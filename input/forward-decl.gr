@@ -1,0 +1,18 @@
+# Contrived example to test simple tail calls
+
+let rec is_even_help = (lambda n, b:
+  if (n == 0):
+    b
+  else:
+    is_odd_help(n - 1, !(b))),
+
+        is_odd_help = (lambda n, b:
+  if (n == 1):
+    b
+  else:
+    is_even_help(n - 1, !(b))) in
+
+let is_even = (lambda n: is_even_help(n, true)),
+    is_odd = (lambda n: is_odd_help(n, true)) in
+
+is_odd(99999999)

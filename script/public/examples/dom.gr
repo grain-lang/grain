@@ -1,0 +1,30 @@
+let div3 = DOM::query("#innerDiv") in
+let makeButtonHTML =
+  (lambda n:
+    string_append(string_append('<div class="row pt-1 pb-1"><button type="button" class="btn btn-primary mx-auto" id="butt', tostring(n)), '">Click me!</button></div>')) in
+let html = ('', 0) in
+let rec add_button = (lambda:
+  begin
+    html[0] := string_append(html[0], makeButtonHTML(html[1]));
+    DOM::dangerouslySetInnerHTML(div3, html[0]);
+    print("No, really.");
+    let id = string_append("#butt", tostring(html[1])) in
+    begin
+      setEventListeners(html[1]);
+      html[1] := html[1] + 1;
+    end
+  end),
+  setEventListeners = (lambda n:
+    if equal(n, 0):
+      DOM::addEventListener(DOM::query("#butt0"), "click", add_button)
+    else:
+      begin
+        let elem = DOM::query(string_append("#butt", tostring(n))) in
+        DOM::addEventListener(elem, "click", add_button);
+        setEventListeners(n - 1);
+      end
+  ) in
+begin
+  add_button();
+  print("Click it.")
+end

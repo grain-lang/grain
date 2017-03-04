@@ -1,0 +1,14 @@
+S src
+
+B _build/src
+
+PKG oUnit
+PKG batteries
+PKG extlib
+PKG unix
+PKG cmdliner
+PKG ocamlgraph
+PKG wasm
+PKG stdint
+
+EXT ounit

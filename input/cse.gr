@@ -1,0 +1,5 @@
+let x = 5 in
+let y = x in
+let a = x + 2 in
+let b = y + 2 in
+  y + 2

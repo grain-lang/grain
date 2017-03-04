@@ -1,0 +1,7 @@
+let rec fib_help = (lambda n, cur, next:
+  if n == 0:
+    cur
+  else:
+    fib_help(n - 1, next, cur + next)) in
+let fib = (lambda n: fib_help(n, 0, 1)) in
+  fib(25)

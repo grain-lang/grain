@@ -1,0 +1,2 @@
+let f = (lambda z: (lambda x, y: z + x + y)) in
+  f(5)(4, 3)

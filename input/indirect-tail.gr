@@ -1,0 +1,4 @@
+let add = (lambda x, y: x + y) in
+let double = (lambda x: add(x, x)) in
+
+double(2) + double(3)

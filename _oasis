@@ -1,0 +1,17 @@
+OASISFormat: 0.4
+Name:        grain
+Version:     0.1.0
+Synopsis:    Experimental language targeting WebAssembly
+Authors:     Philip Blair, Oscar Spencer
+License:     MIT
+Executable grainc
+  Path:       src
+  BuildTools: ocamlbuild
+  BuildDepends: unix,oUnit,extlib,batteries,cmdliner,ocamlgraph,wasm,stdint
+  MainIs:     grainc.ml
+Executable test
+  Path:       src
+  BuildTools: ocamlbuild
+  BuildDepends: unix,oUnit,extlib,batteries,cmdliner,ocamlgraph,wasm,stdint
+  MainIs:     test.ml
+
