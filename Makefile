@@ -35,11 +35,11 @@ gctest.o: gctest.c gc.h
 gc.o: gc.c gc.h
 	gcc gc.c -m32 -c -g -o gc.o
 
-cutest-1.5/CuTest.o: cutest-1.5/CuTest.c cutest-1.5/CuTest.h
-	gcc -m32 cutest-1.5/CuTest.c -c -g -o cutest-1.5/CuTest.o
+# cutest-1.5/CuTest.o: cutest-1.5/CuTest.c cutest-1.5/CuTest.h
+# 	gcc -m32 cutest-1.5/CuTest.c -c -g -o cutest-1.5/CuTest.o
 
-gctest: gctest.o gc.o cutest-1.5/CuTest.o cutest-1.5/CuTest.h
-	gcc -m32 cutest-1.5/AllTests.c cutest-1.5/CuTest.o gctest.o gc.o -o gctest
+# gctest: gctest.o gc.o cutest-1.5/CuTest.o cutest-1.5/CuTest.h
+# 	gcc -m32 cutest-1.5/AllTests.c cutest-1.5/CuTest.o gctest.o gc.o -o gctest
 
 
 clean:
