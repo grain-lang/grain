@@ -54,9 +54,9 @@ int* gc(int* bottom_frame, int* top_frame, int* top_stack, int* from_start, int*
   }
   if (top_frame < bottom_frame)
     to_start = gc(bottom_frame,
-                  *top_frame,    // [top_frame] points to the saved EBP, which is the next stack frame
-                  top_frame + 2, // [top_frame+4] points to the return address
-                                 // so [top_frame+8] is the next frame's stack-top
+                  (int*)(*top_frame), // [top_frame] points to the saved EBP, which is the next stack frame
+                  top_frame + 2,      // [top_frame+4] points to the return address
+                                      // so [top_frame+8] is the next frame's stack-top
                   from_start,
                   from_end,
                   to_start); // to_start has been changed to include any newly copied data
