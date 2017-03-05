@@ -26,6 +26,7 @@ const int ERR_GET_NOT_TUPLE  = 6;
 const int ERR_GET_LOW_INDEX  = 7;
 const int ERR_GET_HIGH_INDEX = 8;
 const int ERR_INDEX_NOT_NUM  = 9;
+const int ERR_OUT_OF_MEMORY  = 10;
 
 size_t HEAP_SIZE;
 int* STACK_BOTTOM;
@@ -108,7 +109,7 @@ void error(int i) {
     fprintf(stderr, "Error: index too large to get\n");
     break;
   case ERR_INDEX_NOT_NUM:
-    fprintf(stderr, "Error: get expected numer for index\n");
+    fprintf(stderr, "Error: get expected number for index\n");
     break;
   default:
     fprintf(stderr, "Error: Unknown error code: %d\n", i);
@@ -154,7 +155,7 @@ int* try_gc(int* alloc_ptr, int bytes_needed, int* cur_frame, int* cur_stack_top
   // Abort early, if we can't allocate a new to-space
   if (new_heap == NULL) {
     fprintf(stderr, "Out of memory: could not allocate a new semispace for garbage collection");
-    exit(9);
+    exit(ERR_OUT_OF_MEMORY);
   }
   
   // When you're confident in your collector, enable the following lines to trigger your GC
@@ -166,17 +167,22 @@ int* try_gc(int* alloc_ptr, int bytes_needed, int* cur_frame, int* cur_stack_top
   } else {
     // This just keeps ESI where it is, and cleans up after the unneeded allocation
     free(new_heap);
+    new_heap = NULL;
     new_esi = alloc_ptr;
   }
   
   // Note: strict greater-than is correct here: if new_esi + (bytes_needed / 4) == HEAP_END,
   // that does not mean we're *using* the byte at HEAP_END, but rather that it would be the
   // next free byte, which is still ok and not a heap-overflow.
-  if((new_esi + (bytes_needed / 4)) > HEAP_END) {
+  if (bytes_needed / 4 > HEAP_SIZE) {
+    fprintf(stderr, "Allocation error: needed %d words, but the heap is only %d words",
+            bytes_needed / 4, HEAP_SIZE);
+    exit(ERR_OUT_OF_MEMORY);
+  } else if((new_esi + (bytes_needed / 4)) > HEAP_END) {
     fprintf(stderr, "Out of memory: needed %d words, but only %d remain after collection",
             bytes_needed / 4, (HEAP_END - new_esi));
-    free(new_heap);
-    exit(9);
+    if (new_heap != NULL) free(new_heap);
+    exit(ERR_OUT_OF_MEMORY);
   }
   else {
     return new_esi;

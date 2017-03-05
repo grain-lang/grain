@@ -6,5 +6,6 @@ output/*.s
 output/*.dSYM
 *.sw*
 *~
+*.o
 *.log
 _build/*

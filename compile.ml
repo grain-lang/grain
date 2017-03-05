@@ -261,7 +261,24 @@ let free_vars (e : 'a aexpr) : string list =
   in List.sort_uniq String.compare (helpA [] e)
 ;;
 
-  
+let reserve size tag =
+  let ok = sprintf "$memcheck_%d" tag in
+  [
+    IMov(Reg(EAX), LabelContents("HEAP_END"));
+    ISub(Reg(EAX), Const(size));
+    ICmp(Reg(EAX), Reg(ESI));
+    IJge(ok);
+    IPush(Reg(ESP)); (* stack_top in C *)
+    IPush(Reg(EBP)); (* first_frame in C *)
+    IPush(Const(size)); (* bytes_needed in C *)
+    IPush(Reg(ESI)); (* alloc_ptr in C *)
+    ICall(Label("try_gc"));
+    IAdd(Reg(ESP), Const(16)); (* clean up after call *)
+    (* assume gc success if returning here, so EAX holds the new ESI value *)
+    IMov(Reg(ESI), Reg(EAX));
+    ILabel(ok);
+  ]
+
 (* IMPLEMENT THIS FROM YOUR PREVIOUS ASSIGNMENT -- THE ONLY NEW CODE IS CSetItem and ALet *)
 let compile_fun name args body = failwith "NYI: compile_fun"
 

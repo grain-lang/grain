@@ -44,6 +44,6 @@ gc.o: gc.c gc.h
 
 
 clean:
-	rm -rf output/*.o output/*.s output/*.dSYM output/*.run *.log
+	rm -rf output/*.o output/*.s output/*.dSYM output/*.run *.log *.o
 	rm -rf _build/
 	rm -f main test
