@@ -207,12 +207,12 @@ let rec format_expr (e : 'a expr) (print_a : 'a -> string) : string =
         | e1::rest -> help e1 fmt; List.iter (fun e -> print_comma_sep fmt; help e fmt) rest);
        close_paren fmt
     | EGetItem(tup, idx, a) ->
-       open_label fmt "EPrim1" a;
+       open_label fmt "EGetItem" a;
        help tup fmt;
        print_comma_sep fmt; help idx fmt; 
        close_paren fmt
     | ESetItem(tup, idx, rhs, a) ->
-       open_label fmt "EPrim1" a;
+       open_label fmt "ESetItem" a;
        help tup fmt;
        print_comma_sep fmt; help idx fmt; 
        print_comma_sep fmt; help rhs fmt; 

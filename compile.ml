@@ -16,6 +16,12 @@ let err_GET_HIGH_INDEX = 8
 let err_INDEX_NOT_NUM  = 9
 
 
+let const_true = HexConst (0xFFFFFFFF)
+let const_false = HexConst(0x7FFFFFFF)
+let bool_mask = HexConst(0x80000000)
+let tag_as_bool = HexConst(0x00000001)
+
+
 type 'a envt = (string * 'a) list
 
 let rec is_anf (e : 'a expr) : bool =
@@ -88,6 +94,7 @@ let well_formed (p : (Lexing.position * Lexing.position) program) builtins : exn
 
 
 type 'a anf_bind =
+  | BSeq of 'a cexpr
   | BLet of string * 'a cexpr
   | BLetRec of (string * 'a cexpr) list
   
@@ -105,9 +112,12 @@ let anf (p : tag program) : unit aprogram =
     | EIf(cond, _then, _else, _) ->
        let (cond_imm, cond_setup) = helpI cond in
        (CIf(cond_imm, helpA _then, helpA _else, ()), cond_setup)
-    | ESeq(stmts, _) ->
-       let (stmts_ans, stmts_setup) = List.split (List.rev_map helpC stmts) in
-       (List.hd stmts_ans, List.fold_left (fun acc prev -> prev @ acc) [] stmts_setup)
+    | ESeq([], _) -> failwith "Impossible by syntax"
+    | ESeq([stmt], _) -> helpC stmt
+    | ESeq(fst :: rest, tag) ->
+       let (fst_ans, fst_setup) = helpC fst in
+       let (rest_ans, rest_setup) = helpC (ESeq(rest, tag)) in
+       (rest_ans, fst_setup @ [BSeq fst_ans] @ rest_setup)
     | ELet([], body, _) -> helpC body
     | ELet((bind, exp, _)::rest, body, pos) ->
        let (exp_ans, exp_setup) = helpC exp in
@@ -134,7 +144,7 @@ let anf (p : tag program) : unit aprogram =
     | ESetItem(tup, idx, rhs, _) ->
        let (tup_imm, tup_setup) = helpI tup in
        let (idx_imm, idx_setup) = helpI idx in
-       let (rhs_imm, rhs_setup) = helpI idx in
+       let (rhs_imm, rhs_setup) = helpI rhs in
        (CSetItem(tup_imm, idx_imm, rhs_imm, ()), tup_setup @ idx_setup @ rhs_setup)
     | _ -> let (imm, setup) = helpI e in (CImmExpr imm, setup)
 
@@ -167,7 +177,7 @@ let anf (p : tag program) : unit aprogram =
     | ESeq(fst :: rest, tag) ->
        let (fst_ans, fst_setup) = helpC fst in
        let (rest_ans, rest_setup) = helpI (ESeq(rest, tag)) in
-       (rest_ans, fst_setup @ rest_setup)
+       (rest_ans, fst_setup @ [BSeq fst_ans] @ rest_setup)
     | ELet([], body, _) -> helpI body
     | ELet((bind, exp, _)::rest, body, pos) ->
        let (exp_ans, exp_setup) = helpC exp in
@@ -198,13 +208,14 @@ let anf (p : tag program) : unit aprogram =
        let tmp = sprintf "set_%d" tag in
        let (tup_imm, tup_setup) = helpI tup in
        let (idx_imm, idx_setup) = helpI idx in
-       let (rhs_imm, rhs_setup) = helpI idx in
+       let (rhs_imm, rhs_setup) = helpI rhs in
        (ImmId(tmp, ()), tup_setup @ idx_setup @ rhs_setup @ [BLet(tmp, CSetItem(tup_imm, idx_imm, rhs_imm, ()))])
   and helpA e : unit aexpr = 
     let (ans, ans_setup) = helpC e in
     List.fold_right
       (fun bind body ->
         match bind with
+        | BSeq(exp) -> ASeq(exp, body, ())
         | BLet(name, exp) -> ALet(name, exp, body, ())
         | BLetRec(names) -> ALetRec(names, body, ()))
       ans_setup (ACExpr ans)

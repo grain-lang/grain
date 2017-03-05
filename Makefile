@@ -1,7 +1,7 @@
 UNAME := $(shell uname)
 ifeq ($(UNAME), Linux)
   FORMAT=aout
-  PIE=-Wl,-no_pie
+  PIE=
 else
 ifeq ($(UNAME), Darwin)
   FORMAT=macho
@@ -26,6 +26,7 @@ output/%.run: output/%.o main.c gc.o
 output/%.o: output/%.s
 	nasm -f $(FORMAT) -o $@ $<
 
+.PRECIOUS: output/%.s
 output/%.s: input/%.garter main
 	./main $< > $@
 
