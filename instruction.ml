@@ -22,6 +22,7 @@ type arg =
   | RegOffsetReg of reg * reg * int * int
   | Sized of size * arg
   | Label of string
+  | LabelContents of string
 
 type instruction =
   | IMov of arg * arg
@@ -93,6 +94,7 @@ let rec arg_to_asm (a : arg) : string =
   | Sized(s, a) ->
      sprintf "%s %s" (s_to_asm s) (arg_to_asm a)
   | Label s -> s
+  | LabelContents s -> sprintf "[%s]" s
 
 let rec i_to_asm (i : instruction) : string =
   match i with

@@ -300,7 +300,7 @@ err_index_not_num:%s"
   (* $heap is a mock parameter name, just so that compile_fun knows our_code_starts_here takes in 1 parameter *)
      let (prologue, comp_main, epilogue) = compile_fun "our_code_starts_here" ["$heap"] anfed in
      let heap_start = [
-         IInstrComment(IMov(Label("STACK_BOTTOM"), Reg(EBP)), "This is the bottom of our Garter stack");
+         IInstrComment(IMov(LabelContents("STACK_BOTTOM"), Reg(EBP)), "This is the bottom of our Garter stack");
          ILineComment("heap start");
          IInstrComment(IMov(Reg(ESI), RegOffset(8, EBP)), "Load ESI with our argument, the heap pointer");
          IInstrComment(IAdd(Reg(ESI), Const(7)), "Align it to the nearest multiple of 8");
