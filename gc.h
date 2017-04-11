@@ -57,4 +57,4 @@ int* copy_if_needed(int* garter_val_addr, int* heap_top);
   Returns:
     The new location within to_start at which to allocate new data
  */
-int* gc(int* bottom_frame, int* top_frame, int* top_stack, int* from_start, int* from_end, int* to_start);
+int* gc(int* bottom_frame, int* top_frame, int* top_stack, int* from_start, int* from_end, int* to_start, int *heap_start, int *heap_end);

@@ -1,0 +1,26 @@
+# Contrived example to test *ADVANCED* tail calls
+
+let rec is_even_help = (lambda n, b:
+  let x = (n, n, b, n) in
+  if (n == 0):
+    b
+  else:
+    # Note the different argument size
+    # (We bounce back and forth between
+    #  different stack sizes with this
+    #  implementation)
+    is_odd(n - 1)),
+
+
+    is_odd_help = (lambda n, b:
+    let x = (n,) in
+  if (n == 1):
+    b
+  else:
+    # See above
+    is_even(n - 1)),
+
+   is_even = (lambda n: is_even_help(n, true)),
+   is_odd = (lambda n: is_odd_help(n, true)) in
+
+is_odd(9999)

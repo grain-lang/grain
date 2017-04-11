@@ -1,0 +1,15 @@
+let counter =
+  let tup = (0,) in
+  let rec func = (lambda:
+    let res = tup[0] in
+    begin
+      tup[0] := tup[0] + 1;
+      res
+    end) in
+  func in
+
+  begin
+    print(counter());
+    print(counter());
+    print(counter())
+  end

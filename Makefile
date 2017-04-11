@@ -1,6 +1,12 @@
 UNAME := $(shell uname)
+DEBUG=yes
+
 ifeq ($(UNAME), Linux)
-  FORMAT=aout
+ifeq ($(DEBUG),)
+	FORMAT=aout
+else
+  FORMAT=elf
+endif
   PIE=
 else
 ifeq ($(UNAME), Darwin)
@@ -9,32 +15,44 @@ ifeq ($(UNAME), Darwin)
 endif
 endif
 
-PKGS=oUnit,extlib,unix
+OCAMLFIND_PKGS=oUnit,extlib,batteries,cmdliner,ocamlgraph,wasm
+PKGS=unix,$(OCAMLFIND_PKGS)
+OPAM_PKGS=ounit,extlib,batteries,cmdliner,ocamlgraph,wasm
 BUILD=ocamlbuild -r -use-ocamlfind
 
-main: *.ml parser.mly lexer.mll
+main: *.ml parser.mly lexer.mll gc.o
+	make check-libs
 	$(BUILD) -no-hygiene -package $(PKGS) main.native
 	mv main.native main
 
-test: *.ml parser.mly lexer.mll
+test: *.ml parser.mly lexer.mll main
+	make check-libs
 	$(BUILD) -no-hygiene -package $(PKGS) test.native
 	mv test.native test
+
+.PHONY: check-libs
+check-libs:
+	./check-installed.sh $(OCAMLFIND_PKGS) $(OPAM_PKGS)
 
 output/%.run: output/%.o main.c gc.o
 	clang $(PIE) -mstackrealign -g -m32 -o $@ gc.o main.c $<
 
 output/%.o: output/%.s
+ifeq ($(DEBUG),)
 	nasm -f $(FORMAT) -o $@ $<
+else
+	nasm -f $(FORMAT) -g -F dwarf -o $@ $<
+endif
 
 .PRECIOUS: output/%.s
-output/%.s: input/%.garter main
-	./main $< > $@
+output/%.s: input/%.indigo main
+	./main $< -o $@
 
 gctest.o: gctest.c gc.h
 	gcc gctest.c -m32 -c -g -o gctest.o
 
 gc.o: gc.c gc.h
-	gcc gc.c -m32 -c -g -o gc.o
+	gcc gc.c -m32 -Wall -Wextra -c -g -o gc.o
 
 # cutest-1.5/CuTest.o: cutest-1.5/CuTest.c cutest-1.5/CuTest.h
 # 	gcc -m32 cutest-1.5/CuTest.c -c -g -o cutest-1.5/CuTest.o
@@ -44,6 +62,14 @@ gc.o: gc.c gc.h
 
 
 clean:
+	ocamlbuild -clean
 	rm -rf output/*.o output/*.s output/*.dSYM output/*.run *.log *.o
 	rm -rf _build/
-	rm -f main test
+	rm -f main test .installed-pkgs
+
+submission-indigo.zip: *.ml *.mll *.mly check-installed.sh Makefile *.c *.h lib/* input/*.indigo _tags
+	zip $@ $^
+	(cd .. && ./test-dist.sh starter-indigo/$@)
+
+.PHONY: dist
+dist: submission-indigo.zip

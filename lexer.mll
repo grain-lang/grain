@@ -19,7 +19,6 @@ rule token = parse
   | "def" { DEF }
   | "add1" { ADD1 }
   | "sub1" { SUB1 }
-  | "print" { PRINT }
   | "printStack" { PRINTSTACK }
   | "begin" { BEGIN }
   | "end" { END }
@@ -31,7 +30,9 @@ rule token = parse
   | "istuple" { ISTUPLE }
   | "lambda" { LAMBDA }
   | "λ" { LAMBDA }
+  | "include" { INCLUDE }
   | ":" { COLON }
+  | "->" { ARROW }
   | "else:" { ELSECOLON }
   | "let" { LET }
   | "rec" { REC }
@@ -55,6 +56,7 @@ rule token = parse
   | "&&" { AND }
   | "||" { OR }
   | "!" { NOT }
+  | "..." { ELLIPSIS }
   | ident as x { ID x }
   | eof { EOF }
   | _ as c { failwith (sprintf "Unrecognized character: %c" c) }

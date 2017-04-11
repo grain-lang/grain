@@ -1,0 +1,33 @@
+# Standard library for list functionality
+
+let rec link = (lambda first, rest: (first, rest)),
+        length = (lambda l: if l == false: 0 else: 1 + length(l[1])),
+        sum = (lambda l: if l == false: 0 else: l[0] + sum(l[1])),
+        reverse = (lambda l:
+                     let rec help = (lambda _l, acc:
+                                       if _l == false:
+                                         acc
+                                       else:
+                                         help(_l[1], link(_l[0], acc))) in
+                       help(l, false)),
+        append = (lambda l1, l2:
+                    if l1 == false: l2
+                    else: link(l1[0], append(l1[1], l2))),
+        contains = (lambda x, l:
+                      if l == false: false
+                      else:
+                        if equal(x, l[0]):
+                          true
+                        else:
+                          contains(x, l[1])),
+        fold_left = (lambda f, b, l:
+                       if l == false: b
+                       else:
+                         fold_left(f, f(b, l[0]), l[1])),
+        fold_right = (lambda f, b, l:
+                        if l == false: b
+                        else:
+                          f(l[0], fold_right(f, b, l[1]))),
+        map = (lambda f, l:
+                fold_right((lambda hd, tl: link(f(hd), tl)), false, l)) in
+  ...

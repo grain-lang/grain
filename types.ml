@@ -8,6 +8,7 @@ type ('a, 'b) either =
 
                
 type sourcespan = (Lexing.position * Lexing.position)
+type initial_func = (string * sourcespan * bool) (* name, loc, is_pure *)
 exception UnboundId of string * sourcespan (* name, where used *)
 exception UnboundFun of string * sourcespan (* name of fun, where used *)
 exception ShadowId of string * sourcespan * sourcespan (* name, where used, where defined *)
@@ -15,6 +16,11 @@ exception DuplicateId of string * sourcespan * sourcespan (* name, where used, w
 exception DuplicateFun of string * sourcespan * sourcespan (* name, where used, where defined *)
 exception Overflow of int * sourcespan (* value, where used *)
 exception LetRecNonFunction of string * sourcespan (* name binding, where defined *)
+exception EllipsisInNonLibrary of sourcespan (* where used *)
+exception EllipsisNotInTailPosition of sourcespan (* where used *)
+exception EllipsisNotInLibrary of sourcespan (* tail expression where ellipsis should be *)
+exception IncludeNotAtBeginning of sourcespan (* location *)
+exception IncludeNotFound of string * sourcespan (* library, location of include *)
 
 
 
@@ -22,7 +28,6 @@ type prim1 =
   | Add1
   | Sub1
   | Not
-  | Print
   | PrintStack
   | IsNum
   | IsBool
@@ -40,7 +45,15 @@ type prim2 =
   | And
   | Or
 
-type 'a bind = (string * 'a expr * 'a)
+type typ =
+  | TyCon of string (* things like Int or Bool *)
+  | TyVar of string (* things like X or Y *)
+  | TyArr of typ list * typ (* t1 t2 ... -> t_ret *)
+  | TyTup of typ list (* (t1, t2, ..., tn) *)
+
+type scheme = (string list * typ) (* Forall X, Y, ..., typ *)
+
+type 'a bind = (string * scheme option * 'a expr * 'a)
 
 and 'a expr =
   | ELet of 'a bind list * 'a expr * 'a
@@ -51,12 +64,16 @@ and 'a expr =
   | ETuple of 'a expr list * 'a
   | EGetItem of 'a expr * 'a expr * 'a
   | ESetItem of 'a expr * 'a expr * 'a expr * 'a
+  | EGetItemExact of 'a expr * int * 'a
+  | ESetItemExact of 'a expr * int * 'a expr * 'a
   | ENumber of int * 'a
   | EBool of bool * 'a
   | EId of string * 'a
   | EApp of 'a expr * 'a expr list * 'a
   | ELambda of (string * 'a) list * 'a expr * 'a
   | ESeq of 'a expr list * 'a
+  | EEllipsis of 'a
+  | EInclude of string * 'a expr * 'a
 
 type 'a program = 'a expr
 
@@ -81,3 +98,5 @@ and 'a aexpr = (* anf expressions *)
   | ACExpr of 'a cexpr
 
 and 'a aprogram = 'a aexpr
+
+type 'a envt = (string * 'a) list

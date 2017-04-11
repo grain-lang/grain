@@ -2,11 +2,13 @@ open Printf
 
 type reg =
   | EAX
+  | EBX
   | ECX
   | EDX
   | ESP
   | EBP
   | ESI
+  | EDI
   | CL
 
 type size =
@@ -23,6 +25,7 @@ type arg =
   | Sized of size * arg
   | Label of string
   | LabelContents of string
+  | LabelOffset of int * string
 
 type instruction =
   | IMov of arg * arg
@@ -56,20 +59,27 @@ type instruction =
   | IJg of string
   | IJge of string
   | IJmp of string
+  | IJmpArg of arg
   | IJz of string
   | IJnz of string
 
   | ILineComment of string
   | IInstrComment of instruction * string
 
+  | IResw of arg
+  | IDw of int
+  | ILiteral of string
+
 let r_to_asm (r : reg) : string =
   match r with
   | EAX -> "eax"
+  | EBX -> "ebx"
   | ESP -> "esp"
   | EBP -> "ebp"
   | ESI -> "esi"
   | ECX -> "ecx"
   | EDX -> "edx"
+  | EDI -> "edi"
   | CL -> "cl"
 
 let s_to_asm (s : size) : string =
@@ -81,7 +91,7 @@ let s_to_asm (s : size) : string =
 let rec arg_to_asm (a : arg) : string =
   match a with
   | Const(n) -> sprintf "%d" n
-  | HexConst(n) -> sprintf "0x%X" n
+  | HexConst(n) -> sprintf "0x%lX" (Int32.of_int n)
   | Reg(r) -> r_to_asm r
   | RegOffset(n, r) ->
      if n >= 0 then
@@ -95,6 +105,17 @@ let rec arg_to_asm (a : arg) : string =
      sprintf "%s %s" (s_to_asm s) (arg_to_asm a)
   | Label s -> s
   | LabelContents s -> sprintf "[%s]" s
+  | LabelOffset(i, s) ->
+    if i >= 0 then
+      sprintf "[%s+%d]" s i
+    else
+      sprintf "[%s-%d]" s i
+
+let rec repeat n x =
+  if n <= 0 then
+    []
+  else
+    x::(repeat (n - 1) x)
 
 let rec i_to_asm (i : instruction) : string =
   match i with
@@ -152,12 +173,17 @@ let rec i_to_asm (i : instruction) : string =
      sprintf "  jo near %s" label
   | IJmp(label) ->
      sprintf "  jmp near %s" label
+  | IJmpArg(arg) ->
+     sprintf "  jmp near %s" (arg_to_asm arg)
   | IRet ->
      "  ret"
   | ILineComment(str) ->
      sprintf "  ;; %s" str
   | IInstrComment(instr, str) ->
-     sprintf "%s ; %s" (i_to_asm instr) str
+    sprintf "%s ; %s" (i_to_asm instr) str
+  | IResw(arg) -> sprintf "  resw %s" (arg_to_asm arg)
+  | IDw(num_words) -> sprintf "dw %s" (ExtString.String.join "," (repeat num_words "0x0"))
+  | ILiteral(str) -> str
 
 let to_asm (is : instruction list) : string =
   List.fold_left (fun s i -> sprintf "%s\n%s" s (i_to_asm i)) "" is

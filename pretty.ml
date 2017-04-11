@@ -13,7 +13,6 @@ let string_of_op1 op =
   match op with
   | Add1 -> "add1"
   | Sub1 -> "sub1"
-  | Print -> "print"
   | PrintStack -> "printStack"
   | Not -> "!"
   | IsNum -> "isnum"
@@ -24,7 +23,6 @@ let name_of_op1 op =
   match op with
   | Add1 -> "Add1"
   | Sub1 -> "Sub1"
-  | Print -> "Print"
   | PrintStack -> "PrintStack"
   | Not -> "Not"
   | IsNum -> "IsNum"
@@ -55,23 +53,41 @@ let name_of_op2 op =
   | GreaterEq -> "GreaterEq"
   | LessEq -> "LessEq"
   | Eq -> "Eq"
-               
+
+let rec string_of_typ t =
+  match t with
+  | TyCon s -> s
+  | TyVar s -> sprintf "'%s" s
+  | TyArr(args, ret) -> sprintf "(%s -> %s)" (ExtString.String.join " " (List.map string_of_typ args))
+                          (string_of_typ ret)
+  | TyTup args -> sprintf "(%s)" (ExtString.String.join ", " (List.map string_of_typ args))
+and string_of_scheme (vars, typ) =
+  sprintf "(Forall (%s), %s)" (ExtString.String.join ", " vars) (string_of_typ typ)
+;;
+
+let string_of_sopt (sopt : scheme option) : string =
+  match sopt with
+  | None -> ""
+  | Some scheme -> " : " ^ (string_of_scheme scheme)
 
 let rec string_of_expr (e : 'a expr) : string =
   match e with
   | ENumber(n, _) -> string_of_int n
   | EBool(b, _) -> string_of_bool b
   | EId(x, _) -> x
+  | EEllipsis(_) -> "..."
+  | EInclude(lib, body, _) ->
+    sprintf "(include %s in %s)" lib (string_of_expr body)
   | EPrim1(op, e, _) ->
      sprintf "%s(%s)" (string_of_op1 op) (string_of_expr e)
   | EPrim2(op, left, right, _) ->
      sprintf "(%s %s %s)" (string_of_expr left) (string_of_op2 op) (string_of_expr right)
   | ELet(binds, body, _) ->
-     let binds_strs = List.map (fun (x, e, _) -> sprintf "%s = %s" x (string_of_expr e)) binds in
+     let binds_strs = List.map (fun (x, sopt, e, _) -> sprintf "%s%s = %s" x (string_of_sopt sopt) (string_of_expr e)) binds in
      let binds_str = List.fold_left (^) "" (intersperse binds_strs ", ") in
      sprintf "(let %s in %s)" binds_str (string_of_expr body)
   | ELetRec(binds, body, _) ->
-     let binds_strs = List.map (fun (x, e, _) -> sprintf "%s = %s" x (string_of_expr e)) binds in
+     let binds_strs = List.map (fun (x, sopt, e, _) -> sprintf "%s%s = %s" x (string_of_sopt sopt) (string_of_expr e)) binds in
      let binds_str = List.fold_left (^) "" (intersperse binds_strs ", ") in
      sprintf "(let rec %s in %s)" binds_str (string_of_expr body)
   | EIf(cond, thn, els, _) ->
@@ -86,7 +102,11 @@ let rec string_of_expr (e : 'a expr) : string =
   | EGetItem(tup, idx, _) ->
      sprintf "%s[%s]" (string_of_expr tup) (string_of_expr idx)
   | ESetItem(tup, idx, rhs, _) ->
-     sprintf "%s[%s] := %s" (string_of_expr tup) (string_of_expr idx) (string_of_expr rhs)
+    sprintf "%s[%s] := %s" (string_of_expr tup) (string_of_expr idx) (string_of_expr rhs)
+  | EGetItemExact(tup, idx, _) ->
+     sprintf "%s[:%d:]" (string_of_expr tup) idx
+  | ESetItemExact(tup, idx, rhs, _) ->
+sprintf "%s[:%d:] := %s" (string_of_expr tup) idx (string_of_expr rhs)
   | ELambda(args, body, _) ->
      sprintf "(lambda(%s): %s)" (ExtString.String.join ", " (List.map fst args))
              (string_of_expr body)
@@ -176,6 +196,14 @@ let rec format_expr (e : 'a expr) (print_a : 'a -> string) : string =
        open_label fmt "EId" a;
        pp_print_string fmt (quote x);
        close_paren fmt
+    | EEllipsis(a) ->
+       open_label fmt "EEllipsis" a;
+       close_paren fmt
+    | EInclude(lib, body, a) ->
+      open_label fmt "EInclude" a;
+      pp_print_string fmt (quote lib);
+      help body fmt;
+      close_paren fmt
     | EPrim1(op, e, a) ->
        open_label fmt "EPrim1" a;
        pp_print_string fmt (name_of_op1 op);
@@ -217,14 +245,26 @@ let rec format_expr (e : 'a expr) (print_a : 'a -> string) : string =
        print_comma_sep fmt; help idx fmt; 
        print_comma_sep fmt; help rhs fmt; 
        close_paren fmt
+    | EGetItemExact(tup, idx, a) ->
+       open_label fmt "EGetItemExact" a;
+       help tup fmt;
+       print_comma_sep fmt; pp_print_int fmt idx;
+       close_paren fmt
+    | ESetItemExact(tup, idx, rhs, a) ->
+       open_label fmt "ESetItemExact" a;
+       help tup fmt;
+       print_comma_sep fmt; pp_print_int fmt idx;
+       print_comma_sep fmt; help rhs fmt; 
+close_paren fmt
     | ESeq(stmts, a) ->
        open_label fmt "ESeq" a;
        print_list fmt help stmts print_semi_sep; 
        close_paren fmt
     | ELet(binds, body, a) ->
-       let print_item (x, b, a) fmt =
+       let print_item (x, sopt, b, a) fmt =
          open_paren fmt;
-         pp_print_string fmt (" " ^ (quote x)); pp_print_string fmt (maybe_a a); print_comma_sep fmt; help b fmt;
+         pp_print_string fmt (" " ^ (quote x)); pp_print_string fmt (string_of_sopt sopt);
+         pp_print_string fmt (maybe_a a); print_comma_sep fmt; help b fmt;
          close_paren fmt in
        open_label fmt "ELet" a;
        open_paren fmt; print_list fmt print_item binds print_comma_sep; close_paren fmt;
@@ -232,9 +272,10 @@ let rec format_expr (e : 'a expr) (print_a : 'a -> string) : string =
        help body fmt;
        close_paren fmt
     | ELetRec(binds, body, a) ->
-       let print_item (x, b, a) fmt =
+       let print_item (x, sopt, b, a) fmt =
          open_paren fmt;
-         pp_print_string fmt (" " ^ (quote x)); pp_print_string fmt (maybe_a a); print_comma_sep fmt; help b fmt;
+         pp_print_string fmt (" " ^ (quote x)); pp_print_string fmt (string_of_sopt sopt);
+         pp_print_string fmt (maybe_a a); print_comma_sep fmt; help b fmt;
          close_paren fmt in
        open_label fmt "ELetRec" a;
        open_paren fmt; print_list fmt print_item binds print_comma_sep; close_paren fmt;
