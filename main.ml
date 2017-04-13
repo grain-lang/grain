@@ -6,7 +6,7 @@ open Types
 open Filename
 open Cmdliner
 
-let language_name = "Indigo"
+let language_name = "Grain"
 
 (** `remove_extension` new enough that we should just use this *)
 let safe_remove_extension name =
@@ -15,12 +15,13 @@ let safe_remove_extension name =
   with
   | Invalid_argument _ -> name
 
-let default_output_filename name = safe_remove_extension name ^ ".run"
+let default_output_filename name = safe_remove_extension name ^ ".wasm"
 
-let default_assembly_filename name = safe_remove_extension name ^ ".s"
+let default_assembly_filename name = safe_remove_extension name ^ ".wast"
 
-let compile_file runnable debug cdebug unsound_opts name outfile =
+let compile_file debug cdebug unsound_opts name outfile =
   let input_file = open_in name in
+  let runnable = true in
   let opts = {Compile.default_compile_options with
               sound_optimizations=(not unsound_opts);
               optimizations_enabled=(not debug);
@@ -53,7 +54,7 @@ let output_file_conv =
   parse, Format.pp_print_string
 
 let runnable =
-  let doc = "Emit runnable program" in
+  let doc = "Emit runnable program (deprecated)" in
   Arg.(value & flag & info ["r"; "runnable"] ~doc)
 
 let debug =
@@ -97,7 +98,7 @@ let help_cmd =
 
 let cmd =
   let doc = sprintf "Compile %s programs" language_name in
-  Term.(ret (const compile_file $ runnable $ debug $ compiler_debug $ unsound_opts $ input_filename $ output_filename)),
+  Term.(ret (const compile_file $ debug $ compiler_debug $ unsound_opts $ input_filename $ output_filename)),
   Term.info (Sys.argv.(0)) ~version:"1.0.0" ~doc
 
 (*let () =

@@ -151,12 +151,8 @@ let safe_run_process prog args =
   try_running, cleanup
 
 let assemble_object_file asm_file debug object_name =
-  let flags =
-    if debug then
-      ["-f"; "aout"]
-    else
-      ["-f"; "elf"; "-g"; "-F"; "dwarf"] in
-  safe_run_process "nasm" (flags @ ["-o"; object_name; asm_file])
+  let flags = [] in
+  safe_run_process "wast2wasm" (flags @ ["-o"; object_name; asm_file])
 
 let compile_runnable_file obj_file debug outfile_name =
   let debug_flags =
@@ -175,20 +171,12 @@ let compile_runnable_file obj_file debug outfile_name =
   safe_run_process "clang" cflags
 
 let compile_assembly_to_binary asm debug outfile_name =
-  let asm_tmp_filename = (temp_file (Filename.basename outfile_name) ".temp.s") in
-  let obj_tmp_filename = (temp_file (Filename.basename outfile_name) ".o") in
+  let asm_tmp_filename = if debug then outfile_name ^ ".wast" else (temp_file (Filename.basename outfile_name) ".wast") in
   let asm_tmp = open_out asm_tmp_filename in
   output_string asm_tmp asm;
   close_out asm_tmp;
-  let obj_asm, obj_asm_cleanup = assemble_object_file asm_tmp_filename debug obj_tmp_filename in
-  match obj_asm with
-  | Left(_) ->
-    obj_asm
-  | Right(_) ->
-    let bin_obj, bin_obj_cleanup = compile_runnable_file obj_tmp_filename debug outfile_name in
-    obj_asm_cleanup();
-    bin_obj_cleanup();
-    bin_obj
+  let obj_asm, obj_asm_cleanup = assemble_object_file asm_tmp_filename debug outfile_name in
+  obj_asm
 
 type result = (string, string) either
 
@@ -227,7 +215,7 @@ let run_vg (program_name : string) args : result =
   result
 
 let run_asm asm_string out (runner : string -> string list  -> result) args =
-  let outfile = open_out (out ^ ".s") in
+  let outfile = open_out (out ^ ".wast") in
   fprintf outfile "%s" asm_string;
   close_out outfile;
   let (bstdout, bstdout_name, bstderr, bstderr_name, bstdin) = make_tmpfiles "build" in

@@ -5,18 +5,37 @@ open Expr
 open Errors
 open Value_tags
 open Instruction
+open Wasm
 
 type compiler_env = {
-  bindings: arg envt;
+  bindings: int32 Wasm.Source.phrase envt;
+  heap_top: int32 Wasm.Source.phrase;
+  stack_index: int;
+  stack_size: int;
+  num_args: int;
+  is_tail: bool;
 }
 
-let const_true  = HexConst(0xFFFFFFFF)
-let const_false = HexConst(0x7FFFFFFF)
-let bool_mask   = HexConst(0x80000000)
-let tag_as_bool = HexConst(0x00000001)
+let add_dummy_loc (x : 'a) : 'a Source.phrase = Source.(x @@ no_region)
+
+let initial_env =
+  {bindings=[];
+   heap_top=add_dummy_loc (Int32.of_int 0);
+   stack_index=0;
+   stack_size=0;
+   num_args=0;
+   is_tail=true}
+
+let const_int32 n = add_dummy_loc (Values.I32Value.to_value @@ Int32.of_int n)
+
+let const_true  = const_int32 (0xFFFFFFFF)
+let const_false = const_int32 (0x7FFFFFFF)
+let bool_mask   = const_int32 (0x80000000)
+let tag_as_bool = const_int32 (0x00000001)
 
 let str_of_env env =
-  sprintf "{bindings=%s}" (ExtLib.dump @@ List.map (fun (n, i) -> (n, Instruction.arg_to_asm i)) env.bindings)
+  sprintf "{bindings=%s}" (ExtLib.dump env.bindings)
+
 
 (** Maps `f` over `lst`, appending the results. *)
 let flat_map (f : 'a -> 'b list) (lst : 'a list) : 'b list = List.fold_left List.append [] (List.rev_map f lst)
@@ -27,168 +46,96 @@ let rec find ls x =
   | (y,v)::rest ->
      if y = x then v else find rest x
 
-let lambda_get_arity (reg : reg) = RegOffset(0, reg);;
-let lambda_get_ptr (reg : reg) = RegOffset(4, reg);;
-let lambda_get_closure_size (reg : reg) = RegOffset(8, reg);;
-let lambda_get_arg_offset arg = 12 + (arg * 4)
-
 let rec repeat n value =
   if n == 0 then
     []
   else
     value::(repeat (n - 1) value)
 
-(*IAdd(Reg(ESP), Const(~-4 * stack_size))*)
+let rec repeat_f n value =
+  if n == 0 then
+    []
+  else
+    (value n)::(repeat_f (n - 1) value)
+
 let reserve_stack num_words =
-  repeat num_words (IPush(HexConst(0xDEADBEEF)))
+  failwith "NYI: reserve_stack"
 
 (** Calls the given function with the given list of arguments *)
-let func_apply (name : string) (args : arg list) (stack_size : int) : instruction list =
-  (List.fold_left (fun acc arg -> (IPush(Sized(DWORD_PTR, arg)))::acc)
-     [
-       ICall(Label(name));
-       IMov(Reg(ESP), Reg(EBP));
-       IAdd(Reg(ESP), HexConst(~-4 * stack_size));
-     ] args)
+let func_apply (name : string) (args : arg list) (stack_size : int) =
+  failwith "NYI: func_apply"
 
-let lambda_apply (lambda : arg) (args : arg list) (stack_size : int) : instruction list =
-  let preamble = [
-    IMov(Reg(ECX), lambda);
-    IMov(Reg(EDX), Reg(ECX));
-    IOr(Reg(EDX), HexConst(tag_val_of_tag_type LambdaTagType));
-  ] in
-  preamble @
-  (List.fold_left (fun acc arg -> (IPush(Sized(DWORD_PTR, arg)))::acc) [] ((Reg(EDX))::args)) @
-  [
-    IMov(Reg(ECX), lambda_get_ptr ECX);
-    ICall(Reg(ECX));
-    IMov(Reg(ESP), Reg(EBP));
-    IAdd(Reg(ESP), HexConst(~-4 * stack_size));
-  ]
+let lambda_apply (lambda : arg) (args : arg list) (stack_size : int) =
+  failwith "NYI: lambda_apply"
 
-let call_error_handler (code : int) : instruction list =
+let call_error_handler (code : int) =
   (* stack_size doesn't matter here, since this call won't return *)
-  func_apply "error" [Const(code); Reg(EAX)] 0
+  failwith "NYI: call_error_handler"
 
 (*  label_of_error code_of_error *)
-let create_error_handlers (defs : snek_error list) : instruction list =
-  let handlers = List.map (fun e ->
-      (ILabel(label_of_error e))::(call_error_handler (code_of_error e))) defs in
-  List.flatten handlers
+let create_error_handlers (defs : snek_error list) =
+  failwith "NYI: create_error_handlers"
 
-let heap_allocate (num_words : int) (dest : arg) tag : instruction list =
+let heap_allocate (num_words : int) env =
   let words_to_allocate = 4 * (((num_words - 1) / 4) + 1) in
-  let ok_label = sprintf "$memcheck_%s" tag in
   [
-    IMov(Reg(EAX), LabelContents("HEAP_END"));
-    ISub(Reg(EAX), Const(4 * words_to_allocate));
-    ICmp(Reg(EAX), Reg(ESI));
-    IJge(ok_label);
-    IXor(Reg(EDI), HexConst(tag_val_of_tag_type LambdaTagType));
-    IPush(Reg(EDI));
-    IPush(Reg(ESP)); (* stack_top in C *)
-    IPush(Reg(EBP)); (* first_frame in C *)
-    IPush(Const(4 * words_to_allocate)); (* bytes_needed in C *)
-    IPush(Reg(ESI)); (* alloc_ptr in C *)
-    ICall(Label("try_gc"));
-    IAdd(Reg(ESP), Const(16)); (* clean up after call *)
-    (* assume gc success if returning here, so EAX holds the new ESI value *)
-    IPop(Reg(EDI));
-    IXor(Reg(EDI), HexConst(tag_val_of_tag_type LambdaTagType));
-    IMov(Reg(ESI), Reg(EAX));
-    ILabel(ok_label);
-    IMov(dest, Reg(ESI));
-    IAdd(Reg(ESI), HexConst(4 * words_to_allocate));
+    Ast.GetGlobal(env.heap_top);
+    Ast.Const(const_int32 (4 * words_to_allocate));
+    Ast.Binary(Values.I32 Ast.IntOp.Add);
+    Ast.SetGlobal(env.heap_top);
   ]
 
 (* Checks that the value has the given tag (value ends up in dest) *)
-let check_tag (tag : tag_type) (arg : arg) (dest : arg) =
-  [
-    IMov(Reg(ECX), arg);
-    IAnd(Reg(ECX), HexConst(and_mask_of_tag_type tag));
-    IMov(dest, Const(1));
-    IShl(dest, Reg(CL));
-    IShl(dest, Const(shift_amount_of_tag_type tag));
-    IOr(dest, const_false);
-  ]
+let check_tag (tag : tag_type) =
+  failwith "NYI: check_tag"
 
 
 let assert_tag arg err t val_tag fmt =
-  let label = sprintf fmt t in
-  [
-    ILineComment("start assert_tag");
-    IMov(Reg(ECX), arg);
-    IAnd(Reg(ECX), HexConst(and_mask_of_tag_type val_tag));
-    IMov(Reg(EBX), Const(1));
-    IShl(Reg(EBX), Reg(CL));
-    ICmp(Reg(EBX), HexConst(1 lsl (tag_val_of_tag_type val_tag)));
-    IJe(label);
-    IMov(Reg(EAX), arg);
-    IJmp(label_of_error err);
-    ILabel(label);
-    ILineComment("end assert_tag");
-  ]
+  failwith "NYI: assert_tag"
 
-let assert_num arg err t : instruction list =
+let assert_num arg err t =
   assert_tag arg err t NumberTagType "$assert_num_%d"
 
-let assert_bool arg err t : instruction list =
+let assert_bool arg err t =
   assert_tag arg err t BooleanTagType "$assert_bool_%d"
 
-let assert_tuple arg err t : instruction list =
+let assert_tuple arg err t =
   assert_tag arg err t TupleTagType "$assert_tuple_%d"
 
-let assert_lambda arg err t : instruction list =
+let assert_lambda arg err t =
   assert_tag arg err t LambdaTagType "$assert_lambda_%d"
 
-let check_tuple_idx arg tup t is_get : instruction list =
-  let non_num = if is_get then GetItemIndexNotNumber else SetItemIndexNotNumber in
-  let too_small = if is_get then GetItemIndexTooSmall else SetItemIndexTooSmall in
-  let too_large = if is_get then GetItemIndexTooLarge else SetItemIndexTooLarge in
-  let small_tag = sprintf "$check_tuple_small_%d" t in
-  let large_tag = sprintf "$check_tuple_large_%d" t in
-  let good_tag = sprintf "$check_tuple_good_%d" t in
-  (assert_num arg non_num t) @ [
-    IMov(Reg(EBX), tup);
-    IXor(Reg(EBX), HexConst(1));
-    IMov(Reg(ECX), arg);
-    ICmp(Reg(ECX), HexConst(0));
-    IJl(small_tag);
-    IShr(Reg(ECX), HexConst(1));
-    ICmp(Reg(ECX), RegOffset(0, EBX));
-    IJge(large_tag);
-    IJmp(good_tag);
-    ILabel(small_tag);
-    IMov(Reg(EAX), arg);
-    IJmp(label_of_error too_small);
-    ILabel(large_tag);
-    IMov(Reg(EAX), arg);
-    IJmp(label_of_error too_large);
-    ILabel(good_tag);
-  ]
+let check_tuple_idx arg tup t is_get =
+  failwith "NYI: check_tuple_idx"
 
-let check_arity arg called_arity t : instruction list =
-  let good_tag = sprintf "$check_arity_good_%d" t in
-  [
-    ILineComment("start check_arity");
-    IMov(Reg(EBX), arg);
-    ICmp(lambda_get_arity EBX, Sized(DWORD_PTR, Const(called_arity)));
-    IJe(good_tag);
-    IMov(Reg(EAX), Reg(EBX));
-    IJmp(label_of_error ArityMismatch);
-    ILabel(good_tag);
-    ILineComment("end check_arity");
-  ]
-
-let check_overflow : instruction list =
-  [
-    IJo(label_of_error OverflowError);
-  ]
+let check_arity arg called_arity t =
+  failwith "NYI: check_arity"
 
 let get_tag = function
   | ImmNum(_, t)
   | ImmBool(_, t)
   | ImmId(_, t) -> t
+
+
+
+(** Untags the number at the top of the stack *)
+let untag_number = [Ast.Const(const_int32 1); Ast.Binary(Values.I32 Ast.IntOp.ShrS)]
+
+let encode_bool = [
+  Ast.Const(const_int32 31);
+  Ast.Binary(Values.I32 Ast.IntOp.Shl);
+  Ast.Const(const_false);
+  Ast.Binary(Values.I32 Ast.IntOp.Or);
+]
+
+let decode_bool = [
+  Ast.Const(const_int32 31);
+  Ast.Binary(Values.I32 Ast.IntOp.ShrU);
+]
+
+let tag_value tagtype = []
+
+let encode n = n * 2
 
 let flat_map_i2 (f : 'a -> int -> int -> 'b list) (start1 : int) (start2 : int) (lst : 'a list) : 'b list =
   let (res, _, _) = List.fold_left
@@ -204,432 +151,121 @@ let map_i (f : 'a -> int -> 'b) (xs : 'a list) : 'b list =
 
 (* Assumption: Tagged Lambda is in EAX *)
 let backpatch free_vars env =
-  let backpatch_var var idx =
-    let closure_idx = lambda_get_arg_offset idx in
-    (* Index into closure, offset by tag *)
-    let offset_idx = closure_idx - (tag_val_of_tag_type LambdaTagType) in
-    [
-      ILineComment(sprintf "Loading closure index %d (%s) into offset %d (%x)" idx var closure_idx closure_idx);
-      IMov(Reg(EDX), find env.bindings var);
-      IMov(RegOffset(offset_idx, EAX), Reg(EDX));
-    ] in
-  let ret = [
-    ILineComment("Starting backpatching");
-    ILineComment(sprintf "Environment: %s" (str_of_env env));
-  ] @ (List.flatten @@ map_i backpatch_var free_vars) @
-  [
-    ILineComment("Done with backpatching");
-  ] in
-  ret
+  failwith "NYI: backpatch"
 
-let rec compile_fun (fun_name : string) (args : string list) env callee_restore extra_stack body : (instruction list * instruction list * compiler_env * int) =
-  let stack_size = (count_vars body) + extra_stack in
-  let maybe_xor = fun xor_first r f ->
-    match r with
-    | Reg(EDI) ->
-      if xor_first then
-        [IXor(Reg(EDI), HexConst(tag_val_of_tag_type LambdaTagType)); (f r)]
-      else
-        [(f r); IXor(Reg(EDI), HexConst(tag_val_of_tag_type LambdaTagType))]
-    | _ -> [(f r)] in
-  let preamble = [
-    ILabel(fun_name);
-  ] @ (List.flatten @@ List.map (fun r -> maybe_xor true r (fun x -> IPush(x))) callee_restore) @ [
-    IPush(Reg(EBP));
-    IMov(Reg(EBP), Reg(ESP));
-    (*IAdd(Reg(ESP), Const(~-4 * stack_size))*)
-  ] @ (reserve_stack stack_size) in
-  let postamble = [
-    IMov(Reg(ESP), Reg(EBP));
-    IPop(Reg(EBP));
-  ] @ (List.flatten @@ List.map (fun r -> maybe_xor false r (fun x -> IPop(x))) @@ List.rev callee_restore) @ [
-    IRet;
-  ] in
-  let new_bindings = snd @@ List.fold_left (fun (idx, acc) arg ->
-      (idx + 1, (arg, RegOffset((4 * (2 + idx + (List.length callee_restore))), EBP))::acc)) (0, env.bindings) args in
-  let env = { bindings=new_bindings } in
-  (preamble, postamble, env, stack_size)
 
-and compile_lambda label (args : string list) body : (instruction list * string list) =
-  let used_var_set = Ast_utils.free_vars body in
-  let free_var_set = BindingSet.diff used_var_set @@ BindingSet.of_list args in
-  let free_vars = Ast_utils.BindingSet.elements free_var_set in
-  let free_env = map_i (fun var closure_idx ->
-      (var, RegOffset(lambda_get_arg_offset closure_idx, EDI))) free_vars in
-  let new_args = "$self"::args in
-  let arg_env = map_i (fun var arg_idx ->
-      (var, RegOffset((4 * (3 + arg_idx)), EBP))) new_args in
-  let bindings = free_env @ arg_env in
-  let end_label = sprintf "%s$end" label in
-  
-  let stack_size = count_vars body in
-  let preamble = [
-    IJmp(end_label);
-    ILineComment("Compiling lambda with env:");
-    ILineComment(sprintf "used_vars: %s" @@ (ExtLib.dump @@ BindingSet.elements used_var_set));
-    ILineComment(sprintf "free_vars: %s" @@ ExtLib.dump free_vars);
-    ILabel(label);
-    (* We tag old EDI in order to allow GC to work correctly *)
-    IXor(Reg(EDI), HexConst(tag_val_of_tag_type LambdaTagType));
-    IPush(Reg(EDI));
-    IPush(Reg(EBP));
-    IMov(Reg(EBP), Reg(ESP));
-    IMov(Reg(EDI), RegOffset(12, EBP));
-    IXor(Reg(EDI), HexConst(tag_val_of_tag_type LambdaTagType));
-  ] @ (reserve_stack stack_size) in
-  let postamble = [
-    IMov(Reg(ESP), Reg(EBP));
-    IPop(Reg(EBP));
-    IPop(Reg(EDI));
-    (* Untag old EDI *)
-    IXor(Reg(EDI), HexConst(tag_val_of_tag_type LambdaTagType));
-    IRet;
-    ILabel(end_label);
-  ] @ (heap_allocate (3 + (List.length free_vars)) (Reg(EAX)) label) @ [
-      IMov(lambda_get_arity EAX, Sized(DWORD_PTR, Const(List.length args)));
-      IMov(lambda_get_ptr EAX, Sized(DWORD_PTR, Label(label)));
-      IMov(lambda_get_closure_size EAX, Sized(DWORD_PTR, Const(List.length free_vars)));
-      ILineComment("Tagging Lambda");
-      IOr(Reg(EAX), HexConst(tag_val_of_tag_type LambdaTagType));
-    ] in
-  ((preamble @
-    (compile_aexpr body 1 stack_size {bindings}
-       (List.length new_args) true) @
-    postamble),
-   free_vars)
-  
 
-and compile_aexpr (e : tag aexpr) (si : int) (stack_size : int) (env : compiler_env) (num_args : int) (is_tail : bool) : instruction list =
+let rec compile_fun (fun_name : string) (args : string list) env callee_restore extra_stack body : (Wasm.Ast.instr list * Wasm.Ast.instr list * compiler_env * int) =
+  failwith "NYI: compile_fun"
+
+and compile_lambda label (args : string list) body : string list =
+  failwith "NYI: compile_lambda"
+
+
+and compile_aexpr (e : tag aexpr) (env : compiler_env) =
   match e with
   | ALet(name, rhs, body, t) ->
-    let new_env = { bindings = (name, RegOffset(~-4 * si, EBP))::env.bindings } in
-    (compile_cexpr rhs si stack_size env num_args false) @
-    [IMov(RegOffset(~-4 * si, EBP), Reg(EAX))] @
-    (compile_aexpr body (si + 1) stack_size new_env num_args is_tail)
-  | ALetRec(binds, body, t) ->
-    let compiled_binds, free_vars = List.split @@ map_i (fun (name, bind) idx ->
-        match bind with
-        | CLambda(args, body, t) ->
-          let name = sprintf "$letrec_lambda_%d" t in
-          let compiled, free_vars = compile_lambda name args body in
-          (compiled @ [
-              IMov(RegOffset(~-4 * (si + idx), EBP), Reg(EAX));
-            ]), free_vars
-        | _ ->
-          ((compile_cexpr bind si stack_size env num_args false) @
-           [IMov(RegOffset(~-4 * (si + idx), EBP), Reg(EAX))]), []) binds in
-    let new_env = {
-      bindings = (map_i (fun (name, _) idx ->
-          (name, RegOffset(~-4 * (si + idx), EBP))) binds) @
-                 env.bindings
-    } in
-    (* Lambdas have been placed into stack, so we just need to fill in the closures *)
-    (List.flatten (compiled_binds @ (map_i (fun free_vars idx ->
-         match free_vars with
-         | [] -> []
-         | _ ->
-           [
-             IMov(Reg(EAX), RegOffset(~-4 * (si + idx), EBP));
-           ] @
-           (backpatch free_vars new_env)
-       ) free_vars))) @
-    (compile_aexpr body (si + (List.length binds)) stack_size new_env num_args is_tail)
-  | ACExpr(ce) -> compile_cexpr ce si stack_size env num_args is_tail
-  | ASeq(hd, tl, _) ->
-    (* Stack indexes should be fine here *)
-    (compile_cexpr hd si stack_size env num_args false) @
-    (compile_aexpr tl si stack_size env num_args is_tail)
-and compile_cexpr (e : tag cexpr) si stack_size env num_args is_tail =
+    let new_loc = add_dummy_loc (Int32.of_int env.stack_index) in
+    let new_env = { env with
+                    bindings = (name, new_loc)::env.bindings;
+                    stack_index = env.stack_index + 1;
+                    is_tail = false } in
+    (compile_cexpr rhs env) @
+    [Ast.SetLocal(new_loc)] @
+    (compile_aexpr body new_env)
+  | ACExpr(e) -> compile_cexpr e env
+  | _ -> failwith "NYI: compile_aexpr"
+and compile_cexpr (e : tag cexpr) env =
   match e with
   | CIf(cond, thn, els, t) ->
-    let label_then = sprintf "$if_then_%d" t in
-    let label_els = sprintf "$if_else_%d" t in
-    let label_end = sprintf "$if_end_%d" t in
-    [IMov(Reg(EAX), compile_imm cond env)] @
-    assert_bool (Reg(EAX)) IfError t @ [
-      ICmp(Reg(EAX), const_true);
-      IJe(label_then);
-      IJmp(label_els);
-      ILabel(label_then)
-    ] @ compile_aexpr thn si stack_size env num_args is_tail @ [
-      IJmp(label_end);
-      ILabel(label_els)
-    ] @ compile_aexpr els si stack_size env num_args is_tail @ [
-      ILabel(label_end)
-    ]
-  | CPrim1(name, arg, t) ->
-    [IMov(Reg(EAX), compile_imm arg env)] @
-    (match name with
-     | Add1  ->
-       assert_num (Reg(EAX)) ArithmeticError t @ [
-         IAdd(Reg(EAX), Const(2))
-       ] @ (check_overflow)
-     | Sub1  ->
-       assert_num (Reg(EAX)) ArithmeticError t @ [
-         ISub(Reg(EAX), Const(2))
-       ] @ (check_overflow)
-     | IsBool  ->
-       check_tag BooleanTagType (Reg(EAX)) (Reg(EAX))
-     | IsNum  ->
-       check_tag NumberTagType (Reg(EAX)) (Reg(EAX))
-     | IsTuple ->
-       check_tag TupleTagType (Reg(EAX)) (Reg(EAX))
-     | Not  ->
-       assert_bool (Reg(EAX)) LogicError t @ [
-         IXor(Reg(EAX), HexConst(0x80000000));
-       ]
-     | PrintStack  ->
-       assert_num (Reg(EAX)) GenericNumberError t @
-       func_apply "print_stack" [Reg(EAX); Reg(EBP); Reg(ESP)] stack_size)
-  | CPrim2(name, arg1, arg2, t) ->
-    let arg1, tag1 = compile_imm arg1 env, get_tag arg1 in
-    let arg2, tag2 = compile_imm arg2 env, get_tag arg2 in
-    [IMov(Reg(EAX), arg1); IMov(Reg(EDX), arg2)] @
-    (match name with
-     | Plus  ->
-       assert_num (Reg(EAX)) ArithmeticError tag1 @
-       assert_num (Reg(EDX)) ArithmeticError tag2 @ [
-         IAdd(Reg(EAX), Reg(EDX))
-       ] @ (check_overflow)
-     | Minus  ->
-       assert_num (Reg(EAX)) ArithmeticError tag1 @
-       assert_num (Reg(EDX)) ArithmeticError tag2 @ [
-         ISub(Reg(EAX), Reg(EDX))
-       ] @ (check_overflow)
-     | Times  ->
-       assert_num (Reg(EAX)) ArithmeticError tag1 @
-       assert_num (Reg(EDX)) ArithmeticError tag2 @ [
-         ISar(Reg(EAX), Const(1));
-         IMul(Reg(EAX), Reg(EDX))
-       ] @ (check_overflow)
-     | And  ->
-       assert_bool (Reg(EAX)) LogicError tag1 @
-       assert_bool (Reg(EDX)) LogicError tag2 @ [
-         IAnd(Reg(EAX), Reg(EDX));
-       ]
-     | Or  ->
-       assert_bool (Reg(EAX)) LogicError tag1 @
-       assert_bool (Reg(EDX)) LogicError tag2 @ [
-         IOr(Reg(EAX), Reg(EDX));
-       ]
-     | Greater  ->
-       let label_false = sprintf "$gt_false_%d" t in
-       let label_end = sprintf "$gt_end_%d" t in
-       assert_num (Reg(EAX)) ComparisonError tag1 @
-       assert_num (Reg(EDX)) ComparisonError tag2 @ [
-         ICmp(Reg(EAX), Reg(EDX));
-         IJle(label_false);
-         IMov(Reg(EAX), const_true);
-         IJmp(label_end);
-         ILabel(label_false);
-         IMov(Reg(EAX), const_false);
-         ILabel(label_end);
-       ]
-     | GreaterEq  ->
-       let label_false = sprintf "$ge_false_%d" t in
-       let label_end = sprintf "$ge_end_%d" t in
-       assert_num (Reg(EAX)) ComparisonError tag1 @
-       assert_num (Reg(EDX)) ComparisonError tag2 @ [
-         ICmp(Reg(EAX), Reg(EDX));
-         IJl(label_false);
-         IMov(Reg(EAX), const_true);
-         IJmp(label_end);
-         ILabel(label_false);
-         IMov(Reg(EAX), const_false);
-         ILabel(label_end);
-       ]
-     | Less  ->
-       let label_false = sprintf "$lt_false_%d" t in
-       let label_end = sprintf "$lt_end_%d" t in
-       assert_num (Reg(EAX)) ComparisonError tag1 @
-       assert_num (Reg(EDX)) ComparisonError tag2 @ [
-         ICmp(Reg(EAX), Reg(EDX));
-         IJge(label_false);
-         IMov(Reg(EAX), const_true);
-         IJmp(label_end);
-         ILabel(label_false);
-         IMov(Reg(EAX), const_false);
-         ILabel(label_end);
-       ]
-     | LessEq  ->
-       let label_false = sprintf "$le_false_%d" t in
-       let label_end = sprintf "$le_end_%d" t in
-       assert_num (Reg(EAX)) ComparisonError tag1 @
-       assert_num (Reg(EDX)) ComparisonError tag2 @ [
-         ICmp(Reg(EAX), Reg(EDX));
-         IJg(label_false);
-         IMov(Reg(EAX), const_true);
-         IJmp(label_end);
-         ILabel(label_false);
-         IMov(Reg(EAX), const_false);
-         ILabel(label_end);
-       ]
-     | Eq  ->
-       let label_false = sprintf "$eq_false_%d" t in
-       let label_end = sprintf "$eq_end_%d" t in
-       [
-         ICmp(Reg(EDX), Reg(EAX));
-         IJne(label_false);
-         IMov(Reg(EAX), const_true);
-         IJmp(label_end);
-         ILabel(label_false);
-         IMov(Reg(EAX), const_false);
-         ILabel(label_end);
-       ])
-  | CApp(func, args, t) ->
-    let compiled_func = compile_imm func env in
-    let mapped_args = List.map (fun a -> compile_imm a env) args in
-    if is_tail then
-      (*
-         Basic algorithm for arbitrary-arity tail calls
-         (While still following the C callee convention!):
+    [compile_imm cond env] @
+    decode_bool @
+    [Ast.If([Types.I32Type],
+            List.map add_dummy_loc (compile_aexpr thn env),
+            List.map add_dummy_loc (compile_aexpr els env))]
 
-         1. Push arguments and RET+Old EBP+Old EDI onto stack
-         2. Copy arguments and RET+Old EBP+Old EDI (in reverse order) to
-            their new locations (where the last argument to the current
-            stack frame and the new stack frame go in the same address)
-         3. Set EDI to align with new location of old EDI
-         4. Set EBP to align with new location of old EBP
-         5. Set ESP to align with new location of EBP from (3)
-         6. Pop the top of the stack (old EBP) into EBP
-         7. Jump to the function. At this point, the callee cannot
-            distinguish the current state of the stack from a typical
-            call
+  | CPrim1(Add1, arg, _) ->
+    [compile_imm arg env; Ast.Const(const_int32 @@ encode 1); Ast.Binary(Values.I32 Ast.IntOp.Add)]
+  | CPrim1(Sub1, arg, _) ->
+    [compile_imm arg env; Ast.Const(const_int32 @@ encode 1); Ast.Binary(Values.I32 Ast.IntOp.Sub)]
 
-         There are a couple of tricks to make this work:
-         1. The current stack size is statically wired through the
-            compiler, so that the caller can set ESP to a value directly
-            offset from EBP (as opposed to popping off a number of stack arguments)
-         2. The `our_code_starts_here` function cannot make a call in tail
-            position (since the C code which called it does not follow the
-            callee convention).
-      *)
-      let new_num_args = 1 + List.length args in
-      let new_args = List.rev_map (fun arg -> (IPush(Sized(DWORD_PTR, arg)))) (compiled_func::mapped_args) @ [
-          IPush(Sized(DWORD_PTR, RegOffset(8, EBP)));
-          IPush(Sized(DWORD_PTR, RegOffset(4, EBP)));
-          IPush(Sized(DWORD_PTR, RegOffset(0, EBP)))
-        ] in
-      let copied_args = flat_map_i2 (fun arg src_off dest_off ->
-          [
-            IMov(Reg(EAX), RegOffset(4 * src_off, ESP));
-            IMov(RegOffset(4 * (dest_off - (new_num_args - num_args)), EBP), Reg(EAX));
-          ])
-          0 0 new_args in
-      [ILineComment("Starting tail call")] @
-      (assert_lambda compiled_func CalledNonFunction t) @ [
-        IMov(Reg(EDX), compiled_func);
-        IXor((Reg(EDX)), HexConst(tag_val_of_tag_type LambdaTagType));
-      ] @
-      (check_arity (Reg(EDX)) (List.length args) t) @
-      new_args @
-      copied_args @ [
-        IAdd(Reg(EBP), Const(~-4 * (new_num_args - num_args)));
-        IMov(Reg(ESP), Reg(EBP));
-        IPop(Reg(EBP));
-        IPop(Reg(EDI));
-        (* Untag the pushed EDI *)
-        IXor(Reg(EDI), HexConst(tag_val_of_tag_type LambdaTagType));
-        IJmpArg(RegOffset(4, EDX));
-        ILineComment("Ending tail call")
-      ]
-    else
-      [
-        ILineComment(sprintf "Starting non-tail call (stack_size: %d)" stack_size);
-        ILineComment(sprintf "Environment: %s" (ExtLib.dump @@ List.map (fun (n, i) -> (n, Instruction.arg_to_asm i)) env.bindings));
-        IMov(Reg(EDX), compiled_func);
-      ] @
-      (assert_lambda (Reg(EDX)) CalledNonFunction t) @
-      [
-        IXor((Reg(EDX)), HexConst(tag_val_of_tag_type LambdaTagType));
-      ] @
-      (check_arity (Reg(EDX)) (List.length args) t) @
-      (lambda_apply (Reg(EDX)) mapped_args stack_size) @ [
-        ILineComment("Ending non-tail call")
-      ]
-  | CGetItem(tup, idx, tag) ->
-    let tup_imm = compile_imm tup env in
-    let idx_imm = compile_imm idx env in
-    (assert_tuple tup_imm GetItemNotTuple tag) @
-    (check_tuple_idx idx_imm tup_imm tag true) @ [
-      IMov(Reg(EAX), tup_imm);
-      IXor(Reg(EAX), HexConst(1));
-      IMov(Reg(EBX), idx_imm);
-      IMov(Reg(EAX), RegOffsetReg(EAX, EBX, 2, 4));
-    ]
-  | CSetItem(tup, idx, value, tag) ->
-    let tup_imm = compile_imm tup env in
-    let idx_imm = compile_imm idx env in
-    let value_imm = compile_imm value env in
-    (assert_tuple tup_imm SetItemNotTuple tag) @
-    (check_tuple_idx idx_imm tup_imm tag false) @ [
-      IMov(Reg(ECX), tup_imm);
-      IXor(Reg(ECX), HexConst(1));
-      IMov(Reg(EBX), idx_imm);
-      IMov(Reg(EAX), value_imm);
-      IMov(RegOffsetReg(ECX, EBX, 2, 4), Sized(DWORD_PTR, Reg(EAX)));
-    ]
+  | CPrim1(IsBool, arg, _) ->
+    check_tag BooleanTagType
+  | CPrim1(IsNum, arg, _) ->
+    check_tag NumberTagType
+
+  | CPrim2(Plus, arg1, arg2, _) ->
+    [compile_imm arg1 env; compile_imm arg2 env; Ast.Binary(Values.I32 Ast.IntOp.Add)]
+  | CPrim2(Minus, arg1, arg2, _) ->
+    [compile_imm arg1 env; compile_imm arg2 env; Ast.Binary(Values.I32 Ast.IntOp.Sub)]
+  | CPrim2(Times, arg1, arg2, _) ->
+    [compile_imm arg1 env] @
+    untag_number @
+    [compile_imm arg2 env] @
+    [Ast.Binary(Values.I32 Ast.IntOp.Mul)]
+
+  | CPrim2(And, arg1, arg2, _) ->
+    [compile_imm arg1 env; compile_imm arg2 env; Ast.Binary(Values.I32 Ast.IntOp.And)]
+  | CPrim2(Or, arg1, arg2, _) ->
+    [compile_imm arg1 env; compile_imm arg2 env; Ast.Binary(Values.I32 Ast.IntOp.Or)]
+
+  | CPrim2(Greater, arg1, arg2, _) ->
+    [compile_imm arg1 env; compile_imm arg2 env; Ast.Compare(Values.I32 Ast.IntOp.GtS)] @ encode_bool
+  | CPrim2(GreaterEq, arg1, arg2, _) ->
+    [compile_imm arg1 env; compile_imm arg2 env; Ast.Compare(Values.I32 Ast.IntOp.GeS)] @ encode_bool
+  | CPrim2(Less, arg1, arg2, _) ->
+    [compile_imm arg1 env; compile_imm arg2 env; Ast.Compare(Values.I32 Ast.IntOp.LtS)] @ encode_bool
+  | CPrim2(LessEq, arg1, arg2, _) ->
+    [compile_imm arg1 env; compile_imm arg2 env; Ast.Compare(Values.I32 Ast.IntOp.LeS)] @ encode_bool
+  | CPrim2(Eq, arg1, arg2, _) ->
+    [compile_imm arg1 env; compile_imm arg2 env; Ast.Compare(Values.I32 Ast.IntOp.Eq)] @ encode_bool
+
   | CTuple(elts, t) ->
+    (* TODO: Perform any GC before *)
     let num_elts = List.length elts in
-    let imm_elts = (map_i (fun x i -> [
-          IMov(Reg(ECX), Sized(DWORD_PTR, compile_imm x env));
-          IMov(RegOffset((i + 1) * 4, EAX), Sized(DWORD_PTR, Reg(ECX)))
-        ])
-        (elts)) in
-    [ILineComment("Heap-allocating tuple");] @
-    (heap_allocate num_elts (Reg(EAX)) (sprintf "%d" t)) @ [
-      ILineComment("Tagging Tuple");
-      IMov(RegOffset(0, EAX), Sized(DWORD_PTR, Const(num_elts)));
-    ] @ (List.flatten imm_elts) @ [
-      IOr(Reg(EAX), HexConst(tag_val_of_tag_type TupleTagType));
+    [
+      Ast.GetGlobal(env.heap_top);
+      Ast.Const(const_int32 num_elts);
+      Ast.Store({Ast.ty=Types.I32Type; Ast.align=2; Ast.offset=Int32.of_int 0; Ast.sz=None});
+    ] @
+    (List.flatten @@ map_i (fun e i -> [
+          Ast.GetGlobal(env.heap_top);
+          compile_imm e env;
+          Ast.Store({Ast.ty=Types.I32Type; Ast.align=2; Ast.offset=Int32.of_int (4 * (i + 1)); Ast.sz=None});
+        ]) elts) @
+    [
+      Ast.GetGlobal(env.heap_top);
+      Ast.Const(const_int32 @@ tag_val_of_tag_type TupleTagType);
+      Ast.Binary(Values.I32 Ast.IntOp.Or);
+    ] @
+    (heap_allocate (num_elts + 1) env)
+
+  | CGetItem(tup, index, tag) ->
+    [
+      compile_imm tup env;
+      Ast.Const(const_int32 @@ tag_val_of_tag_type TupleTagType);
+      Ast.Binary(Values.I32 Ast.IntOp.Xor);
+      compile_imm index env;
+      Ast.Const(const_int32 1);
+      Ast.Binary(Values.I32 Ast.IntOp.Shl);
+      Ast.Const(const_int32 4);
+      Ast.Binary(Values.I32 Ast.IntOp.Add);
+      Ast.Binary(Values.I32 Ast.IntOp.Add);
+      Ast.Load({Ast.ty=Types.I32Type; Ast.align=2; Ast.offset=Int32.of_int 0; Ast.sz=None})
     ]
-  | CLambda(args, body, t) ->
-    let name = sprintf "$lambda_compiled_%d" t in
-    let compiled, free_vars = compile_lambda name args body in
-    compiled @ (backpatch free_vars env)
-  | CImmExpr(i) ->
-    [IMov(Reg(EAX), compile_imm i env)]
-and compile_imm e env : arg =
-  match e with
-  | ImmNum(n, _) -> HexConst((n lsl 1))
-  | ImmBool(true, _) -> const_true
-  | ImmBool(false, _) -> const_false
-  | ImmId(x, _) -> (find env.bindings x)
 
-let data_segment_closure name =
-  let label = sprintf "$builtin_closure_%s" name in
-  [
-    ILineComment(sprintf "Builtin Closure: %s" name);
-    ILabel(label);
-    IDw(4);
-  ], label
-
-let make_builtin_data_closure offset (name, arity) idx =
-  let bss, label = data_segment_closure name in
-  let prelude = [
-    ILineComment(sprintf "Making builtin closure for %s" name);
-    IMov(LabelOffset(0, label), Sized(DWORD_PTR, Const(arity)));
-    IMov(LabelOffset(4, label), Sized(DWORD_PTR, Label(name)));
-    IMov(LabelOffset(8, label), Sized(DWORD_PTR, Const(0)));
-    IMov(Reg(EAX), Sized(DWORD_PTR, Label(label)));
-    IOr(Reg(EAX), HexConst(tag_val_of_tag_type LambdaTagType));
-    IMov(RegOffset(~-4 * (offset + idx), EBP), Reg(EAX));
-    ILineComment(sprintf "End builtin closure for %s" name);
-  ] in
-  bss, prelude
-
-let make_builtin_closure offset (name, arity) idx =
-  [ILineComment(sprintf "Making builtin closure for %s" name);] @
-  [
-    IMov(Reg(EAX), LabelContents("CORE_HEAP"));
-    IAdd(Reg(EAX), HexConst(16 * idx));
-    IMov(lambda_get_arity EAX, Sized(DWORD_PTR, Const(arity)));
-    IMov(lambda_get_ptr EAX, Sized(DWORD_PTR, Label(name)));
-    IMov(lambda_get_closure_size EAX, Sized(DWORD_PTR, Const(0)));
-    IOr(Reg(EAX), HexConst(tag_val_of_tag_type LambdaTagType));
-    IMov(RegOffset(~-4 * (offset + idx), EBP), Reg(EAX));
-    ILineComment(sprintf "End builtin closure for %s" name);
-  ]
+  | CImmExpr(i) -> [compile_imm i env]
+  | _ -> failwith "NYI: compile_cexpr"
+and compile_imm (i : tag immexpr) env =
+  (* TODO: Decide if this should push the value onto the stack or not *)
+  match i with
+  | ImmNum(n, _) -> Ast.Const(const_int32 @@ encode n)
+  | ImmBool(b, _) ->
+    if b then
+      Ast.Const(const_true)
+    else
+      Ast.Const(const_false)
+  | ImmId(name, _) -> Ast.GetLocal(find env.bindings name)
 
 let builtins = [
   ("print", 1);
@@ -637,45 +273,52 @@ let builtins = [
   ("equal", 2);
 ]
 
-let compile_aprog anfed =
-  let prog_preamble ="
-section .text
-extern error
-extern print_stack
-extern try_gc
-extern HEAP_END
-extern STACK_BOTTOM
-extern CORE_HEAP
-" ^ (ExtString.String.join "\n" @@
-     List.map (fun (n, _) -> "extern " ^ n) builtins) ^ "
-global our_code_starts_here" in
-  let (preamble, postamble, env, stack_size) =
-    compile_fun
-      "our_code_starts_here"
-      ["heap"]
-      {bindings=[]}
-      [Reg(ESI); Reg(EBX); Reg(EDI)]
-      (List.length builtins)
-      anfed in
-  let new_env = {
-    bindings=(map_i (fun (name, _) idx -> (name, RegOffset(~-4 * (1 + idx), EBP))) builtins) @ env.bindings;
-    } in
-  (*let new_env = {
-    bindings=(List.map (fun (name, _) -> (name, Label("builtin_closure_" ^ name))) builtins) @ env.bindings;
-  } in*)
-  
-  let compiled =
-    preamble @ [
-      ILineComment("Loading ESI");
-      IMov(LabelContents("STACK_BOTTOM"), Sized(DWORD_PTR, Reg(EBP)));
-      IMov(Reg(ESI), compile_imm (ImmId("heap", 0)) env);
-      ILineComment("Loading closures")
-    ] @
-    (List.flatten @@ map_i (make_builtin_closure 1) builtins) @ [
-      ILineComment("Done loading closures");
-      IMov(Reg(EDI), HexConst(0));
-    ] @
-    (compile_aexpr anfed (1 + (List.length builtins)) stack_size new_env 0 false) @
-    postamble in
-  let handlers = create_error_handlers Errors.all_snek_errors in
-  prog_preamble ^ to_asm (compiled @ handlers)
+let compile_aprog (anfed : tag aprogram) =
+  let console_log = add_dummy_loc (Int32.of_int 1) in
+  let stack_size = count_vars anfed in
+  let heap_top = add_dummy_loc (Int32.of_int 0) in
+  let compiled = List.map add_dummy_loc @@
+    compile_aexpr anfed {initial_env with stack_size = stack_size; heap_top=heap_top}
+    @ [Ast.Call(add_dummy_loc (Int32.zero)); Ast.Return] in
+
+  let ftype = add_dummy_loc Int32.zero in (* <- see inline_type in parser.mly in WASM spec *)
+  let imports = List.map add_dummy_loc [
+    {
+      Ast.module_name="console";
+      Ast.item_name="log";
+      Ast.ikind=add_dummy_loc (Ast.FuncImport(console_log));
+    };
+    {
+      Ast.module_name="js";
+      Ast.item_name="mem";
+      Ast.ikind=add_dummy_loc (Ast.MemoryImport(Types.MemoryType({Types.min=Int32.of_int 0; Types.max=None})))
+    }
+  ] in
+  let exports = List.map add_dummy_loc [] in
+  let globals = List.map add_dummy_loc [
+      {
+        Ast.gtype=Types.GlobalType(Types.I32Type, Types.Mutable);
+        Ast.value=(add_dummy_loc ([add_dummy_loc @@ Ast.Const(const_int32 0)]));
+      }
+    ] in
+  let func = add_dummy_loc {Ast.ftype = ftype;
+                            Ast.locals = repeat_f stack_size (fun n -> Types.I32Type);
+                            Ast.body = compiled} in
+  let compiled_module = {Ast.empty_module with
+                         Ast.imports=imports;
+                         Ast.exports=exports;
+                         Ast.globals=globals;
+                         Ast.funcs=[func];
+                         Ast.types=[Types.FuncType([], []);
+                                    Types.FuncType([Types.I32Type], [])];
+                         Ast.start=Some(add_dummy_loc Int32.one);} in
+  let (in_fd, out_fd) = Unix.pipe() in
+  let (in_channel, out_channel) = (Unix.in_channel_of_descr in_fd, Unix.out_channel_of_descr out_fd) in
+  set_binary_mode_in in_channel false;
+  set_binary_mode_out out_channel false;
+  Wasm.Print.module_ out_channel 80 (add_dummy_loc compiled_module);
+  Unix.close out_fd;
+  let str = BatStream.of_channel in_channel
+            |> BatStream.to_string in
+  Unix.close in_fd;
+  str
