@@ -25,6 +25,7 @@ let rec repeat_f n value =
 type binding =
   | ArgBind of int32
   | LocalBind of int32
+  | GlobalBind of int32
   | ClosureBind of int32
 
 type compiler_env = {
@@ -58,8 +59,33 @@ let external_funcs =
       module_name="console";
       item_name="debug";
       ikind=Types.FuncType([Types.I32Type], [Types.I32Type])
-    }
+    };
+    {
+      module_name="console";
+      item_name="printClosure";
+      ikind=Types.FuncType([Types.I32Type], [Types.I32Type])
+    };
+    {
+      module_name="js";
+      item_name="throwError";
+      ikind=Types.FuncType([Types.I32Type; Types.I32Type; Types.I32Type], [])
+    };
+    {
+      module_name="grainBuiltins";
+      item_name="print";
+      ikind=Types.FuncType([Types.I32Type], [Types.I32Type])
+    };
+    {
+      module_name="grainBuiltins";
+      item_name="equal";
+      ikind=Types.FuncType([Types.I32Type; Types.I32Type], [Types.I32Type])
+    };
   ]
+
+let call_console_log = Ast.Call(add_dummy_loc @@ Int32.of_int 0)
+let call_console_debug = Ast.Call(add_dummy_loc @@ Int32.of_int 1)
+let call_console_print_closure = Ast.Call(add_dummy_loc @@ Int32.of_int 2)
+let call_js_throw_error = Ast.Call(add_dummy_loc @@ Int32.of_int 3)
 
 let initial_env = {
   bindings=[];
@@ -132,9 +158,28 @@ let func_apply (name : string) (args : 'a list) (stack_size : int) =
 let lambda_apply (lambda : 'a) (args : 'b list) (stack_size : int) =
   failwith "NYI: lambda_apply"
 
-let call_error_handler (code : int) =
+let call_error_handler (code : int) val1 val2 =
   (* stack_size doesn't matter here, since this call won't return *)
-  failwith "NYI: call_error_handler"
+  [
+    Ast.Const(const_int32 code);
+  ] @ val1 @ val2 @ [
+    call_js_throw_error;
+    Ast.Unreachable;
+  ]
+
+let dummy_err_val = [Ast.Const(const_int32 0)]
+
+let error_if_true err val1 val2 =
+  Ast.If([],
+         List.map add_dummy_loc
+           (call_error_handler (code_of_error err) val1 val2),
+         [add_dummy_loc Ast.Nop])
+
+let error_if_false err val1 val2 =
+  Ast.If([],
+         [add_dummy_loc Ast.Nop],
+         List.map add_dummy_loc
+           (call_error_handler (code_of_error err) val1 val2))
 
 (*  label_of_error code_of_error *)
 let create_error_handlers (defs : snek_error list) =
@@ -164,26 +209,62 @@ let check_tag (tag : tag_type) (value : Ast.instr' list) =
   ]
 
 
-let assert_tag arg err t val_tag fmt =
-  failwith "NYI: assert_tag"
+(* Assert that the given value has the given tag *)
+let assert_tag value err val_tag =
+  [
+    Ast.Const(const_int32 1);
+  ] @ value @ [
+    Ast.Const(const_int32 (and_mask_of_tag_type val_tag));
+    Ast.Binary(Values.I32 Ast.IntOp.And);
+    Ast.Binary(Values.I32 Ast.IntOp.Shl);
+    Ast.Const(const_int32 (1 lsl (tag_val_of_tag_type val_tag)));
+    Ast.Compare(Values.I32 Ast.IntOp.Eq);
+    error_if_false err value dummy_err_val;
+  ]
 
-let assert_num arg err t =
-  assert_tag arg err t NumberTagType "$assert_num_%d"
+let assert_num arg err =
+  assert_tag arg err NumberTagType
 
-let assert_bool arg err t =
-  assert_tag arg err t BooleanTagType "$assert_bool_%d"
+let assert_bool arg err =
+  assert_tag arg err BooleanTagType
 
-let assert_tuple arg err t =
-  assert_tag arg err t TupleTagType "$assert_tuple_%d"
+let assert_tuple arg err =
+  assert_tag arg err TupleTagType
 
-let assert_lambda arg err t =
-  assert_tag arg err t LambdaTagType "$assert_lambda_%d"
+let assert_lambda arg err =
+  assert_tag arg err LambdaTagType
 
-let check_tuple_idx arg tup t is_get =
-  failwith "NYI: check_tuple_idx"
+let get_arity tup_or_lambda tag =
+  tup_or_lambda @ [
+    Ast.Const(const_int32 @@ tag_val_of_tag_type tag);
+    Ast.Binary(Values.I32 Ast.IntOp.Xor);
+    Ast.Load({Ast.ty=Types.I32Type; Ast.align=2; Ast.offset=Int32.of_int 0; Ast.sz=None});
+  ]
 
-let check_arity arg called_arity t =
-  failwith "NYI: check_arity"
+let check_tuple_idx arg tup is_get =
+  let non_num = if is_get then GetItemIndexNotNumber else SetItemIndexNotNumber in
+  let too_small = if is_get then GetItemIndexTooSmall else SetItemIndexTooSmall in
+  let too_large = if is_get then GetItemIndexTooLarge else SetItemIndexTooLarge in
+  (assert_num arg non_num) @ arg @ [
+    Ast.Const(const_int32 0);
+    Ast.Compare(Values.I32 Ast.IntOp.LtS);
+    error_if_true too_small arg dummy_err_val;
+  ] @ arg @ [
+    (* Untag index *)
+    Ast.Const(const_int32 1);
+    Ast.Binary(Values.I32 Ast.IntOp.ShrS);
+  ] @ get_arity tup TupleTagType @ [
+    Ast.Compare(Values.I32 Ast.IntOp.GeS);
+    error_if_true too_large arg (get_arity tup TupleTagType)
+  ]
+
+let check_arity arg called_arity =
+  [
+    Ast.Const(const_int32 called_arity);
+  ] @ get_arity arg LambdaTagType @ [
+    Ast.Compare(Values.I32 Ast.IntOp.Ne);
+    error_if_true ArityMismatch ([Ast.Const(const_int32 called_arity)]) (get_arity arg LambdaTagType)
+  ]
 
 let get_tag = function
   | ImmNum(_, t)
@@ -228,22 +309,28 @@ let map_i (f : 'a -> int -> 'b) (xs : 'a list) : 'b list =
     | hd::tl -> helper tl (i + 1) ((f hd i)::acc) in
   List.rev @@ helper xs 0 []
 
-(* Assumption: Tagged Lambda is in EAX *)
-
-
-
 
 let rec compile_fun (fun_name : string) (args : string list) env callee_restore extra_stack body : (Wasm.Ast.instr list * Wasm.Ast.instr list * compiler_env * int) =
   failwith "NYI: compile_fun"
 
-and backpatch (free_vars : string list) (env : compiler_env) =
+and backpatch ?lambda:(lambda_opt=None) (free_vars : string list) (env : compiler_env) =
+  let lambda = Option.default [Ast.GetGlobal(env.heap_top)] lambda_opt in
   let backpatch_var var idx =
-    [
-      Ast.GetGlobal(env.heap_top);
-    ] @ (compile_imm (ImmId(var, -1)) env) @ [
+    lambda @ (compile_imm (ImmId(var, -1)) env) @ [
       Ast.Store({Ast.ty=Types.I32Type; Ast.align=2; Ast.offset=Int32.of_int (4 * (idx + 3)); Ast.sz=None});
     ] in
   List.flatten @@ map_i backpatch_var free_vars
+
+and create_closure arity compiled_body env stack_size free_vars =
+  let type_idx = get_arity_func_type_idx arity env in
+  let lift_index = !(env.lift_index) in
+  env.lift_index := lift_index + 1;
+  env.compiled_lambdas := Deque.snoc !(env.compiled_lambdas) {
+      Ast.ftype = add_dummy_loc @@ Int32.of_int type_idx;
+      Ast.locals = repeat stack_size Types.I32Type;
+      Ast.body = List.map add_dummy_loc compiled_body;
+    };
+  lift_index, (3 + (List.length free_vars)), free_vars
 
 and compile_lambda (args : string list) body env : (int * int * string list) =
   let used_var_set = Ast_utils.free_vars body in
@@ -256,7 +343,6 @@ and compile_lambda (args : string list) body env : (int * int * string list) =
       (var, ArgBind(Int32.of_int arg_idx))) new_args in
   let bindings = free_env @ arg_env in
   let stack_size = count_vars body in
-  let type_idx = get_arity_func_type_idx (List.length new_args) env in
   let preamble = [] in
   let postamble = [Ast.Return] in
   let compiled_func =
@@ -268,75 +354,179 @@ and compile_lambda (args : string list) body env : (int * int * string list) =
         num_args=(List.length new_args);
         is_tail=true;
       }) @ postamble in
-  let lift_index = !(env.lift_index) in
-  eprintf "lift_index=%d\n" lift_index;
-  env.lift_index := !(env.lift_index) + 1;
-  env.compiled_lambdas := Deque.snoc !(env.compiled_lambdas) {
-    Ast.ftype = add_dummy_loc @@ Int32.of_int type_idx;
-    Ast.locals = repeat stack_size Types.I32Type;
-    Ast.body = List.map add_dummy_loc compiled_func;
-  };
-  lift_index, (3 + (List.length free_vars)), free_vars
+  create_closure (List.length new_args) compiled_func env stack_size free_vars
 
 
 and compile_aexpr (e : tag aexpr) (env : compiler_env) =
   match e with
   | ALet(name, rhs, body, t) ->
-    let new_stack_idx = (Int32.of_int env.stack_index) in
+    let new_stack_idx = (Int32.of_int @@ env.stack_index) in
+    let local_idx = (Int32.of_int @@ env.num_args + env.stack_index) in
     let new_loc = LocalBind(new_stack_idx) in
     let new_env = { env with
                     bindings = (name, new_loc)::env.bindings;
                     stack_index = env.stack_index + 1;
                     is_tail = false } in
     (compile_cexpr rhs env) @
-    [Ast.SetLocal(add_dummy_loc new_stack_idx)] @
+    [Ast.SetLocal(add_dummy_loc local_idx)] @
     (compile_aexpr body new_env)
+  | ALetRec(binds, body, t) ->
+    let new_env = {
+      env with
+      bindings = (map_i (fun (name, _) idx ->
+          let new_stack_idx = (Int32.of_int @@ env.stack_index + idx) in
+          (name, LocalBind(new_stack_idx))) binds) @ env.bindings;
+      stack_index = env.stack_index + (List.length binds);
+    } in
+    let compiled_binds, free_vars = List.split @@ map_i (fun (name, bind) idx ->
+        let local_idx = (Int32.of_int @@ env.num_args + env.stack_index + idx) in
+        match bind with
+        | CLambda(args, body, t) ->
+          let func_index, closure_size, free_vars = compile_lambda args body env in
+          ([
+            Ast.GetGlobal(env.heap_top);
+            Ast.Const(const_int32 (closure_size - 3));
+
+            Ast.GetGlobal(env.heap_top);
+            Ast.Const(const_int32 func_index);
+
+            Ast.GetGlobal(env.heap_top);
+            Ast.Const(const_int32 (List.length args));
+
+            Ast.Store({Ast.ty=Types.I32Type; Ast.align=2; Ast.offset=Int32.of_int 0; Ast.sz=None});
+            Ast.Store({Ast.ty=Types.I32Type; Ast.align=2; Ast.offset=Int32.of_int 4; Ast.sz=None});
+            Ast.Store({Ast.ty=Types.I32Type; Ast.align=2; Ast.offset=Int32.of_int 8; Ast.sz=None});
+            Ast.GetGlobal(env.heap_top);
+            Ast.Const(const_int32 @@ tag_val_of_tag_type LambdaTagType);
+            Ast.Binary(Values.I32 Ast.IntOp.Or);
+            Ast.SetLocal(add_dummy_loc local_idx);
+          ] @ (heap_allocate closure_size env), free_vars)
+        | _ ->
+          ((compile_cexpr bind {env with is_tail=false}) @
+           [Ast.SetLocal(add_dummy_loc local_idx)], [])) binds in
+    (List.flatten (compiled_binds @ (map_i (fun free_vars idx ->
+         match free_vars with
+         | [] -> []
+         | _ ->
+           let local_idx = (Int32.of_int @@ env.num_args + env.stack_index + idx) in
+           (backpatch ~lambda:(Some(
+                (* The local is stored with its tag, so we need to
+                   untag it in order to get the pointer when
+                   backpatching *)
+                [
+                  Ast.GetLocal(add_dummy_loc local_idx);
+                  Ast.Const(const_int32 @@ tag_val_of_tag_type LambdaTagType);
+                  Ast.Binary(Values.I32 Ast.IntOp.Xor);
+                ])) free_vars new_env)) free_vars))) @
+    (compile_aexpr body new_env)
+  | ASeq(hd, tl, _) ->
+    (compile_cexpr hd env) @ (compile_aexpr tl env)
   | ACExpr(e) -> compile_cexpr e env
-  | _ -> failwith "NYI: compile_aexpr"
 and compile_cexpr (e : tag cexpr) env =
   match e with
   | CIf(cond, thn, els, t) ->
     (compile_imm cond env) @
+    (assert_bool (compile_imm cond env) IfError) @
     decode_bool @
     [Ast.If([Types.I32Type],
             List.map add_dummy_loc (compile_aexpr thn env),
             List.map add_dummy_loc (compile_aexpr els env))]
 
   | CPrim1(Add1, arg, _) ->
-    (compile_imm arg env) @ [Ast.Const(const_int32 @@ encode 1); Ast.Binary(Values.I32 Ast.IntOp.Add)]
+    (compile_imm arg env) @
+    (* We have to call 'compile_imm' again here because there is no
+       instruction to duplicate the top of the stack. *)
+    (assert_num (compile_imm arg env) ArithmeticError) @
+    [Ast.Const(const_int32 @@ encode 1); Ast.Binary(Values.I32 Ast.IntOp.Add)]
   | CPrim1(Sub1, arg, _) ->
-    (compile_imm arg env) @ [Ast.Const(const_int32 @@ encode 1); Ast.Binary(Values.I32 Ast.IntOp.Sub)]
+    (compile_imm arg env) @
+    (assert_num (compile_imm arg env) ArithmeticError) @
+    [Ast.Const(const_int32 @@ encode 1); Ast.Binary(Values.I32 Ast.IntOp.Sub)]
 
   | CPrim1(IsBool, arg, _) ->
     check_tag BooleanTagType (compile_imm arg env)
   | CPrim1(IsNum, arg, _) ->
     check_tag NumberTagType (compile_imm arg env)
+  | CPrim1(IsTuple, arg, _) ->
+    check_tag TupleTagType (compile_imm arg env)
+
+  | CPrim1(Not, arg, _) ->
+    (compile_imm arg env) @
+    (assert_bool (compile_imm arg env) LogicError) @
+    [
+      Ast.Const(const_int32 0x80000000);
+      Ast.Binary(Values.I32 Ast.IntOp.Xor);
+    ]
+
+  | CPrim1(PrintStack, _, _) -> failwith "printStack not supported on this platform"
 
   | CPrim2(Plus, arg1, arg2, _) ->
-    (compile_imm arg1 env) @ (compile_imm arg2 env) @ [Ast.Binary(Values.I32 Ast.IntOp.Add)]
+    (compile_imm arg1 env) @
+    (assert_num (compile_imm arg1 env) ArithmeticError) @
+    (compile_imm arg2 env) @
+    (assert_num (compile_imm arg2 env) ArithmeticError) @
+    [Ast.Binary(Values.I32 Ast.IntOp.Add);]
   | CPrim2(Minus, arg1, arg2, _) ->
-    (compile_imm arg1 env) @ (compile_imm arg2 env) @ [Ast.Binary(Values.I32 Ast.IntOp.Sub)]
+    (compile_imm arg1 env) @
+    (assert_num (compile_imm arg1 env) ArithmeticError) @
+    (compile_imm arg2 env) @
+    (assert_num (compile_imm arg2 env) ArithmeticError) @
+    [Ast.Binary(Values.I32 Ast.IntOp.Sub)]
   | CPrim2(Times, arg1, arg2, _) ->
     (compile_imm arg1 env) @
+    (assert_num (compile_imm arg1 env) ArithmeticError) @
     untag_number @
     (compile_imm arg2 env) @
+    (assert_num (compile_imm arg2 env) ArithmeticError) @
     [Ast.Binary(Values.I32 Ast.IntOp.Mul)]
 
   | CPrim2(And, arg1, arg2, _) ->
-    (compile_imm arg1 env) @ (compile_imm arg2 env) @ [Ast.Binary(Values.I32 Ast.IntOp.And)]
+    (compile_imm arg1 env) @
+    (assert_bool (compile_imm arg1 env) LogicError) @
+    (compile_imm arg2 env) @
+    (assert_bool (compile_imm arg2 env) LogicError) @
+    [Ast.Binary(Values.I32 Ast.IntOp.And)]
   | CPrim2(Or, arg1, arg2, _) ->
-    (compile_imm arg1 env) @ (compile_imm arg2 env) @ [Ast.Binary(Values.I32 Ast.IntOp.Or)]
+    (compile_imm arg1 env) @
+    (assert_bool (compile_imm arg1 env) LogicError) @
+    (compile_imm arg2 env) @
+    (assert_bool (compile_imm arg2 env) LogicError) @
+    [Ast.Binary(Values.I32 Ast.IntOp.Or)]
 
   | CPrim2(Greater, arg1, arg2, _) ->
-    (compile_imm arg1 env) @ (compile_imm arg2 env) @ [Ast.Compare(Values.I32 Ast.IntOp.GtS)] @ encode_bool
+    (compile_imm arg1 env) @
+    (assert_num (compile_imm arg1 env) ComparisonError) @
+    (compile_imm arg2 env) @
+    (assert_num (compile_imm arg2 env) ComparisonError) @
+    [Ast.Compare(Values.I32 Ast.IntOp.GtS)] @
+    encode_bool
   | CPrim2(GreaterEq, arg1, arg2, _) ->
-    (compile_imm arg1 env) @ (compile_imm arg2 env) @ [Ast.Compare(Values.I32 Ast.IntOp.GeS)] @ encode_bool
+    (compile_imm arg1 env) @
+    (assert_num (compile_imm arg1 env) ComparisonError) @
+    (compile_imm arg2 env) @
+    (assert_num (compile_imm arg2 env) ComparisonError) @
+    [Ast.Compare(Values.I32 Ast.IntOp.GeS)] @
+    encode_bool
   | CPrim2(Less, arg1, arg2, _) ->
-    (compile_imm arg1 env) @ (compile_imm arg2 env) @ [Ast.Compare(Values.I32 Ast.IntOp.LtS)] @ encode_bool
+    (compile_imm arg1 env) @
+    (assert_num (compile_imm arg1 env) ComparisonError) @
+    (compile_imm arg2 env) @
+    (assert_num (compile_imm arg2 env) ComparisonError) @
+    [Ast.Compare(Values.I32 Ast.IntOp.LtS)] @
+    encode_bool
   | CPrim2(LessEq, arg1, arg2, _) ->
-    (compile_imm arg1 env) @ (compile_imm arg2 env) @ [Ast.Compare(Values.I32 Ast.IntOp.LeS)] @ encode_bool
+    (compile_imm arg1 env) @
+    (assert_num (compile_imm arg1 env) ComparisonError) @
+    (compile_imm arg2 env) @
+    (assert_num (compile_imm arg2 env) ComparisonError) @
+    [Ast.Compare(Values.I32 Ast.IntOp.LeS)] @
+    encode_bool
+
   | CPrim2(Eq, arg1, arg2, _) ->
-    (compile_imm arg1 env) @ (compile_imm arg2 env) @ [Ast.Compare(Values.I32 Ast.IntOp.Eq)] @ encode_bool
+    (compile_imm arg1 env) @
+    (compile_imm arg2 env) @
+    [Ast.Compare(Values.I32 Ast.IntOp.Eq)] @
+    encode_bool
 
   | CTuple(elts, t) ->
     (* TODO: Perform any GC before *)
@@ -349,8 +539,8 @@ and compile_cexpr (e : tag cexpr) env =
     (List.flatten @@ map_i (fun e i -> [
            Ast.GetGlobal(env.heap_top)
          ] @ (compile_imm e env) @ [
-          Ast.Store({Ast.ty=Types.I32Type; Ast.align=2; Ast.offset=Int32.of_int (4 * (i + 1)); Ast.sz=None});
-        ]) elts) @
+             Ast.Store({Ast.ty=Types.I32Type; Ast.align=2; Ast.offset=Int32.of_int (4 * (i + 1)); Ast.sz=None});
+           ]) elts) @
     [
       Ast.GetGlobal(env.heap_top);
       Ast.Const(const_int32 @@ tag_val_of_tag_type TupleTagType);
@@ -359,11 +549,13 @@ and compile_cexpr (e : tag cexpr) env =
     (heap_allocate (num_elts + 1) env)
 
   | CGetItem(tup, index, tag) ->
+    (assert_tuple (compile_imm tup env) GetItemNotTuple) @
     compile_imm tup env @ [
       Ast.Const(const_int32 @@ tag_val_of_tag_type TupleTagType);
       Ast.Binary(Values.I32 Ast.IntOp.Xor)
     ]
-    @ compile_imm index env @
+    @ (check_tuple_idx (compile_imm index env) (compile_imm tup env) true) @
+    compile_imm index env @
     [
       Ast.Const(const_int32 1);
       Ast.Binary(Values.I32 Ast.IntOp.Shl);
@@ -372,17 +564,36 @@ and compile_cexpr (e : tag cexpr) env =
       Ast.Binary(Values.I32 Ast.IntOp.Add);
       Ast.Load({Ast.ty=Types.I32Type; Ast.align=2; Ast.offset=Int32.of_int 0; Ast.sz=None})
     ]
+  | CSetItem(tup, index, value, tag) ->
+    (assert_tuple (compile_imm tup env) GetItemNotTuple) @
+    compile_imm tup env @ [
+      Ast.Const(const_int32 @@ tag_val_of_tag_type TupleTagType);
+      Ast.Binary(Values.I32 Ast.IntOp.Xor)
+    ]
+    @ (check_tuple_idx (compile_imm index env) (compile_imm tup env) false) @
+    compile_imm index env @
+    [
+      Ast.Const(const_int32 1);
+      Ast.Binary(Values.I32 Ast.IntOp.Shl);
+      Ast.Const(const_int32 4);
+      Ast.Binary(Values.I32 Ast.IntOp.Add);
+      Ast.Binary(Values.I32 Ast.IntOp.Add);
+    ] @ compile_imm value env @ [
+      Ast.Store({Ast.ty=Types.I32Type; Ast.align=2; Ast.offset=Int32.of_int 0; Ast.sz=None})
+    ]
 
   | CLambda(args, body, t) ->
     let idx, closure_size, free_vars = compile_lambda args body env in
-    (* TODO: construct closure *)
     [
       Ast.GetGlobal(env.heap_top);
       Ast.Const(const_int32 (closure_size - 3));
+
       Ast.GetGlobal(env.heap_top);
       Ast.Const(const_int32 idx);
+
       Ast.GetGlobal(env.heap_top);
       Ast.Const(const_int32 (List.length args));
+
       Ast.Store({Ast.ty=Types.I32Type; Ast.align=2; Ast.offset=Int32.of_int 0; Ast.sz=None});
       Ast.Store({Ast.ty=Types.I32Type; Ast.align=2; Ast.offset=Int32.of_int 4; Ast.sz=None});
       Ast.Store({Ast.ty=Types.I32Type; Ast.align=2; Ast.offset=Int32.of_int 8; Ast.sz=None});
@@ -397,21 +608,20 @@ and compile_cexpr (e : tag cexpr) env =
     let compiled_func = compile_imm func env in
     let compiled_args = List.flatten @@ List.map (fun x -> compile_imm x env) args in
     let ftype = add_dummy_loc @@ Int32.of_int @@ get_arity_func_type_idx (1 + List.length args) env in
-    compiled_func @[ Ast.Call(add_dummy_loc (Int32.zero));] @
-    untag LambdaTagType @
-    [
-      Ast.Load({Ast.ty=Types.I32Type; Ast.align=2; Ast.offset=Int32.of_int 4; Ast.sz=None});
-      Ast.Call(add_dummy_loc (Int32.zero));
-    ] @
+    (*compiled_func @ untag LambdaTagType @ [call_console_print_closure; Ast.Drop] @*)
+    (assert_lambda compiled_func CalledNonFunction) @
+    check_arity compiled_func (List.length args) @
     compiled_func @
     untag LambdaTagType @
     compiled_args @
+    compiled_func @
+    untag LambdaTagType @
     [
+      Ast.Load({Ast.ty=Types.I32Type; Ast.align=2; Ast.offset=Int32.of_int 4; Ast.sz=None});
       Ast.CallIndirect(ftype);
     ]
 
   | CImmExpr(i) -> compile_imm i env
-  | _ -> failwith "NYI: compile_cexpr"
 and compile_imm (i : tag immexpr) env : Ast.instr' list =
   (* TODO: Decide if this should push the value onto the stack or not *)
   match i with
@@ -425,22 +635,64 @@ and compile_imm (i : tag immexpr) env : Ast.instr' list =
     match find env.bindings name with
     | ArgBind(n) -> [Ast.GetLocal(add_dummy_loc n)]
     | LocalBind(n) -> [Ast.GetLocal(add_dummy_loc @@ Int32.of_int (Int32.to_int n + env.num_args))]
+    | GlobalBind(n) -> [Ast.GetGlobal(add_dummy_loc n)]
     | ClosureBind(n) -> [
         Ast.GetLocal(add_dummy_loc @@ Int32.of_int 0);
-        Ast.Load({Ast.ty=Types.I32Type; Ast.align=2; Ast.offset=Int32.of_int (4 * (2 + (Int32.to_int n))); Ast.sz=None})
+        Ast.Load({Ast.ty=Types.I32Type; Ast.align=2; Ast.offset=Int32.of_int (4 * (3 + (Int32.to_int n))); Ast.sz=None})
       ]
 
 let builtins = [
-  ("print", 1);
-  ("input", 0);
-  ("equal", 2);
+  ("print", 1, 4);
+  ("equal", 2, 5);
 ]
+
+let create_single_builtin_closure fidx arity env =
+  let body =
+    (repeat_f arity (fun i -> Ast.GetLocal(add_dummy_loc @@ Int32.of_int i))) @ [
+      Ast.Call(add_dummy_loc @@ Int32.of_int fidx);
+      Ast.Return;
+    ] in
+   
+  let idx, closure_size, free_vars = create_closure (arity + 1) body env 0 [] in
+  [
+      Ast.GetGlobal(env.heap_top);
+      Ast.Const(const_int32 (closure_size - 3));
+
+      Ast.GetGlobal(env.heap_top);
+      Ast.Const(const_int32 idx);
+
+      Ast.GetGlobal(env.heap_top);
+      Ast.Const(const_int32 arity);
+
+      Ast.Store({Ast.ty=Types.I32Type; Ast.align=2; Ast.offset=Int32.of_int 0; Ast.sz=None});
+      Ast.Store({Ast.ty=Types.I32Type; Ast.align=2; Ast.offset=Int32.of_int 4; Ast.sz=None});
+      Ast.Store({Ast.ty=Types.I32Type; Ast.align=2; Ast.offset=Int32.of_int 8; Ast.sz=None});
+    ] @ (backpatch free_vars env) @ [
+      Ast.GetGlobal(env.heap_top);
+      Ast.Const(const_int32 @@ tag_val_of_tag_type LambdaTagType);
+      Ast.Binary(Values.I32 Ast.IntOp.Or);
+    ] @ (heap_allocate closure_size env)
+
+let create_builtin_closures to_create init_env =
+  let env, preamble, _ =
+    List.fold_left (fun (env, preamble, idx) (name, arity, fidx) ->
+        let closure = create_single_builtin_closure fidx arity env in
+        let setup =
+          closure @ [
+            Ast.SetGlobal(add_dummy_loc @@ Int32.of_int idx);
+          ] in
+        ({env with
+          bindings = (name, GlobalBind(Int32.of_int idx))::env.bindings
+         }, preamble @ setup, idx + 1)
+      ) (init_env, [], 1) to_create in
+  env, preamble
 
 let compile_aprog (anfed : tag aprogram) =
   let stack_size = count_vars anfed in
   let heap_top = add_dummy_loc (Int32.of_int 0) in
-  let env = {initial_env with stack_size = stack_size; heap_top=heap_top} in
+  let env, builtin_setup = create_builtin_closures builtins {initial_env with stack_size = stack_size; heap_top=heap_top} in
   let compiled = List.map add_dummy_loc @@
+    builtin_setup @
     compile_aexpr anfed env
     @ [Ast.Call(add_dummy_loc (Int32.zero)); Ast.Return] in
 
@@ -464,12 +716,12 @@ let compile_aprog (anfed : tag aprogram) =
   let exports = List.map add_dummy_loc [] in
 
   (* List of the module's global variables *)
-  let globals = List.map add_dummy_loc [
+  let globals = List.map add_dummy_loc @@ repeat (1 + (List.length builtins))
       {
         Ast.gtype=Types.GlobalType(Types.I32Type, Types.Mutable);
-        Ast.value=(add_dummy_loc ([add_dummy_loc @@ Ast.Const(const_int32 0)]));
+        Ast.value=(add_dummy_loc [add_dummy_loc @@ Ast.Const(const_int32 0)]);
       }
-    ] in
+     in
 
   (* Main function *)
   let func = add_dummy_loc {Ast.ftype = ftype;
