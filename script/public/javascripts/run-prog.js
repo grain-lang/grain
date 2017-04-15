@@ -3,17 +3,22 @@
 
 function printNumber(n) {
   var res;
-  if (n & 1) {
+  if (!(n & 1)) {
+    res = (n >> 1).toString();
+  } else if ((n & 7) === 1) {
+    res = "&lt;tuple&gt;";
+  } else if ((n & 7) === 5) {
+    res = "&lt;lambda&gt;";
+  } else {
     if (n === -1) {
       res = "true";
     } else {
       res = "false";
     }
-  } else {
-    res = (n >> 1).toString();
   }
-  document.getElementById('output').innerHTML = res;
+  document.getElementById('output').innerHTML = `<pre>${res}</pre>`;
   console.log(res);
+  return n;
 }
 
 const importObj = { console: { log: printNumber }, js: { mem: new WebAssembly.Memory({initial: 1}) } };
