@@ -9,7 +9,6 @@ open Wasm
 module Deque = Batteries.Deque
 module Queue = Batteries.Queue
 
-let num_imported_functions = 1
 
 let rec repeat n value =
   if n == 0 then
@@ -42,19 +41,46 @@ type compiler_env = {
 
 let add_dummy_loc (x : 'a) : 'a Source.phrase = Source.(x @@ no_region)
 
+type fully_typed_import = {
+  module_name : string;
+  item_name : string;
+  ikind : Types.func_type;
+}
+
+let external_funcs =
+  [
+    {
+      module_name="console";
+      item_name="log";
+      ikind=Types.FuncType([Types.I32Type], [Types.I32Type])
+    };
+    {
+      module_name="console";
+      item_name="debug";
+      ikind=Types.FuncType([Types.I32Type], [Types.I32Type])
+    }
+  ]
+
 let initial_env = {
   bindings=[];
   heap_top=add_dummy_loc (Int32.of_int 0);
   compiled_lambdas=ref Deque.empty;
   stack_index=0;
   stack_size=0;
-  lift_index=ref num_imported_functions;
+  lift_index=ref (List.length external_funcs);
   num_args=0;
   is_tail=true;
   func_types=ref Deque.empty;
 }
 
-let get_func_type_idx arity env =
+let get_func_type_idx typ env =
+  match Deque.find ((=) typ) !(env.func_types) with
+  | None ->
+    env.func_types := Deque.snoc !(env.func_types) typ;
+    Deque.size !(env.func_types) - 1
+  | Some((i, _)) -> i
+
+let get_arity_func_type_idx arity env =
   let has_arity (Types.FuncType(args, _)) = (List.length args) = arity in
   match Deque.find has_arity !(env.func_types) with
   | None ->
@@ -62,6 +88,17 @@ let get_func_type_idx arity env =
         (Types.FuncType((repeat arity Types.I32Type), [Types.I32Type]));
     Deque.size !(env.func_types) - 1
   | Some((i, _)) -> i
+
+let resolve_func_import env ({module_name;item_name;ikind} : fully_typed_import) : Ast.import' =
+  let open Ast in
+  {
+    module_name;
+    item_name;
+    ikind=add_dummy_loc @@
+      Ast.FuncImport(add_dummy_loc
+                     @@ Int32.of_int
+                     @@ get_func_type_idx ikind env)
+  }
 
 let const_int32 n = add_dummy_loc (Values.I32Value.to_value @@ Int32.of_int n)
 
@@ -219,7 +256,7 @@ and compile_lambda (args : string list) body env : (int * int * string list) =
       (var, ArgBind(Int32.of_int arg_idx))) new_args in
   let bindings = free_env @ arg_env in
   let stack_size = count_vars body in
-  let type_idx = get_func_type_idx (List.length new_args) env in
+  let type_idx = get_arity_func_type_idx (List.length new_args) env in
   let preamble = [] in
   let postamble = [Ast.Return] in
   let compiled_func =
@@ -359,7 +396,7 @@ and compile_cexpr (e : tag cexpr) env =
     (* TODO: Tag & arity checks *)
     let compiled_func = compile_imm func env in
     let compiled_args = List.flatten @@ List.map (fun x -> compile_imm x env) args in
-    let ftype = add_dummy_loc @@ Int32.of_int @@ get_func_type_idx (1 + List.length args) env in
+    let ftype = add_dummy_loc @@ Int32.of_int @@ get_arity_func_type_idx (1 + List.length args) env in
     compiled_func @[ Ast.Call(add_dummy_loc (Int32.zero));] @
     untag LambdaTagType @
     [
@@ -387,7 +424,7 @@ and compile_imm (i : tag immexpr) env : Ast.instr' list =
   | ImmId(name, _) ->
     match find env.bindings name with
     | ArgBind(n) -> [Ast.GetLocal(add_dummy_loc n)]
-    | LocalBind(n) -> [Ast.GetLocal(add_dummy_loc @@ Int32.of_int (Int32.to_int n + env.num_args + 1))]
+    | LocalBind(n) -> [Ast.GetLocal(add_dummy_loc @@ Int32.of_int (Int32.to_int n + env.num_args))]
     | ClosureBind(n) -> [
         Ast.GetLocal(add_dummy_loc @@ Int32.of_int 0);
         Ast.Load({Ast.ty=Types.I32Type; Ast.align=2; Ast.offset=Int32.of_int (4 * (2 + (Int32.to_int n))); Ast.sz=None})
@@ -407,59 +444,80 @@ let compile_aprog (anfed : tag aprogram) =
     compile_aexpr anfed env
     @ [Ast.Call(add_dummy_loc (Int32.zero)); Ast.Return] in
 
-  let ftype = add_dummy_loc Int32.(of_int (Deque.size !(env.func_types))) in (* <- see inline_type in parser.mly in WASM spec *)
-  let print_type = add_dummy_loc Int32.(of_int ((Deque.size !(env.func_types)) + 1)) in
+  (* Type of main function *)
+  let ftype = add_dummy_loc
+      Int32.(of_int (get_func_type_idx (Types.FuncType([], [])) env)) in
+
   eprintf "ftype=%d\nprint_type=%d\n" (Deque.size !(env.func_types)) ((Deque.size !(env.func_types)) + 1);
-  let imports = List.map add_dummy_loc [
-    {
-      Ast.module_name="console";
-      Ast.item_name="log";
-      Ast.ikind=add_dummy_loc (Ast.FuncImport(print_type));
-    };
-    {
-      Ast.module_name="js";
-      Ast.item_name="mem";
-      Ast.ikind=add_dummy_loc (Ast.MemoryImport(Types.MemoryType({Types.min=Int32.of_int 0; Types.max=None})))
-    }
-  ] in
+
+  (* List of imports for the module (functions + memory) *)
+  let imports = List.map add_dummy_loc @@
+      (List.map (resolve_func_import env) external_funcs) @ [
+        {
+          Ast.module_name="js";
+          Ast.item_name="mem";
+          Ast.ikind=add_dummy_loc (Ast.MemoryImport(Types.MemoryType({Types.min=Int32.of_int 0; Types.max=None})))
+        }
+      ] in
+
+  (* List of exports for the module *)
   let exports = List.map add_dummy_loc [] in
+
+  (* List of the module's global variables *)
   let globals = List.map add_dummy_loc [
       {
         Ast.gtype=Types.GlobalType(Types.I32Type, Types.Mutable);
         Ast.value=(add_dummy_loc ([add_dummy_loc @@ Ast.Const(const_int32 0)]));
       }
     ] in
-  
+
+  (* Main function *)
   let func = add_dummy_loc {Ast.ftype = ftype;
                             Ast.locals = repeat_f stack_size (fun n -> Types.I32Type);
                             Ast.body = compiled} in
+
+  (* Collected lambdas *)
   let lambdas = (List.map add_dummy_loc @@ Deque.to_list !(env.compiled_lambdas)) in
-  let table_size = ((List.length lambdas) + 1 + num_imported_functions) in
+
+  (* Table (used to call lambdas) *)
+  let table_size = ((List.length lambdas) + 1 + (List.length external_funcs)) in
   let table = List.map add_dummy_loc [
       {
-        Ast.ttype=Types.TableType({Types.max=None; Types.min=Int32.of_int table_size}, Types.AnyFuncType)
+        Ast.ttype=Types.TableType({
+            Types.max=None;
+            Types.min=Int32.of_int table_size
+          }, Types.AnyFuncType)
       }
     ] in
+
+  (* Population of table elements *)
   let elems = List.map add_dummy_loc [
     {
       Ast.index=add_dummy_loc (Int32.zero);
       Ast.offset=add_dummy_loc @@ List.map add_dummy_loc [
           Ast.Const(const_int32 0);
         ];
-      Ast.init=List.rev @@ repeat_f table_size (fun n -> (add_dummy_loc (Int32.of_int (n - 1))))
+      Ast.init=List.rev @@
+        repeat_f table_size (fun n -> (add_dummy_loc (Int32.of_int (n - 1))))
     }
   ] in
-  let compiled_module = {Ast.empty_module with
-                         Ast.imports=imports;
-                         Ast.exports=exports;
-                         Ast.globals=globals;
-                         Ast.tables=table;
-                         Ast.elems=elems;
-                         Ast.funcs=lambdas@[func];
-                         Ast.types=(Deque.to_list !(env.func_types)) @
-                                   [Types.FuncType([], []);
-                                    Types.FuncType([Types.I32Type], [Types.I32Type])];
-                         Ast.start=Some(add_dummy_loc Int32.(of_int @@ num_imported_functions + List.length lambdas));} in
+
+  (* Returned module *)
+  let compiled_module = {
+    Ast.empty_module with
+    Ast.imports=imports;
+    Ast.exports=exports;
+    Ast.globals=globals;
+    Ast.tables=table;
+    Ast.elems=elems;
+    Ast.funcs=lambdas@[func];
+    Ast.types=(Deque.to_list !(env.func_types)) @
+              [Types.FuncType([], []);
+               Types.FuncType([Types.I32Type], [Types.I32Type])];
+    Ast.start=Some(add_dummy_loc Int32.(of_int @@ (List.length external_funcs) + List.length lambdas));
+  } in
+
+  (* Print module to string *)
   let (in_fd, out_fd) = Unix.pipe() in
   let (in_channel, out_channel) = (Unix.in_channel_of_descr in_fd, Unix.out_channel_of_descr out_fd) in
   Pervasives.set_binary_mode_in in_channel false;

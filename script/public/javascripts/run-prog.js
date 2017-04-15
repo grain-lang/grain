@@ -1,6 +1,11 @@
 //#!node --expose-wasm
 //const fs = require('fs');
 
+function debugPrint(n) {
+  console.log(`0x${n.toString(16)}`);
+  return n;
+}
+
 function printNumber(n) {
   var res;
   if (!(n & 1)) {
@@ -21,7 +26,13 @@ function printNumber(n) {
   return n;
 }
 
-const importObj = { console: { log: printNumber }, js: { mem: new WebAssembly.Memory({initial: 1}) } };
+const importObj = {
+  console: {
+    log: printNumber,
+    debug: debugPrint
+  },
+  js: { mem: new WebAssembly.Memory({initial: 1}) }
+};
 
 /*
 if (process.argv.length != 3) {

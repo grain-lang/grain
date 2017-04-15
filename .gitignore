@@ -14,3 +14,4 @@ notes.org
 **/node_modules/**/*
 *.wasm
 *.wasm.wast
+.tern-port
