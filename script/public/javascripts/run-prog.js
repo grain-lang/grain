@@ -121,7 +121,22 @@ function printClosure(c) {
 
 let memory = new WebAssembly.Memory({initial: 1});
 let view = new Int32Array(memory.buffer);
+let decoder = new TextDecoder("utf-8");
 let counter = 0;
+
+function grainHeapValueToString(n) {
+  switch (view[n / 4]) {
+  case 1:
+    let byteView = new UInt8Array(memory.buffer);
+    let length = view[(n / 4) + 1];
+    let slice = byteView.slice(n + 8, n + 8 + length);
+    return decoder.decode(slice);
+    break;
+  default:
+    return `<unknown heap type: ${view[n / 4]}>`;
+  }
+}
+
 function grainToString(n) {
   if (!(n & 1)) {
     return (n >> 1).toString();
@@ -145,7 +160,7 @@ function grainToString(n) {
   } else if ((n & 7) === 5) {
     return "<lambda>";
   } else if ((n & 7) === 3) {
-    return `<forwarding pointer: ${n ^ 3}>`;
+    return grainHeapValueToString(n ^ 3);
   } else if ((n === -1)) {
     return "true";
   } else if (n === 0x7FFFFFFF) {

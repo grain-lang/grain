@@ -580,6 +580,8 @@ let string_tests = [
   tparse "string_parse_sqs4" "'bar\\101'" (EString("barA", ()));
   tparse "string_parse_emoji_escape" "\"\xF0\x9F\x98\x82\"" (EString("😂", ()));
   tparse "string_parse_emoji_literal" "\"💯\"" (EString("💯", ()));
+
+  t "string1" "\"fooooo\"" "\"foo\"";
 ]
 
 let suite =

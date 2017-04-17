@@ -12,5 +12,6 @@ PKG sexplib
 PKG cmdliner
 PKG ocamlgraph
 PKG wasm
+PKG stdint
 
 EXT ounit

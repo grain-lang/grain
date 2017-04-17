@@ -15,9 +15,9 @@ ifeq ($(UNAME), Darwin)
 endif
 endif
 
-OCAMLFIND_PKGS=oUnit,extlib,batteries,cmdliner,ocamlgraph,wasm
+OCAMLFIND_PKGS=oUnit,extlib,batteries,cmdliner,ocamlgraph,wasm,stdint
 PKGS=unix,$(OCAMLFIND_PKGS)
-OPAM_PKGS=ounit,extlib,batteries,cmdliner,ocamlgraph,wasm
+OPAM_PKGS=ounit,extlib,batteries,cmdliner,ocamlgraph,wasm,stdint
 BUILD=ocamlbuild -r -use-ocamlfind
 
 main: *.ml parser.mly lexer.mll gc.o

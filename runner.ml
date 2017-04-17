@@ -62,6 +62,8 @@ let print_errors exns =
         sprintf "Includes must be at the beginning of a file, but one was found at <%s>" (string_of_pos loc)
       | IncludeNotFound(lib, loc) ->
         sprintf "Library \"%s\", in include at <%s>, not found" lib (string_of_pos loc)
+      | MalformedString(loc) ->
+        sprintf "Malformed string literal at <%s>" (string_of_pos loc)
       | GrainRuntimeError(msg) -> msg
       | _ ->
          sprintf "%s" (Printexc.to_string e)

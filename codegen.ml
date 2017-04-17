@@ -209,6 +209,24 @@ let check_tag (tag : tag_type) (value : Ast.instr' list) =
     Ast.Binary(Values.I32 Ast.IntOp.Or);
   ]
 
+let check_generic_tag (tag : heap_tag_type) (value : Ast.instr' list) =
+  [
+    Ast.Const(const_int32 1);
+  ] @ value @ [
+    Ast.Const(const_int32 (and_mask_of_tag_type GenericHeapType));
+    Ast.Binary(Values.I32 Ast.IntOp.And);
+    Ast.Binary(Values.I32 Ast.IntOp.Shl);
+    Ast.Const(const_int32 (shift_amount_of_tag_type GenericHeapType));
+    Ast.Binary(Values.I32 Ast.IntOp.Shl);
+    Ast.Const(const_false);
+    Ast.Binary(Values.I32 Ast.IntOp.Or);
+  ] @ value @ [
+    Ast.Const(const_int32 @@ tag_val_of_tag_type GenericHeapType);
+    Ast.Binary(Values.I32 Ast.IntOp.Xor);
+    Ast.Load({Ast.ty=Types.I32Type; Ast.align=2; Ast.offset=Int32.of_int 0; Ast.sz=None});
+    Ast.Const(const_int32 (tag_val_of_heap_tag_type tag));
+    Ast.Compare(Values.I32 Ast.IntOp.Eq);
+  ]
 
 (* Assert that the given value has the given tag *)
 let assert_tag value err val_tag =
@@ -234,6 +252,27 @@ let assert_tuple arg err =
 
 let assert_lambda arg err =
   assert_tag arg err LambdaTagType
+
+let assert_generic gentype value err =
+  [
+    Ast.Const(const_int32 1);
+  ] @ value @ [
+    Ast.Const(const_int32 (and_mask_of_tag_type GenericHeapType));
+    Ast.Binary(Values.I32 Ast.IntOp.And);
+    Ast.Binary(Values.I32 Ast.IntOp.Shl);
+    Ast.Const(const_int32 (1 lsl (tag_val_of_tag_type GenericHeapType)));
+    Ast.Compare(Values.I32 Ast.IntOp.Eq);
+    error_if_false err value dummy_err_val;
+  ] @ value @ [
+    Ast.Const(const_int32 @@ tag_val_of_tag_type GenericHeapType);
+    Ast.Binary(Values.I32 Ast.IntOp.Xor);
+    Ast.Load({Ast.ty=Types.I32Type; Ast.align=2; Ast.offset=Int32.of_int 0; Ast.sz=None});
+    Ast.Const(const_int32 (tag_val_of_heap_tag_type gentype));
+    Ast.Compare(Values.I32 Ast.IntOp.Eq);
+    error_if_false err value dummy_err_val;
+  ]
+
+let assert_string = assert_generic StringType
 
 let get_arity tup_or_lambda tag =
   tup_or_lambda @ [
@@ -283,6 +322,51 @@ let get_tag = function
   | ImmBool(_, t)
   | ImmId(_, t) -> t
 
+let buf_to_ints (buf : Buffer.t) : int64 list =
+  Printf.printf "Breh be on them bufs\n";
+  let num_bytes = Buffer.length buf in
+  let num_ints = (((num_bytes - 1) / 8) + 1) in
+  Printf.printf "Num_ints: %d\n" num_ints;
+  let out_ints = ref [] in
+
+  let byte_buf = Bytes.create (num_ints * 8) in
+  Buffer.blit buf 0 byte_buf 0 num_bytes;
+  Printf.printf "%d\n" @@ Bytes.length byte_buf;
+  for i = 0 to (num_ints - 1) do
+    Printf.printf "%s\n" @@ Stdint.Uint64.to_string @@ Stdint.Uint64.of_bytes_big_endian byte_buf (i * 8);
+    out_ints := (Stdint.Uint64.of_bytes_big_endian byte_buf (i * 8))::!out_ints
+  done;
+  List.rev @@ List.map Stdint.Uint64.to_int64 !out_ints
+
+let compile_string str env =
+  let str_as_bytes = Bytes.of_string str in
+  let num_bytes = Bytes.length str_as_bytes in
+  let num_ints = 8 * (((num_bytes - 1) / 8) + 1) in
+  let buf = Buffer.create num_ints in
+  BatUTF8.iter (BatUTF8.Buf.add_char buf) str;
+  
+  
+  let ints_to_push : int64 list = buf_to_ints buf in
+  let preamble = [
+    Ast.GetGlobal(env.heap_top);
+    Ast.GetGlobal(env.heap_top);
+    Ast.Const(const_int32 @@ String.length str);
+    Ast.GetGlobal(env.heap_top);
+    Ast.Const(const_int32 (tag_val_of_heap_tag_type StringType));
+    Ast.Store({Ast.ty=Types.I32Type; Ast.align=2; Ast.offset=Int32.of_int 0; Ast.sz=None});
+    Ast.Store({Ast.ty=Types.I32Type; Ast.align=2; Ast.offset=Int32.of_int 4; Ast.sz=None});
+    Ast.GetGlobal(env.heap_top);
+    Ast.Const(const_int32 8);
+    Ast.Binary(Values.I32 Ast.IntOp.Add);
+  ] in
+  let elts = List.flatten @@ List.map (fun (i : int64) -> [
+        Ast.GetGlobal(env.heap_top);
+        Ast.Const(add_dummy_loc (Values.I64 i));
+        Ast.Store({Ast.ty=Types.I64Type; Ast.align=2; Ast.offset=Int32.of_int 0; Ast.sz=None});
+        Ast.Const(const_int32 8);
+        Ast.Binary(Values.I32 Ast.IntOp.Add);
+      ]) ints_to_push in
+  preamble @ elts
 
 
 (** Untags the number at the top of the stack *)
@@ -573,7 +657,10 @@ and compile_cexpr (e : tag cexpr) env =
     [Ast.Compare(Values.I32 Ast.IntOp.Eq)] @
     encode_bool
 
-  | CString(s, t) -> failwith "NYI: String codegen"
+  | CString(s, t) -> compile_string s env @ [
+      Ast.Const(const_int32 @@ tag_val_of_tag_type GenericHeapType);
+      Ast.Binary(Values.I32 Ast.IntOp.Or);
+    ]
 
   | CTuple(elts, t) ->
     (* TODO: Perform any GC before *)

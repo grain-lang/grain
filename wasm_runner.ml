@@ -8,6 +8,7 @@ open Errors
 exception GrainRuntimeError of string
 
 let unbox = Values.I32Value.of_value
+let unbox64 = Values.I64Value.of_value
 
 let in_fd, out_fd =
   let ifd, ofd = Unix.pipe() in
@@ -40,10 +41,33 @@ let load_word addr : int32 =
     (Int64.of_int addr) Int32.zero Types.I32Type
   |> unbox
 
+let load_word64 addr : int64 =
+  Memory.load memory_internal
+    (Int64.of_int addr) Int32.zero Types.I64Type
+  |> unbox64
+
 let set_word addr (value : int32) =
   let to_set = Values.I32Value.to_value value in
   Memory.store memory_internal
     (Int64.of_int addr) Int32.zero to_set
+
+let string_of_grain_heap_value (v : int32) =
+  let open Value_tags in
+  let v_int = Int32.to_int v in
+  let tag = heap_tag_type_of_tag_val @@ Int32.to_int @@ load_word v_int in
+  match tag with
+  | StringType ->
+    let string_length = Int32.to_int @@ load_word (v_int + 4) in
+    let outbytes = Bytes.create (8 * (((string_length - 1) / 8) + 1)) in
+    for i = 0 to (string_length - 1) do
+      let word = load_word64 (v_int + 8 + (8 * i)) in
+      let uword = Stdint.Uint64.of_int64 word in
+      Stdint.Uint64.to_bytes_big_endian uword outbytes (i * 8);
+    done;
+    let buf = Buffer.create (Bytes.length outbytes) in
+    Buffer.add_bytes buf outbytes;
+    BatUTF8.Buf.contents buf
+
 
 let rec string_of_grain_help (v : int32) tuple_counter =
   let open Printf in
@@ -70,7 +94,7 @@ let rec string_of_grain_help (v : int32) tuple_counter =
   else if ((Int32.logand v (Int32.of_int 7)) = (Int32.of_int 5)) then
     "<lambda>"
   else if ((Int32.logand v (Int32.of_int 7)) = (Int32.of_int 3)) then
-    sprintf "<forwarding pointer: %ld>" (Int32.logxor v (Int32.of_int 3))
+    string_of_grain_heap_value (Int32.logxor v (Int32.of_int 3))
   else if (v = Int32.minus_one) then
     "true"
   else if (v = Int32.max_int) then

@@ -21,7 +21,7 @@ exception EllipsisNotInTailPosition of sourcespan (* where used *)
 exception EllipsisNotInLibrary of sourcespan (* tail expression where ellipsis should be *)
 exception IncludeNotAtBeginning of sourcespan (* location *)
 exception IncludeNotFound of string * sourcespan (* library, location of include *)
-
+exception MalformedString of sourcespan
 
 
 type prim1 =
