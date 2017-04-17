@@ -55,6 +55,8 @@ let resolve_scope (p : 'a aprogram) initial_env : 'a aprogram =
       CApp(folded_f, folded_args, t)
     | CTuple(elts, t) ->
       CTuple(List.map (helpI binds) elts, t)
+    | CString(s, t) ->
+      CString(s, t)
     | CGetItem(tup, idx, t) ->
       let folded_tup = helpI binds tup in
       let folded_idx = helpI binds idx in

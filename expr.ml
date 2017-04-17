@@ -35,6 +35,9 @@ let tag (p : 'a program) : tag program =
     | ETuple(vals, _) ->
        let tuple_tag = tag() in
        ETuple(List.map helpE vals, tuple_tag)
+    | EString(s, _) ->
+       let string_tag = tag() in
+       EString(s, string_tag)
     | EGetItem(tup, idx, _) ->
        let get_tag = tag() in
        EGetItem(helpE tup, helpE idx, get_tag)
@@ -78,6 +81,8 @@ let rec untag (p : 'a program) : unit program =
       EIf(helpE cond, helpE thn, helpE els, ())
     | ETuple(vals, _) ->
       ETuple(List.map helpE vals, ())
+    | EString(s, _) ->
+      EString(s, ())
     | EGetItem(tup, idx, _) ->
       EGetItem(helpE tup, helpE idx, ())
     | ESetItem(tup, idx, rhs, _) ->
@@ -124,6 +129,9 @@ let atag (p : 'a aprogram) : tag aprogram =
     | CTuple(vals, _) ->
        let tuple_tag = tag() in
        CTuple(List.map helpI vals, tuple_tag)
+    | CString(s, _) ->
+       let string_tag = tag() in
+       CString(s, string_tag)
     | CGetItem(tup, idx, _) ->
        let get_tag = tag() in
        CGetItem(helpI tup, helpI idx, get_tag)
@@ -165,6 +173,8 @@ let auntag (p : 'a aprogram) : unit aprogram =
        CIf(helpI cond, helpA thn, helpA els, ())
     | CTuple(vals, _) ->
        CTuple(List.map helpI vals, ())
+    | CString(s, _) ->
+       CString(s, ())
     | CGetItem(tup, idx, _) ->
        CGetItem(helpI tup, helpI idx, ())
     | CSetItem(tup, idx, rhs, _) ->

@@ -54,6 +54,7 @@ let purity_env (prog : tag aprogram) (initial_funcs : initial_func list) : (stri
       let f_purity = Hashtbl.find ans f in
       f_purity
     | CApp _ -> false
+    | CString(s, _) -> true
     | CTuple(elts, _) ->
       true
     | CGetItem(tup, idx, _) ->
@@ -195,6 +196,8 @@ let const_fold (prog : 'a aprogram) opts : unit aprogram =
       CApp(folded_f, folded_args, ())
     | CTuple(elts, _) ->
       CTuple(List.map (helpI binds) elts, ())
+    | CString(s, _) ->
+      CString(s, ())
     | CGetItem(tup, idx, _) ->
       let folded_tup = helpI binds tup in
       let folded_idx = helpI binds idx in
@@ -299,6 +302,8 @@ let cse (prog : tag aprogram) opts : unit aprogram =
         CApp(helpI f, List.map helpI args, ())
       | CTuple(elts, _) ->
         CTuple(List.map helpI elts, ())
+      | CString(s, _) ->
+        CString(s, ())
       | CGetItem(tup, idx, _) ->
         CGetItem(helpI tup, helpI idx, ())
       | CSetItem(tup, idx, value, _) ->
@@ -385,6 +390,8 @@ let dae (prog : tag aprogram) opts : unit aprogram =
       CApp(helpI f, List.map helpI args, ())
     | CTuple(elts, _) ->
       CTuple(List.map helpI elts, ())
+    | CString(s, _) ->
+      CString(s, ())
     | CGetItem(tup, idx, _) ->
       CGetItem(helpI tup, helpI idx, ())
     | CSetItem(tup, idx, value, _) ->

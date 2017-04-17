@@ -20,7 +20,7 @@ let default_compile_options = {
   optimizations_enabled = true;
 }
 
-let compile_prog = Codegen.compile_aprog
+let compile_prog p = Codegen.module_to_string @@ Codegen.compile_aprog p
 
 let initial_funcs = [
   ("print", (Lexing.dummy_pos, Lexing.dummy_pos), false);
@@ -40,7 +40,7 @@ let opts_to_optimization_settings opts = {
   initial_functions = initial_funcs;
 }
 
-let compile_to_string (opts: compile_options) (p : sourcespan program) =
+let compile_module (opts: compile_options) (p : sourcespan program) =
   match Snek_stdlib.load_libraries initial_env p with
   | Left(errs) -> Left(errs)
   | Right(full_p) ->
@@ -57,6 +57,11 @@ let compile_to_string (opts: compile_options) (p : sourcespan program) =
         else
           renamed in
       Right(compile_aprog optimized)
+
+let compile_to_string opts p =
+  match compile_module opts p with
+  | Left(v) -> Left(v)
+  | Right(m) -> Right(module_to_string m)
 
 let compile_to_anf (opts : compile_options) (p : sourcespan program) =
   match Snek_stdlib.load_libraries initial_env p with

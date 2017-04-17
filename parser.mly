@@ -14,7 +14,7 @@ let elaborate_schema foralls typ =
 %}
 
 %token <int> NUM
-%token <string> ID
+%token <string> ID STRING
 %token LBRACK RBRACK DEF ADD1 SUB1 LPAREN RPAREN LET REC IN EQUAL COMMA PLUS MINUS TIMES IF COLON ELSECOLON TRUE FALSE ISBOOL ISNUM ISTUPLE LAMBDA EQEQ LESS GREATER PRINTSTACK EOF LESSEQ GREATEREQ AND OR NOT GETS BEGIN END SEMI ELLIPSIS ARROW INCLUDE
 
 %left LPAREN
@@ -32,6 +32,7 @@ const :
   | TRUE { EBool(true, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
   | FALSE { EBool(false, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
   | ELLIPSIS { EEllipsis((Parsing.symbol_start_pos(), Parsing.symbol_end_pos ())) }
+  | STRING { EString($1, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
 
 prim1 :
   | ADD1 { Add1 }
