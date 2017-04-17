@@ -30,6 +30,7 @@ let free_vars (e : 'a aexpr) : BindingSet.t =
     | CPrim2(_, left, right, _) -> helpI bound left @ helpI bound right
     | CApp(fn, args, _) ->
       (helpI bound fn) @ (List.flatten (List.map (fun arg -> helpI bound arg) args))
+    | CString(_, _) -> []
     | CTuple(vals, _) -> List.flatten (List.map (fun v -> helpI bound v) vals)
     | CGetItem(tup, idx, _) -> helpI bound tup @ helpI bound idx
     | CSetItem(tup, idx, rhs, _) -> helpI bound tup @ helpI bound idx @ helpI bound rhs

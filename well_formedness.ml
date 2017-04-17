@@ -49,6 +49,8 @@ let well_formed (p : (Lexing.position * Lexing.position) program) (is_library : 
       let new_env = {env with is_tail=false} in
       List.concat (List.map (fun e -> wf_E e new_env) vals)
       |> check_non_tail loc env
+    | EString(s, loc) ->
+      check_non_tail loc env []
     | EGetItem(tup, idx, loc) ->
       let new_env = {env with is_tail=false} in
       (wf_E tup new_env @ wf_E idx new_env)

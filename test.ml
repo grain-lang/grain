@@ -213,6 +213,14 @@ let tfsound name filename expected = name>::test_file_optimizations_sound filena
 
 let tefsound name filename errmsg = name>::test_file_optimizations_sound_err filename default_compile_options 10000 name errmsg;;
 
+let test_parse name input (expected : unit program) test_ctxt =
+  let parsed = parse_string name input in
+  let untagged = parsed in
+  assert_equal (string_of_expr expected)
+    (string_of_expr untagged) ~printer:identity
+
+let tparse name input expected = name>::test_parse name input expected
+
 let forty = "let x = 40 in x"
 let fals = "let x = false in x"
 let tru = "let x = true in x"
@@ -563,6 +571,17 @@ let indigo_tests = [
     "test_unsound_const_fold_times_one" "let f = (lambda x: x * 1) in f(true)" "true";
 ]
 
+let string_tests = [
+  tparse "string_parse_dqs1" "\"foo\"" (EString("foo", ()));
+  tparse "string_parse_dqs2" "\"bar\\nbaz\"" (EString("bar\nbaz", ()));
+  tparse "string_parse_sqs1" "'foobar'" (EString("foobar", ()));
+  tparse "string_parse_sqs2" "'bar\\u41'" (EString("barA", ()));
+  tparse "string_parse_sqs3" "'bar\\x41'" (EString("barA", ()));
+  tparse "string_parse_sqs4" "'bar\\101'" (EString("barA", ()));
+  tparse "string_parse_emoji_escape" "\"\xF0\x9F\x98\x82\"" (EString("😂", ()));
+  tparse "string_parse_emoji_literal" "\"💯\"" (EString("💯", ()));
+]
+
 let suite =
   "suite">:::
   cobra_tests @
@@ -572,7 +591,7 @@ let suite =
   fer_de_lance_tests @
   fer_de_lance_stdlib_tests @
   pair_tests @ (*oom @ gc @*) garter_extra_tests @
-  indigo_tests
+  indigo_tests @ string_tests
 
 
 

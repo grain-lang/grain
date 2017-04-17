@@ -573,6 +573,8 @@ and compile_cexpr (e : tag cexpr) env =
     [Ast.Compare(Values.I32 Ast.IntOp.Eq)] @
     encode_bool
 
+  | CString(s, t) -> failwith "NYI: String codegen"
+
   | CTuple(elts, t) ->
     (* TODO: Perform any GC before *)
     let num_elts = List.length elts in

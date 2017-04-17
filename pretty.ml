@@ -96,7 +96,8 @@ let rec string_of_expr (e : 'a expr) : string =
              (string_of_expr thn)
              (string_of_expr els)
   | EApp(func, args, _) ->
-     sprintf "(%s(%s))" (string_of_expr func) (ExtString.String.join ", " (List.map string_of_expr args))
+    sprintf "(%s(%s))" (string_of_expr func) (ExtString.String.join ", " (List.map string_of_expr args))
+  | EString(s, _) -> sprintf "\"%s\"" s
   | ETuple(vals, _) ->
      sprintf "(%s)" (ExtString.String.join ", " (List.map string_of_expr vals))
   | EGetItem(tup, idx, _) ->
@@ -141,7 +142,8 @@ and string_of_cexpr c =
              (string_of_aexpr thn)
              (string_of_aexpr els)
   | CApp(func, args, _) ->
-     sprintf "(%s(%s))" (string_of_immexpr func) (ExtString.String.join ", " (List.map string_of_immexpr args))
+    sprintf "(%s(%s))" (string_of_immexpr func) (ExtString.String.join ", " (List.map string_of_immexpr args))
+  | CString(s, _) -> sprintf "\"%s\"" s
   | CTuple(vals, _) ->
      sprintf "(%s)" (ExtString.String.join ", " (List.map string_of_immexpr vals))
   | CGetItem(tup, idx, _) ->
@@ -227,6 +229,10 @@ let rec format_expr (e : 'a expr) (print_a : 'a -> string) : string =
         | [e] -> help e fmt
         | e1::rest -> help e1 fmt; List.iter (fun e -> print_comma_sep fmt; help e fmt) rest);
        close_paren fmt
+    | EString(s, a) ->
+      open_label fmt "EString" a;
+      pp_print_string fmt (quote s);
+      close_paren fmt
     | ETuple(vals, a) ->
        open_label fmt "ETuple" a;
        (match vals with

@@ -46,6 +46,8 @@ let anf (p : tag program) : unit aprogram =
     | ETuple(args, _) ->
        let (new_args, new_setup) = List.split (List.map helpI args) in
        (CTuple(new_args, ()), List.concat new_setup)
+    | EString(s, _) ->
+       (CString(s, ()), [])
     | EEllipsis(_) -> failwith "Cannot ANF library directly."
     | EGetItem(tup, idx, _) ->
        let (tup_imm, tup_setup) = helpI tup in
@@ -116,6 +118,9 @@ let anf (p : tag program) : unit aprogram =
        let tmp = sprintf "tup_%d" tag in
        let (new_args, new_setup) = List.split (List.map helpI args) in
        (ImmId(tmp, ()), (List.concat new_setup) @ [BLet(tmp, CTuple(new_args, ()))])
+    | EString(s, tag) ->
+       let tmp = sprintf "str_%d" tag in
+       (ImmId(tmp, ()), [BLet(tmp, CString(s, ()))])
     | EEllipsis(_) -> failwith "Cannot ANF library directly."
     | EInclude(_, _, _) -> failwith "Cannot ANF include"
     | EGetItem(tup, idx, tag) ->

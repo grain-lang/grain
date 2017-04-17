@@ -62,6 +62,7 @@ and 'a expr =
   | EPrim2 of prim2 * 'a expr * 'a expr * 'a
   | EIf of 'a expr * 'a expr * 'a expr * 'a
   | ETuple of 'a expr list * 'a
+  | EString of string * 'a
   | EGetItem of 'a expr * 'a expr * 'a
   | ESetItem of 'a expr * 'a expr * 'a expr * 'a
   | EGetItemExact of 'a expr * int * 'a
@@ -87,6 +88,7 @@ and 'a cexpr = (* compound expressions *)
   | CPrim2 of prim2 * 'a immexpr * 'a immexpr * 'a
   | CApp of 'a immexpr * 'a immexpr list * 'a
   | CTuple of 'a immexpr list * 'a
+  | CString of string * 'a
   | CGetItem of 'a immexpr * 'a immexpr * 'a
   | CSetItem of 'a immexpr * 'a immexpr * 'a immexpr * 'a
   | CLambda of string list * 'a aexpr * 'a                                            
