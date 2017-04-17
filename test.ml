@@ -300,7 +300,7 @@ let cobra_tests = [
   te "if2" "let y = 0 in if y: 5 else: 6" "if expected a boolean";
   te "if3" "if sub1(1): 2 else: 5" "if expected a boolean";
 
-  te "generic1" "printStack(true)" "expected a number";
+  (* te "generic1" "printStack(true)" "expected a number"; *)
 
   (* Non-compile-time overflows *)
   te "overflow1" "9999999 * 99999999" "overflow";
@@ -308,21 +308,23 @@ let cobra_tests = [
   te "overflow3" "99999999 + 999999999" "overflow";
   (* Compile-time overflow *)
   te "overflow4" "999999999999 + 9999999999999" "overflow";
-  te "ps1" "printStack(-1)" "expected a nonnegative";
+  (* te "ps1" "printStack(-1)" "expected a nonnegative"; *)
 ]
 
 (* Tests for functionality which is new to Diamondback *)
 let diamondback_tests = [
-  tfile "fib1" "fib" "5";
+  tfile "fib1" "fib" "55";
   tfile "fib2" "fib-better" "75025";
   tfile "indirect" "indirect-tail" "10";
   (* NOTE: This file also will test that we're doing tail calls
      and mutual recursion properly (should stack overflow otherwise) *)
-  tfile "forward_decl" "forward-decl" "true";
+
+  (* tfile "forward_decl" "forward-decl" "true"; *)
   (* This will test that we are doing tail calls for arbitrary-arity
      stack frame sizes correctly *)
-  tfile "sinister_tail_call" "sinister-tail-call" "true";
-  tvgfile "sinister_tail_call2" "sinister-tail-call" "true";
+
+  (* tfile "sinister_tail_call" "sinister-tail-call" "true"; *)
+  (* tvgfile "sinister_tail_call2" "sinister-tail-call" "true"; *)
   tefile "fib_big" "too-much-fib" "overflow";
 
   t "func_no_args" "let foo = (lambda: print(5)) in\nfoo()" "5\n5";
@@ -569,7 +571,7 @@ let suite =
   egg_eater_stdlib_tests @
   fer_de_lance_tests @
   fer_de_lance_stdlib_tests @
-  pair_tests @ oom @ gc @ garter_extra_tests @
+  pair_tests @ (*oom @ gc @*) garter_extra_tests @
   indigo_tests
 
 

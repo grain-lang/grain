@@ -89,3 +89,24 @@ let label_of_error = function
   | SetItemIndexTooSmall -> "error_too_small_set_item_idx"
   | SetItemIndexTooLarge -> "error_too_large_set_item_idx"
   | OverflowError -> "error_overflow"
+
+let error_of_code c =
+  match c with
+  | x when x = err_ARITH_NOT_NUM -> ArithmeticError
+  | x when x = err_COMP_NOT_NUM -> ComparisonError
+  | x when x = err_IF_NOT_BOOL -> IfError
+  | x when x = err_LOGIC_NOT_BOOL -> LogicError
+  | x when x = err_ARITY_MISMATCH -> ArityMismatch
+  | x when x = err_CALLED_NON_FUNCTION -> CalledNonFunction
+  | x when x = err_GET_NOT_TUP -> GetItemNotTuple
+  | x when x = err_GET_ITEM_INDEX_NOT_NUMBER -> GetItemIndexNotNumber
+  | x when x = err_GET_ITEM_INDEX_TOO_SMALL -> GetItemIndexTooSmall
+  | x when x = err_GET_ITEM_INDEX_TOO_LARGE -> GetItemIndexTooLarge
+  | x when x = err_SET_NOT_TUP -> SetItemNotTuple
+  | x when x = err_SET_ITEM_INDEX_NOT_NUMBER -> SetItemIndexNotNumber
+  | x when x = err_SET_ITEM_INDEX_TOO_LARGE -> SetItemIndexTooLarge
+  | x when x = err_SET_ITEM_INDEX_TOO_SMALL -> SetItemIndexTooSmall
+  | x when x = err_GENERIC_NUM -> GenericNumberError
+  | x when x = err_OVERFLOW -> OverflowError
+  | c -> failwith (Printf.sprintf "Unknown error code: %d" c)
+

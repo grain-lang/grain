@@ -27,6 +27,7 @@ let string_of_position p =
 
 
 let print_errors exns =
+  let open Wasm_runner in
   List.map (fun e ->
       match e with
       | UnboundId(x, loc) ->
@@ -61,6 +62,7 @@ let print_errors exns =
         sprintf "Includes must be at the beginning of a file, but one was found at <%s>" (string_of_pos loc)
       | IncludeNotFound(lib, loc) ->
         sprintf "Library \"%s\", in include at <%s>, not found" lib (string_of_pos loc)
+      | GrainRuntimeError(msg) -> msg
       | _ ->
          sprintf "%s" (Printexc.to_string e)
     ) exns
@@ -243,22 +245,25 @@ let run_asm asm_string out (runner : string -> string list  -> result) args =
 
   
 let run include_stdlib p out runner args =
-  let maybe_asm_string =
-    try compile_to_string include_stdlib p with
+  let maybe_module =
+    try compile_module include_stdlib p with
     | Failure s -> Left([Failure("Compile error: " ^ s)])
     | err -> Left([Failure("Unexpected compile error: " ^ Printexc.to_string err)])
   in    
-  match maybe_asm_string with
+  match maybe_module with
   | Left(errs) -> Left(ExtString.String.join "\n" (print_errors errs))
-  | Right(asm_string) ->
-     run_asm asm_string out runner args
+  | Right(m) ->
+    try
+      Right(Wasm_runner.run_wasm m)
+    with
+    | Wasm_runner.GrainRuntimeError(msg) -> Left(msg)
 
 let run_anf p out runner args =
   let maybe_asm_string =
     try Right(compile_prog p) with
     | Failure s -> Left([Failure("Compile error: " ^ s)])
     | err -> Left([Failure("Unexpected compile error: " ^ Printexc.to_string err)])
-  in    
+  in
   match maybe_asm_string with
   | Left(errs) -> Left(ExtString.String.join "\n" (print_errors errs))
   | Right(asm_string) ->

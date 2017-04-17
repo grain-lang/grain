@@ -127,6 +127,7 @@ let resolve_func_import env ({module_name;item_name;ikind} : fully_typed_import)
   }
 
 let const_int32 n = add_dummy_loc (Values.I32Value.to_value @@ Int32.of_int n)
+let const_int64 n = add_dummy_loc (Values.I64Value.to_value @@ Int64.of_int n)
 
 let const_true  = const_int32 (0xFFFFFFFF)
 let const_false = const_int32 (0x7FFFFFFF)
@@ -265,6 +266,17 @@ let check_arity arg called_arity =
     Ast.Compare(Values.I32 Ast.IntOp.Ne);
     error_if_true ArityMismatch ([Ast.Const(const_int32 called_arity)]) (get_arity arg LambdaTagType)
   ]
+
+(* Checks whether the two Int64s at the top of the stack overflowed *)
+let check_overflow = [
+  (* WASM has no concept of overflows, so we have to check manually *)
+  Ast.Const(const_int64 (Int32.to_int Int32.max_int));
+  Ast.Compare(Values.I64 Ast.IntOp.GtS);
+  error_if_true OverflowError (dummy_err_val) (dummy_err_val);
+  Ast.Const(const_int64 (Int32.to_int Int32.min_int));
+  Ast.Compare(Values.I64 Ast.IntOp.LtS);
+  error_if_true OverflowError (dummy_err_val) (dummy_err_val);
+]
 
 let get_tag = function
   | ImmNum(_, t)
@@ -465,20 +477,53 @@ and compile_cexpr (e : tag cexpr) env =
     (assert_num (compile_imm arg1 env) ArithmeticError) @
     (compile_imm arg2 env) @
     (assert_num (compile_imm arg2 env) ArithmeticError) @
-    [Ast.Binary(Values.I32 Ast.IntOp.Add);]
+    [Ast.Binary(Values.I32 Ast.IntOp.Add);] @
+    (compile_imm arg1 env) @
+    [Ast.Convert(Values.I64 Ast.IntOp.ExtendSI32)] @
+    (compile_imm arg2 env) @
+    [Ast.Convert(Values.I64 Ast.IntOp.ExtendSI32)] @
+    [Ast.Binary(Values.I64 Ast.IntOp.Add)] @
+    (compile_imm arg1 env) @
+    [Ast.Convert(Values.I64 Ast.IntOp.ExtendSI32)] @
+    (compile_imm arg2 env) @
+    [Ast.Convert(Values.I64 Ast.IntOp.ExtendSI32)] @
+    [Ast.Binary(Values.I64 Ast.IntOp.Add)] @
+    check_overflow
   | CPrim2(Minus, arg1, arg2, _) ->
     (compile_imm arg1 env) @
     (assert_num (compile_imm arg1 env) ArithmeticError) @
     (compile_imm arg2 env) @
     (assert_num (compile_imm arg2 env) ArithmeticError) @
-    [Ast.Binary(Values.I32 Ast.IntOp.Sub)]
+    [Ast.Binary(Values.I32 Ast.IntOp.Sub)] @
+    (compile_imm arg1 env) @
+    [Ast.Convert(Values.I64 Ast.IntOp.ExtendSI32)] @
+    (compile_imm arg2 env) @
+    [Ast.Convert(Values.I64 Ast.IntOp.ExtendSI32)] @
+    [Ast.Binary(Values.I64 Ast.IntOp.Sub)] @
+    (compile_imm arg1 env) @
+    [Ast.Convert(Values.I64 Ast.IntOp.ExtendSI32)] @
+    (compile_imm arg2 env) @
+    [Ast.Convert(Values.I64 Ast.IntOp.ExtendSI32)] @
+    [Ast.Binary(Values.I64 Ast.IntOp.Sub)] @
+    check_overflow
   | CPrim2(Times, arg1, arg2, _) ->
     (compile_imm arg1 env) @
     (assert_num (compile_imm arg1 env) ArithmeticError) @
     untag_number @
     (compile_imm arg2 env) @
     (assert_num (compile_imm arg2 env) ArithmeticError) @
-    [Ast.Binary(Values.I32 Ast.IntOp.Mul)]
+    [Ast.Binary(Values.I32 Ast.IntOp.Mul)] @
+    (compile_imm arg1 env) @
+    [Ast.Convert(Values.I64 Ast.IntOp.ExtendSI32)] @
+    (compile_imm arg2 env) @
+    [Ast.Convert(Values.I64 Ast.IntOp.ExtendSI32)] @
+    [Ast.Binary(Values.I64 Ast.IntOp.Mul)] @
+    (compile_imm arg1 env) @
+    [Ast.Convert(Values.I64 Ast.IntOp.ExtendSI32)] @
+    (compile_imm arg2 env) @
+    [Ast.Convert(Values.I64 Ast.IntOp.ExtendSI32)] @
+    [Ast.Binary(Values.I64 Ast.IntOp.Mul)] @
+    check_overflow
 
   | CPrim2(And, arg1, arg2, _) ->
     (compile_imm arg1 env) @
@@ -579,8 +624,8 @@ and compile_cexpr (e : tag cexpr) env =
       Ast.Binary(Values.I32 Ast.IntOp.Add);
       Ast.Binary(Values.I32 Ast.IntOp.Add);
     ] @ compile_imm value env @ [
-      Ast.Store({Ast.ty=Types.I32Type; Ast.align=2; Ast.offset=Int32.of_int 0; Ast.sz=None})
-    ]
+      Ast.Store({Ast.ty=Types.I32Type; Ast.align=2; Ast.offset=Int32.of_int 0; Ast.sz=None});
+    ] @ compile_imm value env
 
   | CLambda(args, body, t) ->
     let idx, closure_size, free_vars = compile_lambda args body env in
@@ -700,8 +745,6 @@ let compile_aprog (anfed : tag aprogram) =
   let ftype = add_dummy_loc
       Int32.(of_int (get_func_type_idx (Types.FuncType([], [])) env)) in
 
-  eprintf "ftype=%d\nprint_type=%d\n" (Deque.size !(env.func_types)) ((Deque.size !(env.func_types)) + 1);
-
   (* List of imports for the module (functions + memory) *)
   let imports = List.map add_dummy_loc @@
       (List.map (resolve_func_import env) external_funcs) @ [
@@ -755,7 +798,7 @@ let compile_aprog (anfed : tag aprogram) =
   ] in
 
   (* Returned module *)
-  let compiled_module = {
+  add_dummy_loc {
     Ast.empty_module with
     Ast.imports=imports;
     Ast.exports=exports;
@@ -767,14 +810,15 @@ let compile_aprog (anfed : tag aprogram) =
               [Types.FuncType([], []);
                Types.FuncType([Types.I32Type], [Types.I32Type])];
     Ast.start=Some(add_dummy_loc Int32.(of_int @@ (List.length external_funcs) + List.length lambdas));
-  } in
+  }
 
+let module_to_string compiled_module =
   (* Print module to string *)
   let (in_fd, out_fd) = Unix.pipe() in
   let (in_channel, out_channel) = (Unix.in_channel_of_descr in_fd, Unix.out_channel_of_descr out_fd) in
   Pervasives.set_binary_mode_in in_channel false;
   Pervasives.set_binary_mode_out out_channel false;
-  Wasm.Print.module_ out_channel 80 (add_dummy_loc compiled_module);
+  Wasm.Print.module_ out_channel 80 compiled_module;
   Unix.close out_fd;
   let str = BatStream.of_channel in_channel
             |> BatStream.to_string in
