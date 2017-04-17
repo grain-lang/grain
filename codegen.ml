@@ -823,6 +823,12 @@ let heap_adjust env = {
   ]
 }
 
+let make_lambda_export i = add_dummy_loc {
+  Ast.name="GRAIN$LAM_" ^ (string_of_int i);
+  Ast.ekind=add_dummy_loc Ast.FuncExport;
+  Ast.item=(add_dummy_loc @@ Int32.of_int i);
+}
+
 let create_builtin_closures to_create init_env =
   let env, preamble, _ =
     List.fold_left (fun (env, preamble, idx) (name, arity, fidx) ->
@@ -844,11 +850,11 @@ let compile_aprog (anfed : tag aprogram) =
   let compiled = List.map add_dummy_loc @@
     builtin_setup @
     compile_aexpr anfed env
-    @ [Ast.Call(add_dummy_loc (Int32.zero)); Ast.Return] in
+    @ [Ast.Return] in
 
   (* Type of main function *)
   let ftype = add_dummy_loc
-      Int32.(of_int (get_func_type_idx (Types.FuncType([], [])) env)) in
+      Int32.(of_int (get_func_type_idx (Types.FuncType([], [Types.I32Type])) env)) in
 
   (* List of imports for the module (functions + memory) *)
   let imports = List.map add_dummy_loc @@
@@ -883,7 +889,7 @@ let compile_aprog (anfed : tag aprogram) =
         Ast.ekind=add_dummy_loc Ast.FuncExport;
         Ast.item=main_idx;
       }
-    ] in
+    ] @ (repeat_f (List.length lambdas) (fun i -> make_lambda_export (i + (List.length external_funcs)))) in
 
   (* List of the module's global variables *)
   let globals = List.map add_dummy_loc @@ repeat (1 + (List.length builtins))
@@ -896,7 +902,7 @@ let compile_aprog (anfed : tag aprogram) =
   
 
   (* Table (used to call lambdas) *)
-  let table_size = ((List.length lambdas) + 1 + (List.length external_funcs)) in
+  let table_size = ((List.length lambdas) + 2 + (List.length external_funcs)) in
   let table = List.map add_dummy_loc [
       {
         Ast.ttype=Types.TableType({

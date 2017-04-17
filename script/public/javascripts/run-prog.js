@@ -33,6 +33,9 @@ const GRAIN_ERR_NOT_NUMBER_GENERIC = 99;
 const GRAIN_TRUE = 0xFFFFFFFF | 0;
 const GRAIN_FALSE = 0x7FFFFFFF | 0;
 
+let grainInitialized = false;
+let grainModule;
+
 let heapAdjust = function(n) {
   throw new GrainError(-1, "Grain runtime is not yet instantiated.");
 };
@@ -107,8 +110,32 @@ function debugPrint(n) {
   return n;
 }
 
+let memory = new WebAssembly.Memory({initial: 1});
+let view = new Int32Array(memory.buffer);
+let decoder = new TextDecoder("utf-8");
+let counter = 0;
+
+var GrainClosure = function(loc) {
+  this.loc = loc;
+  this.arity = view[loc];
+  this.ptr = view[loc + 1];
+  this.closureSize = view[loc + 2];
+  this.closureElts = view.slice(loc + 3, loc + 3 + this.closureSize);
+  this.func = grainModule.instance.exports["GRAIN$LAM_" + this.ptr];
+};
+
+GrainClosure.prototype.call = function() {
+  if (arguments.length != this.arity) {
+    throwGrainError(GRAIN_ERR_ARITY_MISMATCH, this.arity, arguments.length);
+    return undefined;
+  } else {
+    let grainVals = Array.prototype.map.call(arguments, JSToGrainVal);
+    grainVals.unshift(this.loc * 4);
+    return grainToJSVal(this.func.apply(this.func, grainVals));
+  }
+};
+
 function printClosure(c) {
-  let view = new Int32Array(importObj.js.mem.buffer);
   c /= 4;
   let arity = view[c];
   let idx = view[c + 1];
@@ -123,10 +150,7 @@ function printClosure(c) {
   return c;
 }
 
-let memory = new WebAssembly.Memory({initial: 1});
-let view = new Int32Array(memory.buffer);
-let decoder = new TextDecoder("utf-8");
-let counter = 0;
+
 
 function grainHeapValueToString(n) {
   switch (view[n / 4]) {
@@ -134,7 +158,7 @@ function grainHeapValueToString(n) {
     let byteView = new Uint8Array(memory.buffer);
     let length = view[(n / 4) + 1];
     let slice = byteView.slice(n + 8, n + 8 + length);
-    return decoder.decode(slice);
+    return `"${decoder.decode(slice)}"`;
     break;
   default:
     return `<unknown heap type: ${view[n / 4]}>`;
@@ -171,6 +195,55 @@ function grainToString(n) {
     return "false";
   } else {
     return `<Unknown value: 0x${n}>`;
+  }
+}
+
+function grainHeapValToJSVal(n) {
+  switch (view[n / 4]) {
+  case 1:
+    let byteView = new Uint8Array(memory.buffer);
+    let length = view[(n / 4) + 1];
+    let slice = byteView.slice(n + 8, n + 8 + length);
+    return decoder.decode(slice);
+  default:
+    console.warn(`Unknown heap tag at ${n / 4}: ${view[n / 4]}`);
+    return undefined;
+  }
+}
+
+function grainToJSVal(x) {
+  if (!(x & 1)) {
+    return x >> 1;
+  } else if ((x & 7) == 5) {
+    if (!grainInitialized) {
+      throw new GrainError(-1, "Grain runtime not yet initialized");
+    }
+    let lambdaLoc = (x ^ 5) / 4;
+    return (new GrainClosure(lambdaLoc));
+  } else if ((x & 7) === 3) {
+    return grainHeapValToJSVal(x ^ 3);
+  } else if ((x === -1)) {
+    return true;
+  } else if (x === 0x7FFFFFFF) {
+    return false;
+  } else {
+    console.warn(`Unknown Grain value: ${x} (0x${x.toString(16)})`);
+    return undefined;
+  }
+}
+
+function JSToGrainVal(v) {
+  if (typeof v === "number") {
+    // TODO: overflow check
+    return v << 1;
+  } else if (typeof v === "boolean") {
+    if (v) {
+      return -1;
+    } else {
+      return 0x7FFFFFFF;
+    }
+  } else {
+    throw new GrainError(-1, "JSToGrainVal not yet implemented for value");
   }
 }
 
@@ -269,9 +342,14 @@ function fetchAndInstantiate(url, importObject) {
 }
 
 let result = fetchAndInstantiate("t.wasm", importObj).then((module) => {
+  grainModule = module;
+  grainInitialized = true;
   let main = module.instance.exports["GRAIN$MAIN"];
   heapAdjust = module.instance.exports["GRAIN$HEAP_ADJUST"];
   let res = main();
+  let resJS = grainToJSVal(res);
+  console.log(resJS.call(4, 5));
+  printNumber(res);
   console.log(`result: ${res}`);
 }).catch(e => {
   displayOnPage(`[[ERROR: ${e.message}]]`);

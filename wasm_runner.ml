@@ -269,7 +269,12 @@ let run_wasm (module_ : Wasm.Ast.module_) =
       Unix.close !in_fd;
       str
     | x1::x2::_ -> failwith "Multiple values returned by start"
-    | x::[] -> (string_of_grain (unbox x))
+    | x::[] ->
+      flush !out_channel;
+      Unix.close !out_fd;
+      let str = BatStream.to_string (BatStream.of_channel !in_channel) in
+      Unix.close !in_fd;
+      str ^ (string_of_grain (unbox x)) ^ "\n"
     end
   | _ -> failwith "Bad GRAIN$MAIN export"
   
