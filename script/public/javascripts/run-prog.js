@@ -112,6 +112,7 @@ function debugPrint(n) {
 
 let memory = new WebAssembly.Memory({initial: 1});
 let view = new Int32Array(memory.buffer);
+let encoder = new TextEncoder("utf-8");
 let decoder = new TextDecoder("utf-8");
 let counter = 0;
 
@@ -242,8 +243,19 @@ function JSToGrainVal(v) {
     } else {
       return 0x7FFFFFFF;
     }
+  } else if (typeof v === "string") {
+    let ptr = grainHeapAllocate(2 + (v.length / 4)) / 4;
+    // TODO: Turn tag into constant
+    view[ptr] = 1;
+    view[ptr + 1] = v.length;
+    let byteView = new Uint8Array(memory.buffer);
+    let buf = encoder.encode(v);
+    for (let i = 0; i < buf.length; ++i) {
+      byteView[i + (ptr * 4) + 8] = buf[i];
+    }
+    return (ptr * 4) | 3;
   } else {
-    throw new GrainError(-1, "JSToGrainVal not yet implemented for value");
+    throw new GrainError(-1, "JSToGrainVal not implemented for value with type " + (typeof v));
   }
 }
 
@@ -285,6 +297,14 @@ function grainEqual(x, y) {
   return grainEqualHelp(x, y, 0) ? GRAIN_TRUE : GRAIN_FALSE;
 }
 
+function grainHeapAllocate(numWords) {
+  // allocates the number of words
+  let curTop = heapAdjust(0);
+  let wordsToAllocate = 4 * (((numWords - 1) / 4) + 1);
+  heapAdjust(wordsToAllocate * 4);
+  return curTop;
+}
+
 function displayOnPage(str) {
   document.getElementById('output').innerText = str;
 }
@@ -313,23 +333,6 @@ const importObj = {
   }
 };
 
-/*
-if (process.argv.length != 3) {
-  console.error(`give file pls`);
-  process.exit(1);
-}*/
-
-function fetchFileAndInstantiate(url, importObject) {
-
-  return new Promise((resolve, reject) => fs.readFile(url, (err, data) => {
-    if (err) reject(err);
-    else resolve(data);
-  })).then(bytes =>
-    Wasm.instantiateModule(bytes, importObject)
-  ).then(results =>
-    results
-  );
-}
 
 function fetchAndInstantiate(url, importObject) {
   return fetch(url).then(response =>
@@ -347,10 +350,10 @@ let result = fetchAndInstantiate("t.wasm", importObj).then((module) => {
   let main = module.instance.exports["GRAIN$MAIN"];
   heapAdjust = module.instance.exports["GRAIN$HEAP_ADJUST"];
   let res = main();
-  let resJS = grainToJSVal(res);
-  console.log(resJS.call(4, 5));
-  printNumber(res);
   console.log(`result: ${res}`);
+  let resJS = grainToJSVal(res);
+  printNumber(res);
+  return resJS;
 }).catch(e => {
   displayOnPage(`[[ERROR: ${e.message}]]`);
   console.error(e.message);

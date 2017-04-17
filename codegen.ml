@@ -82,6 +82,17 @@ let external_funcs =
     };
   ]
 
+let lookup_ext_func modname itemname =
+  let rec do_lookup elts idx =
+    match elts with
+    | [] -> raise Not_found
+    | {module_name; item_name; _}::tl ->
+      if module_name = modname && item_name = itemname then
+        add_dummy_loc @@ Int32.of_int idx
+      else
+        do_lookup tl (idx + 1) in
+  do_lookup external_funcs 0
+
 let call_console_log = Ast.Call(add_dummy_loc @@ Int32.of_int 0)
 let call_console_debug = Ast.Call(add_dummy_loc @@ Int32.of_int 1)
 let call_console_print_closure = Ast.Call(add_dummy_loc @@ Int32.of_int 2)

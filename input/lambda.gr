@@ -1,2 +1,3 @@
 let f = (lambda z: (lambda x, y: z + x + y)) in
-  f(5)
+let g = (lambda x: x) in
+  g
