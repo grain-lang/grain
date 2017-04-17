@@ -20,7 +20,7 @@ PKGS=unix,$(OCAMLFIND_PKGS)
 OPAM_PKGS=ounit,extlib,batteries,cmdliner,ocamlgraph,wasm,stdint
 BUILD=ocamlbuild -r -use-ocamlfind
 
-main: *.ml parser.mly lexer.mll gc.o
+main: *.ml parser.mly lexer.mll
 	make check-libs
 	$(BUILD) -no-hygiene -package $(PKGS) main.native
 	mv main.native main
@@ -34,7 +34,7 @@ test: *.ml parser.mly lexer.mll main
 check-libs:
 	./check-installed.sh $(OCAMLFIND_PKGS) $(OPAM_PKGS)
 
-output/%.run: output/%.o main.c gc.o
+output/%.run: output/%.o main.c 
 	clang $(PIE) -mstackrealign -g -m32 -o $@ gc.o main.c $<
 
 output/%.o: output/%.s
@@ -48,11 +48,7 @@ endif
 output/%.s: input/%.indigo main
 	./main $< -o $@
 
-gctest.o: gctest.c gc.h
-	gcc gctest.c -m32 -c -g -o gctest.o
 
-gc.o: gc.c gc.h
-	gcc gc.c -m32 -Wall -Wextra -c -g -o gc.o
 
 # cutest-1.5/CuTest.o: cutest-1.5/CuTest.c cutest-1.5/CuTest.h
 # 	gcc -m32 cutest-1.5/CuTest.c -c -g -o cutest-1.5/CuTest.o
