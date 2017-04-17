@@ -58,15 +58,22 @@ let string_of_grain_heap_value (v : int32) =
   match tag with
   | StringType ->
     let string_length = Int32.to_int @@ load_word (v_int + 4) in
-    let outbytes = Bytes.create (8 * (((string_length - 1) / 8) + 1)) in
-    for i = 0 to (string_length - 1) do
+    let num_ints = ((string_length - 1) / 8) + 1 in
+    let outbytes = Bytes.create (8 * num_ints) in
+    let to_bytes = if Sys.big_endian then
+        Stdint.Uint64.to_bytes_big_endian
+      else
+        Stdint.Uint64.to_bytes_little_endian in
+    for i = 0 to num_ints - 1 do
       let word = load_word64 (v_int + 8 + (8 * i)) in
       let uword = Stdint.Uint64.of_int64 word in
-      Stdint.Uint64.to_bytes_big_endian uword outbytes (i * 8);
+      to_bytes uword outbytes (i * 8);
     done;
     let buf = Buffer.create (Bytes.length outbytes) in
     Buffer.add_bytes buf outbytes;
-    BatUTF8.Buf.contents buf
+    let str = Buffer.sub buf 0 string_length in
+    Printf.sprintf "\"%s\"" str
+
 
 
 let rec string_of_grain_help (v : int32) tuple_counter =
@@ -141,7 +148,10 @@ let rec grain_equal_help x y cycles =
 
 let error_message err (value1 : int32) (value2 : int32) =
   let open Printf in
-  let value1_as_string = string_of_grain value1 in
+  let value1_as_string =
+    try string_of_grain value1
+    with
+    | _ -> "<error printing value>" in
   match err with
   | ArithmeticError ->
     sprintf "arithmetic expected a number, got value: %s" value1_as_string
@@ -242,21 +252,16 @@ let run_wasm (module_ : Wasm.Ast.module_) =
   (* Hack to get result of start *)
   let open Wasm.Source in
   let open Wasm.Ast in
-  let module Crash = Error.Make() in
-  let lookup category list x =
-    try Lib.List32.nth list x.it with Failure _ ->
-      Crash.error x.at ("undefined " ^ category ^ " " ^ Int32.to_string x.it) in
-  let func (inst : instance) x = lookup "function" inst.funcs x in
-  let start = module_.it.start in
-  let stripped_module = {at=module_.at; it={module_.it with start=None}} in
   configure_runner();
   reset_channels();
-  let imports = Import.link stripped_module in
-  let inst = Eval.init stripped_module imports in
+  Valid.check_module module_;
+  let imports = Import.link module_ in
+  let inst = Eval.init module_ imports in
+  let start = Instance.export inst "GRAIN$MAIN" in
   match start with
   | None -> failwith "No start function found in module!"
-  | Some(s) ->
-    match Eval.invoke (func inst s) [] with
+  | Some(ExternalFunc s) ->
+    begin match Eval.invoke s [] with
     | [] ->
       flush !out_channel;
       Unix.close !out_fd;
@@ -265,4 +270,6 @@ let run_wasm (module_ : Wasm.Ast.module_) =
       str
     | x1::x2::_ -> failwith "Multiple values returned by start"
     | x::[] -> (string_of_grain (unbox x))
+    end
+  | _ -> failwith "Bad GRAIN$MAIN export"
   

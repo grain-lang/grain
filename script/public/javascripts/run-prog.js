@@ -33,6 +33,10 @@ const GRAIN_ERR_NOT_NUMBER_GENERIC = 99;
 const GRAIN_TRUE = 0xFFFFFFFF | 0;
 const GRAIN_FALSE = 0x7FFFFFFF | 0;
 
+let heapAdjust = function(n) {
+  throw new GrainError(-1, "Grain runtime is not yet instantiated.");
+};
+
 function throwGrainError(errorCode, value1, value2) {
   let message;
 
@@ -127,7 +131,7 @@ let counter = 0;
 function grainHeapValueToString(n) {
   switch (view[n / 4]) {
   case 1:
-    let byteView = new UInt8Array(memory.buffer);
+    let byteView = new Uint8Array(memory.buffer);
     let length = view[(n / 4) + 1];
     let slice = byteView.slice(n + 8, n + 8 + length);
     return decoder.decode(slice);
@@ -264,8 +268,11 @@ function fetchAndInstantiate(url, importObject) {
   );
 }
 
-let result = fetchAndInstantiate("t.wasm", importObj).then((instance) => {
-  console.log(JSON.stringify(instance, null, 2));
+let result = fetchAndInstantiate("t.wasm", importObj).then((module) => {
+  let main = module.instance.exports["GRAIN$MAIN"];
+  heapAdjust = module.instance.exports["GRAIN$HEAP_ADJUST"];
+  let res = main();
+  console.log(`result: ${res}`);
 }).catch(e => {
   displayOnPage(`[[ERROR: ${e.message}]]`);
   console.error(e.message);

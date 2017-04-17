@@ -581,7 +581,10 @@ let string_tests = [
   tparse "string_parse_emoji_escape" "\"\xF0\x9F\x98\x82\"" (EString("😂", ()));
   tparse "string_parse_emoji_literal" "\"💯\"" (EString("💯", ()));
 
-  t "string1" "\"fooooo\"" "\"foo\"";
+  t "string1" "\"foo\"" "\"foo\"";
+  t "string2" "\"💯\"" "\"💯\"";
+  t "string3" "\"making my way downtown, walking fast\"" "\"making my way downtown, walking fast\"";
+  te "string_err" "let x = 'hello' in x + ', world'" "number";
 ]
 
 let suite =

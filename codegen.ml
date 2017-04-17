@@ -323,18 +323,18 @@ let get_tag = function
   | ImmId(_, t) -> t
 
 let buf_to_ints (buf : Buffer.t) : int64 list =
-  Printf.printf "Breh be on them bufs\n";
   let num_bytes = Buffer.length buf in
   let num_ints = (((num_bytes - 1) / 8) + 1) in
-  Printf.printf "Num_ints: %d\n" num_ints;
   let out_ints = ref [] in
 
   let byte_buf = Bytes.create (num_ints * 8) in
   Buffer.blit buf 0 byte_buf 0 num_bytes;
-  Printf.printf "%d\n" @@ Bytes.length byte_buf;
+  let bytes_to_int = if Sys.big_endian then
+      Stdint.Uint64.of_bytes_big_endian
+    else
+      Stdint.Uint64.of_bytes_little_endian in
   for i = 0 to (num_ints - 1) do
-    Printf.printf "%s\n" @@ Stdint.Uint64.to_string @@ Stdint.Uint64.of_bytes_big_endian byte_buf (i * 8);
-    out_ints := (Stdint.Uint64.of_bytes_big_endian byte_buf (i * 8))::!out_ints
+    out_ints := (bytes_to_int byte_buf (i * 8))::!out_ints
   done;
   List.rev @@ List.map Stdint.Uint64.to_int64 !out_ints
 
@@ -358,15 +358,22 @@ let compile_string str env =
     Ast.GetGlobal(env.heap_top);
     Ast.Const(const_int32 8);
     Ast.Binary(Values.I32 Ast.IntOp.Add);
+    Ast.SetGlobal(env.heap_top);
   ] in
   let elts = List.flatten @@ List.map (fun (i : int64) -> [
         Ast.GetGlobal(env.heap_top);
         Ast.Const(add_dummy_loc (Values.I64 i));
         Ast.Store({Ast.ty=Types.I64Type; Ast.align=2; Ast.offset=Int32.of_int 0; Ast.sz=None});
+        Ast.GetGlobal(env.heap_top);
         Ast.Const(const_int32 8);
         Ast.Binary(Values.I32 Ast.IntOp.Add);
+        Ast.SetGlobal(env.heap_top);
       ]) ints_to_push in
-  preamble @ elts
+  preamble @ elts @ [
+    (* Original heap top should now be on the stack *)
+    Ast.Const(const_int32 @@ tag_val_of_tag_type GenericHeapType);
+    Ast.Binary(Values.I32 Ast.IntOp.Or);
+  ]
 
 
 (** Untags the number at the top of the stack *)
@@ -657,10 +664,7 @@ and compile_cexpr (e : tag cexpr) env =
     [Ast.Compare(Values.I32 Ast.IntOp.Eq)] @
     encode_bool
 
-  | CString(s, t) -> compile_string s env @ [
-      Ast.Const(const_int32 @@ tag_val_of_tag_type GenericHeapType);
-      Ast.Binary(Values.I32 Ast.IntOp.Or);
-    ]
+  | CString(s, t) -> compile_string s env
 
   | CTuple(elts, t) ->
     (* TODO: Perform any GC before *)
@@ -807,6 +811,18 @@ let create_single_builtin_closure fidx arity env =
       Ast.Binary(Values.I32 Ast.IntOp.Or);
     ] @ (heap_allocate closure_size env)
 
+let heap_adjust env = {
+  Ast.ftype = add_dummy_loc Int32.(of_int (get_func_type_idx (Types.FuncType([Types.I32Type], [Types.I32Type])) env));
+  Ast.locals = [];
+  Ast.body = List.map add_dummy_loc [
+    Ast.GetGlobal(env.heap_top);
+    Ast.GetLocal(add_dummy_loc @@ Int32.of_int 0);
+    Ast.Binary(Values.I32 Ast.IntOp.Add);
+    Ast.SetGlobal(env.heap_top);
+    Ast.GetGlobal(env.heap_top);
+  ]
+}
+
 let create_builtin_closures to_create init_env =
   let env, preamble, _ =
     List.fold_left (fun (env, preamble, idx) (name, arity, fidx) ->
@@ -844,8 +860,30 @@ let compile_aprog (anfed : tag aprogram) =
         }
       ] in
 
+  (* Main function *)
+  let func = add_dummy_loc {Ast.ftype = ftype;
+                            Ast.locals = repeat_f stack_size (fun n -> Types.I32Type);
+                            Ast.body = compiled} in
+
+  (* Collected lambdas *)
+  let lambdas = (List.map add_dummy_loc @@ Deque.to_list !(env.compiled_lambdas)) in
+
+  let heap_adjust_idx = add_dummy_loc Int32.(of_int @@ (List.length external_funcs) + List.length lambdas) in
+  let main_idx = add_dummy_loc Int32.(of_int @@ (List.length external_funcs) + List.length lambdas + 1) in
+
   (* List of exports for the module *)
-  let exports = List.map add_dummy_loc [] in
+  let exports = List.map add_dummy_loc [
+      {
+        Ast.name="GRAIN$HEAP_ADJUST";
+        Ast.ekind=add_dummy_loc Ast.FuncExport;
+        Ast.item=heap_adjust_idx;
+      };
+      {
+        Ast.name="GRAIN$MAIN";
+        Ast.ekind=add_dummy_loc Ast.FuncExport;
+        Ast.item=main_idx;
+      }
+    ] in
 
   (* List of the module's global variables *)
   let globals = List.map add_dummy_loc @@ repeat (1 + (List.length builtins))
@@ -855,13 +893,7 @@ let compile_aprog (anfed : tag aprogram) =
       }
      in
 
-  (* Main function *)
-  let func = add_dummy_loc {Ast.ftype = ftype;
-                            Ast.locals = repeat_f stack_size (fun n -> Types.I32Type);
-                            Ast.body = compiled} in
-
-  (* Collected lambdas *)
-  let lambdas = (List.map add_dummy_loc @@ Deque.to_list !(env.compiled_lambdas)) in
+  
 
   (* Table (used to call lambdas) *)
   let table_size = ((List.length lambdas) + 1 + (List.length external_funcs)) in
@@ -894,11 +926,9 @@ let compile_aprog (anfed : tag aprogram) =
     Ast.globals=globals;
     Ast.tables=table;
     Ast.elems=elems;
-    Ast.funcs=lambdas@[func];
-    Ast.types=(Deque.to_list !(env.func_types)) @
-              [Types.FuncType([], []);
-               Types.FuncType([Types.I32Type], [Types.I32Type])];
-    Ast.start=Some(add_dummy_loc Int32.(of_int @@ (List.length external_funcs) + List.length lambdas));
+    Ast.funcs=lambdas@[add_dummy_loc @@ heap_adjust env; func];
+    Ast.types=(Deque.to_list !(env.func_types));
+    Ast.start=None;
   }
 
 let module_to_string compiled_module =
