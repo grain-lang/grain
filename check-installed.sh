@@ -37,5 +37,5 @@ done
 
 if [ ! -z "$TO_INSTALL" ]; then
     echo "Installing required package(s): $TO_INSTALL"
-    opam install $TO_INSTALL
+    opam install $TO_INSTALL || (echo "(use 'opam pin' to make sure your OCaml version is correct)" && rm "$CACHE" && exit 1)
 fi

@@ -17,7 +17,7 @@ no means of performing any type of stack introspection.
 
 ## Building
 
-To build, have `ocaml`, `opam`, and `wast2wasm` (from [`wabt`][wabt]) installed
+To build, have `ocaml` (version >= 4.02.3), `opam`, and `wast2wasm` (from [`wabt`][wabt]) installed
 and on your `PATH`.
 Then, running `make` will install any needed OCaml dependencies and build the
 compiler.
