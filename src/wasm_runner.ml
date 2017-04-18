@@ -209,6 +209,11 @@ let grain_print = function
     [x]
   | _ -> failwith "signature violation"
 
+let grain_check_memory = function
+  | [x] ->
+    []
+  | _ -> failwith "signature violation"
+
 let grain_equal = function
   | [x; y] ->
     if grain_equal_help (unbox x) (unbox y) (ref 0) then
@@ -231,6 +236,7 @@ let js_lookup name t =
   match name, t with
   | "throwError", ExternalFuncType t -> ExternalFunc (HostFunc (t, js_throw_error))
   | "mem", ExternalMemoryType t -> memory
+  | "checkMemory", ExternalFuncType t -> ExternalFunc (HostFunc (t, grain_check_memory))
   | _ -> raise Not_found
 
 let grain_builtin_lookup name t =

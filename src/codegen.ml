@@ -73,6 +73,11 @@ let external_funcs =
       ikind=Types.FuncType([Types.I32Type; Types.I32Type; Types.I32Type], [])
     };
     {
+      module_name="js";
+      item_name="checkMemory";
+      ikind=Types.FuncType([Types.I32Type], [])
+    };
+    {
       module_name="grainBuiltins";
       item_name="print";
       ikind=Types.FuncType([Types.I32Type], [Types.I32Type])
@@ -251,6 +256,13 @@ let heap_allocate (num_words : int) env =
     Ast.SetGlobal(env.heap_top);
   ]
 
+let heap_check_memory (num_words : int) =
+  let words_to_allocate = 4 * (((num_words - 1) / 4) + 1) in
+  [
+    Ast.Const(const_int32 (4 * words_to_allocate));
+    Ast.Call(var_of_ext_func "js" "checkMemory");
+  ]
+
 (* Checks that the given value has the given tag (value ends up in dest) *)
 let check_tag (tag : tag_type) (value : Ast.instr' list) =
   [
@@ -403,7 +415,7 @@ let compile_string str env =
 
 
   let ints_to_push : int64 list = buf_to_ints buf in
-  let preamble = [
+  let preamble = (heap_check_memory (2 + (2 * (List.length ints_to_push)))) @ [
     Ast.GetGlobal(env.heap_top);
     Ast.GetGlobal(env.heap_top);
     Ast.Const(const_int32 @@ String.length str);
@@ -542,7 +554,7 @@ and compile_aexpr (e : tag aexpr) (env : compiler_env) =
         match bind with
         | CLambda(args, body, t) ->
           let func_index, closure_size, free_vars = compile_lambda args body env in
-          ([
+          ((heap_check_memory closure_size) @ [
             Ast.GetGlobal(env.heap_top);
             Ast.Const(const_int32 (closure_size - 3));
 
@@ -725,7 +737,7 @@ and compile_cexpr (e : tag cexpr) env =
   | CTuple(elts, t) ->
     (* TODO: Perform any GC before *)
     let num_elts = List.length elts in
-    [
+    (heap_check_memory (num_elts + 1)) @ [
       Ast.GetGlobal(env.heap_top);
       Ast.Const(const_int32 num_elts);
       Ast.Store({Ast.ty=Types.I32Type; Ast.align=2; Ast.offset=Int32.of_int 0; Ast.sz=None});
@@ -778,7 +790,7 @@ and compile_cexpr (e : tag cexpr) env =
 
   | CLambda(args, body, t) ->
     let idx, closure_size, free_vars = compile_lambda args body env in
-    [
+    (heap_check_memory closure_size) @ [
       Ast.GetGlobal(env.heap_top);
       Ast.Const(const_int32 (closure_size - 3));
 
@@ -856,7 +868,7 @@ let create_single_builtin_closure fidx arity env =
     ] in
 
   let idx, closure_size, free_vars = create_closure (arity + 1) body env 0 [] in
-  [
+  (heap_check_memory closure_size) @ [
       Ast.GetGlobal(env.heap_top);
       Ast.Const(const_int32 (closure_size - 3));
 
@@ -879,12 +891,14 @@ let heap_adjust env = {
   Ast.ftype = add_dummy_loc Int32.(of_int (get_func_type_idx (Types.FuncType([Types.I32Type], [Types.I32Type])) env));
   Ast.locals = [];
   Ast.body = List.map add_dummy_loc [
-    Ast.GetGlobal(env.heap_top);
-    Ast.GetLocal(add_dummy_loc @@ Int32.of_int 0);
-    Ast.Binary(Values.I32 Ast.IntOp.Add);
-    Ast.SetGlobal(env.heap_top);
-    Ast.GetGlobal(env.heap_top);
-  ]
+      Ast.GetLocal(add_dummy_loc @@ Int32.of_int 0);
+      Ast.Call(var_of_ext_func "js" "checkMemory");
+      Ast.GetGlobal(env.heap_top);
+      Ast.GetLocal(add_dummy_loc @@ Int32.of_int 0);
+      Ast.Binary(Values.I32 Ast.IntOp.Add);
+      Ast.SetGlobal(env.heap_top);
+      Ast.GetGlobal(env.heap_top);
+    ]
 }
 
 let make_lambda_export i = add_dummy_loc {

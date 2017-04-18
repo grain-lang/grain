@@ -52,6 +52,7 @@ const GRAIN_DOM_ELEM_TAG = 2;
 
 let grainInitialized = false;
 let grainModule;
+let grainDOMRefs = [];
 
 function getAndMask(tag) {
   switch(tag) {
@@ -222,7 +223,7 @@ function grainHeapValueToString(n) {
     return `"${decoder.decode(slice)}"`;
     break;
   case 2:
-    return grainDOMRefs[view[n + 1]].toString();
+    return grainDOMRefs[view[(n + 4) / 4]].toString();
     break;
   default:
     return `<unknown heap type: ${view[n / 4]}>`;
@@ -365,6 +366,16 @@ function grainEqual(x, y) {
   return grainEqualHelp(x, y, 0) ? GRAIN_TRUE : GRAIN_FALSE;
 }
 
+function grainCheckMemory(numBytes) {
+  if (numBytes === 0) {
+    return;
+  }
+  let curTop = heapAdjust(0);
+  if (memory.buffer.byteLength - curTop < numBytes) {
+    memory.grow(1);
+  }
+}
+
 function grainHeapAllocate(numWords) {
   // allocates the number of words
   let curTop = heapAdjust(0);
@@ -373,7 +384,6 @@ function grainHeapAllocate(numWords) {
   return curTop;
 }
 
-let grainDOMRefs = [];
 function grainDOMQuery(n) {
   assertString(n);
   let query = grainToJSVal(n);
@@ -469,7 +479,8 @@ const importObj = {
   },
   js: {
     mem: memory,
-    throwError: throwGrainError
+    throwError: throwGrainError,
+    checkMemory: grainCheckMemory
   },
   grainBuiltins: {
     print: printNumber,
@@ -496,7 +507,7 @@ function fetchSource(url) {
 
 function fetchAndInstantiate(url, importObject) {
   return fetch(url).then(response => response.arrayBuffer())
-    .then(bytes => WebAssembly.instantiate(bytes, importObj))
+    .then(bytes => WebAssembly.instantiate(bytes, importObject))
     .then(results => results);
 }
 
@@ -536,7 +547,7 @@ function resetPage() {
 function loadExample(e) {
   resetPage();
   fetchSource("examples/".concat(e.source));
-  return fetchAndInstantiate("examples/".concat(e.wasm))
+  return fetchAndInstantiate("examples/".concat(e.wasm), importObj)
     .then(runGrain)
     .catch(showError);
 }
