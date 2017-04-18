@@ -490,6 +490,7 @@ function fetchSource(url) {
     .then(response => response.text())
     .then(code => {
       document.getElementById('sourceCode').innerText = code;
+      Prism.highlightAll();
     });
 }
 
