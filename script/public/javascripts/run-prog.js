@@ -26,12 +26,16 @@ const GRAIN_ERR_SET_NOT_TUP = 12;
 const GRAIN_ERR_SET_ITEM_IDX_NOT_NUMBER = 13;
 const GRAIN_ERR_SET_ITEM_IDX_TOO_SMALL = 14;
 const GRAIN_ERR_SET_ITEM_IDX_TOO_LARGE = 15;
+const GRAIN_ERR_NOT_STRING = 16;
 const GRAIN_ERR_BAD_INPUT = 97;
 const GRAIN_ERR_NOT_NONNEG = 98;
 const GRAIN_ERR_NOT_NUMBER_GENERIC = 99;
 
 const GRAIN_TRUE = 0xFFFFFFFF | 0;
 const GRAIN_FALSE = 0x7FFFFFFF | 0;
+
+const GRAIN_STRING_TAG = 1;
+const GRAIN_DOM_ELEM_TAG = 2;
 
 let heapAdjust = function(n) {
   throw new GrainError(-1, "Grain runtime is not yet instantiated.");
@@ -95,6 +99,9 @@ function throwGrainError(errorCode, value1, value2) {
   case GRAIN_ERR_OUT_OF_MEMORY:
     message = `Out of memory`;
     break;
+  case GRAIN_ERR_NOT_STRING:
+    message = `expected a string, got value: ${value1}`;
+    break;
   default:
     message = `Unknown error code: ${errorCode}`;
   }
@@ -103,7 +110,7 @@ function throwGrainError(errorCode, value1, value2) {
 }
 
 function debugPrint(n) {
-  console.log(`0x${n.toString(16)} (0b${n.toString(2)})`);
+  // console.log(`0x${n.toString(16)} (0b${n.toString(2)})`);
   return n;
 }
 
@@ -135,6 +142,9 @@ function grainHeapValueToString(n) {
     let length = view[(n / 4) + 1];
     let slice = byteView.slice(n + 8, n + 8 + length);
     return decoder.decode(slice);
+    break;
+  case 2:
+    return grainDOMRefs[view[n + 1]].toString();
     break;
   default:
     return `<unknown heap type: ${view[n / 4]}>`;
@@ -212,6 +222,37 @@ function grainEqual(x, y) {
   return grainEqualHelp(x, y, 0) ? GRAIN_TRUE : GRAIN_FALSE;
 }
 
+let grainDOMRefs = [];
+function grainDOMQuery(n) {
+  if (!((n & 7) === 3) && view[n^3] !== GRAIN_STRING_TAG) {
+    throwGrainError(GRAIN_ERR_NOT_STRING, n);
+  }
+  let query = grainHeapValueToString(n ^ 3);
+  let elem = document.querySelector(query);
+  if (elem) {
+    grainDOMRefs.push(elem);
+    let heapRef = heapAdjust(0) / 4;
+    view[heapRef] = GRAIN_DOM_ELEM_TAG;
+    view[heapRef+1] = grainDOMRefs.length - 1;
+    heapAdjust(8);
+    return (heapRef * 4) ^ 3;
+  } else {
+    return GRAIN_FALSE;
+  }
+}
+
+function grainDOMElemSetText(elemRef, textRef) {
+  let elem = (elemRef ^ 3) / 4;
+  grainDOMRefs[view[elem + 1]].innerText = grainHeapValueToString(textRef ^ 3);
+  return elemRef;
+}
+
+function grainDOMDangerouslySetInnerHTML(elemRef, textRef) {
+  let elem = (elemRef ^ 3) / 4;
+  grainDOMRefs[view[elem + 1]].innerHTML = grainHeapValueToString(textRef ^ 3);
+  return elemRef;
+}
+
 function displayOnPage(str) {
   document.getElementById('output').innerText = str;
 }
@@ -236,7 +277,10 @@ const importObj = {
   },
   grainBuiltins: {
     print: printNumber,
-    equal: grainEqual
+    equal: grainEqual,
+    DOMQuery: grainDOMQuery,
+    DOMSetText: grainDOMElemSetText,
+    DOMDangerouslySetInnerHTML: grainDOMDangerouslySetInnerHTML,
   }
 };
 
