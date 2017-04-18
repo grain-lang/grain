@@ -1,14 +1,11 @@
-S .
+S src
 
-B _build
+B _build/src
 
 PKG oUnit
-PKG dyp
-PKG ANSITerminal
 PKG batteries
 PKG extlib
 PKG unix
-PKG sexplib
 PKG cmdliner
 PKG ocamlgraph
 PKG wasm
