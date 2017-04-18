@@ -1,7 +1,7 @@
 let div3 = DOM::query("#div3") in
-let makeButtonHTML =
-  (lambda n:
-    string_append(string_append('<button id="butt', tostring(n)), '">Click me!</button><br/>')) in
+let makeButtonHTML = (lambda n:
+  string_append(string_append('<button id="butt', tostring(n)), '">Click me!</button><br/>')
+) in
 let html = ('', 0) in
 let rec add_button = (lambda:
   begin
@@ -13,17 +13,18 @@ let rec add_button = (lambda:
       setEventListeners(html[1]);
       html[1] := html[1] + 1;
     end
-  end),
-  setEventListeners = (lambda n:
-    if equal(n, 0):
-      DOM::addEventListener(DOM::query("#butt0"), "click", add_button)
-    else:
-      begin
-        let elem = DOM::query(string_append("#butt", tostring(n))) in
-        DOM::addEventListener(elem, "click", add_button);
-        setEventListeners(n - 1);
-      end
-  ) in
+  end
+),
+setEventListeners = (lambda n:
+  if equal(n, 0):
+    DOM::addEventListener(DOM::query("#butt0"), "click", add_button)
+  else:
+    begin
+      let elem = DOM::query(string_append("#butt", tostring(n))) in
+      DOM::addEventListener(elem, "click", add_button);
+      setEventListeners(n - 1);
+    end
+) in
 begin
   add_button();
   print("Click it.")
