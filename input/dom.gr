@@ -1,0 +1,18 @@
+let div3 = DOM::query("#div3") in
+let makeButtonHTML =
+  (lambda n:
+    string_append(string_append('<button id="butt', tostring(n)), '">Click me!</button><br/>')) in
+let html = ('', 0) in
+let rec add_button = (lambda:
+  begin
+    html[0] := string_append(html[0], makeButtonHTML(html[1]));
+    html[1] := html[1] + 1;
+    DOM::dangerouslySetInnerHTML(div3, html[0]);
+    print("No, really.");
+    let id = string_append("#butt", tostring(html[1] - 1)) in
+    DOM::addEventListener(DOM::query(id), "click", add_button)
+  end) in
+begin
+  add_button();
+  print("Click it.")
+end 

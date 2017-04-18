@@ -16,11 +16,13 @@ let rec repeat n value =
   else
     value::(repeat (n - 1) value)
 
-let rec repeat_f n value =
-  if n == 0 then
-    []
-  else
-    (value n)::(repeat_f (n - 1) value)
+let repeat_f n value =
+  let rec help n value =
+    if n == 0 then
+      []
+    else
+      (value n)::(help (n - 1) value) in
+  List.rev @@ help n value
 
 type binding =
   | ArgBind of int32
@@ -80,7 +82,61 @@ let external_funcs =
       item_name="equal";
       ikind=Types.FuncType([Types.I32Type; Types.I32Type], [Types.I32Type])
     };
+    {
+      module_name="grainBuiltins";
+      item_name="toString";
+      ikind=Types.FuncType([Types.I32Type], [Types.I32Type]);
+    };
+    {
+      module_name="grainBuiltins";
+      item_name="stringAppend";
+      ikind=Types.FuncType([Types.I32Type; Types.I32Type], [Types.I32Type])
+    };
+    {
+      module_name="grainBuiltins";
+      item_name="stringLength";
+      ikind=Types.FuncType([Types.I32Type], [Types.I32Type])
+    };
+    {
+      module_name="grainBuiltins";
+      item_name="stringSlice";
+      ikind=Types.FuncType([Types.I32Type; Types.I32Type; Types.I32Type], [Types.I32Type])
+    };
+    {
+      module_name="grainBuiltins";
+      item_name="DOMQuery";
+      ikind=Types.FuncType([Types.I32Type], [Types.I32Type])
+    };
+    {
+      module_name="grainBuiltins";
+      item_name="DOMSetText";
+      ikind=Types.FuncType([Types.I32Type; Types.I32Type], [Types.I32Type])
+    };
+    {
+      module_name="grainBuiltins";
+      item_name="DOMDangerouslySetInnerHTML";
+      ikind=Types.FuncType([Types.I32Type; Types.I32Type], [Types.I32Type])
+    };
+    {
+      module_name="grainBuiltins";
+      item_name="DOMAddEventListener";
+      ikind=Types.FuncType([Types.I32Type; Types.I32Type; Types.I32Type], [Types.I32Type]);
+    };
   ]
+
+let lookup_ext_func modname itemname =
+  let rec do_lookup elts idx =
+    match elts with
+    | [] -> raise Not_found
+    | {module_name; item_name; _}::tl ->
+      if module_name = modname && item_name = itemname then
+        idx
+      else
+        do_lookup tl (idx + 1) in
+  do_lookup external_funcs 0
+
+let var_of_ext_func modname itemname =
+  add_dummy_loc @@ Int32.of_int @@ lookup_ext_func modname itemname
 
 let call_console_log = Ast.Call(add_dummy_loc @@ Int32.of_int 0)
 let call_console_debug = Ast.Call(add_dummy_loc @@ Int32.of_int 1)
@@ -323,18 +379,18 @@ let get_tag = function
   | ImmId(_, t) -> t
 
 let buf_to_ints (buf : Buffer.t) : int64 list =
-  Printf.printf "Breh be on them bufs\n";
   let num_bytes = Buffer.length buf in
   let num_ints = (((num_bytes - 1) / 8) + 1) in
-  Printf.printf "Num_ints: %d\n" num_ints;
   let out_ints = ref [] in
 
   let byte_buf = Bytes.create (num_ints * 8) in
   Buffer.blit buf 0 byte_buf 0 num_bytes;
-  Printf.printf "%d\n" @@ Bytes.length byte_buf;
+  let bytes_to_int = if Sys.big_endian then
+      Stdint.Uint64.of_bytes_big_endian
+    else
+      Stdint.Uint64.of_bytes_little_endian in
   for i = 0 to (num_ints - 1) do
-    Printf.printf "%s\n" @@ Stdint.Uint64.to_string @@ Stdint.Uint64.of_bytes_big_endian byte_buf (i * 8);
-    out_ints := (Stdint.Uint64.of_bytes_big_endian byte_buf (i * 8))::!out_ints
+    out_ints := (bytes_to_int byte_buf (i * 8))::!out_ints
   done;
   List.rev @@ List.map Stdint.Uint64.to_int64 !out_ints
 
@@ -344,8 +400,8 @@ let compile_string str env =
   let num_ints = 8 * (((num_bytes - 1) / 8) + 1) in
   let buf = Buffer.create num_ints in
   BatUTF8.iter (BatUTF8.Buf.add_char buf) str;
-  
-  
+
+
   let ints_to_push : int64 list = buf_to_ints buf in
   let preamble = [
     Ast.GetGlobal(env.heap_top);
@@ -358,15 +414,22 @@ let compile_string str env =
     Ast.GetGlobal(env.heap_top);
     Ast.Const(const_int32 8);
     Ast.Binary(Values.I32 Ast.IntOp.Add);
+    Ast.SetGlobal(env.heap_top);
   ] in
   let elts = List.flatten @@ List.map (fun (i : int64) -> [
         Ast.GetGlobal(env.heap_top);
         Ast.Const(add_dummy_loc (Values.I64 i));
         Ast.Store({Ast.ty=Types.I64Type; Ast.align=2; Ast.offset=Int32.of_int 0; Ast.sz=None});
+        Ast.GetGlobal(env.heap_top);
         Ast.Const(const_int32 8);
         Ast.Binary(Values.I32 Ast.IntOp.Add);
+        Ast.SetGlobal(env.heap_top);
       ]) ints_to_push in
-  preamble @ elts
+  preamble @ elts @ [
+    (* Original heap top should now be on the stack *)
+    Ast.Const(const_int32 @@ tag_val_of_tag_type GenericHeapType);
+    Ast.Binary(Values.I32 Ast.IntOp.Or);
+  ]
 
 
 (** Untags the number at the top of the stack *)
@@ -516,7 +579,7 @@ and compile_aexpr (e : tag aexpr) (env : compiler_env) =
                 ])) free_vars new_env)) free_vars))) @
     (compile_aexpr body new_env)
   | ASeq(hd, tl, _) ->
-    (compile_cexpr hd env) @ (compile_aexpr tl env)
+    (compile_cexpr hd env) @ [Ast.Drop] @ (compile_aexpr tl env)
   | ACExpr(e) -> compile_cexpr e env
 and compile_cexpr (e : tag cexpr) env =
   match e with
@@ -657,10 +720,7 @@ and compile_cexpr (e : tag cexpr) env =
     [Ast.Compare(Values.I32 Ast.IntOp.Eq)] @
     encode_bool
 
-  | CString(s, t) -> compile_string s env @ [
-      Ast.Const(const_int32 @@ tag_val_of_tag_type GenericHeapType);
-      Ast.Binary(Values.I32 Ast.IntOp.Or);
-    ]
+  | CString(s, t) -> compile_string s env
 
   | CTuple(elts, t) ->
     (* TODO: Perform any GC before *)
@@ -776,8 +836,16 @@ and compile_imm (i : tag immexpr) env : Ast.instr' list =
       ]
 
 let builtins = [
-  ("print", 1, 4);
-  ("equal", 2, 5);
+  ("print", 1, lookup_ext_func "grainBuiltins" "print");
+  ("equal", 2, lookup_ext_func "grainBuiltins" "equal");
+  ("tostring", 1, lookup_ext_func "grainBuiltins" "toString");
+  ("string_append", 2, lookup_ext_func "grainBuiltins" "stringAppend");
+  ("string_length", 1, lookup_ext_func "grainBuiltins" "stringLength");
+  ("string_slice", 3, lookup_ext_func "grainBuiltins" "stringSlice");
+  ("DOM::query", 1, lookup_ext_func "grainBuiltins" "DOMQuery");
+  ("DOM::setText", 2, lookup_ext_func "grainBuiltins" "DOMSetText");
+  ("DOM::dangerouslySetInnerHTML", 2, lookup_ext_func "grainBuiltins" "DOMDangerouslySetInnerHTML");
+  ("DOM::addEventListener", 3, lookup_ext_func "grainBuiltins" "DOMAddEventListener");
 ]
 
 let create_single_builtin_closure fidx arity env =
@@ -786,7 +854,7 @@ let create_single_builtin_closure fidx arity env =
       Ast.Call(add_dummy_loc @@ Int32.of_int fidx);
       Ast.Return;
     ] in
-   
+
   let idx, closure_size, free_vars = create_closure (arity + 1) body env 0 [] in
   [
       Ast.GetGlobal(env.heap_top);
@@ -806,6 +874,24 @@ let create_single_builtin_closure fidx arity env =
       Ast.Const(const_int32 @@ tag_val_of_tag_type LambdaTagType);
       Ast.Binary(Values.I32 Ast.IntOp.Or);
     ] @ (heap_allocate closure_size env)
+
+let heap_adjust env = {
+  Ast.ftype = add_dummy_loc Int32.(of_int (get_func_type_idx (Types.FuncType([Types.I32Type], [Types.I32Type])) env));
+  Ast.locals = [];
+  Ast.body = List.map add_dummy_loc [
+    Ast.GetGlobal(env.heap_top);
+    Ast.GetLocal(add_dummy_loc @@ Int32.of_int 0);
+    Ast.Binary(Values.I32 Ast.IntOp.Add);
+    Ast.SetGlobal(env.heap_top);
+    Ast.GetGlobal(env.heap_top);
+  ]
+}
+
+let make_lambda_export i = add_dummy_loc {
+  Ast.name="GRAIN$LAM_" ^ (string_of_int i);
+  Ast.ekind=add_dummy_loc Ast.FuncExport;
+  Ast.item=(add_dummy_loc @@ Int32.of_int i);
+}
 
 let create_builtin_closures to_create init_env =
   let env, preamble, _ =
@@ -828,11 +914,11 @@ let compile_aprog (anfed : tag aprogram) =
   let compiled = List.map add_dummy_loc @@
     builtin_setup @
     compile_aexpr anfed env
-    @ [Ast.Call(add_dummy_loc (Int32.zero)); Ast.Return] in
+    @ [Ast.Return] in
 
   (* Type of main function *)
   let ftype = add_dummy_loc
-      Int32.(of_int (get_func_type_idx (Types.FuncType([], [])) env)) in
+      Int32.(of_int (get_func_type_idx (Types.FuncType([], [Types.I32Type])) env)) in
 
   (* List of imports for the module (functions + memory) *)
   let imports = List.map add_dummy_loc @@
@@ -844,8 +930,30 @@ let compile_aprog (anfed : tag aprogram) =
         }
       ] in
 
+  (* Main function *)
+  let func = add_dummy_loc {Ast.ftype = ftype;
+                            Ast.locals = repeat_f stack_size (fun n -> Types.I32Type);
+                            Ast.body = compiled} in
+
+  (* Collected lambdas *)
+  let lambdas = (List.map add_dummy_loc @@ Deque.to_list !(env.compiled_lambdas)) in
+
+  let heap_adjust_idx = add_dummy_loc Int32.(of_int @@ (List.length external_funcs) + List.length lambdas) in
+  let main_idx = add_dummy_loc Int32.(of_int @@ (List.length external_funcs) + List.length lambdas + 1) in
+
   (* List of exports for the module *)
-  let exports = List.map add_dummy_loc [] in
+  let exports = List.map add_dummy_loc [
+      {
+        Ast.name="GRAIN$HEAP_ADJUST";
+        Ast.ekind=add_dummy_loc Ast.FuncExport;
+        Ast.item=heap_adjust_idx;
+      };
+      {
+        Ast.name="GRAIN$MAIN";
+        Ast.ekind=add_dummy_loc Ast.FuncExport;
+        Ast.item=main_idx;
+      }
+    ] @ (repeat_f (List.length lambdas) (fun i -> make_lambda_export (i + (List.length external_funcs)))) in
 
   (* List of the module's global variables *)
   let globals = List.map add_dummy_loc @@ repeat (1 + (List.length builtins))
@@ -855,16 +963,10 @@ let compile_aprog (anfed : tag aprogram) =
       }
      in
 
-  (* Main function *)
-  let func = add_dummy_loc {Ast.ftype = ftype;
-                            Ast.locals = repeat_f stack_size (fun n -> Types.I32Type);
-                            Ast.body = compiled} in
 
-  (* Collected lambdas *)
-  let lambdas = (List.map add_dummy_loc @@ Deque.to_list !(env.compiled_lambdas)) in
 
   (* Table (used to call lambdas) *)
-  let table_size = ((List.length lambdas) + 1 + (List.length external_funcs)) in
+  let table_size = ((List.length lambdas) + 2 + (List.length external_funcs)) in
   let table = List.map add_dummy_loc [
       {
         Ast.ttype=Types.TableType({
@@ -881,8 +983,7 @@ let compile_aprog (anfed : tag aprogram) =
       Ast.offset=add_dummy_loc @@ List.map add_dummy_loc [
           Ast.Const(const_int32 0);
         ];
-      Ast.init=List.rev @@
-        repeat_f table_size (fun n -> (add_dummy_loc (Int32.of_int (n - 1))))
+      Ast.init=repeat_f table_size (fun n -> (add_dummy_loc (Int32.of_int (n - 1))))
     }
   ] in
 
@@ -894,11 +995,9 @@ let compile_aprog (anfed : tag aprogram) =
     Ast.globals=globals;
     Ast.tables=table;
     Ast.elems=elems;
-    Ast.funcs=lambdas@[func];
-    Ast.types=(Deque.to_list !(env.func_types)) @
-              [Types.FuncType([], []);
-               Types.FuncType([Types.I32Type], [Types.I32Type])];
-    Ast.start=Some(add_dummy_loc Int32.(of_int @@ (List.length external_funcs) + List.length lambdas));
+    Ast.funcs=lambdas@[add_dummy_loc @@ heap_adjust env; func];
+    Ast.types=(Deque.to_list !(env.func_types));
+    Ast.start=None;
   }
 
 let module_to_string compiled_module =

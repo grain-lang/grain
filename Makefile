@@ -18,41 +18,36 @@ endif
 OCAMLFIND_PKGS=oUnit,extlib,batteries,cmdliner,ocamlgraph,wasm,stdint
 PKGS=unix,$(OCAMLFIND_PKGS)
 OPAM_PKGS=ounit,extlib,batteries,cmdliner,ocamlgraph,wasm,stdint
-BUILD=ocamlbuild -r -use-ocamlfind
+BUILD=ocaml setup.ml -build -r -use-ocamlfind
 
-main: *.ml parser.mly lexer.mll gc.o
-	make check-libs
-	$(BUILD) -no-hygiene -package $(PKGS) main.native
-	mv main.native main
 
-test: *.ml parser.mly lexer.mll main
-	make check-libs
-	$(BUILD) -no-hygiene -package $(PKGS) test.native
+grainc: src/*.ml src/parser.mly src/lexer.mll
+	make setup.data
+	$(BUILD) -no-hygiene -package $(PKGS) src/grainc.native
+	rm grainc.byte
+	rm test.byte
+	mv grainc.native grainc
+
+test: src/*.ml src/parser.mly src/lexer.mll grainc
+	make setup.data
+	$(BUILD) -no-hygiene -package $(PKGS) src/test.native
+	rm grainc.byte
+	rm test.byte
 	mv test.native test
+
+
+setup.ml: check-libs
+	oasis setup
+
+setup.data: setup.ml
+	ocaml $< -configure
 
 .PHONY: check-libs
 check-libs:
+	@echo Checking that Oasis is installed...
+	command -v oasis >/dev/null 2>&1 || opam install oasis
 	./check-installed.sh $(OCAMLFIND_PKGS) $(OPAM_PKGS)
 
-output/%.run: output/%.o main.c gc.o
-	clang $(PIE) -mstackrealign -g -m32 -o $@ gc.o main.c $<
-
-output/%.o: output/%.s
-ifeq ($(DEBUG),)
-	nasm -f $(FORMAT) -o $@ $<
-else
-	nasm -f $(FORMAT) -g -F dwarf -o $@ $<
-endif
-
-.PRECIOUS: output/%.s
-output/%.s: input/%.indigo main
-	./main $< -o $@
-
-gctest.o: gctest.c gc.h
-	gcc gctest.c -m32 -c -g -o gctest.o
-
-gc.o: gc.c gc.h
-	gcc gc.c -m32 -Wall -Wextra -c -g -o gc.o
 
 # cutest-1.5/CuTest.o: cutest-1.5/CuTest.c cutest-1.5/CuTest.h
 # 	gcc -m32 cutest-1.5/CuTest.c -c -g -o cutest-1.5/CuTest.o
@@ -63,13 +58,11 @@ gc.o: gc.c gc.h
 
 clean:
 	ocamlbuild -clean
-	rm -rf output/*.o output/*.s output/*.dSYM output/*.run *.log *.o
+	rm -rf output/*.o output/*.s output/*.dSYM output/*.run *.log *.o *.byte
 	rm -rf _build/
-	rm -f main test .installed-pkgs
+	rm -f grainc test .installed-pkgs
+	rm -f setup.ml setup.data myocamlbuild.ml
 
-submission-indigo.zip: *.ml *.mll *.mly check-installed.sh Makefile *.c *.h lib/* input/*.indigo _tags
-	zip $@ $^
-	(cd .. && ./test-dist.sh starter-indigo/$@)
-
-.PHONY: dist
-dist: submission-indigo.zip
+.PHONY: install
+install: grainc
+	cp $< /usr/bin
