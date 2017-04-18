@@ -7,11 +7,11 @@ License:     MIT
 Executable grainc
   Path:       src
   BuildTools: ocamlbuild
-  BuildDepends: oUnit,extlib,batteries,cmdliner,ocamlgraph,wasm,stdint
+  BuildDepends: unix,oUnit,extlib,batteries,cmdliner,ocamlgraph,wasm,stdint
   MainIs:     grainc.ml
 Executable test
   Path:       src
   BuildTools: ocamlbuild
-  BuildDepends: oUnit,extlib,batteries,cmdliner,ocamlgraph,wasm,stdint
+  BuildDepends: unix,oUnit,extlib,batteries,cmdliner,ocamlgraph,wasm,stdint
   MainIs:     test.ml
 
