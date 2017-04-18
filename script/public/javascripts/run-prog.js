@@ -47,6 +47,7 @@ const GRAIN_LAMBDA_TAG_TYPE       = 0b0101;
 const GRAIN_GENERIC_HEAP_TAG_TYPE = 0b0011;
 
 const GRAIN_STRING_HEAP = 1;
+const GRAIN_DOM_ELEM_TAG = 2;
 
 let grainInitialized = false;
 let grainModule;
@@ -59,6 +60,26 @@ function getAndMask(tag) {
     return GRAIN_TUPLE_TAG_MASK;
   }
 }
+
+function assertGrainTag(tag, n, err) {
+  if ((n & getAndMask(tag)) !== tag) {
+    throwGrainError(err, n, 0);
+  }
+}
+
+function assertGrainHeapTag(tag, n, err) {
+  assertGrainTag(GRAIN_GENERIC_HEAP_TAG_TYPE, n, err);
+  let ptr = n ^ GRAIN_GENERIC_HEAP_TAG_TYPE;
+  if (view[ptr / 4] != tag) {
+    throwGrainError(err, n, 0);
+  }
+}
+
+let assertNumber = (n, err) => assertGrainTag(GRAIN_NUMBER_TAG_TYPE, n, err || GRAIN_ERR_NOT_NUMBER_GENERIC);
+let assertBoolean = (n, err) => assertGrainTag(GRAIN_BOOLEAN_TAG_TYPE, n, err || GRAIN_ERR_NOT_BOOLEAN_GENERIC);
+let assertTuple = (n, err) => assertGrainTag(GRAIN_TUPLE_TAG_TYPE, n, err || GRAIN_ERR_NOT_TUPLE_GENERIC);
+let assertLambda = (n, err) => assertGrainTag(GRAIN_LAMBDA_TAG_TYPE, n, err || GRAIN_ERR_NOT_LAMBDA_GENERIC);
+let assertString = (n, err) => assertGrainHeapTag(GRAIN_STRING_HEAP, n, err || GRAIN_ERR_NOT_STRING_GENERIC);
 
 let heapAdjust = function(n) {
   throw new GrainError(-1, "Grain runtime is not yet instantiated.");
@@ -142,7 +163,7 @@ function throwGrainError(errorCode, value1, value2) {
 }
 
 function debugPrint(n) {
-  console.log(`0x${n.toString(16)} (0b${n.toString(2)})`);
+  // console.log(`0x${n.toString(16)} (0b${n.toString(2)})`);
   return n;
 }
 
@@ -196,6 +217,9 @@ function grainHeapValueToString(n) {
     let length = view[(n / 4) + 1];
     let slice = byteView.slice(n + 8, n + 8 + length);
     return `"${decoder.decode(slice)}"`;
+    break;
+  case 2:
+    return grainDOMRefs[view[n + 1]].toString();
     break;
   default:
     return `<unknown heap type: ${view[n / 4]}>`;
@@ -343,6 +367,34 @@ function grainHeapAllocate(numWords) {
   return curTop;
 }
 
+let grainDOMRefs = [];
+function grainDOMQuery(n) {
+  assertString(n);
+  let query = grainHeapValueToString(n ^ 3);
+  let elem = document.querySelector(query);
+  if (elem) {
+    grainDOMRefs.push(elem);
+    let heapRef = grainHeapAllocate(2) / 4;
+    view[heapRef] = GRAIN_DOM_ELEM_TAG;
+    view[heapRef+1] = grainDOMRefs.length - 1;
+    return (heapRef * 4) ^ 3;
+  } else {
+    return GRAIN_FALSE;
+  }
+}
+
+function grainDOMElemSetText(elemRef, textRef) {
+  let elem = (elemRef ^ 3) / 4;
+  grainDOMRefs[view[elem + 1]].innerText = grainHeapValueToString(textRef ^ 3);
+  return elemRef;
+}
+
+function grainDOMDangerouslySetInnerHTML(elemRef, textRef) {
+  let elem = (elemRef ^ 3) / 4;
+  grainDOMRefs[view[elem + 1]].innerHTML = grainHeapValueToString(textRef ^ 3);
+  return elemRef;
+}
+
 function displayOnPage(str) {
   document.getElementById('output').innerText = str;
 }
@@ -355,25 +407,6 @@ function printNumber(n) {
   return n;
 }
 
-function assertGrainTag(tag, n, err) {
-  if ((n & getAndMask(tag)) !== tag) {
-    throwGrainError(err, n, 0);
-  }
-}
-
-function assertGrainHeapTag(tag, n, err) {
-  assertGrainTag(GRAIN_GENERIC_HEAP_TAG_TYPE, n, err);
-  let ptr = n ^ GRAIN_GENERIC_HEAP_TAG_TYPE;
-  if (view[ptr / 4] != tag) {
-    throwGrainError(err, n, 0);
-  }
-}
-
-let assertNumber = (n, err) => assertGrainTag(GRAIN_NUMBER_TAG_TYPE, n, err || GRAIN_ERR_NOT_NUMBER_GENERIC);
-let assertBoolean = (n, err) => assertGrainTag(GRAIN_BOOLEAN_TAG_TYPE, n, err || GRAIN_ERR_NOT_BOOLEAN_GENERIC);
-let assertTuple = (n, err) => assertGrainTag(GRAIN_TUPLE_TAG_TYPE, n, err || GRAIN_ERR_NOT_TUPLE_GENERIC);
-let assertLambda = (n, err) => assertGrainTag(GRAIN_LAMBDA_TAG_TYPE, n, err || GRAIN_ERR_NOT_LAMBDA_GENERIC);
-let assertString = (n, err) => assertGrainHeapTag(GRAIN_STRING_HEAP, n, err || GRAIN_ERR_NOT_STRING_GENERIC);
 
 
 function stringAppend(s1, s2) {
@@ -422,7 +455,10 @@ const importObj = {
     equal: grainEqual,
     stringAppend: stringAppend,
     stringLength: stringLength,
-    stringSlice: stringSlice
+    stringSlice: stringSlice,
+    DOMQuery: grainDOMQuery,
+    DOMSetText: grainDOMElemSetText,
+    DOMDangerouslySetInnerHTML: grainDOMDangerouslySetInnerHTML
   }
 };
 

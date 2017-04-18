@@ -23,7 +23,7 @@ let signed_int = dec_digit+ | ('-' dec_digit+)
 let hex_digit = ['0'-'9' 'A'-'F' 'a'-'f']
 let oct_digit = ['0'-'7']
 
-let ident = ['a'-'z' 'A'-'Z' '_']['a'-'z' 'A'-'Z' '0'-'9' '_']*
+let ident = ['a'-'z' 'A'-'Z' '_']['a'-'z' 'A'-'Z' '0'-'9' '_']* ("::" ['a'-'z' 'A'-'Z' '0'-'9' '_']+)?
 
 let blank = [' ' '\t']+
 

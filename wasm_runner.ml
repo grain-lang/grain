@@ -226,6 +226,15 @@ let grain_string_length = function
 let grain_string_slice = function
   | _ -> failwith "NYI: grain_string_slice"
 
+let grain_dom_query = function
+  | _ -> failwith "NYI: grain_dom_query"
+
+let grain_dom_set_text = function
+  | _ -> failwith "NYI: grain_dom_set_text"
+
+let grain_dom_dangerously_set_inner_html = function
+  | _ -> failwith "NYI: grain_dom_dangerously_set_inner_html"
+
 let console_lookup name t =
   match name, t with
   | "log", ExternalFuncType t -> ExternalFunc (HostFunc (t, console_log))
@@ -246,6 +255,9 @@ let grain_builtin_lookup name t =
   | "stringAppend", ExternalFuncType t -> ExternalFunc (HostFunc (t, grain_string_append))
   | "stringLength", ExternalFuncType t -> ExternalFunc (HostFunc (t, grain_string_length))
   | "stringSlice", ExternalFuncType t -> ExternalFunc (HostFunc (t, grain_string_slice))
+  | "DOMQuery", ExternalFuncType t -> ExternalFunc (HostFunc (t, grain_dom_query))
+  | "DOMSetText", ExternalFuncType t -> ExternalFunc (HostFunc (t, grain_dom_set_text))
+  | "DOMDangerouslySetInnerHTML", ExternalFuncType t -> ExternalFunc (HostFunc (t, grain_dom_dangerously_set_inner_html))
   | _ -> raise Not_found
 
 let configured = ref false

@@ -28,7 +28,10 @@ let initial_funcs = [
   ("input", (Lexing.dummy_pos, Lexing.dummy_pos), false);
   ("string_append", (Lexing.dummy_pos, Lexing.dummy_pos), true);
   ("string_length", (Lexing.dummy_pos, Lexing.dummy_pos), true);
-  ("string_slice", (Lexing.dummy_pos, Lexing.dummy_pos), true)
+  ("string_slice", (Lexing.dummy_pos, Lexing.dummy_pos), true);
+  ("DOM::query", (Lexing.dummy_pos, Lexing.dummy_pos), false);
+  ("DOM::setText", (Lexing.dummy_pos, Lexing.dummy_pos), false);
+  ("DOM::dangerouslySetInnerHTML", (Lexing.dummy_pos, Lexing.dummy_pos), false);
 ]
 
 (* Environment containing initial functions *)

@@ -97,6 +97,21 @@ let external_funcs =
       item_name="stringSlice";
       ikind=Types.FuncType([Types.I32Type; Types.I32Type; Types.I32Type], [Types.I32Type])
     };
+    {
+      module_name="grainBuiltins";
+      item_name="DOMQuery";
+      ikind=Types.FuncType([Types.I32Type], [Types.I32Type])
+    };
+    {
+      module_name="grainBuiltins";
+      item_name="DOMSetText";
+      ikind=Types.FuncType([Types.I32Type; Types.I32Type], [Types.I32Type])
+    };
+    {
+      module_name="grainBuiltins";
+      item_name="DOMDangerouslySetInnerHTML";
+      ikind=Types.FuncType([Types.I32Type; Types.I32Type], [Types.I32Type])
+    };
   ]
 
 let lookup_ext_func modname itemname =
@@ -375,8 +390,8 @@ let compile_string str env =
   let num_ints = 8 * (((num_bytes - 1) / 8) + 1) in
   let buf = Buffer.create num_ints in
   BatUTF8.iter (BatUTF8.Buf.add_char buf) str;
-  
-  
+
+
   let ints_to_push : int64 list = buf_to_ints buf in
   let preamble = [
     Ast.GetGlobal(env.heap_top);
@@ -554,7 +569,7 @@ and compile_aexpr (e : tag aexpr) (env : compiler_env) =
                 ])) free_vars new_env)) free_vars))) @
     (compile_aexpr body new_env)
   | ASeq(hd, tl, _) ->
-    (compile_cexpr hd env) @ (compile_aexpr tl env)
+    (compile_cexpr hd env) @ [Ast.Drop] @ (compile_aexpr tl env)
   | ACExpr(e) -> compile_cexpr e env
 and compile_cexpr (e : tag cexpr) env =
   match e with
@@ -816,15 +831,18 @@ let builtins = [
   ("string_append", 2, lookup_ext_func "grainBuiltins" "stringAppend");
   ("string_length", 1, lookup_ext_func "grainBuiltins" "stringLength");
   ("string_slice", 3, lookup_ext_func "grainBuiltins" "stringSlice");
+  ("DOM::query", 1, lookup_ext_func "grainBuiltins" "DOMQuery");
+  ("DOM::setText", 2, lookup_ext_func "grainBuiltins" "DOMSetText");
+  ("DOM::dangerouslySetInnerHTML", 2, lookup_ext_func "grainBuiltins" "DOMDangerouslySetInnerHTML");
 ]
 
 let create_single_builtin_closure fidx arity env =
   let body =
-    (repeat_f arity (fun i -> Ast.GetLocal(add_dummy_loc @@ Int32.of_int i))) @ [
+    List.rev (repeat_f arity (fun i -> Ast.GetLocal(add_dummy_loc @@ Int32.of_int i))) @ [
       Ast.Call(add_dummy_loc @@ Int32.of_int fidx);
       Ast.Return;
     ] in
-   
+
   let idx, closure_size, free_vars = create_closure (arity + 1) body env 0 [] in
   [
       Ast.GetGlobal(env.heap_top);
@@ -933,7 +951,7 @@ let compile_aprog (anfed : tag aprogram) =
       }
      in
 
-  
+
 
   (* Table (used to call lambdas) *)
   let table_size = ((List.length lambdas) + 2 + (List.length external_funcs)) in
