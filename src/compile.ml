@@ -25,11 +25,11 @@ let compile_prog p = Codegen.module_to_string @@ Codegen.compile_aprog p
 let initial_funcs = [
   ("print", (Lexing.dummy_pos, Lexing.dummy_pos), false);
   ("equal", (Lexing.dummy_pos, Lexing.dummy_pos), true);
-  ("tostring", (Lexing.dummy_pos, Lexing.dummy_pos), true);
+  ("toString", (Lexing.dummy_pos, Lexing.dummy_pos), true);
   ("input", (Lexing.dummy_pos, Lexing.dummy_pos), false);
-  ("string_append", (Lexing.dummy_pos, Lexing.dummy_pos), true);
-  ("string_length", (Lexing.dummy_pos, Lexing.dummy_pos), true);
-  ("string_slice", (Lexing.dummy_pos, Lexing.dummy_pos), true);
+  ("strcat", (Lexing.dummy_pos, Lexing.dummy_pos), true);
+  ("strlen", (Lexing.dummy_pos, Lexing.dummy_pos), true);
+  ("strslice", (Lexing.dummy_pos, Lexing.dummy_pos), true);
   ("DOM::query", (Lexing.dummy_pos, Lexing.dummy_pos), false);
   ("DOM::setText", (Lexing.dummy_pos, Lexing.dummy_pos), false);
   ("DOM::dangerouslySetInnerHTML", (Lexing.dummy_pos, Lexing.dummy_pos), false);
