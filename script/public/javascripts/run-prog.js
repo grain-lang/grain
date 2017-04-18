@@ -494,7 +494,6 @@ function fetchSource(url) {
 }
 
 function fetchAndInstantiate(url, importObject) {
-  console.log(`loading ${url}`);
   return fetch(url).then(response => response.arrayBuffer())
     .then(bytes => WebAssembly.instantiate(bytes, importObj))
     .then(results => results);

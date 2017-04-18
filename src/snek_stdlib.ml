@@ -41,7 +41,7 @@ let convert_to_continuation ast : snek_library =
   help ast (fun x -> x)
 
 let load_library initial_env library =
-  let filename = "lib/" ^ library ^ ".garter-lib" in
+  let filename = "lib/" ^ library ^ ".grlib" in
   let inchan = open_in filename in
   let lexbuf = Lexing.from_channel inchan in
   let lib = parse filename lexbuf in
@@ -66,7 +66,7 @@ let lift_loaded_libraries (libs : (exn list, snek_library) either list) : (exn l
          | Left(rest_errs) -> Left(errs @ rest_errs))) (Right(fun x -> x)) libs
 
 let library_exists lib =
-  let filename = "lib/" ^ lib ^ ".garter-lib" in
+  let filename = "lib/" ^ lib ^ ".grlib" in
   Sys.file_exists filename
 
 let rec extract_includes (prog : sourcespan program) =
