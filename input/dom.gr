@@ -6,13 +6,25 @@ let html = ('', 0) in
 let rec add_button = (lambda:
   begin
     html[0] := string_append(html[0], makeButtonHTML(html[1]));
-    html[1] := html[1] + 1;
     DOM::dangerouslySetInnerHTML(div3, html[0]);
     print("No, really.");
-    let id = string_append("#butt", tostring(html[1] - 1)) in
-    DOM::addEventListener(DOM::query(id), "click", add_button)
-  end) in
+    let id = string_append("#butt", tostring(html[1])) in
+    begin
+      setEventListeners(html[1]);
+      html[1] := html[1] + 1;
+    end
+  end),
+  setEventListeners = (lambda n:
+    if equal(n, 0):
+      DOM::addEventListener(DOM::query("#butt0"), "click", add_button)
+    else:
+      begin
+        let elem = DOM::query(string_append("#butt", tostring(n))) in
+        DOM::addEventListener(elem, "click", add_button);
+        setEventListeners(n - 1);
+      end
+  ) in
 begin
   add_button();
   print("Click it.")
-end 
+end
