@@ -63,6 +63,14 @@ clean:
 	rm -f grainc test .installed-pkgs
 	rm -f setup.ml setup.data myocamlbuild.ml
 
+EXAMPLEFILES=adder.gr lambda.gr domSimple.gr dom.gr
+EXAMPLES=$(patsubst %,script/public/examples/%,$(EXAMPLEFILES))
+script/public/examples/%.wasm: input/%.gr grainc
+	./grainc -g $< -o $@
+
+.PHONY: examples
+examples: $(EXAMPLES)
+
 .PHONY: install
 install: grainc
 	cp $< /usr/bin
