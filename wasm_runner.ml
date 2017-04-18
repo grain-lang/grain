@@ -217,23 +217,8 @@ let grain_equal = function
       [Values.I32Value.to_value (Int32.of_int 0x7FFFFFFF)]
   | _ -> failwith "NYI: grain_equal"
 
-let grain_string_append = function
-  | _ -> failwith "NYI: grain_string_append"
-
-let grain_string_length = function
-  | _ -> failwith "NYI: grain_string_length"
-
-let grain_string_slice = function
-  | _ -> failwith "NYI: grain_string_slice"
-
-let grain_dom_query = function
-  | _ -> failwith "NYI: grain_dom_query"
-
-let grain_dom_set_text = function
-  | _ -> failwith "NYI: grain_dom_set_text"
-
-let grain_dom_dangerously_set_inner_html = function
-  | _ -> failwith "NYI: grain_dom_dangerously_set_inner_html"
+let grain_nyi name = function
+  | _ -> failwith (Printf.sprintf "NYI: %s" name)
 
 let console_lookup name t =
   match name, t with
@@ -252,12 +237,7 @@ let grain_builtin_lookup name t =
   match name, t with
   | "print", ExternalFuncType t -> ExternalFunc (HostFunc (t, grain_print))
   | "equal", ExternalFuncType t -> ExternalFunc (HostFunc (t, grain_equal))
-  | "stringAppend", ExternalFuncType t -> ExternalFunc (HostFunc (t, grain_string_append))
-  | "stringLength", ExternalFuncType t -> ExternalFunc (HostFunc (t, grain_string_length))
-  | "stringSlice", ExternalFuncType t -> ExternalFunc (HostFunc (t, grain_string_slice))
-  | "DOMQuery", ExternalFuncType t -> ExternalFunc (HostFunc (t, grain_dom_query))
-  | "DOMSetText", ExternalFuncType t -> ExternalFunc (HostFunc (t, grain_dom_set_text))
-  | "DOMDangerouslySetInnerHTML", ExternalFuncType t -> ExternalFunc (HostFunc (t, grain_dom_dangerously_set_inner_html))
+  | _, ExternalFuncType t -> ExternalFunc (HostFunc (t, grain_nyi name))
   | _ -> raise Not_found
 
 let configured = ref false
