@@ -84,6 +84,11 @@ let external_funcs =
     };
     {
       module_name="grainBuiltins";
+      item_name="toString";
+      ikind=Types.FuncType([Types.I32Type], [Types.I32Type]);
+    };
+    {
+      module_name="grainBuiltins";
       item_name="stringAppend";
       ikind=Types.FuncType([Types.I32Type; Types.I32Type], [Types.I32Type])
     };
@@ -111,6 +116,11 @@ let external_funcs =
       module_name="grainBuiltins";
       item_name="DOMDangerouslySetInnerHTML";
       ikind=Types.FuncType([Types.I32Type; Types.I32Type], [Types.I32Type])
+    };
+    {
+      module_name="grainBuiltins";
+      item_name="DOMAddEventListener";
+      ikind=Types.FuncType([Types.I32Type; Types.I32Type; Types.I32Type], [Types.I32Type]);
     };
   ]
 
@@ -828,17 +838,19 @@ and compile_imm (i : tag immexpr) env : Ast.instr' list =
 let builtins = [
   ("print", 1, lookup_ext_func "grainBuiltins" "print");
   ("equal", 2, lookup_ext_func "grainBuiltins" "equal");
+  ("tostring", 1, lookup_ext_func "grainBuiltins" "toString");
   ("string_append", 2, lookup_ext_func "grainBuiltins" "stringAppend");
   ("string_length", 1, lookup_ext_func "grainBuiltins" "stringLength");
   ("string_slice", 3, lookup_ext_func "grainBuiltins" "stringSlice");
   ("DOM::query", 1, lookup_ext_func "grainBuiltins" "DOMQuery");
   ("DOM::setText", 2, lookup_ext_func "grainBuiltins" "DOMSetText");
   ("DOM::dangerouslySetInnerHTML", 2, lookup_ext_func "grainBuiltins" "DOMDangerouslySetInnerHTML");
+  ("DOM::addEventListener", 3, lookup_ext_func "grainBuiltins" "DOMAddEventListener");
 ]
 
 let create_single_builtin_closure fidx arity env =
   let body =
-    List.rev (repeat_f arity (fun i -> Ast.GetLocal(add_dummy_loc @@ Int32.of_int i))) @ [
+    (repeat_f arity (fun i -> Ast.GetLocal(add_dummy_loc @@ Int32.of_int i))) @ [
       Ast.Call(add_dummy_loc @@ Int32.of_int fidx);
       Ast.Return;
     ] in

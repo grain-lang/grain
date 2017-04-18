@@ -81,7 +81,7 @@ let assertBoolean = (n, err) => assertGrainTag(GRAIN_BOOLEAN_TAG_TYPE, n, err ||
 let assertTuple = (n, err) => assertGrainTag(GRAIN_TUPLE_TAG_TYPE, n, err || GRAIN_ERR_NOT_TUPLE_GENERIC);
 let assertLambda = (n, err) => assertGrainTag(GRAIN_LAMBDA_TAG_TYPE, n, err || GRAIN_ERR_NOT_LAMBDA_GENERIC);
 let assertString = (n, err) => assertGrainHeapTag(GRAIN_STRING_HEAP, n, err || GRAIN_ERR_NOT_STRING_GENERIC);
-let assertDOMElement = (n, err) => assertGrainHeapTag(GRAIN_DOM_ELEM_TAG, n, err || GRAIN_ERR_NOT_STRING_GENERIC);
+let assertDOMElement = (n, err) => assertGrainHeapTag(GRAIN_DOM_ELEM_TAG, n, err || GRAIN_ERR_NOT_DOM_ELEMENT_GENERIC);
 
 let heapAdjust = function(n) {
   throw new GrainError(-1, "Grain runtime is not yet instantiated.");
@@ -405,6 +405,17 @@ function grainDOMDangerouslySetInnerHTML(elemRef, textRef) {
   return elemRef;
 }
 
+function grainDOMAddEventListener(elemRef, eventRef, handlerRef) {
+  assertDOMElement(elemRef);
+  assertString(eventRef);
+  assertLambda(handlerRef);
+  let elem = grainToJSVal(elemRef);
+  let event = grainToJSVal(eventRef);
+  let handler = grainToJSVal(handlerRef);
+  elem.addEventListener(event, () => handler.call());
+  return elemRef;
+}
+
 function displayOnPage(str) {
   document.getElementById('output').innerText = str;
 }
@@ -463,12 +474,14 @@ const importObj = {
   grainBuiltins: {
     print: printNumber,
     equal: grainEqual,
+    toString: (n => JSToGrainVal(grainToString(n))),
     stringAppend: stringAppend,
     stringLength: stringLength,
     stringSlice: stringSlice,
     DOMQuery: grainDOMQuery,
     DOMSetText: grainDOMElemSetText,
-    DOMDangerouslySetInnerHTML: grainDOMDangerouslySetInnerHTML
+    DOMDangerouslySetInnerHTML: grainDOMDangerouslySetInnerHTML,
+    DOMAddEventListener: grainDOMAddEventListener
   }
 };
 
