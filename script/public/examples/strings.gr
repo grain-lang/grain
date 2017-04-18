@@ -1,0 +1,3 @@
+let foo = "foo" in
+let bar = "bar" in
+  string_slice(string_append(foo, bar), 1, 4)

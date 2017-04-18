@@ -485,18 +485,23 @@ const importObj = {
   }
 };
 
+function fetchSource(url) {
+  return fetch(url)
+    .then(response => response.text())
+    .then(code => {
+      document.getElementById('sourceCode').innerText = code;
+    });
+}
 
 function fetchAndInstantiate(url, importObject) {
   return fetch(url).then(response =>
     response.arrayBuffer()
   ).then(bytes =>
     WebAssembly.instantiate(bytes, importObject)
-  ).then(results =>
-    results
-  );
+  ).then(results => results);
 }
 
-let result = fetchAndInstantiate("t.wasm", importObj).then((module) => {
+function runGrain(module) {
   grainModule = module;
   grainInitialized = true;
   let main = module.instance.exports["GRAIN$MAIN"];
@@ -506,9 +511,48 @@ let result = fetchAndInstantiate("t.wasm", importObj).then((module) => {
   let resJS = grainToJSVal(res);
   printNumber(res);
   return resJS;
-}).catch(e => {
+}
+
+function showError(e) {
   displayOnPage(`[[ERROR: ${e.message}]]`);
   console.error(e.message);
   console.error(e.stack);
   throw e;
-});
+}
+
+var examples = {
+  addition: { source: "adder.gr", wasm: "adder.wasm" },
+  lambda: { source: "lambda.gr", wasm: "lambda.wasm" },
+  dom: { source: "domSimple.gr", wasm: "domSimple.wasm" },
+  domCb: { source: "dom.gr", wasm: "dom.wasm" }
+};
+
+function resetPage() {
+  document.getElementById('div1').innerHTML = "";
+  document.getElementById('div2').innerHTML = "";
+  document.getElementById('innerDiv').innerHTML = "";
+  document.getElementById('sourceCode').innerHTML = "";
+}
+
+function loadExample(e) {
+  resetPage();
+  fetchSource("examples/".concat(e.source));
+  return fetchAndInstantiate("examples/".concat(e.wasm))
+    .then(runGrain)
+    .catch(showError);
+}
+
+function makeExampleLoader(e) {
+  return () => loadExample(e);
+}
+
+document.getElementById("navAdd")
+  .addEventListener("click", makeExampleLoader(examples.addition));
+document.getElementById("navFunc")
+  .addEventListener("click", makeExampleLoader(examples.lambda));
+document.getElementById("navDOM")
+  .addEventListener("click", makeExampleLoader(examples.dom));
+document.getElementById("navDOMCallback")
+  .addEventListener("click", makeExampleLoader(examples.domCb));
+
+loadExample(examples.addition);
