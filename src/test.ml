@@ -29,7 +29,7 @@ let tfvs name program expected = name>::
 ;;
 
 let test_input_file filename include_stdlib heap_size name expected test_ctxt =
-  let input_filename = "input/" ^ filename ^ ".indigo" in
+  let input_filename = "input/" ^ filename ^ ".gr" in
   let input_channel = open_in input_filename in
   let full_outfile = "output/" ^ name in
   let program = parse_file filename input_channel in
@@ -37,7 +37,7 @@ let test_input_file filename include_stdlib heap_size name expected test_ctxt =
   assert_equal (Right(expected ^ "\n")) result ~printer:either_printer
 
 let test_valgrind_file filename include_stdlib heap_size name expected test_ctxt =
-  let input_filename = "input/" ^ filename ^ ".indigo" in
+  let input_filename = "input/" ^ filename ^ ".gr" in
   let input_channel = open_in input_filename in
   let full_outfile = "output/" ^ name in
   let program = parse_file filename input_channel in
@@ -45,7 +45,7 @@ let test_valgrind_file filename include_stdlib heap_size name expected test_ctxt
   assert_equal (Right(expected ^ "\n")) result ~printer:either_printer
 
 let test_err_input_file filename include_stdlib heap_size name errmsg test_ctxt =
-  let input_filename = "input/" ^ filename ^ ".indigo" in
+  let input_filename = "input/" ^ filename ^ ".gr" in
   let input_channel = open_in input_filename in
   let full_outfile = "output/" ^ name in
   let program = parse_file filename input_channel in
@@ -116,7 +116,7 @@ let test_optimizations_sound_err program_str opts heap_size name errmsg test_ctx
       | _ -> false)
 
 let test_file_optimizations_sound filename opts heap_size name expected test_ctxt =
-  let input_filename = "input/" ^ filename ^ ".indigo" in
+  let input_filename = "input/" ^ filename ^ ".gr" in
   let input_channel = open_in input_filename in
   let full_outfile_unoptimized = "output/" ^ name ^ ".no-optimize" in
   let full_outfile_optimized = "output/" ^ name ^ "optimize" in
@@ -142,7 +142,7 @@ let test_file_optimizations_sound filename opts heap_size name expected test_ctx
   assert_equal (Right(expected ^ "\n")) result_optimized ~printer:either_printer
 
 let test_file_optimizations_sound_err filename opts heap_size name errmsg test_ctxt =
-  let input_filename = "input/" ^ filename ^ ".indigo" in
+  let input_filename = "input/" ^ filename ^ ".gr" in
   let input_channel = open_in input_filename in
   let full_outfile_unoptimized = "output/" ^ name ^ ".no-optimize" in
   let full_outfile_optimized = "output/" ^ name ^ "optimize" in
