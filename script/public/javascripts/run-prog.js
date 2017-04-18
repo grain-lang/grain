@@ -26,6 +26,7 @@ const GRAIN_ERR_SET_NOT_TUP = 12;
 const GRAIN_ERR_SET_ITEM_IDX_NOT_NUMBER = 13;
 const GRAIN_ERR_SET_ITEM_IDX_TOO_SMALL = 14;
 const GRAIN_ERR_SET_ITEM_IDX_TOO_LARGE = 15;
+const GRAIN_ERR_NOT_DOM_ELEMENT_GENERIC = 92;
 const GRAIN_ERR_NOT_STRING_GENERIC = 93;
 const GRAIN_ERR_NOT_BOOLEAN_GENERIC = 94;
 const GRAIN_ERR_NOT_TUPLE_GENERIC = 95;
@@ -80,6 +81,7 @@ let assertBoolean = (n, err) => assertGrainTag(GRAIN_BOOLEAN_TAG_TYPE, n, err ||
 let assertTuple = (n, err) => assertGrainTag(GRAIN_TUPLE_TAG_TYPE, n, err || GRAIN_ERR_NOT_TUPLE_GENERIC);
 let assertLambda = (n, err) => assertGrainTag(GRAIN_LAMBDA_TAG_TYPE, n, err || GRAIN_ERR_NOT_LAMBDA_GENERIC);
 let assertString = (n, err) => assertGrainHeapTag(GRAIN_STRING_HEAP, n, err || GRAIN_ERR_NOT_STRING_GENERIC);
+let assertDOMElement = (n, err) => assertGrainHeapTag(GRAIN_DOM_ELEM_TAG, n, err || GRAIN_ERR_NOT_STRING_GENERIC);
 
 let heapAdjust = function(n) {
   throw new GrainError(-1, "Grain runtime is not yet instantiated.");
@@ -125,6 +127,9 @@ function throwGrainError(errorCode, value1, value2) {
     break;
   case GRAIN_ERR_NOT_STRING_GENERIC:
     message = `expected a string, got value: ${value1AsGrain}`;
+    break;
+  case GRAIN_ERR_NOT_DOM_ELEMENT_GENERIC:
+    message = `expected a DOM element, got value: ${value1AsGrain}`;
     break;
   case GRAIN_ERR_GET_NOT_TUP:
     message = `tuple access expected tuple, got value: ${value1AsGrain}`;
@@ -208,8 +213,6 @@ function printClosure(c) {
   return c;
 }
 
-
-
 function grainHeapValueToString(n) {
   switch (view[n / 4]) {
   case 1:
@@ -261,11 +264,14 @@ function grainToString(n) {
 
 function grainHeapValToJSVal(n) {
   switch (view[n / 4]) {
-  case 1:
+  case GRAIN_STRING_HEAP:
     let byteView = new Uint8Array(memory.buffer);
     let length = view[(n / 4) + 1];
     let slice = byteView.slice(n + 8, n + 8 + length);
     return decoder.decode(slice);
+  case GRAIN_DOM_ELEM_TAG:
+    let ref = n / 4;
+    return grainDOMRefs[view[ref + 1]];
   default:
     console.warn(`Unknown heap tag at ${n / 4}: ${view[n / 4]}`);
     return undefined;
@@ -362,7 +368,7 @@ function grainEqual(x, y) {
 function grainHeapAllocate(numWords) {
   // allocates the number of words
   let curTop = heapAdjust(0);
-  let wordsToAllocate = Math.ceil(4 * (((numWords - 1) / 4) + 1));
+  let wordsToAllocate = 4 * (Math.ceil((numWords - 1) / 4) + 1);
   heapAdjust(wordsToAllocate * 4);
   return curTop;
 }
@@ -370,7 +376,7 @@ function grainHeapAllocate(numWords) {
 let grainDOMRefs = [];
 function grainDOMQuery(n) {
   assertString(n);
-  let query = grainHeapValueToString(n ^ 3);
+  let query = grainToJSVal(n);
   let elem = document.querySelector(query);
   if (elem) {
     grainDOMRefs.push(elem);
@@ -384,14 +390,18 @@ function grainDOMQuery(n) {
 }
 
 function grainDOMElemSetText(elemRef, textRef) {
-  let elem = (elemRef ^ 3) / 4;
-  grainDOMRefs[view[elem + 1]].innerText = grainHeapValueToString(textRef ^ 3);
+  assertDOMElement(elemRef);
+  assertString(textRef);
+  let elem = grainToJSVal(elemRef);
+  elem.innerText = grainToJSVal(textRef);
   return elemRef;
 }
 
 function grainDOMDangerouslySetInnerHTML(elemRef, textRef) {
-  let elem = (elemRef ^ 3) / 4;
-  grainDOMRefs[view[elem + 1]].innerHTML = grainHeapValueToString(textRef ^ 3);
+  assertDOMElement(elemRef);
+  assertString(textRef);
+  let elem = grainToJSVal(elemRef);
+  elem.innerHTML = grainToJSVal(textRef);
   return elemRef;
 }
 
