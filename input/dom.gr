@@ -1,14 +1,14 @@
 let div3 = DOM::query("#div3") in
 let makeButtonHTML = (lambda n:
-  string_append(string_append('<button id="butt', tostring(n)), '">Click me!</button><br/>')
+  strcat(strcat('<button id="butt', toString(n)), '">Click me!</button><br/>')
 ) in
 let html = ('', 0) in
-let rec add_button = (lambda:
+let rec addButton = (lambda:
   begin
-    html[0] := string_append(html[0], makeButtonHTML(html[1]));
+    html[0] := strcat(html[0], makeButtonHTML(html[1]));
     DOM::dangerouslySetInnerHTML(div3, html[0]);
     print("No, really.");
-    let id = string_append("#butt", tostring(html[1])) in
+    let id = strcat("#butt", toString(html[1])) in
     begin
       setEventListeners(html[1]);
       html[1] := html[1] + 1;
@@ -17,15 +17,15 @@ let rec add_button = (lambda:
 ),
 setEventListeners = (lambda n:
   if equal(n, 0):
-    DOM::addEventListener(DOM::query("#butt0"), "click", add_button)
+    DOM::addEventListener(DOM::query("#butt0"), "click", addButton)
   else:
     begin
-      let elem = DOM::query(string_append("#butt", tostring(n))) in
-      DOM::addEventListener(elem, "click", add_button);
+      let elem = DOM::query(strcat("#butt", toString(n))) in
+      DOM::addEventListener(elem, "click", addButton);
       setEventListeners(n - 1);
     end
 ) in
 begin
-  add_button();
+  addButton();
   print("Click it.")
 end

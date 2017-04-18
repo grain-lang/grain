@@ -838,10 +838,10 @@ and compile_imm (i : tag immexpr) env : Ast.instr' list =
 let builtins = [
   ("print", 1, lookup_ext_func "grainBuiltins" "print");
   ("equal", 2, lookup_ext_func "grainBuiltins" "equal");
-  ("tostring", 1, lookup_ext_func "grainBuiltins" "toString");
-  ("string_append", 2, lookup_ext_func "grainBuiltins" "stringAppend");
-  ("string_length", 1, lookup_ext_func "grainBuiltins" "stringLength");
-  ("string_slice", 3, lookup_ext_func "grainBuiltins" "stringSlice");
+  ("toString", 1, lookup_ext_func "grainBuiltins" "toString");
+  ("strcat", 2, lookup_ext_func "grainBuiltins" "stringAppend");
+  ("strlen", 1, lookup_ext_func "grainBuiltins" "stringLength");
+  ("strslice", 3, lookup_ext_func "grainBuiltins" "stringSlice");
   ("DOM::query", 1, lookup_ext_func "grainBuiltins" "DOMQuery");
   ("DOM::setText", 2, lookup_ext_func "grainBuiltins" "DOMSetText");
   ("DOM::dangerouslySetInnerHTML", 2, lookup_ext_func "grainBuiltins" "DOMDangerouslySetInnerHTML");
