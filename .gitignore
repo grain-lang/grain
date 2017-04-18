@@ -15,3 +15,7 @@ notes.org
 *.wasm
 *.wasm.wast
 .tern-port
+setup.data
+setup.ml
+myocamlbuild.ml
+

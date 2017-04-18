@@ -18,36 +18,35 @@ endif
 OCAMLFIND_PKGS=oUnit,extlib,batteries,cmdliner,ocamlgraph,wasm,stdint
 PKGS=unix,$(OCAMLFIND_PKGS)
 OPAM_PKGS=ounit,extlib,batteries,cmdliner,ocamlgraph,wasm,stdint
-BUILD=ocamlbuild -r -use-ocamlfind
+BUILD=ocaml setup.ml -build -r -use-ocamlfind
 
-main: *.ml parser.mly lexer.mll
-	make check-libs
-	$(BUILD) -no-hygiene -package $(PKGS) main.native
+
+main: src/*.ml src/parser.mly src/lexer.mll
+	make setup.data
+	$(BUILD) -no-hygiene -package $(PKGS) src/main.native
+	rm main.byte
+	rm test.byte
 	mv main.native main
 
-test: *.ml parser.mly lexer.mll main
-	make check-libs
-	$(BUILD) -no-hygiene -package $(PKGS) test.native
+test: src/*.ml src/parser.mly src/lexer.mll main
+	make setup.data
+	$(BUILD) -no-hygiene -package $(PKGS) src/test.native
+	rm main.byte
+	rm test.byte
 	mv test.native test
+
+
+setup.ml: check-libs
+	oasis setup
+
+setup.data: setup.ml
+	ocaml $< -configure
 
 .PHONY: check-libs
 check-libs:
+	@echo Checking that Oasis is installed...
+	command -v oasis >/dev/null 2>&1 || opam install oasis
 	./check-installed.sh $(OCAMLFIND_PKGS) $(OPAM_PKGS)
-
-output/%.run: output/%.o main.c 
-	clang $(PIE) -mstackrealign -g -m32 -o $@ gc.o main.c $<
-
-output/%.o: output/%.s
-ifeq ($(DEBUG),)
-	nasm -f $(FORMAT) -o $@ $<
-else
-	nasm -f $(FORMAT) -g -F dwarf -o $@ $<
-endif
-
-.PRECIOUS: output/%.s
-output/%.s: input/%.indigo main
-	./main $< -o $@
-
 
 
 # cutest-1.5/CuTest.o: cutest-1.5/CuTest.c cutest-1.5/CuTest.h
@@ -59,9 +58,10 @@ output/%.s: input/%.indigo main
 
 clean:
 	ocamlbuild -clean
-	rm -rf output/*.o output/*.s output/*.dSYM output/*.run *.log *.o
+	rm -rf output/*.o output/*.s output/*.dSYM output/*.run *.log *.o *.byte
 	rm -rf _build/
 	rm -f main test .installed-pkgs
+	rm -f setup.ml setup.data myocamlbuild.ml
 
 submission-indigo.zip: *.ml *.mll *.mly check-installed.sh Makefile *.c *.h lib/* input/*.indigo _tags
 	zip $@ $^
