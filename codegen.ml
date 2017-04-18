@@ -16,11 +16,13 @@ let rec repeat n value =
   else
     value::(repeat (n - 1) value)
 
-let rec repeat_f n value =
-  if n == 0 then
-    []
-  else
-    (value n)::(repeat_f (n - 1) value)
+let repeat_f n value =
+  let rec help n value =
+    if n == 0 then
+      []
+    else
+      (value n)::(help (n - 1) value) in
+  List.rev @@ help n value
 
 type binding =
   | ArgBind of int32
@@ -80,6 +82,21 @@ let external_funcs =
       item_name="equal";
       ikind=Types.FuncType([Types.I32Type; Types.I32Type], [Types.I32Type])
     };
+    {
+      module_name="grainBuiltins";
+      item_name="stringAppend";
+      ikind=Types.FuncType([Types.I32Type; Types.I32Type], [Types.I32Type])
+    };
+    {
+      module_name="grainBuiltins";
+      item_name="stringLength";
+      ikind=Types.FuncType([Types.I32Type], [Types.I32Type])
+    };
+    {
+      module_name="grainBuiltins";
+      item_name="stringSlice";
+      ikind=Types.FuncType([Types.I32Type; Types.I32Type; Types.I32Type], [Types.I32Type])
+    };
   ]
 
 let lookup_ext_func modname itemname =
@@ -88,10 +105,13 @@ let lookup_ext_func modname itemname =
     | [] -> raise Not_found
     | {module_name; item_name; _}::tl ->
       if module_name = modname && item_name = itemname then
-        add_dummy_loc @@ Int32.of_int idx
+        idx
       else
         do_lookup tl (idx + 1) in
   do_lookup external_funcs 0
+
+let var_of_ext_func modname itemname =
+  add_dummy_loc @@ Int32.of_int @@ lookup_ext_func modname itemname
 
 let call_console_log = Ast.Call(add_dummy_loc @@ Int32.of_int 0)
 let call_console_debug = Ast.Call(add_dummy_loc @@ Int32.of_int 1)
@@ -791,8 +811,11 @@ and compile_imm (i : tag immexpr) env : Ast.instr' list =
       ]
 
 let builtins = [
-  ("print", 1, 4);
-  ("equal", 2, 5);
+  ("print", 1, lookup_ext_func "grainBuiltins" "print");
+  ("equal", 2, lookup_ext_func "grainBuiltins" "equal");
+  ("string_append", 2, lookup_ext_func "grainBuiltins" "stringAppend");
+  ("string_length", 1, lookup_ext_func "grainBuiltins" "stringLength");
+  ("string_slice", 3, lookup_ext_func "grainBuiltins" "stringSlice");
 ]
 
 let create_single_builtin_closure fidx arity env =
@@ -930,8 +953,7 @@ let compile_aprog (anfed : tag aprogram) =
       Ast.offset=add_dummy_loc @@ List.map add_dummy_loc [
           Ast.Const(const_int32 0);
         ];
-      Ast.init=List.rev @@
-        repeat_f table_size (fun n -> (add_dummy_loc (Int32.of_int (n - 1))))
+      Ast.init=repeat_f table_size (fun n -> (add_dummy_loc (Int32.of_int (n - 1))))
     }
   ] in
 

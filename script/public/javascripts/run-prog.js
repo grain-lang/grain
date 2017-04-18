@@ -26,6 +26,10 @@ const GRAIN_ERR_SET_NOT_TUP = 12;
 const GRAIN_ERR_SET_ITEM_IDX_NOT_NUMBER = 13;
 const GRAIN_ERR_SET_ITEM_IDX_TOO_SMALL = 14;
 const GRAIN_ERR_SET_ITEM_IDX_TOO_LARGE = 15;
+const GRAIN_ERR_NOT_STRING_GENERIC = 93;
+const GRAIN_ERR_NOT_BOOLEAN_GENERIC = 94;
+const GRAIN_ERR_NOT_TUPLE_GENERIC = 95;
+const GRAIN_ERR_NOT_LAMBDA_GENERIC = 96;
 const GRAIN_ERR_BAD_INPUT = 97;
 const GRAIN_ERR_NOT_NONNEG = 98;
 const GRAIN_ERR_NOT_NUMBER_GENERIC = 99;
@@ -33,8 +37,28 @@ const GRAIN_ERR_NOT_NUMBER_GENERIC = 99;
 const GRAIN_TRUE = 0xFFFFFFFF | 0;
 const GRAIN_FALSE = 0x7FFFFFFF | 0;
 
+const GRAIN_NUMBER_TAG_MASK = 0b0001;
+const GRAIN_TUPLE_TAG_MASK = 0b0111;
+
+const GRAIN_NUMBER_TAG_TYPE       = 0b0000;
+const GRAIN_BOOLEAN_TAG_TYPE      = 0b1111;
+const GRAIN_TUPLE_TAG_TYPE        = 0b0001;
+const GRAIN_LAMBDA_TAG_TYPE       = 0b0101;
+const GRAIN_GENERIC_HEAP_TAG_TYPE = 0b0011;
+
+const GRAIN_STRING_HEAP = 1;
+
 let grainInitialized = false;
 let grainModule;
+
+function getAndMask(tag) {
+  switch(tag) {
+  case GRAIN_NUMBER_TAG_TYPE:
+    return GRAIN_NUMBER_TAG_MASK;
+  default:
+    return GRAIN_TUPLE_TAG_MASK;
+  }
+}
 
 let heapAdjust = function(n) {
   throw new GrainError(-1, "Grain runtime is not yet instantiated.");
@@ -60,6 +84,15 @@ function throwGrainError(errorCode, value1, value2) {
   case GRAIN_ERR_NOT_NUMBER_GENERIC:
     message = `expected a number, got value: ${value1AsGrain}`;
     break;
+  case GRAIN_ERR_NOT_BOOLEAN_GENERIC:
+    message = `expected a boolean, got value: ${value1AsGrain}`;
+    break;
+  case GRAIN_ERR_NOT_TUPLE_GENERIC:
+    message = `expected a tuple, got value: ${value1AsGrain}`;
+    break;
+  case GRAIN_ERR_NOT_LAMBDA_GENERIC:
+    message = `expected a lambda, got value: ${value1AsGrain}`;
+    break;
   case GRAIN_ERR_OVERFLOW:
     message = `number overflow with value: ${value1AsGrain}`;
     break;
@@ -68,6 +101,9 @@ function throwGrainError(errorCode, value1, value2) {
     break;
   case GRAIN_ERR_NOT_BOOLEAN_LOGIC:
     message = `logic expected a boolean, got value: ${value1AsGrain}`;
+    break;
+  case GRAIN_ERR_NOT_STRING_GENERIC:
+    message = `expected a string, got value: ${value1AsGrain}`;
     break;
   case GRAIN_ERR_GET_NOT_TUP:
     message = `tuple access expected tuple, got value: ${value1AsGrain}`;
@@ -169,7 +205,7 @@ function grainHeapValueToString(n) {
 function grainToString(n) {
   if (!(n & 1)) {
     return (n >> 1).toString();
-  } else if ((n & 7) === 1) {
+  } else if ((n & 7) === GRAIN_TUPLE_TAG_TYPE) {
     let tupleIdx = (n ^ 1) / 4;
     let tupleLength = view[tupleIdx];
     if (tupleLength & 0x80000000) {
@@ -186,9 +222,9 @@ function grainToString(n) {
       view[tupleIdx] = tupleLength;
       return `(${elts.join(", ")})`;
     }
-  } else if ((n & 7) === 5) {
+  } else if ((n & 7) === GRAIN_LAMBDA_TAG_TYPE) {
     return "<lambda>";
-  } else if ((n & 7) === 3) {
+  } else if ((n & 7) === GRAIN_GENERIC_HEAP_TAG_TYPE) {
     return grainHeapValueToString(n ^ 3);
   } else if ((n === -1)) {
     return "true";
@@ -236,6 +272,9 @@ function grainToJSVal(x) {
 function JSToGrainVal(v) {
   if (typeof v === "number") {
     // TODO: overflow check
+    if (v >= (1 << 30)) {
+      throwGrainError(GRAIN_ERR_OVERFLOW, -1, -1);
+    }
     return v << 1;
   } else if (typeof v === "boolean") {
     if (v) {
@@ -244,16 +283,15 @@ function JSToGrainVal(v) {
       return 0x7FFFFFFF;
     }
   } else if (typeof v === "string") {
-    let ptr = grainHeapAllocate(2 + (v.length / 4)) / 4;
-    // TODO: Turn tag into constant
-    view[ptr] = 1;
+    let ptr = grainHeapAllocate(2 + (((v.length - 1) / 4) + 1)) / 4;
+    view[ptr] = GRAIN_STRING_HEAP;
     view[ptr + 1] = v.length;
     let byteView = new Uint8Array(memory.buffer);
     let buf = encoder.encode(v);
     for (let i = 0; i < buf.length; ++i) {
       byteView[i + (ptr * 4) + 8] = buf[i];
     }
-    return (ptr * 4) | 3;
+    return (ptr * 4) | GRAIN_GENERIC_HEAP_TAG_TYPE;
   } else {
     throw new GrainError(-1, "JSToGrainVal not implemented for value with type " + (typeof v));
   }
@@ -261,7 +299,7 @@ function JSToGrainVal(v) {
 
 function grainEqualHelp(x, y, cycles) {
   if ((x & 7) === 1) {
-    if ((y & 7) === -1) {
+    if ((y & 7) !== 1) {
       return false;
     }
     let xPtr = (x ^ 1) / 4;
@@ -300,7 +338,7 @@ function grainEqual(x, y) {
 function grainHeapAllocate(numWords) {
   // allocates the number of words
   let curTop = heapAdjust(0);
-  let wordsToAllocate = 4 * (((numWords - 1) / 4) + 1);
+  let wordsToAllocate = Math.ceil(4 * (((numWords - 1) / 4) + 1));
   heapAdjust(wordsToAllocate * 4);
   return curTop;
 }
@@ -317,6 +355,58 @@ function printNumber(n) {
   return n;
 }
 
+function assertGrainTag(tag, n, err) {
+  if ((n & getAndMask(tag)) !== tag) {
+    throwGrainError(err, n, 0);
+  }
+}
+
+function assertGrainHeapTag(tag, n, err) {
+  assertGrainTag(GRAIN_GENERIC_HEAP_TAG_TYPE, n, err);
+  let ptr = n ^ GRAIN_GENERIC_HEAP_TAG_TYPE;
+  if (view[ptr / 4] != tag) {
+    throwGrainError(err, n, 0);
+  }
+}
+
+let assertNumber = (n, err) => assertGrainTag(GRAIN_NUMBER_TAG_TYPE, n, err || GRAIN_ERR_NOT_NUMBER_GENERIC);
+let assertBoolean = (n, err) => assertGrainTag(GRAIN_BOOLEAN_TAG_TYPE, n, err || GRAIN_ERR_NOT_BOOLEAN_GENERIC);
+let assertTuple = (n, err) => assertGrainTag(GRAIN_TUPLE_TAG_TYPE, n, err || GRAIN_ERR_NOT_TUPLE_GENERIC);
+let assertLambda = (n, err) => assertGrainTag(GRAIN_LAMBDA_TAG_TYPE, n, err || GRAIN_ERR_NOT_LAMBDA_GENERIC);
+let assertString = (n, err) => assertGrainHeapTag(GRAIN_STRING_HEAP, n, err || GRAIN_ERR_NOT_STRING_GENERIC);
+
+
+function stringAppend(s1, s2) {
+  assertString(s1);
+  assertString(s2);
+  s1 = grainToJSVal(s1);
+  s2 = grainToJSVal(s2);
+  let appended = s1.concat(s2);
+  let ret = JSToGrainVal(appended);
+  return ret;
+}
+
+function stringLength(s) {
+  assertString(s);
+  return JSToGrainVal(grainToJSVal(s).length);
+}
+
+function stringSlice(s, from, to) {
+  assertString(s);
+  assertNumber(from);
+  assertNumber(to);
+  s = grainToJSVal(s);
+  if (from < 0) {
+    throwGrainError(GRAIN_ERR_NOT_NONNEG, from);
+  } else if ((to >> 1) > s.length) {
+    throw new GrainError(-1, `Index ${to >> 1} greater than string length (${s.length})`);
+  }
+  from = grainToJSVal(from);
+  to = grainToJSVal(to);
+  let ret = s.slice(from, to);
+  return JSToGrainVal(ret);
+}
+
 const importObj = {
   console: {
     log: printNumber,
@@ -329,7 +419,10 @@ const importObj = {
   },
   grainBuiltins: {
     print: printNumber,
-    equal: grainEqual
+    equal: grainEqual,
+    stringAppend: stringAppend,
+    stringLength: stringLength,
+    stringSlice: stringSlice
   }
 };
 

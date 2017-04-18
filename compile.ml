@@ -25,7 +25,10 @@ let compile_prog p = Codegen.module_to_string @@ Codegen.compile_aprog p
 let initial_funcs = [
   ("print", (Lexing.dummy_pos, Lexing.dummy_pos), false);
   ("equal", (Lexing.dummy_pos, Lexing.dummy_pos), true);
-  ("input", (Lexing.dummy_pos, Lexing.dummy_pos), false)
+  ("input", (Lexing.dummy_pos, Lexing.dummy_pos), false);
+  ("string_append", (Lexing.dummy_pos, Lexing.dummy_pos), true);
+  ("string_length", (Lexing.dummy_pos, Lexing.dummy_pos), true);
+  ("string_slice", (Lexing.dummy_pos, Lexing.dummy_pos), true)
 ]
 
 (* Environment containing initial functions *)

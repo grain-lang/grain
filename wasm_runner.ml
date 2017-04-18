@@ -217,6 +217,15 @@ let grain_equal = function
       [Values.I32Value.to_value (Int32.of_int 0x7FFFFFFF)]
   | _ -> failwith "NYI: grain_equal"
 
+let grain_string_append = function
+  | _ -> failwith "NYI: grain_string_append"
+
+let grain_string_length = function
+  | _ -> failwith "NYI: grain_string_length"
+
+let grain_string_slice = function
+  | _ -> failwith "NYI: grain_string_slice"
+
 let console_lookup name t =
   match name, t with
   | "log", ExternalFuncType t -> ExternalFunc (HostFunc (t, console_log))
@@ -234,6 +243,9 @@ let grain_builtin_lookup name t =
   match name, t with
   | "print", ExternalFuncType t -> ExternalFunc (HostFunc (t, grain_print))
   | "equal", ExternalFuncType t -> ExternalFunc (HostFunc (t, grain_equal))
+  | "stringAppend", ExternalFuncType t -> ExternalFunc (HostFunc (t, grain_string_append))
+  | "stringLength", ExternalFuncType t -> ExternalFunc (HostFunc (t, grain_string_length))
+  | "stringSlice", ExternalFuncType t -> ExternalFunc (HostFunc (t, grain_string_slice))
   | _ -> raise Not_found
 
 let configured = ref false
