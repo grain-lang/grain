@@ -4,11 +4,11 @@ Version:     0.1.0
 Synopsis:    Experimental language targeting WebAssembly
 Authors:     Philip Blair, Oscar Spencer
 License:     MIT
-Executable main
+Executable grainc
   Path:       src
   BuildTools: ocamlbuild
   BuildDepends: oUnit,extlib,batteries,cmdliner,ocamlgraph,wasm,stdint
-  MainIs:     main.ml
+  MainIs:     grainc.ml
 Executable test
   Path:       src
   BuildTools: ocamlbuild

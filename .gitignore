@@ -1,4 +1,5 @@
 main
+grainc
 test
 output/*.o
 output/*.run

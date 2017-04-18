@@ -27,7 +27,7 @@ compiler.
 To create a `.wasm` file, run the following:
 
 ```
-$ ./main /path/to/file.gr -o /path/to/output.wasm
+$ ./grainc /path/to/file.gr -o /path/to/output.wasm
 ```
 
 For an example of how to run the file in JavaScript, look at the

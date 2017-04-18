@@ -21,17 +21,17 @@ OPAM_PKGS=ounit,extlib,batteries,cmdliner,ocamlgraph,wasm,stdint
 BUILD=ocaml setup.ml -build -r -use-ocamlfind
 
 
-main: src/*.ml src/parser.mly src/lexer.mll
+grainc: src/*.ml src/parser.mly src/lexer.mll
 	make setup.data
-	$(BUILD) -no-hygiene -package $(PKGS) src/main.native
-	rm main.byte
+	$(BUILD) -no-hygiene -package $(PKGS) src/grainc.native
+	rm grainc.byte
 	rm test.byte
-	mv main.native main
+	mv grainc.native grainc
 
-test: src/*.ml src/parser.mly src/lexer.mll main
+test: src/*.ml src/parser.mly src/lexer.mll grainc
 	make setup.data
 	$(BUILD) -no-hygiene -package $(PKGS) src/test.native
-	rm main.byte
+	rm grainc.byte
 	rm test.byte
 	mv test.native test
 
@@ -60,12 +60,9 @@ clean:
 	ocamlbuild -clean
 	rm -rf output/*.o output/*.s output/*.dSYM output/*.run *.log *.o *.byte
 	rm -rf _build/
-	rm -f main test .installed-pkgs
+	rm -f grainc test .installed-pkgs
 	rm -f setup.ml setup.data myocamlbuild.ml
 
-submission-indigo.zip: *.ml *.mll *.mly check-installed.sh Makefile *.c *.h lib/* input/*.indigo _tags
-	zip $@ $^
-	(cd .. && ./test-dist.sh starter-indigo/$@)
-
-.PHONY: dist
-dist: submission-indigo.zip
+.PHONY: install
+install: grainc
+	cp $< /usr/bin
