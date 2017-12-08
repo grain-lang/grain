@@ -33,22 +33,22 @@ let reset_channels() =
   in_channel := ic;
   out_channel := oc
 
-let memory_internal = (Memory.create {Types.min=(Int32.of_int 1); Types.max=None})
-let memory = ExternalMemory memory_internal
+let memory_internal = (Memory.alloc (MemoryType {Types.min=(Int32.of_int 1); Types.max=None}))
+let memory = ExternMemory memory_internal
 
 let load_word addr : int32 =
-  Memory.load memory_internal
+  Memory.load_value memory_internal
     (Int64.of_int addr) Int32.zero Types.I32Type
   |> unbox
 
 let load_word64 addr : int64 =
-  Memory.load memory_internal
+  Memory.load_value memory_internal
     (Int64.of_int addr) Int32.zero Types.I64Type
   |> unbox64
 
 let set_word addr (value : int32) =
   let to_set = Values.I32Value.to_value value in
-  Memory.store memory_internal
+  Memory.store_value memory_internal
     (Int64.of_int addr) Int32.zero to_set
 
 let string_of_grain_heap_value (v : int32) =
@@ -226,24 +226,24 @@ let grain_nyi name = function
   | _ -> failwith (Printf.sprintf "NYI: %s" name)
 
 let console_lookup name t =
-  match name, t with
-  | "log", ExternalFuncType t -> ExternalFunc (HostFunc (t, console_log))
-  | "debug", ExternalFuncType t -> ExternalFunc (HostFunc (t, console_debug))
-  | "printClosure", ExternalFuncType t -> ExternalFunc (HostFunc (t, console_print_closure))
+  match (Utf8.encode name), t with
+  | "log", ExternFuncType t -> ExternFunc (Func.HostFunc (t, console_log))
+  | "debug", ExternFuncType t -> ExternFunc (Func.HostFunc (t, console_debug))
+  | "printClosure", ExternFuncType t -> ExternFunc (Func.HostFunc (t, console_print_closure))
   | _ -> raise Not_found
 
 let js_lookup name t =
-  match name, t with
-  | "throwError", ExternalFuncType t -> ExternalFunc (HostFunc (t, js_throw_error))
-  | "mem", ExternalMemoryType t -> memory
-  | "checkMemory", ExternalFuncType t -> ExternalFunc (HostFunc (t, grain_check_memory))
+  match (Utf8.encode name), t with
+  | "throwError", ExternFuncType t -> ExternFunc (Func.HostFunc (t, js_throw_error))
+  | "mem", ExternMemoryType t -> memory
+  | "checkMemory", ExternFuncType t -> ExternFunc (Func.HostFunc (t, grain_check_memory))
   | _ -> raise Not_found
 
 let grain_builtin_lookup name t =
-  match name, t with
-  | "print", ExternalFuncType t -> ExternalFunc (HostFunc (t, grain_print))
-  | "equal", ExternalFuncType t -> ExternalFunc (HostFunc (t, grain_equal))
-  | _, ExternalFuncType t -> ExternalFunc (HostFunc (t, grain_nyi name))
+  match (Utf8.encode name), t with
+  | "print", ExternFuncType t -> ExternFunc (Func.HostFunc (t, grain_print))
+  | "equal", ExternFuncType t -> ExternFunc (Func.HostFunc (t, grain_equal))
+  | _, ExternFuncType t -> ExternFunc (Func.HostFunc (t, grain_nyi (Utf8.encode name)))
   | _ -> raise Not_found
 
 let configured = ref false
@@ -251,9 +251,9 @@ let configured = ref false
 let configure_runner() =
   if not !configured then
     begin
-      Import.register "grainBuiltins" grain_builtin_lookup;
-      Import.register "console" console_lookup;
-      Import.register "js" js_lookup;
+      Import.register (Utf8.decode "grainBuiltins") grain_builtin_lookup;
+      Import.register (Utf8.decode "console") console_lookup;
+      Import.register (Utf8.decode "js") js_lookup;
       configured := true
     end
 
@@ -267,10 +267,10 @@ let run_wasm (module_ : Wasm.Ast.module_) =
   Valid.check_module module_;
   let imports = Import.link module_ in
   let inst = Eval.init module_ imports in
-  let start = Instance.export inst "GRAIN$MAIN" in
+  let start = Instance.export inst (Utf8.decode "GRAIN$MAIN") in
   match start with
   | None -> failwith "No start function found in module!"
-  | Some(ExternalFunc s) ->
+  | Some(ExternFunc s) ->
     begin match Eval.invoke s [] with
     | [] ->
       flush !out_channel;

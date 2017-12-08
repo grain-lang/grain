@@ -176,12 +176,16 @@ let get_arity_func_type_idx arity env =
     Deque.size !(env.func_types) - 1
   | Some((i, _)) -> i
 
+(* Seems a little silly when named this way, but it makes a little more sense in the
+   context of this file *)
+let encode_string : string -> int list = Utf8.decode
+
 let resolve_func_import env ({module_name;item_name;ikind} : fully_typed_import) : Ast.import' =
   let open Ast in
   {
-    module_name;
-    item_name;
-    ikind=add_dummy_loc @@
+    module_name=encode_string module_name;
+    item_name=encode_string item_name;
+    idesc=add_dummy_loc @@
       Ast.FuncImport(add_dummy_loc
                      @@ Int32.of_int
                      @@ get_func_type_idx ikind env)
@@ -902,9 +906,8 @@ let heap_adjust env = {
 }
 
 let make_lambda_export i = add_dummy_loc {
-  Ast.name="GRAIN$LAM_" ^ (string_of_int i);
-  Ast.ekind=add_dummy_loc Ast.FuncExport;
-  Ast.item=(add_dummy_loc @@ Int32.of_int i);
+  Ast.name=encode_string ("GRAIN$LAM_" ^ (string_of_int i));
+  Ast.edesc=add_dummy_loc (Ast.FuncExport(add_dummy_loc @@ Int32.of_int i));
 }
 
 let create_builtin_closures to_create init_env =
@@ -938,9 +941,9 @@ let compile_aprog (anfed : tag aprogram) =
   let imports = List.map add_dummy_loc @@
       (List.map (resolve_func_import env) external_funcs) @ [
         {
-          Ast.module_name="js";
-          Ast.item_name="mem";
-          Ast.ikind=add_dummy_loc (Ast.MemoryImport(Types.MemoryType({Types.min=Int32.of_int 0; Types.max=None})))
+          Ast.module_name=encode_string "js";
+          Ast.item_name=encode_string "mem";
+          Ast.idesc=add_dummy_loc (Ast.MemoryImport(Types.MemoryType({Types.min=Int32.of_int 0; Types.max=None})))
         }
       ] in
 
@@ -958,14 +961,12 @@ let compile_aprog (anfed : tag aprogram) =
   (* List of exports for the module *)
   let exports = List.map add_dummy_loc [
       {
-        Ast.name="GRAIN$HEAP_ADJUST";
-        Ast.ekind=add_dummy_loc Ast.FuncExport;
-        Ast.item=heap_adjust_idx;
+        Ast.name=encode_string "GRAIN$HEAP_ADJUST";
+        Ast.edesc=add_dummy_loc (Ast.FuncExport heap_adjust_idx);
       };
       {
-        Ast.name="GRAIN$MAIN";
-        Ast.ekind=add_dummy_loc Ast.FuncExport;
-        Ast.item=main_idx;
+        Ast.name=encode_string "GRAIN$MAIN";
+        Ast.edesc=add_dummy_loc (Ast.FuncExport main_idx);
       }
     ] @ (repeat_f (List.length lambdas) (fun i -> make_lambda_export (i + (List.length external_funcs)))) in
 
@@ -1010,7 +1011,7 @@ let compile_aprog (anfed : tag aprogram) =
     Ast.tables=table;
     Ast.elems=elems;
     Ast.funcs=lambdas@[add_dummy_loc @@ heap_adjust env; func];
-    Ast.types=(Deque.to_list !(env.func_types));
+    Ast.types=List.map add_dummy_loc (Deque.to_list !(env.func_types));
     Ast.start=None;
   }
 
