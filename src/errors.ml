@@ -1,6 +1,6 @@
 (** Runtime Error definitions *)
 
-type snek_error =
+type grain_error =
   | ComparisonError
   | ArithmeticError
   | LogicError
@@ -18,7 +18,7 @@ type snek_error =
   | SetItemIndexTooLarge
   | GenericNumberError
 
-let all_snek_errors = [
+let all_grain_errors = [
   ComparisonError;
   ArithmeticError;
   LogicError;

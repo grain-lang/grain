@@ -248,7 +248,7 @@ let error_if_false err val1 val2 =
            (call_error_handler (code_of_error err) val1 val2))
 
 (*  label_of_error code_of_error *)
-let create_error_handlers (defs : snek_error list) =
+let create_error_handlers (defs : grain_error list) =
   failwith "NYI: create_error_handlers"
 
 let heap_allocate (num_words : int) env =
