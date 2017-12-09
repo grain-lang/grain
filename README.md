@@ -17,7 +17,7 @@ no means of performing any type of stack introspection.
 
 ## Building
 
-To build, have `ocaml` (version >= 4.02.3), `opam`, and `wast2wasm` (from [`wabt`][wabt]) installed
+To build, have `ocaml` (version >= 4.02.3), `opam`, and `jbuilder` installed
 and on your `PATH`.
 Then, running `make` will install any needed OCaml dependencies and build the
 compiler.
@@ -36,4 +36,3 @@ files under `script`.
 [philip]: https://github.com/belph
 [oscar]: http://github.com/ospencer
 [wasm]: http://webassembly.org/
-[wabt]: https://github.com/WebAssembly/wabt

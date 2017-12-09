@@ -20,9 +20,9 @@ clean:
 	jbuilder clean
 
 EXAMPLEFILES=adder.gr lambda.gr domSimple.gr dom.gr
-EXAMPLES=$(patsubst %,script/public/examples/%,$(EXAMPLEFILES))
+EXAMPLES=$(patsubst %.gr,script/public/examples/%.wasm,$(EXAMPLEFILES))
 script/public/examples/%.wasm: test/input/%.gr default
-	_build/install/bin/grainc -g $< -o $@
+	_build/install/default/bin/grainc -g $< -o $@
 
 .PHONY: examples
 examples: $(EXAMPLES)
