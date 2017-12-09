@@ -177,7 +177,8 @@ let get_arity_func_type_idx arity env =
   | Some((i, _)) -> i
 
 (* Seems a little silly when named this way, but it makes a little more sense in the
-   context of this file *)
+   context of this file, since we are encoding the given OCaml string in a WASM-compatible format
+   (its UTF-8 byte sequence). *)
 let encode_string : string -> int list = Utf8.decode
 
 let resolve_func_import env ({module_name;item_name;ikind} : fully_typed_import) : Ast.import' =
