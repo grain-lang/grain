@@ -1,0 +1,9 @@
+((cmi_name Nested)
+ (cmi_sign
+  ((TSigValue ((stamp 1123) (name j))
+    ((val_type
+      ((desc (TTyConstr (PIdent ((stamp 9) (name String))) () TMemNil))
+       (level 100000000) (id -2)))
+     (val_kind TValReg) (val_fullpath (PIdent ((stamp 1122) (name j))))
+     (val_mutable false) (val_loc dummy_loc)))))
+ (cmi_crcs <opaque>) (cmi_flags ()))

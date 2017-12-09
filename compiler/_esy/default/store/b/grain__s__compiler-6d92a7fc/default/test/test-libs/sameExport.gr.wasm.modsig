@@ -1,0 +1,13 @@
+((cmi_name SameExport)
+ (cmi_sign
+  ((TSigValue ((stamp 1126) (name foo))
+    ((val_type
+      ((desc
+        (TTyArrow ()
+         ((desc (TTyConstr (PIdent ((stamp 1) (name Number))) () TMemNil))
+          (level 100000000) (id -3))
+         TComOk))
+       (level 100000000) (id -2)))
+     (val_kind TValReg) (val_fullpath (PIdent ((stamp 1124) (name foo))))
+     (val_mutable false) (val_loc dummy_loc)))))
+ (cmi_crcs <opaque>) (cmi_flags ()))
