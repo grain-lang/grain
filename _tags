@@ -1,2 +1,0 @@
-<**/*.o>: not_hygienic
-<src>: traverse, not_hygienic

@@ -1,11 +1,11 @@
-open Compile
-open Runner
+open Grain.Compile
+open Grain.Runner
 open Printf
 open OUnit2
 open ExtLib
-open Types
-open Expr
-open Pretty
+open Grain.Types
+open Grain.Expr
+open Grain.Pretty
 
 let t ?opts:(opts=default_compile_options) name program expected = name>::test_run opts [] program name expected;;
 let tlib name program expected = name>::test_run default_compile_options [] program name expected;;
@@ -191,14 +191,14 @@ let tvgcfile name heap_size input_file expected = name>::test_valgrind_file inpu
 let test_resolve_scope opts program_str outfile (expected : 'a aprogram) test_ctxt =
   let result = match (compile_string_to_anf outfile opts program_str) with
   | Left(errs) -> Left(ExtString.String.join "\n" (print_errors errs))
-  | Right(anfed) -> Right(Pretty.string_of_aprogram (Resolve_scope.resolve_scope anfed Compile.initial_env)) in
-  assert_equal (Right(Pretty.string_of_aprogram expected)) result ~printer:either_printer
+  | Right(anfed) -> Right(Grain.Pretty.string_of_aprogram (Grain.Resolve_scope.resolve_scope anfed Grain.Compile.initial_env)) in
+  assert_equal (Right(Grain.Pretty.string_of_aprogram expected)) result ~printer:either_printer
 
 let test_final_anf opts program_str outfile (expected : 'a aprogram) test_ctxt =
   let result = match (compile_string_to_final_anf outfile opts program_str) with
   | Left(errs) -> Left(ExtString.String.join "\n" (print_errors errs))
-  | Right(final_anf) -> Right(Pretty.string_of_aprogram final_anf) in
-  assert_equal (Right(Pretty.string_of_aprogram expected)) result ~printer:either_printer
+  | Right(final_anf) -> Right(Grain.Pretty.string_of_aprogram final_anf) in
+  assert_equal (Right(Grain.Pretty.string_of_aprogram expected)) result ~printer:either_printer
 
 let trs name (program : string) (expected : 'a aprogram) = name>::test_resolve_scope default_compile_options program name expected;;
 

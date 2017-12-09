@@ -1,6 +1,6 @@
 main
 grainc
-test
+grain.install
 output/*.o
 output/*.run
 output/*.s
@@ -21,4 +21,4 @@ notes.org
 setup.data
 setup.ml
 myocamlbuild.ml
-
+.merlin
