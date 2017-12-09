@@ -59,7 +59,7 @@ let tag (p : 'a program) : tag program =
   and helpP p = helpE p
   in helpP p
 
-let rec untag (p : 'a program) : unit program =
+let rec untag : 'a. 'a program -> unit program = fun p ->
   let rec helpE e =
     match e with
     | EId(x, _) -> EId(x, ())
@@ -92,7 +92,7 @@ let rec untag (p : 'a program) : unit program =
     | ESetItemExact(tup, idx, rhs, _) ->
       ESetItemExact(helpE tup, idx, helpE rhs, ())
     | EApp(name, args, _) ->
-      EApp(name, List.map helpE args, ())
+      EApp(helpE name, List.map helpE args, ())
     | ELambda(args, body, _) ->
       ELambda(List.map (fun (x, _) -> (x, ())) args, helpE body, ())
   and helpP p = helpE p
