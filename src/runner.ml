@@ -155,8 +155,18 @@ let safe_run_process prog args =
   try_running, cleanup
 
 let assemble_object_file asm_file debug object_name =
-  let flags = [] in
-  safe_run_process "wast2wasm" (flags @ ["-o"; object_name; asm_file])
+  let rec get_encoded m =
+    match m with
+    | Wasm.Script.Textual m -> Wasm.Encode.encode m
+    | Wasm.Script.Encoded(_, bs) -> bs
+    | Wasm.Script.Quoted(_, s) -> get_encoded ((Wasm.Parse.string_to_module s).Wasm.Source.it) in
+  let ic = open_in asm_file in
+  let contents : Wasm.Script.definition = Wasm.Parse.string_to_module (input_all ic) in
+  close_in ic;
+  let oc = open_out_bin object_name in
+  output_string oc @@ get_encoded (contents.Wasm.Source.it);
+  close_out oc;
+  Right(""), (fun() -> ())
 
 let compile_assembly_to_binary asm debug outfile_name =
   let asm_tmp_filename = if debug then outfile_name ^ ".wast" else (temp_file (Filename.basename outfile_name) ".wast") in
