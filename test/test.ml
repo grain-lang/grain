@@ -1,17 +1,15 @@
-open Compile
-open Runner
+open Grain.Compile
+open Grain.Runner
 open Printf
 open OUnit2
 open ExtLib
-open Types
-open Expr
-open Pretty
+open Grain.Types
+open Grain.Expr
+open Grain.Pretty
 
 let t ?opts:(opts=default_compile_options) name program expected = name>::test_run opts [] program name expected;;
 let tlib name program expected = name>::test_run default_compile_options [] program name expected;;
 let tgc name heap_size program expected = name>::test_run default_compile_options [string_of_int heap_size] program name expected;;
-let tvg name program expected = name>::test_run_valgrind default_compile_options [] program name expected;;
-let tvgc name heap_size program expected = name>::test_run_valgrind default_compile_options [string_of_int heap_size] program name expected;;
 let terr name program expected = name>::test_err default_compile_options [] program name expected;;
 let tgcerr name heap_size program expected = name>::test_err default_compile_options [string_of_int heap_size] program name expected;;
 
@@ -34,14 +32,6 @@ let test_input_file filename include_stdlib heap_size name expected test_ctxt =
   let full_outfile = "output/" ^ name in
   let program = parse_file filename input_channel in
   let result = run include_stdlib program full_outfile run_no_vg [string_of_int heap_size] in
-  assert_equal (Right(expected ^ "\n")) result ~printer:either_printer
-
-let test_valgrind_file filename include_stdlib heap_size name expected test_ctxt =
-  let input_filename = "input/" ^ filename ^ ".gr" in
-  let input_channel = open_in input_filename in
-  let full_outfile = "output/" ^ name in
-  let program = parse_file filename input_channel in
-  let result = run include_stdlib program full_outfile run_vg [string_of_int heap_size] in
   assert_equal (Right(expected ^ "\n")) result ~printer:either_printer
 
 let test_err_input_file filename include_stdlib heap_size name errmsg test_ctxt =
@@ -180,25 +170,21 @@ let tfile name input_file expected = name>::test_input_file input_file default_c
     the given error message *)
 let tefile name input_file errmsg = name>::test_err_input_file input_file default_compile_options 10000 name errmsg
 
-let tvgfile name filename expected = name>::test_valgrind_file filename default_compile_options 10000 name expected
-
 let tgcfile name heap_size input_file expected = name>::test_input_file input_file default_compile_options heap_size name expected
 
 let tgcefile name heap_size input_file errmsg = name>::test_err_input_file input_file default_compile_options heap_size name errmsg
 
-let tvgcfile name heap_size input_file expected = name>::test_valgrind_file input_file default_compile_options heap_size name expected
-
 let test_resolve_scope opts program_str outfile (expected : 'a aprogram) test_ctxt =
   let result = match (compile_string_to_anf outfile opts program_str) with
   | Left(errs) -> Left(ExtString.String.join "\n" (print_errors errs))
-  | Right(anfed) -> Right(Pretty.string_of_aprogram (Resolve_scope.resolve_scope anfed Compile.initial_env)) in
-  assert_equal (Right(Pretty.string_of_aprogram expected)) result ~printer:either_printer
+  | Right(anfed) -> Right(Grain.Pretty.string_of_aprogram (Grain.Resolve_scope.resolve_scope anfed Grain.Compile.initial_env)) in
+  assert_equal (Right(Grain.Pretty.string_of_aprogram expected)) result ~printer:either_printer
 
 let test_final_anf opts program_str outfile (expected : 'a aprogram) test_ctxt =
   let result = match (compile_string_to_final_anf outfile opts program_str) with
   | Left(errs) -> Left(ExtString.String.join "\n" (print_errors errs))
-  | Right(final_anf) -> Right(Pretty.string_of_aprogram final_anf) in
-  assert_equal (Right(Pretty.string_of_aprogram expected)) result ~printer:either_printer
+  | Right(final_anf) -> Right(Grain.Pretty.string_of_aprogram final_anf) in
+  assert_equal (Right(Grain.Pretty.string_of_aprogram expected)) result ~printer:either_printer
 
 let trs name (program : string) (expected : 'a aprogram) = name>::test_resolve_scope default_compile_options program name expected;;
 
@@ -459,9 +445,8 @@ let pair_tests = [
 let oom = [
   tgcerr "oomgc1" 7 "(1, (3, 4))" "Out of memory";
   tgc "oomgc2" 8 "(1, (3, 4))" "(1, (3, 4))";
-  tvgc "oomgc3" 8 "(1, (3, 4))" "(1, (3, 4))";
-  tgc "oomgc4" 4 "(3, 4)" "(3, 4)";
-  tgcerr "oomgc5" 3 "(3, 4)" "Allocation";
+  tgc "oomgc3" 4 "(3, 4)" "(3, 4)";
+  tgcerr "oomgc4" 3 "(3, 4)" "Allocation";
 ]
 
 let gc = [

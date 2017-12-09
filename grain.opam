@@ -1,0 +1,25 @@
+opam-version: "1.2"
+maintainer: "philip@pblair.org"
+authors: ["Philip Blair"  "Oscar Spencer"]
+license: "MIT"
+homepage: "https://github.com/grain-lang/grain"
+dev-repo: "git+https://github.com/grain-lang/grain.git"
+bug-reports: "https://github.com/grain-lang/grain/issues"
+doc: "Experimental language targeting WebAssembly"
+build: [
+  [ "jbuilder" "subst" ] {pinned}
+  [ "jbuilder" "build" "-p" name "-j" jobs ]
+]
+build-test: [["jbuilder" "runtest" "-p" name "-j" jobs]]
+depends: [
+  "ocamlfind" {build}
+  "ocamlbuild" {build}
+  "jbuilder" {build}
+  "ounit"
+  "extlib"
+  "batteries"
+  "cmdliner"
+  "ocamlgraph"
+  "wasm"
+  "stdint"
+]

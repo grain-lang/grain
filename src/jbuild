@@ -1,0 +1,16 @@
+(jbuild_version 1)
+
+(ocamllex (lexer))
+(ocamlyacc (parser))
+
+(library
+ ((name grain)
+  (public_name grain)
+  (libraries   (oUnit extlib batteries cmdliner ocamlgraph wasm stdint))))
+
+(executable
+ ((name grainc)
+  (public_name grainc)
+  (package grain)
+  (libraries (grain))))
+
