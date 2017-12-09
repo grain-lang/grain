@@ -2,7 +2,7 @@ open Lexing
 open Printf
 open Types
 
-type snek_library = sourcespan program -> sourcespan program
+type grain_library = sourcespan program -> sourcespan program
 
 let parse name lexbuf =
   let open Lexing in
@@ -29,7 +29,7 @@ let parse name lexbuf =
     by the returned function. The idea is that a loaded program
     can be applied to the returned function to wrap it with the
     given standard library *)
-let convert_to_continuation ast : snek_library =
+let convert_to_continuation ast : grain_library =
   let rec help ast k =
     match ast with
     | ELet(binds, body, a) ->
@@ -53,7 +53,7 @@ let load_library initial_env library =
 let compose f g x = f (g x)
 
 (** Lifts the given list of loaded libraries into a single either result *)
-let lift_loaded_libraries (libs : (exn list, snek_library) either list) : (exn list, snek_library) either =
+let lift_loaded_libraries (libs : (exn list, grain_library) either list) : (exn list, grain_library) either =
   List.fold_left (fun acc cur ->
       match cur with
       | Right(cont) ->

@@ -49,7 +49,7 @@ let opts_to_optimization_settings opts = {
 }
 
 let compile_module (opts: compile_options) (p : sourcespan program) =
-  match Snek_stdlib.load_libraries initial_env p with
+  match Grain_stdlib.load_libraries initial_env p with
   | Left(errs) -> Left(errs)
   | Right(full_p) ->
     let wf_prog = well_formed full_p false initial_env in
@@ -72,7 +72,7 @@ let compile_to_string opts p =
   | Right(m) -> Right(module_to_string m)
 
 let compile_to_anf (opts : compile_options) (p : sourcespan program) =
-  match Snek_stdlib.load_libraries initial_env p with
+  match Grain_stdlib.load_libraries initial_env p with
   | Left(errs) -> Left(errs)
   | Right(full_p) ->
     let wf_prog = well_formed full_p false initial_env in
@@ -84,7 +84,7 @@ let compile_to_anf (opts : compile_options) (p : sourcespan program) =
 
 (* like compile_to_anf, but performs scope resolution and optimization. *)
 let compile_to_final_anf (opts : compile_options) (p : sourcespan program) =
-  match Snek_stdlib.load_libraries initial_env p with
+  match Grain_stdlib.load_libraries initial_env p with
   | Left(errs) -> Left(errs)
   | Right(full_p) ->
     let wf_prog = well_formed full_p false initial_env in

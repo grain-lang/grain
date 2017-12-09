@@ -15,7 +15,7 @@ Pretty
 Resolve_scope
 Runner
 Simple_expr
-Snek_stdlib
+Grain_stdlib
 Type_check
 Utils
 Value_tags
