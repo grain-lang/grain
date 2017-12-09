@@ -7,7 +7,6 @@ Errors
 Lexer
 Parser
 Types
-Instruction
 Intermediate
 Ir_anf
 Optimize

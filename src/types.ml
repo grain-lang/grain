@@ -1,6 +1,3 @@
-(* Abstract syntax of (a small subset of) x86 assembly instructions *)
-let word_size = 4
-;;
 
 type ('a, 'b) either =
   | Left of 'a

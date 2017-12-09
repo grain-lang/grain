@@ -1,5 +1,3 @@
-(* Abstract syntax of (a small subset of) x86 assembly instructions *)
-val word_size : int
 
 type ('a, 'b) either =
   | Left of 'a

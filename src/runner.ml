@@ -76,7 +76,7 @@ let parse name lexbuf =
     lexbuf.lex_curr_p <- { lexbuf.lex_curr_p with pos_fname = name };
     Parser.program Lexer.token lexbuf
   with
-  | Failure "lexing: empty token" ->
+  | Failure x when String.equal x "lexing: empty token" ->
     failwith (sprintf "lexical error at %s"
                 (string_of_position lexbuf.lex_curr_p))
   | Parsing.Parse_error ->
@@ -158,22 +158,6 @@ let assemble_object_file asm_file debug object_name =
   let flags = [] in
   safe_run_process "wast2wasm" (flags @ ["-o"; object_name; asm_file])
 
-let compile_runnable_file obj_file debug outfile_name =
-  let debug_flags =
-    if debug then
-      ["-g"]
-    else
-      [] in
-  let cflags = debug_flags @ [
-      "-mstackrealign";
-      "-m32";
-      "-o"; outfile_name;
-      "gc.o";
-      "main.c";
-      obj_file
-    ] in
-  safe_run_process "clang" cflags
-
 let compile_assembly_to_binary asm debug outfile_name =
   let asm_tmp_filename = if debug then outfile_name ^ ".wast" else (temp_file (Filename.basename outfile_name) ".wast") in
   let asm_tmp = open_out asm_tmp_filename in
@@ -194,25 +178,6 @@ let run_no_vg (program_name : string) args : result =
     | WSIGNALED n ->
        Left(sprintf "Signalled with %d while running %s." n program_name)
     | WSTOPPED n ->
-       Left(sprintf "Stopped with signal %d while running %s." n program_name) in
-  List.iter close [rstdout; rstderr; rstdin];
-  List.iter unlink [rstdout_name; rstderr_name];
-  result
-
-
-let run_vg (program_name : string) args : result =
-  let (rstdout, rstdout_name, rstderr, rstderr_name, rstdin) = make_tmpfiles "run" in
-  let ran_pid = Unix.create_process "valgrind"  (Array.of_list ([""; (program_name ^ ".run")] @ args)) rstdin rstdout rstderr in
-  let (_, status) = waitpid [] ran_pid in
-  let vg_str = string_of_file rstderr_name in
-  let vg_ok = String.exists vg_str "0 errors from 0 contexts" in
-  let result = match (status, vg_ok) with
-    | WEXITED 0, true -> Right(string_of_file rstdout_name)
-    | WEXITED 0, false -> Left("Stdout: " ^ (string_of_file rstdout_name) ^ "\n" ^ "Valgrind: \n" ^ vg_str)
-    | WEXITED n, _ -> Left(sprintf "Error %d: %s" n vg_str)
-    | WSIGNALED n, _ ->
-       Left(sprintf "Signalled with %d while running %s." n program_name)
-    | WSTOPPED n, _ ->
        Left(sprintf "Stopped with signal %d while running %s." n program_name) in
   List.iter close [rstdout; rstderr; rstdin];
   List.iter unlink [rstdout_name; rstderr_name];
@@ -289,12 +254,6 @@ let test_run include_stdlib args program_str outfile expected test_ctxt =
 let test_run_anf include_stdlib args program_anf outfile expected test_ctxt =
   let full_outfile = "output/" ^ outfile in
   let result = run_anf program_anf full_outfile run_no_vg args in
-  assert_equal (Right(expected ^ "\n")) result ~printer:either_printer
-
-let test_run_valgrind include_stdlib args program_str outfile expected test_ctxt =
-  let full_outfile = "output/" ^ outfile in
-  let program = parse_string outfile program_str in
-  let result = run include_stdlib program full_outfile run_vg args in
   assert_equal (Right(expected ^ "\n")) result ~printer:either_printer
 
 let test_err include_stdlib args program_str outfile errmsg test_ctxt =
