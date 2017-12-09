@@ -12,7 +12,7 @@ let parse name lexbuf =
     lexbuf.lex_curr_p <- { lexbuf.lex_curr_p with pos_fname = name };
     Parser.program Lexer.token lexbuf
   with
-  | Failure "lexing: empty token" ->
+  | Failure x when String.equal x "lexing: empty token" ->
     failwith (sprintf "lexical error at %s"
                 (string_of_position lexbuf.lex_curr_p))
   | Parsing.Parse_error ->
