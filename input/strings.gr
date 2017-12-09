@@ -1,3 +1,0 @@
-let foo = "foo" in
-let bar = "bar" in
-  strslice(strcat(foo, bar), 1, 4)
