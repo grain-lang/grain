@@ -587,7 +587,7 @@ let suite =
 
 let () =
   (** Override default stdlib location to use development version of stdlib *)
-  Grain.Config.set_grain_root (Unix.getcwd() ^ "/../../install/default");
+  Grain.Config.set_grain_root (BatFile.with_file_in "grain-root.txt" BatInnerIO.read_all);
   run_test_tt_main suite
 ;;
 

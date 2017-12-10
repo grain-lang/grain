@@ -4,8 +4,13 @@
  ((name test)
   (libraries (grain oUnit extlib))))
 
+(rule
+  ((targets (grain-root.txt))
+   (action  (write-file ${@} ${ROOT}/../install/default))))
+
 (alias
  ((name   runtest)
   (deps   (test.exe
+           grain-root.txt
            (files_recursively_in input)))
   (action (run ${<}))))
