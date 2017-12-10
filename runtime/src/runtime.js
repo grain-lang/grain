@@ -1,10 +1,8 @@
+import { heapAdjust } from './core/heap';
+
 let grainInitialized = false;
 let grainModule;
 let grainDOMRefs = [];
-
-let heapAdjust = function(n) {
-  throw new GrainError(-1, "Grain runtime is not yet instantiated.");
-};
 
 function debugPrint(n) {
   // console.log(`0x${n.toString(16)} (0b${n.toString(2)})`);
@@ -53,24 +51,6 @@ function grainEqualHelp(x, y, cycles) {
 
 function grainEqual(x, y) {
   return grainEqualHelp(x, y, 0) ? GRAIN_TRUE : GRAIN_FALSE;
-}
-
-function grainCheckMemory(numBytes) {
-  if (numBytes === 0) {
-    return;
-  }
-  let curTop = heapAdjust(0);
-  if (memory.buffer.byteLength - curTop < numBytes) {
-    memory.grow(1);
-  }
-}
-
-function grainHeapAllocate(numWords) {
-  // allocates the number of words
-  let curTop = heapAdjust(0);
-  let wordsToAllocate = 4 * (Math.ceil((numWords - 1) / 4) + 1);
-  heapAdjust(wordsToAllocate * 4);
-  return curTop;
 }
 
 function grainDOMQuery(n) {
