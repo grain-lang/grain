@@ -4,7 +4,7 @@ import { GRAIN_FALSE } from '../core/primitives';
 import { grainHeapAllocate } from '../core/heap';
 import { grainToJSVal } from '../utils/utils';
 
-const grainDOMRefs = [];
+export const grainDOMRefs = [];
 
 export function DOMQuery(n) {
   assertString(n);

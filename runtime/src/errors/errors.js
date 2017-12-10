@@ -1,3 +1,5 @@
+import { grainToString } from '../utils/utils';
+
 import * from './error-codes';
 
 export class GrainError extends Error {

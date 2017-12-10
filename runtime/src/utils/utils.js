@@ -1,4 +1,17 @@
 import { memory, view, encoder, decoder } from '../runtime';
+import { grainHeapAllocate } from '../core/heap';
+import { GrainClosure } from '../core/closures';
+import { GrainError } from '../errors/errors';
+import { grainDOMRefs } from '../lib/DOM';
+
+import {
+  GRAIN_TUPLE_TAG_TYPE,
+  GRAIN_LAMBDA_TAG_TYPE,
+  GRAIN_GENERIC_HEAP_TAG_TYPE,
+  GRAIN_DOM_ELEM_TAG,
+  GRAIN_STRING_HEAP_TAG,
+  GRAIN_GENERIC_HEAP_TAG_TYPE
+} from '../core/tags';
 
 export function grainHeapValueToString(n) {
   switch (view[n / 4]) {
@@ -51,7 +64,7 @@ export function grainToString(n) {
 
 export function grainHeapValToJSVal(n) {
   switch (view[n / 4]) {
-  case GRAIN_STRING_HEAP:
+  case GRAIN_STRING_HEAP_TAG:
     let byteView = new Uint8Array(memory.buffer);
     let length = view[(n / 4) + 1];
     let slice = byteView.slice(n + 8, n + 8 + length);
@@ -69,9 +82,6 @@ export function grainToJSVal(x) {
   if (!(x & 1)) {
     return x >> 1;
   } else if ((x & 7) == 5) {
-    if (!grainInitialized) {
-      throw new GrainError(-1, "Grain runtime not yet initialized");
-    }
     let lambdaLoc = (x ^ 5) / 4;
     return (new GrainClosure(lambdaLoc));
   } else if ((x & 7) === 3) {
@@ -101,7 +111,7 @@ export function JSToGrainVal(v) {
     }
   } else if (typeof v === "string") {
     let ptr = grainHeapAllocate(2 + (((v.length - 1) / 4) + 1)) / 4;
-    view[ptr] = GRAIN_STRING_HEAP;
+    view[ptr] = GRAIN_STRING_HEAP_TAG;
     view[ptr + 1] = v.length;
     let byteView = new Uint8Array(memory.buffer);
     let buf = encoder.encode(v);
