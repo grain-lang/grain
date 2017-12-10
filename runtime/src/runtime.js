@@ -1,51 +1,9 @@
 const GRAIN_TRUE = 0xFFFFFFFF | 0;
 const GRAIN_FALSE = 0x7FFFFFFF | 0;
 
-const GRAIN_NUMBER_TAG_MASK = 0b0001;
-const GRAIN_TUPLE_TAG_MASK = 0b0111;
-
-const GRAIN_NUMBER_TAG_TYPE       = 0b0000;
-const GRAIN_BOOLEAN_TAG_TYPE      = 0b1111;
-const GRAIN_TUPLE_TAG_TYPE        = 0b0001;
-const GRAIN_LAMBDA_TAG_TYPE       = 0b0101;
-const GRAIN_GENERIC_HEAP_TAG_TYPE = 0b0011;
-
-const GRAIN_STRING_HEAP = 1;
-const GRAIN_DOM_ELEM_TAG = 2;
-
 let grainInitialized = false;
 let grainModule;
 let grainDOMRefs = [];
-
-function getAndMask(tag) {
-  switch(tag) {
-  case GRAIN_NUMBER_TAG_TYPE:
-    return GRAIN_NUMBER_TAG_MASK;
-  default:
-    return GRAIN_TUPLE_TAG_MASK;
-  }
-}
-
-function assertGrainTag(tag, n, err) {
-  if ((n & getAndMask(tag)) !== tag) {
-    throwGrainError(err, n, 0);
-  }
-}
-
-function assertGrainHeapTag(tag, n, err) {
-  assertGrainTag(GRAIN_GENERIC_HEAP_TAG_TYPE, n, err);
-  let ptr = n ^ GRAIN_GENERIC_HEAP_TAG_TYPE;
-  if (view[ptr / 4] != tag) {
-    throwGrainError(err, n, 0);
-  }
-}
-
-let assertNumber = (n, err) => assertGrainTag(GRAIN_NUMBER_TAG_TYPE, n, err || GRAIN_ERR_NOT_NUMBER_GENERIC);
-let assertBoolean = (n, err) => assertGrainTag(GRAIN_BOOLEAN_TAG_TYPE, n, err || GRAIN_ERR_NOT_BOOLEAN_GENERIC);
-let assertTuple = (n, err) => assertGrainTag(GRAIN_TUPLE_TAG_TYPE, n, err || GRAIN_ERR_NOT_TUPLE_GENERIC);
-let assertLambda = (n, err) => assertGrainTag(GRAIN_LAMBDA_TAG_TYPE, n, err || GRAIN_ERR_NOT_LAMBDA_GENERIC);
-let assertString = (n, err) => assertGrainHeapTag(GRAIN_STRING_HEAP, n, err || GRAIN_ERR_NOT_STRING_GENERIC);
-let assertDOMElement = (n, err) => assertGrainHeapTag(GRAIN_DOM_ELEM_TAG, n, err || GRAIN_ERR_NOT_DOM_ELEMENT_GENERIC);
 
 let heapAdjust = function(n) {
   throw new GrainError(-1, "Grain runtime is not yet instantiated.");
