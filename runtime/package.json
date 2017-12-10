@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/grain-lang/grain.git"
+    "url": "git+https://github.com/grain-lang/grain.git"
   },
   "keywords": [
     "grain",
