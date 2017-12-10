@@ -1,6 +1,3 @@
-const GRAIN_TRUE = 0xFFFFFFFF | 0;
-const GRAIN_FALSE = 0x7FFFFFFF | 0;
-
 let grainInitialized = false;
 let grainModule;
 let grainDOMRefs = [];
