@@ -1,21 +1,16 @@
 import { heapAdjust } from './core/heap';
 
+import print from './lib/print';
 import * as libStrings from './lib/strings';
 import * as libDOM from './lib/DOM';
 
 let grainInitialized = false;
 let grainModule;
 
-function debugPrint(n) {
-  // console.log(`0x${n.toString(16)} (0b${n.toString(2)})`);
-  return n;
-}
-
 export const memory = new WebAssembly.Memory({initial: 1});
 export const view = new Int32Array(memory.buffer);
 export const encoder = new TextEncoder("utf-8");
 export const decoder = new TextDecoder("utf-8");
-let counter = 0;
 
 function grainEqualHelp(x, y, cycles) {
   if ((x & 7) === 1) {
@@ -59,17 +54,9 @@ function displayOnPage(str) {
   document.getElementById('output').innerText = str;
 }
 
-function printNumber(n) {
-  debugPrint(n);
-  let res = grainToString(n);
-  displayOnPage(`${res}`);
-  console.log(res);
-  return n;
-}
-
 const importObj = {
   console: {
-    log: printNumber,
+    log: print,
     debug: debugPrint,
     printClosure: printClosure
   },
@@ -79,7 +66,7 @@ const importObj = {
     checkMemory: grainCheckMemory
   },
   grainBuiltins: {
-    print: printNumber,
+    print,
     equal: grainEqual,
     toString: (n => JSToGrainVal(grainToString(n))),
     ...libStrings,
