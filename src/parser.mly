@@ -15,7 +15,7 @@ let elaborate_schema foralls typ =
 
 %token <int> NUM
 %token <string> ID STRING
-%token LBRACK RBRACK DEF ADD1 SUB1 LPAREN RPAREN LET REC IN EQUAL COMMA PLUS MINUS TIMES IF COLON ELSECOLON TRUE FALSE ISBOOL ISNUM ISTUPLE LAMBDA EQEQ LESS GREATER PRINTSTACK EOF LESSEQ GREATEREQ AND OR NOT GETS BEGIN END SEMI ELLIPSIS ARROW INCLUDE
+%token LBRACK RBRACK DEF ADD1 SUB1 LPAREN RPAREN LET REC IN EQUAL COMMA PLUS MINUS TIMES IF COLON ELSECOLON ELSE TRUE FALSE ISBOOL ISNUM ISTUPLE LAMBDA EQEQ LESS GREATER PRINTSTACK EOF LESSEQ GREATEREQ AND OR NOT GETS BEGIN END SEMI ELLIPSIS ARROW INCLUDE
 
 %left LPAREN
 %left PLUS MINUS TIMES GREATER LESS EQEQ LESSEQ GREATEREQ AND OR
@@ -119,14 +119,17 @@ binop_expr :
   | binop_expr binop binop_expr { EPrim2($2, $1, $3, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
   | simple_expr { $1 }
 
+cond_expr:
+  | IF expr COLON expr ELSECOLON expr { EIf($2, $4, $6, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
+  | IF expr COLON expr ELSE cond_expr { EIf($2, $4, $6, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
+
 expr :
   | INCLUDE ID IN expr { EInclude($2, $4, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
   | LET binds IN expr { ELet($2, $4, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
   | LET REC binds IN expr { ELetRec($3, $5, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
-  | IF expr COLON expr ELSECOLON expr { EIf($2, $4, $6, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
+  | cond_expr { $1 }
   | binop_expr { $1 }
 
 program : expr EOF { $1 }
 
 %%
-

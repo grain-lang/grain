@@ -76,6 +76,7 @@ rule token = parse
   | ":" { COLON }
   | "->" { ARROW }
   | "else:" { ELSECOLON }
+  | "else" { ELSE }
   | "let" { LET }
   | "rec" { REC }
   | "in" { IN }
