@@ -17,21 +17,34 @@ no means of performing any type of stack introspection.
 
 ## Building
 
-To build, have `ocaml` (version >= 4.02.3), `opam`, and `jbuilder` installed
+### Compiler
+
+To build the compiler, have `ocaml` (version >= 4.02.3), `opam`, and `jbuilder` installed
 and on your `PATH`.
 Then, running `make` will install any needed OCaml dependencies and build the
 compiler.
+
+### Runtime
+
+To build the runtime, have `node` (version >= 9) and `npm` (version >= 5) installed. Then,
+
+```sh
+cd runtime
+npm install
+npm run build
+```
 
 ## Running
 
 To create a `.wasm` file, run the following:
 
-```
+```sh
 $ ./grainc /path/to/file.gr -o /path/to/output.wasm
 ```
 
 For an example of how to run the file in JavaScript, look at the
 files under `script`.
+You'll need to create a symlink from `script/public/javascripts/grain-runtime.js` to the built file in `runtime/dist/grain-runtime.js`, or you'll have to just copy it over to run the example.
 
 [philip]: https://github.com/belph
 [oscar]: http://github.com/ospencer
