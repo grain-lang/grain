@@ -1,1 +1,2 @@
-export * from './runtime';
+import GrainRunner from './runtime';
+export default GrainRunner;
