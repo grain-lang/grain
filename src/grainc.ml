@@ -19,13 +19,15 @@ let default_output_filename name = safe_remove_extension name ^ ".wasm"
 
 let default_assembly_filename name = safe_remove_extension name ^ ".wast"
 
-let compile_file debug cdebug unsound_opts name outfile =
+let compile_file debug cdebug unsound_opts name outfile no_stdlib extra_includes =
   let input_file = open_in name in
   let runnable = true in
   let opts = {Compile.default_compile_options with
               sound_optimizations=(not unsound_opts);
               optimizations_enabled=(not debug);
-              verbose=cdebug
+              verbose=cdebug;
+              use_stdlib=(not no_stdlib);
+              include_dirs=extra_includes
              } in
   let output = if runnable then
       compile_file_to_binary name opts debug input_file (Option.default (default_output_filename name) outfile)
@@ -87,6 +89,13 @@ let output_filename =
   let doc = sprintf "Output filename" in
   let docv = "FILE" in
   Arg.(value & opt (some output_file_conv) None & info ["o"] ~docv ~doc)
+;;
+
+let extra_includes =
+  let doc = "Extra library include directories" in
+  let docv = "DIR" in
+  Arg.(value & opt (list dir) [] & info ["I"] ~docv ~doc)
+;;
 
 let help_flag =
   let doc = "Show this help message" in
@@ -98,17 +107,24 @@ let help_cmd =
 
 let cmd =
   let doc = sprintf "Compile %s programs" language_name in
-  Term.(ret (const compile_file $ debug $ compiler_debug $ unsound_opts $ input_filename $ output_filename)),
+  Term.(ret (const compile_file $ debug $ compiler_debug $ unsound_opts $ input_filename $ output_filename $ no_stdlib $ extra_includes)),
   Term.info (Sys.argv.(0)) ~version:"1.0.0" ~doc
 
-(*let () =
-  let name = Sys.argv.(1) in
-  let input_file = open_in name in
-  match compile_file_to_string name true input_file with
-  | Left errs ->
-     printf "Errors:\n%s\n" (ExtString.String.join "\n" (print_errors errs))
-  | Right program -> printf "%s\n" program;;*)
-
-let () = match Term.eval cmd with
+let () =
+  let open BatPathGen.OfString in
+  match Config.get_grain_root() with
+  (* Prefer environment variable over inferred path *)
+  | Some(_) -> ()
+  | None ->
+    begin
+      let grainc_dir = parent @@ of_string Sys.argv.(0) in
+      let as_abs =
+        if is_absolute grainc_dir then
+          grainc_dir
+        else
+          normalize @@ concat (of_string @@ Unix.getcwd()) grainc_dir in
+      Config.set_grain_root @@ to_string @@ parent as_abs
+    end;
+  match Term.eval cmd with
   | `Error _ -> exit 1
   | _ -> exit 0
