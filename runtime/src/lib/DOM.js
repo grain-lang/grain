@@ -1,5 +1,5 @@
 import { view } from '../runtime';
-import { assertString, assertDOMElement, assertLambda } from '../core/tags';
+import { assertString, assertDOMElement, assertLambda, GRAIN_DOM_ELEM_TAG } from '../core/tags';
 import { GRAIN_FALSE } from '../core/primitives';
 import { grainHeapAllocate } from '../core/heap';
 import { grainToJSVal } from '../utils/utils';
@@ -21,7 +21,7 @@ export function DOMQuery(n) {
   }
 }
 
-export function DOMElemSetText(elemRef, textRef) {
+export function DOMSetText(elemRef, textRef) {
   assertDOMElement(elemRef);
   assertString(textRef);
   let elem = grainToJSVal(elemRef);

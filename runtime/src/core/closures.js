@@ -1,6 +1,6 @@
 import { view, grainModule } from '../runtime';
 import { throwGrainError } from '../errors/errors';
-import { grainToJSVal } from '../utils/utils';
+import { grainToJSVal, JSToGrainVal } from '../utils/utils';
 import { GRAIN_ERR_ARITY_MISMATCH } from '../errors/error-codes';
 
 export const GrainClosure = function(loc) {

@@ -1,15 +1,15 @@
-import { heapAdjust, grainCheckMemory } from './core/heap';
+import { heapController, grainCheckMemory } from './core/heap';
 import { printClosure } from './core/closures';
 import { throwGrainError } from './errors/errors';
 import { grainToJSVal } from './utils/utils';
 
 import { print, debugPrint } from './lib/print';
-import { equal } from './lib/equal';
+import equal from './lib/equal';
 import toString from './lib/to-string';
 import * as libStrings from './lib/strings';
 import * as libDOM from './lib/DOM';
 
-let grainModule;
+export let grainModule;
 
 export const memory = new WebAssembly.Memory({initial: 1});
 export const view = new Int32Array(memory.buffer);
@@ -46,7 +46,7 @@ async function fetchAndInstantiate(url, importObject) {
 function runGrain(module) {
   grainModule = module;
   let main = module.instance.exports["GRAIN$MAIN"];
-  heapAdjust = module.instance.exports["GRAIN$HEAP_ADJUST"];
+  heapController.heapAdjust = module.instance.exports["GRAIN$HEAP_ADJUST"];
   let res = main();
   return grainToJSVal(res);
 }
