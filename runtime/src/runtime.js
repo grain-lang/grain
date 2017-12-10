@@ -1,6 +1,7 @@
 import { heapAdjust } from './core/heap';
 
-import print from './lib/print';
+import { print, debugPrint } from './lib/print';
+import { equal } from './lib/equal';
 import * as libStrings from './lib/strings';
 import * as libDOM from './lib/DOM';
 
@@ -12,43 +13,7 @@ export const view = new Int32Array(memory.buffer);
 export const encoder = new TextEncoder("utf-8");
 export const decoder = new TextDecoder("utf-8");
 
-function grainEqualHelp(x, y, cycles) {
-  if ((x & 7) === 1) {
-    if ((y & 7) !== 1) {
-      return false;
-    }
-    let xPtr = (x ^ 1) / 4;
-    let yPtr = (y ^ 1) / 4;
-    if (view[xPtr] !== view[yPtr]) {
-      return false;
-    }
-    if (view[xPtr] & 0x80000000) {
-      return true;
-    }
-    let length = view[xPtr];
-    ++cycles;
-    view[xPtr] |= 0x80000000;
-    view[yPtr] |= 0x80000000;
-    let result = true;
-    for (let i = 0; i < length; ++i) {
-      if (!grainEqualHelp(view[xPtr + i + 1],
-                          view[yPtr + i + 1],
-                          cycles)) {
-        result = false;
-        break;
-      }
-    }
-    view[xPtr] = length;
-    view[yPtr] = length;
-    return result;
-  } else {
-    return x === y;
-  }
-}
 
-function grainEqual(x, y) {
-  return grainEqualHelp(x, y, 0) ? GRAIN_TRUE : GRAIN_FALSE;
-}
 
 function displayOnPage(str) {
   document.getElementById('output').innerText = str;
@@ -67,7 +32,7 @@ const importObj = {
   },
   grainBuiltins: {
     print,
-    equal: grainEqual,
+    equal,
     toString: (n => JSToGrainVal(grainToString(n))),
     ...libStrings,
     ...libDOM
