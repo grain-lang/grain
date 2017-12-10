@@ -1,6 +1,6 @@
 import * from './error-codes';
 
-class GrainError extends Error {
+export class GrainError extends Error {
   constructor(code, message) {
     super(message);
     this.name = "GrainError";
