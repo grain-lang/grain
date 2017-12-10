@@ -41,7 +41,7 @@ let convert_to_continuation ast : grain_library =
   help ast (fun x -> x)
 
 let load_library initial_env library =
-  let filename = "lib/" ^ library ^ ".grlib" in
+  let filename = library in
   let inchan = open_in filename in
   let lexbuf = Lexing.from_channel inchan in
   let lib = parse filename lexbuf in
@@ -65,29 +65,42 @@ let lift_loaded_libraries (libs : (exn list, grain_library) either list) : (exn 
          | Right(_) -> cur
          | Left(rest_errs) -> Left(errs @ rest_errs))) (Right(fun x -> x)) libs
 
-let library_exists lib =
-  let filename = "lib/" ^ lib ^ ".grlib" in
-  Sys.file_exists filename
+(** Returns the path to the given library within the given list
+    of include directories, if it exists. *)
+let library_path (include_dirs : string list) (lib : string) =
+  let lib_path dir =
+    let open BatPathGen.OfString in
+    let open Infix in
+    to_string @@ (of_string dir) /: (lib ^ ".grlib") in
+  List.map lib_path include_dirs
+  |> List.find_opt Sys.file_exists
 
-let rec extract_includes (prog : sourcespan program) =
+
+let rec extract_includes (include_dirs : string list) (prog : sourcespan program) =
   match prog with
   | EInclude(lib, body, loc) ->
-    let rest = extract_includes body in
-    (match rest with
-     | Left(errs) ->
-       if not (library_exists lib) then
-         Left((IncludeNotFound(lib, loc))::errs)
-       else
-         Left(errs)
-     | Right((libs, body)) ->
-       if not (library_exists lib) then
-         Left([(IncludeNotFound(lib, loc))])
-       else
-         Right((lib::libs), body))
+    let rest = extract_includes include_dirs body in
+    let lib_file = library_path include_dirs lib in
+    begin
+      match (rest, lib_file) with
+      | Left(errs), None -> Left((IncludeNotFound(lib, loc))::errs)
+      | Left(_), _ -> rest
+      | Right(_), None -> Left([IncludeNotFound(lib, loc)])
+      | Right((libs, body)), Some(lib_path) -> Right((lib_path::libs), body)
+    end
   | _ -> Right([], prog)
 
-let load_libraries (initial_env : sourcespan envt) (prog : sourcespan program) =
-  let extracted = extract_includes prog in
+
+let stdlib_directory() : string option =
+  let open BatPathGen.OfString in
+  let open Infix in
+  Config.get_grain_root()
+  |> Option.map (fun root ->
+      to_string @@ (of_string root) /: "lib" /: "grain" /: "stdlib")
+
+
+let load_libraries (initial_env : sourcespan envt) (include_dirs : string list) (prog : sourcespan program) =
+  let extracted = extract_includes include_dirs prog in
   match extracted with
   | Left(errs) -> Left(errs)
   | Right((libs, body)) ->

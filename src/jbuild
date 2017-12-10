@@ -14,3 +14,7 @@
   (package grain)
   (libraries (grain))))
 
+(install
+ ((section lib)
+  (files ((grain-stdlib/lists.grlib as stdlib/lists.grlib)))
+  (package grain)))

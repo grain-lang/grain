@@ -11,6 +11,8 @@ type compile_options = {
   verbose: bool;
   sound_optimizations: bool;
   optimizations_enabled: bool;
+  include_dirs: string list;
+  use_stdlib: bool;
 }
 
 let default_compile_options = {
@@ -18,6 +20,8 @@ let default_compile_options = {
   verbose = false;
   sound_optimizations = true;
   optimizations_enabled = true;
+  include_dirs = [];
+  use_stdlib = true;
 }
 
 let compile_prog p = Codegen.module_to_string @@ Codegen.compile_aprog p
@@ -48,8 +52,11 @@ let opts_to_optimization_settings opts = {
   initial_functions = initial_funcs;
 }
 
+let lib_include_dirs opts =
+  (if opts.use_stdlib then Option.map_default (fun x -> [x]) [] (Grain_stdlib.stdlib_directory()) else []) @ opts.include_dirs
+
 let compile_module (opts: compile_options) (p : sourcespan program) =
-  match Grain_stdlib.load_libraries initial_env p with
+  match Grain_stdlib.load_libraries initial_env (lib_include_dirs opts) p with
   | Left(errs) -> Left(errs)
   | Right(full_p) ->
     let wf_prog = well_formed full_p false initial_env in
@@ -72,7 +79,7 @@ let compile_to_string opts p =
   | Right(m) -> Right(module_to_string m)
 
 let compile_to_anf (opts : compile_options) (p : sourcespan program) =
-  match Grain_stdlib.load_libraries initial_env p with
+  match Grain_stdlib.load_libraries initial_env (lib_include_dirs opts) p with
   | Left(errs) -> Left(errs)
   | Right(full_p) ->
     let wf_prog = well_formed full_p false initial_env in
@@ -84,7 +91,7 @@ let compile_to_anf (opts : compile_options) (p : sourcespan program) =
 
 (* like compile_to_anf, but performs scope resolution and optimization. *)
 let compile_to_final_anf (opts : compile_options) (p : sourcespan program) =
-  match Grain_stdlib.load_libraries initial_env p with
+  match Grain_stdlib.load_libraries initial_env (lib_include_dirs opts) p with
   | Left(errs) -> Left(errs)
   | Right(full_p) ->
     let wf_prog = well_formed full_p false initial_env in

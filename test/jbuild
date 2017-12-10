@@ -7,6 +7,5 @@
 (alias
  ((name   runtest)
   (deps   (test.exe
-           (files_recursively_in input)
-           (files_recursively_in lib))) ; FIXME: the standard library should be installed correctly out of the box.
+           (files_recursively_in input)))
   (action (run ${<}))))
