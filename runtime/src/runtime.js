@@ -1,7 +1,9 @@
 import { heapAdjust } from './core/heap';
+import { printClosure } from './core/closures';
 
 import { print, debugPrint } from './lib/print';
 import { equal } from './lib/equal';
+import toString from './lib/to-string';
 import * as libStrings from './lib/strings';
 import * as libDOM from './lib/DOM';
 
@@ -33,7 +35,7 @@ const importObj = {
   grainBuiltins: {
     print,
     equal,
-    toString: (n => JSToGrainVal(grainToString(n))),
+    toString,
     ...libStrings,
     ...libDOM
   }
