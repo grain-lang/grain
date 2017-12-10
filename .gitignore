@@ -22,3 +22,5 @@ setup.data
 setup.ml
 myocamlbuild.ml
 .merlin
+runtime/dist
+script/public/javascripts/grain-runtime.js
