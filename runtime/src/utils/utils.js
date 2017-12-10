@@ -1,3 +1,5 @@
+import { memory, view, encoder, decoder } from '../runtime';
+
 export function grainHeapValueToString(n) {
   switch (view[n / 4]) {
   case 1:
