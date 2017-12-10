@@ -3,6 +3,8 @@ import { throwGrainError } from '../errors/errors';
 import { grainToJSVal, JSToGrainVal } from '../utils/utils';
 import { GRAIN_ERR_ARITY_MISMATCH } from '../errors/error-codes';
 
+import print from '../lib/print';
+
 export class GrainClosure {
   constructor(loc) {
     this.loc = loc;
@@ -32,7 +34,7 @@ export function printClosure(c) {
   let closureElts = [];
 
   for (var i = 0; i < closureSize; ++i) {
-    closureElts.push(printNumber(view[c + i + 3]));
+    closureElts.push(print(view[c + i + 3]));
   }
   console.log(`<closure@${c}: idx=${idx}, arity=${arity}, size=${closureSize}: ${closureElts}>`);
   console.log(view.slice(0, 32));
