@@ -56,10 +56,10 @@ function debugPrint(n) {
   return n;
 }
 
-let memory = new WebAssembly.Memory({initial: 1});
-let view = new Int32Array(memory.buffer);
-let encoder = new TextEncoder("utf-8");
-let decoder = new TextDecoder("utf-8");
+export const memory = new WebAssembly.Memory({initial: 1});
+export const view = new Int32Array(memory.buffer);
+export const encoder = new TextEncoder("utf-8");
+export const decoder = new TextDecoder("utf-8");
 let counter = 0;
 
 var GrainClosure = function(loc) {
