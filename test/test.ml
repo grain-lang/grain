@@ -586,6 +586,8 @@ let suite =
 
 
 let () =
+  (** Override default stdlib location to use development version of stdlib *)
+  Grain.Config.set_grain_root (Unix.getcwd() ^ "/../../install/default");
   run_test_tt_main suite
 ;;
 
