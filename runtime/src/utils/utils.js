@@ -9,8 +9,7 @@ import {
   GRAIN_LAMBDA_TAG_TYPE,
   GRAIN_GENERIC_HEAP_TAG_TYPE,
   GRAIN_DOM_ELEM_TAG,
-  GRAIN_STRING_HEAP_TAG,
-  GRAIN_GENERIC_HEAP_TAG_TYPE
+  GRAIN_STRING_HEAP_TAG
 } from '../core/tags';
 
 export function grainHeapValueToString(n) {
