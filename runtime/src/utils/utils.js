@@ -82,7 +82,8 @@ export function grainToJSVal(x) {
     return x >> 1;
   } else if ((x & 7) == 5) {
     let lambdaLoc = (x ^ 5) / 4;
-    return (new GrainClosure(lambdaLoc));
+    let closure = new GrainClosure(lambdaLoc);
+    return closure.jsFunc.bind(closure);
   } else if ((x & 7) === 3) {
     return grainHeapValToJSVal(x ^ 3);
   } else if ((x === -1)) {

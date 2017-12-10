@@ -3,23 +3,24 @@ import { throwGrainError } from '../errors/errors';
 import { grainToJSVal, JSToGrainVal } from '../utils/utils';
 import { GRAIN_ERR_ARITY_MISMATCH } from '../errors/error-codes';
 
-export const GrainClosure = function(loc) {
-  this.loc = loc;
-  this.arity = view[loc];
-  this.ptr = view[loc + 1];
-  this.closureSize = view[loc + 2];
-  this.closureElts = view.slice(loc + 3, loc + 3 + this.closureSize);
-  this.func = grainModule.instance.exports["GRAIN$LAM_" + this.ptr];
-};
+export class GrainClosure {
+  constructor(loc) {
+    this.loc = loc;
+    this.arity = view[loc];
+    this.ptr = view[loc + 1];
+    this.closureSize = view[loc + 2];
+    this.closureElts = view.slice(loc + 3, loc + 3 + this.closureSize);
+    this.func = grainModule.instance.exports["GRAIN$LAM_" + this.ptr];
+  }
 
-GrainClosure.prototype.call = function() {
-  if (arguments.length != this.arity) {
-    throwGrainError(GRAIN_ERR_ARITY_MISMATCH, this.arity, arguments.length);
-    return undefined;
-  } else {
-    let grainVals = Array.prototype.map.call(arguments, JSToGrainVal);
-    grainVals.unshift(this.loc * 4);
-    return grainToJSVal(this.func.apply(this.func, grainVals));
+  jsFunc(...args) {
+    if (args.length != this.arity) {
+      throwGrainError(GRAIN_ERR_ARITY_MISMATCH, this.arity, args.length);
+    } else {
+      let grainVals = args.map(JSToGrainVal);
+      grainVals.unshift(this.loc * 4);
+      return grainToJSVal(this.func(...grainVals));
+    }
   }
 };
 
