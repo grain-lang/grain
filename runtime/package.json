@@ -1,0 +1,34 @@
+{
+  "name": "@grain/runtime",
+  "version": "0.0.0",
+  "description": "The JavaScript runtime for the Grain language.",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/grain-lang/grain.git"
+  },
+  "keywords": [
+    "grain",
+    "runtime"
+  ],
+  "contributors": [
+    {
+      "name": "Oscar Spencer",
+      "email": "oscar.spen@gmail.com",
+      "url": "https://github.com/ospencer"
+    },
+    {
+      "name": "Philip Blair",
+      "email": "philip@pblair.org",
+      "url": "https://github.com/belph"
+    }
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/grain-lang/grain/issues"
+  },
+  "homepage": "https://grain-lang.org"
+}
