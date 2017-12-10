@@ -1,6 +1,7 @@
 import { assertString, assertNumber } from '../core/tags';
 import { grainToJSVal, JSToGrainVal } from '../utils/utils';
 import { throwGrainError, GrainError } from '../errors/errors';
+import { GRAIN_ERR_NOT_NONNEG } from '../errors/error-codes';
 
 export function stringAppend(s1, s2) {
   assertString(s1);
