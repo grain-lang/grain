@@ -3,7 +3,7 @@ import { throwGrainError } from '../errors/errors';
 import { grainToJSVal, JSToGrainVal } from '../utils/utils';
 import { GRAIN_ERR_ARITY_MISMATCH } from '../errors/error-codes';
 
-import print from '../lib/print';
+import { print } from '../lib/print';
 
 export class GrainClosure {
   constructor(loc) {
