@@ -1018,13 +1018,4 @@ let compile_aprog (anfed : tag aprogram) =
 
 let module_to_string compiled_module =
   (* Print module to string *)
-  let (in_fd, out_fd) = Unix.pipe() in
-  let (in_channel, out_channel) = (Unix.in_channel_of_descr in_fd, Unix.out_channel_of_descr out_fd) in
-  Pervasives.set_binary_mode_in in_channel false;
-  Pervasives.set_binary_mode_out out_channel false;
-  Wasm.Print.module_ out_channel 80 compiled_module;
-  Unix.close out_fd;
-  let str = BatStream.of_channel in_channel
-            |> BatStream.to_string in
-  Unix.close in_fd;
-  str
+  Wasm.Sexpr.to_string 80 @@ Wasm.Arrange.module_ compiled_module
