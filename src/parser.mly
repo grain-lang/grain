@@ -15,7 +15,7 @@ let elaborate_schema foralls typ =
 
 %token <int> NUM
 %token <string> ID STRING
-%token LBRACK RBRACK DEF ADD1 SUB1 LPAREN RPAREN LET REC IN EQUAL COMMA PLUS MINUS TIMES IF COLON ELSECOLON ELSE TRUE FALSE ISBOOL ISNUM ISTUPLE LAMBDA EQEQ LESS GREATER PRINTSTACK EOF LESSEQ GREATEREQ AND OR NOT GETS BEGIN END SEMI ELLIPSIS ARROW INCLUDE
+%token LBRACK RBRACK DEF ADD1 SUB1 LPAREN RPAREN LET REC IN AND EQUAL COMMA PLUS MINUS TIMES IF COLON ELSECOLON ELSE TRUE FALSE ISBOOL ISNUM ISTUPLE LAMBDA EQEQ LESS GREATER PRINTSTACK EOF LESSEQ GREATEREQ ANDAND OROR NOT GETS BEGIN END SEMI ELLIPSIS ARROW INCLUDE
 
 %left LPAREN
 %left PLUS MINUS TIMES GREATER LESS EQEQ LESSEQ GREATEREQ AND OR
@@ -46,6 +46,7 @@ prim1 :
 binds :
   | ID tyann EQUAL expr { [($1, $2, $4, (Parsing.rhs_start_pos 1, Parsing.rhs_end_pos 1))] }
   | ID tyann EQUAL expr COMMA binds { ($1, $2, $4, (Parsing.rhs_start_pos 1, Parsing.rhs_end_pos 1))::$6 }
+  | ID tyann EQUAL expr AND binds { ($1, $2, $4, (Parsing.rhs_start_pos 1, Parsing.rhs_end_pos 1))::$6 }
 
 tyann :
   | { None }
@@ -87,8 +88,8 @@ simple_expr :
   | LPAREN expr RPAREN { $2 }
   | simple_expr LPAREN exprs RPAREN { EApp($1, $3, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
   | simple_expr LPAREN RPAREN { EApp($1, [], (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
-  | LPAREN LAMBDA ids COLON expr RPAREN { ELambda($3, $5, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
-  | LPAREN LAMBDA COLON expr RPAREN { ELambda([], $4, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
+  | LAMBDA ids COLON expr { ELambda($2, $4, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
+  | LAMBDA COLON expr { ELambda([], $3, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
   | simple_expr LBRACK expr RBRACK { EGetItem($1, $3, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
   | simple_expr LBRACK expr RBRACK GETS expr { ESetItem($1, $3, $6, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
   | simple_expr LBRACK colon_num RBRACK { EGetItemExact($1, $3, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
@@ -112,8 +113,8 @@ binop:
   | GREATER { Greater }
   | LESSEQ { LessEq }
   | GREATEREQ { GreaterEq }
-  | AND { And }
-  | OR { Or }
+  | ANDAND { And }
+  | OROR { Or }
 
 binop_expr :
   | binop_expr binop binop_expr { EPrim2($2, $1, $3, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }

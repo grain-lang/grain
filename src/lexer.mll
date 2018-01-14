@@ -80,6 +80,7 @@ rule token = parse
   | "let" { LET }
   | "rec" { REC }
   | "in" { IN }
+  | "and" { AND }
   | ":=" { GETS }
   | "==" { EQEQ }
   | "=" { EQUAL }
@@ -96,8 +97,8 @@ rule token = parse
   | ">" { GREATER }
   | "<=" { LESSEQ }
   | ">=" { GREATEREQ }
-  | "&&" { AND }
-  | "||" { OR }
+  | "&&" { ANDAND }
+  | "||" { OROR }
   | "!" { NOT }
   | "..." { ELLIPSIS }
   | '"'   { read_dquote_str (Buffer.create 16) lexbuf }
