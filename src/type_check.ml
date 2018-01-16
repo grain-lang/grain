@@ -9,7 +9,7 @@ open Pretty
 type typ_env = scheme envt;;
 
 (* A unification is a dictionary mapping type variable names to
-   unifiables (from the BatUref library) containing types.  
+   unifiables (from the BatUref library) containing types.
  *)
 type unification = (typ uref) envt;;
 
@@ -86,12 +86,12 @@ let bind (tyvarname : string) (t : typ) : unification =
      else [tyvarname, uref t] (* make a unification containing just this one type variable, mapped to t *)
 
 (* Unify takes two types, and a unification describing the known equalities among types,
-   and tries to unify the two types.  
+   and tries to unify the two types.
    If the first type is a TyVar, unify it with the second type.
    If the second type is a TyVar, unify it with the first.
-   If both types are TyCons, and the same type constant, then unification succeeds.  
+   If both types are TyCons, and the same type constant, then unification succeeds.
    If both are TyArrs of the same arity, recur on the pieces and unify them.
-   If both are TyTups of the same arity, recur on the pieces and unify them.   
+   If both are TyTups of the same arity, recur on the pieces and unify them.
    Otherwise, raise a type error explaining the mismatch.
    Return the unification, especially if it's been modified...
 *)
@@ -113,12 +113,12 @@ let rec unify (t1 : typ) (t2 : typ) (unif_env : unification) : unification =
      let n1_ref = List.assoc n1 unif_env in
      let n2_ref = List.assoc n2 unif_env in
      let choose_new_representative t1 t2 =
-       (* When we get inside this function, we're effectively producing a 
+       (* When we get inside this function, we're effectively producing a
           new type equality asserting `t1 = t2`, but as we discussed in class,
-          we need to pick a preferred direction to rewrite that equality, 
+          we need to pick a preferred direction to rewrite that equality,
           either saying "Rewrite t1 as t2", or "Rewrite t2 as t1".  If this function
-          returns t2, for example, then we're choosing the first direction, 
-          "Rewrite t1 as t2".  You need to implement this function to choose the 
+          returns t2, for example, then we're choosing the first direction,
+          "Rewrite t1 as t2".  You need to implement this function to choose the
           correct direction, depending on what the types are. *)
        t1 in
      unite ~sel:choose_new_representative n1_ref n2_ref;
@@ -170,7 +170,7 @@ let infer (gamma : typ_env) exp : typ_constraint list =
   let rec type_infer (gamma : typ_env) exp : typ =
     match exp with
     | ELet(binds, body, _) ->
-      let new_env = List.fold_left (fun acc (name, scheme, exp, _) -> (name, generalize gamma (type_infer gamma exp))::acc) gamma binds in
+      let new_env = List.fold_left (fun acc (name, scheme, exp, _) -> (name, generalize gamma (type_infer acc exp))::acc) gamma binds in
       type_infer new_env body
     | ELetRec(binds, body, _) ->
       let bind_vars = List.map (fun (name, scheme, exp, _) -> gen_typ_sym name) binds in
@@ -218,8 +218,9 @@ let infer (gamma : typ_env) exp : typ_constraint list =
       uni t_func (TyArr(t_args, t_var));
       t_var
     | ELambda(args, body, _) ->
-      let arg_vars = List.map (fun (arg, _) -> gen_typ_sym arg) args in    
-      type_infer ((List.map2 (fun (arg, _) tv -> (arg, ([], TyVar(tv)))) args arg_vars) @ gamma) body
+      let arg_vars = List.map (fun (arg, _) -> gen_typ_sym arg) args in
+      let ret = type_infer ((List.map2 (fun (arg, _) tv -> (arg, ([], TyVar(tv)))) args arg_vars) @ gamma) body in
+      TyArr((List.map (fun (a) -> TyVar a) arg_vars), ret)
     | ESeq(exps, _) ->
       begin
         match exps with
@@ -230,15 +231,32 @@ let infer (gamma : typ_env) exp : typ_constraint list =
     | _ -> failwith "Impossible"
   in
   ignore (type_infer gamma exp);
-  !constraints
+  List.rev !constraints
 
 let rec solver (cs : typ_constraint list) (unif_env : unification) =
   match cs with
   | [] -> unif_env
   | (t1, t2)::tl ->
     let unif_env = unify t1 t2 unif_env in
-    solver (List.map (fun (t1, t2) -> ((subst_type unif_env t1), (subst_type unif_env t2))) cs) unif_env
+    solver (List.map (fun (t1, t2) -> ((subst_type unif_env t1), (subst_type unif_env t2))) tl) unif_env
 
+let initial_types_env = [
+  (let print_sym = gen_typ_sym "a" in
+  ("print", ([], TyArr([TyVar(print_sym)], TyVar(print_sym)))));
+  (let sym_a = gen_typ_sym "a" in
+  let sym_b = gen_typ_sym "b" in
+  ("equal", ([], TyArr([TyVar(sym_a); TyVar(sym_b)], typ_bool))));
+  ("toString", ([], TyArr([TyVar(gen_typ_sym "a")], typ_str)));
+  ("strcat", ([], TyArr([typ_str; typ_str], typ_str)));
+  ("strlen", ([], TyArr([typ_str], typ_int)));
+  ("strslice", ([], TyArr([typ_str; typ_int; typ_int], typ_str)));
+]
+
+let type_check (ast : 'a Types.expr) : unit =
+  let types = infer initial_types_env ast in
+  let lst = List.fold_right (^) (List.map ((fun (x, y) -> "(" ^  (string_of_typ x) ^ ", " ^ (string_of_typ y) ^ "); ")) types) "" in
+  Printf.eprintf "%s\n" lst;
+  ignore @@ solver types []
 
 (*
 let rec type_check (gamma : typ_env) exp typ : bool =
@@ -277,7 +295,7 @@ and type_infer (gamma : typ_env) exp : typ =
   | EId(name, _) -> lookup_env gamma name
   | EApp(func, args, _) -> failwith "NYI"
   | ELambda(args, body, _) ->
-    let arg_vars = List.map (fun (arg, _) -> gen_typ_sym arg) args in    
+    let arg_vars = List.map (fun (arg, _) -> gen_typ_sym arg) args in
     type_infer ((List.map2 (fun (arg, _) tv -> (arg, ([], TyVar(tv)))) args arg_vars) @ gamma) body
   | ESeq(exps, _) -> failwith "NYI"
   | EEllipsis(_) -> failwith "NYI"
