@@ -2,14 +2,51 @@ open Printf
 open Types
 open Expr
 
+let rec pre_anf (p : tag program) : tag program =
+  match (p : tag program) with
+    | ELet (binds, body, t) ->
+      ELet (List.flatten @@ List.map (function
+      | LetBind(name, topt, rhs, tag) ->
+        [LetBind(name, topt, pre_anf rhs, tag)]
+      | TupDestr(ids, topt, rhs, tag) ->
+        let tup_name = sprintf "tupdestr_%d" tag in
+        LetBind(tup_name, None, pre_anf rhs, tag) ::
+        (List.mapi (fun i (name, t) ->
+          LetBind(name, None, EGetItemExact(EId(tup_name, t), i, t), t)) ids)
+      ) binds, pre_anf body, t)
+    | ELetRec (binds, body, t) ->
+      ELetRec (List.map (function
+      | LetBind(name, topt, rhs, tag) ->
+        LetBind(name, topt, pre_anf rhs, tag)
+      | TupDestr(_, _, _, _) ->
+        failwith "Not well-formed"
+      ) binds, pre_anf body, t)
+    | EPrim1 (op, e, t) -> EPrim1(op, pre_anf e, t)
+    | EPrim2 (op, e1, e2, t) -> EPrim2(op, pre_anf e1, pre_anf e2, t)
+    | EIf (cond, thn, els, t) -> EIf(pre_anf cond, pre_anf thn, pre_anf els, t)
+    | ETuple (exprs, t) -> ETuple(List.map pre_anf exprs, t)
+    | EString (_,_) -> p
+    | EGetItem (_,_,_) -> failwith "NYI"
+    | ESetItem (_,_,_,_) -> failwith "NYI"
+    | EGetItemExact (e, n, t) -> EGetItemExact(pre_anf e, n, t)
+    | ESetItemExact (l, n, r, t) -> ESetItemExact(pre_anf l, n, pre_anf r, t)
+    | ENumber (_,_)
+    | EBool (_,_)
+    | EId (_,_) -> p
+    | EApp (f, args, t) -> EApp(pre_anf f, List.map pre_anf args, t)
+    | ELambda (args, b, t) -> ELambda(args, pre_anf b, t)
+    | ESeq (exprs, t) -> ESeq(List.map pre_anf exprs, t)
+    | EEllipsis _ -> failwith "you cannot"
+    | EInclude (_,_,_) -> failwith "you cannot"
+
 type 'a anf_bind =
   | BSeq of 'a cexpr
   | BLet of string * 'a cexpr
   | BLetRec of (string * 'a cexpr) list
-  
+
 let anf (p : tag program) : unit aprogram =
   let rec helpP (p : tag program) : unit aprogram = helpA p
-  and helpC (e : tag expr) : (unit cexpr * unit anf_bind list) = 
+  and helpC (e : tag expr) : (unit cexpr * unit anf_bind list) =
     match e with
     | EPrim1(op, arg, _) ->
        let (arg_imm, arg_setup) = helpI arg in
@@ -28,12 +65,17 @@ let anf (p : tag program) : unit aprogram =
        let (rest_ans, rest_setup) = helpC (ESeq(rest, tag)) in
        (rest_ans, fst_setup @ [BSeq fst_ans] @ rest_setup)
     | ELet([], body, _) -> helpC body
-    | ELet((bind, _, exp, _)::rest, body, pos) ->
+    | ELet(LetBind(bind, _, exp, _)::rest, body, pos) ->
        let (exp_ans, exp_setup) = helpC exp in
        let (body_ans, body_setup) = helpC (ELet(rest, body, pos)) in
        (body_ans, exp_setup @ [BLet (bind, exp_ans)] @ body_setup)
+    | ELet(_::_, _, _) ->
+       failwith "Impossible by pre_anf"
     | ELetRec(binds, body, _) ->
-       let (names, new_binds_setup) = List.split (List.map (fun (name, _, rhs, _) -> (name, helpC rhs)) binds) in
+       let (names, new_binds_setup) = List.split (List.map (function
+         | LetBind(name, _, rhs, _) -> (name, helpC rhs)
+         | _ -> failwith "Impossible by pre_anf"
+      ) binds) in
        let (new_binds, new_setup) = List.split new_binds_setup in
        let (body_ans, body_setup) = helpC body in
        (body_ans, (BLetRec (List.combine names new_binds)) :: body_setup)
@@ -98,13 +140,17 @@ let anf (p : tag program) : unit aprogram =
        let (rest_ans, rest_setup) = helpI (ESeq(rest, tag)) in
        (rest_ans, fst_setup @ [BSeq fst_ans] @ rest_setup)
     | ELet([], body, _) -> helpI body
-    | ELet((bind, _, exp, _)::rest, body, pos) ->
+    | ELet(LetBind(bind, _, exp, _)::rest, body, pos) ->
        let (exp_ans, exp_setup) = helpC exp in
        let (body_ans, body_setup) = helpI (ELet(rest, body, pos)) in
        (body_ans, exp_setup @ [BLet(bind, exp_ans)] @ body_setup)
+    | ELet(_, _, _) -> failwith "Impossible by pre_anf"
     | ELetRec(binds, body, tag) ->
        let tmp = sprintf "lam_%d" tag in
-       let (names, new_binds_setup) = List.split (List.map (fun (name, _, rhs, _) -> (name, helpC rhs)) binds) in
+       let (names, new_binds_setup) = List.split (List.map (function
+         | LetBind(name, _, rhs, _) -> (name, helpC rhs)
+         | _ -> failwith "Impossible by pre_anf"
+       ) binds) in
        let (new_binds, new_setup) = List.split new_binds_setup in
        let (body_ans, body_setup) = helpC body in
        (ImmId(tmp, ()), (List.concat new_setup)
@@ -143,7 +189,7 @@ let anf (p : tag program) : unit aprogram =
        let (tup_imm, tup_setup) = helpI tup in
        let (rhs_imm, rhs_setup) = helpI rhs in
        (ImmId(tmp, ()), tup_setup @ rhs_setup @ [BLet(tmp, CSetItem(tup_imm, ImmNum(idx, ()), rhs_imm, ()))])
-  and helpA e : unit aexpr = 
+  and helpA e : unit aexpr =
     let (ans, ans_setup) = helpC e in
     List.fold_right
       (fun bind body ->

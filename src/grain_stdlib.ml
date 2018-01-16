@@ -8,7 +8,7 @@ let parse name lexbuf =
   let open Lexing in
   let string_of_position p =
     sprintf "%s:line %d, col %d" p.pos_fname p.pos_lnum (p.pos_cnum - p.pos_bol) in
-  try 
+  try
     lexbuf.lex_curr_p <- { lexbuf.lex_curr_p with pos_fname = name };
     Parser.program Lexer.token lexbuf
   with
@@ -41,6 +41,7 @@ let convert_to_continuation ast : grain_library =
   help ast (fun x -> x)
 
 let load_library initial_env library =
+  Printf.eprintf "going to load\n";
   let filename = library in
   let inchan = open_in filename in
   let lexbuf = Lexing.from_channel inchan in
@@ -109,4 +110,3 @@ let load_libraries (initial_env : sourcespan envt) (include_dirs : string list) 
     match loaded with
     | Left(errs) -> Left(errs)
     | Right(add_lib) -> Right(add_lib body)
-

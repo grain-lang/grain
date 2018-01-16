@@ -59,13 +59,17 @@ let compile_module (opts: compile_options) (p : sourcespan program) =
   match Grain_stdlib.load_libraries initial_env (lib_include_dirs opts) p with
   | Left(errs) -> Left(errs)
   | Right(full_p) ->
+  Printf.eprintf "Bouta tc\n";
     let wf_prog = well_formed full_p false initial_env in
     match wf_prog with
     | _::_ -> Left(wf_prog)
     | _ ->
+    Printf.eprintf "I am well formed";
       let tagged = tag full_p in
       Type_check.type_check tagged;
-      let anfed = atag @@ Anf.anf tagged in
+      Printf.eprintf "did it\n";
+      let pre_anfed = Anf.pre_anf tagged in
+      let anfed = atag @@ Anf.anf pre_anfed in
       let renamed = resolve_scope anfed initial_env in
       let optimized =
         if opts.optimizations_enabled then
@@ -88,8 +92,12 @@ let compile_to_anf (opts : compile_options) (p : sourcespan program) =
     | _::_ -> Left(wf_prog)
     | _ ->
       let tagged = tag full_p in
+      Printf.eprintf "Bouta tc\n";
       Type_check.type_check tagged;
-      Right(atag @@ Anf.anf tagged)
+      Printf.eprintf "did it\n";
+      let pre_anfed = Anf.pre_anf tagged in
+      let anfed = atag @@ Anf.anf pre_anfed in
+      Right(anfed)
 
 (* like compile_to_anf, but performs scope resolution and optimization. *)
 let compile_to_final_anf (opts : compile_options) (p : sourcespan program) =
@@ -101,8 +109,11 @@ let compile_to_final_anf (opts : compile_options) (p : sourcespan program) =
     | _::_ -> Left(wf_prog)
     | _ ->
       let tagged = tag full_p in
+      Printf.eprintf "Bouta tc\n";
       Type_check.type_check tagged;
-      let anfed = atag @@ Anf.anf tagged in
+      Printf.eprintf "did it\n";
+      let pre_anfed = Anf.pre_anf tagged in
+      let anfed = atag @@ Anf.anf pre_anfed in
       let renamed = resolve_scope anfed initial_env in
       let optimized =
         if opts.optimizations_enabled then

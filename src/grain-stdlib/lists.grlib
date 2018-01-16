@@ -1,33 +1,36 @@
 # Standard library for list functionality
 
 let rec link = (lambda first, rest: (first, rest)),
-        length = (lambda l: if l == false: 0 else: 1 + length(l[1])),
-        sum = (lambda l: if l == false: 0 else: l[0] + sum(l[1])),
+        length = (lambda l: if l == false: 0 else: let (first, rest) = l in 1 + length(rest)),
+        sum = (lambda l: if l == false: 0 else: let (first, rest) = l in first + sum(rest)),
         reverse = (lambda l:
                      let rec help = (lambda _l, acc:
                                        if _l == false:
                                          acc
                                        else:
-                                         help(_l[1], link(_l[0], acc))) in
+                                         let (first, rest) = _l in help(rest, link(first, acc))) in
                        help(l, false)),
         append = (lambda l1, l2:
                     if l1 == false: l2
-                    else: link(l1[0], append(l1[1], l2))),
+                    else: let (first1, rest1) = l1 in link(first1, append(rest1, l2))),
         contains = (lambda x, l:
                       if l == false: false
                       else:
-                        if equal(x, l[0]):
+                        let (first, rest) = l in
+                        if equal(x, first):
                           true
                         else:
-                          contains(x, l[1])),
+                          contains(x, rest)),
         fold_left = (lambda f, b, l:
                        if l == false: b
                        else:
-                         fold_left(f, f(b, l[0]), l[1])),
+                         let (first, rest) = l in
+                         fold_left(f, f(b, first), rest)),
         fold_right = (lambda f, b, l:
                         if l == false: b
                         else:
-                          f(l[0], fold_right(f, b, l[1]))),
+                          let (first, rest) = l in
+                          f(first, fold_right(f, b, rest))),
         map = (lambda f, l:
                 fold_right((lambda hd, tl: link(f(hd), tl)), false, l)) in
   ...

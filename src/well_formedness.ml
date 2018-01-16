@@ -74,12 +74,14 @@ let well_formed (p : (Lexing.position * Lexing.position) program) (is_library : 
        let rec dupe x binds =
          match binds with
          | [] -> None
-         | (y, _, _, loc)::_ when x = y -> Some loc
+         | LetBind(y, _, _, loc)::_ when x = y -> Some loc
+         | TupDestr((y, loc)::_, _, _, _)::_ when x = y -> Some loc
+         | TupDestr(_::rest_ids, topt, rhs, loc)::rest -> dupe x @@ TupDestr(rest_ids, topt, rhs, loc)::rest
          | _::rest -> dupe x rest in
        let rec process_binds rem_binds env =
          match rem_binds with
          | [] -> (env, [])
-         | (x, topt, e, loc)::rest ->
+         | LetBind(x, topt, e, loc)::rest ->
             let shadow =
               match dupe x rest with
               | Some where -> [DuplicateId(x, where, loc)]
@@ -90,19 +92,35 @@ let well_formed (p : (Lexing.position * Lexing.position) program) (is_library : 
             let errs_e = wf_E e {env with is_tail=false} in
             let new_env = {env with binds=(x, loc)::env.binds} in
             let (newer_env, errs) = process_binds rest new_env in
-            (newer_env, (shadow @ errs_e @ errs)) in              
+            (newer_env, (shadow @ errs_e @ errs))
+         | TupDestr(binds, topt, e, loc)::rest ->
+            match binds with
+            | (x, loc_)::rest_ ->
+              let shadow =
+                match dupe x (TupDestr(rest_, topt, e, loc)::rest) with
+                | Some where -> [DuplicateId(x, where, loc_)]
+                | None ->
+                   try
+                     let existing = List.assoc x env.binds in [ShadowId(x, loc_, existing)]
+                   with Not_found -> [] in
+              let new_env = {env with binds=(x, loc)::env.binds} in
+              let (newer_env, errs) = process_binds (TupDestr(rest_, topt, e, loc)::rest) new_env in
+              (newer_env, (shadow @ errs))
+            | [] ->
+              (env, wf_E e {env with is_tail=false}) in
        let (env2, errs) = process_binds binds env in
        errs @ wf_E body {env2 with is_tail=env.is_tail}
     | ELetRec(binds, body, _) ->
       let rec dupe x binds =
         match binds with
         | [] -> None
-        | (y, _, _, loc)::_ when x = y -> Some loc
+        | LetBind(y, _, _, loc)::_ when x = y -> Some loc
+        | TupDestr((y, loc)::_, _, _, _)::_ when x = y -> Some loc
+        | TupDestr(_::rest_ids, topt, rhs, loc)::rest -> dupe x @@ TupDestr(rest_ids, topt, rhs, loc)::rest
         | _::rest -> dupe x rest in
       let rec collect_names rem_names env =
         match rem_names with
-        | [] -> (env, [])
-        | (x, _, _, loc)::rest ->
+        | LetBind(x, _, _, loc)::rest ->
           let shadow =
             match dupe x rest with
             | Some where -> [DuplicateId(x, where, loc)]
@@ -112,11 +130,17 @@ let well_formed (p : (Lexing.position * Lexing.position) program) (is_library : 
               with Not_found -> [] in
           let new_env = {env with binds=(x, loc)::env.binds} in
           let newer_env, errs = collect_names rest new_env in
-          (newer_env, (shadow @ errs)) in
+          (newer_env, (shadow @ errs))
+        | []
+        | _ -> (env, []) in
       let rec process_rhses rem_rhs env =
         match rem_rhs with
         | [] -> []
-        | (name, _, v, loc)::tl ->
+        | TupDestr(_, _, v, loc)::tl ->
+          [LetRecNonFunction("tuple", loc)] @
+          (wf_E v {env with is_tail=false}) @
+          (process_rhses tl env)
+        | LetBind(name, _, v, loc)::tl ->
           let non_lambda =
             match v with
             | ELambda _ -> []
