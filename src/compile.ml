@@ -64,6 +64,7 @@ let compile_module (opts: compile_options) (p : sourcespan program) =
     | _::_ -> Left(wf_prog)
     | _ ->
       let tagged = tag full_p in
+      Type_check.type_check tagged;
       let anfed = atag @@ Anf.anf tagged in
       let renamed = resolve_scope anfed initial_env in
       let optimized =
@@ -87,6 +88,7 @@ let compile_to_anf (opts : compile_options) (p : sourcespan program) =
     | _::_ -> Left(wf_prog)
     | _ ->
       let tagged = tag full_p in
+      Type_check.type_check tagged;
       Right(atag @@ Anf.anf tagged)
 
 (* like compile_to_anf, but performs scope resolution and optimization. *)
@@ -99,6 +101,7 @@ let compile_to_final_anf (opts : compile_options) (p : sourcespan program) =
     | _::_ -> Left(wf_prog)
     | _ ->
       let tagged = tag full_p in
+      Type_check.type_check tagged;
       let anfed = atag @@ Anf.anf tagged in
       let renamed = resolve_scope anfed initial_env in
       let optimized =
