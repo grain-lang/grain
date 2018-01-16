@@ -241,8 +241,10 @@ let cobra_tests = [
   t "or3" "false || true" "true";
   t "or4" "false || false" "false";
 
-  t "comp1" "if 2 < 3: true else: 3" "true";
-  t "comp2" "if 2 <= 3: true else: 3" "true";
+  t "comp1" "if 2 < 3: true else: false" "true";
+  te "comp1e" "if 2 < 3: true else: 3" "type";
+  t "comp2" "if 2 <= 3: true else: false" "true";
+  te "comp2e" "if 2 <= 3: true else: 3" "type";
   t "comp3" "if 2 >= 3: 4 else: 5" "5";
   t "comp4" "if 2 > 3: 4 else: 5" "5";
   t "comp5" "if 2 < 3: 4 else: 5" "4";
@@ -278,21 +280,21 @@ let cobra_tests = [
   t "sub1_2" "sub1(5)" "4";
   t "sub1_3" "sub1(0)" "-1";
 
-  te "comp_bool1" "if 2 < true: 3 else: 4" "comparison expected a number";
-  te "comp_bool2" "if 2 > true: 3 else: 4" "comparison expected a number";
-  te "comp_bool3" "if true >= 4: 3 else: 4" "comparison expected a number";
-  te "comp_bool4" "let x = true in if x < 4: 3 else: 5" "comparison expected a number";
+  te "comp_bool1" "if 2 < true: 3 else: 4" "type";
+  te "comp_bool2" "if 2 > true: 3 else: 4" "type";
+  te "comp_bool3" "if true >= 4: 3 else: 4" "type";
+  te "comp_bool4" "let x = true in if x < 4: 3 else: 5" "type";
 
-  te "arith1" "2 + true" "arithmetic expected a number";
-  te "arith2" "true + 4" "arithmetic expected a number";
-  te "arith3" "false - 5" "arithmetic expected a number";
-  te "arith4" "4 - true" "arithmetic expected a number";
-  te "arith5" "let x = true in x * 4" "arithmetic expected a number";
-  te "arith6" "let x = false in 4 * x" "arithmetic expected a number";
+  te "arith1" "2 + true" "type";
+  te "arith2" "true + 4" "type";
+  te "arith3" "false - 5" "type";
+  te "arith4" "4 - true" "type";
+  te "arith5" "let x = true in x * 4" "type";
+  te "arith6" "let x = false in 4 * x" "type";
 
-  te "if1" "if 2: 5 else: 6" "if expected a boolean";
-  te "if2" "let y = 0 in if y: 5 else: 6" "if expected a boolean";
-  te "if3" "if sub1(1): 2 else: 5" "if expected a boolean";
+  te "if1" "if 2: 5 else: 6" "type";
+  te "if2" "let y = 0 in if y: 5 else: 6" "type";
+  te "if3" "if sub1(1): 2 else: 5" "type";
 
   (* te "generic1" "printStack(true)" "expected a number"; *)
 
@@ -329,9 +331,9 @@ let diamondback_tests = [
   te "shadow_simple" "let x = 12 in let x = 15 in x" "shadows";
   te "shadow_multi" "let x = 12, x = 14 in x" "duplicate";
   te "dup_func" "let rec foo = (lambda: 5) in\nlet bar = (lambda: 7) in\nlet rec foo = (lambda: 9) in\nfoo()" "shadows";
-  te "arity_1" "let foo = (lambda: 5) in\nfoo(6)" "arity";
-  te "arity_2" "let foo = (lambda x: x + 5) in\nfoo()" "arity";
-  te "arity_3" "let foo = (lambda x: x) in\nfoo(1, 2, 3)" "arity";
+  te "arity_1" "let foo = (lambda: 5) in\nfoo(6)" "type";
+  te "arity_2" "let foo = (lambda x: x + 5) in\nfoo()" "type";
+  te "arity_3" "let foo = (lambda x: x) in\nfoo(1, 2, 3)" "type";
 ]
 
 let mylist = "link(1, link(2, link(3, false)))"
@@ -339,10 +341,10 @@ let mylist = "link(1, link(2, link(3, false)))"
 let egg_eater_tests = [
   t "print_tup" "print((1, 2))" "(1, 2)\n(1, 2)";
   t "big_tup" "(1, 2, 3, 4)" "(1, 2, 3, 4)";
-  t "big_tup_access" "(1, 2, 3, 4)[2]" "3";
-  t "nested_tup_1" "((1, 2), (3, 4))[0]" "(1, 2)";
-  t "nested_tup_2" "((1, 2), (3, 4))[1][1]" "4";
-  t "nested_tup_3" "let x = ((1, 2), (3, 4)) in x[1][0]" "3";
+  t "big_tup_access" "let (a, b, c, d) = (1, 2, 3, 4) in c" "3";
+  t "nested_tup_1" "let (a, b) = ((1, 2), (3, 4)) in a" "(1, 2)";
+  t "nested_tup_2" "let (a, b) = ((1, 2), (3, 4)) in let (c, d) = b in d" "4";
+  t "nested_tup_3" "let (x, y) = ((1, 2), (3, 4)) in let (a, b) = y in a" "3";
   t "no_singleton_tup" "(1)" "1";
 ]
 
@@ -399,13 +401,13 @@ let fer_de_lance_tests = [
                         y = (lambda n: x(n + 1)) in
                  y(2)" "not in scope";
   te "lambda_dup_args" "(lambda x, y, x: 5)" "duplicate";
-  te "lambda_arity_1" "(lambda x: 6)()" "arity mismatch";
-  te "lambda_arity_2" "(lambda x: 5)(1, 2)" "arity mismatch";
+  te "lambda_arity_1" "(lambda x: 6)()" "type";
+  te "lambda_arity_2" "(lambda x: 5)(1, 2)" "type";
   te "letrec_nonstatic_const" "let rec x = 5 in x" "not bound to a function";
   te "letrec_nonstatic_same" "let rec x = x in x" "not bound to a function";
   te "letrec_nonstatic_other" "let rec x = (lambda z: z + 1), y = x in y" "not bound to a function";
-  te "nonfunction_1" "let x = 5 in x(3)" "non-function";
-  te "nontuple_1" "let x = (lambda y: y + 1) in x[1]" "expected tuple";
+  te "nonfunction_1" "let x = 5 in x(3)" "type";
+  te "nontuple_1" "let x = (lambda y: y + 1) in x[1]" "type";
 ]
 
 let fer_de_lance_stdlib_tests = [
@@ -495,14 +497,14 @@ let indigo_tests = [
   trs "trs1"
     "let f1 = (lambda x, y: x),
          f2 = (lambda x, y: y) in
-       f1(1)"
+       f1(1, 2)"
     (ALet("f1$1",
           CLambda(["x$2"; "y$3"],
                   ACExpr(CImmExpr(ImmId("x$2", 3))), 2),
           ALet("f2$4",
                CLambda(["x$5"; "y$6"],
                               ACExpr(CImmExpr(ImmId("y$6", 3))), 4),
-             ACExpr(CApp(ImmId("f1$1", 3), [ImmNum(1, 3)], 3)), 3),
+             ACExpr(CApp(ImmId("f1$1", 3), [ImmNum(1, 3); ImmNum(2, 3)], 3)), 3),
           1));
 
   (* Primarily a constant-folding test, but DAE removes the let bindings as well *)
@@ -535,15 +537,15 @@ let indigo_tests = [
 
   tfsound "test_counter_sound" "counter" "0\n1\n2\n2";
   tefsound "fib_big" "too-much-fib" "overflow";
-  te "test_dae_sound" "let x = 2 + false in 3" "number";
+  te "test_dae_sound" "let x = 2 + false in 3" "type";
   te "test_const_fold_times_zero_sound" "let f = (lambda x: x * 0) in f(false)" "number";
   te "test_const_fold_or_sound" "let f = (lambda x: x || true) in f(1)" "bool";
   te "test_const_fold_and_sound" "let f = (lambda x: false && x) in f(1)" "bool";
   te "test_const_fold_plus_sound" "let f = (lambda x: 0 + x) in f(true)" "number";
   te "test_const_fold_times_one_sound" "let f = (lambda x: x * 1) in f(true)" "number";
 
-  t ~opts:{default_compile_options with sound_optimizations=false}
-    "test_unsound_dae" "let x = 2 + false in 3" "3";
+  te ~opts:{default_compile_options with sound_optimizations=false}
+    "test_unsound_dae" "let x = 2 + false in 3" "type";
   t ~opts:{default_compile_options with sound_optimizations=false}
     "test_unsound_const_fold_times_zero" "let f = (lambda x: x * 0) in f(false)" "0";
   t ~opts:{default_compile_options with sound_optimizations=false}
@@ -569,7 +571,7 @@ let string_tests = [
   t "string1" "\"foo\"" "\"foo\"";
   t "string2" "\"💯\"" "\"💯\"";
   t "string3" "\"making my way downtown, walking fast\"" "\"making my way downtown, walking fast\"";
-  te "string_err" "let x = 'hello' in x + ', world'" "number";
+  te "string_err" "let x = 'hello' in x + ', world'" "type";
 ]
 
 let suite =
@@ -590,4 +592,3 @@ let () =
   Grain.Config.set_grain_root (BatFile.with_file_in "grain-root.txt" BatInnerIO.read_all);
   run_test_tt_main suite
 ;;
-

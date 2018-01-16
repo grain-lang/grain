@@ -44,8 +44,10 @@ prim1 :
   | PRINTSTACK { PrintStack }
 
 binds :
-  | ID tyann EQUAL expr { [($1, $2, $4, (Parsing.rhs_start_pos 1, Parsing.rhs_end_pos 1))] }
-  | ID tyann EQUAL expr COMMA binds { ($1, $2, $4, (Parsing.rhs_start_pos 1, Parsing.rhs_end_pos 1))::$6 }
+  | ID tyann EQUAL expr { [LetBind($1, $2, $4, (Parsing.rhs_start_pos 1, Parsing.rhs_end_pos 1))] }
+  | ID tyann EQUAL expr COMMA binds { LetBind($1, $2, $4, (Parsing.rhs_start_pos 1, Parsing.rhs_end_pos 1))::$6 }
+  | LPAREN ids RPAREN tyann EQUAL expr { [TupDestr($2, $4, $6, (Parsing.rhs_start_pos 1, Parsing.rhs_end_pos 1))] }
+  | LPAREN ids RPAREN tyann EQUAL expr COMMA binds { TupDestr($2, $4, $6, (Parsing.rhs_start_pos 1, Parsing.rhs_end_pos 1))::$8 }
 
 tyann :
   | { None }

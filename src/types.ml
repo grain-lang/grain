@@ -3,7 +3,7 @@ type ('a, 'b) either =
   | Left of 'a
   | Right of 'b
 
-               
+
 type sourcespan = (Lexing.position * Lexing.position)
 type initial_func = (string * sourcespan * bool) (* name, loc, is_pure *)
 exception UnboundId of string * sourcespan (* name, where used *)
@@ -50,7 +50,9 @@ type typ =
 
 type scheme = (string list * typ) (* Forall X, Y, ..., typ *)
 
-type 'a bind = (string * scheme option * 'a expr * 'a)
+type 'a bind =
+  | LetBind of string * scheme option * 'a expr * 'a
+  | TupDestr of ((string * 'a) list) * scheme option * 'a expr * 'a
 
 and 'a expr =
   | ELet of 'a bind list * 'a expr * 'a
@@ -88,7 +90,7 @@ and 'a cexpr = (* compound expressions *)
   | CString of string * 'a
   | CGetItem of 'a immexpr * 'a immexpr * 'a
   | CSetItem of 'a immexpr * 'a immexpr * 'a immexpr * 'a
-  | CLambda of string list * 'a aexpr * 'a                                            
+  | CLambda of string list * 'a aexpr * 'a
   | CImmExpr of 'a immexpr (* for when you just need an immediate value *)
 and 'a aexpr = (* anf expressions *)
   | ALet of string * 'a cexpr * 'a aexpr * 'a

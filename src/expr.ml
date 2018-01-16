@@ -1,6 +1,6 @@
 open Types
 
-       
+
 type tag = int
 let tag (p : 'a program) : tag program =
   let next = ref 0 in
@@ -25,10 +25,20 @@ let tag (p : 'a program) : tag program =
        ESeq(List.map helpE stmts, seq_tag)
     | ELet(binds, body, _) ->
        let let_tag = tag() in
-       ELet(List.map (fun (x, topt, b, _) -> let t = tag() in (x, topt, helpE b, t)) binds, helpE body, let_tag)
+       ELet(List.map (function
+       | LetBind(x, topt, b, _) ->
+         let t = tag() in LetBind(x, topt, helpE b, t)
+       | TupDestr(ids, topt, b, _) ->
+         let t = tag() in TupDestr(List.map (fun (n, _) -> (n, tag())) ids, topt, helpE b, t)
+       ) binds, helpE body, let_tag)
     | ELetRec(binds, body, _) ->
-       let let_tag = tag() in
-       ELetRec(List.map (fun (x, topt, b, _) -> let t = tag() in (x, topt, helpE b, t)) binds, helpE body, let_tag)
+      let let_tag = tag() in
+      ELetRec(List.map (function
+      | LetBind(x, topt, b, _) ->
+        let t = tag() in LetBind(x, topt, helpE b, t)
+      | TupDestr(ids, topt, b, _) ->
+        let t = tag() in TupDestr(List.map (fun (n, _) -> (n, tag())) ids, topt, helpE b, t)
+      ) binds, helpE body, let_tag)
     | EIf(cond, thn, els, _) ->
        let if_tag = tag() in
        EIf(helpE cond, helpE thn, helpE els, if_tag)
@@ -74,9 +84,19 @@ let rec untag : 'a. 'a program -> unit program = fun p ->
     | ESeq(stmts, _) ->
       ESeq(List.map helpE stmts, ())
     | ELet(binds, body, _) ->
-      ELet(List.map(fun (x, topt, b, _) -> (x, topt, helpE b, ())) binds, helpE body, ())
+      ELet(List.map (function
+      | LetBind(x, topt, b, _) ->
+        LetBind(x, topt, helpE b, ())
+      | TupDestr(ids, topt, b, _) ->
+        TupDestr(List.map (fun (n, _) -> (n, ())) ids, topt, helpE b, ())
+      ) binds, helpE body, ())
     | ELetRec(binds, body, _) ->
-      ELetRec(List.map(fun (x, topt, b, _) -> (x, topt, helpE b, ())) binds, helpE body, ())
+      ELetRec(List.map (function
+      | LetBind(x, topt, b, _) ->
+        LetBind(x, topt, helpE b, ())
+      | TupDestr(ids, topt, b, _) ->
+        TupDestr(List.map (fun (n, _) -> (n, ())) ids, topt, helpE b, ())
+      ) binds, helpE body, ())
     | EIf(cond, thn, els, _) ->
       EIf(helpE cond, helpE thn, helpE els, ())
     | ETuple(vals, _) ->

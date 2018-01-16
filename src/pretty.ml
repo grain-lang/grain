@@ -70,6 +70,12 @@ let string_of_sopt (sopt : scheme option) : string =
   | None -> ""
   | Some scheme -> " : " ^ (string_of_scheme scheme)
 
+let rec string_of_a_list (p : (string * 'a) list) : string =
+  let inner = match p with
+  | (n, _)::rest -> n ^ ", " ^ string_of_a_list rest
+  | [] -> ""
+  in sprintf "(%s)" inner
+
 let rec string_of_expr (e : 'a expr) : string =
   match e with
   | ENumber(n, _) -> string_of_int n
@@ -82,14 +88,14 @@ let rec string_of_expr (e : 'a expr) : string =
      sprintf "%s(%s)" (string_of_op1 op) (string_of_expr e)
   | EPrim2(op, left, right, _) ->
      sprintf "(%s %s %s)" (string_of_expr left) (string_of_op2 op) (string_of_expr right)
-  | ELet(binds, body, _) ->
-     let binds_strs = List.map (fun (x, sopt, e, _) -> sprintf "%s%s = %s" x (string_of_sopt sopt) (string_of_expr e)) binds in
+  | ELet(binds, body, _)
+  | ELetRec(binds, body, _) ->
+     let binds_strs = List.map (function
+       | LetBind(x, sopt, e, _) -> sprintf "%s%s = %s" x (string_of_sopt sopt) (string_of_expr e)
+       | TupDestr(x, sopt, e, _) -> sprintf "%s%s = %s" (string_of_a_list x) (string_of_sopt sopt) (string_of_expr e)
+     ) binds in
      let binds_str = List.fold_left (^) "" (intersperse binds_strs ", ") in
      sprintf "(let %s in %s)" binds_str (string_of_expr body)
-  | ELetRec(binds, body, _) ->
-     let binds_strs = List.map (fun (x, sopt, e, _) -> sprintf "%s%s = %s" x (string_of_sopt sopt) (string_of_expr e)) binds in
-     let binds_str = List.fold_left (^) "" (intersperse binds_strs ", ") in
-     sprintf "(let rec %s in %s)" binds_str (string_of_expr body)
   | EIf(cond, thn, els, _) ->
      sprintf "(if %s: %s else: %s)"
              (string_of_expr cond)
@@ -159,7 +165,7 @@ and string_of_immexpr i =
   | ImmBool(b, _) -> string_of_bool b
   | ImmId(x, _) -> x
 and string_of_aprogram p = string_of_aexpr p
-          
+
 let rec format_expr (e : 'a expr) (print_a : 'a -> string) : string =
   let maybe_a a =
     let astr = print_a a in
@@ -209,7 +215,7 @@ let rec format_expr (e : 'a expr) (print_a : 'a -> string) : string =
     | EPrim1(op, e, a) ->
        open_label fmt "EPrim1" a;
        pp_print_string fmt (name_of_op1 op);
-       print_comma_sep fmt; help e fmt; 
+       print_comma_sep fmt; help e fmt;
        close_paren fmt
     | EPrim2(op, e1, e2, a) ->
        open_label fmt "EPrim2" a;
@@ -243,13 +249,13 @@ let rec format_expr (e : 'a expr) (print_a : 'a -> string) : string =
     | EGetItem(tup, idx, a) ->
        open_label fmt "EGetItem" a;
        help tup fmt;
-       print_comma_sep fmt; help idx fmt; 
+       print_comma_sep fmt; help idx fmt;
        close_paren fmt
     | ESetItem(tup, idx, rhs, a) ->
        open_label fmt "ESetItem" a;
        help tup fmt;
-       print_comma_sep fmt; help idx fmt; 
-       print_comma_sep fmt; help rhs fmt; 
+       print_comma_sep fmt; help idx fmt;
+       print_comma_sep fmt; help rhs fmt;
        close_paren fmt
     | EGetItemExact(tup, idx, a) ->
        open_label fmt "EGetItemExact" a;
@@ -260,29 +266,43 @@ let rec format_expr (e : 'a expr) (print_a : 'a -> string) : string =
        open_label fmt "ESetItemExact" a;
        help tup fmt;
        print_comma_sep fmt; pp_print_int fmt idx;
-       print_comma_sep fmt; help rhs fmt; 
-close_paren fmt
+       print_comma_sep fmt; help rhs fmt;
+       close_paren fmt
     | ESeq(stmts, a) ->
        open_label fmt "ESeq" a;
-       print_list fmt help stmts print_semi_sep; 
+       print_list fmt help stmts print_semi_sep;
        close_paren fmt
     | ELet(binds, body, a) ->
-       let print_item (x, sopt, b, a) fmt =
-         open_paren fmt;
-         pp_print_string fmt (" " ^ (quote x)); pp_print_string fmt (string_of_sopt sopt);
-         pp_print_string fmt (maybe_a a); print_comma_sep fmt; help b fmt;
-         close_paren fmt in
+       let print_item bind fmt =
+         match bind with
+         | LetBind(x, sopt, b, a) ->
+           open_paren fmt;
+           pp_print_string fmt (" " ^ (quote x)); pp_print_string fmt (string_of_sopt sopt);
+           pp_print_string fmt (maybe_a a); print_comma_sep fmt; help b fmt;
+           close_paren fmt
+         | TupDestr(ids, sopt, b, a) ->
+           open_paren fmt;
+           pp_print_string fmt (" " ^ (quote (string_of_a_list ids))); pp_print_string fmt (string_of_sopt sopt);
+           pp_print_string fmt (maybe_a a); print_comma_sep fmt; help b fmt;
+           close_paren fmt in
        open_label fmt "ELet" a;
        open_paren fmt; print_list fmt print_item binds print_comma_sep; close_paren fmt;
        print_comma_sep fmt;
        help body fmt;
        close_paren fmt
     | ELetRec(binds, body, a) ->
-       let print_item (x, sopt, b, a) fmt =
-         open_paren fmt;
-         pp_print_string fmt (" " ^ (quote x)); pp_print_string fmt (string_of_sopt sopt);
-         pp_print_string fmt (maybe_a a); print_comma_sep fmt; help b fmt;
-         close_paren fmt in
+       let print_item bind fmt =
+         match bind with
+         | LetBind(x, sopt, b, a) ->
+           open_paren fmt;
+           pp_print_string fmt (" " ^ (quote x)); pp_print_string fmt (string_of_sopt sopt);
+           pp_print_string fmt (maybe_a a); print_comma_sep fmt; help b fmt;
+           close_paren fmt
+         | TupDestr(ids, sopt, b, a) ->
+           open_paren fmt;
+           pp_print_string fmt (" " ^ (quote (string_of_a_list ids))); pp_print_string fmt (string_of_sopt sopt);
+           pp_print_string fmt (maybe_a a); print_comma_sep fmt; help b fmt;
+           close_paren fmt in
        open_label fmt "ELetRec" a;
        open_paren fmt; print_list fmt print_item binds print_comma_sep; close_paren fmt;
        print_comma_sep fmt;
@@ -302,17 +322,16 @@ close_paren fmt
   help e str_formatter;
   flush_str_formatter ()
 
-and format_prog (p : 'a program) (print_a : 'a -> string) : string =
+let format_prog (p : 'a program) (print_a : 'a -> string) : string =
   format_expr p print_a
 ;;
-    
+
 let ast_of_pos_prog (e : sourcespan program) : string =
   format_prog e string_of_pos
 let ast_of_prog (e : 'a program) : string =
   format_prog e (fun _ -> "")
-                            
+
 let rec ast_of_pos_expr (e : (Lexing.position * Lexing.position) expr) : string =
   format_expr e string_of_pos
 let rec ast_of_expr (e : 'a expr) : string =
   format_expr e (fun _ -> "")
-

@@ -50,7 +50,7 @@ let rec free_tenv_tyvars (e : typ_env) =
 ;;
 
 let lookup (e : 'a envt) (name : string) : 'a =
-  snd @@ List.find (fun (n, t) -> String.equal n name) e
+  Printf.eprintf "%s\n" name; snd @@ List.find (fun (n, t) -> String.equal n name) e
 
 let rec subst_type (s : unification) (t : typ) : typ =
   match t with
@@ -170,21 +170,41 @@ let infer (gamma : typ_env) exp : typ_constraint list =
   let rec type_infer (gamma : typ_env) exp : typ =
     match exp with
     | ELet(binds, body, _) ->
-      let new_env = List.fold_left (fun acc (name, scheme, exp, _) -> (name, generalize gamma (type_infer acc exp))::acc) gamma binds in
+      let new_env = List.fold_left (fun acc bind_type -> match bind_type with
+      | LetBind(name, scheme, exp, _) ->
+        (name, generalize gamma (type_infer acc exp))::acc
+      | TupDestr(ids, scheme, exp, _) ->
+        let t_exp = type_infer acc exp in
+        let arg_vars = List.map (fun (name, _) -> gen_typ_sym name) ids in
+        let t_args = List.map (fun (t_name) -> TyVar(t_name)) arg_vars in
+        uni (TyTup(t_args)) t_exp;
+        List.map2 (fun (name, _) t_arg -> (name, generalize gamma t_arg)) ids t_args @
+        acc
+      ) gamma binds
+      in
       type_infer new_env body
     | ELetRec(binds, body, _) ->
-      let bind_vars = List.map (fun (name, scheme, exp, _) -> gen_typ_sym name) binds in
-      let first_pass_env : typ_env = List.map2 (fun (name, scheme, exp, _) bind_name -> (name, ([], TyVar(bind_name)))) binds bind_vars in
+      let bind_vars = List.map (function
+        | LetBind(name, scheme, exp, _) -> gen_typ_sym name
+        | TupDestr(_, _, _, _) -> failwith "Should have failed during well-formedness checking."
+      ) binds in
+      let first_pass_env : typ_env = List.map2 (fun bind bind_name -> match bind with
+        | LetBind(name, scheme, exp, _) ->
+          (name, ([], TyVar(bind_name)))
+        | TupDestr(_, _, _, _) -> failwith "Should have failed during well-formedness checking."
+        ) binds bind_vars @ gamma in
       let rec process binds bind_vars env =
         match binds with
         | [] -> env
-        | (name, scheme, exp, _)::tl ->
+        | LetBind(name, scheme, exp, _)::tl ->
           let t_exp = type_infer first_pass_env exp in
           (match scheme with
            | Some(s) -> uni (instantiate s) t_exp
            | None -> ());
           uni (TyVar(List.hd bind_vars)) t_exp;
-          process tl (List.tl bind_vars) ((name, generalize gamma t_exp)::env) in
+          process tl (List.tl bind_vars) ((name, generalize gamma t_exp)::env)
+        | TupDestr(_, _, _, _)::_ -> failwith "Should have failed during well-formedness checking."
+      in
       type_infer (process binds bind_vars first_pass_env) body
     | EPrim1(op, exp, _) ->
       let (t_arg, t_out) = prim1_types op in

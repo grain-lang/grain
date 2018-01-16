@@ -1,1 +1,1 @@
-GrainRunner('examples/conditionals.wasm').then(res => console.log(res));
+GrainRunner('examples/tdestr.wasm').then(res => console.log(res));
