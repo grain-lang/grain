@@ -77,6 +77,8 @@ rule token = parse
   | "->" { ARROW }
   | "else:" { ELSECOLON }
   | "else" { ELSE }
+  | "data" { DATA }
+  | "|" { PIPE }
   | "let" { LET }
   | "rec" { REC }
   | "in" { IN }

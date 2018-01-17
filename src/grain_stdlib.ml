@@ -30,14 +30,18 @@ let parse name lexbuf =
     can be applied to the returned function to wrap it with the
     given standard library *)
 let convert_to_continuation ast : grain_library =
-  let rec help ast k =
+  let rec helpAst ast k =
     match ast with
     | ELet(binds, body, a) ->
-      help body (fun b -> k @@ ELet(binds, b, a))
+      helpAst body (fun ({body; _} as p) -> k @@ {p with body=ELet(binds, body, a)})
     | ELetRec(binds, body, a) ->
-      help body (fun b -> k @@ ELetRec(binds, b, a))
+      helpAst body (fun ({body; _} as p) -> k @@ {p with body=ELetRec(binds, body, a)})
     | EEllipsis(_) -> k
     | _ -> failwith "Invalid library AST passed well-formedness" in
+  let helpStatements stmts k =
+    fun ({statements; _} as p) -> k @@ {p with statements=(stmts @ statements)} in
+  let help {statements; body} k =
+    helpAst body (helpStatements statements k) in
   help ast (fun x -> x)
 
 let load_library initial_env library =
@@ -45,7 +49,7 @@ let load_library initial_env library =
   let filename = library in
   let inchan = open_in filename in
   let lexbuf = Lexing.from_channel inchan in
-  let lib = parse filename lexbuf in
+  let lib = Desugar.desugar_program @@ parse filename lexbuf in
   let errors = Well_formedness.well_formed lib true initial_env in
   match errors with
   | [] -> Right(convert_to_continuation lib)
@@ -77,10 +81,10 @@ let library_path (include_dirs : string list) (lib : string) =
   |> List.find_opt Sys.file_exists
 
 
-let rec extract_includes (include_dirs : string list) (prog : sourcespan program) =
-  match prog with
+let rec extract_includes (include_dirs : string list) (({body; _} : sourcespan program) as prog) =
+  match body with
   | EInclude(lib, body, loc) ->
-    let rest = extract_includes include_dirs body in
+    let rest = extract_includes include_dirs {prog with body=body} in
     let lib_file = library_path include_dirs lib in
     begin
       match (rest, lib_file) with

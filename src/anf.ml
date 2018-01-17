@@ -2,42 +2,45 @@ open Printf
 open Types
 open Expr
 
-let rec pre_anf (p : tag program) : tag program =
-  match (p : tag program) with
+let rec pre_anf (({body; _} : tag program) as p) : tag program =
+  let rec pre_anf_help (b : tag expr) : tag expr =
+    match (b : tag expr) with
     | ELet (binds, body, t) ->
       ELet (List.flatten @@ List.map (function
-      | LetBind(name, topt, rhs, tag) ->
-        [LetBind(name, topt, pre_anf rhs, tag)]
-      | TupDestr(ids, topt, rhs, tag) ->
-        let tup_name = sprintf "tupdestr_%d" tag in
-        LetBind(tup_name, None, pre_anf rhs, tag) ::
-        (List.mapi (fun i (name, t) ->
-          LetBind(name, None, EGetItemExact(EId(tup_name, t), i, t), t)) ids)
-      ) binds, pre_anf body, t)
+          | LetBind(name, topt, rhs, tag) ->
+            [LetBind(name, topt, pre_anf_help rhs, tag)]
+          | TupDestr(ids, topt, rhs, tag) ->
+            let tup_name = sprintf "tupdestr_%d" tag in
+            LetBind(tup_name, None, pre_anf_help rhs, tag) ::
+            (List.mapi (fun i (name, t) ->
+                 LetBind(name, None, EGetItemExact(EId(tup_name, t), i, t), t)) ids)
+        ) binds, pre_anf_help body, t)
     | ELetRec (binds, body, t) ->
       ELetRec (List.map (function
-      | LetBind(name, topt, rhs, tag) ->
-        LetBind(name, topt, pre_anf rhs, tag)
-      | TupDestr(_, _, _, _) ->
-        failwith "Not well-formed"
-      ) binds, pre_anf body, t)
-    | EPrim1 (op, e, t) -> EPrim1(op, pre_anf e, t)
-    | EPrim2 (op, e1, e2, t) -> EPrim2(op, pre_anf e1, pre_anf e2, t)
-    | EIf (cond, thn, els, t) -> EIf(pre_anf cond, pre_anf thn, pre_anf els, t)
-    | ETuple (exprs, t) -> ETuple(List.map pre_anf exprs, t)
-    | EString (_,_) -> p
+          | LetBind(name, topt, rhs, tag) ->
+            LetBind(name, topt, pre_anf_help rhs, tag)
+          | TupDestr(_, _, _, _) ->
+            failwith "Not well-formed"
+        ) binds, pre_anf_help body, t)
+    | EPrim1 (op, e, t) -> EPrim1(op, pre_anf_help e, t)
+    | EPrim2 (op, e1, e2, t) -> EPrim2(op, pre_anf_help e1, pre_anf_help e2, t)
+    | EIf (cond, thn, els, t) -> EIf(pre_anf_help cond, pre_anf_help thn, pre_anf_help els, t)
+    | ETuple (exprs, t) -> ETuple(List.map pre_anf_help exprs, t)
+    | EString (_,_) -> b
     | EGetItem (_,_,_) -> failwith "NYI"
     | ESetItem (_,_,_,_) -> failwith "NYI"
-    | EGetItemExact (e, n, t) -> EGetItemExact(pre_anf e, n, t)
-    | ESetItemExact (l, n, r, t) -> ESetItemExact(pre_anf l, n, pre_anf r, t)
+    | EGetItemExact (e, n, t) -> EGetItemExact(pre_anf_help e, n, t)
+    | ESetItemExact (l, n, r, t) -> ESetItemExact(pre_anf_help l, n, pre_anf_help r, t)
     | ENumber (_,_)
     | EBool (_,_)
-    | EId (_,_) -> p
-    | EApp (f, args, t) -> EApp(pre_anf f, List.map pre_anf args, t)
-    | ELambda (args, b, t) -> ELambda(args, pre_anf b, t)
-    | ESeq (exprs, t) -> ESeq(List.map pre_anf exprs, t)
+    | ENull
+    | EId (_,_) -> b
+    | EApp (f, args, t) -> EApp(pre_anf_help f, List.map pre_anf_help args, t)
+    | ELambda (args, b, t) -> ELambda(args, pre_anf_help b, t)
+    | ESeq (exprs, t) -> ESeq(List.map pre_anf_help exprs, t)
     | EEllipsis _ -> failwith "you cannot"
-    | EInclude (_,_,_) -> failwith "you cannot"
+    | EInclude (_,_,_) -> failwith "you cannot" in
+  {p with body=pre_anf_help body}
 
 type 'a anf_bind =
   | BSeq of 'a cexpr
@@ -45,7 +48,8 @@ type 'a anf_bind =
   | BLetRec of (string * 'a cexpr) list
 
 let anf (p : tag program) : unit aprogram =
-  let rec helpP (p : tag program) : unit aprogram = helpA p
+  (* At the point of ANF-ing, we drop the data information (for now) *)
+  let rec helpP ({body; _} : tag program) : unit aprogram = helpA body
   and helpC (e : tag expr) : (unit cexpr * unit anf_bind list) =
     match e with
     | EPrim1(op, arg, _) ->
@@ -113,6 +117,7 @@ let anf (p : tag program) : unit aprogram =
     match e with
     | ENumber(n, _) -> (ImmNum(n, ()), [])
     | EBool(b, _) -> (ImmBool(b, ()), [])
+    | ENull -> (ImmBool(false, ()), [])
     | EId(name, _) -> (ImmId(name, ()), [])
 
     | EPrim1(op, arg, tag) ->
@@ -189,7 +194,7 @@ let anf (p : tag program) : unit aprogram =
        let (tup_imm, tup_setup) = helpI tup in
        let (rhs_imm, rhs_setup) = helpI rhs in
        (ImmId(tmp, ()), tup_setup @ rhs_setup @ [BLet(tmp, CSetItem(tup_imm, ImmNum(idx, ()), rhs_imm, ()))])
-  and helpA e : unit aexpr =
+  and helpA (e : tag expr) : unit aexpr =
     let (ans, ans_setup) = helpC e in
     List.fold_right
       (fun bind body ->

@@ -56,10 +56,10 @@ let lib_include_dirs opts =
   (if opts.use_stdlib then Option.map_default (fun x -> [x]) [] (Grain_stdlib.stdlib_directory()) else []) @ opts.include_dirs
 
 let compile_module (opts: compile_options) (p : sourcespan program) =
-  match Grain_stdlib.load_libraries initial_env (lib_include_dirs opts) p with
+  match Grain_stdlib.load_libraries initial_env (lib_include_dirs opts) (Desugar.desugar_program p) with
   | Left(errs) -> Left(errs)
   | Right(full_p) ->
-  Printf.eprintf "Bouta tc\n";
+    Printf.eprintf "Bouta tc\n";
     let wf_prog = well_formed full_p false initial_env in
     match wf_prog with
     | _::_ -> Left(wf_prog)
@@ -84,7 +84,7 @@ let compile_to_string opts p =
   | Right(m) -> Right(module_to_string m)
 
 let compile_to_anf (opts : compile_options) (p : sourcespan program) =
-  match Grain_stdlib.load_libraries initial_env (lib_include_dirs opts) p with
+  match Grain_stdlib.load_libraries initial_env (lib_include_dirs opts) (Desugar.desugar_program p) with
   | Left(errs) -> Left(errs)
   | Right(full_p) ->
     let wf_prog = well_formed full_p false initial_env in
@@ -101,7 +101,7 @@ let compile_to_anf (opts : compile_options) (p : sourcespan program) =
 
 (* like compile_to_anf, but performs scope resolution and optimization. *)
 let compile_to_final_anf (opts : compile_options) (p : sourcespan program) =
-  match Grain_stdlib.load_libraries initial_env (lib_include_dirs opts) p with
+  match Grain_stdlib.load_libraries initial_env (lib_include_dirs opts) (Desugar.desugar_program p) with
   | Left(errs) -> Left(errs)
   | Right(full_p) ->
     let wf_prog = well_formed full_p false initial_env in

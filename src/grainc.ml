@@ -117,13 +117,19 @@ let () =
   | Some(_) -> ()
   | None ->
     begin
-      let grainc_dir = parent @@ of_string Sys.argv.(0) in
-      let as_abs =
-        if is_absolute grainc_dir then
-          grainc_dir
-        else
-          normalize @@ concat (of_string @@ Unix.getcwd()) grainc_dir in
-      Config.set_grain_root @@ to_string @@ parent as_abs
+      try
+        let grainc_path =
+          let pid = Unix.getpid() in
+          Unix.readlink (sprintf "/proc/%d/exe" pid) in
+        let grainc_dir = parent @@ of_string grainc_path in
+        let as_abs =
+          if is_absolute grainc_dir then
+            grainc_dir
+          else
+            normalize @@ concat (of_string @@ Unix.getcwd()) grainc_dir in
+        Config.set_grain_root @@ to_string @@ parent as_abs
+      with
+      _ -> ()
     end;
   match Term.eval cmd with
   | `Error _ -> exit 1

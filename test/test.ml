@@ -202,8 +202,8 @@ let tefsound name filename errmsg = name>::test_file_optimizations_sound_err fil
 let test_parse name input (expected : unit program) test_ctxt =
   let parsed = parse_string name input in
   let untagged = parsed in
-  assert_equal (string_of_expr expected)
-    (string_of_expr untagged) ~printer:identity
+  assert_equal (string_of_prog expected)
+    (string_of_prog untagged) ~printer:identity
 
 let tparse name input expected = name>::test_parse name input expected
 
@@ -559,14 +559,14 @@ let indigo_tests = [
 ]
 
 let string_tests = [
-  tparse "string_parse_dqs1" "\"foo\"" (EString("foo", ()));
-  tparse "string_parse_dqs2" "\"bar\\nbaz\"" (EString("bar\nbaz", ()));
-  tparse "string_parse_sqs1" "'foobar'" (EString("foobar", ()));
-  tparse "string_parse_sqs2" "'bar\\u41'" (EString("barA", ()));
-  tparse "string_parse_sqs3" "'bar\\x41'" (EString("barA", ()));
-  tparse "string_parse_sqs4" "'bar\\101'" (EString("barA", ()));
-  tparse "string_parse_emoji_escape" "\"\xF0\x9F\x98\x82\"" (EString("😂", ()));
-  tparse "string_parse_emoji_literal" "\"💯\"" (EString("💯", ()));
+  tparse "string_parse_dqs1" "\"foo\"" {statements=[]; body=(EString("foo", ()))};
+  tparse "string_parse_dqs2" "\"bar\\nbaz\"" {statements=[]; body=(EString("bar\nbaz", ()))};
+  tparse "string_parse_sqs1" "'foobar'" {statements=[]; body=(EString("foobar", ()))};
+  tparse "string_parse_sqs2" "'bar\\u41'" {statements=[]; body=(EString("barA", ()))};
+  tparse "string_parse_sqs3" "'bar\\x41'" {statements=[]; body=(EString("barA", ()))};
+  tparse "string_parse_sqs4" "'bar\\101'" {statements=[]; body=(EString("barA", ()))};
+  tparse "string_parse_emoji_escape" "\"\xF0\x9F\x98\x82\"" {statements=[]; body=(EString("😂", ()))};
+  tparse "string_parse_emoji_literal" "\"💯\"" {statements=[]; body=(EString("💯", ()))};
 
   t "string1" "\"foo\"" "\"foo\"";
   t "string2" "\"💯\"" "\"💯\"";
