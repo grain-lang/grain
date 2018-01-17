@@ -81,6 +81,7 @@ let rec string_of_expr (e : 'a expr) : string =
   | ENumber(n, _) -> string_of_int n
   | EBool(b, _) -> string_of_bool b
   | EId(x, _) -> x
+  | ENull -> "<null>"
   | EEllipsis(_) -> "..."
   | EInclude(lib, body, _) ->
     sprintf "(include %s in %s)" lib (string_of_expr body)
@@ -119,6 +120,9 @@ sprintf "%s[:%d:] := %s" (string_of_expr tup) idx (string_of_expr rhs)
              (string_of_expr body)
   | ESeq(stmts, _) ->
      sprintf "(%s)" (ExtString.String.join "; " (List.map string_of_expr stmts))
+
+(*TODO: Show data types*)
+let string_of_prog {body; _} = string_of_expr body
 
 let string_of_pos ((pstart, pend) : (Lexing.position * Lexing.position)) : string =
   sprintf "%s, %d:%d-%d:%d" pstart.pos_fname pstart.pos_lnum (pstart.pos_cnum - pstart.pos_bol)
@@ -166,18 +170,47 @@ and string_of_immexpr i =
   | ImmId(x, _) -> x
 and string_of_aprogram p = string_of_aexpr p
 
-let rec format_expr (e : 'a expr) (print_a : 'a -> string) : string =
+let rec format_prog_helper (p : 'a program) (print_a : 'a -> string) : string * string * string =
   let maybe_a a =
     let astr = print_a a in
     if astr = "" then "" else "<" ^ astr ^ ">" in
   let indent = 2 in
-  let print_list fmt p_item items p_sep =
-    match items with
-    | [] -> ();
-    | [item] -> p_item item fmt
-    | first::rest ->
-       p_item first fmt;
-       List.iter (fun item -> p_sep fmt; p_item item fmt) rest in
+  let open_bracket fmt =
+    pp_print_string fmt "[" in
+  let close_bracket fmt =
+    pp_print_string fmt "]" in
+  let print_list ?brackets:(brackets=false) fmt p_item items p_sep =
+    if brackets then
+      open_bracket fmt;
+    begin
+      match items with
+      | [] -> ();
+      | [item] -> p_item item fmt
+      | first::rest ->
+        p_item first fmt;
+        List.iter (fun item -> p_sep fmt; p_item item fmt) rest;
+    end;
+    if brackets then
+      close_bracket fmt
+  in
+  let print_record fmt pairs p_kv_sep p_sep =
+    pp_print_string fmt "{";
+    let rec do_print items =
+      match items with
+      | [] -> ();
+      | [(name, value)] ->
+        pp_print_string fmt name;
+        p_kv_sep fmt;
+        pp_print_string fmt value
+      | (name, value)::rest ->
+        pp_print_string fmt name;
+        p_kv_sep fmt;
+        pp_print_string fmt value;
+        List.iter (fun (name, value) -> p_sep fmt; pp_print_string fmt name; p_kv_sep fmt; pp_print_string fmt value) rest in
+    do_print pairs;
+    pp_print_string fmt "}" in
+  let print_colon_sep fmt =
+    pp_print_space fmt (); pp_print_string fmt ":"; pp_print_space fmt () in
   let print_comma_sep fmt =
     pp_print_string fmt ","; pp_print_space fmt () in
   let print_semi_sep fmt =
@@ -190,7 +223,61 @@ let rec format_expr (e : 'a expr) (print_a : 'a -> string) : string =
   let close_paren fmt =
     pp_print_break fmt 0 (~-indent); pp_close_box fmt (); pp_print_string fmt ")" in
   let quote x = "\"" ^ x ^ "\"" in
-  let rec help e fmt =
+  let rec help_bind (b : 'a bind) fmt =
+    match b with
+    | LetBind(x, sopt, b, a) ->
+      open_paren fmt;
+      pp_print_string fmt (" " ^ (quote x)); pp_print_string fmt (string_of_sopt sopt);
+      pp_print_string fmt (maybe_a a); print_comma_sep fmt; help b fmt;
+      close_paren fmt
+    | TupDestr(ids, sopt, b, a) ->
+      open_paren fmt;
+      pp_print_string fmt (" " ^ (quote (string_of_a_list ids))); pp_print_string fmt (string_of_sopt sopt);
+      pp_print_string fmt (maybe_a a); print_comma_sep fmt; help b fmt;
+      close_paren fmt
+  and help_data_branch d fmt =
+    match d with
+    | DDataSingleton(name, a) ->
+      open_label fmt "DDataSingleton" a;
+      pp_print_string fmt (quote name);
+      close_paren fmt
+    | DDataConstructor(name, tyvars, a) ->
+      open_label fmt "DDataConstructor" a;
+      pp_print_string fmt (quote name);
+      print_comma_sep fmt;
+      print_list fmt (fun t fmt ->
+          match t with
+          | TyVar(v) -> pp_print_string fmt (quote v)
+          | _ -> failwith "Impossible") tyvars print_comma_sep;
+      close_paren fmt
+  and help_stmt s fmt =
+    match s with
+    | SInclude(name, a) ->
+      open_label fmt "SInclude" a;
+      pp_print_string fmt (quote name);
+      close_paren fmt
+    | SLet(binds, a) ->
+      open_label fmt "SLet" a;
+      open_paren fmt; print_list fmt help_bind binds print_comma_sep; close_paren fmt;
+      print_comma_sep fmt;
+      close_paren fmt
+    | SLetRec(binds, a) ->
+      open_label fmt "SLetRec" a;
+      open_paren fmt; print_list fmt help_bind binds print_comma_sep; close_paren fmt;
+      print_comma_sep fmt;
+      close_paren fmt
+    | SDataDecl(name, tyvars, branches, a) ->
+      open_label fmt "SDataDecl" a;
+      open_paren fmt;
+      pp_print_string fmt (quote name);
+      print_comma_sep fmt;
+      print_list fmt (fun t fmt ->
+          match t with
+          | TyVar(v) -> pp_print_string fmt (quote v)
+          | _ -> failwith "Impossible") tyvars print_comma_sep;
+      print_list fmt help_data_branch branches print_comma_sep;
+      close_paren fmt
+  and help e fmt =
     match e with
     | ENumber(n, a) ->
        open_label fmt "ENumber" a;
@@ -204,6 +291,8 @@ let rec format_expr (e : 'a expr) (print_a : 'a -> string) : string =
        open_label fmt "EId" a;
        pp_print_string fmt (quote x);
        close_paren fmt
+    | ENull ->
+      pp_print_string fmt (quote "ENull")
     | EEllipsis(a) ->
        open_label fmt "EEllipsis" a;
        close_paren fmt
@@ -273,38 +362,14 @@ let rec format_expr (e : 'a expr) (print_a : 'a -> string) : string =
        print_list fmt help stmts print_semi_sep;
        close_paren fmt
     | ELet(binds, body, a) ->
-       let print_item bind fmt =
-         match bind with
-         | LetBind(x, sopt, b, a) ->
-           open_paren fmt;
-           pp_print_string fmt (" " ^ (quote x)); pp_print_string fmt (string_of_sopt sopt);
-           pp_print_string fmt (maybe_a a); print_comma_sep fmt; help b fmt;
-           close_paren fmt
-         | TupDestr(ids, sopt, b, a) ->
-           open_paren fmt;
-           pp_print_string fmt (" " ^ (quote (string_of_a_list ids))); pp_print_string fmt (string_of_sopt sopt);
-           pp_print_string fmt (maybe_a a); print_comma_sep fmt; help b fmt;
-           close_paren fmt in
        open_label fmt "ELet" a;
-       open_paren fmt; print_list fmt print_item binds print_comma_sep; close_paren fmt;
+       open_paren fmt; print_list fmt help_bind binds print_comma_sep; close_paren fmt;
        print_comma_sep fmt;
        help body fmt;
        close_paren fmt
     | ELetRec(binds, body, a) ->
-       let print_item bind fmt =
-         match bind with
-         | LetBind(x, sopt, b, a) ->
-           open_paren fmt;
-           pp_print_string fmt (" " ^ (quote x)); pp_print_string fmt (string_of_sopt sopt);
-           pp_print_string fmt (maybe_a a); print_comma_sep fmt; help b fmt;
-           close_paren fmt
-         | TupDestr(ids, sopt, b, a) ->
-           open_paren fmt;
-           pp_print_string fmt (" " ^ (quote (string_of_a_list ids))); pp_print_string fmt (string_of_sopt sopt);
-           pp_print_string fmt (maybe_a a); print_comma_sep fmt; help b fmt;
-           close_paren fmt in
        open_label fmt "ELetRec" a;
-       open_paren fmt; print_list fmt print_item binds print_comma_sep; close_paren fmt;
+       open_paren fmt; print_list fmt help_bind binds print_comma_sep; close_paren fmt;
        print_comma_sep fmt;
        help body fmt;
        close_paren fmt
@@ -316,14 +381,30 @@ let rec format_expr (e : 'a expr) (print_a : 'a -> string) : string =
        open_label fmt "ELambda" a;
        open_paren fmt; print_list fmt print_item args print_comma_sep; close_paren fmt;
        print_comma_sep fmt;
-       ignore(format_expr body print_a);
+       help body fmt;
        close_paren fmt
   in
-  help e str_formatter;
-  flush_str_formatter ()
+  let help_stmts s fmt =
+    print_list fmt help_stmt s print_comma_sep in
+  help_stmts p.statements str_formatter;
+  let statements_str = flush_str_formatter() in
+  help p.body str_formatter;
+  let body_str = flush_str_formatter() in
+  print_record str_formatter [
+    ("statements", statements_str);
+    ("body", body_str)
+  ] print_colon_sep print_comma_sep;
+  let full_prog = flush_str_formatter () in
+  (statements_str, body_str, full_prog)
 
 let format_prog (p : 'a program) (print_a : 'a -> string) : string =
-  format_expr p print_a
+  let (_, _, p) = format_prog_helper p print_a in
+  p
+;;
+
+let format_expr (e : 'a expr) (print_a : 'a -> string) : string =
+  let (_, body, _) = format_prog_helper {statements=[]; body=e} print_a in
+  body
 ;;
 
 let ast_of_pos_prog (e : sourcespan program) : string =

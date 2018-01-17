@@ -11,11 +11,14 @@ let elaborate_schema foralls typ =
   in (foralls, help typ)
 ;;
 
+let make_program (statements, body) =
+  {statements; body}
+
 %}
 
 %token <int> NUM
 %token <string> ID STRING
-%token LBRACK RBRACK DEF ADD1 SUB1 LPAREN RPAREN LET REC IN EQUAL COMMA PLUS MINUS TIMES IF COLON ELSECOLON ELSE TRUE FALSE ISBOOL ISNUM ISTUPLE LAMBDA EQEQ LESS GREATER PRINTSTACK EOF LESSEQ GREATEREQ AND OR NOT GETS BEGIN END SEMI ELLIPSIS ARROW INCLUDE
+%token LBRACK RBRACK DEF ADD1 SUB1 LPAREN RPAREN LET REC IN EQUAL COMMA PLUS MINUS TIMES IF COLON ELSECOLON ELSE TRUE FALSE ISBOOL ISNUM ISTUPLE LAMBDA EQEQ LESS GREATER PRINTSTACK EOF LESSEQ GREATEREQ AND OR NOT GETS BEGIN END SEMI ELLIPSIS ARROW INCLUDE DATA PIPE
 
 %left LPAREN
 %left PLUS MINUS TIMES GREATER LESS EQEQ LESSEQ GREATEREQ AND OR
@@ -67,6 +70,14 @@ typs :
   | { [] }
   | COMMA typ typs { $2 :: $3 }
 
+typ_id :
+  | ID { TyVar $1 }
+
+typ_ids :
+  | { [] }
+  | typ_id { [$1] }
+  | typ_id COMMA typ_ids { $1::$3 }
+
 ids :
   | ID { [$1, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())] }
   | ID COMMA ids { ($1, (Parsing.rhs_start_pos 1, Parsing.rhs_end_pos 1))::$3 }
@@ -99,6 +110,26 @@ simple_expr :
   | const { $1 }
   | ID { EId($1, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
 
+data_branch :
+  | ID LPAREN typ typs RPAREN { DDataConstructor($1, $3::$4, (Parsing.symbol_start_pos(), Parsing.symbol_end_pos())) }
+  | ID { DDataSingleton($1, (Parsing.symbol_start_pos(), Parsing.symbol_end_pos())) }
+
+rest_data_branches :
+  | PIPE data_branch { [$2] }
+  | PIPE data_branch data_branches { $2::$3 }
+
+data_branches :
+  | data_branch { [$1] }
+  | data_branch rest_data_branches { $1::$2 }
+  | rest_data_branches { $1 }
+
+id_seq :
+  | ID { [TyVar $1] }
+  | ID id_seq { (TyVar $1)::$2 }
+
+data_decl :
+  | DATA ID EQUAL data_branches { SDataDecl($2, [], $4, (Parsing.symbol_start_pos(), Parsing.symbol_end_pos()))  }
+  | DATA id_seq ID EQUAL data_branches { SDataDecl($3, $2, $5, (Parsing.symbol_start_pos(), Parsing.symbol_end_pos())) }
 
 block_exprs :
   | expr { [$1] }
@@ -132,6 +163,20 @@ expr :
   | cond_expr { $1 }
   | binop_expr { $1 }
 
-program : expr EOF { $1 }
+top_level_stmt :
+  | INCLUDE ID { SInclude($2, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
+  | LET binds { SLet($2, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
+  | LET REC binds { SLetRec($3, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
+  | data_decl { $1 }
+
+top_level_stmts :
+  | top_level_stmt SEMI { [$1] }
+  | top_level_stmt SEMI top_level_stmts { $1::$3 }
+
+program :
+  | top_level_stmts EOF { make_program ($1, ENull) }
+  | expr EOF { make_program ([], $1) }
+  | top_level_stmt EOF { make_program ([$1], ENull) }
+  | top_level_stmts expr EOF { make_program ($1, $2) }
 
 %%

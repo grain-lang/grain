@@ -272,8 +272,9 @@ let initial_types_env = [
   ("strslice", ([], TyArr([typ_str; typ_int; typ_int], typ_str)));
 ]
 
-let type_check (ast : 'a Types.expr) : unit =
-  let types = infer initial_types_env ast in
+let type_check (prog : 'a Types.program) : unit =
+  let {statements; body} = prog in
+  let types = infer initial_types_env body in
   let lst = List.fold_right (^) (List.map ((fun (x, y) -> "(" ^  (string_of_typ x) ^ ", " ^ (string_of_typ y) ^ "); ")) types) "" in
   Printf.eprintf "%s\n" lst;
   ignore @@ solver types []

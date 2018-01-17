@@ -54,6 +54,10 @@ type 'a bind =
   | LetBind of string * scheme option * 'a expr * 'a
   | TupDestr of ((string * 'a) list) * scheme option * 'a expr * 'a
 
+and 'a data_branch =
+  | DDataSingleton of string * 'a
+  | DDataConstructor of string * typ list * 'a
+
 and 'a expr =
   | ELet of 'a bind list * 'a expr * 'a
   | ELetRec of 'a bind list * 'a expr * 'a
@@ -74,8 +78,18 @@ and 'a expr =
   | ESeq of 'a expr list * 'a
   | EEllipsis of 'a
   | EInclude of string * 'a expr * 'a
+  | ENull (* Used for modules without body expressions *)
 
-type 'a program = 'a expr
+and 'a stmt =
+  | SInclude of string * 'a
+  | SLet of 'a bind list * 'a
+  | SLetRec of 'a bind list * 'a
+  | SDataDecl of string * typ list * 'a data_branch list * 'a
+
+type 'a program = {
+  statements: 'a stmt list;
+  body: 'a expr
+}
 
 type 'a immexpr = (* immediate expressions *)
   | ImmNum of int * 'a

@@ -14,11 +14,47 @@ let safe_assoc v lst =
   | Not_found -> None
 
 let well_formed (p : (Lexing.position * Lexing.position) program) (is_library : bool) builtins : exn list =
+  (* PRECONDITION: p is desugared *)
   let check_non_tail pos env errs =
     if is_library && env.is_tail then
       (EllipsisNotInLibrary(pos))::errs
     else
       errs in
+  let rec wf_branches branches (env : sourcespan wf_env) =
+    let check_duplicate name loc =
+      try
+        let existing = List.assoc name env.binds in
+        [ShadowId(name, loc, existing)], env
+      with
+      Not_found -> [], {env with binds=(name, loc)::env.binds} in
+    match branches with
+    | [] -> ([], env)
+    | b::tl ->
+      match b with
+      | DDataSingleton(name, loc) ->
+        let errs, new_env = check_duplicate name loc in
+        let rest_errs, rest_binds = wf_branches tl new_env in
+        (errs @ rest_errs, rest_binds)
+      | DDataConstructor(name, typ_list, loc) ->
+        let errs, new_env = check_duplicate name loc in
+        let rest_errs, rest_binds = wf_branches tl new_env in
+        (errs @ rest_errs, rest_binds) in
+  let rec wf_S stmts (env : sourcespan wf_env) =
+    match stmts with
+    | [] -> ([], env)
+    | s::tl ->
+      match s with
+      | SInclude _
+      | SLet _
+      | SLetRec _ -> failwith "Internal error: WF phase run before desugaring"
+      | SDataDecl(name, typs, data_branch_list, loc) ->
+        let name_err, name_env = try
+            let existing = List.assoc name env.binds in
+            ([ShadowId(name, loc, existing)], env)
+          with Not_found -> ([], {env with binds=(name, loc)::env.binds}) in
+        let branch_errs, post_env = wf_branches data_branch_list name_env in
+        let rest_errs, rest_env = wf_S tl post_env in
+        (name_err @ branch_errs @ rest_errs, rest_env) in
   let rec wf_E e (env : sourcespan wf_env) =
     (* Includes only allowed at beginning of file *)
     let env = match e with
@@ -26,6 +62,7 @@ let well_formed (p : (Lexing.position * Lexing.position) program) (is_library : 
       | _ -> {env with includes_allowed=false} in
     match e with
     | EBool(_, loc) -> check_non_tail loc env []
+    | ENull -> []
     | ENumber(n, loc) ->
        if n > 1073741823 || n < -1073741824 then (check_non_tail loc env [Overflow(n, loc)]) else []
     | EId (x, loc) ->
@@ -176,5 +213,6 @@ let well_formed (p : (Lexing.position * Lexing.position) program) (is_library : 
     | EApp(func, args, loc) ->
        (wf_E func env) @ List.concat (List.map (fun e -> wf_E e env) args)
   in
-  wf_E p {binds=builtins; is_tail=true; includes_allowed=true}
+  let stmt_errs, stmt_env = wf_S p.statements {binds=builtins; is_tail=true; includes_allowed=true} in
+  wf_E p.body {stmt_env with includes_allowed=true; is_tail=true}
 ;;

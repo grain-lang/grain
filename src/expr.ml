@@ -7,7 +7,13 @@ let tag (p : 'a program) : tag program =
   let tag () =
     next := !next + 1;
     !next in
-  let rec helpE (e : 'a expr) : tag expr =
+  let rec help_bind (b : 'a bind) : tag bind =
+    match b with
+    | LetBind(x, topt, b, _) ->
+      let t = tag() in LetBind(x, topt, helpE b, t)
+    | TupDestr(ids, topt, b, _) ->
+      let t = tag() in TupDestr(List.map (fun (n, _) -> (n, tag())) ids, topt, helpE b, t)
+  and helpE (e : 'a expr) : tag expr =
     match e with
     | EId(x, _) -> EId(x, tag())
     | ENumber(n, _) -> ENumber(n, tag())
@@ -25,20 +31,10 @@ let tag (p : 'a program) : tag program =
        ESeq(List.map helpE stmts, seq_tag)
     | ELet(binds, body, _) ->
        let let_tag = tag() in
-       ELet(List.map (function
-       | LetBind(x, topt, b, _) ->
-         let t = tag() in LetBind(x, topt, helpE b, t)
-       | TupDestr(ids, topt, b, _) ->
-         let t = tag() in TupDestr(List.map (fun (n, _) -> (n, tag())) ids, topt, helpE b, t)
-       ) binds, helpE body, let_tag)
+       ELet(List.map help_bind binds, helpE body, let_tag)
     | ELetRec(binds, body, _) ->
       let let_tag = tag() in
-      ELetRec(List.map (function
-      | LetBind(x, topt, b, _) ->
-        let t = tag() in LetBind(x, topt, helpE b, t)
-      | TupDestr(ids, topt, b, _) ->
-        let t = tag() in TupDestr(List.map (fun (n, _) -> (n, tag())) ids, topt, helpE b, t)
-      ) binds, helpE body, let_tag)
+      ELetRec(List.map help_bind binds, helpE body, let_tag)
     | EIf(cond, thn, els, _) ->
        let if_tag = tag() in
        EIf(helpE cond, helpE thn, helpE els, if_tag)
@@ -66,11 +62,36 @@ let tag (p : 'a program) : tag program =
     | ELambda(args, body, _) ->
        let lam_tag = tag() in
        ELambda(List.map (fun (a, _) -> (a, tag())) args, helpE body, lam_tag)
-  and helpP p = helpE p
+    | ENull -> ENull
+  and helpD (d : 'a data_branch) : tag data_branch =
+    match d with
+    | DDataSingleton(name, _) -> DDataSingleton(name, tag())
+    | DDataConstructor(name, tyvars, _) -> DDataConstructor(name, tyvars, tag())
+  and helpS (s : 'a stmt) : tag stmt =
+    match s with
+    | SInclude(lib, _) -> SInclude(lib, tag())
+    | SLet(binds, _) ->
+      let let_tag = tag() in
+      SLet(List.map help_bind binds, let_tag)
+    | SLetRec(binds, _) ->
+      let let_tag = tag() in
+      SLetRec(List.map help_bind binds, let_tag)
+    | SDataDecl(name, vars, branches, _) ->
+      let data_tag = tag() in
+      SDataDecl(name, vars, List.map helpD branches, data_tag)
+  and helpP (p : 'a program) : tag program =
+    {statements = List.map helpS p.statements;
+     body = helpE p.body}
   in helpP p
 
 let rec untag : 'a. 'a program -> unit program = fun p ->
-  let rec helpE e =
+  let rec help_bind b : unit bind =
+    match b with
+    | LetBind(x, topt, b, _) ->
+      LetBind(x, topt, helpE b, ())
+    | TupDestr(ids, topt, b, _) ->
+      TupDestr(List.map (fun (n, _) -> (n, ())) ids, topt, helpE b, ())
+  and helpE e =
     match e with
     | EId(x, _) -> EId(x, ())
     | ENumber(n, _) -> ENumber(n, ())
@@ -115,7 +136,23 @@ let rec untag : 'a. 'a program -> unit program = fun p ->
       EApp(helpE name, List.map helpE args, ())
     | ELambda(args, body, _) ->
       ELambda(List.map (fun (x, _) -> (x, ())) args, helpE body, ())
-  and helpP p = helpE p
+    | ENull -> ENull
+  and helpD d : unit data_branch =
+    match d with
+    | DDataSingleton(name, _) -> DDataSingleton(name, ())
+    | DDataConstructor(name, tyvars, _) -> DDataConstructor(name, tyvars, ())
+  and helpS s : unit stmt =
+    match s with
+    | SInclude(lib, _) -> SInclude(lib, ())
+    | SLet(binds, _) ->
+      SLet(List.map help_bind binds, ())
+    | SLetRec(binds, _) ->
+      SLetRec(List.map help_bind binds, ())
+    | SDataDecl(name, vars, branches, _) ->
+      SDataDecl(name, vars, List.map helpD branches, ())
+  and helpP p =
+    {statements = List.map helpS p.statements;
+     body = helpE p.body}
   in helpP p
 
 let atag (p : 'a aprogram) : tag aprogram =
