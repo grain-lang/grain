@@ -47,6 +47,7 @@ type typ =
   | TyVar of string (* things like X or Y *)
   | TyArr of typ list * typ (* t1 t2 ... -> t_ret *)
   | TyTup of typ list (* (t1, t2, ..., tn) *)
+  | TyGen of typ list * string (* e.g. t List *)
 
 type scheme = (string list * typ) (* Forall X, Y, ..., typ *)
 

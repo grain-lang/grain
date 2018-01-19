@@ -2,7 +2,35 @@ open Printf
 open Types
 open Expr
 
-let rec pre_anf (({body; _} : tag program) as p) : tag program =
+let rec pre_anf (({body; statements} : tag program) as p) : tag program =
+  (* FIXME: Use a more principled approach *)
+  let new_tags = ref 9999999 in
+  let new_tag str =
+    new_tags := !new_tags + 1;
+    !new_tags in
+  let make_statement_thunk acc cur =
+    match cur with
+    | SDataDecl(name, _, branches, tag) ->
+      let counter = ref 0 in
+      let mk_gensym() =
+        let c = ref 0 in
+        fun s ->
+          begin
+            c := !c + 1;
+            sprintf "%s_%d" s !c
+          end in
+      let binds = List.map (fun cur ->
+          counter := !counter + 1;
+          match cur with
+          | DDataSingleton(name, _) -> LetBind(name, None, ETuple([ENumber(!counter, new_tag())], new_tag()), new_tag())
+          | DDataConstructor(name, args, _) ->
+            let gensym = mk_gensym() in
+            let func_args = List.map (fun a -> (gensym "arg", new_tag())) args in
+            let func_arg_ids = List.map (fun a -> EId(fst a, new_tag())) func_args in
+            LetBind(name, None, ELambda(func_args, ETuple((ENumber(!counter, new_tag()))::func_arg_ids, new_tag()), new_tag()), new_tag())) branches in
+      (fun b -> ELet(binds, acc b, new_tag()))
+    | _ -> failwith "Desugaring left non-data decl statement" in
+  let statement_thunk = List.fold_left make_statement_thunk (fun b -> b) statements in
   let rec pre_anf_help (b : tag expr) : tag expr =
     match (b : tag expr) with
     | ELet (binds, body, t) ->
@@ -40,7 +68,7 @@ let rec pre_anf (({body; _} : tag program) as p) : tag program =
     | ESeq (exprs, t) -> ESeq(List.map pre_anf_help exprs, t)
     | EEllipsis _ -> failwith "you cannot"
     | EInclude (_,_,_) -> failwith "you cannot" in
-  {p with body=pre_anf_help body}
+  {statements=[]; body=statement_thunk @@ pre_anf_help body}
 
 type 'a anf_bind =
   | BSeq of 'a cexpr

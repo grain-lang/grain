@@ -11,7 +11,7 @@
 (rule
  ((targets (parser.ml))
   (deps (parser.dyp))
-  (action (run dypgen --no-mli --Werror --pv-obj ${<}))))
+  (action (run dypgen --no-mli --Werror ${<}))))
 
 (executable
  ((name grainc)

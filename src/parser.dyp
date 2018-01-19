@@ -9,6 +9,7 @@ let elaborate_schema foralls typ =
     | TyCon name -> if List.mem name foralls then TyVar name else typ
     | TyArr(args, ret) -> TyArr(List.map help args, help ret)
     | TyTup(args) -> TyTup(List.map help args)
+    | TyGen(args, name) -> TyGen(List.map help args, name)
   in (foralls, help typ)
 ;;
 
@@ -49,8 +50,7 @@ binds :
   | LPAREN ids RPAREN tyann EQUAL expr COMMA binds { TupDestr($2, $4, $6, (Parsing.rhs_start_pos 1, Parsing.rhs_end_pos 1))::$8 }
 
 tyann :
-  | { None }
-  | COLON schema { Some $2 }
+  | [COLON schema]? { $1 }
 
 schema :
   | LBRACK ids RBRACK typ { elaborate_schema (List.map fst $2) $4 }
@@ -58,6 +58,7 @@ schema :
 
 typ :
   | ID { TyCon $1 }
+  | ID+ ID { TyGen(List.map (fun s -> TyCon s) $1, $2) }
   | LPAREN typ typs ARROW typ RPAREN { TyArr($2::$3, $5) }
   | LPAREN typ typs RPAREN { TyTup ($2::$3) }
 
@@ -110,22 +111,16 @@ data_branch :
   | ID LPAREN typ typs RPAREN { DDataConstructor($1, $3::$4, (Parsing.symbol_start_pos(), Parsing.symbol_end_pos())) }
   | ID { DDataSingleton($1, (Parsing.symbol_start_pos(), Parsing.symbol_end_pos())) }
 
-rest_data_branches :
-  | PIPE data_branch { [$2] }
-  | PIPE data_branch data_branches { $2::$3 }
-
 data_branches :
-  | data_branch { [$1] }
-  | data_branch rest_data_branches { $1::$2 }
-  | rest_data_branches { $1 }
+  | data_branch [PIPE data_branch {$2}]* { $1::$2 }
+  | [PIPE data_branch {$2}]+ { $1 }
 
 id_seq :
   | ID { [TyVar $1] }
   | ID id_seq { (TyVar $1)::$2 }
 
 data_decl :
-  | DATA ID EQUAL data_branches { SDataDecl($2, [], $4, (Parsing.symbol_start_pos(), Parsing.symbol_end_pos()))  }
-  | DATA id_seq ID EQUAL data_branches { SDataDecl($3, $2, $5, (Parsing.symbol_start_pos(), Parsing.symbol_end_pos())) }
+  | DATA [ID {TyVar $1}]* ID EQUAL data_branches { SDataDecl($3, $2, $5, (Parsing.symbol_start_pos(), Parsing.symbol_end_pos())) }
 
 block_exprs :
   | expr { [$1] }
@@ -170,9 +165,7 @@ top_level_stmts :
   | top_level_stmt SEMI top_level_stmts { $1::$3 }
 
 program :
-  | top_level_stmts EOF { make_program ($1, ENull) }
-  | expr EOF { make_program ([], $1) }
+  | top_level_stmts? expr? EOF { make_program (Option.default [] $1, Option.default ENull $2) }
   | top_level_stmt EOF { make_program ([$1], ENull) }
-  | top_level_stmts expr EOF { make_program ($1, $2) }
 
 
