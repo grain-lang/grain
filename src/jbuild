@@ -1,17 +1,10 @@
 (jbuild_version 1)
 
-(ocamllex (lexer))
-
 (library
  ((name grain)
   (public_name grain)
   ;; Note: 'dyp' is provided by the 'dypgen' OPAM package
-  (libraries   (oUnit extlib batteries cmdliner ocamlgraph wasm stdint dyp))))
-
-(rule
- ((targets (parser.ml))
-  (deps (parser.dyp))
-  (action (run dypgen --no-mli --Werror ${<}))))
+  (libraries   (oUnit extlib batteries cmdliner ocamlgraph wasm stdint grain_parsing))))
 
 (executable
  ((name grainc)

@@ -1,6 +1,8 @@
 {
+open Location
 open Dyp
-open Types
+open Parsetree
+open Ast_helper
 
 let elaborate_schema foralls typ =
   let rec help typ =
@@ -23,16 +25,15 @@ let make_program (statements, body) =
 %token <string> STRING
 %token LBRACK RBRACK DEF ADD1 SUB1 LPAREN RPAREN LET REC IN EQUAL COMMA PLUS MINUS TIMES IF COLON ELSECOLON ELSE TRUE FALSE ISBOOL ISNUM ISTUPLE LAMBDA EQEQ LESS GREATER PRINTSTACK EOF LESSEQ GREATEREQ AND OR NOT GETS BEGIN END SEMI ELLIPSIS ARROW INCLUDE DATA PIPE
 
-%start <(Lexing.position * Lexing.position) Types.program> program
+%start <Parsetree.program> program
 
 %parser
 
 const :
-  | NUM { ENumber($1, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
-  | TRUE { EBool(true, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
-  | FALSE { EBool(false, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
-  | ELLIPSIS { EEllipsis((Parsing.symbol_start_pos(), Parsing.symbol_end_pos ())) }
-  | STRING { EString($1, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
+  | NUM { Const.int $1 }
+  | TRUE { Const.bool true }
+  | FALSE { Const.bool false }
+  | STRING { Const.string $1 }
 
 prim1 :
   | ADD1 { Add1 }
@@ -41,7 +42,6 @@ prim1 :
   | ISBOOL { IsBool }
   | ISNUM { IsNum }
   | ISTUPLE { IsTuple }
-  | PRINTSTACK { PrintStack }
 
 binds :
   | ID tyann EQUAL expr { [LetBind($1, $2, $4, (Parsing.rhs_start_pos 1, Parsing.rhs_end_pos 1))] }
