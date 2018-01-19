@@ -1,0 +1,14 @@
+(jbuild_version 1)
+
+(ocamllex (lexer))
+
+(library
+ ((name     grain_parsing)
+  (synopsis "Frontend modules for Grain compiler")
+  (libraries (dyp ppx_deriving ppx_sexp_conv sexplib))))
+
+(rule
+ ((targets (parser.ml))
+  (deps (parser.dyp))
+  (action (run dypgen --no-mli --Werror ${<}))))
+
