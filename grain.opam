@@ -15,6 +15,7 @@ depends: [
   "ocamlfind" {build}
   "ocamlbuild" {build}
   "jbuilder" {build}
+  "dypgen"
   "ounit"
   "extlib"
   "batteries"

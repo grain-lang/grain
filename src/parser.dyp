@@ -1,4 +1,5 @@
-%{
+{
+open Dyp
 open Types
 
 let elaborate_schema foralls typ =
@@ -14,21 +15,16 @@ let elaborate_schema foralls typ =
 let make_program (statements, body) =
   {statements; body}
 
-%}
+}
 
 %token <int> NUM
-%token <string> ID STRING
+%token <string> ID
+%token <string> STRING
 %token LBRACK RBRACK DEF ADD1 SUB1 LPAREN RPAREN LET REC IN EQUAL COMMA PLUS MINUS TIMES IF COLON ELSECOLON ELSE TRUE FALSE ISBOOL ISNUM ISTUPLE LAMBDA EQEQ LESS GREATER PRINTSTACK EOF LESSEQ GREATEREQ AND OR NOT GETS BEGIN END SEMI ELLIPSIS ARROW INCLUDE DATA PIPE
 
-%left LPAREN
-%left PLUS MINUS TIMES GREATER LESS EQEQ LESSEQ GREATEREQ AND OR
+%start <(Lexing.position * Lexing.position) Types.program> program
 
-
-%type <(Lexing.position * Lexing.position) Types.program> program
-
-%start program
-
-%%
+%parser
 
 const :
   | NUM { ENumber($1, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
@@ -179,4 +175,4 @@ program :
   | top_level_stmt EOF { make_program ([$1], ENull) }
   | top_level_stmts expr EOF { make_program ($1, $2) }
 
-%%
+
