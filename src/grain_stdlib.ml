@@ -4,13 +4,13 @@ open Types
 
 type grain_library = sourcespan program -> sourcespan program
 
-let parse name lexbuf =
+let parse name lexbuf : sourcespan program =
   let open Lexing in
   let string_of_position p =
     sprintf "%s:line %d, col %d" p.pos_fname p.pos_lnum (p.pos_cnum - p.pos_bol) in
   try
     lexbuf.lex_curr_p <- { lexbuf.lex_curr_p with pos_fname = name };
-    Parser.program Lexer.token lexbuf
+    fst @@ List.hd @@ Parser.program Lexer.token lexbuf
   with
   | Failure x when String.equal x "lexing: empty token" ->
     failwith (sprintf "lexical error at %s"

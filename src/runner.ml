@@ -74,7 +74,7 @@ let print_errors exns =
 let parse name lexbuf =
   try 
     lexbuf.lex_curr_p <- { lexbuf.lex_curr_p with pos_fname = name };
-    Parser.program Lexer.token lexbuf
+    fst @@ List.hd @@ Parser.program Lexer.token lexbuf
   with
   | Failure x when String.equal x "lexing: empty token" ->
     failwith (sprintf "lexical error at %s"
