@@ -1,3 +1,4 @@
+SHELL=/bin/bash
 JBUILDER := $(shell command -v jbuilder &> /dev/null)
 
 ifndef JBUILDER
