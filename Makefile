@@ -1,12 +1,14 @@
-SHELL=/bin/bash
-JBUILDER := $(shell command -v jbuilder &> /dev/null)
+ifeq ($(UNAME_S),Darwin)
+	SHELL:=/bin/bash
+endif
+JBUILDER := $(shell command jbuilder &> /dev/null)
+
+default: check-libs
+	jbuilder build
 
 ifndef JBUILDER
 	$(error "jbuilder not found on your PATH. Please install jbuilder before building: opam install jbuilder")
 endif
-
-default: check-libs
-	jbuilder build
 
 tests:
 	jbuilder runtest

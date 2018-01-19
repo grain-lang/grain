@@ -33,6 +33,7 @@ let rec free_typ_tyvars typ =
   | TyVar s -> [s]
   | TyArr(args, ret) -> List.concat (List.map free_typ_tyvars (args @ [ret]))
   | TyTup(args) -> List.concat (List.map free_typ_tyvars args)
+  | TyGen(args, _) -> List.concat (List.map free_typ_tyvars args)
 and free_scheme_tyvars (args, typ) =
   List.fold_left ExtList.List.remove (List.sort_uniq String.compare (free_typ_tyvars typ)) args
 ;;
@@ -63,6 +64,7 @@ let rec subst_type (s : unification) (t : typ) : typ =
     end
   | TyArr(args, ret) -> TyArr(subst_types s args, subst_type s ret)
   | TyTup args -> TyTup(subst_types s args)
+  | TyGen(args, name) -> TyGen(subst_types s args, name)
 
 and subst_types (s : unification) (ts : typ list) : typ list =
   List.map (subst_type s) ts
@@ -127,6 +129,8 @@ let rec unify (t1 : typ) (t2 : typ) (unif_env : unification) : unification =
     unify_many (args1 @ [ret1]) (args2 @ [ret2]) unif_env
   | TyTup elts1, TyTup elts2 when (List.length elts1) == (List.length elts2) ->
     List.fold_left2 (fun uenv a1 a2 -> unify a1 a2 uenv) unif_env elts1 elts2
+  | TyGen(args1, name1), TyGen(args2, name2) when String.equal name1 name2 ->
+    List.fold_left2 (fun uenv a1 a2 -> unify a1 a2 uenv) unif_env args1 args2
   | TyCon a, TyCon b when a == b -> unif_env
   | _ -> raise (TypeError (sprintf "Cannot unify types: %s, %s" (string_of_typ t1) (string_of_typ t2)));;
 
@@ -272,11 +276,35 @@ let initial_types_env = [
   ("strslice", ([], TyArr([typ_str; typ_int; typ_int], typ_str)));
 ]
 
+let extract_data_types stmts =
+  let a_name = function
+    | TyVar(n) -> n
+    | _ -> failwith "Impossible" in
+  let extract_data_type data_args data_name = function
+    | DDataSingleton(name, _) ->
+      (name, (List.map a_name data_args, TyGen(data_args, data_name)))
+    | DDataConstructor(name, args, _) ->
+      let lift_a_names acc cur =
+        match cur with
+        | TyVar(n) -> n::acc
+        | _ -> acc in
+      let lifted = List.fold_left lift_a_names [] args in
+      (name, ((List.map a_name data_args) @ lifted, TyArr(args, TyGen(data_args, data_name)))) in
+  List.fold_left (fun acc cur ->
+      match cur with
+      | SDataDecl(data_name, data_args, branch_list, _) ->
+        (List.map (fun b -> extract_data_type data_args data_name b) branch_list) @ acc
+      | _ -> acc
+    ) [] stmts
+
 let type_check (prog : 'a Types.program) : unit =
   let {statements; body} = prog in
-  let types = infer initial_types_env body in
-  let lst = List.fold_right (^) (List.map ((fun (x, y) -> "(" ^  (string_of_typ x) ^ ", " ^ (string_of_typ y) ^ "); ")) types) "" in
-  Printf.eprintf "%s\n" lst;
+  let init_env = ((extract_data_types statements) @ initial_types_env) in
+  Printf.eprintf "\nInitial environment:\n";
+  List.iter (fun (name, (vars, typ)) -> Printf.eprintf "\t%s: forall %s. %s\n" name (List.fold_right (^) (List.map (fun s -> s ^ ".") vars) "") (string_of_typ typ)) init_env;
+  let types = infer init_env body in
+  let lst = List.fold_right (^) (List.map ((fun (x, y) -> "(" ^  (string_of_typ x) ^ ", " ^ (string_of_typ y) ^ ");\n\t")) types) "" in
+  Printf.eprintf "\n\t%s\n" lst;
   ignore @@ solver types []
 
 (*

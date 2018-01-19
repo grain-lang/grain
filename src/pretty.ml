@@ -61,6 +61,7 @@ let rec string_of_typ t =
   | TyArr(args, ret) -> sprintf "(%s -> %s)" (ExtString.String.join " " (List.map string_of_typ args))
                           (string_of_typ ret)
   | TyTup args -> sprintf "(%s)" (ExtString.String.join ", " (List.map string_of_typ args))
+  | TyGen(args, s) -> sprintf "(%s %s)" (ExtString.String.join ", " (List.map string_of_typ args)) s
 and string_of_scheme (vars, typ) =
   sprintf "(Forall (%s), %s)" (ExtString.String.join ", " vars) (string_of_typ typ)
 ;;
