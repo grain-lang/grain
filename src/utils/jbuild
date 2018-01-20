@@ -1,0 +1,7 @@
+(jbuild_version 1)
+
+(library
+ ((name        grain_utils)
+  (synopsis "Utilities for the Grain compiler")
+  (libraries ())))
+

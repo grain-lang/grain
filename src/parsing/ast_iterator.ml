@@ -2,6 +2,7 @@
 open Parsetree
 
 type iterator = {
+  constant: iterator -> constant -> unit;
   expr: iterator -> expression -> unit;
   pat: iterator -> pattern -> unit;
   typ: iterator -> parsed_type -> unit;
@@ -16,12 +17,16 @@ type iterator = {
 
 let iter_loc sub {loc; txt} = sub.location sub loc
 
+module Cnst = struct
+  let iter sub c = ()
+end
+
 module E = struct
   let iter sub {pexp_desc = desc; pexp_loc = loc} =
     sub.location sub loc;
     match desc with
     | PExpId(i) -> iter_loc sub i
-    | PExpConstant(c) -> ()
+    | PExpConstant(c) -> sub.constant sub c
     | PExpTuple(es) -> List.iter (sub.expr sub) es
     | PExpLet(r, vbs, e) -> List.iter (sub.value_binding sub) vbs; sub.expr sub e
     | PExpMatch(e, mbs) -> sub.expr sub e; List.iter (sub.match_branch sub) mbs
@@ -103,6 +108,7 @@ module TL = struct
 end
 
 let default_iterator = {
+  constant = Cnst.iter;
   expr = E.iter;
   pat = P.iter;
   typ = T.iter;
