@@ -20,6 +20,8 @@ let make_program statements body =
 
 }
 
+%relation pt<pp<pb<pc
+
 %token <int> NUM
 %token <string> ID
 %token <string> STRING
@@ -59,17 +61,18 @@ prim1 :
   | ISNUM { IsNum }
   | ISTUPLE { IsTuple }
 
-binop:
-  | PLUS { Plus }
-  | MINUS { Minus }
-  | TIMES { Times }
-  | EQEQ { Eq }
-  | LESS { Less }
-  | GREATER { Greater }
-  | LESSEQ { LessEq }
-  | GREATEREQ { GreaterEq }
-  | AND { And }
-  | OR { Or }
+binop_expr:
+  | expr(<=pp) PLUS      expr(<pp) { Exp.prim2 Plus $1 $3 }
+  | expr(<=pp) MINUS     expr(<pp) { Exp.prim2 Minus $1 $3 }
+  | expr(<=pt) TIMES     expr(<pt) { Exp.prim2 Times $1 $3 }
+  | expr(<=pc) EQEQ      expr(<pc) { Exp.prim2 Eq $1 $3 }
+  | expr(<=pc) LESS      expr(<pc) { Exp.prim2 Less $1 $3 }
+  | expr(<=pc) GREATER   expr(<pc) { Exp.prim2 Greater $1 $3 }
+  | expr(<=pc) LESSEQ    expr(<pc) { Exp.prim2 LessEq $1 $3 }
+  | expr(<=pc) GREATEREQ expr(<pc) { Exp.prim2 GreaterEq $1 $3 }
+  | expr(<=pb) AND       expr(<pb) { Exp.prim2 Or $1 $3 }
+  | expr(<=pb) OR        expr(<pb) { Exp.prim2 And $1 $3 }
+  | expr { $1 }
 
 pattern :
   | UNDERSCORE { Pat.any() }
@@ -125,10 +128,6 @@ prim1_expr :
 
 paren_expr :
   | LPAREN binop_expr RPAREN { $2 }
-
-binop_expr :
-  | expr binop expr { Exp.prim2 $2 $1 $3 }
-  | expr { $1 }
 
 app_expr :
   | expr LPAREN tuple_exprs RPAREN { Exp.apply $1 $3 }
