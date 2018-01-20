@@ -90,6 +90,7 @@ module Exp = struct
   let constant ?loc a = mk ?loc (PExpConstant a)
   let tuple ?loc a = mk ?loc (PExpTuple a)
   let let_ ?loc a b c = mk ?loc (PExpLet(a, b, c))
+  let match_ ?loc a b = mk ?loc (PExpMatch(a, b))
   let prim1 ?loc a b = mk ?loc (PExpPrim1(a, b))
   let prim2 ?loc a b c = mk ?loc (PExpPrim2(a, b, c))
   let if_ ?loc a b c = mk ?loc (PExpIf(a, b, c))
@@ -116,6 +117,14 @@ module Vb = struct
       | None -> (!default_loc_src)()
       | Some l -> l in
     {pvb_pat=p; pvb_expr=e; pvb_loc=loc}
+end
+
+module Mb = struct
+  let mk ?loc p e =
+    let loc = match loc with
+      | None -> (!default_loc_src)()
+      | Some l -> l in
+    {pmb_pat=p; pmb_body=e; pmb_loc=loc}
 end
 
 module Imp = struct

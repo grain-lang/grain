@@ -11,6 +11,7 @@ type mapper = {
   location: mapper -> Location.t -> Location.t;
   import: mapper -> import_declaration -> import_declaration;
   value_binding: mapper -> value_binding -> value_binding;
+  match_branch: mapper -> match_branch -> match_branch;
   toplevel: mapper -> toplevel_stmt -> toplevel_stmt;
 }
 
@@ -25,6 +26,7 @@ module E = struct
     | PExpConstant(c) -> constant ~loc c
     | PExpTuple(es) -> tuple ~loc (List.map (sub.expr sub) es)
     | PExpLet(r, vbs, e) -> let_ ~loc r (List.map (sub.value_binding sub) vbs) (sub.expr sub e)
+    | PExpMatch(e, mbs) -> match_ ~loc (sub.expr sub e) (List.map (sub.match_branch sub) mbs)
     | PExpPrim1(p1, e) -> prim1 ~loc p1 (sub.expr sub e)
     | PExpPrim2(p2, e1, e2) -> prim2 ~loc p2 (sub.expr sub e1) (sub.expr sub e2)
     | PExpIf(c, t, f) -> if_ ~loc (sub.expr sub c) (sub.expr sub t) (sub.expr sub f)
@@ -86,6 +88,15 @@ module V = struct
     }
 end
 
+module MB = struct
+  let map sub {pmb_pat = pat; pmb_body = expr; pmb_loc = loc} =
+    {
+      pmb_pat = sub.pat sub pat;
+      pmb_body = sub.expr sub expr;
+      pmb_loc = sub.location sub loc;
+    }
+end
+
 module I = struct
   let map sub {pimp_mod = imod; pimp_loc = loc} =
     let open Imp in
@@ -112,6 +123,7 @@ let default_mapper = {
   location = (fun _ x -> x);
   import = I.map;
   value_binding = V.map;
+  match_branch = MB.map;
   toplevel = TL.map;
 }
 

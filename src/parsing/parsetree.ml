@@ -108,6 +108,7 @@ and expression_desc =
   | PExpConstant of constant
   | PExpTuple of expression list
   | PExpLet of rec_flag * value_binding list * expression
+  | PExpMatch of expression * match_branch list
   | PExpPrim1 of prim1 * expression
   | PExpPrim2 of prim2 * expression * expression
   | PExpIf of expression * expression * expression
@@ -122,6 +123,12 @@ and value_binding = {
   pvb_pat: pattern;
   pvb_expr: expression;
   pvb_loc: Location.t sexp_opaque
+} [@@deriving sexp]
+
+and match_branch = {
+  pmb_pat: pattern;
+  pmb_body: expression;
+  pmb_loc: Location.t sexp_opaque;
 } [@@deriving sexp]
 
 (** Type for import statements *)
