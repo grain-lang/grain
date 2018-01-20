@@ -97,11 +97,10 @@ module TL = struct
   let map sub {ptop_desc = desc; ptop_loc = loc} =
     let open Top in
     let loc = sub.location sub loc in
-    let desc = match desc with
-      | PTopImport id -> PTopImport (sub.import sub id)
-      | PTopData dd -> PTopData (sub.data sub dd)
-      | PTopLet(r, vb) -> PTopLet(r, List.map (sub.value_binding sub) vb) in
-    mk ~loc desc
+    match desc with
+      | PTopImport id -> Top.import ~loc (sub.import sub id)
+      | PTopData dd -> Top.data ~loc (sub.data sub dd)
+      | PTopLet(r, vb) -> Top.let_ ~loc r (List.map (sub.value_binding sub) vb)
 end
 
 let default_mapper = {

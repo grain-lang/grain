@@ -105,6 +105,9 @@ module Top = struct
       | None -> (!default_loc_src)()
       | Some l -> l in
     {ptop_desc=d; ptop_loc=loc}
+  let import ?loc i = mk ?loc (PTopImport i)
+  let data ?loc d = mk ?loc (PTopData d)
+  let let_ ?loc r vb = mk ?loc (PTopLet(r, vb))
 end
 
 module Vb = struct
