@@ -194,3 +194,13 @@ toplevel_stmts :
 program :
   | toplevel_stmts SEMI EOF { make_program $1 (Exp.null ~loc:dummy_loc ()) }
   | toplevel_stmts SEMI binop_expr EOF { make_program $1 $3 }
+
+%%
+
+{
+let parse_program t lexbuf = with_default_loc_src symbol_rloc (fun() -> program t lexbuf)
+}
+
+%mli {
+val parse_program : Lexing.lexbuf -> ((Parsetree.parsed_program * 'a) list)
+}

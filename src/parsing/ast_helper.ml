@@ -23,12 +23,14 @@ type loc = Location.t
 
 let default_loc_src = ref (fun () -> Location.dummy_loc)
 
-let with_default_loc l f =
+let with_default_loc_src ls f =
   let old = !default_loc_src in
-  default_loc_src := (fun () -> l);
+  default_loc_src := ls;
   try let r = f () in default_loc_src := old; r
   with exn -> default_loc_src := old; raise exn
 
+let with_default_loc l =
+  with_default_loc_src (fun() -> l)
 
 module Const = struct
   let string s = PConstString s

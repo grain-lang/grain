@@ -28,6 +28,8 @@ val with_default_loc: loc -> (unit -> 'a) -> 'a
     (** Set the [default_loc] within the scope of the execution
         of the provided function. *)
 
+val with_default_loc_src: (unit -> loc) -> (unit -> 'a) -> 'a
+
 module Const : sig
   val string : string -> constant
   val int : int -> constant
