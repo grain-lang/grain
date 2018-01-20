@@ -23,7 +23,7 @@ let signed_int = dec_digit+ | ('-' dec_digit+)
 let hex_digit = ['0'-'9' 'A'-'F' 'a'-'f']
 let oct_digit = ['0'-'7']
 
-let ident = ['a'-'z' 'A'-'Z' '_']['a'-'z' 'A'-'Z' '0'-'9' '_']* ("::" ['a'-'z' 'A'-'Z' '0'-'9' '_']+)?
+let ident = ['a'-'z' 'A'-'Z' '_']['a'-'z' 'A'-'Z' '0'-'9' '_']*
 
 let blank = [' ' '\t']+
 
@@ -58,30 +58,24 @@ rule token = parse
   | blank { token lexbuf }
   | '\n' { new_line lexbuf; token lexbuf }
   | signed_int as x { NUM (int_of_string x) }
-  | "def" { DEF }
   | "add1" { ADD1 }
   | "sub1" { SUB1 }
-  | "printStack" { PRINTSTACK }
-  | "begin" { BEGIN }
-  | "end" { END }
   | "if" { IF }
+  | "else" { ELSE }
   | "true" { TRUE }
   | "false" { FALSE }
   | "isbool" { ISBOOL }
   | "isnum" { ISNUM }
   | "istuple" { ISTUPLE }
-  | "lambda" { LAMBDA }
-  | "λ" { LAMBDA }
-  | "include" { INCLUDE }
-  | ":" { COLON }
+  | "import" { IMPORT }
   | "->" { ARROW }
-  | "else:" { ELSECOLON }
-  | "else" { ELSE }
+  | "=>" { THICKARROW }
   | "data" { DATA }
   | "|" { PIPE }
   | "let" { LET }
   | "rec" { REC }
-  | "in" { IN }
+  | "match" { MATCH }
+  | "::" { COLONCOLON }
   | ":=" { GETS }
   | "==" { EQEQ }
   | "=" { EQUAL }
@@ -89,6 +83,8 @@ rule token = parse
   | ";" { SEMI }
   | "(" { LPAREN }
   | ")" { RPAREN }
+  | "{" { LBRACE }
+  | "}" { RBRACE }
   | "[" { LBRACK }
   | "]" { RBRACK }
   | "+" { PLUS }
@@ -98,12 +94,11 @@ rule token = parse
   | ">" { GREATER }
   | "<=" { LESSEQ }
   | ">=" { GREATEREQ }
-  | "&&" { AND }
-  | "||" { OR }
-  | "!" { NOT }
-  | "..." { ELLIPSIS }
+  | "and" { AND }
+  | "or" { OR }
   | '"'   { read_dquote_str (Buffer.create 16) lexbuf }
   | '\'' { read_squote_str (Buffer.create 16) lexbuf }
+  | "_" { UNDERSCORE }
   | ident as x { ID x }
   | eof { EOF }
   | _ as c { failwith (sprintf "Unrecognized character: %c" c) }

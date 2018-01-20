@@ -79,6 +79,9 @@ end
 
 module Top: sig
   val mk: ?loc:loc -> toplevel_stmt_desc -> toplevel_stmt
+  val import: ?loc:loc -> import_declaration -> toplevel_stmt
+  val data: ?loc:loc -> data_declaration -> toplevel_stmt
+  val let_: ?loc:loc -> rec_flag -> value_binding list -> toplevel_stmt
 end
 
 module Vb: sig

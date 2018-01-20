@@ -1,21 +1,21 @@
 {
 open Location
+open Identifier
 open Dyp
 open Parsetree
 open Ast_helper
 
-let elaborate_schema foralls typ =
-  let rec help typ =
-    match typ with
-    | TyVar _ -> typ
-    | TyCon name -> if List.mem name foralls then TyVar name else typ
-    | TyArr(args, ret) -> TyArr(List.map help args, help ret)
-    | TyTup(args) -> TyTup(List.map help args)
-    | TyGen(args, name) -> TyGen(List.map help args, name)
-  in (foralls, help typ)
-;;
+let mkid ns =
+  let rec help ns =
+    match ns with
+    | [] -> failwith "Should be impossible"
+    | n::[] -> IdentName n
+    | m::tl -> IdentExternal(m, (help tl)) in
+  mkloc @@ help ns
 
-let make_program (statements, body) =
+let mkstr s = mkloc s (symbol_rloc())
+
+let make_program statements body =
   {statements; body}
 
 }
@@ -23,9 +23,25 @@ let make_program (statements, body) =
 %token <int> NUM
 %token <string> ID
 %token <string> STRING
-%token LBRACK RBRACK DEF ADD1 SUB1 LPAREN RPAREN LET REC IN EQUAL COMMA PLUS MINUS TIMES IF COLON ELSECOLON ELSE TRUE FALSE ISBOOL ISNUM ISTUPLE LAMBDA EQEQ LESS GREATER PRINTSTACK EOF LESSEQ GREATEREQ AND OR NOT GETS BEGIN END SEMI ELLIPSIS ARROW INCLUDE DATA PIPE
+%token LBRACK RBRACK LPAREN RPAREN LBRACE RBRACE
+%token COMMA SEMI
+%token THICKARROW ARROW PIPE
+%token EQEQ LESS GREATER LESSEQ GREATEREQ
+%token EQUAL GETS
+%token UNDERSCORE
+%token COLON COLONCOLON
 
-%start <Parsetree.program> program
+%token ADD1 SUB1 ISBOOL ISNUM ISTUPLE
+%token PLUS MINUS TIMES
+%token TRUE FALSE
+
+%token LET REC IF ELSE MATCH
+%token AND OR NOT
+
+%token DATA IMPORT
+%token EOF
+
+%start <Parsetree.parsed_program> program
 
 %parser
 
@@ -43,90 +59,6 @@ prim1 :
   | ISNUM { IsNum }
   | ISTUPLE { IsTuple }
 
-binds :
-  | ID tyann EQUAL expr { [LetBind($1, $2, $4, (Parsing.rhs_start_pos 1, Parsing.rhs_end_pos 1))] }
-  | ID tyann EQUAL expr COMMA binds { LetBind($1, $2, $4, (Parsing.rhs_start_pos 1, Parsing.rhs_end_pos 1))::$6 }
-  | LPAREN ids RPAREN tyann EQUAL expr { [TupDestr($2, $4, $6, (Parsing.rhs_start_pos 1, Parsing.rhs_end_pos 1))] }
-  | LPAREN ids RPAREN tyann EQUAL expr COMMA binds { TupDestr($2, $4, $6, (Parsing.rhs_start_pos 1, Parsing.rhs_end_pos 1))::$8 }
-
-tyann :
-  | [COLON schema]? { $1 }
-
-schema :
-  | LBRACK ids RBRACK typ { elaborate_schema (List.map fst $2) $4 }
-  | typ { elaborate_schema [] $1 }
-
-typ :
-  | ID { TyCon $1 }
-  | ID+ ID { TyGen(List.map (fun s -> TyCon s) $1, $2) }
-  | LPAREN typ typs ARROW typ RPAREN { TyArr($2::$3, $5) }
-  | LPAREN typ typs RPAREN { TyTup ($2::$3) }
-
-
-typs :
-  | { [] }
-  | COMMA typ typs { $2 :: $3 }
-
-typ_id :
-  | ID { TyVar $1 }
-
-typ_ids :
-  | { [] }
-  | typ_id { [$1] }
-  | typ_id COMMA typ_ids { $1::$3 }
-
-ids :
-  | ID { [$1, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())] }
-  | ID COMMA ids { ($1, (Parsing.rhs_start_pos 1, Parsing.rhs_end_pos 1))::$3 }
-
-exprs :
-  | expr { [$1] }
-  | expr COMMA exprs { $1::$3 }
-
-tuple_exprs :
-  | expr COMMA { [$1] }
-  | expr COMMA exprs { $1::$3 }
-
-
-colon_num:
-  | COLON NUM COLON { $2 }
-
-simple_expr :
-  | prim1 LPAREN expr RPAREN { EPrim1($1, $3, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
-  | LPAREN tuple_exprs RPAREN { ETuple($2, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
-  | LPAREN expr RPAREN { $2 }
-  | simple_expr LPAREN exprs RPAREN { EApp($1, $3, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
-  | simple_expr LPAREN RPAREN { EApp($1, [], (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
-  | LPAREN LAMBDA ids COLON expr RPAREN { ELambda($3, $5, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
-  | LPAREN LAMBDA COLON expr RPAREN { ELambda([], $4, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
-  | simple_expr LBRACK expr RBRACK { EGetItem($1, $3, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
-  | simple_expr LBRACK expr RBRACK GETS expr { ESetItem($1, $3, $6, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
-  | simple_expr LBRACK colon_num RBRACK { EGetItemExact($1, $3, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
-  | simple_expr LBRACK colon_num RBRACK GETS expr { ESetItemExact($1, $3, $6, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
-  | BEGIN block_exprs END { ESeq($2, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
-  | const { $1 }
-  | ID { EId($1, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
-
-data_branch :
-  | ID LPAREN typ typs RPAREN { DDataConstructor($1, $3::$4, (Parsing.symbol_start_pos(), Parsing.symbol_end_pos())) }
-  | ID { DDataSingleton($1, (Parsing.symbol_start_pos(), Parsing.symbol_end_pos())) }
-
-data_branches :
-  | data_branch [PIPE data_branch {$2}]* { $1::$2 }
-  | [PIPE data_branch {$2}]+ { $1 }
-
-id_seq :
-  | ID { [TyVar $1] }
-  | ID id_seq { (TyVar $1)::$2 }
-
-data_decl :
-  | DATA [ID {TyVar $1}]* ID EQUAL data_branches { SDataDecl($3, $2, $5, (Parsing.symbol_start_pos(), Parsing.symbol_end_pos())) }
-
-block_exprs :
-  | expr { [$1] }
-  | expr SEMI { [$1] }
-  | expr SEMI block_exprs { $1::$3 }
-
 binop:
   | PLUS { Plus }
   | MINUS { Minus }
@@ -139,33 +71,117 @@ binop:
   | AND { And }
   | OR { Or }
 
-binop_expr :
-  | binop_expr binop binop_expr { EPrim2($2, $1, $3, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
-  | simple_expr { $1 }
+pattern :
+  | UNDERSCORE { Pat.any() }
+  | ID { Pat.var (mkstr $1) }
+  | LPAREN tuple_patterns RPAREN { Pat.tuple $2 }
+  | LPAREN pattern RPAREN { $2 }
+  | pattern COLON typ { Pat.constraint_ $1 $3 }
 
-cond_expr:
-  | IF expr COLON expr ELSECOLON expr { EIf($2, $4, $6, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
-  | IF expr COLON expr ELSE cond_expr { EIf($2, $4, $6, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
+patterns :
+  | pattern [COMMA pattern {$2}]* { $1::$2 }
+
+tuple_patterns :
+  | pattern COMMA { [$1] }
+  | pattern [COMMA pattern {$2}]+ { $1::$2 }
+
+typ :
+  /* It's a little sad that we can't do `a -> b`, but it makes sense for consistency's sake */
+  | LPAREN typs RPAREN ARROW typ { Typ.arrow $2 $5 }
+  | LPAREN tuple_typs RPAREN { Typ.tuple $2 }
+  | LPAREN typ RPAREN { $2 }
+  | typ+ id { Typ.constr $2 $1 }
+  | ID { Typ.var $1 }
+
+typs :
+  | [typ [COMMA typ {$2}]* {$1::$2}]? { Option.default [] $1 }
+
+tuple_typs :
+  | typ COMMA { [$1] }
+  | typ [COMMA typ {$2}]+ { $1::$2 }
+
+value_bind :
+  | pattern EQUAL binop_expr { Vb.mk $1 $3 }
+
+value_binds :
+  | value_bind [COMMA AND value_bind {$3}]* { $1::$2 }
+
+import_stmt :
+  | IMPORT id { Imp.mk $2 }
+
+data_constructor :
+  | ID { CDecl.singleton (mkstr $1) }
+  | ID LPAREN typs RPAREN { CDecl.tuple (mkstr $1) $3 }
+
+data_constructors :
+  | data_constructor [PIPE data_constructor {$2}]* { $1::$2 }
+  | [PIPE data_constructor {$2}]+ { $1 }
+
+data_declaration :
+  | DATA ID* ID EQUAL data_constructors { Dat.mk (mkstr $3) (List.map Typ.var $2) (PDataVariant $5) }
+
+prim1_expr :
+  | prim1 LPAREN binop_expr RPAREN { Exp.prim1 $1 $3 }
+
+paren_expr :
+  | LPAREN binop_expr RPAREN { $2 }
+
+binop_expr :
+  | expr binop expr { Exp.prim2 $2 $1 $3 }
+  | expr { $1 }
+
+app_expr :
+  | expr LPAREN tuple_exprs RPAREN { Exp.apply $1 $3 }
+
+id :
+  | ID [COLONCOLON ID {$2}]* { (mkid ($1::$2)) (symbol_rloc()) }
+
+simple_expr :
+  | const { Exp.constant $1 }
+  | id { Exp.ident $1 }
+  | LPAREN tuple_exprs RPAREN { Exp.tuple $2 }
+
+block_expr :
+  | LBRACE block RBRACE { Exp.block $2 }
+
+lam_expr :
+  | LPAREN patterns RPAREN THICKARROW block_expr { Exp.lambda $2 $5 }
+
+maybe_rec :
+  | REC? { Option.map_default (fun _ -> Recursive) Nonrecursive $1 }
+
+let_expr :
+  | LET maybe_rec value_binds { Exp.let_ $2 $3 (Exp.block []) }
+
+if_expr :
+  | IF binop_expr block_expr { Exp.if_ $2 $3 (Exp.block []) }
+  | IF binop_expr block_expr ELSE block_expr { Exp.if_ $2 $3 $5 }
 
 expr :
-  | INCLUDE ID IN expr { EInclude($2, $4, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
-  | LET binds IN expr { ELet($2, $4, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
-  | LET REC binds IN expr { ELetRec($3, $5, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
-  | cond_expr { $1 }
-  | binop_expr { $1 }
+  | simple_expr {$1}
+  | paren_expr {$1}
+  | prim1_expr {$1}
+  | app_expr {$1}
+  | block_expr {$1}
+  | lam_expr {$1}
+  | let_expr {$1}
+  | if_expr {$1}
 
-top_level_stmt :
-  | INCLUDE ID { SInclude($2, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
-  | LET binds { SLet($2, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
-  | LET REC binds { SLetRec($3, (Parsing.symbol_start_pos (), Parsing.symbol_end_pos ())) }
-  | data_decl { $1 }
+tuple_exprs :
+  | binop_expr COMMA { [$1] }
+  | binop_expr [COMMA binop_expr {$2}]+ { $1::$2 }
 
-top_level_stmts :
-  | top_level_stmt SEMI { [$1] }
-  | top_level_stmt SEMI top_level_stmts { $1::$3 }
+block :
+  | binop_expr [SEMI binop_expr {$2}]* { $1::$2 }
+
+toplevel_stmt :
+  | LET maybe_rec value_binds { Top.let_ $2 $3 }
+  | import_stmt { Top.import $1 }
+  | data_declaration { Top.data $1 }
+
+toplevel_stmts :
+  | toplevel_stmt [SEMI toplevel_stmt {$2}]* { $1::$2 }
 
 program :
-  | top_level_stmts? expr? EOF { make_program (Option.default [] $1, Option.default ENull $2) }
-  | top_level_stmt EOF { make_program ([$1], ENull) }
-
-
+  | toplevel_stmts SEMI EOF { make_program $1 (Exp.null ~loc:dummy_loc ()) }
+  | toplevel_stmts SEMI binop_expr EOF { make_program $1 $3 }
