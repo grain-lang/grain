@@ -3,6 +3,7 @@ open Parsetree
 open Ast_helper
 
 type mapper = {
+  constant: mapper -> constant -> constant;
   expr: mapper -> expression -> expression;
   pat: mapper -> pattern -> pattern;
   typ: mapper -> parsed_type -> parsed_type;
@@ -17,13 +18,17 @@ type mapper = {
 
 let map_loc sub {loc; txt} = {loc = sub.location sub loc; txt}
 
+module Cnst = struct
+  let map sub c = c
+end
+
 module E = struct
   let map sub {pexp_desc = desc; pexp_loc = loc} =
     let open Exp in
     let loc = sub.location sub loc in
     match desc with
     | PExpId(i) -> ident ~loc (map_loc sub i)
-    | PExpConstant(c) -> constant ~loc c
+    | PExpConstant(c) -> constant ~loc (sub.constant sub c)
     | PExpTuple(es) -> tuple ~loc (List.map (sub.expr sub) es)
     | PExpLet(r, vbs, e) -> let_ ~loc r (List.map (sub.value_binding sub) vbs) (sub.expr sub e)
     | PExpMatch(e, mbs) -> match_ ~loc (sub.expr sub e) (List.map (sub.match_branch sub) mbs)
@@ -115,6 +120,7 @@ module TL = struct
 end
 
 let default_mapper = {
+  constant = Cnst.map;
   expr = E.map;
   pat = P.map;
   typ = T.map;

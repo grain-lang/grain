@@ -18,6 +18,7 @@
 open Parsetree
 
 type mapper = {
+  constant: mapper -> constant -> constant;
   expr: mapper -> expression -> expression;
   pat: mapper -> pattern -> pattern;
   typ: mapper -> parsed_type -> parsed_type;

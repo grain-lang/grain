@@ -18,6 +18,7 @@
 open Parsetree
 
 type iterator = {
+  constant: iterator -> constant -> unit;
   expr: iterator -> expression -> unit;
   pat: iterator -> pattern -> unit;
   typ: iterator -> parsed_type -> unit;
