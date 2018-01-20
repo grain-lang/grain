@@ -10,6 +10,7 @@ type iterator = {
   location: iterator -> Location.t -> unit;
   import: iterator -> import_declaration -> unit;
   value_binding: iterator -> value_binding -> unit;
+  match_branch: iterator -> match_branch -> unit;
   toplevel: iterator -> toplevel_stmt -> unit;
 }
 
@@ -23,6 +24,7 @@ module E = struct
     | PExpConstant(c) -> ()
     | PExpTuple(es) -> List.iter (sub.expr sub) es
     | PExpLet(r, vbs, e) -> List.iter (sub.value_binding sub) vbs; sub.expr sub e
+    | PExpMatch(e, mbs) -> sub.expr sub e; List.iter (sub.match_branch sub) mbs
     | PExpPrim1(p1, e) -> sub.expr sub e
     | PExpPrim2(p2, e1, e2) -> sub.expr sub e1; sub.expr sub e2
     | PExpIf(c, t, f) -> sub.expr sub c; sub.expr sub t; sub.expr sub f
@@ -78,6 +80,13 @@ module V = struct
     sub.location sub loc;
 end
 
+module MB = struct
+  let iter sub {pmb_pat = pat; pmb_body = expr; pmb_loc = loc} =
+    sub.pat sub pat;
+    sub.expr sub expr;
+    sub.location sub loc;
+end
+
 module I = struct
   let iter sub {pimp_mod = imod; pimp_loc = loc} =
     sub.location sub loc;
@@ -102,5 +111,6 @@ let default_iterator = {
   location = (fun _ x -> ());
   import = I.iter;
   value_binding = V.iter;
+  match_branch = MB.iter;
   toplevel = TL.iter;
 }

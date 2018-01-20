@@ -157,15 +157,25 @@ if_expr :
   | IF binop_expr block_expr { Exp.if_ $2 $3 (Exp.block []) }
   | IF binop_expr block_expr ELSE block_expr { Exp.if_ $2 $3 $5 }
 
+match_branch :
+  | pattern THICKARROW binop_expr { Mb.mk $1 $3 }
+
+match_branches :
+  | [PIPE match_branch {$2}]+ { $1 }
+
+match_expr :
+  | MATCH LPAREN binop_expr RPAREN LBRACE match_branches RBRACE { Exp.match_ $3 $6 }
+
 expr :
-  | simple_expr {$1}
-  | paren_expr {$1}
-  | prim1_expr {$1}
-  | app_expr {$1}
-  | block_expr {$1}
-  | lam_expr {$1}
-  | let_expr {$1}
-  | if_expr {$1}
+  | simple_expr { $1 }
+  | paren_expr  { $1 }
+  | prim1_expr  { $1 }
+  | app_expr    { $1 }
+  | block_expr  { $1 }
+  | lam_expr    { $1 }
+  | let_expr    { $1 }
+  | if_expr     { $1 }
+  | match_expr  { $1 }
 
 tuple_exprs :
   | binop_expr COMMA { [$1] }

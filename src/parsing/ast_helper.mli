@@ -68,6 +68,7 @@ module Exp: sig
   val constant: ?loc:loc -> constant -> expression
   val tuple: ?loc:loc -> expression list -> expression
   val let_: ?loc:loc -> rec_flag -> value_binding list -> expression -> expression
+  val match_: ?loc:loc -> expression -> match_branch list -> expression
   val prim1: ?loc:loc -> prim1 -> expression -> expression
   val prim2: ?loc:loc -> prim2 -> expression -> expression -> expression
   val if_: ?loc:loc -> expression -> expression -> expression -> expression
@@ -86,6 +87,10 @@ end
 
 module Vb: sig
   val mk: ?loc:loc -> pattern -> expression -> value_binding
+end
+
+module Mb: sig
+  val mk: ?loc:loc -> pattern -> expression -> match_branch
 end
 
 module Imp: sig
