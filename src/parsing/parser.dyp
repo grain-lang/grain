@@ -6,11 +6,15 @@ open Parsetree
 open Ast_helper
 
 let mkid ns =
-  let rec help ns =
+  let help ns =
+    let rec help ns (acc_ident, acc_str) =
+      let ident = Option.map_default (fun i -> IdentExternal(i, acc_str)) (IdentName acc_str) acc_ident in
+      match ns with
+        | [] -> ident
+        | n::tl -> help tl (Some ident, n) in
     match ns with
-    | [] -> failwith "Should be impossible"
-    | n::[] -> IdentName n
-    | m::tl -> IdentExternal(m, (help tl)) in
+      | [] -> failwith "Should be impossible"
+      | n::tl -> help tl (None, n) in
   mkloc @@ help ns
 
 let mkstr s = mkloc s (symbol_rloc())

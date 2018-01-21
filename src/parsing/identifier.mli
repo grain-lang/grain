@@ -6,9 +6,9 @@ open Format
 type t =
   | IdentName of string
   (** A simple name. *)
-  | IdentExternal of string * t
+  | IdentExternal of t * string
   (** (module, ident) An external name. It is currently a well-formedness error
-      to have a non-name on the RHS. *)
+      to have a non-name on the LHS. *)
 [@@deriving sexp]
 
 val equal : t -> t -> bool

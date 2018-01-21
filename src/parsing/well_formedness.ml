@@ -60,7 +60,7 @@ let malformed_identifiers errs super =
   let iter_expr self ({pexp_desc=desc; pexp_loc=loc} as e) =
     begin
       match desc with
-      | PExpId {txt=(IdentExternal(_, IdentExternal _))} ->
+      | PExpId {txt=(IdentExternal(IdentExternal _, _))} ->
         errs := (MultipleModuleName loc)::!errs
       | _ -> ()
     end;
