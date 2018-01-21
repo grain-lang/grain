@@ -3,6 +3,8 @@
     of the OCaml parse tree. Credit for the module's architecture goes to
     the OCaml team. *)
 open Sexplib.Conv
+open Sexplib.Std
+open Sexplib
 
 type 'a loc = 'a Location.loc = {
   txt: 'a;
@@ -154,3 +156,4 @@ type parsed_program = {
   statements: toplevel_stmt list;
   body: expression
 } [@@deriving sexp]
+

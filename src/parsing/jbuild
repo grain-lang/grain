@@ -5,7 +5,8 @@
 (library
  ((name     grain_parsing)
   (synopsis "Frontend modules for Grain compiler")
-  (libraries (dyp batteries ppx_deriving ppx_sexp_conv sexplib extlib grain_utils))))
+  (libraries (dyp batteries ppx_deriving ppx_sexp_conv sexplib extlib grain_utils))
+  (preprocess (pps (ppx_sexp_conv ppx_deriving)))))
 
 (rule
  ((targets (parser.ml))

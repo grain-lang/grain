@@ -4,7 +4,7 @@
  ((name grain)
   (public_name grain)
   ;; Note: 'dyp' is provided by the 'dypgen' OPAM package
-  (libraries   (oUnit extlib batteries cmdliner ocamlgraph wasm stdint grain_parsing grain_utils))))
+  (libraries   (oUnit extlib batteries cmdliner ocamlgraph wasm stdint grain_parsing grain_utils grain_typed))))
 
 (executable
  ((name grainc)
