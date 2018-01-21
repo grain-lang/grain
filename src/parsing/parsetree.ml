@@ -3,13 +3,14 @@
     of the OCaml parse tree. Credit for the module's architecture goes to
     the OCaml team. *)
 open Sexplib.Conv
-open Sexplib.Std
-open Sexplib
+open Asttypes
 
-type 'a loc = 'a Location.loc = {
+type 'a loc = 'a Asttypes.loc = {
   txt: 'a;
   loc: Location.t;
 }
+
+type rec_flag = Asttypes.rec_flag = Nonrecursive | Recursive
 
 (** Type for syntax-level types *)
 type parsed_type_desc =
@@ -17,13 +18,12 @@ type parsed_type_desc =
   | PTyVar of string
   | PTyArrow of parsed_type list * parsed_type
   | PTyTuple of parsed_type list
-   (* Note: sexp_opaque is just a marker (type 'a sexp_opaque = 'a) *)
-  | PTyConstr of (Identifier.t loc sexp_opaque) * parsed_type list
+  | PTyConstr of (Identifier.t loc) * parsed_type list
 [@@deriving sexp]
 
 and parsed_type = {
   ptyp_desc: parsed_type_desc;
-  ptyp_loc: Location.t sexp_opaque;
+  ptyp_loc: Location.t;
 }
 
 (** Type for arguments to a constructor *)
@@ -34,9 +34,9 @@ type constructor_arguments =
 
 (** Type for branches within data declarations *)
 type constructor_declaration = {
-  pcd_name: string loc sexp_opaque;
+  pcd_name: string loc;
   pcd_args: constructor_arguments;
-  pcd_loc: Location.t sexp_opaque;
+  pcd_loc: Location.t;
 } [@@deriving sexp]
 
 (** Different types of data which can be declared. Currently only one. *)
@@ -46,23 +46,23 @@ type data_kind =
 
 (** Type for data declarations. *)
 type data_declaration = {
-  pdata_name: string loc sexp_opaque;
+  pdata_name: string loc;
   pdata_params: parsed_type list;
   pdata_kind: data_kind;
-  pdata_loc: Location.t sexp_opaque;
+  pdata_loc: Location.t;
 } [@@deriving sexp]
 
 (** Various binding forms *)
 type pattern_desc =
   | PPatAny
-  | PPatVar of string loc sexp_opaque
+  | PPatVar of string loc
   | PPatTuple of pattern list
   | PPatConstraint of pattern * parsed_type
 [@@deriving sexp]
 
 and pattern = {
   ppat_desc: pattern_desc;
-  ppat_loc: Location.t sexp_opaque
+  ppat_loc: Location.t;
 } [@@deriving sexp]
 
 (** Constants supported by Grain *)
@@ -71,9 +71,6 @@ type constant =
   | PConstBool of bool
   | PConstString of string
 [@@deriving sexp]
-
-(** Marker for recursive/nonrecursive let bindings *)
-type rec_flag = Nonrecursive | Recursive [@@deriving sexp]
 
 (** Single-argument operators *)
 type prim1 =
@@ -102,11 +99,11 @@ type prim2 =
 (** Type for expressions (i.e. things which evaluate to something) *)
 type expression = {
   pexp_desc: expression_desc;
-  pexp_loc: Location.t sexp_opaque;
+  pexp_loc: Location.t;
 } [@@deriving sexp]
 
 and expression_desc =
-  | PExpId of Identifier.t loc sexp_opaque
+  | PExpId of Identifier.t loc
   | PExpConstant of constant
   | PExpTuple of expression list
   | PExpLet of rec_flag * value_binding list * expression
@@ -124,19 +121,19 @@ and expression_desc =
 and value_binding = {
   pvb_pat: pattern;
   pvb_expr: expression;
-  pvb_loc: Location.t sexp_opaque
+  pvb_loc: Location.t;
 } [@@deriving sexp]
 
 and match_branch = {
   pmb_pat: pattern;
   pmb_body: expression;
-  pmb_loc: Location.t sexp_opaque;
+  pmb_loc: Location.t;
 } [@@deriving sexp]
 
 (** Type for import statements *)
 type import_declaration = {
-  pimp_mod: Identifier.t loc sexp_opaque;
-  pimp_loc: Location.t sexp_opaque;
+  pimp_mod: Identifier.t loc;
+  pimp_loc: Location.t;
 } [@@deriving sexp]
 
 (** Statements which can exist at the top level *)
@@ -148,7 +145,7 @@ type toplevel_stmt_desc =
 
 type toplevel_stmt = {
   ptop_desc: toplevel_stmt_desc;
-  ptop_loc: Location.t sexp_opaque;
+  ptop_loc: Location.t;
 } [@@deriving sexp]
 
 (** The type for parsed programs *)

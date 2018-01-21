@@ -9,6 +9,7 @@ type t =
   | IdentExternal of string * t
   (** (module, ident) An external name. It is currently a well-formedness error
       to have a non-name on the RHS. *)
+[@@deriving sexp]
 
 val equal : t -> t -> bool
 val compare : t -> t -> int

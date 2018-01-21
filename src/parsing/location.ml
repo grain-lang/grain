@@ -15,6 +15,7 @@
 (*                                                                        *)
 (**************************************************************************)
 
+open Sexplib.Conv
 open Lexing
 open Grain_utils
 (* NOTE: A lot of this file is taken from OCaml's parsing/location.ml.
@@ -22,10 +23,10 @@ open Grain_utils
 let absname = ref false
 
 type t = Warnings.loc = {
-  loc_start: position;
-  loc_end: position;
+  loc_start: position sexp_opaque;
+  loc_end: position sexp_opaque;
   loc_ghost: bool;
-}
+} [@@deriving sexp]
 
 let in_file name =
   let loc = {
