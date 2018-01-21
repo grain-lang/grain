@@ -84,7 +84,9 @@ type data_declaration = {
 type pattern = {
   pat_desc: pattern_desc;
   pat_loc: Location.t;
+  pat_extra: (pat_extra * Location.t) list;
   pat_type: type_expr;
+  mutable pat_env: Env.t;
 }
 
 and pat_extra =

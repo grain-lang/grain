@@ -5,21 +5,21 @@ let sep = "::"
 
 type t =
   | IdentName of string
-  | IdentExternal of string * t
+  | IdentExternal of t * string
 [@@deriving sexp]
 
 let rec equal i1 i2 =
   match i1, i2 with
   | (IdentName n1), (IdentName n2) -> String.equal n1 n2
   | (IdentExternal(mod1, n1)), (IdentExternal(mod2, n2)) ->
-    (String.equal mod1 mod2) && (equal n1 n2)
+    (equal mod1 mod2) && (String.equal n1 n2)
   | _ -> false
 
 open Format
 
 let rec print_ident ppf = function
   | IdentName n -> fprintf ppf "%s" n
-  | IdentExternal(m, n) -> fprintf ppf "%s%s%a" m sep print_ident n
+  | IdentExternal(m, n) -> fprintf ppf "%a%s%s" print_ident m sep n
 
 let default_printer ppf i = fprintf ppf "@{<id>%a@}@," print_ident i
 
@@ -34,11 +34,11 @@ let rec compare i1 i2 =
   match i1, i2 with
   | (IdentName n1), (IdentName n2) -> String.compare n1 n2
   | (IdentExternal(mod1, n1)), (IdentExternal(mod2, n2)) ->
-    let m_comp = String.compare mod1 mod2 in
-    if m_comp <> 0 then
-      m_comp
+    let n_comp = String.compare n1 n2 in
+    if n_comp <> 0 then
+      n_comp
     else
-      compare n1 n2
+      compare mod1 mod2
   | (IdentName _), (IdentExternal _)
   | (IdentExternal _), (IdentName _) ->
     String.compare (string_of_ident i1) (string_of_ident i2)

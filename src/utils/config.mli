@@ -13,6 +13,11 @@ val use_stdlib : bool ref
 val color_enabled : bool ref
 (** Whether color output should be enabled *)
 
+val principal : bool ref
+(** Whether to use principal types when compiling *)
+
+val recursive_types : bool ref
+(** Whether to allow cyclic types. *)
 
 type config
 (** Abstract type representing a saved set of configuration options *)
