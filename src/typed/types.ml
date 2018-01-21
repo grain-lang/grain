@@ -1,6 +1,7 @@
 (** Compile-time type and binding information *)
 (* Inspired by OCaml's typing module *)
 open Grain_parsing
+include Asttypes
 
 type type_expr = {
   mutable desc: type_desc;
