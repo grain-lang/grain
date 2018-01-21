@@ -1,6 +1,5 @@
 open Types
 
-
 type tag = int
 let tag (p : 'a program) : tag program =
   let next = ref 0 in

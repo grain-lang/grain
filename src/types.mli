@@ -21,16 +21,15 @@ exception IncludeNotFound of string * sourcespan (* library, location of include
 exception MalformedString of sourcespan
 
 
-type prim1 =
+type prim1 = Grain_parsing.Parsetree.prim1 =
   | Add1
   | Sub1
   | Not
-  | PrintStack
   | IsNum
   | IsBool
   | IsTuple
 
-type prim2 =
+type prim2 = Grain_parsing.Parsetree.prim2 =
   | Plus
   | Minus
   | Times
