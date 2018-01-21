@@ -1,9 +1,12 @@
 
+open Sexplib.Conv
+
 let sep = "::"
 
 type t =
   | IdentName of string
   | IdentExternal of string * t
+[@@deriving sexp]
 
 let rec equal i1 i2 =
   match i1, i2 with

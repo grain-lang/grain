@@ -8,7 +8,7 @@ type t = Grain_utils.Warnings.loc = {
   loc_start: Lexing.position; (** The starting position *)
   loc_end: Lexing.position;   (** The ending position *)
   loc_ghost: bool;            (** Whether this location was auto-generated *)
-}
+} [@@deriving sexp]
 
 val dummy_loc : t
 (** A placeholder dummy location *)
