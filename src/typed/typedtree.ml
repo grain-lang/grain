@@ -14,7 +14,6 @@
 (*                                                                        *)
 (**************************************************************************)
 
-(** Typed variant of the AST. *)
 open Grain_parsing
 open Types
 
@@ -133,8 +132,8 @@ and match_branch = {
 }
 
 type import_declaration = {
-  pimp_mod: Identifier.t Location.loc;
-  pimp_loc: Location.t;
+  timp_mod: Identifier.t Location.loc;
+  timp_loc: Location.t;
 }
 
 type toplevel_stmt_desc =
@@ -152,21 +151,52 @@ type typed_program = {
   body: expression;
 }
 
-(* Auxiliary functions over the AST *)
+let iter_pattern_desc f patt =
+  match patt with
+  | TPatTuple patts -> List.iter f patts
+  | TPatAny
+  | TPatVar _ -> ()
 
-val iter_pattern_desc: (pattern -> unit) -> pattern_desc -> unit
-val map_pattern_desc: (pattern -> pattern) -> pattern_desc -> pattern_desc
+let map_pattern_desc f patt =
+  match patt with
+  | TPatTuple patts -> TPatTuple (List.map f patts)
+  | _ -> patt
 
-val let_bound_idents: value_binding list -> Ident.t list
-val rev_let_bound_idents: value_binding list -> Ident.t list
+let pattern_bound_idents_and_locs patt =
+  let ret = ref [] in
+  let rec help {pat_desc=desc; _} =
+    match desc with
+    | TPatVar(id, s) -> ret := (id, s)::!ret
+    | _ -> iter_pattern_desc help desc in
+  help patt;
+  !ret
 
-val let_bound_idents_with_loc:
-    value_binding list -> (Ident.t * string loc) list
+let pattern_bound_idents patt =
+  pattern_bound_idents_and_locs patt
+  |> List.map fst
 
-(** Alpha conversion of patterns *)
-val alpha_pat: (Ident.t * Ident.t) list -> pattern -> pattern
+let rev_let_bound_idents_with_loc bindings =
+  List.map pattern_bound_idents_and_locs bindings
+  |> List.fold_left (fun acc cur -> cur @ acc) []
 
-val mknoloc: 'a -> 'a Asttypes.loc
-val mkloc: 'a -> Location.t -> 'a Asttypes.loc
+let let_bound_idents_with_loc bindings =
+  rev_let_bound_idents_with_loc bindings
+  |> List.rev
 
-val pat_bound_idents: pattern -> Ident.t list
+let rev_let_bound_idents pat = List.map fst (rev_let_bound_idents_with_loc pat)
+let let_bound_idents pat = List.map fst (let_bound_idents_with_loc pat)
+
+let alpha_var env id = List.assoc id env
+
+let rec alpha_pat env ({pat_desc=desc; _} as p) =
+  match desc with
+  | TPatVar(id, s) ->
+    let new_desc = try
+        TPatVar(alpha_var env id, s)
+      with
+      | Not_found -> TPatAny in
+    {p with pat_desc=new_desc}
+  | _ -> {p with pat_desc = map_pattern_desc (alpha_pat env) desc}
+
+let mkloc = Location.mkloc
+let mknoloc = Location.mknoloc
