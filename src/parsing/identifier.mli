@@ -23,3 +23,5 @@ val printer : (formatter -> t -> unit) ref
 (** The active {!formatter} implementation for identifiers *)
 
 val string_of_ident : t -> string
+
+val last : t -> string

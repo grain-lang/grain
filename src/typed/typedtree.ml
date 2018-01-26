@@ -106,7 +106,7 @@ and exp_extra =
   | TExpConstraint of core_type
 
 and expression_desc =
-  | TExpIdent of Path.t * Identifier.t loc * Env.t
+  | TExpIdent of Path.t * Identifier.t loc * Types.value_description
   | TExpConstant of constant
   | TExpTuple of expression list
   | TExpLet of rec_flag * value_binding list * expression
