@@ -3,6 +3,11 @@
 open Grain_parsing
 include Asttypes
 
+module Vars = Map.Make(struct
+    type t = string
+    let compare (x:t) y = compare x y
+  end)
+
 (** [commutable] is a flag appended to every arrow type.
     When typing an application, if the type of the functional is
     known, its type is instantiated with [TComOk] arrows, otherwise as
@@ -68,6 +73,7 @@ type value_description = {
 
 and value_kind =
   | TValReg
+  | TValPrim of Primitive.description
 
 type constructor_declaration = {
   cd_id: Ident.t;
@@ -93,6 +99,7 @@ type type_declaration = {
 
 and type_kind =
   | TDataVariant of constructor_declaration list
+  | TDataAbstract
 
 type rec_status =
   | TRecNot
@@ -103,6 +110,7 @@ type signature_item =
   | TSigValue of Ident.t * value_description
   | TSigType of Ident.t * type_declaration * rec_status
   | TSigModule of Ident.t * module_declaration * rec_status
+  | TSigModType of Ident.t * modtype_declaration
 
 and signature = signature_item list
 

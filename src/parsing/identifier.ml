@@ -42,3 +42,7 @@ let rec compare i1 i2 =
   | (IdentName _), (IdentExternal _)
   | (IdentExternal _), (IdentName _) ->
     String.compare (string_of_ident i1) (string_of_ident i2)
+
+let last = function
+  | IdentName s -> s
+  | IdentExternal (_, s) -> s
