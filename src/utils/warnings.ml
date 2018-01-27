@@ -8,15 +8,40 @@ type loc = {
 
 type t =
   | LetRecNonFunction of string
+  | AmbiguousName of string list * string list * bool
+  | NotPrincipal of string
+  | NameOutOfScope of string * string list * bool
 
 let number = function
   | LetRecNonFunction _ -> 1
+  | NotPrincipal _ -> 2
+  | AmbiguousName _ -> 3
+  | NameOutOfScope _ -> 4
 
-let last_warning_number = 1
+let last_warning_number = 4
 
 let message = function
   | LetRecNonFunction(name) ->
     Printf.sprintf "'%s' is not a function, but is bound with 'let rec'" name
+  | NotPrincipal s -> s^" is not principal."
+  | NameOutOfScope (ty, [nm], false) ->
+    nm ^ " was selected from type " ^ ty ^
+    ".\nIt is not visible in the current scope, and will not \n\
+     be selected if the type becomes unknown."
+  | NameOutOfScope (_, _, false) -> assert false
+  | NameOutOfScope (ty, slist, true) ->
+    "this record of type "^ ty ^" contains fields that are \n\
+    not visible in the current scope: "
+    ^ String.concat " " slist ^ ".\n\
+    They will not be selected if the type becomes unknown."
+  | AmbiguousName ([s], tl, false) ->
+    s ^ " belongs to several types: " ^ String.concat " " tl ^
+    "\nThe first one was selected. Please disambiguate if this is wrong."
+  | AmbiguousName (_, _, false) -> assert false
+  | AmbiguousName (_slist, tl, true) ->
+    "these field labels belong to several types: " ^
+      String.concat " " tl ^
+      "\nThe first one was selected. Please disambiguate if this is wrong."
 
 let sub_locs = function
   | _ -> []

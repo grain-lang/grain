@@ -11,6 +11,19 @@ val empty : t
 val initial_safe_string : t
 val initial_unsafe_string : t
 
+(* For short-paths *)
+type iter_cont
+val iter_types:
+    (Path.t -> Path.t * (type_declaration * type_descriptions) -> unit) ->
+    t -> iter_cont
+val run_iter_cont: iter_cont list -> (Path.t * iter_cont) list
+val same_types: t -> t -> bool
+val used_persistent: unit -> Concr.t
+val find_shadowed_types: Path.t -> t -> Path.t list
+val without_cmis: ('a -> 'b) -> 'a -> 'b
+(** [without_cmis f arg] applies [f] to [arg], but does not
+    allow opening cmis during its execution *)
+
 (* By-path lookups *)
 val find_value: Path.t -> t -> value_description
 val find_type: Path.t -> t -> type_declaration
@@ -35,7 +48,7 @@ val lookup_value: ?mark:bool -> Identifier.t -> t -> Path.t * value_description
 (** Looks up the value associated with the given identifier. *)
 val lookup_type: ?mark:bool ->  Identifier.t -> t -> Path.t
 (** Looks up the type associated with the given identifier. *)
-val lookup_constructor: ?mark:bool -> Identifier.t -> t -> Path.t * constructor_description
+val lookup_constructor: ?mark:bool -> Identifier.t -> t -> constructor_description
 (** Looks up the constructor associated with the given identifier. *)
 val lookup_all_constructors:
   ?mark:bool ->
@@ -46,10 +59,13 @@ val lookup_modtype:
   ?loc:Location.t -> ?mark:bool ->
   Identifier.t -> t -> Path.t * modtype_declaration
 
+val copy_types: string list -> t -> t
+  (* Used only in Typecore.duplicate_ident_types. *)
+
 (* By-identifier insertions *)
-val add_value: Ident.t -> value_description -> t -> t
+val add_value: ?check:(string -> Warnings.t) -> Ident.t -> value_description -> t -> t
 (** Adds a value identifier with the given name and description. *)
-val add_type: Ident.t -> type_declaration -> t -> t
+val add_type: check:bool -> Ident.t -> type_declaration -> t -> t
 (** Adds a type identifier with the given name and declaration. *)
 val add_constructor: Ident.t -> constructor_description -> t -> t
 (** Adds a constructor with the given name and description. *)
@@ -59,6 +75,19 @@ val add_module_declaration: ?arg:bool -> check:bool -> Ident.t ->
 val add_modtype: Ident.t -> modtype_declaration -> t -> t
 val add_local_constraint: Path.t -> type_declaration -> int -> t -> t
 val add_local_type: Path.t -> type_declaration -> t -> t
+
+(* Insertion of all fields of a signature. *)
+
+val add_item: signature_item -> t -> t
+val add_signature: signature -> t -> t
+
+(* Insertion of all fields of a signature, relative to the given path.
+   Used to implement open. Returns None if the path refers to a functor,
+   not a structure. *)
+val open_signature:
+    ?used_slot:bool ref ->
+    ?loc:Location.t -> ?toplevel:bool -> Path.t ->
+      t -> t option
 
 (* By-name insertions *)
 val enter_value: string -> value_description -> t -> Ident.t * t

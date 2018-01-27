@@ -22,6 +22,9 @@ type loc = {
 
 type t =
   | LetRecNonFunction of string
+  | AmbiguousName of string list * string list * bool
+  | NotPrincipal of string
+  | NameOutOfScope of string * string list * bool
 
 val is_active : t -> bool;;
 val is_error : t -> bool;;

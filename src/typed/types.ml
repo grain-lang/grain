@@ -3,10 +3,14 @@
 open Grain_parsing
 include Asttypes
 
-module Vars = Map.Make(struct
-    type t = string
-    let compare (x:t) y = compare x y
-  end)
+module OrderedString = struct
+  type t = string
+  let compare (x:t) y = compare x y
+end
+
+module Vars = Map.Make(OrderedString)
+
+module Concr = Set.Make(OrderedString)
 
 (** [commutable] is a flag appended to every arrow type.
     When typing an application, if the type of the functional is

@@ -1980,6 +1980,21 @@ let expand_head_trace env t =
   let t = expand_head_unif env t in
   t
 
+let filter_arrow env t =
+  let t = expand_head_trace env t in
+  match t.desc with
+  | TTyVar _ ->
+    failwith "Should be impossible (?): filter_arrow's t expanded to variable"
+    (*let lv = t.level in
+    let t1 = newvar2 lv and t2 = newvar2 lv in
+    let t' = newty2 lv (TTyArrow(t1, t2, TComOk)) in
+    link_type t t';
+    (t1, t2)*)
+  | TTyArrow(t1, t2, _) ->
+    (t1, t2)
+  | _ ->
+    raise (Unify [])
+
 (***********************************)
 (*  Matching between type schemes  *)
 (***********************************)

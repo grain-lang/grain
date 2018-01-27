@@ -432,6 +432,15 @@ type can_load_modules =
 
 let can_load_modules = ref Can_load_modules
 
+let without_cmis f x =
+  let log = EnvLazy.log () in
+  let res =
+    Misc.(protect_refs
+            [R (can_load_modules, Cannot_load_modules log)]
+            (fun () -> f x))
+  in
+  EnvLazy.backtrack log;
+  res
 
 (* Forward declarations *)
 
@@ -809,6 +818,12 @@ let find_modtype_expansion path env =
 
 let has_local_constraints env = not (PathMap.is_empty env.local_constraints)
 
+
+let copy_types l env =
+  let f desc = {desc with val_type = Subst.type_expr Subst.identity desc.val_type} in
+  let values = List.fold_left (fun env s -> IdTbl.update s f env) env.values l in
+  {env with values}
+
 (* Currently a no-op *)
 let mark_module_used env name loc = ()
 
@@ -865,6 +880,96 @@ let lookup_constructor ?(mark = true) id env =
       use()
     end;
     desc
+
+
+(* Iter on an environment (ignoring the body of functors and
+   not yet evaluated structures) *)
+
+type iter_cont = unit -> unit
+let iter_env_cont = ref []
+
+let rec scrape_alias_for_visit env mty =
+  match mty with
+  | _ -> true
+
+let iter_env proj1 proj2 f env () =
+  IdTbl.iter (fun id x -> f (PIdent id) x) (proj1 env);
+  let rec iter_components path path' mcomps =
+    let cont () =
+      let visit =
+        match EnvLazy.get_arg mcomps.comps with
+        | None -> true
+        | Some (env, _sub, _path, mty) -> scrape_alias_for_visit env mty
+      in
+      if not visit then () else
+      let comps = get_components mcomps in
+      Tbl.iter
+        (fun s (d, n) -> f (PExternal (path, s, n)) (PExternal (path', s, n), d))
+        (proj2 comps);
+      Tbl.iter
+        (fun s (c, n) ->
+           iter_components (PExternal (path, s, n)) (PExternal (path', s, n)) c)
+        comps.comp_components
+    in iter_env_cont := (path, cont) :: !iter_env_cont
+  in
+  Hashtbl.iter
+    (fun s pso ->
+      match pso with None -> ()
+      | Some ps ->
+          let id = PIdent (Ident.create_persistent s) in
+          iter_components id id ps.ps_comps)
+    persistent_structures;
+  IdTbl.iter
+    (fun id (path, comps) -> iter_components (PIdent id) path comps)
+    env.components
+
+let run_iter_cont l =
+  iter_env_cont := [];
+  List.iter (fun c -> c ()) l;
+  let cont = List.rev !iter_env_cont in
+  iter_env_cont := [];
+  cont
+
+let iter_types f = iter_env (fun env -> env.types) (fun sc -> sc.comp_types) f
+
+let same_types env1 env2 =
+  env1.types == env2.types && env1.components == env2.components
+
+let used_persistent () =
+  let r = ref Concr.empty in
+  Hashtbl.iter (fun s pso -> if pso != None then r := Concr.add s !r)
+    persistent_structures;
+  !r
+
+let find_all_comps proj s (p,mcomps) =
+  let comps = get_components mcomps in
+  try let (c,n) = Tbl.find s (proj comps) in [PExternal(p,s,n), c]
+  with Not_found -> []
+
+let rec find_shadowed_comps path env =
+  match path with
+  | PIdent id ->
+      IdTbl.find_all (Ident.name id) env.components
+  | PExternal(p, s, _) ->
+      let l = find_shadowed_comps p env in
+      let l' =
+        List.map (find_all_comps (fun comps -> comps.comp_components) s) l in
+      List.flatten l'
+
+let find_shadowed proj1 proj2 path env =
+  match path with
+  | PIdent id ->
+      IdTbl.find_all (Ident.name id) (proj1 env)
+  | PExternal(p, s, _) ->
+      let l = find_shadowed_comps p env in
+      let l' = List.map (find_all_comps proj2 s) l in
+      List.flatten l'
+
+let find_shadowed_types path env =
+  List.map fst
+    (find_shadowed
+       (fun env -> env.types) (fun comps -> comps.comp_types) path env)
+
 
 let rec scrape_alias env ?path mty =
   match mty, path with
@@ -1005,6 +1110,44 @@ and components_of_module_maker (env, sub, path, mty) =
     Some c
   | TModIdent _ -> None
 
+and store_type ~check id info env =
+  (*let loc = info.type_loc in*)
+  (*if check then
+    check_usage loc id (fun s -> Warnings.Unused_type_declaration s)
+      type_declarations;*)
+  let path = PIdent id in
+  let constructors = Datarepr.constructors_of_type path info in
+  let descrs = List.map snd constructors in
+
+  (*if check && not loc.Location.loc_ghost &&
+    Warnings.is_active (Warnings.Unused_constructor ("", false, false))
+  then begin
+    let ty = Ident.name id in
+    List.iter
+      begin fun (_, {cstr_name = c; _}) ->
+        let k = (ty, loc, c) in
+        if not (Hashtbl.mem used_constructors k) then
+          let used = constructor_usages () in
+          Hashtbl.add used_constructors k (add_constructor_usage used)
+          if not (ty = "" || ty.[0] = '_')
+          then !add_delayed_check_forward
+              (fun () ->
+                if not (is_in_signature env) && not used.cu_positive then
+                  Location.prerr_warning loc
+                    (Warnings.Unused_constructor
+                       (c, used.cu_pattern, used.cu_privatize)))
+      end
+      constructors
+    end;*)
+  { env with
+    constructors =
+      List.fold_right
+        (fun (id, descr) constrs -> TycompTbl.add id descr constrs)
+        constructors
+        env.constructors;
+    types =
+      IdTbl.add id (info, descrs) env.types; }
+
 and store_type_infos id info env =
   (* Simplified version of store_type that doesn't compute and store
      constructor and label infos, but simply record the arity and
@@ -1037,16 +1180,6 @@ let store_value id decl env =
   { env with
     values = IdTbl.add id decl env.values }
 
-let store_type id info env =
-  let path = PIdent id in
-  let constructors = Datarepr.constructors_of_type path info in
-  let descrs = List.map snd constructors in
-  { env with
-    constructors = List.fold_right (fun (id, descr) cstrs -> TycompTbl.add id descr cstrs)
-        constructors
-        env.constructors;
-    types = IdTbl.add id (info, descrs) env.types; }
-
 let _ =
   components_of_module' := components_of_module;
   components_of_module_maker' := components_of_module_maker
@@ -1055,7 +1188,7 @@ let add_value ?check id desc env =
   store_value id desc env
 
 let add_type ~check id info env =
-  store_type id info env
+  store_type ~check id info env
 
 let add_module_declaration ?(arg=false) ~check id md env =
   let env = store_module ~check id md env in
@@ -1078,6 +1211,82 @@ let add_local_constraint path info elv env =
       let info = {info with type_newtype_level = Some (lv, elv)} in
       add_local_type path info env
   | _ -> assert false
+
+
+(* Insertion of bindings by name *)
+
+let enter store_fun name data env =
+  let id = Ident.create name in (id, store_fun id data env)
+
+let enter_value ?check = enter (store_value)
+and enter_type = enter (store_type ~check:true)
+and enter_module_declaration ?arg id md env =
+  add_module_declaration ?arg ~check:true id md env
+  (* let (id, env) = enter store_module name md env in
+  (id, add_functor_arg ?arg id env) *)
+and enter_modtype = enter store_modtype
+
+let enter_module ?arg s mty env =
+  let id = Ident.create s in
+  (id, enter_module_declaration ?arg id (md mty) env)
+
+(* Insertion of all components of a signature *)
+
+let add_item comp env =
+  match comp with
+  | TSigValue(id, decl)     -> add_value id decl env
+  | TSigType(id, decl, _)   -> add_type ~check:false id decl env
+  | TSigModule(id, md, _)   -> add_module_declaration ~check:false id md env
+  | TSigModType(id, decl)   -> add_modtype id decl env
+
+let rec add_signature sg env =
+  match sg with
+    [] -> env
+  | comp :: rem -> add_signature rem (add_item comp env)
+
+(* Open a signature path *)
+
+let add_components slot root env0 comps =
+  let add_l w comps env0 =
+    TycompTbl.add_open slot w comps env0
+  in
+
+  let add w comps env0 = IdTbl.add_open slot w root comps env0 in
+
+  let constructors =
+    add_l (fun x -> `Constructor x) comps.comp_constrs env0.constructors
+  in
+
+  let values =
+    add (fun x -> `Value x) comps.comp_values env0.values
+  in
+  let types =
+    add (fun x -> `Type x) comps.comp_types env0.types
+  in
+  let modtypes =
+    add (fun x -> `Module_type x) comps.comp_modtypes env0.modtypes
+  in
+  let components =
+    add (fun x -> `Component x) comps.comp_components env0.components
+  in
+
+  let modules =
+    add (fun x -> `Module x) comps.comp_modules env0.modules
+  in
+
+  { env0 with
+    constructors;
+    values;
+    types;
+    modtypes;
+    components;
+    modules;
+  }
+
+let open_signature slot root env0 =
+  let comps = get_components (find_module_descr root env0) in
+  Some (add_components slot root env0 comps)
+
 
 (* Folding on environments *)
 

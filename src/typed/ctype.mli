@@ -16,11 +16,11 @@
 
 (* Operations on core types *)
 
+open Grain_parsing
 open Asttypes
 open Types
 
 exception Unify of (type_expr * type_expr) list
-exception Tags of label * label
 exception Subtype of
     (type_expr * type_expr) list * (type_expr * type_expr) list
 exception Cannot_expand
@@ -72,7 +72,7 @@ val set_object_name:
 val remove_object_name: type_expr -> unit
 val hide_private_methods: type_expr -> unit
 val find_cltype_for_path: Env.t -> Path.t -> type_declaration * type_expr
-val lid_of_path: ?hash:string -> Path.t -> Longident.t
+val lid_of_path: ?hash:string -> Path.t -> Identifier.t
 
 val generalize: type_expr -> unit
 (* Generalize in-place the given type *)
@@ -152,12 +152,8 @@ val unify_var: Env.t -> type_expr -> type_expr -> unit
    is a variable. *)
 val with_passive_variants: ('a -> 'b) -> ('a -> 'b)
 (* Call [f] in passive_variants mode, for exhaustiveness check. *)
-val filter_arrow: Env.t -> type_expr -> arg_label -> type_expr * type_expr
+val filter_arrow: Env.t -> type_expr -> type_expr list * type_expr
 (* A special case of unification (with l:'a -> 'b). *)
-val filter_method: Env.t -> string -> private_flag -> type_expr -> type_expr
-(* A special case of unification (with {m : 'a; 'b}). *)
-val check_filter_method: Env.t -> string -> private_flag -> type_expr -> unit
-(* A special case of unification (with {m : 'a; 'b}), returning unit. *)
 val occur_in: Env.t -> type_expr -> type_expr -> bool
 val deep_occur: type_expr -> type_expr -> bool
 val moregeneral: Env.t -> bool -> type_expr -> type_expr -> bool
@@ -227,5 +223,5 @@ val maybe_pointer_type : Env.t -> type_expr -> bool
 
 (* Stubs *)
 val package_subtype :
-  (Env.t -> Path.t -> Longident.t list -> type_expr list ->
-   Path.t -> Longident.t list -> type_expr list -> bool) ref
+  (Env.t -> Path.t -> Identifier.t list -> type_expr list ->
+   Path.t -> Identifier.t list -> type_expr list -> bool) ref

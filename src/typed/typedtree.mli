@@ -117,8 +117,9 @@ and expression_desc =
   | TExpPrim1 of prim1 * expression
   | TExpPrim2 of prim2 * expression * expression
   | TExpIf of expression * expression * expression
-  | TExpLambda of pattern list * expression * partial
+  | TExpLambda of match_branch list * partial
   | TExpApp of expression * expression list
+  | TExpConstruct of Identifier.t loc * constructor_description * expression list (* TODO: Decide if needed *)
   | TExpBlock of expression list
   | TExpNull
 
