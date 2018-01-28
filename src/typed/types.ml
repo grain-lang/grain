@@ -78,6 +78,10 @@ type value_description = {
 and value_kind =
   | TValReg
   | TValPrim of Primitive.description
+  | TValUnbound of value_unbound_reason
+
+and value_unbound_reason =
+  | ValUnboundGhostRecursive
 
 type constructor_declaration = {
   cd_id: Ident.t;

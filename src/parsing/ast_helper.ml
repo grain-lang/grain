@@ -79,7 +79,9 @@ module Pat = struct
   let any ?loc () = mk ?loc PPatAny
   let var ?loc a = mk ?loc (PPatVar a)
   let tuple ?loc a = mk ?loc (PPatTuple a)
+  let constant ?loc a = mk ?loc (PPatConstant a)
   let constraint_ ?loc a b = mk ?loc (PPatConstraint(a, b))
+  let construct ?loc a b = mk ?loc (PPatConstruct(a, b))
 end
 
 module Exp = struct

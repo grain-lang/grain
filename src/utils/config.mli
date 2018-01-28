@@ -19,6 +19,9 @@ val principal : bool ref
 val recursive_types : bool ref
 (** Whether to allow cyclic types. *)
 
+val strict_sequence : bool ref
+(** Whether non-terminal block expressions should be forced to return void *)
+
 type config
 (** Abstract type representing a saved set of configuration options *)
 

@@ -11,14 +11,18 @@ type t =
   | AmbiguousName of string list * string list * bool
   | NotPrincipal of string
   | NameOutOfScope of string * string list * bool
+  | StatementType
+  | NonreturningStatement
 
 let number = function
   | LetRecNonFunction _ -> 1
   | NotPrincipal _ -> 2
   | AmbiguousName _ -> 3
   | NameOutOfScope _ -> 4
+  | StatementType -> 5
+  | NonreturningStatement -> 6
 
-let last_warning_number = 4
+let last_warning_number = 6
 
 let message = function
   | LetRecNonFunction(name) ->
@@ -41,7 +45,9 @@ let message = function
   | AmbiguousName (_slist, tl, true) ->
     "these field labels belong to several types: " ^
       String.concat " " tl ^
-      "\nThe first one was selected. Please disambiguate if this is wrong."
+    "\nThe first one was selected. Please disambiguate if this is wrong."
+  | StatementType -> "this expression should have type void."
+  | NonreturningStatement -> "this statement never returns (or has an unsound type)."
 
 let sub_locs = function
   | _ -> []

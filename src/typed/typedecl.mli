@@ -1,4 +1,3 @@
-(* Modified from OCaml. The original copyright notice is reproduced below. *)
 (**************************************************************************)
 (*                                                                        *)
 (*                                 OCaml                                  *)
@@ -13,26 +12,13 @@
 (*   special exception on linking described in the file LICENSE.          *)
 (*                                                                        *)
 (**************************************************************************)
-open Sexplib.Conv
 
-(** Auxiliary AST types used by parsetree and typedtree. *)
+(* Typing of type definitions and primitive definitions *)
 
-(* These are taken from OCaml. While not all fully supported,
-   we will likely want to support them. *)
-type constant =
-  | Const_int of int
-  | Const_string of string
-  | Const_float of string
-  | Const_int32 of int32
-  | Const_int64 of int64
-  | Const_bool of bool
-[@@deriving sexp]
+open Grain_parsing
+open Types
+open Format
 
-(** Marker for recursive/nonrecursive let bindings *)
-type rec_flag = Nonrecursive | Recursive [@@deriving sexp]
-
-(** A location-tagged value. *)
-type 'a loc = 'a Location.loc = {
-  txt : 'a;
-  loc : Location.t;
-} [@@deriving sexp]
+val transl_data_decl:
+    Env.t -> Asttypes.rec_flag -> Parsetree.data_declaration list ->
+    Typedtree.data_declaration list * Env.t

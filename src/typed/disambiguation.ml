@@ -4,22 +4,7 @@ open Types
 open Typedtree
 open Btype
 open Ctype
-
-type type_forcing_context =
-  | If_conditional
-  | If_no_else_branch
-  | While_loop_conditional
-  | While_loop_body
-  | For_loop_start_index
-  | For_loop_stop_index
-  | For_loop_body
-  | Assert_condition
-  | Sequence_left_hand_side
-
-type type_expected = {
-  ty: type_expr;
-  explanation: type_forcing_context option;
-}
+open Checkertypes
 
 type error =
   | WrongName of string * type_expected * string * Path.t * string * string list

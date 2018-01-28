@@ -52,25 +52,27 @@ type data_declaration = {
   pdata_loc: Location.t;
 } [@@deriving sexp]
 
-(** Various binding forms *)
-type pattern_desc =
-  | PPatAny
-  | PPatVar of string loc
-  | PPatTuple of pattern list
-  | PPatConstraint of pattern * parsed_type
-[@@deriving sexp]
-
-and pattern = {
-  ppat_desc: pattern_desc;
-  ppat_loc: Location.t;
-} [@@deriving sexp]
-
 (** Constants supported by Grain *)
 type constant =
   | PConstNumber of int
   | PConstBool of bool
   | PConstString of string
 [@@deriving sexp]
+
+(** Various binding forms *)
+type pattern_desc =
+  | PPatAny
+  | PPatVar of string loc
+  | PPatTuple of pattern list
+  | PPatConstant of constant
+  | PPatConstraint of pattern * parsed_type
+  | PPatConstruct of Identifier.t loc * pattern list
+[@@deriving sexp]
+
+and pattern = {
+  ppat_desc: pattern_desc;
+  ppat_loc: Location.t;
+} [@@deriving sexp]
 
 (** Single-argument operators *)
 type prim1 =

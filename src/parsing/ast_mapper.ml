@@ -49,7 +49,9 @@ module P = struct
     | PPatAny -> any ~loc ()
     | PPatVar sl -> var ~loc (map_loc sub sl)
     | PPatTuple pl -> tuple ~loc (List.map (sub.pat sub) pl)
+    | PPatConstant c -> constant ~loc (sub.constant sub c)
     | PPatConstraint(p, pt) -> constraint_ ~loc (sub.pat sub p) (sub.typ sub pt)
+    | PPatConstruct(id, pl) -> construct ~loc (map_loc sub id) (List.map (sub.pat sub) pl)
 end
 
 module C = struct
