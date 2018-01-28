@@ -95,7 +95,9 @@ and pat_extra =
 and pattern_desc =
   | TPatAny
   | TPatVar of Ident.t * string loc
+  | TPatConstant of constant
   | TPatTuple of pattern list
+  | TPatConstruct of Identifier.t loc * constructor_description * pattern list
 
 type expression = {
   exp_desc: expression_desc;
@@ -148,11 +150,13 @@ type toplevel_stmt_desc =
 type toplevel_stmt = {
   ttop_desc: toplevel_stmt_desc;
   ttop_loc: Location.t;
+  ttop_env: Env.t;
 }
 
 type typed_program = {
   statements: toplevel_stmt list;
   body: expression;
+  env: Env.t;
 }
 
 (* Auxiliary functions over the AST *)

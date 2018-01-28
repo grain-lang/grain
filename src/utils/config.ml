@@ -45,3 +45,4 @@ let use_stdlib = opt true
 let color_enabled = opt true
 let principal = opt false
 let recursive_types = opt false
+let strict_sequence = opt false

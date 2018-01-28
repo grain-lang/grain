@@ -83,7 +83,9 @@ type data_declaration = {
 type pattern = {
   pat_desc: pattern_desc;
   pat_loc: Location.t;
+  pat_extra: (pat_extra * Location.t) list;
   pat_type: type_expr;
+  mutable pat_env: Env.t;
 }
 
 and pat_extra =
@@ -92,7 +94,9 @@ and pat_extra =
 and pattern_desc =
   | TPatAny
   | TPatVar of Ident.t * string loc
+  | TPatConstant of constant
   | TPatTuple of pattern list
+  | TPatConstruct of Identifier.t loc * constructor_description * pattern list
 
 type expression = {
   exp_desc: expression_desc;
