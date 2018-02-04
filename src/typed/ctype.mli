@@ -152,7 +152,7 @@ val unify_var: Env.t -> type_expr -> type_expr -> unit
    is a variable. *)
 val with_passive_variants: ('a -> 'b) -> ('a -> 'b)
 (* Call [f] in passive_variants mode, for exhaustiveness check. *)
-val filter_arrow: Env.t -> type_expr -> type_expr list * type_expr
+val filter_arrow: int -> Env.t -> type_expr -> type_expr list * type_expr
 (* A special case of unification (with l:'a -> 'b). *)
 val occur_in: Env.t -> type_expr -> type_expr -> bool
 val deep_occur: type_expr -> type_expr -> bool

@@ -7,6 +7,20 @@ open Grain.Legacy_types
 open Grain.Expr
 open Grain.Pretty
 
+let () =
+  Printexc.register_printer (fun exc ->
+      match Grain_parsing.Location.error_of_exn exc with
+      | None -> None
+      | Some `Already_displayed -> None
+      | Some (`Ok err) ->
+        let buf = Buffer.create 512 in
+        let formatter = Format.formatter_of_buffer buf in
+        Format.fprintf formatter "@[%a@]@." Grain_parsing.Location.report_error err;
+        Format.pp_flush_formatter formatter;
+        let s = Buffer.contents buf in
+        Buffer.reset buf;
+        Some (s))
+
 let t ?opts:(opts=default_compile_options) name program expected = name>::test_run opts [] program name expected;;
 let tlib name program expected = name>::test_run default_compile_options [] program name expected;;
 let tgc name heap_size program expected = name>::test_run default_compile_options [string_of_int heap_size] program name expected;;
@@ -18,39 +32,51 @@ let telib name program expected = name>::test_err default_compile_options ["1000
 
 let tfvs name program expected = name>::
   (fun _ ->
-    let ast = parse_string name program in
-    let typed_tree, _, _ = Grain_typed.Typemod.type_module Grain_typed.Env.empty ast in
-    let anfed = anf typed_tree in
-    let vars = free_vars anfed in
-    let c = Pervasives.compare in
-    let str_list_print strs = "[" ^ (ExtString.String.join ", " strs) ^ "]" in
-    assert_equal (List.sort ~cmp:c vars) (List.sort ~cmp:c expected) ~printer:str_list_print)
+    try
+      let ast = parse_string name program in
+      let typed_tree, _, _ = Grain_typed.Typemod.type_module Grain_typed.Env.empty ast in
+      let anfed = anf typed_tree in
+      let vars = free_vars anfed in
+      let c = Pervasives.compare in
+      let str_list_print strs = "[" ^ (ExtString.String.join ", " strs) ^ "]" in
+      assert_equal (List.sort ~cmp:c vars) (List.sort ~cmp:c expected) ~printer:str_list_print
+    with x ->
+      (*Grain_parsing.Location.report_exception Format.err_formatter x;*)
+      raise x)
 ;;
 
 let test_input_file filename include_stdlib heap_size name expected test_ctxt =
-  let input_filename = "input/" ^ filename ^ ".gr" in
-  let input_channel = open_in input_filename in
-  let full_outfile = "output/" ^ name in
-  let program = parse_file filename input_channel in
-  let result = run include_stdlib program full_outfile run_no_vg [string_of_int heap_size] in
-  assert_equal (Right(expected ^ "\n")) result ~printer:either_printer
+  try
+    let input_filename = "input/" ^ filename ^ ".gr" in
+    let input_channel = open_in input_filename in
+    let full_outfile = "output/" ^ name in
+    let program = parse_file filename input_channel in
+    let result = run include_stdlib program full_outfile run_no_vg [string_of_int heap_size] in
+    assert_equal (Right(expected ^ "\n")) result ~printer:either_printer
+  with x ->
+    (*Grain_parsing.Location.report_exception Format.err_formatter x;*)
+    raise x
 
 let test_err_input_file filename include_stdlib heap_size name errmsg test_ctxt =
-  let input_filename = "input/" ^ filename ^ ".gr" in
-  let input_channel = open_in input_filename in
-  let full_outfile = "output/" ^ name in
-  let program = parse_file filename input_channel in
-  let result = run include_stdlib program full_outfile run_no_vg [string_of_int heap_size] in
-  assert_equal
-    (Left(errmsg))
-    result
-    ~printer:either_printer
-    ~cmp: (fun check result ->
-      match check, result with
-      | Left(expect_msg), Left(actual_message) ->
-         String.exists actual_message expect_msg
-      | _ -> false
-    )
+  try
+    let input_filename = "input/" ^ filename ^ ".gr" in
+    let input_channel = open_in input_filename in
+    let full_outfile = "output/" ^ name in
+    let program = parse_file filename input_channel in
+    let result = run include_stdlib program full_outfile run_no_vg [string_of_int heap_size] in
+    assert_equal
+      (Left(errmsg))
+      result
+      ~printer:either_printer
+      ~cmp: (fun check result ->
+          match check, result with
+          | Left(expect_msg), Left(actual_message) ->
+            String.exists actual_message expect_msg
+          | _ -> false
+        )
+  with x ->
+    (*Grain_parsing.Location.report_exception Format.err_formatter x;*)
+    raise x
 
 let test_optimizations_sound program_str opts heap_size name expected test_ctxt =
   let full_outfile_unoptimized = "output/" ^ name ^ ".no-optimize" in
@@ -211,13 +237,13 @@ let test_parse name input (expected : Grain_parsing.Parsetree.parsed_program) te
   let parsed = strip_locs @@ parse_string name input in
   let untagged = strip_locs @@ parsed in
   assert_equal expected
-    untagged ~printer:(fun p -> Sexplib.Conv.string_of_sexp @@ Grain_parsing.Parsetree.sexp_of_parsed_program p)
+    untagged ~printer:(fun p -> Sexplib.Sexp.to_string_hum @@ Grain_parsing.Parsetree.sexp_of_parsed_program p)
 
 let tparse name input expected = name>::test_parse name input expected
 
-let forty = "let x = 40 in x"
-let fals = "let x = false in x"
-let tru = "let x = true in x"
+let forty = "let x = 40; x"
+let fals = "let x = false; x"
+let tru = "let x = true; x"
 
 (* Tests for functionality inherited from Cobra *)
 let cobra_tests = [
@@ -226,11 +252,11 @@ let cobra_tests = [
   t "fals" fals "false";
   t "tru" tru "true";
   t "complex1" "
-    let x = 2, y = 3, z = if true: 4 else: 5 in
-      if true:
-        print(y) - (z + x)
-      else:
-        print(8)
+    let x = 2, y = 3, z = if true: 4 else: 5;
+    if true:
+      print(y) - (z + x)
+    else:
+      print(8)
     "  "3\n-3";
   t "complex2" "print(2) + print(3)" "2\n3\n5";
 
@@ -239,15 +265,15 @@ let cobra_tests = [
   t "binop3" "2 - 4" "-2";
   t "binop4" "2 * 3" "6";
 
-  t "and1" "true && true" "true";
-  t "and2" "true && false" "false";
-  t "and3" "false && true" "false";
-  t "and4" "false && false" "false";
+  t "and1" "true and true" "true";
+  t "and2" "true and false" "false";
+  t "and3" "false and true" "false";
+  t "and4" "false and false" "false";
 
-  t "or1" "true || true" "true";
-  t "or2" "true || false" "true";
-  t "or3" "false || true" "true";
-  t "or4" "false || false" "false";
+  t "or1" "true or true" "true";
+  t "or2" "true or false" "true";
+  t "or3" "false or true" "true";
+  t "or4" "false or false" "false";
 
   t "comp1" "if 2 < 3: true else: false" "true";
   te "comp1e" "if 2 < 3: true else: 3" "type";
@@ -278,8 +304,8 @@ let cobra_tests = [
   t "isnum3" "isnum(4)" "true";
   t "isnum4" "isnum(8)" "true";
 
-  t "not1" "!(true)" "false";
-  t "not2" "!(false)" "true";
+  t "not1" "not(true)" "false";
+  t "not2" "not(false)" "true";
 
   t "add1_1" "add1(2)" "3";
   t "add1_2" "add1(5)" "6";
@@ -291,17 +317,17 @@ let cobra_tests = [
   te "comp_bool1" "if 2 < true: 3 else: 4" "type";
   te "comp_bool2" "if 2 > true: 3 else: 4" "type";
   te "comp_bool3" "if true >= 4: 3 else: 4" "type";
-  te "comp_bool4" "let x = true in if x < 4: 3 else: 5" "type";
+  te "comp_bool4" "let x = true; if x < 4: 3 else: 5" "type";
 
   te "arith1" "2 + true" "type";
   te "arith2" "true + 4" "type";
   te "arith3" "false - 5" "type";
   te "arith4" "4 - true" "type";
-  te "arith5" "let x = true in x * 4" "type";
-  te "arith6" "let x = false in 4 * x" "type";
+  te "arith5" "let x = true; x * 4" "type";
+  te "arith6" "let x = false; 4 * x" "type";
 
   te "if1" "if 2: 5 else: 6" "type";
-  te "if2" "let y = 0 in if y: 5 else: 6" "type";
+  te "if2" "let y = 0; if y: 5 else: 6" "type";
   te "if3" "if sub1(1): 2 else: 5" "type";
 
   (* te "generic1" "printStack(true)" "expected a number"; *)
@@ -331,17 +357,17 @@ let diamondback_tests = [
   (* tvgfile "sinister_tail_call2" "sinister-tail-call" "true"; *)
   tefile "fib_big" "too-much-fib" "overflow";
 
-  t "func_no_args" "let foo = (lambda: print(5)) in\nfoo()" "5\n5";
-  t "multi_bind" "let x = 2, y = x + 1 in y" "3";
+  t "func_no_args" "let foo = (() => print(5));\nfoo()" "5\n5";
+  t "multi_bind" "let x = 2, y = x + 1; y" "3";
   te "unbound_fun" "2 + foo()" "unbound";
   te "unbound_id_simple" "5 - x" "unbound";
-  te "unbound_id_let" "let x = x in 2 + 2" "unbound";
-  te "shadow_simple" "let x = 12 in let x = 15 in x" "shadows";
-  te "shadow_multi" "let x = 12, x = 14 in x" "duplicate";
-  te "dup_func" "let rec foo = (lambda: 5) in\nlet bar = (lambda: 7) in\nlet rec foo = (lambda: 9) in\nfoo()" "shadows";
-  te "arity_1" "let foo = (lambda: 5) in\nfoo(6)" "type";
-  te "arity_2" "let foo = (lambda x: x + 5) in\nfoo()" "type";
-  te "arity_3" "let foo = (lambda x: x) in\nfoo(1, 2, 3)" "type";
+  te "unbound_id_let" "let x = x; 2 + 2" "unbound";
+  te "shadow_simple" "let x = 12; let x = 15; x" "shadows";
+  te "shadow_multi" "let x = 12, x = 14; x" "duplicate";
+  te "dup_func" "let rec foo = (() => 5);\nlet bar = (() => { 7 });\nlet rec foo = (() => 9);\nfoo()" "shadows";
+  te "arity_1" "let foo = (() => {5});\nfoo(6)" "type";
+  te "arity_2" "let foo = ((x) => {x + 5});\nfoo()" "type";
+  te "arity_3" "let foo = ((x) => {x});\nfoo(1, 2, 3)" "type";
 ]
 
 let mylist = "link(1, link(2, link(3, false)))"
@@ -349,10 +375,10 @@ let mylist = "link(1, link(2, link(3, false)))"
 let egg_eater_tests = [
   t "print_tup" "print((1, 2))" "(1, 2)\n(1, 2)";
   t "big_tup" "(1, 2, 3, 4)" "(1, 2, 3, 4)";
-  t "big_tup_access" "let (a, b, c, d) = (1, 2, 3, 4) in c" "3";
-  t "nested_tup_1" "let (a, b) = ((1, 2), (3, 4)) in a" "(1, 2)";
-  t "nested_tup_2" "let (a, b) = ((1, 2), (3, 4)) in let (c, d) = b in d" "4";
-  t "nested_tup_3" "let (x, y) = ((1, 2), (3, 4)) in let (a, b) = y in a" "3";
+  t "big_tup_access" "let (a, b, c, d) = (1, 2, 3, 4); c" "3";
+  t "nested_tup_1" "let (a, b) = ((1, 2), (3, 4)); a" "(1, 2)";
+  t "nested_tup_2" "let (a, b) = ((1, 2), (3, 4)); let (c, d) = b; d" "4";
+  t "nested_tup_3" "let (x, y) = ((1, 2), (3, 4)); let (a, b) = y; a" "3";
   t "no_singleton_tup" "(1)" "1";
 ]
 
@@ -392,7 +418,7 @@ let egg_eater_stdlib_tests = [
    stress test of our lambda and letrec implementations
    (also see the files in input/, which the above suites run)*)
 let fer_de_lance_tests = [
-  t "lambda_1" "(lambda x: x)" "<lambda>";
+  t "lambda_1" "(x) => {x}" "<lambda>";
   t "app_1" "(lambda x: x)(1)" "1";
   t "letrec_1" "let rec x = (lambda n: if n > 3: n else: x(n + 2)),
                         y = (lambda n: x(n + 1)) in

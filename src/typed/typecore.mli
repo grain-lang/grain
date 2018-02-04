@@ -120,6 +120,6 @@ exception Error_forward of Location.error
    Identifier.t loc -> Path.t * Env.t)
     ref*)
 
-val constant: Parsetree.constant -> (Asttypes.constant, error) result
+val constant: Parsetree.constant -> (Asttypes.constant, Checkertypes.error) result
 
 val check_recursive_bindings : Env.t -> Typedtree.value_binding list -> unit
