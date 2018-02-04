@@ -1,6 +1,6 @@
 open Printf
 open Expr
-open Types
+open Legacy_types
 open Utils
 
 let make_gensym () =

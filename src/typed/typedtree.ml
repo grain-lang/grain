@@ -149,18 +149,22 @@ type toplevel_stmt_desc =
 type toplevel_stmt = {
   ttop_desc: toplevel_stmt_desc;
   ttop_loc: Location.t;
+  ttop_env: Env.t;
 }
 
 type typed_program = {
   statements: toplevel_stmt list;
   body: expression;
+  env: Env.t;
 }
 
 let iter_pattern_desc f patt =
   match patt with
-  | TPatTuple patts -> List.iter f patts
+  | TPatTuple patts
+  | TPatConstruct(_, _, patts) -> List.iter f patts
   | TPatAny
-  | TPatVar _ -> ()
+  | TPatVar _
+  | TPatConstant _ -> ()
 
 let map_pattern_desc f patt =
   match patt with
@@ -181,7 +185,8 @@ let pattern_bound_idents patt =
   |> List.map fst
 
 let rev_let_bound_idents_with_loc bindings =
-  List.map pattern_bound_idents_and_locs bindings
+  List.map (fun {vb_pat; _} -> vb_pat) bindings
+  |> List.map pattern_bound_idents_and_locs
   |> List.fold_left (fun acc cur -> cur @ acc) []
 
 let let_bound_idents_with_loc bindings =

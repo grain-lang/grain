@@ -96,9 +96,6 @@ val enter_value: string -> value_description -> t -> Ident.t * t
 val enter_type: string -> type_declaration -> t -> Ident.t * t
 (** Adds a type identifier with the given name and declaration.
     The new environment and a generated identifier are returned. *)
-val enter_constructor: string -> constructor_description -> t -> Ident.t * t
-(** Adds a constructor with the given name and description.
-    The new environment and a generated identifier are returned. *)
 
 (* Forward declaration to break mutual recursion with Ctype. *)
 val same_constr: (t -> type_expr -> type_expr -> bool) ref

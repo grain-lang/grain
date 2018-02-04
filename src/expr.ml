@@ -1,4 +1,4 @@
-open Types
+open Legacy_types
 
 type tag = int
 let tag (p : 'a program) : tag program =

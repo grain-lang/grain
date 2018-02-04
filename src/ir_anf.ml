@@ -1,5 +1,5 @@
 open Graph
-open Types
+open Legacy_types
 open Anf
 open Intermediate
 

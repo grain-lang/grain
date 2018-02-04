@@ -361,7 +361,8 @@ let check_well_founded env loc path to_check ty =
     | _ -> may raise arg_exn
   in
   let snap = Btype.snapshot () in
-  try Ctype.wrap_trace_gadt_instances env (check ty TypeSet.empty) ty
+  (*try Ctype.wrap_trace_gadt_instances env (check ty TypeSet.empty) ty*)
+  try check ty TypeSet.empty ty
   with Ctype.Unify _ ->
     (* Will be detected by check_recursion *)
     Btype.backtrack snap

@@ -1,8 +1,8 @@
 open Printf
 open Ast_utils
-open Types
+open Legacy_types
 open Expr
-open Errors
+open Runtime_errors
 open Value_tags
 open Wasm
 
@@ -633,8 +633,6 @@ and compile_cexpr (e : tag cexpr) env =
       Ast.Const(const_int32 0x80000000);
       Ast.Binary(Values.I32 Ast.IntOp.Xor);
     ]
-
-  | CPrim1(PrintStack, _, _) -> failwith "printStack not supported on this platform"
 
   | CPrim2(Plus, arg1, arg2, _) ->
     (compile_imm arg1 env) @

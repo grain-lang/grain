@@ -1,7 +1,7 @@
 open Printf
 open Pretty
 open Expr
-open Types
+open Legacy_types
 open Simple_expr
 open Utils
 

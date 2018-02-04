@@ -2483,3 +2483,9 @@ let maybe_pointer_type env typ =
          Maybe we should emit a warning. *)
     end
   | _ -> true
+
+let rec lid_of_path ?(hash="") = function
+  | Path.PIdent id ->
+    Identifier.IdentName (hash ^ Ident.name id)
+  | Path.PExternal (p1, s, _) ->
+    Identifier.IdentExternal (lid_of_path p1, hash ^ s)

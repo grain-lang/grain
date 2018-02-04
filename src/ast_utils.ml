@@ -1,4 +1,4 @@
-open Types
+open Legacy_types
 open Expr
 
 module BindingSet = Set.Make(struct

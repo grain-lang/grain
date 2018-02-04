@@ -425,6 +425,7 @@ let copy_local ~from env =
   { env with
     local_constraints = from.local_constraints; }
 
+let same_constr = ref (fun _ _ _ -> assert false)
 
 type can_load_modules =
   | Can_load_modules
@@ -825,6 +826,8 @@ let copy_types l env =
   {env with values}
 
 (* Currently a no-op *)
+let mark_value_used env name loc = ()
+let mark_type_used env name loc = ()
 let mark_module_used env name loc = ()
 
 let rec lookup_module_descr_aux ~mark id env =
@@ -841,6 +844,41 @@ and lookup_module_descr ~mark id env =
   let (p, comps) as res = lookup_module_descr_aux ~mark id env in
   if mark then mark_module_used env (Path.last p) comps.loc;
   res
+
+and lookup_module ?loc ~load ~mark id env : Path.t =
+  match id with
+  | Identifier.IdentName s ->
+    begin try
+        let (p, data) = IdTbl.find_name ~mark s env.modules in
+        let {md_loc; md_type} = EnvLazy.force subst_modtype_maker data in
+        if mark then mark_module_used env s md_loc;
+        begin match md_type with
+          | TModIdent (Path.PIdent id) when Ident.name id = "#recmod#" ->
+            (* see #5965 *)
+            failwith "NYI: lookup_module: raise Recmodule"
+          | _ -> ()
+        end;
+        p
+      with Not_found ->
+        if s = !current_unit then raise Not_found;
+        let p = PIdent(Ident.create_persistent s) in
+        if (*!Grain_utils.Config.transparent_modules &&*) not load
+        then
+          let loc = Option.default Location.dummy_loc loc in
+          check_pers_struct ~loc s
+        else begin
+          ignore(find_pers_struct s)
+        end;
+        p
+    end
+  | Identifier.IdentExternal(l, s) ->
+    let (p, descr) = lookup_module_descr ~mark l env in
+    let c = get_components descr in
+    let (_data, pos) = Tbl.find s c.comp_modules in
+    let (comps, _) = Tbl.find s c.comp_components in
+    if mark then mark_module_used env s comps.loc;
+    let p = PExternal(p, s, pos) in
+    p
 
 let lookup_idtbl ~mark proj1 proj2 id env =
   let open Identifier in
@@ -867,7 +905,7 @@ let lookup_type ~mark id e =
   lookup_idtbl ~mark (fun x -> x.types) (fun x -> x.comp_types) id e
 
 let lookup_modtype ~mark id e =
-  lookup_idtbl ~mark (fun env -> env.modtypes) (fun sc -> sc.comp_modtypes)
+  lookup_idtbl ~mark (fun env -> env.modtypes) (fun sc -> sc.comp_modtypes) id e
 
 let lookup_all_constructors ~mark id env =
   lookup_tycomptbl ~mark (fun x -> x.constructors) (fun x -> x.comp_constrs) id env
@@ -881,6 +919,47 @@ let lookup_constructor ?(mark = true) id env =
     end;
     desc
 
+
+let mark_type_path env path =
+  try
+    let decl = find_type path env in
+    mark_type_used env (Path.last path) decl
+  with Not_found -> ()
+
+let ty_path t =
+  match Btype.repr t with
+  | {desc=TTyConstr(path, _, _)} -> path
+  | _ -> assert false
+
+
+let lookup_value ?(mark = true) lid env =
+  let (_, desc) as r = lookup_value ~mark lid env in
+  if mark then mark_value_used env (Identifier.last lid) desc;
+  r
+
+let lookup_type ?(mark = true) lid env =
+  let (path, (decl, _)) = lookup_type ~mark lid env in
+  if mark then mark_type_used env (Identifier.last lid) decl;
+  path
+
+let lookup_all_constructors ?(mark = true) lid env =
+  try
+    let cstrs = lookup_all_constructors ~mark lid env in
+    let wrap_use desc use () =
+      if mark then begin
+        mark_type_path env (ty_path desc.cstr_res);
+        use ()
+      end
+    in
+    List.map (fun (cstr, use) -> (cstr, wrap_use cstr use)) cstrs
+  with
+    Not_found when (match lid with Identifier.IdentName _ -> true | _ -> false) -> []
+
+let lookup_module ~load ?loc ?(mark = true) lid env =
+  lookup_module ~load ?loc ~mark lid env
+
+let lookup_modtype ?loc ?(mark = true) lid env =
+  lookup_modtype ~mark lid env
 
 (* Iter on an environment (ignoring the body of functors and
    not yet evaluated structures) *)
@@ -1197,6 +1276,9 @@ let add_module_declaration ?(arg=false) ~check id md env =
 and add_modtype id info env =
   store_modtype id info env
 
+let add_module ?arg id mty env =
+  add_module_declaration ~check:false ?arg id (md mty) env
+
 let add_constructor id desc ({constructors; _} as e) =
   {e with constructors = TycompTbl.add id desc constructors}
 
@@ -1218,7 +1300,7 @@ let add_local_constraint path info elv env =
 let enter store_fun name data env =
   let id = Ident.create name in (id, store_fun id data env)
 
-let enter_value ?check = enter (store_value)
+let enter_value = enter (store_value)
 and enter_type = enter (store_type ~check:true)
 and enter_module_declaration ?arg id md env =
   add_module_declaration ?arg ~check:true id md env
@@ -1246,12 +1328,36 @@ let rec add_signature sg env =
 
 (* Open a signature path *)
 
-let add_components slot root env0 comps =
+let add_components ?filter_modules slot root env0 comps =
   let add_l w comps env0 =
     TycompTbl.add_open slot w comps env0
   in
 
   let add w comps env0 = IdTbl.add_open slot w root comps env0 in
+
+  let skipped_modules = ref StringSet.empty in
+  let filter tbl env0_tbl =
+    match filter_modules with
+    | None -> tbl
+    | Some f ->
+      Tbl.fold (fun m x acc ->
+          if f m then
+            Tbl.add m x acc
+          else begin
+            assert
+              (match IdTbl.find_name m env0_tbl ~mark:false with
+               | (_ : _ * _) -> false
+               | exception _ -> true);
+            skipped_modules := StringSet.add m !skipped_modules;
+            acc
+          end)
+        tbl Tbl.empty
+  in
+
+  let filter_and_add w comps env0 =
+    let comps = filter comps env0 in
+    add w comps env0
+  in
 
   let constructors =
     add_l (fun x -> `Constructor x) comps.comp_constrs env0.constructors
@@ -1267,11 +1373,11 @@ let add_components slot root env0 comps =
     add (fun x -> `Module_type x) comps.comp_modtypes env0.modtypes
   in
   let components =
-    add (fun x -> `Component x) comps.comp_components env0.components
+    filter_and_add (fun x -> `Component x) comps.comp_components env0.components
   in
 
   let modules =
-    add (fun x -> `Module x) comps.comp_modules env0.modules
+    filter_and_add (fun x -> `Module x) comps.comp_modules env0.modules
   in
 
   { env0 with
@@ -1283,10 +1389,31 @@ let add_components slot root env0 comps =
     modules;
   }
 
-let open_signature slot root env0 =
+let open_signature ?filter_modules slot root env0 =
   let comps = get_components (find_module_descr root env0) in
-  Some (add_components slot root env0 comps)
+  Some (add_components ?filter_modules slot root env0 comps)
 
+let open_pers_signature name env =
+  match open_signature None (PIdent(Ident.create_persistent name)) env with
+  | Some env -> env
+  | None -> assert false (* Invalid compilation unit *)
+
+let open_signature_of_initially_opened_module root env =
+  let load_path = !Grain_utils.Config.include_dirs in
+  let filter_modules m =
+    match Misc.find_in_path_uncap load_path (m ^ ".gri") with (* Note: this is temporary *)
+    | (_ : string) -> false
+    | exception Not_found -> true
+  in
+  open_signature None root env ~filter_modules
+
+let open_signature
+    ?(used_slot = ref false)
+    ?(loc = Location.dummy_loc)
+    ?(toplevel = false)
+    root env =
+  (* Omitted: some warnings *)
+  open_signature None root env
 
 (* Folding on environments *)
 

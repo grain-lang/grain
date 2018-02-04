@@ -147,7 +147,7 @@ let enrich_type_decls anchor decls oldenv newenv =
         oldenv decls
 
 
-let type_module ?(toplevel=false) funct_body anchor env sstr scope =
+let type_module ?(toplevel=false) funct_body anchor env sstr (*scope*) =
 
   let (imports, datas, lets) = List.fold_right (fun {ptop_desc; ptop_loc=loc} (imports, datas, lets) ->
       match ptop_desc with
@@ -190,3 +190,5 @@ let type_module ?(toplevel=false) funct_body anchor env sstr scope =
     str, (ty_decl @ sg), final_env in
 
   run()
+
+let type_module = type_module false None

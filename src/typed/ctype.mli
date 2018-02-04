@@ -54,7 +54,7 @@ val newvar2: ?name:string -> int -> type_expr
 val new_global_var: ?name:string -> unit -> type_expr
 (* Return a fresh variable, bound at toplevel
    (as type variables ['a] in type constraints). *)
-val newobj: type_expr -> type_expr
+(*val newobj: type_expr -> type_expr*)
 val newconstr: Path.t -> type_expr list -> type_expr
 val none: type_expr
 (* A dummy type expression *)
@@ -62,16 +62,16 @@ val none: type_expr
 val repr: type_expr -> type_expr
 (* Return the canonical representative of a type. *)
 
-val object_fields: type_expr -> type_expr
-val opened_object: type_expr -> bool
-val close_object: type_expr -> unit
-val row_variable: type_expr -> type_expr
+(*val object_fields: type_expr -> type_expr*)
+(*val opened_object: type_expr -> bool*)
+(*val close_object: type_expr -> unit*)
+(*val row_variable: type_expr -> type_expr*)
 (* Return the row variable of an open object type *)
-val set_object_name:
+(*val set_object_name:
   Ident.t -> type_expr -> type_expr list -> type_expr -> unit
 val remove_object_name: type_expr -> unit
 val hide_private_methods: type_expr -> unit
-val find_cltype_for_path: Env.t -> Path.t -> type_declaration * type_expr
+val find_cltype_for_path: Env.t -> Path.t -> type_declaration * type_expr*)
 val lid_of_path: ?hash:string -> Path.t -> Identifier.t
 
 val generalize: type_expr -> unit
@@ -172,9 +172,9 @@ val equal: Env.t -> bool -> type_expr list -> type_expr list -> bool
    checks whether the parameterized types
    [/\x1.../\xn.tau] and [/\y1.../\yn.sigma] are equivalent. *)
 
-val enlarge_type: Env.t -> type_expr -> type_expr * bool
+(*val enlarge_type: Env.t -> type_expr -> type_expr * bool*)
 (* Make a type larger, flag is true if some pruning had to be done *)
-val subtype: Env.t -> type_expr -> type_expr -> unit -> unit
+(*val subtype: Env.t -> type_expr -> type_expr -> unit -> unit*)
 (* [subtype env t1 t2] checks that [t1] is a subtype of [t2].
    It accumulates the constraints the type variables must
    enforce and returns a function that enforces this
@@ -188,9 +188,9 @@ val nondep_type_decl:
   Env.t -> Ident.t -> Ident.t -> bool -> type_declaration ->
   type_declaration
 (* Same for type declarations. *)
-val nondep_extension_constructor:
+(*val nondep_extension_constructor:
   Env.t -> Ident.t -> extension_constructor ->
-  extension_constructor
+  extension_constructor*)
 (* Same for extension constructor *)
 val cyclic_abbrev: Env.t -> Ident.t -> type_expr -> bool
 val is_contractive: Env.t -> Path.t -> bool
@@ -203,7 +203,7 @@ val closed_schema: Env.t -> type_expr -> bool
 val free_variables: ?env:Env.t -> type_expr -> type_expr list
 (* If env present, then check for incomplete definitions too *)
 val closed_type_decl: type_declaration -> type_expr option
-val closed_extension_constructor: extension_constructor -> type_expr option
+(*val closed_extension_constructor: extension_constructor -> type_expr option*)
 
 (* Check whether all type variables are bound *)
 
@@ -215,7 +215,7 @@ val collapse_conj_params: Env.t -> type_expr list -> unit
 (* Collapse conjunctive types in class parameters *)
 
 val get_current_level: unit -> int
-val wrap_trace_gadt_instances: Env.t -> ('a -> 'b) -> 'a -> 'b
+(*val wrap_trace_gadt_instances: Env.t -> ('a -> 'b) -> 'a -> 'b*)
 val reset_reified_var_counter: unit -> unit
 
 val maybe_pointer_type : Env.t -> type_expr -> bool

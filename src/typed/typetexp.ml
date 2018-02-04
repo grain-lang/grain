@@ -152,7 +152,7 @@ let unbound_constructor_error env lid =
 
 (* Support for first-class modules. *)
 
-let transl_modtype_longident = ref (fun _ -> assert false)
+let transl_modtype_identifier = ref (fun _ -> assert false)
 let transl_modtype = ref (fun _ -> assert false)
 
 (* Translation of type expressions *)

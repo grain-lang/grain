@@ -3,7 +3,7 @@ open Wasm
 open Values
 open Types
 open Instance
-open Errors
+open Runtime_errors
 
 exception GrainRuntimeError of string
 

@@ -6,7 +6,7 @@ open Printf
 open OUnit2
 open ExtLib
 open Lexing
-open Types
+open Legacy_types
 open Pretty
        
 let either_printer e =
@@ -74,7 +74,7 @@ let print_errors exns =
 let parse name lexbuf =
   try 
     lexbuf.lex_curr_p <- { lexbuf.lex_curr_p with pos_fname = name };
-    fst @@ List.hd @@ Parser.program Lexer.token lexbuf
+    fst @@ List.hd @@ Grain_parsing.Parser.program Grain_parsing.Lexer.token lexbuf
   with
   | Failure x when String.equal x "lexing: empty token" ->
     failwith (sprintf "lexical error at %s"

@@ -1,4 +1,4 @@
-open Types
+open Legacy_types
 
 type tag = int
 val tag : 'a program -> tag program

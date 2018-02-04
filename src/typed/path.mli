@@ -8,7 +8,7 @@ val same: t -> t -> bool
 val compare: t -> t -> int
 val isfree: Ident.t -> t -> bool
 val binding_time: t -> int
-val flatten: Ident.t * string list
+val flatten: t -> Ident.t * string list
 
 val nopos: int
 

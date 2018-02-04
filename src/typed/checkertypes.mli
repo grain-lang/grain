@@ -2,6 +2,14 @@ open Grain_parsing
 open Parsetree
 open Types
 
+(* This variant is used to print improved error messages, and does not affect
+   the behavior of the typechecker itself.
+
+   It describes possible explanation for types enforced by a keyword of the
+   language; e.g. "if" requires the condition to be of type bool, and the
+   then-branch to be of type unit if there is no else branch; "for" requires
+   indices to be of type int, and the body to be of type unit.
+*)
 type type_forcing_context =
   | If_conditional
   | If_no_else_branch
@@ -13,6 +21,11 @@ type type_forcing_context =
   | Assert_condition
   | Sequence_left_hand_side
 
+(* The combination of a type and a "type forcing context". The intent is that it
+   describes a type that is "expected" (required) by the context. If unifying
+   with such a type fails, then the "explanation" field explains why it was
+   required, in order to display a more enlightening error message.
+*)
 type type_expected = {
   ty: type_expr;
   explanation: type_forcing_context option;
