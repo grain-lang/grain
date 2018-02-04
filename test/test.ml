@@ -3,7 +3,7 @@ open Grain.Runner
 open Printf
 open OUnit2
 open ExtLib
-open Grain.Types
+open Grain.Legacy_types
 open Grain.Expr
 open Grain.Pretty
 
@@ -19,7 +19,8 @@ let telib name program expected = name>::test_err default_compile_options ["1000
 let tfvs name program expected = name>::
   (fun _ ->
     let ast = parse_string name program in
-    let anfed = anf (tag ast) in
+    let typed_tree, _, _ = Grain_typed.Typemod.type_module Grain_typed.Env.empty ast in
+    let anfed = anf typed_tree in
     let vars = free_vars anfed in
     let c = Pervasives.compare in
     let str_list_print strs = "[" ^ (ExtString.String.join ", " strs) ^ "]" in
@@ -199,11 +200,18 @@ let tfsound name filename expected = name>::test_file_optimizations_sound filena
 
 let tefsound name filename errmsg = name>::test_file_optimizations_sound_err filename default_compile_options 10000 name errmsg;;
 
-let test_parse name input (expected : unit program) test_ctxt =
-  let parsed = parse_string name input in
-  let untagged = parsed in
-  assert_equal (string_of_prog expected)
-    (string_of_prog untagged) ~printer:identity
+let test_parse name input (expected : Grain_parsing.Parsetree.parsed_program) test_ctxt =
+  let open Grain_parsing in
+  let location_stripper = {Ast_mapper.default_mapper with location = (fun _ _ -> Location.dummy_loc)} in
+  let strip_locs (({statements; body; _} as p) : Parsetree.parsed_program) =
+    {p with
+     statements=(List.map (location_stripper.toplevel location_stripper) statements);
+     body=location_stripper.expr location_stripper body
+    } in
+  let parsed = strip_locs @@ parse_string name input in
+  let untagged = strip_locs @@ parsed in
+  assert_equal expected
+    untagged ~printer:(fun p -> Sexplib.Conv.string_of_sexp @@ Grain_parsing.Parsetree.sexp_of_parsed_program p)
 
 let tparse name input expected = name>::test_parse name input expected
 
@@ -558,15 +566,19 @@ let indigo_tests = [
     "test_unsound_const_fold_times_one" "let f = (lambda x: x * 1) in f(true)" "true";
 ]
 
-let string_tests = [
-  tparse "string_parse_dqs1" "\"foo\"" {statements=[]; body=(EString("foo", ()))};
-  tparse "string_parse_dqs2" "\"bar\\nbaz\"" {statements=[]; body=(EString("bar\nbaz", ()))};
-  tparse "string_parse_sqs1" "'foobar'" {statements=[]; body=(EString("foobar", ()))};
-  tparse "string_parse_sqs2" "'bar\\u41'" {statements=[]; body=(EString("barA", ()))};
-  tparse "string_parse_sqs3" "'bar\\x41'" {statements=[]; body=(EString("barA", ()))};
-  tparse "string_parse_sqs4" "'bar\\101'" {statements=[]; body=(EString("barA", ()))};
-  tparse "string_parse_emoji_escape" "\"\xF0\x9F\x98\x82\"" {statements=[]; body=(EString("😂", ()))};
-  tparse "string_parse_emoji_literal" "\"💯\"" {statements=[]; body=(EString("💯", ()))};
+let string_tests =
+  let open Grain_parsing in
+  let open Ast_helper in
+  let str s = Exp.constant (Const.string s) in
+  [
+  tparse "string_parse_dqs1" "\"foo\"" {statements=[]; body=str "foo"};
+  tparse "string_parse_dqs2" "\"bar\\nbaz\"" {statements=[]; body=str "bar\nbaz"};
+  tparse "string_parse_sqs1" "'foobar'" {statements=[]; body=str "foobar"};
+  tparse "string_parse_sqs2" "'bar\\u41'" {statements=[]; body=str "barA"};
+  tparse "string_parse_sqs3" "'bar\\x41'" {statements=[]; body=str "barA"};
+  tparse "string_parse_sqs4" "'bar\\101'" {statements=[]; body=str "barA"};
+  tparse "string_parse_emoji_escape" "\"\xF0\x9F\x98\x82\"" {statements=[]; body=str "😂"};
+  tparse "string_parse_emoji_literal" "\"💯\"" {statements=[]; body=str "💯"};
 
   t "string1" "\"foo\"" "\"foo\"";
   t "string2" "\"💯\"" "\"💯\"";
