@@ -5,6 +5,55 @@ open Dyp
 open Parsetree
 open Ast_helper
 
+let symbol_rloc dyp = {
+  loc_start = dyp.symbol_start_pos ();
+  loc_end = dyp.symbol_end_pos ();
+  loc_ghost = false;
+}
+
+let symbol_gloc dyp = {
+  loc_start = dyp.symbol_start_pos ();
+  loc_end = dyp.symbol_end_pos ();
+  loc_ghost = true;
+}
+
+let rhs_loc dyp n = {
+  loc_start = dyp.rhs_start_pos n;
+  loc_end = dyp.rhs_end_pos n;
+  loc_ghost = false;
+}
+
+let fix_block_mapper =
+  let open Ast_mapper in
+  let super = default_mapper in
+  let expr mapper ({pexp_desc; _} as e) =
+    match pexp_desc with
+    | PExpBlock(elts) ->
+      let elts = List.map (mapper.expr mapper) elts in
+      let pre, last = List.fold_left (fun (acc_l, acc_last) cur ->
+          match acc_last with
+          | None -> (acc_l, Some cur)
+          | Some e -> (e::acc_l, Some cur)) ([], None) elts in
+      let pre = List.rev pre in
+      let last = Option.get last in
+      let fixed = List.fold_right (fun ({pexp_desc; pexp_loc; _} as e) acc ->
+          match pexp_desc with
+          | PExpLet(r, vbs, {pexp_desc=PExpNull}) ->
+            [{e with pexp_desc=PExpLet(r, vbs, Ast_helper.Exp.block ~loc:pexp_loc acc)}]
+          | _ -> e::acc) pre [last] in
+      (match fixed with
+       | [x] -> x
+       | _ -> {e with pexp_desc=PExpBlock(fixed)})
+    | _ -> super.expr mapper e in
+  {super with expr}
+
+let fix_blocks ({statements; body} as prog) =
+  let open Ast_mapper in
+  {prog with
+   statements=List.map (fix_block_mapper.toplevel fix_block_mapper) statements;
+   body=fix_block_mapper.expr fix_block_mapper body}
+
+
 let mkid ns =
   let help ns =
     let rec help ns (acc_ident, acc_str) =
@@ -17,10 +66,10 @@ let mkid ns =
       | n::tl -> help tl (None, n) in
   mkloc @@ help ns
 
-let mkstr s = mkloc s (symbol_rloc())
+let mkstr dyp s = mkloc s (symbol_rloc dyp)
 
 let make_program statements body =
-  {statements; body}
+  fix_blocks {statements; body}
 
 }
 
@@ -66,24 +115,24 @@ prim1 :
   | ISTUPLE { IsTuple }
 
 binop_expr:
-  | expr(<=pp) PLUS      expr(<pp) { Exp.prim2 Plus $1 $3 }
-  | expr(<=pp) MINUS     expr(<pp) { Exp.prim2 Minus $1 $3 }
-  | expr(<=pt) TIMES     expr(<pt) { Exp.prim2 Times $1 $3 }
-  | expr(<=pc) EQEQ      expr(<pc) { Exp.prim2 Eq $1 $3 }
-  | expr(<=pc) LESS      expr(<pc) { Exp.prim2 Less $1 $3 }
-  | expr(<=pc) GREATER   expr(<pc) { Exp.prim2 Greater $1 $3 }
-  | expr(<=pc) LESSEQ    expr(<pc) { Exp.prim2 LessEq $1 $3 }
-  | expr(<=pc) GREATEREQ expr(<pc) { Exp.prim2 GreaterEq $1 $3 }
-  | expr(<=pb) AND       expr(<pb) { Exp.prim2 Or $1 $3 }
-  | expr(<=pb) OR        expr(<pb) { Exp.prim2 And $1 $3 }
+  | expr(<=pp) PLUS      expr(<pp) { Exp.prim2 ~loc:(symbol_rloc dyp) Plus $1 $3 }
+  | expr(<=pp) MINUS     expr(<pp) { Exp.prim2 ~loc:(symbol_rloc dyp) Minus $1 $3 }
+  | expr(<=pt) TIMES     expr(<pt) { Exp.prim2 ~loc:(symbol_rloc dyp) Times $1 $3 }
+  | expr(<=pc) EQEQ      expr(<pc) { Exp.prim2 ~loc:(symbol_rloc dyp) Eq $1 $3 }
+  | expr(<=pc) LESS      expr(<pc) { Exp.prim2 ~loc:(symbol_rloc dyp) Less $1 $3 }
+  | expr(<=pc) GREATER   expr(<pc) { Exp.prim2 ~loc:(symbol_rloc dyp) Greater $1 $3 }
+  | expr(<=pc) LESSEQ    expr(<pc) { Exp.prim2 ~loc:(symbol_rloc dyp) LessEq $1 $3 }
+  | expr(<=pc) GREATEREQ expr(<pc) { Exp.prim2 ~loc:(symbol_rloc dyp) GreaterEq $1 $3 }
+  | expr(<=pb) AND       expr(<pb) { Exp.prim2 ~loc:(symbol_rloc dyp) Or $1 $3 }
+  | expr(<=pb) OR        expr(<pb) { Exp.prim2 ~loc:(symbol_rloc dyp) And $1 $3 }
   | expr { $1 }
 
 pattern :
-  | UNDERSCORE { Pat.any() }
-  | ID { Pat.var (mkstr $1) }
-  | LPAREN tuple_patterns RPAREN { Pat.tuple $2 }
+  | UNDERSCORE { Pat.any ~loc:(symbol_rloc dyp) () }
+  | ID { Pat.var ~loc:(symbol_rloc dyp) (mkstr dyp $1) }
+  | LPAREN tuple_patterns RPAREN { Pat.tuple ~loc:(symbol_rloc dyp) $2 }
   | LPAREN pattern RPAREN { $2 }
-  | pattern COLON typ { Pat.constraint_ $1 $3 }
+  | pattern COLON typ { Pat.constraint_ ~loc:(symbol_rloc dyp) $1 $3 }
 
 patterns :
   | pattern [COMMA pattern {$2}]* { $1::$2 }
@@ -94,8 +143,8 @@ tuple_patterns :
 
 typ :
   /* It's a little sad that we can't do `a -> b`, but it makes sense for consistency's sake */
-  | LPAREN typs RPAREN ARROW typ { Typ.arrow $2 $5 }
-  | LPAREN tuple_typs RPAREN { Typ.tuple $2 }
+  | LPAREN typs RPAREN ARROW typ { Typ.arrow ~loc:(symbol_rloc dyp) $2 $5 }
+  | LPAREN tuple_typs RPAREN { Typ.tuple ~loc:(symbol_rloc dyp) $2 }
   | LPAREN typ RPAREN { $2 }
   | typ+ id { Typ.constr $2 $1 }
   | ID { Typ.var $1 }
@@ -108,7 +157,7 @@ tuple_typs :
   | typ [COMMA typ {$2}]+ { $1::$2 }
 
 value_bind :
-  | pattern EQUAL binop_expr { Vb.mk $1 $3 }
+  | pattern EQUAL binop_expr { Vb.mk ~loc:(symbol_rloc dyp) $1 $3 }
 
 value_binds :
   | value_bind [COMMA AND value_bind {$3}]* { $1::$2 }
@@ -117,57 +166,57 @@ import_stmt :
   | IMPORT id { Imp.mk $2 }
 
 data_constructor :
-  | ID { CDecl.singleton (mkstr $1) }
-  | ID LPAREN typs RPAREN { CDecl.tuple (mkstr $1) $3 }
+  | ID { CDecl.singleton ~loc:(symbol_rloc dyp) (mkstr dyp $1) }
+  | ID LPAREN typs RPAREN { CDecl.tuple ~loc:(symbol_rloc dyp) (mkstr dyp $1) $3 }
 
 data_constructors :
   | data_constructor [PIPE data_constructor {$2}]* { $1::$2 }
   | [PIPE data_constructor {$2}]+ { $1 }
 
 data_declaration :
-  | DATA ID* ID EQUAL data_constructors { Dat.mk (mkstr $3) (List.map Typ.var $2) (PDataVariant $5) }
+  | DATA ID* ID EQUAL data_constructors { Dat.mk ~loc:(symbol_rloc dyp) (mkstr dyp $3) (List.map Typ.var $2) (PDataVariant $5) }
 
 prim1_expr :
-  | prim1 LPAREN binop_expr RPAREN { Exp.prim1 $1 $3 }
+  | prim1 LPAREN binop_expr RPAREN { Exp.prim1 ~loc:(symbol_rloc dyp) $1 $3 }
 
 paren_expr :
   | LPAREN binop_expr RPAREN { $2 }
 
 app_expr :
-  | expr LPAREN tuple_exprs RPAREN { Exp.apply $1 $3 }
+  | expr LPAREN tuple_exprs RPAREN { Exp.apply ~loc:(symbol_rloc dyp) $1 $3 }
 
 id :
-  | ID [COLONCOLON ID {$2}]* { (mkid ($1::$2)) (symbol_rloc()) }
+  | ID [COLONCOLON ID {$2}]* { (mkid ($1::$2)) (symbol_rloc dyp) }
 
 simple_expr :
-  | const { Exp.constant $1 }
-  | id { Exp.ident $1 }
-  | LPAREN tuple_exprs RPAREN { Exp.tuple $2 }
+  | const { Exp.constant ~loc:(symbol_rloc dyp) $1 }
+  | id { Exp.ident ~loc:(symbol_rloc dyp) $1 }
+  | LPAREN tuple_exprs RPAREN { Exp.tuple ~loc:(symbol_rloc dyp) $2 }
 
 block_expr :
-  | LBRACE block RBRACE { Exp.block $2 }
+  | LBRACE block RBRACE { Exp.block ~loc:(symbol_rloc dyp) $2 }
 
 lam_expr :
-  | LPAREN patterns RPAREN THICKARROW block_expr { Exp.lambda $2 $5 }
+  | LPAREN patterns RPAREN THICKARROW block_expr { Exp.lambda ~loc:(symbol_rloc dyp) $2 $5 }
 
 maybe_rec :
   | REC? { Option.map_default (fun _ -> Recursive) Nonrecursive $1 }
 
 let_expr :
-  | LET maybe_rec value_binds { Exp.let_ $2 $3 (Exp.block []) }
+  | LET maybe_rec value_binds { Exp.let_ ~loc:(symbol_rloc dyp) $2 $3 (Exp.block []) }
 
 if_expr :
-  | IF binop_expr block_expr { Exp.if_ $2 $3 (Exp.block []) }
-  | IF binop_expr block_expr ELSE block_expr { Exp.if_ $2 $3 $5 }
+  | IF binop_expr block_expr { Exp.if_ ~loc:(symbol_rloc dyp) $2 $3 (Exp.block []) }
+  | IF binop_expr block_expr ELSE block_expr { Exp.if_ ~loc:(symbol_rloc dyp) $2 $3 $5 }
 
 match_branch :
-  | pattern THICKARROW binop_expr { Mb.mk $1 $3 }
+  | pattern THICKARROW binop_expr { Mb.mk ~loc:(symbol_rloc dyp) $1 $3 }
 
 match_branches :
   | [PIPE match_branch {$2}]+ { $1 }
 
 match_expr :
-  | MATCH LPAREN binop_expr RPAREN LBRACE match_branches RBRACE { Exp.match_ $3 $6 }
+  | MATCH LPAREN binop_expr RPAREN LBRACE match_branches RBRACE { Exp.match_ ~loc:(symbol_rloc dyp) $3 $6 }
 
 expr :
   | simple_expr { $1 }
@@ -198,11 +247,22 @@ toplevel_stmts :
 program :
   | toplevel_stmts SEMI EOF { make_program $1 (Exp.null ~loc:dummy_loc ()) }
   | toplevel_stmts SEMI binop_expr EOF { make_program $1 $3 }
+  | binop_expr EOF { make_program [] $1 }
 
 %%
 
 {
-let parse_program t lexbuf = with_default_loc_src symbol_rloc (fun() -> program t lexbuf)
+let parse_program t lexbuf = with_default_loc_src Location.symbol_rloc (fun() -> program t lexbuf)
+
+let print_syntax_error =
+  let open Printf in
+  let open Location in
+  function
+  | Syntax_error -> Some(errorf ~loc:(Location.symbol_rloc()) "Syntax error")
+  | _ -> None
+
+let () =
+  Location.register_error_of_exn print_syntax_error
 }
 
 %mli {

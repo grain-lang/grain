@@ -275,8 +275,8 @@ let test_err include_stdlib args program_str outfile errmsg test_ctxt =
     result
     ~printer:either_printer
     ~cmp: (fun check result ->
-      match check, result with
-      | Left(expect_msg), Left(actual_message) ->
-         String.exists actual_message expect_msg
-      | _ -> false
+        match check, result with
+        | Left(expect_msg), Left(actual_message) ->
+          String.exists actual_message expect_msg
+        | _ -> false
       )

@@ -130,14 +130,9 @@ let all_idents_cases el =
   Hashtbl.fold (fun x () rest -> x :: rest) idents []
 
 
-let constant : Parsetree.constant -> (Asttypes.constant, error) result = function
-  | PConstNumber(n) -> Ok(Const_int n)
-  | _ -> failwith "nyi: constant"
+let constant : Parsetree.constant -> (Asttypes.constant, Checkertypes.error) result = Checkertypes.constant
 
-let constant_or_raise env loc cst =
-  match constant cst with
-  | Ok c -> c
-  | Error err -> raise (Error (loc, env, err))
+let constant_or_raise = Checkertypes.constant_or_raise
 
 
 (* Specific version of type_option, using newty rather than newgenty *)
@@ -543,8 +538,13 @@ and type_function ?in_function loc attrs env ty_expected_explained l caselist =
   in
   let separate = !Grain_utils.Config.principal || Env.has_local_constraints env in
   if separate then begin_def ();
+  let arity = begin match caselist with
+    | [] -> failwith "Impossible: type_function: empty lambda"
+    | {pmb_pat={ppat_desc=PPatTuple(args)}; _}::[] -> List.length args
+    | _ -> failwith "Impossible: type_function: impossible caselist"
+  end in
   let (ty_arg, ty_res) =
-    try filter_arrow env (instance env ty_expected)
+    try filter_arrow arity env (instance env ty_expected)
     with Unify _ ->
       raise(Error(loc_fun, env,
                   Too_many_arguments (in_function <> None,

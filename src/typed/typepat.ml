@@ -295,7 +295,7 @@ and type_pat_aux ~constrs ~labels ~no_existentials ~mode ~explode ~env
         pat_type = expected_ty;
         pat_env = !env }
   | PPatTuple spl ->
-      assert (List.length spl >= 2);
+      (*assert (List.length spl >= 2);*)
       let spl_ann = List.map (fun p -> (p,newvar ())) spl in
       let ty = newty (TTyTuple(List.map snd spl_ann)) in
       unify_pat_types loc !env ty expected_ty;
