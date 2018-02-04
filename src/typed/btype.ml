@@ -127,8 +127,12 @@ let rec iter_abbrev f = function
   | TMemLink rem              -> iter_abbrev f !rem
 
 type type_iterators =
-  { it_value_description: type_iterators -> value_description -> unit;
+  { it_signature: type_iterators -> signature -> unit;
+    it_signature_item: type_iterators -> signature_item -> unit;
+    it_value_description: type_iterators -> value_description -> unit;
     it_type_declaration: type_iterators -> type_declaration -> unit;
+    it_module_declaration: type_iterators -> module_declaration -> unit;
+    it_modtype_declaration: type_iterators -> modtype_declaration -> unit;
     it_module_type: type_iterators -> module_type -> unit;
     it_type_kind: type_iterators -> type_kind -> unit;
     it_do_type_expr: type_iterators -> type_expr -> unit;
@@ -144,21 +148,34 @@ let map_type_expr_cstr_args f = function
   | TConstrTuple tl -> TConstrTuple (List.map f tl)
 
 let iter_type_expr_kind f = function
+  | TDataAbstract -> ()
   | TDataVariant cstrs -> List.iter (fun cd ->
       iter_type_expr_cstr_args f cd.cd_args)
       cstrs
 
 
 let type_iterators =
-  let it_value_description it vd =
+  let it_signature it =
+    List.iter (it.it_signature_item it)
+  and it_signature_item it = function
+    | TSigValue (_, vd)     -> it.it_value_description it vd
+    | TSigType (_, td, _)   -> it.it_type_declaration it td
+    | TSigModule (_, md, _) -> it.it_module_declaration it md
+    | TSigModType (_, mtd)  -> it.it_modtype_declaration it mtd
+  and it_value_description it vd =
     it.it_type_expr it vd.val_type
   and it_type_declaration it td =
     List.iter (it.it_type_expr it) td.type_params;
     it.it_type_kind it td.type_kind
   and it_module_type it = function
     | TModIdent p -> it.it_path p
+    | TModSignature sg -> it.it_signature it sg
   and it_type_kind it kind =
     iter_type_expr_kind (it.it_type_expr it) kind
+  and it_module_declaration it md =
+    it.it_module_type it md.md_type
+  and it_modtype_declaration it mtd =
+    may (it.it_module_type it) mtd.mtd_type
   and it_do_type_expr it ty =
     iter_type_expr (it.it_type_expr it) ty;
     match ty.desc with
@@ -167,9 +184,12 @@ let type_iterators =
     | _ -> ()
   and it_path _p = ()
   in
-  { it_path; it_type_expr = it_do_type_expr; it_do_type_expr;
+  { it_signature; it_signature_item;
+    it_path; it_type_expr = it_do_type_expr; it_do_type_expr;
     it_type_kind; it_module_type;
-    it_type_declaration; it_value_description; }
+    it_type_declaration; it_value_description;
+    it_module_declaration; it_modtype_declaration;
+  }
 
 let copy_commu c =
   if commu_repr c = TComOk then TComOk else TComLink (ref TComUnknown)

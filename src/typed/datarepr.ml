@@ -119,4 +119,5 @@ let find_constr_by_tag tag cstrlist =
 let constructors_of_type ty_path decl =
   match decl.type_kind with
   | TDataVariant cstrs -> constructor_descrs ty_path decl cstrs
+  | TDataAbstract -> []
 

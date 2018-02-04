@@ -189,7 +189,8 @@ let type_declaration s decl =
       type_arity = decl.type_arity;
       type_kind =
         begin match decl.type_kind with
-        | TDataVariant cstrs ->
+          | TDataAbstract -> TDataAbstract
+          | TDataVariant cstrs ->
             TDataVariant (List.map (constructor_declaration s) cstrs)
         end;
       type_manifest =
@@ -220,6 +221,9 @@ let rec rename_bound_idents s idents = function
   | TSigModule(id, _, _) :: sg ->
       let id' = Ident.rename id in
       rename_bound_idents (add_module id (PIdent id') s) (id' :: idents) sg
+  | TSigModType(id, _) :: sg ->
+      let id' = Ident.rename id in
+      rename_bound_idents (add_modtype id (TModIdent(PIdent id')) s) (id' :: idents) sg
   | (TSigValue(id, _)) :: sg ->
       let id' = Ident.rename id in
       rename_bound_idents s (id' :: idents) sg
@@ -251,6 +255,8 @@ and signature_component s comp newid =
       TSigType(newid, type_declaration s d, rs)
   | TSigModule(_id, d, rs) ->
       TSigModule(newid, module_declaration s d, rs)
+  | TSigModType(_id, d) ->
+      TSigModType(newid, modtype_declaration s d)
 
 and module_declaration s decl =
   {
