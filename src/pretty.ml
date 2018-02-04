@@ -1,4 +1,4 @@
-open Types
+open Legacy_types
 open Printf
 open Format
 open Lexing
@@ -13,7 +13,6 @@ let string_of_op1 op =
   match op with
   | Add1 -> "add1"
   | Sub1 -> "sub1"
-  | PrintStack -> "printStack"
   | Not -> "!"
   | IsNum -> "isnum"
   | IsBool -> "isbool"
@@ -23,7 +22,6 @@ let name_of_op1 op =
   match op with
   | Add1 -> "Add1"
   | Sub1 -> "Sub1"
-  | PrintStack -> "PrintStack"
   | Not -> "Not"
   | IsNum -> "IsNum"
   | IsBool -> "IsBool"

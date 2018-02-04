@@ -1,10 +1,11 @@
 open Expr
 open Anf
-open Well_formedness
 open Codegen
-open Types
+open Legacy_types
 open Resolve_scope
 open Optimize
+open Grain_parsing
+open Grain_typed
 
 type compile_options = {
   type_check: bool;
@@ -55,75 +56,60 @@ let opts_to_optimization_settings opts = {
 let lib_include_dirs opts =
   (if opts.use_stdlib then Option.map_default (fun x -> [x]) [] (Grain_stdlib.stdlib_directory()) else []) @ opts.include_dirs
 
-let compile_module (opts: compile_options) (p : sourcespan program) =
-  match Grain_stdlib.load_libraries initial_env (lib_include_dirs opts) (Desugar.desugar_program p) with
+let compile_module (opts: compile_options) (p : Parsetree.parsed_program) =
+  match Grain_stdlib.load_libraries initial_env (lib_include_dirs opts) p with
   | Left(errs) -> Left(errs)
   | Right(full_p) ->
     Printf.eprintf "Bouta tc\n";
-    let wf_prog = well_formed full_p false initial_env in
-    match wf_prog with
-    | _::_ -> Left(wf_prog)
-    | _ ->
+    Well_formedness.check_well_formedness full_p;
     Printf.eprintf "I am well formed";
-      let tagged = tag full_p in
-      Type_check.type_check tagged;
-      Printf.eprintf "did it\n";
-      let pre_anfed = Anf.pre_anf tagged in
-      let anfed = atag @@ Anf.anf pre_anfed in
-      let renamed = resolve_scope anfed initial_env in
-      let optimized =
-        if opts.optimizations_enabled then
-          optimize renamed (opts_to_optimization_settings opts)
-        else
-          renamed in
-      Right(compile_aprog optimized)
+    let typed_mod, signature, env = Typemod.type_module Env.empty full_p in
+    Printf.eprintf "did it\n";
+    let anfed = atag @@ Anf.anf_typed typed_mod in
+    let renamed = resolve_scope anfed initial_env in
+    let optimized =
+      if opts.optimizations_enabled then
+        optimize renamed (opts_to_optimization_settings opts)
+      else
+        renamed in
+    Right(compile_aprog optimized)
 
 let compile_to_string opts p =
   match compile_module opts p with
   | Left(v) -> Left(v)
   | Right(m) -> Right(module_to_string m)
 
-let compile_to_anf (opts : compile_options) (p : sourcespan program) =
-  match Grain_stdlib.load_libraries initial_env (lib_include_dirs opts) (Desugar.desugar_program p) with
+let compile_to_anf (opts : compile_options) (p : Parsetree.parsed_program) =
+  match Grain_stdlib.load_libraries initial_env (lib_include_dirs opts) p with
   | Left(errs) -> Left(errs)
   | Right(full_p) ->
-    let wf_prog = well_formed full_p false initial_env in
-    match wf_prog with
-    | _::_ -> Left(wf_prog)
-    | _ ->
-      let tagged = tag full_p in
-      Printf.eprintf "Bouta tc\n";
-      Type_check.type_check tagged;
-      Printf.eprintf "did it\n";
-      let pre_anfed = Anf.pre_anf tagged in
-      let anfed = atag @@ Anf.anf pre_anfed in
-      Right(anfed)
+    Well_formedness.check_well_formedness full_p;
+    Printf.eprintf "Bouta tc\n";
+    let typed_mod, signature, env = Typemod.type_module Env.empty full_p in
+    Printf.eprintf "did it\n";
+    let anfed = atag @@ Anf.anf_typed typed_mod in
+    Right(anfed)
 
 (* like compile_to_anf, but performs scope resolution and optimization. *)
-let compile_to_final_anf (opts : compile_options) (p : sourcespan program) =
-  match Grain_stdlib.load_libraries initial_env (lib_include_dirs opts) (Desugar.desugar_program p) with
+let compile_to_final_anf (opts : compile_options) (p : Parsetree.parsed_program) =
+  match Grain_stdlib.load_libraries initial_env (lib_include_dirs opts) p with
   | Left(errs) -> Left(errs)
   | Right(full_p) ->
-    let wf_prog = well_formed full_p false initial_env in
-    match wf_prog with
-    | _::_ -> Left(wf_prog)
-    | _ ->
-      let tagged = tag full_p in
-      Printf.eprintf "Bouta tc\n";
-      Type_check.type_check tagged;
-      Printf.eprintf "did it\n";
-      let pre_anfed = Anf.pre_anf tagged in
-      let anfed = atag @@ Anf.anf pre_anfed in
-      let renamed = resolve_scope anfed initial_env in
-      let optimized =
-        if opts.optimizations_enabled then
-          optimize renamed (opts_to_optimization_settings opts)
-        else
-          renamed in
-      Right(optimized)
+    Well_formedness.check_well_formedness full_p;
+    Printf.eprintf "I am well formed";
+    let typed_mod, signature, env = Typemod.type_module Env.empty full_p in
+    Printf.eprintf "did it\n";
+    let anfed = atag @@ Anf.anf_typed typed_mod in
+    let renamed = resolve_scope anfed initial_env in
+    let optimized =
+      if opts.optimizations_enabled then
+        optimize renamed (opts_to_optimization_settings opts)
+      else
+        renamed in
+    Right(optimized)
 
 
-let anf = Anf.anf
+let anf = Anf.anf_typed
 
 let free_vars anfed =
   Ast_utils.BindingSet.elements @@ Ast_utils.free_vars anfed

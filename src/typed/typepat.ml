@@ -439,7 +439,7 @@ let add_pattern_variables ?check ?check_as env =
    get_ref module_variables, pv)
 
 let type_pattern ~lev env spat scope expected_ty =
-  reset_pattern scope true;
+  reset_pattern (*scope*) None true;
   let new_env = ref env in
   let pat = type_pat ~allow_existentials:true ~lev new_env spat expected_ty in
   let new_env, unpacks, _ =
@@ -449,7 +449,7 @@ let type_pattern ~lev env spat scope expected_ty =
   (pat, new_env, get_ref pattern_force, unpacks)
 
 let type_pattern_list env spatl scope expected_tys allow =
-  reset_pattern scope allow;
+  reset_pattern (*scope*) None allow;
   let new_env = ref env in
   let type_pat (attrs, pat) ty =
     (*Builtin_attributes.warning_scope ~ppwarning:false attrs

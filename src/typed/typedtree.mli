@@ -138,8 +138,8 @@ and match_branch = {
 }
 
 type import_declaration = {
-  pimp_mod: Identifier.t Location.loc;
-  pimp_loc: Location.t;
+  timp_mod: Identifier.t Location.loc;
+  timp_loc: Location.t;
 }
 
 type toplevel_stmt_desc =
@@ -176,4 +176,4 @@ val alpha_pat: (Ident.t * Ident.t) list -> pattern -> pattern
 val mknoloc: 'a -> 'a Asttypes.loc
 val mkloc: 'a -> Location.t -> 'a Asttypes.loc
 
-val pat_bound_idents: pattern -> Ident.t list
+val pattern_bound_idents: pattern -> Ident.t list

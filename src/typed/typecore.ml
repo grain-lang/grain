@@ -58,7 +58,6 @@ type error =
   | Exception_pattern_below_toplevel
   | Inlined_record_escape
   | Inlined_record_expected
-  | Unrefuted_pattern of pattern
   | Invalid_extension_constructor_payload
   | Not_an_extension_constructor
   | Literal_overflow of string
@@ -1011,7 +1010,7 @@ and type_let ?(check = fun s -> Warnings.Unused_var s)
                          some_used := true
                     )
                )
-               (Typedtree.pat_bound_idents pat);
+               (Typedtree.pattern_bound_idents pat);
              pat, Some slot
          )*))
       attrs_list
@@ -1092,6 +1091,11 @@ and type_let ?(check = fun s -> Warnings.Unused_var s)
       l;
   (l, new_env, unpacks)
 
+
+let check_recursive_bindings env vbs =
+  (* TODO: Implement *)
+  ()
+
 (* Typing of toplevel bindings *)
 let type_binding env rec_flag spat_sexp_list scope =
   Typetexp.reset_type_variables();
@@ -1107,3 +1111,16 @@ let type_let env rec_flag spat_sexp_list scope =
     type_let env rec_flag spat_sexp_list scope false in
   (pat_exp_list, new_env)
 
+let type_expression env sexp =
+  Typetexp.reset_type_variables();
+  begin_def();
+  let exp = type_exp env sexp in
+  end_def();
+  if not (is_nonexpansive exp) then generalize_expansive env exp.exp_type;
+  generalize exp.exp_type;
+  exp
+
+(* Drop ?recarg *)
+let type_expect ?in_function env e ty = type_expect ?in_function env e ty
+let type_exp env e = type_exp env e
+let type_arguments env es t1s t2s = type_arguments env es t1s t2s

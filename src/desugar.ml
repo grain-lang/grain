@@ -1,4 +1,4 @@
-open Types
+open Legacy_types
 
 let desugar_program : 'a. 'a program -> 'a program = fun p ->
   let {statements; body} = p in
