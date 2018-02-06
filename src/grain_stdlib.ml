@@ -36,4 +36,4 @@ let stdlib_directory() : string option =
 
 
 let load_libraries (initial_env : sourcespan envt) (include_dirs : string list) (prog : Parsetree.parsed_program) =
-  Right(prog)
+  prog

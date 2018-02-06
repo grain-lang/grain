@@ -461,3 +461,75 @@ let type_pattern_list env spatl scope expected_tys allow =
   let patl = List.map2 type_pat spatl expected_tys in
   let new_env, unpacks, pv = add_pattern_variables !new_env in
   (patl, new_env, get_ref pattern_force, unpacks, pv)
+
+open Format
+open Printtyp
+let report_type_expected_explanation expl ppf =
+  match expl with
+  | If_conditional ->
+      fprintf ppf "the condition of an if-statement"
+  | If_no_else_branch ->
+      fprintf ppf "the result of a conditional with no else branch"
+  | While_loop_conditional ->
+      fprintf ppf "the condition of a while-loop"
+  | While_loop_body ->
+      fprintf ppf "the body of a while-loop"
+  | For_loop_start_index ->
+      fprintf ppf "a for-loop start index"
+  | For_loop_stop_index ->
+      fprintf ppf "a for-loop stop index"
+  | For_loop_body ->
+      fprintf ppf "the body of a for-loop"
+  | Assert_condition ->
+      fprintf ppf "the condition of an assertion"
+  | Sequence_left_hand_side ->
+      fprintf ppf "the left-hand side of a sequence"
+let report_type_expected_explanation_opt expl ppf =
+  match expl with
+  | None -> ()
+  | Some expl ->
+      fprintf ppf "@ because it is in %t"
+        (report_type_expected_explanation expl)
+let report_error env ppf = function
+  | ConstructorArityMismatch(lid, expected, provided) ->
+    fprintf ppf
+      "@[The constructor %a@ expects %i argument(s),@ \
+       but is applied here to %i argument(s)@]"
+      identifier lid expected provided
+  | PatternTypeClash(trace) ->
+    report_unification_error ppf env trace
+      (function ppf ->
+         fprintf ppf "This pattern matches values of type")
+      (function ppf ->
+         fprintf ppf "but a pattern was expected which matches values of type")
+  | ExprTypeClash(trace, explanation) ->
+    report_unification_error ppf env trace
+      ~type_expected_explanation:(report_type_expected_explanation_opt explanation)
+      (function ppf ->
+         fprintf ppf "This expression has type")
+      (function ppf ->
+         fprintf ppf "but a expression was expected of type")
+  | RecursiveLocalConstraint(trace) ->
+    report_unification_error ppf env trace
+      (function ppf ->
+         fprintf ppf "Recursive local constraint when unifying")
+      (function ppf -> fprintf ppf "with")
+  | UnexpectedExistential ->
+    fprintf ppf "Unexpected existential"
+  | MultiplyBoundVariable(name) ->
+    fprintf ppf "Variable %s is bound several times in this matching" name
+  | ModulesNotAllowed ->
+    fprintf ppf "Modules are not allowed in this pattern."
+
+let report_error env ppf err =
+  wrap_printing_env env (fun () -> report_error env ppf err)
+let () =
+  Location.register_error_of_exn
+    (function
+      | Error (loc, env, err) ->
+        Some (Location.error_of_printer loc (report_error env) err)
+      | Error_forward err ->
+        Some err
+      | _ ->
+        None
+    )

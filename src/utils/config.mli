@@ -22,6 +22,16 @@ val recursive_types : bool ref
 val strict_sequence : bool ref
 (** Whether non-terminal block expressions should be forced to return void *)
 
+val parser_debug_level : int ref
+(** The debugging level to use for the parser. Primarily intended for Grain compiler developers. *)
+
+val debug : bool ref
+(** Whether debugging information should be included in the compiled output. *)
+
+val unsound_optimizations : bool ref
+(** Whether optimizations which could elide runtime errors should be performed. *)
+
+
 type config
 (** Abstract type representing a saved set of configuration options *)
 
@@ -36,3 +46,6 @@ val reset_config : unit -> unit
 
 val with_config : config -> (unit -> 'a) -> 'a
 (** Runs the given thunk with the given configuration *)
+
+val with_cli_options : 'a -> 'a Cmdliner.Term.t
+(** Wraps the given thunk with extractors for compiler command-line options *)
