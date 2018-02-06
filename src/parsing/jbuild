@@ -11,5 +11,5 @@
 (rule
  ((targets (parser.ml))
   (deps (parser.dyp))
-  (action (run dypgen --no-mli --Werror ${<}))))
+  (action (run dypgen --merge-warning --no-mli --Werror ${<}))))
 

@@ -74,7 +74,7 @@ let print_errors exns =
 let parse name lexbuf =
   try 
     lexbuf.lex_curr_p <- { lexbuf.lex_curr_p with pos_fname = name };
-    fst @@ List.hd @@ Grain_parsing.Parser.program Grain_parsing.Lexer.token lexbuf
+    fst @@ List.hd @@ Grain_parsing.Parser.parse_program Grain_parsing.Lexer.token lexbuf
   with
   | Failure x when String.equal x "lexing: empty token" ->
     failwith (sprintf "lexical error at %s"
@@ -123,17 +123,11 @@ let make_tmpfiles name =
 
 let compile_file_to_assembly name include_stdlib input_file output_file =
   
-  let compiled = compile_file_to_string name include_stdlib input_file in
+  let asm = compile_file_to_string name include_stdlib input_file in
   let outstream = open_out output_file in
-  match compiled with
-  | Left(errs) ->
-    Left(ExtString.String.join "\n" (print_errors errs))
-  | Right(asm) ->
-    begin
-      output_string outstream asm;
-      close_out outstream;
-      Right(asm)
-    end
+  output_string outstream asm;
+  close_out outstream;
+  asm
 
 let safe_run_process prog args =
   let (pstdout, pstdout_name, pstderr, pstderr_name, pstdin) = make_tmpfiles ("proc_" ^ (Filename.basename prog)) in
@@ -166,7 +160,7 @@ let assemble_object_file asm_file debug object_name =
   let oc = open_out_bin object_name in
   output_string oc @@ get_encoded (contents.Wasm.Source.it);
   close_out oc;
-  Right(""), (fun() -> ())
+  "", (fun() -> ())
 
 let compile_assembly_to_binary asm debug outfile_name =
   let asm_tmp_filename = if debug then outfile_name ^ ".wast" else (temp_file (Filename.basename outfile_name) ".wast") in
@@ -178,22 +172,30 @@ let compile_assembly_to_binary asm debug outfile_name =
 
 type result = (string, string) either
 
-let run_no_vg (program_name : string) args : result =
+let run_no_vg (program_name : string) args : string =
   let (rstdout, rstdout_name, rstderr, rstderr_name, rstdin) = make_tmpfiles "run" in
   let ran_pid = Unix.create_process (program_name ^ ".run") (Array.of_list ([""] @ args)) rstdin rstdout rstderr in
   let (_, status) = waitpid [] ran_pid in
-  let result = match status with
-    | WEXITED 0 -> Right(string_of_file rstdout_name)
-    | WEXITED n -> Left(sprintf "Error %d: %s" n (string_of_file rstderr_name))
-    | WSIGNALED n ->
-       Left(sprintf "Signalled with %d while running %s." n program_name)
-    | WSTOPPED n ->
-       Left(sprintf "Stopped with signal %d while running %s." n program_name) in
+  let result =
+    (try
+       (match status with
+        | WEXITED 0 -> string_of_file rstdout_name
+        | WEXITED n -> failwith (sprintf "Error %d: %s" n (string_of_file rstderr_name))
+        | WSIGNALED n ->
+          failwith (sprintf "Signalled with %d while running %s." n program_name)
+        | WSTOPPED n ->
+          failwith (sprintf "Stopped with signal %d while running %s." n program_name))
+     with exn ->
+       begin
+         List.iter close [rstdout; rstderr; rstdin];
+         List.iter unlink [rstdout_name; rstderr_name];
+         raise exn
+       end) in
   List.iter close [rstdout; rstderr; rstdin];
   List.iter unlink [rstdout_name; rstderr_name];
   result
 
-let run_asm asm_string out (runner : string -> string list  -> result) args =
+let run_asm asm_string out (runner : string -> string list  -> string) args =
   let outfile = open_out (out ^ ".wast") in
   fprintf outfile "%s" asm_string;
   close_out outfile;
@@ -201,20 +203,21 @@ let run_asm asm_string out (runner : string -> string list  -> result) args =
   let built_pid = Unix.create_process "make" (Array.of_list [""; out ^ ".run"]) bstdin bstdout bstderr in
   let (_, status) = waitpid [] built_pid in
 
-  let try_running = match status with
-    | WEXITED 0 ->
-       Right(string_of_file bstdout_name)
-    | WEXITED n ->
-       Left(sprintf "Finished with error while building %s:\n%s\n%s" out (string_of_file bstdout_name) (string_of_file bstderr_name))
-    | WSIGNALED n ->
-       Left(sprintf "Signalled with %d while building %s." n out)
-    | WSTOPPED n ->
-       Left(sprintf "Stopped with signal %d while building %s." n out) in
-
-  let result = match try_running with
-    | Left(_) -> try_running
-    | Right(msg) ->
-       runner out args in
+  (try
+     (match status with
+      | WEXITED 0 -> ignore(string_of_file bstdout_name)
+      | WEXITED n -> failwith (sprintf "Error %d: %s" n (string_of_file bstderr_name))
+      | WSIGNALED n ->
+        failwith (sprintf "Signalled with %d while running %s." n out)
+      | WSTOPPED n ->
+        failwith (sprintf "Stopped with signal %d while running %s." n out))
+   with exn ->
+     begin
+       List.iter close [bstdout; bstderr; bstdin];
+       List.iter unlink [bstdout_name; bstderr_name];
+       raise exn
+     end);
+  let result = runner out args in
 
   List.iter close [bstdout; bstderr; bstdin];
   List.iter unlink [bstdout_name; bstderr_name];
@@ -222,61 +225,39 @@ let run_asm asm_string out (runner : string -> string list  -> result) args =
 
   
 let run include_stdlib p out runner args =
-  let maybe_module =
-    try compile_module include_stdlib p with
-    | Failure s -> Left([Failure("Compile error: " ^ s)])
-    | err -> Left([Failure("Unexpected compile error: " ^ Printexc.to_string err)])
-  in    
-  match maybe_module with
-  | Left(errs) -> Left(ExtString.String.join "\n" (print_errors errs))
-  | Right(m) ->
-    try
-      Right(Wasm_runner.run_wasm m)
-    with
-    | Wasm_runner.GrainRuntimeError(msg) -> Left(msg)
+  let m = compile_module include_stdlib p in
+  Wasm_runner.run_wasm m
 
 let run_anf p out runner args =
-  let maybe_asm_string =
-    try Right(compile_prog p) with
-    | Failure s -> Left([Failure("Compile error: " ^ s)])
-    | err -> Left([Failure("Unexpected compile error: " ^ Printexc.to_string err)])
-  in
-  match maybe_asm_string with
-  | Left(errs) -> Left(ExtString.String.join "\n" (print_errors errs))
-  | Right(asm_string) ->
-     run_asm asm_string out runner args
+  let asm_string = compile_prog p in
+  run_asm asm_string out runner args
 
 
 let compile_file_to_binary name include_stdlib debug input_file output_file =
-  let compiled = compile_file_to_string name include_stdlib input_file in
-  match compiled with
-  | Left(errs) -> Left(ExtString.String.join "\n" (print_errors errs))
-  | Right(asm) ->
-    compile_assembly_to_binary asm debug output_file
+  let asm = compile_file_to_string name include_stdlib input_file in
+  compile_assembly_to_binary asm debug output_file
 
 
 let test_run include_stdlib args program_str outfile expected test_ctxt =
   let full_outfile = "output/" ^ outfile in
   let program = parse_string outfile program_str in
   let result = run include_stdlib program full_outfile run_no_vg args in
-  assert_equal (Right(expected ^ "\n")) result ~printer:either_printer
+  assert_equal (expected ^ "\n") result ~printer:identity
 
 let test_run_anf include_stdlib args program_anf outfile expected test_ctxt =
   let full_outfile = "output/" ^ outfile in
   let result = run_anf program_anf full_outfile run_no_vg args in
-  assert_equal (Right(expected ^ "\n")) result ~printer:either_printer
+  assert_equal (expected ^ "\n") result ~printer:identity
 
 let test_err include_stdlib args program_str outfile errmsg test_ctxt =
   let full_outfile = "output/" ^ outfile in
   let program = parse_string outfile program_str in
-  let result = run include_stdlib program full_outfile run_no_vg args in
+  let result = try
+      run include_stdlib program full_outfile run_no_vg args
+    with exn -> Printexc.to_string exn
+  in
   assert_equal
-    (Left(errmsg))
+    errmsg
     result
-    ~printer:either_printer
-    ~cmp: (fun check result ->
-        match check, result with
-        | Left(expect_msg), Left(actual_message) ->
-          String.exists actual_message expect_msg
-        | _ -> false
-      )
+    ~cmp: (fun check result -> String.exists result check)
+    ~printer:identity

@@ -5,23 +5,52 @@ open Dyp
 open Parsetree
 open Ast_helper
 
-let symbol_rloc dyp = {
-  loc_start = dyp.symbol_start_pos ();
-  loc_end = dyp.symbol_end_pos ();
-  loc_ghost = false;
-}
+(* Used for error messages and as a default, in case anything slips through
+   without an explicit loc. *)
+let last_loc = ref Location.dummy_loc
+let dyp_merge = keep_all
 
-let symbol_gloc dyp = {
-  loc_start = dyp.symbol_start_pos ();
-  loc_end = dyp.symbol_end_pos ();
-  loc_ghost = true;
-}
+let last_state_printer = ref (fun () -> ())
 
-let rhs_loc dyp n = {
-  loc_start = dyp.rhs_start_pos n;
-  loc_end = dyp.rhs_end_pos n;
-  loc_ghost = false;
-}
+let when_debug ?(n=0) thunk =
+  if !Grain_utils.Config.parser_debug_level > n then
+    thunk()
+
+let debug_print_state () =
+  when_debug !last_state_printer
+
+let symbol_rloc dyp =
+  let ret = {
+    loc_start = dyp.symbol_start_pos ();
+    loc_end = dyp.symbol_end_pos ();
+    loc_ghost = false;
+  } in
+  last_state_printer := (fun () -> dyp.print_state stderr);
+  when_debug ~n:1 !last_state_printer;
+  last_loc := ret;
+  ret
+
+let symbol_gloc dyp =
+  let ret = {
+    loc_start = dyp.symbol_start_pos ();
+    loc_end = dyp.symbol_end_pos ();
+    loc_ghost = true;
+  } in
+  last_state_printer := (fun () -> dyp.print_state stderr);
+  when_debug ~n:1 !last_state_printer;
+  last_loc := ret;
+  ret
+
+let rhs_loc dyp n =
+  let ret = {
+    loc_start = dyp.rhs_start_pos n;
+    loc_end = dyp.rhs_end_pos n;
+    loc_ghost = false;
+  } in
+  last_state_printer := (fun () -> dyp.print_state stderr);
+  when_debug ~n:1 !last_state_printer;
+  last_loc := ret;
+  ret
 
 let fix_block_mapper =
   let open Ast_mapper in
@@ -73,12 +102,12 @@ let make_program statements body =
 
 }
 
-%relation pt<pp<pb<pc
+%relation pt<pp<pb<pc<pe
 
 %token <int> NUM
 %token <string> ID
 %token <string> STRING
-%token LBRACK RBRACK LPAREN RPAREN LBRACE RBRACE
+%token LBRACK RBRACK LPAREN LPARENNOSPACE RPAREN LBRACE RBRACE
 %token COMMA SEMI
 %token THICKARROW ARROW PIPE
 %token EQEQ LESS GREATER LESSEQ GREATEREQ
@@ -115,17 +144,17 @@ prim1 :
   | ISTUPLE { IsTuple }
 
 binop_expr:
-  | expr(<=pp) PLUS      expr(<pp) { Exp.prim2 ~loc:(symbol_rloc dyp) Plus $1 $3 }
-  | expr(<=pp) MINUS     expr(<pp) { Exp.prim2 ~loc:(symbol_rloc dyp) Minus $1 $3 }
-  | expr(<=pt) TIMES     expr(<pt) { Exp.prim2 ~loc:(symbol_rloc dyp) Times $1 $3 }
-  | expr(<=pc) EQEQ      expr(<pc) { Exp.prim2 ~loc:(symbol_rloc dyp) Eq $1 $3 }
-  | expr(<=pc) LESS      expr(<pc) { Exp.prim2 ~loc:(symbol_rloc dyp) Less $1 $3 }
-  | expr(<=pc) GREATER   expr(<pc) { Exp.prim2 ~loc:(symbol_rloc dyp) Greater $1 $3 }
-  | expr(<=pc) LESSEQ    expr(<pc) { Exp.prim2 ~loc:(symbol_rloc dyp) LessEq $1 $3 }
-  | expr(<=pc) GREATEREQ expr(<pc) { Exp.prim2 ~loc:(symbol_rloc dyp) GreaterEq $1 $3 }
-  | expr(<=pb) AND       expr(<pb) { Exp.prim2 ~loc:(symbol_rloc dyp) Or $1 $3 }
-  | expr(<=pb) OR        expr(<pb) { Exp.prim2 ~loc:(symbol_rloc dyp) And $1 $3 }
-  | expr { $1 }
+  | binop_expr(<=pp) PLUS      binop_expr(<pp) { prerr_string "\nbinop_expr_plus\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); Exp.prim2 ~loc:(symbol_rloc dyp) Plus $1 $3 } pp
+  | binop_expr(<=pp) MINUS     binop_expr(<pp) { Exp.prim2 ~loc:(symbol_rloc dyp) Minus $1 $3 } pp
+  | binop_expr(<=pt) TIMES     binop_expr(<pt) { Exp.prim2 ~loc:(symbol_rloc dyp) Times $1 $3 } pt
+  | binop_expr(<=pc) EQEQ      binop_expr(<pc) { Exp.prim2 ~loc:(symbol_rloc dyp) Eq $1 $3 } pc
+  | binop_expr(<=pc) LESS      binop_expr(<pc) { Exp.prim2 ~loc:(symbol_rloc dyp) Less $1 $3 } pc
+  | binop_expr(<=pc) GREATER   binop_expr(<pc) { Exp.prim2 ~loc:(symbol_rloc dyp) Greater $1 $3 } pc
+  | binop_expr(<=pc) LESSEQ    binop_expr(<pc) { Exp.prim2 ~loc:(symbol_rloc dyp) LessEq $1 $3 } pc
+  | binop_expr(<=pc) GREATEREQ binop_expr(<pc) { Exp.prim2 ~loc:(symbol_rloc dyp) GreaterEq $1 $3 } pc
+  | binop_expr(<=pb) AND       binop_expr(<pb) { Exp.prim2 ~loc:(symbol_rloc dyp) And $1 $3 } pb
+  | binop_expr(<=pb) OR        binop_expr(<pb) { Exp.prim2 ~loc:(symbol_rloc dyp) Or $1 $3 } pb
+  | expr { prerr_string "\nbinop_expr\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); $1 } pe
 
 pattern :
   | UNDERSCORE { Pat.any ~loc:(symbol_rloc dyp) () }
@@ -160,7 +189,7 @@ value_bind :
   | pattern EQUAL binop_expr { Vb.mk ~loc:(symbol_rloc dyp) $1 $3 }
 
 value_binds :
-  | value_bind [COMMA AND value_bind {$3}]* { $1::$2 }
+  | value_bind [COMMA value_bind {$2}]* { $1::$2 }
 
 import_stmt :
   | IMPORT id { Imp.mk $2 }
@@ -183,14 +212,14 @@ paren_expr :
   | LPAREN binop_expr RPAREN { $2 }
 
 app_expr :
-  | expr LPAREN tuple_exprs RPAREN { Exp.apply ~loc:(symbol_rloc dyp) $1 $3 }
+  | expr LPAREN tuple_exprs RPAREN { prerr_string "\napp_expr\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); Exp.apply ~loc:(symbol_rloc dyp) $1 $3 }
 
 id :
-  | ID [COLONCOLON ID {$2}]* { (mkid ($1::$2)) (symbol_rloc dyp) }
+  | ID [COLONCOLON ID {$2}]* { prerr_string "\nid\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); (mkid ($1::$2)) (symbol_rloc dyp) }
 
 simple_expr :
   | const { Exp.constant ~loc:(symbol_rloc dyp) $1 }
-  | id { Exp.ident ~loc:(symbol_rloc dyp) $1 }
+  | id { prerr_string "\nsimple_expr\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); Exp.ident ~loc:(symbol_rloc dyp) $1 }
   | LPAREN tuple_exprs RPAREN { Exp.tuple ~loc:(symbol_rloc dyp) $2 }
 
 block_expr :
@@ -219,10 +248,10 @@ match_expr :
   | MATCH LPAREN binop_expr RPAREN LBRACE match_branches RBRACE { Exp.match_ ~loc:(symbol_rloc dyp) $3 $6 }
 
 expr :
-  | simple_expr { $1 }
+  | app_expr    { prerr_string "\nexpr_app_expr\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); $1 }
+  | simple_expr { prerr_string "\nexpr_simple_expr\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); $1 }
   | paren_expr  { $1 }
   | prim1_expr  { $1 }
-  | app_expr    { $1 }
   | block_expr  { $1 }
   | lam_expr    { $1 }
   | let_expr    { $1 }
@@ -252,16 +281,22 @@ program :
 %%
 
 {
-let parse_program t lexbuf = with_default_loc_src Location.symbol_rloc (fun() -> program t lexbuf)
+let parse_program t lexbuf =
+  Dyp.dypgen_verbose := !Grain_utils.Config.parser_debug_level;
+  with_default_loc_src (fun() -> !last_loc) (fun() -> program t lexbuf)
 
 let print_syntax_error =
   let open Printf in
   let open Location in
   function
-  | Syntax_error -> Some(errorf ~loc:(Location.symbol_rloc()) "Syntax error")
+  | Syntax_error -> begin
+      debug_print_state();
+      Some(errorf ~loc:(!last_loc) "Syntax error")
+    end
   | _ -> None
 
 let () =
+  Dyp.dypgen_verbose := !Grain_utils.Config.parser_debug_level;
   Location.register_error_of_exn print_syntax_error
 }
 

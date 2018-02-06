@@ -52,7 +52,7 @@ let test_input_file filename include_stdlib heap_size name expected test_ctxt =
     let full_outfile = "output/" ^ name in
     let program = parse_file filename input_channel in
     let result = run include_stdlib program full_outfile run_no_vg [string_of_int heap_size] in
-    assert_equal (Right(expected ^ "\n")) result ~printer:either_printer
+    assert_equal (expected ^ "\n") result
   with x ->
     (*Grain_parsing.Location.report_exception Format.err_formatter x;*)
     raise x
@@ -65,15 +65,9 @@ let test_err_input_file filename include_stdlib heap_size name errmsg test_ctxt 
     let program = parse_file filename input_channel in
     let result = run include_stdlib program full_outfile run_no_vg [string_of_int heap_size] in
     assert_equal
-      (Left(errmsg))
+      (errmsg)
       result
-      ~printer:either_printer
-      ~cmp: (fun check result ->
-          match check, result with
-          | Left(expect_msg), Left(actual_message) ->
-            String.exists actual_message expect_msg
-          | _ -> false
-        )
+      ~cmp: (fun check result -> String.exists result check)
   with x ->
     (*Grain_parsing.Location.report_exception Format.err_formatter x;*)
     raise x
@@ -98,9 +92,8 @@ let test_optimizations_sound program_str opts heap_size name expected test_ctxt 
       [string_of_int heap_size] in
   assert_equal
     result_optimized
-    result_unoptimized
-    ~printer:either_printer;
-  assert_equal (Right(expected ^ "\n")) result_optimized ~printer:either_printer
+    result_unoptimized;
+  assert_equal (expected ^ "\n") result_optimized
 
 let test_optimizations_sound_err program_str opts heap_size name errmsg test_ctxt =
   let full_outfile_unoptimized = "output/" ^ name ^ ".no-optimize" in
@@ -122,15 +115,9 @@ let test_optimizations_sound_err program_str opts heap_size name errmsg test_ctx
       [string_of_int heap_size] in
   assert_equal
     result_optimized
-    result_unoptimized
-    ~printer:either_printer;
-  assert_equal (Left(errmsg)) result_optimized
-    ~printer:either_printer
-    ~cmp: (fun check result ->
-      match check, result with
-      | Left(expect_msg), Left(actual_message) ->
-         String.exists actual_message expect_msg
-      | _ -> false)
+    result_unoptimized;
+  assert_equal (errmsg) result_optimized
+    ~cmp: (fun check result -> String.exists result check)
 
 let test_file_optimizations_sound filename opts heap_size name expected test_ctxt =
   let input_filename = "input/" ^ filename ^ ".gr" in
@@ -154,9 +141,8 @@ let test_file_optimizations_sound filename opts heap_size name expected test_ctx
       [string_of_int heap_size] in
   assert_equal
     result_optimized
-    result_unoptimized
-    ~printer:either_printer;
-  assert_equal (Right(expected ^ "\n")) result_optimized ~printer:either_printer
+    result_unoptimized;
+  assert_equal (expected ^ "\n") result_optimized
 
 let test_file_optimizations_sound_err filename opts heap_size name errmsg test_ctxt =
   let input_filename = "input/" ^ filename ^ ".gr" in
@@ -180,15 +166,9 @@ let test_file_optimizations_sound_err filename opts heap_size name errmsg test_c
       [string_of_int heap_size] in
   assert_equal
     result_optimized
-    result_unoptimized
-    ~printer:either_printer;
-  assert_equal (Left(errmsg)) result_optimized
-    ~printer:either_printer
-    ~cmp: (fun check result ->
-      match check, result with
-      | Left(expect_msg), Left(actual_message) ->
-         String.exists actual_message expect_msg
-      | _ -> false)
+    result_unoptimized;
+  assert_equal (errmsg) result_optimized
+    ~cmp: (fun check result -> String.exists result check)
 
 (** Tests that the file input/`input_file`.egg produces
     the given output *)
@@ -202,16 +182,14 @@ let tgcfile name heap_size input_file expected = name>::test_input_file input_fi
 let tgcefile name heap_size input_file errmsg = name>::test_err_input_file input_file default_compile_options heap_size name errmsg
 
 let test_resolve_scope opts program_str outfile (expected : 'a aprogram) test_ctxt =
-  let result = match (compile_string_to_anf outfile opts program_str) with
-  | Left(errs) -> Left(ExtString.String.join "\n" (print_errors errs))
-  | Right(anfed) -> Right(Grain.Pretty.string_of_aprogram (Grain.Resolve_scope.resolve_scope anfed Grain.Compile.initial_env)) in
-  assert_equal (Right(Grain.Pretty.string_of_aprogram expected)) result ~printer:either_printer
+  let anf = compile_string_to_anf outfile opts program_str in
+  let result = Grain.Pretty.string_of_aprogram (Grain.Resolve_scope.resolve_scope anf Grain.Compile.initial_env) in
+  assert_equal (Grain.Pretty.string_of_aprogram expected) result
 
 let test_final_anf opts program_str outfile (expected : 'a aprogram) test_ctxt =
-  let result = match (compile_string_to_final_anf outfile opts program_str) with
-  | Left(errs) -> Left(ExtString.String.join "\n" (print_errors errs))
-  | Right(final_anf) -> Right(Grain.Pretty.string_of_aprogram final_anf) in
-  assert_equal (Right(Grain.Pretty.string_of_aprogram expected)) result ~printer:either_printer
+  let final_anf = compile_string_to_final_anf outfile opts program_str in
+  let result = Grain.Pretty.string_of_aprogram final_anf in
+  assert_equal (Grain.Pretty.string_of_aprogram expected) result
 
 let trs name (program : string) (expected : 'a aprogram) = name>::test_resolve_scope default_compile_options program name expected;;
 
@@ -252,11 +230,12 @@ let cobra_tests = [
   t "fals" fals "false";
   t "tru" tru "true";
   t "complex1" "
-    let x = 2, y = 3, z = if true: 4 else: 5;
-    if true:
+    let x = 2, y = 3, z = if true { 4 } else { 5 };
+    if true {
       print(y) - (z + x)
-    else:
+    } else {
       print(8)
+    }
     "  "3\n-3";
   t "complex2" "print(2) + print(3)" "2\n3\n5";
 
@@ -275,18 +254,18 @@ let cobra_tests = [
   t "or3" "false or true" "true";
   t "or4" "false or false" "false";
 
-  t "comp1" "if 2 < 3: true else: false" "true";
-  te "comp1e" "if 2 < 3: true else: 3" "type";
-  t "comp2" "if 2 <= 3: true else: false" "true";
-  te "comp2e" "if 2 <= 3: true else: 3" "type";
-  t "comp3" "if 2 >= 3: 4 else: 5" "5";
-  t "comp4" "if 2 > 3: 4 else: 5" "5";
-  t "comp5" "if 2 < 3: 4 else: 5" "4";
-  t "comp6" "if 2 == 3: 8 else: 9" "9";
-  t "comp7" "if 2 == 2: 8 else: 9" "8";
-  t "comp8" "if 2 <= 2: 10 else: 11" "10";
-  t "comp9" "if 2 >= 2: 10 else: 11" "10";
-  t "comp10" "let x = 2, y = 4 in (y - 2) == x" "true";
+  t "comp1" "if 2 < 3 {true} else {false}" "true";
+  te "comp1e" "if 2 < 3 {true} else {3}" "type";
+  t "comp2" "if 2 <= 3 {true} else {false}" "true";
+  te "comp2e" "if 2 <= 3 {true} else {3}" "type";
+  t "comp3" "if 2 >= 3 {4} else {5}" "5";
+  t "comp4" "if 2 > 3 {4} else {5}" "5";
+  t "comp5" "if 2 < 3 {4} else {5}" "4";
+  t "comp6" "if 2 == 3 {8} else {9}" "9";
+  t "comp7" "if 2 == 2 {8} else {9}" "8";
+  t "comp8" "if 2 <= 2 {10} else {11}" "10";
+  t "comp9" "if 2 >= 2 {10} else {11}" "10";
+  t "comp10" "let x = 2, y = 4; (y - 2) == x" "true";
   t "comp11" "true == 2" "false";
   t "comp12" "2 == false" "false";
   t "comp13" "true == true" "true";
@@ -314,10 +293,10 @@ let cobra_tests = [
   t "sub1_2" "sub1(5)" "4";
   t "sub1_3" "sub1(0)" "-1";
 
-  te "comp_bool1" "if 2 < true: 3 else: 4" "type";
-  te "comp_bool2" "if 2 > true: 3 else: 4" "type";
-  te "comp_bool3" "if true >= 4: 3 else: 4" "type";
-  te "comp_bool4" "let x = true; if x < 4: 3 else: 5" "type";
+  te "comp_bool1" "if 2 < true {3} else {4}" "type";
+  te "comp_bool2" "if 2 > true {3} else {4}" "type";
+  te "comp_bool3" "if true >= 4 {3} else {4}" "type";
+  te "comp_bool4" "let x = true; if x < 4 {3} else {5}" "type";
 
   te "arith1" "2 + true" "type";
   te "arith2" "true + 4" "type";
@@ -326,9 +305,9 @@ let cobra_tests = [
   te "arith5" "let x = true; x * 4" "type";
   te "arith6" "let x = false; 4 * x" "type";
 
-  te "if1" "if 2: 5 else: 6" "type";
-  te "if2" "let y = 0; if y: 5 else: 6" "type";
-  te "if3" "if sub1(1): 2 else: 5" "type";
+  te "if1" "if 2 {5} else {6}" "type";
+  te "if2" "let y = 0; if y {5} else {6}" "type";
+  te "if3" "if sub1(1) {2} else {5}" "type";
 
   (* te "generic1" "printStack(true)" "expected a number"; *)
 
@@ -363,7 +342,7 @@ let diamondback_tests = [
   te "unbound_id_simple" "5 - x" "unbound";
   te "unbound_id_let" "let x = x; 2 + 2" "unbound";
   te "shadow_simple" "let x = 12; let x = 15; x" "shadows";
-  te "shadow_multi" "let x = 12, x = 14; x" "duplicate";
+  te "shadow_multi" "let x = 12, x = 14; x" "Variable x is bound several times";
   te "dup_func" "let rec foo = (() => 5);\nlet bar = (() => { 7 });\nlet rec foo = (() => 9);\nfoo()" "shadows";
   te "arity_1" "let foo = (() => {5});\nfoo(6)" "type";
   te "arity_2" "let foo = ((x) => {x + 5});\nfoo()" "type";
@@ -419,29 +398,29 @@ let egg_eater_stdlib_tests = [
    (also see the files in input/, which the above suites run)*)
 let fer_de_lance_tests = [
   t "lambda_1" "(x) => {x}" "<lambda>";
-  t "app_1" "(lambda x: x)(1)" "1";
-  t "letrec_1" "let rec x = (lambda n: if n > 3: n else: x(n + 2)),
-                        y = (lambda n: x(n + 1)) in
+  t "app_1" "((x) => x)(1)" "1";
+  t "letrec_1" "let rec x = ((n) => if n > 3 {n} else {x(n + 2)}),
+                        y = ((n) => x(n + 1)) in
                  y(2)" "5";
   (* Check that recursion is order-independent *)
-  t "letrec_2" "let rec y = (lambda n: x(n + 1)),
-                        x = (lambda n: if n > 3: n else: x(n + 2)) in
+  t "letrec_2" "let rec y = ((n) => x(n + 1)),
+                        x = ((n) => if n > 3 {n} else {x(n + 2)}) in
                  y(2)" "5";
-  t "let_1" "let x = (lambda n: n + 1),
+  t "let_1" "let x = ((n) => n + 1),
                  y = x(3),
-                 z = (lambda n: x(n) + y) in
+                 z = ((n) => x(n) + y) in
                z(5)" "10";
-  te "let_norec_1" "let x = (lambda n: if n > 3: n else: x(n + 2)),
-                        y = (lambda n: x(n + 1)) in
+  te "let_norec_1" "let x = ((n) => if n > 3 {n} else {x(n + 2)}),
+                        y = ((n) => x(n + 1)) in
                  y(2)" "not in scope";
-  te "lambda_dup_args" "(lambda x, y, x: 5)" "duplicate";
-  te "lambda_arity_1" "(lambda x: 6)()" "type";
-  te "lambda_arity_2" "(lambda x: 5)(1, 2)" "type";
-  te "letrec_nonstatic_const" "let rec x = 5 in x" "not bound to a function";
-  te "letrec_nonstatic_same" "let rec x = x in x" "not bound to a function";
-  te "letrec_nonstatic_other" "let rec x = (lambda z: z + 1), y = x in y" "not bound to a function";
-  te "nonfunction_1" "let x = 5 in x(3)" "type";
-  te "nontuple_1" "let x = (lambda y: y + 1) in x[1]" "type";
+  te "lambda_dup_args" "((x, y, x) => 5)" "duplicate";
+  te "lambda_arity_1" "((x) => 6)()" "type";
+  te "lambda_arity_2" "((x) => 5)(1, 2)" "type";
+  te "letrec_nonstatic_const" "let rec x = 5; x" "not bound to a function";
+  te "letrec_nonstatic_same" "let rec x = x; x" "Unbound value x.\n       Hint: You are probably missing the `rec' keyword on line 1.";
+  te "letrec_nonstatic_other" "let rec x = ((z) => z + 1), y = x; y" "not bound to a function";
+  te "nonfunction_1" "let x = 5; x(3)" "type";
+  te "nontuple_1" "let x = ((y) => y + 1); x[1]" "type";
 ]
 
 let fer_de_lance_stdlib_tests = [
@@ -609,7 +588,7 @@ let string_tests =
   t "string1" "\"foo\"" "\"foo\"";
   t "string2" "\"💯\"" "\"💯\"";
   t "string3" "\"making my way downtown, walking fast\"" "\"making my way downtown, walking fast\"";
-  te "string_err" "let x = 'hello' in x + ', world'" "type";
+  te "string_err" "let x = \"hello\" in x + \", world\"" "type";
 ]
 
 let suite =

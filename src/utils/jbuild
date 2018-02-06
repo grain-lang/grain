@@ -3,5 +3,5 @@
 (library
  ((name        grain_utils)
   (synopsis "Utilities for the Grain compiler")
-  (libraries ())))
+  (libraries (cmdliner extlib))))
 
