@@ -16,6 +16,8 @@ let when_debug ?(n=0) thunk =
   if !Grain_utils.Config.parser_debug_level > n then
     thunk()
 
+let prerr_string s = when_debug ~n:1 (fun () -> Pervasives.prerr_string s)
+
 let debug_print_state () =
   when_debug !last_state_printer
 
@@ -102,7 +104,7 @@ let make_program statements body =
 
 }
 
-%relation pt<pp<pb<pc<pe
+%relation pe<pt<pp<pb<pc
 
 %token <int> NUM
 %token <string> ID
@@ -211,8 +213,11 @@ prim1_expr :
 paren_expr :
   | LPAREN binop_expr RPAREN { $2 }
 
+app_arg_exprs :
+  | binop_expr [COMMA binop_expr {$2}]* { $1::$2 }
+
 app_expr :
-  | expr LPAREN tuple_exprs RPAREN { prerr_string "\napp_expr\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); Exp.apply ~loc:(symbol_rloc dyp) $1 $3 }
+  | expr LPAREN app_arg_exprs RPAREN { prerr_string "\napp_expr\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); Exp.apply ~loc:(symbol_rloc dyp) $1 $3 }
 
 id :
   | ID [COLONCOLON ID {$2}]* { prerr_string "\nid\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); (mkid ($1::$2)) (symbol_rloc dyp) }
@@ -276,7 +281,7 @@ toplevel_stmts :
 program :
   | toplevel_stmts SEMI EOF { make_program $1 (Exp.null ~loc:dummy_loc ()) }
   | toplevel_stmts SEMI binop_expr EOF { make_program $1 $3 }
-  | binop_expr EOF { make_program [] $1 }
+  | binop_expr EOF { prerr_string "\nprogram\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); make_program [] $1 }
 
 %%
 
