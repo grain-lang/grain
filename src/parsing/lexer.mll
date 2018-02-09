@@ -3,6 +3,34 @@
   open Parser
   open Printf
 
+  let lexbuf_loc {lex_start_p=loc_start; lex_curr_p=loc_end; _} =
+    let open Location in
+    {
+      loc_start; loc_end; loc_ghost=false
+    }
+
+  type error =
+    | UnrecognizedCharacter of char
+    | UnicodeCharacter
+    | IllegalStringCharacter of string
+
+  exception Error of Location.t * error
+
+  let report_error ppf err =
+    match err with
+    | UnrecognizedCharacter c ->
+      Format.fprintf ppf "Unrecognized character: %C" c
+    | UnicodeCharacter ->
+      Format.fprintf ppf "Unicode characters are currently unsupported."
+    | IllegalStringCharacter sc ->
+      Format.fprintf ppf "Illegal string character: %S" sc
+
+  let () =
+    Location.register_error_of_exn
+      (function
+        | Error(loc, err) -> Some(Location.error_of_printer loc report_error err)
+        | _ -> None)
+
   let add_char_code buf lexbuf = begin
     let str = lexeme lexbuf in
     let (esc, numstr) = ((String.sub str 1 1), (String.sub str 2 ((String.length str) - 2))) in
@@ -11,7 +39,7 @@
       | "x" -> Scanf.sscanf numstr "%x" (fun x -> x)
       | _ -> Scanf.sscanf (esc^numstr) "%o" (fun x -> x)) in
     if (to_add > 255) then
-      failwith "Unicode Characters are currently unsupported."
+      raise (Error(lexbuf_loc lexbuf, UnicodeCharacter))
     else
       Buffer.add_char buf (Char.chr to_add);
   end
@@ -102,7 +130,7 @@ rule token = parse
   | "_" { UNDERSCORE }
   | ident as x { ID x }
   | eof { EOF }
-  | _ as c { failwith (sprintf "Unrecognized character: %c" c) }
+  | _ as c { raise (Error(lexbuf_loc lexbuf, UnrecognizedCharacter c)) }
 
 
 and read_dquote_str buf =
@@ -116,7 +144,7 @@ and read_dquote_str buf =
   | [^ '"' '\\']+ { Buffer.add_string buf (lexeme lexbuf);
     read_dquote_str buf lexbuf }
   | '"' { STRING (Buffer.contents buf) }
-  | _ { failwith ("Illegal string character: " ^ (lexeme lexbuf)) }
+  | _ { raise (Error(lexbuf_loc lexbuf, IllegalStringCharacter(lexeme lexbuf))) }
 
 and read_squote_str buf =
   parse
@@ -129,4 +157,4 @@ and read_squote_str buf =
   | [^ ''' '\\']+ { Buffer.add_string buf (lexeme lexbuf);
     read_squote_str buf lexbuf }
   | '\'' { STRING (Buffer.contents buf) }
-  | _ { failwith ("Illegal string character: " ^ (lexeme lexbuf)) }
+  | _ { raise (Error(lexbuf_loc lexbuf, IllegalStringCharacter(lexeme lexbuf))) }

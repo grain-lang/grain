@@ -72,22 +72,7 @@ let print_errors exns =
 
 
 let parse name lexbuf =
-  try 
-    lexbuf.lex_curr_p <- { lexbuf.lex_curr_p with pos_fname = name };
-    fst @@ List.hd @@ Grain_parsing.Parser.parse_program Grain_parsing.Lexer.token lexbuf
-  with
-  | Failure x when String.equal x "lexing: empty token" ->
-    failwith (sprintf "lexical error at %s"
-                (string_of_position lexbuf.lex_curr_p))
-  | Parsing.Parse_error ->
-    begin
-      let curr = lexbuf.Lexing.lex_curr_p in
-      let line = curr.Lexing.pos_lnum in
-      let cnum = curr.Lexing.pos_cnum - curr.Lexing.pos_bol in
-      let tok = Lexing.lexeme lexbuf in
-      failwith (sprintf "Parse error at line %d, col %d: token %s"
-                  line cnum tok)
-    end
+  Grain_parsing.Driver.parse ~name lexbuf
 
 let parse_string name s = 
   let lexbuf = Lexing.from_string s in
