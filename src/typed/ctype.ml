@@ -2344,14 +2344,6 @@ let rec normalize_type_rec env visited ty =
   let ty = repr ty in
   if not (TypeSet.mem ty !visited) then begin
     visited := TypeSet.add ty !visited;
-    begin
-      match ty.desc with (* PR#7348 *)
-        TTyConstr(Path.PExternal(m,i,pos), tl, _abbrev) ->
-        let i' = String.sub i 0 (String.length i - 4) in
-        log_type ty;
-        ty.desc <- TTyConstr(Path.PExternal(m,i',pos), tl, ref TMemNil)
-      | _ -> assert false
-    end;
     iter_type_expr (normalize_type_rec env visited) ty
   end
 
