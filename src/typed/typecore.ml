@@ -94,8 +94,9 @@ let prim2_type = function
   | And
   | Or -> (Builtin_types.type_bool, Builtin_types.type_bool, Builtin_types.type_bool)
   | Eq ->
-    let v = newvar ~name:"equal" () in
-    (v, v, Builtin_types.type_bool)
+    let v1 = newvar ~name:"equal" ()
+    and v2 = newvar ~name:"equal" () in
+    (v1, v2, Builtin_types.type_bool)
 
 let maybe_add_pattern_variables_ghost loc_let env pv =
   List.fold_right

@@ -399,28 +399,28 @@ let egg_eater_stdlib_tests = [
 let fer_de_lance_tests = [
   t "lambda_1" "(x) => {x}" "<lambda>";
   t "app_1" "((x) => x)(1)" "1";
-  t "letrec_1" "let rec x = ((n) => if n > 3 {n} else {x(n + 2)}),
-                        y = ((n) => x(n + 1)) in
+  t "letrec_1" "let rec x = ((n) => {if n > 3 {n} else {x(n + 2)}}),
+                        y = ((n) => {x(n + 1)});
                  y(2)" "5";
   (* Check that recursion is order-independent *)
-  t "letrec_2" "let rec y = ((n) => x(n + 1)),
-                        x = ((n) => if n > 3 {n} else {x(n + 2)}) in
+  t "letrec_2" "let rec y = ((n) => {x(n + 1)}),
+                        x = ((n) => {if n > 3 {n} else {x(n + 2)}});
                  y(2)" "5";
-  t "let_1" "let x = ((n) => n + 1),
+  t "let_1" "let x = ((n) => {n + 1}),
                  y = x(3),
-                 z = ((n) => x(n) + y) in
+                 z = ((n) => {x(n) + y});
                z(5)" "10";
-  te "let_norec_1" "let x = ((n) => if n > 3 {n} else {x(n + 2)}),
-                        y = ((n) => x(n + 1)) in
+  te "let_norec_1" "let x = ((n) => {if n > 3 {n} else {x(n + 2)}}),
+                        y = ((n) => {x(n + 1)});
                  y(2)" "not in scope";
-  te "lambda_dup_args" "((x, y, x) => 5)" "duplicate";
-  te "lambda_arity_1" "((x) => 6)()" "type";
-  te "lambda_arity_2" "((x) => 5)(1, 2)" "type";
+  te "lambda_dup_args" "((x, y, x) => {5})" "duplicate";
+  te "lambda_arity_1" "((x) => {6})()" "type";
+  te "lambda_arity_2" "((x) => {5})(1, 2)" "type";
   te "letrec_nonstatic_const" "let rec x = 5; x" "not bound to a function";
   te "letrec_nonstatic_same" "let rec x = x; x" "Unbound value x.\n       Hint: You are probably missing the `rec' keyword on line 1.";
-  te "letrec_nonstatic_other" "let rec x = ((z) => z + 1), y = x; y" "not bound to a function";
+  te "letrec_nonstatic_other" "let rec x = ((z) => {z + 1}), y = x; y" "not bound to a function";
   te "nonfunction_1" "let x = 5; x(3)" "type";
-  te "nontuple_1" "let x = ((y) => y + 1); x[1]" "type";
+  te "nontuple_1" "let x = ((y) => {y + 1}); x[1]" "type";
 ]
 
 let fer_de_lance_stdlib_tests = [
