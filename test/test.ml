@@ -336,14 +336,14 @@ let diamondback_tests = [
   (* tvgfile "sinister_tail_call2" "sinister-tail-call" "true"; *)
   tefile "fib_big" "too-much-fib" "overflow";
 
-  t "func_no_args" "let foo = (() => print(5));\nfoo()" "5\n5";
+  t "func_no_args" "let foo = (() => {print(5)});\nfoo()" "5\n5";
   t "multi_bind" "let x = 2, y = x + 1; y" "3";
   te "unbound_fun" "2 + foo()" "unbound";
   te "unbound_id_simple" "5 - x" "unbound";
   te "unbound_id_let" "let x = x; 2 + 2" "unbound";
   te "shadow_simple" "let x = 12; let x = 15; x" "shadows";
   te "shadow_multi" "let x = 12, x = 14; x" "Variable x is bound several times";
-  te "dup_func" "let rec foo = (() => 5);\nlet bar = (() => { 7 });\nlet rec foo = (() => 9);\nfoo()" "shadows";
+  te "dup_func" "let rec foo = (() => {5});\nlet bar = (() => { 7 });\nlet rec foo = (() => {9});\nfoo()" "shadows";
   te "arity_1" "let foo = (() => {5});\nfoo(6)" "type";
   te "arity_2" "let foo = ((x) => {x + 5});\nfoo()" "type";
   te "arity_3" "let foo = ((x) => {x});\nfoo(1, 2, 3)" "type";
@@ -424,33 +424,33 @@ let fer_de_lance_tests = [
 ]
 
 let fer_de_lance_stdlib_tests = [
-  tlib "map_1" ("import lists; map(((x) => x + 1), " ^ mylist ^ ")")
+  tlib "map_1" ("import lists; map(((x) => {x + 1}), " ^ mylist ^ ")")
     "(2, (3, (4, false)))";
-  tlib "map_2" ("import lists; map(((x) => x * 2), " ^ mylist ^ ")")
+  tlib "map_2" ("import lists; map(((x) => {x * 2}), " ^ mylist ^ ")")
     "(2, (4, (6, false)))";
   tlib "map_print" ("import lists; map(print, " ^ mylist ^ ")") "3\n2\n1\n(1, (2, (3, false)))";
-  tlib "fold_left_1" ("import lists; fold_left(((acc, cur) => acc - cur), 0, " ^ mylist ^ ")")
+  tlib "fold_left_1" ("import lists; fold_left(((acc, cur) => {acc - cur}), 0, " ^ mylist ^ ")")
     "-6";
-  tlib "fold_right_1" ("import lists; fold_right(((cur, acc) => cur - acc), 0, " ^ mylist ^ ")")
+  tlib "fold_right_1" ("import lists; fold_right(((cur, acc) => {cur - acc}), 0, " ^ mylist ^ ")")
     "2";
 ]
 
 let pair_tests = [
-  t "tup1" "let t = (4, (5, 6)) in
-            begin
+  t "tup1" "let t = (4, (5, 6));
+            {
               t[0] := 7;
               t
-            end" "(7, (5, 6))";
+            }" "(7, (5, 6))";
   t "tup2" "let t = (4, (5, 6));
-            begin
+            {
               t[1] := 7;
               t
-            end" "(4, 7)";
+            }" "(4, 7)";
   t "tup3" "let t = (4, (5, 6));
-            begin
+            {
               t[1] := t;
               t
-            end" "(4, <cyclic tuple 1>)";
+            }" "(4, <cyclic tuple 1>)";
   t "tup4" "let t = (4, 6);
             (t, t)"
            "((4, 6), (4, 6))"
@@ -508,8 +508,8 @@ let garter_extra_tests = [
 let indigo_tests = [
   (* note on resolve-scope test: (tags are not checked) *)
   trs "trs1"
-    "let f1 = ((x, y) => x),
-         f2 = ((x, y) => y) in
+    "let f1 = ((x, y) => {x}),
+         f2 = ((x, y) => {y}) in
        f1(1, 2)"
     (ALet("f1$1",
           CLambda(["x$2"; "y$3"],
@@ -529,18 +529,18 @@ let indigo_tests = [
     let b = 14;
     a + b" (ACExpr(CImmExpr(ImmNum(30, ()))));
 
-  tfinalanf "test_cse" "((x) => let a = x + 1; let b = x + 1; a + b)"
+  tfinalanf "test_cse" "((x) => {let a = x + 1; let b = x + 1; a + b})"
     (ACExpr(CLambda(["x$1"], ALet("a$2", CPrim2(Plus, ImmId("x$1", ()), ImmNum(1, ()), ()),
                                   ACExpr(CPrim2(Plus, ImmId("a$2", ()), ImmId("a$2", ()), ())), ()), ())));
 
-  tfinalanf "test_dae" "(lambda x: let a = x + 1 in let b = x + 1 in x + 1)"
+  tfinalanf "test_dae" "((x) => {let a = x + 1; let b = x + 1; x + 1})"
     (ACExpr(CLambda(["x$1"],
                     ACExpr(CPrim2(Plus, ImmId("x$1", ()), ImmNum(1, ()), ())), ())));
 
   (* All optimizations are needed to work completely on this input *)
   tfinalanf "test_optimizations_work_together" "
     let x = 5;
-    let foo = ((y) => y);
+    let foo = ((y) => {y});
     let y = foo(3) + 5;
     foo(3) + x"
     (ALet("foo$2",
@@ -551,24 +551,24 @@ let indigo_tests = [
   tfsound "test_counter_sound" "counter" "0\n1\n2\n2";
   tefsound "fib_big" "too-much-fib" "overflow";
   te "test_dae_sound" "let x = 2 + false; 3" "type";
-  te "test_const_fold_times_zero_sound" "let f = ((x) => x * 0); f(false)" "number";
-  te "test_const_fold_or_sound" "let f = ((x) => x or true); f(1)" "bool";
-  te "test_const_fold_and_sound" "let f = ((x) => false and x); f(1)" "bool";
-  te "test_const_fold_plus_sound" "let f = ((x) => 0 + x); f(true)" "number";
-  te "test_const_fold_times_one_sound" "let f = ((x) => x * 1); f(true)" "number";
+  te "test_const_fold_times_zero_sound" "let f = ((x) => {x * 0}); f(false)" "number";
+  te "test_const_fold_or_sound" "let f = ((x) => {x or true}); f(1)" "bool";
+  te "test_const_fold_and_sound" "let f = ((x) => {false and x}); f(1)" "bool";
+  te "test_const_fold_plus_sound" "let f = ((x) => {0 + x}); f(true)" "number";
+  te "test_const_fold_times_one_sound" "let f = ((x) => {x * 1}); f(true)" "number";
 
   te ~opts:{default_compile_options with sound_optimizations=false}
     "test_unsound_dae" "let x = 2 + false; 3" "type";
   t ~opts:{default_compile_options with sound_optimizations=false}
-    "test_unsound_const_fold_times_zero" "let f = ((x) => x * 0); f(false)" "0";
+    "test_unsound_const_fold_times_zero" "let f = ((x) => {x * 0}); f(false)" "0";
   t ~opts:{default_compile_options with sound_optimizations=false}
-    "test_unsound_const_fold_or" "let f = ((x) => x or true); f(1)" "true";
+    "test_unsound_const_fold_or" "let f = ((x) => {x or true}); f(1)" "true";
   t ~opts:{default_compile_options with sound_optimizations=false}
-    "test_unsound_const_fold_and" "let f = ((x) => false and x); f(1)" "false";
+    "test_unsound_const_fold_and" "let f = ((x) => {false and x}); f(1)" "false";
   t ~opts:{default_compile_options with sound_optimizations=false}
-    "test_unsound_const_fold_plus" "let f = ((x) => 0 + x); f(true)" "true";
+    "test_unsound_const_fold_plus" "let f = ((x) => {0 + x}); f(true)" "true";
   t ~opts:{default_compile_options with sound_optimizations=false}
-    "test_unsound_const_fold_times_one" "let f = ((x) => x * 1); f(true)" "true";
+    "test_unsound_const_fold_times_one" "let f = ((x) => {x * 1}); f(true)" "true";
 ]
 
 let string_tests =
