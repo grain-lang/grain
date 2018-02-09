@@ -362,35 +362,35 @@ let egg_eater_tests = [
 ]
 
 let egg_eater_stdlib_tests = [
-  tlib "stdlib_link" ("include lists in " ^ mylist) "(1, (2, (3, false)))";
-  tlib "stdlib_sum_1" ("include lists in sum(" ^ mylist ^ ")") "6";
-  tlib "stdlib_sum_2" "include lists in sum(false)" "0";
-  tlib "stdlib_reverse" ("include lists in reverse(" ^ mylist ^ ")") "(3, (2, (1, false)))";
-  tlib "stdlib_length" "include lists in length(link(1, link(2, link(3, false))))" "3";
-  tlib "stdlib_equal_1" "include lists in (1, 2) == (1, 2)" "false";
-  tlib "stdlib_equal_2" "include lists in equal((1, 2), (1, 2))" "true";
-  tlib "stdlib_equal_3" "include lists in equal((1, (2, (3, false))), (1, (2, (3, false))))" "true";
-  tlib "stdlib_equal_4" "include lists in equal(1, 1)" "true";
-  tlib "stdlib_equal_5" "include lists in equal(1, 2)" "false";
-  tlib "stdlib_equal_6" "include lists in equal(true, true)" "true";
-  tlib "stdlib_equal_7" "include lists in equal(true, false)" "false";
-  tlib "stdlib_contains_1" "include lists in contains(true, link(1, link(2, link(3, false))))" "false";
-  tlib "stdlib_contains_2" "include lists in contains(false, link(1, link(2, link(3, false))))" "false";
-  tlib "stdlib_contains_3" "include lists in contains(3, link(1, link(2, link(3, false))))" "true";
-  telib "stdlib_err_1" "include lists in link(1)" "arity";
-  telib "stdlib_err_2" "include lists in link()" "arity";
-  telib "stdlib_err_3" "include lists in link(1, 2, 3)" "arity";
-  telib "stdlib_sum_err" "include lists in sum(link(true, false))" "number";
-  telib "stdlib_length_err" "include lists in length(true)" "tuple";
-  telib "stdlib_reverse_err" "include lists in reverse(1)" "tuple";
-  telib "tuple_index_large_1" "include lists in (1, 2, 3)[6]" "large";
-  telib "tuple_index_large_2" "include lists in (1, 2, 3)[4]" "large";
-  telib "tuple_index_small_1" "include lists in (1, 2, 3)[-1]" "small";
-  telib "tuple_index_small_2" "include lists in (1, 2, 3)[-2]" "small";
-  telib "tuple_index_type_1" "include lists in (1, 2)[false]" "number";
-  telib "tuple_index_type_2" "include lists in ((1, 2), (3, 4))[(1, 2)]" "number";
-  telib "tuple_access_1" "include lists in let x = false in x[6]" "tuple";
-  telib "tuple_access_2" "include lists in let x = 2 in x[6]" "tuple";
+  tlib "stdlib_link" ("import lists; " ^ mylist) "(1, (2, (3, false)))";
+  tlib "stdlib_sum_1" ("import lists; sum(" ^ mylist ^ ")") "6";
+  tlib "stdlib_sum_2" "import lists; sum(false)" "0";
+  tlib "stdlib_reverse" ("import lists; reverse(" ^ mylist ^ ")") "(3, (2, (1, false)))";
+  tlib "stdlib_length" "import lists; length(link(1, link(2, link(3, false))))" "3";
+  tlib "stdlib_equal_1" "import lists; (1, 2) == (1, 2)" "false";
+  tlib "stdlib_equal_2" "import lists; equal((1, 2), (1, 2))" "true";
+  tlib "stdlib_equal_3" "import lists; equal((1, (2, (3, false))), (1, (2, (3, false))))" "true";
+  tlib "stdlib_equal_4" "import lists; equal(1, 1)" "true";
+  tlib "stdlib_equal_5" "import lists; equal(1, 2)" "false";
+  tlib "stdlib_equal_6" "import lists; equal(true, true)" "true";
+  tlib "stdlib_equal_7" "import lists; equal(true, false)" "false";
+  tlib "stdlib_contains_1" "import lists; contains(true, link(1, link(2, link(3, false))))" "false";
+  tlib "stdlib_contains_2" "import lists; contains(false, link(1, link(2, link(3, false))))" "false";
+  tlib "stdlib_contains_3" "import lists; contains(3, link(1, link(2, link(3, false))))" "true";
+  telib "stdlib_err_1" "import lists; link(1)" "arity";
+  telib "stdlib_err_2" "import lists; link()" "arity";
+  telib "stdlib_err_3" "import lists; link(1, 2, 3)" "arity";
+  telib "stdlib_sum_err" "import lists; sum(link(true, false))" "number";
+  telib "stdlib_length_err" "import lists; length(true)" "tuple";
+  telib "stdlib_reverse_err" "import lists; reverse(1)" "tuple";
+  telib "tuple_index_large_1" "import lists; (1, 2, 3)[6]" "large";
+  telib "tuple_index_large_2" "import lists; (1, 2, 3)[4]" "large";
+  telib "tuple_index_small_1" "import lists; (1, 2, 3)[-1]" "small";
+  telib "tuple_index_small_2" "import lists; (1, 2, 3)[-2]" "small";
+  telib "tuple_index_type_1" "import lists; (1, 2)[false]" "number";
+  telib "tuple_index_type_2" "import lists; ((1, 2), (3, 4))[(1, 2)]" "number";
+  telib "tuple_access_1" "import lists; let x = false; x[6]" "tuple";
+  telib "tuple_access_2" "import lists; let x = 2; x[6]" "tuple";
 ]
 
 (* Note that our tail call tests above provide a good
@@ -424,14 +424,14 @@ let fer_de_lance_tests = [
 ]
 
 let fer_de_lance_stdlib_tests = [
-  tlib "map_1" ("include lists in map((lambda x: x + 1), " ^ mylist ^ ")")
+  tlib "map_1" ("import lists; map(((x) => x + 1), " ^ mylist ^ ")")
     "(2, (3, (4, false)))";
-  tlib "map_2" ("include lists in map((lambda x: x * 2), " ^ mylist ^ ")")
+  tlib "map_2" ("import lists; map(((x) => x * 2), " ^ mylist ^ ")")
     "(2, (4, (6, false)))";
-  tlib "map_print" ("include lists in map(print, " ^ mylist ^ ")") "3\n2\n1\n(1, (2, (3, false)))";
-  tlib "fold_left_1" ("include lists in fold_left((lambda acc, cur: acc - cur), 0, " ^ mylist ^ ")")
+  tlib "map_print" ("import lists; map(print, " ^ mylist ^ ")") "3\n2\n1\n(1, (2, (3, false)))";
+  tlib "fold_left_1" ("import lists; fold_left(((acc, cur) => acc - cur), 0, " ^ mylist ^ ")")
     "-6";
-  tlib "fold_right_1" ("include lists in fold_right((lambda cur, acc: cur - acc), 0, " ^ mylist ^ ")")
+  tlib "fold_right_1" ("import lists; fold_right(((cur, acc) => cur - acc), 0, " ^ mylist ^ ")")
     "2";
 ]
 
@@ -441,17 +441,17 @@ let pair_tests = [
               t[0] := 7;
               t
             end" "(7, (5, 6))";
-  t "tup2" "let t = (4, (5, 6)) in
+  t "tup2" "let t = (4, (5, 6));
             begin
               t[1] := 7;
               t
             end" "(4, 7)";
-  t "tup3" "let t = (4, (5, 6)) in
+  t "tup3" "let t = (4, (5, 6));
             begin
               t[1] := t;
               t
             end" "(4, <cyclic tuple 1>)";
-  t "tup4" "let t = (4, 6) in
+  t "tup4" "let t = (4, 6);
             (t, t)"
            "((4, 6), (4, 6))"
 
@@ -466,7 +466,7 @@ let oom = [
 
 let gc = [
   tgc "gc1" 10
-      "let f = (lambda: (1, 2)) in
+      "let f = (() => (1, 2));
        begin
          f();
          f();
@@ -476,9 +476,9 @@ let gc = [
       "(1, 2)";
   (* Test that cyclic tuples are GC'd properly *)
   tgc "gc2" 10
-    "let f = (lambda:
-      let x = (1, 2) in
-        x[1] := x) in
+    "let f = (() =>
+      let x = (1, 2);
+        x[1] := x);
       begin
         f();
         let x = (1, 2) in
@@ -495,8 +495,8 @@ let gc = [
 let garter_extra_tests = [
   t "test_set_extra1" "(1, 2)[0] := 2" "2";
   tfile "counter" "counter" "0\n1\n2\n2";
-  te "test_bad_import" "let x = (1, 2) in include lists in x" "Includes must be at the beginning";
-  te "test_missing_import" "include foo in 2" "not found";
+  (*te "test_bad_import" "let x = (1, 2); import lists; x" "Includes must be at the beginning";*)
+  te "test_missing_import" "import foo; 2" "not found";
   te "test_set_err1" "(1, 2)[-1] := 3" "small";
   te "test_set_err2" "(1, 2)[3] := 4" "large";
   te "test_set_err3" "(1, 2)[true] := 5" "number";
@@ -508,8 +508,8 @@ let garter_extra_tests = [
 let indigo_tests = [
   (* note on resolve-scope test: (tags are not checked) *)
   trs "trs1"
-    "let f1 = (lambda x, y: x),
-         f2 = (lambda x, y: y) in
+    "let f1 = ((x, y) => x),
+         f2 = ((x, y) => y) in
        f1(1, 2)"
     (ALet("f1$1",
           CLambda(["x$2"; "y$3"],
@@ -522,14 +522,14 @@ let indigo_tests = [
 
   (* Primarily a constant-folding test, but DAE removes the let bindings as well *)
   tfinalanf "test_const_folding" "
-    let x = 4 + 5 in
-    let y = x * 2 in
-    let z = y - x in
-    let a = x + 7 in
-    let b = 14 in
+    let x = 4 + 5;
+    let y = x * 2;
+    let z = y - x;
+    let a = x + 7;
+    let b = 14;
     a + b" (ACExpr(CImmExpr(ImmNum(30, ()))));
 
-  tfinalanf "test_cse" "(lambda x: let a = x + 1 in let b = x + 1 in a + b)"
+  tfinalanf "test_cse" "((x) => let a = x + 1; let b = x + 1; a + b)"
     (ACExpr(CLambda(["x$1"], ALet("a$2", CPrim2(Plus, ImmId("x$1", ()), ImmNum(1, ()), ()),
                                   ACExpr(CPrim2(Plus, ImmId("a$2", ()), ImmId("a$2", ()), ())), ()), ())));
 
@@ -539,9 +539,9 @@ let indigo_tests = [
 
   (* All optimizations are needed to work completely on this input *)
   tfinalanf "test_optimizations_work_together" "
-    let x = 5 in
-    let foo = (lambda y: y) in
-    let y = foo(3) + 5 in
+    let x = 5;
+    let foo = ((y) => y);
+    let y = foo(3) + 5;
     foo(3) + x"
     (ALet("foo$2",
           CLambda(["y$3"], ACExpr(CImmExpr(ImmId("y$3", ()))), ()),
@@ -550,25 +550,25 @@ let indigo_tests = [
 
   tfsound "test_counter_sound" "counter" "0\n1\n2\n2";
   tefsound "fib_big" "too-much-fib" "overflow";
-  te "test_dae_sound" "let x = 2 + false in 3" "type";
-  te "test_const_fold_times_zero_sound" "let f = (lambda x: x * 0) in f(false)" "number";
-  te "test_const_fold_or_sound" "let f = (lambda x: x || true) in f(1)" "bool";
-  te "test_const_fold_and_sound" "let f = (lambda x: false && x) in f(1)" "bool";
-  te "test_const_fold_plus_sound" "let f = (lambda x: 0 + x) in f(true)" "number";
-  te "test_const_fold_times_one_sound" "let f = (lambda x: x * 1) in f(true)" "number";
+  te "test_dae_sound" "let x = 2 + false; 3" "type";
+  te "test_const_fold_times_zero_sound" "let f = ((x) => x * 0); f(false)" "number";
+  te "test_const_fold_or_sound" "let f = ((x) => x or true); f(1)" "bool";
+  te "test_const_fold_and_sound" "let f = ((x) => false and x); f(1)" "bool";
+  te "test_const_fold_plus_sound" "let f = ((x) => 0 + x); f(true)" "number";
+  te "test_const_fold_times_one_sound" "let f = ((x) => x * 1); f(true)" "number";
 
   te ~opts:{default_compile_options with sound_optimizations=false}
-    "test_unsound_dae" "let x = 2 + false in 3" "type";
+    "test_unsound_dae" "let x = 2 + false; 3" "type";
   t ~opts:{default_compile_options with sound_optimizations=false}
-    "test_unsound_const_fold_times_zero" "let f = (lambda x: x * 0) in f(false)" "0";
+    "test_unsound_const_fold_times_zero" "let f = ((x) => x * 0); f(false)" "0";
   t ~opts:{default_compile_options with sound_optimizations=false}
-    "test_unsound_const_fold_or" "let f = (lambda x: x || true) in f(1)" "true";
+    "test_unsound_const_fold_or" "let f = ((x) => x or true); f(1)" "true";
   t ~opts:{default_compile_options with sound_optimizations=false}
-    "test_unsound_const_fold_and" "let f = (lambda x: false && x) in f(1)" "false";
+    "test_unsound_const_fold_and" "let f = ((x) => false and x); f(1)" "false";
   t ~opts:{default_compile_options with sound_optimizations=false}
-    "test_unsound_const_fold_plus" "let f = (lambda x: 0 + x) in f(true)" "true";
+    "test_unsound_const_fold_plus" "let f = ((x) => 0 + x); f(true)" "true";
   t ~opts:{default_compile_options with sound_optimizations=false}
-    "test_unsound_const_fold_times_one" "let f = (lambda x: x * 1) in f(true)" "true";
+    "test_unsound_const_fold_times_one" "let f = ((x) => x * 1); f(true)" "true";
 ]
 
 let string_tests =
@@ -588,7 +588,7 @@ let string_tests =
   t "string1" "\"foo\"" "\"foo\"";
   t "string2" "\"💯\"" "\"💯\"";
   t "string3" "\"making my way downtown, walking fast\"" "\"making my way downtown, walking fast\"";
-  te "string_err" "let x = \"hello\" in x + \", world\"" "type";
+  te "string_err" "let x = \"hello\"; x + \", world\"" "type";
 ]
 
 let suite =
