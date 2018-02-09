@@ -42,7 +42,8 @@ let initial_funcs = [
 ]
 
 (* Environment containing initial functions *)
-let initial_env = List.map (fun (n, l, _) -> (n, l)) initial_funcs
+(* Deprecated *)
+let initial_load_env = List.map (fun (n, l, _) -> (n, l)) initial_funcs
 
 (** List of standard libraries to load *)
 let libs = ["lists"]
@@ -53,6 +54,22 @@ let opts_to_optimization_settings opts = {
   initial_functions = initial_funcs;
 }
 
+let implicit_modules : string list ref = ref []
+
+let open_implicit_module m env = env
+  (*let open Grain_typed in
+  let open Asttypes in
+  let lid = {loc = Location.in_file "command line";
+             txt = Longident.parse m } in
+  snd (Typemod.type_open_ env lid.loc lid)**)
+
+let initial_env () =
+  let open Grain_typed in
+  Ident.reinit();
+  let initial = Env.initial_safe_string in
+  let env = initial in
+  List.fold_left (fun env m -> open_implicit_module m env) env (!implicit_modules)
+
 let lib_include_dirs opts =
   (if opts.use_stdlib then Option.map_default (fun x -> [x]) [] (Grain_stdlib.stdlib_directory()) else []) @ opts.include_dirs
 
@@ -62,16 +79,16 @@ let compile_module (opts: compile_options) (p : Parsetree.parsed_program) =
     prerr_string @@ Sexplib.Sexp.to_string_hum @@ Grain_parsing.Parsetree.sexp_of_parsed_program p;
     prerr_string "\n\n";
   end;
-  let full_p = Grain_stdlib.load_libraries initial_env (lib_include_dirs opts) p in
+  let full_p = Grain_stdlib.load_libraries initial_load_env (lib_include_dirs opts) p in
   Well_formedness.check_well_formedness full_p;
-  let typed_mod, signature, env = Typemod.type_module Env.empty full_p in
+  let typed_mod, signature, env = Typemod.type_module (initial_env()) full_p in
   if !Grain_utils.Config.verbose then begin
     prerr_string "\ntyped program:\n";
     prerr_string @@ Sexplib.Sexp.to_string_hum @@ Grain_typed.Typedtree.sexp_of_typed_program typed_mod;
     prerr_string "\n\n";
   end;
   let anfed = atag @@ Anf.anf_typed typed_mod in
-  let renamed = resolve_scope anfed initial_env in
+  let renamed = resolve_scope anfed initial_load_env in
   let optimized =
     if opts.optimizations_enabled then
       optimize renamed (opts_to_optimization_settings opts)
@@ -83,21 +100,21 @@ let compile_to_string opts p =
   module_to_string @@ compile_module opts p
 
 let compile_to_anf (opts : compile_options) (p : Parsetree.parsed_program) =
-  let full_p = Grain_stdlib.load_libraries initial_env (lib_include_dirs opts) p in
+  let full_p = Grain_stdlib.load_libraries initial_load_env (lib_include_dirs opts) p in
   Well_formedness.check_well_formedness full_p;
-  let typed_mod, signature, env = Typemod.type_module Env.empty full_p in
+  let typed_mod, signature, env = Typemod.type_module (initial_env()) full_p in
   let anfed = atag @@ Anf.anf_typed typed_mod in
   anfed
 
 (* like compile_to_anf, but performs scope resolution and optimization. *)
 let compile_to_final_anf (opts : compile_options) (p : Parsetree.parsed_program) =
-  let full_p = Grain_stdlib.load_libraries initial_env (lib_include_dirs opts) p in
+  let full_p = Grain_stdlib.load_libraries initial_load_env (lib_include_dirs opts) p in
   Well_formedness.check_well_formedness full_p;
   Printf.eprintf "I am well formed";
-  let typed_mod, signature, env = Typemod.type_module Env.empty full_p in
+  let typed_mod, signature, env = Typemod.type_module (initial_env()) full_p in
   Printf.eprintf "did it\n";
   let anfed = atag @@ Anf.anf_typed typed_mod in
-  let renamed = resolve_scope anfed initial_env in
+  let renamed = resolve_scope anfed initial_load_env in
   let optimized =
     if opts.optimizations_enabled then
       optimize renamed (opts_to_optimization_settings opts)
