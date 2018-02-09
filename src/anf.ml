@@ -44,7 +44,9 @@ let anf_typed (p : Grain_typed.Typedtree.typed_program) : unit aprogram =
         let tmp = gensym "tup_patt" in
         Some(tmp, (src, i), postprocess @@ List.mapi (anf_patts_pass_one tmp) patts)
       | TPatConstant _ -> failwith "NYI: anf_patts_pass_one: TPatConstant"
-      | TPatConstruct _ -> failwith "NYI: anf_patts_pass_one: TPatConstruct" in
+      | TPatConstruct _ -> failwith "NYI: anf_patts_pass_one: TPatConstruct"
+      | TPatOr _ -> failwith "NYI: anf_patts_pass_one: TPatOr"
+      | TPatAlias _ -> failwith "NYI: anf_patts_pass_one: TPatAlias" in
     postprocess @@ List.mapi (anf_patts_pass_one exp_id) patts in
   let rec helpIExpr (({exp_desc; _} as e) : expression) : (unit immexpr * unit anf_bind list) =
     match exp_desc with
@@ -116,7 +118,7 @@ let anf_typed (p : Grain_typed.Typedtree.typed_program) : unit aprogram =
                         @ [BLet(tmp, body_ans)])
     | TExpLambda({mb_pat; mb_body=body}::[], _) ->
       let tmp = gensym "lam" in
-      let args =
+      let rec args mb_pat =
         begin match mb_pat.pat_desc with
           | TPatTuple(args) ->
             List.map (function
@@ -126,6 +128,7 @@ let anf_typed (p : Grain_typed.Typedtree.typed_program) : unit aprogram =
           | TPatConstruct({txt=ident}, _, []) when Identifier.equal ident (Identifier.IdentName "()") -> []
           | _ -> failwith "Impossible: helpIExpr: Lambda contained non-tuple/var pattern"
         end in
+      let args = args mb_pat in
       (ImmId(tmp, ()), [BLet(tmp, CLambda(args, helpAExpr body, ()))])
     | TExpLambda([], _) -> failwith "Impossible: helpIExpr: Empty lambda"
     | TExpLambda(_, _) -> failwith "NYI: helpIExpr: Multi-branch lambda"

@@ -49,6 +49,10 @@ let rec pretty_val ppf v =
     | TPatConstant c -> fprintf ppf "%s" (pretty_const c)
     | TPatConstruct({txt=id}, _, args) ->
       fprintf ppf "@[%s(%a)@]" (Identifier.string_of_ident id) (pretty_vals ",") args
+    | TPatAlias(v, x, _) ->
+      fprintf ppf "@[(%a@ as %a)@]" pretty_val v Ident.print x
+    | TPatOr(v, w) ->
+      fprintf ppf "@[(%a|@,%a)@]" pretty_or v pretty_or w
 
 and pretty_car ppf v = match v.pat_desc with
   | _ -> pretty_val ppf v
@@ -60,6 +64,8 @@ and pretty_arg ppf v = match v.pat_desc with
   |  _ -> pretty_val ppf v
 
 and pretty_or ppf v = match v.pat_desc with
+  | TPatOr(v, w) ->
+    fprintf ppf "%a|@,%a" pretty_or v pretty_or w
   | _ -> pretty_val ppf v
 
 and pretty_vals sep ppf = function

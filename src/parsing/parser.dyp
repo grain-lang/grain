@@ -54,9 +54,8 @@ let rhs_loc dyp n =
   last_loc := ret;
   ret
 
-let fix_block_mapper =
+let fix_block_mapper super =
   let open Ast_mapper in
-  let super = default_mapper in
   let expr mapper ({pexp_desc; _} as e) =
     match pexp_desc with
     | PExpBlock(elts) ->
@@ -78,11 +77,25 @@ let fix_block_mapper =
     | _ -> super.expr mapper e in
   {super with expr}
 
+let fix_tyvar_mapper super =
+  let open Ast_mapper in
+  let open Ast_helper in
+  let typ mapper ({ptyp_desc; ptyp_loc} as t) =
+    match ptyp_desc with
+    | PTyVar v when (v <> "") && (match v.[0] with 'A'..'Z' -> true | _ -> false) ->
+      let id = mkloc (IdentName v) ptyp_loc in
+      {t with ptyp_desc=PTyConstr(id, [])}
+    | _ -> super.typ mapper t in
+  {super with typ}
+
 let fix_blocks ({statements; body} as prog) =
   let open Ast_mapper in
+  let mapper = default_mapper
+    |> fix_block_mapper
+    |> fix_tyvar_mapper in
   {prog with
-   statements=List.map (fix_block_mapper.toplevel fix_block_mapper) statements;
-   body=fix_block_mapper.expr fix_block_mapper body}
+   statements=List.map (mapper.toplevel mapper) statements;
+   body=mapper.expr mapper body}
 
 
 let mkid ns =

@@ -98,6 +98,8 @@ and pattern_desc =
   | TPatConstant of constant
   | TPatTuple of pattern list
   | TPatConstruct of Identifier.t loc * constructor_description * pattern list
+  | TPatAlias of pattern * Ident.t * string loc
+  | TPatOr of pattern * pattern
 
 type expression = {
   exp_desc: expression_desc;

@@ -49,6 +49,7 @@ module Typ = struct
   let arrow ?loc a b = mk ?loc (PTyArrow(a, b))
   let tuple ?loc a = mk ?loc (PTyTuple a)
   let constr ?loc a b = mk ?loc (PTyConstr(a, b))
+  let poly ?loc a b = mk ?loc (PTyPoly(a, b))
 end
 
 module CDecl = struct
@@ -82,6 +83,8 @@ module Pat = struct
   let constant ?loc a = mk ?loc (PPatConstant a)
   let constraint_ ?loc a b = mk ?loc (PPatConstraint(a, b))
   let construct ?loc a b = mk ?loc (PPatConstruct(a, b))
+  let or_ ?loc a b = mk ?loc (PPatOr(a, b))
+  let alias ?loc a b = mk ?loc (PPatAlias(a, b))
 end
 
 module Exp = struct

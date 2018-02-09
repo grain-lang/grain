@@ -543,14 +543,16 @@ and type_function ?in_function loc attrs env ty_expected_explained l caselist =
   in
   let separate = !Grain_utils.Config.principal || Env.has_local_constraints env in
   if separate then begin_def ();
-  let arity = begin match caselist with
+  let rec arity caselist = begin match caselist with
     | [] -> failwith "Impossible: type_function: empty lambda"
+    | ({pmb_pat={ppat_desc=PPatConstraint(p, _)}; _} as mb)::[] -> arity [{mb with pmb_pat=p}]
     | {pmb_pat={ppat_desc=PPatTuple(args)}; _}::[] -> List.length args
     | {pmb_pat={ppat_desc=PPatVar _}; _}::[] -> 1
       (* FIXME: Less hard-coding, please *)
     | {pmb_pat={ppat_desc=PPatConstruct({txt=ident;_}, []); _}; _}::[] when Identifier.equal ident (Identifier.IdentName "()") -> 0
     | _ -> failwith "Impossible: type_function: impossible caselist"
   end in
+  let arity = arity caselist in
   let (ty_arg, ty_res) =
     try filter_arrow arity env (instance env ty_expected)
     with Unify _ ->
