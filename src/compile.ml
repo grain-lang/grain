@@ -65,6 +65,11 @@ let compile_module (opts: compile_options) (p : Parsetree.parsed_program) =
   let full_p = Grain_stdlib.load_libraries initial_env (lib_include_dirs opts) p in
   Well_formedness.check_well_formedness full_p;
   let typed_mod, signature, env = Typemod.type_module Env.empty full_p in
+  if !Grain_utils.Config.verbose then begin
+    prerr_string "\ntyped program:\n";
+    prerr_string @@ Sexplib.Sexp.to_string_hum @@ Grain_typed.Typedtree.sexp_of_typed_program typed_mod;
+    prerr_string "\n\n";
+  end;
   let anfed = atag @@ Anf.anf_typed typed_mod in
   let renamed = resolve_scope anfed initial_env in
   let optimized =

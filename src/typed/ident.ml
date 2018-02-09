@@ -14,9 +14,14 @@
 (*                                                                        *)
 (**************************************************************************)
 
+open Sexplib.Conv
 open Format
 
-type t = { stamp: int; name: string; mutable flags: int }
+type t = {
+  stamp: int;
+  name: string;
+  mutable flags: int [@default 0] [@sexp_drop_default];
+} [@@deriving sexp]
 
 let global_flag = 1
 let predef_exn_flag = 2

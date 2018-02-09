@@ -157,7 +157,7 @@ type typed_program = {
   statements: toplevel_stmt list;
   body: expression;
   env: Env.t;
-}
+} [@@deriving sexp]
 
 (* Auxiliary functions over the AST *)
 
