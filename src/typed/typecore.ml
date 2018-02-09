@@ -77,7 +77,7 @@ type recarg =
 
 let prim1_type = function
   | Add1
-  | Sub1 -> Builtin_types.type_number, Builtin_types.type_bool
+  | Sub1 -> Builtin_types.type_number, Builtin_types.type_number
   | Not -> Builtin_types.type_bool, Builtin_types.type_bool
   | IsNum
   | IsBool
@@ -557,8 +557,12 @@ and type_function ?in_function loc attrs env ty_expected_explained l caselist =
     List.iter generalize_structure ty_arg;
     generalize_structure ty_res
   end;
+  let normalized_arg_type = match ty_arg with
+    | [] -> Builtin_types.type_void
+    | [x] -> x
+    | _ -> newty (TTyTuple ty_arg) in
   let cases, partial =
-    type_cases ~in_function:(loc_fun,ty_fun) env (newty (TTyTuple ty_arg)) ty_res
+    type_cases ~in_function:(loc_fun,ty_fun) env normalized_arg_type ty_res
       true loc caselist in
   (* TODO: Decide if this should be added to TExpLambda *)
   (*let param = name_pattern "param" cases in*)

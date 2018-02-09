@@ -1986,7 +1986,7 @@ let filter_arrow arity env t =
   | TTyVar _ ->
     let lv = t.level in
     let vars = ref [] in
-    for i = 0 to arity do
+    for i = 1 to arity do
       vars := (newvar2 lv)::!vars
     done;
     let t2 = newvar2 lv in
