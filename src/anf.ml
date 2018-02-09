@@ -122,7 +122,9 @@ let anf_typed (p : Grain_typed.Typedtree.typed_program) : unit aprogram =
             List.map (function
                 | {pat_desc=TPatVar(id, _)} -> Ident.unique_name id
                 | _ -> failwith "NYI: helpIExpr: Destructuring in lambda argument") args
-          | _ -> failwith "Impossible: helpIExpr: Lambda contained non-tuple pattern"
+          | TPatVar(v, _) -> [Ident.unique_name v]
+          | TPatConstruct({txt=ident}, _, []) when Identifier.equal ident (Identifier.IdentName "()") -> []
+          | _ -> failwith "Impossible: helpIExpr: Lambda contained non-tuple/var pattern"
         end in
       (ImmId(tmp, ()), [BLet(tmp, CLambda(args, helpAExpr body, ()))])
     | TExpLambda([], _) -> failwith "Impossible: helpIExpr: Empty lambda"
@@ -188,7 +190,9 @@ let anf_typed (p : Grain_typed.Typedtree.typed_program) : unit aprogram =
             List.map (function
                 | {pat_desc=TPatVar(id, _)} -> Ident.unique_name id
                 | _ -> failwith "NYI: helpIExpr: Destructuring in lambda argument") args
-          | _ -> failwith "Impossible: helpIExpr: Lambda contained non-tuple pattern"
+          | TPatVar(v, _) -> [Ident.unique_name v]
+          | TPatConstruct({txt=ident}, _, []) when Identifier.equal ident (Identifier.IdentName "()") -> []
+          | _ -> failwith "Impossible: helpIExpr: Lambda contained non-tuple/var pattern"
         end in
       (CLambda(args, helpAExpr body, ()), [])
     | TExpLambda([], _) -> failwith "helpCExpr: impossible: empty lambda"

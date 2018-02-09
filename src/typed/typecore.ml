@@ -162,8 +162,8 @@ let unify_pat_types loc env ty ty' =
 
 (* unification inside type_exp and type_expect *)
 let unify_exp_types loc env ty expected_ty =
-  (* Format.eprintf "@[%a@ %a@]@." Printtyp.raw_type_expr exp.exp_type
-     Printtyp.raw_type_expr expected_ty; *)
+  (*Format.eprintf "Unifying: @[%a@ %a@]@." Printtyp.raw_type_expr ty
+     Printtyp.raw_type_expr expected_ty;*)
   try
     unify env ty expected_ty
   with
@@ -420,8 +420,12 @@ and type_expect_ ?in_function ?(recarg=Rejected) env sexp ty_expected_explained 
     }
   | PExpLambda(args, body) ->
     let open Ast_helper in
+    let pat = match args with
+      | [] -> Pat.construct (Location.mknoloc (Identifier.IdentName "()")) []
+      | [x] -> x
+      | args -> Pat.tuple args in
     type_function ?in_function loc [] env ty_expected_explained ()
-      [Mb.mk (Pat.tuple args) body]
+      [Mb.mk pat body]
   | PExpApp(func, args) ->
     begin_def (); (* one more level for non-returning functions *)
     if !Grain_utils.Config.principal then begin_def();
@@ -542,6 +546,9 @@ and type_function ?in_function loc attrs env ty_expected_explained l caselist =
   let arity = begin match caselist with
     | [] -> failwith "Impossible: type_function: empty lambda"
     | {pmb_pat={ppat_desc=PPatTuple(args)}; _}::[] -> List.length args
+    | {pmb_pat={ppat_desc=PPatVar _}; _}::[] -> 1
+      (* FIXME: Less hard-coding, please *)
+    | {pmb_pat={ppat_desc=PPatConstruct({txt=ident;_}, []); _}; _}::[] when Identifier.equal ident (Identifier.IdentName "()") -> 0
     | _ -> failwith "Impossible: type_function: impossible caselist"
   end in
   let (ty_arg, ty_res) =
@@ -610,7 +617,7 @@ and type_application env funct args =
   in
   let typed_args =
     List.map2 (fun arg t_arg -> type_expect env arg (mk_expected t_arg)) args ty_args in
-  typed_args, instance env ty_fun
+  typed_args, instance env ty_ret
 
 and type_construct env loc lid sarg ty_expected_explained attrs =
   let { ty = ty_expected; explanation } = ty_expected_explained in

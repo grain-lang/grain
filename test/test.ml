@@ -183,7 +183,7 @@ let tgcefile name heap_size input_file errmsg = name>::test_err_input_file input
 
 let test_resolve_scope opts program_str outfile (expected : 'a aprogram) test_ctxt =
   let anf = compile_string_to_anf outfile opts program_str in
-  let result = Grain.Pretty.string_of_aprogram (Grain.Resolve_scope.resolve_scope anf Grain.Compile.initial_env) in
+  let result = Grain.Pretty.string_of_aprogram (Grain.Resolve_scope.resolve_scope anf Grain.Compile.initial_load_env) in
   assert_equal (Grain.Pretty.string_of_aprogram expected) result
 
 let test_final_anf opts program_str outfile (expected : 'a aprogram) test_ctxt =

@@ -214,7 +214,7 @@ paren_expr :
   | LPAREN binop_expr RPAREN { $2 }
 
 app_arg_exprs :
-  | binop_expr [COMMA binop_expr {$2}]* { $1::$2 }
+  | [binop_expr [COMMA binop_expr {$2}]* { $1::$2 }]? { Option.default [] $1 }
 
 app_expr :
   | expr LPAREN app_arg_exprs RPAREN { prerr_string "\napp_expr\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); Exp.apply ~loc:(symbol_rloc dyp) $1 $3 }
@@ -230,8 +230,11 @@ simple_expr :
 block_expr :
   | LBRACE block RBRACE { Exp.block ~loc:(symbol_rloc dyp) $2 }
 
+lam_args :
+  | patterns? { Option.default [] $1 }
+
 lam_expr :
-  | LPAREN patterns RPAREN THICKARROW block_expr { Exp.lambda ~loc:(symbol_rloc dyp) $2 $5 }
+  | LPAREN lam_args RPAREN THICKARROW block_expr { Exp.lambda ~loc:(symbol_rloc dyp) $2 $5 }
 
 maybe_rec :
   | REC? { Option.map_default (fun _ -> Recursive) Nonrecursive $1 }
