@@ -106,6 +106,8 @@ and pattern_desc =
   | TPatConstant of constant
   | TPatTuple of pattern list
   | TPatConstruct of Identifier.t loc * constructor_description * pattern list
+  | TPatAlias of pattern * Ident.t * string loc
+  | TPatOr of pattern * pattern
 [@@deriving sexp]
 
 type expression = {
@@ -178,10 +180,15 @@ let iter_pattern_desc f patt =
   | TPatAny
   | TPatVar _
   | TPatConstant _ -> ()
+  | TPatAlias(p, _, _) -> f p
+  | TPatOr(p1, p2) -> f p1; f p2
 
 let map_pattern_desc f patt =
   match patt with
   | TPatTuple patts -> TPatTuple (List.map f patts)
+  | TPatAlias(p1, id, s) -> TPatAlias(f p1, id, s)
+  | TPatConstruct(lid, c, pats) -> TPatConstruct(lid, c, List.map f pats)
+  | TPatOr(p1, p2) -> TPatOr(f p1, f p2)
   | _ -> patt
 
 let pattern_bound_idents_and_locs patt =
@@ -189,6 +196,11 @@ let pattern_bound_idents_and_locs patt =
   let rec help {pat_desc=desc; _} =
     match desc with
     | TPatVar(id, s) -> ret := (id, s)::!ret
+    | TPatAlias(p, id, s) ->
+      help p; ret := (id, s)::!ret
+    | TPatOr(p1, _) ->
+      (* Invariant: both arguments bind the same variables *)
+      help p1
     | _ -> iter_pattern_desc help desc in
   help patt;
   !ret
@@ -219,6 +231,13 @@ let rec alpha_pat env ({pat_desc=desc; _} as p) =
       with
       | Not_found -> TPatAny in
     {p with pat_desc=new_desc}
+  | TPatAlias(p1, id, s) ->
+    let new_p = alpha_pat env p1 in
+    begin try
+        {p with pat_desc=TPatAlias(new_p, alpha_var env id, s)}
+      with
+      | Not_found -> new_p
+    end
   | _ -> {p with pat_desc = map_pattern_desc (alpha_pat env) desc}
 
 let mkloc = Location.mkloc

@@ -43,6 +43,7 @@ module Typ : sig
   val arrow: ?loc:loc -> parsed_type list -> parsed_type -> parsed_type
   val tuple: ?loc:loc -> parsed_type list -> parsed_type
   val constr: ?loc:loc -> id -> parsed_type list -> parsed_type
+  val poly: ?loc:loc -> str list -> parsed_type -> parsed_type
 end
 
 module CDecl : sig
@@ -64,6 +65,8 @@ module Pat : sig
   val constant: ?loc:loc -> constant -> pattern
   val constraint_: ?loc:loc -> pattern -> parsed_type -> pattern
   val construct: ?loc:loc -> id -> pattern list -> pattern
+  val or_: ?loc:loc -> pattern -> pattern -> pattern
+  val alias: ?loc:loc -> pattern -> str -> pattern
 end
 
 module Exp: sig

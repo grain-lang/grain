@@ -105,6 +105,7 @@ rule token = parse
   | "match" { MATCH }
   | "::" { COLONCOLON }
   | ":=" { GETS }
+  | ":" { COLON }
   | "==" { EQEQ }
   | "=" { EQUAL }
   | "," { COMMA }

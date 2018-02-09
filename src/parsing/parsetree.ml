@@ -19,6 +19,7 @@ type parsed_type_desc =
   | PTyArrow of parsed_type list * parsed_type
   | PTyTuple of parsed_type list
   | PTyConstr of (Identifier.t loc) * parsed_type list
+  | PTyPoly of string loc list * parsed_type
 [@@deriving sexp]
 
 and parsed_type = {
@@ -67,6 +68,8 @@ type pattern_desc =
   | PPatConstant of constant
   | PPatConstraint of pattern * parsed_type
   | PPatConstruct of Identifier.t loc * pattern list
+  | PPatOr of pattern * pattern
+  | PPatAlias of pattern * string loc
 [@@deriving sexp]
 
 and pattern = {

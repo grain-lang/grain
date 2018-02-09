@@ -34,6 +34,8 @@ type error =
   | MultiplyBoundVariable of string
   | ModulesNotAllowed
   | UnexpectedExistential
+  | OrpatVars of Ident.t * Ident.t list
+  | OrPatternTypeClash of Ident.t * (type_expr * type_expr) list
 
 exception Error of Location.t * Env.t * error
 
@@ -43,8 +45,10 @@ let iter_ppat f p =
   | PPatVar _
   | PPatConstant _ -> ()
   | PPatTuple lst -> List.iter f lst
+  | PPatAlias (p, _)
   | PPatConstraint (p,_) -> f p
   | PPatConstruct (_, lst) -> List.iter f lst
+  | PPatOr(p1, p2) -> f p1; f p2
 
 
 let map_fold_cont f xs k =
@@ -149,7 +153,7 @@ let sort_pattern_variables vs =
       Pervasives.compare (Ident.name x) (Ident.name y))
     vs
 
-(*let enter_orpat_variables loc env  p1_vs p2_vs =
+let enter_orpat_variables loc env  p1_vs p2_vs =
   (* unify_vars operate on sorted lists *)
 
   let p1_vs = sort_pattern_variables p1_vs
@@ -167,21 +171,42 @@ let sort_pattern_variables vs =
               unify env t1 t2
             with
             | Unify trace ->
-                raise(Error(loc, env, Or_pattern_type_clash(x1, trace)))
+                raise(Error(loc, env, OrPatternTypeClash(x1, trace)))
             end;
           (x2,x1)::unify_vars rem1 rem2
           end
       | [],[] -> []
-      | (x,_,_,_,_)::_, [] -> raise (Error (loc, env, Orpat_vars (x, [])))
-      | [],(y,_,_,_,_)::_  -> raise (Error (loc, env, Orpat_vars (y, [])))
+      | (x,_,_,_,_)::_, [] -> raise (Error (loc, env, OrpatVars (x, [])))
+      | [],(y,_,_,_,_)::_  -> raise (Error (loc, env, OrpatVars (y, [])))
       | (x,_,_,_,_)::_, (y,_,_,_,_)::_ ->
           let err =
             if Ident.name x < Ident.name y
-            then Orpat_vars (x, vars p2_vs)
-            else Orpat_vars (y, vars p1_vs) in
+            then OrpatVars (x, vars p2_vs)
+            else OrpatVars (y, vars p1_vs) in
           raise (Error (loc, env, err)) in
   unify_vars p1_vs p2_vs
-*)
+
+let rec build_as_type env p =
+  match p.pat_desc with
+  | TPatAlias(p1, _, _) -> build_as_type env p1
+  | TPatTuple(pl) ->
+    let tyl = List.map (build_as_type env) pl in
+    newty (TTyTuple tyl)
+  | TPatConstruct(_, cstr, pl) ->
+    let keep = cstr.cstr_existentials <> [] in
+    if keep then p.pat_type else
+      let tyl = List.map (build_as_type env) pl in
+      let ty_args, ty_res = instance_constructor cstr in
+      List.iter2 (fun (p, ty) -> unify_pat env {p with pat_type = ty})
+        (List.combine pl tyl) ty_args;
+      ty_res
+  | TPatOr(p1, p2) ->
+    let ty1 = build_as_type env p1 and ty2 = build_as_type env p2 in
+    unify_pat env {p2 with pat_type = ty2} ty1;
+    ty1
+  | TPatAny
+  | TPatVar _
+  | TPatConstant _ -> p.pat_type
 
 (* Remember current state for backtracking.
    No variable information, as we only backtrack on
@@ -261,8 +286,8 @@ and type_pat_aux ~constrs ~labels ~no_existentials ~mode ~explode ~env
         pat_loc = loc; pat_extra=[];
         pat_type = expected_ty;
         pat_env = !env }
-  (*| PPatConstraint({ppat_desc=PPatVar name; ppat_loc=lloc},
-                   ({ptyp_desc=PTypPoly _} as sty)) ->
+  | PPatConstraint({ppat_desc=PPatVar name; ppat_loc=lloc},
+                   ({ptyp_desc=PTyPoly _} as sty)) ->
       (* explicitly polymorphic type *)
       assert (constrs = None);
       let cty, force = Typetexp.transl_simple_type_delayed !env sty in
@@ -270,22 +295,36 @@ and type_pat_aux ~constrs ~labels ~no_existentials ~mode ~explode ~env
       unify_pat_types lloc !env ty expected_ty;
       pattern_force := force :: !pattern_force;
       begin match ty.desc with
-      | Tpoly (body, tyl) ->
+      | TTyPoly (body, tyl) ->
           begin_def ();
           let _, ty' = instance_poly ~keep_names:true false tyl body in
           end_def ();
           generalize ty';
           let id = enter_variable lloc name ty' in
           rp k {
-            pat_desc = Tpat_var (id, name);
+            pat_desc = TPatVar (id, name);
             pat_loc = lloc;
-            pat_extra = [Tpat_constraint cty, loc, sp.ppat_attributes];
+            pat_extra = [TPatConstraint cty, loc];
             pat_type = ty;
-            pat_attributes = [];
             pat_env = !env
           }
       | _ -> assert false
-      end*)
+      end
+  | PPatAlias(sq, name) ->
+    assert (constrs = None);
+    type_pat sq expected_ty (fun q ->
+        begin_def();
+        let ty_var = build_as_type !env q in
+        end_def();
+        generalize ty_var;
+        let id = enter_variable ~is_as_variable:true loc name ty_var in
+        rp k {
+          pat_desc = TPatAlias(q, id, name);
+          pat_loc = loc;
+          pat_extra = [];
+          pat_type = q.pat_type;
+          pat_env = !env
+        })
   | PPatConstant cst ->
       let cst = constant_or_raise !env loc cst in
       unify_pat_types loc !env (type_constant cst) expected_ty;
@@ -379,39 +418,77 @@ and type_pat_aux ~constrs ~labels ~no_existentials ~mode ~explode ~env
           pat_loc = loc; pat_extra=[];
           pat_type = expected_ty;
           pat_env = !env })
+  | PPatOr(sp1, sp2) ->
+    let state = save_state env in
+    begin match
+        if mode = Split_or || mode = Splitting_or then raise Need_backtrack;
+        let initial_pattern_variables = !pattern_variables in
+        let initial_module_variables = !module_variables in
+        let p1 =
+          try Some (type_pat ~mode:Inside_or sp1 expected_ty (fun x -> x))
+          with Need_backtrack -> None in
+        let p1_variables = !pattern_variables in
+        let p1_module_variables = !module_variables in
+        pattern_variables := initial_pattern_variables;
+        module_variables := initial_module_variables;
+        let p2 =
+          try Some (type_pat ~mode:Inside_or sp2 expected_ty (fun x -> x))
+          with Need_backtrack -> None in
+        let p2_variables = !pattern_variables in
+        match p1, p2 with
+        | None, None -> raise Need_backtrack
+        | Some p, None
+        | None, Some p -> p (* No variables *)
+        | Some p1, Some p2 ->
+          let alpha_env = enter_orpat_variables loc !env p1_variables p2_variables in
+          pattern_variables := p1_variables;
+          module_variables := p1_module_variables;
+          { pat_desc = TPatOr(p1, alpha_pat alpha_env p2);
+            pat_loc = loc; pat_extra=[];
+            pat_type = expected_ty;
+            pat_env = !env }
+      with
+      | p -> rp k p
+      | exception Need_backtrack when mode <> Inside_or ->
+        assert (constrs <> None);
+        set_state state env;
+        let mode = if mode = Split_or then mode else Splitting_or in
+        try type_pat ~mode sp1 expected_ty k with Error _ ->
+          set_state state env;
+          type_pat ~mode sp2 expected_ty k
+    end
   | PPatConstraint(sp, sty) ->
     (* Separate when not already separated by !principal *)
-    failwith "NYI: typepat > type_pat_aux > PPatConstraint (needs TyAlias)"
-      (*let separate = true in
-      if separate then begin_def();
-      let cty, force = Typetexp.transl_simple_type_delayed !env sty in
-      let ty = cty.ctyp_type in
-      let ty, expected_ty' =
-        if separate then begin
-          end_def();
-          generalize_structure ty;
-          instance !env ty, instance !env ty
-        end else ty, ty
-      in
-      unify_pat_types loc !env ty expected_ty;
-      type_pat sp expected_ty' (fun p ->
+    let separate = true in
+    if separate then begin_def();
+    let cty, force = Typetexp.transl_simple_type_delayed !env sty in
+    let ty = cty.ctyp_type in
+    let ty, expected_ty' =
+      if separate then begin
+        end_def();
+        generalize_structure ty;
+        instance !env ty, instance !env ty
+      end else ty, ty
+    in
+    unify_pat_types loc !env ty expected_ty;
+    type_pat sp expected_ty' (fun p ->
         (*Format.printf "%a@.%a@."
           Printtyp.raw_type_expr ty
           Printtyp.raw_type_expr p.pat_type;*)
         pattern_force := force :: !pattern_force;
-        let extra = (TPatConstraint cty, loc, sp.ppat_attributes) in
+        let extra = (TPatConstraint cty, loc) in
         let p =
           if not separate then p else
-          match p.pat_desc with
-            TPatVar (id,s) ->
+            match p.pat_desc with
+              TPatVar (id,s) ->
               {p with pat_type = ty;
-               pat_desc = Tpat_alias
-                 ({p with pat_desc = Tpat_any; pat_attributes = []}, id,s);
-               pat_extra = [extra];
-             }
-          | _ -> {p with pat_type = ty;
-                  pat_extra = extra :: p.pat_extra}
-        in k p)*)
+                      pat_desc = TPatAlias
+                          ({p with pat_desc = TPatAny}, id,s);
+                      pat_extra = [extra];
+              }
+            | _ -> {p with pat_type = ty;
+                           pat_extra = extra :: p.pat_extra}
+        in k p)
 
 let type_pat ?(allow_existentials=false) ?constrs ?labels ?(mode=Normal)
     ?(explode=0) ?(lev=get_current_level()) env sp expected_ty =
@@ -520,6 +597,17 @@ let report_error env ppf = function
     fprintf ppf "Variable %s is bound several times in this matching" name
   | ModulesNotAllowed ->
     fprintf ppf "Modules are not allowed in this pattern."
+  | OrpatVars(id, valid_idents) ->
+    fprintf ppf "Variable %s must occur on both sides of this | pattern"
+      (Ident.name id);
+    spellcheck_idents ppf id valid_idents
+  | OrPatternTypeClash(id, trace) ->
+    report_unification_error ppf env trace
+      (function ppf ->
+         fprintf ppf "The variable %s on the left-hand side of this \
+                      or-pattern has type" (Ident.name id))
+      (function ppf ->
+         fprintf ppf "but on the right-hand side it has type")
 
 let report_error env ppf err =
   wrap_printing_env env (fun () -> report_error env ppf err)

@@ -49,6 +49,8 @@ module P = struct
     | PPatConstant c -> sub.constant sub c
     | PPatConstraint(p, pt) -> sub.pat sub p; sub.typ sub pt
     | PPatConstruct(id, pl) -> iter_loc sub id; List.iter (sub.pat sub) pl
+    | PPatOr(p1, p2) -> sub.pat sub p1; sub.pat sub p2
+    | PPatAlias(p, id) -> sub.pat sub p; iter_loc sub id
 end
 
 module C = struct
@@ -78,6 +80,7 @@ module T = struct
     | PTyArrow(args, ret) -> List.iter (sub.typ sub) args; sub.typ sub ret
     | PTyTuple ts -> List.iter (sub.typ sub) ts
     | PTyConstr(name, ts) -> iter_loc sub name; List.iter (sub.typ sub) ts
+    | PTyPoly(args, t) -> List.iter (iter_loc sub) args; sub.typ sub t
 end
 
 module V = struct
