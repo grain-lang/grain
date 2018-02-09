@@ -1,8 +1,10 @@
 (* Modified version of OCaml's Path module *)
+open Sexplib.Conv
 
 type t =
   | PIdent of Ident.t
   | PExternal of t * string * int
+[@@deriving sexp]
 
 let nopos = -1
 

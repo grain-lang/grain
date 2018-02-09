@@ -2,6 +2,7 @@
 (* Inspired by OCaml's typing module *)
 open Grain_parsing
 include Asttypes
+open Sexplib.Conv
 
 module OrderedString = struct
   type t = string
@@ -23,12 +24,13 @@ type commutable =
   | TComOk
   | TComUnknown
   | TComLink of commutable ref
+[@@deriving sexp]
 
 type type_expr = {
   mutable desc: type_desc;
   mutable level: int;
   id: int;
-}
+} [@@deriving sexp]
 
 and type_desc =
   | TTyVar of string option
@@ -72,12 +74,12 @@ and abbrev_memo =
 type value_description = {
   val_type: type_expr;
   val_kind: value_kind;
-  val_loc: Location.t
-}
+  val_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
+} [@@deriving sexp]
 
 and value_kind =
   | TValReg
-  | TValPrim of Primitive.description
+  | TValPrim of Primitive.description sexp_opaque
   | TValUnbound of value_unbound_reason
 
 and value_unbound_reason =
@@ -87,8 +89,8 @@ type constructor_declaration = {
   cd_id: Ident.t;
   cd_args: constructor_arguments;
   cd_res: type_expr option;
-  cd_loc: Location.t;
-}
+  cd_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
+} [@@deriving sexp]
 
 and constructor_arguments =
   | TConstrTuple of type_expr list
@@ -101,9 +103,9 @@ type type_declaration = {
   type_kind: type_kind;
   type_manifest: type_expr option;
   type_newtype_level: (int * int) option;
-  type_loc: Location.t;
+  type_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
   type_immediate: bool; (* Whether the type should not be a pointer *)
-}
+} [@@deriving sexp]
 
 and type_kind =
   | TDataVariant of constructor_declaration list
@@ -113,12 +115,14 @@ type rec_status =
   | TRecNot
   | TRecFirst
   | TRecNext
+[@@deriving sexp]
 
 type signature_item =
   | TSigValue of Ident.t * value_description
   | TSigType of Ident.t * type_declaration * rec_status
   | TSigModule of Ident.t * module_declaration * rec_status
   | TSigModType of Ident.t * modtype_declaration
+[@@deriving sexp]
 
 and signature = signature_item list
 
@@ -128,18 +132,19 @@ and module_type =
 
 and module_declaration = {
   md_type: module_type;
-  md_loc: Location.t;
+  md_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
 }
 
 and modtype_declaration = {
   mtd_type: module_type option;
-  mtd_loc: Location.t;
+  mtd_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
 }
 
 type constructor_tag =
   | CstrConstant of int
   | CstrBlock of int
   | CstrUnboxed
+[@@deriving sexp]
 
 type constructor_description = {
   cstr_name : string;
@@ -148,8 +153,8 @@ type constructor_description = {
   cstr_args: type_expr list;
   cstr_arity: int;
   cstr_tag: constructor_tag;
-  cstr_loc: Location.t;
-}
+  cstr_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
+} [@@deriving sexp]
 
 module TypeOps = struct
   type t = type_expr

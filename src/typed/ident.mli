@@ -16,7 +16,7 @@
 
 (* Identifiers (unique names) *)
 
-type t = { stamp: int; name: string; mutable flags: int }
+type t = { stamp: int; name: string; mutable flags: int } [@@deriving sexp]
 
 include Identifiable.S with type t := t
 (* Notes:
