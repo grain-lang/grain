@@ -23,7 +23,7 @@ type parsed_type_desc =
 
 and parsed_type = {
   ptyp_desc: parsed_type_desc;
-  ptyp_loc: Location.t;
+  ptyp_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
 }
 
 (** Type for arguments to a constructor *)
@@ -36,7 +36,7 @@ type constructor_arguments =
 type constructor_declaration = {
   pcd_name: string loc;
   pcd_args: constructor_arguments;
-  pcd_loc: Location.t;
+  pcd_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
 } [@@deriving sexp]
 
 (** Different types of data which can be declared. Currently only one. *)
@@ -49,7 +49,7 @@ type data_declaration = {
   pdata_name: string loc;
   pdata_params: parsed_type list;
   pdata_kind: data_kind;
-  pdata_loc: Location.t;
+  pdata_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
 } [@@deriving sexp]
 
 (** Constants supported by Grain *)
@@ -71,7 +71,7 @@ type pattern_desc =
 
 and pattern = {
   ppat_desc: pattern_desc;
-  ppat_loc: Location.t;
+  ppat_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
 } [@@deriving sexp]
 
 (** Single-argument operators *)
@@ -101,7 +101,7 @@ type prim2 =
 (** Type for expressions (i.e. things which evaluate to something) *)
 type expression = {
   pexp_desc: expression_desc;
-  pexp_loc: Location.t;
+  pexp_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
 } [@@deriving sexp]
 
 and expression_desc =
@@ -123,19 +123,19 @@ and expression_desc =
 and value_binding = {
   pvb_pat: pattern;
   pvb_expr: expression;
-  pvb_loc: Location.t;
+  pvb_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
 } [@@deriving sexp]
 
 and match_branch = {
   pmb_pat: pattern;
   pmb_body: expression;
-  pmb_loc: Location.t;
+  pmb_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
 } [@@deriving sexp]
 
 (** Type for import statements *)
 type import_declaration = {
   pimp_mod: Identifier.t loc;
-  pimp_loc: Location.t;
+  pimp_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
 } [@@deriving sexp]
 
 (** Statements which can exist at the top level *)
@@ -147,7 +147,7 @@ type toplevel_stmt_desc =
 
 type toplevel_stmt = {
   ptop_desc: toplevel_stmt_desc;
-  ptop_loc: Location.t;
+  ptop_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
 } [@@deriving sexp]
 
 (** The type for parsed programs *)

@@ -153,6 +153,11 @@ let verbose = toggle_flag
     ~doc:"Print internal debug messages"
     false
 
+let sexp_locs_enabled = toggle_flag
+    ~names:["hide-locs"]
+    ~doc:"Hide locations from intermediate trees. Only has an effect with `--cdebug'."
+    true
+
 let unsound_optimizations = toggle_flag
     ~names:["Ounsound"]
     ~doc:"Compile with optimizations which may remove runtime errors"

@@ -57,12 +57,14 @@ let lib_include_dirs opts =
   (if opts.use_stdlib then Option.map_default (fun x -> [x]) [] (Grain_stdlib.stdlib_directory()) else []) @ opts.include_dirs
 
 let compile_module (opts: compile_options) (p : Parsetree.parsed_program) =
+  if !Grain_utils.Config.verbose then begin
+    prerr_string "\nparsed program:\n";
+    prerr_string @@ Sexplib.Sexp.to_string_hum @@ Grain_parsing.Parsetree.sexp_of_parsed_program p;
+    prerr_string "\n\n";
+  end;
   let full_p = Grain_stdlib.load_libraries initial_env (lib_include_dirs opts) p in
-  Printf.eprintf "Bouta tc\n";
   Well_formedness.check_well_formedness full_p;
-  Printf.eprintf "I am well formed";
   let typed_mod, signature, env = Typemod.type_module Env.empty full_p in
-  Printf.eprintf "did it\n";
   let anfed = atag @@ Anf.anf_typed typed_mod in
   let renamed = resolve_scope anfed initial_env in
   let optimized =
@@ -78,9 +80,7 @@ let compile_to_string opts p =
 let compile_to_anf (opts : compile_options) (p : Parsetree.parsed_program) =
   let full_p = Grain_stdlib.load_libraries initial_env (lib_include_dirs opts) p in
   Well_formedness.check_well_formedness full_p;
-  Printf.eprintf "Bouta tc\n";
   let typed_mod, signature, env = Typemod.type_module Env.empty full_p in
-  Printf.eprintf "did it\n";
   let anfed = atag @@ Anf.anf_typed typed_mod in
   anfed
 

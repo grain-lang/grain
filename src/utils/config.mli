@@ -1,6 +1,10 @@
 val verbose : bool ref
 (** Whether verbose output should be written *)
 
+val sexp_locs_enabled : bool ref
+(** Whether locations should be shown in s-expression-converted trees
+    (primarily useful with --cdebug). *)
+
 val optimizations_enabled : bool ref
 (** Whether optimizations should be run *)
 

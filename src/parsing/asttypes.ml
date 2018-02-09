@@ -34,5 +34,5 @@ type rec_flag = Nonrecursive | Recursive [@@deriving sexp]
 (** A location-tagged value. *)
 type 'a loc = 'a Location.loc = {
   txt : 'a;
-  loc : Location.t;
+  loc : Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
 } [@@deriving sexp]
