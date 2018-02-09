@@ -22,9 +22,52 @@ open Grain_utils
    Perhaps we should just go ahead and copy the whole thing. *)
 let absname = ref false
 
+let sexp_of_position (p : position) =
+  Sexplib.Sexp.List [
+    Sexplib.Sexp.Atom "position";
+    Sexplib.Sexp.List [
+      Sexplib.Sexp.Atom "file";
+      Sexplib.Conv.sexp_of_string p.pos_fname;
+    ];
+    Sexplib.Sexp.List [
+      Sexplib.Sexp.Atom "line";
+      Sexplib.Conv.sexp_of_int p.pos_lnum;
+    ];
+    Sexplib.Sexp.List [
+      Sexplib.Sexp.Atom "col";
+      Sexplib.Conv.sexp_of_int p.pos_cnum;
+    ];
+    Sexplib.Sexp.List [
+      Sexplib.Sexp.Atom "bol";
+      Sexplib.Conv.sexp_of_int p.pos_bol;
+    ];
+  ]
+
+let position_of_sexp (sexp : Sexplib.Sexp.t) =
+  let open Sexplib.Conv in
+  let open Sexplib.Sexp in
+  match sexp with
+  | Atom str -> of_sexp_error "position_of_sexp: list needed" sexp
+  | List [Atom "position"; List sexp_fields] when List.length sexp_fields = 4 ->
+    let fields = List.map (function
+        | List [Atom str; ((Atom _) as value)] -> (str, value)
+        | sexp -> of_sexp_error "position_of_sexp: invalid field" sexp) sexp_fields in
+    let pos_fname, pos_lnum, pos_cnum, pos_bol = begin
+      try
+        string_of_sexp (List.assoc "file" fields),
+        int_of_sexp (List.assoc "line" fields),
+        int_of_sexp (List.assoc "col" fields),
+        int_of_sexp (List.assoc "bol" fields)
+      with
+      | Not_found -> of_sexp_error "position_of_sexp: invalid fields" sexp
+    end in
+    { pos_fname; pos_lnum; pos_cnum; pos_bol }
+  | List ((Atom "position") :: _) -> of_sexp_error "position_of_sexp: invalid fields" sexp
+  | List _ -> of_sexp_error "position_of_sexp: invalid s-expression" sexp
+
 type t = Warnings.loc = {
-  loc_start: position sexp_opaque;
-  loc_end: position sexp_opaque;
+  loc_start: position;
+  loc_end: position;
   loc_ghost: bool;
 } [@@deriving sexp]
 
@@ -42,6 +85,17 @@ let dummy_loc = {
   loc_end=dummy_pos;
   loc_ghost=true
 }
+
+let sexp_of_t loc =
+  if loc = dummy_loc then
+    Sexplib.Sexp.Atom "dummy_loc"
+  else
+    sexp_of_t loc
+
+let t_of_sexp sexp =
+  match sexp with
+  | Sexplib.Sexp.Atom "dummy_loc" -> dummy_loc
+  | _ -> t_of_sexp sexp
 
 let curr lexbuf = {
   loc_start = lexbuf.lex_start_p;
