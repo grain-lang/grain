@@ -409,8 +409,7 @@ let fold_constructors = fold_descr Env.fold_constructors (fun d -> d.cstr_name)
 let fold_modtypes = fold_simple Env.fold_modtypes
 
 let report_error env ppf = function
-  | _ -> fprintf ppf "typetexp error"
- (* | Unbound_type_variable name ->
+  | Unbound_type_variable name ->
      (* we don't use "spellcheck" here: the function that raises this
         error seems not to be called anywhere, so it's unclear how it
         should be handled *)
@@ -433,7 +432,7 @@ let report_error env ppf = function
   | Unbound_row_variable lid ->
       (* we don't use "spellcheck" here: this error is not raised
          anywhere so it's unclear how it should be handled *)
-      fprintf ppf "Unbound row variable in #%a" longident lid
+      fprintf ppf "Unbound row variable in #%a" identifier lid
   | Type_mismatch trace ->
       Printtyp.report_unification_error ppf Env.empty trace
         (function ppf ->
@@ -464,7 +463,7 @@ let report_error env ppf = function
         "@[The type %a@ does not expand to a polymorphic variant type@]"
         Printtyp.type_expr ty;
       begin match ty.desc with
-        | Tvar (Some s) ->
+        | TTyVar (Some s) ->
            (* PR#7012: help the user that wrote 'Foo instead of `Foo *)
            Misc.did_you_mean ppf (fun () -> ["`" ^ s])
         | _ -> ()
@@ -483,64 +482,59 @@ let report_error env ppf = function
          if Btype.is_Tunivar v then "it is already bound to another variable"
          else "it is not a variable")
   | Multiple_constraints_on_type s ->
-      fprintf ppf "Multiple constraints for type %a" longident s
+      fprintf ppf "Multiple constraints for type %a" identifier s
   | Method_mismatch (l, ty, ty') ->
       wrap_printing_env env (fun ()  ->
         Printtyp.reset_and_mark_loops_list [ty; ty'];
         fprintf ppf "@[<hov>Method '%s' has type %a,@ which should be %a@]"
           l Printtyp.type_expr ty Printtyp.type_expr ty')
   | Unbound_value lid ->
-      fprintf ppf "Unbound value %a" longident lid;
+      fprintf ppf "Unbound value %a" identifier lid;
       spellcheck ppf fold_values env lid;
   | Unbound_module lid ->
-      fprintf ppf "Unbound module %a" longident lid;
+      fprintf ppf "Unbound module %a" identifier lid;
       spellcheck ppf fold_modules env lid;
   | Unbound_constructor lid ->
-      fprintf ppf "Unbound constructor %a" longident lid;
+      fprintf ppf "Unbound constructor %a" identifier lid;
       spellcheck ppf fold_constructors env lid;
-  | Unbound_label lid ->
-      fprintf ppf "Unbound record field %a" longident lid;
-      spellcheck ppf fold_labels env lid;
-  | Unbound_class lid ->
-      fprintf ppf "Unbound class %a" longident lid;
-      spellcheck ppf fold_classs env lid;
+  | Unbound_label _
+  | Unbound_class _
+  | Unbound_cltype _ ->
+    failwith "Impossible: deprecated error type in typetexp"
   | Unbound_modtype lid ->
-      fprintf ppf "Unbound module type %a" longident lid;
+      fprintf ppf "Unbound module type %a" identifier lid;
       spellcheck ppf fold_modtypes env lid;
-  | Unbound_cltype lid ->
-      fprintf ppf "Unbound class type %a" longident lid;
-      spellcheck ppf fold_cltypes env lid;
   | Ill_typed_functor_application (flid, mlid, details) ->
      (match details with
      | None ->
         fprintf ppf "@[Ill-typed functor application %a(%a)@]"
-          longident flid longident mlid
+          identifier flid identifier mlid
      | Some inclusion_error ->
         fprintf ppf "@[The type of %a does not match %a's parameter@\n%a@]"
-          longident mlid longident flid Includemod.report_error inclusion_error)
+          identifier mlid identifier flid Includemod.report_error inclusion_error)
   | Illegal_reference_to_recursive_module ->
      fprintf ppf "Illegal recursive module reference"
   | Wrong_use_of_module (lid, details) ->
      (match details with
      | `Structure_used_as_functor ->
         fprintf ppf "@[The module %a is a structure, it cannot be applied@]"
-          longident lid
+          identifier lid
      | `Abstract_used_as_functor ->
         fprintf ppf "@[The module %a is abstract, it cannot be applied@]"
-          longident lid
+          identifier lid
      | `Functor_used_as_structure ->
         fprintf ppf "@[The module %a is a functor, \
-                       it cannot have any components@]" longident lid
+                       it cannot have any components@]" identifier lid
      | `Abstract_used_as_structure ->
         fprintf ppf "@[The module %a is abstract, \
-                       it cannot have any components@]" longident lid
+                       it cannot have any components@]" identifier lid
      | `Generative_used_as_applicative ->
         fprintf ppf "@[The functor %a is generative,@ it@ cannot@ be@ \
-                       applied@ in@ type@ expressions@]" longident lid)
+                       applied@ in@ type@ expressions@]" identifier lid)
   | Cannot_scrape_alias(lid, p) ->
       fprintf ppf
         "The module %a is an alias for module %a, which is missing"
-        longident lid path p
+        identifier lid path p
   | Opened_object nm ->
       fprintf ppf
         "Illegal open object type%a"
@@ -551,7 +545,7 @@ let report_error env ppf = function
       Printtyp.reset_and_mark_loops ty;
       fprintf ppf "@[The type %a@ is not an object type@]"
         Printtyp.type_expr ty
-*)
+
 let () =
   Location.register_error_of_exn
     (function
