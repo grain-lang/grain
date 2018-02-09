@@ -96,6 +96,7 @@ rule token = parse
   | ">=" { GREATEREQ }
   | "and" { AND }
   | "or" { OR }
+  | "not" { NOT }
   | '"'   { read_dquote_str (Buffer.create 16) lexbuf }
   | '\'' { read_squote_str (Buffer.create 16) lexbuf }
   | "_" { UNDERSCORE }
