@@ -123,13 +123,22 @@ let anf_typed (p : Grain_typed.Typedtree.typed_program) : unit aprogram =
           | TPatTuple(args) ->
             List.map (function
                 | {pat_desc=TPatVar(id, _)} -> Ident.unique_name id
-                | _ -> failwith "NYI: helpIExpr: Destructuring in lambda argument") args
-          | TPatVar(v, _) -> [Ident.unique_name v]
-          | TPatConstruct({txt=ident}, _, []) when Identifier.equal ident (Identifier.IdentName "()") -> []
+                | _ -> failwith "NYI: helpIExpr: Destructuring in lambda argument") args, []
+          | TPatVar(v, _) -> [Ident.unique_name v], []
+          | TPatConstruct({txt=ident}, _, []) when Identifier.equal ident (Identifier.IdentName "()") -> [], []
+          | TPatAny -> [gensym "func_arg"], []
+          | TPatAlias(pat, id, _) ->
+            let arglist, extras = args pat in
+            (* NOTE: This is assuming that arglist has length one.
+               When full pattern matching is supported, that will
+               handle this instead *)
+            arglist, (List.hd arglist, (Ident.unique_name id))::extras
           | _ -> failwith "Impossible: helpIExpr: Lambda contained non-tuple/var pattern"
         end in
-      let args = args mb_pat in
-      (ImmId(tmp, ()), [BLet(tmp, CLambda(args, helpAExpr body, ()))])
+      let args, extras = args mb_pat in
+      let anf_body = helpAExpr body in
+      let anf_body = List.fold_left (fun body (a, b) -> ALet(b, CImmExpr(ImmId(a, ())), body, ())) anf_body extras in
+      (ImmId(tmp, ()), [BLet(tmp, CLambda(args, anf_body, ()))])
     | TExpLambda([], _) -> failwith "Impossible: helpIExpr: Empty lambda"
     | TExpLambda(_, _) -> failwith "NYI: helpIExpr: Multi-branch lambda"
     | TExpTuple(args) ->
@@ -187,17 +196,26 @@ let anf_typed (p : Grain_typed.Typedtree.typed_program) : unit aprogram =
        (body_ans, (List.concat new_setup)
                   @ ((BLetRec(List.combine names new_binds))::body_setup))
     | TExpLambda({mb_pat; mb_body=body}::[], _) ->
-      let args =
-        begin match mb_pat.pat_desc with
+      let rec args mb_pat = begin match mb_pat.pat_desc with
           | TPatTuple(args) ->
             List.map (function
                 | {pat_desc=TPatVar(id, _)} -> Ident.unique_name id
-                | _ -> failwith "NYI: helpIExpr: Destructuring in lambda argument") args
-          | TPatVar(v, _) -> [Ident.unique_name v]
-          | TPatConstruct({txt=ident}, _, []) when Identifier.equal ident (Identifier.IdentName "()") -> []
+                | _ -> failwith "NYI: helpIExpr: Destructuring in lambda argument") args, []
+          | TPatVar(v, _) -> [Ident.unique_name v], []
+          | TPatConstruct({txt=ident}, _, []) when Identifier.equal ident (Identifier.IdentName "()") -> [], []
+          | TPatAny -> [gensym "func_arg"], []
+          | TPatAlias(pat, id, _) ->
+            let arglist, extras = args pat in
+            (* NOTE: This is assuming that arglist has length one.
+               When full pattern matching is supported, that will
+               handle this instead *)
+            arglist, (List.hd arglist, (Ident.unique_name id))::extras
           | _ -> failwith "Impossible: helpIExpr: Lambda contained non-tuple/var pattern"
         end in
-      (CLambda(args, helpAExpr body, ()), [])
+      let args, extras = args mb_pat in
+      let anf_body = helpAExpr body in
+      let anf_body = List.fold_left (fun body (a, b) -> ALet(b, CImmExpr(ImmId(a, ())), body, ())) anf_body extras in
+      (CLambda(args, anf_body, ()), [])
     | TExpLambda([], _) -> failwith "helpCExpr: impossible: empty lambda"
     | TExpLambda(_, _) -> failwith "helpCExpr: NYI: multi-branch lambda"
     | TExpApp(func, args) ->
@@ -243,6 +261,26 @@ let anf_typed (p : Grain_typed.Typedtree.typed_program) : unit aprogram =
           | _ -> failwith "Non-name not allowed on LHS of let rec.") binds in
 
       Some((List.concat new_setup) @ [BLetRec(List.combine names new_binds)])
+    | TTopData(decl) ->
+      let open Types in
+      let tdecl = decl.data_type in
+      begin match tdecl.type_kind with
+        | TDataAbstract -> failwith "Impossible: TTopData TDataAbstract"
+        | TDataVariant cstrs ->
+          let count = ref 0 in
+          let cexpr_constructor cd_args =
+            count := !count + 1;
+            match cd_args with
+            | TConstrSingleton -> CTuple([ImmNum(!count, ())], ())
+            | TConstrTuple cd_args ->
+              let args = List.map (fun _ -> gensym "constr_arg") cd_args in
+              let arg_ids = List.map (fun a -> ImmId(a, ())) args in
+              CLambda(args, ACExpr(CTuple((ImmNum(!count, ()))::arg_ids, ())), ()) in
+          let bind_constructor {cd_id; cd_args} =
+            let cexpr = cexpr_constructor cd_args in
+            BLet(Ident.unique_name cd_id, cexpr) in
+          Some(List.map bind_constructor cstrs)
+      end
     | _ -> None in
 
   let helpAProg ({statements; body} : typed_program) : unit aexpr =

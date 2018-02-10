@@ -185,10 +185,121 @@ let type_module ?(toplevel=false) funct_body anchor env sstr (*scope*) =
       (stmt::tt_rem, sg @ sig_rem, final_env) in
 
   let run() =
-    let (items, sg, final_env) = process_all_lets env lets in
+    let (items, sg, final_env) = process_all_lets newenv lets in
     let str = { statements=init_stmts @ items; env = final_env; body = Typecore.type_expression final_env sstr.body } in
     str, (ty_decl @ sg), final_env in
 
   run()
 
 let type_module = type_module false None
+
+(* Error report *)
+
+open Printtyp
+
+let report_error ppf = function
+    Cannot_apply mty ->
+      fprintf ppf
+        "@[This module is not a functor; it has type@ %a@]" modtype mty
+  | Not_included errs ->
+      fprintf ppf
+        "@[<v>Signature mismatch:@ %a@]" Includemod.report_error errs
+  | Cannot_eliminate_dependency mty ->
+      fprintf ppf
+        "@[This functor has type@ %a@ \
+           The parameter cannot be eliminated in the result type.@  \
+           Please bind the argument to a module identifier.@]" modtype mty
+  | Signature_expected -> fprintf ppf "This module type is not a signature"
+  | Structure_expected mty ->
+      fprintf ppf
+        "@[This module is not a structure; it has type@ %a" modtype mty
+  | With_no_component lid ->
+      fprintf ppf
+        "@[The signature constrained by `with' has no component named %a@]"
+        identifier lid
+  | With_mismatch(lid, explanation) ->
+      fprintf ppf
+        "@[<v>\
+           @[In this `with' constraint, the new definition of %a@ \
+             does not match its original definition@ \
+             in the constrained signature:@]@ \
+           %a@]"
+        identifier lid Includemod.report_error explanation
+  | With_makes_applicative_functor_ill_typed(lid, path, explanation) ->
+      fprintf ppf
+        "@[<v>\
+           @[This `with' constraint on %a makes the applicative functor @ \
+             type %s ill-typed in the constrained signature:@]@ \
+           %a@]"
+        identifier lid (Path.name path) Includemod.report_error explanation
+  | With_changes_module_alias(lid, id, path) ->
+      fprintf ppf
+        "@[<v>\
+           @[This `with' constraint on %a changes %s, which is aliased @ \
+             in the constrained signature (as %s)@].@]"
+        identifier lid (Path.name path) (Ident.name id)
+  | With_cannot_remove_constrained_type ->
+      fprintf ppf
+        "@[<v>Destructive substitutions are not supported for constrained @ \
+              types (other than when replacing a type constructor with @ \
+              a type constructor with the same arguments).@]"
+  | Repeated_name(kind, name) ->
+      fprintf ppf
+        "@[Multiple definition of the %s name %s.@ \
+           Names must be unique in a given structure or signature.@]" kind name
+  | Non_generalizable typ ->
+      fprintf ppf
+        "@[The type of this expression,@ %a,@ \
+           contains type variables that cannot be generalized@]" type_scheme typ
+  | Non_generalizable_module mty ->
+      fprintf ppf
+        "@[The type of this module,@ %a,@ \
+           contains type variables that cannot be generalized@]" modtype mty
+  | Implementation_is_required intf_name ->
+      fprintf ppf
+        "@[The interface %a@ declares values, not just types.@ \
+           An implementation must be provided.@]"
+        Location.print_filename intf_name
+  | Interface_not_compiled intf_name ->
+      fprintf ppf
+        "@[Could not find the .cmi file for interface@ %a.@]"
+        Location.print_filename intf_name
+  | Not_allowed_in_functor_body ->
+      fprintf ppf
+        "@[This expression creates fresh types.@ %s@]"
+        "It is not allowed inside applicative functors."
+  | Not_a_packed_module ty ->
+      fprintf ppf
+        "This expression is not a packed module. It has type@ %a"
+        type_expr ty
+  | Incomplete_packed_module ty ->
+      fprintf ppf
+        "The type of this packed module contains variables:@ %a"
+        type_expr ty
+  | Scoping_pack (lid, ty) ->
+      fprintf ppf
+        "The type %a in this module cannot be exported.@ " identifier lid;
+      fprintf ppf
+        "Its type contains local dependencies:@ %a" type_expr ty
+  | Recursive_module_require_explicit_type ->
+      fprintf ppf "Recursive modules require an explicit module type."
+  | Apply_generative ->
+      fprintf ppf "This is a generative functor. It can only be applied to ()"
+  | Cannot_scrape_alias p ->
+      fprintf ppf
+        "This is an alias for module %a, which is missing"
+        path p
+
+let report_error env ppf err =
+  Printtyp.wrap_printing_env env (fun () -> report_error ppf err)
+
+let () =
+  Location.register_error_of_exn
+    (function
+      | Error (loc, env, err) ->
+        Some (Location.error_of_printer loc (report_error env) err)
+      | Error_forward err ->
+        Some err
+      | _ ->
+        None
+    )

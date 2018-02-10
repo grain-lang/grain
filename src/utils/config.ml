@@ -99,6 +99,13 @@ let with_cli_options (term : 'a) : 'a Cmdliner.Term.t =
   let folded = List.fold_left process_option (const term) !specs in
   folded
 
+let option_conv (prsr, prntr) =
+  (fun x -> match prsr x with
+     | `Ok a -> `Ok (Some a)
+     | `Error a -> `Error a),
+  (fun ppf -> function
+     | None -> Format.fprintf ppf "<not set>"
+     | Some(x) -> prntr ppf x)
 
 let optimizations_enabled = toggle_flag
     ~doc:"Disable optimizations."
@@ -111,6 +118,14 @@ let include_dirs = opt
     ~doc:"Extra library include directories"
     ~docv:"DIR"
     []
+
+let grain_root = opt
+    ~names:["grain-root"]
+    ~conv:(option_conv (Cmdliner.Arg.dir))
+    ~doc:"Root directory for grain installation"
+    ~docv:"ROOT"
+    ~env:"GRAIN_ROOT"
+    None
 
 let use_stdlib = toggle_flag
     ~names:["no-stdlib"]

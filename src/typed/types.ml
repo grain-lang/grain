@@ -77,10 +77,27 @@ type value_description = {
   val_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
 } [@@deriving sexp]
 
+and constructor_tag =
+  | CstrConstant of int
+  | CstrBlock of int
+  | CstrUnboxed
+[@@deriving sexp]
+
+and constructor_description = {
+  cstr_name : string;
+  cstr_res: type_expr;
+  cstr_existentials: type_expr list;
+  cstr_args: type_expr list;
+  cstr_arity: int;
+  cstr_tag: constructor_tag;
+  cstr_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
+} [@@deriving sexp]
+
 and value_kind =
   | TValReg
   | TValPrim of Primitive.description sexp_opaque
   | TValUnbound of value_unbound_reason
+  | TValConstructor of constructor_description
 
 and value_unbound_reason =
   | ValUnboundGhostRecursive
@@ -139,22 +156,6 @@ and modtype_declaration = {
   mtd_type: module_type option;
   mtd_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
 }
-
-type constructor_tag =
-  | CstrConstant of int
-  | CstrBlock of int
-  | CstrUnboxed
-[@@deriving sexp]
-
-type constructor_description = {
-  cstr_name : string;
-  cstr_res: type_expr;
-  cstr_existentials: type_expr list;
-  cstr_args: type_expr list;
-  cstr_arity: int;
-  cstr_tag: constructor_tag;
-  cstr_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
-} [@@deriving sexp]
 
 module TypeOps = struct
   type t = type_expr
