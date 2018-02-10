@@ -1,3 +1,6 @@
+val grain_root : string option ref
+(** Root directory for things like standard library lookups *)
+
 val verbose : bool ref
 (** Whether verbose output should be written *)
 

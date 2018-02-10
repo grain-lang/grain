@@ -11,4 +11,4 @@ val stdlib_directory : unit -> string option
     The given environment will be used to check the well-formedness
     of any loaded libraries, and the given list of directories will
     be searched to find included libraries. *)
-val load_libraries : sourcespan envt -> string list -> Grain_parsing.Parsetree.parsed_program -> Grain_parsing.Parsetree.parsed_program
+val load_libraries : Grain_parsing.Parsetree.parsed_program -> Grain_parsing.Parsetree.parsed_program

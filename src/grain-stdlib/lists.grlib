@@ -1,10 +1,12 @@
 # Standard library for list functionality
 
 data a List =
-  | Empty
-  | Cons(a, List);
+  | empty
+  | cons(a, a List);
 
-let rec link = (lambda first, rest: Cons(first, rest));
+let rec link = (first, rest) => {
+  cons(first, rest)
+};
         #length = (lambda l: if l == false: 0 else: let (first, rest) = l in 1 + length(rest)),
         #sum = (lambda l: if l == false: 0 else: let (first, rest) = l in first + sum(rest)),
         #reverse = (lambda l:
@@ -37,4 +39,3 @@ let rec link = (lambda first, rest: Cons(first, rest));
         #                  f(first, fold_right(f, b, rest))),
         #map = (lambda f, l:
         #        fold_right((lambda hd, tl: link(f(hd), tl)), false, l));
-  ...

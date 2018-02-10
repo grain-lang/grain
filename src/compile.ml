@@ -79,7 +79,12 @@ let compile_module (opts: compile_options) (p : Parsetree.parsed_program) =
     prerr_string @@ Sexplib.Sexp.to_string_hum @@ Grain_parsing.Parsetree.sexp_of_parsed_program p;
     prerr_string "\n\n";
   end;
-  let full_p = Grain_stdlib.load_libraries initial_load_env (lib_include_dirs opts) p in
+  let full_p = Grain_stdlib.load_libraries p in
+  if !Grain_utils.Config.verbose then begin
+    prerr_string "\nwith libraries:\n";
+    prerr_string @@ Sexplib.Sexp.to_string_hum @@ Grain_parsing.Parsetree.sexp_of_parsed_program full_p;
+    prerr_string "\n\n";
+  end;
   Well_formedness.check_well_formedness full_p;
   let typed_mod, signature, env = Typemod.type_module (initial_env()) full_p in
   if !Grain_utils.Config.verbose then begin
@@ -100,7 +105,7 @@ let compile_to_string opts p =
   module_to_string @@ compile_module opts p
 
 let compile_to_anf (opts : compile_options) (p : Parsetree.parsed_program) =
-  let full_p = Grain_stdlib.load_libraries initial_load_env (lib_include_dirs opts) p in
+  let full_p = Grain_stdlib.load_libraries p in
   Well_formedness.check_well_formedness full_p;
   let typed_mod, signature, env = Typemod.type_module (initial_env()) full_p in
   let anfed = atag @@ Anf.anf_typed typed_mod in
@@ -108,7 +113,7 @@ let compile_to_anf (opts : compile_options) (p : Parsetree.parsed_program) =
 
 (* like compile_to_anf, but performs scope resolution and optimization. *)
 let compile_to_final_anf (opts : compile_options) (p : Parsetree.parsed_program) =
-  let full_p = Grain_stdlib.load_libraries initial_load_env (lib_include_dirs opts) p in
+  let full_p = Grain_stdlib.load_libraries p in
   Well_formedness.check_well_formedness full_p;
   Printf.eprintf "I am well formed";
   let typed_mod, signature, env = Typemod.type_module (initial_env()) full_p in

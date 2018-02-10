@@ -82,7 +82,7 @@ let newline_char = ("\r\n"|"\n\r"|'\n'|'\r')
 let comment = '#' ((([^'|'])[^ '\r' '\n']*(newline_char | eof)) | (newline_char | eof))
 
 rule token = parse
-  | comment { token lexbuf }
+  | comment { new_line lexbuf; token lexbuf }
   | blank { token lexbuf }
   | '\n' { new_line lexbuf; token lexbuf }
   | signed_int as x { NUM (int_of_string x) }

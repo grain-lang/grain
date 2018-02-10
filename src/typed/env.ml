@@ -1198,6 +1198,21 @@ and store_type ~check id info env =
   let constructors = Datarepr.constructors_of_type path info in
   let descrs = List.map snd constructors in
 
+  let val_descrs = List.map (fun (id, desc) ->
+      let val_type = match desc.cstr_args with
+        | [] -> desc.cstr_res
+        | args -> (Btype.newgenty (TTyArrow(args, desc.cstr_res, TComOk))) in
+      let val_type = match desc.cstr_existentials with
+        | [] -> val_type
+        | existentials -> (Btype.newgenty (TTyPoly(val_type, existentials))) in
+      let val_desc = {
+        val_type;
+        val_kind = TValConstructor desc;
+        val_loc = desc.cstr_loc;
+      } in
+      id, val_desc
+    ) constructors in
+
   (*if check && not loc.Location.loc_ghost &&
     Warnings.is_active (Warnings.Unused_constructor ("", false, false))
   then begin
@@ -1225,7 +1240,11 @@ and store_type ~check id info env =
         constructors
         env.constructors;
     types =
-      IdTbl.add id (info, descrs) env.types; }
+      IdTbl.add id (info, descrs) env.types;
+    values =
+      List.fold_left (fun acc (id, val_desc) -> IdTbl.add id val_desc acc) env.values val_descrs;
+  }
+  
 
 and store_type_infos id info env =
   (* Simplified version of store_type that doesn't compute and store
