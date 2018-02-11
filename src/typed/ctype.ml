@@ -1984,6 +1984,7 @@ let filter_arrow arity env t =
   let t = expand_head_trace env t in
   match t.desc with
   | TTyVar _ ->
+    (*Printf.eprintf "filter_arrow: TTyVar\n";*)
     let lv = t.level in
     let vars = ref [] in
     for i = 1 to arity do
@@ -1995,6 +1996,7 @@ let filter_arrow arity env t =
     link_type t t';
     (!vars, t2)
   | TTyArrow(t1, t2, _) ->
+    (*Printf.eprintf "filter_arrow: TTyArrow\n";*)
     (t1, t2)
   | _ ->
     raise (Unify [])

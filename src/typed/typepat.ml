@@ -36,6 +36,7 @@ type error =
   | UnexpectedExistential
   | OrpatVars of Ident.t * Ident.t list
   | OrPatternTypeClash of Ident.t * (type_expr * type_expr) list
+  | UnrefutedPattern of pattern
 
 exception Error of Location.t * Env.t * error
 
@@ -265,7 +266,7 @@ and type_pat_aux ~constrs ~labels ~no_existentials ~mode ~explode ~env
         pat_env = !env }
       in
       if explode > 0 then
-        let (sp, constrs, labels) = Parmatch.ppat_of_type !env expected_ty in
+        let (sp, constrs) = Parmatch.ppat_of_type !env expected_ty in
         if sp.ppat_desc = Parsetree.PPatAny then k' TPatAny else
         if mode = Inside_or then raise Need_backtrack else
         let explode =
@@ -273,19 +274,35 @@ and type_pat_aux ~constrs ~labels ~no_existentials ~mode ~explode ~env
             (*Parsetree.Ppat_or _ -> explode - 5*)
           | _ -> explode - 1
         in
-        type_pat ~constrs:(Some constrs) ~labels:(Some labels)
+        type_pat ~constrs:(Some constrs) (*~labels:(Some labels)*)
           ~explode sp expected_ty k
       else k' TPatAny
   | PPatVar name ->
-      let id = (* PR#7330 *)
-        if name.txt = "*extension*" then Ident.create name.txt else
-        enter_variable loc name expected_ty
+    let (_, exp_constrs) = Parmatch.ppat_of_type !env expected_ty in
+      let constructor_candidates =
+        match name.txt, constrs with
+          s, Some constrs when Hashtbl.mem exp_constrs s ->
+            [Hashtbl.find exp_constrs s, (fun () -> ())]
+        | _ -> Typetexp.find_all_constructors !env name.loc (Identifier.IdentName name.txt)
       in
-      rp k {
-        pat_desc = TPatVar (id, name);
-        pat_loc = loc; pat_extra=[];
-        pat_type = expected_ty;
-        pat_env = !env }
+      (* Special case: If the name shadows a constructor, assume it's a constructor use. *)
+      begin match constructor_candidates with
+        | _ :: _ ->
+          if !Grain_utils.Config.verbose then
+            Printf.eprintf "Re-interpreting pattern variable '%s' as a constructor\n" name.txt;
+          type_pat_aux ~constrs ~labels ~no_existentials ~mode ~explode ~env
+            {sp with ppat_desc=PPatConstruct(Location.mkloc (Identifier.IdentName name.txt) name.loc, [])} expected_ty k
+        | [] ->
+          let id = (* PR#7330 *)
+            if name.txt = "*extension*" then Ident.create name.txt else
+              enter_variable loc name expected_ty
+          in
+          rp k {
+            pat_desc = TPatVar (id, name);
+            pat_loc = loc; pat_extra=[];
+            pat_type = expected_ty;
+            pat_env = !env }
+      end
   | PPatConstraint({ppat_desc=PPatVar name; ppat_loc=lloc},
                    ({ptyp_desc=PTyPoly _} as sty)) ->
       (* explicitly polymorphic type *)
@@ -394,10 +411,11 @@ and type_pat_aux ~constrs ~labels ~no_existentials ~mode ~explode ~env
       in
       (* PR#7214: do not use gadt unification for toplevel lets *)
       (*if not constr.cstr_generalized || mode = Inside_or || no_existentials
-      then unify_pat_types loc !env ty_res expected_ty
-      else unify_pat_types_gadt loc env ty_res expected_ty;
+      then <copied below>
+        else unify_pat_types_gadt loc env ty_res expected_ty;*)
+      unify_pat_types loc !env ty_res expected_ty;
 
-      let rec check_non_escaping p =
+      (*let rec check_non_escaping p =
         match p.ppat_desc with
         | Ppat_or (p1, p2) ->
             check_non_escaping p1;
@@ -409,7 +427,7 @@ and type_pat_aux ~constrs ~labels ~no_existentials ~mode ~explode ~env
         | _ ->
             ()
       in
-      if constr.cstr_inlined <> None then List.iter check_non_escaping sargs;*)
+      if constr.cstr_inlined <> None then List.iter check_non_escaping sargs;**)
 
       map_fold_cont (fun (p,t) -> type_pat p t) (List.combine sargs ty_args)
       (fun args ->
@@ -490,6 +508,7 @@ and type_pat_aux ~constrs ~labels ~no_existentials ~mode ~explode ~env
                            pat_extra = extra :: p.pat_extra}
         in k p)
 
+
 let type_pat ?(allow_existentials=false) ?constrs ?labels ?(mode=Normal)
     ?(explode=0) ?(lev=get_current_level()) env sp expected_ty =
   newtype_level := Some lev;
@@ -503,6 +522,44 @@ let type_pat ?(allow_existentials=false) ?constrs ?labels ?(mode=Normal)
   with e ->
     newtype_level := None;
     raise e
+
+(* this function is passed to Partial.parmatch
+   to type check gadt nonexhaustiveness *)
+let partial_pred ~lev ?mode ?explode env expected_ty constrs p =
+  let env = ref env in
+  let state = save_state env in
+  try
+    reset_pattern None true;
+    let typed_p =
+      Ctype.with_passive_variants
+        (type_pat ~allow_existentials:true ~lev
+           ~constrs ~labels:None ?mode ?explode env p)
+        expected_ty
+    in
+    set_state state env;
+    (* types are invalidated but we don't need them here *)
+    Some typed_p
+  with Error _ ->
+    set_state state env;
+    None
+
+let check_partial ?(lev=get_current_level ()) env expected_ty loc cases =
+  let explode = match cases with [_] -> 5 | _ -> 0 in
+  Parmatch.check_partial
+    (partial_pred ~lev ~explode env expected_ty) loc cases
+
+let check_unused ?(lev=get_current_level ()) env expected_ty cases =
+  Parmatch.check_unused
+    (fun refute constrs spat ->
+      match
+        partial_pred ~lev ~mode:Split_or ~explode:5
+          env expected_ty constrs spat
+      with
+        Some pat when refute ->
+          raise (Error (spat.ppat_loc, env, UnrefutedPattern pat))
+      | r -> r)
+    cases
+
 
 let add_pattern_variables ?check ?check_as env =
   let pv = get_ref pattern_variables in
@@ -533,7 +590,13 @@ let type_pattern_list env spatl scope expected_tys allow =
       (fun () ->
          type_pat new_env pat ty
       )*)
-    type_pat new_env pat ty
+    (*Format.eprintf "@[Typing pat: %s@]@."
+      (Sexplib.Sexp.to_string_hum (Parsetree.sexp_of_pattern pat));*)
+    let ret = type_pat new_env pat ty in
+    (*Format.eprintf "@[Typed: %s [type: %a]@]@."
+      (Sexplib.Sexp.to_string_hum (Typedtree.sexp_of_pattern ret))
+      Printtyp.raw_type_expr ret.pat_type;*)
+    ret
   in
   let patl = List.map2 type_pat spatl expected_tys in
   let new_env, unpacks, pv = add_pattern_variables !new_env in
@@ -608,6 +671,12 @@ let report_error env ppf = function
                       or-pattern has type" (Ident.name id))
       (function ppf ->
          fprintf ppf "but on the right-hand side it has type")
+  | UnrefutedPattern pat ->
+      fprintf ppf
+        "@[%s@ %s@ %a@]"
+        "This match case could not be refuted."
+        "Here is an example of a value that would reach it:"
+        Printpat.top_pretty pat
 
 let report_error env ppf err =
   wrap_printing_env env (fun () -> report_error env ppf err)

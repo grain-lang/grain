@@ -86,7 +86,7 @@ let prim1_type = function
 let prim2_type = function
   | Plus
   | Minus
-  | Times
+  | Times -> (Builtin_types.type_number, Builtin_types.type_number, Builtin_types.type_number)
   | Less
   | Greater
   | LessEq
@@ -236,7 +236,7 @@ let rec type_approx env (sexp : Parsetree.expression) =
   match sexp.pexp_desc with
   | PExpLet (_,_,e) -> type_approx env e
   | PExpMatch (_, {pmb_body=e}::_) ->
-    newty (TTyArrow([newvar ()], type_approx env e, TComOk))
+    type_approx env e
   | PExpIf (_,e,_) -> type_approx env e
   | PExpLambda (args,e) ->
     newty (TTyArrow(List.map (fun x -> newvar()) args, type_approx env e, TComOk))
@@ -321,6 +321,8 @@ let rec name_pattern default = function
 
 let unify_exp env exp expected_ty =
   let loc = proper_exp_loc exp in
+  (*Printf.eprintf "Typed (pre-unification): %s\n"
+    (Sexplib.Sexp.to_string_hum (Typedtree.sexp_of_expression exp));*)
   unify_exp_types loc env exp.exp_type expected_ty
 
 let rec type_exp ?recarg env sexp =
@@ -537,6 +539,7 @@ and type_expect_ ?in_function ?(recarg=Rejected) env sexp ty_expected_explained 
 
 and type_function ?in_function loc attrs env ty_expected_explained l caselist =
   let { ty = ty_expected; explanation } = ty_expected_explained in
+  (*Format.eprintf "@[type_function: expected: %a@]@." Printtyp.raw_type_expr ty_expected;*)
   let (loc_fun, ty_fun) =
     match in_function with Some p -> p
     | None -> (loc, instance env ty_expected)
@@ -553,14 +556,22 @@ and type_function ?in_function loc attrs env ty_expected_explained l caselist =
     | _ -> failwith "Impossible: type_function: impossible caselist"
   end in
   let arity = arity caselist in
+  let exp_inst = (instance env ty_expected) in
+  (*Format.eprintf "@[type_function: pre: %a@]@." Printtyp.raw_type_expr exp_inst;*)
   let (ty_arg, ty_res) =
-    try filter_arrow arity env (instance env ty_expected)
+    try filter_arrow arity env exp_inst
     with Unify _ ->
       raise(Error(loc_fun, env,
                   Too_many_arguments (in_function <> None,
                                       ty_fun,
                                       explanation)))
   in
+  (*let rec fmt_args ppf = function
+    | [] -> Format.fprintf ppf ")"
+    | a::tl ->
+      Format.fprintf ppf "%a, %a" Printtyp.raw_type_expr a fmt_args tl in
+  Format.eprintf "@[type_function: %i@ (%a -> %a@]@." (get_current_level())
+    fmt_args (ty_arg) Printtyp.raw_type_expr ty_res;*)
   if separate then begin
     end_def ();
     List.iter generalize_structure ty_arg;
@@ -700,7 +711,7 @@ and type_statement_expr ?explanation env sexp =
   let ty = expand_head env exp.exp_type and tv = newvar() in
   if is_Tvar ty && ty.level > tv.level then
       Location.prerr_warning loc Grain_utils.Warnings.NonreturningStatement;
-  if !Clflags.strict_sequence then
+  if !Grain_utils.Config.strict_sequence then
     let expected_ty = instance_def Builtin_types.type_void in
     with_explanation explanation (fun () ->
       unify_exp env exp expected_ty);
@@ -760,8 +771,8 @@ and type_cases ?in_function env (ty_arg : type_expr) ty_res partial_flag loc cas
     | _ -> true in
   if propagate then begin_def (); (* propagation of the argument *)
   let pattern_force = ref [] in
-(*  Format.printf "@[%i %i@ %a@]@." lev (get_current_level())
-    Printtyp.raw_type_expr ty_arg; *)
+  (*Format.eprintf "@[%i %i@ %a@]@." lev (get_current_level())
+    Printtyp.raw_type_expr ty_arg;*)
   let pat_env_list =
     List.map
       (fun {pmb_pat; pmb_body} ->
@@ -782,7 +793,7 @@ and type_cases ?in_function env (ty_arg : type_expr) ty_res partial_flag loc cas
         in
         pattern_force := force @ !pattern_force;
         let pat =
-          if !Clflags.principal then begin
+          if !Grain_utils.Config.principal then begin
             end_def ();
             iter_pattern (fun {pat_type=t} -> generalize_structure t) pat;
             { pat with pat_type = instance ext_env pat.pat_type }
@@ -827,8 +838,8 @@ and type_cases ?in_function env (ty_arg : type_expr) ty_res partial_flag loc cas
           end
           (*else if contains_gadt env pmb_body then correct_levels ty_res*)
           else ty_res in
-(*        Format.printf "@[%i %i, ty_res' =@ %a@]@." lev (get_current_level())
-          Printtyp.raw_type_expr ty_res'; *)
+        (*Format.eprintf "@[%i %i, ty_res' =@ %a@]@." lev (get_current_level())
+          Printtyp.raw_type_expr ty_res';*)
         (*let guard =
           match pc_guard with
           | None -> None
@@ -848,35 +859,35 @@ and type_cases ?in_function env (ty_arg : type_expr) ty_res partial_flag loc cas
       )
       pat_env_list caselist
   in
-  if !Clflags.principal (*|| has_gadts*) then begin
+  if !Grain_utils.Config.principal (*|| has_gadts*) then begin
     let ty_res' = instance env ty_res in
     List.iter (fun c -> unify_exp env c.mb_body ty_res') cases
   end;
   let do_init = (*has_gadts ||*) needs_exhaust_check in
   let lev, env =
     if do_init (*&& not has_gadts*) then init_env () else lev, env in
-  (*let ty_arg_check =
+  let ty_arg_check =
     if do_init then
       (* Hack: use for_saving to copy variables too *)
       Subst.type_expr (Subst.for_saving Subst.identity) ty_arg
     else ty_arg
-  in*)
+  in
   let partial =
-    (*if partial_flag then
+    if partial_flag then
       check_partial ~lev env ty_arg_check loc cases
-    else*)
+    else
       Partial
   in
-  (*let unused_check () =
-    List.iter (fun (pat, (env, _)) -> check_absent_variant env pat)
-      pat_env_list;
+  let unused_check () =
+    (*List.iter (fun (pat, (env, _)) -> check_absent_variant env pat)
+      pat_env_list;*)
     check_unused ~lev env (instance env ty_arg_check) cases ;
     Parmatch.check_ambiguous_bindings cases
   in
-  if contains_polyvars || do_init then
-    add_delayed_check unused_check
+  if do_init then
+    () (*add_delayed_check unused_check*)
   else
-    unused_check ();*)
+    unused_check ();
   (* Check for unused cases, do not delay because of gadts *)
   if do_init then begin
     end_def ();
@@ -1038,6 +1049,7 @@ and type_let ?(check = fun s -> Warnings.Unused_var s)
         if is_recursive then current_slot := slot;
         match pat.pat_type.desc with
         | TTyPoly (ty, tl) ->
+          (*Printf.eprintf "type_let: TTyPoly\n";*)
             begin_def ();
             if !Grain_utils.Config.principal then begin_def ();
             let vars, ty' = instance_poly ~keep_names:true true tl ty in
@@ -1054,6 +1066,9 @@ and type_let ?(check = fun s -> Warnings.Unused_var s)
             check_univars env true "definition" exp pat.pat_type vars;
             {exp with exp_type = instance env exp.exp_type}
         | _ ->
+          (*Printf.eprintf "type_let: non-TTyPoly\n";
+          Format.eprintf "@[type_let: expected: %a@]@."
+            Printtyp.raw_type_expr pat.pat_type;*)
             (*Builtin_attributes.warning_scope pvb_attributes (fun () ->
               type_expect exp_env sexp (mk_expected pat.pat_type))*)
           type_expect exp_env sexp (mk_expected pat.pat_type))
@@ -1100,7 +1115,7 @@ and type_let ?(check = fun s -> Warnings.Unused_var s)
     List.iter
       (fun {vb_pat=pat} -> match pat.pat_desc with
          | TPatVar _ -> ()
-         (*| Tpat_alias ({pat_desc=Tpat_any}, _, _) -> ()*)
+         | TPatAlias ({pat_desc=TPatAny}, _, _) -> ()
          | _ -> raise(Error(pat.pat_loc, env, Illegal_letrec_pat)))
       l;
   (l, new_env, unpacks)
@@ -1235,7 +1250,7 @@ let report_error env ppf = function
   | Label_not_mutable lid ->
     fprintf ppf "The record field %a is not mutable" identifier lid
   | Arity_mismatch (typ, arity) ->
-    fprintf ppf "@[The type %a cannot be called with %d arguments@]" (Printtyp.type_expr) typ arity
+    fprintf ppf "@[The type %a cannot be called with %d argument%s@]" (Printtyp.type_expr) typ arity (if arity = 1 then "" else "s")
   | Wrong_name (eorp, ty_expected, kind, p, name, valid_names) ->
       let { ty; explanation } = ty_expected in
       reset_and_mark_loops ty;

@@ -13,6 +13,13 @@ type t =
   | NameOutOfScope of string * string list * bool
   | StatementType
   | NonreturningStatement
+  | AllClausesGuarded
+  | PartialMatch of string
+  | FragileMatch of string
+  | UnusedMatch
+  | UnusedPat
+  | UnreachableCase
+  | ShadowConstructor of string
 
 let number = function
   | LetRecNonFunction _ -> 1
@@ -21,8 +28,15 @@ let number = function
   | NameOutOfScope _ -> 4
   | StatementType -> 5
   | NonreturningStatement -> 6
+  | AllClausesGuarded -> 7
+  | PartialMatch _ -> 8
+  | FragileMatch _ -> 9
+  | UnusedMatch -> 10
+  | UnusedPat -> 11
+  | UnreachableCase -> 12
+  | ShadowConstructor _ -> 13
 
-let last_warning_number = 6
+let last_warning_number = 13
 
 let message = function
   | LetRecNonFunction(name) ->
@@ -48,6 +62,21 @@ let message = function
     "\nThe first one was selected. Please disambiguate if this is wrong."
   | StatementType -> "this expression should have type void."
   | NonreturningStatement -> "this statement never returns (or has an unsound type)."
+  | AllClausesGuarded ->
+    "this pattern-matching is not exhaustive.\n\
+     All clauses in this pattern-matching are guarded."
+  | PartialMatch "" -> "this pattern-matching is not exhaustive."
+  | PartialMatch s ->
+    "this pattern-matching is not exhaustive.\n\
+     Here is an example of a case that is not matched:\n" ^ s
+  | FragileMatch "" -> "this pattern-matching is fragile."
+  | FragileMatch s ->
+    "this pattern-matching is fragile.\n\
+     It will remain exhaustive when constructors are added to type " ^ s ^ "."
+  | UnusedMatch -> "this match case is unused."
+  | UnusedPat -> "this sub-pattern is unused."
+  | UnreachableCase -> "this mach case is unreachable."
+  | ShadowConstructor s -> "the pattern variable " ^ s ^ " shadows a constructor of the same name."
 
 let sub_locs = function
   | _ -> []

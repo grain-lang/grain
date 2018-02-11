@@ -13,12 +13,12 @@
 
 ;;; Code:
 
-(defvar grain-keywords '("let" "rec" "begin" "end" "lambda" "in" "include"))
+(defvar grain-keywords '("let" "rec" "import" "match" "data"))
 
 (defvar grain-keywords-regexp (regexp-opt grain-keywords))
 
 (defvar grain-punctuation-regexp
-  (regexp-opt '("::" ">" "<" ">=" "<=" "==" "!=" ";" "(" ")" "+" "-" "*")))
+  (regexp-opt '("::" ">" "<" ">=" "<=" "==" "!=" ";" "(" ")" "+" "-" "*" "{" "}" "=>")))
 
 (defvar grain-font-lock-keywords
   `((,(concat "\\_<" grain-keywords-regexp "\\_>") . font-lock-keyword-face)

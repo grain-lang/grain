@@ -157,6 +157,12 @@ let rec find_stamp s = function
   | Some k ->
       if k.ident.stamp = s then k.data else find_stamp s k.previous
 
+let find_stamp_opt s o =
+  try
+    Some(find_stamp s o)
+  with
+  Not_found -> None
+
 let rec find_same id = function
     Empty ->
       raise Not_found
@@ -169,6 +175,12 @@ let rec find_same id = function
       else
         find_same id (if c < 0 then l else r)
 
+let find_same_opt id tbl =
+  try
+    Some(find_same id tbl)
+  with
+  Not_found -> None
+
 let rec find_name name = function
     Empty ->
       raise Not_found
@@ -178,6 +190,12 @@ let rec find_name name = function
         k.ident, k.data
       else
         find_name name (if c < 0 then l else r)
+
+let find_name_opt name tbl =
+  try
+    Some(find_name name tbl)
+  with
+  Not_found -> None
 
 let rec get_all = function
   | None -> []

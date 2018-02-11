@@ -4,6 +4,17 @@ open Types
 module PathMap : Map.S with type key = Path.t
                         and type 'a t = 'a Map.Make(Path).t
 
+type summary =
+    Env_empty
+  | Env_value of summary * Ident.t * value_description
+  | Env_type of summary * Ident.t * type_declaration
+  | Env_module of summary * Ident.t * module_declaration
+  | Env_modtype of summary * Ident.t * modtype_declaration
+  | Env_open of summary * Path.t
+  | Env_constraints of summary * type_declaration PathMap.t
+  | Env_copy_types of summary * string list
+[@@deriving sexp]
+
 type type_descriptions = constructor_description list
 type t
 
@@ -132,3 +143,8 @@ module Persistent_signature : sig
       it from memory, for instance to build a self-contained toplevel. *)
   val load : (unit_name:string -> t option) ref
 end
+
+(* Summaries -- compact representation of an environment, to be
+   exported in debugging information. *)
+
+val summary: t -> summary

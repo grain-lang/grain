@@ -4,9 +4,65 @@ data a List =
   | empty
   | cons(a, a List);
 
-let rec link = (first, rest) => {
-  cons(first, rest)
+let rec length = (lst) => {
+  match (lst) {
+    | empty => 0
+    | cons(hd, tl : a List) => 1 + length(tl)
+  }
 };
+
+let rec sum = (lst) => {
+  match lst {
+    | empty => 0
+    | cons(hd, tl) => hd + sum(tl)
+  }
+};
+
+let reverse = (lst) => {
+  let rec help = (l, acc) => {
+    match l {
+      | empty => acc
+      | cons(hd, tl) => help(tl, cons(hd, acc))
+    }
+  };
+  help(lst, empty)
+};
+
+let rec append = (l1, l2) => {
+  match l1 {
+    | empty => l2
+    | cons(hd, tl) => cons(hd, append(l1, l2))
+  }
+};
+
+let rec contains = (e, l) => {
+  match l {
+    | empty => false
+    | cons(hd, tl) => (hd == e) or contains(e, tl)
+  }
+};
+
+let rec fold_left = (f, b, l) => {
+  match l {
+    | empty => b
+    | cons(hd, tl) => fold_left(f, f(b, hd), tl)
+  }
+};
+
+let rec fold_right = (f, b, l) => {
+  match l {
+    | empty => b
+    | cons(hd, tl) => f(hd, fold_right(f, b, tl))
+  }
+};
+
+let rec map = (f, l) => {
+  match l {
+    | empty => empty
+    | cons(hd, tl) => cons(f(hd), map(f, tl))
+  }
+};
+
         #length = (lambda l: if l == false: 0 else: let (first, rest) = l in 1 + length(rest)),
         #sum = (lambda l: if l == false: 0 else: let (first, rest) = l in first + sum(rest)),
         #reverse = (lambda l:

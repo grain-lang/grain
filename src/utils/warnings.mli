@@ -27,6 +27,13 @@ type t =
   | NameOutOfScope of string * string list * bool
   | StatementType
   | NonreturningStatement
+  | AllClausesGuarded
+  | PartialMatch of string
+  | FragileMatch of string
+  | UnusedMatch
+  | UnusedPat
+  | UnreachableCase
+  | ShadowConstructor of string
 
 val is_active : t -> bool;;
 val is_error : t -> bool;;

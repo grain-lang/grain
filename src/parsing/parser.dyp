@@ -56,8 +56,9 @@ let rhs_loc dyp n =
 
 let fix_block_mapper super =
   let open Ast_mapper in
-  let expr mapper ({pexp_desc; _} as e) =
+  let expr mapper ({pexp_desc; pexp_loc} as e) =
     match pexp_desc with
+    | PExpBlock([]) -> super.expr mapper e
     | PExpBlock(elts) ->
       let elts = List.map (mapper.expr mapper) elts in
       let pre, last = List.fold_left (fun (acc_l, acc_last) cur ->
@@ -65,11 +66,13 @@ let fix_block_mapper super =
           | None -> (acc_l, Some cur)
           | Some e -> (e::acc_l, Some cur)) ([], None) elts in
       let pre = List.rev pre in
-      let last = Option.get last in
+      let last = match last with
+        | None -> raise (Syntaxerr.Error(LetWithoutBody(pexp_loc)))
+        | Some(l) -> l in
       let fixed = List.fold_right (fun ({pexp_desc; pexp_loc; _} as e) acc ->
           match pexp_desc with
-          | PExpLet(r, vbs, {pexp_desc=PExpNull}) ->
-            [{e with pexp_desc=PExpLet(r, vbs, Ast_helper.Exp.block ~loc:pexp_loc acc)}]
+          | PExpLet(r, vbs, {pexp_desc=PExpBlock(b)}) ->
+            [{e with pexp_desc=PExpLet(r, vbs, Ast_helper.Exp.block ~loc:pexp_loc (b @ acc))}]
           | _ -> e::acc) pre [last] in
       (match fixed with
        | [x] -> x
@@ -173,10 +176,13 @@ binop_expr:
 
 pattern :
   | UNDERSCORE { Pat.any ~loc:(symbol_rloc dyp) () }
+  /* If the pattern uses an external ID, we know it's a constructor, not a variable */
+  | ext_id { Pat.construct ~loc:(symbol_rloc dyp) $1 [] }
   | ID { Pat.var ~loc:(symbol_rloc dyp) (mkstr dyp $1) }
   | LPAREN tuple_patterns RPAREN { Pat.tuple ~loc:(symbol_rloc dyp) $2 }
   | LPAREN pattern RPAREN { $2 }
   | pattern COLON typ { Pat.constraint_ ~loc:(symbol_rloc dyp) $1 $3 }
+  | id LPAREN tuple_patterns RPAREN { Pat.construct ~loc:(symbol_rloc dyp) $1 $3 }
 
 patterns :
   | pattern [COMMA pattern {$2}]* { $1::$2 }
@@ -232,6 +238,9 @@ app_arg_exprs :
 app_expr :
   | expr LPAREN app_arg_exprs RPAREN { prerr_string "\napp_expr\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); Exp.apply ~loc:(symbol_rloc dyp) $1 $3 }
 
+ext_id :
+  | ID [COLONCOLON ID {$2}]+ { prerr_string "\nid\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); (mkid ($1::$2)) (symbol_rloc dyp) }
+
 id :
   | ID [COLONCOLON ID {$2}]* { prerr_string "\nid\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); (mkid ($1::$2)) (symbol_rloc dyp) }
 
@@ -249,11 +258,9 @@ lam_args :
 lam_expr :
   | LPAREN lam_args RPAREN THICKARROW block_expr { Exp.lambda ~loc:(symbol_rloc dyp) $2 $5 }
 
-maybe_rec :
-  | REC? { Option.map_default (fun _ -> Recursive) Nonrecursive $1 }
-
 let_expr :
-  | LET maybe_rec value_binds { Exp.let_ ~loc:(symbol_rloc dyp) $2 $3 (Exp.block []) }
+  | LET REC value_binds { Exp.let_ ~loc:(symbol_rloc dyp) Recursive $3 (Exp.block []) }
+  | LET value_binds { Exp.let_ ~loc:(symbol_rloc dyp) Nonrecursive $2 (Exp.block []) }
 
 if_expr :
   | IF binop_expr block_expr { Exp.if_ ~loc:(symbol_rloc dyp) $2 $3 (Exp.block []) }
@@ -266,7 +273,7 @@ match_branches :
   | [PIPE match_branch {$2}]+ { $1 }
 
 match_expr :
-  | MATCH LPAREN binop_expr RPAREN LBRACE match_branches RBRACE { Exp.match_ ~loc:(symbol_rloc dyp) $3 $6 }
+  | MATCH expr LBRACE match_branches RBRACE { Exp.match_ ~loc:(symbol_rloc dyp) $2 $4 }
 
 expr :
   | app_expr    { prerr_string "\nexpr_app_expr\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); $1 }
@@ -287,7 +294,8 @@ block :
   | binop_expr [SEMI binop_expr {$2}]* { $1::$2 }
 
 toplevel_stmt :
-  | LET maybe_rec value_binds { Top.let_ $2 $3 }
+  | LET REC value_binds { Top.let_ Recursive $3 }
+  | LET value_binds { Top.let_ Nonrecursive $2 }
   | import_stmt { Top.import $1 }
   | data_declaration { Top.data $1 }
 
