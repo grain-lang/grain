@@ -84,12 +84,14 @@ and constructor_tag =
 [@@deriving sexp]
 
 and constructor_description = {
-  cstr_name : string;
-  cstr_res: type_expr;
-  cstr_existentials: type_expr list;
-  cstr_args: type_expr list;
-  cstr_arity: int;
-  cstr_tag: constructor_tag;
+  cstr_name : string;                (** Constructor name *)
+  cstr_res: type_expr;               (** Type of the result *)
+  cstr_existentials: type_expr list; (** list of existentials *)
+  cstr_args: type_expr list;         (** Type of the arguments *)
+  cstr_arity: int;                   (** Number of arguments *)
+  cstr_tag: constructor_tag;         (** Tag for heap blocks *)
+  cstr_consts: int;                  (** Number of constant constructors *)
+  cstr_nonconsts: int;               (** Number of non-constant constructors *)
   cstr_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
 } [@@deriving sexp]
 
@@ -163,3 +165,14 @@ module TypeOps = struct
   let hash t = t.id
   let equal t1 t2 = t1 == t2
 end
+
+let equal_tag t1 t2 =
+  match t1, t2 with
+  | CstrBlock i1, CstrBlock i2
+  | CstrConstant i1, CstrConstant i2 -> i1 = i2
+  | CstrUnboxed, CstrUnboxed -> true
+  | _ -> false
+
+let may_equal_constr c1 c2 =
+  match c1.cstr_tag, c2.cstr_tag with
+  | tag1, tag2 -> equal_tag tag1 tag2

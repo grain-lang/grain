@@ -94,6 +94,8 @@ let constructor_descrs ty_path decl cstrs =
           cstr_args;
           cstr_arity = List.length cstr_args;
           cstr_tag = tag;
+          cstr_consts = !num_consts;
+          cstr_nonconsts = !num_nonconsts;
           cstr_loc = cd_loc;
         } in
       (cd_id, cstr) :: descr_rem in

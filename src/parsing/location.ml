@@ -159,8 +159,8 @@ let reset () =
 
 open Format
 
-let (msg_file, msg_line, msg_chars, msg_to, msg_colon) =
-  ("File \"", "\", line ", ", characters ", "-", ":")
+let (msg_file, msg_line, msg_chars, msg_char, msg_to, msg_colon) =
+  ("File \"", "\", line ", ", characters ", ", character ", "-", ":")
 
 (** Returns (file, line, char) *)
 let get_pos_info pos =
@@ -189,10 +189,15 @@ let print_filename ppf file = fprintf ppf "%s" (show_filename file)
 let print_loc ppf loc =
   setup_colors();
   let (file, line, startchar) = get_pos_info loc.loc_start in
-  let endchar = loc.loc_end.pos_cnum - loc.loc_start.pos_cnum + startchar in
+  let (_, endline, endchar) = get_pos_info loc.loc_end in
+  (*let endchar = loc.loc_end.pos_cnum - loc.loc_start.pos_cnum + startchar in*)
   fprintf ppf "%s@{<loc>%a%s%i" msg_file print_filename file msg_line line;
-  if startchar >= 0 then
-    fprintf ppf "%s%i%s%i" msg_chars startchar msg_to endchar;
+  if startchar >= 0 then begin
+    if line = endline then
+      fprintf ppf "%s%i%s%i" msg_chars startchar msg_to endchar
+    else
+      fprintf ppf "%s%i%sline %i%s%i" msg_char startchar msg_to endline msg_char endchar
+  end;
   fprintf ppf "@}"
 
 let default_printer ppf loc =

@@ -67,7 +67,7 @@ type constructor_declaration = {
   cd_args: constructor_arguments;
   cd_res: core_type option;
   cd_loc: Location.t;
-}
+} [@@deriving sexp]
 
 type data_kind =
   | TDataVariant of constructor_declaration list
@@ -79,7 +79,7 @@ type data_declaration = {
   data_type: Types.type_declaration;
   data_kind: data_kind;
   data_loc: Location.t;
-}
+} [@@deriving sexp]
 
 type pattern = {
   pat_desc: pattern_desc;
@@ -87,7 +87,7 @@ type pattern = {
   pat_extra: (pat_extra * Location.t) list;
   pat_type: type_expr;
   mutable pat_env: Env.t;
-}
+} [@@deriving sexp]
 
 and pat_extra =
   | TPatConstraint of core_type
@@ -107,7 +107,7 @@ type expression = {
   exp_extra: (exp_extra * Location.t) list;
   exp_type: type_expr;
   exp_env: Env.t;
-}
+} [@@deriving sexp]
 
 and exp_extra =
   | TExpConstraint of core_type
@@ -142,7 +142,7 @@ and match_branch = {
 type import_declaration = {
   timp_mod: Identifier.t Location.loc;
   timp_loc: Location.t;
-}
+} [@@deriving sexp]
 
 type toplevel_stmt_desc =
   | TTopImport of import_declaration
@@ -153,7 +153,7 @@ type toplevel_stmt = {
   ttop_desc: toplevel_stmt_desc;
   ttop_loc: Location.t;
   ttop_env: Env.t;
-}
+} [@@deriving sexp]
 
 type typed_program = {
   statements: toplevel_stmt list;

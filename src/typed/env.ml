@@ -15,6 +15,7 @@
 (**************************************************************************)
 
 open Grain_parsing
+open Sexplib.Conv
 open Cmi_format
 open Path
 open Types
@@ -22,7 +23,28 @@ open Types
 let add_delayed_check_forward = ref (fun _ -> assert false)
 
 type type_descriptions = constructor_description list
-module PathMap = Map.Make(Path)
+module PathMap = struct
+  include Map.Make(Path)
+
+  let sexp_of_t conv m =
+    let sexp_of_path = Path.sexp_of_t in
+    let open Sexplib in
+    let pairs = List.map (fun (key, v) -> Sexp.List [sexp_of_path key; conv v]) (bindings m) in
+    Sexp.List pairs
+
+  let t_of_sexp conv sexp =
+    let path_of_sexp = Path.t_of_sexp in
+    let open Sexplib.Conv in
+    let open Sexplib.Sexp in
+    match sexp with
+    | Atom str -> of_sexp_error "t_of_sexp: list needed" sexp
+    | List sexprs ->
+      let fields = List.map (function
+          | List [key; value] -> (path_of_sexp key, conv value)
+          | _ -> of_sexp_error "t_of_sexp: invalid field" sexp) sexprs in
+      List.fold_left (fun acc (k, v) -> add k v acc) empty fields
+
+end
 
 let prefixed_sg = Hashtbl.create 113
 
@@ -119,6 +141,17 @@ end  = struct
     loop !log
 
 end
+
+type summary =
+    Env_empty
+  | Env_value of summary * Ident.t * value_description
+  | Env_type of summary * Ident.t * type_declaration
+  | Env_module of summary * Ident.t * module_declaration
+  | Env_modtype of summary * Ident.t * modtype_declaration
+  | Env_open of summary * Path.t
+  | Env_constraints of summary * type_declaration PathMap.t
+  | Env_copy_types of summary * string list
+[@@deriving sexp]
 
 module TycompTbl = struct
   (** This module is used to store components of types (i.e. labels
@@ -409,6 +442,7 @@ and t = {
   modules: (Subst.t * module_declaration, module_declaration) EnvLazy.t IdTbl.t;
   modtypes: modtype_declaration IdTbl.t;
   local_constraints: type_declaration PathMap.t;
+  summary: summary;
 }
 
 let empty = {
@@ -419,6 +453,7 @@ let empty = {
   modtypes = IdTbl.empty;
   constructors = TycompTbl.empty;
   local_constraints = PathMap.empty;
+  summary = Env_empty;
 }
 
 let copy_local ~from env =
@@ -823,7 +858,7 @@ let has_local_constraints env = not (PathMap.is_empty env.local_constraints)
 let copy_types l env =
   let f desc = {desc with val_type = Subst.type_expr Subst.identity desc.val_type} in
   let values = List.fold_left (fun env s -> IdTbl.update s f env) env.values l in
-  {env with values}
+  {env with values; summary = Env_copy_types (env.summary, l)}
 
 (* Currently a no-op *)
 let mark_value_used env name loc = ()
@@ -1243,6 +1278,7 @@ and store_type ~check id info env =
       IdTbl.add id (info, descrs) env.types;
     values =
       List.fold_left (fun acc (id, val_desc) -> IdTbl.add id val_desc acc) env.values val_descrs;
+    summary = List.fold_left (fun acc (id, val_desc) -> Env_value(acc, id, val_desc)) (Env_type(env.summary, id, info)) val_descrs;
   }
   
 
@@ -1253,7 +1289,8 @@ and store_type_infos id info env =
      keep track of type abbreviations (e.g. type t = float) in the
      computation of label representations. *)
   { env with
-    types = IdTbl.add id (info,[]) env.types; }
+    types = IdTbl.add id (info,[]) env.types;
+    summary = Env_type(env.summary, id, info); }
 
 and store_module ~check id md env =
   (*let loc = md.md_loc in
@@ -1267,16 +1304,19 @@ and store_module ~check id md env =
       IdTbl.add id
         (components_of_module ~deprecated:None ~loc:md.md_loc
            env Subst.identity (PIdent id) md.md_type)
-        env.components; }
+        env.components;
+    summary = Env_module(env.summary, id, md); }
 
 and store_modtype id info env =
   { env with
-    modtypes = IdTbl.add id info env.modtypes; }
+    modtypes = IdTbl.add id info env.modtypes;
+    summary = Env_modtype(env.summary, id, info); }
 
 
 let store_value id decl env =
   { env with
-    values = IdTbl.add id decl env.values }
+    values = IdTbl.add id decl env.values;
+    summary = Env_value(env.summary, id, decl) }
 
 let _ =
   components_of_module' := components_of_module;
@@ -1400,6 +1440,7 @@ let add_components ?filter_modules slot root env0 comps =
   in
 
   { env0 with
+    summary = Env_open(env0.summary, root);
     constructors;
     values;
     types;
@@ -1511,3 +1552,61 @@ let (initial_safe_string, initial_unsafe_string) =
   Builtin_types.build_initial_env
     (add_type ~check:false)
     empty
+
+(* Return the environment summary *)
+
+let summary env =
+  if PathMap.is_empty env.local_constraints then env.summary
+  else Env_constraints (env.summary, env.local_constraints)
+
+let last_env = ref empty
+let last_reduced_env = ref empty
+
+(* Error report *)
+
+open Format
+
+let report_error ppf = function
+  | Illegal_renaming(modname, ps_name, filename) -> fprintf ppf
+      "Wrong file naming: %a@ contains the compiled interface for @ \
+       %s when %s was expected"
+      Location.print_filename filename ps_name modname
+  | Inconsistent_import(name, source1, source2) -> fprintf ppf
+      "@[<hov>The files %a@ and %a@ \
+              make inconsistent assumptions@ over interface %s@]"
+      Location.print_filename source1 Location.print_filename source2 name
+  | Need_recursive_types(import, export) ->
+      fprintf ppf
+        "@[<hov>Unit %s imports from %s, which uses recursive types.@ %s@]"
+        export import "The compilation flag -rectypes is required"
+  | Depend_on_unsafe_string_unit(import, export) ->
+      fprintf ppf
+        "@[<hov>Unit %s imports from %s, compiled with -unsafe-string.@ %s@]"
+        export import "This compiler has been configured in strict \
+                       safe-string mode (-force-safe-string)"
+  | Missing_module(_, path1, path2) ->
+      fprintf ppf "@[@[<hov>";
+      if Path.same path1 path2 then
+        fprintf ppf "Internal path@ %s@ is dangling." (Path.name path1)
+      else
+        fprintf ppf "Internal path@ %s@ expands to@ %s@ which is dangling."
+          (Path.name path1) (Path.name path2);
+      fprintf ppf "@]@ @[%s@ %s@ %s.@]@]"
+        "The compiled interface for module" (Ident.name (Path.head path2))
+        "was not found"
+  | Illegal_value_name(_loc, name) ->
+      fprintf ppf "'%s' is not a valid value identifier."
+        name
+  | No_module_file(m, None) -> fprintf ppf "Missing file for module %s" m
+  | No_module_file(m, Some(msg)) -> fprintf ppf "Missing file for module %s: %s" m msg
+
+let () =
+  Location.register_error_of_exn
+    (function
+      | Error (Missing_module (loc, _, _)
+              | Illegal_value_name (loc, _)
+               as err) when loc <> Location.dummy_loc ->
+          Some (Location.error_of_printer loc report_error err)
+      | Error err -> Some (Location.error_of_printer_file report_error err)
+      | _ -> None
+    )

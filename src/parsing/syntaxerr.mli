@@ -15,6 +15,7 @@
 (**************************************************************************)
 
 type stxerr =
+  | LetWithoutBody of Location.t
   | Other of Location.t
 
 exception Error of stxerr
