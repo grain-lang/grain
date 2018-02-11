@@ -1,0 +1,8 @@
+(jbuild_version 1)
+
+(executable
+ ((name grainc)
+  (public_name grainc)
+  (package grain)
+  (libraries (grain))))
+

@@ -1,5 +1,4 @@
 main
-grainc
 grain.install
 output/*.o
 output/*.run
