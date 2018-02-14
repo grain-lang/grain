@@ -1,10 +1,13 @@
-let rec fib = (lambda n:
-    if n == 0:
-      0
-    else:
-      if n == 1:
-        1
-      else:
-        fib(n - 1) + fib(n - 2)) in
+let rec fib = (n) => {
+  if (n == 0) {
+    0
+  } else {
+    if (n == 1) {
+      1
+    } else {
+      fib(n - 1) + fib(n - 2)
+    }
+  }
+};
 
-  fib(10)
+fib(10)

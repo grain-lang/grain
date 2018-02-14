@@ -112,22 +112,22 @@ let rec raw_type ppf ty =
   end
 and raw_type_list tl = raw_list raw_type tl
 and raw_type_desc ppf = function
-  | TTyVar name -> fprintf ppf "Tvar %a" print_name name
+  | TTyVar name -> fprintf ppf "TTyVar %a" print_name name
   | TTyArrow(t1,t2,c) ->
-    fprintf ppf "@[<hov1>Tarrow(@,%a,@,%a,@,%s)@]"
+    fprintf ppf "@[<hov1>TTyArrow(@,%a,@,%a,@,%s)@]"
       raw_type_list t1 raw_type t2
       (safe_commu_repr [] c)
   | TTyTuple tl ->
-    fprintf ppf "@[<1>Ttuple@,%a@]" raw_type_list tl
+    fprintf ppf "@[<1>TTyTuple@,%a@]" raw_type_list tl
   | TTyConstr (p, tl, abbrev) ->
-    fprintf ppf "@[<hov1>Tconstr(@,%a,@,%a,@,%a)@]" path p
+    fprintf ppf "@[<hov1>TTyConstr(@,%a,@,%a,@,%a)@]" path p
       raw_type_list tl
       (raw_list path) (list_of_memo !abbrev)
-  | TTyLink t -> fprintf ppf "@[<1>Tlink@,%a@]" raw_type t
-  | TTySubst t -> fprintf ppf "@[<1>Tsubst@,%a@]" raw_type t
-  | TTyUniVar name -> fprintf ppf "Tunivar %a" print_name name
+  | TTyLink t -> fprintf ppf "@[<1>TTyLink@,%a@]" raw_type t
+  | TTySubst t -> fprintf ppf "@[<1>TTySubst@,%a@]" raw_type t
+  | TTyUniVar name -> fprintf ppf "TTyUnivar %a" print_name name
   | TTyPoly (t, tl) ->
-    fprintf ppf "@[<hov1>Tpoly(@,%a,@,%a)@]"
+    fprintf ppf "@[<hov1>TTyPoly(@,%a,@,%a)@]"
       raw_type t
       raw_type_list tl
 

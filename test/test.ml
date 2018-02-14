@@ -349,7 +349,7 @@ let diamondback_tests = [
   te "arity_3" "let foo = ((x) => {x});\nfoo(1, 2, 3)" "type";
 ]
 
-let mylist = "link(1, link(2, link(3, false)))"
+let mylist = "cons(1, cons(2, cons(3, false)))"
 
 let egg_eater_tests = [
   t "print_tup" "print((1, 2))" "(1, 2)\n(1, 2)";
@@ -362,11 +362,11 @@ let egg_eater_tests = [
 ]
 
 let egg_eater_stdlib_tests = [
-  tlib "stdlib_link" ("import lists; " ^ mylist) "(1, (2, (3, false)))";
+  tlib "stdlib_cons" ("import lists; " ^ mylist) "(1, (2, (3, false)))";
   tlib "stdlib_sum_1" ("import lists; sum(" ^ mylist ^ ")") "6";
   tlib "stdlib_sum_2" "import lists; sum(false)" "0";
   tlib "stdlib_reverse" ("import lists; reverse(" ^ mylist ^ ")") "(3, (2, (1, false)))";
-  tlib "stdlib_length" "import lists; length(link(1, link(2, link(3, false))))" "3";
+  tlib "stdlib_length" "import lists; length(cons(1, cons(2, cons(3, false))))" "3";
   tlib "stdlib_equal_1" "import lists; (1, 2) == (1, 2)" "false";
   tlib "stdlib_equal_2" "import lists; equal((1, 2), (1, 2))" "true";
   tlib "stdlib_equal_3" "import lists; equal((1, (2, (3, false))), (1, (2, (3, false))))" "true";
@@ -374,15 +374,15 @@ let egg_eater_stdlib_tests = [
   tlib "stdlib_equal_5" "import lists; equal(1, 2)" "false";
   tlib "stdlib_equal_6" "import lists; equal(true, true)" "true";
   tlib "stdlib_equal_7" "import lists; equal(true, false)" "false";
-  tlib "stdlib_contains_1" "import lists; contains(true, link(1, link(2, link(3, false))))" "false";
-  tlib "stdlib_contains_2" "import lists; contains(false, link(1, link(2, link(3, false))))" "false";
-  tlib "stdlib_contains_3" "import lists; contains(3, link(1, link(2, link(3, false))))" "true";
-  telib "stdlib_err_1" "import lists; link(1)" "arity";
-  telib "stdlib_err_2" "import lists; link()" "arity";
-  telib "stdlib_err_3" "import lists; link(1, 2, 3)" "arity";
-  telib "stdlib_sum_err" "import lists; sum(link(true, false))" "number";
-  telib "stdlib_length_err" "import lists; length(true)" "tuple";
-  telib "stdlib_reverse_err" "import lists; reverse(1)" "tuple";
+  tlib "stdlib_contains_1" "import lists; contains(true, cons(1, cons(2, cons(3, false))))" "false";
+  tlib "stdlib_contains_2" "import lists; contains(false, cons(1, cons(2, cons(3, false))))" "false";
+  tlib "stdlib_contains_3" "import lists; contains(3, cons(1, cons(2, cons(3, false))))" "true";
+  telib "stdlib_err_1" "import lists; cons(1)" "cannot be called with 1 argument";
+  telib "stdlib_err_2" "import lists; cons()" "cannot be called with 0 arguments";
+  telib "stdlib_err_3" "import lists; cons(1, 2, 3)" "cannot be called with 3 arguments";
+  telib "stdlib_sum_err" "import lists; sum(cons(true, false))" "This expression has type Bool but";
+  telib "stdlib_length_err" "import lists; length(true)" "This expression has type Bool but";
+  telib "stdlib_reverse_err" "import lists; reverse(1)" "This expression has type Number but";
   telib "tuple_index_large_1" "import lists; (1, 2, 3)[6]" "large";
   telib "tuple_index_large_2" "import lists; (1, 2, 3)[4]" "large";
   telib "tuple_index_small_1" "import lists; (1, 2, 3)[-1]" "small";

@@ -1,17 +1,22 @@
-let rec fib = (lambda n:
-    if n == 0:
-      0
-    else:
-      if n == 1:
-        1
-      else:
-        fib(n - 1) + fib(n - 2)) in
-  let rec spinlock = (lambda n:
-    if n <= 0:
-      false
-    else:
-      let y = fib(30) in
-        spinlock(n - 1)) in
+let rec fib = (n) => {
+  if (n == 0) {
+    0
+  } else {
+    if (n == 1) {
+      1
+    } else {
+      fib(n - 1) + fib(n - 2)
+    }
+  }
+};
 
-    spinlock(1000)
-  
+let rec spinlock = (n) => {
+  if (n <= 0) {
+    false
+  } else {
+    let y = fib(30);
+    spinlock(n - 1);
+  }
+};
+
+spinlock(1000)

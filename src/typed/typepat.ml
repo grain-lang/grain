@@ -378,7 +378,7 @@ and type_pat_aux ~constrs ~labels ~no_existentials ~mode ~explode ~env
         if constr.cstr_generalized then
           raise (Error (lid.loc, !env,
                         Unqualified_gadt_pattern (tpath, constr.cstr_name)))
-      in*)
+        in*)
       let constr =
         wrap_disambiguate "This variant pattern is expected to have"
           (mk_expected expected_ty)
