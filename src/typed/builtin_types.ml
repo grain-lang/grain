@@ -71,7 +71,7 @@ let cstr id args = {
 
 let ident_false = ident_create "false"
 and ident_true = ident_create "true"
-and ident_void = ident_create "()" (* TODO: Decide if we want different syntax *)
+and ident_void_cstr = ident_create "()" (* TODO: Decide if we want different syntax *)
 let common_initial_env add_type empty_env =
   let decl_bool =
     {decl_abstr with
@@ -79,7 +79,7 @@ let common_initial_env add_type empty_env =
      type_immediate = true}
   and decl_void =
     {decl_abstr with
-     type_kind = TDataVariant([cstr ident_void []]);
+     type_kind = TDataVariant([cstr ident_void_cstr []]);
      type_immediate = true}
   in
   empty_env
