@@ -1,3 +1,7 @@
+<div align="center">
+    <img src="https://github.com/grain-lang/grain/raw/master/grain-header.jpg" alt="Grain" height="350" />
+</div>
+
 # Grain 🌾
 
 Grain is an experimental language developed by [Philip Blair][philip] and
