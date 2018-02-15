@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="https://github.com/grain-lang/grain/raw/master/grain-header.jpg" alt="Grain" height="350" />
+    <img src="https://github.com/grain-lang/grain/raw/master/grain-header.jpg" alt="Grain" height="200" />
 </div>
 
 # Grain 🌾
