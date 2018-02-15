@@ -8,6 +8,8 @@
     The compiler for the modern web staple.
 </div>
 
+# The Grain Compiler
+
 Grain is a strongly-typed functional programming language built for the modern web by leveraging the brilliant work done by the [WebAssembly project](http://webassembly.org/).
 
 For more information about the language, visit [grain-lang.org](https://grain-lang.org/).
