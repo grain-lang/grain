@@ -1,23 +1,16 @@
 <div align="center">
-    <img src="https://github.com/grain-lang/grain/raw/update-readme/grain-header.jpg" alt="Grain" height="200" />
+    <a href="https://grain-lang.org/">
+        <img src="https://github.com/grain-lang/grain/raw/master/grain-header.jpg" alt="Grain" height="200" />
+    </a>
 </div>
 
-# Grain 🌾
+<div align="center">
+    The compiler for the modern web staple.
+</div>
 
-Grain is an experimental language developed by [Philip Blair][philip] and
-[Oscar Spencer][oscar] for our Compilers final project. The language is an ML-like
-functional language which targets [WebAssembly][wasm].
+Grain is a strongly-typed functional programming language built for the modern web by leveraging the brilliant work done by the [WebAssembly project](http://webassembly.org/).
 
-Highlights include:
-- First-class (higher-order) functions
-- JavaScript FFI
-- (limited) DOM interaction
-
-The language contains types for numbers, booleans, tuples, lambdas, strings, and DOM elements.
-
-The primary limitation of the language is the lack of garbage collection. This
-is because WebAssembly currently does not support GC natively, and it provides
-no means of performing any type of stack introspection.
+For more information about the language, visit [grain-lang.org](https://grain-lang.org/).
 
 ## Building
 
