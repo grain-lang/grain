@@ -1,8 +1,9 @@
 module.exports = {
-  entry: './src/index.js',
+  entry: './src/runtime.js',
   output: {
     filename: 'grain-runtime.js',
-    path: __dirname + '/dist'
+    path: __dirname + '/dist',
+    libraryTarget: 'commonjs2'
   },
   module: {
     rules: [
@@ -20,5 +21,6 @@ module.exports = {
         }
       }
     ]
-  }
+  },
+  externals: ['fs']
 }

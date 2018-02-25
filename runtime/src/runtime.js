@@ -1,3 +1,6 @@
+import 'fast-text-encoding';
+import fs from 'fs';
+
 import { heapController, grainCheckMemory } from './core/heap';
 import { printClosure } from './core/closures';
 import { throwGrainError } from './errors/errors';
@@ -43,6 +46,11 @@ async function fetchAndInstantiate(url, importObject) {
   return WebAssembly.instantiate(bytes, importObject);
 }
 
+async function readAndInstantiate(path, importObject) {
+  let bytes = fs.readFileSync(path);
+  return WebAssembly.instantiate(bytes, importObject);
+}
+
 function runGrain(module) {
   grainModule = module;
   let main = module.instance.exports["GRAIN$MAIN"];
@@ -51,7 +59,13 @@ function runGrain(module) {
   return grainToJSVal(res);
 }
 
+export async function GrainNodeRunner(path) {
+  let module = await readAndInstantiate(path, importObj);
+  return runGrain(module);
+}
+
 export default async function GrainRunner(uri) {
   let module = await fetchAndInstantiate(uri, importObj);
   return runGrain(module);
 }
+
