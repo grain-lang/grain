@@ -1,0 +1,29 @@
+{
+  "name": "@grain/cli",
+  "version": "0.0.0",
+  "description": "A command line tool for the Grain language.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "grain": "bin/grain.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/grain-lang/grain.git"
+  },
+  "keywords": [
+    "grain",
+    "cli"
+  ],
+  "author": "Oscar Spencer",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/grain-lang/grain/issues"
+  },
+  "homepage": "https://github.com/grain-lang/grain#readme",
+  "dependencies": {
+    "commander": "^2.14.1"
+  }
+}

@@ -37,5 +37,8 @@
     "babel-loader": "^7.1.2",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "webpack": "^3.10.0"
+  },
+  "dependencies": {
+    "fast-text-encoding": "^1.0.0"
   }
 }
