@@ -96,6 +96,7 @@ type 'a immexpr = (* immediate expressions *)
   | ImmBool of bool * 'a
   | ImmId of string * 'a
 and 'a cexpr = (* compound expressions *)
+  | CSwitch of 'a immexpr * (int * 'a aexpr) list * 'a
   | CIf of 'a immexpr * 'a aexpr * 'a aexpr * 'a
   | CPrim1 of prim1 * 'a immexpr * 'a
   | CPrim2 of prim2 * 'a immexpr * 'a immexpr * 'a

@@ -362,20 +362,20 @@ let egg_eater_tests = [
 ]
 
 let egg_eater_stdlib_tests = [
-  tlib "stdlib_cons" ("import lists; " ^ mylist) "(1, (2, (3, false)))";
+  tlib "stdlib_cons" ("import lists; " ^ mylist) "(1, (2, (3, empty)))";
   tlib "stdlib_sum_1" ("import lists; sum(" ^ mylist ^ ")") "6";
   tlib "stdlib_sum_2" "import lists; sum(false)" "0";
-  tlib "stdlib_reverse" ("import lists; reverse(" ^ mylist ^ ")") "(3, (2, (1, false)))";
-  tlib "stdlib_length" "import lists; length(cons(1, cons(2, cons(3, false))))" "3";
+  tlib "stdlib_reverse" ("import lists; reverse(" ^ mylist ^ ")") "(3, (2, (1, empty)))";
+  tlib "stdlib_length" "import lists; length(cons(1, cons(2, cons(3, empty))))" "3";
   tlib "stdlib_equal_1" "import lists; (1, 2) == (1, 2)" "false";
   tlib "stdlib_equal_2" "import lists; equal((1, 2), (1, 2))" "true";
-  tlib "stdlib_equal_3" "import lists; equal((1, (2, (3, false))), (1, (2, (3, false))))" "true";
+  tlib "stdlib_equal_3" "import lists; equal((1, (2, (3, false))), (1, (2, (3, empty))))" "true";
   tlib "stdlib_equal_4" "import lists; equal(1, 1)" "true";
   tlib "stdlib_equal_5" "import lists; equal(1, 2)" "false";
   tlib "stdlib_equal_6" "import lists; equal(true, true)" "true";
   tlib "stdlib_equal_7" "import lists; equal(true, false)" "false";
-  tlib "stdlib_contains_1" "import lists; contains(true, cons(1, cons(2, cons(3, false))))" "false";
-  tlib "stdlib_contains_2" "import lists; contains(false, cons(1, cons(2, cons(3, false))))" "false";
+  tlib "stdlib_contains_1" "import lists; contains(true, cons(1, cons(2, cons(3, empty))))" "false";
+  tlib "stdlib_contains_2" "import lists; contains(false, cons(1, cons(2, cons(3, empty))))" "false";
   tlib "stdlib_contains_3" "import lists; contains(3, cons(1, cons(2, cons(3, false))))" "true";
   telib "stdlib_err_1" "import lists; cons(1)" "cannot be called with 1 argument";
   telib "stdlib_err_2" "import lists; cons()" "cannot be called with 0 arguments";

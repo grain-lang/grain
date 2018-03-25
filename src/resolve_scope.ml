@@ -37,6 +37,10 @@ let resolve_scope (p : 'a aprogram) initial_env : 'a aprogram =
     | ACExpr(c) -> ACExpr(helpC binds c)
   and helpC binds cexpr =
     match cexpr with
+    | CSwitch(a, bs, tag) ->
+      let folded_a = helpI binds a in
+      let folded_bs = List.fold_right (fun (i, b) acc -> (i, helpA binds b)::acc) bs [] in
+      CSwitch(folded_a, folded_bs, tag)
     | CIf(c, t, e, tag) ->
       let folded_c = helpI binds c in
       let folded_t = helpA binds t in
@@ -75,7 +79,8 @@ let resolve_scope (p : 'a aprogram) initial_env : 'a aprogram =
     | CImmExpr(v) -> CImmExpr(helpI binds v)
   and helpI binds imm =
     match imm with
-    | ImmId(i, t) -> ImmId(find i binds, t)
-    | _ -> imm in
+    | ImmId(i, t) -> (try ImmId(find i binds, t) with Not_found -> failwith (Format.sprintf "Not found: %s" i))
+    | _ -> imm
+  in
   let initial_binds = List.fold_left (fun b n -> add n n b) empty (List.map fst initial_env) in
   helpA initial_binds p

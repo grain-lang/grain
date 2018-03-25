@@ -7,6 +7,13 @@ type 'a anf_bind =
   | BLet of string * 'a cexpr
   | BLetRec of (string * 'a cexpr) list
 
+let compile_constructor_tag =
+  let open Grain_typed.Types in
+  function
+  | CstrConstant i -> i lsl 1
+  | CstrBlock i -> (i lsl 1) lor 1
+  | CstrUnboxed -> failwith "compile_constructor_tag: cannot compile CstrUnboxed"
+
 let anf_typed (p : Grain_typed.Typedtree.typed_program) : unit aprogram =
   let open Grain_parsing in
   let open Grain_typed in
@@ -16,6 +23,14 @@ let anf_typed (p : Grain_typed.Typedtree.typed_program) : unit aprogram =
   let gensym name =
     (* FIXME: This seems a bit delicate. *)
     Ident.unique_name (Ident.create name) in
+
+  let module MatchCompiler = Matchcomp.MatchTreeCompiler(struct
+      let gensym = gensym
+    end) in
+
+  let extract_bindings pat cexpr =
+    List.map (fun (name, e) -> BLet(name, e)) (MatchCompiler.extract_bindings pat cexpr) in
+
   let helpIConst (c : Types.constant) : ((unit immexpr), (string * unit cexpr)) either =
     match c with
      | Const_int i -> Left(ImmNum(i, ()))
@@ -86,22 +101,12 @@ let anf_typed (p : Grain_typed.Typedtree.typed_program) : unit aprogram =
        let (rest_ans, rest_setup) = helpIExpr {e with exp_desc=(TExpBlock(rest))} in
        (rest_ans, fst_setup @ [BSeq fst_ans] @ rest_setup)
     | TExpLet(Nonrecursive, [], body) -> helpIExpr body
-    | TExpLet(Nonrecursive, {vb_expr; vb_pat={pat_desc=TPatVar(bind, _)}}::rest, body) ->
+    | TExpLet(Nonrecursive, {vb_expr; vb_pat}::rest, body) ->
+      (* TODO: Destructuring on letrec *)
       let (exp_ans, exp_setup) = helpCExpr vb_expr in
-       let (body_ans, body_setup) = helpIExpr ({e with exp_desc=TExpLet(Nonrecursive, rest, body)}) in
-       (body_ans, exp_setup @ [BLet(Ident.unique_name bind, exp_ans)] @ body_setup)
-    | TExpLet(Nonrecursive, {vb_expr; vb_pat={pat_desc=TPatTuple(patts)}}::rest, body) ->
-      let (exp_ans, exp_setup) = helpCExpr vb_expr in
-      let tmp = gensym "let_tup" in
-
-      (* Extract items from tuple *)
-      
-      let anf_patts = bindPatts tmp patts in
-
+      let binds_setup = extract_bindings vb_pat exp_ans in
       let (body_ans, body_setup) = helpIExpr ({e with exp_desc=TExpLet(Nonrecursive, rest, body)}) in
-      (body_ans, exp_setup @ ((BLet(tmp, exp_ans))::anf_patts) @ body_setup)
-
-    | TExpLet(Nonrecursive, _, _) -> failwith "Impossible by pre_anf"
+      (body_ans, exp_setup @ binds_setup @ body_setup)
     | TExpLet(Recursive, binds, body) ->
        let tmp = gensym "lam" in
        let (binds, new_binds_setup) = List.split (List.map (fun {vb_pat; vb_expr} -> (vb_pat, helpCExpr vb_expr)) binds) in
@@ -145,7 +150,11 @@ let anf_typed (p : Grain_typed.Typedtree.typed_program) : unit aprogram =
        let tmp = gensym "tup" in
        let (new_args, new_setup) = List.split (List.map helpIExpr args) in
        (ImmId(tmp, ()), (List.concat new_setup) @ [BLet(tmp, CTuple(new_args, ()))])
-    | TExpMatch _ -> failwith "NYI: helpIExpr: Match"
+    | TExpMatch(exp, branches, _) ->
+      let tmp = gensym "match" in
+      let exp_ans, exp_setup = helpIExpr exp in
+      let ans, setup = MatchCompiler.compile_result (Matchcomp.convert_match_branches branches) helpAExpr exp_ans in
+      (ImmId(tmp, ())), (exp_setup @ (List.map (fun (n, e) -> BLet(n, e)) setup)) @ [(BLet(tmp, ans))]
     | TExpConstruct _ -> failwith "NYI: helpIExpr: Construct"
   and helpCExpr (({exp_desc; _} as e) : expression) : (unit cexpr * unit anf_bind list) =
     match exp_desc with
@@ -225,6 +234,10 @@ let anf_typed (p : Grain_typed.Typedtree.typed_program) : unit aprogram =
     | TExpTuple(args) ->
        let (new_args, new_setup) = List.split (List.map helpIExpr args) in
        (CTuple(new_args, ()), List.concat new_setup)
+    | TExpMatch(expr, branches, _) ->
+      let exp_ans, exp_setup = helpIExpr expr in
+      let ans, setup = MatchCompiler.compile_result (Matchcomp.convert_match_branches branches) helpAExpr exp_ans in
+      ans, (exp_setup @ (List.map (fun (n, e) -> BLet(n, e)) setup))
     | _ -> let (imm, setup) = helpIExpr e in (CImmExpr imm, setup)
   and helpAExpr (({exp_desc; _} as e) : expression) : unit aexpr =
     let (ans, ans_setup) = helpCExpr e in
@@ -237,7 +250,7 @@ let anf_typed (p : Grain_typed.Typedtree.typed_program) : unit aprogram =
       ans_setup (ACExpr ans)
   in
 
-  let rec helpAStmt (({ttop_desc; _} as s) : toplevel_stmt) : (unit anf_bind list) option =
+  let rec helpAStmt (({ttop_desc; ttop_env; _} as s) : toplevel_stmt) : (unit anf_bind list) option =
     match ttop_desc with
     | TTopLet(_, []) -> None
     | TTopLet(Nonrecursive, {vb_expr; vb_pat}::rest) ->
@@ -263,23 +276,24 @@ let anf_typed (p : Grain_typed.Typedtree.typed_program) : unit aprogram =
       Some((List.concat new_setup) @ [BLetRec(List.combine names new_binds)])
     | TTopData(decl) ->
       let open Types in
-      let tdecl = decl.data_type in
-      begin match tdecl.type_kind with
-        | TDataAbstract -> failwith "Impossible: TTopData TDataAbstract"
-        | TDataVariant cstrs ->
-          let count = ref 0 in
-          let cexpr_constructor cd_args =
-            count := !count + 1;
-            match cd_args with
-            | TConstrSingleton -> CTuple([ImmNum(!count, ())], ())
-            | TConstrTuple cd_args ->
-              let args = List.map (fun _ -> gensym "constr_arg") cd_args in
-              let arg_ids = List.map (fun a -> ImmId(a, ())) args in
-              CLambda(args, ACExpr(CTuple((ImmNum(!count, ()))::arg_ids, ())), ()) in
-          let bind_constructor {cd_id; cd_args} =
-            let cexpr = cexpr_constructor cd_args in
-            BLet(Ident.unique_name cd_id, cexpr) in
-          Some(List.map bind_constructor cstrs)
+      let typath = Path.PIdent (decl.data_id) in
+      let descrs = Datarepr.constructors_of_type typath (decl.data_type) in
+      begin match descrs with
+        | [] -> failwith "Impossible: TTopData TDataAbstract"
+        | descrs ->
+          let bind_constructor (cd_id, {cstr_name; cstr_tag; cstr_args}) =
+            let rhs = match cstr_tag with
+              | CstrConstant _ ->
+                let compiled_tag = compile_constructor_tag cstr_tag in
+                CTuple([ImmNum(compiled_tag, ())], ())
+              | CstrBlock _ ->
+                let compiled_tag = compile_constructor_tag cstr_tag in
+                let args = List.map (fun _ -> gensym "constr_arg") cstr_args in
+                let arg_ids = List.map (fun a -> ImmId(a, ())) args in
+                CLambda(args, ACExpr(CTuple((ImmNum(compiled_tag, ()))::arg_ids, ())), ())
+              | CstrUnboxed -> failwith "NYI: ANF CstrUnboxed" in
+            BLet(Ident.unique_name cd_id, rhs) in
+          Some(List.map bind_constructor descrs)
       end
     | _ -> None in
 
@@ -298,3 +312,6 @@ let anf_typed (p : Grain_typed.Typedtree.typed_program) : unit aprogram =
       (top_binds @ ans_setup) (ACExpr ans) in
 
   helpAProg p
+
+let () =
+  Matchcomp.compile_constructor_tag := compile_constructor_tag
