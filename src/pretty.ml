@@ -145,6 +145,10 @@ and string_of_cexpr c =
      sprintf "%s(%s)" (string_of_op1 op) (string_of_immexpr e)
   | CPrim2(op, left, right, _) ->
      sprintf "(%s %s %s)" (string_of_immexpr left) (string_of_op2 op) (string_of_immexpr right)
+  | CSwitch(arg, branches, _) ->
+    let str_branches = List.map (fun (i, b) ->
+        sprintf "(%d -> %s)" i (string_of_aexpr b)) branches in
+    sprintf "(switch %s: %s)" (string_of_immexpr arg) (ExtString.String.join "; " str_branches)
   | CIf(cond, thn, els, _) ->
      sprintf "(if %s: %s else: %s)"
              (string_of_immexpr cond)

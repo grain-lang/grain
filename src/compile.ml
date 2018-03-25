@@ -93,6 +93,11 @@ let compile_module (opts: compile_options) (p : Parsetree.parsed_program) =
     prerr_string "\n\n";
   end;
   let anfed = atag @@ Anf.anf_typed typed_mod in
+  if !Grain_utils.Config.verbose then begin
+    prerr_string "\nANFed program:\n";
+    prerr_string @@ Pretty.string_of_aprogram anfed;
+    prerr_string "\n\n";
+  end;
   let renamed = resolve_scope anfed initial_load_env in
   let optimized =
     if opts.optimizations_enabled then

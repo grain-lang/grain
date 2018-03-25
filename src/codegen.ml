@@ -600,6 +600,29 @@ and compile_aexpr (e : tag aexpr) (env : compiler_env) =
   | ACExpr(e) -> compile_cexpr e env
 and compile_cexpr (e : tag cexpr) env =
   match e with
+  | CSwitch(arg, branches, t) ->
+    let rec process_branches count bs =
+      match bs with
+      | [] -> [Ast.Block([Types.I32Type],
+                         List.map add_dummy_loc (
+                           (compile_imm arg env) @
+                           (assert_num (compile_imm arg env) IfError) @ (* FIXME: Should be a different error *)
+                           untag_number @
+                           [
+                             Ast.BrTable((List.map (fun i -> add_dummy_loc @@ Int32.of_int (i + 1))
+                                          @@ BatList.range 0 `To count),
+                                         (add_dummy_loc (Int32.of_int 0)));
+                           ]))] @
+                           (call_error_handler (code_of_error GenericNumberError) [Ast.Const const_true] [Ast.Const const_true])
+      | (_, hd)::tl ->
+        [Ast.Block([Types.I32Type],
+                   List.map add_dummy_loc
+                     ((process_branches (count + 1) tl) @
+                      (compile_aexpr hd env) @
+                      [Ast.Br(add_dummy_loc @@ Int32.of_int count)]))] in
+    let processed = process_branches 0 branches in
+    [Ast.Block([Types.I32Type],
+               List.map add_dummy_loc processed)]
   | CIf(cond, thn, els, t) ->
     (compile_imm cond env) @
     (assert_bool (compile_imm cond env) IfError) @

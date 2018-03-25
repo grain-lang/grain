@@ -179,6 +179,9 @@ let atag (p : 'a aprogram) : tag aprogram =
     | CPrim2(op, e1, e2, _) ->
        let prim_tag = tag() in
        CPrim2(op, helpI e1, helpI e2, prim_tag)
+    | CSwitch(arg, branches, _) ->
+       let switch_tag = tag() in
+       CSwitch(helpI arg, List.map (fun (i, b) -> (i, helpA b)) branches, switch_tag)
     | CIf(cond, thn, els, _) ->
        let if_tag = tag() in
        CIf(helpI cond, helpA thn, helpA els, if_tag)
@@ -225,6 +228,8 @@ let auntag (p : 'a aprogram) : unit aprogram =
        CPrim1(op, helpI e, ())
     | CPrim2(op, e1, e2, _) ->
        CPrim2(op, helpI e1, helpI e2, ())
+    | CSwitch(arg, branches, _) ->
+       CSwitch(helpI arg, List.map (fun (i, b) -> (i, helpA b)) branches, ())
     | CIf(cond, thn, els, _) ->
        CIf(helpI cond, helpA thn, helpA els, ())
     | CTuple(vals, _) ->

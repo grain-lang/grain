@@ -40,6 +40,9 @@ let purity_env (prog : tag aprogram) (initial_funcs : initial_func list) : (stri
     | ACExpr e -> helpC e
   and helpC (cexp : tag cexpr) : bool =
     match cexp with
+    | CSwitch(a, bs, _) ->
+      let a_purity = helpI a in
+      a_purity && (List.for_all (fun (i, b) -> helpA b) bs)
     | CIf(c,t,e,_) ->
       let c_purity = helpI c in
       let t_purity = helpA t in
@@ -108,6 +111,11 @@ let const_fold (prog : 'a aprogram) opts : unit aprogram =
     | ACExpr e -> ACExpr(helpC binds e)
   and helpC binds (cexp : 'b cexpr) =
     match cexp with
+    | CSwitch(a, bs, _) ->
+      (* In the future (when we're not punning things into tuples), this will be optimized *)
+      let folded_a = helpI binds a in
+      let folded_bs = List.fold_right (fun (i, b) acc -> (i, helpA binds b)::acc) bs [] in
+      CSwitch(folded_a, folded_bs, ())
     | CIf(c, t, e, _) ->
       let folded_c = helpI binds c in
       let folded_t = helpA binds t in
@@ -292,6 +300,8 @@ let cse (prog : tag aprogram) opts : unit aprogram =
   and helpC (cexp : tag cexpr) =
     let simplified =
       match cexp with
+      | CSwitch(a, bs, _) ->
+        CSwitch(helpI a, List.map (fun (i, b) -> (i, helpA b)) bs, ())
       | CIf(c, t, e, _) ->
         CIf(helpI c, helpA t, helpA e, ())
       | CPrim1(op, arg, _) ->
@@ -380,6 +390,8 @@ let dae (prog : tag aprogram) opts : unit aprogram =
     | ACExpr e -> ACExpr(helpC e)
   and helpC (cexp : tag cexpr) =
     match cexp with
+    | CSwitch(a, bs, _) ->
+      CSwitch(helpI a, List.map (fun (i, b) -> (i, helpA b)) bs, ())
     | CIf(c, t, e, _) ->
       CIf(helpI c, helpA t, helpA e, ())
     | CPrim1(op, arg, _) ->

@@ -26,6 +26,8 @@ let free_vars (e : 'a aexpr) : BindingSet.t =
       helpA (args @ bound) body
     | CIf(cond, thn, els, _) ->
       helpI bound cond @ helpA bound thn @ helpA bound els
+    | CSwitch(arg, branches, _) ->
+      (helpI bound arg) @ (List.flatten (List.map (fun (_, a) -> helpA bound a) branches))
     | CPrim1(_, arg, _) -> helpI bound arg
     | CPrim2(_, left, right, _) -> helpI bound left @ helpI bound right
     | CApp(fn, args, _) ->
