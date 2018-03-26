@@ -431,7 +431,7 @@ let optimize ?passes:(passes=4) (prog : tag aprogram) (opts : optimization_setti
       let cse_prog = atag (cse const_prog opts) in
       let dae_prog = atag (dae cse_prog opts) in
       begin
-        (if opts.verbose
+        (if (opts.verbose && false)
          then begin
            printf "Const/tagged:\n%s\n" (string_of_aprogram const_prog);
            printf "CSE/tagged:\n%s\n" (string_of_aprogram cse_prog);

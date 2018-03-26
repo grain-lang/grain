@@ -21,17 +21,26 @@ let () =
         Buffer.reset buf;
         Some (s))
 
-let t ?opts:(opts=default_compile_options) name program expected = name>::test_run opts [] program name expected;;
-let tlib name program expected = name>::test_run default_compile_options [] program name expected;;
-let tgc name heap_size program expected = name>::test_run default_compile_options [string_of_int heap_size] program name expected;;
-let terr name program expected = name>::test_err default_compile_options [] program name expected;;
-let tgcerr name heap_size program expected = name>::test_err default_compile_options [string_of_int heap_size] program name expected;;
+let wrap_todo todo f x =
+  match todo with
+  | Some(msg) -> OUnit2.todo msg
+  | None -> f x
 
-let te ?opts:(opts=default_compile_options) name program expected = name>::test_err default_compile_options ["1000"] program name expected;;
-let telib name program expected = name>::test_err default_compile_options ["10000"] program name expected;;
+let t ?opts:(opts=default_compile_options) ?todo name program expected = name>::(wrap_todo todo @@ test_run opts [] program name expected);;
+let tlib ?todo name program expected = name>::(wrap_todo todo @@ test_run default_compile_options [] program name expected);;
+let tgc ?todo name heap_size program expected = name>::(wrap_todo todo @@ test_run default_compile_options [string_of_int heap_size] program name expected);;
+let terr ?todo name program expected = name>::(wrap_todo todo @@ test_err default_compile_options [] program name expected);;
+let tgcerr ?todo name heap_size program expected = name>::(wrap_todo todo @@ test_err default_compile_options [string_of_int heap_size] program name expected);;
 
-let tfvs name program expected = name>::
+let te ?opts:(opts=default_compile_options) ?todo name program expected = name>::(wrap_todo todo @@ test_err default_compile_options ["1000"] program name expected);;
+let telib ?todo name program expected = name>::(wrap_todo todo @@ test_err default_compile_options ["10000"] program name expected);;
+
+let tfvs ?todo name program expected = name>::
   (fun _ ->
+    begin match todo with
+      | Some(msg) -> OUnit2.todo msg
+      | None -> ()
+    end;
     try
       let ast = parse_string name program in
       let typed_tree, _, _ = Grain_typed.Typemod.type_module Grain_typed.Env.empty ast in
@@ -58,19 +67,19 @@ let test_input_file filename include_stdlib heap_size name expected test_ctxt =
     raise x
 
 let test_err_input_file filename include_stdlib heap_size name errmsg test_ctxt =
-  try
+  let result = try
     let input_filename = "input/" ^ filename ^ ".gr" in
     let input_channel = open_in input_filename in
     let full_outfile = "output/" ^ name in
     let program = parse_file filename input_channel in
-    let result = run include_stdlib program full_outfile run_no_vg [string_of_int heap_size] in
-    assert_equal
-      (errmsg)
-      result
-      ~cmp: (fun check result -> String.exists result check)
-  with x ->
-    (*Grain_parsing.Location.report_exception Format.err_formatter x;*)
-    raise x
+    run include_stdlib program full_outfile run_no_vg [string_of_int heap_size]
+    with x ->
+      (*Grain_parsing.Location.report_exception Format.err_formatter x;*)
+      Printexc.to_string x in
+  assert_equal
+    (errmsg)
+    result
+    ~cmp: (fun check result -> String.exists result check)
 
 let test_optimizations_sound program_str opts heap_size name expected test_ctxt =
   let full_outfile_unoptimized = "output/" ^ name ^ ".no-optimize" in
@@ -172,14 +181,14 @@ let test_file_optimizations_sound_err filename opts heap_size name errmsg test_c
 
 (** Tests that the file input/`input_file`.egg produces
     the given output *)
-let tfile name input_file expected = name>::test_input_file input_file default_compile_options 10000 name expected
+let tfile ?todo name input_file expected = name>::(wrap_todo todo @@ test_input_file input_file default_compile_options 10000 name expected)
 (** Tests that the file input/`input_file`.egg produces
     the given error message *)
-let tefile name input_file errmsg = name>::test_err_input_file input_file default_compile_options 10000 name errmsg
+let tefile ?todo name input_file errmsg = name>::(wrap_todo todo @@ test_err_input_file input_file default_compile_options 10000 name errmsg)
 
-let tgcfile name heap_size input_file expected = name>::test_input_file input_file default_compile_options heap_size name expected
+let tgcfile ?todo name heap_size input_file expected = name>::(wrap_todo todo @@ test_input_file input_file default_compile_options heap_size name expected)
 
-let tgcefile name heap_size input_file errmsg = name>::test_err_input_file input_file default_compile_options heap_size name errmsg
+let tgcefile ?todo name heap_size input_file errmsg = name>::(wrap_todo todo @@ test_err_input_file input_file default_compile_options heap_size name errmsg)
 
 let test_resolve_scope opts program_str outfile (expected : 'a aprogram) test_ctxt =
   let anf = compile_string_to_anf outfile opts program_str in
@@ -191,20 +200,24 @@ let test_final_anf opts program_str outfile (expected : 'a aprogram) test_ctxt =
   let result = Grain.Pretty.string_of_aprogram final_anf in
   assert_equal (Grain.Pretty.string_of_aprogram expected) result
 
-let trs name (program : string) (expected : 'a aprogram) = name>::test_resolve_scope default_compile_options program name expected;;
+let trs ?todo name (program : string) (expected : 'a aprogram) = name>::(wrap_todo todo @@ test_resolve_scope default_compile_options program name expected);;
 
-let tfinalanf name ?opts:(opts=default_compile_options) (program : string) (expected : 'a aprogram) =
-  name>::test_final_anf opts program name expected;;
+let tfinalanf name ?todo ?opts:(opts=default_compile_options) (program : string) (expected : 'a aprogram) =
+  name>::(wrap_todo todo @@ test_final_anf opts program name expected);;
 
-let tsound name prog expected = name>::test_optimizations_sound prog default_compile_options 10000 name expected;;
+let tsound ?todo name prog expected = name>::(wrap_todo todo @@ test_optimizations_sound prog default_compile_options 10000 name expected);;
 
-let tesound name prog expected = name>::test_optimizations_sound_err prog default_compile_options 10000 name expected;;
+let tesound ?todo name prog expected = name>::(wrap_todo todo @@ test_optimizations_sound_err prog default_compile_options 10000 name expected);;
 
-let tfsound name filename expected = name>::test_file_optimizations_sound filename default_compile_options 10000 name expected;;
+let tfsound ?todo name filename expected = name>::(wrap_todo todo @@ test_file_optimizations_sound filename default_compile_options 10000 name expected);;
 
-let tefsound name filename errmsg = name>::test_file_optimizations_sound_err filename default_compile_options 10000 name errmsg;;
+let tefsound ?todo name filename errmsg = name>::(wrap_todo todo @@ test_file_optimizations_sound_err filename default_compile_options 10000 name errmsg);;
 
-let test_parse name input (expected : Grain_parsing.Parsetree.parsed_program) test_ctxt =
+let test_parse ?todo name input (expected : Grain_parsing.Parsetree.parsed_program) test_ctxt =
+  begin match todo with
+  | Some(msg) -> OUnit2.todo msg
+  | _ -> ()
+  end;
   let open Grain_parsing in
   let location_stripper = {Ast_mapper.default_mapper with location = (fun _ _ -> Location.dummy_loc)} in
   let strip_locs (({statements; body; _} as p) : Parsetree.parsed_program) =
@@ -217,7 +230,7 @@ let test_parse name input (expected : Grain_parsing.Parsetree.parsed_program) te
   assert_equal expected
     untagged ~printer:(fun p -> Sexplib.Sexp.to_string_hum @@ Grain_parsing.Parsetree.sexp_of_parsed_program p)
 
-let tparse name input expected = name>::test_parse name input expected
+let tparse ?todo name input expected = name>::(wrap_todo todo @@ test_parse name input expected)
 
 let forty = "let x = 40; x"
 let fals = "let x = false; x"
@@ -229,7 +242,7 @@ let cobra_tests = [
   t "neg" "-1073741824" "-1073741824";
   t "fals" fals "false";
   t "tru" tru "true";
-  t "complex1" "
+  t ~todo:"builtins NYI" "complex1" "
     let x = 2, y = 3, z = if true { 4 } else { 5 };
     if true {
       print(y) - (z + x)
@@ -237,7 +250,7 @@ let cobra_tests = [
       print(8)
     }
     "  "3\n-3";
-  t "complex2" "print(2) + print(3)" "2\n3\n5";
+  t ~todo:"builtins NYI" "complex2" "print(2) + print(3)" "2\n3\n5";
 
   t "binop1" "2 + 2" "4";
   t "binop2" "2 - 2" "0";
@@ -336,14 +349,13 @@ let diamondback_tests = [
   (* tvgfile "sinister_tail_call2" "sinister-tail-call" "true"; *)
   tefile "fib_big" "too-much-fib" "overflow";
 
-  t "func_no_args" "let foo = (() => {print(5)});\nfoo()" "5\n5";
-  t "multi_bind" "let x = 2, y = x + 1; y" "3";
+  t ~todo:"builtins NYI" "func_no_args" "let foo = (() => {print(5)});\nfoo()" "5\n5";
+  t "multi_bind" "let rec x = 2, y = x + 1; y" "3";
   te "unbound_fun" "2 + foo()" "unbound";
   te "unbound_id_simple" "5 - x" "unbound";
   te "unbound_id_let" "let x = x; 2 + 2" "unbound";
-  te "shadow_simple" "let x = 12; let x = 15; x" "shadows";
   te "shadow_multi" "let x = 12, x = 14; x" "Variable x is bound several times";
-  te "dup_func" "let rec foo = (() => {5});\nlet bar = (() => { 7 });\nlet rec foo = (() => {9});\nfoo()" "shadows";
+  t "dup_func" "let rec foo = (() => {5});\nlet bar = (() => { 7 });\nlet rec foo = (() => {9});\nfoo()" "9";
   te "arity_1" "let foo = (() => {5});\nfoo(6)" "type";
   te "arity_2" "let foo = ((x) => {x + 5});\nfoo()" "type";
   te "arity_3" "let foo = ((x) => {x});\nfoo(1, 2, 3)" "type";
@@ -352,7 +364,7 @@ let diamondback_tests = [
 let mylist = "cons(1, cons(2, cons(3, empty)))"
 
 let egg_eater_tests = [
-  t "print_tup" "print((1, 2))" "(1, 2)\n(1, 2)";
+  t ~todo:"builtins NYI" "print_tup" "print((1, 2))" "(1, 2)\n(1, 2)";
   t "big_tup" "(1, 2, 3, 4)" "(1, 2, 3, 4)";
   t "big_tup_access" "let (a, b, c, d) = (1, 2, 3, 4); c" "3";
   t "nested_tup_1" "let (a, b) = ((1, 2), (3, 4)); a" "(1, 2)";
@@ -362,21 +374,22 @@ let egg_eater_tests = [
 ]
 
 let egg_eater_stdlib_tests = [
-  tlib "stdlib_cons" ("import lists; " ^ mylist) "cons(1, cons(2, cons(3, empty)))";
+  tlib ~todo:"ADT printing NYI" "stdlib_cons" ("import lists; " ^ mylist) "cons(1, cons(2, cons(3, empty)))";
   tlib "stdlib_sum_1" ("import lists; sum(" ^ mylist ^ ")") "6";
   tlib "stdlib_sum_2" "import lists; sum(empty)" "0";
-  tlib "stdlib_reverse" ("import lists; reverse(" ^ mylist ^ ")") "cons(3, cons(2, cons(1, empty)))";
+  tlib ~todo:"ADT printing NYI"
+    "stdlib_reverse" ("import lists; reverse(" ^ mylist ^ ")") "cons(3, cons(2, cons(1, empty)))";
   tlib "stdlib_length" "import lists; length(cons(1, cons(2, cons(3, empty))))" "3";
-  tlib "stdlib_equal_1" "import lists; (1, 2) == (1, 2)" "false";
-  tlib "stdlib_equal_2" "import lists; equal((1, 2), (1, 2))" "true";
-  tlib "stdlib_equal_3" "import lists; equal(cons(1, cons(2, cons(3, empty))), cons(1, cons(2, cons(3, empty))))" "true";
-  tlib "stdlib_equal_4" "import lists; equal(1, 1)" "true";
-  tlib "stdlib_equal_5" "import lists; equal(1, 2)" "false";
-  tlib "stdlib_equal_6" "import lists; equal(true, true)" "true";
-  tlib "stdlib_equal_7" "import lists; equal(true, false)" "false";
+  tlib ~todo:"builtins NYI" "stdlib_equal_1" "import lists; (1, 2) == (1, 2)" "false";
+  tlib ~todo:"builtins NYI" "stdlib_equal_2" "import lists; equal((1, 2), (1, 2))" "true";
+  tlib ~todo:"builtins NYI" "stdlib_equal_3" "import lists; equal(cons(1, cons(2, cons(3, empty))), cons(1, cons(2, cons(3, empty))))" "true";
+  tlib ~todo:"builtins NYI" "stdlib_equal_4" "import lists; equal(1, 1)" "true";
+  tlib ~todo:"builtins NYI" "stdlib_equal_5" "import lists; equal(1, 2)" "false";
+  tlib ~todo:"builtins NYI" "stdlib_equal_6" "import lists; equal(true, true)" "true";
+  tlib ~todo:"builtins NYI" "stdlib_equal_7" "import lists; equal(true, false)" "false";
   tlib "stdlib_contains_1" "import lists; contains(true, cons(1, cons(2, cons(3, empty))))" "false";
   tlib "stdlib_contains_2" "import lists; contains(false, cons(1, cons(2, cons(3, empty))))" "false";
-  tlib "stdlib_contains_3" "import lists; contains(3, cons(1, cons(2, cons(3, false))))" "true";
+  tlib "stdlib_contains_3" "import lists; contains(3, cons(1, cons(2, cons(3, empty))))" "true";
   telib "stdlib_err_1" "import lists; cons(1)" "cannot be called with 1 argument";
   telib "stdlib_err_2" "import lists; cons()" "cannot be called with 0 arguments";
   telib "stdlib_err_3" "import lists; cons(1, 2, 3)" "cannot be called with 3 arguments";
@@ -398,29 +411,28 @@ let fer_de_lance_tests = [
   t "letrec_2" "let rec y = ((n) => {x(n + 1)}),
                         x = ((n) => {if n > 3 {n} else {x(n + 2)}});
                  y(2)" "5";
-  t "let_1" "let x = ((n) => {n + 1}),
-                 y = x(3),
-                 z = ((n) => {x(n) + y});
+  t "let_1" "let rec x = ((n) => {n + 1}),
+                     y = x(3),
+                     z = ((n) => {x(n) + y});
                z(5)" "10";
   te "let_norec_1" "let x = ((n) => {if n > 3 {n} else {x(n + 2)}}),
                         y = ((n) => {x(n + 1)});
-                 y(2)" "not in scope";
-  te "lambda_dup_args" "((x, y, x) => {5})" "duplicate";
+                 y(2)" "Unbound value x.";
+  te "lambda_dup_args" "((x, y, x) => {5})" "Variable x is bound several times";
   te "lambda_arity_1" "((x) => {6})()" "type";
   te "lambda_arity_2" "((x) => {5})(1, 2)" "type";
   te "letrec_nonstatic_const" "let rec x = 5; x" "not bound to a function";
   te "letrec_nonstatic_same" "let rec x = x; x" "Unbound value x.\n       Hint: You are probably missing the `rec' keyword on line 1.";
   te "letrec_nonstatic_other" "let rec x = ((z) => {z + 1}), y = x; y" "not bound to a function";
   te "nonfunction_1" "let x = 5; x(3)" "type";
-  te "nontuple_1" "let x = ((y) => {y + 1}); x[1]" "type";
 ]
 
 let fer_de_lance_stdlib_tests = [
-  tlib "map_1" ("import lists; map(((x) => {x + 1}), " ^ mylist ^ ")")
+  tlib ~todo:"ADT printing NYI" "map_1" ("import lists; map(((x) => {x + 1}), " ^ mylist ^ ")")
     "(2, (3, (4, false)))";
-  tlib "map_2" ("import lists; map(((x) => {x * 2}), " ^ mylist ^ ")")
+  tlib ~todo:"ADT printing NYI" "map_2" ("import lists; map(((x) => {x * 2}), " ^ mylist ^ ")")
     "(2, (4, (6, false)))";
-  tlib "map_print" ("import lists; map(print, " ^ mylist ^ ")") "3\n2\n1\n(1, (2, (3, false)))";
+  tlib ~todo:"ADT printing NYI" "map_print" ("import lists; map(print, " ^ mylist ^ ")") "3\n2\n1\n(1, (2, (3, empty)))";
   tlib "fold_left_1" ("import lists; fold_left(((acc, cur) => {acc - cur}), 0, " ^ mylist ^ ")")
     "-6";
   tlib "fold_right_1" ("import lists; fold_right(((cur, acc) => {cur - acc}), 0, " ^ mylist ^ ")")
@@ -428,22 +440,22 @@ let fer_de_lance_stdlib_tests = [
 ]
 
 let pair_tests = [
-  t "tup1" "let t = (4, (5, 6));
+  t ~todo:"mutable types NYI" "tup1" "let t = (4, (5, 6));
             {
               t[0] := 7;
               t
             }" "(7, (5, 6))";
-  t "tup2" "let t = (4, (5, 6));
+  t ~todo:"mutable types NYI" "tup2" "let t = (4, (5, 6));
             {
               t[1] := 7;
               t
             }" "(4, 7)";
-  t "tup3" "let t = (4, (5, 6));
+  t ~todo:"mutable types NYI" "tup3" "let t = (4, (5, 6));
             {
               t[1] := t;
               t
             }" "(4, <cyclic tuple 1>)";
-  t "tup4" "let t = (4, 6);
+  t ~todo:"mutable types NYI" "tup4" "let t = (4, 6);
             (t, t)"
            "((4, 6), (4, 6))"
 
@@ -486,13 +498,13 @@ let gc = [
 
 let garter_extra_tests = [
   t "test_set_extra1" "(1, 2)[0] := 2" "2";
-  tfile "counter" "counter" "0\n1\n2\n2";
+  tfile ~todo:"mutable types NYI" "counter" "counter" "0\n1\n2\n2";
   (*te "test_bad_import" "let x = (1, 2); import lists; x" "Includes must be at the beginning";*)
-  te "test_missing_import" "import foo; 2" "not found";
-  te "test_set_err1" "(1, 2)[-1] := 3" "small";
-  te "test_set_err2" "(1, 2)[3] := 4" "large";
-  te "test_set_err3" "(1, 2)[true] := 5" "number";
-  te "test_set_err4" "let x = 2 in x[1] := 3" "tuple";
+  te "test_missing_import" "import foo; 2" "Could not find";
+  te ~todo:"mutable types NYI" "test_set_err1" "(1, 2)[-1] := 3" "small";
+  te ~todo:"mutable types NYI" "test_set_err2" "(1, 2)[3] := 4" "large";
+  te ~todo:"mutable types NYI" "test_set_err3" "(1, 2)[true] := 5" "number";
+  te ~todo:"mutable types NYI" "test_set_err4" "let x = 2 in x[1] := 3" "tuple";
 ]
 
 (* Note that optimizations are on by default, so all of the above tests
@@ -501,7 +513,7 @@ let indigo_tests = [
   (* note on resolve-scope test: (tags are not checked) *)
   trs "trs1"
     "let f1 = ((x, y) => {x}),
-         f2 = ((x, y) => {y}) in
+         f2 = ((x, y) => {y});
        f1(1, 2)"
     (ALet("f1$1",
           CLambda(["x$2"; "y$3"],
@@ -543,13 +555,13 @@ let indigo_tests = [
   tfsound "test_counter_sound" "counter" "0\n1\n2\n2";
   tefsound "fib_big" "too-much-fib" "overflow";
   te "test_dae_sound" "let x = 2 + false; 3" "type";
-  te "test_const_fold_times_zero_sound" "let f = ((x) => {x * 0}); f(false)" "number";
+  (*te "test_const_fold_times_zero_sound" "let f = ((x) => {x * 0}); f(false)" "number";
   te "test_const_fold_or_sound" "let f = ((x) => {x or true}); f(1)" "bool";
   te "test_const_fold_and_sound" "let f = ((x) => {false and x}); f(1)" "bool";
   te "test_const_fold_plus_sound" "let f = ((x) => {0 + x}); f(true)" "number";
-  te "test_const_fold_times_one_sound" "let f = ((x) => {x * 1}); f(true)" "number";
+  te "test_const_fold_times_one_sound" "let f = ((x) => {x * 1}); f(true)" "number";*)
 
-  te ~opts:{default_compile_options with sound_optimizations=false}
+  (*te ~opts:{default_compile_options with sound_optimizations=false}
     "test_unsound_dae" "let x = 2 + false; 3" "type";
   t ~opts:{default_compile_options with sound_optimizations=false}
     "test_unsound_const_fold_times_zero" "let f = ((x) => {x * 0}); f(false)" "0";
@@ -560,7 +572,7 @@ let indigo_tests = [
   t ~opts:{default_compile_options with sound_optimizations=false}
     "test_unsound_const_fold_plus" "let f = ((x) => {0 + x}); f(true)" "true";
   t ~opts:{default_compile_options with sound_optimizations=false}
-    "test_unsound_const_fold_times_one" "let f = ((x) => {x * 1}); f(true)" "true";
+    "test_unsound_const_fold_times_one" "let f = ((x) => {x * 1}); f(true)" "true";*)
 ]
 
 let string_tests =
