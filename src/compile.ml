@@ -100,8 +100,15 @@ let compile_module (opts: compile_options) (p : Parsetree.parsed_program) =
   end;
   let renamed = resolve_scope anfed initial_load_env in
   let optimized =
-    if opts.optimizations_enabled then
-      optimize renamed (opts_to_optimization_settings opts)
+    if opts.optimizations_enabled then begin
+      let ret = optimize renamed (opts_to_optimization_settings opts) in
+      if !Grain_utils.Config.verbose then begin
+        prerr_string "\nOptimized program:\n";
+        prerr_string @@ Pretty.string_of_aprogram ret;
+        prerr_string "\n\n";
+      end;
+      ret
+    end
     else
       renamed in
   compile_aprog optimized
