@@ -4,6 +4,7 @@
 (* NOTE: Constant patterns are currently unsupported, since
    they require logic for guard expressions. *)
 
+open Sexplib.Conv
 open Grain_parsing
 open Grain_typed
 open Types
@@ -30,6 +31,7 @@ type decision_tree =
   (** This instruction indicates that the first argument should be
       interpreted as a tuple and expanded into its contents.
       Argument: (arity) *)
+[@@deriving sexp]
 
 
 type conversion_result = {
@@ -87,6 +89,7 @@ module MatchTreeCompiler : MatchTreeCompilerSignature =
     let with_str_binding id cexp = compose_str_binding id cexp no_op
 
     let extract_bindings patt expr : (string * unit Legacy_types.cexpr) list =
+      (*Printf.eprintf "Extracting bindings from:\n%s\n" (Sexplib.Sexp.to_string_hum (sexp_of_pattern patt));*)
       let open Legacy_types in
       let rec extract_bindings patt expr =
         match patt.pat_desc with
@@ -139,7 +142,9 @@ module MatchTreeCompiler : MatchTreeCompilerSignature =
             | _ -> (data_name, expr)::binds
           end
         | TPatOr _ -> failwith "NYI: extract_bindings > TPatOr" in
-      extract_bindings patt expr
+      let res = extract_bindings patt expr in
+      (*Printf.eprintf "Bindings:\n%s\n" (Sexplib.Sexp.to_string_hum (sexp_of_list (sexp_of_pair sexp_of_string (fun x -> (sexp_of_string (Pretty.string_of_cexpr x)))) res));*)
+      res
 
     let fold_tree setup ans =
         List.fold_right (fun (name, exp) body -> Legacy_types.ALet(name, exp, body, ())) setup (Legacy_types.ACExpr ans)
@@ -154,7 +159,10 @@ module MatchTreeCompiler : MatchTreeCompilerSignature =
       | Leaf(i) -> CImmExpr(ImmNum(i, ())), []
       | Fail ->
         (* FIXME: We need a "throw error" node in ANF *)
-        CImmExpr(ImmNum(-1, ())), []
+        CImmExpr(ImmNum(0, ())), []
+      (* Optimizations to avoid unneeded destructuring: *)
+      | Explode(_, ((Leaf(_)) as inner))
+      | Explode(_, (Fail as inner)) -> compile_tree_help inner values
       | Explode(arity, rest) ->
         (* Tack on the new bindings. We assume that the indices of 'rest'
            already account for the new indices. *)
@@ -190,6 +198,9 @@ module MatchTreeCompiler : MatchTreeCompilerSignature =
         switch_body_ans, (value_constr_name, value_constr)::(switch_body_setup)
 
     let compile_result ({tree; branches}) helpA expr : unit Legacy_types.cexpr * (string * unit Legacy_types.cexpr) list =
+      (*prerr_string "Compiling tree:";
+      prerr_string (Sexplib.Sexp.to_string_hum (sexp_of_decision_tree tree));
+      prerr_newline();*)
       let ans, setup = compile_tree_help tree [expr] in
       let jmp_name = Context.gensym "match_dest" in
       let setup = setup @ [(jmp_name, ans)] in
@@ -197,7 +208,8 @@ module MatchTreeCompiler : MatchTreeCompilerSignature =
           tag, List.fold_right
             (fun (name, exp) body -> Legacy_types.ALet(name, exp, body, ()))
             (extract_bindings orig_pat (CImmExpr expr))
-            (helpA branch)) branches) in
+            (helpA branch))
+          branches) in
       (CSwitch(ImmId(jmp_name, ()), switch_branches, ())), setup
   end
 
@@ -235,7 +247,7 @@ let matrix_head_constructors mtx =
     match mtx with
     | [] -> acc
     | ([], _)::_ -> failwith "Impossible: Empty pattern matrix"
-    | (p::_, mb)::tl -> pattern_head_constructors_aux p acc in
+    | (p::_, mb)::tl -> help tl (pattern_head_constructors_aux p acc) in
   help mtx []
 
 let normalize_branches match_branches =
@@ -351,15 +363,16 @@ let rec default_matrix mtx =
 let rec compile_matrix last_label branches mtx =
   match mtx with
   | [] -> {tree=Fail; last_label=last_label; branches=branches} (* No branches to match. *)
-  | (pats, (orig_pat, mb)) :: _ when List.for_all pattern_always_matches pats ->
+  | (pats, mb) :: _ when List.for_all pattern_always_matches pats ->
     {
       tree=Leaf (last_label + 1);
       last_label=last_label + 1;
-      branches=(last_label + 1, mb.mb_body, orig_pat)::branches;
+      branches=(last_label + 1, mb.mb_body, mb.mb_pat)::branches;
     }
   | _ when not (col_is_wildcard mtx 0) ->
     (* If the first column contains a non-wildcard pattern *)
     let constructors = matrix_head_constructors mtx in
+    (*Printf.eprintf "constructors:\n%s\n" (Sexplib.Sexp.to_string_hum ((Sexplib.Conv.sexp_of_list sexp_of_constructor_description) constructors));*)
     let handle_constructor ({last_label; branches}, switch_branches) cstr =
       let arity = cstr.cstr_arity in
       let specialized = specialize_matrix cstr mtx in
@@ -390,6 +403,13 @@ let rec compile_matrix last_label branches mtx =
     
 
 let convert_match_branches (match_branches : Typedtree.match_branch list) : conversion_result =
-  compile_matrix 0 [] (List.map2 (fun (ps, mb) {mb_pat} -> (ps, (mb_pat, mb)))
-                         (make_matrix @@ normalize_branches match_branches)
-                         (match_branches))
+  let mtx = List.map2 (fun (ps, _) mb -> (ps, mb))
+      (make_matrix @@ normalize_branches match_branches)
+      (match_branches) in
+  (*prerr_string "Initial matrix:\n";
+  prerr_string (Sexplib.Sexp.to_string_hum (Sexplib.Conv.sexp_of_list
+                                              (Sexplib.Conv.sexp_of_pair
+                                                 (Sexplib.Conv.sexp_of_list sexp_of_pattern)
+                                                 sexp_of_match_branch) mtx));
+  prerr_newline();*)
+  compile_matrix 0 [] mtx

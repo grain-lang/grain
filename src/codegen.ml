@@ -601,26 +601,39 @@ and compile_aexpr (e : tag aexpr) (env : compiler_env) =
 and compile_cexpr (e : tag cexpr) env =
   match e with
   | CSwitch(arg, branches, t) ->
-    let rec process_branches count bs =
+    (* Constructs the jump table. Assumes that branch 0 is the default *)
+    let create_table ?default:(default=0) ?offset:(offset=0) stack =
+      let max_label = List.fold_left max 0 stack in
+      let label_blocks = ref (List.mapi (fun i l -> (i + offset, l)) stack
+                              |> List.sort (fun (_, l1) (_, l2) -> compare l1 l2)) in
+      let default_const = add_dummy_loc @@ Int32.of_int default in
+      let get_slot i =
+        match !label_blocks with
+        | (block, lbl)::tl when lbl = i ->
+          label_blocks := tl;
+          add_dummy_loc @@ Int32.of_int block
+        | _ -> default_const in
+      BatList.init max_label get_slot in
+    let rec process_branches count stack bs =
       match bs with
       | [] -> [Ast.Block([Types.I32Type],
                          List.map add_dummy_loc (
+                           [Ast.Const(const_int32 0)] @
                            (compile_imm arg env) @
                            (assert_num (compile_imm arg env) IfError) @ (* FIXME: Should be a different error *)
                            untag_number @
                            [
-                             Ast.BrTable((List.map (fun i -> add_dummy_loc @@ Int32.of_int (i + 1))
-                                          @@ BatList.range 0 `To count),
+                             Ast.BrTable((create_table ~offset:1 stack),
                                          (add_dummy_loc (Int32.of_int 0)));
                            ]))] @
                            (call_error_handler (code_of_error GenericNumberError) [Ast.Const const_true] [Ast.Const const_true])
-      | (_, hd)::tl ->
+      | (lbl, hd)::tl ->
         [Ast.Block([Types.I32Type],
                    List.map add_dummy_loc
-                     ((process_branches (count + 1) tl) @
+                     ((process_branches (count + 1) (lbl::stack) tl) @
                       (compile_aexpr hd env) @
                       [Ast.Br(add_dummy_loc @@ Int32.of_int count)]))] in
-    let processed = process_branches 0 branches in
+    let processed = process_branches 0 [] branches in
     [Ast.Block([Types.I32Type],
                List.map add_dummy_loc processed)]
   | CIf(cond, thn, els, t) ->
@@ -1025,7 +1038,7 @@ let compile_aprog (anfed : tag aprogram) =
   ] in
 
   (* Returned module *)
-  add_dummy_loc {
+  let ret = add_dummy_loc {
     Ast.empty_module with
     Ast.imports=imports;
     Ast.exports=exports;
@@ -1035,7 +1048,9 @@ let compile_aprog (anfed : tag aprogram) =
     Ast.funcs=lambdas@[add_dummy_loc @@ heap_adjust env; func];
     Ast.types=List.map add_dummy_loc (Deque.to_list !(env.func_types));
     Ast.start=None;
-  }
+  } in
+  Wasm_runner.validate_module ret;
+  ret
 
 let module_to_string compiled_module =
   (* Print module to string *)

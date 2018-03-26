@@ -57,6 +57,7 @@ let count_vars e =
   and helpC e =
     match e with
     | CIf(_, t, f, _) -> max (helpA t) (helpA f)
+    | CSwitch(_, bs, _) -> List.fold_left max 0 @@ List.map (fun (_, b) -> helpA b) bs
     | CApp(_, args, _) -> List.length args
     | _ -> 0
   in helpA e

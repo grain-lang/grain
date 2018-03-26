@@ -257,6 +257,31 @@ let configure_runner() =
       configured := true
     end
 
+exception WasmRunnerError of Wasm.Source.region * string * Wasm.Ast.module_
+
+let reparse_module (module_ : Wasm.Ast.module_) =
+  let open Wasm.Source in
+  let as_str = Wasm.Sexpr.to_string 80 (Wasm.Arrange.module_ module_) in
+  let {it=script} = Wasm.Parse.string_to_module as_str in
+  match script with
+  | Wasm.Script.Textual(m) -> m
+  | Encoded _ -> failwith "Internal error: reparse_module: Returned Encoded (should be impossible)"
+  | Quoted _ -> failwith "Internal error: reparse_module: Returned Quoted (should be impossible)"
+
+let validate_module (module_ : Wasm.Ast.module_) =
+  try
+    Valid.check_module module_
+  with
+  | Wasm.Valid.Invalid(region, msg) ->
+    (* Re-parse module in order to get actual locations *)
+    let reparsed = reparse_module module_ in
+    (try
+       Valid.check_module reparsed
+     with
+     | Wasm.Valid.Invalid(region, msg) ->
+       raise (WasmRunnerError(region, msg, reparsed)));
+    raise (WasmRunnerError(region, Printf.sprintf "WARNING: Did not re-raise after reparse: %s" msg, module_))
+
 let run_wasm (module_ : Wasm.Ast.module_) =
   (* FIXME: Maybe we should be using something like our_code_starts_here instead of start? *)
   (* Hack to get result of start *)
@@ -264,7 +289,7 @@ let run_wasm (module_ : Wasm.Ast.module_) =
   let open Wasm.Ast in
   configure_runner();
   reset_channels();
-  Valid.check_module module_;
+  validate_module module_;
   let imports = Import.link module_ in
   let inst = Eval.init module_ imports in
   let start = Instance.export inst (Utf8.decode "GRAIN$MAIN") in
@@ -288,3 +313,15 @@ let run_wasm (module_ : Wasm.Ast.module_) =
     end
   | _ -> failwith "Bad GRAIN$MAIN export"
   
+
+let () =
+  Printexc.register_printer (fun exc ->
+      match exc with
+      | WasmRunnerError(region, str, module_) ->
+        let fmt_module _ m = Wasm.Sexpr.to_string 80 (Wasm.Arrange.module_ m) in
+        let s = Printf.sprintf "WASM Runner Exception at %s: '%s'\n%a\n"
+          (Wasm.Source.string_of_region region) str
+          fmt_module module_ in
+        Some(s)
+      | _ -> None)
+
