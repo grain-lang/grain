@@ -383,14 +383,6 @@ let egg_eater_stdlib_tests = [
   telib "stdlib_sum_err" "import lists; sum(cons(true, false))" "This expression has type Bool but";
   telib "stdlib_length_err" "import lists; length(true)" "This expression has type Bool but";
   telib "stdlib_reverse_err" "import lists; reverse(1)" "This expression has type Number but";
-  telib "tuple_index_large_1" "import lists; (1, 2, 3)[6]" "large";
-  telib "tuple_index_large_2" "import lists; (1, 2, 3)[4]" "large";
-  telib "tuple_index_small_1" "import lists; (1, 2, 3)[-1]" "small";
-  telib "tuple_index_small_2" "import lists; (1, 2, 3)[-2]" "small";
-  telib "tuple_index_type_1" "import lists; (1, 2)[false]" "number";
-  telib "tuple_index_type_2" "import lists; ((1, 2), (3, 4))[(1, 2)]" "number";
-  telib "tuple_access_1" "import lists; let x = false; x[6]" "tuple";
-  telib "tuple_access_2" "import lists; let x = 2; x[6]" "tuple";
 ]
 
 (* Note that our tail call tests above provide a good
