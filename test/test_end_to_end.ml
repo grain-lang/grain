@@ -3,9 +3,6 @@ open Grain.Runner
 open Printf
 open OUnit2
 open ExtLib
-open Grain.Legacy_types
-open Grain.Expr
-open Grain.Pretty
 open Grain_middle_end.Anftree
 open Grain_middle_end.Anf_helper
 

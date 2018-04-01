@@ -54,7 +54,7 @@ let set_word addr (value : int32) =
     (Int64.of_int addr) Int32.zero to_set
 
 let string_of_grain_heap_value (v : int32) =
-  let open Value_tags in
+  let open Grain_codegen.Value_tags in
   let v_int = Int32.to_int v in
   let tag = heap_tag_type_of_tag_val @@ Int32.to_int @@ load_word v_int in
   match tag with
