@@ -3,12 +3,14 @@ open Wasm
 open Values
 open Types
 open Instance
-open Runtime_errors
+open Grain_codegen.Runtime_errors
 
 exception GrainRuntimeError of string
 
 let unbox = Values.I32Value.of_value
 let unbox64 = Values.I64Value.of_value
+
+let cur_modname = ref ""
 
 let in_fd, out_fd =
   let ifd, ofd = Unix.pipe() in
@@ -183,36 +185,39 @@ let error_message err (value1 : int32) (value2 : int32) =
     sprintf "expected a number, got value: %s" value1_as_string
   | OverflowError ->
     sprintf "overflow"
+  | SwitchError ->
+    sprintf "switch value has no branch: %s" value1_as_string
 
 let console_log = function
   | [x] ->
-    Printf.fprintf !out_channel "%s\n" (string_of_grain (unbox x));
+    Printf.fprintf !out_channel "(module: %s) %s [%d]\n" (!cur_modname) (string_of_grain (unbox x)) (Int32.to_int @@ unbox x);
     [x]
   | _ -> failwith "NYI: console_log"
 
 let console_debug = function
   | [x] -> [x]
-  | _ -> failwith "signature violation"
+  | _ -> failwith "console_debug: signature violation"
 
 let console_print_closure = function
-  | _ -> failwith "signature violation"
+  | _ -> failwith "console_print_closure: signature violation"
 
 let js_throw_error = function
   | [errcode; v1; v2] ->
     let err = error_of_code (Int32.to_int @@ unbox errcode) in
     raise (GrainRuntimeError(error_message err (unbox v1) (unbox v2)))
-  | _ -> failwith "signature violation"
+  | args -> failwith (Printf.sprintf "js_throw_error: signature violation; called with: %s"
+                        ("[" ^ (ExtString.String.join "; " (List.map (fun x -> Int32.to_string (unbox x)) args)) ^ "]"))
 
 let grain_print = function
   | [x] ->
     Printf.fprintf !out_channel "%s\n" (string_of_grain (unbox x));
     [x]
-  | _ -> failwith "signature violation"
+  | _ -> failwith "grain_print: signature violation"
 
 let grain_check_memory = function
   | [x] ->
     []
-  | _ -> failwith "signature violation"
+  | _ -> failwith "grain_check_memory: signature violation"
 
 let grain_equal = function
   | [x; y] ->
@@ -253,11 +258,12 @@ let configure_runner() =
     begin
       Import.register (Utf8.decode "grainBuiltins") grain_builtin_lookup;
       Import.register (Utf8.decode "console") console_lookup;
-      Import.register (Utf8.decode "js") js_lookup;
+      Import.register (Utf8.decode "grainRuntime") js_lookup;
       configured := true
     end
 
 exception WasmRunnerError of Wasm.Source.region * string * Wasm.Ast.module_
+exception WasmInvokeError of string * Wasm.Ast.module_ * Wasm.Types.value_type list * Wasm.Types.value_type list
 
 let reparse_module (module_ : Wasm.Ast.module_) =
   let open Wasm.Source in
@@ -296,7 +302,17 @@ let run_wasm (module_ : Wasm.Ast.module_) =
   match start with
   | None -> failwith "No start function found in module!"
   | Some(ExternFunc s) ->
-    begin match Eval.invoke s [] with
+    let main_type = Wasm.Func.type_of s in
+    let exp_args, exp_ret = begin match main_type with
+      | FuncType(args, ret) -> args, ret
+    end in
+    let main_res = begin
+      try Eval.invoke s []
+      with
+      | (Wasm.Eval.Crash _) as e ->
+        raise (WasmInvokeError(Printexc.to_string e, module_, exp_args, exp_ret))
+    end in
+    begin match main_res with
     | [] ->
       flush !out_channel;
       Unix.close !out_fd;
@@ -322,6 +338,14 @@ let () =
         let s = Printf.sprintf "WASM Runner Exception at %s: '%s'\n%a\n"
           (Wasm.Source.string_of_region region) str
           fmt_module module_ in
+        Some(s)
+      | WasmInvokeError(str, module_, exp_args, exp_ret) ->
+        let fmt_module _ m = Wasm.Sexpr.to_string 80 (Wasm.Arrange.module_ m) in
+        let s = Printf.sprintf "WASM Runner Exception while running main (expects %d args; returns %d values): '%s'\n%a\n"
+            (List.length exp_args)
+            (List.length exp_ret)
+            str
+            fmt_module module_ in
         Some(s)
       | _ -> None)
 

@@ -1,0 +1,18 @@
+data a List =
+  | empty
+  | cons(a, a List);
+
+
+let rec contains = (e, l) => {
+  match l {
+    | empty => false
+    | cons(hd, tl) =>
+    if (hd == e) {
+      true
+    } else {
+      contains(e, tl)
+    }
+  }
+};
+
+(contains(1, empty), contains(1, cons(1, empty)), contains(3, cons(1, cons(3, empty))))
