@@ -1,11 +1,8 @@
-open Expr
-open Anf
-open Codegen
-open Legacy_types
-open Resolve_scope
-open Optimize
 open Grain_parsing
 open Grain_typed
+open Grain_middle_end
+open Grain_codegen
+open Optimize
 
 type compile_options = {
   type_check: bool;
@@ -51,7 +48,7 @@ let libs = ["lists"]
 let opts_to_optimization_settings opts = {
   verbose = opts.verbose;
   sound = opts.sound_optimizations;
-  initial_functions = initial_funcs;
+  (*initial_functions = initial_funcs;*)
 }
 
 let implicit_modules : string list ref = ref []
@@ -92,55 +89,57 @@ let compile_module (opts: compile_options) (p : Parsetree.parsed_program) =
     prerr_string @@ Sexplib.Sexp.to_string_hum @@ Grain_typed.Typedtree.sexp_of_typed_program typed_mod;
     prerr_string "\n\n";
   end;
-  let anfed = atag @@ Anf.anf_typed typed_mod in
+  let anfed = Linearize.transl_anf_module typed_mod in
   if !Grain_utils.Config.verbose then begin
     prerr_string "\nANFed program:\n";
-    prerr_string @@ Pretty.string_of_aprogram anfed;
+    prerr_string @@ Sexplib.Sexp.to_string_hum @@ Anftree.sexp_of_anf_program anfed;
     prerr_string "\n\n";
   end;
-  let renamed = resolve_scope anfed initial_load_env in
   let optimized =
     if opts.optimizations_enabled then begin
-      let ret = optimize renamed (opts_to_optimization_settings opts) in
+      let ret = optimize_program anfed (opts_to_optimization_settings opts) in
       if !Grain_utils.Config.verbose then begin
         prerr_string "\nOptimized program:\n";
-        prerr_string @@ Pretty.string_of_aprogram ret;
+        prerr_string @@ Sexplib.Sexp.to_string_hum @@ Anftree.sexp_of_anf_program anfed;
         prerr_string "\n\n";
       end;
       ret
     end
     else
-      renamed in
-  compile_aprog optimized
+      anfed in
+  let mashed = Transl_anf.transl_anf_program optimized in
+  if !Grain_utils.Config.verbose then begin
+    prerr_string "\nMashed program:\n";
+    prerr_string @@ Sexplib.Sexp.to_string_hum @@ Mashtree.sexp_of_mash_program mashed;
+    prerr_string "\n\n";
+  end;
+  Compcore.compile_wasm_module mashed
 
 let compile_to_string opts p =
-  module_to_string @@ compile_module opts p
+  Compcore.module_to_string @@ compile_module opts p
 
 let compile_to_anf (opts : compile_options) (p : Parsetree.parsed_program) =
   let full_p = Grain_stdlib.load_libraries p in
   Well_formedness.check_well_formedness full_p;
   let typed_mod, signature, env = Typemod.type_module (initial_env()) full_p in
-  let anfed = atag @@ Anf.anf_typed typed_mod in
+  let anfed = Linearize.transl_anf_module typed_mod in
   anfed
 
 (* like compile_to_anf, but performs scope resolution and optimization. *)
 let compile_to_final_anf (opts : compile_options) (p : Parsetree.parsed_program) =
   let full_p = Grain_stdlib.load_libraries p in
   Well_formedness.check_well_formedness full_p;
-  Printf.eprintf "I am well formed";
   let typed_mod, signature, env = Typemod.type_module (initial_env()) full_p in
-  Printf.eprintf "did it\n";
-  let anfed = atag @@ Anf.anf_typed typed_mod in
-  let renamed = resolve_scope anfed initial_load_env in
+  let anfed = Linearize.transl_anf_module typed_mod in
   let optimized =
     if opts.optimizations_enabled then
-      optimize renamed (opts_to_optimization_settings opts)
+      optimize_program anfed (opts_to_optimization_settings opts)
     else
-      renamed in
+      anfed in
   optimized
 
 
-let anf = Anf.anf_typed
+let anf = Linearize.transl_anf_module
 
 let free_vars anfed =
-  Ast_utils.BindingSet.elements @@ Ast_utils.free_vars anfed
+  Ident.Set.elements @@ Anf_utils.anf_free_vars anfed

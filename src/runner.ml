@@ -226,16 +226,19 @@ let compile_file_to_binary name include_stdlib debug input_file output_file =
 let test_run include_stdlib args program_str outfile expected test_ctxt =
   let full_outfile = "output/" ^ outfile in
   let program = parse_string outfile program_str in
+  Wasm_runner.cur_modname := outfile;
   let result = run include_stdlib program full_outfile run_no_vg args in
   assert_equal (expected ^ "\n") result ~printer:identity
 
 let test_run_anf include_stdlib args program_anf outfile expected test_ctxt =
   let full_outfile = "output/" ^ outfile in
+  Wasm_runner.cur_modname := outfile;
   let result = run_anf program_anf full_outfile run_no_vg args in
   assert_equal (expected ^ "\n") result ~printer:identity
 
 let test_err include_stdlib args program_str outfile errmsg test_ctxt =
   let full_outfile = "output/" ^ outfile in
+  Wasm_runner.cur_modname := outfile;
   let program = parse_string outfile program_str in
   let result = try
       run include_stdlib program full_outfile run_no_vg args
