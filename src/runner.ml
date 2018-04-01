@@ -6,9 +6,12 @@ open Printf
 open OUnit2
 open ExtLib
 open Lexing
-open Legacy_types
-open Pretty
-       
+open Grain_codegen
+
+type ('a, 'b) either =
+  | Left of 'a
+  | Right of 'b
+
 let either_printer e =
   match e with
   | Left(v) -> sprintf "Error: %s\n" v
@@ -30,40 +33,6 @@ let print_errors exns =
   let open Wasm_runner in
   List.map (fun e ->
       match e with
-      | UnboundId(x, loc) ->
-         sprintf "The identifier %s, used at <%s>, is not in scope" x (string_of_pos loc)
-      | UnboundFun(x, loc) ->
-         sprintf "The function name %s, used at <%s>, is not in scope" x (string_of_pos loc)
-      | ShadowId(x, loc, existing) ->
-         sprintf "The identifier %s, defined at <%s>, shadows one defined at <%s>"
-                 x (string_of_pos loc) (string_of_pos existing)
-      | DuplicateId(x, loc, existing) ->
-         sprintf "The identifier %s, redefined at <%s>, duplicates one at <%s>"
-                 x (string_of_pos loc) (string_of_pos existing)
-      | DuplicateFun(x, loc, existing) ->
-         sprintf "The function name %s, redefined at <%s>, duplicates one at <%s>"
-                 x (string_of_pos loc) (string_of_pos existing)
-      | Overflow(num, loc) ->
-         sprintf "The number literal %d, used at <%s>, is not supported in this language"
-                 num (string_of_pos loc)
-      | LetRecNonFunction(name, loc) ->
-         sprintf "The let-rec binding of %s is not bound to a function at <%s>"
-           name (string_of_pos loc)
-      | EllipsisInNonLibrary(loc) ->
-        sprintf "Ellipses are only permitted in libraries, but one ewas found at <%s>"
-          (string_of_pos loc)
-      | EllipsisNotInTailPosition(loc) ->
-        sprintf "Ellipses found in non-tail position in library at <%s>"
-          (string_of_pos loc)
-      | EllipsisNotInLibrary(loc) ->
-        sprintf "Expected to have ellipses in library tail position at <%s>"
-          (string_of_pos loc)
-      | IncludeNotAtBeginning(loc) ->
-        sprintf "Includes must be at the beginning of a file, but one was found at <%s>" (string_of_pos loc)
-      | IncludeNotFound(lib, loc) ->
-        sprintf "Library \"%s\", in include at <%s>, not found" lib (string_of_pos loc)
-      | MalformedString(loc) ->
-        sprintf "Malformed string literal at <%s>" (string_of_pos loc)
       | GrainRuntimeError(msg) -> msg
       | _ ->
          sprintf "%s" (Printexc.to_string e)

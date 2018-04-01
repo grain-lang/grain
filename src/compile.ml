@@ -22,7 +22,7 @@ let default_compile_options = {
   use_stdlib = true;
 }
 
-let compile_prog p = Codegen.module_to_string @@ Codegen.compile_aprog p
+let compile_prog p = Compcore.module_to_string @@ Compcore.compile_wasm_module p
 
 let initial_funcs = [
   ("print", (Lexing.dummy_pos, Lexing.dummy_pos), false);
