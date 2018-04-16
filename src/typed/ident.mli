@@ -17,6 +17,7 @@
 (* Identifiers (unique names) *)
 
 type t = { stamp: int; name: string; mutable flags: int } [@@deriving sexp]
+type saved_state
 
 include Identifiable.S with type t := t
 (* Notes:
@@ -25,7 +26,8 @@ include Identifiable.S with type t := t
    - [compare] compares identifiers by binding location
 *)
 
-
+val save_state: unit -> saved_state
+val restore_state: saved_state -> unit
 val create: string -> t
 val create_persistent: string -> t
 val create_predef_exn: string -> t

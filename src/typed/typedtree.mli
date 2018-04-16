@@ -56,6 +56,7 @@ and core_type_desc =
   | TTyArrow of core_type list * core_type
   | TTyTuple of core_type list
   | TTyConstr of Path.t * Identifier.t loc * core_type list
+  | TTyPoly of string list * core_type
 
 type constructor_arguments =
   | TConstrTuple of core_type list
@@ -140,6 +141,7 @@ and match_branch = {
 }
 
 type import_declaration = {
+  timp_path: Path.t;
   timp_mod: Identifier.t Location.loc;
   timp_loc: Location.t;
 } [@@deriving sexp]
@@ -159,6 +161,7 @@ type typed_program = {
   statements: toplevel_stmt list;
   body: expression;
   env: Env.t;
+  signature: Cmi_format.cmi_infos;
 } [@@deriving sexp]
 
 (* Auxiliary functions over the AST *)

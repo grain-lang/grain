@@ -149,6 +149,7 @@ type mash_program = {
   main_body: block;
   main_body_stack_size: int;
   num_globals: int;
+  signature: Cmi_format.cmi_infos;
 } [@@deriving sexp]
 
 let const_true =  MConstLiteral (MConstI32 (Int32.of_int 0xFFFFFFFF))

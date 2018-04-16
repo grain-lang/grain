@@ -89,6 +89,14 @@ let with_config c thunk =
     r
   with exn -> restore_config saved; raise exn
 
+let preserve_config thunk =
+  let saved = save_config() in
+  try
+    let r = thunk() in
+    restore_config saved;
+    r
+  with exn -> restore_config saved; raise exn
+
 let with_cli_options (term : 'a) : 'a Cmdliner.Term.t =
   let open Cmdliner in
   let open Term in
@@ -106,6 +114,8 @@ let option_conv (prsr, prntr) =
   (fun ppf -> function
      | None -> Format.fprintf ppf "<not set>"
      | Some(x) -> prntr ppf x)
+
+let output_enabled = internal_opt true
 
 let optimizations_enabled = toggle_flag
     ~doc:"Disable optimizations."

@@ -240,7 +240,7 @@ let report_error env ppf = function
              name kind)
 
 let report_error env ppf err =
-  wrap_printing_env env (fun () -> report_error env ppf err)
+  wrap_printing_env ~error:true env (fun () -> report_error env ppf err)
 
 let () =
   Location.register_error_of_exn

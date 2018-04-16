@@ -4,23 +4,31 @@ open Grain_middle_end
 open Grain_codegen
 open Optimize
 
-type compile_options = {
-  type_check: bool;
-  verbose: bool;
-  sound_optimizations: bool;
-  optimizations_enabled: bool;
-  include_dirs: string list;
-  use_stdlib: bool;
+type input_source =
+  | InputString of string
+  | InputFile of string
+
+type compilation_state_desc =
+  | Initial of input_source
+  | Parsed of Parsetree.parsed_program
+  | WithLibraries of Parsetree.parsed_program
+  | WellFormed of Parsetree.parsed_program
+  | TypeChecked of Typedtree.typed_program
+  | Linearized of Anftree.anf_program
+  | Optimized of Anftree.anf_program
+  | Mashed of Mashtree.mash_program
+  | Compiled of Compmod.compiled_program
+  | Assembled
+
+type compilation_state = {
+  cstate_desc: compilation_state_desc;
+  cstate_filename: string option;
+  cstate_outfile: string option;
 }
 
-let default_compile_options = {
-  type_check = false;
-  verbose = false;
-  sound_optimizations = true;
-  optimizations_enabled = true;
-  include_dirs = [];
-  use_stdlib = true;
-}
+type compilation_action =
+  | Continue of compilation_state
+  | Stop
 
 let compile_prog p = Compcore.module_to_string @@ Compcore.compile_wasm_module p
 
@@ -45,101 +53,170 @@ let initial_load_env = List.map (fun (n, l, _) -> (n, l)) initial_funcs
 (** List of standard libraries to load *)
 let libs = ["lists"]
 
-let opts_to_optimization_settings opts = {
-  verbose = opts.verbose;
-  sound = opts.sound_optimizations;
-  (*initial_functions = initial_funcs;*)
-}
-
-let implicit_modules : string list ref = ref []
-
-let open_implicit_module m env = env
-  (*let open Grain_typed in
-  let open Asttypes in
-  let lid = {loc = Location.in_file "command line";
-             txt = Longident.parse m } in
-  snd (Typemod.type_open_ env lid.loc lid)**)
-
-let initial_env () =
-  let open Grain_typed in
-  Ident.reinit();
-  let initial = Env.initial_safe_string in
-  let env = initial in
-  List.fold_left (fun env m -> open_implicit_module m env) env (!implicit_modules)
-
-let lib_include_dirs opts =
-  (if opts.use_stdlib then Option.map_default (fun x -> [x]) [] (Grain_stdlib.stdlib_directory()) else []) @ opts.include_dirs
-
-let compile_module (opts: compile_options) (p : Parsetree.parsed_program) =
+let log_state state =
   if !Grain_utils.Config.verbose then begin
-    prerr_string "\nparsed program:\n";
-    prerr_string @@ Sexplib.Sexp.to_string_hum @@ Grain_parsing.Parsetree.sexp_of_parsed_program p;
-    prerr_string "\n\n";
-  end;
-  let full_p = Grain_stdlib.load_libraries p in
-  if !Grain_utils.Config.verbose then begin
-    prerr_string "\nwith libraries:\n";
-    prerr_string @@ Sexplib.Sexp.to_string_hum @@ Grain_parsing.Parsetree.sexp_of_parsed_program full_p;
-    prerr_string "\n\n";
-  end;
-  Well_formedness.check_well_formedness full_p;
-  let typed_mod, signature, env = Typemod.type_module (initial_env()) full_p in
-  if !Grain_utils.Config.verbose then begin
-    prerr_string "\ntyped program:\n";
-    prerr_string @@ Sexplib.Sexp.to_string_hum @@ Grain_typed.Typedtree.sexp_of_typed_program typed_mod;
-    prerr_string "\n\n";
-  end;
-  let anfed = Linearize.transl_anf_module typed_mod in
-  if !Grain_utils.Config.verbose then begin
-    prerr_string "\nANFed program:\n";
-    prerr_string @@ Sexplib.Sexp.to_string_hum @@ Anftree.sexp_of_anf_program anfed;
-    prerr_string "\n\n";
-  end;
-  let optimized =
-    if opts.optimizations_enabled then begin
-      let ret = optimize_program anfed (opts_to_optimization_settings opts) in
-      if !Grain_utils.Config.verbose then begin
+    let prerr_sexp conv x = prerr_string (Sexplib.Sexp.to_string_hum (conv x)) in
+    begin match state.cstate_desc with
+      | Initial(src) ->
+        begin match src with
+          | InputString(str) ->
+            prerr_string "\nInput string:\n";
+            prerr_string ("'" ^ str ^ "'");
+          | InputFile(fname) ->
+            prerr_string ("\nInput from file: " ^ fname)
+        end
+      | Parsed(p) ->
+        prerr_string "\nParsed program:\n";
+        prerr_sexp Grain_parsing.Parsetree.sexp_of_parsed_program p;
+      | WithLibraries(full_p) ->
+        prerr_string "\nwith libraries:\n";
+        prerr_sexp Grain_parsing.Parsetree.sexp_of_parsed_program full_p;
+      | WellFormed _ ->
+        prerr_string "\nWell-Formedness passed";
+      | TypeChecked(typed_mod) ->
+        prerr_string "\nTyped program:\n";
+        prerr_sexp Grain_typed.Typedtree.sexp_of_typed_program typed_mod;
+      | Linearized(anfed) ->
+        prerr_string "\nANFed program:\n";
+        prerr_sexp Anftree.sexp_of_anf_program anfed;
+      | Optimized(optimized) ->
         prerr_string "\nOptimized program:\n";
-        prerr_string @@ Sexplib.Sexp.to_string_hum @@ Anftree.sexp_of_anf_program anfed;
-        prerr_string "\n\n";
+        prerr_sexp Anftree.sexp_of_anf_program optimized;
+      | Mashed(mashed) ->
+        prerr_string "\nMashed program:\n";
+        prerr_sexp Mashtree.sexp_of_mash_program mashed;
+      | Compiled(compiled) ->
+        prerr_string "\nCompiled successfully";
+      | Assembled ->
+        prerr_string "\nAssembled successfully";
+    end;
+    prerr_string "\n\n"
+  end
+
+let next_state ({cstate_desc} as cs) =
+  let cstate_desc = match cstate_desc with
+    | Initial(input) ->
+      let name, lexbuf, cleanup = match input with
+        | InputString(str) ->
+          cs.cstate_filename, (Lexing.from_string str), (fun () -> ())
+        | InputFile(name) ->
+          let ic = open_in name in
+          Some(name), (Lexing.from_channel ic), (fun () -> close_in ic)
+      in
+      let parsed =
+        try
+          Driver.parse ?name lexbuf
+        with
+        | _ as e ->
+          cleanup();
+          raise e
+      in
+      cleanup();
+      Parsed(parsed)
+    | Parsed(p) ->
+      WithLibraries(Grain_stdlib.load_libraries p)
+      (*WithLibraries(p)*)
+    | WithLibraries(full_p) ->
+      Well_formedness.check_well_formedness full_p;
+      WellFormed(full_p)
+    | WellFormed(full_p) ->
+      TypeChecked(Typemod.type_implementation full_p)
+    | TypeChecked(typed_mod) ->
+      Linearized(Linearize.transl_anf_module typed_mod)
+    | Linearized(anfed) ->
+      if !Grain_utils.Config.optimizations_enabled then
+        Optimized(Optimize.optimize_program anfed)
+      else
+        Optimized(anfed)
+    | Optimized(optimized) ->
+      Mashed(Transl_anf.transl_anf_program optimized)
+    | Mashed(mashed) ->
+      Compiled(Compmod.compile_wasm_module mashed)
+    | Compiled(compiled) ->
+      if !Grain_utils.Config.output_enabled then begin
+        match cs.cstate_outfile with
+        | Some(outfile) ->
+          Emitmod.emit_module compiled outfile
+        | None -> ()
       end;
-      ret
+      Assembled
+    | Assembled -> Assembled
+  in
+  let ret = {cs with cstate_desc} in
+  log_state ret;
+  ret
+
+
+let rec compile_resume ?hook (s : compilation_state) =
+  let next_state = next_state s in
+  match hook with
+  | Some(func) ->
+    begin match func next_state with
+      | Continue ({cstate_desc=Assembled} as s) -> s
+      | Continue s -> compile_resume ?hook s
+      | Stop -> next_state
     end
-    else
-      anfed in
-  let mashed = Transl_anf.transl_anf_program optimized in
-  if !Grain_utils.Config.verbose then begin
-    prerr_string "\nMashed program:\n";
-    prerr_string @@ Sexplib.Sexp.to_string_hum @@ Mashtree.sexp_of_mash_program mashed;
-    prerr_string "\n\n";
-  end;
-  Compcore.compile_wasm_module mashed
+  | None ->
+    begin match next_state.cstate_desc with
+      | Assembled -> next_state
+      | _ -> compile_resume ?hook next_state
+    end
 
-let compile_to_string opts p =
-  Compcore.module_to_string @@ compile_module opts p
 
-let compile_to_anf (opts : compile_options) (p : Parsetree.parsed_program) =
-  let full_p = Grain_stdlib.load_libraries p in
-  Well_formedness.check_well_formedness full_p;
-  let typed_mod, signature, env = Typemod.type_module (initial_env()) full_p in
-  let anfed = Linearize.transl_anf_module typed_mod in
-  anfed
+let compile_string ?hook ?name ?outfile str =
+  let cstate = {
+    cstate_desc=Initial(InputString(str));
+    cstate_filename=name;
+    cstate_outfile=outfile;
+  } in
+  compile_resume ?hook cstate
 
-(* like compile_to_anf, but performs scope resolution and optimization. *)
-let compile_to_final_anf (opts : compile_options) (p : Parsetree.parsed_program) =
-  let full_p = Grain_stdlib.load_libraries p in
-  Well_formedness.check_well_formedness full_p;
-  let typed_mod, signature, env = Typemod.type_module (initial_env()) full_p in
-  let anfed = Linearize.transl_anf_module typed_mod in
-  let optimized =
-    if opts.optimizations_enabled then
-      optimize_program anfed (opts_to_optimization_settings opts)
-    else
-      anfed in
-  optimized
+let compile_file ?hook ?outfile filename =
+  let cstate = {
+    cstate_desc=Initial(InputFile(filename));
+    cstate_filename=Some(filename);
+    cstate_outfile=outfile;
+  } in
+  compile_resume ?hook cstate
 
+
+let stop_after_parse = function
+  | {cstate_desc=Parsed(_)} -> Stop
+  | s -> Continue s
+
+let stop_after_libraries = function
+  | {cstate_desc=WithLibraries(_)} -> Stop
+  | s -> Continue s
+
+let stop_after_well_formed = function
+  | {cstate_desc=WellFormed(_)} -> Stop
+  | s -> Continue s
+
+let stop_after_typed = function
+  | {cstate_desc=TypeChecked(_)} -> Stop
+  | s -> Continue s
+
+let stop_after_anf = function
+  | {cstate_desc=Linearized(_)} -> Stop
+  | s -> Continue s
+
+let stop_after_optimization = function
+  | {cstate_desc=Optimized(_)} -> Stop
+  | s -> Continue s
+
+let stop_after_mashed = function
+  | {cstate_desc=Mashed(_)} -> Stop
+  | s -> Continue s
+
+let stop_after_compiled = function
+  | {cstate_desc=Compiled(_)} -> Stop
+  | s -> Continue s
 
 let anf = Linearize.transl_anf_module
 
 let free_vars anfed =
   Ident.Set.elements @@ Anf_utils.anf_free_vars anfed
+
+let () =
+  Env.compile_module_dependency := (fun input outfile -> ignore(compile_file ~outfile input))
+

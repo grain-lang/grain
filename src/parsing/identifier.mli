@@ -25,3 +25,8 @@ val printer : (formatter -> t -> unit) ref
 val string_of_ident : t -> string
 
 val last : t -> string
+val unflatten: string list -> t option
+val parse: string -> t
+val hash: t -> int
+val output : out_channel -> t -> unit
+val flatten : t -> string list

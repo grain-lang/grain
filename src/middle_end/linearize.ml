@@ -308,7 +308,7 @@ let rec transl_anf_statement (({ttop_desc; ttop_env=env; ttop_loc=loc} as s) : t
   | _ -> None
 
 
-let transl_anf_module ({statements; body; env} : typed_program) : anf_program =
+let transl_anf_module ({statements; body; env; signature} : typed_program) : anf_program =
   let top_binds = List.fold_right (fun cur acc ->
       match cur with
       | None -> acc
@@ -325,6 +325,8 @@ let transl_anf_module ({statements; body; env} : typed_program) : anf_program =
   {
     body;
     env;
+    imports=[];
+    signature;
   }
 
 

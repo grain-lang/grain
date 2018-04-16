@@ -23,10 +23,17 @@ type cmi_infos = {
     cmi_sign : Types.signature_item list;
     cmi_crcs : (string * Digest.t option) list;
     cmi_flags : pers_flags list;
-}
+} [@@deriving sexp]
+
+val build_full_cmi :
+  name:string ->
+  sign:Types.signature_item list ->
+  crcs:(string * Digest.t option) list ->
+  flags:pers_flags list ->
+  cmi_infos
 
 (* write the magic + the cmi information *)
-val output_cmi : string -> out_channel -> cmi_infos -> Digest.t
+val output_cmi : string -> out_channel -> cmi_infos -> unit
 
 (* read the cmi information (the magic is supposed to have already been read) *)
 val input_cmi : in_channel -> cmi_infos

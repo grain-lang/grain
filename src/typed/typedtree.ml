@@ -60,6 +60,7 @@ and core_type_desc =
   | TTyArrow of core_type list * core_type
   | TTyTuple of core_type list
   | TTyConstr of Path.t * Identifier.t loc * core_type list
+  | TTyPoly of string list * core_type
 [@@deriving sexp]
 
 type constructor_arguments =
@@ -151,6 +152,7 @@ and match_branch = {
 } [@@deriving sexp]
 
 type import_declaration = {
+  timp_path: Path.t;
   timp_mod: Identifier.t loc;
   timp_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
 } [@@deriving sexp]
@@ -171,6 +173,7 @@ type typed_program = {
   statements: toplevel_stmt list;
   body: expression;
   env: Env.t sexp_opaque;
+  signature: Cmi_format.cmi_infos;
 } [@@deriving sexp]
 
 let iter_pattern_desc f patt =
