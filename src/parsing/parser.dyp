@@ -7,6 +7,7 @@ open Ast_helper
 
 (* Used for error messages and as a default, in case anything slips through
    without an explicit loc. *)
+let first_loc = ref Location.dummy_loc
 let last_loc = ref Location.dummy_loc
 let dyp_merge = keep_all
 
@@ -116,7 +117,12 @@ let mkid ns =
 let mkstr dyp s = mkloc s (symbol_rloc dyp)
 
 let make_program statements body =
-  fix_blocks {statements; body}
+  let prog_loc = {
+    loc_start=(!first_loc).loc_end;
+    loc_end=(!last_loc).loc_end;
+    loc_ghost=false;
+  } in
+  fix_blocks {statements; body; prog_loc}
 
 }
 
@@ -312,6 +318,7 @@ program :
 {
 let parse_program t lexbuf =
   Dyp.dypgen_verbose := !Grain_utils.Config.parser_debug_level;
+  first_loc := Location.curr lexbuf;
   with_default_loc_src (fun() -> !last_loc) (fun() -> program t lexbuf)
 
 let print_syntax_error =

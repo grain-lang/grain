@@ -447,14 +447,14 @@ let check_abbrev_recursion env id_loc_list to_check tdecl =
 (* Check multiple declarations of labels/constructors *)
 
 let check_duplicates sdecl_list =
-  let labels = Hashtbl.create 7 and constrs = Hashtbl.create 7 in
+  let (*labels = Hashtbl.create 7 and*) constrs = Hashtbl.create 7 in
   List.iter
     (fun sdecl -> match sdecl.pdata_kind with
        | PDataVariant cl ->
          List.iter
            (fun pcd ->
               try
-                let name' = Hashtbl.find constrs pcd.pcd_name.txt in ()
+                let name' = Hashtbl.find constrs pcd.pcd_name.txt in ignore(name')
                 (*Location.prerr_warning pcd.pcd_loc
                   (Warnings.Duplicate_definitions
                      ("constructor", pcd.pcd_name.txt, name',

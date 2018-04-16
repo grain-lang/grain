@@ -19,6 +19,7 @@ let () =
 let all_tests = [
   Test_concatlist.tests;
   Test_end_to_end.tests;
+  Test_wasm_utils.tests;
 ]
 
 let () =

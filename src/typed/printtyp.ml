@@ -256,8 +256,9 @@ let wrap_printing_env env f =
   set_printing_env env;
   try_finally f (fun () -> set_printing_env Env.empty)
 
-let wrap_printing_env env f =
-  Env.without_cmis (wrap_printing_env env) f
+let wrap_printing_env ~error env f =
+  if error then Env.without_cmis (wrap_printing_env env) f
+  else wrap_printing_env env f
 
 let is_unambiguous path env =
   let l = Env.find_shadowed_types path env in
@@ -1036,8 +1037,9 @@ let unification_error env unif tr txt1 ppf txt2 ty_expect_explanation =
 let report_unification_error ppf env ?(unif=true) tr
     ?(type_expected_explanation = fun _ -> ())
     txt1 txt2 =
-  wrap_printing_env env (fun () -> unification_error env unif tr txt1 ppf txt2
-                            type_expected_explanation)
+  wrap_printing_env ~error:true env
+    (fun () -> unification_error env unif tr txt1 ppf txt2
+        type_expected_explanation)
 ;;
 
 let trace fst keep_last txt ppf tr =
@@ -1054,7 +1056,7 @@ let trace fst keep_last txt ppf tr =
     raise exn
 
 let report_ambiguous_type_error ppf env (tp0, tp0') tpl txt1 txt2 txt3 =
-  wrap_printing_env env (fun () ->
+  wrap_printing_env ~error:true env (fun () ->
       reset ();
       List.iter
         (fun (tp, tp') -> path_same_name tp0 tp; path_same_name tp0' tp')

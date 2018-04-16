@@ -80,7 +80,21 @@ and anf_expression_desc =
   | AEComp of comp_expression
 [@@deriving sexp]
 
+type import_desc =
+  | GrainValue of Ident.t * Ident.t
+  | WasmFunction of Ident.t * Ident.t
+  | JSFunction of Ident.t
+[@@deriving sexp]
+
+type import_spec = {
+  imp_use_id: Ident.t; (* <- internal references to the name will use this *)
+  imp_desc: import_desc;
+}
+[@@deriving sexp]
+
 type anf_program = {
   body: anf_expression;
   env: Env.t;
+  imports: import_spec list;
+  signature: Cmi_format.cmi_infos;
 } [@@deriving sexp]

@@ -53,6 +53,94 @@ exception Error_forward of Location.error
 open Typedtree
 
 
+let extract_sig env loc mty =
+  match Env.scrape_alias env mty with
+  | TModSignature sg -> sg
+  (*| Mty_alias(_, path) ->
+      raise(Error(loc, env, Cannot_scrape_alias path))*)
+  | _ -> raise(Error(loc, env, Signature_expected))
+
+let extract_sig_open env loc mty =
+  match Env.scrape_alias env mty with
+  | TModSignature sg -> sg
+  (*| Mty_alias(_, path) ->
+      raise(Error(loc, env, Cannot_scrape_alias path))*)
+  | mty -> raise(Error(loc, env, Structure_expected mty))
+
+(* Compute the environment after opening a module *)
+
+let type_open_ ?used_slot ?toplevel (*ovf*) env loc lid =
+  let path = Typetexp.lookup_module ~load:true env lid.loc lid.txt in
+  match Env.open_signature ~loc ?used_slot ?toplevel (*ovf*) path env with
+  | Some env -> path, env
+  | None ->
+      let md = Env.find_module path env in
+      ignore (extract_sig_open env lid.loc md.md_type);
+      assert false
+
+let type_initially_opened_module env module_name =
+  let loc = Location.in_file "compiler internals" in
+  let lid = { Asttypes.loc; txt = Identifier.IdentName module_name } in
+  let path = Typetexp.lookup_module ~load:true env lid.loc lid.txt in
+  match Env.open_signature_of_initially_opened_module path env with
+  | Some env -> path, env
+  | None ->
+      let md = Env.find_module path env in
+      ignore (extract_sig_open env lid.loc md.md_type);
+      assert false
+
+let initial_env ~loc ~initially_opened_module ~open_implicit_modules =
+  let env = Env.initial_safe_string in
+  let env = match initially_opened_module with
+    | None -> env
+    | Some name -> snd (type_initially_opened_module env name)
+  in
+  let open_implicit_module env m =
+    let open Asttypes in
+    let lid = {loc; txt = Identifier.parse m } in
+    snd (type_open_ env lid.loc lid)
+  in
+  List.fold_left open_implicit_module env open_implicit_modules
+
+let type_open ?toplevel env sod =
+  let (path, newenv) =
+    (*Builtin_attributes.warning_scope sod.popen_attributes
+      (fun () ->*)
+         type_open_ ?toplevel env sod.pimp_loc
+           sod.pimp_mod
+      (* )*)
+  in
+  let od =
+    {
+      (*open_override = sod.popen_override;*)
+      timp_path = path;
+      timp_mod = sod.pimp_mod;
+      (*open_attributes = sod.popen_attributes;*)
+      timp_loc = sod.pimp_loc;
+    }
+  in
+  (path, newenv, od)
+
+(* Simplify multiple specifications of a value or an extension in a signature.
+   (Other signature components, e.g. types, modules, etc, are checked for
+   name uniqueness.)  If multiple specifications with the same name,
+   keep only the last (rightmost) one. *)
+
+let simplify_signature sg =
+  let rec aux = function
+    | [] -> [], StringSet.empty
+    | (TSigValue(id, _descr) as component) :: sg ->
+        let (sg, val_names) as k = aux sg in
+        let name = Ident.name id in
+        if StringSet.mem name val_names then k
+        else (component :: sg, StringSet.add name val_names)
+    | component :: sg ->
+        let (sg, val_names) = aux sg in
+        (component :: sg, val_names)
+  in
+  let (sg, _) = aux sg in
+  sg
+
 (* Add recursion flags on declarations arising from a mutually recursive
    block. *)
 
@@ -123,6 +211,53 @@ let check_sig_item names loc = function
   | _ -> ()
 
 
+(* Check that all core type schemes in a structure are closed *)
+
+let rec closed_modtype env = function
+  | TModIdent _ -> true
+  (*| Mty_alias _ -> true*)
+  | TModSignature sg ->
+      let env = Env.add_signature sg env in
+      List.for_all (closed_signature_item env) sg
+  (*| Mty_functor(id, param, body) ->
+      let env = Env.add_module ~arg:true id (Btype.default_mty param) env in
+      closed_modtype env body*)
+
+and closed_signature_item env = function
+  | TSigValue(_id, desc) -> Ctype.closed_schema env desc.val_type
+  | TSigModule(_id, md, _) -> closed_modtype env md.md_type
+  | _ -> true
+
+let check_nongen_scheme env sig_item =
+  match sig_item with
+  | TSigValue(_id, vd) ->
+    if not (Ctype.closed_schema env vd.val_type) then
+      raise (Error (vd.val_loc, env, Non_generalizable vd.val_type))
+  | TSigModule(_id, md, _) ->
+    if not (closed_modtype env md.md_type) then
+      raise(Error(md.md_loc, env, Non_generalizable_module md.md_type))
+  | _ -> ()
+
+let check_nongen_schemes env sg =
+  List.iter (check_nongen_scheme env) sg
+
+
+(* Normalize types in a signature *)
+
+let rec normalize_modtype env = function
+  | TModIdent _
+  (*| Mty_alias _*) -> ()
+  | TModSignature sg -> normalize_signature env sg
+  (*| Mty_functor(_id, _param, body) -> normalize_modtype env body*)
+
+and normalize_signature env = List.iter (normalize_signature_item env)
+
+and normalize_signature_item env = function
+  | TSigValue(_id, desc) -> Ctype.normalize_type env desc.val_type
+  | TSigModule(_id, md, _) -> normalize_modtype env md.md_type
+  | _ -> ()
+
+
 let enrich_type_decls anchor decls oldenv newenv =
   match anchor with
     None -> newenv
@@ -156,6 +291,12 @@ let type_module ?(toplevel=false) funct_body anchor env sstr (*scope*) =
       | PTopLet(r, vb) -> (imports, datas, ((r, vb), loc)::lets)) sstr.Parsetree.statements ([], [], []) in
 
   (* TODO: imports*)
+
+  let env, imports = List.fold_left (fun (env, imports) (i, loc) ->
+      let _path, newenv, od = type_open env i in
+      newenv, ({ttop_desc=TTopImport(od); ttop_loc=loc; ttop_env=env}::imports)) (env, []) imports in
+  let imports = List.rev imports in
+
   let decls, newenv = Typedecl.transl_data_decl env Recursive (List.map fst datas) in
   let ty_decl = map_rec_type_with_row_types ~rec_flag:Recursive
       (fun rs info -> TSigType(info.data_id, info.data_type, rs))
@@ -186,12 +327,48 @@ let type_module ?(toplevel=false) funct_body anchor env sstr (*scope*) =
 
   let run() =
     let (items, sg, final_env) = process_all_lets newenv lets in
-    let str = { statements=init_stmts @ items; env = final_env; body = Typecore.type_expression final_env sstr.body } in
-    str, (ty_decl @ sg), final_env in
+    (* TODO: Is it really safe to drop the import statements here? *)
+    ignore(imports);
+    let stritems = (((*imports @*) init_stmts @ items), final_env, Typecore.type_expression final_env sstr.body) in
+    stritems, (ty_decl @ sg), final_env in
 
   run()
 
 let type_module = type_module false None
+
+let implicit_modules : string list ref = ref []
+
+let open_implicit_module m env = env
+
+let initial_env () =
+  Ident.reinit();
+  let initial = Env.initial_safe_string in
+  let env = initial in
+  List.fold_left (fun env m -> open_implicit_module m env) env (!implicit_modules)
+
+let type_implementation prog =
+  let sourcefile = prog.prog_loc.loc_start.pos_fname in
+  (* TODO: Do we maybe need a fallback here? *)
+  let modulename = Grain_utils.Files.filename_to_module_name sourcefile in
+  Env.set_unit_name modulename;
+  let initenv = initial_env() in
+  let (stritems, sg, finalenv) = type_module initenv prog in
+  let (statements, env, body) = stritems in
+  let simple_sg = simplify_signature sg in
+  let filename = sourcefile in (* TODO: I think this is okay *)
+  let coercion = Includemod.compunit initenv ~mark:Includemod.Mark_positive
+      sourcefile sg "(inferred signature)" simple_sg
+  in
+  check_nongen_schemes finalenv simple_sg;
+  normalize_signature finalenv simple_sg;
+  let signature = Env.build_signature simple_sg modulename filename in
+  ignore(coercion);
+  {
+    statements;
+    env;
+    body;
+    signature;
+  }
 
 (* Error report *)
 
@@ -291,7 +468,7 @@ let report_error ppf = function
         path p
 
 let report_error env ppf err =
-  Printtyp.wrap_printing_env env (fun () -> report_error ppf err)
+  Printtyp.wrap_printing_env ~error:true env (fun () -> report_error ppf err)
 
 let () =
   Location.register_error_of_exn

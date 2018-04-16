@@ -49,3 +49,12 @@ module AExp = struct
   let comp ?loc ?env e = mk ?loc ?env (AEComp(e))
 end
 
+module Imp = struct
+  let mk use_id d =
+    {imp_use_id=use_id;
+     imp_desc=d;}
+  let grain_value a md name = mk a (GrainValue(md, name))
+  let wasm_func a md name = mk a (WasmFunction(md, name))
+  let js_func a name = mk a (JSFunction name)
+end
+

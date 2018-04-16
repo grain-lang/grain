@@ -28,7 +28,10 @@ let () =
       | _ -> None)
 
 let parse ?name lexbuf : Parsetree.parsed_program =
-  Option.may (fun n -> lexbuf.lex_curr_p <- { lexbuf.lex_curr_p with pos_fname = n }) name;
+  Option.may (fun n ->
+      lexbuf.lex_curr_p <- { lexbuf.lex_curr_p with pos_fname = n };
+      Location.input_name := n;
+    ) name;
   let loc_start = Option.map_default (fun n -> {lexbuf.lex_start_p with pos_fname = n}) lexbuf.lex_start_p name in
   let loc_end = lexbuf.lex_curr_p in
   let startpos = {loc_start; loc_end; loc_ghost=true} in

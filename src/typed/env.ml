@@ -48,6 +48,8 @@ end
 
 let prefixed_sg = Hashtbl.create 113
 
+type dependency_chain = (string Location.loc) list
+
 type error =
   | Illegal_renaming of string * string * string
   | Inconsistent_import of string * string * string
@@ -56,6 +58,7 @@ type error =
   | Missing_module of Location.t * Path.t * Path.t
   | No_module_file of string * string option
   | Illegal_value_name of Location.t * string
+  | Cyclic_dependencies of string * dependency_chain
 
 exception Error of error
 
@@ -552,6 +555,12 @@ type pers_struct =
 let persistent_structures =
   (Hashtbl.create 17 : (string, pers_struct option) Hashtbl.t)
 
+let unit_to_file =
+  (Hashtbl.create 17 : (string, string) Hashtbl.t)
+
+let compilation_in_progress =
+  (Hashtbl.create 17 : (string, string Location.loc) Hashtbl.t) (* (module, dependent) *)
+
 (* Consistency between persistent structures *)
 
 let crc_units = Consistbl.create()
@@ -601,25 +610,110 @@ let save_pers_struct crc ps =
   Consistbl.set crc_units modname crc ps.ps_filename;
   add_import modname
 
-let find_in_path_uncap path name =
+let get_dependency_chain ~loc unit_name =
+  let rec help filename =
+    match Hashtbl.find_opt compilation_in_progress filename with
+    | None -> []
+    | Some(dep) when Hashtbl.mem unit_to_file dep.txt ->
+      dep::(help (Hashtbl.find unit_to_file dep.txt))
+    | Some(dep) -> [dep]
+  in
+  let nameloc = Location.mkloc unit_name loc in
+  match Hashtbl.find_opt unit_to_file unit_name with
+  | None -> [nameloc]
+  | Some(fname) -> nameloc::(help fname)
+
+let mark_in_progress ~loc unit_name sourcefile =
+  if Hashtbl.mem compilation_in_progress sourcefile then
+    error (Cyclic_dependencies(unit_name, get_dependency_chain ~loc unit_name));
+  Hashtbl.add compilation_in_progress sourcefile (Location.mkloc (get_unit_name()) loc);
+  Hashtbl.add unit_to_file unit_name sourcefile
+
+let mark_completed unit_name sourcefile =
+  Hashtbl.remove compilation_in_progress sourcefile;
+  Hashtbl.remove unit_to_file unit_name
+
+
+type module_location_result =
+  | GrainModule of string * string option (* Grain Source file, Compiled object *)
+  | WasmModule of string (* Compiled object *)
+
+let compile_module_dependency = ref (fun filename output_file -> failwith "compile_module Should be filled in by compile.ml")
+
+let file_older a b =
+  let last_modified f =
+    let open Unix in
+    (stat f).st_mtime in
+  (last_modified a) < (last_modified b)
+
+let get_output_name name =
+  let name = try
+      Filename.chop_extension name
+    with
+    | Invalid_argument _ -> name in
+  name ^ ".wasm"
+
+let get_up_to_date ~loc unit_name = function
+  | WasmModule(path) -> path
+  | GrainModule(srcpath, Some(objpath)) when file_older srcpath objpath -> objpath
+  | GrainModule(srcpath, _) ->
+    let srcpath = Grain_utils.Files.derelativize srcpath in
+    (* Note: This is a potential security issue? *)
+    let outpath = get_output_name srcpath in
+    mark_in_progress ~loc unit_name srcpath;
+    let save_unit_name = get_unit_name() in
+    let saved = Ident.save_state() in
+    (!compile_module_dependency) srcpath outpath;
+    Ident.restore_state saved;
+    set_unit_name save_unit_name;
+    mark_completed unit_name srcpath;
+    outpath
+
+let find_ext_in_dir dir name =
+  let file_exists = Sys.file_exists in
   let uname = String.uncapitalize_ascii name in
+  let fullname = Filename.concat dir name in
+  let ufullname = Filename.concat dir uname in
+  let rec process_ext = function
+    | [] when file_exists ufullname -> Some(ufullname, dir, uname, "")
+    | [] when file_exists fullname -> Some(fullname, dir, name, "")
+    | [] -> None
+    | ext :: _ when file_exists (ufullname ^ ext) -> Some(ufullname ^ ext, dir, uname, ext)
+    | ext :: _ when file_exists (fullname ^ ext) -> Some(fullname ^ ext, dir, name, ext)
+    | _ :: tl -> process_ext tl in
+  process_ext
+
+let find_in_path_uncap ?exts:(exts=[]) path name =
   let rec try_dir = function
-    [] -> raise Not_found
-  | dir::rem ->
-      let fullname = Filename.concat dir name
-      and ufullname = Filename.concat dir uname in
-      if Sys.file_exists ufullname then ufullname
-      else if Sys.file_exists fullname then fullname
-      else try_dir rem
+    | [] -> raise Not_found
+    | dir::rem ->
+      match find_ext_in_dir dir name exts with
+      | Some(path) -> path
+      | None -> try_dir rem
   in try_dir path
+
+let locate_module path unit_name =
+  let grain_src_exts = [".gr"; ".grlib"] in
+  match find_in_path_uncap ~exts:[".wasm"] path unit_name with
+  | objpath, dir, basename, ext ->
+    begin match find_ext_in_dir dir basename grain_src_exts with
+      | Some(srcpath, _, _, _) -> GrainModule(srcpath, Some(objpath))
+      | None -> WasmModule(objpath)
+    end
+  | exception Not_found ->
+    let srcpath, _, _, _ = find_in_path_uncap ~exts:grain_src_exts path unit_name in
+    GrainModule(srcpath, None)
+
+let locate_module_file ~loc path unit_name =
+  get_up_to_date ~loc unit_name (locate_module path unit_name)
 
 module Persistent_signature = struct
   type t =
     { filename : string;
       cmi : Cmi_format.cmi_infos }
 
-  let load = ref (fun ~unit_name ->
-    match find_in_path_uncap !(Config.load_path) (unit_name ^ ".cmi") with
+  let load = ref (fun ?loc:(loc=Location.dummy_loc) ~unit_name ->
+    match locate_module_file ~loc !(Grain_utils.Config.include_dirs) unit_name with
     | filename -> Some { filename; cmi = read_cmi filename }
     | exception Not_found -> None)
 end
@@ -666,7 +760,7 @@ let read_pers_struct check modname filename =
   acknowledge_pers_struct check modname
     { Persistent_signature.filename; cmi }
 
-let find_pers_struct check name =
+let find_pers_struct ~loc check name =
   if name = "*predef*" then raise Not_found;
   match Hashtbl.find persistent_structures name with
   | Some ps -> ps
@@ -676,7 +770,7 @@ let find_pers_struct check name =
     | Cannot_load_modules _ -> raise Not_found
     | Can_load_modules ->
         let ps =
-          match !Persistent_signature.load ~unit_name:name with
+          match !Persistent_signature.load ~loc ~unit_name:name with
           | Some ps -> ps
           | None ->
             Hashtbl.add persistent_structures name None;
@@ -689,7 +783,7 @@ let find_pers_struct check name =
 (* Emits a warning if there is no valid cmi for name *)
 let check_pers_struct ~loc name =
   try
-    ignore (find_pers_struct false name)
+    ignore (find_pers_struct ~loc false name)
   with
   | Not_found ->
     let err = No_module_file(name, None) in
@@ -717,6 +811,7 @@ let check_pers_struct ~loc name =
       | Missing_module _ -> assert false
       | No_module_file _ -> assert false
       | Illegal_value_name _ -> assert false
+      | Cyclic_dependencies _ -> assert false
     in
     let err = No_module_file(name, Some msg) in
     error err
@@ -746,7 +841,7 @@ let rec find_module_descr path env =
         IdTbl.find_same id env.components
       with Not_found ->
         if Ident.persistent id && not (Ident.name id = !current_unit)
-        then (find_pers_struct (Ident.name id)).ps_comps
+        then (find_pers_struct ~loc:Location.dummy_loc (Ident.name id)).ps_comps
         else raise Not_found
     end
   | PExternal(m, s, pos) ->
@@ -793,7 +888,7 @@ let find_module ~alias path env =
         EnvLazy.force subst_modtype_maker data
       with Not_found ->
         if Ident.persistent id && not (Ident.name id = !current_unit) then
-          let ps = find_pers_struct (Ident.name id) in
+          let ps = find_pers_struct ~loc:Location.dummy_loc (Ident.name id) in
           md (TModSignature(Lazy.force ps.ps_sig))
         else raise Not_found
     end
@@ -820,6 +915,11 @@ let normalize_path oloc env path =
     | Some loc ->
         raise (Error(Missing_module(loc, path, normalize_path true env path)))
 
+let normalize_path_prefix oloc env path =
+  match path with
+  | PExternal(p, s, pos) -> PExternal(normalize_path oloc env p, s, pos)
+  | PIdent _ -> path
+  (*| PApply _ -> assert false*)
 
 let find_module = find_module ~alias:false
 
@@ -897,12 +997,12 @@ and lookup_module ?loc ~load ~mark id env : Path.t =
       with Not_found ->
         if s = !current_unit then raise Not_found;
         let p = PIdent(Ident.create_persistent s) in
+        let loc = Option.default Location.dummy_loc loc in
         if (*!Grain_utils.Config.transparent_modules &&*) not load
         then
-          let loc = Option.default Location.dummy_loc loc in
           check_pers_struct ~loc s
         else begin
-          ignore(find_pers_struct s)
+          ignore(find_pers_struct ~loc s)
         end;
         p
     end
@@ -1191,17 +1291,32 @@ and components_of_module_maker (env, sub, path, mty) =
           end
         | TSigType(id, decl, _) ->
           let decl' = Subst.type_declaration sub decl in
-          let constructors =
-            List.map snd (Datarepr.constructors_of_type path decl') in
+          let constructors = Datarepr.constructors_of_type path decl' in
+          let descrs =
+            List.map snd constructors in
+          List.iter (fun (id, desc) ->
+              let val_type = match desc.cstr_args with
+                | [] -> desc.cstr_res
+                | args -> (Btype.newgenty (TTyArrow(args, desc.cstr_res, TComOk))) in
+              let val_type = match desc.cstr_existentials with
+                | [] -> val_type
+                | existentials -> (Btype.newgenty (TTyPoly(val_type, existentials))) in
+              let val_desc = {
+                val_type;
+                val_kind = TValConstructor desc;
+                val_loc = desc.cstr_loc;
+              } in
+              c.comp_values <- Tbl.add (Ident.name id) (val_desc, nopos) c.comp_values
+            ) constructors;
           c.comp_types <-
             Tbl.add (Ident.name id)
-              ((decl', constructors), nopos)
+              ((decl', descrs), nopos)
               c.comp_types;
           List.iter
             (fun descr ->
                c.comp_constrs <-
                  add_to_tbl descr.cstr_name descr c.comp_constrs)
-            constructors;
+            descrs;
           env := store_type_infos id decl !env
         | TSigModule(id, md, _) ->
           let md' = EnvLazy.create (sub, md) in
@@ -1458,10 +1573,10 @@ let open_pers_signature name env =
   | Some env -> env
   | None -> assert false (* Invalid compilation unit *)
 
-let open_signature_of_initially_opened_module root env =
+let open_signature_of_initially_opened_module ?loc:(loc=Location.dummy_loc) root env =
   let load_path = !Grain_utils.Config.include_dirs in
   let filter_modules m =
-    match Misc.find_in_path_uncap load_path (m ^ ".gri") with (* Note: this is temporary *)
+    match locate_module_file ~loc load_path m with
     | (_ : string) -> false
     | exception Not_found -> true
   in
@@ -1474,6 +1589,131 @@ let open_signature
     root env =
   (* Omitted: some warnings *)
   open_signature None root env
+
+(* Read a signature from a file *)
+let read_signature modname filename =
+  let ps = read_pers_struct modname filename in
+  Lazy.force ps.ps_sig
+
+(* Return the CRC of the given compilation unit *)
+let crc_of_unit name =
+  let ps = find_pers_struct ~loc:Location.dummy_loc name in
+  let crco =
+    try
+      List.assoc name ps.ps_crcs
+    with Not_found ->
+      assert false
+  in
+  match crco with
+  | None -> assert false
+  | Some crc -> crc
+
+(* Return the list of imported interfaces with their CRCs *)
+
+let imports() =
+  Consistbl.extract (StringSet.elements !imported_units) crc_units
+
+(* Returns true if [s] is an imported opaque module *)
+let is_imported_opaque s =
+  StringSet.mem s !imported_opaque_units
+
+
+(* Save a signature to a file *)
+(*
+let save_signature_with_imports ~deprecated sg modname filename imports =
+  (*prerr_endline filename;
+  List.iter (fun (name, crc) -> prerr_endline name) imports;*)
+  Btype.cleanup_abbrev ();
+  Subst.reset_for_saving ();
+  let sg = Subst.signature (Subst.for_saving Subst.identity) sg in
+  let flags =
+    List.concat [
+      if !Grain_utils.Config.recursive_types then [Cmi_format.Rectypes] else [];
+      (*if !Grain_utils.Config.opaque then [Cmi_format.Opaque] else [];*)
+    ]
+  in
+  try
+    let cmi = {
+      cmi_name = modname;
+      cmi_sign = sg;
+      cmi_crcs = imports;
+      cmi_flags = flags;
+    } in
+    let crc =
+      output_to_file_via_temporary (* see MPR#7472, MPR#4991 *)
+         ~mode: [Open_binary] filename
+         (fun temp_filename oc -> output_cmi temp_filename oc cmi) in
+    (* Enter signature in persistent table so that imported_unit()
+       will also return its crc *)
+    let comps =
+      components_of_module ~deprecated ~loc:Location.dummy_loc
+        empty Subst.identity
+        (PIdent(Ident.create_persistent modname)) (TModSignature sg) in
+    let ps =
+      { ps_name = modname;
+        ps_sig = lazy (Subst.signature Subst.identity sg);
+        ps_comps = comps;
+        ps_crcs = (cmi.cmi_name, Some crc) :: imports;
+        ps_filename = filename;
+        ps_flags = cmi.cmi_flags;
+      } in
+    save_pers_struct crc ps;
+    cmi
+  with exn ->
+    remove_file filename;
+    raise exn
+
+let save_signature ~deprecated sg modname filename =
+  save_signature_with_imports ~deprecated sg modname filename (imports())
+*)
+
+(* Build a module signature *)
+let build_signature_with_imports ?deprecated sg modname filename imports =
+  (*prerr_endline filename;
+  List.iter (fun (name, crc) -> prerr_endline name) imports;*)
+  Btype.cleanup_abbrev ();
+  Subst.reset_for_saving ();
+  let sg = Subst.signature (Subst.for_saving Subst.identity) sg in
+  let flags =
+    List.concat [
+      if !Grain_utils.Config.recursive_types then [Cmi_format.Rectypes] else [];
+      (*if !Grain_utils.Config.opaque then [Cmi_format.Opaque] else [];*)
+    ]
+  in
+  try
+    let cmi = {
+      cmi_name = modname;
+      cmi_sign = sg;
+      cmi_crcs = imports;
+      cmi_flags = flags;
+    } in
+    let full_cmi = Cmi_format.build_full_cmi ~name:modname ~sign:sg ~crcs:imports ~flags in
+    let crc = match full_cmi.cmi_crcs with
+      | (_, Some crc)::_ -> crc
+      | _ -> failwith "Impossible"
+    in
+    (* Enter signature in persistent table so that imported_unit()
+       will also return its crc *)
+    let comps =
+      components_of_module ~deprecated ~loc:Location.dummy_loc
+        empty Subst.identity
+        (PIdent(Ident.create_persistent modname)) (TModSignature sg) in
+    let ps =
+      { ps_name = modname;
+        ps_sig = lazy (Subst.signature Subst.identity sg);
+        ps_comps = comps;
+        ps_crcs = full_cmi.cmi_crcs;
+        ps_filename = filename;
+        ps_flags = cmi.cmi_flags;
+      } in
+    save_pers_struct crc ps;
+    cmi
+  with exn ->
+    raise exn
+
+let build_signature ?deprecated sg modname filename =
+  build_signature_with_imports ?deprecated sg modname filename (imports())
+
 
 (* Folding on environments *)
 
@@ -1566,6 +1806,19 @@ let last_reduced_env = ref empty
 
 open Format
 
+let format_dependency_chain ppf (depchain : dependency_chain) =
+  let print_single {txt; loc} =
+    fprintf ppf "@,@[<2> %s at " txt;
+    if loc = Location.dummy_loc then
+      fprintf ppf "<unknown>"
+    else
+      fprintf ppf "%a" Location.print_compact loc;
+    fprintf ppf "@]"
+  in
+  fprintf ppf "@[<v>Dependency Chain:";
+  List.iter print_single depchain;
+  fprintf ppf "@]"
+
 let report_error ppf = function
   | Illegal_renaming(modname, ps_name, filename) -> fprintf ppf
       "Wrong file naming: %a@ contains the compiled interface for @ \
@@ -1599,6 +1852,9 @@ let report_error ppf = function
         name
   | No_module_file(m, None) -> fprintf ppf "Missing file for module %s" m
   | No_module_file(m, Some(msg)) -> fprintf ppf "Missing file for module %s: %s" m msg
+  | Cyclic_dependencies(dep, chain) ->
+    fprintf ppf "@[<v>@[Found cyclic dependency: %s@]@,%a@]"
+      dep format_dependency_chain chain
 
 let () =
   Location.register_error_of_exn

@@ -228,5 +228,6 @@ let transl_anf_program (anf_prog : Anftree.anf_program) : Mashtree.mash_program 
     main_body;
     main_body_stack_size;
     num_globals=(!global_index);
+    signature=anf_prog.signature;
   }
 

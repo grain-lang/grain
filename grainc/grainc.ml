@@ -1,6 +1,5 @@
 open Grain
 open Compile
-open Runner
 open Printf
 open Lexing
 open Filename
@@ -111,26 +110,14 @@ let default_output_filename name = safe_remove_extension name ^ ".wasm"
 
 let default_assembly_filename name = safe_remove_extension name ^ ".wast"
 
-let compile_file name outfile =
+let compile_file name outfile_arg =
   if not (Printexc.backtrace_status()) && !Grain_utils.Config.verbose then
     Printexc.record_backtrace true;
   infer_root_if_needed();
-  let input_file = open_in name in
-  let opts = {Compile.default_compile_options with
-              sound_optimizations=(not !Grain_utils.Config.unsound_optimizations);
-              optimizations_enabled=(not !Grain_utils.Config.debug);
-              verbose=(!Grain_utils.Config.verbose);
-              use_stdlib=(!Grain_utils.Config.use_stdlib);
-              include_dirs=(!Grain_utils.Config.include_dirs);
-             } in
   begin
     try
-      ignore (compile_file_to_binary
-                name
-                opts
-                (!Grain_utils.Config.debug)
-                input_file
-                (Option.default (default_output_filename name) outfile))
+      let outfile = Option.default (default_output_filename name) outfile_arg in
+      ignore (Compile.compile_file ~outfile name)
     with exn ->
       let bt = if Printexc.backtrace_status() then Some(Printexc.get_backtrace()) else None in
       Grain_parsing.Location.report_exception Format.err_formatter exn;

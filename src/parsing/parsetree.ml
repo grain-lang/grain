@@ -156,6 +156,7 @@ type toplevel_stmt = {
 (** The type for parsed programs *)
 type parsed_program = {
   statements: toplevel_stmt list;
-  body: expression
+  body: expression;
+  prog_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
 } [@@deriving sexp]
 

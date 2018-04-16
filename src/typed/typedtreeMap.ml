@@ -60,6 +60,9 @@ end = struct
         TTyArrow(args, ret)
       | TTyConstr(a, b, args) -> TTyConstr(a, b, List.map map_core_type args)
       | TTyTuple(args) -> TTyTuple(List.map map_core_type args)
+      | TTyPoly(args, typ) ->
+        let typ = map_core_type typ in
+        TTyPoly(args, typ)
     end in
     Map.leave_core_type {ct with ctyp_desc}
 

@@ -71,6 +71,7 @@ end = struct
         iter_core_type ret
       | TTyConstr(_, _, args)
       | TTyTuple(args) -> List.iter iter_core_type args
+      | TTyPoly(_, typ) -> iter_core_type typ
     end;
     Iter.leave_core_type ct
 

@@ -38,6 +38,12 @@ val debug : bool ref
 val unsound_optimizations : bool ref
 (** Whether optimizations which could elide runtime errors should be performed. *)
 
+(*** Internal options (no command line flags) *)
+
+val output_enabled : bool ref
+(** Whether to enable file writes. This is useful for testing. *)
+
+(*** Configuration Saving/Restoring *)
 
 type config
 (** Abstract type representing a saved set of configuration options *)
@@ -53,6 +59,10 @@ val reset_config : unit -> unit
 
 val with_config : config -> (unit -> 'a) -> 'a
 (** Runs the given thunk with the given configuration *)
+
+val preserve_config : (unit -> 'a) -> 'a
+(** Runs the given thunk, making sure that any changes to the configuration
+    are contained to its execution. *)
 
 val with_cli_options : 'a -> 'a Cmdliner.Term.t
 (** Wraps the given thunk with extractors for compiler command-line options *)

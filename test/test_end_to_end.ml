@@ -1,5 +1,6 @@
 open Grain.Compile
 open Grain.Runner
+open Grain_utils
 open Printf
 open OUnit2
 open ExtLib
@@ -11,14 +12,14 @@ let wrap_todo todo f x =
   | Some(msg) -> OUnit2.todo msg
   | None -> f x
 
-let t ?opts:(opts=default_compile_options) ?todo name program expected = name>::(wrap_todo todo @@ test_run opts [] program name expected);;
-let tlib ?todo name program expected = name>::(wrap_todo todo @@ test_run default_compile_options [] program name expected);;
-let tgc ?todo name heap_size program expected = name>::(wrap_todo todo @@ test_run default_compile_options [string_of_int heap_size] program name expected);;
-let terr ?todo name program expected = name>::(wrap_todo todo @@ test_err default_compile_options [] program name expected);;
-let tgcerr ?todo name heap_size program expected = name>::(wrap_todo todo @@ test_err default_compile_options [string_of_int heap_size] program name expected);;
+let t ?todo name program expected = name>::(wrap_todo todo @@ test_run program name expected);;
+let tlib ?todo name program expected = name>::(wrap_todo todo @@ test_run program name expected);;
+let tgc ?todo name heap_size program expected = name>::(wrap_todo todo @@ test_run program name expected);;
+let terr ?todo name program expected = name>::(wrap_todo todo @@ test_err program name expected);;
+let tgcerr ?todo name heap_size program expected = name>::(wrap_todo todo @@ test_err program name expected);;
 
-let te ?opts:(opts=default_compile_options) ?todo name program expected = name>::(wrap_todo todo @@ test_err default_compile_options ["1000"] program name expected);;
-let telib ?todo name program expected = name>::(wrap_todo todo @@ test_err default_compile_options ["10000"] program name expected);;
+let te ?todo name program expected = name>::(wrap_todo todo @@ test_err program name expected);;
+let telib ?todo name program expected = name>::(wrap_todo todo @@ test_err program name expected);;
 
 let tfvs ?todo name program expected = name>::
   (fun _ ->
@@ -29,7 +30,7 @@ let tfvs ?todo name program expected = name>::
     try
       let open Grain_typed in
       let ast = parse_string name program in
-      let typed_tree, _, _ = Grain_typed.Typemod.type_module Grain_typed.Env.empty ast in
+      let typed_tree = Grain_typed.Typemod.type_implementation ast in
       let anfed = anf typed_tree in
       let vars = free_vars (anfed.body) in
       let c = Pervasives.compare in
@@ -41,25 +42,23 @@ let tfvs ?todo name program expected = name>::
       raise x)
 ;;
 
-let test_input_file filename include_stdlib heap_size name expected test_ctxt =
+let test_input_file filename name expected test_ctxt =
   try
     let input_filename = "input/" ^ filename ^ ".gr" in
-    let input_channel = open_in input_filename in
-    let full_outfile = "output/" ^ name in
-    let program = parse_file filename input_channel in
-    let result = run include_stdlib program full_outfile run_no_vg [string_of_int heap_size] in
+    let outfile = "output/" ^ name in
+    let compiled = compile_file ~hook:stop_after_compiled ~outfile input_filename in
+    let result = run_output compiled in
     assert_equal ~printer:(fun x -> x) (expected ^ "\n") result
   with x ->
     (*Grain_parsing.Location.report_exception Format.err_formatter x;*)
     raise x
 
-let test_err_input_file filename include_stdlib heap_size name errmsg test_ctxt =
+let test_err_input_file filename name errmsg test_ctxt =
   let result = try
-    let input_filename = "input/" ^ filename ^ ".gr" in
-    let input_channel = open_in input_filename in
-    let full_outfile = "output/" ^ name in
-    let program = parse_file filename input_channel in
-    run include_stdlib program full_outfile run_no_vg [string_of_int heap_size]
+      let input_filename = "input/" ^ filename ^ ".gr" in
+      let outfile = "output/" ^ name in
+      let compiled = compile_file ~hook:stop_after_compiled ~outfile input_filename in
+      run_output compiled
     with x ->
       (*Grain_parsing.Location.report_exception Format.err_formatter x;*)
       Printexc.to_string x in
@@ -68,98 +67,70 @@ let test_err_input_file filename include_stdlib heap_size name errmsg test_ctxt 
     result
     ~cmp: (fun check result -> String.exists result check)
 
-let test_optimizations_sound program_str opts heap_size name expected test_ctxt =
+let test_optimizations_sound program_str name expected test_ctxt =
   let full_outfile_unoptimized = "output/" ^ name ^ ".no-optimize" in
   let full_outfile_optimized = "output/" ^ name ^ "optimize" in
-  let program = parse_string name program_str in
-  let result_unoptimized =
-    run
-      {opts with optimizations_enabled=false}
-      program
-      full_outfile_unoptimized
-      run_no_vg
-      [string_of_int heap_size] in
-  let result_optimized =
-    run
-      {opts with optimizations_enabled=true}
-      program
-      full_outfile_optimized
-      run_no_vg
-      [string_of_int heap_size] in
+  let compile_and_run outfile =
+    run_output (compile_string ~hook:stop_after_compiled ~name ~outfile program_str) in
+  let result_unoptimized = Config.preserve_config (fun () ->
+      Config.optimizations_enabled := false;
+      compile_and_run full_outfile_unoptimized) in
+  let result_optimized = Config.preserve_config (fun () ->
+      Config.optimizations_enabled := true;
+      compile_and_run full_outfile_optimized) in
   assert_equal
     result_optimized
     result_unoptimized;
   assert_equal (expected ^ "\n") result_optimized
 
-let test_optimizations_sound_err program_str opts heap_size name errmsg test_ctxt =
+let test_optimizations_sound_err program_str name errmsg test_ctxt =
   let full_outfile_unoptimized = "output/" ^ name ^ ".no-optimize" in
   let full_outfile_optimized = "output/" ^ name ^ "optimize" in
-  let program = parse_string name program_str in
-  let result_unoptimized =
-    run
-      {opts with optimizations_enabled=false}
-      program
-      full_outfile_unoptimized
-      run_no_vg
-      [string_of_int heap_size] in
-  let result_optimized =
-    run
-      {opts with optimizations_enabled=true}
-      program
-      full_outfile_optimized
-      run_no_vg
-      [string_of_int heap_size] in
+  let compile_and_run outfile =
+    run_output (compile_string ~hook:stop_after_compiled ~name ~outfile program_str) in
+  let result_unoptimized = Config.preserve_config (fun () ->
+      Config.optimizations_enabled := false;
+      compile_and_run full_outfile_unoptimized) in
+  let result_optimized = Config.preserve_config (fun () ->
+      Config.optimizations_enabled := true;
+      compile_and_run full_outfile_optimized) in
   assert_equal
     result_optimized
     result_unoptimized;
   assert_equal (errmsg) result_optimized
     ~cmp: (fun check result -> String.exists result check)
 
-let test_file_optimizations_sound filename opts heap_size name expected test_ctxt =
+let test_file_optimizations_sound filename name expected test_ctxt =
   let input_filename = "input/" ^ filename ^ ".gr" in
-  let input_channel = open_in input_filename in
   let full_outfile_unoptimized = "output/" ^ name ^ ".no-optimize" in
   let full_outfile_optimized = "output/" ^ name ^ "optimize" in
-  let program = parse_file filename input_channel in
-  let result_unoptimized =
-    run
-      {opts with optimizations_enabled=false}
-      program
-      full_outfile_unoptimized
-      run_no_vg
-      [string_of_int heap_size] in
-  let result_optimized =
-    run
-      {opts with optimizations_enabled=true}
-      program
-      full_outfile_optimized
-      run_no_vg
-      [string_of_int heap_size] in
+
+  let compile_and_run outfile =
+    run_output (compile_file ~hook:stop_after_compiled ~outfile input_filename) in
+  let result_unoptimized = Config.preserve_config (fun () ->
+      Config.optimizations_enabled := false;
+      compile_and_run full_outfile_unoptimized) in
+  let result_optimized = Config.preserve_config (fun () ->
+      Config.optimizations_enabled := true;
+      compile_and_run full_outfile_optimized) in
+
   assert_equal
     result_optimized
     result_unoptimized;
   assert_equal (expected ^ "\n") result_optimized
 
-let test_file_optimizations_sound_err filename opts heap_size name errmsg test_ctxt =
+let test_file_optimizations_sound_err filename name errmsg test_ctxt =
   let input_filename = "input/" ^ filename ^ ".gr" in
-  let input_channel = open_in input_filename in
   let full_outfile_unoptimized = "output/" ^ name ^ ".no-optimize" in
   let full_outfile_optimized = "output/" ^ name ^ "optimize" in
-  let program = parse_file filename input_channel in
-  let result_unoptimized =
-    run
-      {opts with optimizations_enabled=false}
-      program
-      full_outfile_unoptimized
-      run_no_vg
-      [string_of_int heap_size] in
-  let result_optimized =
-    run
-      {opts with optimizations_enabled=true}
-      program
-      full_outfile_optimized
-      run_no_vg
-      [string_of_int heap_size] in
+  let compile_and_run outfile =
+    run_output (compile_file ~hook:stop_after_compiled ~outfile input_filename) in
+  let result_unoptimized = Config.preserve_config (fun () ->
+      Config.optimizations_enabled := false;
+      compile_and_run full_outfile_unoptimized) in
+  let result_optimized = Config.preserve_config (fun () ->
+      Config.optimizations_enabled := true;
+      compile_and_run full_outfile_optimized) in
   assert_equal
     result_optimized
     result_unoptimized;
@@ -168,38 +139,38 @@ let test_file_optimizations_sound_err filename opts heap_size name errmsg test_c
 
 (** Tests that the file input/`input_file`.egg produces
     the given output *)
-let tfile ?todo name input_file expected = name>::(wrap_todo todo @@ test_input_file input_file default_compile_options 10000 name expected)
+let tfile ?todo name input_file expected = name>::(wrap_todo todo @@ test_input_file input_file name expected)
 (** Tests that the file input/`input_file`.egg produces
     the given error message *)
-let tefile ?todo name input_file errmsg = name>::(wrap_todo todo @@ test_err_input_file input_file default_compile_options 10000 name errmsg)
+let tefile ?todo name input_file errmsg = name>::(wrap_todo todo @@ test_err_input_file input_file name errmsg)
 
-let tgcfile ?todo name heap_size input_file expected = name>::(wrap_todo todo @@ test_input_file input_file default_compile_options heap_size name expected)
+let tgcfile ?todo name heap_size input_file expected = name>::(wrap_todo todo @@ test_input_file input_file name expected)
 
-let tgcefile ?todo name heap_size input_file errmsg = name>::(wrap_todo todo @@ test_err_input_file input_file default_compile_options heap_size name errmsg)
+let tgcefile ?todo name heap_size input_file errmsg = name>::(wrap_todo todo @@ test_err_input_file input_file name errmsg)
 
 (*let test_resolve_scope opts program_str outfile (expected : 'a aprogram) test_ctxt =
   let anf = compile_string_to_anf outfile opts program_str in
   let result = Grain.Pretty.string_of_aprogram (Grain.Resolve_scope.resolve_scope anf Grain.Compile.initial_load_env) in
   assert_equal (Grain.Pretty.string_of_aprogram expected) result*)
 
-let test_final_anf opts program_str outfile (expected : Grain_middle_end.Anftree.anf_expression) test_ctxt =
+let test_final_anf program_str outfile (expected : Grain_middle_end.Anftree.anf_expression) test_ctxt =
   let open Grain_middle_end in
-  let final_anf = compile_string_to_final_anf outfile opts program_str in
+  let final_anf = compile_string_to_final_anf outfile program_str in
   let result = Sexplib.Sexp.to_string_hum @@ Anftree.sexp_of_anf_expression (final_anf.body) in
   assert_equal (Sexplib.Sexp.to_string_hum @@ Anftree.sexp_of_anf_expression expected) result
 
 (*let trs ?todo name (program : string) (expected : 'a aprogram) = name>::(wrap_todo todo @@ test_resolve_scope default_compile_options program name expected);;*)
 
-let tfinalanf name ?todo ?opts:(opts=default_compile_options) (program : string) (expected : Grain_middle_end.Anftree.anf_expression) =
-  name>::(wrap_todo todo @@ test_final_anf opts program name expected);;
+let tfinalanf name ?todo (program : string) (expected : Grain_middle_end.Anftree.anf_expression) =
+  name>::(wrap_todo todo @@ test_final_anf program name expected);;
 
-let tsound ?todo name prog expected = name>::(wrap_todo todo @@ test_optimizations_sound prog default_compile_options 10000 name expected);;
+let tsound ?todo name prog expected = name>::(wrap_todo todo @@ test_optimizations_sound prog name expected);;
 
-let tesound ?todo name prog expected = name>::(wrap_todo todo @@ test_optimizations_sound_err prog default_compile_options 10000 name expected);;
+let tesound ?todo name prog expected = name>::(wrap_todo todo @@ test_optimizations_sound_err prog name expected);;
 
-let tfsound ?todo name filename expected = name>::(wrap_todo todo @@ test_file_optimizations_sound filename default_compile_options 10000 name expected);;
+let tfsound ?todo name filename expected = name>::(wrap_todo todo @@ test_file_optimizations_sound filename name expected);;
 
-let tefsound ?todo name filename errmsg = name>::(wrap_todo todo @@ test_file_optimizations_sound_err filename default_compile_options 10000 name errmsg);;
+let tefsound ?todo name filename errmsg = name>::(wrap_todo todo @@ test_file_optimizations_sound_err filename name errmsg);;
 
 let test_parse ?todo name input (expected : Grain_parsing.Parsetree.parsed_program) test_ctxt =
   begin match todo with
@@ -208,10 +179,12 @@ let test_parse ?todo name input (expected : Grain_parsing.Parsetree.parsed_progr
   end;
   let open Grain_parsing in
   let location_stripper = {Ast_mapper.default_mapper with location = (fun _ _ -> Location.dummy_loc)} in
-  let strip_locs (({statements; body; _} as p) : Parsetree.parsed_program) =
-    {p with
-     statements=(List.map (location_stripper.toplevel location_stripper) statements);
-     body=location_stripper.expr location_stripper body
+  let strip_locs ({statements; body; _} : Parsetree.parsed_program) =
+    let open Parsetree in
+    {
+      statements=(List.map (location_stripper.toplevel location_stripper) statements);
+      body=location_stripper.expr location_stripper body;
+      prog_loc=Location.dummy_loc;
     } in
   let parsed = strip_locs @@ parse_string name input in
   let untagged = strip_locs @@ parsed in
@@ -566,14 +539,14 @@ let string_tests =
   let open Ast_helper in
   let str s = Exp.constant (Const.string s) in
   [
-  tparse "string_parse_dqs1" "\"foo\"" {statements=[]; body=str "foo"};
-  tparse "string_parse_dqs2" "\"bar\\nbaz\"" {statements=[]; body=str "bar\nbaz"};
-  tparse "string_parse_sqs1" "'foobar'" {statements=[]; body=str "foobar"};
-  tparse "string_parse_sqs2" "'bar\\u41'" {statements=[]; body=str "barA"};
-  tparse "string_parse_sqs3" "'bar\\x41'" {statements=[]; body=str "barA"};
-  tparse "string_parse_sqs4" "'bar\\101'" {statements=[]; body=str "barA"};
-  tparse "string_parse_emoji_escape" "\"\xF0\x9F\x98\x82\"" {statements=[]; body=str "😂"};
-  tparse "string_parse_emoji_literal" "\"💯\"" {statements=[]; body=str "💯"};
+  tparse "string_parse_dqs1" "\"foo\"" {statements=[]; body=str "foo"; prog_loc=Location.dummy_loc};
+  tparse "string_parse_dqs2" "\"bar\\nbaz\"" {statements=[]; body=str "bar\nbaz"; prog_loc=Location.dummy_loc};
+  tparse "string_parse_sqs1" "'foobar'" {statements=[]; body=str "foobar"; prog_loc=Location.dummy_loc};
+  tparse "string_parse_sqs2" "'bar\\u41'" {statements=[]; body=str "barA"; prog_loc=Location.dummy_loc};
+  tparse "string_parse_sqs3" "'bar\\x41'" {statements=[]; body=str "barA"; prog_loc=Location.dummy_loc};
+  tparse "string_parse_sqs4" "'bar\\101'" {statements=[]; body=str "barA"; prog_loc=Location.dummy_loc};
+  tparse "string_parse_emoji_escape" "\"\xF0\x9F\x98\x82\"" {statements=[]; body=str "😂"; prog_loc=Location.dummy_loc};
+  tparse "string_parse_emoji_literal" "\"💯\"" {statements=[]; body=str "💯"; prog_loc=Location.dummy_loc};
 
   t "string1" "\"foo\"" "\"foo\"";
   t "string2" "\"💯\"" "\"💯\"";
