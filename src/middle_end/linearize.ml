@@ -16,6 +16,25 @@ let compile_constructor_tag =
 
 let gensym = Ident.create
 
+let value_imports = ref []
+(* At the linearization phase, we lift all imports *)
+let symbol_table = ref (Ident.empty : (Ident.t Ident.tbl) Ident.tbl)
+
+let lookup_symbol mod_ name =
+  begin
+    match Ident.find_same_opt mod_ (!symbol_table) with
+    | Some _ -> ()
+    | None -> symbol_table := Ident.add mod_ Ident.empty (!symbol_table)
+  end;
+  let modtbl = Ident.find_same mod_ (!symbol_table) in
+  match Ident.find_name_opt name modtbl with
+  | Some(_, ident) -> ident
+  | None ->
+    let fresh = gensym name in
+    value_imports := (Imp.grain_value fresh (Ident.name mod_) name GlobalShape)::(!value_imports);
+    symbol_table := Ident.add mod_ (Ident.add fresh fresh modtbl) (!symbol_table);
+    fresh
+
 type anf_bind =
   | BSeq of comp_expression
   | BLet of Ident.t * comp_expression
@@ -39,8 +58,15 @@ let transl_const (c : Types.constant) : (imm_expression, string * comp_expressio
 let rec transl_imm (({exp_desc; exp_loc=loc; exp_env=env; _} as e) : expression) : (imm_expression * anf_bind list) =
   match exp_desc with
   | TExpIdent(_, _, {val_kind=TValUnbound _}) -> failwith "Impossible: val_kind was unbound"
-  | TExpIdent(Path.PExternal _, _, _) -> failwith "NYI: transl_imm: TExpIdent with PExternal"
-  | TExpIdent(Path.PIdent ident, _, _) -> (Imm.id ~loc ~env ident, [])
+  | TExpIdent(Path.PExternal((Path.PIdent mod_), ident, _), _, _) ->
+    (Imm.id ~loc ~env (lookup_symbol mod_ ident), [])
+  | TExpIdent(Path.PExternal _, _, _) -> failwith "NYI: transl_imm: TExpIdent with multiple PExternal"
+  | TExpIdent((Path.PIdent ident) as path, _, _) ->
+    begin match Env.find_value path env with
+      | {val_fullpath=Path.PIdent _} -> (Imm.id ~loc ~env ident, [])
+      | {val_fullpath=Path.PExternal((Path.PIdent mod_), ident, _)} -> (Imm.id ~loc ~env (lookup_symbol mod_ ident), [])
+      | {val_fullpath=Path.PExternal _} -> failwith "NYI: transl_imm: TExpIdent with multiple PExternal"
+    end
   | TExpConstant c ->
     begin match transl_const c with
       | Left imm -> (imm, [])
@@ -259,12 +285,13 @@ and transl_anf_expression (({exp_desc; exp_loc=loc; exp_env=env; _} as e) : expr
     ans_setup (AExp.comp ~loc ~env ans)
 
 
-let rec transl_anf_statement (({ttop_desc; ttop_env=env; ttop_loc=loc} as s) : toplevel_stmt) : (anf_bind list) option =
+let rec transl_anf_statement (({ttop_desc; ttop_env=env; ttop_loc=loc} as s) : toplevel_stmt) : (anf_bind list) option * import_spec list =
   match ttop_desc with
-  | TTopLet(_, []) -> None
+  | TTopLet(_, []) -> None, []
   | TTopLet(Nonrecursive, {vb_expr; vb_pat}::rest) ->
     let (exp_ans, exp_setup) = transl_comp_expression vb_expr in
-    let rest_setup = Option.default [] (transl_anf_statement {s with ttop_desc=TTopLet(Nonrecursive, rest)}) in
+    let rest_setup, rest_imp = transl_anf_statement {s with ttop_desc=TTopLet(Nonrecursive, rest)} in
+    let rest_setup = Option.default [] rest_setup in
     let setup = begin match vb_pat.pat_desc with
       | TPatVar(bind, _) -> [BLetGlobal(bind, exp_ans)]
       | TPatTuple(patts) ->
@@ -273,7 +300,7 @@ let rec transl_anf_statement (({ttop_desc; ttop_env=env; ttop_loc=loc} as s) : t
         (BLet(tmp, exp_ans))::anf_patts
       | _ -> failwith "NYI: transl_anf_statement: Non-tuple destructuring in let"
     end in
-    Some(exp_setup @ setup @ rest_setup)
+    Some(exp_setup @ setup @ rest_setup), rest_imp
   | TTopLet(Recursive, binds) ->
     let (binds, new_binds_setup) = List.split (List.map (fun {vb_pat; vb_expr} -> (vb_pat, transl_comp_expression vb_expr)) binds) in
     let (new_binds, new_setup) = List.split new_binds_setup in
@@ -282,7 +309,7 @@ let rec transl_anf_statement (({ttop_desc; ttop_env=env; ttop_loc=loc} as s) : t
         | {pat_desc=TPatVar(id, _)} -> id
         | _ -> failwith "Non-name not allowed on LHS of let rec.") binds in
 
-    Some((List.concat new_setup) @ [BLetRec(List.combine names new_binds)])
+    Some((List.concat new_setup) @ [BLetRec(List.combine names new_binds)]), []
   | TTopData(decl) ->
     let open Types in
     let typath = Path.PIdent (decl.data_id) in
@@ -303,16 +330,20 @@ let rec transl_anf_statement (({ttop_desc; ttop_env=env; ttop_loc=loc} as s) : t
               Comp.lambda ~loc ~env args (AExp.comp ~loc ~env (Comp.tuple ~loc ~env tuple_elts))
             | CstrUnboxed -> failwith "NYI: ANF CstrUnboxed" in
           BLetGlobal(cd_id, rhs) in
-        Some(List.map bind_constructor descrs)
+        Some(List.map bind_constructor descrs), []
     end
-  | _ -> None
-
+  | TTopForeign(desc) ->
+    let arity = Ctype.arity (desc.tvd_desc.ctyp_type) in
+    None, [Imp.wasm_func desc.tvd_id desc.tvd_mod.txt desc.tvd_name.txt (FunctionShape(arity, 1))]
+  | _ -> None, []
 
 let transl_anf_module ({statements; body; env; signature} : typed_program) : anf_program =
-  let top_binds = List.fold_right (fun cur acc ->
+  value_imports := [];
+  symbol_table := Ident.empty;
+  let top_binds, imports = List.fold_right (fun cur (acc_bind, acc_imp) ->
       match cur with
-      | None -> acc
-      | Some(b) -> b @ acc) (List.map transl_anf_statement statements) [] in
+      | None, lst -> acc_bind, (lst @ acc_imp)
+      | Some(b), lst -> (b @ acc_bind), (lst @ acc_imp)) (List.map transl_anf_statement statements) ([], []) in
   let (ans, ans_setup) = transl_comp_expression body in
   let body = List.fold_right
       (fun bind body ->
@@ -322,10 +353,11 @@ let transl_anf_module ({statements; body; env; signature} : typed_program) : anf
          | BLetRec(names) -> AExp.let_ Recursive names body
          | BLetGlobal(name, exp) -> AExp.let_ ~glob:Global Nonrecursive [(name, exp)] body)
       (top_binds @ ans_setup) (AExp.comp ans) in
+  let imports = imports @ (!value_imports) in
   {
     body;
     env;
-    imports=[];
+    imports;
     signature;
   }
 

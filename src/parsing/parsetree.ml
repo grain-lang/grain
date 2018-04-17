@@ -141,6 +141,14 @@ type import_declaration = {
   pimp_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
 } [@@deriving sexp]
 
+type value_description = {
+  pval_mod: string loc;
+  pval_name: string loc;
+  pval_type: parsed_type;
+  pval_prim: string list;
+  pval_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
+} [@@deriving sexp]
+
 (** Statements which can exist at the top level *)
 type toplevel_stmt_desc =
   | PTopImport of import_declaration

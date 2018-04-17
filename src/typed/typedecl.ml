@@ -614,3 +614,158 @@ let transl_data_decl env rec_flag sdecl_list =
   in
   (* Done *)
   (final_decls, final_env)
+
+
+type native_repr_attribute =
+  | Native_repr_attr_absent
+  | Native_repr_attr_present of native_repr_kind
+
+let get_native_repr_attribute attrs ~global_repr =
+  match
+    (*Attr_helper.get_no_payload_attribute ["unboxed"; "ocaml.unboxed"]  attrs,
+    Attr_helper.get_no_payload_attribute ["untagged"; "ocaml.untagged"] attrs,*)
+    None, None, global_repr
+  with
+  | None, None, None -> Native_repr_attr_absent
+  | None, None, Some repr -> Native_repr_attr_present repr
+  | Some _, None, None -> Native_repr_attr_present Unboxed
+  | None, Some _, None -> Native_repr_attr_present Untagged
+  | Some { Location.loc }, _, _
+  | _, Some { Location.loc }, _ ->
+    raise (Error (loc, Multiple_native_repr_attributes))
+
+let native_repr_of_type env kind ty =
+  match kind, (Ctype.expand_head_opt env ty).desc with
+  | Untagged, TTyConstr (path, _, _) when Path.same path Builtin_types.path_number ->
+    Some Untagged_int
+  (*| Unboxed, TTyConstr (path, _, _) when Path.same path Predef.path_float ->
+    Some Unboxed_float
+  | Unboxed, TTyConstr (path, _, _) when Path.same path Predef.path_int32 ->
+    Some (Unboxed_integer Pint32)
+  | Unboxed, TTyConstr (path, _, _) when Path.same path Predef.path_int64 ->
+    Some (Unboxed_integer Pint64)
+  | Unboxed, TTyConstr (path, _, _) when Path.same path Predef.path_nativeint ->
+    Some (Unboxed_integer Pnativeint)*)
+  | _ ->
+    None
+
+(* Raises an error when [core_type] contains an [@unboxed] or [@untagged]
+   attribute in a strict sub-term. *)
+let error_if_has_deep_native_repr_attributes core_type =
+  let open Ast_iterator in
+  let this_iterator =
+    { default_iterator with typ = fun iterator core_type ->
+          begin
+            match
+              get_native_repr_attribute [] (*core_type.ptyp_attributes*) ~global_repr:None
+            with
+            | Native_repr_attr_present kind ->
+              raise (Error (core_type.ptyp_loc,
+                            Deep_unbox_or_untag_attribute kind))
+            | Native_repr_attr_absent -> ()
+          end;
+          default_iterator.typ iterator core_type }
+  in
+  List.iter (default_iterator.typ this_iterator) core_type
+
+let make_native_repr env core_type ty ~global_repr =
+  error_if_has_deep_native_repr_attributes core_type;
+  match get_native_repr_attribute [](*core_type.ptyp_attributes*) ~global_repr with
+  | Native_repr_attr_absent ->
+    Same_as_ocaml_repr
+  | Native_repr_attr_present kind ->
+    List.fold_left (fun _ ty -> match native_repr_of_type env kind ty with
+      | None ->
+        raise (Error (Location.dummy_loc, Cannot_unbox_or_untag_type kind))
+      | Some repr -> repr) Same_as_ocaml_repr ty
+
+let rec parse_native_repr_attributes env core_type ty ~global_repr =
+  match core_type.ptyp_desc, (Ctype.repr ty).desc,
+    get_native_repr_attribute [] (*core_type.ptyp_attributes*) ~global_repr:None
+  with
+  | PTyArrow _, TTyArrow _, Native_repr_attr_present kind  ->
+    raise (Error (core_type.ptyp_loc, Cannot_unbox_or_untag_type kind))
+  | PTyArrow (ct1, ct2), TTyArrow (t1, t2, _), _ ->
+    let repr_arg = make_native_repr env ct1 t1 ~global_repr in
+    let repr_args, repr_res =
+      parse_native_repr_attributes env ct2 t2 ~global_repr
+    in
+    (repr_arg :: repr_args, repr_res)
+  | PTyArrow _, _, _ | _, TTyArrow _, _ -> assert false
+  | _ -> ([], make_native_repr env [core_type] [ty] ~global_repr)
+
+
+let check_unboxable env loc ty =
+  let ty = Ctype.repr (Ctype.expand_head_opt env ty) in
+  try match ty.desc with
+    | TTyConstr (p, _, _) -> ()
+      (*let tydecl = Env.find_type p env in
+      if tydecl.type_unboxed.unboxed then
+        Location.prerr_warning loc
+          (Warnings.Unboxable_type_in_prim_decl (Path.name p))*)
+    | _ -> ()
+  with Not_found -> ()
+
+
+(* Translate a value declaration *)
+let transl_value_decl env loc valdecl =
+  let cty = Typetexp.transl_type_scheme env valdecl.pval_type in
+  let ty = cty.ctyp_type in
+  let id = Ident.create valdecl.pval_name.txt in
+  let v =
+  match valdecl.pval_prim with
+    (*[] when Env.is_in_signature env ->
+      { val_type = ty; val_kind = TValReg; Types.val_loc = loc;
+        (*val_attributes = valdecl.pval_attributes*) }*)
+  | [] ->
+      raise (Error(valdecl.pval_loc, Val_in_structure))
+  | _ ->
+      let global_repr = None
+        (*match
+          get_native_repr_attribute valdecl.pval_attributes ~global_repr:None
+        with
+        | Native_repr_attr_present repr -> Some repr
+        | Native_repr_attr_absent -> None*)
+      in
+      let native_repr_args, native_repr_res =
+        parse_native_repr_attributes env valdecl.pval_type ty ~global_repr
+      in
+      let prim =
+        Primitive.parse_declaration valdecl
+          ~native_repr_args
+          ~native_repr_res
+      in
+      if prim.prim_arity = 0 &&
+         (prim.prim_name = "" || prim.prim_name.[0] <> '%') then
+        raise(Error(valdecl.pval_type.ptyp_loc, Null_arity_external));
+      if (*!Clflags.native_code
+      && *) prim.prim_arity > 5
+      && prim.prim_native_name = ""
+      then raise(Error(valdecl.pval_type.ptyp_loc, Missing_native_external));
+      Btype.iter_type_expr (check_unboxable env loc) ty;
+      { val_type = ty; val_kind = TValPrim prim; Types.val_loc = loc;
+        val_fullpath = Path.PIdent id
+        (*val_attributes = valdecl.pval_attributes*) }
+  in
+  let newenv =
+    Env.add_value id v env
+    (*~check:(fun s -> Warnings.Unused_value_declaration s)*)
+  in
+  let desc =
+    {
+      tvd_id = id;
+      tvd_mod = valdecl.pval_mod;
+      tvd_name = valdecl.pval_name;
+      tvd_desc = cty;
+      tvd_val = v;
+      tvd_prim = valdecl.pval_prim;
+      tvd_loc = valdecl.pval_loc;
+      (*val_attributes = valdecl.pval_attributes;*)
+    }
+  in
+  desc, newenv
+
+(*let transl_value_decl env loc valdecl =
+  Builtin_attributes.warning_scope valdecl.pval_attributes
+    (fun () -> transl_value_decl env loc valdecl)*)
+

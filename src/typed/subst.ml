@@ -210,6 +210,7 @@ let type_declaration s decl =
 let value_description s descr =
   { val_type = type_expr s descr.val_type;
     val_kind = descr.val_kind;
+    val_fullpath = Path.PIdent (Ident.create "<unknown>");
     val_loc = loc s descr.val_loc;
    }
 
@@ -250,7 +251,7 @@ and signature s sg =
 and signature_component s comp newid =
   match comp with
   | TSigValue(_id, d) ->
-      TSigValue(newid, value_description s d)
+      TSigValue(newid, {(value_description s d) with val_fullpath = Path.PIdent(_id)})
   | TSigType(_id, d, rs) ->
       TSigType(newid, type_declaration s d, rs)
   | TSigModule(_id, d, rs) ->

@@ -38,6 +38,9 @@ let reset_channels() =
 let memory_internal = (Memory.alloc (MemoryType {Types.min=(Int32.of_int 1); Types.max=None}))
 let memory = ExternMemory memory_internal
 
+let tbl_internal = (Table.alloc (TableType({Types.min=(Int32.of_int 64); Types.max=None}, Types.AnyFuncType)))
+let tbl = ExternTable tbl_internal
+
 let load_word addr : int32 =
   Memory.load_value memory_internal
     (Int64.of_int addr) Int32.zero Types.I32Type
@@ -52,6 +55,20 @@ let set_word addr (value : int32) =
   let to_set = Values.I32Value.to_value value in
   Memory.store_value memory_internal
     (Int64.of_int addr) Int32.zero to_set
+
+let ptr = ref 0
+
+let grain_malloc = function
+  | [bytes] ->
+    let bytes = Int32.to_int @@ unbox bytes in
+    let round_up (num : int) (multiple : int) : int =
+      multiple * (((num - 1) / multiple) + 1) in
+
+    let ret = !ptr in
+    ptr := (!ptr) + (round_up bytes 8);
+    [Values.I32Value.to_value (Int32.of_int ret)]
+  | _ -> failwith "malloc: signature violation"
+
 
 let string_of_grain_heap_value (v : int32) =
   let open Grain_codegen.Value_tags in
@@ -75,8 +92,6 @@ let string_of_grain_heap_value (v : int32) =
     Buffer.add_bytes buf outbytes;
     let str = Buffer.sub buf 0 string_length in
     Printf.sprintf "\"%s\"" str
-
-
 
 let rec string_of_grain_help (v : int32) tuple_counter =
   let open Printf in
@@ -240,7 +255,10 @@ let console_lookup name t =
 let js_lookup name t =
   match (Utf8.encode name), t with
   | "throwError", ExternFuncType t -> ExternFunc (Func.HostFunc (t, js_throw_error))
+  | "malloc", ExternFuncType t -> ExternFunc (Func.HostFunc (t, grain_malloc))
   | "mem", ExternMemoryType t -> memory
+  | "tbl", ExternTableType t -> tbl
+  | "relocBase", ExternGlobalType t -> ExternGlobal (Global.alloc t (Values.I32Value.to_value (Int32.zero)))
   | "checkMemory", ExternFuncType t -> ExternFunc (Func.HostFunc (t, grain_check_memory))
   | _ -> raise Not_found
 
@@ -296,6 +314,7 @@ let run_wasm (module_ : Wasm.Ast.module_) =
   configure_runner();
   reset_channels();
   validate_module module_;
+  ptr := 0;
   let imports = Import.link module_ in
   let inst = Eval.init module_ imports in
   let start = Instance.export inst (Utf8.decode "GRAIN$MAIN") in

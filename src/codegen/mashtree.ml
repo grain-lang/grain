@@ -122,6 +122,7 @@ and block = instr list [@@deriving sexp]
 
 type import_type =
   | MFuncImport of asmtype list * asmtype list
+  | MGlobalImport of asmtype
 [@@deriving sexp]
 
 type import = {

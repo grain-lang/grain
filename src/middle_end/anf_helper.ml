@@ -50,11 +50,12 @@ module AExp = struct
 end
 
 module Imp = struct
-  let mk use_id d =
+  let mk use_id d s=
     {imp_use_id=use_id;
-     imp_desc=d;}
-  let grain_value a md name = mk a (GrainValue(md, name))
-  let wasm_func a md name = mk a (WasmFunction(md, name))
-  let js_func a name = mk a (JSFunction name)
+     imp_desc=d;
+     imp_shape=s;}
+  let grain_value a md name s = mk a (GrainValue(md, name)) s
+  let wasm_func a md name s = mk a (WasmFunction(md, name)) s
+  let js_func a md name s = mk a (JSFunction(md, name)) s
 end
 

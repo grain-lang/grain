@@ -85,15 +85,21 @@ and anf_expression_desc =
   | AEComp of comp_expression
 [@@deriving sexp]
 
+type import_shape =
+  | FunctionShape of int * int
+  | GlobalShape
+[@@deriving sexp]
+
 type import_desc =
-  | GrainValue of Ident.t * Ident.t
-  | WasmFunction of Ident.t * Ident.t
-  | JSFunction of Ident.t
+  | GrainValue of string * string
+  | WasmFunction of string * string
+  | JSFunction of string * string
 [@@deriving sexp]
 
 type import_spec = {
   imp_use_id: Ident.t; (* <- internal references to the name will use this *)
   imp_desc: import_desc;
+  imp_shape: import_shape;
 }
 [@@deriving sexp]
 

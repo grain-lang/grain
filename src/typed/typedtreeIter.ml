@@ -117,17 +117,20 @@ end = struct
     Iter.enter_toplevel_stmt stmt;
     begin match stmt.ttop_desc with
       | TTopData (decl) -> iter_data_declaration decl
+      | TTopForeign _
       | TTopImport _ -> ()
       | TTopLet (recflag, binds) -> iter_bindings recflag binds
     end;
     Iter.leave_toplevel_stmt stmt
 
   and iter_toplevel_stmts stmts =
-    let datas, imports, lets = List.fold_left (fun (acc_data, acc_imports, acc_lets) cur ->
+    let foreigns, datas, imports, lets = List.fold_left (fun (acc_foreign, acc_data, acc_imports, acc_lets) cur ->
         match cur.ttop_desc with
-        | TTopData _ -> (cur::acc_data, acc_imports, acc_lets)
-        | TTopImport _ -> (acc_data, cur::acc_imports, acc_lets)
-        | TTopLet _ -> (acc_data, acc_imports, cur::acc_lets)) ([], [], []) stmts in
+        | TTopForeign _ -> (cur::acc_foreign, acc_data, acc_imports, acc_lets)
+        | TTopData _ -> (acc_foreign, cur::acc_data, acc_imports, acc_lets)
+        | TTopImport _ -> (acc_foreign, acc_data, cur::acc_imports, acc_lets)
+        | TTopLet _ -> (acc_foreign, acc_data, acc_imports, cur::acc_lets)) ([], [], [], []) stmts in
+    List.iter iter_toplevel_stmt foreigns;
     List.iter iter_toplevel_stmt imports;
     Iter.enter_data_declarations();
     List.iter iter_toplevel_stmt datas;

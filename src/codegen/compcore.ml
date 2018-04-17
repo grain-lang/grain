@@ -21,10 +21,10 @@ type codegen_env = {
 }
 
 let init_codegen_env() = {
-  heap_top=add_dummy_loc (Int32.of_int 0);
+  heap_top=add_dummy_loc (Int32.of_int 1);
   num_args=0;
   func_offset=0;
-  global_offset=0;
+  global_offset=1;
   import_offset=0;
   func_types=ref BatDeque.empty;
   backpatches=ref [];
@@ -33,15 +33,22 @@ let init_codegen_env() = {
 
 
 (* Number of swap variables to allocate *)
-let swap_slots = [Types.I32Type; Types.I64Type]
+let swap_slots_i32 = [Types.I32Type]
+let swap_slots_i64 = [Types.I64Type]
+let swap_i32_offset = 0
+let swap_i64_offset = List.length swap_slots_i32
+let swap_slots = List.append swap_slots_i32 swap_slots_i64
 
 
 (* These are the bare-minimum imports needed for basic runtime support *)
+let reloc_base = Ident.create_persistent "relocBase"
+let table_size = Ident.create_persistent "tableSize"
 let runtime_mod = Ident.create_persistent "grainRuntime"
 let console_mod = Ident.create_persistent "console"
 let check_memory_ident = Ident.create_persistent "checkMemory"
 let throw_error_ident = Ident.create_persistent "throwError"
 let log_ident = Ident.create_persistent "log"
+let malloc_ident = Ident.create_persistent "malloc"
 
 let runtime_imports = [
   {
@@ -53,6 +60,11 @@ let runtime_imports = [
     mimp_mod=runtime_mod;
     mimp_name=check_memory_ident;
     mimp_type=MFuncImport([I32Type], []);
+  };
+  {
+    mimp_mod=runtime_mod;
+    mimp_name=malloc_ident;
+    mimp_type=MFuncImport([I32Type], [I32Type]);
   };
   {
     mimp_mod=runtime_mod;
@@ -147,6 +159,8 @@ let call_runtime_check_memory env = Ast.Call(var_of_ext_func env runtime_mod che
 let call_runtime_throw_error env = Ast.Call(var_of_ext_func env runtime_mod throw_error_ident)
 let call_console_log env = Ast.Call(var_of_ext_func env console_mod log_ident)
 
+let call_malloc env = Ast.Call(var_of_ext_func env runtime_mod malloc_ident)
+
 let get_func_type_idx env typ =
   match BatDeque.find ((=) typ) !(env.func_types) with
   | None ->
@@ -240,6 +254,31 @@ let compile_bind ~is_get (env : codegen_env) (b : binding) : Wasm.Ast.instr' Con
     let slot = add_dummy_loc (env.import_offset ++ i) in
     singleton (Ast.GetGlobal(slot))
 
+let get_swap ?ty:(typ=Types.I32Type) env idx =
+  match typ with
+  | Types.I32Type ->
+    if idx > (List.length swap_slots_i32) then
+      raise Not_found;
+    compile_bind ~is_get:true env (MSwapBind(Int32.of_int (idx + swap_i32_offset)))
+  | Types.I64Type ->
+    if idx > (List.length swap_slots_i64) then
+      raise Not_found;
+    compile_bind ~is_get:true env (MSwapBind(Int32.of_int (idx + swap_i64_offset)))
+  | _ -> raise Not_found
+
+let set_swap ?ty:(typ=Types.I32Type) env idx =
+  match typ with
+  | Types.I32Type ->
+    if idx > (List.length swap_slots_i32) then
+      raise Not_found;
+    compile_bind ~is_get:false env (MSwapBind(Int32.of_int (idx + swap_i32_offset)))
+  | Types.I64Type ->
+    if idx > (List.length swap_slots_i64) then
+      raise Not_found;
+    compile_bind ~is_get:false env (MSwapBind(Int32.of_int (idx + swap_i64_offset)))
+  | _ -> raise Not_found
+
+
 let compile_imm (env : codegen_env) (i : immediate) : Wasm.Ast.instr' Concatlist.t =
   match i with
   | MImmConst c -> singleton (Ast.Const(add_dummy_loc @@ compile_const c))
@@ -301,11 +340,9 @@ let compile_prim1 env p1 arg : Wasm.Ast.instr' Concatlist.t =
 let compile_prim2 (env : codegen_env) p2 arg1 arg2 : Wasm.Ast.instr' Concatlist.t =
   let compiled_arg1 = compile_imm env arg1 in
   let compiled_arg2 = compile_imm env arg2 in
-  let compiled_swap_get i = compile_bind ~is_get:true env (MSwapBind Int32.(of_int i)) in
-  let compiled_swap_set i = compile_bind ~is_get:false env (MSwapBind Int32.(of_int i)) in
   let overflow_safe instrs =
-    let compiled_swap_get = compiled_swap_get 1 in
-    let compiled_swap_set = compiled_swap_set 1 in
+    let compiled_swap_get = get_swap ~ty:Types.I64Type env 0 in
+    let compiled_swap_set = set_swap ~ty:Types.I64Type env 0 in
     instrs @
     compiled_swap_set @
     compiled_swap_get @
@@ -389,10 +426,8 @@ let round_allocation_size (num_words : int) : int =
 let heap_allocate env (num_words : int) =
   let words_to_allocate = round_allocation_size num_words in
   Concatlist.t_of_list [
-    Ast.GetGlobal(env.heap_top);
     Ast.Const(const_int32 (4 * words_to_allocate));
-    Ast.Binary(Values.I32 Ast.IntOp.Add);
-    Ast.SetGlobal(env.heap_top);
+    call_malloc env;
   ]
 
 let heap_check_memory env (num_words : int) =
@@ -427,30 +462,26 @@ let allocate_string env str =
   BatUTF8.iter (BatUTF8.Buf.add_char buf) str;
 
   let ints_to_push : int64 list = buf_to_ints buf in
-  let preamble = (heap_check_memory env (2 + (2 * (List.length ints_to_push)))) @+ [
-    Ast.GetGlobal(env.heap_top);
-    Ast.GetGlobal(env.heap_top);
-    Ast.Const(const_int32 @@ String.length str);
-    Ast.GetGlobal(env.heap_top);
-    Ast.Const(const_int32 (tag_val_of_heap_tag_type StringType));
-    store ~offset:0 ();
-    store ~offset:4 ();
-    Ast.GetGlobal(env.heap_top);
-    Ast.Const(const_int32 8);
-    Ast.Binary(Values.I32 Ast.IntOp.Add);
-    Ast.SetGlobal(env.heap_top);
-  ] in
-  let elts = List.flatten @@ List.map (fun (i : int64) -> [
-        Ast.GetGlobal(env.heap_top);
-        Ast.Const(add_dummy_loc (Values.I64 i));
-        store ~ty:Types.I64Type ~offset:0 ();
-        Ast.GetGlobal(env.heap_top);
-        Ast.Const(const_int32 8);
-        Ast.Binary(Values.I32 Ast.IntOp.Add);
-        Ast.SetGlobal(env.heap_top);
-      ]) ints_to_push in
-  preamble +@ elts +@ [
-    (* Original heap top should now be on the stack *)
+  let get_swap = get_swap env 0 in
+  let set_swap = set_swap env 0 in
+  let preamble = Concatlist.t_of_list [
+      Ast.Const(const_int32 @@ (4 * (2 + (2 * (List.length ints_to_push)))));
+      call_malloc env;
+    ] @ set_swap @ get_swap +@ [
+      Ast.Const(const_int32 @@ String.length str);
+    ] @ get_swap +@ [
+      Ast.Const(const_int32 (tag_val_of_heap_tag_type StringType));
+      store ~offset:0 ();
+      store ~offset:4 ();
+    ] in
+  let elts = List.flatten @@ List.mapi (fun idx (i : int64) ->
+      Concatlist.list_of_t
+        (get_swap +@
+         [
+           Ast.Const(add_dummy_loc (Values.I64 i));
+           store ~ty:Types.I64Type ~offset:(8 * (idx + 1)) ();
+         ])) ints_to_push in
+  preamble +@ elts @ get_swap +@ [
     Ast.Const(const_int32 @@ tag_val_of_tag_type (GenericHeapType(Some StringType)));
     Ast.Binary(Values.I32 Ast.IntOp.Or);
   ]
@@ -458,51 +489,51 @@ let allocate_string env str =
 let allocate_closure env ?lambda ({func_idx; arity; variables} as closure_data) =
   let num_free_vars = List.length variables in
   let closure_size = num_free_vars + 3 in
-  let access_lambda = Option.default (Concatlist.t_of_list [
-      Ast.GetGlobal(env.heap_top);
+  let get_swap = get_swap env 0 in
+  let set_swap = set_swap env 0 in
+  let access_lambda = Option.default (get_swap @+ [
       Ast.Const(const_int32 @@ 4 * round_allocation_size closure_size);
       Ast.Binary(Values.I32 Ast.IntOp.Sub);
     ]) lambda in
   env.backpatches := (access_lambda, closure_data)::!(env.backpatches);
-  (heap_check_memory env (3 + num_free_vars)) +@ [
-    Ast.GetGlobal(env.heap_top);
+  (heap_allocate env closure_size) @ set_swap @ get_swap +@ [
     (* FIXME: This is from our original codegen.
        Why are we putting this in the closure twice?
        TODO: Better document this data format. *)
     Ast.Const(const_int32 num_free_vars);
-
-    Ast.GetGlobal(env.heap_top);
+  ] @ get_swap +@ [
+    Ast.GetGlobal(add_dummy_loc Int32.zero); (* <- relocation offset *)
     Ast.Const(wrap_int32 (Int32.(add func_idx (of_int env.func_offset))));
-
-    Ast.GetGlobal(env.heap_top);
+    Ast.Binary(Values.I32 Ast.IntOp.Add);
+  ] @ get_swap +@ [
     Ast.Const(const_int32 num_free_vars);
 
     store ~offset:0 ();
     store ~offset:4 ();
     store ~offset:8 ();
-    Ast.GetGlobal(env.heap_top);
+  ] @ get_swap +@ [
     Ast.Const(const_int32 @@ tag_val_of_tag_type LambdaTagType);
     Ast.Binary(Values.I32 Ast.IntOp.Or);
-  ] @ (heap_allocate env closure_size)
+  ]
 
 
 let allocate_tuple env elts =
   let num_elts = List.length elts in
+  let get_swap = get_swap env 0 in
+  let set_swap = set_swap env 0 in
   let compile_elt idx elt =
-    (Concatlist.t_of_list [ Ast.GetGlobal(env.heap_top); ]) @
+    get_swap @
     (compile_imm env elt) +@ [
       store ~offset:(4 * (idx + 1)) ();
     ] in
 
-  (heap_check_memory env (num_elts + 1)) +@ [
-    Ast.GetGlobal(env.heap_top);
+  (heap_allocate env (num_elts + 1)) @ set_swap @ get_swap +@ [
     Ast.Const(const_int32 num_elts);
     store ~offset:0 ();
-  ] @ (Concatlist.flatten @@ List.mapi compile_elt elts) +@ [
-    Ast.GetGlobal(env.heap_top);
+  ] @ (Concatlist.flatten @@ List.mapi compile_elt elts) @ get_swap +@ [
     Ast.Const(const_int32 @@ tag_val_of_tag_type TupleTagType);
     Ast.Binary(Values.I32 Ast.IntOp.Or);
-  ] @ (heap_allocate env (num_elts + 1))
+  ]
 
 
 let compile_allocation env alloc_type =
@@ -536,9 +567,8 @@ let collect_backpatches env f =
 
 let do_backpatches env backpatches =
   let do_backpatch (lam, {variables}) =
-    let swap_bind = MSwapBind(Int32.zero) in
-    let get_swap = compile_bind ~is_get:true env swap_bind in
-    let set_swap = compile_bind ~is_get:false env swap_bind in
+    let get_swap = get_swap env 0 in
+    let set_swap = set_swap env 0 in
     let preamble = lam +@ [
         Ast.Const(const_int32 @@ tag_val_of_tag_type LambdaTagType);
         Ast.Binary(Values.I32 Ast.IntOp.Xor);
@@ -632,8 +662,8 @@ and compile_instr env instr =
     let compiled_func = compile_imm env func in
     let compiled_args = Concatlist.flatten @@ List.map (compile_imm env) args in
     let ftype = add_dummy_loc @@ Int32.of_int (get_arity_func_type_idx env (1 + List.length args)) in
-    let get_swap = compile_bind ~is_get:true env (MSwapBind(Int32.zero)) in
-    let set_swap = compile_bind ~is_get:false env (MSwapBind(Int32.zero)) in
+    let get_swap = get_swap env 0 in
+    let set_swap = set_swap env 0 in
     let all_args =
       compiled_func @
       untag LambdaTagType @
@@ -684,8 +714,10 @@ let compile_function env {index; arity; stack_size; body=body_instrs} =
     body;
   }
 
+let compute_table_size env {imports; exports; functions} =
+  (List.length functions) + (List.length imports) + (*(see note in compile_exports) (List.length exports)*) + 2
 
-let compile_imports env {imports} =
+let compile_imports env ({imports} as prog) =
   let compile_asm_type t =
     match t with
     | I32Type -> Types.I32Type
@@ -693,24 +725,34 @@ let compile_imports env {imports} =
     | F32Type -> Types.F32Type
     | F64Type -> Types.F64Type in
 
-  let compile_import_type t =
-    match t with
-    | MFuncImport(args, ret) ->
-      let proc_list = List.map compile_asm_type in
-      Types.FuncType(proc_list args, proc_list ret) in
-
   let compile_import {mimp_mod; mimp_name; mimp_type} =
     (* TODO: When user import become a thing, we'll need to worry about hygiene *)
     let module_name = encode_string @@ Ident.name mimp_mod in
     let item_name = encode_string @@ Ident.name mimp_name in
-    let func_type = compile_import_type mimp_type in
-    let idesc = add_dummy_loc @@ Ast.FuncImport(add_dummy_loc @@ Int32.of_int @@ get_func_type_idx env func_type) in
+    let idesc = match mimp_type with
+      | MFuncImport(args, ret) ->
+        let proc_list = List.map compile_asm_type in
+        let func_type = Types.FuncType(proc_list args, proc_list ret) in
+        add_dummy_loc @@ Ast.FuncImport(add_dummy_loc @@ Int32.of_int @@ get_func_type_idx env func_type)
+      | MGlobalImport typ ->
+        let typ = compile_asm_type typ in
+        let imptyp = Types.GlobalType(typ, Types.Immutable) in
+        add_dummy_loc @@ Ast.GlobalImport(imptyp)
+    in
     let open Wasm.Ast in
     add_dummy_loc {
       module_name;
       item_name;
       idesc;
     } in
+  let table_size = compute_table_size env prog in
+  List.append [
+    add_dummy_loc {
+      Ast.module_name=encode_string (Ident.name runtime_mod);
+      Ast.item_name=encode_string (Ident.name reloc_base);
+      Ast.idesc=add_dummy_loc (Ast.GlobalImport(Types.GlobalType(Types.I32Type, Types.Immutable)));
+    };
+  ] @@
   List.append
     (List.map compile_import imports)
     [
@@ -722,9 +764,17 @@ let compile_imports env {imports} =
             Types.max=None;
           })));
       };
+      add_dummy_loc {
+        Ast.module_name=encode_string (Ident.name runtime_mod);
+        Ast.item_name=encode_string "tbl";
+        Ast.idesc=add_dummy_loc (Ast.TableImport (Types.TableType({
+            Types.min=Int32.of_int table_size;
+            Types.max=None;
+          }, Types.AnyFuncType)));
+      };
     ]
 
-let compile_exports env {functions; imports; exports} =
+let compile_exports env {functions; imports; exports; num_globals} =
   (* See note below about exports
   let compile_export {ex_name; ex_global_index} =
     let exported_name = "GRAIN$EXPORT$" ^ (Ident.name ex_name) in
@@ -759,21 +809,21 @@ let compile_exports env {functions; imports; exports} =
         Ast.name=encode_string "GRAIN$MAIN";
         Ast.edesc=add_dummy_loc (Ast.FuncExport main_idx);
       };
+      add_dummy_loc {
+        Ast.name=encode_string (Ident.name table_size);
+        Ast.edesc=add_dummy_loc (Ast.GlobalExport (add_dummy_loc @@ Int32.of_int (num_globals + 2)));
+      };
     ]
 
-
-let compute_table_size env {imports; exports; functions} =
-  (List.length functions) + (List.length imports) + (*(see note in compile_exports) (List.length exports)*) + 2
-
 let compile_tables env prog =
-  let table_size = compute_table_size env prog in
+  (*let table_size = compute_table_size env prog in*)
   [
-    add_dummy_loc {
+    (*add_dummy_loc {
       Ast.ttype=Types.TableType({
           Types.min=Int32.of_int table_size;
           Types.max=None;
         }, Types.AnyFuncType)
-    };
+    };*)
   ]
 
 
@@ -790,11 +840,18 @@ let compile_elems env prog =
     };
   ]
 
-let compile_globals env {num_globals} =
-  BatList.init (1 + num_globals) (fun _ -> add_dummy_loc {
-        Ast.gtype=Types.GlobalType(Types.I32Type, Types.Mutable);
-        Ast.value=(add_dummy_loc [add_dummy_loc @@ Ast.Const(const_int32 0)]);
-      })
+let compile_globals env ({num_globals} as prog) =
+  List.append
+    (BatList.init (1 + num_globals) (fun _ -> add_dummy_loc {
+         Ast.gtype=Types.GlobalType(Types.I32Type, Types.Mutable);
+         Ast.value=(add_dummy_loc [add_dummy_loc @@ Ast.Const(const_int32 0)]);
+       }))
+    [
+      add_dummy_loc {
+        Ast.gtype=Types.GlobalType(Types.I32Type, Types.Immutable);
+        Ast.value=(add_dummy_loc [add_dummy_loc @@ Ast.Const(const_int32 (compute_table_size env prog))]);
+      }
+    ]
 
 
 let heap_adjust env = add_dummy_loc {
