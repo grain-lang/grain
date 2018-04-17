@@ -157,7 +157,18 @@ type import_declaration = {
   timp_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
 } [@@deriving sexp]
 
+type value_description = {
+  tvd_id: Ident.t;
+  tvd_mod: string loc;
+  tvd_name: string loc;
+  tvd_desc: core_type;
+  tvd_val: Types.value_description;
+  tvd_prim: string list;
+  tvd_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
+} [@@deriving sexp]
+
 type toplevel_stmt_desc =
+  | TTopForeign of value_description
   | TTopImport of import_declaration
   | TTopData of data_declaration
   | TTopLet of rec_flag * value_binding list

@@ -210,14 +210,39 @@ let compile_remaining_worklist () =
   List.rev (fold_left_pop compile_one [])
 
 
+let lift_imports imports =
+  let process_shape = function
+    | GlobalShape -> MGlobalImport I32Type
+    | FunctionShape(inputs, outputs) ->
+      MFuncImport
+        ((BatList.init inputs (fun _ -> I32Type)),
+         (BatList.init outputs (fun _ -> I32Type)))
+  in
+  let process_import {imp_use_id; imp_desc; imp_shape} =
+    ignore(next_global imp_use_id);
+    match imp_desc with
+    | GrainValue(mod_, name) -> {
+        mimp_mod = Ident.create mod_;
+        mimp_name = Ident.create name;
+        mimp_type = process_shape imp_shape;
+      }
+    | WasmFunction(mod_, name) -> {
+        mimp_mod = Ident.create mod_;
+        mimp_name = Ident.create name;
+        mimp_type = process_shape imp_shape;
+      }
+    | JSFunction _ -> failwith "NYI: lift_imports JSFunction"
+  in
+  List.map process_import imports
+
 let transl_anf_program (anf_prog : Anftree.anf_program) : Mashtree.mash_program =
   reset_lift();
   reset_global();
   worklist_reset();
 
+  let imports = lift_imports anf_prog.imports in
   let main_body_stack_size = Anf_utils.anf_count_vars anf_prog.body in
   let main_body = compile_anf_expr initial_compilation_env anf_prog.body in
-  let imports = [] in
   let exports = global_exports() in
   let functions = compile_remaining_worklist() in
 

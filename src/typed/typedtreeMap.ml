@@ -106,7 +106,8 @@ end = struct
     let stmt = Map.enter_toplevel_stmt stmt in
     let ttop_desc = begin match stmt.ttop_desc with
       | TTopData (decl) -> TTopData(map_data_declaration decl)
-      | TTopImport _ as d -> d
+      | TTopForeign _
+      | TTopImport _  -> stmt.ttop_desc
       | TTopLet (recflag, binds) -> TTopLet(recflag, map_bindings recflag binds)
     end in
     Map.leave_toplevel_stmt {stmt with ttop_desc}

@@ -1284,6 +1284,7 @@ and components_of_module_maker (env, sub, path, mty) =
         match item with
         | TSigValue(id, decl) ->
           let decl' = Subst.value_description sub decl in
+          let decl' = {decl' with val_fullpath = path} in
           c.comp_values <-
             Tbl.add (Ident.name id) (decl', !pos) c.comp_values;
           begin match decl.val_kind with
@@ -1303,6 +1304,7 @@ and components_of_module_maker (env, sub, path, mty) =
                 | existentials -> (Btype.newgenty (TTyPoly(val_type, existentials))) in
               let val_desc = {
                 val_type;
+                val_fullpath = path;
                 val_kind = TValConstructor desc;
                 val_loc = desc.cstr_loc;
               } in
@@ -1357,6 +1359,7 @@ and store_type ~check id info env =
         | existentials -> (Btype.newgenty (TTyPoly(val_type, existentials))) in
       let val_desc = {
         val_type;
+        val_fullpath = path;
         val_kind = TValConstructor desc;
         val_loc = desc.cstr_loc;
       } in

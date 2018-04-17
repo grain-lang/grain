@@ -34,3 +34,10 @@ module AExp : sig
   val seq : ?loc:loc -> ?env:env -> comp_expression -> anf_expression -> anf_expression
   val comp : ?loc:loc -> ?env:env -> comp_expression -> anf_expression
 end
+
+module Imp : sig
+  val mk : ident -> import_desc -> import_shape -> import_spec
+  val grain_value : ident -> string -> string -> import_shape -> import_spec
+  val wasm_func : ident -> string -> string -> import_shape -> import_spec
+  val js_func : ident -> string -> string -> import_shape -> import_spec
+end

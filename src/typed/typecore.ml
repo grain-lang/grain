@@ -107,6 +107,7 @@ let maybe_add_pattern_variables_ghost loc_let env pv =
        | exception Not_found ->
          Env.add_value id
            { val_type = ty;
+             val_fullpath = Path.PIdent id;
              val_kind = TValUnbound ValUnboundGhostRecursive;
              val_loc = loc_let;
            } env
