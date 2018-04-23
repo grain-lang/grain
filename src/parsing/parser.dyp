@@ -13,9 +13,12 @@ let dyp_merge = keep_all
 
 let last_state_printer = ref (fun () -> ())
 
-let when_debug ?(n=0) thunk =
-  if !Grain_utils.Config.parser_debug_level > n then
-    thunk()
+let when_debug ?n thunk =
+  match n with
+  | Some(n) ->
+      if !Grain_utils.Config.parser_debug_level >= n then
+        thunk()
+  | None -> ()
 
 let prerr_string s = when_debug ~n:1 (fun () -> Pervasives.prerr_string s)
 
@@ -288,16 +291,19 @@ expr :
   | prim1_expr  { $1 }
   | block_expr  { $1 }
   | lam_expr    { $1 }
-  | let_expr    { $1 }
   | if_expr     { $1 }
   | match_expr  { $1 }
+
+block_body_expr :
+  | let_expr    { $1 }
+  | binop_expr  { $1 }
 
 tuple_exprs :
   | binop_expr COMMA { [$1] }
   | binop_expr [COMMA binop_expr {$2}]+ { $1::$2 }
 
 block :
-  | binop_expr [SEMI binop_expr {$2}]* { $1::$2 }
+  | block_body_expr [SEMI block_body_expr {$2}]* { $1::$2 }
 
 toplevel_stmt :
   | LET REC value_binds { Top.let_ Recursive $3 }
