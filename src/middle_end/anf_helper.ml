@@ -35,6 +35,7 @@ module Comp = struct
   let if_ ?loc ?env cond tru fals = mk ?loc ?env (CIf(cond, tru, fals))
   let switch ?loc ?env arg branches = mk ?loc ?env (CSwitch(arg, branches))
   let app ?loc ?env func args = mk ?loc ?env (CApp(func, args))
+  let app_builtin ?loc ?env modname name args = mk ?loc ?env (CAppBuiltin(modname, name, args))
   let lambda ?loc ?env args body = mk ?loc ?env (CLambda(args, body))
   let string ?loc ?env s = mk ?loc ?env (CString s)
 end

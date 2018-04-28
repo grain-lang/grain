@@ -21,8 +21,12 @@ let initial_compilation_env = {
   ce_arity = 0;
 }
 
+type worklist_elt_body =
+  | Anf of anf_expression
+  | Precompiled of block
+
 type worklist_elt = {
-  body : anf_expression;
+  body : worklist_elt_body;
   env : compilation_env;
   arity : int;
   idx : int; (* Lambda-lifted index *)
@@ -43,12 +47,12 @@ let next_lift() =
   ret
 
 (** Global index (index of global variables) *)
-let global_table = ref (Ident.empty : int32 Ident.tbl)
+let global_table = ref (Ident.empty : (int32 * int32) Ident.tbl)
 let global_index = ref 0
 
 let global_exports() =
   let tbl = !global_table in
-  Ident.fold_all (fun ex_name ex_global_index acc -> {ex_name; ex_global_index}::acc) tbl []
+  Ident.fold_all (fun ex_name (ex_global_index, ex_getter_index) acc -> {ex_name; ex_global_index; ex_getter_index}::acc) tbl []
 
 let reset_global() =
   global_table := Ident.empty;
@@ -56,9 +60,10 @@ let reset_global() =
 
 let next_global id =
   let ret = !global_index in
-  global_table := Ident.add id (Int32.of_int ret) !global_table;
+  let ret_get = next_lift() in
+  global_table := Ident.add id ((Int32.of_int ret), (Int32.of_int ret_get)) !global_table;
   global_index := ret + 1;
-  ret
+  ret, ret_get
 
 let find_id id env = Ident.find_same id env.ce_binds
 let find_global id env = Ident.find_same id env.ce_exported_globals
@@ -114,7 +119,7 @@ let compile_lambda env args body : Mashtree.closure_data =
     ce_arity=arity;
   } in
   let worklist_item = {
-    body;
+    body=Anf body;
     env=lam_env;
     idx;
     arity;
@@ -128,6 +133,45 @@ let compile_lambda env args body : Mashtree.closure_data =
     variables=(List.map (fun id -> MImmBinding(find_id id env)) free_vars);
   }
 
+let compile_wrapper env real_idx arity : Mashtree.closure_data =
+  let body = [
+    MCallKnown(Int32.of_int real_idx, BatList.init arity (fun i -> MImmBinding(MArgBind(Int32.of_int (i + 1)))));
+  ] in
+  let idx = next_lift() in
+  let lam_env = {
+    env with
+    ce_binds=Ident.empty;
+    ce_stack_idx=0;
+    ce_arity=arity + 1;
+  } in
+  let worklist_item = {
+    body=Precompiled body;
+    env=lam_env;
+    idx;
+    arity=arity + 1;
+    stack_size=0;
+  } in
+  worklist_enqueue worklist_item;
+  {
+    func_idx=(Int32.of_int idx);
+    arity=(Int32.of_int (arity + 1));
+    variables=[];
+  }
+
+let next_global id =
+  let ret, idx = next_global id in
+  let body = [
+    MImmediate(MImmBinding(MGlobalBind (Int32.of_int ret)));
+  ] in
+  let worklist_item = {
+    body=Precompiled body;
+    env=initial_compilation_env;
+    idx;
+    arity=0; (* <- this function cannot be called by the user, so no self argument is needed. *)
+    stack_size=0;
+  } in
+  worklist_enqueue worklist_item;
+  ret
 
 let rec compile_comp env c =
   match c.comp_desc with
@@ -156,6 +200,9 @@ let rec compile_comp env c =
   | CApp(f, args) ->
     (* TODO: Utilize MCallKnown *)
     MCallIndirect(compile_imm env f, List.map (compile_imm env) args)
+  | CAppBuiltin(modname, name, args) ->
+    let builtin_idx = Int32.zero in
+    MCallKnown(builtin_idx, List.map (compile_imm env) args)
   | CImmExpr(i) -> MImmediate(compile_imm env i)
 
 and compile_anf_expr env a =
@@ -185,7 +232,10 @@ and compile_anf_expr env a =
 
 
 let compile_worklist_elt ({body; env} : worklist_elt) =
-  compile_anf_expr env body
+  match body with
+  | Anf body ->
+    compile_anf_expr env body
+  | Precompiled block -> block
 
 
 let fold_left_pop f base =
@@ -210,7 +260,7 @@ let compile_remaining_worklist () =
   List.rev (fold_left_pop compile_one [])
 
 
-let lift_imports imports =
+let lift_imports env imports =
   let process_shape = function
     | GlobalShape -> MGlobalImport I32Type
     | FunctionShape(inputs, outputs) ->
@@ -218,31 +268,55 @@ let lift_imports imports =
         ((BatList.init inputs (fun _ -> I32Type)),
          (BatList.init outputs (fun _ -> I32Type)))
   in
+  let import_idx = ref 0 in
   let process_import {imp_use_id; imp_desc; imp_shape} =
-    ignore(next_global imp_use_id);
+    let glob = next_global imp_use_id in
+    let import_idx = begin
+      let i = !import_idx in
+      import_idx := i + 1;
+      i
+      end in
     match imp_desc with
     | GrainValue(mod_, name) -> {
         mimp_mod = Ident.create mod_;
         mimp_name = Ident.create name;
-        mimp_type = process_shape imp_shape;
-      }
+        mimp_type = MGlobalImport I32Type (*process_shape imp_shape*);
+        mimp_kind = MImportGrain;
+        mimp_setup = MCallGetter;
+      }, [
+          MStore([(MGlobalBind (Int32.of_int glob)),
+                  MCallKnown((Int32.of_int import_idx), [])]);
+        ]
     | WasmFunction(mod_, name) -> {
         mimp_mod = Ident.create mod_;
         mimp_name = Ident.create name;
         mimp_type = process_shape imp_shape;
-      }
+        mimp_kind = MImportWasm;
+        mimp_setup = MWrap(Int32.zero);
+      }, begin
+          match imp_shape with
+          | GlobalShape -> []
+          | FunctionShape(inputs, outputs) ->
+            if outputs > 1 then
+              failwith "NYI: Multi-result wrapper"
+            else
+              [MStore([MGlobalBind(Int32.of_int glob),
+                       MAllocate(MClosure (compile_wrapper env import_idx inputs))])]
+        end
     | JSFunction _ -> failwith "NYI: lift_imports JSFunction"
   in
-  List.map process_import imports
+  let imports, setups = List.split @@ List.map process_import imports in
+  let setups = List.flatten setups in
+  imports, setups
 
 let transl_anf_program (anf_prog : Anftree.anf_program) : Mashtree.mash_program =
   reset_lift();
   reset_global();
   worklist_reset();
 
-  let imports = lift_imports anf_prog.imports in
+  let imports, setups = lift_imports initial_compilation_env anf_prog.imports in
   let main_body_stack_size = Anf_utils.anf_count_vars anf_prog.body in
-  let main_body = compile_anf_expr initial_compilation_env anf_prog.body in
+  let main_body = setups @ (compile_anf_expr initial_compilation_env anf_prog.body) in
   let exports = global_exports() in
   let functions = compile_remaining_worklist() in
 

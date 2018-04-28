@@ -125,15 +125,29 @@ type import_type =
   | MGlobalImport of asmtype
 [@@deriving sexp]
 
+type import_kind =
+  | MImportWasm
+  | MImportGrain
+[@@deriving sexp]
+
+type import_setup =
+  | MCallGetter
+  | MWrap of int32
+  | MSetupNone
+[@@deriving sexp]
+
 type import = {
   mimp_mod: Ident.t;
   mimp_name: Ident.t;
   mimp_type: import_type;
+  mimp_kind: import_kind;
+  mimp_setup: import_setup;
 } [@@deriving sexp]
 
 type export = {
   ex_name: Ident.t;
   ex_global_index: int32;
+  ex_getter_index: int32;
 } [@@deriving sexp]
 
 type mash_function = {
