@@ -13,11 +13,13 @@ type codegen_env = {
   num_args: int;
   func_offset: int;
   global_offset: int;
+  import_global_offset: int;
   import_offset: int;
   func_types: Wasm.Types.func_type BatDeque.t ref;
   (* Allocated closures which need backpatching *)
   backpatches: (Wasm.Ast.instr' Concatlist.t * closure_data) list ref;
   imported_funcs: (int32 Ident.tbl) Ident.tbl;
+  imported_globals: (int32 Ident.tbl) Ident.tbl;
 }
 
 let init_codegen_env() = {
@@ -25,10 +27,12 @@ let init_codegen_env() = {
   num_args=0;
   func_offset=0;
   global_offset=1;
+  import_global_offset=0;
   import_offset=0;
   func_types=ref BatDeque.empty;
   backpatches=ref [];
   imported_funcs=Ident.empty;
+  imported_globals=Ident.empty;
 }
 
 
@@ -50,28 +54,48 @@ let throw_error_ident = Ident.create_persistent "throwError"
 let log_ident = Ident.create_persistent "log"
 let malloc_ident = Ident.create_persistent "malloc"
 
-let runtime_imports = [
+let runtime_global_imports = [
+  {
+    mimp_mod=runtime_mod;
+    mimp_name=reloc_base;
+    mimp_type=MGlobalImport I32Type;
+    mimp_kind=MImportWasm;
+    mimp_setup=MSetupNone;
+  };
+]
+
+let runtime_function_imports = [
   {
     mimp_mod=console_mod;
     mimp_name=log_ident;
     mimp_type=MFuncImport([I32Type], [I32Type]);
+    mimp_kind=MImportWasm;
+    mimp_setup=MSetupNone;
   };
   {
     mimp_mod=runtime_mod;
     mimp_name=check_memory_ident;
     mimp_type=MFuncImport([I32Type], []);
+    mimp_kind=MImportWasm;
+    mimp_setup=MSetupNone;
   };
   {
     mimp_mod=runtime_mod;
     mimp_name=malloc_ident;
     mimp_type=MFuncImport([I32Type], [I32Type]);
+    mimp_kind=MImportWasm;
+    mimp_setup=MSetupNone;
   };
   {
     mimp_mod=runtime_mod;
     mimp_name=throw_error_ident;
     mimp_type=MFuncImport((BatList.init (Runtime_errors.max_arity + 1) (fun _ -> I32Type)), []);
+    mimp_kind=MImportWasm;
+    mimp_setup=MSetupNone;
   };
 ]
+
+let runtime_imports = List.append runtime_global_imports runtime_function_imports
 
 
 (* Seems a little silly when named this way, but it makes a little more sense in the
@@ -147,6 +171,12 @@ let load
       sz;
       offset=Int32.of_int offset;
     })
+
+let lookup_ext_global env modname itemname =
+  Ident.find_same itemname (Ident.find_same modname (env.imported_globals))
+
+let var_of_ext_global env modname itemname =
+  add_dummy_loc @@ lookup_ext_global env modname itemname
 
 let lookup_ext_func env modname itemname =
   Ident.find_same itemname (Ident.find_same modname (env.imported_funcs))
@@ -497,16 +527,13 @@ let allocate_closure env ?lambda ({func_idx; arity; variables} as closure_data) 
     ]) lambda in
   env.backpatches := (access_lambda, closure_data)::!(env.backpatches);
   (heap_allocate env closure_size) @ set_swap @ get_swap +@ [
-    (* FIXME: This is from our original codegen.
-       Why are we putting this in the closure twice?
-       TODO: Better document this data format. *)
     Ast.Const(const_int32 num_free_vars);
   ] @ get_swap +@ [
     Ast.GetGlobal(add_dummy_loc Int32.zero); (* <- relocation offset *)
     Ast.Const(wrap_int32 (Int32.(add func_idx (of_int env.func_offset))));
     Ast.Binary(Values.I32 Ast.IntOp.Add);
   ] @ get_swap +@ [
-    Ast.Const(const_int32 num_free_vars);
+    Ast.Const(add_dummy_loc (Values.I32Value.to_value arity));
 
     store ~offset:0 ();
     store ~offset:4 ();
@@ -694,7 +721,11 @@ and compile_instr env instr =
 
   | MError(err, args) ->
     call_error_handler env err args
-  | MCallKnown(func_idx, args) -> failwith "NYI: (compile_instr): MCallKnown"
+  | MCallKnown(func_idx, args) ->
+    let compiled_args = Concatlist.flatten @@ List.map (compile_imm env) args in
+    compiled_args +@ [
+      Ast.Call(add_dummy_loc (Int32.of_int (env.import_offset + (Int32.to_int func_idx))));
+    ]
   | MArityOp _ -> failwith "NYI: (compile_instr): MArityOp"
   | MTagOp _ -> failwith "NYI: (compile_instr): MTagOp"
 
@@ -715,7 +746,7 @@ let compile_function env {index; arity; stack_size; body=body_instrs} =
   }
 
 let compute_table_size env {imports; exports; functions} =
-  (List.length functions) + (List.length imports) + (*(see note in compile_exports) (List.length exports)*) + 2
+  (List.length functions) + ((List.length imports) - (List.length runtime_global_imports)) + 2
 
 let compile_imports env ({imports} as prog) =
   let compile_asm_type t =
@@ -723,12 +754,18 @@ let compile_imports env ({imports} as prog) =
     | I32Type -> Types.I32Type
     | I64Type -> Types.I64Type
     | F32Type -> Types.F32Type
-    | F64Type -> Types.F64Type in
+    | F64Type -> Types.F64Type
+  in
 
-  let compile_import {mimp_mod; mimp_name; mimp_type} =
+  let compile_import_name name = function
+    | MImportWasm -> Ident.name name
+    | MImportGrain -> "GRAIN$EXPORT$GET$" ^ (Ident.name name)
+  in
+
+  let compile_import {mimp_mod; mimp_name; mimp_type; mimp_kind} =
     (* TODO: When user import become a thing, we'll need to worry about hygiene *)
     let module_name = encode_string @@ Ident.name mimp_mod in
-    let item_name = encode_string @@ Ident.name mimp_name in
+    let item_name = encode_string @@ compile_import_name mimp_name mimp_kind in
     let idesc = match mimp_type with
       | MFuncImport(args, ret) ->
         let proc_list = List.map compile_asm_type in
@@ -746,15 +783,9 @@ let compile_imports env ({imports} as prog) =
       idesc;
     } in
   let table_size = compute_table_size env prog in
-  List.append [
-    add_dummy_loc {
-      Ast.module_name=encode_string (Ident.name runtime_mod);
-      Ast.item_name=encode_string (Ident.name reloc_base);
-      Ast.idesc=add_dummy_loc (Ast.GlobalImport(Types.GlobalType(Types.I32Type, Types.Immutable)));
-    };
-  ] @@
-  List.append
-    (List.map compile_import imports)
+  let imports = List.map compile_import imports in
+  (List.append
+    imports
     [
       add_dummy_loc {
         Ast.module_name=encode_string (Ident.name runtime_mod);
@@ -772,20 +803,21 @@ let compile_imports env ({imports} as prog) =
             Types.max=None;
           }, Types.AnyFuncType)));
       };
-    ]
+    ])
 
 let compile_exports env {functions; imports; exports; num_globals} =
-  (* See note below about exports
-  let compile_export {ex_name; ex_global_index} =
-    let exported_name = "GRAIN$EXPORT$" ^ (Ident.name ex_name) in
+  let compile_getter i {ex_name; ex_global_index; ex_getter_index} =
+    let exported_name = "GRAIN$EXPORT$GET$" ^ (Ident.name ex_name) in
     let name = encode_string exported_name in
-    let gidx = Int32.(add ex_global_index (of_int env.global_offset)) in
-    let open Wasm.Ast in
-    let edesc = add_dummy_loc (GlobalExport (add_dummy_loc gidx)) in
-    add_dummy_loc {
-      name;
-      edesc;
-    } in*)
+    let fidx = (Int32.to_int ex_getter_index) + env.func_offset in
+    let export =
+      let open Wasm.Ast in
+      add_dummy_loc {
+        name;
+        edesc=add_dummy_loc (Ast.FuncExport (add_dummy_loc @@ Int32.of_int fidx));
+      } in
+    export
+  in
   let compile_lambda_export i _ =
     let name = encode_string ("GRAIN$LAM_" ^ (string_of_int i)) in
     let edesc = add_dummy_loc (Ast.FuncExport(add_dummy_loc @@ Int32.of_int (i + env.func_offset))) in
@@ -795,25 +827,26 @@ let compile_exports env {functions; imports; exports; num_globals} =
   let main_idx = heap_adjust_idx + 1 in
   let heap_adjust_idx = add_dummy_loc @@ Int32.of_int heap_adjust_idx in
   let main_idx = add_dummy_loc @@ Int32.of_int main_idx in
-  (* FIXME: Mutable globals cannot currently be exported. *)
-  (*List.append
-    (List.map compile_export exports) @@*)
-  List.append
-    (List.mapi compile_lambda_export functions)
-    [
-      add_dummy_loc {
-        Ast.name=encode_string "GRAIN$HEAP_ADJUST";
-        Ast.edesc=add_dummy_loc (Ast.FuncExport heap_adjust_idx);
-      };
-      add_dummy_loc {
-        Ast.name=encode_string "GRAIN$MAIN";
-        Ast.edesc=add_dummy_loc (Ast.FuncExport main_idx);
-      };
-      add_dummy_loc {
-        Ast.name=encode_string (Ident.name table_size);
-        Ast.edesc=add_dummy_loc (Ast.GlobalExport (add_dummy_loc @@ Int32.of_int (num_globals + 2)));
-      };
-    ]
+  let compiled_lambda_exports = List.mapi compile_lambda_export functions in
+  let compiled_exports = List.mapi compile_getter exports in
+  (List.append
+     compiled_lambda_exports
+     (List.append
+        compiled_exports
+        [
+          add_dummy_loc {
+            Ast.name=encode_string "GRAIN$HEAP_ADJUST";
+            Ast.edesc=add_dummy_loc (Ast.FuncExport heap_adjust_idx);
+          };
+          add_dummy_loc {
+            Ast.name=encode_string "GRAIN$MAIN";
+            Ast.edesc=add_dummy_loc (Ast.FuncExport main_idx);
+          };
+          add_dummy_loc {
+            Ast.name=encode_string (Ident.name table_size);
+            Ast.edesc=add_dummy_loc (Ast.GlobalExport (add_dummy_loc @@ Int32.of_int (num_globals + 2)));
+          };
+        ]))
 
 let compile_tables env prog =
   (*let table_size = compute_table_size env prog in*)
@@ -915,28 +948,44 @@ let validate_module (module_ : Wasm.Ast.module_) =
 
 
 let prepare env ({imports} as prog) =
-  let process_import acc idx {mimp_mod; mimp_name} =
-    let imported_funcs = begin
-      match Ident.find_same_opt mimp_mod acc.imported_funcs with
-      | None -> Ident.add mimp_mod Ident.empty acc.imported_funcs
-      | Some _ -> acc.imported_funcs
+  let process_import ?dynamic_offset:(dynamic_offset=0) ?is_runtime_import:(is_runtime_import=false)
+      (acc_env) idx {mimp_mod; mimp_name; mimp_type; mimp_kind} =
+    let rt_idx = if is_runtime_import then idx + dynamic_offset else idx in
+    let register tbl =
+      let tbl = begin
+        match Ident.find_same_opt mimp_mod tbl with
+        | None -> Ident.add mimp_mod Ident.empty tbl
+        | Some _ -> tbl
+      end in
+      Ident.add mimp_mod (Ident.add mimp_name (Int32.of_int rt_idx) (Ident.find_same mimp_mod tbl)) tbl
+    in
+    let imported_funcs, imported_globals = begin
+      match mimp_type with
+      | MFuncImport _ ->
+        (register acc_env.imported_funcs), acc_env.imported_globals
+      | MGlobalImport _ ->
+        acc_env.imported_funcs, (register acc_env.imported_globals)
     end in
-    let imported_funcs = Ident.add mimp_mod (Ident.add mimp_name (Int32.of_int idx) (Ident.find_same mimp_mod imported_funcs)) imported_funcs in
-    {env with imported_funcs} in
-  let new_imports = List.append runtime_imports imports in
-  let new_env = BatList.fold_lefti process_import env new_imports in
+    {acc_env with imported_funcs; imported_globals} in
   let import_offset = List.length runtime_imports in
-  let global_offset = import_offset + (List.length imports) in
-  let func_offset = global_offset in
+  let import_global_offset = import_offset + (List.length imports) in
+
+  let new_imports = List.append runtime_imports imports in
+  let new_env = BatList.fold_lefti (process_import ~is_runtime_import:true) env runtime_global_imports in
+  let new_env = BatList.fold_lefti (process_import ~is_runtime_import:true) new_env runtime_function_imports in
+  let new_env = BatList.fold_lefti (process_import ~dynamic_offset:import_global_offset) new_env imports in
+  let global_offset = import_global_offset + (List.length imports) in
+  let func_offset = global_offset - (List.length runtime_global_imports) in
   {
     new_env with
     import_offset;
+    import_global_offset;
     global_offset;
     func_offset;
   }, {
     prog with
-    imports=new_imports;
-    num_globals=prog.num_globals + (List.length new_imports);
+    imports=List.append runtime_imports imports;
+    num_globals=prog.num_globals + (List.length new_imports) + (List.length imports);
   }
 
 

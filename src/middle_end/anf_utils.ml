@@ -42,6 +42,10 @@ and comp_free_vars_help env (c : comp_expression) =
     List.fold_left (fun acc a -> Ident.Set.union (imm_free_vars_help env a) acc)
       (imm_free_vars_help env fn)
       args
+  | CAppBuiltin(_, _, args) ->
+    List.fold_left (fun acc a -> Ident.Set.union (imm_free_vars_help env a) acc)
+      Ident.Set.empty
+      args
   | CTuple(args) ->
     List.fold_left (fun acc a -> Ident.Set.union (imm_free_vars_help env a) acc)
       Ident.Set.empty
@@ -82,4 +86,5 @@ and comp_count_vars c =
   | CIf(_, t, f) -> max (anf_count_vars t) (anf_count_vars f)
   | CSwitch(_, bs) -> List.fold_left max 0 @@ List.map (fun (_, b) -> anf_count_vars b) bs
   | CApp(_, args) -> List.length args
+  | CAppBuiltin(_, _, args) -> List.length args
   | _ -> 0

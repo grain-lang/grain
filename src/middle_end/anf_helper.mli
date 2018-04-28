@@ -24,6 +24,7 @@ module Comp : sig
   val if_ : ?loc:loc -> ?env:env -> imm_expression -> anf_expression -> anf_expression -> comp_expression
   val switch : ?loc:loc -> ?env:env -> imm_expression -> (int * anf_expression) list -> comp_expression
   val app : ?loc:loc -> ?env:env -> imm_expression -> imm_expression list -> comp_expression
+  val app_builtin : ?loc:loc -> ?env:env -> string -> string -> imm_expression list -> comp_expression
   val lambda : ?loc:loc -> ?env:env -> ident list -> anf_expression -> comp_expression
   val string : ?loc:loc -> ?env:env -> string -> comp_expression
 end

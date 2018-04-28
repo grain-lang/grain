@@ -66,6 +66,7 @@ and comp_expression_desc =
   | CIf of imm_expression * anf_expression * anf_expression
   | CSwitch of imm_expression * (int * anf_expression) list
   | CApp of imm_expression * imm_expression list
+  | CAppBuiltin of string * string * imm_expression list
   | CLambda of Ident.t list * anf_expression
   | CString of string
 [@@deriving sexp]

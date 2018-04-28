@@ -39,7 +39,7 @@ type anf_bind =
   | BSeq of comp_expression
   | BLet of Ident.t * comp_expression
   | BLetRec of (Ident.t * comp_expression) list
-  | BLetGlobal of Ident.t * comp_expression
+  | BLetGlobal of rec_flag * (Ident.t * comp_expression) list
 
 type ('a, 'b) either =
   | Left of 'a
@@ -166,7 +166,7 @@ and bind_patts ?toplevel:(toplevel=false) (exp_id : Ident.t) (patts : pattern li
     | None -> acc
     | Some(ident, (src, idx), extras) ->
       let bind = if toplevel then
-          BLetGlobal(ident, Comp.tuple_get (Int32.of_int idx) (Imm.id src))
+          BLetGlobal(Nonrecursive, [ident, Comp.tuple_get (Int32.of_int idx) (Imm.id src)])
         else
           BLet(ident, Comp.tuple_get (Int32.of_int idx) (Imm.id src)) in
       [bind] @ extras @ acc in
@@ -293,7 +293,7 @@ let rec transl_anf_statement (({ttop_desc; ttop_env=env; ttop_loc=loc} as s) : t
     let rest_setup, rest_imp = transl_anf_statement {s with ttop_desc=TTopLet(Nonrecursive, rest)} in
     let rest_setup = Option.default [] rest_setup in
     let setup = begin match vb_pat.pat_desc with
-      | TPatVar(bind, _) -> [BLetGlobal(bind, exp_ans)]
+      | TPatVar(bind, _) -> [BLetGlobal(Nonrecursive, [bind, exp_ans])]
       | TPatTuple(patts) ->
         let tmp = gensym "let_tup" in
         let anf_patts = bind_patts ~toplevel:true tmp patts in
@@ -309,7 +309,7 @@ let rec transl_anf_statement (({ttop_desc; ttop_env=env; ttop_loc=loc} as s) : t
         | {pat_desc=TPatVar(id, _)} -> id
         | _ -> failwith "Non-name not allowed on LHS of let rec.") binds in
 
-    Some((List.concat new_setup) @ [BLetRec(List.combine names new_binds)]), []
+    Some((List.concat new_setup) @ [BLetGlobal(Recursive, List.combine names new_binds)]), []
   | TTopData(decl) ->
     let open Types in
     let typath = Path.PIdent (decl.data_id) in
@@ -329,7 +329,7 @@ let rec transl_anf_statement (({ttop_desc; ttop_env=env; ttop_loc=loc} as s) : t
               let tuple_elts = (Imm.const ~loc ~env (Const_int compiled_tag))::arg_ids in
               Comp.lambda ~loc ~env args (AExp.comp ~loc ~env (Comp.tuple ~loc ~env tuple_elts))
             | CstrUnboxed -> failwith "NYI: ANF CstrUnboxed" in
-          BLetGlobal(cd_id, rhs) in
+          BLetGlobal(Nonrecursive, [cd_id, rhs]) in
         Some(List.map bind_constructor descrs), []
     end
   | TTopForeign(desc) ->
@@ -351,7 +351,7 @@ let transl_anf_module ({statements; body; env; signature} : typed_program) : anf
          | BSeq(exp) -> AExp.seq exp body
          | BLet(name, exp) -> AExp.let_ Nonrecursive [(name, exp)] body
          | BLetRec(names) -> AExp.let_ Recursive names body
-         | BLetGlobal(name, exp) -> AExp.let_ ~glob:Global Nonrecursive [(name, exp)] body)
+         | BLetGlobal(rf, binds) -> AExp.let_ ~glob:Global rf binds body)
       (top_binds @ ans_setup) (AExp.comp ans) in
   let imports = imports @ (!value_imports) in
   {
