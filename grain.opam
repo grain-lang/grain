@@ -12,15 +12,15 @@ build: [
 ]
 build-test: [["jbuilder" "runtest" "-p" name "-j" jobs]]
 depends: [
-  "ocamlfind" {build}
-  "ocamlbuild" {build}
-  "jbuilder" {build}
+  "ocamlfind" {build & >= "1.7.3" }
+  "ocamlbuild" {build & >= "0.12.0" }
+  "jbuilder" {build & >= "1.0+beta16" }
   "dypgen"
-  "ounit"
-  "extlib"
-  "batteries"
-  "cmdliner"
-  "ocamlgraph"
-  "wasm"
-  "stdint"
+  "ounit" { >= "2.0.0" }
+  "extlib" { >= "1.7.2" }
+  "batteries" { >= "2.8.0" }
+  "cmdliner" { >= "1.0.2" }
+  "ocamlgraph" {>= "1.8.8" }
+  "wasm" { = "1.0" }
+  "stdint" { >= "0.5.0" }
 ]
