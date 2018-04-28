@@ -17,7 +17,7 @@ install:
 	jbuilder install
 
 check-libs:
-	jbuilder external-lib-deps --missing @install
+	./tools/get-deps.sh
 
 clean:
 	jbuilder clean
