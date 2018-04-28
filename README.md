@@ -1,6 +1,6 @@
 <div align="center">
     <a href="https://grain-lang.org/">
-        <img src="https://github.com/grain-lang/grain/raw/master/grain-header.jpg" alt="Grain" height="200" />
+        <img src="https://raw.githubusercontent.com/grain-lang/grain/master/grain-logo-large.png" alt="Grain" height="200" />
     </a>
 </div>
 
