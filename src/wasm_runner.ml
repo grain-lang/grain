@@ -375,7 +375,7 @@ let configure_runner() =
             let imports = Import.link m in
             let inst = Eval.init m imports in
             start_grain_module m inst;
-            Import.register (Utf8.decode modname) (module_to_resolver modname inst);
+            Import.register (Utf8.decode ("GRAIN$MODULE$" ^ modname)) (module_to_resolver modname inst);
           end else ()
             (*Printf.eprintf "Skipping file: %s\n" (d ^ "/" ^ f);*)
         in

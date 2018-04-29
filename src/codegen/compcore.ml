@@ -771,6 +771,11 @@ let compile_imports env ({imports} as prog) =
     | F64Type -> Types.F64Type
   in
 
+  let compile_module_name name = function
+    | MImportWasm -> Ident.name name
+    | MImportGrain -> "GRAIN$MODULE$" ^ (Ident.name name)
+  in
+
   let compile_import_name name = function
     | MImportWasm -> Ident.name name
     | MImportGrain -> "GRAIN$EXPORT$GET$" ^ (Ident.name name)
@@ -778,7 +783,7 @@ let compile_imports env ({imports} as prog) =
 
   let compile_import {mimp_mod; mimp_name; mimp_type; mimp_kind} =
     (* TODO: When user import become a thing, we'll need to worry about hygiene *)
-    let module_name = encode_string @@ Ident.name mimp_mod in
+    let module_name = encode_string @@ compile_module_name mimp_mod mimp_kind in
     let item_name = encode_string @@ compile_import_name mimp_name mimp_kind in
     let idesc = match mimp_kind, mimp_type with
       | MImportGrain, MGlobalImport typ ->
