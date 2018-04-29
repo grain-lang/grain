@@ -1,9 +1,7 @@
 import 'fast-text-encoding';
-import fs from 'fs';
 
 import { heapController, grainCheckMemory } from './core/heap';
 import { printClosure } from './core/closures';
-import { readFile, readURL } from './core/grain-module';
 import { GrainRunner } from './core/runner';
 import { throwGrainError } from './errors/errors';
 import { grainToJSVal } from './utils/utils';
@@ -43,54 +41,6 @@ const importObj = {
   }
 };
 
-function normalizeSlash(s) {
-  return s.replace(/\/$/, '');
-}
-
-function wrapBase(base) {
-  if (!base) {
-    return () => base;
-  } else if (base instanceof String || typeof base === 'string') {
-    let normalized = normalizeSlash(base);
-    return () => normalized;
-  } else {
-    return () => (normalizeSlash(base()));
-  }
-}
-
-// Default locator definitions. 'base' can either
-// be a constant path or a thunk yielding a path.
-// If 'base' yields 'null', then 'null' is returned
-export function defaultURLLocator(base)  {
-  // normalize trailing slash
-  let baseFunc = wrapBase(base);
-  return async (raw) => {
-    let module = raw.replace(/^GRAIN\$MODULE\$/, '');
-    let b = baseFunc();
-    if (b === null) {
-      return null;
-    }
-    return readURL(b + "/" + module + ".wasm");
-  };
-}
-
-export function defaultFileLocator(base) {
-  // normalize trailing slash
-  let baseFunc = wrapBase(base);
-  return async (raw) => {
-    let module = raw.replace(/^GRAIN\$MODULE\$/, '');
-    let b = baseFunc();
-    if (b === null) {
-      return null;
-    }
-    let fullpath = b + "/" + module + ".wasm";
-    if (!fs.existsSync(fullpath)) {
-      return null;
-    }
-    return readFile(fullpath);
-  };
-}
-
 export function buildGrainRunner(locator) {
   let runner = new GrainRunner(locator || ((x) => null));
   runner.addImports(importObj);
@@ -107,7 +57,7 @@ export async function GrainNodeRunner(path) {
 }
 
 export default async function GrainRunner(uri) {
-  let loaded = runner.loadURL(uri);
+  let loaded = await runner.loadURL(uri);
   return loaded.run();
 }
 
