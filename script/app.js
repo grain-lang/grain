@@ -10,6 +10,10 @@ var users = require('./routes/users');
 
 var app = express();
 
+// Express will support MIME type application/wasm in the next release.
+// https://github.com/expressjs/express/issues/3589
+express.static.mime.types['wasm'] = 'application/wasm'
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
