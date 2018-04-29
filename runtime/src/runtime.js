@@ -1,4 +1,5 @@
 import 'fast-text-encoding';
+import fs from 'fs';
 
 import { heapController, grainCheckMemory } from './core/heap';
 import { printClosure } from './core/closures';
