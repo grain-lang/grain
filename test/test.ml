@@ -22,8 +22,25 @@ let all_tests = [
   Test_wasm_utils.tests;
 ]
 
+let stdlib_directory() : string option =
+  let open BatPathGen.OfString in
+  let open Infix in
+  !Grain_utils.Config.grain_root
+  |> Option.map (fun root ->
+      to_string @@ (of_string root) /: "lib" /: "grain" /: "stdlib")
+
 let () =
   (** Override default stdlib location to use development version of stdlib *)
-  Grain_utils.Config.grain_root := Some(BatFile.with_file_in "grain-root.txt" BatInnerIO.read_all);
+  let grain_root = BatFile.with_file_in "grain-root.txt" BatInnerIO.read_all in
+  let grain_root = Grain_utils.Files.derelativize grain_root in
+  Grain_utils.Config.grain_root := Some(grain_root);
+  let stdlib = stdlib_directory() in
+  Option.may (fun x ->
+      Grain_utils.Config.include_dirs := x::(!Grain_utils.Config.include_dirs);
+      ignore(Grain.Compile.compile_file ~outfile:(x ^ "/" ^ "lists.wasm") (x ^ "/" ^ "lists.grlib"))
+    )
+    stdlib;
+  Grain_utils.Config.debug := true;
+  Printexc.record_backtrace true;
   run_test_tt_main ("All Tests" >::: all_tests)
 ;;

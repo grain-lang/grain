@@ -10,6 +10,7 @@ type codegen_env = {
   func_offset: int;
   global_offset: int;
   import_global_offset: int;
+  import_func_offset: int;
   import_offset: int;
   func_types: Wasm.Types.func_type BatDeque.t ref;
   (* Allocated closures which need backpatching *)

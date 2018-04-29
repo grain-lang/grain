@@ -86,6 +86,8 @@ rule token = parse
   | blank { token lexbuf }
   | '\n' { new_line lexbuf; token lexbuf }
   | signed_int as x { NUM (int_of_string x) }
+  | "foreign" { FOREIGN }
+  | "wasm" { WASM }
   | "add1" { ADD1 }
   | "sub1" { SUB1 }
   | "if" { IF }

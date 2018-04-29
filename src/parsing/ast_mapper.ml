@@ -13,6 +13,7 @@ type mapper = {
   import: mapper -> import_declaration -> import_declaration;
   value_binding: mapper -> value_binding -> value_binding;
   match_branch: mapper -> match_branch -> match_branch;
+  value_description: mapper -> value_description -> value_description;
   toplevel: mapper -> toplevel_stmt -> toplevel_stmt;
 }
 
@@ -114,11 +115,20 @@ module I = struct
     mk ~loc (map_loc sub imod)
 end
 
+module VD = struct
+  let map sub ({pval_mod = vmod; pval_name = vname; pval_loc = loc} as d) =
+    let pval_loc = sub.location sub loc in
+    let pval_mod = map_loc sub vmod in
+    let pval_name = map_loc sub vname in
+    {d with pval_name; pval_mod; pval_loc}
+end
+
 module TL = struct
   let map sub {ptop_desc = desc; ptop_loc = loc} =
     let open Top in
     let loc = sub.location sub loc in
     match desc with
+      | PTopForeign d -> Top.foreign ~loc (sub.value_description sub d)
       | PTopImport id -> Top.import ~loc (sub.import sub id)
       | PTopData dd -> Top.data ~loc (sub.data sub dd)
       | PTopLet(r, vb) -> Top.let_ ~loc r (List.map (sub.value_binding sub) vb)
@@ -135,6 +145,7 @@ let default_mapper = {
   import = I.map;
   value_binding = V.map;
   match_branch = MB.map;
+  value_description = VD.map;
   toplevel = TL.map;
 }
 

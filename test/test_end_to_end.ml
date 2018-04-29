@@ -332,7 +332,7 @@ let egg_eater_stdlib_tests = [
     "stdlib_reverse" ("import lists; reverse(" ^ mylist ^ ")") "cons(3, cons(2, cons(1, empty)))";
   tlib "stdlib_length" "import lists; length(cons(1, cons(2, cons(3, empty))))" "3";
   tlib ~todo:"builtins NYI" "stdlib_equal_1" "import lists; (1, 2) == (1, 2)" "false";
-  tlib ~todo:"builtins NYI" "stdlib_equal_2" "import lists; equal((1, 2), (1, 2))" "true";
+  tlib "stdlib_equal_2" "import pervasives; equal((1, 2), (1, 2))" "true";
   tlib ~todo:"builtins NYI" "stdlib_equal_3" "import lists; equal(cons(1, cons(2, cons(3, empty))), cons(1, cons(2, cons(3, empty))))" "true";
   tlib ~todo:"builtins NYI" "stdlib_equal_4" "import lists; equal(1, 1)" "true";
   tlib ~todo:"builtins NYI" "stdlib_equal_5" "import lists; equal(1, 2)" "false";

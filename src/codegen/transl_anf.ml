@@ -65,8 +65,9 @@ let next_global id =
   global_index := ret + 1;
   ret, ret_get
 
-let find_id id env = Ident.find_same id env.ce_binds
-let find_global id env = Ident.find_same id env.ce_exported_globals
+(* Hygienic compilation is currently broken! *)
+let find_id id env = snd @@ Ident.find_name (Ident.name id) env.ce_binds
+let find_global id env = snd @@ Ident.find_name (Ident.name id) env.ce_exported_globals
 
 
 let worklist_reset () = compilation_worklist := BatDeque.empty
@@ -269,7 +270,7 @@ let lift_imports env imports =
          (BatList.init outputs (fun _ -> I32Type)))
   in
   let import_idx = ref 0 in
-  let process_import {imp_use_id; imp_desc; imp_shape} =
+  let process_import (imports, setups, env) {imp_use_id; imp_desc; imp_shape} =
     let glob = next_global imp_use_id in
     let import_idx = begin
       let i = !import_idx in
@@ -277,46 +278,53 @@ let lift_imports env imports =
       i
       end in
     match imp_desc with
-    | GrainValue(mod_, name) -> {
+    | GrainValue(mod_, name) ->
+      ({
         mimp_mod = Ident.create mod_;
         mimp_name = Ident.create name;
         mimp_type = MGlobalImport I32Type (*process_shape imp_shape*);
         mimp_kind = MImportGrain;
         mimp_setup = MCallGetter;
-      }, [
-          MStore([(MGlobalBind (Int32.of_int glob)),
-                  MCallKnown((Int32.of_int import_idx), [])]);
-        ]
-    | WasmFunction(mod_, name) -> {
+      }::imports),
+      ([
+        MStore([(MGlobalBind (Int32.of_int glob)),
+                MCallKnown((Int32.of_int import_idx), [])]);
+      ]::setups),
+      ({env with ce_binds=Ident.add imp_use_id (MGlobalBind(Int32.of_int glob)) env.ce_binds})
+    | WasmFunction(mod_, name) ->
+      ({
         mimp_mod = Ident.create mod_;
         mimp_name = Ident.create name;
         mimp_type = process_shape imp_shape;
         mimp_kind = MImportWasm;
         mimp_setup = MWrap(Int32.zero);
-      }, begin
-          match imp_shape with
-          | GlobalShape -> []
-          | FunctionShape(inputs, outputs) ->
-            if outputs > 1 then
-              failwith "NYI: Multi-result wrapper"
-            else
-              [MStore([MGlobalBind(Int32.of_int glob),
-                       MAllocate(MClosure (compile_wrapper env import_idx inputs))])]
-        end
+      }::imports),
+      (begin
+        match imp_shape with
+        | GlobalShape -> []
+        | FunctionShape(inputs, outputs) ->
+          if outputs > 1 then
+            failwith "NYI: Multi-result wrapper"
+          else
+            [MStore([MGlobalBind(Int32.of_int glob),
+                     MAllocate(MClosure (compile_wrapper env import_idx inputs))])]
+      end::setups),
+      ({env with ce_binds=Ident.add imp_use_id (MGlobalBind(Int32.of_int glob)) env.ce_binds})
     | JSFunction _ -> failwith "NYI: lift_imports JSFunction"
   in
-  let imports, setups = List.split @@ List.map process_import imports in
-  let setups = List.flatten setups in
-  imports, setups
+  let imports, setups, env = List.fold_left process_import ([], [], env) imports in
+  let imports = List.rev imports in
+  let setups = List.flatten (List.rev setups) in
+  imports, setups, env
 
 let transl_anf_program (anf_prog : Anftree.anf_program) : Mashtree.mash_program =
   reset_lift();
   reset_global();
   worklist_reset();
 
-  let imports, setups = lift_imports initial_compilation_env anf_prog.imports in
+  let imports, setups, env = lift_imports initial_compilation_env anf_prog.imports in
   let main_body_stack_size = Anf_utils.anf_count_vars anf_prog.body in
-  let main_body = setups @ (compile_anf_expr initial_compilation_env anf_prog.body) in
+  let main_body = setups @ (compile_anf_expr env anf_prog.body) in
   let exports = global_exports() in
   let functions = compile_remaining_worklist() in
 

@@ -149,7 +149,7 @@ let make_program statements body =
 %token LET REC IF ELSE MATCH
 %token AND OR NOT
 
-%token DATA IMPORT
+%token DATA IMPORT FOREIGN WASM
 %token EOF
 
 %start <Parsetree.parsed_program> program
@@ -201,7 +201,9 @@ tuple_patterns :
   | pattern [COMMA pattern {$2}]+ { $1::$2 }
 
 typ :
-  /* It's a little sad that we can't do `a -> b`, but it makes sense for consistency's sake */
+  /* Convenience: Parens optional for single-argument functions */
+  | typ+ id ARROW typ { Typ.arrow ~loc:(symbol_rloc dyp) [(Typ.constr $2 $1)] $4 }
+  | ID ARROW typ { Typ.arrow ~loc:(symbol_rloc dyp) [(Typ.var $1)] $3 }
   | LPAREN typs RPAREN ARROW typ { Typ.arrow ~loc:(symbol_rloc dyp) $2 $5 }
   | LPAREN tuple_typs RPAREN { Typ.tuple ~loc:(symbol_rloc dyp) $2 }
   | LPAREN typ RPAREN { $2 }
@@ -305,9 +307,16 @@ tuple_exprs :
 block :
   | block_body_expr [SEMI block_body_expr {$2}]* { $1::$2 }
 
+id_str :
+  | ID { Location.mkloc $1 (symbol_rloc dyp) }
+
+foreign_stmt :
+  | FOREIGN WASM id_str id_str COLON typ { Val.mk ~loc:(symbol_rloc dyp) ~mod_:$3 ~name:$4 ~typ:$6 ~prim:[$4.txt] }
+
 toplevel_stmt :
   | LET REC value_binds { Top.let_ Recursive $3 }
   | LET value_binds { Top.let_ Nonrecursive $2 }
+  | foreign_stmt { Top.foreign ~loc:(symbol_rloc dyp) $1 }
   | import_stmt { Top.import $1 }
   | data_declaration { Top.data $1 }
 

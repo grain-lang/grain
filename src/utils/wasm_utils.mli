@@ -1,7 +1,7 @@
 (** Utilities for interfacing with WebAssembly *)
 
 type wasm_bin_section_type =
-  | Custom
+  | Custom of string
   | Type
   | Import
   | Function

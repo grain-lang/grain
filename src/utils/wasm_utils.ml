@@ -2,7 +2,7 @@
 open Sexplib.Conv
 
 type wasm_bin_section_type =
-  | Custom
+  | Custom of string
   | Type
   | Import
   | Function
@@ -190,8 +190,8 @@ let serialize_abi_version {major; minor; patch} =
   to_bytes_little_endian (of_int patch) bytes 8;
   bytes
 
-let section_type_of_int ?pos = function
-  | 0 -> Custom
+let section_type_of_int ?pos ?name = function
+  | 0 -> Custom (Option.default "" name)
   | 1 -> Type
   | 2 -> Import
   | 3 -> Function
@@ -206,7 +206,7 @@ let section_type_of_int ?pos = function
   | n -> raise (MalformedSectionType(n, pos))
 
 let int_of_section_type = function
-  | Custom -> 0
+  | Custom _ -> 0
   | Type -> 1
   | Import -> 2
   | Function -> 3
@@ -242,11 +242,23 @@ let get_wasm_sections ?reset:(reset=false) inchan =
       let sec_type = section_type_of_int (input_byte inchan) in
       let size = Stdint.Uint32.to_int (read_leb128_u32_input inchan) in
       let offset = pos_in inchan in
+      let sec_type, true_offset, true_size = match sec_type with
+        | Custom _ ->
+          let name_len = Stdint.Uint32.to_int (read_leb128_u32_input inchan) in
+          let name = really_input_string inchan name_len in
+          (*let bstr bs = "[" ^ (ExtString.String.join ", " (List.map (Printf.sprintf "0x%02x") bs)) ^ "]" in
+          Printf.eprintf "read: size: %d; name_len: %d; name: %s\n"
+            size name_len (bstr (List.map int_of_char @@ ExtString.String.explode name));*)
+          let name = Wasm.Utf8.encode (List.map int_of_char @@ ExtString.String.explode name) in
+          let true_offset = pos_in inchan in
+          (Custom name), true_offset, size - (true_offset - offset)
+        | s -> s, offset, size
+      in
       seek_in inchan (offset + size);
       Some {
         sec_type;
-        offset;
-        size;
+        offset=true_offset;
+        size=true_size;
       }
     with End_of_file -> None
   in
@@ -265,13 +277,29 @@ let get_wasm_sections ?reset:(reset=false) inchan =
 
 let write_wasm_section_header {sec_type; size} ochan =
   output_byte ochan (int_of_section_type sec_type);
-  write_leb128_u32 (output_byte ochan) (Stdint.Uint32.of_int size)
+  begin match sec_type with
+    | Custom name ->
+      let bytes = ref [] in
+      let push = (fun i -> bytes := i::(!bytes)) in
+      let name_bytes = Wasm.Utf8.decode name in
+      write_leb128_u32 push (Stdint.Uint32.of_int (List.length name_bytes));
+      bytes := List.rev !bytes;
+      let full_size = size + (List.length !bytes) + (List.length name_bytes) in
+      (*let bstr bs = "[" ^ (ExtString.String.join ", " (List.map (Printf.sprintf "0x%02x") bs)) ^ "]" in
+      Printf.eprintf "write: size: %d; name: %s; bytes: %s; name_bytes: %s; full_size: %d\n"
+        size name (bstr !bytes) (bstr name_bytes) full_size;*)
+      write_leb128_u32 (output_byte ochan) (Stdint.Uint32.of_int full_size);
+      List.iter (output_byte ochan) !bytes;
+      List.iter (output_byte ochan) name_bytes;
+    | _ ->
+      write_leb128_u32 (output_byte ochan) (Stdint.Uint32.of_int size);
+  end
 
-let write_custom_wasm_section bs ochan =
+let write_custom_wasm_section name bs ochan =
   let size = Bytes.length bs in
   (* Build a header just to validate that we write a complete one *)
   let hdr = {
-    sec_type=Custom;
+    sec_type=Custom name;
     size;
     offset=(-1);
   } in
@@ -332,7 +360,7 @@ module BinarySection(Spec : BinarySectionSpec) : BinarySectionSig with type t = 
 
   let load ?preserve:(preserve=false) inchan =
     let orig_pos = pos_in inchan in
-    let sections = List.filter (fun {sec_type} -> sec_type = Custom)
+    let sections = List.filter (fun {sec_type} -> sec_type = Custom Spec.name)
         (get_wasm_sections inchan) in
     let rec process sections =
       match sections with
@@ -360,7 +388,7 @@ module BinarySection(Spec : BinarySectionSpec) : BinarySectionSig with type t = 
     let val_bytes = Spec.serialize value in
     let header_bytes = serialize_grain_custom_info Spec.name latest_abi in
     let sep = Bytes.empty in
-    write_custom_wasm_section (Bytes.concat sep [header_bytes; val_bytes]) outchan
+    write_custom_wasm_section Spec.name (Bytes.concat sep [header_bytes; val_bytes]) outchan
 
 end
 
