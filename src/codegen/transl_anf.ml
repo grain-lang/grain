@@ -169,18 +169,22 @@ let compile_wrapper env real_idx arity : Mashtree.closure_data =
 
 let next_global id =
   let ret, idx = next_global id in
-  let body = [
-    MImmediate(MImmBinding(MGlobalBind (Int32.of_int ret)));
-  ] in
-  let worklist_item = {
-    body=Precompiled body;
-    env=initial_compilation_env;
-    idx;
-    arity=0; (* <- this function cannot be called by the user, so no self argument is needed. *)
-    stack_size=0;
-  } in
-  worklist_enqueue worklist_item;
-  ret
+  if ret <> ((!global_index) - 1) then
+    ret
+  else begin
+    let body = [
+      MImmediate(MImmBinding(MGlobalBind (Int32.of_int ret)));
+    ] in
+    let worklist_item = {
+      body=Precompiled body;
+      env=initial_compilation_env;
+      idx;
+      arity=0; (* <- this function cannot be called by the user, so no self argument is needed. *)
+      stack_size=0;
+    } in
+    worklist_enqueue worklist_item;
+    ret
+  end
 
 let rec compile_comp env c =
   match c.comp_desc with
