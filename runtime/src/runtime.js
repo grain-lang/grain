@@ -47,7 +47,8 @@ async function fetchAndInstantiate(url, importObject) {
 }
 
 async function readAndInstantiate(path, importObject) {
-  let bytes = fs.readFileSync(path);
+  let bytes = fs.readFileSync(path).buffer;
+  console.log(bytes)
   return WebAssembly.instantiate(bytes, importObject);
 }
 
