@@ -1,5 +1,3 @@
-open Legacy_types
-
 (** Definitions for interacting with the standard library. *)
 
 (** Path to the default grain standard library. This path must be included

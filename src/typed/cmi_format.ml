@@ -13,10 +13,15 @@
 (*                                                                        *)
 (**************************************************************************)
 
+open Sexplib.Conv
+open Grain_utils
+open Wasm_utils
+
 type pers_flags =
   | Rectypes
   | Opaque
   | Unsafe_string
+[@@deriving sexp]
 
 type error =
     Not_an_interface of string
@@ -28,9 +33,20 @@ exception Error of error
 type cmi_infos = {
     cmi_name : string;
     cmi_sign : Types.signature_item list;
-    cmi_crcs : (string * Digest.t option) list;
+    cmi_crcs : (string * Digest.t option) list sexp_opaque;
     cmi_flags : pers_flags list;
-}
+} [@@deriving sexp]
+
+let build_full_cmi ~name ~sign ~crcs ~flags =
+  let ns_sign = Marshal.to_bytes (name, sign) [] in
+  let crc = Digest.bytes ns_sign in
+  let crcs = (name, Some crc) :: crcs in
+  {
+    cmi_name = name;
+    cmi_sign = sign;
+    cmi_crcs = crcs;
+    cmi_flags = flags;
+  }
 
 let input_cmi ic =
   let (name, sign) = input_value ic in
@@ -43,28 +59,45 @@ let input_cmi ic =
       cmi_flags = flags;
     }
 
+let deserialize_cmi bytes =
+  let (name, sign) = Marshal.from_bytes bytes 0 in
+  let ns_size = Marshal.total_size bytes 0 in
+  let crcs_size = Marshal.total_size bytes ns_size in
+  let crcs = Marshal.from_bytes bytes ns_size in
+  let flags = Marshal.from_bytes bytes (ns_size + crcs_size) in
+  {
+    cmi_name = name;
+    cmi_sign = sign;
+    cmi_crcs = crcs;
+    cmi_flags = flags;
+  }
+
+let serialize_cmi {cmi_name=name; cmi_sign=sign; cmi_crcs=crcs; cmi_flags=flags} =
+  let ns_sign = Marshal.to_bytes (name, sign) [] in
+  let crc = Digest.bytes ns_sign in
+  let crcs = (name, Some crc) :: crcs in
+  let crcs = Marshal.to_bytes crcs [] in
+  let flags = Marshal.to_bytes flags [] in
+  Bytes.concat Bytes.empty [ns_sign; crcs; flags]
+
+module CmiBinarySection = BinarySection(struct
+    type t = cmi_infos
+
+    let name = "cmi"
+
+    let deserialize = deserialize_cmi
+    let serialize = serialize_cmi
+    let accepts_version {major} = major = 1
+  end)
+
 let read_cmi filename =
   let ic = open_in_bin filename in
   try
-    let buffer =
-      really_input_string ic (String.length Config.cmi_magic_number)
-    in
-    if buffer <> Config.cmi_magic_number then begin
+    match CmiBinarySection.load ic with
+    | Some(cmi) ->
       close_in ic;
-      let pre_len = String.length Config.cmi_magic_number - 3 in
-      if String.sub buffer 0 pre_len
-          = String.sub Config.cmi_magic_number 0 pre_len then
-      begin
-        let msg =
-          if buffer < Config.cmi_magic_number then "an older" else "a newer" in
-        raise (Error (Wrong_version_interface (filename, msg)))
-      end else begin
-        raise(Error(Not_an_interface filename))
-      end
-    end;
-    let cmi = input_cmi ic in
-    close_in ic;
-    cmi
+      cmi
+    | None -> raise End_of_file
   with End_of_file | Failure _ ->
       close_in ic;
       raise(Error(Corrupted_interface(filename)))
@@ -73,15 +106,8 @@ let read_cmi filename =
       raise (Error e)
 
 let output_cmi filename oc cmi =
-(* beware: the provided signature must have been substituted for saving *)
-  output_string oc Config.cmi_magic_number;
-  output_value oc (cmi.cmi_name, cmi.cmi_sign);
-  flush oc;
-  let crc = Digest.file filename in
-  let crcs = (cmi.cmi_name, Some crc) :: cmi.cmi_crcs in
-  output_value oc crcs;
-  output_value oc cmi.cmi_flags;
-  crc
+  (* beware: the provided signature must have been substituted for saving *)
+  CmiBinarySection.write cmi oc
 
 (* Error report *)
 

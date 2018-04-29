@@ -60,6 +60,9 @@ end = struct
         TTyArrow(args, ret)
       | TTyConstr(a, b, args) -> TTyConstr(a, b, List.map map_core_type args)
       | TTyTuple(args) -> TTyTuple(List.map map_core_type args)
+      | TTyPoly(args, typ) ->
+        let typ = map_core_type typ in
+        TTyPoly(args, typ)
     end in
     Map.leave_core_type {ct with ctyp_desc}
 
@@ -103,7 +106,8 @@ end = struct
     let stmt = Map.enter_toplevel_stmt stmt in
     let ttop_desc = begin match stmt.ttop_desc with
       | TTopData (decl) -> TTopData(map_data_declaration decl)
-      | TTopImport _ as d -> d
+      | TTopForeign _
+      | TTopImport _  -> stmt.ttop_desc
       | TTopLet (recflag, binds) -> TTopLet(recflag, map_bindings recflag binds)
     end in
     Map.leave_toplevel_stmt {stmt with ttop_desc}

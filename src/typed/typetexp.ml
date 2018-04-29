@@ -304,6 +304,34 @@ and transl_type_aux env policy styp =
         raise (Error(styp.ptyp_loc, env, Type_mismatch trace))
       end;
         ctyp (TTyConstr (path, lid, args)) constr
+  | PTyPoly(vars, st) ->
+    let vars = List.map (fun v -> v.txt) vars in
+    begin_def();
+    let new_univars = List.map (fun name -> name, newvar ~name ()) vars in
+    let old_univars = !univars in
+    univars := new_univars @ !univars;
+    let cty = transl_type env policy st in
+    let ty = cty.ctyp_type in
+    univars := old_univars;
+    end_def();
+    generalize ty;
+    let ty_list =
+      List.fold_left
+        (fun tyl (name, ty1) ->
+           let v = ty1 (* would be a no-op right now *) (*Btype.proxy ty1*) in
+           if deep_occur v ty then begin
+             match v.desc with
+               TTyVar name when v.level = Btype.generic_level ->
+               v.desc <- TTyUniVar name;
+               v :: tyl
+             | _ ->
+               raise (Error (styp.ptyp_loc, env, Cannot_quantify (name, v)))
+           end else tyl)
+        [] new_univars
+    in
+    let ty' = Btype.newgenty (TTyPoly(ty, List.rev ty_list)) in
+    unify_var env (newvar()) ty';
+    ctyp (TTyPoly (vars, cty)) ty'
 
 let make_fixed_univars ty =
   (* TODO: Remove *)
@@ -450,7 +478,7 @@ let report_error env ppf = function
   | Present_has_no_type l ->
       fprintf ppf "The present constructor %s has no type" l
   | Constructor_mismatch (ty, ty') ->
-      wrap_printing_env env (fun ()  ->
+      wrap_printing_env ~error:true env (fun ()  ->
         Printtyp.reset_and_mark_loops_list [ty; ty'];
         fprintf ppf "@[<hov>%s %a@ %s@ %a@]"
           "This variant type contains a constructor"
@@ -484,7 +512,7 @@ let report_error env ppf = function
   | Multiple_constraints_on_type s ->
       fprintf ppf "Multiple constraints for type %a" identifier s
   | Method_mismatch (l, ty, ty') ->
-      wrap_printing_env env (fun ()  ->
+      wrap_printing_env ~error:true env (fun ()  ->
         Printtyp.reset_and_mark_loops_list [ty; ty'];
         fprintf ppf "@[<hov>Method '%s' has type %a,@ which should be %a@]"
           l Printtyp.type_expr ty Printtyp.type_expr ty')

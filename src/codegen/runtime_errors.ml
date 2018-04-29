@@ -1,4 +1,5 @@
 (** Runtime Error definitions *)
+open Sexplib.Conv
 
 type grain_error =
   | ComparisonError
@@ -16,7 +17,9 @@ type grain_error =
   | SetItemIndexNotNumber
   | SetItemIndexTooSmall
   | SetItemIndexTooLarge
+  | SwitchError
   | GenericNumberError
+[@@deriving sexp]
 
 let all_grain_errors = [
   ComparisonError;
@@ -34,6 +37,7 @@ let all_grain_errors = [
   SetItemIndexNotNumber;
   SetItemIndexTooSmall;
   SetItemIndexTooLarge;
+  SwitchError;
   GenericNumberError;
 ]
 
@@ -52,6 +56,7 @@ let err_SET_NOT_TUP               = 12
 let err_SET_ITEM_INDEX_NOT_NUMBER = 13
 let err_SET_ITEM_INDEX_TOO_SMALL  = 14
 let err_SET_ITEM_INDEX_TOO_LARGE  = 15
+let err_SWITCH                    = 16
 let err_GENERIC_NUM               = 99
 
 let code_of_error = function
@@ -69,8 +74,28 @@ let code_of_error = function
   | SetItemIndexNotNumber -> err_SET_ITEM_INDEX_NOT_NUMBER
   | SetItemIndexTooLarge -> err_SET_ITEM_INDEX_TOO_LARGE
   | SetItemIndexTooSmall -> err_SET_ITEM_INDEX_TOO_SMALL
+  | SwitchError -> err_SWITCH
   | GenericNumberError -> err_GENERIC_NUM
   | OverflowError -> err_OVERFLOW
+
+let arity_of_error = function
+  | ArithmeticError -> 1
+  | ComparisonError -> 1
+  | IfError -> 1
+  | LogicError -> 1
+  | ArityMismatch -> 2
+  | CalledNonFunction -> 1
+  | GetItemNotTuple -> 1
+  | GetItemIndexNotNumber -> 1
+  | GetItemIndexTooSmall -> 2
+  | GetItemIndexTooLarge -> 2
+  | SetItemNotTuple -> 1
+  | SetItemIndexNotNumber -> 1
+  | SetItemIndexTooLarge -> 2
+  | SetItemIndexTooSmall -> 2
+  | SwitchError -> 1
+  | GenericNumberError -> 1
+  | OverflowError -> 1
 
 let label_of_error = function
   | ArithmeticError -> "error_not_number_arith"
@@ -89,6 +114,7 @@ let label_of_error = function
   | SetItemIndexTooSmall -> "error_too_small_set_item_idx"
   | SetItemIndexTooLarge -> "error_too_large_set_item_idx"
   | OverflowError -> "error_overflow"
+  | SwitchError -> "error_switch"
 
 let error_of_code c =
   match c with
@@ -106,7 +132,28 @@ let error_of_code c =
   | x when x = err_SET_ITEM_INDEX_NOT_NUMBER -> SetItemIndexNotNumber
   | x when x = err_SET_ITEM_INDEX_TOO_LARGE -> SetItemIndexTooLarge
   | x when x = err_SET_ITEM_INDEX_TOO_SMALL -> SetItemIndexTooSmall
+  | x when x = err_SWITCH -> SwitchError
   | x when x = err_GENERIC_NUM -> GenericNumberError
   | x when x = err_OVERFLOW -> OverflowError
   | c -> failwith (Printf.sprintf "Unknown error code: %d" c)
+
+let max_arity = List.fold_left (fun x y -> max x (arity_of_error y)) 0 all_grain_errors
+
+let pad_args : 'a. 'a -> 'a list -> 'a list = fun pad_elt args ->
+  let pad_amount = max_arity - (List.length args) in
+  if pad_amount = 0 then
+    args
+  else
+    (args @ (BatList.init pad_amount (fun _ -> pad_elt)))
+
+let validate_args : 'a. grain_error -> 'a list -> unit = fun error args ->
+  let arity = arity_of_error error in
+  let num_args = List.length args in
+  if num_args <> arity then
+    failwith
+      (Printf.sprintf
+         "Internal error (runtime_errors): Error %s expects %d arguments; generated code calls with %d."
+         (Sexplib.Sexp.to_string_hum (sexp_of_grain_error error))
+         arity
+         num_args)
 

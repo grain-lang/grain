@@ -1,6 +1,5 @@
 open Lexing
 open Printf
-open Legacy_types
 open Grain_parsing
 
 (*type grain_library = sourcespan program -> sourcespan program*)

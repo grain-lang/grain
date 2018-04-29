@@ -166,6 +166,8 @@ val all_distinct_vars: Env.t -> type_expr list -> bool
 val matches: Env.t -> type_expr -> type_expr -> bool
 (* Same as [moregeneral false], implemented using the two above
    functions and backtracking. Ignore levels *)
+val reify_univars : Types.type_expr -> Types.type_expr
+(* Replaces all the variables of a type by a univar. *)
 
 val equal: Env.t -> bool -> type_expr list -> type_expr list -> bool
 (* [equal env [x1...xn] tau [y1...yn] sigma]
@@ -225,3 +227,5 @@ val maybe_pointer_type : Env.t -> type_expr -> bool
 val package_subtype :
   (Env.t -> Path.t -> Identifier.t list -> type_expr list ->
    Path.t -> Identifier.t list -> type_expr list -> bool) ref
+
+val mcomp : Env.t -> type_expr -> type_expr -> unit

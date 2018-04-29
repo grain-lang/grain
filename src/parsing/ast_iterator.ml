@@ -12,6 +12,7 @@ type iterator = {
   import: iterator -> import_declaration -> unit;
   value_binding: iterator -> value_binding -> unit;
   match_branch: iterator -> match_branch -> unit;
+  value_description: iterator -> value_description -> unit;
   toplevel: iterator -> toplevel_stmt -> unit;
 }
 
@@ -103,10 +104,18 @@ module I = struct
     iter_loc sub imod
 end
 
+module VD = struct
+  let iter sub {pval_mod = vmod; pval_name = vname; pval_loc = loc} =
+    sub.location sub loc;
+    iter_loc sub vmod;
+    iter_loc sub vname
+end
+
 module TL = struct
   let iter sub {ptop_desc = desc; ptop_loc = loc} =
     sub.location sub loc;
     match desc with
+      | PTopForeign vd -> sub.value_description sub vd
       | PTopImport id -> sub.import sub id
       | PTopData dd -> sub.data sub dd
       | PTopLet(r, vb) -> List.iter (sub.value_binding sub) vb
@@ -123,5 +132,6 @@ let default_iterator = {
   import = I.iter;
   value_binding = V.iter;
   match_branch = MB.iter;
+  value_description = VD.iter;
   toplevel = TL.iter;
 }

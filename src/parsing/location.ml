@@ -216,9 +216,14 @@ let print_error_prefix ppf =
 
 let print_compact ppf loc =
   let (file, line, startchar) = get_pos_info loc.loc_start in
-  let endchar = loc.loc_end.pos_cnum - loc.loc_start.pos_cnum + startchar in
+  let (_, endline, endchar) = get_pos_info loc.loc_end in
   fprintf ppf "%a:%i" print_filename file line;
-  if startchar >= 0 then fprintf ppf ",%i--%i" startchar endchar
+  if startchar >= 0 then begin
+    if line = endline then
+      fprintf ppf ",%i--%i" startchar endchar
+    else
+      fprintf ppf ",%i--%i,%i" startchar endline endchar
+  end
 
 let print_error ppf loc =
   fprintf ppf "%a%t:" print loc print_error_prefix

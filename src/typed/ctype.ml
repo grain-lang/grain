@@ -1360,6 +1360,28 @@ let enter_poly env univar_pairs t1 tl1 t2 tl2 f =
 
 let univar_pairs = ref []
 
+(* assumption: [ty] is fully generalized. *)
+let reify_univars ty =
+  let rec subst_univar vars ty =
+    let ty = repr ty in
+    if ty.level >= lowest_level then begin
+      ty.level <- pivot_level - ty.level;
+      match ty.desc with
+      | TTyVar name ->
+          save_desc ty ty.desc;
+          let t = newty2 ty.level (TTyUniVar name) in
+          vars := t :: !vars;
+          ty.desc <- TTySubst t
+      | _ ->
+          iter_type_expr (subst_univar vars) ty
+    end
+  in
+  let vars = ref [] in
+  subst_univar vars ty;
+  unmark_type ty;
+  let ty = copy ty in
+  cleanup_types ();
+  newty2 ty.level (TTyPoly(repr ty, !vars))
 
 (*****************)
 (*  Unification  *)

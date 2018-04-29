@@ -1,0 +1,14 @@
+# Prints the given value to the console.
+foreign wasm grainBuiltins print : a -> a;
+
+# Checks the given items for structural equality.
+foreign wasm grainBuiltins equal : (a, a) -> bool;
+
+# Converts the given value to a string
+foreign wasm grainBuiltins toString : a -> string;
+
+# TODO: These should be in a separate WASM module
+
+foreign wasm grainBuiltins stringAppend : (string, string) -> string;
+
+foreign wasm grainBuiltins stringSlice : (string, number, number) -> string;

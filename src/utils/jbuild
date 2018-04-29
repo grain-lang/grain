@@ -3,5 +3,6 @@
 (library
  ((name        grain_utils)
   (synopsis "Utilities for the Grain compiler")
-  (libraries (cmdliner extlib))))
+  (libraries (cmdliner extlib stdint ppx_deriving ppx_sexp_conv sexplib wasm batteries))
+  (preprocess (pps (ppx_sexp_conv ppx_deriving)))))
 

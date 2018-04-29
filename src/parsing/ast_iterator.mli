@@ -28,6 +28,7 @@ type iterator = {
   import: iterator -> import_declaration -> unit;
   value_binding: iterator -> value_binding -> unit;
   match_branch: iterator -> match_branch -> unit;
+  value_description: iterator -> value_description -> unit;
   toplevel: iterator -> toplevel_stmt -> unit;
 }
 (** A [iterator] record implements one "method" per syntactic category,

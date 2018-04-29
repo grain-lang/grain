@@ -23,6 +23,11 @@ type t = {
   mutable flags: int [@default 0] [@sexp_drop_default];
 } [@@deriving sexp]
 
+type saved_state = {
+  currentstamp: int;
+  reinit_level: int;
+}
+
 let global_flag = 1
 let predef_exn_flag = 2
 
@@ -69,6 +74,15 @@ let current_time() = !currentstamp
 let set_current_time t = currentstamp := max !currentstamp t
 
 let reinit_level = ref (-1)
+
+let save_state() = {
+  currentstamp=(!currentstamp);
+  reinit_level=(!reinit_level);
+}
+
+let restore_state s =
+  currentstamp := s.currentstamp;
+  reinit_level := s.reinit_level
 
 let reinit () =
   if !reinit_level < 0

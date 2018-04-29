@@ -107,6 +107,7 @@ let maybe_add_pattern_variables_ghost loc_let env pv =
        | exception Not_found ->
          Env.add_value id
            { val_type = ty;
+             val_fullpath = Path.PIdent id;
              val_kind = TValUnbound ValUnboundGhostRecursive;
              val_loc = loc_let;
            } env
@@ -1427,7 +1428,7 @@ let report_error env ppf = function
         "Hint: You are probably missing the `rec' keyword on line"
         line
 let report_error env ppf err =
-  wrap_printing_env env (fun () -> report_error env ppf err)
+  wrap_printing_env ~error:true env (fun () -> report_error env ppf err)
 let () =
   Location.register_error_of_exn
     (function

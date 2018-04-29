@@ -567,7 +567,7 @@ let add_pattern_variables ?check ?check_as env =
      (fun (id, ty, _name, loc, as_var) env ->
        let check = if as_var then check_as else check in
        Env.add_value ?check id
-         {val_type = ty; val_kind = TValReg; Types.val_loc = loc} env
+         {val_type = ty; val_kind = TValReg; Types.val_loc = loc; val_fullpath = Path.PIdent id} env
      )
      pv env,
    get_ref module_variables, pv)
@@ -679,7 +679,8 @@ let report_error env ppf = function
         Printpat.top_pretty pat
 
 let report_error env ppf err =
-  wrap_printing_env env (fun () -> report_error env ppf err)
+  wrap_printing_env ~error:true env (fun () -> report_error env ppf err)
+
 let () =
   Location.register_error_of_exn
     (function

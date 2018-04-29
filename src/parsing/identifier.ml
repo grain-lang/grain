@@ -46,3 +46,30 @@ let rec compare i1 i2 =
 let last = function
   | IdentName s -> s
   | IdentExternal (_, s) -> s
+
+let rec split_at_dots s pos =
+  try
+    let dot = String.index_from s pos '.' in
+    String.sub s pos (dot - pos) :: split_at_dots s (dot + 1)
+  with Not_found ->
+    [String.sub s pos (String.length s - pos)]
+
+let flatten n =
+  let rec help acc = function
+    | IdentName(n) -> List.rev (n::acc)
+    | IdentExternal(p, n) -> help (n::acc) p
+  in
+  help [] n
+
+let unflatten = function
+  | [] -> None
+  | hd::tl -> Some (List.fold_left (fun p s -> IdentExternal(p, s)) (IdentName hd) tl)
+
+let parse s =
+  match unflatten (split_at_dots s 0) with
+  | None -> IdentName ""
+  | Some v -> v
+
+let hash name = Hashtbl.hash (flatten name)
+let output oc name = output_string oc (string_of_ident name)
+
