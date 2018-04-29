@@ -1,6 +1,4 @@
-import GrainRunner from './runtime';
-if (window.GrainRunner) {
-  throw new Error('[Grain] Only one instance of the Grain runtime is allowed!');
-}
-window.GrainRunner = GrainRunner;
+import {buildGrainRunner, defaultURLLocator} from './runtime';
+
+let GrainRunner = buildGrainRunner(defaultURLLocator(window.GrainStdlibRoot));
 export default GrainRunner;

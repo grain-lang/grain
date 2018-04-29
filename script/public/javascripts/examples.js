@@ -1,1 +1,1 @@
-GrainRunner('examples/tdestr.wasm').then(res => console.log(res));
+Grain.GrainRunner('examples/adder.wasm').then(res => console.log(res));

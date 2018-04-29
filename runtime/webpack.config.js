@@ -1,9 +1,4 @@
-module.exports = {
-  entry: './src/index.js',
-  output: {
-    filename: 'grain-runtime.js',
-    path: __dirname + '/dist'
-  },
+const common = {
   module: {
     rules: [
       {
@@ -20,5 +15,31 @@ module.exports = {
         }
       }
     ]
+  },
+  externals: ['fs']
+};
+
+const browserConfig = {
+  ...common,
+  entry: './src/index.js',
+  output: {
+    filename: 'grain-runtime-browser.js',
+    path: __dirname + '/dist',
+    library: 'Grain',
+    libraryTarget: 'var'
   }
 }
+
+const commonjsConfig = {
+  ...common,
+  entry: './src/runtime.js',
+  output: {
+    filename: 'grain-runtime.js',
+    path: __dirname + '/dist',
+    libraryTarget: 'commonjs2'
+  }
+}
+
+module.exports = [
+  browserConfig, commonjsConfig
+]
