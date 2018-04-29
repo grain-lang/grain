@@ -6,6 +6,9 @@ open Asttypes
 open Anftree
 open Mashtree
 
+
+module StrMap = BatMap.String
+
 type compilation_env = {
   ce_binds: Mashtree.binding Ident.tbl;
   (* Useful due to us needing a second pass over exports (for mutual recursion) *)
@@ -59,15 +62,20 @@ let reset_global() =
   global_index := 0
 
 let next_global id =
-  let ret = !global_index in
-  let ret_get = next_lift() in
-  global_table := Ident.add id ((Int32.of_int ret), (Int32.of_int ret_get)) !global_table;
-  global_index := ret + 1;
-  ret, ret_get
+  (* RIP Hygiene (this behavior works as expected until we have more metaprogramming constructs) *)
+  match Ident.find_name_opt (Ident.name id) (!global_table) with
+  | Some(_, (ret, ret_get)) -> Int32.to_int ret, Int32.to_int ret_get
+  | None ->
+    begin
+      let ret = !global_index in
+      let ret_get = next_lift() in
+      global_table := Ident.add id ((Int32.of_int ret), (Int32.of_int ret_get)) !global_table;
+      global_index := ret + 1;
+      (ret, ret_get)
+    end
 
-(* Hygienic compilation is currently broken! *)
-let find_id id env = snd @@ Ident.find_name (Ident.name id) env.ce_binds
-let find_global id env = snd @@ Ident.find_name (Ident.name id) env.ce_exported_globals
+let find_id id env = Ident.find_same id env.ce_binds
+let find_global id env = Ident.find_same id env.ce_exported_globals
 
 
 let worklist_reset () = compilation_worklist := BatDeque.empty
@@ -270,6 +278,7 @@ let lift_imports env imports =
          (BatList.init outputs (fun _ -> I32Type)))
   in
   let import_idx = ref 0 in
+
   let process_import (imports, setups, env) {imp_use_id; imp_desc; imp_shape} =
     let glob = next_global imp_use_id in
     let import_idx = begin
