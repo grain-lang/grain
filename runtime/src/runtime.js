@@ -42,13 +42,11 @@ const importObj = {
 async function fetchAndInstantiate(url, importObject) {
   let response = await fetch(url);
   if (!response.ok) throw new Error(`[Grain] Could not load ${url} due to a network error.`);
-  let bytes = await response.arrayBuffer();
-  return WebAssembly.instantiate(bytes, importObject);
+  return WebAssembly.instantiateStreaming(response, importObject);
 }
 
 async function readAndInstantiate(path, importObject) {
   let bytes = fs.readFileSync(path).buffer;
-  console.log(bytes)
   return WebAssembly.instantiate(bytes, importObject);
 }
 
