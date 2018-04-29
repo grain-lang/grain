@@ -1,4 +1,4 @@
-import {buildGrainRunner, defaultURLLocator} from './runtime';
+import GrainRunner, { buildGrainRunner } from './runtime';
+import { defaultURLLocator } from './utils/locators';
 
-let GrainRunner = buildGrainRunner(defaultURLLocator(window.GrainStdlibRoot));
-export default GrainRunner;
+export { GrainRunner, buildGrainRunner, defaultURLLocator };

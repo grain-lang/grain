@@ -1,4 +1,3 @@
-import fs from 'fs';
 import { GrainError } from '../errors/errors';
 import { grainToJSVal } from '../utils/utils';
 
