@@ -6,9 +6,7 @@ function normalizeSlash(s) {
   }
 }
 
-// Default locator definitions. 'base' can either
-// be a constant path or a thunk yielding a path.
-// If 'base' yields 'null', then 'null' is returned
+// Default locator definitions.
 export function defaultURLLocator(base) {
   // normalize trailing slash
   base = normalizeSlash(base);
