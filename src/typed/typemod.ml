@@ -284,14 +284,21 @@ let enrich_type_decls anchor decls oldenv newenv =
 
 let type_module ?(toplevel=false) funct_body anchor env sstr (*scope*) =
 
-  let (imports, datas, lets) = List.fold_right (fun {ptop_desc; ptop_loc=loc} (imports, datas, lets) ->
+  let (foreigns, imports, datas, lets) = List.fold_right (fun {ptop_desc; ptop_loc=loc} (foreigns, imports, datas, lets) ->
       match ptop_desc with
-      | PTopImport i -> ((i, loc)::imports, datas, lets)
-      | PTopData d -> (imports, (d, loc)::datas, lets)
-      | PTopLet(r, vb) -> (imports, datas, ((r, vb), loc)::lets)) sstr.Parsetree.statements ([], [], []) in
+      | PTopForeign d -> ((d, loc)::foreigns, imports, datas, lets)
+      | PTopImport i -> (foreigns, (i, loc)::imports, datas, lets)
+      | PTopData d -> (foreigns, imports, (d, loc)::datas, lets)
+      | PTopLet(r, vb) -> (foreigns, imports, datas, ((r, vb), loc)::lets)) sstr.Parsetree.statements ([], [], [], []) in
 
   (* TODO: imports*)
 
+  let env, foreign_sigs, foreigns = List.fold_left (fun (env, foreign_sigs, foreigns) (d, loc) ->
+      let (desc, newenv) = Typedecl.transl_value_decl env loc d in
+      let foreign_sig = TSigValue(desc.tvd_id, desc.tvd_val) in
+      let f = {ttop_desc=TTopForeign desc; ttop_loc=loc; ttop_env=env} in
+      newenv, (foreign_sig::foreign_sigs), (f::foreigns)
+    ) (env, [], []) foreigns in
   let env, imports = List.fold_left (fun (env, imports) (i, loc) ->
       let _path, newenv, od = type_open env i in
       newenv, ({ttop_desc=TTopImport(od); ttop_loc=loc; ttop_env=env}::imports)) (env, []) imports in
@@ -329,22 +336,31 @@ let type_module ?(toplevel=false) funct_body anchor env sstr (*scope*) =
     let (items, sg, final_env) = process_all_lets newenv lets in
     (* TODO: Is it really safe to drop the import statements here? *)
     ignore(imports);
-    let stritems = (((*imports @*) init_stmts @ items), final_env, Typecore.type_expression final_env sstr.body) in
-    stritems, (ty_decl @ sg), final_env in
+    let stritems = (((*imports @*) foreigns @ init_stmts @ items), final_env, Typecore.type_expression final_env sstr.body) in
+    stritems, (ty_decl @ sg @ foreign_sigs), final_env in
 
   run()
 
 let type_module = type_module false None
 
-let implicit_modules : string list ref = ref []
+let implicit_modules : string list ref = ref ["pervasives"]
 
-let open_implicit_module m env = env
+let open_implicit_module m env =
+  let open Asttypes in
+  let loc = Location.dummy_loc in
+  let lid = {loc; txt = Identifier.parse m} in
+  (*ignore (Env.find_module (PIdent(Ident.create_persistent m)) env);*)
+  let _path, newenv = type_open_ env lid.loc lid in
+  newenv
 
 let initial_env () =
   Ident.reinit();
   let initial = Env.initial_safe_string in
   let env = initial in
-  List.fold_left (fun env m -> open_implicit_module m env) env (!implicit_modules)
+  List.fold_left (fun env m ->
+      if Env.get_unit_name() <> m then
+        open_implicit_module m env
+      else env) env (!implicit_modules)
 
 let type_implementation prog =
   let sourcefile = prog.prog_loc.loc_start.pos_fname in

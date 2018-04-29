@@ -961,7 +961,7 @@ let copy_types l env =
   {env with values; summary = Env_copy_types (env.summary, l)}
 
 (* Currently a no-op *)
-let mark_value_used env name loc = ()
+let mark_value_used env name loc = ()(*Printf.eprintf "Marking value %s used\n" name*)
 let mark_type_used env name loc = ()
 let mark_module_used env name loc = ()
 
@@ -1477,7 +1477,11 @@ let add_local_constraint path info elv env =
 let enter store_fun name data env =
   let id = Ident.create name in (id, store_fun id data env)
 
-let enter_value = enter (store_value)
+let enter_value =
+  let store_fun id data env =
+    store_value id {data with val_fullpath = Path.PIdent id} env
+  in
+  enter store_fun
 and enter_type = enter (store_type ~check:true)
 and enter_module_declaration ?arg id md env =
   add_module_declaration ?arg ~check:true id md env

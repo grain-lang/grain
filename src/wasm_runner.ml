@@ -6,6 +6,9 @@ open Instance
 open Grain_codegen.Runtime_errors
 
 exception GrainRuntimeError of string
+exception WasmRunnerError of Wasm.Source.region * string * Wasm.Ast.module_
+exception WasmInvokeError of string * Wasm.Ast.module_ * Wasm.Types.value_type list * Wasm.Types.value_type list
+
 
 let unbox = Values.I32Value.of_value
 let unbox64 = Values.I64Value.of_value
@@ -229,8 +232,13 @@ let grain_print = function
     [x]
   | _ -> failwith "grain_print: signature violation"
 
+
+let memory_listeners = ref []
+
 let grain_check_memory = function
   | [x] ->
+    let size = unbox x in
+    List.iter (fun f -> f size) (!memory_listeners);
     []
   | _ -> failwith "grain_check_memory: signature violation"
 
@@ -252,13 +260,14 @@ let console_lookup name t =
   | "printClosure", ExternFuncType t -> ExternFunc (Func.HostFunc (t, console_print_closure))
   | _ -> raise Not_found
 
+let cur_reloc_base = ref 0
 let js_lookup name t =
   match (Utf8.encode name), t with
   | "throwError", ExternFuncType t -> ExternFunc (Func.HostFunc (t, js_throw_error))
   | "malloc", ExternFuncType t -> ExternFunc (Func.HostFunc (t, grain_malloc))
   | "mem", ExternMemoryType t -> memory
   | "tbl", ExternTableType t -> tbl
-  | "relocBase", ExternGlobalType t -> ExternGlobal (Global.alloc t (Values.I32Value.to_value (Int32.zero)))
+  | "relocBase", ExternGlobalType t -> ExternGlobal (Global.alloc t (Values.I32Value.to_value (Int32.of_int (!cur_reloc_base))))
   | "checkMemory", ExternFuncType t -> ExternFunc (Func.HostFunc (t, grain_check_memory))
   | _ -> raise Not_found
 
@@ -271,17 +280,109 @@ let grain_builtin_lookup name t =
 
 let configured = ref false
 
+let input_binary name buf =
+  Decode.decode name buf
+
+let input_file name filename =
+  let ic = open_in_bin filename in
+  try
+    let len = in_channel_length ic in
+    let buf = Bytes.make len '\x00' in
+    really_input ic buf 0 len;
+    let success = input_binary name (Bytes.to_string buf) in
+    close_in ic;
+    success
+  with exn -> close_in ic; raise exn
+
+let module_to_resolver modname inst name t =
+  (*Printf.eprintf "Looking up %s::%s\n" modname (Utf8.encode name);*)
+  match t with
+  | ExternMemoryType t ->
+    snd @@ List.find (fun (_, e) ->
+        match e with
+        | ExternMemory _ -> true
+        | _ -> false) inst.exports
+  | ExternTableType t ->
+    snd @@ List.find (fun (_, e) ->
+        match e with
+        | ExternTable _ -> true
+        | _ -> false) inst.exports
+  | _ ->
+    Option.get @@ Instance.export inst name
+
+let start_grain_module module_ inst =
+  let start = Instance.export inst (Utf8.decode "GRAIN$MAIN") in
+  begin match start with
+    | None -> failwith "No start function found in module!"
+    | Some(ExternFunc s) ->
+      let main_type = Wasm.Func.type_of s in
+      let exp_args, exp_ret = begin match main_type with
+        | FuncType(args, ret) -> args, ret
+      end in
+      let main_res = begin
+        try Eval.invoke s []
+        with
+        | (Wasm.Eval.Crash _) as e ->
+          raise (WasmInvokeError(Printexc.to_string e, module_, exp_args, exp_ret))
+      end in
+      ignore(main_res)
+    | Some _ -> failwith "Bad GRAIN$MAIN export"
+  end;
+  let heap_adjust = Instance.export inst (Utf8.decode "GRAIN$HEAP_ADJUST") in
+  begin match heap_adjust with
+    | None -> failwith "No heap adjust function found in module!"
+    | Some(ExternFunc s) ->
+      let main_type = Wasm.Func.type_of s in
+      let exp_args, exp_ret = begin match main_type with
+        | FuncType(args, ret) -> args, ret
+      end in
+      let heap_adjust size =
+        try ignore(Eval.invoke s [Values.I32Value.to_value size])
+        with
+        | (Wasm.Eval.Crash _) as e ->
+          raise (WasmInvokeError(Printexc.to_string e, module_, exp_args, exp_ret))
+      in
+      memory_listeners := (heap_adjust)::(!memory_listeners)
+    | Some _ -> failwith "Bad GRAIN$HEAP_ADJUST export"
+  end;
+  let table_size = Instance.export inst (Utf8.decode "GRAIN$TABLE_SIZE") in
+  begin match table_size with
+    | None -> failwith "No table size found in module!"
+    | Some(ExternGlobal g) ->
+      let global = Global.load g in
+      let table_size = Int32.to_int @@ unbox global in
+      cur_reloc_base := table_size + (!cur_reloc_base)
+    | Some _ -> failwith "Bad GRAIN$TABLE_SIZE export"
+  end
+
 let configure_runner() =
   if not !configured then
     begin
       Import.register (Utf8.decode "grainBuiltins") grain_builtin_lookup;
       Import.register (Utf8.decode "console") console_lookup;
       Import.register (Utf8.decode "grainRuntime") js_lookup;
+      let grain_file_patt = Str.regexp "\\(.*/\\)?\\([^/]+\\)\\.wasm$" in
+      let process_dir d =
+        let load_file f =
+          if Str.string_match grain_file_patt f 0 then begin
+            let fullpath = d ^ "/" ^ f in
+            let modname = Str.matched_group 2 f in
+            (*Printf.eprintf "Loading module: %s\n" modname;*)
+            let m = input_file modname fullpath in
+            (*Printf.eprintf "Linking module: %s\n" modname;*)
+            let imports = Import.link m in
+            let inst = Eval.init m imports in
+            start_grain_module m inst;
+            Import.register (Utf8.decode modname) (module_to_resolver modname inst);
+          end else ()
+            (*Printf.eprintf "Skipping file: %s\n" (d ^ "/" ^ f);*)
+        in
+        let entries = Sys.readdir d in
+        Array.iter load_file entries
+      in
+      List.iter process_dir (!Grain_utils.Config.include_dirs);
       configured := true
     end
-
-exception WasmRunnerError of Wasm.Source.region * string * Wasm.Ast.module_
-exception WasmInvokeError of string * Wasm.Ast.module_ * Wasm.Types.value_type list * Wasm.Types.value_type list
 
 let reparse_module (module_ : Wasm.Ast.module_) =
   let open Wasm.Source in
@@ -365,6 +466,10 @@ let () =
             (List.length exp_ret)
             str
             fmt_module module_ in
+        Some(s)
+      | Wasm.Decode.Code(region, str) ->
+        let s = Printf.sprintf "WASM Decoding error at %s: '%s'\n"
+            (Wasm.Source.string_of_region region) str in
         Some(s)
       | _ -> None)
 

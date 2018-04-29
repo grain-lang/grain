@@ -43,13 +43,13 @@ type error =
   | Cannot_extend_private_type of Path.t
   | Not_extensible_type of Path.t
   | Extension_mismatch of Path.t * Includecore.type_mismatch list
-  | Rebind_wrong_type of Longident.t * Env.t * (type_expr * type_expr) list
-  | Rebind_mismatch of Longident.t * Path.t * Path.t
-  | Rebind_private of Longident.t
+  | Rebind_wrong_type of Identifier.t * Env.t * (type_expr * type_expr) list
+  | Rebind_mismatch of Identifier.t * Path.t * Path.t
+  | Rebind_private of Identifier.t
   | Bad_variance of int * (bool * bool * bool) * (bool * bool * bool)
   | Unavailable_type_constructor of Path.t
   | Bad_fixed_type of string
-  | Unbound_type_var_ext of type_expr * extension_constructor
+  (*| Unbound_type_var_ext of type_expr * extension_constructor*)
   | Varying_anonymous
   | Val_in_structure
   | Multiple_native_repr_attributes
@@ -711,7 +711,6 @@ let check_unboxable env loc ty =
 let transl_value_decl env loc valdecl =
   let cty = Typetexp.transl_type_scheme env valdecl.pval_type in
   let ty = cty.ctyp_type in
-  let id = Ident.create valdecl.pval_name.txt in
   let v =
   match valdecl.pval_prim with
     (*[] when Env.is_in_signature env ->
@@ -744,11 +743,11 @@ let transl_value_decl env loc valdecl =
       then raise(Error(valdecl.pval_type.ptyp_loc, Missing_native_external));
       Btype.iter_type_expr (check_unboxable env loc) ty;
       { val_type = ty; val_kind = TValPrim prim; Types.val_loc = loc;
-        val_fullpath = Path.PIdent id
+        val_fullpath = Path.PIdent (Ident.create "<bogus>")
         (*val_attributes = valdecl.pval_attributes*) }
   in
-  let newenv =
-    Env.add_value id v env
+  let (id, newenv) =
+    Env.enter_value valdecl.pval_name.txt v env
     (*~check:(fun s -> Warnings.Unused_value_declaration s)*)
   in
   let desc =
@@ -768,4 +767,247 @@ let transl_value_decl env loc valdecl =
 (*let transl_value_decl env loc valdecl =
   Builtin_attributes.warning_scope valdecl.pval_attributes
     (fun () -> transl_value_decl env loc valdecl)*)
+
+(**** Error report ****)
+
+open Format
+
+let explain_unbound_gen ppf tv tl typ kwd pr =
+  try
+    let ti = List.find (fun ti -> Ctype.deep_occur tv (typ ti)) tl in
+    let ty0 = (* Hack to force aliasing when needed *)
+      Btype.newgenty (TTyTuple([tv])) (*(Tobject(tv, ref None))*) in
+    Printtyp.reset_and_mark_loops_list [typ ti; ty0];
+    fprintf ppf
+      ".@.@[<hov2>In %s@ %a@;<1 -2>the variable %a is unbound@]"
+      kwd pr ti Printtyp.type_expr tv
+  with Not_found -> ()
+
+let explain_unbound ppf tv tl typ kwd lab =
+  explain_unbound_gen ppf tv tl typ kwd
+    (fun ppf ti -> fprintf ppf "%s%a" (lab ti) Printtyp.type_expr (typ ti))
+
+let explain_unbound_single ppf tv ty =
+  let trivial ty =
+    explain_unbound ppf tv [ty] (fun t -> t) "type" (fun _ -> "") in
+  match (Ctype.repr ty).desc with
+    (*Tobject(fi,_) ->
+      let (tl, rv) = Ctype.flatten_fields fi in
+      if rv == tv then trivial ty else
+      explain_unbound ppf tv tl (fun (_,_,t) -> t)
+        "method" (fun (lab,_,_) -> lab ^ ": ")
+  | Tvariant row ->
+      let row = Btype.row_repr row in
+      if row.row_more == tv then trivial ty else
+      explain_unbound ppf tv row.row_fields
+        (fun (_l,f) -> match Btype.row_field_repr f with
+          Rpresent (Some t) -> t
+        | Reither (_,[t],_,_) -> t
+        | Reither (_,tl,_,_) -> Btype.newgenty (Ttuple tl)
+        | _ -> Btype.newgenty (Ttuple[]))
+        "case" (fun (lab,_) -> "`" ^ lab ^ " of ")*)
+  | _ -> trivial ty
+
+
+let tys_of_constr_args = function
+  | Types.TConstrTuple tl -> tl
+  | Types.TConstrSingleton -> []
+  (*| Types.Cstr_record lbls -> List.map (fun l -> l.Types.ld_type) lbls*)
+
+let report_error ppf = function
+  | Repeated_parameter ->
+      fprintf ppf "A type parameter occurs several times"
+  | Duplicate_constructor s ->
+      fprintf ppf "Two constructors are named %s" s
+  | Too_many_constructors ->
+      fprintf ppf
+        "@[Too many non-constant constructors@ -- maximum is %i %s@]"
+        (Config.max_tag + 1) "non-constant constructors"
+  | Duplicate_label s ->
+      fprintf ppf "Two labels are named %s" s
+  | Recursive_abbrev s ->
+      fprintf ppf "The type abbreviation %s is cyclic" s
+  | Cycle_in_def (s, ty) ->
+      Printtyp.reset_and_mark_loops ty;
+      fprintf ppf "@[<v>The definition of %s contains a cycle:@ %a@]"
+        s Printtyp.type_expr ty
+  | Definition_mismatch (ty, errs) ->
+      Printtyp.reset_and_mark_loops ty;
+      fprintf ppf "@[<v>@[<hov>%s@ %s@;<1 2>%a@]%a@]"
+        "This variant or record definition" "does not match that of type"
+        Printtyp.type_expr ty
+        (Includecore.report_type_mismatch "the original" "this" "definition")
+        errs
+  | Constraint_failed (ty, ty') ->
+      Printtyp.reset_and_mark_loops ty;
+      Printtyp.mark_loops ty';
+      fprintf ppf "@[%s@ @[<hv>Type@ %a@ should be an instance of@ %a@]@]"
+        "Constraints are not satisfied in this type."
+        Printtyp.type_expr ty Printtyp.type_expr ty'
+  | Parameters_differ (path, ty, ty') ->
+      Printtyp.reset_and_mark_loops ty;
+      Printtyp.mark_loops ty';
+      fprintf ppf
+        "@[<hv>In the definition of %s, type@ %a@ should be@ %a@]"
+        (Path.name path) Printtyp.type_expr ty Printtyp.type_expr ty'
+  | Inconsistent_constraint (env, trace) ->
+      fprintf ppf "The type constraints are not consistent.@.";
+      Printtyp.report_unification_error ppf env trace
+        (fun ppf -> fprintf ppf "Type")
+        (fun ppf -> fprintf ppf "is not compatible with type")
+  | Type_clash (env, trace) ->
+      Printtyp.report_unification_error ppf env trace
+        (function ppf ->
+           fprintf ppf "This type constructor expands to type")
+        (function ppf ->
+           fprintf ppf "but is used here with type")
+  | Null_arity_external ->
+      fprintf ppf "External identifiers must be functions"
+  | Missing_native_external ->
+      fprintf ppf "@[<hv>An external function with more than 5 arguments \
+                   requires a second stub function@ \
+                   for native-code compilation@]"
+  | Unbound_type_var (ty, decl) ->
+      fprintf ppf "A type variable is unbound in this type declaration";
+      let ty = Ctype.repr ty in
+      begin match decl.type_kind, decl.type_manifest with
+      (*| Type_variant tl, _ ->
+          explain_unbound_gen ppf ty tl (fun c ->
+              let tl = tys_of_constr_args c.Types.cd_args in
+              Btype.newgenty (Ttuple tl)
+            )
+            "case" (fun ppf c ->
+                fprintf ppf
+                  "%s of %a" (Ident.name c.Types.cd_id)
+                  Printtyp.constructor_arguments c.Types.cd_args)
+      | Type_record (tl, _), _ ->
+          explain_unbound ppf ty tl (fun l -> l.Types.ld_type)
+            "field" (fun l -> Ident.name l.Types.ld_id ^ ": ")*)
+      | TDataAbstract, Some ty' ->
+          explain_unbound_single ppf ty ty'
+      | _ -> ()
+      end
+  (*| Unbound_type_var_ext (ty, ext) ->
+      fprintf ppf "A type variable is unbound in this extension constructor";
+      let args = tys_of_constr_args ext.ext_args in
+      explain_unbound ppf ty args (fun c -> c) "type" (fun _ -> "")*)
+  | Cannot_extend_private_type path ->
+      fprintf ppf "@[%s@ %a@]"
+        "Cannot extend private type definition"
+        Printtyp.path path
+  | Not_extensible_type path ->
+      fprintf ppf "@[%s@ %a@ %s@]"
+        "Type definition"
+        Printtyp.path path
+        "is not extensible"
+  | Extension_mismatch (path, errs) ->
+      fprintf ppf "@[<v>@[<hov>%s@ %s@;<1 2>%s@]%a@]"
+        "This extension" "does not match the definition of type"
+        (Path.name path)
+        (Includecore.report_type_mismatch
+           "the type" "this extension" "definition")
+        errs
+  | Rebind_wrong_type (lid, env, trace) ->
+      Printtyp.report_unification_error ppf env trace
+        (function ppf ->
+          fprintf ppf "The constructor %a@ has type"
+            Printtyp.identifier lid)
+        (function ppf ->
+           fprintf ppf "but was expected to be of type")
+  | Rebind_mismatch (lid, p, p') ->
+      fprintf ppf
+        "@[%s@ %a@ %s@ %s@ %s@ %s@ %s@]"
+        "The constructor" Printtyp.identifier lid
+        "extends type" (Path.name p)
+        "whose declaration does not match"
+        "the declaration of type" (Path.name p')
+  | Rebind_private lid ->
+      fprintf ppf "@[%s@ %a@ %s@]"
+        "The constructor"
+        Printtyp.identifier lid
+        "is private"
+  | Bad_variance (n, v1, v2) ->
+      let variance (p,n,i) =
+        let inj = if i then "injective " else "" in
+        match p, n with
+          true,  true  -> inj ^ "invariant"
+        | true,  false -> inj ^ "covariant"
+        | false, true  -> inj ^ "contravariant"
+        | false, false -> if inj = "" then "unrestricted" else inj
+      in
+      let suffix n =
+        let teen = (n mod 100)/10 = 1 in
+        match n mod 10 with
+        | 1 when not teen -> "st"
+        | 2 when not teen -> "nd"
+        | 3 when not teen -> "rd"
+        | _ -> "th"
+      in
+      if n = -1 then
+        fprintf ppf "@[%s@ %s@ It"
+          "In this definition, a type variable has a variance that"
+          "is not reflected by its occurrence in type parameters."
+      else if n = -2 then
+        fprintf ppf "@[%s@ %s@]"
+          "In this definition, a type variable cannot be deduced"
+          "from the type parameters."
+      else if n = -3 then
+        fprintf ppf "@[%s@ %s@ It"
+          "In this definition, a type variable has a variance that"
+          "cannot be deduced from the type parameters."
+      else
+        fprintf ppf "@[%s@ %s@ The %d%s type parameter"
+          "In this definition, expected parameter"
+          "variances are not satisfied."
+          n (suffix n);
+      if n <> -2 then
+        fprintf ppf " was expected to be %s,@ but it is %s.@]"
+          (variance v2) (variance v1)
+  | Unavailable_type_constructor p ->
+      fprintf ppf "The definition of type %a@ is unavailable" Printtyp.path p
+  | Bad_fixed_type r ->
+      fprintf ppf "This fixed type %s" r
+  | Varying_anonymous ->
+      fprintf ppf "@[%s@ %s@ %s@]"
+        "In this GADT definition," "the variance of some parameter"
+        "cannot be checked"
+  | Val_in_structure ->
+      fprintf ppf "Value declarations are only allowed in signatures"
+  | Multiple_native_repr_attributes ->
+      fprintf ppf "Too many [@@unboxed]/[@@untagged] attributes"
+  | Cannot_unbox_or_untag_type Unboxed ->
+      fprintf ppf "Don't know how to unbox this type. Only float, int32, \
+                   int64 and nativeint can be unboxed"
+  | Cannot_unbox_or_untag_type Untagged ->
+      fprintf ppf "Don't know how to untag this type. Only int \
+                   can be untagged"
+  | Deep_unbox_or_untag_attribute kind ->
+      fprintf ppf
+        "The attribute '%s' should be attached to a direct argument or \
+         result of the primitive, it should not occur deeply into its type"
+        (match kind with Unboxed -> "@unboxed" | Untagged -> "@untagged")
+  | Bad_immediate_attribute ->
+      fprintf ppf "@[%s@ %s@]"
+        "Types marked with the immediate attribute must be"
+        "non-pointer types like int or bool"
+  | Bad_unboxed_attribute msg ->
+      fprintf ppf "@[This type cannot be unboxed because@ %s.@]" msg
+  | Wrong_unboxed_type_float ->
+      fprintf ppf "@[This type cannot be unboxed because@ \
+                   it might contain both float and non-float values.@ \
+                   You should annotate it with [%@%@ocaml.boxed].@]"
+  | Boxed_and_unboxed ->
+      fprintf ppf "@[A type cannot be boxed and unboxed at the same time.@]"
+  | Nonrec_gadt ->
+      fprintf ppf
+        "@[GADT case syntax cannot be used in a 'nonrec' block.@]"
+
+let () =
+  Location.register_error_of_exn
+    (function
+      | Error (loc, err) ->
+        Some (Location.error_of_printer loc report_error err)
+      | _ ->
+        None
+    )
 

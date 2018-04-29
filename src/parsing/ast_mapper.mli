@@ -28,6 +28,7 @@ type mapper = {
   import: mapper -> import_declaration -> import_declaration;
   value_binding: mapper -> value_binding -> value_binding;
   match_branch: mapper -> match_branch -> match_branch;
+  value_description: mapper -> value_description -> value_description;
   toplevel: mapper -> toplevel_stmt -> toplevel_stmt;
 }
 (** A mapper record implements one "method" per syntactic category,

@@ -14,6 +14,7 @@ type codegen_env = {
   func_offset: int;
   global_offset: int;
   import_global_offset: int;
+  import_func_offset: int;
   import_offset: int;
   func_types: Wasm.Types.func_type BatDeque.t ref;
   (* Allocated closures which need backpatching *)
@@ -28,6 +29,7 @@ let init_codegen_env() = {
   func_offset=0;
   global_offset=1;
   import_global_offset=0;
+  import_func_offset=0;
   import_offset=0;
   func_types=ref BatDeque.empty;
   backpatches=ref [];
@@ -46,7 +48,7 @@ let swap_slots = List.append swap_slots_i32 swap_slots_i64
 
 (* These are the bare-minimum imports needed for basic runtime support *)
 let reloc_base = Ident.create_persistent "relocBase"
-let table_size = Ident.create_persistent "tableSize"
+let table_size = Ident.create_persistent "GRAIN$TABLE_SIZE"
 let runtime_mod = Ident.create_persistent "grainRuntime"
 let console_mod = Ident.create_persistent "console"
 let check_memory_ident = Ident.create_persistent "checkMemory"
@@ -724,7 +726,7 @@ and compile_instr env instr =
   | MCallKnown(func_idx, args) ->
     let compiled_args = Concatlist.flatten @@ List.map (compile_imm env) args in
     compiled_args +@ [
-      Ast.Call(add_dummy_loc (Int32.of_int (env.import_offset + (Int32.to_int func_idx))));
+      Ast.Call(add_dummy_loc (Int32.of_int (env.import_func_offset + (Int32.to_int func_idx))));
     ]
   | MArityOp _ -> failwith "NYI: (compile_instr): MArityOp"
   | MTagOp _ -> failwith "NYI: (compile_instr): MTagOp"
@@ -766,12 +768,16 @@ let compile_imports env ({imports} as prog) =
     (* TODO: When user import become a thing, we'll need to worry about hygiene *)
     let module_name = encode_string @@ Ident.name mimp_mod in
     let item_name = encode_string @@ compile_import_name mimp_name mimp_kind in
-    let idesc = match mimp_type with
-      | MFuncImport(args, ret) ->
+    let idesc = match mimp_kind, mimp_type with
+      | MImportGrain, MGlobalImport typ ->
+        let typ = compile_asm_type typ in
+        let func_type = Types.FuncType([], [typ]) in
+        add_dummy_loc @@ Ast.FuncImport(add_dummy_loc @@ Int32.of_int @@ get_func_type_idx env func_type)
+      | _, MFuncImport(args, ret) ->
         let proc_list = List.map compile_asm_type in
         let func_type = Types.FuncType(proc_list args, proc_list ret) in
         add_dummy_loc @@ Ast.FuncImport(add_dummy_loc @@ Int32.of_int @@ get_func_type_idx env func_type)
-      | MGlobalImport typ ->
+      | _, MGlobalImport typ ->
         let typ = compile_asm_type typ in
         let imptyp = Types.GlobalType(typ, Types.Immutable) in
         add_dummy_loc @@ Ast.GlobalImport(imptyp)
@@ -867,7 +873,7 @@ let compile_elems env prog =
     add_dummy_loc {
       index=add_dummy_loc (Int32.zero);
       offset=add_dummy_loc [
-        add_dummy_loc (Const(const_int32 0));
+        add_dummy_loc (Ast.GetGlobal(add_dummy_loc @@ Int32.of_int 0));
       ];
       init=BatList.init table_size (fun n -> (add_dummy_loc (Int32.of_int n)));
     };
@@ -968,17 +974,19 @@ let prepare env ({imports} as prog) =
     end in
     {acc_env with imported_funcs; imported_globals} in
   let import_offset = List.length runtime_imports in
+  let import_func_offset = List.length runtime_function_imports in
   let import_global_offset = import_offset + (List.length imports) in
 
   let new_imports = List.append runtime_imports imports in
   let new_env = BatList.fold_lefti (process_import ~is_runtime_import:true) env runtime_global_imports in
   let new_env = BatList.fold_lefti (process_import ~is_runtime_import:true) new_env runtime_function_imports in
   let new_env = BatList.fold_lefti (process_import ~dynamic_offset:import_global_offset) new_env imports in
-  let global_offset = import_global_offset + (List.length imports) in
+  let global_offset = import_global_offset in
   let func_offset = global_offset - (List.length runtime_global_imports) in
   {
     new_env with
     import_offset;
+    import_func_offset;
     import_global_offset;
     global_offset;
     func_offset;

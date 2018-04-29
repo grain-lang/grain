@@ -114,8 +114,8 @@ let next_state ({cstate_desc} as cs) =
       cleanup();
       Parsed(parsed)
     | Parsed(p) ->
-      WithLibraries(Grain_stdlib.load_libraries p)
-      (*WithLibraries(p)*)
+      (*WithLibraries(Grain_stdlib.load_libraries p)*)
+      WithLibraries(p)
     | WithLibraries(full_p) ->
       Well_formedness.check_well_formedness full_p;
       WellFormed(full_p)

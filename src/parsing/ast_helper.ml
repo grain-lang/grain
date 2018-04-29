@@ -113,9 +113,24 @@ module Top = struct
       | None -> (!default_loc_src)()
       | Some l -> l in
     {ptop_desc=d; ptop_loc=loc}
+  let foreign ?loc d = mk ?loc (PTopForeign d)
   let import ?loc i = mk ?loc (PTopImport i)
   let data ?loc d = mk ?loc (PTopData d)
   let let_ ?loc r vb = mk ?loc (PTopLet(r, vb))
+end
+
+module Val = struct
+  let mk ?loc ~mod_ ~name ~typ ~prim =
+    let loc = match loc with
+      | None -> (!default_loc_src)()
+      | Some l -> l in
+    {
+      pval_mod=mod_;
+      pval_name=name;
+      pval_type=typ;
+      pval_prim=prim;
+      pval_loc=loc;
+    }
 end
 
 module Vb = struct
