@@ -1,5 +1,4 @@
 import 'fast-text-encoding';
-import fs from 'fs';
 
 import { heapController, grainCheckMemory } from './core/heap';
 import { printClosure } from './core/closures';
@@ -46,6 +45,7 @@ async function fetchAndInstantiate(url, importObject) {
 }
 
 async function readAndInstantiate(path, importObject) {
+  const fs = require('fs');
   let bytes = fs.readFileSync(path).buffer;
   return WebAssembly.instantiate(bytes, importObject);
 }
