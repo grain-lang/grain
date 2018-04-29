@@ -60,6 +60,9 @@ let set_word addr (value : int32) =
     (Int64.of_int addr) Int32.zero to_set
 
 let ptr = ref 0
+let ptr_zero = ref 0
+
+let memory_listeners = ref []
 
 let grain_malloc = function
   | [bytes] ->
@@ -68,7 +71,9 @@ let grain_malloc = function
       multiple * (((num - 1) / multiple) + 1) in
 
     let ret = !ptr in
-    ptr := (!ptr) + (round_up bytes 8);
+    let size = round_up bytes 8 in
+    ptr := (!ptr) + size;
+    List.iter (fun f -> f (Int32.of_int size)) (!memory_listeners);
     [Values.I32Value.to_value (Int32.of_int ret)]
   | _ -> failwith "malloc: signature violation"
 
@@ -232,9 +237,6 @@ let grain_print = function
     [x]
   | _ -> failwith "grain_print: signature violation"
 
-
-let memory_listeners = ref []
-
 let grain_check_memory = function
   | [x] ->
     let size = unbox x in
@@ -381,7 +383,8 @@ let configure_runner() =
         Array.iter load_file entries
       in
       List.iter process_dir (!Grain_utils.Config.include_dirs);
-      configured := true
+      configured := true;
+      ptr_zero := !ptr;
     end
 
 let reparse_module (module_ : Wasm.Ast.module_) =
@@ -415,7 +418,7 @@ let run_wasm (module_ : Wasm.Ast.module_) =
   configure_runner();
   reset_channels();
   validate_module module_;
-  ptr := 0;
+  ptr := !ptr_zero;
   let imports = Import.link module_ in
   let inst = Eval.init module_ imports in
   let start = Instance.export inst (Utf8.decode "GRAIN$MAIN") in

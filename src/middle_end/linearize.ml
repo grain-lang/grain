@@ -79,6 +79,14 @@ let rec transl_imm (({exp_desc; exp_loc=loc; exp_env=env; _} as e) : expression)
     let tmp = gensym "unary" in
     let (arg_imm, arg_setup) = transl_imm arg in
     (Imm.id ~loc ~env tmp, arg_setup @ [BLet(tmp, Comp.prim1 ~loc ~env op arg_imm)])
+  | TExpPrim2(And, left, right) ->
+    let tmp = gensym "boolBinop" in
+    let (left_imm, left_setup) = transl_imm left in
+    (Imm.id ~loc ~env tmp, left_setup @ [BLet(tmp, Comp.if_ ~loc ~env left_imm (transl_anf_expression right) (AExp.comp ~loc ~env (Comp.imm ~loc ~env left_imm)))])
+  | TExpPrim2(Or, left, right) ->
+    let tmp = gensym "boolBinop" in
+    let (left_imm, left_setup) = transl_imm left in
+    (Imm.id ~loc ~env tmp, left_setup @ [BLet(tmp, Comp.if_ ~loc ~env left_imm (AExp.comp ~loc ~env (Comp.imm ~loc ~env left_imm)) (transl_anf_expression right))])
   | TExpPrim2(op, left, right) ->
     let tmp = gensym "binop" in
     let (left_imm, left_setup) = transl_imm left in
@@ -194,6 +202,12 @@ and transl_comp_expression (({exp_desc; exp_loc=loc; exp_env=env; _} as e) : exp
   | TExpPrim1(op, arg) ->
     let (arg_imm, arg_setup) = transl_imm arg in
     (Comp.prim1 ~loc ~env op arg_imm, arg_setup)
+  | TExpPrim2(And, left, right) ->
+    let (left_imm, left_setup) = transl_imm left in
+    (Comp.if_ ~loc ~env left_imm (transl_anf_expression right) (AExp.comp ~loc ~env (Comp.imm ~loc ~env left_imm)), left_setup)
+  | TExpPrim2(Or, left, right) ->
+    let (left_imm, left_setup) = transl_imm left in
+    (Comp.if_ ~loc ~env left_imm (AExp.comp ~loc ~env (Comp.imm ~loc ~env left_imm)) (transl_anf_expression right), left_setup)
   | TExpPrim2(op, left, right) ->
     let (left_imm, left_setup) = transl_imm left in
     let (right_imm, right_setup) = transl_imm right in
