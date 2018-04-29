@@ -74,8 +74,7 @@ export class GrainModule {
 
   async run() {
     //console.log(`Running ${this.name}`);
-    let main = await this.main;
-    let res = await main();
+    let res = await this.main();
     //console.log(`complete.`);
     return grainToJSVal(res);
   }
