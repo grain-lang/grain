@@ -372,6 +372,8 @@ let compile_prim1 env p1 arg : Wasm.Ast.instr' Concatlist.t =
 let compile_prim2 (env : codegen_env) p2 arg1 arg2 : Wasm.Ast.instr' Concatlist.t =
   let compiled_arg1 = compile_imm env arg1 in
   let compiled_arg2 = compile_imm env arg2 in
+  let swap_get = get_swap ~ty:Types.I32Type env 0 in
+  let swap_set = set_swap ~ty:Types.I32Type env 0 in
   let overflow_safe instrs =
     let compiled_swap_get = get_swap ~ty:Types.I64Type env 0 in
     let compiled_swap_set = set_swap ~ty:Types.I64Type env 0 in
@@ -418,12 +420,22 @@ let compile_prim2 (env : codegen_env) p2 arg1 arg2 : Wasm.Ast.instr' Concatlist.
       Ast.Binary(Values.I64 Ast.IntOp.Mul);
     ]
   | And ->
-    compiled_arg1 @ compiled_arg2 +@ [
-      Ast.Binary(Values.I32 Ast.IntOp.And)
+    compiled_arg1 @
+    swap_set @
+    swap_get @
+    decode_bool +@ [
+      Ast.If([Types.I32Type],
+             List.map add_dummy_loc @@ list_of_t compiled_arg2,
+             List.map add_dummy_loc @@ list_of_t swap_get)
     ]
   | Or ->
-    compiled_arg1 @ compiled_arg2 +@ [
-      Ast.Binary(Values.I32 Ast.IntOp.Or)
+    compiled_arg1 @
+    swap_set @
+    swap_get @
+    decode_bool +@ [
+      Ast.If([Types.I32Type],
+             List.map add_dummy_loc @@ list_of_t swap_get,
+             List.map add_dummy_loc @@ list_of_t compiled_arg2)
     ]
   | Greater ->
     compiled_arg1 @ compiled_arg2 +@ [
