@@ -1,17 +1,1 @@
-# include lists in
-# let (a, b, c) = (1, 2, 3) in
-#   a
-# let a = 5, b = 6 in
-#   b
-# let rec is_even = (lambda x: is_odd)
-# , is_odd = (lambda x: x) in
-# is_even
-let rec link = (lambda first, rest: (first, rest)),
-        reverse = (lambda l:
-                     let rec help = (lambda _l, acc:
-                                       if _l == false:
-                                         acc
-                                       else:
-                                         let (first, rest) = _l in help(rest, link(first, acc))) in
-                       help(l, false)) in
-        link(5, 6)
+4
