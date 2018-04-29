@@ -897,8 +897,8 @@ let heap_adjust env = add_dummy_loc {
   Ast.ftype = add_dummy_loc Int32.(of_int (get_func_type_idx env (Types.FuncType([Types.I32Type], [Types.I32Type]))));
   Ast.locals = [];
   Ast.body = List.map add_dummy_loc [
-      Ast.GetLocal(add_dummy_loc @@ Int32.of_int 0);
-      call_runtime_check_memory env;
+      (*Ast.GetLocal(add_dummy_loc @@ Int32.of_int 0);
+      call_runtime_check_memory env;*)
       Ast.GetGlobal(env.heap_top);
       Ast.GetLocal(add_dummy_loc @@ Int32.of_int 0);
       Ast.Binary(Values.I32 Ast.IntOp.Add);
