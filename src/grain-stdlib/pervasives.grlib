@@ -2,13 +2,13 @@
 foreign wasm grainBuiltins print : a -> a;
 
 # Checks the given items for structural equality.
-foreign wasm grainBuiltins equal : (a, a) -> bool;
+foreign wasm grainBuiltins equal : (a, a) -> Bool;
 
 # Converts the given value to a string
-foreign wasm grainBuiltins toString : a -> string;
+foreign wasm grainBuiltins toString : a -> String;
 
 # TODO: These should be in a separate WASM module
 
-foreign wasm grainBuiltins stringAppend : (string, string) -> string;
+foreign wasm grainBuiltins stringAppend : (String, String) -> String;
 
-foreign wasm grainBuiltins stringSlice : (string, number, number) -> string;
+foreign wasm grainBuiltins stringSlice : (String, Number, Number) -> String;
