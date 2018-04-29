@@ -203,7 +203,7 @@ let cobra_tests = [
   t "neg" "-1073741824" "-1073741824";
   t "fals" fals "false";
   t "tru" tru "true";
-  t ~todo:"builtins NYI" "complex1" "
+  t "complex1" "
     let x = 2, y = 3, z = if true { 4 } else { 5 };
     if true {
       print(y) - (z + x)
@@ -211,7 +211,7 @@ let cobra_tests = [
       print(8)
     }
     "  "3\n-3";
-  t ~todo:"builtins NYI" "complex2" "print(2) + print(3)" "2\n3\n5";
+  t "complex2" "print(2) + print(3)" "2\n3\n5";
 
   t "binop1" "2 + 2" "4";
   t "binop2" "2 - 2" "0";
@@ -300,7 +300,7 @@ let diamondback_tests = [
   (* tvgfile "sinister_tail_call2" "sinister-tail-call" "true"; *)
   tefile "fib_big" "too-much-fib" "overflow";
 
-  t ~todo:"builtins NYI" "func_no_args" "let foo = (() => {print(5)});\nfoo()" "5\n5";
+  t "func_no_args" "let foo = (() => {print(5)});\nfoo()" "5\n5";
   t "multi_bind" "let rec x = 2, y = x + 1; y" "3";
   te "unbound_fun" "2 + foo()" "unbound";
   te "unbound_id_simple" "5 - x" "unbound";
@@ -315,7 +315,7 @@ let diamondback_tests = [
 let mylist = "cons(1, cons(2, cons(3, empty)))"
 
 let egg_eater_tests = [
-  t ~todo:"builtins NYI" "print_tup" "print((1, 2))" "(1, 2)\n(1, 2)";
+  t "print_tup" "print((1, 2))" "(1, 2)\n(1, 2)";
   t "big_tup" "(1, 2, 3, 4)" "(1, 2, 3, 4)";
   t "big_tup_access" "let (a, b, c, d) = (1, 2, 3, 4); c" "3";
   t "nested_tup_1" "let (a, b) = ((1, 2), (3, 4)); a" "(1, 2)";
@@ -331,13 +331,13 @@ let egg_eater_stdlib_tests = [
   tlib ~todo:"ADT printing NYI"
     "stdlib_reverse" ("import lists; reverse(" ^ mylist ^ ")") "cons(3, cons(2, cons(1, empty)))";
   tlib "stdlib_length" "import lists; length(cons(1, cons(2, cons(3, empty))))" "3";
-  tlib ~todo:"builtins NYI" "stdlib_equal_1" "import lists; (1, 2) == (1, 2)" "false";
+  tlib "stdlib_equal_1" "import lists; (1, 2) == (1, 2)" "false";
   tlib "stdlib_equal_2" "import pervasives; equal((1, 2), (1, 2))" "true";
-  tlib ~todo:"builtins NYI" "stdlib_equal_3" "import lists; equal(cons(1, cons(2, cons(3, empty))), cons(1, cons(2, cons(3, empty))))" "true";
-  tlib ~todo:"builtins NYI" "stdlib_equal_4" "import lists; equal(1, 1)" "true";
-  tlib ~todo:"builtins NYI" "stdlib_equal_5" "import lists; equal(1, 2)" "false";
-  tlib ~todo:"builtins NYI" "stdlib_equal_6" "import lists; equal(true, true)" "true";
-  tlib ~todo:"builtins NYI" "stdlib_equal_7" "import lists; equal(true, false)" "false";
+  tlib "stdlib_equal_3" "import lists; equal(cons(1, cons(2, cons(3, empty))), cons(1, cons(2, cons(3, empty))))" "true";
+  tlib "stdlib_equal_4" "import lists; equal(1, 1)" "true";
+  tlib "stdlib_equal_5" "import lists; equal(1, 2)" "false";
+  tlib "stdlib_equal_6" "import lists; equal(true, true)" "true";
+  tlib "stdlib_equal_7" "import lists; equal(true, false)" "false";
   tlib "stdlib_contains_1" "import lists; contains(true, cons(1, cons(2, cons(3, empty))))" "false";
   tlib "stdlib_contains_2" "import lists; contains(false, cons(1, cons(2, cons(3, empty))))" "false";
   tlib "stdlib_contains_3" "import lists; contains(3, cons(1, cons(2, cons(3, empty))))" "true";
@@ -448,10 +448,10 @@ let gc = [
 ]
 
 let garter_extra_tests = [
-  t "test_set_extra1" "(1, 2)[0] := 2" "2";
+  t ~todo:"mutable types NYI" "test_set_extra1" "(1, 2)[0] := 2" "2";
   tfile ~todo:"mutable types NYI" "counter" "counter" "0\n1\n2\n2";
   (*te "test_bad_import" "let x = (1, 2); import lists; x" "Includes must be at the beginning";*)
-  te "test_missing_import" "import foo; 2" "Could not find";
+  te "test_missing_import" "import foo; 2" "Unbound module";
   te ~todo:"mutable types NYI" "test_set_err1" "(1, 2)[-1] := 3" "small";
   te ~todo:"mutable types NYI" "test_set_err2" "(1, 2)[3] := 4" "large";
   te ~todo:"mutable types NYI" "test_set_err3" "(1, 2)[true] := 5" "number";
@@ -476,7 +476,7 @@ let indigo_tests = [
           1))*) "1";
 
   (* Primarily a constant-folding test, but DAE removes the let bindings as well *)
-  tfinalanf "test_const_folding" "
+  tfinalanf ~todo:"Optimizations not yet ported" "test_const_folding" "
     let x = 4 + 5;
     let y = x * 2;
     let z = y - x;
@@ -484,7 +484,7 @@ let indigo_tests = [
     let b = 14;
     a + b" (AExp.comp (Comp.imm (Imm.const (Const_int 30))));
 
-  tfinalanf "test_cse" "((x) => {let a = x + 1; let b = x + 1; a + b})"
+  tfinalanf ~todo:"Optimizations not yet ported" "test_cse" "((x) => {let a = x + 1; let b = x + 1; a + b})"
     (let open Grain_typed in
      let x = Ident.create "x" in
      let a = Ident.create "a" in
@@ -492,13 +492,13 @@ let indigo_tests = [
                   (AExp.let_ Nonrecursive [(a, Comp.prim2 Plus (Imm.id x) (Imm.const (Const_int 1)))]
                      (AExp.comp (Comp.prim2 Plus (Imm.id a) (Imm.id a))))));
 
-  tfinalanf "test_dae" "((x) => {let a = x + 1; let b = x + 1; x + 1})"
+  tfinalanf ~todo:"Optimizations not yet ported" "test_dae" "((x) => {let a = x + 1; let b = x + 1; x + 1})"
     (let open Grain_typed in
      let x = Ident.create "x" in
      AExp.comp (Comp.lambda [x] @@ AExp.comp @@ Comp.prim2 Plus (Imm.id x) (Imm.const (Const_int 1))));
 
   (* All optimizations are needed to work completely on this input *)
-  tfinalanf "test_optimizations_work_together" "
+  tfinalanf ~todo:"Optimizations not yet ported" "test_optimizations_work_together" "
     let x = 5;
     let foo = ((y) => {y});
     let y = foo(3) + 5;
@@ -511,8 +511,8 @@ let indigo_tests = [
      @@ AExp.let_ Nonrecursive [(app, Comp.app (Imm.id foo) [(Imm.const (Const_int 3))])]
      @@ AExp.comp @@ Comp.prim2 Plus (Imm.id app) (Imm.const (Const_int 5)));
 
-  tfsound "test_counter_sound" "counter" "0\n1\n2\n2";
-  tefsound "fib_big" "too-much-fib" "overflow";
+  tfsound ~todo:"mutable types NYI" "test_counter_sound" "counter" "0\n1\n2\n2";
+  tefsound ~todo:"TCO NYI" "fib_big" "too-much-fib" "overflow";
   te "test_dae_sound" "let x = 2 + false; 3" "type";
   (*te "test_const_fold_times_zero_sound" "let f = ((x) => {x * 0}); f(false)" "number";
   te "test_const_fold_or_sound" "let f = ((x) => {x or true}); f(1)" "bool";
