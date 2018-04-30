@@ -80,6 +80,7 @@ export class GrainModule {
 }
 
 export async function readFile(path) {
+  const fs = require('fs');
   let modname = path.replace(/\.gr\(lib\)?$/, '').replace(/.*\/([^/]+)/, '$1');
   //console.log(`Reading module '${modname}' from file: ${path}`);
   let module = await WebAssembly.compile(fs.readFileSync(path));
