@@ -293,7 +293,7 @@ match_branches :
   | [PIPE match_branch {$2}]+ { $1 }
 
 match_expr :
-  | MATCH expr LBRACE match_branches RBRACE { Exp.match_ ~loc:(symbol_rloc dyp) $2 $4 }
+  | MATCH LPAREN expr RPAREN LBRACE match_branches RBRACE { Exp.match_ ~loc:(symbol_rloc dyp) $3 $6 }
 
 expr :
   | app_expr    { prerr_string "\nexpr_app_expr\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); $1 }
