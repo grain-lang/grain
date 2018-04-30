@@ -51,7 +51,8 @@ let signed_int = dec_digit+ | ('-' dec_digit+)
 let hex_digit = ['0'-'9' 'A'-'F' 'a'-'f']
 let oct_digit = ['0'-'7']
 
-let ident = ['a'-'z' 'A'-'Z' '_']['a'-'z' 'A'-'Z' '0'-'9' '_']*
+let ident = ['a'-'z' '_']['a'-'z' 'A'-'Z' '0'-'9' '_']*
+let ident_cap = ['A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']*
 
 let blank = [' ' '\t']+
 
@@ -118,6 +119,8 @@ rule token = parse
   | "}" { RBRACE }
   | "[" { LBRACK }
   | "]" { RBRACK }
+  | "<" { LCARET }
+  | ">" { RCARET }
   | "+" { PLUS }
   | "-" { MINUS }
   | "*" { TIMES }
@@ -132,6 +135,7 @@ rule token = parse
   | '\'' { read_squote_str (Buffer.create 16) lexbuf }
   | "_" { UNDERSCORE }
   | ident as x { ID x }
+  | ident_cap as x { TYPEID x }
   | eof { EOF }
   | _ as c { raise (Error(lexbuf_loc lexbuf, UnrecognizedCharacter c)) }
 
