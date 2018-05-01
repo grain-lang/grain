@@ -4,7 +4,7 @@
     </a>
 </div>
 
-<div align="center">
+<div align="center" style="padding-top: 10px">
     The compiler for the modern web staple.
 </div>
 
