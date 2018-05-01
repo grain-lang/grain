@@ -4,8 +4,8 @@
     </a>
 </div>
 
-<div align="center" style="padding-top: 10px">
-    The compiler for the modern web staple.
+<div align="center">
+    <br>The compiler for the modern web staple.
 </div>
 
 # The Grain Compiler
