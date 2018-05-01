@@ -124,8 +124,6 @@ rule token = parse
   | "+" { PLUS }
   | "-" { MINUS }
   | "*" { TIMES }
-  | "<" { LESS }
-  | ">" { GREATER }
   | "<=" { LESSEQ }
   | ">=" { GREATEREQ }
   | "and" { AND }
