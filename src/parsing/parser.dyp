@@ -176,8 +176,8 @@ binop_expr:
   | binop_expr(<=pp) MINUS     binop_expr(<pp) { Exp.prim2 ~loc:(symbol_rloc dyp) Minus $1 $3 } pp
   | binop_expr(<=pt) TIMES     binop_expr(<pt) { Exp.prim2 ~loc:(symbol_rloc dyp) Times $1 $3 } pt
   | binop_expr(<=pc) EQEQ      binop_expr(<pc) { Exp.prim2 ~loc:(symbol_rloc dyp) Eq $1 $3 } pc
-  | binop_expr(<=pc) LESS      binop_expr(<pc) { Exp.prim2 ~loc:(symbol_rloc dyp) Less $1 $3 } pc
-  | binop_expr(<=pc) GREATER   binop_expr(<pc) { Exp.prim2 ~loc:(symbol_rloc dyp) Greater $1 $3 } pc
+  | binop_expr(<=pc) LCARET    binop_expr(<pc) { Exp.prim2 ~loc:(symbol_rloc dyp) Less $1 $3 } pc
+  | binop_expr(<=pc) RCARET    binop_expr(<pc) { Exp.prim2 ~loc:(symbol_rloc dyp) Greater $1 $3 } pc
   | binop_expr(<=pc) LESSEQ    binop_expr(<pc) { Exp.prim2 ~loc:(symbol_rloc dyp) LessEq $1 $3 } pc
   | binop_expr(<=pc) GREATEREQ binop_expr(<pc) { Exp.prim2 ~loc:(symbol_rloc dyp) GreaterEq $1 $3 } pc
   | binop_expr(<=pb) AND       binop_expr(<pb) { Exp.prim2 ~loc:(symbol_rloc dyp) And $1 $3 } pb
