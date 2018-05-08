@@ -2,6 +2,7 @@
 
 (library
  ((name        grain_typed)
+  (public_name grain_typed)
   (synopsis "Grain compiler type utilities")
   (libraries (grain_parsing grain_utils ppx_deriving ppx_sexp_conv sexplib))
   (preprocess (pps (ppx_sexp_conv ppx_deriving)))))
