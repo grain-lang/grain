@@ -27,8 +27,5 @@ depends: [
   "wasm" { = "1.0" }
   "stdint" { >= "0.5.0" }
   "grain_utils"
-  "grain_parsing"
-  "grain_typed"
   "grain_middle_end"
-  "grain_codegen"
 ]

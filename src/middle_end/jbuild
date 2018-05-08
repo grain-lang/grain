@@ -2,6 +2,7 @@
 
 (library
  ((name        grain_middle_end)
+  (public_name grain_middle_end)
   (synopsis "Grain compiler middle end")
   (libraries (grain_parsing grain_typed grain_utils ppx_deriving ppx_sexp_conv sexplib))
   (preprocess (pps (ppx_sexp_conv ppx_deriving)))))

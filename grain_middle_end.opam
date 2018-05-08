@@ -29,6 +29,4 @@ depends: [
   "grain_utils"
   "grain_parsing"
   "grain_typed"
-  "grain_middle_end"
-  "grain_codegen"
 ]
