@@ -312,7 +312,7 @@ let diamondback_tests = [
   te "arity_3" "let foo = ((x) => {x});\nfoo(1, 2, 3)" "type";
 ]
 
-let mylist = "cons(1, cons(2, cons(3, empty)))"
+let mylist = "Cons(1, Cons(2, Cons(3, Empty)))"
 
 let egg_eater_tests = [
   t "print_tup" "print((1, 2))" "(1, 2)\n(1, 2)";
@@ -325,26 +325,26 @@ let egg_eater_tests = [
 ]
 
 let egg_eater_stdlib_tests = [
-  tlib ~todo:"ADT printing NYI" "stdlib_cons" ("import lists; " ^ mylist) "cons(1, cons(2, cons(3, empty)))";
+  tlib ~todo:"ADT printing NYI" "stdlib_cons" ("import lists; " ^ mylist) "Cons(1, Cons(2, Cons(3, Empty)))";
   tlib "stdlib_sum_1" ("import lists; sum(" ^ mylist ^ ")") "6";
-  tlib "stdlib_sum_2" "import lists; sum(empty)" "0";
+  tlib "stdlib_sum_2" "import lists; sum(Empty)" "0";
   tlib ~todo:"ADT printing NYI"
-    "stdlib_reverse" ("import lists; reverse(" ^ mylist ^ ")") "cons(3, cons(2, cons(1, empty)))";
-  tlib "stdlib_length" "import lists; length(cons(1, cons(2, cons(3, empty))))" "3";
+    "stdlib_reverse" ("import lists; reverse(" ^ mylist ^ ")") "Cons(3, Cons(2, Cons(1, Empty)))";
+  tlib "stdlib_length" "import lists; length(Cons(1, Cons(2, Cons(3, Empty))))" "3";
   tlib "stdlib_equal_1" "import lists; (1, 2) == (1, 2)" "false";
   tlib "stdlib_equal_2" "import pervasives; equal((1, 2), (1, 2))" "true";
-  tlib "stdlib_equal_3" "import lists; equal(cons(1, cons(2, cons(3, empty))), cons(1, cons(2, cons(3, empty))))" "true";
+  tlib "stdlib_equal_3" "import lists; equal(Cons(1, Cons(2, Cons(3, Empty))), Cons(1, Cons(2, Cons(3, Empty))))" "true";
   tlib "stdlib_equal_4" "import lists; equal(1, 1)" "true";
   tlib "stdlib_equal_5" "import lists; equal(1, 2)" "false";
   tlib "stdlib_equal_6" "import lists; equal(true, true)" "true";
   tlib "stdlib_equal_7" "import lists; equal(true, false)" "false";
-  tlib "stdlib_contains_1" "import lists; contains(true, cons(1, cons(2, cons(3, empty))))" "false";
-  tlib "stdlib_contains_2" "import lists; contains(false, cons(1, cons(2, cons(3, empty))))" "false";
-  tlib "stdlib_contains_3" "import lists; contains(3, cons(1, cons(2, cons(3, empty))))" "true";
-  telib "stdlib_err_1" "import lists; cons(1)" "cannot be called with 1 argument";
-  telib "stdlib_err_2" "import lists; cons()" "cannot be called with 0 arguments";
-  telib "stdlib_err_3" "import lists; cons(1, 2, 3)" "cannot be called with 3 arguments";
-  telib "stdlib_sum_err" "import lists; sum(cons(true, false))" "This expression has type Bool but";
+  tlib "stdlib_contains_1" "import lists; contains(true, Cons(1, Cons(2, Cons(3, Empty))))" "false";
+  tlib "stdlib_contains_2" "import lists; contains(false, Cons(1, Cons(2, Cons(3, Empty))))" "false";
+  tlib "stdlib_contains_3" "import lists; contains(3, Cons(1, Cons(2, Cons(3, Empty))))" "true";
+  telib "stdlib_err_1" "import lists; Cons(1)" "cannot be called with 1 argument";
+  telib "stdlib_err_2" "import lists; Cons()" "cannot be called with 0 arguments";
+  telib "stdlib_err_3" "import lists; Cons(1, 2, 3)" "cannot be called with 3 arguments";
+  telib "stdlib_sum_err" "import lists; sum(Cons(true, false))" "This expression has type Bool but";
   telib "stdlib_length_err" "import lists; length(true)" "This expression has type Bool but";
   telib "stdlib_reverse_err" "import lists; reverse(1)" "This expression has type Number but";
 ]
