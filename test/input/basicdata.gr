@@ -1,10 +1,10 @@
-data a List =
+data List<a> =
   | empty
-  | cons(a, a List);
+  | cons(a, List<a>);
 
 
 let rec contains = (e, l) => {
-  match l {
+  match (l) {
     | empty => false
     | cons(hd, tl) =>
     if (hd == e) {
