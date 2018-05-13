@@ -267,8 +267,8 @@ and print_simple_out_type ppf =
         print_ident id
   | Otyp_constr (id, tyl) ->
       pp_open_box ppf 0;
-      print_typargs ppf tyl;
       print_ident ppf id;
+      print_typargs ppf tyl;
       pp_close_box ppf ()
   | Otyp_object (fields, rest) ->
       fprintf ppf "@[<2>< %a >@]" (print_fields rest) fields
@@ -356,9 +356,9 @@ and print_typargs ppf =
   | [ty1] -> print_simple_out_type ppf ty1; pp_print_space ppf ()
   | tyl ->
       pp_open_box ppf 1;
-      pp_print_char ppf '(';
+      pp_print_char ppf '<';
       print_typlist print_out_type "," ppf tyl;
-      pp_print_char ppf ')';
+      pp_print_char ppf '>';
       pp_close_box ppf ();
       pp_print_space ppf ()
 and print_out_label ppf (name, mut, arg) =
