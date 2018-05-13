@@ -1,64 +1,64 @@
 # Standard library for list functionality
 
 data List<a> =
-  | empty
-  | cons(a, List<a>);
+  | Empty
+  | Cons(a, List<a>);
 
 let rec length = (lst) => {
   match (lst) {
-    | empty => 0
-    | cons(hd, tl) => 1 + length(tl)
+    | Empty => 0
+    | Cons(hd, tl) => 1 + length(tl)
   }
 };
 
 let rec sum = (lst) => {
   match (lst) {
-    | empty => 0
-    | cons(hd, tl) => hd + sum(tl)
+    | Empty => 0
+    | Cons(hd, tl) => hd + sum(tl)
   }
 };
 
 let reverse = (lst) => {
   let rec help = (l, acc) => {
     match (l) {
-      | empty => acc
-      | cons(hd, tl) => help(tl, cons(hd, acc))
+      | Empty => acc
+      | Cons(hd, tl) => help(tl, Cons(hd, acc))
     }
   };
-  help(lst, empty)
+  help(lst, Empty)
 };
 
 let rec append = (l1, l2) => {
   match (l1) {
-    | empty => l2
-    | cons(hd, tl) => cons(hd, append(l1, l2))
+    | Empty => l2
+    | Cons(hd, tl) => Cons(hd, append(l1, l2))
   }
 };
 
 let rec contains = (e, l) => {
   match (l) {
-    | empty => false
-    | cons(hd, tl) => (hd == e) or contains(e, tl)
+    | Empty => false
+    | Cons(hd, tl) => (hd == e) or contains(e, tl)
   }
 };
 
 let rec fold_left = (f, b, l) => {
   match (l) {
-    | empty => b
-    | cons(hd, tl) => fold_left(f, f(b, hd), tl)
+    | Empty => b
+    | Cons(hd, tl) => fold_left(f, f(b, hd), tl)
   }
 };
 
 let rec fold_right = (f, b, l) => {
   match (l) {
-    | empty => b
-    | cons(hd, tl) => f(hd, fold_right(f, b, tl))
+    | Empty => b
+    | Cons(hd, tl) => f(hd, fold_right(f, b, tl))
   }
 };
 
 let rec map = (f, l) => {
   match (l) {
-    | empty => empty
-    | cons(hd, tl) => cons(f(hd), map(f, tl))
+    | Empty => Empty
+    | Cons(hd, tl) => Cons(f(hd), map(f, tl))
   }
 };

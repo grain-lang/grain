@@ -192,7 +192,8 @@ pattern :
   | LPAREN tuple_patterns RPAREN { Pat.tuple ~loc:(symbol_rloc dyp) $2 }
   | LPAREN pattern RPAREN { $2 }
   | pattern COLON typ { Pat.constraint_ ~loc:(symbol_rloc dyp) $1 $3 }
-  | id LPAREN tuple_patterns RPAREN { Pat.construct ~loc:(symbol_rloc dyp) $1 $3 }
+  | type_id LPAREN tuple_patterns RPAREN { Pat.construct ~loc:(symbol_rloc dyp) $1 $3 }
+  | type_id { Pat.construct ~loc:(symbol_rloc dyp) $1 [] }
 
 patterns :
   | pattern [COMMA pattern {$2}]* { $1::$2 }
@@ -232,8 +233,8 @@ import_stmt :
   | IMPORT id { Imp.mk $2 }
 
 data_constructor :
-  | ID { CDecl.singleton ~loc:(symbol_rloc dyp) (mkstr dyp $1) }
-  | ID LPAREN typs RPAREN { CDecl.tuple ~loc:(symbol_rloc dyp) (mkstr dyp $1) $3 }
+  | TYPEID { CDecl.singleton ~loc:(symbol_rloc dyp) (mkstr dyp $1) }
+  | TYPEID LPAREN typs RPAREN { CDecl.tuple ~loc:(symbol_rloc dyp) (mkstr dyp $1) $3 }
 
 data_constructors :
   | data_constructor [PIPE data_constructor {$2}]* { $1::$2 }
@@ -256,7 +257,7 @@ app_expr :
   | expr LPAREN app_arg_exprs RPAREN { prerr_string "\napp_expr\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); Exp.apply ~loc:(symbol_rloc dyp) $1 $3 }
 
 ext_id :
-  | ID [COLONCOLON ID {$2}]+ { prerr_string "\nid\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); (mkid ($1::$2)) (symbol_rloc dyp) }
+  | ID [COLONCOLON TYPEID {$2}]+ { prerr_string "\nid\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); (mkid ($1::$2)) (symbol_rloc dyp) }
 
 id :
   | ID [COLONCOLON ID {$2}]* { prerr_string "\nid\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); (mkid ($1::$2)) (symbol_rloc dyp) }
@@ -267,6 +268,7 @@ type_id :
 simple_expr :
   | const { Exp.constant ~loc:(symbol_rloc dyp) $1 }
   | id { prerr_string "\nsimple_expr\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); Exp.ident ~loc:(symbol_rloc dyp) $1 }
+  | type_id { prerr_string "\nsimple_expr\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); Exp.ident ~loc:(symbol_rloc dyp) $1 }
   | LPAREN tuple_exprs RPAREN { Exp.tuple ~loc:(symbol_rloc dyp) $2 }
 
 block_expr :
