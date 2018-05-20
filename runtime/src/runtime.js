@@ -5,6 +5,7 @@ import { printClosure } from './core/closures';
 import { GrainRunner } from './core/runner';
 import { throwGrainError } from './errors/errors';
 import { grainToJSVal } from './utils/utils';
+import { defaultFileLocator } from './utils/locators';
 
 import { print, debugPrint } from './lib/print';
 import equal from './lib/equal';
@@ -61,3 +62,4 @@ export default async function GrainRunner(uri) {
   return loaded.run();
 }
 
+export { defaultFileLocator };
