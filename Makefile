@@ -1,7 +1,4 @@
-ifeq ($(UNAME_S),Darwin)
-	SHELL:=/bin/bash
-endif
-JBUILDER := $(shell command jbuilder &> /dev/null)
+JBUILDER := $(shell command -v jbuilder 2> /dev/null)
 
 default: check-libs
 	jbuilder build
