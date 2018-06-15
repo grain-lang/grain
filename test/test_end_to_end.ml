@@ -3,7 +3,7 @@ open Grain.Runner
 open Grain_utils
 open Printf
 open OUnit2
-open ExtLib
+open Batteries
 open Grain_middle_end.Anftree
 open Grain_middle_end.Anf_helper
 
@@ -21,7 +21,7 @@ let tgcerr ?todo name heap_size program expected = name>::(wrap_todo todo @@ tes
 let te ?todo name program expected = name>::(wrap_todo todo @@ test_err program name expected);;
 let telib ?todo name program expected = name>::(wrap_todo todo @@ test_err program name expected);;
 
-let tfvs ?todo name program expected = name>::
+(* let tfvs ?todo name program expected = name>::
   (fun _ ->
     begin match todo with
       | Some(msg) -> OUnit2.todo msg
@@ -40,7 +40,7 @@ let tfvs ?todo name program expected = name>::
     with x ->
       (*Grain_parsing.Location.report_exception Format.err_formatter x;*)
       raise x)
-;;
+;; *)
 
 let test_input_file filename name expected test_ctxt =
   try
