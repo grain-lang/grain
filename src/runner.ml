@@ -4,7 +4,6 @@ open Str
 open Compile
 open Printf
 open OUnit2
-open ExtLib
 open Lexing
 open Grain_codegen
 
@@ -119,12 +118,12 @@ let run_anf p out =
 let test_run program_str outfile expected test_ctxt =
   Wasm_runner.cur_modname := outfile;
   let result = run_output (compile_string ~hook:stop_after_compiled ~name:outfile program_str) in
-  assert_equal (expected ^ "\n") result ~printer:identity
+  assert_equal (expected ^ "\n") result ~printer:Batteries.identity
 
 let test_run_anf program_anf outfile expected test_ctxt =
   Wasm_runner.cur_modname := outfile;
   let result = run_anf program_anf outfile in
-  assert_equal (expected ^ "\n") result ~printer:identity
+  assert_equal (expected ^ "\n") result ~printer:Batteries.identity
 
 let test_err program_str outfile errmsg test_ctxt =
   Wasm_runner.cur_modname := outfile;
@@ -135,5 +134,5 @@ let test_err program_str outfile errmsg test_ctxt =
   assert_equal
     errmsg
     result
-    ~cmp: (fun check result -> String.exists result check)
-    ~printer:identity
+    ~cmp: (fun check result -> Batteries.String.exists result check)
+    ~printer:Batteries.identity
