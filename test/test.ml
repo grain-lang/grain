@@ -1,6 +1,6 @@
 open OUnit2
 open Printf
-open ExtLib
+open Extlib
 
 let () =
   Printexc.register_printer (fun exc ->
