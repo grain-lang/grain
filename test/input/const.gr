@@ -1,6 +1,6 @@
-let x = 4 + 5 in
-let y = x * 2 in
-let z = y - x in
-let a = x + 7 in
-let b = 14 in
+let x = 4 + 5;
+let y = x * 2;
+let z = y - x;
+let a = x + 7;
+let b = 14;
 a + b

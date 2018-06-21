@@ -1,7 +1,1 @@
-let x = 3 in
-let y = (1, 2) in
-let z = (3, 4) in
-if x > 1:
-  (x - 1) + 5
-else:
-  y
+3 + 4

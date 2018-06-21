@@ -1,0 +1,5 @@
+let x = (4, 5, 6) in
+let (a, b, c) = x in
+  c
+# let a = 5, b = 6 in
+#   a

@@ -1,8 +1,11 @@
-let fib = (lambda x:
-    let rec fib_help = (lambda n, acc:
-      if n == 0:
-        acc[0]
-      else:
-        fib_help(n - 1, (acc[1], acc[0] + acc[1]))) in
-      fib_help(x, (0, 1))) in
-  fib(30)
+let fib = (x) => {
+  let rec fib_help = (n, (cur, next)) => {
+    if (n == 0) {
+      cur
+    } else {
+      fib_help(n - 1, (next, cur + next)))
+    }
+  };
+  fib_help(x, (0, 1))
+};
+fib(30)

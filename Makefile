@@ -1,11 +1,11 @@
-JBUILDER := $(shell command -v jbuilder &> /dev/null)
+JBUILDER := $(shell command -v jbuilder 2> /dev/null)
+
+default: check-libs
+	jbuilder build
 
 ifndef JBUILDER
 	$(error "jbuilder not found on your PATH. Please install jbuilder before building: opam install jbuilder")
 endif
-
-default: check-libs
-	jbuilder build
 
 tests:
 	jbuilder runtest
@@ -14,7 +14,7 @@ install:
 	jbuilder install
 
 check-libs:
-	jbuilder external-lib-deps --missing @install
+	./tools/get-deps.sh
 
 clean:
 	jbuilder clean

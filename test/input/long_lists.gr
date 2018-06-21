@@ -1,14 +1,23 @@
-let rec make_list = (lambda x, n:
-  let rec helper = (lambda a, b, acc:
-    if a == 0:
+import lists;
+
+let rec make_list = (x, n) => {
+  let rec helper = (a, b, acc) => {
+    if (a == 0) {
       acc
-    else:
-      helper(a - 1, b, (b, acc))) in
-    helper(n, x, false)),
-  loop = (lambda n:
-  if n == 0:
+    } else {
+      helper(a - 1, cons(b, acc));
+    }
+  };
+  helper(n, x, empty)
+},
+
+loop = (n) => {
+  if (n == 0) {
     true
-  else:
-    let lst = make_list(n, n) in
-      loop(n - 1)) in
-  loop(45) #<- eats up a lot of heap
+  } else {
+    let lst = make_list(n, n);
+    loop(n - 1)
+  }
+};
+
+loop(45) #<- eats up a lot of heap

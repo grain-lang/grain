@@ -13,12 +13,14 @@
 
 ;;; Code:
 
-(defvar grain-keywords '("let" "rec" "begin" "end" "lambda" "in" "include"))
+(defvar grain-keywords '("let" "rec" "import" "match" "data" "if" "else" "add1" "sub1"
+                         "foreign" "wasm"
+                         "isbool" "isnum" "istuple" "and" "or" "not"))
 
 (defvar grain-keywords-regexp (regexp-opt grain-keywords))
 
 (defvar grain-punctuation-regexp
-  (regexp-opt '("::" ">" "<" ">=" "<=" "==" "!=" ";" "(" ")" "+" "-" "*")))
+  (regexp-opt '("::" ">" "<" ">=" "<=" "==" "!=" ";" "(" ")" "+" "-" "*" "{" "}" "=>" "|")))
 
 (defvar grain-font-lock-keywords
   `((,(concat "\\_<" grain-keywords-regexp "\\_>") . font-lock-keyword-face)
@@ -26,7 +28,7 @@
     (,grain-punctuation-regexp . font-lock-builtin-face)))
 
 (defvar grain-paragraph-starters
-  '("let" "rec" "begin" "lambda"))
+  '("let" "rec" "{" "data"))
 
 (defconst grain-mode-syntax-table
   (let ((st (make-syntax-table)))

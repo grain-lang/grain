@@ -1,7 +1,11 @@
+import 'fast-text-encoding';
+
 import { heapController, grainCheckMemory } from './core/heap';
 import { printClosure } from './core/closures';
+import { GrainRunner } from './core/runner';
 import { throwGrainError } from './errors/errors';
 import { grainToJSVal } from './utils/utils';
+import { defaultFileLocator } from './utils/locators';
 
 import { print, debugPrint } from './lib/print';
 import equal from './lib/equal';
@@ -12,6 +16,7 @@ import * as libDOM from './lib/DOM';
 export let grainModule;
 
 export const memory = new WebAssembly.Memory({initial: 1});
+export const table = new WebAssembly.Table({element: 'anyfunc', initial: 128});
 export const view = new Int32Array(memory.buffer);
 export const encoder = new TextEncoder("utf-8");
 export const decoder = new TextDecoder("utf-8");
@@ -22,8 +27,9 @@ const importObj = {
     debug: debugPrint,
     printClosure: printClosure
   },
-  js: {
+  grainRuntime: {
     mem: memory,
+    tbl: table,
     throwError: throwGrainError,
     checkMemory: grainCheckMemory
   },
@@ -36,22 +42,24 @@ const importObj = {
   }
 };
 
-async function fetchAndInstantiate(url, importObject) {
-  let response = await fetch(url);
-  if (!response.ok) throw new Error(`[Grain] Could not load ${url} due to a network error.`);
-  let bytes = await response.arrayBuffer();
-  return WebAssembly.instantiate(bytes, importObject);
+export function buildGrainRunner(locator) {
+  let runner = new GrainRunner(locator || ((x) => null));
+  runner.addImports(importObj);
+  return runner;
 }
 
-function runGrain(module) {
-  grainModule = module;
-  let main = module.instance.exports["GRAIN$MAIN"];
-  heapController.heapAdjust = module.instance.exports["GRAIN$HEAP_ADJUST"];
-  let res = main();
-  return grainToJSVal(res);
+let runner = buildGrainRunner();
+
+// TODO: Migrate API to expose runner object directly
+
+export async function GrainNodeRunner(path) {
+  let loaded = await runner.loadFile(path);
+  return loaded.run();
 }
 
 export default async function GrainRunner(uri) {
-  let module = await fetchAndInstantiate(uri, importObj);
-  return runGrain(module);
+  let loaded = await runner.loadURL(uri);
+  return loaded.run();
 }
+
+export { defaultFileLocator };
