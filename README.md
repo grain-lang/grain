@@ -61,7 +61,7 @@ You'll need to create a symlink from `script/public/javascripts/grain-runtime.js
 Alternatively, you can use the CLI to run your program on Node:
 
 ```sh
-
+grain test.gr
 ```
 
 [philip]: https://github.com/belph
