@@ -33,6 +33,7 @@ module Comp = struct
   let tuple_get ?loc ?env tup idx = mk ?loc ?env (CGetTupleItem(tup, idx))
   let tuple_set ?loc ?env tup idx value = mk ?loc ?env (CSetTupleItem(tup, idx, value))
   let if_ ?loc ?env cond tru fals = mk ?loc ?env (CIf(cond, tru, fals))
+  let while_ ?loc ?env cond body = mk ?loc ?env (CWhile(cond, body))
   let switch ?loc ?env arg branches = mk ?loc ?env (CSwitch(arg, branches))
   let app ?loc ?env func args = mk ?loc ?env (CApp(func, args))
   let app_builtin ?loc ?env modname name args = mk ?loc ?env (CAppBuiltin(modname, name, args))
