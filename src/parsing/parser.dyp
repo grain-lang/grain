@@ -147,7 +147,7 @@ let make_program statements body =
 %token PLUS MINUS TIMES
 %token TRUE FALSE
 
-%token LET REC IF ELSE MATCH
+%token LET REC IF ELSE MATCH WHILE
 %token AND OR NOT
 
 %token DATA IMPORT FOREIGN WASM
@@ -288,6 +288,9 @@ if_expr :
   | IF binop_expr block_expr { Exp.if_ ~loc:(symbol_rloc dyp) $2 $3 (Exp.block []) }
   | IF binop_expr block_expr ELSE block_expr { Exp.if_ ~loc:(symbol_rloc dyp) $2 $3 $5 }
 
+while_expr :
+  | WHILE LPAREN binop_expr RPAREN block_expr { Exp.while_ ~loc:(symbol_rloc dyp) $3 $5 }
+
 match_branch :
   | pattern THICKARROW binop_expr { Mb.mk ~loc:(symbol_rloc dyp) $1 $3 }
 
@@ -305,6 +308,7 @@ expr :
   | block_expr  { $1 }
   | lam_expr    { $1 }
   | if_expr     { $1 }
+  | while_expr  { $1 }
   | match_expr  { $1 }
 
 block_body_expr :

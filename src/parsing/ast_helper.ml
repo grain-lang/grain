@@ -101,6 +101,7 @@ module Exp = struct
   let prim1 ?loc a b = mk ?loc (PExpPrim1(a, b))
   let prim2 ?loc a b c = mk ?loc (PExpPrim2(a, b, c))
   let if_ ?loc a b c = mk ?loc (PExpIf(a, b, c))
+  let while_ ?loc a b = mk ?loc (PExpWhile(a, b))
   let lambda ?loc a b = mk ?loc (PExpLambda(a, b))
   let apply ?loc a b = mk ?loc (PExpApp(a, b))
   let block ?loc a = mk ?loc (PExpBlock a)

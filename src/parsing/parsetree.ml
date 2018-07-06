@@ -116,6 +116,7 @@ and expression_desc =
   | PExpPrim1 of prim1 * expression
   | PExpPrim2 of prim2 * expression * expression
   | PExpIf of expression * expression * expression
+  | PExpWhile of expression * expression
   | PExpLambda of pattern list * expression
   | PExpApp of expression * expression list
   | PExpBlock of expression list
