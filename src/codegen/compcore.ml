@@ -733,6 +733,22 @@ and compile_instr env instr =
              compiled_els);
     ]
 
+  | MWhile(cond, body) ->
+    let compiled_cond = (compile_block env cond) in
+    let compiled_body = (compile_block env body) in
+    singleton (Ast.Block([Types.I32Type],
+               Concatlist.mapped_list_of_t add_dummy_loc @@ 
+               singleton (Ast.Loop([Types.I32Type],
+                          Concatlist.mapped_list_of_t add_dummy_loc @@
+                          singleton (Ast.Const const_false) @
+                          compiled_cond @
+                          decode_bool +@
+                          [Ast.Test(Values.I32 Ast.IntOp.Eqz); 
+                           Ast.BrIf (add_dummy_loc @@ Int32.of_int 1)] +@
+                          [Ast.Drop] @
+                          compiled_body +@
+                          [Ast.Br (add_dummy_loc @@ Int32.of_int 0)]))))
+
   | MError(err, args) ->
     call_error_handler env err args
   | MCallKnown(func_idx, args) ->
