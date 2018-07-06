@@ -91,6 +91,7 @@ rule token = parse
   | "wasm" { WASM }
   | "add1" { ADD1 }
   | "sub1" { SUB1 }
+  | "while" { WHILE }
   | "if" { IF }
   | "else" { ELSE }
   | "true" { TRUE }
