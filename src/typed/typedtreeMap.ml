@@ -163,6 +163,8 @@ end = struct
       | TExpConstruct(a, b, args) -> TExpConstruct(a, b, List.map map_expression args)
       | TExpIf(c, t, f) ->
         TExpIf(map_expression c, map_expression t, map_expression f)
+      | TExpWhile(c, b) ->
+        TExpWhile(map_expression c, map_expression b)
     end in
     Map.leave_expression {exp with exp_extra; exp_desc}
 end

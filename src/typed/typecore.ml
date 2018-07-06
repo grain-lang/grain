@@ -188,6 +188,7 @@ let rec final_subexpression sexp =
   match sexp.pexp_desc with
   | PExpLet (_, _, e)
   | PExpIf (_, e, _)
+  | PExpWhile (_, e)
   | PExpMatch (_, {pmb_body=e} :: _)
     -> final_subexpression e
   | PExpBlock (es) ->
@@ -209,6 +210,7 @@ let rec is_nonexpansive exp =
   | TExpPrim1(_, e) -> is_nonexpansive e
   | TExpPrim2(_, e1, e2) -> is_nonexpansive e1 && is_nonexpansive e2
   | TExpIf(c, t, f) -> is_nonexpansive t && is_nonexpansive f
+  | TExpWhile(c, b) -> is_nonexpansive b
   | TExpBlock((_::_) as es) -> is_nonexpansive (last es)
   | TExpApp(e, args) -> is_nonexpansive e && List.for_all is_nonexpansive args
   | TExpConstruct(_, _, el) -> List.for_all is_nonexpansive el
@@ -239,6 +241,7 @@ let rec type_approx env (sexp : Parsetree.expression) =
   | PExpMatch (_, {pmb_body=e}::_) ->
     type_approx env e
   | PExpIf (_,e,_) -> type_approx env e
+  | PExpWhile (_,e) -> type_approx env e
   | PExpLambda (args,e) ->
     newty (TTyArrow(List.map (fun x -> newvar()) args, type_approx env e, TComOk))
   | PExpBlock ((_::_) as es) -> type_approx env (last es)
@@ -507,6 +510,17 @@ and type_expect_ ?in_function ?(recarg=Rejected) env sexp ty_expected_explained 
       exp_loc = loc;
       exp_extra = [];
       exp_type = ifso.exp_type;
+      exp_env = env
+    }
+  | PExpWhile(scond, sbody) ->
+    let cond = type_expect env scond (mk_expected ~explanation:While_loop_conditional Builtin_types.type_bool) in
+    let body = type_expect env sbody ty_expected_explained in
+    re {
+      exp_desc = TExpWhile(cond, body);
+      exp_loc = loc;
+      exp_extra = [];
+      (* While loops don't evaluate to anything *)
+      exp_type = Builtin_types.type_void;
       exp_env = env
     }
   | PExpBlock([]) -> failwith "Internal error: type_expect_ block was empty"

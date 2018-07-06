@@ -183,6 +183,9 @@ end = struct
         iter_expression c;
         iter_expression t;
         iter_expression f
+      | TExpWhile(c, b) ->
+        iter_expression c;
+        iter_expression b
     end;
     Iter.leave_expression exp
 
