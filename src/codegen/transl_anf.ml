@@ -196,6 +196,8 @@ let rec compile_comp env c =
             [MError(Runtime_errors.SwitchError, [compiled_arg])])
   | CIf(cond, thn, els) ->
     MIf(compile_imm env cond, compile_anf_expr env thn, compile_anf_expr env els)
+  | CWhile(cond, body) ->
+    MWhile(compile_anf_expr env cond, compile_anf_expr env body)
   | CPrim1(p1, arg) ->
     MPrim1(p1, compile_imm env arg)
   | CPrim2(p2, arg1, arg2) ->
