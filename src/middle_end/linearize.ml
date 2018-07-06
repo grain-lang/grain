@@ -96,6 +96,9 @@ let rec transl_imm (({exp_desc; exp_loc=loc; exp_env=env; _} as e) : expression)
     let tmp = gensym "if" in
     let (cond_imm, cond_setup) = transl_imm cond in
     (Imm.id ~loc ~env tmp, cond_setup @ [BLet(tmp, Comp.if_ ~loc ~env cond_imm (transl_anf_expression _then) (transl_anf_expression _else))])
+  | TExpWhile(cond, body) ->
+    let tmp = gensym "while" in
+    (Imm.id ~loc ~env tmp, [BLet(tmp, Comp.while_ ~loc ~env (transl_anf_expression cond) (transl_anf_expression body))])
   | TExpApp(func, args) ->
     let tmp = gensym "app" in
     let (new_func, func_setup) = transl_imm func in

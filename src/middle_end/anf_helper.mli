@@ -22,6 +22,7 @@ module Comp : sig
   val tuple_get : ?loc:loc -> ?env:env -> int32 -> imm_expression -> comp_expression
   val tuple_set : ?loc:loc -> ?env:env -> int32 -> imm_expression -> imm_expression -> comp_expression
   val if_ : ?loc:loc -> ?env:env -> imm_expression -> anf_expression -> anf_expression -> comp_expression
+  val while_ : ?loc:loc -> ?env:env -> anf_expression -> anf_expression -> comp_expression
   val switch : ?loc:loc -> ?env:env -> imm_expression -> (int * anf_expression) list -> comp_expression
   val app : ?loc:loc -> ?env:env -> imm_expression -> imm_expression list -> comp_expression
   val app_builtin : ?loc:loc -> ?env:env -> string -> string -> imm_expression list -> comp_expression

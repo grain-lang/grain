@@ -64,6 +64,7 @@ and comp_expression_desc =
   | CGetTupleItem of int32 * imm_expression
   | CSetTupleItem of int32 * imm_expression * imm_expression
   | CIf of imm_expression * anf_expression * anf_expression
+  | CWhile of anf_expression * anf_expression
   | CSwitch of imm_expression * (int * anf_expression) list
   | CApp of imm_expression * imm_expression list
   | CAppBuiltin of string * string * imm_expression list

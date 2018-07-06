@@ -29,6 +29,8 @@ and comp_free_vars_help env (c : comp_expression) =
   | CIf(cond, thn, els) ->
     Ident.Set.union (imm_free_vars_help env cond) @@
     Ident.Set.union (anf_free_vars_help env thn) (anf_free_vars_help env els)
+  | CWhile(cond, body) ->
+    Ident.Set.union (anf_free_vars_help env cond) (anf_free_vars_help env body)
   | CSwitch(arg, branches) ->
     List.fold_left (fun acc (_, b) -> Ident.Set.union (anf_free_vars_help env b) acc)
       (imm_free_vars_help env arg)
