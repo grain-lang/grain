@@ -33,6 +33,7 @@ module E = struct
     | PExpMatch(e, mbs) -> sub.expr sub e; List.iter (sub.match_branch sub) mbs
     | PExpPrim1(p1, e) -> sub.expr sub e
     | PExpPrim2(p2, e1, e2) -> sub.expr sub e1; sub.expr sub e2
+    | PExpAssign(be, e) -> sub.expr sub be; sub.expr sub e
     | PExpIf(c, t, f) -> sub.expr sub c; sub.expr sub t; sub.expr sub f
     | PExpWhile(c, b) -> sub.expr sub c; sub.expr sub b
     | PExpLambda(pl, e) -> List.iter (sub.pat sub) pl; sub.expr sub e
