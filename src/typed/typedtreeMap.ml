@@ -156,6 +156,8 @@ end = struct
       | TExpPrim1(o, e) -> TExpPrim1(o, map_expression e)
       | TExpPrim2(o, e1, e2) ->
         TExpPrim2(o, map_expression e1, map_expression e2)
+      | TExpAssign(be, e) ->
+        TExpAssign(map_expression be, map_expression e)
       | TExpMatch(value, branches, p) ->
         TExpMatch(map_expression value, map_match_branches branches, p)
       | TExpTuple(args) -> TExpTuple(List.map map_expression args)
