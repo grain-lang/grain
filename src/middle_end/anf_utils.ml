@@ -40,6 +40,10 @@ and comp_free_vars_help env (c : comp_expression) =
     Ident.Set.union
       (imm_free_vars_help env arg1)
       (imm_free_vars_help env arg2)
+  | CAssign(arg1, arg2) ->
+    Ident.Set.union
+      (imm_free_vars_help env arg1)
+      (imm_free_vars_help env arg2)
   | CApp(fn, args) ->
     List.fold_left (fun acc a -> Ident.Set.union (imm_free_vars_help env a) acc)
       (imm_free_vars_help env fn)
@@ -86,6 +90,7 @@ let rec anf_count_vars a =
 and comp_count_vars c =
   match c.comp_desc with
   | CIf(_, t, f) -> max (anf_count_vars t) (anf_count_vars f)
+  | CWhile(c, b) -> (anf_count_vars c) + (anf_count_vars b)
   | CSwitch(_, bs) -> List.fold_left max 0 @@ List.map (fun (_, b) -> anf_count_vars b) bs
   | CApp(_, args) -> List.length args
   | CAppBuiltin(_, _, args) -> List.length args
