@@ -755,8 +755,9 @@ and type_statement_expr ?explanation env sexp =
     | TTyConstr (p, _, _) when Path.same p Builtin_types.path_void -> ()
     (*| Tvar _ ->
         add_delayed_check (fun () -> check_application_result env true exp)*)
-    | _ ->
-        Location.prerr_warning loc Grain_utils.Warnings.StatementType
+    | _ -> ()
+    (* This isn't quite relevant to Grain mechanics
+        Location.prerr_warning loc Grain_utils.Warnings.StatementType *)
     end;
     unify_var env tv ty;
     exp
