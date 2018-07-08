@@ -22,6 +22,8 @@ type prim1 = Parsetree.prim1 =
   | Add1
   | Sub1
   | Not
+  | Box
+  | Unbox
   | IsNum
   | IsBool
   | IsTuple
