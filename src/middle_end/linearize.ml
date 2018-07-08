@@ -92,6 +92,11 @@ let rec transl_imm (({exp_desc; exp_loc=loc; exp_env=env; _} as e) : expression)
     let (left_imm, left_setup) = transl_imm left in
     let (right_imm, right_setup) = transl_imm right in
     (Imm.id ~loc ~env tmp, left_setup @ right_setup @ [BLet(tmp, Comp.prim2 ~loc ~env op left_imm right_imm)])
+  | TExpAssign(left, right) ->
+    let tmp = gensym "assign" in
+    let (left_imm, left_setup) = transl_imm left in
+    let (right_imm, right_setup) = transl_imm right in
+    (Imm.id ~loc ~env tmp, left_setup @ right_setup @ [BLet(tmp, Comp.assign ~loc ~env left_imm right_imm)])
   | TExpIf(cond, _then, _else) ->
     let tmp = gensym "if" in
     let (cond_imm, cond_setup) = transl_imm cond in

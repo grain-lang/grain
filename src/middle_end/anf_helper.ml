@@ -29,6 +29,7 @@ module Comp = struct
   let imm ?loc ?env imm = mk ?loc ?env (CImmExpr imm)
   let prim1 ?loc ?env p1 a = mk ?loc ?env (CPrim1(p1, a))
   let prim2 ?loc ?env p2 a1 a2 = mk ?loc ?env (CPrim2(p2, a1, a2))
+  let assign ?loc ?env a1 a2 = mk ?loc ?env (CAssign(a1, a2))
   let tuple ?loc ?env elts = mk ?loc ?env (CTuple elts)
   let tuple_get ?loc ?env tup idx = mk ?loc ?env (CGetTupleItem(tup, idx))
   let tuple_set ?loc ?env tup idx value = mk ?loc ?env (CSetTupleItem(tup, idx, value))
