@@ -355,7 +355,7 @@ toplevel_stmts :
 
 program :
   | toplevel_stmts SEMI EOF { make_program $1 (Exp.null ~loc:dummy_loc ()) }
-  | toplevel_stmts SEMI expr EOF { make_program $1 (Exp.block ~loc:(symbol_rloc dyp) [$3]) }
+  | toplevel_stmts SEMI expr EOF { make_program $1 $3 }
   | expr EOF { prerr_string "\nprogram\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); make_program [] $1 }
 
 %%
