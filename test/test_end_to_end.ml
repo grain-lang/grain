@@ -390,26 +390,48 @@ let fer_de_lance_stdlib_tests = [
     "2";
 ]
 
-let pair_tests = [
-  t ~todo:"mutable types NYI" "tup1" "let t = (4, (5, 6));
+let box_tests = [
+  t "box1" "let b = box(4);
             {
-              t[0] := 7;
-              t
-            }" "(7, (5, 6))";
-  t ~todo:"mutable types NYI" "tup2" "let t = (4, (5, 6));
+              unbox(b)
+            }" "4";
+  t "box2" "let b = box((4, (5, 6)));
             {
-              t[1] := 7;
-              t
-            }" "(4, 7)";
-  t ~todo:"mutable types NYI" "tup3" "let t = (4, (5, 6));
+              unbox(b)
+            }" "(4, (5, 6))";
+  t "box3" "let b = box(box(4));
             {
-              t[1] := t;
-              t
-            }" "(4, <cyclic tuple 1>)";
-  t ~todo:"mutable types NYI" "tup4" "let t = (4, 6);
-            (t, t)"
-           "((4, 6), (4, 6))"
+              unbox(unbox(b))
+            }" "4";
+  t "box4" "let b = box(4);
+            {
+              b := 3;
+              unbox(b)
+            }" "3";
+  t "box5" "let b = box(4);
+            {
+              b := unbox(b) - 1;
+              unbox(b)
+            }" "3";
+]
 
+let loop_tests = [
+  t "loop1" "let b = box(3);
+            {
+              while (unbox(b) > 0) {
+                b := unbox(b) - 1
+              };
+              unbox(b)
+            }" "0";
+  t "loop2" "let b = box(12);
+             let count = box(0);
+            {
+              while (unbox(b) > 0) {
+                b := unbox(b) - 1;
+                count := unbox(count) + 1
+              };
+              unbox(count)
+            }" "12";
 ]
 
 let oom = [
@@ -448,14 +470,11 @@ let gc = [
 ]
 
 let garter_extra_tests = [
-  t ~todo:"mutable types NYI" "test_set_extra1" "(1, 2)[0] := 2" "2";
-  tfile ~todo:"mutable types NYI" "counter" "counter" "0\n1\n2\n2";
+  t "test_set_extra1" "box(1) := 2" "2";
+  tfile "counter" "counter" "1\n2\n3\n3";
   (*te "test_bad_import" "let x = (1, 2); import lists; x" "Includes must be at the beginning";*)
   te "test_missing_import" "import foo; 2" "Unbound module";
-  te ~todo:"mutable types NYI" "test_set_err1" "(1, 2)[-1] := 3" "small";
-  te ~todo:"mutable types NYI" "test_set_err2" "(1, 2)[3] := 4" "large";
-  te ~todo:"mutable types NYI" "test_set_err3" "(1, 2)[true] := 5" "number";
-  te ~todo:"mutable types NYI" "test_set_err4" "let x = 2 in x[1] := 3" "tuple";
+  te "test_unbox_err" "unbox(5)" "Box";
 ]
 
 (* Note that optimizations are on by default, so all of the above tests
@@ -567,7 +586,7 @@ let tests =
   egg_eater_stdlib_tests @
   fer_de_lance_tests @
   fer_de_lance_stdlib_tests @
-  pair_tests @ (*oom @ gc @*) garter_extra_tests @
+  box_tests @ loop_tests @(*oom @ gc @*) garter_extra_tests @
   indigo_tests @ string_tests @ data_tests
 
 
