@@ -198,10 +198,16 @@ let rec compile_comp env c =
     MIf(compile_imm env cond, compile_anf_expr env thn, compile_anf_expr env els)
   | CWhile(cond, body) ->
     MWhile(compile_anf_expr env cond, compile_anf_expr env body)
+  | CPrim1(Box, arg) ->
+    MAllocate(MTuple [compile_imm env arg])
+  | CPrim1(Unbox, arg) ->
+    MTupleOp(MTupleGet(Int32.zero), compile_imm env arg)
   | CPrim1(p1, arg) ->
     MPrim1(p1, compile_imm env arg)
   | CPrim2(p2, arg1, arg2) ->
     MPrim2(p2, compile_imm env arg1, compile_imm env arg2)
+  | CAssign(arg1, arg2) ->
+    MTupleOp(MTupleSet(Int32.zero, compile_imm env arg2), compile_imm env arg1)
   | CTuple(args) ->
     MAllocate(MTuple (List.map (compile_imm env) args))
   | CString(s) ->

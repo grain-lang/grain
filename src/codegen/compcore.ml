@@ -364,6 +364,8 @@ let compile_prim1 env p1 arg : Wasm.Ast.instr' Concatlist.t =
       Ast.Const(const_int32 0x80000000);
       Ast.Binary(Values.I32 Ast.IntOp.Xor);
     ]
+  | Box -> failwith "Unreachable case; should never get here: Box"
+  | Unbox -> failwith "Unreachable case; should never get here: Unbox"
   | IsBool -> failwith "Unsupported (compcore): IsBool"
   | IsNum -> failwith "Unsupported (compcore): IsNum"
   | IsTuple -> failwith "Unsupported (compcore): IsTuple"
@@ -598,7 +600,7 @@ let compile_tuple_op env tup_imm op =
     let idx_int = Int32.to_int idx in
     tup @ (untag TupleTagType) @ (compile_imm env imm) +@ [
         store ~offset:(4 * (idx_int + 1)) ();
-      ]
+      ] @ (compile_imm env imm)
 
 
 let collect_backpatches env f =
