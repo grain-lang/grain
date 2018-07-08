@@ -27,6 +27,8 @@ type prim1 = Parsetree.prim1 =
   | Add1
   | Sub1
   | Not
+  | Box
+  | Unbox
   | IsNum
   | IsBool
   | IsTuple
@@ -121,6 +123,7 @@ and expression_desc =
   | TExpMatch of expression * match_branch list * partial
   | TExpPrim1 of prim1 * expression
   | TExpPrim2 of prim2 * expression * expression
+  | TExpAssign of expression * expression
   | TExpIf of expression * expression * expression
   | TExpWhile of expression * expression
   | TExpLambda of match_branch list * partial

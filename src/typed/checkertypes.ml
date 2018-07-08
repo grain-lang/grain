@@ -29,6 +29,7 @@ type type_forcing_context =
   | For_loop_body
   | Assert_condition
   | Sequence_left_hand_side
+  | Assign_not_box
 
 type type_expected = {
   ty: type_expr;

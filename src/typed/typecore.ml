@@ -79,6 +79,12 @@ let prim1_type = function
   | Add1
   | Sub1 -> Builtin_types.type_number, Builtin_types.type_number
   | Not -> Builtin_types.type_bool, Builtin_types.type_bool
+  | Box -> 
+    let var = newvar ~name:"a" () in
+    var, Builtin_types.type_box var
+  | Unbox ->  
+    let var = newvar ~name:"a" () in
+    Builtin_types.type_box var, var
   | IsNum
   | IsBool
   | IsTuple -> newvar ~name:"prim1" (), Builtin_types.type_bool
@@ -497,6 +503,17 @@ and type_expect_ ?in_function ?(recarg=Rejected) env sexp ty_expected_explained 
       exp_loc = loc;
       exp_extra = [];
       exp_type = rettype;
+      exp_env = env
+    }
+  | PExpAssign(sboxexpr, sval) ->
+    let boxexpr = type_expect env sboxexpr (mk_expected ~explanation:Assign_not_box @@ Builtin_types.type_box @@ newvar ~name:"a" ()) in
+    let val_ = type_expect env sval ty_expected_explained in
+    unify_exp env boxexpr @@ Builtin_types.type_box val_.exp_type;
+    rue {
+      exp_desc = TExpAssign(boxexpr, val_);
+      exp_loc = loc;
+      exp_extra = [];
+      exp_type = val_.exp_type;
       exp_env = env
     }
   | PExpIf(scond, sifso, sifnot) ->
@@ -1193,6 +1210,8 @@ let report_type_expected_explanation expl ppf =
       fprintf ppf "the condition of an assertion"
   | Sequence_left_hand_side ->
       fprintf ppf "the left-hand side of a sequence"
+  | Assign_not_box ->
+      fprintf ppf "the left-hand side of an assignment"
 let report_type_expected_explanation_opt expl ppf =
   match expl with
   | None -> ()

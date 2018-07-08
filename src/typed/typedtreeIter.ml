@@ -173,6 +173,9 @@ end = struct
       | TExpPrim2(_, e1, e2) ->
         iter_expression e1;
         iter_expression e2
+      | TExpAssign(be, e) ->
+        iter_expression be;
+        iter_expression e
       | TExpMatch(value, branches, _) ->
         iter_expression value;
         iter_match_branches branches
