@@ -64,6 +64,8 @@ Alternatively, you can use the CLI to run your program on Node:
 grain test.gr
 ```
 
+Copyright ©️ 2017-2018 Philip Blair and Oscar Spencer.
+
 [philip]: https://github.com/belph
 [oscar]: http://github.com/ospencer
 [wasm]: http://webassembly.org/
