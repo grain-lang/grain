@@ -22,6 +22,8 @@ type prim1 = Parsetree.prim1 =
   | Add1
   | Sub1
   | Not
+  | Box
+  | Unbox
   | IsNum
   | IsBool
   | IsTuple
@@ -111,6 +113,7 @@ type instr =
   | MTagOp of tag_op * tag_type * immediate
   | MArityOp of arity_operand * arity_op * immediate
   | MIf of immediate * block * block
+  | MWhile of block * block
   | MSwitch of immediate * (int32 * block) list * block (* value, branches, default *)
   | MPrim1 of prim1 * immediate
   | MPrim2 of prim2 * immediate * immediate

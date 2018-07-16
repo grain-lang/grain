@@ -82,6 +82,8 @@ type prim1 =
   | Add1
   | Sub1
   | Not
+  | Box
+  | Unbox
   | IsNum
   | IsBool
   | IsTuple
@@ -116,9 +118,11 @@ and expression_desc =
   | PExpPrim1 of prim1 * expression
   | PExpPrim2 of prim2 * expression * expression
   | PExpIf of expression * expression * expression
+  | PExpWhile of expression * expression
   | PExpLambda of pattern list * expression
   | PExpApp of expression * expression list
   | PExpBlock of expression list
+  | PExpAssign of expression * expression
   | PExpNull (** Used for modules without body expressions *)
 [@@deriving sexp]
 

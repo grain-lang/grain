@@ -1,14 +1,12 @@
-let counter =
-  let tup = (0,);
-  let rec func = (() => {
-    let res = tup[0];
-    tup[0] := tup[0] + 1;
-    res
-  });
-  func;
-
-  {
-    print(counter());
-    print(counter());
-    print(counter())
-  }
+let counter = {
+  let count = box(0);
+  let rec counter_help = () => {
+    count := unbox(count) + 1
+  };
+  counter_help
+};
+{
+  print(counter());
+  print(counter());
+  print(counter())
+}

@@ -92,10 +92,18 @@ let rec transl_imm (({exp_desc; exp_loc=loc; exp_env=env; _} as e) : expression)
     let (left_imm, left_setup) = transl_imm left in
     let (right_imm, right_setup) = transl_imm right in
     (Imm.id ~loc ~env tmp, left_setup @ right_setup @ [BLet(tmp, Comp.prim2 ~loc ~env op left_imm right_imm)])
+  | TExpAssign(left, right) ->
+    let tmp = gensym "assign" in
+    let (left_imm, left_setup) = transl_imm left in
+    let (right_imm, right_setup) = transl_imm right in
+    (Imm.id ~loc ~env tmp, left_setup @ right_setup @ [BLet(tmp, Comp.assign ~loc ~env left_imm right_imm)])
   | TExpIf(cond, _then, _else) ->
     let tmp = gensym "if" in
     let (cond_imm, cond_setup) = transl_imm cond in
     (Imm.id ~loc ~env tmp, cond_setup @ [BLet(tmp, Comp.if_ ~loc ~env cond_imm (transl_anf_expression _then) (transl_anf_expression _else))])
+  | TExpWhile(cond, body) ->
+    let tmp = gensym "while" in
+    (Imm.id ~loc ~env tmp, [BLet(tmp, Comp.while_ ~loc ~env (transl_anf_expression cond) (transl_anf_expression body))])
   | TExpApp(func, args) ->
     let tmp = gensym "app" in
     let (new_func, func_setup) = transl_imm func in

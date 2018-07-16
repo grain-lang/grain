@@ -14,6 +14,8 @@ type prim1 = Parsetree.prim1 =
   | Add1
   | Sub1
   | Not
+  | Box
+  | Unbox
   | IsNum
   | IsBool
   | IsTuple
@@ -55,10 +57,12 @@ and comp_expression_desc =
   | CImmExpr of imm_expression
   | CPrim1 of prim1 * imm_expression
   | CPrim2 of prim2 * imm_expression * imm_expression
+  | CAssign of imm_expression * imm_expression
   | CTuple of imm_expression list
   | CGetTupleItem of int32 * imm_expression
   | CSetTupleItem of int32 * imm_expression * imm_expression
   | CIf of imm_expression * anf_expression * anf_expression
+  | CWhile of anf_expression * anf_expression
   | CSwitch of imm_expression * (int * anf_expression) list
   | CApp of imm_expression * imm_expression list
   | CAppBuiltin of string * string * imm_expression list (* Unwrapped function call (to WASM functions) *)

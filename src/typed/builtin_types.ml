@@ -35,16 +35,19 @@ let ident_number = ident_create "Number"
 and ident_bool = ident_create "Bool"
 and ident_string = ident_create "String"
 and ident_void = ident_create "Void" (* TODO: When we have type aliases, make "Unit" an alias *)
+and ident_box = ident_create "Box"
 
 let path_number = PIdent ident_number
 and path_bool = PIdent ident_bool
 and path_string = PIdent ident_string
 and path_void = PIdent ident_void
+and path_box = PIdent ident_box
 
 let type_number = newgenty (TTyConstr(path_number, [], ref TMemNil))
 and type_bool = newgenty (TTyConstr(path_bool, [], ref TMemNil))
 and type_string = newgenty (TTyConstr(path_string, [], ref TMemNil))
 and type_void = newgenty (TTyConstr(path_void, [], ref TMemNil))
+and type_box var = newgenty (TTyConstr(path_box, [var], ref TMemNil))
 
 
 let all_predef_exns = [

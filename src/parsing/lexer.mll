@@ -91,6 +91,7 @@ rule token = parse
   | "wasm" { WASM }
   | "add1" { ADD1 }
   | "sub1" { SUB1 }
+  | "while" { WHILE }
   | "if" { IF }
   | "else" { ELSE }
   | "true" { TRUE }
@@ -99,6 +100,8 @@ rule token = parse
   | "isnum" { ISNUM }
   | "istuple" { ISTUPLE }
   | "import" { IMPORT }
+  | "box" { BOX }
+  | "unbox" { UNBOX }
   | "->" { ARROW }
   | "=>" { THICKARROW }
   | "data" { DATA }

@@ -364,6 +364,8 @@ let compile_prim1 env p1 arg : Wasm.Ast.instr' Concatlist.t =
       Ast.Const(const_int32 0x80000000);
       Ast.Binary(Values.I32 Ast.IntOp.Xor);
     ]
+  | Box -> failwith "Unreachable case; should never get here: Box"
+  | Unbox -> failwith "Unreachable case; should never get here: Unbox"
   | IsBool -> failwith "Unsupported (compcore): IsBool"
   | IsNum -> failwith "Unsupported (compcore): IsNum"
   | IsTuple -> failwith "Unsupported (compcore): IsTuple"
@@ -598,7 +600,7 @@ let compile_tuple_op env tup_imm op =
     let idx_int = Int32.to_int idx in
     tup @ (untag TupleTagType) @ (compile_imm env imm) +@ [
         store ~offset:(4 * (idx_int + 1)) ();
-      ]
+      ] @ (compile_imm env imm)
 
 
 let collect_backpatches env f =
@@ -732,6 +734,22 @@ and compile_instr env instr =
              compiled_thn,
              compiled_els);
     ]
+
+  | MWhile(cond, body) ->
+    let compiled_cond = (compile_block env cond) in
+    let compiled_body = (compile_block env body) in
+    singleton (Ast.Block([Types.I32Type],
+               Concatlist.mapped_list_of_t add_dummy_loc @@ 
+               singleton (Ast.Loop([Types.I32Type],
+                          Concatlist.mapped_list_of_t add_dummy_loc @@
+                          singleton (Ast.Const const_false) @
+                          compiled_cond @
+                          decode_bool +@
+                          [Ast.Test(Values.I32 Ast.IntOp.Eqz); 
+                           Ast.BrIf (add_dummy_loc @@ Int32.of_int 1)] +@
+                          [Ast.Drop] @
+                          compiled_body +@
+                          [Ast.Br (add_dummy_loc @@ Int32.of_int 0)]))))
 
   | MError(err, args) ->
     call_error_handler env err args
