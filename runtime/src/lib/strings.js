@@ -8,7 +8,7 @@ export function stringAppend(s1, s2) {
   assertString(s2);
   s1 = grainToJSVal(s1);
   s2 = grainToJSVal(s2);
-  let appended = s1.concat(s2);
+  let appended = s1 + s2;
   let ret = JSToGrainVal(appended);
   return ret;
 }
