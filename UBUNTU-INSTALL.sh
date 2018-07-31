@@ -35,7 +35,7 @@ read ANS
 
 # Checking wether the user is fine with
 # those changes.
-if [ "$ANS" = "n" ]; then
+if [ "$ANS" != "y" ]; then
     echo "Alright, you don't want"
     echo "us to do that so were aborting!"
     exit 1
