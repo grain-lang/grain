@@ -188,3 +188,16 @@ let unsound_optimizations = toggle_flag
     ~doc:"Compile with optimizations which may remove runtime errors"
     false
 
+let stdlib_directory() : string option =
+  let open BatPathGen.OfString in
+    let open Infix in
+    !grain_root
+        |> Option.map (fun root ->
+              to_string @@ (of_string root) /: "lib" /: "grain" /: "stdlib")
+
+let module_search_path() =
+  match (stdlib_directory()) with
+  | Some(x) when !use_stdlib -> (!include_dirs) @ [x] (* stdlib goes last *)
+  | Some _
+  | None -> !include_dirs
+
