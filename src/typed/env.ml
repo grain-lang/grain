@@ -713,7 +713,7 @@ module Persistent_signature = struct
       cmi : Cmi_format.cmi_infos }
 
   let load = ref (fun ?loc:(loc=Location.dummy_loc) ~unit_name ->
-    match locate_module_file ~loc !(Grain_utils.Config.include_dirs) unit_name with
+    match locate_module_file ~loc (Grain_utils.Config.module_search_path()) unit_name with
     | filename -> Some { filename; cmi = read_cmi filename }
     | exception Not_found -> None)
 end

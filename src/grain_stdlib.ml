@@ -4,15 +4,7 @@ open Grain_parsing
 
 (*type grain_library = sourcespan program -> sourcespan program*)
 
-let stdlib_directory() : string option =
-  let open BatPathGen.OfString in
-  let open Infix in
-  !Grain_utils.Config.grain_root
-  |> Option.map (fun root ->
-      to_string @@ (of_string root) /: "lib" /: "grain" /: "stdlib")
-
-let include_dirs() =
-  (Option.map_default (fun x -> [x]) [] (stdlib_directory())) @ !Grain_utils.Config.include_dirs
+let include_dirs() = Grain_utils.Config.module_search_path()
 
 let locate_module (lib : string) =
   let lib_path dir =

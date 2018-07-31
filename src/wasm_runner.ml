@@ -382,7 +382,7 @@ let configure_runner() =
         let entries = Sys.readdir d in
         Array.iter load_file entries
       in
-      List.iter process_dir (!Grain_utils.Config.include_dirs);
+      List.iter process_dir (Grain_utils.Config.module_search_path());
       configured := true;
       ptr_zero := !ptr;
     end

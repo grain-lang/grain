@@ -91,6 +91,8 @@ let infer_root() =
     prerr_string "Failed to find Grain installation root. \
                   Please set the GRAIN_ROOT environment variable \
                   in order to use the standard library.\n"
+  else if !Grain_utils.Config.verbose then
+    prerr_string (Printf.sprintf "Grain Root: %s\n" (Option.get !Grain_utils.Config.grain_root))
 
 let infer_root_if_needed() =
   match !Grain_utils.Config.grain_root with
