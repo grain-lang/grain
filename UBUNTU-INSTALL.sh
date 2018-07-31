@@ -54,6 +54,15 @@ if [ $? ]; then
     opam init                         &&
     opam install ${REQ_OPAM_PACKS[@]} &&
 
+    # Source 'init.sh'.
+    . ~/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true &&
+
+    # Adding sourcing of 'init.sh' to '~/.bashrc'.
+    echo ". ~/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true" >> ~/.bashrc &&
+
+    # Re-sourcing '~/.bashrc'/.
+    . ~/.bashrc
+
     # Building and installing 'grain'.
     make                              &&
     make install                      &&
