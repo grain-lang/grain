@@ -1,3 +1,9 @@
+val stdlib_directory : unit -> string option
+(** The Grain stdlib directory, based on the current configuration *)
+
+val module_search_path : unit -> string list
+(** The list of directories to search for modules in, based on the current configuration *)
+
 val grain_root : string option ref
 (** Root directory for things like standard library lookups *)
 
