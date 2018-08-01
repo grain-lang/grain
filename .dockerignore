@@ -1,0 +1,34 @@
+# dockerignore
+*.dockerfile
+docker-compose.yml
+Dockerfile
+
+# gitignore
+main
+*.install
+output/*.o
+output/*.run
+output/*.s
+output/*.dSYM
+script/node_modules
+.installed-pkgs
+*.sw*
+*~
+*.o
+*.log
+_build/*
+.installed-pkgs
+notes.org
+**/node_modules/**/*
+*.wasm
+*.wasm.wast
+*.wasm.modsig
+.tern-port
+setup.data
+setup.ml
+myocamlbuild.ml
+.merlin
+runtime/dist
+script/public/javascripts/grain-runtime.js
+script/public/javascripts/grain-runtime-browser.js
+/*.gr

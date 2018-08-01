@@ -1,4 +1,4 @@
-#!node --harmony
+#!/usr/bin/env node
 
 let program = require('commander');
 let compile = require('./compile.js');
@@ -16,7 +16,7 @@ program
 program.on('--help', () => {
   console.log('\n\n  File can be either a Grain (.gr) or WebAssembly (.wasm) file.\n');
 });
-  
+
 program.parse(process.argv);
 
 let wasmFile;
