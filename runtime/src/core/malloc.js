@@ -6,7 +6,7 @@
  * essentially hand-laying out structs in memory).
  */
 
-function mallocJSModule(stdlib, foreign, ext_heap) {
+export function mallocJSModule(stdlib, foreign, ext_heap) {
   "use asm";
 
   /* UNDERSTANDING THE STRUCTURE OF THE FREE LIST
@@ -303,7 +303,13 @@ function printAllocations(malloc, buf) {
 function testMallocModule() {
   var heapSize = 8196;
   var asmHeap = new ArrayBuffer(heapSize);
-  var malloc = mallocJSModule(window, {initialHeapSize: heapSize, growHeap: () => -1}, asmHeap);
+  var globNS;
+  if (typeof window === 'undefined') {
+    globNS = global;
+  } else {
+    globNS = window;
+  }
+  var malloc = mallocJSModule(globNS, {initialHeapSize: heapSize, growHeap: () => -1}, asmHeap);
   printAllocations(malloc, asmHeap);
   var first = malloc.malloc(20);
   console.log(`first: ${first}`);
@@ -325,6 +331,4 @@ function testMallocModule() {
   printAllocations(malloc, asmHeap);
 }
 
-if (window.module) {
-  module.exports = mallocJSModule;
-}
+

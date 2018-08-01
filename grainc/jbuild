@@ -1,8 +1,21 @@
 (jbuild_version 1)
 
+(library
+ ((name grain_root_utils)
+  (libraries (grain))
+  (modules (root_utils))))
+
 (executable
  ((name grainc)
   (public_name grainc)
   (package grain)
-  (libraries (grain))))
+  (modules (grainc))
+  (libraries (grain grain_root_utils))))
+
+(executable
+ ((name grain_root)
+  (public_name grain-root)
+  (package grain)
+  (modules (grain_root))
+  (libraries (grain grain_root_utils))))
 
