@@ -64,6 +64,15 @@ Alternatively, you can use the CLI to run your program on Node:
 grain test.gr
 ```
 
+### Docker
+
+For your convience, a Docker image is avaible with the following tools installed: `grainc`, `grain`, `node`, `npm`, and `vim`. To run the image,
+
+```sh
+docker run --rm -it nickbreaton/grain
+```
+
+
 Copyright ©️ 2017-2018 Philip Blair and Oscar Spencer.
 
 [philip]: https://github.com/belph
