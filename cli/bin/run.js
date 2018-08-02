@@ -1,5 +1,6 @@
 let runtime = require('../../runtime/dist/grain-runtime.js');
-let locator = runtime.defaultFileLocator('_build/install/default/lib/grain/stdlib');
+let locatorPath = require('./locator-path');
+let locator = runtime.defaultFileLocator(locatorPath);
 let GrainRunner = runtime.buildGrainRunner(locator);
 
 module.exports = async function run(path) {
