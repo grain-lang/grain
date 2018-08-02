@@ -69,7 +69,7 @@ grain test.gr
 For your convience, a Docker image is avaible with the following tools installed: `grainc`, `grain`, `node`, `npm`, and `vim`. To run the image,
 
 ```sh
-docker run --rm -it nickbreaton/grain
+docker run --rm -it grain-lang/grain
 ```
 
 
