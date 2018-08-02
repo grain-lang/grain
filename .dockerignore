@@ -1,4 +1,5 @@
 # dockerignore
+.git
 *.dockerfile
 docker-compose.yml
 Dockerfile

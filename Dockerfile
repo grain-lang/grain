@@ -46,4 +46,4 @@ RUN npm install && \
 
 # SETUP FOR END USER
 WORKDIR /root
-ENTRYPOINT ["/bin/bash"]
+CMD ["bash"]
