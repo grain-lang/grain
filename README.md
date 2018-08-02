@@ -19,11 +19,15 @@ For more information about the language, visit [grain-lang.org](https://grain-la
 
 ### Compiler
 
-To build the compiler, have `ocaml` (version >= 4.02.3), `opam`, and `jbuilder` installed
-and on your `PATH`.
-Then, running `make` will install any needed OCaml dependencies and build the
-compiler.
+To build the compiler, have `ocaml` (version = 4.05) and `opam` (version >= 2.0) installed and on your path. Then,
+
+```sh
+opam install . --deps-only
+make
+```
+
 Running `make install` will symlink `grainc` onto your PATH.
+
 You can run the tests with `make tests`.
 
 ### Runtime
