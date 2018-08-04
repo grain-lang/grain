@@ -2,6 +2,7 @@ import 'fast-text-encoding';
 
 import { heapController, grainCheckMemory } from './core/heap';
 import { printClosure } from './core/closures';
+import { ManagedMemory } from './core/memory';
 import { GrainRunner } from './core/runner';
 import { throwGrainError } from './errors/errors';
 import { grainToJSVal } from './utils/utils';
@@ -21,6 +22,8 @@ export const view = new Int32Array(memory.buffer);
 export const encoder = new TextEncoder("utf-8");
 export const decoder = new TextDecoder("utf-8");
 
+const managedMemory = new ManagedMemory(memory);
+
 const importObj = {
   console: {
     log: print,
@@ -31,7 +34,8 @@ const importObj = {
     mem: memory,
     tbl: table,
     throwError: throwGrainError,
-    checkMemory: grainCheckMemory
+    checkMemory: grainCheckMemory,
+    malloc: managedMemory.malloc.bind(managedMemory)
   },
   grainBuiltins: {
     print,
