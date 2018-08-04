@@ -1,3 +1,4 @@
+open Grain_parsing
 open Grain_typed
 open Anftree
 
@@ -95,3 +96,21 @@ and comp_count_vars c =
   | CApp(_, args) -> List.length args
   | CAppBuiltin(_, _, args) -> List.length args
   | _ -> 0
+
+
+module ClearLocationsArg : Anf_mapper.MapArgument = struct
+  include Anf_mapper.DefaultMapArgument
+
+  let leave_imm_expression i =
+    {i with imm_loc=Location.dummy_loc}
+
+  let leave_comp_expression c =
+    {c with comp_loc=Location.dummy_loc}
+
+  let leave_anf_expression a =
+    {a with anf_loc=Location.dummy_loc}
+end
+
+module ClearLocations = Anf_mapper.MakeMap(ClearLocationsArg)
+
+let clear_locations = ClearLocations.map_anf_program

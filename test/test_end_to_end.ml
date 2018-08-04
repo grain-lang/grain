@@ -155,9 +155,18 @@ let tgcefile ?todo name heap_size input_file errmsg = name>::(wrap_todo todo @@ 
 
 let test_final_anf program_str outfile (expected : Grain_middle_end.Anftree.anf_expression) test_ctxt =
   let open Grain_middle_end in
-  let final_anf = compile_string_to_final_anf outfile program_str in
-  let result = Sexplib.Sexp.to_string_hum @@ Anftree.sexp_of_anf_expression (final_anf.body) in
-  assert_equal (Sexplib.Sexp.to_string_hum @@ Anftree.sexp_of_anf_expression expected) result
+  let final_anf = Anf_utils.clear_locations @@ compile_string_to_final_anf outfile program_str in
+  let saved_disabled = !Grain_typed.Ident.disable_stamps in
+  let result, expected = try begin
+      Grain_typed.Ident.disable_stamps := true;
+      let result = Sexplib.Sexp.to_string_hum @@ Anftree.sexp_of_anf_expression (final_anf.body) in
+      let expected = (Sexplib.Sexp.to_string_hum @@ Anftree.sexp_of_anf_expression expected) in
+      result, expected
+    end with e ->
+      Grain_typed.Ident.disable_stamps := saved_disabled;
+      raise e
+  in
+  assert_equal ~printer:(fun x -> x) expected result
 
 (*let trs ?todo name (program : string) (expected : 'a aprogram) = name>::(wrap_todo todo @@ test_resolve_scope default_compile_options program name expected);;*)
 
@@ -511,7 +520,7 @@ let indigo_tests = [
                   (AExp.let_ Nonrecursive [(a, Comp.prim2 Plus (Imm.id x) (Imm.const (Const_int 1)))]
                      (AExp.comp (Comp.prim2 Plus (Imm.id a) (Imm.id a))))));
 
-  tfinalanf ~todo:"Optimizations not yet ported" "test_dae" "((x) => {let a = x + 1; let b = x + 1; x + 1})"
+  tfinalanf "test_dae" "((x) => {let a = x + 1; let b = x + 1; x + 1})"
     (let open Grain_typed in
      let x = Ident.create "x" in
      AExp.comp (Comp.lambda [x] @@ AExp.comp @@ Comp.prim2 Plus (Imm.id x) (Imm.const (Const_int 1))));

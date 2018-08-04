@@ -17,8 +17,11 @@
 open Sexplib.Conv
 open Format
 
+let disable_stamps = ref false
+let stamps_disabled _ = !disable_stamps
+
 type t = {
-  stamp: int;
+  stamp: int [@sexp_drop_if stamps_disabled];
   name: string;
   mutable flags: int [@default 0] [@sexp_drop_default];
 } [@@deriving sexp]

@@ -381,6 +381,7 @@ let transl_anf_module ({statements; body; env; signature} : typed_program) : anf
     env;
     imports;
     signature;
+    analyses=ref [];
   }
 
 
