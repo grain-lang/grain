@@ -26,6 +26,8 @@ include Identifiable.S with type t := t
    - [compare] compares identifiers by binding location
 *)
 
+val disable_stamps: bool ref
+(** Whether stamps should be disabled when serializing to s-expressions *)
 val save_state: unit -> saved_state
 val restore_state: saved_state -> unit
 val create: string -> t
