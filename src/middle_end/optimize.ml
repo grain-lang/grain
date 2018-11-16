@@ -5,6 +5,7 @@ let analysis_passes = [
 ]
 
 let optimization_passes = [
+  Optimize_constants.optimize;
   Optimize_dead_assignments.optimize
 ]
 
