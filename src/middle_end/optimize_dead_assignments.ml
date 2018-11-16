@@ -16,14 +16,6 @@ let can_remove ident =
 module DAEArg : Anf_mapper.MapArgument = struct
   include Anf_mapper.DefaultMapArgument
 
-  let enter_comp_expression ({comp_desc = desc} as c) =
-    begin match desc with
-      | CLambda(args, _) ->
-        List.iter mark_used args
-      | _ -> ()
-    end;
-    c
-
   let enter_imm_expression ({imm_desc = desc} as i) =
     begin match desc with
       | ImmId(i) -> mark_used i
