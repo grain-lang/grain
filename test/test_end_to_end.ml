@@ -504,14 +504,33 @@ let indigo_tests = [
           1))*) "1";
 
   (* Primarily a constant-propagation test, but DAE removes the let bindings as well *)
-  tfinalanf "test_const_propagation" "((x) => {
+  tfinalanf "test_const_propagation" "{
+    let x = 4;
+    let y = x;
+    x}"
+    (AExp.comp (Comp.imm (Imm.const (Const_int 4))));
+
+  (* Primarily a constant-propagation test, but DAE removes the let bindings as well *)
+  tfinalanf "test_const_propagation2" "((x) => {
     let x = 4;
     let y = x;
     x})"
     (let open Grain_typed in
      let x = Ident.create "x" in
      AExp.comp (Comp.lambda [x]
-                  (AExp.comp (Comp.imm (Imm.const (Const_int 4))))));
+                     (AExp.comp (Comp.imm (Imm.const (Const_int 4))))));
+
+  (* Primarily a constant-propagation test, but DAE removes the let bindings as well *)
+  tfinalanf "test_const_propagation_shadowing" "{
+  let x = 5;
+  let y = 12;
+  let z = y;
+  {
+    let y = x;
+    x
+  };
+  x + y}"
+    (AExp.comp (Comp.imm (Imm.const (Const_int 17))));
 
   (* Primarily a constant-folding test, but DAE removes the let bindings as well *)
   tfinalanf ~todo:"Optimizations not yet ported" "test_const_folding" "
