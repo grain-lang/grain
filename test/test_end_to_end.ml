@@ -525,6 +525,12 @@ let indigo_tests = [
      let x = Ident.create "x" in
      AExp.comp (Comp.lambda [x] @@ AExp.comp @@ Comp.prim2 Plus (Imm.id x) (Imm.const (Const_int 1))));
 
+  tfinalanf "test_dae_lambda_unused" "((x) => {1})"
+    (let open Grain_typed in
+     let x = Ident.create "x" in
+     AExp.comp (Comp.lambda [x]
+     (AExp.comp (Comp.imm (Imm.const (Const_int 1))))));
+
   (* All optimizations are needed to work completely on this input *)
   tfinalanf ~todo:"Optimizations not yet ported" "test_optimizations_work_together" "
     let x = 5;
