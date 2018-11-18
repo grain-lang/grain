@@ -530,16 +530,17 @@ let indigo_tests = [
     x
   };
   x + y}"
-    (AExp.comp (Comp.imm (Imm.const (Const_int 17))));
+    (AExp.seq (Comp.imm (Imm.const (Const_int 5)))
+      (AExp.comp (Comp.imm (Imm.const (Const_int 17)))));
 
   (* Primarily a constant-folding test, but DAE removes the let bindings as well *)
-  tfinalanf ~todo:"Optimizations not yet ported" "test_const_folding" "
+  tfinalanf "test_const_folding" "{
     let x = 4 + 5;
     let y = x * 2;
     let z = y - x;
     let a = x + 7;
     let b = 14;
-    a + b" (AExp.comp (Comp.imm (Imm.const (Const_int 30))));
+    a + b}" (AExp.comp (Comp.imm (Imm.const (Const_int 30))));
 
   tfinalanf ~todo:"Optimizations not yet ported" "test_cse" "((x) => {let a = x + 1; let b = x + 1; a + b})"
     (let open Grain_typed in
@@ -561,7 +562,7 @@ let indigo_tests = [
      (AExp.comp (Comp.imm (Imm.const (Const_int 1))))));
 
   (* All optimizations are needed to work completely on this input *)
-  tfinalanf ~todo:"Optimizations not yet ported" "test_optimizations_work_together" "
+  tfinalanf ~todo:"CSE NYI" "test_optimizations_work_together" "
     let x = 5;
     let foo = ((y) => {y});
     let y = foo(3) + 5;
