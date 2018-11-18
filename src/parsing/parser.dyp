@@ -65,22 +65,13 @@ let fix_block_mapper super =
     | PExpBlock([]) -> super.expr mapper e
     | PExpBlock(elts) ->
       let elts = List.map (mapper.expr mapper) elts in
-      let pre, last = List.fold_left (fun (acc_l, acc_last) cur ->
-          match acc_last with
-          | None -> (acc_l, Some cur)
-          | Some e -> (e::acc_l, Some cur)) ([], None) elts in
-      let pre = List.rev pre in
-      let last = match last with
-        | None -> raise (Syntaxerr.Error(LetWithoutBody(pexp_loc)))
-        | Some(l) -> l in
-      let fixed = List.fold_right (fun ({pexp_desc; pexp_loc; _} as e) acc ->
-          match pexp_desc with
-          | PExpLet(r, vbs, {pexp_desc=PExpBlock(b)}) ->
-            [{e with pexp_desc=PExpLet(r, vbs, Ast_helper.Exp.block ~loc:pexp_loc (b @ acc))}]
-          | _ -> e::acc) pre [last] in
-      (match fixed with
-       | [x] -> x
-       | _ -> {e with pexp_desc=PExpBlock(fixed)})
+      (* Properly nest let bindings *)
+      let elts = List.fold_right (fun ({pexp_desc} as stmt) elts ->
+        match pexp_desc with
+        | PExpLet(r, binds, _) -> [{stmt with pexp_desc=PExpLet(r, binds, {stmt with pexp_desc=PExpBlock(elts)})}]
+        | _ -> stmt::elts
+      ) elts [] in
+      {e with pexp_desc=PExpBlock(elts)}
     | _ -> super.expr mapper e in
   {super with expr}
 
