@@ -24,19 +24,19 @@ module ExpressionHash =
       | _ -> false
     let hash i = match i with
       | CImmExpr({imm_desc=desc}) -> 
-        100 lxor Hashtbl.hash desc
+        (Hashtbl.hash "CImmExpr") lxor Hashtbl.hash desc
       | CPrim1(p, {imm_desc=desc}) -> 
-        200 lxor Hashtbl.hash p lxor Hashtbl.hash desc
+        (Hashtbl.hash "CPrim1") lxor Hashtbl.hash p lxor Hashtbl.hash desc
       | CPrim2(p, {imm_desc=x}, {imm_desc=y}) -> 
-        300 lxor Hashtbl.hash p lxor Hashtbl.hash x lxor Hashtbl.hash y
+        (Hashtbl.hash "CPrim2") lxor Hashtbl.hash p lxor Hashtbl.hash x lxor Hashtbl.hash y
       | CTuple(exps) -> 
-        List.fold_left (fun hash {imm_desc} -> hash lxor Hashtbl.hash imm_desc) 400 exps
+        (Hashtbl.hash "CTuple") lxor List.fold_left (fun hash {imm_desc} -> hash lxor Hashtbl.hash imm_desc) 0 exps
       | CApp({imm_desc=desc}, args) -> 
-        500 lxor List.fold_left (fun hash {imm_desc} -> hash lxor Hashtbl.hash imm_desc) (Hashtbl.hash desc) args
+        (Hashtbl.hash "CApp") lxor List.fold_left (fun hash {imm_desc} -> hash lxor Hashtbl.hash imm_desc) (Hashtbl.hash desc) args
       | CAppBuiltin(_module, name, args) -> 
-        600 lxor Hashtbl.hash _module lxor List.fold_left (fun hash {imm_desc} -> hash lxor Hashtbl.hash imm_desc) (Hashtbl.hash name) args
+        (Hashtbl.hash "CAppBuiltin") lxor Hashtbl.hash _module lxor List.fold_left (fun hash {imm_desc} -> hash lxor Hashtbl.hash imm_desc) (Hashtbl.hash name) args
       | CString(string) ->
-        700 lxor Hashtbl.hash string
+        (Hashtbl.hash "CString") lxor Hashtbl.hash string
       | _ -> Hashtbl.hash i
   end
 
