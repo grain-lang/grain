@@ -340,7 +340,8 @@ let egg_eater_stdlib_tests = [
   tlib ~todo:"ADT printing NYI"
     "stdlib_reverse" ("import lists; reverse(" ^ mylist ^ ")") "Cons(3, Cons(2, Cons(1, Empty)))";
   tlib "stdlib_length" "import lists; length(Cons(1, Cons(2, Cons(3, Empty))))" "3";
-  tlib "stdlib_equal_1" "import lists; (1, 2) == (1, 2)" "false";
+  (* With compiler optimizations, these are optimized into the same tuple instance *)
+  tlib "stdlib_equal_1" "import lists; (1, 2) == (1, 2)" "true";
   tlib "stdlib_equal_2" "import pervasives; equal((1, 2), (1, 2))" "true";
   tlib "stdlib_equal_3" "import lists; equal(Cons(1, Cons(2, Cons(3, Empty))), Cons(1, Cons(2, Cons(3, Empty))))" "true";
   tlib "stdlib_equal_4" "import lists; equal(1, 1)" "true";
@@ -542,7 +543,7 @@ let indigo_tests = [
     let b = 14;
     a + b}" (AExp.comp (Comp.imm (Imm.const (Const_int 30))));
 
-  tfinalanf ~todo:"Optimizations not yet ported" "test_cse" "((x) => {let a = x + 1; let b = x + 1; a + b})"
+  tfinalanf "test_cse" "((x) => {let a = x + 1; let b = x + 1; a + b})"
     (let open Grain_typed in
      let x = Ident.create "x" in
      let a = Ident.create "a" in
@@ -562,11 +563,11 @@ let indigo_tests = [
      (AExp.comp (Comp.imm (Imm.const (Const_int 1))))));
 
   (* All optimizations are needed to work completely on this input *)
-  tfinalanf ~todo:"CSE NYI" "test_optimizations_work_together" "
+  tfinalanf "test_optimizations_work_together" "{
     let x = 5;
     let foo = ((y) => {y});
     let y = foo(3) + 5;
-    foo(3) + x"
+    foo(3) + x}"
     (let open Grain_typed in
      let foo = Ident.create "foo" in
      let y = Ident.create "y" in
@@ -575,16 +576,16 @@ let indigo_tests = [
      @@ AExp.let_ Nonrecursive [(app, Comp.app (Imm.id foo) [(Imm.const (Const_int 3))])]
      @@ AExp.comp @@ Comp.prim2 Plus (Imm.id app) (Imm.const (Const_int 5)));
 
-  tfsound ~todo:"mutable types NYI" "test_counter_sound" "counter" "0\n1\n2\n2";
+  tfsound "test_counter_sound" "counter" "1\n2\n3\n3";
   tefsound ~todo:"TCO NYI" "fib_big" "too-much-fib" "overflow";
   te "test_dae_sound" "let x = 2 + false; 3" "type";
-  (*te "test_const_fold_times_zero_sound" "let f = ((x) => {x * 0}); f(false)" "number";
-  te "test_const_fold_or_sound" "let f = ((x) => {x or true}); f(1)" "bool";
-  te "test_const_fold_and_sound" "let f = ((x) => {false and x}); f(1)" "bool";
-  te "test_const_fold_plus_sound" "let f = ((x) => {0 + x}); f(true)" "number";
-  te "test_const_fold_times_one_sound" "let f = ((x) => {x * 1}); f(true)" "number";*)
+  te "test_const_fold_times_zero_sound" "let f = ((x) => {x * 0}); f(false)" "Number";
+  te "test_const_fold_or_sound" "let f = ((x) => {x or true}); f(1)" "Bool";
+  te "test_const_fold_and_sound" "let f = ((x) => {false and x}); f(1)" "Bool";
+  te "test_const_fold_plus_sound" "let f = ((x) => {0 + x}); f(true)" "Number";
+  te "test_const_fold_times_one_sound" "let f = ((x) => {x * 1}); f(true)" "Number";
 
-  (*te ~opts:{default_compile_options with sound_optimizations=false}
+  (* te ~opts:{default_compile_options with sound_optimizations=false}
     "test_unsound_dae" "let x = 2 + false; 3" "type";
   t ~opts:{default_compile_options with sound_optimizations=false}
     "test_unsound_const_fold_times_zero" "let f = ((x) => {x * 0}); f(false)" "0";
@@ -595,7 +596,7 @@ let indigo_tests = [
   t ~opts:{default_compile_options with sound_optimizations=false}
     "test_unsound_const_fold_plus" "let f = ((x) => {0 + x}); f(true)" "true";
   t ~opts:{default_compile_options with sound_optimizations=false}
-    "test_unsound_const_fold_times_one" "let f = ((x) => {x * 1}); f(true)" "true";*)
+    "test_unsound_const_fold_times_one" "let f = ((x) => {x * 1}); f(true)" "true"; *)
 ]
 
 let string_tests =
