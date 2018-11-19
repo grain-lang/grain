@@ -1,17 +1,26 @@
 open Anftree
 open Grain_typed
 
-let pure_identifiers = ref (Ident.empty : bool Ident.tbl)
+type analysis +=
+  | Pure = Analyze_purity.Pure
+
 let used_symbols = ref (Ident.empty : bool Ident.tbl)
 
 let mark_used id =
   used_symbols := Ident.add id true !used_symbols
 
-let can_remove ident =
+let get_purity {comp_analyses} =
+  let rec find_purity : analysis list -> bool option = function
+  | Pure(x)::_ -> Some(x)
+  | _::tl -> find_purity tl
+  | [] -> None in
+  Option.default false @@ find_purity !comp_analyses
+
+let can_remove ident value =
   try
     not (Ident.find_same ident !used_symbols)
   with
-  | Not_found -> Ident.find_same ident !pure_identifiers
+  | Not_found -> get_purity value
 
 module DAEArg : Anf_mapper.MapArgument = struct
   include Anf_mapper.DefaultMapArgument
@@ -33,14 +42,14 @@ module DAEArg : Anf_mapper.MapArgument = struct
         | AEComp({comp_desc=CImmExpr({imm_desc=ImmId(id)})}) when Ident.same id bind ->
           {a with anf_desc=AEComp(value)}
         | _ ->
-          if can_remove bind then
+          if can_remove bind value then
             body
           else
             a
       end
     | AELet(g, r, binds, body) ->
       let new_binds = List.fold_right (fun (id, v) tl ->
-          if can_remove id then
+          if can_remove id v then
             tl
           else
             (id, v)::tl) binds [] in
@@ -54,6 +63,5 @@ module DAEMapper = Anf_mapper.MakeMap(DAEArg)
 
 let optimize anfprog =
   (* Reset state *)
-  pure_identifiers := Analyze_purity.pure_identifiers anfprog;
   used_symbols := Ident.empty;
   DAEMapper.map_anf_program anfprog
