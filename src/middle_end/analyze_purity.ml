@@ -46,14 +46,17 @@ let anf_expression_purity_internal a = Option.get (anf_expression_purity a)
 let push_purity lref p =
   lref := (Pure p)::!lref
 
-let analyze_imm_expression i =
-  push_purity i.imm_analyses true
+let analyze_imm_expression ({imm_desc; imm_analyses}) =
+  match imm_desc with
+  | ImmId(id) -> push_purity imm_analyses (get_id_purity id)
+  | ImmConst(_) -> push_purity imm_analyses true
 
 let rec analyze_comp_expression ({comp_desc = desc; comp_analyses = analyses}) =
   let purity = match desc with
     | CImmExpr(i) ->
       analyze_imm_expression i;
       imm_expression_purity_internal i (* <- this was from the original purity analysis. Is it correct? *)
+    | CPrim1(Box, _)
     | CPrim1(Unbox, _) ->
       false
     | CPrim1(_, _)
@@ -84,8 +87,15 @@ let rec analyze_comp_expression ({comp_desc = desc; comp_analyses = analyses}) =
       analyze_imm_expression f;
       let arg_purities = List.map (fun i -> analyze_imm_expression i; imm_expression_purity_internal i) args in
       (imm_expression_purity_internal f) && (List.for_all (fun x -> x) arg_purities)
-    | CAppBuiltin _ ->
-      false (* TODO *)
+    | CAppBuiltin(_module, f, args) ->
+      let arg_purities = List.map (fun i -> analyze_imm_expression i; imm_expression_purity_internal i) args in
+      begin match (_module, f) with
+      | "grainBuiltins", "equal"
+      | "grainBuiltins", "toString"
+      | "grainBuiltins", "stringAppend"
+      | "grainBuiltins", "stringSlice" -> (List.for_all (fun x -> x) arg_purities)
+      | _ -> false
+      end;
     | CLambda(args, body) ->
       List.iter (fun i -> set_id_purity i true) args;
       analyze_anf_expression body;
