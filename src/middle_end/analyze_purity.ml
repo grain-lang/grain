@@ -55,7 +55,7 @@ let rec analyze_comp_expression ({comp_desc = desc; comp_analyses = analyses}) =
   let purity = match desc with
     | CImmExpr(i) ->
       analyze_imm_expression i;
-      imm_expression_purity_internal i (* <- this was from the original purity analysis. Is it correct? *)
+      imm_expression_purity_internal i
     | CPrim1(Box, _)
     | CPrim1(Unbox, _) ->
       false
@@ -83,23 +83,22 @@ let rec analyze_comp_expression ({comp_desc = desc; comp_analyses = analyses}) =
       analyze_imm_expression exp;
       let branches_purities = List.map (fun (t, b) -> analyze_anf_expression b; anf_expression_purity_internal b) branches in
       (imm_expression_purity_internal exp) && (List.for_all (fun x -> x) branches_purities)
-    | CApp(f, args) ->
+    | CApp(f, _) ->
+      (* Arguments are all immediates, and accessing an immediate is always pure *)
       analyze_imm_expression f;
-      let arg_purities = List.map (fun i -> analyze_imm_expression i; imm_expression_purity_internal i) args in
-      (imm_expression_purity_internal f) && (List.for_all (fun x -> x) arg_purities)
-    | CAppBuiltin(_module, f, args) ->
-      let arg_purities = List.map (fun i -> analyze_imm_expression i; imm_expression_purity_internal i) args in
+      imm_expression_purity_internal f
+    | CAppBuiltin(_module, f, _) ->
+      (* Arguments are all immediates, and accessing an immediate is always pure *)
       begin match (_module, f) with
       | "grainBuiltins", "equal"
       | "grainBuiltins", "toString"
       | "grainBuiltins", "stringAppend"
-      | "grainBuiltins", "stringSlice" -> (List.for_all (fun x -> x) arg_purities)
+      | "grainBuiltins", "stringSlice" -> true
       | _ -> false
       end;
     | CLambda(args, body) ->
       List.iter (fun i -> set_id_purity i true) args;
       analyze_anf_expression body;
-      (* FIXME [philip]: I think this is technically wrong; the lambda expression itself *is always* pure? *)
       anf_expression_purity_internal body
     | CString(s) -> true
   in

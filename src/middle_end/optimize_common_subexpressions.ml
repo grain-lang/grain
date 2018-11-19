@@ -2,6 +2,9 @@ open Anftree
 open Grain_typed
 open Types
 
+type analysis +=
+  | Pure = Analyze_purity.Pure
+
 module ExpressionHash =
   struct
     type t = comp_expression_desc
@@ -43,7 +46,6 @@ module ExpressionHash =
 module ExpressionHashtbl = Hashtbl.Make(ExpressionHash)
 
 
-let pure_identifiers = ref (Ident.empty : bool Ident.tbl)
 let rewrite_rules = ref (Ident.empty : Ident.t Ident.tbl)
 let known_expressions = ExpressionHashtbl.create 50
 
@@ -66,11 +68,12 @@ let pop_expression e =
 let get_known_expression e =
   ExpressionHashtbl.find_opt known_expressions e
 
-let is_pure_identifier id =
-  try
-    Ident.find_same id !pure_identifiers
-  with
-  | Not_found -> false
+let get_purity {comp_analyses} =
+  let rec find_purity : analysis list -> bool option = function
+  | Pure(x)::_ -> Some(x)
+  | _::tl -> find_purity tl
+  | [] -> None in
+  Option.default false @@ find_purity !comp_analyses
 
 module CSEArg : Anf_mapper.MapArgument = struct
   include Anf_mapper.DefaultMapArgument
@@ -78,11 +81,10 @@ module CSEArg : Anf_mapper.MapArgument = struct
   let enter_anf_expression ({anf_desc = desc} as a) =
     begin match desc with
     | AELet(_, _, binds, _) ->
-      List.iter (fun (id, {comp_desc}) ->
-        ignore @@ is_pure_identifier id;
+      List.iter (fun (id, ({comp_desc} as c)) ->
         match get_known_expression comp_desc with
         | Some(known_id) -> create_rewrite_rule id known_id
-        | None -> if is_pure_identifier id then push_expression comp_desc id
+        | None -> if get_purity c then push_expression comp_desc id
       ) binds
     | _ -> ()
     end;
@@ -111,7 +113,6 @@ module CSEMapper = Anf_mapper.MakeMap(CSEArg)
 
 let optimize anfprog =
   (* Reset state *)
-  pure_identifiers := Analyze_purity.pure_identifiers anfprog;
   rewrite_rules := Ident.empty;
   ExpressionHashtbl.reset known_expressions;
   CSEMapper.map_anf_program anfprog
