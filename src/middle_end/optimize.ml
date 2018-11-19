@@ -7,6 +7,7 @@ let analysis_passes = [
 let optimization_passes = [
   Optimize_constants.optimize;
   Optimize_simple_binops.optimize;
+  Optimize_common_subexpressions.optimize;
   Optimize_dead_assignments.optimize
 ]
 
