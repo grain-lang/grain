@@ -19,7 +19,7 @@ let either_printer e =
 (* Read a file into a string *)
 let string_of_file file_name =
   let inchan = open_in file_name in
-  let buf = String.create (in_channel_length inchan) in
+  let buf = Bytes.create (in_channel_length inchan) in
   really_input inchan buf 0 (in_channel_length inchan);
   buf 
 
