@@ -228,7 +228,7 @@ let rec compile_comp env c =
 
 and compile_anf_expr env a =
   match a.anf_desc with
-  | AESeq(hd, tl) -> (compile_comp env hd)::(compile_anf_expr env tl)
+  | AESeq(hd, tl) -> (compile_comp env hd)::MDrop::(compile_anf_expr env tl)
   | AELet(global, recflag, binds, body) ->
     let get_loc idx (id, _) =
       match global with
