@@ -1,26 +1,19 @@
 open Anftree
 open Grain_typed
 
-type analysis +=
-  | Pure = Analyze_purity.Pure
-
 let used_symbols = ref (Ident.empty : bool Ident.tbl)
 
 let mark_used id =
   used_symbols := Ident.add id true !used_symbols
 
-let get_purity {comp_analyses} =
-  let rec find_purity : analysis list -> bool option = function
-  | Pure(x)::_ -> Some(x)
-  | _::tl -> find_purity tl
-  | [] -> None in
-  Option.default false @@ find_purity !comp_analyses
+let get_comp_purity c =
+  Option.default false @@ Analyze_purity.comp_expression_purity c
 
 let can_remove ident value =
   try
     not (Ident.find_same ident !used_symbols)
   with
-  | Not_found -> get_purity value
+  | Not_found -> get_comp_purity value
 
 module DAEArg : Anf_mapper.MapArgument = struct
   include Anf_mapper.DefaultMapArgument
