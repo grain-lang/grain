@@ -693,6 +693,7 @@ and compile_block env block =
 
 and compile_instr env instr =
   match instr with
+  | MDrop -> singleton Ast.Drop
   | MImmediate(imm) -> compile_imm env imm
   | MAllocate(alloc) -> compile_allocation env alloc
   | MTupleOp(tuple_op, tup) -> compile_tuple_op env tup tuple_op
