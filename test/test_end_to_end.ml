@@ -577,7 +577,6 @@ let indigo_tests = [
      @@ AExp.comp @@ Comp.prim2 Plus (Imm.id app) (Imm.const (Const_int 5)));
 
   tfsound "test_counter_sound" "counter" "1\n2\n3\n3";
-  tefsound ~todo:"TCO NYI" "fib_big" "too-much-fib" "overflow";
   te "test_dae_sound" "let x = 2 + false; 3" "type";
   te "test_const_fold_times_zero_sound" "let f = ((x) => {x * 0}); f(false)" "Number";
   te "test_const_fold_or_sound" "let f = ((x) => {x or true}); f(1)" "Bool";
