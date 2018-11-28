@@ -2,9 +2,11 @@ open Anftree
 
 let analysis_passes = [
   Analyze_purity.analyze;
+  Analyze_tail_calls.analyze;
 ]
 
 let optimization_passes = [
+  Optimize_tail_calls.optimize;
   Optimize_constants.optimize;
   Optimize_simple_binops.optimize;
   Optimize_common_subexpressions.optimize;
