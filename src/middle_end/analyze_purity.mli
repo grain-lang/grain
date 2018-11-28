@@ -1,10 +1,6 @@
 open Anftree
 open Grain_typed
 
-type analysis +=
-  | Pure of bool
-  | PurityTable of bool Ident.tbl
-
 val imm_expression_purity : imm_expression -> bool option
 val comp_expression_purity : comp_expression -> bool option
 val anf_expression_purity : anf_expression -> bool option

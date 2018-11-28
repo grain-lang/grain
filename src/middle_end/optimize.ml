@@ -1,14 +1,14 @@
 open Anftree
 
 let analysis_passes = [
-  Analyze_purity.analyze
+  Analyze_purity.analyze;
 ]
 
 let optimization_passes = [
   Optimize_constants.optimize;
   Optimize_simple_binops.optimize;
   Optimize_common_subexpressions.optimize;
-  Optimize_dead_assignments.optimize
+  Optimize_dead_assignments.optimize;
 ]
 
 module ClearAnalysesArg : Anf_iterator.IterArgument = struct

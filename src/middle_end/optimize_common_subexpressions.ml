@@ -2,9 +2,6 @@ open Anftree
 open Grain_typed
 open Types
 
-type analysis +=
-  | Pure = Analyze_purity.Pure
-
 module ExpressionHash =
   struct
     type t = comp_expression_desc
@@ -68,12 +65,8 @@ let pop_expression e =
 let get_known_expression e =
   ExpressionHashtbl.find_opt known_expressions e
 
-let get_purity {comp_analyses} =
-  let rec find_purity : analysis list -> bool option = function
-  | Pure(x)::_ -> Some(x)
-  | _::tl -> find_purity tl
-  | [] -> None in
-  Option.default false @@ find_purity !comp_analyses
+let get_comp_purity c =
+  Option.default false @@ Analyze_purity.comp_expression_purity c
 
 module CSEArg : Anf_mapper.MapArgument = struct
   include Anf_mapper.DefaultMapArgument
@@ -84,7 +77,7 @@ module CSEArg : Anf_mapper.MapArgument = struct
       List.iter (fun (id, ({comp_desc} as c)) ->
         match get_known_expression comp_desc with
         | Some(known_id) -> create_rewrite_rule id known_id
-        | None -> if get_purity c then push_expression comp_desc id
+        | None -> if get_comp_purity c then push_expression comp_desc id
       ) binds
     | _ -> ()
     end;
