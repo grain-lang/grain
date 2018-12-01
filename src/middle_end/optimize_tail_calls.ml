@@ -71,7 +71,7 @@ and _isOdd = () => {
 ```
 
 Things to note:
-  * Two references, `continue` and `next` are available to the entire set of recursive funtions.
+  * Two references, `continue` and `next` are available to the entire set of tail-recursive funtions.
   * References are created for all arguments to the functions. These are available to the entire set of recursive
     functions.
   * Each function is transformed into two functions-- an invocation function and an iteree function. The invocation 
@@ -79,7 +79,8 @@ Things to note:
     The iteree function is a thunk that first binds the would-be arguments from the references to names, then proceeds
     with the original function body with minor alterations, the most important being a replacement of tail calls with a
     setup to continue the iteration.
-
+  * Further optimization could be done for directly-recursive functions, such as using only a single function, but this
+    is not implemented at this time.
 *)
 
 open Anftree
