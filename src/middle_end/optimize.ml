@@ -11,6 +11,7 @@ let optimization_passes = [
   Optimize_simple_binops.optimize;
   Optimize_common_subexpressions.optimize;
   Optimize_dead_assignments.optimize;
+  Optimize_dead_branches.optimize;
 ]
 
 module ClearAnalysesArg : Anf_iterator.IterArgument = struct
