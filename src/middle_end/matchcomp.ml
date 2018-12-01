@@ -119,7 +119,7 @@ module MatchTreeCompiler = struct
                 let arg_binds = extract_bindings nested_pat (Comp.imm ~loc ~env cstr_arg_imm) in
                 match arg_binds with
                 | [] -> []
-                | _ -> (cstr_arg_name, Comp.tuple_get ~loc ~env (Int32.of_int (idx + 1)) data_id)::arg_binds
+                | _ -> (cstr_arg_name, Comp.adt_get ~loc ~env (Int32.of_int (idx)) data_id)::arg_binds
               end
             else [] in
           this_binds @ other_binds in
@@ -165,7 +165,7 @@ module MatchTreeCompiler = struct
       let base = compile_tree_help Fail values in
       let value_constr_name = Ident.create "match_constructor" in
       let value_constr_id = Imm.id value_constr_name in
-      let value_constr = Comp.tuple_get (Int32.of_int 0) cur_value in
+      let value_constr = Comp.adt_get_tag cur_value in
       (* Fold left should be safe here, since there should be at most one branch
          per constructor *)
       let switch_body_ans, switch_body_setup = List.fold_left (fun (body_ans, body_setup) (tag, tree) ->
