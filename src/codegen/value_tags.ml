@@ -3,13 +3,19 @@ open Sexplib.Conv
 
 type heap_tag_type =
   | StringType
+  | DOMType
+  | ADTType
 [@@deriving sexp]
 
 let tag_val_of_heap_tag_type = function
   | StringType -> 1
+  | DOMType -> 2
+  | ADTType -> 3
 
 let heap_tag_type_of_tag_val = function
   | x when x = 1 -> StringType
+  | x when x = 2 -> DOMType
+  | x when x = 3 -> ADTType
   | x -> failwith (Printf.sprintf "Unknown tag type: %d" x)
 
 

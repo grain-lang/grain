@@ -53,11 +53,17 @@ module MakeIter(Iter : IterArgument) = struct
         iter_imm_expression rhs
       | CTuple(elts) ->
         List.iter (iter_imm_expression) elts
-      | CGetTupleItem(_, idx) ->
-        iter_imm_expression idx
-      | CSetTupleItem(_, idx, value) ->
-        iter_imm_expression idx;
+      | CAdt(tag, elts) ->
+        iter_imm_expression tag;
+        List.iter (iter_imm_expression) elts
+      | CGetTupleItem(_, tup) ->
+        iter_imm_expression tup
+      | CSetTupleItem(_, tup, value) ->
+        iter_imm_expression tup;
         iter_imm_expression value
+      | CGetAdtItem(_, adt)
+      | CGetAdtTag(adt) ->
+        iter_imm_expression adt
       | CIf(c, t, f) ->
         iter_imm_expression c;
         iter_anf_expression t;

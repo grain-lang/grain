@@ -21,7 +21,8 @@ export class GrainRunner {
         this.ptr += roundUp(bytes, 8);
         return ret;
       },
-      relocBase: 0
+      relocBase: 0,
+      moduleRuntimeId: 0
     };
   }
 
@@ -63,6 +64,7 @@ export class GrainRunner {
         await located.run();
         this.ptrZero = this.ptr;
         this.imports['grainRuntime']['relocBase'] += located.tableSize;
+        this.imports['grainRuntime']['moduleRuntimeId']++;
         this.imports[imp.module] = located.exports;
       }
     }

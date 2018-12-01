@@ -343,13 +343,13 @@ let rec transl_anf_statement (({ttop_desc; ttop_env=env; ttop_loc=loc} as s) : t
           let rhs = match cstr_tag with
             | CstrConstant _ ->
               let compiled_tag = compile_constructor_tag cstr_tag in
-              Comp.tuple ~loc ~env [Imm.const ~loc ~env (Const_int compiled_tag)]
+              Comp.adt ~loc ~env (Imm.const ~loc ~env (Const_int compiled_tag)) []
             | CstrBlock _ ->
               let compiled_tag = compile_constructor_tag cstr_tag in
               let args = List.map (fun _ -> gensym "constr_arg") cstr_args in
               let arg_ids = List.map (fun a -> Imm.id ~loc ~env a) args in
-              let tuple_elts = (Imm.const ~loc ~env (Const_int compiled_tag))::arg_ids in
-              Comp.lambda ~loc ~env args (AExp.comp ~loc ~env (Comp.tuple ~loc ~env tuple_elts))
+              let imm_tag = Imm.const ~loc ~env (Const_int compiled_tag) in
+              Comp.lambda ~loc ~env args (AExp.comp ~loc ~env (Comp.adt ~loc ~env imm_tag arg_ids))
             | CstrUnboxed -> failwith "NYI: ANF CstrUnboxed" in
           BLetGlobal(Nonrecursive, [cd_id, rhs]) in
         Some(List.map bind_constructor descrs), []

@@ -23,21 +23,6 @@ type codegen_env = {
   imported_globals: (int32 Ident.tbl) Ident.tbl;
 }
 
-let init_codegen_env() = {
-  heap_top=add_dummy_loc (Int32.of_int 1);
-  num_args=0;
-  func_offset=0;
-  global_offset=1;
-  import_global_offset=0;
-  import_func_offset=0;
-  import_offset=0;
-  func_types=ref BatDeque.empty;
-  backpatches=ref [];
-  imported_funcs=Ident.empty;
-  imported_globals=Ident.empty;
-}
-
-
 (* Number of swap variables to allocate *)
 let swap_slots_i32 = [Types.I32Type]
 let swap_slots_i64 = [Types.I64Type]
@@ -47,6 +32,7 @@ let swap_slots = List.append swap_slots_i32 swap_slots_i64
 
 
 (* These are the bare-minimum imports needed for basic runtime support *)
+let module_runtime_id = Ident.create_persistent "moduleRuntimeId"
 let reloc_base = Ident.create_persistent "relocBase"
 let table_size = Ident.create_persistent "GRAIN$TABLE_SIZE"
 let runtime_mod = Ident.create_persistent "grainRuntime"
@@ -64,6 +50,13 @@ let runtime_global_imports = [
     mimp_kind=MImportWasm;
     mimp_setup=MSetupNone;
   };
+  {
+    mimp_mod=runtime_mod;
+    mimp_name=module_runtime_id;
+    mimp_type=MGlobalImport I32Type;
+    mimp_kind=MImportWasm;
+    mimp_setup=MSetupNone;
+  }
 ]
 
 let runtime_function_imports = [
@@ -98,6 +91,22 @@ let runtime_function_imports = [
 ]
 
 let runtime_imports = List.append runtime_global_imports runtime_function_imports
+
+
+let init_codegen_env() = {
+  heap_top=add_dummy_loc (Int32.of_int (List.length runtime_global_imports));
+  num_args=0;
+  func_offset=0;
+  global_offset=2;
+  import_global_offset=0;
+  import_func_offset=0;
+  import_offset=0;
+  func_types=ref BatDeque.empty;
+  backpatches=ref [];
+  imported_funcs=Ident.empty;
+  imported_globals=Ident.empty;
+}
+
 
 
 (* Seems a little silly when named this way, but it makes a little more sense in the
@@ -545,7 +554,7 @@ let allocate_closure env ?lambda ({func_idx; arity; variables} as closure_data) 
   (heap_allocate env closure_size) @ set_swap @ get_swap +@ [
     Ast.Const(const_int32 num_free_vars);
   ] @ get_swap +@ [
-    Ast.GetGlobal(add_dummy_loc Int32.zero); (* <- relocation offset *)
+    Ast.GetGlobal(var_of_ext_global env runtime_mod reloc_base);
     Ast.Const(wrap_int32 (Int32.(add func_idx (of_int env.func_offset))));
     Ast.Binary(Values.I32 Ast.IntOp.Add);
   ] @ get_swap +@ [
@@ -559,6 +568,35 @@ let allocate_closure env ?lambda ({func_idx; arity; variables} as closure_data) 
     Ast.Binary(Values.I32 Ast.IntOp.Or);
   ]
 
+let allocate_adt env tag elts =
+  (* TODO: We don't really need to store the arity here. Could move this to module-static info *)
+  (* Heap memory layout of ADT types:
+    [ <value type tag>, <module_tag>, <tag>, <arity>, elts ... ]
+   *)
+  let num_elts = List.length elts in
+  let get_swap = get_swap env 0 in
+  let set_swap = set_swap env 0 in
+  let compile_elt idx elt =
+    get_swap @
+    (compile_imm env elt) +@ [
+      store ~offset:(4 * (idx + 4)) ();
+    ] in
+
+  (heap_allocate env (num_elts + 4)) @ set_swap @ get_swap +@ [
+    Ast.Const(const_int32 (tag_val_of_heap_tag_type ADTType));
+    store ~offset:0 ();
+  ] @ get_swap +@ [
+    Ast.GetGlobal(var_of_ext_global env runtime_mod module_runtime_id);
+    store ~offset:4 ();
+  ] @ get_swap @ (compile_imm env tag) +@ [
+    store ~offset:8 ();
+  ] @ get_swap +@ [
+    Ast.Const(const_int32 num_elts);
+    store ~offset:12 ();
+  ] @ (Concatlist.flatten @@ List.mapi compile_elt elts) @ get_swap +@ [
+    Ast.Const(const_int32 @@ tag_val_of_tag_type (GenericHeapType (Some ADTType)));
+    Ast.Binary(Values.I32 Ast.IntOp.Or);
+  ]
 
 let allocate_tuple env elts =
   let num_elts = List.length elts in
@@ -584,6 +622,7 @@ let compile_allocation env alloc_type =
   | MClosure(cdata) -> allocate_closure env cdata
   | MTuple(elts) -> allocate_tuple env elts
   | MString(str) -> allocate_string env str
+  | MADT(tag, elts) -> allocate_adt env tag elts
 
 
 let compile_tuple_op env tup_imm op =
@@ -601,6 +640,24 @@ let compile_tuple_op env tup_imm op =
     tup @ (untag TupleTagType) @ (compile_imm env imm) +@ [
         store ~offset:(4 * (idx_int + 1)) ();
       ] @ (compile_imm env imm)
+
+
+let compile_adt_op env adt_imm op =
+  let adt = compile_imm env adt_imm in
+  match op with
+  | MAdtGet(idx) ->
+    let idx_int = Int32.to_int idx in 
+    adt @ (untag (GenericHeapType (Some ADTType))) +@ [
+      load ~offset:(4 * (idx_int + 4)) ();
+    ]
+  | MAdtGetModule ->
+    adt @ (untag (GenericHeapType (Some ADTType))) +@ [
+      load ~offset:4 ();
+    ]
+  | MAdtGetTag ->
+    adt @ (untag (GenericHeapType (Some ADTType))) +@ [
+      load ~offset:8 ();
+    ]
 
 
 let collect_backpatches env f =
@@ -697,6 +754,7 @@ and compile_instr env instr =
   | MImmediate(imm) -> compile_imm env imm
   | MAllocate(alloc) -> compile_allocation env alloc
   | MTupleOp(tuple_op, tup) -> compile_tuple_op env tup tuple_op
+  | MAdtOp(adt_op, adt) -> compile_adt_op env adt adt_op
   | MPrim1(p1, arg) -> compile_prim1 env p1 arg
   | MPrim2(p2, arg1, arg2) -> compile_prim2 env p2 arg1 arg2
   | MSwitch(arg, branches, default) -> compile_switch env arg branches default
@@ -886,7 +944,7 @@ let compile_exports env {functions; imports; exports; num_globals} =
           };
           add_dummy_loc {
             Ast.name=encode_string (Ident.name table_size);
-            Ast.edesc=add_dummy_loc (Ast.GlobalExport (add_dummy_loc @@ Int32.of_int (num_globals + 2)));
+            Ast.edesc=add_dummy_loc (Ast.GlobalExport (add_dummy_loc @@ Int32.of_int (num_globals + 1 + (List.length runtime_global_imports))));
           };
         ]))
 

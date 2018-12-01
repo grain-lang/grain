@@ -210,12 +210,18 @@ let rec compile_comp env c =
     MTupleOp(MTupleSet(Int32.zero, compile_imm env arg2), compile_imm env arg1)
   | CTuple(args) ->
     MAllocate(MTuple (List.map (compile_imm env) args))
+  | CAdt(tag, args) ->
+    MAllocate(MADT(compile_imm env tag, List.map (compile_imm env) args))
   | CString(s) ->
     MAllocate(MString s)
   | CGetTupleItem(idx, tup) ->
     MTupleOp(MTupleGet(idx), compile_imm env tup)
   | CSetTupleItem(idx, tup, value) ->
     MTupleOp(MTupleSet(idx, compile_imm env value), compile_imm env tup)
+  | CGetAdtItem(idx, adt) ->
+    MAdtOp(MAdtGet(idx), compile_imm env adt)
+  | CGetAdtTag(adt) ->
+    MAdtOp(MAdtGetTag, compile_imm env adt)
   | CLambda(args, body) ->
     MAllocate(MClosure(compile_lambda env args body))
   | CApp(f, args) ->
