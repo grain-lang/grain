@@ -6,25 +6,16 @@ type analysis +=
   | TailCall of bool
   | TailRecursive of bool
 
-module IdentHash =
-  struct
-    type t = Ident.t
-    let equal i j = Ident.same i j
-    let hash i = Hashtbl.hash i
-  end
-
-module IdentHashtbl = Hashtbl.Make(IdentHash)
-
-let tail_callable_names = IdentHashtbl.create 50
+let tail_callable_names = Ident.Hashtbl.create 50
 
 let push_tail_callable_name id =
-  IdentHashtbl.add tail_callable_names id true
+  Ident.Hashtbl.add tail_callable_names id true
 
 let pop_tail_callable_name id =
-  IdentHashtbl.remove tail_callable_names id
+  Ident.Hashtbl.remove tail_callable_names id
 
 let is_tail_callable id =
-  IdentHashtbl.mem tail_callable_names id
+  Ident.Hashtbl.mem tail_callable_names id
 
 let push_tail_call analysis =
   analysis := TailCall(true)::!analysis
