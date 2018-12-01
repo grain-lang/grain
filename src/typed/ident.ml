@@ -110,6 +110,13 @@ let print ppf i =
   | -1 -> fprintf ppf "%s#" i.name
   | n -> fprintf ppf "%s/%i%s" i.name n (if global i then "g" else "")
 
+type _t = t
+module Hashtbl = Hashtbl.Make(struct
+  type t = _t
+  let equal i j = same i j
+  let hash i = Hashtbl.hash i
+end)
+
 type 'a tbl =
     Empty
   | Node of 'a tbl * 'a data * 'a tbl * int
