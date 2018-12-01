@@ -98,18 +98,18 @@ type transform_rule = {
   next_f_id: Ident.t
 }
 
-let rewrite_rules = Ident.Hashtbl.create 50
-let transform_rules = Ident.Hashtbl.create 50
+let rewrite_rules = Ident_tbl.create 50
+let transform_rules = Ident_tbl.create 50
 
 let push_rewrite_rule a b =
-  Ident.Hashtbl.add rewrite_rules a b
+  Ident_tbl.add rewrite_rules a b
 
 let pop_rewrite_rule a =
-  Ident.Hashtbl.remove rewrite_rules a
+  Ident_tbl.remove rewrite_rules a
 
 let get_rewrite_rule id =
   try
-    Ident.Hashtbl.find rewrite_rules id
+    Ident_tbl.find rewrite_rules id
   with
   | Not_found -> id
 
@@ -117,19 +117,19 @@ let transform_rule_stack = ref []
 
 let push_transform_rule a b =
   transform_rule_stack := a :: !transform_rule_stack;
-  Ident.Hashtbl.add transform_rules a b
+  Ident_tbl.add transform_rules a b
 
 let pop_transform_rule () =
   let current_rule = List.hd !transform_rule_stack in
   let rest_rules = List.tl !transform_rule_stack in
   transform_rule_stack := rest_rules;
-  Ident.Hashtbl.remove transform_rules current_rule
+  Ident_tbl.remove transform_rules current_rule
 
 let get_transform_rule id =
-  Ident.Hashtbl.find transform_rules id
+  Ident_tbl.find transform_rules id
 
 let has_transform_rule id =
-  Ident.Hashtbl.mem transform_rules id
+  Ident_tbl.mem transform_rules id
 
 let comp_is_tail_call c =
   Option.default false @@ Analyze_tail_calls.comp_is_tail_call c
@@ -349,7 +349,7 @@ module TailCallsMapper = Anf_mapper.MakeMap(TailCallsArg)
 
 let optimize anfprog =
   (* Reset state *)
-  Ident.Hashtbl.clear rewrite_rules;
-  Ident.Hashtbl.clear transform_rules;
+  Ident_tbl.clear rewrite_rules;
+  Ident_tbl.clear transform_rules;
   transform_rule_stack := [];
   TailCallsMapper.map_anf_program anfprog
