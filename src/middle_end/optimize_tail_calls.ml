@@ -79,8 +79,8 @@ Things to note:
     The iteree function is a thunk that first binds the would-be arguments from the references to names, then proceeds
     with the original function body with minor alterations, the most important being a replacement of tail calls with a
     setup to continue the iteration.
-  * Further optimization could be done for directly-recursive functions, such as using only a single function, but this
-    is not implemented at this time.
+  * Further optimizations (such as using only a single function) could be done for directly-recursive functions, but
+    this is not implemented at this time.
 *)
 
 open Anftree
