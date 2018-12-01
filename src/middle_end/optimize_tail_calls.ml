@@ -80,7 +80,7 @@ Things to note:
     with the original function body with minor alterations, the most important being a replacement of tail calls with a
     setup to continue the iteration.
   * Further optimizations (such as using only a single function) could be done for directly-recursive functions, but
-    this is not implemented at this time.
+    these are not implemented at this time.
 *)
 
 open Anftree
