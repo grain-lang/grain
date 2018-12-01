@@ -524,15 +524,14 @@ let indigo_tests = [
   t "test_dead_branch_elimination_5" "
       let x = box(1);
       let y = box(2);
-      let z = {
+      let z =
         if (true) {
           x := 3;
           y := 4
         } else {
           x := 5;
           y := 6
-        }
-      };
+        };
       unbox(x) + unbox(y)" "7";
 
 
