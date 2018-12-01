@@ -1,7 +1,7 @@
 (**
 This module transforms tail-recursive directly and mutually recursive functions into loops.
 
-Given this example program:
+Until WebAssembly supports tail calls, this module aims to transform this program:
 ```
 let rec isEven = (x) => {
   if (x <= 1) {
@@ -19,7 +19,7 @@ and isOdd = (y) => {
 }
 ```
 
-This module aims to transform that program into this program:
+Into this program:
 ```
 let continue = box 0,
 next = box 0,
