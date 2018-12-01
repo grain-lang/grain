@@ -504,6 +504,38 @@ let indigo_tests = [
              ACExpr(CApp(ImmId("f1$1", 3), [ImmNum(1, 3); ImmNum(2, 3)], 3)), 3),
           1))*) "1";
 
+  tfinalanf "test_dead_branch_elimination_1" 
+    "{ if (true) {4} else {5} }"
+    (AExp.comp (Comp.imm (Imm.const (Const_int 4))));
+
+  tfinalanf "test_dead_branch_elimination_2" 
+    "{ if (false) {4} else {5} }"
+    (AExp.comp (Comp.imm (Imm.const (Const_int 5))));
+
+  tfinalanf "test_dead_branch_elimination_3" 
+    "{ let x = true; if (x) {4} else {5} }"
+    (AExp.comp (Comp.imm (Imm.const (Const_int 4))));
+
+  tfinalanf "test_dead_branch_elimination_4" 
+    "{let x = if (true) {4; 4} else {5}; x}"
+    (AExp.seq (Comp.imm (Imm.const (Const_int 4)))
+      (AExp.comp (Comp.imm (Imm.const (Const_int 4)))));
+
+  t "test_dead_branch_elimination_5" "
+      let x = box(1);
+      let y = box(2);
+      let z = {
+        if (true) {
+          x := 3;
+          y := 4
+        } else {
+          x := 5;
+          y := 6
+        }
+      };
+      unbox(x) + unbox(y)" "7";
+
+
   (* Primarily a constant-propagation test, but DAE removes the let bindings as well *)
   tfinalanf "test_const_propagation" "{
     let x = 4;
