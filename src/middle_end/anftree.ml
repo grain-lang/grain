@@ -10,6 +10,8 @@ type global_flag = Global | Nonglobal [@@deriving sexp]
 
 type 'a loc = 'a Location.loc
 
+type analysis = ..
+
 type prim1 = Parsetree.prim1 =
   | Add1
   | Sub1
@@ -42,6 +44,7 @@ type imm_expression = {
   imm_desc: imm_expression_desc;
   imm_loc: Location.t [@sexp_drop_if locs_disabled];
   imm_env: Env.t sexp_opaque;
+  imm_analyses: (analysis list) ref sexp_opaque;
 } [@@deriving sexp]
 
 and imm_expression_desc =
@@ -55,6 +58,7 @@ type comp_expression = {
   comp_desc: comp_expression_desc;
   comp_loc: Location.t [@sexp_drop_if locs_disabled];
   comp_env: Env.t sexp_opaque;
+  comp_analyses: (analysis list) ref sexp_opaque;
 }
 [@@deriving sexp]
 
@@ -81,6 +85,7 @@ and anf_expression = {
   anf_desc: anf_expression_desc;
   anf_loc: Location.t [@sexp_drop_if locs_disabled];
   anf_env: Env.t sexp_opaque;
+  anf_analyses: (analysis list) ref sexp_opaque;
 }
 [@@deriving sexp]
 
@@ -105,6 +110,7 @@ type import_spec = {
   imp_use_id: Ident.t; (* <- internal references to the name will use this *)
   imp_desc: import_desc;
   imp_shape: import_shape;
+  imp_analyses: (analysis list) ref sexp_opaque;
 }
 [@@deriving sexp]
 
@@ -113,4 +119,5 @@ type anf_program = {
   env: Env.t sexp_opaque;
   imports: import_spec list;
   signature: Cmi_format.cmi_infos;
+  analyses: (analysis list) ref sexp_opaque;
 } [@@deriving sexp]

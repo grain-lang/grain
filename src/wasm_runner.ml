@@ -41,7 +41,8 @@ let reset_channels() =
 let memory_internal = (Memory.alloc (MemoryType {Types.min=(Int32.of_int 1); Types.max=None}))
 let memory = ExternMemory memory_internal
 
-let tbl_internal = (Table.alloc (TableType({Types.min=(Int32.of_int 64); Types.max=None}, Types.AnyFuncType)))
+(* This is more than large enough for the tests. In the JS runtime, we grow the table dynamically. *)
+let tbl_internal = (Table.alloc (TableType({Types.min=(Int32.of_int 256); Types.max=None}, Types.AnyFuncType)))
 let tbl = ExternTable tbl_internal
 
 let load_word addr : int32 =
@@ -312,7 +313,7 @@ let module_to_resolver modname inst name t =
   | _ ->
     Option.get @@ Instance.export inst name
 
-let start_grain_module module_ inst =
+let start_grain_module module_ modname inst =
   let start = Instance.export inst (Utf8.decode "GRAIN$MAIN") in
   begin match start with
     | None -> failwith "No start function found in module!"
@@ -374,7 +375,7 @@ let configure_runner() =
             (*Printf.eprintf "Linking module: %s\n" modname;*)
             let imports = Import.link m in
             let inst = Eval.init m imports in
-            start_grain_module m inst;
+            start_grain_module m modname inst;
             Import.register (Utf8.decode ("GRAIN$MODULE$" ^ modname)) (module_to_resolver modname inst);
           end else ()
             (*Printf.eprintf "Skipping file: %s\n" (d ^ "/" ^ f);*)

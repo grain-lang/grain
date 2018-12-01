@@ -36,4 +36,4 @@ let derelativize ?base fname =
       base //@ path
     end
   in
-  to_string (normalize_filepath path)
+  to_string (normalize_in_tree path)
