@@ -32,6 +32,7 @@ let push_tail_call analysis =
 let push_tail_recursive analysis =
   analysis := TailRecursive(true)::!analysis
 
+(* Indicate whether or not this expression contails a tail call that needs optimization *)
 let rec analyze_comp_expression ({comp_desc = desc; comp_analyses = analyses}) =
   match desc with
   | CIf(_, t, f) ->
@@ -60,6 +61,7 @@ let rec analyze_comp_expression ({comp_desc = desc; comp_analyses = analyses}) =
   | CPrim2 _
   | CImmExpr _ -> false
 
+(* Mark functions as tail-recursive *)
 and analyze_anf_expression ({anf_desc = desc; anf_analyses = analyses}) =
   match desc with
   | AELet(_, Nonrecursive, binds, body) ->
