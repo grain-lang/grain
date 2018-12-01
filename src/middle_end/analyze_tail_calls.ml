@@ -6,16 +6,16 @@ type analysis +=
   | TailCall of bool
   | TailRecursive of bool
 
-let tail_callable_names = Ident.Hashtbl.create 50
+let tail_callable_names = Ident_tbl.create 50
 
 let push_tail_callable_name id =
-  Ident.Hashtbl.add tail_callable_names id true
+  Ident_tbl.add tail_callable_names id true
 
 let pop_tail_callable_name id =
-  Ident.Hashtbl.remove tail_callable_names id
+  Ident_tbl.remove tail_callable_names id
 
 let is_tail_callable id =
-  Ident.Hashtbl.mem tail_callable_names id
+  Ident_tbl.mem tail_callable_names id
 
 let push_tail_call analysis =
   analysis := TailCall(true)::!analysis
