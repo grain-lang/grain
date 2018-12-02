@@ -4,28 +4,31 @@ let program = require('commander');
 let compile = require('./compile.js');
 let run = require('./run.js');
 
-let file;
+let givenFile
 
 program
   .version('Grain compiler 0.0.0\nGrain cli 0.0.0', '-v, --version')
+  .description('Compile and run Grain programs. 🌾')
   .arguments('<file>')
-  .action((givenFile) => {
-    file = givenFile || '';
+  .option('-w, --wasm', 'run a wasm file')
+  .option('-p, --print-output', 'print the output of the program')
+  .option('-f, --cflags <cflags>', 'pass flags to the Grain compiler')
+  .action(function (file) {
+    givenFile = file
+    
+    let wasmFile;
+    if (program.wasm) {
+      wasmFile = file;
+    } else {
+      wasmFile = compile(file);
+    }
+
+    run(wasmFile, program.printOutput);
   });
 
-program.on('--help', () => {
-  console.log('\n\n  File can be either a Grain (.gr) or WebAssembly (.wasm) file.\n');
-});
-  
 program.parse(process.argv);
 
-let wasmFile;
-if (file.endsWith('gr')) {
-  wasmFile = compile(file);
-} else if (file.endsWith('wasm')) {
-  wasmFile = file;
-} else {
-  program.help();
+if (typeof givenFile === 'undefined') {
+  program.outputHelp()
+  process.exit(-1)
 }
-
-run(wasmFile);
