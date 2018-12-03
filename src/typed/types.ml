@@ -24,13 +24,13 @@ type commutable =
   | TComOk
   | TComUnknown
   | TComLink of commutable ref
-[@@deriving sexp]
+[@@deriving sexp, yojson]
 
 type type_expr = {
   mutable desc: type_desc;
   mutable level: int;
   id: int;
-} [@@deriving sexp]
+} [@@deriving sexp, yojson]
 
 and type_desc =
   | TTyVar of string option
@@ -71,18 +71,11 @@ and abbrev_memo =
         second the expansion. *)
   | TMemLink of abbrev_memo ref (** Abbreviations can be found after this indirection *)
 
-type value_description = {
-  val_type: type_expr;
-  val_kind: value_kind;
-  val_fullpath: Path.t;
-  val_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
-} [@@deriving sexp]
-
-and constructor_tag =
+type constructor_tag =
   | CstrConstant of int
   | CstrBlock of int
   | CstrUnboxed
-[@@deriving sexp]
+[@@deriving sexp, yojson]
 
 and constructor_description = {
   cstr_name : string;                (** Constructor name *)
@@ -94,23 +87,51 @@ and constructor_description = {
   cstr_consts: int;                  (** Number of constant constructors *)
   cstr_nonconsts: int;               (** Number of non-constant constructors *)
   cstr_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
-} [@@deriving sexp]
+} [@@deriving sexp, yojson]
 
-and value_kind =
+and value_unbound_reason =
+  | ValUnboundGhostRecursive
+
+type value_kind =
   | TValReg
   | TValPrim of Primitive.description sexp_opaque
   | TValUnbound of value_unbound_reason
   | TValConstructor of constructor_description
+[@@deriving sexp]
 
-and value_unbound_reason =
-  | ValUnboundGhostRecursive
+(* See: https://github.com/janestreet/ppx_sexp_conv/issues/26 *)
+let rec value_kind_to_yojson = function
+  | TValReg -> `String "TValReg"
+  | TValPrim d -> `List [`String "TValPrim"; Primitive.description_to_yojson d]
+  | TValUnbound r -> `List [`String "TValUnbound"; value_unbound_reason_to_yojson r]
+  | TValConstructor d -> `List [`String "TValConstructor"; constructor_description_to_yojson d]
+
+and value_kind_of_yojson =
+  let res_map f = function
+    | Result.Ok v -> Result.Ok (f v)
+    | Result.Error e -> Result.Error e
+  in
+  function
+  | `String "TValReg" -> Result.Ok TValReg
+  | `List [`String "TValPrim"; d] -> res_map (fun d -> TValPrim d) (Primitive.description_of_yojson d)
+  | `List [`String "TValUnbound"; r] -> res_map (fun r -> TValUnbound r) (value_unbound_reason_of_yojson r)
+  | `List [`String "TValConstructor"; d] -> res_map (fun d -> TValConstructor d) (constructor_description_of_yojson d)
+  | other -> Result.Error ("value_kind_of_yojson: Invalid JSON: " ^ (Yojson.Safe.to_string other))
+
+
+type value_description = {
+  val_type: type_expr;
+  val_kind: value_kind;
+  val_fullpath: Path.t;
+  val_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled] [@default Location.dummy_loc];
+} [@@deriving sexp, yojson]
 
 type constructor_declaration = {
   cd_id: Ident.t;
   cd_args: constructor_arguments;
   cd_res: type_expr option;
   cd_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
-} [@@deriving sexp]
+} [@@deriving sexp, yojson]
 
 and constructor_arguments =
   | TConstrTuple of type_expr list
@@ -123,9 +144,9 @@ type type_declaration = {
   type_kind: type_kind;
   type_manifest: type_expr option;
   type_newtype_level: (int * int) option;
-  type_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
+  type_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled] [@default Location.dummy_loc];
   type_immediate: bool; (* Whether the type should not be a pointer *)
-} [@@deriving sexp]
+} [@@deriving sexp, yojson]
 
 and type_kind =
   | TDataVariant of constructor_declaration list
@@ -135,14 +156,14 @@ type rec_status =
   | TRecNot
   | TRecFirst
   | TRecNext
-[@@deriving sexp]
+[@@deriving sexp, yojson]
 
 type signature_item =
   | TSigValue of Ident.t * value_description
   | TSigType of Ident.t * type_declaration * rec_status
   | TSigModule of Ident.t * module_declaration * rec_status
   | TSigModType of Ident.t * modtype_declaration
-[@@deriving sexp]
+[@@deriving sexp, yojson]
 
 and signature = signature_item list
 
@@ -152,12 +173,12 @@ and module_type =
 
 and module_declaration = {
   md_type: module_type;
-  md_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
+  md_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled] [@default Location.dummy_loc];
 }
 
 and modtype_declaration = {
   mtd_type: module_type option;
-  mtd_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
+  mtd_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled] [@default Location.dummy_loc];
 }
 
 module TypeOps = struct
