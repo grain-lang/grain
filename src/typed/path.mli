@@ -3,7 +3,7 @@
 type t =
   | PIdent of Ident.t
   | PExternal of t * string * int
-[@@deriving sexp]
+[@@deriving sexp, yojson]
 
 val same: t -> t -> bool
 val compare: t -> t -> int

@@ -6,6 +6,7 @@ let counter = {
   counter_help
 };
 {
+  # TODO: This should have some equivalent of OCaml's ignore(...)
   print(counter());
   print(counter());
   print(counter())
