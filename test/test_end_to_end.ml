@@ -24,38 +24,12 @@ let tgcerr ?todo name heap_size program expected = name>::(wrap_todo todo @@ tes
 let te ?todo name program expected = name>::(wrap_todo todo @@ test_err program name expected);;
 let telib ?todo name program expected = name>::(wrap_todo todo @@ test_err program name expected);;
 
-(* let tfvs ?todo name program expected = name>::
-  (fun _ ->
-    begin match todo with
-      | Some(msg) -> OUnit2.todo msg
-      | None -> ()
-    end;
-    try
-      let open Grain_typed in
-      let ast = parse_string name program in
-      let typed_tree = Grain_typed.Typemod.type_implementation ast in
-      let anfed = anf typed_tree in
-      let vars = free_vars (anfed.body) in
-      let c = Pervasives.compare in
-      let str_list_print strs = "[" ^ (ExtString.String.join ", " strs) ^ "]" in
-      let id_list_print ids = str_list_print (List.map Ident.unique_name ids) in
-      assert_equal (List.sort ~cmp:Ident.compare vars) (List.sort ~cmp:c expected) ~printer:id_list_print
-    with x ->
-      (*Grain_parsing.Location.report_exception Format.err_formatter x;*)
-      raise x)
-;; *)
-
 (** Tests that the file input/`input_file`.egg produces
     the given output *)
 let tfile ?todo name input_file expected = name>::(wrap_todo todo @@ test_run_file input_file name expected)
 let tefile ?todo name input_file expected = name>::(wrap_todo todo @@ test_run_file_err input_file name expected)
 
 let tgcfile ?todo name heap_size input_file expected = name>::(wrap_todo todo @@ test_run_file input_file name expected)
-
-(*let test_resolve_scope opts program_str outfile (expected : 'a aprogram) test_ctxt =
-  let anf = compile_string_to_anf outfile opts program_str in
-  let result = Grain.Pretty.string_of_aprogram (Grain.Resolve_scope.resolve_scope anf Grain.Compile.initial_load_env) in
-  assert_equal (Grain.Pretty.string_of_aprogram expected) result*)
 
 let test_final_anf program_str outfile (expected : Grain_middle_end.Anftree.anf_expression) test_ctxt =
   let open Grain_middle_end in
@@ -72,14 +46,10 @@ let test_final_anf program_str outfile (expected : Grain_middle_end.Anftree.anf_
   in
   assert_equal ~printer:(fun x -> x) expected result
 
-(*let trs ?todo name (program : string) (expected : 'a aprogram) = name>::(wrap_todo todo @@ test_resolve_scope default_compile_options program name expected);;*)
-
 let tfinalanf name ?todo (program : string) (expected : Grain_middle_end.Anftree.anf_expression) =
   name>::(wrap_todo todo @@ test_final_anf program name expected);;
 
 let tsound ?todo name prog expected = name>::(wrap_todo todo @@ test_optimizations_sound prog name expected);;
-
-
 let tfsound ?todo name filename expected = name>::(wrap_todo todo @@ test_file_optimizations_sound filename name expected);;
 
 let test_parse ?todo name input (expected : Grain_parsing.Parsetree.parsed_program) test_ctxt =
@@ -103,16 +73,12 @@ let test_parse ?todo name input (expected : Grain_parsing.Parsetree.parsed_progr
 
 let tparse ?todo name input expected = name>::(wrap_todo todo @@ test_parse name input expected)
 
-let forty = "let x = 40; x"
-let fals = "let x = false; x"
-let tru = "let x = true; x"
-
-(* Tests for functionality inherited from Cobra *)
-let cobra_tests = [
-  t "forty" forty "40";
+(* Tests for constants, basic bindings, binops, and conditionals. *)
+let basic_functionality_tests = [
+  t "forty" "let x = 40; x" "40";
   t "neg" "-1073741824" "-1073741824";
-  t "fals" fals "false";
-  t "tru" tru "true";
+  t "fals" "let x = false; x" "false";
+  t "tru" "let x = true; x" "true";
   t "complex1" "
     let x = 2, y = 3, z = if true { 4 } else { 5 };
     if true {
@@ -183,31 +149,27 @@ let cobra_tests = [
   te "if2" "let y = 0; if y {5} else {6}" "type";
   te "if3" "if sub1(1) {2} else {5}" "type";
 
-  (* te "generic1" "printStack(true)" "expected a number"; *)
-
   (* Non-compile-time overflows *)
   te "overflow1" "9999999 * 99999999" "overflow";
   te "overflow2" "-99999999 - 999999999" "overflow";
   te "overflow3" "99999999 + 999999999" "overflow";
   (* Compile-time overflow *)
   te "overflow4" "999999999999 + 9999999999999" "overflow";
-  (* te "ps1" "printStack(-1)" "expected a nonnegative"; *)
 ]
 
-(* Tests for functionality which is new to Diamondback *)
-let diamondback_tests = [
+(* Tests for functions: basic, directly-recursive, and mutually-recursive. *)
+let function_tests = [
   tfile "fib1" "fib" "55";
   tfile "fib2" "fib-better" "75025";
   tfile "indirect" "indirect-tail" "10";
   (* NOTE: This file also will test that we're doing tail calls
      and mutual recursion properly (should stack overflow otherwise) *)
 
-  (* tfile "forward_decl" "forward-decl" "true"; *)
+  tfile "forward_decl" "forward-decl" "true";
   (* This will test that we are doing tail calls for arbitrary-arity
-     stack frame sizes correctly *)
+     functions correctly *)
 
-  (* tfile "sinister_tail_call" "sinister-tail-call" "true"; *)
-  (* tvgfile "sinister_tail_call2" "sinister-tail-call" "true"; *)
+  tfile "sinister_tail_call" "sinister-tail-call" "true";
   tefile "fib_big" "too-much-fib" "overflow";
 
   t "func_no_args" "let foo = (() => {print(5)});\nfoo()" "5\n5";
@@ -220,50 +182,7 @@ let diamondback_tests = [
   te "arity_1" "let foo = (() => {5});\nfoo(6)" "type";
   te "arity_2" "let foo = ((x) => {x + 5});\nfoo()" "type";
   te "arity_3" "let foo = ((x) => {x});\nfoo(1, 2, 3)" "type";
-]
 
-let mylist = "Cons(1, Cons(2, Cons(3, Empty)))"
-
-let egg_eater_tests = [
-  t "print_tup" "print((1, 2))" "(1, 2)\n[ 1, 2 ]";
-  t "big_tup" "print((1, 2, 3, 4))" "(1, 2, 3, 4)\n[ 1, 2, 3, 4 ]";
-  t "big_tup_access" "let (a, b, c, d) = (1, 2, 3, 4); c" "3";
-  t "nested_tup_1" "let (a, b) = ((1, 2), (3, 4)); a" "[ 1, 2 ]";
-  t "nested_tup_2" "let (a, b) = ((1, 2), (3, 4)); let (c, d) = b; d" "4";
-  t "nested_tup_3" "let (x, y) = ((1, 2), (3, 4)); let (a, b) = y; a" "3";
-  t "no_singleton_tup" "(1)" "1";
-]
-
-let egg_eater_stdlib_tests = [
-  tlib ~todo:"ADT printing NYI" "stdlib_cons" ("import lists; " ^ mylist) "Cons(1, Cons(2, Cons(3, Empty)))";
-  tlib "stdlib_sum_1" ("import lists; sum(" ^ mylist ^ ")") "6";
-  tlib "stdlib_sum_2" "import lists; sum(Empty)" "0";
-  tlib ~todo:"ADT printing NYI"
-    "stdlib_reverse" ("import lists; reverse(" ^ mylist ^ ")") "Cons(3, Cons(2, Cons(1, Empty)))";
-  tlib "stdlib_length" "import lists; length(Cons(1, Cons(2, Cons(3, Empty))))" "3";
-  (* With compiler optimizations, these are optimized into the same tuple instance *)
-  tlib "stdlib_equal_1" "import lists; (1, 2) == (1, 2)" "true";
-  tlib "stdlib_equal_2" "import pervasives; equal((1, 2), (1, 2))" "true";
-  tlib "stdlib_equal_3" "import lists; equal(Cons(1, Cons(2, Cons(3, Empty))), Cons(1, Cons(2, Cons(3, Empty))))" "true";
-  tlib "stdlib_equal_4" "import lists; equal(1, 1)" "true";
-  tlib "stdlib_equal_5" "import lists; equal(1, 2)" "false";
-  tlib "stdlib_equal_6" "import lists; equal(true, true)" "true";
-  tlib "stdlib_equal_7" "import lists; equal(true, false)" "false";
-  tlib "stdlib_contains_1" "import lists; contains(true, Cons(1, Cons(2, Cons(3, Empty))))" "false";
-  tlib "stdlib_contains_2" "import lists; contains(false, Cons(1, Cons(2, Cons(3, Empty))))" "false";
-  tlib "stdlib_contains_3" "import lists; contains(3, Cons(1, Cons(2, Cons(3, Empty))))" "true";
-  telib "stdlib_err_1" "import lists; Cons(1)" "cannot be called with 1 argument";
-  telib "stdlib_err_2" "import lists; Cons()" "cannot be called with 0 arguments";
-  telib "stdlib_err_3" "import lists; Cons(1, 2, 3)" "cannot be called with 3 arguments";
-  telib "stdlib_sum_err" "import lists; sum(Cons(true, false))" "This expression has type Bool but";
-  telib "stdlib_length_err" "import lists; length(true)" "This expression has type Bool but";
-  telib "stdlib_reverse_err" "import lists; reverse(1)" "This expression has type Number but";
-]
-
-(* Note that our tail call tests above provide a good
-   stress test of our lambda and letrec implementations
-   (also see the files in input/, which the above suites run)*)
-let fer_de_lance_tests = [
   t "lambda_1" "print((x) => {x})" "<lambda>\n[Function]";
   t "app_1" "((x) => {x})(1)" "1";
   t "letrec_1" "let rec x = ((n) => {if n > 3 {n} else {x(n + 2)}}),
@@ -289,7 +208,43 @@ let fer_de_lance_tests = [
   te "nonfunction_1" "let x = 5; x(3)" "type";
 ]
 
-let fer_de_lance_stdlib_tests = [
+let mylist = "Cons(1, Cons(2, Cons(3, Empty)))"
+
+let tuple_tests = [
+  t "print_tup" "print((1, 2))" "(1, 2)\n[ 1, 2 ]";
+  t "big_tup" "print((1, 2, 3, 4))" "(1, 2, 3, 4)\n[ 1, 2, 3, 4 ]";
+  t "big_tup_access" "let (a, b, c, d) = (1, 2, 3, 4); c" "3";
+  t "nested_tup_1" "let (a, b) = ((1, 2), (3, 4)); a" "[ 1, 2 ]";
+  t "nested_tup_2" "let (a, b) = ((1, 2), (3, 4)); let (c, d) = b; d" "4";
+  t "nested_tup_3" "let (x, y) = ((1, 2), (3, 4)); let (a, b) = y; a" "3";
+  t "no_singleton_tup" "(1)" "1";
+]
+
+let stdlib_tests = [
+  tlib ~todo:"ADT printing NYI" "stdlib_cons" ("import lists; " ^ mylist) "Cons(1, Cons(2, Cons(3, Empty)))";
+  tlib "stdlib_sum_1" ("import lists; sum(" ^ mylist ^ ")") "6";
+  tlib "stdlib_sum_2" "import lists; sum(Empty)" "0";
+  tlib ~todo:"ADT printing NYI"
+    "stdlib_reverse" ("import lists; reverse(" ^ mylist ^ ")") "Cons(3, Cons(2, Cons(1, Empty)))";
+  tlib "stdlib_length" "import lists; length(Cons(1, Cons(2, Cons(3, Empty))))" "3";
+  (* With compiler optimizations, these are optimized into the same tuple instance *)
+  tlib "stdlib_equal_1" "import lists; (1, 2) == (1, 2)" "true";
+  tlib "stdlib_equal_2" "import pervasives; equal((1, 2), (1, 2))" "true";
+  tlib "stdlib_equal_3" "import lists; equal(Cons(1, Cons(2, Cons(3, Empty))), Cons(1, Cons(2, Cons(3, Empty))))" "true";
+  tlib "stdlib_equal_4" "import lists; equal(1, 1)" "true";
+  tlib "stdlib_equal_5" "import lists; equal(1, 2)" "false";
+  tlib "stdlib_equal_6" "import lists; equal(true, true)" "true";
+  tlib "stdlib_equal_7" "import lists; equal(true, false)" "false";
+  tlib "stdlib_contains_1" "import lists; contains(true, Cons(1, Cons(2, Cons(3, Empty))))" "false";
+  tlib "stdlib_contains_2" "import lists; contains(false, Cons(1, Cons(2, Cons(3, Empty))))" "false";
+  tlib "stdlib_contains_3" "import lists; contains(3, Cons(1, Cons(2, Cons(3, Empty))))" "true";
+  telib "stdlib_err_1" "import lists; Cons(1)" "cannot be called with 1 argument";
+  telib "stdlib_err_2" "import lists; Cons()" "cannot be called with 0 arguments";
+  telib "stdlib_err_3" "import lists; Cons(1, 2, 3)" "cannot be called with 3 arguments";
+  telib "stdlib_sum_err" "import lists; sum(Cons(true, false))" "This expression has type Bool but";
+  telib "stdlib_length_err" "import lists; length(true)" "This expression has type Bool but";
+  telib "stdlib_reverse_err" "import lists; reverse(1)" "This expression has type Number but";
+
   tlib ~todo:"ADT printing NYI" "map_1" ("import lists; map(((x) => {x + 1}), " ^ mylist ^ ")")
     "(2, (3, (4, false)))";
   tlib ~todo:"ADT printing NYI" "map_2" ("import lists; map(((x) => {x * 2}), " ^ mylist ^ ")")
@@ -324,6 +279,9 @@ let box_tests = [
               b := unbox(b) - 1;
               unbox(b)
             }" "3";
+  t "test_set_extra1" "box(1) := 2" "2";
+  tfile "counter" "counter" "1\n2\n3\n3";
+  te "test_unbox_err" "unbox(5)" "Box";
 ]
 
 let loop_tests = [
@@ -380,30 +338,20 @@ let gc = [
   tgcfile "long_lists" 1024 "long_lists" "true";
 ]
 
-let garter_extra_tests = [
-  t "test_set_extra1" "box(1) := 2" "2";
-  tfile "counter" "counter" "1\n2\n3\n3";
-  (*te "test_bad_import" "let x = (1, 2); import lists; x" "Includes must be at the beginning";*)
+let import_tests = [
+  te "test_bad_import" "{let x = (1, 2); import lists; x}" "error";
   te "test_missing_import" "import foo; 2" "Unbound module";
-  te "test_unbox_err" "unbox(5)" "Box";
 ]
 
 (* Note that optimizations are on by default, so all of the above tests
    check that it works correctly as well *)
-let indigo_tests = [
+let optimization_tests = [
   (* note on resolve-scope test: (tags are not checked) *)
   t "trs1"
     "let f1 = ((x, y) => {x}),
          f2 = ((x, y) => {y});
        f1(1, 2)"
-    (*(ALet("f1$1",
-          CLambda(["x$2"; "y$3"],
-                  ACExpr(CImmExpr(ImmId("x$2", 3))), 2),
-          ALet("f2$4",
-               CLambda(["x$5"; "y$6"],
-                              ACExpr(CImmExpr(ImmId("y$6", 3))), 4),
-             ACExpr(CApp(ImmId("f1$1", 3), [ImmNum(1, 3); ImmNum(2, 3)], 3)), 3),
-          1))*) "1";
+    "1";
 
   tfinalanf "test_dead_branch_elimination_1" 
     "{ if (true) {4} else {5} }"
@@ -557,14 +505,12 @@ let data_tests =
 
 let tests =
   "End to end">:::
-  cobra_tests @
-  diamondback_tests @
-  egg_eater_tests @
-  egg_eater_stdlib_tests @
-  fer_de_lance_tests @
-  fer_de_lance_stdlib_tests @
-  box_tests @ loop_tests @(*oom @ gc @*) garter_extra_tests @
-  indigo_tests @ string_tests @ data_tests
+  basic_functionality_tests @
+  function_tests @
+  tuple_tests @
+  stdlib_tests @
+  box_tests @ loop_tests @(*oom @ gc @*) import_tests @
+  optimization_tests @ string_tests @ data_tests
 
 
 
