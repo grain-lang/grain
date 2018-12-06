@@ -6,6 +6,7 @@ open Printf
 open OUnit2
 open Lexing
 open Grain_codegen
+open Grain_utils
 
 type ('a, 'b) either =
   | Left of 'a
@@ -104,8 +105,31 @@ let extract_wasm {cstate_desc} =
   | Compiled({asm}) -> asm
   | _ -> raise (Invalid_argument "Expected WASM State")
 
-let run_output cstate =
-  Wasm_runner.run_wasm (extract_wasm cstate)
+let read_stream cstream =
+  let buf = Bytes.create 2048 in
+  let i = ref 0 in
+  Stream.iter (fun c ->
+    (if !i >= 2048 then failwith "Program output exceeds 2048 characters");
+    Bytes.set buf !i c;
+    incr i
+  ) cstream;
+  Bytes.sub buf 0 !i
+
+let success = Unix.WEXITED(0)
+let failure = Unix.WEXITED(255)
+
+let run_output ?exit_code:(exit_code=success) cstate test_ctxt =
+  let wasm = Wasm.Encode.encode (extract_wasm cstate) in
+  let result = ref "" in
+  assert_command 
+    ~exit_code
+    ~sinput:(Stream.of_string wasm) 
+    ~foutput:(fun stream -> result := read_stream stream)
+    ~use_stderr:true
+    ~ctxt:test_ctxt
+    "grain"
+    ["-wp"; "/dev/stdin"];
+  !result
 
 let run_anf p out =
   let cstate = {
@@ -115,20 +139,77 @@ let run_anf p out =
   } in
   run_output (compile_resume ~hook:stop_after_compiled cstate)
 
-let test_run program_str outfile expected test_ctxt =
-  Wasm_runner.cur_modname := outfile;
-  let result = run_output (compile_string ~hook:stop_after_compiled ~name:outfile program_str) in
-  assert_equal (expected ^ "\n") result ~printer:Batteries.identity
+let test_run ?cmp program_str outfile expected test_ctxt =
+  let cstate = compile_string ~hook:stop_after_compiled ~name:outfile program_str in
+  let result = run_output cstate test_ctxt in
+  assert_equal 
+  ~printer:Batteries.identity 
+  ~cmp:(Option.default (=) cmp)
+  (expected ^ "\n") result
+
+let test_run_file filename name expected test_ctxt =
+  let input_filename = "input/" ^ filename ^ ".gr" in
+  let outfile = "output/" ^ name in
+  let cstate = compile_file ~hook:stop_after_compiled ~outfile input_filename in
+  let result = run_output cstate test_ctxt in
+  assert_equal ~printer:Batteries.identity (expected ^ "\n") result
+
+let test_optimizations_sound program_str name expected test_ctxt =
+  let compile_and_run () =
+    run_output (compile_string ~hook:stop_after_compiled ~name program_str) test_ctxt in
+  let result_unoptimized = Config.preserve_config (fun () ->
+      Config.optimizations_enabled := false;
+      compile_and_run ()) in
+  let result_optimized = Config.preserve_config (fun () ->
+      Config.optimizations_enabled := true;
+      compile_and_run ()) in
+
+  assert_equal
+    result_optimized
+    result_unoptimized;
+  assert_equal (expected ^ "\n") result_optimized
+
+let test_file_optimizations_sound filename name expected test_ctxt =
+  let input_filename = "input/" ^ filename ^ ".gr" in
+  let full_outfile_unoptimized = "output/" ^ name ^ ".no-optimize" in
+  let full_outfile_optimized = "output/" ^ name ^ "optimize" in
+
+  let compile_and_run outfile =
+    run_output (compile_file ~hook:stop_after_compiled ~outfile input_filename) test_ctxt in
+  let result_unoptimized = Config.preserve_config (fun () ->
+      Config.optimizations_enabled := false;
+      compile_and_run full_outfile_unoptimized) in
+  let result_optimized = Config.preserve_config (fun () ->
+      Config.optimizations_enabled := true;
+      compile_and_run full_outfile_optimized) in
+
+  assert_equal
+    result_optimized
+    result_unoptimized;
+  assert_equal (expected ^ "\n") result_optimized
 
 let test_run_anf program_anf outfile expected test_ctxt =
-  Wasm_runner.cur_modname := outfile;
-  let result = run_anf program_anf outfile in
+  let result = run_anf program_anf outfile test_ctxt in
   assert_equal (expected ^ "\n") result ~printer:Batteries.identity
 
 let test_err program_str outfile errmsg test_ctxt =
-  Wasm_runner.cur_modname := outfile;
   let result = try
-      run_output (compile_string ~hook:stop_after_compiled ~name:outfile program_str)
+      let cstate = compile_string ~hook:stop_after_compiled ~name:outfile program_str in
+      run_output ~exit_code:failure cstate test_ctxt
+    with exn -> Printexc.to_string exn
+  in
+  assert_equal
+    errmsg
+    result
+    ~cmp: (fun check result -> Batteries.String.exists result check)
+    ~printer:Batteries.identity
+
+let test_run_file_err filename name errmsg test_ctxt =
+  let input_filename = "input/" ^ filename ^ ".gr" in
+  let outfile = "output/" ^ name in
+  let result = try
+      let cstate = compile_file ~hook:stop_after_compiled ~outfile input_filename in
+      run_output ~exit_code:failure cstate test_ctxt
     with exn -> Printexc.to_string exn
   in
   assert_equal
