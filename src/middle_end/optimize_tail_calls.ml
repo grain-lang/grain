@@ -115,15 +115,18 @@ let get_rewrite_rule id =
 
 let transform_rule_stack = ref []
 
-let push_transform_rule a b =
-  transform_rule_stack := a :: !transform_rule_stack;
-  Ident_tbl.add transform_rules a b
+let push_transform_rules rules =
+  transform_rule_stack := rules :: !transform_rule_stack;
+  for i = 2 to List.length rules do
+    transform_rule_stack := [] :: !transform_rule_stack;
+  done;
+  List.iter (fun (a, b) -> Ident_tbl.add transform_rules a b) rules
 
-let pop_transform_rule () =
-  let current_rule = List.hd !transform_rule_stack in
+let pop_transform_rules () =
+  let current_rules = List.hd !transform_rule_stack in
   let rest_rules = List.tl !transform_rule_stack in
   transform_rule_stack := rest_rules;
-  Ident_tbl.remove transform_rules current_rule
+  List.iter (fun (a, _) -> Ident_tbl.remove transform_rules a) current_rules
 
 let get_transform_rule id =
   Ident_tbl.find transform_rules id
@@ -265,7 +268,10 @@ let unbox_of id {comp_loc; comp_env} =
         (continue_loop_id, wrap_comp_with_anf a @@ default_ref a);
         (next_f_id, wrap_comp_with_anf a @@ default_ref a)
       ] in
-      let new_binds = List.flatten @@ List.rev_map (fun ((id : Ident.t), ({comp_desc} as bind)) -> 
+      let local_transform_rules = ref [] in
+      let push_local_transform_rule a b =
+        local_transform_rules := (a, b) :: !local_transform_rules in
+      let new_binds = List.flatten @@ List.map (fun ((id : Ident.t), ({comp_desc} as bind)) -> 
         begin match comp_desc with
         | CLambda(args, body) when comp_is_tail_recursive bind ->
           let wrap_comp = wrap_comp bind
@@ -293,8 +299,7 @@ let unbox_of id {comp_loc; comp_env} =
 
           List.iter2 (fun arg (arg_deref, _) -> push_rewrite_rule arg arg_deref) args arg_derefs;
           (* Flag internal tail calls to this function to be rewritten into setting the `next` function *)
-          (* These are pushed in the correct order because of the rev_map *)
-          push_transform_rule id {f_id=iterative_lam_id; f_args=arg_ref_ids; continue_loop_id; next_f_id};
+          push_local_transform_rule id {f_id=iterative_lam_id; f_args=arg_ref_ids; continue_loop_id; next_f_id};
           
           (* Create the function that gets called instead of the original *)
           let lam_runner = create_lambda_runner bind {continue_id=continue_loop_id; next_id=next_f_id; first_f_id=iterative_lam_id; arg_ref_ids} in
@@ -302,6 +307,7 @@ let unbox_of id {comp_loc; comp_env} =
           [iterative_lam_id, iterative_lam; id, lam_runner]
         | _ -> [(id, bind)] end
       ) binds in
+      push_transform_rules !local_transform_rules;
       {a with anf_analyses=ref []; anf_desc=AELet(Nonglobal, Nonrecursive, !iterator_binds, 
         {a with anf_analyses=ref []; anf_desc=AELet(global, Recursive, new_binds, body)})};
     | _ -> a
@@ -334,7 +340,8 @@ let unbox_of id {comp_loc; comp_env} =
 
   let leave_comp_expression ({comp_desc = desc} as c) =
     begin match desc with
-    | CLambda _ when comp_is_tail_call_optimized c -> pop_transform_rule ()
+    | CLambda _ when comp_is_tail_call_optimized c ->
+      pop_transform_rules ()
     | _ -> ()
     end; c
 
