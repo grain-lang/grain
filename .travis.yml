@@ -8,3 +8,4 @@ env:
   - OCAML_VERSION=4.05 GRAIN_ROOT=~/build/grain-lang/grain/_build/install/default
 os:
   - linux
+  

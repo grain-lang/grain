@@ -13,7 +13,7 @@ program
   .option('-w, --wasm', 'run a wasm file')
   .option('-p, --print-output', 'print the output of the program')
   .option('-f, --cflags <cflags>', 'pass flags to the Grain compiler')
-  .action(function (file) {
+  .action((file) => {
     givenFile = file
     
     let wasmFile;
