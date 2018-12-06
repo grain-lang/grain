@@ -17,9 +17,9 @@ let () =
         Some (s))
 
 let all_tests = [
-  (* Test_concatlist.tests; *)
+  Test_concatlist.tests;
   Test_end_to_end.tests;
-  (* Test_wasm_utils.tests; *)
+  Test_wasm_utils.tests;
 ]
 
 let () =
