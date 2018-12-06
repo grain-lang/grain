@@ -1,4 +1,4 @@
-#!/usr/bin/env node --harmony
+#!/usr/bin/env node
 
 let program = require('commander');
 let compile = require('./compile.js');
