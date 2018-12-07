@@ -115,20 +115,16 @@ let read_stream cstream =
   ) cstream;
   Bytes.sub buf 0 !i
 
-let success = Unix.WEXITED(0)
-let failure = Unix.WEXITED(255)
-
-let run_output ?exit_code:(exit_code=success) cstate test_ctxt =
+let run_output cstate test_ctxt =
   let wasm = Wasm.Encode.encode (extract_wasm cstate) in
   let result = ref "" in
   assert_command 
-    ~exit_code
     ~sinput:(Stream.of_string wasm) 
     ~foutput:(fun stream -> result := read_stream stream)
     ~use_stderr:true
     ~ctxt:test_ctxt
     "grain"
-    ["-wp"; "/dev/stdin"];
+    ["-wpg"; "/dev/stdin"];
   !result
 
 let run_anf p out =
@@ -195,7 +191,7 @@ let test_run_anf program_anf outfile expected test_ctxt =
 let test_err program_str outfile errmsg test_ctxt =
   let result = try
       let cstate = compile_string ~hook:stop_after_compiled ~name:outfile program_str in
-      run_output ~exit_code:failure cstate test_ctxt
+      run_output cstate test_ctxt
     with exn -> Printexc.to_string exn
   in
   assert_equal
@@ -209,7 +205,7 @@ let test_run_file_err filename name errmsg test_ctxt =
   let outfile = "output/" ^ name in
   let result = try
       let cstate = compile_file ~hook:stop_after_compiled ~outfile input_filename in
-      run_output ~exit_code:failure cstate test_ctxt
+      run_output cstate test_ctxt
     with exn -> Printexc.to_string exn
   in
   assert_equal
