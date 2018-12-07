@@ -12,6 +12,7 @@ program
   .arguments('<file>')
   .option('-w, --wasm', 'run a wasm file')
   .option('-p, --print-output', 'print the output of the program')
+  .option('-g, --graceful', 'return a 0 exit code if the program errors')
   .option('-f, --cflags <cflags>', 'pass flags to the Grain compiler')
   .action((file) => {
     givenFile = file
@@ -20,10 +21,10 @@ program
     if (program.wasm) {
       wasmFile = file;
     } else {
-      wasmFile = compile(file);
+      wasmFile = compile(file, program);
     }
 
-    run(wasmFile, program.printOutput);
+    run(wasmFile, program);
   });
 
 program.parse(process.argv);
