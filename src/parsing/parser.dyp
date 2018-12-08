@@ -142,7 +142,7 @@ let make_program statements body =
 %token LET REC IF ELSE MATCH WHILE
 %token AND OR NOT
 
-%token DATA IMPORT FOREIGN WASM
+%token DATA IMPORT EXPORT FOREIGN WASM
 %token EOF
 
 %start <Parsetree.parsed_program> program
@@ -335,8 +335,10 @@ foreign_stmt :
   | FOREIGN WASM id_str id_str COLON typ { Val.mk ~loc:(symbol_rloc dyp) ~mod_:$3 ~name:$4 ~typ:$6 ~prim:[$4.txt] }
 
 toplevel_stmt :
-  | LET REC value_binds { Top.let_ Recursive $3 }
-  | LET value_binds { Top.let_ Nonrecursive $2 }
+  | EXPORT LET REC value_binds { Top.let_ Exported Recursive $4 }
+  | EXPORT LET value_binds { Top.let_ Exported Nonrecursive $3 }
+  | LET REC value_binds { Top.let_ Nonexported Recursive $3 }
+  | LET value_binds { Top.let_ Nonexported Nonrecursive $2 }
   | foreign_stmt { Top.foreign ~loc:(symbol_rloc dyp) $1 }
   | import_stmt { Top.import $1 }
   | data_declaration { Top.data $1 }

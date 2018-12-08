@@ -118,7 +118,7 @@ module Top = struct
   let foreign ?loc d = mk ?loc (PTopForeign d)
   let import ?loc i = mk ?loc (PTopImport i)
   let data ?loc d = mk ?loc (PTopData d)
-  let let_ ?loc r vb = mk ?loc (PTopLet(r, vb))
+  let let_ ?loc e r vb = mk ?loc (PTopLet(e, r, vb))
 end
 
 module Val = struct

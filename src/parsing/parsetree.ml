@@ -10,6 +10,7 @@ type 'a loc = 'a Asttypes.loc = {
   loc: Location.t;
 }
 
+type export_flag = Asttypes.export_flag = Nonexported | Exported
 type rec_flag = Asttypes.rec_flag = Nonrecursive | Recursive
 
 (** Type for syntax-level types *)
@@ -158,7 +159,7 @@ type toplevel_stmt_desc =
   | PTopForeign of value_description
   | PTopImport of import_declaration
   | PTopData of data_declaration
-  | PTopLet of rec_flag * value_binding list
+  | PTopLet of export_flag * rec_flag * value_binding list
 [@@deriving sexp]
 
 type toplevel_stmt = {

@@ -289,7 +289,7 @@ let type_module ?(toplevel=false) funct_body anchor env sstr (*scope*) =
       | PTopForeign d -> ((d, loc)::foreigns, imports, datas, lets)
       | PTopImport i -> (foreigns, (i, loc)::imports, datas, lets)
       | PTopData d -> (foreigns, imports, (d, loc)::datas, lets)
-      | PTopLet(r, vb) -> (foreigns, imports, datas, ((r, vb), loc)::lets)) sstr.Parsetree.statements ([], [], [], []) in
+      | PTopLet(e, r, vb) -> (foreigns, imports, datas, ((e, r, vb), loc)::lets)) sstr.Parsetree.statements ([], [], [], []) in
 
   (* TODO: imports*)
 
@@ -310,15 +310,18 @@ let type_module ?(toplevel=false) funct_body anchor env sstr (*scope*) =
       decls [] in
   let newenv = enrich_type_decls anchor decls env newenv in
 
-  let process_let env (rec_flag, binds) =
+  let process_let env (export_flag, rec_flag, binds) =
     let scope = None in
     let defs, newenv = Typecore.type_binding env rec_flag binds scope in
     let () = if rec_flag = Recursive then
         Typecore.check_recursive_bindings env defs
     in
-    (TTopLet(rec_flag, defs)),
-    List.map (fun id -> TSigValue(id, Env.find_value (PIdent id) newenv))
-      (let_bound_idents defs), newenv in
+    let signatures = match export_flag with
+      | Exported -> 
+        List.map (fun id -> TSigValue(id, Env.find_value (PIdent id) newenv))
+        (let_bound_idents defs)
+      | Nonexported -> [] in
+    (TTopLet(export_flag, rec_flag, defs)), signatures, newenv in
 
   let init_stmts = List.map2 (fun d (_, loc) -> {ttop_desc=TTopData(d); ttop_loc=loc; ttop_env=newenv}) decls datas in
 

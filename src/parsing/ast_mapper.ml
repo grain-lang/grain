@@ -133,7 +133,7 @@ module TL = struct
       | PTopForeign d -> Top.foreign ~loc (sub.value_description sub d)
       | PTopImport id -> Top.import ~loc (sub.import sub id)
       | PTopData dd -> Top.data ~loc (sub.data sub dd)
-      | PTopLet(r, vb) -> Top.let_ ~loc r (List.map (sub.value_binding sub) vb)
+      | PTopLet(e, r, vb) -> Top.let_ ~loc e r (List.map (sub.value_binding sub) vb)
 end
 
 let default_mapper = {

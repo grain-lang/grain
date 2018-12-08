@@ -100,6 +100,7 @@ rule token = parse
   | "isnum" { ISNUM }
   | "istuple" { ISTUPLE }
   | "import" { IMPORT }
+  | "export" { EXPORT }
   | "box" { BOX }
   | "unbox" { UNBOX }
   | "->" { ARROW }

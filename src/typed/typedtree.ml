@@ -21,6 +21,7 @@ open Types
 type 'a loc = 'a Location.loc
 type partial = Partial | Total [@@deriving sexp]
 
+type export_flag = Asttypes.export_flag = Nonexported | Exported
 type rec_flag = Asttypes.rec_flag = Nonrecursive | Recursive
 
 type prim1 = Parsetree.prim1 =
@@ -175,7 +176,7 @@ type toplevel_stmt_desc =
   | TTopForeign of value_description
   | TTopImport of import_declaration
   | TTopData of data_declaration
-  | TTopLet of rec_flag * value_binding list
+  | TTopLet of export_flag * rec_flag * value_binding list
 [@@deriving sexp]
 
 type toplevel_stmt = {
