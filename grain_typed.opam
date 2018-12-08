@@ -26,6 +26,8 @@ depends: [
   "ocamlgraph" {>= "1.8.8" }
   "wasm" { = "1.0" }
   "stdint" { >= "0.5.0" }
+  "yojson"
+  "ppx_deriving_yojson"
   "grain_utils"
   "grain_parsing"
 ]
