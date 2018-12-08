@@ -358,7 +358,7 @@ let rec transl_anf_statement (({ttop_desc; ttop_env=env; ttop_loc=loc} as s) : t
           let rhs = match cstr_tag with
             | CstrConstant _ ->
               let compiled_tag = compile_constructor_tag cstr_tag in
-              Comp.adt ~loc ~env (Imm.const ~loc ~env (Const_int compiled_tag)) (Imm.const ~loc ~env (Const_int compiled_tag)) []
+              Comp.adt ~loc ~env (Imm.const ~loc ~env (Const_int ty_id)) (Imm.const ~loc ~env (Const_int compiled_tag)) []
             | CstrBlock _ ->
               let compiled_tag = compile_constructor_tag cstr_tag in
               let args = List.map (fun _ -> gensym "constr_arg") cstr_args in

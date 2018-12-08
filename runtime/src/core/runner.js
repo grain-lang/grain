@@ -1,5 +1,8 @@
 import { GrainError } from '../errors/errors';
 import { readFile, readURL } from './grain-module';
+import { makePrint } from '../lib/print';
+import { makeToString } from '../lib/to-string';
+import { grainToString } from '../utils/utils';
 
 function roundUp(num, multiple) {
   return multiple * (Math.floor((num - 1) / multiple) + 1);
@@ -9,6 +12,7 @@ export class GrainRunner {
   constructor(locator, opts) {
     this.modules = {};
     this.imports = {};
+    this.idMap = {};
     this.locator = locator;
     opts = opts || {};
     this.opts = opts;
@@ -23,6 +27,11 @@ export class GrainRunner {
       },
       relocBase: 0,
       moduleRuntimeId: 0
+    };
+    let boundGrainToString = (v) => grainToString(v, this);
+    this.imports['grainBuiltins'] = {
+      toString: makeToString(boundGrainToString),
+      print: makePrint(boundGrainToString)
     };
   }
 
@@ -74,6 +83,7 @@ export class GrainRunner {
     }
     // All of the dependencies have been loaded. Now we can instantiate with the import object.
     await mod.instantiate(this.imports);
+    this.idMap[this.imports['grainRuntime']['moduleRuntimeId']] = name;
     if (!(name in this.modules)) {
       this.modules[name] = mod;
     }

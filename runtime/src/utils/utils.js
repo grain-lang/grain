@@ -9,26 +9,56 @@ import {
   GRAIN_LAMBDA_TAG_TYPE,
   GRAIN_GENERIC_HEAP_TAG_TYPE,
   GRAIN_DOM_ELEM_TAG,
-  GRAIN_STRING_HEAP_TAG
+  GRAIN_STRING_HEAP_TAG,
+  GRAIN_ADT_HEAP_TAG
 } from '../core/tags';
 
-export function grainHeapValueToString(n) {
+export function grainHeapValueToString(n, runtime) {
   switch (view[n / 4]) {
-  case 1:
+  case GRAIN_STRING_HEAP_TAG:
     let byteView = new Uint8Array(memory.buffer);
     let length = view[(n / 4) + 1];
     let slice = byteView.slice(n + 8, n + 8 + length);
     return `"${decoder.decode(slice)}"`;
     break;
-  case 2:
+  case GRAIN_DOM_ELEM_TAG:
     return grainDOMRefs[view[(n + 4) / 4]].toString();
+    break;
+  case GRAIN_ADT_HEAP_TAG:
+    let x = n / 4;
+    console.log(`<ADT Value: (${view[x + 1]}, ${view[x + 2]}, ${view[x + 3]}, ${view[x + 4]})>`);
+    if (runtime) {
+      // In-memory tags are tagged ints
+      let moduleId = view[x + 1] >> 1;
+      let typeId = view[x + 2] >> 1;
+      let variantId = view[x + 3] >> 1;
+      let moduleName = runtime.idMap[moduleId];
+      console.log(`\tModule Name: ${moduleName}`);
+      let module = runtime.modules[moduleName];
+      console.log(`\tModule: ${module}`);
+      let tyinfo = module.types[typeId];
+      console.log(`\tType Info: ${JSON.stringify(tyinfo)}`);
+      let info = tyinfo[variantId];
+      console.log(`\tVariant: ${info}`);
+      let [variantName, arity] = info;
+      let printedVals = [];
+      for (let i = 0; i < arity; ++i) {
+        printedVals.push(grainToString(view[x + 5 + i], runtime));
+      }
+      if (arity === 0) {
+        return variantName;
+      } else {
+        return `${variantName}(${printedVals})`;
+      }
+    }
+    return "<adt value>";
     break;
   default:
     return `<unknown heap type: ${view[n / 4]}>`;
   }
 }
 
-export function grainToString(n) {
+export function grainToString(n, runtime) {
   if (!(n & 1)) {
     return (n >> 1).toString();
   } else if ((n & 7) === GRAIN_TUPLE_TAG_TYPE) {
@@ -40,7 +70,7 @@ export function grainToString(n) {
       view[tupleIdx] |= 0x80000000;
       let elts = [];
       for (let i = 0; i < tupleLength; ++i) {
-        elts.push(grainToString(view[tupleIdx + i + 1]));
+        elts.push(grainToString(view[tupleIdx + i + 1], runtime));
       }
       if (elts.length == 1) {
         elts.push("\b");
@@ -51,7 +81,7 @@ export function grainToString(n) {
   } else if ((n & 7) === GRAIN_LAMBDA_TAG_TYPE) {
     return "<lambda>";
   } else if ((n & 7) === GRAIN_GENERIC_HEAP_TAG_TYPE) {
-    return grainHeapValueToString(n ^ 3);
+    return grainHeapValueToString(n ^ 3, runtime);
   } else if ((n === -1)) {
     return "true";
   } else if (n === 0x7FFFFFFF) {
