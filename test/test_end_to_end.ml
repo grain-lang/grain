@@ -184,7 +184,7 @@ let function_tests = [
   te "arity_2" "let foo = ((x) => {x + 5});\nfoo()" "type";
   te "arity_3" "let foo = ((x) => {x});\nfoo(1, 2, 3)" "type";
 
-  t "lambda_1" "print((x) => {x})" "<lambda>\n[Function]";
+  t "lambda_1" "print((x) => {x})" "<lambda>\n<lambda>";
   t "app_1" "((x) => {x})(1)" "1";
   t "letrec_1" "let rec x = ((n) => {if n > 3 {n} else {x(n + 2)}}),
                         y = ((n) => {x(n + 1)});
@@ -204,7 +204,7 @@ let function_tests = [
   te "lambda_arity_1" "((x) => {6})()" "type";
   te "lambda_arity_2" "((x) => {5})(1, 2)" "type";
   t "letrec_nonstatic_const" "let rec x = 5; x" "5";
-  te ~todo:"Recursive binding checking NYI" "letrec_nonstatic_same" "let rec x = x; x" "Unbound value x.\n       Hint: You are probably missing the `rec' keyword on line 1.";
+  te "letrec_nonstatic_same" "let x = x; x" "Unbound value x.\n       Hint: You are probably missing the `rec' keyword on line 1.";
   t "letrec_nonstatic_other" "let rec x = ((z) => {z + 1}), y = x; y(2)" "3";
   te "nonfunction_1" "let x = 5; x(3)" "type";
 ]
@@ -212,10 +212,10 @@ let function_tests = [
 let mylist = "Cons(1, Cons(2, Cons(3, Empty)))"
 
 let tuple_tests = [
-  t "print_tup" "print((1, 2))" "(1, 2)\n[ 1, 2 ]";
-  t "big_tup" "print((1, 2, 3, 4))" "(1, 2, 3, 4)\n[ 1, 2, 3, 4 ]";
+  t "print_tup" "print((1, 2))" "(1, 2)\n(1, 2)";
+  t "big_tup" "print((1, 2, 3, 4))" "(1, 2, 3, 4)\n(1, 2, 3, 4)";
   t "big_tup_access" "let (a, b, c, d) = (1, 2, 3, 4); c" "3";
-  t "nested_tup_1" "let (a, b) = ((1, 2), (3, 4)); a" "[ 1, 2 ]";
+  t "nested_tup_1" "let (a, b) = ((1, 2), (3, 4)); a" "(1, 2)";
   t "nested_tup_2" "let (a, b) = ((1, 2), (3, 4)); let (c, d) = b; d" "4";
   t "nested_tup_3" "let (x, y) = ((1, 2), (3, 4)); let (a, b) = y; a" "3";
   t "no_singleton_tup" "(1)" "1";
@@ -246,10 +246,10 @@ let stdlib_tests = [
   telib "stdlib_reverse_err" "import lists; reverse(1)" "This expression has type Number but";
 
   tlib "map_1" ("import lists; map(((x) => {x + 1}), " ^ mylist ^ ")")
-    "(2, (3, (4, false)))";
+    "Cons(2, Cons(3, Cons(4, Empty)))";
   tlib "map_2" ("import lists; map(((x) => {x * 2}), " ^ mylist ^ ")")
-    "(2, (4, (6, false)))";
-  tlib "map_print" ("import lists; map(print, " ^ mylist ^ ")") "3\n2\n1\n(1, (2, (3, empty)))";
+    "Cons(2, Cons(4, Cons(6, Empty)))";
+  tlib "map_print" ("import lists; map(print, " ^ mylist ^ ")") "1\n2\n3\nCons(1, Cons(2, Cons(3, Empty)))";
   tlib "fold_left_1" ("import lists; fold_left(((acc, cur) => {acc - cur}), 0, " ^ mylist ^ ")")
     "-6";
   tlib "fold_right_1" ("import lists; fold_right(((cur, acc) => {cur - acc}), 0, " ^ mylist ^ ")")
@@ -264,7 +264,7 @@ let box_tests = [
   t "box2" "let b = box((4, (5, 6)));
             {
               unbox(b)
-            }" "[ 4, [ 5, 6 ] ]";
+            }" "(4, (5, 6))";
   t "box3" "let b = box(box(4));
             {
               unbox(unbox(b))
@@ -492,15 +492,15 @@ let string_tests =
   tparse "string_parse_emoji_escape" "\"\xF0\x9F\x98\x82\"" {statements=[]; body=str "😂"; prog_loc=Location.dummy_loc};
   tparse "string_parse_emoji_literal" "\"💯\"" {statements=[]; body=str "💯"; prog_loc=Location.dummy_loc};
 
-  t "string1" "\"foo\"" "foo";
-  t "string2" "\"💯\"" "💯";
-  t "string3" "\"making my way downtown, walking fast\"" "making my way downtown, walking fast";
+  t "string1" "\"foo\"" "\"foo\"";
+  t "string2" "\"💯\"" "\"💯\"";
+  t "string3" "\"making my way downtown, walking fast\"" "\"making my way downtown, walking fast\"";
   te "string_err" "let x = \"hello\"; x + \", world\"" "type";
 ]
 
 let data_tests =
   [
-    tfile "basicdata" "basicdata" "[ false, true, true ]";
+    tfile "basicdata" "basicdata" "(false, true, true)";
   ]
 
 let export_tests =

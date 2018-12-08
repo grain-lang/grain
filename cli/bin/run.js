@@ -7,9 +7,9 @@ module.exports = async function run(path, options) {
   try {
     let locator = runtime.defaultFileLocator(options.includeDirs.concat(`${grainRoot}/lib/grain/stdlib`));
     let GrainRunner = runtime.buildGrainRunner(locator);
-    let result = await GrainRunner.runFile(path);
+    let result = await GrainRunner.runFileUnboxed(path);
     if (options.printOutput) {
-      console.log(String(result));
+      console.log(runtime.grainToString(result, GrainRunner));
     }
   }
   catch (e) {
