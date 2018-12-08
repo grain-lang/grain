@@ -222,11 +222,10 @@ let tuple_tests = [
 ]
 
 let stdlib_tests = [
-  tlib ~todo:"ADT printing NYI" "stdlib_cons" ("import lists; " ^ mylist) "Cons(1, Cons(2, Cons(3, Empty)))";
+  tlib "stdlib_cons" ("import lists; " ^ mylist) "Cons(1, Cons(2, Cons(3, Empty)))";
   tlib "stdlib_sum_1" ("import lists; sum(" ^ mylist ^ ")") "6";
   tlib "stdlib_sum_2" "import lists; sum(Empty)" "0";
-  tlib ~todo:"ADT printing NYI"
-    "stdlib_reverse" ("import lists; reverse(" ^ mylist ^ ")") "Cons(3, Cons(2, Cons(1, Empty)))";
+  tlib "stdlib_reverse" ("import lists; reverse(" ^ mylist ^ ")") "Cons(3, Cons(2, Cons(1, Empty)))";
   tlib "stdlib_length" "import lists; length(Cons(1, Cons(2, Cons(3, Empty))))" "3";
   (* With compiler optimizations, these are optimized into the same tuple instance *)
   tlib "stdlib_equal_1" "import lists; (1, 2) == (1, 2)" "true";
@@ -246,11 +245,11 @@ let stdlib_tests = [
   telib "stdlib_length_err" "import lists; length(true)" "This expression has type Bool but";
   telib "stdlib_reverse_err" "import lists; reverse(1)" "This expression has type Number but";
 
-  tlib ~todo:"ADT printing NYI" "map_1" ("import lists; map(((x) => {x + 1}), " ^ mylist ^ ")")
+  tlib "map_1" ("import lists; map(((x) => {x + 1}), " ^ mylist ^ ")")
     "(2, (3, (4, false)))";
-  tlib ~todo:"ADT printing NYI" "map_2" ("import lists; map(((x) => {x * 2}), " ^ mylist ^ ")")
+  tlib "map_2" ("import lists; map(((x) => {x * 2}), " ^ mylist ^ ")")
     "(2, (4, (6, false)))";
-  tlib ~todo:"ADT printing NYI" "map_print" ("import lists; map(print, " ^ mylist ^ ")") "3\n2\n1\n(1, (2, (3, empty)))";
+  tlib "map_print" ("import lists; map(print, " ^ mylist ^ ")") "3\n2\n1\n(1, (2, (3, empty)))";
   tlib "fold_left_1" ("import lists; fold_left(((acc, cur) => {acc - cur}), 0, " ^ mylist ^ ")")
     "-6";
   tlib "fold_right_1" ("import lists; fold_right(((cur, acc) => {cur - acc}), 0, " ^ mylist ^ ")")
