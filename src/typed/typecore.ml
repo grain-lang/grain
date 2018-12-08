@@ -223,6 +223,15 @@ let rec is_nonexpansive exp =
   | _ -> false
 
 
+let check_recursive_bindings env valbinds =
+  let ids = let_bound_idents valbinds in
+  List.iter
+    (fun {vb_expr} ->
+       if not (Rec_check.is_valid_recursive_expression ids vb_expr) then
+         raise(Error(vb_expr.exp_loc, env, Illegal_letrec_expr))
+    )
+    valbinds
+
 (* Approximate the type of an expression, for better recursion *)
 
 let rec approx_type env sty =
@@ -419,10 +428,10 @@ and type_expect_ ?in_function ?(recarg=Rejected) env sexp ty_expected_explained 
     let (pat_exp_list, new_env, unpacks) =
       type_let env rec_flag pats scp true in
     let body = type_expect new_env body ty_expected_explained in
-    (*let () =
+    let () =
       if rec_flag = Recursive then
-        check_recursive_bindings env pat_exp_list
-      in*)
+        check_recursive_bindings env pat_exp_list;
+      in
     re {
       exp_desc = TExpLet(rec_flag, pat_exp_list, body);
       exp_loc = loc;
@@ -1153,10 +1162,6 @@ and type_let ?(check = fun s -> Warnings.Unused_var s)
       l;
   (l, new_env, unpacks)
 
-
-let check_recursive_bindings env vbs =
-  (* TODO: Implement *)
-  ()
 
 (* Typing of toplevel bindings *)
 let type_binding env rec_flag spat_sexp_list scope =
