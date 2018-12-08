@@ -91,6 +91,25 @@ export function grainToString(n, runtime) {
   }
 }
 
+// TODO: Move
+class GrainAdtValue {
+  constructor(elts) {
+    this._elts = elts;
+  }
+
+  get elts() {
+    return this._elts;
+  }
+
+  toString() {
+    if (this._elts.length === 1) {
+      return this._elts[0];
+    } else {
+      return `${this._elts[0]}(${this._elts.slice(1)})`;
+    }
+  }
+}
+
 export function grainHeapValToJSVal(n, runtime) {
   switch (view[n / 4]) {
   case GRAIN_STRING_HEAP_TAG:
@@ -123,7 +142,7 @@ export function grainHeapValToJSVal(n, runtime) {
       for (let i = 0; i < arity; ++i) {
         ret.push(grainToJSVal(view[x + 5 + i], runtime));
       }
-      return ret;
+      return new GrainAdtValue(ret);
     }
   default:
     console.warn(`Unknown heap tag at ${n / 4}: ${view[n / 4]}`);

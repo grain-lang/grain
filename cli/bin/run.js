@@ -9,7 +9,7 @@ module.exports = async function run(path, options) {
     let GrainRunner = runtime.buildGrainRunner(locator);
     let result = await GrainRunner.runFile(path);
     if (options.printOutput) {
-      console.log(result);
+      console.log(String(result));
     }
   }
   catch (e) {
