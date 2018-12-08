@@ -1,14 +1,14 @@
 # Prints the given value to the console.
-foreign wasm grainBuiltins print : a -> a;
+export foreign wasm grainBuiltins print : a -> a;
 
 # Checks the given items for structural equality.
-foreign wasm grainBuiltins equal : (a, a) -> Bool;
+export foreign wasm grainBuiltins equal : (a, a) -> Bool;
 
 # Converts the given value to a string
-foreign wasm grainBuiltins toString : a -> String;
+export foreign wasm grainBuiltins toString : a -> String;
 
 # TODO: These should be in a separate WASM module
 
-foreign wasm grainBuiltins stringAppend : (String, String) -> String;
+export foreign wasm grainBuiltins stringAppend : (String, String) -> String;
 
-foreign wasm grainBuiltins stringSlice : (String, Number, Number) -> String;
+export foreign wasm grainBuiltins stringSlice : (String, Number, Number) -> String;

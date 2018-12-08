@@ -1,6 +1,6 @@
 # Standard library for list functionality
 
-data List<a> =
+export data List<a> =
   | Empty
   | Cons(a, List<a>);
 
