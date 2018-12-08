@@ -5,6 +5,7 @@ export class GrainModule {
   constructor(wasmModule, name) {
     this.wasmModule = wasmModule;
     this.name = name; // name is optional
+    this.runner = null;
     this._cmi = null;
     this._instantiated = null;
   }
@@ -110,7 +111,7 @@ export class GrainModule {
     return this._types;
   }
 
-  async instantiate(importObj) {
+  async instantiate(importObj, runner) {
     /*console.log(`Instantiating ${this.name}`);
     console.log(`imports:`);
     Object.keys(importObj).forEach(m => {
@@ -123,6 +124,7 @@ export class GrainModule {
       });
       console.log('');
     });*/
+    this.runner = runner;
     this._instantiated = await WebAssembly.instantiate(this.wasmModule, importObj);
     //console.log(`Instantiated: ${this._instantiated}.`);
     //console.log(`fields: ${Object.keys(this._instantiated)}`);
@@ -132,7 +134,7 @@ export class GrainModule {
     //console.log(`Running ${this.name}`);
     let res = await this.main();
     //console.log(`complete.`);
-    return grainToJSVal(res);
+    return grainToJSVal(res, this.runner);
   }
 }
 

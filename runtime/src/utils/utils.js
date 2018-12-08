@@ -26,20 +26,20 @@ export function grainHeapValueToString(n, runtime) {
     break;
   case GRAIN_ADT_HEAP_TAG:
     let x = n / 4;
-    console.log(`<ADT Value: (${view[x + 1]}, ${view[x + 2]}, ${view[x + 3]}, ${view[x + 4]})>`);
+    //console.log(`<ADT Value: (${view[x + 1]}, ${view[x + 2]}, ${view[x + 3]}, ${view[x + 4]})>`);
     if (runtime) {
       // In-memory tags are tagged ints
       let moduleId = view[x + 1] >> 1;
       let typeId = view[x + 2] >> 1;
       let variantId = view[x + 3] >> 1;
       let moduleName = runtime.idMap[moduleId];
-      console.log(`\tModule Name: ${moduleName}`);
+      //console.log(`\tModule Name: ${moduleName}`);
       let module = runtime.modules[moduleName];
-      console.log(`\tModule: ${module}`);
+      //console.log(`\tModule: ${module}`);
       let tyinfo = module.types[typeId];
-      console.log(`\tType Info: ${JSON.stringify(tyinfo)}`);
+      //console.log(`\tType Info: ${JSON.stringify(tyinfo)}`);
       let info = tyinfo[variantId];
-      console.log(`\tVariant: ${info}`);
+      //console.log(`\tVariant: ${info}`);
       let [variantName, arity] = info;
       let printedVals = [];
       for (let i = 0; i < arity; ++i) {
@@ -91,7 +91,7 @@ export function grainToString(n, runtime) {
   }
 }
 
-export function grainHeapValToJSVal(n) {
+export function grainHeapValToJSVal(n, runtime) {
   switch (view[n / 4]) {
   case GRAIN_STRING_HEAP_TAG:
     let byteView = new Uint8Array(memory.buffer);
@@ -101,13 +101,37 @@ export function grainHeapValToJSVal(n) {
   case GRAIN_DOM_ELEM_TAG:
     let ref = n / 4;
     return grainDOMRefs[view[ref + 1]];
+  case GRAIN_ADT_HEAP_TAG:
+    // TODO: Make this reversible
+    let x = n / 4;
+    //console.log(`<ADT Value: (${view[x + 1]}, ${view[x + 2]}, ${view[x + 3]}, ${view[x + 4]})>`);
+    if (runtime) {
+      // In-memory tags are tagged ints
+      let moduleId = view[x + 1] >> 1;
+      let typeId = view[x + 2] >> 1;
+      let variantId = view[x + 3] >> 1;
+      let moduleName = runtime.idMap[moduleId];
+      //console.log(`\tModule Name: ${moduleName}`);
+      let module = runtime.modules[moduleName];
+      //console.log(`\tModule: ${module}`);
+      let tyinfo = module.types[typeId];
+      //console.log(`\tType Info: ${JSON.stringify(tyinfo)}`);
+      let info = tyinfo[variantId];
+      //console.log(`\tVariant: ${info}`);
+      let [variantName, arity] = info;
+      let ret = [variantName];
+      for (let i = 0; i < arity; ++i) {
+        ret.push(grainToJSVal(view[x + 5 + i], runtime));
+      }
+      return ret;
+    }
   default:
     console.warn(`Unknown heap tag at ${n / 4}: ${view[n / 4]}`);
     return undefined;
   }
 }
 
-export function grainTupleToJSVal(n) {
+export function grainTupleToJSVal(n, runtime) {
   let tupleIdx = n / 4;
   let tupleLength = view[tupleIdx];
   if (tupleLength & 0x80000000) {
@@ -116,7 +140,7 @@ export function grainTupleToJSVal(n) {
     view[tupleIdx] |= 0x80000000;
     let elts = [];
     for (let i = 0; i < tupleLength; ++i) {
-      let value = grainToJSVal(view[tupleIdx + i + 1])
+      let value = grainToJSVal(view[tupleIdx + i + 1], runtime)
       if (value === Symbol.for('cyclic')) {
         elts.push(elts);
       } else {
@@ -128,7 +152,7 @@ export function grainTupleToJSVal(n) {
   }
 }
 
-export function grainToJSVal(x) {
+export function grainToJSVal(x, runtime) {
   if (!(x & 1)) {
     return x >> 1;
   } else if ((x & 7) == 5) {
@@ -136,9 +160,9 @@ export function grainToJSVal(x) {
       throw new GrainError('Computed Grain functions are not callable from JavaScript.')
     }
   } else if ((x & 7) === 3) {
-    return grainHeapValToJSVal(x ^ 3);
+    return grainHeapValToJSVal(x ^ 3, runtime);
   } else if ((x & 7) === GRAIN_TUPLE_TAG_TYPE) {
-    return grainTupleToJSVal(x ^ GRAIN_TUPLE_TAG_TYPE);
+    return grainTupleToJSVal(x ^ GRAIN_TUPLE_TAG_TYPE, runtime);
   } else if ((x === -1)) {
     return true;
   } else if (x === 0x7FFFFFFF) {
