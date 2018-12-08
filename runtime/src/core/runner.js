@@ -95,6 +95,11 @@ export class GrainRunner {
     return this.load(module.name, module);
   }
 
+  async runFileUnboxed(path) {
+    let module = await this.loadFile(path);
+    return module.main();
+  }
+
   async runFile(path) {
     let module = await this.loadFile(path);
     return module.run();
@@ -108,5 +113,10 @@ export class GrainRunner {
   async runURL(path) {
     let module = await this.loadURL(path);
     return module.run();
+  }
+
+  async runURLUnboxed(path) {
+    let module = await this.loadURL(path);
+    return module.main();
   }
 }

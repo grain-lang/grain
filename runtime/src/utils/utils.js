@@ -48,7 +48,7 @@ export function grainHeapValueToString(n, runtime) {
       if (arity === 0) {
         return variantName;
       } else {
-        return `${variantName}(${printedVals})`;
+        return `${variantName}(${printedVals.join(", ")})`;
       }
     }
     return "<adt value>";
@@ -100,13 +100,13 @@ class GrainAdtValue {
   get elts() {
     return this._elts;
   }
+}
 
-  toString() {
-    if (this._elts.length === 1) {
-      return this._elts[0];
-    } else {
-      return `${this._elts[0]}(${this._elts.slice(1)})`;
-    }
+GrainAdtValue.prototype.toString = function() {
+  if (this._elts.length === 1) {
+    return this._elts[0];
+  } else {
+    return `${this._elts[0]}(${this._elts.slice(1).join(", ")})`;
   }
 }
 

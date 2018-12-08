@@ -26,24 +26,24 @@ function heapEqualHelp(heapTag, xptr, yptr, cycles) {
       return false;
     }
     // Cycle check
-    if (view[xPtr + 4] & 0x80000000) {
+    if (view[xptr + 4] & 0x80000000) {
       return true;
     }
     let length = view[xptr + 4];
     ++cycles;
-    view[xPtr + 4] |= 0x80000000;
-    view[yPtr + 4] |= 0x80000000;
+    view[xptr + 4] |= 0x80000000;
+    view[yptr + 4] |= 0x80000000;
     let result = true;
     for (let i = 0; i < length; ++i) {
-      if (!equalHelp(view[xPtr + i + 5],
-                     view[yPtr + i + 5],
+      if (!equalHelp(view[xptr + i + 5],
+                     view[yptr + i + 5],
                      cycles)) {
         result = false;
         break;
       }
     }
-    view[xPtr + 4] = length;
-    view[yPtr + 4] = length;
+    view[xptr + 4] = length;
+    view[yptr + 4] = length;
     return result;
   default:
     // No other implementation
@@ -80,12 +80,12 @@ function equalHelp(x, y, cycles) {
     view[xPtr] = length;
     view[yPtr] = length;
     return result;
-  } else if (x & 7 === 5) {
-    if (y & 7 !== 5) {
+  } else if ((x & 7) === 3) {
+    if ((y & 7) !== 3) {
       return false;
     }
-    let xPtr = (x ^ 1) / 4;
-    let yPtr = (y ^ 1) / 4;
+    let xPtr = (x ^ 3) / 4;
+    let yPtr = (y ^ 3) / 4;
     if (view[xPtr] !== view[yPtr]) {
       return false;
     }
