@@ -79,7 +79,7 @@ type closure_data = {
 type allocation_type =
   | MClosure of closure_data
   | MTuple of immediate list
-  | MADT of immediate * immediate list (* Tag, Elements *)
+  | MADT of immediate * immediate * immediate list (* Type Tag, Variant Tag, Elements *)
   | MString of string
 [@@deriving sexp]
 

@@ -568,10 +568,10 @@ let allocate_closure env ?lambda ({func_idx; arity; variables} as closure_data) 
     Ast.Binary(Values.I32 Ast.IntOp.Or);
   ]
 
-let allocate_adt env tag elts =
+let allocate_adt env ttag vtag elts =
   (* TODO: We don't really need to store the arity here. Could move this to module-static info *)
   (* Heap memory layout of ADT types:
-    [ <value type tag>, <module_tag>, <tag>, <arity>, elts ... ]
+    [ <value type tag>, <module_tag>, <type_tag>, <variant_tag>, <arity>, elts ... ]
    *)
   let num_elts = List.length elts in
   let get_swap = get_swap env 0 in
@@ -579,20 +579,22 @@ let allocate_adt env tag elts =
   let compile_elt idx elt =
     get_swap @
     (compile_imm env elt) +@ [
-      store ~offset:(4 * (idx + 4)) ();
+      store ~offset:(4 * (idx + 5)) ();
     ] in
 
-  (heap_allocate env (num_elts + 4)) @ set_swap @ get_swap +@ [
+  (heap_allocate env (num_elts + 5)) @ set_swap @ get_swap +@ [
     Ast.Const(const_int32 (tag_val_of_heap_tag_type ADTType));
     store ~offset:0 ();
   ] @ get_swap +@ [
     Ast.GetGlobal(var_of_ext_global env runtime_mod module_runtime_id);
     store ~offset:4 ();
-  ] @ get_swap @ (compile_imm env tag) +@ [
+  ] @ get_swap @ (compile_imm env ttag) +@ [
     store ~offset:8 ();
+  ] @ get_swap @ (compile_imm env vtag) +@ [
+    store ~offset:12 ();
   ] @ get_swap +@ [
     Ast.Const(const_int32 num_elts);
-    store ~offset:12 ();
+    store ~offset:16 ();
   ] @ (Concatlist.flatten @@ List.mapi compile_elt elts) @ get_swap +@ [
     Ast.Const(const_int32 @@ tag_val_of_tag_type (GenericHeapType (Some ADTType)));
     Ast.Binary(Values.I32 Ast.IntOp.Or);
@@ -622,7 +624,7 @@ let compile_allocation env alloc_type =
   | MClosure(cdata) -> allocate_closure env cdata
   | MTuple(elts) -> allocate_tuple env elts
   | MString(str) -> allocate_string env str
-  | MADT(tag, elts) -> allocate_adt env tag elts
+  | MADT(ttag, vtag, elts) -> allocate_adt env ttag vtag elts
 
 
 let compile_tuple_op env tup_imm op =
@@ -648,7 +650,7 @@ let compile_adt_op env adt_imm op =
   | MAdtGet(idx) ->
     let idx_int = Int32.to_int idx in 
     adt @ (untag (GenericHeapType (Some ADTType))) +@ [
-      load ~offset:(4 * (idx_int + 4)) ();
+      load ~offset:(4 * (idx_int + 5)) ();
     ]
   | MAdtGetModule ->
     adt @ (untag (GenericHeapType (Some ADTType))) +@ [
@@ -656,7 +658,7 @@ let compile_adt_op env adt_imm op =
     ]
   | MAdtGetTag ->
     adt @ (untag (GenericHeapType (Some ADTType))) +@ [
-      load ~offset:8 ();
+      load ~offset:12 ();
     ]
 
 

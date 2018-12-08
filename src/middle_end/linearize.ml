@@ -19,6 +19,12 @@ let gensym = Ident.create
 let value_imports = ref []
 (* At the linearization phase, we lift all imports *)
 let symbol_table = ref (Ident.empty : (Ident.t Ident.tbl) Ident.tbl)
+module PathMap = Hashtbl.Make(struct 
+    type t = Path.t
+    let hash x = Hashtbl.hash (Path.name x)
+    let equal a b = (Path.compare a b) == 0
+  end)
+let type_map = PathMap.create 10
 
 let lookup_symbol mod_ name =
   begin
@@ -371,6 +377,7 @@ let rec transl_anf_statement (({ttop_desc; ttop_env=env; ttop_loc=loc} as s) : t
   | _ -> None, []
 
 let transl_anf_module ({statements; body; env; signature} : typed_program) : anf_program =
+  PathMap.clear type_map;
   value_imports := [];
   symbol_table := Ident.empty;
   let top_binds, imports = List.fold_right (fun cur (acc_bind, acc_imp) ->
