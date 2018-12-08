@@ -1,22 +1,22 @@
 # Contrived example to test simple tail calls
 
-let rec is_even_help = (n, b) => {
-    if (n == 0) {
-      b
-    } else {
-      is_odd_help(n - 1, !(b))
-    }
-  },
+let rec isEvenHelp = (n, b) => {
+  if (n == 0) {
+    b
+  } else {
+    isOddHelp(n - 1, not(b))
+  }
+},
 
-  is_odd_help = (n, b) => {
-    if (n == 1) {
-      b
-    } else {
-      is_even_help(n - 1, !(b))
-    }
-  };
+isOddHelp = (n, b) => {
+  if (n == 1) {
+    b
+  } else {
+    isEvenHelp(n - 1, not(b))
+  }
+};
 
-let is_even = ((n) => is_even_help(n, true)),
-    is_odd = ((n) => is_odd_help(n, true));
+let isEven = (n) => {isEvenHelp(n, true)},
+  isOdd = (n) => {isOddHelp(n, true)};
 
-is_odd(99999999)
+isOdd(9999)

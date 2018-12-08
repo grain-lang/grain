@@ -77,15 +77,38 @@ export function grainHeapValToJSVal(n) {
   }
 }
 
+export function grainTupleToJSVal(n) {
+  let tupleIdx = n / 4;
+  let tupleLength = view[tupleIdx];
+  if (tupleLength & 0x80000000) {
+    return Symbol.for('cyclic');
+  } else {
+    view[tupleIdx] |= 0x80000000;
+    let elts = [];
+    for (let i = 0; i < tupleLength; ++i) {
+      let value = grainToJSVal(view[tupleIdx + i + 1])
+      if (value === Symbol.for('cyclic')) {
+        elts.push(elts);
+      } else {
+        elts.push(value);
+      }
+    }
+    view[tupleIdx] = tupleLength;
+    return elts;
+  }
+}
+
 export function grainToJSVal(x) {
   if (!(x & 1)) {
     return x >> 1;
   } else if ((x & 7) == 5) {
-    let lambdaLoc = (x ^ 5) / 4;
-    let closure = new GrainClosure(lambdaLoc);
-    return closure.jsFunc.bind(closure);
+    return () => {
+      throw new GrainError('Computed Grain functions are not callable from JavaScript.')
+    }
   } else if ((x & 7) === 3) {
     return grainHeapValToJSVal(x ^ 3);
+  } else if ((x & 7) === GRAIN_TUPLE_TAG_TYPE) {
+    return grainTupleToJSVal(x ^ GRAIN_TUPLE_TAG_TYPE);
   } else if ((x === -1)) {
     return true;
   } else if (x === 0x7FFFFFFF) {
