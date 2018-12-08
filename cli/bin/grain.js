@@ -29,6 +29,7 @@ program
 
 program.parse(process.argv);
 
+// If no file is given, print the help message and exit
 if (typeof givenFile === 'undefined') {
   program.outputHelp()
   process.exit(-1)
