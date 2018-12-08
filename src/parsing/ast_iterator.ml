@@ -117,9 +117,9 @@ module TL = struct
   let iter sub {ptop_desc = desc; ptop_loc = loc} =
     sub.location sub loc;
     match desc with
-      | PTopForeign vd -> sub.value_description sub vd
       | PTopImport id -> sub.import sub id
-      | PTopData dd -> sub.data sub dd
+      | PTopForeign(e, vd) -> sub.value_description sub vd
+      | PTopData(e, dd) -> sub.data sub dd
       | PTopLet(e, r, vb) -> List.iter (sub.value_binding sub) vb
 end
 

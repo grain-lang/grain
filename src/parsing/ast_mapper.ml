@@ -130,9 +130,9 @@ module TL = struct
     let open Top in
     let loc = sub.location sub loc in
     match desc with
-      | PTopForeign d -> Top.foreign ~loc (sub.value_description sub d)
       | PTopImport id -> Top.import ~loc (sub.import sub id)
-      | PTopData dd -> Top.data ~loc (sub.data sub dd)
+      | PTopForeign(e, d) -> Top.foreign ~loc e (sub.value_description sub d)
+      | PTopData(e, dd) -> Top.data ~loc e (sub.data sub dd)
       | PTopLet(e, r, vb) -> Top.let_ ~loc e r (List.map (sub.value_binding sub) vb)
 end
 

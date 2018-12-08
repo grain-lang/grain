@@ -286,28 +286,34 @@ let type_module ?(toplevel=false) funct_body anchor env sstr (*scope*) =
 
   let (foreigns, imports, datas, lets) = List.fold_right (fun {ptop_desc; ptop_loc=loc} (foreigns, imports, datas, lets) ->
       match ptop_desc with
-      | PTopForeign d -> ((d, loc)::foreigns, imports, datas, lets)
       | PTopImport i -> (foreigns, (i, loc)::imports, datas, lets)
-      | PTopData d -> (foreigns, imports, (d, loc)::datas, lets)
+      | PTopForeign(e, d) -> ((e, d, loc)::foreigns, imports, datas, lets)
+      | PTopData(e, d) -> (foreigns, imports, (e, d, loc)::datas, lets)
       | PTopLet(e, r, vb) -> (foreigns, imports, datas, ((e, r, vb), loc)::lets)) sstr.Parsetree.statements ([], [], [], []) in
 
   (* TODO: imports*)
 
-  let env, foreign_sigs, foreigns = List.fold_left (fun (env, foreign_sigs, foreigns) (d, loc) ->
+  let env, foreign_sigs, foreigns = List.fold_left (fun (env, foreign_sigs, foreigns) (e, d, loc) ->
       let (desc, newenv) = Typedecl.transl_value_decl env loc d in
-      let foreign_sig = TSigValue(desc.tvd_id, desc.tvd_val) in
+      let foreign_sigs = match e with
+        | Exported -> TSigValue(desc.tvd_id, desc.tvd_val)::foreign_sigs
+        | Nonexported -> foreign_sigs in
       let f = {ttop_desc=TTopForeign desc; ttop_loc=loc; ttop_env=env} in
-      newenv, (foreign_sig::foreign_sigs), (f::foreigns)
+      newenv, foreign_sigs, (f::foreigns)
     ) (env, [], []) foreigns in
   let env, imports = List.fold_left (fun (env, imports) (i, loc) ->
       let _path, newenv, od = type_open env i in
       newenv, ({ttop_desc=TTopImport(od); ttop_loc=loc; ttop_env=env}::imports)) (env, []) imports in
   let imports = List.rev imports in
 
+  let data_exports, datas = List.split @@ List.map (fun (e, d, loc) -> e, (d, loc)) datas in
   let decls, newenv = Typedecl.transl_data_decl env Recursive (List.map fst datas) in
-  let ty_decl = map_rec_type_with_row_types ~rec_flag:Recursive
-      (fun rs info -> TSigType(info.data_id, info.data_type, rs))
-      decls [] in
+  let export_decl_pairs = List.combine data_exports decls in
+  let ty_decl = List.concat @@ map_rec_type_with_row_types ~rec_flag:Recursive
+      (fun rs (e, info) -> match e with
+        | Exported -> [TSigType(info.data_id, info.data_type, rs)]
+        | Nonexported -> []
+      ) export_decl_pairs [] in
   let newenv = enrich_type_decls anchor decls env newenv in
 
   let process_let env (export_flag, rec_flag, binds) =
