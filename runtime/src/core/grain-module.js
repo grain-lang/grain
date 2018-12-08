@@ -74,6 +74,42 @@ export class GrainModule {
     return this.requiredExport("GRAIN$TABLE_SIZE");
   }
 
+  get types() {
+    if (!this._types) {
+      let cmi = this.cmi;
+      if (!cmi) {
+        return null;
+      }
+      this._types = {};
+      let idx = 0;
+      cmi.cmi_sign.forEach(elt => {
+        if (elt[0] !== "TSigType") {
+          return;
+        }
+        let typ = {};
+        this._types[idx++] = typ;
+        let desc = elt[2];
+        let kind = desc.type_kind;
+        if (!kind || kind[0] !== "TDataVariant") {
+          return;
+        }
+        let variants = kind[1];
+        variants.forEach((variant, vidx) => {
+          let name = variant.cd_id.name;
+          let arity;
+          if (variant.cd_args[0] === "TConstrSingleton") {
+            arity = 0;
+          } else {
+            // TConstrTuple
+            arity = variant.cd_args[1].length;
+          }
+          typ[vidx] = [name, arity];
+        })
+      })
+    }
+    return this._types;
+  }
+
   async instantiate(importObj) {
     /*console.log(`Instantiating ${this.name}`);
     console.log(`imports:`);
