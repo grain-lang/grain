@@ -69,10 +69,10 @@ export class GrainRunner {
           throw new GrainError(-1, `Failed to locate required module: ${imp.module}`);
         }
         this.modules[imp.module] = located;
-        console.log(`Located module: ${imp.module}`);
-        if (imp.module === "GRAIN$MODULE$lists") {
+        console.debug(`Located module: ${imp.module}`);
+        /*if (imp.module === "GRAIN$MODULE$lists") {
           console.log(`Lists CMI: ${JSON.stringify(located.cmi)}`);
-        }
+        }*/
         await this.load(imp.module, located);
         await located.run();
         this.ptrZero = this.ptr;
@@ -82,7 +82,7 @@ export class GrainRunner {
       }
     }
     // All of the dependencies have been loaded. Now we can instantiate with the import object.
-    await mod.instantiate(this.imports);
+    await mod.instantiate(this.imports, this);
     this.idMap[this.imports['grainRuntime']['moduleRuntimeId']] = name;
     if (!(name in this.modules)) {
       this.modules[name] = mod;
