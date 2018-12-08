@@ -164,7 +164,7 @@ type toplevel_stmt_desc =
   | TTopForeign of value_description
   | TTopImport of import_declaration
   | TTopData of data_declaration
-  | TTopLet of rec_flag * value_binding list
+  | TTopLet of export_flag * rec_flag * value_binding list
 
 type toplevel_stmt = {
   ttop_desc: toplevel_stmt_desc;

@@ -28,6 +28,8 @@ type constant =
   | Const_bool of bool
 [@@deriving sexp]
 
+(** Marker for exported/nonexported let bindings *)
+type export_flag = Nonexported | Exported [@@deriving sexp]
 (** Marker for recursive/nonrecursive let bindings *)
 type rec_flag = Nonrecursive | Recursive [@@deriving sexp]
 

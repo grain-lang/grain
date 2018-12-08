@@ -33,10 +33,10 @@ module type IteratorArgument = sig
     val leave_core_type : core_type -> unit
     val leave_toplevel_stmt : toplevel_stmt -> unit
 
-    val enter_bindings : rec_flag -> unit
+    val enter_bindings : export_flag -> rec_flag -> unit
     val enter_binding : value_binding -> unit
     val leave_binding : value_binding -> unit
-    val leave_bindings : rec_flag -> unit
+    val leave_bindings : export_flag -> rec_flag -> unit
 
     val enter_data_declarations : unit -> unit
     val enter_data_declaration : data_declaration -> unit

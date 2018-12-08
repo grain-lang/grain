@@ -120,7 +120,7 @@ module TL = struct
       | PTopForeign vd -> sub.value_description sub vd
       | PTopImport id -> sub.import sub id
       | PTopData dd -> sub.data sub dd
-      | PTopLet(r, vb) -> List.iter (sub.value_binding sub) vb
+      | PTopLet(e, r, vb) -> List.iter (sub.value_binding sub) vb
 end
 
 let default_iterator = {

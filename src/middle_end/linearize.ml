@@ -176,12 +176,12 @@ let rec transl_imm (({exp_desc; exp_loc=loc; exp_env=env; _} as e) : expression)
   | TExpConstruct _ -> failwith "NYI: transl_imm: Construct"
 
 
-and bind_patts ?toplevel:(toplevel=false) (exp_id : Ident.t) (patts : pattern list) : anf_bind list =
+and bind_patts ?exported:(exported=false) (exp_id : Ident.t) (patts : pattern list) : anf_bind list =
   let postprocess_item cur acc =
     match cur with
     | None -> acc
     | Some(ident, (src, idx), extras) ->
-      let bind = if toplevel then
+      let bind = if exported then
           BLetGlobal(Nonrecursive, [ident, Comp.tuple_get (Int32.of_int idx) (Imm.id src)])
         else
           BLet(ident, Comp.tuple_get (Int32.of_int idx) (Imm.id src)) in
@@ -309,21 +309,25 @@ and transl_anf_expression (({exp_desc; exp_loc=loc; exp_env=env; _} as e) : expr
 
 let rec transl_anf_statement (({ttop_desc; ttop_env=env; ttop_loc=loc} as s) : toplevel_stmt) : (anf_bind list) option * import_spec list =
   match ttop_desc with
-  | TTopLet(_, []) -> None, []
-  | TTopLet(Nonrecursive, {vb_expr; vb_pat}::rest) ->
+  | TTopLet(_, _, []) -> None, []
+  | TTopLet(export_flag, Nonrecursive, {vb_expr; vb_pat}::rest) ->
     let (exp_ans, exp_setup) = transl_comp_expression vb_expr in
-    let rest_setup, rest_imp = transl_anf_statement {s with ttop_desc=TTopLet(Nonrecursive, rest)} in
+    let rest_setup, rest_imp = transl_anf_statement {s with ttop_desc=TTopLet(export_flag, Nonrecursive, rest)} in
     let rest_setup = Option.default [] rest_setup in
+    let exported = export_flag = Exported in
     let setup = begin match vb_pat.pat_desc with
-      | TPatVar(bind, _) -> [BLetGlobal(Nonrecursive, [bind, exp_ans])]
+      | TPatVar(bind, _) -> 
+        if exported 
+        then [BLetGlobal(Nonrecursive, [bind, exp_ans])]
+        else [BLet(bind, exp_ans)]
       | TPatTuple(patts) ->
         let tmp = gensym "let_tup" in
-        let anf_patts = bind_patts ~toplevel:true tmp patts in
+        let anf_patts = bind_patts ~exported tmp patts in
         (BLet(tmp, exp_ans))::anf_patts
       | _ -> failwith "NYI: transl_anf_statement: Non-tuple destructuring in let"
     end in
     Some(exp_setup @ setup @ rest_setup), rest_imp
-  | TTopLet(Recursive, binds) ->
+  | TTopLet(export_flag, Recursive, binds) ->
     let (binds, new_binds_setup) = List.split (List.map (fun {vb_pat; vb_expr} -> (vb_pat, transl_comp_expression vb_expr)) binds) in
     let (new_binds, new_setup) = List.split new_binds_setup in
 
@@ -331,7 +335,12 @@ let rec transl_anf_statement (({ttop_desc; ttop_env=env; ttop_loc=loc} as s) : t
         | {pat_desc=TPatVar(id, _)} -> id
         | _ -> failwith "Non-name not allowed on LHS of let rec.") binds in
 
-    Some((List.concat new_setup) @ [BLetGlobal(Recursive, List.combine names new_binds)]), []
+    begin match export_flag with
+      | Exported ->
+        Some((List.concat new_setup) @ [BLetGlobal(Recursive, List.combine names new_binds)]), []
+      | Nonexported ->
+        Some((List.concat new_setup) @ [BLetRec(List.combine names new_binds)]), [] 
+    end
   | TTopData(decl) ->
     let open Types in
     let typath = Path.PIdent (decl.data_id) in

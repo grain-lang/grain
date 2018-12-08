@@ -108,7 +108,7 @@ end = struct
       | TTopData (decl) -> TTopData(map_data_declaration decl)
       | TTopForeign _
       | TTopImport _  -> stmt.ttop_desc
-      | TTopLet (recflag, binds) -> TTopLet(recflag, map_bindings recflag binds)
+      | TTopLet (exportflag, recflag, binds) -> TTopLet(exportflag, recflag, map_bindings recflag binds)
     end in
     Map.leave_toplevel_stmt {stmt with ttop_desc}
 
