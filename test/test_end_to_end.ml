@@ -1,5 +1,5 @@
 open Grain.Compile
-open Grain.Runner
+open Runner
 open Grain_utils
 open Printf
 open OUnit2

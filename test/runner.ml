@@ -1,7 +1,7 @@
 open Unix
 open Filename
 open Str
-open Compile
+open Grain.Compile
 open Printf
 open OUnit2
 open Lexing
@@ -27,17 +27,6 @@ let string_of_file file_name =
 
 let string_of_position p =
   sprintf "%s:line %d, col %d" p.pos_fname p.pos_lnum (p.pos_cnum - p.pos_bol);;
-
-
-let print_errors exns =
-  let open Wasm_runner in
-  List.map (fun e ->
-      match e with
-      | GrainRuntimeError(msg) -> msg
-      | _ ->
-         sprintf "%s" (Printexc.to_string e)
-    ) exns
-;;
 
 
 let parse name lexbuf =
@@ -109,6 +98,7 @@ let read_stream cstream =
   let buf = Bytes.create 2048 in
   let i = ref 0 in
   Stream.iter (fun c ->
+    (* This stream doesn't seem to have an end and causes the runner to hang, so we have an arbitrary cap *)
     (if !i >= 2048 then failwith "Program output exceeds 2048 characters");
     Bytes.set buf !i c;
     incr i

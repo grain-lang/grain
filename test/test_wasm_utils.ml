@@ -40,7 +40,7 @@ let collect_bytes f =
 let compile_wasm_file filename =
   let testdata_dir = "test-data" in
   let filename = testdata_dir ^ "/" ^ filename in
-  Grain.Runner.assemble_object_file (filename ^ ".wast") false (filename ^ ".wasm")
+  Runner.assemble_object_file (filename ^ ".wast") false (filename ^ ".wasm")
 
 
 let test_leb128_u32 ctxt =
