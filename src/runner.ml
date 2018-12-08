@@ -109,6 +109,7 @@ let read_stream cstream =
   let buf = Bytes.create 2048 in
   let i = ref 0 in
   Stream.iter (fun c ->
+    (* This stream doesn't seem to have an end and causes the runner to hang, so we have an arbitrary cap *)
     (if !i >= 2048 then failwith "Program output exceeds 2048 characters");
     Bytes.set buf !i c;
     incr i
