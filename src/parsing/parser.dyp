@@ -339,9 +339,9 @@ toplevel_stmt :
   | EXPORT LET value_binds { Top.let_ Exported Nonrecursive $3 }
   | LET REC value_binds { Top.let_ Nonexported Recursive $3 }
   | LET value_binds { Top.let_ Nonexported Nonrecursive $2 }
-  | foreign_stmt { Top.foreign ~loc:(symbol_rloc dyp) $1 }
   | import_stmt { Top.import $1 }
-  | data_declaration { Top.data $1 }
+  | foreign_stmt { Top.foreign ~loc:(symbol_rloc dyp) Exported $1 }
+  | data_declaration { Top.data Exported $1 }
 
 toplevel_stmts :
   | toplevel_stmt [SEMI toplevel_stmt {$2}]* { $1::$2 }

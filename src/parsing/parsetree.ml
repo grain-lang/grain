@@ -156,9 +156,9 @@ type value_description = {
 
 (** Statements which can exist at the top level *)
 type toplevel_stmt_desc =
-  | PTopForeign of value_description
   | PTopImport of import_declaration
-  | PTopData of data_declaration
+  | PTopForeign of export_flag * value_description
+  | PTopData of export_flag * data_declaration
   | PTopLet of export_flag * rec_flag * value_binding list
 [@@deriving sexp]
 
