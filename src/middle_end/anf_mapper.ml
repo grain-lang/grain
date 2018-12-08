@@ -53,8 +53,8 @@ module MakeMap(Iter : MapArgument) = struct
         CAssign(lhs, rhs)
       | CTuple(elts) ->
         CTuple(List.map (map_imm_expression) elts)
-      | CAdt(tag, elts) ->
-        CAdt(map_imm_expression tag, List.map (map_imm_expression) elts)
+      | CAdt(ttag, vtag, elts) ->
+        CAdt(map_imm_expression ttag, map_imm_expression vtag, List.map (map_imm_expression) elts)
       | CGetTupleItem(idx, tup) ->
         CGetTupleItem(idx, map_imm_expression tup)
       | CSetTupleItem(idx, tup, value) ->

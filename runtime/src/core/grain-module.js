@@ -5,6 +5,7 @@ export class GrainModule {
   constructor(wasmModule, name) {
     this.wasmModule = wasmModule;
     this.name = name; // name is optional
+    this._cmi = null;
     this._instantiated = null;
   }
 
@@ -17,6 +18,26 @@ export class GrainModule {
       throw new GrainError(-1, `Module${this.name ? (" " + this.name) : ""} must be instantiated before use`);
     }
     return this._instantiated;
+  }
+
+  get cmi() {
+    if (!this._cmi) {
+      let secs = WebAssembly.Module.customSections(this.wasmModule, "cmi");
+      if (secs.length === 0) {
+        console.warn(`Grain Module${this.name ? (" " + this.name) : ""} missing CMI information`);
+        return null;
+      }
+      let sec = secs[0];
+      let view = new Uint32Array(sec.slice(0, 20));
+      // [grain_magic, abi_major, abi_minor, abi_patch, sec_name_length]
+      let secNameLength = view[4];
+      let startOffset = (4 * 5) + secNameLength;
+      let bytes = sec.slice(startOffset, sec.byteLength);
+      let dec = new TextDecoder("utf-8");
+      let decoded = dec.decode(bytes);
+      this._cmi = JSON.parse(decoded);
+    }
+    return this._cmi;
   }
 
   get importSpecs() {

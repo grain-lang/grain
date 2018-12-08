@@ -53,8 +53,9 @@ module MakeIter(Iter : IterArgument) = struct
         iter_imm_expression rhs
       | CTuple(elts) ->
         List.iter (iter_imm_expression) elts
-      | CAdt(tag, elts) ->
-        iter_imm_expression tag;
+      | CAdt(ttag, vtag, elts) ->
+        iter_imm_expression ttag;
+        iter_imm_expression vtag;
         List.iter (iter_imm_expression) elts
       | CGetTupleItem(_, tup) ->
         iter_imm_expression tup

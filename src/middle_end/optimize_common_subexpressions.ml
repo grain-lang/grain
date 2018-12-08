@@ -15,8 +15,8 @@ module ExpressionHash =
         p1 = p2 && x1 = x2 && y1 = y2
       | CTuple(exps1), CTuple(exps2) -> 
         compare_lists exps1 exps2
-      | CAdt({imm_desc=tag1}, elts1), CAdt({imm_desc=tag2}, elts2) ->
-        tag1 = tag2 && compare_lists elts1 elts2
+      | CAdt({imm_desc=ttag1}, {imm_desc=vtag1}, elts1), CAdt({imm_desc=ttag2}, {imm_desc=vtag2}, elts2) ->
+        ttag1 = ttag2 && vtag1 = vtag2 && compare_lists elts1 elts2
       | CApp({imm_desc=desc1}, args1), CApp({imm_desc=desc2}, args2) -> 
         desc1 = desc2 && compare_lists args1 args2
       | CAppBuiltin(_module1, name1, args1), CAppBuiltin(_module2, name2, args2) -> 
@@ -33,8 +33,8 @@ module ExpressionHash =
         (Hashtbl.hash "CPrim2") lxor Hashtbl.hash p lxor Hashtbl.hash x lxor Hashtbl.hash y
       | CTuple(exps) -> 
         (Hashtbl.hash "CTuple") lxor List.fold_left (fun hash {imm_desc} -> hash lxor Hashtbl.hash imm_desc) 0 exps
-      | CAdt({imm_desc=tag}, elts) ->
-        (Hashtbl.hash "CAdt") lxor Hashtbl.hash tag lxor List.fold_left (fun hash {imm_desc} -> hash lxor Hashtbl.hash imm_desc) 0 elts
+      | CAdt({imm_desc=ttag}, {imm_desc=vtag}, elts) ->
+        (Hashtbl.hash "CAdt") lxor Hashtbl.hash ttag lxor Hashtbl.hash vtag lxor List.fold_left (fun hash {imm_desc} -> hash lxor Hashtbl.hash imm_desc) 0 elts
       | CApp({imm_desc=desc}, args) -> 
         (Hashtbl.hash "CApp") lxor List.fold_left (fun hash {imm_desc} -> hash lxor Hashtbl.hash imm_desc) (Hashtbl.hash desc) args
       | CAppBuiltin(_module, name, args) -> 

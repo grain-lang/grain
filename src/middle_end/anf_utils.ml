@@ -54,7 +54,7 @@ and comp_free_vars_help env (c : comp_expression) =
       Ident.Set.empty
       args
   | CTuple(args)
-  | CAdt(_, args) ->
+  | CAdt(_, _, args) ->
     List.fold_left (fun acc a -> Ident.Set.union (imm_free_vars_help env a) acc)
       Ident.Set.empty
       args
