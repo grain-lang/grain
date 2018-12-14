@@ -121,6 +121,8 @@ module Top = struct
   let let_ ?loc e r vb = mk ?loc (PTopLet(e, r, vb))
   let export ?loc e = mk ?loc (PTopExport e)
   let export_data ?loc e = mk ?loc (PTopExportData e)
+  let export_all ?loc e = mk ?loc (PTopExportAll e)
+  let export_data_all ?loc e = mk ?loc (PTopExportDataAll e)
 end
 
 module Val = struct

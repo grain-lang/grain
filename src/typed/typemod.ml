@@ -284,8 +284,31 @@ let enrich_type_decls anchor decls oldenv newenv =
 
 let type_module ?(toplevel=false) funct_body anchor env sstr (*scope*) =
 
+  let export_all = ref (false, []) in
+  let export_data_all = ref (false, []) in
+  List.iter (fun {ptop_desc} ->
+    (* Take the last export *; after well-formedness there should only be one *)
+    match ptop_desc with
+    | PTopExportAll excepts -> export_all := true, excepts
+    | PTopExportDataAll excepts -> export_data_all := true, excepts
+    | _ -> ()
+  ) sstr.Parsetree.statements;
+
+  let string_needs_export (str : string Grain_parsing.Parsetree.loc) =
+    let flag, excepts = !export_all in
+    flag && not @@ List.exists (fun {txt} -> Identifier.string_of_ident txt = str.txt) excepts in
+
+  let ident_needs_export (id : Ident.t) =
+    let flag, excepts = !export_all in
+    flag && not @@ List.exists (fun except_id -> id.name = Identifier.string_of_ident except_id.txt) excepts in
+
+  let data_needs_export (str : string Grain_parsing.Parsetree.loc) =
+    let flag, excepts = !export_data_all in
+    flag && not @@ List.exists (fun {txt} -> txt = str.txt) excepts in
+
   let process_foreign env e d loc =
     let (desc, newenv) = Typedecl.transl_value_decl env loc d in
+    let e = if string_needs_export d.pval_name then Exported else e in
     let signature = match e with
       | Exported -> Some(TSigValue(desc.tvd_id, desc.tvd_val))
       | Nonexported -> None in
@@ -299,7 +322,9 @@ let type_module ?(toplevel=false) funct_body anchor env sstr (*scope*) =
   let process_datas env e datas loc =
     let decls, newenv = Typedecl.transl_data_decl env Recursive datas in
     let ty_decl = map_rec_type_with_row_types ~rec_flag:Recursive
-        (fun rs info -> match e with
+        (fun rs info -> 
+          let e = if data_needs_export info.data_name then Exported else e in
+          match e with
           | Exported -> TSigType(info.data_id, info.data_type, rs)
           | Nonexported -> TSigType(info.data_id, {info.data_type with type_kind=TDataAbstract}, rs)
         ) decls [] in
@@ -314,11 +339,13 @@ let type_module ?(toplevel=false) funct_body anchor env sstr (*scope*) =
     let () = if rec_flag = Recursive then
         Typecore.check_recursive_bindings env defs
     in
-    let signatures = match export_flag with
-      | Exported -> 
-        List.map (fun id -> TSigValue(id, Env.find_value (PIdent id) newenv))
-        (let_bound_idents defs)
-      | Nonexported -> [] in
+    let some_exported = ref false in
+    let signatures = List.fold_right (fun id sigs ->
+      if ident_needs_export id || export_flag = Exported
+      then (some_exported := true; (TSigValue(id, Env.find_value (PIdent id) newenv))::sigs)
+      else sigs
+    ) (let_bound_idents defs) [] in
+    let export_flag = if !some_exported then Exported else export_flag in
     let stmt = { ttop_desc = TTopLet(export_flag, rec_flag, defs); ttop_loc = loc; ttop_env = env } in
     newenv, signatures, stmt in
 
@@ -367,6 +394,8 @@ let type_module ?(toplevel=false) funct_body anchor env sstr (*scope*) =
       | PTopLet(e, r, vb) -> 
         let new_env, sigs, statement = process_let env e r vb loc in 
         new_env, List.rev sigs @ signatures, statement::statements
+      | PTopExportAll _
+      | PTopExportDataAll _ -> env, signatures, statements
   ) (env, [], []) sstr.Parsetree.statements in
   let signatures, statements = List.rev signatures, List.rev statements in
 

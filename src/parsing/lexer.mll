@@ -101,6 +101,7 @@ rule token = parse
   | "istuple" { ISTUPLE }
   | "import" { IMPORT }
   | "export" { EXPORT }
+  | "except" { EXCEPT }
   | "box" { BOX }
   | "unbox" { UNBOX }
   | "->" { ARROW }

@@ -13,6 +13,8 @@ type mapper = {
   import: mapper -> import_declaration -> import_declaration;
   export: mapper -> export_declaration list -> export_declaration list;
   export_data: mapper -> export_data_declaration list -> export_data_declaration list;
+  export_all: mapper -> export_except list -> export_except list;
+  export_data_all: mapper -> export_data_except list -> export_data_except list;
   value_binding: mapper -> value_binding -> value_binding;
   match_branch: mapper -> match_branch -> match_branch;
   value_description: mapper -> value_description -> value_description;
@@ -129,6 +131,8 @@ module EX = struct
       let pex_loc = sub.location sub pex_loc in
       {pex_name; pex_alias; pex_loc}
     ) exports
+  let map_export_all sub excepts =
+    List.map (map_loc sub) excepts
 end
 
 module EXD = struct
@@ -138,6 +142,8 @@ module EXD = struct
       let pexd_loc = sub.location sub pexd_loc in
       {pexd_name; pexd_loc}
     ) exports
+  let map_export_data_all sub excepts =
+    List.map (map_loc sub) excepts
 end
 
 module VD = struct
@@ -159,6 +165,8 @@ module TL = struct
       | PTopLet(e, r, vb) -> Top.let_ ~loc e r (List.map (sub.value_binding sub) vb)
       | PTopExport ex -> Top.export ~loc (sub.export sub ex)
       | PTopExportData ex -> Top.export_data ~loc (sub.export_data sub ex)
+      | PTopExportAll ex -> Top.export_all ~loc (sub.export_all sub ex)
+      | PTopExportDataAll ex -> Top.export_data_all ~loc (sub.export_data_all sub ex)
 end
 
 let default_mapper = {
@@ -172,6 +180,8 @@ let default_mapper = {
   import = I.map;
   export = EX.map;
   export_data = EXD.map;
+  export_all = EX.map_export_all;
+  export_data_all = EXD.map_export_data_all;
   value_binding = V.map;
   match_branch = MB.map;
   value_description = VD.map;
