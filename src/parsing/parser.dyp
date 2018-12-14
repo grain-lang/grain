@@ -127,7 +127,7 @@ let make_program statements body =
 %token <string> TYPEID
 %token <string> STRING
 %token LBRACK RBRACK LPAREN LPARENNOSPACE RPAREN LBRACE RBRACE LCARET RCARET
-%token COMMA SEMI
+%token COMMA SEMI AS
 %token THICKARROW ARROW PIPE
 %token EQEQ LESSEQ GREATEREQ
 %token EQUAL GETS
@@ -136,13 +136,13 @@ let make_program statements body =
 
 %token ADD1 SUB1 ISBOOL ISNUM ISTUPLE
 %token BOX UNBOX
-%token PLUS MINUS TIMES
+%token PLUS DASH STAR
 %token TRUE FALSE
 
 %token LET REC IF ELSE MATCH WHILE
 %token AND OR NOT
 
-%token DATA IMPORT EXPORT FOREIGN WASM
+%token DATA IMPORT EXPORT FOREIGN WASM 
 %token EOF
 
 %start <Parsetree.parsed_program> program
@@ -170,8 +170,8 @@ expr :
 
 binop_expr :
   | binop_expr(<=pp) PLUS      binop_expr(<pp) { prerr_string "\nbinop_expr_plus\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); Exp.prim2 ~loc:(symbol_rloc dyp) Plus $1 $3 } pp
-  | binop_expr(<=pp) MINUS     binop_expr(<pp) { Exp.prim2 ~loc:(symbol_rloc dyp) Minus $1 $3 } pp
-  | binop_expr(<=pt) TIMES     binop_expr(<pt) { Exp.prim2 ~loc:(symbol_rloc dyp) Times $1 $3 } pt
+  | binop_expr(<=pp) DASH     binop_expr(<pp) { Exp.prim2 ~loc:(symbol_rloc dyp) Minus $1 $3 } pp
+  | binop_expr(<=pt) STAR     binop_expr(<pt) { Exp.prim2 ~loc:(symbol_rloc dyp) Times $1 $3 } pt
   | binop_expr(<=pc) EQEQ      binop_expr(<pc) { Exp.prim2 ~loc:(symbol_rloc dyp) Eq $1 $3 } pc
   | binop_expr(<=pc) LCARET    binop_expr(<pc) { Exp.prim2 ~loc:(symbol_rloc dyp) Less $1 $3 } pc
   | binop_expr(<=pc) RCARET    binop_expr(<pc) { Exp.prim2 ~loc:(symbol_rloc dyp) Greater $1 $3 } pc
@@ -331,6 +331,9 @@ block :
 id_str :
   | ID { Location.mkloc $1 (symbol_rloc dyp) }
 
+type_id_str :
+  | TYPEID { Location.mkloc $1 (symbol_rloc dyp) }
+
 foreign_stmt :
   | FOREIGN WASM id_str id_str COLON typ { Val.mk ~loc:(symbol_rloc dyp) ~mod_:$3 ~name:$4 ~typ:$6 ~prim:[$4.txt] }
 
@@ -339,6 +342,8 @@ toplevel_stmt :
   | EXPORT LET value_binds { Top.let_ Exported Nonrecursive $3 }
   | EXPORT foreign_stmt { Top.foreign ~loc:(symbol_rloc dyp) Exported $2 }
   | EXPORT data_declaration { Top.data Exported $2 }
+  | EXPORT id [AS id_str {$2}]? [COMMA id [AS id_str {$2}]? {$2, $3}]* { Top.export ~loc:(symbol_rloc dyp) (Ex.mk ~loc:(symbol_rloc dyp) (($2, $3)::$4)) }
+  | EXPORT DATA type_id_str [COMMA type_id_str {$2}]* { Top.export_data ~loc:(symbol_rloc dyp) (ExD.mk ~loc:(symbol_rloc dyp) ($3::$4)) }
   | LET REC value_binds { Top.let_ Nonexported Recursive $3 }
   | LET value_binds { Top.let_ Nonexported Nonrecursive $2 }
   | import_stmt { Top.import $1 }

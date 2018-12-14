@@ -1,8 +1,12 @@
 # Standard library for list functionality
 
-export data List<a> =
+data List<a> =
   | Empty
   | Cons(a, List<a>);
+
+export data List;
+
+export let aList = Cons(3, Empty);
 
 export let rec length = (lst) => {
   match (lst) {

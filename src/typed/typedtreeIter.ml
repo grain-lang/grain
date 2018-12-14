@@ -116,26 +116,26 @@ end = struct
   and iter_toplevel_stmt stmt =
     Iter.enter_toplevel_stmt stmt;
     begin match stmt.ttop_desc with
-      | TTopData (decl) -> iter_data_declaration decl
+      | TTopData decls -> List.iter iter_data_declaration decls
       | TTopForeign _
-      | TTopImport _ -> ()
+      | TTopImport _
+      | TTopExport _ -> ()
       | TTopLet (exportflag, recflag, binds) -> iter_bindings exportflag recflag binds
     end;
     Iter.leave_toplevel_stmt stmt
 
   and iter_toplevel_stmts stmts =
-    let foreigns, datas, imports, lets = List.fold_left (fun (acc_foreign, acc_data, acc_imports, acc_lets) cur ->
+    List.iter (fun cur ->
         match cur.ttop_desc with
-        | TTopForeign _ -> (cur::acc_foreign, acc_data, acc_imports, acc_lets)
-        | TTopData _ -> (acc_foreign, cur::acc_data, acc_imports, acc_lets)
-        | TTopImport _ -> (acc_foreign, acc_data, cur::acc_imports, acc_lets)
-        | TTopLet _ -> (acc_foreign, acc_data, acc_imports, cur::acc_lets)) ([], [], [], []) stmts in
-    List.iter iter_toplevel_stmt foreigns;
-    List.iter iter_toplevel_stmt imports;
-    Iter.enter_data_declarations();
-    List.iter iter_toplevel_stmt datas;
-    Iter.leave_data_declarations();
-    List.iter iter_toplevel_stmt lets
+        | TTopForeign _
+        | TTopImport _ 
+        | TTopExport _ 
+        | TTopLet _ -> iter_toplevel_stmt cur
+        | TTopData _ -> 
+          Iter.enter_data_declarations();
+          iter_toplevel_stmt cur;
+          Iter.leave_data_declarations();
+        ) stmts
 
   and iter_pattern pat =
     Iter.enter_pattern pat;

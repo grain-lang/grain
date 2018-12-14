@@ -119,6 +119,8 @@ module Top = struct
   let foreign ?loc e d = mk ?loc (PTopForeign (e, d))
   let data ?loc e d = mk ?loc (PTopData (e, d))
   let let_ ?loc e r vb = mk ?loc (PTopLet(e, r, vb))
+  let export ?loc e = mk ?loc (PTopExport e)
+  let export_data ?loc e = mk ?loc (PTopExportData e)
 end
 
 module Val = struct
@@ -157,5 +159,25 @@ module Imp = struct
       | None -> (!default_loc_src)()
       | Some l -> l in
     {pimp_mod=m; pimp_loc=loc}
+end
+
+module Ex = struct
+  let mk ?loc exports =
+    let loc = match loc with
+      | None -> (!default_loc_src)()
+      | Some l -> l in
+    List.map (fun (name, alias) -> 
+      {pex_name=name; pex_alias=alias; pex_loc=loc}
+    ) exports
+end
+
+module ExD = struct
+  let mk ?loc exports =
+    let loc = match loc with
+      | None -> (!default_loc_src)()
+      | Some l -> l in
+    List.map (fun name -> 
+      {pexd_name=name; pexd_loc=loc}
+    ) exports
 end
 
