@@ -4,25 +4,21 @@ data List<a> =
   | Empty
   | Cons(a, List<a>);
 
-export data List;
-
-export let aList = Cons(3, Empty);
-
-export let rec length = (lst) => {
+let rec length = (lst) => {
   match (lst) {
     | Empty => 0
     | Cons(hd, tl) => 1 + length(tl)
   }
 };
 
-export let rec sum = (lst) => {
+let rec sum = (lst) => {
   match (lst) {
     | Empty => 0
     | Cons(hd, tl) => hd + sum(tl)
   }
 };
 
-export let reverse = (lst) => {
+let reverse = (lst) => {
   let rec help = (l, acc) => {
     match (l) {
       | Empty => acc
@@ -32,37 +28,40 @@ export let reverse = (lst) => {
   help(lst, Empty)
 };
 
-export let rec append = (l1, l2) => {
+let rec append = (l1, l2) => {
   match (l1) {
     | Empty => l2
     | Cons(hd, tl) => Cons(hd, append(l1, l2))
   }
 };
 
-export let rec contains = (e, l) => {
+let rec contains = (e, l) => {
   match (l) {
     | Empty => false
     | Cons(hd, tl) => (hd == e) or contains(e, tl)
   }
 };
 
-export let rec fold_left = (f, b, l) => {
+let rec fold_left = (f, b, l) => {
   match (l) {
     | Empty => b
     | Cons(hd, tl) => fold_left(f, f(b, hd), tl)
   }
 };
 
-export let rec fold_right = (f, b, l) => {
+let rec fold_right = (f, b, l) => {
   match (l) {
     | Empty => b
     | Cons(hd, tl) => f(hd, fold_right(f, b, tl))
   }
 };
 
-export let rec map = (f, l) => {
+let rec map = (f, l) => {
   match (l) {
     | Empty => Empty
     | Cons(hd, tl) => Cons(f(hd), map(f, tl))
   }
 };
+
+export *;
+export data *;
