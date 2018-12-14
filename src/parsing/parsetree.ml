@@ -165,6 +165,9 @@ type export_data_declaration = {
   pexd_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
 } [@@deriving sexp]
 
+type export_except = Identifier.t loc [@@deriving sexp]
+type export_data_except = string loc [@@deriving sexp]
+
 (** Statements which can exist at the top level *)
 type toplevel_stmt_desc =
   | PTopImport of import_declaration
@@ -173,6 +176,8 @@ type toplevel_stmt_desc =
   | PTopLet of export_flag * rec_flag * value_binding list
   | PTopExport of export_declaration list
   | PTopExportData of export_data_declaration list
+  | PTopExportAll of export_except list
+  | PTopExportDataAll of export_data_except list
 [@@deriving sexp]
 
 type toplevel_stmt = {
