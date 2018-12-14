@@ -154,12 +154,25 @@ type value_description = {
   pval_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
 } [@@deriving sexp]
 
+type export_declaration = {
+  pex_name: Identifier.t loc;
+  pex_alias: string loc option;
+  pex_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
+} [@@deriving sexp]
+
+type export_data_declaration = {
+  pexd_name: string loc;
+  pexd_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
+} [@@deriving sexp]
+
 (** Statements which can exist at the top level *)
 type toplevel_stmt_desc =
   | PTopImport of import_declaration
   | PTopForeign of export_flag * value_description
   | PTopData of export_flag * data_declaration
   | PTopLet of export_flag * rec_flag * value_binding list
+  | PTopExport of export_declaration list
+  | PTopExportData of export_data_declaration list
 [@@deriving sexp]
 
 type toplevel_stmt = {

@@ -341,28 +341,30 @@ let rec transl_anf_statement (({ttop_desc; ttop_env=env; ttop_loc=loc} as s) : t
       | Nonexported ->
         Some((List.concat new_setup) @ [BLetRec(List.combine names new_binds)]), [] 
     end
-  | TTopData(decl) ->
+  | TTopData(decls) ->
     let open Types in
-    let typath = Path.PIdent (decl.data_id) in
-    let descrs = Datarepr.constructors_of_type typath (decl.data_type) in
-    begin match descrs with
-      | [] -> failwith "Impossible: TTopData TDataAbstract"
-      | descrs ->
-        let bind_constructor (cd_id, {cstr_name; cstr_tag; cstr_args}) =
-          let rhs = match cstr_tag with
-            | CstrConstant _ ->
-              let compiled_tag = compile_constructor_tag cstr_tag in
-              Comp.tuple ~loc ~env [Imm.const ~loc ~env (Const_int compiled_tag)]
-            | CstrBlock _ ->
-              let compiled_tag = compile_constructor_tag cstr_tag in
-              let args = List.map (fun _ -> gensym "constr_arg") cstr_args in
-              let arg_ids = List.map (fun a -> Imm.id ~loc ~env a) args in
-              let tuple_elts = (Imm.const ~loc ~env (Const_int compiled_tag))::arg_ids in
-              Comp.lambda ~loc ~env args (AExp.comp ~loc ~env (Comp.tuple ~loc ~env tuple_elts))
-            | CstrUnboxed -> failwith "NYI: ANF CstrUnboxed" in
-          BLetGlobal(Nonrecursive, [cd_id, rhs]) in
-        Some(List.map bind_constructor descrs), []
-    end
+    let bindings = List.concat @@ List.map (fun decl ->
+      let typath = Path.PIdent (decl.data_id) in
+      let descrs = Datarepr.constructors_of_type typath (decl.data_type) in
+      begin match descrs with
+        | [] -> failwith "Impossible: TTopData TDataAbstract"
+        | descrs ->
+          let bind_constructor (cd_id, {cstr_name; cstr_tag; cstr_args}) =
+            let rhs = match cstr_tag with
+              | CstrConstant _ ->
+                let compiled_tag = compile_constructor_tag cstr_tag in
+                Comp.tuple ~loc ~env [Imm.const ~loc ~env (Const_int compiled_tag)]
+              | CstrBlock _ ->
+                let compiled_tag = compile_constructor_tag cstr_tag in
+                let args = List.map (fun _ -> gensym "constr_arg") cstr_args in
+                let arg_ids = List.map (fun a -> Imm.id ~loc ~env a) args in
+                let tuple_elts = (Imm.const ~loc ~env (Const_int compiled_tag))::arg_ids in
+                Comp.lambda ~loc ~env args (AExp.comp ~loc ~env (Comp.tuple ~loc ~env tuple_elts))
+              | CstrUnboxed -> failwith "NYI: ANF CstrUnboxed" in
+            BLetGlobal(Nonrecursive, [cd_id, rhs]) in
+          List.map bind_constructor descrs
+      end) decls in
+      Some(bindings), []
   | TTopForeign(desc) ->
     let arity = Ctype.arity (desc.tvd_desc.ctyp_type) in
     None, [Imp.wasm_func desc.tvd_id desc.tvd_mod.txt desc.tvd_name.txt (FunctionShape(arity, 1))]

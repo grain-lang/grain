@@ -10,6 +10,8 @@ type iterator = {
   constructor: iterator -> constructor_declaration -> unit;
   location: iterator -> Location.t -> unit;
   import: iterator -> import_declaration -> unit;
+  export: iterator -> export_declaration list -> unit;
+  export_data: iterator -> export_data_declaration list -> unit;
   value_binding: iterator -> value_binding -> unit;
   match_branch: iterator -> match_branch -> unit;
   value_description: iterator -> value_description -> unit;
@@ -106,6 +108,16 @@ module I = struct
     iter_loc sub imod
 end
 
+module EX = struct
+  let iter sub exports =
+    List.iter (fun {pex_loc = loc} -> sub.location sub loc) exports
+end
+
+module EXD = struct
+  let iter sub exports =
+    List.iter (fun {pexd_loc = loc} -> sub.location sub loc) exports
+end
+
 module VD = struct
   let iter sub {pval_mod = vmod; pval_name = vname; pval_loc = loc} =
     sub.location sub loc;
@@ -118,6 +130,8 @@ module TL = struct
     sub.location sub loc;
     match desc with
       | PTopImport id -> sub.import sub id
+      | PTopExport ex -> sub.export sub ex
+      | PTopExportData ex -> sub.export_data sub ex
       | PTopForeign(e, vd) -> sub.value_description sub vd
       | PTopData(e, dd) -> sub.data sub dd
       | PTopLet(e, r, vb) -> List.iter (sub.value_binding sub) vb
@@ -132,6 +146,8 @@ let default_iterator = {
   constructor = C.iter;
   location = (fun _ x -> ());
   import = I.iter;
+  export = EX.iter;
+  export_data = EXD.iter;
   value_binding = V.iter;
   match_branch = MB.iter;
   value_description = VD.iter;

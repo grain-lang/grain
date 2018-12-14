@@ -1,5 +1,6 @@
 open Anftree
 open Grain_typed
+open Types
 
 let used_symbols = ref (Ident.empty : bool Ident.tbl)
 
@@ -17,6 +18,15 @@ let can_remove ident value =
 
 module DAEArg : Anf_mapper.MapArgument = struct
   include Anf_mapper.DefaultMapArgument
+
+  (* let enter_anf_program ({signature} as prog) =
+    let signatures = signature.cmi_sign in
+    List.iter (fun signature ->
+      match signature with
+      | TSigValue(_, vd) -> mark_used @@ Path.head vd.val_fullpath
+      | _ -> ()
+    ) signatures;
+    prog *)
 
   let enter_imm_expression ({imm_desc = desc} as i) =
     begin match desc with

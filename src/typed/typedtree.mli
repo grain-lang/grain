@@ -150,6 +150,11 @@ type import_declaration = {
   timp_loc: Location.t;
 } [@@deriving sexp]
 
+type export_declaration = {
+  tex_path: Path.t;
+  tex_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
+} [@@deriving sexp]
+
 type value_description = {
   tvd_id: Ident.t;
   tvd_mod: string loc;
@@ -163,7 +168,8 @@ type value_description = {
 type toplevel_stmt_desc =
   | TTopForeign of value_description
   | TTopImport of import_declaration
-  | TTopData of data_declaration
+  | TTopExport of export_declaration list
+  | TTopData of data_declaration list
   | TTopLet of export_flag * rec_flag * value_binding list
 
 type toplevel_stmt = {
