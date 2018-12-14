@@ -399,70 +399,9 @@ let type_module ?(toplevel=false) funct_body anchor env sstr (*scope*) =
   ) (env, [], []) sstr.Parsetree.statements in
   let signatures, statements = List.rev signatures, List.rev statements in
 
-  (* let (foreigns, imports, exports, datas, lets) = List.fold_right (fun {ptop_desc; ptop_loc=loc} (foreigns, imports, exports, datas, lets) ->
-      match ptop_desc with
-      | PTopImport i -> (foreigns, (i, loc)::imports, exports, datas, lets)
-      | PTopExport ex -> (foreigns, imports, (ex, loc)::exports, datas, lets)
-      | PTopForeign(e, d) -> ((e, d, loc)::foreigns, imports, exports, datas, lets)
-      | PTopData(e, d) -> (foreigns, imports, exports, (e, d, loc)::datas, lets)
-      | PTopLet(e, r, vb) -> (foreigns, imports, exports, datas, ((e, r, vb), loc)::lets)) sstr.Parsetree.statements ([], [], [], [], []) in *)
-
-  (* TODO: imports*)
-
-  (* let env, foreign_sigs, foreigns = List.fold_left (fun (env, foreign_sigs, foreigns) (e, d, loc) ->
-      let (desc, newenv) = Typedecl.transl_value_decl env loc d in
-      let foreign_sigs = match e with
-        | Exported -> TSigValue(desc.tvd_id, desc.tvd_val)::foreign_sigs
-        | Nonexported -> foreign_sigs in
-      let f = {ttop_desc=TTopForeign desc; ttop_loc=loc; ttop_env=env} in
-      newenv, foreign_sigs, (f::foreigns)
-    ) (env, [], []) foreigns in
-  let env, imports = List.fold_left (fun (env, imports) (i, loc) ->
-      let _path, newenv, od = type_open env i in
-      newenv, ({ttop_desc=TTopImport(od); ttop_loc=loc; ttop_env=env}::imports)) (env, []) imports in
-  let imports = List.rev imports in *)
-
-  (* let data_exports, datas = List.split @@ List.map (fun (e, d, loc) -> e, (d, loc)) datas in
-  let decls, newenv = Typedecl.transl_data_decl env Recursive (List.map fst datas) in
-  let export_decl_pairs = List.combine data_exports decls in
-  let ty_decl = List.concat @@ map_rec_type_with_row_types ~rec_flag:Recursive
-      (fun rs (e, info) -> match e with
-        | Exported -> [TSigType(info.data_id, info.data_type, rs)]
-        | Nonexported -> []
-      ) export_decl_pairs [] in
-  let newenv = enrich_type_decls anchor decls env newenv in *)
-
-  (* let process_let env (export_flag, rec_flag, binds) =
-    let scope = None in
-    let defs, newenv = Typecore.type_binding env rec_flag binds scope in
-    let () = if rec_flag = Recursive then
-        Typecore.check_recursive_bindings env defs
-    in
-    let signatures = match export_flag with
-      | Exported -> 
-        List.map (fun id -> TSigValue(id, Env.find_value (PIdent id) newenv))
-        (let_bound_idents defs)
-      | Nonexported -> [] in
-    (TTopLet(export_flag, rec_flag, defs)), signatures, newenv in *)
-
-  (* let init_stmts = List.map2 (fun d (_, loc) -> {ttop_desc=TTopData(d); ttop_loc=loc; ttop_env=newenv}) decls datas in *)
-
-  (* let rec process_all_lets env lets =
-    Ctype.init_def(Ident.current_time());
-    match lets with
-    | [] -> ([], [], env)
-    | (lt, loc) :: rem ->
-      let desc, sg, new_env = process_let env lt in
-      let stmt = { ttop_desc = desc; ttop_loc = loc; ttop_env = env } in
-      let (tt_rem, sig_rem, final_env) = process_all_lets new_env rem in
-      (stmt::tt_rem, sg @ sig_rem, final_env) in *)
 
   let run() =
-    (* let (items, sg, final_env) = process_all_lets newenv lets in *)
     (* TODO: Is it really safe to drop the import statements here? *)
-    (* ignore(imports); *)
-    (* let stritems = ((imports @ foreigns @ init_stmts @ items), final_env, Typecore.type_expression final_env sstr.body) in
-    stritems, (ty_decl @ sg @ foreign_sigs), final_env in *)
     let stritems = (statements, final_env, Typecore.type_expression final_env sstr.body) in
     stritems, signatures, final_env in
 
