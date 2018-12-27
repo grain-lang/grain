@@ -284,26 +284,34 @@ let enrich_type_decls anchor decls oldenv newenv =
 
 let type_module ?(toplevel=false) funct_body anchor env sstr (*scope*) =
 
-  let export_all = ref (false, []) in
-  let export_data_all = ref (false, []) in
+  let export_all = ref (false, [], []) in
   List.iter (fun {ptop_desc} ->
     (* Take the last export *; after well-formedness there should only be one *)
     match ptop_desc with
-    | PTopExportAll excepts -> export_all := true, excepts
-    | PTopExportDataAll excepts -> export_data_all := true, excepts
+    | PTopExportAll excepts -> 
+      export_all := true, [], [];
+      List.iter (fun except ->
+        match except with
+        | ExportExceptData(name) -> 
+          let _, values, datas = !export_all in
+          export_all := true, values, name::datas
+        | ExportExceptValue(name) -> 
+          let _, values, datas = !export_all in
+          export_all := true, name::values, datas
+      ) excepts
     | _ -> ()
   ) sstr.Parsetree.statements;
 
   let string_needs_export (str : string Grain_parsing.Parsetree.loc) =
-    let flag, excepts = !export_all in
-    flag && not @@ List.exists (fun {txt} -> Identifier.string_of_ident txt = str.txt) excepts in
+    let flag, excepts, _ = !export_all in
+    flag && not @@ List.exists (fun {txt} -> txt = str.txt) excepts in
 
   let ident_needs_export (id : Ident.t) =
-    let flag, excepts = !export_all in
-    flag && not @@ List.exists (fun except_id -> id.name = Identifier.string_of_ident except_id.txt) excepts in
+    let flag, excepts, _ = !export_all in
+    flag && not @@ List.exists (fun except_id -> id.name = except_id.txt) excepts in
 
   let data_needs_export (str : string Grain_parsing.Parsetree.loc) =
-    let flag, excepts = !export_data_all in
+    let flag, _, excepts = !export_all in
     flag && not @@ List.exists (fun {txt} -> txt = str.txt) excepts in
 
   let process_foreign env e d loc =
@@ -347,13 +355,14 @@ let type_module ?(toplevel=false) funct_body anchor env sstr (*scope*) =
     ) (let_bound_idents defs) [] in
     let export_flag = if !some_exported then Exported else export_flag in
     let stmt = { ttop_desc = TTopLet(export_flag, rec_flag, defs); ttop_loc = loc; ttop_env = env } in
-    newenv, signatures, stmt in
+    newenv, signatures, [stmt] in
 
-  let process_export env exports loc =
+  let process_export_value env exports loc =
     let bindings = List.map (fun {pex_name=name; pex_alias=alias; pex_loc=loc} ->
       let exported_name = match alias with 
       | Some(alias) -> alias.txt 
-      | None -> Identifier.string_of_ident name.txt in
+      | None -> name.txt in
+      let name = { txt=Identifier.IdentName(name.txt); loc } in
       let bind_name = { txt=exported_name; loc } in
       {
         pvb_pat={ppat_desc=PPatVar(bind_name); ppat_loc=loc};
@@ -363,9 +372,14 @@ let type_module ?(toplevel=false) funct_body anchor env sstr (*scope*) =
     ) exports in
     process_let env Exported Nonrecursive bindings loc in
 
+  let type_export_aliases = ref [] in
   let process_export_data env exports loc =
-    let process_one rs {pexd_name=name; pexd_loc=loc} =
+    let process_one rs {pex_name=name; pex_alias=alias; pex_loc=loc} =
       let type_id = Env.lookup_type (IdentName name.txt) env in
+      begin match alias with 
+        | Some(alias) -> 
+          type_export_aliases := (type_id, PIdent(Ident.create alias.txt))::!type_export_aliases
+        | None -> () end;
       let type_ = Env.find_type type_id env in
       TSigType(Path.head type_id, type_, rs) in
     if List.length exports > 1 then
@@ -373,17 +387,24 @@ let type_module ?(toplevel=false) funct_body anchor env sstr (*scope*) =
     else
       List.map (process_one TRecNot) exports in
 
+  let process_export env exports loc =
+    let values, datas = List.fold_right (fun export (values, datas) ->
+      match export with
+      | ExportValue(desc) -> desc::values, datas
+      | ExportData(desc) -> values, desc::datas
+    ) exports ([], []) in
+    let data_sigs = if List.length datas > 0 then process_export_data env datas loc else [] in
+    let env, sigs, stmts = if List.length values > 0 then process_export_value env values loc else env, [], [] in
+      env, data_sigs @ sigs, stmts in
+
   let final_env, signatures, statements = List.fold_left (fun (env, signatures, statements) {ptop_desc; ptop_loc=loc} ->
       match ptop_desc with
       | PTopImport i -> 
         let new_env, statement = process_import env i loc in 
         new_env, signatures, statement::statements
       | PTopExport ex -> 
-        let new_env, sigs, statement = process_export env ex loc in 
-        new_env, List.rev sigs @ signatures, statement::statements
-      | PTopExportData ex -> 
-        let sigs = process_export_data env ex loc in 
-        env, List.rev sigs @ signatures, statements
+        let new_env, sigs, stmts = process_export env ex loc in 
+        new_env, List.rev sigs @ signatures, stmts @ statements
       | PTopForeign(e, d) -> 
         let new_env, signature, statement = process_foreign env e d loc in
         let signatures = match signature with Some(s) -> s::signatures | None -> signatures in
@@ -392,13 +413,60 @@ let type_module ?(toplevel=false) funct_body anchor env sstr (*scope*) =
         let new_env, sigs, statement = process_datas env e [d] loc in 
         new_env, List.rev sigs @ signatures, statement::statements
       | PTopLet(e, r, vb) -> 
-        let new_env, sigs, statement = process_let env e r vb loc in 
-        new_env, List.rev sigs @ signatures, statement::statements
-      | PTopExportAll _
-      | PTopExportDataAll _ -> env, signatures, statements
+        let new_env, sigs, stmts = process_let env e r vb loc in 
+        new_env, List.rev sigs @ signatures, stmts @ statements
+      | PTopExportAll _ -> env, signatures, statements
   ) (env, [], []) sstr.Parsetree.statements in
   let signatures, statements = List.rev signatures, List.rev statements in
 
+  let resolve_type_alias signature = 
+    let rec get_alias aliases id = match aliases with
+      | (name, alias)::rest -> if Path.same name id then Some(name, alias) else get_alias rest id
+      | [] -> None in
+    let rec resolve_type_expr ({desc} as expr) = match desc with
+      | TTyVar _ | TTyUniVar _ -> expr
+      | TTyLink(link) -> {expr with desc=TTyLink(resolve_type_expr link)}
+      | TTySubst(sub) -> {expr with desc=TTySubst(resolve_type_expr sub)}
+      | TTyArrow(args, result, c) -> {expr with desc=TTyArrow(List.map resolve_type_expr args, resolve_type_expr result, c)}
+      | TTyTuple(elts) -> {expr with desc=TTyTuple(List.map resolve_type_expr elts)}
+      | TTyPoly(one, all) -> {expr with desc=TTyPoly(resolve_type_expr one, List.map resolve_type_expr all)}
+      | TTyConstr(id, args, a) ->
+        let name = snd @@ Option.default (id, id) @@ get_alias !type_export_aliases id in
+        {expr with desc=TTyConstr(name, List.map resolve_type_expr args, a)}
+      in
+    let resolve_type_decl ({type_params; type_manifest; type_kind} as decl) =
+      match type_kind with
+      | TDataVariant(cdecls) -> { decl with 
+          type_params=List.map resolve_type_expr type_params;
+          type_manifest=begin match type_manifest with Some(expr) -> Some(resolve_type_expr expr) | None -> None end;
+          type_kind=TDataVariant(List.map (fun ({cd_args; cd_res} as cdecl : Types.constructor_declaration) -> { cdecl with 
+            cd_res=begin match cd_res with Some(expr) -> Some(resolve_type_expr expr) | None -> None end;
+            cd_args=match cd_args with
+            | TConstrSingleton -> cd_args
+            | TConstrTuple(exprs) -> TConstrTuple(List.map resolve_type_expr exprs)
+          }) 
+          cdecls)
+        }
+      | _ -> decl in
+    match signature with
+      | TSigType(id, decl, rs) ->
+        begin match get_alias !type_export_aliases (PIdent id) with
+        | None -> TSigType(id, resolve_type_decl decl, rs)
+        | Some(name, alias) -> TSigType(Path.head alias, resolve_type_decl decl, rs) end
+      | TSigValue(id, ({val_type; val_kind} as vd)) -> 
+        let val_kind = begin match val_kind with
+          | TValConstructor({cstr_res; cstr_existentials; cstr_args} as cd) ->
+            TValConstructor({ cd with
+              cstr_res=resolve_type_expr cstr_res;
+              cstr_existentials=List.map resolve_type_expr cstr_existentials;
+              cstr_args=List.map resolve_type_expr cstr_args
+            })
+          | _ -> val_kind
+          end in
+        TSigValue(id, {vd with val_kind; val_type=resolve_type_expr val_type})
+      | _ -> signature in
+
+  let signatures = List.map resolve_type_alias signatures in
 
   let run() =
     (* TODO: Is it really safe to drop the import statements here? *)

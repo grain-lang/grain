@@ -154,19 +154,21 @@ type value_description = {
   pval_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
 } [@@deriving sexp]
 
-type export_declaration = {
-  pex_name: Identifier.t loc;
+type export_declaration_desc = {
+  pex_name: string loc;
   pex_alias: string loc option;
   pex_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
 } [@@deriving sexp]
 
-type export_data_declaration = {
-  pexd_name: string loc;
-  pexd_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
-} [@@deriving sexp]
+and export_declaration = 
+  | ExportData of export_declaration_desc 
+  | ExportValue of export_declaration_desc
+[@@deriving sexp]
 
-type export_except = Identifier.t loc [@@deriving sexp]
-type export_data_except = string loc [@@deriving sexp]
+type export_except = 
+  | ExportExceptData of string loc 
+  | ExportExceptValue of string loc 
+[@@deriving sexp]
 
 (** Statements which can exist at the top level *)
 type toplevel_stmt_desc =
@@ -175,9 +177,7 @@ type toplevel_stmt_desc =
   | PTopData of export_flag * data_declaration
   | PTopLet of export_flag * rec_flag * value_binding list
   | PTopExport of export_declaration list
-  | PTopExportData of export_data_declaration list
   | PTopExportAll of export_except list
-  | PTopExportDataAll of export_data_except list
 [@@deriving sexp]
 
 type toplevel_stmt = {

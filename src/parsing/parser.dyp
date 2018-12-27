@@ -335,6 +335,10 @@ id_str :
 type_id_str :
   | TYPEID { Location.mkloc $1 (symbol_rloc dyp) }
 
+any_id_str :
+  | id_str { $1 }
+  | type_id_str { $1 }
+
 foreign_stmt :
   | FOREIGN WASM id_str id_str COLON typ { Val.mk ~loc:(symbol_rloc dyp) ~mod_:$3 ~name:$4 ~typ:$6 ~prim:[$4.txt] }
 
@@ -343,10 +347,8 @@ toplevel_stmt :
   | EXPORT LET value_binds { Top.let_ Exported Nonrecursive $3 }
   | EXPORT foreign_stmt { Top.foreign ~loc:(symbol_rloc dyp) Exported $2 }
   | EXPORT data_declaration { Top.data Exported $2 }
-  | EXPORT id [AS id_str {$2}]? [COMMA id [AS id_str {$2}]? {$2, $3}]* { Top.export ~loc:(symbol_rloc dyp) (Ex.mk ~loc:(symbol_rloc dyp) (($2, $3)::$4)) }
-  | EXPORT DATA type_id_str [COMMA type_id_str {$2}]* { Top.export_data ~loc:(symbol_rloc dyp) (ExD.mk ~loc:(symbol_rloc dyp) ($3::$4)) }
-  | EXPORT STAR [EXCEPT id [COMMA id {$2}]* {$2::$3}]? { Top.export_all ~loc:(symbol_rloc dyp) (Option.default [] $3) }
-  | EXPORT DATA STAR [EXCEPT type_id_str [COMMA type_id_str {$2}]* {$2::$3}]? { Top.export_data_all ~loc:(symbol_rloc dyp) (Option.default [] $4) }
+  | EXPORT any_id_str [AS any_id_str {$2}]? [COMMA any_id_str [AS any_id_str {$2}]? {$2, $3}]* { Top.export ~loc:(symbol_rloc dyp) (Ex.mk ~loc:(symbol_rloc dyp) (($2, $3)::$4)) }
+  | EXPORT STAR [EXCEPT any_id_str [COMMA any_id_str {$2}]* {$2::$3}]? { Top.export_all ~loc:(symbol_rloc dyp) (Top.mk_export_list (Option.default [] $3)) }
   | LET REC value_binds { Top.let_ Nonexported Recursive $3 }
   | LET value_binds { Top.let_ Nonexported Nonrecursive $2 }
   | import_stmt { Top.import $1 }
