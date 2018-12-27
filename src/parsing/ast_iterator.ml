@@ -11,9 +11,7 @@ type iterator = {
   location: iterator -> Location.t -> unit;
   import: iterator -> import_declaration -> unit;
   export: iterator -> export_declaration list -> unit;
-  export_data: iterator -> export_data_declaration list -> unit;
   export_all: iterator -> export_except list -> unit;
-  export_data_all: iterator -> export_data_except list -> unit;
   value_binding: iterator -> value_binding -> unit;
   match_branch: iterator -> match_branch -> unit;
   value_description: iterator -> value_description -> unit;
@@ -112,14 +110,20 @@ end
 
 module EX = struct
   let iter sub exports =
-    List.iter (fun {pex_loc = loc} -> sub.location sub loc) exports
+    List.iter (fun export -> 
+      match export with
+      | ExportData({pex_loc=loc})
+      | ExportValue({pex_loc=loc}) -> sub.location sub loc
+    ) exports
   let iter_export_all sub excepts =
-    List.iter (iter_loc sub) excepts
+    List.iter (fun except ->
+      match except with
+      | ExportExceptData(name)
+      | ExportExceptValue(name) -> iter_loc sub name
+    ) excepts
 end
 
 module EXD = struct
-  let iter sub exports =
-    List.iter (fun {pexd_loc = loc} -> sub.location sub loc) exports
   let iter_export_data_all sub excepts =
     List.iter (iter_loc sub) excepts
 end
@@ -137,9 +141,7 @@ module TL = struct
     match desc with
       | PTopImport id -> sub.import sub id
       | PTopExport ex -> sub.export sub ex
-      | PTopExportData ex -> sub.export_data sub ex
       | PTopExportAll ex -> sub.export_all sub ex
-      | PTopExportDataAll ex -> sub.export_data_all sub ex
       | PTopForeign(e, vd) -> sub.value_description sub vd
       | PTopData(e, dd) -> sub.data sub dd
       | PTopLet(e, r, vb) -> List.iter (sub.value_binding sub) vb
@@ -155,9 +157,7 @@ let default_iterator = {
   location = (fun _ x -> ());
   import = I.iter;
   export = EX.iter;
-  export_data = EXD.iter;
   export_all = EX.iter_export_all;
-  export_data_all = EXD.iter_export_data_all;
   value_binding = V.iter;
   match_branch = MB.iter;
   value_description = VD.iter;

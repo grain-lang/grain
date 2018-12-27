@@ -8,7 +8,6 @@ type wferr =
   | TypeNameShouldBeUppercase of string * Location.t
   | TyvarNameShouldBeLowercase of string * Location.t
   | ExportAllShouldOnlyAppearOnce of Location.t
-  | ExportDataAllShouldOnlyAppearOnce of Location.t
 
 exception Error of wferr
 
@@ -26,8 +25,6 @@ let prepare_error =
     errorf ~loc "Type variable '%s' should be lowercase." var
   | ExportAllShouldOnlyAppearOnce loc ->
     errorf ~loc "An 'export *' statement should appear at most once."
-  | ExportDataAllShouldOnlyAppearOnce loc ->
-    errorf ~loc "An 'export data *' statement should appear at most once."
 
 
 let () =
@@ -88,15 +85,11 @@ let types_have_correct_case errs super =
 
 let only_has_one_export_all errs super =
   let count_export = ref 0 in
-  let count_export_data = ref 0 in
   let iter_export_all self ({ptop_desc=desc; ptop_loc=loc} as e) =
     let check_export_count () =
       if !count_export > 1 then errs := (ExportAllShouldOnlyAppearOnce loc)::!errs in
-    let check_export_data_count () =
-      if !count_export_data > 1 then errs := (ExportDataAllShouldOnlyAppearOnce loc)::!errs in
     begin match desc with
     | PTopExportAll _ -> incr count_export; check_export_count ()
-    | PTopExportDataAll _ -> incr count_export_data; check_export_data_count ()
     | _ -> ()
     end;
     super.toplevel self e in

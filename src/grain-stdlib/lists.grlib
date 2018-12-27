@@ -64,4 +64,3 @@ let rec map = (f, l) => {
 };
 
 export *;
-export data *;

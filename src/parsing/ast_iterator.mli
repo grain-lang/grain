@@ -27,9 +27,7 @@ type iterator = {
   location: iterator -> Location.t -> unit;
   import: iterator -> import_declaration -> unit;
   export: iterator -> export_declaration list -> unit;
-  export_data: iterator -> export_data_declaration list -> unit;
   export_all: iterator -> export_except list -> unit;
-  export_data_all: iterator -> export_data_except list -> unit;
   value_binding: iterator -> value_binding -> unit;
   match_branch: iterator -> match_branch -> unit;
   value_description: iterator -> value_description -> unit;

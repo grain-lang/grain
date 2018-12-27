@@ -27,9 +27,7 @@ type mapper = {
   location: mapper -> Location.t -> Location.t;
   import: mapper -> import_declaration -> import_declaration;
   export: mapper -> export_declaration list -> export_declaration list;
-  export_data: mapper -> export_data_declaration list -> export_data_declaration list;
   export_all: mapper -> export_except list -> export_except list;
-  export_data_all: mapper -> export_data_except list -> export_data_except list;
   value_binding: mapper -> value_binding -> value_binding;
   match_branch: mapper -> match_branch -> match_branch;
   value_description: mapper -> value_description -> value_description;

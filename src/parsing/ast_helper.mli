@@ -94,9 +94,8 @@ module Top: sig
   val data: ?loc:loc -> export_flag -> data_declaration -> toplevel_stmt
   val let_: ?loc:loc -> export_flag -> rec_flag -> value_binding list -> toplevel_stmt
   val export: ?loc:loc -> export_declaration list -> toplevel_stmt
-  val export_data: ?loc:loc -> export_data_declaration list -> toplevel_stmt
+  val mk_export_list: str list -> export_except list
   val export_all: ?loc:loc -> export_except list -> toplevel_stmt
-  val export_data_all: ?loc:loc -> export_data_except list -> toplevel_stmt
 end
 
 module Val: sig
@@ -116,11 +115,5 @@ module Imp: sig
 end
 
 module Ex: sig
-  val mk: ?loc:loc -> (id * str option) list -> export_declaration list
+  val mk: ?loc:loc -> (str * str option) list -> export_declaration list
 end
-
-module ExD: sig
-  val mk: ?loc:loc -> str list -> export_data_declaration list
-end
-
-

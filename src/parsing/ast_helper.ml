@@ -120,9 +120,15 @@ module Top = struct
   let data ?loc e d = mk ?loc (PTopData (e, d))
   let let_ ?loc e r vb = mk ?loc (PTopLet(e, r, vb))
   let export ?loc e = mk ?loc (PTopExport e)
-  let export_data ?loc e = mk ?loc (PTopExportData e)
+
+  let mk_export_list e =
+    List.map (fun name -> 
+      let r = Str.regexp "^[A-Z]" in
+      if Str.string_match r name.txt 0 
+      then ExportExceptData name
+      else ExportExceptValue name
+    ) e
   let export_all ?loc e = mk ?loc (PTopExportAll e)
-  let export_data_all ?loc e = mk ?loc (PTopExportDataAll e)
 end
 
 module Val = struct
@@ -169,17 +175,10 @@ module Ex = struct
       | None -> (!default_loc_src)()
       | Some l -> l in
     List.map (fun (name, alias) -> 
-      {pex_name=name; pex_alias=alias; pex_loc=loc}
+      let desc = {pex_name=name; pex_alias=alias; pex_loc=loc} in
+      let r = Str.regexp "^[A-Z]" in
+      if Str.string_match r name.txt 0 
+      then ExportData desc
+      else ExportValue desc
     ) exports
 end
-
-module ExD = struct
-  let mk ?loc exports =
-    let loc = match loc with
-      | None -> (!default_loc_src)()
-      | Some l -> l in
-    List.map (fun name -> 
-      {pexd_name=name; pexd_loc=loc}
-    ) exports
-end
-
