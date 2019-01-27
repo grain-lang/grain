@@ -1,5 +1,7 @@
 # Standard library for list functionality
 
+export *;
+
 data List<a> =
   | Empty
   | Cons(a, List<a>);
@@ -62,5 +64,3 @@ let rec map = (f, l) => {
     | Cons(hd, tl) => Cons(f(hd), map(f, tl))
   }
 };
-
-export *;
