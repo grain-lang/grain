@@ -134,7 +134,7 @@ export class GrainModule {
     //console.log(`Running ${this.name}`);
     let res = await this.main();
     //console.log(`complete.`);
-    return grainToJSVal(res, this.runner);
+    return grainToJSVal(this.runner, res);
   }
 }
 

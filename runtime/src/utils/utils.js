@@ -13,7 +13,7 @@ import {
   GRAIN_ADT_HEAP_TAG
 } from '../core/tags';
 
-export function grainHeapValueToString(n, runtime) {
+export function grainHeapValueToString(runtime, n) {
   switch (view[n / 4]) {
   case GRAIN_STRING_HEAP_TAG:
     let byteView = new Uint8Array(memory.buffer);
@@ -45,7 +45,7 @@ export function grainHeapValueToString(n, runtime) {
       let [variantName, arity] = info;
       let printedVals = [];
       for (let i = 0; i < arity; ++i) {
-        printedVals.push(grainToString(view[x + 5 + i], runtime));
+        printedVals.push(grainToString(runtime, view[x + 5 + i]));
       }
       if (arity === 0) {
         return variantName;
@@ -60,7 +60,7 @@ export function grainHeapValueToString(n, runtime) {
   }
 }
 
-export function grainToString(n, runtime) {
+export function grainToString(runtime, n) {
   if (!(n & 1)) {
     return (n >> 1).toString();
   } else if ((n & 7) === GRAIN_TUPLE_TAG_TYPE) {
@@ -72,7 +72,7 @@ export function grainToString(n, runtime) {
       view[tupleIdx] |= 0x80000000;
       let elts = [];
       for (let i = 0; i < tupleLength; ++i) {
-        elts.push(grainToString(view[tupleIdx + i + 1], runtime));
+        elts.push(grainToString(runtime, view[tupleIdx + i + 1]));
       }
       if (elts.length == 1) {
         elts.push("\b");
@@ -83,7 +83,7 @@ export function grainToString(n, runtime) {
   } else if ((n & 7) === GRAIN_LAMBDA_TAG_TYPE) {
     return "<lambda>";
   } else if ((n & 7) === GRAIN_GENERIC_HEAP_TAG_TYPE) {
-    return grainHeapValueToString(n ^ 3, runtime);
+    return grainHeapValueToString(runtime, n ^ 3);
   } else if ((n === -1)) {
     return "true";
   } else if (n === 0x7FFFFFFF) {
@@ -112,7 +112,7 @@ GrainAdtValue.prototype.toString = function() {
   }
 }
 
-export function grainHeapValToJSVal(n, runtime) {
+export function grainHeapValToJSVal(runtime, n) {
   switch (view[n / 4]) {
   case GRAIN_STRING_HEAP_TAG:
     let byteView = new Uint8Array(memory.buffer);
@@ -142,7 +142,7 @@ export function grainHeapValToJSVal(n, runtime) {
       let [variantName, arity] = info;
       let ret = [variantName];
       for (let i = 0; i < arity; ++i) {
-        ret.push(grainToJSVal(view[x + 5 + i], runtime));
+        ret.push(grainToJSVal(runtime, view[x + 5 + i]));
       }
       return new GrainAdtValue(ret);
     }
@@ -152,7 +152,7 @@ export function grainHeapValToJSVal(n, runtime) {
   }
 }
 
-export function grainTupleToJSVal(n, runtime) {
+export function grainTupleToJSVal(runtime, n) {
   let tupleIdx = n / 4;
   let tupleLength = view[tupleIdx];
   if (tupleLength & 0x80000000) {
@@ -161,7 +161,7 @@ export function grainTupleToJSVal(n, runtime) {
     view[tupleIdx] |= 0x80000000;
     let elts = [];
     for (let i = 0; i < tupleLength; ++i) {
-      let value = grainToJSVal(view[tupleIdx + i + 1], runtime)
+      let value = grainToJSVal(runtime, view[tupleIdx + i + 1])
       if (value === Symbol.for('cyclic')) {
         elts.push(elts);
       } else {
@@ -173,7 +173,7 @@ export function grainTupleToJSVal(n, runtime) {
   }
 }
 
-export function grainToJSVal(x, runtime) {
+export function grainToJSVal(runtime, x) {
   if (!(x & 1)) {
     return x >> 1;
   } else if ((x & 7) == 5) {
@@ -181,9 +181,9 @@ export function grainToJSVal(x, runtime) {
       throw new GrainError('Computed Grain functions are not callable from JavaScript.')
     }
   } else if ((x & 7) === 3) {
-    return grainHeapValToJSVal(x ^ 3, runtime);
+    return grainHeapValToJSVal(runtime, x ^ 3);
   } else if ((x & 7) === GRAIN_TUPLE_TAG_TYPE) {
-    return grainTupleToJSVal(x ^ GRAIN_TUPLE_TAG_TYPE, runtime);
+    return grainTupleToJSVal(runtime, x ^ GRAIN_TUPLE_TAG_TYPE);
   } else if ((x === -1)) {
     return true;
   } else if (x === 0x7FFFFFFF) {

@@ -1,13 +1,13 @@
 import { grainToString } from '../utils/utils';
 
 export function print(v) {
-  console.log(grainToString(v));
+  console.log(grainToString(null, v));
   return v;
 }
 
-export function makePrint(toString) {
+export function makePrint(boundGrainToString) {
   return v => {
-    console.log(toString(v));
+    console.log(boundGrainToString(v));
     return v;
   }
 }
