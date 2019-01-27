@@ -1,3 +1,5 @@
+export *;
+
 # Prints the given value to the console.
 foreign wasm grainBuiltins print : a -> a;
 
@@ -12,5 +14,3 @@ foreign wasm grainBuiltins toString : a -> String;
 foreign wasm grainBuiltins stringAppend : (String, String) -> String;
 
 foreign wasm grainBuiltins stringSlice : (String, Number, Number) -> String;
-
-export *;
