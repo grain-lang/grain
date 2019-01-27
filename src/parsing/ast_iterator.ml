@@ -108,7 +108,7 @@ module I = struct
     iter_loc sub imod
 end
 
-module EX = struct
+module Ex = struct
   let iter sub exports =
     List.iter (fun export -> 
       match export with
@@ -123,7 +123,7 @@ module EX = struct
     ) excepts
 end
 
-module EXD = struct
+module ExD = struct
   let iter_export_data_all sub excepts =
     List.iter (iter_loc sub) excepts
 end
@@ -156,8 +156,8 @@ let default_iterator = {
   constructor = C.iter;
   location = (fun _ x -> ());
   import = I.iter;
-  export = EX.iter;
-  export_all = EX.iter_export_all;
+  export = Ex.iter;
+  export_all = Ex.iter_export_all;
   value_binding = V.iter;
   match_branch = MB.iter;
   value_description = VD.iter;
