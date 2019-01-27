@@ -119,7 +119,7 @@ module I = struct
     mk ~loc (map_loc sub imod)
 end
 
-module EX = struct
+module Ex = struct
   let map sub exports =
     let process_desc {pex_name; pex_alias; pex_loc} =
       let pex_name = map_loc sub pex_name in
@@ -171,8 +171,8 @@ let default_mapper = {
   constructor = C.map;
   location = (fun _ x -> x);
   import = I.map;
-  export = EX.map;
-  export_all = EX.map_export_all;
+  export = Ex.map;
+  export_all = Ex.map_export_all;
   value_binding = V.map;
   match_branch = MB.map;
   value_description = VD.map;
