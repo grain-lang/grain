@@ -351,6 +351,15 @@ let rec transl_anf_statement (({ttop_desc; ttop_env=env; ttop_loc=loc} as s) : t
     let open Types in
     let bindings = List.concat @@ List.map (fun decl ->
       let typath = Path.PIdent (decl.data_id) in
+      (* FIXME: [philip] This is kind of hacky...would be better to store this in the Env directly...not to mention, 
+        I think this'll be much more fragile than if it were in the static info *)
+      let ty_id = begin match PathMap.find_opt type_map typath with
+        | Some(id) -> id
+        | None ->
+          let id = PathMap.length type_map in
+          PathMap.add type_map typath id;
+          id
+      end in
       let descrs = Datarepr.constructors_of_type typath (decl.data_type) in
       begin match descrs with
         | [] -> failwith "Impossible: TTopData TDataAbstract"
@@ -359,13 +368,14 @@ let rec transl_anf_statement (({ttop_desc; ttop_env=env; ttop_loc=loc} as s) : t
             let rhs = match cstr_tag with
               | CstrConstant _ ->
                 let compiled_tag = compile_constructor_tag cstr_tag in
-                Comp.tuple ~loc ~env [Imm.const ~loc ~env (Const_int compiled_tag)]
+                Comp.adt ~loc ~env (Imm.const ~loc ~env (Const_int ty_id)) (Imm.const ~loc ~env (Const_int compiled_tag)) []
               | CstrBlock _ ->
                 let compiled_tag = compile_constructor_tag cstr_tag in
                 let args = List.map (fun _ -> gensym "constr_arg") cstr_args in
                 let arg_ids = List.map (fun a -> Imm.id ~loc ~env a) args in
-                let tuple_elts = (Imm.const ~loc ~env (Const_int compiled_tag))::arg_ids in
-                Comp.lambda ~loc ~env args (AExp.comp ~loc ~env (Comp.tuple ~loc ~env tuple_elts))
+                let imm_tytag = Imm.const ~loc ~env (Const_int ty_id) in
+                let imm_tag = Imm.const ~loc ~env (Const_int compiled_tag) in
+                Comp.lambda ~loc ~env args (AExp.comp ~loc ~env (Comp.adt ~loc ~env imm_tytag imm_tag arg_ids))
               | CstrUnboxed -> failwith "NYI: ANF CstrUnboxed" in
             BLetExport(Nonrecursive, [cd_id, rhs]) in
           List.map bind_constructor descrs

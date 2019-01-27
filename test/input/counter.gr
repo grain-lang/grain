@@ -6,7 +6,8 @@ let counter = {
   counter_help
 };
 {
-  # TODO: This should have some equivalent of OCaml's ignore(...)
+  # TODO: This should either have some equivalent of OCaml's ignore(...) or print needs a different type...
+  #       We need to discuss to figure this out [philip] [oscar]
   print(counter());
   print(counter());
   print(counter())

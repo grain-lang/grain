@@ -69,10 +69,8 @@ export class GrainRunner {
           throw new GrainError(-1, `Failed to locate required module: ${imp.module}`);
         }
         this.modules[imp.module] = located;
-        //console.debug(`Located module: ${imp.module}`);
-        /*if (imp.module === "GRAIN$MODULE$lists") {
-          console.log(`Lists CMI: ${JSON.stringify(located.cmi)}`);
-        }*/
+        // This is a good point to debug when modules are loaded:
+        // console.debug(`Located module: ${imp.module}`);
         await this.load(imp.module, located);
         await located.run();
         this.ptrZero = this.ptr;
