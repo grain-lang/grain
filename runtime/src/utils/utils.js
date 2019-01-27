@@ -26,20 +26,22 @@ export function grainHeapValueToString(n, runtime) {
     break;
   case GRAIN_ADT_HEAP_TAG:
     let x = n / 4;
-    //console.log(`<ADT Value: (${view[x + 1]}, ${view[x + 2]}, ${view[x + 3]}, ${view[x + 4]})>`);
+    // ADT string coercion is tricky, so these log statements can help
+    // debug issues which might crop up:
+    // console.log(`<ADT Value: (${view[x + 1]}, ${view[x + 2]}, ${view[x + 3]}, ${view[x + 4]})>`);
     if (runtime) {
       // In-memory tags are tagged ints
       let moduleId = view[x + 1] >> 1;
       let typeId = view[x + 2] >> 1;
       let variantId = view[x + 3] >> 1;
       let moduleName = runtime.idMap[moduleId];
-      //console.log(`\tModule Name: ${moduleName}`);
+      // console.log(`\tModule Name: ${moduleName}`);
       let module = runtime.modules[moduleName];
-      //console.log(`\tModule: ${module}`);
+      // console.log(`\tModule: ${module}`);
       let tyinfo = module.types[typeId];
-      //console.log(`\tType Info: ${JSON.stringify(tyinfo)}`);
+      // console.log(`\tType Info: ${JSON.stringify(tyinfo)}`);
       let info = tyinfo[variantId];
-      //console.log(`\tVariant: ${info}`);
+      // console.log(`\tVariant: ${info}`);
       let [variantName, arity] = info;
       let printedVals = [];
       for (let i = 0; i < arity; ++i) {

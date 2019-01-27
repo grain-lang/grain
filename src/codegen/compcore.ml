@@ -93,6 +93,7 @@ let runtime_function_imports = [
 let runtime_imports = List.append runtime_global_imports runtime_function_imports
 
 
+(* [TODO]: [philip] Delete remnants of heap_top *)
 let init_codegen_env() = {
   heap_top=add_dummy_loc (Int32.of_int (List.length runtime_global_imports));
   num_args=0;
@@ -946,6 +947,7 @@ let compile_exports env {functions; imports; exports; num_globals} =
           };
           add_dummy_loc {
             Ast.name=encode_string (Ident.name table_size);
+            (* We add one here because of heap top *)
             Ast.edesc=add_dummy_loc (Ast.GlobalExport (add_dummy_loc @@ Int32.of_int (num_globals + 1 + (List.length runtime_global_imports))));
           };
         ]))

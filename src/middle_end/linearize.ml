@@ -341,7 +341,7 @@ let rec transl_anf_statement (({ttop_desc; ttop_env=env; ttop_loc=loc} as s) : t
   | TTopData(decl) ->
     let open Types in
     let typath = Path.PIdent (decl.data_id) in
-    (* FIXME: This is kind of hacky...would be better to store this in the Env directly...not to mention, 
+    (* FIXME: [philip] This is kind of hacky...would be better to store this in the Env directly...not to mention, 
        I think this'll be much more fragile than if it were in the static info *)
     let ty_id = begin match PathMap.find_opt type_map typath with
       | Some(id) -> id

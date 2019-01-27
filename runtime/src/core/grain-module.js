@@ -23,20 +23,20 @@ export class GrainModule {
 
   get cmi() {
     if (!this._cmi) {
-      let secs = WebAssembly.Module.customSections(this.wasmModule, "cmi");
-      if (secs.length === 0) {
+      let sections = WebAssembly.Module.customSections(this.wasmModule, "cmi");
+      if (sections.length === 0) {
         console.warn(`Grain Module${this.name ? (" " + this.name) : ""} missing CMI information`);
         return null;
       }
-      let sec = secs[0];
-      let view = new Uint32Array(sec.slice(0, 20));
+      let section = sections[0];
+      let view = new Uint32Array(section.slice(0, 20));
       // [grain_magic, abi_major, abi_minor, abi_patch, sec_name_length]
-      let secNameLength = view[4];
-      let startOffset = (4 * 5) + secNameLength;
-      let bytes = sec.slice(startOffset, sec.byteLength);
-      let dec = new TextDecoder("utf-8");
-      let decoded = dec.decode(bytes);
-      this._cmi = JSON.parse(decoded);
+      let sectionNameLength = view[4];
+      let startOffset = (4 * 5) + sectionNameLength;
+      let bytes = section.slice(startOffset, section.byteLength);
+      let decoder = new TextDecoder("utf-8");
+      let decodedSection = decoder.decode(bytes);
+      this._cmi = JSON.parse(decodedSection);
     }
     return this._cmi;
   }

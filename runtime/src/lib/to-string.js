@@ -4,6 +4,6 @@ export function toString(v) {
   return JSToGrainVal(grainToString(v));
 }
 
-export function makeToString(gtos) {
-  return v => JSToGrainVal(gtos(v));
+export function makeToString(grainToString) {
+  return v => JSToGrainVal(grainToString(v));
 }
