@@ -120,14 +120,6 @@ module Top = struct
   let data ?loc e d = mk ?loc (PTopData (e, d))
   let let_ ?loc e r vb = mk ?loc (PTopLet(e, r, vb))
   let export ?loc e = mk ?loc (PTopExport e)
-
-  let mk_export_list e =
-    List.map (fun name -> 
-      let r = Str.regexp "^[A-Z]" in
-      if Str.string_match r name.txt 0 
-      then ExportExceptData name
-      else ExportExceptValue name
-    ) e
   let export_all ?loc e = mk ?loc (PTopExportAll e)
 end
 

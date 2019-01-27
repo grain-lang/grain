@@ -237,7 +237,7 @@ export_stmt :
   | EXPORT foreign_stmt { Top.foreign ~loc:(symbol_rloc dyp) Exported $2 }
   | EXPORT data_declaration { Top.data Exported $2 }
   | EXPORT any_id_str [AS any_id_str {$2}]? [COMMA any_id_str [AS any_id_str {$2}]? {$2, $3}]* { Top.export ~loc:(symbol_rloc dyp) (Ex.mk ~loc:(symbol_rloc dyp) (($2, $3)::$4)) }
-  | EXPORT STAR [EXCEPT any_id_str [COMMA any_id_str {$2}]* {$2::$3}]? { Top.export_all ~loc:(symbol_rloc dyp) (Top.mk_export_list (Option.default [] $3)) }
+  | EXPORT STAR [EXCEPT export_id_str [COMMA export_id_str {$2}]* {$2::$3}]? { Top.export_all ~loc:(symbol_rloc dyp) (Option.default [] $3) }
 
 data_constructor :
   | TYPEID { CDecl.singleton ~loc:(symbol_rloc dyp) (mkstr dyp $1) }
@@ -346,6 +346,10 @@ type_id_str :
 any_id_str :
   | id_str { $1 }
   | type_id_str { $1 }
+
+export_id_str :
+  | id_str { ExportExceptValue $1 }
+  | type_id_str { ExportExceptData $1 }
 
 foreign_stmt :
   | FOREIGN WASM id_str id_str COLON typ { Val.mk ~loc:(symbol_rloc dyp) ~mod_:$3 ~name:$4 ~typ:$6 ~prim:[$4.txt] }
