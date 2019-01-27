@@ -18,14 +18,16 @@
 open Grain_parsing
 open Misc
 open Parsetree
+open Sexplib.Conv
 
-type boxed_integer = Pnativeint | Pint32 | Pint64
+type boxed_integer = Pnativeint | Pint32 | Pint64 [@@deriving sexp, yojson]
 
 type native_repr =
   | Same_as_ocaml_repr
   | Unboxed_float
   | Unboxed_integer of boxed_integer
   | Untagged_int
+[@@deriving sexp, yojson]
 
 type description =
   { prim_name: string;         (* Name of primitive  or C function *)
@@ -34,6 +36,7 @@ type description =
     prim_native_name: string;  (* Name of C function for the nat. code gen. *)
     prim_native_repr_args: native_repr list;
     prim_native_repr_res: native_repr }
+[@@deriving sexp, yojson]
 
 type error =
   | Old_style_float_with_native_repr_attribute

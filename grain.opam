@@ -19,6 +19,7 @@ depends: [
   "ppx_sexp_conv"
   "sexplib"
   "dypgen"
+  "core" { >= "0.11.2" }
   "ounit" { >= "2.0.0" }
   "extlib" { >= "1.7.2" }
   "batteries" { >= "2.8.0" }
