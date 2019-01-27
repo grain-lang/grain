@@ -38,7 +38,8 @@ export class GrainError extends Error {
 
 export function throwGrainError(errorCode, value1, value2) {
   let message;
-  let value1AsGrain = grainToString(value1);
+  // [TODO]: Pass a runtime here
+  let value1AsGrain = grainToString(null, value1);
 
   switch (errorCode) {
     case GRAIN_ERR_ARITY_MISMATCH:

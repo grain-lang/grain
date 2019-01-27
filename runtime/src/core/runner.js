@@ -28,7 +28,7 @@ export class GrainRunner {
       relocBase: 0,
       moduleRuntimeId: 0
     };
-    let boundGrainToString = (v) => grainToString(v, this);
+    let boundGrainToString = (v) => grainToString(this, v);
     this.imports['grainBuiltins'] = {
       toString: makeToString(boundGrainToString),
       print: makePrint(boundGrainToString)

@@ -8,7 +8,7 @@ export const grainDOMRefs = [];
 
 export function DOMQuery(n) {
   assertString(n);
-  let query = grainToJSVal(n);
+  let query = grainToJSVal(null, n);
   let elem = document.querySelector(query);
   if (elem) {
     grainDOMRefs.push(elem);
@@ -24,16 +24,16 @@ export function DOMQuery(n) {
 export function DOMSetText(elemRef, textRef) {
   assertDOMElement(elemRef);
   assertString(textRef);
-  let elem = grainToJSVal(elemRef);
-  elem.innerText = grainToJSVal(textRef);
+  let elem = grainToJSVal(null, elemRef);
+  elem.innerText = grainToJSVal(null, textRef);
   return elemRef;
 }
 
 export function DOMDangerouslySetInnerHTML(elemRef, textRef) {
   assertDOMElement(elemRef);
   assertString(textRef);
-  let elem = grainToJSVal(elemRef);
-  elem.innerHTML = grainToJSVal(textRef);
+  let elem = grainToJSVal(null, elemRef);
+  elem.innerHTML = grainToJSVal(null, textRef);
   return elemRef;
 }
 
@@ -41,9 +41,9 @@ export function DOMAddEventListener(elemRef, eventRef, handlerRef) {
   assertDOMElement(elemRef);
   assertString(eventRef);
   assertLambda(handlerRef);
-  let elem = grainToJSVal(elemRef);
-  let event = grainToJSVal(eventRef);
-  let handler = grainToJSVal(handlerRef);
+  let elem = grainToJSVal(null, elemRef);
+  let event = grainToJSVal(null, eventRef);
+  let handler = grainToJSVal(null, handlerRef);
   elem.addEventListener(event, () => handler.call());
   return elemRef;
 }
