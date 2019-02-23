@@ -19,19 +19,19 @@ export function defaultURLLocator(base) {
   };
 }
 
-export function defaultFileLocator(base) {
+export function defaultFileLocator(bases = []) {
   const fs = require('fs');
   // normalize trailing slash
-  base = normalizeSlash(base);
+  bases = bases.map(normalizeSlash);
   return async (raw) => {
     let module = raw.replace(/^GRAIN\$MODULE\$/, '');
-    if (base === null) {
-      return null;
+    for (const base of bases) {
+      let fullpath = base + "/" + module + ".wasm";
+      if (!fs.existsSync(fullpath)) {
+        continue;
+      }
+      return readFile(fullpath);
     }
-    let fullpath = base + "/" + module + ".wasm";
-    if (!fs.existsSync(fullpath)) {
-      return null;
-    }
-    return readFile(fullpath);
+    return null
   };
 }
