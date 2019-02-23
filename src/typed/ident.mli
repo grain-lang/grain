@@ -16,7 +16,7 @@
 
 (* Identifiers (unique names) *)
 
-type t = { stamp: int; name: string; mutable flags: int } [@@deriving sexp]
+type t = { stamp: int; name: string; mutable flags: int } [@@deriving sexp, yojson]
 type saved_state
 
 include Identifiable.S with type t := t

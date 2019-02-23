@@ -4,7 +4,7 @@ open Sexplib.Conv
 type t =
   | PIdent of Ident.t
   | PExternal of t * string * int
-[@@deriving sexp]
+[@@deriving sexp, yojson]
 
 let nopos = -1
 

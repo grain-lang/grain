@@ -28,6 +28,7 @@ let () =
   let grain_root = Grain_utils.Files.derelativize grain_root in
   Grain_utils.Config.grain_root := Some(grain_root);
   let stdlib = Grain_utils.Config.stdlib_directory() in
+  Unix.putenv "GRAIN_ROOT" grain_root;
   Option.may (fun x ->
       ignore(Grain.Compile.compile_file ~outfile:(x ^ "/" ^ "lists.wasm") (x ^ "/" ^ "lists.grlib"))
     )

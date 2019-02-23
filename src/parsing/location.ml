@@ -43,6 +43,14 @@ let sexp_of_position (p : position) =
     ];
   ]
 
+let position_to_yojson (p : position) : Yojson.Safe.json =
+  `Assoc [
+    "file", (`String p.pos_fname);
+    "line", (`Int p.pos_lnum);
+    "col",  (`Int p.pos_cnum);
+    "bol",  (`Int p.pos_bol)
+  ]
+
 let position_of_sexp (sexp : Sexplib.Sexp.t) =
   let open Sexplib.Conv in
   let open Sexplib.Sexp in
@@ -65,11 +73,47 @@ let position_of_sexp (sexp : Sexplib.Sexp.t) =
   | List ((Atom "position") :: _) -> of_sexp_error "position_of_sexp: invalid fields" sexp
   | List _ -> of_sexp_error "position_of_sexp: invalid s-expression" sexp
 
+
+let position_of_yojson (yj : Yojson.Safe.json) : (position, string) result =
+  match yj with
+  | `Assoc contents ->
+    begin
+    let map = Hashtbl.create 4 in
+    List.iter (fun (key, value) -> Hashtbl.add map key value) contents;
+    if not (List.for_all (Hashtbl.mem map) ["file"; "line"; "col"; "bol"]) then
+      Result.Error ("position_of_yojson: invalid json object: " ^ Yojson.Safe.to_string yj)
+    else
+      let (file, line, col, bol) =
+        match List.map (Hashtbl.find map) ["file"; "line"; "col"; "bol"] with
+        | [a; b; c; d] -> a, b, c, d
+        | _ -> failwith "impossible"
+      in
+      let res_map f = function
+        | Result.Ok x -> f x
+        | Result.Error y -> Result.Error y
+      in
+      match file with
+        | `String pos_fname ->
+          begin match List.fold_right (fun (cur_name, cur) acc -> res_map (fun acc_list ->
+            match cur with
+            | `Int x -> Result.Ok (x::acc_list)
+            | `Intlit x -> Result.Ok ((int_of_string x)::acc_list)
+            | _ -> Result.Error ("position_of_yojson '" ^ cur_name ^ "' is not an int")
+          ) acc) [("line", line); ("col", col); ("bol", bol)] (Result.Ok []) with
+          | Result.Ok [pos_lnum; pos_cnum; pos_bol] ->
+            Result.Ok { pos_fname; pos_lnum; pos_cnum; pos_bol }
+          | Result.Ok _ -> failwith "position_of_yojson: impossible"
+          | Result.Error x -> Result.Error x
+          end
+        | _ -> Result.Error "position_of_yojson: 'file' is not a string"
+    end
+  | _ -> Result.Error ("position_of_yojson: invalid json object: " ^ Yojson.Safe.to_string yj)
+
 type t = Warnings.loc = {
   loc_start: position;
   loc_end: position;
   loc_ghost: bool;
-} [@@deriving sexp]
+} [@@deriving sexp, yojson]
 
 let in_file name =
   let loc = {

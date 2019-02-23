@@ -21,7 +21,7 @@ type pers_flags =
   | Rectypes
   | Opaque
   | Unsafe_string
-[@@deriving sexp]
+[@@deriving sexp, yojson]
 
 type error =
     Not_an_interface of string
@@ -30,12 +30,28 @@ type error =
 
 exception Error of error
 
+(* See: https://github.com/janestreet/ppx_sexp_conv/issues/26 *)
+type cmi_digest = Digest.t
+let cmi_digest_to_yojson d =
+  `String (Digest.to_hex d)
+let cmi_digest_of_yojson = function
+  | (`String s) as d -> begin try
+      Result.Ok (Digest.from_hex s)
+    with
+      | Invalid_argument _ -> Result.Error ("cmi_digest_of_yojson: Invalid Digest: " ^ (Yojson.Safe.to_string d))
+    end
+  | d -> Result.Error ("cmi_digest_of_yojson: Invalid Digest: " ^ (Yojson.Safe.to_string d))
+
+type cmi_crcs = (string * Digest.t option) list sexp_opaque [@@deriving sexp]
+let rec cmi_crcs_of_yojson = [%of_yojson: (string * cmi_digest option) list]
+and cmi_crcs_to_yojson = [%to_yojson: (string * cmi_digest option) list]
+
 type cmi_infos = {
     cmi_name : string;
     cmi_sign : Types.signature_item list;
-    cmi_crcs : (string * Digest.t option) list sexp_opaque;
+    cmi_crcs : cmi_crcs;
     cmi_flags : pers_flags list;
-} [@@deriving sexp]
+} [@@deriving sexp, yojson]
 
 let build_full_cmi ~name ~sign ~crcs ~flags =
   let ns_sign = Marshal.to_bytes (name, sign) [] in
@@ -49,36 +65,17 @@ let build_full_cmi ~name ~sign ~crcs ~flags =
   }
 
 let input_cmi ic =
-  let (name, sign) = input_value ic in
-  let crcs = input_value ic in
-  let flags = input_value ic in
-  {
-      cmi_name = name;
-      cmi_sign = sign;
-      cmi_crcs = crcs;
-      cmi_flags = flags;
-    }
+  match cmi_infos_of_yojson @@ Yojson.Safe.from_channel ic with
+  | Result.Ok x -> x
+  | Result.Error e -> raise (Invalid_argument e)
 
 let deserialize_cmi bytes =
-  let (name, sign) = Marshal.from_bytes bytes 0 in
-  let ns_size = Marshal.total_size bytes 0 in
-  let crcs_size = Marshal.total_size bytes ns_size in
-  let crcs = Marshal.from_bytes bytes ns_size in
-  let flags = Marshal.from_bytes bytes (ns_size + crcs_size) in
-  {
-    cmi_name = name;
-    cmi_sign = sign;
-    cmi_crcs = crcs;
-    cmi_flags = flags;
-  }
+  match cmi_infos_of_yojson @@ Yojson.Safe.from_string bytes with
+  | Result.Ok x -> x
+  | Result.Error e -> raise (Invalid_argument e)
 
-let serialize_cmi {cmi_name=name; cmi_sign=sign; cmi_crcs=crcs; cmi_flags=flags} =
-  let ns_sign = Marshal.to_bytes (name, sign) [] in
-  let crc = Digest.bytes ns_sign in
-  let crcs = (name, Some crc) :: crcs in
-  let crcs = Marshal.to_bytes crcs [] in
-  let flags = Marshal.to_bytes flags [] in
-  Bytes.concat Bytes.empty [ns_sign; crcs; flags]
+let serialize_cmi ({cmi_name=name; cmi_sign=sign; cmi_crcs=crcs; cmi_flags=flags} as cmi_info) =
+  Yojson.Safe.to_string @@ cmi_infos_to_yojson cmi_info
 
 module CmiBinarySection = BinarySection(struct
     type t = cmi_infos

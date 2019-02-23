@@ -23,7 +23,7 @@ type cmi_infos = {
     cmi_sign : Types.signature_item list;
     cmi_crcs : (string * Digest.t option) list;
     cmi_flags : pers_flags list;
-} [@@deriving sexp]
+} [@@deriving sexp, yojson]
 
 val build_full_cmi :
   name:string ->

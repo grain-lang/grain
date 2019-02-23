@@ -5,6 +5,8 @@ export class GrainModule {
   constructor(wasmModule, name) {
     this.wasmModule = wasmModule;
     this.name = name; // name is optional
+    this.runner = null;
+    this._cmi = null;
     this._instantiated = null;
   }
 
@@ -17,6 +19,26 @@ export class GrainModule {
       throw new GrainError(-1, `Module${this.name ? (" " + this.name) : ""} must be instantiated before use`);
     }
     return this._instantiated;
+  }
+
+  get cmi() {
+    if (!this._cmi) {
+      let sections = WebAssembly.Module.customSections(this.wasmModule, "cmi");
+      if (sections.length === 0) {
+        console.warn(`Grain Module${this.name ? (" " + this.name) : ""} missing CMI information`);
+        return null;
+      }
+      let section = sections[0];
+      let view = new Uint32Array(section.slice(0, 20));
+      // [grain_magic, abi_major, abi_minor, abi_patch, sec_name_length]
+      let sectionNameLength = view[4];
+      let startOffset = (4 * 5) + sectionNameLength;
+      let bytes = section.slice(startOffset, section.byteLength);
+      let decoder = new TextDecoder("utf-8");
+      let decodedSection = decoder.decode(bytes);
+      this._cmi = JSON.parse(decodedSection);
+    }
+    return this._cmi;
   }
 
   get importSpecs() {
@@ -53,7 +75,43 @@ export class GrainModule {
     return this.requiredExport("GRAIN$TABLE_SIZE");
   }
 
-  async instantiate(importObj) {
+  get types() {
+    if (!this._types) {
+      let cmi = this.cmi;
+      if (!cmi) {
+        return null;
+      }
+      this._types = {};
+      let idx = 0;
+      cmi.cmi_sign.forEach(elt => {
+        if (elt[0] !== "TSigType") {
+          return;
+        }
+        let typ = {};
+        this._types[idx++] = typ;
+        let desc = elt[2];
+        let kind = desc.type_kind;
+        if (!kind || kind[0] !== "TDataVariant") {
+          return;
+        }
+        let variants = kind[1];
+        variants.forEach((variant, vidx) => {
+          let name = variant.cd_id.name;
+          let arity;
+          if (variant.cd_args[0] === "TConstrSingleton") {
+            arity = 0;
+          } else {
+            // TConstrTuple
+            arity = variant.cd_args[1].length;
+          }
+          typ[vidx] = [name, arity];
+        })
+      })
+    }
+    return this._types;
+  }
+
+  async instantiate(importObj, runner) {
     /*console.log(`Instantiating ${this.name}`);
     console.log(`imports:`);
     Object.keys(importObj).forEach(m => {
@@ -66,6 +124,7 @@ export class GrainModule {
       });
       console.log('');
     });*/
+    this.runner = runner;
     this._instantiated = await WebAssembly.instantiate(this.wasmModule, importObj);
     //console.log(`Instantiated: ${this._instantiated}.`);
     //console.log(`fields: ${Object.keys(this._instantiated)}`);
@@ -75,7 +134,7 @@ export class GrainModule {
     //console.log(`Running ${this.name}`);
     let res = await this.main();
     //console.log(`complete.`);
-    return grainToJSVal(res);
+    return grainToJSVal(this.runner, res);
   }
 }
 

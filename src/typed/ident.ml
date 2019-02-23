@@ -24,7 +24,7 @@ type t = {
   stamp: int [@sexp_drop_if stamps_disabled];
   name: string;
   mutable flags: int [@default 0] [@sexp_drop_default];
-} [@@deriving sexp]
+} [@@deriving sexp, yojson]
 
 type saved_state = {
   currentstamp: int;
