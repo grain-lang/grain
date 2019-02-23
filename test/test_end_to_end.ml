@@ -503,6 +503,22 @@ let data_tests =
     tfile "basicdata" "basicdata" "[ false, true, true ]";
   ]
 
+let export_tests =
+  [
+    te "export1" "import noExports; x" "Unbound value x";
+    te "export2" "import noExports; y" "Unbound value y";
+    te "export3" "import noExports; z" "Unbound value z";
+
+    t "export4" "import onlyXExported; x" "4";
+    te "export5" "import onlyXExported; y" "Unbound value y";
+    te "export6" "import onlyXExported; z" "Unbound value z";
+
+    t "export7" "import exportStar; x" "5";
+    t "export8" "import exportStar; x + y(4)" "9";
+    t "export9" "import exportStar; y(z)" "foo";
+    te "export10" "import exportStar; y(secret)" "Unbound value secret";
+  ]
+
 let tests =
   "End to end">:::
   basic_functionality_tests @
@@ -510,7 +526,8 @@ let tests =
   tuple_tests @
   stdlib_tests @
   box_tests @ loop_tests @(*oom @ gc @*) import_tests @
-  optimization_tests @ string_tests @ data_tests
+  optimization_tests @ string_tests @ data_tests @ 
+  export_tests
 
 
 

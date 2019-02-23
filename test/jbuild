@@ -13,5 +13,6 @@
   (deps   (test.exe
            grain-root.txt
            (files_recursively_in input)
+           (files_recursively_in test-libs)
            (files_recursively_in test-data)))
   (action (run ${<}))))
