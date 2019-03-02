@@ -35,7 +35,7 @@
   "homepage": "https://grain-lang.org",
   "devDependencies": {
     "babel-core": "^6.26.3",
-    "babel-loader": "^7.1.2",
+    "babel-loader": "^7.1.5",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "webpack": "^3.12.0"
   },
