@@ -1,3 +1,5 @@
+export *;
+
 # Prints the given value to the console.
 foreign wasm grainBuiltins print : a -> a;
 

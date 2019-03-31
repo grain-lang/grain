@@ -45,7 +45,7 @@ type anf_bind =
   | BSeq of comp_expression
   | BLet of Ident.t * comp_expression
   | BLetRec of (Ident.t * comp_expression) list
-  | BLetGlobal of rec_flag * (Ident.t * comp_expression) list
+  | BLetExport of rec_flag * (Ident.t * comp_expression) list
 
 type ('a, 'b) either =
   | Left of 'a
@@ -182,13 +182,13 @@ let rec transl_imm (({exp_desc; exp_loc=loc; exp_env=env; _} as e) : expression)
   | TExpConstruct _ -> failwith "NYI: transl_imm: Construct"
 
 
-and bind_patts ?toplevel:(toplevel=false) (exp_id : Ident.t) (patts : pattern list) : anf_bind list =
+and bind_patts ?exported:(exported=false) (exp_id : Ident.t) (patts : pattern list) : anf_bind list =
   let postprocess_item cur acc =
     match cur with
     | None -> acc
     | Some(ident, (src, idx), extras) ->
-      let bind = if toplevel then
-          BLetGlobal(Nonrecursive, [ident, Comp.tuple_get (Int32.of_int idx) (Imm.id src)])
+      let bind = if exported then
+          BLetExport(Nonrecursive, [ident, Comp.tuple_get (Int32.of_int idx) (Imm.id src)])
         else
           BLet(ident, Comp.tuple_get (Int32.of_int idx) (Imm.id src)) in
       [bind] @ extras @ acc in
@@ -309,27 +309,31 @@ and transl_anf_expression (({exp_desc; exp_loc=loc; exp_env=env; _} as e) : expr
        | BSeq(exp) -> AExp.seq ~loc ~env exp body
        | BLet(name, exp) -> AExp.let_ ~loc ~env Nonrecursive [(name, exp)] body
        | BLetRec(names) -> AExp.let_ ~loc ~env Recursive names body
-       | BLetGlobal(name, exp) -> failwith "Global bind at non-toplevel")
+       | BLetExport(name, exp) -> failwith "Global bind at non-toplevel")
     ans_setup (AExp.comp ~loc ~env ans)
 
 
 let rec transl_anf_statement (({ttop_desc; ttop_env=env; ttop_loc=loc} as s) : toplevel_stmt) : (anf_bind list) option * import_spec list =
   match ttop_desc with
-  | TTopLet(_, []) -> None, []
-  | TTopLet(Nonrecursive, {vb_expr; vb_pat}::rest) ->
+  | TTopLet(_, _, []) -> None, []
+  | TTopLet(export_flag, Nonrecursive, {vb_expr; vb_pat}::rest) ->
     let (exp_ans, exp_setup) = transl_comp_expression vb_expr in
-    let rest_setup, rest_imp = transl_anf_statement {s with ttop_desc=TTopLet(Nonrecursive, rest)} in
+    let rest_setup, rest_imp = transl_anf_statement {s with ttop_desc=TTopLet(export_flag, Nonrecursive, rest)} in
     let rest_setup = Option.default [] rest_setup in
+    let exported = export_flag = Exported in
     let setup = begin match vb_pat.pat_desc with
-      | TPatVar(bind, _) -> [BLetGlobal(Nonrecursive, [bind, exp_ans])]
+      | TPatVar(bind, _) -> 
+        if exported 
+        then [BLetExport(Nonrecursive, [bind, exp_ans])]
+        else [BLet(bind, exp_ans)]
       | TPatTuple(patts) ->
         let tmp = gensym "let_tup" in
-        let anf_patts = bind_patts ~toplevel:true tmp patts in
+        let anf_patts = bind_patts ~exported tmp patts in
         (BLet(tmp, exp_ans))::anf_patts
       | _ -> failwith "NYI: transl_anf_statement: Non-tuple destructuring in let"
     end in
     Some(exp_setup @ setup @ rest_setup), rest_imp
-  | TTopLet(Recursive, binds) ->
+  | TTopLet(export_flag, Recursive, binds) ->
     let (binds, new_binds_setup) = List.split (List.map (fun {vb_pat; vb_expr} -> (vb_pat, transl_comp_expression vb_expr)) binds) in
     let (new_binds, new_setup) = List.split new_binds_setup in
 
@@ -337,39 +341,46 @@ let rec transl_anf_statement (({ttop_desc; ttop_env=env; ttop_loc=loc} as s) : t
         | {pat_desc=TPatVar(id, _)} -> id
         | _ -> failwith "Non-name not allowed on LHS of let rec.") binds in
 
-    Some((List.concat new_setup) @ [BLetGlobal(Recursive, List.combine names new_binds)]), []
-  | TTopData(decl) ->
-    let open Types in
-    let typath = Path.PIdent (decl.data_id) in
-    (* FIXME: [philip] This is kind of hacky...would be better to store this in the Env directly...not to mention, 
-       I think this'll be much more fragile than if it were in the static info *)
-    let ty_id = begin match PathMap.find_opt type_map typath with
-      | Some(id) -> id
-      | None ->
-        let id = PathMap.length type_map in
-        PathMap.add type_map typath id;
-        id
-    end in
-    let descrs = Datarepr.constructors_of_type typath (decl.data_type) in
-    begin match descrs with
-      | [] -> failwith "Impossible: TTopData TDataAbstract"
-      | descrs ->
-        let bind_constructor (cd_id, {cstr_name; cstr_tag; cstr_args}) =
-          let rhs = match cstr_tag with
-            | CstrConstant _ ->
-              let compiled_tag = compile_constructor_tag cstr_tag in
-              Comp.adt ~loc ~env (Imm.const ~loc ~env (Const_int ty_id)) (Imm.const ~loc ~env (Const_int compiled_tag)) []
-            | CstrBlock _ ->
-              let compiled_tag = compile_constructor_tag cstr_tag in
-              let args = List.map (fun _ -> gensym "constr_arg") cstr_args in
-              let arg_ids = List.map (fun a -> Imm.id ~loc ~env a) args in
-              let imm_tytag = Imm.const ~loc ~env (Const_int ty_id) in
-              let imm_tag = Imm.const ~loc ~env (Const_int compiled_tag) in
-              Comp.lambda ~loc ~env args (AExp.comp ~loc ~env (Comp.adt ~loc ~env imm_tytag imm_tag arg_ids))
-            | CstrUnboxed -> failwith "NYI: ANF CstrUnboxed" in
-          BLetGlobal(Nonrecursive, [cd_id, rhs]) in
-        Some(List.map bind_constructor descrs), []
+    begin match export_flag with
+      | Exported ->
+        Some((List.concat new_setup) @ [BLetExport(Recursive, List.combine names new_binds)]), []
+      | Nonexported ->
+        Some((List.concat new_setup) @ [BLetRec(List.combine names new_binds)]), [] 
     end
+  | TTopData(decls) ->
+    let open Types in
+    let bindings = List.concat @@ List.map (fun decl ->
+      let typath = Path.PIdent (decl.data_id) in
+      (* FIXME: [philip] This is kind of hacky...would be better to store this in the Env directly...not to mention, 
+        I think this'll be much more fragile than if it were in the static info *)
+      let ty_id = begin match PathMap.find_opt type_map typath with
+        | Some(id) -> id
+        | None ->
+          let id = PathMap.length type_map in
+          PathMap.add type_map typath id;
+          id
+      end in
+      let descrs = Datarepr.constructors_of_type typath (decl.data_type) in
+      begin match descrs with
+        | [] -> failwith "Impossible: TTopData TDataAbstract"
+        | descrs ->
+          let bind_constructor (cd_id, {cstr_name; cstr_tag; cstr_args}) =
+            let rhs = match cstr_tag with
+              | CstrConstant _ ->
+                let compiled_tag = compile_constructor_tag cstr_tag in
+                Comp.adt ~loc ~env (Imm.const ~loc ~env (Const_int ty_id)) (Imm.const ~loc ~env (Const_int compiled_tag)) []
+              | CstrBlock _ ->
+                let compiled_tag = compile_constructor_tag cstr_tag in
+                let args = List.map (fun _ -> gensym "constr_arg") cstr_args in
+                let arg_ids = List.map (fun a -> Imm.id ~loc ~env a) args in
+                let imm_tytag = Imm.const ~loc ~env (Const_int ty_id) in
+                let imm_tag = Imm.const ~loc ~env (Const_int compiled_tag) in
+                Comp.lambda ~loc ~env args (AExp.comp ~loc ~env (Comp.adt ~loc ~env imm_tytag imm_tag arg_ids))
+              | CstrUnboxed -> failwith "NYI: ANF CstrUnboxed" in
+            BLetExport(Nonrecursive, [cd_id, rhs]) in
+          List.map bind_constructor descrs
+      end) decls in
+      Some(bindings), []
   | TTopForeign(desc) ->
     let arity = Ctype.arity (desc.tvd_desc.ctyp_type) in
     None, [Imp.wasm_func desc.tvd_id desc.tvd_mod.txt desc.tvd_name.txt (FunctionShape(arity, 1))]
@@ -390,7 +401,7 @@ let transl_anf_module ({statements; body; env; signature} : typed_program) : anf
          | BSeq(exp) -> AExp.seq exp body
          | BLet(name, exp) -> AExp.let_ Nonrecursive [(name, exp)] body
          | BLetRec(names) -> AExp.let_ Recursive names body
-         | BLetGlobal(rf, binds) -> AExp.let_ ~glob:Global rf binds body)
+         | BLetExport(rf, binds) -> AExp.let_ ~glob:Global rf binds body)
       (top_binds @ ans_setup) (AExp.comp ans) in
   let imports = imports @ (!value_imports) in
   {

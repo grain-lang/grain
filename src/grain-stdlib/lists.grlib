@@ -1,5 +1,7 @@
 # Standard library for list functionality
 
+export *;
+
 data List<a> =
   | Empty
   | Cons(a, List<a>);

@@ -10,6 +10,7 @@ type 'a loc = 'a Asttypes.loc = {
   loc: Location.t;
 }
 
+type export_flag = Asttypes.export_flag = Nonexported | Exported
 type rec_flag = Asttypes.rec_flag = Nonrecursive | Recursive
 
 (** Type for syntax-level types *)
@@ -153,12 +154,30 @@ type value_description = {
   pval_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
 } [@@deriving sexp]
 
+type export_declaration_desc = {
+  pex_name: string loc;
+  pex_alias: string loc option;
+  pex_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
+} [@@deriving sexp]
+
+and export_declaration = 
+  | ExportData of export_declaration_desc 
+  | ExportValue of export_declaration_desc
+[@@deriving sexp]
+
+type export_except = 
+  | ExportExceptData of string loc 
+  | ExportExceptValue of string loc 
+[@@deriving sexp]
+
 (** Statements which can exist at the top level *)
 type toplevel_stmt_desc =
-  | PTopForeign of value_description
   | PTopImport of import_declaration
-  | PTopData of data_declaration
-  | PTopLet of rec_flag * value_binding list
+  | PTopForeign of export_flag * value_description
+  | PTopData of export_flag * data_declaration
+  | PTopLet of export_flag * rec_flag * value_binding list
+  | PTopExport of export_declaration list
+  | PTopExportAll of export_except list
 [@@deriving sexp]
 
 type toplevel_stmt = {

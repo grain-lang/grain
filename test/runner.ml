@@ -114,7 +114,7 @@ let run_output cstate test_ctxt =
     ~use_stderr:true
     ~ctxt:test_ctxt
     "grain"
-    ["-wpg"; "/dev/stdin"];
+    ["-wpg"; "-I"; "test-libs"; "/dev/stdin"];
   !result
 
 let run_anf p out =
@@ -126,8 +126,11 @@ let run_anf p out =
   run_output (compile_resume ~hook:stop_after_compiled cstate)
 
 let test_run ?cmp program_str outfile expected test_ctxt =
-  let cstate = compile_string ~hook:stop_after_compiled ~name:outfile program_str in
-  let result = run_output cstate test_ctxt in
+  let result = Config.preserve_config (fun () ->
+      Config.include_dirs := "test-libs"::!Config.include_dirs;
+      let cstate = compile_string ~hook:stop_after_compiled ~name:outfile program_str in
+      run_output cstate test_ctxt
+    ) in
   assert_equal 
   ~printer:Batteries.identity 
   ~cmp:(Option.default (=) cmp)
@@ -180,8 +183,11 @@ let test_run_anf program_anf outfile expected test_ctxt =
 
 let test_err program_str outfile errmsg test_ctxt =
   let result = try
-      let cstate = compile_string ~hook:stop_after_compiled ~name:outfile program_str in
-      run_output cstate test_ctxt
+      Config.preserve_config (fun () ->
+        Config.include_dirs := "test-libs"::!Config.include_dirs;
+        let cstate = compile_string ~hook:stop_after_compiled ~name:outfile program_str in
+        run_output cstate test_ctxt
+      )
     with exn -> Printexc.to_string exn
   in
   assert_equal

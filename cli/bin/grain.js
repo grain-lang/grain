@@ -6,6 +6,10 @@ let run = require('./run.js');
 
 let givenFile
 
+function list(val) {
+  return val.split(',');
+}
+
 program
   .version('Grain compiler 0.0.0\nGrain cli 0.0.0', '-v, --version')
   .description('Compile and run Grain programs. 🌾')
@@ -13,6 +17,7 @@ program
   .option('-w, --wasm', 'run a wasm file')
   .option('-p, --print-output', 'print the output of the program')
   .option('-g, --graceful', 'return a 0 exit code if the program errors')
+  .option('-I, --include-dirs <dirs>', 'include directories the runtime should find wasm modules', list, [])
   .option('-f, --cflags <cflags>', 'pass flags to the Grain compiler')
   .action((file) => {
     givenFile = file

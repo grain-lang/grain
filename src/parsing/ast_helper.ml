@@ -115,10 +115,12 @@ module Top = struct
       | None -> (!default_loc_src)()
       | Some l -> l in
     {ptop_desc=d; ptop_loc=loc}
-  let foreign ?loc d = mk ?loc (PTopForeign d)
   let import ?loc i = mk ?loc (PTopImport i)
-  let data ?loc d = mk ?loc (PTopData d)
-  let let_ ?loc r vb = mk ?loc (PTopLet(r, vb))
+  let foreign ?loc e d = mk ?loc (PTopForeign (e, d))
+  let data ?loc e d = mk ?loc (PTopData (e, d))
+  let let_ ?loc e r vb = mk ?loc (PTopLet(e, r, vb))
+  let export ?loc e = mk ?loc (PTopExport e)
+  let export_all ?loc e = mk ?loc (PTopExportAll e)
 end
 
 module Val = struct
@@ -159,3 +161,16 @@ module Imp = struct
     {pimp_mod=m; pimp_loc=loc}
 end
 
+module Ex = struct
+  let mk ?loc exports =
+    let loc = match loc with
+      | None -> (!default_loc_src)()
+      | Some l -> l in
+    List.map (fun (name, alias) -> 
+      let desc = {pex_name=name; pex_alias=alias; pex_loc=loc} in
+      let r = Str.regexp "^[A-Z]" in
+      if Str.string_match r name.txt 0 
+      then ExportData desc
+      else ExportValue desc
+    ) exports
+end

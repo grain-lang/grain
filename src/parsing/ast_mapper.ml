@@ -11,6 +11,8 @@ type mapper = {
   constructor: mapper -> constructor_declaration -> constructor_declaration;
   location: mapper -> Location.t -> Location.t;
   import: mapper -> import_declaration -> import_declaration;
+  export: mapper -> export_declaration list -> export_declaration list;
+  export_all: mapper -> export_except list -> export_except list;
   value_binding: mapper -> value_binding -> value_binding;
   match_branch: mapper -> match_branch -> match_branch;
   value_description: mapper -> value_description -> value_description;
@@ -117,6 +119,28 @@ module I = struct
     mk ~loc (map_loc sub imod)
 end
 
+module Ex = struct
+  let map sub exports =
+    let process_desc {pex_name; pex_alias; pex_loc} =
+      let pex_name = map_loc sub pex_name in
+      let pex_alias = match pex_alias with
+        | Some(alias) -> Some(map_loc sub alias)
+        | None -> None in
+      let pex_loc = sub.location sub pex_loc in
+      {pex_name; pex_alias; pex_loc} in
+    List.map (fun export ->
+      match export with
+      | ExportData(desc) -> ExportData(process_desc desc)
+      | ExportValue(desc) -> ExportValue(process_desc desc)
+    ) exports
+  let map_export_all sub excepts =
+    List.map (fun except ->
+      match except with
+      | ExportExceptData(name) -> ExportExceptData(map_loc sub name)
+      | ExportExceptValue(name) -> ExportExceptValue(map_loc sub name)
+    ) excepts
+end
+
 module VD = struct
   let map sub ({pval_mod = vmod; pval_name = vname; pval_loc = loc} as d) =
     let pval_loc = sub.location sub loc in
@@ -130,10 +154,12 @@ module TL = struct
     let open Top in
     let loc = sub.location sub loc in
     match desc with
-      | PTopForeign d -> Top.foreign ~loc (sub.value_description sub d)
       | PTopImport id -> Top.import ~loc (sub.import sub id)
-      | PTopData dd -> Top.data ~loc (sub.data sub dd)
-      | PTopLet(r, vb) -> Top.let_ ~loc r (List.map (sub.value_binding sub) vb)
+      | PTopForeign(e, d) -> Top.foreign ~loc e (sub.value_description sub d)
+      | PTopData(e, dd) -> Top.data ~loc e (sub.data sub dd)
+      | PTopLet(e, r, vb) -> Top.let_ ~loc e r (List.map (sub.value_binding sub) vb)
+      | PTopExport ex -> Top.export ~loc (sub.export sub ex)
+      | PTopExportAll ex -> Top.export_all ~loc (sub.export_all sub ex)
 end
 
 let default_mapper = {
@@ -145,6 +171,8 @@ let default_mapper = {
   constructor = C.map;
   location = (fun _ x -> x);
   import = I.map;
+  export = Ex.map;
+  export_all = Ex.map_export_all;
   value_binding = V.map;
   match_branch = MB.map;
   value_description = VD.map;

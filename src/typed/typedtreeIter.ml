@@ -34,10 +34,10 @@ module type IteratorArgument = sig
     val leave_core_type : core_type -> unit
     val leave_toplevel_stmt : toplevel_stmt -> unit
 
-    val enter_bindings : rec_flag -> unit
+    val enter_bindings : export_flag -> rec_flag -> unit
     val enter_binding : value_binding -> unit
     val leave_binding : value_binding -> unit
-    val leave_bindings : rec_flag -> unit
+    val leave_bindings : export_flag -> rec_flag -> unit
 
     val enter_data_declarations : unit -> unit
     val enter_data_declaration : data_declaration -> unit
@@ -81,10 +81,10 @@ end = struct
     iter_expression vb_expr;
     Iter.leave_binding vb
 
-  and iter_bindings rec_flag binds =
-    Iter.enter_bindings rec_flag;
+  and iter_bindings export_flag rec_flag binds =
+    Iter.enter_bindings export_flag rec_flag;
     List.iter iter_binding binds;
-    Iter.leave_bindings rec_flag
+    Iter.leave_bindings export_flag rec_flag
 
   and iter_match_branch {mb_pat; mb_body} =
     iter_pattern mb_pat;
@@ -116,26 +116,26 @@ end = struct
   and iter_toplevel_stmt stmt =
     Iter.enter_toplevel_stmt stmt;
     begin match stmt.ttop_desc with
-      | TTopData (decl) -> iter_data_declaration decl
+      | TTopData decls -> List.iter iter_data_declaration decls
       | TTopForeign _
-      | TTopImport _ -> ()
-      | TTopLet (recflag, binds) -> iter_bindings recflag binds
+      | TTopImport _
+      | TTopExport _ -> ()
+      | TTopLet (exportflag, recflag, binds) -> iter_bindings exportflag recflag binds
     end;
     Iter.leave_toplevel_stmt stmt
 
   and iter_toplevel_stmts stmts =
-    let foreigns, datas, imports, lets = List.fold_left (fun (acc_foreign, acc_data, acc_imports, acc_lets) cur ->
+    List.iter (fun cur ->
         match cur.ttop_desc with
-        | TTopForeign _ -> (cur::acc_foreign, acc_data, acc_imports, acc_lets)
-        | TTopData _ -> (acc_foreign, cur::acc_data, acc_imports, acc_lets)
-        | TTopImport _ -> (acc_foreign, acc_data, cur::acc_imports, acc_lets)
-        | TTopLet _ -> (acc_foreign, acc_data, acc_imports, cur::acc_lets)) ([], [], [], []) stmts in
-    List.iter iter_toplevel_stmt foreigns;
-    List.iter iter_toplevel_stmt imports;
-    Iter.enter_data_declarations();
-    List.iter iter_toplevel_stmt datas;
-    Iter.leave_data_declarations();
-    List.iter iter_toplevel_stmt lets
+        | TTopForeign _
+        | TTopImport _ 
+        | TTopExport _ 
+        | TTopLet _ -> iter_toplevel_stmt cur
+        | TTopData _ -> 
+          Iter.enter_data_declarations();
+          iter_toplevel_stmt cur;
+          Iter.leave_data_declarations();
+        ) stmts
 
   and iter_pattern pat =
     Iter.enter_pattern pat;
@@ -163,7 +163,7 @@ end = struct
       | TExpIdent _
       | TExpConstant _ -> ()
       | TExpLet(recflag, binds, body) ->
-        iter_bindings recflag binds;
+        iter_bindings Nonexported recflag binds;
         iter_expression body
       | TExpLambda(branches, _) -> iter_match_branches branches
       | TExpApp(exp, args) ->
@@ -200,7 +200,7 @@ module DefaultIteratorArgument : IteratorArgument = struct
   let enter_expression _ = ()
   let enter_core_type _ = ()
   let enter_toplevel_stmt _ = ()
-  let enter_bindings _ = ()
+  let enter_bindings _ _ = ()
   let enter_binding _ = ()
   let enter_data_declaration _ = ()
   let enter_data_declarations () = ()
@@ -212,7 +212,7 @@ module DefaultIteratorArgument : IteratorArgument = struct
   let leave_core_type _ = ()
   let leave_toplevel_stmt _ = ()
   let leave_binding _ = ()
-  let leave_bindings _ = ()
+  let leave_bindings _ _ = ()
   let leave_data_declaration _ = ()
   let leave_data_declarations () = ()
 end

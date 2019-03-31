@@ -89,10 +89,12 @@ end
 
 module Top: sig
   val mk: ?loc:loc -> toplevel_stmt_desc -> toplevel_stmt
-  val foreign: ?loc:loc -> value_description -> toplevel_stmt
   val import: ?loc:loc -> import_declaration -> toplevel_stmt
-  val data: ?loc:loc -> data_declaration -> toplevel_stmt
-  val let_: ?loc:loc -> rec_flag -> value_binding list -> toplevel_stmt
+  val foreign: ?loc:loc -> export_flag -> value_description -> toplevel_stmt
+  val data: ?loc:loc -> export_flag -> data_declaration -> toplevel_stmt
+  val let_: ?loc:loc -> export_flag -> rec_flag -> value_binding list -> toplevel_stmt
+  val export: ?loc:loc -> export_declaration list -> toplevel_stmt
+  val export_all: ?loc:loc -> export_except list -> toplevel_stmt
 end
 
 module Val: sig
@@ -111,4 +113,6 @@ module Imp: sig
   val mk: ?loc:loc -> id -> import_declaration
 end
 
-
+module Ex: sig
+  val mk: ?loc:loc -> (str * str option) list -> export_declaration list
+end

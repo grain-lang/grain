@@ -100,6 +100,8 @@ rule token = parse
   | "isnum" { ISNUM }
   | "istuple" { ISTUPLE }
   | "import" { IMPORT }
+  | "export" { EXPORT }
+  | "except" { EXCEPT }
   | "box" { BOX }
   | "unbox" { UNBOX }
   | "->" { ARROW }
@@ -116,6 +118,7 @@ rule token = parse
   | "=" { EQUAL }
   | "," { COMMA }
   | ";" { SEMI }
+  | "as" { AS }
   | "(" { LPAREN }
   | ")" { RPAREN }
   | "{" { LBRACE }
@@ -125,8 +128,8 @@ rule token = parse
   | "<" { LCARET }
   | ">" { RCARET }
   | "+" { PLUS }
-  | "-" { MINUS }
-  | "*" { TIMES }
+  | "-" { DASH }
+  | "*" { STAR }
   | "<=" { LESSEQ }
   | ">=" { GREATEREQ }
   | "and" { AND }

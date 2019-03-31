@@ -105,10 +105,11 @@ end = struct
   and map_toplevel_stmt stmt =
     let stmt = Map.enter_toplevel_stmt stmt in
     let ttop_desc = begin match stmt.ttop_desc with
-      | TTopData (decl) -> TTopData(map_data_declaration decl)
+      | TTopData decls -> TTopData(List.map map_data_declaration decls)
       | TTopForeign _
-      | TTopImport _  -> stmt.ttop_desc
-      | TTopLet (recflag, binds) -> TTopLet(recflag, map_bindings recflag binds)
+      | TTopImport _
+      | TTopExport _  -> stmt.ttop_desc
+      | TTopLet (exportflag, recflag, binds) -> TTopLet(exportflag, recflag, map_bindings recflag binds)
     end in
     Map.leave_toplevel_stmt {stmt with ttop_desc}
 
