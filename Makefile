@@ -1,23 +1,23 @@
-JBUILDER := $(shell command -v jbuilder 2> /dev/null)
+DUNE := $(shell command -v dune 2> /dev/null)
 
 default: check-libs
-	jbuilder build
+	dune build
 
-ifndef JBUILDER
-	$(error "jbuilder not found on your PATH. Please install jbuilder before building: opam install jbuilder")
+ifndef DUNE
+	$(error "dune not found on your PATH. Please install dune before building: opam install dune")
 endif
 
 tests:
-	jbuilder runtest
+	dune runtest
 
 install:
-	jbuilder install
+	dune install
 
 check-libs:
 	./tools/get-deps.sh
 
 clean:
-	jbuilder clean
+	dune clean
 
 EXAMPLEFILES=adder.gr lambda.gr domSimple.gr dom.gr
 EXAMPLES=$(patsubst %.gr,script/public/examples/%.wasm,$(EXAMPLEFILES))

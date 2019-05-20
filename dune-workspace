@@ -1,0 +1,2 @@
+(lang dune 1.5)
+(profile release)

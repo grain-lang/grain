@@ -16,14 +16,14 @@ check_installed() {
     fi
 }
 
-if [ -z "$GRAIN_FORCE_INSTALL" ] && is_installed jbuilder; then
-    JBUILDER_DEPS="$(cd ${GRAIN_DIR} && jbuilder external-lib-deps @install --missing)"
+if [ -z "$GRAIN_FORCE_INSTALL" ] && is_installed dune; then
+    DUNE_DEPS="$(cd ${GRAIN_DIR} && dune external-lib-deps @install --missing)"
 
-    if [ -z "${JBUILDER_DEPS}" ]; then
+    if [ -z "${DUNE_DEPS}" ]; then
         # Everything is installed
         exit 0
     else
-        echo "${JBUILDER_DEPS}"
+        echo "${DUNE_DEPS}"
         echo ""
         echo "Installing missing dependencies..."
     fi

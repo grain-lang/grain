@@ -1,0 +1,8 @@
+(library
+ (name grain_codegen)
+ (public_name grain_codegen)
+ (synopsis "Grain compiler code generation")
+ (libraries wasm stdint grain_parsing grain_typed grain_middle_end
+   grain_utils ppx_deriving ppx_sexp_conv sexplib)
+ (preprocess
+  (pps ppx_sexp_conv ppx_deriving)))
