@@ -1,9 +1,0 @@
-(jbuild_version 1)
-
-(library
- ((name        grain_typed)
-  (public_name grain_typed)
-  (synopsis "Grain compiler type utilities")
-  (libraries (grain_parsing grain_utils ppx_deriving ppx_sexp_conv sexplib yojson core ppx_deriving_yojson.runtime))
-  (preprocess (pps (ppx_sexp_conv ppx_deriving_yojson ppx_deriving)))))
-

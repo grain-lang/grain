@@ -1,0 +1,20 @@
+(executable
+ (name test)
+ (libraries grain oUnit extlib))
+
+(rule
+ (targets grain-root.txt)
+ (action
+  (write-file %{targets} %{workspace_root}/../install/default)))
+
+(alias
+ (name runtest)
+ (deps
+  (:< test.exe)
+  grain-root.txt
+  (source_tree input)
+  (source_tree test-libs)
+  (source_tree test-data))
+ (action
+  (run %{<})))
+  
