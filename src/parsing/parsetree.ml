@@ -41,9 +41,17 @@ type constructor_declaration = {
   pcd_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
 } [@@deriving sexp]
 
+(** Type for fields within a record *)
+type label_declaration = {
+  pld_name: Identifier.t loc;
+  pld_type: parsed_type;
+  pld_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
+} [@@deriving sexp]
+
 (** Different types of data which can be declared. Currently only one. *)
 type data_kind =
   | PDataVariant of constructor_declaration list
+  | PDataRecord of label_declaration list
 [@@deriving sexp]
 
 (** Type for data declarations. *)
@@ -114,6 +122,8 @@ and expression_desc =
   | PExpId of Identifier.t loc
   | PExpConstant of constant
   | PExpTuple of expression list
+  | PExpRecord of (Identifier.t loc * expression) list
+  | PExpRecordGet of expression * Identifier.t loc
   | PExpLet of rec_flag * value_binding list * expression
   | PExpMatch of expression * match_branch list
   | PExpPrim1 of prim1 * expression

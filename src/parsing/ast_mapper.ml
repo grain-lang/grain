@@ -9,6 +9,7 @@ type mapper = {
   typ: mapper -> parsed_type -> parsed_type;
   data: mapper -> data_declaration -> data_declaration;
   constructor: mapper -> constructor_declaration -> constructor_declaration;
+  label: mapper -> label_declaration -> label_declaration;
   location: mapper -> Location.t -> Location.t;
   import: mapper -> import_declaration list -> import_declaration list;
   export: mapper -> export_declaration list -> export_declaration list;
@@ -34,6 +35,8 @@ module E = struct
     | PExpId(i) -> ident ~loc (map_loc sub i)
     | PExpConstant(c) -> constant ~loc (sub.constant sub c)
     | PExpTuple(es) -> tuple ~loc (List.map (sub.expr sub) es)
+    | PExpRecord(es) -> record ~loc (List.map (fun (name, expr) -> map_loc sub name, (sub.expr sub expr)) es)
+    | PExpRecordGet(e, f) -> record_get ~loc (sub.expr sub e) (map_loc sub f)
     | PExpLet(r, vbs, e) -> let_ ~loc r (List.map (sub.value_binding sub) vbs) (sub.expr sub e)
     | PExpMatch(e, mbs) -> match_ ~loc (sub.expr sub e) (List.map (sub.match_branch sub) mbs)
     | PExpPrim1(p1, e) -> prim1 ~loc p1 (sub.expr sub e)
@@ -72,6 +75,14 @@ module C = struct
     | PConstrSingleton -> singleton ~loc sname
 end
 
+module L = struct
+  let map sub {pld_name = name; pld_type = typ; pld_loc = loc} =
+    let open LDecl in
+    let loc = sub.location sub loc in
+    let sname = map_loc sub name in
+    mk ~loc sname (sub.typ sub typ)
+end
+
 module D = struct
   let map sub{pdata_name = name; pdata_params = args; pdata_kind = kind; pdata_loc = loc} =
     let open Dat in
@@ -80,6 +91,7 @@ module D = struct
     let sargs = List.map (sub.typ sub) args in
     match kind with
     | PDataVariant cdl -> variant ~loc sname sargs (List.map (sub.constructor sub) cdl)
+    | PDataRecord ldl -> record ~loc sname sargs (List.map (sub.label sub) ldl)
 end
 
 module T = struct
@@ -181,6 +193,7 @@ let default_mapper = {
   typ = T.map;
   data = D.map;
   constructor = C.map;
+  label = L.map;
   location = (fun _ x -> x);
   import = I.map;
   export = Ex.map;

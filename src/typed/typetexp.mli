@@ -103,4 +103,5 @@ val lookup_module:
 val find_modtype:
     Env.t -> Location.t -> Identifier.t -> Path.t * modtype_declaration
 
+val unbound_label_error: Env.t -> Identifier.t Location.loc -> 'a
 val unbound_constructor_error: Env.t -> Identifier.t Location.loc -> 'a

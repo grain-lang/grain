@@ -684,7 +684,7 @@ let pats_of_type ?(always=false) env ty =
       begin try match (Env.find_type path env).type_kind with
       | TDataVariant cl when always || List.length cl = 1 ||
         List.for_all (fun cd -> cd.Types.cd_res <> None) cl ->
-          let cstrs = (Env.find_type_descrs path env) in
+          let cstrs, _ = (Env.find_type_descrs path env) in
           List.map (pat_of_constr (make_pat TPatAny ty env)) cstrs
       | _ -> [omega]
       with Not_found -> [omega]
@@ -713,7 +713,7 @@ let complete_constrs p all_tags =
   let c =
     match p.pat_desc with TPatConstruct (_, c, _) -> c | _ -> assert false in
   let not_tags = complete_tags c.cstr_consts c.cstr_nonconsts all_tags in
-  let constrs = get_variant_constructors p.pat_env c.cstr_res in
+  let constrs, _ = get_variant_constructors p.pat_env c.cstr_res in
   let others =
     List.filter
       (fun cnstr -> ConstructorTagHashtbl.mem not_tags cnstr.cstr_tag)

@@ -17,6 +17,7 @@
 open Asttypes
 open Types
 open Btype
+open Grain_parsing
 
 (* Simplified version of Ctype.free_vars *)
 let free_vars ?(param=false) ty =
@@ -88,7 +89,8 @@ let constructor_descrs ty_path decl cstrs =
           (Path.PExternal (ty_path, cstr_name, Path.nopos))
       in
       let cstr =
-        { cstr_name;
+        { 
+          cstr_name;
           cstr_res = ty_res;
           cstr_existentials = existentials;
           cstr_args;
@@ -100,6 +102,33 @@ let constructor_descrs ty_path decl cstrs =
         } in
       (cd_id, cstr) :: descr_rem in
   describe_constructors 0 0 cstrs
+
+let none = {desc = TTyTuple []; level = -1; id = -1}
+                                        (* Clearly ill-formed type *)
+let dummy_label =
+  { 
+    lbl_name = ""; lbl_res = none; lbl_arg = none;
+    lbl_pos = (-1); lbl_all = [||];
+    lbl_loc = Location.dummy_loc;
+  }
+
+let label_descrs ty_res lbls =
+  let all_labels = Array.make (List.length lbls) dummy_label in
+  let rec describe_labels num = function
+      [] -> []
+    | l :: rest ->
+        let lbl =
+          { 
+            lbl_name = Ident.name l.rf_name;
+            lbl_res = ty_res;
+            lbl_arg = l.rf_type;
+            lbl_pos = num;
+            lbl_all = all_labels;
+            lbl_loc = l.rf_loc;
+          } in
+        all_labels.(num) <- lbl;
+        (l.rf_name, lbl) :: describe_labels (num+1) rest in
+  describe_labels 0 lbls
 
 exception Constr_not_found
 
@@ -121,5 +150,13 @@ let find_constr_by_tag tag cstrlist =
 let constructors_of_type ty_path decl =
   match decl.type_kind with
   | TDataVariant cstrs -> constructor_descrs ty_path decl cstrs
+  | TDataRecord _
   | TDataAbstract -> []
+
+let labels_of_type ty_path decl =
+  match decl.type_kind with
+  | TDataRecord(labels) ->
+      label_descrs (newgenconstr ty_path decl.type_params)
+        labels
+  | TDataVariant _ | TDataAbstract -> []
 

@@ -66,6 +66,8 @@ let rec analyze_comp_expression ({comp_desc = desc; comp_analyses = analyses}) =
       false
     | CTuple _ ->
       true
+    | CRecord _ ->
+      true
     | CAdt _ ->
       true
     | CGetTupleItem _ ->

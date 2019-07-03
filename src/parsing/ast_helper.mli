@@ -44,6 +44,7 @@ module Typ : sig
   val tuple: ?loc:loc -> parsed_type list -> parsed_type
   val constr: ?loc:loc -> id -> parsed_type list -> parsed_type
   val poly: ?loc:loc -> str list -> parsed_type -> parsed_type
+  val force_poly: parsed_type -> parsed_type
 end
 
 module CDecl : sig
@@ -52,9 +53,14 @@ module CDecl : sig
   val tuple: ?loc:loc -> str -> parsed_type list -> constructor_declaration
 end
 
+module LDecl : sig
+  val mk: ?loc:loc -> id -> parsed_type -> label_declaration
+end
+
 module Dat : sig
   val mk: ?loc:loc -> str -> parsed_type list -> data_kind -> data_declaration
   val variant: ?loc:loc -> str -> parsed_type list -> constructor_declaration list -> data_declaration
+  val record: ?loc:loc -> str -> parsed_type list -> label_declaration list -> data_declaration
 end
 
 module Pat : sig
@@ -74,6 +80,8 @@ module Exp: sig
   val ident: ?loc:loc -> id -> expression
   val constant: ?loc:loc -> constant -> expression
   val tuple: ?loc:loc -> expression list -> expression
+  val record: ?loc:loc -> (id * expression) list -> expression
+  val record_get: ?loc:loc -> expression -> id -> expression
   val let_: ?loc:loc -> rec_flag -> value_binding list -> expression -> expression
   val match_: ?loc:loc -> expression -> match_branch list -> expression
   val prim1: ?loc:loc -> prim1 -> expression -> expression

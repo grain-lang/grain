@@ -44,6 +44,7 @@ let rec analyze_comp_expression ({comp_desc = desc; comp_analyses = analyses}) =
     false
   | CAssign _
   | CTuple _
+  | CRecord _
   | CAdt _
   | CSetTupleItem _
   | CGetTupleItem _

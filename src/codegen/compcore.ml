@@ -620,10 +620,16 @@ let allocate_tuple env elts =
   ]
 
 
+let allocate_record env elts =
+  let _, elts = List.split elts in
+  allocate_tuple env elts
+
+
 let compile_allocation env alloc_type =
   match alloc_type with
   | MClosure(cdata) -> allocate_closure env cdata
   | MTuple(elts) -> allocate_tuple env elts
+  | MRecord(elts) -> allocate_record env elts
   | MString(str) -> allocate_string env str
   | MADT(ttag, vtag, elts) -> allocate_adt env ttag vtag elts
 

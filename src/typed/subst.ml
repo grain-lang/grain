@@ -184,6 +184,13 @@ let constructor_declaration s c =
     cd_loc = loc s c.cd_loc;
   }
 
+let record_field s f =
+  {
+    rf_name = f.rf_name;
+    rf_type = typexp s f.rf_type;
+    rf_loc = loc s f.rf_loc;
+  }
+
 let type_declaration s decl =
   let decl =
     { type_params = List.map (typexp s) decl.type_params;
@@ -191,6 +198,8 @@ let type_declaration s decl =
       type_kind =
         begin match decl.type_kind with
           | TDataAbstract -> TDataAbstract
+          | TDataRecord fields ->
+            TDataRecord (List.map (record_field s) fields)
           | TDataVariant cstrs ->
             TDataVariant (List.map (constructor_declaration s) cstrs)
         end;

@@ -127,6 +127,43 @@ let make_params env params =
   in
     List.map make_param params
 
+let transl_labels env closed lbls =
+  assert (lbls <> []);
+  let all_labels = ref StringSet.empty in
+  List.iter
+    (fun {pld_name = {txt=name; loc}} ->
+        let name = Identifier.string_of_ident name in
+        if StringSet.mem name !all_labels then
+          raise(Error(loc, Duplicate_label name));
+       all_labels := StringSet.add name !all_labels)
+    lbls;
+  let mk {pld_name=name; pld_type=arg; pld_loc=loc;} =
+    (* Builtin_attributes.warning_scope attrs
+      (fun () -> *)
+        let arg = Ast_helper.Typ.force_poly arg in
+        let cty = transl_simple_type env closed arg in
+        {
+          rf_name = Ident.create_persistent (Identifier.last name.txt);
+          rf_type = cty; 
+          rf_loc = loc;
+        }
+      (* ) *)
+  in
+  let lbls = List.map mk lbls in
+  let lbls' =
+    List.map
+      (fun rf ->
+        let ty = rf.rf_type.ctyp_type in
+        let ty = match ty.desc with TTyPoly(t,[]) -> t | _ -> ty in
+        {
+          Types.rf_name = rf.rf_name;
+          rf_type = ty;
+          rf_loc = rf.rf_loc;
+        }
+      )
+      lbls in
+  lbls, lbls'
+
 
 let transl_constructor_arguments env closed = function
   | PConstrTuple l ->
@@ -243,6 +280,9 @@ let transl_declaration env sdecl id =
         in
         let tcstrs, cstrs = List.split (List.map make_cstr scstrs) in
           TDataVariant tcstrs, Types.TDataVariant cstrs
+      | PDataRecord lbls ->
+        let lbls, lbls' = transl_labels env true lbls in
+          TDataRecord lbls, Types.TDataRecord lbls'
       in
     let (tman, man) = None, None in (*match sdecl.ptype_manifest with
         None -> None, None
@@ -447,7 +487,7 @@ let check_abbrev_recursion env id_loc_list to_check tdecl =
 (* Check multiple declarations of labels/constructors *)
 
 let check_duplicates sdecl_list =
-  let (*labels = Hashtbl.create 7 and*) constrs = Hashtbl.create 7 in
+  let labels = Hashtbl.create 7 and constrs = Hashtbl.create 7 in
   List.iter
     (fun sdecl -> match sdecl.pdata_kind with
        | PDataVariant cl ->
@@ -461,7 +501,19 @@ let check_duplicates sdecl_list =
                       sdecl.ptype_name.txt))*)
               with Not_found ->
                 Hashtbl.add constrs pcd.pcd_name.txt sdecl.pdata_name.txt)
-           cl)
+          cl
+        | PDataRecord ll ->
+          List.iter
+           (fun pld ->
+              try
+                let name' = Hashtbl.find labels (Identifier.last pld.pld_name.txt) in ignore(name')
+                (*Location.prerr_warning pld.pcd_loc
+                  (Warnings.Duplicate_definitions
+                     ("constructor", pld.pcd_name.txt, name',
+                      sdecl.ptype_name.txt))*)
+              with Not_found ->
+                Hashtbl.add labels (Identifier.last pld.pld_name.txt) sdecl.pdata_name.txt)
+          ll)
     sdecl_list
 
 (* Force recursion to go through id for private types*)
