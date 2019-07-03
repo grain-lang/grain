@@ -159,15 +159,107 @@ module NameChoice(Name : sig
     lbl
 end
 
+module Label = NameChoice (struct
+  type t = label_description
+  let type_kind = "record"
+  let get_name lbl = lbl.lbl_name
+  let get_type lbl = lbl.lbl_res
+  let get_descrs = snd
+  let unbound_name_error = Typetexp.unbound_label_error
+  let in_env _ = true
+end)
+
 module Constructor = NameChoice (struct
   type t = constructor_description
   let type_kind = "variant"
   let get_name cstr = cstr.cstr_name
   let get_type cstr = cstr.cstr_res
-  let get_descrs d = d
+  let get_descrs = fst
   let unbound_name_error = Typetexp.unbound_constructor_error
   let in_env _ = true
 end)
+
+let disambiguate_label_by_ids keep closed ids labels =
+  let check_ids (lbl, _) =
+    let lbls = Hashtbl.create 8 in
+    Array.iter (fun lbl -> Hashtbl.add lbls lbl.lbl_name ()) lbl.lbl_all;
+    List.for_all (Hashtbl.mem lbls) ids
+  and check_closed (lbl, _) =
+    (not closed || List.length ids = Array.length lbl.lbl_all)
+  in
+  let labels' = List.filter check_ids labels in
+  if keep && labels' = [] then (false, labels) else
+  let labels'' = List.filter check_closed labels' in
+  if keep && labels'' = [] then (false, labels') else (true, labels'')
+
+(* Only issue warnings once per record constructor/pattern *)
+let disambiguate_lid_a_list loc closed env opath lid_a_list =
+  let ids = List.map (fun (lid, _) -> Identifier.last lid.txt) lid_a_list in
+  let w_pr = ref false and w_amb = ref []
+  and w_scope = ref [] and w_scope_ty = ref "" in
+  let warn loc msg =
+    let open Warnings in
+    match msg with
+    | NotPrincipal _ -> w_pr := true
+    | AmbiguousName([s], l, _) -> w_amb := (s, l) :: !w_amb
+    | NameOutOfScope(ty, [s], _) ->
+        w_scope := s :: !w_scope; w_scope_ty := ty
+    | _ -> Location.prerr_warning loc msg
+  in
+  let process_label lid =
+    (* Strategy for each field:
+       * collect all the labels in scope for that name
+       * if the type is known and principal, just eventually warn
+         if the real label was not in scope
+       * fail if there is no known type and no label found
+       * otherwise use other fields to reduce the list of candidates
+       * if there is no known type reduce it incrementally, so that
+         there is still at least one candidate (for error message)
+       * if the reduced list is valid, call Label.disambiguate
+     *)
+    try
+      let labels = Env.lookup_all_labels lid.txt env in
+      if List.length labels = 0 then raise Not_found;
+      let (ok, lbls) =
+        match opath with
+        | Some (_, _, true) ->
+            (true, labels) (* disambiguate only checks scope *)
+        | _  -> disambiguate_label_by_ids (opath=None) closed ids labels
+      in
+      if ok then Label.disambiguate lid env opath lbls ~warn
+      else fst (List.hd lbls) (* will fail later *)
+    with Not_found ->
+      match opath with
+      | None -> 
+        Env.error (Env.Unbound_label(lid.loc, Identifier.string_of_ident lid.txt))
+      | Some _ ->
+        Label.disambiguate lid env opath [] ~warn
+  in
+  let lbl_a_list =
+    List.map (fun (lid,a) -> lid, process_label lid, a) lid_a_list in
+  if !w_pr then
+    Location.prerr_warning loc
+      (Warnings.NotPrincipal "this type-based record disambiguation")
+  else begin
+    match List.rev !w_amb with
+      (_, types)::_ as amb ->
+        let paths =
+          List.map (fun (_,lbl,_) -> Label.get_type_path lbl) lbl_a_list in
+        let path = List.hd paths in
+        if List.for_all (compare_type_path env path) (List.tl paths) then
+          Location.prerr_warning loc
+            (Warnings.AmbiguousName (List.map fst amb, types, true))
+        else
+          List.iter
+            (fun (s, l) -> Location.prerr_warning loc
+                (Warnings.AmbiguousName ([s], l, false)))
+            amb
+    | _ -> ()
+  end;
+  if !w_scope <> [] then
+    Location.prerr_warning loc
+      (Warnings.NameOutOfScope (!w_scope_ty, List.rev !w_scope, true));
+  lbl_a_list
 
 
 (* Error report *)

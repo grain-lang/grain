@@ -95,6 +95,18 @@ let fix_blocks ({statements; body} as prog) =
    statements=List.map (mapper.toplevel mapper) statements;
    body=mapper.expr mapper body}
 
+let block_resembles_record exprs =
+  match exprs with
+  | {pexp_desc=PExpId {txt=IdentName _}}::_ -> true
+  | _ -> false
+
+let is_uppercase_ident expr =
+  match expr.pexp_desc with
+  | PExpId {txt=id} ->
+    let first_char = String.get (Identifier.last id) 0 in
+    first_char = BatChar.uppercase first_char
+  | _ -> false
+
 
 let mkid ns =
   let help ns =
@@ -183,6 +195,10 @@ binop_expr :
   | non_assign_expr { $1 } pe
   | assign_expr { $1 } pa
 
+non_binop_expr :
+  | non_assign_expr { $1 } pe
+  | assign_expr { $1 } pa
+
 pattern :
   | pattern COLON typ { Pat.constraint_ ~loc:(symbol_rloc dyp) $1 $3 }
   | UNDERSCORE { Pat.any ~loc:(symbol_rloc dyp) () }
@@ -252,9 +268,15 @@ data_constructors :
   | data_constructor [PIPE data_constructor {$2}]* { $1::$2 }
   | [PIPE data_constructor {$2}]+ { $1 }
 
+data_label :
+  | simple_id COLON typ { LDecl.mk ~loc:(symbol_rloc dyp) $1 $3 }
+
+data_labels :
+  | LBRACE data_label [COMMA data_label {$2}]* RBRACE { $2::$3 }
+
 data_declaration :
-  | DATA TYPEID EQUAL data_constructors { Dat.mk ~loc:(symbol_rloc dyp) (mkstr dyp $2) [] (PDataVariant $4) }
-  | DATA TYPEID LCARET ID [COMMA ID {$2}]* RCARET EQUAL data_constructors { Dat.mk ~loc:(symbol_rloc dyp) (mkstr dyp $2) (List.map Typ.var ($4::$5)) (PDataVariant $8) }
+  | DATA TYPEID [LCARET ID [COMMA ID {$2}]* RCARET {$2::$3}]? EQUAL data_constructors { Dat.variant ~loc:(symbol_rloc dyp) (mkstr dyp $2) (List.map Typ.var (Option.default [] $3)) $5 }
+  | DATA TYPEID [LCARET ID [COMMA ID {$2}]* RCARET {$2::$3}]? EQUAL data_labels { Dat.record ~loc:(symbol_rloc dyp) (mkstr dyp $2) (List.map Typ.var (Option.default [] $3)) $5 }
 
 prim1_expr :
   | prim1 LPAREN expr RPAREN { Exp.prim1 ~loc:(symbol_rloc dyp) $1 $3 }
@@ -273,12 +295,11 @@ app_expr :
 ext_constructor :
   | TYPEID [DOT TYPEID {$2}]+ { prerr_string "\nid\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); (mkid ($1::$2)) (symbol_rloc dyp) }
 
-any_id :
-  | ID
-  | TYPEID
-
 id :
-  | any_id [DOT any_id {$2}]* { prerr_string "\nid\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); (mkid ($1::$2)) (symbol_rloc dyp) }
+  | [TYPEID DOT {$1}]* ID { prerr_string "\nid\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); (mkid (List.append $1 [$2])) (symbol_rloc dyp) }
+
+simple_id :
+  | ID { (mkid [$1]) (symbol_rloc dyp) }
 
 type_id :
   | TYPEID { prerr_string "\nid\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); (mkid [$1]) (symbol_rloc dyp) }
@@ -289,27 +310,31 @@ id_expr :
 simple_expr :
   | const { Exp.constant ~loc:(symbol_rloc dyp) $1 }
   | LPAREN tuple_exprs RPAREN { Exp.tuple ~loc:(symbol_rloc dyp) $2 }
+  | LBRACE record_exprs RBRACE { Exp.record ~loc:(symbol_rloc dyp) $2 }
   | id_expr { $1 }
 
 block_expr :
-  | LBRACE block RBRACE { Exp.block ~loc:(symbol_rloc dyp) $2 }
+  | LBRACE block_body RBRACE { if block_resembles_record $2 then raise Dyp.Giveup else Exp.block ~loc:(symbol_rloc dyp) $2 }
+
+block :
+  | LBRACE block_body RBRACE { Exp.block ~loc:(symbol_rloc dyp) $2 }
 
 lam_args :
   | patterns? { Option.default [] $1 }
 
 lam_expr :
-  | LPAREN lam_args RPAREN THICKARROW block_expr { Exp.lambda ~loc:(symbol_rloc dyp) $2 $5 }
+  | LPAREN lam_args RPAREN THICKARROW block { Exp.lambda ~loc:(symbol_rloc dyp) $2 $5 }
 
 let_expr :
   | LET REC value_binds { Exp.let_ ~loc:(symbol_rloc dyp) Recursive $3 (Exp.block []) }
   | LET value_binds { Exp.let_ ~loc:(symbol_rloc dyp) Nonrecursive $2 (Exp.block []) }
 
 if_expr :
-  | IF expr block_expr { Exp.if_ ~loc:(symbol_rloc dyp) $2 $3 (Exp.block []) }
-  | IF expr block_expr ELSE block_expr { Exp.if_ ~loc:(symbol_rloc dyp) $2 $3 $5 }
+  | IF expr block { Exp.if_ ~loc:(symbol_rloc dyp) $2 $3 (Exp.block []) }
+  | IF expr block ELSE block { Exp.if_ ~loc:(symbol_rloc dyp) $2 $3 $5 }
 
 while_expr :
-  | WHILE LPAREN expr RPAREN block_expr { Exp.while_ ~loc:(symbol_rloc dyp) $3 $5 }
+  | WHILE LPAREN expr RPAREN block { Exp.while_ ~loc:(symbol_rloc dyp) $3 $5 }
 
 match_branch :
   | pattern THICKARROW expr { Mb.mk ~loc:(symbol_rloc dyp) $1 $3 }
@@ -326,6 +351,7 @@ assign_expr :
 non_assign_expr :
   | app_expr    { prerr_string "\nexpr_app_expr\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); $1 }
   | simple_expr { prerr_string "\nexpr_simple_expr\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); $1 }
+  | record_get  { $1 }
   | paren_expr  { $1 }
   | prim1_expr  { $1 }
   | block_expr  { $1 }
@@ -342,7 +368,19 @@ tuple_exprs :
   | expr COMMA { [$1] }
   | expr [COMMA expr {$2}]+ { $1::$2 }
 
-block :
+record_get :
+  | non_binop_expr DOT simple_id { if is_uppercase_ident $1 then raise Dyp.Giveup else Exp.record_get $1 $3 }
+
+record_field :
+  | id COLON expr { $1, $3 }
+
+record_pun :
+  | ID { mkid [$1] (symbol_rloc dyp), Exp.ident ~loc:(symbol_rloc dyp) (mkid [$1] (symbol_rloc dyp)) }
+
+record_exprs :
+  | [record_field | record_pun] [COMMA [record_field | record_pun] {$2}]* {$1::$2}
+
+block_body :
   | block_body_expr [SEMI block_body_expr {$2}]* { $1::$2 }
 
 file_path :

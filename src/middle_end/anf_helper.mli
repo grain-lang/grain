@@ -3,6 +3,7 @@ open Grain_typed
 open Types
 open Anftree
 
+type str = string loc
 type loc = Location.t
 type env = Env.t
 type ident = Ident.t
@@ -20,6 +21,7 @@ module Comp : sig
   val prim2 : ?loc:loc -> ?env:env -> prim2 -> imm_expression -> imm_expression -> comp_expression
   val assign : ?loc:loc -> ?env:env -> imm_expression -> imm_expression -> comp_expression
   val tuple : ?loc:loc -> ?env:env -> imm_expression list -> comp_expression
+  val record : ?loc:loc -> ?env:env -> (str * imm_expression) list -> comp_expression
   val adt : ?loc:loc -> ?env:env -> imm_expression -> imm_expression -> imm_expression list -> comp_expression
   val tuple_get : ?loc:loc -> ?env:env -> int32 -> imm_expression -> comp_expression
   val tuple_set : ?loc:loc -> ?env:env -> int32 -> imm_expression -> imm_expression -> comp_expression

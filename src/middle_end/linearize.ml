@@ -184,6 +184,19 @@ let rec transl_imm (({exp_desc; exp_loc=loc; exp_env=env; _} as e) : expression)
     let tmp = gensym "tup" in
     let (new_args, new_setup) = List.split (List.map transl_imm args) in
     (Imm.id ~loc ~env tmp, (List.concat new_setup) @ [BLet(tmp, Comp.tuple ~loc ~env new_args)])
+  | TExpRecord(args) ->
+    let tmp = gensym "record" in
+    let definitions = Array.to_list @@ Array.map (fun (desc, def) -> def) args in
+    let definitions = List.map (function Kept _ -> assert false | Overridden(name, def) -> name, def) definitions in
+    let (new_args, new_setup) = List.split (List.map (fun ({txt=name; loc}, expr) -> 
+        let (var, setup) = transl_imm expr in 
+        (Location.mkloc (Identifier.string_of_ident name) loc, var), setup) definitions
+      ) in
+    (Imm.id ~loc ~env tmp, (List.concat new_setup) @ [BLet(tmp, Comp.record ~loc ~env new_args)])
+  | TExpRecordGet(expr, field, ld) ->
+    let tmp = gensym "field" in
+    let (var, setup) = transl_imm expr in 
+    (Imm.id ~loc ~env tmp, setup @ [BLet(tmp, Comp.tuple_get ~loc ~env (Int32.of_int ld.lbl_pos) var)])
   | TExpMatch(exp, branches, _) ->
     let tmp = gensym "match" in
     let exp_ans, exp_setup = transl_imm exp in
@@ -360,37 +373,44 @@ let rec transl_anf_statement (({ttop_desc; ttop_env=env; ttop_loc=loc} as s) : t
   | TTopData(decls) ->
     let open Types in
     let bindings = List.concat @@ List.map (fun decl ->
-      let typath = Path.PIdent (decl.data_id) in
-      (* FIXME: [philip] This is kind of hacky...would be better to store this in the Env directly...not to mention, 
-        I think this'll be much more fragile than if it were in the static info *)
-      let ty_id = begin match PathMap.find_opt type_map typath with
-        | Some(id) -> id
-        | None ->
-          let id = PathMap.length type_map in
-          PathMap.add type_map typath id;
-          id
-      end in
-      let descrs = Datarepr.constructors_of_type typath (decl.data_type) in
-      begin match descrs with
-        | [] -> failwith "Impossible: TTopData TDataAbstract"
-        | descrs ->
-          let bind_constructor (cd_id, {cstr_name; cstr_tag; cstr_args}) =
-            let rhs = match cstr_tag with
-              | CstrConstant _ ->
-                let compiled_tag = compile_constructor_tag cstr_tag in
-                Comp.adt ~loc ~env (Imm.const ~loc ~env (Const_int ty_id)) (Imm.const ~loc ~env (Const_int compiled_tag)) []
-              | CstrBlock _ ->
-                let compiled_tag = compile_constructor_tag cstr_tag in
-                let args = List.map (fun _ -> gensym "constr_arg") cstr_args in
-                let arg_ids = List.map (fun a -> Imm.id ~loc ~env a) args in
-                let imm_tytag = Imm.const ~loc ~env (Const_int ty_id) in
-                let imm_tag = Imm.const ~loc ~env (Const_int compiled_tag) in
-                Comp.lambda ~loc ~env args (AExp.comp ~loc ~env (Comp.adt ~loc ~env imm_tytag imm_tag arg_ids))
-              | CstrUnboxed -> failwith "NYI: ANF CstrUnboxed" in
-            BLetExport(Nonrecursive, [cd_id, rhs]) in
-          List.map bind_constructor descrs
-      end) decls in
-      Some(bindings), []
+      match decl.data_kind with
+      | TDataVariant _ ->
+        let typath = Path.PIdent (decl.data_id) in
+        (* FIXME: [philip] This is kind of hacky...would be better to store this in the Env directly...not to mention, 
+          I think this'll be much more fragile than if it were in the static info *)
+        let ty_id = begin match PathMap.find_opt type_map typath with
+          | Some(id) -> id
+          | None ->
+            let id = PathMap.length type_map in
+            PathMap.add type_map typath id;
+            id
+        end in
+        let descrs = Datarepr.constructors_of_type typath (decl.data_type) in
+        begin match descrs with
+          | [] -> failwith "Impossible: TTopData TDataAbstract"
+          | descrs ->
+            let bind_constructor (cd_id, {cstr_name; cstr_tag; cstr_args}) =
+              let rhs = match cstr_tag with
+                | CstrConstant _ ->
+                  let compiled_tag = compile_constructor_tag cstr_tag in
+                  Comp.adt ~loc ~env (Imm.const ~loc ~env (Const_int ty_id)) (Imm.const ~loc ~env (Const_int compiled_tag)) []
+                | CstrBlock _ ->
+                  let compiled_tag = compile_constructor_tag cstr_tag in
+                  let args = List.map (fun _ -> gensym "constr_arg") cstr_args in
+                  let arg_ids = List.map (fun a -> Imm.id ~loc ~env a) args in
+                  let imm_tytag = Imm.const ~loc ~env (Const_int ty_id) in
+                  let imm_tag = Imm.const ~loc ~env (Const_int compiled_tag) in
+                  Comp.lambda ~loc ~env args (AExp.comp ~loc ~env (Comp.adt ~loc ~env imm_tytag imm_tag arg_ids))
+                | CstrUnboxed -> failwith "NYI: ANF CstrUnboxed" in
+              BLetExport(Nonrecursive, [cd_id, rhs]) in
+            List.map bind_constructor descrs
+        end
+      | TDataRecord _ -> []
+      ) decls in
+      if List.length bindings > 0 then
+        Some(bindings), []
+      else
+        None, []
   | TTopForeign(desc) ->
     let arity = Ctype.arity (desc.tvd_desc.ctyp_type) in
     None, [Imp.wasm_func desc.tvd_id desc.tvd_mod.txt desc.tvd_name.txt (FunctionShape(arity, 1))]

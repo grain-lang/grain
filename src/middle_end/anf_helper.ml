@@ -2,6 +2,7 @@ open Grain_parsing
 open Grain_typed
 open Anftree
 
+type str = string loc
 type loc = Location.t
 type env = Env.t
 type ident = Ident.t
@@ -33,6 +34,7 @@ module Comp = struct
   let prim2 ?loc ?env p2 a1 a2 = mk ?loc ?env (CPrim2(p2, a1, a2))
   let assign ?loc ?env a1 a2 = mk ?loc ?env (CAssign(a1, a2))
   let tuple ?loc ?env elts = mk ?loc ?env (CTuple elts)
+  let record ?loc ?env elts = mk ?loc ?env (CRecord elts)
   let adt ?loc ?env ttag vtag elts = mk ?loc ?env (CAdt(ttag, vtag, elts))
   let tuple_get ?loc ?env idx tup = mk ?loc ?env (CGetTupleItem(idx, tup))
   let tuple_set ?loc ?env idx tup value = mk ?loc ?env (CSetTupleItem(idx, tup, value))

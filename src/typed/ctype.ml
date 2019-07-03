@@ -208,6 +208,7 @@ let in_pervasives p =
 
 let is_datatype decl=
   match decl.type_kind with
+  | TDataRecord _
   | TDataVariant _ -> true
   | TDataAbstract -> false
 
@@ -273,6 +274,8 @@ let closed_type_decl decl =
     List.iter mark_type decl.type_params;
     begin match decl.type_kind with
       | TDataAbstract -> ()
+      | TDataRecord fields ->
+        List.iter (fun {rf_type} -> closed_type rf_type) fields
       | TDataVariant v ->
         List.iter
           (fun {cd_args; cd_res; _} ->
@@ -775,6 +778,8 @@ let instance_parameterized_type_2 sch_args sch_lst sch =
 
 let map_kind f = function
   | TDataAbstract -> TDataAbstract
+  | TDataRecord fields ->
+    TDataRecord (List.map (fun field -> {field with rf_type=(f field.rf_type)}) fields)
   | TDataVariant cl ->
     TDataVariant (
       List.map
@@ -848,6 +853,21 @@ let rec copy_sep fixed free bound visited ty =
         t
       end
 
+let instance_poly' ~keep_names fixed univars sch =
+  let univars = List.map repr univars in
+  let copy_var ty =
+    match ty.desc with
+      TTyUniVar name -> if keep_names then newty (TTyVar name) else newvar ()
+    | _ -> assert false
+  in
+  let vars = List.map copy_var univars in
+  let pairs = List.map2 (fun u v -> u, (v, [])) univars vars in
+  delayed_copy := [];
+  let ty = copy_sep fixed (compute_univars sch) [] pairs sch in
+  List.iter Lazy.force !delayed_copy;
+  delayed_copy := [];
+  vars, ty
+
 let instance_poly ?(keep_names=false) fixed univars sch =
   let univars = List.map repr univars in
   let copy_var ty =
@@ -863,6 +883,17 @@ let instance_poly ?(keep_names=false) fixed univars sch =
   delayed_copy := [];
   cleanup_types ();
   vars, ty
+
+let instance_label fixed lbl =
+  let ty_res = copy lbl.lbl_res in
+    let vars, ty_arg =
+      match repr lbl.lbl_arg with
+        {desc = TTyPoly (ty, tl)} ->
+          instance_poly' ~keep_names:false fixed tl ty
+      | _ ->
+          [], copy lbl.lbl_arg
+    in
+    (vars, ty_arg, ty_res)
 
 (**** Instantiation with parameter substitution ****)
 

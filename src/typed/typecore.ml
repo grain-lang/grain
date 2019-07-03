@@ -156,6 +156,17 @@ let extract_concrete_variant env ty =
   | (p0, p, {type_kind=TDataVariant cstrs}) -> (p0, p, cstrs)
   | _ -> raise Not_found
 
+let extract_concrete_record env ty =
+  match extract_concrete_typedecl env ty with
+    (p0, p, {type_kind=TDataRecord fields}) -> (p0, p, fields)
+  | _ -> raise Not_found
+
+let extract_label_names env ty =
+  try
+    let (_, _,fields) = extract_concrete_record env ty in
+    List.map (fun l -> l.Types.rf_name) fields
+  with Not_found ->
+    assert false
 
 (* Typing of patterns *)
 
@@ -222,6 +233,7 @@ let rec is_nonexpansive exp =
   | TExpConstruct(_, _, el) -> List.for_all is_nonexpansive el
   | _ -> false
 
+let maybe_expansive e = not (is_nonexpansive e)
 
 (* Approximate the type of an expression, for better recursion *)
 
@@ -253,7 +265,42 @@ let rec type_approx env (sexp : Parsetree.expression) =
   | PExpBlock ((_::_) as es) -> type_approx env (last es)
   | _ -> newvar()
   
-
+let rec find_record_qual = function
+  | [] -> None
+  | ({ txt = Identifier.IdentExternal (modname, _) }, _) :: _ -> Some modname
+  | _ :: rest -> find_record_qual rest
+  
+let type_label_a_list ?labels loc closed env type_lbl_a opath lid_a_list k =
+  let lbl_a_list =
+    match lid_a_list, labels with
+      ({txt=Identifier.IdentName s}, _)::_, Some labels when Hashtbl.mem labels s ->
+        (* Special case for rebuilt syntax trees *)
+        List.map
+          (function lid, a -> match lid.txt with
+            Identifier.IdentName s -> lid, Hashtbl.find labels s, a
+          | _ -> assert false)
+          lid_a_list
+    | _ ->
+        let lid_a_list =
+          match find_record_qual lid_a_list with
+            None -> lid_a_list
+          | Some modname ->
+              List.map
+                (fun (lid, a as lid_a) ->
+                  match lid.txt with Identifier.IdentName s ->
+                    {lid with txt=Identifier.IdentExternal (modname, s)}, a
+                  | _ -> lid_a)
+                lid_a_list
+        in
+        disambiguate_lid_a_list loc closed env opath lid_a_list
+  in
+  (* Invariant: records are sorted in the typed tree *)
+  let lbl_a_list =
+    List.sort
+      (fun (_,lbl1,_) (_,lbl2,_) -> compare lbl1.lbl_pos lbl2.lbl_pos)
+      lbl_a_list
+  in
+  map_fold_cont type_lbl_a lbl_a_list k
 
 (* Check that all univars are safe in a type *)
 let check_univars env expans kind exp ty_expected vars =
@@ -414,6 +461,103 @@ and type_expect_ ?in_function ?(recarg=Rejected) env sexp ty_expected_explained 
       exp_type = newty (TTyTuple (List.map (fun e -> e.exp_type) expl));
       exp_env = env
     }
+  | PExpRecord es ->
+    let ty_record, opath =
+      let get_path ty =
+        try
+          let (p0, p, _) = extract_concrete_record env ty in
+          let principal =
+            (repr ty).level = generic_level
+          in
+          Some (p0, p, principal)
+        with Not_found -> None
+      in
+      match get_path ty_expected with
+      | None ->
+        newvar (), None
+      | op -> ty_expected, op
+    in
+    let closed = true in
+    let lbl_exp_list =
+      wrap_disambiguate "This record expression is expected to have"
+        (mk_expected ty_record)
+        (type_label_a_list loc closed env
+            (fun e k -> k (type_label_exp true env loc ty_record e))
+            opath es)
+        (fun x -> x)
+    in
+    (* let subtypes = List.map (fun ({txt=name}, _) -> Identifier.string_of_ident name, newgenvar()) es in
+    let to_unify = newgenty (TTyRecord subtypes) in *)
+    with_explanation (fun () ->
+        unify_exp_types loc env ty_record (instance env ty_expected));
+    (* let expl =
+      List.map2 (fun (name, body) (_, ty_body) -> name, type_expect env body (mk_expected ty_body))
+        es subtypes
+    in *)
+    (* type_label_a_list returns a list of labels sorted by lbl_pos *)
+    (* note: check_duplicates would better be implemented in
+        type_label_a_list directly *)
+    let rec check_duplicates = function
+      | (_, lbl1, _) :: (_, lbl2, _) :: _ when lbl1.lbl_pos = lbl2.lbl_pos ->
+        raise(Error(loc, env, Label_multiply_defined lbl1.lbl_name))
+      | _ :: rem ->
+          check_duplicates rem
+      | [] -> ()
+    in
+    check_duplicates lbl_exp_list;
+    let label_definitions =
+      let (_lid, lbl, _lbl_exp) = List.hd lbl_exp_list in
+      let matching_label lbl =
+        List.find
+          (fun (_, lbl',_) -> lbl'.lbl_pos = lbl.lbl_pos)
+          lbl_exp_list
+      in
+      Array.map (fun lbl ->
+          match matching_label lbl with
+          | (lid, _lbl, lbl_exp) ->
+            Overridden (lid, lbl_exp)
+          | exception Not_found ->
+            let present_indices =
+              List.map (fun (_, lbl, _) -> lbl.lbl_pos) lbl_exp_list
+            in
+            let label_names = extract_label_names env ty_expected in
+            let rec missing_labels n = function
+                [] -> []
+              | lbl :: rem ->
+                  if List.mem n present_indices
+                  then missing_labels (n + 1) rem
+                  else lbl :: missing_labels (n + 1) rem
+            in
+            let missing = missing_labels 0 label_names in
+            raise(Error(loc, env, Label_missing missing)))
+        lbl.lbl_all
+    in
+    let label_descriptions =
+      let (_, { lbl_all }, _) = List.hd lbl_exp_list in
+      lbl_all
+    in
+    let fields =
+      Array.map2 (fun descr def -> descr, def)
+        label_descriptions label_definitions
+    in
+    re {
+      exp_desc = TExpRecord fields;
+      exp_loc = loc;
+      exp_extra = [];
+      exp_type = instance env ty_expected;
+      exp_env = env
+    }
+  | PExpRecordGet(srecord, lid) ->
+      let (record, label, _) = type_label_access env srecord lid in
+      let (_, ty_arg, ty_res) = instance_label false label in
+      unify_exp env record ty_res;
+      rue {
+        exp_desc = TExpRecordGet(record, lid, label);
+        exp_loc = loc; 
+        exp_extra = [];
+        exp_type = ty_arg;
+        exp_env = env 
+      }
   | PExpLet(rec_flag, pats, body) ->
     let scp = None in
     let (pat_exp_list, new_env, unpacks) =
@@ -1153,6 +1297,72 @@ and type_let ?(check = fun s -> Warnings.Unused_var s)
       l;
   (l, new_env, unpacks)
 
+and type_label_access env srecord lid =
+  (* if !Clflags.principal then begin_def (); *)
+  let record = type_exp ~recarg:Allowed env srecord in
+  (* if !Clflags.principal then begin *)
+    (* end_def (); *)
+    (* generalize_structure record.exp_type *)
+  (* end; *)
+  let ty_exp = record.exp_type in
+  let opath =
+    try
+      let (p0, p,_) = extract_concrete_record env ty_exp in
+      Some(p0, p, (repr ty_exp).level = generic_level (*|| not !Clflags.principal*))
+    with Not_found -> None
+  in
+  let labels = Env.lookup_all_labels lid.txt env in
+  let label =
+    wrap_disambiguate "This expression has" (mk_expected ty_exp)
+      (Label.disambiguate lid env opath) labels in
+  (record, label, opath)
+
+and type_label_exp create env loc ty_expected
+          (lid, label, sarg) =
+  (* Here also ty_expected may be at generic_level *)
+  begin_def ();
+  let separate = !Clflags.principal || Env.has_local_constraints env in
+  if separate then (begin_def (); begin_def ());
+  let (vars, ty_arg, ty_res) = instance_label true label in
+  if separate then begin
+    end_def ();
+    (* Generalize label information *)
+    generalize_structure ty_arg;
+    generalize_structure ty_res
+  end;
+  begin try
+    unify env (instance env ty_res) (instance env ty_expected)
+  with Unify trace ->
+    raise (Error(lid.loc, env, Label_mismatch(lid.txt, trace)))
+  end;
+  (* Instantiate so that we can generalize internal nodes *)
+  let ty_arg = instance env ty_arg in
+  if separate then begin
+    end_def ();
+    (* Generalize information merged from ty_expected *)
+    generalize_structure ty_arg
+  end;
+  let arg =
+    let snap = if vars = [] then None else Some (Btype.snapshot ()) in
+    let arg = List.hd @@ type_arguments env [sarg] [ty_arg] [(instance env ty_arg)] in
+    end_def ();
+    try
+      check_univars env (vars <> []) "field value" arg label.lbl_arg vars;
+      arg
+    with exn when maybe_expansive arg -> try
+      (* Try to retype without propagating ty_arg, cf PR#4862 *)
+      Option.may Btype.backtrack snap;
+      begin_def ();
+      let arg = type_exp env sarg in
+      end_def ();
+      generalize_expansive env arg.exp_type;
+      unify_exp env arg ty_arg;
+      check_univars env false "field value" arg label.lbl_arg vars;
+      arg
+    with Error (_, _, Less_general _) as e -> raise e
+    | _ -> raise exn    (* In case of failure return the first error *)
+  in
+  (lid, label, {arg with exp_type = instance env arg.exp_type})
 
 let check_recursive_bindings env vbs =
   (* TODO: Implement *)

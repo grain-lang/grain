@@ -342,7 +342,7 @@ let import_tests = [
   (* import * tests *)
   t "import_all" "import * from 'exportStar'; {print(x); print(y(4)); z}" "5\n4\n\"foo\"";
   t "import_all_except" "import * except {y} from 'exportStar'; {print(x); z}" "5\n\"foo\"";
-  t "import_all_except_multiple" "import * except {x, y} from 'exportStar'; {z}" "\"foo\"";
+  t "import_all_except_multiple" "import * except {x, y} from 'exportStar'; z" "\"foo\"";
   t "import_all_constructor" "import * from 'lists'; Cons(2, Empty)" "Cons(2, Empty)";
   t "import_all_except_constructor" "import * except {Cons} from 'lists'; Empty" "Empty";
   t "import_all_except_multiple_constructor" "import * except {Cons, append} from 'lists'; sum(Empty)" "0";

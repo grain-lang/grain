@@ -71,6 +71,7 @@ end = struct
         iter_core_type ret
       | TTyConstr(_, _, args)
       | TTyTuple(args) -> List.iter iter_core_type args
+      | TTyRecord(args) -> List.iter (fun (_, arg) -> iter_core_type arg) args
       | TTyPoly(_, typ) -> iter_core_type typ
     end;
     Iter.leave_core_type ct
@@ -101,6 +102,9 @@ end = struct
     iter_constructor_arguments cd_args;
     may_iter iter_core_type cd_res
 
+  and iter_record_field {rf_type} =
+    iter_core_type rf_type
+
   and iter_type_parameter ct =
     iter_core_type ct
 
@@ -109,6 +113,7 @@ end = struct
     List.iter iter_type_parameter decl.data_params;
     begin match decl.data_kind with
       | TDataVariant cstrs -> List.iter iter_constructor_declaration cstrs
+      | TDataRecord labels -> List.iter iter_record_field labels
     end;
     Iter.leave_data_declaration decl
 
@@ -179,6 +184,12 @@ end = struct
       | TExpMatch(value, branches, _) ->
         iter_expression value;
         iter_match_branches branches
+      | TExpRecord(args) ->
+        Array.iter (function 
+          | (_, Overridden(_, expr)) -> iter_expression expr
+          | _ -> ()
+        ) args
+      | TExpRecordGet(expr, _, _) -> iter_expression expr
       | TExpTuple(args)
       | TExpBlock(args)
       | TExpConstruct(_, _, args) -> List.iter iter_expression args

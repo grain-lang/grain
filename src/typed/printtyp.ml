@@ -121,6 +121,8 @@ and raw_type_desc ppf = function
       (safe_commu_repr [] c)
   | TTyTuple tl ->
     fprintf ppf "@[<1>TTyTuple@,%a@]" raw_type_list tl
+  | TTyRecord tl ->
+    fprintf ppf "@[<1>TTyRecord@,%a@]" (raw_list (fun ppf (name, arg) -> fprintf ppf "%s=%a" name raw_type arg)) tl
   | TTyConstr (p, tl, abbrev) ->
     fprintf ppf "@[<hov1>TTyConstr(@,%a,@,%a,@,%a)@]" path p
       raw_type_list tl
@@ -416,6 +418,7 @@ let rec mark_loops_rec visited ty =
     | TTyArrow(ty1, ty2, _) ->
       List.iter (mark_loops_rec visited) ty1; mark_loops_rec visited ty2
     | TTyTuple tyl -> List.iter (mark_loops_rec visited) tyl
+    | TTyRecord tyl -> List.iter (fun (_, arg) -> (mark_loops_rec visited) arg) tyl
     | TTyConstr(p, tyl, _) ->
       let (_p', s) = best_type_path p in
       List.iter (mark_loops_rec visited) (apply_subst s tyl)
@@ -469,6 +472,8 @@ let rec tree_of_typexp sch ty =
         pr_arrow ty1 ty2
       | TTyTuple tyl ->
         Otyp_tuple (tree_of_typlist sch tyl)
+      | TTyRecord tyl ->
+        Otyp_record (List.map (fun (name, arg) -> (name, false, tree_of_typexp sch arg)) tyl)
       | TTyConstr(p, tyl, _abbrev) ->
         let p', s = best_type_path p in
         let tyl' = apply_subst s tyl in
@@ -598,6 +603,8 @@ let rec tree_of_type_decl id decl =
   in
   begin match decl.type_kind with
     | TDataAbstract -> ()
+    | TDataRecord fields ->
+      List.iter (fun {rf_type} -> mark_loops rf_type) fields
     | TDataVariant cstrs ->
       List.iter
         (fun c ->
@@ -637,6 +644,8 @@ let rec tree_of_type_decl id decl =
         | Some ty ->
           tree_of_typexp false ty
       end
+    | TDataRecord fields ->
+      Otyp_record (List.map (fun {rf_name; rf_type} -> Ident.name rf_name, false, tree_of_typexp false rf_type) fields)
     | TDataVariant cstrs ->
       tree_of_manifest (Otyp_sum (List.map tree_of_constructor cstrs))
   in

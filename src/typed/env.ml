@@ -23,7 +23,7 @@ open Types
 
 let add_delayed_check_forward = ref (fun _ -> assert false)
 
-type type_descriptions = constructor_description list
+type type_descriptions = constructor_description list * label_description list
 module PathMap = struct
   include Map.Make(Path)
 
@@ -58,6 +58,7 @@ type error =
   | Depend_on_unsafe_string_unit of string * string
   | Missing_module of Location.t * Path.t * Path.t
   | Unbound_module of Location.t * string
+  | Unbound_label of Location.t * string
   | No_module_file of string * string option
   | Value_not_found_in_module of Location.t * string * string
   | Illegal_value_name of Location.t * string
@@ -424,9 +425,22 @@ end
 
 type 'a comp_tbl = (string, ('a * int)) Tbl.t
 
-type module_component_components = {
+type t = {
+  values: value_description IdTbl.t;
+  types: (type_declaration * type_descriptions) IdTbl.t;
+  constructors: constructor_description TycompTbl.t;
+  labels: label_description TycompTbl.t;
+  components: module_components IdTbl.t;
+  modules: (Subst.t * module_declaration, module_declaration) EnvLazy.t IdTbl.t;
+  modtypes: modtype_declaration IdTbl.t;
+  local_constraints: type_declaration PathMap.t;
+  summary: summary;
+}
+
+and module_component_components = {
   mutable comp_values: value_description comp_tbl;
   mutable comp_constrs: (string, constructor_description list) Tbl.t;
+  mutable comp_labels: (string, label_description list) Tbl.t;
   mutable comp_types: (type_declaration * type_descriptions) comp_tbl;
   mutable comp_components: module_components comp_tbl;
   mutable comp_modules:
@@ -440,17 +454,6 @@ and module_components = {
   (t * Subst.t * Path.t * Types.module_type, module_component_components option) EnvLazy.t;
 }
 
-and t = {
-  values: value_description IdTbl.t;
-  types: (type_declaration * type_descriptions) IdTbl.t;
-  constructors: constructor_description TycompTbl.t;
-  components: module_components IdTbl.t;
-  modules: (Subst.t * module_declaration, module_declaration) EnvLazy.t IdTbl.t;
-  modtypes: modtype_declaration IdTbl.t;
-  local_constraints: type_declaration PathMap.t;
-  summary: summary;
-}
-
 let empty = {
   values = IdTbl.empty;
   types = IdTbl.empty;
@@ -458,6 +461,7 @@ let empty = {
   modules = IdTbl.empty;
   modtypes = IdTbl.empty;
   constructors = TycompTbl.empty;
+  labels = TycompTbl.empty;
   local_constraints = PathMap.empty;
   summary = Env_empty;
 }
@@ -520,6 +524,7 @@ let get_components_opt c =
 let empty_structure =  {
   comp_values = Tbl.empty;
   comp_constrs = Tbl.empty;
+  comp_labels = Tbl.empty;
   comp_types = Tbl.empty;
   comp_components = Tbl.empty;
   comp_modules = Tbl.empty;
@@ -830,6 +835,7 @@ let check_pers_struct ~loc name filename =
       | Depend_on_unsafe_string_unit (name, _) ->
         Printf.sprintf "%s uses -unsafe-string"
           name
+      | Unbound_label _ -> assert false
       | Unbound_module _ -> assert false
       | Missing_module _ -> assert false
       | No_module_file _ -> assert false
@@ -896,7 +902,7 @@ and find_modtype =
 let find_type_full path env =
   match path with
   | PIdent _ ->
-    (try (PathMap.find path env.local_constraints, [])
+    (try (PathMap.find path env.local_constraints, ([], []))
      with Not_found -> find_type_full path env)
   | _ -> find_type_full path env
 
@@ -1088,6 +1094,14 @@ let lookup_constructor ?(mark = true) id env =
     end;
     desc
 
+let lookup_all_labels ~mark lid env =
+  lookup_tycomptbl ~mark (fun x -> x.labels) (fun x -> x.comp_labels) lid env
+
+let lookup_label ~mark lid env =
+  match lookup_all_labels ~mark lid env with
+  | [] -> assert false
+  | (desc, use) :: _ -> use (); desc
+
 
 let mark_type_path env path =
   try
@@ -1121,6 +1135,22 @@ let lookup_all_constructors ?(mark = true) lid env =
       end
     in
     List.map (fun (cstr, use) -> (cstr, wrap_use cstr use)) cstrs
+  with
+    Not_found when (match lid with Identifier.IdentName _ -> true | _ -> false) -> []
+
+let lookup_label ?(mark=true) lid env =
+  lookup_label ~mark lid env
+
+let lookup_all_labels ?(mark=true) lid env =
+  try
+    let labels = lookup_all_labels ~mark lid env in
+    let wrap_use desc use () =
+      if mark then begin
+        mark_type_path env (ty_path desc.lbl_res);
+        use ()
+      end
+    in
+    List.map (fun (label, use) -> (label, wrap_use label use)) labels
   with
     Not_found when (match lid with Identifier.IdentName _ -> true | _ -> false) -> []
 
@@ -1307,6 +1337,7 @@ and components_of_module_maker (env, sub, path, mty) =
     let c =
       { comp_values = Tbl.empty;
         comp_constrs = Tbl.empty;
+        comp_labels = Tbl.empty;
         comp_types = Tbl.empty;
         comp_modules = Tbl.empty;
         comp_components = Tbl.empty;
@@ -1332,8 +1363,10 @@ and components_of_module_maker (env, sub, path, mty) =
         | TSigType(id, decl, _) ->
           let decl' = Subst.type_declaration sub decl in
           let constructors = Datarepr.constructors_of_type path decl' in
-          let descrs =
-            List.map snd constructors in
+          let cstrs =
+            List.map snd (Datarepr.constructors_of_type path decl') in
+          let labels =
+            List.map snd (Datarepr.labels_of_type path decl') in
           List.iter (fun (id, desc) ->
               let val_type = match desc.cstr_args with
                 | [] -> desc.cstr_res
@@ -1357,13 +1390,18 @@ and components_of_module_maker (env, sub, path, mty) =
             ) constructors;
           c.comp_types <-
             Tbl.add (Ident.name id)
-              ((decl', descrs), nopos)
+              ((decl', (cstrs, labels)), nopos)
               c.comp_types;
           List.iter
             (fun descr ->
                c.comp_constrs <-
                  add_to_tbl descr.cstr_name descr c.comp_constrs)
-            descrs;
+            cstrs;
+          List.iter
+            (fun descr ->
+               c.comp_labels <-
+                 add_to_tbl descr.lbl_name descr c.comp_labels)
+            labels;
           env := store_type_infos id decl !env
         | TSigModule(id, md, _) ->
           let md' = EnvLazy.create (sub, md) in
@@ -1394,7 +1432,8 @@ and store_type ~check id info env =
       type_declarations;*)
   let path = PIdent id in
   let constructors = Datarepr.constructors_of_type path info in
-  let descrs = List.map snd constructors in
+  let labels = Datarepr.labels_of_type path info in
+  let descrs = (List.map snd constructors, List.map snd labels) in
 
   let val_descrs = List.map (fun (id, desc) ->
       let val_type = match desc.cstr_args with
@@ -1438,6 +1477,11 @@ and store_type ~check id info env =
         (fun (id, descr) constrs -> TycompTbl.add id descr constrs)
         constructors
         env.constructors;
+    labels =
+      List.fold_right
+        (fun (id, descr) labels -> TycompTbl.add id descr labels)
+        labels
+        env.labels;
     types =
       IdTbl.add id (info, descrs) env.types;
     values =
@@ -1453,7 +1497,7 @@ and store_type_infos id info env =
      keep track of type abbreviations (e.g. type t = float) in the
      computation of label representations. *)
   { env with
-    types = IdTbl.add id (info,[]) env.types;
+    types = IdTbl.add id (info, ([], [])) env.types;
     summary = Env_type(env.summary, id, info); }
 
 and store_module ~check id md env =
@@ -2028,6 +2072,7 @@ let report_error ppf = function
   | Illegal_value_name(_loc, name) ->
       fprintf ppf "'%s' is not a valid value identifier."
         name
+  | Unbound_label(_, label) -> fprintf ppf "Unbound record label %s. Perhaps you need to import its type or write a type definition?" label
   | Unbound_module(_, modname) -> fprintf ppf "Unbound module %s" modname
   | No_module_file(m, None) -> fprintf ppf "Missing file for module %s" m
   | No_module_file(m, Some(msg)) -> fprintf ppf "Missing file for module %s: %s" m msg

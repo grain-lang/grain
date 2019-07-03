@@ -210,6 +210,8 @@ let rec compile_comp env c =
     MTupleOp(MTupleSet(Int32.zero, compile_imm env arg2), compile_imm env arg1)
   | CTuple(args) ->
     MAllocate(MTuple (List.map (compile_imm env) args))
+  | CRecord(args) ->
+    MAllocate(MRecord (List.map (fun ({txt=name}, arg) -> name, (compile_imm env arg)) args))
   | CAdt(ttag, vtag, args) ->
     MAllocate(MADT(compile_imm env ttag, compile_imm env vtag, List.map (compile_imm env) args))
   | CString(s) ->

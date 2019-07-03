@@ -53,6 +53,8 @@ module MakeIter(Iter : IterArgument) = struct
         iter_imm_expression rhs
       | CTuple(elts) ->
         List.iter (iter_imm_expression) elts
+      | CRecord(elts) ->
+        List.iter (fun (_, elt) -> iter_imm_expression elt) elts
       | CAdt(ttag, vtag, elts) ->
         iter_imm_expression ttag;
         iter_imm_expression vtag;
