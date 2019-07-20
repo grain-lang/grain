@@ -188,6 +188,9 @@ let unsound_optimizations = toggle_flag
     ~doc:"Compile with optimizations which may remove runtime errors"
     false
 
+(* To be filled in by grainc *)
+let base_path = internal_opt ""
+
 let stdlib_directory() : string option =
   let open BatPathGen.OfString in
     let open Infix in
@@ -197,7 +200,7 @@ let stdlib_directory() : string option =
 
 let module_search_path() =
   match (stdlib_directory()) with
-  | Some(x) when !use_stdlib -> (!include_dirs) @ [x] (* stdlib goes last *)
+  | Some(x) when !use_stdlib -> (!base_path) :: (!include_dirs) @ [x] (* stdlib goes last *)
   | Some _
-  | None -> !include_dirs
+  | None -> (!base_path) :: (!include_dirs)
 

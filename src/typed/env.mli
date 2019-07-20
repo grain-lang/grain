@@ -1,4 +1,5 @@
 open Grain_parsing
+open Parsetree
 open Types
 
 module PathMap : Map.S with type key = Path.t
@@ -39,7 +40,7 @@ val without_cmis: ('a -> 'b) -> 'a -> 'b
 val find_value: Path.t -> t -> value_description
 val find_type: Path.t -> t -> type_declaration
 val find_type_descrs: Path.t -> t -> type_descriptions
-val find_module: Path.t -> t -> module_declaration
+val find_module: Path.t -> string option -> t -> module_declaration
 val find_modtype: Path.t -> t -> modtype_declaration
 
 val find_type_expansion:
@@ -69,7 +70,7 @@ val lookup_all_constructors:
   ?mark:bool ->
   Identifier.t -> t -> (constructor_description * (unit -> unit)) list
 val lookup_module:
-  load:bool -> ?loc:Location.t -> ?mark:bool -> Identifier.t -> t -> Path.t
+  load:bool -> ?loc:Location.t -> ?mark:bool -> Identifier.t -> string option -> t -> Path.t
 val lookup_modtype:
   ?loc:Location.t -> ?mark:bool ->
   Identifier.t -> t -> Path.t * modtype_declaration
@@ -84,7 +85,7 @@ val add_type: check:bool -> Ident.t -> type_declaration -> t -> t
 (** Adds a type identifier with the given name and declaration. *)
 val add_constructor: Ident.t -> constructor_description -> t -> t
 (** Adds a constructor with the given name and description. *)
-val add_module: ?arg:bool -> Ident.t -> module_type -> t -> t
+val add_module: ?arg:bool -> Ident.t -> module_type -> string option -> t -> t
 val add_module_declaration: ?arg:bool -> check:bool -> Ident.t ->
   module_declaration -> t -> t
 val add_modtype: Ident.t -> modtype_declaration -> t -> t
@@ -96,16 +97,15 @@ val add_local_type: Path.t -> type_declaration -> t -> t
 val add_item: signature_item -> t -> t
 val add_signature: signature -> t -> t
 
-(* Remember the name of the current compilation unit. *)
-val set_unit_name: string -> unit
-val get_unit_name: unit -> string
+(* Remember the current compilation unit. *)
+val set_unit: string * string -> unit
+val get_unit: unit -> string * string
 
 (* Insertion of all fields of a signature, relative to the given path.
    Used to implement open. Returns None if the path refers to a functor,
    not a structure. *)
 val open_signature:
-    ?used_slot:bool ref ->
-    ?loc:Location.t -> ?toplevel:bool -> Path.t ->
+    ?used_slot:bool ref -> ?toplevel:bool -> Path.t -> Identifier.t -> import_declaration ->
       t -> t option
 (* Similar to [open_signature], except that modules from the load path
    have precedence over sub-modules of the opened module.
@@ -116,7 +116,7 @@ val open_signature:
    - otherwise, in the new environment [X] resolves to [M.X]
 *)
 val open_signature_of_initially_opened_module:
-    ?loc:Location.t -> Path.t -> t -> t option
+    ?loc:Location.t -> Path.t -> string option -> t -> t option
 
 
 (* Read, save a signature to/from a file *)
@@ -135,7 +135,7 @@ val build_signature_with_imports:
 
 (* Return the CRC of the interface of the given compilation unit *)
 
-val crc_of_unit: string -> Digest.t
+val crc_of_unit: string -> string option -> Digest.t
 
 (* Return the set of compilation units imported, with their CRC *)
 

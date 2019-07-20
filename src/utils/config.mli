@@ -23,6 +23,9 @@ val include_dirs : string list ref
 val use_stdlib : bool ref
 (** Whether the standard library should be included *)
 
+val base_path : string ref
+(** The base path where all Grain files for the program reside *)
+
 val color_enabled : bool ref
 (** Whether color output should be enabled *)
 

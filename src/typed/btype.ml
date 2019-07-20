@@ -169,6 +169,7 @@ let type_iterators =
     it.it_type_kind it td.type_kind
   and it_module_type it = function
     | TModIdent p -> it.it_path p
+    | TModAlias p -> it.it_path p
     | TModSignature sg -> it.it_signature it sg
   and it_type_kind it kind =
     iter_type_expr_kind (it.it_type_expr it) kind

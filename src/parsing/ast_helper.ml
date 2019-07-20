@@ -154,11 +154,13 @@ module Mb = struct
 end
 
 module Imp = struct
-  let mk ?loc m =
+  let mk ?loc shapes path =
     let loc = match loc with
       | None -> (!default_loc_src)()
       | Some l -> l in
-    {pimp_mod=m; pimp_loc=loc}
+    List.map (fun (shape, alias) ->
+      {pimp_val=shape; pimp_path=path; pimp_mod_alias=alias; pimp_loc=loc}
+    ) shapes
 end
 
 module Ex = struct

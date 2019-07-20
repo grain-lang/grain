@@ -102,9 +102,8 @@ and strengthen_sig ~aliasable env sg p pos =
 
 and strengthen_decl ~aliasable env md p =
   match md.md_type with
-  (* FIXME: This line shows that we'll need module aliases after all. *)
-  (*| Mty_alias _ -> md
-  | _ when aliasable -> {md with md_type = Mty_alias(Mta_present, p)}*)
+  | TModAlias _ -> md
+  | _ when aliasable -> {md with md_type = TModAlias(p)}
   | mty -> {md with md_type = strengthen ~aliasable env mty p}
 
 let () = Env.strengthen := strengthen
@@ -112,12 +111,12 @@ let () = Env.strengthen := strengthen
 let scrape_for_type_of env mty =
   let rec loop env path mty =
     match mty, path with
-    (*| Mty_alias(_, path), _ -> begin
+    | TModAlias path, _ -> begin
         try
-          let md = Env.find_module path env in
+          let md = Env.find_module path None env in
           loop env (Some path) md.md_type
         with Not_found -> mty
-      end*)
+      end
     | mty, Some path ->
         strengthen ~aliasable:false env mty path
     | _ -> mty
@@ -138,10 +137,10 @@ let nondep_supertype env mid mty =
         if Path.isfree mid p then
           nondep_mty env va (Env.find_modtype_expansion p env)
         else mty
-    (*| Mty_alias(_, p) ->
+    | TModAlias p ->
         if Path.isfree mid p then
-          nondep_mty env va (Env.find_module p env).md_type
-        else mty*)
+          nondep_mty env va (Env.find_module p None env).md_type
+        else mty
     | TModSignature sg ->
         TModSignature(nondep_sig env va sg)
     (*| Mty_functor(param, arg, res) ->
@@ -246,7 +245,7 @@ and enrich_item env p = function
 let rec type_paths env p mty =
   match scrape env mty with
   | TModIdent _ -> []
-  (*| Mty_alias _ -> []*)
+  | TModAlias _ -> []
   | TModSignature sg -> type_paths_sig env p 0 sg
   (*| Mty_functor _ -> []*)
 
@@ -275,7 +274,7 @@ let rec no_code_needed env mty =
   | TModSignature sg -> no_code_needed_sig env sg
   (*| Mty_functor(_, _, _) -> false*)
   (*| Mty_alias(Mta_absent, _) -> true*)
-  (*| Mty_alias(Mta_present, _) -> false*)
+  | TModAlias _ -> false
 
 and no_code_needed_sig env sg =
   match sg with
@@ -308,8 +307,8 @@ let rec contains_type env = function
       contains_type_sig env sg
   (*| Mty_functor (_, _, body) ->
       contains_type env body*)
-  (*| Mty_alias _ ->
-      ()*)
+  | TModAlias _ ->
+      ()
 
 and contains_type_sig env = List.iter (contains_type_item env)
 
@@ -386,8 +385,8 @@ let collect_arg_paths mty =
   and it_signature_item it si =
     type_iterators.it_signature_item it si;
     match si with
-      (*TSigModule (id, {md_type=Mty_alias(_, p)}, _) ->
-        bindings := Ident.add id p !bindings*)
+      TSigModule (id, {md_type=TModAlias p}, _) ->
+        bindings := Ident.add id p !bindings
     | TSigModule (id, {md_type=TModSignature sg}, _) ->
         List.iter
           (function TSigModule (id', _, _) ->
@@ -407,10 +406,10 @@ let rec remove_aliases_mty env excl mty =
   match mty with
     TModSignature sg ->
       TModSignature (remove_aliases_sig env excl sg)
-  (*| Mty_alias _ ->
+  | TModAlias _ ->
       let mty' = Env.scrape_alias env mty in
       if mty' = mty then mty else
-      remove_aliases_mty env excl mty'*)
+      remove_aliases_mty env excl mty'
   | mty ->
       mty
 
@@ -420,13 +419,13 @@ and remove_aliases_sig env excl sg =
   | TSigModule(id, md, rs) :: rem  ->
       let mty =
         match md.md_type with
-          (*Mty_alias _ when Ident.Set.mem id excl ->
-            md.md_type*)
+          TModAlias _ when Ident.Set.mem id excl ->
+            md.md_type
         | mty ->
             remove_aliases_mty env excl mty
       in
       TSigModule(id, {md with md_type = mty} , rs) ::
-      remove_aliases_sig (Env.add_module id mty env) excl rem
+      remove_aliases_sig (Env.add_module id mty None env) excl rem
   | TSigModType(id, mtd) :: rem ->
       TSigModType(id, mtd) ::
       remove_aliases_sig (Env.add_modtype id mtd env) excl rem

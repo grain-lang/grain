@@ -734,6 +734,8 @@ let hide_rec_items = function
 let rec tree_of_modtype ?(ellipsis=false) = function
   | TModIdent p ->
     Omty_ident (tree_of_path p)
+  | TModAlias p ->
+    Omty_alias (tree_of_path p)
   | TModSignature sg ->
     Omty_signature (if ellipsis then [Osig_ellipsis]
                     else tree_of_signature sg)

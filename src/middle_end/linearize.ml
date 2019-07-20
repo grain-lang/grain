@@ -26,7 +26,7 @@ module PathMap = Hashtbl.Make(struct
   end)
 let type_map = PathMap.create 10
 
-let lookup_symbol mod_ name =
+let lookup_symbol mod_ mod_decl name original_name =
   begin
     match Ident.find_same_opt mod_ (!symbol_table) with
     | Some _ -> ()
@@ -37,7 +37,11 @@ let lookup_symbol mod_ name =
   | Some(_, ident) -> ident
   | None ->
     let fresh = gensym name in
-    value_imports := (Imp.grain_value fresh (Ident.name mod_) name GlobalShape)::(!value_imports);
+    begin match mod_decl.md_filepath with
+      | Some filepath ->
+        value_imports := (Imp.grain_value fresh filepath original_name GlobalShape)::(!value_imports)
+      | None -> ()
+    end;
     symbol_table := Ident.add mod_ (Ident.add fresh fresh modtbl) (!symbol_table);
     fresh
 
@@ -64,13 +68,19 @@ let transl_const (c : Types.constant) : (imm_expression, string * comp_expressio
 let rec transl_imm (({exp_desc; exp_loc=loc; exp_env=env; _} as e) : expression) : (imm_expression * anf_bind list) =
   match exp_desc with
   | TExpIdent(_, _, {val_kind=TValUnbound _}) -> failwith "Impossible: val_kind was unbound"
-  | TExpIdent(Path.PExternal((Path.PIdent mod_), ident, _), _, _) ->
-    (Imm.id ~loc ~env (lookup_symbol mod_ ident), [])
+  | TExpIdent(Path.PExternal((Path.PIdent mod_) as p, ident, _), _, {val_fullpath=Path.PExternal(_, original_name, _)}) ->
+    let mod_decl = Env.find_module p None env in
+    (Imm.id ~loc ~env (lookup_symbol mod_ mod_decl ident original_name), [])
+  | TExpIdent(Path.PExternal((Path.PIdent mod_) as p, ident, _), _, _) ->
+    let mod_decl = Env.find_module p None env in
+    (Imm.id ~loc ~env (lookup_symbol mod_ mod_decl ident ident), [])
   | TExpIdent(Path.PExternal _, _, _) -> failwith "NYI: transl_imm: TExpIdent with multiple PExternal"
   | TExpIdent((Path.PIdent ident) as path, _, _) ->
     begin match Env.find_value path env with
       | {val_fullpath=Path.PIdent _} -> (Imm.id ~loc ~env ident, [])
-      | {val_fullpath=Path.PExternal((Path.PIdent mod_), ident, _)} -> (Imm.id ~loc ~env (lookup_symbol mod_ ident), [])
+      | {val_fullpath=Path.PExternal((Path.PIdent mod_) as p, ident, _)} -> 
+        let mod_decl = Env.find_module p None env in
+        (Imm.id ~loc ~env (lookup_symbol mod_ mod_decl ident ident), [])
       | {val_fullpath=Path.PExternal _} -> failwith "NYI: transl_imm: TExpIdent with multiple PExternal"
     end
   | TExpConstant c ->
