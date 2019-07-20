@@ -10,7 +10,7 @@ type mapper = {
   data: mapper -> data_declaration -> data_declaration;
   constructor: mapper -> constructor_declaration -> constructor_declaration;
   location: mapper -> Location.t -> Location.t;
-  import: mapper -> import_declaration -> import_declaration;
+  import: mapper -> import_declaration list -> import_declaration list;
   export: mapper -> export_declaration list -> export_declaration list;
   export_all: mapper -> export_except list -> export_except list;
   value_binding: mapper -> value_binding -> value_binding;
@@ -20,6 +20,7 @@ type mapper = {
 }
 
 let map_loc sub {loc; txt} = {loc = sub.location sub loc; txt}
+let map_opt sub loc_opt = Option.map (map_loc sub) loc_opt
 
 module Cnst = struct
   let map sub c = c
@@ -113,10 +114,21 @@ module MB = struct
 end
 
 module I = struct
-  let map sub {pimp_mod = imod; pimp_loc = loc} =
+  let map_one sub {pimp_mod_alias = alias; pimp_path = path; pimp_val = ival; pimp_loc = loc} =
     let open Imp in
     let loc = sub.location sub loc in
-    mk ~loc (map_loc sub imod)
+    let ival = match ival with
+      | PImportValues values -> 
+        PImportValues(List.map (fun (name, alias) -> (map_loc sub name, map_opt sub alias)) values)
+      | PImportAllExcept values -> PImportAllExcept(List.map (map_loc sub) values)
+      | PImportModule -> ival in
+    {
+      pimp_mod_alias = (map_opt sub alias); 
+      pimp_path = (map_loc sub path); 
+      pimp_val = ival; 
+      pimp_loc = loc
+    }
+  let map sub imports = List.map (map_one sub) imports
 end
 
 module Ex = struct
@@ -154,7 +166,7 @@ module TL = struct
     let open Top in
     let loc = sub.location sub loc in
     match desc with
-      | PTopImport id -> Top.import ~loc (sub.import sub id)
+      | PTopImport decls -> Top.import ~loc (sub.import sub decls)
       | PTopForeign(e, d) -> Top.foreign ~loc e (sub.value_description sub d)
       | PTopData(e, dd) -> Top.data ~loc e (sub.data sub dd)
       | PTopLet(e, r, vb) -> Top.let_ ~loc e r (List.map (sub.value_binding sub) vb)

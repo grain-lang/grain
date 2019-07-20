@@ -1692,7 +1692,7 @@ let nondep_instance env level id ty =
    list (nl2, tl2). raise Not_found if impossible *)
 let complete_type_list ?(allow_absent=false) env nl1 lv2 mty2 nl2 tl2 =
   let id2 = Ident.create "Pkg" in
-  let env' = Env.add_module id2 mty2 env in
+  let env' = Env.add_module id2 mty2 None env in
   let rec complete nl1 ntl2 =
     match nl1, ntl2 with
       [], _ -> ntl2

@@ -102,6 +102,7 @@ rule token = parse
   | "import" { IMPORT }
   | "export" { EXPORT }
   | "except" { EXCEPT }
+  | "from" { FROM }
   | "box" { BOX }
   | "unbox" { UNBOX }
   | "->" { ARROW }
@@ -111,6 +112,7 @@ rule token = parse
   | "let" { LET }
   | "rec" { REC }
   | "match" { MATCH }
+  | "." { DOT }
   | "::" { COLONCOLON }
   | ":=" { GETS }
   | ":" { COLON }

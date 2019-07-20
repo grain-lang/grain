@@ -46,6 +46,7 @@ type error =
   | Multiple_constraints_on_type of Identifier.t
   | Method_mismatch of string * type_expr * type_expr
   | Unbound_value of Identifier.t
+  | Unbound_value_in_module of Identifier.t * string
   | Unbound_constructor of Identifier.t
   | Unbound_label of Identifier.t
   | Unbound_module of Identifier.t
@@ -80,21 +81,24 @@ let instance_list = Ctype.instance_list Env.empty
 let rec narrow_unbound_lid_error : 'a. _ -> _ -> _ -> _ -> 'a =
   fun env loc lid make_error ->
   let check_module mlid =
-    try ignore (Env.lookup_module ~load:true mlid env) with
+    try ignore (Env.lookup_module ~load:false mlid None env) with
     | Not_found ->
+        Printf.eprintf "aye not there lad\n";
         narrow_unbound_lid_error env loc mlid (fun lid -> Unbound_module lid)
   in
   let error e = raise (Error (loc, env, e)) in
   begin match lid with
   | Identifier.IdentName _ -> ()
-  | Identifier.IdentExternal (mlid, _) ->
+  | Identifier.IdentExternal (mlid, id) ->
       check_module mlid;
-      let md = Env.find_module (Env.lookup_module ~load:true mlid env) env in
+      error (Unbound_value_in_module (mlid, id))
+      (* let md = Env.find_module (Env.lookup_module ~load:true mlid None env) None env in
       begin match Env.scrape_alias env md.md_type with
       | TModIdent _ ->
          error (Wrong_use_of_module (mlid, `Abstract_used_as_structure))
       | TModSignature _ -> ()
-      end
+      | TModAlias _ -> ()
+      end *)
   end;
   error (make_error lid)
 
@@ -129,13 +133,13 @@ let find_value env loc lid =
   in
   r
 
-let lookup_module ?(load=false) env loc lid =
-  find_component (fun ?mark lid env -> (Env.lookup_module ~load ~loc:loc ?mark lid env))
+let lookup_module ?(load=false) env loc lid filepath =
+  find_component (fun ?mark lid env -> (Env.lookup_module ~load ~loc:loc ?mark lid filepath env))
     (fun lid -> Unbound_module lid) env loc lid
 
-let find_module env loc lid =
-  let path = lookup_module ~load:true env loc lid in
-  let decl = Env.find_module path env in
+let find_module env loc lid filepath =
+  let path = lookup_module ~load:true env loc lid filepath in
+  let decl = Env.find_module path filepath env in
   (* No need to check for deprecated here, this is done in Env. *)
   (path, decl)
 
@@ -429,10 +433,14 @@ let spellcheck ppf fold env lid =
 
 let fold_descr fold get_name f = fold (fun descr acc -> f (get_name descr) acc)
 let fold_simple fold4 f = fold4 (fun name _path _descr acc -> f name acc)
+let fold_persistent fold4 f = fold4 (fun name path _descr acc -> 
+    if Ident.persistent (Path.head path)
+    then f name acc
+    else acc)
 
 let fold_values = fold_simple Env.fold_values
 let fold_types = fold_simple Env.fold_types
-let fold_modules = fold_simple Env.fold_modules
+let fold_modules = fold_persistent Env.fold_modules
 let fold_constructors = fold_descr Env.fold_constructors (fun d -> d.cstr_name)
 let fold_modtypes = fold_simple Env.fold_modtypes
 
@@ -519,6 +527,8 @@ let report_error env ppf = function
   | Unbound_value lid ->
       fprintf ppf "Unbound value %a" identifier lid;
       spellcheck ppf fold_values env lid;
+  | Unbound_value_in_module (mlid, lid) ->
+      fprintf ppf "Unbound value %s in module %a" lid identifier mlid
   | Unbound_module lid ->
       fprintf ppf "Unbound module %a" identifier lid;
       spellcheck ppf fold_modules env lid;

@@ -140,9 +140,17 @@ and match_branch = {
   pmb_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
 } [@@deriving sexp]
 
+type import_value = 
+  | PImportModule
+  | PImportAllExcept of (Identifier.t loc) list
+  | PImportValues of (Identifier.t loc * Identifier.t loc option) list
+[@@deriving sexp]
+
 (** Type for import statements *)
 type import_declaration = {
-  pimp_mod: Identifier.t loc;
+  pimp_mod_alias: Identifier.t loc option;
+  pimp_path: string loc;
+  pimp_val: import_value;
   pimp_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
 } [@@deriving sexp]
 
@@ -172,7 +180,7 @@ type export_except =
 
 (** Statements which can exist at the top level *)
 type toplevel_stmt_desc =
-  | PTopImport of import_declaration
+  | PTopImport of import_declaration list
   | PTopForeign of export_flag * value_description
   | PTopData of export_flag * data_declaration
   | PTopLet of export_flag * rec_flag * value_binding list

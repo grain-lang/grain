@@ -56,65 +56,52 @@ open Typedtree
 let extract_sig env loc mty =
   match Env.scrape_alias env mty with
   | TModSignature sg -> sg
-  (*| Mty_alias(_, path) ->
-      raise(Error(loc, env, Cannot_scrape_alias path))*)
+  | TModAlias path ->
+      raise(Error(loc, env, Cannot_scrape_alias path))
   | _ -> raise(Error(loc, env, Signature_expected))
 
 let extract_sig_open env loc mty =
   match Env.scrape_alias env mty with
   | TModSignature sg -> sg
-  (*| Mty_alias(_, path) ->
-      raise(Error(loc, env, Cannot_scrape_alias path))*)
+  | TModAlias path ->
+      raise(Error(loc, env, Cannot_scrape_alias path))
   | mty -> raise(Error(loc, env, Structure_expected mty))
 
 (* Compute the environment after opening a module *)
 
-let type_open_ ?used_slot ?toplevel (*ovf*) env loc lid =
-  let path = Typetexp.lookup_module ~load:true env lid.loc lid.txt in
-  match Env.open_signature ~loc ?used_slot ?toplevel (*ovf*) path env with
+let type_open_ ?used_slot ?toplevel env mod_ =
+  let filepath = (Some mod_.pimp_path.txt) in
+  let mod_name = Identifier.IdentName (Grain_utils.Files.filename_to_module_name mod_.pimp_path.txt) in
+  let path = Typetexp.lookup_module ~load:true env mod_.pimp_loc mod_name filepath in
+  match Env.open_signature ?used_slot ?toplevel path mod_name mod_ env with
   | Some env -> path, env
   | None ->
-      let md = Env.find_module path env in
-      ignore (extract_sig_open env lid.loc md.md_type);
+      let md = Env.find_module path filepath env in
+      ignore (extract_sig_open env mod_.pimp_loc md.md_type);
       assert false
 
-let type_initially_opened_module env module_name =
+let type_initially_opened_module env module_name module_path =
   let loc = Location.in_file "compiler internals" in
   let lid = { Asttypes.loc; txt = Identifier.IdentName module_name } in
-  let path = Typetexp.lookup_module ~load:true env lid.loc lid.txt in
-  match Env.open_signature_of_initially_opened_module path env with
+  let path = Typetexp.lookup_module ~load:true env lid.loc lid.txt module_path in
+  match Env.open_signature_of_initially_opened_module path module_path env with
   | Some env -> path, env
   | None ->
-      let md = Env.find_module path env in
+      let md = Env.find_module path module_path env in
       ignore (extract_sig_open env lid.loc md.md_type);
       assert false
-
-let initial_env ~loc ~initially_opened_module ~open_implicit_modules =
-  let env = Env.initial_safe_string in
-  let env = match initially_opened_module with
-    | None -> env
-    | Some name -> snd (type_initially_opened_module env name)
-  in
-  let open_implicit_module env m =
-    let open Asttypes in
-    let lid = {loc; txt = Identifier.parse m } in
-    snd (type_open_ env lid.loc lid)
-  in
-  List.fold_left open_implicit_module env open_implicit_modules
 
 let type_open ?toplevel env sod =
   let (path, newenv) =
     (*Builtin_attributes.warning_scope sod.popen_attributes
       (fun () ->*)
-         type_open_ ?toplevel env sod.pimp_loc
-           sod.pimp_mod
+         type_open_ ?toplevel env sod
       (* )*)
   in
   let od =
     {
       (*open_override = sod.popen_override;*)
       timp_path = path;
-      timp_mod = sod.pimp_mod;
       (*open_attributes = sod.popen_attributes;*)
       timp_loc = sod.pimp_loc;
     }
@@ -215,7 +202,7 @@ let check_sig_item names loc = function
 
 let rec closed_modtype env = function
   | TModIdent _ -> true
-  (*| Mty_alias _ -> true*)
+  | TModAlias _ -> true
   | TModSignature sg ->
       let env = Env.add_signature sg env in
       List.for_all (closed_signature_item env) sg
@@ -246,7 +233,7 @@ let check_nongen_schemes env sg =
 
 let rec normalize_modtype env = function
   | TModIdent _
-  (*| Mty_alias _*) -> ()
+  | TModAlias _ -> ()
   | TModSignature sg -> normalize_signature env sg
   (*| Mty_functor(_id, _param, body) -> normalize_modtype env body*)
 
@@ -323,9 +310,12 @@ let type_module ?(toplevel=false) funct_body anchor env sstr (*scope*) =
     let foreign = {ttop_desc=TTopForeign desc; ttop_loc=loc; ttop_env=env} in
     newenv, signature, foreign in
 
-  let process_import env i loc =
-    let _path, newenv, od = type_open env i in
-    newenv, {ttop_desc=TTopImport(od); ttop_loc=loc; ttop_env=env} in
+  let process_import env imports loc =
+    let newenv, stmts = List.fold_left (fun (env, stmts) i ->
+      let _path, newenv, od = type_open env i in
+      newenv, {ttop_desc=TTopImport(od); ttop_loc=loc; ttop_env=env}::stmts
+    ) (env, []) imports in
+    newenv, List.rev stmts in
 
   let process_datas env e datas loc =
     let decls, newenv = Typedecl.transl_data_decl env Recursive datas in
@@ -400,8 +390,8 @@ let type_module ?(toplevel=false) funct_body anchor env sstr (*scope*) =
   let final_env, signatures, statements = List.fold_left (fun (env, signatures, statements) {ptop_desc; ptop_loc=loc} ->
       match ptop_desc with
       | PTopImport i -> 
-        let new_env, statement = process_import env i loc in 
-        new_env, signatures, statement::statements
+        let new_env, stmts = process_import env i loc in 
+        new_env, signatures, stmts @ statements
       | PTopExport ex -> 
         let new_env, sigs, stmts = process_export env ex loc in 
         new_env, List.rev sigs @ signatures, stmts @ statements
@@ -477,14 +467,18 @@ let type_module ?(toplevel=false) funct_body anchor env sstr (*scope*) =
 
 let type_module = type_module false None
 
-let implicit_modules : string list ref = ref ["pervasives"]
+let implicit_modules : (string * string) list ref = ref [("pervasives", "pervasives")]
 
 let open_implicit_module m env =
   let open Asttypes in
   let loc = Location.dummy_loc in
-  let lid = {loc; txt = Identifier.parse m} in
-  (*ignore (Env.find_module (PIdent(Ident.create_persistent m)) env);*)
-  let _path, newenv = type_open_ env lid.loc lid in
+  let modname, filename = m in
+  let _path, newenv = type_open_ env {
+    pimp_mod_alias=None;
+    pimp_path={loc; txt=filename};
+    pimp_val=PImportAllExcept [];
+    pimp_loc=loc
+  } in
   newenv
 
 let initial_env () =
@@ -492,7 +486,9 @@ let initial_env () =
   let initial = Env.initial_safe_string in
   let env = initial in
   List.fold_left (fun env m ->
-      if Env.get_unit_name() <> m then
+      let modname, _ = m in
+      let unit_name, _ = Env.get_unit() in
+      if unit_name <> modname then
         open_implicit_module m env
       else env) env (!implicit_modules)
 
@@ -500,7 +496,7 @@ let type_implementation prog =
   let sourcefile = prog.prog_loc.loc_start.pos_fname in
   (* TODO: Do we maybe need a fallback here? *)
   let modulename = Grain_utils.Files.filename_to_module_name sourcefile in
-  Env.set_unit_name modulename;
+  Env.set_unit (modulename, sourcefile);
   let initenv = initial_env() in
   let (stritems, sg, finalenv) = type_module initenv prog in
   let (statements, env, body) = stritems in

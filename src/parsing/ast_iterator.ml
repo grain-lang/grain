@@ -9,7 +9,7 @@ type iterator = {
   data: iterator -> data_declaration -> unit;
   constructor: iterator -> constructor_declaration -> unit;
   location: iterator -> Location.t -> unit;
-  import: iterator -> import_declaration -> unit;
+  import: iterator -> import_declaration list -> unit;
   export: iterator -> export_declaration list -> unit;
   export_all: iterator -> export_except list -> unit;
   value_binding: iterator -> value_binding -> unit;
@@ -19,6 +19,7 @@ type iterator = {
 }
 
 let iter_loc sub {loc; txt} = sub.location sub loc
+let iter_opt sub opt = Option.may (iter_loc sub) opt
 
 module Cnst = struct
   let iter sub c = ()
@@ -103,9 +104,17 @@ module MB = struct
 end
 
 module I = struct
-  let iter sub {pimp_mod = imod; pimp_loc = loc} =
-    sub.location sub loc;
-    iter_loc sub imod
+  let iter_one sub {pimp_mod_alias = alias; pimp_path = path; pimp_val = ival; pimp_loc = loc} =
+    iter_opt sub alias;
+    iter_loc sub path;
+    begin match ival with
+      | PImportValues values -> 
+        List.iter (fun (name, alias) -> iter_loc sub name; iter_opt sub alias) values
+      | PImportAllExcept values -> 
+        List.iter (iter_loc sub) values
+      | PImportModule -> () end;
+    sub.location sub loc
+  let iter sub imports = List.iter (iter_one sub) imports
 end
 
 module Ex = struct

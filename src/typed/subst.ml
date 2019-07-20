@@ -230,7 +230,8 @@ let rec rename_bound_idents s idents = function
       rename_bound_idents s (id' :: idents) sg
 
 let rec modtype s = function
-    TModIdent p as mty ->
+    (TModIdent p as mty)
+  | (TModAlias p as mty) ->
       begin match p with
         PIdent id ->
           begin try Tbl.find id s.modtypes with Not_found -> mty end
@@ -263,6 +264,7 @@ and module_declaration s decl =
   {
     md_type = modtype s decl.md_type;
     md_loc = loc s decl.md_loc;
+    md_filepath = decl.md_filepath;
   }
 
 and modtype_declaration s decl  =
