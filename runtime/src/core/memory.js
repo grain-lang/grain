@@ -13,7 +13,7 @@ export class ManagedMemory {
     this._mallocModule = mallocJSModule(globNS, {
       initialHeapSize: memory.buffer.byteLength,
       growHeap: () => memory.grow(1)
-    }, this._heap);
+    }, this._memory.buffer);
   }
 
   malloc(size) {
