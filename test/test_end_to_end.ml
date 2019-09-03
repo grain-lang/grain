@@ -222,37 +222,37 @@ let tuple_tests = [
 ]
 
 let stdlib_tests = [
-  tlib "stdlib_cons" ("import lists; " ^ mylist) "Cons(1, Cons(2, Cons(3, Empty)))";
-  tlib "stdlib_sum_1" ("import lists; sum(" ^ mylist ^ ")") "6";
-  tlib "stdlib_sum_2" "import lists; sum(Empty)" "0";
-  tlib "stdlib_reverse" ("import lists; reverse(" ^ mylist ^ ")") "Cons(3, Cons(2, Cons(1, Empty)))";
-  tlib "stdlib_length" "import lists; length(Cons(1, Cons(2, Cons(3, Empty))))" "3";
+  tlib "stdlib_cons" ("import * from 'lists'; " ^ mylist) "Cons(1, Cons(2, Cons(3, Empty)))";
+  tlib "stdlib_sum_1" ("import * from 'lists'; sum(" ^ mylist ^ ")") "6";
+  tlib "stdlib_sum_2" "import * from 'lists'; sum(Empty)" "0";
+  tlib "stdlib_reverse" ("import * from 'lists'; reverse(" ^ mylist ^ ")") "Cons(3, Cons(2, Cons(1, Empty)))";
+  tlib "stdlib_length" "import * from 'lists'; length(Cons(1, Cons(2, Cons(3, Empty))))" "3";
   (* With compiler optimizations, these are optimized into the same tuple instance *)
-  tlib "stdlib_equal_1" "import lists; (1, 2) == (1, 2)" "true";
-  tlib "stdlib_equal_2" "import pervasives; equal((1, 2), (1, 2))" "true";
-  tlib "stdlib_equal_3" "import lists; equal(Cons(1, Cons(2, Cons(3, Empty))), Cons(1, Cons(2, Cons(3, Empty))))" "true";
-  tlib "stdlib_equal_4" "import lists; equal(1, 1)" "true";
-  tlib "stdlib_equal_5" "import lists; equal(1, 2)" "false";
-  tlib "stdlib_equal_6" "import lists; equal(true, true)" "true";
-  tlib "stdlib_equal_7" "import lists; equal(true, false)" "false";
-  tlib "stdlib_contains_1" "import lists; contains(true, Cons(1, Cons(2, Cons(3, Empty))))" "false";
-  tlib "stdlib_contains_2" "import lists; contains(false, Cons(1, Cons(2, Cons(3, Empty))))" "false";
-  tlib "stdlib_contains_3" "import lists; contains(3, Cons(1, Cons(2, Cons(3, Empty))))" "true";
-  telib "stdlib_err_1" "import lists; Cons(1)" "cannot be called with 1 argument";
-  telib "stdlib_err_2" "import lists; Cons()" "cannot be called with 0 arguments";
-  telib "stdlib_err_3" "import lists; Cons(1, 2, 3)" "cannot be called with 3 arguments";
-  telib "stdlib_sum_err" "import lists; sum(Cons(true, false))" "This expression has type Bool but";
-  telib "stdlib_length_err" "import lists; length(true)" "This expression has type Bool but";
-  telib "stdlib_reverse_err" "import lists; reverse(1)" "This expression has type Number but";
+  tlib "stdlib_equal_1" "import * from 'lists'; (1, 2) == (1, 2)" "true";
+  tlib "stdlib_equal_2" "import * from 'pervasives'; equal((1, 2), (1, 2))" "true";
+  tlib "stdlib_equal_3" "import * from 'lists'; equal(Cons(1, Cons(2, Cons(3, Empty))), Cons(1, Cons(2, Cons(3, Empty))))" "true";
+  tlib "stdlib_equal_4" "import * from 'lists'; equal(1, 1)" "true";
+  tlib "stdlib_equal_5" "import * from 'lists'; equal(1, 2)" "false";
+  tlib "stdlib_equal_6" "import * from 'lists'; equal(true, true)" "true";
+  tlib "stdlib_equal_7" "import * from 'lists'; equal(true, false)" "false";
+  tlib "stdlib_contains_1" "import * from 'lists'; contains(true, Cons(1, Cons(2, Cons(3, Empty))))" "false";
+  tlib "stdlib_contains_2" "import * from 'lists'; contains(false, Cons(1, Cons(2, Cons(3, Empty))))" "false";
+  tlib "stdlib_contains_3" "import * from 'lists'; contains(3, Cons(1, Cons(2, Cons(3, Empty))))" "true";
+  telib "stdlib_err_1" "import * from 'lists'; Cons(1)" "cannot be called with 1 argument";
+  telib "stdlib_err_2" "import * from 'lists'; Cons()" "cannot be called with 0 arguments";
+  telib "stdlib_err_3" "import * from 'lists'; Cons(1, 2, 3)" "cannot be called with 3 arguments";
+  telib "stdlib_sum_err" "import * from 'lists'; sum(Cons(true, false))" "This expression has type Bool but";
+  telib "stdlib_length_err" "import * from 'lists'; length(true)" "This expression has type Bool but";
+  telib "stdlib_reverse_err" "import * from 'lists'; reverse(1)" "This expression has type Number but";
 
-  tlib "map_1" ("import lists; map(((x) => {x + 1}), " ^ mylist ^ ")")
+  tlib "map_1" ("import * from 'lists'; map(((x) => {x + 1}), " ^ mylist ^ ")")
     "Cons(2, Cons(3, Cons(4, Empty)))";
-  tlib "map_2" ("import lists; map(((x) => {x * 2}), " ^ mylist ^ ")")
+  tlib "map_2" ("import * from 'lists'; map(((x) => {x * 2}), " ^ mylist ^ ")")
     "Cons(2, Cons(4, Cons(6, Empty)))";
-  tlib "map_print" ("import lists; map(print, " ^ mylist ^ ")") "1\n2\n3\nCons(1, Cons(2, Cons(3, Empty)))";
-  tlib "fold_left_1" ("import lists; fold_left(((acc, cur) => {acc - cur}), 0, " ^ mylist ^ ")")
+  tlib "map_print" ("import * from 'lists'; map(print, " ^ mylist ^ ")") "1\n2\n3\nCons(1, Cons(2, Cons(3, Empty)))";
+  tlib "fold_left_1" ("import * from 'lists'; fold_left(((acc, cur) => {acc - cur}), 0, " ^ mylist ^ ")")
     "-6";
-  tlib "fold_right_1" ("import lists; fold_right(((cur, acc) => {cur - acc}), 0, " ^ mylist ^ ")")
+  tlib "fold_right_1" ("import * from 'lists'; fold_right(((cur, acc) => {cur - acc}), 0, " ^ mylist ^ ")")
     "2";
 ]
 
@@ -339,8 +339,67 @@ let gc = [
 ]
 
 let import_tests = [
-  te "test_bad_import" "{let x = (1, 2); import lists; x}" "error";
-  te "test_missing_import" "import foo; 2" "Unbound module";
+  (* import * tests *)
+  t "import_all" "import * from 'exportStar'; {print(x); print(y(4)); z}" "5\n4\n\"foo\"";
+  t "import_all_except" "import * except {y} from 'exportStar'; {print(x); z}" "5\n\"foo\"";
+  t "import_all_except_multiple" "import * except {x, y} from 'exportStar'; {z}" "\"foo\"";
+  t "import_all_constructor" "import * from 'lists'; Cons(2, Empty)" "Cons(2, Empty)";
+  t "import_all_except_constructor" "import * except {Cons} from 'lists'; Empty" "Empty";
+  t "import_all_except_multiple_constructor" "import * except {Cons, append} from 'lists'; sum(Empty)" "0";
+
+  (* import * errors *)
+  te "import_all_except_error" "import * except {y} from 'exportStar'; {print(x); print(y); z}" "Unbound value y";
+  te "import_all_except_multiple_error" "import * except {x, y} from 'exportStar'; {print(x); z}" "Unbound value x";
+  te "import_all_except_multiple_error2" "import * except {x, y} from 'exportStar'; {print(x); print(y); z}" "Unbound value y";
+  te "import_all_except_error_constructor" "import * except {Cons} from 'lists'; Cons(2, Empty)" "Unbound value Cons";
+  te "import_all_except_multiple_error_constructor" "import * except {Cons, append} from 'lists'; append(Empty, Empty)" "Unbound value append";
+  te "import_all_except_multiple_error2_constructor" "import * except {Cons, append} from 'lists'; let x = Cons(2, Empty); append(x, Empty)" "Unbound value Cons";
+
+  (* import {} tests *)
+  t "import_some" "import {x} from 'exportStar'; x" "5";
+  t "import_some_multiple" "import {x, y} from 'exportStar'; y(x)" "5";
+  t "import_some_constructor" "import {Cons, Empty} from 'lists'; Cons(5, Empty)" "Cons(5, Empty)";
+  t "import_some_mixed" "import {Cons, Empty, sum} from 'lists'; sum(Cons(5, Empty))" "5";
+  t "import_alias" "import {x as y} from 'exportStar'; y" "5";
+  t "import_alias_multiple" "import {x as y, y as x} from 'exportStar'; x(y)" "5";
+  t "import_alias_constructor" "import {Empty as None, sum} from 'lists'; sum(None)" "0";
+  t "import_alias_multiple_constructor" "import {Cons as Add, Empty as None, sum} from 'lists'; sum(Add(1, None))" "1";
+
+  (* import {} errors *)
+  te "import_some_error" "import {a} from 'exportStar'; a" "Export 'a' was not found in 'exportStar'";
+  te "import_some_error2" "import {x, a} from 'exportStar'; a" "Export 'a' was not found in 'exportStar'";
+  te "import_some_error3" "import {Foo} from 'exportStar'; a" "Export 'Foo' was not found in 'exportStar'";
+  te "import_some_error3" "import {x, Foo} from 'exportStar'; a" "Export 'Foo' was not found in 'exportStar'";
+
+  (* import module tests *)
+  t "import_module" "import Foo from 'exportStar'; Foo.x" "5";
+  t "import_module2" "import Foo from 'exportStar'; Foo.y(Foo.x)" "5";
+
+  (* import module errors *)
+  te "import_module_error" "import Foo from 'exportStar'; Foo.foo" "Unbound value foo in module Foo";
+
+  (* import well-formedness errors *)
+  te "import_alias_illegal_renaming" "import {Cons as cons, Empty} from 'lists'; cons(3, Empty)" "Alias 'cons' should have proper casing";
+  te "import_alias_illegal_renaming2" "import {sum as Sum, Empty} from 'lists'; sum(Empty)" "Alias 'Sum' should have proper casing";
+  te "import_module_illegal_name" "import foo from 'lists';" "Module 'foo' should have an uppercase name";
+  te "import_module_not_external" "import Foo.Foo from 'lists';" "Module name 'Foo.Foo' should contain only one module.";
+  te "import_value_not_external" "import {foo as Foo.foo} from 'lists';" "Alias 'Foo.foo' should be at most one level deep";
+
+  (* import multiple modules tests *)
+  t "import_muliple_modules" "import * from 'lists'; import * from 'exportStar'; Cons(x, Empty)" "Cons(5, Empty)";
+
+  (* import same module tests *)
+  t "import_same_module_unify" "import * from 'lists'; import List from 'lists'; Cons(5, List.Empty)" "Cons(5, Empty)";
+  t "import_same_module_unify2" "import *, List from 'lists'; Cons(5, List.Empty)" "Cons(5, Empty)";
+
+  (* import filepath tests *)
+  t "import_relative_path" "import * from './exportStar'; x" "5";
+  t "import_relative_path2" "import * from '../test-libs/exportStar'; x" "5";
+  t "import_relative_path3" "import * from 'nested/nested'; j" "\"j\"";
+  te "import_missing_file" "import * from 'foo'; 2" "Missing file for module foo";
+
+  (* Misc import tests *)
+  te "test_bad_import" "{let x = (1, 2); import * from 'lists'; x}" "error";
 ]
 
 (* Note that optimizations are on by default, so all of the above tests
@@ -505,18 +564,18 @@ let data_tests =
 
 let export_tests =
   [
-    te "export1" "import noExports; x" "Unbound value x";
-    te "export2" "import noExports; y" "Unbound value y";
-    te "export3" "import noExports; z" "Unbound value z";
+    te "export1" "import * from 'noExports'; x" "Unbound value x";
+    te "export2" "import * from 'noExports'; y" "Unbound value y";
+    te "export3" "import * from 'noExports'; z" "Unbound value z";
 
-    t "export4" "import onlyXExported; x" "4";
-    te "export5" "import onlyXExported; y" "Unbound value y";
-    te "export6" "import onlyXExported; z" "Unbound value z";
+    t "export4" "import * from 'onlyXExported'; x" "4";
+    te "export5" "import * from 'onlyXExported'; y" "Unbound value y";
+    te "export6" "import * from 'onlyXExported'; z" "Unbound value z";
 
-    t "export7" "import exportStar; x" "5";
-    t "export8" "import exportStar; x + y(4)" "9";
-    t "export9" "import exportStar; y(z)" "foo";
-    te "export10" "import exportStar; y(secret)" "Unbound value secret";
+    t "export7" "import * from 'exportStar'; x" "5";
+    t "export8" "import * from 'exportStar'; x + y(4)" "9";
+    t "export9" "import * from 'exportStar'; y(z)" "\"foo\"";
+    te "export10" "import * from 'exportStar'; y(secret)" "Unbound value secret";
   ]
 
 let tests =
