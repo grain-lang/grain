@@ -33,7 +33,7 @@ let reverse = (lst) => {
 let rec append = (l1, l2) => {
   match (l1) {
     | Empty => l2
-    | Cons(hd, tl) => Cons(hd, append(l1, l2))
+    | Cons(hd, tl) => Cons(hd, append(tl, l2))
   }
 };
 
