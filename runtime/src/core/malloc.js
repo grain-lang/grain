@@ -98,7 +98,7 @@ export function mallocJSModule(stdlib, foreign, ext_heap) {
         // More bytes requested than the initial heap size,
         // so we need to request more anyway.
         reqSize = (nbytes - heapSize)|0;
-        reqResult = extGrowHeap(reqSize)|0;
+        reqResult = extGrowHeap(reqSize|0)|0;
         if ((reqResult|0) == (-1|0)) {
           return -1|0;
         }
@@ -107,11 +107,11 @@ export function mallocJSModule(stdlib, foreign, ext_heap) {
       return origSize|0;
     } else {
       // The size has already been initialized, so call the external function.
-      reqResult = extGrowHeap(nbytes)|0;
+      reqResult = extGrowHeap(nbytes|0)|0;
       if ((reqResult|0) == (-1|0)) {
         return -1|0;
       }
-      heapSize = ((heapSize|0) + (reqResult|0));
+      heapSize = ((heapSize|0) + (reqResult|0))|0;
     }
     return origSize|0;
   }
@@ -208,7 +208,7 @@ export function mallocJSModule(stdlib, foreign, ext_heap) {
     }
     // Set the size of the new block to the amount the
     // heap was grown.
-    grownAmount = (heapSize|0) - (origSize|0);
+    grownAmount = ((heapSize|0) - (origSize|0))|0;
     up = cp;
     heap[(up + 4) >> 2] = grownAmount|0;
     // Call free() with the new block to add it to the free list.
