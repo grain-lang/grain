@@ -3,7 +3,6 @@ import { mallocJSModule } from './malloc';
 export class ManagedMemory {
   constructor(memory) {
     this._memory = memory;
-    this._heap = new Int32Array(memory.buffer);
     var globNS;
     if (typeof window === 'undefined') {
       globNS = global;
