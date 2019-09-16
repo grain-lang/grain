@@ -419,6 +419,13 @@ let rec normalize_package_path env p =
         normalize_package_path env (Path.PExternal(p1', s, n))
     | _ -> p*)
 
+let is_newtype env p =
+  try
+    let decl = Env.find_type p env in
+    decl.type_newtype_level <> None &&
+    decl.type_kind = TDataAbstract
+  with Not_found -> false
+
 let rec update_level env level expand ty =
   let ty = repr ty in
   if ty.level > level then begin
@@ -426,7 +433,6 @@ let rec update_level env level expand ty =
     (* | TTyConstr(p, _tl, _abbrev) when level < get_level env p ->
       (* Try first to replace an abbreviation by its expansion. *)
       begin try
-          (* if is_newtype env p then raise Cannot_expand; *)
           link_type ty (!forward_try_expand_once env ty);
           update_level env level expand ty
         with Cannot_expand ->
@@ -1484,13 +1490,6 @@ let reify env t =
     end
   in
   iterator t
-
-let is_newtype env p =
-  try
-    let decl = Env.find_type p env in
-    decl.type_newtype_level <> None &&
-    decl.type_kind = TDataAbstract
-  with Not_found -> false
 
 let non_aliasable p decl =
   (* in_pervasives p ||  (subsumed by in_current_module) *)

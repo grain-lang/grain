@@ -59,7 +59,7 @@ let decl_abstr =
    type_kind = TDataAbstract;
    type_loc = Location.dummy_loc;
    type_manifest = None;
-   type_newtype_level = None;
+   type_newtype_level = Some(0, 0);
    type_immediate = false;
   }
 
