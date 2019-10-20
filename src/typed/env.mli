@@ -97,7 +97,7 @@ val add_local_type: Path.t -> type_declaration -> t -> t
 val add_item: signature_item -> t -> t
 val add_signature: signature -> t -> t
 
-(* Remember the current compilation unit. *)
+(* Remember the current compilation unit: modname * filename. *)
 val set_unit: string * string -> unit
 val get_unit: unit -> string * string
 
