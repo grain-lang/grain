@@ -158,7 +158,6 @@ and match_branch = {
 
 type import_declaration = {
   timp_path: Path.t;
-  timp_mod: Identifier.t loc;
   timp_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
 } [@@deriving sexp]
 

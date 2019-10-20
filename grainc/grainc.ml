@@ -33,6 +33,7 @@ let default_output_filename name = safe_remove_extension name ^ ".wasm"
 let default_assembly_filename name = safe_remove_extension name ^ ".wast"
 
 let compile_file name outfile_arg =
+  Grain_utils.Config.base_path := dirname name;
   if not (Printexc.backtrace_status()) && !Grain_utils.Config.verbose then
     Printexc.record_backtrace true;
   infer_root_if_needed();

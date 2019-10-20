@@ -146,7 +146,6 @@ and match_branch = {
 
 type import_declaration = {
   timp_path: Path.t;
-  timp_mod: Identifier.t Location.loc;
   timp_loc: Location.t;
 } [@@deriving sexp]
 

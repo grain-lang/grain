@@ -30,7 +30,7 @@ let () =
   let stdlib = Grain_utils.Config.stdlib_directory() in
   Unix.putenv "GRAIN_ROOT" grain_root;
   Option.may (fun x ->
-      ignore(Grain.Compile.compile_file ~outfile:(x ^ "/" ^ "lists.wasm") (x ^ "/" ^ "lists.grlib"))
+      ignore(Grain.Compile.compile_file ~outfile:(x ^ "/" ^ "lists.wasm") (x ^ "/" ^ "lists.gr"))
     )
     stdlib;
   Grain_utils.Config.debug := true;

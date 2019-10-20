@@ -11,7 +11,6 @@ type input_source =
 type compilation_state_desc =
   | Initial of input_source
   | Parsed of Parsetree.parsed_program
-  | WithLibraries of Parsetree.parsed_program
   | WellFormed of Parsetree.parsed_program
   | TypeChecked of Typedtree.typed_program
   | Linearized of Anftree.anf_program
@@ -68,9 +67,6 @@ let log_state state =
       | Parsed(p) ->
         prerr_string "\nParsed program:\n";
         prerr_sexp Grain_parsing.Parsetree.sexp_of_parsed_program p;
-      | WithLibraries(full_p) ->
-        prerr_string "\nwith libraries:\n";
-        prerr_sexp Grain_parsing.Parsetree.sexp_of_parsed_program full_p;
       | WellFormed _ ->
         prerr_string "\nWell-Formedness passed";
       | TypeChecked(typed_mod) ->
@@ -114,11 +110,8 @@ let next_state ({cstate_desc} as cs) =
       cleanup();
       Parsed(parsed)
     | Parsed(p) ->
-      (*WithLibraries(Grain_stdlib.load_libraries p)*)
-      WithLibraries(p)
-    | WithLibraries(full_p) ->
-      Well_formedness.check_well_formedness full_p;
-      WellFormed(full_p)
+      Well_formedness.check_well_formedness p;
+      WellFormed(p)
     | WellFormed(full_p) ->
       TypeChecked(Typemod.type_implementation full_p)
     | TypeChecked(typed_mod) ->
@@ -182,10 +175,6 @@ let compile_file ?hook ?outfile filename =
 
 let stop_after_parse = function
   | {cstate_desc=Parsed(_)} -> Stop
-  | s -> Continue s
-
-let stop_after_libraries = function
-  | {cstate_desc=WithLibraries(_)} -> Stop
   | s -> Continue s
 
 let stop_after_well_formed = function

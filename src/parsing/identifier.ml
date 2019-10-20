@@ -1,7 +1,7 @@
 
 open Sexplib.Conv
 
-let sep = "::"
+let sep = "."
 
 type t =
   | IdentName of string

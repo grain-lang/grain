@@ -56,7 +56,9 @@ type error =
   | Need_recursive_types of string * string
   | Depend_on_unsafe_string_unit of string * string
   | Missing_module of Location.t * Path.t * Path.t
+  | Unbound_module of Location.t * string
   | No_module_file of string * string option
+  | Value_not_found_in_module of Location.t * string * string
   | Illegal_value_name of Location.t * string
   | Cyclic_dependencies of string * dependency_chain
 
@@ -500,8 +502,8 @@ let strengthen =
   ref ((fun ~aliasable:_ _env _mty _path -> assert false) :
          aliasable:bool -> t -> module_type -> Path.t -> module_type)
 
-let md md_type =
-  {md_type; md_loc=Location.dummy_loc}
+let md md_type md_filepath =
+  {md_type; md_filepath; md_loc=Location.dummy_loc}
 
 let subst_modtype_maker (subst, md) =
   if subst == Subst.identity then md
@@ -528,12 +530,12 @@ let get_components c =
   | None -> empty_structure
   | Some c -> c
 
-let current_unit = ref ""
+let current_unit = ref ("", "")
 
-let set_unit_name name =
-  current_unit := name
+let set_unit (name, source) =
+  current_unit := (name, source)
 
-let get_unit_name () =
+let get_unit () =
   !current_unit
 
 
@@ -626,7 +628,8 @@ let get_dependency_chain ~loc unit_name =
 let mark_in_progress ~loc unit_name sourcefile =
   if Hashtbl.mem compilation_in_progress sourcefile then
     error (Cyclic_dependencies(unit_name, get_dependency_chain ~loc unit_name));
-  Hashtbl.add compilation_in_progress sourcefile (Location.mkloc (get_unit_name()) loc);
+  let stored_name, _ = get_unit() in
+  Hashtbl.add compilation_in_progress sourcefile (Location.mkloc stored_name loc);
   Hashtbl.add unit_to_file unit_name sourcefile
 
 let mark_completed unit_name sourcefile =
@@ -661,24 +664,19 @@ let get_up_to_date ~loc unit_name = function
     (* Note: This is a potential security issue? *)
     let outpath = get_output_name srcpath in
     mark_in_progress ~loc unit_name srcpath;
-    let save_unit_name = get_unit_name() in
+    let saved_unit = get_unit() in
     let saved = Ident.save_state() in
     (!compile_module_dependency) srcpath outpath;
     Ident.restore_state saved;
-    set_unit_name save_unit_name;
+    set_unit saved_unit;
     mark_completed unit_name srcpath;
     outpath
 
 let find_ext_in_dir dir name =
   let file_exists = Sys.file_exists in
-  let uname = String.uncapitalize_ascii name in
   let fullname = Filename.concat dir name in
-  let ufullname = Filename.concat dir uname in
   let rec process_ext = function
-    | [] when file_exists ufullname -> Some(ufullname, dir, uname, "")
-    | [] when file_exists fullname -> Some(fullname, dir, name, "")
     | [] -> None
-    | ext :: _ when file_exists (ufullname ^ ext) -> Some(ufullname ^ ext, dir, uname, ext)
     | ext :: _ when file_exists (fullname ^ ext) -> Some(fullname ^ ext, dir, name, ext)
     | _ :: tl -> process_ext tl in
   process_ext
@@ -693,7 +691,7 @@ let find_in_path_uncap ?exts:(exts=[]) path name =
   in try_dir path
 
 let locate_module path unit_name =
-  let grain_src_exts = [".gr"; ".grlib"] in
+  let grain_src_exts = [".gr"] in
   match find_in_path_uncap ~exts:[".wasm"] path unit_name with
   | objpath, dir, basename, ext ->
     begin match find_ext_in_dir dir basename grain_src_exts with
@@ -705,7 +703,23 @@ let locate_module path unit_name =
     GrainModule(srcpath, None)
 
 let locate_module_file ~loc path unit_name =
-  get_up_to_date ~loc unit_name (locate_module path unit_name)
+  try
+    get_up_to_date ~loc unit_name (locate_module path unit_name)
+  with Not_found ->
+    error (No_module_file (unit_name, None))
+
+let resolutions = Hashtbl.create 12
+
+let resolve_unit unit_name =
+  try 
+    Hashtbl.find resolutions unit_name
+  with Not_found ->
+    let path = Grain_utils.Config.module_search_path() in
+    let exts = [".gr"; ".wasm"] in
+    let _, dir, basename, _ = find_in_path_uncap ~exts path unit_name in
+    let resolution = Grain_utils.Files.derelativize @@ Filename.concat dir basename in
+    Hashtbl.add resolutions unit_name resolution;
+    resolution
 
 module Persistent_signature = struct
   type t =
@@ -737,17 +751,17 @@ let acknowledge_pers_struct check modname
              ps_filename = filename;
              ps_flags = flags;
            } in
-  if ps.ps_name <> modname then
-    error (Illegal_renaming(modname, ps.ps_name, filename));
 
   List.iter
     (function
         | Rectypes ->
             if not !Clflags.recursive_types then
-              error (Need_recursive_types(ps.ps_name, !current_unit))
+              let unit_name, _ = get_unit() in
+              error (Need_recursive_types(ps.ps_name, unit_name))
         | Unsafe_string ->
             if Config.safe_string then
-              error (Depend_on_unsafe_string_unit (ps.ps_name, !current_unit));
+              let unit_name, _ = get_unit() in
+              error (Depend_on_unsafe_string_unit (ps.ps_name, unit_name));
         | Opaque -> add_imported_opaque modname)
     ps.ps_flags;
   if check then check_consistency ps;
@@ -760,7 +774,7 @@ let read_pers_struct check modname filename =
   acknowledge_pers_struct check modname
     { Persistent_signature.filename; cmi }
 
-let find_pers_struct ~loc check name =
+let find_pers_struct ~loc check name filepath =
   if name = "*predef*" then raise Not_found;
   match Hashtbl.find persistent_structures name with
   | Some ps -> ps
@@ -770,7 +784,12 @@ let find_pers_struct ~loc check name =
     | Cannot_load_modules _ -> raise Not_found
     | Can_load_modules ->
         let ps =
-          match !Persistent_signature.load ~loc ~unit_name:name with
+          let filepath = begin try
+              Option.get filepath
+            with Option.No_value ->
+              failwith "No file path specified"
+            end in
+          match !Persistent_signature.load ~loc ~unit_name:filepath with
           | Some ps -> ps
           | None ->
             Hashtbl.add persistent_structures name None;
@@ -781,9 +800,9 @@ let find_pers_struct ~loc check name =
 
 
 (* Emits a warning if there is no valid cmi for name *)
-let check_pers_struct ~loc name =
+let check_pers_struct ~loc name filename =
   try
-    ignore (find_pers_struct ~loc false name)
+    ignore (find_pers_struct ~loc false name filename)
   with
   | Not_found ->
     let err = No_module_file(name, None) in
@@ -808,8 +827,10 @@ let check_pers_struct ~loc name =
       | Depend_on_unsafe_string_unit (name, _) ->
         Printf.sprintf "%s uses -unsafe-string"
           name
+      | Unbound_module _ -> assert false
       | Missing_module _ -> assert false
       | No_module_file _ -> assert false
+      | Value_not_found_in_module _ -> assert false
       | Illegal_value_name _ -> assert false
       | Cyclic_dependencies _ -> assert false
     in
@@ -819,10 +840,10 @@ let check_pers_struct ~loc name =
 let read_pers_struct modname filename =
   read_pers_struct true modname filename
 
-let find_pers_struct name =
-  find_pers_struct true name
+let find_pers_struct name filename =
+  find_pers_struct true name filename
 
-let check_pers_struct ~loc name =
+let check_pers_struct ~loc name filename =
   if not (Hashtbl.mem persistent_structures name) then begin
     (* PR#6843: record the weak dependency ([add_import]) regardless of
        whether the check succeeds, to help make builds more
@@ -830,22 +851,24 @@ let check_pers_struct ~loc name =
     add_import name;
     if (Warnings.is_active (Warnings.No_cmi_file("", None))) then
       !add_delayed_check_forward
-        (fun () -> check_pers_struct ~loc name)
+        (fun () -> check_pers_struct ~loc name filename)
   end
 
 
-let rec find_module_descr path env =
+let rec find_module_descr path filename env =
   match path with
   | PIdent id ->
     begin try
         IdTbl.find_same id env.components
       with Not_found ->
-        if Ident.persistent id && not (Ident.name id = !current_unit)
-        then (find_pers_struct ~loc:Location.dummy_loc (Ident.name id)).ps_comps
+        let _, unit_source = get_unit() in
+        if Ident.persistent id && not (Option.default (Ident.name id) filename = unit_source)
+        then 
+          (find_pers_struct ~loc:Location.dummy_loc (Ident.name id) filename).ps_comps
         else raise Not_found
     end
   | PExternal(m, s, pos) ->
-    let c = get_components (find_module_descr m env) in
+    let c = get_components (find_module_descr m filename env) in
     let (descr, _pos) = Tbl.find s c.comp_components in
     descr
 
@@ -854,7 +877,7 @@ let find proj1 proj2 path env =
   | PIdent id ->
     IdTbl.find_same id (proj1 env)
   | PExternal(m, n, _pos) ->
-    let c = get_components (find_module_descr m env) in
+    let c = get_components (find_module_descr m None env) in
     let (data, _pos) = Tbl.find n (proj2 c) in
     data
 
@@ -880,21 +903,22 @@ let find_type p env =
 let find_type_descrs p env =
   snd (find_type_full p env)
 
-let find_module ~alias path env =
+let find_module ~alias path filename env =
   match path with
   | PIdent id ->
     begin try
         let data = IdTbl.find_same id env.modules in
         EnvLazy.force subst_modtype_maker data
       with Not_found ->
-        if Ident.persistent id && not (Ident.name id = !current_unit) then
-          let ps = find_pers_struct ~loc:Location.dummy_loc (Ident.name id) in
-          md (TModSignature(Lazy.force ps.ps_sig))
+        let _, unit_source = get_unit() in
+        if Ident.persistent id && not (Option.default (Ident.name id) filename = unit_source) then
+          let ps = find_pers_struct ~loc:Location.dummy_loc (Ident.name id) filename in
+          md (TModSignature(Lazy.force ps.ps_sig)) filename
         else raise Not_found
     end
   | PExternal(m, n, _pos) ->
     begin
-      let c = get_components (find_module_descr m env) in
+      let c = get_components (find_module_descr m filename env) in
       let (data, _pos) = Tbl.find n c.comp_modules in
       EnvLazy.force subst_modtype_maker data
     end
@@ -969,22 +993,24 @@ let rec lookup_module_descr_aux ~mark id env =
   let open Identifier in
   match id with
   | IdentName s ->
-    IdTbl.find_name ~mark s env.components
+    let id = Ident.create_persistent s in
+    PIdent id, IdTbl.find_same id env.components
   | IdentExternal(m, n) ->
     let (p, descr) = lookup_module_descr ~mark m env in
-    let (descr, pos) = Tbl.find n (get_components descr).comp_components in
-    (PExternal(p, n, pos), descr)
+    (* let (_, pos) = Tbl.find n (get_components descr).comp_components in *)
+    (* FIXME: Should this have a proper position? *)
+    (PExternal(p, n, Path.nopos), descr)
 
 and lookup_module_descr ~mark id env =
   let (p, comps) as res = lookup_module_descr_aux ~mark id env in
   if mark then mark_module_used env (Path.last p) comps.loc;
   res
 
-and lookup_module ?loc ~load ~mark id env : Path.t =
+and lookup_module ?loc ~load ~mark id filename env : Path.t =
   match id with
   | Identifier.IdentName s ->
     begin try
-        let (p, data) = IdTbl.find_name ~mark s env.modules in
+        let p, data = IdTbl.find_name ~mark s env.modules in
         let {md_loc; md_type} = EnvLazy.force subst_modtype_maker data in
         if mark then mark_module_used env s md_loc;
         begin match md_type with
@@ -995,14 +1021,15 @@ and lookup_module ?loc ~load ~mark id env : Path.t =
         end;
         p
       with Not_found ->
-        if s = !current_unit then raise Not_found;
+        let _, unit_source = get_unit() in
+        if Option.default s filename = unit_source then raise Not_found;
         let p = PIdent(Ident.create_persistent s) in
         let loc = Option.default Location.dummy_loc loc in
         if (*!Grain_utils.Config.transparent_modules &&*) not load
         then
-          check_pers_struct ~loc s
+          check_pers_struct ~loc s filename
         else begin
-          ignore(find_pers_struct ~loc s)
+          ignore(find_pers_struct ~loc s filename)
         end;
         p
     end
@@ -1022,7 +1049,11 @@ let lookup_idtbl ~mark proj1 proj2 id env =
   | IdentExternal(m, n) ->
     let (p, desc) = lookup_module_descr ~mark id env in
     let (data, pos) = Tbl.find n (proj2 (get_components desc)) in
-    (PExternal(p, n, pos), data)
+    let new_path = begin match p with
+      | PExternal(path, name, _) -> PExternal(path, name, pos)
+      | _ -> assert false
+    end in
+    (new_path, data)
 
 let lookup_tycomptbl ~mark proj1 proj2 id env =
   let open Identifier in
@@ -1090,8 +1121,8 @@ let lookup_all_constructors ?(mark = true) lid env =
   with
     Not_found when (match lid with Identifier.IdentName _ -> true | _ -> false) -> []
 
-let lookup_module ~load ?loc ?(mark = true) lid env =
-  lookup_module ~load ?loc ~mark lid env
+let lookup_module ~load ?loc ?(mark = true) lid filename env =
+  lookup_module ~load ?loc ~mark lid filename env
 
 let lookup_modtype ?loc ?(mark = true) lid env =
   lookup_modtype ~mark lid env
@@ -1187,7 +1218,8 @@ let find_shadowed_types path env =
 
 let rec scrape_alias env ?path mty =
   match mty, path with
-  | TModIdent p, _ ->
+  | TModIdent p, _
+  | TModAlias p, _ ->
       begin try
         scrape_alias env (find_modtype_expansion p env) ?path
       with Not_found ->
@@ -1277,7 +1309,11 @@ and components_of_module_maker (env, sub, path, mty) =
         comp_components = Tbl.empty;
         comp_modtypes = Tbl.empty;
       } in
-    let pl, sub = prefix_idents path sub sg in
+    let pl, sub = begin match mty, path with 
+      | TModAlias path, _
+      | TModIdent path, _
+      | TModSignature _, path -> 
+        prefix_idents path sub sg end in
     let env = ref env in
     let pos = ref 0 in
     List.iter2 (fun item path ->
@@ -1302,9 +1338,15 @@ and components_of_module_maker (env, sub, path, mty) =
               let val_type = match desc.cstr_existentials with
                 | [] -> val_type
                 | existentials -> (Btype.newgenty (TTyPoly(val_type, existentials))) in
+              let get_path name =
+                begin match path with
+                  | PIdent _ -> PIdent (Ident.create name)
+                  | PExternal(PIdent mod_, _, level) -> PExternal(PIdent mod_, name, level)
+                  | PExternal(PExternal _, _, _) -> failwith "NYI: Multiple PExternal"
+                end in
               let val_desc = {
                 val_type;
-                val_fullpath = path;
+                val_fullpath = get_path desc.cstr_name;
                 val_kind = TValConstructor desc;
                 val_loc = desc.cstr_loc;
               } in
@@ -1340,6 +1382,7 @@ and components_of_module_maker (env, sub, path, mty) =
       sg pl;
     Some c
   | TModIdent _ -> None
+  | TModAlias _ -> None
 
 and store_type ~check id info env =
   (*let loc = info.type_loc in*)
@@ -1359,7 +1402,7 @@ and store_type ~check id info env =
         | existentials -> (Btype.newgenty (TTyPoly(val_type, existentials))) in
       let val_desc = {
         val_type;
-        val_fullpath = path;
+        val_fullpath = PIdent (Ident.create desc.cstr_name);
         val_kind = TValConstructor desc;
         val_loc = desc.cstr_loc;
       } in
@@ -1453,8 +1496,8 @@ let add_module_declaration ?(arg=false) ~check id md env =
 and add_modtype id info env =
   store_modtype id info env
 
-let add_module ?arg id mty env =
-  add_module_declaration ~check:false ?arg id (md mty) env
+let add_module ?arg id mty mf env =
+  add_module_declaration ~check:false ?arg id (md mty mf) env
 
 let add_constructor id desc ({constructors; _} as e) =
   {e with constructors = TycompTbl.add id desc constructors}
@@ -1491,7 +1534,7 @@ and enter_modtype = enter store_modtype
 
 let enter_module ?arg s mty env =
   let id = Ident.create s in
-  (id, enter_module_declaration ?arg id (md mty) env)
+  (id, enter_module_declaration ?arg id (md mty None) env)
 
 (* Insertion of all components of a signature *)
 
@@ -1509,7 +1552,7 @@ let rec add_signature sg env =
 
 (* Open a signature path *)
 
-let add_components ?filter_modules slot root env0 comps =
+let add_components ?filter_modules ?filter_components slot root env0 comps =
   let add_l w comps env0 =
     TycompTbl.add_open slot w comps env0
   in
@@ -1540,25 +1583,48 @@ let add_components ?filter_modules slot root env0 comps =
     add w comps env0
   in
 
+  let filtered_components =
+    match filter_components with
+    | Some f ->
+      let filter tbl =
+        let new_tbl = ref Tbl.empty in
+        Tbl.iter (fun name value ->
+          match f name with
+          | Some new_name -> new_tbl := Tbl.add new_name value !new_tbl
+          | None -> ()
+        ) tbl;
+        !new_tbl
+      in
+      {
+        comps with
+        comp_constrs=filter comps.comp_constrs;
+        comp_values=filter comps.comp_values;
+        comp_types=filter comps.comp_types;
+        comp_modtypes=filter comps.comp_modtypes;
+        comp_components=filter comps.comp_components;
+      }
+    | None -> comps
+  in
+
   let constructors =
-    add_l (fun x -> `Constructor x) comps.comp_constrs env0.constructors
+    add_l (fun x -> `Constructor x) filtered_components.comp_constrs env0.constructors
   in
 
   let values =
-    add (fun x -> `Value x) comps.comp_values env0.values
+    add (fun x -> `Value x) filtered_components.comp_values env0.values
   in
   let types =
-    add (fun x -> `Type x) comps.comp_types env0.types
+    add (fun x -> `Type x) filtered_components.comp_types env0.types
   in
   let modtypes =
-    add (fun x -> `Module_type x) comps.comp_modtypes env0.modtypes
+    add (fun x -> `Module_type x) filtered_components.comp_modtypes env0.modtypes
   in
   let components =
-    filter_and_add (fun x -> `Component x) comps.comp_components env0.components
+    filter_and_add (fun x -> `Component x) filtered_components.comp_components env0.components
   in
 
   let modules =
-    filter_and_add (fun x -> `Module x) comps.comp_modules env0.modules
+    filter_and_add (fun x -> `Module x) filtered_components.comp_modules env0.modules
   in
 
   { env0 with
@@ -1571,12 +1637,55 @@ let add_components ?filter_modules slot root env0 comps =
     modules;
   }
 
-let open_signature ?filter_modules slot root env0 =
-  let comps = get_components (find_module_descr root env0) in
-  Some (add_components ?filter_modules slot root env0 comps)
+let same_filepath unit1 unit2 =
+  (resolve_unit unit1) = (resolve_unit unit2)
 
-let open_pers_signature name env =
-  match open_signature None (PIdent(Ident.create_persistent name)) env with
+let check_opened (mod_ : Parsetree.import_declaration) env =
+  let rec find_open summary =
+    match summary with
+      | Env_empty -> None
+      | Env_module(summary, ({name} as id), {md_filepath=Some(filepath)})
+        when same_filepath filepath mod_.pimp_path.txt -> 
+          Some(PIdent(id))
+      | Env_module(summary, _, _)
+      | Env_value(summary, _, _)
+      | Env_type(summary, _, _)
+      | Env_modtype(summary, _, _)
+      | Env_constraints(summary, _)
+      | Env_copy_types(summary, _)
+      | Env_open(summary, _) -> find_open summary
+  in
+  find_open env.summary
+
+let add_module_signature ?(internal=false) mod_name (mod_ : Parsetree.import_declaration) env0 =
+  let name = match mod_name with
+    | Identifier.IdentName name -> name
+    | Identifier.IdentExternal _ -> failwith "NYI mod identifer is external"
+  in
+  let mod_alias = match (Option.default (Location.mknoloc mod_name) mod_.pimp_mod_alias).txt with
+    | Identifier.IdentName name -> name
+    | Identifier.IdentExternal _ -> failwith "NYI mod alias identifer is external" in
+  let mod_ident = if internal then (Ident.create name) else (Ident.create_persistent mod_alias) in
+  let filename = (Some mod_.pimp_path.txt) in
+  match check_opened mod_ env0 with
+  | Some(path) when not internal ->
+      let mod_type = (TModAlias path) in
+      add_modtype mod_ident {mtd_type=(Some mod_type); mtd_loc=mod_.pimp_loc} env0 |>
+      add_module mod_ident mod_type filename
+  | Some _ -> env0
+  | None ->
+    let {ps_sig} = find_pers_struct name filename mod_.pimp_loc in
+    let sign = Lazy.force ps_sig in
+    let mod_type = (TModSignature sign) in
+    add_modtype mod_ident {mtd_type=(Some mod_type); mtd_loc=mod_.pimp_loc} env0 |>
+    add_module mod_ident mod_type filename
+
+let open_signature ?filter_modules ?filter_components slot root filepath env0 =
+  let comps = get_components (find_module_descr root filepath env0) in
+  Some (add_components ?filter_modules ?filter_components slot root env0 comps)
+
+let open_pers_signature name filepath env =
+  match open_signature None (PIdent(Ident.create_persistent name)) filepath env with
   | Some env -> env
   | None -> assert false (* Invalid compilation unit *)
 
@@ -1589,13 +1698,72 @@ let open_signature_of_initially_opened_module ?loc:(loc=Location.dummy_loc) root
   in
   open_signature None root env ~filter_modules
 
+let check_imports found all where =
+  List.iter (fun comp ->
+    if List.mem comp found
+    then ()
+    else 
+      let {loc; txt} = comp in
+      error (Value_not_found_in_module (loc, Identifier.string_of_ident txt, where))
+  ) all
+
 let open_signature
     ?(used_slot = ref false)
-    ?(loc = Location.dummy_loc)
     ?(toplevel = false)
-    root env =
-  (* Omitted: some warnings *)
-  open_signature None root env
+    root mod_name (mod_ : Parsetree.import_declaration) env =
+  let env = add_module_signature ~internal:true mod_name mod_ env in
+  match mod_.pimp_val with
+  | PImportModule -> Some(add_module_signature mod_name mod_ env)
+  | PImportValues values ->
+    let imported = ref [] in
+    let filter_components name =
+      let value = List.find_opt (fun (val_name, _) ->
+        match (val_name : Identifier.t Parsetree.loc).txt with
+        | Identifier.IdentName id_name -> id_name = name
+        | Identifier.IdentExternal _ -> failwith "NYI"
+      ) values in
+      begin match value with
+        | Some (val_name, val_alias) ->
+          let new_name = Option.default val_name val_alias in
+          begin match new_name.txt with
+            | Identifier.IdentName id_name -> 
+              imported := val_name :: !imported;
+              Some(id_name)
+            | Identifier.IdentExternal _ -> failwith "NYI" 
+          end
+        | None -> None
+      end
+    in
+    let root = match check_opened mod_ env with
+      | Some path -> path
+      | None -> assert false
+    in
+    let new_env = open_signature ~filter_components None root (Some mod_.pimp_path.txt) env in
+    check_imports !imported (List.map (fun (value, _) -> value) values) mod_.pimp_path.txt;
+    new_env
+  | PImportAllExcept exceptions ->
+    let rejected = ref [] in
+    let filter_components name =
+      if List.exists (fun id ->
+        match id.txt with
+        | Identifier.IdentName id_name -> 
+          if id_name = name
+          then begin 
+            rejected := id :: !rejected; 
+            true 
+          end
+          else false
+        | Identifier.IdentExternal _ -> failwith "NYI"
+      ) exceptions
+      then None
+      else Some(name) in
+    let root = match check_opened mod_ env with
+      | Some path -> path
+      | None -> assert false
+    in
+    let new_env = open_signature ~filter_components None root (Some mod_.pimp_path.txt) env in
+    check_imports !rejected exceptions mod_.pimp_path.txt;
+    new_env
 
 (* Read a signature from a file *)
 let read_signature modname filename =
@@ -1603,8 +1771,8 @@ let read_signature modname filename =
   Lazy.force ps.ps_sig
 
 (* Return the CRC of the given compilation unit *)
-let crc_of_unit name =
-  let ps = find_pers_struct ~loc:Location.dummy_loc name in
+let crc_of_unit name filename =
+  let ps = find_pers_struct ~loc:Location.dummy_loc name filename in
   let crco =
     try
       List.assoc name ps.ps_crcs
@@ -1767,14 +1935,14 @@ let fold_modules f lid env acc =
           env.modules
           acc
       in
-      Hashtbl.fold
+      (* Hashtbl.fold
         (fun name ps acc ->
           match ps with
               None -> acc
             | Some ps ->
               f name (PIdent(Ident.create_persistent name))
-                     (md (TModSignature(Lazy.force ps.ps_sig))) acc)
-        persistent_structures
+                     (md (TModSignature(Lazy.force ps.ps_sig)) None) acc)
+        persistent_structures *)
         acc
     | Some l ->
       let p, desc = lookup_module_descr ~mark:true l env in
@@ -1857,8 +2025,10 @@ let report_error ppf = function
   | Illegal_value_name(_loc, name) ->
       fprintf ppf "'%s' is not a valid value identifier."
         name
+  | Unbound_module(_, modname) -> fprintf ppf "Unbound module %s" modname
   | No_module_file(m, None) -> fprintf ppf "Missing file for module %s" m
   | No_module_file(m, Some(msg)) -> fprintf ppf "Missing file for module %s: %s" m msg
+  | Value_not_found_in_module(_, name, path) -> fprintf ppf "Export '%s' was not found in '%s'" name path
   | Cyclic_dependencies(dep, chain) ->
     fprintf ppf "@[<v>@[Found cyclic dependency: %s@]@,%a@]"
       dep format_dependency_chain chain
@@ -1868,6 +2038,7 @@ let () =
     (function
       | Error (Missing_module (loc, _, _)
               | Illegal_value_name (loc, _)
+              | Value_not_found_in_module (loc, _, _)
                as err) when loc <> Location.dummy_loc ->
           Some (Location.error_of_printer loc report_error err)
       | Error err -> Some (Location.error_of_printer_file report_error err)

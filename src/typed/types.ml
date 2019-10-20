@@ -169,10 +169,12 @@ and signature = signature_item list
 
 and module_type =
   | TModIdent of Path.t
+  | TModAlias of Path.t
   | TModSignature of signature
 
 and module_declaration = {
   md_type: module_type;
+  md_filepath: string option;
   md_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled] [@default Location.dummy_loc];
 }
 

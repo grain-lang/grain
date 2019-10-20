@@ -59,6 +59,7 @@ type error =
   | Multiple_constraints_on_type of Identifier.t
   | Method_mismatch of string * type_expr * type_expr
   | Unbound_value of Identifier.t
+  | Unbound_value_in_module of Identifier.t * string
   | Unbound_constructor of Identifier.t
   | Unbound_label of Identifier.t
   | Unbound_module of Identifier.t
@@ -96,9 +97,9 @@ val find_all_constructors:
 val find_value:
     Env.t -> Location.t -> Identifier.t -> Path.t * value_description
 val find_module:
-    Env.t -> Location.t -> Identifier.t -> Path.t * module_declaration
+    Env.t -> Location.t -> Identifier.t -> string option -> Path.t * module_declaration
 val lookup_module:
-    ?load:bool -> Env.t -> Location.t -> Identifier.t -> Path.t
+    ?load:bool -> Env.t -> Location.t -> Identifier.t -> string option -> Path.t
 val find_modtype:
     Env.t -> Location.t -> Identifier.t -> Path.t * modtype_declaration
 
