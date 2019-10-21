@@ -91,21 +91,34 @@ export class GrainModule {
         this._types[idx++] = typ;
         let desc = elt[2];
         let kind = desc.type_kind;
-        if (!kind || kind[0] !== "TDataVariant") {
-          return;
-        }
-        let variants = kind[1];
-        variants.forEach((variant, vidx) => {
-          let name = variant.cd_id.name;
-          let arity;
-          if (variant.cd_args[0] === "TConstrSingleton") {
-            arity = 0;
-          } else {
-            // TConstrTuple
-            arity = variant.cd_args[1].length;
+        if (!kind) return;
+        switch (kind[0]) {
+          case "TDataVariant": {
+            let variants = kind[1];
+            variants.forEach((variant, vidx) => {
+              let name = variant.cd_id.name;
+              let arity;
+              if (variant.cd_args[0] === "TConstrSingleton") {
+                arity = 0;
+              } else {
+                // TConstrTuple
+                arity = variant.cd_args[1].length;
+              }
+              typ[vidx] = [name, arity];
+            })
+            break;
           }
-          typ[vidx] = [name, arity];
-        })
+          case "TDataRecord": {
+            let fields = kind[1];
+            fields.forEach((field, fidx) => {
+              let name = field.rf_name.name;
+              typ[name] = fidx;
+            })
+            break;
+          }
+          default:
+            return
+        }
       })
     }
     return this._types;

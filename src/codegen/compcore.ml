@@ -587,7 +587,10 @@ let allocate_adt env ttag vtag elts =
     Ast.Const(const_int32 (tag_val_of_heap_tag_type ADTType));
     store ~offset:0 ();
   ] @ get_swap +@ [
-    Ast.GlobalGet(var_of_ext_global env runtime_mod module_runtime_id);
+    Ast.GetGlobal(var_of_ext_global env runtime_mod module_runtime_id);
+    (* Tag the runtime id *)
+    Ast.Const(const_int32 2);
+    Ast.Binary(Values.I32 Ast.IntOp.Mul);
     store ~offset:4 ();
   ] @ get_swap @ (compile_imm env ttag) +@ [
     store ~offset:8 ();
@@ -620,16 +623,42 @@ let allocate_tuple env elts =
   ]
 
 
-let allocate_record env elts =
+let allocate_record env ttag elts =
   let _, elts = List.split elts in
-  allocate_tuple env elts
+  (* Heap memory layout of records:
+    [ <value type tag>, <module_tag>, <type_tag>, ordered elts ... ]
+   *)
+  let num_elts = List.length elts in
+  let get_swap = get_swap env 0 in
+  let set_swap = set_swap env 0 in
+  let compile_elt idx elt =
+    get_swap @
+    (compile_imm env elt) +@ [
+      store ~offset:(4 * (idx + 3)) ();
+    ] in
+
+  (heap_allocate env (num_elts + 3)) @ set_swap @ get_swap +@ [
+    Ast.Const(const_int32 (tag_val_of_heap_tag_type RecordType));
+    store ~offset:0 ();
+  ] @ get_swap +@ [
+    Ast.GetGlobal(var_of_ext_global env runtime_mod module_runtime_id);
+    (* Tag the runtime id *)
+    Ast.Const(const_int32 2);
+    Ast.Binary(Values.I32 Ast.IntOp.Mul);
+    store ~offset:4 ();
+  ] @ get_swap @ (compile_imm env ttag) +@ [
+    store ~offset:8 ();
+  ] @ (Concatlist.flatten @@ List.mapi compile_elt elts) @ get_swap +@ [
+    Ast.Const(const_int32 @@ tag_val_of_tag_type (GenericHeapType (Some RecordType)));
+    Ast.Binary(Values.I32 Ast.IntOp.Or);
+  ]
 
 
 let compile_allocation env alloc_type =
   match alloc_type with
   | MClosure(cdata) -> allocate_closure env cdata
   | MTuple(elts) -> allocate_tuple env elts
-  | MRecord(elts) -> allocate_record env elts
+  | MRecord(ttag, elts) -> allocate_record env ttag elts
   | MString(str) -> allocate_string env str
   | MADT(ttag, vtag, elts) -> allocate_adt env ttag vtag elts
 
@@ -667,6 +696,16 @@ let compile_adt_op env adt_imm op =
     adt @ (untag (GenericHeapType (Some ADTType))) +@ [
       load ~offset:12 ();
     ]
+
+
+let compile_record_op env rec_imm op =
+  let record = compile_imm env rec_imm in
+  match op with
+  | MRecordGet(idx) ->
+    let idx_int = Int32.to_int idx in
+    record @ (untag (GenericHeapType (Some RecordType))) +@ [
+        load ~offset:(4 * (idx_int + 3)) ();
+      ]
 
 
 let collect_backpatches env f =
@@ -764,6 +803,7 @@ and compile_instr env instr =
   | MAllocate(alloc) -> compile_allocation env alloc
   | MTupleOp(tuple_op, tup) -> compile_tuple_op env tup tuple_op
   | MAdtOp(adt_op, adt) -> compile_adt_op env adt adt_op
+  | MRecordOp(record_op, record) -> compile_record_op env record record_op
   | MPrim1(p1, arg) -> compile_prim1 env p1 arg
   | MPrim2(p2, arg1, arg2) -> compile_prim2 env p2 arg1 arg2
   | MSwitch(arg, branches, default) -> compile_switch env arg branches default
@@ -1096,7 +1136,7 @@ let prepare env ({imports} as prog) =
     func_offset;
   }, {
     prog with
-    imports=List.append runtime_imports imports;
+    imports=new_imports;
     num_globals=prog.num_globals + (List.length new_imports) + (List.length imports);
   }
 

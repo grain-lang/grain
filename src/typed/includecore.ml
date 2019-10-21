@@ -226,17 +226,17 @@ and compare_variants ~loc env params1 params2 n
     end
 
 
-(*and compare_records ~loc env params1 params2 n
-    (labels1 : Types.label_declaration list)
-    (labels2 : Types.label_declaration list) =
+and compare_records ~loc env params1 params2 n
+    (labels1 : Types.record_field list)
+    (labels2 : Types.record_field list) =
   match labels1, labels2 with
     [], []           -> []
-  | [], l::_ -> [Field_missing (true, l.Types.ld_id)]
-  | l::_, [] -> [Field_missing (false, l.Types.ld_id)]
+  | [], l::_ -> [Field_missing (true, l.Types.rf_name)]
+  | l::_, [] -> [Field_missing (false, l.Types.rf_name)]
   | ld1::rem1, ld2::rem2 ->
-    if Ident.name ld1.ld_id <> Ident.name ld2.ld_id
-    then [Field_names (n, ld1.ld_id, ld2.ld_id)]
-    else if ld1.ld_mutable <> ld2.ld_mutable then [Field_mutable ld1.ld_id] else begin
+    if Ident.name ld1.rf_name <> Ident.name ld2.rf_name
+    then [Field_names (n, ld1.rf_name, ld2.rf_name)]
+    else [] (* if ld1.ld_mutable <> ld2.ld_mutable then [Field_mutable ld1.ld_id] else begin
       Builtin_attributes.check_deprecated_mutable_inclusion
         ~def:ld1.ld_loc
         ~use:ld2.ld_loc
@@ -251,7 +251,7 @@ and compare_variants ~loc env params1 params2 n
           rem1 rem2
       else
         [Field_type ld1.ld_id]
-    end*)
+    end *)
 
 let type_declarations ?(equality = false) ~loc env ~mark name decl1 id decl2 =
   (*Builtin_attributes.check_deprecated_inclusion
@@ -309,14 +309,12 @@ let type_declarations ?(equality = false) ~loc env ~mark name decl1 id decl2 =
             end;*)
             compare_variants ~loc env decl1.type_params
               decl2.type_params 1 cstrs1 cstrs2
-          (*| (Type_record(labels1,rep1), Type_record(labels2,rep2)) ->
-            let err =
-              compare_records ~loc env decl1.type_params
-                decl2.type_params 1 labels1 labels2
-            in
-            if err <> [] || rep1 = rep2 then err else
+          | (TDataRecord(labels1), TDataRecord(labels2)) ->
+            compare_records ~loc env decl1.type_params
+              decl2.type_params 1 labels1 labels2
+            (* if err <> [] || rep1 = rep2 then err else
               [Record_representation (rep2 = Record_float)]
-          | (Type_open, Type_open) -> []*)
+          | (Type_open, Type_open) -> [] *)
           | (_, _) -> [Kind]
         in
         if err <> [] then err else

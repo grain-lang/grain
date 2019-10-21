@@ -50,6 +50,7 @@ let rec analyze_comp_expression ({comp_desc = desc; comp_analyses = analyses}) =
   | CGetTupleItem _
   | CGetAdtItem _
   | CGetAdtTag _
+  | CGetRecordItem _
   | CLambda _
   | CString _
   | CPrim1 _

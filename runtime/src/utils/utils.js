@@ -10,53 +10,81 @@ import {
   GRAIN_GENERIC_HEAP_TAG_TYPE,
   GRAIN_DOM_ELEM_TAG,
   GRAIN_STRING_HEAP_TAG,
-  GRAIN_ADT_HEAP_TAG
+  GRAIN_ADT_HEAP_TAG,
+  GRAIN_RECORD_HEAP_TAG
 } from '../core/tags';
 
 export function grainHeapValueToString(runtime, n) {
   switch (view[n / 4]) {
-  case GRAIN_STRING_HEAP_TAG:
-    let byteView = new Uint8Array(memory.buffer);
-    let length = view[(n / 4) + 1];
-    let slice = byteView.slice(n + 8, n + 8 + length);
-    return `"${decoder.decode(slice)}"`;
-    break;
-  case GRAIN_DOM_ELEM_TAG:
-    return grainDOMRefs[view[(n + 4) / 4]].toString();
-    break;
-  case GRAIN_ADT_HEAP_TAG:
-    let x = n / 4;
-    // ADT string coercion is tricky, so these log statements can help
-    // debug issues which might crop up:
-    // console.log(`<ADT Value: (${view[x + 1]}, ${view[x + 2]}, ${view[x + 3]}, ${view[x + 4]})>`);
-    if (runtime) {
-      // In-memory tags are tagged ints
-      let moduleId = view[x + 1] >> 1;
-      let typeId = view[x + 2] >> 1;
-      let variantId = view[x + 3] >> 1;
-      let moduleName = runtime.idMap[moduleId];
-      // console.log(`\tModule Name: ${moduleName}`);
-      let module = runtime.modules[moduleName];
-      // console.log(`\tModule: ${module}`);
-      let tyinfo = module.types[typeId];
-      // console.log(`\tType Info: ${JSON.stringify(tyinfo)}`);
-      let info = tyinfo[variantId];
-      // console.log(`\tVariant: ${info}`);
-      let [variantName, arity] = info;
-      let printedVals = [];
-      for (let i = 0; i < arity; ++i) {
-        printedVals.push(grainToString(runtime, view[x + 5 + i]));
-      }
-      if (arity === 0) {
-        return variantName;
-      } else {
-        return `${variantName}(${printedVals.join(", ")})`;
-      }
+    case GRAIN_STRING_HEAP_TAG: {
+      let byteView = new Uint8Array(memory.buffer);
+      let length = view[(n / 4) + 1];
+      let slice = byteView.slice(n + 8, n + 8 + length);
+      return `"${decoder.decode(slice)}"`;
     }
-    return "<adt value>";
-    break;
-  default:
-    return `<unknown heap type: ${view[n / 4]}>`;
+    case GRAIN_DOM_ELEM_TAG: {
+      return grainDOMRefs[view[(n + 4) / 4]].toString();
+    }
+    case GRAIN_ADT_HEAP_TAG: {
+      let x = n / 4;
+      // ADT string coercion is tricky, so these log statements can help
+      // debug issues which might crop up:
+      // console.log(`<ADT Value: (${view[x + 1]}, ${view[x + 2]}, ${view[x + 3]}, ${view[x + 4]})>`);
+      if (runtime) {
+        // In-memory tags are tagged ints
+        let moduleId = view[x + 1] >> 1;
+        let typeId = view[x + 2] >> 1;
+        let variantId = view[x + 3] >> 1;
+        // console.log(`\tModules: ${JSON.stringify(runtime.idMap)}`);
+        let moduleName = runtime.idMap[moduleId];
+        // console.log(`\tModule Name: ${moduleName}`);
+        let module = runtime.modules[moduleName];
+        // console.log(`\tModule: ${module}`);
+        let tyinfo = module.types[typeId];
+        // console.log(`\tType Info: ${JSON.stringify(tyinfo)}`);
+        let info = tyinfo[variantId];
+        // console.log(`\tVariant: ${info}`);
+        let [variantName, arity] = info;
+        let printedVals = [];
+        for (let i = 0; i < arity; ++i) {
+          printedVals.push(grainToString(runtime, view[x + 5 + i]));
+        }
+        if (arity === 0) {
+          return variantName;
+        } else {
+          return `${variantName}(${printedVals.join(", ")})`;
+        }
+      }
+      return "<adt value>";
+    }
+    case GRAIN_RECORD_HEAP_TAG: {
+      let x = n / 4;
+      // Record string coercion is tricky, so these log statements can help debug issues which might crop up
+      if (runtime) {
+        // In-memory tags are tagged ints
+        let moduleId = view[x + 1] >> 1;
+        let typeId = view[x + 2] >> 1;
+        // console.log(`\tModules: ${JSON.stringify(runtime.idMap)}`);
+        let moduleName = runtime.idMap[moduleId];
+        // console.log(`\tModule Name: ${moduleName}`);
+        let module = runtime.modules[moduleName];
+        // console.log(`\tModule: ${module}`);
+        let tyinfo = module.types[typeId];
+        // console.log(`\tType Info: ${JSON.stringify(tyinfo)}`);
+        
+        if (Object.keys(tyinfo).length === 0) return '<record value>'
+        
+        let values = [];
+        for (let [field, idx] of Object.entries(tyinfo)) {
+          values.push(`${field}: ${grainToString(runtime, view[x + 3 + idx]).replace(/\n/g, '\n  ')}`)
+        }
+        return `{\n  ${values.join(',\n  ')}\n}`
+      }
+      return "<record value>";
+    }
+    default: {
+      return `<unknown heap type: ${view[n / 4]}>`;
+    }
   }
 }
 
