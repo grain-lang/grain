@@ -78,6 +78,8 @@ let rec analyze_comp_expression ({comp_desc = desc; comp_analyses = analyses}) =
       true
     | CGetAdtTag _ ->
       true
+    | CGetRecordItem _ ->
+      true
     | CIf(c, t, f) ->
       analyze_imm_expression c;
       analyze_anf_expression t;

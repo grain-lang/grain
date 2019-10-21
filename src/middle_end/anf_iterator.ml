@@ -53,7 +53,8 @@ module MakeIter(Iter : IterArgument) = struct
         iter_imm_expression rhs
       | CTuple(elts) ->
         List.iter (iter_imm_expression) elts
-      | CRecord(elts) ->
+      | CRecord(ttag, elts) ->
+        iter_imm_expression ttag;
         List.iter (fun (_, elt) -> iter_imm_expression elt) elts
       | CAdt(ttag, vtag, elts) ->
         iter_imm_expression ttag;
@@ -67,6 +68,8 @@ module MakeIter(Iter : IterArgument) = struct
       | CGetAdtItem(_, adt)
       | CGetAdtTag(adt) ->
         iter_imm_expression adt
+      | CGetRecordItem(_, record) ->
+        iter_imm_expression record
       | CIf(c, t, f) ->
         iter_imm_expression c;
         iter_anf_expression t;

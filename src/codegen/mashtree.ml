@@ -79,7 +79,7 @@ type closure_data = {
 type allocation_type =
   | MClosure of closure_data
   | MTuple of immediate list
-  | MRecord of (string * immediate) list
+  | MRecord of immediate * (string * immediate) list
   | MADT of immediate * immediate * immediate list (* Type Tag, Variant Tag, Elements *)
   | MString of string
 [@@deriving sexp]
@@ -112,6 +112,10 @@ type adt_op =
   | MAdtGetTag
 [@@deriving sexp]
 
+type record_op =
+  | MRecordGet of int32
+[@@deriving sexp]
+
 type instr =
   | MImmediate of immediate
   | MCallKnown of int32 * immediate list (* Optimized path for statically-known function names *)
@@ -127,6 +131,7 @@ type instr =
   | MPrim2 of prim2 * immediate * immediate
   | MTupleOp of tuple_op * immediate
   | MAdtOp of adt_op * immediate
+  | MRecordOp of record_op * immediate
   | MStore of (binding * instr) list (* Items in the same list have their backpatching delayed until the end of that list *)
   | MDrop (* Ignore the result of the last expression. Used for sequences. *)
 [@@deriving sexp]

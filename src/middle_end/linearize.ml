@@ -26,6 +26,14 @@ module PathMap = Hashtbl.Make(struct
   end)
 let type_map = PathMap.create 10
 
+let get_type_id typath =
+  match PathMap.find_opt type_map typath with
+    | Some(id) -> id
+    | None ->
+      let id = PathMap.length type_map in
+      PathMap.add type_map typath id;
+      id
+
 let lookup_symbol mod_ mod_decl name original_name =
   begin
     match Ident.find_same_opt mod_ (!symbol_table) with
@@ -65,7 +73,7 @@ let transl_const (c : Types.constant) : (imm_expression, string * comp_expressio
   | _ -> Left(Imm.const c)
 
 
-let rec transl_imm (({exp_desc; exp_loc=loc; exp_env=env; _} as e) : expression) : (imm_expression * anf_bind list) =
+let rec transl_imm (({exp_desc; exp_loc=loc; exp_env=env; exp_type=typ; _} as e) : expression) : (imm_expression * anf_bind list) =
   match exp_desc with
   | TExpIdent(_, _, {val_kind=TValUnbound _}) -> failwith "Impossible: val_kind was unbound"
   | TExpIdent(Path.PExternal((Path.PIdent mod_) as p, ident, _), _, {val_fullpath=Path.PExternal(_, original_name, _)}) ->
@@ -192,11 +200,13 @@ let rec transl_imm (({exp_desc; exp_loc=loc; exp_env=env; _} as e) : expression)
         let (var, setup) = transl_imm expr in 
         (Location.mkloc (Identifier.string_of_ident name) loc, var), setup) definitions
       ) in
-    (Imm.id ~loc ~env tmp, (List.concat new_setup) @ [BLet(tmp, Comp.record ~loc ~env new_args)])
+    let typath, _, _ = Typecore.extract_concrete_record env typ in
+    let ty_id = get_type_id typath in
+    (Imm.id ~loc ~env tmp, (List.concat new_setup) @ [BLet(tmp, Comp.record ~loc ~env (Imm.const ~loc ~env (Const_int ty_id)) new_args)])
   | TExpRecordGet(expr, field, ld) ->
     let tmp = gensym "field" in
     let (var, setup) = transl_imm expr in 
-    (Imm.id ~loc ~env tmp, setup @ [BLet(tmp, Comp.tuple_get ~loc ~env (Int32.of_int ld.lbl_pos) var)])
+    (Imm.id ~loc ~env tmp, setup @ [BLet(tmp, Comp.record_get ~loc ~env (Int32.of_int ld.lbl_pos) var)])
   | TExpMatch(exp, branches, _) ->
     let tmp = gensym "match" in
     let exp_ans, exp_setup = transl_imm exp in
@@ -378,13 +388,7 @@ let rec transl_anf_statement (({ttop_desc; ttop_env=env; ttop_loc=loc} as s) : t
         let typath = Path.PIdent (decl.data_id) in
         (* FIXME: [philip] This is kind of hacky...would be better to store this in the Env directly...not to mention, 
           I think this'll be much more fragile than if it were in the static info *)
-        let ty_id = begin match PathMap.find_opt type_map typath with
-          | Some(id) -> id
-          | None ->
-            let id = PathMap.length type_map in
-            PathMap.add type_map typath id;
-            id
-        end in
+        let ty_id = get_type_id typath in
         let descrs = Datarepr.constructors_of_type typath (decl.data_type) in
         begin match descrs with
           | [] -> failwith "Impossible: TTopData TDataAbstract"

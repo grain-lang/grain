@@ -68,12 +68,13 @@ and comp_expression_desc =
   | CPrim2 of prim2 * imm_expression * imm_expression
   | CAssign of imm_expression * imm_expression
   | CTuple of imm_expression list
-  | CRecord of (string loc * imm_expression) list
+  | CRecord of imm_expression * (string loc * imm_expression) list
   | CAdt of imm_expression * imm_expression * imm_expression list
   | CGetTupleItem of int32 * imm_expression
   | CSetTupleItem of int32 * imm_expression * imm_expression
   | CGetAdtItem of int32 * imm_expression
   | CGetAdtTag of imm_expression
+  | CGetRecordItem of int32 * imm_expression
   | CIf of imm_expression * anf_expression * anf_expression
   | CWhile of anf_expression * anf_expression
   | CSwitch of imm_expression * (int * anf_expression) list
