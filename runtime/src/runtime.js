@@ -38,8 +38,8 @@ const importObj = {
     tbl: table,
     throwError: throwGrainError,
     checkMemory: grainCheckMemory,
-    malloc: malloc,
-    free: free,
+    malloc: managedMemory.malloc.bind(managedMemory),
+    free: managedMemory.free.bind(managedMemory)
   },
   grainBuiltins: {
     ...libDOM

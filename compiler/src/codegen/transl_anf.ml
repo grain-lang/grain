@@ -257,7 +257,7 @@ and compile_anf_expr env a =
       | Nonglobal -> MLocalBind(Int32.of_int (env.ce_stack_idx + idx)) in
     let locations = List.mapi get_loc binds in
     let new_env = BatList.fold_left2 (fun acc new_loc (id, _) ->
-        {acc with ce_binds=Ident.add id new_loc acc.ce_binds; ce_stack_idx=acc.ce_stack_idx + 1})
+        {acc with ce_binds=Ident.add id new_loc acc.ce_binds; ce_stack_idx=acc.ce_stack_idx + 1}) (* WTF? Why is this not ce_stack_idx + (List.length binds)?? *)
         env locations binds in
     begin match recflag with
       | Nonrecursive ->
