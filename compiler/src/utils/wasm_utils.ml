@@ -29,7 +29,10 @@ type abi_version = {
   patch: int;
 } [@@deriving sexp]
 
-let grain_magic = [0x53; 0x77; 0x13; 0x00] (* punny, I know *)
+let grain_magic = [0x53; 0x77; 0x13; 0x00] (* punny, I know [16 April 2018] <Philip>
+                                              Took me like 5min to figure out the pun here...
+                                                if a bad pun is hidden in the code and no one is
+                                                there to explain it, is it still a joke? #showerthoughts [21 October 2019] <Philip> *)
 let latest_abi = {major=1; minor=0; patch=0}
 
 

@@ -13,6 +13,7 @@ type codegen_env = {
   num_args: int;
   func_offset: int;
   global_offset: int;
+  stack_size: int;
   import_global_offset: int;
   import_func_offset: int;
   import_offset: int;
@@ -41,6 +42,8 @@ let check_memory_ident = Ident.create_persistent "checkMemory"
 let throw_error_ident = Ident.create_persistent "throwError"
 let log_ident = Ident.create_persistent "log"
 let malloc_ident = Ident.create_persistent "malloc"
+let incref_ident = Ident.create_persistent "incRef"
+let decref_ident = Ident.create_persistent "decRef"
 
 let runtime_global_imports = [
   {
@@ -83,6 +86,20 @@ let runtime_function_imports = [
   };
   {
     mimp_mod=runtime_mod;
+    mimp_name=incref_ident;
+    mimp_type=MFuncImport([I32Type], [I32Type]); (* Returns same pointer as argument *)
+    mimp_kind=MImportWasm;
+    mimp_setup=MSetupNone;
+  };
+  {
+    mimp_mod=runtime_mod;
+    mimp_name=decref_ident;
+    mimp_type=MFuncImport([I32Type], [I32Type]); (* Returns same pointer as argument *)
+    mimp_kind=MImportWasm;
+    mimp_setup=MSetupNone;
+  };
+  {
+    mimp_mod=runtime_mod;
     mimp_name=throw_error_ident;
     mimp_type=MFuncImport((BatList.init (Runtime_errors.max_arity + 1) (fun _ -> I32Type)), []);
     mimp_kind=MImportWasm;
@@ -99,6 +116,7 @@ let init_codegen_env() = {
   num_args=0;
   func_offset=0;
   global_offset=2;
+  stack_size=0;
   import_global_offset=0;
   import_func_offset=0;
   import_offset=0;
@@ -206,6 +224,8 @@ let call_runtime_throw_error env = Ast.Call(var_of_ext_func env runtime_mod thro
 let call_console_log env = Ast.Call(var_of_ext_func env console_mod log_ident)
 
 let call_malloc env = Ast.Call(var_of_ext_func env runtime_mod malloc_ident)
+let call_incref env = Ast.Call(var_of_ext_func env runtime_mod incref_ident)
+let call_decref env = Ast.Call(var_of_ext_func env runtime_mod decref_ident)
 
 let get_func_type_idx env typ =
   match BatDeque.find ((=) typ) !(env.func_types) with
@@ -253,6 +273,16 @@ let encoded_const_int32 n = const_int32 (encoded_int32 n)
 
 type bind_action = BindGet | BindSet | BindTee
 
+let cleanup_local_slot_instructions (env : codegen_env) =
+  let instrs = BatList.init env.stack_size (fun i ->
+    let slot = add_dummy_loc (Int32.of_int (i + env.num_args + (List.length swap_slots))) in
+    wrapped [
+      Ast.LocalGet(slot);
+      call_decref env;
+      Ast.Drop;
+    ]) in
+  flatten instrs
+
 let compile_bind ~action (env : codegen_env) (b : binding) : Wasm.Ast.instr' Concatlist.t =
   let (++) a b = Int32.(add (of_int a) b) in
   match b with
@@ -263,7 +293,18 @@ let compile_bind ~action (env : codegen_env) (b : binding) : Wasm.Ast.instr' Con
       | BindGet ->
         singleton (Ast.LocalGet(slot))
       | BindSet ->
-        singleton (Ast.LocalSet(slot))
+        wrapped [
+          (* PRE: Stack: value to set, <rest> *)
+          (* Call incref() on new value we're setting (we do this first, since we don't know if new == old).
+             Note that this preserves the stack. *)
+          call_incref env;
+          (* Get old value of slot and call decref() on it *)
+          Ast.LocalGet(slot);
+          call_decref env;
+          (* Set new stack value *)
+          Ast.LocalSet(slot);
+          (* POST: Stack: <rest> *)
+        ]
       | BindTee ->
         singleton (Ast.LocalTee(slot))
     end
@@ -274,7 +315,18 @@ let compile_bind ~action (env : codegen_env) (b : binding) : Wasm.Ast.instr' Con
       | BindGet ->
         singleton (Ast.LocalGet(slot))
       | BindSet ->
-        singleton (Ast.LocalSet(slot))
+        wrapped [
+          (* PRE: Stack: value to set, <rest> *)
+          (* Call incref() on new value we're setting (we do this first, since we don't know if new == old).
+             Note that this preserves the stack. *)
+          call_incref env;
+          (* Get old value of slot and call decref() on it *)
+          Ast.LocalGet(slot);
+          call_decref env;
+          (* Set new stack value *)
+          Ast.LocalSet(slot);
+          (* POST: Stack: <rest> *)
+        ]
       | BindTee ->
         singleton (Ast.LocalTee(slot))
     end
@@ -285,7 +337,18 @@ let compile_bind ~action (env : codegen_env) (b : binding) : Wasm.Ast.instr' Con
       | BindGet ->
         singleton (Ast.LocalGet(slot))
       | BindSet ->
-        singleton (Ast.LocalSet(slot))
+        wrapped [
+          (* PRE: Stack: value to set, <rest> *)
+          (* Call incref() on new value we're setting (we do this first, since we don't know if new == old).
+             Note that this preserves the stack. *)
+          call_incref env;
+          (* Get old value of slot and call decref() on it *)
+          Ast.LocalGet(slot);
+          call_decref env;
+          (* Set new stack value *)
+          Ast.LocalSet(slot);
+          (* POST: Stack: <rest> *)
+        ]
       | BindTee ->
         singleton (Ast.LocalTee(slot))
     end
@@ -296,7 +359,18 @@ let compile_bind ~action (env : codegen_env) (b : binding) : Wasm.Ast.instr' Con
       | BindGet ->
         singleton (Ast.GlobalGet(slot))
       | BindSet ->
-        singleton (Ast.GlobalSet(slot))
+        wrapped [
+          (* PRE: Stack: value to set, <rest> *)
+          (* Call incref() on new value we're setting (we do this first, since we don't know if new == old).
+             Note that this preserves the stack. *)
+          call_incref env;
+          (* Get old value of slot and call decref() on it *)
+          Ast.GlobalGet(slot);
+          call_decref env;
+          (* Set new stack value *)
+          Ast.GlobalSet(slot);
+          (* POST: Stack: <rest> *)
+        ]
       | BindTee ->
         Concatlist.t_of_list [
           Ast.GlobalSet(slot);
@@ -358,6 +432,18 @@ let tee_swap ?ty:(typ=Types.I32Type) env idx =
   | _ -> raise Not_found
 
 
+(* [TODO] This is going to need some sort of type argument as well...I think this could be indicative of a code smell *)
+let cleanup_locals (env : codegen_env) : Wasm.Ast.instr' Concatlist.t =
+  (* Do the following:
+    - Move the current stack value into a designated return-value holder slot (maybe swap is fine)
+    - Call incref() on the return value (to prevent premature free)
+    - Call decref() on all locals (should include return value) *)
+  (set_swap env 0) @ (get_swap env 0) +@ [
+    call_decref env;
+    Ast.Drop;
+  ] @ (cleanup_local_slot_instructions env) @ (get_swap env 0)
+
+
 let compile_imm (env : codegen_env) (i : immediate) : Wasm.Ast.instr' Concatlist.t =
   match i with
   | MImmConst c -> singleton (Ast.Const(add_dummy_loc @@ compile_const c))
@@ -374,7 +460,7 @@ let call_error_handler env err args =
     call_runtime_throw_error env;
     Ast.Unreachable;
   ]
-  
+
 
 let error_if_true env err args =
   Ast.If([],
@@ -511,7 +597,7 @@ let compile_adt_op env adt_imm op =
   let adt = compile_imm env adt_imm in
   match op with
   | MAdtGet(idx) ->
-    let idx_int = Int32.to_int idx in 
+    let idx_int = Int32.to_int idx in
     adt @ (untag (GenericHeapType (Some ADTType))) +@ [
       load ~offset:(4 * (idx_int + 5)) ();
     ]
@@ -552,7 +638,7 @@ let heap_allocate env (num_words : int) =
 
 let heap_allocate_imm ?(additional_words=0) env (num_words : immediate) =
   let num_words = compile_imm env num_words in
-  (* 
+  (*
     Normally, this would be:
       Untag num_words
       Find remainder by 4
@@ -728,7 +814,6 @@ let allocate_closure env ?lambda ({func_idx; arity; variables} as closure_data) 
     Ast.Binary(Values.I32 Ast.IntOp.Add);
   ] @ get_swap +@ [
     Ast.Const(add_dummy_loc (Values.I32Value.to_value arity));
-
     store ~offset:0 ();
     store ~offset:4 ();
     store ~offset:8 ();
@@ -747,6 +832,7 @@ let allocate_adt env ttag vtag elts =
   let compile_elt idx elt =
     get_swap @
     (compile_imm env elt) +@ [
+      call_incref env;
       store ~offset:(4 * (idx + 5)) ();
     ] in
 
@@ -778,6 +864,7 @@ let allocate_tuple env elts =
   let compile_elt idx elt =
     get_swap @
     (compile_imm env elt) +@ [
+      call_incref env;
       store ~offset:(4 * (idx + 1)) ();
     ] in
 
@@ -831,8 +918,8 @@ let allocate_array_n env num_elts elt =
     Ast.Binary(Values.I32 Ast.IntOp.ShrS);
     store ~offset:4 ();
     Ast.Const(const_int32 0);
-  ] @ set_loop_counter @ singleton 
-  (Ast.Block([], Concatlist.mapped_list_of_t add_dummy_loc @@ singleton 
+  ] @ set_loop_counter @ singleton
+  (Ast.Block([], Concatlist.mapped_list_of_t add_dummy_loc @@ singleton
     (Ast.Loop([], Concatlist.mapped_list_of_t add_dummy_loc @@
       get_loop_counter @ compiled_num_elts +@ [
         Ast.Compare(Values.I32 Ast.IntOp.GeS);
@@ -880,8 +967,8 @@ let allocate_array_init env num_elts init_f =
     Ast.Binary(Values.I32 Ast.IntOp.ShrS);
     store ~offset:4 ();
     Ast.Const(const_int32 0);
-  ] @ set_loop_counter @ singleton 
-  (Ast.Block([], Concatlist.mapped_list_of_t add_dummy_loc @@ singleton 
+  ] @ set_loop_counter @ singleton
+  (Ast.Block([], Concatlist.mapped_list_of_t add_dummy_loc @@ singleton
     (Ast.Loop([], Concatlist.mapped_list_of_t add_dummy_loc @@
       get_loop_counter @ compiled_num_elts +@ [
         Ast.Compare(Values.I32 Ast.IntOp.GeS);
@@ -1027,7 +1114,7 @@ let compile_prim2 (env : codegen_env) p2 arg1 arg2 : Wasm.Ast.instr' Concatlist.
     compiled_swap_get +@ [
       Ast.Convert(Values.I32 Ast.IntOp.WrapI64);
     ] in
-                                                                          
+
   (* TODO: Overflow checks? *)
   match p2 with
   | Plus ->
@@ -1258,6 +1345,7 @@ let do_backpatches env backpatches =
       ] @ set_swap in
     let backpatch_var idx var =
       get_swap @ (compile_imm env var) +@ [
+          call_incref env;
           store ~offset:(4 * (idx + 3)) ();
         ] in
     preamble @
@@ -1367,13 +1455,13 @@ and compile_instr env instr =
     let compiled_cond = (compile_block env cond) in
     let compiled_body = (compile_block env body) in
     singleton (Ast.Block([Types.I32Type],
-               Concatlist.mapped_list_of_t add_dummy_loc @@ 
+               Concatlist.mapped_list_of_t add_dummy_loc @@
                singleton (Ast.Loop([Types.I32Type],
                           Concatlist.mapped_list_of_t add_dummy_loc @@
                           singleton (Ast.Const const_void) @
                           compiled_cond @
                           decode_bool +@
-                          [Ast.Test(Values.I32 Ast.IntOp.Eqz); 
+                          [Ast.Test(Values.I32 Ast.IntOp.Eqz);
                            Ast.BrIf (add_dummy_loc @@ Int32.of_int 1)] +@
                           [Ast.Drop] @
                           compiled_body +@
@@ -1392,9 +1480,9 @@ and compile_instr env instr =
 
 let compile_function env {index; arity; stack_size; body=body_instrs} =
   let arity_int = Int32.to_int arity in
-  let body_env = {env with num_args=arity_int} in
+  let body_env = {env with num_args=arity_int; stack_size} in
   let body = Concatlist.mapped_list_of_t add_dummy_loc @@
-    (compile_block body_env body_instrs) +@ [Ast.Return] in
+    (compile_block body_env body_instrs) @ (cleanup_locals env) +@ [Ast.Return] in
   let open Wasm.Ast in
   let ftype_idx = get_arity_func_type_idx env arity_int in
   let ftype = add_dummy_loc Int32.(of_int ftype_idx) in
