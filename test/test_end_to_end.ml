@@ -221,6 +221,26 @@ let tuple_tests = [
   t "no_singleton_tup" "(1)" "1";
 ]
 
+let record_tests = [
+  t "record_1" "data Rec = {foo: Number}; {foo: 4}" "<record value>";
+  t "record_2" "export data Rec = {foo: Number}; {foo: 4}" "{\n  foo: 4\n}";
+  t "record_multiple" "export data Rec = {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: 'boo', baz: true}" "{\n  foo: 4,\n  bar: \"boo\",\n  baz: true\n}";
+  t "record_pun" "export data Rec = {foo: Number}; let foo = 4; {foo}" "{\n  foo: 4\n}";
+  t "record_pun_multiple" "export data Rec = {foo: Number, bar: Bool}; let foo = 4; let bar = false; {foo, bar}" "{\n  foo: 4,\n  bar: false\n}";
+  t "record_pun_mixed" "export data Rec = {foo: Number, bar: Bool}; let foo = 4; {foo, bar: false}" "{\n  foo: 4,\n  bar: false\n}";
+  t "record_pun_mixed_2" "export data Rec = {foo: Number, bar: Bool}; let bar = false; {foo: 4, bar}" "{\n  foo: 4,\n  bar: false\n}";
+
+  te "record_err_1" "{foo: 4}" "Unbound record label foo";
+  te "record_err_2" "data Rec = {foo: Number}; {foo: 4, bar: 4}" "Unbound record label bar";
+
+  t "record_get_1" "data Rec = {foo: Number}; let bar = {foo: 4}; bar.foo" "4";
+  t "record_get_2" "data Rec = {foo: Number}; {foo: 4}.foo" "4";
+  t "record_get_multiple" "data Rec = {foo: Number, bar: Number}; let x = {foo: 4, bar: 9}; x.foo + x.bar" "13";
+  t "record_get_multilevel" "data Rec1 = {foo: Number, bar: Number}; data Rec2 = {baz: Rec1}; let x = {baz: {foo: 4, bar: 9}}; x.baz.bar" "9";
+
+  te "record_get_err" "data Rec1 = {foo: Number, bar: Number}; let x = {foo: 4, bar: 9}; x.baz" "The field baz does not belong to type Rec1";
+]
+
 let stdlib_tests = [
   tlib "stdlib_cons" ("import * from 'lists'; " ^ mylist) "Cons(1, Cons(2, Cons(3, Empty)))";
   tlib "stdlib_sum_1" ("import * from 'lists'; sum(" ^ mylist ^ ")") "6";
@@ -583,11 +603,8 @@ let tests =
   basic_functionality_tests @
   function_tests @
   tuple_tests @
+  record_tests @
   stdlib_tests @
   box_tests @ loop_tests @(*oom @ gc @*) import_tests @
   optimization_tests @ string_tests @ data_tests @ 
   export_tests
-
-
-
-
