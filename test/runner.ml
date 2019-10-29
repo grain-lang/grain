@@ -91,7 +91,7 @@ type result = (string, string) either
 
 let extract_wasm {cstate_desc} =
   match cstate_desc with
-  | Compiled({asm}) -> asm
+  | Compiled(compiled) -> compiled
   | _ -> raise (Invalid_argument "Expected WASM State")
 
 let read_stream cstream =
@@ -106,15 +106,16 @@ let read_stream cstream =
   Bytes.to_string @@ Bytes.sub buf 0 !i
 
 let run_output cstate test_ctxt =
-  let wasm = Wasm.Encode.encode (extract_wasm cstate) in
+  let program = extract_wasm cstate in
+  let file = Filename.temp_file "test" ".gr.wasm" in
+  Emitmod.emit_module program file;
   let result = ref "" in
   assert_command 
-    ~sinput:(Stream.of_string wasm) 
     ~foutput:(fun stream -> result := read_stream stream)
     ~use_stderr:true
     ~ctxt:test_ctxt
     "grain"
-    ["-wpg"; "-I"; "test-libs"; "/dev/stdin"];
+    ["-wpg"; "-I"; "test-libs"; file];
   !result
 
 let run_anf p out =
