@@ -341,8 +341,8 @@ let rec normalize_pat q = match q.pat_desc with
   | TPatAlias (p,_,_) -> normalize_pat p
   | TPatTuple (args) ->
       make_pat (TPatTuple (omega_list args)) q.pat_type q.pat_env
-  | TPatRecord (fields) ->
-      make_pat (TPatRecord (List.map (fun (id, ld, pat) -> id, ld, omega) fields)) q.pat_type q.pat_env
+  | TPatRecord (fields, c) ->
+      make_pat (TPatRecord (List.map (fun (id, ld, pat) -> id, ld, omega) fields, c)) q.pat_type q.pat_env
   | TPatConstruct  (lid, c,args) ->
       make_pat
         (TPatConstruct (lid, c,omega_list args))
@@ -808,7 +808,7 @@ let rec has_instance p = match p.pat_desc with
   | TPatOr (p1,p2) -> has_instance p1 || has_instance p2
   | TPatConstruct (_,_,ps) | TPatTuple ps ->
     has_instances ps
-  | TPatRecord fields ->
+  | TPatRecord (fields, _) ->
     let ps = List.map (fun (_, _, p) -> p) fields in
     has_instances ps
 
@@ -1486,8 +1486,8 @@ module Conv = struct
         mkpat (PPatConstant (untype_constant c))
       | TPatTuple lst ->
         mkpat (PPatTuple (List.map loop lst))
-      | TPatRecord fields ->
-        mkpat (PPatRecord (List.map (fun (id, _, pat) -> id, loop pat) fields))
+      | TPatRecord(fields, c) ->
+        mkpat (PPatRecord ((List.map (fun (id, _, pat) -> id, loop pat) fields), c))
       | TPatConstruct (cstr_lid, cstr, lst) ->
         let id = fresh cstr.cstr_name in
         let lid = { cstr_lid with txt = Identifier.IdentName id } in
@@ -1598,7 +1598,7 @@ let rec collect_paths_from_pat r p = match p.pat_desc with
       ps
   | TPatAny|TPatVar _|TPatConstant _ -> r
   | TPatTuple ps -> List.fold_left collect_paths_from_pat r ps
-  | TPatRecord fields -> 
+  | TPatRecord (fields, _) -> 
     let ps = List.map (fun (_, _, pat) -> pat) fields in
     List.fold_left collect_paths_from_pat r ps
   | TPatAlias (p,_,_) -> collect_paths_from_pat r p
@@ -1725,7 +1725,7 @@ let inactive ~partial pat =
           end
         | TPatTuple ps | TPatConstruct (_, _, ps) ->
           List.for_all (fun p -> loop p) ps
-        | TPatRecord fields ->
+        | TPatRecord (fields, _) ->
           List.for_all (fun (_, _, p) -> loop p) fields
         | TPatAlias (p,_,_) ->
           loop p

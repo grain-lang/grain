@@ -154,7 +154,7 @@ end = struct
       | TPatAlias(p1, _, _) -> iter_pattern p1
       | TPatConstruct(_, _, args)
       | TPatTuple(args) -> List.iter iter_pattern args
-      | TPatRecord(fields) -> List.iter (fun (_, _, pat) -> iter_pattern pat) fields
+      | TPatRecord(fields, _) -> List.iter (fun (_, _, pat) -> iter_pattern pat) fields
       | TPatOr(p1, p2) -> iter_pattern p1; iter_pattern p2
     end;
     Iter.leave_pattern pat

@@ -55,7 +55,7 @@ module P = struct
     | PPatAny -> ()
     | PPatVar sl -> iter_loc sub sl
     | PPatTuple pl -> List.iter (sub.pat sub) pl
-    | PPatRecord fs -> List.iter (fun (id, pat) -> iter_loc sub id; sub.pat sub pat) fs
+    | PPatRecord(fs, _) -> List.iter (fun (id, pat) -> iter_loc sub id; sub.pat sub pat) fs
     | PPatConstant c -> sub.constant sub c
     | PPatConstraint(p, pt) -> sub.pat sub p; sub.typ sub pt
     | PPatConstruct(id, pl) -> iter_loc sub id; List.iter (sub.pat sub) pl

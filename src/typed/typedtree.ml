@@ -117,7 +117,7 @@ and pattern_desc =
   | TPatVar of Ident.t * string loc
   | TPatConstant of constant
   | TPatTuple of pattern list
-  | TPatRecord of (Identifier.t loc * label_description * pattern) list
+  | TPatRecord of (Identifier.t loc * label_description * pattern) list * closed_flag
   | TPatConstruct of Identifier.t loc * constructor_description * pattern list
   | TPatAlias of pattern * Ident.t * string loc
   | TPatOr of pattern * pattern
@@ -216,7 +216,7 @@ let iter_pattern_desc f patt =
   match patt with
   | TPatTuple patts
   | TPatConstruct(_, _, patts) -> List.iter f patts
-  | TPatRecord fields ->
+  | TPatRecord(fields, _) ->
     List.iter (fun (_, _, p) -> f p) fields
   | TPatAny
   | TPatVar _
@@ -227,6 +227,7 @@ let iter_pattern_desc f patt =
 let map_pattern_desc f patt =
   match patt with
   | TPatTuple patts -> TPatTuple (List.map f patts)
+  | TPatRecord(fields, c) -> TPatRecord((List.map (fun (id, ld, pat) -> id, ld, f pat) fields), c)
   | TPatAlias(p1, id, s) -> TPatAlias(f p1, id, s)
   | TPatConstruct(lid, c, pats) -> TPatConstruct(lid, c, List.map f pats)
   | TPatOr(p1, p2) -> TPatOr(f p1, f p2)

@@ -46,7 +46,7 @@ let rec pretty_val ppf v =
     | TPatVar (x,_) -> fprintf ppf "%s" (Ident.name x)
     | TPatTuple vs ->
       fprintf ppf "@[(%a)@]" (pretty_vals ",") vs
-    | TPatRecord lvs ->
+    | TPatRecord (lvs, c) ->
       let filtered_lvs = List.filter
         (function
           | (_,_,{pat_desc=TPatAny}) -> false (* do not show lbl=_ *)
