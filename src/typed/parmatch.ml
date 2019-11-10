@@ -341,6 +341,8 @@ let rec normalize_pat q = match q.pat_desc with
   | TPatAlias (p,_,_) -> normalize_pat p
   | TPatTuple (args) ->
       make_pat (TPatTuple (omega_list args)) q.pat_type q.pat_env
+  | TPatRecord (fields) ->
+      make_pat (TPatRecord (List.map (fun (id, ld, pat) -> id, ld, omega) fields)) q.pat_type q.pat_env
   | TPatConstruct  (lid, c,args) ->
       make_pat
         (TPatConstruct (lid, c,omega_list args))
@@ -377,7 +379,8 @@ let discr_pat q pss =
       match head.pat_desc with
       | TPatOr _ | TPatVar _ | TPatAlias _ -> assert false
       | TPatAny -> refine_pat acc rows
-      | TPatTuple _ -> normalize_pat head
+      | TPatTuple _ 
+      | TPatRecord _ -> normalize_pat head
       | TPatConstant _
       | TPatConstruct _ -> acc
   in
@@ -598,7 +601,7 @@ let mark_partial =
   not. We work on the discriminating patterns of each sub-matrix: they
   are simplified, and are not omega/Tpat_any.
 *)
-let full_match closing env =  match env with
+let full_match closing env = match env with
   | ({pat_desc = (TPatAny | TPatVar _ | TPatAlias _ | TPatOr _)},_) :: _ ->
     (* discriminating patterns are simplified *)
     assert false
@@ -607,7 +610,8 @@ let full_match closing env =  match env with
     if c.cstr_consts < 0 then false (* extensions *)
     else List.length env = c.cstr_consts + c.cstr_nonconsts
   | ({pat_desc = TPatConstant(_)},_) :: _ -> false
-  | ({pat_desc = TPatTuple(_)},_) :: _ -> true
+  | ({pat_desc = TPatTuple(_)},_) :: _ 
+  | ({pat_desc = TPatRecord(_)},_) :: _ -> true
 
 
 (* Written as a non-fragile matching, PR#7451 originated from a fragile matching below. *)
@@ -621,7 +625,7 @@ let should_extend ext env = match ext with
               (_, {cstr_tag=(CstrConstant _|CstrBlock _|CstrUnboxed)},_) ->
             let path = get_constructor_type_path p.pat_type p.pat_env in
             Path.same path ext
-          | TPatConstant _|TPatTuple _
+          | TPatConstant _|TPatTuple _|TPatRecord _
             -> false
           | TPatAny|TPatVar _|TPatAlias _|TPatOr _
             -> assert false
@@ -803,7 +807,10 @@ let rec has_instance p = match p.pat_desc with
   | TPatAlias (p,_,_) -> has_instance p
   | TPatOr (p1,p2) -> has_instance p1 || has_instance p2
   | TPatConstruct (_,_,ps) | TPatTuple ps ->
-      has_instances ps
+    has_instances ps
+  | TPatRecord fields ->
+    let ps = List.map (fun (_, _, p) -> p) fields in
+    has_instances ps
 
 and has_instances = function
   | [] -> true
@@ -1479,6 +1486,8 @@ module Conv = struct
         mkpat (PPatConstant (untype_constant c))
       | TPatTuple lst ->
         mkpat (PPatTuple (List.map loop lst))
+      | TPatRecord fields ->
+        mkpat (PPatRecord (List.map (fun (id, _, pat) -> id, loop pat) fields))
       | TPatConstruct (cstr_lid, cstr, lst) ->
         let id = fresh cstr.cstr_name in
         let lid = { cstr_lid with txt = Identifier.IdentName id } in
@@ -1589,6 +1598,9 @@ let rec collect_paths_from_pat r p = match p.pat_desc with
       ps
   | TPatAny|TPatVar _|TPatConstant _ -> r
   | TPatTuple ps -> List.fold_left collect_paths_from_pat r ps
+  | TPatRecord fields -> 
+    let ps = List.map (fun (_, _, pat) -> pat) fields in
+    List.fold_left collect_paths_from_pat r ps
   | TPatAlias (p,_,_) -> collect_paths_from_pat r p
   | TPatOr (p1,p2) ->
     collect_paths_from_pat (collect_paths_from_pat r p1) p2
@@ -1713,6 +1725,8 @@ let inactive ~partial pat =
           end
         | TPatTuple ps | TPatConstruct (_, _, ps) ->
           List.for_all (fun p -> loop p) ps
+        | TPatRecord fields ->
+          List.for_all (fun (_, _, p) -> loop p) fields
         | TPatAlias (p,_,_) ->
           loop p
         | TPatOr (p,q) ->

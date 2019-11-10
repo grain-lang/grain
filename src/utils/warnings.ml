@@ -18,6 +18,7 @@ type t =
   | FragileMatch of string
   | UnusedMatch
   | UnusedPat
+  | NonClosedRecordPattern of string
   | UnreachableCase
   | ShadowConstructor of string
   | NoCmiFile of string * string option
@@ -37,8 +38,9 @@ let number = function
   | UnreachableCase -> 12
   | ShadowConstructor _ -> 13
   | NoCmiFile _ -> 14
+  | NonClosedRecordPattern _ -> 15
 
-let last_warning_number = 14
+let last_warning_number = 15
 
 let message = function
   | LetRecNonFunction(name) ->
@@ -81,6 +83,7 @@ let message = function
   | ShadowConstructor s -> "the pattern variable " ^ s ^ " shadows a constructor of the same name."
   | NoCmiFile(name, None) -> "no cmi file was found in path for module " ^ name
   | NoCmiFile(name, Some msg) -> Printf.sprintf "no valid cmi file was found in path for module %s. %s" name msg
+  | NonClosedRecordPattern s -> "the following fields are missing from the record pattern: " ^ s
 
 let sub_locs = function
   | _ -> []

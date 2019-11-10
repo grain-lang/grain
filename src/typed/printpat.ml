@@ -46,6 +46,22 @@ let rec pretty_val ppf v =
     | TPatVar (x,_) -> fprintf ppf "%s" (Ident.name x)
     | TPatTuple vs ->
       fprintf ppf "@[(%a)@]" (pretty_vals ",") vs
+    | TPatRecord lvs ->
+      let filtered_lvs = List.filter
+        (function
+          | (_,_,{pat_desc=TPatAny}) -> false (* do not show lbl=_ *)
+          | _ -> true) lvs in
+      begin match filtered_lvs with
+        | [] -> fprintf ppf "_"
+        | (_, lbl, _) :: q ->
+          let elision_mark ppf =
+            (* we assume that there are no label repetitions here *)
+              if Array.length lbl.lbl_all > 1 + List.length q then
+                fprintf ppf ";@ _@ "
+              else () in
+          fprintf ppf "@[{%a%t}@]"
+            pretty_lvals filtered_lvs elision_mark
+      end
     | TPatConstant c -> fprintf ppf "%s" (pretty_const c)
     | TPatConstruct({txt=id}, _, args) ->
       fprintf ppf "@[%s(%a)@]" (Identifier.string_of_ident id) (pretty_vals ",") args
@@ -73,6 +89,14 @@ and pretty_vals sep ppf = function
   | [v] -> pretty_val ppf v
   | v::vs ->
     fprintf ppf "%a%s@ %a" pretty_val v sep (pretty_vals sep) vs
+
+and pretty_lvals ppf = function
+  | [] -> ()
+  | [_,lbl,v] ->
+      fprintf ppf "%s=%a" lbl.lbl_name pretty_val v
+  | (_, lbl,v)::rest ->
+      fprintf ppf "%s=%a;@ %a"
+        lbl.lbl_name pretty_val v pretty_lvals rest
 
 let top_pretty ppf v =
   fprintf ppf "@[%a@]@?" pretty_val v

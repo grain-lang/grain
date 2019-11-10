@@ -107,6 +107,26 @@ module MatchTreeCompiler = struct
           | [] -> []
           | _ -> (tup_name, expr)::binds
         end
+      | TPatRecord(fields) ->
+        let rec_name = Ident.create "match_bind_rec" in
+        let rec_id = Imm.id ~loc ~env rec_name in
+        let process_nested other_binds (lid, ld, nested_pat) =
+          let this_binds = if pattern_could_contain_binding nested_pat then
+              begin
+                let rec_field_name = Ident.create @@ "match_bind_rec_field_" ^ Identifier.last lid.txt in
+                let rec_field_imm = Imm.id ~loc ~env rec_field_name in
+                let field_binds = extract_bindings nested_pat (Comp.imm ~loc ~env rec_field_imm) in
+                match field_binds with
+                | [] -> []
+                | _ -> (rec_field_name, Comp.record_get ~loc ~env (Int32.of_int ld.lbl_pos) rec_id)::field_binds
+              end
+            else [] in
+          this_binds @ other_binds in
+        let binds = BatList.fold_left process_nested [] fields in
+        begin match binds with
+          | [] -> []
+          | _ -> (rec_name, expr)::binds
+        end
       | TPatConstruct(_, _, args) ->
         let data_name = Ident.create "match_bind_data" in
         let data_id = Imm.id ~loc ~env data_name in
@@ -210,6 +230,7 @@ let rec pattern_always_matches patt =
   | TPatVar _ -> true
   | TPatAlias(p, _, _) -> pattern_always_matches p
   | TPatTuple(args) when List.for_all pattern_always_matches args -> true
+  | TPatRecord(fields) when List.for_all (fun (_, _, p) -> pattern_always_matches p) fields -> true
   | _ -> false
 
 let flatten_pattern size ({pat_desc} as p) =
