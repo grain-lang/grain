@@ -94,7 +94,11 @@ module Pat = struct
   let any ?loc () = mk ?loc PPatAny
   let var ?loc a = mk ?loc (PPatVar a)
   let tuple ?loc a = mk ?loc (PPatTuple a)
-  let record ?loc a = mk ?loc (PPatRecord a)
+  let record ?loc a = 
+    let patterns, closed = List.fold_right (fun (pat_opt, closed) (pats, closed_acc) ->
+      Option.map_default (fun pat -> pat::pats) pats pat_opt, if closed_acc = Asttypes.Open then Asttypes.Open else closed
+    ) a ([], Asttypes.Closed) in
+    mk ?loc (PPatRecord(patterns, closed))
   let constant ?loc a = mk ?loc (PPatConstant a)
   let constraint_ ?loc a b = mk ?loc (PPatConstraint(a, b))
   let construct ?loc a b = mk ?loc (PPatConstruct(a, b))

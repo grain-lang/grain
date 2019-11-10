@@ -74,7 +74,7 @@ type pattern_desc =
   | PPatAny
   | PPatVar of string loc
   | PPatTuple of pattern list
-  | PPatRecord of (Identifier.t loc * pattern) list
+  | PPatRecord of (Identifier.t loc * pattern) list * closed_flag
   | PPatConstant of constant
   | PPatConstraint of pattern * parsed_type
   | PPatConstruct of Identifier.t loc * pattern list

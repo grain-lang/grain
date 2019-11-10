@@ -245,7 +245,7 @@ and bind_patts ?exported:(exported=false) (pat : pattern) : Ident.t * anf_bind l
     | TPatTuple(patts) ->
       let tmp = gensym "tup_patt" in
       Some(tmp, (src, i), postprocess @@ List.mapi (fun i pat -> anf_patts_pass_one tmp (TuplePatGet i) pat) patts)
-    | TPatRecord(fields) ->
+    | TPatRecord(fields, _) ->
       let tmp = gensym "rec_patt" in
       Some(tmp, (src, i), postprocess @@ List.map (fun (_, ld, pat) -> anf_patts_pass_one tmp (RecordPatGet ld.lbl_pos) pat) fields)
     | TPatConstant _ -> failwith "NYI: anf_patts_pass_one: TPatConstant"

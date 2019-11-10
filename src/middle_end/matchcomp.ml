@@ -107,7 +107,7 @@ module MatchTreeCompiler = struct
           | [] -> []
           | _ -> (tup_name, expr)::binds
         end
-      | TPatRecord(fields) ->
+      | TPatRecord(fields, _) ->
         let rec_name = Ident.create "match_bind_rec" in
         let rec_id = Imm.id ~loc ~env rec_name in
         let process_nested other_binds (lid, ld, nested_pat) =
@@ -230,7 +230,7 @@ let rec pattern_always_matches patt =
   | TPatVar _ -> true
   | TPatAlias(p, _, _) -> pattern_always_matches p
   | TPatTuple(args) when List.for_all pattern_always_matches args -> true
-  | TPatRecord(fields) when List.for_all (fun (_, _, p) -> pattern_always_matches p) fields -> true
+  | TPatRecord(fields, _) when List.for_all (fun (_, _, p) -> pattern_always_matches p) fields -> true
   | _ -> false
 
 let flatten_pattern size ({pat_desc} as p) =

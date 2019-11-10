@@ -222,8 +222,9 @@ record_patterns :
   | record_pattern [COMMA record_pattern {$2}]* { $1::$2 }
 
 record_pattern :
-  | id COLON pattern { $1, $3 }
-  | id { $1, Pat.var ~loc:(symbol_rloc dyp) (mkstr dyp (Identifier.last $1.txt)) }
+  | UNDERSCORE { None, Open }
+  | id COLON pattern { Some($1, $3), Closed }
+  | id { Some($1, Pat.var ~loc:(symbol_rloc dyp) (mkstr dyp (Identifier.last $1.txt))), Closed }
 
 data_typ :
   | type_id LCARET typ [COMMA typ {$2}]* RCARET { Typ.constr $1 ($3::$4) }

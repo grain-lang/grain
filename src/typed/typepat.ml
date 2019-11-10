@@ -49,7 +49,7 @@ let iter_ppat f p =
   | PPatVar _
   | PPatConstant _ -> ()
   | PPatTuple lst -> List.iter f lst
-  | PPatRecord fs -> List.iter (fun (_, p) -> f p) fs
+  | PPatRecord (fs, _) -> List.iter (fun (_, p) -> f p) fs
   | PPatAlias (p, _)
   | PPatConstraint (p,_) -> f p
   | PPatConstruct (_, lst) -> List.iter f lst
@@ -197,7 +197,7 @@ let rec build_as_type env p =
   | TPatTuple(pl) ->
     let tyl = List.map (build_as_type env) pl in
     newty (TTyTuple tyl)
-  | TPatRecord (lpl) ->
+  | TPatRecord (lpl, _) ->
       let lbl = snd3 (List.hd lpl) in
       let ty = newvar () in
       let ppl = List.map (fun (_, l, p) -> l.lbl_pos, p) lpl in
@@ -289,7 +289,7 @@ let check_recordpat_labels loc lbl_pat_list closed =
         then raise(Error(loc, Env.empty, LabelMultiplyDefined label.lbl_name))
         else defined.(label.lbl_pos) <- true in
       List.iter check_defined lbl_pat_list;
-      if closed && Warnings.is_active (Warnings.NonClosedRecordPattern "")
+      if closed = Closed && Warnings.is_active (Warnings.NonClosedRecordPattern "")
       then begin
         let undefined = ref [] in
         for i = 0 to Array.length all - 1 do
@@ -469,7 +469,7 @@ and type_pat_aux ~constrs ~labels ~no_existentials ~mode ~explode ~env
         pat_loc = loc; pat_extra=[];
         pat_type = expected_ty;
         pat_env = !env })
-  | PPatRecord lid_pat_list ->
+  | PPatRecord (lid_pat_list, closed) ->
     assert (lid_pat_list <> []);
       let opath, record_ty =
         try
@@ -497,9 +497,9 @@ and type_pat_aux ~constrs ~labels ~no_existentials ~mode ~explode ~env
           k (label_lid, label, arg))
       in
       let make_record_pat lbl_pat_list =
-        check_recordpat_labels loc lbl_pat_list true;
+        check_recordpat_labels loc lbl_pat_list closed;
         {
-          pat_desc = TPatRecord lbl_pat_list;
+          pat_desc = TPatRecord (lbl_pat_list, closed);
           pat_loc = loc; pat_extra=[];
           pat_type = instance !env record_ty;
           pat_env = !env;
