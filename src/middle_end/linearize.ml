@@ -200,7 +200,7 @@ let rec transl_imm (({exp_desc; exp_loc=loc; exp_env=env; exp_type=typ; _} as e)
         let (var, setup) = transl_imm expr in 
         (Location.mkloc (Identifier.string_of_ident name) loc, var), setup) definitions
       ) in
-    let typath, _, _ = Typecore.extract_concrete_record env typ in
+    let typath, _, _ = Typepat.extract_concrete_record env typ in
     let ty_id = get_type_id typath in
     (Imm.id ~loc ~env tmp, (List.concat new_setup) @ [BLet(tmp, Comp.record ~loc ~env (Imm.const ~loc ~env (Const_int ty_id)) new_args)])
   | TExpRecordGet(expr, field, ld) ->
@@ -237,6 +237,10 @@ and bind_patts ?exported:(exported=false) (exp_id : Ident.t) (patts : pattern li
     | TPatAny -> None
     | TPatTuple(patts) ->
       let tmp = gensym "tup_patt" in
+      Some(tmp, (src, i), postprocess @@ List.mapi (anf_patts_pass_one tmp) patts)
+    | TPatRecord(fields) ->
+      let tmp = gensym "rec_patt" in
+      let patts = List.map (fun (_, _, pat) -> pat) fields in
       Some(tmp, (src, i), postprocess @@ List.mapi (anf_patts_pass_one tmp) patts)
     | TPatConstant _ -> failwith "NYI: anf_patts_pass_one: TPatConstant"
     | TPatConstruct _ -> failwith "NYI: anf_patts_pass_one: TPatConstruct"

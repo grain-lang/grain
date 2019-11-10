@@ -16,6 +16,7 @@
 (**************************************************************************)
 
 open Grain_parsing
+open Grain_utils
 open Misc
 open Asttypes
 open Parsetree
@@ -29,6 +30,8 @@ open Disambiguation
 type error =
   | ConstructorArityMismatch of Identifier.t * int * int
   | PatternTypeClash of (type_expr * type_expr) list
+  | LabelMismatch of Identifier.t * (type_expr * type_expr) list
+  | LabelMultiplyDefined of string
   | ExprTypeClash of (type_expr * type_expr) list * type_forcing_context option
   | RecursiveLocalConstraint of (type_expr * type_expr) list
   | MultiplyBoundVariable of string
@@ -46,6 +49,7 @@ let iter_ppat f p =
   | PPatVar _
   | PPatConstant _ -> ()
   | PPatTuple lst -> List.iter f lst
+  | PPatRecord fs -> List.iter (fun (_, p) -> f p) fs
   | PPatAlias (p, _)
   | PPatConstraint (p,_) -> f p
   | PPatConstruct (_, lst) -> List.iter f lst
@@ -193,6 +197,26 @@ let rec build_as_type env p =
   | TPatTuple(pl) ->
     let tyl = List.map (build_as_type env) pl in
     newty (TTyTuple tyl)
+  | TPatRecord (lpl) ->
+      let lbl = snd3 (List.hd lpl) in
+      let ty = newvar () in
+      let ppl = List.map (fun (_, l, p) -> l.lbl_pos, p) lpl in
+      let do_label lbl =
+        let _, ty_arg, ty_res = instance_label false lbl in
+        unify_pat env {p with pat_type = ty} ty_res;
+        let refinable =
+          List.mem_assoc lbl.lbl_pos ppl &&
+          match (repr lbl.lbl_arg).desc with TTyPoly _ -> false | _ -> true in
+        if refinable then begin
+          let arg = List.assoc lbl.lbl_pos ppl in
+          unify_pat env {arg with pat_type = build_as_type env arg} ty_arg
+        end else begin
+          let _, ty_arg', ty_res' = instance_label false lbl in
+          unify env ty_arg ty_arg';
+          unify_pat env p ty_res'
+        end in
+      Array.iter do_label lbl.lbl_all;
+      ty
   | TPatConstruct(_, cstr, pl) ->
     let keep = cstr.cstr_existentials <> [] in
     if keep then p.pat_type else
@@ -234,6 +258,86 @@ type type_pat_mode =
 
 exception Need_backtrack
 
+let extract_concrete_variant env ty =
+  match extract_concrete_typedecl env ty with
+  | (p0, p, {type_kind=TDataVariant cstrs}) -> (p0, p, cstrs)
+  | _ -> raise Not_found
+
+let extract_concrete_record env ty =
+  match extract_concrete_typedecl env ty with
+    (p0, p, {type_kind=TDataRecord fields}) -> (p0, p, fields)
+  | _ -> raise Not_found
+
+let extract_label_names env ty =
+  try
+    let (_, _,fields) = extract_concrete_record env ty in
+    List.map (fun l -> l.Types.rf_name) fields
+  with Not_found ->
+    assert false
+
+(* Checks over the labels mentioned in a record pattern:
+   no duplicate definitions (error); properly closed (warning) *)
+
+let check_recordpat_labels loc lbl_pat_list closed =
+  match lbl_pat_list with
+  | [] -> ()                            (* should not happen *)
+  | (_, label1, _) :: _ ->
+      let all = label1.lbl_all in
+      let defined = Array.make (Array.length all) false in
+      let check_defined (_, label, _) =
+        if defined.(label.lbl_pos)
+        then raise(Error(loc, Env.empty, LabelMultiplyDefined label.lbl_name))
+        else defined.(label.lbl_pos) <- true in
+      List.iter check_defined lbl_pat_list;
+      if closed && Warnings.is_active (Warnings.NonClosedRecordPattern "")
+      then begin
+        let undefined = ref [] in
+        for i = 0 to Array.length all - 1 do
+          if not defined.(i) then undefined := all.(i).lbl_name :: !undefined
+        done;
+        if !undefined <> [] then begin
+          let u = String.concat ", " (List.rev !undefined) in
+          Location.prerr_warning loc (Warnings.NonClosedRecordPattern u)
+        end
+      end
+
+let rec find_record_qual = function
+  | [] -> None
+  | ({ txt = Identifier.IdentExternal (modname, _) }, _) :: _ -> Some modname
+  | _ :: rest -> find_record_qual rest
+  
+let type_label_a_list ?labels loc closed env type_lbl_a opath lid_a_list k =
+  let lbl_a_list =
+    match lid_a_list, labels with
+      ({txt=Identifier.IdentName s}, _)::_, Some labels when Hashtbl.mem labels s ->
+        (* Special case for rebuilt syntax trees *)
+        List.map
+          (function lid, a -> match lid.txt with
+            Identifier.IdentName s -> lid, Hashtbl.find labels s, a
+          | _ -> assert false)
+          lid_a_list
+    | _ ->
+        let lid_a_list =
+          match find_record_qual lid_a_list with
+            None -> lid_a_list
+          | Some modname ->
+              List.map
+                (fun (lid, a as lid_a) ->
+                  match lid.txt with Identifier.IdentName s ->
+                    {lid with txt=Identifier.IdentExternal (modname, s)}, a
+                  | _ -> lid_a)
+                lid_a_list
+        in
+        disambiguate_lid_a_list loc closed env opath lid_a_list
+  in
+  (* Invariant: records are sorted in the typed tree *)
+  let lbl_a_list =
+    List.sort
+      (fun (_,lbl1,_) (_,lbl2,_) -> compare lbl1.lbl_pos lbl2.lbl_pos)
+      lbl_a_list
+  in
+  map_fold_cont type_lbl_a lbl_a_list k
+
 (* type_pat propagates the expected type as well as maps for
    constructors and labels.
    Unification may update the typing environment. *)
@@ -256,6 +360,10 @@ and type_pat_aux ~constrs ~labels ~no_existentials ~mode ~explode ~env
       ?(explode=explode) ?(env=env) =
     type_pat ~constrs ~labels ~no_existentials ~mode ~explode ~env in
   let loc = sp.ppat_loc in
+  let unif (x : pattern) : pattern =
+    unify_pat !env x (instance !env expected_ty);
+    x
+  in
   let rp k x : pattern = if constrs = None then k (rp x) else k x in
   match sp.ppat_desc with
   | PPatAny ->
@@ -361,6 +469,55 @@ and type_pat_aux ~constrs ~labels ~no_existentials ~mode ~explode ~env
         pat_loc = loc; pat_extra=[];
         pat_type = expected_ty;
         pat_env = !env })
+  | PPatRecord lid_pat_list ->
+    assert (lid_pat_list <> []);
+      let opath, record_ty =
+        try
+          let (p0, p,_) = extract_concrete_record !env expected_ty in
+          begin_def ();
+          let ty = instance !env expected_ty in
+          end_def ();
+          generalize_structure ty;
+          Some (p0, p, true), ty
+        with Not_found -> None, newvar ()
+      in
+      let type_label_pat (label_lid, label, sarg) k =
+        begin_def ();
+        let (_, ty_arg, ty_res) = instance_label false label in
+        begin try
+          unify_pat_types loc !env ty_res (instance !env record_ty)
+        with Error(_loc, _env, PatternTypeClash(cl)) ->
+          raise(Error(label_lid.loc, !env,
+                      LabelMismatch(label_lid.txt, cl)))
+        end;
+        end_def ();
+        generalize_structure ty_res;
+        generalize_structure ty_arg;
+        type_pat sarg ty_arg (fun arg ->
+          k (label_lid, label, arg))
+      in
+      let make_record_pat lbl_pat_list =
+        check_recordpat_labels loc lbl_pat_list true;
+        {
+          pat_desc = TPatRecord lbl_pat_list;
+          pat_loc = loc; pat_extra=[];
+          pat_type = instance !env record_ty;
+          pat_env = !env;
+        }
+      in
+      let k' pat = rp k (unif pat) in
+      begin match mode with
+      | Normal ->
+          k' (wrap_disambiguate "This record pattern is expected to have"
+               (mk_expected expected_ty)
+               (type_label_a_list loc false !env type_label_pat opath
+                  lid_pat_list)
+               make_record_pat)
+      | _ -> failwith "Counter examples NYI"
+      (* | Counter_example {labels; _} ->
+          type_label_a_list ~labels loc false !env type_label_pat opath
+            lid_pat_list (fun lbl_pat_list -> k' (make_record_pat lbl_pat_list)) *)
+      end
   | PPatConstruct(lid, sargs) ->
       let opath =
         (*try
@@ -651,6 +808,15 @@ let report_error env ppf = function
          fprintf ppf "This expression has type")
       (function ppf ->
          fprintf ppf "but a expression was expected of type")
+  | LabelMismatch(lid, trace) ->
+    report_unification_error ppf env trace
+      (function ppf ->
+        fprintf ppf "The record field %s belongs to the type"
+                (Identifier.string_of_ident lid))
+      (function ppf ->
+        fprintf ppf "but is mixed here with fields of type")
+  | LabelMultiplyDefined(s) ->
+    fprintf ppf "The record field label %s is defined several times" s
   | RecursiveLocalConstraint(trace) ->
     report_unification_error ppf env trace
       (function ppf ->

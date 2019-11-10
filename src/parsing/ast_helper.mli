@@ -68,6 +68,7 @@ module Pat : sig
   val any: ?loc:loc -> unit -> pattern
   val var: ?loc:loc -> str -> pattern
   val tuple: ?loc:loc -> pattern list -> pattern
+  val record: ?loc:loc -> (id * pattern) list -> pattern
   val constant: ?loc:loc -> constant -> pattern
   val constraint_: ?loc:loc -> pattern -> parsed_type -> pattern
   val construct: ?loc:loc -> id -> pattern list -> pattern

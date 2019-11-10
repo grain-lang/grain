@@ -138,6 +138,7 @@ end = struct
       | TPatAlias(p1, a, b) -> TPatAlias(map_pattern p1, a, b)
       | TPatConstruct(a, b, args) -> TPatConstruct(a, b, List.map map_pattern args)
       | TPatTuple(args) -> TPatTuple(List.map map_pattern args)
+      | TPatRecord(fields) -> TPatRecord(List.map (fun (id, ld, pat) -> id, ld, map_pattern pat) fields)
       | TPatOr(p1, p2) -> TPatOr(map_pattern p1, map_pattern p2)
     end in
     Map.leave_pattern {pat with pat_extra; pat_desc}

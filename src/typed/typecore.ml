@@ -151,23 +151,6 @@ let constant_or_raise = Checkertypes.constant_or_raise
 let mkexp exp_desc exp_type exp_loc exp_env =
   { exp_desc; exp_type; exp_loc; exp_env; exp_extra = []; }
 
-let extract_concrete_variant env ty =
-  match extract_concrete_typedecl env ty with
-  | (p0, p, {type_kind=TDataVariant cstrs}) -> (p0, p, cstrs)
-  | _ -> raise Not_found
-
-let extract_concrete_record env ty =
-  match extract_concrete_typedecl env ty with
-    (p0, p, {type_kind=TDataRecord fields}) -> (p0, p, fields)
-  | _ -> raise Not_found
-
-let extract_label_names env ty =
-  try
-    let (_, _,fields) = extract_concrete_record env ty in
-    List.map (fun l -> l.Types.rf_name) fields
-  with Not_found ->
-    assert false
-
 (* Typing of patterns *)
 
 (* unification inside type_pat*)
@@ -265,42 +248,6 @@ let rec type_approx env (sexp : Parsetree.expression) =
   | PExpBlock ((_::_) as es) -> type_approx env (last es)
   | _ -> newvar()
   
-let rec find_record_qual = function
-  | [] -> None
-  | ({ txt = Identifier.IdentExternal (modname, _) }, _) :: _ -> Some modname
-  | _ :: rest -> find_record_qual rest
-  
-let type_label_a_list ?labels loc closed env type_lbl_a opath lid_a_list k =
-  let lbl_a_list =
-    match lid_a_list, labels with
-      ({txt=Identifier.IdentName s}, _)::_, Some labels when Hashtbl.mem labels s ->
-        (* Special case for rebuilt syntax trees *)
-        List.map
-          (function lid, a -> match lid.txt with
-            Identifier.IdentName s -> lid, Hashtbl.find labels s, a
-          | _ -> assert false)
-          lid_a_list
-    | _ ->
-        let lid_a_list =
-          match find_record_qual lid_a_list with
-            None -> lid_a_list
-          | Some modname ->
-              List.map
-                (fun (lid, a as lid_a) ->
-                  match lid.txt with Identifier.IdentName s ->
-                    {lid with txt=Identifier.IdentExternal (modname, s)}, a
-                  | _ -> lid_a)
-                lid_a_list
-        in
-        disambiguate_lid_a_list loc closed env opath lid_a_list
-  in
-  (* Invariant: records are sorted in the typed tree *)
-  let lbl_a_list =
-    List.sort
-      (fun (_,lbl1,_) (_,lbl2,_) -> compare lbl1.lbl_pos lbl2.lbl_pos)
-      lbl_a_list
-  in
-  map_fold_cont type_lbl_a lbl_a_list k
 
 (* Check that all univars are safe in a type *)
 let check_univars env expans kind exp ty_expected vars =

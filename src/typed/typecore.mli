@@ -50,10 +50,6 @@ val type_arguments:
         Env.t -> Parsetree.expression list ->
         type_expr list -> type_expr list -> Typedtree.expression list
 
-val extract_concrete_record:
-        Env.t -> type_expr ->
-        Path.t * Path.t * record_field list
-
 val generalizable: int -> type_expr -> bool
 
 val name_pattern : string -> Typedtree.match_branch list -> Ident.t
