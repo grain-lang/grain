@@ -73,6 +73,9 @@ let transl_const (c : Types.constant) : (imm_expression, string * comp_expressio
   | _ -> Left(Imm.const c)
 
 
+type item_get = 
+  RecordPatGet of int | TuplePatGet of int
+
 let rec transl_imm (({exp_desc; exp_loc=loc; exp_env=env; exp_type=typ; _} as e) : expression) : (imm_expression * anf_bind list) =
   match exp_desc with
   | TExpIdent(_, _, {val_kind=TValUnbound _}) -> failwith "Impossible: val_kind was unbound"
@@ -215,15 +218,19 @@ let rec transl_imm (({exp_desc; exp_loc=loc; exp_env=env; exp_type=typ; _} as e)
   | TExpConstruct _ -> failwith "NYI: transl_imm: Construct"
 
 
-and bind_patts ?exported:(exported=false) (exp_id : Ident.t) (patts : pattern list) : anf_bind list =
+and bind_patts ?exported:(exported=false) (pat : pattern) : Ident.t * anf_bind list =
   let postprocess_item cur acc =
     match cur with
     | None -> acc
     | Some(ident, (src, idx), extras) ->
+      let access = begin match idx with
+        | RecordPatGet idx -> Comp.record_get (Int32.of_int idx) (Imm.id src)
+        | TuplePatGet idx -> Comp.tuple_get (Int32.of_int idx) (Imm.id src)
+      end in
       let bind = if exported then
-          BLetExport(Nonrecursive, [ident, Comp.tuple_get (Int32.of_int idx) (Imm.id src)])
+          BLetExport(Nonrecursive, [ident, access])
         else
-          BLet(ident, Comp.tuple_get (Int32.of_int idx) (Imm.id src)) in
+          BLet(ident, access) in
       [bind] @ extras @ acc in
   let postprocess items = List.fold_right postprocess_item items [] in
   (* Pass one: Some(<identifier>, <access path>, <extra binds>)*)
@@ -237,16 +244,20 @@ and bind_patts ?exported:(exported=false) (exp_id : Ident.t) (patts : pattern li
     | TPatAny -> None
     | TPatTuple(patts) ->
       let tmp = gensym "tup_patt" in
-      Some(tmp, (src, i), postprocess @@ List.mapi (anf_patts_pass_one tmp) patts)
+      Some(tmp, (src, i), postprocess @@ List.mapi (fun i pat -> anf_patts_pass_one tmp (TuplePatGet i) pat) patts)
     | TPatRecord(fields) ->
       let tmp = gensym "rec_patt" in
-      let patts = List.map (fun (_, _, pat) -> pat) fields in
-      Some(tmp, (src, i), postprocess @@ List.mapi (anf_patts_pass_one tmp) patts)
+      Some(tmp, (src, i), postprocess @@ List.map (fun (_, ld, pat) -> anf_patts_pass_one tmp (RecordPatGet ld.lbl_pos) pat) fields)
     | TPatConstant _ -> failwith "NYI: anf_patts_pass_one: TPatConstant"
     | TPatConstruct _ -> failwith "NYI: anf_patts_pass_one: TPatConstruct"
     | TPatOr _ -> failwith "NYI: anf_patts_pass_one: TPatOr"
     | TPatAlias _ -> failwith "NYI: anf_patts_pass_one: TPatAlias" in
-  postprocess @@ List.mapi (anf_patts_pass_one exp_id) patts
+  let dummy_id = gensym "dummy" in
+  let dummy_idx = (TuplePatGet 0) in
+  match anf_patts_pass_one dummy_id dummy_idx pat with
+    | Some(tmp, _, binds) -> tmp, binds
+    | None -> failwith "Bind pattern was not destructable"
+
 
 and transl_comp_expression (({exp_desc; exp_loc=loc; exp_env=env; _} as e) : expression) : (comp_expression * anf_bind list) =
   match exp_desc with
@@ -278,13 +289,12 @@ and transl_comp_expression (({exp_desc; exp_loc=loc; exp_env=env; _} as e) : exp
     let (exp_ans, exp_setup) = transl_comp_expression vb_expr in
     let (body_ans, body_setup) = transl_comp_expression ({e with exp_desc=TExpLet(Nonrecursive, rest, body)}) in
     (body_ans, exp_setup @ [BLet(bind, exp_ans)] @ body_setup)
-  | TExpLet(Nonrecursive, {vb_expr; vb_pat={pat_desc=TPatTuple(patts)}}::rest, body) ->
+  | TExpLet(Nonrecursive, {vb_expr; vb_pat={pat_desc=TPatTuple _} as pat}::rest, body)
+  | TExpLet(Nonrecursive, {vb_expr; vb_pat={pat_desc=TPatRecord _} as pat}::rest, body) ->
     let (exp_ans, exp_setup) = transl_comp_expression vb_expr in
-    let tmp = gensym "let_tup" in
 
-    (* Extract items from tuple *)
-
-    let anf_patts = bind_patts tmp patts in
+    (* Extract items from destructure *)
+    let tmp, anf_patts = bind_patts pat in
 
     let (body_ans, body_setup) = transl_comp_expression ({e with exp_desc=TExpLet(Nonrecursive, rest, body)}) in
     (body_ans, exp_setup @ ((BLet(tmp, exp_ans))::anf_patts) @ body_setup)
@@ -363,11 +373,11 @@ let rec transl_anf_statement (({ttop_desc; ttop_env=env; ttop_loc=loc} as s) : t
         if exported 
         then [BLetExport(Nonrecursive, [bind, exp_ans])]
         else [BLet(bind, exp_ans)]
-      | TPatTuple(patts) ->
-        let tmp = gensym "let_tup" in
-        let anf_patts = bind_patts ~exported tmp patts in
+      | TPatTuple _
+      | TPatRecord _ ->
+        let tmp, anf_patts = bind_patts ~exported vb_pat in
         (BLet(tmp, exp_ans))::anf_patts
-      | _ -> failwith "NYI: transl_anf_statement: Non-tuple destructuring in let"
+      | _ -> failwith "NYI: transl_anf_statement: Non-record or non-tuple destructuring in let"
     end in
     Some(exp_setup @ setup @ rest_setup), rest_imp
   | TTopLet(export_flag, Recursive, binds) ->
