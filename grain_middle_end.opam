@@ -1,5 +1,6 @@
-opam-version: "1.2"
-maintainer: "philip@pblair.org"
+opam-version: "2.0"
+synopsis: "Grain itermediate representations"
+maintainer: ["philip@grain-lang.org" "oscar@grain-lang.org"]
 authors: ["Philip Blair"  "Oscar Spencer"]
 license: "MIT"
 homepage: "https://github.com/grain-lang/grain"
@@ -10,7 +11,7 @@ build: [
   [ "dune" "subst" ] {pinned}
   [ "dune" "build" "-p" name "-j" jobs ]
 ]
-build-test: [["dune" "runtest" "-p" name "-j" jobs]]
+run-test: [["dune" "runtest" "-p" name "-j" jobs]]
 depends: [
   "ocamlfind" {build & >= "1.7.3" }
   "ocamlbuild" {build & >= "0.12.0" }
