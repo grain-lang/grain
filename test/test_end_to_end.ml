@@ -239,6 +239,21 @@ let record_tests = [
   t "record_get_multilevel" "data Rec1 = {foo: Number, bar: Number}; data Rec2 = {baz: Rec1}; let x = {baz: {foo: 4, bar: 9}}; x.baz.bar" "9";
 
   te "record_get_err" "data Rec1 = {foo: Number, bar: Number}; let x = {foo: 4, bar: 9}; x.baz" "The field baz does not belong to type Rec1";
+
+  (* record destructured assignment *)
+  t "record_destruct_1" "data Rec = {foo: Number, bar: String, baz: Bool}; let { foo, _ } = {foo: 4, bar: 'boo', baz: true}; foo" "4";
+  t "record_destruct_2" "data Rec = {foo: Number, bar: String, baz: Bool}; let { bar, _ } = {foo: 4, bar: 'boo', baz: true}; bar" "\"boo\"";
+  t "record_destruct_3" "data Rec = {foo: Number, bar: Number, baz: Number}; let { foo, bar, _ } = {foo: 4, bar: 5, baz: 6}; foo + bar" "9";
+  t "record_destruct_4" "data Rec = {foo: Number, bar: Number, baz: Number}; let { foo, bar, baz } = {foo: 4, bar: 5, baz: 6}; foo + bar + baz" "15";
+  t "record_destruct_deep" "data Rec = {foo: Number}; data Rec2 = {bar: Rec}; let { bar: { foo } } = {bar: {foo: 4}}; foo" "4";
+  te "record_destruct_deep_alias" "data Rec = {foo: Number}; data Rec2 = {bar: Rec}; let { bar: { foo } } = {bar: {foo: 4}}; bar" "Unbound value bar";
+
+  t "record_match_1" "data Rec = {foo: Number, bar: String, baz: Bool}; match ({foo: 4, bar: 'boo', baz: true}) { | { foo, _ } => foo }" "4";
+  t "record_match_2" "data Rec = {foo: Number, bar: String, baz: Bool}; match ({foo: 4, bar: 'boo', baz: true}) { | { bar, _ } => bar }" "\"boo\"";
+  t "record_match_3" "data Rec = {foo: Number, bar: Number, baz: Number}; match ({foo: 4, bar: 5, baz: 6}) { | { foo, bar, _ } => foo + bar }" "9";
+  t "record_match_4" "data Rec = {foo: Number, bar: Number, baz: Number}; match ({foo: 4, bar: 5, baz: 6}) { | { foo, bar, baz } => foo + bar + baz}" "15";
+  t "record_match_deep" "data Rec = {foo: Number}; data Rec2 = {bar: Rec}; match ({bar: {foo: 4}}) { | { bar: { foo } } => foo }" "4";
+  te "record_match_deep_alias" "data Rec = {foo: Number}; data Rec2 = {bar: Rec}; match ({bar: {foo: 4}}) { | { bar: { foo } } => bar }" "Unbound value bar";
 ]
 
 let stdlib_tests = [
