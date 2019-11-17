@@ -43,7 +43,7 @@ let sexp_of_position (p : position) =
     ];
   ]
 
-let position_to_yojson (p : position) : Yojson.Safe.json =
+let position_to_yojson (p : position) : Yojson.Safe.t =
   `Assoc [
     "file", (`String p.pos_fname);
     "line", (`Int p.pos_lnum);
@@ -74,7 +74,7 @@ let position_of_sexp (sexp : Sexplib.Sexp.t) =
   | List _ -> of_sexp_error "position_of_sexp: invalid s-expression" sexp
 
 
-let position_of_yojson (yj : Yojson.Safe.json) : (position, string) result =
+let position_of_yojson (yj : Yojson.Safe.t) : (position, string) result =
   match yj with
   | `Assoc contents ->
     begin
@@ -395,7 +395,7 @@ let () =
           Some (errorf ~loc:(in_file !input_name)
                 "I/O error: %s" msg)
 
-      | Misc.HookExnWrapper {error = e; hook_name;
+      (* | Misc.HookExnWrapper {error = e; hook_name;
                              hook_info={Misc.sourcefile}} ->
           let sub = match error_of_exn e with
             | None | Some `Already_displayed -> error (Printexc.to_string e)
@@ -404,7 +404,7 @@ let () =
           Some
             (errorf ~loc:(in_file sourcefile)
                "In hook %S:" hook_name
-               ~sub:[sub])
+               ~sub:[sub]) *)
       | _ -> None
     )
 

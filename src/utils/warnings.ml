@@ -20,6 +20,7 @@ type t =
   | UnusedPat
   | UnreachableCase
   | ShadowConstructor of string
+  | NoCmiFile of string * string option
 
 let number = function
   | LetRecNonFunction _ -> 1
@@ -35,8 +36,9 @@ let number = function
   | UnusedPat -> 11
   | UnreachableCase -> 12
   | ShadowConstructor _ -> 13
+  | NoCmiFile _ -> 14
 
-let last_warning_number = 13
+let last_warning_number = 14
 
 let message = function
   | LetRecNonFunction(name) ->
@@ -77,6 +79,8 @@ let message = function
   | UnusedPat -> "this sub-pattern is unused."
   | UnreachableCase -> "this mach case is unreachable."
   | ShadowConstructor s -> "the pattern variable " ^ s ^ " shadows a constructor of the same name."
+  | NoCmiFile(name, None) -> "no cmi file was found in path for module " ^ name
+  | NoCmiFile(name, Some msg) -> Printf.sprintf "no valid cmi file was found in path for module %s. %s" name msg
 
 let sub_locs = function
   | _ -> []

@@ -34,6 +34,7 @@ type t =
   | UnusedPat
   | UnreachableCase
   | ShadowConstructor of string
+  | NoCmiFile of string * string option
 
 val is_active : t -> bool;;
 val is_error : t -> bool;;

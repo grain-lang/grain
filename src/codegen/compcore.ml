@@ -254,30 +254,30 @@ let compile_bind ~is_get (env : codegen_env) (b : binding) : Wasm.Ast.instr' Con
     (* No adjustments are needed for argument bindings *)
     let slot = add_dummy_loc i in
     if is_get then
-      singleton (Ast.GetLocal(slot))
+      singleton (Ast.LocalGet(slot))
     else
-      singleton (Ast.SetLocal(slot))
+      singleton (Ast.LocalSet(slot))
   | MLocalBind(i) ->
     (* Local bindings need to be offset to account for arguments and swap variables *)
     let slot = add_dummy_loc ((env.num_args + (List.length swap_slots)) ++ i) in
     if is_get then
-      singleton (Ast.GetLocal(slot))
+      singleton (Ast.LocalGet(slot))
     else
-      singleton (Ast.SetLocal(slot))
+      singleton (Ast.LocalSet(slot))
   | MSwapBind(i) ->
     (* Swap bindings need to be offset to account for arguments *)
     let slot = add_dummy_loc (env.num_args ++ i) in
     if is_get then
-      singleton (Ast.GetLocal(slot))
+      singleton (Ast.LocalGet(slot))
     else
-      singleton (Ast.SetLocal(slot))
+      singleton (Ast.LocalSet(slot))
   | MGlobalBind(i) ->
     (* Global bindings need to be offset to account for any imports *)
     let slot = add_dummy_loc (env.global_offset ++ i) in
     if is_get then
-      singleton (Ast.GetGlobal(slot))
+      singleton (Ast.GlobalGet(slot))
     else
-      singleton (Ast.SetGlobal(slot))
+      singleton (Ast.GlobalSet(slot))
   | MClosureBind(i) ->
     (* Closure bindings need to be calculated *)
     begin
@@ -285,7 +285,7 @@ let compile_bind ~is_get (env : codegen_env) (b : binding) : Wasm.Ast.instr' Con
         failwith "Internal error: attempted to emit instruction which would mutate closure contents"
     end;
     cons
-      (Ast.GetLocal(add_dummy_loc Int32.zero))
+      (Ast.LocalGet(add_dummy_loc Int32.zero))
       (singleton (load ~offset:(4 * (3 + Int32.to_int i)) ()))
   | MImport(i) ->
     begin
@@ -294,7 +294,7 @@ let compile_bind ~is_get (env : codegen_env) (b : binding) : Wasm.Ast.instr' Con
     end;
     (* Adjust for runtime functions *)
     let slot = add_dummy_loc (env.import_offset ++ i) in
-    singleton (Ast.GetGlobal(slot))
+    singleton (Ast.GlobalGet(slot))
 
 let get_swap ?ty:(typ=Types.I32Type) env idx =
   match typ with
@@ -555,7 +555,7 @@ let allocate_closure env ?lambda ({func_idx; arity; variables} as closure_data) 
   (heap_allocate env closure_size) @ set_swap @ get_swap +@ [
     Ast.Const(const_int32 num_free_vars);
   ] @ get_swap +@ [
-    Ast.GetGlobal(var_of_ext_global env runtime_mod reloc_base);
+    Ast.GlobalGet(var_of_ext_global env runtime_mod reloc_base);
     Ast.Const(wrap_int32 (Int32.(add func_idx (of_int env.func_offset))));
     Ast.Binary(Values.I32 Ast.IntOp.Add);
   ] @ get_swap +@ [
@@ -587,7 +587,7 @@ let allocate_adt env ttag vtag elts =
     Ast.Const(const_int32 (tag_val_of_heap_tag_type ADTType));
     store ~offset:0 ();
   ] @ get_swap +@ [
-    Ast.GetGlobal(var_of_ext_global env runtime_mod module_runtime_id);
+    Ast.GlobalGet(var_of_ext_global env runtime_mod module_runtime_id);
     store ~offset:4 ();
   ] @ get_swap @ (compile_imm env ttag) +@ [
     store ~offset:8 ();
@@ -904,7 +904,7 @@ let compile_imports env ({imports} as prog) =
         Ast.idesc=add_dummy_loc (Ast.TableImport (Types.TableType({
             Types.min=Int32.of_int table_size;
             Types.max=None;
-          }, Types.AnyFuncType)));
+          }, Types.FuncRefType)));
       };
     ])
 
@@ -959,7 +959,7 @@ let compile_tables env prog =
       Ast.ttype=Types.TableType({
           Types.min=Int32.of_int table_size;
           Types.max=None;
-        }, Types.AnyFuncType)
+        }, Types.FuncRefType)
     };*)
   ]
 
@@ -971,7 +971,7 @@ let compile_elems env prog =
     add_dummy_loc {
       index=add_dummy_loc (Int32.zero);
       offset=add_dummy_loc [
-        add_dummy_loc (Ast.GetGlobal(add_dummy_loc @@ Int32.of_int 0));
+        add_dummy_loc (Ast.GlobalGet(add_dummy_loc @@ Int32.of_int 0));
       ];
       init=BatList.init table_size (fun n -> (add_dummy_loc (Int32.of_int n)));
     };
@@ -995,13 +995,13 @@ let heap_adjust env = add_dummy_loc {
   Ast.ftype = add_dummy_loc Int32.(of_int (get_func_type_idx env (Types.FuncType([Types.I32Type], [Types.I32Type]))));
   Ast.locals = [];
   Ast.body = List.map add_dummy_loc [
-      (*Ast.GetLocal(add_dummy_loc @@ Int32.of_int 0);
+      (*Ast.LocalGet(add_dummy_loc @@ Int32.of_int 0);
       call_runtime_check_memory env;*)
-      Ast.GetGlobal(env.heap_top);
-      Ast.GetLocal(add_dummy_loc @@ Int32.of_int 0);
+      Ast.GlobalGet(env.heap_top);
+      Ast.LocalGet(add_dummy_loc @@ Int32.of_int 0);
       Ast.Binary(Values.I32 Ast.IntOp.Add);
-      Ast.SetGlobal(env.heap_top);
-      Ast.GetGlobal(env.heap_top);
+      Ast.GlobalSet(env.heap_top);
+      Ast.GlobalGet(env.heap_top);
     ]
 }
 

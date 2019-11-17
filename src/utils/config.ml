@@ -162,6 +162,9 @@ let strict_sequence = toggle_flag
     ~doc:"Enable strict sequencing"
     false
 
+(* For now, leave this as true *)
+let safe_string = ref true
+
 let parser_debug_level = opt
     ~names:["parser-debug-level"]
     ~conv:Cmdliner.Arg.int

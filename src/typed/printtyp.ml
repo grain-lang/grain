@@ -8,6 +8,8 @@ open Ctype
 open Format
 open Outcometree
 
+module String = Misc.Stdlib.String
+
 (* Print a long identifier *)
 
 let rec identifier ppf = function
@@ -30,7 +32,7 @@ let ident ppf id = pp_print_string ppf (ident_name id)
 
 (* Print a path *)
 
-let ident_pervasives = Ident.create_persistent "Pervasives"
+let ident_pervasives = Ident.create_persistent "Stdlib"
 let printing_env = ref Env.empty
 let non_shadowed_pervasive = function
   | PExternal(PIdent id, s, _pos) as path ->
@@ -254,7 +256,7 @@ let set_printing_env env =
 
 let wrap_printing_env env f =
   set_printing_env env;
-  try_finally f (fun () -> set_printing_env Env.empty)
+  try_finally ~always:(fun () -> set_printing_env Env.empty) f
 
 let wrap_printing_env ~error env f =
   if error then Env.without_cmis (wrap_printing_env env) f
@@ -315,7 +317,7 @@ let named_vars = ref ([] : string list)
 
 let weak_counter = ref 1
 let weak_var_map = ref TypeMap.empty
-let named_weak_vars = ref StringSet.empty
+let named_weak_vars = ref String.Set.empty
 
 let reset_names () = names := []; name_counter := 0; named_vars := []
 let add_named_var ty =
@@ -328,7 +330,7 @@ let add_named_var ty =
 let name_is_already_used name =
   List.mem name !named_vars
   || List.exists (fun (_, name') -> name = name') !names
-  || StringSet.mem name !named_weak_vars
+  || String.Set.mem name !named_weak_vars
 
 let rec new_name () =
   let name =
@@ -344,7 +346,7 @@ let rec new_weak_name ty () =
   incr weak_counter;
   if name_is_already_used name then new_weak_name ty ()
   else begin
-    named_weak_vars := StringSet.add name !named_weak_vars;
+    named_weak_vars := String.Set.add name !named_weak_vars;
     weak_var_map := TypeMap.add ty name !weak_var_map;
     name
   end
@@ -791,11 +793,11 @@ let refresh_weak () =
     if is_non_gen true (repr t) then
       begin
         TypeMap.add t name m,
-        StringSet.add name s
+        String.Set.add name s
       end
     else m, s in
   let m, s =
-    TypeMap.fold refresh !weak_var_map (TypeMap.empty ,StringSet.empty)  in
+    TypeMap.fold refresh !weak_var_map (TypeMap.empty, String.Set.empty)  in
   named_weak_vars := s;
   weak_var_map := m
 
