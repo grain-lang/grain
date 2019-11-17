@@ -49,6 +49,9 @@ val unsound_optimizations : bool ref
 
 (*** Internal options (no command line flags) *)
 
+val safe_string : bool ref
+(** Whether to use safe string representations (always true for now) *)
+
 val output_enabled : bool ref
 (** Whether to enable file writes. This is useful for testing. *)
 

@@ -103,7 +103,7 @@ let read_stream cstream =
     Bytes.set buf !i c;
     incr i
   ) cstream;
-  Bytes.sub buf 0 !i
+  Bytes.to_string @@ Bytes.sub buf 0 !i
 
 let run_output cstate test_ctxt =
   let wasm = Wasm.Encode.encode (extract_wasm cstate) in

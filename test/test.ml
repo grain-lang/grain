@@ -11,7 +11,7 @@ let () =
         let buf = Buffer.create 512 in
         let formatter = Format.formatter_of_buffer buf in
         Format.fprintf formatter "@[%a@]@." Grain_parsing.Location.report_error err;
-        Format.pp_flush_formatter formatter;
+        Format.pp_print_flush formatter ();
         let s = Buffer.contents buf in
         Buffer.reset buf;
         Some (s))

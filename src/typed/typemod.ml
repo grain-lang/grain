@@ -22,6 +22,8 @@ open Parsetree
 open Types
 open Format
 
+module String = Misc.Stdlib.String
+
 type error =
     Cannot_apply of module_type
   | Not_included of Includemod.error list
@@ -115,12 +117,12 @@ let type_open ?toplevel env sod =
 
 let simplify_signature sg =
   let rec aux = function
-    | [] -> [], StringSet.empty
+    | [] -> [], String.Set.empty
     | (TSigValue(id, _descr) as component) :: sg ->
         let (sg, val_names) as k = aux sg in
         let name = Ident.name id in
-        if StringSet.mem name val_names then k
-        else (component :: sg, StringSet.add name val_names)
+        if String.Set.mem name val_names then k
+        else (component :: sg, String.Set.add name val_names)
     | component :: sg ->
         let (sg, val_names) = aux sg in
         (component :: sg, val_names)

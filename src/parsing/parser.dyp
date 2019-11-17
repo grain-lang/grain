@@ -20,7 +20,7 @@ let when_debug ?n thunk =
         thunk()
   | None -> ()
 
-let prerr_string s = when_debug ~n:1 (fun () -> Pervasives.prerr_string s)
+let prerr_string s = when_debug ~n:1 (fun () -> Stdlib.prerr_string s)
 
 let debug_print_state () =
   when_debug !last_state_printer

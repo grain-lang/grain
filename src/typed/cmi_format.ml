@@ -70,12 +70,12 @@ let input_cmi ic =
   | Result.Error e -> raise (Invalid_argument e)
 
 let deserialize_cmi bytes =
-  match cmi_infos_of_yojson @@ Yojson.Safe.from_string bytes with
+  match cmi_infos_of_yojson @@ Yojson.Safe.from_string (Bytes.to_string bytes) with
   | Result.Ok x -> x
   | Result.Error e -> raise (Invalid_argument e)
 
 let serialize_cmi ({cmi_name=name; cmi_sign=sign; cmi_crcs=crcs; cmi_flags=flags} as cmi_info) =
-  Yojson.Safe.to_string @@ cmi_infos_to_yojson cmi_info
+  Bytes.of_string @@ Yojson.Safe.to_string @@ cmi_infos_to_yojson cmi_info
 
 module CmiBinarySection = BinarySection(struct
     type t = cmi_infos
