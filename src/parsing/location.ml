@@ -395,7 +395,8 @@ let () =
           Some (errorf ~loc:(in_file !input_name)
                 "I/O error: %s" msg)
 
-      (* | Misc.HookExnWrapper {error = e; hook_name;
+      (* [This exception was removed in OCaml 4.09, so we need to decide if we want to add back support for it] 
+         | Misc.HookExnWrapper {error = e; hook_name;
                              hook_info={Misc.sourcefile}} ->
           let sub = match error_of_exn e with
             | None | Some `Already_displayed -> error (Printexc.to_string e)
