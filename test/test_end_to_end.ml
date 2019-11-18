@@ -81,8 +81,8 @@ let basic_functionality_tests = [
   t "fals" "let x = false; x" "false";
   t "tru" "let x = true; x" "true";
   t "complex1" "
-    let x = 2, y = 3, z = if true { 4 } else { 5 };
-    if true {
+    let x = 2, y = 3, z = if (true) { 4 } else { 5 };
+    if (true) {
       print(y) - (z + x)
     } else {
       print(8)
@@ -105,17 +105,17 @@ let basic_functionality_tests = [
   t "or3" "false or true" "true";
   t "or4" "false or false" "false";
 
-  t "comp1" "if 2 < 3 {true} else {false}" "true";
-  te "comp1e" "if 2 < 3 {true} else {3}" "type";
-  t "comp2" "if 2 <= 3 {true} else {false}" "true";
-  te "comp2e" "if 2 <= 3 {true} else {3}" "type";
-  t "comp3" "if 2 >= 3 {4} else {5}" "5";
-  t "comp4" "if 2 > 3 {4} else {5}" "5";
-  t "comp5" "if 2 < 3 {4} else {5}" "4";
-  t "comp6" "if 2 == 3 {8} else {9}" "9";
-  t "comp7" "if 2 == 2 {8} else {9}" "8";
-  t "comp8" "if 2 <= 2 {10} else {11}" "10";
-  t "comp9" "if 2 >= 2 {10} else {11}" "10";
+  t "comp1" "if (2 < 3) {true} else {false}" "true";
+  te "comp1e" "if (2 < 3) {true} else {3}" "type";
+  t "comp2" "if (2 <= 3) {true} else {false}" "true";
+  te "comp2e" "if (2 <= 3) {true} else {3}" "type";
+  t "comp3" "if (2 >= 3) {4} else {5}" "5";
+  t "comp4" "if (2 > 3) {4} else {5}" "5";
+  t "comp5" "if (2 < 3) {4} else {5}" "4";
+  t "comp6" "if (2 == 3) {8} else {9}" "9";
+  t "comp7" "if (2 == 2) {8} else {9}" "8";
+  t "comp8" "if (2 <= 2) {10} else {11}" "10";
+  t "comp9" "if (2 >= 2) {10} else {11}" "10";
   t "comp10" "let x = 2, y = 4; (y - 2) == x" "true";
   t "comp11" "true == 2" "false";
   t "comp12" "2 == false" "false";
@@ -134,10 +134,10 @@ let basic_functionality_tests = [
   t "sub1_2" "sub1(5)" "4";
   t "sub1_3" "sub1(0)" "-1";
 
-  te "comp_bool1" "if 2 < true {3} else {4}" "type";
-  te "comp_bool2" "if 2 > true {3} else {4}" "type";
-  te "comp_bool3" "if true >= 4 {3} else {4}" "type";
-  te "comp_bool4" "let x = true; if x < 4 {3} else {5}" "type";
+  te "comp_bool1" "if (2 < true) {3} else {4}" "type";
+  te "comp_bool2" "if (2 > true) {3} else {4}" "type";
+  te "comp_bool3" "if (true >= 4) {3} else {4}" "type";
+  te "comp_bool4" "let x = true; if (x < 4) {3} else {5}" "type";
 
   te "arith1" "2 + true" "type";
   te "arith2" "true + 4" "type";
@@ -146,9 +146,9 @@ let basic_functionality_tests = [
   te "arith5" "let x = true; x * 4" "type";
   te "arith6" "let x = false; 4 * x" "type";
 
-  te "if1" "if 2 {5} else {6}" "type";
-  te "if2" "let y = 0; if y {5} else {6}" "type";
-  te "if3" "if sub1(1) {2} else {5}" "type";
+  te "if1" "if (2) {5} else {6}" "type";
+  te "if2" "let y = 0; if (y) {5} else {6}" "type";
+  te "if3" "if (sub1(1)) {2} else {5}" "type";
 
   (* Non-compile-time overflows *)
   te "overflow1" "9999999 * 99999999" "overflow";
@@ -186,18 +186,18 @@ let function_tests = [
 
   t "lambda_1" "print((x) => {x})" "<lambda>\n<lambda>";
   t "app_1" "((x) => {x})(1)" "1";
-  t "letrec_1" "let rec x = ((n) => {if n > 3 {n} else {x(n + 2)}}),
+  t "letrec_1" "let rec x = ((n) => {if (n > 3) {n} else {x(n + 2)}}),
                         y = ((n) => {x(n + 1)});
                  y(2)" "5";
   (* Check that recursion is order-independent *)
   t "letrec_2" "let rec y = ((n) => {x(n + 1)}),
-                        x = ((n) => {if n > 3 {n} else {x(n + 2)}});
+                        x = ((n) => {if (n > 3) {n} else {x(n + 2)}});
                  y(2)" "5";
   t "let_1" "let rec x = ((n) => {n + 1}),
                      y = x(3),
                      z = ((n) => {x(n) + y});
                z(5)" "10";
-  te "let_norec_1" "let x = ((n) => {if n > 3 {n} else {x(n + 2)}}),
+  te "let_norec_1" "let x = ((n) => {if (n > 3) {n} else {x(n + 2)}}),
                         y = ((n) => {x(n + 1)});
                  y(2)" "Unbound value x.";
   te "lambda_dup_args" "((x, y, x) => {5})" "Variable x is bound several times";
