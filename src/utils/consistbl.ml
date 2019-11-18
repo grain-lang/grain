@@ -17,6 +17,8 @@
 
 open Misc
 
+type filepath = string
+
 module Make (Module_name : sig
   type t
   module Set : Set.S with type elt = t
