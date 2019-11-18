@@ -44,6 +44,15 @@
       Buffer.add_char buf (Char.chr to_add);
   end
 
+  let newline_regex = Str.regexp "\\(\r\\|\n\\)"
+
+  let process_newlines lexbuf =
+    let input = lexeme lexbuf in
+    String.iter (fun c ->
+      if Str.string_match newline_regex (String.make 1 c) 0
+      then new_line lexbuf
+    ) input
+
 }
 
 let dec_digit = ['0'-'9']
@@ -79,13 +88,14 @@ let oct_esc = "\\" oct_digit (oct_digit oct_digit?)?
 let num_esc = (unicode_esc | hex_esc | oct_esc)
 
 let newline_char = ("\r\n"|"\n\r"|'\n'|'\r')
+let newline_chars = newline_char (newline_char | blank)*
 
-let comment = '#' ((([^'|'])[^ '\r' '\n']*(newline_char | eof)) | (newline_char | eof))
+let comment = '#' ((([^'|'])[^ '\r' '\n']*(newline_chars | eof)) | (newline_chars | eof))
 
 rule token = parse
-  | comment { new_line lexbuf; token lexbuf }
+  | comment { process_newlines lexbuf; token lexbuf }
   | blank { token lexbuf }
-  | '\n' { new_line lexbuf; token lexbuf }
+  | newline_chars { process_newlines lexbuf; EOL }
   | signed_int as x { NUM (int_of_string x) }
   | "foreign" { FOREIGN }
   | "wasm" { WASM }
@@ -144,7 +154,6 @@ rule token = parse
   | ident_cap as x { TYPEID x }
   | eof { EOF }
   | _ as c { raise (Error(lexbuf_loc lexbuf, UnrecognizedCharacter c)) }
-
 
 and read_dquote_str buf =
   parse
