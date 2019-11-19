@@ -116,6 +116,7 @@ type prim2 =
 (** Type for expressions (i.e. things which evaluate to something) *)
 type expression = {
   pexp_desc: expression_desc;
+  pexp_ignored: bool;
   pexp_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
 } [@@deriving sexp]
 
@@ -131,6 +132,7 @@ and expression_desc =
   | PExpPrim2 of prim2 * expression * expression
   | PExpIf of expression * expression * expression
   | PExpWhile of expression * expression
+  | PExpConstraint of expression * parsed_type
   | PExpLambda of pattern list * expression
   | PExpApp of expression * expression list
   | PExpBlock of expression list

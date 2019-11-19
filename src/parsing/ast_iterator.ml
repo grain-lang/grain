@@ -42,6 +42,7 @@ module E = struct
     | PExpAssign(be, e) -> sub.expr sub be; sub.expr sub e
     | PExpIf(c, t, f) -> sub.expr sub c; sub.expr sub t; sub.expr sub f
     | PExpWhile(c, b) -> sub.expr sub c; sub.expr sub b
+    | PExpConstraint(e, t) -> sub.expr sub e; sub.typ sub t
     | PExpLambda(pl, e) -> List.iter (sub.pat sub) pl; sub.expr sub e
     | PExpApp(e, el) -> sub.expr sub e; List.iter (sub.expr sub) el
     | PExpBlock(el) -> List.iter (sub.expr sub) el

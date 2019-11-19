@@ -235,6 +235,7 @@ binop_expr :
   | binop_expr(<=pc) EOL? GREATEREQ EOL? binop_expr(<pc) { Exp.prim2 ~loc:(symbol_rloc dyp) GreaterEq $1 $5 } pc
   | binop_expr(<=pb) EOL? AND EOL?       binop_expr(<pb) { Exp.prim2 ~loc:(symbol_rloc dyp) And $1 $5 } pb
   | binop_expr(<=pb) EOL? OR EOL?        binop_expr(<pb) { Exp.prim2 ~loc:(symbol_rloc dyp) Or $1 $5 } pb
+  | binop_expr colon typ { Exp.constraint_ ~loc:(symbol_rloc dyp) $1 $3 } pe
   | non_assign_expr { $1 } pe
   | assign_expr { $1 } pa
 
