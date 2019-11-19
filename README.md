@@ -19,11 +19,11 @@ For more information about the language, visit [grain-lang.org](https://grain-la
 
 ### Compiler
 
-To build the compiler, have `ocaml` (version = 4.05) and `opam` (version >= 2.0) installed and on your path. Then,
+To build the compiler, have `ocaml` (version = 4.08) and `opam` (version >= 2.0) installed and on your path. Then,
 
 ```bash
-# If needed, make sure you have OCaml 4.05 enabled
-$ opam switch 4.05.0
+# If needed, make sure you have OCaml 4.08 enabled
+$ opam switch 4.08.1
 # Then install dependencies and build
 $ opam install . --deps-only
 $ make
