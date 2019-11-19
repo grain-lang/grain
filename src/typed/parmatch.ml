@@ -222,17 +222,17 @@ let first_column simplified_matrix =
 let const_compare x y =
   match x, y with
   | Const_float f1, Const_float f2 ->
-    Pervasives.compare (float_of_string f1) (float_of_string f2)
+    Stdlib.compare (float_of_string f1) (float_of_string f2)
   | Const_string (s1), Const_string (s2) ->
     String.compare s1 s2
   | Const_bool b1, Const_bool b2 ->
-    Pervasives.compare (if b1 then 1 else 0) (if b2 then 1 else 0)
+    Stdlib.compare (if b1 then 1 else 0) (if b2 then 1 else 0)
   | (Const_int _
     | Const_string _
     | Const_float _
     | Const_bool _
     | Const_int32 _
-    | Const_int64 _), _ -> Pervasives.compare x y
+    | Const_int64 _), _ -> Stdlib.compare x y
 
 module Compat
     (Constr:sig

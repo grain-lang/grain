@@ -146,6 +146,10 @@ val is_imported_opaque: string -> bool
 
 (* Direct access to the table of imported compilation units with their CRC *)
 
+module Consistbl : module type of struct
+  include Grain_utils.Consistbl.Make (Misc.Stdlib.String)
+end
+
 val crc_units: Consistbl.t
 val add_import: string -> unit
 

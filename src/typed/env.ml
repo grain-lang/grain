@@ -15,6 +15,7 @@
 (**************************************************************************)
 
 open Grain_parsing
+open Grain_utils
 open Sexplib.Conv
 open Cmi_format
 open Path
@@ -565,6 +566,8 @@ let compilation_in_progress =
 
 (* Consistency between persistent structures *)
 
+module Consistbl = Consistbl.Make (Misc.Stdlib.String)
+
 let crc_units = Consistbl.create()
 
 module StringSet =
@@ -759,7 +762,7 @@ let acknowledge_pers_struct check modname
               let unit_name, _ = get_unit() in
               error (Need_recursive_types(ps.ps_name, unit_name))
         | Unsafe_string ->
-            if Config.safe_string then
+            if !Config.safe_string then
               let unit_name, _ = get_unit() in
               error (Depend_on_unsafe_string_unit (ps.ps_name, unit_name));
         | Opaque -> add_imported_opaque modname)
@@ -849,7 +852,7 @@ let check_pers_struct ~loc name filename =
        whether the check succeeds, to help make builds more
        deterministic. *)
     add_import name;
-    if (Warnings.is_active (Warnings.No_cmi_file("", None))) then
+    if (Warnings.is_active (Warnings.NoCmiFile("", None))) then
       !add_delayed_check_forward
         (fun () -> check_pers_struct ~loc name filename)
   end

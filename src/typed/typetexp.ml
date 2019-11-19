@@ -17,6 +17,7 @@
 
 (* Typechecking of type expressions for the core language *)
 open Grain_parsing
+open Grain_utils
 open Asttypes
 open Misc
 open Parsetree

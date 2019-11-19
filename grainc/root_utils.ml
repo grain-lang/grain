@@ -33,8 +33,8 @@ let path_var_sep = if Sys.os_type = "Win32" then ';' else ':'
 
 let infer_root_from_argv() =
   match Sys.argv.(0) with
-  | x when not(BatString.ends_with x "grainc") -> false
-  | exec_path when exec_path <> "grainc" ->
+  | x when not((BatString.ends_with x "grainc") || (BatString.ends_with x "grain-root")) -> false
+  | exec_path when exec_path <> "grainc" && exec_path <> "grain-root" ->
     (* Ends with 'grainc' and isn't 'grainc'. Likely an absolute or relative path *)
     try_infer_grain_root exec_path
   | _ -> (* argv[0] is exactly 'grainc'. Look for it on $PATH *)
