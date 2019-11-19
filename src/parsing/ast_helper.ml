@@ -111,7 +111,7 @@ module Exp = struct
     let loc = match loc with
       | None -> (!default_loc_src)()
       | Some l -> l in
-    {pexp_desc=d; pexp_loc=loc}
+    {pexp_desc=d; pexp_ignored=false; pexp_loc=loc}
   let ident ?loc a = mk ?loc (PExpId a)
   let constant ?loc a = mk ?loc (PExpConstant a)
   let tuple ?loc a = mk ?loc (PExpTuple a)
@@ -123,6 +123,7 @@ module Exp = struct
   let prim2 ?loc a b c = mk ?loc (PExpPrim2(a, b, c))
   let if_ ?loc a b c = mk ?loc (PExpIf(a, b, c))
   let while_ ?loc a b = mk ?loc (PExpWhile(a, b))
+  let constraint_ ?loc a b = mk ?loc (PExpConstraint(a, b))
   let assign ?loc a b = mk ?loc (PExpAssign(a, b))
   let lambda ?loc a b = mk ?loc (PExpLambda(a, b))
   let apply ?loc a b = mk ?loc (PExpApp(a, b))

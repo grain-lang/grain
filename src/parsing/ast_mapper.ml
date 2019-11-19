@@ -44,10 +44,12 @@ module E = struct
     | PExpAssign(be, e) -> assign ~loc (sub.expr sub be) (sub.expr sub e)
     | PExpIf(c, t, f) -> if_ ~loc (sub.expr sub c) (sub.expr sub t) (sub.expr sub f)
     | PExpWhile(c, e) -> while_ ~loc (sub.expr sub c) (sub.expr sub e)
+    | PExpConstraint(e, t) -> constraint_ ~loc (sub.expr sub e) (sub.typ sub t)
     | PExpLambda(pl, e) -> lambda ~loc (List.map (sub.pat sub) pl) (sub.expr sub e)
     | PExpApp(e, el) -> apply ~loc (sub.expr sub e) (List.map (sub.expr sub) el)
     | PExpBlock(el) -> block ~loc (List.map (sub.expr sub) el)
     | PExpNull -> null ~loc ()
+    | PExpConstraint(e, t) -> constraint_ ~loc (sub.expr sub e) (sub.typ sub t)
 end
 
 module P = struct

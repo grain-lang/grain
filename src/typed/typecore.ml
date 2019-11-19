@@ -631,6 +631,20 @@ and type_expect_ ?in_function ?(recarg=Rejected) env sexp ty_expected_explained 
       exp_type = Builtin_types.type_void;
       exp_env = env
     }
+  | PExpConstraint (sarg, styp) ->
+    begin_def ();
+    let cty = Typetexp.transl_simple_type env false styp in
+    let ty = cty.ctyp_type in
+    end_def ();
+    generalize_structure ty;
+    let (arg, ty') = (List.hd @@ type_arguments env [sarg] [ty] [(instance env ty)], instance env ty) in
+    rue {
+      exp_desc = arg.exp_desc;
+      exp_loc = arg.exp_loc;
+      exp_type = ty';
+      exp_env = env;
+      exp_extra = (TExpConstraint cty, loc) :: arg.exp_extra;
+    }
   | PExpBlock([]) -> failwith "Internal error: type_expect_ block was empty"
   | PExpBlock(es) ->
     let rec process_es rem =
