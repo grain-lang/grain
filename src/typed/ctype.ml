@@ -423,7 +423,7 @@ let rec update_level env level expand ty =
   let ty = repr ty in
   if ty.level > level then begin
     match ty.desc with
-    | TTyConstr(p, _tl, _abbrev) when level < get_level env p ->
+    (* | TTyConstr(p, _tl, _abbrev) when level < get_level env p ->
       (* Try first to replace an abbreviation by its expansion. *)
       begin try
           (* if is_newtype env p then raise Cannot_expand; *)
@@ -434,7 +434,7 @@ let rec update_level env level expand ty =
           (* Format.printf "update_level: %i < %i@." level (get_level env p); *)
           if level < get_level env p then raise (Unify [(ty, newvar2 level)]);
           iter_type_expr (update_level env level expand) ty
-      end
+      end *)
     | TTyConstr(_, _ :: _, _) when expand ->
       begin try
           link_type ty (!forward_try_expand_once env ty);
