@@ -113,10 +113,12 @@ type prim2 =
   | Or
 [@@deriving sexp]
 
+type ignored = TypeKept | TypeIgnored [@@deriving sexp]
+
 (** Type for expressions (i.e. things which evaluate to something) *)
 type expression = {
   pexp_desc: expression_desc;
-  pexp_ignored: bool;
+  pexp_ignored: ignored;
   pexp_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
 } [@@deriving sexp]
 

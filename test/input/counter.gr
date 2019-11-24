@@ -1,10 +1,10 @@
 let counter = {
-  let count = box(0);
-  let rec counter_help = () => {
-    count := unbox(count) + 1
-  };
-  counter_help
-};
+  let count = box(0)
+  let rec counterHelp = () => {
+    count := unbox(count) + 1;
+  }
+  counterHelp
+}
 {
   # TODO: This should either have some equivalent of OCaml's ignore(...) or print needs a different type...
   #       We need to discuss to figure this out [philip] [oscar]

@@ -4,7 +4,7 @@ export *
 foreign wasm grainBuiltins print : a -> a
 
 # Checks the given items for structural equality.
-foreign wasm grainBuiltins equal : (a, a) -> Bool;
+foreign wasm grainBuiltins equal : (a, a) -> Bool
 
 # Converts the given value to a string
 foreign wasm grainBuiltins toString : a -> String

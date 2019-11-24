@@ -358,7 +358,7 @@ let type_module ?(toplevel=false) funct_body anchor env sstr (*scope*) =
       let bind_name = { txt=exported_name; loc } in
       {
         pvb_pat={ppat_desc=PPatVar(bind_name); ppat_loc=loc};
-        pvb_expr={pexp_loc=loc; pexp_ignored=false; pexp_desc=PExpId name};
+        pvb_expr={pexp_loc=loc; pexp_ignored=TypeKept; pexp_desc=PExpId name};
         pvb_loc=loc;
       }
     ) exports in

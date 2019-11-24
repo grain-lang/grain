@@ -362,6 +362,10 @@ and type_expect_ ?in_function ?(recarg=Rejected) env sexp ty_expected_explained 
   let loc = sexp.pexp_loc in
   (* Record the expression type before unifying it with the expected type *)
   let with_explanation = with_explanation explanation in
+  let re exp =
+    if sexp.pexp_ignored = TypeIgnored
+    then re {exp with exp_type = Builtin_types.type_void}
+    else re exp in
   let rue exp =
     with_explanation (fun () ->
       unify_exp env (re exp) (instance env ty_expected));
@@ -547,7 +551,6 @@ and type_expect_ ?in_function ?(recarg=Rejected) env sexp ty_expected_explained 
             lower_args (ty::seen) ty_fun
         | _ -> ()
     in*)
-    (*let ty = instance env funct.exp_type in*)
     end_def();
     (*lower_args [] ty;*)
     begin_def();
@@ -600,7 +603,7 @@ and type_expect_ ?in_function ?(recarg=Rejected) env sexp ty_expected_explained 
     let boxexpr = type_expect env sboxexpr (mk_expected ~explanation:Assign_not_box @@ Builtin_types.type_box @@ newvar ~name:"a" ()) in
     let val_ = type_expect env sval ty_expected_explained in
     unify_exp env boxexpr @@ Builtin_types.type_box val_.exp_type;
-    rue {
+    re {
       exp_desc = TExpAssign(boxexpr, val_);
       exp_loc = loc;
       exp_extra = [];
@@ -765,8 +768,7 @@ and type_application env funct args =
     | td ->
       raise(Error(funct.exp_loc, env, Apply_non_function (expand_head env funct.exp_type)))
   in
-  let typed_args =
-    List.map2 (fun arg t_arg -> type_expect env arg (mk_expected t_arg)) args ty_args in
+  let typed_args = type_arguments env args ty_args (List.map (instance env) ty_args) in
   typed_args, instance env ty_ret
 
 and type_construct env loc lid sarg ty_expected_explained attrs =
