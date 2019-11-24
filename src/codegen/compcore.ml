@@ -587,7 +587,7 @@ let allocate_adt env ttag vtag elts =
     Ast.Const(const_int32 (tag_val_of_heap_tag_type ADTType));
     store ~offset:0 ();
   ] @ get_swap +@ [
-    Ast.GetGlobal(var_of_ext_global env runtime_mod module_runtime_id);
+    Ast.GlobalGet(var_of_ext_global env runtime_mod module_runtime_id);
     (* Tag the runtime id *)
     Ast.Const(const_int32 2);
     Ast.Binary(Values.I32 Ast.IntOp.Mul);
@@ -641,7 +641,7 @@ let allocate_record env ttag elts =
     Ast.Const(const_int32 (tag_val_of_heap_tag_type RecordType));
     store ~offset:0 ();
   ] @ get_swap +@ [
-    Ast.GetGlobal(var_of_ext_global env runtime_mod module_runtime_id);
+    Ast.GlobalGet(var_of_ext_global env runtime_mod module_runtime_id);
     (* Tag the runtime id *)
     Ast.Const(const_int32 2);
     Ast.Binary(Values.I32 Ast.IntOp.Mul);
