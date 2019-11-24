@@ -416,6 +416,10 @@ block_body_expr :
   | let_expr    { $1 }
   | expr  { $1 }
 
+block_body_stmt :
+  | block_body_expr SEMI EOL? { Exp.ignore $1 }
+  | block_body_expr EOL { $1 }
+
 tuple_exprs :
   | expr comma { [$1] }
   | expr [comma expr {$2}]+ { $1::$2 }
@@ -433,7 +437,8 @@ record_exprs :
   | [record_field | record_pun] [comma [record_field | record_pun] {$2}]* {$1::$2}
 
 block_body :
-  | block_body_expr [eos block_body_expr {$2}]* eos? { $1::$2 }
+  | block_body_stmt+ block_body_expr? { $1 @ (match $2 with Some(e) -> [e] | None -> []) }
+  | block_body_expr { [$1] }
 
 file_path :
   | STRING { Location.mkloc $1 (symbol_rloc dyp) }
