@@ -186,6 +186,8 @@ let function_tests = [
 
   t "shorthand_1" "let foo = (x) => x; foo(1)" "1";
   t "shorthand_2" "let foo = (x) => x + 3; foo(1)" "4";
+  t "shorthand_3" "let foo = x => x; foo(1)" "1";
+  t "shorthand_4" "let foo = x => x + 3; foo(1)" "4";
 
   t "lambda_1" "print((x) => {x})" "<lambda>\n<lambda>";
   t "app_1" "((x) => {x})(1)" "1";
