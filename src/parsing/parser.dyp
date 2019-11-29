@@ -404,7 +404,7 @@ match_branch :
   | pattern thickarrow expr { Mb.mk ~loc:(symbol_rloc dyp) $1 $3 }
 
 match_branches :
-  | [pipe match_branch EOL? {$2}]* pipe match_branch { $1 @ [$3] }
+  | pipe? match_branch [EOL? pipe match_branch {$3}]* { $2::$3 }
 
 match_expr :
   | MATCH lparen expr rparen lbrace match_branches rbrace { Exp.match_ ~loc:(symbol_rloc dyp) $3 $6 }
