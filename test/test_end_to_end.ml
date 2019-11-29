@@ -83,12 +83,14 @@ let basic_functionality_tests = [
   t "complex1" "
     let x = 2, y = 3, z = if (true) { 4 } else { 5 };
     if (true) {
-      print(y) - (z + x)
+      print(y)
+      y - (z + x)
     } else {
       print(8)
+      8
     }
     "  "3\n-3";
-  t "complex2" "print(2) + print(3)" "2\n3\n5";
+  t "complex2" "print(2 + 3)" "5\n5";
 
   t "binop1" "2 + 2" "4";
   t "binop2" "2 - 2" "0";
