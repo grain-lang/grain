@@ -40,7 +40,7 @@ let rec append = (l1, l2) => {
 let rec contains = (e, l) => {
   match (l) {
     | Empty => false
-    | Cons(hd, tl) => (hd == e) or contains(e, tl)
+    | Cons(hd, tl) => (hd == e) || contains(e, tl)
   }
 }
 

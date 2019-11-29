@@ -144,9 +144,9 @@ rule token = parse
   | "*" { STAR }
   | "<=" { LESSEQ }
   | ">=" { GREATEREQ }
-  | "and" { AND }
-  | "or" { OR }
-  | "not" { NOT }
+  | "&&" { AMPAMP }
+  | "||" { PIPEPIPE }
+  | "!" { NOT }
   | '"'   { read_dquote_str (Buffer.create 16) lexbuf }
   | '\'' { read_squote_str (Buffer.create 16) lexbuf }
   | "_" { UNDERSCORE }
