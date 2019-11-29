@@ -1,7 +1,7 @@
 export *
 
 # Prints the given value to the console.
-foreign wasm grainBuiltins print : a -> a
+foreign wasm grainBuiltins print : a -> Void
 
 # Checks the given items for structural equality.
 foreign wasm grainBuiltins equal : (a, a) -> Bool
