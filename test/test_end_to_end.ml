@@ -95,15 +95,15 @@ let basic_functionality_tests = [
   t "binop3" "2 - 4" "-2";
   t "binop4" "2 * 3" "6";
 
-  t "and1" "true and true" "true";
-  t "and2" "true and false" "false";
-  t "and3" "false and true" "false";
-  t "and4" "false and false" "false";
+  t "and1" "true && true" "true";
+  t "and2" "true && false" "false";
+  t "and3" "false && true" "false";
+  t "and4" "false && false" "false";
 
-  t "or1" "true or true" "true";
-  t "or2" "true or false" "true";
-  t "or3" "false or true" "true";
-  t "or4" "false or false" "false";
+  t "or1" "true || true" "true";
+  t "or2" "true || false" "true";
+  t "or3" "false || true" "true";
+  t "or4" "false || false" "false";
 
   t "comp1" "if (2 < 3) {true} else {false}" "true";
   te "comp1e" "if (2 < 3) {true} else {3}" "type";
@@ -124,8 +124,8 @@ let basic_functionality_tests = [
   t "comp15" "false == true" "false";
   t "comp16" "false == false" "true";
 
-  t "not1" "not(true)" "false";
-  t "not2" "not(false)" "true";
+  t "not1" "!true" "false";
+  t "not2" "!false" "true";
 
   t "add1_1" "add1(2)" "3";
   t "add1_2" "add1(5)" "6";
@@ -560,8 +560,8 @@ let optimization_tests = [
   tfsound "test_counter_sound" "counter" "1\n2\n3\n3";
   te "test_dae_sound" "let x = 2 + false; 3" "type";
   te "test_const_fold_times_zero_sound" "let f = ((x) => {x * 0}); f(false)" "Number";
-  te "test_const_fold_or_sound" "let f = ((x) => {x or true}); f(1)" "Bool";
-  te "test_const_fold_and_sound" "let f = ((x) => {false and x}); f(1)" "Bool";
+  te "test_const_fold_or_sound" "let f = ((x) => {x || true}); f(1)" "Bool";
+  te "test_const_fold_and_sound" "let f = ((x) => {false && x}); f(1)" "Bool";
   te "test_const_fold_plus_sound" "let f = ((x) => {0 + x}); f(true)" "Number";
   te "test_const_fold_times_one_sound" "let f = ((x) => {x * 1}); f(true)" "Number";
 

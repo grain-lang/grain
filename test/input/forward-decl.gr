@@ -4,7 +4,7 @@ let rec isEvenHelp = (n, b) => {
   if (n == 0) {
     b
   } else {
-    isOddHelp(n - 1, not(b))
+    isOddHelp(n - 1, !b)
   }
 },
 
@@ -12,7 +12,7 @@ isOddHelp = (n, b) => {
   if (n == 1) {
     b
   } else {
-    isEvenHelp(n - 1, not(b))
+    isEvenHelp(n - 1, !b)
   }
 };
 
