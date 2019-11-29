@@ -150,6 +150,8 @@ let basic_functionality_tests = [
   te "if2" "let y = 0; if (y) {5} else {6}" "type";
   te "if3" "if (sub1(1)) {2} else {5}" "type";
 
+  t "if4" "if (false) 1 else if (false) 2 else {3}" "3";
+
   (* Non-compile-time overflows *)
   te "overflow1" "9999999 * 99999999" "overflow";
   te "overflow2" "-99999999 - 999999999" "overflow";
