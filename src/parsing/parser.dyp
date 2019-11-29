@@ -97,7 +97,13 @@ let fix_blocks ({statements; body} as prog) =
 
 let block_resembles_record exprs =
   match exprs with
-  | {pexp_desc=PExpId {txt=IdentName _}}::_ -> true
+  | {pexp_desc=PExpId {txt=IdentName _}}::[] -> true
+  | _ -> false
+
+let is_brace_expr expr =
+  match expr.pexp_desc with
+  | PExpBlock _
+  | PExpRecord _ -> true
   | _ -> false
 
 let is_uppercase_ident expr =
@@ -132,7 +138,7 @@ let make_program statements body =
 
 }
 
-%relation pe<pt<pp<pb<pc<pa
+%relation pe<pt<pp<pb<pc<pa<pl
 
 %token <int> NUM
 %token <string> ID
@@ -236,6 +242,7 @@ binop_expr :
   | binop_expr(<=pb) EOL? AND EOL?       binop_expr(<pb) { Exp.prim2 ~loc:(symbol_rloc dyp) And $1 $5 } pb
   | binop_expr(<=pb) EOL? OR EOL?        binop_expr(<pb) { Exp.prim2 ~loc:(symbol_rloc dyp) Or $1 $5 } pb
   | binop_expr colon typ { Exp.constraint_ ~loc:(symbol_rloc dyp) $1 $3 } pe
+  | lam_expr { $1 } pl
   | non_assign_expr { $1 } pe
   | assign_expr { $1 } pa
 
@@ -376,6 +383,7 @@ lam_args :
 
 lam_expr :
   | lparen lam_args rparen thickarrow block { Exp.lambda ~loc:(symbol_rloc dyp) $2 $5 }
+  | lparen lam_args rparen thickarrow binop_expr { if is_brace_expr $5 then raise Dyp.Giveup else Exp.lambda ~loc:(symbol_rloc dyp) $2 $5 }
 
 let_expr :
   | LET REC value_binds { Exp.let_ ~loc:(symbol_rloc dyp) Recursive $3 (Exp.block []) }
@@ -407,7 +415,6 @@ non_assign_expr :
   | record_get  { $1 }
   | paren_expr  { $1 }
   | block_expr  { $1 }
-  | lam_expr    { $1 }
   | if_expr     { $1 }
   | while_expr  { $1 }
   | match_expr  { $1 }

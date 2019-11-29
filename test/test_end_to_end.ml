@@ -184,6 +184,9 @@ let function_tests = [
   te "arity_2" "let foo = ((x) => {x + 5});\nfoo()" "type";
   te "arity_3" "let foo = ((x) => {x});\nfoo(1, 2, 3)" "type";
 
+  t "shorthand_1" "let foo = (x) => x; foo(1)" "1";
+  t "shorthand_2" "let foo = (x) => x + 3; foo(1)" "4";
+
   t "lambda_1" "print((x) => {x})" "<lambda>\n<lambda>";
   t "app_1" "((x) => {x})(1)" "1";
   t "letrec_1" "let rec x = ((n) => {if (n > 3) {n} else {x(n + 2)}}),
