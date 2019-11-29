@@ -95,23 +95,23 @@ let fix_blocks ({statements; body} as prog) =
    statements=List.map (mapper.toplevel mapper) statements;
    body=mapper.expr mapper body}
 
-let block_resembles_record exprs =
+let no_record_block exprs =
   match exprs with
-  | {pexp_desc=PExpId {txt=IdentName _}}::[] -> true
-  | _ -> false
+  | [{pexp_desc=PExpId {txt=IdentName _}}] -> raise Dyp.Giveup
+  | _ -> ()
 
-let is_brace_expr expr =
+let no_brace_expr expr =
   match expr.pexp_desc with
   | PExpBlock _
-  | PExpRecord _ -> true
-  | _ -> false
+  | PExpRecord _ -> raise Dyp.Giveup
+  | _ -> ()
 
-let is_uppercase_ident expr =
+let no_uppercase_ident expr =
   match expr.pexp_desc with
   | PExpId {txt=id} ->
     let first_char = String.get (Identifier.last id) 0 in
-    first_char = BatChar.uppercase first_char
-  | _ -> false
+    if first_char = BatChar.uppercase first_char then raise Dyp.Giveup
+  | _ -> ()
 
 
 let mkid ns =
@@ -373,7 +373,7 @@ simple_expr :
   | id_expr { $1 }
 
 block_expr :
-  | lbrace block_body rbrace { if block_resembles_record $2 then raise Dyp.Giveup else Exp.block ~loc:(symbol_rloc dyp) $2 }
+  | lbrace block_body rbrace { no_record_block $2; Exp.block ~loc:(symbol_rloc dyp) $2 }
 
 block :
   | lbrace block_body rbrace { Exp.block ~loc:(symbol_rloc dyp) $2 }
@@ -383,9 +383,9 @@ lam_args :
 
 lam_expr :
   | lparen lam_args rparen thickarrow block { Exp.lambda ~loc:(symbol_rloc dyp) $2 $5 }
-  | lparen lam_args rparen thickarrow binop_expr { if is_brace_expr $5 then raise Dyp.Giveup else Exp.lambda ~loc:(symbol_rloc dyp) $2 $5 }
+  | lparen lam_args rparen thickarrow binop_expr { no_brace_expr $5; Exp.lambda ~loc:(symbol_rloc dyp) $2 $5 }
   | ID thickarrow block { Exp.lambda ~loc:(symbol_rloc dyp) [Pat.var ~loc:(rhs_loc dyp 1) (mkstr dyp $1)] $3 }
-  | ID thickarrow binop_expr { if is_brace_expr $3 then raise Dyp.Giveup else Exp.lambda ~loc:(symbol_rloc dyp) [Pat.var ~loc:(rhs_loc dyp 1) (mkstr dyp $1)] $3 }
+  | ID thickarrow binop_expr { no_brace_expr $3; Exp.lambda ~loc:(symbol_rloc dyp) [Pat.var ~loc:(rhs_loc dyp 1) (mkstr dyp $1)] $3 }
 
 let_expr :
   | LET REC value_binds { Exp.let_ ~loc:(symbol_rloc dyp) Recursive $3 (Exp.block []) }
@@ -434,7 +434,7 @@ tuple_exprs :
   | expr [comma expr {$2}]+ { $1::$2 }
 
 record_get :
-  | non_binop_expr dot simple_id { if is_uppercase_ident $1 then raise Dyp.Giveup else Exp.record_get $1 $3 }
+  | non_binop_expr dot simple_id { no_uppercase_ident $1; Exp.record_get $1 $3 }
 
 record_field :
   | id colon expr { $1, $3 }
