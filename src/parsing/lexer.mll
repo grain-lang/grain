@@ -88,7 +88,7 @@ let oct_esc = "\\" oct_digit (oct_digit oct_digit?)?
 let num_esc = (unicode_esc | hex_esc | oct_esc)
 
 let newline_char = ("\r\n"|"\n\r"|'\n'|'\r')
-let newline_chars = newline_char (newline_char | blank)*
+let newline_chars = (newline_char | blank)* newline_char
 
 let comment = '#' ((([^'|'])[^ '\r' '\n']*(newline_chars | eof)) | (newline_chars | eof))
 
