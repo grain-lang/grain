@@ -384,6 +384,8 @@ lam_args :
 lam_expr :
   | lparen lam_args rparen thickarrow block { Exp.lambda ~loc:(symbol_rloc dyp) $2 $5 }
   | lparen lam_args rparen thickarrow binop_expr { if is_brace_expr $5 then raise Dyp.Giveup else Exp.lambda ~loc:(symbol_rloc dyp) $2 $5 }
+  | ID thickarrow block { Exp.lambda ~loc:(symbol_rloc dyp) [Pat.var ~loc:(rhs_loc dyp 1) (mkstr dyp $1)] $3 }
+  | ID thickarrow binop_expr { if is_brace_expr $3 then raise Dyp.Giveup else Exp.lambda ~loc:(symbol_rloc dyp) [Pat.var ~loc:(rhs_loc dyp 1) (mkstr dyp $1)] $3 }
 
 let_expr :
   | LET REC value_binds { Exp.let_ ~loc:(symbol_rloc dyp) Recursive $3 (Exp.block []) }
