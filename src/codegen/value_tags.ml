@@ -24,7 +24,7 @@ let heap_tag_type_of_tag_val = function
 
 type tag_type =
   | NumberTagType
-  | BooleanTagType
+  | ConstTagType
   | TupleTagType
   | LambdaTagType
   | GenericHeapType of heap_tag_type option
@@ -32,14 +32,14 @@ type tag_type =
 
 let and_mask_of_tag_type = function
   | NumberTagType     -> 0b0001
-  | BooleanTagType    -> 0b1111
+  | ConstTagType      -> 0b1111
   | TupleTagType      -> 0b0111
   | LambdaTagType     -> 0b0111
   | GenericHeapType _ -> 0b0111
 
 let tag_val_of_tag_type = function
   | NumberTagType     -> 0b0000
-  | BooleanTagType    -> 0b1111
+  | ConstTagType      -> 0b1111
   | TupleTagType      -> 0b0001
   | LambdaTagType     -> 0b0101
   | GenericHeapType _ -> 0b0011

@@ -32,6 +32,7 @@ type prim1 = Parsetree.prim1 =
   | IsNum
   | IsBool
   | IsTuple
+  | Ignore
 
 type prim2 = Parsetree.prim2 =
   | Plus

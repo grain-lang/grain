@@ -28,28 +28,27 @@ module Cnst = struct
 end
 
 module E = struct
-  let map sub {pexp_desc = desc; pexp_loc = loc; pexp_ignored = ignored} =
+  let map sub {pexp_desc = desc; pexp_loc = loc} =
     let open Exp in
     let loc = sub.location sub loc in
     match desc with
-      | PExpId(i) -> ident ~loc ~ignored (map_loc sub i)
-      | PExpConstant(c) -> constant ~loc ~ignored (sub.constant sub c)
-      | PExpTuple(es) -> tuple ~loc ~ignored (List.map (sub.expr sub) es)
-      | PExpRecord(es) -> record ~loc ~ignored (List.map (fun (name, expr) -> map_loc sub name, (sub.expr sub expr)) es)
-      | PExpRecordGet(e, f) -> record_get ~loc ~ignored (sub.expr sub e) (map_loc sub f)
-      | PExpLet(r, vbs, e) -> let_ ~loc ~ignored r (List.map (sub.value_binding sub) vbs) (sub.expr sub e)
-      | PExpMatch(e, mbs) -> match_ ~loc ~ignored (sub.expr sub e) (List.map (sub.match_branch sub) mbs)
-      | PExpPrim1(p1, e) -> prim1 ~loc ~ignored p1 (sub.expr sub e)
-      | PExpPrim2(p2, e1, e2) -> prim2 ~loc ~ignored p2 (sub.expr sub e1) (sub.expr sub e2)
-      | PExpAssign(be, e) -> assign ~loc ~ignored (sub.expr sub be) (sub.expr sub e)
-      | PExpIf(c, t, f) -> if_ ~loc ~ignored (sub.expr sub c) (sub.expr sub t) (sub.expr sub f)
-      | PExpWhile(c, e) -> while_ ~loc ~ignored (sub.expr sub c) (sub.expr sub e)
-      | PExpConstraint(e, t) -> constraint_ ~loc ~ignored (sub.expr sub e) (sub.typ sub t)
-      | PExpLambda(pl, e) -> lambda ~loc ~ignored (List.map (sub.pat sub) pl) (sub.expr sub e)
-      | PExpApp(e, el) -> apply ~loc ~ignored (sub.expr sub e) (List.map (sub.expr sub) el)
-      | PExpBlock(el) -> block ~loc ~ignored (List.map (sub.expr sub) el)
-      | PExpNull -> null ~loc ~ignored ()
-      | PExpConstraint(e, t) -> constraint_ ~loc (sub.expr sub e) (sub.typ sub t)
+    | PExpId(i) -> ident ~loc (map_loc sub i)
+    | PExpConstant(c) -> constant ~loc (sub.constant sub c)
+    | PExpTuple(es) -> tuple ~loc (List.map (sub.expr sub) es)
+    | PExpRecord(es) -> record ~loc (List.map (fun (name, expr) -> map_loc sub name, (sub.expr sub expr)) es)
+    | PExpRecordGet(e, f) -> record_get ~loc (sub.expr sub e) (map_loc sub f)
+    | PExpLet(r, vbs, e) -> let_ ~loc r (List.map (sub.value_binding sub) vbs) (sub.expr sub e)
+    | PExpMatch(e, mbs) -> match_ ~loc (sub.expr sub e) (List.map (sub.match_branch sub) mbs)
+    | PExpPrim1(p1, e) -> prim1 ~loc p1 (sub.expr sub e)
+    | PExpPrim2(p2, e1, e2) -> prim2 ~loc p2 (sub.expr sub e1) (sub.expr sub e2)
+    | PExpAssign(be, e) -> assign ~loc (sub.expr sub be) (sub.expr sub e)
+    | PExpIf(c, t, f) -> if_ ~loc (sub.expr sub c) (sub.expr sub t) (sub.expr sub f)
+    | PExpWhile(c, e) -> while_ ~loc (sub.expr sub c) (sub.expr sub e)
+    | PExpLambda(pl, e) -> lambda ~loc (List.map (sub.pat sub) pl) (sub.expr sub e)
+    | PExpApp(e, el) -> apply ~loc (sub.expr sub e) (List.map (sub.expr sub) el)
+    | PExpBlock(el) -> block ~loc (List.map (sub.expr sub) el)
+    | PExpNull -> null ~loc ()
+    | PExpConstraint(e, t) -> constraint_ ~loc (sub.expr sub e) (sub.typ sub t)
 end
 
 module P = struct

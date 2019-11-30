@@ -1,14 +1,15 @@
 import { grainToString } from '../utils/utils';
+import { GRAIN_VOID } from '../core/primitives';
 
 export function print(v) {
   console.log(grainToString(null, v));
-  return v;
+  return GRAIN_VOID;
 }
 
 export function makePrint(boundGrainToString) {
   return v => {
     console.log(boundGrainToString(v));
-    return v;
+    return GRAIN_VOID;
   }
 }
 

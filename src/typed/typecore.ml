@@ -85,6 +85,9 @@ let prim1_type = function
   | Unbox ->  
     let var = newvar ~name:"a" () in
     Builtin_types.type_box var, var
+  | Ignore ->  
+    let var = newvar ~name:"a" () in
+    var, Builtin_types.type_void
   | IsNum
   | IsBool
   | IsTuple -> newvar ~name:"prim1" (), Builtin_types.type_bool
@@ -362,10 +365,6 @@ and type_expect_ ?in_function ?(recarg=Rejected) env sexp ty_expected_explained 
   let loc = sexp.pexp_loc in
   (* Record the expression type before unifying it with the expected type *)
   let with_explanation = with_explanation explanation in
-  let re exp =
-    if sexp.pexp_ignored = TypeIgnored
-    then re {exp with exp_type = Builtin_types.type_void}
-    else re exp in
   let rue exp =
     with_explanation (fun () ->
       unify_exp env (re exp) (instance env ty_expected));
