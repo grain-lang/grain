@@ -77,25 +77,25 @@ module Pat : sig
 end
 
 module Exp: sig
-  val mk: ?loc:loc -> ?ignored:ignored -> expression_desc -> expression
+  val mk: ?loc:loc -> expression_desc -> expression
+  val ident: ?loc:loc -> id -> expression
+  val constant: ?loc:loc -> constant -> expression
+  val tuple: ?loc:loc -> expression list -> expression
+  val record: ?loc:loc -> (id * expression) list -> expression
+  val record_get: ?loc:loc -> expression -> id -> expression
+  val let_: ?loc:loc -> rec_flag -> value_binding list -> expression -> expression
+  val match_: ?loc:loc -> expression -> match_branch list -> expression
+  val prim1: ?loc:loc -> prim1 -> expression -> expression
+  val prim2: ?loc:loc -> prim2 -> expression -> expression -> expression
+  val if_: ?loc:loc -> expression -> expression -> expression -> expression
+  val while_: ?loc:loc -> expression -> expression -> expression
+  val constraint_: ?loc:loc -> expression -> parsed_type -> expression
+  val assign: ?loc:loc -> expression -> expression -> expression
+  val lambda: ?loc:loc -> pattern list -> expression -> expression
+  val apply: ?loc:loc -> expression -> expression list -> expression
+  val block: ?loc:loc -> expression list -> expression
+  val null: ?loc:loc -> unit -> expression
   val ignore: expression -> expression
-  val ident: ?loc:loc -> ?ignored:ignored -> id -> expression
-  val constant: ?loc:loc -> ?ignored:ignored -> constant -> expression
-  val tuple: ?loc:loc -> ?ignored:ignored -> expression list -> expression
-  val record: ?loc:loc -> ?ignored:ignored -> (id * expression) list -> expression
-  val record_get: ?loc:loc -> ?ignored:ignored -> expression -> id -> expression
-  val let_: ?loc:loc -> ?ignored:ignored -> rec_flag -> value_binding list -> expression -> expression
-  val match_: ?loc:loc -> ?ignored:ignored -> expression -> match_branch list -> expression
-  val prim1: ?loc:loc -> ?ignored:ignored -> prim1 -> expression -> expression
-  val prim2: ?loc:loc -> ?ignored:ignored -> prim2 -> expression -> expression -> expression
-  val if_: ?loc:loc -> ?ignored:ignored -> expression -> expression -> expression -> expression
-  val while_: ?loc:loc -> ?ignored:ignored -> expression -> expression -> expression
-  val constraint_: ?loc:loc -> ?ignored:ignored -> expression -> parsed_type -> expression
-  val assign: ?loc:loc -> ?ignored:ignored -> expression -> expression -> expression
-  val lambda: ?loc:loc -> ?ignored:ignored -> pattern list -> expression -> expression
-  val apply: ?loc:loc -> ?ignored:ignored -> expression -> expression list -> expression
-  val block: ?loc:loc -> ?ignored:ignored -> expression list -> expression
-  val null: ?loc:loc -> ?ignored:ignored -> unit -> expression
 end
 
 module Top: sig

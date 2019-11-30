@@ -107,33 +107,33 @@ module Pat = struct
 end
 
 module Exp = struct
-  let mk ?loc ?ignored d =
+  let mk ?loc d =
     let loc = match loc with
       | None -> (!default_loc_src)()
       | Some l -> l in
-    let ignored = match ignored with
-      | None -> TypeKept
-      | Some i -> i in
-    {pexp_desc=d; pexp_ignored=ignored; pexp_loc=loc}
+    {pexp_desc=d; pexp_loc=loc}
+  let ident ?loc a = mk ?loc (PExpId a)
+  let constant ?loc a = mk ?loc (PExpConstant a)
+  let tuple ?loc a = mk ?loc (PExpTuple a)
+  let record ?loc a = mk ?loc (PExpRecord a)
+  let record_get ?loc a b = mk ?loc (PExpRecordGet(a, b))
+  let let_ ?loc a b c = mk ?loc (PExpLet(a, b, c))
+  let match_ ?loc a b = mk ?loc (PExpMatch(a, b))
+  let prim1 ?loc a b = mk ?loc (PExpPrim1(a, b))
+  let prim2 ?loc a b c = mk ?loc (PExpPrim2(a, b, c))
+  let if_ ?loc a b c = mk ?loc (PExpIf(a, b, c))
+  let while_ ?loc a b = mk ?loc (PExpWhile(a, b))
+  let constraint_ ?loc a b = mk ?loc (PExpConstraint(a, b))
+  let assign ?loc a b = mk ?loc (PExpAssign(a, b))
+  let lambda ?loc a b = mk ?loc (PExpLambda(a, b))
+  let apply ?loc a b = mk ?loc (PExpApp(a, b))
+  let block ?loc a = mk ?loc (PExpBlock a)
+  let null ?loc () = mk ?loc PExpNull
+
   let ignore e = 
-    {e with pexp_ignored=TypeIgnored}
-  let ident ?loc ?ignored a = mk ?loc ?ignored (PExpId a)
-  let constant ?loc ?ignored a = mk ?loc ?ignored (PExpConstant a)
-  let tuple ?loc ?ignored a = mk ?loc ?ignored (PExpTuple a)
-  let record ?loc ?ignored a = mk ?loc ?ignored (PExpRecord a)
-  let record_get ?loc ?ignored a b = mk ?loc ?ignored (PExpRecordGet(a, b))
-  let let_ ?loc ?ignored a b c = mk ?loc ?ignored (PExpLet(a, b, c))
-  let match_ ?loc ?ignored a b = mk ?loc ?ignored (PExpMatch(a, b))
-  let prim1 ?loc ?ignored a b = mk ?loc ?ignored (PExpPrim1(a, b))
-  let prim2 ?loc ?ignored a b c = mk ?loc ?ignored (PExpPrim2(a, b, c))
-  let if_ ?loc ?ignored a b c = mk ?loc ?ignored (PExpIf(a, b, c))
-  let while_ ?loc ?ignored a b = mk ?loc ?ignored (PExpWhile(a, b))
-  let constraint_ ?loc ?ignored a b = mk ?loc ?ignored (PExpConstraint(a, b))
-  let assign ?loc ?ignored a b = mk ?loc ?ignored (PExpAssign(a, b))
-  let lambda ?loc ?ignored a b = mk ?loc ?ignored (PExpLambda(a, b))
-  let apply ?loc ?ignored a b = mk ?loc ?ignored (PExpApp(a, b))
-  let block ?loc ?ignored a = mk ?loc ?ignored (PExpBlock a)
-  let null ?loc ?ignored () = mk ?loc ?ignored PExpNull
+    match e.pexp_desc with
+      | PExpLet _ -> e
+      | _ -> prim1 ~loc:e.pexp_loc Ignore e
 end
 
 module Top = struct

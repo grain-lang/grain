@@ -90,7 +90,7 @@ let basic_functionality_tests = [
       8
     }
     "  "3\n-3";
-  t "complex2" "print(2 + 3)" "5\n5";
+  t "complex2" "print(2 + 3)" "5\nvoid";
 
   t "binop1" "2 + 2" "4";
   t "binop2" "2 - 2" "0";
@@ -141,6 +141,8 @@ let basic_functionality_tests = [
   te "comp_bool3" "if (true >= 4) {3} else {4}" "type";
   te "comp_bool4" "let x = true; if (x < 4) {3} else {5}" "type";
 
+  t "void" "{'foo';}" "void";
+
   te "arith1" "2 + true" "type";
   te "arith2" "true + 4" "type";
   te "arith3" "false - 5" "type";
@@ -177,7 +179,7 @@ let function_tests = [
   tfile "sinister_tail_call" "sinister-tail-call" "true";
   tefile "fib_big" "too-much-fib" "overflow";
 
-  t "func_no_args" "let foo = (() => {print(5)});\nfoo()" "5\n5";
+  t "func_no_args" "let foo = (() => {print(5)});\nfoo()" "5\nvoid";
   t "multi_bind" "let rec x = 2, y = x + 1; y" "3";
   te "unbound_fun" "2 + foo()" "unbound";
   te "unbound_id_simple" "5 - x" "unbound";
@@ -193,7 +195,7 @@ let function_tests = [
   t "shorthand_3" "let foo = x => x; foo(1)" "1";
   t "shorthand_4" "let foo = x => x + 3; foo(1)" "4";
 
-  t "lambda_1" "print((x) => {x})" "<lambda>\n<lambda>";
+  t "lambda_1" "print((x) => {x})" "<lambda>\nvoid";
   t "app_1" "((x) => {x})(1)" "1";
   t "letrec_1" "let rec x = ((n) => {if (n > 3) {n} else {x(n + 2)}}),
                         y = ((n) => {x(n + 1)});
@@ -221,8 +223,8 @@ let function_tests = [
 let mylist = "Cons(1, Cons(2, Cons(3, Empty)))"
 
 let tuple_tests = [
-  t "print_tup" "print((1, 2))" "(1, 2)\n(1, 2)";
-  t "big_tup" "print((1, 2, 3, 4))" "(1, 2, 3, 4)\n(1, 2, 3, 4)";
+  t "print_tup" "print((1, 2))" "(1, 2)\nvoid";
+  t "big_tup" "print((1, 2, 3, 4))" "(1, 2, 3, 4)\nvoid";
   t "big_tup_access" "let (a, b, c, d) = (1, 2, 3, 4); c" "3";
   t "nested_tup_1" "let (a, b) = ((1, 2), (3, 4)); a" "(1, 2)";
   t "nested_tup_2" "let (a, b) = ((1, 2), (3, 4)); let (c, d) = b; d" "4";
@@ -293,7 +295,6 @@ let stdlib_tests = [
     "Cons(2, Cons(3, Cons(4, Empty)))";
   tlib "map_2" ("import * from 'lists'; map(((x) => {x * 2}), " ^ mylist ^ ")")
     "Cons(2, Cons(4, Cons(6, Empty)))";
-  tlib "map_print" ("import * from 'lists'; map(print, " ^ mylist ^ ")") "1\n2\n3\nCons(1, Cons(2, Cons(3, Empty)))";
   tlib "fold_left_1" ("import * from 'lists'; fold_left(((acc, cur) => {acc - cur}), 0, " ^ mylist ^ ")")
     "-6";
   tlib "fold_right_1" ("import * from 'lists'; fold_right(((cur, acc) => {cur - acc}), 0, " ^ mylist ^ ")")
@@ -324,7 +325,7 @@ let box_tests = [
               unbox(b)
             }" "3";
   t "test_set_extra1" "box(1) := 2" "2";
-  tfile "counter" "counter" "1\n2\n3\n3";
+  tfile "counter" "counter" "1\n2\n3\nvoid";
   te "test_unbox_err" "unbox(5)" "Box";
 ]
 
@@ -469,9 +470,8 @@ let optimization_tests = [
     (AExp.comp (Comp.imm (Imm.const (Const_int 4))));
 
   tfinalanf "test_dead_branch_elimination_4" 
-    "{let x = if (true) {4; 4} else {5}; x}"
-    (AExp.seq (Comp.imm (Imm.const (Const_int 4)))
-      (AExp.comp (Comp.imm (Imm.const (Const_int 4)))));
+    "{let x = if (true) {4} else {5}; x}"
+      (AExp.comp (Comp.imm (Imm.const (Const_int 4))));
 
   t "test_dead_branch_elimination_5" "
       let x = box(1);
@@ -512,7 +512,7 @@ let optimization_tests = [
   {
     let y = x;
     x
-  };
+  }
   x + y}"
     (AExp.seq (Comp.imm (Imm.const (Const_int 5)))
       (AExp.comp (Comp.imm (Imm.const (Const_int 17)))));
@@ -559,7 +559,7 @@ let optimization_tests = [
      @@ AExp.let_ Nonrecursive [(app, Comp.app (Imm.id foo) [(Imm.const (Const_int 3))])]
      @@ AExp.comp @@ Comp.prim2 Plus (Imm.id app) (Imm.const (Const_int 5)));
 
-  tfsound "test_counter_sound" "counter" "1\n2\n3\n3";
+  tfsound "test_counter_sound" "counter" "1\n2\n3\nvoid";
   te "test_dae_sound" "let x = 2 + false; 3" "type";
   te "test_const_fold_times_zero_sound" "let f = ((x) => {x * 0}); f(false)" "Number";
   te "test_const_fold_or_sound" "let f = ((x) => {x || true}); f(1)" "Bool";

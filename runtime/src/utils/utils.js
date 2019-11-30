@@ -14,6 +14,12 @@ import {
   GRAIN_RECORD_HEAP_TAG
 } from '../core/tags';
 
+import { 
+  GRAIN_TRUE, 
+  GRAIN_FALSE,
+  GRAIN_VOID
+} from '../core/primitives';
+
 export function grainHeapValueToString(runtime, n) {
   switch (view[n / 4]) {
     case GRAIN_STRING_HEAP_TAG: {
@@ -112,10 +118,12 @@ export function grainToString(runtime, n) {
     return "<lambda>";
   } else if ((n & 7) === GRAIN_GENERIC_HEAP_TAG_TYPE) {
     return grainHeapValueToString(runtime, n ^ 3);
-  } else if ((n === -1)) {
+  } else if ((n === GRAIN_TRUE)) {
     return "true";
-  } else if (n === 0x7FFFFFFF) {
+  } else if (n === GRAIN_FALSE) {
     return "false";
+  } else if (n === GRAIN_VOID) {
+    return "void";
   } else {
     return `<Unknown value: 0x${n}>`;
   }
