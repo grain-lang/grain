@@ -23,7 +23,7 @@ let stamps_disabled _ = !disable_stamps
 type t = {
   stamp: int [@sexp_drop_if stamps_disabled];
   name: string;
-  mutable flags: int [@default 0] [@sexp_drop_default];
+  mutable flags: int [@default 0] [@sexp_drop_default (=)];
 } [@@deriving sexp, yojson]
 
 type saved_state = {
