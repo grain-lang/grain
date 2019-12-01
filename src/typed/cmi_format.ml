@@ -42,7 +42,7 @@ let cmi_digest_of_yojson = function
     end
   | d -> Result.Error ("cmi_digest_of_yojson: Invalid Digest: " ^ (Yojson.Safe.to_string d))
 
-type cmi_crcs = (string * Digest.t option) list sexp_opaque [@@deriving sexp]
+type cmi_crcs = (string * Digest.t option) list [@sexp.opaque] [@@deriving sexp]
 let rec cmi_crcs_of_yojson = [%of_yojson: (string * cmi_digest option) list]
 and cmi_crcs_to_yojson = [%to_yojson: (string * cmi_digest option) list]
 
