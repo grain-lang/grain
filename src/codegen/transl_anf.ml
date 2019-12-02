@@ -97,6 +97,7 @@ let compile_const (c : Asttypes.constant) =
   | Const_int64 i64 -> MConstI64 i64
   | Const_bool b when b = true -> const_true
   | Const_bool _ -> const_false
+  | Const_void -> const_void
 
 let compile_imm env (i : imm_expression) =
   match i.imm_desc with

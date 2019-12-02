@@ -394,6 +394,9 @@ let rec transl_anf_statement (({ttop_desc; ttop_env=env; ttop_loc=loc} as s) : t
       | Nonexported ->
         Some((List.concat new_setup) @ [BLetRec(List.combine names new_binds)]), [] 
     end
+  | TTopExpr expr ->
+    let comp, setup = transl_comp_expression expr in
+    Some(setup @ [BSeq comp]), []
   | TTopData(decls) ->
     let open Types in
     let bindings = List.concat @@ List.map (fun decl ->
@@ -434,23 +437,33 @@ let rec transl_anf_statement (({ttop_desc; ttop_env=env; ttop_loc=loc} as s) : t
     None, [Imp.wasm_func desc.tvd_id desc.tvd_mod.txt desc.tvd_name.txt (FunctionShape(arity, 1))]
   | _ -> None, []
 
-let transl_anf_module ({statements; body; env; signature} : typed_program) : anf_program =
+let transl_anf_module ({statements; env; signature} : typed_program) : anf_program =
   PathMap.clear type_map;
   value_imports := [];
   symbol_table := Ident.empty;
-  let top_binds, imports = List.fold_right (fun cur (acc_bind, acc_imp) ->
+  let top_binds, imports = List.fold_left (fun (acc_bind, acc_imp) cur ->
       match cur with
-      | None, lst -> acc_bind, (lst @ acc_imp)
-      | Some(b), lst -> (b @ acc_bind), (lst @ acc_imp)) (List.map transl_anf_statement statements) ([], []) in
-  let (ans, ans_setup) = transl_comp_expression body in
-  let body = List.fold_right
-      (fun bind body ->
-         match bind with
-         | BSeq(exp) -> AExp.seq exp body
-         | BLet(name, exp) -> AExp.let_ Nonrecursive [(name, exp)] body
-         | BLetRec(names) -> AExp.let_ Recursive names body
-         | BLetExport(rf, binds) -> AExp.let_ ~glob:Global rf binds body)
-      (top_binds @ ans_setup) (AExp.comp ans) in
+      | None, lst -> acc_bind, (List.rev_append lst acc_imp)
+      | Some(b), lst -> (List.rev_append b acc_bind), (List.rev_append lst acc_imp)) ([], []) (List.map transl_anf_statement statements) in
+  let imports = List.rev imports in
+  let void_comp = Comp.imm (Imm.const Const_void) in
+  let void = AExp.comp(void_comp) in
+  let last_bind, top_binds = match top_binds with
+    | bind::rest -> bind, rest
+    | _ -> (BSeq void_comp), [] in
+  let ans = match last_bind with
+    | BSeq(exp) -> AExp.comp exp
+    | BLet(name, exp) -> AExp.let_ Nonrecursive [(name, exp)] void
+    | BLetRec(names) -> AExp.let_ Recursive names void
+    | BLetExport(rf, binds) -> AExp.let_ ~glob:Global rf binds void in
+  let body = List.fold_left
+      (fun body bind ->
+        match bind with
+        | BSeq(exp) -> AExp.seq exp body
+        | BLet(name, exp) -> AExp.let_ Nonrecursive [(name, exp)] body
+        | BLetRec(names) -> AExp.let_ Recursive names body
+        | BLetExport(rf, binds) -> AExp.let_ ~glob:Global rf binds body)
+      ans (top_binds) in
   let imports = imports @ (!value_imports) in
   {
     body;

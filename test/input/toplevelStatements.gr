@@ -1,0 +1,14 @@
+let one = 1
+let two = 2
+print(one)
+print(two)
+
+let three = 3
+print(three)
+
+let four = 4
+let five = two + three
+print(four)
+print(five)
+
+'foo'

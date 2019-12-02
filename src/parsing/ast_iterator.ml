@@ -167,6 +167,7 @@ module TL = struct
       | PTopForeign(e, vd) -> sub.value_description sub vd
       | PTopData(e, dd) -> sub.data sub dd
       | PTopLet(e, r, vb) -> List.iter (sub.value_binding sub) vb
+      | PTopExpr e -> sub.expr sub e
 end
 
 let default_iterator = {

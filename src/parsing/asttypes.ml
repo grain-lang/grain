@@ -26,6 +26,7 @@ type constant =
   | Const_int32 of int32
   | Const_int64 of int64
   | Const_bool of bool
+  | Const_void
 [@@deriving sexp]
 
 (** Marker for exported/nonexported let bindings *)
