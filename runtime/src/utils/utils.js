@@ -220,10 +220,12 @@ export function grainToJSVal(runtime, x) {
     return grainHeapValToJSVal(runtime, x ^ 3);
   } else if ((x & 7) === GRAIN_TUPLE_TAG_TYPE) {
     return grainTupleToJSVal(runtime, x ^ GRAIN_TUPLE_TAG_TYPE);
-  } else if ((x === -1)) {
+  } else if ((x === GRAIN_TRUE)) {
     return true;
-  } else if (x === 0x7FFFFFFF) {
+  } else if (x === GRAIN_FALSE) {
     return false;
+  } else if (x === GRAIN_VOID) {
+    return null;
   } else {
     console.warn(`Unknown Grain value: ${x} (0x${x.toString(16)})`);
     return undefined;
