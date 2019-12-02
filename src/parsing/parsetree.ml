@@ -197,6 +197,7 @@ type toplevel_stmt_desc =
   | PTopForeign of export_flag * value_description
   | PTopData of export_flag * data_declaration
   | PTopLet of export_flag * rec_flag * value_binding list
+  | PTopExpr of expression
   | PTopExport of export_declaration list
   | PTopExportAll of export_except list
 [@@deriving sexp]
@@ -209,7 +210,6 @@ type toplevel_stmt = {
 (** The type for parsed programs *)
 type parsed_program = {
   statements: toplevel_stmt list;
-  body: expression;
   prog_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
 } [@@deriving sexp]
 

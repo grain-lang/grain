@@ -211,9 +211,8 @@ let well_formedness_checker() =
     {errs=ref []; iterator=default_iterator}
     well_formedness_checks
 
-let check_well_formedness {statements; body} =
+let check_well_formedness {statements} =
   let checker = well_formedness_checker() in
   List.iter (checker.iterator.toplevel checker.iterator) statements;
-  checker.iterator.expr checker.iterator body;
   (* FIXME: We should be able to raise _all_ errors at once *)
   List.iter (fun e -> raise (Error e)) !(checker.errs)

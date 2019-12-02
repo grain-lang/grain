@@ -198,6 +198,7 @@ type toplevel_stmt_desc =
   | TTopExport of export_declaration list
   | TTopData of data_declaration list
   | TTopLet of export_flag * rec_flag * value_binding list
+  | TTopExpr of expression
 [@@deriving sexp]
 
 type toplevel_stmt = {
@@ -208,7 +209,6 @@ type toplevel_stmt = {
 
 type typed_program = {
   statements: toplevel_stmt list;
-  body: expression;
   env: (Env.t [@sexp.opaque]);
   signature: Cmi_format.cmi_infos;
 } [@@deriving sexp]

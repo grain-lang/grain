@@ -146,6 +146,7 @@ module Top = struct
   let foreign ?loc e d = mk ?loc (PTopForeign (e, d))
   let data ?loc e d = mk ?loc (PTopData (e, d))
   let let_ ?loc e r vb = mk ?loc (PTopLet(e, r, vb))
+  let expr ?loc e = mk ?loc (PTopExpr e)
   let export ?loc e = mk ?loc (PTopExport e)
   let export_all ?loc e = mk ?loc (PTopExportAll e)
 end

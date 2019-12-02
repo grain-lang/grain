@@ -60,11 +60,10 @@ let test_parse ?todo name input (expected : Grain_parsing.Parsetree.parsed_progr
   end;
   let open Grain_parsing in
   let location_stripper = {Ast_mapper.default_mapper with location = (fun _ _ -> Location.dummy_loc)} in
-  let strip_locs ({statements; body; _} : Parsetree.parsed_program) =
+  let strip_locs ({statements; _} : Parsetree.parsed_program) =
     let open Parsetree in
     {
       statements=(List.map (location_stripper.toplevel location_stripper) statements);
-      body=location_stripper.expr location_stripper body;
       prog_loc=Location.dummy_loc;
     } in
   let parsed = strip_locs @@ parse_string name input in
@@ -162,6 +161,8 @@ let basic_functionality_tests = [
   te "overflow3" "99999999 + 999999999" "overflow";
   (* Compile-time overflow *)
   te "overflow4" "999999999999 + 9999999999999" "overflow";
+
+  tfile "toplevel_statements" "toplevelStatements" "1\n2\n3\n4\n5\n\"foo\"";
 ]
 
 (* Tests for functions: basic, directly-recursive, and mutually-recursive. *)
@@ -584,16 +585,16 @@ let optimization_tests = [
 let string_tests =
   let open Grain_parsing in
   let open Ast_helper in
-  let str s = Exp.constant (Const.string s) in
+  let str s = Top.expr @@ Exp.constant (Const.string s) in
   [
-  tparse "string_parse_dqs1" "\"foo\"" {statements=[]; body=str "foo"; prog_loc=Location.dummy_loc};
-  tparse "string_parse_dqs2" "\"bar\\nbaz\"" {statements=[]; body=str "bar\nbaz"; prog_loc=Location.dummy_loc};
-  tparse "string_parse_sqs1" "'foobar'" {statements=[]; body=str "foobar"; prog_loc=Location.dummy_loc};
-  tparse "string_parse_sqs2" "'bar\\u41'" {statements=[]; body=str "barA"; prog_loc=Location.dummy_loc};
-  tparse "string_parse_sqs3" "'bar\\x41'" {statements=[]; body=str "barA"; prog_loc=Location.dummy_loc};
-  tparse "string_parse_sqs4" "'bar\\101'" {statements=[]; body=str "barA"; prog_loc=Location.dummy_loc};
-  tparse "string_parse_emoji_escape" "\"\xF0\x9F\x98\x82\"" {statements=[]; body=str "😂"; prog_loc=Location.dummy_loc};
-  tparse "string_parse_emoji_literal" "\"💯\"" {statements=[]; body=str "💯"; prog_loc=Location.dummy_loc};
+  tparse "string_parse_dqs1" "\"foo\"" {statements=[str "foo"]; prog_loc=Location.dummy_loc};
+  tparse "string_parse_dqs2" "\"bar\\nbaz\"" {statements=[str "bar\nbaz"]; prog_loc=Location.dummy_loc};
+  tparse "string_parse_sqs1" "'foobar'" {statements=[str "foobar"]; prog_loc=Location.dummy_loc};
+  tparse "string_parse_sqs2" "'bar\\u41'" {statements=[str "barA"]; prog_loc=Location.dummy_loc};
+  tparse "string_parse_sqs3" "'bar\\x41'" {statements=[str "barA"]; prog_loc=Location.dummy_loc};
+  tparse "string_parse_sqs4" "'bar\\101'" {statements=[str "barA"]; prog_loc=Location.dummy_loc};
+  tparse "string_parse_emoji_escape" "\"\xF0\x9F\x98\x82\"" {statements=[str "😂"]; prog_loc=Location.dummy_loc};
+  tparse "string_parse_emoji_literal" "\"💯\"" {statements=[str "💯"]; prog_loc=Location.dummy_loc};
 
   t "string1" "\"foo\"" "\"foo\"";
   t "string2" "\"💯\"" "\"💯\"";

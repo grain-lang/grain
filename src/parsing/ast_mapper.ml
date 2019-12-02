@@ -184,6 +184,7 @@ module TL = struct
       | PTopForeign(e, d) -> Top.foreign ~loc e (sub.value_description sub d)
       | PTopData(e, dd) -> Top.data ~loc e (sub.data sub dd)
       | PTopLet(e, r, vb) -> Top.let_ ~loc e r (List.map (sub.value_binding sub) vb)
+      | PTopExpr e -> Top.expr ~loc (sub.expr sub e)
       | PTopExport ex -> Top.export ~loc (sub.export sub ex)
       | PTopExportAll ex -> Top.export_all ~loc (sub.export_all sub ex)
 end

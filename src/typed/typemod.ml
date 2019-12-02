@@ -349,6 +349,10 @@ let type_module ?(toplevel=false) funct_body anchor env sstr (*scope*) =
     let stmt = { ttop_desc = TTopLet(export_flag, rec_flag, defs); ttop_loc = loc; ttop_env = env } in
     newenv, signatures, [stmt] in
 
+  let process_expr env expr loc =
+    let expr = Typecore.type_statement_expr env expr in
+    { ttop_desc = TTopExpr(expr); ttop_loc = loc; ttop_env = env } in
+
   let process_export_value env exports loc =
     let bindings = List.map (fun {pex_name=name; pex_alias=alias; pex_loc=loc} ->
       let exported_name = match alias with 
@@ -407,6 +411,9 @@ let type_module ?(toplevel=false) funct_body anchor env sstr (*scope*) =
       | PTopLet(e, r, vb) -> 
         let new_env, sigs, stmts = process_let env e r vb loc in 
         new_env, List.rev sigs @ signatures, stmts @ statements
+      | PTopExpr e ->
+        let statement = process_expr env e loc in
+        env, signatures, statement::statements
       | PTopExportAll _ -> env, signatures, statements
   ) (env, [], []) sstr.Parsetree.statements in
   let signatures, statements = List.rev signatures, List.rev statements in
@@ -463,7 +470,7 @@ let type_module ?(toplevel=false) funct_body anchor env sstr (*scope*) =
 
   let run() =
     (* TODO: Is it really safe to drop the import statements here? *)
-    let stritems = (statements, final_env, Typecore.type_expression final_env sstr.body) in
+    let stritems = (statements, final_env) in
     stritems, signatures, final_env in
 
   run()
@@ -502,7 +509,7 @@ let type_implementation prog =
   Env.set_unit (modulename, sourcefile);
   let initenv = initial_env() in
   let (stritems, sg, finalenv) = type_module initenv prog in
-  let (statements, env, body) = stritems in
+  let (statements, env) = stritems in
   let simple_sg = simplify_signature sg in
   let filename = sourcefile in (* TODO: I think this is okay *)
   let coercion = Includemod.compunit initenv ~mark:Includemod.Mark_positive
@@ -515,7 +522,6 @@ let type_implementation prog =
   {
     statements;
     env;
-    body;
     signature;
   }
 

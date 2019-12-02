@@ -86,14 +86,13 @@ let fix_tyvar_mapper super =
     | _ -> super.typ mapper t in
   {super with typ}
 
-let fix_blocks ({statements; body} as prog) =
+let fix_blocks ({statements} as prog) =
   let open Ast_mapper in
   let mapper = default_mapper
     |> fix_block_mapper
     |> fix_tyvar_mapper in
   {prog with
-   statements=List.map (mapper.toplevel mapper) statements;
-   body=mapper.expr mapper body}
+   statements=List.map (mapper.toplevel mapper) statements}
 
 let no_record_block exprs =
   match exprs with
@@ -128,13 +127,13 @@ let mkid ns =
 
 let mkstr dyp s = mkloc s (symbol_rloc dyp)
 
-let make_program statements body =
+let make_program statements =
   let prog_loc = {
     loc_start=(!first_loc).loc_end;
     loc_end=(!last_loc).loc_end;
     loc_ghost=false;
   } in
-  fix_blocks {statements; body; prog_loc}
+  fix_blocks {statements; prog_loc}
 
 }
 
@@ -474,6 +473,7 @@ foreign_stmt :
 toplevel_stmt :
   | LET REC value_binds { Top.let_ Nonexported Recursive $3 }
   | LET value_binds { Top.let_ Nonexported Nonrecursive $2 }
+  | expr { Top.expr $1 }
   | import_stmt { Top.import $1 }
   | export_stmt { $1 }
   | foreign_stmt { Top.foreign ~loc:(symbol_rloc dyp) Nonexported $1 }
@@ -483,9 +483,7 @@ toplevel_stmts :
   | toplevel_stmt [eos toplevel_stmt {$2}]* { $1::$2 }
 
 program :
-  | EOL? toplevel_stmts eos? EOF { make_program $2 (Exp.null ~loc:dummy_loc ()) }
-  | EOL? toplevel_stmts eos expr eos? EOF { make_program $2 $4 }
-  | EOL? expr eos? EOF { prerr_string "\nprogram\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); make_program [] $2 }
+  | EOL? toplevel_stmts eos? EOF { make_program $2 }
 
 %%
 

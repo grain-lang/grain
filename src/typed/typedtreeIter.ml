@@ -55,10 +55,9 @@ end = struct
 
   let may_iter = Option.may
 
-  let rec iter_typed_program ({statements; body} as tp) =
+  let rec iter_typed_program ({statements} as tp) =
     Iter.enter_typed_program tp;
     iter_toplevel_stmts statements;
-    iter_expression body;
     Iter.leave_typed_program tp
 
   and iter_core_type ct =
@@ -125,6 +124,7 @@ end = struct
       | TTopForeign _
       | TTopImport _
       | TTopExport _ -> ()
+      | TTopExpr e -> iter_expression e
       | TTopLet (exportflag, recflag, binds) -> iter_bindings exportflag recflag binds
     end;
     Iter.leave_toplevel_stmt stmt
@@ -135,6 +135,7 @@ end = struct
         | TTopForeign _
         | TTopImport _ 
         | TTopExport _ 
+        | TTopExpr _
         | TTopLet _ -> iter_toplevel_stmt cur
         | TTopData _ -> 
           Iter.enter_data_declarations();
