@@ -101,7 +101,7 @@ let build_initial_env add_type empty_env =
 
 let builtin_values =
   List.map (fun id -> Ident.make_global id; (Ident.name id, id))
-      []
+    []
 
 (* Start non-predef identifiers at 1000.  This way, more predefs can
    be defined in this file (above!) without breaking .cmi

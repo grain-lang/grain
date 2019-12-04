@@ -149,7 +149,7 @@ let make_program statements =
 %token EQEQ LESSEQ GREATEREQ
 %token EQUAL GETS
 %token UNDERSCORE
-%token COLON COLONCOLON DOT
+%token COLON COLONCOLON DOT ELLIPSIS
 
 %token ADD1 SUB1 ISBOOL ISNUM ISTUPLE
 %token BOX UNBOX
@@ -170,6 +170,12 @@ let make_program statements =
 eos :
   | EOL { None }
   | SEMI EOL? { None }
+
+lbrack : 
+  | LBRACK EOL? { () }
+
+rbrack : 
+  | EOL? RBRACK { () }
 
 lparen : 
   | LPAREN EOL? { () }
@@ -257,8 +263,10 @@ pattern :
   | lparen tuple_patterns rparen { Pat.tuple ~loc:(symbol_rloc dyp) $2 }
   | lparen pattern rparen { $2 }
   | lbrace record_patterns rbrace { Pat.record ~loc:(symbol_rloc dyp) $2 }
-  | type_id lparen tuple_patterns rparen { Pat.construct ~loc:(symbol_rloc dyp) $1 $3 }
+  | type_id lparen patterns rparen { Pat.construct ~loc:(symbol_rloc dyp) $1 $3 }
   | type_id { Pat.construct ~loc:(symbol_rloc dyp) $1 [] }
+  | lbrack patterns [comma ELLIPSIS ID {Pat.var ~loc:(rhs_loc dyp 3) (mkstr dyp $3)}]? rbrack { Pat.list ~loc:(symbol_rloc dyp) $2 $3 }
+  | lbrack [ELLIPSIS ID {Pat.var ~loc:(rhs_loc dyp 2) (mkstr dyp $2)}]? rbrack { Pat.list ~loc:(symbol_rloc dyp) [] $2 }
 
 patterns :
   | pattern [comma pattern {$2}]* { $1::$2 }
@@ -321,6 +329,9 @@ export_stmt :
 data_constructor :
   | TYPEID { CDecl.singleton ~loc:(symbol_rloc dyp) (mkstr dyp $1) }
   | TYPEID lparen typs rparen { CDecl.tuple ~loc:(symbol_rloc dyp) (mkstr dyp $1) $3 }
+  /* Special support for lists */
+  | lbrack rbrack { CDecl.singleton ~loc:(symbol_rloc dyp) (mkstr dyp "[]") }
+  | lbrack ELLIPSIS rbrack lparen typs rparen { CDecl.tuple ~loc:(symbol_rloc dyp) (mkstr dyp "[...]") $5 }
 
 data_constructors :
   | pipe? data_constructor [EOL? pipe data_constructor {$3}]* { $2::$3 }
@@ -408,6 +419,10 @@ match_branches :
 match_expr :
   | MATCH lparen expr rparen lbrace match_branches rbrace { Exp.match_ ~loc:(symbol_rloc dyp) $3 $6 }
 
+list_expr :
+  | lbrack rbrack { Exp.list ~loc:(symbol_rloc dyp) [] }
+  | lbrack expr [comma expr {$2}]* rbrack { Exp.list ~loc:(symbol_rloc dyp) ($2::$3) }
+
 assign_expr :
   | expr EOL? GETS EOL? expr { Exp.assign ~loc:(symbol_rloc dyp) $1 $5 }
 
@@ -421,6 +436,7 @@ non_assign_expr :
   | if_expr     { $1 }
   | while_expr  { $1 }
   | match_expr  { $1 }
+  | list_expr  { $1 }
 
 block_body_expr :
   | let_expr    { $1 }

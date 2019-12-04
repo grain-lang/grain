@@ -69,6 +69,7 @@ module Pat : sig
   val var: ?loc:loc -> str -> pattern
   val tuple: ?loc:loc -> pattern list -> pattern
   val record: ?loc:loc -> ((id * pattern) option * Asttypes.closed_flag) list -> pattern
+  val list: ?loc: loc -> pattern list -> pattern option -> pattern
   val constant: ?loc:loc -> constant -> pattern
   val constraint_: ?loc:loc -> pattern -> parsed_type -> pattern
   val construct: ?loc:loc -> id -> pattern list -> pattern
@@ -95,6 +96,7 @@ module Exp: sig
   val apply: ?loc:loc -> expression -> expression list -> expression
   val block: ?loc:loc -> expression list -> expression
   val null: ?loc:loc -> unit -> expression
+  val list: ?loc:loc -> expression list -> expression
   val ignore: expression -> expression
 end
 

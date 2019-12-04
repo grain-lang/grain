@@ -32,6 +32,9 @@ let with_default_loc_src ls f =
 let with_default_loc l =
   with_default_loc_src (fun() -> l)
 
+let ident_empty = {txt=Identifier.IdentName "[]"; loc=((!default_loc_src)())}
+let ident_cons = {txt=Identifier.IdentName "[...]"; loc=((!default_loc_src)())}
+
 module Const = struct
   let string s = PConstString s
   let int i = PConstNumber i
@@ -102,6 +105,9 @@ module Pat = struct
   let constant ?loc a = mk ?loc (PPatConstant a)
   let constraint_ ?loc a b = mk ?loc (PPatConstraint(a, b))
   let construct ?loc a b = mk ?loc (PPatConstruct(a, b))
+  let list ?loc a r =
+    let base = Option.default (construct ident_empty []) r in
+    List.fold_right (fun pat acc -> construct ident_cons [pat; acc]) a base
   let or_ ?loc a b = mk ?loc (PPatOr(a, b))
   let alias ?loc a b = mk ?loc (PPatAlias(a, b))
 end
@@ -128,7 +134,12 @@ module Exp = struct
   let lambda ?loc a b = mk ?loc (PExpLambda(a, b))
   let apply ?loc a b = mk ?loc (PExpApp(a, b))
   let block ?loc a = mk ?loc (PExpBlock a)
+  let list ?loc a = 
+    let empty = ident ?loc ident_empty in
+    let cons = ident ident_cons in
+    List.fold_right (fun expr acc -> apply cons [expr; acc]) a empty
   let null ?loc () = mk ?loc PExpNull
+
 
   let ignore e = 
     match e.pexp_desc with
