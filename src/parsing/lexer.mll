@@ -122,6 +122,7 @@ rule token = parse
   | "let" { LET }
   | "rec" { REC }
   | "match" { MATCH }
+  | "..." { ELLIPSIS }
   | "." { DOT }
   | "::" { COLONCOLON }
   | ":=" { GETS }
