@@ -18,25 +18,29 @@ type decision_tree =
       to the action number (i.e. switch branch) to be taken *)
   | Fail
   (** Represents a failed match. *)
-  | Switch of (int * decision_tree) list
+  | Switch of (int * decision_tree) list * decision_tree option
   (** Multi-way test for an occurence. The list is a
       non-empty list of pairs of
-      (constructor_tag, nested_decision_tree) tuples. *)
+      (constructor_tag, nested_decision_tree) tuples,
+      with an optional default branch. *)
   | Swap of int * decision_tree
   (** This is a control structure which swaps the item in the
       n'th position with the top of the value stack (where 'n' is the
       number saved in the node) *)
   (* The following instruction(s) are extensions from the paper's ADT: *)
-  | Explode of int * decision_tree
+  | Explode of matrix_type * decision_tree
   (** This instruction indicates that the first argument should be
       interpreted as a tuple and expanded into its contents.
-      Argument: (arity) *)
+      Argument: (kind of expansion) *)
 [@@deriving sexp]
 
+and matrix_type =
+  | TupleMatrix of int
+  | RecordMatrix of int array
+  | ConstructorMatrix of int option
 
 type conversion_result = {
   tree : decision_tree;
-  last_label : int;
   branches : (int * expression * pattern) list;
 }
 
@@ -44,13 +48,12 @@ type conversion_result = {
 
 (** Swaps the first and 'idx'-th elements of the given list *)
 let swap_list idx lst =
-  match lst with
-  | [] -> failwith "Impossible (swap_list): Cannot swap empty list"
-  | hd::tl ->
-    let split_hd, split_tl = BatList.split_at (idx - 2) tl in
-    match split_tl with
-    | [] -> failwith "Impossible (swap_list): Invalid swap index"
-    | new_hd::rem -> new_hd::(split_hd @ (hd::rem))
+  if List.length lst = 0 then failwith "Impossible (swap_list): Cannot swap empty list";
+  List.mapi (fun i item -> match i with
+    | 0 -> (List.nth lst idx)
+    | index when index = idx -> List.hd lst
+    | _ -> item
+  ) lst
 
 (** Decision tree to ANF compilation (compiled trees evaluate to the
     corresponding label to be used in the computed goto) *)
@@ -169,20 +172,33 @@ module MatchTreeCompiler = struct
     (* Optimizations to avoid unneeded destructuring: *)
     | Explode(_, ((Leaf(_)) as inner))
     | Explode(_, (Fail as inner)) -> compile_tree_help inner values
-    | Explode(arity, rest) ->
+    | Explode(matrix_type, rest) ->
       (* Tack on the new bindings. We assume that the indices of 'rest'
          already account for the new indices. *)
-      let bindings = BatList.init arity (fun idx ->
-          let id = Ident.create "match_explode" in
-          (id, Comp.tuple_get (Int32.of_int idx) cur_value)) in
+      let bindings = match matrix_type with
+        | ConstructorMatrix (Some arity) ->
+          BatList.init arity (fun idx ->
+              let id = Ident.create "match_explode" in
+              (id, Comp.adt_get (Int32.of_int idx) cur_value))
+        | ConstructorMatrix None -> failwith "Internal error: must supply constructor arity"
+        | TupleMatrix arity ->
+          BatList.init arity (fun idx ->
+              let id = Ident.create "match_explode" in
+              (id, Comp.tuple_get (Int32.of_int idx) cur_value))
+        | RecordMatrix (label_poses) ->
+          List.map (fun label_pos ->
+              let id = Ident.create "match_explode" in
+              (id, Comp.record_get (Int32.of_int label_pos) cur_value)) (Array.to_list label_poses)
+      in
       let new_values = (List.map (fun (id, _) -> Imm.id id) bindings) @ rest_values in
       let rest_ans, rest_setup = compile_tree_help rest new_values in
       rest_ans, (bindings @ rest_setup)
     | Swap(idx, rest_tree) ->
       compile_tree_help rest_tree (swap_list idx values)
-    | Switch(branches) ->
+    | Switch(branches, default_tree) ->
       (* Runs when no branches match *)
-      let base = compile_tree_help Fail values in
+      let base_tree = Option.default Fail default_tree in
+      let base = compile_tree_help base_tree values in
       let value_constr_name = Ident.create "match_constructor" in
       let value_constr_id = Imm.id value_constr_name in
       let value_constr = Comp.adt_get_tag cur_value in
@@ -219,10 +235,6 @@ module MatchTreeCompiler = struct
     Comp.switch (Imm.id jmp_name) switch_branches, setup
 end
 
-let normalize_branch ({mb_pat; _} as mb) =
-  let mb_pat = Parmatch.normalize_pat mb_pat in
-  {mb with mb_pat}
-
 let rec pattern_always_matches patt =
   (* Precondition: Normalized *)
   match patt.pat_desc with
@@ -233,12 +245,23 @@ let rec pattern_always_matches patt =
   | TPatRecord(fields, _) when List.for_all (fun (_, _, p) -> pattern_always_matches p) fields -> true
   | _ -> false
 
-let flatten_pattern size ({pat_desc} as p) =
+let flatten_pattern size ({pat_desc}) =
   match pat_desc with
   | TPatTuple(args) -> args
+  | TPatRecord((_, {lbl_all}, _)::_ as ps, _) -> 
+    let patterns = Array.init (Array.length lbl_all) (fun _ -> Parmatch.omega) in
+    List.iter (fun (_, ld, pat) -> patterns.(ld.lbl_pos) <- pat) ps;
+    Array.to_list patterns
+  | TPatVar _
   | TPatAny -> Parmatch.omegas size
-  | _ -> [p]
+  | _ -> failwith "Internal error: flatten_pattern on non-tuple or non-record pattern"
 
+let rec matrix_type = function
+  | []
+  | (({pat_desc=TPatConstruct _})::_, _)::_ -> ConstructorMatrix(None)
+  | (({pat_desc=TPatTuple ps})::_, _)::_ -> TupleMatrix(List.length ps)
+  | (({pat_desc=TPatRecord ((_, ld, _)::_, _)})::_, _)::_ -> RecordMatrix(Array.map (fun {lbl_pos} -> lbl_pos) ld.lbl_all)
+  | _::rest -> matrix_type rest
 
 let rec pattern_head_constructors_aux p acc =
   match p.pat_desc with
@@ -257,20 +280,9 @@ let matrix_head_constructors mtx =
     | (p::_, mb)::tl -> help tl (pattern_head_constructors_aux p acc) in
   help mtx []
 
-let normalize_branches match_branches =
-  let match_branches = List.map normalize_branch match_branches in
-  let rec help branches =
-    match branches with
-    | [] -> []
-    | hd :: _ when pattern_always_matches hd.mb_pat -> [hd]
-    | hd :: tl -> hd :: (help tl) in
-  help match_branches
-
 let make_matrix branches =
-  List.map (fun ({mb_pat} as mb) ->
-      match mb_pat.pat_desc with
-      | TPatTuple(patts) -> patts, mb
-      | _ -> ([mb_pat], mb)) branches
+  (* Form matrix and assign each branch a number *)
+  List.mapi (fun i ({mb_pat} as mb) -> [mb_pat], (mb, i)) branches
 
 let matrix_width = function
   | [] -> raise Not_found
@@ -332,10 +344,10 @@ let rec specialize_matrix cd mtx =
       | _ when pattern_always_matches p ->
         let wildcards = BatList.init arity (fun _ -> {p with pat_desc=TPatAny}) in
         [wildcards @ ptl]
-      | TPatConstruct(_, pcd, _) when cd <> pcd -> []
-      | TPatConstruct(_, pcd, args) -> [args @ ptl]
+      | TPatConstruct(_, pcd, args) when cd = pcd -> [args @ ptl]
       | TPatOr(p1, p2) -> (specialized_rows (p1::ptl)) @ (specialized_rows (p2::ptl))
-      | _ -> [] (* TODO: Should this be possible? *) in
+      | TPatAlias(p, _, _) -> specialized_rows (p::ptl)
+      | _ -> [] (* Specialization for non-constructors generates no rows. *) in
 
   List.fold_right (fun (row, mb) rem ->
       (List.map (fun patts -> (patts, mb)) (specialized_rows row)) @ rem) mtx []
@@ -355,68 +367,87 @@ let rec default_matrix mtx =
   let rec default_rows row =
     match row with
     | [] -> failwith "Impossible: Empty pattern row in default_matrix"
-    | _::[] -> failwith "default_matrix called with a one-column matrix"
     | ({pat_desc} as p)::ptl ->
       match pat_desc with
       | _ when pattern_always_matches p -> [ptl]
-      | TPatConstruct _ -> []
       | TPatOr(p1, p2) -> (default_rows (p1::ptl)) @ (default_rows (p2::ptl))
-      | _ -> [] (* TODO: Should this be possible? *) in
+      | _ -> [] in
 
   List.fold_right (fun (row, mb) rem ->
       (List.map (fun patts -> (patts, mb)) (default_rows row)) @ rem) mtx []
 
 
-let rec compile_matrix last_label branches mtx =
+let rec compile_matrix branches mtx =
   match mtx with
-  | [] -> {tree=Fail; last_label=last_label; branches=branches} (* No branches to match. *)
-  | (pats, mb) :: _ when List.for_all pattern_always_matches pats ->
+  | [] -> {tree=Fail; branches=branches} (* No branches to match. *)
+  | (pats, (mb, i)) :: _ when List.for_all pattern_always_matches pats ->
     {
-      tree=Leaf (last_label + 1);
-      last_label=last_label + 1;
-      branches=(last_label + 1, mb.mb_body, mb.mb_pat)::branches;
+      tree=Leaf (i);
+      branches=(i, mb.mb_body, mb.mb_pat)::branches;
     }
   | _ when not (col_is_wildcard mtx 0) ->
     (* If the first column contains a non-wildcard pattern *)
-    let constructors = matrix_head_constructors mtx in
-    (*Printf.eprintf "constructors:\n%s\n" (Sexplib.Sexp.to_string_hum ((Sexplib.Conv.sexp_of_list sexp_of_constructor_description) constructors));*)
-    let handle_constructor ({last_label; branches}, switch_branches) cstr =
-      let arity = cstr.cstr_arity in
-      let specialized = specialize_matrix cstr mtx in
-      let ({tree} as result) = compile_matrix last_label branches specialized in
-      let final_tree = Explode(arity + 1, tree) in
-      {result with tree=final_tree}, ((!compile_constructor_tag cstr.cstr_tag, final_tree)::switch_branches)
-    in
-    begin match constructors with
-      | [] -> failwith "Internal error: compile_matrix: non-wildcard column returned no constructors"
-      | _ ->
-        let (result, switch_branches) =
-          List.fold_left
-            handle_constructor
-            ({last_label; branches; tree=Fail}, [])
-            constructors in
+    let matrix_type = matrix_type mtx in
+    begin match matrix_type with
+      | TupleMatrix arity ->
+        let mtx = List.map (fun (row, mb) -> flatten_pattern arity (List.hd row), mb) mtx in
+        let result = compile_matrix branches mtx in
         {
           result with
-          tree=Switch(switch_branches);
+          tree=Explode(matrix_type, result.tree)
         }
+      | RecordMatrix labels ->
+        let mtx = List.map (fun (row, mb) -> flatten_pattern (Array.length labels) (List.hd row), mb) mtx in
+        let result = compile_matrix branches mtx in
+        {
+          result with
+          tree=Explode(matrix_type, result.tree)
+        }
+      | ConstructorMatrix _ ->
+        let constructors = matrix_head_constructors mtx in
+        (* Printf.eprintf "constructors:\n%s\n" (Sexplib.Sexp.to_string_hum ((Sexplib.Conv.sexp_of_list sexp_of_constructor_description) constructors)); *)
+        let handle_constructor ({branches}, switch_branches) cstr =
+          let arity = cstr.cstr_arity in
+          let specialized = specialize_matrix cstr mtx in
+          let ({tree} as result) = compile_matrix branches specialized in
+          let final_tree = Explode(ConstructorMatrix(Some arity), tree) in
+          {result with tree=final_tree}, ((!compile_constructor_tag cstr.cstr_tag, final_tree)::switch_branches)
+        in
+        begin match constructors with
+          | [] -> failwith "Internal error: compile_matrix: non-wildcard column returned no constructors"
+          | _ ->
+            let (result, switch_branches) =
+              List.fold_left handle_constructor ({branches; tree=Fail}, []) constructors in
+            let {tree; branches} = result in
+
+            let default = default_matrix mtx in
+            let default_tree, branches = 
+              if (List.length default <> 0) then 
+                let {tree; branches} = compile_matrix branches default in
+                Some(tree), branches
+              else 
+                None, branches in
+            {
+              tree=Switch(switch_branches, default_tree);
+              branches;
+            }
+      end
     end
   | _ ->
     (* Adjust stack so non-wildcard column is on top *)
     let i, rotated  = try rotate_if_needed mtx with
       | Not_found ->
         failwith "Internal error: convert_match_branches: no non-wildcard column found but not all patterns always match (should be impossible)" in
-    let ({tree; _} as result) = compile_matrix last_label branches rotated in
+    let ({tree; _} as result) = compile_matrix branches rotated in
     {result with tree=Swap(i, tree)}
     
 
 let convert_match_branches (match_branches : Typedtree.match_branch list) : conversion_result =
-  let mtx = List.map2 (fun (ps, _) mb -> (ps, mb))
-      (make_matrix @@ normalize_branches match_branches)
-      (match_branches) in
+  let mtx = (make_matrix match_branches) in
   (*prerr_string "Initial matrix:\n";
   prerr_string (Sexplib.Sexp.to_string_hum (Sexplib.Conv.sexp_of_list
                                               (Sexplib.Conv.sexp_of_pair
                                                  (Sexplib.Conv.sexp_of_list sexp_of_pattern)
                                                  sexp_of_match_branch) mtx));
   prerr_newline();*)
-  compile_matrix 0 [] mtx
+  compile_matrix [] mtx
