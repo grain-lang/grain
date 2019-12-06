@@ -14,39 +14,39 @@ export data Poly =
 let test = (test) => {
   let (input, expected) = test;
   let result = match (input) {
-    | PList(Empty,) => 1
-    | PList(Cons(a, Cons(b, Empty)),) => a + b
-    | PList(Cons(a, _),) => a
-    | PAssoc({foo: Empty, _},) => 1
-    | PAssoc({foo: Cons(a, Cons(b, Empty)), _},) => a + b
-    | PAssoc({foo: Cons(a, _), _},) => a
-    | PMulti(Empty, a, {foo: Empty, _}) => a
-    | PMulti(Cons(_, _), a, {foo: Cons(b, _), _}) => a + b
-    | PMulti(Empty, _, {foo: Cons(b, _), _}) => b
-    | PMulti(Cons(_, _), a, {foo: Cons(b, Cons(c, _)), _}) => a + b + c
-    | PPoly(Cons(PList(Cons(a, Empty),), Cons(PAssoc({foo: Cons(b, Empty), _},), Cons(PMulti(Empty, c, {foo: Cons(d, Empty), _}), Empty))),) => a + b + c + d
-    | PPoly(Empty,) => 42
-    | PPoly(Cons(_, _),) => 43
+    | PList([]) => 1
+    | PList([a, b]) => a + b
+    | PList([a, ..._]) => a
+    | PAssoc({foo: [], _}) => 1
+    | PAssoc({foo: [a, b], _}) => a + b
+    | PAssoc({foo: [a, ..._], _}) => a
+    | PMulti([], a, {foo: [], _}) => a
+    | PMulti([_, ..._], a, {foo: [b, ..._], _}) => a + b
+    | PMulti([], _, {foo: [b, ..._], _}) => b
+    | PMulti([_, ..._], a, {foo: [b, c, ..._], _}) => a + b + c
+    | PPoly([PList([a]), PAssoc({foo: [b], _}), PMulti([], c, {foo: [d], _})]) => a + b + c + d
+    | PPoly([]) => 42
+    | PPoly([_, ..._]) => 43
   };
   result == expected
 };
 
-let tests = 
-  Cons((PList(Empty), 1), 
-  Cons((PList(Cons(2, Empty)), 2), 
-  Cons((PList(Cons(2, Cons(7, Empty))), 9), 
-  Cons((PList(Cons(2, Cons(7, Cons(10, Empty)))), 2), 
-  Cons((PAssoc({foo: Empty, bar: 'bar'}), 1), 
-  Cons((PAssoc({foo: Cons(2, Empty), bar: 'bar'}), 2), 
-  Cons((PAssoc({foo: Cons(2, Cons(7, Empty)), bar: 'bar'}), 9), 
-  Cons((PAssoc({foo: Cons(2, Cons(7, Cons(10, Empty))), bar: 'bar'}), 2), 
-  Cons((PMulti(Empty, 17, {foo: Empty, bar: 'bar'}), 17),
-  Cons((PMulti(Cons('foo', Empty), 17, {foo: Cons(3, Empty), bar: 'bar'}), 20),
-  Cons((PMulti(Empty, 11, {foo: Cons(4, Empty), bar: 'bar'}), 4),
-  Cons((PMulti(Cons('foo', Empty), 17, {foo: Cons(3, Cons(5, Empty)), bar: 'bar'}), 20),
-  Cons((PPoly(Cons(PList(Cons(1, Empty)), Cons(PAssoc({foo: Cons(2, Empty), bar: 'bar'}), Cons(PMulti(Empty, 3, {foo: Cons(4, Empty), bar: 'bar'}), Empty)))), 10),
-  Cons((PPoly(Empty), 42),
-  Cons((PPoly(Cons(PPoly(Empty), Empty)), 43),
-  Empty)))))))))))))));
+let tests = [
+  (PList([]), 1), 
+  (PList([2]), 2), 
+  (PList([2, 7]), 9), 
+  (PList([2, 7, 10]), 2), 
+  (PAssoc({foo: [], bar: 'bar'}), 1), 
+  (PAssoc({foo: [2], bar: 'bar'}), 2), 
+  (PAssoc({foo: [2, 7], bar: 'bar'}), 9), 
+  (PAssoc({foo: [2, 7, 10], bar: 'bar'}), 2), 
+  (PMulti([], 17, {foo: [], bar: 'bar'}), 17),
+  (PMulti(['foo'], 17, {foo: [3], bar: 'bar'}), 20),
+  (PMulti([], 11, {foo: [4], bar: 'bar'}), 4),
+  (PMulti(['foo'], 17, {foo: [3, 5], bar: 'bar'}), 20),
+  (PPoly([PList([1]), PAssoc({foo: [2], bar: 'bar'}), PMulti([], 3, {foo: [4], bar: 'bar'})]), 10),
+  (PPoly([]), 42),
+  (PPoly([PPoly([])]), 43)
+];
 
 for_all(test, tests)
