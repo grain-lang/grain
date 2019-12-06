@@ -96,7 +96,7 @@ module Exp: sig
   val apply: ?loc:loc -> expression -> expression list -> expression
   val block: ?loc:loc -> expression list -> expression
   val null: ?loc:loc -> unit -> expression
-  val list: ?loc:loc -> expression list -> expression
+  val list: ?loc:loc -> expression list -> expression option -> expression
   val ignore: expression -> expression
 end
 

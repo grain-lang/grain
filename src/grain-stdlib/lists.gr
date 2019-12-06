@@ -2,66 +2,62 @@
 
 export *
 
-data List<a> =
-  | Empty
-  | Cons(a, List<a>)
-
 let rec length = (lst) => {
   match (lst) {
-    | Empty => 0
-    | Cons(hd, tl) => 1 + length(tl)
+    | [] => 0
+    | [hd, ...tl] => 1 + length(tl)
   }
 }
 
 let rec sum = (lst) => {
   match (lst) {
-    | Empty => 0
-    | Cons(hd, tl) => hd + sum(tl)
+    | [] => 0
+    | [hd, ...tl] => hd + sum(tl)
   }
 }
 
 let reverse = (lst) => {
   let rec help = (l, acc) => {
     match (l) {
-      | Empty => acc
-      | Cons(hd, tl) => help(tl, Cons(hd, acc))
+      | [] => acc
+      | [hd, ...tl] => help(tl, [hd, ...acc])
     }
   }
-  help(lst, Empty)
+  help(lst, [])
 }
 
 let rec append = (l1, l2) => {
   match (l1) {
-    | Empty => l2
-    | Cons(hd, tl) => Cons(hd, append(tl, l2))
+    | [] => l2
+    | [hd, ...tl] => [hd, ...append(tl, l2)]
   }
 }
 
 let rec contains = (e, l) => {
   match (l) {
-    | Empty => false
-    | Cons(hd, tl) => (hd == e) || contains(e, tl)
+    | [] => false
+    | [hd, ...tl] => (hd == e) || contains(e, tl)
   }
 }
 
 let rec fold_left = (f, b, l) => {
   match (l) {
-    | Empty => b
-    | Cons(hd, tl) => fold_left(f, f(b, hd), tl)
+    | [] => b
+    | [hd, ...tl] => fold_left(f, f(b, hd), tl)
   }
 }
 
 let rec fold_right = (f, b, l) => {
   match (l) {
-    | Empty => b
-    | Cons(hd, tl) => f(hd, fold_right(f, b, tl))
+    | [] => b
+    | [hd, ...tl] => f(hd, fold_right(f, b, tl))
   }
 }
 
 let rec map = (f, l) => {
   match (l) {
-    | Empty => Empty
-    | Cons(hd, tl) => Cons(f(hd), map(f, tl))
+    | [] => []
+    | [hd, ...tl] => [f(hd), ...map(f, tl)]
   }
 }
 

@@ -134,10 +134,11 @@ module Exp = struct
   let lambda ?loc a b = mk ?loc (PExpLambda(a, b))
   let apply ?loc a b = mk ?loc (PExpApp(a, b))
   let block ?loc a = mk ?loc (PExpBlock a)
-  let list ?loc a = 
+  let list ?loc a base = 
     let empty = ident ?loc ident_empty in
     let cons = ident ident_cons in
-    List.fold_right (fun expr acc -> apply cons [expr; acc]) a empty
+    let base = Option.default empty base in
+    List.fold_right (fun expr acc -> apply cons [expr; acc]) a base
   let null ?loc () = mk ?loc PExpNull
 
 
