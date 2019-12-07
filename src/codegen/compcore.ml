@@ -453,7 +453,7 @@ let compile_prim2 (env : codegen_env) p2 arg1 arg2 : Wasm.Ast.instr' Concatlist.
       Ast.Binary(Values.I64 Ast.IntOp.Mul);
     ]
   | Mod ->
-    (* Mod is not distributive, so untag everything and retag at the end *)
+    (* Mod is not commutative, so untag everything and retag at the end *)
     overflow_safe @@
     compiled_arg1 @
     untag_number +@ [
