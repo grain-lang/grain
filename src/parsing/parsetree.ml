@@ -105,6 +105,8 @@ type prim2 =
   | Plus
   | Minus
   | Times
+  | Divide
+  | Mod
   | Less
   | Greater
   | LessEq

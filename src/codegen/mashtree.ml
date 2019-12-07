@@ -33,6 +33,8 @@ type prim2 = Parsetree.prim2 =
   | Plus
   | Minus
   | Times
+  | Divide
+  | Mod
   | Less
   | Greater
   | LessEq

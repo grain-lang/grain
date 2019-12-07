@@ -433,6 +433,60 @@ let compile_prim2 (env : codegen_env) p2 arg1 arg2 : Wasm.Ast.instr' Concatlist.
       Ast.Convert(Values.I64 Ast.IntOp.ExtendSI32);
       Ast.Binary(Values.I64 Ast.IntOp.Mul);
     ]
+  | Divide ->
+    (* While (2a) / b = 2(a/b), we can't just untag b since b could be a multiple of 2 (yielding an odd result).
+       Instead, perform the division and retag after:
+       (2a / 2b) * 2 = (a / b) * 2
+    *)
+    overflow_safe @@
+    compiled_arg1 +@ [
+      Ast.Convert(Values.I64 Ast.IntOp.ExtendSI32);
+    ] @
+    compiled_arg2 +@ [
+      Ast.Test(Values.I32 Ast.IntOp.Eqz);
+      error_if_true env DivisionByZeroError [];
+    ] @
+    compiled_arg2 +@ [
+      Ast.Convert(Values.I64 Ast.IntOp.ExtendSI32);
+      Ast.Binary(Values.I64 Ast.IntOp.DivS);
+      Ast.Const(const_int64 2);
+      Ast.Binary(Values.I64 Ast.IntOp.Mul);
+    ]
+  | Mod ->
+    (* Mod is not distributive, so untag everything and retag at the end *)
+    overflow_safe @@
+    compiled_arg1 @
+    untag_number +@ [
+      Ast.Convert(Values.I64 Ast.IntOp.ExtendSI32);
+    ] @
+    compiled_arg2 +@ [
+      Ast.Test(Values.I32 Ast.IntOp.Eqz);
+      error_if_true env ModuloByZeroError [];
+    ] @
+    compiled_arg2 @
+    untag_number +@ [
+      Ast.Convert(Values.I64 Ast.IntOp.ExtendSI32);
+      Ast.Binary(Values.I64 Ast.IntOp.RemS);
+      Ast.Const(const_int64 2);
+      Ast.Binary(Values.I64 Ast.IntOp.Mul);
+    ] @
+    (* Convert remainder result into modulo result *)
+    compiled_arg1 +@ [
+      Ast.Const(encoded_const_int32 31);
+      Ast.Binary(Values.I32 Ast.IntOp.ShrU);
+    ] @
+    compiled_arg2 +@ [
+      Ast.Const(encoded_const_int32 31);
+      Ast.Binary(Values.I32 Ast.IntOp.ShrU);
+      Ast.Compare(Values.I32 Ast.IntOp.Eq);
+      Ast.If([Types.I64Type],
+        [add_dummy_loc @@ Ast.Const(const_int64 0)],
+        Concatlist.mapped_list_of_t add_dummy_loc @@
+        compiled_arg2 +@
+        [Ast.Convert(Values.I64 Ast.IntOp.ExtendSI32)]
+      );
+      Ast.Binary(Values.I64 Ast.IntOp.Add);
+    ]
   | And ->
     compiled_arg1 @
     swap_set @
