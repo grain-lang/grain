@@ -3,6 +3,8 @@
 type grain_error =
   | ComparisonError
   | ArithmeticError
+  | DivisionByZeroError
+  | ModuloByZeroError
   | LogicError
   | IfError
   | OverflowError

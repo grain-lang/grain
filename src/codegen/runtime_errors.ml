@@ -4,6 +4,8 @@ open Sexplib.Conv
 type grain_error =
   | ComparisonError
   | ArithmeticError
+  | DivisionByZeroError
+  | ModuloByZeroError
   | LogicError
   | IfError
   | OverflowError
@@ -24,6 +26,8 @@ type grain_error =
 let all_grain_errors = [
   ComparisonError;
   ArithmeticError;
+  DivisionByZeroError;
+  ModuloByZeroError;
   LogicError;
   IfError;
   OverflowError;
@@ -57,10 +61,14 @@ let err_SET_ITEM_INDEX_NOT_NUMBER = 13
 let err_SET_ITEM_INDEX_TOO_SMALL  = 14
 let err_SET_ITEM_INDEX_TOO_LARGE  = 15
 let err_SWITCH                    = 16
+let err_DIVISION_BY_ZERO          = 17
+let err_MODULO_BY_ZERO            = 18
 let err_GENERIC_NUM               = 99
 
 let code_of_error = function
   | ArithmeticError -> err_ARITH_NOT_NUM
+  | DivisionByZeroError -> err_DIVISION_BY_ZERO
+  | ModuloByZeroError -> err_MODULO_BY_ZERO
   | ComparisonError -> err_COMP_NOT_NUM
   | IfError -> err_IF_NOT_BOOL
   | LogicError -> err_LOGIC_NOT_BOOL
@@ -80,6 +88,8 @@ let code_of_error = function
 
 let arity_of_error = function
   | ArithmeticError -> 1
+  | DivisionByZeroError -> 0
+  | ModuloByZeroError -> 0
   | ComparisonError -> 1
   | IfError -> 1
   | LogicError -> 1
@@ -99,6 +109,8 @@ let arity_of_error = function
 
 let label_of_error = function
   | ArithmeticError -> "error_not_number_arith"
+  | DivisionByZeroError -> "error_division_by_zero"
+  | ModuloByZeroError -> "error_modulo_by_zero"
   | ComparisonError -> "error_not_number_comp"
   | IfError -> "error_not_boolean_if"
   | LogicError -> "error_not_boolean_logic"
@@ -119,6 +131,8 @@ let label_of_error = function
 let error_of_code c =
   match c with
   | x when x = err_ARITH_NOT_NUM -> ArithmeticError
+  | x when x = err_DIVISION_BY_ZERO -> DivisionByZeroError
+  | x when x = err_MODULO_BY_ZERO -> ModuloByZeroError
   | x when x = err_COMP_NOT_NUM -> ComparisonError
   | x when x = err_IF_NOT_BOOL -> IfError
   | x when x = err_LOGIC_NOT_BOOL -> LogicError

@@ -95,7 +95,9 @@ let prim1_type = function
 let prim2_type = function
   | Plus
   | Minus
-  | Times -> (Builtin_types.type_number, Builtin_types.type_number, Builtin_types.type_number)
+  | Times 
+  | Divide
+  | Mod -> (Builtin_types.type_number, Builtin_types.type_number, Builtin_types.type_number)
   | Less
   | Greater
   | LessEq
