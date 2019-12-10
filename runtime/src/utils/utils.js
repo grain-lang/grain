@@ -11,7 +11,8 @@ import {
   GRAIN_DOM_ELEM_TAG,
   GRAIN_STRING_HEAP_TAG,
   GRAIN_ADT_HEAP_TAG,
-  GRAIN_RECORD_HEAP_TAG
+  GRAIN_RECORD_HEAP_TAG,
+  GRAIN_ARRAY_HEAP_TAG
 } from '../core/tags';
 
 import { 
@@ -109,6 +110,17 @@ export function grainHeapValueToString(runtime, n) {
         return `{\n  ${values.join(',\n  ')}\n}`
       }
       return "<record value>";
+    }
+    case GRAIN_ARRAY_HEAP_TAG: {
+      let x = n / 4;
+
+      let arity = view[x + 1];
+      
+      let values = [];
+      for (let i = 0; i < arity; i++) {
+        values.push(grainToString(runtime, view[x + 2 + i]))
+      }
+      return `[> ${values.join(', ')}]`
     }
     default: {
       return `<unknown heap type: ${view[n / 4]}>`;
