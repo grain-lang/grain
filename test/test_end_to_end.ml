@@ -244,6 +244,33 @@ let tuple_tests = [
   t "no_singleton_tup" "(1)" "1";
 ]
 
+let array_tests = [
+  t "array" "[> 1, 2, 3]" "[> 1, 2, 3]";
+  t "array2" "[>]" "[> ]";
+
+  te "array_error" "[> 1, false, 2]" "has type Bool but";
+
+  t "array_access" "let x = [> 1, 2, 3]; x[0]" "1";
+  t "array_access2" "let x = [> 1, 2, 3]; x[1]" "2";
+  t "array_access3" "let x = [> 1, 2, 3]; x[2]" "3";
+  t "array_access4" "let x = [> 1, 2, 3]; x[-2]" "2";
+  t "array_access5" "let x = [> 1, 2, 3]; x[-3]" "1";
+
+  te "array_access_err" "let x = [> 1, 2, 3]; x[3]" "array index out of bounds";
+  te "array_access_err2" "let x = [> 1, 2, 3]; x[-4]" "array index out of bounds";
+  te "array_access_err3" "let x = [> 1, 2, 3]; x[99]" "array index out of bounds";
+  te "array_access_err4" "let x = [> 1, 2, 3]; x[-99]" "array index out of bounds";
+  te "array_access_err5" "let x = [> 1, 2, 3]; x[false]" "has type Bool but";
+
+  t "array_set" "let x = [> 1, 2, 3]; x[0] := 4; x" "[> 4, 2, 3]";
+  t "array_set2" "let x = [> 1, 2, 3]; x[-2] := 4; x" "[> 1, 4, 3]";
+  te "array_set_err" "let x = [> 1, 2, 3]; x[-2] := false" "has type Bool but";
+  te "array_set_err2" "let x = [> 1, 2, 3]; x[-12] := 4" "array index out of bounds";
+
+  te "array_type" "let x = [> true, false, false]; x[1] + 3" "has type Bool but";
+  te "array_type2" "let x = [> true, false, false]; (x[1] := true) + 3" "has type Bool but";
+]
+
 let record_tests = [
   t "record_1" "data Rec = {foo: Number}; {foo: 4}" "<record value>";
   t "record_2" "export data Rec = {foo: Number}; {foo: 4}" "{\n  foo: 4\n}";
@@ -661,6 +688,7 @@ let tests =
   basic_functionality_tests @
   function_tests @
   tuple_tests @
+  array_tests @
   record_tests @
   stdlib_tests @
   box_tests @ 
