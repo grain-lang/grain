@@ -126,6 +126,9 @@ and expression_desc =
   | PExpId of Identifier.t loc
   | PExpConstant of constant
   | PExpTuple of expression list
+  | PExpArray of expression list
+  | PExpArrayGet of expression * expression
+  | PExpArraySet of expression * expression * expression
   | PExpRecord of (Identifier.t loc * expression) list
   | PExpRecordGet of expression * Identifier.t loc
   | PExpLet of rec_flag * value_binding list * expression

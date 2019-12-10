@@ -21,6 +21,9 @@ module Comp : sig
   val prim2 : ?loc:loc -> ?env:env -> prim2 -> imm_expression -> imm_expression -> comp_expression
   val assign : ?loc:loc -> ?env:env -> imm_expression -> imm_expression -> comp_expression
   val tuple : ?loc:loc -> ?env:env -> imm_expression list -> comp_expression
+  val array : ?loc:loc -> ?env:env -> imm_expression list -> comp_expression
+  val array_get : ?loc:loc -> ?env:env -> imm_expression -> imm_expression -> comp_expression
+  val array_set : ?loc:loc -> ?env:env -> imm_expression -> imm_expression -> imm_expression -> comp_expression
   val record : ?loc:loc -> ?env:env -> imm_expression -> (str * imm_expression) list -> comp_expression
   val adt : ?loc:loc -> ?env:env -> imm_expression -> imm_expression -> imm_expression list -> comp_expression
   val tuple_get : ?loc:loc -> ?env:env -> int32 -> imm_expression -> comp_expression

@@ -64,7 +64,13 @@ let rec analyze_comp_expression ({comp_desc = desc; comp_analyses = analyses}) =
       true
     | CAssign(_, _) -> (* TODO: Would be nice if we could "scope" the purity analysis to local assignments *)
       false
+    | CArrayGet _ ->
+      true
+    | CArraySet _ ->
+      false
     | CTuple _ ->
+      true
+    | CArray _ ->
       true
     | CRecord _ ->
       true

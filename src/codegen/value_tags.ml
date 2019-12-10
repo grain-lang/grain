@@ -6,6 +6,7 @@ type heap_tag_type =
   | DOMType
   | ADTType
   | RecordType
+  | ArrayType
 [@@deriving sexp]
 
 let tag_val_of_heap_tag_type = function
@@ -13,12 +14,14 @@ let tag_val_of_heap_tag_type = function
   | DOMType -> 2
   | ADTType -> 3
   | RecordType -> 4
+  | ArrayType -> 5
 
 let heap_tag_type_of_tag_val = function
   | x when x = 1 -> StringType
   | x when x = 2 -> DOMType
   | x when x = 3 -> ADTType
   | x when x = 4 -> RecordType
+  | x when x = 5 -> ArrayType
   | x -> failwith (Printf.sprintf "Unknown tag type: %d" x)
 
 

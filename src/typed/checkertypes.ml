@@ -30,6 +30,8 @@ type type_forcing_context =
   | Assert_condition
   | Sequence_left_hand_side
   | Assign_not_box
+  | Assign_not_array
+  | Assign_not_array_index
 
 type type_expected = {
   ty: type_expr;

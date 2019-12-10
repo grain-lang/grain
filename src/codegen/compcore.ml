@@ -678,6 +678,26 @@ let allocate_tuple env elts =
     Ast.Binary(Values.I32 Ast.IntOp.Or);
   ]
 
+let allocate_array env elts =
+  let num_elts = List.length elts in
+  let get_swap = get_swap env 0 in
+  let set_swap = set_swap env 0 in
+  let compile_elt idx elt =
+    get_swap @
+    (compile_imm env elt) +@ [
+      store ~offset:(4 * (idx + 2)) ();
+    ] in
+
+  (heap_allocate env (num_elts + 2)) @ set_swap @ get_swap +@ [
+    Ast.Const(const_int32 (tag_val_of_heap_tag_type ArrayType));
+    store ~offset:0 ();
+  ] @ get_swap +@ [
+    Ast.Const(const_int32 num_elts);
+    store ~offset:4 ();
+  ] @ (Concatlist.flatten @@ List.mapi compile_elt elts) @ get_swap +@ [
+    Ast.Const(const_int32 @@ tag_val_of_tag_type (GenericHeapType (Some ArrayType)));
+    Ast.Binary(Values.I32 Ast.IntOp.Or);
+  ]
 
 let allocate_record env ttag elts =
   let _, elts = List.split elts in
@@ -714,6 +734,7 @@ let compile_allocation env alloc_type =
   match alloc_type with
   | MClosure(cdata) -> allocate_closure env cdata
   | MTuple(elts) -> allocate_tuple env elts
+  | MArray(elts) -> allocate_array env elts
   | MRecord(ttag, elts) -> allocate_record env ttag elts
   | MString(str) -> allocate_string env str
   | MADT(ttag, vtag, elts) -> allocate_adt env ttag vtag elts
@@ -734,6 +755,95 @@ let compile_tuple_op env tup_imm op =
     tup @ (untag TupleTagType) @ (compile_imm env imm) +@ [
         store ~offset:(4 * (idx_int + 1)) ();
       ] @ (compile_imm env imm)
+
+
+let compile_array_op env arr_imm op =
+  let arr = compile_imm env arr_imm in
+  match op with
+  | MArrayGet(idx_imm) ->
+    let idx = compile_imm env idx_imm in
+    (* Check that the index is in bounds *)
+    arr @ (untag (GenericHeapType(Some ArrayType))) +@ [load ~offset:4 ()] @
+    arr @ (untag (GenericHeapType(Some ArrayType))) +@ [load ~offset:4 ()] +@ [
+      Ast.Const(const_int32 (-2));
+      Ast.Binary(Values.I32 Ast.IntOp.Mul);
+    ] @ idx +@ [
+      Ast.Compare(Values.I32 Ast.IntOp.GtS);
+      error_if_true env ArrayIndexOutOfBounds [];
+      Ast.Const(const_int32 2);
+      Ast.Binary(Values.I32 Ast.IntOp.Mul);
+    ] @ idx +@ [
+      Ast.Compare(Values.I32 Ast.IntOp.LeS);
+      error_if_true env ArrayIndexOutOfBounds [];
+    (* Resolve a negative index *)
+    ] @ idx +@ [
+      Ast.Const(const_int32 0);
+      Ast.Compare(Values.I32 Ast.IntOp.LtS);
+      Ast.If([Types.I32Type],
+        Concatlist.mapped_list_of_t add_dummy_loc @@
+        idx +@ [
+          Ast.Const(const_int32 1);
+          Ast.Binary(Values.I32 Ast.IntOp.ShrS);
+        ] @ arr @ (untag (GenericHeapType(Some ArrayType))) +@ [
+          load ~offset:4 ();
+          (Ast.Binary(Values.I32 Ast.IntOp.Add))
+        ],
+        Concatlist.mapped_list_of_t add_dummy_loc @@
+        idx +@ [
+          Ast.Const(const_int32 1);
+          Ast.Binary(Values.I32 Ast.IntOp.ShrS);
+        ]
+      );
+      (* Get the item *)
+      Ast.Const(const_int32 4);
+      Ast.Binary(Values.I32 Ast.IntOp.Mul);
+    ] @ arr @ (untag (GenericHeapType(Some ArrayType))) +@ [
+      Ast.Binary(Values.I32 Ast.IntOp.Add);
+      load ~offset:8 ();
+    ]
+  | MArraySet(idx_imm, val_imm) ->
+    let idx = compile_imm env idx_imm in
+    let val_ = compile_imm env val_imm in
+    (* Check that the index is in bounds *)
+    arr @ (untag (GenericHeapType(Some ArrayType))) +@ [load ~offset:4 ()] @
+    arr @ (untag (GenericHeapType(Some ArrayType))) +@ [load ~offset:4 ()] +@ [
+      Ast.Const(const_int32 (-2));
+      Ast.Binary(Values.I32 Ast.IntOp.Mul);
+    ] @ idx +@ [
+      Ast.Compare(Values.I32 Ast.IntOp.GtS);
+      error_if_true env ArrayIndexOutOfBounds [];
+      Ast.Const(const_int32 2);
+      Ast.Binary(Values.I32 Ast.IntOp.Mul);
+    ] @ idx +@ [
+      Ast.Compare(Values.I32 Ast.IntOp.LeS);
+      error_if_true env ArrayIndexOutOfBounds [];
+    (* Resolve a negative index *)
+    ] @ idx +@ [
+      Ast.Const(const_int32 0);
+      Ast.Compare(Values.I32 Ast.IntOp.LtS);
+      Ast.If([Types.I32Type],
+        Concatlist.mapped_list_of_t add_dummy_loc @@
+        idx +@ [
+          Ast.Const(const_int32 1);
+          Ast.Binary(Values.I32 Ast.IntOp.ShrS);
+        ] @ arr @ (untag (GenericHeapType(Some ArrayType))) +@ [
+          load ~offset:4 ();
+          (Ast.Binary(Values.I32 Ast.IntOp.Add))
+        ],
+        Concatlist.mapped_list_of_t add_dummy_loc @@
+        idx +@ [
+          Ast.Const(const_int32 1);
+          Ast.Binary(Values.I32 Ast.IntOp.ShrS);
+        ]
+      );
+      (* Store the item *)
+      Ast.Const(const_int32 4);
+      Ast.Binary(Values.I32 Ast.IntOp.Mul);
+    ] @ arr @ (untag (GenericHeapType(Some ArrayType))) +@ [
+      Ast.Binary(Values.I32 Ast.IntOp.Add);
+    ] @ val_ +@ [
+      store ~offset:8 ();
+    ] @ val_
 
 
 let compile_adt_op env adt_imm op =
@@ -858,6 +968,7 @@ and compile_instr env instr =
   | MImmediate(imm) -> compile_imm env imm
   | MAllocate(alloc) -> compile_allocation env alloc
   | MTupleOp(tuple_op, tup) -> compile_tuple_op env tup tuple_op
+  | MArrayOp(array_op, ret) -> compile_array_op env ret array_op
   | MAdtOp(adt_op, adt) -> compile_adt_op env adt adt_op
   | MRecordOp(record_op, record) -> compile_record_op env record record_op
   | MPrim1(p1, arg) -> compile_prim1 env p1 arg
