@@ -195,6 +195,21 @@ let rec transl_imm (({exp_desc; exp_loc=loc; exp_env=env; exp_type=typ; _} as e)
     let tmp = gensym "tup" in
     let (new_args, new_setup) = List.split (List.map transl_imm args) in
     (Imm.id ~loc ~env tmp, (List.concat new_setup) @ [BLet(tmp, Comp.tuple ~loc ~env new_args)])
+  | TExpArray(args) ->
+    let tmp = gensym "tup" in
+    let (new_args, new_setup) = List.split (List.map transl_imm args) in
+    (Imm.id ~loc ~env tmp, (List.concat new_setup) @ [BLet(tmp, Comp.array ~loc ~env new_args)])
+  | TExpArrayGet(arr, idx) ->
+    let tmp = gensym "array_access" in
+    let (arr_var, arr_setup) = transl_imm arr in 
+    let (idx_var, idx_setup) = transl_imm idx in 
+    (Imm.id ~loc ~env tmp, arr_setup @ idx_setup @ [BLet(tmp, Comp.array_get ~loc ~env idx_var arr_var)])
+  | TExpArraySet(arr, idx, arg) ->
+    let tmp = gensym "array_access" in
+    let (arr_var, arr_setup) = transl_imm arr in 
+    let (idx_var, idx_setup) = transl_imm idx in 
+    let (arg_var, arg_setup) = transl_imm arg in 
+    (Imm.id ~loc ~env tmp, arr_setup @ idx_setup @ arg_setup @ [BLet(tmp, Comp.array_set ~loc ~env idx_var arr_var arg_var)])
   | TExpRecord(args) ->
     let tmp = gensym "record" in
     let definitions = Array.to_list @@ Array.map (fun (desc, def) -> def) args in
@@ -342,6 +357,9 @@ and transl_comp_expression (({exp_desc; exp_loc=loc; exp_env=env; _} as e) : exp
   | TExpTuple(args) ->
     let (new_args, new_setup) = List.split (List.map transl_imm args) in
     (Comp.tuple ~loc ~env new_args, List.concat new_setup)
+  | TExpArray(args) ->
+    let (new_args, new_setup) = List.split (List.map transl_imm args) in
+    (Comp.array ~loc ~env new_args, List.concat new_setup)
   | TExpMatch(expr, branches, _) ->
     let exp_ans, exp_setup = transl_imm expr in
     let ans, setup = MatchCompiler.compile_result (Matchcomp.convert_match_branches branches) transl_anf_expression exp_ans in

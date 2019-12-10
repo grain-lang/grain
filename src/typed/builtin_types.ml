@@ -36,18 +36,21 @@ and ident_bool = ident_create "Bool"
 and ident_string = ident_create "String"
 and ident_void = ident_create "Void" (* TODO: When we have type aliases, make "Unit" an alias *)
 and ident_box = ident_create "Box"
+and ident_array = ident_create "Array"
 
 let path_number = PIdent ident_number
 and path_bool = PIdent ident_bool
 and path_string = PIdent ident_string
 and path_void = PIdent ident_void
 and path_box = PIdent ident_box
+and path_array = PIdent ident_array
 
 let type_number = newgenty (TTyConstr(path_number, [], ref TMemNil))
 and type_bool = newgenty (TTyConstr(path_bool, [], ref TMemNil))
 and type_string = newgenty (TTyConstr(path_string, [], ref TMemNil))
 and type_void = newgenty (TTyConstr(path_void, [], ref TMemNil))
 and type_box var = newgenty (TTyConstr(path_box, [var], ref TMemNil))
+and type_array var = newgenty (TTyConstr(path_array, [var], ref TMemNil))
 
 
 let all_predef_exns = [
@@ -84,12 +87,18 @@ let common_initial_env add_type empty_env =
     {decl_abstr with
      type_kind = TDataVariant([cstr ident_void_cstr []]);
      type_immediate = true}
+  and decl_array =
+    let tvar = newgenvar() in
+    {decl_abstr with
+     type_params = [tvar];
+     type_arity = 1}
   in
   empty_env
   |> add_type ident_number decl_abstr_imm
   |> add_type ident_bool decl_bool
   |> add_type ident_string decl_abstr
   |> add_type ident_void decl_void
+  |> add_type ident_array decl_array
 
 let build_initial_env add_type empty_env =
   let common = common_initial_env add_type empty_env in

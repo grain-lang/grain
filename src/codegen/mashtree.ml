@@ -82,6 +82,7 @@ type closure_data = {
 type allocation_type =
   | MClosure of closure_data
   | MTuple of immediate list
+  | MArray of immediate list
   | MRecord of immediate * (string * immediate) list
   | MADT of immediate * immediate * immediate list (* Type Tag, Variant Tag, Elements *)
   | MString of string
@@ -109,6 +110,11 @@ type tuple_op =
   | MTupleSet of int32 * immediate
 [@@deriving sexp]
 
+type array_op =
+  | MArrayGet of immediate
+  | MArraySet of immediate * immediate
+[@@deriving sexp]
+
 type adt_op =
   | MAdtGet of int32
   | MAdtGetModule
@@ -133,6 +139,7 @@ type instr =
   | MPrim1 of prim1 * immediate
   | MPrim2 of prim2 * immediate * immediate
   | MTupleOp of tuple_op * immediate
+  | MArrayOp of array_op * immediate
   | MAdtOp of adt_op * immediate
   | MRecordOp of record_op * immediate
   | MStore of (binding * instr) list (* Items in the same list have their backpatching delayed until the end of that list *)

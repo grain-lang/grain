@@ -142,6 +142,9 @@ and expression_desc =
   | TExpIdent of Path.t * Identifier.t loc * Types.value_description
   | TExpConstant of constant
   | TExpTuple of expression list
+  | TExpArray of expression list
+  | TExpArrayGet of expression * expression
+  | TExpArraySet of expression * expression * expression
   | TExpRecord of (Types.label_description * record_label_definition) array
   | TExpRecordGet of expression * Identifier.t loc * Types.label_description
   | TExpLet of rec_flag * value_binding list * expression

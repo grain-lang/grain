@@ -84,6 +84,10 @@ module Exp: sig
   val tuple: ?loc:loc -> expression list -> expression
   val record: ?loc:loc -> (id * expression) list -> expression
   val record_get: ?loc:loc -> expression -> id -> expression
+  val list: ?loc:loc -> expression list -> expression option -> expression
+  val array: ?loc:loc -> expression list -> expression
+  val array_get: ?loc:loc -> expression -> expression -> expression
+  val array_set: ?loc:loc -> expression -> expression -> expression -> expression
   val let_: ?loc:loc -> rec_flag -> value_binding list -> expression -> expression
   val match_: ?loc:loc -> expression -> match_branch list -> expression
   val prim1: ?loc:loc -> prim1 -> expression -> expression
@@ -96,7 +100,6 @@ module Exp: sig
   val apply: ?loc:loc -> expression -> expression list -> expression
   val block: ?loc:loc -> expression list -> expression
   val null: ?loc:loc -> unit -> expression
-  val list: ?loc:loc -> expression list -> expression option -> expression
   val ignore: expression -> expression
 end
 

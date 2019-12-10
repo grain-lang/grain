@@ -112,6 +112,11 @@ let no_uppercase_ident expr =
     if first_char = BatChar.uppercase first_char then raise Dyp.Giveup
   | _ -> ()
 
+let no_array_access expr =
+  match expr.pexp_desc with
+  | PExpArrayGet _ -> raise Dyp.Giveup
+  | _ -> ()
+
 
 let mkid ns =
   let help ns =
@@ -429,8 +434,13 @@ list_expr :
   | lbrack rbrack { Exp.list ~loc:(symbol_rloc dyp) [] None }
   | lbrack expr [comma expr {$2}]* [comma ELLIPSIS expr {$3}]? rbrack { Exp.list ~loc:(symbol_rloc dyp) ($2::$3) $4 }
 
+array_expr :
+  | lbrack rcaret rbrack { Exp.array ~loc:(symbol_rloc dyp) [] }
+  | lbrack rcaret expr [comma expr {$2}]* rbrack { Exp.array ~loc:(symbol_rloc dyp) ($3::$4) }
+
 assign_expr :
-  | expr EOL? GETS EOL? expr { Exp.assign ~loc:(symbol_rloc dyp) $1 $5 }
+  | expr EOL? GETS EOL? expr { no_array_access $1; Exp.assign ~loc:(symbol_rloc dyp) $1 $5 }
+  | array_set { $1 }
 
 non_assign_expr :
   | app_expr    { prerr_string "\nexpr_app_expr\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); $1 }
@@ -442,7 +452,9 @@ non_assign_expr :
   | if_expr     { $1 }
   | while_expr  { $1 }
   | match_expr  { $1 }
-  | list_expr  { $1 }
+  | list_expr   { $1 }
+  | array_get   { $1 }
+  | array_expr  { $1 }
 
 block_body_expr :
   | let_expr    { $1 }
@@ -455,6 +467,12 @@ block_body_stmt :
 tuple_exprs :
   | expr comma { [$1] }
   | expr [comma expr {$2}]+ { $1::$2 }
+
+array_get :
+  | non_binop_expr lbrack expr rbrack { Exp.array_get ~loc:(symbol_rloc dyp) $1 $3 }
+
+array_set :
+  | expr lbrack expr rbrack GETS EOL? expr { Exp.array_set ~loc:(symbol_rloc dyp) $1 $3 $7 }
 
 record_get :
   | non_binop_expr dot simple_id { no_uppercase_ident $1; Exp.record_get $1 $3 }

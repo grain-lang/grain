@@ -193,8 +193,11 @@ end = struct
         ) args
       | TExpRecordGet(expr, _, _) -> iter_expression expr
       | TExpTuple(args)
+      | TExpArray(args)
       | TExpBlock(args)
       | TExpConstruct(_, _, args) -> List.iter iter_expression args
+      | TExpArrayGet(a1, a2) -> iter_expression a1; iter_expression a2
+      | TExpArraySet(a1, a2, a3) -> iter_expression a1; iter_expression a2; iter_expression a3
       | TExpIf(c, t, f) ->
         iter_expression c;
         iter_expression t;

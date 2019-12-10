@@ -169,6 +169,9 @@ end = struct
       | TExpMatch(value, branches, p) ->
         TExpMatch(map_expression value, map_match_branches branches, p)
       | TExpTuple(args) -> TExpTuple(List.map map_expression args)
+      | TExpArray(args) -> TExpArray(List.map map_expression args)
+      | TExpArrayGet(a1, a2) -> TExpArrayGet(map_expression a1, map_expression a2)
+      | TExpArraySet(a1, a2, a3) -> TExpArraySet(map_expression a1, map_expression a2, map_expression a3)
       | TExpRecord(args) -> 
         TExpRecord(Array.map (function 
           | (desc, Overridden(name, expr)) -> desc, (Overridden(name, map_expression expr)) 

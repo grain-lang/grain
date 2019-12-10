@@ -413,6 +413,43 @@ and type_expect_ ?in_function ?(recarg=Rejected) env sexp ty_expected_explained 
       exp_type = newty (TTyTuple (List.map (fun e -> e.exp_type) expl));
       exp_env = env
     }
+  | PExpArray es ->
+    let ty = newgenvar() in
+    let to_unify = Builtin_types.type_array ty in
+    with_explanation (fun () ->
+      unify_exp_types loc env to_unify ty_expected);
+    let expl =
+      List.map (fun sarg -> type_expect env sarg (mk_expected ty)) es in
+    re {
+      exp_desc = TExpArray expl;
+      exp_loc = loc; 
+      exp_extra = [];
+      exp_type = instance env ty_expected;
+      exp_env = env 
+    }
+  | PExpArrayGet(sarrexp, sidx) ->
+    let array_type = newvar ~name:"a" () in
+    let arrexp = type_expect env sarrexp (mk_expected ~explanation:Assign_not_array (Builtin_types.type_array array_type)) in
+    let idx = type_expect env sidx (mk_expected ~explanation:Assign_not_array_index Builtin_types.type_number) in
+    rue {
+      exp_desc = TExpArrayGet(arrexp, idx);
+      exp_loc = loc; 
+      exp_extra = [];
+      exp_type = instance env array_type;
+      exp_env = env 
+    }
+  | PExpArraySet(sarrexp, sidx, se) ->
+    let array_type = newvar ~name:"a" () in
+    let arrexp = type_expect env sarrexp (mk_expected ~explanation:Assign_not_array (Builtin_types.type_array array_type)) in
+    let idx = type_expect env sidx (mk_expected ~explanation:Assign_not_array_index Builtin_types.type_number) in
+    let e = type_expect env se (mk_expected array_type) in
+    rue {
+      exp_desc = TExpArraySet(arrexp, idx, e);
+      exp_loc = loc; 
+      exp_extra = [];
+      exp_type = instance env e.exp_type;
+      exp_env = env
+    }
   | PExpRecord es ->
     let ty_record, opath =
       let get_path ty =
@@ -1387,6 +1424,10 @@ let report_type_expected_explanation expl ppf =
       fprintf ppf "the left-hand side of a sequence"
   | Assign_not_box ->
       fprintf ppf "the left-hand side of an assignment"
+  | Assign_not_array ->
+      fprintf ppf "the left-hand side of an array assignment"
+  | Assign_not_array_index ->
+      fprintf ppf "the index argument of an array assignment"
 let report_type_expected_explanation_opt expl ppf =
   match expl with
   | None -> ()
