@@ -1,0 +1,20 @@
+foreign wasm grainBuiltins arrayLength : Array<a> -> Number
+export let length = arrayLength
+
+export let forEach = (array, fn) => {
+  let length = length(array)
+  let count = box(0)
+  while (unbox(count) < length) {
+    fn(array[unbox(count)])
+    count := add1(unbox(count))
+  }
+}
+
+export let forEachi = (array, fn) => {
+  let length = length(array)
+  let count = box(0)
+  while (unbox(count) < length) {
+    fn(array[unbox(count)], unbox(count))
+    count := add1(unbox(count))
+  }
+}
