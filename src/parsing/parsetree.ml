@@ -200,6 +200,7 @@ type export_except =
 type toplevel_stmt_desc =
   | PTopImport of import_declaration list
   | PTopForeign of export_flag * value_description
+  | PTopPrimitive of export_flag * value_description
   | PTopData of export_flag * data_declaration
   | PTopLet of export_flag * rec_flag * value_binding list
   | PTopExpr of expression

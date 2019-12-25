@@ -97,6 +97,7 @@ rule token = parse
   | blank { token lexbuf }
   | newline_chars { process_newlines lexbuf; EOL }
   | signed_int as x { NUM (int_of_string x) }
+  | "primitive" { PRIMITIVE }
   | "foreign" { FOREIGN }
   | "wasm" { WASM }
   | "add1" { ADD1 }

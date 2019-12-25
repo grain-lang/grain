@@ -1,5 +1,23 @@
 export *
 
+# Math operations
+primitive (+) : (Number, Number) -> Number = "@plus"
+primitive (-) : (Number, Number) -> Number = "@minus"
+primitive (*) : (Number, Number) -> Number = "@times"
+
+# Number comparisons
+primitive (<) : (Number, Number) -> Bool = "@less"
+primitive (>) : (Number, Number) -> Bool = "@greater"
+primitive (<=) : (Number, Number) -> Bool = "@lesseq"
+primitive (>=) : (Number, Number) -> Bool = "@greatereq"
+
+# Generic comparisons
+primitive (==) : (a, b) -> Bool = "@eq"
+
+# Boolean operations
+primitive (&&) : (Bool, Bool) -> Bool = "@and"
+primitive (||) : (Bool, Bool) -> Bool = "@or"
+
 # Prints the given value to the console.
 foreign wasm grainBuiltins print : a -> Void
 
