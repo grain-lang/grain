@@ -217,8 +217,8 @@ let function_tests = [
                         x = ((n) => {if (n > 3) {n} else {x(n + 2)}});
                  y(2)" "5";
   t "let_1" "let rec x = ((n) => {n + 1}),
-                     y = x(3),
-                     z = ((n) => {x(n) + y});
+                     y = (() => x(3)),
+                     z = ((n) => {x(n) + y()});
                z(5)" "10";
   te "let_norec_1" "let x = ((n) => {if (n > 3) {n} else {x(n + 2)}}),
                         y = ((n) => {x(n + 1)});
@@ -589,16 +589,18 @@ let optimization_tests = [
 
   tfinalanf "test_cse" "((x) => {let a = x + 1; let b = x + 1; a + b})"
     (let open Grain_typed in
+     let plus = Ident.create "+" in
      let x = Ident.create "x" in
      let a = Ident.create "a" in
      AExp.comp (Comp.lambda [x]
-                  (AExp.let_ Nonrecursive [(a, Comp.prim2 Plus (Imm.id x) (Imm.const (Const_int 1)))]
-                     (AExp.comp (Comp.prim2 Plus (Imm.id a) (Imm.id a))))));
+                  (AExp.let_ Nonrecursive [(a, Comp.app (Imm.id plus) [(Imm.id x); (Imm.const (Const_int 1))])]
+                     (AExp.comp (Comp.app (Imm.id plus) [(Imm.id a); (Imm.id a)])))));
 
   tfinalanf "test_dae" "((x) => {let a = x + 1; let b = x + 1; x + 1})"
     (let open Grain_typed in
+     let plus = Ident.create "+" in
      let x = Ident.create "x" in
-     AExp.comp (Comp.lambda [x] @@ AExp.comp @@ Comp.prim2 Plus (Imm.id x) (Imm.const (Const_int 1))));
+     AExp.comp (Comp.lambda [x] @@ AExp.comp @@ Comp.app (Imm.id plus) [(Imm.id x); (Imm.const (Const_int 1))]));
 
   tfinalanf "test_dae_lambda_unused" "((x) => {1})"
     (let open Grain_typed in
@@ -613,12 +615,13 @@ let optimization_tests = [
     let y = foo(3) + 5;
     foo(3) + x}"
     (let open Grain_typed in
+     let plus = Ident.create "+" in
      let foo = Ident.create "foo" in
      let y = Ident.create "y" in
      let app = Ident.create "app" in
      AExp.let_ Nonrecursive [(foo, Comp.lambda [y] @@ AExp.comp @@ Comp.imm @@ Imm.id y)]
      @@ AExp.let_ Nonrecursive [(app, Comp.app (Imm.id foo) [(Imm.const (Const_int 3))])]
-     @@ AExp.comp @@ Comp.prim2 Plus (Imm.id app) (Imm.const (Const_int 5)));
+     @@ AExp.comp @@ Comp.app (Imm.id plus) [(Imm.id app); (Imm.const (Const_int 5))]);
 
   tfsound "test_counter_sound" "counter" "1\n2\n3\nvoid";
   te "test_dae_sound" "let x = 2 + false; 3" "type";
