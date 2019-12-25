@@ -96,7 +96,7 @@ and value_unbound_reason =
 
 type value_kind =
   | TValReg
-  | TValPrim of Primitive.description [@sexp.opaque]
+  | TValPrim of string
   | TValUnbound of value_unbound_reason
   | TValConstructor of constructor_description
 [@@deriving sexp]
@@ -104,7 +104,7 @@ type value_kind =
 (* See: https://github.com/janestreet/ppx_sexp_conv/issues/26 *)
 let rec value_kind_to_yojson = function
   | TValReg -> `String "TValReg"
-  | TValPrim d -> `List [`String "TValPrim"; Primitive.description_to_yojson d]
+  | TValPrim n -> `List [`String "TValPrim"; `String n]
   | TValUnbound r -> `List [`String "TValUnbound"; value_unbound_reason_to_yojson r]
   | TValConstructor d -> `List [`String "TValConstructor"; constructor_description_to_yojson d]
 
@@ -115,7 +115,7 @@ and value_kind_of_yojson =
   in
   function
   | `String "TValReg" -> Result.Ok TValReg
-  | `List [`String "TValPrim"; d] -> res_map (fun d -> TValPrim d) (Primitive.description_of_yojson d)
+  | `List [`String "TValPrim"; `String n] -> Result.Ok (TValPrim n)
   | `List [`String "TValUnbound"; r] -> res_map (fun r -> TValUnbound r) (value_unbound_reason_of_yojson r)
   | `List [`String "TValConstructor"; d] -> res_map (fun d -> TValConstructor d) (constructor_description_of_yojson d)
   | other -> Result.Error ("value_kind_of_yojson: Invalid JSON: " ^ (Yojson.Safe.to_string other))

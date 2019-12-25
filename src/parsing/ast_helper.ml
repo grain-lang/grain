@@ -159,6 +159,7 @@ module Top = struct
     {ptop_desc=d; ptop_loc=loc}
   let import ?loc i = mk ?loc (PTopImport i)
   let foreign ?loc e d = mk ?loc (PTopForeign (e, d))
+  let primitive ?loc e d = mk ?loc (PTopPrimitive (e, d))
   let data ?loc e d = mk ?loc (PTopData (e, d))
   let let_ ?loc e r vb = mk ?loc (PTopLet(e, r, vb))
   let expr ?loc e = mk ?loc (PTopExpr e)

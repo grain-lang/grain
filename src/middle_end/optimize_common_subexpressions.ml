@@ -17,7 +17,7 @@ module ExpressionHash =
         compare_lists exps1 exps2
       | CAdt({imm_desc=ttag1}, {imm_desc=vtag1}, elts1), CAdt({imm_desc=ttag2}, {imm_desc=vtag2}, elts2) ->
         ttag1 = ttag2 && vtag1 = vtag2 && compare_lists elts1 elts2
-      | CApp({imm_desc=desc1}, args1), CApp({imm_desc=desc2}, args2) -> 
+      | CApp({imm_desc=desc1}, args1), CApp({imm_desc=desc2}, args2) ->
         desc1 = desc2 && compare_lists args1 args2
       | CAppBuiltin(_module1, name1, args1), CAppBuiltin(_module2, name2, args2) -> 
         _module1 = _module2 && name1 = name2 && compare_lists args1 args2

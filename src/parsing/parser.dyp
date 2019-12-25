@@ -130,6 +130,8 @@ let mkid ns =
       | n::tl -> help tl (None, n) in
   mkloc @@ help ns
 
+let mkid_expr dyp ns = Exp.ident ~loc:(symbol_rloc dyp) (mkid ns (symbol_rloc dyp))
+
 let mkstr dyp s = mkloc s (symbol_rloc dyp)
 
 let make_program statements =
@@ -164,7 +166,7 @@ let make_program statements =
 %token LET REC IF ELSE MATCH WHILE
 %token AMPAMP PIPEPIPE NOT
 
-%token DATA IMPORT EXPORT FOREIGN WASM 
+%token DATA IMPORT EXPORT FOREIGN WASM PRIMITIVE
 %token EXCEPT FROM
 %token EOL EOF
 
@@ -240,18 +242,18 @@ expr :
   binop_expr
 
 binop_expr :
-  | binop_expr(<=pp) EOL? PLUS EOL?      binop_expr(<pp) { prerr_string "\nbinop_expr_plus\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); Exp.prim2 ~loc:(symbol_rloc dyp) Plus $1 $5 } pp
-  | binop_expr(<=pp) EOL? DASH EOL?      binop_expr(<pp) { Exp.prim2 ~loc:(symbol_rloc dyp) Minus $1 $5 } pp
-  | binop_expr(<=pt) EOL? STAR EOL?      binop_expr(<pt) { Exp.prim2 ~loc:(symbol_rloc dyp) Times $1 $5 } pt
-  | binop_expr(<=pt) EOL? SLASH EOL?     binop_expr(<pt) { Exp.prim2 ~loc:(symbol_rloc dyp) Divide $1 $5 } pt
-  | binop_expr(<=pb) EOL? PERCENT EOL?   binop_expr(<pb) { Exp.prim2 ~loc:(symbol_rloc dyp) Mod $1 $5 } pb
-  | binop_expr(<=pc) EOL? EQEQ EOL?      binop_expr(<pc) { Exp.prim2 ~loc:(symbol_rloc dyp) Eq $1 $5 } pc
-  | binop_expr(<=pc) EOL? LCARET EOL?    binop_expr(<pc) { Exp.prim2 ~loc:(symbol_rloc dyp) Less $1 $5 } pc
-  | binop_expr(<=pc) EOL? RCARET EOL?    binop_expr(<pc) { Exp.prim2 ~loc:(symbol_rloc dyp) Greater $1 $5 } pc
-  | binop_expr(<=pc) EOL? LESSEQ EOL?    binop_expr(<pc) { Exp.prim2 ~loc:(symbol_rloc dyp) LessEq $1 $5 } pc
-  | binop_expr(<=pc) EOL? GREATEREQ EOL? binop_expr(<pc) { Exp.prim2 ~loc:(symbol_rloc dyp) GreaterEq $1 $5 } pc
-  | binop_expr(<=pb) EOL? AMPAMP EOL?    binop_expr(<pb) { Exp.prim2 ~loc:(symbol_rloc dyp) And $1 $5 } pb
-  | binop_expr(<=pb) EOL? PIPEPIPE EOL?  binop_expr(<pb) { Exp.prim2 ~loc:(symbol_rloc dyp) Or $1 $5 } pb
+  | binop_expr(<=pp) EOL? plus_op EOL?      binop_expr(<pp) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pp
+  | binop_expr(<=pp) EOL? dash_op EOL?      binop_expr(<pp) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pp
+  | binop_expr(<=pt) EOL? star_op EOL?      binop_expr(<pt) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pt
+  | binop_expr(<=pt) EOL? slash_op EOL?     binop_expr(<pt) { Exp.prim2 ~loc:(symbol_rloc dyp) Divide $1 $5 } pt
+  | binop_expr(<=pb) EOL? percent_op EOL?   binop_expr(<pb) { Exp.prim2 ~loc:(symbol_rloc dyp) Mod $1 $5 } pb
+  | binop_expr(<=pc) EOL? eqeq_op EOL?      binop_expr(<pc) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pc
+  | binop_expr(<=pc) EOL? lcaret_op EOL?    binop_expr(<pc) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pc
+  | binop_expr(<=pc) EOL? rcaret_op EOL?    binop_expr(<pc) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pc
+  | binop_expr(<=pc) EOL? lesseq_op EOL?    binop_expr(<pc) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pc
+  | binop_expr(<=pc) EOL? greatereq_op EOL? binop_expr(<pc) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pc
+  | binop_expr(<=pb) EOL? ampamp_op EOL?    binop_expr(<pb) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pb
+  | binop_expr(<=pb) EOL? pipepipe_op EOL?  binop_expr(<pb) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pb
   | binop_expr colon typ { Exp.constraint_ ~loc:(symbol_rloc dyp) $1 $3 } pe
   | lam_expr { $1 } pl
   | non_assign_expr { $1 } pe
@@ -333,6 +335,7 @@ export_stmt :
   | EXPORT LET REC value_binds { Top.let_ Exported Recursive $4 }
   | EXPORT LET value_binds { Top.let_ Exported Nonrecursive $3 }
   | EXPORT foreign_stmt { Top.foreign ~loc:(symbol_rloc dyp) Exported $2 }
+  | EXPORT primitive_stmt { Top.primitive ~loc:(symbol_rloc dyp) Exported $2 }
   | EXPORT data_declaration { Top.data Exported $2 }
   | EXPORT any_id_str [AS any_id_str {$2}]? [comma any_id_str [AS any_id_str {$2}]? {$2, $3}]* { Top.export ~loc:(symbol_rloc dyp) (Ex.mk ~loc:(symbol_rloc dyp) (($2, $3)::$4)) }
   | EXPORT STAR [EXCEPT export_id_str [comma export_id_str {$2}]* {$2::$3}]? { Top.export_all ~loc:(symbol_rloc dyp) (Option.default [] $3) }
@@ -375,8 +378,50 @@ app_expr :
 ext_constructor :
   | TYPEID [dot TYPEID {$2}]+ { prerr_string "\nid\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); (mkid ($1::$2)) (symbol_rloc dyp) }
 
+plus_op :
+  | PLUS { "+" }
+dash_op :  
+  | DASH { "-" }
+star_op :  
+  | STAR { "*" }
+slash_op :  
+  | SLASH { "/" }
+percent_op :  
+  | PERCENT { "%" }
+eqeq_op :  
+  | EQEQ { "==" }
+lcaret_op :  
+  | LCARET { "<" }
+rcaret_op :  
+  | RCARET { ">" }
+lesseq_op :  
+  | LESSEQ { "<=" }
+greatereq_op :  
+  | GREATEREQ { ">=" }
+ampamp_op :  
+  | AMPAMP { "&&" }
+pipepipe_op :  
+  | PIPEPIPE { "||" }
+
+infix_op :
+  | plus_op
+  | dash_op
+  | star_op
+  | slash_op
+  | percent_op
+  | eqeq_op
+  | lcaret_op
+  | rcaret_op
+  | lesseq_op
+  | greatereq_op
+  | ampamp_op
+  | pipepipe_op
+
+infix :
+  | lparen infix_op rparen { $2 }
+
 id :
-  | [TYPEID dot {$1}]* [ID | TYPEID] { prerr_string "\nid\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); (mkid (List.append $1 [$2])) (symbol_rloc dyp) }
+  | [TYPEID dot {$1}]* [ID | TYPEID | infix] { prerr_string "\nid\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); (mkid (List.append $1 [$2])) (symbol_rloc dyp) }
 
 simple_id :
   | ID { (mkid [$1]) (symbol_rloc dyp) }
@@ -495,6 +540,7 @@ file_path :
 
 id_str :
   | ID { Location.mkloc $1 (symbol_rloc dyp) }
+  | infix { Location.mkloc $1 (symbol_rloc dyp) }
 
 type_id_str :
   | TYPEID { Location.mkloc $1 (symbol_rloc dyp) }
@@ -508,7 +554,10 @@ export_id_str :
   | type_id_str { ExportExceptData $1 }
 
 foreign_stmt :
-  | FOREIGN WASM id_str id_str colon typ { Val.mk ~loc:(symbol_rloc dyp) ~mod_:$3 ~name:$4 ~typ:$6 ~prim:[$4.txt] }
+  | FOREIGN WASM id_str id_str colon typ { Val.mk ~loc:(symbol_rloc dyp) ~mod_:$3 ~name:$4 ~typ:$6 ~prim:[] }
+
+primitive_stmt :
+  | PRIMITIVE id_str colon typ equal STRING { Val.mk ~loc:(symbol_rloc dyp) ~mod_:{$2 with txt="primitive"} ~name:$2 ~typ:$4 ~prim:[$6] }
 
 toplevel_stmt :
   | LET REC value_binds { Top.let_ Nonexported Recursive $3 }
@@ -517,6 +566,7 @@ toplevel_stmt :
   | import_stmt { Top.import $1 }
   | export_stmt { $1 }
   | foreign_stmt { Top.foreign ~loc:(symbol_rloc dyp) Nonexported $1 }
+  | primitive_stmt { Top.primitive ~loc:(symbol_rloc dyp) Nonexported $1 }
   | data_declaration { Top.data Nonexported $1 }
 
 toplevel_stmts :

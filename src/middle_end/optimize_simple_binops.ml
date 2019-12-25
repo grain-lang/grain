@@ -24,21 +24,21 @@ module ConstantFoldingArg : Anf_mapper.MapArgument = struct
 
   let leave_comp_expression ({comp_desc = desc} as c) =
     match desc with
-    | CPrim2(binop, ({imm_desc=ImmConst(x)} as i), {imm_desc=ImmConst(y)}) ->
-      let wrap_imm imm = {c with comp_desc=CImmExpr({ i with imm_desc=ImmConst(imm) })} in
-      begin match binop with
+    | CApp({imm_desc=ImmId{name}}, [({imm_desc=ImmConst x} as i); {imm_desc=ImmConst y}]) ->
+      let wrap_imm imm = {c with comp_desc=CImmExpr({i with imm_desc=ImmConst(imm)})} in
+      begin match name with
       (* in_valid_int_range check to make sure we don't overflow. 
          If we will overflow, don't optimize and allow the error at runtime. *)
-      | Plus when in_valid_int_range (+) x y -> wrap_imm @@ Const_int(get_int x + get_int y)
-      | Minus when in_valid_int_range (-) x y -> wrap_imm @@ Const_int(get_int x - get_int y)
-      | Times when in_valid_int_range ( * ) x y -> wrap_imm @@ Const_int(get_int x * get_int y)
-      | Less -> wrap_imm @@ Const_bool(get_int x < get_int y)
-      | LessEq -> wrap_imm @@ Const_bool(get_int x <= get_int y)
-      | Greater -> wrap_imm @@ Const_bool(get_int x > get_int y)
-      | GreaterEq -> wrap_imm @@ Const_bool(get_int x >= get_int y)
-      | Eq -> wrap_imm @@ Const_bool(x = y)
-      | And -> wrap_imm @@ Const_bool(get_bool x && get_bool y)
-      | Or -> wrap_imm @@ Const_bool(get_bool x || get_bool y)
+      | "+" when in_valid_int_range (+) x y -> wrap_imm @@ Const_int(get_int x + get_int y)
+      | "-" when in_valid_int_range (-) x y -> wrap_imm @@ Const_int(get_int x - get_int y)
+      | "*" when in_valid_int_range ( * ) x y -> wrap_imm @@ Const_int(get_int x * get_int y)
+      | "<" -> wrap_imm @@ Const_bool(get_int x < get_int y)
+      | "<=" -> wrap_imm @@ Const_bool(get_int x <= get_int y)
+      | ">" -> wrap_imm @@ Const_bool(get_int x > get_int y)
+      | ">=" -> wrap_imm @@ Const_bool(get_int x >= get_int y)
+      | "==" -> wrap_imm @@ Const_bool(x = y)
+      | "&&" -> wrap_imm @@ Const_bool(get_bool x && get_bool y)
+      | "||" -> wrap_imm @@ Const_bool(get_bool x || get_bool y)
       | _ -> c end
     | _ -> c
 

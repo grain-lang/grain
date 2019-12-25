@@ -185,6 +185,7 @@ module TL = struct
     match desc with
       | PTopImport decls -> Top.import ~loc (sub.import sub decls)
       | PTopForeign(e, d) -> Top.foreign ~loc e (sub.value_description sub d)
+      | PTopPrimitive(e, d) -> Top.primitive ~loc e (sub.value_description sub d)
       | PTopData(e, dd) -> Top.data ~loc e (sub.data sub dd)
       | PTopLet(e, r, vb) -> Top.let_ ~loc e r (List.map (sub.value_binding sub) vb)
       | PTopExpr e -> Top.expr ~loc (sub.expr sub e)
