@@ -97,24 +97,18 @@ rule token = parse
   | blank { token lexbuf }
   | newline_chars { process_newlines lexbuf; EOL }
   | signed_int as x { NUM (int_of_string x) }
+  | "primitive" { PRIMITIVE }
   | "foreign" { FOREIGN }
   | "wasm" { WASM }
-  | "add1" { ADD1 }
-  | "sub1" { SUB1 }
   | "while" { WHILE }
   | "if" { IF }
   | "else" { ELSE }
   | "true" { TRUE }
   | "false" { FALSE }
-  | "isbool" { ISBOOL }
-  | "isnum" { ISNUM }
-  | "istuple" { ISTUPLE }
   | "import" { IMPORT }
   | "export" { EXPORT }
   | "except" { EXCEPT }
   | "from" { FROM }
-  | "box" { BOX }
-  | "unbox" { UNBOX }
   | "->" { ARROW }
   | "=>" { THICKARROW }
   | "data" { DATA }

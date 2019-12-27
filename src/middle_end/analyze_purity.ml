@@ -29,8 +29,27 @@ let rec get_purity_tbl lst =
 let set_id_purity id p =
   purity_tbl := Ident.add id p !purity_tbl
 
+module StringHash = Hashtbl.Make(struct
+  type t = string
+  let hash x = Hashtbl.hash x
+  let equal a b = (String.compare a b) == 0
+end)
+
+let pervasives_purity = StringHash.of_seq (List.to_seq [
+  ("+", true);
+  ("-", true);
+  ("*", true);
+  ("==", true);
+  ("<", true);
+  (">", true);
+  ("<=", true);
+  (">=", true);
+  ("&&", true);
+  ("||", true);
+])
+
 let get_id_purity (id : Ident.t) : bool =
-  Ident.find_same id !purity_tbl
+  Option.default (Ident.find_same id !purity_tbl) (StringHash.find_opt pervasives_purity (Ident.name id))
 
 let imm_expression_purity {imm_analyses} = get_purity !imm_analyses
 let comp_expression_purity {comp_analyses} = get_purity !comp_analyses

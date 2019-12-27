@@ -312,6 +312,16 @@ let type_module ?(toplevel=false) funct_body anchor env sstr (*scope*) =
     let foreign = {ttop_desc=TTopForeign desc; ttop_loc=loc; ttop_env=env} in
     newenv, signature, foreign in
 
+  let process_primitive env e d loc =
+    let (desc, newenv) = Typedecl.transl_value_decl env loc d in
+    let e = if string_needs_export d.pval_name then Exported else e in
+    let signature = match e with
+      | Exported -> Some(TSigValue(desc.tvd_id, desc.tvd_val))
+      | Nonexported -> None in
+    let (defs, newenv) = Translprim.transl_prim newenv desc in
+    let prim = {ttop_desc=TTopLet(e, Nonrecursive, defs); ttop_loc=loc; ttop_env=newenv} in
+    newenv, signature, prim in
+
   let process_import env imports loc =
     let newenv, stmts = List.fold_left (fun (env, stmts) i ->
       let _path, newenv, od = type_open env i in
@@ -403,6 +413,10 @@ let type_module ?(toplevel=false) funct_body anchor env sstr (*scope*) =
         new_env, List.rev sigs @ signatures, stmts @ statements
       | PTopForeign(e, d) -> 
         let new_env, signature, statement = process_foreign env e d loc in
+        let signatures = match signature with Some(s) -> s::signatures | None -> signatures in
+        new_env, signatures, statement::statements
+      | PTopPrimitive(e, d) -> 
+        let new_env, signature, statement = process_primitive env e d loc in
         let signatures = match signature with Some(s) -> s::signatures | None -> signatures in
         new_env, signatures, statement::statements
       | PTopData(e, d) -> 

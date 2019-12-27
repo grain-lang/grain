@@ -89,14 +89,11 @@ and pattern = {
 
 (** Single-argument operators *)
 type prim1 =
-  | Add1
-  | Sub1
+  | Incr
+  | Decr
   | Not
   | Box
   | Unbox
-  | IsNum
-  | IsBool
-  | IsTuple
   | Ignore
 [@@deriving sexp]
 
@@ -200,6 +197,7 @@ type export_except =
 type toplevel_stmt_desc =
   | PTopImport of import_declaration list
   | PTopForeign of export_flag * value_description
+  | PTopPrimitive of export_flag * value_description
   | PTopData of export_flag * data_declaration
   | PTopLet of export_flag * rec_flag * value_binding list
   | PTopExpr of expression

@@ -76,8 +76,8 @@ type recarg =
   | Rejected
 
 let prim1_type = function
-  | Add1
-  | Sub1 -> Builtin_types.type_number, Builtin_types.type_number
+  | Incr
+  | Decr -> Builtin_types.type_number, Builtin_types.type_number
   | Not -> Builtin_types.type_bool, Builtin_types.type_bool
   | Box -> 
     let var = newvar ~name:"a" () in
@@ -88,9 +88,6 @@ let prim1_type = function
   | Ignore ->  
     let var = newvar ~name:"a" () in
     var, Builtin_types.type_void
-  | IsNum
-  | IsBool
-  | IsTuple -> newvar ~name:"prim1" (), Builtin_types.type_bool
 
 let prim2_type = function
   | Plus

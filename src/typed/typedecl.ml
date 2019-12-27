@@ -747,18 +747,6 @@ let rec parse_native_repr_attributes env core_type ty ~global_repr =
   | _ -> ([], make_native_repr env [core_type] [ty] ~global_repr)
 
 
-let check_unboxable env loc ty =
-  let ty = Ctype.repr (Ctype.expand_head_opt env ty) in
-  try match ty.desc with
-    | TTyConstr (p, _, _) -> ()
-      (*let tydecl = Env.find_type p env in
-      if tydecl.type_unboxed.unboxed then
-        Location.prerr_warning loc
-          (Warnings.Unboxable_type_in_prim_decl (Path.name p))*)
-    | _ -> ()
-  with Not_found -> ()
-
-
 (* Translate a value declaration *)
 let transl_value_decl env loc valdecl =
   let cty = Typetexp.transl_type_scheme env valdecl.pval_type in
@@ -768,33 +756,14 @@ let transl_value_decl env loc valdecl =
     (*[] when Env.is_in_signature env ->
       { val_type = ty; val_kind = TValReg; Types.val_loc = loc;
         (*val_attributes = valdecl.pval_attributes*) }*)
-  | [] ->
-      raise (Error(valdecl.pval_loc, Val_in_structure))
-  | _ ->
-      let global_repr = None
-        (*match
-          get_native_repr_attribute valdecl.pval_attributes ~global_repr:None
-        with
-        | Native_repr_attr_present repr -> Some repr
-        | Native_repr_attr_absent -> None*)
-      in
-      let native_repr_args, native_repr_res =
-        parse_native_repr_attributes env valdecl.pval_type ty ~global_repr
-      in
-      let prim =
-        Primitive.parse_declaration valdecl
-          ~native_repr_args
-          ~native_repr_res
-      in
-      if prim.prim_arity = 0 &&
-         (prim.prim_name = "" || prim.prim_name.[0] <> '%') then
-        raise(Error(valdecl.pval_type.ptyp_loc, Null_arity_external));
-      if (*!Clflags.native_code
-      && *) prim.prim_arity > 5
-      && prim.prim_native_name = ""
-      then raise(Error(valdecl.pval_type.ptyp_loc, Missing_native_external));
-      Btype.iter_type_expr (check_unboxable env loc) ty;
+  (* | [] ->
+      raise (Error(valdecl.pval_loc, Val_in_structure)) *)
+  | [prim] ->
       { val_type = ty; val_kind = TValPrim prim; Types.val_loc = loc;
+        val_fullpath = Path.PIdent (Ident.create "<bogus>")
+        (*val_attributes = valdecl.pval_attributes*) }
+  | _ ->
+      { val_type = ty; val_kind = TValReg; Types.val_loc = loc;
         val_fullpath = Path.PIdent (Ident.create "<bogus>")
         (*val_attributes = valdecl.pval_attributes*) }
   in
@@ -811,7 +780,6 @@ let transl_value_decl env loc valdecl =
       tvd_val = v;
       tvd_prim = valdecl.pval_prim;
       tvd_loc = valdecl.pval_loc;
-      (*val_attributes = valdecl.pval_attributes;*)
     }
   in
   desc, newenv

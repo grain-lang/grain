@@ -168,6 +168,7 @@ module TL = struct
       | PTopExport ex -> sub.export sub ex
       | PTopExportAll ex -> sub.export_all sub ex
       | PTopForeign(e, vd) -> sub.value_description sub vd
+      | PTopPrimitive(e, vd) -> sub.value_description sub vd
       | PTopData(e, dd) -> sub.data sub dd
       | PTopLet(e, r, vb) -> List.iter (sub.value_binding sub) vb
       | PTopExpr e -> sub.expr sub e
