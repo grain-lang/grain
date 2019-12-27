@@ -13,9 +13,8 @@
 
 ;;; Code:
 
-(defvar grain-keywords '("let" "rec" "import" "match" "data" "if" "else" "add1" "sub1"
-                         "foreign" "wasm"
-                         "isbool" "isnum" "istuple" "and" "or" "not"))
+(defvar grain-keywords '("let" "rec" "import" "match" "data" "if" "else" "incr" "decr"
+                         "foreign" "wasm" "and" "or" "not"))
 
 (defvar grain-keywords-regexp (regexp-opt grain-keywords))
 
