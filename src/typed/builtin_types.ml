@@ -87,6 +87,11 @@ let common_initial_env add_type empty_env =
     {decl_abstr with
      type_kind = TDataVariant([cstr ident_void_cstr []]);
      type_immediate = true}
+  and decl_box =
+    let tvar = newgenvar() in
+    {decl_abstr with
+     type_params = [tvar];
+     type_arity = 1}
   and decl_array =
     let tvar = newgenvar() in
     {decl_abstr with
@@ -96,6 +101,7 @@ let common_initial_env add_type empty_env =
   empty_env
   |> add_type ident_number decl_abstr_imm
   |> add_type ident_bool decl_bool
+  |> add_type ident_box decl_box
   |> add_type ident_string decl_abstr
   |> add_type ident_void decl_void
   |> add_type ident_array decl_array

@@ -4,6 +4,7 @@ open Typedtree
 open Parsetree
 
 type primitive =
+  | Primitive1 of prim1
   | Primitive2 of prim2
 
 module PrimMap = Hashtbl.Make(struct 
@@ -24,6 +25,13 @@ let pat_a = mkpatvar "a"
 let pat_b = mkpatvar "b"
   
 let prim_map = PrimMap.of_seq (List.to_seq [
+  ("@incr", Primitive1 Incr);
+  ("@decr", Primitive1 Decr);
+  ("@not", Primitive1 Not);
+  ("@box", Primitive1 Box);
+  ("@unbox", Primitive1 Unbox);
+  ("@ignore", Primitive1 Ignore);
+
   ("@plus", Primitive2 Plus);
   ("@minus", Primitive2 Minus);
   ("@times", Primitive2 Times);
@@ -43,6 +51,8 @@ let transl_prim env desc =
     failwith "Throw a real error here"
   in
   let value = match prim with
+    | Primitive1 p ->
+      Exp.lambda [pat_a] (Exp.prim1 p id_a)
     | Primitive2 p ->
       Exp.lambda [pat_a; pat_b] (Exp.prim2 p id_a id_b)
   in
