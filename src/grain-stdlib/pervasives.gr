@@ -6,6 +6,8 @@ primitive decr : Number -> Number = "@decr"
 primitive (+) : (Number, Number) -> Number = "@plus"
 primitive (-) : (Number, Number) -> Number = "@minus"
 primitive (*) : (Number, Number) -> Number = "@times"
+primitive (/) : (Number, Number) -> Number = "@divides"
+primitive (%) : (Number, Number) -> Number = "@modulo"
 
 # Number comparisons
 primitive (<) : (Number, Number) -> Bool = "@less"
