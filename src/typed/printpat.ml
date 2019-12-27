@@ -32,6 +32,7 @@ let pretty_const c = match c with
   | Const_int64 i -> Printf.sprintf "%LdL" i
   | Const_bool true -> "true"
   | Const_bool false -> "false"
+  | Const_void -> "void"
 
 let rec pretty_val ppf v =
   match v.pat_extra with

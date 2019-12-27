@@ -46,8 +46,7 @@ end = struct
   let rec map_typed_program tp =
     let tp = Map.enter_typed_program tp in
     let statements = List.map map_toplevel_stmt tp.statements in
-    let body = map_expression tp.body in
-    Map.leave_typed_program {tp with statements=statements; body=body}
+    Map.leave_typed_program {tp with statements=statements}
 
   and map_core_type ct =
     let ct = Map.enter_core_type ct in
@@ -116,6 +115,7 @@ end = struct
       | TTopImport _
       | TTopExport _  -> stmt.ttop_desc
       | TTopLet (exportflag, recflag, binds) -> TTopLet(exportflag, recflag, map_bindings recflag binds)
+      | TTopExpr e -> TTopExpr(map_expression e)
     end in
     Map.leave_toplevel_stmt {stmt with ttop_desc}
 

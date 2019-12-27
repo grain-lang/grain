@@ -104,6 +104,7 @@ module Top: sig
   val foreign: ?loc:loc -> export_flag -> value_description -> toplevel_stmt
   val data: ?loc:loc -> export_flag -> data_declaration -> toplevel_stmt
   val let_: ?loc:loc -> export_flag -> rec_flag -> value_binding list -> toplevel_stmt
+  val expr: ?loc:loc -> expression -> toplevel_stmt
   val export: ?loc:loc -> export_declaration list -> toplevel_stmt
   val export_all: ?loc:loc -> export_except list -> toplevel_stmt
 end
