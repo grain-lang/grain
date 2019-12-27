@@ -60,6 +60,7 @@ end = struct
         TTyArrow(args, ret)
       | TTyConstr(a, b, args) -> TTyConstr(a, b, List.map map_core_type args)
       | TTyTuple(args) -> TTyTuple(List.map map_core_type args)
+      | TTyRecord(args) -> TTyRecord(List.map (fun (name, arg) -> (name, map_core_type arg)) args)
       | TTyPoly(args, typ) ->
         let typ = map_core_type typ in
         TTyPoly(args, typ)
@@ -91,6 +92,10 @@ end = struct
     let cd_res = may_map map_core_type cd_res in
     {cd with cd_args; cd_res}
 
+  and map_record_field ({rf_type} as rf) =
+    let rf_type = map_core_type rf_type in
+    {rf with rf_type}
+
   and map_type_parameter ct =
     map_core_type ct
 
@@ -99,6 +104,7 @@ end = struct
     let data_params = List.map map_type_parameter decl.data_params in
     let data_kind = begin match decl.data_kind with
       | TDataVariant cstrs -> TDataVariant(List.map map_constructor_declaration cstrs)
+      | TDataRecord lbls -> TDataRecord(List.map map_record_field lbls)
     end in
     Map.leave_data_declaration {decl with data_params; data_kind}
 
@@ -132,6 +138,7 @@ end = struct
       | TPatAlias(p1, a, b) -> TPatAlias(map_pattern p1, a, b)
       | TPatConstruct(a, b, args) -> TPatConstruct(a, b, List.map map_pattern args)
       | TPatTuple(args) -> TPatTuple(List.map map_pattern args)
+      | TPatRecord(fields, c) -> TPatRecord(List.map (fun (id, ld, pat) -> id, ld, map_pattern pat) fields, c)
       | TPatOr(p1, p2) -> TPatOr(map_pattern p1, map_pattern p2)
     end in
     Map.leave_pattern {pat with pat_extra; pat_desc}
@@ -162,6 +169,12 @@ end = struct
       | TExpMatch(value, branches, p) ->
         TExpMatch(map_expression value, map_match_branches branches, p)
       | TExpTuple(args) -> TExpTuple(List.map map_expression args)
+      | TExpRecord(args) -> 
+        TExpRecord(Array.map (function 
+          | (desc, Overridden(name, expr)) -> desc, (Overridden(name, map_expression expr)) 
+          | (desc, def) -> (desc, def)
+        ) args)
+      | TExpRecordGet(record, field, ld) -> TExpRecordGet(map_expression record, field, ld)
       | TExpBlock(args) -> TExpBlock(List.map map_expression args)
       | TExpConstruct(a, b, args) -> TExpConstruct(a, b, List.map map_expression args)
       | TExpIf(c, t, f) ->

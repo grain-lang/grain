@@ -39,6 +39,8 @@ and type_desc =
   (** A function type. *)
   | TTyTuple of type_expr list
   (** A tuple type. *)
+  | TTyRecord of (string * type_expr) list
+  (** A record type. *)
   | TTyConstr of Path.t * type_expr list * abbrev_memo ref
   (** A parameterized type. *)
   | TTyUniVar of string option
@@ -126,6 +128,12 @@ type value_description = {
   val_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled] [@default Location.dummy_loc];
 } [@@deriving sexp, yojson]
 
+type record_field = {
+  rf_name: Ident.t;
+  rf_type: type_expr;
+  rf_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
+} [@@deriving sexp, yojson]
+
 type constructor_declaration = {
   cd_id: Ident.t;
   cd_args: constructor_arguments;
@@ -151,6 +159,7 @@ type type_declaration = {
 and type_kind =
   | TDataVariant of constructor_declaration list
   | TDataAbstract
+  | TDataRecord of record_field list
 
 type rec_status =
   | TRecNot
@@ -200,3 +209,12 @@ let equal_tag t1 t2 =
 let may_equal_constr c1 c2 =
   match c1.cstr_tag, c2.cstr_tag with
   | tag1, tag2 -> equal_tag tag1 tag2
+
+type label_description = { 
+  lbl_name: string;                   (* Short name *)
+  lbl_res: type_expr;                 (* Type of the result *)
+  lbl_arg: type_expr;                 (* Type of the argument *)
+  lbl_pos: int;                       (* Position in block *)
+  lbl_all: label_description array;   (* All the labels in this type *)
+  lbl_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled] [@default Location.dummy_loc];
+} [@@deriving sexp, yojson]

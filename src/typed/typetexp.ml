@@ -151,6 +151,10 @@ let find_modtype env loc lid =
   in
   r
 
+let unbound_label_error env lid =
+  narrow_unbound_lid_error env lid.loc lid.txt
+    (fun lid -> Unbound_label lid)
+
 let unbound_constructor_error env lid =
   narrow_unbound_lid_error env lid.loc lid.txt
     (fun lid -> Unbound_constructor lid)

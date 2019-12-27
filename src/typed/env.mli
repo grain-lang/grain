@@ -16,12 +16,30 @@ type summary =
   | Env_copy_types of summary * string list
 [@@deriving sexp]
 
-type type_descriptions = constructor_description list
+type type_descriptions = constructor_description list * label_description list
 type t
 
 val empty : t
 val initial_safe_string : t
 val initial_unsafe_string : t
+
+type dependency_chain = (string Location.loc) list
+
+type error =
+  | Illegal_renaming of string * string * string
+  | Inconsistent_import of string * string * string
+  | Need_recursive_types of string * string
+  | Depend_on_unsafe_string_unit of string * string
+  | Missing_module of Location.t * Path.t * Path.t
+  | Unbound_module of Location.t * string
+  | Unbound_label of Location.t * string
+  | No_module_file of string * string option
+  | Value_not_found_in_module of Location.t * string * string
+  | Illegal_value_name of Location.t * string
+  | Cyclic_dependencies of string * dependency_chain
+
+exception Error of error
+val error : error -> 'a
 
 (* For short-paths *)
 type iter_cont
@@ -67,8 +85,9 @@ val lookup_type: ?mark:bool ->  Identifier.t -> t -> Path.t
 val lookup_constructor: ?mark:bool -> Identifier.t -> t -> constructor_description
 (** Looks up the constructor associated with the given identifier. *)
 val lookup_all_constructors:
-  ?mark:bool ->
-  Identifier.t -> t -> (constructor_description * (unit -> unit)) list
+  ?mark:bool -> Identifier.t -> t -> (constructor_description * (unit -> unit)) list
+val lookup_all_labels: 
+  ?mark:bool -> Identifier.t -> t -> (label_description * (unit -> unit)) list
 val lookup_module:
   load:bool -> ?loc:Location.t -> ?mark:bool -> Identifier.t -> string option -> t -> Path.t
 val lookup_modtype:

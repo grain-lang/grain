@@ -24,6 +24,7 @@ type iterator = {
   typ: iterator -> parsed_type -> unit;
   data: iterator -> data_declaration -> unit;
   constructor: iterator -> constructor_declaration -> unit;
+  label: iterator -> label_declaration -> unit;
   location: iterator -> Location.t -> unit;
   import: iterator -> import_declaration list -> unit;
   export: iterator -> export_declaration list -> unit;

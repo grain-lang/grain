@@ -208,6 +208,7 @@ let in_pervasives p =
 
 let is_datatype decl=
   match decl.type_kind with
+  | TDataRecord _
   | TDataVariant _ -> true
   | TDataAbstract -> false
 
@@ -273,6 +274,8 @@ let closed_type_decl decl =
     List.iter mark_type decl.type_params;
     begin match decl.type_kind with
       | TDataAbstract -> ()
+      | TDataRecord fields ->
+        List.iter (fun {rf_type} -> closed_type rf_type) fields
       | TDataVariant v ->
         List.iter
           (fun {cd_args; cd_res; _} ->
@@ -419,6 +422,13 @@ let rec normalize_package_path env p =
         normalize_package_path env (Path.PExternal(p1', s, n))
     | _ -> p*)
 
+let is_newtype env p =
+  try
+    let decl = Env.find_type p env in
+    decl.type_newtype_level <> None &&
+    decl.type_kind = TDataAbstract
+  with Not_found -> false
+
 let rec update_level env level expand ty =
   let ty = repr ty in
   if ty.level > level then begin
@@ -426,7 +436,6 @@ let rec update_level env level expand ty =
     (* | TTyConstr(p, _tl, _abbrev) when level < get_level env p ->
       (* Try first to replace an abbreviation by its expansion. *)
       begin try
-          (* if is_newtype env p then raise Cannot_expand; *)
           link_type ty (!forward_try_expand_once env ty);
           update_level env level expand ty
         with Cannot_expand ->
@@ -769,6 +778,8 @@ let instance_parameterized_type_2 sch_args sch_lst sch =
 
 let map_kind f = function
   | TDataAbstract -> TDataAbstract
+  | TDataRecord fields ->
+    TDataRecord (List.map (fun field -> {field with rf_type=(f field.rf_type)}) fields)
   | TDataVariant cl ->
     TDataVariant (
       List.map
@@ -842,6 +853,21 @@ let rec copy_sep fixed free bound visited ty =
         t
       end
 
+let instance_poly' ~keep_names fixed univars sch =
+  let univars = List.map repr univars in
+  let copy_var ty =
+    match ty.desc with
+      TTyUniVar name -> if keep_names then newty (TTyVar name) else newvar ()
+    | _ -> assert false
+  in
+  let vars = List.map copy_var univars in
+  let pairs = List.map2 (fun u v -> u, (v, [])) univars vars in
+  delayed_copy := [];
+  let ty = copy_sep fixed (compute_univars sch) [] pairs sch in
+  List.iter Lazy.force !delayed_copy;
+  delayed_copy := [];
+  vars, ty
+
 let instance_poly ?(keep_names=false) fixed univars sch =
   let univars = List.map repr univars in
   let copy_var ty =
@@ -857,6 +883,17 @@ let instance_poly ?(keep_names=false) fixed univars sch =
   delayed_copy := [];
   cleanup_types ();
   vars, ty
+
+let instance_label fixed lbl =
+  let ty_res = copy lbl.lbl_res in
+    let vars, ty_arg =
+      match repr lbl.lbl_arg with
+        {desc = TTyPoly (ty, tl)} ->
+          instance_poly' ~keep_names:false fixed tl ty
+      | _ ->
+          [], copy lbl.lbl_arg
+    in
+    (vars, ty_arg, ty_res)
 
 (**** Instantiation with parameter substitution ****)
 
@@ -1484,13 +1521,6 @@ let reify env t =
     end
   in
   iterator t
-
-let is_newtype env p =
-  try
-    let decl = Env.find_type p env in
-    decl.type_newtype_level <> None &&
-    decl.type_kind = TDataAbstract
-  with Not_found -> false
 
 let non_aliasable p decl =
   (* in_pervasives p ||  (subsumed by in_current_module) *)

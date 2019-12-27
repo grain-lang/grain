@@ -50,10 +50,7 @@ let optimize_program (prog : Anftree.anf_program) : Anftree.anf_program =
     else begin
       analyze prog;
       let opt = clear_analyses (run_optimization_pass prog) in
-      if opt = prog then
-        opt
-      else
-        pass (n - 1) opt
+      pass (n - 1) opt
     end
   in
   (* TODO: Make 4 a config value *)

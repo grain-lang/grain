@@ -115,6 +115,7 @@ let iter_type_expr f ty =
   | TTyVar _ -> ()
   | TTyArrow(args, ret, _) -> List.iter f args; f ret
   | TTyTuple ts -> List.iter f ts
+  | TTyRecord ts -> List.iter (fun (_, t) -> f t) ts
   | TTyConstr(_, args, _) -> List.iter f args;
   | TTyLink ty -> f ty
   | TTySubst ty -> f ty
@@ -152,6 +153,7 @@ let iter_type_expr_kind f = function
   | TDataVariant cstrs -> List.iter (fun cd ->
       iter_type_expr_cstr_args f cd.cd_args)
       cstrs
+  | TDataRecord fields -> List.iter (fun {rf_type} -> f rf_type) fields
 
 
 let type_iterators =
@@ -203,6 +205,7 @@ let rec norm_univar ty =
   | TTyUniVar _
   | TTySubst _ -> ty
   | TTyTuple (ty :: _) -> norm_univar ty
+  | TTyRecord _
   | TTyVar _
   | TTyArrow _
   | TTyTuple _
@@ -213,6 +216,7 @@ let rec copy_type_desc ?(keep_names=false) f = function
   | TTyVar _ as ty -> if keep_names then ty else TTyVar None
   | TTyArrow(tyl, ret, c) -> TTyArrow(List.map f tyl, f ret, copy_commu c)
   | TTyTuple l -> TTyTuple (List.map f l)
+  | TTyRecord l -> TTyRecord (List.map (fun (name, arg) -> (name, f arg)) l)
   | TTyConstr(p, l, _) -> TTyConstr(p, List.map f l, ref TMemNil)
   | TTyUniVar _ as ty -> ty
   | TTySubst _ -> assert false

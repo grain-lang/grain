@@ -32,6 +32,7 @@ type t =
   | FragileMatch of string
   | UnusedMatch
   | UnusedPat
+  | NonClosedRecordPattern of string
   | UnreachableCase
   | ShadowConstructor of string
   | NoCmiFile of string * string option

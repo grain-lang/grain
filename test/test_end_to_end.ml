@@ -221,6 +221,41 @@ let tuple_tests = [
   t "no_singleton_tup" "(1)" "1";
 ]
 
+let record_tests = [
+  t "record_1" "data Rec = {foo: Number}; {foo: 4}" "<record value>";
+  t "record_2" "export data Rec = {foo: Number}; {foo: 4}" "{\n  foo: 4\n}";
+  t "record_multiple" "export data Rec = {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: 'boo', baz: true}" "{\n  foo: 4,\n  bar: \"boo\",\n  baz: true\n}";
+  t "record_pun" "export data Rec = {foo: Number}; let foo = 4; {foo}" "{\n  foo: 4\n}";
+  t "record_pun_multiple" "export data Rec = {foo: Number, bar: Bool}; let foo = 4; let bar = false; {foo, bar}" "{\n  foo: 4,\n  bar: false\n}";
+  t "record_pun_mixed" "export data Rec = {foo: Number, bar: Bool}; let foo = 4; {foo, bar: false}" "{\n  foo: 4,\n  bar: false\n}";
+  t "record_pun_mixed_2" "export data Rec = {foo: Number, bar: Bool}; let bar = false; {foo: 4, bar}" "{\n  foo: 4,\n  bar: false\n}";
+
+  te "record_err_1" "{foo: 4}" "Unbound record label foo";
+  te "record_err_2" "data Rec = {foo: Number}; {foo: 4, bar: 4}" "Unbound record label bar";
+
+  t "record_get_1" "data Rec = {foo: Number}; let bar = {foo: 4}; bar.foo" "4";
+  t "record_get_2" "data Rec = {foo: Number}; {foo: 4}.foo" "4";
+  t "record_get_multiple" "data Rec = {foo: Number, bar: Number}; let x = {foo: 4, bar: 9}; x.foo + x.bar" "13";
+  t "record_get_multilevel" "data Rec1 = {foo: Number, bar: Number}; data Rec2 = {baz: Rec1}; let x = {baz: {foo: 4, bar: 9}}; x.baz.bar" "9";
+
+  te "record_get_err" "data Rec1 = {foo: Number, bar: Number}; let x = {foo: 4, bar: 9}; x.baz" "The field baz does not belong to type Rec1";
+
+  (* record destructured assignment *)
+  t "record_destruct_1" "data Rec = {foo: Number, bar: String, baz: Bool}; let { foo, _ } = {foo: 4, bar: 'boo', baz: true}; foo" "4";
+  t "record_destruct_2" "data Rec = {foo: Number, bar: String, baz: Bool}; let { bar, _ } = {foo: 4, bar: 'boo', baz: true}; bar" "\"boo\"";
+  t "record_destruct_3" "data Rec = {foo: Number, bar: Number, baz: Number}; let { foo, bar, _ } = {foo: 4, bar: 5, baz: 6}; foo + bar" "9";
+  t "record_destruct_4" "data Rec = {foo: Number, bar: Number, baz: Number}; let { foo, bar, baz } = {foo: 4, bar: 5, baz: 6}; foo + bar + baz" "15";
+  t "record_destruct_deep" "data Rec = {foo: Number}; data Rec2 = {bar: Rec}; let { bar: { foo } } = {bar: {foo: 4}}; foo" "4";
+  te "record_destruct_deep_alias" "data Rec = {foo: Number}; data Rec2 = {bar: Rec}; let { bar: { foo } } = {bar: {foo: 4}}; bar" "Unbound value bar";
+
+  t "record_match_1" "data Rec = {foo: Number, bar: String, baz: Bool}; match ({foo: 4, bar: 'boo', baz: true}) { | { foo, _ } => foo }" "4";
+  t "record_match_2" "data Rec = {foo: Number, bar: String, baz: Bool}; match ({foo: 4, bar: 'boo', baz: true}) { | { bar, _ } => bar }" "\"boo\"";
+  t "record_match_3" "data Rec = {foo: Number, bar: Number, baz: Number}; match ({foo: 4, bar: 5, baz: 6}) { | { foo, bar, _ } => foo + bar }" "9";
+  t "record_match_4" "data Rec = {foo: Number, bar: Number, baz: Number}; match ({foo: 4, bar: 5, baz: 6}) { | { foo, bar, baz } => foo + bar + baz}" "15";
+  t "record_match_deep" "data Rec = {foo: Number}; data Rec2 = {bar: Rec}; match ({bar: {foo: 4}}) { | { bar: { foo } } => foo }" "4";
+  te "record_match_deep_alias" "data Rec = {foo: Number}; data Rec2 = {bar: Rec}; match ({bar: {foo: 4}}) { | { bar: { foo } } => bar }" "Unbound value bar";
+]
+
 let stdlib_tests = [
   tlib "stdlib_cons" ("import * from 'lists'; " ^ mylist) "Cons(1, Cons(2, Cons(3, Empty)))";
   tlib "stdlib_sum_1" ("import * from 'lists'; sum(" ^ mylist ^ ")") "6";
@@ -342,7 +377,7 @@ let import_tests = [
   (* import * tests *)
   t "import_all" "import * from 'exportStar'; {print(x); print(y(4)); z}" "5\n4\n\"foo\"";
   t "import_all_except" "import * except {y} from 'exportStar'; {print(x); z}" "5\n\"foo\"";
-  t "import_all_except_multiple" "import * except {x, y} from 'exportStar'; {z}" "\"foo\"";
+  t "import_all_except_multiple" "import * except {x, y} from 'exportStar'; z" "\"foo\"";
   t "import_all_constructor" "import * from 'lists'; Cons(2, Empty)" "Cons(2, Empty)";
   t "import_all_except_constructor" "import * except {Cons} from 'lists'; Empty" "Empty";
   t "import_all_except_multiple_constructor" "import * except {Cons, append} from 'lists'; sum(Empty)" "0";
@@ -583,11 +618,8 @@ let tests =
   basic_functionality_tests @
   function_tests @
   tuple_tests @
+  record_tests @
   stdlib_tests @
   box_tests @ loop_tests @(*oom @ gc @*) import_tests @
   optimization_tests @ string_tests @ data_tests @ 
   export_tests
-
-
-
-

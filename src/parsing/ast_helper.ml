@@ -50,6 +50,11 @@ module Typ = struct
   let tuple ?loc a = mk ?loc (PTyTuple a)
   let constr ?loc a b = mk ?loc (PTyConstr(a, b))
   let poly ?loc a b = mk ?loc (PTyPoly(a, b))
+
+  let force_poly t =
+    match t.ptyp_desc with
+    | PTyPoly _ -> t
+    | _ -> poly ~loc:t.ptyp_loc [] t
 end
 
 module CDecl = struct
@@ -62,6 +67,14 @@ module CDecl = struct
   let tuple ?loc n a = mk ?loc n (PConstrTuple a)
 end
 
+module LDecl = struct
+  let mk ?loc n t =
+    let loc = match loc with
+      | None -> (!default_loc_src)()
+      | Some l -> l in
+    {pld_name=n; pld_type=t; pld_loc=loc}
+end
+
 module Dat = struct
   let mk ?loc n t k =
     let loc = match loc with
@@ -69,6 +82,7 @@ module Dat = struct
       | Some l -> l in
     {pdata_name=n; pdata_params=t; pdata_kind=k; pdata_loc=loc}
   let variant ?loc n t cdl = mk ?loc n t (PDataVariant cdl)
+  let record ?loc n t ldl = mk ?loc n t (PDataRecord ldl)
 end
 
 module Pat = struct
@@ -80,6 +94,11 @@ module Pat = struct
   let any ?loc () = mk ?loc PPatAny
   let var ?loc a = mk ?loc (PPatVar a)
   let tuple ?loc a = mk ?loc (PPatTuple a)
+  let record ?loc a = 
+    let patterns, closed = List.fold_right (fun (pat_opt, closed) (pats, closed_acc) ->
+      Option.map_default (fun pat -> pat::pats) pats pat_opt, if closed_acc = Asttypes.Open then Asttypes.Open else closed
+    ) a ([], Asttypes.Closed) in
+    mk ?loc (PPatRecord(patterns, closed))
   let constant ?loc a = mk ?loc (PPatConstant a)
   let constraint_ ?loc a b = mk ?loc (PPatConstraint(a, b))
   let construct ?loc a b = mk ?loc (PPatConstruct(a, b))
@@ -96,6 +115,8 @@ module Exp = struct
   let ident ?loc a = mk ?loc (PExpId a)
   let constant ?loc a = mk ?loc (PExpConstant a)
   let tuple ?loc a = mk ?loc (PExpTuple a)
+  let record ?loc a = mk ?loc (PExpRecord a)
+  let record_get ?loc a b = mk ?loc (PExpRecordGet(a, b))
   let let_ ?loc a b c = mk ?loc (PExpLet(a, b, c))
   let match_ ?loc a b = mk ?loc (PExpMatch(a, b))
   let prim1 ?loc a b = mk ?loc (PExpPrim1(a, b))

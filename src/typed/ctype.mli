@@ -141,6 +141,7 @@ val extract_concrete_typedecl:
    Raise [Not_found] if none appears or not a type constructor. *)
 
 val enforce_constraints: Env.t -> type_expr -> unit
+val instance_label: bool -> label_description -> type_expr list * type_expr * type_expr
 
 val unify: Env.t -> type_expr -> type_expr -> unit
 (* Unify the two types given. Raise [Unify] if not possible. *)

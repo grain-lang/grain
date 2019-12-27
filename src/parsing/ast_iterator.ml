@@ -8,6 +8,7 @@ type iterator = {
   typ: iterator -> parsed_type -> unit;
   data: iterator -> data_declaration -> unit;
   constructor: iterator -> constructor_declaration -> unit;
+  label: iterator -> label_declaration -> unit;
   location: iterator -> Location.t -> unit;
   import: iterator -> import_declaration list -> unit;
   export: iterator -> export_declaration list -> unit;
@@ -32,6 +33,8 @@ module E = struct
     | PExpId(i) -> iter_loc sub i
     | PExpConstant(c) -> sub.constant sub c
     | PExpTuple(es) -> List.iter (sub.expr sub) es
+    | PExpRecord(es) -> List.iter (fun (name, exp) -> iter_loc sub name; (sub.expr sub exp)) es
+    | PExpRecordGet(e, f) -> sub.expr sub e; iter_loc sub f
     | PExpLet(r, vbs, e) -> List.iter (sub.value_binding sub) vbs; sub.expr sub e
     | PExpMatch(e, mbs) -> sub.expr sub e; List.iter (sub.match_branch sub) mbs
     | PExpPrim1(p1, e) -> sub.expr sub e
@@ -52,6 +55,7 @@ module P = struct
     | PPatAny -> ()
     | PPatVar sl -> iter_loc sub sl
     | PPatTuple pl -> List.iter (sub.pat sub) pl
+    | PPatRecord(fs, _) -> List.iter (fun (id, pat) -> iter_loc sub id; sub.pat sub pat) fs
     | PPatConstant c -> sub.constant sub c
     | PPatConstraint(p, pt) -> sub.pat sub p; sub.typ sub pt
     | PPatConstruct(id, pl) -> iter_loc sub id; List.iter (sub.pat sub) pl
@@ -68,6 +72,13 @@ module C = struct
     | PConstrSingleton -> ()
 end
 
+module L = struct
+  let iter sub {pld_name = name; pld_type = typ; pld_loc = loc} =
+    sub.location sub loc;
+    iter_loc sub name;
+    sub.typ sub typ
+end
+
 module D = struct
   let iter sub{pdata_name = name; pdata_params = args; pdata_kind = kind; pdata_loc = loc} =
     sub.location sub loc;
@@ -75,6 +86,7 @@ module D = struct
     List.iter (sub.typ sub) args;
     match kind with
     | PDataVariant cdl -> List.iter (sub.constructor sub) cdl
+    | PDataRecord ldl -> List.iter (sub.label sub) ldl
 end
 
 module T = struct
@@ -163,6 +175,7 @@ let default_iterator = {
   typ = T.iter;
   data = D.iter;
   constructor = C.iter;
+  label = L.iter;
   location = (fun _ x -> ());
   import = I.iter;
   export = Ex.iter;

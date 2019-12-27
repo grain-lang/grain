@@ -26,6 +26,14 @@ module PathMap = Hashtbl.Make(struct
   end)
 let type_map = PathMap.create 10
 
+let get_type_id typath =
+  match PathMap.find_opt type_map typath with
+    | Some(id) -> id
+    | None ->
+      let id = PathMap.length type_map in
+      PathMap.add type_map typath id;
+      id
+
 let lookup_symbol mod_ mod_decl name original_name =
   begin
     match Ident.find_same_opt mod_ (!symbol_table) with
@@ -65,7 +73,10 @@ let transl_const (c : Types.constant) : (imm_expression, string * comp_expressio
   | _ -> Left(Imm.const c)
 
 
-let rec transl_imm (({exp_desc; exp_loc=loc; exp_env=env; _} as e) : expression) : (imm_expression * anf_bind list) =
+type item_get = 
+  RecordPatGet of int | TuplePatGet of int
+
+let rec transl_imm (({exp_desc; exp_loc=loc; exp_env=env; exp_type=typ; _} as e) : expression) : (imm_expression * anf_bind list) =
   match exp_desc with
   | TExpIdent(_, _, {val_kind=TValUnbound _}) -> failwith "Impossible: val_kind was unbound"
   | TExpIdent(Path.PExternal((Path.PIdent mod_) as p, ident, _), _, {val_fullpath=Path.PExternal(_, original_name, _)}) ->
@@ -184,6 +195,21 @@ let rec transl_imm (({exp_desc; exp_loc=loc; exp_env=env; _} as e) : expression)
     let tmp = gensym "tup" in
     let (new_args, new_setup) = List.split (List.map transl_imm args) in
     (Imm.id ~loc ~env tmp, (List.concat new_setup) @ [BLet(tmp, Comp.tuple ~loc ~env new_args)])
+  | TExpRecord(args) ->
+    let tmp = gensym "record" in
+    let definitions = Array.to_list @@ Array.map (fun (desc, def) -> def) args in
+    let definitions = List.map (function Kept _ -> assert false | Overridden(name, def) -> name, def) definitions in
+    let (new_args, new_setup) = List.split (List.map (fun ({txt=name; loc}, expr) -> 
+        let (var, setup) = transl_imm expr in 
+        (Location.mkloc (Identifier.string_of_ident name) loc, var), setup) definitions
+      ) in
+    let typath, _, _ = Typepat.extract_concrete_record env typ in
+    let ty_id = get_type_id typath in
+    (Imm.id ~loc ~env tmp, (List.concat new_setup) @ [BLet(tmp, Comp.record ~loc ~env (Imm.const ~loc ~env (Const_int ty_id)) new_args)])
+  | TExpRecordGet(expr, field, ld) ->
+    let tmp = gensym "field" in
+    let (var, setup) = transl_imm expr in 
+    (Imm.id ~loc ~env tmp, setup @ [BLet(tmp, Comp.record_get ~loc ~env (Int32.of_int ld.lbl_pos) var)])
   | TExpMatch(exp, branches, _) ->
     let tmp = gensym "match" in
     let exp_ans, exp_setup = transl_imm exp in
@@ -192,15 +218,19 @@ let rec transl_imm (({exp_desc; exp_loc=loc; exp_env=env; _} as e) : expression)
   | TExpConstruct _ -> failwith "NYI: transl_imm: Construct"
 
 
-and bind_patts ?exported:(exported=false) (exp_id : Ident.t) (patts : pattern list) : anf_bind list =
+and bind_patts ?exported:(exported=false) (pat : pattern) : Ident.t * anf_bind list =
   let postprocess_item cur acc =
     match cur with
     | None -> acc
     | Some(ident, (src, idx), extras) ->
+      let access = begin match idx with
+        | RecordPatGet idx -> Comp.record_get (Int32.of_int idx) (Imm.id src)
+        | TuplePatGet idx -> Comp.tuple_get (Int32.of_int idx) (Imm.id src)
+      end in
       let bind = if exported then
-          BLetExport(Nonrecursive, [ident, Comp.tuple_get (Int32.of_int idx) (Imm.id src)])
+          BLetExport(Nonrecursive, [ident, access])
         else
-          BLet(ident, Comp.tuple_get (Int32.of_int idx) (Imm.id src)) in
+          BLet(ident, access) in
       [bind] @ extras @ acc in
   let postprocess items = List.fold_right postprocess_item items [] in
   (* Pass one: Some(<identifier>, <access path>, <extra binds>)*)
@@ -214,12 +244,20 @@ and bind_patts ?exported:(exported=false) (exp_id : Ident.t) (patts : pattern li
     | TPatAny -> None
     | TPatTuple(patts) ->
       let tmp = gensym "tup_patt" in
-      Some(tmp, (src, i), postprocess @@ List.mapi (anf_patts_pass_one tmp) patts)
+      Some(tmp, (src, i), postprocess @@ List.mapi (fun i pat -> anf_patts_pass_one tmp (TuplePatGet i) pat) patts)
+    | TPatRecord(fields, _) ->
+      let tmp = gensym "rec_patt" in
+      Some(tmp, (src, i), postprocess @@ List.map (fun (_, ld, pat) -> anf_patts_pass_one tmp (RecordPatGet ld.lbl_pos) pat) fields)
     | TPatConstant _ -> failwith "NYI: anf_patts_pass_one: TPatConstant"
     | TPatConstruct _ -> failwith "NYI: anf_patts_pass_one: TPatConstruct"
     | TPatOr _ -> failwith "NYI: anf_patts_pass_one: TPatOr"
     | TPatAlias _ -> failwith "NYI: anf_patts_pass_one: TPatAlias" in
-  postprocess @@ List.mapi (anf_patts_pass_one exp_id) patts
+  let dummy_id = gensym "dummy" in
+  let dummy_idx = (TuplePatGet 0) in
+  match anf_patts_pass_one dummy_id dummy_idx pat with
+    | Some(tmp, _, binds) -> tmp, binds
+    | None -> failwith "Bind pattern was not destructable"
+
 
 and transl_comp_expression (({exp_desc; exp_loc=loc; exp_env=env; _} as e) : expression) : (comp_expression * anf_bind list) =
   match exp_desc with
@@ -251,13 +289,12 @@ and transl_comp_expression (({exp_desc; exp_loc=loc; exp_env=env; _} as e) : exp
     let (exp_ans, exp_setup) = transl_comp_expression vb_expr in
     let (body_ans, body_setup) = transl_comp_expression ({e with exp_desc=TExpLet(Nonrecursive, rest, body)}) in
     (body_ans, exp_setup @ [BLet(bind, exp_ans)] @ body_setup)
-  | TExpLet(Nonrecursive, {vb_expr; vb_pat={pat_desc=TPatTuple(patts)}}::rest, body) ->
+  | TExpLet(Nonrecursive, {vb_expr; vb_pat={pat_desc=TPatTuple _} as pat}::rest, body)
+  | TExpLet(Nonrecursive, {vb_expr; vb_pat={pat_desc=TPatRecord _} as pat}::rest, body) ->
     let (exp_ans, exp_setup) = transl_comp_expression vb_expr in
-    let tmp = gensym "let_tup" in
 
-    (* Extract items from tuple *)
-
-    let anf_patts = bind_patts tmp patts in
+    (* Extract items from destructure *)
+    let tmp, anf_patts = bind_patts pat in
 
     let (body_ans, body_setup) = transl_comp_expression ({e with exp_desc=TExpLet(Nonrecursive, rest, body)}) in
     (body_ans, exp_setup @ ((BLet(tmp, exp_ans))::anf_patts) @ body_setup)
@@ -336,11 +373,11 @@ let rec transl_anf_statement (({ttop_desc; ttop_env=env; ttop_loc=loc} as s) : t
         if exported 
         then [BLetExport(Nonrecursive, [bind, exp_ans])]
         else [BLet(bind, exp_ans)]
-      | TPatTuple(patts) ->
-        let tmp = gensym "let_tup" in
-        let anf_patts = bind_patts ~exported tmp patts in
+      | TPatTuple _
+      | TPatRecord _ ->
+        let tmp, anf_patts = bind_patts ~exported vb_pat in
         (BLet(tmp, exp_ans))::anf_patts
-      | _ -> failwith "NYI: transl_anf_statement: Non-tuple destructuring in let"
+      | _ -> failwith "NYI: transl_anf_statement: Non-record or non-tuple destructuring in let"
     end in
     Some(exp_setup @ setup @ rest_setup), rest_imp
   | TTopLet(export_flag, Recursive, binds) ->
@@ -360,37 +397,38 @@ let rec transl_anf_statement (({ttop_desc; ttop_env=env; ttop_loc=loc} as s) : t
   | TTopData(decls) ->
     let open Types in
     let bindings = List.concat @@ List.map (fun decl ->
-      let typath = Path.PIdent (decl.data_id) in
-      (* FIXME: [philip] This is kind of hacky...would be better to store this in the Env directly...not to mention, 
-        I think this'll be much more fragile than if it were in the static info *)
-      let ty_id = begin match PathMap.find_opt type_map typath with
-        | Some(id) -> id
-        | None ->
-          let id = PathMap.length type_map in
-          PathMap.add type_map typath id;
-          id
-      end in
-      let descrs = Datarepr.constructors_of_type typath (decl.data_type) in
-      begin match descrs with
-        | [] -> failwith "Impossible: TTopData TDataAbstract"
-        | descrs ->
-          let bind_constructor (cd_id, {cstr_name; cstr_tag; cstr_args}) =
-            let rhs = match cstr_tag with
-              | CstrConstant _ ->
-                let compiled_tag = compile_constructor_tag cstr_tag in
-                Comp.adt ~loc ~env (Imm.const ~loc ~env (Const_int ty_id)) (Imm.const ~loc ~env (Const_int compiled_tag)) []
-              | CstrBlock _ ->
-                let compiled_tag = compile_constructor_tag cstr_tag in
-                let args = List.map (fun _ -> gensym "constr_arg") cstr_args in
-                let arg_ids = List.map (fun a -> Imm.id ~loc ~env a) args in
-                let imm_tytag = Imm.const ~loc ~env (Const_int ty_id) in
-                let imm_tag = Imm.const ~loc ~env (Const_int compiled_tag) in
-                Comp.lambda ~loc ~env args (AExp.comp ~loc ~env (Comp.adt ~loc ~env imm_tytag imm_tag arg_ids))
-              | CstrUnboxed -> failwith "NYI: ANF CstrUnboxed" in
-            BLetExport(Nonrecursive, [cd_id, rhs]) in
-          List.map bind_constructor descrs
-      end) decls in
-      Some(bindings), []
+      match decl.data_kind with
+      | TDataVariant _ ->
+        let typath = Path.PIdent (decl.data_id) in
+        (* FIXME: [philip] This is kind of hacky...would be better to store this in the Env directly...not to mention, 
+          I think this'll be much more fragile than if it were in the static info *)
+        let ty_id = get_type_id typath in
+        let descrs = Datarepr.constructors_of_type typath (decl.data_type) in
+        begin match descrs with
+          | [] -> failwith "Impossible: TTopData TDataAbstract"
+          | descrs ->
+            let bind_constructor (cd_id, {cstr_name; cstr_tag; cstr_args}) =
+              let rhs = match cstr_tag with
+                | CstrConstant _ ->
+                  let compiled_tag = compile_constructor_tag cstr_tag in
+                  Comp.adt ~loc ~env (Imm.const ~loc ~env (Const_int ty_id)) (Imm.const ~loc ~env (Const_int compiled_tag)) []
+                | CstrBlock _ ->
+                  let compiled_tag = compile_constructor_tag cstr_tag in
+                  let args = List.map (fun _ -> gensym "constr_arg") cstr_args in
+                  let arg_ids = List.map (fun a -> Imm.id ~loc ~env a) args in
+                  let imm_tytag = Imm.const ~loc ~env (Const_int ty_id) in
+                  let imm_tag = Imm.const ~loc ~env (Const_int compiled_tag) in
+                  Comp.lambda ~loc ~env args (AExp.comp ~loc ~env (Comp.adt ~loc ~env imm_tytag imm_tag arg_ids))
+                | CstrUnboxed -> failwith "NYI: ANF CstrUnboxed" in
+              BLetExport(Nonrecursive, [cd_id, rhs]) in
+            List.map bind_constructor descrs
+        end
+      | TDataRecord _ -> []
+      ) decls in
+      if List.length bindings > 0 then
+        Some(bindings), []
+      else
+        None, []
   | TTopForeign(desc) ->
     let arity = Ctype.arity (desc.tvd_desc.ctyp_type) in
     None, [Imp.wasm_func desc.tvd_id desc.tvd_mod.txt desc.tvd_name.txt (FunctionShape(arity, 1))]

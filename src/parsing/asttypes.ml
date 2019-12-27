@@ -32,6 +32,8 @@ type constant =
 type export_flag = Nonexported | Exported [@@deriving sexp]
 (** Marker for recursive/nonrecursive let bindings *)
 type rec_flag = Nonrecursive | Recursive [@@deriving sexp]
+(** Marker for closed/open records *)
+type closed_flag = Closed | Open [@@deriving sexp]
 
 (** A location-tagged value. *)
 type 'a loc = 'a Location.loc = {

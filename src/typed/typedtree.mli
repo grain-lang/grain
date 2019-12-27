@@ -57,6 +57,7 @@ and core_type_desc =
   | TTyVar of string
   | TTyArrow of core_type list * core_type
   | TTyTuple of core_type list
+  | TTyRecord of (Identifier.t loc * core_type) list
   | TTyConstr of Path.t * Identifier.t loc * core_type list
   | TTyPoly of string list * core_type
 
@@ -72,8 +73,15 @@ type constructor_declaration = {
   cd_loc: Location.t;
 } [@@deriving sexp]
 
+type record_field = {
+  rf_name: Ident.t;
+  rf_type: core_type;
+  rf_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
+} [@@deriving sexp]
+
 type data_kind =
   | TDataVariant of constructor_declaration list
+  | TDataRecord of record_field list
 
 type data_declaration = {
   data_id: Ident.t;
@@ -100,6 +108,7 @@ and pattern_desc =
   | TPatVar of Ident.t * string loc
   | TPatConstant of constant
   | TPatTuple of pattern list
+  | TPatRecord of (Identifier.t loc * label_description * pattern) list * closed_flag
   | TPatConstruct of Identifier.t loc * constructor_description * pattern list
   | TPatAlias of pattern * Ident.t * string loc
   | TPatOr of pattern * pattern
@@ -119,6 +128,8 @@ and expression_desc =
   | TExpIdent of Path.t * Identifier.t loc * Types.value_description
   | TExpConstant of constant
   | TExpTuple of expression list
+  | TExpRecord of (Types.label_description * record_label_definition) array
+  | TExpRecordGet of expression * Identifier.t loc * Types.label_description
   | TExpLet of rec_flag * value_binding list * expression
   | TExpMatch of expression * match_branch list * partial
   | TExpPrim1 of prim1 * expression
@@ -131,6 +142,10 @@ and expression_desc =
   | TExpConstruct of Identifier.t loc * constructor_description * expression list (* TODO: Decide if needed *)
   | TExpBlock of expression list
   | TExpNull
+
+and record_label_definition =
+  | Kept of Types.type_expr
+  | Overridden of Identifier.t loc * expression
 
 and value_binding = {
   vb_pat: pattern;

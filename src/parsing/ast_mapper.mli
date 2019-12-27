@@ -24,6 +24,7 @@ type mapper = {
   typ: mapper -> parsed_type -> parsed_type;
   data: mapper -> data_declaration -> data_declaration;
   constructor: mapper -> constructor_declaration -> constructor_declaration;
+  label: mapper -> label_declaration -> label_declaration;
   location: mapper -> Location.t -> Location.t;
   import: mapper -> import_declaration list -> import_declaration list;
   export: mapper -> export_declaration list -> export_declaration list;

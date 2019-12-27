@@ -62,6 +62,7 @@ and core_type_desc =
   | TTyVar of string
   | TTyArrow of core_type list * core_type
   | TTyTuple of core_type list
+  | TTyRecord of (Identifier.t loc * core_type) list
   | TTyConstr of Path.t * Identifier.t loc * core_type list
   | TTyPoly of string list * core_type
 [@@deriving sexp]
@@ -79,8 +80,15 @@ type constructor_declaration = {
   cd_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
 } [@@deriving sexp]
 
+type record_field = {
+  rf_name: Ident.t;
+  rf_type: core_type;
+  rf_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
+} [@@deriving sexp]
+
 type data_kind =
   | TDataVariant of constructor_declaration list
+  | TDataRecord of record_field list
 [@@deriving sexp]
 
 type data_declaration = {
@@ -109,6 +117,7 @@ and pattern_desc =
   | TPatVar of Ident.t * string loc
   | TPatConstant of constant
   | TPatTuple of pattern list
+  | TPatRecord of (Identifier.t loc * label_description * pattern) list * closed_flag
   | TPatConstruct of Identifier.t loc * constructor_description * pattern list
   | TPatAlias of pattern * Ident.t * string loc
   | TPatOr of pattern * pattern
@@ -130,6 +139,8 @@ and expression_desc =
   | TExpIdent of Path.t * Identifier.t loc * Types.value_description
   | TExpConstant of constant
   | TExpTuple of expression list
+  | TExpRecord of (Types.label_description * record_label_definition) array
+  | TExpRecordGet of expression * Identifier.t loc * Types.label_description
   | TExpLet of rec_flag * value_binding list * expression
   | TExpMatch of expression * match_branch list * partial
   | TExpPrim1 of prim1 * expression
@@ -143,6 +154,10 @@ and expression_desc =
   | TExpBlock of expression list
   | TExpNull
 [@@deriving sexp]
+
+and record_label_definition =
+  | Kept of Types.type_expr
+  | Overridden of Identifier.t loc * expression
 
 and value_binding = {
   vb_pat: pattern;
@@ -201,6 +216,8 @@ let iter_pattern_desc f patt =
   match patt with
   | TPatTuple patts
   | TPatConstruct(_, _, patts) -> List.iter f patts
+  | TPatRecord(fields, _) ->
+    List.iter (fun (_, _, p) -> f p) fields
   | TPatAny
   | TPatVar _
   | TPatConstant _ -> ()
@@ -210,6 +227,7 @@ let iter_pattern_desc f patt =
 let map_pattern_desc f patt =
   match patt with
   | TPatTuple patts -> TPatTuple (List.map f patts)
+  | TPatRecord(fields, c) -> TPatRecord((List.map (fun (id, ld, pat) -> id, ld, f pat) fields), c)
   | TPatAlias(p1, id, s) -> TPatAlias(f p1, id, s)
   | TPatConstruct(lid, c, pats) -> TPatConstruct(lid, c, List.map f pats)
   | TPatOr(p1, p2) -> TPatOr(f p1, f p2)

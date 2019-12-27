@@ -421,6 +421,7 @@ let type_module ?(toplevel=false) funct_body anchor env sstr (*scope*) =
       | TTySubst(sub) -> {expr with desc=TTySubst(resolve_type_expr sub)}
       | TTyArrow(args, result, c) -> {expr with desc=TTyArrow(List.map resolve_type_expr args, resolve_type_expr result, c)}
       | TTyTuple(elts) -> {expr with desc=TTyTuple(List.map resolve_type_expr elts)}
+      | TTyRecord(elts) -> {expr with desc=TTyRecord(List.map (fun (name, elt) -> (name, resolve_type_expr elt)) elts)}
       | TTyPoly(one, all) -> {expr with desc=TTyPoly(resolve_type_expr one, List.map resolve_type_expr all)}
       | TTyConstr(id, args, a) ->
         let name = snd @@ Option.default (id, id) @@ get_alias !type_export_aliases id in

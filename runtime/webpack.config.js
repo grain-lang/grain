@@ -1,4 +1,5 @@
 const common = {
+  devtool: 'source-map',
   module: {
     rules: [
       {
