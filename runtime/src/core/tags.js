@@ -28,6 +28,7 @@ export const GRAIN_STRING_HEAP_TAG = 1;
 export const GRAIN_DOM_ELEM_TAG = 2;
 export const GRAIN_ADT_HEAP_TAG = 3;
 export const GRAIN_RECORD_HEAP_TAG = 4;
+export const GRAIN_ARRAY_HEAP_TAG = 5;
 
 function getAndMask(tag) {
   switch(tag) {

@@ -15,6 +15,7 @@ type grain_error =
   | GetItemIndexNotNumber
   | GetItemIndexTooSmall
   | GetItemIndexTooLarge
+  | ArrayIndexOutOfBounds
   | SetItemNotTuple
   | SetItemIndexNotNumber
   | SetItemIndexTooSmall
@@ -37,6 +38,7 @@ let all_grain_errors = [
   GetItemIndexNotNumber;
   GetItemIndexTooSmall;
   GetItemIndexTooLarge;
+  ArrayIndexOutOfBounds;
   SetItemNotTuple;
   SetItemIndexNotNumber;
   SetItemIndexTooSmall;
@@ -63,6 +65,7 @@ let err_SET_ITEM_INDEX_TOO_LARGE  = 15
 let err_SWITCH                    = 16
 let err_DIVISION_BY_ZERO          = 17
 let err_MODULO_BY_ZERO            = 18
+let err_ARRAY_INDEX_OUT_OF_BOUNDS = 19
 let err_GENERIC_NUM               = 99
 
 let code_of_error = function
@@ -78,6 +81,7 @@ let code_of_error = function
   | GetItemIndexNotNumber -> err_GET_ITEM_INDEX_NOT_NUMBER
   | GetItemIndexTooSmall -> err_GET_ITEM_INDEX_TOO_SMALL
   | GetItemIndexTooLarge -> err_GET_ITEM_INDEX_TOO_LARGE
+  | ArrayIndexOutOfBounds -> err_ARRAY_INDEX_OUT_OF_BOUNDS
   | SetItemNotTuple -> err_SET_NOT_TUP
   | SetItemIndexNotNumber -> err_SET_ITEM_INDEX_NOT_NUMBER
   | SetItemIndexTooLarge -> err_SET_ITEM_INDEX_TOO_LARGE
@@ -99,6 +103,7 @@ let arity_of_error = function
   | GetItemIndexNotNumber -> 1
   | GetItemIndexTooSmall -> 2
   | GetItemIndexTooLarge -> 2
+  | ArrayIndexOutOfBounds -> 0
   | SetItemNotTuple -> 1
   | SetItemIndexNotNumber -> 1
   | SetItemIndexTooLarge -> 2
@@ -121,6 +126,7 @@ let label_of_error = function
   | GetItemIndexNotNumber -> "error_not_number_get_item_idx"
   | GetItemIndexTooSmall -> "error_too_small_get_item_idx"
   | GetItemIndexTooLarge -> "error_too_large_get_item_idx"
+  | ArrayIndexOutOfBounds -> "error_array_index_out_of_bounds"
   | SetItemNotTuple -> "error_not_tuple_set_item"
   | SetItemIndexNotNumber -> "error_not_number_set_item_idx"
   | SetItemIndexTooSmall -> "error_too_small_set_item_idx"
@@ -142,6 +148,7 @@ let error_of_code c =
   | x when x = err_GET_ITEM_INDEX_NOT_NUMBER -> GetItemIndexNotNumber
   | x when x = err_GET_ITEM_INDEX_TOO_SMALL -> GetItemIndexTooSmall
   | x when x = err_GET_ITEM_INDEX_TOO_LARGE -> GetItemIndexTooLarge
+  | x when x = err_ARRAY_INDEX_OUT_OF_BOUNDS -> ArrayIndexOutOfBounds
   | x when x = err_SET_NOT_TUP -> SetItemNotTuple
   | x when x = err_SET_ITEM_INDEX_NOT_NUMBER -> SetItemIndexNotNumber
   | x when x = err_SET_ITEM_INDEX_TOO_LARGE -> SetItemIndexTooLarge

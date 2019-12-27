@@ -54,10 +54,19 @@ and comp_free_vars_help env (c : comp_expression) =
       Ident.Set.empty
       args
   | CTuple(args)
+  | CArray(args)
   | CAdt(_, _, args) ->
     List.fold_left (fun acc a -> Ident.Set.union (imm_free_vars_help env a) acc)
       Ident.Set.empty
       args
+  | CArrayGet(arg1, arg2) ->
+    List.fold_left (fun acc a -> Ident.Set.union (imm_free_vars_help env a) acc)
+    Ident.Set.empty
+    [arg1; arg2]
+  | CArraySet(arg1, arg2, arg3) ->
+    List.fold_left (fun acc a -> Ident.Set.union (imm_free_vars_help env a) acc)
+    Ident.Set.empty
+    [arg1; arg2; arg3]
   | CRecord(_, args) ->
     List.fold_left (fun acc (_, a) -> Ident.Set.union (imm_free_vars_help env a) acc)
       Ident.Set.empty

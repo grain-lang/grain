@@ -14,6 +14,7 @@ type grain_error =
   | GetItemIndexNotNumber
   | GetItemIndexTooSmall
   | GetItemIndexTooLarge
+  | ArrayIndexOutOfBounds
   | SetItemNotTuple
   | SetItemIndexNotNumber
   | SetItemIndexTooSmall

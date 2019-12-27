@@ -53,6 +53,12 @@ module MakeIter(Iter : IterArgument) = struct
         iter_imm_expression rhs
       | CTuple(elts) ->
         List.iter (iter_imm_expression) elts
+      | CArray(elts) ->
+        List.iter (iter_imm_expression) elts
+      | CArrayGet(arg1, arg2) ->
+        iter_imm_expression arg1; iter_imm_expression arg2
+      | CArraySet(arg1, arg2, arg3) ->
+        iter_imm_expression arg1; iter_imm_expression arg2; iter_imm_expression arg3
       | CRecord(ttag, elts) ->
         iter_imm_expression ttag;
         List.iter (fun (_, elt) -> iter_imm_expression elt) elts

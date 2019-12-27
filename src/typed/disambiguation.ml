@@ -299,6 +299,10 @@ let report_type_expected_explanation expl ppf =
       fprintf ppf "the left-hand side of a sequence"
   | Assign_not_box ->
       fprintf ppf "the left-hand side of an assignment"
+  | Assign_not_array ->
+      fprintf ppf "the left-hand side of an array item access"
+  | Assign_not_array_index ->
+      fprintf ppf "the argument to an array item access"
 
 let report_type_expected_explanation_opt expl ppf =
   match expl with

@@ -33,6 +33,9 @@ module E = struct
     | PExpId(i) -> iter_loc sub i
     | PExpConstant(c) -> sub.constant sub c
     | PExpTuple(es) -> List.iter (sub.expr sub) es
+    | PExpArray(es) -> List.iter (sub.expr sub) es
+    | PExpArrayGet(a, i) -> sub.expr sub a; sub.expr sub i
+    | PExpArraySet(a, i, arg) -> sub.expr sub a; sub.expr sub i; sub.expr sub arg
     | PExpRecord(es) -> List.iter (fun (name, exp) -> iter_loc sub name; (sub.expr sub exp)) es
     | PExpRecordGet(e, f) -> sub.expr sub e; iter_loc sub f
     | PExpLet(r, vbs, e) -> List.iter (sub.value_binding sub) vbs; sub.expr sub e

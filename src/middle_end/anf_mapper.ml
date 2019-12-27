@@ -53,6 +53,12 @@ module MakeMap(Iter : MapArgument) = struct
         CAssign(lhs, rhs)
       | CTuple(elts) ->
         CTuple(List.map (map_imm_expression) elts)
+      | CArray(elts) ->
+        CArray(List.map (map_imm_expression) elts)
+      | CArrayGet(arg1, arg2) ->
+        CArrayGet(map_imm_expression arg1, map_imm_expression arg2)
+      | CArraySet(arg1, arg2, arg3) ->
+        CArraySet(map_imm_expression arg1, map_imm_expression arg2, map_imm_expression arg3)
       | CRecord(ttag, elts) ->
         CRecord(map_imm_expression ttag, List.map (fun (name, elt) -> name, map_imm_expression elt) elts)
       | CAdt(ttag, vtag, elts) ->

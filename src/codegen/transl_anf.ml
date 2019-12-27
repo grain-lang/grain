@@ -211,6 +211,12 @@ let rec compile_comp env c =
     MTupleOp(MTupleSet(Int32.zero, compile_imm env arg2), compile_imm env arg1)
   | CTuple(args) ->
     MAllocate(MTuple (List.map (compile_imm env) args))
+  | CArray(args) ->
+    MAllocate(MArray (List.map (compile_imm env) args))
+  | CArrayGet(idx, arr) ->
+    MArrayOp(MArrayGet(compile_imm env idx), compile_imm env arr)
+  | CArraySet(idx, arr, arg) ->
+    MArrayOp(MArraySet(compile_imm env idx, compile_imm env arg), compile_imm env arr)
   | CRecord(ttag, args) ->
     MAllocate(MRecord (compile_imm env ttag, List.map (fun ({txt=name}, arg) -> name, (compile_imm env arg)) args))
   | CAdt(ttag, vtag, args) ->
