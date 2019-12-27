@@ -259,13 +259,6 @@ let record_tests = [
   t "record_destruct_4" "data Rec = {foo: Number, bar: Number, baz: Number}; let { foo, bar, baz } = {foo: 4, bar: 5, baz: 6}; foo + bar + baz" "15";
   t "record_destruct_deep" "data Rec = {foo: Number}; data Rec2 = {bar: Rec}; let { bar: { foo } } = {bar: {foo: 4}}; foo" "4";
   te "record_destruct_deep_alias" "data Rec = {foo: Number}; data Rec2 = {bar: Rec}; let { bar: { foo } } = {bar: {foo: 4}}; bar" "Unbound value bar";
-
-  t "record_match_1" "data Rec = {foo: Number, bar: String, baz: Bool}; match ({foo: 4, bar: 'boo', baz: true}) { { foo, _ } => foo }" "4";
-  t "record_match_2" "data Rec = {foo: Number, bar: String, baz: Bool}; match ({foo: 4, bar: 'boo', baz: true}) { { bar, _ } => bar }" "\"boo\"";
-  t "record_match_3" "data Rec = {foo: Number, bar: Number, baz: Number}; match ({foo: 4, bar: 5, baz: 6}) { | { foo, bar, _ } => foo + bar }" "9";
-  t "record_match_4" "data Rec = {foo: Number, bar: Number, baz: Number}; match ({foo: 4, bar: 5, baz: 6}) { | { foo, bar, baz } => foo + bar + baz}" "15";
-  t "record_match_deep" "data Rec = {foo: Number}; data Rec2 = {bar: Rec}; match ({bar: {foo: 4}}) { | { bar: { foo } } => foo }" "4";
-  te "record_match_deep_alias" "data Rec = {foo: Number}; data Rec2 = {bar: Rec}; match ({bar: {foo: 4}}) { | { bar: { foo } } => bar }" "Unbound value bar";
 ]
 
 let stdlib_tests = [
@@ -382,6 +375,38 @@ let gc = [
   tgcfile "fib_gc_biggest" 512 "fib-gc" "832040";
   tgcfile "sinister_gc" 64 "sinister-tail-call-gc" "true";
   tgcfile "long_lists" 1024 "long_lists" "true";
+]
+
+let match_tests = [
+  (* Pattern matching on tuples *)
+  t "tuple_match_1" "match ((1,)) { | (a,) => a }" "1";
+  t "tuple_match_2" "match ((1, 2, 3)) { | (a, b, c) => a + b + c }" "6";
+  t "tuple_match_3" "match ((1, 'boop', false)) { | (a, b, c) => (a, b, c) }" "(1, \"boop\", false)";
+  t "tuple_match_deep" "match ((1, (4, 5), 3)) { | (a, (d, e), c) => a + c + d + e }" "13";
+  t "tuple_match_deep2" "match ((1, (2, (3, (4, 5, (6, 7)))))) { | (a, (b, (c, (d, e, (f, g))))) => a + b + c + d + e + f + g }" "28";
+  t "tuple_match_deep3" "import * from 'lists'; match ((1, Empty)) { | (a, Empty) => a | (a, Cons(b, Empty)) => a + b | (a, Cons(b, Cons(c, Empty))) => a + b + c | (a, Cons(b, Cons(c, Cons(d, Empty)))) => a + b + c + d | (_, Cons(_, _)) => 999 }" "1";
+  t "tuple_match_deep4" "import * from 'lists'; match ((1, Cons(2, Empty))) { | (a, Empty) => a | (a, Cons(b, Empty)) => a + b | (a, Cons(b, Cons(c, Empty))) => a + b + c | (a, Cons(b, Cons(c, Cons(d, Empty)))) => a + b + c + d | (_, Cons(_, _)) => 999 }" "3";
+  t "tuple_match_deep5" "import * from 'lists'; match ((1, Cons(4, Cons(5, Empty)))) { | (a, Empty) => a | (a, Cons(b, Empty)) => a + b | (a, Cons(b, Cons(c, Empty))) => a + b + c | (a, Cons(b, Cons(c, Cons(d, Empty)))) => a + b + c + d | (_, Cons(_, _)) => 999 }" "10";
+  t "tuple_match_deep6" "import * from 'lists'; match ((1, Cons(4, Cons(5, Cons(6, Empty))))) { | (a, Empty) => a | (a, Cons(b, Empty)) => a + b | (a, Cons(b, Cons(c, Empty))) => a + b + c | (a, Cons(b, Cons(c, Cons(d, Empty)))) => a + b + c + d | (_, Cons(_, _)) => 999 }" "16";
+  t "tuple_match_deep7" "import * from 'lists'; match ((1, Cons(4, Cons(5, Cons(6, Cons(7, Empty)))))) { | (a, Empty) => a | (a, Cons(b, Empty)) => a + b | (a, Cons(b, Cons(c, Empty))) => a + b + c | (a, Cons(b, Cons(c, Cons(d, Empty)))) => a + b + c + d | (_, Cons(_, _)) => 999 }" "999";
+  
+  (* Pattern matching on records *)
+  t "record_match_1" "data Rec = {foo: Number, bar: String, baz: Bool}; match ({foo: 4, bar: 'boo', baz: true}) { | { foo, _ } => foo }" "4";
+  t "record_match_2" "data Rec = {foo: Number, bar: String, baz: Bool}; match ({foo: 4, bar: 'boo', baz: true}) { | { bar, _ } => bar }" "\"boo\"";
+  t "record_match_3" "data Rec = {foo: Number, bar: Number, baz: Number}; match ({foo: 4, bar: 5, baz: 6}) { | { foo, bar, _ } => foo + bar }" "9";
+  t "record_match_4" "data Rec = {foo: Number, bar: Number, baz: Number}; match ({foo: 4, bar: 5, baz: 6}) { | { foo, bar, baz } => foo + bar + baz}" "15";
+  t "record_match_deep" "data Rec = {foo: Number}; data Rec2 = {bar: Rec}; match ({bar: {foo: 4}}) { | { bar: { foo } } => foo }" "4";
+  te "record_match_deep_alias" "data Rec = {foo: Number}; data Rec2 = {bar: Rec}; match ({bar: {foo: 4}}) { | { bar: { foo } } => bar }" "Unbound value bar";
+
+  (* Pattern matching on ADTs *)
+  t "adt_match_1" "import * from 'lists'; match (Empty) { | Empty => 0 | Cons(b, Empty) => b | Cons(b, Cons(c, Empty)) => b + c | Cons(b, Cons(c, Cons(d, Empty))) => b + c + d | Cons(_, _) => 999 }" "0";
+  t "adt_match_2" "import * from 'lists'; match (Cons(2, Empty)) { | Empty => 0 | Cons(b, Empty) => b | Cons(b, Cons(c, Empty)) => b + c | Cons(b, Cons(c, Cons(d, Empty))) => b + c + d | Cons(_, _) => 999 }" "2";
+  t "adt_match_3" "import * from 'lists'; match (Cons(4, Cons(5, Empty))) { | Empty => 0 | Cons(b, Empty) => b | Cons(b, Cons(c, Empty)) => b + c | Cons(b, Cons(c, Cons(d, Empty))) => b + c + d | Cons(_, _) => 999 }" "9";
+  t "adt_match_4" "import * from 'lists'; match (Cons(4, Cons(5, Cons(6, Empty)))) { | Empty => 0 | Cons(b, Empty) => b | Cons(b, Cons(c, Empty)) => b + c | Cons(b, Cons(c, Cons(d, Empty))) => b + c + d | Cons(_, _) => 999 }" "15";
+  t "adt_match_5" "import * from 'lists'; match (Cons(4, Cons(5, Cons(6, Cons(7, Empty))))) { | Empty => 0 | Cons(b, Empty) => b | Cons(b, Cons(c, Empty)) => b + c | Cons(b, Cons(c, Cons(d, Empty))) => b + c + d | Cons(_, _) => 999 }" "999";
+  t "adt_match_deep" "import * from 'lists'; data Rec = {foo: Number}; match (Cons({foo: 5}, Empty)) { | Empty => 999 | Cons({foo}, _) => foo }" "5";
+
+  tfile "mixed_matching" "mixedPatternMatching" "true";
 ]
 
 let import_tests = [
@@ -630,6 +655,12 @@ let tests =
   tuple_tests @
   record_tests @
   stdlib_tests @
-  box_tests @ loop_tests @(*oom @ gc @*) import_tests @
-  optimization_tests @ string_tests @ data_tests @ 
+  box_tests @ 
+  loop_tests @
+  (*oom @ gc @*) 
+  match_tests @
+  import_tests @
+  optimization_tests @ 
+  string_tests @ 
+  data_tests @ 
   export_tests
