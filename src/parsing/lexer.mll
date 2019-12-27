@@ -143,6 +143,8 @@ rule token = parse
   | "+" { PLUS }
   | "-" { DASH }
   | "*" { STAR }
+  | "/" { SLASH }
+  | "%" { PERCENT }
   | "<=" { LESSEQ }
   | ">=" { GREATEREQ }
   | "&&" { AMPAMP }

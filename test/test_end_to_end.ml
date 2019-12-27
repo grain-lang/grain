@@ -95,6 +95,17 @@ let basic_functionality_tests = [
   t "binop2" "2 - 2" "0";
   t "binop3" "2 - 4" "-2";
   t "binop4" "2 * 3" "6";
+  t "binop5" "10 / 5" "2";
+  t "binop6" "9 % 5" "4";
+
+  te "division_by_zero" "9 / 0" "division by zero";
+  te "modulo_by_zero" "9 % 0" "modulo by zero";
+
+  t "division1" "5 / 2" "2";
+
+  t "modulo1" "-17 % 4" "3";
+  t "modulo2" "17 % -4" "-3";
+  t "modulo3" "-17 % -4" "-1";
 
   t "and1" "true && true" "true";
   t "and2" "true && false" "false";

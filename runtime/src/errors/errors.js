@@ -6,6 +6,8 @@ import {
   GRAIN_ERR_NOT_BOOLEAN_LOGIC,
   GRAIN_ERR_NOT_BOOLEAN_IF,
   GRAIN_ERR_OVERFLOW,
+  GRAIN_ERR_DIVISION_BY_ZERO,
+  GRAIN_ERR_MODULO_BY_ZERO,
   GRAIN_ERR_GET_NOT_TUP,
   GRAIN_ERR_GET_ITEM_IDX_NOT_NUMBER,
   GRAIN_ERR_GET_ITEM_IDX_TOO_SMALL,
@@ -50,6 +52,12 @@ export function throwGrainError(errorCode, value1, value2) {
       break;
     case GRAIN_ERR_NOT_NUMBER_COMP:
       message = `comparison expected a number, got value: ${value1AsGrain}`;
+      break;
+    case GRAIN_ERR_DIVISION_BY_ZERO:
+      message = `division by zero`;
+      break;
+    case GRAIN_ERR_MODULO_BY_ZERO:
+      message = `modulo by zero`;
       break;
     case GRAIN_ERR_NOT_NUMBER_GENERIC:
       message = `expected a number, got value: ${value1AsGrain}`;
