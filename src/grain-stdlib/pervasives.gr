@@ -14,3 +14,5 @@ foreign wasm grainBuiltins toString : a -> String
 foreign wasm grainBuiltins stringAppend : (String, String) -> String
 
 foreign wasm grainBuiltins stringSlice : (String, Number, Number) -> String
+
+export data List<a> = [] | [...](a, List<a>)

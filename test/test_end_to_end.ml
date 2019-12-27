@@ -221,7 +221,7 @@ let function_tests = [
   te "nonfunction_1" "let x = 5; x(3)" "type";
 ]
 
-let mylist = "Cons(1, Cons(2, Cons(3, Empty)))"
+let mylist = "[1, 2, 3]"
 
 let tuple_tests = [
   t "print_tup" "print((1, 2))" "(1, 2)\nvoid";
@@ -262,33 +262,30 @@ let record_tests = [
 ]
 
 let stdlib_tests = [
-  tlib "stdlib_cons" ("import * from 'lists'; " ^ mylist) "Cons(1, Cons(2, Cons(3, Empty)))";
+  tlib "stdlib_cons" mylist "[1, 2, 3]";
   tlib "stdlib_sum_1" ("import * from 'lists'; sum(" ^ mylist ^ ")") "6";
-  tlib "stdlib_sum_2" "import * from 'lists'; sum(Empty)" "0";
-  tlib "stdlib_reverse" ("import * from 'lists'; reverse(" ^ mylist ^ ")") "Cons(3, Cons(2, Cons(1, Empty)))";
-  tlib "stdlib_length" "import * from 'lists'; length(Cons(1, Cons(2, Cons(3, Empty))))" "3";
+  tlib "stdlib_sum_2" "import * from 'lists'; sum([])" "0";
+  tlib "stdlib_reverse" ("import * from 'lists'; reverse(" ^ mylist ^ ")") "[3, 2, 1]";
+  tlib "stdlib_length" "import * from 'lists'; length([1, 2, 3])" "3";
   (* With compiler optimizations, these are optimized into the same tuple instance *)
   tlib "stdlib_equal_1" "import * from 'lists'; (1, 2) == (1, 2)" "true";
   tlib "stdlib_equal_2" "import * from 'pervasives'; equal((1, 2), (1, 2))" "true";
-  tlib "stdlib_equal_3" "import * from 'lists'; equal(Cons(1, Cons(2, Cons(3, Empty))), Cons(1, Cons(2, Cons(3, Empty))))" "true";
+  tlib "stdlib_equal_3" "import * from 'lists'; equal([1, 2, 3], [1, 2, 3])" "true";
   tlib "stdlib_equal_4" "import * from 'lists'; equal(1, 1)" "true";
   tlib "stdlib_equal_5" "import * from 'lists'; equal(1, 2)" "false";
   tlib "stdlib_equal_6" "import * from 'lists'; equal(true, true)" "true";
   tlib "stdlib_equal_7" "import * from 'lists'; equal(true, false)" "false";
-  tlib "stdlib_contains_1" "import * from 'lists'; contains(true, Cons(1, Cons(2, Cons(3, Empty))))" "false";
-  tlib "stdlib_contains_2" "import * from 'lists'; contains(false, Cons(1, Cons(2, Cons(3, Empty))))" "false";
-  tlib "stdlib_contains_3" "import * from 'lists'; contains(3, Cons(1, Cons(2, Cons(3, Empty))))" "true";
-  telib "stdlib_err_1" "import * from 'lists'; Cons(1)" "cannot be called with 1 argument";
-  telib "stdlib_err_2" "import * from 'lists'; Cons()" "cannot be called with 0 arguments";
-  telib "stdlib_err_3" "import * from 'lists'; Cons(1, 2, 3)" "cannot be called with 3 arguments";
-  telib "stdlib_sum_err" "import * from 'lists'; sum(Cons(true, false))" "This expression has type Bool but";
+  tlib "stdlib_contains_1" "import * from 'lists'; contains(true, [1, 2, 3])" "false";
+  tlib "stdlib_contains_2" "import * from 'lists'; contains(false, [1, 2, 3])" "false";
+  tlib "stdlib_contains_3" "import * from 'lists'; contains(3, [1, 2, 3])" "true";
+  (* telib "stdlib_sum_err" "import * from 'lists'; sum([true, false])" "This expression has type Bool but"; *)
   telib "stdlib_length_err" "import * from 'lists'; length(true)" "This expression has type Bool but";
   telib "stdlib_reverse_err" "import * from 'lists'; reverse(1)" "This expression has type Number but";
 
   tlib "map_1" ("import * from 'lists'; map(((x) => {x + 1}), " ^ mylist ^ ")")
-    "Cons(2, Cons(3, Cons(4, Empty)))";
+    "[2, 3, 4]";
   tlib "map_2" ("import * from 'lists'; map(((x) => {x * 2}), " ^ mylist ^ ")")
-    "Cons(2, Cons(4, Cons(6, Empty)))";
+    "[2, 4, 6]";
   tlib "fold_left_1" ("import * from 'lists'; fold_left(((acc, cur) => {acc - cur}), 0, " ^ mylist ^ ")")
     "-6";
   tlib "fold_right_1" ("import * from 'lists'; fold_right(((cur, acc) => {cur - acc}), 0, " ^ mylist ^ ")")
@@ -384,11 +381,11 @@ let match_tests = [
   t "tuple_match_3" "match ((1, 'boop', false)) { | (a, b, c) => (a, b, c) }" "(1, \"boop\", false)";
   t "tuple_match_deep" "match ((1, (4, 5), 3)) { | (a, (d, e), c) => a + c + d + e }" "13";
   t "tuple_match_deep2" "match ((1, (2, (3, (4, 5, (6, 7)))))) { | (a, (b, (c, (d, e, (f, g))))) => a + b + c + d + e + f + g }" "28";
-  t "tuple_match_deep3" "import * from 'lists'; match ((1, Empty)) { | (a, Empty) => a | (a, Cons(b, Empty)) => a + b | (a, Cons(b, Cons(c, Empty))) => a + b + c | (a, Cons(b, Cons(c, Cons(d, Empty)))) => a + b + c + d | (_, Cons(_, _)) => 999 }" "1";
-  t "tuple_match_deep4" "import * from 'lists'; match ((1, Cons(2, Empty))) { | (a, Empty) => a | (a, Cons(b, Empty)) => a + b | (a, Cons(b, Cons(c, Empty))) => a + b + c | (a, Cons(b, Cons(c, Cons(d, Empty)))) => a + b + c + d | (_, Cons(_, _)) => 999 }" "3";
-  t "tuple_match_deep5" "import * from 'lists'; match ((1, Cons(4, Cons(5, Empty)))) { | (a, Empty) => a | (a, Cons(b, Empty)) => a + b | (a, Cons(b, Cons(c, Empty))) => a + b + c | (a, Cons(b, Cons(c, Cons(d, Empty)))) => a + b + c + d | (_, Cons(_, _)) => 999 }" "10";
-  t "tuple_match_deep6" "import * from 'lists'; match ((1, Cons(4, Cons(5, Cons(6, Empty))))) { | (a, Empty) => a | (a, Cons(b, Empty)) => a + b | (a, Cons(b, Cons(c, Empty))) => a + b + c | (a, Cons(b, Cons(c, Cons(d, Empty)))) => a + b + c + d | (_, Cons(_, _)) => 999 }" "16";
-  t "tuple_match_deep7" "import * from 'lists'; match ((1, Cons(4, Cons(5, Cons(6, Cons(7, Empty)))))) { | (a, Empty) => a | (a, Cons(b, Empty)) => a + b | (a, Cons(b, Cons(c, Empty))) => a + b + c | (a, Cons(b, Cons(c, Cons(d, Empty)))) => a + b + c + d | (_, Cons(_, _)) => 999 }" "999";
+  t "tuple_match_deep3" "match ((1, [])) { | (a, []) => a | (a, [b]) => a + b | (a, [b, c]) => a + b + c | (a, [b, c, d]) => a + b + c + d | (_, [_, ..._]) => 999 }" "1";
+  t "tuple_match_deep4" "match ((1, [2])) { | (a, []) => a | (a, [b]) => a + b | (a, [b, c]) => a + b + c | (a, [b, c, d]) => a + b + c + d | (_, [_, ..._]) => 999 }" "3";
+  t "tuple_match_deep5" "match ((1, [4, 5])) { | (a, []) => a | (a, [b]) => a + b | (a, [b, c]) => a + b + c | (a, [b, c, d]) => a + b + c + d | (_, [_, ..._]) => 999 }" "10";
+  t "tuple_match_deep6" "match ((1, [4, 5, 6])) { | (a, []) => a | (a, [b]) => a + b | (a, [b, c]) => a + b + c | (a, [b, c, d]) => a + b + c + d | (_, [_, ..._]) => 999 }" "16";
+  t "tuple_match_deep7" "match ((1, [4, 5, 6, 7])) { | (a, []) => a | (a, [b]) => a + b | (a, [b, c]) => a + b + c | (a, [b, c, d]) => a + b + c + d | (_, [_, ..._]) => 999 }" "999";
   
   (* Pattern matching on records *)
   t "record_match_1" "data Rec = {foo: Number, bar: String, baz: Bool}; match ({foo: 4, bar: 'boo', baz: true}) { | { foo, _ } => foo }" "4";
@@ -399,12 +396,12 @@ let match_tests = [
   te "record_match_deep_alias" "data Rec = {foo: Number}; data Rec2 = {bar: Rec}; match ({bar: {foo: 4}}) { | { bar: { foo } } => bar }" "Unbound value bar";
 
   (* Pattern matching on ADTs *)
-  t "adt_match_1" "import * from 'lists'; match (Empty) { | Empty => 0 | Cons(b, Empty) => b | Cons(b, Cons(c, Empty)) => b + c | Cons(b, Cons(c, Cons(d, Empty))) => b + c + d | Cons(_, _) => 999 }" "0";
-  t "adt_match_2" "import * from 'lists'; match (Cons(2, Empty)) { | Empty => 0 | Cons(b, Empty) => b | Cons(b, Cons(c, Empty)) => b + c | Cons(b, Cons(c, Cons(d, Empty))) => b + c + d | Cons(_, _) => 999 }" "2";
-  t "adt_match_3" "import * from 'lists'; match (Cons(4, Cons(5, Empty))) { | Empty => 0 | Cons(b, Empty) => b | Cons(b, Cons(c, Empty)) => b + c | Cons(b, Cons(c, Cons(d, Empty))) => b + c + d | Cons(_, _) => 999 }" "9";
-  t "adt_match_4" "import * from 'lists'; match (Cons(4, Cons(5, Cons(6, Empty)))) { | Empty => 0 | Cons(b, Empty) => b | Cons(b, Cons(c, Empty)) => b + c | Cons(b, Cons(c, Cons(d, Empty))) => b + c + d | Cons(_, _) => 999 }" "15";
-  t "adt_match_5" "import * from 'lists'; match (Cons(4, Cons(5, Cons(6, Cons(7, Empty))))) { | Empty => 0 | Cons(b, Empty) => b | Cons(b, Cons(c, Empty)) => b + c | Cons(b, Cons(c, Cons(d, Empty))) => b + c + d | Cons(_, _) => 999 }" "999";
-  t "adt_match_deep" "import * from 'lists'; data Rec = {foo: Number}; match (Cons({foo: 5}, Empty)) { | Empty => 999 | Cons({foo}, _) => foo }" "5";
+  t "adt_match_1" "match ([]) { | [] => 0 | [b] => b | [b, c] => b + c | [b, c, d] => b + c + d | [_, ..._] => 999 }" "0";
+  t "adt_match_2" "match ([2]) { | [] => 0 | [b] => b | [b, c] => b + c | [b, c, d] => b + c + d | [_, ..._] => 999 }" "2";
+  t "adt_match_3" "match ([4, 5]) { | [] => 0 | [b] => b | [b, c] => b + c | [b, c, d] => b + c + d | [_, ..._] => 999 }" "9";
+  t "adt_match_4" "match ([4, 5, 6]) { | [] => 0 | [b] => b | [b, c] => b + c | [b, c, d] => b + c + d | [_, ..._] => 999 }" "15";
+  t "adt_match_5" "match ([4, 5, 6, 7]) { | [] => 0 | [b] => b | [b, c] => b + c | [b, c, d] => b + c + d | [_, ..._] => 999 }" "999";
+  t "adt_match_deep" "data Rec = {foo: Number}; match ([{foo: 5}]) { | [] => 999 | [{foo}, ..._] => foo }" "5";
 
   tfile "mixed_matching" "mixedPatternMatching" "true";
 ]
@@ -414,27 +411,27 @@ let import_tests = [
   t "import_all" "import * from 'exportStar'; {print(x); print(y(4)); z}" "5\n4\n\"foo\"";
   t "import_all_except" "import * except {y} from 'exportStar'; {print(x); z}" "5\n\"foo\"";
   t "import_all_except_multiple" "import * except {x, y} from 'exportStar'; z" "\"foo\"";
-  t "import_all_constructor" "import * from 'lists'; Cons(2, Empty)" "Cons(2, Empty)";
-  t "import_all_except_constructor" "import * except {Cons} from 'lists'; Empty" "Empty";
-  t "import_all_except_multiple_constructor" "import * except {Cons, append} from 'lists'; sum(Empty)" "0";
+  t "import_all_constructor" "import * from 'tlists'; Cons(2, Empty)" "Cons(2, Empty)";
+  t "import_all_except_constructor" "import * except {Cons} from 'tlists'; Empty" "Empty";
+  t "import_all_except_multiple_constructor" "import * except {Cons, append} from 'tlists'; sum(Empty)" "0";
 
   (* import * errors *)
   te "import_all_except_error" "import * except {y} from 'exportStar'; {print(x); print(y); z}" "Unbound value y";
   te "import_all_except_multiple_error" "import * except {x, y} from 'exportStar'; {print(x); z}" "Unbound value x";
   te "import_all_except_multiple_error2" "import * except {x, y} from 'exportStar'; {print(x); print(y); z}" "Unbound value y";
-  te "import_all_except_error_constructor" "import * except {Cons} from 'lists'; Cons(2, Empty)" "Unbound value Cons";
-  te "import_all_except_multiple_error_constructor" "import * except {Cons, append} from 'lists'; append(Empty, Empty)" "Unbound value append";
-  te "import_all_except_multiple_error2_constructor" "import * except {Cons, append} from 'lists'; let x = Cons(2, Empty); append(x, Empty)" "Unbound value Cons";
+  te "import_all_except_error_constructor" "import * except {Cons} from 'tlists'; Cons(2, Empty)" "Unbound value Cons";
+  te "import_all_except_multiple_error_constructor" "import * except {Cons, append} from 'tlists'; append(Empty, Empty)" "Unbound value append";
+  te "import_all_except_multiple_error2_constructor" "import * except {Cons, append} from 'tlists'; let x = Cons(2, Empty); append(x, Empty)" "Unbound value Cons";
 
   (* import {} tests *)
   t "import_some" "import {x} from 'exportStar'; x" "5";
   t "import_some_multiple" "import {x, y} from 'exportStar'; y(x)" "5";
-  t "import_some_constructor" "import {Cons, Empty} from 'lists'; Cons(5, Empty)" "Cons(5, Empty)";
-  t "import_some_mixed" "import {Cons, Empty, sum} from 'lists'; sum(Cons(5, Empty))" "5";
+  t "import_some_constructor" "import {Cons, Empty} from 'tlists'; Cons(5, Empty)" "Cons(5, Empty)";
+  t "import_some_mixed" "import {Cons, Empty, sum} from 'tlists'; sum(Cons(5, Empty))" "5";
   t "import_alias" "import {x as y} from 'exportStar'; y" "5";
   t "import_alias_multiple" "import {x as y, y as x} from 'exportStar'; x(y)" "5";
-  t "import_alias_constructor" "import {Empty as None, sum} from 'lists'; sum(None)" "0";
-  t "import_alias_multiple_constructor" "import {Cons as Add, Empty as None, sum} from 'lists'; sum(Add(1, None))" "1";
+  t "import_alias_constructor" "import {Empty as None, sum} from 'tlists'; sum(None)" "0";
+  t "import_alias_multiple_constructor" "import {Cons as Add, Empty as None, sum} from 'tlists'; sum(Add(1, None))" "1";
 
   (* import {} errors *)
   te "import_some_error" "import {a} from 'exportStar'; a" "Export 'a' was not found in 'exportStar'";
@@ -457,11 +454,11 @@ let import_tests = [
   te "import_value_not_external" "import {foo as Foo.foo} from 'lists';" "Alias 'Foo.foo' should be at most one level deep";
 
   (* import multiple modules tests *)
-  t "import_muliple_modules" "import * from 'lists'; import * from 'exportStar'; Cons(x, Empty)" "Cons(5, Empty)";
+  t "import_muliple_modules" "import * from 'tlists'; import * from 'exportStar'; Cons(x, Empty)" "Cons(5, Empty)";
 
   (* import same module tests *)
-  t "import_same_module_unify" "import * from 'lists'; import List from 'lists'; Cons(5, List.Empty)" "Cons(5, Empty)";
-  t "import_same_module_unify2" "import *, List from 'lists'; Cons(5, List.Empty)" "Cons(5, Empty)";
+  t "import_same_module_unify" "import * from 'tlists'; import TList from 'tlists'; Cons(5, TList.Empty)" "Cons(5, Empty)";
+  t "import_same_module_unify2" "import *, TList from 'tlists'; Cons(5, TList.Empty)" "Cons(5, Empty)";
 
   (* import filepath tests *)
   t "import_relative_path" "import * from './exportStar'; x" "5";
@@ -470,7 +467,7 @@ let import_tests = [
   te "import_missing_file" "import * from 'foo'; 2" "Missing file for module foo";
 
   (* Misc import tests *)
-  te "test_bad_import" "{let x = (1, 2); import * from 'lists'; x}" "error";
+  te "test_bad_import" "{let x = (1, 2); import * from 'tlists'; x}" "error";
 ]
 
 (* Note that optimizations are on by default, so all of the above tests

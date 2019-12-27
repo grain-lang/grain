@@ -20,6 +20,24 @@ import {
   GRAIN_VOID
 } from '../core/primitives';
 
+export function grainListToString(runtime, n) {
+  let cur = n;
+  let printedVals = [];
+  
+  while (true) {
+    let x = cur / 4;
+    let variantId = view[x + 3] >> 1;
+    if (variantId === 0) {
+      break;
+    } else {
+      printedVals.push(grainToString(runtime, view[x + 5]));
+      cur = view[x + 6] ^ 3;
+    }
+  }
+
+  return `[${printedVals.join(', ' )}]`;
+}
+
 export function grainHeapValueToString(runtime, n) {
   switch (view[n / 4]) {
     case GRAIN_STRING_HEAP_TAG: {
@@ -51,6 +69,10 @@ export function grainHeapValueToString(runtime, n) {
         let info = tyinfo[variantId];
         // console.log(`\tVariant: ${info}`);
         let [variantName, arity] = info;
+
+        // Dirty hack to support list printing
+        if (variantName === '[...]') return grainListToString(runtime, n);
+        
         let printedVals = [];
         for (let i = 0; i < arity; ++i) {
           printedVals.push(grainToString(runtime, view[x + 5 + i]));
