@@ -139,12 +139,12 @@ let basic_functionality_tests = [
   t "not1" "!true" "false";
   t "not2" "!false" "true";
 
-  t "add1_1" "add1(2)" "3";
-  t "add1_2" "add1(5)" "6";
-  t "add1_3" "add1(-1)" "0";
-  t "sub1_1" "sub1(2)" "1";
-  t "sub1_2" "sub1(5)" "4";
-  t "sub1_3" "sub1(0)" "-1";
+  t "incr_1" "incr(2)" "3";
+  t "incr_2" "incr(5)" "6";
+  t "incr_3" "incr(-1)" "0";
+  t "decr_1" "decr(2)" "1";
+  t "decr_2" "decr(5)" "4";
+  t "decr_3" "decr(0)" "-1";
 
   te "comp_bool1" "if (2 < true) {3} else {4}" "type";
   te "comp_bool2" "if (2 > true) {3} else {4}" "type";
@@ -162,7 +162,7 @@ let basic_functionality_tests = [
 
   te "if1" "if (2) {5} else {6}" "type";
   te "if2" "let y = 0; if (y) {5} else {6}" "type";
-  te "if3" "if (sub1(1)) {2} else {5}" "type";
+  te "if3" "if (decr(1)) {2} else {5}" "type";
 
   t "if4" "if (false) 1 else if (false) 2 else {3}" "3";
 
