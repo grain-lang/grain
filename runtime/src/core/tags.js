@@ -10,11 +10,16 @@ import {
   GRAIN_ERR_NOT_ADT_VAL_GENERIC,
 } from '../errors/error-codes';
 
+import { 
+  GRAIN_TRUE, 
+  GRAIN_FALSE 
+} from './primitives';
+
 export const GRAIN_NUMBER_TAG_MASK = 0b0001;
 export const GRAIN_TUPLE_TAG_MASK = 0b0111;
 
 export const GRAIN_NUMBER_TAG_TYPE       = 0b0000;
-export const GRAIN_BOOLEAN_TAG_TYPE      = 0b1111;
+export const GRAIN_CONST_TAG_TYPE        = 0b1111;
 export const GRAIN_TUPLE_TAG_TYPE        = 0b0001;
 export const GRAIN_LAMBDA_TAG_TYPE       = 0b0101;
 export const GRAIN_GENERIC_HEAP_TAG_TYPE = 0b0011;
@@ -47,8 +52,14 @@ function assertGrainHeapTag(tag, n, err) {
   }
 }
 
+export const assertBoolean = (n, err) => {
+  assertGrainTag(GRAIN_CONST_TAG_TYPE, n, err || GRAIN_ERR_NOT_BOOLEAN_GENERIC);
+  if (n !== GRAIN_TRUE && n !== GRAIN_FALSE) {
+    throwGrainError(err, n, 0);
+  }
+}
+
 export const assertNumber = (n, err) => assertGrainTag(GRAIN_NUMBER_TAG_TYPE, n, err || GRAIN_ERR_NOT_NUMBER_GENERIC);
-export const assertBoolean = (n, err) => assertGrainTag(GRAIN_BOOLEAN_TAG_TYPE, n, err || GRAIN_ERR_NOT_BOOLEAN_GENERIC);
 export const assertTuple = (n, err) => assertGrainTag(GRAIN_TUPLE_TAG_TYPE, n, err || GRAIN_ERR_NOT_TUPLE_GENERIC);
 export const assertLambda = (n, err) => assertGrainTag(GRAIN_LAMBDA_TAG_TYPE, n, err || GRAIN_ERR_NOT_LAMBDA_GENERIC);
 export const assertString = (n, err) => assertGrainHeapTag(GRAIN_STRING_HEAP_TAG, n, err || GRAIN_ERR_NOT_STRING_GENERIC);

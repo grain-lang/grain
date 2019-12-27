@@ -85,6 +85,9 @@ let prim1_type = function
   | Unbox ->  
     let var = newvar ~name:"a" () in
     Builtin_types.type_box var, var
+  | Ignore ->  
+    let var = newvar ~name:"a" () in
+    var, Builtin_types.type_void
   | IsNum
   | IsBool
   | IsTuple -> newvar ~name:"prim1" (), Builtin_types.type_bool
@@ -547,7 +550,6 @@ and type_expect_ ?in_function ?(recarg=Rejected) env sexp ty_expected_explained 
             lower_args (ty::seen) ty_fun
         | _ -> ()
     in*)
-    (*let ty = instance env funct.exp_type in*)
     end_def();
     (*lower_args [] ty;*)
     begin_def();
@@ -600,7 +602,7 @@ and type_expect_ ?in_function ?(recarg=Rejected) env sexp ty_expected_explained 
     let boxexpr = type_expect env sboxexpr (mk_expected ~explanation:Assign_not_box @@ Builtin_types.type_box @@ newvar ~name:"a" ()) in
     let val_ = type_expect env sval ty_expected_explained in
     unify_exp env boxexpr @@ Builtin_types.type_box val_.exp_type;
-    rue {
+    re {
       exp_desc = TExpAssign(boxexpr, val_);
       exp_loc = loc;
       exp_extra = [];
@@ -630,6 +632,20 @@ and type_expect_ ?in_function ?(recarg=Rejected) env sexp ty_expected_explained 
       (* While loops don't evaluate to anything *)
       exp_type = Builtin_types.type_void;
       exp_env = env
+    }
+  | PExpConstraint (sarg, styp) ->
+    begin_def ();
+    let cty = Typetexp.transl_simple_type env false styp in
+    let ty = cty.ctyp_type in
+    end_def ();
+    generalize_structure ty;
+    let (arg, ty') = (List.hd @@ type_arguments env [sarg] [ty] [(instance env ty)], instance env ty) in
+    rue {
+      exp_desc = arg.exp_desc;
+      exp_loc = arg.exp_loc;
+      exp_type = ty';
+      exp_env = env;
+      exp_extra = (TExpConstraint cty, loc) :: arg.exp_extra;
     }
   | PExpBlock([]) -> failwith "Internal error: type_expect_ block was empty"
   | PExpBlock(es) ->
@@ -751,8 +767,7 @@ and type_application env funct args =
     | td ->
       raise(Error(funct.exp_loc, env, Apply_non_function (expand_head env funct.exp_type)))
   in
-  let typed_args =
-    List.map2 (fun arg t_arg -> type_expect env arg (mk_expected t_arg)) args ty_args in
+  let typed_args = type_arguments env args ty_args (List.map (instance env) ty_args) in
   typed_args, instance env ty_ret
 
 and type_construct env loc lid sarg ty_expected_explained attrs =

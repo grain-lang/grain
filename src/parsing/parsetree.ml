@@ -97,6 +97,7 @@ type prim1 =
   | IsNum
   | IsBool
   | IsTuple
+  | Ignore
 [@@deriving sexp]
 
 (** Two-argument operators *)
@@ -131,6 +132,7 @@ and expression_desc =
   | PExpPrim2 of prim2 * expression * expression
   | PExpIf of expression * expression * expression
   | PExpWhile of expression * expression
+  | PExpConstraint of expression * parsed_type
   | PExpLambda of pattern list * expression
   | PExpApp of expression * expression list
   | PExpBlock of expression list

@@ -81,41 +81,43 @@ let basic_functionality_tests = [
   t "fals" "let x = false; x" "false";
   t "tru" "let x = true; x" "true";
   t "complex1" "
-    let x = 2, y = 3, z = if true { 4 } else { 5 };
-    if true {
-      print(y) - (z + x)
+    let x = 2, y = 3, z = if (true) { 4 } else { 5 };
+    if (true) {
+      print(y)
+      y - (z + x)
     } else {
       print(8)
+      8
     }
     "  "3\n-3";
-  t "complex2" "print(2) + print(3)" "2\n3\n5";
+  t "complex2" "print(2 + 3)" "5\nvoid";
 
   t "binop1" "2 + 2" "4";
   t "binop2" "2 - 2" "0";
   t "binop3" "2 - 4" "-2";
   t "binop4" "2 * 3" "6";
 
-  t "and1" "true and true" "true";
-  t "and2" "true and false" "false";
-  t "and3" "false and true" "false";
-  t "and4" "false and false" "false";
+  t "and1" "true && true" "true";
+  t "and2" "true && false" "false";
+  t "and3" "false && true" "false";
+  t "and4" "false && false" "false";
 
-  t "or1" "true or true" "true";
-  t "or2" "true or false" "true";
-  t "or3" "false or true" "true";
-  t "or4" "false or false" "false";
+  t "or1" "true || true" "true";
+  t "or2" "true || false" "true";
+  t "or3" "false || true" "true";
+  t "or4" "false || false" "false";
 
-  t "comp1" "if 2 < 3 {true} else {false}" "true";
-  te "comp1e" "if 2 < 3 {true} else {3}" "type";
-  t "comp2" "if 2 <= 3 {true} else {false}" "true";
-  te "comp2e" "if 2 <= 3 {true} else {3}" "type";
-  t "comp3" "if 2 >= 3 {4} else {5}" "5";
-  t "comp4" "if 2 > 3 {4} else {5}" "5";
-  t "comp5" "if 2 < 3 {4} else {5}" "4";
-  t "comp6" "if 2 == 3 {8} else {9}" "9";
-  t "comp7" "if 2 == 2 {8} else {9}" "8";
-  t "comp8" "if 2 <= 2 {10} else {11}" "10";
-  t "comp9" "if 2 >= 2 {10} else {11}" "10";
+  t "comp1" "if (2 < 3) {true} else {false}" "true";
+  te "comp1e" "if (2 < 3) {true} else {3}" "type";
+  t "comp2" "if (2 <= 3) {true} else {false}" "true";
+  te "comp2e" "if (2 <= 3) {true} else {3}" "type";
+  t "comp3" "if (2 >= 3) {4} else {5}" "5";
+  t "comp4" "if (2 > 3) {4} else {5}" "5";
+  t "comp5" "if (2 < 3) {4} else {5}" "4";
+  t "comp6" "if (2 == 3) {8} else {9}" "9";
+  t "comp7" "if (2 == 2) {8} else {9}" "8";
+  t "comp8" "if (2 <= 2) {10} else {11}" "10";
+  t "comp9" "if (2 >= 2) {10} else {11}" "10";
   t "comp10" "let x = 2, y = 4; (y - 2) == x" "true";
   t "comp11" "true == 2" "false";
   t "comp12" "2 == false" "false";
@@ -124,8 +126,8 @@ let basic_functionality_tests = [
   t "comp15" "false == true" "false";
   t "comp16" "false == false" "true";
 
-  t "not1" "not(true)" "false";
-  t "not2" "not(false)" "true";
+  t "not1" "!true" "false";
+  t "not2" "!false" "true";
 
   t "add1_1" "add1(2)" "3";
   t "add1_2" "add1(5)" "6";
@@ -134,10 +136,12 @@ let basic_functionality_tests = [
   t "sub1_2" "sub1(5)" "4";
   t "sub1_3" "sub1(0)" "-1";
 
-  te "comp_bool1" "if 2 < true {3} else {4}" "type";
-  te "comp_bool2" "if 2 > true {3} else {4}" "type";
-  te "comp_bool3" "if true >= 4 {3} else {4}" "type";
-  te "comp_bool4" "let x = true; if x < 4 {3} else {5}" "type";
+  te "comp_bool1" "if (2 < true) {3} else {4}" "type";
+  te "comp_bool2" "if (2 > true) {3} else {4}" "type";
+  te "comp_bool3" "if (true >= 4) {3} else {4}" "type";
+  te "comp_bool4" "let x = true; if (x < 4) {3} else {5}" "type";
+
+  t "void" "{'foo';}" "void";
 
   te "arith1" "2 + true" "type";
   te "arith2" "true + 4" "type";
@@ -146,9 +150,11 @@ let basic_functionality_tests = [
   te "arith5" "let x = true; x * 4" "type";
   te "arith6" "let x = false; 4 * x" "type";
 
-  te "if1" "if 2 {5} else {6}" "type";
-  te "if2" "let y = 0; if y {5} else {6}" "type";
-  te "if3" "if sub1(1) {2} else {5}" "type";
+  te "if1" "if (2) {5} else {6}" "type";
+  te "if2" "let y = 0; if (y) {5} else {6}" "type";
+  te "if3" "if (sub1(1)) {2} else {5}" "type";
+
+  t "if4" "if (false) 1 else if (false) 2 else {3}" "3";
 
   (* Non-compile-time overflows *)
   te "overflow1" "9999999 * 99999999" "overflow";
@@ -173,7 +179,7 @@ let function_tests = [
   tfile "sinister_tail_call" "sinister-tail-call" "true";
   tefile "fib_big" "too-much-fib" "overflow";
 
-  t "func_no_args" "let foo = (() => {print(5)});\nfoo()" "5\n5";
+  t "func_no_args" "let foo = (() => {print(5)});\nfoo()" "5\nvoid";
   t "multi_bind" "let rec x = 2, y = x + 1; y" "3";
   te "unbound_fun" "2 + foo()" "unbound";
   te "unbound_id_simple" "5 - x" "unbound";
@@ -184,20 +190,25 @@ let function_tests = [
   te "arity_2" "let foo = ((x) => {x + 5});\nfoo()" "type";
   te "arity_3" "let foo = ((x) => {x});\nfoo(1, 2, 3)" "type";
 
-  t "lambda_1" "print((x) => {x})" "<lambda>\n<lambda>";
+  t "shorthand_1" "let foo = (x) => x; foo(1)" "1";
+  t "shorthand_2" "let foo = (x) => x + 3; foo(1)" "4";
+  t "shorthand_3" "let foo = x => x; foo(1)" "1";
+  t "shorthand_4" "let foo = x => x + 3; foo(1)" "4";
+
+  t "lambda_1" "print((x) => {x})" "<lambda>\nvoid";
   t "app_1" "((x) => {x})(1)" "1";
-  t "letrec_1" "let rec x = ((n) => {if n > 3 {n} else {x(n + 2)}}),
+  t "letrec_1" "let rec x = ((n) => {if (n > 3) {n} else {x(n + 2)}}),
                         y = ((n) => {x(n + 1)});
                  y(2)" "5";
   (* Check that recursion is order-independent *)
   t "letrec_2" "let rec y = ((n) => {x(n + 1)}),
-                        x = ((n) => {if n > 3 {n} else {x(n + 2)}});
+                        x = ((n) => {if (n > 3) {n} else {x(n + 2)}});
                  y(2)" "5";
   t "let_1" "let rec x = ((n) => {n + 1}),
                      y = x(3),
                      z = ((n) => {x(n) + y});
                z(5)" "10";
-  te "let_norec_1" "let x = ((n) => {if n > 3 {n} else {x(n + 2)}}),
+  te "let_norec_1" "let x = ((n) => {if (n > 3) {n} else {x(n + 2)}}),
                         y = ((n) => {x(n + 1)});
                  y(2)" "Unbound value x.";
   te "lambda_dup_args" "((x, y, x) => {5})" "Variable x is bound several times";
@@ -212,8 +223,8 @@ let function_tests = [
 let mylist = "Cons(1, Cons(2, Cons(3, Empty)))"
 
 let tuple_tests = [
-  t "print_tup" "print((1, 2))" "(1, 2)\n(1, 2)";
-  t "big_tup" "print((1, 2, 3, 4))" "(1, 2, 3, 4)\n(1, 2, 3, 4)";
+  t "print_tup" "print((1, 2))" "(1, 2)\nvoid";
+  t "big_tup" "print((1, 2, 3, 4))" "(1, 2, 3, 4)\nvoid";
   t "big_tup_access" "let (a, b, c, d) = (1, 2, 3, 4); c" "3";
   t "nested_tup_1" "let (a, b) = ((1, 2), (3, 4)); a" "(1, 2)";
   t "nested_tup_2" "let (a, b) = ((1, 2), (3, 4)); let (c, d) = b; d" "4";
@@ -248,8 +259,8 @@ let record_tests = [
   t "record_destruct_deep" "data Rec = {foo: Number}; data Rec2 = {bar: Rec}; let { bar: { foo } } = {bar: {foo: 4}}; foo" "4";
   te "record_destruct_deep_alias" "data Rec = {foo: Number}; data Rec2 = {bar: Rec}; let { bar: { foo } } = {bar: {foo: 4}}; bar" "Unbound value bar";
 
-  t "record_match_1" "data Rec = {foo: Number, bar: String, baz: Bool}; match ({foo: 4, bar: 'boo', baz: true}) { | { foo, _ } => foo }" "4";
-  t "record_match_2" "data Rec = {foo: Number, bar: String, baz: Bool}; match ({foo: 4, bar: 'boo', baz: true}) { | { bar, _ } => bar }" "\"boo\"";
+  t "record_match_1" "data Rec = {foo: Number, bar: String, baz: Bool}; match ({foo: 4, bar: 'boo', baz: true}) { { foo, _ } => foo }" "4";
+  t "record_match_2" "data Rec = {foo: Number, bar: String, baz: Bool}; match ({foo: 4, bar: 'boo', baz: true}) { { bar, _ } => bar }" "\"boo\"";
   t "record_match_3" "data Rec = {foo: Number, bar: Number, baz: Number}; match ({foo: 4, bar: 5, baz: 6}) { | { foo, bar, _ } => foo + bar }" "9";
   t "record_match_4" "data Rec = {foo: Number, bar: Number, baz: Number}; match ({foo: 4, bar: 5, baz: 6}) { | { foo, bar, baz } => foo + bar + baz}" "15";
   t "record_match_deep" "data Rec = {foo: Number}; data Rec2 = {bar: Rec}; match ({bar: {foo: 4}}) { | { bar: { foo } } => foo }" "4";
@@ -284,7 +295,6 @@ let stdlib_tests = [
     "Cons(2, Cons(3, Cons(4, Empty)))";
   tlib "map_2" ("import * from 'lists'; map(((x) => {x * 2}), " ^ mylist ^ ")")
     "Cons(2, Cons(4, Cons(6, Empty)))";
-  tlib "map_print" ("import * from 'lists'; map(print, " ^ mylist ^ ")") "1\n2\n3\nCons(1, Cons(2, Cons(3, Empty)))";
   tlib "fold_left_1" ("import * from 'lists'; fold_left(((acc, cur) => {acc - cur}), 0, " ^ mylist ^ ")")
     "-6";
   tlib "fold_right_1" ("import * from 'lists'; fold_right(((cur, acc) => {cur - acc}), 0, " ^ mylist ^ ")")
@@ -315,7 +325,7 @@ let box_tests = [
               unbox(b)
             }" "3";
   t "test_set_extra1" "box(1) := 2" "2";
-  tfile "counter" "counter" "1\n2\n3\n3";
+  tfile "counter" "counter" "1\n2\n3\nvoid";
   te "test_unbox_err" "unbox(5)" "Box";
 ]
 
@@ -460,9 +470,8 @@ let optimization_tests = [
     (AExp.comp (Comp.imm (Imm.const (Const_int 4))));
 
   tfinalanf "test_dead_branch_elimination_4" 
-    "{let x = if (true) {4; 4} else {5}; x}"
-    (AExp.seq (Comp.imm (Imm.const (Const_int 4)))
-      (AExp.comp (Comp.imm (Imm.const (Const_int 4)))));
+    "{let x = if (true) {4} else {5}; x}"
+      (AExp.comp (Comp.imm (Imm.const (Const_int 4))));
 
   t "test_dead_branch_elimination_5" "
       let x = box(1);
@@ -503,7 +512,7 @@ let optimization_tests = [
   {
     let y = x;
     x
-  };
+  }
   x + y}"
     (AExp.seq (Comp.imm (Imm.const (Const_int 5)))
       (AExp.comp (Comp.imm (Imm.const (Const_int 17)))));
@@ -550,11 +559,11 @@ let optimization_tests = [
      @@ AExp.let_ Nonrecursive [(app, Comp.app (Imm.id foo) [(Imm.const (Const_int 3))])]
      @@ AExp.comp @@ Comp.prim2 Plus (Imm.id app) (Imm.const (Const_int 5)));
 
-  tfsound "test_counter_sound" "counter" "1\n2\n3\n3";
+  tfsound "test_counter_sound" "counter" "1\n2\n3\nvoid";
   te "test_dae_sound" "let x = 2 + false; 3" "type";
   te "test_const_fold_times_zero_sound" "let f = ((x) => {x * 0}); f(false)" "Number";
-  te "test_const_fold_or_sound" "let f = ((x) => {x or true}); f(1)" "Bool";
-  te "test_const_fold_and_sound" "let f = ((x) => {false and x}); f(1)" "Bool";
+  te "test_const_fold_or_sound" "let f = ((x) => {x || true}); f(1)" "Bool";
+  te "test_const_fold_and_sound" "let f = ((x) => {false && x}); f(1)" "Bool";
   te "test_const_fold_plus_sound" "let f = ((x) => {0 + x}); f(true)" "Number";
   te "test_const_fold_times_one_sound" "let f = ((x) => {x * 1}); f(true)" "Number";
 

@@ -27,6 +27,7 @@ type prim1 = Parsetree.prim1 =
   | IsNum
   | IsBool
   | IsTuple
+  | Ignore
 
 type prim2 = Parsetree.prim2 =
   | Plus
@@ -187,3 +188,4 @@ type mash_program = {
 
 let const_true =  MConstLiteral (MConstI32 (Int32.of_int 0xFFFFFFFF))
 let const_false = MConstLiteral (MConstI32 (Int32.of_int 0x7FFFFFFF))
+let const_void = MConstLiteral (MConstI32 (Int32.of_int 0x6FFFFFFF))

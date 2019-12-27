@@ -48,6 +48,7 @@ module E = struct
     | PExpApp(e, el) -> apply ~loc (sub.expr sub e) (List.map (sub.expr sub) el)
     | PExpBlock(el) -> block ~loc (List.map (sub.expr sub) el)
     | PExpNull -> null ~loc ()
+    | PExpConstraint(e, t) -> constraint_ ~loc (sub.expr sub e) (sub.typ sub t)
 end
 
 module P = struct

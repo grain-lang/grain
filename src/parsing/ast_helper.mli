@@ -89,11 +89,13 @@ module Exp: sig
   val prim2: ?loc:loc -> prim2 -> expression -> expression -> expression
   val if_: ?loc:loc -> expression -> expression -> expression -> expression
   val while_: ?loc:loc -> expression -> expression -> expression
+  val constraint_: ?loc:loc -> expression -> parsed_type -> expression
   val assign: ?loc:loc -> expression -> expression -> expression
   val lambda: ?loc:loc -> pattern list -> expression -> expression
   val apply: ?loc:loc -> expression -> expression list -> expression
   val block: ?loc:loc -> expression list -> expression
   val null: ?loc:loc -> unit -> expression
+  val ignore: expression -> expression
 end
 
 module Top: sig

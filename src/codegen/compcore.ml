@@ -152,6 +152,7 @@ let rec compile_const c : Wasm.Values.value =
 (* Translate constants to WASM *)
 let const_true = add_dummy_loc @@ compile_const const_true
 let const_false = add_dummy_loc @@ compile_const const_false
+let const_void = add_dummy_loc @@ compile_const const_void
 
 (* WebAssembly helpers *)
 
@@ -374,6 +375,7 @@ let compile_prim1 env p1 arg : Wasm.Ast.instr' Concatlist.t =
       Ast.Const(const_int32 0x80000000);
       Ast.Binary(Values.I32 Ast.IntOp.Xor);
     ]
+  | Ignore -> singleton (Ast.Const const_void)
   | Box -> failwith "Unreachable case; should never get here: Box"
   | Unbox -> failwith "Unreachable case; should never get here: Unbox"
   | IsBool -> failwith "Unsupported (compcore): IsBool"
@@ -850,7 +852,7 @@ and compile_instr env instr =
                Concatlist.mapped_list_of_t add_dummy_loc @@ 
                singleton (Ast.Loop([Types.I32Type],
                           Concatlist.mapped_list_of_t add_dummy_loc @@
-                          singleton (Ast.Const const_false) @
+                          singleton (Ast.Const const_void) @
                           compiled_cond @
                           decode_bool +@
                           [Ast.Test(Values.I32 Ast.IntOp.Eqz); 
