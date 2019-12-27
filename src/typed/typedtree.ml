@@ -53,7 +53,7 @@ let prim2_of_sexp, sexp_of_prim2 = Parsetree.prim2_of_sexp, Parsetree.sexp_of_pr
 type core_type = {
   ctyp_desc : core_type_desc;
   ctyp_type : type_expr;
-  ctyp_env : Env.t sexp_opaque;
+  ctyp_env : (Env.t [@sexp.opaque]);
   ctyp_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
 } [@@deriving sexp]
 
@@ -103,9 +103,9 @@ type data_declaration = {
 type pattern = {
   pat_desc: pattern_desc;
   pat_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
-  pat_extra: (pat_extra * Location.t) list [@default []] [@sexp_drop_default];
+  pat_extra: (pat_extra * Location.t) list [@default []] [@sexp_drop_default (=)];
   pat_type: type_expr;
-  mutable pat_env: Env.t sexp_opaque;
+  mutable pat_env: (Env.t [@sexp.opaque]);
 } [@@deriving sexp]
 
 and pat_extra =
@@ -126,9 +126,9 @@ and pattern_desc =
 type expression = {
   exp_desc: expression_desc;
   exp_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
-  exp_extra: (exp_extra * Location.t) list [@default []] [@sexp_drop_default];
+  exp_extra: (exp_extra * Location.t) list [@default []] [@sexp_drop_default (=)];
   exp_type: type_expr;
-  exp_env: Env.t sexp_opaque;
+  exp_env: (Env.t [@sexp.opaque]);
 } [@@deriving sexp]
 
 and exp_extra =
@@ -202,13 +202,13 @@ type toplevel_stmt_desc =
 type toplevel_stmt = {
   ttop_desc: toplevel_stmt_desc;
   ttop_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
-  ttop_env: Env.t sexp_opaque;
+  ttop_env: (Env.t [@sexp.opaque]);
 } [@@deriving sexp]
 
 type typed_program = {
   statements: toplevel_stmt list;
   body: expression;
-  env: Env.t sexp_opaque;
+  env: (Env.t [@sexp.opaque]);
   signature: Cmi_format.cmi_infos;
 } [@@deriving sexp]
 

@@ -96,7 +96,7 @@ and value_unbound_reason =
 
 type value_kind =
   | TValReg
-  | TValPrim of Primitive.description sexp_opaque
+  | TValPrim of Primitive.description [@sexp.opaque]
   | TValUnbound of value_unbound_reason
   | TValConstructor of constructor_description
 [@@deriving sexp]
