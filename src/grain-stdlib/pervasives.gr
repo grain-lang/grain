@@ -1,6 +1,8 @@
 export *
 
 # Math operations
+primitive incr : Number -> Number = "@incr"
+primitive decr : Number -> Number = "@decr"
 primitive (+) : (Number, Number) -> Number = "@plus"
 primitive (-) : (Number, Number) -> Number = "@minus"
 primitive (*) : (Number, Number) -> Number = "@times"
@@ -15,8 +17,16 @@ primitive (>=) : (Number, Number) -> Bool = "@greatereq"
 primitive (==) : (a, b) -> Bool = "@eq"
 
 # Boolean operations
+primitive (!) : Bool -> Bool = "@not"
 primitive (&&) : (Bool, Bool) -> Bool = "@and"
 primitive (||) : (Bool, Bool) -> Bool = "@or"
+
+# Box operations
+primitive box : a -> Box<a> = "@box"
+primitive unbox : Box<a> -> a = "@unbox"
+
+# Other operations
+primitive ignore : a -> Void = "@ignore"
 
 # Prints the given value to the console.
 foreign wasm grainBuiltins print : a -> Void

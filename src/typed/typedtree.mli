@@ -24,14 +24,11 @@ type partial = Partial | Total
 type rec_flag = Asttypes.rec_flag = Nonrecursive | Recursive
 
 type prim1 = Parsetree.prim1 =
-  | Add1
-  | Sub1
+  | Incr
+  | Decr
   | Not
   | Box
   | Unbox
-  | IsNum
-  | IsBool
-  | IsTuple
   | Ignore
 
 type prim2 = Parsetree.prim2 =

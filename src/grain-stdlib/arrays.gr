@@ -6,7 +6,7 @@ export let forEach = (array, fn) => {
   let count = box(0)
   while (unbox(count) < length) {
     fn(array[unbox(count)])
-    count := add1(unbox(count))
+    count := incr(unbox(count))
   }
 }
 
@@ -15,6 +15,6 @@ export let forEachi = (array, fn) => {
   let count = box(0)
   while (unbox(count) < length) {
     fn(array[unbox(count)], unbox(count))
-    count := add1(unbox(count))
+    count := incr(unbox(count))
   }
 }

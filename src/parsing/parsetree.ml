@@ -89,14 +89,11 @@ and pattern = {
 
 (** Single-argument operators *)
 type prim1 =
-  | Add1
-  | Sub1
+  | Incr
+  | Decr
   | Not
   | Box
   | Unbox
-  | IsNum
-  | IsBool
-  | IsTuple
   | Ignore
 [@@deriving sexp]
 

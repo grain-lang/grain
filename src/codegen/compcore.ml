@@ -363,11 +363,11 @@ let compile_prim1 env p1 arg : Wasm.Ast.instr' Concatlist.t =
   let compiled_arg = compile_imm env arg in
   (* TODO: Overflow checks? *)
   match p1 with
-  | Add1 -> compiled_arg @+ [
+  | Incr -> compiled_arg @+ [
       Ast.Const(encoded_const_int32 1);
       Ast.Binary(Values.I32 Ast.IntOp.Add);
     ]
-  | Sub1 -> compiled_arg @+ [
+  | Decr -> compiled_arg @+ [
       Ast.Const(encoded_const_int32 1);
       Ast.Binary(Values.I32 Ast.IntOp.Sub);
     ]
@@ -378,9 +378,6 @@ let compile_prim1 env p1 arg : Wasm.Ast.instr' Concatlist.t =
   | Ignore -> singleton (Ast.Const const_void)
   | Box -> failwith "Unreachable case; should never get here: Box"
   | Unbox -> failwith "Unreachable case; should never get here: Unbox"
-  | IsBool -> failwith "Unsupported (compcore): IsBool"
-  | IsNum -> failwith "Unsupported (compcore): IsNum"
-  | IsTuple -> failwith "Unsupported (compcore): IsTuple"
 
 
 let compile_prim2 (env : codegen_env) p2 arg1 arg2 : Wasm.Ast.instr' Concatlist.t =
