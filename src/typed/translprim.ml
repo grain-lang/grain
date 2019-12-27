@@ -35,6 +35,8 @@ let prim_map = PrimMap.of_seq (List.to_seq [
   ("@plus", Primitive2 Plus);
   ("@minus", Primitive2 Minus);
   ("@times", Primitive2 Times);
+  ("@divides", Primitive2 Divide);
+  ("@modulo", Primitive2 Mod);
   ("@less", Primitive2 Less);
   ("@greater", Primitive2 Greater);
   ("@lesseq", Primitive2 LessEq);
