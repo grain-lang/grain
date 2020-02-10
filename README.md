@@ -1,6 +1,6 @@
 <div align="center">
     <a href="https://grain-lang.org/">
-        <img src="https://raw.githubusercontent.com/grain-lang/grain/master/grain-logo-large.png" alt="Grain" height="200" />
+        <img src="https://raw.githubusercontent.com/grain-lang/grain/master/grain_shorthand_color.svg" alt="Grain" height="200" />
     </a>
 </div>
 
@@ -71,7 +71,7 @@ Alternatively, you can use the CLI to run your program on Node:
 $ grain test.gr
 ```
 
-Copyright ©️ 2017-2018 Philip Blair and Oscar Spencer.
+Copyright ©️ 2017-2020 Philip Blair and Oscar Spencer.
 
 [philip]: https://github.com/belph
 [oscar]: http://github.com/ospencer
