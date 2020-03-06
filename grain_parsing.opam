@@ -17,6 +17,8 @@ depends: [
   "ocamlbuild" {build & >= "0.12.0" }
   "dune" {build & >= "1.0" }
   "ppx_deriving"
+  "ppx_deriving_yojson"
+  "yojson"
   "ppx_sexp_conv"
   "sexplib"
   "grain_dypgen" { = "0.1" }
