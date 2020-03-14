@@ -132,6 +132,7 @@ let rec typexp s ty =
   let ty = repr ty in
   match ty.desc with
     TTyVar _ | TTyUniVar _ as desc ->
+      (* Is this okay? This causes serialized type variables to lose their proper IDs. -Oscar *)
       (* if s.for_saving || ty.id < 0 then *)
       if s.for_saving then
         let ty' =
