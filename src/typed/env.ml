@@ -1723,6 +1723,7 @@ let add_module_signature ?(internal=false) mod_name (mod_ : Parsetree.import_dec
   | None ->
     let {ps_sig} = find_pers_struct name filename mod_.pimp_loc in
     let sign = Lazy.force ps_sig in
+    let sign = Translsig.translate_signature sign in
     let mod_type = (TModSignature sign) in
     add_modtype mod_ident {mtd_type=(Some mod_type); mtd_loc=mod_.pimp_loc} env0 |>
     add_module mod_ident mod_type filename
