@@ -356,6 +356,8 @@ let box_tests = [
   t "test_set_extra1" "box(1) := 2" "2";
   tfile "counter" "counter" "1\n2\n3\nvoid";
   te "test_unbox_err" "unbox(5)" "Box";
+
+  te "test_box_typing" "unbox(box(false)) + 4" "expression has type Bool but"
 ]
 
 let loop_tests = [
