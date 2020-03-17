@@ -30,6 +30,7 @@ type prim1 = Parsetree.prim1 =
   | Box
   | Unbox
   | Ignore
+  | ArrayLength
 
 type prim2 = Parsetree.prim2 =
   | Plus
@@ -44,6 +45,7 @@ type prim2 = Parsetree.prim2 =
   | Eq
   | And
   | Or
+  | ArrayMake
 
 type core_type = {
   ctyp_desc : core_type_desc;

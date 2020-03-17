@@ -44,13 +44,16 @@ let prim_map = PrimMap.of_seq (List.to_seq [
   ("@eq", Primitive2 Eq);
   ("@and", Primitive2 And);
   ("@or", Primitive2 Or);
+  
+  ("@array.length", Primitive1 ArrayLength);
+  ("@array.make", Primitive2 ArrayMake);
 ])
 
 let transl_prim env desc = 
   let prim = try
     PrimMap.find prim_map (List.hd desc.tvd_prim)
   with Not_found ->
-    failwith "Throw a real error here"
+    failwith "This primitive does not exist."
   in
   let value = match prim with
     | Primitive1 p ->

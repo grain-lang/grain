@@ -95,6 +95,7 @@ type prim1 =
   | Box
   | Unbox
   | Ignore
+  | ArrayLength
 [@@deriving sexp]
 
 (** Two-argument operators *)
@@ -111,6 +112,7 @@ type prim2 =
   | Eq
   | And
   | Or
+  | ArrayMake
 [@@deriving sexp]
 
 (** Type for expressions (i.e. things which evaluate to something) *)

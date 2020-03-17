@@ -21,6 +21,7 @@ type grain_error =
   | SetItemIndexTooSmall
   | SetItemIndexTooLarge
   | SwitchError
+  | InvalidArgument
   | GenericNumberError
 [@@deriving sexp]
 
@@ -44,6 +45,7 @@ let all_grain_errors = [
   SetItemIndexTooSmall;
   SetItemIndexTooLarge;
   SwitchError;
+  InvalidArgument;
   GenericNumberError;
 ]
 
@@ -66,6 +68,7 @@ let err_SWITCH                    = 16
 let err_DIVISION_BY_ZERO          = 17
 let err_MODULO_BY_ZERO            = 18
 let err_ARRAY_INDEX_OUT_OF_BOUNDS = 19
+let err_INVALID_ARGUMENT          = 20
 let err_GENERIC_NUM               = 99
 
 let code_of_error = function
@@ -89,6 +92,7 @@ let code_of_error = function
   | SwitchError -> err_SWITCH
   | GenericNumberError -> err_GENERIC_NUM
   | OverflowError -> err_OVERFLOW
+  | InvalidArgument -> err_INVALID_ARGUMENT
 
 let arity_of_error = function
   | ArithmeticError -> 1
@@ -111,6 +115,7 @@ let arity_of_error = function
   | SwitchError -> 1
   | GenericNumberError -> 1
   | OverflowError -> 1
+  | InvalidArgument -> 1
 
 let label_of_error = function
   | ArithmeticError -> "error_not_number_arith"
@@ -133,6 +138,7 @@ let label_of_error = function
   | SetItemIndexTooLarge -> "error_too_large_set_item_idx"
   | OverflowError -> "error_overflow"
   | SwitchError -> "error_switch"
+  | InvalidArgument -> "error_invalid_argument"
 
 let error_of_code c =
   match c with
@@ -156,6 +162,7 @@ let error_of_code c =
   | x when x = err_SWITCH -> SwitchError
   | x when x = err_GENERIC_NUM -> GenericNumberError
   | x when x = err_OVERFLOW -> OverflowError
+  | x when x = err_INVALID_ARGUMENT -> InvalidArgument
   | c -> failwith (Printf.sprintf "Unknown error code: %d" c)
 
 let max_arity = List.fold_left (fun x y -> max x (arity_of_error y)) 0 all_grain_errors
