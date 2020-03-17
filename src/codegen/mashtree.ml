@@ -25,6 +25,7 @@ type prim1 = Parsetree.prim1 =
   | Box
   | Unbox
   | Ignore
+  | ArrayLength
 
 type prim2 = Parsetree.prim2 =
   | Plus
@@ -39,6 +40,7 @@ type prim2 = Parsetree.prim2 =
   | Eq
   | And
   | Or
+  | ArrayMake
 
 (* Types within the WASM output *)
 type asmtype =
@@ -110,6 +112,7 @@ type tuple_op =
 type array_op =
   | MArrayGet of immediate
   | MArraySet of immediate * immediate
+  | MArrayLength
 [@@deriving sexp]
 
 type adt_op =

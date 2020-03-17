@@ -88,6 +88,9 @@ let prim1_type = function
   | Ignore ->  
     let var = newvar ~name:"a" () in
     var, Builtin_types.type_void
+  | ArrayLength ->  
+    let var = newvar ~name:"a" () in
+    Builtin_types.type_array var, Builtin_types.type_number
 
 let prim2_type = function
   | Plus
@@ -105,6 +108,9 @@ let prim2_type = function
     let v1 = newvar ~name:"equal" ()
     and v2 = newvar ~name:"equal" () in
     (v1, v2, Builtin_types.type_bool)
+  | ArrayMake ->  
+    let var = newvar ~name:"a" () in
+    (Builtin_types.type_number, var, Builtin_types.type_array var)
 
 let maybe_add_pattern_variables_ghost loc_let env pv =
   List.fold_right

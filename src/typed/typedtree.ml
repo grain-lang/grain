@@ -31,6 +31,7 @@ type prim1 = Parsetree.prim1 =
   | Box
   | Unbox
   | Ignore
+  | ArrayLength
 
 type prim2 = Parsetree.prim2 =
   | Plus
@@ -45,6 +46,7 @@ type prim2 = Parsetree.prim2 =
   | Eq
   | And
   | Or
+  | ArrayMake
 
 let prim1_of_sexp, sexp_of_prim1 = Parsetree.prim1_of_sexp, Parsetree.sexp_of_prim1
 let prim2_of_sexp, sexp_of_prim2 = Parsetree.prim2_of_sexp, Parsetree.sexp_of_prim2

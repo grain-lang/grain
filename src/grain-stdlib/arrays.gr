@@ -1,5 +1,5 @@
-foreign wasm grainBuiltins arrayLength : Array<a> -> Number
-export let length = arrayLength
+export primitive length : Array<a> -> Number = "@array.length"
+export primitive make : (Number, a) -> Array<a> = "@array.make"
 
 export let forEach = (array, fn) => {
   let length = length(array)

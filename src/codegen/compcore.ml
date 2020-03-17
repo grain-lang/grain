@@ -24,7 +24,7 @@ type codegen_env = {
 }
 
 (* Number of swap variables to allocate *)
-let swap_slots_i32 = [Types.I32Type]
+let swap_slots_i32 = [Types.I32Type; Types.I32Type]
 let swap_slots_i64 = [Types.I64Type]
 let swap_i32_offset = 0
 let swap_i64_offset = List.length swap_slots_i32
@@ -248,41 +248,62 @@ let decode_bool = Concatlist.t_of_list [
 
 let encoded_const_int32 n = const_int32 (encoded_int32 n)
 
-let compile_bind ~is_get (env : codegen_env) (b : binding) : Wasm.Ast.instr' Concatlist.t =
+type bind_action = BindGet | BindSet | BindTee
+
+let compile_bind ~action (env : codegen_env) (b : binding) : Wasm.Ast.instr' Concatlist.t =
   let (++) a b = Int32.(add (of_int a) b) in
   match b with
   | MArgBind(i) ->
     (* No adjustments are needed for argument bindings *)
     let slot = add_dummy_loc i in
-    if is_get then
-      singleton (Ast.LocalGet(slot))
-    else
-      singleton (Ast.LocalSet(slot))
+    begin match action with
+      | BindGet ->
+        singleton (Ast.LocalGet(slot))
+      | BindSet ->
+        singleton (Ast.LocalSet(slot))
+      | BindTee ->
+        singleton (Ast.LocalTee(slot))
+    end
   | MLocalBind(i) ->
     (* Local bindings need to be offset to account for arguments and swap variables *)
     let slot = add_dummy_loc ((env.num_args + (List.length swap_slots)) ++ i) in
-    if is_get then
-      singleton (Ast.LocalGet(slot))
-    else
-      singleton (Ast.LocalSet(slot))
+    begin match action with
+      | BindGet ->
+        singleton (Ast.LocalGet(slot))
+      | BindSet ->
+        singleton (Ast.LocalSet(slot))
+      | BindTee ->
+        singleton (Ast.LocalTee(slot))
+    end
   | MSwapBind(i) ->
     (* Swap bindings need to be offset to account for arguments *)
     let slot = add_dummy_loc (env.num_args ++ i) in
-    if is_get then
-      singleton (Ast.LocalGet(slot))
-    else
-      singleton (Ast.LocalSet(slot))
+    begin match action with
+      | BindGet ->
+        singleton (Ast.LocalGet(slot))
+      | BindSet ->
+        singleton (Ast.LocalSet(slot))
+      | BindTee ->
+        singleton (Ast.LocalTee(slot))
+    end
   | MGlobalBind(i) ->
     (* Global bindings need to be offset to account for any imports *)
     let slot = add_dummy_loc (env.global_offset ++ i) in
-    if is_get then
-      singleton (Ast.GlobalGet(slot))
-    else
-      singleton (Ast.GlobalSet(slot))
+    begin match action with
+      | BindGet ->
+        singleton (Ast.GlobalGet(slot))
+      | BindSet ->
+        singleton (Ast.GlobalSet(slot))
+      | BindTee ->
+        Concatlist.t_of_list [
+          Ast.GlobalSet(slot);
+          Ast.GlobalGet(slot);
+        ]
+    end
   | MClosureBind(i) ->
     (* Closure bindings need to be calculated *)
     begin
-      if not(is_get) then
+      if not(action = BindGet) then
         failwith "Internal error: attempted to emit instruction which would mutate closure contents"
     end;
     cons
@@ -290,7 +311,7 @@ let compile_bind ~is_get (env : codegen_env) (b : binding) : Wasm.Ast.instr' Con
       (singleton (load ~offset:(4 * (3 + Int32.to_int i)) ()))
   | MImport(i) ->
     begin
-      if not(is_get) then
+      if not(action = BindGet) then
         failwith "Internal error: attempted to emit instruction which would mutate an import"
     end;
     (* Adjust for runtime functions *)
@@ -302,11 +323,11 @@ let get_swap ?ty:(typ=Types.I32Type) env idx =
   | Types.I32Type ->
     if idx > (List.length swap_slots_i32) then
       raise Not_found;
-    compile_bind ~is_get:true env (MSwapBind(Int32.of_int (idx + swap_i32_offset)))
+    compile_bind ~action:BindGet env (MSwapBind(Int32.of_int (idx + swap_i32_offset)))
   | Types.I64Type ->
     if idx > (List.length swap_slots_i64) then
       raise Not_found;
-    compile_bind ~is_get:true env (MSwapBind(Int32.of_int (idx + swap_i64_offset)))
+    compile_bind ~action:BindGet env (MSwapBind(Int32.of_int (idx + swap_i64_offset)))
   | _ -> raise Not_found
 
 let set_swap ?ty:(typ=Types.I32Type) env idx =
@@ -314,11 +335,23 @@ let set_swap ?ty:(typ=Types.I32Type) env idx =
   | Types.I32Type ->
     if idx > (List.length swap_slots_i32) then
       raise Not_found;
-    compile_bind ~is_get:false env (MSwapBind(Int32.of_int (idx + swap_i32_offset)))
+    compile_bind ~action:BindSet env (MSwapBind(Int32.of_int (idx + swap_i32_offset)))
   | Types.I64Type ->
     if idx > (List.length swap_slots_i64) then
       raise Not_found;
-    compile_bind ~is_get:false env (MSwapBind(Int32.of_int (idx + swap_i64_offset)))
+    compile_bind ~action:BindSet env (MSwapBind(Int32.of_int (idx + swap_i64_offset)))
+  | _ -> raise Not_found
+
+let tee_swap ?ty:(typ=Types.I32Type) env idx =
+  match typ with
+  | Types.I32Type ->
+    if idx > (List.length swap_slots_i32) then
+      raise Not_found;
+    compile_bind ~action:BindTee env (MSwapBind(Int32.of_int (idx + swap_i32_offset)))
+  | Types.I64Type ->
+    if idx > (List.length swap_slots_i64) then
+      raise Not_found;
+    compile_bind ~action:BindTee env (MSwapBind(Int32.of_int (idx + swap_i64_offset)))
   | _ -> raise Not_found
 
 
@@ -326,7 +359,7 @@ let compile_imm (env : codegen_env) (i : immediate) : Wasm.Ast.instr' Concatlist
   match i with
   | MImmConst c -> singleton (Ast.Const(add_dummy_loc @@ compile_const c))
   | MImmBinding b ->
-    compile_bind ~is_get:true env b
+    compile_bind ~action:BindGet env b
 
 
 let call_error_handler env err args =
@@ -359,6 +392,455 @@ let check_overflow env = Concatlist.t_of_list [
   ]
 
 
+let compile_tuple_op env tup_imm op =
+  let tup = compile_imm env tup_imm in
+  match op with
+  | MTupleGet(idx) ->
+    let idx_int = Int32.to_int idx in
+    (* Note that we're assuming the type-checker has done its
+       job and this access is not out of bounds. *)
+    tup @ (untag TupleTagType) +@ [
+        load ~offset:(4 * (idx_int + 1)) ();
+      ]
+  | MTupleSet(idx, imm) ->
+    let idx_int = Int32.to_int idx in
+    tup @ (untag TupleTagType) @ (compile_imm env imm) +@ [
+        store ~offset:(4 * (idx_int + 1)) ();
+      ] @ (compile_imm env imm)
+
+
+let compile_array_op env arr_imm op =
+  let arr = compile_imm env arr_imm in
+  match op with
+  | MArrayGet(idx_imm) ->
+    let idx = compile_imm env idx_imm in
+    (* Check that the index is in bounds *)
+    arr @ (untag (GenericHeapType(Some ArrayType))) +@ [load ~offset:4 ()] @
+    arr @ (untag (GenericHeapType(Some ArrayType))) +@ [load ~offset:4 ()] +@ [
+      Ast.Const(const_int32 (-2));
+      Ast.Binary(Values.I32 Ast.IntOp.Mul);
+    ] @ idx +@ [
+      Ast.Compare(Values.I32 Ast.IntOp.GtS);
+      error_if_true env ArrayIndexOutOfBounds [];
+      Ast.Const(const_int32 2);
+      Ast.Binary(Values.I32 Ast.IntOp.Mul);
+    ] @ idx +@ [
+      Ast.Compare(Values.I32 Ast.IntOp.LeS);
+      error_if_true env ArrayIndexOutOfBounds [];
+    (* Resolve a negative index *)
+    ] @ idx +@ [
+      Ast.Const(const_int32 0);
+      Ast.Compare(Values.I32 Ast.IntOp.LtS);
+      Ast.If([Types.I32Type],
+        Concatlist.mapped_list_of_t add_dummy_loc @@
+        idx +@ [
+          Ast.Const(const_int32 1);
+          Ast.Binary(Values.I32 Ast.IntOp.ShrS);
+        ] @ arr @ (untag (GenericHeapType(Some ArrayType))) +@ [
+          load ~offset:4 ();
+          (Ast.Binary(Values.I32 Ast.IntOp.Add))
+        ],
+        Concatlist.mapped_list_of_t add_dummy_loc @@
+        idx +@ [
+          Ast.Const(const_int32 1);
+          Ast.Binary(Values.I32 Ast.IntOp.ShrS);
+        ]
+      );
+      (* Get the item *)
+      Ast.Const(const_int32 4);
+      Ast.Binary(Values.I32 Ast.IntOp.Mul);
+    ] @ arr @ (untag (GenericHeapType(Some ArrayType))) +@ [
+      Ast.Binary(Values.I32 Ast.IntOp.Add);
+      load ~offset:8 ();
+    ]
+  | MArrayLength ->
+    arr @ (untag (GenericHeapType(Some ArrayType))) +@ [
+      load ~offset:4 ();
+      Ast.Const(const_int32 1);
+      Ast.Binary(Values.I32 Ast.IntOp.Shl);
+    ]
+  | MArraySet(idx_imm, val_imm) ->
+    let idx = compile_imm env idx_imm in
+    let val_ = compile_imm env val_imm in
+    (* Check that the index is in bounds *)
+    arr @ (untag (GenericHeapType(Some ArrayType))) +@ [load ~offset:4 ()] @
+    arr @ (untag (GenericHeapType(Some ArrayType))) +@ [load ~offset:4 ()] +@ [
+      Ast.Const(const_int32 (-2));
+      Ast.Binary(Values.I32 Ast.IntOp.Mul);
+    ] @ idx +@ [
+      Ast.Compare(Values.I32 Ast.IntOp.GtS);
+      error_if_true env ArrayIndexOutOfBounds [];
+      Ast.Const(const_int32 2);
+      Ast.Binary(Values.I32 Ast.IntOp.Mul);
+    ] @ idx +@ [
+      Ast.Compare(Values.I32 Ast.IntOp.LeS);
+      error_if_true env ArrayIndexOutOfBounds [];
+    (* Resolve a negative index *)
+    ] @ idx +@ [
+      Ast.Const(const_int32 0);
+      Ast.Compare(Values.I32 Ast.IntOp.LtS);
+      Ast.If([Types.I32Type],
+        Concatlist.mapped_list_of_t add_dummy_loc @@
+        idx +@ [
+          Ast.Const(const_int32 1);
+          Ast.Binary(Values.I32 Ast.IntOp.ShrS);
+        ] @ arr @ (untag (GenericHeapType(Some ArrayType))) +@ [
+          load ~offset:4 ();
+          (Ast.Binary(Values.I32 Ast.IntOp.Add))
+        ],
+        Concatlist.mapped_list_of_t add_dummy_loc @@
+        idx +@ [
+          Ast.Const(const_int32 1);
+          Ast.Binary(Values.I32 Ast.IntOp.ShrS);
+        ]
+      );
+      (* Store the item *)
+      Ast.Const(const_int32 4);
+      Ast.Binary(Values.I32 Ast.IntOp.Mul);
+    ] @ arr @ (untag (GenericHeapType(Some ArrayType))) +@ [
+      Ast.Binary(Values.I32 Ast.IntOp.Add);
+    ] @ val_ +@ [
+      store ~offset:8 ();
+    ] @ val_
+
+
+let compile_adt_op env adt_imm op =
+  let adt = compile_imm env adt_imm in
+  match op with
+  | MAdtGet(idx) ->
+    let idx_int = Int32.to_int idx in 
+    adt @ (untag (GenericHeapType (Some ADTType))) +@ [
+      load ~offset:(4 * (idx_int + 5)) ();
+    ]
+  | MAdtGetModule ->
+    adt @ (untag (GenericHeapType (Some ADTType))) +@ [
+      load ~offset:4 ();
+    ]
+  | MAdtGetTag ->
+    adt @ (untag (GenericHeapType (Some ADTType))) +@ [
+      load ~offset:12 ();
+    ]
+
+
+let compile_record_op env rec_imm op =
+  let record = compile_imm env rec_imm in
+  match op with
+  | MRecordGet(idx) ->
+    let idx_int = Int32.to_int idx in
+    record @ (untag (GenericHeapType (Some RecordType))) +@ [
+        load ~offset:(4 * (idx_int + 3)) ();
+      ]
+
+
+(** Heap allocations. *)
+let round_up (num : int) (multiple : int) : int =
+  num + (num mod multiple)
+
+(** Rounds the given number of words to be aligned correctly *)
+let round_allocation_size (num_words : int) : int =
+  round_up num_words 4
+
+let heap_allocate env (num_words : int) =
+  let words_to_allocate = round_allocation_size num_words in
+  Concatlist.t_of_list [
+    Ast.Const(const_int32 (4 * words_to_allocate));
+    call_malloc env;
+  ]
+
+let heap_allocate_imm ?(additional_words=0) env (num_words : immediate) =
+  let num_words = compile_imm env num_words in
+  (* 
+    Normally, this would be:
+      Untag num_words
+      Find remainder by 4
+      Untag num_words
+      Add (to get rounded value)
+      Multiply by 4 (to get bytes)
+
+    Instead, we do:
+      Find remainder by 8
+      Add (to get rounded value)
+      Multiply by 2 (to get bytes)
+
+    Proof:
+      This is an exercise left to the reader.
+   *)
+  if additional_words = 0 then
+    num_words @ num_words +@ [
+      (* Round up to nearest multiple of 8 *)
+      Ast.Const(const_int32 8);
+      Ast.Binary(Values.I32 Ast.IntOp.RemS);
+      Ast.Binary(Values.I32 Ast.IntOp.Add);
+      (* Get number of bytes *)
+      Ast.Const(const_int32 2);
+      Ast.Binary(Values.I32 Ast.IntOp.Mul);
+      call_malloc env;
+    ]
+  else
+    num_words @ num_words +@ [
+      (* Add in additional words (tagged) before rounding *)
+      Ast.Const(const_int32 (additional_words * 2));
+      Ast.Binary(Values.I32 Ast.IntOp.Add);
+      (* Round up to nearest multiple of 8 *)
+      Ast.Const(const_int32 8);
+      Ast.Binary(Values.I32 Ast.IntOp.RemS);
+      Ast.Binary(Values.I32 Ast.IntOp.Add);
+      (* Add in the additional words (tagged) again *)
+      Ast.Const(const_int32 (additional_words * 2));
+      Ast.Binary(Values.I32 Ast.IntOp.Add);
+      (* Get number of bytes *)
+      Ast.Const(const_int32 2);
+      Ast.Binary(Values.I32 Ast.IntOp.Mul);
+      call_malloc env;
+    ]
+
+let heap_check_memory env (num_words : int) =
+  let words_to_allocate = round_allocation_size num_words in
+  Concatlist.t_of_list [
+    Ast.Const(const_int32 (4 * words_to_allocate));
+    call_runtime_check_memory env;
+  ]
+
+
+let buf_to_ints (buf : Buffer.t) : int64 list =
+  let num_bytes = Buffer.length buf in
+  let num_ints = round_up num_bytes 8 in
+  let out_ints = ref [] in
+
+  let byte_buf = Bytes.create (num_ints * 8) in
+  Buffer.blit buf 0 byte_buf 0 num_bytes;
+  let bytes_to_int = if Sys.big_endian then
+      Stdint.Uint64.of_bytes_big_endian
+    else
+      Stdint.Uint64.of_bytes_little_endian in
+  for i = 0 to (num_ints - 1) do
+    out_ints := (bytes_to_int byte_buf (i * 8))::!out_ints
+  done;
+  List.rev @@ List.map Stdint.Uint64.to_int64 !out_ints
+
+let call_lambda env func args =
+  let compiled_func = compile_imm env func in
+  let compiled_args = Concatlist.flatten @@ List.map (compile_imm env) args in
+  let ftype = add_dummy_loc @@ Int32.of_int (get_arity_func_type_idx env (1 + List.length args)) in
+  compiled_func @
+  untag LambdaTagType @
+  compiled_args @
+  compiled_func @
+  untag LambdaTagType +@ [
+    load ~offset:4 ();
+    Ast.CallIndirect(ftype);
+  ]
+
+let allocate_string env str =
+  let str_as_bytes = Bytes.of_string str in
+  let num_bytes = Bytes.length str_as_bytes in
+  let num_ints = round_up num_bytes 8 in
+  let buf = Buffer.create num_ints in
+  BatUTF8.iter (BatUTF8.Buf.add_char buf) str;
+
+  let ints_to_push : int64 list = buf_to_ints buf in
+  let get_swap = get_swap env 0 in
+  let tee_swap = tee_swap env 0 in
+  let preamble = Concatlist.t_of_list [
+      Ast.Const(const_int32 @@ (4 * (2 + (2 * (List.length ints_to_push)))));
+      call_malloc env;
+    ] @ tee_swap +@ [
+      Ast.Const(const_int32 @@ String.length str);
+    ] @ get_swap +@ [
+      Ast.Const(const_int32 (tag_val_of_heap_tag_type StringType));
+      store ~offset:0 ();
+      store ~offset:4 ();
+    ] in
+  let elts = List.flatten @@ List.mapi (fun idx (i : int64) ->
+      Concatlist.list_of_t
+        (get_swap +@
+         [
+           Ast.Const(add_dummy_loc (Values.I64 i));
+           store ~ty:Types.I64Type ~offset:(8 * (idx + 1)) ();
+         ])) ints_to_push in
+  preamble +@ elts @ get_swap +@ [
+    Ast.Const(const_int32 @@ tag_val_of_tag_type (GenericHeapType(Some StringType)));
+    Ast.Binary(Values.I32 Ast.IntOp.Or);
+  ]
+
+let allocate_closure env ?lambda ({func_idx; arity; variables} as closure_data) =
+  let num_free_vars = List.length variables in
+  let closure_size = num_free_vars + 3 in
+  let get_swap = get_swap env 0 in
+  let tee_swap = tee_swap env 0 in
+  let access_lambda = Option.default (get_swap @+ [
+      Ast.Const(const_int32 @@ 4 * round_allocation_size closure_size);
+      Ast.Binary(Values.I32 Ast.IntOp.Sub);
+    ]) lambda in
+  env.backpatches := (access_lambda, closure_data)::!(env.backpatches);
+  (heap_allocate env closure_size) @ tee_swap +@ [
+    Ast.Const(const_int32 num_free_vars);
+  ] @ get_swap +@ [
+    Ast.GlobalGet(var_of_ext_global env runtime_mod reloc_base);
+    Ast.Const(wrap_int32 (Int32.(add func_idx (of_int env.func_offset))));
+    Ast.Binary(Values.I32 Ast.IntOp.Add);
+  ] @ get_swap +@ [
+    Ast.Const(add_dummy_loc (Values.I32Value.to_value arity));
+
+    store ~offset:0 ();
+    store ~offset:4 ();
+    store ~offset:8 ();
+  ] @ get_swap +@ [
+    Ast.Const(const_int32 @@ tag_val_of_tag_type LambdaTagType);
+    Ast.Binary(Values.I32 Ast.IntOp.Or);
+  ]
+
+let allocate_adt env ttag vtag elts =
+  (* TODO: We don't really need to store the arity here. Could move this to module-static info *)
+  (* Heap memory layout of ADT types:
+    [ <value type tag>, <module_tag>, <type_tag>, <variant_tag>, <arity>, elts ... ]
+   *)
+  let num_elts = List.length elts in
+  let get_swap = get_swap env 0 in
+  let tee_swap = tee_swap env 0 in
+  let compile_elt idx elt =
+    get_swap @
+    (compile_imm env elt) +@ [
+      store ~offset:(4 * (idx + 5)) ();
+    ] in
+
+  (heap_allocate env (num_elts + 5)) @ tee_swap +@ [
+    Ast.Const(const_int32 (tag_val_of_heap_tag_type ADTType));
+    store ~offset:0 ();
+  ] @ get_swap +@ [
+    Ast.GlobalGet(var_of_ext_global env runtime_mod module_runtime_id);
+    (* Tag the runtime id *)
+    Ast.Const(const_int32 2);
+    Ast.Binary(Values.I32 Ast.IntOp.Mul);
+    store ~offset:4 ();
+  ] @ get_swap @ (compile_imm env ttag) +@ [
+    store ~offset:8 ();
+  ] @ get_swap @ (compile_imm env vtag) +@ [
+    store ~offset:12 ();
+  ] @ get_swap +@ [
+    Ast.Const(const_int32 num_elts);
+    store ~offset:16 ();
+  ] @ (Concatlist.flatten @@ List.mapi compile_elt elts) @ get_swap +@ [
+    Ast.Const(const_int32 @@ tag_val_of_tag_type (GenericHeapType (Some ADTType)));
+    Ast.Binary(Values.I32 Ast.IntOp.Or);
+  ]
+
+let allocate_tuple env elts =
+  let num_elts = List.length elts in
+  let get_swap = get_swap env 0 in
+  let tee_swap = tee_swap env 0 in
+  let compile_elt idx elt =
+    get_swap @
+    (compile_imm env elt) +@ [
+      store ~offset:(4 * (idx + 1)) ();
+    ] in
+
+  (heap_allocate env (num_elts + 1)) @ tee_swap +@ [
+    Ast.Const(const_int32 num_elts);
+    store ~offset:0 ();
+  ] @ (Concatlist.flatten @@ List.mapi compile_elt elts) @ get_swap +@ [
+    Ast.Const(const_int32 @@ tag_val_of_tag_type TupleTagType);
+    Ast.Binary(Values.I32 Ast.IntOp.Or);
+  ]
+
+let allocate_array env elts =
+  let num_elts = List.length elts in
+  let get_swap = get_swap env 0 in
+  let tee_swap = tee_swap env 0 in
+  let compile_elt idx elt =
+    get_swap @
+    (compile_imm env elt) +@ [
+      store ~offset:(4 * (idx + 2)) ();
+    ] in
+
+  (heap_allocate env (num_elts + 2)) @ tee_swap +@ [
+    Ast.Const(const_int32 (tag_val_of_heap_tag_type ArrayType));
+    store ~offset:0 ();
+  ] @ get_swap +@ [
+    Ast.Const(const_int32 num_elts);
+    store ~offset:4 ();
+  ] @ (Concatlist.flatten @@ List.mapi compile_elt elts) @ get_swap +@ [
+    Ast.Const(const_int32 @@ tag_val_of_tag_type (GenericHeapType (Some ArrayType)));
+    Ast.Binary(Values.I32 Ast.IntOp.Or);
+  ]
+
+let allocate_array_n env num_elts elt =
+  let get_arr_addr = get_swap env 0 in
+  let set_arr_addr = set_swap env 0 in
+  let get_loop_counter = get_swap env 1 in
+  let set_loop_counter = set_swap env 1 in
+
+  let compiled_num_elts = compile_imm env num_elts in
+  let elt = compile_imm env elt in
+
+  compiled_num_elts +@ [
+    Ast.Const(const_int32 0);
+    Ast.Compare(Values.I32 Ast.IntOp.LtS);
+    error_if_true env InvalidArgument [num_elts];
+  ] @ (heap_allocate_imm ~additional_words:2 env num_elts) @ set_arr_addr @ get_arr_addr +@ [
+    Ast.Const(const_int32 (tag_val_of_heap_tag_type ArrayType));
+    store ~offset:0 ();
+  ] @ get_arr_addr @ compiled_num_elts +@ [
+    Ast.Const(const_int32 1);
+    Ast.Binary(Values.I32 Ast.IntOp.ShrS);
+    store ~offset:4 ();
+  ] @ compiled_num_elts +@ [
+    Ast.Const(const_int32 1);
+    Ast.Binary(Values.I32 Ast.IntOp.ShrS);
+  ] @ set_loop_counter @ singleton 
+  (Ast.Block([], Concatlist.mapped_list_of_t add_dummy_loc @@ singleton 
+    (Ast.Loop([], Concatlist.mapped_list_of_t add_dummy_loc @@
+      get_loop_counter +@ [
+        Ast.Test(Values.I32 Ast.IntOp.Eqz); 
+        Ast.BrIf (add_dummy_loc @@ Int32.of_int 1)
+      ] @ get_loop_counter +@ [
+        Ast.Const(const_int32 1);
+        Ast.Binary(Values.I32 Ast.IntOp.Sub);
+      ] @ set_loop_counter @ get_arr_addr @ get_loop_counter +@ [
+        Ast.Const(const_int32 4);
+        Ast.Binary(Values.I32 Ast.IntOp.Mul);
+        Ast.Binary(Values.I32 Ast.IntOp.Add);
+      ] @ elt +@ [
+        store ~offset:8 ();
+        Ast.Br (add_dummy_loc @@ Int32.of_int 0);
+      ])
+    )
+  )) @ get_arr_addr +@ [
+    Ast.Const(const_int32 @@ tag_val_of_tag_type (GenericHeapType (Some ArrayType)));
+    Ast.Binary(Values.I32 Ast.IntOp.Or);
+  ]
+
+let allocate_record env ttag elts =
+  let _, elts = List.split elts in
+  (* Heap memory layout of records:
+    [ <value type tag>, <module_tag>, <type_tag>, ordered elts ... ]
+   *)
+  let num_elts = List.length elts in
+  let get_swap = get_swap env 0 in
+  let tee_swap = tee_swap env 0 in
+  let compile_elt idx elt =
+    get_swap @
+    (compile_imm env elt) +@ [
+      store ~offset:(4 * (idx + 3)) ();
+    ] in
+
+  (heap_allocate env (num_elts + 3)) @ tee_swap +@ [
+    Ast.Const(const_int32 (tag_val_of_heap_tag_type RecordType));
+    store ~offset:0 ();
+  ] @ get_swap +@ [
+    Ast.GlobalGet(var_of_ext_global env runtime_mod module_runtime_id);
+    (* Tag the runtime id *)
+    Ast.Const(const_int32 2);
+    Ast.Binary(Values.I32 Ast.IntOp.Mul);
+    store ~offset:4 ();
+  ] @ get_swap @ (compile_imm env ttag) +@ [
+    store ~offset:8 ();
+  ] @ (Concatlist.flatten @@ List.mapi compile_elt elts) @ get_swap +@ [
+    Ast.Const(const_int32 @@ tag_val_of_tag_type (GenericHeapType (Some RecordType)));
+    Ast.Binary(Values.I32 Ast.IntOp.Or);
+  ]
+
+
 let compile_prim1 env p1 arg : Wasm.Ast.instr' Concatlist.t =
   let compiled_arg = compile_imm env arg in
   (* TODO: Overflow checks? *)
@@ -376,6 +858,7 @@ let compile_prim1 env p1 arg : Wasm.Ast.instr' Concatlist.t =
       Ast.Binary(Values.I32 Ast.IntOp.Xor);
     ]
   | Ignore -> singleton (Ast.Const const_void)
+  | ArrayLength -> compile_array_op env arg MArrayLength
   | Box -> failwith "Unreachable case; should never get here: Box"
   | Unbox -> failwith "Unreachable case; should never get here: Unbox"
 
@@ -522,210 +1005,8 @@ let compile_prim2 (env : codegen_env) p2 arg1 arg2 : Wasm.Ast.instr' Concatlist.
     compiled_arg1 @ compiled_arg2 +@ [
       Ast.Compare(Values.I32 Ast.IntOp.Eq)
     ] @ encode_bool
-
-
-(** Heap allocations. *)
-let round_up (num : int) (multiple : int) : int =
-  multiple * (((num - 1) / multiple) + 1)
-
-(** Rounds the given number of words to be aligned correctly *)
-let round_allocation_size (num_words : int) : int =
-  round_up num_words 4
-
-let heap_allocate env (num_words : int) =
-  let words_to_allocate = round_allocation_size num_words in
-  Concatlist.t_of_list [
-    Ast.Const(const_int32 (4 * words_to_allocate));
-    call_malloc env;
-  ]
-
-let heap_check_memory env (num_words : int) =
-  let words_to_allocate = round_allocation_size num_words in
-  Concatlist.t_of_list [
-    Ast.Const(const_int32 (4 * words_to_allocate));
-    call_runtime_check_memory env;
-  ]
-
-
-let buf_to_ints (buf : Buffer.t) : int64 list =
-  let num_bytes = Buffer.length buf in
-  let num_ints = round_up num_bytes 8 in
-  let out_ints = ref [] in
-
-  let byte_buf = Bytes.create (num_ints * 8) in
-  Buffer.blit buf 0 byte_buf 0 num_bytes;
-  let bytes_to_int = if Sys.big_endian then
-      Stdint.Uint64.of_bytes_big_endian
-    else
-      Stdint.Uint64.of_bytes_little_endian in
-  for i = 0 to (num_ints - 1) do
-    out_ints := (bytes_to_int byte_buf (i * 8))::!out_ints
-  done;
-  List.rev @@ List.map Stdint.Uint64.to_int64 !out_ints
-
-let allocate_string env str =
-  let str_as_bytes = Bytes.of_string str in
-  let num_bytes = Bytes.length str_as_bytes in
-  let num_ints = round_up num_bytes 8 in
-  let buf = Buffer.create num_ints in
-  BatUTF8.iter (BatUTF8.Buf.add_char buf) str;
-
-  let ints_to_push : int64 list = buf_to_ints buf in
-  let get_swap = get_swap env 0 in
-  let set_swap = set_swap env 0 in
-  let preamble = Concatlist.t_of_list [
-      Ast.Const(const_int32 @@ (4 * (2 + (2 * (List.length ints_to_push)))));
-      call_malloc env;
-    ] @ set_swap @ get_swap +@ [
-      Ast.Const(const_int32 @@ String.length str);
-    ] @ get_swap +@ [
-      Ast.Const(const_int32 (tag_val_of_heap_tag_type StringType));
-      store ~offset:0 ();
-      store ~offset:4 ();
-    ] in
-  let elts = List.flatten @@ List.mapi (fun idx (i : int64) ->
-      Concatlist.list_of_t
-        (get_swap +@
-         [
-           Ast.Const(add_dummy_loc (Values.I64 i));
-           store ~ty:Types.I64Type ~offset:(8 * (idx + 1)) ();
-         ])) ints_to_push in
-  preamble +@ elts @ get_swap +@ [
-    Ast.Const(const_int32 @@ tag_val_of_tag_type (GenericHeapType(Some StringType)));
-    Ast.Binary(Values.I32 Ast.IntOp.Or);
-  ]
-
-let allocate_closure env ?lambda ({func_idx; arity; variables} as closure_data) =
-  let num_free_vars = List.length variables in
-  let closure_size = num_free_vars + 3 in
-  let get_swap = get_swap env 0 in
-  let set_swap = set_swap env 0 in
-  let access_lambda = Option.default (get_swap @+ [
-      Ast.Const(const_int32 @@ 4 * round_allocation_size closure_size);
-      Ast.Binary(Values.I32 Ast.IntOp.Sub);
-    ]) lambda in
-  env.backpatches := (access_lambda, closure_data)::!(env.backpatches);
-  (heap_allocate env closure_size) @ set_swap @ get_swap +@ [
-    Ast.Const(const_int32 num_free_vars);
-  ] @ get_swap +@ [
-    Ast.GlobalGet(var_of_ext_global env runtime_mod reloc_base);
-    Ast.Const(wrap_int32 (Int32.(add func_idx (of_int env.func_offset))));
-    Ast.Binary(Values.I32 Ast.IntOp.Add);
-  ] @ get_swap +@ [
-    Ast.Const(add_dummy_loc (Values.I32Value.to_value arity));
-
-    store ~offset:0 ();
-    store ~offset:4 ();
-    store ~offset:8 ();
-  ] @ get_swap +@ [
-    Ast.Const(const_int32 @@ tag_val_of_tag_type LambdaTagType);
-    Ast.Binary(Values.I32 Ast.IntOp.Or);
-  ]
-
-let allocate_adt env ttag vtag elts =
-  (* TODO: We don't really need to store the arity here. Could move this to module-static info *)
-  (* Heap memory layout of ADT types:
-    [ <value type tag>, <module_tag>, <type_tag>, <variant_tag>, <arity>, elts ... ]
-   *)
-  let num_elts = List.length elts in
-  let get_swap = get_swap env 0 in
-  let set_swap = set_swap env 0 in
-  let compile_elt idx elt =
-    get_swap @
-    (compile_imm env elt) +@ [
-      store ~offset:(4 * (idx + 5)) ();
-    ] in
-
-  (heap_allocate env (num_elts + 5)) @ set_swap @ get_swap +@ [
-    Ast.Const(const_int32 (tag_val_of_heap_tag_type ADTType));
-    store ~offset:0 ();
-  ] @ get_swap +@ [
-    Ast.GlobalGet(var_of_ext_global env runtime_mod module_runtime_id);
-    (* Tag the runtime id *)
-    Ast.Const(const_int32 2);
-    Ast.Binary(Values.I32 Ast.IntOp.Mul);
-    store ~offset:4 ();
-  ] @ get_swap @ (compile_imm env ttag) +@ [
-    store ~offset:8 ();
-  ] @ get_swap @ (compile_imm env vtag) +@ [
-    store ~offset:12 ();
-  ] @ get_swap +@ [
-    Ast.Const(const_int32 num_elts);
-    store ~offset:16 ();
-  ] @ (Concatlist.flatten @@ List.mapi compile_elt elts) @ get_swap +@ [
-    Ast.Const(const_int32 @@ tag_val_of_tag_type (GenericHeapType (Some ADTType)));
-    Ast.Binary(Values.I32 Ast.IntOp.Or);
-  ]
-
-let allocate_tuple env elts =
-  let num_elts = List.length elts in
-  let get_swap = get_swap env 0 in
-  let set_swap = set_swap env 0 in
-  let compile_elt idx elt =
-    get_swap @
-    (compile_imm env elt) +@ [
-      store ~offset:(4 * (idx + 1)) ();
-    ] in
-
-  (heap_allocate env (num_elts + 1)) @ set_swap @ get_swap +@ [
-    Ast.Const(const_int32 num_elts);
-    store ~offset:0 ();
-  ] @ (Concatlist.flatten @@ List.mapi compile_elt elts) @ get_swap +@ [
-    Ast.Const(const_int32 @@ tag_val_of_tag_type TupleTagType);
-    Ast.Binary(Values.I32 Ast.IntOp.Or);
-  ]
-
-let allocate_array env elts =
-  let num_elts = List.length elts in
-  let get_swap = get_swap env 0 in
-  let set_swap = set_swap env 0 in
-  let compile_elt idx elt =
-    get_swap @
-    (compile_imm env elt) +@ [
-      store ~offset:(4 * (idx + 2)) ();
-    ] in
-
-  (heap_allocate env (num_elts + 2)) @ set_swap @ get_swap +@ [
-    Ast.Const(const_int32 (tag_val_of_heap_tag_type ArrayType));
-    store ~offset:0 ();
-  ] @ get_swap +@ [
-    Ast.Const(const_int32 num_elts);
-    store ~offset:4 ();
-  ] @ (Concatlist.flatten @@ List.mapi compile_elt elts) @ get_swap +@ [
-    Ast.Const(const_int32 @@ tag_val_of_tag_type (GenericHeapType (Some ArrayType)));
-    Ast.Binary(Values.I32 Ast.IntOp.Or);
-  ]
-
-let allocate_record env ttag elts =
-  let _, elts = List.split elts in
-  (* Heap memory layout of records:
-    [ <value type tag>, <module_tag>, <type_tag>, ordered elts ... ]
-   *)
-  let num_elts = List.length elts in
-  let get_swap = get_swap env 0 in
-  let set_swap = set_swap env 0 in
-  let compile_elt idx elt =
-    get_swap @
-    (compile_imm env elt) +@ [
-      store ~offset:(4 * (idx + 3)) ();
-    ] in
-
-  (heap_allocate env (num_elts + 3)) @ set_swap @ get_swap +@ [
-    Ast.Const(const_int32 (tag_val_of_heap_tag_type RecordType));
-    store ~offset:0 ();
-  ] @ get_swap +@ [
-    Ast.GlobalGet(var_of_ext_global env runtime_mod module_runtime_id);
-    (* Tag the runtime id *)
-    Ast.Const(const_int32 2);
-    Ast.Binary(Values.I32 Ast.IntOp.Mul);
-    store ~offset:4 ();
-  ] @ get_swap @ (compile_imm env ttag) +@ [
-    store ~offset:8 ();
-  ] @ (Concatlist.flatten @@ List.mapi compile_elt elts) @ get_swap +@ [
-    Ast.Const(const_int32 @@ tag_val_of_tag_type (GenericHeapType (Some RecordType)));
-    Ast.Binary(Values.I32 Ast.IntOp.Or);
-  ]
-
+  | ArrayMake ->
+    allocate_array_n env arg1 arg2
 
 let compile_allocation env alloc_type =
   match alloc_type with
@@ -735,140 +1016,6 @@ let compile_allocation env alloc_type =
   | MRecord(ttag, elts) -> allocate_record env ttag elts
   | MString(str) -> allocate_string env str
   | MADT(ttag, vtag, elts) -> allocate_adt env ttag vtag elts
-
-
-let compile_tuple_op env tup_imm op =
-  let tup = compile_imm env tup_imm in
-  match op with
-  | MTupleGet(idx) ->
-    let idx_int = Int32.to_int idx in
-    (* Note that we're assuming the type-checker has done its
-       job and this access is not out of bounds. *)
-    tup @ (untag TupleTagType) +@ [
-        load ~offset:(4 * (idx_int + 1)) ();
-      ]
-  | MTupleSet(idx, imm) ->
-    let idx_int = Int32.to_int idx in
-    tup @ (untag TupleTagType) @ (compile_imm env imm) +@ [
-        store ~offset:(4 * (idx_int + 1)) ();
-      ] @ (compile_imm env imm)
-
-
-let compile_array_op env arr_imm op =
-  let arr = compile_imm env arr_imm in
-  match op with
-  | MArrayGet(idx_imm) ->
-    let idx = compile_imm env idx_imm in
-    (* Check that the index is in bounds *)
-    arr @ (untag (GenericHeapType(Some ArrayType))) +@ [load ~offset:4 ()] @
-    arr @ (untag (GenericHeapType(Some ArrayType))) +@ [load ~offset:4 ()] +@ [
-      Ast.Const(const_int32 (-2));
-      Ast.Binary(Values.I32 Ast.IntOp.Mul);
-    ] @ idx +@ [
-      Ast.Compare(Values.I32 Ast.IntOp.GtS);
-      error_if_true env ArrayIndexOutOfBounds [];
-      Ast.Const(const_int32 2);
-      Ast.Binary(Values.I32 Ast.IntOp.Mul);
-    ] @ idx +@ [
-      Ast.Compare(Values.I32 Ast.IntOp.LeS);
-      error_if_true env ArrayIndexOutOfBounds [];
-    (* Resolve a negative index *)
-    ] @ idx +@ [
-      Ast.Const(const_int32 0);
-      Ast.Compare(Values.I32 Ast.IntOp.LtS);
-      Ast.If([Types.I32Type],
-        Concatlist.mapped_list_of_t add_dummy_loc @@
-        idx +@ [
-          Ast.Const(const_int32 1);
-          Ast.Binary(Values.I32 Ast.IntOp.ShrS);
-        ] @ arr @ (untag (GenericHeapType(Some ArrayType))) +@ [
-          load ~offset:4 ();
-          (Ast.Binary(Values.I32 Ast.IntOp.Add))
-        ],
-        Concatlist.mapped_list_of_t add_dummy_loc @@
-        idx +@ [
-          Ast.Const(const_int32 1);
-          Ast.Binary(Values.I32 Ast.IntOp.ShrS);
-        ]
-      );
-      (* Get the item *)
-      Ast.Const(const_int32 4);
-      Ast.Binary(Values.I32 Ast.IntOp.Mul);
-    ] @ arr @ (untag (GenericHeapType(Some ArrayType))) +@ [
-      Ast.Binary(Values.I32 Ast.IntOp.Add);
-      load ~offset:8 ();
-    ]
-  | MArraySet(idx_imm, val_imm) ->
-    let idx = compile_imm env idx_imm in
-    let val_ = compile_imm env val_imm in
-    (* Check that the index is in bounds *)
-    arr @ (untag (GenericHeapType(Some ArrayType))) +@ [load ~offset:4 ()] @
-    arr @ (untag (GenericHeapType(Some ArrayType))) +@ [load ~offset:4 ()] +@ [
-      Ast.Const(const_int32 (-2));
-      Ast.Binary(Values.I32 Ast.IntOp.Mul);
-    ] @ idx +@ [
-      Ast.Compare(Values.I32 Ast.IntOp.GtS);
-      error_if_true env ArrayIndexOutOfBounds [];
-      Ast.Const(const_int32 2);
-      Ast.Binary(Values.I32 Ast.IntOp.Mul);
-    ] @ idx +@ [
-      Ast.Compare(Values.I32 Ast.IntOp.LeS);
-      error_if_true env ArrayIndexOutOfBounds [];
-    (* Resolve a negative index *)
-    ] @ idx +@ [
-      Ast.Const(const_int32 0);
-      Ast.Compare(Values.I32 Ast.IntOp.LtS);
-      Ast.If([Types.I32Type],
-        Concatlist.mapped_list_of_t add_dummy_loc @@
-        idx +@ [
-          Ast.Const(const_int32 1);
-          Ast.Binary(Values.I32 Ast.IntOp.ShrS);
-        ] @ arr @ (untag (GenericHeapType(Some ArrayType))) +@ [
-          load ~offset:4 ();
-          (Ast.Binary(Values.I32 Ast.IntOp.Add))
-        ],
-        Concatlist.mapped_list_of_t add_dummy_loc @@
-        idx +@ [
-          Ast.Const(const_int32 1);
-          Ast.Binary(Values.I32 Ast.IntOp.ShrS);
-        ]
-      );
-      (* Store the item *)
-      Ast.Const(const_int32 4);
-      Ast.Binary(Values.I32 Ast.IntOp.Mul);
-    ] @ arr @ (untag (GenericHeapType(Some ArrayType))) +@ [
-      Ast.Binary(Values.I32 Ast.IntOp.Add);
-    ] @ val_ +@ [
-      store ~offset:8 ();
-    ] @ val_
-
-
-let compile_adt_op env adt_imm op =
-  let adt = compile_imm env adt_imm in
-  match op with
-  | MAdtGet(idx) ->
-    let idx_int = Int32.to_int idx in 
-    adt @ (untag (GenericHeapType (Some ADTType))) +@ [
-      load ~offset:(4 * (idx_int + 5)) ();
-    ]
-  | MAdtGetModule ->
-    adt @ (untag (GenericHeapType (Some ADTType))) +@ [
-      load ~offset:4 ();
-    ]
-  | MAdtGetTag ->
-    adt @ (untag (GenericHeapType (Some ADTType))) +@ [
-      load ~offset:12 ();
-    ]
-
-
-let compile_record_op env rec_imm op =
-  let record = compile_imm env rec_imm in
-  match op with
-  | MRecordGet(idx) ->
-    let idx_int = Int32.to_int idx in
-    record @ (untag (GenericHeapType (Some RecordType))) +@ [
-        load ~offset:(4 * (idx_int + 3)) ();
-      ]
 
 
 let collect_backpatches env f =
@@ -895,8 +1042,8 @@ let do_backpatches env backpatches =
 let rec compile_store env binds =
   let process_binds env =
     let process_bind (b, instr) acc =
-      let store_bind = compile_bind ~is_get:false env b in
-      let get_bind = compile_bind ~is_get:true env b in
+      let store_bind = compile_bind ~action:BindSet env b in
+      let get_bind = compile_bind ~action:BindGet env b in
       let compiled_instr = match instr with
         | MAllocate(MClosure(cdata)) ->
           allocate_closure env ~lambda:get_bind cdata
@@ -974,23 +1121,7 @@ and compile_instr env instr =
   | MStore(binds) -> compile_store env binds
 
   | MCallIndirect(func, args) ->
-    let compiled_func = compile_imm env func in
-    let compiled_args = Concatlist.flatten @@ List.map (compile_imm env) args in
-    let ftype = add_dummy_loc @@ Int32.of_int (get_arity_func_type_idx env (1 + List.length args)) in
-    let get_swap = get_swap env 0 in
-    let set_swap = set_swap env 0 in
-    let all_args =
-      compiled_func @
-      untag LambdaTagType @
-      set_swap @
-      get_swap @
-      compiled_args in
-
-    all_args @
-    get_swap +@ [
-      load ~offset:4 ();
-      Ast.CallIndirect(ftype);
-    ]
+    call_lambda env func args
 
   | MIf(cond, thn, els) ->
     let compiled_cond = compile_imm env cond in
