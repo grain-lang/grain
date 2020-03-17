@@ -784,24 +784,25 @@ let allocate_array_n env num_elts elt =
     Ast.Const(const_int32 1);
     Ast.Binary(Values.I32 Ast.IntOp.ShrS);
     store ~offset:4 ();
-  ] @ compiled_num_elts +@ [
-    Ast.Const(const_int32 1);
-    Ast.Binary(Values.I32 Ast.IntOp.ShrS);
+    Ast.Const(const_int32 0);
   ] @ set_loop_counter @ singleton 
   (Ast.Block([], Concatlist.mapped_list_of_t add_dummy_loc @@ singleton 
     (Ast.Loop([], Concatlist.mapped_list_of_t add_dummy_loc @@
-      get_loop_counter +@ [
-        Ast.Test(Values.I32 Ast.IntOp.Eqz); 
+      get_loop_counter @ compiled_num_elts +@ [
+        Ast.Compare(Values.I32 Ast.IntOp.GeS);
         Ast.BrIf (add_dummy_loc @@ Int32.of_int 1)
-      ] @ get_loop_counter +@ [
-        Ast.Const(const_int32 1);
-        Ast.Binary(Values.I32 Ast.IntOp.Sub);
-      ] @ set_loop_counter @ get_arr_addr @ get_loop_counter +@ [
-        Ast.Const(const_int32 4);
+      ] @ get_arr_addr @ get_loop_counter +@ [
+        (* Since the counter is tagged, only need to multiply by 2 *)
+        Ast.Const(const_int32 2);
         Ast.Binary(Values.I32 Ast.IntOp.Mul);
         Ast.Binary(Values.I32 Ast.IntOp.Add);
       ] @ elt +@ [
         store ~offset:8 ();
+      ] @ get_loop_counter +@ [
+        (* Add 2 to keep tagged counter *)
+        Ast.Const(const_int32 2);
+        Ast.Binary(Values.I32 Ast.IntOp.Add);
+      ] @ set_loop_counter +@ [
         Ast.Br (add_dummy_loc @@ Int32.of_int 0);
       ])
     )
