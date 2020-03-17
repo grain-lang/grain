@@ -35,6 +35,7 @@ type prim2 = Parsetree.prim2 =
   | And
   | Or
   | ArrayMake
+  | ArrayInit
 
 (** Immediate expressions (requiring no computation) *)
 type imm_expression = {

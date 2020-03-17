@@ -47,6 +47,7 @@ let prim_map = PrimMap.of_seq (List.to_seq [
   
   ("@array.length", Primitive1 ArrayLength);
   ("@array.make", Primitive2 ArrayMake);
+  ("@array.init", Primitive2 ArrayInit);
 ])
 
 let transl_prim env desc = 

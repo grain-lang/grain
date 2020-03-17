@@ -111,6 +111,9 @@ let prim2_type = function
   | ArrayMake ->  
     let var = newvar ~name:"a" () in
     (Builtin_types.type_number, var, Builtin_types.type_array var)
+  | ArrayInit ->  
+    let var = newvar ~name:"a" () in
+    (Builtin_types.type_number, Builtin_types.type_lambda [Builtin_types.type_number] var, Builtin_types.type_array var)
 
 let maybe_add_pattern_variables_ghost loc_let env pv =
   List.fold_right

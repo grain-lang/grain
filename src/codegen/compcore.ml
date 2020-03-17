@@ -811,6 +811,61 @@ let allocate_array_n env num_elts elt =
     Ast.Binary(Values.I32 Ast.IntOp.Or);
   ]
 
+let allocate_array_init env num_elts init_f =
+  let get_arr_addr = get_swap env 0 in
+  let set_arr_addr = set_swap env 0 in
+  let get_loop_counter = get_swap env 1 in
+  let set_loop_counter = set_swap env 1 in
+
+  let compiled_num_elts = compile_imm env num_elts in
+
+  let compiled_func = compile_imm env init_f in
+  let ftype = add_dummy_loc @@ Int32.of_int (get_arity_func_type_idx env (2)) in
+
+  compiled_num_elts +@ [
+    Ast.Const(const_int32 0);
+    Ast.Compare(Values.I32 Ast.IntOp.LtS);
+    error_if_true env InvalidArgument [num_elts];
+  ] @ (heap_allocate_imm ~additional_words:2 env num_elts) @ set_arr_addr @ get_arr_addr +@ [
+    Ast.Const(const_int32 (tag_val_of_heap_tag_type ArrayType));
+    store ~offset:0 ();
+  ] @ get_arr_addr @ compiled_num_elts +@ [
+    Ast.Const(const_int32 1);
+    Ast.Binary(Values.I32 Ast.IntOp.ShrS);
+    store ~offset:4 ();
+    Ast.Const(const_int32 0);
+  ] @ set_loop_counter @ singleton 
+  (Ast.Block([], Concatlist.mapped_list_of_t add_dummy_loc @@ singleton 
+    (Ast.Loop([], Concatlist.mapped_list_of_t add_dummy_loc @@
+      get_loop_counter @ compiled_num_elts +@ [
+        Ast.Compare(Values.I32 Ast.IntOp.GeS);
+        Ast.BrIf (add_dummy_loc @@ Int32.of_int 1)
+      ] @ get_arr_addr @ get_loop_counter +@ [
+        (* Since the counter is tagged, only need to multiply by 2 *)
+        Ast.Const(const_int32 2);
+        Ast.Binary(Values.I32 Ast.IntOp.Mul);
+        Ast.Binary(Values.I32 Ast.IntOp.Add);
+      ] @ compiled_func @
+      untag LambdaTagType @
+      get_loop_counter @
+      compiled_func @
+      untag LambdaTagType +@ [
+        load ~offset:4 ();
+        Ast.CallIndirect(ftype);
+        store ~offset:8 ();
+      ] @ get_loop_counter +@ [
+        (* Add 2 to keep tagged counter *)
+        Ast.Const(const_int32 2);
+        Ast.Binary(Values.I32 Ast.IntOp.Add);
+      ] @ set_loop_counter +@ [
+        Ast.Br (add_dummy_loc @@ Int32.of_int 0);
+      ])
+    )
+  )) @ get_arr_addr +@ [
+    Ast.Const(const_int32 @@ tag_val_of_tag_type (GenericHeapType (Some ArrayType)));
+    Ast.Binary(Values.I32 Ast.IntOp.Or);
+  ]
+
 let allocate_record env ttag elts =
   let _, elts = List.split elts in
   (* Heap memory layout of records:
@@ -1008,6 +1063,8 @@ let compile_prim2 (env : codegen_env) p2 arg1 arg2 : Wasm.Ast.instr' Concatlist.
     ] @ encode_bool
   | ArrayMake ->
     allocate_array_n env arg1 arg2
+  | ArrayInit ->
+    allocate_array_init env arg1 arg2
 
 let compile_allocation env alloc_type =
   match alloc_type with

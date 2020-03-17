@@ -51,6 +51,7 @@ and type_string = newgenty (TTyConstr(path_string, [], ref TMemNil))
 and type_void = newgenty (TTyConstr(path_void, [], ref TMemNil))
 and type_box var = newgenty (TTyConstr(path_box, [var], ref TMemNil))
 and type_array var = newgenty (TTyConstr(path_array, [var], ref TMemNil))
+and type_lambda args res = newgenty (TTyArrow(args, res, TComOk))
 
 
 let all_predef_exns = [

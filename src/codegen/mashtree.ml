@@ -41,6 +41,7 @@ type prim2 = Parsetree.prim2 =
   | And
   | Or
   | ArrayMake
+  | ArrayInit
 
 (* Types within the WASM output *)
 type asmtype =
