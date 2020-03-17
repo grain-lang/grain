@@ -28,7 +28,8 @@ import {
   GRAIN_ERR_NOT_LAMBDA_GENERIC,
   GRAIN_ERR_BAD_INPUT,
   GRAIN_ERR_NOT_NONNEG,
-  GRAIN_ERR_NOT_NUMBER_GENERIC
+  GRAIN_ERR_NOT_NUMBER_GENERIC,
+  GRAIN_ERR_INVALID_ARGUMENT
 } from './error-codes';
 
 export class GrainError extends Error {
@@ -121,6 +122,9 @@ export function throwGrainError(errorCode, value1, value2) {
       break;
     case GRAIN_ERR_OUT_OF_MEMORY:
       message = `Out of memory`;
+      break;
+    case GRAIN_ERR_INVALID_ARGUMENT:
+      message = `Invalid argument: ${value1AsGrain}`;
       break;
     default:
       message = `Unknown error code: ${errorCode}`;
