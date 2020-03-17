@@ -1,5 +1,6 @@
 export primitive length : Array<a> -> Number = "@array.length"
 export primitive make : (Number, a) -> Array<a> = "@array.make"
+export primitive init : (Number, Number -> a) -> Array<a> = "@array.init"
 
 export let forEach = (array, fn) => {
   let length = length(array)

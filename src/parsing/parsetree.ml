@@ -113,6 +113,7 @@ type prim2 =
   | And
   | Or
   | ArrayMake
+  | ArrayInit
 [@@deriving sexp]
 
 (** Type for expressions (i.e. things which evaluate to something) *)

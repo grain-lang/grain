@@ -46,6 +46,7 @@ type prim2 = Parsetree.prim2 =
   | And
   | Or
   | ArrayMake
+  | ArrayInit
 
 type core_type = {
   ctyp_desc : core_type_desc;
