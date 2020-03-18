@@ -173,6 +173,16 @@ let basic_functionality_tests = [
   (* Compile-time overflow *)
   te "overflow4" "999999999999 + 9999999999999" "overflow";
 
+  (* Assertions *)
+  t "assert1" "assert true" "void";
+  t "assert2" "assert 3 + 3 == 6" "void";
+  te "assert3" "assert false" "Assertion error";
+  te "assert4" "assert 4 - 1 == 14" "Assertion error";
+
+  (* Failures *)
+  te "fail1" "ignore(fail \"boo\")" "Failure: \"boo\"";
+  te "fail2" "if (false) { 3 } else { fail \"boo\" }" "Failure: \"boo\"";
+
   tfile "toplevel_statements" "toplevelStatements" "1\n2\n3\n4\n5\n\"foo\"";
 ]
 
