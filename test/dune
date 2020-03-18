@@ -3,19 +3,18 @@
  (libraries grain oUnit extlib))
 
 (rule
- (targets grain-root.txt)
+ (targets stdlib-dir.txt)
  (action
-  (write-file %{targets} %{workspace_root}/../install/default)))
+  (write-file %{targets} %{project_root}/stdlib)))
 
 (alias
  (name runtest)
  (deps
   (:< test.exe)
-  grain-root.txt
+  stdlib-dir.txt
   (source_tree input)
   (source_tree stdlib)
   (source_tree test-libs)
   (source_tree test-data))
  (action
   (run %{<})))
-  

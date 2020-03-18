@@ -1,0 +1,33 @@
+{
+  "name": "@grain/stdlib",
+  "version": "0.0.0",
+  "description": "The standard library for the Grain language.",
+  "main": "pervasives.gr",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/grain-lang/grain.git"
+  },
+  "keywords": [
+    "grain",
+    "stdlib"
+  ],
+  "contributors": [
+    {
+      "name": "Oscar Spencer",
+      "email": "oscar.spen@gmail.com",
+      "url": "https://github.com/ospencer"
+    },
+    {
+      "name": "Philip Blair",
+      "email": "philip@pblair.org",
+      "url": "https://github.com/belph"
+    }
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/grain-lang/grain/issues"
+  },
+  "homepage": "https://grain-lang.org",
+  "devDependencies": {},
+  "dependencies": {}
+}

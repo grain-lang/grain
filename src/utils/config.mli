@@ -4,9 +4,6 @@ val stdlib_directory : unit -> string option
 val module_search_path : unit -> string list
 (** The list of directories to search for modules in, based on the current configuration *)
 
-val grain_root : string option ref
-(** Root directory for things like standard library lookups *)
-
 val verbose : bool ref
 (** Whether verbose output should be written *)
 
@@ -20,8 +17,8 @@ val optimizations_enabled : bool ref
 val include_dirs : string list ref
 (** The path to find modules on *)
 
-val use_stdlib : bool ref
-(** Whether the standard library should be included *)
+val stdlib_dir : string option ref
+(** The location of the pervasives module. *)
 
 val base_path : string ref
 (** The base path where all Grain files for the program reside *)
