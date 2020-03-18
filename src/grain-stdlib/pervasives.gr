@@ -29,6 +29,8 @@ primitive unbox : Box<a> -> a = "@unbox"
 
 # Other operations
 primitive ignore : a -> Void = "@ignore"
+primitive assert : Bool -> Void = "@assert"
+primitive fail : String -> a = "@fail"
 
 # Prints the given value to the console.
 foreign wasm grainBuiltins print : a -> Void
