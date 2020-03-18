@@ -129,18 +129,12 @@ let include_dirs = opt
     ~docv:"DIR"
     []
 
-let grain_root = opt
-    ~names:["grain-root"]
-    ~conv:(option_conv (Cmdliner.Arg.dir))
-    ~doc:"Root directory for grain installation"
-    ~docv:"ROOT"
-    ~env:"GRAIN_ROOT"
+let stdlib_dir = opt
+    ~names:["stdlib"]
+    ~conv:(option_conv (Cmdliner.Arg.string))
+    ~doc:"Path to the standard library (stdlib) directory"
+    ~env:"GRAIN_STDLIB"
     None
-
-let use_stdlib = toggle_flag
-    ~names:["no-stdlib"]
-    ~doc:"Disable the grain standard library"
-    true
 
 let color_enabled = toggle_flag
     ~names:["no-color"]
@@ -195,15 +189,9 @@ let unsound_optimizations = toggle_flag
 let base_path = internal_opt ""
 
 let stdlib_directory() : string option =
-  let open BatPathGen.OfString in
-    let open Infix in
-    !grain_root
-        |> Option.map (fun root ->
-              to_string @@ (of_string root) /: "lib" /: "grain" /: "stdlib")
+  Option.map (fun path -> Files.derelativize path) !stdlib_dir
 
 let module_search_path() =
   match (stdlib_directory()) with
-  | Some(x) when !use_stdlib -> (!base_path) :: (!include_dirs) @ [x] (* stdlib goes last *)
-  | Some _
+  | Some(x) -> (!base_path) :: (!include_dirs) @ [x] (* stdlib goes last *)
   | None -> (!base_path) :: (!include_dirs)
-
