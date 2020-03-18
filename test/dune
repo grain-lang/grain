@@ -2,10 +2,13 @@
  (name test)
  (libraries grain oUnit extlib))
 
+(copy_files ../stdlib/*.gr)
+
 (rule
  (targets stdlib-dir.txt)
+ (deps (glob_files ../stdlib/*.gr))
  (action
-  (write-file %{targets} %{project_root}/stdlib)))
+  (write-file %{targets} ../stdlib)))
 
 (alias
  (name runtest)
