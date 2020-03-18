@@ -22,6 +22,8 @@ type grain_error =
   | SetItemIndexTooLarge
   | SwitchError
   | InvalidArgument
+  | AssertionError
+  | Failure
   | GenericNumberError
 [@@deriving sexp]
 
@@ -46,6 +48,8 @@ let all_grain_errors = [
   SetItemIndexTooLarge;
   SwitchError;
   InvalidArgument;
+  AssertionError;
+  Failure;
   GenericNumberError;
 ]
 
@@ -69,6 +73,8 @@ let err_DIVISION_BY_ZERO          = 17
 let err_MODULO_BY_ZERO            = 18
 let err_ARRAY_INDEX_OUT_OF_BOUNDS = 19
 let err_INVALID_ARGUMENT          = 20
+let err_ASSERTION_ERROR           = 21
+let err_FAILURE                   = 22
 let err_GENERIC_NUM               = 99
 
 let code_of_error = function
@@ -93,6 +99,8 @@ let code_of_error = function
   | GenericNumberError -> err_GENERIC_NUM
   | OverflowError -> err_OVERFLOW
   | InvalidArgument -> err_INVALID_ARGUMENT
+  | AssertionError -> err_ASSERTION_ERROR
+  | Failure -> err_FAILURE
 
 let arity_of_error = function
   | ArithmeticError -> 1
@@ -116,6 +124,8 @@ let arity_of_error = function
   | GenericNumberError -> 1
   | OverflowError -> 1
   | InvalidArgument -> 1
+  | AssertionError -> 0
+  | Failure -> 1
 
 let label_of_error = function
   | ArithmeticError -> "error_not_number_arith"
@@ -139,6 +149,8 @@ let label_of_error = function
   | OverflowError -> "error_overflow"
   | SwitchError -> "error_switch"
   | InvalidArgument -> "error_invalid_argument"
+  | AssertionError -> "error_assertion"
+  | Failure -> "error_failure"
 
 let error_of_code c =
   match c with
@@ -163,6 +175,8 @@ let error_of_code c =
   | x when x = err_GENERIC_NUM -> GenericNumberError
   | x when x = err_OVERFLOW -> OverflowError
   | x when x = err_INVALID_ARGUMENT -> InvalidArgument
+  | x when x = err_ASSERTION_ERROR -> AssertionError
+  | x when x = err_FAILURE -> Failure
   | c -> failwith (Printf.sprintf "Unknown error code: %d" c)
 
 let max_arity = List.fold_left (fun x y -> max x (arity_of_error y)) 0 all_grain_errors
