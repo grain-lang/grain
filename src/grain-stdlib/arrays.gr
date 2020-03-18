@@ -2,6 +2,64 @@ export primitive length : Array<a> -> Number = "@array.length"
 export primitive make : (Number, a) -> Array<a> = "@array.make"
 export primitive init : (Number, Number -> a) -> Array<a> = "@array.init"
 
+export let get = (array, index) => {
+  array[index]
+}
+
+export let set = (array, index, value) => {
+  array[index] := value
+}
+
+export let append = (a1, a2) => {
+  let len1 = length(a1)
+  let len2 = length(a2)
+  
+  init(len1 + len2, n => {
+    if (n < len1) {
+      a1[n]
+    } else {
+      a2[n - len1]
+    }
+  })
+}
+
+export let concat = (arrs) => {
+  # This function is slightly verbose to avoid depending on the List stdlib.
+
+  let rec findLength = (arrays, acc) => {
+    match (arrays) {
+      | [fst, ...rest] => findLength(rest, acc + length(fst))
+      | [] => acc
+    }
+  }
+
+  let offset = box(0)
+  let arrays = box(arrs)
+
+  let rec next = (n) => {
+    let arr = match (unbox(arrays)) {
+      | [fst, ..._] => fst
+      | [] => [>]
+    }
+    if (n - unbox(offset) == length(arr)) {
+      offset := unbox(offset) + length(arr)
+      arrays := match (unbox(arrays)) {
+        | [_, ...rest] => rest
+        | [] => []
+      }
+      next(n)
+    } else {
+      arr[n - unbox(offset)]
+    }
+  }
+
+  init(findLength(arrs, 0), next)
+}
+
+export let copy = (array) => {
+  init(length(array), n => array[n])
+}
+
 export let forEach = (array, fn) => {
   let length = length(array)
   let count = box(0)
@@ -18,4 +76,37 @@ export let forEachi = (array, fn) => {
     fn(array[unbox(count)], unbox(count))
     count := incr(unbox(count))
   }
+}
+
+export let toList = (array) => {
+  let rec buildList = (acc, n) => {
+    let n = n - 1
+    if (n < 0) {
+      acc
+    } else {
+      buildList([array[n], ...acc], n)
+    }
+  }
+  buildList([], length(array))
+}
+
+export let fromList = (list) => {
+  let rec listLength = (list, acc) => {
+    match (list) {
+      | [_, ...rest] => listLength(rest, acc + 1)
+      | [] => acc
+    }
+  }
+  
+  let list = box(list)
+  let rec next = (n) => {
+    match (unbox(list)) {
+      | [fst, ...rest] => {
+        list := rest
+        fst
+      }
+      | [] => next(n)
+    }
+  }
+  init(listLength(unbox(list), 0), next)
 }
