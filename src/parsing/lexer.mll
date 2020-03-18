@@ -116,6 +116,8 @@ rule token = parse
   | "let" { LET }
   | "rec" { REC }
   | "match" { MATCH }
+  | "assert" { ASSERT }
+  | "fail" { FAIL }
   | "..." { ELLIPSIS }
   | "." { DOT }
   | "::" { COLONCOLON }

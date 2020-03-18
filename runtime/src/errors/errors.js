@@ -29,7 +29,9 @@ import {
   GRAIN_ERR_BAD_INPUT,
   GRAIN_ERR_NOT_NONNEG,
   GRAIN_ERR_NOT_NUMBER_GENERIC,
-  GRAIN_ERR_INVALID_ARGUMENT
+  GRAIN_ERR_INVALID_ARGUMENT,
+  GRAIN_ERR_ASSERTION_ERROR,
+  GRAIN_ERR_FAILURE
 } from './error-codes';
 
 export class GrainError extends Error {
@@ -125,6 +127,12 @@ export function throwGrainError(errorCode, value1, value2) {
       break;
     case GRAIN_ERR_INVALID_ARGUMENT:
       message = `Invalid argument: ${value1AsGrain}`;
+      break;
+    case GRAIN_ERR_ASSERTION_ERROR:
+      message = `Assertion error`;
+      break;
+    case GRAIN_ERR_FAILURE:
+      message = `Failure: ${value1AsGrain}`;
       break;
     default:
       message = `Unknown error code: ${errorCode}`;

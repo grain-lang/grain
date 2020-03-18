@@ -91,6 +91,8 @@ let prim1_type = function
   | ArrayLength ->  
     let var = newvar ~name:"a" () in
     Builtin_types.type_array var, Builtin_types.type_number
+  | Assert -> Builtin_types.type_bool, Builtin_types.type_void
+  | FailWith -> Builtin_types.type_string, newvar ~name:"a" ()
 
 let prim2_type = function
   | Plus

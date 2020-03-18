@@ -96,6 +96,8 @@ type prim1 =
   | Unbox
   | Ignore
   | ArrayLength
+  | Assert
+  | FailWith
 [@@deriving sexp]
 
 (** Two-argument operators *)
