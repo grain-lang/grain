@@ -915,6 +915,13 @@ let compile_prim1 env p1 arg : Wasm.Ast.instr' Concatlist.t =
     ]
   | Ignore -> singleton (Ast.Const const_void)
   | ArrayLength -> compile_array_op env arg MArrayLength
+  | Assert -> compiled_arg @+ [
+    Ast.Const(const_false);
+    Ast.Compare(Values.I32 Ast.IntOp.Eq);
+    error_if_true env AssertionError [];
+    Ast.Const(const_void);
+  ]
+  | FailWith -> call_error_handler env Failure [arg]
   | Box -> failwith "Unreachable case; should never get here: Box"
   | Unbox -> failwith "Unreachable case; should never get here: Unbox"
 
