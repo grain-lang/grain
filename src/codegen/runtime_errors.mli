@@ -21,6 +21,8 @@ type grain_error =
   | SetItemIndexTooLarge
   | SwitchError
   | InvalidArgument
+  | AssertionError
+  | Failure
   | GenericNumberError
 [@@deriving sexp]
 
