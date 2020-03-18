@@ -12,12 +12,11 @@ import { print, debugPrint } from './lib/print';
 import equal from './lib/equal';
 import * as libStrings from './lib/strings';
 import * as libDOM from './lib/DOM';
-import * as libArray from './lib/array';
 
 export let grainModule;
 
-export const memory = new WebAssembly.Memory({initial: 1});
-export const table = new WebAssembly.Table({element: 'anyfunc', initial: 128});
+export const memory = new WebAssembly.Memory({initial: 16});
+export const table = new WebAssembly.Table({element: 'anyfunc', initial: 256});
 export const view = new Int32Array(memory.buffer);
 export const encoder = new TextEncoder("utf-8");
 export const decoder = new TextDecoder("utf-8");
@@ -40,8 +39,7 @@ const importObj = {
   grainBuiltins: {
     equal,
     ...libStrings,
-    ...libDOM,
-    ...libArray
+    ...libDOM
   }
 };
 

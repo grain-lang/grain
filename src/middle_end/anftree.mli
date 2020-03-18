@@ -19,6 +19,7 @@ type prim1 = Parsetree.prim1 =
   | Box
   | Unbox
   | Ignore
+  | ArrayLength
 
 type prim2 = Parsetree.prim2 =
   | Plus
@@ -33,6 +34,8 @@ type prim2 = Parsetree.prim2 =
   | Eq
   | And
   | Or
+  | ArrayMake
+  | ArrayInit
 
 (** Immediate expressions (requiring no computation) *)
 type imm_expression = {
