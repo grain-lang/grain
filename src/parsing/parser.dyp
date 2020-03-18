@@ -158,6 +158,8 @@ let make_program statements =
 %token UNDERSCORE
 %token COLON COLONCOLON DOT ELLIPSIS
 
+%token ASSERT FAIL
+
 %token PLUS DASH STAR SLASH PERCENT
 %token TRUE FALSE
 
@@ -228,7 +230,8 @@ const :
   | STRING { Const.string $1 }
 
 expr :
-  binop_expr
+  | stmt_expr
+  | binop_expr
 
 binop_expr :
   | binop_expr(<=pp) EOL? plus_op EOL?      binop_expr(<pp) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pp
@@ -474,6 +477,10 @@ array_expr :
   | lbrack rcaret rbrack { Exp.array ~loc:(symbol_rloc dyp) [] }
   | lbrack rcaret expr [comma expr {$2}]* rbrack { Exp.array ~loc:(symbol_rloc dyp) ($3::$4) }
 
+stmt_expr :
+  | ASSERT expr { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp ["assert"]) [$2] }
+  | FAIL expr { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp ["fail"]) [$2] }
+
 assign_expr :
   | expr EOL? GETS EOL? expr { no_array_access $1; Exp.assign ~loc:(symbol_rloc dyp) $1 $5 }
   | array_set { $1 }
@@ -548,8 +555,13 @@ export_id_str :
 foreign_stmt :
   | FOREIGN WASM id_str id_str colon typ { Val.mk ~loc:(symbol_rloc dyp) ~mod_:$3 ~name:$4 ~typ:$6 ~prim:[] }
 
+primitive :
+  | ASSERT { Location.mkloc "assert" (symbol_rloc dyp) }
+  | FAIL { Location.mkloc "fail" (symbol_rloc dyp) }
+
 primitive_stmt :
   | PRIMITIVE id_str colon typ equal STRING { Val.mk ~loc:(symbol_rloc dyp) ~mod_:{$2 with txt="primitive"} ~name:$2 ~typ:$4 ~prim:[$6] }
+  | PRIMITIVE primitive colon typ equal STRING { Val.mk ~loc:(symbol_rloc dyp) ~mod_:{$2 with txt="primitive"} ~name:$2 ~typ:$4 ~prim:[$6] }
 
 toplevel_stmt :
   | LET REC value_binds { Top.let_ Nonexported Recursive $3 }
