@@ -31,6 +31,8 @@ type prim1 = Parsetree.prim1 =
   | Unbox
   | Ignore
   | ArrayLength
+  | Assert
+  | FailWith
 
 type prim2 = Parsetree.prim2 =
   | Plus

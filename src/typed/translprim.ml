@@ -31,6 +31,8 @@ let prim_map = PrimMap.of_seq (List.to_seq [
   ("@box", Primitive1 Box);
   ("@unbox", Primitive1 Unbox);
   ("@ignore", Primitive1 Ignore);
+  ("@assert", Primitive1 Assert);
+  ("@fail", Primitive1 FailWith);
 
   ("@plus", Primitive2 Plus);
   ("@minus", Primitive2 Minus);
