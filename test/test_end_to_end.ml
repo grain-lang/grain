@@ -310,10 +310,6 @@ let record_tests = [
 
 let stdlib_tests = [
   t "stdlib_cons" mylist "[1, 2, 3]";
-  t "stdlib_sum_1" ("import * from 'lists'; sum(" ^ mylist ^ ")") "6";
-  t "stdlib_sum_2" "import * from 'lists'; sum([])" "0";
-  t "stdlib_reverse" ("import * from 'lists'; reverse(" ^ mylist ^ ")") "[3, 2, 1]";
-  t "stdlib_length" "import * from 'lists'; length([1, 2, 3])" "3";
   (* With compiler optimizations, these are optimized into the same tuple instance *)
   t "stdlib_equal_1" "import * from 'lists'; (1, 2) == (1, 2)" "true";
   t "stdlib_equal_2" "import * from 'pervasives'; equal((1, 2), (1, 2))" "true";
@@ -322,22 +318,11 @@ let stdlib_tests = [
   t "stdlib_equal_5" "import * from 'lists'; equal(1, 2)" "false";
   t "stdlib_equal_6" "import * from 'lists'; equal(true, true)" "true";
   t "stdlib_equal_7" "import * from 'lists'; equal(true, false)" "false";
-  t "stdlib_contains_1" "import * from 'lists'; contains(true, [1, 2, 3])" "false";
-  t "stdlib_contains_2" "import * from 'lists'; contains(false, [1, 2, 3])" "false";
-  t "stdlib_contains_3" "import * from 'lists'; contains(3, [1, 2, 3])" "true";
   (* te "stdlib_sum_err" "import * from 'lists'; sum([true, false])" "This expression has type Bool but"; *)
   te "stdlib_length_err" "import * from 'lists'; length(true)" "This expression has type Bool but";
   te "stdlib_reverse_err" "import * from 'lists'; reverse(1)" "This expression has type Number but";
 
-  t "map_1" ("import * from 'lists'; map(((x) => {x + 1}), " ^ mylist ^ ")")
-    "[2, 3, 4]";
-  t "map_2" ("import * from 'lists'; map(((x) => {x * 2}), " ^ mylist ^ ")")
-    "[2, 4, 6]";
-  t "fold_left_1" ("import * from 'lists'; fold_left(((acc, cur) => {acc - cur}), 0, " ^ mylist ^ ")")
-    "-6";
-  t "fold_right_1" ("import * from 'lists'; fold_right(((cur, acc) => {cur - acc}), 0, " ^ mylist ^ ")")
-    "2";
-
+  tlib "lists";
   tlib "arrays";
 ]
 
