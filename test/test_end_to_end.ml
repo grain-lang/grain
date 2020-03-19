@@ -16,19 +16,18 @@ let exists check result = String.exists result check;;
 
 let t ?todo name program expected = name>::(wrap_todo todo @@ test_run program name expected);;
 let tc ?todo name program expected = name>::(wrap_todo todo @@ test_run ~cmp:exists program name expected);;
-let tlib ?todo name program expected = name>::(wrap_todo todo @@ test_run program name expected);;
 let tgc ?todo name heap_size program expected = name>::(wrap_todo todo @@ test_run program name expected);;
 let terr ?todo name program expected = name>::(wrap_todo todo @@ test_err program name expected);;
 let tgcerr ?todo name heap_size program expected = name>::(wrap_todo todo @@ test_err program name expected);;
 
 let te ?todo name program expected = name>::(wrap_todo todo @@ test_err program name expected);;
-let telib ?todo name program expected = name>::(wrap_todo todo @@ test_err program name expected);;
 
-(** Tests that the file input/`input_file`.egg produces
-    the given output *)
+(** Tests that the file input/`input_file`.gr produces the given output *)
 let tfile ?todo name input_file expected = name>::(wrap_todo todo @@ test_run_file input_file name expected)
 let tefile ?todo name input_file expected = name>::(wrap_todo todo @@ test_run_file_err input_file name expected)
 
+(** Tests that the file stdlib/`input_file`.gr produces the given output *)
+let tlib ?todo input_file = input_file>::(wrap_todo todo @@ test_run_stdlib input_file)
 
 let tgcfile ?todo name heap_size input_file expected = name>::(wrap_todo todo @@ test_run_file input_file name expected)
 
@@ -310,34 +309,36 @@ let record_tests = [
 ]
 
 let stdlib_tests = [
-  tlib "stdlib_cons" mylist "[1, 2, 3]";
-  tlib "stdlib_sum_1" ("import * from 'lists'; sum(" ^ mylist ^ ")") "6";
-  tlib "stdlib_sum_2" "import * from 'lists'; sum([])" "0";
-  tlib "stdlib_reverse" ("import * from 'lists'; reverse(" ^ mylist ^ ")") "[3, 2, 1]";
-  tlib "stdlib_length" "import * from 'lists'; length([1, 2, 3])" "3";
+  t "stdlib_cons" mylist "[1, 2, 3]";
+  t "stdlib_sum_1" ("import * from 'lists'; sum(" ^ mylist ^ ")") "6";
+  t "stdlib_sum_2" "import * from 'lists'; sum([])" "0";
+  t "stdlib_reverse" ("import * from 'lists'; reverse(" ^ mylist ^ ")") "[3, 2, 1]";
+  t "stdlib_length" "import * from 'lists'; length([1, 2, 3])" "3";
   (* With compiler optimizations, these are optimized into the same tuple instance *)
-  tlib "stdlib_equal_1" "import * from 'lists'; (1, 2) == (1, 2)" "true";
-  tlib "stdlib_equal_2" "import * from 'pervasives'; equal((1, 2), (1, 2))" "true";
-  tlib "stdlib_equal_3" "import * from 'lists'; equal([1, 2, 3], [1, 2, 3])" "true";
-  tlib "stdlib_equal_4" "import * from 'lists'; equal(1, 1)" "true";
-  tlib "stdlib_equal_5" "import * from 'lists'; equal(1, 2)" "false";
-  tlib "stdlib_equal_6" "import * from 'lists'; equal(true, true)" "true";
-  tlib "stdlib_equal_7" "import * from 'lists'; equal(true, false)" "false";
-  tlib "stdlib_contains_1" "import * from 'lists'; contains(true, [1, 2, 3])" "false";
-  tlib "stdlib_contains_2" "import * from 'lists'; contains(false, [1, 2, 3])" "false";
-  tlib "stdlib_contains_3" "import * from 'lists'; contains(3, [1, 2, 3])" "true";
-  (* telib "stdlib_sum_err" "import * from 'lists'; sum([true, false])" "This expression has type Bool but"; *)
-  telib "stdlib_length_err" "import * from 'lists'; length(true)" "This expression has type Bool but";
-  telib "stdlib_reverse_err" "import * from 'lists'; reverse(1)" "This expression has type Number but";
+  t "stdlib_equal_1" "import * from 'lists'; (1, 2) == (1, 2)" "true";
+  t "stdlib_equal_2" "import * from 'pervasives'; equal((1, 2), (1, 2))" "true";
+  t "stdlib_equal_3" "import * from 'lists'; equal([1, 2, 3], [1, 2, 3])" "true";
+  t "stdlib_equal_4" "import * from 'lists'; equal(1, 1)" "true";
+  t "stdlib_equal_5" "import * from 'lists'; equal(1, 2)" "false";
+  t "stdlib_equal_6" "import * from 'lists'; equal(true, true)" "true";
+  t "stdlib_equal_7" "import * from 'lists'; equal(true, false)" "false";
+  t "stdlib_contains_1" "import * from 'lists'; contains(true, [1, 2, 3])" "false";
+  t "stdlib_contains_2" "import * from 'lists'; contains(false, [1, 2, 3])" "false";
+  t "stdlib_contains_3" "import * from 'lists'; contains(3, [1, 2, 3])" "true";
+  (* te "stdlib_sum_err" "import * from 'lists'; sum([true, false])" "This expression has type Bool but"; *)
+  te "stdlib_length_err" "import * from 'lists'; length(true)" "This expression has type Bool but";
+  te "stdlib_reverse_err" "import * from 'lists'; reverse(1)" "This expression has type Number but";
 
-  tlib "map_1" ("import * from 'lists'; map(((x) => {x + 1}), " ^ mylist ^ ")")
+  t "map_1" ("import * from 'lists'; map(((x) => {x + 1}), " ^ mylist ^ ")")
     "[2, 3, 4]";
-  tlib "map_2" ("import * from 'lists'; map(((x) => {x * 2}), " ^ mylist ^ ")")
+  t "map_2" ("import * from 'lists'; map(((x) => {x * 2}), " ^ mylist ^ ")")
     "[2, 4, 6]";
-  tlib "fold_left_1" ("import * from 'lists'; fold_left(((acc, cur) => {acc - cur}), 0, " ^ mylist ^ ")")
+  t "fold_left_1" ("import * from 'lists'; fold_left(((acc, cur) => {acc - cur}), 0, " ^ mylist ^ ")")
     "-6";
-  tlib "fold_right_1" ("import * from 'lists'; fold_right(((cur, acc) => {cur - acc}), 0, " ^ mylist ^ ")")
+  t "fold_right_1" ("import * from 'lists'; fold_right(((cur, acc) => {cur - acc}), 0, " ^ mylist ^ ")")
     "2";
+
+  tlib "arrays";
 ]
 
 let box_tests = [
