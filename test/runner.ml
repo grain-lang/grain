@@ -144,6 +144,13 @@ let test_run_file filename name expected test_ctxt =
   let result = run_output cstate test_ctxt in
   assert_equal ~printer:Batteries.identity (expected ^ "\n") result
 
+let test_run_stdlib filename test_ctxt =
+  let input_filename = "stdlib/" ^ filename ^ ".gr" in
+  let outfile = "output/" ^ filename in
+  let cstate = compile_file ~hook:stop_after_compiled ~outfile input_filename in
+  let result = run_output cstate test_ctxt in
+  assert_equal ~printer:Batteries.identity ("void\n") result
+
 let test_optimizations_sound program_str name expected test_ctxt =
   let compile_and_run () =
     run_output (compile_string ~hook:stop_after_compiled ~name program_str) test_ctxt in
