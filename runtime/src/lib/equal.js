@@ -3,12 +3,13 @@ import { view } from '../runtime';
 
 import {
   GRAIN_ADT_HEAP_TAG,
+  GRAIN_ARRAY_HEAP_TAG,
 } from '../core/tags';
 
 function heapEqualHelp(heapTag, xptr, yptr, cycles) {
   switch (heapTag) {
   // TODO: String equality
-  case GRAIN_ADT_HEAP_TAG:
+  case GRAIN_ADT_HEAP_TAG: {
     // Check if the same module
     if (view[xptr + 1] !== view[yptr + 1]) {
       return false;
@@ -45,6 +46,20 @@ function heapEqualHelp(heapTag, xptr, yptr, cycles) {
     view[xptr + 4] = length;
     view[yptr + 4] = length;
     return result;
+  }
+  case GRAIN_ARRAY_HEAP_TAG: {
+    // Check if the same length
+    if (view[xptr + 1] !== view[yptr + 1]) {
+      return false;
+    }
+    let length = view[xptr + 1];
+    for (let i = 2; i < length + 2; i++) {
+      if (!equalHelp(view[xptr + i], view[yptr + i], 0)) {
+        return false
+      }
+    }
+    return true
+  }
   default:
     // No other implementation
     return xptr === yptr;

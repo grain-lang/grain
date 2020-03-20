@@ -16,6 +16,7 @@
   (:< test.exe)
   stdlib-dir.txt
   (source_tree input)
+  (source_tree stdlib)
   (source_tree test-libs)
   (source_tree test-data))
  (action

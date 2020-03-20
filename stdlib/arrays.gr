@@ -39,13 +39,13 @@ export let concat = (arrs) => {
   let rec next = (n) => {
     let arr = match (unbox(arrays)) {
       | [fst, ..._] => fst
-      | [] => [>]
+      | [] => fail "end of arrays list"
     }
     if (n - unbox(offset) == length(arr)) {
       offset := unbox(offset) + length(arr)
       arrays := match (unbox(arrays)) {
         | [_, ...rest] => rest
-        | [] => []
+        | [] => fail "end of arrays list"
       }
       next(n)
     } else {
