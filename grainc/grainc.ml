@@ -4,7 +4,6 @@ open Printf
 open Lexing
 open Filename
 open Cmdliner
-open Grain_root_utils.Root_utils
 
 let () =
   Printexc.register_printer (fun exc ->
@@ -36,7 +35,6 @@ let compile_file name outfile_arg =
   Grain_utils.Config.base_path := dirname name;
   if not (Printexc.backtrace_status()) && !Grain_utils.Config.verbose then
     Printexc.record_backtrace true;
-  infer_root_if_needed();
   begin
     try
       let outfile = Option.default (default_output_filename name) outfile_arg in
