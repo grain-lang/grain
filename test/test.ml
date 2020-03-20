@@ -29,8 +29,12 @@ let () =
   Grain_utils.Config.stdlib_dir := Some(stdlib_dir);
   let stdlib = Grain_utils.Config.stdlib_directory() in
   Unix.putenv "GRAIN_STDLIB" stdlib_dir;
+  (* TODO: How do we compile all? Or maybe compile with dune before running tests? *)
   Option.may (fun x ->
-      ignore(Grain.Compile.compile_file ~outfile:(x ^ "/" ^ "lists.wasm") (x ^ "/" ^ "lists.gr"))
+      let _ = Grain.Compile.compile_file ~outfile:(x ^ "/" ^ "pervasives.wasm") (x ^ "/" ^ "pervasives.gr") in
+      let _ = Grain.Compile.compile_file ~outfile:(x ^ "/" ^ "lists.wasm") (x ^ "/" ^ "lists.gr") in
+      let _ = Grain.Compile.compile_file ~outfile:(x ^ "/" ^ "arrays.wasm") (x ^ "/" ^ "arrays.gr") in
+      ignore ()
     )
     stdlib;
   Grain_utils.Config.debug := true;
