@@ -10,8 +10,5 @@
 
 (install
  (section lib)
- (files
-  (grain-stdlib/lists.gr as stdlib/lists.gr)
-  (grain-stdlib/arrays.gr as stdlib/arrays.gr)
-  (grain-stdlib/pervasives.gr as stdlib/pervasives.gr))
+ (files)
  (package grain))

@@ -2,19 +2,21 @@
  (name test)
  (libraries grain oUnit extlib))
 
+(copy_files ../stdlib/*.gr)
+
 (rule
- (targets grain-root.txt)
+ (targets stdlib-dir.txt)
+ (deps (glob_files ../stdlib/*.gr))
  (action
-  (write-file %{targets} %{workspace_root}/../install/default)))
+  (write-file %{targets} ../stdlib)))
 
 (alias
  (name runtest)
  (deps
   (:< test.exe)
-  grain-root.txt
+  stdlib-dir.txt
   (source_tree input)
   (source_tree test-libs)
   (source_tree test-data))
  (action
   (run %{<})))
-  

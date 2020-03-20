@@ -105,17 +105,22 @@ let read_stream cstream =
   ) cstream;
   Bytes.to_string @@ Bytes.sub buf 0 !i
 
+
 let run_output cstate test_ctxt =
   let program = extract_wasm cstate in
   let file = Filename.temp_file "test" ".gr.wasm" in
   Emitmod.emit_module program file;
+
+  let stdlib = Option.get (Grain_utils.Config.stdlib_directory()) in
+  let testlibs = Sys.getcwd () ^ "/test-libs" in
+  let include_dirs = stdlib ^ "," ^ testlibs in
   let result = ref "" in
   assert_command 
     ~foutput:(fun stream -> result := read_stream stream)
     ~use_stderr:true
     ~ctxt:test_ctxt
     "grain"
-    ["-wpg"; "-I"; "test-libs"; file];
+    ["-wpg"; "-I"; include_dirs; file];
   !result
 
 let run_anf p out =
