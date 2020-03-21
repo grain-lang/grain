@@ -339,6 +339,7 @@ let box_tests = [
             {
               unbox(unbox(b))
             }" "4";
+  t "box3_2" "let b = box(box(4)); ^^b" "4";
   t "box4" "let b = box(4);
             {
               b := 3;
@@ -353,7 +354,17 @@ let box_tests = [
   tfile "counter" "counter" "1\n2\n3\nvoid";
   te "test_unbox_err" "unbox(5)" "Box";
 
-  te "test_box_typing" "unbox(box(false)) + 4" "expression has type Bool but"
+  te "test_box_typing" "unbox(box(false)) + 4" "expression has type Bool but";
+
+  (* Operations on Box<Number> *)
+  t "box_addition1" "let b = box(4); b += 19" "23";
+  t "box_addition2" "let b = box(4); b += 19; ^b" "23";
+  t "box_subtraction1" "let b = box(4); b -= 19" "-15";
+  t "box_subtraction2" "let b = box(4); b -= 19; ^b" "-15";
+  t "box_multiplication1" "let b = box(4); b *= 19" "76";
+  t "box_multiplication2" "let b = box(4); b *= 19; ^b" "76";
+  t "box_division1" "let b = box(76); b /= 19" "4";
+  t "box_division2" "let b = box(76); b /= 19; ^b" "4";
 ]
 
 let loop_tests = [
@@ -692,7 +703,7 @@ let tests =
   array_tests @
   record_tests @
   stdlib_tests @
-  box_tests @ 
+  box_tests @
   loop_tests @
   (*oom @ gc @*) 
   match_tests @
