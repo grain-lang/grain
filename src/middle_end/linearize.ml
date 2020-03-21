@@ -387,7 +387,8 @@ let rec transl_anf_statement (({ttop_desc; ttop_env=env; ttop_loc=loc} as s) : t
     let rest_setup = Option.default [] rest_setup in
     let exported = export_flag = Exported in
     let setup = begin match vb_pat.pat_desc with
-      | TPatVar(bind, _) -> 
+      | TPatVar(bind, _)
+      | TPatAlias({pat_desc=TPatAny}, bind, _) ->
         if exported 
         then [BLetExport(Nonrecursive, [bind, exp_ans])]
         else [BLet(bind, exp_ans)]
@@ -395,6 +396,13 @@ let rec transl_anf_statement (({ttop_desc; ttop_env=env; ttop_loc=loc} as s) : t
       | TPatRecord _ ->
         let tmp, anf_patts = bind_patts ~exported vb_pat in
         (BLet(tmp, exp_ans))::anf_patts
+      | TPatAlias(patt, bind, _) ->
+        let bind = if exported 
+          then BLetExport(Nonrecursive, [bind, exp_ans])
+          else BLet(bind, exp_ans) in
+        let tmp, anf_patts = bind_patts ~exported patt in
+        bind::(BLet(tmp, exp_ans))::anf_patts
+      | TPatAny -> []
       | _ -> failwith "NYI: transl_anf_statement: Non-record or non-tuple destructuring in let"
     end in
     Some(exp_setup @ setup @ rest_setup), rest_imp
