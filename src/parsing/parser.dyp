@@ -151,6 +151,7 @@ let make_program statements =
 %token <string> TYPEID
 %token <string> STRING
 %token LBRACK RBRACK LPAREN LPARENNOSPACE RPAREN LBRACE RBRACE LCARET RCARET
+%token CARET
 %token COMMA SEMI AS
 %token THICKARROW ARROW PIPE
 %token EQEQ LESSEQ GREATEREQ
@@ -234,6 +235,10 @@ expr :
   | binop_expr
 
 binop_expr :
+  | binop_expr(<=pa) EOL? pluseq_op EOL?    binop_expr(<pa) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pa
+  | binop_expr(<=pa) EOL? dasheq_op EOL?    binop_expr(<pa) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pa
+  | binop_expr(<=pa) EOL? stareq_op EOL?    binop_expr(<pa) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pa
+  | binop_expr(<=pa) EOL? slasheq_op EOL?   binop_expr(<pa) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pa
   | binop_expr(<=pp) EOL? plus_op EOL?      binop_expr(<pp) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pp
   | binop_expr(<=pp) EOL? dash_op EOL?      binop_expr(<pp) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pp
   | binop_expr(<=pt) EOL? star_op EOL?      binop_expr(<pt) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pt
@@ -260,7 +265,7 @@ pattern :
   | UNDERSCORE { Pat.any ~loc:(symbol_rloc dyp) () }
   /* If the pattern uses an external ID, we know it's a constructor, not a variable */
   | ext_constructor { Pat.construct ~loc:(symbol_rloc dyp) $1 [] }
-  | ID { Pat.var ~loc:(symbol_rloc dyp) (mkstr dyp $1) }
+  | [ID | infix] { Pat.var ~loc:(symbol_rloc dyp) (mkstr dyp $1) }
   | lparen tuple_patterns rparen { Pat.tuple ~loc:(symbol_rloc dyp) $2 }
   | lparen pattern rparen { $2 }
   | lbrace record_patterns rbrace { Pat.record ~loc:(symbol_rloc dyp) $2 }
@@ -353,7 +358,8 @@ data_declaration :
   | DATA TYPEID [lcaret ID [comma ID {$2}]* rcaret {$2::$3}]? equal data_labels { Dat.record ~loc:(symbol_rloc dyp) (mkstr dyp $2) (List.map Typ.var (Option.default [] $3)) $5 }
 
 prim1_expr :
-  | NOT expr { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp ["!"]) [$2] }
+  | NOT non_assign_expr { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp ["!"]) [$2] }
+  | CARET non_assign_expr { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp ["^"]) [$2] }
 
 paren_expr :
   | lparen expr rparen { $2 }
@@ -393,6 +399,14 @@ ampamp_op :
   | AMPAMP { "&&" }
 pipepipe_op :  
   | PIPEPIPE { "||" }
+pluseq_op :  
+  | PLUS EQUAL { "+=" }
+dasheq_op :  
+  | DASH EQUAL { "-=" }
+stareq_op :  
+  | STAR EQUAL { "*=" }
+slasheq_op :  
+  | SLASH EQUAL { "/=" }
 
 infix_op :
   | plus_op
@@ -407,12 +421,17 @@ infix_op :
   | greatereq_op
   | ampamp_op
   | pipepipe_op
+  | pluseq_op
+  | dasheq_op
+  | stareq_op
+  | slasheq_op
 
 infix :
   | lparen infix_op rparen { $2 }
 
 prefix :
   | lparen NOT rparen { "!" }
+  | lparen CARET rparen { "^" }
 
 id :
   | [TYPEID dot {$1}]* [ID | TYPEID | infix | prefix] { prerr_string "\nid\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); (mkid (List.append $1 [$2])) (symbol_rloc dyp) }
@@ -482,7 +501,7 @@ stmt_expr :
   | FAIL expr { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp ["fail"]) [$2] }
 
 assign_expr :
-  | expr EOL? GETS EOL? expr { no_array_access $1; Exp.assign ~loc:(symbol_rloc dyp) $1 $5 }
+  | binop_expr(<pl) EOL? GETS EOL? expr { no_array_access $1; Exp.assign ~loc:(symbol_rloc dyp) $1 $5 }
   | array_set { $1 }
 
 non_assign_expr :
