@@ -136,6 +136,7 @@ rule token = parse
   | "]" { RBRACK }
   | "<" { LCARET }
   | ">" { RCARET }
+  | "^" { CARET }
   | "+" { PLUS }
   | "-" { DASH }
   | "*" { STAR }
