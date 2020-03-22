@@ -17,6 +17,11 @@ assert equal(reverse(list), [3, 2, 1])
 assert length([]) == 0
 assert length(list) == 3
 
+# List.append
+
+assert equal(append(list, [4]), [1, 2, 3, 4])
+assert equal(append([], [4]), [4])
+
 # List.contains
 
 assert contains(true, list) == false
@@ -39,3 +44,9 @@ assert fold_left((acc, cur) => acc - cur, 0, []) == 0
 
 assert fold_right((acc, cur) => acc - cur, 0, list) == 2
 assert fold_right((acc, cur) => acc - cur, 0, []) == 0
+
+# List.for_all
+
+assert for_all(x => x > 0, list) == true
+assert for_all(x => x > 2, list) == false
+
