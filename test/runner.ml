@@ -113,14 +113,13 @@ let run_output cstate test_ctxt =
 
   let stdlib = Option.get (Grain_utils.Config.stdlib_directory()) in
   let testlibs = Sys.getcwd () ^ "/test-libs" in
-  let include_dirs = stdlib ^ "," ^ testlibs in
   let result = ref "" in
   assert_command 
     ~foutput:(fun stream -> result := read_stream stream)
     ~use_stderr:true
     ~ctxt:test_ctxt
     "grain"
-    ["-wpg"; "-I"; include_dirs; file];
+    ["-wpg"; "-I"; testlibs; "-S"; stdlib; file];
   !result
 
 let run_anf p out =
