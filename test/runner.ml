@@ -119,7 +119,7 @@ let run_output cstate test_ctxt =
     ~use_stderr:true
     ~ctxt:test_ctxt
     "grain"
-    ["-wpg"; "-I"; testlibs; "-S"; stdlib; file];
+    ["-wpg"; "-S"; stdlib; "-I"; testlibs; file];
   !result
 
 let run_anf p out =
