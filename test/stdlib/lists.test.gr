@@ -49,5 +49,5 @@ assert fold_right((acc, cur) => acc - cur, 0, []) == 0
 
 assert for_all(x => x > 0, list) == true
 assert for_all(x => x > 2, list) == false
-print(for_all(x => x == 3, []))
+assert for_all(x => x == 3, []) == true
 
