@@ -474,7 +474,7 @@ let match_tests = [
   t "tuple_match_deep5" "match ((1, [4, 5])) { | (a, []) => a | (a, [b]) => a + b | (a, [b, c]) => a + b + c | (a, [b, c, d]) => a + b + c + d | (_, [_, ..._]) => 999 }" "10";
   t "tuple_match_deep6" "match ((1, [4, 5, 6])) { | (a, []) => a | (a, [b]) => a + b | (a, [b, c]) => a + b + c | (a, [b, c, d]) => a + b + c + d | (_, [_, ..._]) => 999 }" "16";
   t "tuple_match_deep7" "match ((1, [4, 5, 6, 7])) { | (a, []) => a | (a, [b]) => a + b | (a, [b, c]) => a + b + c | (a, [b, c, d]) => a + b + c + d | (_, [_, ..._]) => 999 }" "999";
-  
+
   (* Pattern matching on records *)
   t "record_match_1" "data Rec = {foo: Number, bar: String, baz: Bool}; match ({foo: 4, bar: 'boo', baz: true}) { | { foo, _ } => foo }" "4";
   t "record_match_2" "data Rec = {foo: Number, bar: String, baz: Bool}; match ({foo: 4, bar: 'boo', baz: true}) { | { bar, _ } => bar }" "\"boo\"";
@@ -570,19 +570,19 @@ let optimization_tests = [
        f1(1, 2)"
     "1";
 
-  tfinalanf "test_dead_branch_elimination_1" 
+  tfinalanf "test_dead_branch_elimination_1"
     "{ if (true) {4} else {5} }"
     (AExp.comp (Comp.imm (Imm.const (Const_int 4))));
 
-  tfinalanf "test_dead_branch_elimination_2" 
+  tfinalanf "test_dead_branch_elimination_2"
     "{ if (false) {4} else {5} }"
     (AExp.comp (Comp.imm (Imm.const (Const_int 5))));
 
-  tfinalanf "test_dead_branch_elimination_3" 
+  tfinalanf "test_dead_branch_elimination_3"
     "{ let x = true; if (x) {4} else {5} }"
     (AExp.comp (Comp.imm (Imm.const (Const_int 4))));
 
-  tfinalanf "test_dead_branch_elimination_4" 
+  tfinalanf "test_dead_branch_elimination_4"
     "{let x = if (true) {4} else {5}; x}"
       (AExp.comp (Comp.imm (Imm.const (Const_int 4))));
 
@@ -750,10 +750,10 @@ let tests =
   stdlib_tests @
   box_tests @
   loop_tests @
-  (*oom @ gc @*) 
+  (*oom @ *) gc @
   match_tests @
   import_tests @
-  optimization_tests @ 
-  string_tests @ 
-  data_tests @ 
+  optimization_tests @
+  string_tests @
+  data_tests @
   export_tests

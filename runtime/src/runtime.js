@@ -1,6 +1,5 @@
 import 'fast-text-encoding';
 
-import { heapController, grainCheckMemory } from './core/heap';
 import { printClosure } from './core/closures';
 import { ManagedMemory } from './core/memory';
 import { GrainRunner } from './core/runner';
@@ -37,18 +36,29 @@ const importObj = {
     mem: memory,
     tbl: table,
     throwError: throwGrainError,
-    checkMemory: grainCheckMemory,
     malloc: managedMemory.malloc.bind(managedMemory),
-    free: managedMemory.free.bind(managedMemory)
+    free: managedMemory.free.bind(managedMemory),
+    incRef: managedMemory.incRef.bind(managedMemory),
+    incRefADT: managedMemory.incRefADT.bind(managedMemory),
+    incRefTuple: managedMemory.incRefTuple.bind(managedMemory),
+    incRefBackpatch: managedMemory.incRefBackpatch.bind(managedMemory),
+    incRefSwapBind: managedMemory.incRefSwapBind.bind(managedMemory),
+    incRefLocalBind: managedMemory.incRefLocalBind.bind(managedMemory),
+    incRefArgBind: managedMemory.incRefArgBind.bind(managedMemory),
+    incRef64: managedMemory.incRef64.bind(managedMemory),
+    decRef: managedMemory.decRef.bind(managedMemory),
+    decRef64: managedMemory.decRef64.bind(managedMemory)
   },
   grainBuiltins: {
     ...libDOM
   }
 };
 
-export function buildGrainRunner(locator) {
-  let runner = new GrainRunner(locator || ((x) => null));
+export function buildGrainRunner(locator, opts) {
+  let runner = new GrainRunner(locator || ((x) => null), opts);
   runner.addImports(importObj);
+  // [TODO] Find something which avoids global state!
+  managedMemory.setRuntime(runner);
   return runner;
 }
 

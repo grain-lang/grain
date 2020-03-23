@@ -41,6 +41,23 @@ function getAndMask(tag) {
   }
 }
 
+export function getTagType(n) {
+  if (!(n & GRAIN_NUMBER_TAG_MASK)) {
+    return GRAIN_NUMBER_TAG_TYPE;
+  } else if ((n & GRAIN_TUPLE_TAG_MASK) === GRAIN_TUPLE_TAG_TYPE) {
+    return GRAIN_TUPLE_TAG_TYPE;
+  } else if ((n & GRAIN_TUPLE_TAG_MASK) === GRAIN_LAMBDA_TAG_TYPE) {
+    return GRAIN_LAMBDA_TAG_TYPE;
+  } else if ((n & GRAIN_TUPLE_TAG_MASK) === GRAIN_GENERIC_HEAP_TAG_TYPE) {
+    return GRAIN_GENERIC_HEAP_TAG_TYPE;
+  } else if ((n === -1) || (n === 0x7FFFFFFF)) {
+    return GRAIN_BOOLEAN_TAG_TYPE;
+  } else {
+    console.warn(`<getTagType: Unknown value: 0x${(new Number(n)).toString(16)}`);
+    return undefined;
+  }
+}
+
 function assertGrainTag(tag, n, err) {
   if ((n & getAndMask(tag)) !== tag) {
     throwGrainError(err, n, 0);

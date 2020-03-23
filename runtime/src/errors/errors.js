@@ -20,6 +20,7 @@ import {
   GRAIN_ERR_SET_ITEM_IDX_TOO_SMALL,
   GRAIN_ERR_SET_ITEM_IDX_TOO_LARGE,
   GRAIN_ERR_ARRAY_INDEX_OUT_OF_BOUNDS,
+  GRAIN_ERR_SWITCH,
   GRAIN_ERR_NOT_ADT_VAL_GENERIC,
   GRAIN_ERR_NOT_DOM_ELEMENT_GENERIC,
   GRAIN_ERR_NOT_STRING_GENERIC,
@@ -116,6 +117,8 @@ export function throwGrainError(errorCode, value1, value2) {
       break;
     case GRAIN_ERR_ARRAY_INDEX_OUT_OF_BOUNDS:
       message = 'array index out of bounds';
+    case GRAIN_ERR_SWITCH:
+      message = `value has no switch case: ${value1AsGrain}`;
       break;
     case GRAIN_ERR_CALLED_NON_FUNCTION:
       message = `called non-function: ${value1AsGrain}`;

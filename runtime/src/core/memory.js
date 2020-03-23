@@ -1,5 +1,15 @@
 import { mallocJSModule } from './malloc';
-import { GRAIN_BOOLEAN_TAG_TYPE, GRAIN_NUMBER_TAG_TYPE } from './tags';
+import { getTagType, GRAIN_CONST_TAG_TYPE, GRAIN_NUMBER_TAG_TYPE, GRAIN_TUPLE_TAG_TYPE, GRAIN_GENERIC_HEAP_TAG_TYPE, GRAIN_LAMBDA_TAG_TYPE,
+         GRAIN_STRING_HEAP_TAG, GRAIN_DOM_ELEM_TAG, GRAIN_ADT_HEAP_TAG } from './tags';
+import { grainAdtInfo } from '../utils/utils';
+
+const TRACE_MEMORY = false;
+
+function trace(msg) {
+  if (TRACE_MEMORY) {
+    console.warn(msg);
+  }
+}
 
 /* Notes:
  * 
@@ -31,7 +41,8 @@ import { GRAIN_BOOLEAN_TAG_TYPE, GRAIN_NUMBER_TAG_TYPE } from './tags';
 export class ManagedMemory {
   constructor(memory) {
     this._memory = memory;
-    this._headerSize = 4; // 16 bits in bytes
+    this._headerSize = 8; // 32 bits in bytes (extra space needed for alignment)
+    this._runtime = null;
     var globNS;
     if (typeof window === 'undefined') {
       globNS = global;
@@ -44,14 +55,24 @@ export class ManagedMemory {
     }, this._memory.buffer);
   }
 
-  malloc(size, tag) {
+  setRuntime(runtime) {
+    this._runtime = runtime;
+  }
+
+  malloc(size) {
+    trace(`malloc(0x${this._toHex(size)})`);
     let rawPtr = this._mallocModule.malloc(size + this._headerSize);
-    this.populateHeader(rawPtr, tag);
-    let userPtr = ret + this._headerSize;
+    trace('\tpopulateHeader')
+    this.populateHeader(rawPtr);
+    trace('\tend_populateHeader')
+    let userPtr = rawPtr + this._headerSize;
+    trace(`malloc: ${this._memdump(userPtr)}`);
     return userPtr; // offset by headerSize
   }
 
-  populateHeader(rawPtr, tag) {
+  populateHeader(rawPtr) {
+    let tag = 0x0; // reserved
+    trace('populateHeader');
     var heap = this._memory.buffer;
     for (let i = 0; i < this._headerSize; ++i) {
       heap[rawPtr + i] = 0;
@@ -62,6 +83,7 @@ export class ManagedMemory {
 
   // [TODO] These next three methods can probably be made more efficient
   _getRefCount(userPtr) {
+    trace('_getRefCount');
     let rawPtr = userPtr - this._headerSize;
     let heap = this._memory.buffer;
     let count = heap[rawPtr] & 0b0111; // reserved bit should always be zero, but let's be safe
@@ -69,65 +91,179 @@ export class ManagedMemory {
     count = count | heap[rawPtr + 1];
     count = count << 4;
     count = count | heap[rawPtr + 2];
+    trace(`\t${count}`);
     return count;
   }
 
   _getValueTag(userPtr) {
+    trace('_getValueTag');
     let rawPtr = userPtr - this._headerSize;
     let heap = this._memory.buffer;
     return heap[rawPtr + 3];
   }
 
+  _toHex(n) {
+    if (!TRACE_MEMORY) {
+      return undefined; // improve performance; this is a very hot path in production
+    }
+    return (new Number(n)).toString(16);
+  }
+
+  _memdump(userPtr) {
+    let heap = this._memory.buffer;
+    if (!TRACE_MEMORY) {
+      return undefined; // improve performance; this is a very hot path in production
+    }
+    return `Dump: 0x${this._toHex(heap[userPtr-3])} 0x${this._toHex(heap[userPtr-2])} 0x${this._toHex(heap[userPtr-1])} @ 0x${this._toHex(userPtr)} (raw: 0x${this._toHex(userPtr - this._headerSize)})`
+  }
+
+  decRef64(userPtr) {
+    trace('decRef64 [see next]');
+    return this.decRef(userPtr);
+  }
+
+  incRef64(userPtr) {
+    trace('incRef64 [see next]');
+    return this.incRef(userPtr);
+  }
+
+  incRefADT(userPtr) {
+    trace('incRefADT [see next]');
+    return this.incRef(userPtr);
+  }
+
+  incRefTuple(userPtr) {
+    trace('incRefTuple [see next]');
+    return this.incRef(userPtr);
+  }
+
+  incRefBackpatch(userPtr) {
+    trace('incRefBackpatch [see next]');
+    return this.incRef(userPtr);
+  }
+
+  incRefSwapBind(userPtr) {
+    trace('incRefSwapBind [see next]');
+    return this.incRef(userPtr);
+  }
+
+  incRefArgBind(userPtr) {
+    trace('incRefArgBind [see next]');
+    return this.incRef(userPtr);
+  }
+
+  incRefLocalBind(userPtr) {
+    trace('incRefLocalBind [see next]');
+    return this.incRef(userPtr);
+  }
+
   incRef(userPtr) {
-    let valueTag = this._getValueTag(userPtr);
-    if (valueTag === GRAIN_NUMBER_TAG_TYPE || valueTag === GRAIN_BOOLEAN_TAG_TYPE) {
+    let origInput = userPtr;
+    trace(`incRef(0x${this._toHex(userPtr)})`);
+    let ptrTagType = getTagType(userPtr);
+    if (userPtr === 0 || ptrTagType === GRAIN_NUMBER_TAG_TYPE || ptrTagType === GRAIN_CONST_TAG_TYPE) {
       // no ref-counting for primitives
       // [TODO] The type-checker should make this not ever be called ideally, but it
       //        significantly complicates our codegen
-      return;
+      trace(`\tbailing out (ptrTagType: ${ptrTagType})`);
+      return origInput;
     }
+    userPtr = userPtr & (~7);
+    trace('\tincrementing...');
     let heap = this._memory.buffer;
     let rawPtr = userPtr - this._headerSize;
     let refCount = this._getRefCount(userPtr);
     ++refCount;
+    trace(`\tnew count: ${refCount}`);
     heap[rawPtr] = refCount & (0b0111 << 8);
     heap[rawPtr + 1] = refCount & (0b1111 << 4);
     heap[rawPtr + 2] = refCount & 0b1111;
-    return userPtr;
+    trace(`\tdump: ${this._memdump(userPtr)}`);
+    return origInput;
   }
 
   decRef(userPtr) {
-    let valueTag = this._getValueTag(userPtr);
-    if (valueTag === GRAIN_NUMBER_TAG_TYPE || valueTag === GRAIN_BOOLEAN_TAG_TYPE) {
+    trace(`decRef(0x${this._toHex(userPtr)})`);
+    let origInput = userPtr;
+    let ptrTagType = getTagType(userPtr);
+    if (userPtr === 0 || ptrTagType === GRAIN_NUMBER_TAG_TYPE || ptrTagType === GRAIN_CONST_TAG_TYPE) {
       // no ref-counting for primitives
       // [TODO] The type-checker should make this not ever be called ideally, but it
       //        significantly complicates our codegen
-      return;
+      trace(`\tbailing out (ptrTagType: ${ptrTagType})`);
+      return origInput;
     }
+    userPtr = userPtr & (~7);
     let heap = this._memory.buffer;
     let rawPtr = userPtr - this._headerSize;
     let refCount = this._getRefCount(userPtr);
     // [TODO] This is a blazing-hot code path. Should we eschew error-checking?
     if (refCount === 0) {
       // [TODO] the formatting on this is busted, but I'm on a plane with no WiFi and can't look up how to do it right
-      throw new Error(`decRef called when reference count was zero. Dump: 0x${heap[userPtr-4]} 0x${heap[userPtr-3]} 0x${heap[userPtr-2]} 0x${heap[userPtr-1]} @ ${userPtr} (raw: ${userPtr - self._headerSize})`);
+      throw new Error(`decRef called when reference count was zero. ${this._memdump(userPtr)}`);
     }
     --refCount;
+    trace('\tdecrementing...');
+    trace(`\tnew count: ${refCount}`);
     if (refCount === 0) {
       // This object is ready to be freed.
-      console.warn("Should traverse elements and decref() here!")
+      let view = new Int32Array(heap);
+      trace("Should traverse elements and decref() here!")
+      switch (ptrTagType) {
+        case GRAIN_TUPLE_TAG_TYPE:
+          let tupleIdx = userPtr / 4;
+          let tupleLength = view[tupleIdx];
+          if (tupleLength & 0x80000000) {
+            // cyclic. return
+            return origInput;
+          } else {
+            view[tupleIdx] |= 0x80000000;
+            for (let i = 0; i < tupleLength; ++i) {
+              this.decRef(view[tupleIdx + i + 1])
+            }
+            view[tupleIdx] = tupleLength;
+          }
+          break;
+        case GRAIN_LAMBDA_TAG_TYPE:
+          // 4 * (idx + 3)
+          let lambdaIdx = userPtr / 4;
+          let numFreeVars = view[lambdaIdx + 2];
+          for (let i = 0; i < numFreeVars; ++i) {
+            this.decRef(view[lambdaIdx + 3 + i]);
+          }
+          break;
+        case GRAIN_GENERIC_HEAP_TAG_TYPE:
+          let genericHeapValUserPtr = userPtr;
+          switch (view[genericHeapValUserPtr / 4]) {
+            case GRAIN_ADT_HEAP_TAG:
+              if (this._runtime) {
+                let x = genericHeapValUserPtr / 4;
+                let [variantName, arity] = grainAdtInfo(this._runtime, genericHeapValUserPtr);
+                for (let i = 0; i < arity; ++i) {
+                  this.decRef(view[x + 5 + i]);
+                }
+              }
+            default:
+              // No extra traversal needed for Strings and DOM elements
+          }
+          break;
+        default:
+          console.warn(`<decRef: Unexpected value tag: 0x${this._toHex(ptrTagType)}> [userPtr=0x${this._toHex(userPtr)}]`)
+      }
       this.free(userPtr);
     } else {
       heap[rawPtr] = refCount & (0b0111 << 8);
       heap[rawPtr + 1] = refCount & (0b1111 << 4);
       heap[rawPtr + 2] = refCount & 0b1111;
     }
-    return userPtr;
+    return origInput;
   }
 
   free(userPtr) { // [TODO] Do we even need this?
     // stub
-    this._mallocModule.malloc(userPtr - this._headerSize);
+    console.warn(`free 0x${(new Number(userPtr)).toString(16)}`);
+    this._mallocModule.free(userPtr - this._headerSize);
+    trace('end_free');
   }
 
   free(ptr) {
@@ -179,6 +315,5 @@ class ManagedType {
     return address1 === address2;
   }
 }
-
 
 
