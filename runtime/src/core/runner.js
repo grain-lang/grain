@@ -3,13 +3,14 @@ import { wasi, readFile, readURL } from './grain-module';
 import { makePrint } from '../lib/print';
 import { makeToString } from '../lib/to-string';
 import { grainToString } from '../utils/utils';
+import { makeMemoryChecker } from './heap';
 
 function roundUp(num, multiple) {
   return multiple * (Math.floor((num - 1) / multiple) + 1);
 }
 
 export class GrainRunner {
-  constructor(locator, opts) {
+  constructor(locator, opts, limit) {
     this.modules = {};
     this.imports = {};
     this.idMap = {};
@@ -19,12 +20,7 @@ export class GrainRunner {
     this.ptr = 0;
     this.ptrZero = 0;
     this.imports['grainRuntime'] = {
-      malloc: (bytes) => {
-        // Basic malloc implementation for now
-        let ret = this.ptr;
-        this.ptr += roundUp(bytes, 8);
-        return ret;
-      },
+      checkMemory: makeMemoryChecker(this),
       relocBase: 0,
       moduleRuntimeId: 0
     };

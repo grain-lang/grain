@@ -238,17 +238,7 @@ export function grainHeapValToJSVal(runtime, n) {
     let x = n / 4;
     //console.log(`<ADT Value: (${view[x + 1]}, ${view[x + 2]}, ${view[x + 3]}, ${view[x + 4]})>`);
     if (runtime) {
-      // In-memory tags are tagged ints
-      let moduleId = view[x + 1] >> 1;
-      let typeId = view[x + 2] >> 1;
-      let variantId = view[x + 3] >> 1;
-      let moduleName = runtime.idMap[moduleId];
-      //console.log(`\tModule Name: ${moduleName}`);
-      let module = runtime.modules[moduleName];
-      //console.log(`\tModule: ${module}`);
-      let tyinfo = module.types[typeId];
-      //console.log(`\tType Info: ${JSON.stringify(tyinfo)}`);
-      let info = tyinfo[variantId];
+      let info = grainAdtInfo(runtime, n);
       //console.log(`\tVariant: ${info}`);
       let [variantName, arity] = info;
       let ret = [variantName];
@@ -261,6 +251,26 @@ export function grainHeapValToJSVal(runtime, n) {
     console.warn(`Unknown heap tag at ${n / 4}: ${view[n / 4]}`);
     return undefined;
   }
+}
+
+export function grainAdtInfo(runtime, n) {
+  let x = n / 4;
+  if (runtime) {
+    // In-memory tags are tagged ints
+    let moduleId = view[x + 1] >> 1;
+    let typeId = view[x + 2] >> 1;
+    let variantId = view[x + 3] >> 1;
+    let moduleName = runtime.idMap[moduleId];
+    //console.log(`\tModule Name: ${moduleName}`);
+    let module = runtime.modules[moduleName];
+    //console.log(`\tModule: ${module}`);
+    let tyinfo = module.types[typeId];
+    //console.log(`\tType Info: ${JSON.stringify(tyinfo)}`);
+    let info = tyinfo[variantId];
+    //console.log(`\tVariant: ${info}`);
+    return info;
+  }
+  return null;
 }
 
 export function grainTupleToJSVal(runtime, n) {

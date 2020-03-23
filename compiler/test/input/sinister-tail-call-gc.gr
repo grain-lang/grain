@@ -1,7 +1,7 @@
 # Contrived example to test *ADVANCED* tail calls
 
 let rec is_even_help = (n, b) => {
-  let x = (n, n, b, n) in
+  let x = (n, n, b, n);
   if (n == 0) {
     b
   } else {
@@ -9,12 +9,12 @@ let rec is_even_help = (n, b) => {
     # (We bounce back and forth between
     #  different stack sizes with this
     #  implementation)
-    if_odd(n - 1)
+    is_odd(n - 1)
   }
 },
 
 is_odd_help = (n, b) => {
-  let x = (n,) in
+  let x = (n,);
   if (n == 1) {
     b
   } else {
