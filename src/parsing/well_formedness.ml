@@ -13,6 +13,7 @@ type wferr =
   | TyvarNameShouldBeLowercase of string * Location.t
   | ExportAllShouldOnlyAppearOnce of Location.t
   | EmptyRecordPattern of Location.t
+  | RHSLetRecMayOnlyBeFunction of Location.t
 
 exception Error of wferr
 
@@ -40,6 +41,8 @@ let prepare_error =
     errorf ~loc "An 'export *' statement should appear at most once."
   | EmptyRecordPattern loc ->
     errorf ~loc "A record pattern must contain at least one named field."
+  | RHSLetRecMayOnlyBeFunction loc ->
+    errorf ~loc "let rec may only be used with recursive function definitions."
 
 
 let () =
@@ -192,6 +195,30 @@ let no_empty_record_patterns errs super =
   let iterator = { super with toplevel = iter_toplevel_binds; expr = iter_binds } in
   { errs; iterator }
 
+let only_functions_oh_rhs_letrec errs super =
+  let iter_toplevel_binds self ({ptop_desc=desc; ptop_loc=loc} as e) =
+    begin match desc with
+    | PTopLet(_, Recursive, vbs) ->
+      List.iter (function 
+        | {pvb_expr={pexp_desc=PExpLambda _}} -> ()
+        | {pvb_loc} -> errs := (RHSLetRecMayOnlyBeFunction loc)::!errs
+      ) vbs
+    | _ -> ()
+    end;
+    super.toplevel self e in
+  let iter_binds self ({pexp_desc=desc; pexp_loc=loc} as e) =
+    begin match desc with
+    | PExpLet(Recursive, vbs, _) ->
+      List.iter (function 
+        | {pvb_expr={pexp_desc=PExpLambda _}} -> ()
+        | {pvb_loc} -> errs := (RHSLetRecMayOnlyBeFunction loc)::!errs
+      ) vbs
+    | _ -> ()
+    end;
+    super.expr self e in
+  let iterator = { super with toplevel = iter_toplevel_binds; expr = iter_binds } in
+  { errs; iterator }
+
 let compose_well_formedness { errs; iterator } cur =
   cur errs iterator
 
@@ -203,6 +230,7 @@ let well_formedness_checks = [
   module_imports_not_external;
   only_has_one_export_all;
   no_empty_record_patterns;
+  only_functions_oh_rhs_letrec;
 ]
 
 let well_formedness_checker() =
