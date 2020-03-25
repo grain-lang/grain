@@ -201,7 +201,8 @@ let function_tests = [
   tefile "fib_big" "too-much-fib" "overflow";
 
   t "func_no_args" "let foo = (() => {print(5)});\nfoo()" "5\nvoid";
-  t "multi_bind" "let rec x = 2, y = x + 1; y" "3";
+  te "multi_bind" "let x = 2, y = x + 1; y" "Unbound value x";
+  t "multi_bind2" "let x = 2, y = 3; y" "3";
   te "unbound_fun" "2 + foo()" "unbound";
   te "unbound_id_simple" "5 - x" "unbound";
   te "unbound_id_let" "let x = x; 2 + 2" "unbound";
@@ -235,9 +236,9 @@ let function_tests = [
   te "lambda_dup_args" "((x, y, x) => {5})" "Variable x is bound several times";
   te "lambda_arity_1" "((x) => {6})()" "type";
   te "lambda_arity_2" "((x) => {5})(1, 2)" "type";
-  t "letrec_nonstatic_const" "let rec x = 5; x" "5";
+  te "letrec_nonstatic_const" "let rec x = 5; x" "let rec may only be used with recursive function definitions";
   te "letrec_nonstatic_same" "let x = x; x" "Unbound value x.\n       Hint: You are probably missing the `rec' keyword on line 1.";
-  t "letrec_nonstatic_other" "let rec x = ((z) => {z + 1}), y = x; y(2)" "3";
+  te "letrec_nonstatic_other" "let rec x = ((z) => {z + 1}), y = x; y(2)" "let rec may only be used with recursive function definitions";
   te "nonfunction_1" "let x = 5; x(3)" "type";
 ]
 
