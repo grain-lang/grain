@@ -59,6 +59,10 @@ export class GrainModule {
     return this.instantiated.exports;
   }
 
+  get isGrainModule() {
+    return !!this.exports["GRAIN$MAIN"]
+  }
+
   requiredExport(key) {
     let exports = this.exports;
     if (!(key in exports)) {
@@ -144,9 +148,7 @@ export class GrainModule {
   }
 
   async run() {
-    //console.log(`Running ${this.name}`);
     let res = await this.main();
-    //console.log(`complete.`);
     return grainToJSVal(this.runner, res);
   }
 }
