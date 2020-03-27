@@ -24,6 +24,9 @@ export const decoder = new TextDecoder("utf-8");
 const managedMemory = new ManagedMemory(memory);
 
 const importObj = {
+  env: {
+    memory
+  },
   console: {
     log: print,
     debug: debugPrint,
