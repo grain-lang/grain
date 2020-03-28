@@ -28,6 +28,11 @@
     "url": "https://github.com/grain-lang/grain/issues"
   },
   "homepage": "https://grain-lang.org",
-  "devDependencies": {},
-  "dependencies": {}
+  "devDependencies": {
+    "assemblyscript": "^0.9.4"
+  },
+  "dependencies": {},
+  "scripts": {
+    "build": "asc hashUtils.ts -b hashUtils.wasm -O3 --runtime none --importMemory"
+  }
 }
