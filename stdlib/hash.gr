@@ -1,0 +1,1 @@
+export foreign wasm hashUtils hash : a -> Number
