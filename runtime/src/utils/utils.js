@@ -105,7 +105,7 @@ export function grainHeapValueToString(runtime, n) {
         
         let values = [];
         for (let [field, idx] of Object.entries(tyinfo)) {
-          values.push(`${field}: ${grainToString(runtime, view[x + 3 + idx]).replace(/\n/g, '\n  ')}`)
+          values.push(`${field}: ${grainToString(runtime, view[x + 4 + idx]).replace(/\n/g, '\n  ')}`)
         }
         return `{\n  ${values.join(',\n  ')}\n}`
       }
