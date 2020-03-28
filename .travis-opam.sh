@@ -54,6 +54,7 @@ opam install . --deps-only
 ### Setup Grain runtime and cli
 
 cd runtime && npm i && npm run build && cd -
+cd stdlib && npm i && npm run build && cd -
 cd cli && npm i && npm link && cd -
 
 echo -en "travis_fold:end:prepare.ci\r"
