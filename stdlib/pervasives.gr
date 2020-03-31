@@ -38,18 +38,18 @@ primitive assert : Bool -> Void = "@assert"
 primitive fail : String -> a = "@fail"
 
 # Prints the given value to the console.
-foreign wasm grainBuiltins print : a -> Void
+import foreign wasm print : a -> Void from 'grainBuiltins'
 
 # Checks the given items for structural equality.
-foreign wasm grainBuiltins equal : (a, a) -> Bool
+import foreign wasm equal : (a, a) -> Bool from 'grainBuiltins'
 
 # Converts the given value to a string
-foreign wasm grainBuiltins toString : a -> String
+import foreign wasm toString : a -> String from 'grainBuiltins'
 
 # TODO: These should be in a separate WASM module
 
-foreign wasm grainBuiltins stringAppend : (String, String) -> String
+import foreign wasm stringAppend : (String, String) -> String from 'grainBuiltins'
 
-foreign wasm grainBuiltins stringSlice : (String, Number, Number) -> String
+import foreign wasm stringSlice : (String, Number, Number) -> String from 'grainBuiltins'
 
 export data List<a> = [] | [...](a, List<a>)

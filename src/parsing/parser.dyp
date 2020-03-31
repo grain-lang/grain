@@ -572,7 +572,7 @@ export_id_str :
   | type_id_str { ExportExceptData $1 }
 
 foreign_stmt :
-  | FOREIGN WASM id_str id_str colon typ { Val.mk ~loc:(symbol_rloc dyp) ~mod_:$3 ~name:$4 ~typ:$6 ~prim:[] }
+  | FOREIGN WASM id_str colon typ FROM file_path { Val.mk ~loc:(symbol_rloc dyp) ~mod_:$7 ~name:$3 ~typ:$5 ~prim:[] }
 
 primitive :
   | ASSERT { Location.mkloc "assert" (symbol_rloc dyp) }
@@ -587,8 +587,8 @@ toplevel_stmt :
   | LET value_binds { Top.let_ Nonexported Nonrecursive $2 }
   | expr { Top.expr $1 }
   | import_stmt { Top.import $1 }
+  | IMPORT foreign_stmt { Top.foreign ~loc:(symbol_rloc dyp) Nonexported $2 }
   | export_stmt { $1 }
-  | foreign_stmt { Top.foreign ~loc:(symbol_rloc dyp) Nonexported $1 }
   | primitive_stmt { Top.primitive ~loc:(symbol_rloc dyp) Nonexported $1 }
   | data_declaration { Top.data Nonexported $1 }
 
