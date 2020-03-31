@@ -3,13 +3,13 @@
  (libraries grain oUnit extlib))
 
 (copy_files ../stdlib/*.gr)
-(copy_files ../stdlib/hashUtils.wasm)
+(copy_files ../stdlib/stdlib-external/*)
 
 (rule
  (targets stdlib-dir.txt)
  (deps 
   (glob_files ../stdlib/*.gr)
-  (glob_files ../stdlib/hashUtils.wasm))
+  (glob_files ../stdlib/stdlib-external/*))
  (action
   (write-file %{targets} ../stdlib)))
 
