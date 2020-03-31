@@ -1,1 +1,1 @@
-export foreign wasm hashUtils hash : a -> Number
+export foreign wasm hash : a -> Number from 'stdlib-external/hash'
