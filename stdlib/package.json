@@ -33,6 +33,6 @@
   },
   "dependencies": {},
   "scripts": {
-    "build": "asc hashUtils.ts -b hashUtils.wasm -O3 --runtime none --importMemory"
+    "build": "for f in stdlib-external/*.ts; do asc $f -o stdlib-external/$(basename $f .ts).wasm -O3 --runtime none --importMemory; done"
   }
 }
