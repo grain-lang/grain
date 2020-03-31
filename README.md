@@ -33,12 +33,20 @@ Running `make install` will symlink `grainc` onto your PATH.
 
 You can run the tests with `make tests`.
 
-### Runtime
+### Runtime and Standard Library
 
 To build the runtime, have `node` (version >= 9) and `npm` (version >= 5) installed. Then,
 
 ```bash
 $ cd runtime
+$ npm install
+$ npm run build
+```
+
+For the standard library,
+
+```bash
+$ cd stdlib
 $ npm install
 $ npm run build
 ```

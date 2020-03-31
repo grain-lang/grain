@@ -28,6 +28,11 @@
     "url": "https://github.com/grain-lang/grain/issues"
   },
   "homepage": "https://grain-lang.org",
-  "devDependencies": {},
-  "dependencies": {}
+  "devDependencies": {
+    "assemblyscript": "^0.9.4"
+  },
+  "dependencies": {},
+  "scripts": {
+    "build": "for f in stdlib-external/*.ts; do asc $f -o stdlib-external/$(basename $f .ts).wasm -O3 --runtime none --importMemory; done"
+  }
 }

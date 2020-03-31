@@ -72,9 +72,11 @@ export class GrainRunner {
         // This is a good point to debug when modules are loaded:
         // console.debug(`Located module: ${imp.module}`);
         await this.load(imp.module, located);
-        await located.run();
+        if (located.isGrainModule) {
+          await located.run();
+          this.imports['grainRuntime']['relocBase'] += located.tableSize;
+        }
         this.ptrZero = this.ptr;
-        this.imports['grainRuntime']['relocBase'] += located.tableSize;
         this.imports['grainRuntime']['moduleRuntimeId']++;
         this.imports[imp.module] = located.exports;
       }

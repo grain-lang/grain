@@ -528,7 +528,7 @@ let compile_record_op env rec_imm op =
   | MRecordGet(idx) ->
     let idx_int = Int32.to_int idx in
     record @ (untag (GenericHeapType (Some RecordType))) +@ [
-        load ~offset:(4 * (idx_int + 3)) ();
+        load ~offset:(4 * (idx_int + 4)) ();
       ]
 
 
@@ -691,7 +691,6 @@ let allocate_closure env ?lambda ({func_idx; arity; variables} as closure_data) 
   ]
 
 let allocate_adt env ttag vtag elts =
-  (* TODO: We don't really need to store the arity here. Could move this to module-static info *)
   (* Heap memory layout of ADT types:
     [ <value type tag>, <module_tag>, <type_tag>, <variant_tag>, <arity>, elts ... ]
    *)
@@ -869,7 +868,7 @@ let allocate_array_init env num_elts init_f =
 let allocate_record env ttag elts =
   let _, elts = List.split elts in
   (* Heap memory layout of records:
-    [ <value type tag>, <module_tag>, <type_tag>, ordered elts ... ]
+    [ <value type tag>, <module_tag>, <type_tag>, <arity> ordered elts ... ]
    *)
   let num_elts = List.length elts in
   let get_swap = get_swap env 0 in
@@ -877,10 +876,10 @@ let allocate_record env ttag elts =
   let compile_elt idx elt =
     get_swap @
     (compile_imm env elt) +@ [
-      store ~offset:(4 * (idx + 3)) ();
+      store ~offset:(4 * (idx + 4)) ();
     ] in
 
-  (heap_allocate env (num_elts + 3)) @ tee_swap +@ [
+  (heap_allocate env (num_elts + 4)) @ tee_swap +@ [
     Ast.Const(const_int32 (tag_val_of_heap_tag_type RecordType));
     store ~offset:0 ();
   ] @ get_swap +@ [
@@ -891,6 +890,9 @@ let allocate_record env ttag elts =
     store ~offset:4 ();
   ] @ get_swap @ (compile_imm env ttag) +@ [
     store ~offset:8 ();
+  ] @ get_swap +@ [
+    Ast.Const(const_int32 num_elts);
+    store ~offset:12 ();
   ] @ (Concatlist.flatten @@ List.mapi compile_elt elts) @ get_swap +@ [
     Ast.Const(const_int32 @@ tag_val_of_tag_type (GenericHeapType (Some RecordType)));
     Ast.Binary(Values.I32 Ast.IntOp.Or);
@@ -1015,11 +1017,11 @@ let compile_prim2 (env : codegen_env) p2 arg1 arg2 : Wasm.Ast.instr' Concatlist.
     ] @
     (* Convert remainder result into modulo result *)
     compiled_arg1 +@ [
-      Ast.Const(encoded_const_int32 31);
+      Ast.Const(const_int32 31);
       Ast.Binary(Values.I32 Ast.IntOp.ShrU);
     ] @
     compiled_arg2 +@ [
-      Ast.Const(encoded_const_int32 31);
+      Ast.Const(const_int32 31);
       Ast.Binary(Values.I32 Ast.IntOp.ShrU);
       Ast.Compare(Values.I32 Ast.IntOp.Eq);
       Ast.If([Types.I64Type],
