@@ -8,5 +8,14 @@
     "runtime",
     "stdlib",
     "compiler"
-  ]
+  ],
+  "scripts": {
+    "compiler:clean": "yarn workspace compiler run esy clean",
+    "compiler:build": "yarn workspace compiler run esy",
+    "postcompiler:build": "yarn workspace compiler run esy no-pnp",
+    "compiler:test": "yarn workspace compiler run esy test",
+    "runtime:build": "yarn workspace @grain/runtime build",
+    "stdlib:build": "yarn workspace @grain/stdlib build",
+    "cli:link": "yarn workspace @grain/cli link"
+  }
 }

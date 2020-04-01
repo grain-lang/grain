@@ -1,0 +1,23 @@
+opam-version: "2.0"
+maintainer: "Kate <kit.ty.kate@disroot.org>"
+authors: ["The OpenSSL Project"]
+bug-reports: "https://github.com/ocaml/opam-repository/issues"
+homepage: "https://www.openssl.org/"
+license: "Apache-1.0"
+build: ["openssl" "version"]
+depexts: [
+  ["openssl"] {os-family = "debian"}
+  ["openssl"] {os-distribution = "centos"}
+  ["openssl"] {os-distribution = "ol"}
+  ["openssl"] {os-distribution = "fedora"}
+  ["openssl"] {os = "macos" & os-distribution = "homebrew"}
+  ["openssl"] {os = "macos" & os-distribution = "macports"}
+  ["openssl"] {os-distribution = "alpine"}
+  ["openssl"] {os-distribution = "nixos"}
+  ["openssl"] {os-distribution = "arch"}
+  ["openssl"] {os-family = "suse"}
+]
+synopsis: "Virtual package relying on an OpenSSL binary system installation"
+description:
+  "This package can only install if the OpenSSL binary is installed on the system."
+flags: conf

@@ -2,19 +2,10 @@
  (name test)
  (libraries grain oUnit extlib))
 
-(rule
- (targets stdlib-dir.txt)
- (deps 
-  (glob_files ../../stdlib/*.gr)
-  (glob_files ../../stdlib/stdlib-external/*))
- (action
-  (write-file %{targets} ../stdlib)))
-
 (alias
  (name runtest)
  (deps
   (:< test.exe)
-  stdlib-dir.txt
   (source_tree input)
   (source_tree stdlib)
   (source_tree test-libs)

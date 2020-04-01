@@ -24,10 +24,9 @@ let all_tests = [
 
 let () =
   (** Override default stdlib location to use development version of stdlib *)
-  let stdlib_dir = BatFile.with_file_in "stdlib-dir.txt" BatInnerIO.read_all in
+  let stdlib_dir = Unix.getenv "GRAIN_STDLIB" in
   let stdlib_dir = Grain_utils.Files.derelativize stdlib_dir in
   Grain_utils.Config.stdlib_dir := Some(stdlib_dir);
-  Unix.putenv "GRAIN_STDLIB" stdlib_dir;
   Grain_utils.Config.debug := true;
   Printexc.record_backtrace true;
   run_test_tt_main ("All Tests" >::: all_tests)
