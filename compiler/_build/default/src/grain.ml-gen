@@ -1,2 +1,0 @@
-(** @canonical Grain.Compile *)
-module Compile = Grain__Compile

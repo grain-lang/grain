@@ -1,1 +1,0 @@
-../../../../default/src/middle_end/analyze_purity.mli

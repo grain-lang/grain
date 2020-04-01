@@ -1,1 +1,0 @@
-../../../../default/src/typed/cmi_format.mli
