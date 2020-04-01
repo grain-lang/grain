@@ -1,0 +1,6 @@
+let x = 4 + 5;
+let y = x * 2;
+let z = y - x;
+let a = x + 7;
+let b = 14;
+a + b

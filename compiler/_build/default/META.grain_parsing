@@ -1,0 +1,18 @@
+version = "0.0.1"
+description = "Frontend modules for Grain compiler"
+requires = "batteries
+            core
+            dyp
+            extlib
+            grain_utils
+            ppx_deriving
+            ppx_deriving.runtime
+            ppx_deriving_yojson.runtime
+            ppx_sexp_conv
+            ppx_sexp_conv.runtime-lib
+            sexplib
+            yojson"
+archive(byte) = "grain_parsing.cma"
+archive(native) = "grain_parsing.cmxa"
+plugin(byte) = "grain_parsing.cma"
+plugin(native) = "grain_parsing.cmxs"

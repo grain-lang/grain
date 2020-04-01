@@ -1,0 +1,23 @@
+import lists;
+
+let rec make_list = (x, n) => {
+  let rec helper = (a, b, acc) => {
+    if (a == 0) {
+      acc
+    } else {
+      helper(a - 1, cons(b, acc));
+    }
+  };
+  helper(n, x, empty)
+},
+
+loop = (n) => {
+  if (n == 0) {
+    true
+  } else {
+    let lst = make_list(n, n);
+    loop(n - 1)
+  }
+};
+
+loop(45) #<- eats up a lot of heap

@@ -1,0 +1,23 @@
+(** @canonical Grain_codegen.Compcore *)
+module Compcore = Grain_codegen__Compcore
+
+(** @canonical Grain_codegen.Compmod *)
+module Compmod = Grain_codegen__Compmod
+
+(** @canonical Grain_codegen.Concatlist *)
+module Concatlist = Grain_codegen__Concatlist
+
+(** @canonical Grain_codegen.Emitmod *)
+module Emitmod = Grain_codegen__Emitmod
+
+(** @canonical Grain_codegen.Mashtree *)
+module Mashtree = Grain_codegen__Mashtree
+
+(** @canonical Grain_codegen.Runtime_errors *)
+module Runtime_errors = Grain_codegen__Runtime_errors
+
+(** @canonical Grain_codegen.Transl_anf *)
+module Transl_anf = Grain_codegen__Transl_anf
+
+(** @canonical Grain_codegen.Value_tags *)
+module Value_tags = Grain_codegen__Value_tags

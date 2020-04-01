@@ -1,0 +1,17 @@
+export data TList<a> =
+  | Empty
+  | Cons(a, TList<a>)
+
+export let rec sum = (l) => {
+  match (l) {
+    | Empty => 0
+    | Cons(a, more) => a + sum(more)
+  }
+}
+
+export let rec append = (l1, l2) => {
+  match (l1) {
+    | Empty => l2
+    | Cons(hd, tl) => Cons(hd, append(tl, l2))
+  }
+}

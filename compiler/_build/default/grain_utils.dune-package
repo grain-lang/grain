@@ -1,0 +1,55 @@
+(lang dune 1.11)
+(name grain_utils)
+(version 0.0.1)
+(library
+ (name grain_utils)
+ (kind normal)
+ (synopsis "Utilities for the Grain compiler")
+ (archives (byte grain_utils.cma) (native grain_utils.cmxa))
+ (plugins (byte grain_utils.cma) (native grain_utils.cmxs))
+ (foreign_archives (native grain_utils.a))
+ (requires
+  ppx_sexp_conv.runtime-lib
+  cmdliner
+  extlib
+  stdint
+  ppx_deriving
+  ppx_sexp_conv
+  sexplib
+  wasm
+  batteries)
+ (main_module_name Grain_utils)
+ (modes byte native)
+ (modules
+  (wrapped
+   (main_module_name Grain_utils)
+   (modules
+    ((name Config)
+     (obj_name grain_utils__Config)
+     (visibility public)
+     (impl)
+     (intf))
+    ((name Consistbl)
+     (obj_name grain_utils__Consistbl)
+     (visibility public)
+     (impl)
+     (intf))
+    ((name Files) (obj_name grain_utils__Files) (visibility public) (impl))
+    ((name Tbl) (obj_name grain_utils__Tbl) (visibility public) (impl) (intf))
+    ((name Warnings)
+     (obj_name grain_utils__Warnings)
+     (visibility public)
+     (impl)
+     (intf))
+    ((name Wasm_utils)
+     (obj_name grain_utils__Wasm_utils)
+     (visibility public)
+     (impl)
+     (intf)))
+   (alias_module
+    (name Grain_utils)
+    (obj_name grain_utils)
+    (visibility public)
+    (kind alias)
+    (impl))
+   (wrapped true))))

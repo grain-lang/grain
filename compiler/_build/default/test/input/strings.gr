@@ -1,0 +1,3 @@
+let foo = "foo";
+let bar = "bar";
+strslice(strcat(foo, bar), 1, 4)

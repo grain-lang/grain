@@ -1,0 +1,24 @@
+# Contrived example to test *ADVANCED* tail calls
+
+let rec isEvenHelp = (n, b) => {
+  if (n == 0) {
+    b
+  } else {
+    # Note the different argument size
+    isOdd(n - 1)
+  }
+},
+
+isOddHelp = (n, b) => {
+  if (n == 1) {
+    b
+  } else {
+    # See above
+    isEven(n - 1)
+  }
+},
+
+isEven = (n) => { isEvenHelp(n, true) },
+isOdd = (n) => { isOddHelp(n, true) };
+
+isOdd(999999)

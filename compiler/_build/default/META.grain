@@ -1,0 +1,22 @@
+version = "0.0.1"
+description = ""
+requires = "batteries
+            cmdliner
+            extlib
+            grain_codegen
+            grain_middle_end
+            grain_parsing
+            grain_typed
+            grain_utils
+            oUnit
+            ocamlgraph
+            ppx_deriving
+            ppx_sexp_conv
+            ppx_sexp_conv.runtime-lib
+            sexplib
+            stdint
+            wasm"
+archive(byte) = "grain.cma"
+archive(native) = "grain.cmxa"
+plugin(byte) = "grain.cma"
+plugin(native) = "grain.cmxs"

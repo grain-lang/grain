@@ -1,0 +1,10 @@
+let x = 5;
+if (x == 4) {
+  false
+} else {
+  if (x == 5) {
+    true
+  } else {
+    "what"
+  }
+}

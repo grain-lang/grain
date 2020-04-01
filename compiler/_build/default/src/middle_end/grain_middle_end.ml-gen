@@ -1,0 +1,53 @@
+(** @canonical Grain_middle_end.Analysis_pass *)
+module Analysis_pass = Grain_middle_end__Analysis_pass
+
+(** @canonical Grain_middle_end.Analyze_purity *)
+module Analyze_purity = Grain_middle_end__Analyze_purity
+
+(** @canonical Grain_middle_end.Analyze_tail_calls *)
+module Analyze_tail_calls = Grain_middle_end__Analyze_tail_calls
+
+(** @canonical Grain_middle_end.Anf_helper *)
+module Anf_helper = Grain_middle_end__Anf_helper
+
+(** @canonical Grain_middle_end.Anf_iterator *)
+module Anf_iterator = Grain_middle_end__Anf_iterator
+
+(** @canonical Grain_middle_end.Anf_mapper *)
+module Anf_mapper = Grain_middle_end__Anf_mapper
+
+(** @canonical Grain_middle_end.Anf_utils *)
+module Anf_utils = Grain_middle_end__Anf_utils
+
+(** @canonical Grain_middle_end.Anftree *)
+module Anftree = Grain_middle_end__Anftree
+
+(** @canonical Grain_middle_end.Linearize *)
+module Linearize = Grain_middle_end__Linearize
+
+(** @canonical Grain_middle_end.Matchcomp *)
+module Matchcomp = Grain_middle_end__Matchcomp
+
+(** @canonical Grain_middle_end.Optimization_pass *)
+module Optimization_pass = Grain_middle_end__Optimization_pass
+
+(** @canonical Grain_middle_end.Optimize *)
+module Optimize = Grain_middle_end__Optimize
+
+(** @canonical Grain_middle_end.Optimize_common_subexpressions *)
+module Optimize_common_subexpressions = Grain_middle_end__Optimize_common_subexpressions
+
+(** @canonical Grain_middle_end.Optimize_constants *)
+module Optimize_constants = Grain_middle_end__Optimize_constants
+
+(** @canonical Grain_middle_end.Optimize_dead_assignments *)
+module Optimize_dead_assignments = Grain_middle_end__Optimize_dead_assignments
+
+(** @canonical Grain_middle_end.Optimize_dead_branches *)
+module Optimize_dead_branches = Grain_middle_end__Optimize_dead_branches
+
+(** @canonical Grain_middle_end.Optimize_simple_binops *)
+module Optimize_simple_binops = Grain_middle_end__Optimize_simple_binops
+
+(** @canonical Grain_middle_end.Optimize_tail_calls *)
+module Optimize_tail_calls = Grain_middle_end__Optimize_tail_calls

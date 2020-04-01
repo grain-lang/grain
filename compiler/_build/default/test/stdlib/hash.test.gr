@@ -1,0 +1,81 @@
+# Sanity tests for generic hashing.
+
+import Hash from 'hash'
+import List from 'lists'
+
+let uniq = (list) => {
+  let itemsSeen = box([])
+
+  List.fold_left((acc, item) => {
+    let seen = List.contains(item, ^itemsSeen)
+    itemsSeen := [item, ...^itemsSeen]
+    acc && !seen
+  }, true, list)
+}
+
+let numbers = [
+  0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+  10, 20, 30, 40, 50, 60, 70, 80, 90,
+  101, 202, 303, 404, 505, 606, 707, 808, 909
+]
+assert uniq(List.map(n => Hash.hash(n), numbers))
+
+assert Hash.hash(42) == Hash.hash(42)
+assert Hash.hash(0) == Hash.hash(0)
+
+
+let strings = [
+  '', 'f', 'fo', 'foo', 'foo ', 'foo b', 'foo ba', 'foo bar', 'foo bar!',
+  'deer', 'reed', 'read', 'dear', 'bad', 'dab', 'fee', 'feed', 'fed',
+  '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '!', '@', '#', '$', '%'
+]
+assert uniq(List.map(n => Hash.hash(n), strings))
+
+assert Hash.hash('') == Hash.hash('')
+assert Hash.hash('grain > ore > wool > lumber > brick') == Hash.hash('grain > ore > wool > lumber > brick')
+
+
+data Variants = A | B | C | D(Number, List<Variants>) | E(String)
+
+let variants = [
+  A, B, C,
+  D(1, []), D(2, []), D(1, [A]), D(1, [B]), D(1, [A, B]),
+  E(''), E('dab'), E('bad')
+]
+assert uniq(List.map(n => Hash.hash(n), variants))
+
+assert Hash.hash(A) == Hash.hash(A)
+assert Hash.hash(D(1, [A, B])) == Hash.hash(D(1, [A, B]))
+assert Hash.hash(E('wasm')) == Hash.hash(E('wasm'))
+
+let tuples = [
+  (1, A, ''),
+  (1, A, 'foo'),
+  (12, A, 'foo'),
+  (12, B, 'foo'),
+  (12, B, 'gr'),
+  (12, E('wasm'), 'gr')
+]
+assert uniq(List.map(n => Hash.hash(n), tuples))
+
+assert Hash.hash((12, E('wasm'), 'gr')) == Hash.hash((12, E('wasm'), 'gr'))
+assert Hash.hash((0, A, '')) == Hash.hash((0, A, ''))
+
+data Rec = {
+  num: Number,
+  var: Variants,
+  str: String
+}
+
+let recs = [
+  { num: 1, var: A, str: '' },
+  { num: 1, var: A, str: 'foo' },
+  { num: 12, var: A, str: 'foo' },
+  { num: 12, var: B, str: 'foo' },
+  { num: 12, var: B, str: 'gr' },
+  { num: 12, var: E('wasm'), str: 'gr' }
+]
+assert uniq(List.map(n => Hash.hash(n), recs))
+
+assert Hash.hash({ num: 12, var: E('wasm'), str: 'gr' }) == Hash.hash({ num: 12, var: E('wasm'), str: 'gr' })
+assert Hash.hash({ num: 0, var: A, str: '' }) == Hash.hash({ num: 0, var: A, str: '' })

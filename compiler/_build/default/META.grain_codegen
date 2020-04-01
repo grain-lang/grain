@@ -1,0 +1,16 @@
+version = "0.0.1"
+description = "Grain compiler code generation"
+requires = "grain_middle_end
+            grain_parsing
+            grain_typed
+            grain_utils
+            ppx_deriving
+            ppx_sexp_conv
+            ppx_sexp_conv.runtime-lib
+            sexplib
+            stdint
+            wasm"
+archive(byte) = "grain_codegen.cma"
+archive(native) = "grain_codegen.cmxa"
+plugin(byte) = "grain_codegen.cma"
+plugin(native) = "grain_codegen.cmxs"
