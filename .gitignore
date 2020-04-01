@@ -10,10 +10,10 @@ script/node_modules
 *~
 *.o
 *.log
-_build/*
+_build/
 .installed-pkgs
 notes.org
-**/node_modules/**/*
+node_modules/
 *.wasm
 *.wasm.wast
 *.wasm.modsig
