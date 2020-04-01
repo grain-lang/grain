@@ -1,0 +1,8 @@
+{
+  "name": "compiler",
+  "private": true,
+  "version": "0.0.1",
+  "devDependencies": {
+    "esy": "0.6.2"
+  }
+}

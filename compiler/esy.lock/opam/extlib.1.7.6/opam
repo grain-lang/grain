@@ -1,0 +1,50 @@
+opam-version: "2.0"
+maintainer: "ygrek@autistici.org"
+homepage: "https://github.com/ygrek/ocaml-extlib"
+dev-repo: "git://github.com/ygrek/ocaml-extlib.git"
+bug-reports: "https://github.com/ygrek/ocaml-extlib/issues"
+doc: ["https://ygrek.org/p/extlib/doc/"]
+license: "LGPL-2.1-only with OCaml-LGPL-linking-exception"
+authors: [
+  "Nicolas Cannasse"
+  "Brian Hurt"
+  "Yamagata Yoriyuki"
+  "Markus Mottl"
+  "Jesse Guardiani"
+  "John Skaller"
+  "Bardur Arantsson"
+  "Janne Hellsten"
+  "Richard W.M. Jones"
+  "ygrek"
+  "Gabriel Scherer"
+  "Pietro Abate"
+]
+build: [
+  [make "minimal=1" "build"]
+  [make "minimal=1" "test"] {with-test}
+  [make "minimal=1" "doc"] {with-doc}
+]
+install: [ [make "minimal=1" "install"] ]
+remove: [
+  ["ocamlfind" "remove" "extlib"]
+]
+depends: [
+  "ocaml"
+  "ocamlfind" {build}
+  "cppo" {build}
+  "base-bytes" {build}
+]
+synopsis:
+  "A complete yet small extension for OCaml standard library (reduced, recommended)"
+description: """
+The purpose of this library is to add new functions to OCaml standard library
+modules, to modify some functions in order to get better performances or
+safety (tail-recursive) and also to provide new modules which should be useful
+for day to day programming."""
+flags: light-uninstall
+url {
+  src: "https://ygrek.org/p/release/ocaml-extlib/extlib-1.7.6.tar.gz"
+  checksum: "md5=b976093ef23b7d60fc1c8f0380c4f76a"
+  mirrors:
+    "https://github.com/ygrek/ocaml-extlib/releases/download/1.7.6/extlib-1.7.6.tar.gz"
+}

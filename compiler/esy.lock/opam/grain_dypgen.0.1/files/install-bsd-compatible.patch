@@ -1,0 +1,62 @@
+--- dypgen.20120619-1/Makefile.orig	2013-04-02 16:17:00.000000000 +0200
++++ dypgen.20120619-1/Makefile	2013-04-02 16:21:59.000000000 +0200
+@@ -22,20 +22,24 @@
+ 
+ #install with ocaml-findlib
+ install: install_opt
+-	install -D --mode=755 dypgen/dypgen $(BINDIR)
+-	install -D --mode=755 dyp2gram.pl $(BINDIR)/dyp2gram
+-	install -D --mode=644 doc/dypgen.1 $(MANDIR)/dypgen.1
+-	install -D --mode=644 doc/dypgen.1 $(MANDIR)/dypgen.opt.1
+-	install -D --mode=644 doc/dypgen.1 $(MANDIR)/dyp2gram.1
++	install -d $(BINDIR)
++	install -m 755 dypgen/dypgen $(BINDIR)
++	install -m 755 dyp2gram.pl $(BINDIR)/dyp2gram
++	install -d $(MANDIR)
++	install -m 644 doc/dypgen.1 $(MANDIR)/dypgen.1
++	install -m 644 doc/dypgen.1 $(MANDIR)/dypgen.opt.1
++	install -m 644 doc/dypgen.1 $(MANDIR)/dyp2gram.1
+ 	cd dyplib; $(MAKE) install
+ 
+ #install without ocaml-findlib
+ install2: install_opt
+-	install -D --mode=755 dypgen/dypgen $(BINDIR)
+-	install -D --mode=755 dyp2gram.pl $(BINDIR)/dyp2gram
+-	install -D --mode=644 doc/dypgen.1 $(MANDIR)/dypgen.1
+-	install -D --mode=644 doc/dypgen.1 $(MANDIR)/dypgen.opt.1
+-	install -D --mode=644 doc/dypgen.1 $(MANDIR)/dyp2gram.1
++	install -d $(BINDIR)
++	install -m 755 dypgen/dypgen $(BINDIR)
++	install -m 755 dyp2gram.pl $(BINDIR)/dyp2gram
++	install -d $(MANDIR)
++	install -m 644 doc/dypgen.1 $(MANDIR)/dypgen.1
++	install -m 644 doc/dypgen.1 $(MANDIR)/dypgen.opt.1
++	install -m 644 doc/dypgen.1 $(MANDIR)/dyp2gram.1
+ 	cd dyplib; $(MAKE) install2
+ 
+ ifdef CAMLOPT
+--- dypgen.20120619-1/dyplib/Makefile.orig	2013-04-02 16:15:48.000000000 +0200
++++ dypgen.20120619-1/dyplib/Makefile	2013-04-02 16:16:41.000000000 +0200
+@@ -28,15 +28,18 @@
+ 	- $(OCAMLFIND) remove -destdir $(DYPGENLIBDIR) dyp
+ 
+ install2: install_dyp install_opt
+-	install -D --mode=644 dyp.cmi $(DYPGENLIBDIR)/dyp
++	install -d $(DYPGENLIBDIR)/dyp
++	install -m 644 dyp.cmi $(DYPGENLIBDIR)/dyp
+ 
+ install_dyp:
+-	install -D --mode=644 dyp.cma $(DYPGENLIBDIR)/dyp
++	install -d $(DYPGENLIBDIR)/dyp
++	install -m 644 dyp.cma $(DYPGENLIBDIR)/dyp
+ 
+ ifdef CAMLOPT
+ install_opt:
+-	install -D --mode=644 dyp.cmxa $(DYPGENLIBDIR)/dyp
+-	install -D --mode=644 dyp.a $(DYPGENLIBDIR)/dyp
++	install -d $(DYPGENLIBDIR)/dyp
++	install -m 644 dyp.cmxa $(DYPGENLIBDIR)/dyp
++	install -m 644 dyp.a $(DYPGENLIBDIR)/dyp
+ else
+ install_opt:
+ endif
