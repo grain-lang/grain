@@ -26,3 +26,4 @@ runtime/dist
 script/public/javascripts/grain-runtime.js
 script/public/javascripts/grain-runtime-browser.js
 /*.gr
+_esy/

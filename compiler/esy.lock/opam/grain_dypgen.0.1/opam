@@ -1,0 +1,35 @@
+opam-version: "2.0"
+maintainer: "https://github.com/ocaml/opam-repository/issues"
+authors: ["Emmanuel Onzo" "Philip Blair"]
+homepage: "https://github.com/grain-lang/dypgen"
+license: "CeCILL-B"
+build: make
+depends: [
+  "ocaml" {>= "4.07.0"}
+  "ocamlfind" {build}
+]
+patches: ["install-bsd-compatible.patch"]
+install: [
+  make
+  "install"
+  "DYPGENLIBDIR=%{lib}%"
+  "BINDIR=%{bin}%"
+  "MANDIR=%{man}%/man1"
+]
+synopsis: "Self-extensible parsers and lexers for OCaml"
+description: """
+dypgen is a GLR parser generator for OCaml, it is able to
+generate self-extensible parsers (also called adaptive parsers) as
+well as extensible lexers for the parsers it produces.
+(fork of pre-4.06 dypgen: http://dypgen.free.fr/)"""
+extra-files: [
+  ["install-bsd-compatible.patch" "md5=f4885881bb9e16bae3f9e88ebb54c582"]
+  ["dypgen.install" "md5=3af2bc7343588caf1a6de8af49a3b1b5"]
+]
+url {
+  src: "https://github.com/grain-lang/dypgen/archive/0.1.tar.gz"
+  checksum: [
+    "md5=abf5514b873721d675f6568378b605c9"
+    "sha512=0e742efc003b9d974e7d1e82f51af7e550d25fc77bd024a6fc8f7d1a148678bdee1c58c14e6ef3bf335d7e4176446ff5b41d695020c7bd08bb960b14ef278831"
+  ]
+}

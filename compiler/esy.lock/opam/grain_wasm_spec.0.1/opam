@@ -1,0 +1,28 @@
+opam-version: "2.0"
+maintainer: ["Philip Blair <philip@grain-lang.org>" "Oscar Spencer <oscar@grain-lang.org>"]
+authors: ["Andreas Rossberg <rossberg@mpi-sws.org>" "Philip Blair <philip@grain-lang.org>"]
+homepage: "https://github.com/grain-lang/wasm-spec"
+bug-reports: "https://github.com/WebAssembly/spec/issues"
+license: "Apache-2.0"
+dev-repo: "git+https://github.com/grain-lang/wasm-spec.git"
+build: [
+  [make "-C" "interpreter" "opt" "unopt"]
+]
+install: [make "-C" "interpreter" "install"]
+conflicts: [
+  "wasm"
+]
+depends: [
+  "ocaml" {>= "4.07.0"}
+  "ocamlfind" {build}
+  "ocamlbuild" {build}
+]
+synopsis:
+  "An OCaml library to read and write Web Assembly (wasm) files and manipulate their AST. (Fork of official spec: https://github.com/WebAssembly/spec)"
+url {
+  src: "https://github.com/grain-lang/wasm-spec/archive/0.1.tar.gz"
+  checksum: [
+    "md5=4033b452d5f9b60c1d7b5b4df9cd8813"
+    "sha512=252b489e6cb344536d74100e8949ad26919d61188f0a6541112f6622cedc3d50767dd12661e830b3dec3809c541a3028333f5129c37b0d7290af3e3cf5d9ffd4"
+  ]
+}
