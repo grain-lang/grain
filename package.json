@@ -1,0 +1,12 @@
+{
+  "name": "grain-lang",
+  "private": true,
+  "version": "0.0.0",
+  "description": "The grain monorepo.",
+  "workspaces": [
+    "cli",
+    "runtime",
+    "stdlib",
+    "compiler"
+  ]
+}
