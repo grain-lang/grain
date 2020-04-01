@@ -24,8 +24,8 @@
   },
   "homepage": "https://github.com/grain-lang/grain#readme",
   "dependencies": {
-    "@grain/runtime": "file:../runtime",
-    "@grain/stdlib": "file:../stdlib",
+    "@grain/runtime": "*",
+    "@grain/stdlib": "*",
     "commander": "^2.14.1"
   }
 }
