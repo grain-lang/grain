@@ -8,7 +8,8 @@ ifndef DUNE
 endif
 
 tests:
-	dune runtest
+	cp -r ../stdlib _build/default/stdlib
+	# dune runtest
 
 install:
 	dune install
