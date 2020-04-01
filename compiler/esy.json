@@ -9,25 +9,30 @@
     }
   },
   "scripts": {
-    "clean": "rm -r #{self.root}/_esy",
-    "no-pnp": "rm -r #{self.root}/_esy/default/bin",
+    "clean": "rm -rf #{self.root}/_esy",
+    "no-pnp": "rm -rf #{self.root}/_esy/default/bin",
+    "install-compiler": "dune install",
     "test": "dune runtest"
   },
   "dependencies": {
-    "@opam/grain": "*",
-    "@opam/grain_utils": "*",
-    "@opam/grain_parsing": "*",
-    "@opam/grain_typed": "*",
-    "@opam/grain_middle_end": "*",
-    "@opam/grain_codegen": "*",
+    "@opam/ocamlfind": "^1.7.3",
+    "@opam/ocamlbuild": "~0.14.0",
+    "@opam/conf-openssl": "2",
+    "@opam/dune": "^1.0",
+    "@opam/ppx_deriving": "*",
+    "@opam/ppx_sexp_conv": "*",
+    "@opam/sexplib": "*",
+    "@opam/grain_dypgen": "0.1",
+    "@opam/core": "v0.13.0",
+    "@opam/ounit": "^2.0.0",
+    "@opam/extlib": "^1.7.2",
+    "@opam/batteries": "^2.8.0",
+    "@opam/cmdliner": "^1.0.2",
+    "@opam/ocamlgraph": "^1.8.8",
+    "@opam/grain_wasm_spec": "0.1",
+    "@opam/stdint": "^0.5.0",
+    "@opam/yojson": "*",
+    "@opam/ppx_deriving_yojson": "*",
     "ocaml": "~4.8.1000"
-  },
-  "resolutions": {
-    "@opam/grain": "link:./grain.opam",
-    "@opam/grain_utils": "link:./grain_utils.opam",
-    "@opam/grain_parsing": "link:./grain_parsing.opam",
-    "@opam/grain_typed": "link:./grain_typed.opam",
-    "@opam/grain_middle_end": "link:./grain_middle_end.opam",
-    "@opam/grain_codegen": "link:./grain_codegen.opam"
   }
 }
