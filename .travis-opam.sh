@@ -19,7 +19,7 @@ echo -en "travis_fold:start:prepare.ci\r"
 ### Setup Grain runtime and cli
 
 yarn
-yarn runtime:build
+yarn setup
 yarn stdlib:build
 yarn cli:link
 

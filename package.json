@@ -1,8 +1,8 @@
 {
-  "name": "grain-lang",
+  "name": "grain",
   "private": true,
   "version": "0.0.0",
-  "description": "The grain monorepo.",
+  "description": "The Grain monorepo.",
   "workspaces": [
     "cli",
     "runtime",
@@ -13,9 +13,11 @@
     "compiler:clean": "yarn workspace compiler run esy clean",
     "compiler:build": "yarn workspace compiler run esy",
     "postcompiler:build": "yarn workspace compiler run esy no-pnp",
+    "compiler:install": "yarn workspace compiler run esy install-compiler",
     "compiler:test": "yarn workspace compiler run esy test",
     "runtime:build": "yarn workspace @grain/runtime build",
     "stdlib:build": "yarn workspace @grain/stdlib build",
-    "cli:link": "yarn workspace @grain/cli link"
+    "cli:link": "yarn workspace @grain/cli link",
+    "setup": "yarn runtime:build && yarn stdlib:build && yarn cli:link"
   }
 }
