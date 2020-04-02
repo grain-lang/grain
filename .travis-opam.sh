@@ -20,8 +20,6 @@ echo -en "travis_fold:start:prepare.ci\r"
 
 yarn
 yarn setup
-yarn stdlib:build
-yarn cli:link
 
 echo -en "travis_fold:end:prepare.ci\r"
 
