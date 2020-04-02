@@ -1,0 +1,34 @@
+{
+  "name": "compiler",
+  "version": "0.0.0",
+  "esy": {
+    "build": "dune build @install",
+    "buildEnv": {
+      "DUNE_BUILD_DIR": "#{self.target_dir}",
+      "GRAIN_STDLIB": "#{self.root}/../stdlib"
+    }
+  },
+  "scripts": {
+    "clean": "rm -rf #{self.root}/_esy",
+    "no-pnp": "rm -rf #{self.root}/_esy/default/bin",
+    "install-compiler": "dune install",
+    "test": "dune runtest"
+  },
+  "dependencies": {
+    "@opam/grain": "*",
+    "@opam/grain_utils": "*",
+    "@opam/grain_parsing": "*",
+    "@opam/grain_typed": "*",
+    "@opam/grain_middle_end": "*",
+    "@opam/grain_codegen": "*",
+    "ocaml": "~4.8.1000"
+  },
+  "resolutions": {
+    "@opam/grain": "path:./grain.opam",
+    "@opam/grain_utils": "path:./grain_utils.opam",
+    "@opam/grain_parsing": "path:./grain_parsing.opam",
+    "@opam/grain_typed": "path:./grain_typed.opam",
+    "@opam/grain_middle_end": "path:./grain_middle_end.opam",
+    "@opam/grain_codegen": "path:./grain_codegen.opam"
+  }
+}

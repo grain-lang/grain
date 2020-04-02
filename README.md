@@ -17,66 +17,35 @@ For more information about the language, visit [grain-lang.org](https://grain-la
 
 ## Building
 
-### Compiler
-
-To build the compiler, have `ocaml` (version = 4.08) and `opam` (version >= 2.0) installed and on your path. Then,
+To build Grain, you'll need `yarn` and Node.js version 10 or higher. To get everything set up, run:
 
 ```bash
-# If needed, make sure you have OCaml 4.08 enabled
-$ opam switch 4.08.1
-# Then install dependencies and build
-$ opam install . --deps-only
-$ make
+yarn
+yarn setup
+yarn compiler:build
 ```
 
-Running `make install` will symlink `grainc` onto your PATH.
+This will set up the Grain runtime, standard library, and CLI.
 
-You can run the tests with `make tests`.
-
-### Runtime and Standard Library
-
-To build the runtime, have `node` (version >= 9) and `npm` (version >= 5) installed. Then,
+To put the Grain compiler binaries on your path, run:
 
 ```bash
-$ cd runtime
-$ npm install
-$ npm run build
+yarn compiler:install
 ```
 
-For the standard library,
+## Running Grain Programs
+
+You can run programs using the Grain CLI:
 
 ```bash
-$ cd stdlib
-$ npm install
-$ npm run build
+echo "print('Hello world')" > hello.gr
+grain hello.gr
 ```
 
-### CLI
-
-To make the CLI available on your path, have `node` (version >= 9) and `npm` (version >= 5) installed. Then,
+Alternatively, you can invoke the compiler directly:
 
 ```bash
-$ cd cli
-$ npm install
-$ npm link --global
-```
-
-## Running
-
-To create a `.wasm` file, run the following:
-
-```bash
-$ grainc /path/to/file.gr -o /path/to/output.wasm
-```
-
-For an example of how to run the file in JavaScript, look at the
-files under `script`.
-You'll need to create a symlink from `script/public/javascripts/grain-runtime.js` to the built file in `runtime/dist/grain-runtime.js`, or you'll have to just copy it over to run the example.
-
-Alternatively, you can use the CLI to run your program on Node:
-
-```bash
-$ grain test.gr
+grainc hello.gr
 ```
 
 Copyright ©️ 2017-2020 Philip Blair and Oscar Spencer.

@@ -1,0 +1,27 @@
+opam-version: "2.0"
+maintainer: "Sylvain Le Gall <sylvaini+ocaml@le-gall.net>"
+authors: [ "Maas-Maarten Zeeman" "Sylvain Le Gall" ]
+homepage: "https://github.com/gildor478/ounit"
+dev-repo: "git+https://github.com/gildor478/ounit.git"
+bug-reports: "https://github.com/gildor478/ounit/issues"
+doc: "https://gildor478.github.io/ounit/"
+depends: [
+  "ocamlfind" {build}
+  "ounit2" {= version}
+]
+install: [
+  [make "install-ounit" "version=%{version}%"]
+]
+synopsis: "This is a transition package, ounit is now ounit2"
+description:"""
+More details for the transition:
+https://github.com/gildor478/ounit#transition-to-ounit2
+"""
+url {
+  src:
+    "https://github.com/gildor478/ounit/releases/download/v2.2.2/ounit-v2.2.2.tbz"
+  checksum: [
+    "sha256=53439ae8958d4016afd596d7afbe0b613163533761253e8c781d7afe3d6b9dc0"
+    "sha512=24c56141c9063c81e9cd193f9b927f01766e344bd8fbddd702fe1a2765e1bf626082d7b0b29704e1c86ce6eb67493d1f70c0a454e39c6e79209820d0e60db9bd"
+  ]
+}

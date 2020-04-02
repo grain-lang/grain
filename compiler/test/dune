@@ -1,0 +1,14 @@
+(executable
+ (name test)
+ (libraries grain oUnit extlib))
+
+(alias
+ (name runtest)
+ (deps
+  (:< test.exe)
+  (source_tree input)
+  (source_tree stdlib)
+  (source_tree test-libs)
+  (source_tree test-data))
+ (action
+  (run %{<})))
