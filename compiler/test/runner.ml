@@ -111,7 +111,7 @@ let run_output cstate test_ctxt =
   let file = Filename.temp_file "test" ".gr.wasm" in
   Emitmod.emit_module program file;
 
-  let stdlib = Option.get (Grain_utils.Config.stdlib_directory()) in
+  let stdlib = Option.get !Grain_utils.Config.stdlib_dir in
   let testlibs = Sys.getcwd () ^ "/test-libs" in
   let result = ref "" in
   assert_command 
