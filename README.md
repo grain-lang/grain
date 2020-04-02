@@ -6,14 +6,17 @@
 
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
 [![GitHub version](https://badge.fury.io/gh/grain-lang%2Fgrain.svg)](https://badge.fury.io/gh/grain-lang%2Fgrain)
+[![Build Status](https://travis-ci.org/grain-lang/grain.svg?branch=master)](https://travis-ci.org/grain-lang/grain)
 
 # The Grain Compiler
 
-Grain is a strongly-typed functional programming language built for the modern web by leveraging the brilliant work done by the [WebAssembly project](http://webassembly.org/).
+Grain is a new programming language that compiles to [WebAssembly](http://webassembly.org/). For more information about the language, check out [grain-lang.org](https://grain-lang.org/).
 
-This language is still a work in progress, but be sure to stay tuned, or even contribute!
+If it's your first time here, it's highly recommended that you follow [the Grain guide](https://grain-lang.org/guide) to get up and running!
 
-For more information about the language, visit [grain-lang.org](https://grain-lang.org/).
+## Contributing
+
+There are tons of ways to contribute to Grain. Check out our [contributing guide](https://github.com/grain-lang/grain/blob/master/CONTRIBUTING.md) for more info and instructions on how to join our community Discord. All contributors are held to our [contributor code of conduct](https://github.com/grain-lang/grain/blob/master/CODE_OF_CONDUCT.md).
 
 ## Building
 
@@ -33,6 +36,38 @@ To put the Grain compiler binaries on your path, run:
 yarn compiler:install
 ```
 
+If running tests is your kind of thing, run
+
+```bash
+yarn compiler:test
+```
+
+### Other Commands
+
+To build the standard library:
+
+```bash
+yarn stdlib:build
+```
+
+To build the runtime:
+
+```bash
+yarn runtime:build
+```
+
+To link the CLI:
+
+```bash
+yarn cli:link
+```
+
+To reset your compiler build:
+
+```bash
+yarn compiler:clean
+```
+
 ## Running Grain Programs
 
 You can run programs using the Grain CLI:
@@ -49,7 +84,3 @@ grainc hello.gr
 ```
 
 Copyright ©️ 2017-2020 Philip Blair and Oscar Spencer.
-
-[philip]: https://github.com/belph
-[oscar]: http://github.com/ospencer
-[wasm]: http://webassembly.org/
