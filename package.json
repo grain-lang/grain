@@ -14,9 +14,11 @@
     "compiler:build": "yarn workspace compiler run esy",
     "postcompiler:build": "yarn workspace compiler run esy no-pnp",
     "compiler:install": "yarn workspace compiler run esy install-compiler",
+    "postcompiler:install": "yarn stdlib:clean",
     "compiler:test": "yarn workspace compiler run esy test",
     "runtime:build": "yarn workspace @grain/runtime build",
     "stdlib:build": "yarn workspace @grain/stdlib build",
+    "stdlib:clean": "yarn workspace @grain/stdlib clean",
     "cli:link": "yarn workspace @grain/cli link",
     "setup": "yarn runtime:build && yarn stdlib:build && yarn cli:link"
   }
