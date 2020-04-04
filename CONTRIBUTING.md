@@ -14,6 +14,10 @@ Shoot an email over to oscar[at]grain-lang.org and we'll send you an invitation 
 
 If it's your first time here, we suggest that you follow [the Grain setup guide](https://grain-lang.org/guide/getting_grain) to get up and running. We also have build instructions listed in the README. The instructions should be fairly straightforward, but if you run into any issues please reach out to us on Discord.
 
+## Contributor docs
+
+There are a set of contributor docs in [docs/contributor](https://github.com/grain-lang/grain/tree/master/docs/contributor). These documents go into technical details on how things work in Grain.
+
 ## Typical development workflows
 
 ### Compiler
