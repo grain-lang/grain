@@ -533,88 +533,58 @@ let compile_record_op env rec_imm op =
 
 
 (** Heap allocations. *)
-let round_up (num : int) (multiple : int) : int =
-  num + (num mod multiple)
-
-(** Rounds the given number of words to be aligned correctly *)
-let round_allocation_size (num_words : int) : int =
-  round_up num_words 4
 
 let heap_allocate env (num_words : int) =
-  let words_to_allocate = round_allocation_size num_words in
   Concatlist.t_of_list [
-    Ast.Const(const_int32 (4 * words_to_allocate));
+    Ast.Const(const_int32 (4 * num_words));
     call_malloc env;
   ]
 
 let heap_allocate_imm ?(additional_words=0) env (num_words : immediate) =
   let num_words = compile_imm env num_words in
-  (* 
-    Normally, this would be:
-      Untag num_words
-      Find remainder by 4
-      Untag num_words
-      Add (to get rounded value)
-      Multiply by 4 (to get bytes)
-
-    Instead, we do:
-      Find remainder by 8
-      Add (to get rounded value)
-      Multiply by 2 (to get bytes)
-
-    Proof:
-      This is an exercise left to the reader.
-   *)
   if additional_words = 0 then
-    num_words @ num_words +@ [
-      (* Round up to nearest multiple of 8 *)
-      Ast.Const(const_int32 8);
-      Ast.Binary(Values.I32 Ast.IntOp.RemS);
-      Ast.Binary(Values.I32 Ast.IntOp.Add);
-      (* Get number of bytes *)
+    num_words +@ [
+      (* Get untagged number of bytes *)
       Ast.Const(const_int32 2);
       Ast.Binary(Values.I32 Ast.IntOp.Mul);
       call_malloc env;
     ]
   else
-    num_words @ num_words +@ [
-      (* Add in additional words (tagged) before rounding *)
-      Ast.Const(const_int32 (additional_words * 2));
+    num_words +@ [
+      (* Add in encoded additional words *)
+      Ast.Const(encoded_const_int32 additional_words);
       Ast.Binary(Values.I32 Ast.IntOp.Add);
-      (* Round up to nearest multiple of 8 *)
-      Ast.Const(const_int32 8);
-      Ast.Binary(Values.I32 Ast.IntOp.RemS);
-      Ast.Binary(Values.I32 Ast.IntOp.Add);
-      (* Add in the additional words (tagged) again *)
-      Ast.Const(const_int32 (additional_words * 2));
-      Ast.Binary(Values.I32 Ast.IntOp.Add);
-      (* Get number of bytes *)
+      (* Get untagged number of bytes. *)
       Ast.Const(const_int32 2);
       Ast.Binary(Values.I32 Ast.IntOp.Mul);
       call_malloc env;
     ]
 
 let heap_check_memory env (num_words : int) =
-  let words_to_allocate = round_allocation_size num_words in
   Concatlist.t_of_list [
-    Ast.Const(const_int32 (4 * words_to_allocate));
+    Ast.Const(const_int32 (4 * num_words));
     call_runtime_check_memory env;
   ]
 
 
+let round_up (num : int) (multiple : int) : int =
+  num - (num mod multiple) + multiple
+
 let buf_to_ints (buf : Buffer.t) : int64 list =
   let num_bytes = Buffer.length buf in
-  let num_ints = round_up num_bytes 8 in
+  let bytes_to_allocate = round_up num_bytes 8 in
   let out_ints = ref [] in
 
-  let byte_buf = Bytes.create (num_ints * 8) in
+  let byte_buf = Bytes.create bytes_to_allocate in
   Buffer.blit buf 0 byte_buf 0 num_bytes;
   let bytes_to_int = if Sys.big_endian then
       Stdint.Uint64.of_bytes_big_endian
     else
       Stdint.Uint64.of_bytes_little_endian in
-  for i = 0 to (num_ints - 1) do
-    out_ints := (bytes_to_int byte_buf (i * 8))::!out_ints
+  let count = ref 0 in
+  while !count < bytes_to_allocate do
+    out_ints := (bytes_to_int byte_buf !count)::!out_ints;
+    count := !count + 8
   done;
   List.rev @@ List.map Stdint.Uint64.to_int64 !out_ints
 
@@ -634,15 +604,15 @@ let call_lambda env func args =
 let allocate_string env str =
   let str_as_bytes = Bytes.of_string str in
   let num_bytes = Bytes.length str_as_bytes in
-  let num_ints = round_up num_bytes 8 in
-  let buf = Buffer.create num_ints in
+  let bytes_to_allocate = round_up num_bytes 8 in
+  let buf = Buffer.create bytes_to_allocate in
   BatUTF8.iter (BatUTF8.Buf.add_char buf) str;
 
   let ints_to_push : int64 list = buf_to_ints buf in
   let get_swap = get_swap env 0 in
   let tee_swap = tee_swap env 0 in
   let preamble = Concatlist.t_of_list [
-      Ast.Const(const_int32 @@ (4 * (2 + (2 * (List.length ints_to_push)))));
+      Ast.Const(const_int32 @@ ((4 * 2) + bytes_to_allocate));
       call_malloc env;
     ] @ tee_swap +@ [
       Ast.Const(const_int32 @@ String.length str);
@@ -669,8 +639,8 @@ let allocate_closure env ?lambda ({func_idx; arity; variables} as closure_data) 
   let get_swap = get_swap env 0 in
   let tee_swap = tee_swap env 0 in
   let access_lambda = Option.default (get_swap @+ [
-      Ast.Const(const_int32 @@ 4 * round_allocation_size closure_size);
-      Ast.Binary(Values.I32 Ast.IntOp.Sub);
+      Ast.Const(const_int32 @@ tag_val_of_tag_type LambdaTagType);
+      Ast.Binary(Values.I32 Ast.IntOp.Or);
     ]) lambda in
   env.backpatches := (access_lambda, closure_data)::!(env.backpatches);
   (heap_allocate env closure_size) @ tee_swap +@ [
