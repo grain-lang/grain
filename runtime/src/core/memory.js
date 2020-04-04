@@ -12,7 +12,7 @@ function trace(msg) {
 }
 
 /* Notes:
- * 
+ *
  * Grain's memory system uses a reference-counted garbage collector.
  * Because `ManagedMemory` is the point of communication between the Grain runtime
  * and the memory management system, we are able to neatly intercept the pointers
@@ -20,19 +20,19 @@ function trace(msg) {
  * then incumbent upon the compiler (and any Grain plugins which interact with memory)
  * to make sure that reference counting functionality exists at appropriate places
  * in code. Here is the basic idea for how this looks in practice for an n-byte heap object:
- * 
+ *
  * [ 0 bit <reserved> ][ 11-bit counter ][ 4-bit value tag ][ n-bit payload ]
  * ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
  * {start address}                                          {pointer used by grain runtime}
- * 
+ *
  * Some notes about this scheme:
  * - The value tag is the same tag used to identify the pointer on the stack
- * - The value tag is admittedly inefficient (since it duplicates the stack value tag), 
+ * - The value tag is admittedly inefficient (since it duplicates the stack value tag),
  *   but it is a "good enough for now" approach for allowing traversal
- * - If studying this design, one will notice this only allows a maximum of 2048 references to a given 
+ * - If studying this design, one will notice this only allows a maximum of 2048 references to a given
  *   GC-managed object. In the future, we will ideally come up with a method of making this
  *   work with a greater number of values.
- * 
+ *
  *
  * Variable Naming Conventions:
  *   rawPtr  : The pointer returned by the call to malloc()
@@ -261,7 +261,7 @@ export class ManagedMemory {
 
   free(userPtr) { // [TODO] Do we even need this?
     // stub
-    console.warn(`free 0x${(new Number(userPtr)).toString(16)}`);
+    //console.warn(`free 0x${(new Number(userPtr)).toString(16)}`);
     this._mallocModule.free(userPtr - this._headerSize);
     trace('end_free');
   }

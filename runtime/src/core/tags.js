@@ -10,9 +10,9 @@ import {
   GRAIN_ERR_NOT_ADT_VAL_GENERIC,
 } from '../errors/error-codes';
 
-import { 
-  GRAIN_TRUE, 
-  GRAIN_FALSE 
+import {
+  GRAIN_TRUE,
+  GRAIN_FALSE
 } from './primitives';
 
 export const GRAIN_NUMBER_TAG_MASK = 0b0001;
@@ -50,8 +50,8 @@ export function getTagType(n) {
     return GRAIN_LAMBDA_TAG_TYPE;
   } else if ((n & GRAIN_TUPLE_TAG_MASK) === GRAIN_GENERIC_HEAP_TAG_TYPE) {
     return GRAIN_GENERIC_HEAP_TAG_TYPE;
-  } else if ((n === -1) || (n === 0x7FFFFFFF)) {
-    return GRAIN_BOOLEAN_TAG_TYPE;
+  } else if ((n === -1) || (n === 0x7FFFFFFF) || (n === 0x6FFFFFFF)) {
+    return GRAIN_CONST_TAG_TYPE;
   } else {
     console.warn(`<getTagType: Unknown value: 0x${(new Number(n)).toString(16)}`);
     return undefined;

@@ -22,12 +22,12 @@ type codegen_env = {
 
 val init_codegen_env : unit -> codegen_env
 
-exception WasmRunnerError of Wasm.Source.region * string * Wasm.Ast.module_
+exception WasmRunnerError of string option * Wasm.Source.region * string * Wasm.Ast.module_
 
 val reparse_module : Wasm.Ast.module_ -> Wasm.Ast.module_
 
-val validate_module : Wasm.Ast.module_ -> unit
+val validate_module : ?name:string -> Wasm.Ast.module_ -> unit
 
-val compile_wasm_module : ?env:codegen_env -> Mashtree.mash_program -> Wasm.Ast.module_
+val compile_wasm_module : ?env:codegen_env -> ?name:string -> Mashtree.mash_program -> Wasm.Ast.module_
 
 val module_to_string : Wasm.Ast.module_ -> string
