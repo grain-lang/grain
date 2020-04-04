@@ -397,6 +397,8 @@ let compile_bind ~action ?ty:(typ=Types.I32Type) ?skip_incref:(skip_incref=false
           (* Get old value of slot and call decref() on it *)
           Ast.LocalGet(slot);
           appropriate_decref env;
+          (* Drop old value from stack *)
+          Ast.Drop;
           (* Set new stack value *)
           Ast.LocalSet(slot);
           (* POST: Stack: <rest> *)
@@ -410,6 +412,8 @@ let compile_bind ~action ?ty:(typ=Types.I32Type) ?skip_incref:(skip_incref=false
           (* Get old value of slot and call decref() on it *)
           Ast.LocalGet(slot);
           appropriate_decref env;
+          (* Drop old value from stack *)
+          Ast.Drop;
           (* Set new stack value *)
           Ast.LocalTee(slot);
           (* POST: Stack: <rest> *)
@@ -430,6 +434,8 @@ let compile_bind ~action ?ty:(typ=Types.I32Type) ?skip_incref:(skip_incref=false
           (* Get old value of slot and call decref() on it *)
           Ast.LocalGet(slot);
           appropriate_decref env;
+          (* Drop old value from stack *)
+          Ast.Drop;
           (* Set new stack value *)
           Ast.LocalSet(slot);
           (* POST: Stack: <rest> *)
@@ -443,6 +449,8 @@ let compile_bind ~action ?ty:(typ=Types.I32Type) ?skip_incref:(skip_incref=false
           (* Get old value of slot and call decref() on it *)
           Ast.LocalGet(slot);
           appropriate_decref env;
+          (* Drop old value from stack *)
+          Ast.Drop;
           (* Set new stack value *)
           Ast.LocalTee(slot);
           (* POST: Stack: <rest> *)
@@ -463,6 +471,8 @@ let compile_bind ~action ?ty:(typ=Types.I32Type) ?skip_incref:(skip_incref=false
           (* Get old value of slot and call decref() on it *)
           Ast.LocalGet(slot);
           appropriate_decref env;
+          (* Drop old value from stack *)
+          Ast.Drop;
           (* Set new stack value *)
           Ast.LocalSet(slot);
           (* POST: Stack: <rest> *)
@@ -476,6 +486,8 @@ let compile_bind ~action ?ty:(typ=Types.I32Type) ?skip_incref:(skip_incref=false
           (* Get old value of slot and call decref() on it *)
           Ast.LocalGet(slot);
           appropriate_decref env;
+          (* Drop old value from stack *)
+          Ast.Drop;
           (* Set new stack value *)
           Ast.LocalTee(slot);
           (* POST: Stack: <rest> *)
@@ -496,6 +508,8 @@ let compile_bind ~action ?ty:(typ=Types.I32Type) ?skip_incref:(skip_incref=false
           (* Get old value of slot and call decref() on it *)
           Ast.GlobalGet(slot);
           call_decref env;
+          (* Drop old value from stack *)
+          Ast.Drop;
           (* Set new stack value *)
           Ast.GlobalSet(slot);
           (* POST: Stack: <rest> *)
@@ -509,6 +523,8 @@ let compile_bind ~action ?ty:(typ=Types.I32Type) ?skip_incref:(skip_incref=false
           (* Get old value of slot and call decref() on it *)
           Ast.GlobalGet(slot);
           call_decref env;
+          (* Drop old value from stack *)
+          Ast.Drop;
           (* Set new stack value *)
           Ast.GlobalSet(slot);
           (* POST: Stack: <rest> *)
@@ -1838,7 +1854,7 @@ let compile_functions env ({functions} as prog) =
       main;
     ]
 
-exception WasmRunnerError of Wasm.Source.region * string * Wasm.Ast.module_
+exception WasmRunnerError of string option * Wasm.Source.region * string * Wasm.Ast.module_
 
 let reparse_module (module_ : Wasm.Ast.module_) =
   let open Wasm.Source in
@@ -1849,7 +1865,7 @@ let reparse_module (module_ : Wasm.Ast.module_) =
   | Encoded _ -> failwith "Internal error: reparse_module: Returned Encoded (should be impossible)"
   | Quoted _ -> failwith "Internal error: reparse_module: Returned Quoted (should be impossible)"
 
-let validate_module (module_ : Wasm.Ast.module_) =
+let validate_module ?name (module_ : Wasm.Ast.module_) =
   try
     Valid.check_module module_
   with
@@ -1860,8 +1876,8 @@ let validate_module (module_ : Wasm.Ast.module_) =
        Valid.check_module reparsed
      with
      | Wasm.Valid.Invalid(region, msg) ->
-       raise (WasmRunnerError(region, msg, reparsed)));
-    raise (WasmRunnerError(region, Printf.sprintf "WARNING: Did not re-raise after reparse: %s" msg, module_))
+       raise (WasmRunnerError(name, region, msg, reparsed)));
+    raise (WasmRunnerError(name, region, Printf.sprintf "WARNING: Did not re-raise after reparse: %s" msg, module_))
 
 
 let prepare env ({imports} as prog) =
@@ -1908,7 +1924,7 @@ let prepare env ({imports} as prog) =
   }
 
 
-let compile_wasm_module ?env prog =
+let compile_wasm_module ?env ?name prog =
   let open Wasm.Ast in
   let env = match env with
     | None -> init_codegen_env()
@@ -1932,7 +1948,7 @@ let compile_wasm_module ?env prog =
     types;
     start=None;
   } in
-  validate_module ret;
+  validate_module ?name:name ret;
   ret
 
 let module_to_string compiled_module =
@@ -1943,10 +1959,13 @@ let module_to_string compiled_module =
 let () =
   Printexc.register_printer (fun exc ->
       match exc with
-      | WasmRunnerError(region, str, module_) ->
+      | WasmRunnerError(name, region, str, module_) ->
+        let formatted_name = match name with
+          | None -> "<unknown>"
+          | Some(n) -> n in
         let fmt_module _ m = Wasm.Sexpr.to_string 80 (Wasm.Arrange.module_ m) in
-        let s = Printf.sprintf "WASM Runner Exception at %s: '%s'\n%a\n"
-          (Wasm.Source.string_of_region region) str
+        let s = Printf.sprintf "WASM Runner Exception at %s <%s>: '%s'\n%a\n"
+          (Wasm.Source.string_of_region region) formatted_name str
           fmt_module module_ in
         Some(s)
       | _ -> None)

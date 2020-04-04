@@ -22,7 +22,7 @@ let string_of_file file_name =
   let inchan = open_in file_name in
   let buf = Bytes.create (in_channel_length inchan) in
   really_input inchan buf 0 (in_channel_length inchan);
-  buf 
+  buf
 
 
 let string_of_position p =
@@ -36,11 +36,11 @@ let parse name lexbuf =
   assert (ret.Parsetree.prog_loc.loc_start.pos_fname = name);
   ret
 
-let parse_string name s = 
+let parse_string name s =
   let lexbuf = Lexing.from_string s in
   parse name lexbuf
 
-let parse_file name input_file = 
+let parse_file name input_file =
   let lexbuf = Lexing.from_channel input_file in
   parse name lexbuf
 
@@ -114,7 +114,7 @@ let run_output ?(code=0) cstate test_ctxt =
   let stdlib = Option.get !Grain_utils.Config.stdlib_dir in
   let testlibs = Sys.getcwd () ^ "/test-libs" in
   let result = ref "" in
-  assert_command 
+  assert_command
     ~foutput:(fun stream -> result := read_stream stream)
     ~exit_code:(Unix.WEXITED(code))
     ~use_stderr:true
@@ -137,8 +137,8 @@ let test_run ?cmp program_str outfile expected test_ctxt =
       let cstate = compile_string ~hook:stop_after_compiled ~name:outfile program_str in
       run_output cstate test_ctxt
     ) in
-  assert_equal 
-  ~printer:Batteries.identity 
+  assert_equal
+  ~printer:Batteries.identity
   ~cmp:(Option.default (=) cmp)
   (expected ^ "\n") result
 

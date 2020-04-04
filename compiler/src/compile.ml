@@ -93,7 +93,7 @@ let log_state state =
     prerr_string "\n\n"
   end
 
-let next_state ({cstate_desc} as cs) =
+let next_state ({cstate_desc; cstate_filename} as cs) =
   let cstate_desc = match cstate_desc with
     | Initial(input) ->
       let name, lexbuf, cleanup = match input with
@@ -131,7 +131,7 @@ let next_state ({cstate_desc} as cs) =
     | Optimized(optimized) ->
       Mashed(Transl_anf.transl_anf_program optimized)
     | Mashed(mashed) ->
-      Compiled(Compmod.compile_wasm_module mashed)
+      Compiled(Compmod.compile_wasm_module ?name:cstate_filename mashed)
     | Compiled(compiled) ->
       if !Grain_utils.Config.output_enabled then begin
         match cs.cstate_outfile with
