@@ -1,0 +1,46 @@
+export data Opt<a> = None | Some(a)
+
+let z = box(None)
+z := Some(z)
+
+let y = box(None)
+
+assert !(z == y)
+
+y := Some(y)
+assert z == y
+
+export data R = Atom | Recurisve(Box<Opt<R>>)
+
+let t = box(None)
+let u = box(None)
+let x = Recurisve(t)
+let w = Recurisve(u)
+
+t := Some(x)
+
+assert !(x == w)
+
+u := Some(w)
+
+assert x == w
+
+export data Rec = {
+  int: Number,
+  record: Box<Opt<Rec>>
+}
+
+let a = { int: 5, record: box(None) }
+let b = { int: 5, record: box(None) }
+
+a.record := Some(a)
+
+assert a is a
+assert a == a
+
+assert !(a == b)
+
+b.record := Some(b)
+
+assert !(a is b)
+assert a == b
