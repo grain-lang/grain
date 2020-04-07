@@ -137,7 +137,6 @@ let rec analyze_comp_expression ({comp_desc = desc; comp_analyses = analyses}) =
       let arg_purities = List.map (fun arg -> analyze_imm_expression arg; imm_expression_purity_internal arg) args in
       (List.for_all (fun x -> x) arg_purities) && begin 
         match (_module, f) with
-        | "grainBuiltins", "equal"
         | "grainBuiltins", "toString"
         | "grainBuiltins", "stringAppend"
         | "grainBuiltins", "stringSlice" -> true
