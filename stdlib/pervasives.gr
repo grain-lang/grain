@@ -15,9 +15,6 @@ primitive (>) : (Number, Number) -> Bool = "@greater"
 primitive (<=) : (Number, Number) -> Bool = "@lesseq"
 primitive (>=) : (Number, Number) -> Bool = "@greatereq"
 
-# Generic comparisons
-primitive (==) : (a, b) -> Bool = "@eq"
-
 # Boolean operations
 primitive (!) : Bool -> Bool = "@not"
 primitive (&&) : (Bool, Bool) -> Bool = "@and"
@@ -41,7 +38,9 @@ primitive fail : String -> a = "@fail"
 import foreign wasm print : a -> Void from 'grainBuiltins'
 
 # Checks the given items for structural equality.
-import foreign wasm equal : (a, a) -> Bool from 'grainBuiltins'
+import foreign wasm equal : (a, a) -> Bool as (==) from 'stdlib-external/equal'
+# Checks the given items for physical equality.
+primitive (is) : (a, a) -> Bool = "@eq"
 
 # Converts the given value to a string
 import foreign wasm toString : a -> String from 'grainBuiltins'
