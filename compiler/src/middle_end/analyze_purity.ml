@@ -78,33 +78,44 @@ let rec analyze_comp_expression ({comp_desc = desc; comp_analyses = analyses}) =
     | CPrim1(Box, _)
     | CPrim1(Unbox, _) ->
       false
-    | CPrim1(_, _)
-    | CPrim2(_, _, _) ->
-      true
+    | CPrim1(_, a) ->
+      analyze_imm_expression a;
+      imm_expression_purity_internal a
+    | CPrim2(_, a1, a2) ->
+      analyze_imm_expression a1;
+      analyze_imm_expression a2;
+      imm_expression_purity_internal a1 &&
+      imm_expression_purity_internal a2
     | CAssign(_, _) -> (* TODO: Would be nice if we could "scope" the purity analysis to local assignments *)
       false
-    | CArrayGet _ ->
-      true
+    | CArrayGet(a, i) ->
+      analyze_imm_expression a;
+      analyze_imm_expression i;
+      imm_expression_purity_internal a &&
+      imm_expression_purity_internal i
     | CArraySet _ ->
       false
-    | CTuple _ ->
-      true
-    | CArray _ ->
-      true
-    | CRecord _ ->
-      true
-    | CAdt _ ->
-      true
-    | CGetTupleItem _ ->
-      true
+    | CTuple(args)
+    | CArray(args)
+    | CAdt(_, _, args) ->
+      let arg_purities = List.map (fun arg -> analyze_imm_expression arg; imm_expression_purity_internal arg) args in
+      List.for_all (fun x -> x) arg_purities
+    | CRecord (_, args) ->
+      let arg_purities = List.map (fun (_, arg) -> analyze_imm_expression arg; imm_expression_purity_internal arg) args in
+      List.for_all (fun x -> x) arg_purities
+    | CGetTupleItem(_, a) ->
+      analyze_imm_expression a;
+      imm_expression_purity_internal a
     | CSetTupleItem _ ->
       false
-    | CGetAdtItem _ ->
-      true
+    | CGetAdtItem(_, a) ->
+      analyze_imm_expression a;
+      imm_expression_purity_internal a
     | CGetAdtTag _ ->
       true
-    | CGetRecordItem _ ->
-      true
+    | CGetRecordItem(_, r) ->
+      analyze_imm_expression r;
+      imm_expression_purity_internal r
     | CIf(c, t, f) ->
       analyze_imm_expression c;
       analyze_anf_expression t;
@@ -118,18 +129,19 @@ let rec analyze_comp_expression ({comp_desc = desc; comp_analyses = analyses}) =
       analyze_imm_expression exp;
       let branches_purities = List.map (fun (t, b) -> analyze_anf_expression b; anf_expression_purity_internal b) branches in
       (imm_expression_purity_internal exp) && (List.for_all (fun x -> x) branches_purities)
-    | CApp(f, _) ->
-      (* Arguments are all immediates, and accessing an immediate is always pure *)
+    | CApp(f, args) ->
+      let arg_purities = List.map (fun arg -> analyze_imm_expression arg; imm_expression_purity_internal arg) args in
       analyze_imm_expression f;
-      imm_expression_purity_internal f
-    | CAppBuiltin(_module, f, _) ->
-      (* Arguments are all immediates, and accessing an immediate is always pure *)
-      begin match (_module, f) with
-      | "grainBuiltins", "equal"
-      | "grainBuiltins", "toString"
-      | "grainBuiltins", "stringAppend"
-      | "grainBuiltins", "stringSlice" -> true
-      | _ -> false
+      imm_expression_purity_internal f && (List.for_all (fun x -> x) arg_purities)
+    | CAppBuiltin(_module, f, args) ->
+      let arg_purities = List.map (fun arg -> analyze_imm_expression arg; imm_expression_purity_internal arg) args in
+      (List.for_all (fun x -> x) arg_purities) && begin 
+        match (_module, f) with
+        | "grainBuiltins", "equal"
+        | "grainBuiltins", "toString"
+        | "grainBuiltins", "stringAppend"
+        | "grainBuiltins", "stringSlice" -> true
+        | _ -> false
       end;
     | CLambda(args, body) ->
       List.iter (fun i -> set_id_purity i true) args;
