@@ -177,6 +177,7 @@ type import_declaration = {
 type value_description = {
   pval_mod: string loc;
   pval_name: string loc;
+  pval_name_alias: string loc option;
   pval_type: parsed_type;
   pval_prim: string list;
   pval_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];

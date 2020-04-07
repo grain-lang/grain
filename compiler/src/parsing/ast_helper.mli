@@ -116,7 +116,7 @@ module Top: sig
 end
 
 module Val: sig
-  val mk: ?loc:loc -> mod_:str -> name:str -> typ:parsed_type -> prim:string list -> value_description
+  val mk: ?loc:loc -> mod_:str -> name:str -> alias:str option -> typ:parsed_type -> prim:string list -> value_description
 end
 
 module Vb: sig
