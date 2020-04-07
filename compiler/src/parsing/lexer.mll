@@ -123,6 +123,7 @@ rule token = parse
   | "::" { COLONCOLON }
   | ":=" { GETS }
   | ":" { COLON }
+  | "is" { IS }
   | "==" { EQEQ }
   | "=" { EQUAL }
   | "," { COMMA }

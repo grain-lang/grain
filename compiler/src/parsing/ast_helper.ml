@@ -168,13 +168,14 @@ module Top = struct
 end
 
 module Val = struct
-  let mk ?loc ~mod_ ~name ~typ ~prim =
+  let mk ?loc ~mod_ ~name ~alias ~typ ~prim =
     let loc = match loc with
       | None -> (!default_loc_src)()
       | Some l -> l in
     {
       pval_mod=mod_;
       pval_name=name;
+      pval_name_alias=alias;
       pval_type=typ;
       pval_prim=prim;
       pval_loc=loc;
