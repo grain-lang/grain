@@ -128,8 +128,8 @@ let basic_functionality_tests = [
   t "comp8" "if (2 <= 2) {10} else {11}" "10";
   t "comp9" "if (2 >= 2) {10} else {11}" "10";
   t "comp10" "let x = 2, y = 4; (y - 2) == x" "true";
-  t "comp11" "true == 2" "false";
-  t "comp12" "2 == false" "false";
+  te "comp11" "true == 2" "has type Number but";
+  te "comp12" "2 == false" "has type Bool but";
   t "comp13" "true == true" "true";
   t "comp14" "true == false" "false";
   t "comp15" "false == true" "false";
@@ -312,13 +312,28 @@ let record_tests = [
 let stdlib_tests = [
   t "stdlib_cons" mylist "[1, 2, 3]";
   (* With compiler optimizations, these are optimized into the same tuple instance *)
-  t "stdlib_equal_1" "import * from 'lists'; (1, 2) == (1, 2)" "true";
-  t "stdlib_equal_2" "import * from 'pervasives'; equal((1, 2), (1, 2))" "true";
-  t "stdlib_equal_3" "import * from 'lists'; equal([1, 2, 3], [1, 2, 3])" "true";
-  t "stdlib_equal_4" "import * from 'lists'; equal(1, 1)" "true";
-  t "stdlib_equal_5" "import * from 'lists'; equal(1, 2)" "false";
-  t "stdlib_equal_6" "import * from 'lists'; equal(true, true)" "true";
-  t "stdlib_equal_7" "import * from 'lists'; equal(true, false)" "false";
+  t "stdlib_equal_1" "import * from 'lists'; (1, 2) is (1, 2)" "true";
+  t "stdlib_equal_2" "import * from 'pervasives'; (1, 2) == (1, 2)" "true";
+  t "stdlib_equal_3" "import * from 'lists'; [1, 2, 3] == [1, 2, 3]" "true";
+  t "stdlib_equal_4" "import * from 'lists'; 1 == 1" "true";
+  t "stdlib_equal_5" "import * from 'lists'; 1 == 2" "false";
+  t "stdlib_equal_6" "import * from 'lists'; true == true" "true";
+  t "stdlib_equal_7" "import * from 'lists'; true == false" "false";
+  t "stdlib_equal_8" "import * from 'lists'; [>] == [>]" "true";
+  t "stdlib_equal_9" "import * from 'lists'; [>] == [> 1]" "false";
+  t "stdlib_equal_10" "import * from 'lists'; [> 1] == [> 1]" "true";
+  t "stdlib_equal_11" "import * from 'lists'; [> 1, 2] == [> 1]" "false";
+  t "stdlib_equal_12" "import * from 'lists'; [> 1, 2, 3, 4] == [> 1, 2, 3, 4]" "true";
+  t "stdlib_equal_13" "import * from 'lists'; '' == ''" "true";
+  t "stdlib_equal_14" "import * from 'lists'; ' ' == ''" "false";
+  t "stdlib_equal_15" "import * from 'lists'; 'f' == ''" "false";
+  t "stdlib_equal_16" "import * from 'lists'; 'foo' == 'foo'" "true";
+  t "stdlib_equal_17" "import * from 'lists'; 'foo 😂' == 'foo 😂'" "true";
+  t "stdlib_equal_18" "import * from 'lists'; 'foo 😂' == 'foo 🙄'" "false";
+  t "stdlib_equal_19" "data Rec = {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: 'boo', baz: true} == {foo: 4, bar: 'boo', baz: true}" "true";
+  t "stdlib_equal_20" "data Rec = {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: 'boo', baz: true} == {foo: 4, bar: 'bar', baz: true}" "false";
+  t "stdlib_equal_21" "data Rec = {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: 'boo', baz: true} == {foo: 78, bar: 'boo', baz: true}" "false";
+  t "stdlib_equal_22" "data Rec = {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: 'boo', baz: true} == {foo: 4, bar: 'boo', baz: false}" "false";
   (* te "stdlib_sum_err" "import * from 'lists'; sum([true, false])" "This expression has type Bool but"; *)
   te "stdlib_length_err" "import * from 'lists'; length(true)" "This expression has type Bool but";
   te "stdlib_reverse_err" "import * from 'lists'; reverse(1)" "This expression has type Number but";

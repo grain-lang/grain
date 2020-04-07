@@ -9,8 +9,8 @@ assert sum([]) == 0
 
 # List.reverse
 
-assert equal(reverse([]), [])
-assert equal(reverse(list), [3, 2, 1])
+assert reverse([]) == []
+assert reverse(list) == [3, 2, 1]
 
 # List.length
 
@@ -19,8 +19,8 @@ assert length(list) == 3
 
 # List.append
 
-assert equal(append(list, [4]), [1, 2, 3, 4])
-assert equal(append([], [4]), [4])
+assert append(list, [4]) == [1, 2, 3, 4]
+assert append([], [4]) == [4]
 
 # List.contains
 
@@ -31,9 +31,9 @@ assert contains(3, []) == false
 
 # List.map
 
-assert equal(map(x => x + 1, list), [2, 3, 4])
-assert equal(map(x => x * 2, list), [2, 4, 6])
-assert equal(map(x => x + 1, []), [])
+assert map(x => x + 1, list) == [2, 3, 4]
+assert map(x => x * 2, list) == [2, 4, 6]
+assert map(x => x + 1, []) == []
 
 # List.fold_left
 
