@@ -69,39 +69,35 @@ let constructor_descrs ty_path decl cstrs =
        if cd_args = TConstrSingleton then incr num_consts else incr num_nonconsts;
        incr num_normal)
     cstrs;
-  let rec describe_constructors idx_const idx_nonconst = function
-      [] -> []
-    | {cd_id; cd_args; cd_res; cd_loc} :: rem ->
-      let ty_res =
-        match cd_res with
-        | Some ty_res' -> ty_res'
-        | None -> ty_res
-      in
-      let (tag, descr_rem) =
-        match cd_args with
-        | TConstrSingleton -> (CstrConstant idx_const,
-                               describe_constructors (idx_const+1) idx_nonconst rem)
-        | _  -> (CstrBlock idx_nonconst,
-                 describe_constructors idx_const (idx_nonconst+1) rem) in
-      let cstr_name = Ident.name cd_id in
-      let existentials, cstr_args, cstr_inlined =
-        constructor_args cd_args cd_res
-          (Path.PExternal (ty_path, cstr_name, Path.nopos))
-      in
-      let cstr =
-        { 
-          cstr_name;
-          cstr_res = ty_res;
-          cstr_existentials = existentials;
-          cstr_args;
-          cstr_arity = List.length cstr_args;
-          cstr_tag = tag;
-          cstr_consts = !num_consts;
-          cstr_nonconsts = !num_nonconsts;
-          cstr_loc = cd_loc;
-        } in
-      (cd_id, cstr) :: descr_rem in
-  describe_constructors 0 0 cstrs
+  let describe_constructor idx {cd_id; cd_args; cd_res; cd_loc} =
+    let ty_res =
+      match cd_res with
+      | Some ty_res' -> ty_res'
+      | None -> ty_res
+    in
+    let tag =
+      match cd_args with
+      | TConstrSingleton -> CstrConstant idx
+      | _  -> CstrBlock idx in
+    let cstr_name = Ident.name cd_id in
+    let existentials, cstr_args, cstr_inlined =
+      constructor_args cd_args cd_res
+        (Path.PExternal (ty_path, cstr_name, Path.nopos))
+    in
+    let cstr =
+      {
+        cstr_name;
+        cstr_res = ty_res;
+        cstr_existentials = existentials;
+        cstr_args;
+        cstr_arity = List.length cstr_args;
+        cstr_tag = tag;
+        cstr_consts = !num_consts;
+        cstr_nonconsts = !num_nonconsts;
+        cstr_loc = cd_loc;
+      } in
+    (cd_id, cstr) in
+  List.mapi describe_constructor cstrs
 
 let none = {desc = TTyTuple []; level = -1; id = -1}
                                         (* Clearly ill-formed type *)
