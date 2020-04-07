@@ -154,7 +154,7 @@ let make_program statements =
 %token CARET
 %token COMMA SEMI AS
 %token THICKARROW ARROW PIPE
-%token EQEQ LESSEQ GREATEREQ
+%token IS EQEQ LESSEQ GREATEREQ
 %token EQUAL GETS
 %token UNDERSCORE
 %token COLON COLONCOLON DOT ELLIPSIS
@@ -244,6 +244,7 @@ binop_expr :
   | binop_expr(<=pt) EOL? star_op EOL?      binop_expr(<pt) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pt
   | binop_expr(<=pt) EOL? slash_op EOL?     binop_expr(<pt) { Exp.prim2 ~loc:(symbol_rloc dyp) Divide $1 $5 } pt
   | binop_expr(<=pb) EOL? percent_op EOL?   binop_expr(<pb) { Exp.prim2 ~loc:(symbol_rloc dyp) Mod $1 $5 } pb
+  | binop_expr(<=pc) EOL? is_op EOL?        binop_expr(<pc) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pc
   | binop_expr(<=pc) EOL? eqeq_op EOL?      binop_expr(<pc) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pc
   | binop_expr(<=pc) EOL? lcaret_op EOL?    binop_expr(<pc) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pc
   | binop_expr(<=pc) EOL? rcaret_op EOL?    binop_expr(<pc) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pc
@@ -385,6 +386,8 @@ slash_op :
   | SLASH { "/" }
 percent_op :  
   | PERCENT { "%" }
+is_op :  
+  | IS { "is" }
 eqeq_op :  
   | EQEQ { "==" }
 lcaret_op :  
@@ -414,6 +417,7 @@ infix_op :
   | star_op
   | slash_op
   | percent_op
+  | is_op
   | eqeq_op
   | lcaret_op
   | rcaret_op
@@ -572,15 +576,15 @@ export_id_str :
   | type_id_str { ExportExceptData $1 }
 
 foreign_stmt :
-  | FOREIGN WASM id_str colon typ FROM file_path { Val.mk ~loc:(symbol_rloc dyp) ~mod_:$7 ~name:$3 ~typ:$5 ~prim:[] }
+  | FOREIGN WASM id_str colon typ [AS id_str {$2}]? FROM file_path { Val.mk ~loc:(symbol_rloc dyp) ~mod_:$8 ~name:$3 ~alias:$6 ~typ:$5 ~prim:[] }
 
 primitive :
   | ASSERT { Location.mkloc "assert" (symbol_rloc dyp) }
   | FAIL { Location.mkloc "fail" (symbol_rloc dyp) }
 
 primitive_stmt :
-  | PRIMITIVE id_str colon typ equal STRING { Val.mk ~loc:(symbol_rloc dyp) ~mod_:{$2 with txt="primitive"} ~name:$2 ~typ:$4 ~prim:[$6] }
-  | PRIMITIVE primitive colon typ equal STRING { Val.mk ~loc:(symbol_rloc dyp) ~mod_:{$2 with txt="primitive"} ~name:$2 ~typ:$4 ~prim:[$6] }
+  | PRIMITIVE id_str colon typ equal STRING { Val.mk ~loc:(symbol_rloc dyp) ~mod_:{$2 with txt="primitive"} ~name:$2 ~alias:None ~typ:$4 ~prim:[$6] }
+  | PRIMITIVE primitive colon typ equal STRING { Val.mk ~loc:(symbol_rloc dyp) ~mod_:{$2 with txt="primitive"} ~name:$2 ~alias:None ~typ:$4 ~prim:[$6] }
 
 toplevel_stmt :
   | LET REC value_binds { Top.let_ Nonexported Recursive $3 }

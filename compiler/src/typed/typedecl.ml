@@ -768,7 +768,8 @@ let transl_value_decl env loc valdecl =
         (*val_attributes = valdecl.pval_attributes*) }
   in
   let (id, newenv) =
-    Env.enter_value valdecl.pval_name.txt v env
+    let name = (Option.default valdecl.pval_name valdecl.pval_name_alias).txt in
+    Env.enter_value name v env
     (*~check:(fun s -> Warnings.Unused_value_declaration s)*)
   in
   let desc =
