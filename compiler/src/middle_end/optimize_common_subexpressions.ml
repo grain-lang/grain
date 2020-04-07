@@ -72,9 +72,6 @@ let get_known_expression e =
 let get_comp_purity c =
   Option.default false @@ Analyze_purity.comp_expression_purity c
 
-let get_imm_purity i =
-  Option.default false @@ Analyze_purity.imm_expression_purity i
-
 module CSEArg : Anf_mapper.MapArgument = struct
   include Anf_mapper.DefaultMapArgument
 
@@ -92,7 +89,7 @@ module CSEArg : Anf_mapper.MapArgument = struct
 
   let leave_imm_expression ({imm_desc = desc} as i) =
     match desc with
-    | ImmId(id) when get_imm_purity i -> {i with imm_desc=ImmId(get_rewrite_rule id)}
+    | ImmId(id) -> {i with imm_desc=ImmId(get_rewrite_rule id)}
     | _ -> i
 
   let leave_anf_expression ({anf_desc = desc} as a) =
