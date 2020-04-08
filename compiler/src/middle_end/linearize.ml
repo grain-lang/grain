@@ -10,8 +10,8 @@ module MatchCompiler = Matchcomp.MatchTreeCompiler
 let compile_constructor_tag =
   let open Grain_typed.Types in
   function
-  | CstrConstant i -> i lsl 1
-  | CstrBlock i -> (i lsl 1) lor 1
+  | CstrConstant i -> i
+  | CstrBlock i -> i
   | CstrUnboxed -> failwith "compile_constructor_tag: cannot compile CstrUnboxed"
 
 let gensym = Ident.create

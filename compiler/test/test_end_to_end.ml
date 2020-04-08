@@ -696,6 +696,7 @@ let string_tests =
 let data_tests =
   [
     tfile "basicdata" "basicdata" "(false, true, true)";
+    tfile "adtprint" "adtprint" "Foo\nBar\nBaz(\"baz\")\nQux(5, \"qux\", false)\nQuux\nFlip(\"flip\")\nvoid";
   ]
 
 let export_tests =
