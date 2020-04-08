@@ -1,0 +1,14 @@
+export data Printable =
+  | Foo
+  | Bar
+  | Baz(String)
+  | Qux(Number, String, Bool)
+  | Quux
+  | Flip(String)
+
+print(Foo)
+print(Bar)
+print(Baz('baz'))
+print(Qux(5, 'qux', false))
+print(Quux)
+print(Flip('flip'))
