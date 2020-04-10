@@ -1,6 +1,5 @@
 import { memory, view, encoder, decoder } from '../runtime';
 import { grainHeapAllocate } from '../core/heap';
-import { GrainClosure } from '../core/closures';
 import { GrainError } from '../errors/errors';
 import { grainDOMRefs } from '../lib/DOM';
 
