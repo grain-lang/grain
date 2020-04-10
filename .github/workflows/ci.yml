@@ -1,0 +1,39 @@
+name: Grain CI Workflow
+on: push
+
+jobs:
+  build:
+    name: Build and test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up runtime and CLI
+        run: |
+          yarn
+          yarn setup
+      - name: esy install
+        run: |
+          yarn workspace compiler run esy install
+      - name: Restore esy cache
+        id: restore-cache
+        uses: actions/cache@v1
+        with:
+          path: compiler/_export
+          key:  ${{ runner.os }}-esy-${{ hashFiles('compiler/esy.lock/index.json') }}
+          restore-keys: |
+            ${{ runner.os }}-esy-
+      - name: Import esy cache
+        run: |
+          yarn workspace compiler run esy import-dependencies _export
+          rm -rf compiler/_export
+      - name: Build compiler
+        run: |
+          yarn compiler:build
+      # Re-export dependencies if anything has changed or if it is the first time
+      - name: Build esy cache 
+        run: |
+          yarn workspace compiler run esy export-dependencies
+        if: steps.restore-cache.outputs.cache-hit != 'true'
+      - name: Run tests
+        run: |
+          yarn compiler:test
