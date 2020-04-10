@@ -1,4 +1,4 @@
-import { memory } from '../runtime';
+import { memory, malloc } from '../runtime';
 import { GrainError } from '../errors/errors';
 
 export const heapController = {
@@ -19,8 +19,5 @@ export function grainCheckMemory(numBytes) {
 
 export function grainHeapAllocate(numWords) {
   // allocates the number of words
-  let curTop = heapController.heapAdjust(0);
-  let wordsToAllocate = 4 * (Math.ceil((numWords - 1) / 4) + 1);
-  heapController.heapAdjust(wordsToAllocate * 4);
-  return curTop;
+  return malloc(numWords * 4)
 }
