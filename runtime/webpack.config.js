@@ -4,7 +4,7 @@ const common = {
     rules: [
       {
         test: /\.js$/,
-        exclude: /(node_modules)/,
+        exclude: /(node_modules|wasmer-js)/,
         use: {
           loader: 'babel-loader',
           options: {
@@ -17,7 +17,8 @@ const common = {
       }
     ]
   },
-  externals: ['fs']
+  externals: ['fs'],
+  mode: 'development'
 };
 
 const browserConfig = {
@@ -38,7 +39,9 @@ const commonjsConfig = {
     filename: 'grain-runtime.js',
     path: __dirname + '/dist',
     libraryTarget: 'commonjs2'
-  }
+  },
+  externals: ['fs', 'crypto', 'path', 'tty'],
+  node: false
 }
 
 module.exports = [
