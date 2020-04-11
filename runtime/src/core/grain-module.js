@@ -60,7 +60,7 @@ export class GrainModule {
   }
 
   get isGrainModule() {
-    return !!this.exports["GRAIN$MAIN"]
+    return !!this.exports["_start"]
   }
 
   requiredExport(key) {
@@ -72,7 +72,7 @@ export class GrainModule {
   }
 
   get main() {
-    return this.requiredExport("GRAIN$MAIN");
+    return this.requiredExport("_start");
   }
 
   get tableSize() {

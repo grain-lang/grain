@@ -1350,7 +1350,7 @@ let compile_exports env {functions; imports; exports; num_globals} =
             Ast.edesc=add_dummy_loc (Ast.FuncExport heap_adjust_idx);
           };
           add_dummy_loc {
-            Ast.name=encode_string "GRAIN$MAIN";
+            Ast.name=encode_string "_start";
             Ast.edesc=add_dummy_loc (Ast.FuncExport main_idx);
           };
           add_dummy_loc {
