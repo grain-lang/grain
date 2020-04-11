@@ -24,8 +24,6 @@ assert append([], [4]) == [4]
 
 # List.contains
 
-assert contains(true, list) == false
-assert contains(false, list) == false
 assert contains(3, list)
 assert contains(3, []) == false
 
