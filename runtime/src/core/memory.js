@@ -18,6 +18,10 @@ export class ManagedMemory {
   malloc(size) {
     return this._mallocModule.malloc(size);
   }
+
+  free(ptr) {
+    return this._mallocModule.free(ptr);
+  }
 }
 
 class ManagedType {
