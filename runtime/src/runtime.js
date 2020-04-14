@@ -22,6 +22,7 @@ export const decoder = new TextDecoder("utf-8");
 
 const managedMemory = new ManagedMemory(memory);
 export const malloc = managedMemory.malloc.bind(managedMemory)
+export const free = managedMemory.free.bind(managedMemory)
 
 const importObj = {
   env: {
@@ -37,7 +38,8 @@ const importObj = {
     tbl: table,
     throwError: throwGrainError,
     checkMemory: grainCheckMemory,
-    malloc: malloc
+    malloc: malloc,
+    free: free,
   },
   grainBuiltins: {
     ...libStrings,

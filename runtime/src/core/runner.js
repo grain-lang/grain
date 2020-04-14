@@ -1,17 +1,8 @@
 import { GrainError } from '../errors/errors';
-import { readFile, readURL } from './grain-module';
+import { wasi, readFile, readURL } from './grain-module';
 import { makePrint } from '../lib/print';
 import { makeToString } from '../lib/to-string';
 import { grainToString } from '../utils/utils';
-
-import { WASI } from "@wasmer/wasi/lib/index.cjs";
-import wasiBindings from "@wasmer/wasi/lib/bindings/node";
-
-const wasi = new WASI({
-  args: [],
-  env: {},
-  bindings: {...wasiBindings}
-});
 
 function roundUp(num, multiple) {
   return multiple * (Math.floor((num - 1) / multiple) + 1);
@@ -65,13 +56,15 @@ export class GrainRunner {
     // This will change in the future.
     let moduleImports = mod.importSpecs;
     // First, load any dependencies which need loading
-    let wasiImports = wasi.getImports(mod.wasmModule)
-    Object.assign(this.imports, wasiImports)
     for (let imp of moduleImports) {
       if (!(imp.module in this.imports)) {
         // Sanity check
         if (imp.module in this.modules) {
           console.warn(`Ignoring possible cyclic dependency: ${imp.module}`);
+          continue;
+        }
+        if (imp.module.startsWith('wasi_')) {
+          Object.assign(this.imports, wasi.getImports(mod.wasmModule));
           continue;
         }
         // Should return an instance of GrainModule

@@ -1,6 +1,17 @@
 import { GrainError } from '../errors/errors';
 import { grainToJSVal } from '../utils/utils';
 
+import { WASI } from "@wasmer/wasi/lib/index.cjs";
+import wasiBindings from "@wasmer/wasi/lib/bindings/node";
+
+export const wasi = new WASI({
+  args: process.argv,
+  env: {},
+  bindings: {
+    ...wasiBindings
+  }
+});
+
 export class GrainModule {
   constructor(wasmModule, name) {
     this.wasmModule = wasmModule;
@@ -148,7 +159,7 @@ export class GrainModule {
   }
 
   async run() {
-    let res = await this.main();
+    let res = await wasi.start(this._instantiated);
     return grainToJSVal(this.runner, res);
   }
 }
