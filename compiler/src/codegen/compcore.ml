@@ -1358,6 +1358,10 @@ let compile_exports env {functions; imports; exports; num_globals} =
             (* We add one here because of heap top *)
             Ast.edesc=add_dummy_loc (Ast.GlobalExport (add_dummy_loc @@ Int32.of_int (num_globals + 1 + (List.length runtime_global_imports))));
           };
+          add_dummy_loc {
+            Ast.name=encode_string "memory";
+            Ast.edesc=add_dummy_loc (Ast.MemoryExport (add_dummy_loc @@ Int32.of_int 0));
+          };
         ]))
 
 let compile_tables env prog =
