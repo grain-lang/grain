@@ -29,7 +29,7 @@ export function argv(): u32 {
   let err = args_sizes_get(argcPtr, argvBufSizePtr)
   if (err !== 0) {
     free(argcPtr)
-    throwError(GRAIN_ERR_SYSTEM, err * 2, 0)
+    throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
   }
 
   let argc = load<u32>(argcPtr)
@@ -43,7 +43,7 @@ export function argv(): u32 {
     free(argcPtr)
     free(argvPtr)
     free(argvBufPtr)
-    throwError(GRAIN_ERR_SYSTEM, err * 2, 0)
+    throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
   }
 
   let arr = allocateArray(argc)
