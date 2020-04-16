@@ -24,6 +24,7 @@ type grain_error =
   | InvalidArgument
   | AssertionError
   | Failure
+  | SystemError
   | GenericNumberError
 [@@deriving sexp]
 
@@ -50,6 +51,7 @@ let all_grain_errors = [
   InvalidArgument;
   AssertionError;
   Failure;
+  SystemError;
   GenericNumberError;
 ]
 
@@ -75,6 +77,7 @@ let err_ARRAY_INDEX_OUT_OF_BOUNDS = 19
 let err_INVALID_ARGUMENT          = 20
 let err_ASSERTION_ERROR           = 21
 let err_FAILURE                   = 22
+let err_SYSTEM_ERROR              = 23
 let err_GENERIC_NUM               = 99
 
 let code_of_error = function
@@ -101,6 +104,7 @@ let code_of_error = function
   | InvalidArgument -> err_INVALID_ARGUMENT
   | AssertionError -> err_ASSERTION_ERROR
   | Failure -> err_FAILURE
+  | SystemError -> err_SYSTEM_ERROR
 
 let arity_of_error = function
   | ArithmeticError -> 1
@@ -126,6 +130,7 @@ let arity_of_error = function
   | InvalidArgument -> 1
   | AssertionError -> 0
   | Failure -> 1
+  | SystemError -> 1
 
 let label_of_error = function
   | ArithmeticError -> "error_not_number_arith"
@@ -151,6 +156,7 @@ let label_of_error = function
   | InvalidArgument -> "error_invalid_argument"
   | AssertionError -> "error_assertion"
   | Failure -> "error_failure"
+  | SystemError -> "error_system"
 
 let error_of_code c =
   match c with
@@ -177,6 +183,7 @@ let error_of_code c =
   | x when x = err_INVALID_ARGUMENT -> InvalidArgument
   | x when x = err_ASSERTION_ERROR -> AssertionError
   | x when x = err_FAILURE -> Failure
+  | x when x = err_SYSTEM_ERROR -> SystemError
   | c -> failwith (Printf.sprintf "Unknown error code: %d" c)
 
 let max_arity = List.fold_left (fun x y -> max x (arity_of_error y)) 0 all_grain_errors

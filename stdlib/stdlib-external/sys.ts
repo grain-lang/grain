@@ -1,7 +1,12 @@
 import {
   malloc,
-  free
+  free,
+  throwError
 } from './ascutils/grainRuntime'
+
+import {
+  GRAIN_ERR_SYSTEM
+} from './ascutils/errors'
 
 import {
   GRAIN_GENERIC_HEAP_TAG_TYPE
@@ -21,7 +26,11 @@ export function argv(): u32 {
   let argcPtr = malloc(8)
   let argvBufSizePtr = argcPtr + 4
 
-  let err_args_sizes_get = args_sizes_get(argcPtr, argvBufSizePtr)
+  let err = args_sizes_get(argcPtr, argvBufSizePtr)
+  if (err !== 0) {
+    free(argcPtr)
+    throwError(GRAIN_ERR_SYSTEM, err * 2, 0)
+  }
 
   let argc = load<u32>(argcPtr)
   let argvBufSize = load<u32>(argvBufSizePtr)
@@ -29,7 +38,13 @@ export function argv(): u32 {
   let argvPtr = malloc(argc * 4)
   let argvBufPtr = malloc(argvBufSize)
 
-  let err_args_get = args_get(argvPtr, argvBufPtr)
+  err = args_get(argvPtr, argvBufPtr)
+  if (err !== 0) {
+    free(argcPtr)
+    free(argvPtr)
+    free(argvBufPtr)
+    throwError(GRAIN_ERR_SYSTEM, err * 2, 0)
+  }
 
   let arr = allocateArray(argc)
 
