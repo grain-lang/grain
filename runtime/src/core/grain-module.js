@@ -6,7 +6,7 @@ import wasiBindings from "@wasmer/wasi/lib/bindings/node";
 
 export const wasi = new WASI({
   args: process.argv,
-  env: {},
+  env: process.env,
   bindings: {
     ...wasiBindings
   }

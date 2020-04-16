@@ -19,7 +19,9 @@ import {
 
 import {
   args_get,
-  args_sizes_get
+  args_sizes_get,
+  environ_get,
+  environ_sizes_get
 } from 'bindings/wasi'
 
 export function argv(): u32 {
@@ -67,4 +69,51 @@ export function argv(): u32 {
   free(argvBufPtr)
   
   return arr | GRAIN_GENERIC_HEAP_TAG_TYPE
+}
+
+export function env(): u32 {
+  let envcPtr = malloc(8);
+  let envvBufSizePtr = envcPtr + 4;
+
+  let err = environ_sizes_get(envcPtr, envvBufSizePtr);
+  if (err !== 0) {
+    free(envcPtr);
+    throwError(GRAIN_ERR_SYSTEM, err << 1, 0);
+  }
+
+  let envc = load<u32>(envcPtr);
+  let envvBufSize = load<u32>(envvBufSizePtr);
+
+  let envvPtr = malloc(envc * 4);
+  let envvBufPtr = malloc(envvBufSize);
+
+  err = environ_get(envvPtr, envvBufPtr);
+  if (err !== 0) {
+    free(envcPtr);
+    free(envvPtr);
+    free(envvBufPtr);
+    throwError(GRAIN_ERR_SYSTEM, err << 1, 0);
+  }
+
+  let arr = allocateArray(envc);
+
+  let envsLength = envc * 4;
+  for (let i: u32; i < envsLength; i += 4) {
+    let strPtr = load<u32>(envvPtr + i);
+    let strLength = 0;
+    while (load<u8>(strPtr + strLength) !== 0) {
+      strLength += 1;
+    }
+
+    let grainStrPtr = allocateString(strLength);
+    memory.copy(grainStrPtr + 8, strPtr, strLength);
+
+    store<u32>(arr + i, grainStrPtr | GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4);
+  }
+
+  free(envcPtr);
+  free(envvPtr);
+  free(envvBufPtr);
+
+  return arr | GRAIN_GENERIC_HEAP_TAG_TYPE;
 }
