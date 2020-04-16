@@ -1,3 +1,4 @@
 export *
 
 import foreign wasm argv : () -> Array<String> from 'stdlib-external/sys'
+import foreign wasm env : () -> Array<String> from 'stdlib-external/sys'
