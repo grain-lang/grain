@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env node --experimental-wasm-bigint
 const path = require('path');
 
 let program = require('commander');
