@@ -32,6 +32,8 @@ let ident_create = wrap Ident.create
 let ident_create_predef_exn = wrap Ident.create_predef_exn
 
 let ident_number = ident_create "Number"
+and ident_int32 = ident_create "Int32"
+and ident_int64 = ident_create "Int64"
 and ident_bool = ident_create "Bool"
 and ident_string = ident_create "String"
 and ident_void = ident_create "Void" (* TODO: When we have type aliases, make "Unit" an alias *)
@@ -39,6 +41,8 @@ and ident_box = ident_create "Box"
 and ident_array = ident_create "Array"
 
 let path_number = PIdent ident_number
+and path_int32 = PIdent ident_int32
+and path_int64 = PIdent ident_int64
 and path_bool = PIdent ident_bool
 and path_string = PIdent ident_string
 and path_void = PIdent ident_void
@@ -46,6 +50,8 @@ and path_box = PIdent ident_box
 and path_array = PIdent ident_array
 
 let type_number = newgenty (TTyConstr(path_number, [], ref TMemNil))
+and type_int32 = newgenty (TTyConstr(path_int32, [], ref TMemNil))
+and type_int64 = newgenty (TTyConstr(path_int64, [], ref TMemNil))
 and type_bool = newgenty (TTyConstr(path_bool, [], ref TMemNil))
 and type_string = newgenty (TTyConstr(path_string, [], ref TMemNil))
 and type_void = newgenty (TTyConstr(path_void, [], ref TMemNil))
@@ -101,6 +107,8 @@ let common_initial_env add_type empty_env =
   in
   empty_env
   |> add_type ident_number decl_abstr_imm
+  |> add_type ident_int32 decl_abstr_imm
+  |> add_type ident_int64 decl_abstr_imm
   |> add_type ident_bool decl_bool
   |> add_type ident_box decl_box
   |> add_type ident_string decl_abstr
