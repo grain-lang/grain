@@ -3,6 +3,7 @@ import { malloc } from './grainRuntime'
 import {
   GRAIN_ARRAY_HEAP_TAG,
   GRAIN_STRING_HEAP_TAG,
+  GRAIN_INT64_HEAP_TAG
 } from './tags'
 
 /**
@@ -33,4 +34,17 @@ export function allocateString(size: u32): u32 {
   store<u32>(str, size, 4)
 
   return str
+}
+
+/**
+ * Allocates a new Int64.
+ *
+ * @returns {u32}
+ */
+export function allocateInt64(): u32 {
+  let ptr = malloc(12)
+
+  store<u32>(ptr, GRAIN_INT64_HEAP_TAG)
+
+  return ptr
 }
