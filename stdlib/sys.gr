@@ -2,3 +2,8 @@ export *
 
 import foreign wasm argv : () -> Array<String> from 'stdlib-external/sys'
 import foreign wasm env : () -> Array<String> from 'stdlib-external/sys'
+
+import foreign wasm realTime : () -> Int64 from 'stdlib-external/sys'
+import foreign wasm monotonicTime : () -> Int64 from 'stdlib-external/sys'
+import foreign wasm processCpuTime : () -> Int64 from 'stdlib-external/sys'
+import foreign wasm threadCpuTime : () -> Int64 from 'stdlib-external/sys'
