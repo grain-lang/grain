@@ -97,13 +97,13 @@ export class GrainModule {
         return null;
       }
       this._types = {};
-      let idx = 0;
       cmi.cmi_sign.forEach(elt => {
         if (elt[0] !== "TSigType") {
           return;
         }
+        let id = elt[2].type_path[1].stamp
         let typ = {};
-        this._types[idx++] = typ;
+        this._types[id] = typ;
         let desc = elt[2];
         let kind = desc.type_kind;
         if (!kind) return;

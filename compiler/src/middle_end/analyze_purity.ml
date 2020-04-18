@@ -46,10 +46,15 @@ let pervasives_purity = StringHash.of_seq (List.to_seq [
   (">=", true);
   ("&&", true);
   ("||", true);
+
+  ("void", true);
 ])
 
 let get_id_purity (id : Ident.t) : bool =
-  Option.default (Ident.find_same id !purity_tbl) (StringHash.find_opt pervasives_purity (Ident.name id))
+  try
+    StringHash.find pervasives_purity (Ident.name id)
+  with Not_found ->
+    Ident.find_same id !purity_tbl
 
 let imm_expression_purity {imm_analyses} = get_purity !imm_analyses
 let comp_expression_purity {comp_analyses} = get_purity !comp_analyses

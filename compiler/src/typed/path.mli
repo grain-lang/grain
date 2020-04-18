@@ -20,3 +20,5 @@ val head: t -> Ident.t
 val heads: t -> Ident.t list
 
 val last: t -> string
+
+val stamp: t -> int
