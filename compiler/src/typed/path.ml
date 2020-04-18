@@ -61,3 +61,7 @@ let rec last = function
   | PIdent id -> Ident.name id
   | PExternal(_, s, _) -> s
 
+let rec stamp = function
+  | PIdent id -> id.stamp
+  | PExternal(p, _, _) -> stamp p
+  

@@ -7,8 +7,8 @@ type heap_tag_type =
   | ADTType
   | RecordType
   | ArrayType
-  | Int32
-  | Int64
+  | Int32Type
+  | Int64Type
 [@@deriving sexp]
 
 let tag_val_of_heap_tag_type = function
@@ -17,8 +17,8 @@ let tag_val_of_heap_tag_type = function
   | ADTType -> 3
   | RecordType -> 4
   | ArrayType -> 5
-  | Int32 -> 6
-  | Int64 -> 7
+  | Int32Type -> 6
+  | Int64Type -> 7
 
 let heap_tag_type_of_tag_val = function
   | x when x = 1 -> StringType
@@ -26,8 +26,8 @@ let heap_tag_type_of_tag_val = function
   | x when x = 3 -> ADTType
   | x when x = 4 -> RecordType
   | x when x = 5 -> ArrayType
-  | x when x = 6 -> Int32
-  | x when x = 7 -> Int64
+  | x when x = 6 -> Int32Type
+  | x when x = 7 -> Int64Type
   | x -> failwith (Printf.sprintf "Unknown tag type: %d" x)
 
 

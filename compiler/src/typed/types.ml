@@ -153,6 +153,7 @@ type type_declaration = {
   type_manifest: type_expr option;
   type_newtype_level: (int * int) option;
   type_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled] [@default Location.dummy_loc];
+  type_path: Path.t;
   type_immediate: bool; (* Whether the type should not be a pointer *)
 } [@@deriving sexp, yojson]
 
