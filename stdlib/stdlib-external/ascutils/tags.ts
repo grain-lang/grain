@@ -14,3 +14,5 @@ export const GRAIN_RECORD_HEAP_TAG: i32 = 4;
 export const GRAIN_ARRAY_HEAP_TAG: i32 = 5;
 export const GRAIN_INT32_HEAP_TAG: i32 = 6;
 export const GRAIN_INT64_HEAP_TAG: i32 = 7;
+
+export const GRAIN_FILE_DESCRIPTOR_TYPE_ID: i32 = 9;
