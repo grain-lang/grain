@@ -7,3 +7,116 @@ import foreign wasm realTime : () -> Int64 from 'stdlib-external/sys'
 import foreign wasm monotonicTime : () -> Int64 from 'stdlib-external/sys'
 import foreign wasm processCpuTime : () -> Int64 from 'stdlib-external/sys'
 import foreign wasm threadCpuTime : () -> Int64 from 'stdlib-external/sys'
+
+data FileDescriptor =
+  FileDescriptor(Number)
+
+let stdin = FileDescriptor(0)
+let stdout = FileDescriptor(1)
+let stderr = FileDescriptor(2)
+let pwdfd = FileDescriptor(3)
+
+data LookupFlag =
+  # Follow symlinks
+  SymlinkFollow
+
+data OpenFlag =
+  # Create file if it does not exist.
+  | Create
+  # Fail if not a directory.
+  | Directory
+  # Fail if file already exists.
+  | Exclusive
+  # Truncate file to size 0.
+  | Truncate
+
+data Rights =
+  # The right to invoke `fd_datasync`.
+
+  # If `path_open` is set, includes the right to invoke
+  # `path_open` with `fdflags::dsync`.
+  | FdDatasync
+  # The right to invoke `fd_read` and `sock_recv`.
+
+  # If `rights::fd_seek` is set, includes the right to invoke `fd_pread`.
+  | FdRead
+  # The right to invoke `fd_seek`. This flag implies `rights::fd_tell`.
+  | FdSeek
+  # The right to invoke `fd_fdstat_set_flags`.
+  | FdFdstatSetFlags
+  # The right to invoke `fd_sync`.
+
+  # If `path_open` is set, includes the right to invoke
+  # `path_open` with `fdflags::rsync` and `fdflags::dsync`.
+  | FdSync
+  # The right to invoke `fd_seek` in such a way that the file offset
+  # remains unaltered (i.e., `whence::cur` with offset zero), or to
+  # invoke `fd_tell`.
+  | FdTell
+  # The right to invoke `fd_write` and `sock_send`.
+  # If `rights::fd_seek` is set, includes the right to invoke `fd_pwrite`.
+  | FdWrite
+  # The right to invoke `fd_advise`.
+  | FdAdvise
+  # The right to invoke `fd_allocate`.
+  | FdAllocate
+  # The right to invoke `path_create_directory`.
+  | PathCreateDirectory
+  # If `path_open` is set, the right to invoke `path_open` with `oflags::creat`.
+  | PathCreateFile
+  # The right to invoke `path_link` with the file descriptor as the
+  # source directory.
+  | PathLinkSource
+  # The right to invoke `path_link` with the file descriptor as the
+  # target directory.
+  | PathLinkTarget
+  # The right to invoke `path_open`.
+  | PathOpen
+  # The right to invoke `fd_readdir`.
+  | FdReaddir
+  # The right to invoke `path_readlink`.
+  | PathReadlink
+  # The right to invoke `path_rename` with the file descriptor as the source directory.
+  | PathRenameSource
+  # The right to invoke `path_rename` with the file descriptor as the target directory.
+  | PathRenameTarget
+  # The right to invoke `path_filestat_get`.
+  | PathFilestatGet
+  # The right to change a file's size (there is no `path_filestat_set_size`).
+  # If `path_open` is set, includes the right to invoke `path_open` with `oflags::trunc`.
+  | PathFilestatSetSize
+  # The right to invoke `path_filestat_set_times`.
+  | PathFilestatSetTimes
+  # The right to invoke `fd_filestat_get`.
+  | FdFilestatGet
+  # The right to invoke `fd_filestat_set_size`.
+  | FdFilestatSetSize
+  # The right to invoke `fd_filestat_set_times`.
+  | FdFilestatSetTimes
+  # The right to invoke `path_symlink`.
+  | PathSymlink
+  # The right to invoke `path_remove_directory`.
+  | PathRemoveDirectory
+  # The right to invoke `path_unlink_file`.
+  | PathUnlinkFile
+  # If `rights::fd_read` is set, includes the right to invoke `poll_oneoff` to subscribe to `eventtype::fd_read`.
+  # If `rights::fd_write` is set, includes the right to invoke `poll_oneoff` to subscribe to `eventtype::fd_write`.
+  | PollFdReadwrite
+  # The right to invoke `sock_shutdown`.
+  | SockShutdown
+
+data FdFlag =
+  # Append mode: Data written to the file is always appended to the file's end.
+  | Append
+  # Write according to synchronized I/O data integrity completion. Only the data stored in the file is synchronized.
+  | Dsync
+  # Non-blocking mode.
+  | Nonblock
+  # Synchronized read I/O operations.
+  | Rsync
+  # Write according to synchronized I/O file integrity completion. In
+  # addition to synchronizing the data stored in the file, the implementation
+  # may also synchronously update the file's metadata.
+  | Sync
+
+import foreign wasm pathOpen : (FileDescriptor, List<LookupFlag>, String, List<OpenFlag>, List<Rights>, List<Rights>, List<FdFlag>) -> FileDescriptor from 'stdlib-external/sys'

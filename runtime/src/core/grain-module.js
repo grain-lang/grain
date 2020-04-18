@@ -9,6 +9,9 @@ export const wasi = new WASI({
   env: process.env,
   bindings: {
     ...wasiBindings
+  },
+  preopens: {
+    [process.cwd()]: process.cwd()
   }
 });
 

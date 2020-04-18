@@ -48,3 +48,43 @@ export function allocateInt64(): u32 {
 
   return ptr
 }
+
+/**
+ * Load a value from an ADT.
+ *
+ * @export
+ * @param {u32} ptr Untagged pointer to the ADT
+ * @param {u32} idx Index (from zero) of the item
+ * @returns {u32} The value located at the index
+ */
+// @ts-ignore: decorator
+@inline
+export function loadAdtVal(ptr: u32, idx: u32): u32 {
+  return load<u32>(ptr + (idx * 4), 5 * 4)
+}
+
+/**
+ * Load the (tagged) variant of an ADT.
+ *
+ * @export
+ * @param {u32} ptr Untagged pointer to the ADT
+ * @returns {u32} The (tagged) ADT variant id
+ */
+// @ts-ignore: decorator
+@inline
+export function loadAdtVariant(ptr: u32): u32 {
+  return load<u32>(ptr, 3 * 4)
+}
+
+/**
+ * Load an untagged string's size.
+ *
+ * @export
+ * @param {u32} ptr Untagged pointer to the string
+ * @returns {u32} The (untagged) string size (in bytes)
+ */
+// @ts-ignore: decorator
+@inline
+export function stringSize(ptr: u32): u32 {
+  return load<u32>(ptr, 4)
+}
