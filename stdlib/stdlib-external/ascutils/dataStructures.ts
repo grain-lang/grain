@@ -22,6 +22,20 @@ export function allocateArray(numElts: u32): u32 {
 }
 
 /**
+ * Allocates a new Grain tuple.
+ *
+ * @param {u32} numElts The number of elements to be contained in this tuple
+ * @returns {u32} The (untagged) pointer to the tuple
+ */
+export function allocateTuple(numElts: u32): u32 {
+  let tuple = malloc((numElts + 1) * 4)
+
+  store<u32>(tuple, numElts)
+
+  return tuple
+}
+
+/**
  * Allocates a new Grain string.
  *
  * @param {u32} size The size (in bytes) of the string to allocate
