@@ -120,3 +120,5 @@ data FdFlag =
   | Sync
 
 import foreign wasm pathOpen : (FileDescriptor, List<LookupFlag>, String, List<OpenFlag>, List<Rights>, List<Rights>, List<FdFlag>) -> FileDescriptor from 'stdlib-external/sys'
+import foreign wasm fdRead : (FileDescriptor, Number) -> (String, Number) from 'stdlib-external/sys'
+import foreign wasm fdWrite : (FileDescriptor, String) -> Number from 'stdlib-external/sys'

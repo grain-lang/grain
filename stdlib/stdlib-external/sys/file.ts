@@ -2,19 +2,20 @@ import { malloc, free, throwError } from "../ascutils/grainRuntime";
 
 import {
   errno,
-  fd,
   lookupflags,
   oflags,
   rights,
   fdflags,
-  path_open
+  path_open,
+  fd_read,
+  fd_write,
 } from "bindings/wasi";
 
 import { GRAIN_ERR_SYSTEM } from "../ascutils/errors";
 
-import { GRAIN_GENERIC_HEAP_TAG_TYPE } from "../ascutils/tags";
+import { GRAIN_GENERIC_HEAP_TAG_TYPE, GRAIN_STRING_HEAP_TAG, GRAIN_TUPLE_TAG_TYPE } from "../ascutils/tags";
 
-import { loadAdtVal, loadAdtVariant, stringSize } from '../ascutils/dataStructures'
+import { loadAdtVal, loadAdtVariant, stringSize, allocateString, allocateTuple } from '../ascutils/dataStructures'
 
 namespace glookupflag {
   // @ts-ignore: decorator
@@ -391,4 +392,63 @@ export function pathOpen(
   store<u32>(newFd, load<u32>(newFd, 5 * 4) << 1, 5 * 4)
   
   return newFd ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+}
+
+export function fdRead(fdPtr: u32, n: u32): u32 {
+  fdPtr = fdPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let fd = loadAdtVal(fdPtr, 0) >> 1
+
+  n = n >> 1
+
+  let iovs = malloc(3 * 4)
+  let strPtr = allocateString(n)
+
+  store<u32>(iovs, strPtr + (2 * 4))
+  store<u32>(iovs, n, 4)
+
+  let nread = iovs + (3 * 4)
+
+  let err = fd_read(fd, iovs, 1, nread)
+  if (err !== errno.SUCCESS) {
+    free(iovs)
+    free(strPtr)
+    throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
+  }
+
+  nread = load<u32>(nread)
+  
+  let tuple = allocateTuple(2)
+
+  store<u32>(tuple, strPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE, 4)
+  store<u32>(tuple, nread << 1, 2 * 4)
+  store<u32>(strPtr, nread, 4)
+
+  free(iovs)
+
+  return tuple ^ GRAIN_TUPLE_TAG_TYPE
+}
+
+export function fdWrite(fdPtr: u32, data: u32): u32 {
+  fdPtr = fdPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let fd = loadAdtVal(fdPtr, 0) >> 1
+
+  let iovs = malloc(3 * 4)
+  let strPtr = data ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+
+  store<u32>(iovs, strPtr + (2 * 4))
+  store<u32>(iovs, load<u32>(strPtr, 4), 4)
+
+  let nwritten = iovs + (3 * 4)
+
+  let err = fd_write(fd, iovs, 1, nwritten)
+  if (err !== errno.SUCCESS) {
+    free(iovs)
+    throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
+  }
+
+  nwritten = load<u32>(nwritten)
+  
+  free(iovs)
+
+  return nwritten << 1
 }
