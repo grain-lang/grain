@@ -122,3 +122,7 @@ data FdFlag =
 import foreign wasm pathOpen : (FileDescriptor, List<LookupFlag>, String, List<OpenFlag>, List<Rights>, List<Rights>, List<FdFlag>) -> FileDescriptor from 'stdlib-external/sys'
 import foreign wasm fdRead : (FileDescriptor, Number) -> (String, Number) from 'stdlib-external/sys'
 import foreign wasm fdWrite : (FileDescriptor, String) -> Number from 'stdlib-external/sys'
+import foreign wasm fdAllocate : (FileDescriptor, Int64, Int64) -> Void from 'stdlib-external/sys'
+import foreign wasm fdClose : (FileDescriptor) -> Void from 'stdlib-external/sys'
+import foreign wasm fdDatasync : (FileDescriptor) -> Void from 'stdlib-external/sys'
+import foreign wasm fdSync : (FileDescriptor) -> Void from 'stdlib-external/sys'
