@@ -9,11 +9,17 @@ import {
   path_open,
   fd_read,
   fd_write,
+  fd_allocate,
+  fd_close,
+  fd_datasync,
+  fd_sync,
 } from "bindings/wasi";
 
 import { GRAIN_ERR_SYSTEM } from "../ascutils/errors";
 
 import { GRAIN_GENERIC_HEAP_TAG_TYPE, GRAIN_STRING_HEAP_TAG, GRAIN_TUPLE_TAG_TYPE } from "../ascutils/tags";
+
+import { GRAIN_VOID } from "../ascutils/primitives";
 
 import { loadAdtVal, loadAdtVariant, stringSize, allocateString, allocateTuple } from '../ascutils/dataStructures'
 
@@ -451,4 +457,58 @@ export function fdWrite(fdPtr: u32, data: u32): u32 {
   free(iovs)
 
   return nwritten << 1
+}
+
+export function fdAllocate(fdPtr: u32, offsetPtr: u32, sizePtr: u32): u32 {
+  fdPtr = fdPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let fd = loadAdtVal(fdPtr, 0) >> 1
+
+  offsetPtr = offsetPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let offset = load<u64>(offsetPtr, 4)
+
+  sizePtr = sizePtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let size = load<u64>(sizePtr, 4)
+  
+  let err = fd_allocate(fd, offset, size)
+  if (err !== errno.SUCCESS) {
+    throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
+  }
+
+  return GRAIN_VOID
+}
+
+export function fdClose(fdPtr: u32): u32 {
+  fdPtr = fdPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let fd = loadAdtVal(fdPtr, 0) >> 1
+
+  let err = fd_close(fd)
+  if (err !== errno.SUCCESS) {
+    throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
+  }
+
+  return GRAIN_VOID
+}
+
+export function fdDatasync(fdPtr: u32): u32 {
+  fdPtr = fdPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let fd = loadAdtVal(fdPtr, 0) >> 1
+
+  let err = fd_datasync(fd)
+  if (err !== errno.SUCCESS) {
+    throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
+  }
+
+  return GRAIN_VOID
+}
+
+export function fdSync(fdPtr: u32): u32 {
+  fdPtr = fdPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let fd = loadAdtVal(fdPtr, 0) >> 1
+
+  let err = fd_sync(fd)
+  if (err !== errno.SUCCESS) {
+    throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
+  }
+
+  return GRAIN_VOID
 }

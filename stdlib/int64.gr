@@ -1,0 +1,4 @@
+export *
+
+primitive fromNumber : Number -> Int64 = '@int64.fromNumber'
+primitive toNumber : Int64 -> Number = '@int64.toNumber'
