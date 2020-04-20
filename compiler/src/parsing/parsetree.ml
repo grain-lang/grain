@@ -98,6 +98,8 @@ type prim1 =
   | ArrayLength
   | Assert
   | FailWith
+  | Int64FromNumber
+  | Int64ToNumber
 [@@deriving sexp]
 
 (** Two-argument operators *)

@@ -93,6 +93,8 @@ let prim1_type = function
     Builtin_types.type_array var, Builtin_types.type_number
   | Assert -> Builtin_types.type_bool, Builtin_types.type_void
   | FailWith -> Builtin_types.type_string, newvar ~name:"a" ()
+  | Int64FromNumber -> Builtin_types.type_number, Builtin_types.type_int64
+  | Int64ToNumber -> Builtin_types.type_int64, Builtin_types.type_number
 
 let prim2_type = function
   | Plus
