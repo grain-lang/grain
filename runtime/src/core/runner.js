@@ -79,9 +79,9 @@ export class GrainRunner {
         if (located.isGrainModule) {
           await located.run();
           this.imports['grainRuntime']['relocBase'] += located.tableSize;
+          ++this.imports['grainRuntime']['moduleRuntimeId'];
         }
         this.ptrZero = this.ptr;
-        this.imports['grainRuntime']['moduleRuntimeId']++;
         this.imports[imp.module] = located.exports;
       }
     }
