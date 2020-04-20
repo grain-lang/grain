@@ -56,9 +56,16 @@
 }
 
 let dec_digit = ['0'-'9']
-let signed_int = dec_digit+ | ('-' dec_digit+)
 let hex_digit = ['0'-'9' 'A'-'F' 'a'-'f']
 let oct_digit = ['0'-'7']
+let bin_digit = ['0'-'1']
+
+let signed_dec_int = dec_digit+ | ('-' dec_digit+)
+let signed_hex_int = ("0x" hex_digit+) | ('-' "0x" hex_digit+)
+let signed_oct_int = ("0o" oct_digit+) | ('-' "0o" oct_digit+)
+let signed_bin_int = ("0b" bin_digit+) | ('-' "0b" bin_digit+)
+
+let signed_int = signed_dec_int | signed_hex_int | signed_oct_int | signed_bin_int
 
 let ident = ['a'-'z' '_']['a'-'z' 'A'-'Z' '0'-'9' '_']*
 let ident_cap = ['A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']*
