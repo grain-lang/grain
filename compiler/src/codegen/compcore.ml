@@ -129,6 +129,9 @@ let wrap_int64 n = add_dummy_loc (Values.I64Value.to_value n)
 let wrap_float32 n = add_dummy_loc (Values.F32Value.to_value n)
 let wrap_float64 n = add_dummy_loc (Values.F64Value.to_value n)
 
+let grain_number_max = 0x3fffffff
+let grain_number_min = -0x3fffffff
+
 (** Constant compilation *)
 let rec compile_const c : Wasm.Values.value =
   let identity : 'a. 'a -> 'a = fun x -> x in
@@ -901,6 +904,10 @@ let allocate_record env ttag elts =
 
 let compile_prim1 env p1 arg : Wasm.Ast.instr' Concatlist.t =
   let compiled_arg = compile_imm env arg in
+  let get_swap_i64 = get_swap ~ty:I64Type env 0 in
+  let tee_swap_i64 = tee_swap ~ty:I64Type env 0 in
+  let get_swap = get_swap env 0 in
+  let tee_swap = tee_swap env 0 in
   (* TODO: Overflow checks? *)
   match p1 with
   | Incr -> compiled_arg @+ [
@@ -924,6 +931,31 @@ let compile_prim1 env p1 arg : Wasm.Ast.instr' Concatlist.t =
     Ast.Const(const_void);
   ]
   | FailWith -> call_error_handler env Failure [arg]
+  | Int64FromNumber -> (heap_allocate env 3) @ tee_swap +@ [
+    Ast.Const(const_int32 (tag_val_of_heap_tag_type Int64Type));
+    store ~offset:0 ();
+  ] @ get_swap @ compiled_arg @ untag_number +@ [
+    Ast.Convert(Values.I64 Ast.IntOp.ExtendSI32);
+    store ~ty:I64Type ~offset:4 ();
+  ] @ get_swap +@ [
+    Ast.Const(const_int32 @@ tag_val_of_tag_type (GenericHeapType (Some Int64Type)));
+    Ast.Binary(Values.I32 Ast.IntOp.Or);
+  ]
+  | Int64ToNumber -> compiled_arg @ untag (GenericHeapType (Some Int64Type)) +@ [
+    load ~ty:I64Type ~offset:4 ();
+  ] @ tee_swap_i64 +@ [
+    Ast.Const(const_int64 grain_number_max);
+    Ast.Compare(Values.I64 Ast.IntOp.GtS);
+    error_if_true env OverflowError [];
+  ] @ get_swap_i64 +@ [
+    Ast.Const(const_int64 grain_number_min);
+    Ast.Compare(Values.I64 Ast.IntOp.LtS);
+    error_if_true env OverflowError [];
+  ] @ get_swap_i64 +@ [
+    Ast.Convert(Values.I32 Ast.IntOp.WrapI64);
+    Ast.Const(const_int32 1);
+    Ast.Binary(Values.I32 Ast.IntOp.Shl);
+  ]
   | Box -> failwith "Unreachable case; should never get here: Box"
   | Unbox -> failwith "Unreachable case; should never get here: Unbox"
 

@@ -50,6 +50,9 @@ let prim_map = PrimMap.of_seq (List.to_seq [
   ("@array.length", Primitive1 ArrayLength);
   ("@array.make", Primitive2 ArrayMake);
   ("@array.init", Primitive2 ArrayInit);
+
+  ("@int64.fromNumber", Primitive1 Int64FromNumber);
+  ("@int64.toNumber", Primitive1 Int64ToNumber);
 ])
 
 let transl_prim env desc = 
