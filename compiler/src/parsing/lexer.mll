@@ -61,9 +61,9 @@ let oct_digit = ['0'-'7']
 let bin_digit = ['0'-'1']
 
 let dec_int = dec_digit (dec_digit | '_')*
-let hex_int = "0x" hex_digit (hex_digit | '_')*
-let oct_int = "0o" oct_digit (oct_digit | '_')*
-let bin_int = "0b" bin_digit (bin_digit | '_')*
+let hex_int = '0' ['x' 'X'] hex_digit (hex_digit | '_')*
+let oct_int = '0' ['o' 'O'] oct_digit (oct_digit | '_')*
+let bin_int = '0' ['b' 'B'] bin_digit (bin_digit | '_')*
 
 let signed_dec_int = dec_int | ('-' dec_int)
 let signed_hex_int = hex_int | ('-' hex_int)
