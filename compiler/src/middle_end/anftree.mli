@@ -87,6 +87,8 @@ and comp_expression_desc =
   | CAppBuiltin of string * string * imm_expression list (* Unwrapped function call (to WASM functions) *)
   | CLambda of Ident.t list * anf_expression
   | CString of string
+  | CInt32 of int32
+  | CInt64 of int64
 [@@deriving sexp]
 
 (** Compound expressions (possibly let-bound)

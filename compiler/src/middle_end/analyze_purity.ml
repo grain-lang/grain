@@ -151,7 +151,9 @@ let rec analyze_comp_expression ({comp_desc = desc; comp_analyses = analyses}) =
       List.iter (fun i -> set_id_purity i true) args;
       analyze_anf_expression body;
       anf_expression_purity_internal body
-    | CString(s) -> true
+    | CInt32 _
+    | CInt64 _
+    | CString _ -> true
   in
   push_purity analyses purity
 

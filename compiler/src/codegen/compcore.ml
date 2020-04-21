@@ -666,6 +666,34 @@ let allocate_string env str =
     Ast.Binary(Values.I32 Ast.IntOp.Or);
   ]
 
+let allocate_int32 env i =
+  let get_swap = get_swap env 0 in
+  let tee_swap = tee_swap env 0 in
+  (heap_allocate env 2) @ tee_swap +@ [
+    Ast.Const(const_int32 (tag_val_of_heap_tag_type Int32Type));
+    store ~offset:0 ();
+  ] @ get_swap +@ [
+    Ast.Const(wrap_int32 i);
+    store ~ty:I32Type ~offset:4 ();
+  ] @ get_swap +@ [
+    Ast.Const(const_int32 @@ tag_val_of_tag_type (GenericHeapType (Some Int32Type)));
+    Ast.Binary(Values.I32 Ast.IntOp.Or);
+  ]
+
+let allocate_int64 env i =
+  let get_swap = get_swap env 0 in
+  let tee_swap = tee_swap env 0 in
+  (heap_allocate env 3) @ tee_swap +@ [
+    Ast.Const(const_int32 (tag_val_of_heap_tag_type Int64Type));
+    store ~offset:0 ();
+  ] @ get_swap +@ [
+    Ast.Const(wrap_int64 i);
+    store ~ty:I64Type ~offset:4 ();
+  ] @ get_swap +@ [
+    Ast.Const(const_int32 @@ tag_val_of_tag_type (GenericHeapType (Some Int64Type)));
+    Ast.Binary(Values.I32 Ast.IntOp.Or);
+  ]
+
 let allocate_closure env ?lambda ({func_idx; arity; variables} as closure_data) =
   let num_free_vars = List.length variables in
   let closure_size = num_free_vars + 3 in
@@ -1115,6 +1143,8 @@ let compile_allocation env alloc_type =
   | MRecord(ttag, elts) -> allocate_record env ttag elts
   | MString(str) -> allocate_string env str
   | MADT(ttag, vtag, elts) -> allocate_adt env ttag vtag elts
+  | MInt32(i) -> allocate_int32 env i
+  | MInt64(i) -> allocate_int64 env i
 
 
 let collect_backpatches env f =

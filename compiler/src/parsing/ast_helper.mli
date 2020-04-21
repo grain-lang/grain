@@ -33,6 +33,8 @@ val with_default_loc_src: (unit -> loc) -> (unit -> 'a) -> 'a
 module Const : sig
   val string : string -> constant
   val int : int -> constant
+  val int32 : int32 -> constant
+  val int64 : int64 -> constant
   val bool : bool -> constant
 end
 

@@ -147,6 +147,8 @@ let make_program statements =
 %relation pe<pt<pp<pb<pc<pa<pl
 
 %token <int> NUM
+%token <int32> INT32
+%token <int64> INT64
 %token <string> ID
 %token <string> TYPEID
 %token <string> STRING
@@ -226,6 +228,8 @@ equal :
 
 const :
   | NUM { Const.int $1 }
+  | INT32 { Const.int32 $1 }
+  | INT64 { Const.int64 $1 }
   | TRUE { Const.bool true }
   | FALSE { Const.bool false }
   | STRING { Const.string $1 }

@@ -56,6 +56,8 @@ let rec analyze_comp_expression ({comp_desc = desc; comp_analyses = analyses}) =
   | CGetRecordItem _
   | CLambda _
   | CString _
+  | CInt32 _
+  | CInt64 _
   | CPrim1 _
   | CPrim2 _
   | CImmExpr _ -> false

@@ -98,6 +98,8 @@ module MakeMap(Iter : MapArgument) = struct
         let expr = map_anf_expression expr in
         CLambda(idents, expr)
       | CString(s) -> CString(s)
+      | CInt32(i) -> CInt32(i)
+      | CInt64(i) -> CInt64(i)
     in
     Iter.leave_comp_expression {c with comp_desc = d}
 

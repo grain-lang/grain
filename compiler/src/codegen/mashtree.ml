@@ -90,6 +90,8 @@ type allocation_type =
   | MRecord of immediate * (string * immediate) list
   | MADT of immediate * immediate * immediate list (* Type Tag, Variant Tag, Elements *)
   | MString of string
+  | MInt32 of int32
+  | MInt64 of int64
 [@@deriving sexp]
 
 type tag_op =
