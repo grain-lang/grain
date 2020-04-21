@@ -223,6 +223,10 @@ let rec compile_comp env c =
     MAllocate(MADT(compile_imm env ttag, compile_imm env vtag, List.map (compile_imm env) args))
   | CString(s) ->
     MAllocate(MString s)
+  | CInt32(i) ->
+    MAllocate(MInt32 i)
+  | CInt64(i) ->
+    MAllocate(MInt64 i)
   | CGetTupleItem(idx, tup) ->
     MTupleOp(MTupleGet(idx), compile_imm env tup)
   | CSetTupleItem(idx, tup, value) ->

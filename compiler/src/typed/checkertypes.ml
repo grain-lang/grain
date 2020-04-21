@@ -63,12 +63,16 @@ let mk_expected ?explanation ty = { ty; explanation; }
 
 let type_constant = function
   | Const_int _ -> instance_def Builtin_types.type_number
+  | Const_int32 _ -> instance_def Builtin_types.type_int32
+  | Const_int64 _ -> instance_def Builtin_types.type_int64
   | Const_bool _ -> instance_def Builtin_types.type_bool
   | Const_string _ -> instance_def Builtin_types.type_string
   | _ -> failwith "NYI: type_constant"
 
 let constant : Parsetree.constant -> (Asttypes.constant, error) result = function
   | PConstNumber(n) -> Ok(Const_int n)
+  | PConstInt32(n) -> Ok(Const_int32 n)
+  | PConstInt64(n) -> Ok(Const_int64 n)
   | PConstBool(b) -> Ok(Const_bool b)
   | PConstString(s) -> Ok(Const_string s)
 

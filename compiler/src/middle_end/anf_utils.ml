@@ -80,7 +80,9 @@ and comp_free_vars_help env (c : comp_expression) =
     Ident.Set.union
       (imm_free_vars_help env arg1)
       (imm_free_vars_help env arg2)
-  | CString(s) -> Ident.Set.empty
+  | CInt32 _
+  | CInt64 _
+  | CString _ -> Ident.Set.empty
   | CImmExpr(i) -> imm_free_vars_help env i
 
 and imm_free_vars_help env (i : imm_expression) =

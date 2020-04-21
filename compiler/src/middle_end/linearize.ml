@@ -68,6 +68,8 @@ let extract_bindings pat cexpr =
 
 let transl_const (c : Types.constant) : (imm_expression, string * comp_expression) either =
   match c with
+  | Const_int32 i -> Right("int32", Comp.int32 i)
+  | Const_int64 i -> Right("int64", Comp.int64 i)
   | Const_string s -> Right("str", Comp.string s)
   | Const_float _ -> failwith "NYI: helpIConst: float"
   | _ -> Left(Imm.const c)

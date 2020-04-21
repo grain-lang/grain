@@ -38,6 +38,8 @@ let ident_cons = {txt=Identifier.IdentName "[...]"; loc=((!default_loc_src)())}
 module Const = struct
   let string s = PConstString s
   let int i = PConstNumber i
+  let int32 i = PConstInt32 i
+  let int64 i = PConstInt64 i
   let bool b = PConstBool b
 end
 
