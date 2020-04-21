@@ -53,6 +53,17 @@ let prim_map = PrimMap.of_seq (List.to_seq [
 
   ("@int64.fromNumber", Primitive1 Int64FromNumber);
   ("@int64.toNumber", Primitive1 Int64ToNumber);
+  ("@int64.lnot", Primitive1 Int64Lnot);
+  ("@int64.land", Primitive2 Int64Land);
+  ("@int64.lor", Primitive2 Int64Lor);
+  ("@int64.lxor", Primitive2 Int64Lxor);
+  ("@int64.lsl", Primitive2 Int64Lsl);
+  ("@int64.lsr", Primitive2 Int64Lsr);
+  ("@int64.asr", Primitive2 Int64Asr);
+  ("@int64.gt", Primitive2 Int64Gt);
+  ("@int64.gte", Primitive2 Int64Gte);
+  ("@int64.lt", Primitive2 Int64Lt);
+  ("@int64.lte", Primitive2 Int64Lte);
 ])
 
 let transl_prim env desc = 

@@ -95,6 +95,7 @@ let prim1_type = function
   | FailWith -> Builtin_types.type_string, newvar ~name:"a" ()
   | Int64FromNumber -> Builtin_types.type_number, Builtin_types.type_int64
   | Int64ToNumber -> Builtin_types.type_int64, Builtin_types.type_number
+  | Int64Lnot -> Builtin_types.type_int64, Builtin_types.type_int64
 
 let prim2_type = function
   | Plus
@@ -118,6 +119,16 @@ let prim2_type = function
   | ArrayInit ->  
     let var = newvar ~name:"a" () in
     (Builtin_types.type_number, Builtin_types.type_lambda [Builtin_types.type_number] var, Builtin_types.type_array var)
+  | Int64Land
+  | Int64Lor
+  | Int64Lxor -> (Builtin_types.type_int64, Builtin_types.type_int64, Builtin_types.type_int64)
+  | Int64Lsl
+  | Int64Lsr
+  | Int64Asr -> (Builtin_types.type_int64, Builtin_types.type_number, Builtin_types.type_int64)
+  | Int64Gt
+  | Int64Gte
+  | Int64Lt
+  | Int64Lte -> (Builtin_types.type_int64, Builtin_types.type_int64, Builtin_types.type_bool)
 
 let maybe_add_pattern_variables_ghost loc_let env pv =
   List.fold_right

@@ -694,6 +694,22 @@ let allocate_int64 env i =
     Ast.Binary(Values.I32 Ast.IntOp.Or);
   ]
 
+(* Store the int64 at the top of the stack *)
+let allocate_int64_imm env =
+  let get_swap64 = get_swap ~ty:I64Type env 0 in
+  let set_swap64 = set_swap ~ty:I64Type env 0 in
+  let get_swap = get_swap env 0 in
+  let tee_swap = tee_swap env 0 in
+  set_swap64 @ (heap_allocate env 3) @ tee_swap +@ [
+    Ast.Const(const_int32 (tag_val_of_heap_tag_type Int64Type));
+    store ~offset:0 ();
+  ] @ get_swap @ get_swap64 +@ [
+    store ~ty:I64Type ~offset:4 ();
+  ] @ get_swap +@ [
+    Ast.Const(const_int32 @@ tag_val_of_tag_type (GenericHeapType (Some Int64Type)));
+    Ast.Binary(Values.I32 Ast.IntOp.Or);
+  ]
+
 let allocate_closure env ?lambda ({func_idx; arity; variables} as closure_data) =
   let num_free_vars = List.length variables in
   let closure_size = num_free_vars + 3 in
@@ -984,6 +1000,13 @@ let compile_prim1 env p1 arg : Wasm.Ast.instr' Concatlist.t =
     Ast.Const(const_int32 1);
     Ast.Binary(Values.I32 Ast.IntOp.Shl);
   ]
+  | Int64Lnot -> Concatlist.t_of_list [
+    (* 2's complement *)
+    Ast.Const(const_int64 (-1));
+  ] @ compiled_arg @ untag (GenericHeapType (Some Int64Type)) +@ [
+    load ~ty:I64Type ~offset:4 ();
+    Ast.Binary(Values.I64 Ast.IntOp.Sub);
+  ] @ allocate_int64_imm env
   | Box -> failwith "Unreachable case; should never get here: Box"
   | Unbox -> failwith "Unreachable case; should never get here: Unbox"
 
@@ -1129,6 +1152,76 @@ let compile_prim2 (env : codegen_env) p2 arg1 arg2 : Wasm.Ast.instr' Concatlist.
   | Eq ->
     compiled_arg1 @ compiled_arg2 +@ [
       Ast.Compare(Values.I32 Ast.IntOp.Eq)
+    ] @ encode_bool
+  | Int64Land ->
+    compiled_arg1 @ untag (GenericHeapType (Some Int64Type)) +@ [
+      load ~ty:I64Type ~offset:4 ();
+    ] @ compiled_arg2 @ untag (GenericHeapType (Some Int64Type)) +@ [
+      load ~ty:I64Type ~offset:4 ();
+      Ast.Binary(Values.I64 Ast.IntOp.And)
+    ] @ allocate_int64_imm env
+  | Int64Lor ->
+    compiled_arg1 @ untag (GenericHeapType (Some Int64Type)) +@ [
+      load ~ty:I64Type ~offset:4 ();
+    ] @ compiled_arg2 @ untag (GenericHeapType (Some Int64Type)) +@ [
+      load ~ty:I64Type ~offset:4 ();
+      Ast.Binary(Values.I64 Ast.IntOp.Or)
+    ] @ allocate_int64_imm env
+  | Int64Lxor ->
+    compiled_arg1 @ untag (GenericHeapType (Some Int64Type)) +@ [
+      load ~ty:I64Type ~offset:4 ();
+    ] @ compiled_arg2 @ untag (GenericHeapType (Some Int64Type)) +@ [
+      load ~ty:I64Type ~offset:4 ();
+      Ast.Binary(Values.I64 Ast.IntOp.Xor)
+    ] @ allocate_int64_imm env
+  | Int64Lsl ->
+    compiled_arg1 @ untag (GenericHeapType (Some Int64Type)) +@ [
+      load ~ty:I64Type ~offset:4 ();
+    ] @ compiled_arg2 @ untag_number +@ [
+      Ast.Convert(Values.I64 Ast.IntOp.ExtendSI32);
+      Ast.Binary(Values.I64 Ast.IntOp.Shl);
+    ] @ allocate_int64_imm env
+  | Int64Lsr ->
+    compiled_arg1 @ untag (GenericHeapType (Some Int64Type)) +@ [
+      load ~ty:I64Type ~offset:4 ();
+    ] @ compiled_arg2 @ untag_number +@ [
+      Ast.Convert(Values.I64 Ast.IntOp.ExtendSI32);
+      Ast.Binary(Values.I64 Ast.IntOp.ShrU);
+    ] @ allocate_int64_imm env
+  | Int64Asr ->
+    compiled_arg1 @ untag (GenericHeapType (Some Int64Type)) +@ [
+      load ~ty:I64Type ~offset:4 ();
+    ] @ compiled_arg2 @ untag_number +@ [
+      Ast.Convert(Values.I64 Ast.IntOp.ExtendSI32);
+      Ast.Binary(Values.I64 Ast.IntOp.ShrS);
+    ] @ allocate_int64_imm env
+  | Int64Gt ->
+    compiled_arg1 @ untag (GenericHeapType (Some Int64Type)) +@ [
+      load ~ty:I64Type ~offset:4 ();
+    ] @ compiled_arg2 @ untag (GenericHeapType (Some Int64Type)) +@ [
+      load ~ty:I64Type ~offset:4 ();
+      Ast.Compare(Values.I64 Ast.IntOp.GtS);
+    ] @ encode_bool
+  | Int64Gte ->
+    compiled_arg1 @ untag (GenericHeapType (Some Int64Type)) +@ [
+      load ~ty:I64Type ~offset:4 ();
+    ] @ compiled_arg2 @ untag (GenericHeapType (Some Int64Type)) +@ [
+      load ~ty:I64Type ~offset:4 ();
+      Ast.Compare(Values.I64 Ast.IntOp.GeS);
+    ] @ encode_bool
+  | Int64Lt ->
+    compiled_arg1 @ untag (GenericHeapType (Some Int64Type)) +@ [
+      load ~ty:I64Type ~offset:4 ();
+    ] @ compiled_arg2 @ untag (GenericHeapType (Some Int64Type)) +@ [
+      load ~ty:I64Type ~offset:4 ();
+      Ast.Compare(Values.I64 Ast.IntOp.LtS);
+    ] @ encode_bool
+  | Int64Lte ->
+    compiled_arg1 @ untag (GenericHeapType (Some Int64Type)) +@ [
+      load ~ty:I64Type ~offset:4 ();
+    ] @ compiled_arg2 @ untag (GenericHeapType (Some Int64Type)) +@ [
+      load ~ty:I64Type ~offset:4 ();
+      Ast.Compare(Values.I64 Ast.IntOp.LeS);
     ] @ encode_bool
   | ArrayMake ->
     allocate_array_n env arg1 arg2

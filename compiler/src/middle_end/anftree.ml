@@ -24,6 +24,7 @@ type prim1 = Parsetree.prim1 =
   | FailWith
   | Int64FromNumber
   | Int64ToNumber
+  | Int64Lnot
 
 type prim2 = Parsetree.prim2 =
   | Plus
@@ -40,6 +41,16 @@ type prim2 = Parsetree.prim2 =
   | Or
   | ArrayMake
   | ArrayInit
+  | Int64Land
+  | Int64Lor
+  | Int64Lxor
+  | Int64Lsl
+  | Int64Lsr
+  | Int64Asr
+  | Int64Gt
+  | Int64Gte
+  | Int64Lt
+  | Int64Lte
 
 let prim1_of_sexp, sexp_of_prim1 = Parsetree.prim1_of_sexp, Parsetree.sexp_of_prim1
 let prim2_of_sexp, sexp_of_prim2 = Parsetree.prim2_of_sexp, Parsetree.sexp_of_prim2

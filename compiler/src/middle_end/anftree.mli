@@ -24,6 +24,7 @@ type prim1 = Parsetree.prim1 =
   | FailWith
   | Int64FromNumber
   | Int64ToNumber
+  | Int64Lnot
 
 type prim2 = Parsetree.prim2 =
   | Plus
@@ -40,6 +41,16 @@ type prim2 = Parsetree.prim2 =
   | Or
   | ArrayMake
   | ArrayInit
+  | Int64Land
+  | Int64Lor
+  | Int64Lxor
+  | Int64Lsl
+  | Int64Lsr
+  | Int64Asr
+  | Int64Gt
+  | Int64Gte
+  | Int64Lt
+  | Int64Lte
 
 (** Immediate expressions (requiring no computation) *)
 type imm_expression = {
