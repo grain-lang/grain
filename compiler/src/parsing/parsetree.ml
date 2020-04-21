@@ -102,6 +102,7 @@ type prim1 =
   | FailWith
   | Int64FromNumber
   | Int64ToNumber
+  | Int64Lnot
 [@@deriving sexp]
 
 (** Two-argument operators *)
@@ -120,6 +121,16 @@ type prim2 =
   | Or
   | ArrayMake
   | ArrayInit
+  | Int64Land
+  | Int64Lor
+  | Int64Lxor
+  | Int64Lsl
+  | Int64Lsr
+  | Int64Asr
+  | Int64Gt
+  | Int64Gte
+  | Int64Lt
+  | Int64Lte
 [@@deriving sexp]
 
 (** Type for expressions (i.e. things which evaluate to something) *)
