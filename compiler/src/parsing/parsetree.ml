@@ -68,6 +68,7 @@ type constant =
   | PConstInt32 of int32
   | PConstInt64 of int64
   | PConstBool of bool
+  | PConstVoid
   | PConstString of string
 [@@deriving sexp]
 

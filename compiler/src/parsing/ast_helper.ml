@@ -41,6 +41,7 @@ module Const = struct
   let int32 i = PConstInt32 i
   let int64 i = PConstInt64 i
   let bool b = PConstBool b
+  let void = PConstVoid
 end
 
 module Typ = struct

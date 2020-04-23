@@ -36,6 +36,7 @@ module Const : sig
   val int32 : int32 -> constant
   val int64 : int64 -> constant
   val bool : bool -> constant
+  val void : constant
 end
 
 module Typ : sig
