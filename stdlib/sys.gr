@@ -1,3 +1,6 @@
+import List from 'lists'
+import Int64 from 'int64'
+
 export *
 
 import foreign wasm argv : () -> Array<String> from 'stdlib-external/sys'
@@ -119,6 +122,35 @@ data FdFlag =
   # may also synchronously update the file's metadata.
   | Sync
 
+data Filetype =
+  # The type of the file descriptor or file is unknown or is different from any of the other types specified.
+  | Unknown
+  # The file descriptor or file refers to a block device inode.
+  | BlockDevice
+  # The file descriptor or file refers to a character device inode.
+  | CharacterDevice
+  # The file descriptor or file refers to a directory inode.
+  | Directory
+  # The file descriptor or file refers to a regular file inode.
+  | RegularFile
+  # The file descriptor or file refers to a datagram socket.
+  | SocketDatagram
+  # The file descriptor or file refers to a byte-stream socket.
+  | SocketStream
+  # The file refers to a symbolic link inode.
+  | SymbolicLink
+
+data Filestats = {
+  device: Int64,
+  inode: Int64,
+  filetype: Filetype,
+  linkcount: Int64,
+  size: Int64,
+  accessed: Int64,
+  modified: Int64,
+  changed: Int64
+}
+
 import foreign wasm pathOpen : (FileDescriptor, List<LookupFlag>, String, List<OpenFlag>, List<Rights>, List<Rights>, List<FdFlag>) -> FileDescriptor from 'stdlib-external/sys'
 import foreign wasm fdRead : (FileDescriptor, Number) -> (String, Number) from 'stdlib-external/sys'
 import foreign wasm fdWrite : (FileDescriptor, String) -> Number from 'stdlib-external/sys'
@@ -126,3 +158,105 @@ import foreign wasm fdAllocate : (FileDescriptor, Int64, Int64) -> Void from 'st
 import foreign wasm fdClose : (FileDescriptor) -> Void from 'stdlib-external/sys'
 import foreign wasm fdDatasync : (FileDescriptor) -> Void from 'stdlib-external/sys'
 import foreign wasm fdSync : (FileDescriptor) -> Void from 'stdlib-external/sys'
+import foreign wasm fdStats : (FileDescriptor) -> (Number, Int64, Int64, Int64) as fdStatsRaw from 'stdlib-external/sys'
+let fdStats = (fd) => {
+  let (filetype, fdflags, rights, rightsInheriting) = fdStatsRaw(fd)
+
+  let orderedFdflags = [
+    Append,
+    Dsync,
+    Nonblock,
+    Rsync,
+    Sync
+  ]
+
+  let orderedRights = [
+    FdDatasync,
+    FdRead,
+    FdSeek,
+    FdFdstatSetFlags,
+    FdSync,
+    FdTell,
+    FdWrite,
+    FdAdvise,
+    FdAllocate,
+    PathCreateDirectory,
+    PathCreateFile,
+    PathLinkSource,
+    PathLinkTarget,
+    PathOpen,
+    FdReaddir,
+    PathReadlink,
+    PathRenameSource,
+    PathRenameTarget,
+    PathFilestatGet,
+    PathFilestatSetSize,
+    PathFilestatSetTimes,
+    FdFilestatGet,
+    FdFilestatSetSize,
+    FdFilestatSetTimes,
+    PathSymlink,
+    PathRemoveDirectory,
+    PathUnlinkFile,
+    PollFdReadwrite,
+    SockShutdown
+  ]
+
+  # [oscar] We need match guards like I need air to breathe
+
+  let filetype =
+    if (filetype == 0) Unknown else
+    if (filetype == 1) BlockDevice else
+    if (filetype == 2) CharacterDevice else
+    if (filetype == 3) Directory else
+    if (filetype == 4) RegularFile else
+    if (filetype == 5) SocketDatagram else
+    if (filetype == 6) SocketStream else
+    if (filetype == 7) SymbolicLink else
+    fail "Unknown filetype"
+
+  let (&&) = Int64.land
+  let (>) = Int64.gt
+
+  let fdflagsList = box([])
+  List.for_each_i((flag, i) => {
+    if ((fdflags && Int64.lsl(1L, i)) > 0L) {
+      ignore(fdflagsList := [flag, ...^fdflagsList])
+    }
+  }, orderedFdflags)
+
+  let rightsList = box([])
+  List.for_each_i((flag, i) => {
+    if ((rights && Int64.lsl(1L, i)) > 0L) {
+      ignore(rightsList := [flag, ...^rightsList])
+    }
+  }, orderedRights)
+
+  let rightsInheritingList = box([])
+  List.for_each_i((flag, i) => {
+    if (rightsInheriting && Int64.lsl(1L, i) > 0L) {
+      ignore(rightsInheritingList := [flag, ...^rightsInheritingList])
+    }
+  }, orderedRights)
+  
+  (filetype, ^fdflagsList, ^rightsList, ^rightsInheritingList)
+}
+import foreign wasm fdSetFlags : (FileDescriptor, List<FdFlag>) -> Void from 'stdlib-external/sys'
+import foreign wasm fdSetRights : (FileDescriptor, List<Rights>, List<Rights>) -> Void from 'stdlib-external/sys'
+import foreign wasm fdFilestats : (FileDescriptor) -> (Int64, Int64, Number, Int64, Int64, Int64, Int64, Int64) as fdFilestatsRaw from 'stdlib-external/sys'
+let fdFilestats = (fd) => {
+  let (device, inode, filetype, linkcount, size, accessed, modified, changed) = fdFilestatsRaw(fd)
+
+  let filetype =
+    if (filetype == 0) Unknown else
+    if (filetype == 1) BlockDevice else
+    if (filetype == 2) CharacterDevice else
+    if (filetype == 3) Directory else
+    if (filetype == 4) RegularFile else
+    if (filetype == 5) SocketDatagram else
+    if (filetype == 6) SocketStream else
+    if (filetype == 7) SymbolicLink else
+    fail "Unknown filetype"
+  
+  { device, inode, filetype, linkcount, size, accessed, modified, changed }
+}

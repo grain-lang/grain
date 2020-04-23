@@ -6,6 +6,8 @@ import {
   oflags,
   rights,
   fdflags,
+  fdstat,
+  filestat,
   path_open,
   fd_read,
   fd_write,
@@ -13,6 +15,12 @@ import {
   fd_close,
   fd_datasync,
   fd_sync,
+  fd_fdstat_get,
+  fd_fdstat_set_flags,
+  fd_fdstat_set_rights,
+  fd_filestat_get,
+  fd_filestat_set_size,
+  fd_filestat_set_times,
 } from "bindings/wasi";
 
 import { GRAIN_ERR_SYSTEM } from "../ascutils/errors";
@@ -21,7 +29,7 @@ import { GRAIN_GENERIC_HEAP_TAG_TYPE, GRAIN_STRING_HEAP_TAG, GRAIN_TUPLE_TAG_TYP
 
 import { GRAIN_VOID } from "../ascutils/primitives";
 
-import { loadAdtVal, loadAdtVariant, stringSize, allocateString, allocateTuple } from '../ascutils/dataStructures'
+import { loadAdtVal, loadAdtVariant, stringSize, allocateString, allocateTuple, allocateInt64 } from '../ascutils/dataStructures'
 
 namespace glookupflag {
   // @ts-ignore: decorator
@@ -511,4 +519,142 @@ export function fdSync(fdPtr: u32): u32 {
   }
 
   return GRAIN_VOID
+}
+
+export function fdStats(fdPtr: u32): u32 {
+  fdPtr = fdPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let fd = loadAdtVal(fdPtr, 0) >> 1
+
+  let structPtr = malloc(24)
+  
+  let err = fd_fdstat_get(fd, changetype<fdstat>(structPtr))
+  if (err !== errno.SUCCESS) {
+    free(structPtr)
+    throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
+  }
+
+  let filetype = load<u8>(structPtr)
+  let fdflags = load<u16>(structPtr, 4)
+  let rights = load<u64>(structPtr, 8)
+  let rightsInheriting = load<u64>(structPtr, 16)
+
+  let fdflagsPtr = allocateInt64()
+  store<u64>(fdflagsPtr, fdflags, 4)
+
+  let rightsPtr = allocateInt64()
+  store<u64>(rightsPtr, rights, 4)
+
+  let rightsInheritingPtr = allocateInt64()
+  store<u64>(rightsInheritingPtr, rightsInheriting, 4)
+
+  let tuple = allocateTuple(4)
+  store<u32>(tuple, filetype << 1, 4)
+  store<u32>(tuple, fdflagsPtr | GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
+  store<u32>(tuple, rightsPtr | GRAIN_GENERIC_HEAP_TAG_TYPE, 3 * 4)
+  store<u32>(tuple, rightsInheritingPtr | GRAIN_GENERIC_HEAP_TAG_TYPE, 4 * 4)
+
+  free(structPtr)
+
+  return tuple | GRAIN_TUPLE_TAG_TYPE
+}
+
+export function fdSetFlags(fdPtr: u32, flagsPtr: u32): u32 {
+  fdPtr = fdPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let fd = loadAdtVal(fdPtr, 0) >> 1
+
+  let flags: u16 = 0
+  let listPtr = flagsPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  while (loadAdtVariant(listPtr) !== 0) {
+    let adt = loadAdtVal(listPtr, 0) ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+    switch (loadAdtVariant(adt)) {
+      case gfdflag.Append: {
+        flags = flags | fdflags.APPEND
+        break
+      }
+      case gfdflag.Dsync: {
+        flags = flags | fdflags.DSYNC
+        break
+      }
+      case gfdflag.Nonblock: {
+        flags = flags | fdflags.NONBLOCK
+        break
+      }
+      case gfdflag.Rsync: {
+        flags = flags | fdflags.RSYNC
+        break
+      }
+      case gfdflag.Sync: {
+        flags = flags | fdflags.SYNC
+        break
+      }
+    }
+    listPtr = loadAdtVal(listPtr, 1) ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  }
+  
+  let err = fd_fdstat_set_flags(fd, flags)
+  if (err !== errno.SUCCESS) {
+    throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
+  }
+
+  return GRAIN_VOID
+}
+
+export function fdSetRights(fdPtr: u32, rightsPtr: u32, rightsInheritingPtr: u32): u32 {
+  fdPtr = fdPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let fd = loadAdtVal(fdPtr, 0) >> 1
+
+  let rights = combineRights(rightsPtr)
+  let rightsInheriting = combineRights(rightsInheritingPtr)
+  
+  let err = fd_fdstat_set_rights(fd, rights, rightsInheriting)
+  if (err !== errno.SUCCESS) {
+    throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
+  }
+
+  return GRAIN_VOID
+}
+
+export function fdFilestats(fdPtr: u32): u32 {
+  fdPtr = fdPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let fd = loadAdtVal(fdPtr, 0) >> 1
+
+  let stats = malloc(64)
+
+  let filestats = changetype<filestat>(stats)
+  
+  let err = fd_filestat_get(fd, filestats)
+  if (err !== errno.SUCCESS) {
+    free(stats)
+    throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
+  }
+
+  let tuple = allocateTuple(8)
+
+  let dev = allocateInt64()
+  store<u64>(dev, filestats.dev, 4)
+  let ino = allocateInt64()
+  store<u64>(ino, filestats.ino, 4)
+  let nlink = allocateInt64()
+  store<u64>(nlink, filestats.nlink, 4)
+  let size = allocateInt64()
+  store<u64>(size, filestats.size, 4)
+  let atim = allocateInt64()
+  store<u64>(atim, filestats.atim, 4)
+  let mtim = allocateInt64()
+  store<u64>(mtim, filestats.mtim, 4)
+  let ctim = allocateInt64()
+  store<u64>(ctim, filestats.ctim, 4)
+
+  store<u32>(tuple, dev ^ GRAIN_GENERIC_HEAP_TAG_TYPE, 4)
+  store<u32>(tuple, ino ^ GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
+  store<u32>(tuple, filestats.filetype << 1, 3 * 4)
+  store<u32>(tuple, nlink ^ GRAIN_GENERIC_HEAP_TAG_TYPE, 4 * 4)
+  store<u32>(tuple, size ^ GRAIN_GENERIC_HEAP_TAG_TYPE, 5 * 4)
+  store<u32>(tuple, atim ^ GRAIN_GENERIC_HEAP_TAG_TYPE, 6 * 4)
+  store<u32>(tuple, mtim ^ GRAIN_GENERIC_HEAP_TAG_TYPE, 7 * 4)
+  store<u32>(tuple, ctim ^ GRAIN_GENERIC_HEAP_TAG_TYPE, 8 * 4)
+
+  free(stats)
+
+  return tuple ^ GRAIN_TUPLE_TAG_TYPE
 }
