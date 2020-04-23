@@ -5,9 +5,9 @@ primitive toNumber : Int64 -> Number = '@int64.toNumber'
 
 primitive lnot : Int64 -> Int64 = '@int64.lnot'
 
-primitive land : Int64 -> Int64 = '@int64.land'
-primitive lor : Int64 -> Int64 = '@int64.lor'
-primitive lxor : Int64 -> Int64 = '@int64.lxor'
+primitive land : (Int64, Int64) -> Int64 = '@int64.land'
+primitive lor : (Int64, Int64) -> Int64 = '@int64.lor'
+primitive lxor : (Int64, Int64) -> Int64 = '@int64.lxor'
 
 primitive lsl : (Int64, Number) -> Int64 = '@int64.lsl'
 primitive lsr : (Int64, Number) -> Int64 = '@int64.lsr'
