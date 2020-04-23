@@ -119,6 +119,7 @@ rule token = parse
   | "else" { ELSE }
   | "true" { TRUE }
   | "false" { FALSE }
+  | "void" { VOID }
   | "import" { IMPORT }
   | "export" { EXPORT }
   | "except" { EXCEPT }

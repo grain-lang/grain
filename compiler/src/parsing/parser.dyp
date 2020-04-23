@@ -164,7 +164,7 @@ let make_program statements =
 %token ASSERT FAIL
 
 %token PLUS DASH STAR SLASH PERCENT
-%token TRUE FALSE
+%token TRUE FALSE VOID
 
 %token LET REC IF ELSE MATCH WHILE
 %token AMPAMP PIPEPIPE NOT
@@ -232,6 +232,7 @@ const :
   | INT64 { Const.int64 $1 }
   | TRUE { Const.bool true }
   | FALSE { Const.bool false }
+  | VOID { Const.void }
   | STRING { Const.string $1 }
 
 expr :
