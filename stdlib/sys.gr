@@ -140,6 +140,13 @@ data Filetype =
   # The file refers to a symbolic link inode.
   | SymbolicLink
 
+data Stats = {
+  filetype: Filetype,
+  flags: List<FdFlag>,
+  rights: List<Rights>,
+  rightsInheriting: List<Rights>
+}
+
 data Filestats = {
   device: Int64,
   inode: Int64,
@@ -153,6 +160,7 @@ data Filestats = {
 
 import foreign wasm pathOpen : (FileDescriptor, List<LookupFlag>, String, List<OpenFlag>, List<Rights>, List<Rights>, List<FdFlag>) -> FileDescriptor from 'stdlib-external/sys'
 import foreign wasm fdRead : (FileDescriptor, Number) -> (String, Number) from 'stdlib-external/sys'
+import foreign wasm fdPread : (FileDescriptor, Int64, Number) -> (String, Number) from 'stdlib-external/sys'
 import foreign wasm fdWrite : (FileDescriptor, String) -> Number from 'stdlib-external/sys'
 import foreign wasm fdAllocate : (FileDescriptor, Int64, Int64) -> Void from 'stdlib-external/sys'
 import foreign wasm fdClose : (FileDescriptor) -> Void from 'stdlib-external/sys'
@@ -239,7 +247,7 @@ let fdStats = (fd) => {
     }
   }, orderedRights)
   
-  (filetype, ^fdflagsList, ^rightsList, ^rightsInheritingList)
+  { filetype, flags: ^fdflagsList, rights: ^rightsList, rightsInheriting: ^rightsInheritingList }
 }
 import foreign wasm fdSetFlags : (FileDescriptor, List<FdFlag>) -> Void from 'stdlib-external/sys'
 import foreign wasm fdSetRights : (FileDescriptor, List<Rights>, List<Rights>) -> Void from 'stdlib-external/sys'
@@ -260,3 +268,8 @@ let fdFilestats = (fd) => {
   
   { device, inode, filetype, linkcount, size, accessed, modified, changed }
 }
+import foreign wasm fdSetSize : (FileDescriptor, Int64) -> Void from 'stdlib-external/sys'
+import foreign wasm fdSetAccessTime : (FileDescriptor, Int64) -> Void from 'stdlib-external/sys'
+import foreign wasm fdSetAccessTimeNow : (FileDescriptor) -> Void from 'stdlib-external/sys'
+import foreign wasm fdSetModifiedTime : (FileDescriptor, Int64) -> Void from 'stdlib-external/sys'
+import foreign wasm fdSetModifiedTimeNow : (FileDescriptor) -> Void from 'stdlib-external/sys'
