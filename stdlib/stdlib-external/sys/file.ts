@@ -13,6 +13,7 @@ import {
   fd_read,
   fd_pread,
   fd_write,
+  fd_pwrite,
   fd_allocate,
   fd_close,
   fd_datasync,
@@ -494,6 +495,34 @@ export function fdWrite(fdPtr: u32, data: u32): u32 {
   let nwritten = iovs + (3 * 4)
 
   let err = fd_write(fd, iovs, 1, nwritten)
+  if (err !== errno.SUCCESS) {
+    free(iovs)
+    throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
+  }
+
+  nwritten = load<u32>(nwritten)
+  
+  free(iovs)
+
+  return nwritten << 1
+}
+
+export function fdPwrite(fdPtr: u32, data: u32, offsetPtr: u32): u32 {
+  fdPtr = fdPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let fd = loadAdtVal(fdPtr, 0) >> 1
+  
+  let iovs = malloc(3 * 4)
+  let strPtr = data ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  
+  store<u32>(iovs, strPtr + (2 * 4))
+  store<u32>(iovs, load<u32>(strPtr, 4), 4)
+
+  offsetPtr = offsetPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let offset = load<u64>(offsetPtr, 4)
+
+  let nwritten = iovs + (3 * 4)
+
+  let err = fd_pwrite(fd, iovs, 1, offset, nwritten)
   if (err !== errno.SUCCESS) {
     free(iovs)
     throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
