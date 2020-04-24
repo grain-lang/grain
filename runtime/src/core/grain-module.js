@@ -85,8 +85,8 @@ export class GrainModule {
     return exports[key];
   }
 
-  get main() {
-    return this.requiredExport("_start");
+  start() {
+    wasi.start(this.instantiated)
   }
 
   get tableSize() {
