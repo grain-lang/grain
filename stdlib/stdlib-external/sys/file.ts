@@ -8,8 +8,10 @@ import {
   fdflags,
   fdstat,
   filestat,
+  fstflags,
   path_open,
   fd_read,
+  fd_pread,
   fd_write,
   fd_allocate,
   fd_close,
@@ -442,6 +444,43 @@ export function fdRead(fdPtr: u32, n: u32): u32 {
   return tuple ^ GRAIN_TUPLE_TAG_TYPE
 }
 
+export function fdPread(fdPtr: u32, offsetPtr: u32, n: u32): u32 {
+  fdPtr = fdPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let fd = loadAdtVal(fdPtr, 0) >> 1
+
+  offsetPtr = offsetPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let offset = load<u64>(offsetPtr, 4)
+
+  n = n >> 1
+
+  let iovs = malloc(3 * 4)
+  let strPtr = allocateString(n)
+
+  store<u32>(iovs, strPtr + (2 * 4))
+  store<u32>(iovs, n, 4)
+
+  let nread = iovs + (3 * 4)
+
+  let err = fd_pread(fd, iovs, 1, offset, nread)
+  if (err !== errno.SUCCESS) {
+    free(iovs)
+    free(strPtr)
+    throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
+  }
+
+  nread = load<u32>(nread)
+  
+  let tuple = allocateTuple(2)
+
+  store<u32>(tuple, strPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE, 4)
+  store<u32>(tuple, nread << 1, 2 * 4)
+  store<u32>(strPtr, nread, 4)
+
+  free(iovs)
+
+  return tuple ^ GRAIN_TUPLE_TAG_TYPE
+}
+
 export function fdWrite(fdPtr: u32, data: u32): u32 {
   fdPtr = fdPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
   let fd = loadAdtVal(fdPtr, 0) >> 1
@@ -657,4 +696,73 @@ export function fdFilestats(fdPtr: u32): u32 {
   free(stats)
 
   return tuple ^ GRAIN_TUPLE_TAG_TYPE
+}
+
+export function fdSetSize(fdPtr: u32, sizePtr: u32): u32 {
+  fdPtr = fdPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let fd = loadAdtVal(fdPtr, 0) >> 1
+
+  sizePtr = sizePtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let size = load<u64>(sizePtr, 4)
+
+  let err = fd_filestat_set_size(fd, size)
+  if (err !== errno.SUCCESS) {
+    throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
+  }
+
+  return GRAIN_VOID
+}
+
+export function fdSetAccessTime(fdPtr: u32, timePtr: u32): u32 {
+  fdPtr = fdPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let fd = loadAdtVal(fdPtr, 0) >> 1
+
+  timePtr = timePtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let time = load<u64>(timePtr, 4)
+
+  let err = fd_filestat_set_times(fd, time, 0, fstflags.SET_ATIM)
+  if (err !== errno.SUCCESS) {
+    throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
+  }
+
+  return GRAIN_VOID
+}
+
+export function fdSetAccessTimeNow(fdPtr: u32): u32 {
+  fdPtr = fdPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let fd = loadAdtVal(fdPtr, 0) >> 1
+
+  let err = fd_filestat_set_times(fd, 0, 0, fstflags.SET_ATIM_NOW)
+  if (err !== errno.SUCCESS) {
+    throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
+  }
+
+  return GRAIN_VOID
+}
+
+export function fdSetModifiedTime(fdPtr: u32, timePtr: u32): u32 {
+  fdPtr = fdPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let fd = loadAdtVal(fdPtr, 0) >> 1
+
+  timePtr = timePtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let time = load<u64>(timePtr, 4)
+
+  let err = fd_filestat_set_times(fd, 0, time, fstflags.SET_MTIM)
+  if (err !== errno.SUCCESS) {
+    throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
+  }
+
+  return GRAIN_VOID
+}
+
+export function fdSetModifiedTimeNow(fdPtr: u32): u32 {
+  fdPtr = fdPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let fd = loadAdtVal(fdPtr, 0) >> 1
+
+  let err = fd_filestat_set_times(fd, 0, 0, fstflags.SET_MTIM_NOW)
+  if (err !== errno.SUCCESS) {
+    throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
+  }
+
+  return GRAIN_VOID
 }
