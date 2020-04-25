@@ -78,6 +78,13 @@ export let forEachi = (array, fn) => {
   }
 }
 
+export let map = (array, fn) => {
+  let length = length(array)
+  init(length, (i) => {
+    fn(array[i])
+  })
+}
+
 export let toList = (array) => {
   let rec buildList = (acc, n) => {
     let n = n - 1
