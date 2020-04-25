@@ -302,3 +302,4 @@ let fdReaddir = (fd) => {
     { inode, path, filetype }
   })
 }
+import foreign wasm fdRenumber : (FileDescriptor, FileDescriptor) -> Void from 'stdlib-external/sys'
