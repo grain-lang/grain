@@ -1,4 +1,5 @@
 import List from 'lists'
+import Array from 'arrays'
 import Int64 from 'int64'
 
 export *
@@ -158,6 +159,24 @@ data Filestats = {
   changed: Int64
 }
 
+data DirectoryEntry = {
+  inode: Int64,
+  filetype: Filetype,
+  path: String
+}
+
+let filetypeFromNumber = (filetype) => {
+  if (filetype == 0) Unknown else
+    if (filetype == 1) BlockDevice else
+    if (filetype == 2) CharacterDevice else
+    if (filetype == 3) Directory else
+    if (filetype == 4) RegularFile else
+    if (filetype == 5) SocketDatagram else
+    if (filetype == 6) SocketStream else
+    if (filetype == 7) SymbolicLink else
+    fail "Unknown filetype"
+}
+
 import foreign wasm pathOpen : (FileDescriptor, List<LookupFlag>, String, List<OpenFlag>, List<Rights>, List<Rights>, List<FdFlag>) -> FileDescriptor from 'stdlib-external/sys'
 import foreign wasm fdRead : (FileDescriptor, Number) -> (String, Number) from 'stdlib-external/sys'
 import foreign wasm fdPread : (FileDescriptor, Int64, Number) -> (String, Number) from 'stdlib-external/sys'
@@ -274,3 +293,12 @@ import foreign wasm fdSetAccessTime : (FileDescriptor, Int64) -> Void from 'stdl
 import foreign wasm fdSetAccessTimeNow : (FileDescriptor) -> Void from 'stdlib-external/sys'
 import foreign wasm fdSetModifiedTime : (FileDescriptor, Int64) -> Void from 'stdlib-external/sys'
 import foreign wasm fdSetModifiedTimeNow : (FileDescriptor) -> Void from 'stdlib-external/sys'
+import foreign wasm fdReaddir : (FileDescriptor) -> Array<(Int64, String, Number)> as fdReaddirRaw from 'stdlib-external/sys'
+let fdReaddir = (fd) => {
+  let dirents = fdReaddirRaw(fd)
+  Array.map(dirents, (dirent) => {
+    let (inode, path, filetype) = dirent
+    let filetype = filetypeFromNumber(filetype)
+    { inode, path, filetype }
+  })
+}

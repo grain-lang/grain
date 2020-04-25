@@ -24,15 +24,16 @@ import {
   fd_filestat_get,
   fd_filestat_set_size,
   fd_filestat_set_times,
+  fd_readdir,
 } from "bindings/wasi";
 
 import { GRAIN_ERR_SYSTEM } from "../ascutils/errors";
 
-import { GRAIN_GENERIC_HEAP_TAG_TYPE, GRAIN_STRING_HEAP_TAG, GRAIN_TUPLE_TAG_TYPE } from "../ascutils/tags";
+import { GRAIN_GENERIC_HEAP_TAG_TYPE, GRAIN_STRING_HEAP_TAG, GRAIN_TUPLE_TAG_TYPE, GRAIN_ARRAY_HEAP_TAG } from "../ascutils/tags";
 
 import { GRAIN_VOID } from "../ascutils/primitives";
 
-import { loadAdtVal, loadAdtVariant, stringSize, allocateString, allocateTuple, allocateInt64 } from '../ascutils/dataStructures'
+import { loadAdtVal, loadAdtVariant, stringSize, allocateString, allocateTuple, allocateInt64, allocateArray } from '../ascutils/dataStructures'
 
 namespace glookupflag {
   // @ts-ignore: decorator
@@ -794,4 +795,106 @@ export function fdSetModifiedTimeNow(fdPtr: u32): u32 {
   }
 
   return GRAIN_VOID
+}
+
+export function fdReaddir(fdPtr: u32): u32 {
+  fdPtr = fdPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let fd = loadAdtVal(fdPtr, 0) >> 1
+
+  const structWidth = 24
+
+  let bufUsed = malloc(4)
+  let cookie: u64 = 0
+  
+  let buf = malloc(structWidth)
+  let bufLen = structWidth
+  
+  let err = fd_readdir(fd, buf, bufLen, cookie, bufUsed)
+  if (err !== errno.SUCCESS) {
+    free(buf)
+    free(bufUsed)
+    throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
+  }
+
+  let used = load<u32>(bufUsed)
+  
+  if (used <= 0) {
+    free(buf)
+    free(bufUsed)
+    return allocateArray(0) ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  }
+
+  bufLen = load<u32>(buf, 16) + structWidth * 2
+
+  free(buf)
+  
+   // simple linked list
+  // ptr +0 -> current buffer
+  // ptr +4 -> bufs
+  let bufs = 0
+
+  let numEntries = 0
+
+  while (true) {
+    numEntries++
+    
+    buf = malloc(bufLen)
+    let cons = malloc(8)
+    store<u32>(cons, buf)
+    store<u32>(cons, bufs, 4)
+    bufs = cons
+
+    let err = fd_readdir(fd, buf, bufLen, cookie, bufUsed)
+    if (err !== errno.SUCCESS) {
+      while (bufs !== 0) {
+        free(load<u32>(bufs))
+        let next = load<u32>(bufs, 4)
+        free(bufs)
+        bufs = next
+      }
+      free(bufUsed)
+      throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
+    }
+
+    if (load<u32>(bufUsed) !== bufLen) {
+      break
+    } else {
+      let curLen = load<u32>(buf, 16)
+      cookie = load<u64>(buf)
+      let nextDirentPtr = buf + structWidth + curLen
+      bufLen = load<u32>(nextDirentPtr, 16) + structWidth * 2
+    }
+  }
+
+  free(bufUsed)
+
+  let arr = allocateArray(numEntries)
+
+  for (let i = numEntries - 1; i >= 0; i--) {
+    let dirent = load<u32>(bufs)
+    let tuple = allocateTuple(3)
+
+    let inode = allocateInt64()
+    store<u64>(inode, load<u64>(dirent, 8), 4)
+
+    let dirnameLen = load<u32>(dirent, 16)
+    let dirname = allocateString(dirnameLen)
+    memory.copy(dirname + 8, dirent + structWidth, dirnameLen)
+
+    let filetype = load<u8>(dirent, 20) << 1
+    
+    store<u32>(tuple, inode ^ GRAIN_GENERIC_HEAP_TAG_TYPE, 4)
+    store<u32>(tuple, dirname ^ GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
+    store<u32>(tuple, filetype, 3 * 4)
+
+    store<u32>(arr + i * 4, tuple ^ GRAIN_TUPLE_TAG_TYPE, 8)
+
+    let next = load<u32>(bufs, 4)
+    free(bufs)
+    free(dirent)
+
+    bufs = next
+  }
+  
+  return arr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
 }
