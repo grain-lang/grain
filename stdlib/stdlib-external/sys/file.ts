@@ -26,6 +26,7 @@ import {
   fd_filestat_set_times,
   fd_readdir,
   fd_renumber,
+  fd_seek,
 } from "bindings/wasi";
 
 import { GRAIN_ERR_SYSTEM } from "../ascutils/errors";
@@ -913,4 +914,25 @@ export function fdRenumber(fromFdPtr: u32, toFdPtr: u32): u32 {
   }
 
   return GRAIN_VOID
+}
+
+export function fdSeek(fdPtr: u32, offsetPtr: u32, whencePtr: u32): u32 {
+  fdPtr = fdPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let fd = loadAdtVal(fdPtr, 0) >> 1
+
+  offsetPtr = offsetPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let offset = load<u64>(offsetPtr, 4)
+
+  whencePtr = whencePtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let whence = u8(load<u32>(whencePtr, 12) >> 1)
+
+  let newoffset = allocateInt64()
+  let newoffsetPtr = newoffset + 4
+  
+  let err = fd_seek(fd, offset, whence, newoffsetPtr)
+  if (err !== errno.SUCCESS) {
+    throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
+  }
+
+  return newoffset ^ GRAIN_GENERIC_HEAP_TAG_TYPE
 }

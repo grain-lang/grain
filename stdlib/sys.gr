@@ -141,6 +141,14 @@ data Filetype =
   # The file refers to a symbolic link inode.
   | SymbolicLink
 
+data Whence =
+  # Seek relative to start-of-file.
+  | Set
+  # Seek relative to current position.
+  | Current
+  # Seek relative to end-of-file.
+  | End
+
 data Stats = {
   filetype: Filetype,
   flags: List<FdFlag>,
@@ -303,3 +311,4 @@ let fdReaddir = (fd) => {
   })
 }
 import foreign wasm fdRenumber : (FileDescriptor, FileDescriptor) -> Void from 'stdlib-external/sys'
+import foreign wasm fdSeek : (FileDescriptor, Int64, Whence) -> Int64 from 'stdlib-external/sys'
