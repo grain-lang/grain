@@ -304,3 +304,10 @@ let pathFilestats = (fd, flags, path) => {
   
   { device, inode, filetype, linkcount, size, accessed, modified, changed }
 }
+import foreign wasm pathSetAccessTime : (FileDescriptor, List<LookupFlag>, String, Int64) -> Void from 'stdlib-external/sys'
+import foreign wasm pathSetAccessTimeNow : (FileDescriptor, List<LookupFlag>, String) -> Void from 'stdlib-external/sys'
+import foreign wasm pathSetModifiedTime : (FileDescriptor, List<LookupFlag>, String, Int64) -> Void from 'stdlib-external/sys'
+import foreign wasm pathSetModifiedTimeNow : (FileDescriptor, List<LookupFlag>, String) -> Void from 'stdlib-external/sys'
+import foreign wasm pathLink : (FileDescriptor, List<LookupFlag>, String, FileDescriptor, String) -> Void from 'stdlib-external/sys'
+import foreign wasm pathSymlink : (FileDescriptor, String, String) -> Void from 'stdlib-external/sys'
+import foreign wasm pathUnlink : (FileDescriptor, String) -> Void from 'stdlib-external/sys'

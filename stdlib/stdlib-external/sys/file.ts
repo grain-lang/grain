@@ -30,6 +30,10 @@ import {
   fd_tell,
   path_create_directory,
   path_filestat_get,
+  path_filestat_set_times,
+  path_link,
+  path_symlink,
+  path_unlink_file,
 } from "bindings/wasi";
 
 import { GRAIN_ERR_SYSTEM } from "../ascutils/errors";
@@ -1032,4 +1036,143 @@ export function pathFilestats(fdPtr: u32, dirflags: u32, pathPtr: u32): u32 {
   free(stats)
 
   return tuple ^ GRAIN_TUPLE_TAG_TYPE
+}
+
+export function pathSetAccessTime(fdPtr: u32, dirflags: u32, pathPtr: u32, timePtr: u32): u32 {
+  fdPtr = fdPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let fd = loadAdtVal(fdPtr, 0) >> 1
+
+  let combinedDirFlags = combineLookupflags(dirflags)
+
+  pathPtr = pathPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let pathSize = load<u32>(pathPtr, 4)
+  pathPtr += 8
+
+  timePtr = timePtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let time = load<u64>(timePtr, 4)
+
+  let err = path_filestat_set_times(fd, combinedDirFlags, pathPtr, pathSize, time, 0, fstflags.SET_ATIM)
+  if (err !== errno.SUCCESS) {
+    throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
+  }
+
+  return GRAIN_VOID
+}
+
+export function pathSetAccessTimeNow(fdPtr: u32, dirflags: u32, pathPtr: u32): u32 {
+  fdPtr = fdPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let fd = loadAdtVal(fdPtr, 0) >> 1
+
+  let combinedDirFlags = combineLookupflags(dirflags)
+
+  pathPtr = pathPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let pathSize = load<u32>(pathPtr, 4)
+  pathPtr += 8
+
+  let err = path_filestat_set_times(fd, combinedDirFlags, pathPtr, pathSize, 0, 0, fstflags.SET_ATIM_NOW)
+  if (err !== errno.SUCCESS) {
+    throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
+  }
+
+  return GRAIN_VOID
+}
+
+export function pathSetModifiedTime(fdPtr: u32, dirflags: u32, pathPtr: u32, timePtr: u32): u32 {
+  fdPtr = fdPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let fd = loadAdtVal(fdPtr, 0) >> 1
+
+  let combinedDirFlags = combineLookupflags(dirflags)
+
+  pathPtr = pathPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let pathSize = load<u32>(pathPtr, 4)
+  pathPtr += 8
+
+  timePtr = timePtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let time = load<u64>(timePtr, 4)
+
+  let err = path_filestat_set_times(fd, combinedDirFlags, pathPtr, pathSize, 0, time, fstflags.SET_MTIM)
+  if (err !== errno.SUCCESS) {
+    throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
+  }
+
+  return GRAIN_VOID
+}
+
+export function pathSetModifiedTimeNow(fdPtr: u32, dirflags: u32, pathPtr: u32): u32 {
+  fdPtr = fdPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let fd = loadAdtVal(fdPtr, 0) >> 1
+
+  let combinedDirFlags = combineLookupflags(dirflags)
+
+  pathPtr = pathPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let pathSize = load<u32>(pathPtr, 4)
+  pathPtr += 8
+
+  let err = path_filestat_set_times(fd, combinedDirFlags, pathPtr, pathSize, 0, 0, fstflags.SET_MTIM_NOW)
+  if (err !== errno.SUCCESS) {
+    throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
+  }
+
+  return GRAIN_VOID
+}
+
+export function pathLink(sourceFdPtr: u32, dirflags: u32, sourcePtr: u32, targetFdPtr: u32, targetPtr: u32): u32 {
+  sourceFdPtr = sourceFdPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let sourceFd = loadAdtVal(sourceFdPtr, 0) >> 1
+
+  targetFdPtr = targetFdPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let targetFd = loadAdtVal(targetFdPtr, 0) >> 1
+
+  let combinedDirFlags = combineLookupflags(dirflags)
+
+  sourcePtr = sourcePtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let sourceSize = load<u32>(sourcePtr, 4)
+  sourcePtr += 8
+
+  targetPtr = targetPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let targetSize = load<u32>(targetPtr, 4)
+  targetPtr += 8
+
+  let err = path_link(sourceFd, combinedDirFlags, sourcePtr, sourceSize, targetFd, targetPtr, targetSize)
+  if (err !== errno.SUCCESS) {
+    throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
+  }
+
+  return GRAIN_VOID
+}
+
+export function pathSymlink(fdPtr: u32, sourcePtr: u32, targetPtr: u32): u32 {
+  fdPtr = fdPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let fd = loadAdtVal(fdPtr, 0) >> 1
+
+  sourcePtr = sourcePtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let sourceSize = load<u32>(sourcePtr, 4)
+  sourcePtr += 8
+
+  targetPtr = targetPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let targetSize = load<u32>(targetPtr, 4)
+  targetPtr += 8
+
+  let err = path_symlink(sourcePtr, sourceSize, fd, targetPtr, targetSize)
+  if (err !== errno.SUCCESS) {
+    throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
+  }
+
+  return GRAIN_VOID
+}
+
+export function pathUnlink(fdPtr: u32, pathPtr: u32): u32 {
+  fdPtr = fdPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let fd = loadAdtVal(fdPtr, 0) >> 1
+
+  pathPtr = pathPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let pathSize = load<u32>(pathPtr, 4)
+  pathPtr += 8
+
+  let err = path_unlink_file(fd, pathPtr, pathSize)
+  if (err !== errno.SUCCESS) {
+    throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
+  }
+
+  return GRAIN_VOID
 }
