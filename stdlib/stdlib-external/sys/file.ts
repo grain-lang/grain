@@ -25,6 +25,7 @@ import {
   fd_filestat_set_size,
   fd_filestat_set_times,
   fd_readdir,
+  fd_renumber,
 } from "bindings/wasi";
 
 import { GRAIN_ERR_SYSTEM } from "../ascutils/errors";
@@ -897,4 +898,19 @@ export function fdReaddir(fdPtr: u32): u32 {
   }
   
   return arr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+}
+
+export function fdRenumber(fromFdPtr: u32, toFdPtr: u32): u32 {
+  fromFdPtr = fromFdPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let fromFd = loadAdtVal(fromFdPtr, 0) >> 1
+
+  toFdPtr = toFdPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let toFd = loadAdtVal(toFdPtr, 0) >> 1
+
+  let err = fd_renumber(fromFd, toFd)
+  if (err !== errno.SUCCESS) {
+    throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
+  }
+
+  return GRAIN_VOID
 }
