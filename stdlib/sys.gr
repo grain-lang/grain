@@ -313,3 +313,5 @@ let fdReaddir = (fd) => {
 import foreign wasm fdRenumber : (FileDescriptor, FileDescriptor) -> Void from 'stdlib-external/sys'
 import foreign wasm fdSeek : (FileDescriptor, Int64, Whence) -> Int64 from 'stdlib-external/sys'
 import foreign wasm fdTell : (FileDescriptor) -> Int64 from 'stdlib-external/sys'
+
+import foreign wasm pathCreateDirectory : (FileDescriptor, String) -> Void from 'stdlib-external/sys'
