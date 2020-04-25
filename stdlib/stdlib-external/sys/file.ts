@@ -29,6 +29,7 @@ import {
   fd_seek,
   fd_tell,
   path_create_directory,
+  path_filestat_get,
 } from "bindings/wasi";
 
 import { GRAIN_ERR_SYSTEM } from "../ascutils/errors";
@@ -166,6 +167,50 @@ namespace gfdflag {
   // @ts-ignore decorator
   @inline
   export const Sync: u32 = 8
+}
+
+function combineLookupflags(dirflags: u32): u32 {
+  let combinedDirFlags: u32 = 0
+  let listPtr = dirflags ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  while (loadAdtVariant(listPtr) !== 0) {
+    let adt = loadAdtVal(listPtr, 0) ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+    switch (loadAdtVariant(adt)) {
+      case glookupflag.SymlinkFollow: {
+        combinedDirFlags = combinedDirFlags | lookupflags.SYMLINK_FOLLOW
+        break
+      }
+    }
+    listPtr = loadAdtVal(listPtr, 1) ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  }
+  return combinedDirFlags
+}
+
+function combineOFlags(openflags: u32): u16 {
+  let combinedOFlags: u16 = 0
+  let listPtr = openflags ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  while (loadAdtVariant(listPtr) !== 0) {
+    let adt = loadAdtVal(listPtr, 0) ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+    switch (loadAdtVariant(adt)) {
+      case goflag.Create: {
+        combinedOFlags = combinedOFlags | oflags.CREAT
+        break
+      }
+      case goflag.Directory: {
+        combinedOFlags = combinedOFlags | oflags.DIRECTORY
+        break
+      }
+      case goflag.Exclusive: {
+        combinedOFlags = combinedOFlags | oflags.EXCL
+        break
+      }
+      case goflag.Truncate: {
+        combinedOFlags = combinedOFlags | oflags.TRUNC
+        break
+      }
+    }
+    listPtr = loadAdtVal(listPtr, 1) ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  }
+  return combinedOFlags
 }
 
 function combineRights(grightsl: u32): u64 {
@@ -342,47 +387,13 @@ export function pathOpen(
   dirfd = dirfd ^ GRAIN_GENERIC_HEAP_TAG_TYPE
   let dirfdval = loadAdtVal(dirfd, 0) >> 1
   
-  let combinedDirFlags: u32 = 0
-  let listPtr = dirflags ^ GRAIN_GENERIC_HEAP_TAG_TYPE
-  while (loadAdtVariant(listPtr) !== 0) {
-    let adt = loadAdtVal(listPtr, 0) ^ GRAIN_GENERIC_HEAP_TAG_TYPE
-    switch (loadAdtVariant(adt)) {
-      case glookupflag.SymlinkFollow: {
-        combinedDirFlags = combinedDirFlags | lookupflags.SYMLINK_FOLLOW
-        break
-      }
-    }
-    listPtr = loadAdtVal(listPtr, 1) ^ GRAIN_GENERIC_HEAP_TAG_TYPE
-  }
+  let combinedDirFlags = combineLookupflags(dirflags)
 
   path = path ^ GRAIN_GENERIC_HEAP_TAG_TYPE
   let pathLength = stringSize(path)
   path += 8 // Offset the string pointer to the start of the string
 
-  let combinedOFlags: u16 = 0
-  listPtr = openflags ^ GRAIN_GENERIC_HEAP_TAG_TYPE
-  while (loadAdtVariant(listPtr) !== 0) {
-    let adt = loadAdtVal(listPtr, 0) ^ GRAIN_GENERIC_HEAP_TAG_TYPE
-    switch (loadAdtVariant(adt)) {
-      case goflag.Create: {
-        combinedOFlags = combinedOFlags | oflags.CREAT
-        break
-      }
-      case goflag.Directory: {
-        combinedOFlags = combinedOFlags | oflags.DIRECTORY
-        break
-      }
-      case goflag.Exclusive: {
-        combinedOFlags = combinedOFlags | oflags.EXCL
-        break
-      }
-      case goflag.Truncate: {
-        combinedOFlags = combinedOFlags | oflags.TRUNC
-        break
-      }
-    }
-    listPtr = loadAdtVal(listPtr, 1) ^ GRAIN_GENERIC_HEAP_TAG_TYPE
-  }
+  let combinedOFlags = combineOFlags(openflags)
 
   let rightsBase = combineRights(fsRightsBase)
   let rightsInheriting = combineRights(fsRightsInheriting)
@@ -970,4 +981,55 @@ export function pathCreateDirectory(fdPtr: u32, stringPtr: u32): u32 {
   }
 
   return GRAIN_VOID
+}
+
+export function pathFilestats(fdPtr: u32, dirflags: u32, pathPtr: u32): u32 {
+  fdPtr = fdPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let fd = loadAdtVal(fdPtr, 0) >> 1
+
+  let combinedDirFlags = combineLookupflags(dirflags)
+
+  pathPtr = pathPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let pathSize = load<u32>(pathPtr, 4)
+  pathPtr += 8
+  
+  let stats = malloc(64)
+
+  let filestats = changetype<filestat>(stats)
+  
+  let err = path_filestat_get(fd, combinedDirFlags, pathPtr, pathSize, filestats)
+  if (err !== errno.SUCCESS) {
+    free(stats)
+    throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
+  }
+
+  let tuple = allocateTuple(8)
+
+  let dev = allocateInt64()
+  store<u64>(dev, filestats.dev, 4)
+  let ino = allocateInt64()
+  store<u64>(ino, filestats.ino, 4)
+  let nlink = allocateInt64()
+  store<u64>(nlink, filestats.nlink, 4)
+  let size = allocateInt64()
+  store<u64>(size, filestats.size, 4)
+  let atim = allocateInt64()
+  store<u64>(atim, filestats.atim, 4)
+  let mtim = allocateInt64()
+  store<u64>(mtim, filestats.mtim, 4)
+  let ctim = allocateInt64()
+  store<u64>(ctim, filestats.ctim, 4)
+
+  store<u32>(tuple, dev ^ GRAIN_GENERIC_HEAP_TAG_TYPE, 4)
+  store<u32>(tuple, ino ^ GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
+  store<u32>(tuple, filestats.filetype << 1, 3 * 4)
+  store<u32>(tuple, nlink ^ GRAIN_GENERIC_HEAP_TAG_TYPE, 4 * 4)
+  store<u32>(tuple, size ^ GRAIN_GENERIC_HEAP_TAG_TYPE, 5 * 4)
+  store<u32>(tuple, atim ^ GRAIN_GENERIC_HEAP_TAG_TYPE, 6 * 4)
+  store<u32>(tuple, mtim ^ GRAIN_GENERIC_HEAP_TAG_TYPE, 7 * 4)
+  store<u32>(tuple, ctim ^ GRAIN_GENERIC_HEAP_TAG_TYPE, 8 * 4)
+
+  free(stats)
+
+  return tuple ^ GRAIN_TUPLE_TAG_TYPE
 }
