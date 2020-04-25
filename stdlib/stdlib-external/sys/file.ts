@@ -28,6 +28,7 @@ import {
   fd_renumber,
   fd_seek,
   fd_tell,
+  path_create_directory,
 } from "bindings/wasi";
 
 import { GRAIN_ERR_SYSTEM } from "../ascutils/errors";
@@ -951,4 +952,22 @@ export function fdTell(fdPtr: u32): u32 {
   }
 
   return offset ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+}
+
+export function pathCreateDirectory(fdPtr: u32, stringPtr: u32): u32 {
+  fdPtr = fdPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let fd = loadAdtVal(fdPtr, 0) >> 1
+
+  stringPtr = stringPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  
+  let size = load<u32>(stringPtr, 4)
+
+  stringPtr += 8
+  
+  let err = path_create_directory(fd, stringPtr, size)
+  if (err !== errno.SUCCESS) {
+    throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
+  }
+
+  return GRAIN_VOID
 }
