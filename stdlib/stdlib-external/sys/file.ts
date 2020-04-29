@@ -35,6 +35,7 @@ import {
   path_symlink,
   path_unlink_file,
   path_readlink,
+  path_remove_directory,
 } from "bindings/wasi";
 
 import { GRAIN_ERR_SYSTEM } from "../ascutils/errors";
@@ -1208,4 +1209,20 @@ export function pathReadlink(fdPtr: u32, pathPtr: u32, size: u32): u32 {
   free(nread)
 
   return tuple ^ GRAIN_TUPLE_TAG_TYPE
+}
+
+export function pathRemoveDirectory(fdPtr: u32, pathPtr: u32): u32 {
+  fdPtr = fdPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let fd = loadAdtVal(fdPtr, 0) >> 1
+
+  pathPtr = pathPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let pathSize = load<u32>(pathPtr, 4)
+  pathPtr += 8
+
+  let err = path_remove_directory(fd, pathPtr, pathSize)
+  if (err !== errno.SUCCESS) {
+    throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
+  }
+
+  return GRAIN_VOID
 }

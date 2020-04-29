@@ -312,3 +312,4 @@ import foreign wasm pathLink : (FileDescriptor, List<LookupFlag>, String, FileDe
 import foreign wasm pathSymlink : (FileDescriptor, String, String) -> Void from 'stdlib-external/sys'
 import foreign wasm pathUnlink : (FileDescriptor, String) -> Void from 'stdlib-external/sys'
 import foreign wasm pathReadlink : (FileDescriptor, String, Number) -> (String, Number) from 'stdlib-external/sys'
+import foreign wasm pathRemoveDirectory : (FileDescriptor, String) -> Void from 'stdlib-external/sys'
