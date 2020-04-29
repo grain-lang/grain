@@ -30,5 +30,8 @@
     "@opam/grain_typed": "path:./grain_typed.opam",
     "@opam/grain_middle_end": "path:./grain_middle_end.opam",
     "@opam/grain_codegen": "path:./grain_codegen.opam"
+  },
+  "installConfig": {
+    "pnp": false
   }
 }
