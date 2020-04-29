@@ -25,9 +25,6 @@ build: [
   [make "minimal=1" "doc"] {with-doc}
 ]
 install: [ [make "minimal=1" "install"] ]
-remove: [
-  ["ocamlfind" "remove" "extlib"]
-]
 depends: [
   "ocaml"
   "ocamlfind" {build}
@@ -40,11 +37,18 @@ description: """
 The purpose of this library is to add new functions to OCaml standard library
 modules, to modify some functions in order to get better performances or
 safety (tail-recursive) and also to provide new modules which should be useful
-for day to day programming."""
-flags: light-uninstall
+for day to day programming.
+
+Current goal is to maintain compatibility, new software is encouraged to not use extlib since stdlib
+is now seeing many additions and improvements which make many parts of extlib obsolete.
+For tail-recursion safety consider using other libraries e.g. containers.
+"""
 url {
-  src: "https://ygrek.org/p/release/ocaml-extlib/extlib-1.7.6.tar.gz"
-  checksum: "md5=b976093ef23b7d60fc1c8f0380c4f76a"
-  mirrors:
-    "https://github.com/ygrek/ocaml-extlib/releases/download/1.7.6/extlib-1.7.6.tar.gz"
+  src: "https://ygrek.org/p/release/ocaml-extlib/extlib-1.7.7.tar.gz"
+  checksum: [
+    "md5=2c620993aecd4b31b3a362b21b55dd94"
+    "sha256=4183abeca72efefc2513a440706c0e6e56d4676f60ae89a4306f8e5e03fbb5eb"
+    "sha512=4f3d6f5bc29c43254ad9f927213fca4afb8a74afbfbaca01ae7e540ea4509f2583aeedd91da8d5252843dd0998093e6e02801a4e95a70a04c6f7229b2b817bf3"
+  ]
+  mirrors: "https://github.com/ygrek/ocaml-extlib/releases/download/1.7.7/extlib-1.7.7.tar.gz"
 }
