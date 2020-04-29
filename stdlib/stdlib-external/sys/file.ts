@@ -36,6 +36,7 @@ import {
   path_unlink_file,
   path_readlink,
   path_remove_directory,
+  path_rename,
 } from "bindings/wasi";
 
 import { GRAIN_ERR_SYSTEM } from "../ascutils/errors";
@@ -1220,6 +1221,29 @@ export function pathRemoveDirectory(fdPtr: u32, pathPtr: u32): u32 {
   pathPtr += 8
 
   let err = path_remove_directory(fd, pathPtr, pathSize)
+  if (err !== errno.SUCCESS) {
+    throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
+  }
+
+  return GRAIN_VOID
+}
+
+export function pathRename(sourceFdPtr: u32, sourcePtr: u32, targetFdPtr: u32, targetPtr: u32): u32 {
+  sourceFdPtr = sourceFdPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let sourceFd = loadAdtVal(sourceFdPtr, 0) >> 1
+
+  targetFdPtr = targetFdPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let targetFd = loadAdtVal(targetFdPtr, 0) >> 1
+
+  sourcePtr = sourcePtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let sourceSize = load<u32>(sourcePtr, 4)
+  sourcePtr += 8
+
+  targetPtr = targetPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let targetSize = load<u32>(targetPtr, 4)
+  targetPtr += 8
+
+  let err = path_rename(sourceFd, sourcePtr, sourceSize, targetFd, targetPtr, targetSize)
   if (err !== errno.SUCCESS) {
     throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
   }
