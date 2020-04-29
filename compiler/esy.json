@@ -10,7 +10,6 @@
   },
   "scripts": {
     "clean": "rm -rf #{self.root}/_esy",
-    "no-pnp": "rm -rf #{self.root}/_esy/default/bin",
     "install-compiler": "dune install",
     "test": "dune runtest --force"
   },
