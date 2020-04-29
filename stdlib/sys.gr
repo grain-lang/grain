@@ -313,3 +313,4 @@ import foreign wasm pathSymlink : (FileDescriptor, String, String) -> Void from 
 import foreign wasm pathUnlink : (FileDescriptor, String) -> Void from 'stdlib-external/sys'
 import foreign wasm pathReadlink : (FileDescriptor, String, Number) -> (String, Number) from 'stdlib-external/sys'
 import foreign wasm pathRemoveDirectory : (FileDescriptor, String) -> Void from 'stdlib-external/sys'
+import foreign wasm pathRename : (FileDescriptor, String, FileDescriptor, String) -> Void from 'stdlib-external/sys'
