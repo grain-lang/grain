@@ -149,6 +149,64 @@ data Whence =
   # Seek relative to end-of-file.
   | End
 
+data Signal =
+  # Hangup.
+  | HUP
+  # Terminate interrupt signal.
+  | INT
+  # Terminal quit signal.
+  | QUIT
+  # Illegal instruction.
+  | ILL
+  # Trace/breakpoint trap.
+  | TRAP
+  # Process abort signal.
+  | ABRT
+  # Access to an undefined portion of a memory object.
+  | BUS
+  # Erroneous arithmetic operation.
+  | FPE
+  # Kill.
+  | KILL
+  # User-defined signal 1.
+  | USR1
+  # Invalid memory reference.
+  | SEGV
+  # User-defined signal 2.
+  | USR2
+  # Write on a pipe with no one to read it.
+  | PIPE
+  # Alarm clock.
+  | ALRM
+  # Termination signal.
+  | TERM
+  # Child process terminated, stopped, or continued.
+  | CHLD
+  # Continue executing, if stopped.
+  | CONT
+  # Stop executing.
+  | STOP
+  # Terminal stop signal.
+  | TSTP
+  # Background process attempting read.
+  | TTIN
+  # Background process attempting write.
+  | TTOU
+  # High bandwidth data is available at a socket.
+  | URG
+  # CPU time limit exceeded.
+  | XCPU
+  # File size limit exceeded.
+  | XFSZ
+  # Virtual timer expired.
+  | VTALRM
+  | PROF
+  | WINCH
+  | POLL
+  | PWR
+  # Bad system call.
+  | SYS
+
 data Stats = {
   filetype: Filetype,
   flags: List<FdFlag>,
@@ -314,3 +372,9 @@ import foreign wasm pathUnlink : (FileDescriptor, String) -> Void from 'stdlib-e
 import foreign wasm pathReadlink : (FileDescriptor, String, Number) -> (String, Number) from 'stdlib-external/sys'
 import foreign wasm pathRemoveDirectory : (FileDescriptor, String) -> Void from 'stdlib-external/sys'
 import foreign wasm pathRename : (FileDescriptor, String, FileDescriptor, String) -> Void from 'stdlib-external/sys'
+
+import foreign wasm exit : (Number) -> Void from 'stdlib-external/sys'
+import foreign wasm sigRaise : (Signal) -> Void from 'stdlib-external/sys'
+import foreign wasm schedYield : () -> Void from 'stdlib-external/sys'
+
+import foreign wasm random : () -> Number from 'stdlib-external/sys'
