@@ -12,7 +12,6 @@
   "scripts": {
     "compiler:clean": "yarn workspace compiler run esy clean",
     "compiler:build": "yarn workspace compiler run esy",
-    "postcompiler:build": "yarn workspace compiler run esy no-pnp",
     "compiler:install": "yarn workspace compiler run esy install-compiler",
     "postcompiler:install": "yarn stdlib:clean",
     "compiler:test": "yarn workspace compiler run esy test",

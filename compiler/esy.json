@@ -10,7 +10,6 @@
   },
   "scripts": {
     "clean": "rm -rf #{self.root}/_esy",
-    "no-pnp": "rm -rf #{self.root}/_esy/default/bin",
     "install-compiler": "dune install",
     "test": "dune runtest --force"
   },
@@ -30,5 +29,8 @@
     "@opam/grain_typed": "path:./grain_typed.opam",
     "@opam/grain_middle_end": "path:./grain_middle_end.opam",
     "@opam/grain_codegen": "path:./grain_codegen.opam"
+  },
+  "installConfig": {
+    "pnp": false
   }
 }
