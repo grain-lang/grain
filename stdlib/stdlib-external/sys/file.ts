@@ -80,7 +80,7 @@ namespace grights {
   export const FdSeek: u32 = 4
   // @ts-ignore decorator
   @inline
-  export const FdFdstatSetFlags: u32 = 6
+  export const FdSetFlags: u32 = 6
   // @ts-ignore decorator
   @inline
   export const FdSync: u32 = 8
@@ -125,22 +125,22 @@ namespace grights {
   export const PathRenameTarget: u32 = 34
   // @ts-ignore decorator
   @inline
-  export const PathFilestatGet: u32 = 36
+  export const PathFilestats: u32 = 36
   // @ts-ignore decorator
   @inline
-  export const PathFilestatSetSize: u32 = 38
+  export const PathSetSize: u32 = 38
   // @ts-ignore decorator
   @inline
-  export const PathFilestatSetTimes: u32 = 40
+  export const PathSetTimes: u32 = 40
   // @ts-ignore decorator
   @inline
-  export const FdFilestatGet: u32 = 42
+  export const FdFilestats: u32 = 42
   // @ts-ignore decorator
   @inline
-  export const FdFilestatSetSize: u32 = 44
+  export const FdSetSize: u32 = 44
   // @ts-ignore decorator
   @inline
-  export const FdFilestatSetTimes: u32 = 46
+  export const FdSetTimes: u32 = 46
   // @ts-ignore decorator
   @inline
   export const PathSymlink: u32 = 48
@@ -238,7 +238,7 @@ function combineRights(grightsl: u32): u64 {
         combinedRights = combinedRights | rights.FD_SEEK
         break
       }
-      case grights.FdFdstatSetFlags: {
+      case grights.FdSetFlags: {
         combinedRights = combinedRights | rights.FD_FDSTAT_SET_FLAGS
         break
       }
@@ -298,27 +298,27 @@ function combineRights(grightsl: u32): u64 {
         combinedRights = combinedRights | rights.PATH_RENAME_TARGET
         break
       }
-      case grights.PathFilestatGet: {
+      case grights.PathFilestats: {
         combinedRights = combinedRights | rights.PATH_FILESTAT_GET
         break
       }
-      case grights.PathFilestatSetSize: {
+      case grights.PathSetSize: {
         combinedRights = combinedRights | rights.PATH_FILESTAT_SET_SIZE
         break
       }
-      case grights.PathFilestatSetTimes: {
+      case grights.PathSetTimes: {
         combinedRights = combinedRights | rights.PATH_FILESTAT_SET_TIMES
         break
       }
-      case grights.FdFilestatGet: {
+      case grights.FdFilestats: {
         combinedRights = combinedRights | rights.FD_FILESTAT_GET
         break
       }
-      case grights.FdFilestatSetSize: {
+      case grights.FdSetSize: {
         combinedRights = combinedRights | rights.FD_FILESTAT_SET_SIZE
         break
       }
-      case grights.FdFilestatSetTimes: {
+      case grights.FdSetTimes: {
         combinedRights = combinedRights | rights.FD_FILESTAT_SET_TIMES
         break
       }

@@ -35,78 +35,75 @@ data OpenFlag =
   | Truncate
 
 data Rights =
-  # The right to invoke `fd_datasync`.
-
-  # If `path_open` is set, includes the right to invoke
-  # `path_open` with `fdflags::dsync`.
+  # The right to invoke `fdDatasync`.
+  # If `PathOpen` is set, includes the right to invoke
+  # `pathOpen` with `FdFlag::Dsync`.
   | FdDatasync
-  # The right to invoke `fd_read` and `sock_recv`.
-
-  # If `rights::fd_seek` is set, includes the right to invoke `fd_pread`.
+  # The right to invoke `fdRead`.
+  # If `Rights::FdSeek` is set, includes the right to invoke `fdPread`.
   | FdRead
-  # The right to invoke `fd_seek`. This flag implies `rights::fd_tell`.
+  # The right to invoke `fdSeek`. This flag implies `Rights::FdTell`.
   | FdSeek
-  # The right to invoke `fd_fdstat_set_flags`.
-  | FdFdstatSetFlags
-  # The right to invoke `fd_sync`.
-
-  # If `path_open` is set, includes the right to invoke
-  # `path_open` with `fdflags::rsync` and `fdflags::dsync`.
+  # The right to invoke `fdSetFlags`.
+  | FdSetFlags
+  # The right to invoke `fdSync`.
+  # If `PathOpen` is set, includes the right to invoke
+  # `pathOpen` with `FdFlag::Rsync` and `FdFlag::Dsync`.
   | FdSync
-  # The right to invoke `fd_seek` in such a way that the file offset
-  # remains unaltered (i.e., `whence::cur` with offset zero), or to
-  # invoke `fd_tell`.
+  # The right to invoke `fdSeek` in such a way that the file offset
+  # remains unaltered (i.e., `Whence::Current` with offset zero), or to
+  # invoke `fdTell`.
   | FdTell
-  # The right to invoke `fd_write` and `sock_send`.
-  # If `rights::fd_seek` is set, includes the right to invoke `fd_pwrite`.
+  # The right to invoke `fdWrite`.
+  # If `Rights::FdSeek` is set, includes the right to invoke `fdPwrite`.
   | FdWrite
-  # The right to invoke `fd_advise`.
+  # The right to invoke `fdAdvise`.
   | FdAdvise
-  # The right to invoke `fd_allocate`.
+  # The right to invoke `fdAllocate`.
   | FdAllocate
-  # The right to invoke `path_create_directory`.
+  # The right to invoke `pathCreateDirectory`.
   | PathCreateDirectory
-  # If `path_open` is set, the right to invoke `path_open` with `oflags::creat`.
+  # If `PathOpen` is set, the right to invoke `pathOpen` with `OpenFlag::Create`.
   | PathCreateFile
-  # The right to invoke `path_link` with the file descriptor as the
+  # The right to invoke `pathLink` with the file descriptor as the
   # source directory.
   | PathLinkSource
-  # The right to invoke `path_link` with the file descriptor as the
+  # The right to invoke `pathLink` with the file descriptor as the
   # target directory.
   | PathLinkTarget
-  # The right to invoke `path_open`.
+  # The right to invoke `pathOpen`.
   | PathOpen
-  # The right to invoke `fd_readdir`.
+  # The right to invoke `fdReaddir`.
   | FdReaddir
-  # The right to invoke `path_readlink`.
+  # The right to invoke `pathReadlink`.
   | PathReadlink
-  # The right to invoke `path_rename` with the file descriptor as the source directory.
+  # The right to invoke `pathRename` with the file descriptor as the source directory.
   | PathRenameSource
-  # The right to invoke `path_rename` with the file descriptor as the target directory.
+  # The right to invoke `pathRename` with the file descriptor as the target directory.
   | PathRenameTarget
-  # The right to invoke `path_filestat_get`.
-  | PathFilestatGet
-  # The right to change a file's size (there is no `path_filestat_set_size`).
-  # If `path_open` is set, includes the right to invoke `path_open` with `oflags::trunc`.
-  | PathFilestatSetSize
-  # The right to invoke `path_filestat_set_times`.
-  | PathFilestatSetTimes
-  # The right to invoke `fd_filestat_get`.
-  | FdFilestatGet
-  # The right to invoke `fd_filestat_set_size`.
-  | FdFilestatSetSize
-  # The right to invoke `fd_filestat_set_times`.
-  | FdFilestatSetTimes
-  # The right to invoke `path_symlink`.
+  # The right to invoke `pathFilestats`.
+  | PathFilestats
+  # The right to change a file's size (there's no `pathSetSize`).
+  # If `PathOpen` is set, includes the right to invoke `pathOpen` with `OpenFlag::Truncate`.
+  | PathSetSize
+  # The right to invoke `pathSetAccessTime`, `pathSetAccessTimeNow`, `pathSetModifiedTime`, or `pathSetModifiedTimeNow`.
+  | PathSetTimes
+  # The right to invoke `fdFilestats`.
+  | FdFilestats
+  # The right to invoke `fdSetSize`.
+  | FdSetSize
+  # The right to invoke `fdSetAccessTime`, `fdSetAccessTimeNow`, `fdSetModifiedTime`, or `fdSetModifiedTimeNow`.
+  | FdSetTimes
+  # The right to invoke `pathSymlink`.
   | PathSymlink
-  # The right to invoke `path_remove_directory`.
+  # The right to invoke `pathRemoveDirectory`.
   | PathRemoveDirectory
-  # The right to invoke `path_unlink_file`.
+  # The right to invoke `pathUnlinkFile`.
   | PathUnlinkFile
-  # If `rights::fd_read` is set, includes the right to invoke `poll_oneoff` to subscribe to `eventtype::fd_read`.
-  # If `rights::fd_write` is set, includes the right to invoke `poll_oneoff` to subscribe to `eventtype::fd_write`.
+  # If `Rights::FdRead` is set, includes the right to invoke `pollOneoff` (not yet implemented) to subscribe to `EventType::FdRead`.
+  # If `Rights::FdWrite` is set, includes the right to invoke `pollOneoff` (not yet implemented) to subscribe to `EventType::FdWrite`.
   | PollFdReadwrite
-  # The right to invoke `sock_shutdown`.
+  # The right to invoke `sockShutdown` (not yet implemented).
   | SockShutdown
 
 data FdFlag =
@@ -269,7 +266,7 @@ let fdStats = (fd) => {
     FdDatasync,
     FdRead,
     FdSeek,
-    FdFdstatSetFlags,
+    FdSetFlags,
     FdSync,
     FdTell,
     FdWrite,
@@ -284,12 +281,12 @@ let fdStats = (fd) => {
     PathReadlink,
     PathRenameSource,
     PathRenameTarget,
-    PathFilestatGet,
-    PathFilestatSetSize,
-    PathFilestatSetTimes,
-    FdFilestatGet,
-    FdFilestatSetSize,
-    FdFilestatSetTimes,
+    PathFilestats,
+    PathSetSize,
+    PathSetTimes,
+    FdFilestats,
+    FdSetSize,
+    FdSetTimes,
     PathSymlink,
     PathRemoveDirectory,
     PathUnlinkFile,
