@@ -34,6 +34,7 @@ import {
   path_link,
   path_symlink,
   path_unlink_file,
+  path_readlink,
 } from "bindings/wasi";
 
 import { GRAIN_ERR_SYSTEM } from "../ascutils/errors";
@@ -1175,4 +1176,36 @@ export function pathUnlink(fdPtr: u32, pathPtr: u32): u32 {
   }
 
   return GRAIN_VOID
+}
+
+export function pathReadlink(fdPtr: u32, pathPtr: u32, size: u32): u32 {
+  fdPtr = fdPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let fd = loadAdtVal(fdPtr, 0) >> 1
+
+  pathPtr = pathPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let pathSize = load<u32>(pathPtr, 4)
+  pathPtr += 8
+
+  size = size >> 1
+
+  let grainStrPtr = allocateString(size)
+  let strPtr = grainStrPtr + 8
+
+  let nread = malloc(4)
+
+  let err = path_readlink(fd, pathPtr, pathSize, strPtr, size, nread)
+  if (err !== errno.SUCCESS) {
+    free(grainStrPtr)
+    free(nread)
+    throwError(GRAIN_ERR_SYSTEM, err << 1, 0)
+  }
+
+  let tuple = allocateTuple(2)
+
+  store<u32>(tuple, grainStrPtr ^ GRAIN_GENERIC_HEAP_TAG_TYPE, 4)
+  store<u32>(tuple, load<u32>(nread) << 1, 2 * 4)
+
+  free(nread)
+
+  return tuple ^ GRAIN_TUPLE_TAG_TYPE
 }
