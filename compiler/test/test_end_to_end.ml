@@ -343,6 +343,7 @@ let stdlib_tests = [
   tlib "lists.test";
   tlib "arrays.test";
   tlib "hash.test";
+  tlib "int64.test";
 ]
 
 let box_tests = [
