@@ -29,19 +29,18 @@ let wrap create s =
   builtin_idents := (s, id) :: !builtin_idents;
   id
 
-let ident_create n = wrap (Ident.create_builtin n)
+let ident_create = wrap Ident.create
 let ident_create_predef_exn = wrap Ident.create_predef_exn
 
-(* If these ID numbers are updated, they should also be updated in the runtime. *)
-let ident_number = ident_create 1 "Number"
-and ident_int32 = ident_create 2 "Int32"
-and ident_int64 = ident_create 3 "Int64"
-and ident_bool = ident_create 4 "Bool"
-and ident_string = ident_create 5 "String"
-and ident_void = ident_create 6 "Void"
-and ident_box = ident_create 7 "Box"
-and ident_array = ident_create 8 "Array"
-and ident_fd = ident_create 9 "FileDescriptor"
+let ident_number = ident_create "Number"
+and ident_int32 = ident_create "Int32"
+and ident_int64 = ident_create "Int64"
+and ident_bool = ident_create "Bool"
+and ident_string = ident_create "String"
+and ident_void = ident_create "Void"
+and ident_box = ident_create "Box"
+and ident_array = ident_create "Array"
+and ident_fd = ident_create "FileDescriptor"
 
 let path_number = PIdent ident_number
 and path_int32 = PIdent ident_int32
@@ -87,8 +86,6 @@ let cstr id args = {
   cd_res = None;
   cd_loc = Location.dummy_loc;
 }
-
-let ident_create = ident_create ((List.length !builtin_idents) + 1)
 
 let ident_false = ident_create "false"
 and ident_true = ident_create "true"

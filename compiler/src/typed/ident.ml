@@ -42,9 +42,6 @@ let create s =
   incr currentstamp;
   { name = s; stamp = !currentstamp; flags = 0 }
 
-let create_builtin n s =
-  { name = s; stamp = n; flags = 0 }
-
 let create_predef_exn s =
   incr currentstamp;
   { name = s; stamp = !currentstamp; flags = predef_exn_flag }

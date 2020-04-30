@@ -31,7 +31,6 @@ val disable_stamps: bool ref
 val save_state: unit -> saved_state
 val restore_state: saved_state -> unit
 val create: string -> t
-val create_builtin: int -> string -> t
 val create_persistent: string -> t
 val create_predef_exn: string -> t
 val rename: t -> t
