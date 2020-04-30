@@ -1,4 +1,5 @@
-#!/usr/bin/env node --experimental-wasm-bigint
+#!/bin/sh
+// 2>/dev/null; exec /usr/bin/env node --experimental-wasm-bigint "$0" "$@"
 const path = require('path');
 
 let program = require('commander');
