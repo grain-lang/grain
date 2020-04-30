@@ -77,7 +77,7 @@ export class GrainRunner {
         // console.debug(`Located module: ${imp.module}`);
         await this.load(imp.module, located);
         if (located.isGrainModule) {
-          await located.run();
+          await located.start();
           this.imports['grainRuntime']['relocBase'] += located.tableSize;
           ++this.imports['grainRuntime']['moduleRuntimeId'];
         }
@@ -101,12 +101,12 @@ export class GrainRunner {
 
   async runFileUnboxed(path) {
     let module = await this.loadFile(path);
-    return module.start();
+    return module.runUnboxed();
   }
 
   async runFile(path) {
     let module = await this.loadFile(path);
-    return module.run();
+    return module.start();
   }
 
   async loadURL(url) {
@@ -116,11 +116,11 @@ export class GrainRunner {
 
   async runURL(path) {
     let module = await this.loadURL(path);
-    return module.run();
+    return module.start();
   }
 
   async runURLUnboxed(path) {
     let module = await this.loadURL(path);
-    return module.start();
+    return module.runUnboxed();
   }
 }

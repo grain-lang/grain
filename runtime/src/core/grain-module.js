@@ -161,9 +161,11 @@ export class GrainModule {
     //console.log(`fields: ${Object.keys(this._instantiated)}`);
   }
 
-  async run() {
-    let res = await wasi.start(this._instantiated);
-    return grainToJSVal(this.runner, res);
+  async runUnboxed() {
+    // This works because we use @wasmer/wasi, but will break in the future.
+    // Only the tests currently rely on this.
+    wasi.setMemory(this.requiredExport('memory'));
+    return await this.requiredExport('_start')();
   }
 }
 
