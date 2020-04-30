@@ -76,6 +76,12 @@ let tparse ?todo name input expected = name>::(wrap_todo todo @@ test_parse name
 let basic_functionality_tests = [
   t "forty" "let x = 40; x" "40";
   t "neg" "-1073741824" "-1073741824";
+  t "hex" "0xff" "255";
+  t "hex_neg" "-0xff" "-255";
+  t "bin" "0b1010" "10";
+  t "bin_neg" "-0b1010" "-10";
+  t "oct" "0o77" "63";
+  t "oct_neg" "-0o77" "-63";
   t "fals" "let x = false; x" "false";
   t "tru" "let x = true; x" "true";
   t "complex1" "
