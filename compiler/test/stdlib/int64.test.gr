@@ -1,0 +1,43 @@
+import * from 'int64'
+
+assert fromNumber(5) == 5L
+assert fromNumber(0) == 0L
+
+assert toNumber(555L) == 555
+assert toNumber(0L) == 0
+
+assert lnot(0xffffffffffffffffL) == 0L
+assert lnot(0L) == 0xffffffffffffffffL
+assert lnot(0xf0f0f0f0f0f0f0f0L) == 0x0f0f0f0f0f0f0f0fL
+
+assert land(0b1010L, 0b10L) == 0b10L
+assert land(0b1010L, 0L) == 0L
+
+assert lor(0b1010L, 0b0101L) == 0b1111L
+assert lor(0b1010L, 0L) == 0b1010L
+
+assert lxor(0b1010L, 0b1101L) == 0b0111L
+assert lxor(0b1010L, 0L) == 0b1010L
+
+assert lsl(-1L, 1) == -2L
+assert lsl(-1L, 2) == -4L
+assert lsl(-1L, 3) == -8L
+assert lsl(-2L, 63) == 0L
+assert lsl(24L, 1) == 48L
+
+assert lsr(4L, 1) == 2L
+assert lsr(4L, 2) == 1L
+assert lsr(4L, 3) == 0L
+assert lsr(-1L, 63) == 1L
+
+assert asr(-1L, 63) == -1L
+assert asr(-24L, 1) == -12L
+
+assert gt(5L, 4L)
+assert gte(5L, 5L)
+assert lt(5L, 17L)
+assert lte(5L, 5L)
+assert !gt(5L, 5L)
+assert !gte(5L, 22L)
+assert !lt(5L, -17L)
+assert !lte(5L, 4L)
