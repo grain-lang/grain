@@ -171,6 +171,7 @@ end
 
 val crc_units: Consistbl.t
 val add_import: string -> unit
+val clear_imports: unit -> unit
 
 (* By-name insertions *)
 val enter_value: string -> value_description -> t -> Ident.t * t

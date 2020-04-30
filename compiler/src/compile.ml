@@ -163,7 +163,7 @@ let rec compile_resume ?hook (s : compilation_state) =
     end
 
 
-let compile_string ?hook ?name ?outfile str =
+let compile_string ?hook ?name ?outfile ?(reset=true) str =
   let cstate = {
     cstate_desc=Initial(InputString(str));
     cstate_filename=name;
@@ -171,7 +171,8 @@ let compile_string ?hook ?name ?outfile str =
   } in
   compile_resume ?hook cstate
 
-let compile_file ?hook ?outfile filename =
+let compile_file ?hook ?outfile ?(reset=true) filename =
+  if reset then Env.clear_imports ();
   let cstate = {
     cstate_desc=Initial(InputFile(filename));
     cstate_filename=Some(filename);
@@ -218,5 +219,5 @@ let free_vars anfed =
   Ident.Set.elements @@ Anf_utils.anf_free_vars anfed
 
 let () =
-  Env.compile_module_dependency := (fun input outfile -> ignore(compile_file ~outfile input))
+  Env.compile_module_dependency := (fun input outfile -> ignore(compile_file ~outfile ~reset:false input))
 
