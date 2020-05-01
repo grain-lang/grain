@@ -164,6 +164,7 @@ let rec compile_resume ?hook (s : compilation_state) =
 
 
 let compile_string ?hook ?name ?outfile ?(reset=true) str =
+  if reset then Env.clear_imports ();
   let cstate = {
     cstate_desc=Initial(InputString(str));
     cstate_filename=name;
