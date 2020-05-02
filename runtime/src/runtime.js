@@ -62,6 +62,11 @@ export function buildGrainRunner(locator, opts) {
   return runner;
 }
 
+export function dumpMemoryStats() {
+  // Only functional when memory.js's TRACE_MEMORY is on
+  managedMemory.prepareExit();
+}
+
 let runner = buildGrainRunner();
 
 // TODO: Migrate API to expose runner object directly

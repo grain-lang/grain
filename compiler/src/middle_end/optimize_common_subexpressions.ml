@@ -5,39 +5,39 @@ open Types
 module ExpressionHash =
   struct
     type t = comp_expression_desc
-    let compare_lists l1 l2 = List.fold_left2 (fun is_equal {imm_desc=exp1} {imm_desc=exp2} -> is_equal && exp1 = exp2) true l1 l2
+    let compare_lists l1 l2 = List.length l1 == List.length l2 && List.fold_left2 (fun is_equal {imm_desc=exp1} {imm_desc=exp2} -> is_equal && exp1 = exp2) true l1 l2
     let equal i j = match (i, j) with
-      | CImmExpr({imm_desc=desc1}), CImmExpr({imm_desc=desc2}) -> 
+      | CImmExpr({imm_desc=desc1}), CImmExpr({imm_desc=desc2}) ->
         desc1 = desc2
-      | CPrim1(p1, {imm_desc=desc1}), CPrim1(p2, {imm_desc=desc2}) -> 
+      | CPrim1(p1, {imm_desc=desc1}), CPrim1(p2, {imm_desc=desc2}) ->
         desc1 = desc2 && p1 = p2
-      | CPrim2(p1, {imm_desc=x1}, {imm_desc=y1}), CPrim2(p2, {imm_desc=x2}, {imm_desc=y2}) -> 
+      | CPrim2(p1, {imm_desc=x1}, {imm_desc=y1}), CPrim2(p2, {imm_desc=x2}, {imm_desc=y2}) ->
         p1 = p2 && x1 = x2 && y1 = y2
-      | CTuple(exps1), CTuple(exps2) -> 
+      | CTuple(exps1), CTuple(exps2) ->
         compare_lists exps1 exps2
       | CAdt({imm_desc=ttag1}, {imm_desc=vtag1}, elts1), CAdt({imm_desc=ttag2}, {imm_desc=vtag2}, elts2) ->
         ttag1 = ttag2 && vtag1 = vtag2 && compare_lists elts1 elts2
       | CApp({imm_desc=desc1}, args1), CApp({imm_desc=desc2}, args2) ->
         desc1 = desc2 && compare_lists args1 args2
-      | CAppBuiltin(_module1, name1, args1), CAppBuiltin(_module2, name2, args2) -> 
+      | CAppBuiltin(_module1, name1, args1), CAppBuiltin(_module2, name2, args2) ->
         _module1 = _module2 && name1 = name2 && compare_lists args1 args2
       | CString(string1), CString(string2) ->
         string1 = string2
       | _ -> false
     let hash i = match i with
-      | CImmExpr({imm_desc=desc}) -> 
+      | CImmExpr({imm_desc=desc}) ->
         (Hashtbl.hash "CImmExpr") lxor Hashtbl.hash desc
-      | CPrim1(p, {imm_desc=desc}) -> 
+      | CPrim1(p, {imm_desc=desc}) ->
         (Hashtbl.hash "CPrim1") lxor Hashtbl.hash p lxor Hashtbl.hash desc
-      | CPrim2(p, {imm_desc=x}, {imm_desc=y}) -> 
+      | CPrim2(p, {imm_desc=x}, {imm_desc=y}) ->
         (Hashtbl.hash "CPrim2") lxor Hashtbl.hash p lxor Hashtbl.hash x lxor Hashtbl.hash y
-      | CTuple(exps) -> 
+      | CTuple(exps) ->
         (Hashtbl.hash "CTuple") lxor List.fold_left (fun hash {imm_desc} -> hash lxor Hashtbl.hash imm_desc) 0 exps
       | CAdt({imm_desc=ttag}, {imm_desc=vtag}, elts) ->
         (Hashtbl.hash "CAdt") lxor Hashtbl.hash ttag lxor Hashtbl.hash vtag lxor List.fold_left (fun hash {imm_desc} -> hash lxor Hashtbl.hash imm_desc) 0 elts
-      | CApp({imm_desc=desc}, args) -> 
+      | CApp({imm_desc=desc}, args) ->
         (Hashtbl.hash "CApp") lxor List.fold_left (fun hash {imm_desc} -> hash lxor Hashtbl.hash imm_desc) (Hashtbl.hash desc) args
-      | CAppBuiltin(_module, name, args) -> 
+      | CAppBuiltin(_module, name, args) ->
         (Hashtbl.hash "CAppBuiltin") lxor Hashtbl.hash _module lxor List.fold_left (fun hash {imm_desc} -> hash lxor Hashtbl.hash imm_desc) (Hashtbl.hash name) args
       | CString(string) ->
         (Hashtbl.hash "CString") lxor Hashtbl.hash string

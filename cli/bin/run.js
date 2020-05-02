@@ -13,6 +13,8 @@ module.exports = async function run(filename, options) {
     } else {
       await GrainRunner.runFile(filename);
     }
+    // Will only do anything if memory.js's TRACE_MEMORY is enabled
+    runtime.dumpMemoryStats();
   }
   catch (e) {
     console.error(e)
