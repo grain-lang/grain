@@ -437,23 +437,26 @@ let oom = [
 let gc = [
   tgc "gc1" 10
       "let f = (() => (1, 2));
-       begin
+       {
          f();
          f();
          f();
          f()
-       end"
+       }"
       "(1, 2)";
   (* Test that cyclic tuples are GC'd properly *)
   tgc "gc2" 10
-    "let f = (() =>
-      let x = (1, 2);
-        x[1] := x);
-      begin
+    "data Opt<x> = None | Some(x);
+     let f = (() => {
+      let x = (box(None), 2);
+      let (fst, _) = x
+      fst := Some(x)
+      });
+      {
         f();
-        let x = (1, 2) in
-          x
-      end" "(1, 2)";
+        let x = (1, 2);
+        x
+      }" "(1, 2)";
   tgcfile "fib_gc_err" 10 "fib-gc" "Out of memory";
   tgcfile "fib_gc" 16 "fib-gc" "832040";
   tgcfile "fib_gc_bigger" 64 "fib-gc" "832040";

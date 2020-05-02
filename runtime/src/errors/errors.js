@@ -117,6 +117,7 @@ export function throwGrainError(errorCode, value1, value2) {
       break;
     case GRAIN_ERR_ARRAY_INDEX_OUT_OF_BOUNDS:
       message = 'array index out of bounds';
+      break;
     case GRAIN_ERR_SWITCH:
       message = `value has no switch case: ${value1AsGrain}`;
       break;

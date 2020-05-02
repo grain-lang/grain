@@ -16,8 +16,8 @@ import {
   GRAIN_INT64_HEAP_TAG,
 } from '../core/tags';
 
-import { 
-  GRAIN_TRUE, 
+import {
+  GRAIN_TRUE,
   GRAIN_FALSE,
   GRAIN_VOID
 } from '../core/primitives';
@@ -25,7 +25,7 @@ import {
 export function grainListToString(runtime, n) {
   let cur = n;
   let printedVals = [];
-  
+
   while (true) {
     let x = cur / 4;
     let variantId = view[x + 3] >> 1;
@@ -40,7 +40,35 @@ export function grainListToString(runtime, n) {
   return `[${printedVals.join(', ' )}]`;
 }
 
+/**
+ * Formats a number as hex. Useful for debug printing.
+ *
+ * @param {Number} minWidth [0] - Minimum length of formatted number (will be padded w/ zeros)
+ */
+export function toHex(n, minWidth) {
+  let ret = (new Number(n >>> 0)).toString(16);
+  if (minWidth && ret.length < minWidth) {
+    ret = '0'.repeat(minWidth - ret.length)
+  }
+  return ret;
+}
+
+/**
+ * Formats a number as binary. Useful for debug printing.
+ *
+ * @param {Number} minWidth [0] - Minimum length of formatted number (will be padded w/ zeros)
+ */
+export function toBinary(n, minWidth) {
+  // Useful for debug printing
+  let ret = (n >>> 0).toString(2);
+  if (minWidth && ret.length < minWidth) {
+    ret = '0'.repeat(minWidth - ret.length) + ret;
+  }
+  return ret;
+}
+
 export function grainHeapValueToString(runtime, n) {
+  // console.log(`Print Heap Value: <0x${toHex(n)}>`);
   switch (view[n / 4]) {
     case GRAIN_STRING_HEAP_TAG: {
       let byteView = new Uint8Array(memory.buffer);
@@ -55,13 +83,16 @@ export function grainHeapValueToString(runtime, n) {
       let x = n / 4;
       // ADT string coercion is tricky, so these log statements can help
       // debug issues which might crop up:
+      // [ <value type tag>, <module_tag>, <type_tag>, <variant_tag>, <arity>, elts ... ]
       // console.log(`<ADT Value: (${view[x + 1]}, ${view[x + 2]}, ${view[x + 3]}, ${view[x + 4]})>`);
       if (runtime) {
         // In-memory tags are tagged ints
         let moduleId = view[x + 1] >> 1;
         let typeId = view[x + 2] >> 1;
         let variantId = view[x + 3] >> 1;
+        // console.log(`\tValue Type: ${view[x]}`);
         // console.log(`\tModules: ${JSON.stringify(runtime.idMap)}`);
+        // console.log(`\tModule ID: ${moduleId}; Type ID: ${typeId}; Variant ID: ${variantId}`);
         let moduleName = runtime.idMap[moduleId];
         // console.log(`\tModule Name: ${moduleName}`);
         let module = runtime.modules[moduleName];
@@ -77,7 +108,7 @@ export function grainHeapValueToString(runtime, n) {
 
         // Dirty hack to support list printing
         if (variantName === '[...]') return grainListToString(runtime, n);
-        
+
         let printedVals = [];
         for (let i = 0; i < arity; ++i) {
           printedVals.push(grainToString(runtime, view[x + 5 + i]));
@@ -104,9 +135,9 @@ export function grainHeapValueToString(runtime, n) {
         // console.log(`\tModule: ${module}`);
         let tyinfo = module.types[typeId];
         // console.log(`\tType Info: ${JSON.stringify(tyinfo)}`);
-        
+
         if (Object.keys(tyinfo).length === 0) return '<record value>'
-        
+
         let values = [];
         for (let [field, idx] of Object.entries(tyinfo)) {
           values.push(`${field}: ${grainToString(runtime, view[x + 4 + idx]).replace(/\n/g, '\n  ')}`)
@@ -119,7 +150,7 @@ export function grainHeapValueToString(runtime, n) {
       let x = n / 4;
 
       let arity = view[x + 1];
-      
+
       let values = [];
       for (let i = 0; i < arity; i++) {
         values.push(grainToString(runtime, view[x + 2 + i]))

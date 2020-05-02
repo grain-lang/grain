@@ -1,7 +1,7 @@
 import { mallocJSModule } from './malloc';
 import { getTagType, GRAIN_CONST_TAG_TYPE, GRAIN_NUMBER_TAG_TYPE, GRAIN_TUPLE_TAG_TYPE, GRAIN_GENERIC_HEAP_TAG_TYPE, GRAIN_LAMBDA_TAG_TYPE,
          GRAIN_STRING_HEAP_TAG, GRAIN_DOM_ELEM_TAG, GRAIN_ADT_HEAP_TAG } from './tags';
-import { grainAdtInfo } from '../utils/utils';
+import { grainAdtInfo, toHex, toBinary } from '../utils/utils';
 
 const TRACE_MEMORY = false;
 
@@ -53,6 +53,11 @@ export class ManagedMemory {
       initialHeapSize: memory.buffer.byteLength,
       growHeap: () => memory.grow(1)
     }, this._memory.buffer);
+    if (TRACE_MEMORY) {
+      this._allocatedAddresses = new Set();
+      this._incRefSources = {};
+      this._decRefSources = {};
+    }
   }
 
   setRuntime(runtime) {
@@ -67,13 +72,17 @@ export class ManagedMemory {
     trace('\tend_populateHeader')
     let userPtr = rawPtr + this._headerSize;
     trace(`malloc: ${this._memdump(userPtr)}`);
+    if (TRACE_MEMORY) {
+      this._allocatedAddresses.add(userPtr);
+    }
+    this._markIncRefSource(userPtr, 'MALLOC');
     return userPtr; // offset by headerSize
   }
 
   populateHeader(rawPtr) {
     let tag = 0x0; // reserved
     trace('populateHeader');
-    var heap = this._memory.buffer;
+    var heap = new Uint8Array(this._memory.buffer);
     for (let i = 0; i < this._headerSize; ++i) {
       heap[rawPtr + i] = 0;
     }
@@ -85,11 +94,13 @@ export class ManagedMemory {
   _getRefCount(userPtr) {
     trace('_getRefCount');
     let rawPtr = userPtr - this._headerSize;
-    let heap = this._memory.buffer;
+    //let rawPtr = userPtr - 3;
+    let heap = new Uint8Array(this._memory.buffer);
+    trace(`\tas binary: ${this._toBinary(heap[rawPtr], 8, 8)}|${this._toBinary(heap[rawPtr + 1], 8, 8)}|${this._toBinary(heap[rawPtr + 2], 8, 8)}`)
     let count = heap[rawPtr] & 0b0111; // reserved bit should always be zero, but let's be safe
-    count = count << 4;
+    count = count << 8;
     count = count | heap[rawPtr + 1];
-    count = count << 4;
+    count = count << 8;
     count = count | heap[rawPtr + 2];
     trace(`\t${count}`);
     return count;
@@ -98,63 +109,112 @@ export class ManagedMemory {
   _getValueTag(userPtr) {
     trace('_getValueTag');
     let rawPtr = userPtr - this._headerSize;
-    let heap = this._memory.buffer;
+    let heap = new Uint8Array(this._memory.buffer);
     return heap[rawPtr + 3];
   }
 
-  _toHex(n) {
+  _toHex(n, minWidth) {
     if (!TRACE_MEMORY) {
       return undefined; // improve performance; this is a very hot path in production
     }
-    return (new Number(n)).toString(16);
+    return toHex(n, minWidth);
+  }
+
+  _toBinary(n, minWidth, maxWidth) {
+    if (!TRACE_MEMORY) {
+      return undefined; // see above
+    }
+    let ret = toBinary(n, minWidth);
+    if (maxWidth && ret.length > maxWidth) {
+      if (ret.substring(0, ret.length - maxWidth).includes('1')) {
+        console.warn('chopping off at least one 1!');
+      }
+      ret = ret.substring(ret.length - maxWidth);
+    }
+    return ret;
   }
 
   _memdump(userPtr) {
-    let heap = this._memory.buffer;
+    let heap = new Uint8Array(this._memory.buffer);
     if (!TRACE_MEMORY) {
       return undefined; // improve performance; this is a very hot path in production
     }
-    return `Dump: 0x${this._toHex(heap[userPtr-3])} 0x${this._toHex(heap[userPtr-2])} 0x${this._toHex(heap[userPtr-1])} @ 0x${this._toHex(userPtr)} (raw: 0x${this._toHex(userPtr - this._headerSize)})`
+    return `Dump: 0x${this._toHex(heap[userPtr-8])} 0x${this._toHex(heap[userPtr-7])} 0x${this._toHex(heap[userPtr-6])} 0x${this._toHex(heap[userPtr-5])} 0x${this._toHex(heap[userPtr-4])} 0x${this._toHex(heap[userPtr-3])} 0x${this._toHex(heap[userPtr-2])} 0x${this._toHex(heap[userPtr-1])} @ 0x${this._toHex(userPtr)} (raw: 0x${this._toHex(userPtr - this._headerSize)})`
   }
 
   decRef64(userPtr) {
     trace('decRef64 [see next]');
+    if (TRACE_MEMORY) {
+      this._decRefSources[userPtr] = this._decRefSources[userPtr] || {};
+      this._decRefSources[userPtr]['64']++;
+    }
     return this.decRef(userPtr);
   }
 
   incRef64(userPtr) {
     trace('incRef64 [see next]');
+    this._markIncRefSource(userPtr, '64')
     return this.incRef(userPtr);
   }
 
   incRefADT(userPtr) {
     trace('incRefADT [see next]');
+    this._markIncRefSource(userPtr, 'ADT');
     return this.incRef(userPtr);
   }
 
   incRefTuple(userPtr) {
     trace('incRefTuple [see next]');
+    this._markIncRefSource(userPtr, 'TUPLE');
     return this.incRef(userPtr);
   }
 
   incRefBackpatch(userPtr) {
     trace('incRefBackpatch [see next]');
+    this._markIncRefSource(userPtr, 'BACKPATCH');
     return this.incRef(userPtr);
   }
 
   incRefSwapBind(userPtr) {
     trace('incRefSwapBind [see next]');
+    this._markIncRefSource(userPtr, 'SWAP');
     return this.incRef(userPtr);
   }
 
   incRefArgBind(userPtr) {
     trace('incRefArgBind [see next]');
+    this._markIncRefSource(userPtr, 'ARG');
     return this.incRef(userPtr);
   }
 
   incRefLocalBind(userPtr) {
     trace('incRefLocalBind [see next]');
+    this._markIncRefSource(userPtr, 'LOCAL');
     return this.incRef(userPtr);
+  }
+
+  _markIncRefSource(userPtr, x) {
+    if (TRACE_MEMORY) {
+      this._incRefSources[userPtr] = this._incRefSources[userPtr] || {};
+      this._incRefSources[userPtr][x] = (this._incRefSources[userPtr][x] || 0) + 1;
+    }
+  }
+
+  _markDecRefSource(userPtr, x) {
+    if (TRACE_MEMORY) {
+      this._decRefSources[userPtr] = this._decRefSources[userPtr] || {};
+      this._decRefSources[userPtr][x] = (this._decRefSources[userPtr][x] || 0) + 1;
+    }
+  }
+
+  _setRefCount(rawPtr, count) {
+    const heap = new Uint8Array(this._memory.buffer);
+    trace('_setRefCount:')
+    trace(`\told as binary: ${this._toBinary(heap[rawPtr], 8, 8)}|${this._toBinary(heap[rawPtr + 1], 8, 8)}|${this._toBinary(heap[rawPtr + 2], 8, 8)}`)
+    heap[rawPtr] = count & (0b01111111 << 16);
+    heap[rawPtr + 1] = count & (0b11111111 << 8);
+    heap[rawPtr + 2] = count & 0b11111111;
+    trace(`\tnew as binary: ${this._toBinary(heap[rawPtr], 8, 8)}|${this._toBinary(heap[rawPtr + 1], 8, 8)}|${this._toBinary(heap[rawPtr + 2], 8, 8)}`)
   }
 
   incRef(userPtr) {
@@ -169,15 +229,13 @@ export class ManagedMemory {
       return origInput;
     }
     userPtr = userPtr & (~7);
+    trace(`\ttrue ptr: 0x${this._toHex(userPtr)}; raw: 0x${this._toHex(userPtr - this._headerSize)}`);
     trace('\tincrementing...');
-    let heap = this._memory.buffer;
     let rawPtr = userPtr - this._headerSize;
     let refCount = this._getRefCount(userPtr);
     ++refCount;
     trace(`\tnew count: ${refCount}`);
-    heap[rawPtr] = refCount & (0b0111 << 8);
-    heap[rawPtr + 1] = refCount & (0b1111 << 4);
-    heap[rawPtr + 2] = refCount & 0b1111;
+    this._setRefCount(rawPtr, refCount);
     trace(`\tdump: ${this._memdump(userPtr)}`);
     return origInput;
   }
@@ -194,8 +252,9 @@ export class ManagedMemory {
       return origInput;
     }
     userPtr = userPtr & (~7);
-    let heap = this._memory.buffer;
+    let heap = new Uint8Array(this._memory.buffer);
     let rawPtr = userPtr - this._headerSize;
+    trace(`\ttrue ptr: 0x${this._toHex(userPtr)}; raw: 0x${this._toHex(rawPtr)}`);
     let refCount = this._getRefCount(userPtr);
     // [TODO] This is a blazing-hot code path. Should we eschew error-checking?
     if (refCount === 0) {
@@ -252,22 +311,44 @@ export class ManagedMemory {
       }
       this.free(userPtr);
     } else {
-      heap[rawPtr] = refCount & (0b0111 << 8);
-      heap[rawPtr + 1] = refCount & (0b1111 << 4);
-      heap[rawPtr + 2] = refCount & 0b1111;
+      this._setRefCount(rawPtr, refCount);
     }
     return origInput;
   }
 
   free(userPtr) { // [TODO] Do we even need this?
     // stub
-    //console.warn(`free 0x${(new Number(userPtr)).toString(16)}`);
+    trace(`free 0x${(new Number(userPtr)).toString(16)}`);
+    trace(this._memdump(userPtr));
+    if (TRACE_MEMORY) {
+      trace(`\tincrefs: ${JSON.stringify(this._incRefSources[userPtr] || {})}`);
+      trace(`\tdecrefs: ${JSON.stringify(this._decRefSources[userPtr] || {})}`);
+    }
     this._mallocModule.free(userPtr - this._headerSize);
+    if (TRACE_MEMORY) {
+      this._allocatedAddresses.delete(userPtr);
+    }
     trace('end_free');
   }
 
+<<<<<<< HEAD
   free(ptr) {
     return this._mallocModule.free(ptr);
+=======
+  prepareExit() {
+    // Prints debug info for memory tracing before the interpreter exits
+    if (!TRACE_MEMORY) {
+      return;
+    }
+    trace('==== MEMORY TRACE INFO ===');
+    trace('---- LEAKED OBJECTS ---');
+    this._allocatedAddresses.forEach((x) => {
+      trace(this._memdump(x));
+      trace(`\tincrefs: ${JSON.stringify(this._incRefSources[x] || {})}`);
+      trace(`\tdecrefs: ${JSON.stringify(this._decRefSources[x] || {})}`);
+    });
+    trace('==== END MEMORY TRACE INFO ===')
+>>>>>>> Fix more tests and nasty memory allocation bugs
   }
 }
 
