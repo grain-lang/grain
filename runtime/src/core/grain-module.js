@@ -11,7 +11,7 @@ export const wasi = new WASI({
     ...wasiBindings
   },
   preopens: {
-    [process.cwd()]: process.cwd()
+    '/sandbox': process.cwd()
   }
 });
 
