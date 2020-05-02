@@ -3,7 +3,7 @@ import { getTagType, GRAIN_CONST_TAG_TYPE, GRAIN_NUMBER_TAG_TYPE, GRAIN_TUPLE_TA
          GRAIN_STRING_HEAP_TAG, GRAIN_DOM_ELEM_TAG, GRAIN_ADT_HEAP_TAG } from './tags';
 import { grainAdtInfo, toHex, toBinary } from '../utils/utils';
 
-const TRACE_MEMORY = false;
+const TRACE_MEMORY = true;
 
 function trace(msg) {
   if (TRACE_MEMORY) {
@@ -43,16 +43,16 @@ export class ManagedMemory {
     this._memory = memory;
     this._headerSize = 8; // 32 bits in bytes (extra space needed for alignment)
     this._runtime = null;
-    var globNS;
     if (typeof window === 'undefined') {
-      globNS = global;
+      this._globNS = global;
     } else {
-      globNS = window;
+      this._globNS = window;
     }
-    this._mallocModule = mallocJSModule(globNS, {
+    this._mallocModule = mallocJSModule(this._globNS, {
       initialHeapSize: memory.buffer.byteLength,
-      growHeap: () => memory.grow(1)
+      growHeap: () => this._growHeap()
     }, this._memory.buffer);
+    this._grown = 0;
     if (TRACE_MEMORY) {
       this._allocatedAddresses = new Set();
       this._incRefSources = {};
@@ -60,13 +60,36 @@ export class ManagedMemory {
     }
   }
 
+  _growHeap() {
+    console.log('_growHeap');
+    if (this._runtime && this._runtime.limitMemory >= 0 && this._grown >= this._runtime.limitMemory) {
+      //throw 'Out of memory (_growHeap)';
+      return -1;
+    }
+    this._grown += 1024;
+    // doesn't actually work; we are just simulating a smaller memory size for GC tests
+    //return this._memory.grow(1);
+    return 0;
+  }
+
   setRuntime(runtime) {
     this._runtime = runtime;
+    if (runtime.limitMemory) {
+      this._mallocModule = mallocJSModule(this._globNS, {
+        initialHeapSize: runtime.limitMemory,
+        growHeap: () => this._growHeap()
+      }, this._memory.buffer);
+      this._grown = 0;
+    }
   }
 
   malloc(size) {
     trace(`malloc(0x${this._toHex(size)})`);
     let rawPtr = this._mallocModule.malloc(size + this._headerSize);
+    if (rawPtr === -1 || (this._runtime && this._runtime.limitMemory >= 0 && this._runtime.limitMemory <= rawPtr)) {
+      trace(`OOM; ret=${rawPtr}; limit=${this._runtime && this._runtime.limitMemory}; less than=${this._runtime && this._runtime.limitMemory >= 0 && this._runtime.limitMemory <= rawPtr}`);
+      throw 'Out of memory';
+    }
     trace('\tpopulateHeader')
     this.populateHeader(rawPtr);
     trace('\tend_populateHeader')
@@ -344,6 +367,7 @@ export class ManagedMemory {
     trace('---- LEAKED OBJECTS ---');
     this._allocatedAddresses.forEach((x) => {
       trace(this._memdump(x));
+      this._getRefCount(x);
       trace(`\tincrefs: ${JSON.stringify(this._incRefSources[x] || {})}`);
       trace(`\tdecrefs: ${JSON.stringify(this._decRefSources[x] || {})}`);
     });

@@ -19,8 +19,10 @@ export class GrainRunner {
     this.opts = opts;
     this.ptr = 0;
     this.ptrZero = 0;
+    this._checkMemory = makeMemoryChecker(this);
+    this.limitMemory = opts.limitMemory || -1;
     this.imports['grainRuntime'] = {
-      checkMemory: makeMemoryChecker(this),
+      checkMemory: this._checkMemory,
       relocBase: 0,
       moduleRuntimeId: 0
     };
@@ -29,6 +31,10 @@ export class GrainRunner {
       toString: makeToString(boundGrainToString),
       print: makePrint(boundGrainToString)
     };
+  }
+
+  checkMemory() {
+    return this._checkMemory();
   }
 
   addImport(name, obj) {

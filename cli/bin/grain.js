@@ -31,7 +31,7 @@ program
   .option('-I, --include-dirs <dirs>', 'include directories the runtime should find wasm modules', list, [])
   .option('-f, --cflags <cflags>', 'pass flags to the Grain compiler')
   .option('-S, --stdlib <path>', 'override the standard libary with your own', stdlibPath)
-  .option('--limitMemory', 'maximum allowed heap size', num, 0)
+  .option('--limitMemory <size>', 'maximum allowed heap size', num, 0)
   .action((file) => {
     givenFile = file
 
