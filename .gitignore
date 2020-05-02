@@ -1,4 +1,5 @@
 main
+*.mashtree
 *.install
 output/*.o
 output/*.run

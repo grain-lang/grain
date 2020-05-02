@@ -21,6 +21,7 @@ export class GrainRunner {
     this.ptrZero = 0;
     this._checkMemory = makeMemoryChecker(this);
     this.limitMemory = opts.limitMemory || -1;
+    this.postImports = () => {};
     this.imports['grainRuntime'] = {
       checkMemory: this._checkMemory,
       relocBase: 0,
@@ -87,6 +88,7 @@ export class GrainRunner {
         this.imports[imp.module] = located.exports;
       }
     }
+    this.postImports();
     // All of the dependencies have been loaded. Now we can instantiate with the import object.
     await mod.instantiate(this.imports, this);
     this.idMap[this.imports['grainRuntime']['moduleRuntimeId']] = name;
@@ -101,9 +103,13 @@ export class GrainRunner {
     return this.load(module.name, module);
   }
 
-  async runFileUnboxed(path) {
+  async runFileUnboxed(path, cleanupGlobals) {
     let module = await this.loadFile(path);
-    return module.runUnboxed();
+    let ret = module.runUnboxed();
+    if (cleanupGlobals) {
+      module.cleanupGlobals();
+    }
+    return ret;
   }
 
   async runFile(path) {

@@ -16,9 +16,9 @@ let exists check result = String.exists result check;;
 
 let t ?todo name program expected = name>::(wrap_todo todo @@ test_run program name expected);;
 let tc ?todo name program expected = name>::(wrap_todo todo @@ test_run ~cmp:exists program name expected);;
-let tgc ?todo name heap_size program expected = name>::(wrap_todo todo @@ test_run program name expected);;
+let tgc ?todo name heap_size program expected = name>::(wrap_todo todo @@ test_run ~heap_size program name expected);;
 let terr ?todo name program expected = name>::(wrap_todo todo @@ test_err program name expected);;
-let tgcerr ?todo name heap_size program expected = name>::(wrap_todo todo @@ test_err program name expected);;
+let tgcerr ?todo name heap_size program expected = name>::(wrap_todo todo @@ test_err ~heap_size program name expected);;
 
 let te ?todo name program expected = name>::(wrap_todo todo @@ test_err program name expected);;
 
@@ -29,7 +29,7 @@ let tefile ?todo name input_file expected = name>::(wrap_todo todo @@ test_run_f
 (** Tests that the file stdlib/`input_file`.gr produces the given output *)
 let tlib ?todo ?returns ?code input_file = input_file>::(wrap_todo todo @@ test_run_stdlib ?returns ?code input_file)
 
-let tgcfile ?todo name heap_size input_file expected = name>::(wrap_todo todo @@ test_run_file input_file name expected)
+let tgcfile ?todo name heap_size input_file expected = name>::(wrap_todo todo @@ test_run_file ~heap_size input_file name expected)
 
 let test_final_anf program_str outfile (expected : Grain_middle_end.Anftree.anf_expression) test_ctxt =
   let open Grain_middle_end in

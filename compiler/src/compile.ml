@@ -216,6 +216,18 @@ let stop_after_compiled = function
 
 let anf = Linearize.transl_anf_module
 
+let save_mashed f outfile =
+  match compile_file ~hook:stop_after_mashed f with
+    | {cstate_desc=Mashed(mashed)} ->
+      begin
+        Grain_utils.Files.ensure_parent_directory_exists outfile;
+        let mash_string = Sexplib.Sexp.to_string_hum @@ Mashtree.sexp_of_mash_program mashed in
+        let oc = open_out outfile in
+        output_string oc mash_string;
+        close_out oc
+      end
+    | _ -> failwith "Should be impossible"
+
 let free_vars anfed =
   Ident.Set.elements @@ Anf_utils.anf_free_vars anfed
 

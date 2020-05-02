@@ -1,4 +1,4 @@
-import { memory, view, uview, encoder, decoder } from '../runtime';
+import { memory, view, encoder, decoder, managedMemory, uview } from '../runtime';
 import { grainHeapAllocate } from '../core/heap';
 import { GrainError } from '../errors/errors';
 import { grainDOMRefs } from '../lib/DOM';
@@ -101,7 +101,7 @@ export function grainHeapValueToString(runtime, n) {
         // console.log(`\tType Info: ${JSON.stringify(tyinfo)}`);
 
         if (Object.keys(tyinfo).length === 0) return '<adt value>';
-        
+
         let info = tyinfo[variantId];
         // console.log(`\tVariant: ${info}`);
         let [variantName, arity] = info;
@@ -362,7 +362,8 @@ export function JSToGrainVal(v) {
       return 0x7FFFFFFF;
     }
   } else if (typeof v === "string") {
-    let ptr = grainHeapAllocate(2 + (((v.length - 1) / 4) + 1)) / 4;
+    let userPtr = managedMemory.malloc((4 * 2) + (((v.length - 1) / 4) + 1));
+    let ptr = userPtr / 4;
     view[ptr] = GRAIN_STRING_HEAP_TAG;
     view[ptr + 1] = v.length;
     let byteView = new Uint8Array(memory.buffer);
@@ -370,7 +371,7 @@ export function JSToGrainVal(v) {
     for (let i = 0; i < buf.length; ++i) {
       byteView[i + (ptr * 4) + 8] = buf[i];
     }
-    return (ptr * 4) | GRAIN_GENERIC_HEAP_TAG_TYPE;
+    return userPtr | GRAIN_GENERIC_HEAP_TAG_TYPE;
   } else {
     throw new GrainError(-1, "JSToGrainVal not implemented for value with type " + (typeof v));
   }

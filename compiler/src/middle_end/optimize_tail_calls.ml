@@ -74,7 +74,7 @@ Things to note:
   * Two references, `continue` and `next` are available to the entire set of tail-recursive funtions.
   * References are created for all arguments to the functions. These are available to the entire set of recursive
     functions.
-  * Each function is transformed into two functions-- an invocation function and an iteree function. The invocation 
+  * Each function is transformed into two functions-- an invocation function and an iteree function. The invocation
     function is called when the function is called from an outside source, and controls the loop that calls the iteree.
     The iteree function is a thunk that first binds the would-be arguments from the references to names, then proceeds
     with the original function body with minor alterations, the most important being a replacement of tail calls with a
@@ -92,9 +92,9 @@ type analysis +=
   | TailCallOptimized of bool
 
 type transform_rule = {
-  f_id: Ident.t; 
-  f_args: Ident.t list; 
-  continue_loop_id: Ident.t; 
+  f_id: Ident.t;
+  f_args: Ident.t list;
+  continue_loop_id: Ident.t;
   next_f_id: Ident.t
 }
 
@@ -151,37 +151,37 @@ let comp_is_tail_call_optimized {comp_analyses} =
 let has_tail_recursive_binding binds =
   List.exists (fun (_, exp) -> Option.default false @@ Analyze_tail_calls.comp_is_tail_recursive exp) binds
 
-let wrap_imm wrapper imm = 
+let wrap_imm wrapper imm =
   {
-    imm_analyses=ref []; 
+    imm_analyses=ref [];
     imm_desc=imm;
     imm_loc=wrapper.comp_loc;
     imm_env=wrapper.comp_env
   }
 
-let wrap_id wrapper imm_id = 
+let wrap_id wrapper imm_id =
   wrap_imm wrapper @@ ImmId(imm_id)
 
-let wrap_comp wrapper comp = 
+let wrap_comp wrapper comp =
   {wrapper with comp_analyses=ref []; comp_desc=comp}
 
-let wrap_comp_with_anf wrapper comp = 
+let wrap_comp_with_anf wrapper comp =
   {
-    comp_analyses=ref []; 
+    comp_analyses=ref [];
     comp_desc=comp;
     comp_loc=wrapper.anf_loc;
     comp_env=wrapper.anf_env
   }
 
-let wrap_anf_with_comp wrapper anf = 
+let wrap_anf_with_comp wrapper anf =
   {
-    anf_analyses=ref []; 
+    anf_analyses=ref [];
     anf_desc=anf;
     anf_loc=wrapper.comp_loc;
     anf_env=wrapper.comp_env
   }
 
-let wrap_anf wrapper anf = 
+let wrap_anf wrapper anf =
   {wrapper with anf_analyses=ref []; anf_desc=anf}
 
 let mark_tail_call_optimized ({comp_analyses}) =
@@ -190,7 +190,7 @@ let mark_tail_call_optimized ({comp_analyses}) =
 module TailCallsArg : Anf_mapper.MapArgument = struct
   include Anf_mapper.DefaultMapArgument
 
-let default_ref {anf_loc; anf_env} = 
+let default_ref {anf_loc; anf_env} =
   CPrim1(Box, {
     imm_desc=ImmConst(Const_int(0));
     imm_loc=anf_loc;
@@ -212,7 +212,7 @@ let unbox_of id {comp_loc; comp_env} =
     first_f_id: Ident.t;
     arg_ref_ids: Ident.t list;
   }
-  
+
   (* Creates the function that will run the loop for the (transformed) recursive function. *)
   let create_lambda_runner lambda {continue_id; next_id; first_f_id; arg_ref_ids} =
     let assign_id id value = wrap_comp lambda @@ CAssign(wrap_id lambda id, wrap_id lambda value) in
@@ -220,10 +220,10 @@ let unbox_of id {comp_loc; comp_env} =
     let bind id value body = wrap_anf_with_comp lambda @@ AELet(Nonglobal, Nonrecursive, [(id, value)], body) in
     let box value = wrap_comp lambda @@ CPrim1(Box, wrap_imm lambda value) in
     let unbox id = wrap_comp lambda @@ unbox_of id lambda in
-    let sequence comp_exprs anf_expr = 
+    let sequence comp_exprs anf_expr =
       List.fold_right (fun comp seq -> wrap_anf_with_comp lambda @@ AESeq(comp, seq)) comp_exprs anf_expr in
     let to_anf value = wrap_anf_with_comp lambda @@ AEComp(value) in
-  
+
     let lambda_args = match lambda.comp_desc with
     | CLambda(args, _) -> args
     | _ -> failwith "comp_expr was not a lambda" in
@@ -247,7 +247,7 @@ let unbox_of id {comp_loc; comp_env} =
         unbox continue_id |> to_anf,
         sequence [
           assign_imm continue_id @@ ImmConst(Const_bool(false))
-        ] @@ 
+        ] @@
         bind unboxed_next_id (unbox next_id) @@
         bind next_result_id (CApp(wrap_id lambda unboxed_next_id, []) |> wrap_comp lambda) @@
         (assign_id return_val_id next_result_id |> to_anf)
@@ -271,7 +271,7 @@ let unbox_of id {comp_loc; comp_env} =
       let local_transform_rules = ref [] in
       let push_local_transform_rule a b =
         local_transform_rules := (a, b) :: !local_transform_rules in
-      let new_binds = List.flatten @@ List.map (fun ((id : Ident.t), ({comp_desc} as bind)) -> 
+      let new_binds = List.flatten @@ List.map (fun ((id : Ident.t), ({comp_desc} as bind)) ->
         begin match comp_desc with
         | CLambda(args, body) when comp_is_tail_recursive bind ->
           let wrap_comp = wrap_comp bind
@@ -292,15 +292,15 @@ let unbox_of id {comp_loc; comp_env} =
 
           let iterative_lam_id = Ident.create (id.name ^ "#tc_iter") in
           (* Make a new thunk that begins with new bindings to the would-be arguments *)
-          let iterative_lam = wrap_comp @@ 
+          let iterative_lam = wrap_comp @@
             CLambda([], wrap_anf @@ AELet(Nonglobal, Nonrecursive, arg_derefs, body)) in
-          
+
           mark_tail_call_optimized iterative_lam; Analyze_tail_calls.mark_not_tail_recursive iterative_lam;
 
           List.iter2 (fun arg (arg_deref, _) -> push_rewrite_rule arg arg_deref) args arg_derefs;
           (* Flag internal tail calls to this function to be rewritten into setting the `next` function *)
           push_local_transform_rule id {f_id=iterative_lam_id; f_args=arg_ref_ids; continue_loop_id; next_f_id};
-          
+
           (* Create the function that gets called instead of the original *)
           let lam_runner = create_lambda_runner bind {continue_id=continue_loop_id; next_id=next_f_id; first_f_id=iterative_lam_id; arg_ref_ids} in
 
@@ -308,7 +308,7 @@ let unbox_of id {comp_loc; comp_env} =
         | _ -> [(id, bind)] end
       ) binds in
       push_transform_rules !local_transform_rules;
-      {a with anf_analyses=ref []; anf_desc=AELet(Nonglobal, Nonrecursive, !iterator_binds, 
+      {a with anf_analyses=ref []; anf_desc=AELet(Nonglobal, Nonrecursive, !iterator_binds,
         {a with anf_analyses=ref []; anf_desc=AELet(global, Recursive, new_binds, body)})};
     | _ -> a
 
@@ -346,7 +346,7 @@ let unbox_of id {comp_loc; comp_env} =
     end; c
 
   let leave_imm_expression ({imm_desc = desc} as i) =
-    match desc with 
+    match desc with
     | ImmId(id) -> {i with imm_desc=ImmId(get_rewrite_rule id)}
     | _ -> i
 

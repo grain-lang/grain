@@ -18,8 +18,8 @@ export const view = new Int32Array(memory.buffer);
 export const uview = new Uint32Array(memory.buffer);
 export const encoder = new TextEncoder("utf-8");
 export const decoder = new TextDecoder("utf-8");
+export const managedMemory = new ManagedMemory(memory);
 
-const managedMemory = new ManagedMemory(memory);
 export const malloc = managedMemory.malloc.bind(managedMemory)
 export const free = managedMemory.free.bind(managedMemory)
 
@@ -40,13 +40,23 @@ const importObj = {
     free: managedMemory.free.bind(managedMemory),
     incRef: managedMemory.incRef.bind(managedMemory),
     incRefADT: managedMemory.incRefADT.bind(managedMemory),
+    incRefArray: managedMemory.incRefArray.bind(managedMemory),
     incRefTuple: managedMemory.incRefTuple.bind(managedMemory),
     incRefBackpatch: managedMemory.incRefBackpatch.bind(managedMemory),
     incRefSwapBind: managedMemory.incRefSwapBind.bind(managedMemory),
     incRefLocalBind: managedMemory.incRefLocalBind.bind(managedMemory),
     incRefArgBind: managedMemory.incRefArgBind.bind(managedMemory),
+    incRefGlobalBind: managedMemory.incRefGlobalBind.bind(managedMemory),
+    incRefCleanupLocals: managedMemory.incRefCleanupLocals.bind(managedMemory),
     incRef64: managedMemory.incRef64.bind(managedMemory),
     decRef: managedMemory.decRef.bind(managedMemory),
+    decRefSwapBind: managedMemory.decRefSwapBind.bind(managedMemory),
+    decRefLocalBind: managedMemory.decRefLocalBind.bind(managedMemory),
+    decRefArgBind: managedMemory.decRefArgBind.bind(managedMemory),
+    decRefGlobalBind: managedMemory.decRefGlobalBind.bind(managedMemory),
+    decRefCleanupLocals: managedMemory.decRefCleanupLocals.bind(managedMemory),
+    decRefCleanupGlobals: managedMemory.decRefCleanupGlobals.bind(managedMemory),
+    decRefDrop: managedMemory.decRefDrop.bind(managedMemory),
     decRef64: managedMemory.decRef64.bind(managedMemory)
   },
   grainBuiltins: {
