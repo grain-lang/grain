@@ -171,6 +171,9 @@ let basic_functionality_tests = [
 
   t "if4" "if (false) 1 else if (false) 2 else {3}" "3";
 
+  t "if_one_sided" "if (3 < 4) print(5)" "5\nvoid";
+  t "if_one_sided2" "if (3 > 4) print(5)" "void";
+
   t "int32" "42l" "42";
   t "int64" "99999999999999999L" "99999999999999999";
 
