@@ -1,9 +1,9 @@
 import { mallocJSModule } from './malloc';
-import { getTagType, GRAIN_CONST_TAG_TYPE, GRAIN_NUMBER_TAG_TYPE, GRAIN_TUPLE_TAG_TYPE, GRAIN_GENERIC_HEAP_TAG_TYPE, GRAIN_LAMBDA_TAG_TYPE,
+import { getTagType, tagToString, heapTagToString, GRAIN_CONST_TAG_TYPE, GRAIN_NUMBER_TAG_TYPE, GRAIN_TUPLE_TAG_TYPE, GRAIN_GENERIC_HEAP_TAG_TYPE, GRAIN_LAMBDA_TAG_TYPE,
          GRAIN_STRING_HEAP_TAG, GRAIN_DOM_ELEM_TAG, GRAIN_ADT_HEAP_TAG } from './tags';
 import { grainAdtInfo, toHex, toBinary } from '../utils/utils';
 
-const TRACE_MEMORY = true;
+const TRACE_MEMORY = false;
 
 function trace(msg) {
   if (TRACE_MEMORY) {
@@ -57,11 +57,12 @@ export class ManagedMemory {
       this._allocatedAddresses = new Set();
       this._incRefSources = {};
       this._decRefSources = {};
+      this._knownTagTypes = {};
     }
   }
 
   _growHeap() {
-    console.log('_growHeap');
+    //console.log('_growHeap');
     if (this._runtime && this._runtime.limitMemory >= 0 && this._grown >= this._runtime.limitMemory) {
       //throw 'Out of memory (_growHeap)';
       return -1;
@@ -74,12 +75,20 @@ export class ManagedMemory {
 
   setRuntime(runtime) {
     this._runtime = runtime;
-    if (runtime.limitMemory) {
+    if (runtime.limitMemory >= 0) {
       this._mallocModule = mallocJSModule(this._globNS, {
         initialHeapSize: runtime.limitMemory,
         growHeap: () => this._growHeap()
       }, this._memory.buffer);
       this._grown = 0;
+    }
+    if (TRACE_MEMORY) {
+      runtime.postImports = () => {
+        this._allocatedAddresses = new Set();
+        this._incRefSources = {};
+        this._decRefSources = {};
+        this._knownTagTypes = {};
+      }
     }
   }
 
@@ -109,7 +118,8 @@ export class ManagedMemory {
     for (let i = 0; i < this._headerSize; ++i) {
       heap[rawPtr + i] = 0;
     }
-    heap[rawPtr + 2] = 1; // <- init refCount at 1 (from this allocation)
+    this._setRefCount(rawPtr, 1);
+    //heap[rawPtr + 2] = 1; // <- init refCount at 1 (from this allocation)
     heap[rawPtr + 3] = tag & 0b1111; // <- 4-bit tag
   }
 
@@ -176,44 +186,87 @@ export class ManagedMemory {
 
   incRef64(userPtr) {
     trace('incRef64 [see next]');
-    this._markIncRefSource(userPtr, '64')
-    return this.incRef(userPtr);
+    return this.incRef(userPtr, '64');
   }
 
   incRefADT(userPtr) {
     trace('incRefADT [see next]');
-    this._markIncRefSource(userPtr, 'ADT');
-    return this.incRef(userPtr);
+    return this.incRef(userPtr, 'ADT');
+  }
+
+  incRefArray(userPtr) {
+    trace('incRefARRAY [see next]');
+    return this.incRef(userPtr, 'ARRAY');
   }
 
   incRefTuple(userPtr) {
     trace('incRefTuple [see next]');
-    this._markIncRefSource(userPtr, 'TUPLE');
-    return this.incRef(userPtr);
+    return this.incRef(userPtr, 'TUPLE');
   }
 
   incRefBackpatch(userPtr) {
     trace('incRefBackpatch [see next]');
-    this._markIncRefSource(userPtr, 'BACKPATCH');
-    return this.incRef(userPtr);
+    return this.incRef(userPtr, 'BACKPATCH');
   }
 
   incRefSwapBind(userPtr) {
     trace('incRefSwapBind [see next]');
-    this._markIncRefSource(userPtr, 'SWAP');
-    return this.incRef(userPtr);
+    return this.incRef(userPtr, 'SWAP');
+  }
+
+  decRefSwapBind(userPtr) {
+    trace('decRefSwapBind [see next]');
+    return this.decRef(userPtr, 'SWAP');
   }
 
   incRefArgBind(userPtr) {
     trace('incRefArgBind [see next]');
-    this._markIncRefSource(userPtr, 'ARG');
-    return this.incRef(userPtr);
+    return this.incRef(userPtr, 'ARG');
+  }
+
+  decRefArgBind(userPtr) {
+    trace('decRefArgBind [see next]');
+    return this.decRef(userPtr, 'ARG');
   }
 
   incRefLocalBind(userPtr) {
     trace('incRefLocalBind [see next]');
-    this._markIncRefSource(userPtr, 'LOCAL');
-    return this.incRef(userPtr);
+    return this.incRef(userPtr, 'LOCAL');
+  }
+
+  decRefLocalBind(userPtr) {
+    trace('decRefLocalBind [see next]');
+    return this.decRef(userPtr, 'LOCAL');
+  }
+
+  incRefGlobalBind(userPtr) {
+    trace('incRefGlobalBind [see next]');
+    return this.incRef(userPtr, 'GLOBAL');
+  }
+
+  decRefGlobalBind(userPtr) {
+    trace('decRefGlobalBind [see next]');
+    return this.decRef(userPtr, 'GLOBAL');
+  }
+
+  incRefCleanupLocals(userPtr) {
+    trace('incRefCleanupLocals [see next]');
+    return this.incRef(userPtr, 'CLEANUP_LOCALS');
+  }
+
+  decRefCleanupLocals(userPtr) {
+    trace('decRefCleanupLocals [see next]');
+    return this.decRef(userPtr, 'CLEANUP_LOCALS');
+  }
+
+  decRefCleanupGlobals(userPtr) {
+    trace('decRefCleanupGlobals [see next]');
+    return this.decRef(userPtr, 'CLEANUP_GLOBALS', true);
+  }
+
+  decRefDrop(userPtr) {
+    trace('decRefDrop [see next]');
+    return this.decRef(userPtr, 'DROP', true);
   }
 
   _markIncRefSource(userPtr, x) {
@@ -234,16 +287,16 @@ export class ManagedMemory {
     const heap = new Uint8Array(this._memory.buffer);
     trace('_setRefCount:')
     trace(`\told as binary: ${this._toBinary(heap[rawPtr], 8, 8)}|${this._toBinary(heap[rawPtr + 1], 8, 8)}|${this._toBinary(heap[rawPtr + 2], 8, 8)}`)
-    heap[rawPtr] = count & (0b01111111 << 16);
-    heap[rawPtr + 1] = count & (0b11111111 << 8);
+    heap[rawPtr] = (count & (0b01111111 << 16)) >> 16;
+    heap[rawPtr + 1] = (count & (0b11111111 << 8)) >> 8;
     heap[rawPtr + 2] = count & 0b11111111;
     trace(`\tnew as binary: ${this._toBinary(heap[rawPtr], 8, 8)}|${this._toBinary(heap[rawPtr + 1], 8, 8)}|${this._toBinary(heap[rawPtr + 2], 8, 8)}`)
   }
 
-  incRef(userPtr) {
+  incRef(userPtr, src) {
     let origInput = userPtr;
     trace(`incRef(0x${this._toHex(userPtr)})`);
-    let ptrTagType = getTagType(userPtr);
+    let ptrTagType = getTagType(userPtr, true);
     if (userPtr === 0 || ptrTagType === GRAIN_NUMBER_TAG_TYPE || ptrTagType === GRAIN_CONST_TAG_TYPE) {
       // no ref-counting for primitives
       // [TODO] The type-checker should make this not ever be called ideally, but it
@@ -252,7 +305,15 @@ export class ManagedMemory {
       return origInput;
     }
     userPtr = userPtr & (~7);
-    trace(`\ttrue ptr: 0x${this._toHex(userPtr)}; raw: 0x${this._toHex(userPtr - this._headerSize)}`);
+    if (TRACE_MEMORY) {
+      this._knownTagTypes[userPtr] = ptrTagType;
+      let heapTag = '';
+      if (ptrTagType === GRAIN_GENERIC_HEAP_TAG_TYPE) {
+        heapTag = `>${heapTagToString(new Uint32Array(this._memory.buffer)[userPtr/4])}`
+      }
+      trace(`\ttrue ptr: 0x${this._toHex(userPtr)} (${tagToString(ptrTagType)}${heapTag} (${ptrTagType})); raw: 0x${this._toHex(userPtr - this._headerSize)}`);
+    }
+    this._markIncRefSource(userPtr, src || 'UNK');
     trace('\tincrementing...');
     let rawPtr = userPtr - this._headerSize;
     let refCount = this._getRefCount(userPtr);
@@ -263,10 +324,10 @@ export class ManagedMemory {
     return origInput;
   }
 
-  decRef(userPtr) {
+  decRef(userPtr, src, ignoreZeros) {
     trace(`decRef(0x${this._toHex(userPtr)})`);
     let origInput = userPtr;
-    let ptrTagType = getTagType(userPtr);
+    let ptrTagType = getTagType(userPtr, true);
     if (userPtr === 0 || ptrTagType === GRAIN_NUMBER_TAG_TYPE || ptrTagType === GRAIN_CONST_TAG_TYPE) {
       // no ref-counting for primitives
       // [TODO] The type-checker should make this not ever be called ideally, but it
@@ -275,13 +336,22 @@ export class ManagedMemory {
       return origInput;
     }
     userPtr = userPtr & (~7);
+    if (TRACE_MEMORY) {
+      let heapTag = '';
+      if (ptrTagType === GRAIN_GENERIC_HEAP_TAG_TYPE) {
+        heapTag = `>${heapTagToString(new Uint32Array(this._memory.buffer)[userPtr/4])}`
+      }
+      trace(`\ttrue ptr: 0x${this._toHex(userPtr)} (${tagToString(ptrTagType)}${heapTag} (${ptrTagType})); raw: 0x${this._toHex(userPtr - this._headerSize)}`);
+    }
+    this._markDecRefSource(userPtr, src || 'UNK');
     let heap = new Uint8Array(this._memory.buffer);
     let rawPtr = userPtr - this._headerSize;
-    trace(`\ttrue ptr: 0x${this._toHex(userPtr)}; raw: 0x${this._toHex(rawPtr)}`);
     let refCount = this._getRefCount(userPtr);
     // [TODO] This is a blazing-hot code path. Should we eschew error-checking?
     if (refCount === 0) {
-      // [TODO] the formatting on this is busted, but I'm on a plane with no WiFi and can't look up how to do it right
+      if (ignoreZeros) {
+        return userPtr;
+      }
       throw new Error(`decRef called when reference count was zero. ${this._memdump(userPtr)}`);
     }
     --refCount;
@@ -301,7 +371,7 @@ export class ManagedMemory {
           } else {
             view[tupleIdx] |= 0x80000000;
             for (let i = 0; i < tupleLength; ++i) {
-              this.decRef(view[tupleIdx + i + 1])
+              this.decRef(view[tupleIdx + i + 1], 'FREE')
             }
             view[tupleIdx] = tupleLength;
           }
@@ -311,7 +381,7 @@ export class ManagedMemory {
           let lambdaIdx = userPtr / 4;
           let numFreeVars = view[lambdaIdx + 2];
           for (let i = 0; i < numFreeVars; ++i) {
-            this.decRef(view[lambdaIdx + 3 + i]);
+            this.decRef(view[lambdaIdx + 3 + i], 'FREE');
           }
           break;
         case GRAIN_GENERIC_HEAP_TAG_TYPE:
@@ -322,7 +392,7 @@ export class ManagedMemory {
                 let x = genericHeapValUserPtr / 4;
                 let [variantName, arity] = grainAdtInfo(this._runtime, genericHeapValUserPtr);
                 for (let i = 0; i < arity; ++i) {
-                  this.decRef(view[x + 5 + i]);
+                  this.decRef(view[x + 5 + i], 'FREE');
                 }
               }
             default:
@@ -366,11 +436,30 @@ export class ManagedMemory {
     trace('==== MEMORY TRACE INFO ===');
     trace('---- LEAKED OBJECTS ---');
     this._allocatedAddresses.forEach((x) => {
+      let ptrTagType = this._knownTagTypes[x] || -1;
+      if (x === 0 || ptrTagType === GRAIN_NUMBER_TAG_TYPE || ptrTagType === GRAIN_CONST_TAG_TYPE) {
+        trace(`is invalid (ptrTagType=${ptrTagType} (${ptrTagType === GRAIN_NUMBER_TAG_TYPE ? 'number' : ''}${ptrTagType === GRAIN_CONST_TAG_TYPE ? 'const' : ''}))`)
+      }
+      if (ptrTagType === GRAIN_LAMBDA_TAG_TYPE) {
+        return;
+      }
       trace(this._memdump(x));
+      let heapTag = '';
+      if (ptrTagType === GRAIN_GENERIC_HEAP_TAG_TYPE) {
+        heapTag = `>${heapTagToString(new Uint32Array(this._memory.buffer)[x/4])}`
+      }
+      trace(`last known tag: ${tagToString(ptrTagType)}${heapTag} (${ptrTagType})`)
       this._getRefCount(x);
       trace(`\tincrefs: ${JSON.stringify(this._incRefSources[x] || {})}`);
       trace(`\tdecrefs: ${JSON.stringify(this._decRefSources[x] || {})}`);
     });
+    // trace('---- LEAKED OBJECTS (2) ---');
+    // Object.keys(this._incRefSources).forEach((x) => {
+    //   trace(this._memdump(x));
+    //   this._getRefCount(x);
+    //   trace(`\tincrefs: ${JSON.stringify(this._incRefSources[x] || {})}`);
+    //   trace(`\tdecrefs: ${JSON.stringify(this._decRefSources[x] || {})}`);
+    // })
     trace('==== END MEMORY TRACE INFO ===')
 >>>>>>> Fix more tests and nasty memory allocation bugs
   }

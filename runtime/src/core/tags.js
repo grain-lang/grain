@@ -41,7 +41,7 @@ function getAndMask(tag) {
   }
 }
 
-export function getTagType(n) {
+export function getTagType(n, quiet) {
   if (!(n & GRAIN_NUMBER_TAG_MASK)) {
     return GRAIN_NUMBER_TAG_TYPE;
   } else if ((n & GRAIN_TUPLE_TAG_MASK) === GRAIN_TUPLE_TAG_TYPE) {
@@ -53,8 +53,44 @@ export function getTagType(n) {
   } else if ((n === -1) || (n === 0x7FFFFFFF) || (n === 0x6FFFFFFF)) {
     return GRAIN_CONST_TAG_TYPE;
   } else {
-    console.warn(`<getTagType: Unknown value: 0x${(new Number(n)).toString(16)}`);
+    if (!quiet) {
+      console.warn(`<getTagType: Unknown value: 0x${(new Number(n)).toString(16)}`);
+    }
     return undefined;
+  }
+}
+
+export function tagToString(t) {
+  switch(t) {
+    case GRAIN_NUMBER_TAG_TYPE:
+      return 'number';
+    case GRAIN_TUPLE_TAG_TYPE:
+      return 'tuple';
+    case GRAIN_LAMBDA_TAG_TYPE:
+      return 'lambda';
+    case GRAIN_GENERIC_HEAP_TAG_TYPE:
+      return 'heap_value';
+    case GRAIN_CONST_TAG_TYPE:
+      return 'const';
+    default:
+      return 'unknown';
+  }
+}
+
+export function heapTagToString(t) {
+  switch (t) {
+    case GRAIN_STRING_HEAP_TAG:
+      return 'string';
+    case GRAIN_DOM_ELEM_TAG:
+      return 'dom_elem';
+    case GRAIN_ADT_HEAP_TAG:
+      return 'adt';
+    case GRAIN_RECORD_HEAP_TAG:
+      return 'record';
+    case GRAIN_ARRAY_HEAP_TAG:
+      return 'array';
+    default:
+      return 'unknown';
   }
 }
 

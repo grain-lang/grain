@@ -106,7 +106,7 @@ let read_stream cstream =
   Bytes.to_string @@ Bytes.sub buf 0 !i
 
 
-let run_output ?(code=0) cstate test_ctxt =
+let run_output ?(code=0) ?heap_size cstate test_ctxt =
   let program = extract_wasm cstate in
   let file = Filename.temp_file "test" ".gr.wasm" in
   Emitmod.emit_module program file;
@@ -114,13 +114,16 @@ let run_output ?(code=0) cstate test_ctxt =
   let stdlib = Option.get !Grain_utils.Config.stdlib_dir in
   let testlibs = Sys.getcwd () ^ "/test-libs" in
   let result = ref "" in
+  let heap_args = match heap_size with
+    | Some x -> ["--limitMemory"; string_of_int x]
+    | None -> [] in
   assert_command
     ~foutput:(fun stream -> result := read_stream stream)
     ~exit_code:(Unix.WEXITED(code))
     ~use_stderr:true
     ~ctxt:test_ctxt
     "grain"
-    ["-wpg"; "-S"; stdlib; "-I"; testlibs; file];
+    (["-wpg"; "-S"; stdlib; "-I"; testlibs; file] @ heap_args);
   !result
 
 let run_anf p out =
@@ -131,22 +134,22 @@ let run_anf p out =
   } in
   run_output (compile_resume ~hook:stop_after_compiled cstate)
 
-let test_run ?cmp program_str outfile expected test_ctxt =
+let test_run ?cmp ?heap_size program_str outfile expected test_ctxt =
   let result = Config.preserve_config (fun () ->
       Config.include_dirs := "test-libs"::!Config.include_dirs;
       let cstate = compile_string ~hook:stop_after_compiled ~name:outfile program_str in
-      run_output cstate test_ctxt
+      run_output ?heap_size cstate test_ctxt
     ) in
   assert_equal
   ~printer:Batteries.identity
   ~cmp:(Option.default (=) cmp)
   (expected ^ "\n") result
 
-let test_run_file filename name expected test_ctxt =
+let test_run_file ?heap_size filename name expected test_ctxt =
   let input_filename = "input/" ^ filename ^ ".gr" in
   let outfile = "output/" ^ name in
   let cstate = compile_file ~hook:stop_after_compiled ~outfile input_filename in
-  let result = run_output cstate test_ctxt in
+  let result = run_output ?heap_size cstate test_ctxt in
   assert_equal ~printer:Batteries.identity (expected ^ "\n") result
 
 let test_run_stdlib ?(returns="void\n") ?code filename test_ctxt =
@@ -194,12 +197,12 @@ let test_run_anf program_anf outfile expected test_ctxt =
   let result = run_anf program_anf outfile test_ctxt in
   assert_equal (expected ^ "\n") result ~printer:Batteries.identity
 
-let test_err program_str outfile errmsg test_ctxt =
+let test_err ?heap_size program_str outfile errmsg test_ctxt =
   let result = try
       Config.preserve_config (fun () ->
         Config.include_dirs := "test-libs"::!Config.include_dirs;
         let cstate = compile_string ~hook:stop_after_compiled ~name:outfile program_str in
-        run_output cstate test_ctxt
+        run_output ?heap_size cstate test_ctxt
       )
     with exn -> Printexc.to_string exn
   in

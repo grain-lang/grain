@@ -45,14 +45,24 @@ let malloc_ident = Ident.create_persistent "malloc"
 let incref_ident = Ident.create_persistent "incRef"
 (* Variants used for tracing *)
 let incref_adt_ident = Ident.create_persistent "incRefADT"
+let incref_array_ident = Ident.create_persistent "incRefArray"
 let incref_tuple_ident = Ident.create_persistent "incRefTuple"
 let incref_backpatch_ident = Ident.create_persistent "incRefBackpatch"
 let incref_swap_bind_ident = Ident.create_persistent "incRefSwapBind"
 let incref_arg_bind_ident = Ident.create_persistent "incRefArgBind"
 let incref_local_bind_ident = Ident.create_persistent "incRefLocalBind"
+let incref_global_bind_ident = Ident.create_persistent "incRefGlobalBind"
+let incref_cleanup_locals_ident = Ident.create_persistent "incRefCleanupLocals"
 let incref64_ident = Ident.create_persistent "incRef64"
 let decref_ident = Ident.create_persistent "decRef"
 let decref64_ident = Ident.create_persistent "decRef64"
+let decref_swap_bind_ident = Ident.create_persistent "decRefSwapBind"
+let decref_arg_bind_ident = Ident.create_persistent "decRefArgBind"
+let decref_local_bind_ident = Ident.create_persistent "decRefLocalBind"
+let decref_global_bind_ident = Ident.create_persistent "decRefGlobalBind"
+let decref_cleanup_locals_ident = Ident.create_persistent "decRefCleanupLocals"
+let decref_cleanup_globals_ident = Ident.create_persistent "decRefCleanupGlobals"
+let decref_drop_ident = Ident.create_persistent "decRefDrop"
 
 let runtime_global_imports = [
   {
@@ -109,6 +119,13 @@ let runtime_function_imports = [
   };
   {
     mimp_mod=runtime_mod;
+    mimp_name=incref_array_ident;
+    mimp_type=MFuncImport([I32Type], [I32Type]); (* Returns same pointer as argument *)
+    mimp_kind=MImportWasm;
+    mimp_setup=MSetupNone;
+  };
+  {
+    mimp_mod=runtime_mod;
     mimp_name=incref_tuple_ident;
     mimp_type=MFuncImport([I32Type], [I32Type]); (* Returns same pointer as argument *)
     mimp_kind=MImportWasm;
@@ -144,6 +161,20 @@ let runtime_function_imports = [
   };
   {
     mimp_mod=runtime_mod;
+    mimp_name=incref_global_bind_ident;
+    mimp_type=MFuncImport([I32Type], [I32Type]); (* Returns same pointer as argument *)
+    mimp_kind=MImportWasm;
+    mimp_setup=MSetupNone;
+  };
+  {
+    mimp_mod=runtime_mod;
+    mimp_name=incref_cleanup_locals_ident;
+    mimp_type=MFuncImport([I32Type], [I32Type]); (* Returns same pointer as argument *)
+    mimp_kind=MImportWasm;
+    mimp_setup=MSetupNone;
+  };
+  {
+    mimp_mod=runtime_mod;
     mimp_name=incref64_ident;
     mimp_type=MFuncImport([I64Type], [I64Type]); (* Returns same pointer as argument *)
     mimp_kind=MImportWasm;
@@ -160,6 +191,55 @@ let runtime_function_imports = [
     mimp_mod=runtime_mod;
     mimp_name=decref64_ident;
     mimp_type=MFuncImport([I64Type], [I64Type]); (* Returns same pointer as argument *)
+    mimp_kind=MImportWasm;
+    mimp_setup=MSetupNone;
+  };
+  {
+    mimp_mod=runtime_mod;
+    mimp_name=decref_swap_bind_ident;
+    mimp_type=MFuncImport([I32Type], [I32Type]); (* Returns same pointer as argument *)
+    mimp_kind=MImportWasm;
+    mimp_setup=MSetupNone;
+  };
+  {
+    mimp_mod=runtime_mod;
+    mimp_name=decref_arg_bind_ident;
+    mimp_type=MFuncImport([I32Type], [I32Type]); (* Returns same pointer as argument *)
+    mimp_kind=MImportWasm;
+    mimp_setup=MSetupNone;
+  };
+  {
+    mimp_mod=runtime_mod;
+    mimp_name=decref_local_bind_ident;
+    mimp_type=MFuncImport([I32Type], [I32Type]); (* Returns same pointer as argument *)
+    mimp_kind=MImportWasm;
+    mimp_setup=MSetupNone;
+  };
+  {
+    mimp_mod=runtime_mod;
+    mimp_name=decref_global_bind_ident;
+    mimp_type=MFuncImport([I32Type], [I32Type]); (* Returns same pointer as argument *)
+    mimp_kind=MImportWasm;
+    mimp_setup=MSetupNone;
+  };
+  {
+    mimp_mod=runtime_mod;
+    mimp_name=decref_cleanup_locals_ident;
+    mimp_type=MFuncImport([I32Type], [I32Type]); (* Returns same pointer as argument *)
+    mimp_kind=MImportWasm;
+    mimp_setup=MSetupNone;
+  };
+  {
+    mimp_mod=runtime_mod;
+    mimp_name=decref_cleanup_globals_ident;
+    mimp_type=MFuncImport([I32Type], [I32Type]); (* Returns same pointer as argument *)
+    mimp_kind=MImportWasm;
+    mimp_setup=MSetupNone;
+  };
+  {
+    mimp_mod=runtime_mod;
+    mimp_name=decref_drop_ident;
+    mimp_type=MFuncImport([I32Type], [I32Type]); (* Returns same pointer as argument *)
     mimp_kind=MImportWasm;
     mimp_setup=MSetupNone;
   };
@@ -291,14 +371,24 @@ let call_console_log env = Ast.Call(var_of_ext_func env console_mod log_ident)
 let call_malloc env = Ast.Call(var_of_ext_func env runtime_mod malloc_ident)
 let call_incref env = Ast.Call(var_of_ext_func env runtime_mod incref_ident)
 let call_incref_adt env = Ast.Call(var_of_ext_func env runtime_mod incref_adt_ident)
+let call_incref_array env = Ast.Call(var_of_ext_func env runtime_mod incref_array_ident)
 let call_incref_tuple env = Ast.Call(var_of_ext_func env runtime_mod incref_tuple_ident)
 let call_incref_backpatch env = Ast.Call(var_of_ext_func env runtime_mod incref_backpatch_ident)
 let call_incref_swap_bind env = Ast.Call(var_of_ext_func env runtime_mod incref_swap_bind_ident)
 let call_incref_arg_bind env = Ast.Call(var_of_ext_func env runtime_mod incref_arg_bind_ident)
 let call_incref_local_bind env = Ast.Call(var_of_ext_func env runtime_mod incref_local_bind_ident)
+let call_incref_global_bind env = Ast.Call(var_of_ext_func env runtime_mod incref_global_bind_ident)
+let call_incref_cleanup_locals env = Ast.Call(var_of_ext_func env runtime_mod incref_cleanup_locals_ident)
 let call_incref_64 env = Ast.Call(var_of_ext_func env runtime_mod incref64_ident)
 let call_decref env = Ast.Call(var_of_ext_func env runtime_mod decref_ident)
 let call_decref_64 env = Ast.Call(var_of_ext_func env runtime_mod decref64_ident)
+let call_decref_swap_bind env = Ast.Call(var_of_ext_func env runtime_mod decref_swap_bind_ident)
+let call_decref_arg_bind env = Ast.Call(var_of_ext_func env runtime_mod decref_arg_bind_ident)
+let call_decref_local_bind env = Ast.Call(var_of_ext_func env runtime_mod decref_local_bind_ident)
+let call_decref_global_bind env = Ast.Call(var_of_ext_func env runtime_mod decref_global_bind_ident)
+let call_decref_cleanup_locals env = Ast.Call(var_of_ext_func env runtime_mod decref_cleanup_locals_ident)
+let call_decref_cleanup_globals env = Ast.Call(var_of_ext_func env runtime_mod decref_cleanup_globals_ident)
+let call_decref_drop env = Ast.Call(var_of_ext_func env runtime_mod decref_drop_ident)
 
 let get_func_type_idx env typ =
   match BatDeque.find ((=) typ) !(env.func_types) with
@@ -351,7 +441,7 @@ let cleanup_local_slot_instructions (env : codegen_env) =
     let slot = add_dummy_loc (Int32.of_int (i + env.num_args + (List.length swap_slots))) in
     wrapped [
       Ast.LocalGet(slot);
-      call_decref env;
+      call_decref_cleanup_locals env;
       Ast.Drop;
     ]) in
   flatten instrs
@@ -365,6 +455,7 @@ let compile_bind ~action ?ty:(typ=Types.I32Type) ?skip_incref:(skip_incref=false
         | MArgBind _ -> call_incref_arg_bind env
         | MLocalBind _ -> call_incref_local_bind env
         | MSwapBind _ -> call_incref_swap_bind env
+        | MGlobalBind _ -> call_incref_global_bind env
         | _ -> call_incref env
       end
     | Types.I64Type ->
@@ -374,7 +465,14 @@ let compile_bind ~action ?ty:(typ=Types.I32Type) ?skip_incref:(skip_incref=false
     | _ -> failwith "appropriate_incref called with non-i32/i64 type"
   in
   let appropriate_decref env = match typ with
-    | Types.I32Type -> call_decref env
+    | Types.I32Type ->
+      begin match b with
+        | MArgBind _ -> call_decref_arg_bind env
+        | MLocalBind _ -> call_decref_local_bind env
+        | MSwapBind _ -> call_decref_swap_bind env
+        | MGlobalBind _ -> call_decref_global_bind env
+        | _ -> call_decref env
+      end
     | Types.I64Type ->
       (* https://github.com/dcodeIO/webassembly/issues/26#issuecomment-410157370 *)
       (* call_decref_64 env *)
@@ -504,10 +602,10 @@ let compile_bind ~action ?ty:(typ=Types.I32Type) ?skip_incref:(skip_incref=false
           (* PRE: Stack: value to set, <rest> *)
           (* Call incref() on new value we're setting (we do this first, since we don't know if new == old).
              Note that this preserves the stack. *)
-          call_incref env;
+          appropriate_incref env;
           (* Get old value of slot and call decref() on it *)
           Ast.GlobalGet(slot);
-          call_decref env;
+          appropriate_decref env;
           (* Drop old value from stack *)
           Ast.Drop;
           (* Set new stack value *)
@@ -519,10 +617,10 @@ let compile_bind ~action ?ty:(typ=Types.I32Type) ?skip_incref:(skip_incref=false
           (* PRE: Stack: value to set, <rest> *)
           (* Call incref() on new value we're setting (we do this first, since we don't know if new == old).
              Note that this preserves the stack. *)
-          call_incref env;
+          appropriate_incref env;
           (* Get old value of slot and call decref() on it *)
           Ast.GlobalGet(slot);
-          call_decref env;
+          appropriate_decref env;
           (* Drop old value from stack *)
           Ast.Drop;
           (* Set new stack value *)
@@ -548,6 +646,11 @@ let compile_bind ~action ?ty:(typ=Types.I32Type) ?skip_incref:(skip_incref=false
     (* Adjust for runtime functions *)
     let slot = add_dummy_loc (env.import_offset ++ i) in
     singleton (Ast.GlobalGet(slot))
+
+let safe_drop env = Concatlist.t_of_list [
+  call_decref_drop env;
+  Ast.Drop;
+]
 
 let get_swap ?ty:(typ=Types.I32Type) env idx =
   match typ with
@@ -593,9 +696,11 @@ let cleanup_locals (env : codegen_env) : Wasm.Ast.instr' Concatlist.t =
     - Call incref() on the return value (to prevent premature free)
     - Call decref() on all locals (should include return value) *)
   (set_swap env 0) @ (get_swap env 0) +@ [
-    call_decref env;
+    call_incref_cleanup_locals env;
     Ast.Drop;
-  ] @ (cleanup_local_slot_instructions env) @ (get_swap env 0)
+  ] @ (cleanup_local_slot_instructions env) @ (get_swap env 0) +@ [
+    call_decref_cleanup_locals env;
+  ]
 
 
 let compile_imm (env : codegen_env) (i : immediate) : Wasm.Ast.instr' Concatlist.t =
@@ -1046,7 +1151,7 @@ let allocate_array env elts =
   let compile_elt idx elt =
     get_swap @
     (compile_imm env elt) +@ [
-      call_incref env;
+      call_incref_array env;
       store ~offset:(4 * (idx + 2)) ();
     ] in
 
@@ -1585,7 +1690,7 @@ and compile_block env block =
 
 and compile_instr env instr =
   match instr with
-  | MDrop -> singleton Ast.Drop
+  | MDrop -> safe_drop env
   | MImmediate(imm) -> compile_imm env imm
   | MAllocate(alloc) -> compile_allocation env alloc
   | MTupleOp(tuple_op, tup) -> compile_tuple_op env tup tuple_op
@@ -1626,8 +1731,8 @@ and compile_instr env instr =
                           compiled_cond @
                           decode_bool +@
                           [Ast.Test(Values.I32 Ast.IntOp.Eqz);
-                           Ast.BrIf (add_dummy_loc @@ Int32.of_int 1)] +@
-                          [Ast.Drop] @
+                           Ast.BrIf (add_dummy_loc @@ Int32.of_int 1)] @
+                          (safe_drop env) @
                           compiled_body +@
                           [Ast.Br (add_dummy_loc @@ Int32.of_int 0)]))))
 
@@ -1646,7 +1751,7 @@ let compile_function env {index; arity; stack_size; body=body_instrs} =
   let arity_int = Int32.to_int arity in
   let body_env = {env with num_args=arity_int; stack_size} in
   let body = Concatlist.mapped_list_of_t add_dummy_loc @@
-    (compile_block body_env body_instrs) @ (cleanup_locals env) +@ [Ast.Return] in
+    (compile_block body_env body_instrs) @ (cleanup_locals body_env) +@ [Ast.Return] in
   let open Wasm.Ast in
   let ftype_idx = get_arity_func_type_idx env arity_int in
   let ftype = add_dummy_loc Int32.(of_int ftype_idx) in
@@ -1746,8 +1851,10 @@ let compile_exports env {functions; imports; exports; num_globals} =
     add_dummy_loc { name; edesc } in
   let heap_adjust_idx = env.func_offset + (List.length functions) in
   let main_idx = heap_adjust_idx + 1 in
+  let cleanup_globals_idx = main_idx + 1 in
   let heap_adjust_idx = add_dummy_loc @@ Int32.of_int heap_adjust_idx in
   let main_idx = add_dummy_loc @@ Int32.of_int main_idx in
+  let cleanup_globals_idx = add_dummy_loc @@ Int32.of_int cleanup_globals_idx in
   let compiled_lambda_exports = List.mapi compile_lambda_export functions in
   let exports =
     let exported = Hashtbl.create 14 in
@@ -1769,6 +1876,10 @@ let compile_exports env {functions; imports; exports; num_globals} =
           add_dummy_loc {
             Ast.name=encode_string "_start";
             Ast.edesc=add_dummy_loc (Ast.FuncExport main_idx);
+          };
+          add_dummy_loc {
+            Ast.name=encode_string "GRAIN$CLEANUP_GLOBALS";
+            Ast.edesc=add_dummy_loc (Ast.FuncExport cleanup_globals_idx);
           };
           add_dummy_loc {
             Ast.name=encode_string (Ident.name table_size);
@@ -1843,15 +1954,34 @@ let compile_main env prog =
       stack_size=prog.main_body_stack_size;
     }
 
-let compile_functions env ({functions} as prog) =
+let compile_global_cleanup_function env num_globals =
+  let body = Concatlist.mapped_list_of_t add_dummy_loc @@
+    (List.fold_right Concatlist.append (BatList.init num_globals (fun n ->
+      (singleton (Ast.GlobalGet(add_dummy_loc @@ Int32.of_int n))) +@ [
+        call_decref_cleanup_globals env;
+        Ast.Drop
+        ]))
+      (Concatlist.t_of_list [Ast.Const(wrap_int32 Int32.zero); Ast.Return])) in
+  let open Wasm.Ast in
+  let ftype_idx = get_arity_func_type_idx env 0 in
+  let ftype = add_dummy_loc Int32.(of_int ftype_idx) in
+  add_dummy_loc {
+    ftype;
+    locals=[];
+    body;
+  }
+
+let compile_functions env ({functions; num_globals} as prog) =
   let compiled_funcs = List.map (compile_function env) functions in
   let heap_adjust = heap_adjust env in
   let main = compile_main env prog in
+  let cleanup_globals = compile_global_cleanup_function env num_globals in
   List.append
     compiled_funcs
     [
       heap_adjust;
       main;
+      cleanup_globals;
     ]
 
 exception WasmRunnerError of string option * Wasm.Source.region * string * Wasm.Ast.module_
