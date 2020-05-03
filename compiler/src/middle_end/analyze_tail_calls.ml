@@ -35,6 +35,9 @@ let rec analyze_comp_expression ({comp_desc = desc; comp_analyses = analyses}) =
   | CWhile(_, body) ->
     (* While this loop itself is not in tail position, we still want to analyze the body. *)
     ignore @@ analyze_anf_expression body; false
+  | CLambda(args, body) ->
+    (* While this lambda itself is not in tail position, we still want to analyze the body. *)
+    ignore @@ analyze_anf_expression body; false
   | CApp({imm_desc=ImmId(id)}, _) ->
     push_tail_call analyses;
     is_tail_callable id
@@ -54,7 +57,6 @@ let rec analyze_comp_expression ({comp_desc = desc; comp_analyses = analyses}) =
   | CGetAdtItem _
   | CGetAdtTag _
   | CGetRecordItem _
-  | CLambda _
   | CString _
   | CPrim1 _
   | CPrim2 _
