@@ -130,7 +130,7 @@ let wrap_float32 n = add_dummy_loc (Values.F32Value.to_value n)
 let wrap_float64 n = add_dummy_loc (Values.F64Value.to_value n)
 
 let grain_number_max = 0x3fffffff
-let grain_number_min = -0x3fffffff
+let grain_number_min = -0x3fffffff (* 0xC0000001 *)
 
 (** Constant compilation *)
 let rec compile_const c : Wasm.Values.value =
