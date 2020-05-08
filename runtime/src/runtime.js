@@ -15,13 +15,15 @@ import * as libDOM from './lib/DOM';
 export let grainModule;
 
 export const memory = new WebAssembly.Memory({initial: 16});
-export const table = new WebAssembly.Table({element: 'anyfunc', initial: 256});
+export const table = new WebAssembly.Table({element: 'anyfunc', initial: 512});
 export const view = new Int32Array(memory.buffer);
+export const uview = new Uint32Array(memory.buffer);
 export const encoder = new TextEncoder("utf-8");
 export const decoder = new TextDecoder("utf-8");
 
 const managedMemory = new ManagedMemory(memory);
 export const malloc = managedMemory.malloc.bind(managedMemory)
+export const free = managedMemory.free.bind(managedMemory)
 
 const importObj = {
   env: {
@@ -37,7 +39,8 @@ const importObj = {
     tbl: table,
     throwError: throwGrainError,
     checkMemory: grainCheckMemory,
-    malloc: malloc
+    malloc: malloc,
+    free: free,
   },
   grainBuiltins: {
     ...libStrings,

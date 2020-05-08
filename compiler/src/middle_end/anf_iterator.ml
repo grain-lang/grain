@@ -94,6 +94,8 @@ module MakeIter(Iter : IterArgument) = struct
       | CLambda(idents, expr) ->
         iter_anf_expression expr
       | CString(s) -> ()
+      | CInt32(i) -> ()
+      | CInt64(i) -> ()
     end;
     Iter.leave_comp_expression c
 

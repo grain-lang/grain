@@ -23,6 +23,7 @@ type grain_error =
   | InvalidArgument
   | AssertionError
   | Failure
+  | SystemError
   | GenericNumberError
 [@@deriving sexp]
 

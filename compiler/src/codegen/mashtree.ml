@@ -28,6 +28,9 @@ type prim1 = Parsetree.prim1 =
   | ArrayLength
   | Assert
   | FailWith
+  | Int64FromNumber
+  | Int64ToNumber
+  | Int64Lnot
 
 type prim2 = Parsetree.prim2 =
   | Plus
@@ -44,6 +47,16 @@ type prim2 = Parsetree.prim2 =
   | Or
   | ArrayMake
   | ArrayInit
+  | Int64Land
+  | Int64Lor
+  | Int64Lxor
+  | Int64Lsl
+  | Int64Lsr
+  | Int64Asr
+  | Int64Gt
+  | Int64Gte
+  | Int64Lt
+  | Int64Lte
 
 (* Types within the WASM output *)
 type asmtype =
@@ -88,6 +101,8 @@ type allocation_type =
   | MRecord of immediate * (string * immediate) list
   | MADT of immediate * immediate * immediate list (* Type Tag, Variant Tag, Elements *)
   | MString of string
+  | MInt32 of int32
+  | MInt64 of int64
 [@@deriving sexp]
 
 type tag_op =

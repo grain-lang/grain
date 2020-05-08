@@ -93,6 +93,7 @@ let enter_type rec_flag env sdecl id =
         | Some _ -> Some(Ctype.newvar ()) end;*)
       type_newtype_level = None;
       type_loc = sdecl.pdata_loc;
+      type_path = PIdent(id);
       type_immediate = false;
     }
   in
@@ -298,6 +299,7 @@ let transl_declaration env sdecl id =
         type_manifest = man;
         type_newtype_level = None;
         type_loc = sdecl.pdata_loc;
+        type_path = PIdent(id);
         type_immediate = false;
       } in
 

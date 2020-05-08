@@ -1,5 +1,5 @@
 import { GrainError } from '../errors/errors';
-import { readFile, readURL } from './grain-module';
+import { wasi, readFile, readURL } from './grain-module';
 import { makePrint } from '../lib/print';
 import { makeToString } from '../lib/to-string';
 import { grainToString } from '../utils/utils';
@@ -63,6 +63,10 @@ export class GrainRunner {
           console.warn(`Ignoring possible cyclic dependency: ${imp.module}`);
           continue;
         }
+        if (imp.module.startsWith('wasi_')) {
+          Object.assign(this.imports, wasi.getImports(mod.wasmModule));
+          continue;
+        }
         // Should return an instance of GrainModule
         let located = await this.locator(imp.module);
         if (!located) {
@@ -73,11 +77,11 @@ export class GrainRunner {
         // console.debug(`Located module: ${imp.module}`);
         await this.load(imp.module, located);
         if (located.isGrainModule) {
-          await located.run();
+          await located.start();
           this.imports['grainRuntime']['relocBase'] += located.tableSize;
+          ++this.imports['grainRuntime']['moduleRuntimeId'];
         }
         this.ptrZero = this.ptr;
-        this.imports['grainRuntime']['moduleRuntimeId']++;
         this.imports[imp.module] = located.exports;
       }
     }
@@ -97,12 +101,12 @@ export class GrainRunner {
 
   async runFileUnboxed(path) {
     let module = await this.loadFile(path);
-    return module.main();
+    return module.runUnboxed();
   }
 
   async runFile(path) {
     let module = await this.loadFile(path);
-    return module.run();
+    return module.start();
   }
 
   async loadURL(url) {
@@ -112,11 +116,11 @@ export class GrainRunner {
 
   async runURL(path) {
     let module = await this.loadURL(path);
-    return module.run();
+    return module.start();
   }
 
   async runURLUnboxed(path) {
     let module = await this.loadURL(path);
-    return module.main();
+    return module.runUnboxed();
   }
 }

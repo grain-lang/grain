@@ -1,0 +1,19 @@
+export *
+
+primitive fromNumber : Number -> Int64 = '@int64.fromNumber'
+primitive toNumber : Int64 -> Number = '@int64.toNumber'
+
+primitive lnot : Int64 -> Int64 = '@int64.lnot'
+
+primitive land : (Int64, Int64) -> Int64 = '@int64.land'
+primitive lor : (Int64, Int64) -> Int64 = '@int64.lor'
+primitive lxor : (Int64, Int64) -> Int64 = '@int64.lxor'
+
+primitive lsl : (Int64, Number) -> Int64 = '@int64.lsl'
+primitive lsr : (Int64, Number) -> Int64 = '@int64.lsr'
+primitive asr : (Int64, Number) -> Int64 = '@int64.asr'
+
+primitive gt : (Int64, Int64) -> Bool = '@int64.gt'
+primitive gte : (Int64, Int64) -> Bool = '@int64.gte'
+primitive lt : (Int64, Int64) -> Bool = '@int64.lt'
+primitive lte : (Int64, Int64) -> Bool = '@int64.lte'

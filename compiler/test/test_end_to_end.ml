@@ -76,6 +76,12 @@ let tparse ?todo name input expected = name>::(wrap_todo todo @@ test_parse name
 let basic_functionality_tests = [
   t "forty" "let x = 40; x" "40";
   t "neg" "-1073741824" "-1073741824";
+  t "hex" "0xff" "255";
+  t "hex_neg" "-0xff" "-255";
+  t "bin" "0b1010" "10";
+  t "bin_neg" "-0b1010" "-10";
+  t "oct" "0o77" "63";
+  t "oct_neg" "-0o77" "-63";
   t "fals" "let x = false; x" "false";
   t "tru" "let x = true; x" "true";
   t "complex1" "
@@ -164,6 +170,12 @@ let basic_functionality_tests = [
   te "if3" "if (decr(1)) {2} else {5}" "type";
 
   t "if4" "if (false) 1 else if (false) 2 else {3}" "3";
+
+  t "if_one_sided" "if (3 < 4) print(5)" "5\nvoid";
+  t "if_one_sided2" "if (3 > 4) print(5)" "void";
+
+  t "int32" "42l" "42";
+  t "int64" "99999999999999999L" "99999999999999999";
 
   (* Non-compile-time overflows *)
   te "overflow1" "9999999 * 99999999" "overflow";
@@ -343,6 +355,8 @@ let stdlib_tests = [
   tlib "lists.test";
   tlib "arrays.test";
   tlib "hash.test";
+  tlib "int64.test";
+  tlib "sys.test";
 ]
 
 let box_tests = [

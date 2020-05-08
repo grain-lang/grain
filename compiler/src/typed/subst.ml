@@ -213,6 +213,7 @@ let type_declaration s decl =
         end;
       type_newtype_level = None;
       type_loc = loc s decl.type_loc;
+      type_path = decl.type_path;
       type_immediate = decl.type_immediate;
     }
   in

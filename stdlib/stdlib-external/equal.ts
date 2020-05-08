@@ -13,6 +13,8 @@ import {
   GRAIN_ADT_HEAP_TAG,
   GRAIN_RECORD_HEAP_TAG, 
   GRAIN_ARRAY_HEAP_TAG,
+  GRAIN_INT32_HEAP_TAG,
+  GRAIN_INT64_HEAP_TAG,
 } from './ascutils/tags.ts'
 
 import {
@@ -141,6 +143,18 @@ function heapEqualHelp(heapTag: u32, xptr: u32, yptr: u32): bool {
       }
 
       return true
+    }
+    case GRAIN_INT32_HEAP_TAG: {
+      let x = load<u32>(xptr, 4)
+      let y = load<u32>(yptr, 4)
+
+      return x === y
+    }
+    case GRAIN_INT64_HEAP_TAG: {
+      let x = load<u64>(xptr, 4)
+      let y = load<u64>(yptr, 4)
+
+      return x === y
     }
     default: {
       // No other implementation

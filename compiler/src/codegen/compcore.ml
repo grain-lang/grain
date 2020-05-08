@@ -129,6 +129,9 @@ let wrap_int64 n = add_dummy_loc (Values.I64Value.to_value n)
 let wrap_float32 n = add_dummy_loc (Values.F32Value.to_value n)
 let wrap_float64 n = add_dummy_loc (Values.F64Value.to_value n)
 
+let grain_number_max = 0x3fffffff
+let grain_number_min = -0x3fffffff (* 0xC0000001 *)
+
 (** Constant compilation *)
 let rec compile_const c : Wasm.Values.value =
   let identity : 'a. 'a -> 'a = fun x -> x in
@@ -663,6 +666,50 @@ let allocate_string env str =
     Ast.Binary(Values.I32 Ast.IntOp.Or);
   ]
 
+let allocate_int32 env i =
+  let get_swap = get_swap env 0 in
+  let tee_swap = tee_swap env 0 in
+  (heap_allocate env 2) @ tee_swap +@ [
+    Ast.Const(const_int32 (tag_val_of_heap_tag_type Int32Type));
+    store ~offset:0 ();
+  ] @ get_swap +@ [
+    Ast.Const(wrap_int32 i);
+    store ~ty:I32Type ~offset:4 ();
+  ] @ get_swap +@ [
+    Ast.Const(const_int32 @@ tag_val_of_tag_type (GenericHeapType (Some Int32Type)));
+    Ast.Binary(Values.I32 Ast.IntOp.Or);
+  ]
+
+let allocate_int64 env i =
+  let get_swap = get_swap env 0 in
+  let tee_swap = tee_swap env 0 in
+  (heap_allocate env 3) @ tee_swap +@ [
+    Ast.Const(const_int32 (tag_val_of_heap_tag_type Int64Type));
+    store ~offset:0 ();
+  ] @ get_swap +@ [
+    Ast.Const(wrap_int64 i);
+    store ~ty:I64Type ~offset:4 ();
+  ] @ get_swap +@ [
+    Ast.Const(const_int32 @@ tag_val_of_tag_type (GenericHeapType (Some Int64Type)));
+    Ast.Binary(Values.I32 Ast.IntOp.Or);
+  ]
+
+(* Store the int64 at the top of the stack *)
+let allocate_int64_imm env =
+  let get_swap64 = get_swap ~ty:I64Type env 0 in
+  let set_swap64 = set_swap ~ty:I64Type env 0 in
+  let get_swap = get_swap env 0 in
+  let tee_swap = tee_swap env 0 in
+  set_swap64 @ (heap_allocate env 3) @ tee_swap +@ [
+    Ast.Const(const_int32 (tag_val_of_heap_tag_type Int64Type));
+    store ~offset:0 ();
+  ] @ get_swap @ get_swap64 +@ [
+    store ~ty:I64Type ~offset:4 ();
+  ] @ get_swap +@ [
+    Ast.Const(const_int32 @@ tag_val_of_tag_type (GenericHeapType (Some Int64Type)));
+    Ast.Binary(Values.I32 Ast.IntOp.Or);
+  ]
+
 let allocate_closure env ?lambda ({func_idx; arity; variables} as closure_data) =
   let num_free_vars = List.length variables in
   let closure_size = num_free_vars + 3 in
@@ -901,6 +948,10 @@ let allocate_record env ttag elts =
 
 let compile_prim1 env p1 arg : Wasm.Ast.instr' Concatlist.t =
   let compiled_arg = compile_imm env arg in
+  let get_swap_i64 = get_swap ~ty:I64Type env 0 in
+  let tee_swap_i64 = tee_swap ~ty:I64Type env 0 in
+  let get_swap = get_swap env 0 in
+  let tee_swap = tee_swap env 0 in
   (* TODO: Overflow checks? *)
   match p1 with
   | Incr -> compiled_arg @+ [
@@ -924,6 +975,38 @@ let compile_prim1 env p1 arg : Wasm.Ast.instr' Concatlist.t =
     Ast.Const(const_void);
   ]
   | FailWith -> call_error_handler env Failure [arg]
+  | Int64FromNumber -> (heap_allocate env 3) @ tee_swap +@ [
+    Ast.Const(const_int32 (tag_val_of_heap_tag_type Int64Type));
+    store ~offset:0 ();
+  ] @ get_swap @ compiled_arg @ untag_number +@ [
+    Ast.Convert(Values.I64 Ast.IntOp.ExtendSI32);
+    store ~ty:I64Type ~offset:4 ();
+  ] @ get_swap +@ [
+    Ast.Const(const_int32 @@ tag_val_of_tag_type (GenericHeapType (Some Int64Type)));
+    Ast.Binary(Values.I32 Ast.IntOp.Or);
+  ]
+  | Int64ToNumber -> compiled_arg @ untag (GenericHeapType (Some Int64Type)) +@ [
+    load ~ty:I64Type ~offset:4 ();
+  ] @ tee_swap_i64 +@ [
+    Ast.Const(const_int64 grain_number_max);
+    Ast.Compare(Values.I64 Ast.IntOp.GtS);
+    error_if_true env OverflowError [];
+  ] @ get_swap_i64 +@ [
+    Ast.Const(const_int64 grain_number_min);
+    Ast.Compare(Values.I64 Ast.IntOp.LtS);
+    error_if_true env OverflowError [];
+  ] @ get_swap_i64 +@ [
+    Ast.Convert(Values.I32 Ast.IntOp.WrapI64);
+    Ast.Const(const_int32 1);
+    Ast.Binary(Values.I32 Ast.IntOp.Shl);
+  ]
+  | Int64Lnot -> Concatlist.t_of_list [
+    (* 2's complement *)
+    Ast.Const(const_int64 (-1));
+  ] @ compiled_arg @ untag (GenericHeapType (Some Int64Type)) +@ [
+    load ~ty:I64Type ~offset:4 ();
+    Ast.Binary(Values.I64 Ast.IntOp.Sub);
+  ] @ allocate_int64_imm env
   | Box -> failwith "Unreachable case; should never get here: Box"
   | Unbox -> failwith "Unreachable case; should never get here: Unbox"
 
@@ -1070,6 +1153,76 @@ let compile_prim2 (env : codegen_env) p2 arg1 arg2 : Wasm.Ast.instr' Concatlist.
     compiled_arg1 @ compiled_arg2 +@ [
       Ast.Compare(Values.I32 Ast.IntOp.Eq)
     ] @ encode_bool
+  | Int64Land ->
+    compiled_arg1 @ untag (GenericHeapType (Some Int64Type)) +@ [
+      load ~ty:I64Type ~offset:4 ();
+    ] @ compiled_arg2 @ untag (GenericHeapType (Some Int64Type)) +@ [
+      load ~ty:I64Type ~offset:4 ();
+      Ast.Binary(Values.I64 Ast.IntOp.And)
+    ] @ allocate_int64_imm env
+  | Int64Lor ->
+    compiled_arg1 @ untag (GenericHeapType (Some Int64Type)) +@ [
+      load ~ty:I64Type ~offset:4 ();
+    ] @ compiled_arg2 @ untag (GenericHeapType (Some Int64Type)) +@ [
+      load ~ty:I64Type ~offset:4 ();
+      Ast.Binary(Values.I64 Ast.IntOp.Or)
+    ] @ allocate_int64_imm env
+  | Int64Lxor ->
+    compiled_arg1 @ untag (GenericHeapType (Some Int64Type)) +@ [
+      load ~ty:I64Type ~offset:4 ();
+    ] @ compiled_arg2 @ untag (GenericHeapType (Some Int64Type)) +@ [
+      load ~ty:I64Type ~offset:4 ();
+      Ast.Binary(Values.I64 Ast.IntOp.Xor)
+    ] @ allocate_int64_imm env
+  | Int64Lsl ->
+    compiled_arg1 @ untag (GenericHeapType (Some Int64Type)) +@ [
+      load ~ty:I64Type ~offset:4 ();
+    ] @ compiled_arg2 @ untag_number +@ [
+      Ast.Convert(Values.I64 Ast.IntOp.ExtendSI32);
+      Ast.Binary(Values.I64 Ast.IntOp.Shl);
+    ] @ allocate_int64_imm env
+  | Int64Lsr ->
+    compiled_arg1 @ untag (GenericHeapType (Some Int64Type)) +@ [
+      load ~ty:I64Type ~offset:4 ();
+    ] @ compiled_arg2 @ untag_number +@ [
+      Ast.Convert(Values.I64 Ast.IntOp.ExtendSI32);
+      Ast.Binary(Values.I64 Ast.IntOp.ShrU);
+    ] @ allocate_int64_imm env
+  | Int64Asr ->
+    compiled_arg1 @ untag (GenericHeapType (Some Int64Type)) +@ [
+      load ~ty:I64Type ~offset:4 ();
+    ] @ compiled_arg2 @ untag_number +@ [
+      Ast.Convert(Values.I64 Ast.IntOp.ExtendSI32);
+      Ast.Binary(Values.I64 Ast.IntOp.ShrS);
+    ] @ allocate_int64_imm env
+  | Int64Gt ->
+    compiled_arg1 @ untag (GenericHeapType (Some Int64Type)) +@ [
+      load ~ty:I64Type ~offset:4 ();
+    ] @ compiled_arg2 @ untag (GenericHeapType (Some Int64Type)) +@ [
+      load ~ty:I64Type ~offset:4 ();
+      Ast.Compare(Values.I64 Ast.IntOp.GtS);
+    ] @ encode_bool
+  | Int64Gte ->
+    compiled_arg1 @ untag (GenericHeapType (Some Int64Type)) +@ [
+      load ~ty:I64Type ~offset:4 ();
+    ] @ compiled_arg2 @ untag (GenericHeapType (Some Int64Type)) +@ [
+      load ~ty:I64Type ~offset:4 ();
+      Ast.Compare(Values.I64 Ast.IntOp.GeS);
+    ] @ encode_bool
+  | Int64Lt ->
+    compiled_arg1 @ untag (GenericHeapType (Some Int64Type)) +@ [
+      load ~ty:I64Type ~offset:4 ();
+    ] @ compiled_arg2 @ untag (GenericHeapType (Some Int64Type)) +@ [
+      load ~ty:I64Type ~offset:4 ();
+      Ast.Compare(Values.I64 Ast.IntOp.LtS);
+    ] @ encode_bool
+  | Int64Lte ->
+    compiled_arg1 @ untag (GenericHeapType (Some Int64Type)) +@ [
+      load ~ty:I64Type ~offset:4 ();
+    ] @ compiled_arg2 @ untag (GenericHeapType (Some Int64Type)) +@ [
+      load ~ty:I64Type ~offset:4 ();
+      Ast.Compare(Values.I64 Ast.IntOp.LeS);
+    ] @ encode_bool
   | ArrayMake ->
     allocate_array_n env arg1 arg2
   | ArrayInit ->
@@ -1083,6 +1236,8 @@ let compile_allocation env alloc_type =
   | MRecord(ttag, elts) -> allocate_record env ttag elts
   | MString(str) -> allocate_string env str
   | MADT(ttag, vtag, elts) -> allocate_adt env ttag vtag elts
+  | MInt32(i) -> allocate_int32 env i
+  | MInt64(i) -> allocate_int64 env i
 
 
 let collect_backpatches env f =
@@ -1350,13 +1505,17 @@ let compile_exports env {functions; imports; exports; num_globals} =
             Ast.edesc=add_dummy_loc (Ast.FuncExport heap_adjust_idx);
           };
           add_dummy_loc {
-            Ast.name=encode_string "GRAIN$MAIN";
+            Ast.name=encode_string "_start";
             Ast.edesc=add_dummy_loc (Ast.FuncExport main_idx);
           };
           add_dummy_loc {
             Ast.name=encode_string (Ident.name table_size);
             (* We add one here because of heap top *)
             Ast.edesc=add_dummy_loc (Ast.GlobalExport (add_dummy_loc @@ Int32.of_int (num_globals + 1 + (List.length runtime_global_imports))));
+          };
+          add_dummy_loc {
+            Ast.name=encode_string "memory";
+            Ast.edesc=add_dummy_loc (Ast.MemoryExport (add_dummy_loc @@ Int32.of_int 0));
           };
         ]))
 

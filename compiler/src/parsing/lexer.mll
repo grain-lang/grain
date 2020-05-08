@@ -56,9 +56,21 @@
 }
 
 let dec_digit = ['0'-'9']
-let signed_int = dec_digit+ | ('-' dec_digit+)
 let hex_digit = ['0'-'9' 'A'-'F' 'a'-'f']
 let oct_digit = ['0'-'7']
+let bin_digit = ['0'-'1']
+
+let dec_int = dec_digit (dec_digit | '_')*
+let hex_int = '0' ['x' 'X'] hex_digit (hex_digit | '_')*
+let oct_int = '0' ['o' 'O'] oct_digit (oct_digit | '_')*
+let bin_int = '0' ['b' 'B'] bin_digit (bin_digit | '_')*
+
+let signed_dec_int = dec_int | ('-' dec_int)
+let signed_hex_int = hex_int | ('-' hex_int)
+let signed_oct_int = oct_int | ('-' oct_int)
+let signed_bin_int = bin_int | ('-' bin_int)
+
+let signed_int = signed_dec_int | signed_hex_int | signed_oct_int | signed_bin_int
 
 let ident = ['a'-'z' '_']['a'-'z' 'A'-'Z' '0'-'9' '_']*
 let ident_cap = ['A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']*
@@ -96,6 +108,8 @@ rule token = parse
   | comment { process_newlines lexbuf; token lexbuf }
   | blank { token lexbuf }
   | newline_chars { process_newlines lexbuf; EOL }
+  | (signed_int as x) 'l' { INT32 (Int32.of_string x) }
+  | (signed_int as x) 'L' { INT64 (Int64.of_string x) }
   | signed_int as x { NUM (int_of_string x) }
   | "primitive" { PRIMITIVE }
   | "foreign" { FOREIGN }
@@ -105,6 +119,7 @@ rule token = parse
   | "else" { ELSE }
   | "true" { TRUE }
   | "false" { FALSE }
+  | "void" { VOID }
   | "import" { IMPORT }
   | "export" { EXPORT }
   | "except" { EXCEPT }

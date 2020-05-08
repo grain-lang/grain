@@ -734,6 +734,7 @@ let new_declaration newtype manifest =
     type_manifest = manifest;
     type_newtype_level = newtype;
     type_loc = Location.dummy_loc;
+    type_path = PIdent({stamp=(-1); name=""; flags=0});
     type_immediate = false;
   }
 
@@ -2495,6 +2496,7 @@ let nondep_type_decl env mid id is_covariant decl =
       type_manifest = tm;
       type_newtype_level = None;
       type_loc = decl.type_loc;
+      type_path = decl.type_path;
       type_immediate = decl.type_immediate;
     }
   with Not_found ->

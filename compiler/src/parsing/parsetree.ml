@@ -65,7 +65,10 @@ type data_declaration = {
 (** Constants supported by Grain *)
 type constant =
   | PConstNumber of int
+  | PConstInt32 of int32
+  | PConstInt64 of int64
   | PConstBool of bool
+  | PConstVoid
   | PConstString of string
 [@@deriving sexp]
 
@@ -98,6 +101,9 @@ type prim1 =
   | ArrayLength
   | Assert
   | FailWith
+  | Int64FromNumber
+  | Int64ToNumber
+  | Int64Lnot
 [@@deriving sexp]
 
 (** Two-argument operators *)
@@ -116,6 +122,16 @@ type prim2 =
   | Or
   | ArrayMake
   | ArrayInit
+  | Int64Land
+  | Int64Lor
+  | Int64Lxor
+  | Int64Lsl
+  | Int64Lsr
+  | Int64Asr
+  | Int64Gt
+  | Int64Gte
+  | Int64Lt
+  | Int64Lte
 [@@deriving sexp]
 
 (** Type for expressions (i.e. things which evaluate to something) *)

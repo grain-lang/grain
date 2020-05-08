@@ -33,6 +33,9 @@ type prim1 = Parsetree.prim1 =
   | ArrayLength
   | Assert
   | FailWith
+  | Int64FromNumber
+  | Int64ToNumber
+  | Int64Lnot
 
 type prim2 = Parsetree.prim2 =
   | Plus
@@ -49,6 +52,16 @@ type prim2 = Parsetree.prim2 =
   | Or
   | ArrayMake
   | ArrayInit
+  | Int64Land
+  | Int64Lor
+  | Int64Lxor
+  | Int64Lsl
+  | Int64Lsr
+  | Int64Asr
+  | Int64Gt
+  | Int64Gte
+  | Int64Lt
+  | Int64Lte
 
 type core_type = {
   ctyp_desc : core_type_desc;

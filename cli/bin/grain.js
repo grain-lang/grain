@@ -1,4 +1,7 @@
-#!/usr/bin/env node
+#!/bin/sh
+// 2>/dev/null; exec /usr/bin/env node --experimental-wasm-bigint "$0" "$@"
+// https://github.com/grain-lang/grain/issues/114
+
 const path = require('path');
 
 let program = require('commander');

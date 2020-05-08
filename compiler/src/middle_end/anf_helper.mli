@@ -17,6 +17,8 @@ end
 module Comp : sig
   val mk : ?loc:loc -> ?env:env -> comp_expression_desc -> comp_expression
   val imm : ?loc:loc -> ?env:env -> imm_expression -> comp_expression
+  val int32 : ?loc:loc -> ?env:env -> int32 -> comp_expression
+  val int64 : ?loc:loc -> ?env:env -> int64 -> comp_expression
   val prim1 : ?loc:loc -> ?env:env -> prim1 -> imm_expression -> comp_expression
   val prim2 : ?loc:loc -> ?env:env -> prim2 -> imm_expression -> imm_expression -> comp_expression
   val assign : ?loc:loc -> ?env:env -> imm_expression -> imm_expression -> comp_expression

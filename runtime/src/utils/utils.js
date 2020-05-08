@@ -1,4 +1,4 @@
-import { memory, view, encoder, decoder } from '../runtime';
+import { memory, view, uview, encoder, decoder } from '../runtime';
 import { grainHeapAllocate } from '../core/heap';
 import { GrainError } from '../errors/errors';
 import { grainDOMRefs } from '../lib/DOM';
@@ -11,7 +11,9 @@ import {
   GRAIN_STRING_HEAP_TAG,
   GRAIN_ADT_HEAP_TAG,
   GRAIN_RECORD_HEAP_TAG,
-  GRAIN_ARRAY_HEAP_TAG
+  GRAIN_ARRAY_HEAP_TAG,
+  GRAIN_INT32_HEAP_TAG,
+  GRAIN_INT64_HEAP_TAG,
 } from '../core/tags';
 
 import { 
@@ -120,6 +122,43 @@ export function grainHeapValueToString(runtime, n) {
         values.push(grainToString(runtime, view[x + 2 + i]))
       }
       return `[> ${values.join(', ')}]`
+    }
+    case GRAIN_INT32_HEAP_TAG: {
+      let x = n / 4
+
+      let int = view[x + 1]
+
+      return int.toString(10)
+    }
+    case GRAIN_INT64_HEAP_TAG: {
+      let x = n / 4
+
+      let low = uview[x + 1]
+      let high = view[x + 2]
+
+      let negative = high < 0
+
+      let digits = []
+      if (negative) {
+        high = ~high
+        low = ~low + 1
+      }
+
+      let digit = ((high % 10) * (2 ** 32) + low) % 10
+      digits.unshift(digit)
+
+      while (low >= 10 || high > 0) {
+        low = Math.floor(((high % 10) * (2 ** 32) + low) / 10)
+        high = Math.floor(high / 10)
+        digit = ((high % 10) * (2 ** 32) + low) % 10
+        digits.unshift(digit)
+      }
+
+      if (negative) {
+        digits.unshift('-')
+      }
+
+      return digits.join('')
     }
     default: {
       return `<unknown heap type: ${view[n / 4]}>`;

@@ -93,6 +93,9 @@ let prim1_type = function
     Builtin_types.type_array var, Builtin_types.type_number
   | Assert -> Builtin_types.type_bool, Builtin_types.type_void
   | FailWith -> Builtin_types.type_string, newvar ~name:"a" ()
+  | Int64FromNumber -> Builtin_types.type_number, Builtin_types.type_int64
+  | Int64ToNumber -> Builtin_types.type_int64, Builtin_types.type_number
+  | Int64Lnot -> Builtin_types.type_int64, Builtin_types.type_int64
 
 let prim2_type = function
   | Plus
@@ -116,6 +119,16 @@ let prim2_type = function
   | ArrayInit ->  
     let var = newvar ~name:"a" () in
     (Builtin_types.type_number, Builtin_types.type_lambda [Builtin_types.type_number] var, Builtin_types.type_array var)
+  | Int64Land
+  | Int64Lor
+  | Int64Lxor -> (Builtin_types.type_int64, Builtin_types.type_int64, Builtin_types.type_int64)
+  | Int64Lsl
+  | Int64Lsr
+  | Int64Asr -> (Builtin_types.type_int64, Builtin_types.type_number, Builtin_types.type_int64)
+  | Int64Gt
+  | Int64Gte
+  | Int64Lt
+  | Int64Lte -> (Builtin_types.type_int64, Builtin_types.type_int64, Builtin_types.type_bool)
 
 let maybe_add_pattern_variables_ghost loc_let env pv =
   List.fold_right
@@ -658,10 +671,29 @@ and type_expect_ ?in_function ?(recarg=Rejected) env sexp ty_expected_explained 
     }
   | PExpIf(scond, sifso, sifnot) ->
     let cond = type_expect env scond (mk_expected ~explanation:If_conditional Builtin_types.type_bool) in
-    let ifso = type_expect env sifso ty_expected_explained in
-    let ifnot = type_expect env sifnot ty_expected_explained in
-    (* Keep sharing *)
-    unify_exp env ifnot ifso.exp_type;
+
+    let ifso, ifnot = begin match sifnot.pexp_desc with
+      | PExpBlock([]) -> 
+        let void_exp = {
+          exp_desc = TExpConstant(Const_void);
+          exp_loc = loc;
+          exp_extra = [];
+          exp_type = Builtin_types.type_void;
+          exp_env = env
+        } in
+        let ifso = type_expect env sifso (mk_expected ~explanation:If_no_else_branch Builtin_types.type_void) in
+        let ifnot = { void_exp with
+          exp_desc = TExpBlock([void_exp])
+        } in
+        ifso, ifnot
+      | _ ->
+        let ifso = type_expect env sifso ty_expected_explained in
+        let ifnot = type_expect env sifnot ty_expected_explained in
+        (* Both types should match *)
+        unify_exp env ifnot ifso.exp_type;
+        ifso, ifnot
+    end in
+
     re {
       exp_desc = TExpIf(cond, ifso, ifnot);
       exp_loc = loc;
