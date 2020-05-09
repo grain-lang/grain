@@ -1494,6 +1494,12 @@ let compile_exports env {functions; imports; exports; num_globals} =
   let heap_adjust_idx = add_dummy_loc @@ Int32.of_int heap_adjust_idx in
   let main_idx = add_dummy_loc @@ Int32.of_int main_idx in
   let compiled_lambda_exports = List.mapi compile_lambda_export functions in
+  let exports =
+    let exported = Hashtbl.create 14 in
+    List.filter (fun {ex_name} ->
+      if Hashtbl.mem exported (Ident.name ex_name) then false
+      else (Hashtbl.add exported (Ident.name ex_name) (); true)
+    ) exports in
   let compiled_exports = List.mapi compile_getter exports in
   (List.append
      compiled_lambda_exports
