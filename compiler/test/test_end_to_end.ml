@@ -494,6 +494,8 @@ let import_tests = [
   t "import_all_constructor" "import * from 'tlists'; Cons(2, Empty)" "Cons(2, Empty)";
   t "import_all_except_constructor" "import * except {Cons} from 'tlists'; Empty" "Empty";
   t "import_all_except_multiple_constructor" "import * except {Cons, append} from 'tlists'; sum(Empty)" "0";
+  
+  t "import_with_export_multiple" "import * from 'sameExport'; foo()" "6";
 
   (* import * errors *)
   te "import_all_except_error" "import * except {y} from 'exportStar'; {print(x); print(y); z}" "Unbound value y";
