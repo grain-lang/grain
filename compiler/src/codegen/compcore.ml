@@ -1496,6 +1496,7 @@ let compile_exports env {functions; imports; exports; num_globals} =
   let compiled_lambda_exports = List.mapi compile_lambda_export functions in
   let exports =
     let exported = Hashtbl.create 14 in
+    (* Exports are already reversed, so keeping the first of any name is the correct behavior. *)
     List.filter (fun {ex_name} ->
       if Hashtbl.mem exported (Ident.name ex_name) then false
       else (Hashtbl.add exported (Ident.name ex_name) (); true)
