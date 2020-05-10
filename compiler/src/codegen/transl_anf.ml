@@ -88,6 +88,150 @@ let worklist_pop () =
     compilation_worklist := tl;
     hd
 
+module IntMap = Map.Make(Int)
+module RegisterAllocation = struct
+  type t = (int IntMap.t) * (int list)
+  let initialize (num_locals: int): t = (IntMap.empty, BatList.init num_locals (fun x -> x))
+  (* Takes an id (a local from the original mashtree) and assigns a slot to it *)
+  let allocate var_id = function
+    | (_, []) -> failwith "Should be impossible"
+    | (allocs, hd::tl) -> (IntMap.add var_id hd allocs, tl), hd
+
+  let release_var (var_id: int): (t -> t) = function
+    | (allocs, tl) ->
+      let hd = IntMap.find var_id allocs in
+      (allocs, hd::tl)
+
+  let release_slot slot_id ((allocs, tl): t) = (allocs, slot_id::tl)
+
+  let get_allocations ((allocs, _): t) = allocs
+
+  let get_allocation var_id ((allocs, _): t) = IntMap.find var_id allocs
+
+  let get_allocation_int32 var_id allocs =
+    (* Printf.eprintf "get_allocation_int32: %d\n" var_id; *)
+    Int32.of_int (get_allocation var_id allocs)
+
+  let rec apply_allocations (allocs: t) (instr: Mashtree.instr) : Mashtree.instr =
+    let apply_allocation_to_bind = function
+      | MLocalBind(n) -> MLocalBind(get_allocation_int32 (Int32.to_int n) allocs)
+      | _ as b -> b
+    in
+    let apply_allocation_to_imm = function
+      | MImmBinding(b) -> MImmBinding(apply_allocation_to_bind b)
+      | _ as i -> i
+    in
+    let apply_allocation_to_block = List.map (apply_allocations allocs) in
+    match instr with
+      | MImmediate(i) -> MImmediate(apply_allocation_to_imm i)
+      | MTagOp(top, tt, i) -> MTagOp(top, tt, apply_allocation_to_imm i)
+      | MArityOp(aop, at, i) -> MArityOp(aop, at, apply_allocation_to_imm i)
+      | MPrim1(pop, i) -> MPrim1(pop, apply_allocation_to_imm i)
+      | MTupleOp(top, i) -> MTupleOp(top, apply_allocation_to_imm i)
+      | MBoxOp(bop, i) -> MBoxOp(bop, apply_allocation_to_imm i)
+      | MArrayOp(aop, i) -> MArrayOp(aop, apply_allocation_to_imm i)
+      | MRecordOp(rop, i) -> MRecordOp(rop, apply_allocation_to_imm i)
+      | MAdtOp(aop, i) -> MAdtOp(aop, apply_allocation_to_imm i)
+      | MCallKnown(i32, is) -> MCallKnown(i32, List.map apply_allocation_to_imm is)
+      | MError(e, is) -> MError(e, List.map apply_allocation_to_imm is)
+      | MCallIndirect(imm, is) -> MCallIndirect(apply_allocation_to_imm imm, List.map apply_allocation_to_imm is)
+      | MIf(c, t, f) -> MIf(apply_allocation_to_imm c, apply_allocation_to_block t, apply_allocation_to_block f)
+      | MWhile(b1, b2) -> MWhile(apply_allocation_to_block b1, apply_allocation_to_block b2)
+      | MSwitch(v, bs, d) -> MSwitch(apply_allocation_to_imm v, List.map (fun (t, b) -> (t, apply_allocation_to_block b)) bs, apply_allocation_to_block d)
+      | MPrim2(pop, i1, i2) -> MPrim2(pop, apply_allocation_to_imm i1, apply_allocation_to_imm i2)
+      | MStore(bs) -> MStore(List.map (fun (b, bk) -> (apply_allocation_to_bind b, apply_allocations allocs bk)) bs)
+      | MAllocate(x) -> MAllocate(x)
+      | MDrop -> MDrop
+      | MTracepoint(x) -> MTracepoint(x)
+end
+
+let run_register_allocation (instrs: Mashtree.instr list) =
+  let uniq l =
+    let rec tail_uniq a l =
+      match l with
+        | [] -> a
+        | hd::tl -> tail_uniq (hd::a) (List.filter (fun x -> x != hd) tl) in
+    tail_uniq [] l in
+  let bind_live_local = function
+    | MLocalBind(n) -> [Int32.to_int n]
+    | _ -> []
+  in
+  let imm_live_local = function
+    | MImmBinding(MLocalBind(n)) -> [Int32.to_int n]
+    | _ -> []
+  in
+  let rec live_locals = function
+    | MImmediate(imm)
+    | MTagOp(_, _, imm)
+    | MArityOp(_, _, imm)
+    | MPrim1(_, imm)
+    | MTupleOp(_, imm)
+    | MBoxOp(_, imm)
+    | MArrayOp(_, imm)
+    | MRecordOp(_, imm)
+    | MAdtOp(_, imm) -> imm_live_local imm
+    | MCallKnown(_, is)
+    | MError(_, is) -> List.concat (List.map imm_live_local is)
+    | MCallIndirect(imm, is) -> (List.concat (List.map imm_live_local is)) @ (imm_live_local imm)
+    | MIf(c, t, f) -> (imm_live_local c) @ (block_live_locals t) @ (block_live_locals f)
+    | MWhile(b1, b2) -> (block_live_locals b1) @ (block_live_locals b2)
+    | MSwitch(v, bs, d) -> (imm_live_local v) @ (List.concat (List.map (fun (_, b) -> block_live_locals b) bs)) @ (block_live_locals d)
+    | MPrim2(_, i1, i2) -> (imm_live_local i1) @ (imm_live_local i2)
+    | MStore(bs) -> List.concat (List.map (fun (b, bk) -> (bind_live_local b) @ (live_locals bk)) bs)
+    | MAllocate _
+    | MTracepoint _
+    | MDrop -> []
+  and block_live_locals b = List.concat (List.map live_locals b)
+  in
+  (** Mapping from (instruction index) -> (used locals) *)
+  let instr_live_sets = List.mapi (fun i instr -> (i, uniq @@ live_locals instr)) instrs in
+  let num_locals =
+    let rec help acc = function
+      | [] -> acc
+      | hd::tl when hd > acc -> help hd tl
+      | _::tl -> help acc tl in
+    1 + (help 0 (List.map (fun (_, lst) -> help 0 lst) instr_live_sets)) in
+  (* Printf.eprintf "Live sets:\n";
+  List.iter (fun (i, items) -> Printf.eprintf "%d -> [%s]\n" i (BatString.join ", " (List.map string_of_int items))) instr_live_sets; *)
+  if num_locals < 2 then
+    instrs
+  else begin
+    (* flipped mapping of instr_live_sets; (used locals) -> (first_instruction_used, last_instruction_used) *)
+    let live_intervals =
+      let rec min = List.fold_left (fun acc cur -> if cur < acc then cur else acc) (List.length instrs) in
+      let rec max = List.fold_left (fun acc cur -> if cur > acc then cur else acc) 0 in
+      let rec help (acc: (int list) IntMap.t) = function
+        | [] -> acc
+        | (idx, items)::tl ->
+        let with_items: int list IntMap.t = List.fold_left (fun acc cur ->
+          let existing_elts: int list = BatOption.default [] (IntMap.find_opt cur acc) in
+          IntMap.add cur (idx::existing_elts) acc) acc items in
+        help with_items tl in
+      let interval_map = help IntMap.empty instr_live_sets in
+      List.sort (fun (_, (min1, _)) (_, (min2, _)) -> if min1 < min2 then -1 else if min1 == min2 then 0 else 1) @@
+      List.map (fun (binding, indices) -> (binding, (min indices, max indices))) (IntMap.bindings interval_map) in
+    (* Modified version of Linear-scan register allocation; we don't need to spill, since we are optimizing with an
+       unbounded number of memory locations *)
+    (* Printf.eprintf "Intervals:\n";
+    List.iter (fun (v, (si, ei)) -> Printf.eprintf "%d: [%d,%d]\n" v si ei) live_intervals; *)
+    let expire_old_intervals current_instr allocs active =
+      let rec help (allocs, active) = function
+        | [] -> (allocs, active)
+        | (var_id, (_, max))::tl when max < current_instr -> help (RegisterAllocation.release_var var_id allocs, active) tl
+        | hd::tl -> help (allocs, (hd::active)) tl in
+      help (allocs, []) active in
+    let (allocs, _) = BatList.fold_lefti (fun (allocs, active) i ((var_id, (start_inst, end_inst)) as cur) ->
+      let (allocs, active) = expire_old_intervals start_inst allocs active in
+      let allocs, _ = RegisterAllocation.allocate var_id allocs in
+      let active = cur::active in
+      (allocs, active)) (RegisterAllocation.initialize num_locals, []) live_intervals in
+    (* Printf.eprintf "Allocations:\n";
+    List.iter (fun (var_id, reg_id) -> Printf.eprintf "%d --> %d\n" var_id reg_id) (IntMap.bindings (RegisterAllocation.get_allocations allocs)); *)
+    (* List.map (RegisterAllocation.apply_allocations allocs) instrs *)
+    instrs
+  end
+
+
 let compile_const (c : Asttypes.constant) =
   match c with
   | Const_int i -> MConstI32 (Int32.of_int i)
@@ -200,15 +344,16 @@ let rec compile_comp env c =
   | CWhile(cond, body) ->
     MWhile(compile_anf_expr env cond, compile_anf_expr env body)
   | CPrim1(Box, arg) ->
-    MAllocate(MTuple [compile_imm env arg])
+    MAllocate(MBox(compile_imm env arg))
   | CPrim1(Unbox, arg) ->
-    MTupleOp(MTupleGet(Int32.zero), compile_imm env arg)
+    MBoxOp(MBoxUnbox, compile_imm env arg)
   | CPrim1(p1, arg) ->
     MPrim1(p1, compile_imm env arg)
   | CPrim2(p2, arg1, arg2) ->
     MPrim2(p2, compile_imm env arg1, compile_imm env arg2)
   | CAssign(arg1, arg2) ->
-    MTupleOp(MTupleSet(Int32.zero, compile_imm env arg2), compile_imm env arg1)
+    (* MTupleOp(MTupleSet(Int32.zero, compile_imm env arg2), compile_imm env arg1) *)
+    MBoxOp(MBoxUpdate(compile_imm env arg2), compile_imm env arg1)
   | CTuple(args) ->
     MAllocate(MTuple (List.map (compile_imm env) args))
   | CArray(args) ->
@@ -366,15 +511,15 @@ let transl_anf_program (anf_prog : Anftree.anf_program) : Mashtree.mash_program 
 
   let imports, setups, env = lift_imports initial_compilation_env anf_prog.imports in
   let main_body_stack_size = Anf_utils.anf_count_vars anf_prog.body in
-  let main_body = setups @ (compile_anf_expr env anf_prog.body) in
+  let main_body = run_register_allocation @@ setups @ (compile_anf_expr env anf_prog.body) in
   let exports = global_exports() in
-  let functions = compile_remaining_worklist() in
+  let functions = List.map (fun (({body} as f): Mashtree.mash_function) -> {f with body=run_register_allocation body}) (compile_remaining_worklist()) in
 
   {
     functions;
     imports;
     exports;
-    main_body;
+    main_body=main_body(* @ [MTracepoint 1]*);
     main_body_stack_size;
     num_globals=(!global_index);
     signature=anf_prog.signature;

@@ -322,7 +322,7 @@ let unbox_of id {comp_loc; comp_env} =
       let comp_false = {c with comp_desc=CImmExpr(_false)} in
       let set_break_and_next = wrap_anf_with_comp c @@ AESeq(
         wrap_comp c @@ CAssign(wrap_id c continue_loop_id, _true),
-        wrap_anf_with_comp c @@ AEComp(wrap_comp c @@ CAssign(wrap_id c next_f_id, wrap_id c new_f))
+        wrap_anf_with_comp c @@ AESeq(wrap_comp c @@ CAssign(wrap_id c next_f_id, wrap_id c new_f), wrap_anf_with_comp c @@ AEComp(wrap_comp c @@ CImmExpr(_true)))
       ) in
       let replaced_tail_call = List.fold_right2 (fun new_f_arg arg seq ->
         wrap_anf_with_comp c @@ AESeq(

@@ -123,7 +123,7 @@ let run_output ?(code=0) ?heap_size cstate test_ctxt =
     ~use_stderr:true
     ~ctxt:test_ctxt
     "grain"
-    (["-wpg"; "-S"; stdlib; "-I"; testlibs; file] @ heap_args);
+    (["-wpg"; "-S"; stdlib; "-I"; testlibs] @ heap_args @ [file]);
   !result
 
 let run_anf p out =

@@ -12,7 +12,8 @@ import {
 
 import {
   GRAIN_TRUE,
-  GRAIN_FALSE
+  GRAIN_FALSE,
+  GRAIN_VOID
 } from './primitives';
 
 export const GRAIN_NUMBER_TAG_MASK = 0b0001;
@@ -42,7 +43,9 @@ function getAndMask(tag) {
 }
 
 export function getTagType(n, quiet) {
-  if (!(n & GRAIN_NUMBER_TAG_MASK)) {
+  if ((n === GRAIN_TRUE) || (n === GRAIN_FALSE) || (n === GRAIN_VOID)) {
+    return GRAIN_CONST_TAG_TYPE;
+  } else if (!(n & GRAIN_NUMBER_TAG_MASK)) {
     return GRAIN_NUMBER_TAG_TYPE;
   } else if ((n & GRAIN_TUPLE_TAG_MASK) === GRAIN_TUPLE_TAG_TYPE) {
     return GRAIN_TUPLE_TAG_TYPE;
@@ -50,8 +53,6 @@ export function getTagType(n, quiet) {
     return GRAIN_LAMBDA_TAG_TYPE;
   } else if ((n & GRAIN_TUPLE_TAG_MASK) === GRAIN_GENERIC_HEAP_TAG_TYPE) {
     return GRAIN_GENERIC_HEAP_TAG_TYPE;
-  } else if ((n === -1) || (n === 0x7FFFFFFF) || (n === 0x6FFFFFFF)) {
-    return GRAIN_CONST_TAG_TYPE;
   } else {
     if (!quiet) {
       console.warn(`<getTagType: Unknown value: 0x${(new Number(n)).toString(16)}`);
