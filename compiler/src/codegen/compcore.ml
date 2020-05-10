@@ -5,6 +5,7 @@ open Wasm
 open Concatlist (* NOTE: This import shadows (@) and introduces (@+) and (+@) *)
 
 let add_dummy_loc (x : 'a) : 'a Source.phrase = Source.(x @@ no_region)
+let source_it (x : 'a Source.phrase) : 'a = Source.(x.it)
 
 (** Environment *)
 type codegen_env = {
@@ -47,22 +48,29 @@ let incref_ident = Ident.create_persistent "incRef"
 let incref_adt_ident = Ident.create_persistent "incRefADT"
 let incref_array_ident = Ident.create_persistent "incRefArray"
 let incref_tuple_ident = Ident.create_persistent "incRefTuple"
+let incref_box_ident = Ident.create_persistent "incRefBox"
 let incref_backpatch_ident = Ident.create_persistent "incRefBackpatch"
 let incref_swap_bind_ident = Ident.create_persistent "incRefSwapBind"
 let incref_arg_bind_ident = Ident.create_persistent "incRefArgBind"
 let incref_local_bind_ident = Ident.create_persistent "incRefLocalBind"
 let incref_global_bind_ident = Ident.create_persistent "incRefGlobalBind"
+let incref_closure_bind_ident = Ident.create_persistent "incRefClosureBind"
 let incref_cleanup_locals_ident = Ident.create_persistent "incRefCleanupLocals"
 let incref64_ident = Ident.create_persistent "incRef64"
 let decref_ident = Ident.create_persistent "decRef"
 let decref64_ident = Ident.create_persistent "decRef64"
+let decref_array_ident = Ident.create_persistent "decRefArray"
+let decref_tuple_ident = Ident.create_persistent "decRefTuple"
+let decref_box_ident = Ident.create_persistent "decRefBox"
 let decref_swap_bind_ident = Ident.create_persistent "decRefSwapBind"
 let decref_arg_bind_ident = Ident.create_persistent "decRefArgBind"
 let decref_local_bind_ident = Ident.create_persistent "decRefLocalBind"
 let decref_global_bind_ident = Ident.create_persistent "decRefGlobalBind"
+let decref_closure_bind_ident = Ident.create_persistent "decRefClosureBind"
 let decref_cleanup_locals_ident = Ident.create_persistent "decRefCleanupLocals"
 let decref_cleanup_globals_ident = Ident.create_persistent "decRefCleanupGlobals"
 let decref_drop_ident = Ident.create_persistent "decRefDrop"
+let tracepoint_ident = Ident.create_persistent "tracepoint"
 
 let runtime_global_imports = [
   {
@@ -133,6 +141,13 @@ let runtime_function_imports = [
   };
   {
     mimp_mod=runtime_mod;
+    mimp_name=incref_box_ident;
+    mimp_type=MFuncImport([I32Type], [I32Type]); (* Returns same pointer as argument *)
+    mimp_kind=MImportWasm;
+    mimp_setup=MSetupNone;
+  };
+  {
+    mimp_mod=runtime_mod;
     mimp_name=incref_backpatch_ident;
     mimp_type=MFuncImport([I32Type], [I32Type]); (* Returns same pointer as argument *)
     mimp_kind=MImportWasm;
@@ -168,6 +183,13 @@ let runtime_function_imports = [
   };
   {
     mimp_mod=runtime_mod;
+    mimp_name=incref_closure_bind_ident;
+    mimp_type=MFuncImport([I32Type], [I32Type]); (* Returns same pointer as argument *)
+    mimp_kind=MImportWasm;
+    mimp_setup=MSetupNone;
+  };
+  {
+    mimp_mod=runtime_mod;
     mimp_name=incref_cleanup_locals_ident;
     mimp_type=MFuncImport([I32Type], [I32Type]); (* Returns same pointer as argument *)
     mimp_kind=MImportWasm;
@@ -191,6 +213,27 @@ let runtime_function_imports = [
     mimp_mod=runtime_mod;
     mimp_name=decref64_ident;
     mimp_type=MFuncImport([I64Type], [I64Type]); (* Returns same pointer as argument *)
+    mimp_kind=MImportWasm;
+    mimp_setup=MSetupNone;
+  };
+  {
+    mimp_mod=runtime_mod;
+    mimp_name=decref_array_ident;
+    mimp_type=MFuncImport([I32Type], [I32Type]); (* Returns same pointer as argument *)
+    mimp_kind=MImportWasm;
+    mimp_setup=MSetupNone;
+  };
+  {
+    mimp_mod=runtime_mod;
+    mimp_name=decref_tuple_ident;
+    mimp_type=MFuncImport([I32Type], [I32Type]); (* Returns same pointer as argument *)
+    mimp_kind=MImportWasm;
+    mimp_setup=MSetupNone;
+  };
+  {
+    mimp_mod=runtime_mod;
+    mimp_name=decref_box_ident;
+    mimp_type=MFuncImport([I32Type], [I32Type]); (* Returns same pointer as argument *)
     mimp_kind=MImportWasm;
     mimp_setup=MSetupNone;
   };
@@ -224,8 +267,15 @@ let runtime_function_imports = [
   };
   {
     mimp_mod=runtime_mod;
-    mimp_name=decref_cleanup_locals_ident;
+    mimp_name=decref_closure_bind_ident;
     mimp_type=MFuncImport([I32Type], [I32Type]); (* Returns same pointer as argument *)
+    mimp_kind=MImportWasm;
+    mimp_setup=MSetupNone;
+  };
+  {
+    mimp_mod=runtime_mod;
+    mimp_name=decref_cleanup_locals_ident;
+    mimp_type=MFuncImport([I32Type; I32Type], [I32Type]); (* Returns same pointer as argument *)
     mimp_kind=MImportWasm;
     mimp_setup=MSetupNone;
   };
@@ -240,6 +290,13 @@ let runtime_function_imports = [
     mimp_mod=runtime_mod;
     mimp_name=decref_drop_ident;
     mimp_type=MFuncImport([I32Type], [I32Type]); (* Returns same pointer as argument *)
+    mimp_kind=MImportWasm;
+    mimp_setup=MSetupNone;
+  };
+  {
+    mimp_mod=console_mod;
+    mimp_name=tracepoint_ident;
+    mimp_type=MFuncImport([I32Type], []);
     mimp_kind=MImportWasm;
     mimp_setup=MSetupNone;
   };
@@ -373,22 +430,34 @@ let call_incref env = Ast.Call(var_of_ext_func env runtime_mod incref_ident)
 let call_incref_adt env = Ast.Call(var_of_ext_func env runtime_mod incref_adt_ident)
 let call_incref_array env = Ast.Call(var_of_ext_func env runtime_mod incref_array_ident)
 let call_incref_tuple env = Ast.Call(var_of_ext_func env runtime_mod incref_tuple_ident)
+let call_incref_box env = Ast.Call(var_of_ext_func env runtime_mod incref_box_ident)
 let call_incref_backpatch env = Ast.Call(var_of_ext_func env runtime_mod incref_backpatch_ident)
 let call_incref_swap_bind env = Ast.Call(var_of_ext_func env runtime_mod incref_swap_bind_ident)
 let call_incref_arg_bind env = Ast.Call(var_of_ext_func env runtime_mod incref_arg_bind_ident)
 let call_incref_local_bind env = Ast.Call(var_of_ext_func env runtime_mod incref_local_bind_ident)
 let call_incref_global_bind env = Ast.Call(var_of_ext_func env runtime_mod incref_global_bind_ident)
+let call_incref_closure_bind env = Ast.Call(var_of_ext_func env runtime_mod incref_closure_bind_ident)
 let call_incref_cleanup_locals env = Ast.Call(var_of_ext_func env runtime_mod incref_cleanup_locals_ident)
 let call_incref_64 env = Ast.Call(var_of_ext_func env runtime_mod incref64_ident)
 let call_decref env = Ast.Call(var_of_ext_func env runtime_mod decref_ident)
 let call_decref_64 env = Ast.Call(var_of_ext_func env runtime_mod decref64_ident)
+let call_decref_array env = Ast.Call(var_of_ext_func env runtime_mod decref_array_ident)
+let call_decref_tuple env = Ast.Call(var_of_ext_func env runtime_mod decref_tuple_ident)
+let call_decref_box env = Ast.Call(var_of_ext_func env runtime_mod decref_box_ident)
 let call_decref_swap_bind env = Ast.Call(var_of_ext_func env runtime_mod decref_swap_bind_ident)
 let call_decref_arg_bind env = Ast.Call(var_of_ext_func env runtime_mod decref_arg_bind_ident)
 let call_decref_local_bind env = Ast.Call(var_of_ext_func env runtime_mod decref_local_bind_ident)
 let call_decref_global_bind env = Ast.Call(var_of_ext_func env runtime_mod decref_global_bind_ident)
+let call_decref_closure_bind env = Ast.Call(var_of_ext_func env runtime_mod decref_closure_bind_ident)
 let call_decref_cleanup_locals env = Ast.Call(var_of_ext_func env runtime_mod decref_cleanup_locals_ident)
 let call_decref_cleanup_globals env = Ast.Call(var_of_ext_func env runtime_mod decref_cleanup_globals_ident)
 let call_decref_drop env = Ast.Call(var_of_ext_func env runtime_mod decref_drop_ident)
+
+(** Will print "tracepoint <n> reached" to the console when executed (for debugging WASM output) *)
+let tracepoint env n = Concatlist.t_of_list [
+  Ast.Const(const_int32 n);
+  Ast.Call(var_of_ext_func env console_mod tracepoint_ident);
+]
 
 let get_func_type_idx env typ =
   match BatDeque.find ((=) typ) !(env.func_types) with
@@ -438,15 +507,17 @@ type bind_action = BindGet | BindSet | BindTee
 
 let cleanup_local_slot_instructions (env : codegen_env) =
   let instrs = BatList.init env.stack_size (fun i ->
-    let slot = add_dummy_loc (Int32.of_int (i + env.num_args + (List.length swap_slots))) in
+    let slot_no = i + env.num_args + (List.length swap_slots) in
+    let slot = add_dummy_loc (Int32.of_int slot_no) in
     wrapped [
       Ast.LocalGet(slot);
+      Ast.Const(const_int32 slot_no);
       call_decref_cleanup_locals env;
       Ast.Drop;
     ]) in
   flatten instrs
 
-let compile_bind ~action ?ty:(typ=Types.I32Type) ?skip_incref:(skip_incref=false) (env : codegen_env) (b : binding) : Wasm.Ast.instr' Concatlist.t =
+let compile_bind ~action ?ty:(typ=Types.I32Type) ?skip_incref:(skip_incref=false) ?skip_decref:(skip_decref=false) (env : codegen_env) (b : binding) : Wasm.Ast.instr' Concatlist.t =
   let (++) a b = Int32.(add (of_int a) b) in
   let appropriate_incref env = match typ with
     | _ when skip_incref -> Ast.Nop (* This case is used for storing swap values that have freshly been heap-allocated. *)
@@ -456,6 +527,7 @@ let compile_bind ~action ?ty:(typ=Types.I32Type) ?skip_incref:(skip_incref=false
         | MLocalBind _ -> call_incref_local_bind env
         | MSwapBind _ -> call_incref_swap_bind env
         | MGlobalBind _ -> call_incref_global_bind env
+        | MClosureBind _ -> call_incref_closure_bind env
         | _ -> call_incref env
       end
     | Types.I64Type ->
@@ -465,12 +537,14 @@ let compile_bind ~action ?ty:(typ=Types.I32Type) ?skip_incref:(skip_incref=false
     | _ -> failwith "appropriate_incref called with non-i32/i64 type"
   in
   let appropriate_decref env = match typ with
+    | _ when skip_decref -> Ast.Nop (* This case is used for storing swap values that have freshly been heap-allocated. *)
     | Types.I32Type ->
       begin match b with
         | MArgBind _ -> call_decref_arg_bind env
         | MLocalBind _ -> call_decref_local_bind env
         | MSwapBind _ -> call_decref_swap_bind env
         | MGlobalBind _ -> call_decref_global_bind env
+        | MClosureBind _ -> call_decref_closure_bind env
         | _ -> call_decref env
       end
     | Types.I64Type ->
@@ -664,28 +738,28 @@ let get_swap ?ty:(typ=Types.I32Type) env idx =
     compile_bind ~action:BindGet ~ty:Types.I64Type env (MSwapBind(Int32.of_int (idx + swap_i64_offset)))
   | _ -> raise Not_found
 
-let set_swap ?skip_incref:(skip_incref=false) ?ty:(typ=Types.I32Type) env idx =
+let set_swap ?skip_incref:(skip_incref=true) ?skip_decref:(skip_decref=true) ?ty:(typ=Types.I32Type) env idx =
   match typ with
   | Types.I32Type ->
     if idx > (List.length swap_slots_i32) then
       raise Not_found;
-    compile_bind ~action:BindSet ~skip_incref:skip_incref env (MSwapBind(Int32.of_int (idx + swap_i32_offset)))
+    compile_bind ~action:BindSet ~skip_incref:skip_incref ~skip_decref:skip_decref env (MSwapBind(Int32.of_int (idx + swap_i32_offset)))
   | Types.I64Type ->
     if idx > (List.length swap_slots_i64) then
       raise Not_found;
-    compile_bind ~action:BindSet ~skip_incref:skip_incref ~ty:Types.I64Type env (MSwapBind(Int32.of_int (idx + swap_i64_offset)))
+    compile_bind ~action:BindSet ~skip_incref:skip_incref ~skip_decref:skip_decref ~ty:Types.I64Type env (MSwapBind(Int32.of_int (idx + swap_i64_offset)))
   | _ -> raise Not_found
 
-let tee_swap ?ty:(typ=Types.I32Type) ?skip_incref:(skip_incref=false) env idx =
+let tee_swap ?ty:(typ=Types.I32Type) ?skip_incref:(skip_incref=true) ?skip_decref:(skip_decref=true) env idx =
   match typ with
   | Types.I32Type ->
     if idx > (List.length swap_slots_i32) then
       raise Not_found;
-    compile_bind ~action:BindTee ~skip_incref:skip_incref env (MSwapBind(Int32.of_int (idx + swap_i32_offset)))
+    compile_bind ~action:BindTee ~skip_incref:skip_incref ~skip_decref:skip_decref env (MSwapBind(Int32.of_int (idx + swap_i32_offset)))
   | Types.I64Type ->
     if idx > (List.length swap_slots_i64) then
       raise Not_found;
-    compile_bind ~action:BindTee ~skip_incref:skip_incref ~ty:Types.I64Type env (MSwapBind(Int32.of_int (idx + swap_i64_offset)))
+    compile_bind ~action:BindTee ~skip_incref:skip_incref ~skip_decref:skip_decref ~ty:Types.I64Type env (MSwapBind(Int32.of_int (idx + swap_i64_offset)))
   | _ -> raise Not_found
 
 
@@ -699,6 +773,7 @@ let cleanup_locals (env : codegen_env) : Wasm.Ast.instr' Concatlist.t =
     call_incref_cleanup_locals env;
     Ast.Drop;
   ] @ (cleanup_local_slot_instructions env) @ (get_swap env 0) +@ [
+    Ast.Const(const_int32 (-1));
     call_decref_cleanup_locals env;
   ]
 
@@ -740,7 +815,7 @@ let check_overflow env = Concatlist.t_of_list [
   ]
 
 
-let compile_tuple_op env tup_imm op =
+let compile_tuple_op ?is_box:(is_box=false) env tup_imm op =
   let tup = compile_imm env tup_imm in
   match op with
   | MTupleGet(idx) ->
@@ -755,13 +830,20 @@ let compile_tuple_op env tup_imm op =
     let get_swap = get_swap env 0 in
     let set_swap = set_swap env 0 in
     tup @ (untag TupleTagType) @ set_swap @ get_swap @ (compile_imm env imm) +@ [
-        call_incref_tuple env;
+        (if is_box then call_incref_box else call_incref_tuple) env;
     ] @ get_swap +@ [
         load ~offset:(4 * (idx_int + 1)) ();
-        call_decref env;
+        (if is_box then call_decref_box else call_decref_tuple) env;
         Ast.Drop;
         store ~offset:(4 * (idx_int + 1)) ();
       ] @ (compile_imm env imm)
+
+
+let compile_box_op env box_imm op =
+  (* At the moment, we make no runtime distinction between boxes and tuples *)
+  match op with
+  | MBoxUnbox -> compile_tuple_op ~is_box:true env box_imm (MTupleGet(Int32.zero))
+  | MBoxUpdate(imm) -> compile_tuple_op ~is_box:true env box_imm (MTupleSet(Int32.zero, imm))
 
 
 let compile_array_op env arr_imm op =
@@ -1068,13 +1150,12 @@ let allocate_closure env ?lambda ({func_idx; arity; variables} as closure_data) 
   let num_free_vars = List.length variables in
   let closure_size = num_free_vars + 3 in
   let get_swap = get_swap env 0 in
-  let tee_swap = tee_swap ~skip_incref:true env 0 in
   let access_lambda = Option.default (get_swap @+ [
       Ast.Const(const_int32 @@ 4 * round_allocation_size closure_size);
       Ast.Binary(Values.I32 Ast.IntOp.Sub);
     ]) lambda in
   env.backpatches := (access_lambda, closure_data)::!(env.backpatches);
-  (heap_allocate env closure_size) @ tee_swap +@ [
+  (heap_allocate env closure_size) @ (tee_swap ~skip_incref:true env 0) +@ [
     Ast.Const(const_int32 num_free_vars);
   ] @ get_swap +@ [
     Ast.GlobalGet(var_of_ext_global env runtime_mod reloc_base);
@@ -1088,7 +1169,7 @@ let allocate_closure env ?lambda ({func_idx; arity; variables} as closure_data) 
   ] @ get_swap +@ [
     Ast.Const(const_int32 @@ tag_val_of_tag_type LambdaTagType);
     Ast.Binary(Values.I32 Ast.IntOp.Or);
-  ] @ tee_swap
+  ] @ (tee_swap ~skip_incref:true ~skip_decref:true env 0)
 
 let allocate_adt env ttag vtag elts =
   (* Heap memory layout of ADT types:
@@ -1096,7 +1177,6 @@ let allocate_adt env ttag vtag elts =
    *)
   let num_elts = List.length elts in
   let get_swap = get_swap env 0 in
-  let tee_swap = tee_swap ~skip_incref:true env 0 in
   let compile_elt idx elt =
     get_swap @
     (compile_imm env elt) +@ [
@@ -1104,7 +1184,7 @@ let allocate_adt env ttag vtag elts =
       store ~offset:(4 * (idx + 5)) ();
     ] in
 
-  (heap_allocate env (num_elts + 5)) @ tee_swap +@ [
+  (heap_allocate env (num_elts + 5)) @ (tee_swap ~skip_incref:true env 0) +@ [
     Ast.Const(const_int32 (tag_val_of_heap_tag_type ADTType));
     store ~offset:0 ();
   ] @ get_swap +@ [
@@ -1123,31 +1203,33 @@ let allocate_adt env ttag vtag elts =
   ] @ (Concatlist.flatten @@ List.mapi compile_elt elts) @ get_swap +@ [
     Ast.Const(const_int32 @@ tag_val_of_tag_type (GenericHeapType (Some ADTType)));
     Ast.Binary(Values.I32 Ast.IntOp.Or);
-  ] @ tee_swap
+  ] @ (tee_swap ~skip_incref:true ~skip_decref:true env 0)
 
-let allocate_tuple env elts =
+let allocate_tuple ?is_box:(is_box=false) env elts =
   let num_elts = List.length elts in
   let get_swap = get_swap env 0 in
-  let tee_swap = tee_swap ~skip_incref:true env 0 in
   let compile_elt idx elt =
     get_swap @
     (compile_imm env elt) +@ [
-      call_incref_tuple env;
+      (if is_box then call_incref_box else call_incref_tuple) env;
       store ~offset:(4 * (idx + 1)) ();
     ] in
 
-  (heap_allocate env (num_elts + 1)) @ tee_swap +@ [
+  (heap_allocate env (num_elts + 1)) @ (tee_swap ~skip_incref:true env 0) +@ [
     Ast.Const(const_int32 num_elts);
     store ~offset:0 ();
   ] @ (Concatlist.flatten @@ List.mapi compile_elt elts) @ get_swap +@ [
     Ast.Const(const_int32 @@ tag_val_of_tag_type TupleTagType);
     Ast.Binary(Values.I32 Ast.IntOp.Or);
-  ] @ tee_swap
+  ] @ (tee_swap ~skip_incref:true ~skip_decref:true env 0)
+
+let allocate_box env elt =
+  (* At the moment, we make no runtime distinction between boxes and tuples *)
+  allocate_tuple ~is_box:true env [elt]
 
 let allocate_array env elts =
   let num_elts = List.length elts in
   let get_swap = get_swap env 0 in
-  let tee_swap = tee_swap env 0 in
   let compile_elt idx elt =
     get_swap @
     (compile_imm env elt) +@ [
@@ -1155,7 +1237,7 @@ let allocate_array env elts =
       store ~offset:(4 * (idx + 2)) ();
     ] in
 
-  (heap_allocate env (num_elts + 2)) @ tee_swap +@ [
+  (heap_allocate env (num_elts + 2)) @ (tee_swap ~skip_incref:true env 0) +@ [
     Ast.Const(const_int32 (tag_val_of_heap_tag_type ArrayType));
     store ~offset:0 ();
   ] @ get_swap +@ [
@@ -1168,7 +1250,6 @@ let allocate_array env elts =
 
 let allocate_array_n env num_elts elt =
   let get_arr_addr = get_swap env 0 in
-  let set_arr_addr = set_swap env 0 in
   let get_loop_counter = get_swap env 1 in
   let set_loop_counter = set_swap env 1 in
 
@@ -1179,7 +1260,7 @@ let allocate_array_n env num_elts elt =
     Ast.Const(const_int32 0);
     Ast.Compare(Values.I32 Ast.IntOp.LtS);
     error_if_true env InvalidArgument [num_elts];
-  ] @ (heap_allocate_imm ~additional_words:2 env num_elts) @ set_arr_addr @ get_arr_addr +@ [
+  ] @ (heap_allocate_imm ~additional_words:2 env num_elts) @ (tee_swap ~skip_incref:true env 0) +@ [
     Ast.Const(const_int32 (tag_val_of_heap_tag_type ArrayType));
     store ~offset:0 ();
   ] @ get_arr_addr @ compiled_num_elts +@ [
@@ -1228,7 +1309,7 @@ let allocate_array_init env num_elts init_f =
     Ast.Const(const_int32 0);
     Ast.Compare(Values.I32 Ast.IntOp.LtS);
     error_if_true env InvalidArgument [num_elts];
-  ] @ (heap_allocate_imm ~additional_words:2 env num_elts) @ set_arr_addr @ get_arr_addr +@ [
+  ] @ (heap_allocate_imm ~additional_words:2 env num_elts) @ (tee_swap ~skip_incref:true env 0) +@ [
     Ast.Const(const_int32 (tag_val_of_heap_tag_type ArrayType));
     store ~offset:0 ();
   ] @ get_arr_addr @ compiled_num_elts +@ [
@@ -1275,14 +1356,13 @@ let allocate_record env ttag elts =
    *)
   let num_elts = List.length elts in
   let get_swap = get_swap env 0 in
-  let tee_swap = tee_swap env 0 in
   let compile_elt idx elt =
     get_swap @
     (compile_imm env elt) +@ [
       store ~offset:(4 * (idx + 4)) ();
     ] in
 
-  (heap_allocate env (num_elts + 4)) @ tee_swap +@ [
+  (heap_allocate env (num_elts + 4)) @ (tee_swap ~skip_incref:true env 0) +@ [
     Ast.Const(const_int32 (tag_val_of_heap_tag_type RecordType));
     store ~offset:0 ();
   ] @ get_swap +@ [
@@ -1322,7 +1402,10 @@ let compile_prim1 env p1 arg : Wasm.Ast.instr' Concatlist.t =
       Ast.Const(const_int32 0x80000000);
       Ast.Binary(Values.I32 Ast.IntOp.Xor);
     ]
-  | Ignore -> singleton (Ast.Const const_void)
+  | Ignore -> (compiled_arg @+ [
+      call_decref_drop env;
+      Ast.Drop;
+    ]) @ (singleton (Ast.Const const_void))
   | ArrayLength -> compile_array_op env arg MArrayLength
   | Assert -> compiled_arg @+ [
     Ast.Const(const_false);
@@ -1591,6 +1674,7 @@ let compile_allocation env alloc_type =
   match alloc_type with
   | MClosure(cdata) -> allocate_closure env cdata
   | MTuple(elts) -> allocate_tuple env elts
+  | MBox(elt) -> allocate_box env elt
   | MArray(elts) -> allocate_array env elts
   | MRecord(ttag, elts) -> allocate_record env ttag elts
   | MString(str) -> allocate_string env str
@@ -1625,11 +1709,16 @@ let rec compile_store env binds =
   let process_binds env =
     let process_bind (b, instr) acc =
       let store_bind = compile_bind ~action:BindSet env b in
+      let store_bind_no_incref = compile_bind ~action:BindSet ~skip_incref:true env b in
       let get_bind = compile_bind ~action:BindGet env b in
-      let compiled_instr = match instr with
+      let compiled_instr, store_bind = match instr with
         | MAllocate(MClosure(cdata)) ->
-          allocate_closure env ~lambda:get_bind cdata
-        | _ -> compile_instr env instr in
+          (allocate_closure env ~lambda:get_bind cdata), store_bind_no_incref
+        (* HACK: We expect values returned from functions to have a refcount of 1, so we don't increment it when storing *)
+        | (MCallIndirect _)
+        | (MCallKnown _)
+        | (MAllocate _) -> (compile_instr env instr), store_bind_no_incref
+        | _ -> (compile_instr env instr), store_bind in
       (compiled_instr @ store_bind) @ acc in
     List.fold_right process_bind binds empty in
   let instrs, backpatches = collect_backpatches env process_binds in
@@ -1690,10 +1779,12 @@ and compile_block env block =
 
 and compile_instr env instr =
   match instr with
-  | MDrop -> safe_drop env
+  | MDrop -> singleton Ast.Drop
+  | MTracepoint(x) -> tracepoint env x
   | MImmediate(imm) -> compile_imm env imm
   | MAllocate(alloc) -> compile_allocation env alloc
   | MTupleOp(tuple_op, tup) -> compile_tuple_op env tup tuple_op
+  | MBoxOp(box_op, box) -> compile_box_op env box box_op
   | MArrayOp(array_op, ret) -> compile_array_op env ret array_op
   | MAdtOp(adt_op, adt) -> compile_adt_op env adt adt_op
   | MRecordOp(record_op, record) -> compile_record_op env record record_op
@@ -1723,7 +1814,8 @@ and compile_instr env instr =
   | MWhile(cond, body) ->
     let compiled_cond = (compile_block env cond) in
     let compiled_body = (compile_block env body) in
-    singleton (Ast.Block([Types.I32Type],
+    (* (tracepoint env 2) @ *)
+    (singleton (Ast.Block([Types.I32Type],
                Concatlist.mapped_list_of_t add_dummy_loc @@
                singleton (Ast.Loop([Types.I32Type],
                           Concatlist.mapped_list_of_t add_dummy_loc @@
@@ -1734,7 +1826,7 @@ and compile_instr env instr =
                            Ast.BrIf (add_dummy_loc @@ Int32.of_int 1)] @
                           (safe_drop env) @
                           compiled_body +@
-                          [Ast.Br (add_dummy_loc @@ Int32.of_int 0)]))))
+                          [Ast.Br (add_dummy_loc @@ Int32.of_int 0)])))))
 
   | MError(err, args) ->
     call_error_handler env err args
@@ -1751,7 +1843,7 @@ let compile_function env {index; arity; stack_size; body=body_instrs} =
   let arity_int = Int32.to_int arity in
   let body_env = {env with num_args=arity_int; stack_size} in
   let body = Concatlist.mapped_list_of_t add_dummy_loc @@
-    (compile_block body_env body_instrs) @ (cleanup_locals body_env) +@ [Ast.Return] in
+    (*(tracepoint env 0) @ *)(compile_block body_env body_instrs) @ (cleanup_locals body_env) +@ [Ast.Return] in
   let open Wasm.Ast in
   let ftype_idx = get_arity_func_type_idx env arity_int in
   let ftype = add_dummy_loc Int32.(of_int ftype_idx) in
@@ -1946,13 +2038,28 @@ let heap_adjust env = add_dummy_loc {
 }
 
 let compile_main env prog =
-  compile_function env
+  (* let rec intersperse = function
+    | [] -> []
+    | x::[] -> x::[]
+    | hd::tl -> hd :: ((MTracepoint 3)::(intersperse tl))
+  in *)
+  let ret = compile_function env
     {
       index=Int32.of_int (-99);
       arity=Int32.zero;
       body=prog.main_body;
       stack_size=prog.main_body_stack_size;
     }
+  in
+  (* let ret = source_it ret in
+  add_dummy_loc {ret with body=intersperse ret.body} *)
+  (*let rec but_last = function
+    | []
+    | _::[] -> []
+    | hd::tl -> hd::(but_last tl)
+  in
+  add_dummy_loc {ret with body=List.append (List.append (but_last ret.body) (Concatlist.mapped_list_of_t add_dummy_loc @@ tracepoint env 1)) [add_dummy_loc Ast.Return]} *)
+  ret
 
 let compile_global_cleanup_function env num_globals =
   let body = Concatlist.mapped_list_of_t add_dummy_loc @@

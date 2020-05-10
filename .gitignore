@@ -1,6 +1,8 @@
 main
 *.mashtree
-*.install
+/compiler/*.install
+/*.install
+/*.out
 output/*.o
 output/*.run
 output/*.s
