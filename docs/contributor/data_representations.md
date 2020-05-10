@@ -112,7 +112,7 @@ The value `x` gets "saved" so later when we call `foo`, we still have access to 
 ╚══════╩═══════╧════════════╧══════╧═══════╧═════╧═══════╝
 ```
 
-The arity represents the number of arguments to the function. `*wasm func` is a pointer to where the assembled wasm fuction is located in the WebAssembly function table. `size` is the number of values stored in the closure.
+The arity represents the number of arguments to the function. `*wasm func` is a pointer to where the assembled wasm function is located in the WebAssembly function table. `size` is the number of values stored in the closure.
 
 The arity, wasm function pointer, and size are all **untagged**. All other elements are regular Grain values.
 
