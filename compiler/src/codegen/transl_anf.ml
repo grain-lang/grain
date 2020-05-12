@@ -63,8 +63,8 @@ let reset_global() =
 
 let next_global id =
   (* RIP Hygiene (this behavior works as expected until we have more metaprogramming constructs) *)
-  match Ident.find_name_opt (Ident.name id) (!global_table) with
-  | Some(_, (ret, ret_get)) -> Int32.to_int ret, Int32.to_int ret_get
+  match Ident.find_same_opt id (!global_table) with
+  | Some(ret, ret_get) -> Int32.to_int ret, Int32.to_int ret_get
   | None ->
     begin
       let ret = !global_index in

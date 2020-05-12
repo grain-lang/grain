@@ -317,12 +317,12 @@ import foreign wasm fdDatasync : (FileDescriptor) -> Void from 'stdlib-external/
 # @param fd: FileDescriptor The file descriptor to synchronize
 import foreign wasm fdSync : (FileDescriptor) -> Void from 'stdlib-external/sys'
 
-import foreign wasm fdStats : (FileDescriptor) -> (Number, Int64, Int64, Int64) as fdStatsRaw from 'stdlib-external/sys'
+import foreign wasm fdStats : (FileDescriptor) -> (Number, Int64, Int64, Int64) from 'stdlib-external/sys'
 # Retrieve information about a file descriptor
 # @param fd: FileDescriptor The file descriptor of which to retrieve information
 # @returns Stats A record containing the filetype, flags, rights, and inheriting rights associated with the file descriptor
 let fdStats = (fd) => {
-  let (filetype, fdflags, rights, rightsInheriting) = fdStatsRaw(fd)
+  let (filetype, fdflags, rights, rightsInheriting) = fdStats(fd)
 
   let orderedFdflags = [
     Append,
@@ -402,12 +402,12 @@ import foreign wasm fdSetFlags : (FileDescriptor, List<FdFlag>) -> Void from 'st
 # @param rightsInheriting: List<Rights> Inheriting rights to apply to the file descriptor
 import foreign wasm fdSetRights : (FileDescriptor, List<Rights>, List<Rights>) -> Void from 'stdlib-external/sys'
 
-import foreign wasm fdFilestats : (FileDescriptor) -> (Int64, Int64, Number, Int64, Int64, Int64, Int64, Int64) as fdFilestatsRaw from 'stdlib-external/sys'
+import foreign wasm fdFilestats : (FileDescriptor) -> (Int64, Int64, Number, Int64, Int64, Int64, Int64, Int64) from 'stdlib-external/sys'
 # Retrieve information about a file
 # @param fd: FileDescriptor The file descriptor of the file to retrieve information
 # @returns Filestats A record containing the information about the file
 let fdFilestats = (fd) => {
-  let (device, inode, filetype, linkcount, size, accessed, modified, changed) = fdFilestatsRaw(fd)
+  let (device, inode, filetype, linkcount, size, accessed, modified, changed) = fdFilestats(fd)
 
   let filetype = filetypeFromNumber(filetype)
   
