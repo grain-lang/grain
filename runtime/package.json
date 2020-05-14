@@ -42,7 +42,7 @@
     "webpack-cli": "^3.3.11"
   },
   "dependencies": {
-    "@wasmer/wasi": "^0.11.0",
+    "@wasmer/wasi": "^0.11.2",
     "fast-text-encoding": "^1.0.0"
   }
 }
