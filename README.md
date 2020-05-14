@@ -4,9 +4,9 @@
     </a>
 </div>
 
+![Grain CI Workflow](https://github.com/grain-lang/grain/workflows/Grain%20CI%20Workflow/badge.svg)
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
 [![GitHub version](https://badge.fury.io/gh/grain-lang%2Fgrain.svg)](https://badge.fury.io/gh/grain-lang%2Fgrain)
-[![Build Status](https://travis-ci.org/grain-lang/grain.svg?branch=master)](https://travis-ci.org/grain-lang/grain)
 
 # The Grain Compiler
 
