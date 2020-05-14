@@ -62,6 +62,7 @@ let translate_signature sg =
     | TSigValue(id, d) ->
       TSigValue(id, {d with val_type=link_type_vars d.val_type})
     | TSigType _
+    | TSigTypeExt _
     | TSigModule _
     | TSigModType _ -> item
   ) sg

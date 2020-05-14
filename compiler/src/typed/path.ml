@@ -27,6 +27,10 @@ let rec compare p1 p2 =
   | (PIdent _, PExternal _) -> -1
   | (PExternal _, PIdent _) -> 1
 
+let rec find_free_opt ids = function
+  | PIdent id -> List.find_opt (Ident.same id) ids
+  | PExternal(p, _, _) -> find_free_opt ids p
+
 let rec isfree id = function
   | PIdent id' -> Ident.same id id'
   | PExternal(m, _, _) -> isfree id m

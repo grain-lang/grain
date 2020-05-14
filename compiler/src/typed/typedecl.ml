@@ -791,6 +791,223 @@ let transl_value_decl env loc valdecl =
   Builtin_attributes.warning_scope valdecl.pval_attributes
     (fun () -> transl_value_decl env loc valdecl)*)
 
+(* Translating type extensions *)
+
+let transl_extension_constructor env type_path type_params
+                                 typext_params sext =
+  let id = Ident.create sext.pext_name.txt in
+  let args, kind =
+    match sext.pext_kind with
+      PExtDecl sargs ->
+        let targs, _, args, _, _ =
+          make_constructor env type_path typext_params sargs
+        in
+          args, TExtDecl targs
+    | PExtRebind lid ->
+        let cdescr = Env.lookup_constructor lid.txt env in
+        let (args, cstr_res) = Ctype.instance_constructor cdescr in
+        let res =
+          (*if cdescr.cstr_generalized then
+            let params = Ctype.instance_list type_params in
+            let res = Ctype.newconstr type_path params in
+            let ret_type = Some (Ctype.newconstr type_path params) in
+              res, ret_type
+          else*) (Ctype.newconstr type_path typext_params)
+        in
+        begin
+          try
+            Ctype.unify env cstr_res res
+          with Ctype.Unify trace ->
+            raise (Error(lid.loc,
+                     Rebind_wrong_type(lid.txt, env, trace)))
+        end;
+        (* Remove "_" names from parameters used in the constructor *)
+        if (*not cdescr.cstr_generalized*) true then begin
+          let vars =
+            Ctype.free_variables (Btype.newgenty (TTyTuple args))
+          in
+            List.iter
+              (function {desc = TTyVar (Some "_")} as ty ->
+                          if List.memq ty vars then ty.desc <- TTyVar None
+                        | _ -> ())
+              typext_params
+        end;
+        (* Ensure that constructor's type matches the type being extended *)
+        let cstr_type_path, cstr_type_params =
+          match cdescr.cstr_res.desc with
+            TTyConstr (p, _, _) ->
+              let decl = Env.find_type p env in
+                p, decl.type_params
+          | _ -> assert false
+        in
+        let cstr_types =
+          (Btype.newgenty
+             (TTyConstr(cstr_type_path, cstr_type_params, ref TMemNil)))
+          :: cstr_type_params
+        in
+        let ext_types =
+          (Btype.newgenty
+             (TTyConstr(type_path, type_params, ref TMemNil)))
+          :: type_params
+        in
+        if not (Ctype.equal env true cstr_types ext_types) then
+          raise (Error(lid.loc,
+                       Rebind_mismatch(lid.txt, cstr_type_path, type_path)));
+        let path =
+          match cdescr.cstr_tag with
+            CstrExtension(path, _) -> path
+          | _ -> assert false
+        in
+        let args =
+          Types.TConstrTuple args
+        in
+        args, TExtRebind(path, lid)
+    in
+  let ext =
+    { ext_type_path = type_path;
+      ext_type_params = typext_params;
+      ext_args = args;
+      Types.ext_loc = sext.pext_loc;
+    }
+  in
+    { ext_id = id;
+      ext_name = sext.pext_name;
+      ext_type = ext;
+      ext_kind = kind;
+      Typedtree.ext_loc = sext.pext_loc; }
+
+let transl_extension_constructor env type_path type_params
+    typext_params sext =
+  (*Builtin_attributes.warning_scope sext.pext_attributes
+    (fun () ->*) transl_extension_constructor env type_path type_params
+        typext_params sext
+
+(* let transl_type_extension extend env loc styext =
+  reset_type_variables();
+  Ctype.begin_def();
+  let type_path, type_decl =
+    let lid = styext.ptyext_path in
+    Env.lookup_type lid.txt env
+  in
+  begin
+    match type_decl.type_kind with
+    | Type_open -> begin
+        match type_decl.type_private with
+        | Private when extend -> begin
+            match
+              List.find
+                (function {pext_kind = Pext_decl _} -> true
+                        | {pext_kind = Pext_rebind _} -> false)
+                styext.ptyext_constructors
+            with
+            | {pext_loc} ->
+                raise (Error(pext_loc, Cannot_extend_private_type type_path))
+            | exception Not_found -> ()
+          end
+        | _ -> ()
+      end
+    | _ ->
+        raise (Error(loc, Not_extensible_type type_path))
+  end;
+  let type_variance =
+    List.map (fun v ->
+                let (co, cn) = Variance.get_upper v in
+                  (not cn, not co, false))
+             type_decl.type_variance
+  in
+  let err =
+    if type_decl.type_arity <> List.length styext.ptyext_params then
+      Some Includecore.Arity
+    else
+      if List.for_all2
+           (fun (c1, n1, _) (c2, n2, _) -> (not c2 || c1) && (not n2 || n1))
+           type_variance
+           (Typedecl_variance.variance_of_params styext.ptyext_params)
+      then None else Some Includecore.Variance
+  in
+  begin match err with
+  | None -> ()
+  | Some err -> raise (Error(loc, Extension_mismatch (type_path, err)))
+  end;
+  let ttype_params = make_params env styext.ptyext_params in
+  let type_params = List.map (fun (cty, _) -> cty.ctyp_type) ttype_params in
+  List.iter2 (Ctype.unify_var env)
+    (Ctype.instance_list type_decl.type_params)
+    type_params;
+  let constructors =
+    List.map (transl_extension_constructor env type_path
+               type_decl.type_params type_params styext.ptyext_private)
+      styext.ptyext_constructors
+  in
+  Ctype.end_def();
+  (* Generalize types *)
+  List.iter Ctype.generalize type_params;
+  List.iter
+    (fun ext ->
+       Btype.iter_type_expr_cstr_args Ctype.generalize ext.ext_type.ext_args;
+       Option.iter Ctype.generalize ext.ext_type.ext_ret_type)
+    constructors;
+  (* Check that all type variables are closed *)
+  List.iter
+    (fun ext ->
+       match Ctype.closed_extension_constructor ext.ext_type with
+         Some ty ->
+           raise(Error(ext.ext_loc, Unbound_type_var_ext(ty, ext.ext_type)))
+       | None -> ())
+    constructors;
+  (* Check variances are correct *)
+  List.iter
+    (fun ext->
+       (* Note that [loc] here is distinct from [type_decl.type_loc], which
+          makes the [loc] parameter to this function useful. [loc] is the
+          location of the extension, while [type_decl] points to the original
+          type declaration being extended. *)
+       try Typedecl_variance.check_variance_extension
+             env type_decl ext (type_variance, loc)
+       with Typedecl_variance.Error (loc, err) ->
+         raise (Error (loc, Variance err)))
+    constructors;
+  (* Add extension constructors to the environment *)
+  let newenv =
+    List.fold_left
+      (fun env ext ->
+         Env.add_extension ~check:true ext.ext_id ext.ext_type env)
+      env constructors
+  in
+  let tyext =
+    { tyext_path = type_path;
+      tyext_txt = styext.ptyext_path;
+      tyext_params = ttype_params;
+      tyext_constructors = constructors;
+      tyext_private = styext.ptyext_private;
+      tyext_loc = styext.ptyext_loc;
+      tyext_attributes = styext.ptyext_attributes; }
+  in
+    (tyext, newenv)
+
+let transl_type_extension extend env loc styext =
+  Builtin_attributes.warning_scope styext.ptyext_attributes
+    (fun () -> transl_type_extension extend env loc styext) *)
+
+let transl_exception env sext =
+  reset_type_variables();
+  Ctype.begin_def();
+  let ext =
+    transl_extension_constructor env
+      Builtin_types.path_exception [] [] sext
+  in
+  Ctype.end_def();
+  (* Generalize types *)
+  Btype.iter_type_expr_cstr_args Ctype.generalize ext.ext_type.ext_args;
+  (* Check that all type variables are closed *)
+  (* begin match Ctype.closed_extension_constructor ext.ext_type with
+    Some ty ->
+      raise (Error(ext.ext_loc, Unbound_type_var_ext(ty, ext.ext_type)))
+  | None -> ()
+  end; *)
+  let newenv = Env.add_extension ~check:true ext.ext_id ext.ext_type env in
+  ext, newenv
+
 (**** Error report ****)
 
 open Format

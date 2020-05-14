@@ -49,6 +49,7 @@ val type_path: t -> Path.t -> Path.t
 
 val type_expr: t -> type_expr -> type_expr
 val value_description: t -> value_description -> value_description
+val extension_constructor: t -> extension_constructor -> extension_constructor
 val type_declaration: t -> type_declaration -> type_declaration
 val modtype: t -> module_type -> module_type
 val signature: t -> signature -> signature

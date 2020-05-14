@@ -153,6 +153,7 @@ type summary =
     Env_empty
   | Env_value of summary * Ident.t * value_description
   | Env_type of summary * Ident.t * type_declaration
+  | Env_extension of summary * Ident.t * extension_constructor
   | Env_module of summary * Ident.t * module_declaration
   | Env_modtype of summary * Ident.t * modtype_declaration
   | Env_open of summary * Path.t
@@ -997,6 +998,7 @@ let copy_types l env =
 let mark_value_used env name loc = ()(*Printf.eprintf "Marking value %s used\n" name*)
 let mark_type_used env name loc = ()
 let mark_module_used env name loc = ()
+let mark_extension_used env ext loc = ()
 
 let rec lookup_module_descr_aux ~mark id env =
   let open Identifier in
@@ -1276,6 +1278,11 @@ let rec prefix_idents root pos sub = function
       let (pl, final_sub) =
         prefix_idents root pos (Subst.add_type id p sub) rem in
       (p::pl, final_sub)
+  | TSigTypeExt(id, ec, es) :: rem ->
+      let p = PExternal(root, Ident.name id, pos) in
+      let pl, final_sub =
+        prefix_idents root pos (Subst.add_type id p sub) rem in
+      (p::pl, final_sub)
   | TSigModule(id, _, _) :: rem ->
       let p = PExternal(root, Ident.name id, pos) in
       let (pl, final_sub) =
@@ -1403,6 +1410,11 @@ and components_of_module_maker (env, sub, path, mty) =
                  add_to_tbl descr.lbl_name descr c.comp_labels)
             labels;
           env := store_type_infos id decl !env
+        | TSigTypeExt(id, ext, _) ->
+            let ext' = Subst.extension_constructor sub ext in
+            let descr =
+              Datarepr.extension_descr path ext' in
+            c.comp_constrs <- add_to_tbl (Ident.name id) descr c.comp_constrs
         | TSigModule(id, md, _) ->
           let md' = EnvLazy.create (sub, md) in
           c.comp_modules <-
@@ -1500,6 +1512,47 @@ and store_type_infos id info env =
     types = IdTbl.add id (info, ([], [])) env.types;
     summary = Env_type(env.summary, id, info); }
 
+and store_extension ~check id ext env =
+  (* let loc = ext.ext_loc in *)
+  let cstr = Datarepr.extension_descr (PIdent id) ext in
+  let val_desc =
+    let val_type = match cstr.cstr_args with
+      | [] -> cstr.cstr_res
+      | args -> (Btype.newgenty (TTyArrow(args, cstr.cstr_res, TComOk))) in
+    let val_type = match cstr.cstr_existentials with
+      | [] -> val_type
+      | existentials -> (Btype.newgenty (TTyPoly(val_type, existentials))) in
+    {
+      val_type;
+      val_fullpath = PIdent (Ident.create cstr.cstr_name);
+      val_kind = TValConstructor cstr;
+      val_loc = cstr.cstr_loc;
+    } in
+  (* if check && not loc.Location.loc_ghost &&
+    Warnings.is_active Warnings.UnusedExtension
+  then begin
+    let is_exception = Path.same ext.ext_type_path Builtin_types.path_exception in
+    let ty_name = Path.last ext.ext_type_path in
+    let name = cstr.cstr_name in
+    let k = (ty_name, loc, name) in
+    if not (Hashtbl.mem used_constructors k) then begin
+      let used = constructor_usages () in
+      Hashtbl.add used_constructors k (add_constructor_usage used);
+      !add_delayed_check_forward
+        (fun () ->
+          if not (is_in_signature env) && not used.cu_positive then
+            Location.prerr_warning loc
+              (Warnings.Unused_extension
+                 (name, is_exception, used.cu_pattern, used.cu_privatize)
+              )
+        )
+    end;
+  end; *)
+  { env with
+    constructors = TycompTbl.add id cstr env.constructors;
+    values = IdTbl.add id val_desc env.values;
+    summary = Env_extension(env.summary, id, ext) }
+
 and store_module ~check id md env =
   (*let loc = md.md_loc in
   if check then
@@ -1535,6 +1588,9 @@ let add_value ?check id desc env =
 
 let add_type ~check id info env =
   store_type ~check id info env
+
+and add_extension ~check id ext env =
+  store_extension ~check id ext env
 
 let add_module_declaration ?(arg=false) ~check id md env =
   let env = store_module ~check id md env in
@@ -1589,6 +1645,7 @@ let add_item comp env =
   match comp with
   | TSigValue(id, decl)     -> add_value id decl env
   | TSigType(id, decl, _)   -> add_type ~check:false id decl env
+  | TSigTypeExt(id, ext, _)   -> add_extension ~check:false id ext env
   | TSigModule(id, md, _)   -> add_module_declaration ~check:false id md env
   | TSigModType(id, decl)   -> add_modtype id decl env
 
@@ -1697,6 +1754,7 @@ let check_opened (mod_ : Parsetree.import_declaration) env =
       | Env_module(summary, _, _)
       | Env_value(summary, _, _)
       | Env_type(summary, _, _)
+      | Env_extension(summary, _, _)
       | Env_modtype(summary, _, _)
       | Env_constraints(summary, _)
       | Env_copy_types(summary, _)

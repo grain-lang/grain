@@ -9,6 +9,7 @@ type summary =
     Env_empty
   | Env_value of summary * Ident.t * value_description
   | Env_type of summary * Ident.t * type_declaration
+  | Env_extension of summary * Ident.t * extension_constructor
   | Env_module of summary * Ident.t * module_declaration
   | Env_modtype of summary * Ident.t * modtype_declaration
   | Env_open of summary * Path.t
@@ -102,6 +103,8 @@ val add_value: ?check:(string -> Warnings.t) -> Ident.t -> value_description -> 
 (** Adds a value identifier with the given name and description. *)
 val add_type: check:bool -> Ident.t -> type_declaration -> t -> t
 (** Adds a type identifier with the given name and declaration. *)
+val add_extension: check:bool -> Ident.t -> extension_constructor -> t -> t
+(** Adds a type extenstion with the given name and extension. *)
 val add_constructor: Ident.t -> constructor_description -> t -> t
 (** Adds a constructor with the given name and description. *)
 val add_module: ?arg:bool -> Ident.t -> module_type -> string option -> t -> t

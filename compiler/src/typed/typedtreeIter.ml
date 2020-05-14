@@ -121,6 +121,7 @@ end = struct
     Iter.enter_toplevel_stmt stmt;
     begin match stmt.ttop_desc with
       | TTopData decls -> List.iter iter_data_declaration decls
+      | TTopException _
       | TTopForeign _
       | TTopImport _
       | TTopExport _ -> ()
@@ -132,6 +133,7 @@ end = struct
   and iter_toplevel_stmts stmts =
     List.iter (fun cur ->
         match cur.ttop_desc with
+        | TTopException _
         | TTopForeign _
         | TTopImport _ 
         | TTopExport _ 

@@ -7,6 +7,7 @@ type t =
 
 val same: t -> t -> bool
 val compare: t -> t -> int
+val find_free_opt: Ident.t list -> t -> Ident.t option
 val isfree: Ident.t -> t -> bool
 val binding_time: t -> int
 val flatten: t -> Ident.t * string list

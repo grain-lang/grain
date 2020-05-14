@@ -625,7 +625,7 @@ let should_extend ext env = match ext with
       | (p,_)::_ ->
         begin match p.pat_desc with
           | TPatConstruct
-              (_, {cstr_tag=(CstrConstant _|CstrBlock _|CstrUnboxed)},_) ->
+              (_, {cstr_tag=(CstrConstant _|CstrBlock _|CstrExtension _|CstrUnboxed)},_) ->
             let path = get_constructor_type_path p.pat_type p.pat_env in
             Path.same path ext
           | TPatConstant _|TPatTuple _|TPatRecord _
@@ -1592,7 +1592,7 @@ let extendable_path path =
      (*Path.same path Predef.path_option*))
 
 let rec collect_paths_from_pat r p = match p.pat_desc with
-  | TPatConstruct(_, {cstr_tag=(CstrConstant _|CstrBlock _|CstrUnboxed)},ps)
+  | TPatConstruct(_, {cstr_tag=(CstrConstant _|CstrBlock _|CstrExtension _|CstrUnboxed)},ps)
     ->
     let path = get_constructor_type_path p.pat_type p.pat_env in
     List.fold_left

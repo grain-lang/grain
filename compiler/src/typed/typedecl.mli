@@ -26,3 +26,6 @@ val transl_data_decl:
 val transl_value_decl:
     Env.t -> Location.t ->
     Parsetree.value_description -> Typedtree.value_description * Env.t
+
+val transl_exception:
+    Env.t -> Parsetree.extension_constructor -> Typedtree.extension_constructor * Env.t

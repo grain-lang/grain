@@ -84,6 +84,7 @@ and out_sig_item =
   | Osig_modtype of string * out_module_type
   | Osig_module of string * out_module_type * out_rec_status
   | Osig_type of out_type_decl * out_rec_status
+  | Osig_typext of out_extension_constructor * out_ext_status
   | Osig_value of out_val_decl
   | Osig_ellipsis
 and out_type_decl =
@@ -93,6 +94,11 @@ and out_type_decl =
     otype_immediate: bool;
     otype_unboxed: bool;
     otype_cstrs: (out_type * out_type) list }
+and out_extension_constructor =
+  { oext_name: string;
+    oext_type_name: string;
+    oext_type_params: string list;
+    oext_args: out_type list }
 and out_type_extension =
   { otyext_name: string;
     otyext_params: string list;

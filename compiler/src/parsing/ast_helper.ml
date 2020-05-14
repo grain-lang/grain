@@ -91,6 +91,17 @@ module Dat = struct
   let record ?loc n t ldl = mk ?loc n t (PDataRecord ldl)
 end
 
+module Except = struct
+  let mk ?loc n t =
+    let loc = match loc with
+      | None -> (!default_loc_src)()
+      | Some l -> l in
+    let ext = {pext_name=n; pext_kind=PExtDecl t; pext_loc=loc} in
+    {ptyexn_constructor=ext; ptyexn_loc=loc}
+  let singleton ?loc n = mk ?loc n PConstrSingleton
+  let tuple ?loc n args = mk ?loc n (PConstrTuple args)
+end
+
 module Pat = struct
   let mk ?loc d =
     let loc = match loc with
@@ -166,6 +177,7 @@ module Top = struct
   let data ?loc e d = mk ?loc (PTopData (e, d))
   let let_ ?loc e r vb = mk ?loc (PTopLet(e, r, vb))
   let expr ?loc e = mk ?loc (PTopExpr e)
+  let grain_exception ?loc e ext = mk ?loc (PTopException (e, ext))
   let export ?loc e = mk ?loc (PTopExport e)
   let export_all ?loc e = mk ?loc (PTopExportAll e)
 end

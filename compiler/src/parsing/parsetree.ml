@@ -34,6 +34,29 @@ type constructor_arguments =
   | PConstrSingleton
 [@@deriving sexp]
 
+and type_extension = {
+  ptyext_path: Identifier.t loc;
+  ptyext_params: parsed_type list;
+  ptyext_constructors: extension_constructor list;
+  ptyext_loc: Location.t;
+} [@@deriving sexp]
+
+and extension_constructor = {
+  pext_name: string loc;
+  pext_kind : extension_constructor_kind;
+  pext_loc : Location.t;
+} [@@deriving sexp]
+
+and type_exception = {
+  ptyexn_constructor: extension_constructor;
+  ptyexn_loc: Location.t;
+} [@@deriving sexp]
+
+and extension_constructor_kind =
+  | PExtDecl of constructor_arguments
+  | PExtRebind of Identifier.t loc
+[@@deriving sexp]
+
 (** Type for branches within data declarations *)
 type constructor_declaration = {
   pcd_name: string loc;
@@ -223,6 +246,7 @@ type toplevel_stmt_desc =
   | PTopData of export_flag * data_declaration
   | PTopLet of export_flag * rec_flag * value_binding list
   | PTopExpr of expression
+  | PTopException of export_flag * type_exception
   | PTopExport of export_declaration list
   | PTopExportAll of export_except list
 [@@deriving sexp]

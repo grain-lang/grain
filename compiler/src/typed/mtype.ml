@@ -74,8 +74,8 @@ and strengthen_sig ~aliasable env sg p pos =
               { decl with type_manifest = manif }
       in
       TSigType(id, newdecl, rs) :: strengthen_sig ~aliasable env rem p pos
-  (*| (Sig_typext _ as sigelt) :: rem ->
-      sigelt :: strengthen_sig ~aliasable env rem p (pos+1)*)
+  | (TSigTypeExt _ as sigelt) :: rem ->
+      sigelt :: strengthen_sig ~aliasable env rem p (pos+1)
   | TSigModule(id, md, rs) :: rem ->
       let str =
         strengthen_decl ~aliasable env md (PExternal(p, Ident.name id, pos))
@@ -163,9 +163,9 @@ let nondep_supertype env mid mty =
       | TSigType(id, d, rs) ->
           TSigType(id, Ctype.nondep_type_decl env mid id (va = Co) d, rs)
           :: rem'
-      (*| Sig_typext(id, ext, es) ->
-          Sig_typext(id, Ctype.nondep_extension_constructor env mid ext, es)
-          :: rem'*)
+      | TSigTypeExt(id, ext, es) ->
+          TSigTypeExt(id, Ctype.nondep_extension_constructor env mid ext, es)
+          :: rem'
       | TSigModule(id, md, rs) ->
           TSigModule(id, {md with md_type=nondep_mty env va md.md_type}, rs)
           :: rem'
@@ -263,8 +263,8 @@ and type_paths_sig env p pos sg =
         p (pos+1) rem
   | TSigModType(id, decl) :: rem ->
       type_paths_sig (Env.add_modtype id decl env) p pos rem
-  (*| (Sig_typext _ | Sig_class _) :: rem ->
-      type_paths_sig env p (pos+1) rem*)
+  | (TSigTypeExt _ (*| Sig_class _*)) :: rem ->
+      type_paths_sig env p (pos+1) rem
   (*| (Sig_class_type _) :: rem ->
       type_paths_sig env p pos rem*)
 
@@ -290,8 +290,8 @@ and no_code_needed_sig env sg =
         (Env.add_module_declaration ~check:false id md env) rem
   | (TSigType _ | TSigModType _ (*| Sig_class_type _*)) :: rem ->
       no_code_needed_sig env rem
-  (*| (Sig_typext _ | Sig_class _) :: _ ->
-      false*)
+  | (TSigTypeExt _ (*| Sig_class _*)) :: _ ->
+      false
 
 
 (* Check whether a module type may return types *)
@@ -327,7 +327,7 @@ and contains_type_item env = function
       contains_type env mty
   | TSigValue _
   | TSigType _
-  (*| Sig_typext _*)
+  | TSigTypeExt _
   (*| Sig_class _*)
   (*| Sig_class_type _*) ->
       ()

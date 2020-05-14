@@ -18,6 +18,7 @@ type t =
   | FragileMatch of string
   | UnusedMatch
   | UnusedPat
+  | UnusedExtension
   | NonClosedRecordPattern of string
   | UnreachableCase
   | ShadowConstructor of string
@@ -39,8 +40,9 @@ let number = function
   | ShadowConstructor _ -> 13
   | NoCmiFile _ -> 14
   | NonClosedRecordPattern _ -> 15
+  | UnusedExtension -> 16
 
-let last_warning_number = 15
+let last_warning_number = 16
 
 let message = function
   | LetRecNonFunction(name) ->
@@ -79,6 +81,7 @@ let message = function
      It will remain exhaustive when constructors are added to type " ^ s ^ "."
   | UnusedMatch -> "this match case is unused."
   | UnusedPat -> "this sub-pattern is unused."
+  | UnusedExtension -> "this type extension is unused."
   | UnreachableCase -> "this mach case is unreachable."
   | ShadowConstructor s -> "the pattern variable " ^ s ^ " shadows a constructor of the same name."
   | NoCmiFile(name, None) -> "no cmi file was found in path for module " ^ name

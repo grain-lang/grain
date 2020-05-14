@@ -99,6 +99,24 @@ let constructor_descrs ty_path decl cstrs =
     (cd_id, cstr) in
   List.mapi describe_constructor cstrs
 
+let extension_descr path_ext ext =
+  let ty_res =
+    newgenconstr ext.ext_type_path ext.ext_type_params
+  in
+  let existentials, cstr_args, cstr_inlined =
+    constructor_args ext.ext_args (Some ty_res) path_ext
+  in
+    { cstr_name = Path.last path_ext;
+      cstr_res = ty_res;
+      cstr_existentials = existentials;
+      cstr_args;
+      cstr_arity = List.length cstr_args;
+      cstr_tag = CstrExtension(path_ext, cstr_args = []);
+      cstr_consts = -1;
+      cstr_nonconsts = -1;
+      cstr_loc = ext.ext_loc;
+    }
+
 let none = {desc = TTyTuple []; level = -1; id = -1}
                                         (* Clearly ill-formed type *)
 let dummy_label =

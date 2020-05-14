@@ -16,6 +16,7 @@ type iterator = {
   value_binding: iterator -> value_binding -> unit;
   match_branch: iterator -> match_branch -> unit;
   value_description: iterator -> value_description -> unit;
+  grain_exception: iterator -> type_exception -> unit;
   toplevel: iterator -> toplevel_stmt -> unit;
 }
 
@@ -91,6 +92,21 @@ module D = struct
     match kind with
     | PDataVariant cdl -> List.iter (sub.constructor sub) cdl
     | PDataRecord ldl -> List.iter (sub.label sub) ldl
+end
+
+module Except = struct
+  let iter sub {ptyexn_constructor = ext; ptyexn_loc = loc} =
+    sub.location sub loc;
+    let {pext_name=n; pext_kind=k; pext_loc=loc} = ext in
+    iter_loc sub n;
+    sub.location sub loc;
+    match k with
+    | PExtDecl(args) ->
+      begin match args with
+      | PConstrTuple(ptl) -> List.iter (sub.typ sub) ptl
+      | PConstrSingleton -> ()
+      end
+    | PExtRebind id -> iter_loc sub id
 end
 
 module T = struct
@@ -172,6 +188,7 @@ module TL = struct
       | PTopData(e, dd) -> sub.data sub dd
       | PTopLet(e, r, vb) -> List.iter (sub.value_binding sub) vb
       | PTopExpr e -> sub.expr sub e
+      | PTopException(e, d) -> sub.grain_exception sub d
 end
 
 let default_iterator = {
@@ -189,5 +206,6 @@ let default_iterator = {
   value_binding = V.iter;
   match_branch = MB.iter;
   value_description = VD.iter;
+  grain_exception = Except.iter;
   toplevel = TL.iter;
 }

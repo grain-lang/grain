@@ -76,6 +76,7 @@ and abbrev_memo =
 type constructor_tag =
   | CstrConstant of int
   | CstrBlock of int
+  | CstrExtension of Path.t * bool (*true if a constant false if a block*)
   | CstrUnboxed
 [@@deriving sexp, yojson]
 
@@ -145,6 +146,13 @@ and constructor_arguments =
   | TConstrTuple of type_expr list
   | TConstrSingleton
 
+type extension_constructor = { 
+  ext_type_path: Path.t;
+  ext_type_params: type_expr list;
+  ext_args: constructor_arguments;
+  ext_loc: Location.t;
+} [@@deriving sexp, yojson]
+
 
 type type_declaration = {
   type_params: type_expr list;
@@ -168,9 +176,16 @@ type rec_status =
   | TRecNext
 [@@deriving sexp, yojson]
 
+type ext_status =
+  | TExtFirst
+  | TExtNext
+  | TExtException
+[@@deriving sexp, yojson]
+
 type signature_item =
   | TSigValue of Ident.t * value_description
   | TSigType of Ident.t * type_declaration * rec_status
+  | TSigTypeExt of Ident.t * extension_constructor * ext_status
   | TSigModule of Ident.t * module_declaration * rec_status
   | TSigModType of Ident.t * modtype_declaration
 [@@deriving sexp, yojson]
@@ -204,6 +219,7 @@ let equal_tag t1 t2 =
   match t1, t2 with
   | CstrBlock i1, CstrBlock i2
   | CstrConstant i1, CstrConstant i2 -> i1 = i2
+  | CstrExtension(p1, b1), CstrExtension(p2, b2) -> Path.same p1 p2 && b1 = b2
   | CstrUnboxed, CstrUnboxed -> true
   | _ -> false
 

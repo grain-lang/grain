@@ -67,6 +67,8 @@ exception Cannot_apply
 
 exception Recursive_abbrev
 
+exception Nondep_cannot_erase of Ident.t
+
 (* GADT: recursive abbrevs can appear as a result of local constraints *)
 exception Unification_recursive_abbrev of (type_expr * type_expr) list
 
@@ -2502,6 +2504,38 @@ let nondep_type_decl env mid id is_covariant decl =
   with Not_found ->
     clear_hash ();
     raise Not_found
+
+(* Preserve sharing inside extension constructors. *)
+let nondep_extension_constructor env id ext =
+  try
+    let type_path, type_params =
+      match Path.find_free_opt [id] ext.ext_type_path with
+      | Some id' ->
+        begin
+          let ty =
+            newgenty (TTyConstr(ext.ext_type_path, ext.ext_type_params, ref TMemNil))
+          in
+          let ty' = nondep_type_rec env id ty in
+            match (repr ty').desc with
+                TTyConstr(p, tl, _) -> p, tl
+              | _ -> raise (Nondep_cannot_erase id')
+        end
+      | None ->
+        let type_params =
+          List.map (nondep_type_rec env id) ext.ext_type_params
+        in
+          ext.ext_type_path, type_params
+    in
+    let args = map_type_expr_cstr_args (nondep_type_rec env id) ext.ext_args in
+      clear_hash ();
+      { ext_type_path = type_path;
+        ext_type_params = type_params;
+        ext_args = args;
+        ext_loc = ext.ext_loc;
+      }
+  with Nondep_cannot_erase _ as exn ->
+    clear_hash ();
+    raise exn
 
 (* collapse conjunctive types in class parameters *)
 let rec collapse_conj env visited ty =

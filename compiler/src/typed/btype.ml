@@ -132,6 +132,7 @@ type type_iterators =
     it_signature_item: type_iterators -> signature_item -> unit;
     it_value_description: type_iterators -> value_description -> unit;
     it_type_declaration: type_iterators -> type_declaration -> unit;
+    it_extension_constructor: type_iterators -> extension_constructor -> unit;
     it_module_declaration: type_iterators -> module_declaration -> unit;
     it_modtype_declaration: type_iterators -> modtype_declaration -> unit;
     it_module_type: type_iterators -> module_type -> unit;
@@ -162,6 +163,7 @@ let type_iterators =
   and it_signature_item it = function
     | TSigValue (_, vd)     -> it.it_value_description it vd
     | TSigType (_, td, _)   -> it.it_type_declaration it td
+    | TSigTypeExt (_, td, _)   -> it.it_extension_constructor it td
     | TSigModule (_, md, _) -> it.it_module_declaration it md
     | TSigModType (_, mtd)  -> it.it_modtype_declaration it mtd
   and it_value_description it vd =
@@ -169,6 +171,10 @@ let type_iterators =
   and it_type_declaration it td =
     List.iter (it.it_type_expr it) td.type_params;
     it.it_type_kind it td.type_kind
+  and it_extension_constructor it td =
+    it.it_path td.ext_type_path;
+    List.iter (it.it_type_expr it) td.ext_type_params;
+    iter_type_expr_cstr_args (it.it_type_expr it) td.ext_args
   and it_module_type it = function
     | TModIdent p -> it.it_path p
     | TModAlias p -> it.it_path p
@@ -191,6 +197,7 @@ let type_iterators =
     it_path; it_type_expr = it_do_type_expr; it_do_type_expr;
     it_type_kind; it_module_type;
     it_type_declaration; it_value_description;
+    it_extension_constructor;
     it_module_declaration; it_modtype_declaration;
   }
 

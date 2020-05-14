@@ -684,6 +684,74 @@ let constructor_arguments ppf a =
   !Oprint.out_type ppf (Otyp_tuple tys)
 
 
+(* Print an extension declaration *)
+
+let tree_of_extension_constructor id ext es =
+  (* reset_except_context (); *)
+  let ty_name = Path.name ext.ext_type_path in
+  let ty_params = filter_params ext.ext_type_params in
+  List.iter add_alias ty_params;
+  List.iter mark_loops ty_params;
+  List.iter check_name_of_type ty_params;
+  mark_loops_constructor_arguments ext.ext_args;
+  let type_param =
+    function
+    | Otyp_var (_, id) -> id
+    | _ -> "?"
+  in
+  let ty_params =
+    List.map (fun ty -> type_param (tree_of_typexp false ty)) ty_params
+  in
+  let name = Ident.name id in
+  let args = tree_of_constructor_arguments ext.ext_args
+  in
+  let ext =
+    { oext_name = name;
+      oext_type_name = ty_name;
+      oext_type_params = ty_params;
+      oext_args = args }
+  in
+  let es =
+    match es with
+        TExtFirst -> Oext_first
+      | TExtNext -> Oext_next
+      | TExtException -> Oext_exception
+  in
+    Osig_typext (ext, es)
+
+let extension_constructor id ppf ext =
+  !Oprint.out_sig_item ppf (tree_of_extension_constructor id ext TExtFirst)
+
+let extension_only_constructor id ppf ext =
+  (* reset_except_context (); *)
+  let name = Ident.name id in
+  let args = tree_of_constructor_arguments ext.ext_args in
+  Format.fprintf ppf "@[<hv>%a@]"
+    !Oprint.out_constr (name, args, None)
+
+(* Print a value declaration *)
+
+let tree_of_value_description id decl =
+  (* Format.eprintf "@[%a@]@." raw_type_expr decl.val_type; *)
+  let id = Ident.name id in
+  let ty = tree_of_type_scheme decl.val_type in
+  let vd =
+    { oval_name = id;
+      oval_type = ty;
+      oval_prims = [];
+      oval_attributes = [] }
+  in
+  let vd =
+    match decl.val_kind with
+    (* | TValPrim p -> Primitive.print p vd *)
+    | _ -> vd
+  in
+  Osig_value vd
+
+let value_description id ppf decl =
+  !Oprint.out_sig_item ppf (tree_of_value_description id decl)
+
+
 (* Print a value declaration *)
 
 let tree_of_value_description id decl =
@@ -776,6 +844,8 @@ and trees_of_sigitem = function
     [tree_of_value_description id decl]
   | TSigType(id, decl, rs) ->
     [tree_of_type_declaration id decl rs]
+  | TSigTypeExt(id, ext, es) ->
+    [tree_of_extension_constructor id ext es]
   | TSigModule(id, md, rs) ->
     [tree_of_module id md.md_type rs ~ellipsis:false]
   | TSigModType(id, decl) ->

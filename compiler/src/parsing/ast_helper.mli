@@ -66,6 +66,12 @@ module Dat : sig
   val record: ?loc:loc -> str -> parsed_type list -> label_declaration list -> data_declaration
 end
 
+module Except : sig
+  val mk: ?loc:loc -> str -> constructor_arguments -> type_exception
+  val singleton: ?loc:loc -> str -> type_exception
+  val tuple: ?loc:loc -> str -> parsed_type list -> type_exception
+end
+
 module Pat : sig
   val mk: ?loc:loc -> pattern_desc -> pattern
   val any: ?loc:loc -> unit -> pattern
@@ -114,6 +120,7 @@ module Top: sig
   val data: ?loc:loc -> export_flag -> data_declaration -> toplevel_stmt
   val let_: ?loc:loc -> export_flag -> rec_flag -> value_binding list -> toplevel_stmt
   val expr: ?loc:loc -> expression -> toplevel_stmt
+  val grain_exception: ?loc:loc -> export_flag -> type_exception -> toplevel_stmt
   val export: ?loc:loc -> export_declaration list -> toplevel_stmt
   val export_all: ?loc:loc -> export_except list -> toplevel_stmt
 end

@@ -363,6 +363,14 @@ let type_module ?(toplevel=false) funct_body anchor env sstr (*scope*) =
     let expr = Typecore.type_statement_expr env expr in
     { ttop_desc = TTopExpr(expr); ttop_loc = loc; ttop_env = env } in
 
+  let process_exception env export_flag ext loc =
+    let ext, newenv = Typedecl.transl_exception env ext in
+    let stmt = { ttop_desc = TTopException(export_flag, ext); ttop_loc = loc; ttop_env = newenv } in
+    let sign = match export_flag with
+      | Exported -> Some(TSigTypeExt(ext.ext_id, ext.ext_type, TExtException))
+      | Nonexported -> None in
+    newenv, sign, stmt in
+
   let process_export_value env exports loc =
     let bindings = List.map (fun {pex_name=name; pex_alias=alias; pex_loc=loc} ->
       let exported_name = match alias with 
@@ -428,6 +436,10 @@ let type_module ?(toplevel=false) funct_body anchor env sstr (*scope*) =
       | PTopExpr e ->
         let statement = process_expr env e loc in
         env, signatures, statement::statements
+      | PTopException(e, d) ->
+        let new_env, signature, statement = process_exception env e d.ptyexn_constructor loc in
+        let signatures = match signature with Some(s) -> s::signatures | None -> signatures in
+        new_env, signatures, statement::statements
       | PTopExportAll _ -> env, signatures, statements
   ) (env, [], []) sstr.Parsetree.statements in
   let signatures, statements = List.rev signatures, List.rev statements in

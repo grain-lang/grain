@@ -19,6 +19,9 @@
 
 open Types
 
+val extension_descr:
+  Path.t -> extension_constructor -> constructor_description
+
 val constructors_of_type:
   Path.t -> type_declaration ->
   (Ident.t * constructor_description) list

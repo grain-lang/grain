@@ -349,37 +349,23 @@ let type_declarations ?(equality = false) ~loc env ~mark name decl1 id decl2 =
               then [] else [Variance]*)
 
 (* Inclusion between extension constructors *)
-(*
+
 let extension_constructors ~loc env ~mark id ext1 ext2 =
-  if mark then begin
-    let usage =
-      if ext1.ext_private = Private || ext2.ext_private = Public
-      then Env.Positive else Env.Privatize
-    in
-    Env.mark_extension_used usage ext1 (Ident.name id)
-  end;
+  (* if mark then begin
+    Env.mark_extension_used ext1 (Ident.name id)
+  end; *)
   let ty1 =
-    Btype.newgenty (Tconstr(ext1.ext_type_path, ext1.ext_type_params, ref Mnil))
+    Btype.newgenty (TTyConstr(ext1.ext_type_path, ext1.ext_type_params, ref TMemNil))
   in
   let ty2 =
-    Btype.newgenty (Tconstr(ext2.ext_type_path, ext2.ext_type_params, ref Mnil))
+    Btype.newgenty (TTyConstr(ext2.ext_type_path, ext2.ext_type_params, ref TMemNil))
   in
   if Ctype.equal env true
       (ty1 :: ext1.ext_type_params)
       (ty2 :: ext2.ext_type_params)
   then
-    if compare_constructor_arguments ~loc env (Ident.create "")
-        ext1.ext_type_params ext2.ext_type_params
-        ext1.ext_args ext2.ext_args = [] then
-      if match ext1.ext_ret_type, ext2.ext_ret_type with
-          Some r1, Some r2 when not (Ctype.equal env true [r1] [r2]) -> false
-        | Some _, None | None, Some _ -> false
-        | _ -> true
-      then
-        match ext1.ext_private, ext2.ext_private with
-          Private, Public -> false
-        | _, _ -> true
-      else false
-    else false
+    compare_constructor_arguments ~loc env (Ident.create "")
+      ext1.ext_type_params ext2.ext_type_params
+      ext1.ext_args ext2.ext_args = []
   else false
-*)
+

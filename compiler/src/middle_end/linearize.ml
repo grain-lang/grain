@@ -12,6 +12,7 @@ let compile_constructor_tag =
   function
   | CstrConstant i -> i
   | CstrBlock i -> i
+  | CstrExtension(p, _) -> Path.stamp p
   | CstrUnboxed -> failwith "compile_constructor_tag: cannot compile CstrUnboxed"
 
 let gensym = Ident.create
@@ -380,26 +381,34 @@ and transl_anf_expression (({exp_desc; exp_loc=loc; exp_env=env; _} as e) : expr
     ans_setup (AExp.comp ~loc ~env ans)
 
 
+let bind_constructor env loc ty_id (cd_id, {cstr_name; cstr_tag; cstr_args}) =
+  let rhs = match cstr_tag with
+    | CstrConstant _ ->
+      let compiled_tag = compile_constructor_tag cstr_tag in
+      Comp.adt ~loc ~env (Imm.const ~loc ~env (Const_int ty_id)) (Imm.const ~loc ~env (Const_int compiled_tag)) []
+    | CstrBlock _ | CstrExtension _ ->
+      let compiled_tag = compile_constructor_tag cstr_tag in
+      let args = List.map (fun _ -> gensym "constr_arg") cstr_args in
+      let arg_ids = List.map (fun a -> Imm.id ~loc ~env a) args in
+      let imm_tytag = Imm.const ~loc ~env (Const_int ty_id) in
+      let imm_tag = Imm.const ~loc ~env (Const_int compiled_tag) in
+      Comp.lambda ~loc ~env args (AExp.comp ~loc ~env (Comp.adt ~loc ~env imm_tytag imm_tag arg_ids))
+    | CstrUnboxed -> failwith "NYI: ANF CstrUnboxed" in
+  BLetExport(Nonrecursive, [cd_id, rhs])
+
 let linearize_decl env loc typath decl =
   (* FIXME: [philip] This is kind of hacky...would be better to store this in the Env directly...not to mention, 
         I think this'll be much more fragile than if it were in the static info *)
   let ty_id = get_type_id typath in
   let descrs = Datarepr.constructors_of_type typath decl in
-  let bind_constructor (cd_id, {cstr_name; cstr_tag; cstr_args}) =
-    let rhs = match cstr_tag with
-      | CstrConstant _ ->
-        let compiled_tag = compile_constructor_tag cstr_tag in
-        Comp.adt ~loc ~env (Imm.const ~loc ~env (Const_int ty_id)) (Imm.const ~loc ~env (Const_int compiled_tag)) []
-      | CstrBlock _ ->
-        let compiled_tag = compile_constructor_tag cstr_tag in
-        let args = List.map (fun _ -> gensym "constr_arg") cstr_args in
-        let arg_ids = List.map (fun a -> Imm.id ~loc ~env a) args in
-        let imm_tytag = Imm.const ~loc ~env (Const_int ty_id) in
-        let imm_tag = Imm.const ~loc ~env (Const_int compiled_tag) in
-        Comp.lambda ~loc ~env args (AExp.comp ~loc ~env (Comp.adt ~loc ~env imm_tytag imm_tag arg_ids))
-      | CstrUnboxed -> failwith "NYI: ANF CstrUnboxed" in
-    BLetExport(Nonrecursive, [cd_id, rhs]) in
-  List.map bind_constructor descrs
+  List.map (bind_constructor env loc ty_id) descrs
+
+let linearize_exception env ext =
+  let ty_id = get_type_id ext.ext_type.ext_type_path in
+  let id = ext.ext_id in
+  let loc = ext.ext_loc in
+  let ext = Datarepr.extension_descr (Path.PIdent id) ext.ext_type in
+  [bind_constructor env loc ty_id (id, ext)]
 
 let rec transl_anf_statement (({ttop_desc; ttop_env=env; ttop_loc=loc} as s) : toplevel_stmt) : (anf_bind list) option * import_spec list =
   match ttop_desc with
@@ -459,6 +468,8 @@ let rec transl_anf_statement (({ttop_desc; ttop_env=env; ttop_loc=loc} as s) : t
         Some(bindings), []
       else
         None, []
+  | TTopException(_, ext) ->
+    Some (linearize_exception env ext), []
   | TTopForeign(desc) ->
     let arity = Ctype.arity (desc.tvd_desc.ctyp_type) in
     None, [Imp.wasm_func desc.tvd_id desc.tvd_mod.txt desc.tvd_name.txt (FunctionShape(arity, 1))]

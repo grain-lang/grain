@@ -111,6 +111,7 @@ end = struct
     let stmt = Map.enter_toplevel_stmt stmt in
     let ttop_desc = begin match stmt.ttop_desc with
       | TTopData decls -> TTopData(List.map map_data_declaration decls)
+      | TTopException _
       | TTopForeign _
       | TTopImport _
       | TTopExport _  -> stmt.ttop_desc

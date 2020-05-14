@@ -27,8 +27,8 @@ type symptom =
   | Value_descriptions of Ident.t * value_description * value_description
   | Type_declarations of Ident.t * type_declaration
                          * type_declaration * Includecore.type_mismatch list
-  (*| Extension_constructors of
-      Ident.t * extension_constructor * extension_constructor*)
+  | Extension_constructors of
+      Ident.t * extension_constructor * extension_constructor
   | Module_types of module_type * module_type
   | Modtype_infos of Ident.t * modtype_declaration * modtype_declaration
   | Modtype_permutation
@@ -101,12 +101,12 @@ let type_declarations ~loc env ~mark ?(old_env=env) cxt subst id decl1 decl2 =
 
 (* Inclusion between extension constructors *)
 
-(*let extension_constructors ~loc env ~mark cxt subst id ext1 ext2 =
+let extension_constructors ~loc env ~mark cxt subst id ext1 ext2 =
   let mark = mark_positive mark in
   let ext2 = Subst.extension_constructor subst ext2 in
   if Includecore.extension_constructors ~loc env ~mark id ext1 ext2
   then ()
-  else raise(Error[cxt, env, Extension_constructors(id, ext1, ext2)])*)
+  else raise(Error[cxt, env, Extension_constructors(id, ext1, ext2)])
 
 (* Inclusion between class declarations *)
 
@@ -174,7 +174,7 @@ let kind_of_field_desc = function
 let item_ident_name = function
   | TSigValue(id, d) -> (id, d.val_loc, Field_value(Ident.name id))
   | TSigType(id, d, _) -> (id, d.type_loc, Field_type(Ident.name id))
-  (*| Sig_typext(id, d, _) -> (id, d.ext_loc, Field_typext(Ident.name id))*)
+  | TSigTypeExt(id, d, _) -> (id, d.ext_loc, Field_typext(Ident.name id))
   | TSigModule(id, d, _) -> (id, d.md_loc, Field_module(Ident.name id))
   | TSigModType(id, d) -> (id, d.mtd_loc, Field_modtype(Ident.name id))
 (*  | Sig_class(id, d, _) -> (id, d.cty_loc, Field_class(Ident.name id))*)
@@ -186,7 +186,7 @@ let is_runtime_component = function
   | TSigModType(_,_)
   (*| Sig_class_type(_,_,_)*) -> false
   | TSigValue(_,_)
-  (*| Sig_typext(_,_,_)*)
+  | TSigTypeExt(_,_,_)
   | TSigModule(_,_,_)
   (*| Sig_class(_, _,_)*) -> true
 
@@ -409,7 +409,7 @@ and signatures ~loc env ~mark cxt subst sig1 sig2 =
               Subst.add_module id2 (PIdent id1) subst
             | TSigModType _ ->
               Subst.add_modtype id2 (TModIdent (PIdent id1)) subst
-            | TSigValue _ (*| Sig_typext _*)
+            | TSigValue _ | TSigTypeExt _
             (*| Sig_class _ | Sig_class_type _*) ->
               subst
           in
@@ -445,10 +445,9 @@ and signature_components ~loc old_env ~mark env cxt subst paired =
   | (TSigType(id1, tydecl1, _), TSigType(_id2, tydecl2, _), _pos) :: rem ->
     type_declarations ~loc ~old_env env ~mark cxt subst id1 tydecl1 tydecl2;
     comps_rec rem
-  (*| (Sig_typext(id1, ext1, _), Sig_typext(_id2, ext2, _), pos)
-    :: rem ->
+  | (TSigTypeExt(id1, ext1, _), TSigTypeExt(_id2, ext2, _), pos) :: rem ->
     extension_constructors ~loc env ~mark cxt subst id1 ext1 ext2;
-    (pos, Tcoerce_none) :: comps_rec rem*)
+    (pos, None) :: comps_rec rem
   | (TSigModule(id1, mty1, _), TSigModule(_id2, mty2, _), pos) :: rem ->
     let cc = module_declarations ~loc env ~mark cxt subst id1 mty1 mty2 in
     (pos, cc) :: comps_rec rem
@@ -594,13 +593,13 @@ let include_err ppf = function
       show_locs (d1.type_loc, d2.type_loc)
       (Includecore.report_type_mismatch
          "the first" "the second" "declaration") errs
-  (*| Extension_constructors(id, x1, x2) ->
+  | Extension_constructors(id, x1, x2) ->
     fprintf ppf
       "@[<hv 2>Extension declarations do not match:@ \
        %a@;<1 -2>is not included in@ %a@]"
       (extension_constructor id) x1
       (extension_constructor id) x2;
-    show_locs ppf (x1.ext_loc, x2.ext_loc)*)
+    show_locs ppf (x1.ext_loc, x2.ext_loc)
   | Module_types(mty1, mty2)->
     fprintf ppf
       "@[<hv 2>Modules do not match:@ \

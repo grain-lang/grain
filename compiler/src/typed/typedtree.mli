@@ -83,6 +83,32 @@ type constructor_arguments =
   | TConstrTuple of core_type list
   | TConstrSingleton
 
+and type_extension = {
+  tyext_path: Path.t;
+  tyext_txt: Identifier.t loc;
+  tyext_params: core_type list;
+  tyext_constructors: extension_constructor list;
+  tyext_loc: Location.t;
+} [@@deriving sexp]
+
+and type_exception = {
+  tyexn_constructor: extension_constructor;
+  tyexn_loc: Location.t;
+} [@@deriving sexp]
+
+and extension_constructor = {
+  ext_id: Ident.t;
+  ext_name: string loc;
+  ext_type: Types.extension_constructor;
+  ext_kind: extension_constructor_kind;
+  ext_loc: Location.t;
+} [@@deriving sexp]
+
+and extension_constructor_kind =
+  | TExtDecl of constructor_arguments
+  | TExtRebind of Path.t * Identifier.t loc
+[@@deriving sexp]
+
 type constructor_declaration = {
   cd_id: Ident.t;
   cd_name: string loc;
@@ -205,6 +231,7 @@ type toplevel_stmt_desc =
   | TTopImport of import_declaration
   | TTopExport of export_declaration list
   | TTopData of data_declaration list
+  | TTopException of export_flag * extension_constructor
   | TTopLet of export_flag * rec_flag * value_binding list
   | TTopExpr of expression
 

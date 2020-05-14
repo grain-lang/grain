@@ -17,6 +17,7 @@ type mapper = {
   value_binding: mapper -> value_binding -> value_binding;
   match_branch: mapper -> match_branch -> match_branch;
   value_description: mapper -> value_description -> value_description;
+  grain_exception: mapper -> type_exception -> type_exception;
   toplevel: mapper -> toplevel_stmt -> toplevel_stmt;
 }
 
@@ -97,6 +98,23 @@ module D = struct
     match kind with
     | PDataVariant cdl -> variant ~loc sname sargs (List.map (sub.constructor sub) cdl)
     | PDataRecord ldl -> record ~loc sname sargs (List.map (sub.label sub) ldl)
+end
+
+module Exc = struct
+  let map sub {ptyexn_constructor = ext; ptyexn_loc = loc} =
+    let open Except in
+    let cloc = sub.location sub loc in
+    let {pext_name=n; pext_kind=k; pext_loc=loc} = ext in
+    let name = map_loc sub n in
+    let loc = sub.location sub loc in
+    let k = match k with
+    | PExtDecl(args) -> (
+      PExtDecl (match args with
+        | PConstrTuple(ptl) -> PConstrTuple (List.map (sub.typ sub) ptl)
+        | PConstrSingleton -> PConstrSingleton))
+    | PExtRebind id -> PExtRebind(map_loc sub id) in
+    let ext = {pext_name=name; pext_kind=k; pext_loc=loc} in
+    {ptyexn_constructor = ext; ptyexn_loc = cloc}
 end
 
 module T = struct
@@ -189,6 +207,7 @@ module TL = struct
       | PTopData(e, dd) -> Top.data ~loc e (sub.data sub dd)
       | PTopLet(e, r, vb) -> Top.let_ ~loc e r (List.map (sub.value_binding sub) vb)
       | PTopExpr e -> Top.expr ~loc (sub.expr sub e)
+      | PTopException(e, d) -> Top.grain_exception ~loc e (sub.grain_exception sub d)
       | PTopExport ex -> Top.export ~loc (sub.export sub ex)
       | PTopExportAll ex -> Top.export_all ~loc (sub.export_all sub ex)
 end
@@ -208,6 +227,7 @@ let default_mapper = {
   value_binding = V.map;
   match_branch = MB.map;
   value_description = VD.map;
+  grain_exception = Exc.map;
   toplevel = TL.map;
 }
 

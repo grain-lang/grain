@@ -227,11 +227,21 @@ let value_description s descr =
     val_loc = loc s descr.val_loc;
    }
 
+let extension_constructor s ext =
+  { ext_type_path = type_path s ext.ext_type_path;
+    ext_type_params = List.map (typexp s) ext.ext_type_params;
+    ext_args = constructor_arguments s ext.ext_args;
+    ext_loc = loc s ext.ext_loc;
+  }
+
 let rec rename_bound_idents s idents = function
     [] -> (List.rev idents, s)
   | TSigType(id, _, _) :: sg ->
       let id' = Ident.rename id in
       rename_bound_idents (add_type id (PIdent id') s) (id' :: idents) sg
+  | TSigTypeExt(id, _, _) :: sg ->
+      let id' = Ident.rename id in
+      rename_bound_idents s (id' :: idents) sg
   | TSigModule(id, _, _) :: sg ->
       let id' = Ident.rename id in
       rename_bound_idents (add_module id (PIdent id') s) (id' :: idents) sg
@@ -268,6 +278,8 @@ and signature_component s comp newid =
       TSigValue(newid, {(value_description s d) with val_fullpath = Path.PIdent(_id)})
   | TSigType(_id, d, rs) ->
       TSigType(newid, type_declaration s d, rs)
+  | TSigTypeExt(_id, d, es) ->
+      TSigTypeExt(newid, extension_constructor s d, es)
   | TSigModule(_id, d, rs) ->
       TSigModule(newid, module_declaration s d, rs)
   | TSigModType(_id, d) ->

@@ -191,9 +191,9 @@ val nondep_type_decl:
   Env.t -> Ident.t -> Ident.t -> bool -> type_declaration ->
   type_declaration
 (* Same for type declarations. *)
-(*val nondep_extension_constructor:
+val nondep_extension_constructor:
   Env.t -> Ident.t -> extension_constructor ->
-  extension_constructor*)
+  extension_constructor
 (* Same for extension constructor *)
 val cyclic_abbrev: Env.t -> Ident.t -> type_expr -> bool
 val is_contractive: Env.t -> Path.t -> bool
