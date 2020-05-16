@@ -713,6 +713,7 @@ let data_tests =
   [
     tfile "basicdata" "basicdata" "(false, true, true)";
     tfile "adtprint" "adtprint" "Foo\nBar\nBaz(\"baz\")\nQux(5, \"qux\", false)\nQuux\nFlip(\"flip\")\nvoid";
+    t "adtprint_nonexported" "data Foo = Foo; Foo" "<adt value>";
   ]
 
 let export_tests =
