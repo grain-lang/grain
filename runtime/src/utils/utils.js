@@ -68,6 +68,9 @@ export function grainHeapValueToString(runtime, n) {
         // console.log(`\tModule: ${module}`);
         let tyinfo = module.types[typeId];
         // console.log(`\tType Info: ${JSON.stringify(tyinfo)}`);
+
+        if (Object.keys(tyinfo).length === 0) return '<adt value>';
+        
         let info = tyinfo[variantId];
         // console.log(`\tVariant: ${info}`);
         let [variantName, arity] = info;
