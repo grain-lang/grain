@@ -9,6 +9,9 @@
     "stdlib",
     "compiler"
   ],
+  "engines": {
+    "node": ">=14"
+  },
   "scripts": {
     "compiler:clean": "yarn workspace compiler run esy clean",
     "compiler:build": "yarn workspace compiler run esy",
