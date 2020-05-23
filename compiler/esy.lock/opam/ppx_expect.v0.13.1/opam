@@ -30,6 +30,6 @@ description: "
 Part of the Jane Street's PPX rewriters collection.
 "
 url {
-  src: "https://ocaml.janestreet.com/ocaml-core/v0.13/files/ppx_expect-v0.13.0.tar.gz"
-  checksum: "md5=e9d928f6aed89da85a511ea3d8d57f58"
+  src: "https://github.com/janestreet/ppx_expect/archive/v0.13.1.tar.gz"
+  checksum: "md5=8f6fd9c0c3c93f9e5a25038f1c26b0aa"
 }
