@@ -15,7 +15,7 @@ run-test: [["dune" "runtest" "-p" name "-j" jobs]]
 depends: [
   "ocamlfind" {build & >= "1.7.3" }
   "ocamlbuild" {build & >= "0.12.0" }
-  "dune" {build & >= "1.0" }
+  "dune" {build & >= "2.0" }
   "ppx_deriving"
   "ppx_deriving_yojson"
   "yojson"

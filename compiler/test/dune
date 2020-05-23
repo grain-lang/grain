@@ -2,8 +2,8 @@
  (name test)
  (libraries grain oUnit extlib))
 
-(alias
- (name runtest)
+(rule
+ (alias runtest)
  (deps
   (:< test.exe)
   (source_tree input)
