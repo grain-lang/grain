@@ -40,17 +40,17 @@ let rec contains = (e, l) => {
   }
 }
 
-let rec fold_left = (f, b, l) => {
+let rec foldLeft = (f, b, l) => {
   match (l) {
     | [] => b
-    | [hd, ...tl] => fold_left(f, f(b, hd), tl)
+    | [hd, ...tl] => foldLeft(f, f(b, hd), tl)
   }
 }
 
-let rec fold_right = (f, b, l) => {
+let rec foldRight = (f, b, l) => {
   match (l) {
     | [] => b
-    | [hd, ...tl] => f(hd, fold_right(f, b, tl))
+    | [hd, ...tl] => f(hd, foldRight(f, b, tl))
   }
 }
 
@@ -61,21 +61,21 @@ let rec map = (f, l) => {
   }
 }
 
-let for_all = (f, l) => {
-  fold_left((acc, item) => { acc && f(item) }, true, l)
+let forAll = (f, l) => {
+  foldLeft((acc, item) => { acc && f(item) }, true, l)
 }
 
-let rec for_each = (f, l) => {
+let rec forEach = (f, l) => {
   match (l) {
     | [] => void
     | [hd, ...tl] => {
       f(hd)
-      for_each(f, tl)
+      forEach(f, tl)
     }
   }
 }
 
-let for_each_i = (f, l) => {
+let forEachI = (f, l) => {
   let rec help = (f, l, c) => {
     match (l) {
       | [] => void
