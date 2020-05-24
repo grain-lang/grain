@@ -75,7 +75,7 @@ let rec forEach = (f, l) => {
   }
 }
 
-let forEachI = (f, l) => {
+let forEachi = (f, l) => {
   let rec help = (f, l, c) => {
     match (l) {
       | [] => void

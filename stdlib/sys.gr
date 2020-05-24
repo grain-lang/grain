@@ -370,21 +370,21 @@ let fdStats = (fd) => {
   let (>) = Int64.gt
 
   let fdflagsList = box([])
-  List.forEachI((flag, i) => {
+  List.forEachi((flag, i) => {
     if ((fdflags && Int64.lsl(1L, i)) > 0L) {
       ignore(fdflagsList := [flag, ...^fdflagsList])
     }
   }, orderedFdflags)
 
   let rightsList = box([])
-  List.forEachI((flag, i) => {
+  List.forEachi((flag, i) => {
     if ((rights && Int64.lsl(1L, i)) > 0L) {
       ignore(rightsList := [flag, ...^rightsList])
     }
   }, orderedRights)
 
   let rightsInheritingList = box([])
-  List.forEachI((flag, i) => {
+  List.forEachi((flag, i) => {
     if (rightsInheriting && Int64.lsl(1L, i) > 0L) {
       ignore(rightsInheritingList := [flag, ...^rightsInheritingList])
     }
