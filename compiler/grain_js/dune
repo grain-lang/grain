@@ -1,0 +1,10 @@
+(executable
+ (name grain_js)
+ (public_name grain_js)
+ (package grain)
+ (modules grain_js)
+ (modes byte js)
+ (flags :standard -safe-string)
+ (js_of_ocaml (flags :standard --disable genprim --toplevel --linkall +toplevel.js +dynlink.js))
+ (libraries grain js_of_ocaml js_of_ocaml-compiler)
+)
