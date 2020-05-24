@@ -3,6 +3,9 @@
   "version": "0.0.0",
   "description": "The standard library for the Grain language.",
   "main": "pervasives.gr",
+  "engines": {
+    "node": ">=14"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/grain-lang/grain.git"
