@@ -5,7 +5,7 @@ export data Rec = {
   bar: String
 };
 
-export data Poly = 
+export data Poly =
   | PList(List<Number>)
   | PAssoc(Rec)
   | PMulti(List<String>, Number, Rec)
@@ -32,14 +32,14 @@ let test = (test) => {
 };
 
 let tests = [
-  (PList([]), 1), 
-  (PList([2]), 2), 
-  (PList([2, 7]), 9), 
-  (PList([2, 7, 10]), 2), 
-  (PAssoc({foo: [], bar: 'bar'}), 1), 
-  (PAssoc({foo: [2], bar: 'bar'}), 2), 
-  (PAssoc({foo: [2, 7], bar: 'bar'}), 9), 
-  (PAssoc({foo: [2, 7, 10], bar: 'bar'}), 2), 
+  (PList([]), 1),
+  (PList([2]), 2),
+  (PList([2, 7]), 9),
+  (PList([2, 7, 10]), 2),
+  (PAssoc({foo: [], bar: 'bar'}), 1),
+  (PAssoc({foo: [2], bar: 'bar'}), 2),
+  (PAssoc({foo: [2, 7], bar: 'bar'}), 9),
+  (PAssoc({foo: [2, 7, 10], bar: 'bar'}), 2),
   (PMulti([], 17, {foo: [], bar: 'bar'}), 17),
   (PMulti(['foo'], 17, {foo: [3], bar: 'bar'}), 20),
   (PMulti([], 11, {foo: [4], bar: 'bar'}), 4),
@@ -49,4 +49,4 @@ let tests = [
   (PPoly([PPoly([])]), 43)
 ];
 
-for_all(test, tests)
+forAll(test, tests)
