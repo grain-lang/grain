@@ -33,18 +33,18 @@ assert map(x => x + 1, list) == [2, 3, 4]
 assert map(x => x * 2, list) == [2, 4, 6]
 assert map(x => x + 1, []) == []
 
-# List.fold_left
+# List.foldLeft
 
 assert foldLeft((acc, cur) => acc - cur, 0, list) == -6
 assert foldLeft((acc, cur) => acc - cur, 0, []) == 0
 
-# List.fold_right
+# List.foldRight
 
 assert foldRight((acc, cur) => acc - cur, 0, list) == 2
 assert foldRight((acc, cur) => acc - cur, 0, []) == 0
 
-# List.for_all
+# List.every
 
-assert forAll(x => x > 0, list) == true
-assert forAll(x => x > 2, list) == false
-assert forAll(x => x == 3, []) == true
+assert every(x => x > 0, list) == true
+assert every(x => x > 2, list) == false
+assert every(x => x == 3, []) == true

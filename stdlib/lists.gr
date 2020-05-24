@@ -61,7 +61,7 @@ let rec map = (f, l) => {
   }
 }
 
-let forAll = (f, l) => {
+let every = (f, l) => {
   foldLeft((acc, item) => { acc && f(item) }, true, l)
 }
 

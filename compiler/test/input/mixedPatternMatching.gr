@@ -49,4 +49,4 @@ let tests = [
   (PPoly([PPoly([])]), 43)
 ];
 
-forAll(test, tests)
+every(test, tests)
