@@ -1,20 +1,17 @@
 let filename_to_module_name fname =
-  let open BatPathGen.OfString in
-  let path = of_string fname in
+  let (path_without_ext, _ext) = Core_kernel.Filename.split_extension fname in
   try
-    name_core path
+    path_without_ext
   with Invalid_argument s ->
     raise (Invalid_argument (Printf.sprintf "%s (fname: '%s')" s fname))
 
 let ensure_parent_directory_exists fname =
-  let open BatPathGen.OfString in
-  let path = of_string fname in
   try
-    let pdir = parent path in
+    let pdir = Core_kernel.Filename.dirname fname in
     try
-      ignore(Sys.is_directory (to_string pdir))
+      ignore(Sys.is_directory (pdir))
     with Sys_error _ ->
-      Unix.mkdir (to_string pdir) 0o755
+      Unix.mkdir (pdir) 0o755
   with Invalid_argument s ->
     (* File appears to be in CWD. Eat the exception *)
     ()
@@ -23,17 +20,14 @@ let ensure_parent_directory_exists fname =
     treated as relative to [base], if given; otherwise, they will be
     assumed to be relative to the current working directory. *)
 let derelativize ?base fname =
-  let open BatPathGen.OfString in
-  let path = of_string fname in
-  let path = if is_absolute path then
-      path
+  let path = if Core_kernel.Filename.is_absolute fname then
+      fname
     else begin
-      let base = of_string @@ match base with
+      let base = match base with
         | None -> Sys.getcwd()
         | Some(path) -> path
       in
-      let open Operators in
-      base //@ path
+      Core_kernel.Filename.concat base fname
     end
   in
-  to_string (normalize_in_tree path)
+  Core_kernel.Filename.of_parts (Core_kernel.Filename.parts path)

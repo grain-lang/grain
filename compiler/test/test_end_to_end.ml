@@ -3,7 +3,6 @@ open Runner
 open Grain_utils
 open Printf
 open OUnit2
-open Batteries
 open Grain_middle_end.Anftree
 open Grain_middle_end.Anf_helper
 
@@ -12,7 +11,7 @@ let wrap_todo todo f x =
   | Some(msg) -> OUnit2.todo msg
   | None -> f x
 
-let exists check result = String.exists result check;;
+let exists check result = Core_kernel.String.is_substring ~substring:check result;;
 
 let t ?todo name program expected = name>::(wrap_todo todo @@ test_run program name expected);;
 let tc ?todo name program expected = name>::(wrap_todo todo @@ test_run ~cmp:exists program name expected);;

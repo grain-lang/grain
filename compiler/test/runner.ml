@@ -141,7 +141,7 @@ let test_run ?cmp ?heap_size program_str outfile expected test_ctxt =
       run_output ?heap_size cstate test_ctxt
     ) in
   assert_equal
-  ~printer:Batteries.identity
+  ~printer:Core_kernel.ident
   ~cmp:(Option.default (=) cmp)
   (expected ^ "\n") result
 
@@ -150,14 +150,14 @@ let test_run_file ?heap_size filename name expected test_ctxt =
   let outfile = "output/" ^ name in
   let cstate = compile_file ~hook:stop_after_compiled ~outfile input_filename in
   let result = run_output ?heap_size cstate test_ctxt in
-  assert_equal ~printer:Batteries.identity (expected ^ "\n") result
+  assert_equal ~printer:Core_kernel.ident (expected ^ "\n") result
 
 let test_run_stdlib ?(returns="void\n") ?code filename test_ctxt =
   let input_filename = "stdlib/" ^ filename ^ ".gr" in
   let outfile = "stdlib_output/" ^ filename in
   let cstate = compile_file ~hook:stop_after_compiled ~outfile input_filename in
   let result = run_output ?code cstate test_ctxt in
-  assert_equal ~printer:Batteries.identity returns result
+  assert_equal ~printer:Core_kernel.ident ("void\n") result
 
 let test_optimizations_sound program_str name expected test_ctxt =
   let compile_and_run () =
@@ -195,7 +195,7 @@ let test_file_optimizations_sound filename name expected test_ctxt =
 
 let test_run_anf program_anf outfile expected test_ctxt =
   let result = run_anf program_anf outfile test_ctxt in
-  assert_equal (expected ^ "\n") result ~printer:Batteries.identity
+  assert_equal (expected ^ "\n") result ~printer:Core_kernel.ident
 
 let test_err ?heap_size program_str outfile errmsg test_ctxt =
   let result = try
@@ -209,8 +209,8 @@ let test_err ?heap_size program_str outfile errmsg test_ctxt =
   assert_equal
     errmsg
     result
-    ~cmp: (fun check result -> Batteries.String.exists result check)
-    ~printer:Batteries.identity
+    ~cmp: (fun check result -> Core_kernel.String.is_substring ~substring:check result)
+    ~printer:Core_kernel.ident
 
 let test_run_file_err filename name errmsg test_ctxt =
   let input_filename = "input/" ^ filename ^ ".gr" in
@@ -223,5 +223,5 @@ let test_run_file_err filename name errmsg test_ctxt =
   assert_equal
     errmsg
     result
-    ~cmp: (fun check result -> Batteries.String.exists result check)
-    ~printer:Batteries.identity
+    ~cmp: (fun check result -> Core_kernel.String.is_substring ~substring:check result)
+    ~printer:Core_kernel.ident

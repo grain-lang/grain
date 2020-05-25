@@ -331,12 +331,12 @@ let get_grain_custom_info inchan =
 
 let serialize_grain_custom_info sec_name abi_version =
   let sec_bytes = Bytes.of_string sec_name in
-  let buf = BatBuffer.create ((Bytes.length sec_bytes) + 4 + (4 * 3) + 4) in
-  List.iter (fun b -> BatBuffer.add_char buf (char_of_int b)) grain_magic;
-  BatBuffer.add_bytes buf (serialize_abi_version abi_version);
-  BatBuffer.add_bytes buf (serialize_int32 (Bytes.length sec_bytes));
-  BatBuffer.add_bytes buf sec_bytes;
-  BatBuffer.to_bytes buf
+  let buf = Core_kernel.Buffer.create ((Bytes.length sec_bytes) + 4 + (4 * 3) + 4) in
+  List.iter (fun b -> Core_kernel.Buffer.add_char buf (char_of_int b)) grain_magic;
+  Core_kernel.Buffer.add_bytes buf (serialize_abi_version abi_version);
+  Core_kernel.Buffer.add_bytes buf (serialize_int32 (Bytes.length sec_bytes));
+  Core_kernel.Buffer.add_bytes buf sec_bytes;
+  Core_kernel.Buffer.contents_bytes buf
 
 
 module type BinarySectionSpec = sig
