@@ -1782,8 +1782,8 @@
         "@opam/grain_wasm_spec@opam:0.1@d07a2c3e",
         "@opam/grain_dypgen@opam:0.1@0b95a143",
         "@opam/extlib@opam:1.7.7@750728e7", "@opam/dune@opam:2.5.0@aef1678b",
+        "@opam/core_kernel@opam:v0.13.1@834fa417",
         "@opam/cmdliner@opam:1.0.4@93208aac",
-        "@opam/batteries@opam:3.0.0@8b2b498b",
         "@esy-ocaml/substs@0.0.1@d41d8cd9"
       ],
       "devDependencies": [
@@ -1796,8 +1796,8 @@
         "@opam/grain_wasm_spec@opam:0.1@d07a2c3e",
         "@opam/grain_dypgen@opam:0.1@0b95a143",
         "@opam/extlib@opam:1.7.7@750728e7",
-        "@opam/cmdliner@opam:1.0.4@93208aac",
-        "@opam/batteries@opam:3.0.0@8b2b498b"
+        "@opam/core_kernel@opam:v0.13.1@834fa417",
+        "@opam/cmdliner@opam:1.0.4@93208aac"
       ]
     },
     "@opam/grain_typed@path:./grain_typed.opam@d41d8cd9": {
@@ -1826,7 +1826,6 @@
         "@opam/grain_dypgen@opam:0.1@0b95a143",
         "@opam/extlib@opam:1.7.7@750728e7", "@opam/dune@opam:2.5.0@aef1678b",
         "@opam/cmdliner@opam:1.0.4@93208aac",
-        "@opam/batteries@opam:3.0.0@8b2b498b",
         "@esy-ocaml/substs@0.0.1@d41d8cd9"
       ],
       "devDependencies": [
@@ -1843,8 +1842,7 @@
         "@opam/grain_parsing@path:./grain_parsing.opam@d41d8cd9",
         "@opam/grain_dypgen@opam:0.1@0b95a143",
         "@opam/extlib@opam:1.7.7@750728e7",
-        "@opam/cmdliner@opam:1.0.4@93208aac",
-        "@opam/batteries@opam:3.0.0@8b2b498b"
+        "@opam/cmdliner@opam:1.0.4@93208aac"
       ]
     },
     "@opam/grain_parsing@path:./grain_parsing.opam@d41d8cd9": {
@@ -1917,7 +1915,6 @@
         "@opam/grain_dypgen@opam:0.1@0b95a143",
         "@opam/extlib@opam:1.7.7@750728e7", "@opam/dune@opam:2.5.0@aef1678b",
         "@opam/cmdliner@opam:1.0.4@93208aac",
-        "@opam/batteries@opam:3.0.0@8b2b498b",
         "@esy-ocaml/substs@0.0.1@d41d8cd9"
       ],
       "devDependencies": [
@@ -1933,8 +1930,7 @@
         "@opam/grain_parsing@path:./grain_parsing.opam@d41d8cd9",
         "@opam/grain_dypgen@opam:0.1@0b95a143",
         "@opam/extlib@opam:1.7.7@750728e7",
-        "@opam/cmdliner@opam:1.0.4@93208aac",
-        "@opam/batteries@opam:3.0.0@8b2b498b"
+        "@opam/cmdliner@opam:1.0.4@93208aac"
       ]
     },
     "@opam/grain_dypgen@opam:0.1@0b95a143": {
@@ -2028,7 +2024,6 @@
         "@opam/extlib@opam:1.7.7@750728e7", "@opam/dune@opam:2.5.0@aef1678b",
         "@opam/conf-openssl@opam:2@fddedae6",
         "@opam/cmdliner@opam:1.0.4@93208aac",
-        "@opam/batteries@opam:3.0.0@8b2b498b",
         "@esy-ocaml/substs@0.0.1@d41d8cd9"
       ],
       "devDependencies": [
@@ -2047,8 +2042,7 @@
         "@opam/grain_codegen@path:./grain_codegen.opam@d41d8cd9",
         "@opam/extlib@opam:1.7.7@750728e7",
         "@opam/conf-openssl@opam:2@fddedae6",
-        "@opam/cmdliner@opam:1.0.4@93208aac",
-        "@opam/batteries@opam:3.0.0@8b2b498b"
+        "@opam/cmdliner@opam:1.0.4@93208aac"
       ]
     },
     "@opam/fieldslib@opam:v0.13.0@e5d61627": {

@@ -1,6 +1,5 @@
 open OUnit2
 open Printf
-open Extlib
 
 let () =
   Printexc.register_printer (fun exc ->
@@ -12,8 +11,8 @@ let () =
         let formatter = Format.formatter_of_buffer buf in
         Format.fprintf formatter "@[%a@]@." Grain_parsing.Location.report_error err;
         Format.pp_print_flush formatter ();
-        let s = Buffer.contents buf in
-        Buffer.reset buf;
+        let s = Core_kernel.Buffer.contents buf in
+        Core_kernel.Buffer.reset buf;
         Some (s))
 
 let compile_stdlib stdlib_dir =
