@@ -106,7 +106,7 @@ let read_stream cstream =
   Bytes.to_string @@ Bytes.sub buf 0 !i
 
 
-let run_output cstate test_ctxt =
+let run_output ?(code=0) cstate test_ctxt =
   let program = extract_wasm cstate in
   let file = Filename.temp_file "test" ".gr.wasm" in
   Emitmod.emit_module program file;
@@ -116,6 +116,7 @@ let run_output cstate test_ctxt =
   let result = ref "" in
   assert_command 
     ~foutput:(fun stream -> result := read_stream stream)
+    ~exit_code:(Unix.WEXITED(code))
     ~use_stderr:true
     ~ctxt:test_ctxt
     "grain"
@@ -148,12 +149,12 @@ let test_run_file filename name expected test_ctxt =
   let result = run_output cstate test_ctxt in
   assert_equal ~printer:Batteries.identity (expected ^ "\n") result
 
-let test_run_stdlib filename test_ctxt =
+let test_run_stdlib ?(returns="void\n") ?code filename test_ctxt =
   let input_filename = "stdlib/" ^ filename ^ ".gr" in
   let outfile = "stdlib_output/" ^ filename in
   let cstate = compile_file ~hook:stop_after_compiled ~outfile input_filename in
-  let result = run_output cstate test_ctxt in
-  assert_equal ~printer:Batteries.identity ("void\n") result
+  let result = run_output ?code cstate test_ctxt in
+  assert_equal ~printer:Batteries.identity returns result
 
 let test_optimizations_sound program_str name expected test_ctxt =
   let compile_and_run () =
