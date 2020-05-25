@@ -1,0 +1,18 @@
+import Fs from 'fs'
+
+let foo = Fs.pathOpen(
+  Fs.pwdfd,
+  [Fs.SymlinkFollow],
+  "test-data/foo.txt",
+  [Fs.Create],
+  [Fs.FdRead, Fs.FdWrite],
+  [Fs.FdRead, Fs.FdWrite],
+  []
+)
+
+let (buf, nread) = Fs.fdRead(foo, 40)
+
+Fs.fdClose(foo)
+
+assert buf == 'foo, bar, & baz'
+assert nread == 15
