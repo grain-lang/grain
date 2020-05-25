@@ -1,171 +1,4 @@
-import List from 'lists'
-import Array from 'arrays'
-import Int64 from 'stdint64'
-
 export *
-
-# Access command line arguments
-# @returns Array<String> The positional string arguments to the process
-import foreign wasm argv : () -> Array<String> from 'stdlib-external/sys'
-
-# Access environment variables
-# @returns Array<String> The environment variables supplied to the process
-import foreign wasm env : () -> Array<String> from 'stdlib-external/sys'
-
-
-# Get the current time, in nanoseconds.
-# Time value 0 corresponds with 1970-01-01T00:00:00Z.
-# @returns Int64 The current time
-import foreign wasm realTime : () -> Int64 from 'stdlib-external/sys'
-
-# Get the time of the system's high-resolution clock, in nanoseconds.
-# This system clock cannot be adjusted and cannot have negative time jumps.
-# The epoch of this clock is undefined, and thus time value 0 is meaningless.
-# Useful for calculation of precise time intervals.
-# @returns Int64 The current time
-import foreign wasm monotonicTime : () -> Int64 from 'stdlib-external/sys'
-
-# Get the number of nanoseconds elapsed since the process began
-# @returns Int64
-import foreign wasm processCpuTime : () -> Int64 from 'stdlib-external/sys'
-
-# Get the number of nanoseconds elapsed since the thread began
-# @returns Int64
-import foreign wasm threadCpuTime : () -> Int64 from 'stdlib-external/sys'
-
-data FileDescriptor =
-  FileDescriptor(Number)
-
-let stdin = FileDescriptor(0)
-let stdout = FileDescriptor(1)
-let stderr = FileDescriptor(2)
-let pwdfd = FileDescriptor(3)
-
-data LookupFlag =
-  # Follow symlinks
-  SymlinkFollow
-
-data OpenFlag =
-  # Create file if it does not exist.
-  | Create
-  # Fail if not a directory.
-  | Directory
-  # Fail if file already exists.
-  | Exclusive
-  # Truncate file to size 0.
-  | Truncate
-
-data Rights =
-  # The right to invoke `fdDatasync`.
-  # If `PathOpen` is set, includes the right to invoke
-  # `pathOpen` with `FdFlag::Dsync`.
-  | FdDatasync
-  # The right to invoke `fdRead`.
-  # If `Rights::FdSeek` is set, includes the right to invoke `fdPread`.
-  | FdRead
-  # The right to invoke `fdSeek`. This flag implies `Rights::FdTell`.
-  | FdSeek
-  # The right to invoke `fdSetFlags`.
-  | FdSetFlags
-  # The right to invoke `fdSync`.
-  # If `PathOpen` is set, includes the right to invoke
-  # `pathOpen` with `FdFlag::Rsync` and `FdFlag::Dsync`.
-  | FdSync
-  # The right to invoke `fdSeek` in such a way that the file offset
-  # remains unaltered (i.e., `Whence::Current` with offset zero), or to
-  # invoke `fdTell`.
-  | FdTell
-  # The right to invoke `fdWrite`.
-  # If `Rights::FdSeek` is set, includes the right to invoke `fdPwrite`.
-  | FdWrite
-  # The right to invoke `fdAdvise`.
-  | FdAdvise
-  # The right to invoke `fdAllocate`.
-  | FdAllocate
-  # The right to invoke `pathCreateDirectory`.
-  | PathCreateDirectory
-  # If `PathOpen` is set, the right to invoke `pathOpen` with `OpenFlag::Create`.
-  | PathCreateFile
-  # The right to invoke `pathLink` with the file descriptor as the
-  # source directory.
-  | PathLinkSource
-  # The right to invoke `pathLink` with the file descriptor as the
-  # target directory.
-  | PathLinkTarget
-  # The right to invoke `pathOpen`.
-  | PathOpen
-  # The right to invoke `fdReaddir`.
-  | FdReaddir
-  # The right to invoke `pathReadlink`.
-  | PathReadlink
-  # The right to invoke `pathRename` with the file descriptor as the source directory.
-  | PathRenameSource
-  # The right to invoke `pathRename` with the file descriptor as the target directory.
-  | PathRenameTarget
-  # The right to invoke `pathFilestats`.
-  | PathFilestats
-  # The right to change a file's size (there's no `pathSetSize`).
-  # If `PathOpen` is set, includes the right to invoke `pathOpen` with `OpenFlag::Truncate`.
-  | PathSetSize
-  # The right to invoke `pathSetAccessTime`, `pathSetAccessTimeNow`, `pathSetModifiedTime`, or `pathSetModifiedTimeNow`.
-  | PathSetTimes
-  # The right to invoke `fdFilestats`.
-  | FdFilestats
-  # The right to invoke `fdSetSize`.
-  | FdSetSize
-  # The right to invoke `fdSetAccessTime`, `fdSetAccessTimeNow`, `fdSetModifiedTime`, or `fdSetModifiedTimeNow`.
-  | FdSetTimes
-  # The right to invoke `pathSymlink`.
-  | PathSymlink
-  # The right to invoke `pathRemoveDirectory`.
-  | PathRemoveDirectory
-  # The right to invoke `pathUnlinkFile`.
-  | PathUnlinkFile
-  # If `Rights::FdRead` is set, includes the right to invoke `pollOneoff` (not yet implemented) to subscribe to `EventType::FdRead`.
-  # If `Rights::FdWrite` is set, includes the right to invoke `pollOneoff` (not yet implemented) to subscribe to `EventType::FdWrite`.
-  | PollFdReadwrite
-  # The right to invoke `sockShutdown` (not yet implemented).
-  | SockShutdown
-
-data FdFlag =
-  # Append mode: Data written to the file is always appended to the file's end.
-  | Append
-  # Write according to synchronized I/O data integrity completion. Only the data stored in the file is synchronized.
-  | Dsync
-  # Non-blocking mode.
-  | Nonblock
-  # Synchronized read I/O operations.
-  | Rsync
-  # Write according to synchronized I/O file integrity completion. In
-  # addition to synchronizing the data stored in the file, the implementation
-  # may also synchronously update the file's metadata.
-  | Sync
-
-data Filetype =
-  # The type of the file descriptor or file is unknown or is different from any of the other types specified.
-  | Unknown
-  # The file descriptor or file refers to a block device inode.
-  | BlockDevice
-  # The file descriptor or file refers to a character device inode.
-  | CharacterDevice
-  # The file descriptor or file refers to a directory inode.
-  | Directory
-  # The file descriptor or file refers to a regular file inode.
-  | RegularFile
-  # The file descriptor or file refers to a datagram socket.
-  | SocketDatagram
-  # The file descriptor or file refers to a byte-stream socket.
-  | SocketStream
-  # The file refers to a symbolic link inode.
-  | SymbolicLink
-
-data Whence =
-  # Seek relative to start-of-file.
-  | Set
-  # Seek relative to current position.
-  | Current
-  # Seek relative to end-of-file.
-  | End
 
 data Signal =
   # Hangup.
@@ -225,105 +58,8 @@ data Signal =
   # Bad system call.
   | SYS
 
-data Stats = {
-  filetype: Filetype,
-  flags: List<FdFlag>,
-  rights: List<Rights>,
-  rightsInheriting: List<Rights>
-}
 
-data Filestats = {
-  device: Int64,
-  inode: Int64,
-  filetype: Filetype,
-  linkcount: Int64,
-  size: Int64,
-  accessed: Int64,
-  modified: Int64,
-  changed: Int64
-}
-
-data DirectoryEntry = {
-  inode: Int64,
-  filetype: Filetype,
-  path: String
-}
-
-let filetypeFromNumber = (filetype) => {
-  # [oscar] We need match guards like I need air to breathe
-  if (filetype == 0) Unknown else
-    if (filetype == 1) BlockDevice else
-    if (filetype == 2) CharacterDevice else
-    if (filetype == 3) Directory else
-    if (filetype == 4) RegularFile else
-    if (filetype == 5) SocketDatagram else
-    if (filetype == 6) SocketStream else
-    if (filetype == 7) SymbolicLink else
-    fail "Unknown filetype"
-}
-
-# Open a file or directory
-# @param workingDirectory: FileDescriptor The directory in which path resolution starts
-# @param lookupFlags: List<LookupFlag> Flags which affect path resolution
-# @param path: String The path to the file or directory
-# @param openFlags: List<OpenFlag> Flags that decide how the path will be opened
-# @param rights: List<Rights> The rights that dictate what may be done with the returned file descriptor
-# @param rightsInheriting: List<Rights> The rights that dictate what may be done with file descriptors derived from this file descriptor
-# @param flags: List<FdFlag> Flags which affect read/write operations on this file descriptor
-# @returns FileDescriptor The opened file or directory
-import foreign wasm pathOpen : (FileDescriptor, List<LookupFlag>, String, List<OpenFlag>, List<Rights>, List<Rights>, List<FdFlag>) -> FileDescriptor from 'stdlib-external/sys'
-
-# Read from a file descriptor
-# @param fd: FileDescriptor The file descriptor to read from
-# @param nBytes: Number The maximum number of bytes to read from the file descriptor
-# @returns (String, Number) The bytes read and the number of bytes read
-import foreign wasm fdRead : (FileDescriptor, Number) -> (String, Number) from 'stdlib-external/sys'
-
-# Read from a file descriptor without updating the file descriptor's offset
-# @param fd: FileDescriptor The file descriptor to read from
-# @param offset: Int64 The position within the file to begin reading
-# @param nBytes: Number The maximum number of bytes to read from the file descriptor
-# @returns (String, Number) The bytes read and the number of bytes read
-import foreign wasm fdPread : (FileDescriptor, Int64, Number) -> (String, Number) from 'stdlib-external/sys'
-
-# Write to a file descriptor
-# @param fd: FileDescriptor The file descriptor to which data will be written
-# @param buf: String The data to be written
-# @returns Number The number of bytes written
-import foreign wasm fdWrite : (FileDescriptor, String) -> Number from 'stdlib-external/sys'
-
-# Write to a file descriptor without updating the file descriptor's offset
-# @param fd: FileDescriptor The file descriptor to which data will be written
-# @param buf: String The data to be written
-# @param offset: Int64 The position within the file to begin writing
-# @returns Number The number of bytes written
-import foreign wasm fdPwrite : (FileDescriptor, String, Int64) -> Number from 'stdlib-external/sys'
-
-# Allocate space within a file
-# @param fd: FileDescriptor The file descriptor in which space will be allocated
-# @param offset: Int64 The position within the file to begin writing
-# @param nBytes: Int64 The number of bytes to allocate
-import foreign wasm fdAllocate : (FileDescriptor, Int64, Int64) -> Void from 'stdlib-external/sys'
-
-# Close a file descriptor
-# @param fd: FileDescriptor The file descriptor to close
-import foreign wasm fdClose : (FileDescriptor) -> Void from 'stdlib-external/sys'
-
-# Synchronize the data of a file to disk
-# @param fd: FileDescriptor The file descriptor to synchronize
-import foreign wasm fdDatasync : (FileDescriptor) -> Void from 'stdlib-external/sys'
-
-# Synchronize the data and metadata of a file to disk
-# @param fd: FileDescriptor The file descriptor to synchronize
-import foreign wasm fdSync : (FileDescriptor) -> Void from 'stdlib-external/sys'
-
-import foreign wasm fdStats : (FileDescriptor) -> (Number, Int64, Int64, Int64) from 'stdlib-external/sys'
-# Retrieve information about a file descriptor
-# @param fd: FileDescriptor The file descriptor of which to retrieve information
-# @returns Stats A record containing the filetype, flags, rights, and inheriting rights associated with the file descriptor
-let fdStats = (fd) => {
-  let (filetype, fdflags, rights, rightsInheriting) = fdStats(fd)
-
+<<<<<<< HEAD
   let orderedFdflags = [
     Append,
     Dsync,
@@ -506,50 +242,46 @@ import foreign wasm pathSetAccessTimeNow : (FileDescriptor, List<LookupFlag>, St
 # @param path: String The path to set the time
 # @param timestamp: Int64 The time to set
 import foreign wasm pathSetModifiedTime : (FileDescriptor, List<LookupFlag>, String, Int64) -> Void from 'stdlib-external/sys'
+=======
+# Access command line arguments
+# @returns Array<String> The positional string arguments to the process
+import foreign wasm argv : () -> Array<String> from 'stdlib-external/sys'
+>>>>>>> Move all filesystem-related things to fs.gr
 
-# Set the modified time of a file to the current time
-# @param workingDirectory: FileDescriptor The directory in which path resolution starts
-# @param flags: List<LookupFlag> Flags which affect path resolution
-# @param path: String The path to set the time
-import foreign wasm pathSetModifiedTimeNow : (FileDescriptor, List<LookupFlag>, String) -> Void from 'stdlib-external/sys'
+# Access environment variables
+# @returns Array<String> The environment variables supplied to the process
+import foreign wasm env : () -> Array<String> from 'stdlib-external/sys'
 
-# Create a hard link
-# @param sourceWorkingDirectory: FileDescriptor The directory in which the source path resolution starts
-# @param flags: List<LookupFlag> Flags which affect path resolution
-# @param sourcePath: String The path to the source of the link
-# @param targetWorkingDirectory: FileDescriptor The directory in which the target path resolution starts
-# @param targetPath: String The path to the target of the link
-import foreign wasm pathLink : (FileDescriptor, List<LookupFlag>, String, FileDescriptor, String) -> Void from 'stdlib-external/sys'
 
-# Create a symlink
-# @param workingDirectory: FileDescriptor The directory in which path resolution starts
-# @param sourcePath: String The path to the source of the link
-# @param targetPath: String The path to the target of the link
-import foreign wasm pathSymlink : (FileDescriptor, String, String) -> Void from 'stdlib-external/sys'
+# Get the current time, in nanoseconds.
+# Time value 0 corresponds with 1970-01-01T00:00:00Z.
+# @returns Int64 The current time
+import foreign wasm realTime : () -> Int64 from 'stdlib-external/sys'
 
-# Unlink a file
-# @param workingDirectory: FileDescriptor The directory in which path resolution starts
-# @param path: String The path of the file to unlink
-import foreign wasm pathUnlink : (FileDescriptor, String) -> Void from 'stdlib-external/sys'
+# Get the time of the system's high-resolution clock, in nanoseconds.
+# This system clock cannot be adjusted and cannot have negative time jumps.
+# The epoch of this clock is undefined, and thus time value 0 is meaningless.
+# Useful for calculation of precise time intervals.
+# @returns Int64 The current time
+import foreign wasm monotonicTime : () -> Int64 from 'stdlib-external/sys'
 
-# Read the contents of a symbolic link
-# @param workingDirectory: FileDescriptor The directory in which path resolution starts
-# @param path: String The path to the symlink
-# @param nBytes: The number of bytes to read
-# @returns (String, Number) The bytes read and the number of bytes read
-import foreign wasm pathReadlink : (FileDescriptor, String, Number) -> (String, Number) from 'stdlib-external/sys'
+# Get the number of nanoseconds elapsed since the process began
+# @returns Int64
+import foreign wasm processCpuTime : () -> Int64 from 'stdlib-external/sys'
 
-# Remove a directory
-# @param workingDirectory: FileDescriptor The directory in which path resolution starts
-# @param path: String The path to the directory to remove
-import foreign wasm pathRemoveDirectory : (FileDescriptor, String) -> Void from 'stdlib-external/sys'
+# Get the number of nanoseconds elapsed since the thread began
+# @returns Int64
+import foreign wasm threadCpuTime : () -> Int64 from 'stdlib-external/sys'
 
+<<<<<<< HEAD
 # Rename a file or directory
 # @param sourceWorkingDirectory: FileDescriptor The directory in which the source path resolution starts
 # @param sourcePath: String The path of the file to rename
 # @param targetWorkingDirectory: FileDescriptor The directory in which the target path resolution starts
 # @param targetPath: String The new path of the file
 import foreign wasm pathRename : (FileDescriptor, String, FileDescriptor, String) -> Void from 'stdlib-external/sys'
+=======
+>>>>>>> Move all filesystem-related things to fs.gr
 
 # Terminate the process normally
 # @param code: Number The value to exit with. An exit code of 0 is considered normal, with other values having meaning depending on the platform
