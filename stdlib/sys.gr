@@ -292,7 +292,7 @@ import foreign wasm fdPread : (FileDescriptor, Int64, Number) -> (String, Number
 # @returns Number The number of bytes written
 import foreign wasm fdWrite : (FileDescriptor, String) -> Number from 'stdlib-external/sys'
 
-# Read from a file descriptor without updating the file descriptor's offset
+# Write to a file descriptor without updating the file descriptor's offset
 # @param fd: FileDescriptor The file descriptor to which data will be written
 # @param buf: String The data to be written
 # @param offset: Int64 The position within the file to begin writing
