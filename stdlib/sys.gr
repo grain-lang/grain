@@ -547,7 +547,7 @@ import foreign wasm pathRemoveDirectory : (FileDescriptor, String) -> Void from 
 # Rename a file or directory
 # @param sourceWorkingDirectory: FileDescriptor The directory in which the source path resolution starts
 # @param sourcePath: String The path of the file to rename
-# @param targetWorkingDirectory: FileDescriptor The directory in which the arget path resolution starts
+# @param targetWorkingDirectory: FileDescriptor The directory in which the target path resolution starts
 # @param targetPath: String The new path of the file
 import foreign wasm pathRename : (FileDescriptor, String, FileDescriptor, String) -> Void from 'stdlib-external/sys'
 
