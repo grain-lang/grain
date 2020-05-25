@@ -1,3 +1,0 @@
-import Sys from 'sys'
-
-Sys.exit(5)

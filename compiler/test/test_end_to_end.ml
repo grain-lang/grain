@@ -354,10 +354,10 @@ let stdlib_tests = [
 
   tlib "arrays.test";
   tlib "lists.test";
-  tlib "fs.test";
   tlib "hash.test";
   tlib "int64.test";
-  tlib ~returns:"" ~code:5 "sys.test";
+  tlib "sys.file.test";
+  tlib ~returns:"" ~code:5 "sys.process.test";
 ]
 
 let box_tests = [
