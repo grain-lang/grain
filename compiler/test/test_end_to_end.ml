@@ -352,11 +352,11 @@ let stdlib_tests = [
   te "stdlib_length_err" "import * from 'lists'; length(true)" "This expression has type Bool but";
   te "stdlib_reverse_err" "import * from 'lists'; reverse(1)" "This expression has type Number but";
 
-  tlib "lists.test";
   tlib "arrays.test";
+  tlib "lists.test";
+  tlib "fs.test";
   tlib "hash.test";
   tlib "int64.test";
-  tlib "sys.test";
 ]
 
 let box_tests = [
