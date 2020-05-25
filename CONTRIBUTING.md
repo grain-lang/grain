@@ -12,7 +12,7 @@ Shoot an email over to oscar[at]grain-lang.org and we'll send you an invitation 
 
 ## Getting up and running
 
-If it's your first time here, we suggest that you follow [the Grain setup guide](https://grain-lang.org/guide/getting_grain) to get up and running. We also have build instructions listed in the README. The instructions should be fairly straightforward, but if you run into any issues please reach out to us on Discord.
+If it's your first time here, we suggest that you follow [the Grain setup guide](https://grain-lang.org/docs/getting_grain) to get up and running. We also have build instructions listed in the README. The instructions should be fairly straightforward, but if you run into any issues please reach out to us on Discord.
 
 ## Contributor docs
 
