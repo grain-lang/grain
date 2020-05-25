@@ -75,6 +75,10 @@ let every = (f, l) => {
   foldLeft((acc, item) => { acc && f(item) }, true, l)
 }
 
+let some = (f, l) => {
+  foldLeft((acc, item) => { acc || f(item) }, false, l)
+}
+
 let rec forEach = (f, l) => {
   match (l) {
     | [] => void
@@ -96,4 +100,29 @@ let forEachi = (f, l) => {
     }
   }
   help(f, l, 0)
+}
+
+let filter = (f, l) => {
+  foldLeft((acc, item) => { if (f(item)) [item, ...acc] else acc }, [], l)
+}
+
+let hd = (l) => {
+  match (l) {
+    | [] => fail 'hd'
+    | [hd, ...tl] => hd
+  }
+}
+
+let tl = (l) => {
+  match (l) {
+    | [] => fail 'tl'
+    | [hd, ...tl] => tl
+  }
+}
+
+let nth = (l, n) => {
+  let rec help = (l, n) => {
+    if (n == 0) hd(l) else help(tl(l), n-1)
+  }
+  help(l, n)
 }

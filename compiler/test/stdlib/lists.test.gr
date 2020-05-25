@@ -56,3 +56,25 @@ assert foldRight((acc, cur) => acc - cur, 0, []) == 0
 assert every(x => x > 0, list) == true
 assert every(x => x > 2, list) == false
 assert every(x => x == 3, []) == true
+
+# List.some
+
+assert some(x => x > 0, list) == true
+assert some(x => x > 3, list) == false
+assert some(x => x == 3, []) == false
+
+# List.filter
+
+# assert filter(x => x > 0, list) == list
+# assert filter(x => x > 3, list) == []
+# assert filter(x => x == 3, list) == [3]
+
+# List.hd
+
+assert hd(list) == 1
+assert hd([2]) == 2
+
+# List.tl
+
+assert tl(list) == [2, 3]
+assert tl([1]) == []
