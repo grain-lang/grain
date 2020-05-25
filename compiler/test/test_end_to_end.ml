@@ -27,7 +27,7 @@ let tfile ?todo name input_file expected = name>::(wrap_todo todo @@ test_run_fi
 let tefile ?todo name input_file expected = name>::(wrap_todo todo @@ test_run_file_err input_file name expected)
 
 (** Tests that the file stdlib/`input_file`.gr produces the given output *)
-let tlib ?todo input_file = input_file>::(wrap_todo todo @@ test_run_stdlib input_file)
+let tlib ?todo ?returns ?code input_file = input_file>::(wrap_todo todo @@ test_run_stdlib ?returns ?code input_file)
 
 let tgcfile ?todo name heap_size input_file expected = name>::(wrap_todo todo @@ test_run_file input_file name expected)
 
@@ -357,6 +357,7 @@ let stdlib_tests = [
   tlib "fs.test";
   tlib "hash.test";
   tlib "int64.test";
+  tlib ~returns:"" ~code:5 "sys.test";
 ]
 
 let box_tests = [
