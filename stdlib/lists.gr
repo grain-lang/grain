@@ -122,7 +122,7 @@ let tl = (l) => {
 
 let nth = (l, n) => {
   let rec help = (l, n) => {
-    if (n == 0) hd(l) else help(tl(l), n-1)
+    if (n == 0) hd(l) else help(tl(l), n - 1)
   }
   help(l, n)
 }
