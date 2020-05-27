@@ -1,7 +1,10 @@
 {
-  "name": "compiler",
+  "name": "@grain/compiler",
   "private": true,
   "version": "0.0.1",
+  "bin": {
+    "grainc": "_esy/default/build/install/default/bin/grainc"
+  },
   "engines": {
     "node": ">=14"
   },

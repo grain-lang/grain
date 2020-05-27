@@ -13,15 +13,16 @@
     "node": ">=14"
   },
   "scripts": {
-    "compiler:clean": "yarn workspace compiler run esy clean",
-    "compiler:build": "yarn workspace compiler run esy",
-    "compiler:install": "yarn workspace compiler run esy install-compiler",
-    "postcompiler:install": "yarn stdlib:clean",
-    "compiler:test": "yarn workspace compiler run esy test",
+    "compiler:clean": "yarn workspace @grain/compiler run esy clean",
+    "compiler:build": "yarn workspace @grain/compiler run esy",
+    "postcompiler:build": "yarn stdlib:clean",
+    "compiler:test": "yarn workspace @grain/compiler run esy test",
+    "test": "yarn compiler:test",
     "runtime:build": "yarn workspace @grain/runtime build",
     "stdlib:build": "yarn workspace @grain/stdlib build",
     "stdlib:clean": "yarn workspace @grain/stdlib clean",
     "cli:link": "yarn workspace @grain/cli link",
-    "setup": "yarn runtime:build && yarn stdlib:build && yarn cli:link"
+    "compiler:link": "yarn workspace @grain/compiler link",
+    "setup": "yarn runtime:build && yarn stdlib:build && yarn cli:link && yarn compiler:link"
   }
 }
