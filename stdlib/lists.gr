@@ -102,8 +102,18 @@ let forEachi = (f, l) => {
   help(f, l, 0)
 }
 
-let filter = (f, l) => {
-  foldLeft((acc, item) => { if (f(item)) [item, ...acc] else acc }, [], l)
+let rec filter = (f, l) => {
+  match (l) {
+    | [] => []
+    | [hd, ...tl] => if (f(hd)) [hd, ...filter(f, tl)] else filter(f, tl)
+  }
+}
+
+let rec reject = (f, l) => {
+  match (l) {
+    | [] => []
+    | [hd, ...tl] => if (!f(hd)) [hd, ...reject(f, tl)] else reject(f, tl)
+  }
 }
 
 let hd = (l) => {
@@ -120,9 +130,27 @@ let tl = (l) => {
   }
 }
 
-let nth = (l, n) => {
-  let rec help = (l, n) => {
-    if (n == 0) hd(l) else help(tl(l), n - 1)
+let rec nth = (l, n) => {
+  if (n == 0) hd(l) else nth(tl(l), n - 1)
+}
+
+let rec flatten = (l) => {
+  match (l) {
+    | [] => []
+    | [hd, ...tl] => append(hd, flatten(tl))
   }
-  help(l, n)
+}
+
+let rec insert = (l, x, i) => {
+  match(l) {
+    | [] => if (i == 0) [x] else fail 'insert'
+    | [hd, ...tl] => if (i == 0) [x, ...l] else [hd, ...insert(tl, x, i - 1)]
+  }
+}
+
+let rec count = (f, l) => {
+  match (l) {
+    | [] => 0
+    | [hd, ...tl] => if (f(hd)) 1 + count(f, tl) else count(f, tl)
+  }
 }

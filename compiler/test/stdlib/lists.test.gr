@@ -65,9 +65,15 @@ assert some(x => x == 3, []) == false
 
 # List.filter
 
-# assert filter(x => x > 0, list) == list
-# assert filter(x => x > 3, list) == []
-# assert filter(x => x == 3, list) == [3]
+assert filter(x => x > 0, list) == list
+assert filter(x => x > 3, list) == []
+assert filter(x => x == 3, list) == [3]
+
+# List.reject
+
+assert reject(x => x > 0, list) == []
+assert reject(x => x > 3, list) == list
+assert reject(x => x == 3, list) == [1, 2]
 
 # List.hd
 
@@ -78,3 +84,25 @@ assert hd([2]) == 2
 
 assert tl(list) == [2, 3]
 assert tl([1]) == []
+
+# List.nth
+
+assert nth(list, 0) == 1
+assert nth(list, 2) == 3
+
+# List.flatten
+
+assert flatten([[1], [2], [3]]) == list
+assert flatten([[], list]) == list
+assert flatten([list, []]) == list
+
+# List.insert
+
+assert insert([], 1, 0) == [1]
+assert insert(list, 0, 0) == [0, 1, 2, 3]
+
+# List.count
+
+assert count(x => x > 0, list) == 3
+assert count(x => x > 0, []) == 0
+assert count(x => x == 3, list) == 1
