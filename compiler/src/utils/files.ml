@@ -1,9 +1,11 @@
 let filename_to_module_name fname =
-  let (path_without_ext, _ext) = Core_kernel.Filename.split_extension fname in
+  let modname = Core_kernel.Filename.basename fname in
   try
-    path_without_ext
+    Core_kernel.Filename.chop_extension modname
   with Invalid_argument s ->
-    raise (Invalid_argument (Printf.sprintf "%s (fname: '%s')" s fname))
+    if String.length s > 0 then
+      modname
+    else raise (Invalid_argument (Printf.sprintf "%s (fname: '%s')" s fname))
 
 let ensure_parent_directory_exists fname =
   try
