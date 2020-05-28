@@ -30,12 +30,6 @@ yarn compiler:build
 
 This will set up the Grain runtime, standard library, and CLI.
 
-To put the Grain compiler binaries on your path, run:
-
-```bash
-yarn compiler:install
-```
-
 If running tests is your kind of thing, run
 
 ```bash
