@@ -1,0 +1,8 @@
+let rec filter = (f, l) => {
+  match (l) {
+    | [hd, ...tl] => if (f(hd)) [hd, ...filter(f, tl)] else filter(f, tl)
+    | [] => []
+  }
+};
+
+filter((x) => x == 2, [1, 2, 3])

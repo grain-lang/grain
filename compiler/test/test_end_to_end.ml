@@ -205,6 +205,9 @@ let function_tests = [
   (* NOTE: This file also will test that we're doing tail calls
      and mutual recursion properly (should stack overflow otherwise) *)
 
+  (* Tests tail calls on only on one branch *)
+  tfile "one_branch_tail_call" "oneBranchTail" "[2]";
+
   tfile "forward_decl" "forward-decl" "true";
   (* This will test that we are doing tail calls for arbitrary-arity
      functions correctly *)
