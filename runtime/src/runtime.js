@@ -9,7 +9,6 @@ import { grainToString } from './utils/utils';
 import { defaultFileLocator } from './utils/locators';
 
 import { print, debugPrint } from './lib/print';
-import * as libStrings from './lib/strings';
 import * as libDOM from './lib/DOM';
 
 export let grainModule;
@@ -43,7 +42,6 @@ const importObj = {
     free: free,
   },
   grainBuiltins: {
-    ...libStrings,
     ...libDOM
   }
 };
