@@ -157,7 +157,7 @@ let test_run_stdlib ?(returns="void\n") ?code filename test_ctxt =
   let outfile = "stdlib_output/" ^ filename in
   let cstate = compile_file ~hook:stop_after_compiled ~outfile input_filename in
   let result = run_output ?code cstate test_ctxt in
-  assert_equal ~printer:Core_kernel.ident ("void\n") result
+  assert_equal ~printer:Core_kernel.ident returns result
 
 let test_optimizations_sound program_str name expected test_ctxt =
   let compile_and_run () =
