@@ -33,6 +33,16 @@ assert map(x => x + 1, list) == [2, 3, 4]
 assert map(x => x * 2, list) == [2, 4, 6]
 assert map(x => x + 1, []) == []
 
+# List.mapi
+
+# let numbers = [2, 3, 4 ]
+# let square = (n, i) => {
+#   n * numbers[i]
+# }
+
+# assert mapi(square, [2, 3, 4 ]) == [2, 9, 16]
+# assert mapi(square, []) == []
+
 # List.foldLeft
 
 assert foldLeft((acc, cur) => acc - cur, 0, list) == -6
