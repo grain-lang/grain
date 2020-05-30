@@ -61,6 +61,16 @@ let rec map = (f, l) => {
   }
 }
 
+let mapi = (fn, list) => {
+  let rec help = (fn, list, index) => {
+    match (list) {
+      | [] => []
+      | [hd, ...tl] => [fn(hd, index), ...help(fn, tl, index + 1)]
+    }
+  }
+  help(fn, list, 0)
+}
+
 let every = (f, l) => {
   foldLeft((acc, item) => { acc && f(item) }, true, l)
 }

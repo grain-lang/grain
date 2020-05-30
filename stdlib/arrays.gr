@@ -85,6 +85,15 @@ export let map = (array, fn) => {
   })
 }
 
+export let mapi = (fn, array) => {
+  let length = length(array)
+  let count = box(-1)
+  init(length, (index) => {
+    count := incr(unbox(count))
+    fn(array[index], unbox(count))
+  })
+}
+
 export let toList = (array) => {
   let rec buildList = (acc, n) => {
     let n = n - 1
