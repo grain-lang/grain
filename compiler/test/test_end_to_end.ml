@@ -27,7 +27,7 @@ let tfile ?todo name input_file expected = name>::(wrap_todo todo @@ test_run_fi
 let tefile ?todo name input_file expected = name>::(wrap_todo todo @@ test_run_file_err input_file name expected)
 
 (** Tests that the file stdlib/`input_file`.gr produces the given output *)
-let tlib ?todo input_file = input_file>::(wrap_todo todo @@ test_run_stdlib input_file)
+let tlib ?todo ?returns ?code input_file = input_file>::(wrap_todo todo @@ test_run_stdlib ?returns ?code input_file)
 
 let tgcfile ?todo name heap_size input_file expected = name>::(wrap_todo todo @@ test_run_file input_file name expected)
 
@@ -205,6 +205,9 @@ let function_tests = [
   (* NOTE: This file also will test that we're doing tail calls
      and mutual recursion properly (should stack overflow otherwise) *)
 
+  (* Tests tail calls on only on one branch *)
+  tfile "one_branch_tail_call" "oneBranchTail" "[2]";
+
   tfile "forward_decl" "forward-decl" "true";
   (* This will test that we are doing tail calls for arbitrary-arity
      functions correctly *)
@@ -352,11 +355,12 @@ let stdlib_tests = [
   te "stdlib_length_err" "import * from 'lists'; length(true)" "This expression has type Bool but";
   te "stdlib_reverse_err" "import * from 'lists'; reverse(1)" "This expression has type Number but";
 
-  tlib "lists.test";
   tlib "arrays.test";
+  tlib "lists.test";
   tlib "hash.test";
   tlib "int64.test";
-  tlib "sys.test";
+  tlib "sys.file.test";
+  tlib ~returns:"" ~code:5 "sys.process.test";
 ]
 
 let box_tests = [

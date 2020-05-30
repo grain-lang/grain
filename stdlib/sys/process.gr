@@ -1,0 +1,78 @@
+export *
+
+data Signal =
+  # Hangup.
+  | HUP
+  # Terminate interrupt signal.
+  | INT
+  # Terminal quit signal.
+  | QUIT
+  # Illegal instruction.
+  | ILL
+  # Trace/breakpoint trap.
+  | TRAP
+  # Process abort signal.
+  | ABRT
+  # Access to an undefined portion of a memory object.
+  | BUS
+  # Erroneous arithmetic operation.
+  | FPE
+  # Kill.
+  | KILL
+  # User-defined signal 1.
+  | USR1
+  # Invalid memory reference.
+  | SEGV
+  # User-defined signal 2.
+  | USR2
+  # Write on a pipe with no one to read it.
+  | PIPE
+  # Alarm clock.
+  | ALRM
+  # Termination signal.
+  | TERM
+  # Child process terminated, stopped, or continued.
+  | CHLD
+  # Continue executing, if stopped.
+  | CONT
+  # Stop executing.
+  | STOP
+  # Terminal stop signal.
+  | TSTP
+  # Background process attempting read.
+  | TTIN
+  # Background process attempting write.
+  | TTOU
+  # High bandwidth data is available at a socket.
+  | URG
+  # CPU time limit exceeded.
+  | XCPU
+  # File size limit exceeded.
+  | XFSZ
+  # Virtual timer expired.
+  | VTALRM
+  | PROF
+  | WINCH
+  | POLL
+  | PWR
+  # Bad system call.
+  | SYS
+
+# Access command line arguments
+# @returns Array<String> The positional string arguments to the process
+import foreign wasm argv : () -> Array<String> from 'stdlib-external/sys'
+
+# Access environment variables
+# @returns Array<String> The environment variables supplied to the process
+import foreign wasm env : () -> Array<String> from 'stdlib-external/sys'
+
+# Terminate the process normally
+# @param code: Number The value to exit with. An exit code of 0 is considered normal, with other values having meaning depending on the platform
+import foreign wasm exit : (Number) -> Void from 'stdlib-external/sys'
+
+# Send a signal to the process of the calling thread
+# @param signal: Signal The signal to send
+import foreign wasm sigRaise : (Signal) -> Void from 'stdlib-external/sys'
+
+# Yield execution to the calling thread
+import foreign wasm schedYield : () -> Void from 'stdlib-external/sys'
