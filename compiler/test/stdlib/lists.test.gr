@@ -107,6 +107,11 @@ assert count(x => x > 0, list) == 3
 assert count(x => x > 0, []) == 0
 assert count(x => x == 3, list) == 1
 
+# List.part
+
+assert part(list, 0) == ([], list)
+assert part(list, 2) == ([1, 2], [3])
+
 # List.rotate
 
 assert rotate(list, 0) == list
