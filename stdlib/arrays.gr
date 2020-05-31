@@ -87,10 +87,8 @@ export let map = (array, fn) => {
 
 export let mapi = (fn, array) => {
   let length = length(array)
-  let count = box(-1)
   init(length, (index) => {
-    count := incr(unbox(count))
-    fn(array[index], unbox(count))
+    fn(array[index], index)
   })
 }
 
