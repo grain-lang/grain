@@ -85,6 +85,13 @@ export let map = (array, fn) => {
   })
 }
 
+export let mapi = (fn, array) => {
+  let length = length(array)
+  init(length, (index) => {
+    fn(array[index], index)
+  })
+}
+
 export let toList = (array) => {
   let rec buildList = (acc, n) => {
     let n = n - 1
