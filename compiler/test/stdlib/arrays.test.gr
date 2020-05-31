@@ -106,20 +106,13 @@ assert Array.fromList([1, 2, 3]) == [> 1, 2, 3]
 
 # Array.map
 
-let numbers = [> 2, 3, 4]
-let shift = (n) => {
-  n + 1
-}
-
-assert Array.map([>], shift) == [>]
-assert Array.map(numbers, shift) == [> 3, 4, 5]
+assert Array.map([>], incr) == [>]
+assert Array.map([> 2, 3, 4], incr) == [> 3, 4, 5]
 
 # Array.mapi
 
 let numbers = [> 2, 3, 4]
-let square = (n, i) => {
-  n * numbers[i]
-}
+let square = (n, i) => n * numbers[i]
 
 assert Array.mapi(square, [>]) == [>]
 assert Array.mapi(square, numbers) == [> 4, 9, 16]
