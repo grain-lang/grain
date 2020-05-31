@@ -117,3 +117,9 @@ assert part(list, 2) == ([1, 2], [3])
 assert rotate(list, 0) == list
 assert rotate(list, 1) == [2, 3, 1]
 assert rotate(list, -2) == [2, 3, 1]
+
+# List.uniq
+
+assert uniq([]) == []
+assert uniq(list) == list
+assert uniq([1, 1, 1, 1]) == [1]

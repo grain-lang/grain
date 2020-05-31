@@ -169,3 +169,13 @@ let rotate = (l, n) => {
   let (beginning, end) = if (n >= 0) part(l, n) else part(l, length(l) + n)
   append(end, beginning)
 }
+
+let uniq = (l) => {
+  let rec help = (l, acc) => {
+    match (l) {
+      | [] => reverse(acc)
+      | [hd, ...tl] => if (contains(hd, acc)) help(tl, acc) else help(tl, [hd, ...acc])
+    }
+  }
+  help(l, [])
+}
