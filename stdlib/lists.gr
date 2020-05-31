@@ -119,19 +119,22 @@ let rec reject = (f, l) => {
 let hd = (l) => {
   match (l) {
     | [] => fail 'hd'
-    | [hd, ...tl] => hd
+    | [hd, ..._] => hd
   }
 }
 
 let tl = (l) => {
   match (l) {
     | [] => fail 'tl'
-    | [hd, ...tl] => tl
+    | [_, ...tl] => tl
   }
 }
 
 let rec nth = (n, l) => {
-  if (n == 0) hd(l) else nth(n - 1, tl(l))
+  match (l) {
+    | [] => fail 'nth'
+    | [hd, ...tl] => if (n < 0) fail 'nth' else if (n == 0) hd else nth(n - 1, tl)
+  }
 }
 
 let rec flatten = (l) => {
@@ -144,7 +147,7 @@ let rec flatten = (l) => {
 let rec insert = (x, i, l) => {
   match(l) {
     | [] => if (i == 0) [x] else fail 'insert'
-    | [hd, ...tl] => if (i == 0) [x, ...l] else [hd, ...insert(x, i - 1, tl)]
+    | [hd, ...tl] => if (i < 0) fail 'insert' else if (i == 0) [x, ...l] else [hd, ...insert(x, i - 1, tl)]
   }
 }
 
