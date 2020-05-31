@@ -53,15 +53,15 @@ assert foldRight((acc, cur) => acc - cur, 0, []) == 0
 
 # List.every
 
-assert every(x => x > 0, list) == true
-assert every(x => x > 2, list) == false
-assert every(x => x == 3, []) == true
+assert every(x => x > 0, list)
+assert !every(x => x > 2, list)
+assert every(x => x == 3, [])
 
 # List.some
 
-assert some(x => x > 0, list) == true
-assert some(x => x > 3, list) == false
-assert some(x => x == 3, []) == false
+assert some(x => x > 0, list)
+assert !some(x => x > 3, list)
+assert !some(x => x == 3, [])
 
 # List.filter
 
@@ -100,6 +100,8 @@ assert flatten([list, []]) == list
 
 assert insert(1, 0, []) == [1]
 assert insert(0, 0, list) == [0, 1, 2, 3]
+assert insert(0, 2, list) == [1, 2, 0, 3]
+assert insert(0, 3, list) == [1, 2, 3, 0]
 
 # List.count
 
@@ -110,12 +112,14 @@ assert count(x => x == 3, list) == 1
 # List.part
 
 assert part(0, list) == ([], list)
+assert part(3, list) == (list, [])
 assert part(2, list) == ([1, 2], [3])
 
 # List.rotate
 
 assert rotate(0, list) == list
 assert rotate(1, list) == [2, 3, 1]
+assert rotate(2, list) == [3, 1, 2]
 assert rotate(-2, list) == [2, 3, 1]
 
 # List.uniq
