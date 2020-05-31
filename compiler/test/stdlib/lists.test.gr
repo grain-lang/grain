@@ -35,7 +35,7 @@ assert map(x => x + 1, []) == []
 
 # List.mapi
 
-# let numbers = [2, 3, 4 ]
+# let numbers = [2, 3, 4]
 # let square = (n, i) => {
 #   n * numbers[i]
 # }
