@@ -87,8 +87,8 @@ assert tl([1]) == []
 
 # List.nth
 
-assert nth(list, 0) == 1
-assert nth(list, 2) == 3
+assert nth(0, list) == 1
+assert nth(2, list) == 3
 
 # List.flatten
 
@@ -98,8 +98,8 @@ assert flatten([list, []]) == list
 
 # List.insert
 
-assert insert([], 1, 0) == [1]
-assert insert(list, 0, 0) == [0, 1, 2, 3]
+assert insert(1, 0, []) == [1]
+assert insert(0, 0, list) == [0, 1, 2, 3]
 
 # List.count
 
@@ -109,14 +109,14 @@ assert count(x => x == 3, list) == 1
 
 # List.part
 
-assert part(list, 0) == ([], list)
-assert part(list, 2) == ([1, 2], [3])
+assert part(0, list) == ([], list)
+assert part(2, list) == ([1, 2], [3])
 
 # List.rotate
 
-assert rotate(list, 0) == list
-assert rotate(list, 1) == [2, 3, 1]
-assert rotate(list, -2) == [2, 3, 1]
+assert rotate(0, list) == list
+assert rotate(1, list) == [2, 3, 1]
+assert rotate(-2, list) == [2, 3, 1]
 
 # List.uniq
 

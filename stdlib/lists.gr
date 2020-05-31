@@ -130,8 +130,8 @@ let tl = (l) => {
   }
 }
 
-let rec nth = (l, n) => {
-  if (n == 0) hd(l) else nth(tl(l), n - 1)
+let rec nth = (n, l) => {
+  if (n == 0) hd(l) else nth(n - 1, tl(l))
 }
 
 let rec flatten = (l) => {
@@ -141,10 +141,10 @@ let rec flatten = (l) => {
   }
 }
 
-let rec insert = (l, x, i) => {
+let rec insert = (x, i, l) => {
   match(l) {
     | [] => if (i == 0) [x] else fail 'insert'
-    | [hd, ...tl] => if (i == 0) [x, ...l] else [hd, ...insert(tl, x, i - 1)]
+    | [hd, ...tl] => if (i == 0) [x, ...l] else [hd, ...insert(x, i - 1, tl)]
   }
 }
 
@@ -155,7 +155,7 @@ let rec count = (f, l) => {
   }
 }
 
-let part = (l, n) => {
+let part = (n, l) => {
   let rec help = (l1, l2, n) => {
     match (l2) {
       | [] => if (n > 0) fail 'part' else (reverse(l1), l2)
@@ -165,8 +165,8 @@ let part = (l, n) => {
   help([], l, n)
 }
 
-let rotate = (l, n) => {
-  let (beginning, end) = if (n >= 0) part(l, n) else part(l, length(l) + n)
+let rotate = (n, l) => {
+  let (beginning, end) = if (n >= 0) part(n, l) else part(length(l) + n, l)
   append(end, beginning)
 }
 
