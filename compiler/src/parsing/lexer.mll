@@ -105,7 +105,7 @@ let newline_chars = (newline_char | blank)* newline_char
 let comment = '#' ((([^'|'])[^ '\r' '\n']*(newline_chars | eof)) | (newline_chars | eof))
 
 rule token = parse
-  | comment { process_newlines lexbuf; token lexbuf }
+  | comment { process_newlines lexbuf; EOL }
   | blank { token lexbuf }
   | newline_chars { process_newlines lexbuf; EOL }
   | (signed_int as x) 'l' { INT32 (Int32.of_string x) }
