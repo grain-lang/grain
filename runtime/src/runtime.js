@@ -15,7 +15,7 @@ import * as libDOM from './lib/DOM';
 export let grainModule;
 
 export const memory = new WebAssembly.Memory({initial: 16});
-export const table = new WebAssembly.Table({element: 'anyfunc', initial: 512});
+export const table = new WebAssembly.Table({element: 'anyfunc', initial: 1024});
 export const view = new Int32Array(memory.buffer);
 export const uview = new Uint32Array(memory.buffer);
 export const encoder = new TextEncoder("utf-8");
