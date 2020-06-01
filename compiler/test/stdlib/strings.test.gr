@@ -1,0 +1,98 @@
+import String from 'strings'
+
+let fox = 'The quick brown fox jumps over the lazy dog.'
+let emojis = 'we found a path🚀 to greatness🏅but the grind never quits😤💪🏼 keep milling💯🔥😈'
+let emoji = '🌾'
+let short = 'fox'
+let empty = ''
+let multi = 'a
+b
+c'
+
+
+# concat tests
+assert String.concat('', '') == ''
+assert String.concat(short, '') == short
+assert String.concat('', short) == short
+assert String.concat(short, short) == 'foxfox'
+assert String.concat(emoji, emoji) == '🌾🌾'
+assert String.concat(multi, emoji) == 'a\nb\nc🌾'
+
+# length tests
+assert String.length(empty) == 0
+assert String.length(short) == 3
+assert String.length(emoji) == 1
+assert String.length(fox) == 44
+assert String.length(emojis) == 74
+# Comprised of two graphemes
+assert String.length('💪🏼') == 2 
+
+# byteLength tests
+assert String.byteLength(empty) == 0
+assert String.byteLength('a') == 1
+assert String.byteLength(emoji) == 4
+assert String.byteLength(emojis) == 98
+
+# slice tests
+assert String.slice(empty, 0, 0) == empty
+assert String.slice(fox, 0, 1) == 'T'
+assert String.slice(fox, 0, 2) == 'Th'
+assert String.slice(fox, 0, 3) == 'The'
+assert String.slice(fox, 0, 4) == 'The '
+assert String.slice(fox, 0, 5) == 'The q'
+assert String.slice(fox, 35, 39) == 'lazy'
+assert String.slice(fox, 35, 44) == 'lazy dog.'
+assert String.slice(fox, -9, -1) == 'lazy dog'
+assert String.slice(fox, 35, -1) == 'lazy dog'
+assert String.slice(fox, 35, -5) == 'lazy'
+assert String.slice(fox, 0, 44) == fox
+assert String.slice(fox, 44, 44) == empty
+assert String.slice(emoji, 0, 1) == emoji
+assert String.slice(emoji, -2, 1) == emoji
+assert String.slice(emoji, -1, -1) == empty
+assert String.slice('💪🏾', 0, 1) == '💪'
+assert String.slice('💪🏾', 1, 2) == '🏾'
+
+# contains tests
+assert String.contains(short, '')
+assert String.contains(short, 'f')
+assert String.contains(short, 'o')
+assert String.contains(short, 'x')
+assert String.contains(short, 'fo')
+assert String.contains(short, 'ox')
+assert String.contains(short, 'fox')
+assert String.contains(fox, 'lazy')
+assert String.contains(emoji, emoji)
+assert String.contains(emojis, 'quits😤💪🏼 ')
+assert String.contains(emojis, emojis)
+assert String.contains(multi, '\n')
+assert !String.contains(short, 'F')
+assert !String.contains('fox', 'foxes')
+assert !String.contains(fox, 'LAZY DOG')
+
+# startsWith tests
+assert String.startsWith(empty, empty)
+assert String.startsWith(short, empty)
+assert String.startsWith(short, short)
+assert String.startsWith(short, 'f')
+assert String.startsWith(short, 'fo')
+assert String.startsWith(fox, 'The quick')
+assert String.startsWith(emoji, emoji)
+assert String.startsWith(emojis, emojis)
+assert !String.startsWith(short, 'foxes')
+assert !String.startsWith(emoji, 'q')
+assert !String.startsWith(fox, 'THE QUICK')
+
+# endsWith tests
+assert String.endsWith(empty, empty)
+assert String.endsWith(short, empty)
+assert String.endsWith(short, short)
+assert String.endsWith(short, 'x')
+assert String.endsWith(short, 'ox')
+assert String.endsWith(fox, 'lazy dog.')
+assert String.endsWith(fox, '.')
+assert String.endsWith(emoji, emoji)
+assert String.endsWith(emojis, emojis)
+assert !String.endsWith(short, 'bluefox')
+assert !String.endsWith(emoji, 'q')
+assert !String.endsWith(fox, 'LAZY DOG.')

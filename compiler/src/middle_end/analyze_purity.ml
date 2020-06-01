@@ -139,14 +139,8 @@ let rec analyze_comp_expression ({comp_desc = desc; comp_analyses = analyses}) =
       analyze_imm_expression f;
       imm_expression_purity_internal f && (List.for_all (fun x -> x) arg_purities)
     | CAppBuiltin(_module, f, args) ->
-      let arg_purities = List.map (fun arg -> analyze_imm_expression arg; imm_expression_purity_internal arg) args in
-      (List.for_all (fun x -> x) arg_purities) && begin 
-        match (_module, f) with
-        | "grainBuiltins", "toString"
-        | "grainBuiltins", "stringAppend"
-        | "grainBuiltins", "stringSlice" -> true
-        | _ -> false
-      end;
+      List.iter (fun arg -> analyze_imm_expression arg) args;
+      false
     | CLambda(args, body) ->
       List.iter (fun i -> set_id_purity i true) args;
       analyze_anf_expression body;

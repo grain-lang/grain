@@ -1,0 +1,42 @@
+export *
+
+# Concatenate two strings.
+# @param str1: String - The first string
+# @param str2: String - The second string
+# @returns String
+import foreign wasm concat : (String, String) -> String from 'stdlib-external/string'
+
+# Get the character length of a string.
+# @param input: String - The string to check
+# @returns Number
+import foreign wasm length : String -> Number from 'stdlib-external/string'
+
+# Get the byte length of a string.
+# @param input: String - The string to check
+# @returns Number
+import foreign wasm byteLength : String -> Number from 'stdlib-external/string'
+
+# Get a portion of a string.
+# @param input: String - The input string
+# @param from: Number - The start index of the substring
+# @param to: Number - The end index of the substring
+# @returns String
+import foreign wasm slice : (String, Number, Number) -> String from 'stdlib-external/string'
+
+# Check if a string contains a substring.
+# @param input: String - The input string
+# @param pattern: String - The substring to check
+# @returns Bool
+import foreign wasm contains : (String, String) -> Bool from 'stdlib-external/string'
+
+# Check if a string begins with another string.
+# @param input: String - The input string
+# @param pattern: String - The substring to check
+# @returns Bool
+import foreign wasm startsWith : (String, String) -> Bool from 'stdlib-external/string'
+
+# Check if a string ends with another string.
+# @param input: String - The input string
+# @param pattern: String - The substring to check
+# @returns Bool
+import foreign wasm endsWith : (String, String) -> Bool from 'stdlib-external/string'

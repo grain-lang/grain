@@ -359,6 +359,7 @@ let stdlib_tests = [
   tlib "lists.test";
   tlib "hash.test";
   tlib "int64.test";
+  tlib "strings.test";
   tlib "sys.file.test";
   tlib ~returns:"" ~code:5 "sys.process.test";
 ]

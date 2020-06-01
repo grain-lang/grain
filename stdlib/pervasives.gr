@@ -45,10 +45,4 @@ primitive (is) : (a, a) -> Bool = "@eq"
 # Converts the given value to a string
 import foreign wasm toString : a -> String from 'grainBuiltins'
 
-# TODO: These should be in a separate WASM module
-
-import foreign wasm stringAppend : (String, String) -> String from 'grainBuiltins'
-
-import foreign wasm stringSlice : (String, Number, Number) -> String from 'grainBuiltins'
-
 export data List<a> = [] | [...](a, List<a>)
