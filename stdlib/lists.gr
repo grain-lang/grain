@@ -75,6 +75,10 @@ let every = (f, l) => {
   foldLeft((acc, item) => { acc && f(item) }, true, l)
 }
 
+let some = (f, l) => {
+  foldLeft((acc, item) => { acc || f(item) }, false, l)
+}
+
 let rec forEach = (f, l) => {
   match (l) {
     | [] => void
@@ -96,4 +100,87 @@ let forEachi = (f, l) => {
     }
   }
   help(f, l, 0)
+}
+
+let rec filter = (f, l) => {
+  match (l) {
+    | [] => []
+    | [hd, ...tl] => if (f(hd)) [hd, ...filter(f, tl)] else filter(f, tl)
+  }
+}
+
+let rec reject = (f, l) => {
+  match (l) {
+    | [] => []
+    | [hd, ...tl] => if (!f(hd)) [hd, ...reject(f, tl)] else reject(f, tl)
+  }
+}
+
+let hd = (l) => {
+  match (l) {
+    | [] => fail 'hd'
+    | [hd, ..._] => hd
+  }
+}
+
+let tl = (l) => {
+  match (l) {
+    | [] => fail 'tl'
+    | [_, ...tl] => tl
+  }
+}
+
+let rec nth = (n, l) => {
+  match (l) {
+    | [] => fail 'nth'
+    | [hd, ...tl] => if (n < 0) fail 'nth' else if (n == 0) hd else nth(n - 1, tl)
+  }
+}
+
+let rec flatten = (l) => {
+  match (l) {
+    | [] => []
+    | [hd, ...tl] => append(hd, flatten(tl))
+  }
+}
+
+let rec insert = (x, i, l) => {
+  match(l) {
+    | [] => if (i == 0) [x] else fail 'insert'
+    | [hd, ...tl] => if (i < 0) fail 'insert' else if (i == 0) [x, ...l] else [hd, ...insert(x, i - 1, tl)]
+  }
+}
+
+let rec count = (f, l) => {
+  match (l) {
+    | [] => 0
+    | [hd, ...tl] => if (f(hd)) 1 + count(f, tl) else count(f, tl)
+  }
+}
+
+let part = (n, l) => {
+  if (n < 0) fail 'part'
+  let rec help = (l1, l2, n) => {
+    match (l2) {
+      | [] => if (n > 0) fail 'part' else (l1, l2)
+      | [hd, ...tl] => if (n > 0) help([hd, ...l1], tl, n - 1) else (l1, l2)
+    }
+  }
+  let (pt1, pt2) = help([], l, n)
+  (reverse(pt1), pt2)
+}
+
+let rotate = (n, l) => {
+  let (beginning, end) = if (n >= 0) part(n, l) else part(length(l) + n, l)
+  append(end, beginning)
+}
+
+let uniq = (l) => {
+  let rec help = (l, acc) => {
+    match (l) {
+      | [] => reverse(acc)
+      | [hd, ...tl] => if (contains(hd, acc)) help(tl, acc) else help(tl, [hd, ...acc])
+    }
+  }
+  help(l, [])
 }
