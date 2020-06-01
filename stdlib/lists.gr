@@ -159,13 +159,15 @@ let rec count = (f, l) => {
 }
 
 let part = (n, l) => {
+  if (n < 0) fail 'part'
   let rec help = (l1, l2, n) => {
     match (l2) {
-      | [] => if (n > 0) fail 'part' else (reverse(l1), l2)
-      | [hd, ...tl] => if (n > 0) help([hd, ...l1], tl, n - 1) else (reverse(l1), l2)
+      | [] => if (n > 0) fail 'part' else (l1, l2)
+      | [hd, ...tl] => if (n > 0) help([hd, ...l1], tl, n - 1) else (l1, l2)
     }
   }
-  help([], l, n)
+  let (pt1, pt2) = help([], l, n)
+  (reverse(pt1), pt2)
 }
 
 let rotate = (n, l) => {
