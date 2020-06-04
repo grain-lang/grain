@@ -1097,7 +1097,7 @@ let compile_prim2 (env : codegen_env) p2 arg1 arg2 : Wasm.Ast.instr' Concatlist.
       Ast.Binary(Values.I64 Ast.IntOp.RemS);
       Ast.Const(const_int64 2);
       Ast.Binary(Values.I64 Ast.IntOp.Mul);
-    ] @
+    ] @ tee_swap ~ty:Types.I64Type env 0 @
     (* Convert remainder result into modulo result *)
     compiled_arg1 +@ [
       Ast.Const(const_int32 31);
@@ -1107,6 +1107,9 @@ let compile_prim2 (env : codegen_env) p2 arg1 arg2 : Wasm.Ast.instr' Concatlist.
       Ast.Const(const_int32 31);
       Ast.Binary(Values.I32 Ast.IntOp.ShrU);
       Ast.Compare(Values.I32 Ast.IntOp.Eq);
+    ] @ get_swap ~ty:Types.I64Type env 0 +@ [
+      Ast.Test(Values.I64 Ast.IntOp.Eqz);
+      Ast.Binary(Values.I32 Ast.IntOp.Or);
       Ast.If([Types.I64Type],
         [add_dummy_loc @@ Ast.Const(const_int64 0)],
         Concatlist.mapped_list_of_t add_dummy_loc @@

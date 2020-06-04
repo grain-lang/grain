@@ -111,6 +111,9 @@ let basic_functionality_tests = [
   t "modulo1" "-17 % 4" "3";
   t "modulo2" "17 % -4" "-3";
   t "modulo3" "-17 % -4" "-1";
+  t "modulo4" "-17 % 17" "0";
+  t "modulo5" "17 % -17" "0";
+  t "modulo6" "17 % 17" "0";
 
   t "and1" "true && true" "true";
   t "and2" "true && false" "false";
