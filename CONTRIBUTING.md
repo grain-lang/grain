@@ -8,7 +8,7 @@ Please note that this project is released with a [contributor code of conduct](h
 
 ## Joining the Discord
 
-Shoot an email over to oscar[at]grain-lang.org and we'll send you an invitation to join.
+You can use this link to chat with us on Discord: [grain-lang discord server](https://discord.gg/7U3newJ)
 
 ## Getting up and running
 
