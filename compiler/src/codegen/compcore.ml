@@ -1715,9 +1715,11 @@ let rec compile_store env binds =
         | MAllocate(MClosure(cdata)) ->
           (allocate_closure env ~lambda:get_bind cdata), store_bind_no_incref
         (* HACK: We expect values returned from functions to have a refcount of 1, so we don't increment it when storing *)
-        | (MCallIndirect _)
+        (* | (MCallIndirect _) *)
         | (MCallKnown _)
         | (MAllocate _) -> (compile_instr env instr), store_bind_no_incref
+        (* [TODO] I think this is wrong? See commented out line above *)
+        | (MCallIndirect _)
         | _ -> (compile_instr env instr), store_bind in
       (compiled_instr @ store_bind) @ acc in
     List.fold_right process_bind binds empty in
