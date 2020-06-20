@@ -424,7 +424,7 @@ export class ManagedMemory {
           case GRAIN_ADT_HEAP_TAG:
             if (this._runtime) {
               let x = genericHeapValUserPtr / 4;
-              let [variantName, arity] = grainAdtInfo(this._runtime, genericHeapValUserPtr);
+              let arity = view[x + 4];
               trace(`traversing ${arity} ADT vals on ADT 0x${this._toHex(userPtr)}`);
               for (let i = 0; i < arity; ++i) {
                 //this.decRef(view[x + 5 + i], 'FREE');
