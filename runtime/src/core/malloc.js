@@ -5,6 +5,7 @@
  * the code is a little opaque (especially considering that we are
  * essentially hand-laying out structs in memory).
  */
+import {toHex} from '../utils/utils';
 
 export function mallocJSModule(stdlib, foreign, ext_heap) {
   "use asm";
@@ -76,7 +77,7 @@ export function mallocJSModule(stdlib, foreign, ext_heap) {
 
   /**
    * The current size of the heap (in bytes).
-   */ 
+   */
   var heapSize = 0;
 
   /**
@@ -154,7 +155,7 @@ export function mallocJSModule(stdlib, foreign, ext_heap) {
         // If this block is big enough, allocate from it.
         if ((size|0) == (nbytes|0)) {
           // It's exactly the right size!
-          heap[prevp >> 2] = p|0;
+          heap[prevp >> 2] = heap[p >> 2]|0;
         } else {
           // Shrink it as needed
           newSize = (size - nbytes)|0;
@@ -238,7 +239,7 @@ export function mallocJSModule(stdlib, foreign, ext_heap) {
 
     // Find the location to insert this block into the free list
     for (p = freePtr|0; !(((blockPtr|0) > (p|0)) & ((blockPtr|0) < (heap[p >> 2]|0))); p = heap[p >> 2]|0) {
-      if ((p|0) >= (heap[p >> 2]|0) & ((blockPtr|0) > (p|0) | (blockPtr|0) < (heap[p >> 2]|0))) {
+      if (((p|0) >= (heap[p >> 2]|0)) & ((blockPtr|0) > (p|0) | (blockPtr|0) < (heap[p >> 2]|0))) {
         break;
       }
     }
@@ -285,13 +286,13 @@ export function mallocJSModule(stdlib, foreign, ext_heap) {
  * @param malloc {Object} - An initialized malloc module
  * @param buf {ArrayBuffer} - The heap associated with the given module
  */
-function printAllocations(malloc, buf) {
+export function printAllocations(malloc, buf) {
   var freePtr = malloc.getFreePtr() >> 2;
   var ptr = freePtr;
   buf = new Uint32Array(buf);
   var blocks = [];
   do {
-    blocks.push({start: ptr << 2, next: buf[ptr], size: buf[ptr + 1]});
+    blocks.push({start: `0x${toHex(ptr << 2)}`, next: `0x${toHex(buf[ptr])}`, size: buf[ptr + 1]});
     ptr = buf[ptr] >> 2;
   } while (ptr != freePtr);
   console.log("Blocks:");
