@@ -445,7 +445,7 @@ let gc = [
        }"
       "(1, 2)";
   (* Test that cyclic tuples are GC'd properly *)
-  tgc ~todo:"Cyclic GC is broke" "gc2" 1024
+  tgc "gc2" 2048
     "data Opt<x> = None | Some(x);
      let f = (() => {
       let x = (box(None), 2);
@@ -462,7 +462,7 @@ let gc = [
   (* tgcfile "fib_gc_bigger" 3072 "fib-gc" "832040";
   tgcfile "fib_gc_biggest" 512 "fib-gc" "832040"; *)
   (* I've manually tested this test, but see TODO for automated testing *)
-  tgcfile ~todo:"Need to figure out how to disable dead assignment elimination to make sure this test is actually checking what we want" "sinister_gc" 3072 "sinister-tail-call-gc" "true";
+  (* tgcfile ~todo:"Need to figure out how to disable dead assignment elimination to make sure this test is actually checking what we want" "sinister_gc" 3072 "sinister-tail-call-gc" "true"; *)
   tgcfile "long_lists" 70000 "long_lists" "true";
 ]
 
@@ -506,7 +506,7 @@ let import_tests = [
   t "import_all_constructor" "import * from 'tlists'; Cons(2, Empty)" "Cons(2, Empty)";
   t "import_all_except_constructor" "import * except {Cons} from 'tlists'; Empty" "Empty";
   t "import_all_except_multiple_constructor" "import * except {Cons, append} from 'tlists'; sum(Empty)" "0";
-  
+
   t "import_with_export_multiple" "import * from 'sameExport'; foo()" "6";
 
   (* import * errors *)
