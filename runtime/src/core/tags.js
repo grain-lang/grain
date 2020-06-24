@@ -62,7 +62,7 @@ export function getTagType(n, quiet) {
 }
 
 export function tagToString(t) {
-  switch(t) {
+  switch (t) {
     case GRAIN_NUMBER_TAG_TYPE:
       return 'number';
     case GRAIN_TUPLE_TAG_TYPE:
