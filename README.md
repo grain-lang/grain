@@ -12,7 +12,7 @@
 
 Grain is a new programming language that compiles to [WebAssembly](http://webassembly.org/). For more information about the language, check out [grain-lang.org](https://grain-lang.org/).
 
-If it's your first time here, it's highly recommended that you follow [the Grain guide](https://grain-lang.org/guide) to get up and running!
+If it's your first time here, it's highly recommended that you follow [the Grain guide](https://grain-lang.org/docs) to get up and running!
 
 ## Contributing
 
