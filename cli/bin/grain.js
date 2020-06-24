@@ -18,7 +18,7 @@ function list(val) {
 }
 
 function num(val) {
-  return Number.parseInt(val);
+  return Number.parseInt(val, 10);
 }
 
 program
