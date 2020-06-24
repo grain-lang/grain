@@ -90,7 +90,6 @@ export class GrainRunner {
     }
     this.postImports();
     // All of the dependencies have been loaded. Now we can instantiate with the import object.
-    //  console.log(`Instantiating module: ${mod.name}`);
     await mod.instantiate(this.imports, this);
     this.idMap[this.imports['grainRuntime']['moduleRuntimeId']] = name;
     if (!(name in this.modules)) {
@@ -108,7 +107,6 @@ export class GrainRunner {
     let module = await this.loadFile(path);
     let ret = module.runUnboxed();
     if (cleanupGlobals) {
-      // console.log('cleaning up globals');
       module.cleanupGlobals();
     }
     return ret;
