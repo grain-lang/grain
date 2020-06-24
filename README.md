@@ -16,7 +16,7 @@ If it's your first time here, it's highly recommended that you follow [the Grain
 
 ## Contributing
 
-There are tons of ways to contribute to Grain. Check out our [contributing guide](https://github.com/grain-lang/grain/blob/master/CONTRIBUTING.md) for more info and instructions on how to join our community Discord. All contributors are held to our [contributor code of conduct](https://github.com/grain-lang/grain/blob/master/CODE_OF_CONDUCT.md).
+There are tons of ways to contribute to Grain. Check out our [contributing guide](https://github.com/grain-lang/grain/blob/master/CONTRIBUTING.md) for more info and come [chat with us on Discord](https://discord.gg/7U3newJ)! All contributors are held to our [contributor code of conduct](https://github.com/grain-lang/grain/blob/master/CODE_OF_CONDUCT.md).
 
 ## Building
 
