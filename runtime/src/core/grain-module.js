@@ -160,7 +160,12 @@ export class GrainModule {
       console.log('');
     });*/
     this.runner = runner;
-    this._instantiated = await WebAssembly.instantiate(this.wasmModule, importObj);
+    try {
+      this._instantiated = await WebAssembly.instantiate(this.wasmModule, importObj);
+    } catch (e) {
+      console.error(`Exception while instantiating ${this.name}`);
+      throw e;
+    }
     //console.log(`Instantiated: ${this._instantiated}.`);
     //console.log(`fields: ${Object.keys(this._instantiated)}`);
   }
