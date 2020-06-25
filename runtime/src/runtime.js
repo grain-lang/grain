@@ -1,7 +1,7 @@
 import 'fast-text-encoding';
 
 import { printClosure } from './core/closures';
-import { ManagedMemory } from './core/memory';
+import { ManagedMemory, TRACE_MEMORY } from './core/memory';
 import { GrainRunner } from './core/runner';
 import { throwGrainError } from './errors/errors';
 import { grainToString } from './utils/utils';
@@ -23,6 +23,33 @@ export const managedMemory = new ManagedMemory(memory);
 export const malloc = managedMemory.malloc.bind(managedMemory)
 export const free = managedMemory.free.bind(managedMemory)
 
+const tracingImports = TRACE_MEMORY ? {
+  incRefADT: managedMemory.incRefADT.bind(managedMemory),
+  incRefArray: managedMemory.incRefArray.bind(managedMemory),
+  incRefTuple: managedMemory.incRefTuple.bind(managedMemory),
+  incRefBox: managedMemory.incRefBox.bind(managedMemory),
+  incRefBackpatch: managedMemory.incRefBackpatch.bind(managedMemory),
+  incRefSwapBind: managedMemory.incRefSwapBind.bind(managedMemory),
+  incRefLocalBind: managedMemory.incRefLocalBind.bind(managedMemory),
+  incRefArgBind: managedMemory.incRefArgBind.bind(managedMemory),
+  incRefGlobalBind: managedMemory.incRefGlobalBind.bind(managedMemory),
+  incRefClosureBind: managedMemory.incRefClosureBind.bind(managedMemory),
+  incRefCleanupLocals: managedMemory.incRefCleanupLocals.bind(managedMemory),
+  decRefArray: managedMemory.decRefArray.bind(managedMemory),
+  decRefTuple: managedMemory.decRefTuple.bind(managedMemory),
+  decRefBox: managedMemory.decRefBox.bind(managedMemory),
+  decRefSwapBind: managedMemory.decRefSwapBind.bind(managedMemory),
+  decRefLocalBind: managedMemory.decRefLocalBind.bind(managedMemory),
+  decRefArgBind: managedMemory.decRefArgBind.bind(managedMemory),
+  decRefGlobalBind: managedMemory.decRefGlobalBind.bind(managedMemory),
+  decRefClosureBind: managedMemory.decRefClosureBind.bind(managedMemory),
+  decRefCleanupLocals: managedMemory.decRefCleanupLocals.bind(managedMemory),
+  decRefCleanupGlobals: managedMemory.decRefCleanupGlobals.bind(managedMemory),
+  decRefDrop: managedMemory.decRefDrop.bind(managedMemory),
+} : {
+  decRefIgnoreZeros: managedMemory.decRefIgnoreZeros.bind(managedMemory)
+};
+
 const importObj = {
   env: {
     memory
@@ -40,31 +67,10 @@ const importObj = {
     malloc: managedMemory.malloc.bind(managedMemory),
     free: managedMemory.free.bind(managedMemory),
     incRef: managedMemory.incRef.bind(managedMemory),
-    incRefADT: managedMemory.incRefADT.bind(managedMemory),
-    incRefArray: managedMemory.incRefArray.bind(managedMemory),
-    incRefTuple: managedMemory.incRefTuple.bind(managedMemory),
-    incRefBox: managedMemory.incRefBox.bind(managedMemory),
-    incRefBackpatch: managedMemory.incRefBackpatch.bind(managedMemory),
-    incRefSwapBind: managedMemory.incRefSwapBind.bind(managedMemory),
-    incRefLocalBind: managedMemory.incRefLocalBind.bind(managedMemory),
-    incRefArgBind: managedMemory.incRefArgBind.bind(managedMemory),
-    incRefGlobalBind: managedMemory.incRefGlobalBind.bind(managedMemory),
-    incRefClosureBind: managedMemory.incRefClosureBind.bind(managedMemory),
-    incRefCleanupLocals: managedMemory.incRefCleanupLocals.bind(managedMemory),
     incRef64: managedMemory.incRef64.bind(managedMemory),
     decRef: managedMemory.decRef.bind(managedMemory),
-    decRefArray: managedMemory.decRefArray.bind(managedMemory),
-    decRefTuple: managedMemory.decRefTuple.bind(managedMemory),
-    decRefBox: managedMemory.decRefBox.bind(managedMemory),
-    decRefSwapBind: managedMemory.decRefSwapBind.bind(managedMemory),
-    decRefLocalBind: managedMemory.decRefLocalBind.bind(managedMemory),
-    decRefArgBind: managedMemory.decRefArgBind.bind(managedMemory),
-    decRefGlobalBind: managedMemory.decRefGlobalBind.bind(managedMemory),
-    decRefClosureBind: managedMemory.decRefClosureBind.bind(managedMemory),
-    decRefCleanupLocals: managedMemory.decRefCleanupLocals.bind(managedMemory),
-    decRefCleanupGlobals: managedMemory.decRefCleanupGlobals.bind(managedMemory),
-    decRefDrop: managedMemory.decRefDrop.bind(managedMemory),
-    decRef64: managedMemory.decRef64.bind(managedMemory)
+    decRef64: managedMemory.decRef64.bind(managedMemory),
+    ...tracingImports
   },
   grainBuiltins: {
     ...libDOM

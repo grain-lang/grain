@@ -4,7 +4,7 @@ import { getTagType, tagToString, heapTagToString, GRAIN_CONST_TAG_TYPE, GRAIN_N
 import { toHex, toBinary } from '../utils/utils';
 import treeify from 'treeify';
 
-const TRACE_MEMORY = false;
+export const TRACE_MEMORY = false;
 let TRACE_OVERRIDE = false;
 
 // Graph coloring
@@ -63,6 +63,7 @@ export class ManagedMemory {
     this._grown = 0;
     this._colors = {};
     this._markQueue = [];
+    this._jumpStack = [];
     if (TRACE_MEMORY) {
       this._allocatedAddresses = new Set();
       this._freedAddresses = new Set();
@@ -311,6 +312,11 @@ export class ManagedMemory {
   incRefCleanupLocals(userPtr) {
     trace('incRefCleanupLocals [see next]');
     return this.incRef(userPtr, 'CLEANUP_LOCALS');
+  }
+
+  decRefIgnoreZeros(userPtr) {
+    trace('decRefIgnoreZeros (unknown origin)');
+    return this.decRef(userPtr, undefined, true);
   }
 
   decRefCleanupLocals(userPtr, slot) {

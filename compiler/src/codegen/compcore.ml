@@ -4,6 +4,9 @@ open Value_tags
 open Wasm
 open Concatlist (* NOTE: This import shadows (@) and introduces (@+) and (+@) *)
 
+(* [TODO] Should probably be a config variable *)
+let memory_tracing_enabled = false
+
 let add_dummy_loc (x : 'a) : 'a Source.phrase = Source.(x @@ no_region)
 let source_it (x : 'a Source.phrase) : 'a = Source.(x.it)
 
@@ -69,55 +72,11 @@ let decref_global_bind_ident = Ident.create_persistent "decRefGlobalBind"
 let decref_closure_bind_ident = Ident.create_persistent "decRefClosureBind"
 let decref_cleanup_locals_ident = Ident.create_persistent "decRefCleanupLocals"
 let decref_cleanup_globals_ident = Ident.create_persistent "decRefCleanupGlobals"
+let decref_ignore_zeros_ident = Ident.create_persistent "decRefIgnoreZeros"
 let decref_drop_ident = Ident.create_persistent "decRefDrop"
 let tracepoint_ident = Ident.create_persistent "tracepoint"
 
-let runtime_global_imports = [
-  {
-    mimp_mod=runtime_mod;
-    mimp_name=reloc_base;
-    mimp_type=MGlobalImport I32Type;
-    mimp_kind=MImportWasm;
-    mimp_setup=MSetupNone;
-  };
-  {
-    mimp_mod=runtime_mod;
-    mimp_name=module_runtime_id;
-    mimp_type=MGlobalImport I32Type;
-    mimp_kind=MImportWasm;
-    mimp_setup=MSetupNone;
-  }
-]
-
-let runtime_function_imports = [
-  {
-    mimp_mod=console_mod;
-    mimp_name=log_ident;
-    mimp_type=MFuncImport([I32Type], [I32Type]);
-    mimp_kind=MImportWasm;
-    mimp_setup=MSetupNone;
-  };
-  {
-    mimp_mod=runtime_mod;
-    mimp_name=check_memory_ident;
-    mimp_type=MFuncImport([I32Type], []);
-    mimp_kind=MImportWasm;
-    mimp_setup=MSetupNone;
-  };
-  {
-    mimp_mod=runtime_mod;
-    mimp_name=malloc_ident;
-    mimp_type=MFuncImport([I32Type], [I32Type]);
-    mimp_kind=MImportWasm;
-    mimp_setup=MSetupNone;
-  };
-  {
-    mimp_mod=runtime_mod;
-    mimp_name=incref_ident;
-    mimp_type=MFuncImport([I32Type], [I32Type]); (* Returns same pointer as argument *)
-    mimp_kind=MImportWasm;
-    mimp_setup=MSetupNone;
-  };
+let traced_imports = if memory_tracing_enabled then [
   {
     mimp_mod=runtime_mod;
     mimp_name=incref_adt_ident;
@@ -192,27 +151,6 @@ let runtime_function_imports = [
     mimp_mod=runtime_mod;
     mimp_name=incref_cleanup_locals_ident;
     mimp_type=MFuncImport([I32Type], [I32Type]); (* Returns same pointer as argument *)
-    mimp_kind=MImportWasm;
-    mimp_setup=MSetupNone;
-  };
-  {
-    mimp_mod=runtime_mod;
-    mimp_name=incref64_ident;
-    mimp_type=MFuncImport([I64Type], [I64Type]); (* Returns same pointer as argument *)
-    mimp_kind=MImportWasm;
-    mimp_setup=MSetupNone;
-  };
-  {
-    mimp_mod=runtime_mod;
-    mimp_name=decref_ident;
-    mimp_type=MFuncImport([I32Type], [I32Type]); (* Returns same pointer as argument *)
-    mimp_kind=MImportWasm;
-    mimp_setup=MSetupNone;
-  };
-  {
-    mimp_mod=runtime_mod;
-    mimp_name=decref64_ident;
-    mimp_type=MFuncImport([I64Type], [I64Type]); (* Returns same pointer as argument *)
     mimp_kind=MImportWasm;
     mimp_setup=MSetupNone;
   };
@@ -293,6 +231,84 @@ let runtime_function_imports = [
     mimp_kind=MImportWasm;
     mimp_setup=MSetupNone;
   };
+] else [
+  {
+    mimp_mod=runtime_mod;
+    mimp_name=decref_ignore_zeros_ident;
+    mimp_type=MFuncImport([I32Type], [I32Type]); (* Returns same pointer as argument *)
+    mimp_kind=MImportWasm;
+    mimp_setup=MSetupNone;
+  };
+]
+;;
+
+let runtime_global_imports = [
+  {
+    mimp_mod=runtime_mod;
+    mimp_name=reloc_base;
+    mimp_type=MGlobalImport I32Type;
+    mimp_kind=MImportWasm;
+    mimp_setup=MSetupNone;
+  };
+  {
+    mimp_mod=runtime_mod;
+    mimp_name=module_runtime_id;
+    mimp_type=MGlobalImport I32Type;
+    mimp_kind=MImportWasm;
+    mimp_setup=MSetupNone;
+  }
+]
+
+let runtime_function_imports = List.append [
+  {
+    mimp_mod=console_mod;
+    mimp_name=log_ident;
+    mimp_type=MFuncImport([I32Type], [I32Type]);
+    mimp_kind=MImportWasm;
+    mimp_setup=MSetupNone;
+  };
+  {
+    mimp_mod=runtime_mod;
+    mimp_name=check_memory_ident;
+    mimp_type=MFuncImport([I32Type], []);
+    mimp_kind=MImportWasm;
+    mimp_setup=MSetupNone;
+  };
+  {
+    mimp_mod=runtime_mod;
+    mimp_name=malloc_ident;
+    mimp_type=MFuncImport([I32Type], [I32Type]);
+    mimp_kind=MImportWasm;
+    mimp_setup=MSetupNone;
+  };
+  {
+    mimp_mod=runtime_mod;
+    mimp_name=incref_ident;
+    mimp_type=MFuncImport([I32Type], [I32Type]); (* Returns same pointer as argument *)
+    mimp_kind=MImportWasm;
+    mimp_setup=MSetupNone;
+  };
+  {
+    mimp_mod=runtime_mod;
+    mimp_name=incref64_ident;
+    mimp_type=MFuncImport([I64Type], [I64Type]); (* Returns same pointer as argument *)
+    mimp_kind=MImportWasm;
+    mimp_setup=MSetupNone;
+  };
+  {
+    mimp_mod=runtime_mod;
+    mimp_name=decref_ident;
+    mimp_type=MFuncImport([I32Type], [I32Type]); (* Returns same pointer as argument *)
+    mimp_kind=MImportWasm;
+    mimp_setup=MSetupNone;
+  };
+  {
+    mimp_mod=runtime_mod;
+    mimp_name=decref64_ident;
+    mimp_type=MFuncImport([I64Type], [I64Type]); (* Returns same pointer as argument *)
+    mimp_kind=MImportWasm;
+    mimp_setup=MSetupNone;
+  };
   {
     mimp_mod=console_mod;
     mimp_name=tracepoint_ident;
@@ -307,7 +323,7 @@ let runtime_function_imports = [
     mimp_kind=MImportWasm;
     mimp_setup=MSetupNone;
   };
-]
+] traced_imports (* <- 2nd argument to List.append *)
 
 let runtime_imports = List.append runtime_global_imports runtime_function_imports
 
@@ -420,6 +436,13 @@ let lookup_ext_func env modname itemname =
 let var_of_ext_func env modname itemname =
   add_dummy_loc @@ lookup_ext_func env modname itemname
 
+let var_of_memory_tracing_func env modname itemname default =
+  if memory_tracing_enabled then
+    var_of_ext_func env modname itemname
+  else
+    var_of_ext_func env modname default
+;;
+
 
 let call_runtime_check_memory env = Ast.Call(var_of_ext_func env runtime_mod check_memory_ident)
 let call_runtime_throw_error env = Ast.Call(var_of_ext_func env runtime_mod throw_error_ident)
@@ -427,31 +450,31 @@ let call_console_log env = Ast.Call(var_of_ext_func env console_mod log_ident)
 
 let call_malloc env = Ast.Call(var_of_ext_func env runtime_mod malloc_ident)
 let call_incref env = Ast.Call(var_of_ext_func env runtime_mod incref_ident)
-let call_incref_adt env = Ast.Call(var_of_ext_func env runtime_mod incref_adt_ident)
-let call_incref_array env = Ast.Call(var_of_ext_func env runtime_mod incref_array_ident)
-let call_incref_tuple env = Ast.Call(var_of_ext_func env runtime_mod incref_tuple_ident)
-let call_incref_box env = Ast.Call(var_of_ext_func env runtime_mod incref_box_ident)
-let call_incref_backpatch env = Ast.Call(var_of_ext_func env runtime_mod incref_backpatch_ident)
-let call_incref_swap_bind env = Ast.Call(var_of_ext_func env runtime_mod incref_swap_bind_ident)
-let call_incref_arg_bind env = Ast.Call(var_of_ext_func env runtime_mod incref_arg_bind_ident)
-let call_incref_local_bind env = Ast.Call(var_of_ext_func env runtime_mod incref_local_bind_ident)
-let call_incref_global_bind env = Ast.Call(var_of_ext_func env runtime_mod incref_global_bind_ident)
-let call_incref_closure_bind env = Ast.Call(var_of_ext_func env runtime_mod incref_closure_bind_ident)
-let call_incref_cleanup_locals env = Ast.Call(var_of_ext_func env runtime_mod incref_cleanup_locals_ident)
+let call_incref_adt env = Ast.Call(var_of_memory_tracing_func env runtime_mod incref_adt_ident incref_ident)
+let call_incref_array env = Ast.Call(var_of_memory_tracing_func env runtime_mod incref_array_ident incref_ident)
+let call_incref_tuple env = Ast.Call(var_of_memory_tracing_func env runtime_mod incref_tuple_ident incref_ident)
+let call_incref_box env = Ast.Call(var_of_memory_tracing_func env runtime_mod incref_box_ident incref_ident)
+let call_incref_backpatch env = Ast.Call(var_of_memory_tracing_func env runtime_mod incref_backpatch_ident incref_ident)
+let call_incref_swap_bind env = Ast.Call(var_of_memory_tracing_func env runtime_mod incref_swap_bind_ident incref_ident)
+let call_incref_arg_bind env = Ast.Call(var_of_memory_tracing_func env runtime_mod incref_arg_bind_ident incref_ident)
+let call_incref_local_bind env = Ast.Call(var_of_memory_tracing_func env runtime_mod incref_local_bind_ident incref_ident)
+let call_incref_global_bind env = Ast.Call(var_of_memory_tracing_func env runtime_mod incref_global_bind_ident incref_ident)
+let call_incref_closure_bind env = Ast.Call(var_of_memory_tracing_func env runtime_mod incref_closure_bind_ident incref_ident)
+let call_incref_cleanup_locals env = Ast.Call(var_of_memory_tracing_func env runtime_mod incref_cleanup_locals_ident incref_ident)
 let call_incref_64 env = Ast.Call(var_of_ext_func env runtime_mod incref64_ident)
 let call_decref env = Ast.Call(var_of_ext_func env runtime_mod decref_ident)
 let call_decref_64 env = Ast.Call(var_of_ext_func env runtime_mod decref64_ident)
-let call_decref_array env = Ast.Call(var_of_ext_func env runtime_mod decref_array_ident)
-let call_decref_tuple env = Ast.Call(var_of_ext_func env runtime_mod decref_tuple_ident)
-let call_decref_box env = Ast.Call(var_of_ext_func env runtime_mod decref_box_ident)
-let call_decref_swap_bind env = Ast.Call(var_of_ext_func env runtime_mod decref_swap_bind_ident)
-let call_decref_arg_bind env = Ast.Call(var_of_ext_func env runtime_mod decref_arg_bind_ident)
-let call_decref_local_bind env = Ast.Call(var_of_ext_func env runtime_mod decref_local_bind_ident)
-let call_decref_global_bind env = Ast.Call(var_of_ext_func env runtime_mod decref_global_bind_ident)
-let call_decref_closure_bind env = Ast.Call(var_of_ext_func env runtime_mod decref_closure_bind_ident)
-let call_decref_cleanup_locals env = Ast.Call(var_of_ext_func env runtime_mod decref_cleanup_locals_ident)
-let call_decref_cleanup_globals env = Ast.Call(var_of_ext_func env runtime_mod decref_cleanup_globals_ident)
-let call_decref_drop env = Ast.Call(var_of_ext_func env runtime_mod decref_drop_ident)
+let call_decref_array env = Ast.Call(var_of_memory_tracing_func env runtime_mod decref_array_ident decref_ident)
+let call_decref_tuple env = Ast.Call(var_of_memory_tracing_func env runtime_mod decref_tuple_ident decref_ident)
+let call_decref_box env = Ast.Call(var_of_memory_tracing_func env runtime_mod decref_box_ident decref_ident)
+let call_decref_swap_bind env = Ast.Call(var_of_memory_tracing_func env runtime_mod decref_swap_bind_ident decref_ident)
+let call_decref_arg_bind env = Ast.Call(var_of_memory_tracing_func env runtime_mod decref_arg_bind_ident decref_ident)
+let call_decref_local_bind env = Ast.Call(var_of_memory_tracing_func env runtime_mod decref_local_bind_ident decref_ident)
+let call_decref_global_bind env = Ast.Call(var_of_memory_tracing_func env runtime_mod decref_global_bind_ident decref_ident)
+let call_decref_closure_bind env = Ast.Call(var_of_memory_tracing_func env runtime_mod decref_closure_bind_ident decref_ident)
+let call_decref_cleanup_locals env = Ast.Call(var_of_memory_tracing_func env runtime_mod decref_cleanup_locals_ident decref_ignore_zeros_ident)
+let call_decref_cleanup_globals env = Ast.Call(var_of_memory_tracing_func env runtime_mod decref_cleanup_globals_ident decref_ignore_zeros_ident)
+let call_decref_drop env = Ast.Call(var_of_memory_tracing_func env runtime_mod decref_drop_ident decref_ignore_zeros_ident)
 
 (** Will print "tracepoint <n> reached" to the console when executed (for debugging WASM output) *)
 let tracepoint env n = Concatlist.t_of_list [
@@ -511,7 +534,7 @@ let cleanup_local_slot_instructions (env : codegen_env) =
     let slot = add_dummy_loc (Int32.of_int slot_no) in
     wrapped [
       Ast.LocalGet(slot);
-      Ast.Const(const_int32 slot_no);
+      (if memory_tracing_enabled then Ast.Const(const_int32 slot_no) else Ast.Nop);
       call_decref_cleanup_locals env;
       Ast.Drop;
     ]) in
@@ -773,7 +796,7 @@ let cleanup_locals (env : codegen_env) : Wasm.Ast.instr' Concatlist.t =
     call_incref_cleanup_locals env;
     Ast.Drop;
   ] @ (cleanup_local_slot_instructions env) @ (get_swap env 0) +@ [
-    Ast.Const(const_int32 (-1));
+    (if memory_tracing_enabled then Ast.Const(const_int32 (-1)) else Ast.Nop);
     call_decref_cleanup_locals env;
   ]
 
