@@ -19,6 +19,7 @@
     "compiler:test": "yarn workspace @grain/compiler run esy test",
     "test": "yarn compiler:test",
     "runtime:build": "yarn workspace @grain/runtime build",
+    "runtime:build:dev": "yarn workspace @grain/runtime build:dev",
     "stdlib:build": "yarn workspace @grain/stdlib build",
     "stdlib:clean": "yarn workspace @grain/stdlib clean",
     "cli:link": "yarn workspace @grain/cli link",

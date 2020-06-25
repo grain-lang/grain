@@ -1,5 +1,6 @@
+const webpack = require('webpack');
+
 const common = {
-  devtool: 'source-map',
   module: {
     rules: [
       {
@@ -18,7 +19,11 @@ const common = {
     ]
   },
   externals: ['fs'],
-  mode: 'development'
+  plugins: [
+    new webpack.DefinePlugin({
+      __DEBUG: JSON.stringify(false)
+    })
+  ]
 };
 
 const browserConfig = {
