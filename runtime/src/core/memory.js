@@ -1,7 +1,7 @@
 import { mallocJSModule, printAllocations } from './malloc';
 import { getTagType, tagToString, heapTagToString, GRAIN_CONST_TAG_TYPE, GRAIN_NUMBER_TAG_TYPE, GRAIN_TUPLE_TAG_TYPE, GRAIN_GENERIC_HEAP_TAG_TYPE, GRAIN_LAMBDA_TAG_TYPE,
-         GRAIN_STRING_HEAP_TAG, GRAIN_DOM_ELEM_TAG, GRAIN_ADT_HEAP_TAG } from './tags';
-import { grainAdtInfo, toHex, toBinary } from '../utils/utils';
+         GRAIN_ADT_HEAP_TAG } from './tags';
+import { toHex, toBinary } from '../utils/utils';
 import treeify from 'treeify';
 
 const TRACE_MEMORY = false;
@@ -177,14 +177,14 @@ export class ManagedMemory {
 
   _toHex(n, minWidth) {
     if (!TRACE_MEMORY) {
-      return undefined; // improve performance; this is a very hot path in production
+      return;
     }
     return toHex(n, minWidth);
   }
 
   _toBinary(n, minWidth, maxWidth) {
     if (!TRACE_MEMORY) {
-      return undefined; // see above
+      return;
     }
     let ret = toBinary(n, minWidth);
     if (maxWidth && ret.length > maxWidth) {
