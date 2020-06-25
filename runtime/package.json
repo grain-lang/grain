@@ -4,8 +4,9 @@
   "description": "The JavaScript runtime for the Grain language.",
   "main": "src/index.js",
   "scripts": {
-    "build": "webpack",
-    "watch": "webpack --watch",
+    "build": "webpack --config webpack.prod.js",
+    "build:dev": "webpack --config webpack.dev.js",
+    "watch": "webpack --config webpack.dev.js --watch",
     "test": "jest"
   },
   "repository": {
@@ -39,7 +40,8 @@
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "source-map-support": "^0.5.16",
     "webpack": "^4.42.1",
-    "webpack-cli": "^3.3.11"
+    "webpack-cli": "^3.3.11",
+    "webpack-merge": "^4.2.2"
   },
   "dependencies": {
     "@wasmer/wasi": "^0.11.2",

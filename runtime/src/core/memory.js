@@ -14,7 +14,7 @@ const BLUE = 'BLUE';
 const BLACK = 'BLACK';
 
 function trace(msg) {
-  if (TRACE_MEMORY && !TRACE_OVERRIDE) {
+  if (__DEBUG && TRACE_MEMORY && !TRACE_OVERRIDE) {
     console.warn(msg);
   }
 }
