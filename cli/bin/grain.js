@@ -27,7 +27,12 @@ function graincVersion() {
 }
 
 program
-  .version(`Grain compiler ${graincVersion()} \nGrain cli 0.1.0`, '-v, --version')
+  .option('-v, --version', 'output CLI and compiler versions')
+  .on('option:version', () => {
+    console.log(`Grain cli ${require('../package.json').version}`)
+    console.log(`Grain compiler ${graincVersion()}`)
+    process.exit(0)
+  })
   .description('Compile and run Grain programs. 🌾')
   .arguments('<file>')
   .option('-w, --wasm', 'run a wasm file')
