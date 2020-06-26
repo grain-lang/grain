@@ -428,10 +428,9 @@ let loop_tests = [
 ]
 
 let oom = [
-  tgcerr "oomgc1" 7 "(1, (3, 4))" "Out of memory";
-  tgc "oomgc2" 8 "(1, (3, 4))" "(1, (3, 4))";
-  tgc "oomgc3" 4 "(3, 4)" "(3, 4)";
-  tgcerr "oomgc4" 3 "(3, 4)" "Allocation";
+  tgcerr "oomgc1" 70 "(1, (3, 4))" "Out of memory";
+  tgc "oomgc2" 96 "(1, (3, 4))" "(1, (3, 4))";
+  tgc "oomgc3" 64 "(3, 4)" "(3, 4)";
 ]
 
 let gc = [
@@ -754,7 +753,8 @@ let tests =
   stdlib_tests @
   box_tests @
   loop_tests @
-  (*oom @ *) gc @
+  oom @
+  gc @
   match_tests @
   import_tests @
   optimization_tests @
