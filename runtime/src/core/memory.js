@@ -5,7 +5,6 @@ import { toHex, toBinary } from '../utils/utils';
 import treeify from 'treeify';
 
 export const TRACE_MEMORY = false;
-let TRACE_OVERRIDE = false;
 
 // Graph coloring
 const GREEN = 'GREEN';
@@ -14,7 +13,7 @@ const BLUE = 'BLUE';
 const BLACK = 'BLACK';
 
 function trace(msg) {
-  if (__DEBUG && TRACE_MEMORY && !TRACE_OVERRIDE) {
+  if (__DEBUG && TRACE_MEMORY) {
     console.warn(msg);
   }
 }
@@ -695,7 +694,6 @@ export class ManagedMemory {
     if (!TRACE_MEMORY) {
       return;
     }
-    TRACE_OVERRIDE = true;
     let ret = {};
     let parents = {};
     for (let userPtr of this._markQueue) {
@@ -727,9 +725,8 @@ export class ManagedMemory {
         }
       }
     }
-    TRACE_OVERRIDE = false;
-    trace(treeify.asTree(ret, true));
-    trace(treeify.asTree(parents, true));
+    console.warn(treeify.asTree(ret, true));
+    console.warn(treeify.asTree(parents, true));
   }
 
   prepareExit() {
