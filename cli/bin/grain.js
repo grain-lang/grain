@@ -2,6 +2,7 @@
 // 2>/dev/null; exec /usr/bin/env node --experimental-wasm-bigint "$0" "$@"
 // https://github.com/grain-lang/grain/issues/114
 
+const { execSync } = require('child_process');
 const path = require('path');
 
 let program = require('commander');
@@ -21,8 +22,12 @@ function num(val) {
   return Number.parseInt(val, 10);
 }
 
+function graincVersion() {
+  return execSync(`grainc --version`).toString().trim();
+}
+
 program
-  .version('Grain compiler 0.0.0\nGrain cli 0.0.0', '-v, --version')
+  .version(`Grain compiler ${graincVersion()} \nGrain cli 0.1.0`, '-v, --version')
   .description('Compile and run Grain programs. 🌾')
   .arguments('<file>')
   .option('-w, --wasm', 'run a wasm file')
