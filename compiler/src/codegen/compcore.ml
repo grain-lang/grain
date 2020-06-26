@@ -1839,7 +1839,6 @@ and compile_instr env instr =
   | MWhile(cond, body) ->
     let compiled_cond = (compile_block env cond) in
     let compiled_body = (compile_block env body) in
-    (* (tracepoint env 2) @ *)
     (singleton (Ast.Block([Types.I32Type],
                Concatlist.mapped_list_of_t add_dummy_loc @@
                singleton (Ast.Loop([Types.I32Type],
@@ -1868,7 +1867,7 @@ let compile_function env {index; arity; stack_size; body=body_instrs} =
   let arity_int = Int32.to_int arity in
   let body_env = {env with num_args=arity_int; stack_size} in
   let body = Concatlist.mapped_list_of_t add_dummy_loc @@
-    (*(tracepoint env 0) @ *)(compile_block body_env body_instrs) @ (cleanup_locals body_env) +@ [Ast.Return] in
+    (compile_block body_env body_instrs) @ (cleanup_locals body_env) +@ [Ast.Return] in
   let open Wasm.Ast in
   let ftype_idx = get_arity_func_type_idx env arity_int in
   let ftype = add_dummy_loc Int32.(of_int ftype_idx) in
@@ -2063,11 +2062,6 @@ let heap_adjust env = add_dummy_loc {
 }
 
 let compile_main env prog =
-  (* let rec intersperse = function
-    | [] -> []
-    | x::[] -> x::[]
-    | hd::tl -> hd :: ((MTracepoint 3)::(intersperse tl))
-  in *)
   let ret = compile_function env
     {
       index=Int32.of_int (-99);
@@ -2076,14 +2070,6 @@ let compile_main env prog =
       stack_size=prog.main_body_stack_size;
     }
   in
-  (* let ret = source_it ret in
-  add_dummy_loc {ret with body=intersperse ret.body} *)
-  (*let rec but_last = function
-    | []
-    | _::[] -> []
-    | hd::tl -> hd::(but_last tl)
-  in
-  add_dummy_loc {ret with body=List.append (List.append (but_last ret.body) (Concatlist.mapped_list_of_t add_dummy_loc @@ tracepoint env 1)) [add_dummy_loc Ast.Return]} *)
   ret
 
 let compile_global_cleanup_function env num_globals =
@@ -2231,4 +2217,3 @@ let () =
           fmt_module module_ in
         Some(s)
       | _ -> None)
-
