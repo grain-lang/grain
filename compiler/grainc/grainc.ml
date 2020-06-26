@@ -31,6 +31,8 @@ let default_output_filename name = safe_remove_extension name ^ ".wasm"
 
 let default_assembly_filename name = safe_remove_extension name ^ ".wast"
 
+let default_mashtree_filename name = safe_remove_extension name ^ ".mashtree"
+
 let compile_file name outfile_arg =
   Grain_utils.Config.base_path := dirname name;
   if not (Printexc.backtrace_status()) && !Grain_utils.Config.verbose then
@@ -38,6 +40,9 @@ let compile_file name outfile_arg =
   begin
     try
       let outfile = Option.default (default_output_filename name) outfile_arg in
+      if !Grain_utils.Config.debug then begin
+        Compile.save_mashed name (default_mashtree_filename outfile)
+      end;
       ignore (Compile.compile_file ~outfile name)
     with exn ->
       let bt = if Printexc.backtrace_status() then Some(Printexc.get_backtrace()) else None in

@@ -3,13 +3,14 @@ import { wasi, readFile, readURL } from './grain-module';
 import { makePrint } from '../lib/print';
 import { makeToString } from '../lib/to-string';
 import { grainToString } from '../utils/utils';
+import { makeMemoryChecker } from './heap';
 
 function roundUp(num, multiple) {
   return multiple * (Math.floor((num - 1) / multiple) + 1);
 }
 
 export class GrainRunner {
-  constructor(locator, opts) {
+  constructor(locator, opts, limit) {
     this.modules = {};
     this.imports = {};
     this.idMap = {};
@@ -18,13 +19,11 @@ export class GrainRunner {
     this.opts = opts;
     this.ptr = 0;
     this.ptrZero = 0;
+    this._checkMemory = makeMemoryChecker(this);
+    this.limitMemory = opts.limitMemory || -1;
+    this.postImports = () => {};
     this.imports['grainRuntime'] = {
-      malloc: (bytes) => {
-        // Basic malloc implementation for now
-        let ret = this.ptr;
-        this.ptr += roundUp(bytes, 8);
-        return ret;
-      },
+      checkMemory: this._checkMemory,
       relocBase: 0,
       moduleRuntimeId: 0
     };
@@ -33,6 +32,10 @@ export class GrainRunner {
       toString: makeToString(boundGrainToString),
       print: makePrint(boundGrainToString)
     };
+  }
+
+  checkMemory() {
+    return this._checkMemory();
   }
 
   addImport(name, obj) {
@@ -74,7 +77,7 @@ export class GrainRunner {
         }
         this.modules[imp.module] = located;
         // This is a good point to debug when modules are loaded:
-        // console.debug(`Located module: ${imp.module}`);
+        // console.log(`Located module: ${imp.module}`);
         await this.load(imp.module, located);
         if (located.isGrainModule) {
           await located.start();
@@ -85,6 +88,7 @@ export class GrainRunner {
         this.imports[imp.module] = located.exports;
       }
     }
+    this.postImports();
     // All of the dependencies have been loaded. Now we can instantiate with the import object.
     await mod.instantiate(this.imports, this);
     this.idMap[this.imports['grainRuntime']['moduleRuntimeId']] = name;
@@ -99,9 +103,13 @@ export class GrainRunner {
     return this.load(module.name, module);
   }
 
-  async runFileUnboxed(path) {
+  async runFileUnboxed(path, cleanupGlobals) {
     let module = await this.loadFile(path);
-    return module.runUnboxed();
+    let ret = module.runUnboxed();
+    if (cleanupGlobals) {
+      module.cleanupGlobals();
+    }
+    return ret;
   }
 
   async runFile(path) {

@@ -111,6 +111,7 @@ let find_component (lookup : ?mark:_ -> _) make_error env loc lid =
     | _ ->
         lookup lid env
   with Not_found ->
+    (* [FIXME] This should be replaced with a more specific exception, since it can eat errors from compilation of submodules *)
     narrow_unbound_lid_error env loc lid make_error
 
 let find_type env loc lid =
@@ -438,7 +439,7 @@ let spellcheck ppf fold env lid =
 
 let fold_descr fold get_name f = fold (fun descr acc -> f (get_name descr) acc)
 let fold_simple fold4 f = fold4 (fun name _path _descr acc -> f name acc)
-let fold_persistent fold4 f = fold4 (fun name path _descr acc -> 
+let fold_persistent fold4 f = fold4 (fun name path _descr acc ->
     if Ident.persistent (Path.head path)
     then f name acc
     else acc)

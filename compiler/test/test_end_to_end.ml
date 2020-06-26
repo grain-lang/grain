@@ -16,9 +16,9 @@ let exists check result = String.exists result check;;
 
 let t ?todo name program expected = name>::(wrap_todo todo @@ test_run program name expected);;
 let tc ?todo name program expected = name>::(wrap_todo todo @@ test_run ~cmp:exists program name expected);;
-let tgc ?todo name heap_size program expected = name>::(wrap_todo todo @@ test_run program name expected);;
+let tgc ?todo name heap_size program expected = name>::(wrap_todo todo @@ test_run ~heap_size program name expected);;
 let terr ?todo name program expected = name>::(wrap_todo todo @@ test_err program name expected);;
-let tgcerr ?todo name heap_size program expected = name>::(wrap_todo todo @@ test_err program name expected);;
+let tgcerr ?todo name heap_size program expected = name>::(wrap_todo todo @@ test_err ~heap_size program name expected);;
 
 let te ?todo name program expected = name>::(wrap_todo todo @@ test_err program name expected);;
 
@@ -29,7 +29,7 @@ let tefile ?todo name input_file expected = name>::(wrap_todo todo @@ test_run_f
 (** Tests that the file stdlib/`input_file`.gr produces the given output *)
 let tlib ?todo ?returns ?code input_file = input_file>::(wrap_todo todo @@ test_run_stdlib ?returns ?code input_file)
 
-let tgcfile ?todo name heap_size input_file expected = name>::(wrap_todo todo @@ test_run_file input_file name expected)
+let tgcfile ?todo name heap_size input_file expected = name>::(wrap_todo todo @@ test_run_file ~heap_size input_file name expected)
 
 let test_final_anf program_str outfile (expected : Grain_middle_end.Anftree.anf_expression) test_ctxt =
   let open Grain_middle_end in
@@ -353,7 +353,7 @@ let stdlib_tests = [
   t "stdlib_equal_21" "data Rec = {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: 'boo', baz: true} == {foo: 78, bar: 'boo', baz: true}" "false";
   t "stdlib_equal_22" "data Rec = {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: 'boo', baz: true} == {foo: 4, bar: 'boo', baz: false}" "false";
   tfile "recursive_equal" "recursive-equal" "void";
-  
+
   (* te "stdlib_sum_err" "import * from 'lists'; sum([true, false])" "This expression has type Bool but"; *)
   te "stdlib_length_err" "import * from 'lists'; length(true)" "This expression has type Bool but";
   te "stdlib_reverse_err" "import * from 'lists'; reverse(1)" "This expression has type Number but";
@@ -428,38 +428,41 @@ let loop_tests = [
 ]
 
 let oom = [
-  tgcerr "oomgc1" 7 "(1, (3, 4))" "Out of memory";
-  tgc "oomgc2" 8 "(1, (3, 4))" "(1, (3, 4))";
-  tgc "oomgc3" 4 "(3, 4)" "(3, 4)";
-  tgcerr "oomgc4" 3 "(3, 4)" "Allocation";
+  tgcerr "oomgc1" 70 "(1, (3, 4))" "Out of memory";
+  tgc "oomgc2" 96 "(1, (3, 4))" "(1, (3, 4))";
+  tgc "oomgc3" 64 "(3, 4)" "(3, 4)";
 ]
 
 let gc = [
-  tgc "gc1" 10
+  tgc "gc1" 96
       "let f = (() => (1, 2));
-       begin
+       {
          f();
          f();
          f();
          f()
-       end"
+       }"
       "(1, 2)";
   (* Test that cyclic tuples are GC'd properly *)
-  tgc "gc2" 10
-    "let f = (() =>
-      let x = (1, 2);
-        x[1] := x);
-      begin
+  tgc "gc2" 2048
+    "data Opt<x> = None | Some(x);
+     let f = (() => {
+      let x = (box(None), 2);
+      let (fst, _) = x
+      fst := Some(x)
+      });
+      {
         f();
-        let x = (1, 2) in
-          x
-      end" "(1, 2)";
-  tgcfile "fib_gc_err" 10 "fib-gc" "Out of memory";
-  tgcfile "fib_gc" 16 "fib-gc" "832040";
-  tgcfile "fib_gc_bigger" 64 "fib-gc" "832040";
-  tgcfile "fib_gc_biggest" 512 "fib-gc" "832040";
-  tgcfile "sinister_gc" 64 "sinister-tail-call-gc" "true";
-  tgcfile "long_lists" 1024 "long_lists" "true";
+        let x = (1, 2);
+        x
+      }" "(1, 2)";
+  tgcfile "fib_gc_err" 1024 "fib-gc" "Out of memory";
+  tgcfile "fib_gc" 3072 "fib-gc" "832040";
+  (* tgcfile "fib_gc_bigger" 3072 "fib-gc" "832040";
+  tgcfile "fib_gc_biggest" 512 "fib-gc" "832040"; *)
+  (* I've manually tested this test, but see TODO for automated testing *)
+  (* tgcfile ~todo:"Need to figure out how to disable dead assignment elimination to make sure this test is actually checking what we want" "sinister_gc" 3072 "sinister-tail-call-gc" "true"; *)
+  tgcfile "long_lists" 70000 "long_lists" "true";
 ]
 
 let match_tests = [
@@ -474,7 +477,7 @@ let match_tests = [
   t "tuple_match_deep5" "match ((1, [4, 5])) { | (a, []) => a | (a, [b]) => a + b | (a, [b, c]) => a + b + c | (a, [b, c, d]) => a + b + c + d | (_, [_, ..._]) => 999 }" "10";
   t "tuple_match_deep6" "match ((1, [4, 5, 6])) { | (a, []) => a | (a, [b]) => a + b | (a, [b, c]) => a + b + c | (a, [b, c, d]) => a + b + c + d | (_, [_, ..._]) => 999 }" "16";
   t "tuple_match_deep7" "match ((1, [4, 5, 6, 7])) { | (a, []) => a | (a, [b]) => a + b | (a, [b, c]) => a + b + c | (a, [b, c, d]) => a + b + c + d | (_, [_, ..._]) => 999 }" "999";
-  
+
   (* Pattern matching on records *)
   t "record_match_1" "data Rec = {foo: Number, bar: String, baz: Bool}; match ({foo: 4, bar: 'boo', baz: true}) { | { foo, _ } => foo }" "4";
   t "record_match_2" "data Rec = {foo: Number, bar: String, baz: Bool}; match ({foo: 4, bar: 'boo', baz: true}) { | { bar, _ } => bar }" "\"boo\"";
@@ -502,7 +505,7 @@ let import_tests = [
   t "import_all_constructor" "import * from 'tlists'; Cons(2, Empty)" "Cons(2, Empty)";
   t "import_all_except_constructor" "import * except {Cons} from 'tlists'; Empty" "Empty";
   t "import_all_except_multiple_constructor" "import * except {Cons, append} from 'tlists'; sum(Empty)" "0";
-  
+
   t "import_with_export_multiple" "import * from 'sameExport'; foo()" "6";
 
   (* import * errors *)
@@ -570,19 +573,19 @@ let optimization_tests = [
        f1(1, 2)"
     "1";
 
-  tfinalanf "test_dead_branch_elimination_1" 
+  tfinalanf "test_dead_branch_elimination_1"
     "{ if (true) {4} else {5} }"
     (AExp.comp (Comp.imm (Imm.const (Const_int 4))));
 
-  tfinalanf "test_dead_branch_elimination_2" 
+  tfinalanf "test_dead_branch_elimination_2"
     "{ if (false) {4} else {5} }"
     (AExp.comp (Comp.imm (Imm.const (Const_int 5))));
 
-  tfinalanf "test_dead_branch_elimination_3" 
+  tfinalanf "test_dead_branch_elimination_3"
     "{ let x = true; if (x) {4} else {5} }"
     (AExp.comp (Comp.imm (Imm.const (Const_int 4))));
 
-  tfinalanf "test_dead_branch_elimination_4" 
+  tfinalanf "test_dead_branch_elimination_4"
     "{let x = if (true) {4} else {5}; x}"
       (AExp.comp (Comp.imm (Imm.const (Const_int 4))));
 
@@ -750,10 +753,11 @@ let tests =
   stdlib_tests @
   box_tests @
   loop_tests @
-  (*oom @ gc @*) 
+  oom @
+  gc @
   match_tests @
   import_tests @
-  optimization_tests @ 
-  string_tests @ 
-  data_tests @ 
+  optimization_tests @
+  string_tests @
+  data_tests @
   export_tests

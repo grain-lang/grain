@@ -6,8 +6,8 @@ type compiled_program = {
   signature: Cmi_format.cmi_infos;
 }
 
-let compile_wasm_module ({Mashtree.signature; } as mashprog) =
-  let asm = Compcore.compile_wasm_module mashprog in
+let compile_wasm_module ?name ({Mashtree.signature; } as mashprog) =
+  let asm = Compcore.compile_wasm_module ?name:name mashprog in
   {
     asm;
     signature;

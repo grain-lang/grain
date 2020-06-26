@@ -10,9 +10,10 @@ import {
   GRAIN_ERR_NOT_ADT_VAL_GENERIC,
 } from '../errors/error-codes';
 
-import { 
-  GRAIN_TRUE, 
-  GRAIN_FALSE 
+import {
+  GRAIN_TRUE,
+  GRAIN_FALSE,
+  GRAIN_VOID
 } from './primitives';
 
 export const GRAIN_NUMBER_TAG_MASK = 0b0001;
@@ -38,6 +39,59 @@ function getAndMask(tag) {
     return GRAIN_NUMBER_TAG_MASK;
   default:
     return GRAIN_TUPLE_TAG_MASK;
+  }
+}
+
+export function getTagType(n, quiet) {
+  if ((n === GRAIN_TRUE) || (n === GRAIN_FALSE) || (n === GRAIN_VOID)) {
+    return GRAIN_CONST_TAG_TYPE;
+  } else if (!(n & GRAIN_NUMBER_TAG_MASK)) {
+    return GRAIN_NUMBER_TAG_TYPE;
+  } else if ((n & GRAIN_TUPLE_TAG_MASK) === GRAIN_TUPLE_TAG_TYPE) {
+    return GRAIN_TUPLE_TAG_TYPE;
+  } else if ((n & GRAIN_TUPLE_TAG_MASK) === GRAIN_LAMBDA_TAG_TYPE) {
+    return GRAIN_LAMBDA_TAG_TYPE;
+  } else if ((n & GRAIN_TUPLE_TAG_MASK) === GRAIN_GENERIC_HEAP_TAG_TYPE) {
+    return GRAIN_GENERIC_HEAP_TAG_TYPE;
+  } else {
+    if (!quiet) {
+      console.warn(`<getTagType: Unknown value: 0x${(new Number(n)).toString(16)}`);
+    }
+    return;
+  }
+}
+
+export function tagToString(t) {
+  switch (t) {
+    case GRAIN_NUMBER_TAG_TYPE:
+      return 'number';
+    case GRAIN_TUPLE_TAG_TYPE:
+      return 'tuple';
+    case GRAIN_LAMBDA_TAG_TYPE:
+      return 'lambda';
+    case GRAIN_GENERIC_HEAP_TAG_TYPE:
+      return 'heap_value';
+    case GRAIN_CONST_TAG_TYPE:
+      return 'const';
+    default:
+      return 'unknown';
+  }
+}
+
+export function heapTagToString(t) {
+  switch (t) {
+    case GRAIN_STRING_HEAP_TAG:
+      return 'string';
+    case GRAIN_DOM_ELEM_TAG:
+      return 'dom_elem';
+    case GRAIN_ADT_HEAP_TAG:
+      return 'adt';
+    case GRAIN_RECORD_HEAP_TAG:
+      return 'record';
+    case GRAIN_ARRAY_HEAP_TAG:
+      return 'array';
+    default:
+      return 'unknown';
   }
 }
 

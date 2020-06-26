@@ -93,7 +93,7 @@ let log_state state =
     prerr_string "\n\n"
   end
 
-let next_state ({cstate_desc} as cs) =
+let next_state ({cstate_desc; cstate_filename} as cs) =
   let cstate_desc = match cstate_desc with
     | Initial(input) ->
       let name, lexbuf, cleanup = match input with
@@ -131,7 +131,7 @@ let next_state ({cstate_desc} as cs) =
     | Optimized(optimized) ->
       Mashed(Transl_anf.transl_anf_program optimized)
     | Mashed(mashed) ->
-      Compiled(Compmod.compile_wasm_module mashed)
+      Compiled(Compmod.compile_wasm_module ?name:cstate_filename mashed)
     | Compiled(compiled) ->
       if !Grain_utils.Config.output_enabled then begin
         match cs.cstate_outfile with
@@ -215,6 +215,18 @@ let stop_after_compiled = function
   | s -> Continue s
 
 let anf = Linearize.transl_anf_module
+
+let save_mashed f outfile =
+  match compile_file ~hook:stop_after_mashed f with
+    | {cstate_desc=Mashed(mashed)} ->
+      begin
+        Grain_utils.Files.ensure_parent_directory_exists outfile;
+        let mash_string = Sexplib.Sexp.to_string_hum @@ Mashtree.sexp_of_mash_program mashed in
+        let oc = open_out outfile in
+        output_string oc mash_string;
+        close_out oc
+      end
+    | _ -> failwith "Should be impossible"
 
 let free_vars anfed =
   Ident.Set.elements @@ Anf_utils.anf_free_vars anfed

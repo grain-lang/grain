@@ -211,7 +211,7 @@ let get_pos_info pos =
   (pos.pos_fname, pos.pos_lnum, pos.pos_cnum - pos.pos_bol)
 
 let setup_colors() =
-  Misc.Color.setup @@ Some(if !Grain_utils.Config.color_enabled then Misc.Color.Auto else Misc.Color.Never) 
+  Misc.Color.setup @@ Some(if !Grain_utils.Config.color_enabled then Misc.Color.Auto else Misc.Color.Never)
 
 let absolute_path s = (* This function could go into Filename *)
   let open Filename in
@@ -340,12 +340,12 @@ let pp_ksprintf ?before k fmt =
 
 (* Shift the formatter's offset by the length of the error prefix, which
    is always added by the compiler after the message has been formatted *)
-let print_phanton_error_prefix ppf =
+let print_phantom_error_prefix ppf =
   Format.pp_print_as ppf (String.length error_prefix + 2 (* ": " *)) ""
 
 let errorf ?(loc = dummy_loc) ?(sub = []) ?(if_highlight = "") fmt =
   pp_ksprintf
-    ~before:print_phanton_error_prefix
+    ~before:print_phantom_error_prefix
     (fun msg -> {loc; msg; sub; if_highlight})
     fmt
 
@@ -395,7 +395,7 @@ let () =
           Some (errorf ~loc:(in_file !input_name)
                 "I/O error: %s" msg)
 
-      (* [This exception was removed in OCaml 4.09, so we need to decide if we want to add back support for it] 
+      (* [This exception was removed in OCaml 4.09, so we need to decide if we want to add back support for it]
          | Misc.HookExnWrapper {error = e; hook_name;
                              hook_info={Misc.sourcefile}} ->
           let sub = match error_of_exn e with
@@ -411,15 +411,15 @@ let () =
 
 external reraise : exn -> 'a = "%reraise"
 
-let rec report_exception_rec n ppf exn =
-  try
+let rec report_exception ppf exn =
+  let rec loop n exn =
     match error_of_exn exn with
     | None -> reraise exn
     | Some `Already_displayed -> ()
-    | Some (`Ok err) -> fprintf ppf "@[%a@]@." report_error err
-  with exn when n > 0 -> report_exception_rec (n-1) ppf exn
-
-let report_exception ppf exn = report_exception_rec 5 ppf exn
+    | Some (`Ok err) -> Format.fprintf ppf "@[%a@]@." report_error err
+    | exception exn when n > 0 -> loop (n - 1) exn
+  in
+  loop 10 exn
 
 
 exception Error of error
@@ -433,5 +433,5 @@ let () =
 
 let raise_errorf ?(loc = dummy_loc) ?(sub = []) ?(if_highlight = "") =
   pp_ksprintf
-    ~before:print_phanton_error_prefix
+    ~before:print_phantom_error_prefix
     (fun msg -> raise (Error ({loc; msg; sub; if_highlight})))

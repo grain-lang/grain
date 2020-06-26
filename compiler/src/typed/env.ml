@@ -711,15 +711,20 @@ let locate_module path unit_name =
     GrainModule(srcpath, None)
 
 let locate_module_file ~loc path unit_name =
-  try
-    get_up_to_date ~loc unit_name (locate_module path unit_name)
-  with Not_found ->
-    error (No_module_file (unit_name, None))
+  (* NOTE: We need to take care here to *not* wrap get_up_to_date with this try/with, since
+           it will falsely raise No_module_file if a Not_found is raised during the compilation *)
+  let located = begin
+    try
+      locate_module path unit_name
+    with Not_found ->
+      error (No_module_file (unit_name, None))
+  end in
+  get_up_to_date ~loc unit_name located
 
 let resolutions = Hashtbl.create 12
 
 let resolve_unit unit_name =
-  try 
+  try
     Hashtbl.find resolutions unit_name
   with Not_found ->
     let path = Grain_utils.Config.module_search_path() in
@@ -872,7 +877,7 @@ let rec find_module_descr path filename env =
       with Not_found ->
         let _, unit_source = get_unit() in
         if Ident.persistent id && not (Option.default (Ident.name id) filename = unit_source)
-        then 
+        then
           (find_pers_struct ~loc:Location.dummy_loc (Ident.name id) filename).ps_comps
         else raise Not_found
     end
@@ -1343,10 +1348,10 @@ and components_of_module_maker (env, sub, path, mty) =
         comp_components = Tbl.empty;
         comp_modtypes = Tbl.empty;
       } in
-    let pl, sub = begin match mty, path with 
+    let pl, sub = begin match mty, path with
       | TModAlias path, _
       | TModIdent path, _
-      | TModSignature _, path -> 
+      | TModSignature _, path ->
         prefix_idents path sub sg end in
     let env = ref env in
     let pos = ref 0 in
@@ -1488,7 +1493,7 @@ and store_type ~check id info env =
       List.fold_left (fun acc (id, val_desc) -> IdTbl.add id val_desc acc) env.values val_descrs;
     summary = List.fold_left (fun acc (id, val_desc) -> Env_value(acc, id, val_desc)) (Env_type(env.summary, id, info)) val_descrs;
   }
-  
+
 
 and store_type_infos id info env =
   (* Simplified version of store_type that doesn't compute and store
@@ -1692,7 +1697,7 @@ let check_opened (mod_ : Parsetree.import_declaration) env =
     match summary with
       | Env_empty -> None
       | Env_module(summary, ({name} as id), {md_filepath=Some(filepath)})
-        when same_filepath filepath mod_.pimp_path.txt -> 
+        when same_filepath filepath mod_.pimp_path.txt ->
           Some(PIdent(id))
       | Env_module(summary, _, _)
       | Env_value(summary, _, _)
@@ -1750,7 +1755,7 @@ let check_imports found all where =
   List.iter (fun comp ->
     if List.mem comp found
     then ()
-    else 
+    else
       let {loc; txt} = comp in
       error (Value_not_found_in_module (loc, Identifier.string_of_ident txt, where))
   ) all
@@ -1774,10 +1779,10 @@ let open_signature
         | Some (val_name, val_alias) ->
           let new_name = Option.default val_name val_alias in
           begin match new_name.txt with
-            | Identifier.IdentName id_name -> 
+            | Identifier.IdentName id_name ->
               imported := val_name :: !imported;
               Some(id_name)
-            | Identifier.IdentExternal _ -> failwith "NYI" 
+            | Identifier.IdentExternal _ -> failwith "NYI"
           end
         | None -> None
       end
@@ -1794,11 +1799,11 @@ let open_signature
     let filter_components name =
       if List.exists (fun id ->
         match id.txt with
-        | Identifier.IdentName id_name -> 
+        | Identifier.IdentName id_name ->
           if id_name = name
-          then begin 
-            rejected := id :: !rejected; 
-            true 
+          then begin
+            rejected := id :: !rejected;
+            true
           end
           else false
         | Identifier.IdentExternal _ -> failwith "NYI"

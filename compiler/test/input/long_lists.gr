@@ -1,14 +1,14 @@
-import lists;
+import * from 'lists';
 
 let rec make_list = (x, n) => {
   let rec helper = (a, b, acc) => {
     if (a == 0) {
       acc
     } else {
-      helper(a - 1, cons(b, acc));
+      helper(a - 1, b, [b, ...acc])
     }
   };
-  helper(n, x, empty)
+  helper(n, x, [])
 },
 
 loop = (n) => {
