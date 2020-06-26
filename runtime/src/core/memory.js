@@ -76,14 +76,10 @@ export class ManagedMemory {
   }
 
   _growHeap() {
-    //console.log('_growHeap');
     if (this._runtime && this._runtime.limitMemory >= 0 && this._grown >= this._runtime.limitMemory) {
-      //throw 'Out of memory (_growHeap)';
       return -1;
     }
     this._grown += 1024;
-    // doesn't actually work; we are just simulating a smaller memory size for GC tests
-    //return this._memory.grow(1);
     return 0;
   }
 
@@ -149,7 +145,6 @@ export class ManagedMemory {
       heap[rawPtr + i] = 0;
     }
     this._setRefCount(rawPtr, 1);
-    //heap[rawPtr + 2] = 1; // <- init refCount at 1 (from this allocation)
     heap[rawPtr + 3] = tag & 0b1111; // <- 4-bit tag
   }
 
@@ -157,7 +152,6 @@ export class ManagedMemory {
   _getRefCount(userPtr) {
     trace('_getRefCount');
     let rawPtr = (userPtr & (~7)) - this._headerSize;
-    //let rawPtr = userPtr - 3;
     let heap = new Uint8Array(this._memory.buffer);
     trace(`\tas binary: ${this._toBinary(heap[rawPtr], 8, 8)}|${this._toBinary(heap[rawPtr + 1], 8, 8)}|${this._toBinary(heap[rawPtr + 2], 8, 8)}`)
     let count = heap[rawPtr] & 0b0111; // reserved bit should always be zero, but let's be safe
@@ -198,10 +192,10 @@ export class ManagedMemory {
   }
 
   _memdump(userPtr) {
-    let heap = new Uint8Array(this._memory.buffer);
     if (!TRACE_MEMORY) {
-      return undefined; // improve performance; this is a very hot path in production
+      return;
     }
+    let heap = new Uint8Array(this._memory.buffer);
     return `Dump: 0x${this._toHex(heap[userPtr-8])} 0x${this._toHex(heap[userPtr-7])} 0x${this._toHex(heap[userPtr-6])} 0x${this._toHex(heap[userPtr-5])} 0x${this._toHex(heap[userPtr-4])} 0x${this._toHex(heap[userPtr-3])} 0x${this._toHex(heap[userPtr-2])} 0x${this._toHex(heap[userPtr-1])} @ 0x${this._toHex(userPtr)} (raw: 0x${this._toHex(userPtr - this._headerSize)})`
   }
 
@@ -408,7 +402,6 @@ export class ManagedMemory {
           view[tupleIdx] |= 0x80000000;
           trace(`traversing ${tupleLength} tuple elts on tuple 0x${this._toHex(userPtr)}`);
           for (let i = 0; i < tupleLength; ++i) {
-            //this.decRef(view[tupleIdx + i + 1], 'FREE')
             yield view[tupleIdx + i + 1];
           }
           view[tupleIdx] = tupleLength;
@@ -420,7 +413,6 @@ export class ManagedMemory {
         let numFreeVars = view[lambdaIdx + 2];
         trace(`traversing ${numFreeVars} free vars on lambda 0x${this._toHex(userPtr)}`);
         for (let i = 0; i < numFreeVars; ++i) {
-          //this.decRef(view[lambdaIdx + 3 + i], 'FREE');
           yield view[lambdaIdx + 3 + i];
         }
         break;
@@ -433,7 +425,6 @@ export class ManagedMemory {
               let arity = view[x + 4];
               trace(`traversing ${arity} ADT vals on ADT 0x${this._toHex(userPtr)}`);
               for (let i = 0; i < arity; ++i) {
-                //this.decRef(view[x + 5 + i], 'FREE');
                 yield view[x + 5 + i];
               }
             }
@@ -452,11 +443,6 @@ export class ManagedMemory {
   }
 
   _getColor(userPtr) {
-    // if (!this._isReference(userPtr)) {
-    //   return GREEN;
-    // }
-    // this._colors[userPtr] = this._colors[userPtr] || GREEN;
-    // return this._colors[userPtr];
     return this._colors[userPtr & (~7)] || GREEN;
   }
 
@@ -465,13 +451,6 @@ export class ManagedMemory {
       // fast case
       return;
     }
-    // for (let childUserPtr of this.references(userPtr)) {
-    //   if (this._getColor(userPtr) === GREEN && color !== GREEN) {
-    //     this.decRef(childUserPtr, 'RECOLOR', ignoreZeros);
-    //   } else if (this._getColor(userPtr) !== GREEN && color === GREEN) {
-    //     this.incRef(childUserPtr, 'RECOLOR');
-    //   }
-    // }
     if (TRACE_MEMORY) {
       trace(`recolor 0x${this._toHex(userPtr & (~7))}: ${this._colors[userPtr & (~7)] || GREEN} -> ${color}`)
     }
@@ -486,7 +465,6 @@ export class ManagedMemory {
     if (this._getColor(userPtr) !== RED) {
       this._recolor(userPtr, RED, ignoreZeros);
       for (let childUserPtr of this.references(userPtr)) {
-        //this.decRef(childUserPtr, 'MARK_RED', ignoreZeros);
         this._decrementRefCount(childUserPtr, ignoreZeros);
       }
       let isInserted = false;
@@ -505,7 +483,6 @@ export class ManagedMemory {
   _scan(userPtr, ignoreZeros) {
     let origInput = userPtr;
     let ptrTagType = getTagType(userPtr, true);
-    //userPtr = userPtr & (~7);
     if (!this._isReference(userPtr)) {
       // no ref-counting for primitives
       // [TODO] The type-checker should make this not ever be called ideally, but it
@@ -524,14 +501,6 @@ export class ManagedMemory {
         if (this._getColor(topOfStack) === RED && this._getRefCount(topOfStack) > 0) {
           this._scanGreen(topOfStack, ignoreZeros)
         }
-        // if (this._getRefCount(userPtr) > 0) {
-        //   this._scanGreen(userPtr, ignoreZeros);
-        // } else {
-        //   this._recolor(userPtr, BLUE);
-        //   for (let childUserPtr of this.references(userPtr)) {
-        //     this._scan(childUserPtr, ignoreZeros);
-        //   }
-        // }
       }
       this._collect(userPtr, ignoreZeros);
     }
@@ -559,7 +528,6 @@ export class ManagedMemory {
     if (this._getColor(userPtr) === RED) {
       this._recolor(userPtr, GREEN, ignoreZeros);
       for (let childUserPtr of this.references(userPtr)) {
-        //this.decRef(childUserPtr, 'COLLECT', ignoreZeros);
         if (this._getColor(childUserPtr) === RED) {
           this._collect(childUserPtr, ignoreZeros);
         }
@@ -585,7 +553,6 @@ export class ManagedMemory {
         this._markRed(top);
         this._scan(top);
       }
-      //this._dumpRefTree();
     }
   }
 
@@ -676,8 +643,6 @@ export class ManagedMemory {
       this.free(userPtr);
     } else {
       this._setRefCount(rawPtr, refCount);
-      // this._markRed(origInput);
-      // this._scan(origInput);
       this._recolor(origInput, BLACK);
       this._markQueue.push(origInput);
 
@@ -787,9 +752,6 @@ export class ManagedMemory {
       if (x === 0 || ptrTagType === GRAIN_NUMBER_TAG_TYPE || ptrTagType === GRAIN_CONST_TAG_TYPE) {
         trace(`is invalid (ptrTagType=${ptrTagType} (${ptrTagType === GRAIN_NUMBER_TAG_TYPE ? 'number' : ''}${ptrTagType === GRAIN_CONST_TAG_TYPE ? 'const' : ''}))`)
       }
-      // if (ptrTagType === GRAIN_LAMBDA_TAG_TYPE) {
-      //   return;
-      // }
       trace(this._memdump(x));
       let heapTag = '';
       if (ptrTagType === GRAIN_GENERIC_HEAP_TAG_TYPE) {
@@ -859,5 +821,4 @@ class ManagedType {
     return address1 === address2;
   }
 }
-
 
