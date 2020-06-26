@@ -7,10 +7,10 @@ import treeify from 'treeify';
 export const TRACE_MEMORY = false;
 
 // Graph coloring
-const GREEN = 'GREEN';
-const RED = 'RED';
-const BLUE = 'BLUE';
-const BLACK = 'BLACK';
+const GREEN = Symbol('GREEN');
+const RED = Symbol('RED');
+const BLUE = Symbol('BLUE');
+const BLACK = Symbol('BLACK');
 
 function trace(msg) {
   if (__DEBUG && TRACE_MEMORY) {
@@ -451,7 +451,7 @@ export class ManagedMemory {
       return;
     }
     if (TRACE_MEMORY) {
-      trace(`recolor 0x${this._toHex(userPtr & (~7))}: ${this._colors[userPtr & (~7)] || GREEN} -> ${color}`)
+      trace(`recolor 0x${this._toHex(userPtr & (~7))}: ${(this._colors[userPtr & (~7)] || GREEN).toString()} -> ${color.toString()}`)
     }
     this._colors[userPtr & (~7)] = color;
   }
@@ -496,7 +496,7 @@ export class ManagedMemory {
     } else {
       while (this._jumpStack.length > 0) {
         let topOfStack = this._jumpStack.pop();
-        trace(`\tscan: popped from jumpStack: 0x${this._toHex(topOfStack)} [color=${this._getColor(topOfStack)}]`);
+        trace(`\tscan: popped from jumpStack: 0x${this._toHex(topOfStack)} [color=${this._getColor(topOfStack).toString()}]`);
         if (this._getColor(topOfStack) === RED && this._getRefCount(topOfStack) > 0) {
           this._scanGreen(topOfStack, ignoreZeros)
         }
