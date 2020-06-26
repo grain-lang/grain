@@ -68,7 +68,6 @@ export function toBinary(n, minWidth) {
 }
 
 export function grainHeapValueToString(runtime, n) {
-  // console.log(`Print Heap Value: <0x${toHex(n)}>`);
   switch (view[n / 4]) {
     case GRAIN_STRING_HEAP_TAG: {
       let byteView = new Uint8Array(memory.buffer);
