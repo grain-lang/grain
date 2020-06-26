@@ -46,6 +46,7 @@ const tracingImports = TRACE_MEMORY ? {
   decRefCleanupLocals: managedMemory.decRefCleanupLocals.bind(managedMemory),
   decRefCleanupGlobals: managedMemory.decRefCleanupGlobals.bind(managedMemory),
   decRefDrop: managedMemory.decRefDrop.bind(managedMemory),
+  decRefIgnoreZeros: managedMemory.decRefIgnoreZeros.bind(managedMemory)
 } : {
   decRefIgnoreZeros: managedMemory.decRefIgnoreZeros.bind(managedMemory)
 };
