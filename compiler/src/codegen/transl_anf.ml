@@ -109,7 +109,6 @@ module RegisterAllocation = struct
   let get_allocation var_id ((allocs, _): t) = IntMap.find var_id allocs
 
   let get_allocation_int32 var_id allocs =
-    (* Printf.eprintf "get_allocation_int32: %d\n" var_id; *)
     Int32.of_int (get_allocation var_id allocs)
 
   let rec apply_allocations (allocs: t) (instr: Mashtree.instr) : Mashtree.instr =
@@ -352,7 +351,6 @@ let rec compile_comp env c =
   | CPrim2(p2, arg1, arg2) ->
     MPrim2(p2, compile_imm env arg1, compile_imm env arg2)
   | CAssign(arg1, arg2) ->
-    (* MTupleOp(MTupleSet(Int32.zero, compile_imm env arg2), compile_imm env arg1) *)
     MBoxOp(MBoxUpdate(compile_imm env arg2), compile_imm env arg1)
   | CTuple(args) ->
     MAllocate(MTuple (List.map (compile_imm env) args))
@@ -402,7 +400,7 @@ and compile_anf_expr env a =
       | Nonglobal -> MLocalBind(Int32.of_int (env.ce_stack_idx + idx)) in
     let locations = List.mapi get_loc binds in
     let new_env = BatList.fold_left2 (fun acc new_loc (id, _) ->
-        {acc with ce_binds=Ident.add id new_loc acc.ce_binds; ce_stack_idx=acc.ce_stack_idx + 1}) (* WTF? Why is this not ce_stack_idx + (List.length binds)?? *)
+        {acc with ce_binds=Ident.add id new_loc acc.ce_binds; ce_stack_idx=acc.ce_stack_idx + 1}) (* FIXME: Why is this not ce_stack_idx + (List.length binds)?? *)
         env locations binds in
     begin match recflag with
       | Nonrecursive ->
@@ -519,9 +517,8 @@ let transl_anf_program (anf_prog : Anftree.anf_program) : Mashtree.mash_program 
     functions;
     imports;
     exports;
-    main_body=main_body(* @ [MTracepoint 1]*);
+    main_body;
     main_body_stack_size;
     num_globals=(!global_index);
     signature=anf_prog.signature;
   }
-

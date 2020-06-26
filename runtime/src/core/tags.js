@@ -57,7 +57,7 @@ export function getTagType(n, quiet) {
     if (!quiet) {
       console.warn(`<getTagType: Unknown value: 0x${(new Number(n)).toString(16)}`);
     }
-    return undefined;
+    return;
   }
 }
 
