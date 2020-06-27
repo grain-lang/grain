@@ -11,7 +11,8 @@
   "scripts": {
     "clean": "rm -rf #{self.root}/_esy",
     "install-compiler": "dune install",
-    "test": "dune runtest --force"
+    "test": "dune runtest --force",
+    "format": "esy dune build @fmt --auto-promote"
   },
   "dependencies": {
     "@opam/grain": "*",
