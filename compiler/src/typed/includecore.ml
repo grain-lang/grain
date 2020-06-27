@@ -49,9 +49,9 @@ exception Dont_match
 
 (* Inclusion between "private" annotations *)
 
-let private_flags decl1 decl2 =
-  true
-  (*match decl1.type_private, decl2.type_private with
+let private_flags decl1 decl2 = true
+
+(*match decl1.type_private, decl2.type_private with
   | Private, Public ->
     decl2.type_kind = Type_abstract &&
     (decl2.type_manifest = None || decl1.type_kind <> Type_abstract)
@@ -59,9 +59,9 @@ let private_flags decl1 decl2 =
 
 (* Inclusion between manifest types (particularly for private row types) *)
 
-let is_absrow env ty =
-  false
-  (*match ty.desc with
+let is_absrow env ty = false
+
+(*match ty.desc with
   | TTyConstr(PIdent _, _, _) ->
     begin match Ctype.expand_head env ty with
         {desc=Tobject _|Tvariant _} -> true
@@ -71,7 +71,7 @@ let is_absrow env ty =
 
 let type_manifest env ty1 params1 ty2 params2 priv2 =
   let ty1' = Ctype.expand_head env ty1 and ty2' = Ctype.expand_head env ty2 in
-  match ty1'.desc, ty2'.desc with
+  match (ty1'.desc, ty2'.desc) with
   (*| Tvariant row1, Tvariant row2 when is_absrow env (Btype.row_more row2) ->
     let row1 = Btype.row_repr row1 and row2 = Btype.row_repr row2 in
     Ctype.equal env true (ty1::params1) (row2.row_more::params2) &&
@@ -115,18 +115,20 @@ let type_manifest env ty1 params1 ty2 params2 priv2 =
       List.split (List.map (fun (_,_,t1,_,t2) -> t1, t2) pairs) in
     Ctype.equal env true (params1 @ tl1) (params2 @ tl2)*)
   | _ ->
-    let rec check_super ty1 =
-      Ctype.equal env true (ty1 :: params1) (ty2 :: params2) (*||
-      priv2 = Private &&
-      try check_super
-            (Ctype.try_expand_once_opt env (Ctype.expand_head env ty1))
-      with Ctype.Cannot_expand -> false*)
-    in check_super ty1
+      let rec check_super ty1 =
+        Ctype.equal env true (ty1 :: params1) (ty2 :: params2)
+        (*||
+          priv2 = Private &&
+          try check_super
+                (Ctype.try_expand_once_opt env (Ctype.expand_head env ty1))
+          with Ctype.Cannot_expand -> false*)
+      in
+      check_super ty1
 
 (* Inclusion between type declarations *)
 
 type type_mismatch =
-    Arity
+  | Arity
   | Privacy
   | Kind
   | Constraint
@@ -137,121 +139,119 @@ type type_mismatch =
   | Field_arity of Ident.t
   | Field_names of int * Ident.t * Ident.t
   | Field_missing of bool * Ident.t
-  | Record_representation of bool   (* true means second one is unboxed float *)
-  | Unboxed_representation of bool  (* true means second one is unboxed *)
+  | Record_representation of bool (* true means second one is unboxed float *)
+  | Unboxed_representation of bool (* true means second one is unboxed *)
   | Immediate
 
 let report_type_mismatch0 first second decl ppf err =
   let pr fmt = Format.fprintf ppf fmt in
   match err with
-    Arity -> pr "They have different arities"
+  | Arity -> pr "They have different arities"
   | Privacy -> pr "A private type would be revealed"
   | Kind -> pr "Their kinds differ"
   | Constraint -> pr "Their constraints differ"
   | Manifest -> ()
   | Variance -> pr "Their variances do not agree"
-  | Field_type s ->
-    pr "The types for field %s are not equal" (Ident.name s)
+  | Field_type s -> pr "The types for field %s are not equal" (Ident.name s)
   | Field_mutable s ->
-    pr "The mutability of field %s is different" (Ident.name s)
-  | Field_arity s ->
-    pr "The arities for field %s differ" (Ident.name s)
+      pr "The mutability of field %s is different" (Ident.name s)
+  | Field_arity s -> pr "The arities for field %s differ" (Ident.name s)
   | Field_names (n, name1, name2) ->
-    pr "Fields number %i have different names, %s and %s"
-      n (Ident.name name1) (Ident.name name2)
+      pr "Fields number %i have different names, %s and %s" n (Ident.name name1)
+        (Ident.name name2)
   | Field_missing (b, s) ->
-    pr "The field %s is only present in %s %s"
-      (Ident.name s) (if b then second else first) decl
+      pr "The field %s is only present in %s %s" (Ident.name s)
+        (if b then second else first)
+        decl
   | Record_representation b ->
-    pr "Their internal representations differ:@ %s %s %s"
-      (if b then second else first) decl
-      "uses unboxed float representation"
+      pr "Their internal representations differ:@ %s %s %s"
+        (if b then second else first)
+        decl "uses unboxed float representation"
   | Unboxed_representation b ->
-    pr "Their internal representations differ:@ %s %s %s"
-      (if b then second else first) decl
-      "uses unboxed representation"
+      pr "Their internal representations differ:@ %s %s %s"
+        (if b then second else first)
+        decl "uses unboxed representation"
   | Immediate -> pr "%s is not an immediate type" first
 
 let report_type_mismatch first second decl ppf =
-  List.iter
-    (fun err ->
-       if err = Manifest then () else
-         Format.fprintf ppf "@ %a." (report_type_mismatch0 first second decl) err)
+  List.iter (fun err ->
+      if err = Manifest then ()
+      else
+        Format.fprintf ppf "@ %a." (report_type_mismatch0 first second decl) err)
 
 let rec compare_constructor_arguments ~loc env cstr params1 params2 arg1 arg2 =
-  match arg1, arg2 with
+  match (arg1, arg2) with
   | Types.TConstrSingleton, Types.TConstrSingleton -> []
   | Types.TConstrTuple arg1, Types.TConstrTuple arg2 ->
-    if List.length arg1 <> List.length arg2 then [Field_arity cstr]
-    else if
-      (* Ctype.equal must be called on all arguments at once, cf. PR#7378 *)
-      Ctype.equal env true (params1 @ arg1) (params2 @ arg2)
-    then [] else [Field_type cstr]
+      if List.length arg1 <> List.length arg2 then [ Field_arity cstr ]
+      else if
+        (* Ctype.equal must be called on all arguments at once, cf. PR#7378 *)
+        Ctype.equal env true (params1 @ arg1) (params2 @ arg2)
+      then []
+      else [ Field_type cstr ]
   (*| Types.Cstr_record l1, Types.Cstr_record l2 ->
     compare_records env ~loc params1 params2 0 l1 l2*)
-  | _ -> [Field_type cstr]
+  | _ -> [ Field_type cstr ]
 
 and compare_variants ~loc env params1 params2 n
     (cstrs1 : Types.constructor_declaration list)
     (cstrs2 : Types.constructor_declaration list) =
-  match cstrs1, cstrs2 with
-    [], []           -> []
-  | [], c::_ -> [Field_missing (true, c.Types.cd_id)]
-  | c::_, [] -> [Field_missing (false, c.Types.cd_id)]
-  | cd1::rem1, cd2::rem2 ->
-    if Ident.name cd1.cd_id <> Ident.name cd2.cd_id then
-      [Field_names (n, cd1.cd_id, cd2.cd_id)]
-    else begin
-      (*Builtin_attributes.check_deprecated_inclusion
-        ~def:cd1.cd_loc
-        ~use:cd2.cd_loc
-        loc
-        cd1.cd_attributes cd2.cd_attributes
-        (Ident.name cd1.cd_id);*)
-      let r =
-        match cd1.cd_res, cd2.cd_res with
-        | Some r1, Some r2 ->
-          if Ctype.equal env true [r1] [r2] then
-            compare_constructor_arguments ~loc env cd1.cd_id [r1] [r2]
-              cd1.cd_args cd2.cd_args
-          else [Field_type cd1.cd_id]
-        | Some _, None | None, Some _ ->
-          [Field_type cd1.cd_id]
-        | _ ->
-          compare_constructor_arguments ~loc env cd1.cd_id
-            params1 params2 cd1.cd_args cd2.cd_args
-      in
-      if r <> [] then r
-      else compare_variants ~loc env params1 params2 (n+1) rem1 rem2
-    end
-
+  match (cstrs1, cstrs2) with
+  | [], [] -> []
+  | [], c :: _ -> [ Field_missing (true, c.Types.cd_id) ]
+  | c :: _, [] -> [ Field_missing (false, c.Types.cd_id) ]
+  | cd1 :: rem1, cd2 :: rem2 ->
+      if Ident.name cd1.cd_id <> Ident.name cd2.cd_id then
+        [ Field_names (n, cd1.cd_id, cd2.cd_id) ]
+      else
+        (*Builtin_attributes.check_deprecated_inclusion
+          ~def:cd1.cd_loc
+          ~use:cd2.cd_loc
+          loc
+          cd1.cd_attributes cd2.cd_attributes
+          (Ident.name cd1.cd_id);*)
+        let r =
+          match (cd1.cd_res, cd2.cd_res) with
+          | Some r1, Some r2 ->
+              if Ctype.equal env true [ r1 ] [ r2 ] then
+                compare_constructor_arguments ~loc env cd1.cd_id [ r1 ] [ r2 ]
+                  cd1.cd_args cd2.cd_args
+              else [ Field_type cd1.cd_id ]
+          | Some _, None | None, Some _ -> [ Field_type cd1.cd_id ]
+          | _ ->
+              compare_constructor_arguments ~loc env cd1.cd_id params1 params2
+                cd1.cd_args cd2.cd_args
+        in
+        if r <> [] then r
+        else compare_variants ~loc env params1 params2 (n + 1) rem1 rem2
 
 and compare_records ~loc env params1 params2 n
-    (labels1 : Types.record_field list)
-    (labels2 : Types.record_field list) =
-  match labels1, labels2 with
-    [], []           -> []
-  | [], l::_ -> [Field_missing (true, l.Types.rf_name)]
-  | l::_, [] -> [Field_missing (false, l.Types.rf_name)]
-  | ld1::rem1, ld2::rem2 ->
-    if Ident.name ld1.rf_name <> Ident.name ld2.rf_name
-    then [Field_names (n, ld1.rf_name, ld2.rf_name)]
-    else [] (* if ld1.ld_mutable <> ld2.ld_mutable then [Field_mutable ld1.ld_id] else begin
-      Builtin_attributes.check_deprecated_mutable_inclusion
-        ~def:ld1.ld_loc
-        ~use:ld2.ld_loc
-        loc
-        ld1.ld_attributes ld2.ld_attributes
-        (Ident.name ld1.ld_id);
-      if Ctype.equal env true (ld1.ld_type::params1)(ld2.ld_type::params2)
-      then (* add arguments to the parameters, cf. PR#7378 *)
-        compare_records ~loc env
-          (ld1.ld_type::params1) (ld2.ld_type::params2)
-          (n+1)
-          rem1 rem2
-      else
-        [Field_type ld1.ld_id]
-    end *)
+    (labels1 : Types.record_field list) (labels2 : Types.record_field list) =
+  match (labels1, labels2) with
+  | [], [] -> []
+  | [], l :: _ -> [ Field_missing (true, l.Types.rf_name) ]
+  | l :: _, [] -> [ Field_missing (false, l.Types.rf_name) ]
+  | ld1 :: rem1, ld2 :: rem2 ->
+      if Ident.name ld1.rf_name <> Ident.name ld2.rf_name then
+        [ Field_names (n, ld1.rf_name, ld2.rf_name) ]
+      else []
+
+(* if ld1.ld_mutable <> ld2.ld_mutable then [Field_mutable ld1.ld_id] else begin
+     Builtin_attributes.check_deprecated_mutable_inclusion
+       ~def:ld1.ld_loc
+       ~use:ld2.ld_loc
+       loc
+       ld1.ld_attributes ld2.ld_attributes
+       (Ident.name ld1.ld_id);
+     if Ctype.equal env true (ld1.ld_type::params1)(ld2.ld_type::params2)
+     then (* add arguments to the parameters, cf. PR#7378 *)
+       compare_records ~loc env
+         (ld1.ld_type::params1) (ld2.ld_type::params2)
+         (n+1)
+         rem1 rem2
+     else
+       [Field_type ld1.ld_id]
+   end *)
 
 let type_declarations ?(equality = false) ~loc env ~mark name decl1 id decl2 =
   (*Builtin_attributes.check_deprecated_inclusion
@@ -260,93 +260,103 @@ let type_declarations ?(equality = false) ~loc env ~mark name decl1 id decl2 =
     loc
     decl1.type_attributes decl2.type_attributes
     name;*)
-  if decl1.type_arity <> decl2.type_arity then [Arity] else
-  if not (private_flags decl1 decl2) then [Privacy] else
-    let err = match (decl1.type_manifest, decl2.type_manifest) with
-        (_, None) ->
-        if Ctype.equal env true decl1.type_params decl2.type_params
-        then [] else [Constraint]
-      | (Some ty1, Some ty2) ->
-        if type_manifest env ty1 decl1.type_params ty2 decl2.type_params
-            () (*decl2.type_private*)
-        then [] else [Manifest]
-      | (None, Some ty2) ->
-        let ty1 =
-          Btype.newgenty (TTyConstr(PIdent id, decl2.type_params, ref TMemNil))
-        in
-        if Ctype.equal env true decl1.type_params decl2.type_params then
-          if Ctype.equal env false [ty1] [ty2] then []
-          else [Manifest]
-        else [Constraint]
+  if decl1.type_arity <> decl2.type_arity then [ Arity ]
+  else if not (private_flags decl1 decl2) then [ Privacy ]
+  else
+    let err =
+      match (decl1.type_manifest, decl2.type_manifest) with
+      | _, None ->
+          if Ctype.equal env true decl1.type_params decl2.type_params then []
+          else [ Constraint ]
+      | Some ty1, Some ty2 ->
+          if
+            type_manifest env ty1 decl1.type_params ty2 decl2.type_params ()
+            (*decl2.type_private*)
+          then []
+          else [ Manifest ]
+      | None, Some ty2 ->
+          let ty1 =
+            Btype.newgenty
+              (TTyConstr (PIdent id, decl2.type_params, ref TMemNil))
+          in
+          if Ctype.equal env true decl1.type_params decl2.type_params then
+            if Ctype.equal env false [ ty1 ] [ ty2 ] then [] else [ Manifest ]
+          else [ Constraint ]
     in
-    if err <> [] then err else
-      let err = []
+    if err <> [] then err
+    else
+      let err =
+        []
         (*match (decl2.type_kind, decl1.type_unboxed.unboxed,
-               decl2.type_unboxed.unboxed) with
-        | TDataAbstract, _, _ -> []
-        | _, true, false -> [Unboxed_representation false]
-        | _, false, true -> [Unboxed_representation true]
-        | _ -> []*)
+                 decl2.type_unboxed.unboxed) with
+          | TDataAbstract, _, _ -> []
+          | _, true, false -> [Unboxed_representation false]
+          | _, false, true -> [Unboxed_representation true]
+          | _ -> []*)
       in
-      if err <> [] then err else
-        let err = match (decl1.type_kind, decl2.type_kind) with
-            (_, TDataAbstract) -> []
-          | (TDataVariant cstrs1, TDataVariant cstrs2) ->
-            (*if mark then begin
-              let mark cstrs usage name decl =
-                List.iter
-                  (fun c ->
-                     Env.mark_constructor_used usage name decl
-                       (Ident.name c.Types.cd_id))
-                  cstrs
-              in
-              let usage =
-                if decl1.type_private = Private || decl2.type_private = Public
-                then Env.Positive else Env.Privatize
-              in
-              mark cstrs1 usage name decl1;
-              if equality then mark cstrs2 Env.Positive (Ident.name id) decl2
-            end;*)
-            compare_variants ~loc env decl1.type_params
-              decl2.type_params 1 cstrs1 cstrs2
-          | (TDataRecord(labels1), TDataRecord(labels2)) ->
-            compare_records ~loc env decl1.type_params
-              decl2.type_params 1 labels1 labels2
-            (* if err <> [] || rep1 = rep2 then err else
-              [Record_representation (rep2 = Record_float)]
-          | (Type_open, Type_open) -> [] *)
-          | (_, _) -> [Kind]
+      if err <> [] then err
+      else
+        let err =
+          match (decl1.type_kind, decl2.type_kind) with
+          | _, TDataAbstract -> []
+          | TDataVariant cstrs1, TDataVariant cstrs2 ->
+              (*if mark then begin
+                  let mark cstrs usage name decl =
+                    List.iter
+                      (fun c ->
+                         Env.mark_constructor_used usage name decl
+                           (Ident.name c.Types.cd_id))
+                      cstrs
+                  in
+                  let usage =
+                    if decl1.type_private = Private || decl2.type_private = Public
+                    then Env.Positive else Env.Privatize
+                  in
+                  mark cstrs1 usage name decl1;
+                  if equality then mark cstrs2 Env.Positive (Ident.name id) decl2
+                end;*)
+              compare_variants ~loc env decl1.type_params decl2.type_params 1
+                cstrs1 cstrs2
+          | TDataRecord labels1, TDataRecord labels2 ->
+              compare_records ~loc env decl1.type_params decl2.type_params 1
+                labels1 labels2
+              (* if err <> [] || rep1 = rep2 then err else
+                     [Record_representation (rep2 = Record_float)]
+                 | (Type_open, Type_open) -> [] *)
+          | _, _ -> [ Kind ]
         in
-        if err <> [] then err else
-          let abstr = decl2.type_kind = TDataAbstract && decl2.type_manifest = None in
+        if err <> [] then err
+        else
+          let abstr =
+            decl2.type_kind = TDataAbstract && decl2.type_manifest = None
+          in
           (* If attempt to assign a non-immediate type (e.g. string) to a type that
            * must be immediate, then we error *)
           let err =
-            if abstr &&
-               not decl1.type_immediate &&
-               decl2.type_immediate then
-              [Immediate]
+            if abstr && (not decl1.type_immediate) && decl2.type_immediate then
+              [ Immediate ]
             else []
           in
           if err <> [] then err else []
-            (*let need_variance =
-              abstr || decl1.type_private = Private || decl1.type_kind = Type_open in
-            if not need_variance then [] else
-              let abstr = abstr || decl2.type_private = Private in
-              let opn = decl2.type_kind = Type_open && decl2.type_manifest = None in
-              let constrained ty = not (Btype.(is_Tvar (repr ty))) in
-              if List.for_all2
-                  (fun ty (v1,v2) ->
-                     let open Variance in
-                     let imp a b = not a || b in
-                     let (co1,cn1) = get_upper v1 and (co2,cn2) = get_upper v2 in
-                     (if abstr then (imp co1 co2 && imp cn1 cn2)
-                      else if opn || constrained ty then (co1 = co2 && cn1 = cn2)
-                      else true) &&
-                     let (p1,n1,i1,j1) = get_lower v1 and (p2,n2,i2,j2) = get_lower v2 in
-                     imp abstr (imp p2 p1 && imp n2 n1 && imp i2 i1 && imp j2 j1))
-                  decl2.type_params (List.combine decl1.type_variance decl2.type_variance)
-              then [] else [Variance]*)
+
+(*let need_variance =
+    abstr || decl1.type_private = Private || decl1.type_kind = Type_open in
+  if not need_variance then [] else
+    let abstr = abstr || decl2.type_private = Private in
+    let opn = decl2.type_kind = Type_open && decl2.type_manifest = None in
+    let constrained ty = not (Btype.(is_Tvar (repr ty))) in
+    if List.for_all2
+        (fun ty (v1,v2) ->
+           let open Variance in
+           let imp a b = not a || b in
+           let (co1,cn1) = get_upper v1 and (co2,cn2) = get_upper v2 in
+           (if abstr then (imp co1 co2 && imp cn1 cn2)
+            else if opn || constrained ty then (co1 = co2 && cn1 = cn2)
+            else true) &&
+           let (p1,n1,i1,j1) = get_lower v1 and (p2,n2,i2,j2) = get_lower v2 in
+           imp abstr (imp p2 p1 && imp n2 n1 && imp i2 i1 && imp j2 j1))
+        decl2.type_params (List.combine decl1.type_variance decl2.type_variance)
+    then [] else [Variance]*)
 
 (* Inclusion between extension constructors *)
 (*

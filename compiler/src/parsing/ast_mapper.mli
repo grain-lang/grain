@@ -18,26 +18,26 @@
 open Parsetree
 
 type mapper = {
-  constant: mapper -> constant -> constant;
-  expr: mapper -> expression -> expression;
-  pat: mapper -> pattern -> pattern;
-  typ: mapper -> parsed_type -> parsed_type;
-  data: mapper -> data_declaration -> data_declaration;
-  constructor: mapper -> constructor_declaration -> constructor_declaration;
-  label: mapper -> label_declaration -> label_declaration;
-  location: mapper -> Location.t -> Location.t;
-  import: mapper -> import_declaration list -> import_declaration list;
-  export: mapper -> export_declaration list -> export_declaration list;
-  export_all: mapper -> export_except list -> export_except list;
-  value_binding: mapper -> value_binding -> value_binding;
-  match_branch: mapper -> match_branch -> match_branch;
-  value_description: mapper -> value_description -> value_description;
-  toplevel: mapper -> toplevel_stmt -> toplevel_stmt;
+  constant : mapper -> constant -> constant;
+  expr : mapper -> expression -> expression;
+  pat : mapper -> pattern -> pattern;
+  typ : mapper -> parsed_type -> parsed_type;
+  data : mapper -> data_declaration -> data_declaration;
+  constructor : mapper -> constructor_declaration -> constructor_declaration;
+  label : mapper -> label_declaration -> label_declaration;
+  location : mapper -> Location.t -> Location.t;
+  import : mapper -> import_declaration list -> import_declaration list;
+  export : mapper -> export_declaration list -> export_declaration list;
+  export_all : mapper -> export_except list -> export_except list;
+  value_binding : mapper -> value_binding -> value_binding;
+  match_branch : mapper -> match_branch -> match_branch;
+  value_description : mapper -> value_description -> value_description;
+  toplevel : mapper -> toplevel_stmt -> toplevel_stmt;
 }
 (** A mapper record implements one "method" per syntactic category,
     using an open recursion style: each method takes as its first
     argument the mapper to be applied to children in the syntax
     tree. *)
 
-val default_mapper: mapper
+val default_mapper : mapper
 (** A default mapper, which implements a "deep identity" mapping. *)

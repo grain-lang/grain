@@ -13,17 +13,15 @@
 (*                                                                        *)
 (**************************************************************************)
 
-type pers_flags =
-  | Rectypes
-  | Opaque
-  | Unsafe_string
+type pers_flags = Rectypes | Opaque | Unsafe_string
 
 type cmi_infos = {
-    cmi_name : string;
-    cmi_sign : Types.signature_item list;
-    cmi_crcs : (string * Digest.t option) list;
-    cmi_flags : pers_flags list;
-} [@@deriving sexp, yojson]
+  cmi_name : string;
+  cmi_sign : Types.signature_item list;
+  cmi_crcs : (string * Digest.t option) list;
+  cmi_flags : pers_flags list;
+}
+[@@deriving sexp, yojson]
 
 val build_full_cmi :
   name:string ->
@@ -44,7 +42,7 @@ val read_cmi : string -> cmi_infos
 (* Error report *)
 
 type error =
-    Not_an_interface of string
+  | Not_an_interface of string
   | Wrong_version_interface of string * string
   | Corrupted_interface of string
 
@@ -52,4 +50,4 @@ exception Error of error
 
 open Format
 
-val report_error: formatter -> error -> unit
+val report_error : formatter -> error -> unit

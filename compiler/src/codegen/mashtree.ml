@@ -1,5 +1,5 @@
-(** Low-level IR, suitable for direct translation into WASM *)
 open Sexplib.Conv
+(** Low-level IR, suitable for direct translation into WASM *)
 
 open Grain_parsing
 open Grain_typed
@@ -9,14 +9,20 @@ open Runtime_errors
 (* OCaml floats are 64-bit
    (see section 2.3: https://github.com/janestreet/janestreet.github.com/blob/009358427533b46ba2c66200779ea05a73ef0783/ocaml-perf-notes.md)*)
 type float32 = float
+
 type float64 = float
 
 type tag_type = Value_tags.tag_type
+
 type heap_tag_type = Value_tags.heap_tag_type
 
 type grain_error = Runtime_errors.grain_error
-let prim1_of_sexp, sexp_of_prim1 = Parsetree.prim1_of_sexp, Parsetree.sexp_of_prim1
-let prim2_of_sexp, sexp_of_prim2 = Parsetree.prim2_of_sexp, Parsetree.sexp_of_prim2
+
+let prim1_of_sexp, sexp_of_prim1 =
+  (Parsetree.prim1_of_sexp, Parsetree.sexp_of_prim1)
+
+let prim2_of_sexp, sexp_of_prim2 =
+  (Parsetree.prim2_of_sexp, Parsetree.sexp_of_prim2)
 
 type prim1 = Parsetree.prim1 =
   | Incr
@@ -59,12 +65,7 @@ type prim2 = Parsetree.prim2 =
   | Int64Lte
 
 (* Types within the WASM output *)
-type asmtype =
-  | I32Type
-  | I64Type
-  | F32Type
-  | F64Type
-[@@deriving sexp]
+type asmtype = I32Type | I64Type | F32Type | F64Type [@@deriving sexp]
 
 type constant =
   | MConstI32 of int32
@@ -83,16 +84,15 @@ type binding =
   | MImport of int32 (* Index into list of imports *)
 [@@deriving sexp]
 
-type immediate =
-  | MImmConst of constant
-  | MImmBinding of binding
+type immediate = MImmConst of constant | MImmBinding of binding
 [@@deriving sexp]
 
 type closure_data = {
-  func_idx: int32;
-  arity: int32;
-  variables: immediate list;
-} [@@deriving sexp]
+  func_idx : int32;
+  arity : int32;
+  variables : immediate list;
+}
+[@@deriving sexp]
 
 type allocation_type =
   | MClosure of closure_data
@@ -106,32 +106,16 @@ type allocation_type =
   | MInt64 of int64
 [@@deriving sexp]
 
-type tag_op =
-  | MCheckTag
-  | MAssertTag
-  | MAddTag
-  | MRemoveTag
+type tag_op = MCheckTag | MAssertTag | MAddTag | MRemoveTag [@@deriving sexp]
+
+type arity_operand = MLambdaArity | MTupleArity [@@deriving sexp]
+
+type arity_op = MGetArity | MAssertArity of int32 [@@deriving sexp]
+
+type tuple_op = MTupleGet of int32 | MTupleSet of int32 * immediate
 [@@deriving sexp]
 
-type arity_operand =
-  | MLambdaArity
-  | MTupleArity
-[@@deriving sexp]
-
-type arity_op =
-  | MGetArity
-  | MAssertArity of int32
-[@@deriving sexp]
-
-type tuple_op =
-  | MTupleGet of int32
-  | MTupleSet of int32 * immediate
-[@@deriving sexp]
-
-type box_op =
-  | MBoxUnbox
-  | MBoxUpdate of immediate
-[@@deriving sexp]
+type box_op = MBoxUnbox | MBoxUpdate of immediate [@@deriving sexp]
 
 type array_op =
   | MArrayGet of immediate
@@ -139,15 +123,9 @@ type array_op =
   | MArrayLength
 [@@deriving sexp]
 
-type adt_op =
-  | MAdtGet of int32
-  | MAdtGetModule
-  | MAdtGetTag
-[@@deriving sexp]
+type adt_op = MAdtGet of int32 | MAdtGetModule | MAdtGetTag [@@deriving sexp]
 
-type record_op =
-  | MRecordGet of int32
-[@@deriving sexp]
+type record_op = MRecordGet of int32 [@@deriving sexp]
 
 type instr =
   | MImmediate of immediate
@@ -179,48 +157,49 @@ type import_type =
   | MGlobalImport of asmtype
 [@@deriving sexp]
 
-type import_kind =
-  | MImportWasm
-  | MImportGrain
-[@@deriving sexp]
+type import_kind = MImportWasm | MImportGrain [@@deriving sexp]
 
-type import_setup =
-  | MCallGetter
-  | MWrap of int32
-  | MSetupNone
+type import_setup = MCallGetter | MWrap of int32 | MSetupNone
 [@@deriving sexp]
 
 type import = {
-  mimp_mod: Ident.t;
-  mimp_name: Ident.t;
-  mimp_type: import_type;
-  mimp_kind: import_kind;
-  mimp_setup: import_setup;
-} [@@deriving sexp]
+  mimp_mod : Ident.t;
+  mimp_name : Ident.t;
+  mimp_type : import_type;
+  mimp_kind : import_kind;
+  mimp_setup : import_setup;
+}
+[@@deriving sexp]
 
 type export = {
-  ex_name: Ident.t;
-  ex_global_index: int32;
-  ex_getter_index: int32;
-} [@@deriving sexp]
+  ex_name : Ident.t;
+  ex_global_index : int32;
+  ex_getter_index : int32;
+}
+[@@deriving sexp]
 
 type mash_function = {
-  index: int32;
-  arity: int32; (* TODO: Proper typing of arguments *)
-  body: block;
-  stack_size: int;
-} [@@deriving sexp]
+  index : int32;
+  arity : int32;
+  (* TODO: Proper typing of arguments *)
+  body : block;
+  stack_size : int;
+}
+[@@deriving sexp]
 
 type mash_program = {
-  functions: mash_function list;
-  imports: import list;
-  exports: export list;
-  main_body: block;
-  main_body_stack_size: int;
-  num_globals: int;
-  signature: Cmi_format.cmi_infos;
-} [@@deriving sexp]
+  functions : mash_function list;
+  imports : import list;
+  exports : export list;
+  main_body : block;
+  main_body_stack_size : int;
+  num_globals : int;
+  signature : Cmi_format.cmi_infos;
+}
+[@@deriving sexp]
 
-let const_true =  MConstLiteral (MConstI32 (Int32.of_int 0xFFFFFFFF))
+let const_true = MConstLiteral (MConstI32 (Int32.of_int 0xFFFFFFFF))
+
 let const_false = MConstLiteral (MConstI32 (Int32.of_int 0x7FFFFFFF))
+
 let const_void = MConstLiteral (MConstI32 (Int32.of_int 0x6FFFFFFF))

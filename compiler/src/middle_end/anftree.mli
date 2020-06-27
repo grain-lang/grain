@@ -1,11 +1,12 @@
-(** Linearized (ANF) AST. *)
 open Sexplib.Conv
+(** Linearized (ANF) AST. *)
 
 open Grain_parsing
 open Grain_typed
 open Types
 
 type rec_flag = Asttypes.rec_flag = Nonrecursive | Recursive
+
 type global_flag = Global | Nonglobal [@@deriving sexp]
 
 type 'a loc = 'a Location.loc
@@ -52,28 +53,26 @@ type prim2 = Parsetree.prim2 =
   | Int64Lt
   | Int64Lte
 
-(** Immediate expressions (requiring no computation) *)
 type imm_expression = {
-  imm_desc: imm_expression_desc;
-  imm_loc: Location.t;
-  imm_env: Env.t;
-  imm_analyses: (analysis list) ref;
-} [@@deriving sexp]
-
-and imm_expression_desc =
-  | ImmId of Ident.t
-  | ImmConst of constant
-[@@deriving sexp]
-
-
-(** Compound expressions (non-let-bound) *)
-type comp_expression = {
-  comp_desc: comp_expression_desc;
-  comp_loc: Location.t;
-  comp_env: Env.t;
-  comp_analyses: (analysis list) ref;
+  imm_desc : imm_expression_desc;
+  imm_loc : Location.t;
+  imm_env : Env.t;
+  imm_analyses : analysis list ref;
 }
 [@@deriving sexp]
+(** Immediate expressions (requiring no computation) *)
+
+and imm_expression_desc = ImmId of Ident.t | ImmConst of constant
+[@@deriving sexp]
+
+type comp_expression = {
+  comp_desc : comp_expression_desc;
+  comp_loc : Location.t;
+  comp_env : Env.t;
+  comp_analyses : analysis list ref;
+}
+[@@deriving sexp]
+(** Compound expressions (non-let-bound) *)
 
 and comp_expression_desc =
   | CImmExpr of imm_expression
@@ -102,26 +101,24 @@ and comp_expression_desc =
   | CInt64 of int64
 [@@deriving sexp]
 
-(** Compound expressions (possibly let-bound)
-    TODO: better name *)
 and anf_expression = {
-  anf_desc: anf_expression_desc;
-  anf_loc: Location.t;
-  anf_env: Env.t;
-  anf_analyses: (analysis list) ref;
+  anf_desc : anf_expression_desc;
+  anf_loc : Location.t;
+  anf_env : Env.t;
+  anf_analyses : analysis list ref;
 }
 [@@deriving sexp]
+(** Compound expressions (possibly let-bound)
+    TODO: better name *)
 
 and anf_expression_desc =
-  | AELet of global_flag * rec_flag * (Ident.t * comp_expression) list * anf_expression
+  | AELet of
+      global_flag * rec_flag * (Ident.t * comp_expression) list * anf_expression
   | AESeq of comp_expression * anf_expression
   | AEComp of comp_expression
 [@@deriving sexp]
 
-type import_shape =
-  | FunctionShape of int * int
-  | GlobalShape
-[@@deriving sexp]
+type import_shape = FunctionShape of int * int | GlobalShape [@@deriving sexp]
 
 type import_desc =
   | GrainValue of string * string
@@ -130,17 +127,19 @@ type import_desc =
 [@@deriving sexp]
 
 type import_spec = {
-  imp_use_id: Ident.t; (* <- internal references to the name will use this *)
-  imp_desc: import_desc;
-  imp_shape: import_shape;
-  imp_analyses: (analysis list) ref;
+  imp_use_id : Ident.t;
+  (* <- internal references to the name will use this *)
+  imp_desc : import_desc;
+  imp_shape : import_shape;
+  imp_analyses : analysis list ref;
 }
 [@@deriving sexp]
 
 type anf_program = {
-  body: anf_expression;
-  env: Env.t;
-  imports: import_spec list;
-  signature: Cmi_format.cmi_infos;
-  analyses: (analysis list) ref;
-} [@@deriving sexp]
+  body : anf_expression;
+  env : Env.t;
+  imports : import_spec list;
+  signature : Cmi_format.cmi_infos;
+  analyses : analysis list ref;
+}
+[@@deriving sexp]

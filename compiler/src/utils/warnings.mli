@@ -15,9 +15,9 @@
 (**************************************************************************)
 
 type loc = {
-  loc_start: Lexing.position;
-  loc_end: Lexing.position;
-  loc_ghost: bool;
+  loc_start : Lexing.position;
+  loc_end : Lexing.position;
+  loc_ghost : bool;
 }
 
 type t =
@@ -37,9 +37,9 @@ type t =
   | ShadowConstructor of string
   | NoCmiFile of string * string option
 
-val is_active : t -> bool;;
-val is_error : t -> bool;;
+val is_active : t -> bool
 
+val is_error : t -> bool
 
 type reporting_information = {
   number : int;
@@ -50,11 +50,14 @@ type reporting_information = {
 
 val report : t -> [ `Active of reporting_information | `Inactive ]
 
-exception Errors;;
+exception Errors
 
-val check_fatal : unit -> unit;;
-val reset_fatal: unit -> unit
+val check_fatal : unit -> unit
+
+val reset_fatal : unit -> unit
 
 type state
-val backup: unit -> state
-val restore: state -> unit
+
+val backup : unit -> state
+
+val restore : state -> unit

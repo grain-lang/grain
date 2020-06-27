@@ -19,9 +19,11 @@ open Grain_parsing
 open Types
 
 type 'a loc = 'a Location.loc
+
 type partial = Partial | Total [@@deriving sexp]
 
 type export_flag = Asttypes.export_flag = Nonexported | Exported
+
 type rec_flag = Asttypes.rec_flag = Nonrecursive | Recursive
 
 type prim1 = Parsetree.prim1 =
@@ -64,16 +66,20 @@ type prim2 = Parsetree.prim2 =
   | Int64Lt
   | Int64Lte
 
-let prim1_of_sexp, sexp_of_prim1 = Parsetree.prim1_of_sexp, Parsetree.sexp_of_prim1
-let prim2_of_sexp, sexp_of_prim2 = Parsetree.prim2_of_sexp, Parsetree.sexp_of_prim2
+let prim1_of_sexp, sexp_of_prim1 =
+  (Parsetree.prim1_of_sexp, Parsetree.sexp_of_prim1)
 
+let prim2_of_sexp, sexp_of_prim2 =
+  (Parsetree.prim2_of_sexp, Parsetree.sexp_of_prim2)
 
 type core_type = {
   ctyp_desc : core_type_desc;
   ctyp_type : type_expr;
-  ctyp_env : (Env.t [@sexp.opaque]);
-  ctyp_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
-} [@@deriving sexp]
+  ctyp_env : (Env.t[@sexp.opaque]);
+  ctyp_loc : Location.t;
+      [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled]
+}
+[@@deriving sexp]
 
 and core_type_desc =
   | TTyAny
@@ -85,24 +91,26 @@ and core_type_desc =
   | TTyPoly of string list * core_type
 [@@deriving sexp]
 
-type constructor_arguments =
-  | TConstrTuple of core_type list
-  | TConstrSingleton
+type constructor_arguments = TConstrTuple of core_type list | TConstrSingleton
 [@@deriving sexp]
 
 type constructor_declaration = {
-  cd_id: Ident.t;
-  cd_name: string loc;
-  cd_args: constructor_arguments;
-  cd_res: core_type option;
-  cd_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
-} [@@deriving sexp]
+  cd_id : Ident.t;
+  cd_name : string loc;
+  cd_args : constructor_arguments;
+  cd_res : core_type option;
+  cd_loc : Location.t;
+      [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled]
+}
+[@@deriving sexp]
 
 type record_field = {
-  rf_name: Ident.t;
-  rf_type: core_type;
-  rf_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
-} [@@deriving sexp]
+  rf_name : Ident.t;
+  rf_type : core_type;
+  rf_loc : Location.t;
+      [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled]
+}
+[@@deriving sexp]
 
 type data_kind =
   | TDataVariant of constructor_declaration list
@@ -110,48 +118,53 @@ type data_kind =
 [@@deriving sexp]
 
 type data_declaration = {
-  data_id: Ident.t;
-  data_name: string loc;
-  data_params: core_type list;
-  data_type: Types.type_declaration;
-  data_kind: data_kind;
-  data_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
-} [@@deriving sexp]
+  data_id : Ident.t;
+  data_name : string loc;
+  data_params : core_type list;
+  data_type : Types.type_declaration;
+  data_kind : data_kind;
+  data_loc : Location.t;
+      [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled]
+}
+[@@deriving sexp]
 
 type pattern = {
-  pat_desc: pattern_desc;
-  pat_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
-  pat_extra: (pat_extra * Location.t) list [@default []] [@sexp_drop_default (=)];
-  pat_type: type_expr;
-  mutable pat_env: (Env.t [@sexp.opaque]);
-} [@@deriving sexp]
-
-and pat_extra =
-  | TPatConstraint of core_type
+  pat_desc : pattern_desc;
+  pat_loc : Location.t;
+      [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled]
+  pat_extra : (pat_extra * Location.t) list;
+      [@default []] [@sexp_drop_default ( = )]
+  pat_type : type_expr;
+  mutable pat_env : (Env.t[@sexp.opaque]);
+}
 [@@deriving sexp]
+
+and pat_extra = TPatConstraint of core_type [@@deriving sexp]
 
 and pattern_desc =
   | TPatAny
   | TPatVar of Ident.t * string loc
   | TPatConstant of constant
   | TPatTuple of pattern list
-  | TPatRecord of (Identifier.t loc * label_description * pattern) list * closed_flag
+  | TPatRecord of
+      (Identifier.t loc * label_description * pattern) list * closed_flag
   | TPatConstruct of Identifier.t loc * constructor_description * pattern list
   | TPatAlias of pattern * Ident.t * string loc
   | TPatOr of pattern * pattern
 [@@deriving sexp]
 
 type expression = {
-  exp_desc: expression_desc;
-  exp_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
-  exp_extra: (exp_extra * Location.t) list [@default []] [@sexp_drop_default (=)];
-  exp_type: type_expr;
-  exp_env: (Env.t [@sexp.opaque]);
-} [@@deriving sexp]
-
-and exp_extra =
-  | TExpConstraint of core_type
+  exp_desc : expression_desc;
+  exp_loc : Location.t;
+      [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled]
+  exp_extra : (exp_extra * Location.t) list;
+      [@default []] [@sexp_drop_default ( = )]
+  exp_type : type_expr;
+  exp_env : (Env.t[@sexp.opaque]);
+}
 [@@deriving sexp]
+
+and exp_extra = TExpConstraint of core_type [@@deriving sexp]
 
 and expression_desc =
   | TExpIdent of Path.t * Identifier.t loc * Types.value_description
@@ -171,7 +184,8 @@ and expression_desc =
   | TExpWhile of expression * expression
   | TExpLambda of match_branch list * partial
   | TExpApp of expression * expression list
-  | TExpConstruct of Identifier.t loc * constructor_description * expression list
+  | TExpConstruct of
+      Identifier.t loc * constructor_description * expression list
   | TExpBlock of expression list
   | TExpNull
 [@@deriving sexp]
@@ -181,36 +195,46 @@ and record_label_definition =
   | Overridden of Identifier.t loc * expression
 
 and value_binding = {
-  vb_pat: pattern;
-  vb_expr: expression;
-  vb_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
-} [@@deriving sexp]
+  vb_pat : pattern;
+  vb_expr : expression;
+  vb_loc : Location.t;
+      [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled]
+}
+[@@deriving sexp]
 
 and match_branch = {
-  mb_pat: pattern;
-  mb_body: expression;
-  mb_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
-} [@@deriving sexp]
+  mb_pat : pattern;
+  mb_body : expression;
+  mb_loc : Location.t;
+      [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled]
+}
+[@@deriving sexp]
 
 type import_declaration = {
-  timp_path: Path.t;
-  timp_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
-} [@@deriving sexp]
+  timp_path : Path.t;
+  timp_loc : Location.t;
+      [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled]
+}
+[@@deriving sexp]
 
 type export_declaration = {
-  tex_path: Path.t;
-  tex_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
-} [@@deriving sexp]
+  tex_path : Path.t;
+  tex_loc : Location.t;
+      [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled]
+}
+[@@deriving sexp]
 
 type value_description = {
-  tvd_id: Ident.t;
-  tvd_mod: string loc;
-  tvd_name: string loc;
-  tvd_desc: core_type;
-  tvd_val: Types.value_description;
-  tvd_prim: string list;
-  tvd_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
-} [@@deriving sexp]
+  tvd_id : Ident.t;
+  tvd_mod : string loc;
+  tvd_name : string loc;
+  tvd_desc : core_type;
+  tvd_val : Types.value_description;
+  tvd_prim : string list;
+  tvd_loc : Location.t;
+      [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled]
+}
+[@@deriving sexp]
 
 type toplevel_stmt_desc =
   | TTopForeign of value_description
@@ -222,86 +246,86 @@ type toplevel_stmt_desc =
 [@@deriving sexp]
 
 type toplevel_stmt = {
-  ttop_desc: toplevel_stmt_desc;
-  ttop_loc: Location.t [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled];
-  ttop_env: (Env.t [@sexp.opaque]);
-} [@@deriving sexp]
+  ttop_desc : toplevel_stmt_desc;
+  ttop_loc : Location.t;
+      [@sexp_drop_if fun _ -> not !Grain_utils.Config.sexp_locs_enabled]
+  ttop_env : (Env.t[@sexp.opaque]);
+}
+[@@deriving sexp]
 
 type typed_program = {
-  statements: toplevel_stmt list;
-  env: (Env.t [@sexp.opaque]);
-  signature: Cmi_format.cmi_infos;
-} [@@deriving sexp]
+  statements : toplevel_stmt list;
+  env : (Env.t[@sexp.opaque]);
+  signature : Cmi_format.cmi_infos;
+}
+[@@deriving sexp]
 
 let iter_pattern_desc f patt =
   match patt with
-  | TPatTuple patts
-  | TPatConstruct(_, _, patts) -> List.iter f patts
-  | TPatRecord(fields, _) ->
-    List.iter (fun (_, _, p) -> f p) fields
-  | TPatAny
-  | TPatVar _
-  | TPatConstant _ -> ()
-  | TPatAlias(p, _, _) -> f p
-  | TPatOr(p1, p2) -> f p1; f p2
+  | TPatTuple patts | TPatConstruct (_, _, patts) -> List.iter f patts
+  | TPatRecord (fields, _) -> List.iter (fun (_, _, p) -> f p) fields
+  | TPatAny | TPatVar _ | TPatConstant _ -> ()
+  | TPatAlias (p, _, _) -> f p
+  | TPatOr (p1, p2) ->
+      f p1;
+      f p2
 
 let map_pattern_desc f patt =
   match patt with
   | TPatTuple patts -> TPatTuple (List.map f patts)
-  | TPatRecord(fields, c) -> TPatRecord((List.map (fun (id, ld, pat) -> id, ld, f pat) fields), c)
-  | TPatAlias(p1, id, s) -> TPatAlias(f p1, id, s)
-  | TPatConstruct(lid, c, pats) -> TPatConstruct(lid, c, List.map f pats)
-  | TPatOr(p1, p2) -> TPatOr(f p1, f p2)
+  | TPatRecord (fields, c) ->
+      TPatRecord (List.map (fun (id, ld, pat) -> (id, ld, f pat)) fields, c)
+  | TPatAlias (p1, id, s) -> TPatAlias (f p1, id, s)
+  | TPatConstruct (lid, c, pats) -> TPatConstruct (lid, c, List.map f pats)
+  | TPatOr (p1, p2) -> TPatOr (f p1, f p2)
   | _ -> patt
 
 let pattern_bound_idents_and_locs patt =
   let ret = ref [] in
-  let rec help {pat_desc=desc; _} =
+  let rec help { pat_desc = desc; _ } =
     match desc with
-    | TPatVar(id, s) -> ret := (id, s)::!ret
-    | TPatAlias(p, id, s) ->
-      help p; ret := (id, s)::!ret
-    | TPatOr(p1, _) ->
-      (* Invariant: both arguments bind the same variables *)
-      help p1
-    | _ -> iter_pattern_desc help desc in
+    | TPatVar (id, s) -> ret := (id, s) :: !ret
+    | TPatAlias (p, id, s) ->
+        help p;
+        ret := (id, s) :: !ret
+    | TPatOr (p1, _) ->
+        (* Invariant: both arguments bind the same variables *)
+        help p1
+    | _ -> iter_pattern_desc help desc
+  in
   help patt;
   !ret
 
 let pattern_bound_idents patt =
-  pattern_bound_idents_and_locs patt
-  |> List.map fst
+  pattern_bound_idents_and_locs patt |> List.map fst
 
 let rev_let_bound_idents_with_loc bindings =
-  List.map (fun {vb_pat; _} -> vb_pat) bindings
+  List.map (fun { vb_pat; _ } -> vb_pat) bindings
   |> List.map pattern_bound_idents_and_locs
   |> List.fold_left (fun acc cur -> cur @ acc) []
 
 let let_bound_idents_with_loc bindings =
-  rev_let_bound_idents_with_loc bindings
-  |> List.rev
+  rev_let_bound_idents_with_loc bindings |> List.rev
 
 let rev_let_bound_idents pat = List.map fst (rev_let_bound_idents_with_loc pat)
+
 let let_bound_idents pat = List.map fst (let_bound_idents_with_loc pat)
 
 let alpha_var env id = List.assoc id env
 
-let rec alpha_pat env ({pat_desc=desc; _} as p) =
+let rec alpha_pat env ({ pat_desc = desc; _ } as p) =
   match desc with
-  | TPatVar(id, s) ->
-    let new_desc = try
-        TPatVar(alpha_var env id, s)
-      with
-      | Not_found -> TPatAny in
-    {p with pat_desc=new_desc}
-  | TPatAlias(p1, id, s) ->
-    let new_p = alpha_pat env p1 in
-    begin try
-        {p with pat_desc=TPatAlias(new_p, alpha_var env id, s)}
-      with
-      | Not_found -> new_p
-    end
-  | _ -> {p with pat_desc = map_pattern_desc (alpha_pat env) desc}
+  | TPatVar (id, s) ->
+      let new_desc =
+        try TPatVar (alpha_var env id, s) with Not_found -> TPatAny
+      in
+      { p with pat_desc = new_desc }
+  | TPatAlias (p1, id, s) -> (
+      let new_p = alpha_pat env p1 in
+      try { p with pat_desc = TPatAlias (new_p, alpha_var env id, s) }
+      with Not_found -> new_p )
+  | _ -> { p with pat_desc = map_pattern_desc (alpha_pat env) desc }
 
 let mkloc = Location.mkloc
+
 let mknoloc = Location.mknoloc

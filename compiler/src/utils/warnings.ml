@@ -1,9 +1,9 @@
 (* See copyright information in warnings.mli *)
 
 type loc = {
-  loc_start: Lexing.position;
-  loc_end: Lexing.position;
-  loc_ghost: bool;
+  loc_start : Lexing.position;
+  loc_end : Lexing.position;
+  loc_ghost : bool;
 }
 
 type t =
@@ -43,67 +43,71 @@ let number = function
 let last_warning_number = 15
 
 let message = function
-  | LetRecNonFunction(name) ->
-    Printf.sprintf "'%s' is not a function, but is bound with 'let rec'" name
-  | NotPrincipal s -> s^" is not principal."
-  | NameOutOfScope (ty, [nm], false) ->
-    nm ^ " was selected from type " ^ ty ^
-    ".\nIt is not visible in the current scope, and will not \n\
-     be selected if the type becomes unknown."
+  | LetRecNonFunction name ->
+      Printf.sprintf "'%s' is not a function, but is bound with 'let rec'" name
+  | NotPrincipal s -> s ^ " is not principal."
+  | NameOutOfScope (ty, [ nm ], false) ->
+      nm ^ " was selected from type " ^ ty
+      ^ ".\n\
+         It is not visible in the current scope, and will not \n\
+         be selected if the type becomes unknown."
   | NameOutOfScope (_, _, false) -> assert false
   | NameOutOfScope (ty, slist, true) ->
-    "this record of type "^ ty ^" contains fields that are \n\
-    not visible in the current scope: "
-    ^ String.concat " " slist ^ ".\n\
-    They will not be selected if the type becomes unknown."
-  | AmbiguousName ([s], tl, false) ->
-    s ^ " belongs to several types: " ^ String.concat " " tl ^
-    "\nThe first one was selected. Please disambiguate if this is wrong."
+      "this record of type " ^ ty
+      ^ " contains fields that are \nnot visible in the current scope: "
+      ^ String.concat " " slist
+      ^ ".\nThey will not be selected if the type becomes unknown."
+  | AmbiguousName ([ s ], tl, false) ->
+      s ^ " belongs to several types: " ^ String.concat " " tl
+      ^ "\nThe first one was selected. Please disambiguate if this is wrong."
   | AmbiguousName (_, _, false) -> assert false
   | AmbiguousName (_slist, tl, true) ->
-    "these field labels belong to several types: " ^
-      String.concat " " tl ^
-    "\nThe first one was selected. Please disambiguate if this is wrong."
+      "these field labels belong to several types: " ^ String.concat " " tl
+      ^ "\nThe first one was selected. Please disambiguate if this is wrong."
   | StatementType -> "this expression should have type void."
-  | NonreturningStatement -> "this statement never returns (or has an unsound type)."
+  | NonreturningStatement ->
+      "this statement never returns (or has an unsound type)."
   | AllClausesGuarded ->
-    "this pattern-matching is not exhaustive.\n\
-     All clauses in this pattern-matching are guarded."
+      "this pattern-matching is not exhaustive.\n\
+       All clauses in this pattern-matching are guarded."
   | PartialMatch "" -> "this pattern-matching is not exhaustive."
   | PartialMatch s ->
-    "this pattern-matching is not exhaustive.\n\
-     Here is an example of a case that is not matched:\n" ^ s
+      "this pattern-matching is not exhaustive.\n\
+       Here is an example of a case that is not matched:\n" ^ s
   | FragileMatch "" -> "this pattern-matching is fragile."
   | FragileMatch s ->
-    "this pattern-matching is fragile.\n\
-     It will remain exhaustive when constructors are added to type " ^ s ^ "."
+      "this pattern-matching is fragile.\n\
+       It will remain exhaustive when constructors are added to type " ^ s ^ "."
   | UnusedMatch -> "this match case is unused."
   | UnusedPat -> "this sub-pattern is unused."
   | UnreachableCase -> "this mach case is unreachable."
-  | ShadowConstructor s -> "the pattern variable " ^ s ^ " shadows a constructor of the same name."
-  | NoCmiFile(name, None) -> "no cmi file was found in path for module " ^ name
-  | NoCmiFile(name, Some msg) -> Printf.sprintf "no valid cmi file was found in path for module %s. %s" name msg
-  | NonClosedRecordPattern s -> "the following fields are missing from the record pattern: " ^ s
+  | ShadowConstructor s ->
+      "the pattern variable " ^ s ^ " shadows a constructor of the same name."
+  | NoCmiFile (name, None) -> "no cmi file was found in path for module " ^ name
+  | NoCmiFile (name, Some msg) ->
+      Printf.sprintf "no valid cmi file was found in path for module %s. %s"
+        name msg
+  | NonClosedRecordPattern s ->
+      "the following fields are missing from the record pattern: " ^ s
 
-let sub_locs = function
-  | _ -> []
+let sub_locs = function _ -> []
 
-type state = {
-  active: bool array;
-  error: bool array;
-}
+type state = { active : bool array; error : bool array }
 
-let current = ref {
-    active = Array.make (last_warning_number + 1) true;
-    error = Array.make (last_warning_number + 1) false;
-  }
+let current =
+  ref
+    {
+      active = Array.make (last_warning_number + 1) true;
+      error = Array.make (last_warning_number + 1) false;
+    }
 
 let backup () = !current
 
 let restore x = current := x
 
-let is_active x = (!current).active.(number x)
-let is_error x = (!current).error.(number x)
+let is_active x = !current.active.(number x)
+
+let is_error x = !current.error.(number x)
 
 let nerrors = ref 0
 
@@ -116,18 +120,19 @@ type reporting_information = {
 
 let report w =
   if is_error w then incr nerrors;
-  `Active { number = number w; message = message w; is_error = is_error w;
-            sub_locs = sub_locs w; }
-
+  `Active
+    {
+      number = number w;
+      message = message w;
+      is_error = is_error w;
+      sub_locs = sub_locs w;
+    }
 
 exception Errors
 
-let reset_fatal () =
-  nerrors := 0
+let reset_fatal () = nerrors := 0
 
 let check_fatal () =
-  if !nerrors > 0 then begin
+  if !nerrors > 0 then (
     nerrors := 0;
-    raise Errors;
-  end;
-
+    raise Errors )

@@ -1,5 +1,5 @@
-(** Runtime Error definitions *)
 open Sexplib.Conv
+(** Runtime Error definitions *)
 
 type grain_error =
   | ComparisonError
@@ -28,57 +28,81 @@ type grain_error =
   | GenericNumberError
 [@@deriving sexp]
 
-let all_grain_errors = [
-  ComparisonError;
-  ArithmeticError;
-  DivisionByZeroError;
-  ModuloByZeroError;
-  LogicError;
-  IfError;
-  OverflowError;
-  ArityMismatch;
-  CalledNonFunction;
-  GetItemNotTuple;
-  GetItemIndexNotNumber;
-  GetItemIndexTooSmall;
-  GetItemIndexTooLarge;
-  ArrayIndexOutOfBounds;
-  SetItemNotTuple;
-  SetItemIndexNotNumber;
-  SetItemIndexTooSmall;
-  SetItemIndexTooLarge;
-  SwitchError;
-  InvalidArgument;
-  AssertionError;
-  Failure;
-  SystemError;
-  GenericNumberError;
-]
+let all_grain_errors =
+  [
+    ComparisonError;
+    ArithmeticError;
+    DivisionByZeroError;
+    ModuloByZeroError;
+    LogicError;
+    IfError;
+    OverflowError;
+    ArityMismatch;
+    CalledNonFunction;
+    GetItemNotTuple;
+    GetItemIndexNotNumber;
+    GetItemIndexTooSmall;
+    GetItemIndexTooLarge;
+    ArrayIndexOutOfBounds;
+    SetItemNotTuple;
+    SetItemIndexNotNumber;
+    SetItemIndexTooSmall;
+    SetItemIndexTooLarge;
+    SwitchError;
+    InvalidArgument;
+    AssertionError;
+    Failure;
+    SystemError;
+    GenericNumberError;
+  ]
 
-let err_COMP_NOT_NUM              = 0
-let err_ARITH_NOT_NUM             = 1
-let err_LOGIC_NOT_BOOL            = 2
-let err_IF_NOT_BOOL               = 3
-let err_OVERFLOW                  = 4
-let err_GET_NOT_TUP               = 5
+let err_COMP_NOT_NUM = 0
+
+let err_ARITH_NOT_NUM = 1
+
+let err_LOGIC_NOT_BOOL = 2
+
+let err_IF_NOT_BOOL = 3
+
+let err_OVERFLOW = 4
+
+let err_GET_NOT_TUP = 5
+
 let err_GET_ITEM_INDEX_NOT_NUMBER = 6
-let err_GET_ITEM_INDEX_TOO_SMALL  = 7
-let err_GET_ITEM_INDEX_TOO_LARGE  = 8
-let err_CALLED_NON_FUNCTION       = 9
-let err_ARITY_MISMATCH            = 10
-let err_SET_NOT_TUP               = 12
+
+let err_GET_ITEM_INDEX_TOO_SMALL = 7
+
+let err_GET_ITEM_INDEX_TOO_LARGE = 8
+
+let err_CALLED_NON_FUNCTION = 9
+
+let err_ARITY_MISMATCH = 10
+
+let err_SET_NOT_TUP = 12
+
 let err_SET_ITEM_INDEX_NOT_NUMBER = 13
-let err_SET_ITEM_INDEX_TOO_SMALL  = 14
-let err_SET_ITEM_INDEX_TOO_LARGE  = 15
-let err_SWITCH                    = 16
-let err_DIVISION_BY_ZERO          = 17
-let err_MODULO_BY_ZERO            = 18
+
+let err_SET_ITEM_INDEX_TOO_SMALL = 14
+
+let err_SET_ITEM_INDEX_TOO_LARGE = 15
+
+let err_SWITCH = 16
+
+let err_DIVISION_BY_ZERO = 17
+
+let err_MODULO_BY_ZERO = 18
+
 let err_ARRAY_INDEX_OUT_OF_BOUNDS = 19
-let err_INVALID_ARGUMENT          = 20
-let err_ASSERTION_ERROR           = 21
-let err_FAILURE                   = 22
-let err_SYSTEM_ERROR              = 23
-let err_GENERIC_NUM               = 99
+
+let err_INVALID_ARGUMENT = 20
+
+let err_ASSERTION_ERROR = 21
+
+let err_FAILURE = 22
+
+let err_SYSTEM_ERROR = 23
+
+let err_GENERIC_NUM = 99
 
 let code_of_error = function
   | ArithmeticError -> err_ARITH_NOT_NUM
@@ -186,23 +210,23 @@ let error_of_code c =
   | x when x = err_SYSTEM_ERROR -> SystemError
   | c -> failwith (Printf.sprintf "Unknown error code: %d" c)
 
-let max_arity = List.fold_left (fun x y -> max x (arity_of_error y)) 0 all_grain_errors
+let max_arity =
+  List.fold_left (fun x y -> max x (arity_of_error y)) 0 all_grain_errors
 
-let pad_args : 'a. 'a -> 'a list -> 'a list = fun pad_elt args ->
-  let pad_amount = max_arity - (List.length args) in
-  if pad_amount = 0 then
-    args
-  else
-    (args @ (BatList.init pad_amount (fun _ -> pad_elt)))
+let pad_args : 'a. 'a -> 'a list -> 'a list =
+ fun pad_elt args ->
+  let pad_amount = max_arity - List.length args in
+  if pad_amount = 0 then args
+  else args @ BatList.init pad_amount (fun _ -> pad_elt)
 
-let validate_args : 'a. grain_error -> 'a list -> unit = fun error args ->
+let validate_args : 'a. grain_error -> 'a list -> unit =
+ fun error args ->
   let arity = arity_of_error error in
   let num_args = List.length args in
   if num_args <> arity then
     failwith
       (Printf.sprintf
-         "Internal error (runtime_errors): Error %s expects %d arguments; generated code calls with %d."
+         "Internal error (runtime_errors): Error %s expects %d arguments; \
+          generated code calls with %d."
          (Sexplib.Sexp.to_string_hum (sexp_of_grain_error error))
-         arity
-         num_args)
-
+         arity num_args)

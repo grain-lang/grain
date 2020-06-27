@@ -20,37 +20,52 @@ open Asttypes
 open Types
 open Format
 
-val is_nonexpansive: Typedtree.expression -> bool
+val is_nonexpansive : Typedtree.expression -> bool
 
-val type_binding:
-        Env.t -> rec_flag ->
-          Parsetree.value_binding list ->
-          'a option ->
-          Typedtree.value_binding list * Env.t
-val type_let:
-        Env.t -> rec_flag ->
-          Parsetree.value_binding list ->
-          'a option ->
-          Typedtree.value_binding list * Env.t
-val type_expression:
-  Env.t -> Parsetree.expression -> Typedtree.expression
-val type_statement_expr:
-  ?explanation:Checkertypes.type_forcing_context -> Env.t -> Parsetree.expression -> Typedtree.expression
+val type_binding :
+  Env.t ->
+  rec_flag ->
+  Parsetree.value_binding list ->
+  'a option ->
+  Typedtree.value_binding list * Env.t
+
+val type_let :
+  Env.t ->
+  rec_flag ->
+  Parsetree.value_binding list ->
+  'a option ->
+  Typedtree.value_binding list * Env.t
+
+val type_expression : Env.t -> Parsetree.expression -> Typedtree.expression
+
+val type_statement_expr :
+  ?explanation:Checkertypes.type_forcing_context ->
+  Env.t ->
+  Parsetree.expression ->
+  Typedtree.expression
+
 (*val check_partial:
         ?lev:int -> Env.t -> type_expr ->
         Location.t -> Typedtree.match_branch list -> Typedtree.partial*)
-val type_expect:
-        ?in_function:(Location.t * type_expr) ->
-        Env.t -> Parsetree.expression -> Checkertypes.type_expected -> Typedtree.expression
-val type_exp:
-        Env.t -> Parsetree.expression -> Typedtree.expression
-val type_approx:
-        Env.t -> Parsetree.expression -> type_expr
-val type_arguments:
-        Env.t -> Parsetree.expression list ->
-        type_expr list -> type_expr list -> Typedtree.expression list
+val type_expect :
+  ?in_function:Location.t * type_expr ->
+  Env.t ->
+  Parsetree.expression ->
+  Checkertypes.type_expected ->
+  Typedtree.expression
 
-val generalizable: int -> type_expr -> bool
+val type_exp : Env.t -> Parsetree.expression -> Typedtree.expression
+
+val type_approx : Env.t -> Parsetree.expression -> type_expr
+
+val type_arguments :
+  Env.t ->
+  Parsetree.expression list ->
+  type_expr list ->
+  type_expr list ->
+  Typedtree.expression list
+
+val generalizable : int -> type_expr -> bool
 
 val name_pattern : string -> Typedtree.match_branch list -> Ident.t
 
@@ -63,12 +78,19 @@ type error =
   | Or_pattern_type_clash of Ident.t * (type_expr * type_expr) list
   | Multiply_bound_variable of string
   | Orpat_vars of Ident.t * Ident.t list
-  | Expr_type_clash of (type_expr * type_expr) list * Checkertypes.type_forcing_context option
+  | Expr_type_clash of
+      (type_expr * type_expr) list * Checkertypes.type_forcing_context option
   | Apply_non_function of type_expr
   | Label_multiply_defined of string
   | Label_missing of Ident.t list
   | Label_not_mutable of Identifier.t
-  | Wrong_name of string * Checkertypes.type_expected * string * Path.t * string * string list
+  | Wrong_name of
+      string
+      * Checkertypes.type_expected
+      * string
+      * Path.t
+      * string
+      * string list
   | Name_type_mismatch of
       string * Identifier.t * (Path.t * Path.t) * (Path.t * Path.t) list
   | Invalid_format of string
@@ -84,7 +106,8 @@ type error =
   | Value_multiply_overridden of string
   | Coercion_failure of
       type_expr * type_expr * (type_expr * type_expr) list * bool
-  | Too_many_arguments of bool * type_expr * Checkertypes.type_forcing_context option
+  | Too_many_arguments of
+      bool * type_expr * Checkertypes.type_forcing_context option
   | Scoping_let_module of string * type_expr
   | Masked_instance_variable of Identifier.t
   | Not_a_variant_type of Identifier.t
@@ -112,6 +135,7 @@ type error =
   | Unbound_value_missing_rec of Identifier.t * Location.t
 
 exception Error of Location.t * Env.t * error
+
 exception Error_forward of Location.error
 
 (* Forward declaration, to be filled in by Typemod.type_open *)
@@ -120,6 +144,7 @@ exception Error_forward of Location.error
    Identifier.t loc -> Path.t * Env.t)
     ref*)
 
-val constant: Parsetree.constant -> (Asttypes.constant, Checkertypes.error) result
+val constant :
+  Parsetree.constant -> (Asttypes.constant, Checkertypes.error) result
 
 val check_recursive_bindings : Env.t -> Typedtree.value_binding list -> unit

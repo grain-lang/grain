@@ -14,10 +14,8 @@
 (*                                                                        *)
 (**************************************************************************)
 
-type stxerr =
-  | LetWithoutBody of Location.t
-  | Other of Location.t
+type stxerr = LetWithoutBody of Location.t | Other of Location.t
 
 exception Error of stxerr
 
-val location_of_error: stxerr -> Location.t
+val location_of_error : stxerr -> Location.t

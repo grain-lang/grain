@@ -16,7 +16,11 @@
 open Grain_parsing
 
 val pretty_const : Asttypes.constant -> string
+
 val top_pretty : Format.formatter -> Typedtree.pattern -> unit
+
 val pretty_pat : Typedtree.pattern -> unit
+
 val pretty_line : Format.formatter -> Typedtree.pattern list -> unit
+
 val pretty_matrix : Format.formatter -> Typedtree.pattern list list -> unit

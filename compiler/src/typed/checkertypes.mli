@@ -30,8 +30,8 @@ type type_forcing_context =
    required, in order to display a more enlightening error message.
 *)
 type type_expected = {
-  ty: type_expr;
-  explanation: type_forcing_context option;
+  ty : type_expr;
+  explanation : type_forcing_context option;
 }
 
 type error
@@ -43,13 +43,16 @@ type error
   or [Typedtree.pattern] that will end up in the typed AST.
 *)
 
-val re: Typedtree.expression -> Typedtree.expression
-val rp: Typedtree.pattern -> Typedtree.pattern
+val re : Typedtree.expression -> Typedtree.expression
 
-val mk_expected : ?explanation:type_forcing_context -> type_expr -> type_expected
+val rp : Typedtree.pattern -> Typedtree.pattern
+
+val mk_expected :
+  ?explanation:type_forcing_context -> type_expr -> type_expected
 
 val type_constant : Asttypes.constant -> type_expr
 
 val constant : Parsetree.constant -> (Asttypes.constant, error) result
 
-val constant_or_raise : Env.t -> Location.t -> Parsetree.constant -> Asttypes.constant
+val constant_or_raise :
+  Env.t -> Location.t -> Parsetree.constant -> Asttypes.constant

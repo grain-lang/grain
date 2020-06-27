@@ -10,31 +10,30 @@ let add_constant id value =
 module ConstantPropagationArg : Anf_mapper.MapArgument = struct
   include Anf_mapper.DefaultMapArgument
 
-  let enter_anf_expression ({anf_desc = desc} as a) =
-    begin match desc with
-      | AELet(g, r, binds, body) ->
-      List.iter (fun (id, v) ->
-        match v with
-        | {comp_desc=CImmExpr({imm_desc=ImmConst(c)})} -> add_constant id c
-        | _ -> ()
-        ) binds
-      | _ -> ()
-    end;
+  let enter_anf_expression ({ anf_desc = desc } as a) =
+    ( match desc with
+    | AELet (g, r, binds, body) ->
+        List.iter
+          (fun (id, v) ->
+            match v with
+            | { comp_desc = CImmExpr { imm_desc = ImmConst c } } ->
+                add_constant id c
+            | _ -> ())
+          binds
+    | _ -> () );
     a
 
-  let leave_imm_expression ({imm_desc = desc} as i) =
+  let leave_imm_expression ({ imm_desc = desc } as i) =
     match desc with
-    | ImmId(id) -> begin
-      try 
-        let value = Ident.find_same id !known_constants in
-        {i with imm_desc=ImmConst(value)}
-      with
-        Not_found -> i end
+    | ImmId id -> (
+        try
+          let value = Ident.find_same id !known_constants in
+          { i with imm_desc = ImmConst value }
+        with Not_found -> i )
     | _ -> i
-
 end
 
-module ConstantPropagationMapper = Anf_mapper.MakeMap(ConstantPropagationArg)
+module ConstantPropagationMapper = Anf_mapper.MakeMap (ConstantPropagationArg)
 
 let optimize anfprog =
   (* Reset state *)

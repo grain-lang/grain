@@ -34,11 +34,12 @@ type type_forcing_context =
   | Assign_not_array_index
 
 type type_expected = {
-  ty: type_expr;
-  explanation: type_forcing_context option;
+  ty : type_expr;
+  explanation : type_forcing_context option;
 }
 
 type error = string
+
 exception Error of Location.t * Env.t * error
 
 (*
@@ -49,17 +50,15 @@ exception Error of Location.t * Env.t * error
 *)
 let re node =
   (*Cmt_format.add_saved_type (Cmt_format.Partial_expression node);
-  Stypes.record (Stypes.Ti_expr node);*)
+    Stypes.record (Stypes.Ti_expr node);*)
   node
-;;
+
 let rp node =
   (*Cmt_format.add_saved_type (Cmt_format.Partial_pattern node);
-  Stypes.record (Stypes.Ti_pat node);*)
+    Stypes.record (Stypes.Ti_pat node);*)
   node
-;;
 
-
-let mk_expected ?explanation ty = { ty; explanation; }
+let mk_expected ?explanation ty = { ty; explanation }
 
 let type_constant = function
   | Const_int _ -> instance_def Builtin_types.type_number
@@ -70,13 +69,14 @@ let type_constant = function
   | Const_string _ -> instance_def Builtin_types.type_string
   | _ -> failwith "NYI: type_constant"
 
-let constant : Parsetree.constant -> (Asttypes.constant, error) result = function
-  | PConstNumber(n) -> Ok(Const_int n)
-  | PConstInt32(n) -> Ok(Const_int32 n)
-  | PConstInt64(n) -> Ok(Const_int64 n)
-  | PConstBool(b) -> Ok(Const_bool b)
-  | PConstVoid -> Ok(Const_void)
-  | PConstString(s) -> Ok(Const_string s)
+let constant : Parsetree.constant -> (Asttypes.constant, error) result =
+  function
+  | PConstNumber n -> Ok (Const_int n)
+  | PConstInt32 n -> Ok (Const_int32 n)
+  | PConstInt64 n -> Ok (Const_int64 n)
+  | PConstBool b -> Ok (Const_bool b)
+  | PConstVoid -> Ok Const_void
+  | PConstString s -> Ok (Const_string s)
 
 let constant_or_raise env loc cst =
   match constant cst with

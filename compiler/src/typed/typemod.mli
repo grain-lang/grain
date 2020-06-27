@@ -3,7 +3,7 @@ open Types
 open Typedtree
 
 type error =
-    Cannot_apply of module_type
+  | Cannot_apply of module_type
   | Not_included of Includemod.error list
   | Cannot_eliminate_dependency of module_type
   | Signature_expected
@@ -28,6 +28,7 @@ type error =
   | Cannot_scrape_alias of Path.t
 
 exception Error of Location.t * Env.t * error
+
 exception Error_forward of Location.error
 
 val type_implementation : Parsetree.parsed_program -> Typedtree.typed_program

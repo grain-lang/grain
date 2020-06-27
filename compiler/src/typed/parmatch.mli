@@ -47,17 +47,16 @@ val le_pats : pattern list -> pattern list -> bool
 (** [le_pats (p1 .. pm) (q1 .. qn)] means: forall i <= m, [le_pat pi qi] *)
 
 (** Exported compatibility functor, abstracted over constructor equality *)
-module Compat :
-  functor
-    (Constr: sig
-      val equal :
-          Types.constructor_description ->
-            Types.constructor_description ->
-              bool
-     end) -> sig
-       val compat : pattern -> pattern -> bool
-       val compats : pattern list -> pattern list -> bool
-     end
+module Compat : functor
+  (Constr : sig
+     val equal :
+       Types.constructor_description -> Types.constructor_description -> bool
+   end)
+  -> sig
+  val compat : pattern -> pattern -> bool
+
+  val compats : pattern list -> pattern list -> bool
+end
 
 exception Empty
 
@@ -71,41 +70,50 @@ val lubs : pattern list -> pattern list -> pattern list
 
 val get_mins : ('a -> 'a -> bool) -> 'a list -> 'a list
 
+val set_args : pattern -> pattern list -> pattern list
 (** Those two functions recombine one pattern and its arguments:
     For instance:
       (_,_)::p1::p2::rem -> (p1, p2)::rem
     The second one will replace mutable arguments by '_'
 *)
-val set_args : pattern -> pattern list -> pattern list
+
 val set_args_erase_mutable : pattern -> pattern list -> pattern list
 
 val pat_of_constr : pattern -> constructor_description -> pattern
-val complete_constrs :
-    pattern -> constructor_tag list -> constructor_description  list
-val ppat_of_type :
-    Env.t -> type_expr ->
-    Parsetree.pattern *
-    (string, constructor_description) Hashtbl.t
 
-val pressure_variants: Env.t -> pattern list -> unit
-val check_partial:
-    ((string, constructor_description) Hashtbl.t ->
-     Parsetree.pattern -> pattern option) ->
-    Location.t -> match_branch list -> partial
-val check_unused:
-    (bool ->
-     (string, constructor_description) Hashtbl.t ->
-     Parsetree.pattern -> pattern option) ->
-    match_branch list -> unit
+val complete_constrs :
+  pattern -> constructor_tag list -> constructor_description list
+
+val ppat_of_type :
+  Env.t ->
+  type_expr ->
+  Parsetree.pattern * (string, constructor_description) Hashtbl.t
+
+val pressure_variants : Env.t -> pattern list -> unit
+
+val check_partial :
+  ((string, constructor_description) Hashtbl.t ->
+  Parsetree.pattern ->
+  pattern option) ->
+  Location.t ->
+  match_branch list ->
+  partial
+
+val check_unused :
+  (bool ->
+  (string, constructor_description) Hashtbl.t ->
+  Parsetree.pattern ->
+  pattern option) ->
+  match_branch list ->
+  unit
 
 (* Irrefutability tests *)
 val irrefutable : pattern -> bool
 
+val inactive : partial:partial -> pattern -> bool
 (** An inactive pattern is a pattern, matching against which can be duplicated, erased or
     delayed without change in observable behavior of the program.  Patterns containing
     (lazy _) subpatterns or reads of mutable fields are active. *)
-val inactive : partial:partial -> pattern -> bool
 
 (* Ambiguous bindings *)
 val check_ambiguous_bindings : match_branch list -> unit
-
