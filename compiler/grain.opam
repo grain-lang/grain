@@ -13,10 +13,12 @@ build: [
 ]
 run-test: [["dune" "runtest" "-p" name "-j" jobs]]
 depends: [
+  "reason"
   "ocamlfind" {build & >= "1.7.3" }
   "ocamlbuild" {build & >= "0.12.0" }
   "conf-openssl" { >= "2" }
   "dune" {build & >= "2.0" }
+  "dune-build-info"
   "ppx_deriving"
   "ppx_sexp_conv"
   "sexplib"
