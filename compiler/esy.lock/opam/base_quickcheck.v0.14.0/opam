@@ -1,0 +1,32 @@
+opam-version: "2.0"
+maintainer: "opensource@janestreet.com"
+authors: ["Jane Street Group, LLC <opensource@janestreet.com>"]
+homepage: "https://github.com/janestreet/base_quickcheck"
+bug-reports: "https://github.com/janestreet/base_quickcheck/issues"
+dev-repo: "git+https://github.com/janestreet/base_quickcheck.git"
+doc: "https://ocaml.janestreet.com/ocaml-core/latest/doc/base_quickcheck/index.html"
+license: "MIT"
+build: [
+  ["dune" "build" "-p" name "-j" jobs]
+]
+depends: [
+  "ocaml"             {>= "4.04.2"}
+  "base"              {>= "v0.14" & < "v0.15"}
+  "ppx_base"          {>= "v0.14" & < "v0.15"}
+  "ppx_fields_conv"   {>= "v0.14" & < "v0.15"}
+  "ppx_let"           {>= "v0.14" & < "v0.15"}
+  "ppx_sexp_message"  {>= "v0.14" & < "v0.15"}
+  "ppx_sexp_value"    {>= "v0.14" & < "v0.15"}
+  "splittable_random" {>= "v0.14" & < "v0.15"}
+  "dune"              {>= "2.0.0"}
+  "ppxlib"            {>= "0.11.0"}
+]
+synopsis: "Randomized testing framework, designed for compatibility with Base"
+description: "
+Base_quickcheck provides randomized testing in the style of Haskell's Quickcheck library,
+with support for built-in types as well as types provided by Base.
+"
+url {
+  src: "https://ocaml.janestreet.com/ocaml-core/v0.14/files/base_quickcheck-v0.14.0.tar.gz"
+  checksum: "md5=75acb8709847ca5b9f32036984361ec5"
+}
