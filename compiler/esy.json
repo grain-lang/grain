@@ -22,6 +22,9 @@
     "@opam/grain_codegen": "*",
     "ocaml": "~4.8.1000"
   },
+  "devDependencies": {
+    "@opam/ocamlformat": "*"
+  },
   "resolutions": {
     "@opam/grain": "path:./grain.opam",
     "@opam/grain_utils": "path:./grain_utils.opam",
