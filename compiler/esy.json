@@ -21,6 +21,7 @@
     "@opam/grain_typed": "*",
     "@opam/grain_middle_end": "*",
     "@opam/grain_codegen": "*",
+    "@opam/reason": "*",
     "ocaml": "~4.8.1000"
   },
   "devDependencies": {
