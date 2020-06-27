@@ -9,6 +9,6 @@
     "node": ">=14"
   },
   "devDependencies": {
-    "esy": "0.6.4"
+    "esy": "0.6.6"
   }
 }
