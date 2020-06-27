@@ -1,0 +1,122 @@
+# Standard library for list functionality
+
+export *
+
+let isSome = (opt) => {
+  match (opt) {
+    | Some(_) => true
+    | None => false
+  }
+}
+
+let isNone = (opt) => {
+  match (opt) {
+    | None => true
+    | Some(_) => false
+  }
+}
+
+let contains = (val, opt) => {
+  match (opt) {
+    | Some(x) => x == val
+    | None => false
+  }
+}
+
+let expect = (msg, opt) => {
+  match (opt) {
+    | Some(x) => x
+    | None => fail msg
+  }
+}
+
+let unwrap = (opt) => {
+  expect('Could not unwrap None value', opt)
+}
+
+let unwrapWithDefault = (default, opt) => {
+  match (opt) {
+    | Some(x) => x
+    | None => default
+  }
+}
+
+let map = (fn, opt) => {
+  match (opt) {
+    | Some(x) => Some(fn(x))
+    | None => None
+  }
+}
+
+let mapWithDefault = (default, fn, opt) => {
+  match (opt) {
+    | Some(x) => fn(x)
+    | None => default
+  }
+}
+
+let flatMap = (fn, opt) => {
+  match (opt) {
+    | Some(x) => fn(x)
+    | None => None
+  }
+}
+
+let filter = (pred, opt) => {
+  match (opt) {
+    | Some(x) =>
+      if (pred(x)) {
+        Some(x)
+      } else {
+        None
+      }
+    | None => None
+  }
+}
+
+let zip = (optA, optB) => {
+  match ((optA, optB)) {
+    | (Some(a), Some(b)) => Some((a, b))
+    | _ => None
+  }
+}
+
+let zipWith = (fn, optA, optB) => {
+  match ((optA, optB)) {
+    | (Some(a), Some(b)) => Some(fn(a, b))
+    | _ => None
+  }
+}
+
+let flatten = (opt) => {
+  match (opt) {
+    | Some(Some(x)) => Some(x)
+    | _ => None
+  }
+}
+
+let toList = (opt) => {
+  match (opt) {
+    | Some(x) => [x]
+    | None => []
+  }
+}
+
+let toArray = (opt) => {
+  match (opt) {
+    | Some(x) => [> x]
+    | None => [>]
+  }
+}
+
+let sideEffect = (fn, opt) => {
+  match (opt) {
+    | Some(x) => fn(x)
+    | None => void
+  }
+}
+
+let peek = (fn, opt) => {
+  sideEffect(fn, opt)
+  opt
+}

@@ -360,6 +360,7 @@ let stdlib_tests = [
 
   tlib "arrays.test";
   tlib "lists.test";
+  tlib "option.test";
   tlib "hash.test";
   tlib "int64.test";
   tlib "strings.test";

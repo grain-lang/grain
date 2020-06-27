@@ -46,3 +46,6 @@ primitive (is) : (a, a) -> Bool = "@eq"
 import foreign wasm toString : a -> String from 'grainBuiltins'
 
 export data List<a> = [] | [...](a, List<a>)
+
+# Maybe some data, maybe not!
+data Option<a> = Some(a) | None
