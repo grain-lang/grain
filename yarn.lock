@@ -1066,10 +1066,10 @@ esy-solve-cudf@^0.1.10:
   resolved "https://registry.yarnpkg.com/esy-solve-cudf/-/esy-solve-cudf-0.1.10.tgz#2cd48af78183ae8f06c035a398beb65673c2d77d"
   integrity sha512-/MrZOBH0wuJndvZN8pl+S3Mg3zJaK70PH9ZZwqDeJHulghEWROEZxpmenNiS9pqAaxyUVhTZJBt2/vL9jKCJbg==
 
-esy@0.6.4:
-  version "0.6.4"
-  resolved "https://registry.yarnpkg.com/esy/-/esy-0.6.4.tgz#44a60e673365911eabb18fa21be4b18f17559623"
-  integrity sha512-DIul1QxM1DVrCTx2dc0jYn2mhQBHynlC3Wki35U6iYzeBNq1js3IM9au4v4hK/UyvlYCMlz0MoCI4C88L3+Qkw==
+esy@0.6.6:
+  version "0.6.6"
+  resolved "https://registry.yarnpkg.com/esy/-/esy-0.6.6.tgz#5c8dafd1ba717ee9f2d5121065a5101ae51ebb39"
+  integrity sha512-moR72ovr80fRZ7XKtt4oOtecrRUdfOGlz/+BO6TxOMK1oD2Y3q65wBH4ofQbni3g1b2KGmsXawMw+KHC5gmFLQ==
   dependencies:
     esy-solve-cudf "^0.1.10"
 

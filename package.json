@@ -14,7 +14,7 @@
   },
   "scripts": {
     "compiler:clean": "yarn workspace @grain/compiler run esy clean",
-    "compiler:build": "yarn workspace @grain/compiler run esy",
+    "compiler:build": "yarn workspace @grain/compiler run esy install && yarn workspace @grain/compiler run esy compile",
     "postcompiler:build": "yarn stdlib:clean",
     "compiler:test": "yarn workspace @grain/compiler run esy test",
     "test": "yarn compiler:test",
