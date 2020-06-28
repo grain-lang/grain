@@ -33,11 +33,13 @@
   "homepage": "https://grain-lang.org",
   "devDependencies": {
     "assemblyscript": "^0.9.4",
-    "del-cli": "^3.0.1"
+    "del-cli": "^3.0.1",
+    "globby": "^11.0.1",
+    "replace-ext": "^2.0.0"
   },
   "dependencies": {},
   "scripts": {
-    "build": "for f in stdlib-external/*.ts; do asc $f -o stdlib-external/$(basename $f .ts).wasm -O3 --runtime none --importMemory; done",
-    "clean": "del '**/*.wasm' '**/*.wasm.modsig' '**/*.wasm.wast' '!stdlib-external/*.wasm'"
+    "build": "./build.mjs",
+    "clean": "del '**/*.wasm' '**/*.wasm.modsig' '**/*.wasm.wast' '!stdlib-external/**'"
   }
 }
