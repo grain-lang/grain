@@ -12,8 +12,6 @@ let source_it (x : 'a Source.phrase) : 'a = Source.(x.it)
 
 (** Environment *)
 type codegen_env = {
-  (* Pointer to top of heap (needed until GC is implemented) *)
-  heap_top: Wasm.Ast.var;
   num_args: int;
   func_offset: int;
   global_offset: int;
@@ -328,9 +326,7 @@ let runtime_function_imports = List.append [
 let runtime_imports = List.append runtime_global_imports runtime_function_imports
 
 
-(* [TODO]: [philip] Delete remnants of heap_top *)
 let init_codegen_env() = {
-  heap_top=add_dummy_loc (Int32.of_int (List.length runtime_global_imports));
   num_args=0;
   func_offset=0;
   global_offset=2;
@@ -1878,7 +1874,7 @@ let compile_function env {index; arity; stack_size; body=body_instrs} =
   }
 
 let compute_table_size env {imports; exports; functions} =
-  (List.length functions) + ((List.length imports) - (List.length runtime_global_imports)) + 2
+  (List.length functions) + ((List.length imports) - (List.length runtime_global_imports)) + 1
 
 let compile_imports env ({imports} as prog) =
   let compile_asm_type t =
@@ -1964,10 +1960,8 @@ let compile_exports env {functions; imports; exports; num_globals} =
     let edesc = add_dummy_loc (Ast.FuncExport(add_dummy_loc @@ Int32.of_int (i + env.func_offset))) in
     let open Wasm.Ast in
     add_dummy_loc { name; edesc } in
-  let heap_adjust_idx = env.func_offset + (List.length functions) in
-  let main_idx = heap_adjust_idx + 1 in
+  let main_idx = env.func_offset + (List.length functions) in
   let cleanup_globals_idx = main_idx + 1 in
-  let heap_adjust_idx = add_dummy_loc @@ Int32.of_int heap_adjust_idx in
   let main_idx = add_dummy_loc @@ Int32.of_int main_idx in
   let cleanup_globals_idx = add_dummy_loc @@ Int32.of_int cleanup_globals_idx in
   let compiled_lambda_exports = List.mapi compile_lambda_export functions in
@@ -1985,10 +1979,6 @@ let compile_exports env {functions; imports; exports; num_globals} =
         compiled_exports
         [
           add_dummy_loc {
-            Ast.name=encode_string "GRAIN$HEAP_ADJUST";
-            Ast.edesc=add_dummy_loc (Ast.FuncExport heap_adjust_idx);
-          };
-          add_dummy_loc {
             Ast.name=encode_string "_start";
             Ast.edesc=add_dummy_loc (Ast.FuncExport main_idx);
           };
@@ -1998,7 +1988,6 @@ let compile_exports env {functions; imports; exports; num_globals} =
           };
           add_dummy_loc {
             Ast.name=encode_string (Ident.name table_size);
-            (* We add one here because of heap top *)
             Ast.edesc=add_dummy_loc (Ast.GlobalExport (add_dummy_loc @@ Int32.of_int (num_globals + 1 + (List.length runtime_global_imports))));
           };
           add_dummy_loc {
@@ -2046,20 +2035,6 @@ let compile_globals env ({num_globals} as prog) =
     ]
 
 
-let heap_adjust env = add_dummy_loc {
-  Ast.ftype = add_dummy_loc Int32.(of_int (get_func_type_idx env (Types.FuncType([Types.I32Type], [Types.I32Type]))));
-  Ast.locals = [];
-  Ast.body = List.map add_dummy_loc [
-      (*Ast.LocalGet(add_dummy_loc @@ Int32.of_int 0);
-      call_runtime_check_memory env;*)
-      Ast.GlobalGet(env.heap_top);
-      Ast.LocalGet(add_dummy_loc @@ Int32.of_int 0);
-      Ast.Binary(Values.I32 Ast.IntOp.Add);
-      Ast.GlobalSet(env.heap_top);
-      Ast.GlobalGet(env.heap_top);
-    ]
-}
-
 let compile_main env prog =
   let ret = compile_function env
     {
@@ -2090,13 +2065,11 @@ let compile_global_cleanup_function env num_globals =
 
 let compile_functions env ({functions; num_globals} as prog) =
   let compiled_funcs = List.map (compile_function env) functions in
-  let heap_adjust = heap_adjust env in
   let main = compile_main env prog in
   let cleanup_globals = compile_global_cleanup_function env num_globals in
   List.append
     compiled_funcs
     [
-      heap_adjust;
       main;
       cleanup_globals;
     ]
