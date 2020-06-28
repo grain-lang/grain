@@ -4,13 +4,15 @@
   "esy": {
     "buildEnv": {
       "DUNE_BUILD_DIR": "#{self.target_dir}",
-      "GRAIN_STDLIB": "#{self.root}/../stdlib"
+      "GRAIN_STDLIB": "#{self.root / '..' / 'stdlib'}",
+      "GRAINC_BIN_PATH": "#{self.target_dir / 'default' / 'grainc' / 'grainc.exe'}",
+      "CLI_BIN_DIR": "#{self.root / '..' / 'cli' / 'bin'}"
     }
   },
   "scripts": {
-    "compile": "dune build @all @install",
+    "compile": "dune build",
+    "copy-compiler": "cp #{$GRAINC_BIN_PATH} #{$CLI_BIN_DIR}",
     "clean": "rm -rf #{self.root}/_esy",
-    "install-compiler": "dune install",
     "test": "dune runtest --force"
   },
   "dependencies": {

@@ -30,3 +30,6 @@ script/public/javascripts/grain-runtime.js
 script/public/javascripts/grain-runtime-browser.js
 /*.gr
 _esy/
+
+# The grainc.exe binary is copied to the CLI directory during build
+cli/bin/grainc.exe
