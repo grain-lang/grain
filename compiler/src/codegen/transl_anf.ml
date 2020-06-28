@@ -219,7 +219,7 @@ let run_register_allocation (instrs: Mashtree.instr list) =
         | (var_id, (_, max))::tl when max < current_instr -> help (RegisterAllocation.release_var var_id allocs, active) tl
         | hd::tl -> help (allocs, (hd::active)) tl in
       help (allocs, []) active in
-    let (allocs, _) = BatList.fold_lefti (fun (allocs, active) i ((var_id, (start_inst, end_inst)) as cur) ->
+    let _ = BatList.fold_lefti (fun (allocs, active) i ((var_id, (start_inst, end_inst)) as cur) ->
       let (allocs, active) = expire_old_intervals start_inst allocs active in
       let allocs, _ = RegisterAllocation.allocate var_id allocs in
       let active = cur::active in
