@@ -28,7 +28,7 @@
   },
   "devDependencies": {
     "@opam/reason": "*",
-    "@opam/ocaml-lsp-server": "ocaml/ocaml-lsp:ocaml-lsp-server.opam"
+    "@opam/ocaml-lsp-server": "ocaml/ocaml-lsp:ocaml-lsp-server.opam#ce1840355541ff60b999e39388835027f89d8798"
   },
   "resolutions": {
     "@opam/grain": "link:./grain.opam",
@@ -37,7 +37,8 @@
     "@opam/grain_parsing": "link:./grain_parsing.opam",
     "@opam/grain_typed": "link:./grain_typed.opam",
     "@opam/grain_middle_end": "link:./grain_middle_end.opam",
-    "@opam/grain_codegen": "link:./grain_codegen.opam"
+    "@opam/grain_codegen": "link:./grain_codegen.opam",
+    "@opam/binaryen": "grain-lang/binaryen.ml:binaryen.opam#81fd504"
   },
   "installConfig": {
     "pnp": false

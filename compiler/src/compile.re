@@ -31,7 +31,7 @@ type compilation_action =
   | Stop;
 
 let compile_prog = p =>
-  Compcore.module_to_string @@ Compcore.compile_wasm_module(p);
+  Compcore.module_to_bytes @@ Compcore.compile_wasm_module(p);
 
 let initial_funcs = [
   ("print", (Lexing.dummy_pos, Lexing.dummy_pos), false),
@@ -113,7 +113,7 @@ let next_state = ({cstate_desc, cstate_filename} as cs) => {
         };
 
       let parsed =
-        try(Driver.parse(~name?, lexbuf)) {
+        try (Driver.parse(~name?, lexbuf)) {
         | _ as e =>
           cleanup();
           raise(e);
@@ -147,6 +147,7 @@ let next_state = ({cstate_desc, cstate_filename} as cs) => {
         | None => ()
         };
       };
+      Binaryen.Module.dispose(compiled.asm);
       Assembled;
     | Assembled => Assembled
     };

@@ -158,12 +158,11 @@ type adt_op =
 type record_op =
   | MRecordGet(int32);
 
-/* Optimized path for statically-known function names */ /* value, branches, default */ /* Items in the same list have their backpatching delayed until the end of that list */ /* Ignore the result of the last expression. Used for sequences. */ /* Prints a message to the console; for compiler debugging */
-
+/* Optimized path for statically-known function names */ /* value, branches, default */ /* Items in the same list have their backpatching delayed until the end of that list */ /* Ignore the result of an expression. Used for sequences. */ /* Prints a message to the console; for compiler debugging */
 [@deriving sexp]
 type instr =
   | MImmediate(immediate)
-  | MCallKnown(int32, list(immediate))
+  | MCallKnown(string, list(immediate))
   | MCallIndirect(immediate, list(immediate))
   | MError(grain_error, list(immediate))
   | MAllocate(allocation_type)
@@ -171,7 +170,7 @@ type instr =
   | MArityOp(arity_operand, arity_op, immediate)
   | MIf(immediate, block, block)
   | MWhile(block, block)
-  | MSwitch(immediate, list((int32, block)), block)
+  | MSwitch(immediate, list((int32, block)), block) /* value, branches, default */
   | MPrim1(prim1, immediate)
   | MPrim2(prim2, immediate, immediate)
   | MTupleOp(tuple_op, immediate)
@@ -179,10 +178,9 @@ type instr =
   | MArrayOp(array_op, immediate)
   | MAdtOp(adt_op, immediate)
   | MRecordOp(record_op, immediate)
-  | MStore(list((binding, instr)))
-  | MDrop
-  | MTracepoint(int)
-
+  | MStore(list((binding, instr))) /* Items in the same list have their backpatching delayed until the end of that list */
+  | MDrop(instr) /* Ignore the result of an expression. Used for sequences. */
+  | MTracepoint(int) /* Prints a message to the console; for compiler debugging */
 [@deriving sexp]
 and block = list(instr);
 
@@ -237,6 +235,6 @@ type mash_program = {
   signature: Cmi_format.cmi_infos,
 };
 
-let const_true = MConstLiteral(MConstI32(Int32.of_int(0xFFFFFFFF)));
-let const_false = MConstLiteral(MConstI32(Int32.of_int(0x7FFFFFFF)));
-let const_void = MConstLiteral(MConstI32(Int32.of_int(0x6FFFFFFF)));
+let const_true = MConstLiteral(MConstI32(Int32.of_int(4294967295)));
+let const_false = MConstLiteral(MConstI32(Int32.of_int(2147483647)));
+let const_void = MConstLiteral(MConstI32(Int32.of_int(1879048191)));

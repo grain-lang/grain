@@ -2,6 +2,7 @@ open Grain_typed;
 open Grain_middle_end;
 open Mashtree;
 open Wasm;
+open Binaryen;
 
 type codegen_env = {
   num_args: int,
@@ -11,29 +12,19 @@ type codegen_env = {
   import_global_offset: int,
   import_func_offset: int,
   import_offset: int,
-  func_types: ref(BatDeque.t(Wasm.Types.func_type)),
   /* Allocated closures which need backpatching */
-  backpatches: ref(list((Concatlist.t(Wasm.Ast.instr'), closure_data))),
+  backpatches: ref(list((Expression.t, closure_data))),
   imported_funcs: Ident.tbl(Ident.tbl(int32)),
-  imported_globals: Ident.tbl(Ident.tbl(int32)),
+  imported_globals: Ident.tbl(Ident.tbl(string)),
 };
 
 let init_codegen_env: unit => codegen_env;
 
-exception
-  WasmRunnerError(
-    option(string),
-    Wasm.Source.region,
-    string,
-    Wasm.Ast.module_,
-  );
+exception WasmRunnerError(Module.t, option(string), string);
 
-let reparse_module: Wasm.Ast.module_ => Wasm.Ast.module_;
-
-let validate_module: (~name: string=?, Wasm.Ast.module_) => unit;
+let validate_module: (~name: string=?, Module.t) => unit;
 
 let compile_wasm_module:
-  (~env: codegen_env=?, ~name: string=?, Mashtree.mash_program) =>
-  Wasm.Ast.module_;
+  (~env: codegen_env=?, ~name: string=?, Mashtree.mash_program) => Module.t;
 
-let module_to_string: Wasm.Ast.module_ => string;
+let module_to_bytes: Module.t => bytes;
