@@ -86,8 +86,11 @@ let help_cmd =
 
 let cmd =
   let doc = sprintf "Compile Grain programs" in
+  let version = (match Build_info.V1.version () with
+   | None -> "unknown"
+   | Some v -> Build_info.V1.Version.to_string v) in
   Term.(ret (Grain_utils.Config.with_cli_options compile_file $ input_filename $ output_filename)),
-  Term.info (Sys.argv.(0)) ~version:"0.1.0" ~doc
+  Term.info (Sys.argv.(0)) ~version ~doc
 
 let () =
   match Term.eval cmd with

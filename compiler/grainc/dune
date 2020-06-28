@@ -3,4 +3,4 @@
  (public_name grainc)
  (package grain)
  (modules grainc)
- (libraries grain))
+ (libraries grain dune-build-info))
