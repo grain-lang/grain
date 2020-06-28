@@ -23,7 +23,9 @@ function num(val) {
 }
 
 function graincVersion() {
-  return execSync(`grainc --version`).toString().trim();
+  const grainc = path.join(__dirname, 'grainc.exe');
+
+  return execSync(`${grainc} --version`).toString().trim();
 }
 
 program
