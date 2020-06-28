@@ -94,7 +94,7 @@ type state = {
 }
 
 let current = ref {
-    active = Array.make (last_warning_number + 1) true;
+    active = Array.make (last_warning_number + 1) false;
     error = Array.make (last_warning_number + 1) false;
   }
 
@@ -106,6 +106,27 @@ let is_active x = (!current).active.(number x)
 let is_error x = (!current).error.(number x)
 
 let nerrors = ref 0
+
+let defaults = [
+  LetRecNonFunction "";
+  AmbiguousName ([], [], false);
+  NotPrincipal "";
+  NameOutOfScope ("", [], false);
+  StatementType;
+  NonreturningStatement;
+  AllClausesGuarded;
+  PartialMatch "";
+  UnusedMatch;
+  UnusedPat;
+  NonClosedRecordPattern "";
+  UnreachableCase;
+  ShadowConstructor "";
+  NoCmiFile ("", None);
+]
+
+let _ = List.iter (fun x -> 
+  (!current).active.(number x) <- true
+) defaults
 
 type reporting_information = {
   number : int;
