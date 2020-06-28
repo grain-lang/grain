@@ -5,8 +5,8 @@ let foo = Fs.pathOpen(
   [Fs.SymlinkFollow],
   "test-data/foo.txt",
   [Fs.Create],
-  [Fs.FdRead, Fs.FdWrite],
-  [Fs.FdRead, Fs.FdWrite],
+  [Fs.FdRead],
+  [Fs.FdRead],
   []
 )
 
