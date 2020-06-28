@@ -1,5 +1,5 @@
 {
-  "checksum": "76bac30b5b3e9fb6186007160c390c60",
+  "checksum": "e72edc55509e6e27c2ecd22b64801db5",
   "root": "compiler@link-dev:./esy.json",
   "node": {
     "ocaml@4.8.1000@d41d8cd9": {
@@ -23,7 +23,7 @@
       "source": { "type": "link-dev", "path": ".", "manifest": "esy.json" },
       "overrides": [],
       "dependencies": [
-        "ocaml@4.8.1000@d41d8cd9",
+        "ocaml@4.8.1000@d41d8cd9", "@opam/grainc@link:./grainc.opam",
         "@opam/grain_utils@link:./grain_utils.opam",
         "@opam/grain_typed@link:./grain_typed.opam",
         "@opam/grain_parsing@link:./grain_parsing.opam",
@@ -1805,6 +1805,46 @@
         "ocaml@4.8.1000@d41d8cd9", "@opam/dune@opam:2.5.0@aef1678b"
       ]
     },
+    "@opam/grainc@link:./grainc.opam": {
+      "id": "@opam/grainc@link:./grainc.opam",
+      "name": "@opam/grainc",
+      "version": "link:./grainc.opam",
+      "source": { "type": "link", "path": ".", "manifest": "grainc.opam" },
+      "overrides": [],
+      "dependencies": [
+        "@opam/stdint@opam:0.6.0@d1e22c8e",
+        "@opam/sexplib@opam:v0.14.0@f67f18de",
+        "@opam/ppx_sexp_conv@opam:v0.14.0@a2eef025",
+        "@opam/ppx_deriving@opam:4.5@bb81afdc",
+        "@opam/ounit@opam:2.2.2@e13ca575",
+        "@opam/ocamlgraph@opam:1.8.8@2767ad0b",
+        "@opam/ocamlfind@opam:1.8.1@ff07b0f9",
+        "@opam/ocamlbuild@opam:0.14.0@6ac75d03",
+        "@opam/grain_wasm_spec@opam:0.1@d07a2c3e",
+        "@opam/grain_dypgen@opam:0.1@0b95a143",
+        "@opam/grain@link:./grain.opam", "@opam/extlib@opam:1.7.7@750728e7",
+        "@opam/dune-build-info@opam:2.5.1@921e5578",
+        "@opam/dune@opam:2.5.0@aef1678b", "@opam/core@opam:v0.14.0@d187027a",
+        "@opam/cmdliner@opam:1.0.4@93208aac",
+        "@opam/batteries@opam:3.0.0@8b2b498b",
+        "@esy-ocaml/substs@0.0.1@d41d8cd9"
+      ],
+      "devDependencies": [
+        "@opam/stdint@opam:0.6.0@d1e22c8e",
+        "@opam/sexplib@opam:v0.14.0@f67f18de",
+        "@opam/ppx_sexp_conv@opam:v0.14.0@a2eef025",
+        "@opam/ppx_deriving@opam:4.5@bb81afdc",
+        "@opam/ounit@opam:2.2.2@e13ca575",
+        "@opam/ocamlgraph@opam:1.8.8@2767ad0b",
+        "@opam/grain_wasm_spec@opam:0.1@d07a2c3e",
+        "@opam/grain_dypgen@opam:0.1@0b95a143",
+        "@opam/grain@link:./grain.opam", "@opam/extlib@opam:1.7.7@750728e7",
+        "@opam/dune-build-info@opam:2.5.1@921e5578",
+        "@opam/core@opam:v0.14.0@d187027a",
+        "@opam/cmdliner@opam:1.0.4@93208aac",
+        "@opam/batteries@opam:3.0.0@8b2b498b"
+      ]
+    },
     "@opam/grain_wasm_spec@opam:0.1@d07a2c3e": {
       "id": "@opam/grain_wasm_spec@opam:0.1@d07a2c3e",
       "name": "@opam/grain_wasm_spec",
@@ -2258,6 +2298,28 @@
         "@opam/dune-private-libs@opam:2.5.1@60c1661f",
         "@opam/dune@opam:2.5.0@aef1678b"
       ]
+    },
+    "@opam/dune-build-info@opam:2.5.1@921e5578": {
+      "id": "@opam/dune-build-info@opam:2.5.1@921e5578",
+      "name": "@opam/dune-build-info",
+      "version": "opam:2.5.1",
+      "source": {
+        "type": "install",
+        "source": [
+          "archive:https://opam.ocaml.org/cache/sha256/8f/8f77d3a87f208e0d7cccaa1c48c4bb1bb87d62d07c3f25e9b8ba298e028ce52b#sha256:8f77d3a87f208e0d7cccaa1c48c4bb1bb87d62d07c3f25e9b8ba298e028ce52b",
+          "archive:https://github.com/ocaml/dune/releases/download/2.5.1/dune-2.5.1.tbz#sha256:8f77d3a87f208e0d7cccaa1c48c4bb1bb87d62d07c3f25e9b8ba298e028ce52b"
+        ],
+        "opam": {
+          "name": "dune-build-info",
+          "version": "2.5.1",
+          "path": "esy.lock/opam/dune-build-info.2.5.1"
+        }
+      },
+      "overrides": [],
+      "dependencies": [
+        "@opam/dune@opam:2.5.0@aef1678b", "@esy-ocaml/substs@0.0.1@d41d8cd9"
+      ],
+      "devDependencies": [ "@opam/dune@opam:2.5.0@aef1678b" ]
     },
     "@opam/dune@opam:2.5.0@aef1678b": {
       "id": "@opam/dune@opam:2.5.0@aef1678b",

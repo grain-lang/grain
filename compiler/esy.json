@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@opam/grain": "*",
+    "@opam/grainc": "*",
     "@opam/grain_utils": "*",
     "@opam/grain_parsing": "*",
     "@opam/grain_typed": "*",
@@ -26,6 +27,7 @@
   },
   "resolutions": {
     "@opam/grain": "link:./grain.opam",
+    "@opam/grainc": "link:./grainc.opam",
     "@opam/grain_utils": "link:./grain_utils.opam",
     "@opam/grain_parsing": "link:./grain_parsing.opam",
     "@opam/grain_typed": "link:./grain_typed.opam",
