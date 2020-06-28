@@ -4,8 +4,6 @@ open Mashtree
 open Wasm
 
 type codegen_env = {
-  (* Pointer to top of heap (needed until GC is implemented) *)
-  heap_top: Wasm.Ast.var;
   num_args: int;
   func_offset: int;
   global_offset: int;
