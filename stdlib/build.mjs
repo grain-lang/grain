@@ -13,7 +13,7 @@ const asc = require('assemblyscript/cli/asc');
 
 const compileFile = promisify(asc.main);
 
-// Binaryen is ready
+// AssemblyScript compiler is ready
 await asc.ready;
 
 const filenames = await globby('stdlib-external/**/*.ts');
