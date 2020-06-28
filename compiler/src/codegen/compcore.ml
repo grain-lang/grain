@@ -1319,7 +1319,6 @@ let allocate_array_n env num_elts elt =
 
 let allocate_array_init env num_elts init_f =
   let get_arr_addr = get_swap env 0 in
-  let set_arr_addr = set_swap env 0 in
   let get_loop_counter = get_swap env 1 in
   let set_loop_counter = set_swap env 1 in
 
