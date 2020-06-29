@@ -37,7 +37,7 @@
   },
   "dependencies": {},
   "scripts": {
-    "build": "for f in stdlib-external/*.ts; do asc $f -o stdlib-external/$(basename $f .ts).wasm -O3 --runtime none --importMemory; done",
+    "build": "node ./build-scripts/asbuild.js",
     "clean": "del '**/*.wasm' '**/*.wasm.modsig' '**/*.wasm.wast' '!stdlib-external/*.wasm'"
   }
 }
