@@ -4,40 +4,67 @@ on: [push, pull_request]
 jobs:
   build:
     name: Build and test
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
     steps:
-      - name: Use Node.js
-        uses: actions/setup-node@v1
+      - name: Setup Node.js
+        uses: actions/setup-node@v2.1.0
         with:
-          node-version: '14.x'
-      - uses: actions/checkout@v2
+          node-version: '14'
+          check-latest: true
+
+      # This configures yarn to use node/npm prefix in our path
+      # It also adds `shx` globally for cross-platform shell commands
+      - name: Setup environment
+        run: |
+          yarn config set prefix $(npm config get prefix)
+          yarn global add shx
+
+      - name: Checkout project
+        uses: actions/checkout@v2
+
       - name: Set up runtime and CLI
         run: |
           yarn
           yarn setup
-      - name: esy install
+
+      - name: Esy install
         run: |
           yarn workspace @grain/compiler run esy install
-      - name: Restore esy cache
-        id: restore-cache
-        uses: actions/cache@v1
+
+      - name: Esy cache
+        id: esy-cache
+        uses: actions/cache@v2
         with:
           path: compiler/_export
           key:  ${{ runner.os }}-esy-${{ hashFiles('compiler/esy.lock/index.json') }}
-          restore-keys: |
-            ${{ runner.os }}-esy-
+
       - name: Import esy cache
+        if: steps.esy-cache.outputs.cache-hit == 'true'
         run: |
           yarn workspace @grain/compiler run esy import-dependencies _export
-          rm -rf compiler/_export
+          shx rm -rf compiler/_export
+
       - name: Build compiler
         run: |
           yarn compiler:build
+
       # Re-export dependencies if anything has changed or if it is the first time
-      - name: Build esy cache 
+      - name: Build esy cache
+        if: steps.esy-cache.outputs.cache-hit != 'true'
         run: |
           yarn workspace @grain/compiler run esy export-dependencies
-        if: steps.restore-cache.outputs.cache-hit != 'true'
+
       - name: Run tests
         run: |
           yarn compiler:test
+
+      # This is to test the CLI is working
+      - name: Log Grain version
+        run: |
+          grain -v
