@@ -23,20 +23,30 @@ let () =
     }
   );
 
+// Recursive readdir
+let rec readdir = dir => {
+  Sys.readdir(dir)
+  |> Array.fold_left(
+       (results, filename) => {
+         let filepath = Filename.concat(dir, filename);
+         Sys.is_directory(filepath)
+           ? Array.append(results, readdir(filepath))
+           : Array.append(results, [|filepath|]);
+       },
+       [||],
+     );
+};
+
 let compile_stdlib = stdlib_dir =>
   Array.iter(
     file =>
       if (Filename.check_suffix(file, ".gr")) {
-        let infile = Printf.sprintf("%s/%s", stdlib_dir, file);
+        let infile = Printf.sprintf("%s", file);
         let outfile =
-          Printf.sprintf(
-            "%s/%s",
-            stdlib_dir,
-            Filename.remove_extension(file) ++ ".wasm",
-          );
+          Printf.sprintf("%s", Filename.remove_extension(file) ++ ".wasm");
         ignore @@ Grain.Compile.compile_file(~outfile, infile);
       },
-    Sys.readdir(stdlib_dir),
+    readdir(stdlib_dir),
   );
 
 let all_tests = [
