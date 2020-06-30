@@ -3,6 +3,6 @@
  (public_name grain_codegen)
  (synopsis "Grain compiler code generation")
  (libraries wasm stdint grain_parsing grain_typed grain_middle_end
-   grain_utils ppx_sexp_conv sexplib)
+   grain_utils ppx_sexp_conv.runtime-lib compiler-libs.common sexplib)
  (preprocess
   (pps ppx_sexp_conv)))
