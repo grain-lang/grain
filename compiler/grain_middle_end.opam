@@ -13,7 +13,6 @@ depends: [
   "reason" {>= "3.6.0"}
   "ocamlfind" {build & >= "1.7.3"}
   "ocamlbuild" {build & >= "0.12.0"}
-  "ppx_deriving" {>= "4.5"}
   "ppx_sexp_conv" {>= "0.14.0"}
   "sexplib" {>= "0.14.0"}
   "grain_dypgen" {= "0.1"}

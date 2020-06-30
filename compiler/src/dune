@@ -4,9 +4,9 @@
  ;; Note: 'dyp' is provided by the 'dypgen' OPAM package
  (libraries oUnit extlib batteries cmdliner ocamlgraph wasm stdint
    grain_parsing grain_utils grain_typed grain_middle_end grain_codegen
-   ppx_deriving ppx_sexp_conv sexplib)
+   ppx_sexp_conv sexplib)
  (preprocess
-  (pps ppx_sexp_conv ppx_deriving)))
+  (pps ppx_sexp_conv)))
 
 (install
  (section lib)

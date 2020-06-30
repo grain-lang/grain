@@ -2,7 +2,7 @@
  (name grain_utils)
  (public_name grain_utils)
  (synopsis "Utilities for the Grain compiler")
- (libraries cmdliner extlib stdint ppx_deriving ppx_sexp_conv sexplib wasm
+ (libraries cmdliner extlib stdint ppx_sexp_conv sexplib wasm
    batteries)
  (preprocess
-  (pps ppx_sexp_conv ppx_deriving)))
+  (pps ppx_sexp_conv)))
