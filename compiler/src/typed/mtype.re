@@ -194,7 +194,7 @@ let nondep_supertype = (env, mid, mty) => {
   /*| Mty_functor(param, arg, res) ->
     let var_inv =
       match va with Co -> Contra | Contra -> Co | Strict -> Strict in
-    Mty_functor(param, Misc.may_map (nondep_mty env var_inv) arg,
+    Mty_functor(param, Option.map (nondep_mty env var_inv) arg,
                 nondep_mty
                   (Env.add_module ~arg:true param
                      (Btype.default_mty arg) env) va res)*/
@@ -266,7 +266,7 @@ let nondep_supertype = (env, mid, mty) => {
 
   and nondep_modtype_decl = (env, mtd) => {
     ...mtd,
-    mtd_type: Misc.may_map(nondep_mty(env, Strict), mtd.mtd_type),
+    mtd_type: Option.map(nondep_mty(env, Strict), mtd.mtd_type),
   };
 
   nondep_mty(env, Co, mty);

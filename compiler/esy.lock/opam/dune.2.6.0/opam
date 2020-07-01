@@ -29,6 +29,7 @@ conflicts: [
   "dune-configurator" {< "2.3.0"}
   "odoc" {< "1.3.0"}
   "dune-release" {< "1.3.0"}
+  "js_of_ocaml-compiler" {< "3.6.0"}
   "jbuilder" {= "transition"}
 ]
 dev-repo: "git+https://github.com/ocaml/dune.git"
@@ -46,9 +47,9 @@ depends: [
   "base-threads"
 ]
 url {
-  src: "https://github.com/ocaml/dune/releases/download/2.5.0/dune-2.5.0.tbz"
+  src: "https://github.com/ocaml/dune/releases/download/2.6.0/dune-2.6.0.tbz"
   checksum: [
-    "sha256=9cc1661b9b173dd183867edcf8ee28a9ce79079a7d00316b719bdcba1d78d7da"
-    "sha512=fa29986243b73caa6ca01acbc55cfba5e454e069e737f53c32bee5abc7e3c4679fecdec232d34af63954287bebf0fb1cabe4a95c56147f457d82d1a72dd44223"
+    "sha256=12c9d849fbc5f202f99e9f8ed13fdff7de85ae9c5206cb1b821763dcd1916fc3"
+    "sha512=de808537e471ef5a4ca49f68bfaf99d36441b5d30bc66712467a636e7bf69ea825e30286d882dac4e18a36c3eae45a80c3407d86255484c76570f771d84ce8b5"
   ]
 }

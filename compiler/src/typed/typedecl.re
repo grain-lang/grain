@@ -454,7 +454,7 @@ let check_well_founded = (env, loc, path, to_check, ty) => {
       | [@implicit_arity] TTyConstr(p, _, _)
           when arg_exn != None || to_check(p) =>
         if (to_check(p)) {
-          may(raise, arg_exn);
+          Option.may(raise, arg_exn);
         } else {
           Btype.iter_type_expr(check(ty0, TypeSet.empty), ty);
         };
@@ -468,9 +468,9 @@ let check_well_founded = (env, loc, path, to_check, ty) => {
             };
           check(ty0, TypeSet.add(ty, parents), ty');
         }) {
-        | Ctype.Cannot_expand => may(raise, arg_exn)
+        | Ctype.Cannot_expand => Option.may(raise, arg_exn)
         };
-      | _ => may(raise, arg_exn)
+      | _ => Option.may(raise, arg_exn)
       };
     };
   };
@@ -572,7 +572,7 @@ let check_recursion = (env, loc, path, decl, to_check) =>
       };
     };
 
-    Misc.may(
+    Option.may(
       body => {
         let (args, body) =
           Ctype.instance_parameterized_type(
