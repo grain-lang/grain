@@ -208,7 +208,7 @@ let type_iterators = {
     iter_type_expr_kind(it.it_type_expr(it), kind)
   and it_module_declaration = (it, md) => it.it_module_type(it, md.md_type)
   and it_modtype_declaration = (it, mtd) =>
-    may(it.it_module_type(it), mtd.mtd_type)
+    Option.may(it.it_module_type(it), mtd.mtd_type)
   and it_do_type_expr = (it, ty) => {
     iter_type_expr(it.it_type_expr(it), ty);
     switch (ty.desc) {
@@ -258,7 +258,12 @@ let rec norm_univar = ty =>
 
 let rec copy_type_desc = (~keep_names=false, f) =>
   fun
-  | TTyVar(_) as ty => if (keep_names) {ty} else {TTyVar(None)}
+  | TTyVar(_) as ty =>
+    if (keep_names) {
+      ty;
+    } else {
+      TTyVar(None);
+    }
   | [@implicit_arity] TTyArrow(tyl, ret, c) =>
     [@implicit_arity] TTyArrow(List.map(f, tyl), f(ret), copy_commu(c))
   | TTyTuple(l) => TTyTuple(List.map(f, l))

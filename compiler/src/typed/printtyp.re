@@ -230,7 +230,6 @@ let apply_subst = (s1, tyl) =>
     [];
   } else {
     /* cf. PR#7543: Typemod.type_package doesn't respect type constructor arity */
-
     switch (s1) {
     | Nth(n1) => [List.nth(tyl, n1)]
     | Map(l1) => List.map(List.nth(tyl), l1)
@@ -845,7 +844,7 @@ let rec tree_of_type_decl = (id, decl) => {
     List.iter(
       c => {
         mark_loops_constructor_arguments(c.cd_args);
-        may(mark_loops, c.cd_res);
+        Option.may(mark_loops, c.cd_res);
       },
       cstrs,
     )

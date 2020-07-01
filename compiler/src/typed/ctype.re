@@ -913,7 +913,7 @@ let map_kind = f =>
           {
             ...c,
             cd_args: map_type_expr_cstr_args(f, c.cd_args),
-            cd_res: may_map(f, c.cd_res),
+            cd_res: Option.map(f, c.cd_res),
           },
         cl,
       ),
@@ -923,7 +923,7 @@ let instance_declaration = decl => {
   let decl = {
     ...decl,
     type_params: List.map(simple_copy, decl.type_params),
-    type_manifest: may_map(simple_copy, decl.type_manifest),
+    type_manifest: Option.map(simple_copy, decl.type_manifest),
     type_kind: map_kind(simple_copy, decl.type_kind),
   };
 
@@ -2316,7 +2316,6 @@ let rec unify = (env: ref(Env.t), t1, t2) =>
       ();
     } else {
       /*let reset_tracing = check_trace_gadt_instances !env in*/
-
       try(
         {
           type_changed := true;
@@ -2402,9 +2401,9 @@ and unify2 = (env, t1, t2) => {
     let (t1, t2) =
       if (Grain_utils.Config.principal^
           && (find_lowest_level(t1') < lv || find_lowest_level(t2') < lv)) {
-        /* Expand abbreviations hiding a lower level */
-        /* Should also do it for parameterized types, after unification... */
         (
+          /* Expand abbreviations hiding a lower level */
+          /* Should also do it for parameterized types, after unification... */
           switch (t1.desc) {
           | [@implicit_arity] TTyConstr(_, [], _) => t1'
           | _ => t1
