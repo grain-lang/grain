@@ -25,26 +25,26 @@ There are a set of contributor docs in [docs/contributor](https://github.com/gra
 Once you have the compiler building, the typical flow for development is to make changes in the `compiler` directory, then run:
 
 ```bash
-yarn compiler:build
-yarn compiler:test
+yarn compiler build
+yarn compiler test
 ```
 
-It can sometimes be helpful to run small Grain programs directly to test some functionality without running the full test suite. If you change the compiler, you'll need to run `yarn compiler:install` to install the latest built version to see your compiler changes take effect when you run the `grain` CLI.
+It can sometimes be helpful to run small Grain programs directly to test some functionality without running the full test suite.
 
 ### Runtime
 
 After making changes in the `runtime` directory, run:
 
 ```bash
-yarn runtime:build
-yarn runtime:test
+yarn runtime build
+yarn runtime test
 ```
 
 Once the runtime has been built, it's the only one active. Grain programs that you run from the command line or the tests will use that version.
 
 ### Standard library
 
-If you're only changing `.gr` stdlib files, you don't need to do anything special. Running the tests will automatically recompile all of the standard library files. If you change any of the AssemblyScript files in the `stdlib-external` directory of `stdlib`, you'll need to run `yarn stdlib:build` to recompile them.
+If you're only changing `.gr` stdlib files, you don't need to do anything special. Running the tests will automatically recompile all of the standard library files. If you change any of the AssemblyScript files in the `stdlib-external` directory of `stdlib`, you'll need to run `yarn stdlib build` to recompile them.
 
 It's usually easiest to create a small Grain program that imports your library to try it out, like so:
 
