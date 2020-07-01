@@ -4,10 +4,18 @@
  (name grain_parsing)
  (public_name grain_parsing)
  (synopsis "Frontend modules for Grain compiler")
- (libraries dyp batteries ppx_deriving ppx_sexp_conv sexplib extlib
-   grain_utils yojson ppx_deriving_yojson.runtime)
+ (libraries
+  batteries
+  compiler-libs.common
+  dyp
+  extlib
+  grain_utils
+  ppx_deriving_yojson.runtime
+  ppx_sexp_conv.runtime-lib
+  sexplib
+  yojson)
  (preprocess
-  (pps ppx_sexp_conv ppx_deriving_yojson ppx_deriving)))
+  (pps ppx_sexp_conv ppx_deriving_yojson)))
 
 (rule
  (targets parser.ml)
