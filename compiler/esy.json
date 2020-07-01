@@ -27,7 +27,8 @@
     "ocaml": "~4.8.1000"
   },
   "devDependencies": {
-    "@opam/reason": "*"
+    "@opam/reason": "*",
+    "@opam/ocaml-lsp-server": "ocaml/ocaml-lsp:ocaml-lsp-server.opam"
   },
   "resolutions": {
     "@opam/grain": "link:./grain.opam",

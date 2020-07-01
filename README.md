@@ -36,6 +36,14 @@ If running tests is your kind of thing, run
 yarn compiler test
 ```
 
+If you are using `vscode` as your editor, we recommend you run:
+
+```bash
+yarn vscode
+```
+
+This will create local settings that point OCaml LSP to our `compiler` directory. Then, you should be able to use the [OCaml Platform](https://github.com/ocamllabs/vscode-ocaml-platform) extension!
+
 ### Other Commands
 
 To build the standard library:
