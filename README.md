@@ -25,7 +25,7 @@ To build Grain, you'll need `yarn` and Node.js version 10 or higher. To get ever
 ```bash
 yarn
 yarn setup
-yarn compiler:build
+yarn compiler build
 ```
 
 This will set up the Grain runtime, standard library, and CLI.
@@ -33,7 +33,7 @@ This will set up the Grain runtime, standard library, and CLI.
 If running tests is your kind of thing, run
 
 ```bash
-yarn compiler:test
+yarn compiler test
 ```
 
 ### Other Commands
@@ -41,26 +41,34 @@ yarn compiler:test
 To build the standard library:
 
 ```bash
-yarn stdlib:build
+yarn stdlib build
 ```
 
 To build the runtime:
 
 ```bash
-yarn runtime:build
+yarn runtime build
 ```
 
 To link the CLI:
 
 ```bash
-yarn cli:link
+yarn cli link
 ```
 
 To reset your compiler build:
 
 ```bash
-yarn compiler:clean
+yarn compiler clean
 ```
+
+To navigate tasks available in the system:
+
+```bash
+yarn run
+```
+
+This will display an interactive session where you can select the project and command you want.
 
 ## Running Grain Programs
 

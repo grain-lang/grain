@@ -33,9 +33,9 @@ jobs:
           yarn
           yarn setup
 
-      - name: Esy install
+      - name: Esy setup
         run: |
-          yarn workspace @grain/compiler run esy install
+          yarn compiler setup
 
       - name: Esy cache
         id: esy-cache
@@ -47,22 +47,22 @@ jobs:
       - name: Import esy cache
         if: steps.esy-cache.outputs.cache-hit == 'true'
         run: |
-          yarn workspace @grain/compiler run esy import-dependencies _export
+          yarn compiler import-dependencies
           shx rm -rf compiler/_export
 
       - name: Build compiler
         run: |
-          yarn compiler:build
+          yarn compiler build
 
       # Re-export dependencies if anything has changed or if it is the first time
       - name: Build esy cache
         if: steps.esy-cache.outputs.cache-hit != 'true'
         run: |
-          yarn workspace @grain/compiler run esy export-dependencies
+          yarn compiler export-dependencies
 
       - name: Run tests
         run: |
-          yarn compiler:test
+          yarn compiler test
 
       # This is to test the CLI is working
       - name: Log Grain version

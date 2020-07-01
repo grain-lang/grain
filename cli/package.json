@@ -7,6 +7,7 @@
     "node": ">=14"
   },
   "scripts": {
+    "link": "yarn link",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": {
