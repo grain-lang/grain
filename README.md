@@ -20,7 +20,7 @@ There are tons of ways to contribute to Grain. Check out our [contributing guide
 
 ## Building
 
-To build Grain, you'll need `yarn` and Node.js version 10 or higher. To get everything set up, run:
+To build Grain, you'll need `yarn` and Node.js version 14 or higher. To get everything set up, run:
 
 ```bash
 yarn
