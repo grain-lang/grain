@@ -17,6 +17,7 @@
     "compiler:build": "yarn workspace @grain/compiler run esy install && yarn workspace @grain/compiler run esy compile && yarn workspace @grain/compiler run esy copy-compiler",
     "postcompiler:build": "yarn stdlib:clean",
     "compiler:test": "yarn workspace @grain/compiler run esy test",
+    "postcompiler:test": "yarn stdlib:clean",
     "test": "yarn compiler:test",
     "runtime:build": "yarn workspace @grain/runtime build",
     "runtime:build:dev": "yarn workspace @grain/runtime build:dev",
