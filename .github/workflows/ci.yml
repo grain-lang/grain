@@ -33,9 +33,9 @@ jobs:
           yarn
           yarn setup
 
-      - name: Esy install
+      - name: Esy setup
         run: |
-          yarn compiler install
+          yarn compiler setup
 
       - name: Esy cache
         id: esy-cache
