@@ -10,5 +10,12 @@
   },
   "devDependencies": {
     "esy": "0.6.6"
+  },
+  "scripts": {
+    "clean": "esy clean",
+    "build": "esy install && esy compile && esy copy-compiler",
+    "test": "esy test",
+    "import-dependencies": "esy import-dependencies _export",
+    "export-dependencies": "esy export-dependencies"
   }
 }
