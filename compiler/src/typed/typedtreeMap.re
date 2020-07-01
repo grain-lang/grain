@@ -43,8 +43,6 @@ module MakeMap =
          let map_toplevel_stmt: toplevel_stmt => toplevel_stmt;
          let map_expression: expression => expression;
        } => {
-  let may_map = Option.map;
-
   let rec map_typed_program = tp => {
     let tp = Map.enter_typed_program(tp);
     let statements = List.map(map_toplevel_stmt, tp.statements);
@@ -98,7 +96,7 @@ module MakeMap =
 
   and map_constructor_declaration = ({cd_args, cd_res} as cd) => {
     let cd_args = map_constructor_arguments(cd_args);
-    let cd_res = may_map(map_core_type, cd_res);
+    let cd_res = Option.map(map_core_type, cd_res);
     {...cd, cd_args, cd_res};
   }
 

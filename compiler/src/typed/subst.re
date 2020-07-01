@@ -227,7 +227,7 @@ let constructor_arguments = s =>
 let constructor_declaration = (s, c) => {
   cd_id: c.cd_id,
   cd_args: constructor_arguments(s, c.cd_args),
-  cd_res: may_map(typexp(s), c.cd_res),
+  cd_res: Option.map(typexp(s), c.cd_res),
   cd_loc: loc(s, c.cd_loc),
 };
 
@@ -349,7 +349,7 @@ and module_declaration = (s, decl) => {
 }
 
 and modtype_declaration = (s, decl) => {
-  mtd_type: may_map(modtype(s), decl.mtd_type),
+  mtd_type: Option.map(modtype(s), decl.mtd_type),
   mtd_loc: loc(s, decl.mtd_loc),
 };
 
