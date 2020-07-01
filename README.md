@@ -53,7 +53,7 @@ yarn runtime build
 To link the CLI:
 
 ```bash
-yarn link @grain/cli
+yarn cli link
 ```
 
 To reset your compiler build:

@@ -13,7 +13,7 @@
     "node": ">=14"
   },
   "scripts": {
-    "setup": "yarn runtime build && yarn stdlib build && yarn link @grain/cli && yarn link @grain/compiler",
+    "setup": "yarn runtime build && yarn stdlib build && yarn cli link && yarn compiler link",
     "test": "yarn compiler test",
     "cli": "yarn workspace @grain/cli run",
     "runtime": "yarn workspace @grain/runtime run",

@@ -12,6 +12,7 @@
     "esy": "0.6.6"
   },
   "scripts": {
+    "link": "yarn link",
     "clean": "esy clean",
     "build": "esy install && esy compile && esy copy-compiler",
     "test": "esy test",
