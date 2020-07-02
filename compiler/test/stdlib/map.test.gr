@@ -1,0 +1,59 @@
+import Map from 'map'
+
+# With Number keys
+let nums = Map.make();
+
+assert Map.set(1, "🌾", nums) == void;
+assert Map.set(2, "🐑", nums) == void;
+assert Map.set(3, "🧱", nums) == void;
+
+assert Map.get(1, nums) == Some("🌾");
+assert Map.get(2, nums) == Some("🐑");
+assert Map.get(3, nums) == Some("🧱");
+assert Map.get(4, nums) == None;
+
+# With String keys
+let strs = Map.make();
+
+assert Map.set("🌾", 1, strs) == void;
+assert Map.set("🐑", 2, strs) == void;
+assert Map.set("🧱", 3, strs) == void;
+
+assert Map.get("🌾", strs) == Some(1);
+assert Map.get("🐑", strs) == Some(2);
+assert Map.get("🧱", strs) == Some(3);
+assert Map.get("🌳", strs) == None;
+
+# With variant keys
+data Resource = Grain | Sheep | Brick | Wood;
+
+let vars = Map.make();
+
+assert Map.set(Grain, "🌾", vars) == void;
+assert Map.set(Sheep, "🐑", vars) == void;
+assert Map.set(Brick, "🧱", vars) == void;
+
+assert Map.get(Grain, vars) == Some("🌾");
+assert Map.get(Sheep, vars) == Some("🐑");
+assert Map.get(Brick, vars) == Some("🧱");
+assert Map.get(Wood, vars) == None;
+
+# With record keys
+data ResourceData = { name: String, emoji: String }
+
+let recs = Map.make();
+
+assert Map.set({ name: "Grain", emoji: "🌾" }, 1, recs) == void;
+assert Map.set({ name: "Sheep", emoji: "🐑" }, 2, recs) == void;
+assert Map.set({ name: "Brick", emoji: "🧱" }, 3, recs) == void;
+
+assert Map.get({ name: "Grain", emoji: "🌾" }, recs) == Some(1);
+assert Map.get({ name: "Sheep", emoji: "🐑" }, recs) == Some(2);
+assert Map.get({ name: "Brick", emoji: "🧱" }, recs) == Some(3);
+assert Map.get({ name: "Wood", emoji: "🌳" }, recs) == None;
+
+# Overwriting data
+assert Map.set(1, "🐑", nums) == void;
+assert Map.set(1, "🌾", nums) == void;
+
+assert Map.get(1, nums) == Some("🌾");

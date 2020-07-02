@@ -561,6 +561,7 @@ let stdlib_tests = [
   tlib("int64.test"),
   tlib("strings.test"),
   tlib("sys.file.test"),
+  tlib("map.test"),
   tlib(~returns="", ~code=5, "sys.process.test"),
 ];
 
