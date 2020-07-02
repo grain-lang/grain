@@ -13,7 +13,7 @@ export let set = (array, index, value) => {
 export let append = (a1, a2) => {
   let len1 = length(a1)
   let len2 = length(a2)
-  
+
   init(len1 + len2, n => {
     if (n < len1) {
       a1[n]
@@ -111,7 +111,7 @@ export let fromList = (list) => {
       | [] => acc
     }
   }
-  
+
   let list = box(list)
   let rec next = (n) => {
     match (unbox(list)) {
@@ -123,4 +123,16 @@ export let fromList = (list) => {
     }
   }
   init(listLength(unbox(list), 0), next)
+}
+
+# TODO: This should use recursion when we can pattern match arrays
+export let contains = (search, array) => {
+  let len = length(array);
+  let idx = box(0);
+  let found = box(false);
+  while ((^found == false) && (^idx < len)) {
+    found := (array[^idx] == search);
+    idx += 1;
+  }
+  ^found
 }
