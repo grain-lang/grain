@@ -1,5 +1,13 @@
 import Map from 'map'
 
+# Map.isEmpty()
+
+let e = Map.make();
+
+assert Map.isEmpty(e) == true;
+assert Map.set("🌾", "🌾", e) == void;
+assert Map.isEmpty(e) == false;
+
 # With Number keys
 let nums = Map.make();
 
