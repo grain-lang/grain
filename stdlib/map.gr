@@ -18,7 +18,7 @@ data Bucket<k, v> = {
 export let makeSized = (size) => {
   let buckets = Array.make(size, None);
   {
-    size: box(size),
+    size: box(0),
     buckets: box(buckets)
   }
 }
@@ -83,4 +83,8 @@ export let get = (key, map) => {
     | None => None
     | Some(cell) => valueFromBucket(key, cell)
   }
+}
+
+export let isEmpty = (map) => {
+  unbox(map.size) == 0
 }
