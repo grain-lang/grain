@@ -1,0 +1,86 @@
+# Standard library for Map (aka HashMap) functionality
+
+import Array from 'arrays'
+import { hash } from 'hash'
+
+data Container<a> = {
+  size: Box<Number>,
+  buckets: Box<Array<Option<a>>>
+}
+
+data Bucket<k, v> = {
+  key: Box<k>,
+  value: Box<v>,
+  next: Option<Bucket<k, v>>
+}
+
+# TODO: This could take an `eq` function to custom comparisons
+export let makeSized = (size) => {
+  let buckets = Array.make(size, None);
+  {
+    size: box(size),
+    buckets: box(buckets)
+  }
+}
+
+export let make = () => {
+  makeSized(16)
+}
+
+let getBucketIndex = (key, buckets) => {
+  let bucketsLength = Array.length(buckets);
+  let hashedKey = hash(key);
+  hashedKey % bucketsLength
+}
+
+let rec replaceInBucket = (key, value, cell) => {
+  if (key == unbox(cell.key)) {
+    cell.value := value;
+    false
+  } else {
+    match (cell.next) {
+      | None => true
+      | Some(next) => replaceInBucket(key, value, next)
+    }
+  }
+}
+
+export let set = (key, value, map) => {
+  let buckets = unbox(map.buckets);
+  let idx = getBucketIndex(key, buckets)
+  let bucket = buckets[idx];
+  match (bucket) {
+    | None => {
+      buckets[idx] := Some({ key: box(key), value: box(value), next: None });
+      map.size += 1;
+    }
+    | Some(cell) => {
+      if (replaceInBucket(key, value, cell)) {
+        buckets[idx] := Some({ key: box(key), value: box(value), next: bucket });
+        map.size += 1;
+      };
+    }
+  };
+  # TODO: Need to check and possibly resize the buckets array
+}
+
+let rec valueFromBucket = (key, cell) => {
+  if (key == unbox(cell.key)) {
+    Some(unbox(cell.value))
+  } else {
+    match (cell.next) {
+      | None => None
+      | Some(next) => valueFromBucket(key, next)
+    }
+  }
+}
+
+export let get = (key, map) => {
+  let buckets = unbox(map.buckets);
+  let idx = getBucketIndex(key, buckets);
+  let bucket = buckets[idx];
+  match (bucket) {
+    | None => None
+    | Some(cell) => valueFromBucket(key, cell)
+  }
+}
