@@ -116,3 +116,10 @@ let square = (n, i) => n * numbers[i]
 
 assert Array.mapi(square, [>]) == [>]
 assert Array.mapi(square, numbers) == [> 4, 9, 16]
+
+# Array.contains
+
+let arr = [> 1, 2, 3]
+
+assert Array.contains(3, arr)
+assert Array.contains(4, arr) == false
