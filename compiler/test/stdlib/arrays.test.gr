@@ -122,4 +122,4 @@ assert Array.mapi(square, numbers) == [> 4, 9, 16]
 let arr = [> 1, 2, 3]
 
 assert Array.contains(3, arr)
-assert Array.contains(4, arr) == false
+assert !Array.contains(4, arr)
