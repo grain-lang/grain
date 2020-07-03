@@ -88,7 +88,8 @@ module Pat: {
 };
 
 module Exp: {
-  let mk: (~loc: loc=?, expression_desc) => expression;
+  let mk:
+    (~loc: loc=?, ~comments: list(comment)=?, expression_desc) => expression;
   let ident: (~loc: loc=?, id) => expression;
   let constant: (~loc: loc=?, constant) => expression;
   let tuple: (~loc: loc=?, list(expression)) => expression;
@@ -114,6 +115,8 @@ module Exp: {
   let block: (~loc: loc=?, list(expression)) => expression;
   let null: (~loc: loc=?, unit) => expression;
   let ignore: expression => expression;
+  let comment: string => comment;
+  let add_comments: (expression, list(string)) => expression;
 };
 
 module Top: {

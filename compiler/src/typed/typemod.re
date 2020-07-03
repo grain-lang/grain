@@ -549,6 +549,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
             pvb_expr: {
               pexp_loc: loc,
               pexp_desc: PExpId(name),
+              pexp_leading_comments: [],
             },
             pvb_loc: loc,
           };

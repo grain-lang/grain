@@ -173,6 +173,8 @@ let make_program statements =
 %token EXCEPT FROM
 %token EOL EOF
 
+%token <string> COMMENT
+
 %start <Parsetree.parsed_program> program
 
 %parser
@@ -241,9 +243,11 @@ const :
   | VOID { Const.void }
   | STRING { Const.string $1 }
 
-expr :
+pre_expr :
   | stmt_expr
   | binop_expr
+expr :
+  | COMMENT* pre_expr { Exp.add_comments $2 $1 }
 
 binop_expr :
   | binop_expr(<=pa) eols? pluseq_op eols?    binop_expr(<pa) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pa

@@ -109,7 +109,6 @@ and pattern = {
 };
 
 /** Single-argument operators */
-
 [@deriving sexp]
 type prim1 =
   | Incr
@@ -126,7 +125,6 @@ type prim1 =
   | Int64Lnot;
 
 /** Two-argument operators */
-
 [@deriving sexp]
 type prim2 =
   | Plus
@@ -154,13 +152,19 @@ type prim2 =
   | Int64Lt
   | Int64Lte;
 
-/** Type for expressions (i.e. things which evaluate to something) */
+// Comments before an expression
+[@deriving sexp]
+type comment =
+  | Line(string)
+  | Doc(string);
 
+/** Type for expressions (i.e. things which evaluate to something) */
 [@deriving sexp]
 type expression = {
   pexp_desc: expression_desc,
   [@sexp_drop_if _ => ! Grain_utils.Config.sexp_locs_enabled^]
   pexp_loc: Location.t,
+  pexp_leading_comments: list(comment),
 }
 
 [@deriving sexp]

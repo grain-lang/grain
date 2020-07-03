@@ -102,10 +102,8 @@ let num_esc = (unicode_esc | hex_esc | oct_esc)
 let newline_char = ("\r\n"|"\n\r"|'\n'|'\r')
 let newline_chars = (newline_char | blank)* newline_char
 
-let comment = '#' ((([^'|'])[^ '\r' '\n']*(newline_chars | eof)) | (newline_chars | eof))
-
 rule token = parse
-  | comment { process_newlines lexbuf; EOL }
+  | "#" { read_comment (Buffer.create 16) lexbuf }
   | blank { token lexbuf }
   | newline_chars { process_newlines lexbuf; EOL }
   | (signed_int as x) 'l' { INT32 (Int32.of_string x) }
@@ -196,3 +194,8 @@ and read_squote_str buf =
     read_squote_str buf lexbuf }
   | '\'' { STRING (Buffer.contents buf) }
   | _ { raise (Error(lexbuf_loc lexbuf, IllegalStringCharacter(lexeme lexbuf))) }
+
+and read_comment buf =
+  parse
+  | newline_char { COMMENT (Buffer.contents buf) }
+  | _ { Buffer.add_string buf (lexeme lexbuf); read_comment buf lexbuf }

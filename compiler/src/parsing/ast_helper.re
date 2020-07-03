@@ -163,13 +163,18 @@ module Pat = {
 };
 
 module Exp = {
-  let mk = (~loc=?, d) => {
+  let mk = (~loc=?, ~comments=?, d) => {
     let loc =
       switch (loc) {
       | None => default_loc_src^()
       | Some(l) => l
       };
-    {pexp_desc: d, pexp_loc: loc};
+    let pexp_leading_comments =
+      switch (comments) {
+      | None => []
+      | Some(l) => l
+      };
+    {pexp_desc: d, pexp_loc: loc, pexp_leading_comments};
   };
   let ident = (~loc=?, a) => mk(~loc?, PExpId(a));
   let constant = (~loc=?, a) => mk(~loc?, PExpConstant(a));
@@ -215,6 +220,13 @@ module Exp = {
     | PExpLet(_) => e
     | _ => prim1(~loc=e.pexp_loc, Ignore, e)
     };
+
+  let comment = c => Doc(c);
+
+  let add_comments = (expr, comments) => {
+    ...expr,
+    pexp_leading_comments: List.map(comment, comments),
+  };
 };
 
 module Top = {
