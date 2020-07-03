@@ -162,9 +162,9 @@ type comment =
 [@deriving sexp]
 type expression = {
   pexp_desc: expression_desc,
+  pexp_leading_comments: list(comment),
   [@sexp_drop_if _ => ! Grain_utils.Config.sexp_locs_enabled^]
   pexp_loc: Location.t,
-  pexp_leading_comments: list(comment),
 }
 
 [@deriving sexp]

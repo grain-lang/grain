@@ -176,44 +176,44 @@ module Exp = {
       };
     {pexp_desc: d, pexp_loc: loc, pexp_leading_comments};
   };
-  let ident = (~loc=?, a) => mk(~loc?, PExpId(a));
-  let constant = (~loc=?, a) => mk(~loc?, PExpConstant(a));
-  let tuple = (~loc=?, a) => mk(~loc?, PExpTuple(a));
-  let record = (~loc=?, a) => mk(~loc?, PExpRecord(a));
-  let record_get = (~loc=?, a, b) =>
-    mk(~loc?, [@implicit_arity] PExpRecordGet(a, b));
-  let array = (~loc=?, a) => mk(~loc?, PExpArray(a));
-  let array_get = (~loc=?, a, b) =>
-    mk(~loc?, [@implicit_arity] PExpArrayGet(a, b));
-  let array_set = (~loc=?, a, b, c) =>
-    mk(~loc?, [@implicit_arity] PExpArraySet(a, b, c));
-  let let_ = (~loc=?, a, b, c) =>
-    mk(~loc?, [@implicit_arity] PExpLet(a, b, c));
-  let match = (~loc=?, a, b) =>
-    mk(~loc?, [@implicit_arity] PExpMatch(a, b));
-  let prim1 = (~loc=?, a, b) =>
-    mk(~loc?, [@implicit_arity] PExpPrim1(a, b));
-  let prim2 = (~loc=?, a, b, c) =>
-    mk(~loc?, [@implicit_arity] PExpPrim2(a, b, c));
-  let if_ = (~loc=?, a, b, c) =>
-    mk(~loc?, [@implicit_arity] PExpIf(a, b, c));
-  let while_ = (~loc=?, a, b) =>
-    mk(~loc?, [@implicit_arity] PExpWhile(a, b));
-  let constraint_ = (~loc=?, a, b) =>
-    mk(~loc?, [@implicit_arity] PExpConstraint(a, b));
-  let assign = (~loc=?, a, b) =>
-    mk(~loc?, [@implicit_arity] PExpAssign(a, b));
-  let lambda = (~loc=?, a, b) =>
-    mk(~loc?, [@implicit_arity] PExpLambda(a, b));
-  let apply = (~loc=?, a, b) => mk(~loc?, [@implicit_arity] PExpApp(a, b));
-  let block = (~loc=?, a) => mk(~loc?, PExpBlock(a));
-  let list = (~loc=?, a, base) => {
+  let ident = (~loc=?, ~comments=?, a) => mk(~loc?, ~comments?, PExpId(a));
+  let constant = (~loc=?, ~comments=?, a) => mk(~loc?, ~comments?, PExpConstant(a));
+  let tuple = (~loc=?, ~comments=?, a) => mk(~loc?, ~comments?, PExpTuple(a));
+  let record = (~loc=?, ~comments=?, a) => mk(~loc?, ~comments?, PExpRecord(a));
+  let record_get = (~loc=?, ~comments=?, a, b) =>
+    mk(~loc?, ~comments?, [@implicit_arity] PExpRecordGet(a, b));
+  let array = (~loc=?, ~comments=?, a) => mk(~loc?, ~comments?, PExpArray(a));
+  let array_get = (~loc=?, ~comments=?, a, b) =>
+    mk(~loc?, ~comments?, [@implicit_arity] PExpArrayGet(a, b));
+  let array_set = (~loc=?, ~comments=?, a, b, c) =>
+    mk(~loc?, ~comments?, [@implicit_arity] PExpArraySet(a, b, c));
+  let let_ = (~loc=?, ~comments=?, a, b, c) =>
+    mk(~loc?, ~comments?, [@implicit_arity] PExpLet(a, b, c));
+  let match = (~loc=?, ~comments=?, a, b) =>
+    mk(~loc?, ~comments?, [@implicit_arity] PExpMatch(a, b));
+  let prim1 = (~loc=?, ~comments=?, a, b) =>
+    mk(~loc?, ~comments?, [@implicit_arity] PExpPrim1(a, b));
+  let prim2 = (~loc=?, ~comments=?, a, b, c) =>
+    mk(~loc?, ~comments?, [@implicit_arity] PExpPrim2(a, b, c));
+  let if_ = (~loc=?, ~comments=?, a, b, c) =>
+    mk(~loc?, ~comments?, [@implicit_arity] PExpIf(a, b, c));
+  let while_ = (~loc=?, ~comments=?, a, b) =>
+    mk(~loc?, ~comments?, [@implicit_arity] PExpWhile(a, b));
+  let constraint_ = (~loc=?, ~comments=?, a, b) =>
+    mk(~loc?, ~comments?, [@implicit_arity] PExpConstraint(a, b));
+  let assign = (~loc=?, ~comments=?, a, b) =>
+    mk(~loc?, ~comments?, [@implicit_arity] PExpAssign(a, b));
+  let lambda = (~loc=?, ~comments=?, a, b) =>
+    mk(~loc?, ~comments?, [@implicit_arity] PExpLambda(a, b));
+  let apply = (~loc=?, ~comments=?, a, b) => mk(~loc?, ~comments?, [@implicit_arity] PExpApp(a, b));
+  let block = (~loc=?, ~comments=?, a) => mk(~loc?, ~comments?, PExpBlock(a));
+  let list = (~loc=?, ~comments=?, a, base) => {
     let empty = ident(~loc?, ident_empty);
     let cons = ident(ident_cons);
     let base = Option.default(empty, base);
     List.fold_right((expr, acc) => apply(cons, [expr, acc]), a, base);
   };
-  let null = (~loc=?, ()) => mk(~loc?, PExpNull);
+  let null = (~loc=?, ~comments=?, ()) => mk(~loc?, ~comments?, PExpNull);
 
   let ignore = e =>
     switch (e.pexp_desc) {
@@ -221,7 +221,9 @@ module Exp = {
     | _ => prim1(~loc=e.pexp_loc, Ignore, e)
     };
 
-  let comment = c => Doc(c);
+  let comment = c => {
+    Line(c);
+  };
 
   let add_comments = (expr, comments) => {
     ...expr,

@@ -90,30 +90,30 @@ module Pat: {
 module Exp: {
   let mk:
     (~loc: loc=?, ~comments: list(comment)=?, expression_desc) => expression;
-  let ident: (~loc: loc=?, id) => expression;
-  let constant: (~loc: loc=?, constant) => expression;
-  let tuple: (~loc: loc=?, list(expression)) => expression;
-  let record: (~loc: loc=?, list((id, expression))) => expression;
-  let record_get: (~loc: loc=?, expression, id) => expression;
+  let ident: (~loc: loc=?, ~comments: list(comment)=?, id) => expression;
+  let constant: (~loc: loc=?, ~comments: list(comment)=?, constant) => expression;
+  let tuple: (~loc: loc=?, ~comments: list(comment)=?, list(expression)) => expression;
+  let record: (~loc: loc=?, ~comments: list(comment)=?, list((id, expression))) => expression;
+  let record_get: (~loc: loc=?, ~comments: list(comment)=?, expression, id) => expression;
   let list:
-    (~loc: loc=?, list(expression), option(expression)) => expression;
-  let array: (~loc: loc=?, list(expression)) => expression;
-  let array_get: (~loc: loc=?, expression, expression) => expression;
+    (~loc: loc=?, ~comments: list(comment)=?, list(expression), option(expression)) => expression;
+  let array: (~loc: loc=?, ~comments: list(comment)=?, list(expression)) => expression;
+  let array_get: (~loc: loc=?, ~comments: list(comment)=?, expression, expression) => expression;
   let array_set:
-    (~loc: loc=?, expression, expression, expression) => expression;
+    (~loc: loc=?, ~comments: list(comment)=?, expression, expression, expression) => expression;
   let let_:
-    (~loc: loc=?, rec_flag, list(value_binding), expression) => expression;
-  let match: (~loc: loc=?, expression, list(match_branch)) => expression;
-  let prim1: (~loc: loc=?, prim1, expression) => expression;
-  let prim2: (~loc: loc=?, prim2, expression, expression) => expression;
-  let if_: (~loc: loc=?, expression, expression, expression) => expression;
-  let while_: (~loc: loc=?, expression, expression) => expression;
-  let constraint_: (~loc: loc=?, expression, parsed_type) => expression;
-  let assign: (~loc: loc=?, expression, expression) => expression;
-  let lambda: (~loc: loc=?, list(pattern), expression) => expression;
-  let apply: (~loc: loc=?, expression, list(expression)) => expression;
-  let block: (~loc: loc=?, list(expression)) => expression;
-  let null: (~loc: loc=?, unit) => expression;
+    (~loc: loc=?, ~comments: list(comment)=?, rec_flag, list(value_binding), expression) => expression;
+  let match: (~loc: loc=?, ~comments: list(comment)=?, expression, list(match_branch)) => expression;
+  let prim1: (~loc: loc=?, ~comments: list(comment)=?, prim1, expression) => expression;
+  let prim2: (~loc: loc=?, ~comments: list(comment)=?, prim2, expression, expression) => expression;
+  let if_: (~loc: loc=?, ~comments: list(comment)=?, expression, expression, expression) => expression;
+  let while_: (~loc: loc=?, ~comments: list(comment)=?, expression, expression) => expression;
+  let constraint_: (~loc: loc=?, ~comments: list(comment)=?, expression, parsed_type) => expression;
+  let assign: (~loc: loc=?, ~comments: list(comment)=?, expression, expression) => expression;
+  let lambda: (~loc: loc=?, ~comments: list(comment)=?, list(pattern), expression) => expression;
+  let apply: (~loc: loc=?, ~comments: list(comment)=?, expression, list(expression)) => expression;
+  let block: (~loc: loc=?, ~comments: list(comment)=?, list(expression)) => expression;
+  let null: (~loc: loc=?, ~comments: list(comment)=?, unit) => expression;
   let ignore: expression => expression;
   let comment: string => comment;
   let add_comments: (expression, list(string)) => expression;

@@ -28,60 +28,60 @@ module Cnst = {
 };
 
 module E = {
-  let map = (sub, {pexp_desc: desc, pexp_loc: loc}) => {
+  let map = (sub, {pexp_desc: desc, pexp_loc: loc, pexp_leading_comments: comments}) => {
     open Exp;
     let loc = sub.location(sub, loc);
     switch (desc) {
-    | PExpId(i) => ident(~loc, map_loc(sub, i))
-    | PExpConstant(c) => constant(~loc, sub.constant(sub, c))
-    | PExpTuple(es) => tuple(~loc, List.map(sub.expr(sub), es))
-    | PExpArray(es) => array(~loc, List.map(sub.expr(sub), es))
+    | PExpId(i) => ident(~loc, ~comments, map_loc(sub, i))
+    | PExpConstant(c) => constant(~loc, ~comments, sub.constant(sub, c))
+    | PExpTuple(es) => tuple(~loc, ~comments, List.map(sub.expr(sub), es))
+    | PExpArray(es) => array(~loc, ~comments, List.map(sub.expr(sub), es))
     | [@implicit_arity] PExpArrayGet(a, i) =>
-      array_get(~loc, sub.expr(sub, a), sub.expr(sub, i))
+      array_get(~loc, ~comments, sub.expr(sub, a), sub.expr(sub, i))
     | [@implicit_arity] PExpArraySet(a, i, arg) =>
       array_set(
-        ~loc,
+        ~loc, ~comments,
         sub.expr(sub, a),
         sub.expr(sub, i),
         sub.expr(sub, arg),
       )
     | PExpRecord(es) =>
       record(
-        ~loc,
+        ~loc, ~comments,
         List.map(
           ((name, expr)) => (map_loc(sub, name), sub.expr(sub, expr)),
           es,
         ),
       )
     | [@implicit_arity] PExpRecordGet(e, f) =>
-      record_get(~loc, sub.expr(sub, e), map_loc(sub, f))
+      record_get(~loc, ~comments, sub.expr(sub, e), map_loc(sub, f))
     | [@implicit_arity] PExpLet(r, vbs, e) =>
       let_(
-        ~loc,
+        ~loc, ~comments,
         r,
         List.map(sub.value_binding(sub), vbs),
         sub.expr(sub, e),
       )
     | [@implicit_arity] PExpMatch(e, mbs) =>
-      match(~loc, sub.expr(sub, e), List.map(sub.match_branch(sub), mbs))
+      match(~loc, ~comments, sub.expr(sub, e), List.map(sub.match_branch(sub), mbs))
     | [@implicit_arity] PExpPrim1(p1, e) =>
-      prim1(~loc, p1, sub.expr(sub, e))
+      prim1(~loc, ~comments, p1, sub.expr(sub, e))
     | [@implicit_arity] PExpPrim2(p2, e1, e2) =>
-      prim2(~loc, p2, sub.expr(sub, e1), sub.expr(sub, e2))
+      prim2(~loc, ~comments, p2, sub.expr(sub, e1), sub.expr(sub, e2))
     | [@implicit_arity] PExpAssign(be, e) =>
-      assign(~loc, sub.expr(sub, be), sub.expr(sub, e))
+      assign(~loc, ~comments, sub.expr(sub, be), sub.expr(sub, e))
     | [@implicit_arity] PExpIf(c, t, f) =>
-      if_(~loc, sub.expr(sub, c), sub.expr(sub, t), sub.expr(sub, f))
+      if_(~loc, ~comments, sub.expr(sub, c), sub.expr(sub, t), sub.expr(sub, f))
     | [@implicit_arity] PExpWhile(c, e) =>
-      while_(~loc, sub.expr(sub, c), sub.expr(sub, e))
+      while_(~loc, ~comments, sub.expr(sub, c), sub.expr(sub, e))
     | [@implicit_arity] PExpLambda(pl, e) =>
-      lambda(~loc, List.map(sub.pat(sub), pl), sub.expr(sub, e))
+      lambda(~loc, ~comments, List.map(sub.pat(sub), pl), sub.expr(sub, e))
     | [@implicit_arity] PExpApp(e, el) =>
-      apply(~loc, sub.expr(sub, e), List.map(sub.expr(sub), el))
-    | PExpBlock(el) => block(~loc, List.map(sub.expr(sub), el))
-    | PExpNull => null(~loc, ())
+      apply(~loc, ~comments, sub.expr(sub, e), List.map(sub.expr(sub), el))
+    | PExpBlock(el) => block(~loc, ~comments, List.map(sub.expr(sub), el))
+    | PExpNull => null(~loc, ~comments, ())
     | [@implicit_arity] PExpConstraint(e, t) =>
-      constraint_(~loc, sub.expr(sub, e), sub.typ(sub, t))
+      constraint_(~loc, ~comments, sub.expr(sub, e), sub.typ(sub, t))
     };
   };
 };
