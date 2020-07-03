@@ -280,7 +280,6 @@ export let toArray = (map) => {
 
 export let fromArray = (array) => {
   let map = make();
-  # TODO: Fix this when Array.forEach is collection-last
   Array.forEach(array, (pair) => {
     let (key, value) = pair;
     set(key, value, map);
