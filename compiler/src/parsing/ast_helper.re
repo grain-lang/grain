@@ -177,12 +177,16 @@ module Exp = {
     {pexp_desc: d, pexp_loc: loc, pexp_leading_comments};
   };
   let ident = (~loc=?, ~comments=?, a) => mk(~loc?, ~comments?, PExpId(a));
-  let constant = (~loc=?, ~comments=?, a) => mk(~loc?, ~comments?, PExpConstant(a));
-  let tuple = (~loc=?, ~comments=?, a) => mk(~loc?, ~comments?, PExpTuple(a));
-  let record = (~loc=?, ~comments=?, a) => mk(~loc?, ~comments?, PExpRecord(a));
+  let constant = (~loc=?, ~comments=?, a) =>
+    mk(~loc?, ~comments?, PExpConstant(a));
+  let tuple = (~loc=?, ~comments=?, a) =>
+    mk(~loc?, ~comments?, PExpTuple(a));
+  let record = (~loc=?, ~comments=?, a) =>
+    mk(~loc?, ~comments?, PExpRecord(a));
   let record_get = (~loc=?, ~comments=?, a, b) =>
     mk(~loc?, ~comments?, [@implicit_arity] PExpRecordGet(a, b));
-  let array = (~loc=?, ~comments=?, a) => mk(~loc?, ~comments?, PExpArray(a));
+  let array = (~loc=?, ~comments=?, a) =>
+    mk(~loc?, ~comments?, PExpArray(a));
   let array_get = (~loc=?, ~comments=?, a, b) =>
     mk(~loc?, ~comments?, [@implicit_arity] PExpArrayGet(a, b));
   let array_set = (~loc=?, ~comments=?, a, b, c) =>
@@ -205,8 +209,10 @@ module Exp = {
     mk(~loc?, ~comments?, [@implicit_arity] PExpAssign(a, b));
   let lambda = (~loc=?, ~comments=?, a, b) =>
     mk(~loc?, ~comments?, [@implicit_arity] PExpLambda(a, b));
-  let apply = (~loc=?, ~comments=?, a, b) => mk(~loc?, ~comments?, [@implicit_arity] PExpApp(a, b));
-  let block = (~loc=?, ~comments=?, a) => mk(~loc?, ~comments?, PExpBlock(a));
+  let apply = (~loc=?, ~comments=?, a, b) =>
+    mk(~loc?, ~comments?, [@implicit_arity] PExpApp(a, b));
+  let block = (~loc=?, ~comments=?, a) =>
+    mk(~loc?, ~comments?, PExpBlock(a));
   let list = (~loc=?, ~comments=?, a, base) => {
     let empty = ident(~loc?, ident_empty);
     let cons = ident(ident_cons);
@@ -232,25 +238,43 @@ module Exp = {
 };
 
 module Top = {
-  let mk = (~loc=?, d) => {
+  let mk = (~loc=?, ~comments=?, d) => {
     let loc =
       switch (loc) {
       | None => default_loc_src^()
       | Some(l) => l
       };
-    {ptop_desc: d, ptop_loc: loc};
+    let ptop_leading_comments =
+      switch (comments) {
+      | None => []
+      | Some(l) => l
+      };
+    {ptop_desc: d, ptop_loc: loc, ptop_leading_comments};
   };
-  let import = (~loc=?, i) => mk(~loc?, PTopImport(i));
-  let foreign = (~loc=?, e, d) =>
-    mk(~loc?, [@implicit_arity] PTopForeign(e, d));
-  let primitive = (~loc=?, e, d) =>
-    mk(~loc?, [@implicit_arity] PTopPrimitive(e, d));
-  let data = (~loc=?, e, d) => mk(~loc?, [@implicit_arity] PTopData(e, d));
-  let let_ = (~loc=?, e, r, vb) =>
-    mk(~loc?, [@implicit_arity] PTopLet(e, r, vb));
-  let expr = (~loc=?, e) => mk(~loc?, PTopExpr(e));
-  let export = (~loc=?, e) => mk(~loc?, PTopExport(e));
-  let export_all = (~loc=?, e) => mk(~loc?, PTopExportAll(e));
+  let import = (~loc=?, ~comments=?, i) =>
+    mk(~loc?, ~comments?, PTopImport(i));
+  let foreign = (~loc=?, ~comments=?, e, d) =>
+    mk(~loc?, ~comments?, [@implicit_arity] PTopForeign(e, d));
+  let primitive = (~loc=?, ~comments=?, e, d) =>
+    mk(~loc?, ~comments?, [@implicit_arity] PTopPrimitive(e, d));
+  let data = (~loc=?, ~comments=?, e, d) =>
+    mk(~loc?, ~comments?, [@implicit_arity] PTopData(e, d));
+  let let_ = (~loc=?, ~comments=?, e, r, vb) =>
+    mk(~loc?, ~comments?, [@implicit_arity] PTopLet(e, r, vb));
+  let expr = (~loc=?, ~comments=?, e) => mk(~loc?, ~comments?, PTopExpr(e));
+  let export = (~loc=?, ~comments=?, e) =>
+    mk(~loc?, ~comments?, PTopExport(e));
+  let export_all = (~loc=?, ~comments=?, e) =>
+    mk(~loc?, ~comments?, PTopExportAll(e));
+
+  let comment = c => {
+    Line(c);
+  };
+
+  let add_comments = (d, comments) => {
+    ...d,
+    ptop_leading_comments: List.map(comment, comments),
+  };
 };
 
 module Val = {

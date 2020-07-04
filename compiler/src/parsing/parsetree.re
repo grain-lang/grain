@@ -152,7 +152,7 @@ type prim2 =
   | Int64Lt
   | Int64Lte;
 
-// Comments before an expression
+// Comments before a statement or expression
 [@deriving sexp]
 type comment =
   | Line(string)
@@ -271,6 +271,7 @@ type toplevel_stmt_desc =
 [@deriving sexp]
 type toplevel_stmt = {
   ptop_desc: toplevel_stmt_desc,
+  ptop_leading_comments: list(comment),
   [@sexp_drop_if _ => ! Grain_utils.Config.sexp_locs_enabled^]
   ptop_loc: Location.t,
 };

@@ -243,11 +243,11 @@ const :
   | VOID { Const.void }
   | STRING { Const.string $1 }
 
-pre_expr :
+raw_expr :
   | stmt_expr
   | binop_expr
 expr :
-  | [COMMENT eols? {$1}]* pre_expr { Exp.add_comments $2 $1 }
+  | [COMMENT eols? {$1}]* raw_expr { Exp.add_comments $2 $1 }
 
 binop_expr :
   | binop_expr(<=pa) eols? pluseq_op eols?    binop_expr(<pa) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pa
@@ -603,7 +603,7 @@ primitive_stmt :
   | PRIMITIVE id_str colon typ equal STRING { Val.mk ~loc:(symbol_rloc dyp) ~mod_:{$2 with txt="primitive"} ~name:$2 ~alias:None ~typ:$4 ~prim:[$6] }
   | PRIMITIVE primitive colon typ equal STRING { Val.mk ~loc:(symbol_rloc dyp) ~mod_:{$2 with txt="primitive"} ~name:$2 ~alias:None ~typ:$4 ~prim:[$6] }
 
-toplevel_stmt :
+raw_toplevel_stmt :
   | LET REC value_binds { Top.let_ Nonexported Recursive $3 }
   | LET value_binds { Top.let_ Nonexported Nonrecursive $2 }
   | expr { Top.expr $1 }
@@ -612,6 +612,8 @@ toplevel_stmt :
   | export_stmt { $1 }
   | primitive_stmt { Top.primitive ~loc:(symbol_rloc dyp) Nonexported $1 }
   | data_declaration { Top.data Nonexported $1 }
+toplevel_stmt :
+  | [COMMENT eols? {$1}]* raw_toplevel_stmt { Top.add_comments $2 $1 }
 
 toplevel_stmts :
   | toplevel_stmt [eos toplevel_stmt {$2}]* { $1::$2 }
