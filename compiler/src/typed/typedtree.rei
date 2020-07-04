@@ -68,6 +68,10 @@ type prim2 =
     | Int64Lt
     | Int64Lte;
 
+type comment =
+  | Line(string)
+  | Doc(string);
+
 type core_type = {
   ctyp_desc: core_type_desc,
   ctyp_type: type_expr,
@@ -147,6 +151,7 @@ and pattern_desc =
 [@deriving sexp]
 type expression = {
   exp_desc: expression_desc,
+  exp_leading_comments: list(comment),
   exp_loc: Location.t,
   exp_extra: list((exp_extra, Location.t)),
   exp_type: type_expr,

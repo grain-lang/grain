@@ -236,8 +236,9 @@ let constant_or_raise = Checkertypes.constant_or_raise;
 /*let type_option ty =
   newty (TTyConstr(Predef.path_option,[ty], ref TMemNil))*/
 
-let mkexp = (exp_desc, exp_type, exp_loc, exp_env) => {
+let mkexp = (exp_desc, exp_leading_comments, exp_type, exp_loc, exp_env) => {
   exp_desc,
+  exp_leading_comments,
   exp_type,
   exp_loc,
   exp_env,
@@ -541,6 +542,15 @@ and type_expect_ =
     );
     exp;
   };
+  let exp_leading_comments =
+    List.map(
+      c =>
+        switch (c) {
+        | Parsetree.Line(s) => Typedtree.Line(s)
+        | Parsetree.Doc(s) => Typedtree.Doc(s)
+        },
+      sexp.pexp_leading_comments,
+    );
 
   switch (sexp.pexp_desc) {
   | PExpId(id) =>
@@ -560,6 +570,7 @@ and type_expect_ =
           )
         | _ => [@implicit_arity] TExpIdent(path, id, desc)
         },
+      exp_leading_comments,
       exp_loc: loc,
       exp_extra: [],
       exp_type: instance(env, desc.val_type),
@@ -569,6 +580,7 @@ and type_expect_ =
     let cst = constant_or_raise(env, loc, cst);
     rue({
       exp_desc: TExpConstant(cst),
+      exp_leading_comments,
       exp_loc: loc,
       exp_extra: [],
       exp_type: type_constant(cst),
@@ -587,6 +599,7 @@ and type_expect_ =
 
     re({
       exp_desc: TExpTuple(expl),
+      exp_leading_comments,
       exp_loc: loc,
       exp_extra: [],
       exp_type: newty(TTyTuple(List.map(e => e.exp_type, expl))),
@@ -600,6 +613,7 @@ and type_expect_ =
       List.map(sarg => type_expect(env, sarg, mk_expected(ty)), es);
     re({
       exp_desc: TExpArray(expl),
+      exp_leading_comments,
       exp_loc: loc,
       exp_extra: [],
       exp_type: instance(env, ty_expected),
@@ -627,6 +641,7 @@ and type_expect_ =
       );
     rue({
       exp_desc: [@implicit_arity] TExpArrayGet(arrexp, idx),
+      exp_leading_comments,
       exp_loc: loc,
       exp_extra: [],
       exp_type: instance(env, array_type),
@@ -655,6 +670,7 @@ and type_expect_ =
     let e = type_expect(env, se, mk_expected(array_type));
     rue({
       exp_desc: [@implicit_arity] TExpArraySet(arrexp, idx, e),
+      exp_leading_comments,
       exp_loc: loc,
       exp_extra: [],
       exp_type: instance(env, e.exp_type),
@@ -771,6 +787,7 @@ and type_expect_ =
 
     re({
       exp_desc: TExpRecord(fields),
+      exp_leading_comments,
       exp_loc: loc,
       exp_extra: [],
       exp_type: instance(env, ty_expected),
@@ -782,6 +799,7 @@ and type_expect_ =
     unify_exp(env, record, ty_res);
     rue({
       exp_desc: [@implicit_arity] TExpRecordGet(record, lid, label),
+      exp_leading_comments,
       exp_loc: loc,
       exp_extra: [],
       exp_type: ty_arg,
@@ -798,6 +816,7 @@ and type_expect_ =
       in*/
     re({
       exp_desc: [@implicit_arity] TExpLet(rec_flag, pat_exp_list, body),
+      exp_leading_comments,
       exp_loc: loc,
       exp_extra: [],
       exp_type: body.exp_type,
@@ -815,6 +834,7 @@ and type_expect_ =
     type_function(
       ~in_function?,
       loc,
+      exp_leading_comments,
       [],
       env,
       ty_expected_explained,
@@ -849,6 +869,7 @@ and type_expect_ =
     unify_var(env, newvar(), funct.exp_type);
     rue({
       exp_desc: [@implicit_arity] TExpApp(funct, args),
+      exp_leading_comments,
       exp_loc: loc,
       exp_extra: [],
       exp_type: ty_res,
@@ -866,6 +887,7 @@ and type_expect_ =
       type_cases(env, arg.exp_type, ty_expected, true, loc, branches);
     re({
       exp_desc: [@implicit_arity] TExpMatch(arg, val_cases, partial),
+      exp_leading_comments,
       exp_loc: loc,
       exp_extra: [],
       exp_type: instance(env, ty_expected),
@@ -876,6 +898,7 @@ and type_expect_ =
     let arg = type_expect(env, sarg, mk_expected(argtype));
     rue({
       exp_desc: [@implicit_arity] TExpPrim1(p1, arg),
+      exp_leading_comments,
       exp_loc: loc,
       exp_extra: [],
       exp_type: rettype,
@@ -887,6 +910,7 @@ and type_expect_ =
     let arg2 = type_expect(env, sarg2, mk_expected(arg2type));
     rue({
       exp_desc: [@implicit_arity] TExpPrim2(p2, arg1, arg2),
+      exp_leading_comments,
       exp_loc: loc,
       exp_extra: [],
       exp_type: rettype,
@@ -905,6 +929,7 @@ and type_expect_ =
     unify_exp(env, boxexpr) @@ Builtin_types.type_box(val_.exp_type);
     re({
       exp_desc: [@implicit_arity] TExpAssign(boxexpr, val_),
+      exp_leading_comments,
       exp_loc: loc,
       exp_extra: [],
       exp_type: val_.exp_type,
@@ -923,6 +948,7 @@ and type_expect_ =
       | PExpBlock([]) =>
         let void_exp = {
           exp_desc: TExpConstant(Const_void),
+          exp_leading_comments,
           exp_loc: loc,
           exp_extra: [],
           exp_type: Builtin_types.type_void,
@@ -949,6 +975,7 @@ and type_expect_ =
 
     re({
       exp_desc: [@implicit_arity] TExpIf(cond, ifso, ifnot),
+      exp_leading_comments,
       exp_loc: loc,
       exp_extra: [],
       exp_type: ifso.exp_type,
@@ -967,6 +994,7 @@ and type_expect_ =
     let body = type_expect(env, sbody, ty_expected_explained);
     re({
       exp_desc: [@implicit_arity] TExpWhile(cond, body),
+      exp_leading_comments,
       exp_loc: loc,
       exp_extra: [],
       /* While loops don't evaluate to anything */
@@ -985,6 +1013,7 @@ and type_expect_ =
     );
     rue({
       exp_desc: arg.exp_desc,
+      exp_leading_comments,
       exp_loc: arg.exp_loc,
       exp_type: ty',
       exp_env: env,
@@ -1012,6 +1041,7 @@ and type_expect_ =
     let (exprs, typ) = process_es(es);
     re({
       exp_desc: TExpBlock(exprs),
+      exp_leading_comments,
       exp_loc: loc,
       exp_extra: [],
       exp_type: typ,
@@ -1020,6 +1050,7 @@ and type_expect_ =
   | PExpNull =>
     rue({
       exp_desc: TExpNull,
+      exp_leading_comments,
       exp_loc: loc,
       exp_extra: [],
       exp_type: instance(env, Builtin_types.type_void),
@@ -1029,7 +1060,16 @@ and type_expect_ =
 }
 
 and type_function =
-    (~in_function=?, loc, attrs, env, ty_expected_explained, l, caselist) => {
+    (
+      ~in_function=?,
+      loc,
+      exp_leading_comments,
+      attrs,
+      env,
+      ty_expected_explained,
+      l,
+      caselist,
+    ) => {
   let {ty: ty_expected, explanation} = ty_expected_explained;
   /*Format.eprintf "@[type_function: expected: %a@]@." Printtyp.raw_type_expr ty_expected;*/
   let (loc_fun, ty_fun) =
@@ -1113,6 +1153,7 @@ and type_function =
   /*let param = name_pattern "param" cases in*/
   re({
     exp_desc: [@implicit_arity] TExpLambda(cases, partial),
+    exp_leading_comments,
     exp_loc: loc,
     exp_extra: [],
     exp_type:
@@ -1201,7 +1242,8 @@ and type_application = (env, funct, args) => {
   (typed_args, instance(env, ty_ret));
 }
 
-and type_construct = (env, loc, lid, sarg, ty_expected_explained, attrs) => {
+and type_construct =
+    (env, loc, exp_leading_comments, lid, sarg, ty_expected_explained, attrs) => {
   let {ty: ty_expected, explanation} = ty_expected_explained;
   let opath =
     try({
@@ -1257,6 +1299,7 @@ and type_construct = (env, loc, lid, sarg, ty_expected_explained, attrs) => {
   let texp =
     re({
       exp_desc: [@implicit_arity] TExpConstruct(lid, constr, []),
+      exp_leading_comments,
       exp_loc: loc,
       exp_extra: [],
       exp_type: ty_res,
@@ -1458,8 +1501,8 @@ and type_cases =
   /* `Contaminating' unifications start here */
   List.iter(f => f(), pattern_force^);
   /* Post-processing and generalization */
-  if (propagate) /*|| erase_either*/ {
-    unify_pats(instance(env, ty_arg));
+  if (propagate) {
+    /*|| erase_either*/ unify_pats(instance(env, ty_arg));
   };
   if (propagate) {
     List.iter(
@@ -1523,15 +1566,18 @@ and type_cases =
   };
   let do_init = /*has_gadts ||*/ needs_exhaust_check;
   let (lev, env) =
-    if (do_init) /*&& not has_gadts*/ {
-      init_env();
+    if (do_init) {
+      /*&& not has_gadts*/ init_env();
     } else {
       (lev, env);
     };
   let ty_arg_check =
     if (do_init) {
       /* Hack: use for_saving to copy variables too */
-      Subst.type_expr(Subst.for_saving(Subst.identity), ty_arg);
+      Subst.type_expr(
+        Subst.for_saving(Subst.identity),
+        ty_arg,
+      );
     } else {
       ty_arg;
     };
@@ -1554,7 +1600,6 @@ and type_cases =
     ();
   } else {
     /*add_delayed_check unused_check*/
-
     unused_check();
   };
   /* Check for unused cases, do not delay because of gadts */
@@ -1697,42 +1742,7 @@ and type_let =
          warning is 26, not 27.
        */
     List.map2(
-      (attrs, pat) => (pat, None) /*Builtin_attributes.warning_scope ~ppwarning:false attrs (fun () ->
-           if not warn_about_unused_bindings then pat, None
-           else
-             let some_used = ref false in
-             (* has one of the identifier of this pattern been used? *)
-             let slot = ref [] in
-             List.iter
-               (fun id ->
-                  let vd = Env.find_value (Path.Pident id) new_env in
-                  (* note: Env.find_value does not trigger the value_used event *)
-                  let name = Ident.name id in
-                  let used = ref false in
-                  if not (name = "" || name.[0] = '_' || name.[0] = '#') then
-                    add_delayed_check
-                      (fun () ->
-                         if not !used then
-                           Location.prerr_warning vd.Types.val_loc
-                             ((if !some_used then check_strict else check) name)
-                      );
-                  Env.set_value_used_callback
-                    name vd
-                    (fun () ->
-                       match !current_slot with
-                       | Some slot ->
-                         slot := (name, vd) :: !slot; rec_needed := true
-                       | None ->
-                         List.iter
-                           (fun (name, vd) -> Env.mark_value_used env name vd)
-                           (get_ref slot);
-                         used := true;
-                         some_used := true
-                    )
-               )
-               (Typedtree.pattern_bound_idents pat);
-             pat, Some slot
-         )*/,
+      (attrs, pat) => (pat, None) /*Builtin_attributes.warning_scope ~ppwarning:false attrs (fun () ->    if not warn_about_unused_bindings then pat, None    else      let some_used = ref false in      (* has one of the identifier of this pattern been used? *)      let slot = ref [] in      List.iter        (fun id ->           let vd = Env.find_value (Path.Pident id) new_env in           (* note: Env.find_value does not trigger the value_used event *)           let name = Ident.name id in           let used = ref false in           if not (name = "" || name.[0] = '_' || name.[0] = '#') then             add_delayed_check               (fun () ->                  if not !used then                    Location.prerr_warning vd.Types.val_loc                      ((if !some_used then check_strict else check) name)               );           Env.set_value_used_callback             name vd             (fun () ->                match !current_slot with                | Some slot ->                  slot := (name, vd) :: !slot; rec_needed := true                | None ->                  List.iter                    (fun (name, vd) -> Env.mark_value_used env name vd)                    (get_ref slot);                  used := true;                  some_used := true             )        )        (Typedtree.pattern_bound_idents pat);      pat, Some slot  )*/,
       attrs_list,
       pat_list,
     );

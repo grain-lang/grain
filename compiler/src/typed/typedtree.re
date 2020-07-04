@@ -78,6 +78,12 @@ let (prim2_of_sexp, sexp_of_prim2) = (
   Parsetree.sexp_of_prim2,
 );
 
+// Comments before a statement or expression
+[@deriving sexp]
+type comment =
+  | Line(string)
+  | Doc(string);
+
 [@deriving sexp]
 type core_type = {
   ctyp_desc: core_type_desc,
@@ -168,6 +174,7 @@ and pattern_desc =
 [@deriving sexp]
 type expression = {
   exp_desc: expression_desc,
+  exp_leading_comments: list(comment),
   [@sexp_drop_if _ => ! Grain_utils.Config.sexp_locs_enabled^]
   exp_loc: Location.t,
   [@default []] [@sexp_drop_default (==)]
