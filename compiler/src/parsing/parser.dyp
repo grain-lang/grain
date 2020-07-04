@@ -134,13 +134,12 @@ let mkid_expr dyp ns = Exp.ident ~loc:(symbol_rloc dyp) (mkid ns (symbol_rloc dy
 
 let mkstr dyp s = mkloc s (symbol_rloc dyp)
 
-let make_program statements comments =
+let make_program statements prog_trailing_comments =
   let prog_loc = {
     loc_start=(!first_loc).loc_end;
     loc_end=(!last_loc).loc_end;
     loc_ghost=false;
   } in
-  let prog_trailing_comments = to_comments comments in
   fix_blocks {statements; prog_trailing_comments; prog_loc}
 
 }
@@ -235,6 +234,12 @@ pipe :
 equal :
   | eols? EQUAL eols? { () }
 
+leading_comments :
+  | [COMMENT eols? {$1}]* { as_comments $1 }
+
+trailing_comments :
+  | [COMMENT eols? {$1}]* { as_comments $1 }
+
 const :
   | NUM { Const.int $1 }
   | INT32 { Const.int32 $1 }
@@ -248,7 +253,7 @@ raw_expr :
   | stmt_expr
   | binop_expr
 expr :
-  | [COMMENT eols? {$1}]* raw_expr { Exp.add_comments $2 $1 }
+  | leading_comments raw_expr { Exp.add_comments $2 $1 }
 
 binop_expr :
   | binop_expr(<=pa) eols? pluseq_op eols?    binop_expr(<pa) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pa
@@ -492,7 +497,7 @@ raw_let_expr :
   | LET REC value_binds { Exp.let_ ~loc:(symbol_rloc dyp) Recursive $3 (Exp.block []) }
   | LET value_binds { Exp.let_ ~loc:(symbol_rloc dyp) Nonrecursive $2 (Exp.block []) }
 let_expr :
-  | [COMMENT eols? {$1}]* raw_let_expr { Exp.add_comments $2 $1 }
+  | leading_comments raw_let_expr { Exp.add_comments $2 $1 }
 
 if_expr :
   | IF lparen expr rparen eols? block_or_expr { Exp.if_ ~loc:(symbol_rloc dyp) $3 $6 (Exp.block []) }
@@ -614,13 +619,13 @@ raw_toplevel_stmt :
   | primitive_stmt { Top.primitive ~loc:(symbol_rloc dyp) Nonexported $1 }
   | data_declaration { Top.data Nonexported $1 }
 toplevel_stmt :
-  | [COMMENT eols? {$1}]* raw_toplevel_stmt { Top.add_comments $2 $1 }
+  | leading_comments raw_toplevel_stmt { Top.add_comments $2 $1 }
 
 toplevel_stmts :
   | toplevel_stmt [eos toplevel_stmt {$2}]* { $1::$2 }
 
 program :
-  | eols? toplevel_stmts eos? [COMMENT eols? {$1}]* EOF { make_program $2 $4 }
+  | eols? toplevel_stmts eos? trailing_comments EOF { make_program $2 $4 }
 
 %%
 

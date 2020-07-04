@@ -32,7 +32,8 @@ let with_default_loc: (loc, unit => 'a) => 'a;
 
 let with_default_loc_src: (unit => loc, unit => 'a) => 'a;
 
-let to_comments: list(string) => list(comment);
+let comment_of_string: string => comment;
+let as_comments: list(string) => list(comment);
 
 module Const: {
   let string: string => constant;
@@ -185,7 +186,7 @@ module Exp: {
     (~loc: loc=?, ~comments: list(comment)=?, list(expression)) => expression;
   let null: (~loc: loc=?, ~comments: list(comment)=?, unit) => expression;
   let ignore: expression => expression;
-  let add_comments: (expression, list(string)) => expression;
+  let add_comments: (expression, list(comment)) => expression;
 };
 
 module Top: {
@@ -236,7 +237,7 @@ module Top: {
   let export_all:
     (~loc: loc=?, ~comments: list(comment)=?, list(export_except)) =>
     toplevel_stmt;
-  let add_comments: (toplevel_stmt, list(string)) => toplevel_stmt;
+  let add_comments: (toplevel_stmt, list(comment)) => toplevel_stmt;
 };
 
 module Val: {

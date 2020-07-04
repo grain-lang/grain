@@ -45,8 +45,10 @@ let ident_cons = {
   loc: default_loc_src^(),
 };
 
-let to_comments = l => {
-  List.map(c => Line(c), l);
+let comment_of_string = c => Line(c);
+
+let as_comments = l => {
+  List.map(comment_of_string, l);
 };
 
 module Const = {
@@ -231,9 +233,9 @@ module Exp = {
     | _ => prim1(~loc=e.pexp_loc, Ignore, e)
     };
 
-  let add_comments = (expr, comments) => {
+  let add_comments = (expr, pexp_leading_comments) => {
     ...expr,
-    pexp_leading_comments: to_comments(comments),
+    pexp_leading_comments,
   };
 };
 
@@ -267,9 +269,9 @@ module Top = {
   let export_all = (~loc=?, ~comments=?, e) =>
     mk(~loc?, ~comments?, PTopExportAll(e));
 
-  let add_comments = (d, comments) => {
+  let add_comments = (d, ptop_leading_comments) => {
     ...d,
-    ptop_leading_comments: to_comments(comments),
+    ptop_leading_comments,
   };
 };
 
