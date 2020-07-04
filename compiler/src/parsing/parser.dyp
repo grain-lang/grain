@@ -68,7 +68,7 @@ let fix_block_mapper super =
       (* Properly nest let bindings *)
       let elts = List.fold_right (fun ({pexp_desc} as stmt) elts ->
         match pexp_desc with
-        | PExpLet(r, binds, _) -> [{stmt with pexp_desc=PExpLet(r, binds, {stmt with pexp_desc=PExpBlock(elts)})}]
+        | PExpLet(r, binds, _) -> [{stmt with pexp_desc=PExpLet(r, binds, {stmt with pexp_desc=PExpBlock(elts); pexp_leading_comments=[]})}]
         | _ -> stmt::elts
       ) elts [] in
       {e with pexp_desc=PExpBlock(elts)}
