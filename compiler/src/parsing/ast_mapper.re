@@ -294,25 +294,56 @@ module TL = {
   let map =
       (
         sub,
-        {ptop_desc: desc, ptop_loc: loc, ptop_leading_comments: comments},
+        {
+          ptop_desc: desc,
+          ptop_loc: loc,
+          ptop_leading_comments: comments,
+          ptop_inline_comment: inline_comment,
+        },
       ) => {
     open Top;
     let loc = sub.location(sub, loc);
     switch (desc) {
     | PTopImport(decls) =>
-      Top.import(~loc, ~comments, sub.import(sub, decls))
+      Top.import(~loc, ~comments, ~inline_comment?, sub.import(sub, decls))
     | [@implicit_arity] PTopForeign(e, d) =>
-      Top.foreign(~loc, ~comments, e, sub.value_description(sub, d))
+      Top.foreign(
+        ~loc,
+        ~comments,
+        ~inline_comment?,
+        e,
+        sub.value_description(sub, d),
+      )
     | [@implicit_arity] PTopPrimitive(e, d) =>
-      Top.primitive(~loc, ~comments, e, sub.value_description(sub, d))
+      Top.primitive(
+        ~loc,
+        ~comments,
+        ~inline_comment?,
+        e,
+        sub.value_description(sub, d),
+      )
     | [@implicit_arity] PTopData(e, dd) =>
-      Top.data(~loc, ~comments, e, sub.data(sub, dd))
+      Top.data(~loc, ~comments, ~inline_comment?, e, sub.data(sub, dd))
     | [@implicit_arity] PTopLet(e, r, vb) =>
-      Top.let_(~loc, ~comments, e, r, List.map(sub.value_binding(sub), vb))
-    | PTopExpr(e) => Top.expr(~loc, ~comments, sub.expr(sub, e))
-    | PTopExport(ex) => Top.export(~loc, ~comments, sub.export(sub, ex))
+      Top.let_(
+        ~loc,
+        ~comments,
+        ~inline_comment?,
+        e,
+        r,
+        List.map(sub.value_binding(sub), vb),
+      )
+    | PTopExpr(e) =>
+      Top.expr(~loc, ~comments, ~inline_comment?, sub.expr(sub, e))
+    | PTopExport(ex) =>
+      Top.export(~loc, ~comments, ~inline_comment?, sub.export(sub, ex))
     | PTopExportAll(ex) =>
-      Top.export_all(~loc, ~comments, sub.export_all(sub, ex))
+      Top.export_all(
+        ~loc,
+        ~comments,
+        ~inline_comment?,
+        sub.export_all(sub, ex),
+      )
     };
   };
 };

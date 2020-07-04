@@ -191,15 +191,26 @@ module Exp: {
 
 module Top: {
   let mk:
-    (~loc: loc=?, ~comments: list(comment)=?, toplevel_stmt_desc) =>
+    (
+      ~loc: loc=?,
+      ~comments: list(comment)=?,
+      ~inline_comment: comment=?,
+      toplevel_stmt_desc
+    ) =>
     toplevel_stmt;
   let import:
-    (~loc: loc=?, ~comments: list(comment)=?, list(import_declaration)) =>
+    (
+      ~loc: loc=?,
+      ~comments: list(comment)=?,
+      ~inline_comment: comment=?,
+      list(import_declaration)
+    ) =>
     toplevel_stmt;
   let foreign:
     (
       ~loc: loc=?,
       ~comments: list(comment)=?,
+      ~inline_comment: comment=?,
       export_flag,
       value_description
     ) =>
@@ -208,6 +219,7 @@ module Top: {
     (
       ~loc: loc=?,
       ~comments: list(comment)=?,
+      ~inline_comment: comment=?,
       export_flag,
       value_description
     ) =>
@@ -216,6 +228,7 @@ module Top: {
     (
       ~loc: loc=?,
       ~comments: list(comment)=?,
+      ~inline_comment: comment=?,
       export_flag,
       data_declaration
     ) =>
@@ -224,20 +237,38 @@ module Top: {
     (
       ~loc: loc=?,
       ~comments: list(comment)=?,
+      ~inline_comment: comment=?,
       export_flag,
       rec_flag,
       list(value_binding)
     ) =>
     toplevel_stmt;
   let expr:
-    (~loc: loc=?, ~comments: list(comment)=?, expression) => toplevel_stmt;
+    (
+      ~loc: loc=?,
+      ~comments: list(comment)=?,
+      ~inline_comment: comment=?,
+      expression
+    ) =>
+    toplevel_stmt;
   let export:
-    (~loc: loc=?, ~comments: list(comment)=?, list(export_declaration)) =>
+    (
+      ~loc: loc=?,
+      ~comments: list(comment)=?,
+      ~inline_comment: comment=?,
+      list(export_declaration)
+    ) =>
     toplevel_stmt;
   let export_all:
-    (~loc: loc=?, ~comments: list(comment)=?, list(export_except)) =>
+    (
+      ~loc: loc=?,
+      ~comments: list(comment)=?,
+      ~inline_comment: comment=?,
+      list(export_except)
+    ) =>
     toplevel_stmt;
-  let add_comments: (toplevel_stmt, list(comment)) => toplevel_stmt;
+  let add_comments:
+    (toplevel_stmt, list(comment), option(comment)) => toplevel_stmt;
 };
 
 module Val: {

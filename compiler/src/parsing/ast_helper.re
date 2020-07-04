@@ -240,7 +240,7 @@ module Exp = {
 };
 
 module Top = {
-  let mk = (~loc=?, ~comments=?, d) => {
+  let mk = (~loc=?, ~comments=?, ~inline_comment=?, d) => {
     let loc =
       switch (loc) {
       | None => default_loc_src^()
@@ -251,27 +251,54 @@ module Top = {
       | None => []
       | Some(l) => l
       };
-    {ptop_desc: d, ptop_loc: loc, ptop_leading_comments};
+    {
+      ptop_desc: d,
+      ptop_loc: loc,
+      ptop_leading_comments,
+      ptop_inline_comment: inline_comment,
+    };
   };
-  let import = (~loc=?, ~comments=?, i) =>
-    mk(~loc?, ~comments?, PTopImport(i));
-  let foreign = (~loc=?, ~comments=?, e, d) =>
-    mk(~loc?, ~comments?, [@implicit_arity] PTopForeign(e, d));
-  let primitive = (~loc=?, ~comments=?, e, d) =>
-    mk(~loc?, ~comments?, [@implicit_arity] PTopPrimitive(e, d));
-  let data = (~loc=?, ~comments=?, e, d) =>
-    mk(~loc?, ~comments?, [@implicit_arity] PTopData(e, d));
-  let let_ = (~loc=?, ~comments=?, e, r, vb) =>
-    mk(~loc?, ~comments?, [@implicit_arity] PTopLet(e, r, vb));
-  let expr = (~loc=?, ~comments=?, e) => mk(~loc?, ~comments?, PTopExpr(e));
-  let export = (~loc=?, ~comments=?, e) =>
-    mk(~loc?, ~comments?, PTopExport(e));
-  let export_all = (~loc=?, ~comments=?, e) =>
-    mk(~loc?, ~comments?, PTopExportAll(e));
+  let import = (~loc=?, ~comments=?, ~inline_comment=?, i) =>
+    mk(~loc?, ~comments?, ~inline_comment?, PTopImport(i));
+  let foreign = (~loc=?, ~comments=?, ~inline_comment=?, e, d) =>
+    mk(
+      ~loc?,
+      ~comments?,
+      ~inline_comment?,
+      [@implicit_arity] PTopForeign(e, d),
+    );
+  let primitive = (~loc=?, ~comments=?, ~inline_comment=?, e, d) =>
+    mk(
+      ~loc?,
+      ~comments?,
+      ~inline_comment?,
+      [@implicit_arity] PTopPrimitive(e, d),
+    );
+  let data = (~loc=?, ~comments=?, ~inline_comment=?, e, d) =>
+    mk(
+      ~loc?,
+      ~comments?,
+      ~inline_comment?,
+      [@implicit_arity] PTopData(e, d),
+    );
+  let let_ = (~loc=?, ~comments=?, ~inline_comment=?, e, r, vb) =>
+    mk(
+      ~loc?,
+      ~comments?,
+      ~inline_comment?,
+      [@implicit_arity] PTopLet(e, r, vb),
+    );
+  let expr = (~loc=?, ~comments=?, ~inline_comment=?, e) =>
+    mk(~loc?, ~comments?, ~inline_comment?, PTopExpr(e));
+  let export = (~loc=?, ~comments=?, ~inline_comment=?, e) =>
+    mk(~loc?, ~comments?, ~inline_comment?, PTopExport(e));
+  let export_all = (~loc=?, ~comments=?, ~inline_comment=?, e) =>
+    mk(~loc?, ~comments?, ~inline_comment?, PTopExportAll(e));
 
-  let add_comments = (d, ptop_leading_comments) => {
+  let add_comments = (d, ptop_leading_comments, ptop_inline_comment) => {
     ...d,
     ptop_leading_comments,
+    ptop_inline_comment,
   };
 };
 
