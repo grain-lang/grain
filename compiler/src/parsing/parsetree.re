@@ -281,6 +281,7 @@ type toplevel_stmt = {
 [@deriving sexp]
 type parsed_program = {
   statements: list(toplevel_stmt),
+  prog_trailing_comments: list(comment),
   [@sexp_drop_if _ => ! Grain_utils.Config.sexp_locs_enabled^]
   prog_loc: Location.t,
 };

@@ -134,13 +134,14 @@ let mkid_expr dyp ns = Exp.ident ~loc:(symbol_rloc dyp) (mkid ns (symbol_rloc dy
 
 let mkstr dyp s = mkloc s (symbol_rloc dyp)
 
-let make_program statements =
+let make_program statements comments =
   let prog_loc = {
     loc_start=(!first_loc).loc_end;
     loc_end=(!last_loc).loc_end;
     loc_ghost=false;
   } in
-  fix_blocks {statements; prog_loc}
+  let prog_trailing_comments = to_comments comments in
+  fix_blocks {statements; prog_trailing_comments; prog_loc}
 
 }
 
@@ -619,7 +620,7 @@ toplevel_stmts :
   | toplevel_stmt [eos toplevel_stmt {$2}]* { $1::$2 }
 
 program :
-  | eols? toplevel_stmts eos? EOF { make_program $2 }
+  | eols? toplevel_stmts eos? [COMMENT eols? {$1}]* EOF { make_program $2 $4 }
 
 %%
 

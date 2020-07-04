@@ -118,6 +118,7 @@ let test_parse =
     Parsetree.{
       statements:
         List.map(location_stripper.toplevel(location_stripper), statements),
+      prog_trailing_comments: [],
       prog_loc: Location.dummy_loc,
     };
   let parsed = strip_locs @@ parse_string(name, input);
@@ -1140,42 +1141,74 @@ let string_tests = {
     tparse(
       "string_parse_dqs1",
       "\"foo\"",
-      {statements: [str("foo")], prog_loc: Location.dummy_loc},
+      {
+        statements: [str("foo")],
+        prog_trailing_comments: [],
+        prog_loc: Location.dummy_loc,
+      },
     ),
     tparse(
       "string_parse_dqs2",
       "\"bar\\nbaz\"",
-      {statements: [str("bar\nbaz")], prog_loc: Location.dummy_loc},
+      {
+        statements: [str("bar\nbaz")],
+        prog_trailing_comments: [],
+        prog_loc: Location.dummy_loc,
+      },
     ),
     tparse(
       "string_parse_sqs1",
       "'foobar'",
-      {statements: [str("foobar")], prog_loc: Location.dummy_loc},
+      {
+        statements: [str("foobar")],
+        prog_trailing_comments: [],
+        prog_loc: Location.dummy_loc,
+      },
     ),
     tparse(
       "string_parse_sqs2",
       "'bar\\u41'",
-      {statements: [str("barA")], prog_loc: Location.dummy_loc},
+      {
+        statements: [str("barA")],
+        prog_trailing_comments: [],
+        prog_loc: Location.dummy_loc,
+      },
     ),
     tparse(
       "string_parse_sqs3",
       "'bar\\x41'",
-      {statements: [str("barA")], prog_loc: Location.dummy_loc},
+      {
+        statements: [str("barA")],
+        prog_trailing_comments: [],
+        prog_loc: Location.dummy_loc,
+      },
     ),
     tparse(
       "string_parse_sqs4",
       "'bar\\101'",
-      {statements: [str("barA")], prog_loc: Location.dummy_loc},
+      {
+        statements: [str("barA")],
+        prog_trailing_comments: [],
+        prog_loc: Location.dummy_loc,
+      },
     ),
     tparse(
       "string_parse_emoji_escape",
       "\"😂\"",
-      {statements: [str("😂")], prog_loc: Location.dummy_loc},
+      {
+        statements: [str("😂")],
+        prog_trailing_comments: [],
+        prog_loc: Location.dummy_loc,
+      },
     ),
     tparse(
       "string_parse_emoji_literal",
       "\"💯\"",
-      {statements: [str("💯")], prog_loc: Location.dummy_loc},
+      {
+        statements: [str("💯")],
+        prog_trailing_comments: [],
+        prog_loc: Location.dummy_loc,
+      },
     ),
     t("string1", "\"foo\"", "\"foo\""),
     t("string2", "\"💯\"", "\"💯\""),
