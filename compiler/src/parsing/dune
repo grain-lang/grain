@@ -14,4 +14,4 @@
  (deps
   (:< parser.dyp))
  (action
-  (run dypgen --no-mli --Werror %{<})))
+  (run dypgen --pv-obj --no-mli --Werror %{<})))
