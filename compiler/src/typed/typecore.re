@@ -542,15 +542,7 @@ and type_expect_ =
     );
     exp;
   };
-  let exp_leading_comments =
-    List.map(
-      c =>
-        switch (c) {
-        | Parsetree.Line(s) => Typedtree.Line(s)
-        | Parsetree.Doc(s) => Typedtree.Doc(s)
-        },
-      sexp.pexp_leading_comments,
-    );
+  let exp_leading_comments = sexp.pexp_leading_comments;
 
   switch (sexp.pexp_desc) {
   | PExpId(id) =>

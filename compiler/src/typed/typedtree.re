@@ -78,11 +78,9 @@ let (prim2_of_sexp, sexp_of_prim2) = (
   Parsetree.sexp_of_prim2,
 );
 
-// Comments before a statement or expression
+// Comments
 [@deriving sexp]
-type comment =
-  | Line(string)
-  | Doc(string);
+type comment = Parsetree.comment = | Line(string);
 
 [@deriving sexp]
 type core_type = {

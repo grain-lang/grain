@@ -152,11 +152,10 @@ type prim2 =
   | Int64Lt
   | Int64Lte;
 
-// Comments before a statement or expression
+// Comments
 [@deriving sexp]
 type comment =
-  | Line(string)
-  | Doc(string);
+  | Line(string);
 
 /** Type for expressions (i.e. things which evaluate to something) */
 [@deriving sexp]

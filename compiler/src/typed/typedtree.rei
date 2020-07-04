@@ -68,9 +68,7 @@ type prim2 =
     | Int64Lt
     | Int64Lte;
 
-type comment =
-  | Line(string)
-  | Doc(string);
+type comment = Parsetree.comment = | Line(string);
 
 type core_type = {
   ctyp_desc: core_type_desc,

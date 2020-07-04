@@ -630,18 +630,8 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
     List.fold_left(
       (
         (env, signatures, statements),
-        {ptop_desc, ptop_loc: loc, ptop_leading_comments},
-      ) => {
-        let comments =
-          List.map(
-            c => {
-              switch (c) {
-              | Parsetree.Line(s) => Typedtree.Line(s)
-              | Parsetree.Doc(s) => Typedtree.Doc(s)
-              }
-            },
-            ptop_leading_comments,
-          );
+        {ptop_desc, ptop_loc: loc, ptop_leading_comments: comments},
+      ) =>
         switch (ptop_desc) {
         | PTopImport(i) =>
           let (new_env, stmts) = process_import(env, i, loc, comments);
@@ -684,8 +674,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
           let statement = process_expr(env, e, loc, comments);
           (env, signatures, [statement, ...statements]);
         | PTopExportAll(_) => (env, signatures, statements)
-        };
-      },
+        },
       (env, [], []),
       sstr.Parsetree.statements,
     );
@@ -895,15 +884,7 @@ let type_implementation = prog => {
       "(inferred signature)",
       simple_sg,
     );
-  let trailing_comments =
-    List.map(
-      c =>
-        switch (c) {
-        | Parsetree.Line(s) => Typedtree.Line(s)
-        | Parsetree.Doc(s) => Typedtree.Doc(s)
-        },
-      prog.prog_trailing_comments,
-    );
+  let trailing_comments = prog.prog_trailing_comments;
 
   check_nongen_schemes(finalenv, simple_sg);
   normalize_signature(finalenv, simple_sg);
