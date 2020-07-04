@@ -239,6 +239,7 @@ type toplevel_stmt_desc =
 [@deriving sexp]
 type toplevel_stmt = {
   ttop_desc: toplevel_stmt_desc,
+  ttop_leading_comments: list(comment),
   ttop_loc: Location.t,
   ttop_env: Env.t,
 };
@@ -246,6 +247,7 @@ type toplevel_stmt = {
 [@deriving sexp]
 type typed_program = {
   statements: list(toplevel_stmt),
+  trailing_comments: list(comment),
   env: Env.t,
   signature: Cmi_format.cmi_infos,
 };

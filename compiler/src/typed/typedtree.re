@@ -272,6 +272,7 @@ type toplevel_stmt_desc =
 [@deriving sexp]
 type toplevel_stmt = {
   ttop_desc: toplevel_stmt_desc,
+  ttop_leading_comments: list(comment),
   [@sexp_drop_if _ => ! Grain_utils.Config.sexp_locs_enabled^]
   ttop_loc: Location.t,
   ttop_env: [@sexp.opaque] Env.t,
@@ -280,6 +281,7 @@ type toplevel_stmt = {
 [@deriving sexp]
 type typed_program = {
   statements: list(toplevel_stmt),
+  trailing_comments: list(comment),
   env: [@sexp.opaque] Env.t,
   signature: Cmi_format.cmi_infos,
 };

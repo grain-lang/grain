@@ -385,7 +385,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
     flag && (!) @@ List.exists(({txt}) => txt == str.txt, excepts);
   };
 
-  let process_foreign = (env, e, d, loc) => {
+  let process_foreign = (env, e, d, loc, ttop_leading_comments) => {
     let (desc, newenv) = Typedecl.transl_value_decl(env, loc, d);
     let e =
       if (string_needs_export(d.pval_name)) {
@@ -401,13 +401,14 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       };
     let foreign = {
       ttop_desc: TTopForeign(desc),
+      ttop_leading_comments,
       ttop_loc: loc,
       ttop_env: env,
     };
     (newenv, signature, foreign);
   };
 
-  let process_primitive = (env, e, d, loc) => {
+  let process_primitive = (env, e, d, loc, ttop_leading_comments) => {
     let (desc, newenv) = Typedecl.transl_value_decl(env, loc, d);
     let e =
       if (string_needs_export(d.pval_name)) {
@@ -424,13 +425,14 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
     let (defs, newenv) = Translprim.transl_prim(newenv, desc);
     let prim = {
       ttop_desc: [@implicit_arity] TTopLet(e, Nonrecursive, defs),
+      ttop_leading_comments,
       ttop_loc: loc,
       ttop_env: newenv,
     };
     (newenv, signature, prim);
   };
 
-  let process_import = (env, imports, loc) => {
+  let process_import = (env, imports, loc, ttop_leading_comments) => {
     let (newenv, stmts) =
       List.fold_left(
         ((env, stmts), i) => {
@@ -438,7 +440,12 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
           (
             newenv,
             [
-              {ttop_desc: TTopImport(od), ttop_loc: loc, ttop_env: env},
+              {
+                ttop_desc: TTopImport(od),
+                ttop_leading_comments,
+                ttop_loc: loc,
+                ttop_env: env,
+              },
               ...stmts,
             ],
           );
@@ -449,7 +456,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
     (newenv, List.rev(stmts));
   };
 
-  let process_datas = (env, e, datas, loc) => {
+  let process_datas = (env, e, datas, loc, ttop_leading_comments) => {
     let (decls, newenv) = Typedecl.transl_data_decl(env, Recursive, datas);
     let ty_decl =
       map_rec_type_with_row_types(
@@ -478,6 +485,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       );
     let statement = {
       ttop_desc: TTopData(decls),
+      ttop_leading_comments,
       ttop_loc: loc,
       ttop_env: newenv,
     };
@@ -485,7 +493,8 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
     (newenv, ty_decl, statement);
   };
 
-  let process_let = (env, export_flag, rec_flag, binds, loc) => {
+  let process_let =
+      (env, export_flag, rec_flag, binds, loc, ttop_leading_comments) => {
     Ctype.init_def(Ident.current_time());
     let scope = None;
     let (defs, newenv) = Typecore.type_binding(env, rec_flag, binds, scope);
@@ -519,18 +528,24 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       };
     let stmt = {
       ttop_desc: [@implicit_arity] TTopLet(export_flag, rec_flag, defs),
+      ttop_leading_comments,
       ttop_loc: loc,
       ttop_env: env,
     };
     (newenv, signatures, [stmt]);
   };
 
-  let process_expr = (env, expr, loc) => {
+  let process_expr = (env, expr, loc, ttop_leading_comments) => {
     let expr = Typecore.type_statement_expr(env, expr);
-    {ttop_desc: TTopExpr(expr), ttop_loc: loc, ttop_env: env};
+    {
+      ttop_desc: TTopExpr(expr),
+      ttop_leading_comments,
+      ttop_loc: loc,
+      ttop_env: env,
+    };
   };
 
-  let process_export_value = (env, exports, loc) => {
+  let process_export_value = (env, exports, loc, comments) => {
     let bindings =
       List.map(
         ({pex_name: name, pex_alias: alias, pex_loc: loc}) => {
@@ -556,7 +571,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
         },
         exports,
       );
-    process_let(env, Exported, Nonrecursive, bindings, loc);
+    process_let(env, Exported, Nonrecursive, bindings, loc, comments);
   };
 
   let type_export_aliases = ref([]);
@@ -585,7 +600,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
     };
   };
 
-  let process_export = (env, exports, loc) => {
+  let process_export = (env, exports, loc, comments) => {
     let (values, datas) =
       List.fold_right(
         (export, (values, datas)) =>
@@ -604,7 +619,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       };
     let (env, sigs, stmts) =
       if (List.length(values) > 0) {
-        process_export_value(env, values, loc);
+        process_export_value(env, values, loc, comments);
       } else {
         (env, [], []);
       };
@@ -613,17 +628,31 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
 
   let (final_env, signatures, statements) =
     List.fold_left(
-      ((env, signatures, statements), {ptop_desc, ptop_loc: loc}) =>
+      (
+        (env, signatures, statements),
+        {ptop_desc, ptop_loc: loc, ptop_leading_comments},
+      ) => {
+        let comments =
+          List.map(
+            c => {
+              switch (c) {
+              | Parsetree.Line(s) => Typedtree.Line(s)
+              | Parsetree.Doc(s) => Typedtree.Doc(s)
+              }
+            },
+            ptop_leading_comments,
+          );
         switch (ptop_desc) {
         | PTopImport(i) =>
-          let (new_env, stmts) = process_import(env, i, loc);
+          let (new_env, stmts) = process_import(env, i, loc, comments);
           (new_env, signatures, stmts @ statements);
         | PTopExport(ex) =>
-          let (new_env, sigs, stmts) = process_export(env, ex, loc);
+          let (new_env, sigs, stmts) =
+            process_export(env, ex, loc, comments);
           (new_env, List.rev(sigs) @ signatures, stmts @ statements);
         | [@implicit_arity] PTopForeign(e, d) =>
           let (new_env, signature, statement) =
-            process_foreign(env, e, d, loc);
+            process_foreign(env, e, d, loc, comments);
           let signatures =
             switch (signature) {
             | Some(s) => [s, ...signatures]
@@ -632,7 +661,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
           (new_env, signatures, [statement, ...statements]);
         | [@implicit_arity] PTopPrimitive(e, d) =>
           let (new_env, signature, statement) =
-            process_primitive(env, e, d, loc);
+            process_primitive(env, e, d, loc, comments);
           let signatures =
             switch (signature) {
             | Some(s) => [s, ...signatures]
@@ -640,20 +669,23 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
             };
           (new_env, signatures, [statement, ...statements]);
         | [@implicit_arity] PTopData(e, d) =>
-          let (new_env, sigs, statement) = process_datas(env, e, [d], loc);
+          let (new_env, sigs, statement) =
+            process_datas(env, e, [d], loc, comments);
           (
             new_env,
             List.rev(sigs) @ signatures,
             [statement, ...statements],
           );
         | [@implicit_arity] PTopLet(e, r, vb) =>
-          let (new_env, sigs, stmts) = process_let(env, e, r, vb, loc);
+          let (new_env, sigs, stmts) =
+            process_let(env, e, r, vb, loc, comments);
           (new_env, List.rev(sigs) @ signatures, stmts @ statements);
         | PTopExpr(e) =>
-          let statement = process_expr(env, e, loc);
+          let statement = process_expr(env, e, loc, comments);
           (env, signatures, [statement, ...statements]);
         | PTopExportAll(_) => (env, signatures, statements)
-        },
+        };
+      },
       (env, [], []),
       sstr.Parsetree.statements,
     );
@@ -863,12 +895,21 @@ let type_implementation = prog => {
       "(inferred signature)",
       simple_sg,
     );
+  let trailing_comments =
+    List.map(
+      c =>
+        switch (c) {
+        | Parsetree.Line(s) => Typedtree.Line(s)
+        | Parsetree.Doc(s) => Typedtree.Doc(s)
+        },
+      prog.prog_trailing_comments,
+    );
 
   check_nongen_schemes(finalenv, simple_sg);
   normalize_signature(finalenv, simple_sg);
   let signature = Env.build_signature(simple_sg, modulename, filename);
   ignore(coercion);
-  {statements, env, signature};
+  {statements, trailing_comments, env, signature};
 };
 
 /* Error report */
