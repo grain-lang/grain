@@ -1,0 +1,25 @@
+opam-version: "2.0"
+synopsis: "OCaml bindings for Binaryen"
+maintainer: "oscar@grain-lang.org"
+homepage: "https://github.com/grain-lang/binaryen.ml"
+dev-repo: "git+https://github.com/grain-lang/binaryen.ml.git"
+bug-reports: "https://github.com/grain-lang/binaryen.ml/issues"
+build: [
+  [ "dune" "subst" ] {pinned}
+  [ "dune" "build" "-p" name "-j" jobs "--no-buffer" ]
+]
+depends: [
+  "ocaml" {>= "4.08"}
+  "dune" {>= "2.6"}
+  "conf-cmake" {build}
+  "conf-python-3" {build}
+]
+authors: "Oscar Spencer"
+url {
+  src:
+    "https://github.com/grain-lang/binaryen.ml/releases/download/v0.2.2/binaryen-archive-v0.2.2.tar.gz"
+  checksum: [
+    "md5=1753373cf3fbd094432dbd4b8d62a9c5"
+    "sha512=a514ec1a60e1a358c1ab8b76b9341ab0e13413e5b467faecca3dc722187154567794404e67ce4a98e085d8e08c5e3e76d9adb5d73dba41a903c4d71bfabc2e5a"
+  ]
+}
