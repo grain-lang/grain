@@ -37,8 +37,7 @@
     "@opam/grain_parsing": "link:./grain_parsing.opam",
     "@opam/grain_typed": "link:./grain_typed.opam",
     "@opam/grain_middle_end": "link:./grain_middle_end.opam",
-    "@opam/grain_codegen": "link:./grain_codegen.opam",
-    "@opam/binaryen": "grain-lang/binaryen.ml:binaryen.opam#81fd504"
+    "@opam/grain_codegen": "link:./grain_codegen.opam"
   },
   "installConfig": {
     "pnp": false
