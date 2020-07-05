@@ -235,6 +235,6 @@ type mash_program = {
   signature: Cmi_format.cmi_infos,
 };
 
-let const_true = MConstLiteral(MConstI32(Int32.of_int(4294967295)));
-let const_false = MConstLiteral(MConstI32(Int32.of_int(2147483647)));
-let const_void = MConstLiteral(MConstI32(Int32.of_int(1879048191)));
+let const_true = MConstLiteral(MConstI32(Int32.of_int(0xFFFFFFFF)));
+let const_false = MConstLiteral(MConstI32(Int32.of_int(0x7FFFFFFF)));
+let const_void = MConstLiteral(MConstI32(Int32.of_int(0x6FFFFFFF)));
