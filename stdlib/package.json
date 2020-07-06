@@ -40,6 +40,6 @@
   "dependencies": {},
   "scripts": {
     "build": "./build.mjs",
-    "clean": "del '**/*.wasm' '**/*.wasm.modsig' '**/*.wasm.wast' '!stdlib-external/**'"
+    "clean": "del-cli '**/*.wasm' '**/*.wasm.modsig' '**/*.wasm.wast' '!stdlib-external/**'"
   }
 }
