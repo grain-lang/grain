@@ -5,7 +5,7 @@ open Compmod;
 let emit_module = ({asm, signature}, outfile) => {
   Files.ensure_parent_directory_exists(outfile);
   if (Config.debug^) {
-    let asm_string = Wasm.Sexpr.to_string(80, Wasm.Arrange.module_(asm));
+    let asm_string = Binaryen.Module.write_text(asm);
     let sig_string =
       Sexplib.Sexp.to_string_hum(Cmi_format.sexp_of_cmi_infos(signature));
     let wast_file = outfile ++ ".wast";
@@ -17,9 +17,9 @@ let emit_module = ({asm, signature}, outfile) => {
     output_string(oc, sig_string);
     close_out(oc);
   };
-  let encoded = Wasm.Encode.encode(asm);
+  let (encoded, _) = Binaryen.Module.write(asm, None);
   let oc = open_out_bin(outfile);
-  output_string(oc, encoded);
+  output_bytes(oc, encoded);
   Cmi_format.output_cmi(outfile, oc, signature);
   close_out(oc);
 };

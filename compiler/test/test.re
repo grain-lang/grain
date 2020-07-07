@@ -24,29 +24,26 @@ let () =
   );
 
 // Recursive readdir
-let rec readdir = dir => {
+let rec readdir = (dir, excludes) => {
   Sys.readdir(dir)
   |> Array.fold_left(
        (results, filename) => {
          let filepath = Filename.concat(dir, filename);
-         Sys.is_directory(filepath)
-           ? Array.append(results, readdir(filepath))
+         (Sys.is_directory(filepath) && List.for_all((exclude) => !BatString.starts_with(filename, exclude), excludes))
+           ? Array.append(results, readdir(filepath, excludes))
            : Array.append(results, [|filepath|]);
        },
        [||],
      );
 };
 
-let compile_stdlib = stdlib_dir =>
+let clean_stdlib = stdlib_dir =>
   Array.iter(
-    file =>
-      if (Filename.check_suffix(file, ".gr")) {
-        let infile = Printf.sprintf("%s", file);
-        let outfile =
-          Printf.sprintf("%s", Filename.remove_extension(file) ++ ".wasm");
-        ignore @@ Grain.Compile.compile_file(~outfile, infile);
+    (file) =>
+      if (Filename.check_suffix(file, ".wasm")) {
+        Sys.remove(file);
       },
-    readdir(stdlib_dir),
+    readdir(stdlib_dir, ["stdlib-external"]),
   );
 
 let all_tests = [
@@ -60,7 +57,7 @@ let () = {
   let stdlib_dir = Unix.getenv("GRAIN_STDLIB");
   let stdlib_dir = Grain_utils.Files.derelativize(stdlib_dir);
   Grain_utils.Config.stdlib_dir := Some(stdlib_dir);
-  compile_stdlib(stdlib_dir);
+  clean_stdlib(stdlib_dir);
   Grain_utils.Config.debug := true;
   Printexc.record_backtrace(true);
   run_test_tt_main("All Tests" >::: all_tests);

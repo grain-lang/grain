@@ -57,8 +57,10 @@ let global_index = ref(0);
 let global_exports = () => {
   let tbl = global_table^;
   Ident.fold_all(
-    (ex_name, (ex_global_index, ex_getter_index), acc) =>
-      [{ex_name, ex_global_index, ex_getter_index}, ...acc],
+    (ex_name, (ex_global_index, ex_getter_index), acc) => [
+      {ex_name, ex_global_index, ex_getter_index},
+      ...acc,
+    ],
     tbl,
     [],
   );
@@ -200,13 +202,15 @@ module RegisterAllocation = {
     | MStore(bs) =>
       MStore(
         List.map(
-          ((b, bk)) =>
-            (apply_allocation_to_bind(b), apply_allocations(allocs, bk)),
+          ((b, bk)) => (
+            apply_allocation_to_bind(b),
+            apply_allocations(allocs, bk),
+          ),
           bs,
         ),
       )
     | MAllocate(x) => MAllocate(x)
-    | MDrop => MDrop
+    | MDrop(i) => MDrop(apply_allocations(allocs, i))
     | MTracepoint(x) => MTracepoint(x)
     };
   };
@@ -234,6 +238,7 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
 
   let rec live_locals =
     fun
+    | MDrop(i) => live_locals(i)
     | MImmediate(imm)
     | [@implicit_arity] MTagOp(_, _, imm)
     | [@implicit_arity] MArityOp(_, _, imm)
@@ -263,8 +268,7 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
         List.map(((b, bk)) => bind_live_local(b) @ live_locals(bk), bs),
       )
     | MAllocate(_)
-    | MTracepoint(_)
-    | MDrop => []
+    | MTracepoint(_) => []
   and block_live_locals = b => List.concat(List.map(live_locals, b));
 
   /*** Mapping from (instruction index) -> (used locals) */
@@ -309,20 +313,16 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
         fun
         | [] => acc
         | [(idx, items), ...tl] => {
-            let with_items: IntMap.t(list(int)) = (
+            let with_items: IntMap.t(list(int)) =
               List.fold_left(
                 (acc, cur) => {
-                  let existing_elts: list(int) = (
-                    BatOption.default([], IntMap.find_opt(cur, acc)):
-                      list(int)
-                  );
+                  let existing_elts: list(int) =
+                    BatOption.default([], IntMap.find_opt(cur, acc));
                   IntMap.add(cur, [idx, ...existing_elts], acc);
                 },
                 acc,
                 items,
-              ):
-                IntMap.t(list(int))
-            );
+              );
             help(with_items, tl);
           };
       let interval_map = help(IntMap.empty, instr_live_sets);
@@ -437,11 +437,11 @@ let compile_lambda = (env, args, body): Mashtree.closure_data => {
   };
 };
 
-let compile_wrapper = (env, real_idx, arity): Mashtree.closure_data => {
+let compile_wrapper = (env, func_name, arity): Mashtree.closure_data => {
   let body = [
     [@implicit_arity]
     MCallKnown(
-      Int32.of_int(real_idx),
+      func_name,
       BatList.init(arity, i => MImmBinding(MArgBind(Int32.of_int(i + 1)))),
     ),
   ];
@@ -578,17 +578,14 @@ let rec compile_comp = (env, c) =>
     [@implicit_arity]
     MCallIndirect(compile_imm(env, f), List.map(compile_imm(env), args))
   | [@implicit_arity] CAppBuiltin(modname, name, args) =>
-    let builtin_idx = Int32.zero;
     [@implicit_arity]
-    MCallKnown(builtin_idx, List.map(compile_imm(env), args));
+    MCallKnown("builtin", List.map(compile_imm(env), args))
   | CImmExpr(i) => MImmediate(compile_imm(env, i))
   }
-
 and compile_anf_expr = (env, a) =>
   switch (a.anf_desc) {
   | [@implicit_arity] AESeq(hd, tl) => [
-      compile_comp(env, hd),
-      MDrop,
+      MDrop(compile_comp(env, hd)),
       ...compile_anf_expr(env, tl),
     ]
   | [@implicit_arity] AELet(global, recflag, binds, body) =>
@@ -600,12 +597,11 @@ and compile_anf_expr = (env, a) =>
     let locations = List.mapi(get_loc, binds);
     let new_env =
       BatList.fold_left2(
-        (acc, new_loc, (id, _)) =>
-          {
-            ...acc,
-            ce_binds: Ident.add(id, new_loc, acc.ce_binds),
-            ce_stack_idx: acc.ce_stack_idx + 1,
-          }, /* FIXME: Why is this not ce_stack_idx + (List.length binds)?? */
+        (acc, new_loc, (id, _)) => {
+          ...acc,
+          ce_binds: Ident.add(id, new_loc, acc.ce_binds),
+          ce_stack_idx: acc.ce_stack_idx + 1,
+        }, /* FIXME: Why is this not ce_stack_idx + (List.length binds)?? */
         env,
         locations,
         binds,
@@ -613,8 +609,10 @@ and compile_anf_expr = (env, a) =>
     switch (recflag) {
     | Nonrecursive =>
       BatList.fold_right2(
-        (loc, (_, rhs), acc) =>
-          [MStore([(loc, compile_comp(env, rhs))]), ...acc],
+        (loc, (_, rhs), acc) => [
+          MStore([(loc, compile_comp(env, rhs))]),
+          ...acc,
+        ],
         locations,
         binds,
         compile_anf_expr(new_env, body),
@@ -622,8 +620,10 @@ and compile_anf_expr = (env, a) =>
     | Recursive =>
       let binds =
         BatList.fold_left2(
-          (acc, loc, (_, rhs)) =>
-            [(loc, compile_comp(new_env, rhs)), ...acc],
+          (acc, loc, (_, rhs)) => [
+            (loc, compile_comp(new_env, rhs)),
+            ...acc,
+          ],
           [],
           locations,
           binds,
@@ -675,34 +675,32 @@ let lift_imports = (env, imports) => {
         BatList.init(outputs, _ => I32Type),
       );
 
-  let import_idx = ref(0);
-
   let process_import =
       ((imports, setups, env), {imp_use_id, imp_desc, imp_shape}) => {
     let glob = next_global(imp_use_id);
-    let import_idx = {
-      let i = import_idx^;
-      import_idx := i + 1;
-      i;
-    };
     switch (imp_desc) {
-    | [@implicit_arity] GrainValue(mod_, name) => (
-        [
-          {
-            mimp_mod: Ident.create(mod_),
-            mimp_name: Ident.create(name),
-            mimp_type: MGlobalImport(I32Type) /*process_shape imp_shape*/,
-            mimp_kind: MImportGrain,
-            mimp_setup: MCallGetter,
-          },
-          ...imports,
-        ],
+    | [@implicit_arity] GrainValue(mod_, name) =>
+      let new_mod = {
+        mimp_mod: Ident.create(mod_),
+        mimp_name: Ident.create(name),
+        mimp_type: MGlobalImport(I32Type) /*process_shape imp_shape*/,
+        mimp_kind: MImportGrain,
+        mimp_setup: MCallGetter,
+      };
+      let func_name =
+        Printf.sprintf(
+          "import_%s_%s",
+          Ident.unique_name(new_mod.mimp_mod),
+          Ident.unique_name(new_mod.mimp_name),
+        );
+      (
+        [new_mod, ...imports],
         [
           [
             MStore([
               (
                 MGlobalBind(Int32.of_int(glob)),
-                [@implicit_arity] MCallKnown(Int32.of_int(import_idx), []),
+                [@implicit_arity] MCallKnown(func_name, []),
               ),
             ]),
           ],
@@ -717,18 +715,23 @@ let lift_imports = (env, imports) => {
               env.ce_binds,
             ),
         },
-      )
-    | [@implicit_arity] WasmFunction(mod_, name) => (
-        [
-          {
-            mimp_mod: Ident.create(mod_),
-            mimp_name: Ident.create(name),
-            mimp_type: process_shape(imp_shape),
-            mimp_kind: MImportWasm,
-            mimp_setup: MWrap(Int32.zero),
-          },
-          ...imports,
-        ],
+      );
+    | [@implicit_arity] WasmFunction(mod_, name) =>
+      let new_mod = {
+        mimp_mod: Ident.create(mod_),
+        mimp_name: Ident.create(name),
+        mimp_type: process_shape(imp_shape),
+        mimp_kind: MImportWasm,
+        mimp_setup: MWrap(Int32.zero),
+      };
+      let func_name =
+        Printf.sprintf(
+          "import_%s_%s",
+          Ident.unique_name(new_mod.mimp_mod),
+          Ident.unique_name(new_mod.mimp_name),
+        );
+      (
+        [new_mod, ...imports],
         [
           switch (imp_shape) {
           | GlobalShape => []
@@ -741,7 +744,7 @@ let lift_imports = (env, imports) => {
                   (
                     MGlobalBind(Int32.of_int(glob)),
                     MAllocate(
-                      MClosure(compile_wrapper(env, import_idx, inputs)),
+                      MClosure(compile_wrapper(env, func_name, inputs)),
                     ),
                   ),
                 ]),
@@ -759,7 +762,7 @@ let lift_imports = (env, imports) => {
               env.ce_binds,
             ),
         },
-      )
+      );
     | JSFunction(_) => failwith("NYI: lift_imports JSFunction")
     };
   };
@@ -785,8 +788,10 @@ let transl_anf_program =
   let exports = global_exports();
   let functions =
     List.map(
-      ({body} as f: Mashtree.mash_function) =>
-        {...f, body: run_register_allocation(body)},
+      ({body} as f: Mashtree.mash_function) => {
+        ...f,
+        body: run_register_allocation(body),
+      },
       compile_remaining_worklist(),
     );
 

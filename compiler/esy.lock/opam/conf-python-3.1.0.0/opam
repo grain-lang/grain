@@ -1,0 +1,30 @@
+opam-version: "2.0"
+maintainer: "unixjunkie@sdf.org"
+homepage: "https://www.python.org/download/releases/3.6"
+authors: "Python Software Foundation"
+license: "PSF"
+bug-reports: "https://github.com/ocaml/opam-repository/issues"
+build: ["python3" "test.py"]
+depexts: [
+  ["python3"] {os-family = "debian"}
+  ["python3"] {os-distribution = "nixos"}
+  ["python3"] {os-distribution = "alpine"}
+  ["python36" "epel-release"] {os-distribution = "centos"}
+  ["python3"] {os-distribution = "fedora"}
+  ["python3"] {os-distribution = "arch"}
+  ["python3"] {os-family = "suse"}
+  ["dev-lang/python:3.6"] {os-distribution = "gentoo"}
+  ["python3"] {os = "openbsd"}
+  ["lang/python36"] {os = "netbsd"}
+  ["lang/python36"] {os = "freebsd"}
+  ["python36"] {os-distribution = "macports" & os = "macos"}
+  ["python3"] {os-distribution = "homebrew" & os = "macos"}
+]
+synopsis: "Virtual package relying on Python-3 installation"
+description: """
+This package can only install if a Python-3 interpreter is available
+on the system.
+If a minor version needs to be specified for your operating system, then
+python-3.6 will be used.
+"""
+extra-files: ["test.py" "md5=cf4d1727e71778e636c47947dc10a02d"]
