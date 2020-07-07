@@ -241,7 +241,7 @@ trailing_comments :
   | [COMMENT eols? {$1}]* { as_comments $1 }
 
 inline_comment :
-  | COMMENT { comment_of_string $1 }
+  | [SEMI? COMMENT {$2}] { comment_of_string $1 }
 
 const :
   | NUM { Const.int $1 }

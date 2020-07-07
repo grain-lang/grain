@@ -197,5 +197,5 @@ and read_squote_str buf =
 
 and read_comment buf =
   parse
-  | newline_char { process_newlines lexbuf; COMMENT (Buffer.contents buf) }
-  | _ { Buffer.add_string buf (lexeme lexbuf); read_comment buf lexbuf }
+  | newline_char { process_newlines lexbuf; EOL }
+  | [^ '\n' '\r']* { Buffer.add_string buf (lexeme lexbuf); COMMENT (Buffer.contents buf) }
