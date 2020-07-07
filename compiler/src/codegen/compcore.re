@@ -378,8 +378,8 @@ let wrap_int64 = n => Literal.int64(n);
 let wrap_float32 = n => Literal.float32(n);
 let wrap_float64 = n => Literal.float64(n);
 
-let grain_number_max = 1073741823;
-let grain_number_min = (-1073741823); /* 0xC0000001 */
+let grain_number_max = 0x3fffffff;
+let grain_number_min = (-0x3fffffff); // 0xC0000001
 
 /** Constant compilation */
 
@@ -3953,6 +3953,7 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
   
   validate_module(~name?, wasm_mod);
   // TODO: Enable Binaryen optimizations
+  // https://github.com/grain-lang/grain/issues/196
   // Module.optimize(wasm_mod);
   wasm_mod;
 };
