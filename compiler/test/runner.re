@@ -146,7 +146,7 @@ let test_run =
       run_output(~heap_size?, cstate, test_ctxt);
     });
   assert_equal(
-    ~printer=Batteries.identity,
+    ~printer=Fun.id,
     ~cmp=Option.default((==), cmp),
     expected ++ "\n",
     result,
@@ -159,7 +159,7 @@ let test_run_file = (~heap_size=?, filename, name, expected, test_ctxt) => {
   let cstate =
     compile_file(~hook=stop_after_compiled, ~outfile, input_filename);
   let result = run_output(~heap_size?, cstate, test_ctxt);
-  assert_equal(~printer=Batteries.identity, expected ++ "\n", result);
+  assert_equal(~printer=Fun.id, expected ++ "\n", result);
 };
 
 let test_run_stdlib = (~returns="void\n", ~code=?, filename, test_ctxt) => {
@@ -168,7 +168,7 @@ let test_run_stdlib = (~returns="void\n", ~code=?, filename, test_ctxt) => {
   let cstate =
     compile_file(~hook=stop_after_compiled, ~outfile, input_filename);
   let result = run_output(~code?, cstate, test_ctxt);
-  assert_equal(~printer=Batteries.identity, returns, result);
+  assert_equal(~printer=Fun.id, returns, result);
 };
 
 let test_optimizations_sound = (program_str, name, expected, test_ctxt) => {
@@ -219,7 +219,7 @@ let test_file_optimizations_sound = (filename, name, expected, test_ctxt) => {
 
 let test_run_anf = (program_anf, outfile, expected, test_ctxt) => {
   let result = run_anf(program_anf, outfile, test_ctxt);
-  assert_equal(expected ++ "\n", result, ~printer=Batteries.identity);
+  assert_equal(expected ++ "\n", result, ~printer=Fun.id);
 };
 
 let test_err = (~heap_size=?, program_str, outfile, errmsg, test_ctxt) => {
@@ -243,7 +243,7 @@ let test_err = (~heap_size=?, program_str, outfile, errmsg, test_ctxt) => {
     errmsg,
     result,
     ~cmp=(check, result) => Batteries.String.exists(result, check),
-    ~printer=Batteries.identity,
+    ~printer=Fun.id,
   );
 };
 
@@ -263,6 +263,6 @@ let test_run_file_err = (filename, name, errmsg, test_ctxt) => {
     errmsg,
     result,
     ~cmp=(check, result) => Batteries.String.exists(result, check),
-    ~printer=Batteries.identity,
+    ~printer=Fun.id,
   );
 };

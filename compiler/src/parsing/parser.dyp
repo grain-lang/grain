@@ -4,6 +4,7 @@ open Identifier
 open Dyp
 open Parsetree
 open Ast_helper
+open Grain_utils
 
 (* Used for error messages and as a default, in case anything slips through
    without an explicit loc. *)
@@ -109,7 +110,7 @@ let no_uppercase_ident expr =
   match expr.pexp_desc with
   | PExpId {txt=id} ->
     let first_char = String.get (Identifier.last id) 0 in
-    if first_char = BatChar.uppercase first_char then raise Dyp.Giveup
+    if Char_utils.is_uppercase_letter first_char then raise Dyp.Giveup
   | _ -> ()
 
 let no_array_access expr =

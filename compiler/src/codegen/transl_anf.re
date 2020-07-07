@@ -320,7 +320,7 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
               List.fold_left(
                 (acc, cur) => {
                   let existing_elts: list(int) =
-                    BatOption.default([], IntMap.find_opt(cur, acc));
+                    Option.default([], IntMap.find_opt(cur, acc));
                   IntMap.add(cur, [idx, ...existing_elts], acc);
                 },
                 acc,

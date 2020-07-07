@@ -430,12 +430,12 @@ let get_grain_custom_info = inchan =>
 
 let serialize_grain_custom_info = (sec_name, abi_version) => {
   let sec_bytes = Bytes.of_string(sec_name);
-  let buf = BatBuffer.create(Bytes.length(sec_bytes) + 4 + 4 * 3 + 4);
-  List.iter(b => BatBuffer.add_char(buf, char_of_int(b)), grain_magic);
-  BatBuffer.add_bytes(buf, serialize_abi_version(abi_version));
-  BatBuffer.add_bytes(buf, serialize_int32(Bytes.length(sec_bytes)));
-  BatBuffer.add_bytes(buf, sec_bytes);
-  BatBuffer.to_bytes(buf);
+  let buf = Buffer.create(Bytes.length(sec_bytes) + 4 + 4 * 3 + 4);
+  List.iter(b => Buffer.add_char(buf, char_of_int(b)), grain_magic);
+  Buffer.add_bytes(buf, serialize_abi_version(abi_version));
+  Buffer.add_bytes(buf, serialize_int32(Bytes.length(sec_bytes)));
+  Buffer.add_bytes(buf, sec_bytes);
+  Buffer.to_bytes(buf);
 };
 
 module type BinarySectionSpec = {
