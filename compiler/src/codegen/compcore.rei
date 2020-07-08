@@ -1,7 +1,6 @@
 open Grain_typed;
 open Grain_middle_end;
 open Mashtree;
-open Wasm;
 open Binaryen;
 
 type codegen_env = {
