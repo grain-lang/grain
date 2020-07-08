@@ -7,8 +7,6 @@ open Asttypes;
 open Anftree;
 open Mashtree;
 
-module StrMap = BatMap.String;
-
 type compilation_env = {
   ce_binds: Ident.tbl(Mashtree.binding),
   /* Useful due to us needing a second pass over exports (for mutual recursion) */
