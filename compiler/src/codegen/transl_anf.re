@@ -35,7 +35,9 @@ type worklist_elt = {
   loc: Location.t,
 };
 
-let compilation_worklist = ref(BatDeque.empty: BatDeque.t(worklist_elt));
+// The OCaml docs warn that this isn't thread-safe,
+// but I don't think we are threading yet
+let compilation_worklist: Queue.t(worklist_elt) = Queue.create();
 
 /** Lambda-lifting index (function index) */
 
@@ -89,16 +91,13 @@ let next_global = id =>
 let find_id = (id, env) => Ident.find_same(id, env.ce_binds);
 let find_global = (id, env) => Ident.find_same(id, env.ce_exported_globals);
 
-let worklist_reset = () => compilation_worklist := BatDeque.empty;
-let worklist_enqueue = elt =>
-  compilation_worklist := BatDeque.snoc(compilation_worklist^, elt);
-let worklist_empty = () => BatDeque.is_empty(compilation_worklist^);
+let worklist_reset = () => Queue.clear(compilation_worklist);
+let worklist_enqueue = elt => Queue.add(elt, compilation_worklist);
+let worklist_empty = () => Queue.is_empty(compilation_worklist);
 let worklist_pop = () =>
-  switch (BatDeque.front(compilation_worklist^)) {
+  switch (Queue.take_opt(compilation_worklist)) {
   | None => raise(Not_found)
-  | Some((hd, tl)) =>
-    compilation_worklist := tl;
-    hd;
+  | Some(hd) => hd
   };
 
 module IntMap = Map.Make(Int);
