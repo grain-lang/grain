@@ -1,18 +1,20 @@
-<div align="center">
+<p align="center">
     <a href="https://grain-lang.org/">
         <img src="https://raw.githubusercontent.com/grain-lang/grain/master/grain_shorthand_color.png" alt="Grain" height="200" />
     </a>
-</div>
+</p>
 
-![Grain CI Workflow](https://github.com/grain-lang/grain/workflows/Grain%20CI%20Workflow/badge.svg)
-[![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
-[![GitHub version](https://badge.fury.io/gh/grain-lang%2Fgrain.svg)](https://badge.fury.io/gh/grain-lang%2Fgrain)
+<p align="center">
+    <a target="_blank" rel="noopener noreferrer" href="https://github.com/grain-lang/grain/workflows/Grain%20CI%20Workflow/badge.svg"><img src="https://github.com/grain-lang/grain/workflows/Grain%20CI%20Workflow/badge.svg" alt="Grain CI Workflow" style="max-width:100%;"></a>
+    <a href="https://www.gnu.org/licenses/lgpl-3.0" rel="nofollow"><img src="https://camo.githubusercontent.com/4e8beb53bf7fc54e0addd2106a833503fc81a083/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f4c6963656e73652d4c47504c25323076332d626c75652e737667" alt="License: LGPL v3" data-canonical-src="https://img.shields.io/badge/License-LGPL%20v3-blue.svg" style="max-width:100%;"></a>
+    <a href="https://badge.fury.io/gh/grain-lang%2Fgrain" rel="nofollow"><img src="https://camo.githubusercontent.com/909d4481f00303c64c5b47ae8d62b791726960d3/68747470733a2f2f62616467652e667572792e696f2f67682f677261696e2d6c616e67253246677261696e2e737667" alt="GitHub version" data-canonical-src="https://badge.fury.io/gh/grain-lang%2Fgrain.svg" style="max-width:100%;"></a>
+</p>
 
-# The Grain Compiler
+---
 
-Grain is a new programming language that compiles to [WebAssembly](http://webassembly.org/). For more information about the language, check out [grain-lang.org](https://grain-lang.org/).
+Grain is a new programming language that compiles to [WebAssembly](http://webassembly.org/) via [Binaryen](https://github.com/WebAssembly/binaryen). For more information about the language, check out [grain-lang.org](https://grain-lang.org/).
 
-If it's your first time here, it's highly recommended that you follow [the Grain guide](https://grain-lang.org/docs) to get up and running!
+If it's your first time here, we recommended that you follow [the Grain guide](https://grain-lang.org/docs) to get up and running.
 
 ## Contributing
 
@@ -20,7 +22,7 @@ There are tons of ways to contribute to Grain. Check out our [contributing guide
 
 ## Building
 
-To build Grain, you'll need `yarn` and Node.js version 14 or higher. To get everything set up, run:
+To build Grain, you'll need [Node.js](https://nodejs.org/en/download/current/) v14, [Yarn](https://yarnpkg.com/getting-started/install), and [CMake](https://cgold.readthedocs.io/en/latest/first-step/installation.html). To get everything set up, run:
 
 ```bash
 yarn
@@ -93,4 +95,4 @@ Alternatively, you can invoke the compiler directly:
 grainc hello.gr
 ```
 
-Copyright ©️ 2017-2020 Philip Blair and Oscar Spencer.
+Copyright ©️ 2017-2020 Philip Blair, Oscar Spencer, & contributors.
