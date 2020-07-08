@@ -67,8 +67,8 @@ let malformed_strings = (errs, super) => {
   let iter_expr = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
     | PExpConstant(PConstString(s)) =>
-      try(BatUTF8.validate(s)) {
-      | BatUTF8.Malformed_code => errs := [MalformedString(loc), ...errs^]
+      try(Extlib.UTF8.validate(s)) {
+      | Extlib.UTF8.Malformed_code => errs := [MalformedString(loc), ...errs^]
       }
     | _ => ()
     };
