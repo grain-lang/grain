@@ -8,7 +8,6 @@
   compiler-libs.common
   extlib
   ppx_sexp_conv.runtime-lib
-  sexplib
-  stdint)
+  sexplib)
  (preprocess
   (pps ppx_sexp_conv)))

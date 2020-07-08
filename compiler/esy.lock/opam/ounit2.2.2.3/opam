@@ -6,7 +6,7 @@ dev-repo: "git+https://github.com/gildor478/ounit.git"
 bug-reports: "https://github.com/gildor478/ounit/issues"
 doc: "https://gildor478.github.io/ounit/"
 depends: [
-  "ocaml" {>= "4.02.3"}
+  "ocaml" {>= "4.04.0"}
   "dune" {>= "1.11.0"}
   "base-bytes"
   "base-unix"
@@ -26,9 +26,9 @@ frameworks.
 """
 url {
   src:
-    "https://github.com/gildor478/ounit/releases/download/v2.2.2/ounit-v2.2.2.tbz"
+    "https://github.com/gildor478/ounit/releases/download/v2.2.3/ounit-v2.2.3.tbz"
   checksum: [
-    "sha256=53439ae8958d4016afd596d7afbe0b613163533761253e8c781d7afe3d6b9dc0"
-    "sha512=24c56141c9063c81e9cd193f9b927f01766e344bd8fbddd702fe1a2765e1bf626082d7b0b29704e1c86ce6eb67493d1f70c0a454e39c6e79209820d0e60db9bd"
+    "sha256=e280a64aa7df64bd7335c9ed68a70d6ee168b39ae8bbfb6daedd2f4a04844ad9"
+    "sha512=dff04859d263e5f80a1606156d07493d0320a2756d0a7f134c63c53078550c7b056587486922bc66a288413af30c59a7e47157636502c6dd10626cf75587f981"
   ]
 }
