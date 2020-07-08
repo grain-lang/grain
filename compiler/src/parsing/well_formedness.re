@@ -93,7 +93,10 @@ let malformed_identifiers = (errs, super) => {
     let casing_mismatch = (orig, alias) => {
       let o = orig.[0];
       let a = alias.[0];
-      xor(BatChar.is_uppercase(o), BatChar.is_uppercase(a));
+      xor(
+        Char_utils.is_uppercase_letter(o),
+        Char_utils.is_uppercase_letter(a),
+      );
     };
     List.iter(
       ({pimp_val}) =>
