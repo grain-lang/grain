@@ -43,16 +43,6 @@ let collect_bytes = f => {
   List.rev(bytes^);
 };
 
-let compile_wasm_file = filename => {
-  let testdata_dir = "test-data";
-  let filename = testdata_dir ++ "/" ++ filename;
-  Runner.assemble_object_file(
-    filename ++ ".wast",
-    false,
-    filename ++ ".wasm",
-  );
-};
-
 let test_leb128_u32 = ctxt => {
   assert_equal_u32(
     ~ctxt,
@@ -80,18 +70,18 @@ let test_leb128_i32 = ctxt => {
 };
 
 let test_get_wasm_sections = ctxt => {
-  ignore(compile_wasm_file("testmod"));
   let inchan = open_in_bin("test-data/testmod.wasm");
   let sections = get_wasm_sections(inchan);
   close_in(inchan);
   assert_equal_sections(
     ~ctxt,
     [
-      {sec_type: Type, offset: 14, size: 8},
-      {sec_type: Import, offset: 28, size: 25},
-      {sec_type: Function, offset: 59, size: 2},
-      {sec_type: Export, offset: 67, size: 17},
-      {sec_type: Code, offset: 90, size: 12},
+      {sec_type: Type, offset: 10, size: 8},
+      {sec_type: Import, offset: 20, size: 25},
+      {sec_type: Function, offset: 47, size: 2},
+      {sec_type: Export, offset: 51, size: 17},
+      {sec_type: Code, offset: 70, size: 8},
+      {sec_type: Custom("name"), offset: 85, size: 28},
     ],
     sections,
   );

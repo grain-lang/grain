@@ -11,7 +11,6 @@
   ppx_sexp_conv.runtime-lib
   sexplib
   stdint
-  binaryen
-  wasm)
+  binaryen)
  (preprocess
   (pps ppx_sexp_conv)))

@@ -16,8 +16,7 @@
   oUnit
   ppx_sexp_conv.runtime-lib
   sexplib
-  stdint
-  wasm)
+  stdint)
  (preprocess
   (pps ppx_sexp_conv)))
 
