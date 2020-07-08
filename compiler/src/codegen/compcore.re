@@ -1791,19 +1791,18 @@ let heap_check_memory = (wasm_mod, env, num_words: int) => {
 
 let buf_to_ints = (buf: Buffer.t): list(int64) => {
   let num_bytes = Buffer.length(buf);
-  let num_ints = round_up(num_bytes, 8);
-  let out_ints = ref([]);
+  let num_ints = num_bytes / 8;
+  let num_ints = num_bytes mod 8 == 0 ? num_ints : num_ints + 1;
+  let total_bytes = num_ints * 8;
 
-  let byte_buf = Bytes.create(num_ints * 8);
-  Buffer.blit(buf, 0, byte_buf, 0, num_bytes);
-  let bytes_to_int =
-    if (Sys.big_endian) {Stdint.Uint64.of_bytes_big_endian} else {
-      Stdint.Uint64.of_bytes_little_endian
-    };
-  for (i in 0 to num_ints - 1) {
-    out_ints := [bytes_to_int(byte_buf, i * 8), ...out_ints^];
-  };
-  List.rev @@ List.map(Stdint.Uint64.to_int64, out_ints^);
+  let bytes = Buffer.to_bytes(buf);
+  let bytes = Bytes.extend(bytes, 0, total_bytes - num_bytes);
+  // Clear out those unitialized bytes
+  Bytes.fill(bytes, num_bytes, total_bytes - num_bytes, '\x00');
+
+  List.init(num_ints, (i) => {
+    Bytes.get_int64_ne(bytes, i * 8);
+  });
 };
 
 let call_lambda = (wasm_mod, env, func, args) => {
@@ -1820,11 +1819,8 @@ let call_lambda = (wasm_mod, env, func, args) => {
 };
 
 let allocate_string = (wasm_mod, env, str) => {
-  let str_as_bytes = Bytes.of_string(str);
-  let num_bytes = Bytes.length(str_as_bytes);
-  let num_ints = round_up(num_bytes, 8);
-  let buf = Buffer.create(num_ints);
-  BatUTF8.iter(BatUTF8.Buf.add_char(buf), str);
+  let buf = Buffer.create(80);
+  Buffer.add_string(buf, str);
 
   let ints_to_push: list(int64) = buf_to_ints(buf);
   let get_swap = () => get_swap(wasm_mod, env, 0);
