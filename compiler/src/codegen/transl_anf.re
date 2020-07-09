@@ -33,6 +33,7 @@ type worklist_elt = {
   arity: int,
   idx: int, /* Lambda-lifted index */
   stack_size: int,
+  loc: Location.t
 };
 
 let compilation_worklist = ref(BatDeque.empty: BatDeque.t(worklist_elt));
@@ -150,7 +151,7 @@ module RegisterAllocation = {
       | _ as i => i;
 
     let apply_allocation_to_block = List.map(apply_allocations(allocs));
-    switch (instr) {
+    let desc = switch (instr.instr_desc) {
     | MImmediate(i) => MImmediate(apply_allocation_to_imm(i))
     | [@implicit_arity] MTagOp(top, tt, i) =>
       [@implicit_arity] MTagOp(top, tt, apply_allocation_to_imm(i))
@@ -213,6 +214,7 @@ module RegisterAllocation = {
     | MDrop(i) => MDrop(apply_allocations(allocs, i))
     | MTracepoint(x) => MTracepoint(x)
     };
+    {...instr, instr_desc:desc}
   };
 };
 
@@ -236,8 +238,8 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
     | MImmBinding(MLocalBind(n)) => [Int32.to_int(n)]
     | _ => [];
 
-  let rec live_locals =
-    fun
+  let rec live_locals = (instr) =>
+    switch (instr.instr_desc) {
     | MDrop(i) => live_locals(i)
     | MImmediate(imm)
     | [@implicit_arity] MTagOp(_, _, imm)
@@ -269,6 +271,7 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
       )
     | MAllocate(_)
     | MTracepoint(_) => []
+  }
   and block_live_locals = b => List.concat(List.map(live_locals, b));
 
   /*** Mapping from (instruction index) -> (used locals) */
@@ -390,7 +393,7 @@ let compile_imm = (env, i: imm_expression) =>
   | ImmId(id) => MImmBinding(find_id(id, env))
   };
 
-let compile_lambda = (env, args, body): Mashtree.closure_data => {
+let compile_lambda = (env, args, body, loc): Mashtree.closure_data => {
   let used_var_set = Anf_utils.anf_free_vars(body);
   let free_var_set = Ident.Set.diff(used_var_set) @@ Ident.Set.of_list(args);
   let free_vars = Ident.Set.elements(free_var_set);
@@ -427,6 +430,7 @@ let compile_lambda = (env, args, body): Mashtree.closure_data => {
     idx,
     arity,
     stack_size,
+    loc,
   };
   worklist_enqueue(worklist_item);
   {
@@ -439,11 +443,14 @@ let compile_lambda = (env, args, body): Mashtree.closure_data => {
 
 let compile_wrapper = (env, func_name, arity): Mashtree.closure_data => {
   let body = [
-    [@implicit_arity]
-    MCallKnown(
-      func_name,
-      BatList.init(arity, i => MImmBinding(MArgBind(Int32.of_int(i + 1)))),
-    ),
+    {
+      instr_desc:
+        MCallKnown(
+          func_name,
+          BatList.init(arity, i => MImmBinding(MArgBind(Int32.of_int(i + 1)))),
+        ),
+      instr_loc: Location.dummy_loc
+    },
   ];
   let idx = next_lift();
   let lam_env = {
@@ -458,6 +465,7 @@ let compile_wrapper = (env, func_name, arity): Mashtree.closure_data => {
     idx,
     arity: arity + 1,
     stack_size: 0,
+    loc: Location.dummy_loc,
   };
   worklist_enqueue(worklist_item);
   {
@@ -472,24 +480,24 @@ let next_global = id => {
   if (ret != global_index^ - 1) {
     ret;
   } else {
-    let body = [MImmediate(MImmBinding(MGlobalBind(Int32.of_int(ret))))];
+    let body = [{instr_desc: MImmediate(MImmBinding(MGlobalBind(Int32.of_int(ret)))), instr_loc: Location.dummy_loc}];
     let worklist_item = {
       body: Precompiled(body),
       env: initial_compilation_env,
       idx,
       arity: 0, /* <- this function cannot be called by the user, so no self argument is needed. */
       stack_size: 0,
+      loc: Location.dummy_loc,
     };
     worklist_enqueue(worklist_item);
     ret;
   };
 };
 
-let rec compile_comp = (env, c) =>
-  switch (c.comp_desc) {
-  | [@implicit_arity] CSwitch(arg, branches) =>
+let rec compile_comp = (env, c) => {
+  let desc = switch (c.comp_desc) {
+  | CSwitch(arg, branches) =>
     let compiled_arg = compile_imm(env, arg);
-    [@implicit_arity]
     MSwitch(
       compiled_arg,
       List.map(
@@ -497,7 +505,7 @@ let rec compile_comp = (env, c) =>
         branches,
       ),
       [
-        [@implicit_arity] MError(Runtime_errors.SwitchError, [compiled_arg]),
+        {instr_desc: MError(Runtime_errors.SwitchError, [compiled_arg]), instr_loc: c.comp_loc},
       ],
     );
   | [@implicit_arity] CIf(cond, thn, els) =>
@@ -572,7 +580,7 @@ let rec compile_comp = (env, c) =>
   | [@implicit_arity] CGetRecordItem(idx, record) =>
     [@implicit_arity] MRecordOp(MRecordGet(idx), compile_imm(env, record))
   | [@implicit_arity] CLambda(args, body) =>
-    MAllocate(MClosure(compile_lambda(env, args, body)))
+    MAllocate(MClosure(compile_lambda(env, args, body, c.comp_loc)))
   | [@implicit_arity] CApp(f, args) =>
     /* TODO: Utilize MCallKnown */
     [@implicit_arity]
@@ -581,14 +589,16 @@ let rec compile_comp = (env, c) =>
     [@implicit_arity]
     MCallKnown("builtin", List.map(compile_imm(env), args))
   | CImmExpr(i) => MImmediate(compile_imm(env, i))
-  }
+  };
+  {instr_desc: desc, instr_loc: c.comp_loc}
+}
 and compile_anf_expr = (env, a) =>
   switch (a.anf_desc) {
-  | [@implicit_arity] AESeq(hd, tl) => [
-      MDrop(compile_comp(env, hd)),
+  | AESeq(hd, tl) => [
+      {instr_desc: MDrop(compile_comp(env, hd)), instr_loc: hd.comp_loc},
       ...compile_anf_expr(env, tl),
     ]
-  | [@implicit_arity] AELet(global, recflag, binds, body) =>
+  | AELet(global, recflag, binds, body) =>
     let get_loc = (idx, (id, _)) =>
       switch (global) {
       | Global => MGlobalBind(Int32.of_int(next_global(id)))
@@ -610,7 +620,7 @@ and compile_anf_expr = (env, a) =>
     | Nonrecursive =>
       BatList.fold_right2(
         (loc, (_, rhs), acc) => [
-          MStore([(loc, compile_comp(env, rhs))]),
+          {instr_desc: MStore([(loc, compile_comp(env, rhs))]), instr_loc: rhs.comp_loc},
           ...acc,
         ],
         locations,
@@ -628,7 +638,7 @@ and compile_anf_expr = (env, a) =>
           locations,
           binds,
         );
-      [MStore(List.rev(binds)), ...compile_anf_expr(new_env, body)];
+      [{instr_desc: MStore(List.rev(binds)), instr_loc: a.anf_loc}, ...compile_anf_expr(new_env, body)];
     };
   | AEComp(c) => [compile_comp(env, c)]
   };
@@ -651,13 +661,14 @@ let fold_left_pop = (f, base) => {
 
 let compile_remaining_worklist = () => {
   let compile_one =
-      (funcs, {idx: index, arity, stack_size} as cur: worklist_elt) => {
+      (funcs, {idx: index, arity, stack_size, loc} as cur: worklist_elt) => {
     let body = compile_worklist_elt(cur);
     let func = {
       index: Int32.of_int(index),
       arity: Int32.of_int(arity),
-      body,
+      body: body,
       stack_size,
+      func_loc: loc
     };
     [func, ...funcs];
   };
@@ -697,12 +708,12 @@ let lift_imports = (env, imports) => {
         [new_mod, ...imports],
         [
           [
-            MStore([
+            {instr_desc: MStore([
               (
                 MGlobalBind(Int32.of_int(glob)),
-                [@implicit_arity] MCallKnown(func_name, []),
+                {instr_desc: MCallKnown(func_name, []), instr_loc: Location.dummy_loc},
               ),
-            ]),
+            ]), instr_loc: Location.dummy_loc},
           ],
           ...setups,
         ],
@@ -740,14 +751,14 @@ let lift_imports = (env, imports) => {
               failwith("NYI: Multi-result wrapper");
             } else {
               [
-                MStore([
+                {instr_desc: MStore([
                   (
                     MGlobalBind(Int32.of_int(glob)),
-                    MAllocate(
+                    {instr_desc: MAllocate(
                       MClosure(compile_wrapper(env, func_name, inputs)),
-                    ),
+                    ), instr_loc: Location.dummy_loc},
                   ),
-                ]),
+                ]), instr_loc: Location.dummy_loc},
               ];
             }
           },

@@ -3353,7 +3353,7 @@ let rec compile_store = (wasm_mod, env, binds) => {
         );
       let get_bind = compile_bind(~action=BindGet, wasm_mod, env, b);
       let (compiled_instr, store_bind) =
-        switch (instr) {
+        switch (instr.instr_desc) {
         | MAllocate(MClosure(cdata)) => (
             allocate_closure(wasm_mod, env, ~lambda=get_bind, cdata),
             store_bind_no_incref,
@@ -3459,7 +3459,7 @@ and compile_block = (wasm_mod, env, block) =>
     List.map(compile_instr(wasm_mod, env), block),
   )
 and compile_instr = (wasm_mod, env, instr) =>
-  switch (instr) {
+  switch (instr.instr_desc) {
   | MDrop(arg) =>
     Expression.drop(wasm_mod, compile_instr(wasm_mod, env, arg))
   | MTracepoint(x) => tracepoint(wasm_mod, env, x)
@@ -3779,6 +3779,7 @@ let compile_main = (wasm_mod, env, prog) => {
         arity: Int32.zero,
         body: prog.main_body,
         stack_size: prog.main_body_stack_size,
+        func_loc: Grain_parsing.Location.dummy_loc,
       },
     )
 };
