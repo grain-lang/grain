@@ -2,7 +2,7 @@
 
 This guide will take you through all of the phases of the compiler to give you a general sense of how we go from a `.gr` file to a `.wasm` file.
 
-We'll largely be following the `next_state` function in [compile.re](https://github.com/grain-lang/grain/blob/master/compiler/src/compile.ml).
+We'll largely be following the `next_state` function in [compile.re](https://github.com/grain-lang/grain/blob/master/compiler/src/compile.re).
 
 ## Lexing
 
@@ -119,11 +119,11 @@ You can find the entrypoints into optimization in [middle_end/optimize.re](https
 
 ## Mashing
 
-We couldn't think of a better name for this stage, but it's (mostly) the last representation before outputting the actual WebAssembly instructions. It's here that we decide what actually gets allocated in memory and how we retrieve and change things in memory. You can find the mashtree [here](https://github.com/grain-lang/grain/blob/master/compiler/src/codegen/mashtree.ml) and the conversion process from ANF in [codegen/transl_anf.re](https://github.com/grain-lang/grain/blob/master/compiler/src/codegen/transl_anf.re).
+We couldn't think of a better name for this stage, but it's (mostly) the last representation before outputting the actual WebAssembly instructions. It's here that we decide what actually gets allocated in memory and how we retrieve and change things in memory. You can find the mashtree [here](https://github.com/grain-lang/grain/blob/master/compiler/src/codegen/mashtree.re) and the conversion process from ANF in [codegen/transl_anf.re](https://github.com/grain-lang/grain/blob/master/compiler/src/codegen/transl_anf.re).
 
 ## Code generation
 
-The code generation (or codegen) step is where we generate the actual WebAssembly code for the program. By this point, we should have reduced the complexity of the original program down enough that there is a straightforward set of wasm instructions for each action that needs to happen. You can see what some of this looks like in [codegen/compcore.ml](https://github.com/grain-lang/grain/blob/master/compiler/src/codegen/compcore.ml).
+The code generation (or codegen) step is where we generate the actual WebAssembly code for the program. By this point, we should have reduced the complexity of the original program down enough that there is a straightforward set of wasm instructions for each action that needs to happen. You can see what some of this looks like in [codegen/compcore.re](https://github.com/grain-lang/grain/blob/master/compiler/src/codegen/compcore.re).
 
 You can check out the online version of the [wasm spec](https://webassembly.github.io/spec/core/index.html), but if you're looking for the OCaml types that Grain uses, you can check that out in [the Grain fork of the wasm-spec repository](https://github.com/grain-lang/wasm-spec).
 
