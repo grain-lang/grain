@@ -6,7 +6,7 @@ There are two places that Grain data can live—on the stack or on the heap. All
 
 Values in Grain are tagged. This means that we reserve a number of bits to signal the type of the value. Normally, since Grain is a statically typed language, we wouldn't need to tag the values because the types are guaranteed at compile-time. However, since our values are tagged, at runtime we can determine the type of a value. This is what allows us to have a generic `print` function that works for any data type—even user defined types.
 
-You can find all of the tags in the code in [codegen/value_tags.ml](https://github.com/grain-lang/grain/blob/master/compiler/src/codegen/value_tags.ml), but they'll be broken down here.
+You can find all of the tags in the code in [codegen/value_tags.re](https://github.com/grain-lang/grain/blob/master/compiler/src/codegen/value_tags.re), but they'll be broken down here.
 
 ### Numbers
 
