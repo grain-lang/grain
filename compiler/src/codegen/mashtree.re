@@ -158,9 +158,15 @@ type adt_op =
 type record_op =
   | MRecordGet(int32);
 
+[@deriving sexp]
+type instr = {
+  instr_desc: instr_desc,
+  instr_loc: Location.t,
+}
+
 /* Optimized path for statically-known function names */ /* value, branches, default */ /* Items in the same list have their backpatching delayed until the end of that list */ /* Ignore the result of an expression. Used for sequences. */ /* Prints a message to the console; for compiler debugging */
 [@deriving sexp]
-type instr =
+and instr_desc =
   | MImmediate(immediate)
   | MCallKnown(string, list(immediate))
   | MCallIndirect(immediate, list(immediate))
@@ -181,6 +187,7 @@ type instr =
   | MStore(list((binding, instr))) /* Items in the same list have their backpatching delayed until the end of that list */
   | MDrop(instr) /* Ignore the result of an expression. Used for sequences. */
   | MTracepoint(int) /* Prints a message to the console; for compiler debugging */
+
 [@deriving sexp]
 and block = list(instr);
 
@@ -222,6 +229,7 @@ type mash_function = {
   arity: int32, /* TODO: Proper typing of arguments */
   body: block,
   stack_size: int,
+  func_loc: Location.t,
 };
 
 [@deriving sexp]
