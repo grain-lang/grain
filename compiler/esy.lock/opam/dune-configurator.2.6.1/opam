@@ -17,7 +17,7 @@ homepage: "https://github.com/ocaml/dune"
 doc: "https://dune.readthedocs.io/"
 bug-reports: "https://github.com/ocaml/dune/issues"
 depends: [
-  "dune" {>= "2.5"}
+  "dune" {>= "2.6"}
   "dune-private-libs" {= version}
 ]
 dev-repo: "git+https://github.com/ocaml/dune.git"

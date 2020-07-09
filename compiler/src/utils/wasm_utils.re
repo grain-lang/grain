@@ -259,6 +259,20 @@ let serialize_abi_version = ({major, minor, patch}) => {
   bytes;
 };
 
+let utf8_encode = (ints) => {
+  let buf = Buffer.create(14);
+  List.iter((i) => {
+    Buffer.add_utf_8_uchar(buf, Uchar.of_int(i));
+  }, ints);
+  Buffer.contents(buf);
+}
+
+let utf8_decode = (str) => {
+  List.init(String.length(str), (i) => {
+    Uchar.to_int(Uchar.of_char(String.get(str, i)));
+  });
+}
+
 let section_type_of_int = (~pos=?, ~name=?) =>
   fun
   | 0 => Custom(Option.default("", name))
@@ -333,7 +347,7 @@ let get_wasm_sections = (~reset=false, inchan) => {
             Printf.eprintf "read: size: %d; name_len: %d; name: %s\n"
               size name_len (bstr (List.map int_of_char @@ ExtString.String.explode name));*/
           let name =
-            Wasm.Utf8.encode(
+            utf8_encode(
               List.map(int_of_char) @@ ExtString.String.explode(name),
             );
           let true_offset = pos_in(inchan);
@@ -368,7 +382,7 @@ let write_wasm_section_header = ({sec_type, size}, ochan) => {
   | Custom(name) =>
     let bytes = ref([]);
     let push = i => bytes := [i, ...bytes^];
-    let name_bytes = Wasm.Utf8.decode(name);
+    let name_bytes = utf8_decode(name);
     write_leb128_u32(push, Stdint.Uint32.of_int(List.length(name_bytes)));
     bytes := List.rev(bytes^);
     let full_size = size + List.length(bytes^) + List.length(name_bytes);
@@ -520,14 +534,6 @@ let () =
       )
     | [@implicit_arity] MalformedSectionType(tag, None) =>
       Some(Printf.sprintf("Malformed WASM section tag: %d", tag))
-    | [@implicit_arity] Wasm.Script.Syntax(src, msg) =>
-      Some(
-        Printf.sprintf(
-          "WebAssembly Parse Error at %s: %s",
-          Wasm.Source.string_of_region(src),
-          msg,
-        ),
-      )
     | _ => None
     }
   );

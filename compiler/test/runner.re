@@ -78,39 +78,6 @@ let make_tmpfiles = name => {
   );
 };
 
-let assemble_object_file = (asm_file, debug, object_name) => {
-  let rec get_encoded = m =>
-    switch (m) {
-    | Wasm.Script.Textual(m) => Wasm.Encode.encode(m)
-    | [@implicit_arity] Wasm.Script.Encoded(_, bs) => bs
-    | [@implicit_arity] Wasm.Script.Quoted(_, s) =>
-      get_encoded(Wasm.Parse.string_to_module(s).Wasm.Source.it)
-    };
-  let ic = open_in(asm_file);
-  let lexbuf = Lexing.from_channel(ic);
-  let (_, contents) = Wasm.Parse.parse(asm_file, lexbuf, Wasm.Parse.Module);
-  close_in(ic);
-  let oc = open_out_bin(object_name);
-  output_string(oc) @@ get_encoded(contents.Wasm.Source.it);
-  close_out(oc);
-  ("", () => ());
-};
-
-let compile_assembly_to_binary = (asm, debug, outfile_name) => {
-  let asm_tmp_filename =
-    if (debug) {
-      outfile_name ++ ".wast";
-    } else {
-      temp_file(Filename.basename(outfile_name), ".wast");
-    };
-  let asm_tmp = open_out(asm_tmp_filename);
-  output_string(asm_tmp, asm);
-  close_out(asm_tmp);
-  let (obj_asm, obj_asm_cleanup) =
-    assemble_object_file(asm_tmp_filename, debug, outfile_name);
-  obj_asm;
-};
-
 type result = either(string, string);
 
 let extract_wasm = ({cstate_desc}) =>

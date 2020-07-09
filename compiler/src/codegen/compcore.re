@@ -1,7 +1,6 @@
 open Grain_typed;
 open Mashtree;
 open Value_tags;
-open Wasm;
 open Binaryen;
 open Concatlist; /* NOTE: This import shadows (@) and introduces (@+) and (+@) */
 
@@ -359,10 +358,6 @@ let init_codegen_env = () => {
   imported_globals: Ident.empty,
 };
 
-/* Seems a little silly when named this way, but it makes a little more sense in the
-   context of this file, since we are encoding the given OCaml string in a WASM-compatible format
-   (its UTF-8 byte sequence). */
-let encode_string: string => list(int) = Utf8.decode;
 
 let encoded_int32 = n => n * 2;
 
@@ -3934,7 +3929,6 @@ let prepare = (env, {imports} as prog) => {
 };
 
 let compile_wasm_module = (~env=?, ~name=?, prog) => {
-  open Wasm.Ast;
   let env =
     switch (env) {
     | None => init_codegen_env()

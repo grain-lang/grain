@@ -21,7 +21,6 @@ depends: [
   "batteries" {>= "2.8.0"}
   "cmdliner" {>= "1.0.2"}
   "ocamlgraph" {>= "1.8.8"}
-  "grain_wasm_spec" {= "0.1"}
   "stdint" {>= "0.5.0"}
   "ppx_deriving_yojson" {>= "3.5.2"}
   "yojson" {>= "1.7.0"}
