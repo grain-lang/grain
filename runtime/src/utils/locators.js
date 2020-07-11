@@ -7,15 +7,20 @@ function normalizeSlash(s) {
 }
 
 // Default locator definitions.
-export function defaultURLLocator(base) {
+export function defaultURLLocator(bases = []) {
   // normalize trailing slash
-  base = normalizeSlash(base);
+  bases = bases.map(normalizeSlash);
   return async (raw) => {
-    if (base === null) {
-      return null;
-    }
     let module = raw.replace(/^GRAIN\$MODULE\$/, '');
-    return readURL(base + "/" + module + ".wasm");
+    for (const base of bases) {
+      let fullpath = base + "/" + module + ".wasm";
+      try {
+        return await readURL(fullpath);
+      } catch (e) {
+        continue
+      }
+    }
+    throw new Error(`Could not locate ${raw}`);
   };
 }
 

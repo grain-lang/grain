@@ -1,4 +1,5 @@
 const webpack = require('webpack');
+const merge = require('webpack-merge');
 
 const common = {
   module: {
@@ -18,7 +19,6 @@ const common = {
       }
     ]
   },
-  externals: ['fs'],
   plugins: [
     new webpack.DefinePlugin({
       __DEBUG: JSON.stringify(false)
@@ -26,19 +26,28 @@ const common = {
   ]
 };
 
-const browserConfig = {
-  ...common,
+const browserConfig = merge(common, {
   entry: './src/index.js',
   output: {
     filename: 'grain-runtime-browser.js',
     path: __dirname + '/dist',
     library: 'Grain',
     libraryTarget: 'var'
-  }
-}
+  },
+  node: {
+    fs: "empty"
+  },
+  plugins: [
+    new webpack.ProvidePlugin({
+      wasiBindings: "@wasmer/wasi/lib/bindings/browser"
+    }),
+    new webpack.DefinePlugin({
+      __RUNTIME_BROWSER: JSON.stringify(true)
+    })
+  ]
+})
 
-const commonjsConfig = {
-  ...common,
+const nodeConfig = merge(common, {
   entry: './src/runtime.js',
   output: {
     filename: 'grain-runtime.js',
@@ -46,9 +55,17 @@ const commonjsConfig = {
     libraryTarget: 'commonjs2'
   },
   externals: ['fs', 'crypto', 'path', 'tty'],
-  node: false
-}
+  node: false,
+  plugins: [
+    new webpack.ProvidePlugin({
+      wasiBindings: "@wasmer/wasi/lib/bindings/node"
+    }),
+    new webpack.DefinePlugin({
+      __RUNTIME_BROWSER: JSON.stringify(false)
+    })
+  ]
+})
 
 module.exports = [
-  browserConfig, commonjsConfig
+  browserConfig, nodeConfig
 ]

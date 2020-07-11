@@ -45,6 +45,7 @@
   },
   "dependencies": {
     "@wasmer/wasi": "^0.11.2",
+    "@wasmer/wasmfs": "^0.11.2",
     "fast-text-encoding": "^1.0.0",
     "treeify": "^1.1.0"
   }
