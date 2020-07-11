@@ -220,6 +220,9 @@ module MakeIterator =
         args,
       )
     | [@implicit_arity] TExpRecordGet(expr, _, _) => iter_expression(expr)
+    | [@implicit_arity] TExpRecordSet(e1, _, _, e2) => 
+      iter_expression(e1);
+      iter_expression(e2);
     | TExpTuple(args)
     | TExpArray(args)
     | TExpBlock(args)

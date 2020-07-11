@@ -127,6 +127,7 @@ let dummy_label = {
   lbl_res: none,
   lbl_arg: none,
   lbl_pos: (-1),
+  lbl_mut: false,
   lbl_all: [||],
   lbl_loc: Location.dummy_loc,
 };
@@ -141,6 +142,7 @@ let label_descrs = (ty_res, lbls) => {
           lbl_name: Ident.name(l.rf_name),
           lbl_res: ty_res,
           lbl_arg: l.rf_type,
+          lbl_mut: l.rf_mutable,
           lbl_pos: num,
           lbl_all: all_labels,
           lbl_loc: l.rf_loc,

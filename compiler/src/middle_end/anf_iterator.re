@@ -76,6 +76,9 @@ module MakeIter = (Iter: IterArgument) => {
     | CGetAdtTag(adt) => iter_imm_expression(adt)
     | [@implicit_arity] CGetRecordItem(_, record) =>
       iter_imm_expression(record)
+    | [@implicit_arity] CSetRecordItem(_, record, arg) =>
+      iter_imm_expression(record);
+      iter_imm_expression(arg);
     | [@implicit_arity] CIf(c, t, f) =>
       iter_imm_expression(c);
       iter_anf_expression(t);

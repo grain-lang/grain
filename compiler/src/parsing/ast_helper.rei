@@ -58,7 +58,7 @@ module CDecl: {
   let tuple: (~loc: loc=?, str, list(parsed_type)) => constructor_declaration;
 };
 
-module LDecl: {let mk: (~loc: loc=?, id, parsed_type) => label_declaration;};
+module LDecl: {let mk: (~loc: loc=?, id, parsed_type, mut_flag) => label_declaration;};
 
 module Dat: {
   let mk:
@@ -94,6 +94,7 @@ module Exp: {
   let tuple: (~loc: loc=?, list(expression)) => expression;
   let record: (~loc: loc=?, list((id, expression))) => expression;
   let record_get: (~loc: loc=?, expression, id) => expression;
+  let record_set: (~loc: loc=?, expression, id, expression) => expression;
   let list:
     (~loc: loc=?, list(expression), option(expression)) => expression;
   let array: (~loc: loc=?, list(expression)) => expression;

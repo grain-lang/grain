@@ -55,6 +55,7 @@ type constructor_declaration = {
 type label_declaration = {
   pld_name: loc(Identifier.t),
   pld_type: parsed_type,
+  pld_mutable: mut_flag,
   [@sexp_drop_if _ => ! Grain_utils.Config.sexp_locs_enabled^]
   pld_loc: Location.t,
 };
@@ -174,6 +175,7 @@ and expression_desc =
   | PExpArraySet(expression, expression, expression)
   | PExpRecord(list((loc(Identifier.t), expression)))
   | PExpRecordGet(expression, loc(Identifier.t))
+  | PExpRecordSet(expression, loc(Identifier.t), expression)
   | PExpLet(rec_flag, mut_flag, list(value_binding), expression)
   | PExpMatch(expression, list(match_branch))
   | PExpPrim1(prim1, expression)

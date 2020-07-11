@@ -67,6 +67,7 @@ let rec analyze_comp_expression =
   | CGetAdtItem(_)
   | CGetAdtTag(_)
   | CGetRecordItem(_)
+  | CSetRecordItem(_)
   | CString(_)
   | CInt32(_)
   | CInt64(_)

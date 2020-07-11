@@ -55,6 +55,8 @@ module E = {
       )
     | [@implicit_arity] PExpRecordGet(e, f) =>
       record_get(~loc, sub.expr(sub, e), map_loc(sub, f))
+    | [@implicit_arity] PExpRecordSet(e, f, v) =>
+      record_set(~loc, sub.expr(sub, e), map_loc(sub, f), sub.expr(sub, v))
     | [@implicit_arity] PExpLet(r, m, vbs, e) =>
       let_(
         ~loc,
@@ -132,11 +134,11 @@ module C = {
 };
 
 module L = {
-  let map = (sub, {pld_name: name, pld_type: typ, pld_loc: loc}) => {
+  let map = (sub, {pld_name: name, pld_type: typ, pld_mutable: mut, pld_loc: loc}) => {
     open LDecl;
     let loc = sub.location(sub, loc);
     let sname = map_loc(sub, name);
-    mk(~loc, sname, sub.typ(sub, typ));
+    mk(~loc, sname, sub.typ(sub, typ), mut);
   };
 };
 

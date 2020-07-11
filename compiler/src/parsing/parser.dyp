@@ -360,7 +360,8 @@ data_constructors :
   | pipe? data_constructor [eols? pipe data_constructor {$3}]* { $2::$3 }
 
 data_label :
-  | simple_id colon typ { LDecl.mk ~loc:(symbol_rloc dyp) $1 $3 }
+  | simple_id colon typ { LDecl.mk ~loc:(symbol_rloc dyp) $1 $3 Immutable }
+  | MUT simple_id colon typ { LDecl.mk ~loc:(symbol_rloc dyp) $2 $4 Mutable }
 
 data_labels :
   | lbrace data_label [comma data_label {$2}]* comma? rbrace { $2::$3 }
@@ -534,6 +535,7 @@ assign_expr :
   | id_expr eols? EQUAL eols? expr { Exp.assign ~loc:(symbol_rloc dyp) $1 $5 }
   | id_expr eols? assign_binop_op eols? expr { Exp.assign ~loc:(symbol_rloc dyp) $1 (Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5]) }
   | array_set { $1 }
+  | record_set { $1 }
 
 non_assign_expr :
   | app_expr    { prerr_string "\nexpr_app_expr\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); $1 }
@@ -569,6 +571,9 @@ array_set :
 
 record_get :
   | non_binop_expr dot simple_id { no_uppercase_ident $1; Exp.record_get $1 $3 }
+
+record_set :
+  | non_binop_expr dot simple_id EQUAL eols? expr { no_uppercase_ident $1; Exp.record_set $1 $3 $6 }
 
 record_field :
   | id colon expr { $1, $3 }

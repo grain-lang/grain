@@ -102,6 +102,7 @@ and comp_expression_desc =
   | CGetAdtItem(int32, imm_expression)
   | CGetAdtTag(imm_expression)
   | CGetRecordItem(int32, imm_expression)
+  | CSetRecordItem(int32, imm_expression, imm_expression)
   | CIf(imm_expression, anf_expression, anf_expression)
   | CWhile(anf_expression, anf_expression)
   | CSwitch(imm_expression, list((int, anf_expression)))

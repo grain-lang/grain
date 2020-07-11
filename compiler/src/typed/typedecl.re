@@ -152,14 +152,16 @@ let transl_labels = (env, closed, lbls) => {
     },
     lbls,
   );
-  let mk = ({pld_name: name, pld_type: arg, pld_loc: loc}) => {
+  let mk = ({pld_name: name, pld_type: arg, pld_mutable: mut, pld_loc: loc}) => {
     /* Builtin_attributes.warning_scope attrs
        (fun () -> */
     let arg = Ast_helper.Typ.force_poly(arg);
     let cty = transl_simple_type(env, closed, arg);
+    let mut = mut == Mutable;
     {
       rf_name: Ident.create_persistent(Identifier.last(name.txt)),
       rf_type: cty,
+      rf_mutable: mut,
       rf_loc: loc,
     };
   };
@@ -175,7 +177,7 @@ let transl_labels = (env, closed, lbls) => {
           | [@implicit_arity] TTyPoly(t, []) => t
           | _ => ty
           };
-        {Types.rf_name: rf.rf_name, rf_type: ty, rf_loc: rf.rf_loc};
+        {Types.rf_name: rf.rf_name, rf_type: ty, rf_mutable: rf.rf_mutable, rf_loc: rf.rf_loc};
       },
       lbls,
     );
