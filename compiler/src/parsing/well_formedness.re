@@ -13,7 +13,8 @@ type wferr =
   | TyvarNameShouldBeLowercase(string, Location.t)
   | ExportAllShouldOnlyAppearOnce(Location.t)
   | EmptyRecordPattern(Location.t)
-  | RHSLetRecMayOnlyBeFunction(Location.t);
+  | RHSLetRecMayOnlyBeFunction(Location.t)
+  | NoLetRecMut(Location.t);
 
 exception Error(wferr);
 
@@ -47,6 +48,11 @@ let prepare_error =
         errorf(
           ~loc,
           "let rec may only be used with recursive function definitions.",
+        )
+      | NoLetRecMut(loc) =>
+        errorf(
+          ~loc,
+          "let rec may not be used with the `mut` keyword.",
         )
     )
   );
@@ -295,6 +301,27 @@ let only_functions_oh_rhs_letrec = (errs, super) => {
   {errs, iterator};
 };
 
+let no_letrec_mut = (errs, super) => {
+  let iter_toplevel_binds = (self, {ptop_desc: desc, ptop_loc: loc} as e) => {
+    switch (desc) {
+    | [@implicit_arity] PTopLet(_, Recursive, Mutable, vbs) =>
+      errs := [NoLetRecMut(loc), ...errs^];
+    | _ => ()
+    };
+    super.toplevel(self, e);
+  };
+  let iter_binds = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
+    switch (desc) {
+    | [@implicit_arity] PExpLet(Recursive, Mutable, vbs, _) =>
+      errs := [NoLetRecMut(loc), ...errs^];
+    | _ => ()
+    };
+    super.expr(self, e);
+  };
+  let iterator = {...super, toplevel: iter_toplevel_binds, expr: iter_binds};
+  {errs, iterator};
+};
+
 let compose_well_formedness = ({errs, iterator}, cur) =>
   cur(errs, iterator);
 
@@ -307,6 +334,7 @@ let well_formedness_checks = [
   only_has_one_export_all,
   no_empty_record_patterns,
   only_functions_oh_rhs_letrec,
+  no_letrec_mut,
 ];
 
 let well_formedness_checker = () =>
