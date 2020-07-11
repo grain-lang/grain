@@ -1,17 +1,27 @@
 import { GrainError } from '../errors/errors';
-import { grainToJSVal } from '../utils/utils';
 
 import { WASI } from "@wasmer/wasi/lib/index.cjs";
-import wasiBindings from "@wasmer/wasi/lib/bindings/node";
+import { WasmFs } from "@wasmer/wasmfs";
+
+const wasmFs = new WasmFs();
+
+let bindings
+
+if (__RUNTIME_BROWSER) {
+  bindings = {
+    ...wasiBindings.default,
+    fs: wasmFs.fs
+  }
+} else {
+  bindings = wasiBindings.default
+}
 
 export const wasi = new WASI({
-  args: process.argv,
-  env: process.env,
-  bindings: {
-    ...wasiBindings
-  },
+  args: __RUNTIME_BROWSER ? [] : process.argv,
+  env: __RUNTIME_BROWSER ? {} : process.env,
+  bindings,
   preopens: {
-    '/sandbox': process.cwd()
+    '/sandbox': __RUNTIME_BROWSER ? '' : process.cwd()
   }
 });
 
@@ -188,7 +198,6 @@ export async function readFile(path) {
 
 export async function readURL(url) {
   let modname = url; // FIXME
-  console.log(`Reading module at URL: ${url}`);
   let response = await fetch(url);
   if (!response.ok) throw new Error(`[Grain] Could not load ${url} due to a network error.`);
   let module = await WebAssembly.compileStreaming(response);
