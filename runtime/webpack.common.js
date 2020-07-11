@@ -1,4 +1,5 @@
 const webpack = require('webpack');
+const merge = require('webpack-merge');
 
 const common = {
   module: {
@@ -25,8 +26,7 @@ const common = {
   ]
 };
 
-const browserConfig = {
-  ...common,
+const browserConfig = merge(common, {
   entry: './src/index.js',
   output: {
     filename: 'grain-runtime-browser.js',
@@ -45,10 +45,9 @@ const browserConfig = {
       __RUNTIME_BROWSER: JSON.stringify(true)
     })
   ]
-}
+})
 
-const nodeConfig = {
-  ...common,
+const nodeConfig = merge(common, {
   entry: './src/runtime.js',
   output: {
     filename: 'grain-runtime.js',
@@ -65,7 +64,7 @@ const nodeConfig = {
       __RUNTIME_BROWSER: JSON.stringify(false)
     })
   ]
-}
+})
 
 module.exports = [
   browserConfig, nodeConfig
