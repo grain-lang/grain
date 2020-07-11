@@ -24,6 +24,9 @@ module Comp: {
   let prim2:
     (~loc: loc=?, ~env: env=?, prim2, imm_expression, imm_expression) =>
     comp_expression;
+  let box_assign:
+    (~loc: loc=?, ~env: env=?, imm_expression, imm_expression) =>
+    comp_expression;
   let assign:
     (~loc: loc=?, ~env: env=?, imm_expression, imm_expression) =>
     comp_expression;
@@ -110,6 +113,7 @@ module AExp: {
       ~env: env=?,
       ~glob: global_flag=?,
       rec_flag,
+      mut_flag,
       list((ident, comp_expression)),
       anf_expression
     ) =>

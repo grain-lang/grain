@@ -236,14 +236,14 @@ module TailCallsArg: Anf_mapper.MapArgument = {
       (lambda, {continue_id, next_id, first_f_id, arg_ref_ids}) => {
     let assign_id = (id, value) =>
       wrap_comp(lambda) @@
-      [@implicit_arity] CAssign(wrap_id(lambda, id), wrap_id(lambda, value));
+      [@implicit_arity] CBoxAssign(wrap_id(lambda, id), wrap_id(lambda, value));
     let assign_imm = (id, value) =>
       wrap_comp(lambda) @@
       [@implicit_arity]
-      CAssign(wrap_id(lambda, id), wrap_imm(lambda, value));
+      CBoxAssign(wrap_id(lambda, id), wrap_imm(lambda, value));
     let bind = (id, value, body) =>
       wrap_anf_with_comp(lambda) @@
-      [@implicit_arity] AELet(Nonglobal, Nonrecursive, [(id, value)], body);
+      [@implicit_arity] AELet(Nonglobal, Nonrecursive, Immutable, [(id, value)], body);
     let box = value =>
       wrap_comp(lambda) @@
       [@implicit_arity] CPrim1(Box, wrap_imm(lambda, value));
@@ -314,7 +314,7 @@ module TailCallsArg: Anf_mapper.MapArgument = {
 
   let enter_anf_expression = ({anf_desc: desc} as a) =>
     switch (desc) {
-    | [@implicit_arity] AELet(global, Recursive, binds, body)
+    | [@implicit_arity] AELet(global, Recursive, Immutable, binds, body)
         when has_tail_recursive_binding(binds) =>
       let continue_loop_id = Ident.create("continue#tc");
       let next_f_id = Ident.create("next#tc");
@@ -368,7 +368,7 @@ module TailCallsArg: Anf_mapper.MapArgument = {
                   [],
                   wrap_anf @@
                   [@implicit_arity]
-                  AELet(Nonglobal, Nonrecursive, arg_derefs, body),
+                  AELet(Nonglobal, Nonrecursive, Immutable, arg_derefs, body),
                 );
 
               mark_tail_call_optimized(iterative_lam);
@@ -416,12 +416,13 @@ module TailCallsArg: Anf_mapper.MapArgument = {
           AELet(
             Nonglobal,
             Nonrecursive,
+            Immutable,
             iterator_binds^,
             {
               ...a,
               anf_analyses: ref([]),
               anf_desc:
-                [@implicit_arity] AELet(global, Recursive, new_binds, body),
+                [@implicit_arity] AELet(global, Recursive, Immutable, new_binds, body),
             },
           ),
       };
@@ -443,13 +444,13 @@ module TailCallsArg: Anf_mapper.MapArgument = {
         [@implicit_arity]
         AESeq(
           wrap_comp(c) @@
-          [@implicit_arity] CAssign(wrap_id(c, continue_loop_id), _true),
+          [@implicit_arity] CBoxAssign(wrap_id(c, continue_loop_id), _true),
           wrap_anf_with_comp(c) @@
           [@implicit_arity]
           AESeq(
             wrap_comp(c) @@
             [@implicit_arity]
-            CAssign(wrap_id(c, next_f_id), wrap_id(c, new_f)),
+            CBoxAssign(wrap_id(c, next_f_id), wrap_id(c, new_f)),
             wrap_anf_with_comp(c) @@
             AEComp(wrap_comp(c) @@ CImmExpr(_true)),
           ),
@@ -461,7 +462,7 @@ module TailCallsArg: Anf_mapper.MapArgument = {
             [@implicit_arity]
             AESeq(
               wrap_comp(c) @@
-              [@implicit_arity] CAssign(wrap_id(c, new_f_arg), arg),
+              [@implicit_arity] CBoxAssign(wrap_id(c, new_f_arg), arg),
               seq,
             ),
           new_f_args,

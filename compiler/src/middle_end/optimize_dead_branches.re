@@ -50,20 +50,21 @@ module BranchArg: Anf_mapper.MapArgument = {
     | AEComp(comp) => {
         ...a,
         anf_desc:
-          [@implicit_arity] AELet(global, Nonrecursive, [(id, comp)], cont),
+          [@implicit_arity] AELet(global, Nonrecursive, Immutable, [(id, comp)], cont),
       }
     | [@implicit_arity] AESeq(comp, body) => {
         ...a,
         anf_desc:
           [@implicit_arity] AESeq(comp, relinearize(id, global, body, cont)),
       }
-    | [@implicit_arity] AELet(_global, _recursive, binds, body) => {
+    | [@implicit_arity] AELet(_global, _recursive, _mutable, binds, body) => {
         ...a,
         anf_desc:
           [@implicit_arity]
           AELet(
             _global,
             _recursive,
+            _mutable,
             binds,
             relinearize(id, global, body, cont),
           ),
@@ -82,7 +83,7 @@ module BranchArg: Anf_mapper.MapArgument = {
           [@implicit_arity]
           CIf({imm_desc: ImmConst(Const_bool(false))}, _, branch),
       }) => branch
-    | [@implicit_arity] AELet(global, recursive, binds, body)
+    | [@implicit_arity] AELet(global, recursive, mut, binds, body)
         when has_simple_optimizable_conditional(binds) =>
       let binds =
         List.map(
@@ -101,9 +102,9 @@ module BranchArg: Anf_mapper.MapArgument = {
         );
       {
         ...a,
-        anf_desc: [@implicit_arity] AELet(global, recursive, binds, body),
+        anf_desc: [@implicit_arity] AELet(global, recursive, mut, binds, body),
       };
-    | [@implicit_arity] AELet(global, Nonrecursive, binds, body)
+    | [@implicit_arity] AELet(global, Nonrecursive, mut_flag, binds, body)
         when has_optimizable_conditional(binds) =>
       /* We can't relinearize recursive bindings since they depend on each other */
       List.fold_right(
@@ -119,7 +120,7 @@ module BranchArg: Anf_mapper.MapArgument = {
               ...a,
               anf_desc:
                 [@implicit_arity]
-                AELet(global, Nonrecursive, [(name, comp)], cont),
+                AELet(global, Nonrecursive, mut_flag, [(name, comp)], cont),
             }
           },
         binds,

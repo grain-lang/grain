@@ -26,10 +26,10 @@ module DAEArg: Anf_mapper.MapArgument = {
 
   let leave_anf_expression = ({anf_desc: desc} as a) =>
     switch (desc) {
-    | [@implicit_arity] AELet(Global, _, _, _)
+    | [@implicit_arity] AELet(Global, _, _, _, _)
     | AESeq(_)
     | AEComp(_) => a
-    | [@implicit_arity] AELet(g, Nonrecursive, [(bind, value)], body) =>
+    | [@implicit_arity] AELet(g, Nonrecursive, mut_flag, [(bind, value)], body) =>
       switch (body.anf_desc) {
       | AEComp({comp_desc: CImmExpr({imm_desc: ImmId(id)})})
           when Ident.same(id, bind) => {
@@ -43,7 +43,7 @@ module DAEArg: Anf_mapper.MapArgument = {
           a;
         }
       }
-    | [@implicit_arity] AELet(g, r, binds, body) =>
+    | [@implicit_arity] AELet(g, r, m, binds, body) =>
       let new_binds =
         List.fold_right(
           ((id, v), tl) =>
@@ -57,7 +57,7 @@ module DAEArg: Anf_mapper.MapArgument = {
         );
       switch (new_binds) {
       | [] => body
-      | _ => {...a, anf_desc: [@implicit_arity] AELet(g, r, new_binds, body)}
+      | _ => {...a, anf_desc: [@implicit_arity] AELet(g, r, m, new_binds, body)}
       };
     };
 };

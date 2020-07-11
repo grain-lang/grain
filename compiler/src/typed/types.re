@@ -168,6 +168,7 @@ type value_description = {
   val_type: type_expr,
   val_kind: value_kind,
   val_fullpath: Path.t,
+  val_mutable: bool,
   [@sexp_drop_if _ => ! Grain_utils.Config.sexp_locs_enabled^] [@default
                                                                  Location.dummy_loc
                                                                ]

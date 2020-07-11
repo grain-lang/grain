@@ -1074,7 +1074,7 @@ let check_unused = (~lev=get_current_level(), env, expected_ty, cases) =>
     cases,
   );
 
-let add_pattern_variables = (~check=?, ~check_as=?, env) => {
+let add_pattern_variables = (~check=?, ~check_as=?, ~mut=false, env) => {
   let pv = get_ref(pattern_variables);
   (
     List.fold_right(
@@ -1088,6 +1088,7 @@ let add_pattern_variables = (~check=?, ~check_as=?, env) => {
             val_kind: TValReg,
             Types.val_loc: loc,
             val_fullpath: Path.PIdent(id),
+            val_mutable: mut
           },
           env,
         );
@@ -1110,7 +1111,7 @@ let type_pattern = (~lev, env, spat, scope, expected_ty) => {
   (pat, new_env, get_ref(pattern_force), unpacks);
 };
 
-let type_pattern_list = (env, spatl, scope, expected_tys, allow) => {
+let type_pattern_list = (~mut=false, env, spatl, scope, expected_tys, allow) => {
   reset_pattern(/*scope*/ None, allow);
   let new_env = ref(env);
   let type_pat = ((attrs, pat), ty) => {
@@ -1128,7 +1129,7 @@ let type_pattern_list = (env, spatl, scope, expected_tys, allow) => {
   };
 
   let patl = List.map2(type_pat, spatl, expected_tys);
-  let (new_env, unpacks, pv) = add_pattern_variables(new_env^);
+  let (new_env, unpacks, pv) = add_pattern_variables(~mut, new_env^);
   (patl, new_env, get_ref(pattern_force), unpacks, pv);
 };
 
@@ -1147,7 +1148,8 @@ let report_type_expected_explanation = (expl, ppf) =>
   | Assert_condition => fprintf(ppf, "the condition of an assertion")
   | Sequence_left_hand_side =>
     fprintf(ppf, "the left-hand side of a sequence")
-  | Assign_not_box => fprintf(ppf, "the left-hand side of an assignment")
+  | Assign_not_box => 
+    fprintf(ppf, "the left-hand side of a box assignment")
   | Assign_not_array =>
     fprintf(ppf, "the left-hand side of an array index access")
   | Assign_not_array_index =>

@@ -32,10 +32,10 @@ module type IteratorArgument = {
   let leave_core_type: core_type => unit;
   let leave_toplevel_stmt: toplevel_stmt => unit;
 
-  let enter_bindings: (export_flag, rec_flag) => unit;
+  let enter_bindings: (export_flag, rec_flag, mut_flag) => unit;
   let enter_binding: value_binding => unit;
   let leave_binding: value_binding => unit;
-  let leave_bindings: (export_flag, rec_flag) => unit;
+  let leave_bindings: (export_flag, rec_flag, mut_flag) => unit;
 
   let enter_data_declarations: unit => unit;
   let enter_data_declaration: data_declaration => unit;

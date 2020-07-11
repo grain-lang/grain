@@ -46,6 +46,9 @@ module MakeIter = (Iter: IterArgument) => {
     | [@implicit_arity] CPrim2(_, arg1, arg2) =>
       iter_imm_expression(arg1);
       iter_imm_expression(arg2);
+    | [@implicit_arity] CBoxAssign(lhs, rhs) =>
+      iter_imm_expression(lhs);
+      iter_imm_expression(rhs);
     | [@implicit_arity] CAssign(lhs, rhs) =>
       iter_imm_expression(lhs);
       iter_imm_expression(rhs);
@@ -99,7 +102,7 @@ module MakeIter = (Iter: IterArgument) => {
   and iter_anf_expression = ({anf_desc: desc} as anf) => {
     Iter.enter_anf_expression(anf);
     switch (desc) {
-    | [@implicit_arity] AELet(_, _, bindings, body) =>
+    | [@implicit_arity] AELet(_, _, _, bindings, body) =>
       List.iter(((ident, bind)) => iter_comp_expression(bind), bindings);
       iter_anf_expression(body);
     | [@implicit_arity] AESeq(hd, tl) =>

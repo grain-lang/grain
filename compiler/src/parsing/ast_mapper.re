@@ -55,10 +55,11 @@ module E = {
       )
     | [@implicit_arity] PExpRecordGet(e, f) =>
       record_get(~loc, sub.expr(sub, e), map_loc(sub, f))
-    | [@implicit_arity] PExpLet(r, vbs, e) =>
+    | [@implicit_arity] PExpLet(r, m, vbs, e) =>
       let_(
         ~loc,
         r,
+        m,
         List.map(sub.value_binding(sub), vbs),
         sub.expr(sub, e),
       )
@@ -68,8 +69,10 @@ module E = {
       prim1(~loc, p1, sub.expr(sub, e))
     | [@implicit_arity] PExpPrim2(p2, e1, e2) =>
       prim2(~loc, p2, sub.expr(sub, e1), sub.expr(sub, e2))
-    | [@implicit_arity] PExpAssign(be, e) =>
-      assign(~loc, sub.expr(sub, be), sub.expr(sub, e))
+    | [@implicit_arity] PExpBoxAssign(e1, e2) =>
+      box_assign(~loc, sub.expr(sub, e1), sub.expr(sub, e2))
+    | [@implicit_arity] PExpAssign(e1, e2) =>
+      assign(~loc, sub.expr(sub, e1), sub.expr(sub, e2))
     | [@implicit_arity] PExpIf(c, t, f) =>
       if_(~loc, sub.expr(sub, c), sub.expr(sub, t), sub.expr(sub, f))
     | [@implicit_arity] PExpWhile(c, e) =>
@@ -284,8 +287,8 @@ module TL = {
       Top.primitive(~loc, e, sub.value_description(sub, d))
     | [@implicit_arity] PTopData(e, dd) =>
       Top.data(~loc, e, sub.data(sub, dd))
-    | [@implicit_arity] PTopLet(e, r, vb) =>
-      Top.let_(~loc, e, r, List.map(sub.value_binding(sub), vb))
+    | [@implicit_arity] PTopLet(e, r, m, vb) =>
+      Top.let_(~loc, e, r, m, List.map(sub.value_binding(sub), vb))
     | PTopExpr(e) => Top.expr(~loc, sub.expr(sub, e))
     | PTopExport(ex) => Top.export(~loc, sub.export(sub, ex))
     | PTopExportAll(ex) => Top.export_all(~loc, sub.export_all(sub, ex))

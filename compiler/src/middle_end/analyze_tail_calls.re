@@ -54,6 +54,7 @@ let rec analyze_comp_expression =
       push_tail_call(analyses);
     };
     false;
+  | CBoxAssign(_)
   | CAssign(_)
   | CTuple(_)
   | CArray(_)
@@ -78,14 +79,14 @@ let rec analyze_comp_expression =
 and analyze_anf_expression =
     (is_tail, {anf_desc: desc, anf_analyses: analyses}) =>
   switch (desc) {
-  | [@implicit_arity] AELet(_, Nonrecursive, binds, body) =>
+  | [@implicit_arity] AELet(_, Nonrecursive, mut_flag, binds, body) =>
     /* None of these binds are in tail position */
     List.iter(
       ((_, exp)) => ignore @@ analyze_comp_expression(false, exp),
       binds,
     );
     analyze_anf_expression(is_tail, body);
-  | [@implicit_arity] AELet(_, Recursive, binds, body) =>
+  | [@implicit_arity] AELet(_, Recursive, mut_flag, binds, body) =>
     List.iter(((id, _)) => push_tail_callable_name(id), binds);
     List.iter(
       ((_, {comp_desc, comp_analyses} as bind)) =>

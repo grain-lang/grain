@@ -128,11 +128,11 @@ export let fromList = (list) => {
 # TODO: This should use recursion when we can pattern match arrays
 export let contains = (search, array) => {
   let len = length(array);
-  let index = box(0);
-  let found = box(false);
-  while ((^found == false) && (^index < len)) {
-    found := (array[^index] == search);
+  let mut index = 0;
+  let mut found = false;
+  while ((!found) && (index < len)) {
+    found = (array[index] == search);
     index += 1;
   }
-  ^found
+  found
 }

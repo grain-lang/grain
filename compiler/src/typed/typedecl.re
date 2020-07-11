@@ -967,12 +967,14 @@ let transl_value_decl = (env, loc, valdecl) => {
         val_kind: TValPrim(prim),
         Types.val_loc: loc,
         val_fullpath: Path.PIdent(Ident.create("<bogus>")) /*val_attributes = valdecl.pval_attributes*/,
+        val_mutable: false,
       }
     | _ => {
         val_type: ty,
         val_kind: TValReg,
         Types.val_loc: loc,
         val_fullpath: Path.PIdent(Ident.create("<bogus>")) /*val_attributes = valdecl.pval_attributes*/,
+        val_mutable: false,
       }
     };
 

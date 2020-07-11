@@ -144,10 +144,10 @@ Map.set(Grain, "🌾", fe);
 Map.set(Sheep, "🐑", fe);
 Map.set(Brick, "🧱", fe);
 
-let called = box(0);
+let mut called = 0;
 
 Map.forEach((key, value) => {
-  called += 1;
+  called = called + 1;
   match (key) {
     | Grain => assert value == "🌾"
     | Sheep => assert value == "🐑"
@@ -156,7 +156,7 @@ Map.forEach((key, value) => {
   }
 }, fe);
 
-assert ^called == 3;
+assert called == 3;
 
 ### Map.reduce()
 
@@ -166,10 +166,10 @@ Map.set(Grain, 1, r);
 Map.set(Sheep, 2, r);
 Map.set(Brick, 3, r);
 
-let called = box(0);
+let mut called = 0;
 
 let result = Map.reduce((acc, key, value) => {
-  called += 1;
+  called = called + 1;
   match (key) {
     | Grain => assert value == 1
     | Sheep => assert value == 2
@@ -179,7 +179,7 @@ let result = Map.reduce((acc, key, value) => {
   acc + value
 }, 0, r);
 
-assert ^called == 3;
+assert called == 3;
 assert result == 6;
 
 ### Map.keys() & Map.values();

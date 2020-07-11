@@ -32,10 +32,10 @@ module type IteratorArgument = {
   let leave_core_type: core_type => unit;
   let leave_toplevel_stmt: toplevel_stmt => unit;
 
-  let enter_bindings: (export_flag, rec_flag) => unit;
+  let enter_bindings: (export_flag, rec_flag, mut_flag) => unit;
   let enter_binding: value_binding => unit;
   let leave_binding: value_binding => unit;
-  let leave_bindings: (export_flag, rec_flag) => unit;
+  let leave_bindings: (export_flag, rec_flag, mut_flag) => unit;
 
   let enter_data_declarations: unit => unit;
   let enter_data_declaration: data_declaration => unit;
@@ -83,10 +83,10 @@ module MakeIterator =
     Iter.leave_binding(vb);
   }
 
-  and iter_bindings = (export_flag, rec_flag, binds) => {
-    Iter.enter_bindings(export_flag, rec_flag);
+  and iter_bindings = (export_flag, rec_flag, mut_flag, binds) => {
+    Iter.enter_bindings(export_flag, rec_flag, mut_flag);
     List.iter(iter_binding, binds);
-    Iter.leave_bindings(export_flag, rec_flag);
+    Iter.leave_bindings(export_flag, rec_flag, mut_flag);
   }
 
   and iter_match_branch = ({mb_pat, mb_body}) => {
@@ -129,8 +129,8 @@ module MakeIterator =
     | TTopImport(_)
     | TTopExport(_) => ()
     | TTopExpr(e) => iter_expression(e)
-    | [@implicit_arity] TTopLet(exportflag, recflag, binds) =>
-      iter_bindings(exportflag, recflag, binds)
+    | [@implicit_arity] TTopLet(exportflag, recflag, mutflag, binds) =>
+      iter_bindings(exportflag, recflag, mutflag, binds)
     };
     Iter.leave_toplevel_stmt(stmt);
   }
@@ -190,8 +190,8 @@ module MakeIterator =
     | TExpNull
     | TExpIdent(_)
     | TExpConstant(_) => ()
-    | [@implicit_arity] TExpLet(recflag, binds, body) =>
-      iter_bindings(Nonexported, recflag, binds);
+    | [@implicit_arity] TExpLet(recflag, mutflag, binds, body) =>
+      iter_bindings(Nonexported, recflag, mutflag, binds);
       iter_expression(body);
     | [@implicit_arity] TExpLambda(branches, _) =>
       iter_match_branches(branches)
@@ -202,9 +202,12 @@ module MakeIterator =
     | [@implicit_arity] TExpPrim2(_, e1, e2) =>
       iter_expression(e1);
       iter_expression(e2);
-    | [@implicit_arity] TExpAssign(be, e) =>
-      iter_expression(be);
-      iter_expression(e);
+    | [@implicit_arity] TExpBoxAssign(e1, e2) =>
+      iter_expression(e1);
+      iter_expression(e2);
+    | [@implicit_arity] TExpAssign(e1, e2) =>
+      iter_expression(e1);
+      iter_expression(e2);
     | [@implicit_arity] TExpMatch(value, branches, _) =>
       iter_expression(value);
       iter_match_branches(branches);
@@ -247,7 +250,7 @@ module DefaultIteratorArgument: IteratorArgument = {
   let enter_expression = _ => ();
   let enter_core_type = _ => ();
   let enter_toplevel_stmt = _ => ();
-  let enter_bindings = (_, _) => ();
+  let enter_bindings = (_, _, _) => ();
   let enter_binding = _ => ();
   let enter_data_declaration = _ => ();
   let enter_data_declarations = () => ();
@@ -258,7 +261,7 @@ module DefaultIteratorArgument: IteratorArgument = {
   let leave_core_type = _ => ();
   let leave_toplevel_stmt = _ => ();
   let leave_binding = _ => ();
-  let leave_bindings = (_, _) => ();
+  let leave_bindings = (_, _, _) => ();
   let leave_data_declaration = _ => ();
   let leave_data_declarations = () => ();
 };

@@ -654,14 +654,14 @@ let box_tests = [
     "expression has type Bool but",
   ),
   /* Operations on Box<Number> */
-  t("box_addition1", "let b = box(4); b += 19", "23"),
-  t("box_addition2", "let b = box(4); b += 19; ^b", "23"),
-  t("box_subtraction1", "let b = box(4); b -= 19", "-15"),
-  t("box_subtraction2", "let b = box(4); b -= 19; ^b", "-15"),
-  t("box_multiplication1", "let b = box(4); b *= 19", "76"),
-  t("box_multiplication2", "let b = box(4); b *= 19; ^b", "76"),
-  t("box_division1", "let b = box(76); b /= 19", "4"),
-  t("box_division2", "let b = box(76); b /= 19; ^b", "4"),
+  t("box_addition1", "let b = box(4); b := unbox(b) + 19", "23"),
+  t("box_addition2", "let b = box(4); b := unbox(b) + 19; ^b", "23"),
+  t("box_subtraction1", "let b = box(4); b := unbox(b) - 19", "-15"),
+  t("box_subtraction2", "let b = box(4); b := unbox(b) - 19; ^b", "-15"),
+  t("box_multiplication1", "let b = box(4); b := unbox(b) * 19", "76"),
+  t("box_multiplication2", "let b = box(4); b := unbox(b) * 19; ^b", "76"),
+  t("box_division1", "let b = box(76); b := unbox(b) / 19", "4"),
+  t("box_division2", "let b = box(76); b := unbox(b) / 19; ^b", "4"),
 ];
 
 let loop_tests = [
@@ -1082,6 +1082,7 @@ let optimization_tests = [
           [x],
           AExp.let_(
             Nonrecursive,
+            Immutable,
             [
               (
                 a,
@@ -1134,10 +1135,12 @@ let optimization_tests = [
       let app = Ident.create("app");
       AExp.let_(
         Nonrecursive,
+        Immutable,
         [(foo, Comp.lambda([y]) @@ AExp.comp @@ Comp.imm @@ Imm.id(y))],
       ) @@
       AExp.let_(
         Nonrecursive,
+        Immutable,
         [(app, Comp.app(Imm.id(foo), [Imm.const(Const_int(3))]))],
       ) @@
       AExp.comp @@

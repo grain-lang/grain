@@ -182,6 +182,7 @@ and instr_desc =
   | MArrayOp(array_op, immediate)
   | MAdtOp(adt_op, immediate)
   | MRecordOp(record_op, immediate)
+  | MSet(binding, instr)
   | MStore(list((binding, instr))) /* Items in the same list have their backpatching delayed until the end of that list */
   | MDrop(instr) /* Ignore the result of an expression. Used for sequences. */
   | MTracepoint(int) /* Prints a message to the console; for compiler debugging */

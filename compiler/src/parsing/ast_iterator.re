@@ -52,7 +52,7 @@ module E = {
     | [@implicit_arity] PExpRecordGet(e, f) =>
       sub.expr(sub, e);
       iter_loc(sub, f);
-    | [@implicit_arity] PExpLet(r, vbs, e) =>
+    | [@implicit_arity] PExpLet(r, m, vbs, e) =>
       List.iter(sub.value_binding(sub), vbs);
       sub.expr(sub, e);
     | [@implicit_arity] PExpMatch(e, mbs) =>
@@ -62,9 +62,12 @@ module E = {
     | [@implicit_arity] PExpPrim2(p2, e1, e2) =>
       sub.expr(sub, e1);
       sub.expr(sub, e2);
-    | [@implicit_arity] PExpAssign(be, e) =>
-      sub.expr(sub, be);
-      sub.expr(sub, e);
+    | [@implicit_arity] PExpBoxAssign(a, b) =>
+      sub.expr(sub, a);
+      sub.expr(sub, b);
+    | [@implicit_arity] PExpAssign(a, b) =>
+      sub.expr(sub, a);
+      sub.expr(sub, b);
     | [@implicit_arity] PExpIf(c, t, f) =>
       sub.expr(sub, c);
       sub.expr(sub, t);
@@ -270,7 +273,7 @@ module TL = {
     | [@implicit_arity] PTopPrimitive(e, vd) =>
       sub.value_description(sub, vd)
     | [@implicit_arity] PTopData(e, dd) => sub.data(sub, dd)
-    | [@implicit_arity] PTopLet(e, r, vb) =>
+    | [@implicit_arity] PTopLet(e, r, m, vb) =>
       List.iter(sub.value_binding(sub), vb)
     | PTopExpr(e) => sub.expr(sub, e)
     };
