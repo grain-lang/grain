@@ -257,6 +257,7 @@ binop_expr :
   | binop_expr(<=pb) eols? percent_op eols?   binop_expr(<pb) { Exp.prim2 ~loc:(symbol_rloc dyp) Mod $1 $5 } pb
   | binop_expr(<=pc) eols? is_op eols?        binop_expr(<pc) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pc
   | binop_expr(<=pc) eols? eqeq_op eols?      binop_expr(<pc) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pc
+  | binop_expr(<=pc) eols? noteq_op eols?     binop_expr(<pc) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pc
   | binop_expr(<=pc) eols? lcaret_op eols?    binop_expr(<pc) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pc
   | binop_expr(<=pc) eols? rcaret_op eols?    binop_expr(<pc) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pc
   | binop_expr(<=pc) eols? lesseq_op eols?    binop_expr(<pc) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pc
@@ -401,6 +402,8 @@ is_op :
   | IS { "is" }
 eqeq_op :  
   | EQEQ { "==" }
+noteq_op :  
+  | NOT EQUAL { "!=" }
 lcaret_op :  
   | LCARET { "<" }
 rcaret_op :  
@@ -430,6 +433,7 @@ infix_op :
   | percent_op
   | is_op
   | eqeq_op
+  | noteq_op
   | lcaret_op
   | rcaret_op
   | lesseq_op

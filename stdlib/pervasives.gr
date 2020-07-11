@@ -39,6 +39,7 @@ import foreign wasm print : a -> Void from 'grainBuiltins'
 
 # Checks the given items for structural equality.
 import foreign wasm equal : (a, a) -> Bool as (==) from 'stdlib-external/equal'
+let (!=) : (a, a) -> Bool = (x, y) => !(x == y)
 # Checks the given items for physical equality.
 primitive (is) : (a, a) -> Bool = "@eq"
 
