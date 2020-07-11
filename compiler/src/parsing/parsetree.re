@@ -162,6 +162,8 @@ type comment =
 type expression = {
   pexp_desc: expression_desc,
   pexp_leading_comments: list(comment),
+  pexp_inline_comments: list(comment),
+  pexp_trailing_comments: list(comment),
   [@sexp_drop_if _ => ! Grain_utils.Config.sexp_locs_enabled^]
   pexp_loc: Location.t,
 }
@@ -271,7 +273,7 @@ type toplevel_stmt_desc =
 type toplevel_stmt = {
   ptop_desc: toplevel_stmt_desc,
   ptop_leading_comments: list(comment),
-  ptop_inline_comment: option(comment),
+  ptop_inline_comments: list(comment),
   [@sexp_drop_if _ => ! Grain_utils.Config.sexp_locs_enabled^]
   ptop_loc: Location.t,
 };

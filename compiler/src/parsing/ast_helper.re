@@ -169,63 +169,73 @@ module Pat = {
 };
 
 module Exp = {
-  let mk = (~loc=?, ~comments=?, d) => {
+  let mk = (~loc=?, ~leading_comments=?, ~inline_comments=?, ~trailing_comments=?, d) => {
     let loc =
       switch (loc) {
       | None => default_loc_src^()
       | Some(l) => l
       };
     let pexp_leading_comments =
-      switch (comments) {
+      switch (leading_comments) {
       | None => []
       | Some(l) => l
       };
-    {pexp_desc: d, pexp_loc: loc, pexp_leading_comments};
+    let pexp_inline_comments =
+      switch (inline_comments) {
+      | None => []
+      | Some(l) => l
+      };
+    let pexp_trailing_comments =
+      switch (trailing_comments) {
+      | None => []
+      | Some(l) => l
+      };
+    {pexp_desc: d, pexp_loc: loc, pexp_leading_comments, pexp_inline_comments, pexp_trailing_comments};
   };
-  let ident = (~loc=?, ~comments=?, a) => mk(~loc?, ~comments?, PExpId(a));
-  let constant = (~loc=?, ~comments=?, a) =>
-    mk(~loc?, ~comments?, PExpConstant(a));
-  let tuple = (~loc=?, ~comments=?, a) =>
-    mk(~loc?, ~comments?, PExpTuple(a));
-  let record = (~loc=?, ~comments=?, a) =>
-    mk(~loc?, ~comments?, PExpRecord(a));
-  let record_get = (~loc=?, ~comments=?, a, b) =>
-    mk(~loc?, ~comments?, [@implicit_arity] PExpRecordGet(a, b));
-  let array = (~loc=?, ~comments=?, a) =>
-    mk(~loc?, ~comments?, PExpArray(a));
-  let array_get = (~loc=?, ~comments=?, a, b) =>
-    mk(~loc?, ~comments?, [@implicit_arity] PExpArrayGet(a, b));
-  let array_set = (~loc=?, ~comments=?, a, b, c) =>
-    mk(~loc?, ~comments?, [@implicit_arity] PExpArraySet(a, b, c));
-  let let_ = (~loc=?, ~comments=?, a, b, c) =>
-    mk(~loc?, ~comments?, [@implicit_arity] PExpLet(a, b, c));
-  let match = (~loc=?, ~comments=?, a, b) =>
-    mk(~loc?, ~comments?, [@implicit_arity] PExpMatch(a, b));
-  let prim1 = (~loc=?, ~comments=?, a, b) =>
-    mk(~loc?, ~comments?, [@implicit_arity] PExpPrim1(a, b));
-  let prim2 = (~loc=?, ~comments=?, a, b, c) =>
-    mk(~loc?, ~comments?, [@implicit_arity] PExpPrim2(a, b, c));
-  let if_ = (~loc=?, ~comments=?, a, b, c) =>
-    mk(~loc?, ~comments?, [@implicit_arity] PExpIf(a, b, c));
-  let while_ = (~loc=?, ~comments=?, a, b) =>
-    mk(~loc?, ~comments?, [@implicit_arity] PExpWhile(a, b));
-  let constraint_ = (~loc=?, ~comments=?, a, b) =>
-    mk(~loc?, ~comments?, [@implicit_arity] PExpConstraint(a, b));
-  let assign = (~loc=?, ~comments=?, a, b) =>
-    mk(~loc?, ~comments?, [@implicit_arity] PExpAssign(a, b));
-  let lambda = (~loc=?, ~comments=?, a, b) =>
-    mk(~loc?, ~comments?, [@implicit_arity] PExpLambda(a, b));
-  let apply = (~loc=?, ~comments=?, a, b) =>
-    mk(~loc?, ~comments?, [@implicit_arity] PExpApp(a, b));
-  let block = (~loc=?, ~comments=?, a) =>
-    mk(~loc?, ~comments?, PExpBlock(a));
-  let list = (~loc=?, ~comments=?, a, base) => {
+  let ident = (~loc=?, ~leading_comments=?, ~inline_comments=?, ~trailing_comments=?, a) => mk(~loc?, ~leading_comments?, ~inline_comments?, ~trailing_comments?, PExpId(a));
+  let constant = (~loc=?, ~leading_comments=?, ~inline_comments=?, ~trailing_comments=?, a) =>
+    mk(~loc?, ~leading_comments?, ~inline_comments?, ~trailing_comments?, PExpConstant(a));
+  let tuple = (~loc=?, ~leading_comments=?, ~inline_comments=?, ~trailing_comments=?, a) =>
+    mk(~loc?, ~leading_comments?, ~inline_comments?, ~trailing_comments?, PExpTuple(a));
+  let record = (~loc=?, ~leading_comments=?, ~inline_comments=?, ~trailing_comments=?, a) =>
+    mk(~loc?, ~leading_comments?, ~inline_comments?, ~trailing_comments?, PExpRecord(a));
+  let record_get = (~loc=?, ~leading_comments=?, ~inline_comments=?, ~trailing_comments=?, a, b) =>
+    mk(~loc?, ~leading_comments?, ~inline_comments?, ~trailing_comments?, [@implicit_arity] PExpRecordGet(a, b));
+  let array = (~loc=?, ~leading_comments=?, ~inline_comments=?, ~trailing_comments=?, a) =>
+    mk(~loc?, ~leading_comments?, ~inline_comments?, ~trailing_comments?, PExpArray(a));
+  let array_get = (~loc=?, ~leading_comments=?, ~inline_comments=?, ~trailing_comments=?, a, b) =>
+    mk(~loc?, ~leading_comments?, ~inline_comments?, ~trailing_comments?, [@implicit_arity] PExpArrayGet(a, b));
+  let array_set = (~loc=?, ~leading_comments=?, ~inline_comments=?, ~trailing_comments=?, a, b, c) =>
+    mk(~loc?, ~leading_comments?, ~inline_comments?, ~trailing_comments?, [@implicit_arity] PExpArraySet(a, b, c));
+  let let_ = (~loc=?, ~leading_comments=?, ~inline_comments=?, ~trailing_comments=?, a, b, c) =>
+    mk(~loc?, ~leading_comments?, ~inline_comments?, ~trailing_comments?, [@implicit_arity] PExpLet(a, b, c));
+  let match = (~loc=?, ~leading_comments=?, ~inline_comments=?, ~trailing_comments=?, a, b) =>
+    mk(~loc?, ~leading_comments?, ~inline_comments?, ~trailing_comments?, [@implicit_arity] PExpMatch(a, b));
+  let prim1 = (~loc=?, ~leading_comments=?, ~inline_comments=?, ~trailing_comments=?, a, b) =>
+    mk(~loc?, ~leading_comments?, ~inline_comments?, ~trailing_comments?, [@implicit_arity] PExpPrim1(a, b));
+  let prim2 = (~loc=?, ~leading_comments=?, ~inline_comments=?, ~trailing_comments=?, a, b, c) =>
+    mk(~loc?, ~leading_comments?, ~inline_comments?, ~trailing_comments?, [@implicit_arity] PExpPrim2(a, b, c));
+  let if_ = (~loc=?, ~leading_comments=?, ~inline_comments=?, ~trailing_comments=?, a, b, c) =>
+    mk(~loc?, ~leading_comments?, ~inline_comments?, ~trailing_comments?, [@implicit_arity] PExpIf(a, b, c));
+  let while_ = (~loc=?, ~leading_comments=?, ~inline_comments=?, ~trailing_comments=?, a, b) =>
+    mk(~loc?, ~leading_comments?, ~inline_comments?, ~trailing_comments?, [@implicit_arity] PExpWhile(a, b));
+  let constraint_ = (~loc=?, ~leading_comments=?, ~inline_comments=?, ~trailing_comments=?, a, b) =>
+    mk(~loc?, ~leading_comments?, ~inline_comments?, ~trailing_comments?, [@implicit_arity] PExpConstraint(a, b));
+  let assign = (~loc=?, ~leading_comments=?, ~inline_comments=?, ~trailing_comments=?, a, b) =>
+    mk(~loc?, ~leading_comments?, ~inline_comments?, ~trailing_comments?, [@implicit_arity] PExpAssign(a, b));
+  let lambda = (~loc=?, ~leading_comments=?, ~inline_comments=?, ~trailing_comments=?, a, b) =>
+    mk(~loc?, ~leading_comments?, ~inline_comments?, ~trailing_comments?, [@implicit_arity] PExpLambda(a, b));
+  let apply = (~loc=?, ~leading_comments=?, ~inline_comments=?, ~trailing_comments=?, a, b) =>
+    mk(~loc?, ~leading_comments?, ~inline_comments?, ~trailing_comments?, [@implicit_arity] PExpApp(a, b));
+  let block = (~loc=?, ~leading_comments=?, ~inline_comments=?, ~trailing_comments=?, a) =>
+    mk(~loc?, ~leading_comments?, ~inline_comments?, ~trailing_comments?, PExpBlock(a));
+  let list = (~loc=?, ~leading_comments=?, ~inline_comments=?, ~trailing_comments=?, a, base) => {
     let empty = ident(~loc?, ident_empty);
     let cons = ident(ident_cons);
     let base = Option.default(empty, base);
     List.fold_right((expr, acc) => apply(cons, [expr, acc]), a, base);
   };
-  let null = (~loc=?, ~comments=?, ()) => mk(~loc?, ~comments?, PExpNull);
+  let null = (~loc=?, ~leading_comments=?, ~inline_comments=?, ~trailing_comments=?, ()) => mk(~loc?, ~leading_comments?, ~inline_comments?, ~trailing_comments?, PExpNull);
 
   let ignore = e =>
     switch (e.pexp_desc) {
@@ -233,21 +243,28 @@ module Exp = {
     | _ => prim1(~loc=e.pexp_loc, Ignore, e)
     };
 
-  let add_comments = (expr, pexp_leading_comments) => {
+  let add_comments = (expr, ~leading, ~inline, ~trailing) => {
     ...expr,
-    pexp_leading_comments,
+    pexp_leading_comments: leading,
+    pexp_inline_comments: inline,
+    pexp_trailing_comments: trailing,
   };
 };
 
 module Top = {
-  let mk = (~loc=?, ~comments=?, ~inline_comment=?, d) => {
+  let mk = (~loc=?, ~leading_comments=?, ~inline_comments=?, d) => {
     let loc =
       switch (loc) {
       | None => default_loc_src^()
       | Some(l) => l
       };
     let ptop_leading_comments =
-      switch (comments) {
+      switch (leading_comments) {
+      | None => []
+      | Some(l) => l
+      };
+    let ptop_inline_comments =
+      switch (inline_comments) {
       | None => []
       | Some(l) => l
       };
@@ -255,50 +272,50 @@ module Top = {
       ptop_desc: d,
       ptop_loc: loc,
       ptop_leading_comments,
-      ptop_inline_comment: inline_comment,
+      ptop_inline_comments,
     };
   };
-  let import = (~loc=?, ~comments=?, ~inline_comment=?, i) =>
-    mk(~loc?, ~comments?, ~inline_comment?, PTopImport(i));
-  let foreign = (~loc=?, ~comments=?, ~inline_comment=?, e, d) =>
+  let import = (~loc=?, ~leading_comments=?, ~inline_comments=?, i) =>
+    mk(~loc?, ~leading_comments?, ~inline_comments?, PTopImport(i));
+  let foreign = (~loc=?, ~leading_comments=?, ~inline_comments=?, e, d) =>
     mk(
       ~loc?,
-      ~comments?,
-      ~inline_comment?,
+      ~leading_comments?,
+      ~inline_comments?,
       [@implicit_arity] PTopForeign(e, d),
     );
-  let primitive = (~loc=?, ~comments=?, ~inline_comment=?, e, d) =>
+  let primitive = (~loc=?, ~leading_comments=?, ~inline_comments=?, e, d) =>
     mk(
       ~loc?,
-      ~comments?,
-      ~inline_comment?,
+      ~leading_comments?,
+      ~inline_comments?,
       [@implicit_arity] PTopPrimitive(e, d),
     );
-  let data = (~loc=?, ~comments=?, ~inline_comment=?, e, d) =>
+  let data = (~loc=?, ~leading_comments=?, ~inline_comments=?, e, d) =>
     mk(
       ~loc?,
-      ~comments?,
-      ~inline_comment?,
+      ~leading_comments?,
+      ~inline_comments?,
       [@implicit_arity] PTopData(e, d),
     );
-  let let_ = (~loc=?, ~comments=?, ~inline_comment=?, e, r, vb) =>
+  let let_ = (~loc=?, ~leading_comments=?, ~inline_comments=?, e, r, vb) =>
     mk(
       ~loc?,
-      ~comments?,
-      ~inline_comment?,
+      ~leading_comments?,
+      ~inline_comments?,
       [@implicit_arity] PTopLet(e, r, vb),
     );
-  let expr = (~loc=?, ~comments=?, ~inline_comment=?, e) =>
-    mk(~loc?, ~comments?, ~inline_comment?, PTopExpr(e));
-  let export = (~loc=?, ~comments=?, ~inline_comment=?, e) =>
-    mk(~loc?, ~comments?, ~inline_comment?, PTopExport(e));
-  let export_all = (~loc=?, ~comments=?, ~inline_comment=?, e) =>
-    mk(~loc?, ~comments?, ~inline_comment?, PTopExportAll(e));
+  let expr = (~loc=?, ~leading_comments=?, ~inline_comments=?, e) =>
+    mk(~loc?, ~leading_comments?, ~inline_comments?, PTopExpr(e));
+  let export = (~loc=?, ~leading_comments=?, ~inline_comments=?, e) =>
+    mk(~loc?, ~leading_comments?, ~inline_comments?, PTopExport(e));
+  let export_all = (~loc=?, ~leading_comments=?, ~inline_comments=?, e) =>
+    mk(~loc?, ~leading_comments?, ~inline_comments?, PTopExportAll(e));
 
-  let add_comments = (d, ptop_leading_comments, ptop_inline_comment) => {
+  let add_comments = (d, ~leading, ~inline) => {
     ...d,
-    ptop_leading_comments,
-    ptop_inline_comment,
+    ptop_leading_comments: leading,
+    ptop_inline_comments: inline,
   };
 };
 

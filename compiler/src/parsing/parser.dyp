@@ -186,8 +186,8 @@ eols :
   | eol+ { () }
 
 eos :
-  | eols { None }
-  | SEMI eols? { None }
+  | eols { () }
+  | SEMI eols? { () }
 
 lbrack :
   | LBRACK eols? { () }
@@ -241,7 +241,7 @@ trailing_comments :
   | [COMMENT eols? {$1}]* { as_comments $1 }
 
 inline_comment :
-  | [SEMI? COMMENT {$2}] { comment_of_string $1 }
+  | [SEMI? COMMENT {$2}]? { Option.map_default (fun c -> [comment_of_string c]) [] $1 }
 
 const :
   | NUM { Const.int $1 }
@@ -256,7 +256,7 @@ raw_expr :
   | stmt_expr
   | binop_expr
 expr :
-  | leading_comments raw_expr { Exp.add_comments $2 $1 }
+  | leading_comments raw_expr inline_comment { Exp.add_comments ~leading:$1 ~inline:$3 ~trailing:[] $2 }
 
 binop_expr :
   | binop_expr(<=pa) eols? pluseq_op eols?    binop_expr(<pa) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pa
@@ -500,7 +500,7 @@ raw_let_expr :
   | LET REC value_binds { Exp.let_ ~loc:(symbol_rloc dyp) Recursive $3 (Exp.block []) }
   | LET value_binds { Exp.let_ ~loc:(symbol_rloc dyp) Nonrecursive $2 (Exp.block []) }
 let_expr :
-  | leading_comments raw_let_expr { Exp.add_comments $2 $1 }
+  | leading_comments raw_let_expr { Exp.add_comments ~leading:$1 ~inline:[] ~trailing:[] $2 }
 
 if_expr :
   | IF lparen expr rparen eols? block_or_expr { Exp.if_ ~loc:(symbol_rloc dyp) $3 $6 (Exp.block []) }
@@ -622,7 +622,7 @@ raw_toplevel_stmt :
   | primitive_stmt { Top.primitive ~loc:(symbol_rloc dyp) Nonexported $1 }
   | data_declaration { Top.data Nonexported $1 }
 toplevel_stmt :
-  | leading_comments raw_toplevel_stmt inline_comment? { Top.add_comments $2 $1 $3 }
+  | leading_comments raw_toplevel_stmt inline_comment { Top.add_comments ~leading:$1 ~inline:$3 $2 }
 
 toplevel_stmts :
   | toplevel_stmt [eos toplevel_stmt {$2}]* { $1::$2 }

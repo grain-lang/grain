@@ -31,21 +31,27 @@ module E = {
   let map =
       (
         sub,
-        {pexp_desc: desc, pexp_loc: loc, pexp_leading_comments: comments},
+        {
+          pexp_desc: desc, 
+          pexp_loc: loc, 
+          pexp_leading_comments: leading_comments,
+          pexp_inline_comments: inline_comments,
+          pexp_trailing_comments: trailing_comments,
+        },
       ) => {
     open Exp;
     let loc = sub.location(sub, loc);
     switch (desc) {
-    | PExpId(i) => ident(~loc, ~comments, map_loc(sub, i))
-    | PExpConstant(c) => constant(~loc, ~comments, sub.constant(sub, c))
-    | PExpTuple(es) => tuple(~loc, ~comments, List.map(sub.expr(sub), es))
-    | PExpArray(es) => array(~loc, ~comments, List.map(sub.expr(sub), es))
+    | PExpId(i) => ident(~loc, ~leading_comments, ~inline_comments, ~trailing_comments, map_loc(sub, i))
+    | PExpConstant(c) => constant(~loc, ~leading_comments, ~inline_comments, ~trailing_comments, sub.constant(sub, c))
+    | PExpTuple(es) => tuple(~loc, ~leading_comments, ~inline_comments, ~trailing_comments, List.map(sub.expr(sub), es))
+    | PExpArray(es) => array(~loc, ~leading_comments, ~inline_comments, ~trailing_comments, List.map(sub.expr(sub), es))
     | [@implicit_arity] PExpArrayGet(a, i) =>
-      array_get(~loc, ~comments, sub.expr(sub, a), sub.expr(sub, i))
+      array_get(~loc, ~leading_comments, ~inline_comments, ~trailing_comments, sub.expr(sub, a), sub.expr(sub, i))
     | [@implicit_arity] PExpArraySet(a, i, arg) =>
       array_set(
         ~loc,
-        ~comments,
+        ~leading_comments, ~inline_comments, ~trailing_comments,
         sub.expr(sub, a),
         sub.expr(sub, i),
         sub.expr(sub, arg),
@@ -53,18 +59,18 @@ module E = {
     | PExpRecord(es) =>
       record(
         ~loc,
-        ~comments,
+        ~leading_comments, ~inline_comments, ~trailing_comments,
         List.map(
           ((name, expr)) => (map_loc(sub, name), sub.expr(sub, expr)),
           es,
         ),
       )
     | [@implicit_arity] PExpRecordGet(e, f) =>
-      record_get(~loc, ~comments, sub.expr(sub, e), map_loc(sub, f))
+      record_get(~loc, ~leading_comments, ~inline_comments, ~trailing_comments, sub.expr(sub, e), map_loc(sub, f))
     | [@implicit_arity] PExpLet(r, vbs, e) =>
       let_(
         ~loc,
-        ~comments,
+        ~leading_comments, ~inline_comments, ~trailing_comments,
         r,
         List.map(sub.value_binding(sub), vbs),
         sub.expr(sub, e),
@@ -72,34 +78,34 @@ module E = {
     | [@implicit_arity] PExpMatch(e, mbs) =>
       match(
         ~loc,
-        ~comments,
+        ~leading_comments, ~inline_comments, ~trailing_comments,
         sub.expr(sub, e),
         List.map(sub.match_branch(sub), mbs),
       )
     | [@implicit_arity] PExpPrim1(p1, e) =>
-      prim1(~loc, ~comments, p1, sub.expr(sub, e))
+      prim1(~loc, ~leading_comments, ~inline_comments, ~trailing_comments, p1, sub.expr(sub, e))
     | [@implicit_arity] PExpPrim2(p2, e1, e2) =>
-      prim2(~loc, ~comments, p2, sub.expr(sub, e1), sub.expr(sub, e2))
+      prim2(~loc, ~leading_comments, ~inline_comments, ~trailing_comments, p2, sub.expr(sub, e1), sub.expr(sub, e2))
     | [@implicit_arity] PExpAssign(be, e) =>
-      assign(~loc, ~comments, sub.expr(sub, be), sub.expr(sub, e))
+      assign(~loc, ~leading_comments, ~inline_comments, ~trailing_comments, sub.expr(sub, be), sub.expr(sub, e))
     | [@implicit_arity] PExpIf(c, t, f) =>
       if_(
         ~loc,
-        ~comments,
+        ~leading_comments, ~inline_comments, ~trailing_comments,
         sub.expr(sub, c),
         sub.expr(sub, t),
         sub.expr(sub, f),
       )
     | [@implicit_arity] PExpWhile(c, e) =>
-      while_(~loc, ~comments, sub.expr(sub, c), sub.expr(sub, e))
+      while_(~loc, ~leading_comments, ~inline_comments, ~trailing_comments, sub.expr(sub, c), sub.expr(sub, e))
     | [@implicit_arity] PExpLambda(pl, e) =>
-      lambda(~loc, ~comments, List.map(sub.pat(sub), pl), sub.expr(sub, e))
+      lambda(~loc, ~leading_comments, ~inline_comments, ~trailing_comments, List.map(sub.pat(sub), pl), sub.expr(sub, e))
     | [@implicit_arity] PExpApp(e, el) =>
-      apply(~loc, ~comments, sub.expr(sub, e), List.map(sub.expr(sub), el))
-    | PExpBlock(el) => block(~loc, ~comments, List.map(sub.expr(sub), el))
-    | PExpNull => null(~loc, ~comments, ())
+      apply(~loc, ~leading_comments, ~inline_comments, ~trailing_comments, sub.expr(sub, e), List.map(sub.expr(sub), el))
+    | PExpBlock(el) => block(~loc, ~leading_comments, ~inline_comments, ~trailing_comments, List.map(sub.expr(sub), el))
+    | PExpNull => null(~loc, ~leading_comments, ~inline_comments, ~trailing_comments, ())
     | [@implicit_arity] PExpConstraint(e, t) =>
-      constraint_(~loc, ~comments, sub.expr(sub, e), sub.typ(sub, t))
+      constraint_(~loc, ~leading_comments, ~inline_comments, ~trailing_comments, sub.expr(sub, e), sub.typ(sub, t))
     };
   };
 };
@@ -297,51 +303,51 @@ module TL = {
         {
           ptop_desc: desc,
           ptop_loc: loc,
-          ptop_leading_comments: comments,
-          ptop_inline_comment: inline_comment,
+          ptop_leading_comments: leading_comments,
+          ptop_inline_comments: inline_comments,
         },
       ) => {
     open Top;
     let loc = sub.location(sub, loc);
     switch (desc) {
     | PTopImport(decls) =>
-      Top.import(~loc, ~comments, ~inline_comment?, sub.import(sub, decls))
+      Top.import(~loc, ~leading_comments, ~inline_comments, sub.import(sub, decls))
     | [@implicit_arity] PTopForeign(e, d) =>
       Top.foreign(
         ~loc,
-        ~comments,
-        ~inline_comment?,
+        ~leading_comments,
+        ~inline_comments,
         e,
         sub.value_description(sub, d),
       )
     | [@implicit_arity] PTopPrimitive(e, d) =>
       Top.primitive(
         ~loc,
-        ~comments,
-        ~inline_comment?,
+        ~leading_comments,
+        ~inline_comments,
         e,
         sub.value_description(sub, d),
       )
     | [@implicit_arity] PTopData(e, dd) =>
-      Top.data(~loc, ~comments, ~inline_comment?, e, sub.data(sub, dd))
+      Top.data(~loc, ~leading_comments, ~inline_comments, e, sub.data(sub, dd))
     | [@implicit_arity] PTopLet(e, r, vb) =>
       Top.let_(
         ~loc,
-        ~comments,
-        ~inline_comment?,
+        ~leading_comments,
+        ~inline_comments,
         e,
         r,
         List.map(sub.value_binding(sub), vb),
       )
     | PTopExpr(e) =>
-      Top.expr(~loc, ~comments, ~inline_comment?, sub.expr(sub, e))
+      Top.expr(~loc, ~leading_comments, ~inline_comments, sub.expr(sub, e))
     | PTopExport(ex) =>
-      Top.export(~loc, ~comments, ~inline_comment?, sub.export(sub, ex))
+      Top.export(~loc, ~leading_comments, ~inline_comments, sub.export(sub, ex))
     | PTopExportAll(ex) =>
       Top.export_all(
         ~loc,
-        ~comments,
-        ~inline_comment?,
+        ~leading_comments,
+        ~inline_comments,
         sub.export_all(sub, ex),
       )
     };

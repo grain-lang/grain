@@ -92,34 +92,34 @@ module Pat: {
 
 module Exp: {
   let mk:
-    (~loc: loc=?, ~comments: list(comment)=?, expression_desc) => expression;
-  let ident: (~loc: loc=?, ~comments: list(comment)=?, id) => expression;
+    (~loc: loc=?, ~leading_comments: list(comment)=?, ~inline_comments: list(comment)=?, ~trailing_comments: list(comment)=?, expression_desc) => expression;
+  let ident: (~loc: loc=?, ~leading_comments: list(comment)=?, ~inline_comments: list(comment)=?, ~trailing_comments: list(comment)=?, id) => expression;
   let constant:
-    (~loc: loc=?, ~comments: list(comment)=?, constant) => expression;
+    (~loc: loc=?, ~leading_comments: list(comment)=?, ~inline_comments: list(comment)=?, ~trailing_comments: list(comment)=?, constant) => expression;
   let tuple:
-    (~loc: loc=?, ~comments: list(comment)=?, list(expression)) => expression;
+    (~loc: loc=?, ~leading_comments: list(comment)=?, ~inline_comments: list(comment)=?, ~trailing_comments: list(comment)=?, list(expression)) => expression;
   let record:
-    (~loc: loc=?, ~comments: list(comment)=?, list((id, expression))) =>
+    (~loc: loc=?, ~leading_comments: list(comment)=?, ~inline_comments: list(comment)=?, ~trailing_comments: list(comment)=?, list((id, expression))) =>
     expression;
   let record_get:
-    (~loc: loc=?, ~comments: list(comment)=?, expression, id) => expression;
+    (~loc: loc=?, ~leading_comments: list(comment)=?, ~inline_comments: list(comment)=?, ~trailing_comments: list(comment)=?, expression, id) => expression;
   let list:
     (
       ~loc: loc=?,
-      ~comments: list(comment)=?,
+      ~leading_comments: list(comment)=?, ~inline_comments: list(comment)=?, ~trailing_comments: list(comment)=?,
       list(expression),
       option(expression)
     ) =>
     expression;
   let array:
-    (~loc: loc=?, ~comments: list(comment)=?, list(expression)) => expression;
+    (~loc: loc=?, ~leading_comments: list(comment)=?, ~inline_comments: list(comment)=?, ~trailing_comments: list(comment)=?, list(expression)) => expression;
   let array_get:
-    (~loc: loc=?, ~comments: list(comment)=?, expression, expression) =>
+    (~loc: loc=?, ~leading_comments: list(comment)=?, ~inline_comments: list(comment)=?, ~trailing_comments: list(comment)=?, expression, expression) =>
     expression;
   let array_set:
     (
       ~loc: loc=?,
-      ~comments: list(comment)=?,
+      ~leading_comments: list(comment)=?, ~inline_comments: list(comment)=?, ~trailing_comments: list(comment)=?,
       expression,
       expression,
       expression
@@ -128,7 +128,7 @@ module Exp: {
   let let_:
     (
       ~loc: loc=?,
-      ~comments: list(comment)=?,
+      ~leading_comments: list(comment)=?, ~inline_comments: list(comment)=?, ~trailing_comments: list(comment)=?,
       rec_flag,
       list(value_binding),
       expression
@@ -137,17 +137,17 @@ module Exp: {
   let match:
     (
       ~loc: loc=?,
-      ~comments: list(comment)=?,
+      ~leading_comments: list(comment)=?, ~inline_comments: list(comment)=?, ~trailing_comments: list(comment)=?,
       expression,
       list(match_branch)
     ) =>
     expression;
   let prim1:
-    (~loc: loc=?, ~comments: list(comment)=?, prim1, expression) => expression;
+    (~loc: loc=?, ~leading_comments: list(comment)=?, ~inline_comments: list(comment)=?, ~trailing_comments: list(comment)=?, prim1, expression) => expression;
   let prim2:
     (
       ~loc: loc=?,
-      ~comments: list(comment)=?,
+      ~leading_comments: list(comment)=?, ~inline_comments: list(comment)=?, ~trailing_comments: list(comment)=?,
       prim2,
       expression,
       expression
@@ -156,61 +156,61 @@ module Exp: {
   let if_:
     (
       ~loc: loc=?,
-      ~comments: list(comment)=?,
+      ~leading_comments: list(comment)=?, ~inline_comments: list(comment)=?, ~trailing_comments: list(comment)=?,
       expression,
       expression,
       expression
     ) =>
     expression;
   let while_:
-    (~loc: loc=?, ~comments: list(comment)=?, expression, expression) =>
+    (~loc: loc=?, ~leading_comments: list(comment)=?, ~inline_comments: list(comment)=?, ~trailing_comments: list(comment)=?, expression, expression) =>
     expression;
   let constraint_:
-    (~loc: loc=?, ~comments: list(comment)=?, expression, parsed_type) =>
+    (~loc: loc=?, ~leading_comments: list(comment)=?, ~inline_comments: list(comment)=?, ~trailing_comments: list(comment)=?, expression, parsed_type) =>
     expression;
   let assign:
-    (~loc: loc=?, ~comments: list(comment)=?, expression, expression) =>
+    (~loc: loc=?, ~leading_comments: list(comment)=?, ~inline_comments: list(comment)=?, ~trailing_comments: list(comment)=?, expression, expression) =>
     expression;
   let lambda:
-    (~loc: loc=?, ~comments: list(comment)=?, list(pattern), expression) =>
+    (~loc: loc=?, ~leading_comments: list(comment)=?, ~inline_comments: list(comment)=?, ~trailing_comments: list(comment)=?, list(pattern), expression) =>
     expression;
   let apply:
     (
       ~loc: loc=?,
-      ~comments: list(comment)=?,
+      ~leading_comments: list(comment)=?, ~inline_comments: list(comment)=?, ~trailing_comments: list(comment)=?,
       expression,
       list(expression)
     ) =>
     expression;
   let block:
-    (~loc: loc=?, ~comments: list(comment)=?, list(expression)) => expression;
-  let null: (~loc: loc=?, ~comments: list(comment)=?, unit) => expression;
+    (~loc: loc=?, ~leading_comments: list(comment)=?, ~inline_comments: list(comment)=?, ~trailing_comments: list(comment)=?, list(expression)) => expression;
+  let null: (~loc: loc=?, ~leading_comments: list(comment)=?, ~inline_comments: list(comment)=?, ~trailing_comments: list(comment)=?, unit) => expression;
   let ignore: expression => expression;
-  let add_comments: (expression, list(comment)) => expression;
+  let add_comments: (expression, ~leading: list(comment), ~inline: list(comment), ~trailing: list(comment)) => expression;
 };
 
 module Top: {
   let mk:
     (
       ~loc: loc=?,
-      ~comments: list(comment)=?,
-      ~inline_comment: comment=?,
+      ~leading_comments: list(comment)=?,
+      ~inline_comments: list(comment)=?,
       toplevel_stmt_desc
     ) =>
     toplevel_stmt;
   let import:
     (
       ~loc: loc=?,
-      ~comments: list(comment)=?,
-      ~inline_comment: comment=?,
+      ~leading_comments: list(comment)=?,
+      ~inline_comments: list(comment)=?,
       list(import_declaration)
     ) =>
     toplevel_stmt;
   let foreign:
     (
       ~loc: loc=?,
-      ~comments: list(comment)=?,
-      ~inline_comment: comment=?,
+      ~leading_comments: list(comment)=?,
+      ~inline_comments: list(comment)=?,
       export_flag,
       value_description
     ) =>
@@ -218,8 +218,8 @@ module Top: {
   let primitive:
     (
       ~loc: loc=?,
-      ~comments: list(comment)=?,
-      ~inline_comment: comment=?,
+      ~leading_comments: list(comment)=?,
+      ~inline_comments: list(comment)=?,
       export_flag,
       value_description
     ) =>
@@ -227,8 +227,8 @@ module Top: {
   let data:
     (
       ~loc: loc=?,
-      ~comments: list(comment)=?,
-      ~inline_comment: comment=?,
+      ~leading_comments: list(comment)=?,
+      ~inline_comments: list(comment)=?,
       export_flag,
       data_declaration
     ) =>
@@ -236,8 +236,8 @@ module Top: {
   let let_:
     (
       ~loc: loc=?,
-      ~comments: list(comment)=?,
-      ~inline_comment: comment=?,
+      ~leading_comments: list(comment)=?,
+      ~inline_comments: list(comment)=?,
       export_flag,
       rec_flag,
       list(value_binding)
@@ -246,29 +246,29 @@ module Top: {
   let expr:
     (
       ~loc: loc=?,
-      ~comments: list(comment)=?,
-      ~inline_comment: comment=?,
+      ~leading_comments: list(comment)=?,
+      ~inline_comments: list(comment)=?,
       expression
     ) =>
     toplevel_stmt;
   let export:
     (
       ~loc: loc=?,
-      ~comments: list(comment)=?,
-      ~inline_comment: comment=?,
+      ~leading_comments: list(comment)=?,
+      ~inline_comments: list(comment)=?,
       list(export_declaration)
     ) =>
     toplevel_stmt;
   let export_all:
     (
       ~loc: loc=?,
-      ~comments: list(comment)=?,
-      ~inline_comment: comment=?,
+      ~leading_comments: list(comment)=?,
+      ~inline_comments: list(comment)=?,
       list(export_except)
     ) =>
     toplevel_stmt;
   let add_comments:
-    (toplevel_stmt, list(comment), option(comment)) => toplevel_stmt;
+    (toplevel_stmt, ~leading: list(comment), ~inline: list(comment)) => toplevel_stmt;
 };
 
 module Val: {
