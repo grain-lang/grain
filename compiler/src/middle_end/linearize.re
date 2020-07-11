@@ -963,7 +963,7 @@ let rec transl_anf_statement =
       };
       | TPatTuple(_)
       | TPatRecord(_) =>
-        let (tmp, anf_patts) = bind_patts(~exported, ~mut_flag=Immutable, vb_pat);
+        let (tmp, anf_patts) = bind_patts(~exported, ~mut_flag=mut_flag, vb_pat);
         [[@implicit_arity] BLet(Immutable, tmp, exp_ans), ...anf_patts];
       | [@implicit_arity] TPatAlias(patt, bind, _) => {
         let binds = switch (mut_flag) {
