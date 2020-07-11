@@ -74,6 +74,8 @@ module Comp: {
     (~loc: loc=?, ~env: env=?, imm_expression) => comp_expression;
   let record_get:
     (~loc: loc=?, ~env: env=?, int32, imm_expression) => comp_expression;
+  let record_set:
+    (~loc: loc=?, ~env: env=?, int32, imm_expression, imm_expression) => comp_expression;
   let if_:
     (
       ~loc: loc=?,

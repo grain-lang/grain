@@ -93,6 +93,8 @@ module MakeMap = (Iter: MapArgument) => {
       | CGetAdtTag(adt) => CGetAdtTag(map_imm_expression(adt))
       | [@implicit_arity] CGetRecordItem(idx, record) =>
         [@implicit_arity] CGetRecordItem(idx, map_imm_expression(record))
+      | [@implicit_arity] CSetRecordItem(idx, record, arg) =>
+        [@implicit_arity] CSetRecordItem(idx, map_imm_expression(record), map_imm_expression(arg))
       | [@implicit_arity] CIf(c, t, f) =>
         let c = map_imm_expression(c);
         let t = map_anf_expression(t);

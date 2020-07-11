@@ -789,6 +789,22 @@ and type_expect_ =
       exp_type: ty_arg,
       exp_env: env,
     });
+  | [@implicit_arity] PExpRecordSet(srecord, lid, sval) =>
+    let (record, label, _) = type_label_access(env, srecord, lid);
+    if (!label.lbl_mut) {
+      raise(Error(loc, env, Label_not_mutable(lid.txt)));
+    };
+    let (_, ty_arg, ty_res) = instance_label(false, label);
+    unify_exp(env, record, ty_res);
+    let val_ = type_expect(env, sval, ty_expected_explained);
+    unify_exp(env, val_, ty_arg);
+    rue({
+      exp_desc: [@implicit_arity] TExpRecordSet(record, lid, label, val_),
+      exp_loc: loc,
+      exp_extra: [],
+      exp_type: ty_arg,
+      exp_env: env,
+    });
   | [@implicit_arity] PExpLet(rec_flag, mut_flag, pats, body) =>
     let scp = None;
     let (pat_exp_list, new_env, unpacks) =

@@ -1681,6 +1681,18 @@ let compile_record_op = (wasm_mod, env, rec_imm, op) => {
       wasm_mod,
       untag(wasm_mod, GenericHeapType(Some(RecordType)), record),
     );
+  | MRecordSet(idx, arg_imm) =>
+    let idx_int = Int32.to_int(idx);
+    let arg = compile_imm(wasm_mod, env, arg_imm);
+    Expression.block(wasm_mod, "record_set", [
+      store(
+        ~offset=4 * (idx_int + 4),
+        wasm_mod,
+        untag(wasm_mod, GenericHeapType(Some(RecordType)), record),
+        tee_swap(wasm_mod, env, 0, arg)
+      ),
+      get_swap(wasm_mod, env, 0)
+    ]);
   };
 };
 

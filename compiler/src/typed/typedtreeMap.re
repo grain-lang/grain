@@ -232,6 +232,8 @@ module MakeMap =
         )
       | [@implicit_arity] TExpRecordGet(record, field, ld) =>
         [@implicit_arity] TExpRecordGet(map_expression(record), field, ld)
+      | [@implicit_arity] TExpRecordSet(record, field, ld, arg) =>
+        [@implicit_arity] TExpRecordSet(map_expression(record), field, ld, map_expression(arg))
       | TExpBlock(args) => TExpBlock(List.map(map_expression, args))
       | [@implicit_arity] TExpConstruct(a, b, args) =>
         [@implicit_arity] TExpConstruct(a, b, List.map(map_expression, args))

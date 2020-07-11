@@ -156,7 +156,8 @@ type adt_op =
 
 [@deriving sexp]
 type record_op =
-  | MRecordGet(int32);
+  | MRecordGet(int32)
+  | MRecordSet(int32, immediate);
 
 [@deriving sexp]
 type instr = {

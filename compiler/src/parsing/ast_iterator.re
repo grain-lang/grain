@@ -52,6 +52,10 @@ module E = {
     | [@implicit_arity] PExpRecordGet(e, f) =>
       sub.expr(sub, e);
       iter_loc(sub, f);
+    | [@implicit_arity] PExpRecordSet(e, f, v) =>
+      sub.expr(sub, e);
+      iter_loc(sub, f);
+      sub.expr(sub, v);
     | [@implicit_arity] PExpLet(r, m, vbs, e) =>
       List.iter(sub.value_binding(sub), vbs);
       sub.expr(sub, e);

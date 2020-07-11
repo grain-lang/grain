@@ -234,6 +234,7 @@ let constructor_declaration = (s, c) => {
 let record_field = (s, f) => {
   rf_name: f.rf_name,
   rf_type: typexp(s, f.rf_type),
+  rf_mutable: f.rf_mutable,
   rf_loc: loc(s, f.rf_loc),
 };
 

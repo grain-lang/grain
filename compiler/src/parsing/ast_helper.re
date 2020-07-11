@@ -92,13 +92,13 @@ module CDecl = {
 };
 
 module LDecl = {
-  let mk = (~loc=?, n, t) => {
+  let mk = (~loc=?, n, t, m) => {
     let loc =
       switch (loc) {
       | None => default_loc_src^()
       | Some(l) => l
       };
-    {pld_name: n, pld_type: t, pld_loc: loc};
+    {pld_name: n, pld_type: t, pld_mutable: m, pld_loc: loc};
   };
 };
 
@@ -177,6 +177,8 @@ module Exp = {
   let record = (~loc=?, a) => mk(~loc?, PExpRecord(a));
   let record_get = (~loc=?, a, b) =>
     mk(~loc?, [@implicit_arity] PExpRecordGet(a, b));
+  let record_set = (~loc=?, a, b, c) =>
+    mk(~loc?, [@implicit_arity] PExpRecordSet(a, b, c));
   let array = (~loc=?, a) => mk(~loc?, PExpArray(a));
   let array_get = (~loc=?, a, b) =>
     mk(~loc?, [@implicit_arity] PExpArrayGet(a, b));

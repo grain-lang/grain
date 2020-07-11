@@ -528,6 +528,22 @@ let rec transl_imm =
         ),
       ],
     );
+  | [@implicit_arity] TExpRecordSet(expr, field, ld, arg) =>
+    let tmp = gensym("field_set");
+    let (record, rec_setup) = transl_imm(expr);
+    let (arg, arg_setup) = transl_imm(arg);
+    (
+      Imm.id(~loc, ~env, tmp),
+      rec_setup @ arg_setup
+      @ [
+        [@implicit_arity]
+        BLet(
+          Immutable,
+          tmp,
+          Comp.record_set(~loc, ~env, Int32.of_int(ld.lbl_pos), record, arg),
+        ),
+      ],
+    );
   | [@implicit_arity] TExpMatch(exp, branches, _) =>
     let tmp = gensym("match");
     let (exp_ans, exp_setup) = transl_imm(exp);
