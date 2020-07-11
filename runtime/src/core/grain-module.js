@@ -3,11 +3,10 @@ import { GrainError } from '../errors/errors';
 import { WASI } from "@wasmer/wasi/lib/index.cjs";
 import { WasmFs } from "@wasmer/wasmfs";
 
-const wasmFs = new WasmFs();
-
 let bindings
 
 if (__RUNTIME_BROWSER) {
+  const wasmFs = new WasmFs();
   bindings = {
     ...wasiBindings.default,
     fs: wasmFs.fs
