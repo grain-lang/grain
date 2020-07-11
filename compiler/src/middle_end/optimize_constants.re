@@ -12,7 +12,7 @@ module ConstantPropagationArg: Anf_mapper.MapArgument = {
 
   let enter_anf_expression = ({anf_desc: desc} as a) => {
     switch (desc) {
-    | [@implicit_arity] AELet(g, r, binds, body) =>
+    | [@implicit_arity] AELet(g, r, Immutable, binds, body) =>
       List.iter(
         ((id, v)) =>
           switch (v) {

@@ -13,6 +13,7 @@ type loc('a) =
 
 type export_flag = Asttypes.export_flag = | Nonexported | Exported;
 type rec_flag = Asttypes.rec_flag = | Nonrecursive | Recursive;
+type mut_flag = Asttypes.mut_flag = | Mutable | Immutable;
 
 /** Type for syntax-level types */
 
@@ -173,7 +174,7 @@ and expression_desc =
   | PExpArraySet(expression, expression, expression)
   | PExpRecord(list((loc(Identifier.t), expression)))
   | PExpRecordGet(expression, loc(Identifier.t))
-  | PExpLet(rec_flag, list(value_binding), expression)
+  | PExpLet(rec_flag, mut_flag, list(value_binding), expression)
   | PExpMatch(expression, list(match_branch))
   | PExpPrim1(prim1, expression)
   | PExpPrim2(prim2, expression, expression)
@@ -183,6 +184,7 @@ and expression_desc =
   | PExpLambda(list(pattern), expression)
   | PExpApp(expression, list(expression))
   | PExpBlock(list(expression))
+  | PExpBoxAssign(expression, expression)
   | PExpAssign(expression, expression)
   | /** Used for modules without body expressions */
     PExpNull
@@ -259,7 +261,7 @@ type toplevel_stmt_desc =
   | PTopForeign(export_flag, value_description)
   | PTopPrimitive(export_flag, value_description)
   | PTopData(export_flag, data_declaration)
-  | PTopLet(export_flag, rec_flag, list(value_binding))
+  | PTopLet(export_flag, rec_flag, mut_flag, list(value_binding))
   | PTopExpr(expression)
   | PTopExport(list(export_declaration))
   | PTopExportAll(list(export_except));

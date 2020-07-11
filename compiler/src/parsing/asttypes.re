@@ -30,7 +30,6 @@ type constant =
   | Const_void;
 
 /** Marker for exported/nonexported let bindings */
-/** Marker for recursive/nonrecursive let bindings */
 
 [@deriving sexp]
 type export_flag =
@@ -38,12 +37,18 @@ type export_flag =
   | Exported;
 
 /** Marker for recursive/nonrecursive let bindings */
-/** Marker for closed/open records */
 
 [@deriving sexp]
 type rec_flag =
   | Nonrecursive
   | Recursive;
+
+/** Marker for recursive/nonrecursive let bindings */
+
+[@deriving sexp]
+type mut_flag =
+  | Mutable
+  | Immutable;
 
 /** Marker for closed/open records */
 

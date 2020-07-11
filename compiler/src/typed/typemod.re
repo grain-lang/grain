@@ -423,7 +423,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       };
     let (defs, newenv) = Translprim.transl_prim(newenv, desc);
     let prim = {
-      ttop_desc: [@implicit_arity] TTopLet(e, Nonrecursive, defs),
+      ttop_desc: [@implicit_arity] TTopLet(e, Nonrecursive, Immutable, defs),
       ttop_loc: loc,
       ttop_env: newenv,
     };
@@ -485,10 +485,10 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
     (newenv, ty_decl, statement);
   };
 
-  let process_let = (env, export_flag, rec_flag, binds, loc) => {
+  let process_let = (env, export_flag, rec_flag, mut_flag, binds, loc) => {
     Ctype.init_def(Ident.current_time());
     let scope = None;
-    let (defs, newenv) = Typecore.type_binding(env, rec_flag, binds, scope);
+    let (defs, newenv) = Typecore.type_binding(env, rec_flag, mut_flag, binds, scope);
     let () =
       if (rec_flag == Recursive) {
         Typecore.check_recursive_bindings(env, defs);
@@ -518,7 +518,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
         export_flag;
       };
     let stmt = {
-      ttop_desc: [@implicit_arity] TTopLet(export_flag, rec_flag, defs),
+      ttop_desc: [@implicit_arity] TTopLet(export_flag, rec_flag, mut_flag, defs),
       ttop_loc: loc,
       ttop_env: env,
     };
@@ -555,7 +555,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
         },
         exports,
       );
-    process_let(env, Exported, Nonrecursive, bindings, loc);
+    process_let(env, Exported, Nonrecursive, Immutable, bindings, loc);
   };
 
   let type_export_aliases = ref([]);
@@ -645,8 +645,8 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
             List.rev(sigs) @ signatures,
             [statement, ...statements],
           );
-        | [@implicit_arity] PTopLet(e, r, vb) =>
-          let (new_env, sigs, stmts) = process_let(env, e, r, vb, loc);
+        | [@implicit_arity] PTopLet(e, r, m, vb) =>
+          let (new_env, sigs, stmts) = process_let(env, e, r, m, vb, loc);
           (new_env, List.rev(sigs) @ signatures, stmts @ statements);
         | PTopExpr(e) =>
           let statement = process_expr(env, e, loc);

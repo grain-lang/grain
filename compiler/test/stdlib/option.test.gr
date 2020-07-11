@@ -102,25 +102,25 @@ assert Option.toArray(None) == [>]
 
 # Option.sideEffect
 
-let a = box(2)
+let mut a = 2
 
-Option.sideEffect((x) => ignore(a *= x), Some(2))
+Option.sideEffect((x) => ignore(a = a * x), Some(2))
 
-assert ^a == 4
+assert a == 4
 
-let b = box('🌾')
+let mut b = '🌾'
 
 Option.sideEffect((x) => fail 'Should not be called', None)
 
-assert ^b == '🌾'
+assert b == '🌾'
 
 # Option.peek
 
-let c = box(2)
+let mut c = 2
 
-assert Option.peek((x) => ignore(c *= x), Some(2)) == Some(2)
-assert ^c == 4
+assert Option.peek((x) => ignore(c = c * x), Some(2)) == Some(2)
+assert c == 4
 
-let d = box('🌾')
+let mut d = '🌾'
 assert Option.peek((x) => fail 'Should not be called', None) == None
-assert ^d == '🌾'
+assert d == '🌾'

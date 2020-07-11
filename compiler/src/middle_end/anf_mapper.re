@@ -47,8 +47,11 @@ module MakeMap = (Iter: MapArgument) => {
         let arg1 = map_imm_expression(arg1);
         let arg2 = map_imm_expression(arg2);
         [@implicit_arity] CPrim2(p2, arg1, arg2);
-      | [@implicit_arity] CAssign(lhs, rhs) =>
+      | [@implicit_arity] CBoxAssign(lhs, rhs) =>
         let lhs = map_imm_expression(lhs);
+        let rhs = map_imm_expression(rhs);
+        [@implicit_arity] CBoxAssign(lhs, rhs);
+      | [@implicit_arity] CAssign(lhs, rhs) =>
         let rhs = map_imm_expression(rhs);
         [@implicit_arity] CAssign(lhs, rhs);
       | CTuple(elts) => CTuple(List.map(map_imm_expression, elts))
@@ -129,7 +132,7 @@ module MakeMap = (Iter: MapArgument) => {
     let {anf_desc: desc} as anf = Iter.enter_anf_expression(anf);
     let d =
       switch (desc) {
-      | [@implicit_arity] AELet(g, r, bindings, body) =>
+      | [@implicit_arity] AELet(g, r, m, bindings, body) =>
         let bindings =
           List.map(
             ((ident, bind)) => {
@@ -139,7 +142,7 @@ module MakeMap = (Iter: MapArgument) => {
             bindings,
           );
         let body = map_anf_expression(body);
-        [@implicit_arity] AELet(g, r, bindings, body);
+        [@implicit_arity] AELet(g, r, m, bindings, body);
       | [@implicit_arity] AESeq(hd, tl) =>
         let hd = map_comp_expression(hd);
         let tl = map_anf_expression(tl);

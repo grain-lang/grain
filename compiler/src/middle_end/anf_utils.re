@@ -10,7 +10,7 @@ let rec anf_free_vars_help = (env, a: anf_expression) =>
       anf_free_vars_help(env, rest),
     )
   | AEComp(c) => comp_free_vars_help(env, c)
-  | [@implicit_arity] AELet(_, recflag, binds, body) =>
+  | [@implicit_arity] AELet(_, recflag, mutflag, binds, body) =>
     let with_names =
       List.fold_left((acc, (id, _)) => Ident.Set.add(id, acc), env, binds);
     let free_binds =
@@ -56,6 +56,11 @@ and comp_free_vars_help = (env, c: comp_expression) =>
     )
   | [@implicit_arity] CPrim1(_, arg) => imm_free_vars_help(env, arg)
   | [@implicit_arity] CPrim2(_, arg1, arg2) =>
+    Ident.Set.union(
+      imm_free_vars_help(env, arg1),
+      imm_free_vars_help(env, arg2),
+    )
+  | [@implicit_arity] CBoxAssign(arg1, arg2) =>
     Ident.Set.union(
       imm_free_vars_help(env, arg1),
       imm_free_vars_help(env, arg2),
@@ -130,7 +135,7 @@ let imm_free_vars = imm_free_vars_help(Ident.Set.empty);
 
 let rec anf_count_vars = a =>
   switch (a.anf_desc) {
-  | [@implicit_arity] AELet(_, recflag, binds, body) =>
+  | [@implicit_arity] AELet(_, recflag, mutflag, binds, body) =>
     let max_binds =
       List.fold_left(max, 0) @@
       List.map(((_, c)) => comp_count_vars(c), binds);

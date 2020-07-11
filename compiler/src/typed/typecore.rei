@@ -23,10 +23,10 @@ open Format;
 let is_nonexpansive: Typedtree.expression => bool;
 
 let type_binding:
-  (Env.t, rec_flag, list(Parsetree.value_binding), option('a)) =>
+  (Env.t, rec_flag, mut_flag, list(Parsetree.value_binding), option('a)) =>
   (list(Typedtree.value_binding), Env.t);
 let type_let:
-  (Env.t, rec_flag, list(Parsetree.value_binding), option('a)) =>
+  (Env.t, rec_flag, mut_flag, list(Parsetree.value_binding), option('a)) =>
   (list(Typedtree.value_binding), Env.t);
 let type_expression: (Env.t, Parsetree.expression) => Typedtree.expression;
 let type_statement_expr:
@@ -74,6 +74,7 @@ type error =
   | Label_multiply_defined(string)
   | Label_missing(list(Ident.t))
   | Label_not_mutable(Identifier.t)
+  | Assign_not_mutable(Identifier.t)
   | Wrong_name(
       string,
       Checkertypes.type_expected,

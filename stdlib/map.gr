@@ -102,12 +102,12 @@ export let set = (key, value, map) => {
   match (bucket) {
     | None => {
       buckets[idx] := Some({ key: box(key), value: box(value), next: box(None) });
-      map.size += 1;
+      map.size := unbox(map.size) + 1;
     }
     | Some(node) => {
       if (replaceInBucket(key, value, node)) {
         buckets[idx] := Some({ key: box(key), value: box(value), next: box(bucket) });
-        map.size += 1;
+        map.size := unbox(map.size) + 1;
       };
     }
   }
@@ -184,11 +184,11 @@ export let remove = (key, map) => {
     | Some(node) => {
       # If it is a top-level node, just replace with next node
       if (key == unbox(node.key)) {
-        map.size -= 1;
+        map.size := unbox(map.size) - 1;
         buckets[idx] := unbox(node.next);
       } else {
         if (removeInBucket(key, node)) {
-          map.size -= 1;
+          map.size := unbox(map.size) - 1;
         }
       }
     }

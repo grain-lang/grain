@@ -7,6 +7,7 @@ open Grain_typed;
 open Types;
 
 type rec_flag = Asttypes.rec_flag = | Nonrecursive | Recursive;
+type mut_flag = Asttypes.mut_flag = | Mutable | Immutable;
 [@deriving sexp]
 type global_flag =
   | Global
@@ -88,6 +89,7 @@ and comp_expression_desc =
   | CImmExpr(imm_expression)
   | CPrim1(prim1, imm_expression)
   | CPrim2(prim2, imm_expression, imm_expression)
+  | CBoxAssign(imm_expression, imm_expression)
   | CAssign(imm_expression, imm_expression)
   | CTuple(list(imm_expression))
   | CArray(list(imm_expression))
@@ -126,6 +128,7 @@ and anf_expression_desc =
   | AELet(
       global_flag,
       rec_flag,
+      mut_flag,
       list((Ident.t, comp_expression)),
       anf_expression,
     )

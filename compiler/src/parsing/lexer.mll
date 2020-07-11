@@ -130,6 +130,7 @@ rule token = parse
   | "data" { DATA }
   | "|" { PIPE }
   | "let" { LET }
+  | "mut" { MUT }
   | "rec" { REC }
   | "match" { MATCH }
   | "assert" { ASSERT }

@@ -27,6 +27,7 @@ type error =
   | Label_multiply_defined(string)
   | Label_missing(list(Ident.t))
   | Label_not_mutable(Identifier.t)
+  | Assign_not_mutable(Identifier.t)
   | Wrong_name(string, type_expected, string, Path.t, string, list(string))
   | Name_type_mismatch(
       string,
@@ -195,6 +196,7 @@ let maybe_add_pattern_variables_ghost = (loc_let, env, pv) =>
             val_fullpath: Path.PIdent(id),
             val_kind: TValUnbound(ValUnboundGhostRecursive),
             val_loc: loc_let,
+            val_mutable: false,
           },
           env,
         )
@@ -282,7 +284,7 @@ let rec last = lst =>
 
 let rec final_subexpression = sexp =>
   switch (sexp.pexp_desc) {
-  | [@implicit_arity] PExpLet(_, _, e)
+  | [@implicit_arity] PExpLet(_, _, _, e)
   | [@implicit_arity] PExpIf(_, e, _)
   | [@implicit_arity] PExpWhile(_, e)
   | [@implicit_arity] PExpMatch(_, [{pmb_body: e}, ..._]) =>
@@ -301,7 +303,7 @@ let rec is_nonexpansive = exp =>
   | TExpLambda(_)
   | TExpNull => true
   | TExpTuple(es) => List.for_all(is_nonexpansive, es)
-  | [@implicit_arity] TExpLet(rec_flag, binds, body) =>
+  | [@implicit_arity] TExpLet(rec_flag, mut_flag, binds, body) =>
     List.for_all(vb => is_nonexpansive(vb.vb_expr), binds)
     && is_nonexpansive(body)
   | [@implicit_arity] TExpMatch(e, cases, _) =>
@@ -354,7 +356,7 @@ let rec approx_type = (env, sty) =>
 
 let rec type_approx = (env, sexp: Parsetree.expression) =>
   switch (sexp.pexp_desc) {
-  | [@implicit_arity] PExpLet(_, _, e) => type_approx(env, e)
+  | [@implicit_arity] PExpLet(_, _, _, e) => type_approx(env, e)
   | [@implicit_arity] PExpMatch(_, [{pmb_body: e}, ..._]) =>
     type_approx(env, e)
   | [@implicit_arity] PExpIf(_, e, _) => type_approx(env, e)
@@ -787,17 +789,17 @@ and type_expect_ =
       exp_type: ty_arg,
       exp_env: env,
     });
-  | [@implicit_arity] PExpLet(rec_flag, pats, body) =>
+  | [@implicit_arity] PExpLet(rec_flag, mut_flag, pats, body) =>
     let scp = None;
     let (pat_exp_list, new_env, unpacks) =
-      type_let(env, rec_flag, pats, scp, true);
+      type_let(env, rec_flag, mut_flag, pats, scp, true);
     let body = type_expect(new_env, body, ty_expected_explained);
     /*let () =
       if rec_flag = Recursive then
         check_recursive_bindings env pat_exp_list
       in*/
     re({
-      exp_desc: [@implicit_arity] TExpLet(rec_flag, pat_exp_list, body),
+      exp_desc: [@implicit_arity] TExpLet(rec_flag, mut_flag, pat_exp_list, body),
       exp_loc: loc,
       exp_extra: [],
       exp_type: body.exp_type,
@@ -892,7 +894,7 @@ and type_expect_ =
       exp_type: rettype,
       exp_env: env,
     });
-  | [@implicit_arity] PExpAssign(sboxexpr, sval) =>
+  | [@implicit_arity] PExpBoxAssign(sboxexpr, sval) =>
     let boxexpr =
       type_expect(
         env,
@@ -904,7 +906,30 @@ and type_expect_ =
     let val_ = type_expect(env, sval, ty_expected_explained);
     unify_exp(env, boxexpr) @@ Builtin_types.type_box(val_.exp_type);
     re({
-      exp_desc: [@implicit_arity] TExpAssign(boxexpr, val_),
+      exp_desc: [@implicit_arity] TExpBoxAssign(boxexpr, val_),
+      exp_loc: loc,
+      exp_extra: [],
+      exp_type: val_.exp_type,
+      exp_env: env,
+    });
+  | [@implicit_arity] PExpAssign(sidexpr, sval) =>
+    let idexpr =
+      type_expect(
+        env,
+        sidexpr,
+        ty_expected_explained,
+      );
+    let (id, {val_mutable}) = switch (idexpr.exp_desc) {
+      | TExpIdent(_, id, vd) => (id, vd)
+      | _ => failwith("lhs of assign was not identifier; impossible by parsing")
+    };
+    if (!val_mutable) {
+      raise(Error(loc, env, Assign_not_mutable(id.txt)));
+    };
+    let val_ = type_expect(env, sval, ty_expected_explained);
+    unify_exp(env, val_, idexpr.exp_type);
+    re({
+      exp_desc: TExpAssign(idexpr, val_),
       exp_loc: loc,
       exp_extra: [],
       exp_type: val_.exp_type,
@@ -1576,6 +1601,7 @@ and type_let =
       ~check_strict=s => Warnings.Unused_var_strict(s),
       env,
       rec_flag,
+      mut_flag,
       spat_sexp_list,
       scope,
       allow,
@@ -1614,8 +1640,9 @@ and type_let =
       spat_sexp_list,
     );
   let nvs = List.map(_ => newvar(), spatl);
+  let mut = mut_flag == Mutable;
   let (pat_list, new_env, force, unpacks, pv) =
-    type_pattern_list(env, spatl, scope, nvs, allow);
+    type_pattern_list(~mut, env, spatl, scope, nvs, allow);
   let attrs_list = List.map(fst, spatl);
   let is_recursive = rec_flag == Recursive;
   /* If recursive, first unify with an approximation of the expression */
@@ -1949,7 +1976,7 @@ let check_recursive_bindings = (env, vbs) =>
   ();
 
 /* Typing of toplevel bindings */
-let type_binding = (env, rec_flag, spat_sexp_list, scope) => {
+let type_binding = (env, rec_flag, mut_flag, spat_sexp_list, scope) => {
   Typetexp.reset_type_variables();
   let (pat_exp_list, new_env, _unpacks) =
     type_let(
@@ -1957,6 +1984,7 @@ let type_binding = (env, rec_flag, spat_sexp_list, scope) => {
         ~check_strict:(fun s -> Warnings.Unused_value_declaration s)*/
       env,
       rec_flag,
+      mut_flag,
       spat_sexp_list,
       scope,
       false,
@@ -1964,9 +1992,9 @@ let type_binding = (env, rec_flag, spat_sexp_list, scope) => {
 
   (pat_exp_list, new_env);
 };
-let type_let = (env, rec_flag, spat_sexp_list, scope) => {
+let type_let = (env, rec_flag, mut_flag, spat_sexp_list, scope) => {
   let (pat_exp_list, new_env, _unpacks) =
-    type_let(env, rec_flag, spat_sexp_list, scope, false);
+    type_let(env, rec_flag, mut_flag, spat_sexp_list, scope, false);
   (pat_exp_list, new_env);
 };
 
@@ -2143,6 +2171,8 @@ let report_error = (env, ppf) =>
     }
   | Label_not_mutable(lid) =>
     fprintf(ppf, "The record field %a is not mutable", identifier, lid)
+  | Assign_not_mutable(id) =>
+    fprintf(ppf, "The identifier %a was not declared mutable", identifier, id)
   | [@implicit_arity] Arity_mismatch(typ, arity) =>
     fprintf(
       ppf,
