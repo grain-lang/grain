@@ -1,0 +1,34 @@
+# Note: This file doesn't include the Recursive type test
+# because it isn't achievable with `let mut`
+
+export data Opt<a> = None | Some(a)
+
+let mut z = None
+z = Some(z)
+
+let mut y = None
+
+assert !(z == y)
+
+y = Some(y)
+assert z == y
+
+export data Rec = {
+  int: Number,
+  mut record: Opt<Rec>
+}
+
+let a = { int: 5, record: None }
+let b = { int: 5, record: None }
+
+a.record = Some(a)
+
+assert a is a
+assert a == a
+
+assert !(a == b)
+
+b.record = Some(b)
+
+assert !(a is b)
+assert a == b
