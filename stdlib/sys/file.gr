@@ -356,11 +356,11 @@ import foreign wasm fdReaddir : (FileDescriptor) -> Array<(Int64, String, Number
 # @returns Array<DirectoryEntry> An array of records containing information about each entry in the directory
 let fdReaddir = (fd) => {
   let dirents = fdReaddirRaw(fd)
-  Array.map(dirents, (dirent) => {
+  Array.map((dirent) => {
     let (inode, path, filetype) = dirent
     let filetype = filetypeFromNumber(filetype)
     { inode, path, filetype }
-  })
+  }, dirents)
 }
 
 # Atomically replace a file descriptor by renumbering another file descriptor

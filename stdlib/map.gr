@@ -67,17 +67,17 @@ let resize = (map) => {
     # This tracks the tail nodes so we can set their `next` to None
     let tailNodes = Array.make(nextSize, None);
     map.buckets := nextBuckets;
-    Array.forEach(currentBuckets, (old) => {
+    Array.forEach((old) => {
       copyNodeWithNewHash(old, nextBuckets, tailNodes);
-    });
-    Array.forEach(tailNodes, (tail) => {
+    }, currentBuckets);
+    Array.forEach((tail) => {
       match (tail) {
         | None => void
         | Some(node) => {
           node.next := None;
         }
       }
-    });
+    }, tailNodes);
   } else {
     void
   }
@@ -206,9 +206,9 @@ export let isEmpty = (map) => {
 export let clear = (map) => {
   map.size := 0;
   let buckets = unbox(map.buckets);
-  Array.forEachi(buckets, (bucket, idx) => {
+  Array.forEachi((bucket, idx) => {
     buckets[idx] := None;
-  });
+  }, buckets);
 }
 
 let rec forEachBucket = (fn, node) => {
@@ -223,12 +223,11 @@ let rec forEachBucket = (fn, node) => {
 
 export let forEach = (fn, map) => {
   let buckets = unbox(map.buckets);
-  Array.forEach(buckets, (bucket) => {
+  Array.forEach((bucket) => {
     forEachBucket(fn, bucket)
-  });
+  }, buckets);
 }
 
-# TODO: fold?
 export let reduce = (fn, init, map) => {
   let buckets = unbox(map.buckets);
   let acc = box(init);
@@ -280,10 +279,10 @@ export let toArray = (map) => {
 
 export let fromArray = (array) => {
   let map = make();
-  Array.forEach(array, (pair) => {
+  Array.forEach((pair) => {
     let (key, value) = pair;
     set(key, value, map);
-  });
+  }, array);
   map
 }
 

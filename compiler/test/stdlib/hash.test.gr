@@ -6,7 +6,7 @@ import List from 'lists'
 let uniq = (list) => {
   let itemsSeen = box([])
 
-  List.foldLeft((acc, item) => {
+  List.reduce((acc, item) => {
     let seen = List.contains(item, ^itemsSeen)
     itemsSeen := [item, ...^itemsSeen]
     acc && !seen
