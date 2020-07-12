@@ -27,7 +27,7 @@ let combined_ene = String.concat('n', combining_tilde)
 
 assert ene == 'ñ'
 assert combined_ene == 'ñ'
-assert !(ene == combined_ene)
+assert ene != combined_ene
 assert String.length(ene) == 1
 assert String.length(combined_ene) == 2
 
