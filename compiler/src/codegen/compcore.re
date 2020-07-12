@@ -1691,6 +1691,8 @@ let compile_record_op = (wasm_mod, env, rec_imm, op) => {
         untag(wasm_mod, GenericHeapType(Some(RecordType)), record),
         tee_swap(wasm_mod, env, 0, arg)
       ),
+      // TODO: decref old item
+      Expression.drop(wasm_mod, call_incref(wasm_mod, env, [get_swap(wasm_mod, env, 0)])),
       get_swap(wasm_mod, env, 0)
     ]);
   };
