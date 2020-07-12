@@ -129,3 +129,5 @@ Strings are currently the only data type that stores data in 8-bit chunks rather
 ```
 
 The size is **untagged**. Note that Grain strings are UTF-8 encoded, so one byte does not necessarily fully represent one character. As such, the size set here is the size of the string in bytes, rather than the actual number of characters. The size will always be greater than or equal to the number of characters in the string.
+
+[More information on strings](./string.md)

@@ -46,11 +46,21 @@ encoded by either a single code point or multiple code points. For example,
 __ñ__ is U+00F1, but it can also be encoded by combining __n__ U+0006E and tilde
  __◌̃__ U+0303.
 
- Normalization is the process by which combining code points are reduced to
- either single code points or put into canonical order. This is necessary for
- searching and comparing strings. Strings in Grain are not normalized.
+Normalization is the process by which combining code points are reduced to
+either single code points or put into canonical order. This is necessary for
+searching and comparing strings. Strings in Grain are not normalized.
 
- ## JavaScript
+## JavaScript
 
- JavaScript strings are not encoded in UTF-8.
- 
+JavaScript strings are not encoded in UTF-8.
+
+JavaScript uses UCS-2 with unpaired surrogate codepoints. Each codepoint is
+represented by two bytes. A surrograte pair is a pair of codepoints used to
+represent a codepoint greater than U+FFFF. DOMString is the  same but with a
+replacement character, U+FFFD, for unpaired surrogate  codepoints. A USVString
+is the same but  without unpaired surrogate codepoints. A CSSOMString is the
+same as a DOMString.
+
+A JavaScript string containing one or more unpaired surrogate codepoints is not
+a  valid UTF-16 string. USVString, DOMString and CSSOMString are valid UTF-16
+strings. The encoder converts to USVString.
