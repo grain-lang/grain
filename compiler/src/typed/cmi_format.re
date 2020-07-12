@@ -120,9 +120,9 @@ let read_cmi = filename => {
   };
 };
 
-let output_cmi = (filename, oc, cmi) =>
+let serialize_cmi = (cmi) =>
   /* beware: the provided signature must have been substituted for saving */
-  CmiBinarySection.write(cmi, oc);
+  CmiBinarySection.serialize(cmi);
 
 /* Error report */
 

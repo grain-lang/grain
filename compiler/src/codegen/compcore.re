@@ -3984,6 +3984,9 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
   let () = ignore @@ compile_tables(wasm_mod, env, prog);
   let () = ignore @@ compile_elems(wasm_mod, env, prog);
 
+  let serialized_cmi = Cmi_format.serialize_cmi(prog.signature);
+  Module.add_custom_section(wasm_mod, "cmi", Bytes.to_string(serialized_cmi));
+  
   validate_module(~name?, wasm_mod);
   // TODO: Enable Binaryen optimizations
   // https://github.com/grain-lang/grain/issues/196
