@@ -483,6 +483,57 @@ let record_tests = [
     "data Rec = {foo: Number}; data Rec2 = {bar: Rec}; let { bar: { foo } } = {bar: {foo: 4}}; bar",
     "Unbound value bar",
   ),
+  // Record trailing commas
+  t(
+    "record_definition_trailing",
+    "export data Rec = {foo: Number,}; {foo: 4}",
+    "{\n  foo: 4\n}",
+  ),
+  t(
+    "record_value_trailing",
+    "export data Rec = {foo: Number}; {foo: 4,}",
+    "{\n  foo: 4\n}",
+  ),
+  t(
+    "record_both_trailing",
+    "export data Rec = {foo: Number,}; {foo: 4,}",
+    "{\n  foo: 4\n}",
+  ),
+  t(
+    "record_multiple_fields_definition_trailing",
+    "export data Rec = {foo: Number, bar: String, baz: Bool,}; {foo: 4, bar: 'boo', baz: true}",
+    "{\n  foo: 4,\n  bar: \"boo\",\n  baz: true\n}",
+  ),
+  t(
+    "record_multiple_fields_value_trailing",
+    "export data Rec = {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: 'boo', baz: true,}",
+    "{\n  foo: 4,\n  bar: \"boo\",\n  baz: true\n}",
+  ),
+  t(
+    "record_multiple_fields_both_trailing",
+    "export data Rec = {foo: Number, bar: String, baz: Bool,}; {foo: 4, bar: 'boo', baz: true,}",
+    "{\n  foo: 4,\n  bar: \"boo\",\n  baz: true\n}",
+  ),
+  t(
+    "record_pun_trailing",
+    "export data Rec = {foo: Number}; let foo = 4; {foo,}",
+    "{\n  foo: 4\n}",
+  ),
+  t(
+    "record_pun_multiple_trailing",
+    "export data Rec = {foo: Number, bar: Bool}; let foo = 4; let bar = false; {foo, bar,}",
+    "{\n  foo: 4,\n  bar: false\n}",
+  ),
+  t(
+    "record_pun_mixed_trailing",
+    "export data Rec = {foo: Number, bar: Bool}; let foo = 4; {foo, bar: false,}",
+    "{\n  foo: 4,\n  bar: false\n}",
+  ),
+  t(
+    "record_pun_mixed_2_trailing",
+    "export data Rec = {foo: Number, bar: Bool}; let bar = false; {foo: 4, bar,}",
+    "{\n  foo: 4,\n  bar: false\n}",
+  ),
 ];
 
 let stdlib_tests = [

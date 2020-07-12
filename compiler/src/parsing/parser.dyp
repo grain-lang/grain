@@ -364,7 +364,7 @@ data_label :
   | simple_id colon typ { LDecl.mk ~loc:(symbol_rloc dyp) $1 $3 }
 
 data_labels :
-  | lbrace data_label [comma data_label {$2}]* rbrace { $2::$3 }
+  | lbrace data_label [comma data_label {$2}]* comma? rbrace { $2::$3 }
 
 data_declaration :
   | DATA TYPEID [lcaret ID [comma ID {$2}]* rcaret {$2::$3}]? equal data_constructors { Dat.variant ~loc:(symbol_rloc dyp) (mkstr dyp $2) (List.map Typ.var (Option.default [] $3)) $5 }
@@ -565,7 +565,7 @@ record_pun :
   | ID { mkid [$1] (symbol_rloc dyp), Exp.ident ~loc:(symbol_rloc dyp) (mkid [$1] (symbol_rloc dyp)) }
 
 record_exprs :
-  | [record_field | record_pun] [comma [record_field | record_pun] {$2}]* {$1::$2}
+  | [record_field | record_pun] [comma [record_field | record_pun] {$2}]* comma? {$1::$2}
 
 block_body :
   | block_body_stmt* block_body_expr SEMI { $1 @ [Exp.ignore $2] }
