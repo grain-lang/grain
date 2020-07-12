@@ -11,8 +11,8 @@
 
   type error =
     | UnrecognizedCharacter of char
-    | UnicodeCharacter
     | IllegalStringCharacter of string
+    | IllegalUnicodeCodePoint of string
 
   exception Error of Location.t * error
 
@@ -20,10 +20,10 @@
     match err with
     | UnrecognizedCharacter c ->
       Format.fprintf ppf "Unrecognized character: %C" c
-    | UnicodeCharacter ->
-      Format.fprintf ppf "Unicode characters are currently unsupported."
     | IllegalStringCharacter sc ->
       Format.fprintf ppf "Illegal string character: %S" sc
+    | IllegalUnicodeCodePoint cp ->
+      Format.fprintf ppf "Illegal unicode code point: %S" cp
 
   let () =
     Location.register_error_of_exn
@@ -31,17 +31,17 @@
         | Error(loc, err) -> Some(Location.error_of_printer loc report_error err)
         | _ -> None)
 
-  let add_char_code buf lexbuf = begin
+  let add_code_point buf lexbuf = begin
     let str = lexeme lexbuf in
     let (esc, numstr) = ((String.sub str 1 1), (String.sub str 2 ((String.length str) - 2))) in
-    let to_add = (match esc with
-      | "u" -> Scanf.sscanf numstr "%x" (fun x -> x)
+    let code_point = (match esc with
+      | "u" -> Scanf.sscanf (String.sub numstr 1 ((String.length numstr) - 1)) "%x" (fun x -> x)
       | "x" -> Scanf.sscanf numstr "%x" (fun x -> x)
       | _ -> Scanf.sscanf (esc^numstr) "%o" (fun x -> x)) in
-    if (to_add > 255) then
-      raise (Error(lexbuf_loc lexbuf, UnicodeCharacter))
+    if (Uchar.is_valid code_point) then
+      Buffer.add_utf_8_uchar buf (Uchar.of_int code_point)
     else
-      Buffer.add_char buf (Char.chr to_add);
+      raise (Error(lexbuf_loc lexbuf, IllegalUnicodeCodePoint(lexeme lexbuf)));
   end
 
   let newline_regex = Str.regexp "\\(\r\\|\n\\)"
@@ -79,7 +79,8 @@ let blank = [' ' '\t']+
 
 let std_escapes = (("\\" dec_digit dec_digit? dec_digit?)
                  | ("\\x" hex_digit hex_digit?)
-                 | ("\\u" hex_digit hex_digit? hex_digit? hex_digit?)
+                 | ("\\" oct_digit oct_digit? oct_digit?)
+                 | ("\\u{" hex_digit hex_digit? hex_digit? hex_digit? hex_digit? hex_digit? "}")
                  | ("\\" ['\\' 'n' 'r' 't' '"' '\''] ))
 
 let tquot_str = "```" (std_escapes
@@ -94,7 +95,7 @@ let dquot_str = '"' (std_escapes
 let squot_str = '\'' (std_escapes
               | [^ '\\' '\'' '\n' '\r'])* '\''
 
-let unicode_esc = "\\u" hex_digit (hex_digit (hex_digit hex_digit?)?)?
+let unicode_esc = "\\u{" hex_digit (hex_digit (hex_digit (hex_digit (hex_digit hex_digit?)?)?)?)? "}"
 let hex_esc = "\\x" hex_digit hex_digit?
 let oct_esc = "\\" oct_digit (oct_digit oct_digit?)?
 let num_esc = (unicode_esc | hex_esc | oct_esc)
@@ -178,7 +179,7 @@ and read_dquote_str buf =
   | "\\r" { Buffer.add_char buf '\r'; read_dquote_str buf lexbuf }
   | "\\\"" { Buffer.add_char buf '"'; read_dquote_str buf lexbuf }
   | "\\\\" { Buffer.add_char buf '\\'; read_dquote_str buf lexbuf }
-  | num_esc { add_char_code buf lexbuf; read_dquote_str buf lexbuf }
+  | num_esc { add_code_point buf lexbuf; read_dquote_str buf lexbuf }
   | [^ '"' '\\']+ { Buffer.add_string buf (lexeme lexbuf);
     read_dquote_str buf lexbuf }
   | '"' { STRING (Buffer.contents buf) }
@@ -191,7 +192,7 @@ and read_squote_str buf =
   | "\\r" { Buffer.add_char buf '\r'; read_squote_str buf lexbuf }
   | "\\'" { Buffer.add_char buf '\''; read_squote_str buf lexbuf }
   | "\\\\" { Buffer.add_char buf '\\'; read_squote_str buf lexbuf }
-  | num_esc { add_char_code buf lexbuf; read_squote_str buf lexbuf }
+  | num_esc { add_code_point buf lexbuf; read_squote_str buf lexbuf }
   | [^ ''' '\\']+ { Buffer.add_string buf (lexeme lexbuf);
     read_squote_str buf lexbuf }
   | '\'' { STRING (Buffer.contents buf) }
