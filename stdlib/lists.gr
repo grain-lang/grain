@@ -2,185 +2,196 @@
 
 export *
 
-let rec length = (lst) => {
-  match (lst) {
+let rec length = (list) => {
+  match (list) {
     | [] => 0
-    | [hd, ...tl] => 1 + length(tl)
+    | [_, ...rest] => 1 + length(rest)
   }
 }
 
-let rec sum = (lst) => {
-  match (lst) {
+let rec sum = (list) => {
+  match (list) {
     | [] => 0
-    | [hd, ...tl] => hd + sum(tl)
+    | [first, ...rest] => first + sum(rest)
   }
 }
 
-let reverse = (lst) => {
-  let rec help = (l, acc) => {
-    match (l) {
+let reverse = (list) => {
+  let rec iter = (list, acc) => {
+    match (list) {
       | [] => acc
-      | [hd, ...tl] => help(tl, [hd, ...acc])
+      | [first, ...rest] => iter(rest, [first, ...acc])
     }
   }
-  help(lst, [])
+  iter(list, [])
 }
 
-let rec append = (l1, l2) => {
-  match (l1) {
-    | [] => l2
-    | [hd, ...tl] => [hd, ...append(tl, l2)]
+let rec append = (list1, list2) => {
+  match (list1) {
+    | [] => list2
+    | [first, ...rest] => [first, ...append(rest, list2)]
   }
 }
 
-let rec contains = (e, l) => {
-  match (l) {
+let rec contains = (value, list) => {
+  match (list) {
     | [] => false
-    | [hd, ...tl] => (hd == e) || contains(e, tl)
+    | [first, ...rest] => (first == value) || contains(value, rest)
   }
 }
 
-let rec foldLeft = (f, b, l) => {
-  match (l) {
-    | [] => b
-    | [hd, ...tl] => foldLeft(f, f(b, hd), tl)
+let rec reduce = (fn, acc, list) => {
+  match (list) {
+    | [] => acc
+    | [first, ...rest] => reduce(fn, fn(acc, first), rest)
   }
 }
 
-let rec foldRight = (f, b, l) => {
-  match (l) {
-    | [] => b
-    | [hd, ...tl] => f(hd, foldRight(f, b, tl))
+let rec reduceRight = (fn, acc, list) => {
+  match (list) {
+    | [] => acc
+    | [first, ...rest] => fn(first, reduceRight(fn, acc, rest))
   }
 }
 
-let rec map = (f, l) => {
-  match (l) {
+let rec map = (fn, list) => {
+  match (list) {
     | [] => []
-    | [hd, ...tl] => [f(hd), ...map(f, tl)]
+    | [first, ...rest] => [fn(first), ...map(fn, rest)]
   }
 }
 
 let mapi = (fn, list) => {
-  let rec help = (fn, list, index) => {
+  let rec iter = (fn, list, index) => {
     match (list) {
       | [] => []
-      | [hd, ...tl] => [fn(hd, index), ...help(fn, tl, index + 1)]
+      | [first, ...rest] => [fn(first, index), ...iter(fn, rest, index + 1)]
     }
   }
-  help(fn, list, 0)
+  iter(fn, list, 0)
 }
 
-let every = (f, l) => {
-  foldLeft((acc, item) => { acc && f(item) }, true, l)
+let every = (fn, list) => {
+  reduce((acc, value) => { acc && fn(value) }, true, list)
 }
 
-let some = (f, l) => {
-  foldLeft((acc, item) => { acc || f(item) }, false, l)
+let some = (fn, list) => {
+  reduce((acc, value) => { acc || fn(value) }, false, list)
 }
 
-let rec forEach = (f, l) => {
-  match (l) {
+let rec forEach = (fn, list) => {
+  match (list) {
     | [] => void
-    | [hd, ...tl] => {
-      f(hd)
-      forEach(f, tl)
+    | [first, ...rest] => {
+      fn(first)
+      forEach(fn, rest)
     }
   }
 }
 
-let forEachi = (f, l) => {
-  let rec help = (f, l, c) => {
-    match (l) {
+let forEachi = (fn, list) => {
+  let rec iter = (fn, list, index) => {
+    match (list) {
       | [] => void
-      | [hd, ...tl] => {
-        f(hd, c)
-        help(f, tl, c + 1)
+      | [first, ...rest] => {
+        fn(first, index)
+        iter(fn, rest, index + 1)
       }
     }
   }
-  help(f, l, 0)
+  iter(fn, list, 0)
 }
 
-let rec filter = (f, l) => {
-  match (l) {
+let rec filter = (fn, list) => {
+  match (list) {
     | [] => []
-    | [hd, ...tl] => if (f(hd)) [hd, ...filter(f, tl)] else filter(f, tl)
+    | [first, ...rest] => if (fn(first)) [first, ...filter(fn, rest)] else filter(fn, rest)
   }
 }
 
-let rec reject = (f, l) => {
-  match (l) {
+let rec reject = (fn, list) => {
+  match (list) {
     | [] => []
-    | [hd, ...tl] => if (!f(hd)) [hd, ...reject(f, tl)] else reject(f, tl)
+    | [first, ...rest] => if (!fn(first)) [first, ...reject(fn, rest)] else reject(fn, rest)
   }
 }
 
-let hd = (l) => {
-  match (l) {
-    | [] => fail 'hd'
-    | [hd, ..._] => hd
+let head = (list) => {
+  match (list) {
+    | [] => fail 'Cannot get the first element of an empty List'
+    | [first, ..._] => first
   }
 }
 
-let tl = (l) => {
-  match (l) {
-    | [] => fail 'tl'
-    | [_, ...tl] => tl
+let tail = (list) => {
+  match (list) {
+    | [] => fail 'Cannot get any elements from an empty List'
+    | [_, ...rest] => rest
   }
 }
 
-let rec nth = (n, l) => {
-  match (l) {
-    | [] => fail 'nth'
-    | [hd, ...tl] => if (n < 0) fail 'nth' else if (n == 0) hd else nth(n - 1, tl)
-  }
-}
-
-let rec flatten = (l) => {
-  match (l) {
-    | [] => []
-    | [hd, ...tl] => append(hd, flatten(tl))
-  }
-}
-
-let rec insert = (x, i, l) => {
-  match(l) {
-    | [] => if (i == 0) [x] else fail 'insert'
-    | [hd, ...tl] => if (i < 0) fail 'insert' else if (i == 0) [x, ...l] else [hd, ...insert(x, i - 1, tl)]
-  }
-}
-
-let rec count = (f, l) => {
-  match (l) {
-    | [] => 0
-    | [hd, ...tl] => if (f(hd)) 1 + count(f, tl) else count(f, tl)
-  }
-}
-
-let part = (n, l) => {
-  if (n < 0) fail 'part'
-  let rec help = (l1, l2, n) => {
-    match (l2) {
-      | [] => if (n > 0) fail 'part' else (l1, l2)
-      | [hd, ...tl] => if (n > 0) help([hd, ...l1], tl, n - 1) else (l1, l2)
+let rec nth = (count, list) => {
+  if (count < 0) {
+    fail 'Cannot be a negative number'
+  } else {
+    match (list) {
+      | [] => fail 'Cannot get any elements from an empty List'
+      | [first, ...rest] => if (count == 0) first else nth(count - 1, rest)
     }
   }
-  let (pt1, pt2) = help([], l, n)
-  (reverse(pt1), pt2)
 }
 
-let rotate = (n, l) => {
-  let (beginning, end) = if (n >= 0) part(n, l) else part(length(l) + n, l)
+let rec flatten = (list) => {
+  match (list) {
+    | [] => []
+    | [first, ...rest] => append(first, flatten(rest))
+  }
+}
+
+let rec insert = (value, index, list) => {
+  if (index < 0) {
+    fail 'Cannot be a negative number'
+  } else {
+    match(list) {
+      | [] => if (index == 0) [value] else fail 'Can only insert at index 0 in an empty list'
+      | [first, ...rest] => if (index == 0) [value, ...list] else [first, ...insert(value, index - 1, rest)]
+    }
+  }
+}
+
+let rec count = (fn, list) => {
+  match (list) {
+    | [] => 0
+    | [first, ...rest] => if (fn(first)) 1 + count(fn, rest) else count(fn, rest)
+  }
+}
+
+let part = (count, list) => {
+  if (count < 0) {
+    fail 'Cannot be a negative number'
+  } else {
+    let rec iter = (list1, list2, count) => {
+      match (list2) {
+        | [] => if (count > 0) fail 'Can only part an empty list by 0' else (list1, list2)
+        | [first, ...rest] => if (count > 0) iter([first, ...list1], rest, count - 1) else (list1, list2)
+      }
+    }
+    let (pt1, pt2) = iter([], list, count)
+    (reverse(pt1), pt2)
+  }
+}
+
+let rotate = (count, list) => {
+  let (beginning, end) = if (count >= 0) part(count, list) else part(length(list) + count, list)
   append(end, beginning)
 }
 
-let uniq = (l) => {
-  let rec help = (l, acc) => {
-    match (l) {
+let unique = (list) => {
+  let rec iter = (list, acc) => {
+    match (list) {
       | [] => reverse(acc)
-      | [hd, ...tl] => if (contains(hd, acc)) help(tl, acc) else help(tl, [hd, ...acc])
+      | [first, ...rest] => if (contains(first, acc)) iter(rest, acc) else iter(rest, [first, ...acc])
     }
   }
-  help(l, [])
+  iter(list, [])
 }

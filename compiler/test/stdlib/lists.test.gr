@@ -41,15 +41,15 @@ let multiply = (n, i) => n * i
 assert mapi(multiply, numbers) == [0, 3, 8]
 assert mapi(multiply, []) == []
 
-# List.foldLeft
+# List.reduce
 
-assert foldLeft((acc, cur) => acc - cur, 0, list) == -6
-assert foldLeft((acc, cur) => acc - cur, 0, []) == 0
+assert reduce((acc, cur) => acc - cur, 0, list) == -6
+assert reduce((acc, cur) => acc - cur, 0, []) == 0
 
-# List.foldRight
+# List.reduceRight
 
-assert foldRight((acc, cur) => acc - cur, 0, list) == 2
-assert foldRight((acc, cur) => acc - cur, 0, []) == 0
+assert reduceRight((acc, cur) => acc - cur, 0, list) == 2
+assert reduceRight((acc, cur) => acc - cur, 0, []) == 0
 
 # List.every
 
@@ -75,15 +75,15 @@ assert reject(x => x > 0, list) == []
 assert reject(x => x > 3, list) == list
 assert reject(x => x == 3, list) == [1, 2]
 
-# List.hd
+# List.head
 
-assert hd(list) == 1
-assert hd([2]) == 2
+assert head(list) == 1
+assert head([2]) == 2
 
-# List.tl
+# List.tail
 
-assert tl(list) == [2, 3]
-assert tl([1]) == []
+assert tail(list) == [2, 3]
+assert tail([1]) == []
 
 # List.nth
 
@@ -124,6 +124,6 @@ assert rotate(-2, list) == [2, 3, 1]
 
 # List.uniq
 
-assert uniq([]) == []
-assert uniq(list) == list
-assert uniq([1, 1, 1, 1]) == [1]
+assert unique([]) == []
+assert unique(list) == list
+assert unique([1, 1, 1, 1]) == [1]
