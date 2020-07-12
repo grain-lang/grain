@@ -1684,7 +1684,7 @@ let compile_record_op = (wasm_mod, env, rec_imm, op) => {
   | MRecordSet(idx, arg_imm) =>
     let idx_int = Int32.to_int(idx);
     let arg = compile_imm(wasm_mod, env, arg_imm);
-    Expression.block(wasm_mod, "record_set", [
+    Expression.block(wasm_mod, gensym_label("record_set"), [
       store(
         ~offset=4 * (idx_int + 4),
         wasm_mod,
