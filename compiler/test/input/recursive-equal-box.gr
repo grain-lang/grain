@@ -10,12 +10,12 @@ assert !(z == y)
 y := Some(y)
 assert z == y
 
-export data R = Atom | Recurisve(Box<Opt<R>>)
+export data R = Atom | Recursive(Box<Opt<R>>)
 
 let t = box(None)
 let u = box(None)
-let x = Recurisve(t)
-let w = Recurisve(u)
+let x = Recursive(t)
+let w = Recursive(u)
 
 t := Some(x)
 

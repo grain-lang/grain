@@ -282,28 +282,28 @@ let fdStats = (fd) => {
   let (&&) = Int64.land
   let (>) = Int64.gt
 
-  let fdflagsList = box([])
+  let mut fdflagsList = []
   List.forEachi((flag, i) => {
     if ((fdflags && Int64.lsl(1L, i)) > 0L) {
-      ignore(fdflagsList := [flag, ...^fdflagsList])
+      ignore(fdflagsList = [flag, ...fdflagsList])
     }
   }, orderedFdflags)
 
-  let rightsList = box([])
+  let mut rightsList = []
   List.forEachi((flag, i) => {
     if ((rights && Int64.lsl(1L, i)) > 0L) {
-      ignore(rightsList := [flag, ...^rightsList])
+      ignore(rightsList = [flag, ...rightsList])
     }
   }, orderedRights)
 
-  let rightsInheritingList = box([])
+  let mut rightsInheritingList = []
   List.forEachi((flag, i) => {
     if (rightsInheriting && Int64.lsl(1L, i) > 0L) {
-      ignore(rightsInheritingList := [flag, ...^rightsInheritingList])
+      ignore(rightsInheritingList = [flag, ...rightsInheritingList])
     }
   }, orderedRights)
 
-  { filetype, flags: ^fdflagsList, rights: ^rightsList, rightsInheriting: ^rightsInheritingList }
+  { filetype, flags: fdflagsList, rights: rightsList, rightsInheriting: rightsInheritingList }
 }
 
 # Update the flags associated with a file descriptor

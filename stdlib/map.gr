@@ -5,23 +5,23 @@ import Array from 'arrays'
 import { hash } from 'hash'
 
 data Container<a> = {
-  size: Box<Number>,
-  buckets: Box<Array<Option<a>>>
+  mut size: Number,
+  mut buckets: Array<Option<a>>
 }
 
 # TODO: Consider implementing this as List<(Box<k>, Box<v>)>
 data Bucket<k, v> = {
-  key: Box<k>,
-  value: Box<v>,
-  next: Box<Option<Bucket<k, v>>>
+  mut key: k,
+  mut value: v,
+  mut next: Option<Bucket<k, v>>
 }
 
 # TODO: This could take an `eq` function to custom comparisons
 export let makeSized = (size) => {
   let buckets = Array.make(size, None);
   {
-    size: box(0),
-    buckets: box(buckets)
+    size: 0,
+    buckets
   }
 }
 
@@ -39,7 +39,7 @@ let rec copyNodeWithNewHash = (oldNode, next, tail) => {
   match (oldNode) {
     | None => void
     | Some(node) => {
-      let idx = getBucketIndex(unbox(node.key), next);
+      let idx = getBucketIndex(node.key, next);
       let newNode = Some(node);
       match (tail[idx]) {
         | None => {
@@ -47,26 +47,26 @@ let rec copyNodeWithNewHash = (oldNode, next, tail) => {
         }
         | Some(tailNode) => {
           # If there's already a tail node, we add this to the end
-          tailNode.next := newNode;
+          tailNode.next = newNode;
         }
       }
       # Always place this node as the new tail
       tail[idx] := newNode;
       # Recurse with the next node
-      copyNodeWithNewHash(unbox(node.next), next, tail);
+      copyNodeWithNewHash(node.next, next, tail);
     }
   }
 }
 
 let resize = (map) => {
-  let currentBuckets = unbox(map.buckets);
+  let currentBuckets = map.buckets;
   let currentSize = Array.length(currentBuckets);
   let nextSize = currentSize * 2;
   if (nextSize >= currentSize) {
     let nextBuckets = Array.make(nextSize, None);
     # This tracks the tail nodes so we can set their `next` to None
     let tailNodes = Array.make(nextSize, None);
-    map.buckets := nextBuckets;
+    map.buckets = nextBuckets;
     Array.forEach((old) => {
       copyNodeWithNewHash(old, nextBuckets, tailNodes);
     }, currentBuckets);
@@ -74,7 +74,7 @@ let resize = (map) => {
       match (tail) {
         | None => void
         | Some(node) => {
-          node.next := None;
+          node.next = None;
         }
       }
     }, tailNodes);
@@ -84,11 +84,11 @@ let resize = (map) => {
 }
 
 let rec replaceInBucket = (key, value, node) => {
-  if (key == unbox(node.key)) {
-    node.value := value;
+  if (key == node.key) {
+    node.value = value;
     false
   } else {
-    match (unbox(node.next)) {
+    match (node.next) {
       | None => true
       | Some(next) => replaceInBucket(key, value, next)
     }
@@ -96,23 +96,23 @@ let rec replaceInBucket = (key, value, node) => {
 }
 
 export let set = (key, value, map) => {
-  let buckets = unbox(map.buckets);
+  let buckets = map.buckets;
   let idx = getBucketIndex(key, buckets)
   let bucket = buckets[idx];
   match (bucket) {
     | None => {
-      buckets[idx] := Some({ key: box(key), value: box(value), next: box(None) });
-      map.size := unbox(map.size) + 1;
+      buckets[idx] := Some({ key, value, next: None });
+      map.size = incr(map.size);
     }
     | Some(node) => {
       if (replaceInBucket(key, value, node)) {
-        buckets[idx] := Some({ key: box(key), value: box(value), next: box(bucket) });
-        map.size := unbox(map.size) + 1;
+        buckets[idx] := Some({ key, value, next: bucket });
+        map.size = incr(map.size);
       };
     }
   }
   # Resize if there are more than 2x the amount of nodes as buckets
-  if (unbox(map.size) > (Array.length(buckets) * 2)) {
+  if (map.size > (Array.length(buckets) * 2)) {
     resize(map);
   } else {
     void
@@ -120,10 +120,10 @@ export let set = (key, value, map) => {
 }
 
 let rec valueFromBucket = (key, node) => {
-  if (key == unbox(node.key)) {
-    Some(unbox(node.value))
+  if (key == node.key) {
+    Some(node.value)
   } else {
-    match (unbox(node.next)) {
+    match (node.next) {
       | None => None
       | Some(next) => valueFromBucket(key, next)
     }
@@ -131,7 +131,7 @@ let rec valueFromBucket = (key, node) => {
 }
 
 export let get = (key, map) => {
-  let buckets = unbox(map.buckets);
+  let buckets = map.buckets;
   let idx = getBucketIndex(key, buckets);
   let bucket = buckets[idx];
   match (bucket) {
@@ -141,10 +141,10 @@ export let get = (key, map) => {
 }
 
 let rec nodeInBucket = (key, node) => {
-  if (key == unbox(node.key)) {
+  if (key == node.key) {
     true
   } else {
-    match (unbox(node.next)) {
+    match (node.next) {
       | None => false
       | Some(next) => nodeInBucket(key, next)
     }
@@ -152,7 +152,7 @@ let rec nodeInBucket = (key, node) => {
 }
 
 export let contains = (key, map) => {
-  let buckets = unbox(map.buckets);
+  let buckets = map.buckets;
   let idx = getBucketIndex(key, buckets);
   let bucket = buckets[idx];
   match (bucket) {
@@ -162,11 +162,11 @@ export let contains = (key, map) => {
 }
 
 let rec removeInBucket = (key, node) => {
-  match (unbox(node.next)) {
+  match (node.next) {
     | None => false
     | Some(next) => {
-      if (key == unbox(next.key)) {
-        node.next := unbox(next.next);
+      if (key == next.key) {
+        node.next = next.next;
         true
       } else {
         removeInBucket(key, next)
@@ -176,19 +176,19 @@ let rec removeInBucket = (key, node) => {
 }
 
 export let remove = (key, map) => {
-  let buckets = unbox(map.buckets);
+  let buckets = map.buckets;
   let idx = getBucketIndex(key, buckets);
   let bucket = buckets[idx];
   match (bucket) {
     | None => void
     | Some(node) => {
       # If it is a top-level node, just replace with next node
-      if (key == unbox(node.key)) {
-        map.size := unbox(map.size) - 1;
-        buckets[idx] := unbox(node.next);
+      if (key == node.key) {
+        map.size = decr(map.size);
+        buckets[idx] := node.next;
       } else {
         if (removeInBucket(key, node)) {
-          map.size := unbox(map.size) - 1;
+          map.size = decr(map.size);
         }
       }
     }
@@ -196,7 +196,7 @@ export let remove = (key, map) => {
 }
 
 export let size = (map) => {
-  unbox(map.size)
+  map.size
 }
 
 export let isEmpty = (map) => {
@@ -204,8 +204,8 @@ export let isEmpty = (map) => {
 }
 
 export let clear = (map) => {
-  map.size := 0;
-  let buckets = unbox(map.buckets);
+  map.size = 0;
+  let buckets = map.buckets;
   Array.forEachi((bucket, idx) => {
     buckets[idx] := None;
   }, buckets);
@@ -215,14 +215,14 @@ let rec forEachBucket = (fn, node) => {
   match (node) {
     | None => void
     | Some({ key, value, next }) => {
-      fn(^key, ^value);
-      forEachBucket(fn, ^next);
+      fn(key, value);
+      forEachBucket(fn, next);
     }
   }
 }
 
 export let forEach = (fn, map) => {
-  let buckets = unbox(map.buckets);
+  let buckets = map.buckets;
   Array.forEach((bucket) => {
     forEachBucket(fn, bucket)
   }, buckets);
@@ -232,17 +232,17 @@ let rec reduceEachBucket = (fn, node, acc) => {
   match (node) {
     | None => acc
     | Some({ key, value, next }) =>
-      reduceEachBucket(fn, ^next, fn(acc, ^key, ^value))
+      reduceEachBucket(fn, next, fn(acc, key, value))
   }
 }
 
 export let reduce = (fn, init, map) => {
-  let buckets = unbox(map.buckets);
-  let acc = box(init);
+  let buckets = map.buckets;
+  let mut acc = init;
   Array.forEach((bucket) => {
-    acc := reduceEachBucket(fn, bucket, ^acc)
+    acc = reduceEachBucket(fn, bucket, acc)
   }, buckets);
-  ^acc
+  acc
 }
 
 export let keys = (map) => {
@@ -282,5 +282,5 @@ export let fromArray = (array) => {
 # TODO: Should return a Record type instead of a Tuple
 # Waiting on https://github.com/grain-lang/grain/issues/190
 export let getInternalStats = (map) => {
-  (unbox(map.size), Array.length(unbox(map.buckets)))
+  (map.size, Array.length(map.buckets))
 }

@@ -595,7 +595,8 @@ let stdlib_tests = [
     "data Rec = {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: 'boo', baz: true} == {foo: 4, bar: 'boo', baz: false}",
     "false",
   ),
-  tfile("recursive_equal", "recursive-equal", "void"),
+  tfile("recursive_equal_box", "recursive-equal-box", "void"),
+  tfile("recursive_equal_mut", "recursive-equal-mut", "void"),
   /* te "stdlib_sum_err" "import * from 'lists'; sum([true, false])" "This expression has type Bool but"; */
   te(
     "stdlib_length_err",
@@ -646,7 +647,7 @@ let box_tests = [
     "3",
   ),
   t("test_set_extra1", "box(1) := 2", "2"),
-  tfile("counter", "counter", "1\n2\n3\nvoid"),
+  tfile("counter-box", "counter-box", "1\n2\n3\nvoid"),
   te("test_unbox_err", "unbox(5)", "Box"),
   te(
     "test_box_typing",
@@ -664,6 +665,34 @@ let box_tests = [
   t("box_division2", "let b = box(76); b := unbox(b) / 19; ^b", "4"),
 ];
 
+let let_mut_tests = [
+  t("let-mut1", "let mut b = 4;b", "4"),
+  t("let-mut2", "let mut b = (4, (5, 6));b", "(4, (5, 6))"),
+  t("let-mut3", "let mut b = box(4);unbox(b)", "4"),
+  t("let-mut3_2", "let mut b = box(4); ^b", "4"),
+  t("let-mut4", "let mut b = 4;b = 3;b", "3"),
+  t("let-mut5", "let mut b = 4;b = b - 1;b", "3"),
+  tfile("counter-mut", "counter-mut", "1\n2\n3\nvoid"),
+  te(
+    "test_mut_typing",
+    "let mut a = false; a + 4",
+    "expression has type Bool but",
+  ),
+  /* Operations on mutable `Number`s */
+  t("let-mut_addition1", "let mut b = 4; b = b + 19", "23"),
+  t("let-mut_addition2", "let mut b = 4; b = b + 19; b", "23"),
+  t("let-mut_addition3", "let mut b = 4; b += 19; b", "23"),
+  t("let-mut_subtraction1", "let mut b = 4; b = b - 19", "-15"),
+  t("let-mut_subtraction2", "let mut b = 4; b = b - 19; b", "-15"),
+  t("let-mut_subtraction3", "let mut b = 4; b -= 19; b", "-15"),
+  t("let-mut_multiplication1", "let mut b = 4; b = b * 19", "76"),
+  t("let-mut_multiplication2", "let mut b = 4; b = b * 19; b", "76"),
+  t("let-mut_multiplication3", "let mut b = 4; b *= 19; b", "76"),
+  t("let-mut_division1", "let mut b = 76; b = b / 19", "4"),
+  t("let-mut_division2", "let mut b = 76; b = b / 19; b", "4"),
+  t("let-mut_division3", "let mut b = 76; b /= 19; b", "4"),
+];
+
 let loop_tests = [
   t(
     "loop1",
@@ -673,6 +702,12 @@ let loop_tests = [
   t(
     "loop2",
     "let b = box(12);\n             let count = box(0);\n            {\n              while (unbox(b) > 0) {\n                b := unbox(b) - 1;\n                count := unbox(count) + 1\n              };\n              unbox(count)\n            }",
+    "12",
+  ),
+  t("loop1", "let mut b = 3; while (b > 0) { b = b - 1 }; b ", "0"),
+  t(
+    "loop2",
+    "let mut b = 12; let mut count = 0; while (b > 0) { b = b - 1; count = count + 1 }; count",
     "12",
   ),
 ];
@@ -1147,7 +1182,8 @@ let optimization_tests = [
       Comp.app(Imm.id(plus), [Imm.id(app), Imm.const(Const_int(5))]);
     },
   ),
-  tfsound("test_counter_sound", "counter", "1\n2\n3\nvoid"),
+  tfsound("test_counter-mut_sound", "counter-mut", "1\n2\n3\nvoid"),
+  tfsound("test_counter-box_sound", "counter-box", "1\n2\n3\nvoid"),
   te("test_dae_sound", "let x = 2 + false; 3", "type"),
   te(
     "test_const_fold_times_zero_sound",
@@ -1288,6 +1324,7 @@ let tests =
   @ record_tests
   @ stdlib_tests
   @ box_tests
+  @ let_mut_tests
   @ loop_tests
   @ oom
   @ gc

@@ -33,23 +33,23 @@ export let concat = (arrays) => {
     }
   }
 
-  let offset = box(0)
-  let arrs = box(arrays)
+  let mut offset = 0
+  let mut arrs = arrays
 
   let rec next = (index) => {
-    let array = match (unbox(arrs)) {
+    let array = match (arrs) {
       | [fst, ..._] => fst
       | [] => fail "end of arrays list"
     }
-    if (index - unbox(offset) == length(array)) {
-      offset := unbox(offset) + length(array)
-      arrs := match (unbox(arrs)) {
+    if (index - offset == length(array)) {
+      offset = offset + length(array)
+      arrs = match (arrs) {
         | [_, ...rest] => rest
         | [] => fail "end of arrays list"
       }
       next(index)
     } else {
-      array[index - unbox(offset)]
+      array[index - offset]
     }
   }
 
@@ -62,19 +62,19 @@ export let copy = (array) => {
 
 export let forEach = (fn, array) => {
   let length = length(array)
-  let count = box(0)
-  while (unbox(count) < length) {
-    fn(array[unbox(count)])
-    count := incr(unbox(count))
+  let mut count = 0
+  while (count < length) {
+    fn(array[count])
+    count = incr(count)
   }
 }
 
 export let forEachi = (fn, array) => {
   let length = length(array)
-  let count = box(0)
-  while (unbox(count) < length) {
-    fn(array[unbox(count)], unbox(count))
-    count := incr(unbox(count))
+  let mut count = 0
+  while (count < length) {
+    fn(array[count], count)
+    count = incr(count)
   }
 }
 
@@ -112,17 +112,17 @@ export let fromList = (list) => {
     }
   }
 
-  let list = box(list)
+  let mut lst = list
   let rec next = (index) => {
-    match (unbox(list)) {
+    match (lst) {
       | [fst, ...rest] => {
-        list := rest
+        lst = rest
         fst
       }
       | [] => next(index)
     }
   }
-  init(listLength(unbox(list), 0), next)
+  init(listLength(list, 0), next)
 }
 
 # TODO: This should use recursion when we can pattern match arrays
