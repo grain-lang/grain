@@ -444,7 +444,7 @@ module type BinarySectionSig = {
 
   /** Serializes this section at the current position in the given [out_channel]. */
 
-  let write: (t, out_channel) => unit;
+  let serialize: (t) => bytes;
 };
 
 module BinarySection =
@@ -486,15 +486,11 @@ module BinarySection =
     ret;
   };
 
-  let write = (value, outchan) => {
+  let serialize = (value) => {
     let val_bytes = Spec.serialize(value);
     let header_bytes = serialize_grain_custom_info(Spec.name, latest_abi);
     let sep = Bytes.empty;
-    write_custom_wasm_section(
-      Spec.name,
-      Bytes.concat(sep, [header_bytes, val_bytes]),
-      outchan,
-    );
+    Bytes.concat(sep, [header_bytes, val_bytes])
   };
 };
 

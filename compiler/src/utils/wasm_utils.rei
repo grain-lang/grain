@@ -74,7 +74,7 @@ module type BinarySectionSig = {
 
   /** Serializes this section at the current position in the given [out_channel]. */
 
-  let write: (t, out_channel) => unit;
+  let serialize: (t) => bytes;
 };
 
 module BinarySection:
