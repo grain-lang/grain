@@ -9,6 +9,27 @@ let multi = 'a
 b
 c'
 
+# encoding tests
+# valid code points 0x0000...0xD7FF and 0xE000...0x10FFFF
+# invalid code points will not compile in Grain
+assert '🌾' == '\u{1F33E}'
+assert '💪🏾' == '\u{1f4aa}\u{1f3fe}'
+
+assert 'a' == '\x61'
+assert 'a' == '\141'
+
+# Grain doesn't normalize strings
+# ñ as a single code point
+let ene = '\u{00f1}'
+# ñ as a combined character
+let combining_tilde = '\u{0303}'
+let combined_ene = String.concat('n', combining_tilde)
+
+assert ene == 'ñ'
+assert combined_ene == 'ñ'
+assert !(ene == combined_ene)
+assert String.length(ene) == 1
+assert String.length(combined_ene) == 2
 
 # concat tests
 assert String.concat('', '') == ''
@@ -24,7 +45,7 @@ assert String.length(short) == 3
 assert String.length(emoji) == 1
 assert String.length(fox) == 44
 assert String.length(emojis) == 74
-# Comprised of two graphemes
+# Single grapheme composed of two code points
 assert String.length('💪🏼') == 2 
 
 # byteLength tests

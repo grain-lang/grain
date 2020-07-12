@@ -1154,7 +1154,7 @@ let string_tests = {
     ),
     tparse(
       "string_parse_sqs2",
-      "'bar\\u41'",
+      "'bar\\u{41}'",
       {statements: [str("barA")], prog_loc: Location.dummy_loc},
     ),
     tparse(
@@ -1185,6 +1185,9 @@ let string_tests = {
       "\"making my way downtown, walking fast\"",
     ),
     te("string_err", "let x = \"hello\"; x + \", world\"", "type"),
+    te("unicode_err1", "let x = '\\u{d800}'", "Illegal unicode code point"),
+    te("unicode_err2", "let x = '\\u{dfff}'", "Illegal unicode code point"),
+    te("unicode_err3", "let x = '\\u{110000}'", "Illegal unicode code point"),
   ];
 };
 
