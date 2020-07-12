@@ -118,25 +118,25 @@ let rec reject = (fn, list) => {
 
 let head = (list) => {
   match (list) {
-    | [] => fail 'Cannot get the first element of an empty List'
+    | [] => fail 'head cannot get the first element of an empty List'
     | [first, ..._] => first
   }
 }
 
 let tail = (list) => {
   match (list) {
-    | [] => fail 'Cannot get any elements from an empty List'
+    | [] => fail 'tail cannot get any elements from an empty List'
     | [_, ...rest] => rest
   }
 }
 
-let rec nth = (count, list) => {
-  if (count < 0) {
-    fail 'Cannot be a negative number'
+let rec nth = (index, list) => {
+  if (index < 0) {
+    fail 'nth index cannot be a negative number'
   } else {
     match (list) {
-      | [] => fail 'Cannot get any elements from an empty List'
-      | [first, ...rest] => if (count == 0) first else nth(count - 1, rest)
+      | [] => fail 'nth index is out-of-bounds'
+      | [first, ...rest] => if (index == 0) first else nth(index - 1, rest)
     }
   }
 }
@@ -150,10 +150,10 @@ let rec flatten = (list) => {
 
 let rec insert = (value, index, list) => {
   if (index < 0) {
-    fail 'Cannot be a negative number'
+    fail 'insert index cannot be a negative number'
   } else {
     match(list) {
-      | [] => if (index == 0) [value] else fail 'Can only insert at index 0 in an empty list'
+      | [] => if (index == 0) [value] else fail 'insert index is out-of-bounds'
       | [first, ...rest] => if (index == 0) [value, ...list] else [first, ...insert(value, index - 1, rest)]
     }
   }
@@ -168,11 +168,11 @@ let rec count = (fn, list) => {
 
 let part = (count, list) => {
   if (count < 0) {
-    fail 'Cannot be a negative number'
+    fail 'part count cannot be a negative number'
   } else {
     let rec iter = (list1, list2, count) => {
       match (list2) {
-        | [] => if (count > 0) fail 'Can only part an empty list by 0' else (list1, list2)
+        | [] => if (count > 0) fail 'part count is out-of-bounds' else (list1, list2)
         | [first, ...rest] => if (count > 0) iter([first, ...list1], rest, count - 1) else (list1, list2)
       }
     }

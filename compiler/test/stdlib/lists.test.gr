@@ -122,7 +122,7 @@ assert rotate(1, list) == [2, 3, 1]
 assert rotate(2, list) == [3, 1, 2]
 assert rotate(-2, list) == [2, 3, 1]
 
-# List.uniq
+# List.unique
 
 assert unique([]) == []
 assert unique(list) == list
