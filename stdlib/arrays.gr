@@ -2,28 +2,28 @@ export primitive length : Array<a> -> Number = "@array.length"
 export primitive make : (Number, a) -> Array<a> = "@array.make"
 export primitive init : (Number, Number -> a) -> Array<a> = "@array.init"
 
-export let get = (array, index) => {
+export let get = (index, array) => {
   array[index]
 }
 
-export let set = (array, index, value) => {
+export let set = (index, value, array) => {
   array[index] := value
 }
 
-export let append = (a1, a2) => {
-  let len1 = length(a1)
-  let len2 = length(a2)
+export let append = (array1, array2) => {
+  let len1 = length(array1)
+  let len2 = length(array2)
 
   init(len1 + len2, n => {
     if (n < len1) {
-      a1[n]
+      array1[n]
     } else {
-      a2[n - len1]
+      array2[n - len1]
     }
   })
 }
 
-export let concat = (arrs) => {
+export let concat = (arrays) => {
   # This function is slightly verbose to avoid depending on the List stdlib.
 
   let rec findLength = (arrays, acc) => {
@@ -34,33 +34,33 @@ export let concat = (arrs) => {
   }
 
   let offset = box(0)
-  let arrays = box(arrs)
+  let arrs = box(arrays)
 
-  let rec next = (n) => {
-    let arr = match (unbox(arrays)) {
+  let rec next = (index) => {
+    let array = match (unbox(arrs)) {
       | [fst, ..._] => fst
       | [] => fail "end of arrays list"
     }
-    if (n - unbox(offset) == length(arr)) {
-      offset := unbox(offset) + length(arr)
-      arrays := match (unbox(arrays)) {
+    if (index - unbox(offset) == length(array)) {
+      offset := unbox(offset) + length(array)
+      arrs := match (unbox(arrs)) {
         | [_, ...rest] => rest
         | [] => fail "end of arrays list"
       }
-      next(n)
+      next(index)
     } else {
-      arr[n - unbox(offset)]
+      array[index - unbox(offset)]
     }
   }
 
-  init(findLength(arrs, 0), next)
+  init(findLength(arrays, 0), next)
 }
 
 export let copy = (array) => {
   init(length(array), n => array[n])
 }
 
-export let forEach = (array, fn) => {
+export let forEach = (fn, array) => {
   let length = length(array)
   let count = box(0)
   while (unbox(count) < length) {
@@ -69,7 +69,7 @@ export let forEach = (array, fn) => {
   }
 }
 
-export let forEachi = (array, fn) => {
+export let forEachi = (fn, array) => {
   let length = length(array)
   let count = box(0)
   while (unbox(count) < length) {
@@ -78,7 +78,7 @@ export let forEachi = (array, fn) => {
   }
 }
 
-export let map = (array, fn) => {
+export let map = (fn, array) => {
   let length = length(array)
   init(length, (i) => {
     fn(array[i])
@@ -93,12 +93,12 @@ export let mapi = (fn, array) => {
 }
 
 export let toList = (array) => {
-  let rec buildList = (acc, n) => {
-    let n = n - 1
-    if (n < 0) {
+  let rec buildList = (acc, index) => {
+    let index = index - 1
+    if (index < 0) {
       acc
     } else {
-      buildList([array[n], ...acc], n)
+      buildList([array[index], ...acc], index)
     }
   }
   buildList([], length(array))
@@ -113,13 +113,13 @@ export let fromList = (list) => {
   }
 
   let list = box(list)
-  let rec next = (n) => {
+  let rec next = (index) => {
     match (unbox(list)) {
       | [fst, ...rest] => {
         list := rest
         fst
       }
-      | [] => next(n)
+      | [] => next(index)
     }
   }
   init(listLength(unbox(list), 0), next)
@@ -128,11 +128,11 @@ export let fromList = (list) => {
 # TODO: This should use recursion when we can pattern match arrays
 export let contains = (search, array) => {
   let len = length(array);
-  let idx = box(0);
+  let index = box(0);
   let found = box(false);
-  while ((^found == false) && (^idx < len)) {
-    found := (array[^idx] == search);
-    idx += 1;
+  while ((^found == false) && (^index < len)) {
+    found := (array[^index] == search);
+    index += 1;
   }
   ^found
 }
