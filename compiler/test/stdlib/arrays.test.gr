@@ -4,18 +4,18 @@ let arr = [> 1, 2, 3]
 
 # Array.get
 
-assert Array.get(arr, 1) == 2
-assert Array.get(arr, -1) == 3
-assert Array.get(arr, -2) == 2
-assert Array.get(arr, 0) == 1
+assert Array.get(1, arr) == 2
+assert Array.get(-1, arr) == 3
+assert Array.get(-2, arr) == 2
+assert Array.get(0, arr) == 1
 
 # Array.set
 
 let arr = [> 1, 2]
 
-Array.set(arr, 0, 5)
+Array.set(0, 5, arr)
 assert arr[0] == 5
-Array.set(arr, -1, 5)
+Array.set(-1, 5, arr)
 assert arr[1] == 5
 
 # Array.append
@@ -61,7 +61,7 @@ let sentinel = (_n) => {
   sum := 42
 }
 
-Array.forEach([>], sentinel)
+Array.forEach(sentinel, [>])
 
 assert unbox(sum) == 0
 
@@ -69,7 +69,7 @@ let addToSum = (n) => {
   sum := unbox(sum) + n
 }
 
-Array.forEach(arr1, addToSum)
+Array.forEach(addToSum, arr1)
 
 assert unbox(sum) == 6
 
@@ -82,7 +82,7 @@ let sentinel = (_n, _i) => {
   sum := 42
 }
 
-Array.forEachi([>], sentinel)
+Array.forEachi(sentinel, [>])
 
 assert unbox(sum) == 0
 
@@ -90,7 +90,7 @@ let addToSum = (n, i) => {
   sum := unbox(sum) + (n * i)
 }
 
-Array.forEachi(arr1, addToSum)
+Array.forEachi(addToSum, arr1)
 
 assert unbox(sum) == 8
 
@@ -106,8 +106,8 @@ assert Array.fromList([1, 2, 3]) == [> 1, 2, 3]
 
 # Array.map
 
-assert Array.map([>], incr) == [>]
-assert Array.map([> 2, 3, 4], incr) == [> 3, 4, 5]
+assert Array.map(incr, [>]) == [>]
+assert Array.map(incr, [> 2, 3, 4]) == [> 3, 4, 5]
 
 # Array.mapi
 
