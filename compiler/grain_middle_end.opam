@@ -17,11 +17,8 @@ depends: [
   "sexplib" {>= "0.14.0"}
   "grain_dypgen" {= "0.1"}
   "ounit" {>= "2.0.0"}
-  "extlib" {>= "1.7.2"}
-  "batteries" {>= "2.8.0"}
   "cmdliner" {>= "1.0.2"}
   "ocamlgraph" {>= "1.8.8"}
-  "stdint" {>= "0.5.0"}
   "grain_utils" {>= "0"}
   "grain_parsing" {>= "0"}
   "grain_typed" {>= "0"}

@@ -2,15 +2,12 @@ open Grain_utils;
 open Wasm_utils;
 
 open OUnit2;
-open Stdint;
 
 let assert_equal_i32 = assert_equal(~printer=Int32.to_string);
-let assert_equal_u32 = assert_equal(~printer=Uint32.to_string);
 let assert_equal_i64 = assert_equal(~printer=Int64.to_string);
-let assert_equal_u64 = assert_equal(~printer=Uint64.to_string);
 
 let print_list = (printer, lst) =>
-  "[" ++ ExtString.String.join("; ", List.map(printer, lst)) ++ "]";
+  "[" ++ String.concat("; ", List.map(printer, lst)) ++ "]";
 
 let print_bytes = print_list(Printf.sprintf("0x%02x"));
 
@@ -44,15 +41,15 @@ let collect_bytes = f => {
 };
 
 let test_leb128_u32 = ctxt => {
-  assert_equal_u32(
+  assert_equal_i32(
     ~ctxt,
-    Uint32.of_int(624485),
+    Int32.of_int(624485),
     read_leb128_u32(iter_bytes([0xE5, 0x8E, 0x26])),
   );
   assert_equal_bytes(
     ~ctxt,
     [0xE5, 0x8E, 0x26],
-    collect_bytes(sink => write_leb128_u32(sink, Uint32.of_int(624485))),
+    collect_bytes(sink => write_leb128_u32(sink, Int32.of_int(624485))),
   );
 };
 

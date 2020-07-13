@@ -7,6 +7,7 @@
 open Sexplib.Conv;
 open Grain_parsing;
 open Grain_typed;
+open Grain_utils;
 open Types;
 open Typedtree;
 
@@ -148,7 +149,7 @@ module MatchTreeCompiler = {
             };
           this_binds @ other_binds;
         };
-        let binds = BatList.fold_lefti(process_nested, [], args);
+        let binds = List_utils.fold_lefti(process_nested, [], args);
         switch (binds) {
         | [] => []
         | _ => [(tup_name, expr), ...binds]
@@ -189,7 +190,7 @@ module MatchTreeCompiler = {
             };
           this_binds @ other_binds;
         };
-        let binds = BatList.fold_left(process_nested, [], fields);
+        let binds = List.fold_left(process_nested, [], fields);
         switch (binds) {
         | [] => []
         | _ => [(rec_name, expr), ...binds]
@@ -222,7 +223,7 @@ module MatchTreeCompiler = {
             };
           this_binds @ other_binds;
         };
-        let binds = BatList.fold_lefti(process_nested, [], args);
+        let binds = List_utils.fold_lefti(process_nested, [], args);
         switch (binds) {
         | [] => []
         | _ => [(data_name, expr), ...binds]
@@ -263,7 +264,7 @@ module MatchTreeCompiler = {
       let bindings =
         switch (matrix_type) {
         | ConstructorMatrix(Some(arity)) =>
-          BatList.init(
+          List.init(
             arity,
             idx => {
               let id = Ident.create("match_explode");
@@ -273,7 +274,7 @@ module MatchTreeCompiler = {
         | ConstructorMatrix(None) =>
           failwith("Internal error: must supply constructor arity")
         | TupleMatrix(arity) =>
-          BatList.init(
+          List.init(
             arity,
             idx => {
               let id = Ident.create("match_explode");
@@ -298,7 +299,7 @@ module MatchTreeCompiler = {
       compile_tree_help(rest_tree, swap_list(idx, values))
     | [@implicit_arity] Switch(branches, default_tree) =>
       /* Runs when no branches match */
-      let base_tree = Option.default(Fail, default_tree);
+      let base_tree = Option.value(~default=Fail, default_tree);
       let base = compile_tree_help(base_tree, values);
       let value_constr_name = Ident.create("match_constructor");
       let value_constr_id = Imm.id(value_constr_name);
@@ -504,7 +505,7 @@ let rec specialize_matrix = (cd, mtx) => {
     | [{pat_desc} as p, ...ptl] =>
       switch (pat_desc) {
       | _ when pattern_always_matches(p) =>
-        let wildcards = BatList.init(arity, _ => {...p, pat_desc: TPatAny});
+        let wildcards = List.init(arity, _ => {...p, pat_desc: TPatAny});
         [wildcards @ ptl];
       | [@implicit_arity] TPatConstruct(_, pcd, args) when cd == pcd => [
           args @ ptl,

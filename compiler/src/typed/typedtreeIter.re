@@ -51,7 +51,7 @@ module MakeIterator =
          let iter_expression: expression => unit;
          let iter_pattern: pattern => unit;
        } => {
-  let may_iter = Option.may;
+  let may_iter = Option.iter;
 
   let rec iter_typed_program = ({statements} as tp) => {
     Iter.enter_typed_program(tp);

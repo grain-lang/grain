@@ -140,8 +140,8 @@ let bool_flag:
   ref('a) = (
   (~true_info=?, ~false_info=?, default) => {
     let names = ref([]);
-    Option.may(i => names := [(true, i), ...names^], true_info);
-    Option.may(i => names := [(false, i), ...names^], false_info);
+    Option.iter(i => names := [(true, i), ...names^], true_info);
+    Option.iter(i => names := [(false, i), ...names^], false_info);
     switch (names^) {
     | [] => failwith("Internal error: bool_flag called with no info")
     | names => flag(~names, ~default)

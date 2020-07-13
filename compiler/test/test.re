@@ -1,6 +1,5 @@
 open OUnit2;
 open Printf;
-open Extlib;
 
 let () =
   Printexc.register_printer(exc =>
@@ -23,13 +22,27 @@ let () =
     }
   );
 
+let starts_with = (string, prefix) => {
+  let prefixLength = String.length(prefix);
+  let stringLength = String.length(string);
+  if (stringLength < prefixLength) {
+    false;
+  } else {
+    String.sub(string, 0, prefixLength) == prefix;
+  };
+};
+
 // Recursive readdir
 let rec readdir = (dir, excludes) => {
   Sys.readdir(dir)
   |> Array.fold_left(
        (results, filename) => {
          let filepath = Filename.concat(dir, filename);
-         (Sys.is_directory(filepath) && List.for_all((exclude) => !BatString.starts_with(filename, exclude), excludes))
+         Sys.is_directory(filepath)
+         && List.for_all(
+              exclude => !starts_with(filename, exclude),
+              excludes,
+            )
            ? Array.append(results, readdir(filepath, excludes))
            : Array.append(results, [|filepath|]);
        },
@@ -39,7 +52,7 @@ let rec readdir = (dir, excludes) => {
 
 let clean_stdlib = stdlib_dir =>
   Array.iter(
-    (file) =>
+    file =>
       if (Filename.check_suffix(file, ".wasm")) {
         Sys.remove(file);
       },

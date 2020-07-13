@@ -3,7 +3,6 @@ open Runner;
 open Grain_utils;
 open Printf;
 open OUnit2;
-open Batteries;
 open Grain_middle_end.Anftree;
 open Grain_middle_end.Anf_helper;
 
@@ -13,7 +12,10 @@ let wrap_todo = (todo, f, x) =>
   | None => f(x)
   };
 
-let exists = (check, result) => String.exists(result, check);
+let exists = (check, result) =>
+  try(Str.search_forward(Str.regexp_string(check), result, 0) >= 0) {
+  | Not_found => false
+  };
 
 let t = (~todo=?, name, program, expected) =>
   name >:: wrap_todo(todo) @@ test_run(program, name, expected);

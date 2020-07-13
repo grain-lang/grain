@@ -4,6 +4,7 @@ open Identifier
 open Dyp
 open Parsetree
 open Ast_helper
+open Grain_utils
 
 (* Used for error messages and as a default, in case anything slips through
    without an explicit loc. *)
@@ -109,7 +110,7 @@ let no_uppercase_ident expr =
   match expr.pexp_desc with
   | PExpId {txt=id} ->
     let first_char = String.get (Identifier.last id) 0 in
-    if first_char = BatChar.uppercase first_char then raise Dyp.Giveup
+    if Char_utils.is_uppercase_letter first_char then raise Dyp.Giveup
   | _ -> ()
 
 let no_array_access expr =
@@ -121,7 +122,7 @@ let no_array_access expr =
 let mkid ns =
   let help ns =
     let rec help ns (acc_ident, acc_str) =
-      let ident = Option.map_default (fun i -> IdentExternal(i, acc_str)) (IdentName acc_str) acc_ident in
+      let ident = Option.fold ~some:(fun i -> IdentExternal(i, acc_str)) ~none:(IdentName acc_str) acc_ident in
       match ns with
         | [] -> ident
         | n::tl -> help tl (Some ident, n) in
@@ -321,7 +322,7 @@ typ :
   | data_typ
 
 typs :
-  | [typ [comma typ {$2}]* {$1::$2}]? { Option.default [] $1 }
+  | [typ [comma typ {$2}]* {$1::$2}]? { Option.value ~default:[] $1 }
 
 tuple_typs :
   | typ comma { [$1] }
@@ -335,8 +336,8 @@ value_binds :
 
 import_shape :
   | id { PImportModule, Some $1 }
-  | STAR [EXCEPT lbrace id [comma id {$2}]* rbrace {$3::$4}]? [AS id {$2}]? { PImportAllExcept (Option.default [] $2), $3 }
-  | lbrace [id [AS id {$2}]? [comma id [AS id {$2}]? {($2, $3)}]* {($1, $2)::$3}]? rbrace [AS id {$2}]? { PImportValues (Option.default [] $2), $4 }
+  | STAR [EXCEPT lbrace id [comma id {$2}]* rbrace {$3::$4}]? [AS id {$2}]? { PImportAllExcept (Option.value ~default:[] $2), $3 }
+  | lbrace [id [AS id {$2}]? [comma id [AS id {$2}]? {($2, $3)}]* {($1, $2)::$3}]? rbrace [AS id {$2}]? { PImportValues (Option.value ~default:[] $2), $4 }
 
 import_stmt :
   | IMPORT import_shape [comma import_shape {$2}]* FROM file_path { Imp.mk ($2::$3) $5 }
@@ -348,7 +349,7 @@ export_stmt :
   | EXPORT primitive_stmt { Top.primitive ~loc:(symbol_rloc dyp) Exported $2 }
   | EXPORT data_declaration { Top.data Exported $2 }
   | EXPORT any_id_str [AS any_id_str {$2}]? [comma any_id_str [AS any_id_str {$2}]? {$2, $3}]* { Top.export ~loc:(symbol_rloc dyp) (Ex.mk ~loc:(symbol_rloc dyp) (($2, $3)::$4)) }
-  | EXPORT STAR [EXCEPT export_id_str [comma export_id_str {$2}]* {$2::$3}]? { Top.export_all ~loc:(symbol_rloc dyp) (Option.default [] $3) }
+  | EXPORT STAR [EXCEPT export_id_str [comma export_id_str {$2}]* {$2::$3}]? { Top.export_all ~loc:(symbol_rloc dyp) (Option.value ~default:[] $3) }
 
 data_constructor :
   | TYPEID { CDecl.singleton ~loc:(symbol_rloc dyp) (mkstr dyp $1) }
@@ -367,8 +368,8 @@ data_labels :
   | lbrace data_label [comma data_label {$2}]* comma? rbrace { $2::$3 }
 
 data_declaration :
-  | DATA TYPEID [lcaret ID [comma ID {$2}]* rcaret {$2::$3}]? equal data_constructors { Dat.variant ~loc:(symbol_rloc dyp) (mkstr dyp $2) (List.map Typ.var (Option.default [] $3)) $5 }
-  | DATA TYPEID [lcaret ID [comma ID {$2}]* rcaret {$2::$3}]? equal data_labels { Dat.record ~loc:(symbol_rloc dyp) (mkstr dyp $2) (List.map Typ.var (Option.default [] $3)) $5 }
+  | DATA TYPEID [lcaret ID [comma ID {$2}]* rcaret {$2::$3}]? equal data_constructors { Dat.variant ~loc:(symbol_rloc dyp) (mkstr dyp $2) (List.map Typ.var (Option.value ~default:[] $3)) $5 }
+  | DATA TYPEID [lcaret ID [comma ID {$2}]* rcaret {$2::$3}]? equal data_labels { Dat.record ~loc:(symbol_rloc dyp) (mkstr dyp $2) (List.map Typ.var (Option.value ~default:[] $3)) $5 }
 
 prim1_expr :
   | NOT non_assign_expr { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp ["!"]) [$2] }
@@ -378,7 +379,7 @@ paren_expr :
   | lparen expr rparen { $2 }
 
 app_arg_exprs :
-  | [expr [comma expr {$2}]* { $1::$2 }]? { Option.default [] $1 }
+  | [expr [comma expr {$2}]* { $1::$2 }]? { Option.value ~default:[] $1 }
 
 app_expr :
   | id_expr lparen app_arg_exprs rparen { prerr_string "\napp_expr\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); Exp.apply ~loc:(symbol_rloc dyp) $1 $3 }
@@ -481,7 +482,7 @@ block_or_expr :
   | expr { no_brace_expr $1; $1 }
 
 lam_args :
-  | patterns? { Option.default [] $1 }
+  | patterns? { Option.value ~default:[] $1 }
 
 lam_expr :
   | lparen lam_args rparen thickarrow block_or_expr { Exp.lambda ~loc:(symbol_rloc dyp) $2 $5 }

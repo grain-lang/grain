@@ -67,8 +67,8 @@ let malformed_strings = (errs, super) => {
   let iter_expr = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
     | PExpConstant(PConstString(s)) =>
-      try(BatUTF8.validate(s)) {
-      | BatUTF8.Malformed_code => errs := [MalformedString(loc), ...errs^]
+      if (!Utf8.validString(s)) {
+        errs := [MalformedString(loc), ...errs^];
       }
     | _ => ()
     };
@@ -93,7 +93,10 @@ let malformed_identifiers = (errs, super) => {
     let casing_mismatch = (orig, alias) => {
       let o = orig.[0];
       let a = alias.[0];
-      xor(BatChar.is_uppercase(o), BatChar.is_uppercase(a));
+      xor(
+        Char_utils.is_uppercase_letter(o),
+        Char_utils.is_uppercase_letter(a),
+      );
     };
     List.iter(
       ({pimp_val}) =>
@@ -133,7 +136,7 @@ let malformed_identifiers = (errs, super) => {
 let types_have_correct_case = (errs, super) => {
   let check_uppercase = (loc, s) => {
     let first_char = s.[0];
-    if (first_char != BatChar.uppercase(first_char)) {
+    if (!Char_utils.is_uppercase_letter(first_char)) {
       errs := [[@implicit_arity] TypeNameShouldBeUppercase(s, loc), ...errs^];
     };
   };
@@ -153,7 +156,7 @@ let types_have_correct_case = (errs, super) => {
 let modules_have_correct_case = (errs, super) => {
   let check_uppercase = (loc, s) => {
     let first_char = s.[0];
-    if (first_char != BatChar.uppercase(first_char)) {
+    if (!Char_utils.is_uppercase_letter(first_char)) {
       errs :=
         [[@implicit_arity] ModuleNameShouldBeUppercase(s, loc), ...errs^];
     };
