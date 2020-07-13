@@ -115,7 +115,7 @@ let get_known_expression = e =>
   ExpressionHashtbl.find_opt(known_expressions, e);
 
 let get_comp_purity = c =>
-  Option.default(false) @@ Analyze_purity.comp_expression_purity(c);
+  Option.value(~default=false) @@ Analyze_purity.comp_expression_purity(c);
 
 module CSEArg: Anf_mapper.MapArgument = {
   include Anf_mapper.DefaultMapArgument;

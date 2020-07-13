@@ -841,7 +841,7 @@ let rec transl_anf_statement =
         ...s,
         ttop_desc: [@implicit_arity] TTopLet(export_flag, Nonrecursive, rest),
       });
-    let rest_setup = Option.default([], rest_setup);
+    let rest_setup = Option.value(~default=[], rest_setup);
     let exported = export_flag == Exported;
     let setup =
       switch (vb_pat.pat_desc) {

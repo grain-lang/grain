@@ -1,12 +1,11 @@
 open Grain_parsing;
 open Grain_typed;
 open Grain_middle_end;
+open Grain_utils;
 
 open Asttypes;
 open Anftree;
 open Mashtree;
-
-module StrMap = BatMap.String;
 
 type compilation_env = {
   ce_binds: Ident.tbl(Mashtree.binding),
@@ -33,10 +32,12 @@ type worklist_elt = {
   arity: int,
   idx: int, /* Lambda-lifted index */
   stack_size: int,
-  loc: Location.t
+  loc: Location.t,
 };
 
-let compilation_worklist = ref(BatDeque.empty: BatDeque.t(worklist_elt));
+// The OCaml docs warn that this isn't thread-safe,
+// but I don't think we are threading yet
+let compilation_worklist: Queue.t(worklist_elt) = Queue.create();
 
 /** Lambda-lifting index (function index) */
 
@@ -58,10 +59,8 @@ let global_index = ref(0);
 let global_exports = () => {
   let tbl = global_table^;
   Ident.fold_all(
-    (ex_name, (ex_global_index, ex_getter_index), acc) => [
-      {ex_name, ex_global_index, ex_getter_index},
-      ...acc,
-    ],
+    (ex_name, (ex_global_index, ex_getter_index), acc) =>
+      [{ex_name, ex_global_index, ex_getter_index}, ...acc],
     tbl,
     [],
   );
@@ -92,16 +91,13 @@ let next_global = id =>
 let find_id = (id, env) => Ident.find_same(id, env.ce_binds);
 let find_global = (id, env) => Ident.find_same(id, env.ce_exported_globals);
 
-let worklist_reset = () => compilation_worklist := BatDeque.empty;
-let worklist_enqueue = elt =>
-  compilation_worklist := BatDeque.snoc(compilation_worklist^, elt);
-let worklist_empty = () => BatDeque.is_empty(compilation_worklist^);
+let worklist_reset = () => Queue.clear(compilation_worklist);
+let worklist_enqueue = elt => Queue.add(elt, compilation_worklist);
+let worklist_empty = () => Queue.is_empty(compilation_worklist);
 let worklist_pop = () =>
-  switch (BatDeque.front(compilation_worklist^)) {
+  switch (Queue.take_opt(compilation_worklist)) {
   | None => raise(Not_found)
-  | Some((hd, tl)) =>
-    compilation_worklist := tl;
-    hd;
+  | Some(hd) => hd
   };
 
 module IntMap = Map.Make(Int);
@@ -109,7 +105,7 @@ module RegisterAllocation = {
   type t = (IntMap.t(int), list(int));
   let initialize = (num_locals: int): t => (
     IntMap.empty,
-    BatList.init(num_locals, x => x),
+    List.init(num_locals, x => x),
   );
   /* Takes an id (a local from the original mashtree) and assigns a slot to it */
   let allocate = var_id =>
@@ -151,70 +147,73 @@ module RegisterAllocation = {
       | _ as i => i;
 
     let apply_allocation_to_block = List.map(apply_allocations(allocs));
-    let desc = switch (instr.instr_desc) {
-    | MImmediate(i) => MImmediate(apply_allocation_to_imm(i))
-    | [@implicit_arity] MTagOp(top, tt, i) =>
-      [@implicit_arity] MTagOp(top, tt, apply_allocation_to_imm(i))
-    | [@implicit_arity] MArityOp(aop, at, i) =>
-      [@implicit_arity] MArityOp(aop, at, apply_allocation_to_imm(i))
-    | [@implicit_arity] MPrim1(pop, i) =>
-      [@implicit_arity] MPrim1(pop, apply_allocation_to_imm(i))
-    | [@implicit_arity] MTupleOp(top, i) =>
-      [@implicit_arity] MTupleOp(top, apply_allocation_to_imm(i))
-    | [@implicit_arity] MBoxOp(bop, i) =>
-      [@implicit_arity] MBoxOp(bop, apply_allocation_to_imm(i))
-    | [@implicit_arity] MArrayOp(aop, i) =>
-      [@implicit_arity] MArrayOp(aop, apply_allocation_to_imm(i))
-    | [@implicit_arity] MRecordOp(rop, i) =>
-      [@implicit_arity] MRecordOp(rop, apply_allocation_to_imm(i))
-    | [@implicit_arity] MAdtOp(aop, i) =>
-      [@implicit_arity] MAdtOp(aop, apply_allocation_to_imm(i))
-    | [@implicit_arity] MCallKnown(i32, is) =>
-      [@implicit_arity]
-      MCallKnown(i32, List.map(apply_allocation_to_imm, is))
-    | [@implicit_arity] MError(e, is) =>
-      [@implicit_arity] MError(e, List.map(apply_allocation_to_imm, is))
-    | [@implicit_arity] MCallIndirect(imm, is) =>
-      [@implicit_arity]
-      MCallIndirect(
-        apply_allocation_to_imm(imm),
-        List.map(apply_allocation_to_imm, is),
-      )
-    | [@implicit_arity] MIf(c, t, f) =>
-      [@implicit_arity]
-      MIf(
-        apply_allocation_to_imm(c),
-        apply_allocation_to_block(t),
-        apply_allocation_to_block(f),
-      )
-    | [@implicit_arity] MWhile(b1, b2) =>
-      [@implicit_arity]
-      MWhile(apply_allocation_to_block(b1), apply_allocation_to_block(b2))
-    | [@implicit_arity] MSwitch(v, bs, d) =>
-      [@implicit_arity]
-      MSwitch(
-        apply_allocation_to_imm(v),
-        List.map(((t, b)) => (t, apply_allocation_to_block(b)), bs),
-        apply_allocation_to_block(d),
-      )
-    | [@implicit_arity] MPrim2(pop, i1, i2) =>
-      [@implicit_arity]
-      MPrim2(pop, apply_allocation_to_imm(i1), apply_allocation_to_imm(i2))
-    | MStore(bs) =>
-      MStore(
-        List.map(
-          ((b, bk)) => (
-            apply_allocation_to_bind(b),
-            apply_allocations(allocs, bk),
+    let desc =
+      switch (instr.instr_desc) {
+      | MImmediate(i) => MImmediate(apply_allocation_to_imm(i))
+      | [@implicit_arity] MTagOp(top, tt, i) =>
+        [@implicit_arity] MTagOp(top, tt, apply_allocation_to_imm(i))
+      | [@implicit_arity] MArityOp(aop, at, i) =>
+        [@implicit_arity] MArityOp(aop, at, apply_allocation_to_imm(i))
+      | [@implicit_arity] MPrim1(pop, i) =>
+        [@implicit_arity] MPrim1(pop, apply_allocation_to_imm(i))
+      | [@implicit_arity] MTupleOp(top, i) =>
+        [@implicit_arity] MTupleOp(top, apply_allocation_to_imm(i))
+      | [@implicit_arity] MBoxOp(bop, i) =>
+        [@implicit_arity] MBoxOp(bop, apply_allocation_to_imm(i))
+      | [@implicit_arity] MArrayOp(aop, i) =>
+        [@implicit_arity] MArrayOp(aop, apply_allocation_to_imm(i))
+      | [@implicit_arity] MRecordOp(rop, i) =>
+        [@implicit_arity] MRecordOp(rop, apply_allocation_to_imm(i))
+      | [@implicit_arity] MAdtOp(aop, i) =>
+        [@implicit_arity] MAdtOp(aop, apply_allocation_to_imm(i))
+      | [@implicit_arity] MCallKnown(i32, is) =>
+        [@implicit_arity]
+        MCallKnown(i32, List.map(apply_allocation_to_imm, is))
+      | [@implicit_arity] MError(e, is) =>
+        [@implicit_arity] MError(e, List.map(apply_allocation_to_imm, is))
+      | [@implicit_arity] MCallIndirect(imm, is) =>
+        [@implicit_arity]
+        MCallIndirect(
+          apply_allocation_to_imm(imm),
+          List.map(apply_allocation_to_imm, is),
+        )
+      | [@implicit_arity] MIf(c, t, f) =>
+        [@implicit_arity]
+        MIf(
+          apply_allocation_to_imm(c),
+          apply_allocation_to_block(t),
+          apply_allocation_to_block(f),
+        )
+      | [@implicit_arity] MWhile(b1, b2) =>
+        [@implicit_arity]
+        MWhile(apply_allocation_to_block(b1), apply_allocation_to_block(b2))
+      | [@implicit_arity] MSwitch(v, bs, d) =>
+        [@implicit_arity]
+        MSwitch(
+          apply_allocation_to_imm(v),
+          List.map(((t, b)) => (t, apply_allocation_to_block(b)), bs),
+          apply_allocation_to_block(d),
+        )
+      | [@implicit_arity] MPrim2(pop, i1, i2) =>
+        [@implicit_arity]
+        MPrim2(
+          pop,
+          apply_allocation_to_imm(i1),
+          apply_allocation_to_imm(i2),
+        )
+      | MStore(bs) =>
+        MStore(
+          List.map(
+            ((b, bk)) =>
+              (apply_allocation_to_bind(b), apply_allocations(allocs, bk)),
+            bs,
           ),
-          bs,
-        ),
-      )
-    | MAllocate(x) => MAllocate(x)
-    | MDrop(i) => MDrop(apply_allocations(allocs, i))
-    | MTracepoint(x) => MTracepoint(x)
-    };
-    {...instr, instr_desc:desc}
+        )
+      | MAllocate(x) => MAllocate(x)
+      | MDrop(i) => MDrop(apply_allocations(allocs, i))
+      | MTracepoint(x) => MTracepoint(x)
+      };
+    {...instr, instr_desc: desc};
   };
 };
 
@@ -238,7 +237,7 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
     | MImmBinding(MLocalBind(n)) => [Int32.to_int(n)]
     | _ => [];
 
-  let rec live_locals = (instr) =>
+  let rec live_locals = instr =>
     switch (instr.instr_desc) {
     | MDrop(i) => live_locals(i)
     | MImmediate(imm)
@@ -271,7 +270,7 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
       )
     | MAllocate(_)
     | MTracepoint(_) => []
-  }
+    }
   and block_live_locals = b => List.concat(List.map(live_locals, b));
 
   /*** Mapping from (instruction index) -> (used locals) */
@@ -320,7 +319,7 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
               List.fold_left(
                 (acc, cur) => {
                   let existing_elts: list(int) =
-                    BatOption.default([], IntMap.find_opt(cur, acc));
+                    Option.value(~default=[], IntMap.find_opt(cur, acc));
                   IntMap.add(cur, [idx, ...existing_elts], acc);
                 },
                 acc,
@@ -357,7 +356,7 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
       help((allocs, []), active);
     };
     let _ =
-      BatList.fold_lefti(
+      List_utils.fold_lefti(
         ((allocs, active), i, (var_id, (start_inst, end_inst)) as cur) => {
           let (allocs, active) =
             expire_old_intervals(start_inst, allocs, active);
@@ -400,7 +399,7 @@ let compile_lambda = (env, args, body, loc): Mashtree.closure_data => {
   /* Bind all non-arguments in the function body to
      their respective closure slots */
   let free_binds =
-    BatList.fold_lefti(
+    List_utils.fold_lefti(
       (acc, closure_idx, var) =>
         Ident.add(var, MClosureBind(Int32.of_int(closure_idx)), acc),
       Ident.empty,
@@ -409,7 +408,7 @@ let compile_lambda = (env, args, body, loc): Mashtree.closure_data => {
   let closure_arg = Ident.create("$self");
   let new_args = [closure_arg, ...args];
   let arg_binds =
-    BatList.fold_lefti(
+    List_utils.fold_lefti(
       (acc, arg_idx, arg) =>
         Ident.add(arg, MArgBind(Int32.of_int(arg_idx)), acc),
       free_binds,
@@ -447,9 +446,9 @@ let compile_wrapper = (env, func_name, arity): Mashtree.closure_data => {
       instr_desc:
         MCallKnown(
           func_name,
-          BatList.init(arity, i => MImmBinding(MArgBind(Int32.of_int(i + 1)))),
+          List.init(arity, i => MImmBinding(MArgBind(Int32.of_int(i + 1)))),
         ),
-      instr_loc: Location.dummy_loc
+      instr_loc: Location.dummy_loc,
     },
   ];
   let idx = next_lift();
@@ -480,7 +479,12 @@ let next_global = id => {
   if (ret != global_index^ - 1) {
     ret;
   } else {
-    let body = [{instr_desc: MImmediate(MImmBinding(MGlobalBind(Int32.of_int(ret)))), instr_loc: Location.dummy_loc}];
+    let body = [
+      {
+        instr_desc: MImmediate(MImmBinding(MGlobalBind(Int32.of_int(ret)))),
+        instr_loc: Location.dummy_loc,
+      },
+    ];
     let worklist_item = {
       body: Precompiled(body),
       env: initial_compilation_env,
@@ -495,102 +499,107 @@ let next_global = id => {
 };
 
 let rec compile_comp = (env, c) => {
-  let desc = switch (c.comp_desc) {
-  | CSwitch(arg, branches) =>
-    let compiled_arg = compile_imm(env, arg);
-    MSwitch(
-      compiled_arg,
-      List.map(
-        ((lbl, body)) => (Int32.of_int(lbl), compile_anf_expr(env, body)),
-        branches,
-      ),
-      [
-        {instr_desc: MError(Runtime_errors.SwitchError, [compiled_arg]), instr_loc: c.comp_loc},
-      ],
-    );
-  | [@implicit_arity] CIf(cond, thn, els) =>
-    [@implicit_arity]
-    MIf(
-      compile_imm(env, cond),
-      compile_anf_expr(env, thn),
-      compile_anf_expr(env, els),
-    )
-  | [@implicit_arity] CWhile(cond, body) =>
-    [@implicit_arity]
-    MWhile(compile_anf_expr(env, cond), compile_anf_expr(env, body))
-  | [@implicit_arity] CPrim1(Box, arg) =>
-    MAllocate(MBox(compile_imm(env, arg)))
-  | [@implicit_arity] CPrim1(Unbox, arg) =>
-    [@implicit_arity] MBoxOp(MBoxUnbox, compile_imm(env, arg))
-  | [@implicit_arity] CPrim1(p1, arg) =>
-    [@implicit_arity] MPrim1(p1, compile_imm(env, arg))
-  | [@implicit_arity] CPrim2(p2, arg1, arg2) =>
-    [@implicit_arity]
-    MPrim2(p2, compile_imm(env, arg1), compile_imm(env, arg2))
-  | [@implicit_arity] CAssign(arg1, arg2) =>
-    [@implicit_arity]
-    MBoxOp(MBoxUpdate(compile_imm(env, arg2)), compile_imm(env, arg1))
-  | CTuple(args) => MAllocate(MTuple(List.map(compile_imm(env), args)))
-  | CArray(args) => MAllocate(MArray(List.map(compile_imm(env), args)))
-  | [@implicit_arity] CArrayGet(idx, arr) =>
-    [@implicit_arity]
-    MArrayOp(MArrayGet(compile_imm(env, idx)), compile_imm(env, arr))
-  | [@implicit_arity] CArraySet(idx, arr, arg) =>
-    [@implicit_arity]
-    MArrayOp(
-      [@implicit_arity]
-      MArraySet(compile_imm(env, idx), compile_imm(env, arg)),
-      compile_imm(env, arr),
-    )
-  | [@implicit_arity] CRecord(ttag, args) =>
-    MAllocate(
-      [@implicit_arity]
-      MRecord(
-        compile_imm(env, ttag),
+  let desc =
+    switch (c.comp_desc) {
+    | CSwitch(arg, branches) =>
+      let compiled_arg = compile_imm(env, arg);
+      MSwitch(
+        compiled_arg,
         List.map(
-          (({txt: name}, arg)) => (name, compile_imm(env, arg)),
-          args,
+          ((lbl, body)) =>
+            (Int32.of_int(lbl), compile_anf_expr(env, body)),
+          branches,
         ),
-      ),
-    )
-  | [@implicit_arity] CAdt(ttag, vtag, args) =>
-    MAllocate(
+        [
+          {
+            instr_desc: MError(Runtime_errors.SwitchError, [compiled_arg]),
+            instr_loc: c.comp_loc,
+          },
+        ],
+      );
+    | [@implicit_arity] CIf(cond, thn, els) =>
       [@implicit_arity]
-      MADT(
-        compile_imm(env, ttag),
-        compile_imm(env, vtag),
-        List.map(compile_imm(env), args),
-      ),
-    )
-  | CString(s) => MAllocate(MString(s))
-  | CInt32(i) => MAllocate(MInt32(i))
-  | CInt64(i) => MAllocate(MInt64(i))
-  | [@implicit_arity] CGetTupleItem(idx, tup) =>
-    [@implicit_arity] MTupleOp(MTupleGet(idx), compile_imm(env, tup))
-  | [@implicit_arity] CSetTupleItem(idx, tup, value) =>
-    [@implicit_arity]
-    MTupleOp(
-      [@implicit_arity] MTupleSet(idx, compile_imm(env, value)),
-      compile_imm(env, tup),
-    )
-  | [@implicit_arity] CGetAdtItem(idx, adt) =>
-    [@implicit_arity] MAdtOp(MAdtGet(idx), compile_imm(env, adt))
-  | CGetAdtTag(adt) =>
-    [@implicit_arity] MAdtOp(MAdtGetTag, compile_imm(env, adt))
-  | [@implicit_arity] CGetRecordItem(idx, record) =>
-    [@implicit_arity] MRecordOp(MRecordGet(idx), compile_imm(env, record))
-  | [@implicit_arity] CLambda(args, body) =>
-    MAllocate(MClosure(compile_lambda(env, args, body, c.comp_loc)))
-  | [@implicit_arity] CApp(f, args) =>
-    /* TODO: Utilize MCallKnown */
-    [@implicit_arity]
-    MCallIndirect(compile_imm(env, f), List.map(compile_imm(env), args))
-  | [@implicit_arity] CAppBuiltin(modname, name, args) =>
-    [@implicit_arity]
-    MCallKnown("builtin", List.map(compile_imm(env), args))
-  | CImmExpr(i) => MImmediate(compile_imm(env, i))
-  };
-  {instr_desc: desc, instr_loc: c.comp_loc}
+      MIf(
+        compile_imm(env, cond),
+        compile_anf_expr(env, thn),
+        compile_anf_expr(env, els),
+      )
+    | [@implicit_arity] CWhile(cond, body) =>
+      [@implicit_arity]
+      MWhile(compile_anf_expr(env, cond), compile_anf_expr(env, body))
+    | [@implicit_arity] CPrim1(Box, arg) =>
+      MAllocate(MBox(compile_imm(env, arg)))
+    | [@implicit_arity] CPrim1(Unbox, arg) =>
+      [@implicit_arity] MBoxOp(MBoxUnbox, compile_imm(env, arg))
+    | [@implicit_arity] CPrim1(p1, arg) =>
+      [@implicit_arity] MPrim1(p1, compile_imm(env, arg))
+    | [@implicit_arity] CPrim2(p2, arg1, arg2) =>
+      [@implicit_arity]
+      MPrim2(p2, compile_imm(env, arg1), compile_imm(env, arg2))
+    | [@implicit_arity] CAssign(arg1, arg2) =>
+      [@implicit_arity]
+      MBoxOp(MBoxUpdate(compile_imm(env, arg2)), compile_imm(env, arg1))
+    | CTuple(args) => MAllocate(MTuple(List.map(compile_imm(env), args)))
+    | CArray(args) => MAllocate(MArray(List.map(compile_imm(env), args)))
+    | [@implicit_arity] CArrayGet(idx, arr) =>
+      [@implicit_arity]
+      MArrayOp(MArrayGet(compile_imm(env, idx)), compile_imm(env, arr))
+    | [@implicit_arity] CArraySet(idx, arr, arg) =>
+      [@implicit_arity]
+      MArrayOp(
+        [@implicit_arity]
+        MArraySet(compile_imm(env, idx), compile_imm(env, arg)),
+        compile_imm(env, arr),
+      )
+    | [@implicit_arity] CRecord(ttag, args) =>
+      MAllocate(
+        [@implicit_arity]
+        MRecord(
+          compile_imm(env, ttag),
+          List.map(
+            (({txt: name}, arg)) => (name, compile_imm(env, arg)),
+            args,
+          ),
+        ),
+      )
+    | [@implicit_arity] CAdt(ttag, vtag, args) =>
+      MAllocate(
+        [@implicit_arity]
+        MADT(
+          compile_imm(env, ttag),
+          compile_imm(env, vtag),
+          List.map(compile_imm(env), args),
+        ),
+      )
+    | CString(s) => MAllocate(MString(s))
+    | CInt32(i) => MAllocate(MInt32(i))
+    | CInt64(i) => MAllocate(MInt64(i))
+    | [@implicit_arity] CGetTupleItem(idx, tup) =>
+      [@implicit_arity] MTupleOp(MTupleGet(idx), compile_imm(env, tup))
+    | [@implicit_arity] CSetTupleItem(idx, tup, value) =>
+      [@implicit_arity]
+      MTupleOp(
+        [@implicit_arity] MTupleSet(idx, compile_imm(env, value)),
+        compile_imm(env, tup),
+      )
+    | [@implicit_arity] CGetAdtItem(idx, adt) =>
+      [@implicit_arity] MAdtOp(MAdtGet(idx), compile_imm(env, adt))
+    | CGetAdtTag(adt) =>
+      [@implicit_arity] MAdtOp(MAdtGetTag, compile_imm(env, adt))
+    | [@implicit_arity] CGetRecordItem(idx, record) =>
+      [@implicit_arity] MRecordOp(MRecordGet(idx), compile_imm(env, record))
+    | [@implicit_arity] CLambda(args, body) =>
+      MAllocate(MClosure(compile_lambda(env, args, body, c.comp_loc)))
+    | [@implicit_arity] CApp(f, args) =>
+      /* TODO: Utilize MCallKnown */
+      [@implicit_arity]
+      MCallIndirect(compile_imm(env, f), List.map(compile_imm(env), args))
+    | [@implicit_arity] CAppBuiltin(modname, name, args) =>
+      [@implicit_arity]
+      MCallKnown("builtin", List.map(compile_imm(env), args))
+    | CImmExpr(i) => MImmediate(compile_imm(env, i))
+    };
+  {instr_desc: desc, instr_loc: c.comp_loc};
 }
 and compile_anf_expr = (env, a) =>
   switch (a.anf_desc) {
@@ -606,39 +615,45 @@ and compile_anf_expr = (env, a) =>
       };
     let locations = List.mapi(get_loc, binds);
     let new_env =
-      BatList.fold_left2(
-        (acc, new_loc, (id, _)) => {
-          ...acc,
-          ce_binds: Ident.add(id, new_loc, acc.ce_binds),
-          ce_stack_idx: acc.ce_stack_idx + 1,
-        }, /* FIXME: Why is this not ce_stack_idx + (List.length binds)?? */
+      List.fold_left2(
+        (acc, new_loc, (id, _)) =>
+          {
+            ...acc,
+            ce_binds: Ident.add(id, new_loc, acc.ce_binds),
+            ce_stack_idx: acc.ce_stack_idx + 1,
+          }, /* FIXME: Why is this not ce_stack_idx + (List.length binds)?? */
         env,
         locations,
         binds,
       );
     switch (recflag) {
     | Nonrecursive =>
-      BatList.fold_right2(
-        (loc, (_, rhs), acc) => [
-          {instr_desc: MStore([(loc, compile_comp(env, rhs))]), instr_loc: rhs.comp_loc},
-          ...acc,
-        ],
+      List.fold_right2(
+        (loc, (_, rhs), acc) =>
+          [
+            {
+              instr_desc: MStore([(loc, compile_comp(env, rhs))]),
+              instr_loc: rhs.comp_loc,
+            },
+            ...acc,
+          ],
         locations,
         binds,
         compile_anf_expr(new_env, body),
       )
     | Recursive =>
       let binds =
-        BatList.fold_left2(
-          (acc, loc, (_, rhs)) => [
-            (loc, compile_comp(new_env, rhs)),
-            ...acc,
-          ],
+        List.fold_left2(
+          (acc, loc, (_, rhs)) =>
+            [(loc, compile_comp(new_env, rhs)), ...acc],
           [],
           locations,
           binds,
         );
-      [{instr_desc: MStore(List.rev(binds)), instr_loc: a.anf_loc}, ...compile_anf_expr(new_env, body)];
+      [
+        {instr_desc: MStore(List.rev(binds)), instr_loc: a.anf_loc},
+        ...compile_anf_expr(new_env, body),
+      ];
     };
   | AEComp(c) => [compile_comp(env, c)]
   };
@@ -666,9 +681,9 @@ let compile_remaining_worklist = () => {
     let func = {
       index: Int32.of_int(index),
       arity: Int32.of_int(arity),
-      body: body,
+      body,
       stack_size,
-      func_loc: loc
+      func_loc: loc,
     };
     [func, ...funcs];
   };
@@ -682,8 +697,8 @@ let lift_imports = (env, imports) => {
     | [@implicit_arity] FunctionShape(inputs, outputs) =>
       [@implicit_arity]
       MFuncImport(
-        BatList.init(inputs, _ => I32Type),
-        BatList.init(outputs, _ => I32Type),
+        List.init(inputs, _ => I32Type),
+        List.init(outputs, _ => I32Type),
       );
 
   let process_import =
@@ -708,12 +723,19 @@ let lift_imports = (env, imports) => {
         [new_mod, ...imports],
         [
           [
-            {instr_desc: MStore([
-              (
-                MGlobalBind(Int32.of_int(glob)),
-                {instr_desc: MCallKnown(func_name, []), instr_loc: Location.dummy_loc},
-              ),
-            ]), instr_loc: Location.dummy_loc},
+            {
+              instr_desc:
+                MStore([
+                  (
+                    MGlobalBind(Int32.of_int(glob)),
+                    {
+                      instr_desc: MCallKnown(func_name, []),
+                      instr_loc: Location.dummy_loc,
+                    },
+                  ),
+                ]),
+              instr_loc: Location.dummy_loc,
+            },
           ],
           ...setups,
         ],
@@ -751,14 +773,24 @@ let lift_imports = (env, imports) => {
               failwith("NYI: Multi-result wrapper");
             } else {
               [
-                {instr_desc: MStore([
-                  (
-                    MGlobalBind(Int32.of_int(glob)),
-                    {instr_desc: MAllocate(
-                      MClosure(compile_wrapper(env, func_name, inputs)),
-                    ), instr_loc: Location.dummy_loc},
-                  ),
-                ]), instr_loc: Location.dummy_loc},
+                {
+                  instr_desc:
+                    MStore([
+                      (
+                        MGlobalBind(Int32.of_int(glob)),
+                        {
+                          instr_desc:
+                            MAllocate(
+                              MClosure(
+                                compile_wrapper(env, func_name, inputs),
+                              ),
+                            ),
+                          instr_loc: Location.dummy_loc,
+                        },
+                      ),
+                    ]),
+                  instr_loc: Location.dummy_loc,
+                },
               ];
             }
           },
@@ -799,10 +831,8 @@ let transl_anf_program =
   let exports = global_exports();
   let functions =
     List.map(
-      ({body} as f: Mashtree.mash_function) => {
-        ...f,
-        body: run_register_allocation(body),
-      },
+      ({body} as f: Mashtree.mash_function) =>
+        {...f, body: run_register_allocation(body)},
       compile_remaining_worklist(),
     );
 

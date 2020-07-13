@@ -1,6 +1,6 @@
 (executable
  (name test)
- (libraries grain oUnit extlib))
+ (libraries grain str oUnit))
 
 (rule
  (alias runtest)

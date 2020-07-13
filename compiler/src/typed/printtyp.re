@@ -844,7 +844,7 @@ let rec tree_of_type_decl = (id, decl) => {
     List.iter(
       c => {
         mark_loops_constructor_arguments(c.cd_args);
-        Option.may(mark_loops, c.cd_res);
+        Option.iter(mark_loops, c.cd_res);
       },
       cstrs,
     )

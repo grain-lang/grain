@@ -47,7 +47,8 @@ let compile_file = (name, outfile_arg) => {
     Printexc.record_backtrace(true);
   };
   try({
-    let outfile = Option.default(default_output_filename(name), outfile_arg);
+    let outfile =
+      Option.value(~default=default_output_filename(name), outfile_arg);
     if (Grain_utils.Config.debug^) {
       Compile.save_mashed(name, default_mashtree_filename(outfile));
     };
@@ -61,7 +62,7 @@ let compile_file = (name, outfile_arg) => {
         None;
       };
     Grain_parsing.Location.report_exception(Format.err_formatter, exn);
-    Option.may(
+    Option.iter(
       s => {
         prerr_string("Backtrace:\n");
         prerr_string(s);

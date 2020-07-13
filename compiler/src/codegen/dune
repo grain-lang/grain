@@ -10,7 +10,6 @@
   grain_utils
   ppx_sexp_conv.runtime-lib
   sexplib
-  stdint
   binaryen)
  (preprocess
   (pps ppx_sexp_conv)))

@@ -38,9 +38,7 @@ let grain_magic = [0x53, 0x77, 0x13, 0x00]; /* punny, I know [16 April 2018] <Ph
 let latest_abi = {major: 1, minor: 0, patch: 0};
 
 let identity: 'a. 'a => 'a = x => x;
-let i64_of_u64 = Stdint.Int64.of_uint64;
-let i32_of_u64 = Stdint.Int32.of_uint64;
-let u32_of_u64 = Stdint.Uint32.of_uint64;
+let i32_of_u64 = Int64.to_int32;
 
 exception MalformedLEB(bool, int);
 exception MalformedSectionType(int, option(int));
@@ -52,17 +50,11 @@ exception MalformedSectionType(int, option(int));
 
 let read_leb128:
   'a.
-  (
-    ~signed: bool=?,
-    ~maxbits: int=?,
-    ~conv: Stdint.uint64 => 'a,
-    unit => int
-  ) =>
-  'a
+  (~signed: bool=?, ~maxbits: int=?, ~conv: int64 => 'a, unit => int) => 'a
  =
   (~signed=false, ~maxbits=32, ~conv, next_byte) => {
     let rec read_int = maxbits => {
-      let (zero, of_int, add, mul) = Stdint.Uint64.(zero, of_int, add, mul);
+      let (zero, of_int, add, mul) = Int64.(zero, of_int, add, mul);
       if (maxbits <= 0) {
         zero;
       } else {
@@ -95,7 +87,7 @@ let read_leb128:
 
 /* https://graphics.stanford.edu/~seander/bithacks.html#IntegerLog */
 let log2_u64 = x => {
-  open Stdint.Uint64;
+  open Int64;
   let v = ref(zero);
   let b = [|
     of_int(0x2),
@@ -117,7 +109,7 @@ let log2_u64 = x => {
 };
 
 let log2_i64 = x => {
-  open Stdint.Int64;
+  open Int64;
   let v = ref(zero);
   let b = [|
     of_int(0x2),
@@ -125,9 +117,7 @@ let log2_i64 = x => {
     of_int(0xF0),
     of_int(0xFF00),
     of_int(0xFFFF0000),
-    of_uint64(
-      Stdint.Uint64.shift_left(Stdint.Uint64.of_int(0xFFFFFFFF), 8),
-    ),
+    Int64.shift_left(Int64.of_int(0xFFFFFFFF), 8),
   |];
   let s = [|1, 2, 4, 8, 16, 32|];
   let r = ref(0);
@@ -141,71 +131,69 @@ let log2_i64 = x => {
 };
 
 /* Encoding algorithms taken from https://en.wikipedia.org/wiki/LEB128 */
-let write_leb128_unsigned: (~sink: int => unit, Stdint.uint64) => unit = (
+let write_leb128_unsigned: (~sink: int => unit, int64) => unit = (
   (~sink, num) => {
-    open Stdint.Uint64;
-    let last_byte_low = n =>
-      Stdint.Uint8.of_uint64(logand(of_int(0x7F), n));
-    let set_high_bit = Stdint.Uint8.(logor(of_int(0x80)));
+    open Int64;
+    let last_byte_low = n => Int64.to_int(logand(of_int(0x7F), n));
+    let set_high_bit = Int.(logor(0x80));
     let rec process = num => {
       let byte = last_byte_low(num);
       let num = shift_right(num, 7);
       if (num == zero) {
-        sink(Stdint.Uint8.to_int(byte));
+        sink(byte);
       } else {
-        sink(Stdint.Uint8.to_int(set_high_bit(byte)));
+        sink(set_high_bit(byte));
         process(num);
       };
     };
     process(num);
   }:
-    (~sink: int => unit, Stdint.uint64) => unit /* last 7 bits */
+    (~sink: int => unit, int64) => unit /* last 7 bits */
 );
 
-let write_leb128_signed: (~sink: int => unit, Stdint.int64) => unit = (
+let write_leb128_signed: (~sink: int => unit, int64) => unit = (
   (~sink, num) => {
-    open Stdint.Int64;
-    let last_byte_low = n => Stdint.Uint8.of_int64(logand(of_int(0x7F), n));
-    let set_high_bit = Stdint.Uint8.(logor(of_int(0x80)));
-    let get_sign_bit = Stdint.Uint8.(logand(of_int(0x40)));
-    let nonneg_finished = (b, n) =>
-      n == zero && get_sign_bit(b) == Stdint.Uint8.zero;
+    open Int64;
+    let last_byte_low = n => Int64.to_int(logand(of_int(0x7F), n));
+    let set_high_bit = Int.(logor(0x80));
+    let get_sign_bit = Int.(logand(0x40));
+    let nonneg_finished = (b, n) => n == zero && get_sign_bit(b) == Int.zero;
     let neg_finished = (b, n) =>
-      n == of_int(-1) && get_sign_bit(b) != Stdint.Uint8.zero;
+      n == of_int(-1) && get_sign_bit(b) != Int.zero;
     let rec process = num => {
       let byte = last_byte_low(num);
       let num = shift_right(num, 7);
       if (nonneg_finished(byte, num) || neg_finished(byte, num)) {
-        sink(Stdint.Uint8.to_int(byte));
+        sink(byte);
       } else {
-        sink(Stdint.Uint8.to_int(set_high_bit(byte)));
+        sink(set_high_bit(byte));
         process(num);
       };
     };
     process(num);
   }:
-    (~sink: int => unit, Stdint.int64) => unit /* last 7 bits */ /* Arithmetic shift */
+    (~sink: int => unit, int64) => unit /* last 7 bits */ /* Arithmetic shift */
 );
 
-let read_leb128_i32 = (bytesrc): Stdint.int32 =>
+let read_leb128_i32 = (bytesrc): int32 =>
   read_leb128(~signed=true, ~maxbits=32, ~conv=i32_of_u64, bytesrc);
 let read_leb128_i32_input = inchan =>
   read_leb128_i32(() => input_byte(inchan));
 let read_leb128_i32_stream = stream =>
   read_leb128_i32(() => Stream.next(stream));
-let read_leb128_u32 = (bytesrc): Stdint.uint32 =>
-  read_leb128(~signed=false, ~maxbits=32, ~conv=u32_of_u64, bytesrc);
+let read_leb128_u32 = (bytesrc): int32 =>
+  read_leb128(~signed=false, ~maxbits=32, ~conv=i32_of_u64, bytesrc);
 let read_leb128_u32_input = inchan =>
   read_leb128_u32(() => input_byte(inchan));
 let read_leb128_u32_stream = stream =>
   read_leb128_u32(() => Stream.next(stream));
-let read_leb128_i64 = (bytesrc): Stdint.int64 =>
-  read_leb128(~signed=true, ~maxbits=64, ~conv=i64_of_u64, bytesrc);
+let read_leb128_i64 = (bytesrc): int64 =>
+  read_leb128(~signed=true, ~maxbits=64, ~conv=identity, bytesrc);
 let read_leb128_i64_input = inchan =>
   read_leb128_i64(() => input_byte(inchan));
 let read_leb128_i64_stream = stream =>
   read_leb128_i64(() => Stream.next(stream));
-let read_leb128_u64 = (bytesrc): Stdint.uint64 =>
+let read_leb128_u64 = (bytesrc): int64 =>
   read_leb128(~signed=false, ~maxbits=64, ~conv=identity, bytesrc);
 let read_leb128_u64_input = inchan =>
   read_leb128_u64(() => input_byte(inchan));
@@ -213,9 +201,9 @@ let read_leb128_u64_stream = stream =>
   read_leb128_u64(() => Stream.next(stream));
 
 let write_leb128_i32 = (bytesink, n): unit =>
-  write_leb128_signed(bytesink, Stdint.Int64.of_int32(n));
+  write_leb128_signed(bytesink, Int64.of_int32(n));
 let write_leb128_u32 = (bytesink, n): unit =>
-  write_leb128_unsigned(bytesink, Stdint.Uint64.of_uint32(n));
+  write_leb128_unsigned(bytesink, Int64.of_int32(n));
 let write_leb128_i64 = (bytesink, n): unit =>
   write_leb128_signed(bytesink, n);
 let write_leb128_u64 = (bytesink, n): unit =>
@@ -226,7 +214,7 @@ let read_int32 = inchan => {
   if (input(inchan, bytes, 0, 4) != 4) {
     raise(End_of_file);
   };
-  Stdint.Int32.(to_int(of_bytes_little_endian(bytes, 0)));
+  Bytes.get_int32_le(bytes, 0);
 };
 
 let read_abi_version = inchan => {
@@ -235,47 +223,45 @@ let read_abi_version = inchan => {
   if (input(inchan, bytes, 0, num_bytes) != num_bytes) {
     raise(End_of_file);
   };
-  open Stdint.Uint32;
-  let major = to_int(of_bytes_little_endian(bytes, 0));
-  let minor = to_int(of_bytes_little_endian(bytes, 4));
-  let patch = to_int(of_bytes_little_endian(bytes, 8));
+  open Int32;
+  let major = to_int(Bytes.get_int32_le(bytes, 0));
+  let minor = to_int(Bytes.get_int32_le(bytes, 4));
+  let patch = to_int(Bytes.get_int32_le(bytes, 8));
   {major, minor, patch};
 };
 
 let serialize_int32 = i => {
   let bytes = Bytes.create(4);
-  open Stdint.Uint32;
-  to_bytes_little_endian(of_int(i), bytes, 0);
+  open Int32;
+  Bytes.set_int32_le(bytes, 0, of_int(i));
   bytes;
 };
 
 let serialize_abi_version = ({major, minor, patch}) => {
   let num_bytes = 4 * 3;
   let bytes = Bytes.create(num_bytes);
-  open Stdint.Uint32;
-  to_bytes_little_endian(of_int(major), bytes, 0);
-  to_bytes_little_endian(of_int(minor), bytes, 4);
-  to_bytes_little_endian(of_int(patch), bytes, 8);
+  open Int32;
+  Bytes.set_int32_le(bytes, 0, of_int(major));
+  Bytes.set_int32_le(bytes, 4, of_int(minor));
+  Bytes.set_int32_le(bytes, 8, of_int(patch));
   bytes;
 };
 
-let utf8_encode = (ints) => {
+let utf8_encode = ints => {
   let buf = Buffer.create(14);
-  List.iter((i) => {
-    Buffer.add_utf_8_uchar(buf, Uchar.of_int(i));
-  }, ints);
+  List.iter(i => {Buffer.add_utf_8_uchar(buf, Uchar.of_int(i))}, ints);
   Buffer.contents(buf);
-}
+};
 
-let utf8_decode = (str) => {
-  List.init(String.length(str), (i) => {
-    Uchar.to_int(Uchar.of_char(String.get(str, i)));
+let utf8_decode = str => {
+  List.init(String.length(str), i => {
+    Uchar.to_int(Uchar.of_char(str.[i]))
   });
-}
+};
 
 let section_type_of_int = (~pos=?, ~name=?) =>
   fun
-  | 0 => Custom(Option.default("", name))
+  | 0 => Custom(Option.value(~default="", name))
   | 1 => Type
   | 2 => Import
   | 3 => Function
@@ -336,19 +322,19 @@ let get_wasm_sections = (~reset=false, inchan) => {
   let next_section = () =>
     try({
       let sec_type = section_type_of_int(input_byte(inchan));
-      let size = Stdint.Uint32.to_int(read_leb128_u32_input(inchan));
+      let size = Int32.to_int(read_leb128_u32_input(inchan));
       let offset = pos_in(inchan);
       let (sec_type, true_offset, true_size) =
         switch (sec_type) {
         | Custom(_) =>
-          let name_len = Stdint.Uint32.to_int(read_leb128_u32_input(inchan));
+          let name_len = Int32.to_int(read_leb128_u32_input(inchan));
           let name = really_input_string(inchan, name_len);
-          /*let bstr bs = "[" ^ (ExtString.String.join ", " (List.map (Printf.sprintf "0x%02x") bs)) ^ "]" in
+          /*let bstr bs = "[" ^ (String.concat ", " (List.map (Printf.sprintf "0x%02x") bs)) ^ "]" in
             Printf.eprintf "read: size: %d; name_len: %d; name: %s\n"
-              size name_len (bstr (List.map int_of_char @@ ExtString.String.explode name));*/
+              size name_len (bstr (List.map int_of_char @@ String_util.explode name));*/
           let name =
             utf8_encode(
-              List.map(int_of_char) @@ ExtString.String.explode(name),
+              List.map(int_of_char) @@ String_utils.explode(name),
             );
           let true_offset = pos_in(inchan);
           (Custom(name), true_offset, size - (true_offset - offset));
@@ -383,16 +369,16 @@ let write_wasm_section_header = ({sec_type, size}, ochan) => {
     let bytes = ref([]);
     let push = i => bytes := [i, ...bytes^];
     let name_bytes = utf8_decode(name);
-    write_leb128_u32(push, Stdint.Uint32.of_int(List.length(name_bytes)));
+    write_leb128_u32(push, Int32.of_int(List.length(name_bytes)));
     bytes := List.rev(bytes^);
     let full_size = size + List.length(bytes^) + List.length(name_bytes);
-    /*let bstr bs = "[" ^ (ExtString.String.join ", " (List.map (Printf.sprintf "0x%02x") bs)) ^ "]" in
+    /*let bstr bs = "[" ^ (String.concat ", " (List.map (Printf.sprintf "0x%02x") bs)) ^ "]" in
       Printf.eprintf "write: size: %d; name: %s; bytes: %s; name_bytes: %s; full_size: %d\n"
         size name (bstr !bytes) (bstr name_bytes) full_size;*/
-    write_leb128_u32(output_byte(ochan), Stdint.Uint32.of_int(full_size));
+    write_leb128_u32(output_byte(ochan), Int32.of_int(full_size));
     List.iter(output_byte(ochan), bytes^);
     List.iter(output_byte(ochan), name_bytes);
-  | _ => write_leb128_u32(output_byte(ochan), Stdint.Uint32.of_int(size))
+  | _ => write_leb128_u32(output_byte(ochan), Int32.of_int(size))
   };
 };
 
@@ -415,7 +401,7 @@ let get_grain_custom_info = inchan =>
       None;
     } else {
       let version = read_abi_version(inchan);
-      let section_name_length = read_int32(inchan);
+      let section_name_length = Int32.to_int(read_int32(inchan));
       let section_name_bytes = Bytes.create(section_name_length);
       if (input(inchan, section_name_bytes, 0, section_name_length)
           != section_name_length) {
@@ -430,12 +416,12 @@ let get_grain_custom_info = inchan =>
 
 let serialize_grain_custom_info = (sec_name, abi_version) => {
   let sec_bytes = Bytes.of_string(sec_name);
-  let buf = BatBuffer.create(Bytes.length(sec_bytes) + 4 + 4 * 3 + 4);
-  List.iter(b => BatBuffer.add_char(buf, char_of_int(b)), grain_magic);
-  BatBuffer.add_bytes(buf, serialize_abi_version(abi_version));
-  BatBuffer.add_bytes(buf, serialize_int32(Bytes.length(sec_bytes)));
-  BatBuffer.add_bytes(buf, sec_bytes);
-  BatBuffer.to_bytes(buf);
+  let buf = Buffer.create(Bytes.length(sec_bytes) + 4 + 4 * 3 + 4);
+  List.iter(b => Buffer.add_char(buf, char_of_int(b)), grain_magic);
+  Buffer.add_bytes(buf, serialize_abi_version(abi_version));
+  Buffer.add_bytes(buf, serialize_int32(Bytes.length(sec_bytes)));
+  Buffer.add_bytes(buf, sec_bytes);
+  Buffer.to_bytes(buf);
 };
 
 module type BinarySectionSpec = {

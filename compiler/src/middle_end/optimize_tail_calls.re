@@ -135,10 +135,11 @@ let get_transform_rule = id => Ident_tbl.find(transform_rules, id);
 let has_transform_rule = id => Ident_tbl.mem(transform_rules, id);
 
 let comp_is_tail_call = c =>
-  Option.default(false) @@ Analyze_tail_calls.comp_is_tail_call(c);
+  Option.value(~default=false) @@ Analyze_tail_calls.comp_is_tail_call(c);
 
 let comp_is_tail_recursive = c =>
-  Option.default(false) @@ Analyze_tail_calls.comp_is_tail_recursive(c);
+  Option.value(~default=false) @@
+  Analyze_tail_calls.comp_is_tail_recursive(c);
 
 let comp_is_tail_call_optimized = ({comp_analyses}) => {
   let rec find_tail_call_optimized = analyses =>
@@ -153,7 +154,8 @@ let comp_is_tail_call_optimized = ({comp_analyses}) => {
 let has_tail_recursive_binding = binds =>
   List.exists(
     ((_, exp)) =>
-      Option.default(false) @@ Analyze_tail_calls.comp_is_tail_recursive(exp),
+      Option.value(~default=false) @@
+      Analyze_tail_calls.comp_is_tail_recursive(exp),
     binds,
   );
 

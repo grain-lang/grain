@@ -992,7 +992,7 @@ let find_pers_struct = (~loc, check, name, filepath) => {
       let ps = {
         let filepath =
           try(Option.get(filepath)) {
-          | Option.No_value => failwith("No file path specified")
+          | Invalid_argument(_) => failwith("No file path specified")
           };
         switch (Persistent_signature.load^(~loc, ~unit_name=filepath)) {
         | Some(ps) => ps
@@ -1073,7 +1073,9 @@ let rec find_module_descr = (path, filename, env) =>
     | Not_found =>
       let (_, unit_source) = get_unit();
       if (Ident.persistent(id)
-          && !(Option.default(Ident.name(id), filename) == unit_source)) {
+          && !(
+               Option.value(~default=Ident.name(id), filename) == unit_source
+             )) {
         find_pers_struct(~loc=Location.dummy_loc, Ident.name(id), filename).
           ps_comps;
       } else {
@@ -1124,7 +1126,9 @@ let find_module = (~alias, path, filename, env) =>
     | Not_found =>
       let (_, unit_source) = get_unit();
       if (Ident.persistent(id)
-          && !(Option.default(Ident.name(id), filename) == unit_source)) {
+          && !(
+               Option.value(~default=Ident.name(id), filename) == unit_source
+             )) {
         let ps =
           find_pers_struct(
             ~loc=Location.dummy_loc,
@@ -1279,12 +1283,13 @@ and lookup_module = (~loc=?, ~load, ~mark, id, filename, env): Path.t =>
     }) {
     | Not_found =>
       let (_, unit_source) = get_unit();
-      if (Option.default(s, filename) == unit_source) {
+      if (Option.value(~default=s, filename) == unit_source) {
         raise(Not_found);
       };
       let p = PIdent(Ident.create_persistent(s));
-      let loc = Option.default(Location.dummy_loc, loc);
-      /*!Grain_utils.Config.transparent_modules &&*/ if (!load) {
+      let loc = Option.value(~default=Location.dummy_loc, loc);
+      // !Grain_utils.Config.transparent_modules &&
+      if (!load) {
         check_pers_struct(~loc, s, filename);
       } else {
         ignore(find_pers_struct(~loc, s, filename));
@@ -2152,7 +2157,8 @@ let add_module_signature =
 
   let mod_alias =
     switch (
-      Option.default(Location.mknoloc(mod_name), mod_.pimp_mod_alias).txt
+      Option.value(~default=Location.mknoloc(mod_name), mod_.pimp_mod_alias).
+        txt
     ) {
     | Identifier.IdentName(name) => name
     | Identifier.IdentExternal(_) =>
@@ -2274,7 +2280,7 @@ let open_signature =
         );
       switch (value) {
       | Some((val_name, val_alias)) =>
-        let new_name = Option.default(val_name, val_alias);
+        let new_name = Option.value(~default=val_name, val_alias);
         switch (new_name.txt) {
         | Identifier.IdentName(id_name) =>
           imported := [val_name, ...imported^];

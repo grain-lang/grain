@@ -199,7 +199,7 @@ let pad_args: 'a. ('a, list('a)) => list('a) =
     if (pad_amount == 0) {
       args;
     } else {
-      args @ BatList.init(pad_amount, _ => pad_elt);
+      args @ List.init(pad_amount, _ => pad_elt);
     };
   };
 

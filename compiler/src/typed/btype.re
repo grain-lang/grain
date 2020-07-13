@@ -208,7 +208,7 @@ let type_iterators = {
     iter_type_expr_kind(it.it_type_expr(it), kind)
   and it_module_declaration = (it, md) => it.it_module_type(it, md.md_type)
   and it_modtype_declaration = (it, mtd) =>
-    Option.may(it.it_module_type(it), mtd.mtd_type)
+    Option.iter(it.it_module_type(it), mtd.mtd_type)
   and it_do_type_expr = (it, ty) => {
     iter_type_expr(it.it_type_expr(it), ty);
     switch (ty.desc) {

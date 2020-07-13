@@ -3,6 +3,7 @@ open Mashtree;
 open Value_tags;
 open Binaryen;
 open Concatlist; /* NOTE: This import shadows (@) and introduces (@+) and (+@) */
+open Grain_utils;
 
 /* [TODO] Should probably be a config variable */
 let memory_tracing_enabled = false;
@@ -332,7 +333,7 @@ let runtime_function_imports =
         mimp_type:
           [@implicit_arity]
           MFuncImport(
-            BatList.init(Runtime_errors.max_arity + 1, _ => I32Type),
+            List.init(Runtime_errors.max_arity + 1, _ => I32Type),
             [],
           ),
         mimp_kind: MImportWasm,
@@ -358,7 +359,6 @@ let init_codegen_env = () => {
   imported_globals: Ident.empty,
 };
 
-
 let encoded_int32 = n => n * 2;
 
 let const_int32 = n => Literal.int32(Int32.of_int(n));
@@ -378,7 +378,7 @@ let grain_number_min = (-0x3fffffff); // 0xC0000001
 
 /** Constant compilation */
 
-let rec compile_const = c: Literal.t => {
+let rec compile_const = (c): Literal.t => {
   let identity: 'a. 'a => 'a = x => x;
   let conv_int32 = Int32.(mul(of_int(2)));
   let conv_int64 = Int64.(mul(of_int(2)));
@@ -408,12 +408,13 @@ let const_void = () => compile_const(const_void);
 let store =
     (~ty=Type.int32, ~align=2, ~offset=0, ~sz=None, wasm_mod, ptr, arg) => {
   let sz =
-    Option.default(
-      switch (ty) {
-      | a when a === Type.int32 || a === Type.float32 => 4
-      | a when a === Type.int64 || a === Type.float64 => 8
-      | _ => failwith("sizing not defined for this type")
-      },
+    Option.value(
+      ~default=
+        switch (ty) {
+        | a when a === Type.int32 || a === Type.float32 => 4
+        | a when a === Type.int64 || a === Type.float64 => 8
+        | _ => failwith("sizing not defined for this type")
+        },
       sz,
     );
   Expression.store(wasm_mod, sz, offset, align, ptr, arg, ty);
@@ -421,12 +422,13 @@ let store =
 
 let load = (~ty=Type.int32, ~align=2, ~offset=0, ~sz=None, wasm_mod, ptr) => {
   let sz =
-    Option.default(
-      switch (ty) {
-      | a when a === Type.int32 || a === Type.float32 => 4
-      | a when a === Type.int64 || a === Type.float64 => 8
-      | _ => failwith("sizing not defined for this type")
-      },
+    Option.value(
+      ~default=
+        switch (ty) {
+        | a when a === Type.int32 || a === Type.float32 => 4
+        | a when a === Type.int64 || a === Type.float64 => 8
+        | _ => failwith("sizing not defined for this type")
+        },
       sz,
     );
   Expression.load(wasm_mod, sz, offset, align, ty, ptr);
@@ -717,18 +719,14 @@ let call_decref_cleanup_locals = (wasm_mod, env, args) =>
     args,
     Type.int32,
   );
-let decref_cleanup_globals_name = name_of_memory_tracing_func(
+let decref_cleanup_globals_name =
+  name_of_memory_tracing_func(
     runtime_mod,
     decref_cleanup_globals_ident,
     decref_ignore_zeros_ident,
   );
 let call_decref_cleanup_globals = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    decref_cleanup_globals_name,
-    args,
-    Type.int32,
-  );
+  Expression.call(wasm_mod, decref_cleanup_globals_name, args, Type.int32);
 let call_decref_drop = (wasm_mod, env, args) =>
   Expression.call(
     wasm_mod,
@@ -799,7 +797,7 @@ type bind_action =
 
 let cleanup_local_slot_instructions = (wasm_mod, env: codegen_env) => {
   let instrs =
-    BatList.init(
+    List.init(
       env.stack_size,
       i => {
         let slot_no = i + env.num_args + Array.length(swap_slots);
@@ -1795,19 +1793,16 @@ let heap_check_memory = (wasm_mod, env, num_words: int) => {
 
 let buf_to_ints = (buf: Buffer.t): list(int64) => {
   let num_bytes = Buffer.length(buf);
-  let num_ints = round_up(num_bytes, 8);
-  let out_ints = ref([]);
+  let num_ints = num_bytes / 8;
+  let num_ints = num_bytes mod 8 == 0 ? num_ints : num_ints + 1;
+  let total_bytes = num_ints * 8;
 
-  let byte_buf = Bytes.create(num_ints * 8);
-  Buffer.blit(buf, 0, byte_buf, 0, num_bytes);
-  let bytes_to_int =
-    if (Sys.big_endian) {Stdint.Uint64.of_bytes_big_endian} else {
-      Stdint.Uint64.of_bytes_little_endian
-    };
-  for (i in 0 to num_ints - 1) {
-    out_ints := [bytes_to_int(byte_buf, i * 8), ...out_ints^];
-  };
-  List.rev @@ List.map(Stdint.Uint64.to_int64, out_ints^);
+  let bytes = Buffer.to_bytes(buf);
+  let bytes = Bytes.extend(bytes, 0, total_bytes - num_bytes);
+  // Clear out those uninitialized bytes
+  Bytes.fill(bytes, num_bytes, total_bytes - num_bytes, '\000');
+
+  List.init(num_ints, i => {Bytes.get_int64_ne(bytes, i * 8)});
 };
 
 let call_lambda = (wasm_mod, env, func, args) => {
@@ -1818,17 +1813,14 @@ let call_lambda = (wasm_mod, env, func, args) => {
     wasm_mod,
     load(~offset=4, wasm_mod, untagged_fn()),
     [untagged_fn(), ...compiled_args],
-    Type.create @@ BatArray.make(1 + List.length(args), Type.int32),
+    Type.create @@ Array.make(1 + List.length(args), Type.int32),
     Type.int32,
   );
 };
 
 let allocate_string = (wasm_mod, env, str) => {
-  let str_as_bytes = Bytes.of_string(str);
-  let num_bytes = Bytes.length(str_as_bytes);
-  let num_ints = round_up(num_bytes, 8);
-  let buf = Buffer.create(num_ints);
-  BatUTF8.iter(BatUTF8.Buf.add_char(buf), str);
+  let buf = Buffer.create(80);
+  Buffer.add_string(buf, str);
 
   let ints_to_push: list(int64) = buf_to_ints(buf);
   let get_swap = () => get_swap(wasm_mod, env, 0);
@@ -2011,16 +2003,17 @@ let allocate_closure =
   let closure_size = num_free_vars + 3;
   let get_swap = () => get_swap(wasm_mod, env, 0);
   let access_lambda =
-    Option.default(
-      Expression.binary(
-        wasm_mod,
-        Op.sub_int32,
-        get_swap(),
-        Expression.const(
+    Option.value(
+      ~default=
+        Expression.binary(
           wasm_mod,
-          const_int32 @@ 4 * round_allocation_size(closure_size),
+          Op.sub_int32,
+          get_swap(),
+          Expression.const(
+            wasm_mod,
+            const_int32 @@ 4 * round_allocation_size(closure_size),
+          ),
         ),
-      ),
       lambda,
     );
   env.backpatches := [(access_lambda, closure_data), ...env.backpatches^];
@@ -2833,12 +2826,12 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
       Expression.unary(wasm_mod, Op.extend_s_int32, compiled_arg2()),
     )
   | Divide =>
-    /* 
-    While (2a) / b = 2(a/b), we can't just untag b since b could be a multiple of 2,
-          yielding an odd (untagged) result.
-          Instead, perform the division and retag after:
-          (2a / 2b) * 2 = (a / b) * 2
-       */
+    /*
+     While (2a) / b = 2(a/b), we can't just untag b since b could be a multiple of 2,
+           yielding an odd (untagged) result.
+           Instead, perform the division and retag after:
+           (2a / 2b) * 2 = (a / b) * 2
+        */
     overflow_safe @@
     Expression.block(
       wasm_mod,
@@ -3391,7 +3384,7 @@ and compile_switch = (wasm_mod, env, arg, branches, default) => {
       | None => default_label
       | Some((_, b)) => b
       };
-    BatList.init(List.length(stack) + 1, get_slot);
+    List.init(List.length(stack) + 1, get_slot);
   };
   let rec process_branches = (count, stack, bs) => {
     let branch_name = Printf.sprintf("%s_branch_%d", switch_label, count);
@@ -3574,13 +3567,13 @@ let compile_function =
       ),
     );
   let locals =
-    BatList.init(stack_size, n => Type.int32)
+    List.init(stack_size, n => Type.int32)
     |> Array.of_list
     |> Array.append(swap_slots);
   Function.add_function(
     wasm_mod,
     func_name,
-    Type.create @@ BatArray.create(arity_int, Type.int32),
+    Type.create @@ Array.make(arity_int, Type.int32),
     Type.int32,
     locals,
     body,
@@ -3745,12 +3738,11 @@ let compile_tables = (wasm_mod, env, {functions, imports} as prog) => {
   );
 };
 
-let compile_elems = (wasm_mod, env, prog) =>
-  ();
+let compile_elems = (wasm_mod, env, prog) => ();
 
 let compile_globals = (wasm_mod, env, {num_globals} as prog) => {
   ignore @@
-  BatList.init(1 + num_globals, i =>
+  List.init(1 + num_globals, i =>
     Global.add_global(
       wasm_mod,
       Printf.sprintf("global_%d", i),
@@ -3770,24 +3762,25 @@ let compile_globals = (wasm_mod, env, {num_globals} as prog) => {
 };
 
 let compile_main = (wasm_mod, env, prog) => {
-  ignore @@ compile_function(
-      ~start=true,
-      wasm_mod,
-      env,
-      {
-        index: Int32.of_int(-99),
-        arity: Int32.zero,
-        body: prog.main_body,
-        stack_size: prog.main_body_stack_size,
-        func_loc: Grain_parsing.Location.dummy_loc,
-      },
-    )
+  ignore @@
+  compile_function(
+    ~start=true,
+    wasm_mod,
+    env,
+    {
+      index: Int32.of_int(-99),
+      arity: Int32.zero,
+      body: prog.main_body,
+      stack_size: prog.main_body_stack_size,
+      func_loc: Grain_parsing.Location.dummy_loc,
+    },
+  );
 };
 
 let compile_global_cleanup_function =
     (wasm_mod, env, {num_globals, functions}) => {
   let cleanup_calls =
-    BatList.init(num_globals, n =>
+    List.init(num_globals, n =>
       Expression.drop(
         wasm_mod,
         call_decref_cleanup_globals(
@@ -3833,9 +3826,8 @@ let compile_functions = (wasm_mod, env, {functions, num_globals} as prog) => {
 
 exception WasmRunnerError(Module.t, option(string), string);
 
-
 let validate_module = (~name=?, wasm_mod: Module.t) =>
-  try (assert(Module.validate(wasm_mod) == 1)) {
+  try(assert(Module.validate(wasm_mod) == 1)) {
   | Assert_failure(_) =>
     raise(
       [@implicit_arity]
@@ -3891,19 +3883,19 @@ let prepare = (env, {imports} as prog) => {
 
   let new_imports = List.append(runtime_imports, imports);
   let new_env =
-    BatList.fold_lefti(
+    List_utils.fold_lefti(
       process_import(~is_runtime_import=true),
       env,
       runtime_global_imports,
     );
   let new_env =
-    BatList.fold_lefti(
+    List_utils.fold_lefti(
       process_import(~is_runtime_import=true),
       new_env,
       runtime_function_imports,
     );
   let new_env =
-    BatList.fold_lefti(
+    List_utils.fold_lefti(
       process_import(~dynamic_offset=import_global_offset),
       new_env,
       imports,
@@ -3945,7 +3937,7 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
   let () = ignore @@ compile_globals(wasm_mod, env, prog);
   let () = ignore @@ compile_tables(wasm_mod, env, prog);
   let () = ignore @@ compile_elems(wasm_mod, env, prog);
-  
+
   validate_module(~name?, wasm_mod);
   // TODO: Enable Binaryen optimizations
   // https://github.com/grain-lang/grain/issues/196

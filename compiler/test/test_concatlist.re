@@ -8,7 +8,7 @@ let l1 = append(snoc(cons(1, empty), 2), cons(3, snoc(empty, 4)));
 
 let sexp_printer = (to_sexp, x) => Sexplib.Sexp.to_string_hum(to_sexp(x));
 let list_printer = (p, l) =>
-  "[" ++ ExtString.String.join("; ", List.map(p, l)) ++ "]";
+  "[" ++ String.concat("; ", List.map(p, l)) ++ "]";
 
 let str_printer = x => x;
 let num_printer = string_of_int;
