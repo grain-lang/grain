@@ -136,7 +136,7 @@ let malformed_identifiers = (errs, super) => {
 let types_have_correct_case = (errs, super) => {
   let check_uppercase = (loc, s) => {
     let first_char = s.[0];
-    if (Char_utils.is_lowercase_letter(first_char)) {
+    if (!Char_utils.is_uppercase_letter(first_char)) {
       errs := [[@implicit_arity] TypeNameShouldBeUppercase(s, loc), ...errs^];
     };
   };
@@ -156,7 +156,7 @@ let types_have_correct_case = (errs, super) => {
 let modules_have_correct_case = (errs, super) => {
   let check_uppercase = (loc, s) => {
     let first_char = s.[0];
-    if (Char_utils.is_lowercase_letter(first_char)) {
+    if (!Char_utils.is_uppercase_letter(first_char)) {
       errs :=
         [[@implicit_arity] ModuleNameShouldBeUppercase(s, loc), ...errs^];
     };
