@@ -1799,7 +1799,7 @@ let buf_to_ints = (buf: Buffer.t): list(int64) => {
 
   let bytes = Buffer.to_bytes(buf);
   let bytes = Bytes.extend(bytes, 0, total_bytes - num_bytes);
-  // Clear out those unitialized bytes
+  // Clear out those uninitialized bytes
   Bytes.fill(bytes, num_bytes, total_bytes - num_bytes, '\000');
 
   List.init(num_ints, i => {Bytes.get_int64_ne(bytes, i * 8)});
