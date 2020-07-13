@@ -7,7 +7,7 @@ let assert_equal_i32 = assert_equal(~printer=Int32.to_string);
 let assert_equal_i64 = assert_equal(~printer=Int64.to_string);
 
 let print_list = (printer, lst) =>
-  "[" ++ ExtString.String.join("; ", List.map(printer, lst)) ++ "]";
+  "[" ++ String.concat("; ", List.map(printer, lst)) ++ "]";
 
 let print_bytes = print_list(Printf.sprintf("0x%02x"));
 

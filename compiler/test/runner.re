@@ -242,7 +242,7 @@ let test_err = (~heap_size=?, program_str, outfile, errmsg, test_ctxt) => {
   assert_equal(
     errmsg,
     result,
-    ~cmp=(check, result) => Batteries.String.exists(result, check),
+    ~cmp=(check, result) => ExtString.String.exists(result, check),
     ~printer=Fun.id,
   );
 };
@@ -262,7 +262,7 @@ let test_run_file_err = (filename, name, errmsg, test_ctxt) => {
   assert_equal(
     errmsg,
     result,
-    ~cmp=(check, result) => Batteries.String.exists(result, check),
+    ~cmp=(check, result) => ExtString.String.exists(result, check),
     ~printer=Fun.id,
   );
 };

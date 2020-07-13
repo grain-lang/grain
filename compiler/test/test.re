@@ -1,6 +1,5 @@
 open OUnit2;
 open Printf;
-open Extlib;
 
 let () =
   Printexc.register_printer(exc =>
@@ -29,7 +28,11 @@ let rec readdir = (dir, excludes) => {
   |> Array.fold_left(
        (results, filename) => {
          let filepath = Filename.concat(dir, filename);
-         (Sys.is_directory(filepath) && List.for_all((exclude) => !BatString.starts_with(filename, exclude), excludes))
+         Sys.is_directory(filepath)
+         && List.for_all(
+              exclude => !ExtString.String.starts_with(filename, exclude),
+              excludes,
+            )
            ? Array.append(results, readdir(filepath, excludes))
            : Array.append(results, [|filepath|]);
        },
@@ -39,7 +42,7 @@ let rec readdir = (dir, excludes) => {
 
 let clean_stdlib = stdlib_dir =>
   Array.iter(
-    (file) =>
+    file =>
       if (Filename.check_suffix(file, ".wasm")) {
         Sys.remove(file);
       },

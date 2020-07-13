@@ -446,9 +446,7 @@ let compile_wrapper = (env, func_name, arity): Mashtree.closure_data => {
       instr_desc:
         MCallKnown(
           func_name,
-          BatList.init(arity, i =>
-            MImmBinding(MArgBind(Int32.of_int(i + 1)))
-          ),
+          List.init(arity, i => MImmBinding(MArgBind(Int32.of_int(i + 1)))),
         ),
       instr_loc: Location.dummy_loc,
     },
