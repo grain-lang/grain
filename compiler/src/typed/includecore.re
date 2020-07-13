@@ -359,8 +359,8 @@ let type_declarations =
               decl2.type_params,
               (),
             )) {
-          /*decl2.type_private*/
           [];
+            /*decl2.type_private*/
         } else {
           [Manifest];
         }

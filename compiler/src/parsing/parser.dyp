@@ -188,28 +188,28 @@ eos :
   | eols { None }
   | SEMI eols? { None }
 
-lbrack : 
+lbrack :
   | LBRACK eols? { () }
 
-rbrack : 
+rbrack :
   | eols? RBRACK { () }
 
-lparen : 
+lparen :
   | LPAREN eols? { () }
 
-rparen : 
+rparen :
   | eols? RPAREN { () }
 
-lbrace : 
+lbrace :
   | LBRACE eols? { () }
 
-rbrace : 
+rbrace :
   | eols? RBRACE { () }
 
-lcaret : 
+lcaret :
   | LCARET eols? { () }
 
-rcaret : 
+rcaret :
   | eols? RCARET { () }
 
 comma :
@@ -391,39 +391,39 @@ ext_constructor :
 
 plus_op :
   | PLUS { "+" }
-dash_op :  
+dash_op :
   | DASH { "-" }
-star_op :  
+star_op :
   | STAR { "*" }
-slash_op :  
+slash_op :
   | SLASH { "/" }
-percent_op :  
+percent_op :
   | PERCENT { "%" }
-is_op :  
+is_op :
   | IS { "is" }
-eqeq_op :  
+eqeq_op :
   | EQEQ { "==" }
-noteq_op :  
+noteq_op :
   | NOT EQUAL { "!=" }
-lcaret_op :  
+lcaret_op :
   | LCARET { "<" }
-rcaret_op :  
+rcaret_op :
   | RCARET { ">" }
-lesseq_op :  
+lesseq_op :
   | LESSEQ { "<=" }
-greatereq_op :  
+greatereq_op :
   | GREATEREQ { ">=" }
-ampamp_op :  
+ampamp_op :
   | AMPAMP { "&&" }
-pipepipe_op :  
+pipepipe_op :
   | PIPEPIPE { "||" }
-pluseq_op :  
+pluseq_op :
   | PLUS EQUAL { "+=" }
-dasheq_op :  
+dasheq_op :
   | DASH EQUAL { "-=" }
-stareq_op :  
+stareq_op :
   | STAR EQUAL { "*=" }
-slasheq_op :  
+slasheq_op :
   | SLASH EQUAL { "/=" }
 
 infix_op :

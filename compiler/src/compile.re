@@ -113,7 +113,7 @@ let next_state = ({cstate_desc, cstate_filename} as cs) => {
         };
 
       let parsed =
-        try (Driver.parse(~name?, lexbuf)) {
+        try(Driver.parse(~name?, lexbuf)) {
         | _ as e =>
           cleanup();
           raise(e);

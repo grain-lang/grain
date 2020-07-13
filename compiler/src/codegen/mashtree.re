@@ -160,11 +160,9 @@ type record_op =
 
 [@deriving sexp]
 type instr = {
-  instr_desc: instr_desc,
+  instr_desc,
   instr_loc: Location.t,
-}
-
-/* Optimized path for statically-known function names */ /* value, branches, default */ /* Items in the same list have their backpatching delayed until the end of that list */ /* Ignore the result of an expression. Used for sequences. */ /* Prints a message to the console; for compiler debugging */
+} /* Optimized path for statically-known function names */ /* value, branches, default */ /* Items in the same list have their backpatching delayed until the end of that list */ /* Ignore the result of an expression. Used for sequences. */ /* Prints a message to the console; for compiler debugging */
 [@deriving sexp]
 and instr_desc =
   | MImmediate(immediate)
