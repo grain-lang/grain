@@ -20,7 +20,7 @@ type iterator = {
 };
 
 let iter_loc = (sub, {loc, txt}) => sub.location(sub, loc);
-let iter_opt = (sub, opt) => Option.may(iter_loc(sub), opt);
+let iter_opt = (sub, opt) => Option.iter(iter_loc(sub), opt);
 
 module Cnst = {
   let iter = (sub, c) => ();

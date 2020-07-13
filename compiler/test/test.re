@@ -22,6 +22,16 @@ let () =
     }
   );
 
+let starts_with = (string, prefix) => {
+  let prefixLength = String.length(prefix);
+  let stringLength = String.length(string);
+  if (stringLength < prefixLength) {
+    false;
+  } else {
+    String.sub(string, 0, prefixLength) == prefix;
+  };
+};
+
 // Recursive readdir
 let rec readdir = (dir, excludes) => {
   Sys.readdir(dir)
@@ -30,7 +40,7 @@ let rec readdir = (dir, excludes) => {
          let filepath = Filename.concat(dir, filename);
          Sys.is_directory(filepath)
          && List.for_all(
-              exclude => !ExtString.String.starts_with(filename, exclude),
+              exclude => !starts_with(filename, exclude),
               excludes,
             )
            ? Array.append(results, readdir(filepath, excludes))

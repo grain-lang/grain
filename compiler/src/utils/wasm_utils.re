@@ -261,7 +261,7 @@ let utf8_decode = str => {
 
 let section_type_of_int = (~pos=?, ~name=?) =>
   fun
-  | 0 => Custom(Option.default("", name))
+  | 0 => Custom(Option.value(~default="", name))
   | 1 => Type
   | 2 => Import
   | 3 => Function
@@ -329,12 +329,12 @@ let get_wasm_sections = (~reset=false, inchan) => {
         | Custom(_) =>
           let name_len = Int32.to_int(read_leb128_u32_input(inchan));
           let name = really_input_string(inchan, name_len);
-          /*let bstr bs = "[" ^ (ExtString.String.join ", " (List.map (Printf.sprintf "0x%02x") bs)) ^ "]" in
+          /*let bstr bs = "[" ^ (String.concat ", " (List.map (Printf.sprintf "0x%02x") bs)) ^ "]" in
             Printf.eprintf "read: size: %d; name_len: %d; name: %s\n"
-              size name_len (bstr (List.map int_of_char @@ ExtString.String.explode name));*/
+              size name_len (bstr (List.map int_of_char @@ String_util.explode name));*/
           let name =
             utf8_encode(
-              List.map(int_of_char) @@ ExtString.String.explode(name),
+              List.map(int_of_char) @@ String_utils.explode(name),
             );
           let true_offset = pos_in(inchan);
           (Custom(name), true_offset, size - (true_offset - offset));
@@ -372,7 +372,7 @@ let write_wasm_section_header = ({sec_type, size}, ochan) => {
     write_leb128_u32(push, Int32.of_int(List.length(name_bytes)));
     bytes := List.rev(bytes^);
     let full_size = size + List.length(bytes^) + List.length(name_bytes);
-    /*let bstr bs = "[" ^ (ExtString.String.join ", " (List.map (Printf.sprintf "0x%02x") bs)) ^ "]" in
+    /*let bstr bs = "[" ^ (String.concat ", " (List.map (Printf.sprintf "0x%02x") bs)) ^ "]" in
       Printf.eprintf "write: size: %d; name: %s; bytes: %s; name_bytes: %s; full_size: %d\n"
         size name (bstr !bytes) (bstr name_bytes) full_size;*/
     write_leb128_u32(output_byte(ochan), Int32.of_int(full_size));

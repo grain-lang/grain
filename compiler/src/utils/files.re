@@ -4,19 +4,19 @@
 // TODO: Would be cool to upstream this to @reason-native/fp
 let remove_extension = baseName => {
   switch (String.rindex_opt(baseName, '.')) {
-  | Some(index) => ExtString.String.slice(~last=index, baseName)
+  | Some(index) => String_utils.slice(~last=index, baseName)
   | None => baseName
   };
 };
 
 let filename_to_module_name = fname => {
-  // TODO: Stdlib Option.bind when Extlib is gone
   let baseName =
-    switch (Fp.testForPath(fname)) {
-    | Some(Absolute(path)) => Fp.baseName(path)
-    | Some(Relative(path)) => Fp.baseName(path)
-    | None => Some(fname)
-    };
+    Option.bind(Fp.testForPath(fname), p =>
+      switch (p) {
+      | Absolute(path) => Fp.baseName(path)
+      | Relative(path) => Fp.baseName(path)
+      }
+    );
   switch (baseName) {
   | Some(baseName) => remove_extension(baseName)
   | None =>
@@ -71,7 +71,7 @@ let derelativize = (~base=?, fname) => {
           Invalid_argument(
             Printf.sprintf(
               "Invalid filepath base (base: '%s')",
-              Option.default("unknown", base),
+              Option.value(~default="unknown", base),
             ),
           ),
         )

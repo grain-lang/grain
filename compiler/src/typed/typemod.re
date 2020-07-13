@@ -714,7 +714,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       | [@implicit_arity] TTyConstr(id, args, a) =>
         let name =
           snd @@
-          Option.default((id, id)) @@
+          Option.value(~default=(id, id)) @@
           get_alias(type_export_aliases^, id);
         {
           ...expr,

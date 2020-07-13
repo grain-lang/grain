@@ -408,12 +408,13 @@ let const_void = () => compile_const(const_void);
 let store =
     (~ty=Type.int32, ~align=2, ~offset=0, ~sz=None, wasm_mod, ptr, arg) => {
   let sz =
-    Option.default(
-      switch (ty) {
-      | a when a === Type.int32 || a === Type.float32 => 4
-      | a when a === Type.int64 || a === Type.float64 => 8
-      | _ => failwith("sizing not defined for this type")
-      },
+    Option.value(
+      ~default=
+        switch (ty) {
+        | a when a === Type.int32 || a === Type.float32 => 4
+        | a when a === Type.int64 || a === Type.float64 => 8
+        | _ => failwith("sizing not defined for this type")
+        },
       sz,
     );
   Expression.store(wasm_mod, sz, offset, align, ptr, arg, ty);
@@ -421,12 +422,13 @@ let store =
 
 let load = (~ty=Type.int32, ~align=2, ~offset=0, ~sz=None, wasm_mod, ptr) => {
   let sz =
-    Option.default(
-      switch (ty) {
-      | a when a === Type.int32 || a === Type.float32 => 4
-      | a when a === Type.int64 || a === Type.float64 => 8
-      | _ => failwith("sizing not defined for this type")
-      },
+    Option.value(
+      ~default=
+        switch (ty) {
+        | a when a === Type.int32 || a === Type.float32 => 4
+        | a when a === Type.int64 || a === Type.float64 => 8
+        | _ => failwith("sizing not defined for this type")
+        },
       sz,
     );
   Expression.load(wasm_mod, sz, offset, align, ty, ptr);
@@ -1798,11 +1800,9 @@ let buf_to_ints = (buf: Buffer.t): list(int64) => {
   let bytes = Buffer.to_bytes(buf);
   let bytes = Bytes.extend(bytes, 0, total_bytes - num_bytes);
   // Clear out those unitialized bytes
-  Bytes.fill(bytes, num_bytes, total_bytes - num_bytes, '\x00');
+  Bytes.fill(bytes, num_bytes, total_bytes - num_bytes, '\000');
 
-  List.init(num_ints, (i) => {
-    Bytes.get_int64_ne(bytes, i * 8);
-  });
+  List.init(num_ints, i => {Bytes.get_int64_ne(bytes, i * 8)});
 };
 
 let call_lambda = (wasm_mod, env, func, args) => {
@@ -2003,16 +2003,17 @@ let allocate_closure =
   let closure_size = num_free_vars + 3;
   let get_swap = () => get_swap(wasm_mod, env, 0);
   let access_lambda =
-    Option.default(
-      Expression.binary(
-        wasm_mod,
-        Op.sub_int32,
-        get_swap(),
-        Expression.const(
+    Option.value(
+      ~default=
+        Expression.binary(
           wasm_mod,
-          const_int32 @@ 4 * round_allocation_size(closure_size),
+          Op.sub_int32,
+          get_swap(),
+          Expression.const(
+            wasm_mod,
+            const_int32 @@ 4 * round_allocation_size(closure_size),
+          ),
         ),
-      ),
       lambda,
     );
   env.backpatches := [(access_lambda, closure_data), ...env.backpatches^];

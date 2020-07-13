@@ -18,6 +18,11 @@ let either_printer = e =>
   | Right(v) => v
   };
 
+let exists = (check, result) =>
+  try(Str.search_forward(Str.regexp_string(check), result, 0) >= 0) {
+  | Not_found => false
+  };
+
 /* Read a file into a string */
 let string_of_file = file_name => {
   let inchan = open_in(file_name);
@@ -147,7 +152,7 @@ let test_run =
     });
   assert_equal(
     ~printer=Fun.id,
-    ~cmp=Option.default((==), cmp),
+    ~cmp=Option.value(~default=(==), cmp),
     expected ++ "\n",
     result,
   );
@@ -239,12 +244,7 @@ let test_err = (~heap_size=?, program_str, outfile, errmsg, test_ctxt) => {
     | exn => Printexc.to_string(exn)
     };
 
-  assert_equal(
-    errmsg,
-    result,
-    ~cmp=(check, result) => ExtString.String.exists(result, check),
-    ~printer=Fun.id,
-  );
+  assert_equal(errmsg, result, ~cmp=exists, ~printer=Fun.id);
 };
 
 let test_run_file_err = (filename, name, errmsg, test_ctxt) => {
@@ -259,10 +259,5 @@ let test_run_file_err = (filename, name, errmsg, test_ctxt) => {
     | exn => Printexc.to_string(exn)
     };
 
-  assert_equal(
-    errmsg,
-    result,
-    ~cmp=(check, result) => ExtString.String.exists(result, check),
-    ~printer=Fun.id,
-  );
+  assert_equal(errmsg, result, ~cmp=exists, ~printer=Fun.id);
 };

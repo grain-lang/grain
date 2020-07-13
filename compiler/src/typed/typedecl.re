@@ -454,7 +454,7 @@ let check_well_founded = (env, loc, path, to_check, ty) => {
       | [@implicit_arity] TTyConstr(p, _, _)
           when arg_exn != None || to_check(p) =>
         if (to_check(p)) {
-          Option.may(raise, arg_exn);
+          Option.iter(raise, arg_exn);
         } else {
           Btype.iter_type_expr(check(ty0, TypeSet.empty), ty);
         };
@@ -468,9 +468,9 @@ let check_well_founded = (env, loc, path, to_check, ty) => {
             };
           check(ty0, TypeSet.add(ty, parents), ty');
         }) {
-        | Ctype.Cannot_expand => Option.may(raise, arg_exn)
+        | Ctype.Cannot_expand => Option.iter(raise, arg_exn)
         };
-      | _ => Option.may(raise, arg_exn)
+      | _ => Option.iter(raise, arg_exn)
       };
     };
   };
@@ -572,7 +572,7 @@ let check_recursion = (env, loc, path, decl, to_check) =>
       };
     };
 
-    Option.may(
+    Option.iter(
       body => {
         let (args, body) =
           Ctype.instance_parameterized_type(
@@ -977,7 +977,8 @@ let transl_value_decl = (env, loc, valdecl) => {
     };
 
   let (id, newenv) = {
-    let name = Option.default(valdecl.pval_name, valdecl.pval_name_alias).txt;
+    let name =
+      Option.value(~default=valdecl.pval_name, valdecl.pval_name_alias).txt;
     Env.enter_value(name, v, env);
   };
   /*~check:(fun s -> Warnings.Unused_value_declaration s)*/

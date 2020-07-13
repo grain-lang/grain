@@ -48,7 +48,7 @@ let () =
   );
 
 let parse = (~name=?, lexbuf): Parsetree.parsed_program => {
-  Option.may(
+  Option.iter(
     n => {
       lexbuf.lex_curr_p = {...lexbuf.lex_curr_p, pos_fname: n};
       Location.input_name := n;
@@ -56,9 +56,9 @@ let parse = (~name=?, lexbuf): Parsetree.parsed_program => {
     name,
   );
   let loc_start =
-    Option.map_default(
-      n => {...lexbuf.lex_start_p, pos_fname: n},
-      lexbuf.lex_start_p,
+    Option.fold(
+      ~some=n => {...lexbuf.lex_start_p, pos_fname: n},
+      ~none=lexbuf.lex_start_p,
       name,
     );
   let loc_end = lexbuf.lex_curr_p;

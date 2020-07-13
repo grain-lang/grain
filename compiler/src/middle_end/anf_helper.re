@@ -10,8 +10,8 @@ type ident = Ident.t;
 let default_loc = Location.dummy_loc;
 let default_env = Env.empty;
 
-let or_default_loc = Option.default(default_loc);
-let or_default_env = Option.default(default_env);
+let or_default_loc = Option.value(~default=default_loc);
+let or_default_env = Option.value(~default=default_env);
 
 module Imm = {
   let mk = (~loc=?, ~env=?, d) => {

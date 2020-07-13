@@ -132,7 +132,7 @@ module Pat = {
       List.fold_right(
         ((pat_opt, closed), (pats, closed_acc)) =>
           (
-            Option.map_default(pat => [pat, ...pats], pats, pat_opt),
+            Option.fold(~some=pat => [pat, ...pats], ~none=pats, pat_opt),
             if (closed_acc == Asttypes.Open) {
               Asttypes.Open;
             } else {
@@ -150,7 +150,7 @@ module Pat = {
   let construct = (~loc=?, a, b) =>
     mk(~loc?, [@implicit_arity] PPatConstruct(a, b));
   let list = (~loc=?, a, r) => {
-    let base = Option.default(construct(ident_empty, []), r);
+    let base = Option.value(~default=construct(ident_empty, []), r);
     List.fold_right(
       (pat, acc) => construct(ident_cons, [pat, acc]),
       a,
@@ -205,7 +205,7 @@ module Exp = {
   let list = (~loc=?, a, base) => {
     let empty = ident(~loc?, ident_empty);
     let cons = ident(ident_cons);
-    let base = Option.default(empty, base);
+    let base = Option.value(~default=empty, base);
     List.fold_right((expr, acc) => apply(cons, [expr, acc]), a, base);
   };
   let null = (~loc=?, ()) => mk(~loc?, PExpNull);

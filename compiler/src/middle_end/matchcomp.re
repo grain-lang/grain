@@ -299,7 +299,7 @@ module MatchTreeCompiler = {
       compile_tree_help(rest_tree, swap_list(idx, values))
     | [@implicit_arity] Switch(branches, default_tree) =>
       /* Runs when no branches match */
-      let base_tree = Option.default(Fail, default_tree);
+      let base_tree = Option.value(~default=Fail, default_tree);
       let base = compile_tree_help(base_tree, values);
       let value_constr_name = Ident.create("match_constructor");
       let value_constr_id = Imm.id(value_constr_name);

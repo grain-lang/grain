@@ -6,7 +6,7 @@ let used_symbols = ref(Ident.empty: Ident.tbl(bool));
 let mark_used = id => used_symbols := Ident.add(id, true, used_symbols^);
 
 let get_comp_purity = c =>
-  Option.default(false) @@ Analyze_purity.comp_expression_purity(c);
+  Option.value(~default=false) @@ Analyze_purity.comp_expression_purity(c);
 
 let can_remove = (ident, value) =>
   try(!Ident.find_same(ident, used_symbols^)) {
