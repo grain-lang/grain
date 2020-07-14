@@ -228,40 +228,33 @@ export let forEach = (fn, map) => {
   }, buckets);
 }
 
+let rec reduceEachBucket = (fn, node, acc) => {
+  match (node) {
+    | None => acc
+    | Some({ key, value, next }) =>
+      reduceEachBucket(fn, ^next, fn(acc, ^key, ^value))
+  }
+}
+
 export let reduce = (fn, init, map) => {
   let buckets = unbox(map.buckets);
   let acc = box(init);
-  forEach((key, value) => {
-    acc := fn(^acc, key, value);
-  }, map);
+  Array.forEach((bucket) => {
+    acc := reduceEachBucket(fn, bucket, ^acc)
+  }, buckets);
   ^acc
 }
 
 export let keys = (map) => {
-  reduce((lis, key, _value) => {
-    match (lis) {
-      | [] => [key]
-      | [...rest] => [key, ...rest]
-    }
-  }, [], map)
+  reduce((list, key, _value) => [key, ...list], [], map)
 }
 
 export let values = (map) => {
-  reduce((lis, _key, value) => {
-    match (lis) {
-      | [] => [value]
-      | [...rest] => [value, ...rest]
-    }
-  }, [], map)
+  reduce((list, _key, value) => [value, ...list], [], map)
 }
 
 export let toList = (map) => {
-  reduce((lis, key, value) => {
-    match (lis) {
-      | [] => [(key, value)]
-      | [...rest] => [(key, value), ...rest]
-    }
-  }, [], map)
+  reduce((list, key, value) => [(key, value), ...list], [], map)
 }
 
 export let fromList = (list) => {
