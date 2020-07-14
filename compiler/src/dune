@@ -12,3 +12,8 @@
  (section lib)
  (files)
  (package grain))
+
+(env
+ (dev
+  (flags
+   (:standard -warn-error -A))))

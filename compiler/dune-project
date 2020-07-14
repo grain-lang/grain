@@ -33,6 +33,17 @@
     (grain_codegen (>= 0))))
 
 (package
+  (name grain_js)
+  (synopsis "The Grain compiler on the web")
+  (depends
+    (reason (>= 3.6.0))
+    (ocamlfind (and :build (>= 1.7.3)))
+    (ocamlbuild (and :build (>= 0.12.0)))
+    (js_of_ocaml (>= 3.6.0))
+    (js_of_ocaml-compiler (>= 3.6.0))
+    (grain (>= 0))))
+
+(package
   (name grainc)
   (synopsis "The core Grain language compiler CLI")
   (depends

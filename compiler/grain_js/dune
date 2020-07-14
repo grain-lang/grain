@@ -5,6 +5,11 @@
  (modules grain_js)
  (modes byte js)
  (flags :standard -safe-string)
- (js_of_ocaml (flags :standard --disable genprim --toplevel --linkall +toplevel.js +dynlink.js))
- (libraries grain js_of_ocaml js_of_ocaml-compiler)
-)
+ (js_of_ocaml
+  (flags :standard))
+ (libraries grain js_of_ocaml js_of_ocaml-compiler))
+
+(env
+ (dev
+  (flags
+   (:standard -warn-error -A))))

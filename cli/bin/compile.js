@@ -3,7 +3,7 @@ const { execSync } = require('child_process');
 
 const grainc = path.join(__dirname, 'grainc.exe');
 
-const grain = require('../../compiler/_esy/default/build/default/grain_js/grain_js.bc.js');
+const grain = require('./grain_js.bc.runtime.js');
 console.log(grain);
 
 module.exports = (file, options) => {

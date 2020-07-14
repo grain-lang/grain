@@ -6,3 +6,8 @@
    sexplib)
  (preprocess
   (pps ppx_sexp_conv)))
+
+(env
+ (dev
+  (flags
+   (:standard -warn-error -A))))

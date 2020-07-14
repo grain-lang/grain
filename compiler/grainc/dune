@@ -4,3 +4,8 @@
  (package grain)
  (modules grainc)
  (libraries grain dune-build-info))
+
+(env
+ (dev
+  (flags
+   (:standard -warn-error -A))))

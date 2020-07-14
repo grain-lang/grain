@@ -43,7 +43,7 @@
     "@opam/grain_typed": "link:./grain_typed.opam",
     "@opam/grain_middle_end": "link:./grain_middle_end.opam",
     "@opam/grain_codegen": "link:./grain_codegen.opam",
-    "@opam/grain_js": "path:./grain_js.opam",
+    "@opam/grain_js": "link:./grain_js.opam",
     "@opam/fp": "facebookexperimental/reason-native:fp.opam#445493fca8d56ce58ee7c84a9e878a4303c9d296",
     "@opam/fs": "facebookexperimental/reason-native:fs.opam#445493fca8d56ce58ee7c84a9e878a4303c9d296",
     "@opam/utf8": "facebookexperimental/reason-native:utf8.opam#445493fca8d56ce58ee7c84a9e878a4303c9d296"

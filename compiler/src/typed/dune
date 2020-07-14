@@ -6,3 +6,8 @@
    ppx_deriving_yojson.runtime ppx_sexp_conv.runtime-lib sexplib yojson)
  (preprocess
   (pps ppx_sexp_conv ppx_deriving_yojson)))
+
+(env
+ (dev
+  (flags
+   (:standard -warn-error -A))))

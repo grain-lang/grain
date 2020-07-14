@@ -12,3 +12,8 @@
   (source_tree test-data))
  (action
   (run %{<})))
+
+(env
+ (dev
+  (flags
+   (:standard -warn-error -A))))
