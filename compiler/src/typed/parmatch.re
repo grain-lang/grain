@@ -1199,9 +1199,7 @@ let rec exhaust = (ext: option(Path.t), pss, n) =>
   | pss =>
     let pss = simplify_first_col(pss);
     if (!all_coherent(first_column(pss))) {
-      /* We're considering an ill-typed branch, we won't actually be able to
-         produce a well typed value taking that branch. */
-      No_matching_value;
+      No_matching_value; // We're considering an ill-typed branch, we won't actually be able to produce a well typed value taking that branch.
     } else {
       /* Assuming the first column is ill-typed but considered coherent, we
          might end up producing an ill-typed witness of non-exhaustivity
@@ -1532,18 +1530,30 @@ let rec every_satisfiables = (pss, qs) =>
     | TPatVar(_) =>
       if (is_var_column(pss)) {
         /* forget about ``all-variable''  columns now */
-        every_satisfiables(remove_column(pss), remove(qs));
+        every_satisfiables(
+          remove_column(pss),
+          remove(qs),
+        );
       } else {
         /* otherwise this is direct food for satisfiable */
-        every_satisfiables(push_no_or_column(pss), push_no_or(qs));
+        every_satisfiables(
+          push_no_or_column(pss),
+          push_no_or(qs),
+        );
       }
     | [@implicit_arity] TPatOr(q1, q2) =>
       if (q1.pat_loc.Location.loc_ghost && q2.pat_loc.Location.loc_ghost) {
         /* syntactically generated or-pats should not be expanded */
-        every_satisfiables(push_no_or_column(pss), push_no_or(qs));
+        every_satisfiables(
+          push_no_or_column(pss),
+          push_no_or(qs),
+        );
       } else {
         /* this is a real or-pattern */
-        every_satisfiables(push_or_column(pss), push_or(qs));
+        every_satisfiables(
+          push_or_column(pss),
+          push_or(qs),
+        );
       }
     | _ =>
       /* standard case, filter matrix */
@@ -2313,11 +2323,11 @@ let rec matrix_stable_vars = m =>
       | Positive(_) => false
     );
     if (List.for_all(is_negative, m)) {
-      /* optimization: quit early if there are no positive rows.
-         This may happen often when the initial matrix has many
-         negative cases and few positive cases (a small guarded
-         clause after a long list of clauses) */
       All;
+         /* optimization: quit early if there are no positive rows.
+            This may happen often when the initial matrix has many
+            negative cases and few positive cases (a small guarded
+            clause after a long list of clauses) */
     } else {
       let m = simplify_first_amb_col(m);
       if (!all_coherent(first_column(m))) {
