@@ -171,10 +171,9 @@ let enter_variable = (~is_module=false, ~is_as_variable=false, loc, name, ty) =>
     };
     module_variables := [(name, loc), ...module_variables^];
   } else {
-    /* moved to genannot */
-    /*may (fun s -> Stypes.record (Stypes.An_ident (name.loc, name.txt, s)))
-      !pattern_scope;*/
-    ();
+    (); /* moved to genannot */
+      /*may (fun s -> Stypes.record (Stypes.An_ident (name.loc, name.txt, s)))
+        !pattern_scope;*/
   };
   id;
 };
@@ -1106,8 +1105,8 @@ let type_pattern = (~lev, env, spat, scope, expected_ty) => {
   let new_env = ref(env);
   let pat =
     type_pat(~allow_existentials=true, ~lev, new_env, spat, expected_ty);
-  let (new_env, unpacks, _) = add_pattern_variables(new_env^) /*~check:(fun s -> Warnings.Unused_var_strict s)
-      ~check_as:(fun s -> Warnings.Unused_var s)*/;
+  let (new_env, unpacks, _) = add_pattern_variables(new_env^) /*~check:(fun s -> Warnings.Unused_var_strict s)  ~check_as:(fun s -> Warnings.Unused_var s)*/;
+
   (pat, new_env, get_ref(pattern_force), unpacks);
 };
 

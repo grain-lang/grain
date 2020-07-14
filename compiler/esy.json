@@ -14,7 +14,8 @@
     "copy-compiler": "cp #{$GRAINC_BIN_PATH} #{$CLI_BIN_DIR}",
     "clean": "rm -rf #{self.root}/_esy",
     "test": "dune runtest --force",
-    "format": "esy dune build @fmt --auto-promote"
+    "format": "dune build @fmt --auto-promote",
+    "check-format": "dune build @fmt"
   },
   "dependencies": {
     "@opam/grain": "*",

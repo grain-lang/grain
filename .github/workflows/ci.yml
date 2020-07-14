@@ -64,6 +64,11 @@ jobs:
         run: |
           yarn compiler test
 
+      # Formatting lint last because building is more important
+      - name: Run formatting lint
+        run: |
+          yarn compiler check-format
+
       # This is to test the CLI is working
       - name: Log Grain version
         run: |
