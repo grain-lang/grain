@@ -1684,17 +1684,24 @@ let compile_record_op = (wasm_mod, env, rec_imm, op) => {
   | MRecordSet(idx, arg_imm) =>
     let idx_int = Int32.to_int(idx);
     let arg = compile_imm(wasm_mod, env, arg_imm);
-    Expression.block(wasm_mod, gensym_label("record_set"), [
-      store(
-        ~offset=4 * (idx_int + 4),
-        wasm_mod,
-        untag(wasm_mod, GenericHeapType(Some(RecordType)), record),
-        tee_swap(wasm_mod, env, 0, arg)
-      ),
-      // TODO: decref old item
-      Expression.drop(wasm_mod, call_incref(wasm_mod, env, [get_swap(wasm_mod, env, 0)])),
-      get_swap(wasm_mod, env, 0)
-    ]);
+    Expression.block(
+      wasm_mod,
+      gensym_label("record_set"),
+      [
+        store(
+          ~offset=4 * (idx_int + 4),
+          wasm_mod,
+          untag(wasm_mod, GenericHeapType(Some(RecordType)), record),
+          tee_swap(wasm_mod, env, 0, arg),
+        ),
+        // TODO: decref old item
+        Expression.drop(
+          wasm_mod,
+          call_incref(wasm_mod, env, [get_swap(wasm_mod, env, 0)]),
+        ),
+        get_swap(wasm_mod, env, 0),
+      ],
+    );
   };
 };
 
@@ -3385,13 +3392,6 @@ let rec compile_store = (wasm_mod, env, binds) => {
   List.append(instrs, [do_backpatches(wasm_mod, env, backpatches)]);
 }
 
-and compile_set = (wasm_mod, env, b, i) => {
-  Expression.block(wasm_mod, gensym_label("compile_set"), [
-    compile_store(wasm_mod, env, [(b, i)]),
-    Expression.const(wasm_mod, const_void())
-  ]);
-}
-
 and compile_switch = (wasm_mod, env, arg, branches, default) => {
   /* Constructs the jump table. Assumes that branch 0 is the default */
   let switch_label = gensym_label("switch");
@@ -3496,7 +3496,6 @@ and compile_instr = (wasm_mod, env, instr) =>
     compile_prim2(wasm_mod, env, p2, arg1, arg2)
   | [@implicit_arity] MSwitch(arg, branches, default) =>
     compile_switch(wasm_mod, env, arg, branches, default)
-  | MSet(b, i) => compile_set(wasm_mod, env, b, i)
   | MStore(binds) => compile_store(wasm_mod, env, binds)
 
   | [@implicit_arity] MCallIndirect(func, args) =>

@@ -201,8 +201,6 @@ module RegisterAllocation = {
           apply_allocation_to_imm(i1),
           apply_allocation_to_imm(i2),
         )
-      | MSet(bind, i) =>
-        MSet(apply_allocation_to_bind(bind), apply_allocations(allocs, i))
       | MStore(bs) =>
         MStore(
           List.map(
@@ -266,7 +264,6 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
       @ block_live_locals(d)
     | [@implicit_arity] MPrim2(_, i1, i2) =>
       imm_live_local(i1) @ imm_live_local(i2)
-    | MSet(b, i) => bind_live_local(b) @ live_locals(i)
     | MStore(bs) =>
       List.concat(
         List.map(((b, bk)) => bind_live_local(b) @ live_locals(bk), bs),
