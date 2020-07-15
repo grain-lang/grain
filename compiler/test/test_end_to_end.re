@@ -704,10 +704,15 @@ let loop_tests = [
     "let b = box(12);\n             let count = box(0);\n            {\n              while (unbox(b) > 0) {\n                b := unbox(b) - 1;\n                count := unbox(count) + 1\n              };\n              unbox(count)\n            }",
     "12",
   ),
-  t("loop1", "let mut b = 3; while (b > 0) { b = b - 1 }; b ", "0"),
+  t("loop3", "let mut b = 3; while (b > 0) { b = b - 1 }; b ", "0"),
   t(
-    "loop2",
+    "loop4",
     "let mut b = 12; let mut count = 0; while (b > 0) { b = b - 1; count = count + 1 }; count",
+    "12",
+  ),
+  t(
+    "loop5",
+    "let mut b = 12; let mut count = 0; while ((b -= 1) >= 0) { count += 1 }; count",
     "12",
   ),
 ];
