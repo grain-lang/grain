@@ -12,7 +12,7 @@ module.exports = (file, options) => {
     if (options.graceful) {
       process.exit()
     } else {
-      process.exit(-1)
+      process.exit(1)
     }
   }
 }
