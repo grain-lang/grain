@@ -167,7 +167,12 @@ and expression_desc =
   | TExpArraySet(expression, expression, expression)
   | TExpRecord(array((Types.label_description, record_label_definition)))
   | TExpRecordGet(expression, loc(Identifier.t), Types.label_description)
-  | TExpRecordSet(expression, loc(Identifier.t), Types.label_description, expression)
+  | TExpRecordSet(
+      expression,
+      loc(Identifier.t),
+      Types.label_description,
+      expression,
+    )
   | TExpLet(rec_flag, mut_flag, list(value_binding), expression)
   | TExpMatch(expression, list(match_branch), partial)
   | TExpPrim1(prim1, expression)

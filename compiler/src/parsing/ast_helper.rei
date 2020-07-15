@@ -58,7 +58,9 @@ module CDecl: {
   let tuple: (~loc: loc=?, str, list(parsed_type)) => constructor_declaration;
 };
 
-module LDecl: {let mk: (~loc: loc=?, id, parsed_type, mut_flag) => label_declaration;};
+module LDecl: {
+  let mk: (~loc: loc=?, id, parsed_type, mut_flag) => label_declaration;
+};
 
 module Dat: {
   let mk:
@@ -102,7 +104,8 @@ module Exp: {
   let array_set:
     (~loc: loc=?, expression, expression, expression) => expression;
   let let_:
-    (~loc: loc=?, rec_flag, mut_flag, list(value_binding), expression) => expression;
+    (~loc: loc=?, rec_flag, mut_flag, list(value_binding), expression) =>
+    expression;
   let match: (~loc: loc=?, expression, list(match_branch)) => expression;
   let prim1: (~loc: loc=?, prim1, expression) => expression;
   let prim2: (~loc: loc=?, prim2, expression, expression) => expression;
@@ -126,7 +129,8 @@ module Top: {
     (~loc: loc=?, export_flag, value_description) => toplevel_stmt;
   let data: (~loc: loc=?, export_flag, data_declaration) => toplevel_stmt;
   let let_:
-    (~loc: loc=?, export_flag, rec_flag, mut_flag, list(value_binding)) => toplevel_stmt;
+    (~loc: loc=?, export_flag, rec_flag, mut_flag, list(value_binding)) =>
+    toplevel_stmt;
   let expr: (~loc: loc=?, expression) => toplevel_stmt;
   let export: (~loc: loc=?, list(export_declaration)) => toplevel_stmt;
   let export_all: (~loc: loc=?, list(export_except)) => toplevel_stmt;

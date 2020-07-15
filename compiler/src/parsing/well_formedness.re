@@ -50,10 +50,7 @@ let prepare_error =
           "let rec may only be used with recursive function definitions.",
         )
       | NoLetRecMut(loc) =>
-        errorf(
-          ~loc,
-          "let rec may not be used with the `mut` keyword.",
-        )
+        errorf(~loc, "let rec may not be used with the `mut` keyword.")
     )
   );
 
@@ -305,7 +302,7 @@ let no_letrec_mut = (errs, super) => {
   let iter_toplevel_binds = (self, {ptop_desc: desc, ptop_loc: loc} as e) => {
     switch (desc) {
     | [@implicit_arity] PTopLet(_, Recursive, Mutable, vbs) =>
-      errs := [NoLetRecMut(loc), ...errs^];
+      errs := [NoLetRecMut(loc), ...errs^]
     | _ => ()
     };
     super.toplevel(self, e);
@@ -313,7 +310,7 @@ let no_letrec_mut = (errs, super) => {
   let iter_binds = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
     | [@implicit_arity] PExpLet(Recursive, Mutable, vbs, _) =>
-      errs := [NoLetRecMut(loc), ...errs^];
+      errs := [NoLetRecMut(loc), ...errs^]
     | _ => ()
     };
     super.expr(self, e);

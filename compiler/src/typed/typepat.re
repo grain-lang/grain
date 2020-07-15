@@ -1088,7 +1088,7 @@ let add_pattern_variables = (~check=?, ~check_as=?, ~mut=false, env) => {
             val_kind: TValReg,
             Types.val_loc: loc,
             val_fullpath: Path.PIdent(id),
-            val_mutable: mut
+            val_mutable: mut,
           },
           env,
         );
@@ -1148,8 +1148,7 @@ let report_type_expected_explanation = (expl, ppf) =>
   | Assert_condition => fprintf(ppf, "the condition of an assertion")
   | Sequence_left_hand_side =>
     fprintf(ppf, "the left-hand side of a sequence")
-  | Assign_not_box => 
-    fprintf(ppf, "the left-hand side of a box assignment")
+  | Assign_not_box => fprintf(ppf, "the left-hand side of a box assignment")
   | Assign_not_array =>
     fprintf(ppf, "the left-hand side of an array index access")
   | Assign_not_array_index =>
