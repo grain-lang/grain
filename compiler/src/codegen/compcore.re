@@ -1691,15 +1691,39 @@ let compile_record_op = (wasm_mod, env, rec_imm, op) => {
         store(
           ~offset=4 * (idx_int + 4),
           wasm_mod,
-          untag(wasm_mod, GenericHeapType(Some(RecordType)), record),
-          tee_swap(wasm_mod, env, 0, arg),
+          tee_swap(
+            wasm_mod,
+            env,
+            0,
+            untag(wasm_mod, GenericHeapType(Some(RecordType)), record),
+          ),
+          Expression.tuple_extract(
+            wasm_mod,
+            Expression.tuple_make(
+              wasm_mod,
+              [
+                call_incref(
+                  wasm_mod,
+                  env,
+                  [tee_swap(wasm_mod, env, 1, arg)],
+                ),
+                call_decref(
+                  wasm_mod,
+                  env,
+                  [
+                    load(
+                      ~offset=4 * (idx_int + 4),
+                      wasm_mod,
+                      get_swap(wasm_mod, env, 0),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            0,
+          ),
         ),
-        // TODO: decref old item
-        Expression.drop(
-          wasm_mod,
-          call_incref(wasm_mod, env, [get_swap(wasm_mod, env, 0)]),
-        ),
-        get_swap(wasm_mod, env, 0),
+        get_swap(wasm_mod, env, 1),
       ],
     );
   };
