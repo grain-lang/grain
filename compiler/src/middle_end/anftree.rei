@@ -7,7 +7,6 @@ open Grain_typed;
 open Types;
 
 type rec_flag = Asttypes.rec_flag = | Nonrecursive | Recursive;
-type mut_flag = Asttypes.mut_flag = | Mutable | Immutable;
 [@deriving sexp]
 type global_flag =
   | Global
