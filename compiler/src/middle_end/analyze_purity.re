@@ -122,7 +122,7 @@ let rec analyze_comp_expression =
           args,
         );
       List.for_all(x => x, arg_purities);
-    | [@implicit_arity] CRecord(_) => false
+    | CRecord(_) => false
     | [@implicit_arity] CGetTupleItem(_, a) =>
       analyze_imm_expression(a);
       imm_expression_purity_internal(a);
@@ -134,7 +134,7 @@ let rec analyze_comp_expression =
     | [@implicit_arity] CGetRecordItem(_, r) =>
       analyze_imm_expression(r);
       imm_expression_purity_internal(r);
-    | [@implicit_arity] CSetRecordItem(_) => false
+    | CSetRecordItem(_) => false
     | [@implicit_arity] CIf(c, t, f) =>
       analyze_imm_expression(c);
       analyze_anf_expression(t);
@@ -187,13 +187,10 @@ let rec analyze_comp_expression =
 
 and analyze_anf_expression = ({anf_desc: desc, anf_analyses: analyses}) =>
   switch (desc) {
-  | [@implicit_arity] AELet(g, Nonrecursive, mut_flag, binds, body) =>
+  | [@implicit_arity] AELet(g, Nonrecursive, binds, body) =>
     let process_bind = ((id, bind)) => {
       analyze_comp_expression(bind);
-      let purity = switch (mut_flag) {
-        | Mutable => false
-        | Immutable => comp_expression_purity_internal(bind)
-      };
+      let purity = comp_expression_purity_internal(bind);
       set_id_purity(id, purity);
       purity;
     };
@@ -202,16 +199,13 @@ and analyze_anf_expression = ({anf_desc: desc, anf_analyses: analyses}) =>
     analyze_anf_expression(body);
     let purity = anf_expression_purity_internal(body) && bind_purity;
     push_purity(analyses, purity);
-  | [@implicit_arity] AELet(g, Recursive, mut_flag, binds, body) =>
+  | [@implicit_arity] AELet(g, Recursive, binds, body) =>
     /* Initialize purity to true, just so they're in scope */
     List.iter(((id, _)) => set_id_purity(id, true), binds);
     /* Do the actual purity analysis */
     let process_bind = ((id, bind)) => {
       analyze_comp_expression(bind);
-      let purity = switch (mut_flag) {
-        | Mutable => false
-        | Immutable => comp_expression_purity_internal(bind)
-      };
+      let purity = comp_expression_purity_internal(bind);
       set_id_purity(id, purity);
       purity;
     };

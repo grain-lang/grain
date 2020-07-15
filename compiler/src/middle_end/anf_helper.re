@@ -86,8 +86,8 @@ module AExp = {
     anf_env: or_default_env(env),
     anf_analyses: ref([]),
   };
-  let let_ = (~loc=?, ~env=?, ~glob=Nonglobal, rec_flag, mut_flag, binds, body) =>
-    mk(~loc?, ~env?, [@implicit_arity] AELet(glob, rec_flag, mut_flag, binds, body));
+  let let_ = (~loc=?, ~env=?, ~glob=Nonglobal, rec_flag, binds, body) =>
+    mk(~loc?, ~env?, [@implicit_arity] AELet(glob, rec_flag, binds, body));
   let seq = (~loc=?, ~env=?, hd, tl) =>
     mk(~loc?, ~env?, [@implicit_arity] AESeq(hd, tl));
   let comp = (~loc=?, ~env=?, e) => mk(~loc?, ~env?, AEComp(e));

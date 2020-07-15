@@ -1122,7 +1122,6 @@ let optimization_tests = [
           [x],
           AExp.let_(
             Nonrecursive,
-            Immutable,
             [
               (
                 a,
@@ -1175,12 +1174,10 @@ let optimization_tests = [
       let app = Ident.create("app");
       AExp.let_(
         Nonrecursive,
-        Immutable,
         [(foo, Comp.lambda([y]) @@ AExp.comp @@ Comp.imm @@ Imm.id(y))],
       ) @@
       AExp.let_(
         Nonrecursive,
-        Immutable,
         [(app, Comp.app(Imm.id(foo), [Imm.const(Const_int(3))]))],
       ) @@
       AExp.comp @@

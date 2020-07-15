@@ -105,7 +105,7 @@ module MakeIter = (Iter: IterArgument) => {
   and iter_anf_expression = ({anf_desc: desc} as anf) => {
     Iter.enter_anf_expression(anf);
     switch (desc) {
-    | [@implicit_arity] AELet(_, _, _, bindings, body) =>
+    | [@implicit_arity] AELet(_, _, bindings, body) =>
       List.iter(((ident, bind)) => iter_comp_expression(bind), bindings);
       iter_anf_expression(body);
     | [@implicit_arity] AESeq(hd, tl) =>

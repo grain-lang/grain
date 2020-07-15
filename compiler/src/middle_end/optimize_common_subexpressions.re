@@ -122,7 +122,7 @@ module CSEArg: Anf_mapper.MapArgument = {
 
   let enter_anf_expression = ({anf_desc: desc} as a) => {
     switch (desc) {
-    | [@implicit_arity] AELet(_, _, Immutable, binds, _) =>
+    | [@implicit_arity] AELet(_, _, binds, _) =>
       List.iter(
         ((id, {comp_desc} as c)) =>
           switch (get_known_expression(comp_desc)) {
@@ -147,7 +147,7 @@ module CSEArg: Anf_mapper.MapArgument = {
 
   let leave_anf_expression = ({anf_desc: desc} as a) => {
     switch (desc) {
-    | [@implicit_arity] AELet(_, _, Immutable, binds, _) =>
+    | [@implicit_arity] AELet(_, _, binds, _) =>
       List.iter(
         ((id, {comp_desc})) =>
           switch (get_known_expression(comp_desc)) {

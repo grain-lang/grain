@@ -94,7 +94,12 @@ module MakeMap = (Iter: MapArgument) => {
       | [@implicit_arity] CGetRecordItem(idx, record) =>
         [@implicit_arity] CGetRecordItem(idx, map_imm_expression(record))
       | [@implicit_arity] CSetRecordItem(idx, record, arg) =>
-        [@implicit_arity] CSetRecordItem(idx, map_imm_expression(record), map_imm_expression(arg))
+        [@implicit_arity]
+        CSetRecordItem(
+          idx,
+          map_imm_expression(record),
+          map_imm_expression(arg),
+        )
       | [@implicit_arity] CIf(c, t, f) =>
         let c = map_imm_expression(c);
         let t = map_anf_expression(t);
@@ -134,7 +139,7 @@ module MakeMap = (Iter: MapArgument) => {
     let {anf_desc: desc} as anf = Iter.enter_anf_expression(anf);
     let d =
       switch (desc) {
-      | [@implicit_arity] AELet(g, r, m, bindings, body) =>
+      | [@implicit_arity] AELet(g, r, bindings, body) =>
         let bindings =
           List.map(
             ((ident, bind)) => {
@@ -144,7 +149,7 @@ module MakeMap = (Iter: MapArgument) => {
             bindings,
           );
         let body = map_anf_expression(body);
-        [@implicit_arity] AELet(g, r, m, bindings, body);
+        [@implicit_arity] AELet(g, r, bindings, body);
       | [@implicit_arity] AESeq(hd, tl) =>
         let hd = map_comp_expression(hd);
         let tl = map_anf_expression(tl);
