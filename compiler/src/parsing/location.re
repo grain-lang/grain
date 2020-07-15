@@ -264,8 +264,8 @@ let setup_colors = () =>
   );
 
 let absolute_path = s => {
-  /* This function could go into Filename */
-  open Filename;
+  open Filename; /* This function could go into Filename */
+
   let s =
     if (is_relative(s)) {
       concat(Sys.getcwd(), s);

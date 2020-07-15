@@ -75,7 +75,6 @@ and type_desc =
     [Btype], with [cleanup_abbrev] and [memo], takes care of tracking and
     removing abbreviations.
 */
-
 and abbrev_memo =
   | /** No known abbrevation */
     TMemNil
