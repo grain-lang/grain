@@ -488,7 +488,8 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
   let process_let = (env, export_flag, rec_flag, mut_flag, binds, loc) => {
     Ctype.init_def(Ident.current_time());
     let scope = None;
-    let (defs, newenv) = Typecore.type_binding(env, rec_flag, mut_flag, binds, scope);
+    let (defs, newenv) =
+      Typecore.type_binding(env, rec_flag, mut_flag, binds, scope);
     let () =
       if (rec_flag == Recursive) {
         Typecore.check_recursive_bindings(env, defs);
@@ -518,7 +519,8 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
         export_flag;
       };
     let stmt = {
-      ttop_desc: [@implicit_arity] TTopLet(export_flag, rec_flag, mut_flag, defs),
+      ttop_desc:
+        [@implicit_arity] TTopLet(export_flag, rec_flag, mut_flag, defs),
       ttop_loc: loc,
       ttop_env: env,
     };

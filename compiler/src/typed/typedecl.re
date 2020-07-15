@@ -177,7 +177,12 @@ let transl_labels = (env, closed, lbls) => {
           | [@implicit_arity] TTyPoly(t, []) => t
           | _ => ty
           };
-        {Types.rf_name: rf.rf_name, rf_type: ty, rf_mutable: rf.rf_mutable, rf_loc: rf.rf_loc};
+        {
+          Types.rf_name: rf.rf_name,
+          rf_type: ty,
+          rf_mutable: rf.rf_mutable,
+          rf_loc: rf.rf_loc,
+        };
       },
       lbls,
     );

@@ -134,7 +134,8 @@ module C = {
 };
 
 module L = {
-  let map = (sub, {pld_name: name, pld_type: typ, pld_mutable: mut, pld_loc: loc}) => {
+  let map =
+      (sub, {pld_name: name, pld_type: typ, pld_mutable: mut, pld_loc: loc}) => {
     open LDecl;
     let loc = sub.location(sub, loc);
     let sname = map_loc(sub, name);

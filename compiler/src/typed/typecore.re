@@ -815,7 +815,8 @@ and type_expect_ =
         check_recursive_bindings env pat_exp_list
       in*/
     re({
-      exp_desc: [@implicit_arity] TExpLet(rec_flag, mut_flag, pat_exp_list, body),
+      exp_desc:
+        [@implicit_arity] TExpLet(rec_flag, mut_flag, pat_exp_list, body),
       exp_loc: loc,
       exp_extra: [],
       exp_type: body.exp_type,
@@ -929,16 +930,13 @@ and type_expect_ =
       exp_env: env,
     });
   | [@implicit_arity] PExpAssign(sidexpr, sval) =>
-    let idexpr =
-      type_expect(
-        env,
-        sidexpr,
-        ty_expected_explained,
-      );
-    let (id, {val_mutable}) = switch (idexpr.exp_desc) {
+    let idexpr = type_expect(env, sidexpr, ty_expected_explained);
+    let (id, {val_mutable}) =
+      switch (idexpr.exp_desc) {
       | TExpIdent(_, id, vd) => (id, vd)
-      | _ => failwith("lhs of assign was not identifier; impossible by parsing")
-    };
+      | _ =>
+        failwith("lhs of assign was not identifier; impossible by parsing")
+      };
     if (!val_mutable) {
       raise(Error(loc, env, Assign_not_mutable(id.txt)));
     };
