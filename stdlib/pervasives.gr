@@ -24,10 +24,6 @@ primitive (||) : (Bool, Bool) -> Bool = "@or"
 primitive box : a -> Box<a> = "@box"
 primitive unbox : Box<a> -> a = "@unbox"
 primitive (^) : Box<a> -> a = "@unbox"
-# let (+=) : (Box<Number>, Number) -> Number = (b, n) => b := ^b + n
-# let (-=) : (Box<Number>, Number) -> Number = (b, n) => b := ^b - n
-# let (*=) : (Box<Number>, Number) -> Number = (b, n) => b := ^b * n
-# let (/=) : (Box<Number>, Number) -> Number = (b, n) => b := ^b / n
 
 # Other operations
 primitive ignore : a -> Void = "@ignore"
