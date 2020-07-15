@@ -10,7 +10,7 @@ let rec anf_free_vars_help = (env, a: anf_expression) =>
       anf_free_vars_help(env, rest),
     )
   | AEComp(c) => comp_free_vars_help(env, c)
-  | [@implicit_arity] AELet(_, recflag, mutflag, binds, body) =>
+  | [@implicit_arity] AELet(_, recflag, binds, body) =>
     let with_names =
       List.fold_left((acc, (id, _)) => Ident.Set.add(id, acc), env, binds);
     let free_binds =
@@ -136,7 +136,7 @@ let imm_free_vars = imm_free_vars_help(Ident.Set.empty);
 
 let rec anf_count_vars = a =>
   switch (a.anf_desc) {
-  | [@implicit_arity] AELet(_, recflag, mutflag, binds, body) =>
+  | [@implicit_arity] AELet(_, recflag, binds, body) =>
     let max_binds =
       List.fold_left(max, 0) @@
       List.map(((_, c)) => comp_count_vars(c), binds);

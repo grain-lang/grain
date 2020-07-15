@@ -141,7 +141,6 @@ and anf_expression_desc =
   | AELet(
       global_flag,
       rec_flag,
-      mut_flag,
       list((Ident.t, comp_expression)),
       anf_expression,
     )

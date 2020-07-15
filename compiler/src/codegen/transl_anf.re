@@ -616,7 +616,7 @@ and compile_anf_expr = (env, a) =>
       {instr_desc: MDrop(compile_comp(env, hd)), instr_loc: hd.comp_loc},
       ...compile_anf_expr(env, tl),
     ]
-  | AELet(global, recflag, mutflag, binds, body) =>
+  | AELet(global, recflag, binds, body) =>
     let get_loc = (idx, (id, _)) =>
       switch (global) {
       | Global => MGlobalBind(Int32.of_int(next_global(id)))

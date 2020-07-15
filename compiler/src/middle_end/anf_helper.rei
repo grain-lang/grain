@@ -75,7 +75,8 @@ module Comp: {
   let record_get:
     (~loc: loc=?, ~env: env=?, int32, imm_expression) => comp_expression;
   let record_set:
-    (~loc: loc=?, ~env: env=?, int32, imm_expression, imm_expression) => comp_expression;
+    (~loc: loc=?, ~env: env=?, int32, imm_expression, imm_expression) =>
+    comp_expression;
   let if_:
     (
       ~loc: loc=?,
@@ -115,7 +116,6 @@ module AExp: {
       ~env: env=?,
       ~glob: global_flag=?,
       rec_flag,
-      mut_flag,
       list((ident, comp_expression)),
       anf_expression
     ) =>
