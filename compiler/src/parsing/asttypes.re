@@ -43,7 +43,7 @@ type rec_flag =
   | Nonrecursive
   | Recursive;
 
-/** Marker for recursive/nonrecursive let bindings */
+/** Marker for mutable/immutable let bindings */
 
 [@deriving sexp]
 type mut_flag =

@@ -42,7 +42,7 @@ export let concat = (arrays) => {
       | [] => fail "end of arrays list"
     }
     if (index - offset == length(array)) {
-      offset = offset + length(array)
+      offset += length(array)
       arrs = match (arrs) {
         | [_, ...rest] => rest
         | [] => fail "end of arrays list"
