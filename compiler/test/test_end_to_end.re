@@ -454,6 +454,17 @@ let record_tests = [
     "data Rec1 = {foo: Number, bar: Number}; let x = {foo: 4, bar: 9}; x.baz",
     "The field baz does not belong to type Rec1",
   ),
+  /* mutable record fields */
+  t(
+    "record_mut_1",
+    "data Rec = {foo: Number, mut bar: String, baz: Bool}; let a = {foo: 4, bar: 'boo', baz: true}; a.bar = 'hoo'; a.bar",
+    "\"hoo\"",
+  ),
+  te(
+    "record_mut_1",
+    "data Rec = {foo: Number, mut bar: String, baz: Bool}; let a = {foo: 4, bar: 'boo', baz: true}; a.foo = 5; a.foo",
+    "The record field foo is not mutable",
+  ),
   /* record destructured assignment */
   t(
     "record_destruct_1",
@@ -677,6 +688,48 @@ let let_mut_tests = [
     "test_mut_typing",
     "let mut a = false; a + 4",
     "expression has type Bool but",
+  ),
+  // let mut destructure tests
+  t(
+    "let-mut_destructure1",
+    "let mut (x, y, z) = (5, false, 'foo'); x = 6; y = true; z = 'bar'; print(x); print(y); print(z)",
+    "6\ntrue\n\"bar\"\nvoid",
+  ),
+  t(
+    "let-mut_destructure2",
+    "{let mut (x, y, z) = (5, false, 'foo'); x = 6; y = true; z = 'bar'; print(x); print(y); print(z)}",
+    "6\ntrue\n\"bar\"\nvoid",
+  ),
+  t(
+    "let-mut_destructure3",
+    "data Rec = {foo: Number, bar: Bool}; let mut {foo, bar} = {foo: 5, bar: false}; foo = 6; bar = true; print(foo); print(bar)",
+    "6\ntrue\nvoid",
+  ),
+  t(
+    "let-mut_destructure4",
+    "data Rec = {foo: Number, bar: Bool}; {let mut {foo, bar} = {foo: 5, bar: false}; foo = 6; bar = true; print(foo); print(bar)}",
+    "6\ntrue\nvoid",
+  ),
+  // not-mut let errors
+  te(
+    "let-mut_err1",
+    "let x = 5; x = 6",
+    "The identifier x was not declared mutable",
+  ),
+  te(
+    "let-mut_err2",
+    "let (x, y) = (1, 2); x = 6",
+    "The identifier x was not declared mutable",
+  ),
+  te(
+    "let-mut_err3",
+    "let (x, y) = (1, 2); y = 6",
+    "The identifier y was not declared mutable",
+  ),
+  te(
+    "let-mut_err4",
+    "data Rec = {foo: Number, bar: Bool}; let {foo, bar} = {foo: 1, bar: false}; foo = 6",
+    "The identifier foo was not declared mutable",
   ),
   /* Operations on mutable `Number`s */
   t("let-mut_addition1", "let mut b = 4; b = b + 19", "23"),
