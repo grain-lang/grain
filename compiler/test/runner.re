@@ -127,7 +127,7 @@ let run_output = (~code=0, ~heap_size=?, cstate, test_ctxt) => {
     ~use_stderr=true,
     ~ctxt=test_ctxt,
     "grain",
-    ["-wpg", "-S", stdlib, "-I", testlibs] @ heap_args @ [file],
+    ["-pg", "-S", stdlib, "-I", testlibs] @ heap_args @ ["run", file],
   );
   result^;
 };
