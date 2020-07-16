@@ -30,6 +30,6 @@
   "dependencies": {
     "@grain/runtime": "*",
     "@grain/stdlib": "*",
-    "commander": "^2.14.1"
+    "commander": "^5.1.0"
   }
 }
