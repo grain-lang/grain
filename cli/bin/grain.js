@@ -34,7 +34,6 @@ program
     process.exit(0)
   })
   .description('Compile and run Grain programs. 🌾')
-  .option('-w, --wasm', 'run a wasm file')
   .option('-p, --print-output', 'print the output of the program')
   .option('-g, --graceful', 'return a 0 exit code if the program errors')
   .option('-I, --include-dirs <dirs>', 'include directories the runtime should find wasm modules', list, [])
@@ -44,25 +43,13 @@ program
   // The root command that compiles & runs
   .arguments('<file>')
   .action(function (file) {
-    let wasmFile;
-    if (program.wasm) {
-      wasmFile = file;
-    } else {
-      wasmFile = compile(file, program);
-    }
-
-    run(wasmFile, program);
+    run(compile(file, program), program);
   })
 
 program
   .command('compile <file>')
   .description('compile a grain program into wasm')
   .action(function (file) {
-    if (program.wasm) {
-      console.error('--wasm is invalid for the compile command');
-      process.exit(1);
-    }
-
     compile(file, program);
   });
 
