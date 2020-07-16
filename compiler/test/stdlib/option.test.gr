@@ -104,7 +104,7 @@ assert Option.toArray(None) == [>]
 
 let mut a = 2
 
-Option.sideEffect((x) => ignore(a = a * x), Some(2))
+Option.sideEffect((x) => ignore(a *= x), Some(2))
 
 assert a == 4
 
@@ -118,7 +118,7 @@ assert b == '🌾'
 
 let mut c = 2
 
-assert Option.peek((x) => ignore(c = c * x), Some(2)) == Some(2)
+assert Option.peek((x) => ignore(c *= x), Some(2)) == Some(2)
 assert c == 4
 
 let mut d = '🌾'
