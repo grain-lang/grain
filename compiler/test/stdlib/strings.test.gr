@@ -14,9 +14,13 @@ c'
 # invalid code points will not compile in Grain
 assert '🌾' == '\u{1F33E}'
 assert '💪🏾' == '\u{1f4aa}\u{1f3fe}'
+# extended grapheme cluster
+assert '🤦🏼‍♂️' == '\u{1F926}\u{1F3FC}\u{200D}\u{2642}\u{FE0F}'
 
 assert 'a' == '\x61'
 assert 'a' == '\141'
+assert 'a' == '\u0061'
+assert 'a' == '\u{61}'
 
 # Grain doesn't normalize strings
 # ñ as a single code point
