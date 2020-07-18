@@ -92,5 +92,6 @@ let transl_prim = (env, desc) => {
       pvb_loc: desc.tvd_loc,
     },
   ];
-  Typecore.type_binding(env, Nonrecursive, binds, None);
+  let mut_flag = desc.tvd_val.val_mutable ? Mutable : Immutable;
+  Typecore.type_binding(env, Nonrecursive, mut_flag, binds, None);
 };

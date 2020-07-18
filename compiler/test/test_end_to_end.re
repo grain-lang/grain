@@ -454,6 +454,17 @@ let record_tests = [
     "data Rec1 = {foo: Number, bar: Number}; let x = {foo: 4, bar: 9}; x.baz",
     "The field baz does not belong to type Rec1",
   ),
+  /* mutable record fields */
+  t(
+    "record_mut_1",
+    "data Rec = {foo: Number, mut bar: String, baz: Bool}; let a = {foo: 4, bar: 'boo', baz: true}; a.bar = 'hoo'; a.bar",
+    "\"hoo\"",
+  ),
+  te(
+    "record_mut_1",
+    "data Rec = {foo: Number, mut bar: String, baz: Bool}; let a = {foo: 4, bar: 'boo', baz: true}; a.foo = 5; a.foo",
+    "The record field foo is not mutable",
+  ),
   /* record destructured assignment */
   t(
     "record_destruct_1",
@@ -595,7 +606,8 @@ let stdlib_tests = [
     "data Rec = {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: 'boo', baz: true} == {foo: 4, bar: 'boo', baz: false}",
     "false",
   ),
-  tfile("recursive_equal", "recursive-equal", "void"),
+  tfile("recursive_equal_box", "recursive-equal-box", "void"),
+  tfile("recursive_equal_mut", "recursive-equal-mut", "void"),
   /* te "stdlib_sum_err" "import * from 'lists'; sum([true, false])" "This expression has type Bool but"; */
   te(
     "stdlib_length_err",
@@ -646,7 +658,7 @@ let box_tests = [
     "3",
   ),
   t("test_set_extra1", "box(1) := 2", "2"),
-  tfile("counter", "counter", "1\n2\n3\nvoid"),
+  tfile("counter-box", "counter-box", "1\n2\n3\nvoid"),
   te("test_unbox_err", "unbox(5)", "Box"),
   te(
     "test_box_typing",
@@ -654,14 +666,84 @@ let box_tests = [
     "expression has type Bool but",
   ),
   /* Operations on Box<Number> */
-  t("box_addition1", "let b = box(4); b += 19", "23"),
-  t("box_addition2", "let b = box(4); b += 19; ^b", "23"),
-  t("box_subtraction1", "let b = box(4); b -= 19", "-15"),
-  t("box_subtraction2", "let b = box(4); b -= 19; ^b", "-15"),
-  t("box_multiplication1", "let b = box(4); b *= 19", "76"),
-  t("box_multiplication2", "let b = box(4); b *= 19; ^b", "76"),
-  t("box_division1", "let b = box(76); b /= 19", "4"),
-  t("box_division2", "let b = box(76); b /= 19; ^b", "4"),
+  t("box_addition1", "let b = box(4); b := unbox(b) + 19", "23"),
+  t("box_addition2", "let b = box(4); b := unbox(b) + 19; ^b", "23"),
+  t("box_subtraction1", "let b = box(4); b := unbox(b) - 19", "-15"),
+  t("box_subtraction2", "let b = box(4); b := unbox(b) - 19; ^b", "-15"),
+  t("box_multiplication1", "let b = box(4); b := unbox(b) * 19", "76"),
+  t("box_multiplication2", "let b = box(4); b := unbox(b) * 19; ^b", "76"),
+  t("box_division1", "let b = box(76); b := unbox(b) / 19", "4"),
+  t("box_division2", "let b = box(76); b := unbox(b) / 19; ^b", "4"),
+];
+
+let let_mut_tests = [
+  t("let-mut1", "let mut b = 4;b", "4"),
+  t("let-mut2", "let mut b = (4, (5, 6));b", "(4, (5, 6))"),
+  t("let-mut3", "let mut b = box(4);unbox(b)", "4"),
+  t("let-mut3_2", "let mut b = box(4); ^b", "4"),
+  t("let-mut4", "let mut b = 4;b = 3;b", "3"),
+  t("let-mut5", "let mut b = 4;b = b - 1;b", "3"),
+  tfile("counter-mut", "counter-mut", "1\n2\n3\nvoid"),
+  te(
+    "test_mut_typing",
+    "let mut a = false; a + 4",
+    "expression has type Bool but",
+  ),
+  // let mut destructure tests
+  t(
+    "let-mut_destructure1",
+    "let mut (x, y, z) = (5, false, 'foo'); x = 6; y = true; z = 'bar'; print(x); print(y); print(z)",
+    "6\ntrue\n\"bar\"\nvoid",
+  ),
+  t(
+    "let-mut_destructure2",
+    "{let mut (x, y, z) = (5, false, 'foo'); x = 6; y = true; z = 'bar'; print(x); print(y); print(z)}",
+    "6\ntrue\n\"bar\"\nvoid",
+  ),
+  t(
+    "let-mut_destructure3",
+    "data Rec = {foo: Number, bar: Bool}; let mut {foo, bar} = {foo: 5, bar: false}; foo = 6; bar = true; print(foo); print(bar)",
+    "6\ntrue\nvoid",
+  ),
+  t(
+    "let-mut_destructure4",
+    "data Rec = {foo: Number, bar: Bool}; {let mut {foo, bar} = {foo: 5, bar: false}; foo = 6; bar = true; print(foo); print(bar)}",
+    "6\ntrue\nvoid",
+  ),
+  // not-mut let errors
+  te(
+    "let-mut_err1",
+    "let x = 5; x = 6",
+    "The identifier x was not declared mutable",
+  ),
+  te(
+    "let-mut_err2",
+    "let (x, y) = (1, 2); x = 6",
+    "The identifier x was not declared mutable",
+  ),
+  te(
+    "let-mut_err3",
+    "let (x, y) = (1, 2); y = 6",
+    "The identifier y was not declared mutable",
+  ),
+  te(
+    "let-mut_err4",
+    "data Rec = {foo: Number, bar: Bool}; let {foo, bar} = {foo: 1, bar: false}; foo = 6",
+    "The identifier foo was not declared mutable",
+  ),
+  /* Operations on mutable `Number`s */
+  t("let-mut_addition1", "let mut b = 4; b = b + 19", "23"),
+  t("let-mut_addition2", "let mut b = 4; b = b + 19; b", "23"),
+  t("let-mut_addition3", "let mut b = 4; b += 19; b", "23"),
+  t("let-mut_subtraction1", "let mut b = 4; b = b - 19", "-15"),
+  t("let-mut_subtraction2", "let mut b = 4; b = b - 19; b", "-15"),
+  t("let-mut_subtraction3", "let mut b = 4; b -= 19; b", "-15"),
+  t("let-mut_multiplication1", "let mut b = 4; b = b * 19", "76"),
+  t("let-mut_multiplication2", "let mut b = 4; b = b * 19; b", "76"),
+  t("let-mut_multiplication3", "let mut b = 4; b *= 19; b", "76"),
+  t("let-mut_division1", "let mut b = 76; b = b / 19", "4"),
+  t("let-mut_division2", "let mut b = 76; b = b / 19; b", "4"),
+  t("let-mut_division3", "let mut b = 76; b /= 19; b", "4"),
 ];
 
 let loop_tests = [
@@ -673,6 +755,17 @@ let loop_tests = [
   t(
     "loop2",
     "let b = box(12);\n             let count = box(0);\n            {\n              while (unbox(b) > 0) {\n                b := unbox(b) - 1;\n                count := unbox(count) + 1\n              };\n              unbox(count)\n            }",
+    "12",
+  ),
+  t("loop3", "let mut b = 3; while (b > 0) { b = b - 1 }; b ", "0"),
+  t(
+    "loop4",
+    "let mut b = 12; let mut count = 0; while (b > 0) { b = b - 1; count = count + 1 }; count",
+    "12",
+  ),
+  t(
+    "loop5",
+    "let mut b = 12; let mut count = 0; while ((b -= 1) >= 0) { count += 1 }; count",
     "12",
   ),
 ];
@@ -1144,7 +1237,8 @@ let optimization_tests = [
       Comp.app(Imm.id(plus), [Imm.id(app), Imm.const(Const_int(5))]);
     },
   ),
-  tfsound("test_counter_sound", "counter", "1\n2\n3\nvoid"),
+  tfsound("test_counter-mut_sound", "counter-mut", "1\n2\n3\nvoid"),
+  tfsound("test_counter-box_sound", "counter-box", "1\n2\n3\nvoid"),
   te("test_dae_sound", "let x = 2 + false; 3", "type"),
   te(
     "test_const_fold_times_zero_sound",
@@ -1285,6 +1379,7 @@ let tests =
   @ record_tests
   @ stdlib_tests
   @ box_tests
+  @ let_mut_tests
   @ loop_tests
   @ oom
   @ gc

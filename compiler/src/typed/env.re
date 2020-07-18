@@ -1739,6 +1739,7 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
                 val_fullpath: get_path(desc.cstr_name),
                 val_kind: TValConstructor(desc),
                 val_loc: desc.cstr_loc,
+                val_mutable: false,
               };
               c.comp_values =
                 Tbl.add(Ident.name(id), (val_desc, nopos), c.comp_values);
@@ -1828,6 +1829,7 @@ and store_type = (~check, id, info, env) => {
           val_fullpath: PIdent(Ident.create(desc.cstr_name)),
           val_kind: TValConstructor(desc),
           val_loc: desc.cstr_loc,
+          val_mutable: false,
         };
         (id, val_desc);
       },

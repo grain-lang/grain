@@ -54,6 +54,7 @@ let rec analyze_comp_expression =
       push_tail_call(analyses);
     };
     false;
+  | CBoxAssign(_)
   | CAssign(_)
   | CTuple(_)
   | CArray(_)
@@ -66,6 +67,7 @@ let rec analyze_comp_expression =
   | CGetAdtItem(_)
   | CGetAdtTag(_)
   | CGetRecordItem(_)
+  | CSetRecordItem(_)
   | CString(_)
   | CInt32(_)
   | CInt64(_)

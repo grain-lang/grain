@@ -79,7 +79,8 @@ module MakeMap =
     {...vb, vb_pat, vb_expr};
   }
 
-  and map_bindings = (rec_flag, binds) => List.map(map_binding, binds)
+  and map_bindings = (rec_flag, mut_flag, binds) =>
+    List.map(map_binding, binds)
 
   and map_match_branch = ({mb_pat, mb_body} as mb) => {
     let mb_pat = map_pattern(mb_pat);
@@ -127,9 +128,14 @@ module MakeMap =
       | TTopForeign(_)
       | TTopImport(_)
       | TTopExport(_) => stmt.ttop_desc
-      | [@implicit_arity] TTopLet(exportflag, recflag, binds) =>
+      | [@implicit_arity] TTopLet(exportflag, recflag, mutflag, binds) =>
         [@implicit_arity]
-        TTopLet(exportflag, recflag, map_bindings(recflag, binds))
+        TTopLet(
+          exportflag,
+          recflag,
+          mutflag,
+          map_bindings(recflag, mutflag, binds),
+        )
       | TTopExpr(e) => TTopExpr(map_expression(e))
       };
     Map.leave_toplevel_stmt({...stmt, ttop_desc});
@@ -186,9 +192,14 @@ module MakeMap =
       | TExpNull
       | TExpIdent(_)
       | TExpConstant(_) => exp.exp_desc
-      | [@implicit_arity] TExpLet(recflag, binds, body) =>
+      | [@implicit_arity] TExpLet(recflag, mutflag, binds, body) =>
         [@implicit_arity]
-        TExpLet(recflag, map_bindings(recflag, binds), map_expression(body))
+        TExpLet(
+          recflag,
+          mutflag,
+          map_bindings(recflag, mutflag, binds),
+          map_expression(body),
+        )
       | [@implicit_arity] TExpLambda(branches, p) =>
         [@implicit_arity] TExpLambda(map_match_branches(branches), p)
       | [@implicit_arity] TExpApp(exp, args) =>
@@ -199,8 +210,11 @@ module MakeMap =
       | [@implicit_arity] TExpPrim2(o, e1, e2) =>
         [@implicit_arity]
         TExpPrim2(o, map_expression(e1), map_expression(e2))
-      | [@implicit_arity] TExpAssign(be, e) =>
-        [@implicit_arity] TExpAssign(map_expression(be), map_expression(e))
+      | [@implicit_arity] TExpBoxAssign(e1, e2) =>
+        [@implicit_arity]
+        TExpBoxAssign(map_expression(e1), map_expression(e2))
+      | [@implicit_arity] TExpAssign(e1, e2) =>
+        [@implicit_arity] TExpAssign(map_expression(e1), map_expression(e2))
       | [@implicit_arity] TExpMatch(value, branches, p) =>
         [@implicit_arity]
         TExpMatch(map_expression(value), map_match_branches(branches), p)
@@ -230,6 +244,14 @@ module MakeMap =
         )
       | [@implicit_arity] TExpRecordGet(record, field, ld) =>
         [@implicit_arity] TExpRecordGet(map_expression(record), field, ld)
+      | [@implicit_arity] TExpRecordSet(record, field, ld, arg) =>
+        [@implicit_arity]
+        TExpRecordSet(
+          map_expression(record),
+          field,
+          ld,
+          map_expression(arg),
+        )
       | TExpBlock(args) => TExpBlock(List.map(map_expression, args))
       | [@implicit_arity] TExpConstruct(a, b, args) =>
         [@implicit_arity] TExpConstruct(a, b, List.map(map_expression, args))

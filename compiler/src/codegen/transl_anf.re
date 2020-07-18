@@ -539,6 +539,9 @@ let rec compile_comp = (env, c) => {
     | [@implicit_arity] CAssign(arg1, arg2) =>
       [@implicit_arity]
       MBoxOp(MBoxUpdate(compile_imm(env, arg2)), compile_imm(env, arg1))
+    | [@implicit_arity] CBoxAssign(arg1, arg2) =>
+      [@implicit_arity]
+      MBoxOp(MBoxUpdate(compile_imm(env, arg2)), compile_imm(env, arg1))
     | CTuple(args) => MAllocate(MTuple(List.map(compile_imm(env), args)))
     | CArray(args) => MAllocate(MArray(List.map(compile_imm(env), args)))
     | [@implicit_arity] CArrayGet(idx, arr) =>
@@ -588,6 +591,12 @@ let rec compile_comp = (env, c) => {
       [@implicit_arity] MAdtOp(MAdtGetTag, compile_imm(env, adt))
     | [@implicit_arity] CGetRecordItem(idx, record) =>
       [@implicit_arity] MRecordOp(MRecordGet(idx), compile_imm(env, record))
+    | [@implicit_arity] CSetRecordItem(idx, record, arg) =>
+      [@implicit_arity]
+      MRecordOp(
+        MRecordSet(idx, compile_imm(env, arg)),
+        compile_imm(env, record),
+      )
     | [@implicit_arity] CLambda(args, body) =>
       MAllocate(MClosure(compile_lambda(env, args, body, c.comp_loc)))
     | [@implicit_arity] CApp(f, args) =>

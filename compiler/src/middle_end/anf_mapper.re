@@ -47,8 +47,11 @@ module MakeMap = (Iter: MapArgument) => {
         let arg1 = map_imm_expression(arg1);
         let arg2 = map_imm_expression(arg2);
         [@implicit_arity] CPrim2(p2, arg1, arg2);
-      | [@implicit_arity] CAssign(lhs, rhs) =>
+      | [@implicit_arity] CBoxAssign(lhs, rhs) =>
         let lhs = map_imm_expression(lhs);
+        let rhs = map_imm_expression(rhs);
+        [@implicit_arity] CBoxAssign(lhs, rhs);
+      | [@implicit_arity] CAssign(lhs, rhs) =>
         let rhs = map_imm_expression(rhs);
         [@implicit_arity] CAssign(lhs, rhs);
       | CTuple(elts) => CTuple(List.map(map_imm_expression, elts))
@@ -90,6 +93,13 @@ module MakeMap = (Iter: MapArgument) => {
       | CGetAdtTag(adt) => CGetAdtTag(map_imm_expression(adt))
       | [@implicit_arity] CGetRecordItem(idx, record) =>
         [@implicit_arity] CGetRecordItem(idx, map_imm_expression(record))
+      | [@implicit_arity] CSetRecordItem(idx, record, arg) =>
+        [@implicit_arity]
+        CSetRecordItem(
+          idx,
+          map_imm_expression(record),
+          map_imm_expression(arg),
+        )
       | [@implicit_arity] CIf(c, t, f) =>
         let c = map_imm_expression(c);
         let t = map_anf_expression(t);

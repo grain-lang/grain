@@ -101,6 +101,7 @@ let rec analyze_comp_expression =
       analyze_imm_expression(a2);
       imm_expression_purity_internal(a1)
       && imm_expression_purity_internal(a2);
+    | [@implicit_arity] CBoxAssign(_, _)
     | [@implicit_arity] CAssign(_, _) =>
       /* TODO: Would be nice if we could "scope" the purity analysis to local assignments */
       false
@@ -108,9 +109,9 @@ let rec analyze_comp_expression =
       analyze_imm_expression(a);
       analyze_imm_expression(i);
       imm_expression_purity_internal(a) && imm_expression_purity_internal(i);
+    | CArray(_)
     | CArraySet(_) => false
     | CTuple(args)
-    | CArray(args)
     | [@implicit_arity] CAdt(_, _, args) =>
       let arg_purities =
         List.map(
@@ -121,16 +122,7 @@ let rec analyze_comp_expression =
           args,
         );
       List.for_all(x => x, arg_purities);
-    | [@implicit_arity] CRecord(_, args) =>
-      let arg_purities =
-        List.map(
-          ((_, arg)) => {
-            analyze_imm_expression(arg);
-            imm_expression_purity_internal(arg);
-          },
-          args,
-        );
-      List.for_all(x => x, arg_purities);
+    | CRecord(_) => false
     | [@implicit_arity] CGetTupleItem(_, a) =>
       analyze_imm_expression(a);
       imm_expression_purity_internal(a);
@@ -142,6 +134,7 @@ let rec analyze_comp_expression =
     | [@implicit_arity] CGetRecordItem(_, r) =>
       analyze_imm_expression(r);
       imm_expression_purity_internal(r);
+    | CSetRecordItem(_) => false
     | [@implicit_arity] CIf(c, t, f) =>
       analyze_imm_expression(c);
       analyze_anf_expression(t);

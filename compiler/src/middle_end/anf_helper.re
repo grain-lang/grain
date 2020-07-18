@@ -38,6 +38,8 @@ module Comp = {
     mk(~loc?, ~env?, [@implicit_arity] CPrim1(p1, a));
   let prim2 = (~loc=?, ~env=?, p2, a1, a2) =>
     mk(~loc?, ~env?, [@implicit_arity] CPrim2(p2, a1, a2));
+  let box_assign = (~loc=?, ~env=?, a1, a2) =>
+    mk(~loc?, ~env?, [@implicit_arity] CBoxAssign(a1, a2));
   let assign = (~loc=?, ~env=?, a1, a2) =>
     mk(~loc?, ~env?, [@implicit_arity] CAssign(a1, a2));
   let tuple = (~loc=?, ~env=?, elts) => mk(~loc?, ~env?, CTuple(elts));
@@ -60,6 +62,8 @@ module Comp = {
     mk(~loc?, ~env?, CGetAdtTag(value));
   let record_get = (~loc=?, ~env=?, idx, record) =>
     mk(~loc?, ~env?, [@implicit_arity] CGetRecordItem(idx, record));
+  let record_set = (~loc=?, ~env=?, idx, record, arg) =>
+    mk(~loc?, ~env?, [@implicit_arity] CSetRecordItem(idx, record, arg));
   let if_ = (~loc=?, ~env=?, cond, tru, fals) =>
     mk(~loc?, ~env?, [@implicit_arity] CIf(cond, tru, fals));
   let while_ = (~loc=?, ~env=?, cond, body) =>

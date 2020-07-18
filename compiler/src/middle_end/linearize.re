@@ -73,11 +73,21 @@ type either('a, 'b) =
   | Left('a)
   | Right('b);
 
-let extract_bindings = (pat, cexpr) =>
-  List.map(
-    ((name, e)) => [@implicit_arity] BLet(name, e),
-    MatchCompiler.extract_bindings(pat, cexpr),
-  );
+let extract_bindings = (mut_flag, pat, cexpr) => {
+  let get_imm =
+    fun
+    | CImmExpr(imm) => imm
+    | _ => failwith("MatchCompiler returned non-immediate for binding");
+  let map_fn =
+    switch (mut_flag) {
+    | Mutable => (
+        ((name, e)) =>
+          BLet(name, {...e, comp_desc: CPrim1(Box, get_imm(e.comp_desc))})
+      )
+    | Immutable => (((name, e)) => BLet(name, e))
+    };
+  List.map(map_fn, MatchCompiler.extract_bindings(pat, cexpr));
+};
 
 let transl_const =
     (c: Types.constant): either(imm_expression, (string, comp_expression)) =>
@@ -95,6 +105,7 @@ type item_get =
 
 let rec transl_imm =
         (
+          ~boxed=false,
           {exp_desc, exp_loc: loc, exp_env: env, exp_type: typ, _} as e: expression,
         )
         : (imm_expression, list(anf_bind)) =>
@@ -105,32 +116,68 @@ let rec transl_imm =
     TExpIdent(
       [@implicit_arity] Path.PExternal(Path.PIdent(mod_) as p, ident, _),
       _,
-      {val_fullpath: [@implicit_arity] Path.PExternal(_, original_name, _)},
+      {
+        val_fullpath: [@implicit_arity] Path.PExternal(_, original_name, _),
+        val_mutable,
+      },
     ) =>
     let mod_decl = Env.find_module(p, None, env);
-    (
-      Imm.id(~loc, ~env, lookup_symbol(mod_, mod_decl, ident, original_name)),
-      [],
-    );
+    let id =
+      Imm.id(
+        ~loc,
+        ~env,
+        lookup_symbol(mod_, mod_decl, ident, original_name),
+      );
+    if (val_mutable && !boxed) {
+      let tmp = gensym("unbox_mut");
+      let setup = [BLet(tmp, Comp.prim1(~loc, ~env, Unbox, id))];
+      (Imm.id(~loc, ~env, tmp), setup);
+    } else {
+      (id, []);
+    };
   | [@implicit_arity]
     TExpIdent(
       [@implicit_arity] Path.PExternal(Path.PIdent(mod_) as p, ident, _),
       _,
-      _,
+      {val_mutable},
     ) =>
     let mod_decl = Env.find_module(p, None, env);
-    (Imm.id(~loc, ~env, lookup_symbol(mod_, mod_decl, ident, ident)), []);
+    let id = Imm.id(~loc, ~env, lookup_symbol(mod_, mod_decl, ident, ident));
+    if (val_mutable && !boxed) {
+      let tmp = gensym("unbox_mut");
+      let setup = [BLet(tmp, Comp.prim1(~loc, ~env, Unbox, id))];
+      (Imm.id(~loc, ~env, tmp), setup);
+    } else {
+      (id, []);
+    };
   | [@implicit_arity] TExpIdent(Path.PExternal(_), _, _) =>
     failwith("NYI: transl_imm: TExpIdent with multiple PExternal")
   | [@implicit_arity] TExpIdent(Path.PIdent(ident) as path, _, _) =>
     switch (Env.find_value(path, env)) {
-    | {val_fullpath: Path.PIdent(_)} => (Imm.id(~loc, ~env, ident), [])
+    | {val_fullpath: Path.PIdent(_), val_mutable} =>
+      let id = Imm.id(~loc, ~env, ident);
+      if (val_mutable && !boxed) {
+        let tmp = gensym("unbox_mut");
+        let setup = [BLet(tmp, Comp.prim1(~loc, ~env, Unbox, id))];
+        (Imm.id(~loc, ~env, tmp), setup);
+      } else {
+        (id, []);
+      };
     | {
         val_fullpath:
           [@implicit_arity] Path.PExternal(Path.PIdent(mod_) as p, ident, _),
+        val_mutable,
       } =>
       let mod_decl = Env.find_module(p, None, env);
-      (Imm.id(~loc, ~env, lookup_symbol(mod_, mod_decl, ident, ident)), []);
+      let id =
+        Imm.id(~loc, ~env, lookup_symbol(mod_, mod_decl, ident, ident));
+      if (val_mutable && !boxed) {
+        let tmp = gensym("unbox_mut");
+        let setup = [BLet(tmp, Comp.prim1(~loc, ~env, Unbox, id))];
+        (Imm.id(~loc, ~env, tmp), setup);
+      } else {
+        (id, []);
+      };
     | {val_fullpath: Path.PExternal(_)} =>
       failwith("NYI: transl_imm: TExpIdent with multiple PExternal")
     }
@@ -203,9 +250,22 @@ let rec transl_imm =
         BLet(tmp, Comp.prim2(~loc, ~env, op, left_imm, right_imm)),
       ],
     );
-  | [@implicit_arity] TExpAssign(left, right) =>
+  | [@implicit_arity] TExpBoxAssign(left, right) =>
     let tmp = gensym("assign");
     let (left_imm, left_setup) = transl_imm(left);
+    let (right_imm, right_setup) = transl_imm(right);
+    (
+      Imm.id(~loc, ~env, tmp),
+      left_setup
+      @ right_setup
+      @ [
+        [@implicit_arity]
+        BLet(tmp, Comp.box_assign(~loc, ~env, left_imm, right_imm)),
+      ],
+    );
+  | [@implicit_arity] TExpAssign(left, right) =>
+    let tmp = gensym("assign");
+    let (left_imm, left_setup) = transl_imm(~boxed=true, left);
     let (right_imm, right_setup) = transl_imm(right);
     (
       Imm.id(~loc, ~env, tmp),
@@ -272,19 +332,23 @@ let rec transl_imm =
     let (rest_ans, rest_setup) =
       transl_imm({...e, exp_desc: TExpBlock(rest)});
     (rest_ans, fst_setup @ [BSeq(fst_ans)] @ rest_setup);
-  | [@implicit_arity] TExpLet(Nonrecursive, [], body) => transl_imm(body)
+  | [@implicit_arity] TExpLet(Nonrecursive, _, [], body) => transl_imm(body)
   | [@implicit_arity]
-    TExpLet(Nonrecursive, [{vb_expr, vb_pat}, ...rest], body) =>
+    TExpLet(Nonrecursive, mut_flag, [{vb_expr, vb_pat}, ...rest], body) =>
     /* TODO: Destructuring on letrec */
     let (exp_ans, exp_setup) = transl_comp_expression(vb_expr);
-    let binds_setup = extract_bindings(vb_pat, exp_ans);
+    let binds_setup = extract_bindings(mut_flag, vb_pat, exp_ans);
     let (body_ans, body_setup) =
       transl_imm({
         ...e,
-        exp_desc: [@implicit_arity] TExpLet(Nonrecursive, rest, body),
+        exp_desc:
+          [@implicit_arity] TExpLet(Nonrecursive, mut_flag, rest, body),
       });
     (body_ans, exp_setup @ binds_setup @ body_setup);
-  | [@implicit_arity] TExpLet(Recursive, binds, body) =>
+  | [@implicit_arity] TExpLet(Recursive, mut_flag, binds, body) =>
+    if (mut_flag == Mutable) {
+      failwith("mutable let rec");
+    };
     let tmp = gensym("lam");
     let (binds, new_binds_setup) =
       List.split(
@@ -468,6 +532,22 @@ let rec transl_imm =
         ),
       ],
     );
+  | [@implicit_arity] TExpRecordSet(expr, field, ld, arg) =>
+    let tmp = gensym("field_set");
+    let (record, rec_setup) = transl_imm(expr);
+    let (arg, arg_setup) = transl_imm(arg);
+    (
+      Imm.id(~loc, ~env, tmp),
+      rec_setup
+      @ arg_setup
+      @ [
+        [@implicit_arity]
+        BLet(
+          tmp,
+          Comp.record_set(~loc, ~env, Int32.of_int(ld.lbl_pos), record, arg),
+        ),
+      ],
+    );
   | [@implicit_arity] TExpMatch(exp, branches, _) =>
     let tmp = gensym("match");
     let (exp_ans, exp_setup) = transl_imm(exp);
@@ -488,7 +568,8 @@ let rec transl_imm =
   | TExpConstruct(_) => failwith("NYI: transl_imm: Construct")
   }
 
-and bind_patts = (~exported=false, pat: pattern): (Ident.t, list(anf_bind)) => {
+and bind_patts =
+    (~exported=false, ~mut_flag, pat: pattern): (Ident.t, list(anf_bind)) => {
   let postprocess_item = (cur, acc) =>
     switch (cur) {
     | None => acc
@@ -499,13 +580,27 @@ and bind_patts = (~exported=false, pat: pattern): (Ident.t, list(anf_bind)) => {
           Comp.record_get(Int32.of_int(idx), Imm.id(src))
         | TuplePatGet(idx) => Comp.tuple_get(Int32.of_int(idx), Imm.id(src))
         };
-      let bind =
-        if (exported) {
-          [@implicit_arity] BLetExport(Nonrecursive, [(ident, access)]);
-        } else {
-          [@implicit_arity] BLet(ident, access);
+      let binds =
+        switch (mut_flag) {
+        | Mutable =>
+          let tmp = gensym("mut_bind_destructure");
+          let boxed = Comp.prim1(Box, Imm.id(tmp));
+          if (exported) {
+            [
+              BLet(tmp, access),
+              BLetExport(Nonrecursive, [(ident, boxed)]),
+            ];
+          } else {
+            [BLet(tmp, access), BLet(ident, boxed)];
+          };
+        | Immutable =>
+          if (exported) {
+            [BLetExport(Nonrecursive, [(ident, access)])];
+          } else {
+            [BLet(ident, access)];
+          }
         };
-      [bind] @ extras @ acc;
+      binds @ extras @ acc;
     };
   let postprocess = items => List.fold_right(postprocess_item, items, []);
   /* Pass one: Some(<identifier>, <access path>, <extra binds>)*/
@@ -611,23 +706,31 @@ and transl_comp_expression =
     let (rest_ans, rest_setup) =
       transl_comp_expression({...e, exp_desc: TExpBlock(rest)});
     (rest_ans, fst_setup @ [BSeq(fst_ans)] @ rest_setup);
-  | [@implicit_arity] TExpLet(Nonrecursive, [], body) =>
+  | [@implicit_arity] TExpLet(Nonrecursive, _, [], body) =>
     transl_comp_expression(body)
 
   | [@implicit_arity]
     TExpLet(
       Nonrecursive,
+      mut_flag,
       [
         {vb_expr, vb_pat: {pat_desc: [@implicit_arity] TPatVar(bind, _)}},
         ...rest,
       ],
       body,
     ) =>
-    let (exp_ans, exp_setup) = transl_comp_expression(vb_expr);
+    let (exp_ans, exp_setup) =
+      if (mut_flag == Mutable) {
+        let (imm, imm_setup) = transl_imm(vb_expr);
+        (Comp.prim1(Box, imm), imm_setup);
+      } else {
+        transl_comp_expression(vb_expr);
+      };
     let (body_ans, body_setup) =
       transl_comp_expression({
         ...e,
-        exp_desc: [@implicit_arity] TExpLet(Nonrecursive, rest, body),
+        exp_desc:
+          [@implicit_arity] TExpLet(Nonrecursive, mut_flag, rest, body),
       });
     (
       body_ans,
@@ -636,24 +739,27 @@ and transl_comp_expression =
   | [@implicit_arity]
     TExpLet(
       Nonrecursive,
+      mut_flag,
       [{vb_expr, vb_pat: {pat_desc: TPatTuple(_)} as pat}, ...rest],
       body,
     )
   | [@implicit_arity]
     TExpLet(
       Nonrecursive,
+      mut_flag,
       [{vb_expr, vb_pat: {pat_desc: TPatRecord(_)} as pat}, ...rest],
       body,
     ) =>
     let (exp_ans, exp_setup) = transl_comp_expression(vb_expr);
 
     /* Extract items from destructure */
-    let (tmp, anf_patts) = bind_patts(pat);
+    let (tmp, anf_patts) = bind_patts(~mut_flag, pat);
 
     let (body_ans, body_setup) =
       transl_comp_expression({
         ...e,
-        exp_desc: [@implicit_arity] TExpLet(Nonrecursive, rest, body),
+        exp_desc:
+          [@implicit_arity] TExpLet(Nonrecursive, mut_flag, rest, body),
       });
     (
       body_ans,
@@ -662,9 +768,12 @@ and transl_comp_expression =
       @ body_setup,
     );
 
-  | [@implicit_arity] TExpLet(Nonrecursive, [_, ..._], _) =>
+  | [@implicit_arity] TExpLet(Nonrecursive, _, [_, ..._], _) =>
     failwith("Impossible by pre_anf")
-  | [@implicit_arity] TExpLet(Recursive, binds, body) =>
+  | [@implicit_arity] TExpLet(Recursive, mut_flag, binds, body) =>
+    if (mut_flag == Mutable) {
+      failwith("mutable let rec");
+    };
     let (binds, new_binds_setup) =
       List.split(
         List.map(
@@ -832,14 +941,21 @@ let rec transl_anf_statement =
         ({ttop_desc, ttop_env: env, ttop_loc: loc} as s: toplevel_stmt)
         : (option(list(anf_bind)), list(import_spec)) =>
   switch (ttop_desc) {
-  | [@implicit_arity] TTopLet(_, _, []) => (None, [])
+  | [@implicit_arity] TTopLet(_, _, _, []) => (None, [])
   | [@implicit_arity]
-    TTopLet(export_flag, Nonrecursive, [{vb_expr, vb_pat}, ...rest]) =>
+    TTopLet(
+      export_flag,
+      Nonrecursive,
+      mut_flag,
+      [{vb_expr, vb_pat}, ...rest],
+    ) =>
     let (exp_ans, exp_setup) = transl_comp_expression(vb_expr);
     let (rest_setup, rest_imp) =
       transl_anf_statement({
         ...s,
-        ttop_desc: [@implicit_arity] TTopLet(export_flag, Nonrecursive, rest),
+        ttop_desc:
+          [@implicit_arity]
+          TTopLet(export_flag, Nonrecursive, mut_flag, rest),
       });
     let rest_setup = Option.value(~default=[], rest_setup);
     let exported = export_flag == Exported;
@@ -847,24 +963,52 @@ let rec transl_anf_statement =
       switch (vb_pat.pat_desc) {
       | [@implicit_arity] TPatVar(bind, _)
       | [@implicit_arity] TPatAlias({pat_desc: TPatAny}, bind, _) =>
-        if (exported) {
-          [[@implicit_arity] BLetExport(Nonrecursive, [(bind, exp_ans)])];
-        } else {
-          [[@implicit_arity] BLet(bind, exp_ans)];
+        switch (mut_flag) {
+        | Mutable =>
+          let tmp = gensym("mut_bind_destructure");
+          let boxed = Comp.prim1(Box, Imm.id(tmp));
+          if (exported) {
+            [
+              BLet(tmp, exp_ans),
+              BLetExport(Nonrecursive, [(bind, boxed)]),
+            ];
+          } else {
+            [BLet(tmp, exp_ans), BLet(bind, boxed)];
+          };
+        | Immutable =>
+          if (exported) {
+            [BLetExport(Nonrecursive, [(bind, exp_ans)])];
+          } else {
+            [BLet(bind, exp_ans)];
+          }
         }
       | TPatTuple(_)
       | TPatRecord(_) =>
-        let (tmp, anf_patts) = bind_patts(~exported, vb_pat);
+        let (tmp, anf_patts) = bind_patts(~exported, ~mut_flag, vb_pat);
         [[@implicit_arity] BLet(tmp, exp_ans), ...anf_patts];
       | [@implicit_arity] TPatAlias(patt, bind, _) =>
-        let bind =
-          if (exported) {
-            [@implicit_arity] BLetExport(Nonrecursive, [(bind, exp_ans)]);
-          } else {
-            [@implicit_arity] BLet(bind, exp_ans);
+        let binds =
+          switch (mut_flag) {
+          | Mutable =>
+            let tmp = gensym("mut_bind_destructure");
+            let boxed = Comp.prim1(Box, Imm.id(tmp));
+            if (exported) {
+              [
+                BLet(tmp, exp_ans),
+                BLetExport(Nonrecursive, [(bind, boxed)]),
+              ];
+            } else {
+              [BLet(tmp, exp_ans), BLet(bind, boxed)];
+            };
+          | Immutable =>
+            if (exported) {
+              [BLetExport(Nonrecursive, [(bind, exp_ans)])];
+            } else {
+              [BLet(bind, exp_ans)];
+            }
           };
-        let (tmp, anf_patts) = bind_patts(~exported, patt);
-        [bind, [@implicit_arity] BLet(tmp, exp_ans), ...anf_patts];
+        let (tmp, anf_patts) = bind_patts(~exported, ~mut_flag, patt);
+        binds @ [BLet(tmp, exp_ans), ...anf_patts];
       | TPatAny => []
       | _ =>
         failwith(
@@ -872,7 +1016,7 @@ let rec transl_anf_statement =
         )
       };
     (Some(exp_setup @ setup @ rest_setup), rest_imp);
-  | [@implicit_arity] TTopLet(export_flag, Recursive, binds) =>
+  | [@implicit_arity] TTopLet(export_flag, Recursive, mut_flag, binds) =>
     let (binds, new_binds_setup) =
       List.split(
         List.map(

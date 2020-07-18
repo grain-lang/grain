@@ -46,6 +46,9 @@ module MakeIter = (Iter: IterArgument) => {
     | [@implicit_arity] CPrim2(_, arg1, arg2) =>
       iter_imm_expression(arg1);
       iter_imm_expression(arg2);
+    | [@implicit_arity] CBoxAssign(lhs, rhs) =>
+      iter_imm_expression(lhs);
+      iter_imm_expression(rhs);
     | [@implicit_arity] CAssign(lhs, rhs) =>
       iter_imm_expression(lhs);
       iter_imm_expression(rhs);
@@ -73,6 +76,9 @@ module MakeIter = (Iter: IterArgument) => {
     | CGetAdtTag(adt) => iter_imm_expression(adt)
     | [@implicit_arity] CGetRecordItem(_, record) =>
       iter_imm_expression(record)
+    | [@implicit_arity] CSetRecordItem(_, record, arg) =>
+      iter_imm_expression(record);
+      iter_imm_expression(arg);
     | [@implicit_arity] CIf(c, t, f) =>
       iter_imm_expression(c);
       iter_anf_expression(t);

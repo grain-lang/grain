@@ -168,6 +168,7 @@ type value_description = {
   val_type: type_expr,
   val_kind: value_kind,
   val_fullpath: Path.t,
+  val_mutable: bool,
   [@sexp_drop_if _ => ! Grain_utils.Config.sexp_locs_enabled^] [@default
                                                                  Location.dummy_loc
                                                                ]
@@ -178,6 +179,7 @@ type value_description = {
 type record_field = {
   rf_name: Ident.t,
   rf_type: type_expr,
+  rf_mutable: bool,
   [@sexp_drop_if _ => ! Grain_utils.Config.sexp_locs_enabled^]
   rf_loc: Location.t,
 };
@@ -280,6 +282,7 @@ type label_description = {
   lbl_res: type_expr, /* Type of the result */
   lbl_arg: type_expr, /* Type of the argument */
   lbl_pos: int, /* Position in block */
+  lbl_mut: bool, /* If this label is mutable */
   lbl_all: array(label_description), /* All the labels in this type */
   [@sexp_drop_if _ => ! Grain_utils.Config.sexp_locs_enabled^] [@default
                                                                  Location.dummy_loc

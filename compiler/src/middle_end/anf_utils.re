@@ -60,6 +60,11 @@ and comp_free_vars_help = (env, c: comp_expression) =>
       imm_free_vars_help(env, arg1),
       imm_free_vars_help(env, arg2),
     )
+  | [@implicit_arity] CBoxAssign(arg1, arg2) =>
+    Ident.Set.union(
+      imm_free_vars_help(env, arg1),
+      imm_free_vars_help(env, arg2),
+    )
   | [@implicit_arity] CAssign(arg1, arg2) =>
     Ident.Set.union(
       imm_free_vars_help(env, arg1),
@@ -107,6 +112,7 @@ and comp_free_vars_help = (env, c: comp_expression) =>
   | [@implicit_arity] CGetAdtItem(_, arg)
   | CGetAdtTag(arg)
   | [@implicit_arity] CGetRecordItem(_, arg) => imm_free_vars_help(env, arg)
+  | [@implicit_arity] CSetRecordItem(_, arg1, arg2)
   | [@implicit_arity] CSetTupleItem(_, arg1, arg2) =>
     Ident.Set.union(
       imm_free_vars_help(env, arg1),

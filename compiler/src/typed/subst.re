@@ -234,6 +234,7 @@ let constructor_declaration = (s, c) => {
 let record_field = (s, f) => {
   rf_name: f.rf_name,
   rf_type: typexp(s, f.rf_type),
+  rf_mutable: f.rf_mutable,
   rf_loc: loc(s, f.rf_loc),
 };
 
@@ -268,6 +269,7 @@ let value_description = (s, descr) => {
   val_type: type_expr(s, descr.val_type),
   val_kind: descr.val_kind,
   val_fullpath: Path.PIdent(Ident.create("<unknown>")),
+  val_mutable: descr.val_mutable,
   val_loc: loc(s, descr.val_loc),
 };
 

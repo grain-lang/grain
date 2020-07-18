@@ -92,13 +92,13 @@ module CDecl = {
 };
 
 module LDecl = {
-  let mk = (~loc=?, n, t) => {
+  let mk = (~loc=?, n, t, m) => {
     let loc =
       switch (loc) {
       | None => default_loc_src^()
       | Some(l) => l
       };
-    {pld_name: n, pld_type: t, pld_loc: loc};
+    {pld_name: n, pld_type: t, pld_mutable: m, pld_loc: loc};
   };
 };
 
@@ -177,13 +177,15 @@ module Exp = {
   let record = (~loc=?, a) => mk(~loc?, PExpRecord(a));
   let record_get = (~loc=?, a, b) =>
     mk(~loc?, [@implicit_arity] PExpRecordGet(a, b));
+  let record_set = (~loc=?, a, b, c) =>
+    mk(~loc?, [@implicit_arity] PExpRecordSet(a, b, c));
   let array = (~loc=?, a) => mk(~loc?, PExpArray(a));
   let array_get = (~loc=?, a, b) =>
     mk(~loc?, [@implicit_arity] PExpArrayGet(a, b));
   let array_set = (~loc=?, a, b, c) =>
     mk(~loc?, [@implicit_arity] PExpArraySet(a, b, c));
-  let let_ = (~loc=?, a, b, c) =>
-    mk(~loc?, [@implicit_arity] PExpLet(a, b, c));
+  let let_ = (~loc=?, a, b, c, d) =>
+    mk(~loc?, [@implicit_arity] PExpLet(a, b, c, d));
   let match = (~loc=?, a, b) =>
     mk(~loc?, [@implicit_arity] PExpMatch(a, b));
   let prim1 = (~loc=?, a, b) =>
@@ -196,6 +198,8 @@ module Exp = {
     mk(~loc?, [@implicit_arity] PExpWhile(a, b));
   let constraint_ = (~loc=?, a, b) =>
     mk(~loc?, [@implicit_arity] PExpConstraint(a, b));
+  let box_assign = (~loc=?, a, b) =>
+    mk(~loc?, [@implicit_arity] PExpBoxAssign(a, b));
   let assign = (~loc=?, a, b) =>
     mk(~loc?, [@implicit_arity] PExpAssign(a, b));
   let lambda = (~loc=?, a, b) =>
@@ -232,8 +236,8 @@ module Top = {
   let primitive = (~loc=?, e, d) =>
     mk(~loc?, [@implicit_arity] PTopPrimitive(e, d));
   let data = (~loc=?, e, d) => mk(~loc?, [@implicit_arity] PTopData(e, d));
-  let let_ = (~loc=?, e, r, vb) =>
-    mk(~loc?, [@implicit_arity] PTopLet(e, r, vb));
+  let let_ = (~loc=?, e, r, m, vb) =>
+    mk(~loc?, [@implicit_arity] PTopLet(e, r, m, vb));
   let expr = (~loc=?, e) => mk(~loc?, PTopExpr(e));
   let export = (~loc=?, e) => mk(~loc?, PTopExport(e));
   let export_all = (~loc=?, e) => mk(~loc?, PTopExportAll(e));

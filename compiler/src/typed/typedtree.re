@@ -26,6 +26,7 @@ type partial =
 
 type export_flag = Asttypes.export_flag = | Nonexported | Exported;
 type rec_flag = Asttypes.rec_flag = | Nonrecursive | Recursive;
+type mut_flag = Asttypes.mut_flag = | Mutable | Immutable;
 
 type prim1 =
   Parsetree.prim1 =
@@ -116,6 +117,7 @@ type constructor_declaration = {
 type record_field = {
   rf_name: Ident.t,
   rf_type: core_type,
+  rf_mutable: bool,
   [@sexp_drop_if _ => ! Grain_utils.Config.sexp_locs_enabled^]
   rf_loc: Location.t,
 };
@@ -190,10 +192,17 @@ and expression_desc =
   | TExpArraySet(expression, expression, expression)
   | TExpRecord(array((Types.label_description, record_label_definition)))
   | TExpRecordGet(expression, loc(Identifier.t), Types.label_description)
-  | TExpLet(rec_flag, list(value_binding), expression)
+  | TExpRecordSet(
+      expression,
+      loc(Identifier.t),
+      Types.label_description,
+      expression,
+    )
+  | TExpLet(rec_flag, mut_flag, list(value_binding), expression)
   | TExpMatch(expression, list(match_branch), partial)
   | TExpPrim1(prim1, expression)
   | TExpPrim2(prim2, expression, expression)
+  | TExpBoxAssign(expression, expression)
   | TExpAssign(expression, expression)
   | TExpIf(expression, expression, expression)
   | TExpWhile(expression, expression)
@@ -259,7 +268,7 @@ type toplevel_stmt_desc =
   | TTopImport(import_declaration)
   | TTopExport(list(export_declaration))
   | TTopData(list(data_declaration))
-  | TTopLet(export_flag, rec_flag, list(value_binding))
+  | TTopLet(export_flag, rec_flag, mut_flag, list(value_binding))
   | TTopExpr(expression);
 
 [@deriving sexp]

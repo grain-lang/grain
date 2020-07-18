@@ -236,11 +236,12 @@ module TailCallsArg: Anf_mapper.MapArgument = {
       (lambda, {continue_id, next_id, first_f_id, arg_ref_ids}) => {
     let assign_id = (id, value) =>
       wrap_comp(lambda) @@
-      [@implicit_arity] CAssign(wrap_id(lambda, id), wrap_id(lambda, value));
+      [@implicit_arity]
+      CBoxAssign(wrap_id(lambda, id), wrap_id(lambda, value));
     let assign_imm = (id, value) =>
       wrap_comp(lambda) @@
       [@implicit_arity]
-      CAssign(wrap_id(lambda, id), wrap_imm(lambda, value));
+      CBoxAssign(wrap_id(lambda, id), wrap_imm(lambda, value));
     let bind = (id, value, body) =>
       wrap_anf_with_comp(lambda) @@
       [@implicit_arity] AELet(Nonglobal, Nonrecursive, [(id, value)], body);
@@ -443,13 +444,13 @@ module TailCallsArg: Anf_mapper.MapArgument = {
         [@implicit_arity]
         AESeq(
           wrap_comp(c) @@
-          [@implicit_arity] CAssign(wrap_id(c, continue_loop_id), _true),
+          [@implicit_arity] CBoxAssign(wrap_id(c, continue_loop_id), _true),
           wrap_anf_with_comp(c) @@
           [@implicit_arity]
           AESeq(
             wrap_comp(c) @@
             [@implicit_arity]
-            CAssign(wrap_id(c, next_f_id), wrap_id(c, new_f)),
+            CBoxAssign(wrap_id(c, next_f_id), wrap_id(c, new_f)),
             wrap_anf_with_comp(c) @@
             AEComp(wrap_comp(c) @@ CImmExpr(_true)),
           ),
@@ -461,7 +462,7 @@ module TailCallsArg: Anf_mapper.MapArgument = {
             [@implicit_arity]
             AESeq(
               wrap_comp(c) @@
-              [@implicit_arity] CAssign(wrap_id(c, new_f_arg), arg),
+              [@implicit_arity] CBoxAssign(wrap_id(c, new_f_arg), arg),
               seq,
             ),
           new_f_args,

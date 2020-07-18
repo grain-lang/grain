@@ -4,11 +4,11 @@ import Hash from 'hash'
 import List from 'lists'
 
 let uniq = (list) => {
-  let itemsSeen = box([])
+  let mut itemsSeen = []
 
   List.reduce((acc, item) => {
-    let seen = List.contains(item, ^itemsSeen)
-    itemsSeen := [item, ...^itemsSeen]
+    let seen = List.contains(item, itemsSeen)
+    itemsSeen = [item, ...itemsSeen]
     acc && !seen
   }, true, list)
 }

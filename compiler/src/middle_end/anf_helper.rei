@@ -24,6 +24,9 @@ module Comp: {
   let prim2:
     (~loc: loc=?, ~env: env=?, prim2, imm_expression, imm_expression) =>
     comp_expression;
+  let box_assign:
+    (~loc: loc=?, ~env: env=?, imm_expression, imm_expression) =>
+    comp_expression;
   let assign:
     (~loc: loc=?, ~env: env=?, imm_expression, imm_expression) =>
     comp_expression;
@@ -71,6 +74,9 @@ module Comp: {
     (~loc: loc=?, ~env: env=?, imm_expression) => comp_expression;
   let record_get:
     (~loc: loc=?, ~env: env=?, int32, imm_expression) => comp_expression;
+  let record_set:
+    (~loc: loc=?, ~env: env=?, int32, imm_expression, imm_expression) =>
+    comp_expression;
   let if_:
     (
       ~loc: loc=?,

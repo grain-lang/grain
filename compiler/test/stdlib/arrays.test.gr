@@ -55,44 +55,44 @@ assert !(Array.copy(arr2) is arr2)
 # Array.forEach
 
 let arr1 = [> 1, 2, 3]
-let sum = box(0)
+let mut sum = 0
 
 let sentinel = (_n) => {
-  sum := 42
+  sum = 42
 }
 
 Array.forEach(sentinel, [>])
 
-assert unbox(sum) == 0
+assert sum == 0
 
 let addToSum = (n) => {
-  sum := unbox(sum) + n
+  sum = sum + n
 }
 
 Array.forEach(addToSum, arr1)
 
-assert unbox(sum) == 6
+assert sum == 6
 
 # Array.forEachi
 
 let arr1 = [> 1, 2, 3]
-let sum = box(0)
+let mut sum = 0
 
 let sentinel = (_n, _i) => {
-  sum := 42
+  sum = 42
 }
 
 Array.forEachi(sentinel, [>])
 
-assert unbox(sum) == 0
+assert sum == 0
 
 let addToSum = (n, i) => {
-  sum := unbox(sum) + (n * i)
+  sum = sum + (n * i)
 }
 
 Array.forEachi(addToSum, arr1)
 
-assert unbox(sum) == 8
+assert sum == 8
 
 # Array.toList
 

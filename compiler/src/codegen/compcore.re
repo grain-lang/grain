@@ -1681,6 +1681,51 @@ let compile_record_op = (wasm_mod, env, rec_imm, op) => {
       wasm_mod,
       untag(wasm_mod, GenericHeapType(Some(RecordType)), record),
     );
+  | MRecordSet(idx, arg_imm) =>
+    let idx_int = Int32.to_int(idx);
+    let arg = compile_imm(wasm_mod, env, arg_imm);
+    Expression.block(
+      wasm_mod,
+      gensym_label("record_set"),
+      [
+        store(
+          ~offset=4 * (idx_int + 4),
+          wasm_mod,
+          tee_swap(
+            wasm_mod,
+            env,
+            0,
+            untag(wasm_mod, GenericHeapType(Some(RecordType)), record),
+          ),
+          Expression.tuple_extract(
+            wasm_mod,
+            Expression.tuple_make(
+              wasm_mod,
+              [
+                call_incref(
+                  wasm_mod,
+                  env,
+                  [tee_swap(wasm_mod, env, 1, arg)],
+                ),
+                call_decref(
+                  wasm_mod,
+                  env,
+                  [
+                    load(
+                      ~offset=4 * (idx_int + 4),
+                      wasm_mod,
+                      get_swap(wasm_mod, env, 0),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            0,
+          ),
+        ),
+        get_swap(wasm_mod, env, 1),
+      ],
+    );
   };
 };
 
@@ -3370,6 +3415,7 @@ let rec compile_store = (wasm_mod, env, binds) => {
   Expression.block(wasm_mod, gensym_label("compile_store")) @@
   List.append(instrs, [do_backpatches(wasm_mod, env, backpatches)]);
 }
+
 and compile_switch = (wasm_mod, env, arg, branches, default) => {
   /* Constructs the jump table. Assumes that branch 0 is the default */
   let switch_label = gensym_label("switch");
