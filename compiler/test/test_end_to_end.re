@@ -1221,6 +1221,11 @@ let string_tests = {
       {statements: [str("barA")], prog_loc: Location.dummy_loc},
     ),
     tparse(
+      "string_parse_sqs5",
+      "'bar\\u0041'",
+      {statements: [str("barA")], prog_loc: Location.dummy_loc},
+    ),
+    tparse(
       "string_parse_emoji_escape",
       "\"😂\"",
       {statements: [str("😂")], prog_loc: Location.dummy_loc},

@@ -35,7 +35,8 @@
     let str = lexeme lexbuf in
     let (esc, numstr) = ((String.sub str 1 1), (String.sub str 2 ((String.length str) - 2))) in
     let code_point = (match esc with
-      | "u" -> Scanf.sscanf (String.sub numstr 1 ((String.length numstr) - 1)) "%x" (fun x -> x)
+      | "u" when (numstr.[0] = '{') -> Scanf.sscanf (String.sub numstr 1 ((String.length numstr) - 1)) "%x" (fun x -> x)
+      | "u"
       | "x" -> Scanf.sscanf numstr "%x" (fun x -> x)
       | _ -> Scanf.sscanf (esc^numstr) "%o" (fun x -> x)) in
     if (Uchar.is_valid code_point) then
@@ -80,6 +81,7 @@ let blank = [' ' '\t']+
 let std_escapes = (("\\" dec_digit dec_digit? dec_digit?)
                  | ("\\x" hex_digit hex_digit?)
                  | ("\\" oct_digit oct_digit? oct_digit?)
+                 | ("\\u" hex_digit hex_digit hex_digit hex_digit)
                  | ("\\u{" hex_digit hex_digit? hex_digit? hex_digit? hex_digit? hex_digit? "}")
                  | ("\\" ['\\' 'n' 'r' 't' '"' '\''] ))
 
@@ -96,9 +98,10 @@ let squot_str = '\'' (std_escapes
               | [^ '\\' '\'' '\n' '\r'])* '\''
 
 let unicode_esc = "\\u{" hex_digit (hex_digit (hex_digit (hex_digit (hex_digit hex_digit?)?)?)?)? "}"
+let unicode4_esc = "\\u" hex_digit hex_digit hex_digit hex_digit
 let hex_esc = "\\x" hex_digit hex_digit?
 let oct_esc = "\\" oct_digit (oct_digit oct_digit?)?
-let num_esc = (unicode_esc | hex_esc | oct_esc)
+let num_esc = (unicode_esc | unicode4_esc | hex_esc | oct_esc)
 
 let newline_char = ("\r\n"|"\n\r"|'\n'|'\r')
 let newline_chars = (newline_char | blank)* newline_char
