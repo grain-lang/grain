@@ -47,11 +47,6 @@ let read_leb128_u64: (unit => int) => int64;
 let read_leb128_u64_input: in_channel => int64;
 let read_leb128_u64_stream: Stream.t(int) => int64;
 
-let write_leb128_i32: (int => unit, int32) => unit;
-let write_leb128_u32: (int => unit, int32) => unit;
-let write_leb128_i64: (int => unit, int64) => unit;
-let write_leb128_u64: (int => unit, int64) => unit;
-
 let get_wasm_sections: (~reset: bool=?, in_channel) => list(wasm_bin_section);
 
 module type BinarySectionSpec = {

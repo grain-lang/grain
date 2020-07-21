@@ -130,51 +130,6 @@ let log2_i64 = x => {
   r^;
 };
 
-/* Encoding algorithms taken from https://en.wikipedia.org/wiki/LEB128 */
-let write_leb128_unsigned: (~sink: int => unit, int64) => unit = (
-  (~sink, num) => {
-    open Int64;
-    let last_byte_low = n => Int64.to_int(logand(of_int(0x7F), n));
-    let set_high_bit = Int.(logor(0x80));
-    let rec process = num => {
-      let byte = last_byte_low(num);
-      let num = shift_right(num, 7);
-      if (num == zero) {
-        sink(byte);
-      } else {
-        sink(set_high_bit(byte));
-        process(num);
-      };
-    };
-    process(num);
-  }:
-    (~sink: int => unit, int64) => unit /* last 7 bits */
-);
-
-let write_leb128_signed: (~sink: int => unit, int64) => unit = (
-  (~sink, num) => {
-    open Int64;
-    let last_byte_low = n => Int64.to_int(logand(of_int(0x7F), n));
-    let set_high_bit = Int.(logor(0x80));
-    let get_sign_bit = Int.(logand(0x40));
-    let nonneg_finished = (b, n) => n == zero && get_sign_bit(b) == Int.zero;
-    let neg_finished = (b, n) =>
-      n == of_int(-1) && get_sign_bit(b) != Int.zero;
-    let rec process = num => {
-      let byte = last_byte_low(num);
-      let num = shift_right(num, 7);
-      if (nonneg_finished(byte, num) || neg_finished(byte, num)) {
-        sink(byte);
-      } else {
-        sink(set_high_bit(byte));
-        process(num);
-      };
-    };
-    process(num);
-  }:
-    (~sink: int => unit, int64) => unit /* last 7 bits */ /* Arithmetic shift */
-);
-
 let read_leb128_i32 = (bytesrc): int32 =>
   read_leb128(~signed=true, ~maxbits=32, ~conv=i32_of_u64, bytesrc);
 let read_leb128_i32_input = inchan =>
@@ -199,15 +154,6 @@ let read_leb128_u64_input = inchan =>
   read_leb128_u64(() => input_byte(inchan));
 let read_leb128_u64_stream = stream =>
   read_leb128_u64(() => Stream.next(stream));
-
-let write_leb128_i32 = (bytesink, n): unit =>
-  write_leb128_signed(bytesink, Int64.of_int32(n));
-let write_leb128_u32 = (bytesink, n): unit =>
-  write_leb128_unsigned(bytesink, Int64.of_int32(n));
-let write_leb128_i64 = (bytesink, n): unit =>
-  write_leb128_signed(bytesink, n);
-let write_leb128_u64 = (bytesink, n): unit =>
-  write_leb128_unsigned(bytesink, n);
 
 let read_int32 = inchan => {
   let bytes = Bytes.create(4);
@@ -360,34 +306,6 @@ let get_wasm_sections = (~reset=false, inchan) => {
     seek_in(inchan, orig_pos);
   };
   ret;
-};
-
-let write_wasm_section_header = ({sec_type, size}, ochan) => {
-  output_byte(ochan, int_of_section_type(sec_type));
-  switch (sec_type) {
-  | Custom(name) =>
-    let bytes = ref([]);
-    let push = i => bytes := [i, ...bytes^];
-    let name_bytes = utf8_decode(name);
-    write_leb128_u32(push, Int32.of_int(List.length(name_bytes)));
-    bytes := List.rev(bytes^);
-    let full_size = size + List.length(bytes^) + List.length(name_bytes);
-    /*let bstr bs = "[" ^ (String.concat ", " (List.map (Printf.sprintf "0x%02x") bs)) ^ "]" in
-      Printf.eprintf "write: size: %d; name: %s; bytes: %s; name_bytes: %s; full_size: %d\n"
-        size name (bstr !bytes) (bstr name_bytes) full_size;*/
-    write_leb128_u32(output_byte(ochan), Int32.of_int(full_size));
-    List.iter(output_byte(ochan), bytes^);
-    List.iter(output_byte(ochan), name_bytes);
-  | _ => write_leb128_u32(output_byte(ochan), Int32.of_int(size))
-  };
-};
-
-let write_custom_wasm_section = (name, bs, ochan) => {
-  let size = Bytes.length(bs);
-  /* Build a header just to validate that we write a complete one */
-  let hdr = {sec_type: Custom(name), size, offset: (-1)};
-  write_wasm_section_header(hdr, ochan);
-  output_bytes(ochan, bs);
 };
 
 let get_grain_custom_info = inchan =>
