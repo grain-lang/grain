@@ -17,9 +17,9 @@ depends: [
 authors: "Oscar Spencer"
 url {
   src:
-    "https://github.com/grain-lang/binaryen.ml/releases/download/v0.2.2/binaryen-archive-v0.2.2.tar.gz"
+    "https://github.com/grain-lang/binaryen.ml/releases/download/v0.2.3/binaryen-archive-v0.2.3.tar.gz"
   checksum: [
-    "md5=1753373cf3fbd094432dbd4b8d62a9c5"
-    "sha512=a514ec1a60e1a358c1ab8b76b9341ab0e13413e5b467faecca3dc722187154567794404e67ce4a98e085d8e08c5e3e76d9adb5d73dba41a903c4d71bfabc2e5a"
+    "md5=f4cb5ad491901b6252cc8adcec7cfd8a"
+    "sha512=ebceb1b39a1dc69870b6b5d4d0364df609c0743c9f4af2b9d37fb46a255e3417ff34ccc0f8eac1f1d0b10f42f10f47987bd208f887b1a2bd89153aef42eb0a76"
   ]
 }
