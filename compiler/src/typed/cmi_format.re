@@ -120,7 +120,7 @@ let read_cmi = filename => {
   };
 };
 
-let serialize_cmi = (cmi) =>
+let serialize_cmi = cmi =>
   /* beware: the provided signature must have been substituted for saving */
   CmiBinarySection.serialize(cmi);
 

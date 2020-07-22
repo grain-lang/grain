@@ -362,7 +362,7 @@ module type BinarySectionSig = {
 
   /** Serializes this section at the current position in the given [out_channel]. */
 
-  let serialize: (t) => bytes;
+  let serialize: t => bytes;
 };
 
 module BinarySection =
@@ -404,11 +404,11 @@ module BinarySection =
     ret;
   };
 
-  let serialize = (value) => {
+  let serialize = value => {
     let val_bytes = Spec.serialize(value);
     let header_bytes = serialize_grain_custom_info(Spec.name, latest_abi);
     let sep = Bytes.empty;
-    Bytes.concat(sep, [header_bytes, val_bytes])
+    Bytes.concat(sep, [header_bytes, val_bytes]);
   };
 };
 
