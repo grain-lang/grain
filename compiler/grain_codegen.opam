@@ -19,7 +19,7 @@ depends: [
   "ounit" {>= "2.0.0"}
   "cmdliner" {>= "1.0.2"}
   "ocamlgraph" {>= "1.8.8"}
-  "binaryen" {= "0.2.2"}
+  "binaryen" {= "0.2.3"}
   "grain_utils" {>= "0"}
   "grain_middle_end" {>= "0"}
 ]

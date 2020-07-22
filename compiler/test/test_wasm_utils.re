@@ -46,11 +46,6 @@ let test_leb128_u32 = ctxt => {
     Int32.of_int(624485),
     read_leb128_u32(iter_bytes([0xE5, 0x8E, 0x26])),
   );
-  assert_equal_bytes(
-    ~ctxt,
-    [0xE5, 0x8E, 0x26],
-    collect_bytes(sink => write_leb128_u32(sink, Int32.of_int(624485))),
-  );
 };
 
 let test_leb128_i32 = ctxt => {
@@ -58,11 +53,6 @@ let test_leb128_i32 = ctxt => {
     ~ctxt,
     Int32.of_int(-624485),
     read_leb128_i32(iter_bytes([0x9B, 0xF1, 0x59])),
-  );
-  assert_equal_bytes(
-    ~ctxt,
-    [0x9B, 0xF1, 0x59],
-    collect_bytes(sink => write_leb128_i32(sink, Int32.of_int(-624485))),
   );
 };
 
