@@ -802,8 +802,9 @@ let compile_module_dependency =
   );
 
 let file_older = (a, b) => {
-  let last_modified = f => Unix.(stat(f).st_mtime);
-  last_modified(a) < last_modified(b);
+  true;
+      /* let last_modified = f => Unix.(stat(f).st_mtime);
+         last_modified(a) < last_modified(b); */
 };
 
 let get_output_name = name => {

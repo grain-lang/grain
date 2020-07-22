@@ -1,8 +1,24 @@
 open Grain;
 open Compile;
 open Printf;
-open Lexing;
-open Filename;
+open Js_of_ocaml;
+
+let p = {|
+export *
+
+export data List<a> = [] | [...](a, List<a>)
+
+# Maybe some data, maybe not!
+data Option<a> = Some(a) | None
+|};
+
+Sys_js.mount(~path="", (~prefix, ~path) =>
+  if (path == "pervasives.wasm") {
+    None;
+  } else {
+    Some(p);
+  }
+);
 
 let () =
   Printexc.register_printer(exc =>
@@ -25,36 +41,11 @@ let () =
     }
   );
 
-
-/** `remove_extension` new enough that we should just use this */
-
-let safe_remove_extension = name =>
-  try(Filename.chop_extension(name)) {
-  | Invalid_argument(_) => name
-  };
-
-
-let default_output_filename = name => safe_remove_extension(name) ++ ".wasm";
-
-let default_assembly_filename = name =>
-  safe_remove_extension(name) ++ ".wast";
-
-let default_mashtree_filename = name =>
-  safe_remove_extension(name) ++ ".mashtree";
-
-let compile_file = (name, outfile_arg) => {
-  Grain_utils.Config.base_path := dirname(name);
-  if (!Printexc.backtrace_status() && Grain_utils.Config.verbose^) {
+let compile = str => {
+  if (!Printexc.backtrace_status()) {
     Printexc.record_backtrace(true);
   };
-  try({
-    let outfile =
-      Option.value(~default=default_output_filename(name), outfile_arg);
-    if (Grain_utils.Config.debug^) {
-      Compile.save_mashed(name, default_mashtree_filename(outfile));
-    };
-    ignore(Compile.compile_file(~outfile, name));
-  }) {
+  try(Compile.compile_string(~name="sandbox.gr", Js.to_string(str))) {
   | exn =>
     let bt =
       if (Printexc.backtrace_status()) {
@@ -73,7 +64,6 @@ let compile_file = (name, outfile_arg) => {
     );
     exit(2);
   };
-  `Ok();
 };
 
-Js_of_ocaml.Js.export("compile", compile_file);
+Js.export("compile", compile);

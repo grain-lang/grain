@@ -1,13 +1,11 @@
 (executable
  (name grain_js)
- (public_name grain_js)
- (package grain)
- (modules grain_js)
- (modes byte js)
- (flags :standard -safe-string)
+ (modes
+  (byte js))
+ (libraries grain js_of_ocaml binaryen.js)
  (js_of_ocaml
-  (flags :standard))
- (libraries grain js_of_ocaml js_of_ocaml-compiler))
+  (flags --no-sourcemap --pretty --debug-info)
+  (javascript_files runtime.js)))
 
 (env
  (dev

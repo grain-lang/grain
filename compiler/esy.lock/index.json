@@ -1,5 +1,5 @@
 {
-  "checksum": "5a39dd66661cff9f82c5d034143ac080",
+  "checksum": "ecfe19d1a84beca3b3ac6fb6d5766e41",
   "root": "compiler@link-dev:./esy.json",
   "node": {
     "ocaml@4.10.0@d41d8cd9": {
@@ -976,6 +976,38 @@
         "@opam/dune@opam:2.6.1@e1bf507c"
       ]
     },
+    "@opam/js_of_ocaml-ppx@opam:3.6.0@92f19746": {
+      "id": "@opam/js_of_ocaml-ppx@opam:3.6.0@92f19746",
+      "name": "@opam/js_of_ocaml-ppx",
+      "version": "opam:3.6.0",
+      "source": {
+        "type": "install",
+        "source": [
+          "archive:https://opam.ocaml.org/cache/sha256/51/51eaa89c83ef3168ef270bf7997cbc35a747936d3f51aa6fac58fb0323b4cbb0#sha256:51eaa89c83ef3168ef270bf7997cbc35a747936d3f51aa6fac58fb0323b4cbb0",
+          "archive:https://github.com/ocsigen/js_of_ocaml/releases/download/3.6.0/js_of_ocaml-3.6.0.tbz#sha256:51eaa89c83ef3168ef270bf7997cbc35a747936d3f51aa6fac58fb0323b4cbb0"
+        ],
+        "opam": {
+          "name": "js_of_ocaml-ppx",
+          "version": "3.6.0",
+          "path": "esy.lock/opam/js_of_ocaml-ppx.3.6.0"
+        }
+      },
+      "overrides": [],
+      "dependencies": [
+        "ocaml@4.10.0@d41d8cd9",
+        "@opam/ppx_tools_versioned@opam:5.4.0@48c10ee1",
+        "@opam/ocaml-migrate-parsetree@opam:1.7.3@dbcf3b47",
+        "@opam/js_of_ocaml@opam:3.6.0@92f53867",
+        "@opam/dune@opam:2.6.1@e1bf507c", "@esy-ocaml/substs@0.0.1@d41d8cd9"
+      ],
+      "devDependencies": [
+        "ocaml@4.10.0@d41d8cd9",
+        "@opam/ppx_tools_versioned@opam:5.4.0@48c10ee1",
+        "@opam/ocaml-migrate-parsetree@opam:1.7.3@dbcf3b47",
+        "@opam/js_of_ocaml@opam:3.6.0@92f53867",
+        "@opam/dune@opam:2.6.1@e1bf507c"
+      ]
+    },
     "@opam/js_of_ocaml-compiler@opam:3.6.0@bda9e5de": {
       "id": "@opam/js_of_ocaml-compiler@opam:3.6.0@bda9e5de",
       "name": "@opam/js_of_ocaml-compiler",
@@ -1249,13 +1281,15 @@
         "@opam/js_of_ocaml-compiler@opam:3.6.0@bda9e5de",
         "@opam/js_of_ocaml@opam:3.6.0@92f53867",
         "@opam/grain@link:./grain.opam", "@opam/dune@opam:2.6.1@e1bf507c",
+        "@opam/binaryen@github:grain-lang/binaryen.ml:binaryen.opam#8a1283ca00d4da1892490ecab1fe229b1a40a6e6@d41d8cd9",
         "@esy-ocaml/substs@0.0.1@d41d8cd9"
       ],
       "devDependencies": [
         "@opam/reason@opam:3.6.0@2da53ff9",
         "@opam/js_of_ocaml-compiler@opam:3.6.0@bda9e5de",
         "@opam/js_of_ocaml@opam:3.6.0@92f53867",
-        "@opam/grain@link:./grain.opam", "@opam/dune@opam:2.6.1@e1bf507c"
+        "@opam/grain@link:./grain.opam", "@opam/dune@opam:2.6.1@e1bf507c",
+        "@opam/binaryen@github:grain-lang/binaryen.ml:binaryen.opam#8a1283ca00d4da1892490ecab1fe229b1a40a6e6@d41d8cd9"
       ]
     },
     "@opam/grain_dypgen@opam:0.1@0b95a143": {
@@ -1304,7 +1338,7 @@
         "@opam/grain_dypgen@opam:0.1@0b95a143",
         "@opam/dune@opam:2.6.1@e1bf507c",
         "@opam/cmdliner@opam:1.0.4@93208aac",
-        "@opam/binaryen@opam:0.2.3@6888aa9f",
+        "@opam/binaryen@github:grain-lang/binaryen.ml:binaryen.opam#8a1283ca00d4da1892490ecab1fe229b1a40a6e6@d41d8cd9",
         "@esy-ocaml/substs@0.0.1@d41d8cd9"
       ],
       "devDependencies": [
@@ -1318,7 +1352,7 @@
         "@opam/grain_dypgen@opam:0.1@0b95a143",
         "@opam/dune@opam:2.6.1@e1bf507c",
         "@opam/cmdliner@opam:1.0.4@93208aac",
-        "@opam/binaryen@opam:0.2.3@6888aa9f"
+        "@opam/binaryen@github:grain-lang/binaryen.ml:binaryen.opam#8a1283ca00d4da1892490ecab1fe229b1a40a6e6@d41d8cd9"
       ]
     },
     "@opam/grain@link:./grain.opam": {
@@ -1713,31 +1747,31 @@
         "@opam/dune@opam:2.6.1@e1bf507c"
       ]
     },
-    "@opam/binaryen@opam:0.2.3@6888aa9f": {
-      "id": "@opam/binaryen@opam:0.2.3@6888aa9f",
+    "@opam/binaryen@github:grain-lang/binaryen.ml:binaryen.opam#8a1283ca00d4da1892490ecab1fe229b1a40a6e6@d41d8cd9": {
+      "id":
+        "@opam/binaryen@github:grain-lang/binaryen.ml:binaryen.opam#8a1283ca00d4da1892490ecab1fe229b1a40a6e6@d41d8cd9",
       "name": "@opam/binaryen",
-      "version": "opam:0.2.3",
+      "version":
+        "github:grain-lang/binaryen.ml:binaryen.opam#8a1283ca00d4da1892490ecab1fe229b1a40a6e6",
       "source": {
         "type": "install",
         "source": [
-          "archive:https://opam.ocaml.org/cache/md5/f4/f4cb5ad491901b6252cc8adcec7cfd8a#md5:f4cb5ad491901b6252cc8adcec7cfd8a",
-          "archive:https://github.com/grain-lang/binaryen.ml/releases/download/v0.2.3/binaryen-archive-v0.2.3.tar.gz#md5:f4cb5ad491901b6252cc8adcec7cfd8a"
-        ],
-        "opam": {
-          "name": "binaryen",
-          "version": "0.2.3",
-          "path": "esy.lock/opam/binaryen.0.2.3"
-        }
+          "github:grain-lang/binaryen.ml:binaryen.opam#8a1283ca00d4da1892490ecab1fe229b1a40a6e6"
+        ]
       },
       "overrides": [],
       "dependencies": [
-        "ocaml@4.10.0@d41d8cd9", "@opam/dune@opam:2.6.1@e1bf507c",
+        "ocaml@4.10.0@d41d8cd9", "@opam/js_of_ocaml-ppx@opam:3.6.0@92f19746",
+        "@opam/js_of_ocaml@opam:3.6.0@92f53867",
+        "@opam/dune@opam:2.6.1@e1bf507c",
         "@opam/conf-python-3@opam:1.0.0@a6b2949d",
         "@opam/conf-cmake@opam:1@75ae6bc3",
         "@esy-ocaml/substs@0.0.1@d41d8cd9"
       ],
       "devDependencies": [
-        "ocaml@4.10.0@d41d8cd9", "@opam/dune@opam:2.6.1@e1bf507c"
+        "ocaml@4.10.0@d41d8cd9", "@opam/js_of_ocaml-ppx@opam:3.6.0@92f19746",
+        "@opam/js_of_ocaml@opam:3.6.0@92f53867",
+        "@opam/dune@opam:2.6.1@e1bf507c"
       ]
     },
     "@opam/base-unix@opam:base@87d0b2eb": {

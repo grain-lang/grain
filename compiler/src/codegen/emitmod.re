@@ -3,7 +3,7 @@ open Grain_utils;
 open Compmod;
 
 let emit_module = ({asm, signature}, outfile) => {
-  Files.ensure_parent_directory_exists(outfile);
+  // Files.ensure_parent_directory_exists(outfile);
   if (Config.debug^) {
     let asm_string = Binaryen.Module.write_text(asm);
     let sig_string =
