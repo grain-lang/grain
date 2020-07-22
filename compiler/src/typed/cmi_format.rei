@@ -36,7 +36,7 @@ let build_full_cmi:
   cmi_infos;
 
 /* write the magic + the cmi information */
-let serialize_cmi: (cmi_infos) => bytes;
+let serialize_cmi: cmi_infos => bytes;
 
 /* read the cmi information (the magic is supposed to have already been read) */
 let input_cmi: in_channel => cmi_infos;
