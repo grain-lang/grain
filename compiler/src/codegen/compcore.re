@@ -3976,7 +3976,7 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
   let (env, prog) = prepare(env, prog);
   let wasm_mod = Module.create();
   let _ = Module.set_features(wasm_mod, [Features.mvp, Features.multivalue]);
-  let _ = Memory.set_memory(wasm_mod, 0, 256, "memory", [], false);
+  let _ = Memory.set_memory(wasm_mod, 0, -1, "memory", [], false);
   let () = ignore @@ compile_functions(wasm_mod, env, prog);
   let () = ignore @@ compile_imports(wasm_mod, env, prog);
   let () = ignore @@ compile_exports(wasm_mod, env, prog);
