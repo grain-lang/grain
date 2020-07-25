@@ -1,4 +1,4 @@
-import String from 'strings'
+import String from 'string'
 
 let fox = 'The quick brown fox jumps over the lazy dog.'
 let emojis = 'we found a path🚀 to greatness🏅but the grind never quits😤💪🏼 keep milling💯🔥😈'

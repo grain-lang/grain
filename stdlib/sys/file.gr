@@ -1,5 +1,5 @@
-import List from 'lists'
-import Array from 'arrays'
+import List from 'list'
+import Array from 'array'
 import Int64 from 'stdint64'
 
 export *
