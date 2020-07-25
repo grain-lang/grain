@@ -1,5 +1,5 @@
 import Option from 'option'
-import String from 'strings'
+import String from 'string'
 
 # Option.isSome
 

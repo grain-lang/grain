@@ -49,7 +49,7 @@ If you're only changing `.gr` stdlib files, you don't need to do anything specia
 It's usually easiest to create a small Grain program that imports your library to try it out, like so:
 
 ```grain
-import Array from 'arrays'
+import Array from 'array'
 
 let appended = Array.append([> 1, 2, 3], [> 4, 5, 6])
 print(appended)
@@ -58,7 +58,7 @@ print(appended)
 The tests for the standard library are located in `compiler/test/stdlib`. Since the standard library tests are written in Grain, rather than running the whole test suite, you can just run them directly:
 
 ```bash
-grain compiler/test/stdlib/arrays.test.gr
+grain compiler/test/stdlib/array.test.gr
 ```
 
 If there's no error, you're all set.
