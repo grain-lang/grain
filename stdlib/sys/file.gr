@@ -1,6 +1,6 @@
 import List from 'list'
 import Array from 'array'
-import Int64 from 'stdint64'
+import Int64 from 'int64'
 
 export *
 
