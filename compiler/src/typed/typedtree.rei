@@ -19,6 +19,8 @@
 open Grain_parsing;
 open Types;
 
+let sexp_locs_disabled: 'a => bool;
+
 type loc('a) = Location.loc('a);
 type partial =
   | Partial
@@ -103,7 +105,7 @@ type record_field = {
   rf_name: Ident.t,
   rf_type: core_type,
   rf_mutable: bool,
-  [@sexp_drop_if _ => ! Grain_utils.Config.sexp_locs_enabled^]
+  [@sexp_drop_if sexp_locs_disabled]
   rf_loc: Location.t,
 };
 
@@ -216,7 +218,7 @@ type import_declaration = {
 [@deriving sexp]
 type export_declaration = {
   tex_path: Path.t,
-  [@sexp_drop_if _ => ! Grain_utils.Config.sexp_locs_enabled^]
+  [@sexp_drop_if sexp_locs_disabled]
   tex_loc: Location.t,
 };
 
@@ -228,7 +230,7 @@ type value_description = {
   tvd_desc: core_type,
   tvd_val: Types.value_description,
   tvd_prim: list(string),
-  [@sexp_drop_if _ => ! Grain_utils.Config.sexp_locs_enabled^]
+  [@sexp_drop_if sexp_locs_disabled]
   tvd_loc: Location.t,
 };
 
