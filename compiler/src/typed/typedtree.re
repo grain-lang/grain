@@ -18,6 +18,8 @@ open Sexplib.Conv;
 open Grain_parsing;
 open Types;
 
+let sexp_locs_disabled = _ => ! Grain_utils.Config.sexp_locs_enabled^;
+
 type loc('a) = Location.loc('a);
 [@deriving sexp]
 type partial =
@@ -84,7 +86,7 @@ type core_type = {
   ctyp_desc: core_type_desc,
   ctyp_type: type_expr,
   ctyp_env: [@sexp.opaque] Env.t,
-  [@sexp_drop_if _ => ! Grain_utils.Config.sexp_locs_enabled^]
+  [@sexp_drop_if sexp_locs_disabled]
   ctyp_loc: Location.t,
 }
 
@@ -109,7 +111,7 @@ type constructor_declaration = {
   cd_name: loc(string),
   cd_args: constructor_arguments,
   cd_res: option(core_type),
-  [@sexp_drop_if _ => ! Grain_utils.Config.sexp_locs_enabled^]
+  [@sexp_drop_if sexp_locs_disabled]
   cd_loc: Location.t,
 };
 
@@ -118,7 +120,7 @@ type record_field = {
   rf_name: Ident.t,
   rf_type: core_type,
   rf_mutable: bool,
-  [@sexp_drop_if _ => ! Grain_utils.Config.sexp_locs_enabled^]
+  [@sexp_drop_if sexp_locs_disabled]
   rf_loc: Location.t,
 };
 
@@ -134,14 +136,14 @@ type data_declaration = {
   data_params: list(core_type),
   data_type: Types.type_declaration,
   data_kind,
-  [@sexp_drop_if _ => ! Grain_utils.Config.sexp_locs_enabled^]
+  [@sexp_drop_if sexp_locs_disabled]
   data_loc: Location.t,
 };
 
 [@deriving sexp]
 type pattern = {
   pat_desc: pattern_desc,
-  [@sexp_drop_if _ => ! Grain_utils.Config.sexp_locs_enabled^]
+  [@sexp_drop_if sexp_locs_disabled]
   pat_loc: Location.t,
   [@default []] [@sexp_drop_default (==)]
   pat_extra: list((pat_extra, Location.t)),
@@ -170,7 +172,7 @@ and pattern_desc =
 [@deriving sexp]
 type expression = {
   exp_desc: expression_desc,
-  [@sexp_drop_if _ => ! Grain_utils.Config.sexp_locs_enabled^]
+  [@sexp_drop_if sexp_locs_disabled]
   exp_loc: Location.t,
   [@default []] [@sexp_drop_default (==)]
   exp_extra: list((exp_extra, Location.t)),
@@ -224,7 +226,7 @@ and record_label_definition =
 and value_binding = {
   vb_pat: pattern,
   vb_expr: expression,
-  [@sexp_drop_if _ => ! Grain_utils.Config.sexp_locs_enabled^]
+  [@sexp_drop_if sexp_locs_disabled]
   vb_loc: Location.t,
 }
 
@@ -232,21 +234,21 @@ and value_binding = {
 and match_branch = {
   mb_pat: pattern,
   mb_body: expression,
-  [@sexp_drop_if _ => ! Grain_utils.Config.sexp_locs_enabled^]
+  [@sexp_drop_if sexp_locs_disabled]
   mb_loc: Location.t,
 };
 
 [@deriving sexp]
 type import_declaration = {
   timp_path: Path.t,
-  [@sexp_drop_if _ => ! Grain_utils.Config.sexp_locs_enabled^]
+  [@sexp_drop_if sexp_locs_disabled]
   timp_loc: Location.t,
 };
 
 [@deriving sexp]
 type export_declaration = {
   tex_path: Path.t,
-  [@sexp_drop_if _ => ! Grain_utils.Config.sexp_locs_enabled^]
+  [@sexp_drop_if sexp_locs_disabled]
   tex_loc: Location.t,
 };
 
@@ -258,7 +260,7 @@ type value_description = {
   tvd_desc: core_type,
   tvd_val: Types.value_description,
   tvd_prim: list(string),
-  [@sexp_drop_if _ => ! Grain_utils.Config.sexp_locs_enabled^]
+  [@sexp_drop_if sexp_locs_disabled]
   tvd_loc: Location.t,
 };
 
@@ -274,7 +276,7 @@ type toplevel_stmt_desc =
 [@deriving sexp]
 type toplevel_stmt = {
   ttop_desc: toplevel_stmt_desc,
-  [@sexp_drop_if _ => ! Grain_utils.Config.sexp_locs_enabled^]
+  [@sexp_drop_if sexp_locs_disabled]
   ttop_loc: Location.t,
   ttop_env: [@sexp.opaque] Env.t,
 };

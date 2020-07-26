@@ -65,14 +65,14 @@ let (prim2_of_sexp, sexp_of_prim2) = (
   Parsetree.prim2_of_sexp,
   Parsetree.sexp_of_prim2,
 );
-let locs_disabled = _ => ! Grain_utils.Config.sexp_locs_enabled^;
+let sexp_locs_disabled = _ => ! Grain_utils.Config.sexp_locs_enabled^;
 
 /** Immediate expressions (requiring no computation) */
 
 [@deriving sexp]
 type imm_expression = {
   imm_desc: imm_expression_desc,
-  [@sexp_drop_if locs_disabled]
+  [@sexp_drop_if sexp_locs_disabled]
   imm_loc: Location.t,
   imm_env: [@sexp.opaque] Env.t,
   imm_analyses: [@sexp.opaque] ref(list(analysis)),
@@ -88,7 +88,7 @@ and imm_expression_desc =
 [@deriving sexp]
 type comp_expression = {
   comp_desc: comp_expression_desc,
-  [@sexp_drop_if locs_disabled]
+  [@sexp_drop_if sexp_locs_disabled]
   comp_loc: Location.t,
   comp_env: [@sexp.opaque] Env.t,
   comp_analyses: [@sexp.opaque] ref(list(analysis)),
@@ -129,7 +129,7 @@ and comp_expression_desc =
 [@deriving sexp]
 and anf_expression = {
   anf_desc: anf_expression_desc,
-  [@sexp_drop_if locs_disabled]
+  [@sexp_drop_if sexp_locs_disabled]
   anf_loc: Location.t,
   anf_env: [@sexp.opaque] Env.t,
   anf_analyses: [@sexp.opaque] ref(list(analysis)),
