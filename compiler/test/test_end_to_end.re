@@ -554,11 +554,7 @@ let stdlib_tests = [
   /* With compiler optimizations, these are optimized into the same tuple instance */
   t("stdlib_equal_1", "import * from 'list'; (1, 2) is (1, 2)", "true"),
   t("stdlib_equal_2", "import * from 'pervasives'; (1, 2) == (1, 2)", "true"),
-  t(
-    "stdlib_equal_3",
-    "import * from 'list'; [1, 2, 3] == [1, 2, 3]",
-    "true",
-  ),
+  t("stdlib_equal_3", "import * from 'list'; [1, 2, 3] == [1, 2, 3]", "true"),
   t("stdlib_equal_4", "import * from 'list'; 1 == 1", "true"),
   t("stdlib_equal_5", "import * from 'list'; 1 == 2", "false"),
   t("stdlib_equal_6", "import * from 'list'; true == true", "true"),
