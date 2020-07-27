@@ -217,8 +217,8 @@ let basic_functionality_tests = [
   t("if4", "if (false) 1 else if (false) 2 else {3}", "3"),
   t("if_one_sided", "if (3 < 4) print(5)", "5\nvoid"),
   t("if_one_sided2", "if (3 > 4) print(5)", "void"),
-  t("int32", "42l", "42"),
-  t("int64", "99999999999999999L", "99999999999999999"),
+  t("int32_1", "42l", "42"),
+  t("int64_1", "99999999999999999L", "99999999999999999"),
   /* Non-compile-time overflows */
   te("overflow1", "9999999 * 99999999", "overflow"),
   te("overflow2", "-99999999 - 999999999", "overflow"),
@@ -338,7 +338,7 @@ let tuple_tests = [
 ];
 
 let array_tests = [
-  t("array", "[> 1, 2, 3]", "[> 1, 2, 3]"),
+  t("array1", "[> 1, 2, 3]", "[> 1, 2, 3]"),
   t("array2", "[>]", "[> ]"),
   te("array_error", "[> 1, false, 2]", "has type Bool but"),
   t("array_access", "let x = [> 1, 2, 3]; x[0]", "1"),
