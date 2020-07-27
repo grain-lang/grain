@@ -1,7 +1,7 @@
 # Standard library for Map (aka HashMap) functionality
 
-import List from 'lists'
-import Array from 'arrays'
+import List from 'list'
+import Array from 'array'
 import { hash } from 'hash'
 
 data Container<a> = {

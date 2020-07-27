@@ -1,6 +1,6 @@
 import Map from 'map';
-import List from 'lists';
-import Array from 'arrays';
+import List from 'list';
+import Array from 'array';
 
 # Data types used in multiple tests
 data Resource = Grain | Sheep | Brick | Wood;

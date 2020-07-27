@@ -1,7 +1,7 @@
 # Sanity tests for generic hashing.
 
 import Hash from 'hash'
-import List from 'lists'
+import List from 'list'
 
 let uniq = (list) => {
   let mut itemsSeen = []

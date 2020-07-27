@@ -55,10 +55,6 @@ let initial_funcs = [
 /* Deprecated */
 let initial_load_env = List.map(((n, l, _)) => (n, l), initial_funcs);
 
-/** List of standard libraries to load */
-
-let libs = ["lists"];
-
 let log_state = state =>
   if (Grain_utils.Config.verbose^) {
     let prerr_sexp = (conv, x) =>
