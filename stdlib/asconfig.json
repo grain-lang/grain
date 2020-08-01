@@ -1,6 +1,6 @@
 {
   "options": {
-    "-O3z": true,
+    "-O3": true,
     "runtime": "none",
     "importMemory": true
   }
