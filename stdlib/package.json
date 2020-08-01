@@ -32,7 +32,7 @@
   },
   "homepage": "https://grain-lang.org",
   "devDependencies": {
-    "assemblyscript": "^0.9.4",
+    "assemblyscript": "^0.14.7",
     "del-cli": "^3.0.1",
     "globby": "^11.0.1",
     "replace-ext": "^2.0.0"

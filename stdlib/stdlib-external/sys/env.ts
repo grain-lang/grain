@@ -15,12 +15,11 @@ import {
 } from "bindings/wasi";
 
 export function argv(): u32 {
-  let argcPtr = malloc(8);
+  let argcPtr = memory.data(8);
   let argvBufSizePtr = argcPtr + 4;
 
   let err = args_sizes_get(argcPtr, argvBufSizePtr);
   if (err !== errno.SUCCESS) {
-    free(argcPtr);
     throwError(GRAIN_ERR_SYSTEM, err << 1, 0);
   }
 
@@ -32,7 +31,6 @@ export function argv(): u32 {
 
   err = args_get(argvPtr, argvBufPtr);
   if (err !== errno.SUCCESS) {
-    free(argcPtr);
     free(argvPtr);
     free(argvBufPtr);
     throwError(GRAIN_ERR_SYSTEM, err << 1, 0);
@@ -54,7 +52,6 @@ export function argv(): u32 {
     store<u32>(arr + i, grainStrPtr | GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4);
   }
 
-  free(argcPtr);
   free(argvPtr);
   free(argvBufPtr);
 
@@ -62,12 +59,11 @@ export function argv(): u32 {
 }
 
 export function env(): u32 {
-  let envcPtr = malloc(8);
+  let envcPtr = memory.data(8);
   let envvBufSizePtr = envcPtr + 4;
 
   let err = environ_sizes_get(envcPtr, envvBufSizePtr);
   if (err !== errno.SUCCESS) {
-    free(envcPtr);
     throwError(GRAIN_ERR_SYSTEM, err << 1, 0);
   }
 
@@ -79,7 +75,6 @@ export function env(): u32 {
 
   err = environ_get(envvPtr, envvBufPtr);
   if (err !== errno.SUCCESS) {
-    free(envcPtr);
     free(envvPtr);
     free(envvBufPtr);
     throwError(GRAIN_ERR_SYSTEM, err << 1, 0);
@@ -101,7 +96,6 @@ export function env(): u32 {
     store<u32>(arr + i, grainStrPtr | GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4);
   }
 
-  free(envcPtr);
   free(envvPtr);
   free(envvBufPtr);
 
