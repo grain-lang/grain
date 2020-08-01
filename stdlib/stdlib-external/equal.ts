@@ -1,17 +1,17 @@
-import { 
+import {
   GRAIN_NUMBER_TAG_TYPE,
   GRAIN_CONST_TAG_TYPE,
   GRAIN_TUPLE_TAG_TYPE,
-  GRAIN_LAMBDA_TAG_TYPE, 
+  GRAIN_LAMBDA_TAG_TYPE,
   GRAIN_GENERIC_HEAP_TAG_TYPE,
 
-  GRAIN_NUMBER_TAG_MASK, 
+  GRAIN_NUMBER_TAG_MASK,
   GRAIN_GENERIC_TAG_MASK,
 
-  GRAIN_STRING_HEAP_TAG, 
+  GRAIN_STRING_HEAP_TAG,
   GRAIN_DOM_ELEM_TAG,
   GRAIN_ADT_HEAP_TAG,
-  GRAIN_RECORD_HEAP_TAG, 
+  GRAIN_RECORD_HEAP_TAG,
   GRAIN_ARRAY_HEAP_TAG,
   GRAIN_INT32_HEAP_TAG,
   GRAIN_INT64_HEAP_TAG,
@@ -31,10 +31,10 @@ function heapEqualHelp(heapTag: u32, xptr: u32, yptr: u32): bool {
       if (load<u32>(xptr, 3 * 4) !== load<u32>(yptr, 3 * 4)) {
         return false
       }
-      
+
       let xarity = load<u32>(xptr, 4 * 4)
       let yarity = load<u32>(yptr, 4 * 4)
-      
+
       // Check that the arities are the same
       if (xarity !== yarity) {
         return false
@@ -58,13 +58,13 @@ function heapEqualHelp(heapTag: u32, xptr: u32, yptr: u32): bool {
       }
       store<u32>(xptr, xarity, 4 * 4)
       store<u32>(yptr, yarity, 4 * 4)
-      
+
       return result
     }
     case GRAIN_RECORD_HEAP_TAG: {
       let xlength = load<u32>(xptr, 3 * 4)
       let ylength = load<u32>(yptr, 3 * 4)
-      
+
       // Check that the lengths are the same
       if (xlength !== ylength) {
         return false
@@ -88,13 +88,13 @@ function heapEqualHelp(heapTag: u32, xptr: u32, yptr: u32): bool {
       }
       store<u32>(xptr, xlength, 3 * 4)
       store<u32>(yptr, ylength, 3 * 4)
-      
+
       return result
     }
     case GRAIN_ARRAY_HEAP_TAG: {
       let xlength = load<u32>(xptr, 4)
       let ylength = load<u32>(yptr, 4)
-      
+
       // Check if the same length
       if (xlength !== ylength) {
         return false
@@ -123,7 +123,7 @@ function heapEqualHelp(heapTag: u32, xptr: u32, yptr: u32): bool {
     case GRAIN_STRING_HEAP_TAG: {
       let xlength = load<u32>(xptr, 4)
       let ylength = load<u32>(yptr, 4)
-      
+
       // Check if the same length
       if (xlength !== ylength) {
         return false
@@ -166,7 +166,7 @@ function heapEqualHelp(heapTag: u32, xptr: u32, yptr: u32): bool {
 function equalHelp(x: u32, y: u32): bool {
   // Short circuit if value/pointer is the same
   if (x === y) return true
-  
+
   // We only need to worry about heep allocated things since everything else
   // is handled by a simple x == y check at the end
   switch (x & GRAIN_GENERIC_TAG_MASK) {
@@ -199,7 +199,7 @@ function equalHelp(x: u32, y: u32): bool {
 
       store<u32>(xptr, xsize)
       store<u32>(yptr, ysize)
-      
+
       return result
     }
     case GRAIN_GENERIC_HEAP_TAG_TYPE: {
