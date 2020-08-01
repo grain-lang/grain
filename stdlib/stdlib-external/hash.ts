@@ -18,13 +18,13 @@ import {
   GRAIN_ADT_HEAP_TAG,
   GRAIN_RECORD_HEAP_TAG, 
   GRAIN_ARRAY_HEAP_TAG,
-} from './ascutils/tags.ts'
+} from './ascutils/tags'
 
 import {
   GRAIN_TRUE,
   GRAIN_FALSE,
   GRAIN_VOID,
-} from './ascutils/primitives.ts'
+} from './ascutils/primitives'
 
 const seed: u32 = 0xe444
 

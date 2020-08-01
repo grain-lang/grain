@@ -15,12 +15,12 @@ import {
   GRAIN_ARRAY_HEAP_TAG,
   GRAIN_INT32_HEAP_TAG,
   GRAIN_INT64_HEAP_TAG,
-} from './ascutils/tags.ts'
+} from './ascutils/tags'
 
 import {
   GRAIN_TRUE,
   GRAIN_FALSE,
-} from './ascutils/primitives.ts'
+} from './ascutils/primitives'
 
 const cycleMarker: u32 = 0x80000000
 
