@@ -387,10 +387,9 @@ let module_search_path = () =>
   | None => [base_path^, ...include_dirs^]
   };
 
-  let no_gc =
-    toggle_flag(
+let no_gc =
+  toggle_flag(
     ~names=["no-gc"],
     ~doc="Turn off reference counting garbage collection.",
     false,
   );
-  
