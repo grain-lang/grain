@@ -1,0 +1,87 @@
+export let isOk = (v) => {
+    match (v) {
+        | Ok(_)  => true
+        | _      => false
+    }
+};
+
+export let isErr = (v) => !isOk(v);
+
+export let toOption = (v) => {
+    match (v) {
+        | Ok(x)  => Some(x)
+        | _      => None
+    }
+}
+
+export let flatMap = (fn, v) => {
+    match (v) {
+        | Ok(x)  => fn(x)
+        | _      => v
+    }
+}
+
+export let flatMapErr = (fn, v) => {
+    match (v) {
+        | Err(e) => fn(e)
+        | _      => v
+    }
+}
+
+export let map = (fn, v) => {
+    match (v) {
+        | Ok(x) => Ok(fn(x))
+        | _     => v
+    }
+}
+
+export let mapErr = (fn, v) => {
+    match (v) {
+        | Err(x) => Err(fn(x))
+        | _      => v
+    }
+}
+
+export let mapWithDefault = (fn, def, v) => {
+    match (v) {
+        | Ok(a) => fn(a)
+        | _     => def
+    }
+}
+
+export let mapWithDefaultFn = (fnOk, fnErr, v) => {
+    match (v) {
+        | Ok(a)  => fnOk(a)
+        | Err(a) => fnErr(a)
+    }
+}
+
+export let or = (r1, r2) => {
+    match (r1) {
+        | Ok(x) => r1
+        | _     => r2
+    }
+}
+
+export let and = (r1, r2) => {
+    match (r1) {
+        | Ok(_) => r2
+        | Err(_) => r1
+    }
+}
+
+export let peek = (fnOk, fnErr, r) => {
+    match (r) {
+        | Ok(x) => ignore(fnOk(x))
+        | Err(x) => ignore(fnErr(x))
+    }
+    r
+}
+
+export let peekOk = (fn, r) => {
+    peek(fn, identity, r)
+}
+
+export let peekErr = (fn, r) => {
+    peek(identity, fn, r)
+}

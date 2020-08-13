@@ -120,3 +120,10 @@ let peek = (fn, option) => {
   sideEffect(fn, option)
   option
 }
+
+let toResult = (option, err) => {
+  match (option) {
+    | Some(a) => Ok(a)
+    | None    => Err(err)
+  }
+}
