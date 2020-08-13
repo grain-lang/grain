@@ -64,10 +64,6 @@ let unsound_optimizations: ref(bool);
 
 let safe_string: ref(bool);
 
-/** Whether to enable file writes. This is useful for testing. */
-
-let output_enabled: ref(bool);
-
 /*** Configuration Saving/Restoring */
 
 /** Abstract type representing a saved set of configuration options */

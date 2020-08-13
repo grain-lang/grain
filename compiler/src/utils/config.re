@@ -286,8 +286,6 @@ let option_conv = ((prsr, prntr)) => (
     | Some(x) => prntr(ppf, x),
 );
 
-let output_enabled = internal_opt(true);
-
 let optimizations_enabled =
   toggle_flag(~doc="Disable optimizations.", ~names=["O0"], true);
 

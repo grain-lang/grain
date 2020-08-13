@@ -137,11 +137,9 @@ let next_state = ({cstate_desc, cstate_filename} as cs) => {
     | Mashed(mashed) =>
       Compiled(Compmod.compile_wasm_module(~name=?cstate_filename, mashed))
     | Compiled(compiled) =>
-      if (Grain_utils.Config.output_enabled^) {
-        switch (cs.cstate_outfile) {
-        | Some(outfile) => Emitmod.emit_module(compiled, outfile)
-        | None => ()
-        };
+      switch (cs.cstate_outfile) {
+      | Some(outfile) => Emitmod.emit_module(compiled, outfile)
+      | None => ()
       };
       Binaryen.Module.dispose(compiled.asm);
       Assembled;
