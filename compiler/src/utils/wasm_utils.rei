@@ -53,9 +53,9 @@ module type BinarySectionSpec = {
   type t;
 
   let name: string;
-  let deserialize: bytes => t;
+  let deserialize: Bigstring.t => t;
   let accepts_version: abi_version => bool;
-  let serialize: t => bytes;
+  let serialize: t => Bigstring.t;
 };
 
 module type BinarySectionSig = {
@@ -69,7 +69,7 @@ module type BinarySectionSig = {
 
   /** Serializes this section at the current position in the given [out_channel]. */
 
-  let serialize: t => bytes;
+  let serialize: t => Bigstring.t;
 };
 
 module BinarySection:

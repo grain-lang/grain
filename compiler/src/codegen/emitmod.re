@@ -19,6 +19,6 @@ let emit_module = ({asm, signature}, outfile) => {
   };
   let (encoded, _) = Binaryen.Module.write(asm, None);
   let oc = open_out_bin(outfile);
-  output_bytes(oc, encoded);
+  Bigstring.output(oc, encoded);
   close_out(oc);
 };

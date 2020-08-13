@@ -3,8 +3,8 @@ const { execSync } = require('child_process');
 
 const grainc = path.join(__dirname, 'grainc.exe');
 
-const grain = require('./grain_js.bc.runtime.js');
-console.log(grain);
+// const grain = require('./grain_js.bc.runtime.js');
+// console.log(grain);
 
 module.exports = (file, options) => {
   try {

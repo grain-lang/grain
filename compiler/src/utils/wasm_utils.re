@@ -177,19 +177,19 @@ let read_abi_version = inchan => {
 };
 
 let serialize_int32 = i => {
-  let bytes = Bytes.create(4);
+  let bytes = Bigstring.create(4);
   open Int32;
-  Bytes.set_int32_le(bytes, 0, of_int(i));
+  Bigstring.set_int32_le(bytes, 0, of_int(i));
   bytes;
 };
 
 let serialize_abi_version = ({major, minor, patch}) => {
   let num_bytes = 4 * 3;
-  let bytes = Bytes.create(num_bytes);
+  let bytes = Bigstring.create(num_bytes);
   open Int32;
-  Bytes.set_int32_le(bytes, 0, of_int(major));
-  Bytes.set_int32_le(bytes, 4, of_int(minor));
-  Bytes.set_int32_le(bytes, 8, of_int(patch));
+  Bigstring.set_int32_le(bytes, 0, of_int(major));
+  Bigstring.set_int32_le(bytes, 4, of_int(minor));
+  Bigstring.set_int32_le(bytes, 8, of_int(patch));
   bytes;
 };
 
@@ -267,8 +267,11 @@ let get_wasm_sections = (~reset=false, inchan) => {
 
   let next_section = () =>
     try({
+      Printf.eprintf("Trying to get section type.\n");
       let sec_type = section_type_of_int(input_byte(inchan));
+      Printf.eprintf("Got section type.\n");
       let size = Int32.to_int(read_leb128_u32_input(inchan));
+      Printf.eprintf("Read size.\n");
       let offset = pos_in(inchan);
       let (sec_type, true_offset, true_size) =
         switch (sec_type) {
@@ -300,6 +303,7 @@ let get_wasm_sections = (~reset=false, inchan) => {
     };
 
   read_boilerplate();
+  Printf.eprintf("Boilerplate A-OK.\n");
 
   let ret = List.rev(collect_sections([]));
   if (reset) {
@@ -318,7 +322,9 @@ let get_grain_custom_info = inchan =>
     if (!check_magic(grain_magic)) {
       None;
     } else {
+      Printf.eprintf("Magic is checked\n");
       let version = read_abi_version(inchan);
+      Printf.eprintf("Version %d.%d.%d\n", version.major, version.minor, version.patch);
       let section_name_length = Int32.to_int(read_int32(inchan));
       let section_name_bytes = Bytes.create(section_name_length);
       if (input(inchan, section_name_bytes, 0, section_name_length)
@@ -333,22 +339,25 @@ let get_grain_custom_info = inchan =>
   };
 
 let serialize_grain_custom_info = (sec_name, abi_version) => {
-  let sec_bytes = Bytes.of_string(sec_name);
-  let buf = Buffer.create(Bytes.length(sec_bytes) + 4 + 4 * 3 + 4);
-  List.iter(b => Buffer.add_char(buf, char_of_int(b)), grain_magic);
-  Buffer.add_bytes(buf, serialize_abi_version(abi_version));
-  Buffer.add_bytes(buf, serialize_int32(Bytes.length(sec_bytes)));
-  Buffer.add_bytes(buf, sec_bytes);
-  Buffer.to_bytes(buf);
+  let data = Bigstring.create(4 + 4 * 3 + 4 + String.length(sec_name));
+  let pos = ref(0);
+  List.iter(b => { data.{pos^} = Char.chr(b); incr(pos) }, grain_magic);
+  Bigstring.add_bigstring(data, serialize_abi_version(abi_version), pos^);
+  pos := pos^ + 4 * 3;
+  Bigstring.add_bigstring(data, serialize_int32(String.length(sec_name)), pos^);
+  pos := pos^ + 4;
+  let sec_bytes = Bigstring.of_string(sec_name);
+  Bigstring.add_bigstring(data, sec_bytes, pos^);
+  data
 };
 
 module type BinarySectionSpec = {
   type t;
 
   let name: string;
-  let deserialize: bytes => t;
+  let deserialize: Bigstring.t => t;
   let accepts_version: abi_version => bool;
-  let serialize: t => bytes;
+  let serialize: t => Bigstring.t;
 };
 
 module type BinarySectionSig = {
@@ -362,7 +371,7 @@ module type BinarySectionSig = {
 
   /** Serializes this section at the current position in the given [out_channel]. */
 
-  let serialize: t => bytes;
+  let serialize: t => Bigstring.t;
 };
 
 module BinarySection =
@@ -371,12 +380,14 @@ module BinarySection =
   type t = Spec.t;
 
   let load = (~preserve=false, inchan) => {
+    Printf.eprintf("Loading binary...\n");
     let orig_pos = pos_in(inchan);
     let sections =
       List.filter(
         ({sec_type}) => sec_type == Custom(Spec.name),
         get_wasm_sections(inchan),
       );
+    Printf.eprintf("Sections loaded.\n");
     let rec process = sections =>
       switch (sections) {
       | [] => None
@@ -387,12 +398,9 @@ module BinarySection =
             when name == Spec.name && Spec.accepts_version(abi_version) =>
           /* Now we're at the start of the section. Time to read */
           let realsize = size - (pos_in(inchan) - offset);
-          let bytes = Bytes.create(realsize);
-          if (input(inchan, bytes, 0, realsize) == realsize) {
-            Some(Spec.deserialize(bytes));
-          } else {
-            process(tl);
-          };
+          let bs = Bigstring.create(realsize);
+          Bigstring.input(inchan, bs, 0, realsize);
+          Some(Spec.deserialize(bs));
         | _ => process(tl)
         };
       };
@@ -407,8 +415,7 @@ module BinarySection =
   let serialize = value => {
     let val_bytes = Spec.serialize(value);
     let header_bytes = serialize_grain_custom_info(Spec.name, latest_abi);
-    let sep = Bytes.empty;
-    Bytes.concat(sep, [header_bytes, val_bytes]);
+    Bigstring.concat([header_bytes, val_bytes]);
   };
 };
 

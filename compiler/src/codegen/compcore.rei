@@ -26,4 +26,4 @@ let validate_module: (~name: string=?, Module.t) => unit;
 let compile_wasm_module:
   (~env: codegen_env=?, ~name: string=?, Mashtree.mash_program) => Module.t;
 
-let module_to_bytes: Module.t => bytes;
+let module_to_bytes: Module.t => Grain_utils.Bigstring.t;

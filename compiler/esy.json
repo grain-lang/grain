@@ -10,7 +10,7 @@
     }
   },
   "scripts": {
-    "compile": "dune build grain_js/grain_js.bc.js",
+    "compile": "dune build",
     "copy-compiler": "cp #{$GRAINC_BIN_PATH} #{$CLI_BIN_DIR}",
     "clean": "rm -rf #{self.root}/_esy",
     "test": "dune runtest --force",
@@ -36,7 +36,7 @@
     "@opam/ocaml-lsp-server": "ocaml/ocaml-lsp:ocaml-lsp-server.opam#ce1840355541ff60b999e39388835027f89d8798"
   },
   "resolutions": {
-    "@opam/binaryen": "grain-lang/binaryen.ml:binaryen.opam#faa05d18c3540742420b60bfd2175d0cfdf78a20",
+    "@opam/binaryen": "grain-lang/binaryen.ml:binaryen.opam#dfddc4db4e93f79831fcf2746df2499f8149f8d6",
     "@opam/grain": "link:./grain.opam",
     "@opam/grainc": "link:./grainc.opam",
     "@opam/grain_utils": "link:./grain_utils.opam",

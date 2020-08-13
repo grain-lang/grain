@@ -15,7 +15,7 @@
     "link": "yarn link",
     "clean": "esy clean",
     "setup": "esy install",
-    "build": "esy install && esy compile",
+    "build": "esy install && esy compile && esy copy-compiler",
     "test": "esy test",
     "format": "esy format",
     "check-format": "esy check-format",

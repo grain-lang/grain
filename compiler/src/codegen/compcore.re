@@ -3988,7 +3988,7 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
   Module.add_custom_section(
     wasm_mod,
     "cmi",
-    Bytes.to_string(serialized_cmi),
+    serialized_cmi,
   );
 
   validate_module(~name?, wasm_mod);
