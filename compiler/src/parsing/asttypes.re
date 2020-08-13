@@ -15,6 +15,8 @@
 /**************************************************************************/
 open Sexplib.Conv;
 
+let sexp_locs_disabled = _ => ! Grain_utils.Config.sexp_locs_enabled^;
+
 /** Auxiliary AST types used by parsetree and typedtree. */;
 
 /* These are taken from OCaml. While not all fully supported,
@@ -63,6 +65,6 @@ type closed_flag =
 type loc('a) =
   Location.loc('a) = {
     txt: 'a,
-    [@sexp_drop_if _ => ! Grain_utils.Config.sexp_locs_enabled^]
+    [@sexp_drop_if sexp_locs_disabled]
     loc: Location.t,
   };
