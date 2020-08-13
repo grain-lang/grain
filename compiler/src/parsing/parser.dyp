@@ -507,9 +507,13 @@ match_branches :
 match_expr :
   | MATCH lparen expr rparen lbrace match_branches rbrace { Exp.match_ ~loc:(symbol_rloc dyp) $3 $6 }
 
+list_expr_ending :
+  | comma? { None }
+  | comma ELLIPSIS expr { Some $3 }
+
 list_expr :
   | lbrack rbrack { Exp.list ~loc:(symbol_rloc dyp) [] None }
-  | lbrack expr [comma expr {$2}]* comma? [ELLIPSIS expr {$2}]? rbrack { Exp.list ~loc:(symbol_rloc dyp) ($2::$3) $5 }
+  | lbrack expr [comma expr {$2}]* list_expr_ending rbrack { Exp.list ~loc:(symbol_rloc dyp) ($2::$3) $4 }
 
 array_expr :
   | lbrack rcaret rbrack { Exp.array ~loc:(symbol_rloc dyp) [] }
