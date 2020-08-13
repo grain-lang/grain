@@ -509,7 +509,7 @@ match_expr :
 
 list_expr :
   | lbrack rbrack { Exp.list ~loc:(symbol_rloc dyp) [] None }
-  | lbrack expr [comma expr {$2}]* [comma ELLIPSIS expr {$3}]? rbrack { Exp.list ~loc:(symbol_rloc dyp) ($2::$3) $4 }
+  | lbrack expr [comma expr {$2}]* comma? [ELLIPSIS expr {$2}]? rbrack { Exp.list ~loc:(symbol_rloc dyp) ($2::$3) $5 }
 
 array_expr :
   | lbrack rcaret rbrack { Exp.array ~loc:(symbol_rloc dyp) [] }
