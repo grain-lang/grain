@@ -65,7 +65,7 @@ let parse = (~name=?, lexbuf): Parsetree.parsed_program => {
   let startpos = {loc_start, loc_end, loc_ghost: true};
   switch (Parser.parse_program(Lexer.token, lexbuf)) {
   | [] => raise([@implicit_arity] Error(startpos, NoValidParse))
-  | [(x, _)] => x
+  | [(x, _)] => {...x, comments: Lexer.comments^}
   | parses =>
     raise(
       [@implicit_arity]

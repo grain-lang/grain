@@ -54,6 +54,13 @@
       then new_line lexbuf
     ) input
 
+  let comments = ref []
+
+  let parse_line_comment lexbuf =
+    let source = lexeme lexbuf in
+    let loc = lexbuf_loc lexbuf in
+    comments := line_comment source loc :: !comments
+
 }
 
 let dec_digit = ['0'-'9']
@@ -109,7 +116,7 @@ let newline_chars = (newline_char | blank)* newline_char
 let comment = '#' ((([^'|'])[^ '\r' '\n']*(newline_chars | eof)) | (newline_chars | eof))
 
 rule token = parse
-  | comment { process_newlines lexbuf; EOL }
+  | comment { parse_line_comment lexbuf; EOL }
   | blank { token lexbuf }
   | newline_chars { process_newlines lexbuf; EOL }
   | (signed_int as x) 'l' { INT32 (Int32.of_string x) }

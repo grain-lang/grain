@@ -26,6 +26,10 @@ let prerr_string s = when_debug ~n:1 (fun () -> Stdlib.prerr_string s)
 let debug_print_state () =
   when_debug !last_state_printer
 
+let line_comment source loc =
+  let content = String_utils.slice ~first:1 source |> String.trim in
+  Line { cmt_content=content; cmt_source=source; cmt_loc=loc }
+
 let symbol_rloc dyp =
   let ret = {
     loc_start = dyp.symbol_start_pos ();
@@ -141,7 +145,7 @@ let make_program statements =
     loc_end=(!last_loc).loc_end;
     loc_ghost=false;
   } in
-  fix_blocks {statements; prog_loc}
+  fix_blocks {statements; comments=[]; prog_loc}
 
 }
 
