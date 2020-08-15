@@ -277,11 +277,25 @@ type toplevel_stmt = {
   ptop_loc: Location.t,
 };
 
+[@deriving sexp]
+type comment_desc = {
+  cmt_content: string,
+  cmt_source: string,
+  cmt_loc: Location.t,
+};
+
+[@deriving sexp]
+type comment =
+  | Line(comment_desc)
+  | Block(comment_desc)
+  | Doc(comment_desc);
+
 /** The type for parsed programs */
 
 [@deriving sexp]
 type parsed_program = {
   statements: list(toplevel_stmt),
+  comments: list(comment),
   [@sexp_drop_if sexp_locs_disabled]
   prog_loc: Location.t,
 };

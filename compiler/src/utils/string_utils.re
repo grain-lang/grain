@@ -3,12 +3,15 @@ let explode = string => {
   List.init(String.length(string), get_char);
 };
 
-let slice = (~last=?, string) => {
+let slice = (~first=0, ~last=?, string) => {
   let stringLength = String.length(string);
   let last = Option.value(~default=stringLength, last);
-  if (last > stringLength) {
+  let newLength = last - first;
+  if (newLength > stringLength) {
     string;
+  } else if (first >= stringLength) {
+    ""
   } else {
-    String.sub(string, 0, last);
+    String.sub(string, first, newLength);
   };
 };
