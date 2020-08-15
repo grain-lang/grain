@@ -10,7 +10,7 @@ let slice = (~first=0, ~last=?, string) => {
   if (newLength > stringLength) {
     string;
   } else if (first >= stringLength) {
-    ""
+    "";
   } else {
     String.sub(string, first, newLength);
   };
