@@ -337,6 +337,28 @@ let tuple_tests = [
   t("no_singleton_tup", "(1)", "1"),
 ];
 
+let list_tests = [
+  t("list1", "[1, 2, 3]", "[1, 2, 3]"),
+  t("list2", "[]", "[]"),
+  // TODO: This should fail with typechecker error
+  // t("list_heterogeneous", "[1, false, 2]", "[1, false, 2]"),
+  t("list_spread", "let a = [3, 4]; [1, 2, ...a]", "[1, 2, 3, 4]"),
+  te(
+    "invalid_list_no_comma_before_spread",
+    "let a = [3, 4]; [1, 2 ...a]",
+    "Error: Syntax error",
+  ),
+  // trailing commas
+  t("list1_trailing", "[1, 2, 3,]", "[1, 2, 3]"),
+  t("list1_trailing_space", "[1, 2, 3, ]", "[1, 2, 3]"),
+  te("invalid_empty_trailing", "[,]", "Error: Syntax error"),
+  te(
+    "invalid_list_spread_trailing",
+    "let a = [3, 4]; [1, 2, ...a,]",
+    "Error: Syntax error",
+  ),
+];
+
 let array_tests = [
   t("array1", "[> 1, 2, 3]", "[> 1, 2, 3]"),
   t("array2", "[>]", "[> ]"),
@@ -1371,6 +1393,7 @@ let tests =
   >::: basic_functionality_tests
   @ function_tests
   @ tuple_tests
+  @ list_tests
   @ array_tests
   @ record_tests
   @ stdlib_tests

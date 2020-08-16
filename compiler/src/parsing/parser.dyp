@@ -412,15 +412,15 @@ ampamp_op :
   | AMPAMP { "&&" }
 pipepipe_op :
   | PIPEPIPE { "||" }
-pluseq_op :  
+pluseq_op :
   | PLUS EQUAL { "+" }
-dasheq_op :  
+dasheq_op :
   | DASH EQUAL { "-" }
-stareq_op :  
+stareq_op :
   | STAR EQUAL { "*" }
-slasheq_op :  
+slasheq_op :
   | SLASH EQUAL { "/" }
-percenteq_op :  
+percenteq_op :
   | PERCENT EQUAL { "%" }
 
 infix_op :
@@ -507,9 +507,13 @@ match_branches :
 match_expr :
   | MATCH lparen expr rparen lbrace match_branches rbrace { Exp.match_ ~loc:(symbol_rloc dyp) $3 $6 }
 
+list_expr_ending :
+  | comma? { None }
+  | comma ELLIPSIS expr { Some $3 }
+
 list_expr :
   | lbrack rbrack { Exp.list ~loc:(symbol_rloc dyp) [] None }
-  | lbrack expr [comma expr {$2}]* [comma ELLIPSIS expr {$3}]? rbrack { Exp.list ~loc:(symbol_rloc dyp) ($2::$3) $4 }
+  | lbrack expr [comma expr {$2}]* list_expr_ending rbrack { Exp.list ~loc:(symbol_rloc dyp) ($2::$3) $4 }
 
 array_expr :
   | lbrack rcaret rbrack { Exp.array ~loc:(symbol_rloc dyp) [] }
@@ -520,12 +524,12 @@ stmt_expr :
   | FAIL expr { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp ["fail"]) [$2] }
 
 assign_binop_op :
-  | pluseq_op 
-  | dasheq_op 
-  | stareq_op 
+  | pluseq_op
+  | dasheq_op
+  | stareq_op
   | slasheq_op
   | percenteq_op
-  
+
 assign_expr :
   | binop_expr(<pl) eols? GETS eols? expr { no_array_access $1; Exp.box_assign ~loc:(symbol_rloc dyp) $1 $5 }
   | id_expr equal expr { Exp.assign ~loc:(symbol_rloc dyp) $1 $3 }
