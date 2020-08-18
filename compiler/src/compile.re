@@ -11,7 +11,6 @@ type input_source =
 type compilation_state_desc =
   | Initial(input_source)
   | Parsed(Parsetree.parsed_program)
-  | WithLibraries(Parsetree.parsed_program)
   | WellFormed(Parsetree.parsed_program)
   | TypeChecked(Typedtree.typed_program)
   | Linearized(Anftree.anf_program)
@@ -70,9 +69,6 @@ let log_state = state =>
     | Parsed(p) =>
       prerr_string("\nParsed program:\n");
       prerr_sexp(Grain_parsing.Parsetree.sexp_of_parsed_program, p);
-    | WithLibraries(full_p) =>
-      prerr_string("\nwith libraries:\n");
-      prerr_sexp(Grain_parsing.Parsetree.sexp_of_parsed_program, full_p);
     | WellFormed(_) => prerr_string("\nWell-Formedness passed")
     | TypeChecked(typed_mod) =>
       prerr_string("\nTyped program:\n");
@@ -118,12 +114,9 @@ let next_state = ({cstate_desc, cstate_filename} as cs) => {
       cleanup();
       Parsed(parsed);
     | Parsed(p) =>
-      /*WithLibraries(Grain_stdlib.load_libraries p)*/
-      WithLibraries(p)
-    | WithLibraries(full_p) =>
-      Well_formedness.check_well_formedness(full_p);
-      WellFormed(full_p);
-    | WellFormed(full_p) => TypeChecked(Typemod.type_implementation(full_p))
+      Well_formedness.check_well_formedness(p);
+      WellFormed(p);
+    | WellFormed(p) => TypeChecked(Typemod.type_implementation(p))
     | TypeChecked(typed_mod) =>
       Linearized(Linearize.transl_anf_module(typed_mod))
     | Linearized(anfed) =>
@@ -195,11 +188,6 @@ let compile_file = (~hook=?, ~outfile=?, ~reset=true, filename) => {
 let stop_after_parse =
   fun
   | {cstate_desc: Parsed(_)} => Stop
-  | s => Continue(s);
-
-let stop_after_libraries =
-  fun
-  | {cstate_desc: WithLibraries(_)} => Stop
   | s => Continue(s);
 
 let stop_after_well_formed =
