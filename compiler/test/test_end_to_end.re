@@ -323,6 +323,7 @@ let function_tests = [
     "let rec may only be used with recursive function definitions",
   ),
   te("nonfunction_1", "let x = 5; x(3)", "type"),
+  t("lambda_pat_any", "let x = (_) => 5; x('foo')", "5"),
 ];
 
 let mylist = "[1, 2, 3]";

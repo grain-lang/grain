@@ -1091,6 +1091,7 @@ and type_function =
       arity([{...mb, pmb_pat: p}])
     | [{pmb_pat: {ppat_desc: PPatTuple(args)}, _}] => List.length(args)
     | [{pmb_pat: {ppat_desc: PPatVar(_)}, _}] => 1
+    | [{pmb_pat: {ppat_desc: PPatAny}, _}] => 1
     /* FIXME: Less hard-coding, please */
     | [
         {
