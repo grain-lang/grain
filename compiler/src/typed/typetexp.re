@@ -90,8 +90,7 @@ let rec narrow_unbound_lid_error: 'a. (_, _, _, _) => 'a =
     let check_module = mlid =>
       try(ignore(Env.lookup_module(~load=false, mlid, None, env))) {
       | Not_found =>
-        Printf.eprintf("aye not there lad\n");
-        narrow_unbound_lid_error(env, loc, mlid, lid => Unbound_module(lid));
+        narrow_unbound_lid_error(env, loc, mlid, lid => Unbound_module(lid))
       };
 
     let error = e => raise([@implicit_arity] Error(loc, env, e));

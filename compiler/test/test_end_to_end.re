@@ -1106,6 +1106,12 @@ let import_tests = [
     "import * from 'foo'; 2",
     "Missing file for module foo",
   ),
+  /* Unbound module tests */
+  te(
+    "test_unbound_module",
+    "String.concat('hello ', 'world')",
+    "Unbound module String",
+  ),
   /* Misc import tests */
   te(
     "test_bad_import",
