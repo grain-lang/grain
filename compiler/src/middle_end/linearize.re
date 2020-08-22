@@ -377,57 +377,8 @@ let rec transl_imm =
     );
   | [@implicit_arity] TExpLambda([{mb_pat, mb_body: body}], _) =>
     let tmp = gensym("lam");
-    let rec args = mb_pat =>
-      switch (mb_pat.pat_desc) {
-      | TPatTuple(args) => (
-          List.map(
-            fun
-            | {pat_desc: [@implicit_arity] TPatVar(id, _)} => id
-            | _ =>
-              failwith("NYI: transl_imm: Destructuring in lambda argument"),
-            args,
-          ),
-          [],
-        )
-      | [@implicit_arity] TPatVar(v, _) => ([v], [])
-      | [@implicit_arity] TPatConstruct({txt: ident}, _, [])
-          when Identifier.equal(ident, Identifier.IdentName("()")) => (
-          [],
-          [],
-        )
-      | TPatAny => ([gensym("func_arg")], [])
-      | [@implicit_arity] TPatAlias(pat, id, _) =>
-        let (arglist, extras) = args(pat);
-        /* NOTE: This is assuming that arglist has length one.
-           When full pattern matching is supported, that will
-           handle this instead */
-        (arglist, [(List.hd(arglist), id), ...extras]);
-      | _ =>
-        failwith(
-          "Impossible: transl_imm: Lambda contained non-tuple/var pattern",
-        )
-      };
-    let (args, extras) = args(mb_pat);
-    let anf_body = transl_anf_expression(body);
-    let anf_body =
-      List.fold_left(
-        (body, (a, b)) =>
-          AExp.let_(
-            ~loc,
-            ~env,
-            Nonrecursive,
-            [(b, Comp.imm(~loc, ~env, Imm.id(~loc, ~env, a)))],
-            body,
-          ),
-        anf_body,
-        extras,
-      );
-    (
-      Imm.id(~loc, ~env, tmp),
-      [
-        [@implicit_arity] BLet(tmp, Comp.lambda(~loc, ~env, args, anf_body)),
-      ],
-    );
+    let (lam, _) = transl_comp_expression(e);
+    (Imm.id(~loc, ~env, tmp), [[@implicit_arity] BLet(tmp, lam)]);
   | [@implicit_arity] TExpLambda([], _) =>
     failwith("Impossible: transl_imm: Empty lambda")
   | [@implicit_arity] TExpLambda(_, _) =>
@@ -797,53 +748,48 @@ and transl_comp_expression =
       List.concat(new_setup)
       @ [BLetRec(List.combine(names, new_binds)), ...body_setup],
     );
-  | [@implicit_arity] TExpLambda([{mb_pat, mb_body: body}], _) =>
-    let rec args = mb_pat =>
-      switch (mb_pat.pat_desc) {
-      | TPatTuple(args) => (
-          List.map(
-            fun
-            | {pat_desc: [@implicit_arity] TPatVar(id, _)} => id
-            | _ =>
-              failwith("NYI: transl_imm: Destructuring in lambda argument"),
-            args,
-          ),
-          [],
-        )
-      | [@implicit_arity] TPatVar(v, _) => ([v], [])
-      | [@implicit_arity] TPatConstruct({txt: ident}, _, [])
-          when Identifier.equal(ident, Identifier.IdentName("()")) => (
-          [],
-          [],
-        )
-      | TPatAny => ([gensym("func_arg")], [])
-      | [@implicit_arity] TPatAlias(pat, id, _) =>
-        let (arglist, extras) = args(pat);
-        /* NOTE: This is assuming that arglist has length one.
-           When full pattern matching is supported, that will
-           handle this instead */
-        (arglist, [(List.hd(arglist), id), ...extras]);
-      | _ =>
-        failwith(
-          "Impossible: transl_imm: Lambda contained non-tuple/var pattern",
-        )
-      };
-    let (args, extras) = args(mb_pat);
-    let anf_body = transl_anf_expression(body);
-    let anf_body =
-      List.fold_left(
-        (body, (a, b)) =>
-          AExp.let_(
-            ~loc,
-            ~env,
-            Nonrecursive,
-            [(b, Comp.imm(~loc, ~env, Imm.id(~loc, ~env, a)))],
-            body,
-          ),
-        anf_body,
-        extras,
-      );
-    (Comp.lambda(~loc, ~env, args, anf_body), []);
+  | TExpLambda(
+      [
+        {
+          mb_pat: {pat_desc: TPatConstruct({txt: ident}, _, [])},
+          mb_body: body,
+        },
+      ],
+      _,
+    )
+      when Identifier.equal(ident, Identifier.IdentName("()")) =>
+    let body = transl_anf_expression(body);
+    (Comp.lambda(~loc, ~env, [], body), []);
+  | TExpLambda([{mb_pat, mb_body: body}], _) =>
+    switch (mb_pat.pat_desc) {
+    | TPatTuple(args) =>
+      let anf_body = transl_anf_expression(body);
+      let (anf_args, anf_body) =
+        List.fold_right(
+          (arg, (anf_args, body)) => {
+            let tmp = gensym("lambda_arg");
+            let binds =
+              MatchCompiler.extract_bindings(
+                arg,
+                Comp.imm(~loc, ~env, Imm.id(~loc, ~env, tmp)),
+              );
+            (
+              [tmp, ...anf_args],
+              List.fold_right(
+                (bind, body) =>
+                  AExp.let_(~loc, ~env, Nonrecursive, [bind], body),
+                binds,
+                body,
+              ),
+            );
+          },
+          args,
+          ([], anf_body),
+        );
+      (Comp.lambda(~loc, ~env, anf_args, anf_body), []);
+    | _ =>
+      failwith("Impossible: transl_imm: Lambda contained non-tuple pattern")
+    }
   | [@implicit_arity] TExpLambda([], _) =>
     failwith("transl_comp_expression: impossible: empty lambda")
   | [@implicit_arity] TExpLambda(_, _) =>
