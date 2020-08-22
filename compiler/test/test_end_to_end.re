@@ -277,6 +277,34 @@ let function_tests = [
   t("shorthand_2", "let foo = (x) => x + 3; foo(1)", "4"),
   t("shorthand_3", "let foo = x => x; foo(1)", "1"),
   t("shorthand_4", "let foo = x => x + 3; foo(1)", "4"),
+  t("lam_destructure_1", "((_) => 5)('foo')", "5"),
+  t("lam_destructure_2", "let foo = (_) => 5; foo('foo')", "5"),
+  t("lam_destructure_3", "(((a, b, c)) => a + b + c)((1, 2, 3))", "6"),
+  t(
+    "lam_destructure_4",
+    "let foo = ((a, b, c)) => a + b + c; foo((1, 2, 3))",
+    "6",
+  ),
+  t(
+    "lam_destructure_5",
+    "(((a, b, c), (x, y)) => a + b + c + x + y)((1, 2, 3), (4, 5))",
+    "15",
+  ),
+  t(
+    "lam_destructure_6",
+    "let foo = ((a, b, c), (x, y)) => a + b + c + x + y; foo((1, 2, 3), (4, 5))",
+    "15",
+  ),
+  t(
+    "lam_destructure_7",
+    "(((a, b, (c, d))) => a + b + c + d)((1, 2, (3, 4)))",
+    "10",
+  ),
+  t(
+    "lam_destructure_8",
+    "let foo = ((a, b, (c, d))) => a + b + c + d; foo((1, 2, (3, 4)))",
+    "10",
+  ),
   t("lambda_1", "print((x) => {x})", "<lambda>\nvoid"),
   t("app_1", "((x) => {x})(1)", "1"),
   t(
@@ -1166,7 +1194,7 @@ let optimization_tests = [
     "((x) => {\n    let x = 4;\n    let y = x;\n    x})",
     {
       open Grain_typed;
-      let x = Ident.create("x");
+      let x = Ident.create("lambda_arg");
       AExp.comp(
         Comp.lambda([x], AExp.comp(Comp.imm(Imm.const(Const_int(4))))),
       );
@@ -1193,23 +1221,28 @@ let optimization_tests = [
     {
       open Grain_typed;
       let plus = Ident.create("+");
+      let arg = Ident.create("lambda_arg");
       let x = Ident.create("x");
       let a = Ident.create("a");
       AExp.comp(
         Comp.lambda(
-          [x],
+          [arg],
           AExp.let_(
             Nonrecursive,
-            [
-              (
-                a,
-                Comp.app(
-                  Imm.id(plus),
-                  [Imm.id(x), Imm.const(Const_int(1))],
+            [(x, Comp.imm(Imm.id(arg)))],
+            AExp.let_(
+              Nonrecursive,
+              [
+                (
+                  a,
+                  Comp.app(
+                    Imm.id(plus),
+                    [Imm.id(x), Imm.const(Const_int(1))],
+                  ),
                 ),
-              ),
-            ],
-            AExp.comp(Comp.app(Imm.id(plus), [Imm.id(a), Imm.id(a)])),
+              ],
+              AExp.comp(Comp.app(Imm.id(plus), [Imm.id(a), Imm.id(a)])),
+            ),
           ),
         ),
       );
@@ -1221,9 +1254,11 @@ let optimization_tests = [
     {
       open Grain_typed;
       let plus = Ident.create("+");
+      let arg = Ident.create("lambda_arg");
       let x = Ident.create("x");
       AExp.comp(
-        Comp.lambda([x]) @@
+        Comp.lambda([arg]) @@
+        AExp.let_(Nonrecursive, [(x, Comp.imm(Imm.id(arg)))]) @@
         AExp.comp @@
         Comp.app(Imm.id(plus), [Imm.id(x), Imm.const(Const_int(1))]),
       );
@@ -1234,7 +1269,7 @@ let optimization_tests = [
     "((x) => {1})",
     {
       open Grain_typed;
-      let x = Ident.create("x");
+      let x = Ident.create("lambda_arg");
       AExp.comp(
         Comp.lambda([x], AExp.comp(Comp.imm(Imm.const(Const_int(1))))),
       );
@@ -1248,11 +1283,13 @@ let optimization_tests = [
       open Grain_typed;
       let plus = Ident.create("+");
       let foo = Ident.create("foo");
-      let y = Ident.create("y");
+      let arg = Ident.create("lambda_arg");
       let app = Ident.create("app");
       AExp.let_(
         Nonrecursive,
-        [(foo, Comp.lambda([y]) @@ AExp.comp @@ Comp.imm @@ Imm.id(y))],
+        [
+          (foo, Comp.lambda([arg]) @@ AExp.comp @@ Comp.imm @@ Imm.id(arg)),
+        ],
       ) @@
       AExp.let_(
         Nonrecursive,
