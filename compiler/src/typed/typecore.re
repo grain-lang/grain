@@ -828,7 +828,6 @@ and type_expect_ =
       switch (args) {
       | [] =>
         Pat.construct(Location.mknoloc(Identifier.IdentName("()")), [])
-      | [x] => x
       | args => Pat.tuple(args)
       };
     type_function(
@@ -1090,8 +1089,6 @@ and type_function =
       ] =>
       arity([{...mb, pmb_pat: p}])
     | [{pmb_pat: {ppat_desc: PPatTuple(args)}, _}] => List.length(args)
-    | [{pmb_pat: {ppat_desc: PPatVar(_)}, _}] => 1
-    | [{pmb_pat: {ppat_desc: PPatAny}, _}] => 1
     /* FIXME: Less hard-coding, please */
     | [
         {
@@ -1136,7 +1133,6 @@ and type_function =
   let normalized_arg_type =
     switch (ty_arg) {
     | [] => Builtin_types.type_void
-    | [x] => x
     | _ => newty(TTyTuple(ty_arg))
     };
   let (cases, partial) =
