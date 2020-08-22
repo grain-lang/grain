@@ -1290,7 +1290,7 @@ and lookup_module = (~loc=?, ~load, ~mark, id, filename, env): Path.t =>
       let loc = Option.value(~default=Location.dummy_loc, loc);
       // !Grain_utils.Config.transparent_modules &&
       if (!load) {
-        check_pers_struct(~loc, s, filename);
+        raise(Not_found);
       } else {
         ignore(find_pers_struct(~loc, s, filename));
       };
