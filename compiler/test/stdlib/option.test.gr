@@ -55,6 +55,13 @@ assert Option.mapWithDefault((x) => String.concat('hello ', x), '🐑', Some('�
 assert Option.mapWithDefault((x) => x * 2, 1, None) == 1
 assert Option.mapWithDefault((x) => String.concat('hello ', x), '🐑', None) == '🐑'
 
+# Option.mapWithDefaultFn
+
+assert Option.mapWithDefaultFn((x) => x * 2, () => fail "Shouldn't be called", Some(2)) == 4
+assert Option.mapWithDefaultFn((x) => String.concat('hello ', x), () => fail "Shouldn't be called", Some('🌾')) == 'hello 🌾'
+assert Option.mapWithDefaultFn((x) => fail "Shouldn't be called", () => 1, None) == 1
+assert Option.mapWithDefaultFn((x) => fail "Shouldn't be called", () => '🐑', None) == '🐑'
+
 # Option.flatMap
 
 assert Option.flatMap((x) => Some(x * 2), Some(2)) == Some(4)
@@ -122,8 +129,20 @@ assert Option.peek((x) => ignore(c *= x), Some(2)) == Some(2)
 assert c == 4
 
 let mut d = '🌾'
-assert Option.peek((x) => fail 'Should not be called', None) == None
+assert Option.peek((x) => fail "Shouldn't be called", None) == None
 assert d == '🌾'
+
+# Option.or
+assert Option.or(Some(1), Some(2)) == Some(1)
+assert Option.or(Some(1), None) == Some(1)
+assert Option.or(None, Some(2)) == Some(2)
+assert Option.or(None, None) == None
+
+# Option.and
+assert Option.and(Some(1), Some(2)) == Some(2)
+assert Option.and(Some(1), None) == None
+assert Option.and(None, Some(2)) == None
+assert Option.and(None, None) == None
 
 # Option.toResult
 assert Option.toResult("Nope", Some(1)) == Ok(1)
