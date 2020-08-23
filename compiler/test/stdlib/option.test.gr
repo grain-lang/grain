@@ -124,3 +124,7 @@ assert c == 4
 let mut d = '🌾'
 assert Option.peek((x) => fail 'Should not be called', None) == None
 assert d == '🌾'
+
+# Option.toResult
+assert Option.toResult(Some(1), "Nope") == Ok(1)
+assert Option.toResult(None, "Yes!") == Err("Yes!")
