@@ -50,10 +50,10 @@ assert Option.map((x) => fail 'Should not be called', None) == None
 
 # Option.mapWithDefault
 
-assert Option.mapWithDefault(1, (x) => x * 2, Some(2)) == 4
-assert Option.mapWithDefault('🐑', (x) => String.concat('hello ', x), Some('🌾')) == 'hello 🌾'
-assert Option.mapWithDefault(1, (x) => x * 2, None) == 1
-assert Option.mapWithDefault('🐑', (x) => String.concat('hello ', x), None) == '🐑'
+assert Option.mapWithDefault((x) => x * 2, 1, Some(2)) == 4
+assert Option.mapWithDefault((x) => String.concat('hello ', x), '🐑', Some('🌾')) == 'hello 🌾'
+assert Option.mapWithDefault((x) => x * 2, 1, None) == 1
+assert Option.mapWithDefault((x) => String.concat('hello ', x), '🐑', None) == '🐑'
 
 # Option.flatMap
 
@@ -126,5 +126,5 @@ assert Option.peek((x) => fail 'Should not be called', None) == None
 assert d == '🌾'
 
 # Option.toResult
-assert Option.toResult(Some(1), "Nope") == Ok(1)
-assert Option.toResult(None, "Yes!") == Err("Yes!")
+assert Option.toResult("Nope", Some(1)) == Ok(1)
+assert Option.toResult("Yes!", None) == Err("Yes!")
