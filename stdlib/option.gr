@@ -55,6 +55,13 @@ let mapWithDefault = (fn, default, option) => {
   }
 }
 
+let mapWithDefaultFn = (fn, defaultFn, option) => {
+  match (option) {
+    | Some(x) => fn(x)
+    | None => defaultFn()
+  }
+}
+
 let flatMap = (fn, option) => {
   match (option) {
     | Some(x) => fn(x)
@@ -119,6 +126,20 @@ let sideEffect = (fn, option) => {
 let peek = (fn, option) => {
   sideEffect(fn, option)
   option
+}
+
+let or = (r1, r2) => {
+  match (r1) {
+    | Some(x) => r1
+    | None => r2
+  }
+}
+
+let and = (r1, r2) => {
+  match (r1) {
+    | Some(_) => r2
+    | None => r1
+  }
 }
 
 let toResult = (err, option) => {
