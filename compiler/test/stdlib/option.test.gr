@@ -46,27 +46,34 @@ assert Option.unwrapWithDefault('🐑', None) == '🐑'
 
 assert Option.map((x) => x * 2, Some(2)) == Some(4)
 assert Option.map((x) => String.concat('hello ', x), Some('🌾')) == Some('hello 🌾')
-assert Option.map((x) => fail 'Should not be called', None) == None
+assert Option.map((x) => fail "Shouldn't be called", None) == None
 
 # Option.mapWithDefault
 
-assert Option.mapWithDefault(1, (x) => x * 2, Some(2)) == 4
-assert Option.mapWithDefault('🐑', (x) => String.concat('hello ', x), Some('🌾')) == 'hello 🌾'
-assert Option.mapWithDefault(1, (x) => x * 2, None) == 1
-assert Option.mapWithDefault('🐑', (x) => String.concat('hello ', x), None) == '🐑'
+assert Option.mapWithDefault((x) => x * 2, 1, Some(2)) == 4
+assert Option.mapWithDefault((x) => String.concat('hello ', x), '🐑', Some('🌾')) == 'hello 🌾'
+assert Option.mapWithDefault((x) => x * 2, 1, None) == 1
+assert Option.mapWithDefault((x) => String.concat('hello ', x), '🐑', None) == '🐑'
+
+# Option.mapWithDefaultFn
+
+assert Option.mapWithDefaultFn((x) => x * 2, () => fail "Shouldn't be called", Some(2)) == 4
+assert Option.mapWithDefaultFn((x) => String.concat('hello ', x), () => fail "Shouldn't be called", Some('🌾')) == 'hello 🌾'
+assert Option.mapWithDefaultFn((x) => fail "Shouldn't be called", () => 1, None) == 1
+assert Option.mapWithDefaultFn((x) => fail "Shouldn't be called", () => '🐑', None) == '🐑'
 
 # Option.flatMap
 
 assert Option.flatMap((x) => Some(x * 2), Some(2)) == Some(4)
 assert Option.flatMap((x) => Some(String.concat('hello ', x)), Some('🌾')) == Some('hello 🌾')
 assert Option.flatMap((x) => None, Some('🌾')) == None
-assert Option.flatMap((x) => fail 'Should not be called', None) == None
+assert Option.flatMap((x) => fail "Shouldn't be called", None) == None
 
 # Option.filter
 
 assert Option.filter((x) => x == 2, Some(2)) == Some(2)
 assert Option.filter((x) => x == 2, Some(1)) == None
-assert Option.filter((x) => fail 'Should not be called', None) == None
+assert Option.filter((x) => fail "Shouldn't be called", None) == None
 
 # Option.zip
 
@@ -79,8 +86,8 @@ assert Option.zip(None, Some('🌾')) == None
 
 assert Option.zipWith((a, b) => a + b, Some(1), Some(2)) == Some(3)
 assert Option.zipWith((a, b) => (a, b), Some(1), Some('🌾')) == Some((1, '🌾'))
-assert Option.zipWith((a, b) => fail 'Should not be called',Some(1), None) == None
-assert Option.zipWith((a, b) => fail 'Should not be called', None, Some('🌾')) == None
+assert Option.zipWith((a, b) => fail "Shouldn't be called", Some(1), None) == None
+assert Option.zipWith((a, b) => fail "Shouldn't be called", None, Some('🌾')) == None
 
 # Option.flatten
 
@@ -110,7 +117,7 @@ assert a == 4
 
 let mut b = '🌾'
 
-Option.sideEffect((x) => fail 'Should not be called', None)
+Option.sideEffect((x) => fail "Shouldn't be called", None)
 
 assert b == '🌾'
 
@@ -122,9 +129,21 @@ assert Option.peek((x) => ignore(c *= x), Some(2)) == Some(2)
 assert c == 4
 
 let mut d = '🌾'
-assert Option.peek((x) => fail 'Should not be called', None) == None
+assert Option.peek((x) => fail "Shouldn't be called", None) == None
 assert d == '🌾'
 
+# Option.or
+assert Option.or(Some(1), Some(2)) == Some(1)
+assert Option.or(Some(1), None) == Some(1)
+assert Option.or(None, Some(2)) == Some(2)
+assert Option.or(None, None) == None
+
+# Option.and
+assert Option.and(Some(1), Some(2)) == Some(2)
+assert Option.and(Some(1), None) == None
+assert Option.and(None, Some(2)) == None
+assert Option.and(None, None) == None
+
 # Option.toResult
-assert Option.toResult(Some(1), "Nope") == Ok(1)
-assert Option.toResult(None, "Yes!") == Err("Yes!")
+assert Option.toResult("Nope", Some(1)) == Ok(1)
+assert Option.toResult("Yes!", None) == Err("Yes!")
