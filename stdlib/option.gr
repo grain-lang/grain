@@ -48,7 +48,7 @@ let map = (fn, option) => {
   }
 }
 
-let mapWithDefault = (default, fn, option) => {
+let mapWithDefault = (fn, default, option) => {
   match (option) {
     | Some(x) => fn(x)
     | None => default
@@ -121,7 +121,7 @@ let peek = (fn, option) => {
   option
 }
 
-let toResult = (option, err) => {
+let toResult = (err, option) => {
   match (option) {
     | Some(a) => Ok(a)
     | None    => Err(err)
