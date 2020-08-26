@@ -5,6 +5,8 @@ open Binaryen;
 open Concatlist; /* NOTE: This import shadows (@) and introduces (@+) and (+@) */
 open Grain_utils;
 
+let sources: ref(list((Expression.t, Grain_parsing.Location.t))) = ref([]);
+
 /* [TODO] Should probably be a config variable */
 let memory_tracing_enabled = false;
 
@@ -3491,12 +3493,21 @@ and compile_switch = (wasm_mod, env, arg, branches, default) => {
     [process_branches(0, [], branches)],
   );
 }
-and compile_block = (wasm_mod, env, block) =>
-  Expression.block(
-    wasm_mod,
-    gensym_label("compile_block"),
-    List.map(compile_instr(wasm_mod, env), block),
-  )
+and compile_block = (wasm_mod, env, block) => {
+  let compiled_instrs = List.map(compile_instr(wasm_mod, env), block);
+  if (Config.source_map^) {
+    sources :=
+      List.fold_left2(
+        (sources, compiled, raw) => {
+          [(compiled, raw.instr_loc), ...sources]
+        },
+        sources^,
+        compiled_instrs,
+        block,
+      );
+  };
+  Expression.block(wasm_mod, gensym_label("compile_block"), compiled_instrs);
+}
 and compile_instr = (wasm_mod, env, instr) =>
   switch (instr.instr_desc) {
   | MDrop(arg) =>
@@ -3592,8 +3603,9 @@ let compile_function =
       ~start=false,
       wasm_mod,
       env,
-      {index, arity, stack_size, body: body_instrs},
+      {index, arity, stack_size, body: body_instrs, func_loc},
     ) => {
+  sources := [];
   let arity_int = Int32.to_int(arity);
   let index_int = Int32.to_int(index);
   let func_name =
@@ -3616,14 +3628,38 @@ let compile_function =
     List.init(stack_size, n => Type.int32)
     |> Array.of_list
     |> Array.append(swap_slots);
-  Function.add_function(
-    wasm_mod,
-    func_name,
-    Type.create @@ Array.make(arity_int, Type.int32),
-    Type.int32,
-    locals,
-    body,
-  );
+  let func_ref =
+    Function.add_function(
+      wasm_mod,
+      func_name,
+      Type.create @@ Array.make(arity_int, Type.int32),
+      Type.int32,
+      locals,
+      body,
+    );
+  if (Config.source_map^) {
+    open Grain_parsing.Location;
+    List.iter(
+      ((exp, loc)) => {
+        Function.set_debug_location(
+          func_ref,
+          exp,
+          0,
+          loc.loc_start.pos_lnum,
+          loc.loc_start.pos_cnum - loc.loc_start.pos_bol,
+        )
+      },
+      sources^,
+    );
+    Function.set_debug_location(
+      func_ref,
+      body,
+      0,
+      func_loc.loc_start.pos_lnum,
+      func_loc.loc_start.pos_cnum - func_loc.loc_start.pos_bol,
+    );
+  };
+  func_ref;
 };
 
 let compute_table_size = (env, {imports, exports, functions}) =>
@@ -3975,6 +4011,13 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
     };
   let (env, prog) = prepare(env, prog);
   let wasm_mod = Module.create();
+  if (Config.source_map^) {
+    ignore @@
+    Module.add_debug_info_filename(
+      wasm_mod,
+      Filename.basename(Option.get(name)),
+    );
+  };
   let _ = Module.set_features(wasm_mod, [Features.mvp, Features.multivalue]);
   let _ = Memory.set_memory(wasm_mod, 0, max_int, "memory", [], false);
   let () = ignore @@ compile_functions(wasm_mod, env, prog);
