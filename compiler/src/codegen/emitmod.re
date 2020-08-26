@@ -17,8 +17,21 @@ let emit_module = ({asm, signature}, outfile) => {
     output_string(oc, sig_string);
     close_out(oc);
   };
-  let (encoded, _) = Binaryen.Module.write(asm, None);
+  let source_map_name =
+    if (Config.source_map^) {
+      Some(Filename.basename(outfile) ++ ".map");
+    } else {
+      None;
+    };
+  let (encoded, map) = Binaryen.Module.write(asm, source_map_name);
   let oc = open_out_bin(outfile);
   output_bytes(oc, encoded);
   close_out(oc);
+  switch (map) {
+  | Some(map) =>
+    let oc = open_out_bin(outfile ++ ".map");
+    output_string(oc, map);
+    close_out(oc);
+  | None => ()
+  };
 };
