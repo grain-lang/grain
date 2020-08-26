@@ -18,6 +18,7 @@ _build/
 notes.org
 node_modules/
 *.wasm
+*.wasm.map
 *.wasm.wast
 *.wasm.modsig
 .tern-port
