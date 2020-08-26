@@ -371,6 +371,9 @@ let unsound_optimizations =
     false,
   );
 
+let source_map =
+  toggle_flag(~names=["source-map"], ~doc="Generate source maps", false);
+
 /* To be filled in by grainc */
 let base_path = internal_opt("");
 
