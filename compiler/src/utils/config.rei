@@ -58,6 +58,10 @@ let debug: ref(bool);
 
 let unsound_optimizations: ref(bool);
 
+/** Whether or not to generate source maps. */
+
+let source_map: ref(bool);
+
 /*** Internal options (no command line flags) */
 
 /** Whether to use safe string representations (always true for now) */

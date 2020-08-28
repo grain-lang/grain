@@ -71,6 +71,8 @@ let prim_map =
   );
 
 let transl_prim = (env, desc) => {
+  let loc = desc.tvd_loc;
+
   let prim =
     try(PrimMap.find(prim_map, List.hd(desc.tvd_prim))) {
     | Not_found => failwith("This primitive does not exist.")
@@ -78,18 +80,19 @@ let transl_prim = (env, desc) => {
 
   let value =
     switch (prim) {
-    | Primitive1(p) => Exp.lambda([pat_a], Exp.prim1(p, id_a))
-    | Primitive2(p) => Exp.lambda([pat_a, pat_b], Exp.prim2(p, id_a, id_b))
+    | Primitive1(p) => Exp.lambda(~loc, [pat_a], Exp.prim1(~loc, p, id_a))
+    | Primitive2(p) =>
+      Exp.lambda(~loc, [pat_a, pat_b], Exp.prim2(~loc, p, id_a, id_b))
     };
 
   let binds = [
     {
       pvb_pat: {
         ppat_desc: PPatVar(desc.tvd_name),
-        ppat_loc: desc.tvd_loc,
+        ppat_loc: loc,
       },
       pvb_expr: value,
-      pvb_loc: desc.tvd_loc,
+      pvb_loc: loc,
     },
   ];
   let mut_flag = desc.tvd_val.val_mutable ? Mutable : Immutable;
