@@ -116,11 +116,19 @@ let test_parse =
     ...Ast_mapper.default_mapper,
     location: (_, _) => Location.dummy_loc,
   };
-  let strip_locs = ({statements, _}: Parsetree.parsed_program) =>
+  let comment_loc_stripper: Parsetree.comment => Parsetree.comment =
+    comment => {
+      switch (comment) {
+      | Line(desc) => Line({...desc, cmt_loc: Location.dummy_loc})
+      | Block(desc) => Block({...desc, cmt_loc: Location.dummy_loc})
+      | Doc(desc) => Doc({...desc, cmt_loc: Location.dummy_loc})
+      };
+    };
+  let strip_locs = ({statements, comments}: Parsetree.parsed_program) =>
     Parsetree.{
       statements:
         List.map(location_stripper.toplevel(location_stripper), statements),
-      comments: [],
+      comments: List.map(comment_loc_stripper, comments),
       prog_loc: Location.dummy_loc,
     };
   let parsed = strip_locs @@ parse_string(name, input);
@@ -1470,6 +1478,30 @@ let export_tests = [
   ),
 ];
 
+let comment_tests = {
+  open Grain_parsing;
+  open Ast_helper;
+  let str = s => Top.expr @@ Exp.constant(Const.string(s));
+
+  [
+    tparse(
+      "comment_parse_1",
+      "# Test\n'foo'",
+      {
+        statements: [str("foo")],
+        comments: [
+          Parsetree.Line({
+            cmt_content: "Test",
+            cmt_source: "# Test\n",
+            cmt_loc: Location.dummy_loc,
+          }),
+        ],
+        prog_loc: Location.dummy_loc,
+      },
+    ),
+  ];
+};
+
 let tests =
   "End to end"
   >::: basic_functionality_tests
@@ -1489,4 +1521,5 @@ let tests =
   @ optimization_tests
   @ string_tests
   @ data_tests
-  @ export_tests;
+  @ export_tests
+  @ comment_tests;
