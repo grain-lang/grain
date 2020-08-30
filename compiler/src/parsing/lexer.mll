@@ -56,6 +56,11 @@
 
   let comments = ref []
 
+  let consume_comments () =
+    let out_comments = !comments in
+    comments := [];
+    out_comments
+
   let parse_line_comment lexbuf =
     let source = lexeme lexbuf in
     let loc = lexbuf_loc lexbuf in
