@@ -1444,6 +1444,7 @@ let string_tests = {
       "\"making my way downtown, walking fast\"",
       "\"making my way downtown, walking fast\"",
     ),
+    t("concat", "'foo' ++ 'bar'", "\"foobar\""),
     te("string_err", "let x = \"hello\"; x + \", world\"", "type"),
     te("unicode_err1", "let x = '\\u{d800}'", "Illegal unicode code point"),
     te("unicode_err2", "let x = '\\u{dfff}'", "Illegal unicode code point"),
