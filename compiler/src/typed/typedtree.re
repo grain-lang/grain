@@ -59,6 +59,7 @@ type prim2 =
     | Eq
     | And
     | Or
+    | StringConcat
     | ArrayMake
     | ArrayInit
     | Int64Land

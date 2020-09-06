@@ -51,6 +51,7 @@ let prim_map =
       ("@eq", Primitive2(Eq)),
       ("@and", Primitive2(And)),
       ("@or", Primitive2(Or)),
+      ("@concat", Primitive2(StringConcat)),
       ("@array.length", Primitive1(ArrayLength)),
       ("@array.make", Primitive2(ArrayMake)),
       ("@array.init", Primitive2(ArrayInit)),

@@ -170,6 +170,7 @@ rule token = parse
   | "<" { LCARET }
   | ">" { RCARET }
   | "^" { CARET }
+  | "++" { PLUSPLUS }
   | "+" { PLUS }
   | "-" { DASH }
   | "*" { STAR }
