@@ -33,7 +33,7 @@ let gensym_label = s => {
 };
 
 /* Number of swap variables to allocate */
-let swap_slots_i32 = [|Type.int32, Type.int32|];
+let swap_slots_i32 = [|Type.int32, Type.int32, Type.int32|];
 let swap_slots_i64 = [|Type.int64|];
 let swap_i32_offset = 0;
 let swap_i64_offset = Array.length(swap_slots_i32);
@@ -1936,6 +1936,42 @@ let allocate_string = (wasm_mod, env, str) => {
   );
 };
 
+let allocate_string_no_data = (wasm_mod, env, num_bytes) => {
+  let get_swap = n => get_swap(wasm_mod, env, n);
+  let tee_swap = tee_swap(~skip_incref=true, wasm_mod, env);
+  Expression.block(
+    wasm_mod,
+    gensym_label("allocate_string_no_data"),
+    [
+      store(
+        ~offset=0,
+        wasm_mod,
+        tee_swap(
+          0,
+          call_malloc(
+            wasm_mod,
+            env,
+            [
+              Expression.binary(
+                wasm_mod,
+                Op.add_int32,
+                Expression.const(wasm_mod, const_int32(2 * 4)),
+                tee_swap(1, num_bytes),
+              ),
+            ],
+          ),
+        ),
+        Expression.const(
+          wasm_mod,
+          const_int32(tag_val_of_heap_tag_type(StringType)),
+        ),
+      ),
+      store(~offset=4, wasm_mod, get_swap(0), get_swap(1)),
+      get_swap(0),
+    ],
+  );
+};
+
 let allocate_int32 = (wasm_mod, env, i) => {
   let get_swap = () => get_swap(wasm_mod, env, 0);
   let tee_swap = tee_swap(wasm_mod, env, 0);
@@ -2831,8 +2867,8 @@ let compile_prim1 = (wasm_mod, env, p1, arg): Expression.t => {
 let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t => {
   let compiled_arg1 = () => compile_imm(wasm_mod, env, arg1);
   let compiled_arg2 = () => compile_imm(wasm_mod, env, arg2);
-  let swap_get = () => get_swap(wasm_mod, env, 0);
-  let swap_tee = tee_swap(wasm_mod, env, 0);
+  let swap_get = n => get_swap(wasm_mod, env, n);
+  let swap_tee = tee_swap(wasm_mod, env);
   let overflow_safe = arg =>
     Expression.unary(
       wasm_mod,
@@ -2984,15 +3020,15 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
   | And =>
     Expression.if_(
       wasm_mod,
-      decode_bool(wasm_mod, swap_tee(compiled_arg1())),
+      decode_bool(wasm_mod, swap_tee(0, compiled_arg1())),
       compiled_arg2(),
-      swap_get(),
+      swap_get(0),
     )
   | Or =>
     Expression.if_(
       wasm_mod,
-      decode_bool(wasm_mod, swap_tee(compiled_arg1())),
-      swap_get(),
+      decode_bool(wasm_mod, swap_tee(0, compiled_arg1())),
+      swap_get(0),
       compiled_arg2(),
     )
   | Greater =>
@@ -3044,6 +3080,91 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
         compiled_arg1(),
         compiled_arg2(),
       ),
+    )
+  | StringConcat =>
+    Expression.block(
+      wasm_mod,
+      gensym_label("StringConcat"),
+      [
+        Expression.memory_copy(
+          wasm_mod,
+          Expression.binary(
+            wasm_mod,
+            Op.add_int32,
+            swap_tee(
+              0,
+              allocate_string_no_data(
+                wasm_mod,
+                env,
+                Expression.binary(
+                  wasm_mod,
+                  Op.add_int32,
+                  // allocate_string_no_data uses the swap slots, so wait to use the swap slots
+                  load(
+                    ~offset=4,
+                    wasm_mod,
+                    untag(wasm_mod, GenericHeapType(Some(StringType))) @@
+                    compiled_arg1(),
+                  ),
+                  load(
+                    ~offset=4,
+                    wasm_mod,
+                    untag(wasm_mod, GenericHeapType(Some(StringType))) @@
+                    compiled_arg2(),
+                  ),
+                ),
+              ),
+            ),
+            Expression.const(wasm_mod, const_int32(2 * 4)),
+          ),
+          Expression.binary(
+            wasm_mod,
+            Op.add_int32,
+            swap_tee(
+              1,
+              untag(wasm_mod, GenericHeapType(Some(StringType))) @@
+              compiled_arg1(),
+            ),
+            Expression.const(wasm_mod, const_int32(2 * 4)),
+          ),
+          load(~offset=4, wasm_mod, swap_get(1)),
+        ),
+        Expression.memory_copy(
+          wasm_mod,
+          Expression.binary(
+            wasm_mod,
+            Op.add_int32,
+            swap_get(0),
+            Expression.binary(
+              wasm_mod,
+              Op.add_int32,
+              Expression.const(wasm_mod, const_int32(4 * 2)),
+              load(~offset=4, wasm_mod, swap_get(1)),
+            ),
+          ),
+          Expression.binary(
+            wasm_mod,
+            Op.add_int32,
+            swap_tee(
+              2,
+              untag(wasm_mod, GenericHeapType(Some(StringType))) @@
+              compiled_arg2(),
+            ),
+            Expression.const(wasm_mod, const_int32(2 * 4)),
+          ),
+          load(~offset=4, wasm_mod, swap_get(2)),
+        ),
+        Expression.binary(
+          wasm_mod,
+          Op.or_int32,
+          swap_get(0),
+          Expression.const(
+            wasm_mod,
+            const_int32 @@
+            tag_val_of_tag_type(GenericHeapType(Some(StringType))),
+          ),
+        ),
+      ],
     )
   | Int64Land =>
     allocate_int64_imm(
@@ -4018,7 +4139,11 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
       Filename.basename(Option.get(name)),
     );
   };
-  let _ = Module.set_features(wasm_mod, [Features.mvp, Features.multivalue]);
+  let _ =
+    Module.set_features(
+      wasm_mod,
+      [Features.mvp, Features.multivalue, Features.bulk_memory],
+    );
   let _ = Memory.set_memory(wasm_mod, 0, max_int, "memory", [], false);
   let () = ignore @@ compile_functions(wasm_mod, env, prog);
   let () = ignore @@ compile_imports(wasm_mod, env, prog);

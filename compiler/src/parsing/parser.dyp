@@ -168,7 +168,7 @@ let make_program statements =
 
 %token ASSERT FAIL
 
-%token PLUS DASH STAR SLASH PERCENT
+%token PLUS PLUSPLUS DASH STAR SLASH PERCENT
 %token TRUE FALSE VOID
 
 %token LET MUT REC IF ELSE MATCH WHILE
@@ -265,6 +265,7 @@ binop_expr :
   | binop_expr(<=pc) eols? greatereq_op eols? binop_expr(<pc) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pc
   | binop_expr(<=pb) eols? ampamp_op eols?    binop_expr(<pb) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pb
   | binop_expr(<=pb) eols? pipepipe_op eols?  binop_expr(<pb) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pb
+  | binop_expr(<=pb) eols? plusplus_op eols?  binop_expr(<pb) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } pb
   | binop_expr colon typ { Exp.constraint_ ~loc:(symbol_rloc dyp) $1 $3 } pe
   | lam_expr { $1 } pl
   | non_assign_expr { $1 } pe
@@ -390,6 +391,8 @@ ext_constructor :
 
 plus_op :
   | PLUS { "+" }
+plusplus_op :
+  | PLUSPLUS { "++" }
 dash_op :
   | DASH { "-" }
 star_op :
@@ -435,6 +438,7 @@ infix_op :
   | percent_op
   | is_op
   | eqeq_op
+  | plusplus_op
   | noteq_op
   | lcaret_op
   | rcaret_op
