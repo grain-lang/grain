@@ -20,6 +20,9 @@ primitive (!) : Bool -> Bool = "@not"
 primitive (&&) : (Bool, Bool) -> Bool = "@and"
 primitive (||) : (Bool, Bool) -> Bool = "@or"
 
+# String operations
+primitive (++) : (String, String) -> String = "@concat"
+
 # Box operations
 primitive box : a -> Box<a> = "@box"
 primitive unbox : Box<a> -> a = "@unbox"
