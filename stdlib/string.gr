@@ -4,7 +4,7 @@ export *
 # @param str1: String - The first string
 # @param str2: String - The second string
 # @returns String
-import foreign wasm concat : (String, String) -> String from 'stdlib-external/string'
+let concat = (++)
 
 # Get the character length of a string.
 # @param input: String - The string to check
