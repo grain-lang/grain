@@ -117,6 +117,20 @@ module Dat = {
   let record = (~loc=?, n, t, ldl) => mk(~loc?, n, t, PDataRecord(ldl));
 };
 
+module Except = {
+  let mk = (~loc=?, n, t) => {
+    let loc =
+      switch (loc) {
+      | None => default_loc_src^()
+      | Some(l) => l
+      };
+    let ext = {pext_name: n, pext_kind: PExtDecl(t), pext_loc: loc};
+    {ptyexn_constructor: ext, ptyexn_loc: loc};
+  };
+  let singleton = (~loc=?, n) => mk(~loc?, n, PConstrSingleton);
+  let tuple = (~loc=?, n, args) => mk(~loc?, n, PConstrTuple(args));
+};
+
 module Pat = {
   let mk = (~loc=?, d) => {
     let loc =
@@ -241,6 +255,8 @@ module Top = {
   let let_ = (~loc=?, e, r, m, vb) =>
     mk(~loc?, [@implicit_arity] PTopLet(e, r, m, vb));
   let expr = (~loc=?, e) => mk(~loc?, PTopExpr(e));
+  let grain_exception = (~loc=?, e, ext) =>
+    mk(~loc?, [@implicit_arity] PTopException(e, ext));
   let export = (~loc=?, e) => mk(~loc?, PTopExport(e));
   let export_all = (~loc=?, e) => mk(~loc?, PTopExportAll(e));
 };

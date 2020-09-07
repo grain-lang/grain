@@ -67,6 +67,8 @@ exception Cannot_apply;
 
 exception Recursive_abbrev;
 
+exception Nondep_cannot_erase(Ident.t);
+
 /* GADT: recursive abbrevs can appear as a result of local constraints */
 exception Unification_recursive_abbrev(list((type_expr, type_expr)));
 
@@ -229,6 +231,7 @@ let in_pervasives = p => failwith("NYI: in_pervasives");
 
 let is_datatype = decl =>
   switch (decl.type_kind) {
+  | TDataOpen
   | TDataRecord(_)
   | TDataVariant(_) => true
   | TDataAbstract => false
@@ -307,6 +310,7 @@ let closed_type_decl = decl =>
     {
       List.iter(mark_type, decl.type_params);
       switch (decl.type_kind) {
+      | TDataOpen
       | TDataAbstract => ()
       | TDataRecord(fields) =>
         List.iter(({rf_type}) => closed_type(rf_type), fields)
@@ -902,6 +906,7 @@ let instance_parameterized_type_2 = (sch_args, sch_lst, sch) => {
 let map_kind = f =>
   fun
   | TDataAbstract => TDataAbstract
+  | TDataOpen => TDataOpen
   | TDataRecord(fields) =>
     TDataRecord(
       List.map(field => {...field, rf_type: f(field.rf_type)}, fields),
@@ -3293,6 +3298,46 @@ let nondep_type_decl = (env, mid, id, is_covariant, decl) =>
   | Not_found =>
     clear_hash();
     raise(Not_found);
+  };
+
+/* Preserve sharing inside extension constructors. */
+let nondep_extension_constructor = (env, id, ext) =>
+  try({
+    let (type_path, type_params) =
+      switch (Path.find_free_opt([id], ext.ext_type_path)) {
+      | Some(id') =>
+        let ty =
+          newgenty(
+            [@implicit_arity]
+            TTyConstr(ext.ext_type_path, ext.ext_type_params, ref(TMemNil)),
+          );
+
+        let ty' = nondep_type_rec(env, id, ty);
+        switch (repr(ty').desc) {
+        | [@implicit_arity] TTyConstr(p, tl, _) => (p, tl)
+        | _ => raise(Nondep_cannot_erase(id'))
+        };
+      | None =>
+        let type_params =
+          List.map(nondep_type_rec(env, id), ext.ext_type_params);
+
+        (ext.ext_type_path, type_params);
+      };
+
+    let args =
+      map_type_expr_cstr_args(nondep_type_rec(env, id), ext.ext_args);
+    clear_hash();
+    {
+      ext_type_path: type_path,
+      ext_type_params: type_params,
+      ext_args: args,
+      ext_runtime_id: ext.ext_runtime_id,
+      ext_loc: ext.ext_loc,
+    };
+  }) {
+  | Nondep_cannot_erase(_) as exn =>
+    clear_hash();
+    raise(exn);
   };
 
 /* collapse conjunctive types in class parameters */

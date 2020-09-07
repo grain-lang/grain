@@ -71,10 +71,13 @@ and abbrev_memo =
   // Abbreviations can be found after this indirection
   | TMemLink(ref(abbrev_memo));
 
+/*true if a constant false if a block*/
+
 [@deriving (sexp, yojson)]
 type constructor_tag =
   | CstrConstant(int)
   | CstrBlock(int)
+  | CstrExtension(int, Path.t, bool)
   | CstrUnboxed
 
 [@deriving (sexp, yojson)]
@@ -134,6 +137,16 @@ and constructor_arguments =
   | TConstrSingleton;
 
 [@deriving (sexp, yojson)]
+type extension_constructor = {
+  ext_type_path: Path.t,
+  ext_type_params: list(type_expr),
+  ext_args: constructor_arguments,
+  ext_runtime_id: int,
+  [@sexp_drop_if sexp_locs_disabled]
+  ext_loc: Location.t,
+};
+
+[@deriving (sexp, yojson)]
 type type_declaration = {
   type_params: list(type_expr),
   type_arity: int,
@@ -149,7 +162,8 @@ type type_declaration = {
 and type_kind =
   | TDataVariant(list(constructor_declaration))
   | TDataAbstract
-  | TDataRecord(list(record_field));
+  | TDataRecord(list(record_field))
+  | TDataOpen;
 
 [@deriving (sexp, yojson)]
 type rec_status =
@@ -158,9 +172,16 @@ type rec_status =
   | TRecNext;
 
 [@deriving (sexp, yojson)]
+type ext_status =
+  | TExtFirst
+  | TExtNext
+  | TExtException;
+
+[@deriving (sexp, yojson)]
 type signature_item =
   | TSigValue(Ident.t, value_description)
   | TSigType(Ident.t, type_declaration, rec_status)
+  | TSigTypeExt(Ident.t, extension_constructor, ext_status)
   | TSigModule(Ident.t, module_declaration, rec_status)
   | TSigModType(Ident.t, modtype_declaration)
 
@@ -195,6 +216,11 @@ let equal_tag = (t1, t2) =>
   switch (t1, t2) {
   | (CstrBlock(i1), CstrBlock(i2))
   | (CstrConstant(i1), CstrConstant(i2)) => i1 == i2
+  | (
+      [@implicit_arity] CstrExtension(i1, p1, b1),
+      [@implicit_arity] CstrExtension(i2, p2, b2),
+    ) =>
+    i1 == i2 && Path.same(p1, p2) && b1 == b2
   | (CstrUnboxed, CstrUnboxed) => true
   | _ => false
   };

@@ -36,6 +36,11 @@ let rec compare = (p1, p2) =>
   | (PExternal(_), PIdent(_)) => 1
   };
 
+let rec find_free_opt = ids =>
+  fun
+  | PIdent(id) => List.find_opt(Ident.same(id), ids)
+  | [@implicit_arity] PExternal(p, _, _) => find_free_opt(ids, p);
+
 let rec isfree = id =>
   fun
   | PIdent(id') => Ident.same(id, id')

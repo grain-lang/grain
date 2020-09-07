@@ -170,7 +170,7 @@ let make_program statements =
 %token UNDERSCORE
 %token COLON COLONCOLON DOT ELLIPSIS
 
-%token ASSERT FAIL
+%token ASSERT FAIL EXCEPTION TRY RAISE
 
 %token PLUS PLUSPLUS DASH STAR SLASH PERCENT
 %token TRUE FALSE VOID
@@ -354,6 +354,7 @@ export_stmt :
   | EXPORT foreign_stmt { Top.foreign ~loc:(symbol_rloc dyp) Exported $2 }
   | EXPORT primitive_stmt { Top.primitive ~loc:(symbol_rloc dyp) Exported $2 }
   | EXPORT data_declaration { Top.data Exported $2 }
+  | EXPORT exception_stmt { Top.grain_exception ~loc:(symbol_rloc dyp) Exported $2 }
   | EXPORT any_id_str [AS any_id_str {$2}]? [comma any_id_str [AS any_id_str {$2}]? {$2, $3}]* { Top.export ~loc:(symbol_rloc dyp) (Ex.mk ~loc:(symbol_rloc dyp) (($2, $3)::$4)) }
   | EXPORT STAR [EXCEPT export_id_str [comma export_id_str {$2}]* {$2::$3}]? { Top.export_all ~loc:(symbol_rloc dyp) (Option.value ~default:[] $3) }
 
@@ -633,6 +634,10 @@ primitive_stmt :
   | PRIMITIVE id_str colon typ equal STRING { Val.mk ~loc:(symbol_rloc dyp) ~mod_:{$2 with txt="primitive"} ~name:$2 ~alias:None ~typ:$4 ~prim:[$6] }
   | PRIMITIVE primitive colon typ equal STRING { Val.mk ~loc:(symbol_rloc dyp) ~mod_:{$2 with txt="primitive"} ~name:$2 ~alias:None ~typ:$4 ~prim:[$6] }
 
+exception_stmt :
+  | EXCEPTION type_id_str { Except.singleton ~loc:(symbol_rloc dyp) $2 }
+  | EXCEPTION type_id_str lparen typs rparen { Except.tuple ~loc:(symbol_rloc dyp) $2 $4 }
+  
 toplevel_stmt :
   | LET REC value_binds { Top.let_ Nonexported Recursive Immutable $3 }
   | LET value_binds { Top.let_ Nonexported Nonrecursive Immutable $2 }
@@ -644,6 +649,7 @@ toplevel_stmt :
   | export_stmt { $1 }
   | primitive_stmt { Top.primitive ~loc:(symbol_rloc dyp) Nonexported $1 }
   | data_declaration { Top.data Nonexported $1 }
+  | exception_stmt { Top.grain_exception ~loc:(symbol_rloc dyp) Nonexported $1 }
 
 toplevel_stmts :
   | toplevel_stmt [eos toplevel_stmt {$2}]* { $1::$2 }

@@ -12,6 +12,7 @@ let compile_constructor_tag =
     fun
     | CstrConstant(i) => i
     | CstrBlock(i) => i
+    | CstrExtension(i, _, _) => i
     | CstrUnboxed =>
       failwith("compile_constructor_tag: cannot compile CstrUnboxed")
   );
@@ -863,62 +864,64 @@ and transl_anf_expression =
   );
 };
 
+let bind_constructor =
+    (env, loc, ty_id, (cd_id, {cstr_name, cstr_tag, cstr_args})) => {
+  let rhs =
+    switch (cstr_tag) {
+    | CstrConstant(_) =>
+      let compiled_tag = compile_constructor_tag(cstr_tag);
+      Comp.adt(
+        ~loc,
+        ~env,
+        Imm.const(~loc, ~env, Const_number(Const_number_int(Int64.of_int(ty_id)))),
+        Imm.const(~loc, ~env, Const_number(Const_number_int(Int64.of_int(compiled_tag)))),
+        [],
+      );
+    | CstrExtension(_, _, constant) when constant =>
+      let compiled_tag = compile_constructor_tag(cstr_tag);
+      Comp.adt(
+        ~loc,
+        ~env,
+        Imm.const(~loc, ~env, Const_number(Const_number_int(Int64.of_int(ty_id)))),
+        Imm.const(~loc, ~env, Const_number(Const_number_int(Int64.of_int(compiled_tag)))),
+        [],
+      );
+    | CstrBlock(_)
+    | CstrExtension(_) =>
+      let compiled_tag = compile_constructor_tag(cstr_tag);
+      let args = List.map(_ => gensym("constr_arg"), cstr_args);
+      let arg_ids = List.map(a => Imm.id(~loc, ~env, a), args);
+      let imm_tytag = Imm.const(~loc, ~env, Const_number(Const_number_int(Int64.of_int(ty_id))));
+      let imm_tag = Imm.const(~loc, ~env, Const_number(Const_number_int(Int64.of_int(compiled_tag))));
+      Comp.lambda(
+        ~loc,
+        ~env,
+        args,
+        AExp.comp(
+          ~loc,
+          ~env,
+          Comp.adt(~loc, ~env, imm_tytag, imm_tag, arg_ids),
+        ),
+      );
+    | CstrUnboxed => failwith("NYI: ANF CstrUnboxed")
+    };
+  [@implicit_arity] BLetExport(Nonrecursive, [(cd_id, rhs)]);
+};
+
 let linearize_decl = (env, loc, typath, decl) => {
   /* FIXME: [philip] This is kind of hacky...would be better to store this in the Env directly...not to mention,
      I think this'll be much more fragile than if it were in the static info */
   let ty_id = get_type_id(typath);
   let descrs = Datarepr.constructors_of_type(typath, decl);
-  let bind_constructor = ((cd_id, {cstr_name, cstr_tag, cstr_args})) => {
-    let rhs =
-      switch (cstr_tag) {
-      | CstrConstant(_) =>
-        let compiled_tag = compile_constructor_tag(cstr_tag);
-        Comp.adt(
-          ~loc,
-          ~env,
-          Imm.const(
-            ~loc,
-            ~env,
-            Const_number(Const_number_int(Int64.of_int(ty_id))),
-          ),
-          Imm.const(
-            ~loc,
-            ~env,
-            Const_number(Const_number_int(Int64.of_int(compiled_tag))),
-          ),
-          [],
-        );
-      | CstrBlock(_) =>
-        let compiled_tag = compile_constructor_tag(cstr_tag);
-        let args = List.map(_ => gensym("constr_arg"), cstr_args);
-        let arg_ids = List.map(a => Imm.id(~loc, ~env, a), args);
-        let imm_tytag =
-          Imm.const(
-            ~loc,
-            ~env,
-            Const_number(Const_number_int(Int64.of_int(ty_id))),
-          );
-        let imm_tag =
-          Imm.const(
-            ~loc,
-            ~env,
-            Const_number(Const_number_int(Int64.of_int(compiled_tag))),
-          );
-        Comp.lambda(
-          ~loc,
-          ~env,
-          args,
-          AExp.comp(
-            ~loc,
-            ~env,
-            Comp.adt(~loc, ~env, imm_tytag, imm_tag, arg_ids),
-          ),
-        );
-      | CstrUnboxed => failwith("NYI: ANF CstrUnboxed")
-      };
-    [@implicit_arity] BLetExport(Nonrecursive, [(cd_id, rhs)]);
-  };
-  List.map(bind_constructor, descrs);
+  List.map(bind_constructor(env, loc, ty_id), descrs);
+};
+
+let linearize_exception = (env, ext) => {
+  let ty_id = get_type_id(ext.ext_type.ext_type_path);
+  let id = ext.ext_id;
+  let loc = ext.ext_loc;
+  let ext = Datarepr.extension_descr(Path.PIdent(id), ext.ext_type);
+  [bind_constructor(env, loc, ty_id, (id, ext))];
 };
 
 let rec transl_anf_statement =
@@ -1059,6 +1062,10 @@ let rec transl_anf_statement =
     } else {
       (None, []);
     };
+  | [@implicit_arity] TTopException(_, ext) => (
+      Some(linearize_exception(env, ext)),
+      [],
+    )
   | TTopForeign(desc) =>
     let arity = Ctype.arity(desc.tvd_desc.ctyp_type);
     (

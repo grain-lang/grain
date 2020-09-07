@@ -120,6 +120,25 @@ let constructor_descrs = (ty_path, decl, cstrs) => {
   List.mapi(describe_constructor, cstrs);
 };
 
+let extension_descr = (path_ext, ext) => {
+  let ty_res = newgenconstr(ext.ext_type_path, ext.ext_type_params);
+
+  let (existentials, cstr_args, cstr_inlined) =
+    constructor_args(ext.ext_args, Some(ty_res), path_ext);
+
+  {
+    cstr_name: Path.last(path_ext),
+    cstr_res: ty_res,
+    cstr_existentials: existentials,
+    cstr_args,
+    cstr_arity: List.length(cstr_args),
+    cstr_tag: CstrExtension(ext.ext_runtime_id, path_ext, cstr_args == []),
+    cstr_consts: (-1),
+    cstr_nonconsts: (-1),
+    cstr_loc: ext.ext_loc,
+  };
+};
+
 let none = {desc: TTyTuple([]), level: (-1), id: (-1)};
 /* Clearly ill-formed type */
 let dummy_label = {
@@ -177,6 +196,7 @@ let constructors_of_type = (ty_path, decl) =>
   switch (decl.type_kind) {
   | TDataVariant(cstrs) => constructor_descrs(ty_path, decl, cstrs)
   | TDataRecord(_)
+  | TDataOpen
   | TDataAbstract => []
   };
 
@@ -185,5 +205,6 @@ let labels_of_type = (ty_path, decl) =>
   | TDataRecord(labels) =>
     label_descrs(newgenconstr(ty_path, decl.type_params), labels)
   | TDataVariant(_)
+  | TDataOpen
   | TDataAbstract => []
   };

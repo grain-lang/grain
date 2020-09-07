@@ -245,6 +245,7 @@ let type_declaration = (s, decl) => {
     type_kind:
       switch (decl.type_kind) {
       | TDataAbstract => TDataAbstract
+      | TDataOpen => TDataOpen
       | TDataRecord(fields) =>
         TDataRecord(List.map(record_field(s), fields))
       | TDataVariant(cstrs) =>
@@ -273,6 +274,14 @@ let value_description = (s, descr) => {
   val_loc: loc(s, descr.val_loc),
 };
 
+let extension_constructor = (s, ext) => {
+  ext_type_path: type_path(s, ext.ext_type_path),
+  ext_type_params: List.map(typexp(s), ext.ext_type_params),
+  ext_args: constructor_arguments(s, ext.ext_args),
+  ext_runtime_id: ext.ext_runtime_id,
+  ext_loc: loc(s, ext.ext_loc),
+};
+
 let rec rename_bound_idents = (s, idents) =>
   fun
   | [] => (List.rev(idents), s)
@@ -283,6 +292,10 @@ let rec rename_bound_idents = (s, idents) =>
         [id', ...idents],
         sg,
       );
+    }
+  | [[@implicit_arity] TSigTypeExt(id, _, _), ...sg] => {
+      let id' = Ident.rename(id);
+      rename_bound_idents(s, [id', ...idents], sg);
     }
   | [[@implicit_arity] TSigModule(id, _, _), ...sg] => {
       let id' = Ident.rename(id);
@@ -338,6 +351,8 @@ and signature_component = (s, comp, newid) =>
     )
   | [@implicit_arity] TSigType(_id, d, rs) =>
     [@implicit_arity] TSigType(newid, type_declaration(s, d), rs)
+  | [@implicit_arity] TSigTypeExt(_id, d, es) =>
+    [@implicit_arity] TSigTypeExt(newid, extension_constructor(s, d), es)
   | [@implicit_arity] TSigModule(_id, d, rs) =>
     [@implicit_arity] TSigModule(newid, module_declaration(s, d), rs)
   | [@implicit_arity] TSigModType(_id, d) =>
