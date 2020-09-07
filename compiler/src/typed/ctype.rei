@@ -195,9 +195,8 @@ let nondep_type: (Env.t, Ident.t, type_expr) => type_expr;
 let nondep_type_decl:
   (Env.t, Ident.t, Ident.t, bool, type_declaration) => type_declaration;
 /* Same for type declarations. */
-/*val nondep_extension_constructor:
-  Env.t -> Ident.t -> extension_constructor ->
-  extension_constructor*/
+let nondep_extension_constructor:
+  (Env.t, Ident.t, extension_constructor) => extension_constructor;
 /* Same for extension constructor */
 let cyclic_abbrev: (Env.t, Ident.t, type_expr) => bool;
 let is_contractive: (Env.t, Path.t) => bool;

@@ -32,6 +32,7 @@ type t =
   | FragileMatch(string)
   | UnusedMatch
   | UnusedPat
+  | UnusedExtension
   | NonClosedRecordPattern(string)
   | UnreachableCase
   | ShadowConstructor(string)

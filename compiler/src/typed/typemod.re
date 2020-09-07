@@ -141,22 +141,31 @@ let type_open = (~toplevel=?, env, sod) => {
 let simplify_signature = sg => {
   let rec aux =
     fun
-    | [] => ([], String.Set.empty)
-    | [[@implicit_arity] TSigValue(id, _descr) as component, ...sg] => {
-        let (sg, val_names) as k = aux(sg);
+    | [] => ([], String.Set.empty, String.Set.empty)
+    | [TSigValue(id, _descr) as component, ...sg] => {
+        let (sg, val_names, ext_names) as k = aux(sg);
         let name = Ident.name(id);
         if (String.Set.mem(name, val_names)) {
           k;
         } else {
-          ([component, ...sg], String.Set.add(name, val_names));
+          ([component, ...sg], String.Set.add(name, val_names), ext_names);
+        };
+      }
+    | [TSigTypeExt(id, _descr, _stat) as component, ...sg] => {
+        let (sg, val_names, ext_names) as k = aux(sg);
+        let name = Ident.name(id);
+        if (String.Set.mem(name, ext_names)) {
+          k;
+        } else {
+          ([component, ...sg], val_names, String.Set.add(name, ext_names));
         };
       }
     | [component, ...sg] => {
-        let (sg, val_names) = aux(sg);
-        ([component, ...sg], val_names);
+        let (sg, val_names, ext_names) = aux(sg);
+        ([component, ...sg], val_names, ext_names);
       };
 
-  let (sg, _) = aux(sg);
+  let (sg, _, _) = aux(sg);
   sg;
 };
 
@@ -532,6 +541,25 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
     {ttop_desc: TTopExpr(expr), ttop_loc: loc, ttop_env: env};
   };
 
+  let process_exception = (env, export_flag, ext, loc) => {
+    let (ext, newenv) = Typedecl.transl_exception(env, ext);
+    let stmt = {
+      ttop_desc: [@implicit_arity] TTopException(export_flag, ext),
+      ttop_loc: loc,
+      ttop_env: newenv,
+    };
+    let sign =
+      switch (export_flag) {
+      | Exported =>
+        Some(
+          [@implicit_arity]
+          TSigTypeExt(ext.ext_id, ext.ext_type, TExtException),
+        )
+      | Nonexported => None
+      };
+    (newenv, sign, stmt);
+  };
+
   let process_export_value = (env, exports, loc) => {
     let bindings =
       List.map(
@@ -653,6 +681,15 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
         | PTopExpr(e) =>
           let statement = process_expr(env, e, loc);
           (env, signatures, [statement, ...statements]);
+        | [@implicit_arity] PTopException(e, d) =>
+          let (new_env, signature, statement) =
+            process_exception(env, e, d.ptyexn_constructor, loc);
+          let signatures =
+            switch (signature) {
+            | Some(s) => [s, ...signatures]
+            | None => signatures
+            };
+          (new_env, signatures, [statement, ...statements]);
         | PTopExportAll(_) => (env, signatures, statements)
         },
       (env, [], []),

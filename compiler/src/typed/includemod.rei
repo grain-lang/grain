@@ -75,6 +75,11 @@ type symptom =
       type_declaration,
       list(Includecore.type_mismatch),
     )
+  | Extension_constructors(
+      Ident.t,
+      extension_constructor,
+      extension_constructor,
+    )
   | Module_types(module_type, module_type)
   | Modtype_infos(Ident.t, modtype_declaration, modtype_declaration)
   | Modtype_permutation

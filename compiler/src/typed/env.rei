@@ -10,6 +10,7 @@ type summary =
   | Env_empty
   | Env_value(summary, Ident.t, value_description)
   | Env_type(summary, Ident.t, type_declaration)
+  | Env_extension(summary, Ident.t, extension_constructor)
   | Env_module(summary, Ident.t, module_declaration)
   | Env_modtype(summary, Ident.t, modtype_declaration)
   | Env_open(summary, Path.t)
@@ -135,6 +136,11 @@ let add_value:
 let add_type: (~check: bool, Ident.t, type_declaration, t) => t;
 
 /** Adds a type identifier with the given name and declaration. */
+/** Adds a type extenstion with the given name and extension. */
+
+let add_extension: (~check: bool, Ident.t, extension_constructor, t) => t;
+
+/** Adds a type extenstion with the given name and extension. */
 /** Adds a constructor with the given name and description. */
 
 let add_constructor: (Ident.t, constructor_description, t) => t;

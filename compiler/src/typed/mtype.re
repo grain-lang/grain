@@ -85,8 +85,10 @@ and strengthen_sig = (~aliasable, env, sg, p, pos) =>
       [@implicit_arity] TSigType(id, newdecl, rs),
       ...strengthen_sig(~aliasable, env, rem, p, pos),
     ];
-  /*| (Sig_typext _ as sigelt) :: rem ->
-    sigelt :: strengthen_sig ~aliasable env rem p (pos+1)*/
+  | [TSigTypeExt(_) as sigelt, ...rem] => [
+      sigelt,
+      ...strengthen_sig(~aliasable, env, rem, p, pos + 1),
+    ]
   | [[@implicit_arity] TSigModule(id, md, rs), ...rem] =>
     let str =
       strengthen_decl(
@@ -222,9 +224,15 @@ let nondep_supertype = (env, mid, mty) => {
             ),
             ...rem',
           ]
-        /*| Sig_typext(id, ext, es) ->
-          Sig_typext(id, Ctype.nondep_extension_constructor env mid ext, es)
-          :: rem'*/
+        | [@implicit_arity] TSigTypeExt(id, ext, es) => [
+            [@implicit_arity]
+            TSigTypeExt(
+              id,
+              Ctype.nondep_extension_constructor(env, mid, ext),
+              es,
+            ),
+            ...rem',
+          ]
         | [@implicit_arity] TSigModule(id, md, rs) => [
             [@implicit_arity]
             TSigModule(
@@ -392,9 +400,9 @@ and type_paths_sig = (env, p, pos, sg) =>
       )
   | [[@implicit_arity] TSigModType(id, decl), ...rem] =>
     type_paths_sig(Env.add_modtype(id, decl, env), p, pos, rem)
+  | [TSigTypeExt(_) /*| Sig_class _*/, ...rem] =>
+    type_paths_sig(env, p, pos + 1, rem)
   };
-/*| (Sig_typext _ | Sig_class _) :: rem ->
-  type_paths_sig env p (pos+1) rem*/
 /*| (Sig_class_type _) :: rem ->
   type_paths_sig env p pos rem*/
 
@@ -423,9 +431,8 @@ and no_code_needed_sig = (env, sg) =>
        )
   | [TSigType(_) | TSigModType(_) /*| Sig_class_type _*/, ...rem] =>
     no_code_needed_sig(env, rem)
+  | [TSigTypeExt(_) /*| Sig_class _*/, ..._] => false
   };
-/*| (Sig_typext _ | Sig_class _) :: _ ->
-  false*/
 
 /* Check whether a module type may return types */
 
@@ -462,8 +469,8 @@ and contains_type_item = env =>
   | [@implicit_arity] TSigModule(_, {md_type: mty}, _) =>
     contains_type(env, mty)
   | TSigValue(_)
-  | TSigType(_) =>
-    /*| Sig_typext _*/
+  | TSigType(_)
+  | TSigTypeExt(_) =>
     /*| Sig_class _*/
     /*| Sig_class_type _*/
     ();

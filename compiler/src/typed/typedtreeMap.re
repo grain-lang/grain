@@ -125,6 +125,7 @@ module MakeMap =
     let ttop_desc =
       switch (stmt.ttop_desc) {
       | TTopData(decls) => TTopData(List.map(map_data_declaration, decls))
+      | TTopException(_)
       | TTopForeign(_)
       | TTopImport(_)
       | TTopExport(_) => stmt.ttop_desc
