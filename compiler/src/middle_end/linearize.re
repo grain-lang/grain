@@ -866,33 +866,46 @@ and transl_anf_expression =
 
 let bind_constructor =
     (env, loc, ty_id, (cd_id, {cstr_name, cstr_tag, cstr_args})) => {
+  let compile_constant_constructor = () => {
+    let compiled_tag = compile_constructor_tag(cstr_tag);
+    Comp.adt(
+      ~loc,
+      ~env,
+      Imm.const(
+        ~loc,
+        ~env,
+        Const_number(Const_number_int(Int64.of_int(ty_id))),
+      ),
+      Imm.const(
+        ~loc,
+        ~env,
+        Const_number(Const_number_int(Int64.of_int(compiled_tag))),
+      ),
+      [],
+    );
+  };
   let rhs =
     switch (cstr_tag) {
-    | CstrConstant(_) =>
-      let compiled_tag = compile_constructor_tag(cstr_tag);
-      Comp.adt(
-        ~loc,
-        ~env,
-        Imm.const(~loc, ~env, Const_number(Const_number_int(Int64.of_int(ty_id)))),
-        Imm.const(~loc, ~env, Const_number(Const_number_int(Int64.of_int(compiled_tag)))),
-        [],
-      );
+    | CstrConstant(_) => compile_constant_constructor()
     | CstrExtension(_, _, constant) when constant =>
-      let compiled_tag = compile_constructor_tag(cstr_tag);
-      Comp.adt(
-        ~loc,
-        ~env,
-        Imm.const(~loc, ~env, Const_number(Const_number_int(Int64.of_int(ty_id)))),
-        Imm.const(~loc, ~env, Const_number(Const_number_int(Int64.of_int(compiled_tag)))),
-        [],
-      );
+      compile_constant_constructor()
     | CstrBlock(_)
     | CstrExtension(_) =>
       let compiled_tag = compile_constructor_tag(cstr_tag);
       let args = List.map(_ => gensym("constr_arg"), cstr_args);
       let arg_ids = List.map(a => Imm.id(~loc, ~env, a), args);
-      let imm_tytag = Imm.const(~loc, ~env, Const_number(Const_number_int(Int64.of_int(ty_id))));
-      let imm_tag = Imm.const(~loc, ~env, Const_number(Const_number_int(Int64.of_int(compiled_tag))));
+      let imm_tytag =
+        Imm.const(
+          ~loc,
+          ~env,
+          Const_number(Const_number_int(Int64.of_int(ty_id))),
+        );
+      let imm_tag =
+        Imm.const(
+          ~loc,
+          ~env,
+          Const_number(Const_number_int(Int64.of_int(compiled_tag))),
+        );
       Comp.lambda(
         ~loc,
         ~env,
