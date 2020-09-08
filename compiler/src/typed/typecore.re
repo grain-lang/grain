@@ -147,11 +147,6 @@ let prim2_type =
       and v2 = newvar(~name="equal", ());
       (v1, v2, Builtin_types.type_bool);
     }
-  | StringConcat => (
-      Builtin_types.type_string,
-      Builtin_types.type_string,
-      Builtin_types.type_string,
-    )
   | ArrayMake => {
       let var = newvar(~name="a", ());
       (Builtin_types.type_number, var, Builtin_types.type_array(var));
