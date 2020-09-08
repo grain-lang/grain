@@ -151,7 +151,10 @@ module Val: {
 
 module Vb: {let mk: (~loc: loc=?, pattern, expression) => value_binding;};
 
-module Mb: {let mk: (~loc: loc=?, pattern, expression) => match_branch;};
+module Mb: {
+  let mk:
+    (~loc: loc=?, pattern, expression, option(expression)) => match_branch;
+};
 
 module Imp: {
   let mk:
