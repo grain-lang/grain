@@ -21,7 +21,7 @@ primitive (&&) : (Bool, Bool) -> Bool = "@and"
 primitive (||) : (Bool, Bool) -> Bool = "@or"
 
 # String operations
-primitive (++) : (String, String) -> String = "@concat"
+import foreign wasm concat : (String, String) -> String as (++) from 'stdlib-external/runtime'
 
 # Box operations
 primitive box : a -> Box<a> = "@box"
