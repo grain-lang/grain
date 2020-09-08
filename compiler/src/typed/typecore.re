@@ -837,7 +837,7 @@ and type_expect_ =
       env,
       ty_expected_explained,
       (),
-      [Mb.mk(pat, body)],
+      [Mb.mk(pat, body, None)],
     );
   | [@implicit_arity] PExpApp(func, args) =>
     begin_def(); /* one more level for non-returning functions */
@@ -1514,7 +1514,7 @@ and type_cases =
     };
   let cases =
     List.map2(
-      ((pat, (ext_env, unpacks)), {pmb_pat, pmb_body, pmb_loc}) => {
+      ((pat, (ext_env, unpacks)), {pmb_pat, pmb_body, pmb_guard, pmb_loc}) => {
         let sexp = pmb_body /*wrap_unpacks pmb_body unpacks*/;
         let ty_res' =
           if (Grain_utils.Config.principal^) {
@@ -1529,23 +1529,27 @@ and type_cases =
           };
         /*Format.eprintf "@[%i %i, ty_res' =@ %a@]@." lev (get_current_level())
           Printtyp.raw_type_expr ty_res';*/
-        /*let guard =
-            match pc_guard with
-            | None -> None
-            | Some scond ->
-                Some
-                  (type_expect ext_env (wrap_unpacks scond unpacks)
-                     (mk_expected Predef.type_bool))
-          in*/
+        let guard =
+          switch (pmb_guard) {
+          | None => None
+          | Some(scond) =>
+            Some(
+              type_expect(
+                ext_env,
+                scond,
+                mk_expected(Builtin_types.type_bool),
+              ),
+            )
+          };
         let exp =
           type_expect(~in_function?, ext_env, sexp, mk_expected(ty_res'));
         {
           mb_pat: pat,
-          /*c_guard = guard;*/
           mb_body: {
             ...exp,
             exp_type: instance(env, ty_res'),
           },
+          mb_guard: guard,
           mb_loc: pmb_loc,
         };
       },

@@ -161,3 +161,9 @@ type anf_program = {
   signature: Cmi_format.cmi_infos,
   analyses: ref(list(analysis)),
 };
+
+type anf_bind =
+  | BSeq(comp_expression)
+  | BLet(Ident.t, comp_expression)
+  | BLetRec(list((Ident.t, comp_expression)))
+  | BLetExport(rec_flag, list((Ident.t, comp_expression)));

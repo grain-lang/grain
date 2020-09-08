@@ -273,13 +273,13 @@ module Vb = {
 };
 
 module Mb = {
-  let mk = (~loc=?, p, e) => {
+  let mk = (~loc=?, p, e, g) => {
     let loc =
       switch (loc) {
       | None => default_loc_src^()
       | Some(l) => l
       };
-    {pmb_pat: p, pmb_body: e, pmb_loc: loc};
+    {pmb_pat: p, pmb_body: e, pmb_guard: g, pmb_loc: loc};
   };
 };
 

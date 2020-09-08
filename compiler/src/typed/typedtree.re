@@ -234,6 +234,7 @@ and value_binding = {
 and match_branch = {
   mb_pat: pattern,
   mb_body: expression,
+  mb_guard: option(expression),
   [@sexp_drop_if sexp_locs_disabled]
   mb_loc: Location.t,
 };

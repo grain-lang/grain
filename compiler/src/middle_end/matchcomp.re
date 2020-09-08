@@ -1,8 +1,7 @@
 /** Pattern Matching compiler, based on "Compiling Pattern Matching to Good Decision Trees"
     by Luc Maranget (http://moscova.inria.fr/~maranget/papers/ml05e-maranget.pdf) */;
 
-/* NOTE: Constant patterns are currently unsupported, since
-   they require logic for guard expressions. */
+/* NOTE: Constant patterns are currently unsupported. */
 
 open Sexplib.Conv;
 open Grain_parsing;
@@ -22,6 +21,13 @@ type decision_tree =
       to the action number (i.e. switch branch) to be taken */
     Leaf(
       int,
+    )
+  | /** Represents a guarded branch. The left tree corresponds to a successful
+      guard check, and the right tree corresponds to a failed guard check. */
+    Guard(
+      match_branch,
+      decision_tree,
+      decision_tree,
     )
   | /** Represents a failed match. */
     Fail
@@ -238,12 +244,17 @@ module MatchTreeCompiler = {
 
   let fold_tree = (setup, ans) =>
     List.fold_right(
-      ((name, exp), body) => AExp.let_(Nonrecursive, [(name, exp)], body),
+      (bind, body) =>
+        switch (bind) {
+        | BLet(name, exp) => AExp.let_(Nonrecursive, [(name, exp)], body)
+        | _ =>
+          failwith("match_comp: compile_tree_help: bindings were not BLet")
+        },
       setup,
       AExp.comp(ans),
     );
 
-  let rec compile_tree_help = (tree, values) => {
+  let rec compile_tree_help = (tree, values, expr, helpI) => {
     let (cur_value, rest_values) =
       switch (values) {
       | [] => failwith("Impossible (compile_tree_help): Empty value stack")
@@ -251,13 +262,41 @@ module MatchTreeCompiler = {
       };
     switch (tree) {
     | Leaf(i) => (Comp.imm(Imm.const(Const_int(i))), [])
+    | Guard(mb, true_tree, false_tree) =>
+      let guard =
+        switch (mb.mb_guard) {
+        | Some(guard) => guard
+        | None =>
+          failwith(
+            "Impossible: (compile_tree_help): guarded match branch contained no guard",
+          )
+        };
+      let bindings =
+        List.map(
+          ((id, expr)) => BLet(id, expr),
+          extract_bindings(mb.mb_pat, Comp.imm(expr)),
+        );
+      let (cond, cond_setup) = helpI(guard);
+      let (true_comp, true_setup) =
+        compile_tree_help(true_tree, values, expr, helpI);
+      let (false_comp, false_setup) =
+        compile_tree_help(false_tree, values, expr, helpI);
+      (
+        Comp.if_(
+          cond,
+          fold_tree(true_setup, true_comp),
+          fold_tree(false_setup, false_comp),
+        ),
+        bindings @ cond_setup,
+      );
     | Fail =>
       /* FIXME: We need a "throw error" node in ANF */
       (Comp.imm(Imm.const(Const_int(0))), [])
     /* Optimizations to avoid unneeded destructuring: */
     | [@implicit_arity] Explode(_, Leaf(_) as inner)
+    | [@implicit_arity] Explode(_, Guard(_) as inner)
     | [@implicit_arity] Explode(_, Fail as inner) =>
-      compile_tree_help(inner, values)
+      compile_tree_help(inner, values, expr, helpI)
     | [@implicit_arity] Explode(matrix_type, rest) =>
       /* Tack on the new bindings. We assume that the indices of 'rest'
          already account for the new indices. */
@@ -268,7 +307,7 @@ module MatchTreeCompiler = {
             arity,
             idx => {
               let id = Ident.create("match_explode");
-              (id, Comp.adt_get(Int32.of_int(idx), cur_value));
+              BLet(id, Comp.adt_get(Int32.of_int(idx), cur_value));
             },
           )
         | ConstructorMatrix(None) =>
@@ -278,29 +317,37 @@ module MatchTreeCompiler = {
             arity,
             idx => {
               let id = Ident.create("match_explode");
-              (id, Comp.tuple_get(Int32.of_int(idx), cur_value));
+              BLet(id, Comp.tuple_get(Int32.of_int(idx), cur_value));
             },
           )
         | RecordMatrix(label_poses) =>
           List.map(
             label_pos => {
               let id = Ident.create("match_explode");
-              (id, Comp.record_get(Int32.of_int(label_pos), cur_value));
+              BLet(id, Comp.record_get(Int32.of_int(label_pos), cur_value));
             },
             Array.to_list(label_poses),
           )
         };
 
       let new_values =
-        List.map(((id, _)) => Imm.id(id), bindings) @ rest_values;
-      let (rest_ans, rest_setup) = compile_tree_help(rest, new_values);
+        List.map(
+          fun
+          | BLet(id, _) => Imm.id(id)
+          | _ =>
+            failwith("matchcomp: compile_tree_help: binding was not BLet"),
+          bindings,
+        )
+        @ rest_values;
+      let (rest_ans, rest_setup) =
+        compile_tree_help(rest, new_values, expr, helpI);
       (rest_ans, bindings @ rest_setup);
     | [@implicit_arity] Swap(idx, rest_tree) =>
-      compile_tree_help(rest_tree, swap_list(idx, values))
+      compile_tree_help(rest_tree, swap_list(idx, values), expr, helpI)
     | [@implicit_arity] Switch(branches, default_tree) =>
       /* Runs when no branches match */
       let base_tree = Option.value(~default=Fail, default_tree);
-      let base = compile_tree_help(base_tree, values);
+      let base = compile_tree_help(base_tree, values, expr, helpI);
       let value_constr_name = Ident.create("match_constructor");
       let value_constr_id = Imm.id(value_constr_name);
       let value_constr = Comp.adt_get_tag(cur_value);
@@ -314,12 +361,13 @@ module MatchTreeCompiler = {
             /* If the constructor has the correct tag, execute this branch.
                Otherwise continue. */
             let setup = [
-              (
+              BLet(
                 cmp_id_name,
                 Comp.prim2(Eq, value_constr_id, Imm.const(Const_int(tag))),
               ),
             ];
-            let (tree_ans, tree_setup) = compile_tree_help(tree, values);
+            let (tree_ans, tree_setup) =
+              compile_tree_help(tree, values, expr, helpI);
             let ans =
               Comp.if_(
                 cmp_id,
@@ -333,20 +381,20 @@ module MatchTreeCompiler = {
         );
       (
         switch_body_ans,
-        [(value_constr_name, value_constr), ...switch_body_setup],
+        [BLet(value_constr_name, value_constr), ...switch_body_setup],
       );
     };
   };
 
   let compile_result =
-      ({tree, branches}, helpA, expr)
-      : (Anftree.comp_expression, list((Ident.t, Anftree.comp_expression))) => {
+      ({tree, branches}, helpA, helpI, expr)
+      : (Anftree.comp_expression, list(Anftree.anf_bind)) => {
     /*prerr_string "Compiling tree:";
       prerr_string (Sexplib.Sexp.to_string_hum (sexp_of_decision_tree tree));
       prerr_newline();*/
-    let (ans, setup) = compile_tree_help(tree, [expr]);
+    let (ans, setup) = compile_tree_help(tree, [expr], expr, helpI);
     let jmp_name = Ident.create("match_dest");
-    let setup = setup @ [(jmp_name, ans)];
+    let setup = setup @ [BLet(jmp_name, ans)];
     let switch_branches =
       List.map(
         ((tag, branch, orig_pat)) =>
@@ -560,10 +608,16 @@ let rec default_matrix = mtx => {
 let rec compile_matrix = (branches, mtx) =>
   switch (mtx) {
   | [] => {tree: Fail, branches} /* No branches to match. */
-  | [(pats, (mb, i)), ..._] when List.for_all(pattern_always_matches, pats) => {
-      tree: Leaf(i),
-      branches: [(i, mb.mb_body, mb.mb_pat), ...branches],
-    }
+  | [(pats, (mb, i)), ...rest_mtx]
+      when List.for_all(pattern_always_matches, pats) =>
+    let (rest_tree, branches) =
+      switch (mb.mb_guard) {
+      | Some(guard) =>
+        let result = compile_matrix(branches, rest_mtx);
+        (Guard(mb, Leaf(i), result.tree), result.branches);
+      | None => (Leaf(i), branches)
+      };
+    {tree: rest_tree, branches: [(i, mb.mb_body, mb.mb_pat), ...branches]};
   | _ when !col_is_wildcard(mtx, 0) =>
     /* If the first column contains a non-wildcard pattern */
     let matrix_type = matrix_type(mtx);

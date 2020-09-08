@@ -63,15 +63,41 @@ let lookup_symbol = (mod_, mod_decl, name, original_name) => {
   };
 };
 
-type anf_bind =
-  | BSeq(comp_expression)
-  | BLet(Ident.t, comp_expression)
-  | BLetRec(list((Ident.t, comp_expression)))
-  | BLetExport(rec_flag, list((Ident.t, comp_expression)));
-
 type either('a, 'b) =
   | Left('a)
   | Right('b);
+
+let convert_binds = anf_binds => {
+  let void_comp = Comp.imm(Imm.const(Const_void));
+  let void = AExp.comp(void_comp);
+  let (last_bind, top_binds) =
+    switch (anf_binds) {
+    | [bind, ...rest] => (bind, rest)
+    | _ => (BSeq(void_comp), [])
+    };
+  let ans =
+    switch (last_bind) {
+    | BSeq(exp) => AExp.comp(exp)
+    | [@implicit_arity] BLet(name, exp) =>
+      AExp.let_(Nonrecursive, [(name, exp)], void)
+    | BLetRec(names) => AExp.let_(Recursive, names, void)
+    | [@implicit_arity] BLetExport(rf, binds) =>
+      AExp.let_(~glob=Global, rf, binds, void)
+    };
+  List.fold_left(
+    (body, bind) =>
+      switch (bind) {
+      | BSeq(exp) => AExp.seq(exp, body)
+      | [@implicit_arity] BLet(name, exp) =>
+        AExp.let_(Nonrecursive, [(name, exp)], body)
+      | BLetRec(names) => AExp.let_(Recursive, names, body)
+      | [@implicit_arity] BLetExport(rf, binds) =>
+        AExp.let_(~glob=Global, rf, binds, body)
+      },
+    ans,
+    top_binds,
+  );
+};
 
 let extract_bindings = (mut_flag, pat, cexpr) => {
   let get_imm =
@@ -506,15 +532,12 @@ let rec transl_imm =
       MatchCompiler.compile_result(
         Matchcomp.convert_match_branches(branches),
         transl_anf_expression,
+        transl_imm,
         exp_ans,
       );
     (
       Imm.id(~loc, ~env, tmp),
-      (
-        exp_setup
-        @ List.map(((n, e)) => [@implicit_arity] BLet(n, e), setup)
-      )
-      @ [[@implicit_arity] BLet(tmp, ans)],
+      (exp_setup @ setup) @ [[@implicit_arity] BLet(tmp, ans)],
     );
   | TExpConstruct(_) => failwith("NYI: transl_imm: Construct")
   }
@@ -813,12 +836,10 @@ and transl_comp_expression =
       MatchCompiler.compile_result(
         Matchcomp.convert_match_branches(branches),
         transl_anf_expression,
+        transl_imm,
         exp_ans,
       );
-    (
-      ans,
-      exp_setup @ List.map(((n, e)) => [@implicit_arity] BLet(n, e), setup),
-    );
+    (ans, exp_setup @ setup);
   | _ =>
     let (imm, setup) = transl_imm(e);
     (Comp.imm(~loc, ~env, imm), setup);
@@ -1072,36 +1093,7 @@ let transl_anf_module =
       List.map(transl_anf_statement, statements),
     );
   let imports = List.rev(imports);
-  let void_comp = Comp.imm(Imm.const(Const_void));
-  let void = AExp.comp(void_comp);
-  let (last_bind, top_binds) =
-    switch (top_binds) {
-    | [bind, ...rest] => (bind, rest)
-    | _ => (BSeq(void_comp), [])
-    };
-  let ans =
-    switch (last_bind) {
-    | BSeq(exp) => AExp.comp(exp)
-    | [@implicit_arity] BLet(name, exp) =>
-      AExp.let_(Nonrecursive, [(name, exp)], void)
-    | BLetRec(names) => AExp.let_(Recursive, names, void)
-    | [@implicit_arity] BLetExport(rf, binds) =>
-      AExp.let_(~glob=Global, rf, binds, void)
-    };
-  let body =
-    List.fold_left(
-      (body, bind) =>
-        switch (bind) {
-        | BSeq(exp) => AExp.seq(exp, body)
-        | [@implicit_arity] BLet(name, exp) =>
-          AExp.let_(Nonrecursive, [(name, exp)], body)
-        | BLetRec(names) => AExp.let_(Recursive, names, body)
-        | [@implicit_arity] BLetExport(rf, binds) =>
-          AExp.let_(~glob=Global, rf, binds, body)
-        },
-      ans,
-      top_binds,
-    );
+  let body = convert_binds(top_binds);
   let imports = imports @ value_imports^;
   {body, env, imports, signature, analyses: ref([])};
 };

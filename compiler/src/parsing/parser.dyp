@@ -171,7 +171,7 @@ let make_program statements =
 %token PLUS PLUSPLUS DASH STAR SLASH PERCENT
 %token TRUE FALSE VOID
 
-%token LET MUT REC IF ELSE MATCH WHILE
+%token LET MUT REC IF WHEN ELSE MATCH WHILE
 %token AMPAMP PIPEPIPE NOT
 
 %token DATA IMPORT EXPORT FOREIGN WASM PRIMITIVE
@@ -507,7 +507,7 @@ while_expr :
   | WHILE lparen expr rparen block { Exp.while_ ~loc:(symbol_rloc dyp) $3 $5 }
 
 match_branch :
-  | pattern thickarrow expr { Mb.mk ~loc:(symbol_rloc dyp) $1 $3 }
+  | pattern [WHEN expr {$2}]? thickarrow expr { Mb.mk ~loc:(symbol_rloc dyp) $1 $4 $2 }
 
 match_branches :
   | pipe? match_branch [eols? pipe match_branch {$3}]* { $2::$3 }
