@@ -531,10 +531,7 @@ let rec transl_imm =
         transl_imm,
         exp_ans,
       );
-    (
-      Imm.id(~loc, ~env, tmp),
-      (exp_setup @ setup) @ [BLet(tmp, ans)],
-    );
+    (Imm.id(~loc, ~env, tmp), (exp_setup @ setup) @ [BLet(tmp, ans)]);
   | TExpConstruct(_) => failwith("NYI: transl_imm: Construct")
   }
 
