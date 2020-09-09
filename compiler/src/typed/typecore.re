@@ -217,9 +217,10 @@ let all_idents_cases = el => {
 
   let iterator = {...default_iterator, expr: f_expr};
   List.iter(
-    cp =>
-      /*may (iterator.expr iterator) cp.pc_guard;*/
-      iterator.expr(iterator, cp.pmb_body),
+    cp => {
+      Option.iter(iterator.expr(iterator), cp.pmb_guard);
+      iterator.expr(iterator, cp.pmb_body);
+    },
     el,
   );
   Hashtbl.fold((x, (), rest) => [x, ...rest], idents, []);
@@ -1441,12 +1442,6 @@ and type_cases =
   let pat_env_list =
     List.map(
       ({pmb_pat, pmb_body}) => {
-        /*let loc = pmb_body.pexp_loc
-            (*let open Location in
-            match pc_guard with
-            | None -> pc_rhs.pexp_loc
-            | Some g -> {pc_rhs.pexp_loc with loc_start=g.pexp_loc.loc_start}*)
-          in*/
         if (Grain_utils.Config.principal^) {
           begin_def();
         }; /* propagation of pattern */
