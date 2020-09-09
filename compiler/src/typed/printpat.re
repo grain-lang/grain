@@ -70,14 +70,12 @@ let rec pretty_val = (ppf, v) =>
         fprintf(ppf, "@[{%a%t}@]", pretty_lvals, filtered_lvs, elision_mark);
       };
     | TPatConstant(c) => fprintf(ppf, "%s", pretty_const(c))
-    | [@implicit_arity] TPatConstruct({txt: id}, _, args) =>
-      fprintf(
-        ppf,
-        "@[%s(%a)@]",
-        Identifier.string_of_ident(id),
-        pretty_vals(","),
-        args,
-      )
+    | [@implicit_arity] TPatConstruct(_, cstr, args) =>
+      if (List.length(args) > 0) {
+        fprintf(ppf, "@[%s(%a)@]", cstr.cstr_name, pretty_vals(","), args);
+      } else {
+        fprintf(ppf, "@[%s@]", cstr.cstr_name);
+      }
     | [@implicit_arity] TPatAlias(v, x, _) =>
       fprintf(ppf, "@[(%a@ as %a)@]", pretty_val, v, Ident.print, x)
     | [@implicit_arity] TPatOr(v, w) =>
