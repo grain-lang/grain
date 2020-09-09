@@ -113,7 +113,9 @@ type allocation_type =
   | MADT(immediate, immediate, list(immediate)) /* Type Tag, Variant Tag, Elements */
   | MString(string)
   | MInt32(int32)
-  | MInt64(int64);
+  | MInt64(int64)
+  | MFloat32(float)
+  | MFloat64(float);
 
 [@deriving sexp]
 type tag_op =
