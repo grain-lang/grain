@@ -962,6 +962,86 @@ let match_tests = [
     "data Rec = {foo: Number}; match ([{foo: 5}]) { | [] => 999 | [{foo}, ..._] => foo }",
     "5",
   ),
+  t(
+    "guarded_match_1",
+    "match ((1, 2, 3)) { | (a, b, c) when a == 1 => 42 | _ => 99 }",
+    "42",
+  ),
+  t(
+    "guarded_match_2",
+    "match ((2, 2, 3)) { | (a, b, c) when a == 1 => 42 | _ => 99 }",
+    "99",
+  ),
+  t(
+    "guarded_match_3",
+    "match ((2, 2, 3)) { | (a, b, c) when (a == 2) && (c == 3) => 42 | _ => 99 }",
+    "42",
+  ),
+  t(
+    "guarded_match_4",
+    "match ((8, 2, 3)) { | (a, b, c) when (a == 2) && (c == 3) => 42 | _ => 99 }",
+    "99",
+  ),
+  t(
+    "guarded_match_5",
+    "data ADT = Foo((String, Number)) | Bar
+     match (Foo(('abcd', 4))) {
+       | Foo((s, n)) when (s == 'abcd') && (n == 4) => 42
+       | Foo((s, n)) when (s == 'wxyz') && (n == 4) => 99
+       | Foo(_) when false => 90
+       | Foo(_) => 89
+       | Bar => 79
+     }",
+    "42",
+  ),
+  t(
+    "guarded_match_6",
+    "data ADT = Foo((String, Number)) | Bar
+     match (Foo(('abcd', 3))) {
+       | Foo((s, n)) when (s == 'abcd') && (n == 4) => 42
+       | Foo((s, n)) when (s == 'wxyz') && (n == 4) => 99
+       | Foo(_) when false => 90
+       | Foo(_) => 89
+       | Bar => 79
+     }",
+    "89",
+  ),
+  t(
+    "guarded_match_7",
+    "data ADT = Foo((String, Number)) | Bar
+     match (Foo(('wxyz', 4))) {
+       | Foo((s, n)) when (s == 'abcd') && (n == 4) => 42
+       | Foo((s, n)) when (s == 'wxyz') && (n == 4) => 99
+       | Foo(_) when false => 90
+       | Foo(_) => 89
+       | Bar => 79
+     }",
+    "99",
+  ),
+  t(
+    "guarded_match_8",
+    "data ADT = Foo((String, Number)) | Bar
+     match (Foo(('wxyz', 15))) {
+       | Foo((s, n)) when (s == 'abcd') && (n == 4) => 42
+       | Foo((s, n)) when (s == 'wxyz') && (n == 4) => 99
+       | Foo(_) when false => 90
+       | Foo(_) => 89
+       | Bar => 79
+     }",
+    "89",
+  ),
+  t(
+    "guarded_match_9",
+    "data ADT = Foo((String, Number)) | Bar
+     match (Bar) {
+       | Foo((s, n)) when (s == 'abcd') && (n == 4) => 42
+       | Foo((s, n)) when (s == 'wxyz') && (n == 4) => 99
+       | Foo(_) when false => 90
+       | Foo(_) => 89
+       | Bar => 79
+     }",
+    "79",
+  ),
   tfile("mixed_matching", "mixedPatternMatching", "true"),
 ];
 
