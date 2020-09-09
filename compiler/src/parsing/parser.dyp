@@ -255,8 +255,8 @@ binop_expr :
   | binop_expr(<=p110) eols? plus_op eols?      binop_expr(<p110) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p110
   | binop_expr(<=p110) eols? dash_op eols?      binop_expr(<p110) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p110
   | binop_expr(<=p120) eols? star_op eols?      binop_expr(<p120) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p120
-  | binop_expr(<=p120) eols? slash_op eols?     binop_expr(<p120) { Exp.prim2 ~loc:(symbol_rloc dyp) Divide $1 $5 } p120
-  | binop_expr(<=p120) eols? percent_op eols?   binop_expr(<p120) { Exp.prim2 ~loc:(symbol_rloc dyp) Mod $1 $5 } p120
+  | binop_expr(<=p120) eols? slash_op eols?     binop_expr(<p120) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p120
+  | binop_expr(<=p120) eols? percent_op eols?   binop_expr(<p120) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p120
   | binop_expr(<=p80) eols? is_op eols?        binop_expr(<p80) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p80
   | binop_expr(<=p80) eols? eqeq_op eols?      binop_expr(<p80) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p80
   | binop_expr(<=p80) eols? noteq_op eols?     binop_expr(<p80) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p80

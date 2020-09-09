@@ -1,20 +1,30 @@
 export *
 
 # Math operations
-primitive incr : Number -> Number = "@incr"
-primitive decr : Number -> Number = "@decr"
-primitive (+) : (Number, Number) -> Number = "@plus"
-primitive (-) : (Number, Number) -> Number = "@minus"
-primitive (*) : (Number, Number) -> Number = "@times"
-primitive (/) : (Number, Number) -> Number = "@divides"
-primitive (%) : (Number, Number) -> Number = "@modulo"
-import foreign wasm incr
+#primitive incr : Number -> Number = "@incr"
+#primitive decr : Number -> Number = "@decr"
+#primitive (+) : (Number, Number) -> Number = "@plus"
+#primitive (-) : (Number, Number) -> Number = "@minus"
+#primitive (*) : (Number, Number) -> Number = "@times"
+#primitive (/) : (Number, Number) -> Number = "@divides"
+#primitive (%) : (Number, Number) -> Number = "@modulo"
+import foreign wasm numberIncr : Number -> Number as incr from 'stdlib-external/runtime'
+import foreign wasm numberDecr : Number -> Number as decr from 'stdlib-external/runtime'
+import foreign wasm numberPlus : (Number, Number) -> Number as (+) from 'stdlib-external/runtime'
+import foreign wasm numberMinus : (Number, Number) -> Number as (-) from 'stdlib-external/runtime'
+import foreign wasm numberTimes : (Number, Number) -> Number as (*) from 'stdlib-external/runtime'
+import foreign wasm numberDivide : (Number, Number) -> Number as (/) from 'stdlib-external/runtime'
+import foreign wasm numberMod : (Number, Number) -> Number as (%) from 'stdlib-external/runtime'
 
 # Number comparisons
-primitive (<) : (Number, Number) -> Bool = "@less"
-primitive (>) : (Number, Number) -> Bool = "@greater"
-primitive (<=) : (Number, Number) -> Bool = "@lesseq"
-primitive (>=) : (Number, Number) -> Bool = "@greatereq"
+#primitive (<) : (Number, Number) -> Bool = "@less"
+#primitive (>) : (Number, Number) -> Bool = "@greater"
+#primitive (<=) : (Number, Number) -> Bool = "@lesseq"
+#primitive (>=) : (Number, Number) -> Bool = "@greatereq"
+import foreign wasm numberLess : (Number, Number) -> Number as (<) from 'stdlib-external/runtime'
+import foreign wasm numberGreater : (Number, Number) -> Number as (>) from 'stdlib-external/runtime'
+import foreign wasm numberLessEqual : (Number, Number) -> Number as (<=) from 'stdlib-external/runtime'
+import foreign wasm numberGreaterEqual : (Number, Number) -> Number as (>=) from 'stdlib-external/runtime'
 
 # Boolean operations
 primitive (!) : Bool -> Bool = "@not"
@@ -38,7 +48,7 @@ primitive fail : String -> a = "@fail"
 import foreign wasm print : a -> Void from 'grainBuiltins'
 
 # Checks the given items for structural equality.
-import foreign wasm equal : (a, a) -> Bool as (==) from 'stdlib-external/equal'
+import foreign wasm equal : (a, a) -> Bool as (==) from 'stdlib-external/runtime'
 let (!=) : (a, a) -> Bool = (x, y) => !(x == y)
 # Checks the given items for physical equality.
 primitive (is) : (a, a) -> Bool = "@eq"

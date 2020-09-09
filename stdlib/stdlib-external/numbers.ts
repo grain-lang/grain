@@ -1008,3 +1008,13 @@ export function numberAsr(x: u32, y: u32): u32 {
   let yval = coerceInt64(y)
   return reducedInteger(x >>> y)
 }
+
+// inc/dec
+
+export function numberIncr(x: u32): u32 {
+  return numberPlus(x, boxSimple(1));
+}
+
+export function numberDecr(x: u32): u32 {
+  return numberMinus(x, boxSimple(1));
+}
