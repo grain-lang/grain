@@ -78,21 +78,17 @@ let convert_binds = anf_binds => {
   let ans =
     switch (last_bind) {
     | BSeq(exp) => AExp.comp(exp)
-    | [@implicit_arity] BLet(name, exp) =>
-      AExp.let_(Nonrecursive, [(name, exp)], void)
+    | BLet(name, exp) => AExp.let_(Nonrecursive, [(name, exp)], void)
     | BLetRec(names) => AExp.let_(Recursive, names, void)
-    | [@implicit_arity] BLetExport(rf, binds) =>
-      AExp.let_(~glob=Global, rf, binds, void)
+    | BLetExport(rf, binds) => AExp.let_(~glob=Global, rf, binds, void)
     };
   List.fold_left(
     (body, bind) =>
       switch (bind) {
       | BSeq(exp) => AExp.seq(exp, body)
-      | [@implicit_arity] BLet(name, exp) =>
-        AExp.let_(Nonrecursive, [(name, exp)], body)
+      | BLet(name, exp) => AExp.let_(Nonrecursive, [(name, exp)], body)
       | BLetRec(names) => AExp.let_(Recursive, names, body)
-      | [@implicit_arity] BLetExport(rf, binds) =>
-        AExp.let_(~glob=Global, rf, binds, body)
+      | BLetExport(rf, binds) => AExp.let_(~glob=Global, rf, binds, body)
       },
     ans,
     top_binds,
@@ -537,7 +533,7 @@ let rec transl_imm =
       );
     (
       Imm.id(~loc, ~env, tmp),
-      (exp_setup @ setup) @ [[@implicit_arity] BLet(tmp, ans)],
+      (exp_setup @ setup) @ [BLet(tmp, ans)],
     );
   | TExpConstruct(_) => failwith("NYI: transl_imm: Construct")
   }
