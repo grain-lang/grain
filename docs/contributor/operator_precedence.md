@@ -1,0 +1,24 @@
+# Grain's Operator Precedence
+
+This table shows which operators take precedence over other operators, and can be used as a reference when parsing.
+
+| Precedence | Operator type | Associativity | Operators |
+|-|-|-|-|
+| 180 | Grouping | n/a | `( … )` |
+| 170 | Member Access<br>Computed Member Access<br>Function Call | left-to-right<br>left-to-right<br>left-to-right | `… . …`<br>`… [ … ]`<br>`… ( … )` |
+| 160 | Postfix Increment<br>Postfix Decrement | n/a | NYI |
+| 150 | Logical NOT<br>Bitwise NOT<br>Unary Negation<br>Unbox<br>Prefix Increment<br>Postfix Increment | right-to-left | `! …`<br>NYI<br>`- …`<br>`^ …`<br>NYI<br>NYI |
+| 140 | Annotation | left-to-right | `… : …` |
+| 130 | Exponentiation | right-to-left | NYI |
+| 120 | Multiplication<br>Division<br>Modulus | left-to-right | `… * …`<br>`… / …`<br>`… % …` |
+| 110 | Addition<br>Subtraction | left-to-right | `… + …`<br>`… - …` |
+| 100 | Bitwise Shift Left<br>Bitwise Shift Right<br>Bitwise Arithmetic Shift Right | left-to-right | NYI |
+| 90 | Less Than<br>Less Than or Equal To<br>Greater Than<br>Greater Than or Equal To | left-to-right | `… < …`<br>`… <= …`<br>`… > …`<br>`… >= …` |
+| 80 | Structural Equality<br>Structural Inequality<br>Physical Equality<br>Physical Inequality | left-to-right | `… == …`<br>`… != …`<br>`… is …`<br>`… isnt …`(NYI) |
+| 70 | Bitwise AND | left-to-right | NYI |
+| 60 | Bitwise XOR | left-to-right | NYI |
+| 50 | Bitwise OR | left-to-right | NYI |
+| 40 | Logical AND | left-to-right | `… && …` |
+| 30 | Logical OR | left-to-right | `… \|\| …` |
+| 20 | Ternary Conditional | right-to-left | NYI |
+| 10 | Assignment | right-to-left | `… = …`<br>`… := …`<br>`… += …`<br>`… -= …`<br>`… *= …`<br>`… /= …`<br>`… %= …` |
