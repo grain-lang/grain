@@ -12,7 +12,13 @@ export const GRAIN_DOM_ELEM_TAG: i32 = 2;
 export const GRAIN_ADT_HEAP_TAG: i32 = 3;
 export const GRAIN_RECORD_HEAP_TAG: i32 = 4;
 export const GRAIN_ARRAY_HEAP_TAG: i32 = 5;
-export const GRAIN_INT32_HEAP_TAG: i32 = 6;
-export const GRAIN_INT64_HEAP_TAG: i32 = 7;
+export const GRAIN_BOXED_NUM_HEAP_TAG: i32 = 6;
 
 export const GRAIN_FILE_DESCRIPTOR_TYPE_ID: i32 = 9;
+
+// Boxed number types
+export const GRAIN_FLOAT32_BOXED_NUM_TAG = 1;
+export const GRAIN_FLOAT64_BOXED_NUM_TAG = 2;
+export const GRAIN_INT32_BOXED_NUM_TAG = 3;
+export const GRAIN_INT64_BOXED_NUM_TAG = 4;
+export const GRAIN_RATIONAL_BOXED_NUM_TAG = 5;

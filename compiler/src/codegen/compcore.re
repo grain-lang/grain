@@ -44,12 +44,35 @@ let module_runtime_id = Ident.create_persistent("moduleRuntimeId");
 let reloc_base = Ident.create_persistent("relocBase");
 let table_size = Ident.create_persistent("GRAIN$TABLE_SIZE");
 let runtime_mod = Ident.create_persistent("grainRuntime");
+let data_structures_mod = Ident.create_persistent("dataStructures");
+let numbers_mod = Ident.create_persistent("numbers");
 let console_mod = Ident.create_persistent("console");
 let check_memory_ident = Ident.create_persistent("checkMemory");
 let throw_error_ident = Ident.create_persistent("throwError");
 let log_ident = Ident.create_persistent("log");
 let malloc_ident = Ident.create_persistent("malloc");
 let incref_ident = Ident.create_persistent("incRef");
+let new_rational_ident = Ident.create_persistent("newRational");
+let new_float32_ident = Ident.create_persistent("newFloat32");
+let new_float64_ident = Ident.create_persistent("newFloat64");
+let new_int32_ident = Ident.create_persistent("newInt64");
+let new_int64_ident = Ident.create_persistent("newInt64");
+let number_plus_ident = Ident.create_persistent("numberPlus");
+let number_minus_ident = Ident.create_persistent("numberMinus");
+let number_times_ident = Ident.create_persistent("numberTimes");
+let number_divide_ident = Ident.create_persistent("numberDivide");
+let number_mod_ident = Ident.create_persistent("numberMod");
+let number_less_ident = Ident.create_persistent("numberLess");
+let number_greater_ident = Ident.create_persistent("numberGreater");
+let number_less_equal_ident = Ident.create_persistent("numberLessEqual");
+let number_greater_equal_ident = Ident.create_persistent("numberGreaterEqual");
+let number_eq_ident = Ident.create_persistent("numberEq");
+let number_lsl_ident = Ident.create_persistent("numberLsl");
+let number_lsr_ident = Ident.create_persistent("numberLsr");
+let number_land_ident = Ident.create_persistent("numberLand");
+let number_lor_ident = Ident.create_persistent("numberLor");
+let number_lxor_ident = Ident.create_persistent("numberLxor");
+let number_asr_ident = Ident.create_persistent("numberAsr");
 /* Variants used for tracing */
 let incref_adt_ident = Ident.create_persistent("incRefADT");
 let incref_array_ident = Ident.create_persistent("incRefArray");
@@ -338,6 +361,153 @@ let runtime_function_imports =
             List.init(Runtime_errors.max_arity + 1, _ => I32Type),
             [],
           ),
+        mimp_kind: MImportWasm,
+        mimp_setup: MSetupNone,
+      },
+      {
+        mimp_mod: data_structures_mod,
+        mimp_name: new_rational_ident,
+        mimp_type: [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
+        mimp_kind: MImportWasm,
+        mimp_setup: MSetupNone,
+      },
+      {
+        mimp_mod: data_structures_mod,
+        mimp_name: new_float32_ident,
+        mimp_type: [@implicit_arity] MFuncImport([F32Type], [I32Type]),
+        mimp_kind: MImportWasm,
+        mimp_setup: MSetupNone,
+      },
+      {
+        mimp_mod: data_structures_mod,
+        mimp_name: new_float64_ident,
+        mimp_type: [@implicit_arity] MFuncImport([F64Type], [I32Type]),
+        mimp_kind: MImportWasm,
+        mimp_setup: MSetupNone,
+      },
+      {
+        mimp_mod: data_structures_mod,
+        mimp_name: new_int32_ident,
+        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]),
+        mimp_kind: MImportWasm,
+        mimp_setup: MSetupNone,
+      },
+      {
+        mimp_mod: data_structures_mod,
+        mimp_name: new_int64_ident,
+        mimp_type: [@implicit_arity] MFuncImport([I64Type], [I32Type]),
+        mimp_kind: MImportWasm,
+        mimp_setup: MSetupNone,
+      },
+      {
+        mimp_mod: numbers_mod,
+        mimp_name: number_plus_ident,
+        mimp_type: [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
+        mimp_kind: MImportWasm,
+        mimp_setup: MSetupNone,
+      },
+      {
+        mimp_mod: numbers_mod,
+        mimp_name: number_minus_ident,
+        mimp_type: [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
+        mimp_kind: MImportWasm,
+        mimp_setup: MSetupNone,
+      },
+      {
+        mimp_mod: numbers_mod,
+        mimp_name: number_times_ident,
+        mimp_type: [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
+        mimp_kind: MImportWasm,
+        mimp_setup: MSetupNone,
+      },
+      {
+        mimp_mod: numbers_mod,
+        mimp_name: number_divide_ident,
+        mimp_type: [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
+        mimp_kind: MImportWasm,
+        mimp_setup: MSetupNone,
+      },
+      {
+        mimp_mod: numbers_mod,
+        mimp_name: number_mod_ident,
+        mimp_type: [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
+        mimp_kind: MImportWasm,
+        mimp_setup: MSetupNone,
+      },
+      {
+        mimp_mod: numbers_mod,
+        mimp_name: number_less_ident,
+        mimp_type: [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
+        mimp_kind: MImportWasm,
+        mimp_setup: MSetupNone,
+      },
+      {
+        mimp_mod: numbers_mod,
+        mimp_name: number_greater_ident,
+        mimp_type: [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
+        mimp_kind: MImportWasm,
+        mimp_setup: MSetupNone,
+      },
+      {
+        mimp_mod: numbers_mod,
+        mimp_name: number_less_equal_ident,
+        mimp_type: [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
+        mimp_kind: MImportWasm,
+        mimp_setup: MSetupNone,
+      },
+      {
+        mimp_mod: numbers_mod,
+        mimp_name: number_greater_equal_ident,
+        mimp_type: [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
+        mimp_kind: MImportWasm,
+        mimp_setup: MSetupNone,
+      },
+      {
+        mimp_mod: numbers_mod,
+        mimp_name: number_eq_ident,
+        mimp_type: [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
+        mimp_kind: MImportWasm,
+        mimp_setup: MSetupNone,
+      },
+      {
+        mimp_mod: numbers_mod,
+        mimp_name: number_lsl_ident,
+        mimp_type: [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
+        mimp_kind: MImportWasm,
+        mimp_setup: MSetupNone,
+      },
+      {
+        mimp_mod: numbers_mod,
+        mimp_name: number_lsr_ident,
+        mimp_type: [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
+        mimp_kind: MImportWasm,
+        mimp_setup: MSetupNone,
+      },
+      {
+        mimp_mod: numbers_mod,
+        mimp_name: number_land_ident,
+        mimp_type: [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
+        mimp_kind: MImportWasm,
+        mimp_setup: MSetupNone,
+      },
+      {
+        mimp_mod: numbers_mod,
+        mimp_name: number_lor_ident,
+        mimp_type: [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
+        mimp_kind: MImportWasm,
+        mimp_setup: MSetupNone,
+      },
+      {
+        mimp_mod: numbers_mod,
+        mimp_name: number_lxor_ident,
+        mimp_type: [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
+        mimp_kind: MImportWasm,
+        mimp_setup: MSetupNone,
+      },
+      {
+        mimp_mod: numbers_mod,
+        mimp_name: number_asr_ident,
+        mimp_type: [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
@@ -737,6 +907,153 @@ let call_decref_drop = (wasm_mod, env, args) =>
       decref_drop_ident,
       decref_ignore_zeros_ident,
     ),
+    args,
+    Type.int32,
+  );
+let call_new_rational = (wasm_mod, env, args) =>
+  Expression.call(
+    wasm_mod,
+    get_imported_name(data_structures_mod, new_rational_ident),
+    args,
+    Type.int32,
+  );
+let call_new_float32 = (wasm_mod, env, args) =>
+  Expression.call(
+    wasm_mod,
+    get_imported_name(data_structures_mod, new_float32_ident),
+    args,
+    Type.int32,
+  );
+let call_new_float64 = (wasm_mod, env, args) =>
+  Expression.call(
+    wasm_mod,
+    get_imported_name(data_structures_mod, new_float64_ident),
+    args,
+    Type.int32,
+  );
+let call_new_int32 = (wasm_mod, env, args) =>
+  Expression.call(
+    wasm_mod,
+    get_imported_name(data_structures_mod, new_int32_ident),
+    args,
+    Type.int32,
+  );
+let call_new_int64 = (wasm_mod, env, args) =>
+  Expression.call(
+    wasm_mod,
+    get_imported_name(data_structures_mod, new_int64_ident),
+    args,
+    Type.int32,
+  );
+let call_number_plus = (wasm_mod, env, args) =>
+  Expression.call(
+    wasm_mod,
+    get_imported_name(numbers_mod, number_plus_ident),
+    args,
+    Type.int32,
+  );
+let call_number_minus = (wasm_mod, env, args) =>
+  Expression.call(
+    wasm_mod,
+    get_imported_name(numbers_mod, number_minus_ident),
+    args,
+    Type.int32,
+  );
+let call_number_times = (wasm_mod, env, args) =>
+  Expression.call(
+    wasm_mod,
+    get_imported_name(numbers_mod, number_times_ident),
+    args,
+    Type.int32,
+  );
+let call_number_divide = (wasm_mod, env, args) =>
+  Expression.call(
+    wasm_mod,
+    get_imported_name(numbers_mod, number_divide_ident),
+    args,
+    Type.int32,
+  );
+let call_number_mod = (wasm_mod, env, args) =>
+  Expression.call(
+    wasm_mod,
+    get_imported_name(numbers_mod, number_mod_ident),
+    args,
+    Type.int32,
+  );
+let call_number_less = (wasm_mod, env, args) =>
+  Expression.call(
+    wasm_mod,
+    get_imported_name(numbers_mod, number_less_ident),
+    args,
+    Type.int32,
+  );
+let call_number_greater = (wasm_mod, env, args) =>
+  Expression.call(
+    wasm_mod,
+    get_imported_name(numbers_mod, number_greater_ident),
+    args,
+    Type.int32,
+  );
+let call_number_less_equal = (wasm_mod, env, args) =>
+  Expression.call(
+    wasm_mod,
+    get_imported_name(numbers_mod, number_less_equal_ident),
+    args,
+    Type.int32,
+  );
+let call_number_greater_equal = (wasm_mod, env, args) =>
+  Expression.call(
+    wasm_mod,
+    get_imported_name(numbers_mod, number_greater_equal_ident),
+    args,
+    Type.int32,
+  );
+let call_number_eq = (wasm_mod, env, args) =>
+  Expression.call(
+    wasm_mod,
+    get_imported_name(numbers_mod, number_eq_ident),
+    args,
+    Type.int32,
+  );
+let call_number_lsl = (wasm_mod, env, args) =>
+  Expression.call(
+    wasm_mod,
+    get_imported_name(numbers_mod, number_lsl_ident),
+    args,
+    Type.int32,
+  );
+let call_number_lsr = (wasm_mod, env, args) =>
+  Expression.call(
+    wasm_mod,
+    get_imported_name(numbers_mod, number_lsr_ident),
+    args,
+    Type.int32,
+  );
+let call_number_land = (wasm_mod, env, args) =>
+  Expression.call(
+    wasm_mod,
+    get_imported_name(numbers_mod, number_land_ident),
+    args,
+    Type.int32,
+  );
+let call_number_lor = (wasm_mod, env, args) =>
+  Expression.call(
+    wasm_mod,
+    get_imported_name(numbers_mod, number_lor_ident),
+    args,
+    Type.int32,
+  );
+let call_number_lxor = (wasm_mod, env, args) =>
+  Expression.call(
+    wasm_mod,
+    get_imported_name(numbers_mod, number_lxor_ident),
+    args,
+    Type.int32,
+  );
+let call_number_asr = (wasm_mod, env, args) =>
+  Expression.call(
+    wasm_mod,
+    get_imported_name(numbers_mod, number_asr_ident),
     args,
     Type.int32,
   );
@@ -1936,77 +2253,20 @@ let allocate_string = (wasm_mod, env, str) => {
   );
 };
 
+let allocate_float32 = (wasm_mod, env, i) => {
+  call_new_float32(wasm_mod, env, [i])
+};
+
+let allocate_float64 = (wasm_mod, env, i) => {
+  call_new_float64(wasm_mod, env, [i])
+};
+
 let allocate_int32 = (wasm_mod, env, i) => {
-  let get_swap = () => get_swap(wasm_mod, env, 0);
-  let tee_swap = tee_swap(wasm_mod, env, 0);
-  Expression.block(
-    wasm_mod,
-    gensym_label("allocate_int32"),
-    [
-      store(
-        ~offset=0,
-        wasm_mod,
-        tee_swap(heap_allocate(wasm_mod, env, 2)),
-        Expression.const(
-          wasm_mod,
-          const_int32(tag_val_of_heap_tag_type(Int32Type)),
-        ),
-      ),
-      store(
-        ~offset=4,
-        wasm_mod,
-        get_swap(),
-        Expression.const(wasm_mod, wrap_int32(i)),
-      ),
-      Expression.binary(
-        wasm_mod,
-        Op.or_int32,
-        get_swap(),
-        Expression.const(
-          wasm_mod,
-          const_int32 @@
-          tag_val_of_tag_type(GenericHeapType(Some(Int32Type))),
-        ),
-      ),
-    ],
-  );
+  call_new_int32(wasm_mod, env, [i])
 };
 
 let allocate_int64 = (wasm_mod, env, i) => {
-  let get_swap = () => get_swap(wasm_mod, env, 0);
-  let tee_swap = tee_swap(wasm_mod, env, 0);
-  Expression.block(
-    wasm_mod,
-    gensym_label("allocate_int64"),
-    [
-      store(
-        ~offset=0,
-        wasm_mod,
-        tee_swap(heap_allocate(wasm_mod, env, 3)),
-        Expression.const(
-          wasm_mod,
-          const_int32(tag_val_of_heap_tag_type(Int64Type)),
-        ),
-      ),
-      store(
-        ~ty=Type.int64,
-        ~offset=4,
-        wasm_mod,
-        get_swap(),
-        Expression.const(wasm_mod, wrap_int64(i)),
-      ),
-      Expression.binary(
-        wasm_mod,
-        Op.or_int32,
-        get_swap(),
-        Expression.const(
-          wasm_mod,
-          const_int32 @@
-          tag_val_of_tag_type(GenericHeapType(Some(Int64Type))),
-        ),
-      ),
-    ],
-  );
+  call_new_int64(wasm_mod, env, [i])
 };
 
 /* Store an int64 */
@@ -2020,26 +2280,7 @@ let allocate_int64_imm = (wasm_mod, env, i) => {
     gensym_label("allocate_int64_imm"),
     [
       set_swap64(i),
-      store(
-        ~offset=0,
-        wasm_mod,
-        tee_swap(heap_allocate(wasm_mod, env, 3)),
-        Expression.const(
-          wasm_mod,
-          const_int32(tag_val_of_heap_tag_type(Int64Type)),
-        ),
-      ),
-      store(~ty=Type.int64, ~offset=4, wasm_mod, get_swap(), get_swap64()),
-      Expression.binary(
-        wasm_mod,
-        Op.or_int32,
-        get_swap(),
-        Expression.const(
-          wasm_mod,
-          const_int32 @@
-          tag_val_of_tag_type(GenericHeapType(Some(Int64Type))),
-        ),
-      ),
+      call_new_int64(wasm_mod, env, [get_swap64()]),
     ],
   );
 };
@@ -2842,36 +3083,14 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
 
   switch (p2) {
   | Plus =>
-    overflow_safe @@
-    Expression.binary(
-      wasm_mod,
-      Op.add_int64,
-      Expression.unary(wasm_mod, Op.extend_s_int32, compiled_arg1()),
-      Expression.unary(wasm_mod, Op.extend_s_int32, compiled_arg2()),
-    )
+    call_number_plus(wasm_mod, env, [compiled_arg1(), compiled_arg2()])
   | Minus =>
-    overflow_safe @@
-    Expression.binary(
-      wasm_mod,
-      Op.sub_int64,
-      Expression.unary(wasm_mod, Op.extend_s_int32, compiled_arg1()),
-      Expression.unary(wasm_mod, Op.extend_s_int32, compiled_arg2()),
-    )
+    call_number_minus(wasm_mod, env, [compiled_arg1(), compiled_arg2()])
   | Times =>
     /* Untag one of the numbers:
           ((a * 2) / 2) * (b * 2) = (a * b) * 2
        */
-    overflow_safe @@
-    Expression.binary(
-      wasm_mod,
-      Op.mul_int64,
-      Expression.unary(
-        wasm_mod,
-        Op.extend_s_int32,
-        untag_number(wasm_mod, compiled_arg1()),
-      ),
-      Expression.unary(wasm_mod, Op.extend_s_int32, compiled_arg2()),
-    )
+    call_number_times(wasm_mod, env, [compiled_arg1(), compiled_arg2()])
   | Divide =>
     /*
      While (2a) / b = 2(a/b), we can't just untag b since b could be a multiple of 2,
@@ -2879,108 +3098,10 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
            Instead, perform the division and retag after:
            (2a / 2b) * 2 = (a / b) * 2
         */
-    overflow_safe @@
-    Expression.block(
-      wasm_mod,
-      gensym_label("Divide"),
-      [
-        error_if_true(
-          wasm_mod,
-          env,
-          Expression.unary(wasm_mod, Op.eq_z_int32, compiled_arg2()),
-          DivisionByZeroError,
-          [],
-        ),
-        Expression.binary(
-          wasm_mod,
-          Op.mul_int64,
-          Expression.binary(
-            wasm_mod,
-            Op.div_s_int64,
-            Expression.unary(wasm_mod, Op.extend_s_int32, compiled_arg1()),
-            Expression.unary(wasm_mod, Op.extend_s_int32, compiled_arg2()),
-          ),
-          Expression.const(wasm_mod, const_int64(2)),
-        ),
-      ],
-    )
+    call_number_divide(wasm_mod, env, [compiled_arg1(), compiled_arg2()])
   | Mod =>
     /* Mod is not commutative, so untag everything and retag at the end */
-    overflow_safe @@
-    Expression.block(
-      wasm_mod,
-      gensym_label("Mod"),
-      [
-        error_if_true(
-          wasm_mod,
-          env,
-          Expression.unary(wasm_mod, Op.eq_z_int32, compiled_arg2()),
-          ModuloByZeroError,
-          [],
-        ),
-        set_swap(
-          ~ty=Type.int64,
-          wasm_mod,
-          env,
-          0,
-          Expression.binary(
-            wasm_mod,
-            Op.mul_int64,
-            Expression.binary(
-              wasm_mod,
-              Op.rem_s_int64,
-              Expression.unary(
-                wasm_mod,
-                Op.extend_s_int32,
-                untag_number(wasm_mod, compiled_arg1()),
-              ),
-              Expression.unary(
-                wasm_mod,
-                Op.extend_s_int32,
-                untag_number(wasm_mod, compiled_arg2()),
-              ),
-            ),
-            Expression.const(wasm_mod, const_int64(2)),
-          ),
-        ),
-        /* Convert remainder result into modulo result */
-        Expression.if_(
-          wasm_mod,
-          Expression.binary(
-            wasm_mod,
-            Op.or_int32,
-            Expression.binary(
-              wasm_mod,
-              Op.eq_int32,
-              Expression.binary(
-                wasm_mod,
-                Op.shr_u_int32,
-                compiled_arg1(),
-                Expression.const(wasm_mod, const_int32(31)),
-              ),
-              Expression.binary(
-                wasm_mod,
-                Op.shr_u_int32,
-                compiled_arg2(),
-                Expression.const(wasm_mod, const_int32(31)),
-              ),
-            ),
-            Expression.unary(
-              wasm_mod,
-              Op.eq_z_int64,
-              get_swap(~ty=Type.int64, wasm_mod, env, 0),
-            ),
-          ),
-          get_swap(~ty=Type.int64, wasm_mod, env, 0),
-          Expression.binary(
-            wasm_mod,
-            Op.add_int64,
-            get_swap(~ty=Type.int64, wasm_mod, env, 0),
-            Expression.unary(wasm_mod, Op.extend_s_int32, compiled_arg2()),
-          ),
-        ),
-      ],
-    )
+    call_number_mod(wasm_mod, env, [compiled_arg1(), compiled_arg2()])
   | And =>
     Expression.if_(
       wasm_mod,
@@ -2995,327 +3116,32 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
       swap_get(),
       compiled_arg2(),
     )
-  | Greater =>
-    encode_bool(
-      wasm_mod,
-      Expression.binary(
-        wasm_mod,
-        Op.gt_s_int32,
-        compiled_arg1(),
-        compiled_arg2(),
-      ),
-    )
-  | GreaterEq =>
-    encode_bool(
-      wasm_mod,
-      Expression.binary(
-        wasm_mod,
-        Op.ge_s_int32,
-        compiled_arg1(),
-        compiled_arg2(),
-      ),
-    )
-  | Less =>
-    encode_bool(
-      wasm_mod,
-      Expression.binary(
-        wasm_mod,
-        Op.lt_s_int32,
-        compiled_arg1(),
-        compiled_arg2(),
-      ),
-    )
-  | LessEq =>
-    encode_bool(
-      wasm_mod,
-      Expression.binary(
-        wasm_mod,
-        Op.le_s_int32,
-        compiled_arg1(),
-        compiled_arg2(),
-      ),
-    )
-  | Eq =>
-    encode_bool(
-      wasm_mod,
-      Expression.binary(
-        wasm_mod,
-        Op.eq_int32,
-        compiled_arg1(),
-        compiled_arg2(),
-      ),
-    )
-  | Int64Land =>
-    allocate_int64_imm(
-      wasm_mod,
-      env,
-      Expression.binary(
-        wasm_mod,
-        Op.and_int64,
-        load(
-          ~ty=Type.int64,
-          ~offset=4,
-          wasm_mod,
-          untag(
-            wasm_mod,
-            GenericHeapType(Some(Int64Type)),
-            compiled_arg1(),
-          ),
-        ),
-        load(
-          ~ty=Type.int64,
-          ~offset=4,
-          wasm_mod,
-          untag(
-            wasm_mod,
-            GenericHeapType(Some(Int64Type)),
-            compiled_arg2(),
-          ),
-        ),
-      ),
-    )
-  | Int64Lor =>
-    allocate_int64_imm(
-      wasm_mod,
-      env,
-      Expression.binary(
-        wasm_mod,
-        Op.or_int64,
-        load(
-          ~ty=Type.int64,
-          ~offset=4,
-          wasm_mod,
-          untag(
-            wasm_mod,
-            GenericHeapType(Some(Int64Type)),
-            compiled_arg1(),
-          ),
-        ),
-        load(
-          ~ty=Type.int64,
-          ~offset=4,
-          wasm_mod,
-          untag(
-            wasm_mod,
-            GenericHeapType(Some(Int64Type)),
-            compiled_arg2(),
-          ),
-        ),
-      ),
-    )
-  | Int64Lxor =>
-    allocate_int64_imm(
-      wasm_mod,
-      env,
-      Expression.binary(
-        wasm_mod,
-        Op.xor_int64,
-        load(
-          ~ty=Type.int64,
-          ~offset=4,
-          wasm_mod,
-          untag(
-            wasm_mod,
-            GenericHeapType(Some(Int64Type)),
-            compiled_arg1(),
-          ),
-        ),
-        load(
-          ~ty=Type.int64,
-          ~offset=4,
-          wasm_mod,
-          untag(
-            wasm_mod,
-            GenericHeapType(Some(Int64Type)),
-            compiled_arg2(),
-          ),
-        ),
-      ),
-    )
-  | Int64Lsl =>
-    allocate_int64_imm(
-      wasm_mod,
-      env,
-      Expression.binary(
-        wasm_mod,
-        Op.shl_int64,
-        load(
-          ~ty=Type.int64,
-          ~offset=4,
-          wasm_mod,
-          untag(
-            wasm_mod,
-            GenericHeapType(Some(Int64Type)),
-            compiled_arg1(),
-          ),
-        ),
-        Expression.unary(
-          wasm_mod,
-          Op.extend_s_int32,
-          untag_number(wasm_mod, compiled_arg2()),
-        ),
-      ),
-    )
-  | Int64Lsr =>
-    allocate_int64_imm(
-      wasm_mod,
-      env,
-      Expression.binary(
-        wasm_mod,
-        Op.shr_u_int64,
-        load(
-          ~ty=Type.int64,
-          ~offset=4,
-          wasm_mod,
-          untag(
-            wasm_mod,
-            GenericHeapType(Some(Int64Type)),
-            compiled_arg1(),
-          ),
-        ),
-        Expression.unary(
-          wasm_mod,
-          Op.extend_s_int32,
-          untag_number(wasm_mod, compiled_arg2()),
-        ),
-      ),
-    )
-  | Int64Asr =>
-    allocate_int64_imm(
-      wasm_mod,
-      env,
-      Expression.binary(
-        wasm_mod,
-        Op.shr_s_int64,
-        load(
-          ~ty=Type.int64,
-          ~offset=4,
-          wasm_mod,
-          untag(
-            wasm_mod,
-            GenericHeapType(Some(Int64Type)),
-            compiled_arg1(),
-          ),
-        ),
-        Expression.unary(
-          wasm_mod,
-          Op.extend_s_int32,
-          untag_number(wasm_mod, compiled_arg2()),
-        ),
-      ),
-    )
+  | Greater
   | Int64Gt =>
-    encode_bool(
-      wasm_mod,
-      Expression.binary(
-        wasm_mod,
-        Op.gt_s_int64,
-        load(
-          ~ty=Type.int64,
-          ~offset=4,
-          wasm_mod,
-          untag(
-            wasm_mod,
-            GenericHeapType(Some(Int64Type)),
-            compiled_arg1(),
-          ),
-        ),
-        load(
-          ~ty=Type.int64,
-          ~offset=4,
-          wasm_mod,
-          untag(
-            wasm_mod,
-            GenericHeapType(Some(Int64Type)),
-            compiled_arg2(),
-          ),
-        ),
-      ),
-    )
+    call_number_greater(wasm_mod, env, [compiled_arg1(), compiled_arg2()])
+  | GreaterEq
   | Int64Gte =>
-    encode_bool(
-      wasm_mod,
-      Expression.binary(
-        wasm_mod,
-        Op.ge_s_int64,
-        load(
-          ~ty=Type.int64,
-          ~offset=4,
-          wasm_mod,
-          untag(
-            wasm_mod,
-            GenericHeapType(Some(Int64Type)),
-            compiled_arg1(),
-          ),
-        ),
-        load(
-          ~ty=Type.int64,
-          ~offset=4,
-          wasm_mod,
-          untag(
-            wasm_mod,
-            GenericHeapType(Some(Int64Type)),
-            compiled_arg2(),
-          ),
-        ),
-      ),
-    )
+    call_number_greater_equal(wasm_mod, env, [compiled_arg1(), compiled_arg2()])
+  | Less
   | Int64Lt =>
-    encode_bool(
-      wasm_mod,
-      Expression.binary(
-        wasm_mod,
-        Op.lt_s_int64,
-        load(
-          ~ty=Type.int64,
-          ~offset=4,
-          wasm_mod,
-          untag(
-            wasm_mod,
-            GenericHeapType(Some(Int64Type)),
-            compiled_arg1(),
-          ),
-        ),
-        load(
-          ~ty=Type.int64,
-          ~offset=4,
-          wasm_mod,
-          untag(
-            wasm_mod,
-            GenericHeapType(Some(Int64Type)),
-            compiled_arg2(),
-          ),
-        ),
-      ),
-    )
+    call_number_less(wasm_mod, env, [compiled_arg1(), compiled_arg2()])
+  | LessEq
   | Int64Lte =>
-    encode_bool(
-      wasm_mod,
-      Expression.binary(
-        wasm_mod,
-        Op.le_s_int64,
-        load(
-          ~ty=Type.int64,
-          ~offset=4,
-          wasm_mod,
-          untag(
-            wasm_mod,
-            GenericHeapType(Some(Int64Type)),
-            compiled_arg1(),
-          ),
-        ),
-        load(
-          ~ty=Type.int64,
-          ~offset=4,
-          wasm_mod,
-          untag(
-            wasm_mod,
-            GenericHeapType(Some(Int64Type)),
-            compiled_arg2(),
-          ),
-        ),
-      ),
-    )
+    call_number_less_equal(wasm_mod, env, [compiled_arg1(), compiled_arg2()])
+  | Eq =>
+    call_number_eq(wasm_mod, env, [compiled_arg1(), compiled_arg2()])
+  | Int64Land =>
+    call_number_land(wasm_mod, env, [compiled_arg1(), compiled_arg2()])
+  | Int64Lor =>
+    call_number_lor(wasm_mod, env, [compiled_arg1(), compiled_arg2()])
+  | Int64Lxor =>
+    call_number_lxor(wasm_mod, env, [compiled_arg1(), compiled_arg2()])
+  | Int64Lsl =>
+    call_number_lsl(wasm_mod, env, [compiled_arg1(), compiled_arg2()])
+  | Int64Lsr =>
+    call_number_lsr(wasm_mod, env, [compiled_arg1(), compiled_arg2()])
+  | Int64Asr =>
+    call_number_asr(wasm_mod, env, [compiled_arg1(), compiled_arg2()])
   | ArrayMake => allocate_array_n(wasm_mod, env, arg1, arg2)
   | ArrayInit => allocate_array_init(wasm_mod, env, arg1, arg2)
   };
@@ -3332,8 +3158,10 @@ let compile_allocation = (wasm_mod, env, alloc_type) =>
   | MString(str) => allocate_string(wasm_mod, env, str)
   | [@implicit_arity] MADT(ttag, vtag, elts) =>
     allocate_adt(wasm_mod, env, ttag, vtag, elts)
-  | MInt32(i) => allocate_int32(wasm_mod, env, i)
-  | MInt64(i) => allocate_int64(wasm_mod, env, i)
+  | MInt32(i) => allocate_int32(wasm_mod, env, Expression.const(wasm_mod, Literal.int32(i)))
+  | MInt64(i) => allocate_int64(wasm_mod, env, Expression.const(wasm_mod, Literal.int64(i)))
+  | MFloat32(i) => allocate_float32(wasm_mod, env, Expression.const(wasm_mod, Literal.float32(i)))
+  | MFloat64(i) => allocate_float64(wasm_mod, env, Expression.const(wasm_mod, Literal.float64(i)))
   };
 
 let collect_backpatches = (env, f) => {
