@@ -724,28 +724,21 @@ module ConstructorTagHashtbl =
     let equal = Types.equal_tag;
   });
 
-/* complement constructor tags */
+/* compute seen constructor tags */
 let complete_tags = (nconsts, nconstrs, tags) => {
-  let seen_const = Array.make(nconsts, false)
-  and seen_constr = Array.make(nconstrs, false);
+  let seen_constr = Array.make(nconsts + nconstrs, false);
+  let r = ConstructorTagHashtbl.create(nconsts + nconstrs);
   List.iter(
     fun
-    | CstrConstant(i) => seen_const[i] = true
-    | CstrBlock(i) => seen_constr[i] = true
+    | CstrConstant(i) as c
+    | CstrBlock(i) as c =>
+      if (!seen_constr[i]) {
+        ConstructorTagHashtbl.add(r, c, ());
+        seen_constr[i] = true;
+      }
     | _ => assert(false),
     tags,
   );
-  let r = ConstructorTagHashtbl.create(nconsts + nconstrs);
-  for (i in 0 to nconsts - 1) {
-    if (!seen_const[i]) {
-      ConstructorTagHashtbl.add(r, CstrConstant(i), ());
-    };
-  };
-  for (i in 0 to nconstrs - 1) {
-    if (!seen_constr[i]) {
-      ConstructorTagHashtbl.add(r, CstrBlock(i), ());
-    };
-  };
   r;
 };
 
@@ -822,22 +815,22 @@ let rec get_variant_constructors = (env, ty) =>
   | _ => fatal_error("Parmatch.get_variant_constructors")
   };
 
-/* Sends back a pattern that complements constructor tags all_tag */
+/* Sends back a pattern that complements constructor tags all_tags */
 let complete_constrs = (p, all_tags) => {
   let c =
     switch (p.pat_desc) {
     | [@implicit_arity] TPatConstruct(_, c, _) => c
     | _ => assert(false)
     };
-  let not_tags = complete_tags(c.cstr_consts, c.cstr_nonconsts, all_tags);
+  let tags_seen = complete_tags(c.cstr_consts, c.cstr_nonconsts, all_tags);
   let (constrs, _) = get_variant_constructors(p.pat_env, c.cstr_res);
-  let others =
+  let tags_not_seen =
     List.filter(
-      cnstr => ConstructorTagHashtbl.mem(not_tags, cnstr.cstr_tag),
+      cnstr => !ConstructorTagHashtbl.mem(tags_seen, cnstr.cstr_tag),
       constrs,
     );
   let (const, nonconst) =
-    List.partition(cnstr => cnstr.cstr_arity == 0, others);
+    List.partition(cnstr => cnstr.cstr_arity == 0, tags_not_seen);
   const @ nonconst;
 };
 
@@ -1724,9 +1717,8 @@ let pressure_variants = (tdefs, patl) => {
 let rec initial_matrix =
   fun
   | [] => []
+  | [{mb_guard: Some(_)}, ...tl] => initial_matrix(tl)
   | [{mb_pat: hd}, ...tl] => [[hd], ...initial_matrix(tl)];
-/*{c_guard=Some _} :: rem -> initial_matrix rem
-  | {c_guard=None; c_lhs=p} :: rem -> [p] :: initial_matrix rem*/
 
 /*
     Build up a working pattern matrix by keeping
@@ -1735,11 +1727,8 @@ let rec initial_matrix =
 let rec initial_only_guarded =
   fun
   | [] => []
+  | [{mb_guard: None}, ...tl] => initial_only_guarded(tl)
   | [{mb_pat: hd}, ...tl] => [[hd], ...initial_only_guarded(tl)];
-/*{ c_guard = None; _} :: rem ->
-      initial_only_guarded rem
-  | { c_lhs = pat; _ } :: rem ->
-      [pat] :: initial_only_guarded rem*/
 
 /************************/
 /* Exhaustiveness check */
@@ -1972,7 +1961,7 @@ let check_unused = (pred, casel) =>
     let rec do_rec = pref =>
       fun
       | [] => ()
-      | [{mb_pat: q, /*c_guard;*/ mb_body}, ...rem] => {
+      | [{mb_pat: q, mb_guard, mb_body}, ...rem] => {
           let qs = [q];
           try({
             let pss = get_mins(le_pats, List.filter(compats(qs), pref));
@@ -2047,10 +2036,11 @@ let check_unused = (pred, casel) =>
           | Not_found => assert(false)
           };
 
-          /*if c_guard <> None then
-            do_rec pref rem
-            else*/
-          do_rec([[q], ...pref], rem);
+          if (mb_guard != None) {
+            do_rec(pref, rem);
+          } else {
+            do_rec([[q], ...pref], rem);
+          };
         };
 
     do_rec([], casel);
