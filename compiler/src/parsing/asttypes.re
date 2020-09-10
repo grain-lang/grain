@@ -28,6 +28,8 @@ type constant =
   | Const_float(string)
   | Const_int32(int32)
   | Const_int64(int64)
+  | Const_float32(float)
+  | Const_float64(float)
   | Const_bool(bool)
   | Const_void;
 

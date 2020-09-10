@@ -29,6 +29,9 @@ type prim1 =
     | FailWith
     | Int64FromNumber
     | Int64ToNumber
+    | Int32ToNumber
+    | Float64ToNumber
+    | Float32ToNumber
     | Int64Lnot;
 
 type prim2 =
@@ -111,6 +114,8 @@ and comp_expression_desc =
   | CString(string)
   | CInt32(int32)
   | CInt64(int64)
+  | CFloat32(float)
+  | CFloat64(float)
 
 /** Compound expressions (possibly let-bound)
     TODO: better name */

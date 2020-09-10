@@ -64,6 +64,8 @@ let type_constant =
   | Const_int(_) => instance_def(Builtin_types.type_number)
   | Const_int32(_) => instance_def(Builtin_types.type_int32)
   | Const_int64(_) => instance_def(Builtin_types.type_int64)
+  | Const_float32(_) => instance_def(Builtin_types.type_float32)
+  | Const_float64(_) => instance_def(Builtin_types.type_float64)
   | Const_bool(_) => instance_def(Builtin_types.type_bool)
   | Const_void => instance_def(Builtin_types.type_void)
   | Const_string(_) => instance_def(Builtin_types.type_string)
@@ -74,9 +76,12 @@ let constant: Parsetree.constant => result(Asttypes.constant, error) = (
   | PConstNumber(n) => Ok(Const_int(n))
   | PConstInt32(n) => Ok(Const_int32(n))
   | PConstInt64(n) => Ok(Const_int64(n))
+  | PConstFloat32(n) => Ok(Const_float32(n))
+  | PConstFloat64(n) => Ok(Const_float64(n))
   | PConstBool(b) => Ok(Const_bool(b))
   | PConstVoid => Ok(Const_void)
-  | PConstString(s) => Ok(Const_string(s)):
+  | PConstString(s) => Ok(Const_string(s))
+  | PConstIntOverflow(_) => failwith("Impossible: PCosntIntOverflow post-well_formedness"):
     Parsetree.constant => result(Asttypes.constant, error)
 );
 

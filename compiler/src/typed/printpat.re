@@ -29,6 +29,8 @@ let pretty_const = c =>
   switch (c) {
   | Const_int(i) => Printf.sprintf("%d", i)
   | Const_string(s) => Printf.sprintf("%S", s)
+  | Const_float64(f)
+  | Const_float32(f) => Printf.sprintf("%f", f)
   | Const_float(f) => Printf.sprintf("%s", f)
   | Const_int32(i) => Printf.sprintf("%ldl", i)
   | Const_int64(i) => Printf.sprintf("%LdL", i)

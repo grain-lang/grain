@@ -66,6 +66,11 @@
     let loc = lexbuf_loc lexbuf in
     comments := line_comment source loc :: !comments
 
+  let parse_int_gen s =
+    match (Int64.of_string_opt s) with
+    | None -> (0L, Some(s))
+    | Some(n) -> (n, None)
+
 }
 
 let dec_digit = ['0'-'9']
@@ -84,6 +89,16 @@ let signed_oct_int = oct_int | ('-' oct_int)
 let signed_bin_int = bin_int | ('-' bin_int)
 
 let signed_int = signed_dec_int | signed_hex_int | signed_oct_int | signed_bin_int
+
+let dec_float_exp = ['e' 'E'] ['+' '-']? dec_digit (dec_digit | '_')*
+let dec_float_decimal = '.' (dec_digit | '_')*
+let dec_float_integral = dec_digit (dec_digit | '_')*
+
+let dec_float = dec_float_integral dec_float_decimal dec_float_exp? | dec_float_integral dec_float_exp
+
+let signed_dec_float = dec_float | ('-' dec_float)
+
+let signed_float = signed_dec_float
 
 let ident = ['a'-'z' '_']['a'-'z' 'A'-'Z' '0'-'9' '_']*
 let ident_cap = ['A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']*
@@ -124,9 +139,12 @@ rule token = parse
   | comment { parse_line_comment lexbuf; EOL }
   | blank { token lexbuf }
   | newline_chars { process_newlines lexbuf; EOL }
+  | (signed_float as x) 'l' { FLOAT32 (Float.of_string x) }
+  | (signed_float as x) 'L' { FLOAT64 (Float.of_string x) }
+  | signed_float as x { FLOAT_GEN (Float.of_string x) }
   | (signed_int as x) 'l' { INT32 (Int32.of_string x) }
   | (signed_int as x) 'L' { INT64 (Int64.of_string x) }
-  | signed_int as x { NUM (int_of_string x) }
+  | signed_int as x { INT_GEN (parse_int_gen x) }
   | "primitive" { PRIMITIVE }
   | "foreign" { FOREIGN }
   | "wasm" { WASM }

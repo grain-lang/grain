@@ -77,6 +77,9 @@ let number_asr_ident = Ident.create_persistent("numberAsr");
 let number_lnot_ident = Ident.create_persistent("numberLnot");
 let number_to_int64_ident = Ident.create_persistent("coerceNumberToInt64");
 let int64_to_number_ident = Ident.create_persistent("coerceInt64ToNumber");
+let int32_to_number_ident = Ident.create_persistent("coerceInt32ToNumber");
+let float32_to_number_ident = Ident.create_persistent("coerceFloat32ToNumber");
+let float64_to_number_ident = Ident.create_persistent("coerceFloat64ToNumber");
 /* Variants used for tracing */
 let incref_adt_ident = Ident.create_persistent("incRefADT");
 let incref_array_ident = Ident.create_persistent("incRefArray");
@@ -532,6 +535,27 @@ let runtime_function_imports =
       {
         mimp_mod: stdlib_external_runtime_mod,
         mimp_name: int64_to_number_ident,
+        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]),
+        mimp_kind: MImportWasm,
+        mimp_setup: MSetupNone,
+      },
+      {
+        mimp_mod: stdlib_external_runtime_mod,
+        mimp_name: int32_to_number_ident,
+        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]),
+        mimp_kind: MImportWasm,
+        mimp_setup: MSetupNone,
+      },
+      {
+        mimp_mod: stdlib_external_runtime_mod,
+        mimp_name: float32_to_number_ident,
+        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]),
+        mimp_kind: MImportWasm,
+        mimp_setup: MSetupNone,
+      },
+      {
+        mimp_mod: stdlib_external_runtime_mod,
+        mimp_name: float64_to_number_ident,
         mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
@@ -1100,6 +1124,27 @@ let call_int64_to_number = (wasm_mod, env, args) =>
   Expression.call(
     wasm_mod,
     get_imported_name(stdlib_external_runtime_mod, int64_to_number_ident),
+    args,
+    Type.int32,
+  );
+let call_int32_to_number = (wasm_mod, env, args) =>
+  Expression.call(
+    wasm_mod,
+    get_imported_name(stdlib_external_runtime_mod, int32_to_number_ident),
+    args,
+    Type.int32,
+  );
+let call_float32_to_number = (wasm_mod, env, args) =>
+  Expression.call(
+    wasm_mod,
+    get_imported_name(stdlib_external_runtime_mod, float32_to_number_ident),
+    args,
+    Type.int32,
+  );
+let call_float64_to_number = (wasm_mod, env, args) =>
+  Expression.call(
+    wasm_mod,
+    get_imported_name(stdlib_external_runtime_mod, float64_to_number_ident),
     args,
     Type.int32,
   );
@@ -3006,6 +3051,12 @@ let compile_prim1 = (wasm_mod, env, p1, arg): Expression.t => {
     call_number_to_int64(wasm_mod, env, [compiled_arg])
   | Int64ToNumber =>
     call_int64_to_number(wasm_mod, env, [compiled_arg])
+  | Int32ToNumber =>
+    call_int32_to_number(wasm_mod, env, [compiled_arg])
+  | Float32ToNumber =>
+    call_float32_to_number(wasm_mod, env, [compiled_arg])
+  | Float64ToNumber =>
+    call_float64_to_number(wasm_mod, env, [compiled_arg])
   | Int64Lnot =>
     call_number_lnot(wasm_mod, env, [compiled_arg])
   | Box => failwith("Unreachable case; should never get here: Box")

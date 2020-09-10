@@ -18,6 +18,7 @@ import {
   GRAIN_ERR_DIVISION_BY_ZERO,
   GRAIN_ERR_NOT_INTLIKE,
   GRAIN_ERR_NOT_RATIONAL,
+  GRAIN_ERR_MODULO_BY_ZERO,
 } from './ascutils/errors'
 
 import {
@@ -221,43 +222,43 @@ function safeI64Multiply(x: i64, y: i64): i64 {
 
 // @ts-ignore: decorator
 @inline
-function boxedNumberTag(xptr: u32): u32 {
+export function boxedNumberTag(xptr: u32): u32 {
   return load<u32>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 1 * 4)
 }
 
 // @ts-ignore: decorator
 @inline
-function boxedInt32Number(xptr: u32): i32 {
+export function boxedInt32Number(xptr: u32): i32 {
   return load<i32>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
 }
 
 // @ts-ignore: decorator
 @inline
-function boxedInt64Number(xptr: u32): i64 {
+export function boxedInt64Number(xptr: u32): i64 {
   return load<i64>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
 }
 
 // @ts-ignore: decorator
 @inline
-function boxedFloat32Number(xptr: u32): f32 {
+export function boxedFloat32Number(xptr: u32): f32 {
   return load<f32>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
 }
 
 // @ts-ignore: decorator
 @inline
-function boxedFloat64Number(xptr: u32): f64 {
+export function boxedFloat64Number(xptr: u32): f64 {
   return load<f64>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
 }
 
 // @ts-ignore: decorator
 @inline
-function boxedRationalNumerator(xptr: u32): i32 {
+export function boxedRationalNumerator(xptr: u32): i32 {
   return load<i32>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
 }
 
 // @ts-ignore: decorator
 @inline
-function boxedRationalDenominator(xptr: u32): u32 {
+export function boxedRationalDenominator(xptr: u32): u32 {
   return load<u32>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 3 * 4)
 }
 
@@ -302,7 +303,7 @@ function coerceFloat64(x: u32): f64 {
     } case GRAIN_INT64_BOXED_NUM_TAG: {
       return <f64>(boxedInt64Number(x))
     } case GRAIN_RATIONAL_BOXED_NUM_TAG: {
-      return <f64>(boxedRationalNumerator(x)) / <f32>(boxedRationalDenominator(x))
+      return <f64>(boxedRationalNumerator(x)) / <f64>(boxedRationalDenominator(x))
     } case GRAIN_FLOAT32_BOXED_NUM_TAG: {
       return <f64>(boxedFloat32Number(x))
     } case GRAIN_FLOAT64_BOXED_NUM_TAG: {
@@ -375,8 +376,11 @@ export function isNumber(x: u32): bool {
 
 function numberEqualSimpleHelp(x: u32, yTagged: u32): bool {
   // PRECONDITION: x is a "simple" number (value tag is 0) and x !== y and isNumber(y)
-  // We know y is a heap number, so let's not beat around the bush
-  let xval = x >> 1 // <- actual int value of x
+  if (isSimpleNumber(yTagged)) {
+    // x !== y, so they must be different
+    return false
+  }
+  let xval = unboxSimple(x) // <- actual int value of x
   let y = boxedNumberPtr(yTagged)
   let yBoxedNumberTag = boxedNumberTag(y)
   switch (yBoxedNumberTag) {
@@ -407,7 +411,7 @@ function numberEqualInt64Help(xBoxedVal: i64, y: u32): bool {
   // PRECONDITION: x !== y and isNumber(y)
   // Basic number:
   if ((y & GRAIN_NUMBER_TAG_MASK) == GRAIN_NUMBER_TAG_TYPE) {
-    return xBoxedVal == <i64>(y >> 1)
+    return xBoxedVal == <i64>(unboxSimple(y))
   }
   // Boxed number:
   let yBoxedNumberTag = boxedNumberTag(y)
@@ -479,7 +483,7 @@ function numberEqualFloat64Help(x: f64, y: u32): bool {
   let xIsInteger = F64.isInteger(x)
   // Basic number:
   if ((y & GRAIN_NUMBER_TAG_MASK) == GRAIN_NUMBER_TAG_TYPE) {
-    return xIsInteger && x == <f64>(y >> 1)
+    return xIsInteger && x == <f64>(unboxSimple(y))
   }
   // Boxed number
   let yBoxedNumberTag = boxedNumberTag(y)
@@ -519,7 +523,7 @@ export function numberEqual(x: u32, y: u32): bool {
   if (x === y) return true
   if (!isNumber(x)) return false
   if (!isNumber(y)) return false
-  if ((x & GRAIN_NUMBER_TAG_MASK) == GRAIN_NUMBER_TAG_TYPE) {
+  if (isSimpleNumber(x)) {
     return numberEqualSimpleHelp(x, y)
   }
   // Boxed number
@@ -956,7 +960,16 @@ export function numberDivide(x: u32, y: u32): u32 {
 export function numberMod(x: u32, y: u32): u32 {
   let xval = coerceInt64(x)
   let yval = coerceInt64(y)
-  return reducedInteger(xval % yval)
+  if (yval == 0) {
+    return throwError(GRAIN_ERR_MODULO_BY_ZERO, 0, 0)
+  }
+  // Tests were failing with simple modulo operator, so we have to get creative
+  if (xval < 0 && yval > 0 || xval > 0 && yval < 0) {
+    let modval = abs<i64>(xval) % abs<i64>(yval)
+    return reducedInteger(modval != 0 ? (abs<i64>(yval) - modval) * (yval < 0 ? -1 : 1) : modval)
+  } else {
+    return reducedInteger(xval % yval)
+  }
 }
 
 /*
@@ -1015,43 +1028,43 @@ export function numberEq(x: u32, y: u32): u32 {
 
 export function numberLnot(x: u32): u32 {
   let xval = coerceInt64(x)
-  return reducedInteger(~x)
+  return reducedInteger(~xval)
 }
 
 export function numberLsl(x: u32, y: u32): u32 {
   let xval = coerceInt64(x)
   let yval = coerceInt64(y)
-  return reducedInteger(x << y)
+  return reducedInteger(xval << yval)
 }
 
 export function numberLsr(x: u32, y: u32): u32 {
   let xval = coerceInt64(x)
   let yval = coerceInt64(y)
-  return reducedInteger(x >> y)
+  return reducedInteger(xval >>> yval)
 }
 
 export function numberLand(x: u32, y: u32): u32 {
   let xval = coerceInt64(x)
   let yval = coerceInt64(y)
-  return reducedInteger(x & y)
+  return reducedInteger(xval & yval)
 }
 
 export function numberLor(x: u32, y: u32): u32 {
   let xval = coerceInt64(x)
   let yval = coerceInt64(y)
-  return reducedInteger(x | y)
+  return reducedInteger(xval | yval)
 }
 
 export function numberLxor(x: u32, y: u32): u32 {
   let xval = coerceInt64(x)
   let yval = coerceInt64(y)
-  return reducedInteger(x ^ y)
+  return reducedInteger(xval ^ yval)
 }
 
 export function numberAsr(x: u32, y: u32): u32 {
   let xval = coerceInt64(x)
   let yval = coerceInt64(y)
-  return reducedInteger(x >>> y)
+  return reducedInteger(xval >> yval)
 }
 
 // inc/dec

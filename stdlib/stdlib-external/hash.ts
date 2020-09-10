@@ -18,6 +18,12 @@ import {
   GRAIN_ADT_HEAP_TAG,
   GRAIN_RECORD_HEAP_TAG,
   GRAIN_ARRAY_HEAP_TAG,
+  GRAIN_BOXED_NUM_HEAP_TAG,
+  GRAIN_INT32_BOXED_NUM_TAG,
+  GRAIN_INT64_BOXED_NUM_TAG,
+  GRAIN_FLOAT32_BOXED_NUM_TAG,
+  GRAIN_FLOAT64_BOXED_NUM_TAG,
+  GRAIN_RATIONAL_BOXED_NUM_TAG,
 } from './ascutils/tags'
 
 import {
@@ -25,6 +31,14 @@ import {
   GRAIN_FALSE,
   GRAIN_VOID,
 } from './ascutils/primitives'
+import { debug } from './ascutils/console'
+import {
+  boxedNumberTag,
+  boxedRationalNumerator,
+  boxedRationalDenominator,
+  boxedInt32Number,
+  boxedFloat32Number
+} from './numbers'
 
 const seed: u32 = 0xe444
 
@@ -147,6 +161,39 @@ function hashOne(val: u32, depth: u32): void {
           hashOne(load<u32>(heapPtr + i, 2 * 4), depth + 1)
         }
         finalize(arity)
+        break
+      }
+      case GRAIN_BOXED_NUM_HEAP_TAG: {
+        let tag = boxedNumberTag(heapPtr)
+        switch (tag) {
+          case GRAIN_INT32_BOXED_NUM_TAG: {
+            hash32(boxedInt32Number(heapPtr))
+            break
+          }
+          case GRAIN_INT64_BOXED_NUM_TAG: {
+            hash32(load<u32>(heapPtr, 2 * 4))
+            hash32(load<u32>(heapPtr, 3 * 4))
+            break
+          }
+          case GRAIN_FLOAT32_BOXED_NUM_TAG: {
+            hash32(reinterpret<u32>(boxedFloat32Number(heapPtr)))
+            break
+          }
+          case GRAIN_FLOAT64_BOXED_NUM_TAG: {
+            hash32(load<u32>(heapPtr, 2 * 4))
+            hash32(load<u32>(heapPtr, 3 * 4))
+            break
+          }
+          case GRAIN_RATIONAL_BOXED_NUM_TAG: {
+            hash32(boxedRationalNumerator(heapPtr))
+            hash32(boxedRationalDenominator(heapPtr))
+            break
+          }
+          default: {
+            hash32(heapPtr)
+            break
+          }
+        }
         break
       }
       default: {

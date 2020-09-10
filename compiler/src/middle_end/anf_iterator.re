@@ -98,6 +98,8 @@ module MakeIter = (Iter: IterArgument) => {
     | CString(s) => ()
     | CInt32(i) => ()
     | CInt64(i) => ()
+    | CFloat32(f) => ()
+    | CFloat64(f) => ()
     };
     Iter.leave_comp_expression(c);
   }

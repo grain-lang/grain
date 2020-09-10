@@ -22,6 +22,11 @@ assert uniq(List.map(n => Hash.hash(n), numbers))
 
 assert Hash.hash(42) == Hash.hash(42)
 assert Hash.hash(0) == Hash.hash(0)
+assert Hash.hash(100l) == Hash.hash(100l)
+assert Hash.hash(100.0l) == Hash.hash(100.0l)
+assert Hash.hash(100.0L) == Hash.hash(100.0L)
+assert Hash.hash(100L) == Hash.hash(100L)
+assert Hash.hash(2/3) == Hash.hash(2/3)
 
 
 let strings = [
