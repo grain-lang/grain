@@ -21,16 +21,15 @@ let get_bool =
   | Const_bool(b) => b
   | _ => failwith("Operand was not a boolean");
 
-let in_valid_int_range = (op, x, y) => {
+let in_valid_int_range = (op, x, y) =>
   if (!is_int(x) || !is_int(y)) {
-    false
+    false;
   } else {
     let n = op(get_int(x), get_int(y));
     /* Numbers in Grain are stored double their value, so we need to check if the representation overflows */
     let n = n * 2;
     n < Int32.to_int(Int32.max_int) && n > Int32.to_int(Int32.min_int);
-  }
-};
+  };
 
 module ConstantFoldingArg: Anf_mapper.MapArgument = {
   include Anf_mapper.DefaultMapArgument;
