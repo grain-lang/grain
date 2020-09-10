@@ -1,13 +1,6 @@
 export *
 
 # Math operations
-#primitive incr : Number -> Number = "@incr"
-#primitive decr : Number -> Number = "@decr"
-#primitive (+) : (Number, Number) -> Number = "@plus"
-#primitive (-) : (Number, Number) -> Number = "@minus"
-#primitive (*) : (Number, Number) -> Number = "@times"
-#primitive (/) : (Number, Number) -> Number = "@divides"
-#primitive (%) : (Number, Number) -> Number = "@modulo"
 import foreign wasm numberIncr : Number -> Number as incr from 'stdlib-external/runtime'
 import foreign wasm numberDecr : Number -> Number as decr from 'stdlib-external/runtime'
 import foreign wasm numberPlus : (Number, Number) -> Number as (+) from 'stdlib-external/runtime'
@@ -17,14 +10,37 @@ import foreign wasm numberDivide : (Number, Number) -> Number as (/) from 'stdli
 import foreign wasm numberMod : (Number, Number) -> Number as (%) from 'stdlib-external/runtime'
 
 # Number comparisons
-#primitive (<) : (Number, Number) -> Bool = "@less"
-#primitive (>) : (Number, Number) -> Bool = "@greater"
-#primitive (<=) : (Number, Number) -> Bool = "@lesseq"
-#primitive (>=) : (Number, Number) -> Bool = "@greatereq"
 import foreign wasm numberLess : (Number, Number) -> Number as (<) from 'stdlib-external/runtime'
 import foreign wasm numberGreater : (Number, Number) -> Number as (>) from 'stdlib-external/runtime'
 import foreign wasm numberLessEqual : (Number, Number) -> Number as (<=) from 'stdlib-external/runtime'
 import foreign wasm numberGreaterEqual : (Number, Number) -> Number as (>=) from 'stdlib-external/runtime'
+
+# Number bit/logical operations
+import foreign wasm numberLnot : Number -> Number as lnot from 'stdlib-external/runtime'
+
+import foreign wasm numberLand : (Number, Number) -> Number as land from 'stdlib-external/runtime'
+import foreign wasm numberLor : (Number, Number) -> Number as lor from 'stdlib-external/runtime'
+import foreign wasm numberLxor : (Number, Number) -> Number as lxor from 'stdlib-external/runtime'
+
+import foreign wasm numberLsl : (Number, Number) -> Number as lsl from 'stdlib-external/runtime'
+import foreign wasm numberLsr : (Number, Number) -> Number as lsr from 'stdlib-external/runtime'
+import foreign wasm numberAsr : (Number, Number) -> Number as asr from 'stdlib-external/runtime'
+
+
+# Number coercions & conversions
+import foreign wasm coerceInt64ToNumber : Int64 -> Number from 'stdlib-external/runtime'
+import foreign wasm coerceInt32ToNumber : Int32 -> Number from 'stdlib-external/runtime'
+import foreign wasm coerceFloat64ToNumber : Float64 -> Number from 'stdlib-external/runtime'
+import foreign wasm coerceFloat32ToNumber : Float32 -> Number from 'stdlib-external/runtime'
+import foreign wasm coerceRationalToNumber : Rational -> Number from 'stdlib-external/runtime'
+import foreign wasm coerceNumberToInt64 : Number -> Int64 from 'stdlib-external/runtime'
+import foreign wasm coerceNumberToInt32 : Number -> Int32 from 'stdlib-external/runtime'
+import foreign wasm coerceNumberToRational : Number -> Rational from 'stdlib-external/runtime'
+import foreign wasm coerceNumberToFloat64 : Number -> Float64 from 'stdlib-external/runtime'
+import foreign wasm coerceNumberToFloat32 : Number -> Float32 from 'stdlib-external/runtime'
+
+import foreign wasm convertExactToInexact : Number -> Number from 'stdlib-external/runtime'
+import foreign wasm convertInexactToExact : Number -> Number from 'stdlib-external/runtime'
 
 # Boolean operations
 primitive (!) : Bool -> Bool = "@not"

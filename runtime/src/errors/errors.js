@@ -144,7 +144,10 @@ export function throwGrainError(errorCode, value1, value2) {
       message = `System error: ${value1AsGrain}`;
       break;
     case GRAIN_ERR_NOT_INTLIKE:
-      message = `Cannot convert to integer: ${value1AsGrain}`
+      message = `Cannot coerce to integer: ${value1AsGrain}`
+      break;
+    case GRAIN_ERR_NOT_RATIONAL:
+      message = `Cannot coerce to rational: ${value1AsGrain}`
       break;
     default:
       message = `Unknown error code: ${errorCode}`;

@@ -26,6 +26,8 @@ type grain_error =
   | AssertionError
   | Failure
   | SystemError
+  | NotIntLikeError
+  | NotRationalError
   | GenericNumberError;
 
 let all_grain_errors = [
@@ -78,6 +80,8 @@ let err_INVALID_ARGUMENT = 20;
 let err_ASSERTION_ERROR = 21;
 let err_FAILURE = 22;
 let err_SYSTEM_ERROR = 23;
+let err_NOT_INTLIKE = 24;
+let err_NOT_RATIONAL = 25;
 let err_GENERIC_NUM = 99;
 
 let code_of_error =
@@ -105,6 +109,8 @@ let code_of_error =
   | InvalidArgument => err_INVALID_ARGUMENT
   | AssertionError => err_ASSERTION_ERROR
   | Failure => err_FAILURE
+  | NotIntLikeError => err_NOT_INTLIKE
+  | NotRationalError => err_NOT_RATIONAL
   | SystemError => err_SYSTEM_ERROR;
 
 let arity_of_error =
@@ -132,6 +138,8 @@ let arity_of_error =
   | InvalidArgument => 1
   | AssertionError => 0
   | Failure => 1
+  | NotIntLikeError => 1
+  | NotRationalError => 1
   | SystemError => 1;
 
 let label_of_error =
@@ -159,6 +167,8 @@ let label_of_error =
   | InvalidArgument => "error_invalid_argument"
   | AssertionError => "error_assertion"
   | Failure => "error_failure"
+  | NotIntLikeError => "error_not_intlike"
+  | NotRationalError => "error_not_rational"
   | SystemError => "error_system";
 
 let error_of_code = c =>
@@ -186,6 +196,8 @@ let error_of_code = c =>
   | x when x == err_INVALID_ARGUMENT => InvalidArgument
   | x when x == err_ASSERTION_ERROR => AssertionError
   | x when x == err_FAILURE => Failure
+  | x when x == err_NOT_INTLIKE => NotIntLikeError
+  | x when x == err_NOT_RATIONAL => NotRationalError
   | x when x == err_SYSTEM_ERROR => SystemError
   | c => failwith(Printf.sprintf("Unknown error code: %d", c))
   };

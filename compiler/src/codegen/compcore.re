@@ -74,6 +74,9 @@ let number_land_ident = Ident.create_persistent("numberLand");
 let number_lor_ident = Ident.create_persistent("numberLor");
 let number_lxor_ident = Ident.create_persistent("numberLxor");
 let number_asr_ident = Ident.create_persistent("numberAsr");
+let number_lnot_ident = Ident.create_persistent("numberLnot");
+let number_to_int64_ident = Ident.create_persistent("coerceNumberToInt64");
+let int64_to_number_ident = Ident.create_persistent("coerceInt64ToNumber");
 /* Variants used for tracing */
 let incref_adt_ident = Ident.create_persistent("incRefADT");
 let incref_array_ident = Ident.create_persistent("incRefArray");
@@ -509,6 +512,27 @@ let runtime_function_imports =
         mimp_mod: stdlib_external_runtime_mod,
         mimp_name: number_asr_ident,
         mimp_type: [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
+        mimp_kind: MImportWasm,
+        mimp_setup: MSetupNone,
+      },
+      {
+        mimp_mod: stdlib_external_runtime_mod,
+        mimp_name: number_lnot_ident,
+        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]),
+        mimp_kind: MImportWasm,
+        mimp_setup: MSetupNone,
+      },
+      {
+        mimp_mod: stdlib_external_runtime_mod,
+        mimp_name: number_to_int64_ident,
+        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]),
+        mimp_kind: MImportWasm,
+        mimp_setup: MSetupNone,
+      },
+      {
+        mimp_mod: stdlib_external_runtime_mod,
+        mimp_name: int64_to_number_ident,
+        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
@@ -1055,6 +1079,27 @@ let call_number_asr = (wasm_mod, env, args) =>
   Expression.call(
     wasm_mod,
     get_imported_name(stdlib_external_runtime_mod, number_asr_ident),
+    args,
+    Type.int32,
+  );
+let call_number_lnot = (wasm_mod, env, args) =>
+  Expression.call(
+    wasm_mod,
+    get_imported_name(stdlib_external_runtime_mod, number_lnot_ident),
+    args,
+    Type.int32,
+  );
+let call_number_to_int64 = (wasm_mod, env, args) =>
+  Expression.call(
+    wasm_mod,
+    get_imported_name(stdlib_external_runtime_mod, number_to_int64_ident),
+    args,
+    Type.int32,
+  );
+let call_int64_to_number = (wasm_mod, env, args) =>
+  Expression.call(
+    wasm_mod,
+    get_imported_name(stdlib_external_runtime_mod, int64_to_number_ident),
     args,
     Type.int32,
   );
@@ -2900,10 +2945,6 @@ let allocate_record = (wasm_mod, env, ttag, elts) => {
 
 let compile_prim1 = (wasm_mod, env, p1, arg): Expression.t => {
   let compiled_arg = compile_imm(wasm_mod, env, arg);
-  let get_swap_i64 = () => get_swap(~ty=Type.int64, wasm_mod, env, 0);
-  let tee_swap_i64 = tee_swap(~ty=Type.int64, wasm_mod, env, 0);
-  let get_swap = () => get_swap(wasm_mod, env, 0);
-  let tee_swap = tee_swap(wasm_mod, env, 0);
   /* TODO: Overflow checks? */
   switch (p1) {
   | Incr =>
@@ -2962,107 +3003,11 @@ let compile_prim1 = (wasm_mod, env, p1, arg): Expression.t => {
     )
   | FailWith => call_error_handler(wasm_mod, env, Failure, [arg])
   | Int64FromNumber =>
-    Expression.block(
-      wasm_mod,
-      gensym_label("Int64FromNumber"),
-      [
-        store(
-          ~offset=0,
-          wasm_mod,
-          tee_swap(heap_allocate(wasm_mod, env, 3)),
-          Expression.const(
-            wasm_mod,
-            const_int32(tag_val_of_heap_tag_type(Int64Type)),
-          ),
-        ),
-        store(
-          ~ty=Type.int64,
-          ~offset=4,
-          wasm_mod,
-          get_swap(),
-          Expression.unary(
-            wasm_mod,
-            Op.extend_s_int32,
-            untag_number(wasm_mod, compiled_arg),
-          ),
-        ),
-        Expression.binary(
-          wasm_mod,
-          Op.or_int32,
-          get_swap(),
-          Expression.const(
-            wasm_mod,
-            const_int32 @@
-            tag_val_of_tag_type(GenericHeapType(Some(Int64Type))),
-          ),
-        ),
-      ],
-    )
+    call_number_to_int64(wasm_mod, env, [compiled_arg])
   | Int64ToNumber =>
-    Expression.block(
-      wasm_mod,
-      gensym_label("Int64ToNumber"),
-      [
-        error_if_true(
-          wasm_mod,
-          env,
-          Expression.binary(
-            wasm_mod,
-            Op.gt_s_int64,
-            tee_swap_i64(
-              load(
-                ~ty=Type.int64,
-                ~offset=4,
-                wasm_mod,
-                untag(
-                  wasm_mod,
-                  GenericHeapType(Some(Int64Type)),
-                  compiled_arg,
-                ),
-              ),
-            ),
-            Expression.const(wasm_mod, const_int64(grain_number_max)),
-          ),
-          OverflowError,
-          [],
-        ),
-        error_if_true(
-          wasm_mod,
-          env,
-          Expression.binary(
-            wasm_mod,
-            Op.lt_s_int64,
-            get_swap_i64(),
-            Expression.const(wasm_mod, const_int64(grain_number_min)),
-          ),
-          OverflowError,
-          [],
-        ),
-        Expression.binary(
-          wasm_mod,
-          Op.shl_int32,
-          Expression.unary(wasm_mod, Op.wrap_int64, get_swap_i64()),
-          Expression.const(wasm_mod, const_int32(1)),
-        ),
-      ],
-    )
+    call_int64_to_number(wasm_mod, env, [compiled_arg])
   | Int64Lnot =>
-    allocate_int64_imm(
-      wasm_mod,
-      env,
-      Expression.binary(
-        wasm_mod,
-        Op.sub_int64,
-        /* 2's complement */
-        Expression.const(wasm_mod, const_int64(-1)),
-        load(
-          ~ty=Type.int64,
-          ~offset=4,
-          wasm_mod,
-          untag(wasm_mod, GenericHeapType(Some(Int64Type)), compiled_arg),
-        ),
-      ),
-    )
+    call_number_lnot(wasm_mod, env, [compiled_arg])
   | Box => failwith("Unreachable case; should never get here: Box")
   | Unbox => failwith("Unreachable case; should never get here: Unbox")
   };
