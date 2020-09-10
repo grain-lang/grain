@@ -71,6 +71,20 @@ export function toBinary(n, minWidth) {
   return ret;
 }
 
+function float64At(idx) {
+  if (idx % 8 == 0) {
+    // if aligned, return without extra allocations
+    return f64view[(idx / 8) + 1]
+  }
+  // not 8-byte aligned. Need load into temporary buffer
+  let tmpbuf = new ArrayBuffer(8)
+  let tmpview32 = new Uint32Array(tmpbuf)
+  let tmpview = new Float64Array(tmpbuf)
+  tmpview32[0] = view[(idx / 4) + 2]
+  tmpview32[1] = view[(idx / 4) + 3]
+  return tmpview[0]
+}
+
 export function grainHeapValueToString(runtime, n) {
   switch (view[n / 4]) {
     case GRAIN_STRING_HEAP_TAG: {
@@ -203,7 +217,7 @@ export function grainHeapValueToString(runtime, n) {
           return f32view[x + 2].toString(10)
         }
         case GRAIN_FLOAT64_BOXED_NUM_TAG: {
-          return '[TODO] Float64 toString()'
+          return float64At(x * 4).toString(10)
         }
       }
     }
@@ -267,8 +281,36 @@ GrainAdtValue.prototype.toString = function() {
   }
 }
 
+export function grainBoxedNumberToJSVal(runtime, n) {
+  let nInt = n / 4
+  switch (view[nInt + 1]) {
+    case GRAIN_FLOAT32_BOXED_NUM_TAG:
+      return f32view[nInt + 2]
+    case GRAIN_FLOAT64_BOXED_NUM_TAG:
+      return float64At(n + 8)
+    case GRAIN_RATIONAL_BOXED_NUM_TAG:
+      let numerator = view[nInt + 2]
+      let denominator = view[nInt + 3]
+      return numerator / denominator
+    case GRAIN_INT32_BOXED_NUM_TAG:
+      return view[nInt + 2]
+    case GRAIN_INT64_BOXED_NUM_TAG:
+      let low = uview[nInt + 2]
+      let high = view[nInt + 3]
+      let negative = high < 0
+
+      if (negative) {
+        high = ~high
+        low = ~low + 1
+      }
+      return (high * (2 ** 32) + low) * (negative ? -1 : 1)
+  }
+}
+
 export function grainHeapValToJSVal(runtime, n) {
   switch (view[n / 4]) {
+  case GRAIN_BOXED_NUM_HEAP_TAG:
+    return grainBoxedNumberToJSVal(runtime, n)
   case GRAIN_STRING_HEAP_TAG:
     let byteView = new Uint8Array(memory.buffer);
     let length = view[(n / 4) + 1];
@@ -363,11 +405,49 @@ export function grainToJSVal(runtime, x) {
 
 export function JSToGrainVal(v) {
   if (typeof v === "number") {
-    // TODO: overflow check
-    if (v >= (1 << 30)) {
-      throwGrainError(GRAIN_ERR_OVERFLOW, -1, -1);
+    if (!Number.isInteger(v)) {
+      // not an integer, so just pun into a float64
+      let userPtr = managedMemory.malloc(4 * 4)
+      let ptr = userPtr / 4
+      view[ptr] = GRAIN_BOXED_NUM_HEAP_TAG
+      view[ptr + 1] = GRAIN_FLOAT64_BOXED_NUM_TAG
+      let tmpbuf = new ArrayBuffer(8)
+      let f64tmpbuf = new Float64Array(tmpbuf)
+      let i32tmpbuf = new Int32Array(tmpbuf)
+      f64tmpbuf[0] = v
+      view[ptr + 2] = i32tmpbuf[0]
+      view[ptr + 3] = i32tmpbuf[1]
+      return userPtr | GRAIN_GENERIC_HEAP_TAG_TYPE
     }
-    return v << 1;
+    if (v < (1 << 30) && v > (-1 << 30)) {
+      // simple int
+      return v << 1
+    }
+    if (v < (1 << 31) && v > (-1 << 31)) {
+      // int32
+      let userPtr = managedMemory.malloc(4 * 3)
+      let ptr = userPtr / 4
+      view[ptr] = GRAIN_BOXED_NUM_HEAP_TAG
+      view[ptr + 1] = GRAIN_INT32_BOXED_NUM_TAG
+      view[ptr + 2] = v
+      return userPtr | GRAIN_GENERIC_HEAP_TAG_TYPE
+    }
+    if (v < (1 << 63) && v > (-1 << 63)) {
+      // int64
+      let userPtr = managedMemory.malloc(4 * 4)
+      let ptr = userPtr / 4
+      view[ptr] = GRAIN_BOXED_NUM_HEAP_TAG
+      view[ptr + 1] = GRAIN_INT64_BOXED_NUM_TAG
+      let tmpbuf = new ArrayBuffer(8)
+      let i64tmpbuf = new BigInt64Array(tmpbuf)
+      let i32tmpbuf = new Int32Array(tmpbuf)
+      i64tmpbuf[0] = v
+      view[ptr + 2] = i32tmpbuf[0]
+      view[ptr + 3] = i32tmpbuf[1]
+      return userPtr | GRAIN_GENERIC_HEAP_TAG_TYPE
+    }
+    throwGrainError(GRAIN_ERR_OVERFLOW, -1, -1);
+    return 0xF00BAE << 1;
   } else if (typeof v === "boolean") {
     if (v) {
       return -1;

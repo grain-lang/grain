@@ -71,6 +71,8 @@ let rec analyze_comp_expression =
   | CString(_)
   | CInt32(_)
   | CInt64(_)
+  | CFloat32(_)
+  | CFloat64(_)
   | CPrim1(_)
   | CPrim2(_)
   | CImmExpr(_) => false

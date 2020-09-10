@@ -120,6 +120,8 @@ and comp_free_vars_help = (env, c: comp_expression) =>
     )
   | CInt32(_)
   | CInt64(_)
+  | CFloat32(_)
+  | CFloat64(_)
   | CString(_) => Ident.Set.empty
   | CImmExpr(i) => imm_free_vars_help(env, i)
   }

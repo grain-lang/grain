@@ -2,6 +2,13 @@ open Anftree;
 open Grain_typed;
 open Types;
 
+let is_int =
+  fun
+  | Const_int(_)
+  | Const_int32(_)
+  | Const_int64(_) => true
+  | _ => false;
+
 let get_int =
   fun
   | Const_int(n) => n
@@ -15,10 +22,14 @@ let get_bool =
   | _ => failwith("Operand was not a boolean");
 
 let in_valid_int_range = (op, x, y) => {
-  let n = op(get_int(x), get_int(y));
-  /* Numbers in Grain are stored double their value, so we need to check if the representation overflows */
-  let n = n * 2;
-  n < Int32.to_int(Int32.max_int) && n > Int32.to_int(Int32.min_int);
+  if (!is_int(x) || !is_int(y)) {
+    false
+  } else {
+    let n = op(get_int(x), get_int(y));
+    /* Numbers in Grain are stored double their value, so we need to check if the representation overflows */
+    let n = n * 2;
+    n < Int32.to_int(Int32.max_int) && n > Int32.to_int(Int32.min_int);
+  }
 };
 
 module ConstantFoldingArg: Anf_mapper.MapArgument = {

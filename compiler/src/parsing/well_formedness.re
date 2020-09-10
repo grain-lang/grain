@@ -14,7 +14,8 @@ type wferr =
   | ExportAllShouldOnlyAppearOnce(Location.t)
   | EmptyRecordPattern(Location.t)
   | RHSLetRecMayOnlyBeFunction(Location.t)
-  | NoLetRecMut(Location.t);
+  | NoLetRecMut(Location.t)
+  | NumberDoesntFit(string, Location.t);
 
 exception Error(wferr);
 
@@ -51,6 +52,8 @@ let prepare_error =
         )
       | NoLetRecMut(loc) =>
         errorf(~loc, "let rec may not be used with the `mut` keyword.")
+      | NumberDoesntFit(num, loc) =>
+        errorf(~loc, "Grain does not support numbers this big: %s", num)
     )
   );
 
@@ -64,6 +67,19 @@ let () =
 type well_formedness_checker = {
   errs: ref(list(wferr)),
   iterator,
+};
+
+let numbers_too_big = (errs, super) => {
+  let iter_expr = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
+    switch (desc) {
+    | PExpConstant(PConstIntOverflow(s)) =>
+      errs := [NumberDoesntFit(s, loc), ...errs^];
+    | _ => ()
+    };
+    super.expr(self, e);
+  };
+  let iterator = {...super, expr: iter_expr};
+  {errs, iterator};
 };
 
 let malformed_strings = (errs, super) => {
@@ -332,6 +348,7 @@ let well_formedness_checks = [
   no_empty_record_patterns,
   only_functions_oh_rhs_letrec,
   no_letrec_mut,
+  numbers_too_big,
 ];
 
 let well_formedness_checker = () =>

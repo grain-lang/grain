@@ -10,10 +10,10 @@ import foreign wasm numberDivide : (Number, Number) -> Number as (/) from 'stdli
 import foreign wasm numberMod : (Number, Number) -> Number as (%) from 'stdlib-external/runtime'
 
 # Number comparisons
-import foreign wasm numberLess : (Number, Number) -> Number as (<) from 'stdlib-external/runtime'
-import foreign wasm numberGreater : (Number, Number) -> Number as (>) from 'stdlib-external/runtime'
-import foreign wasm numberLessEqual : (Number, Number) -> Number as (<=) from 'stdlib-external/runtime'
-import foreign wasm numberGreaterEqual : (Number, Number) -> Number as (>=) from 'stdlib-external/runtime'
+import foreign wasm numberLess : (Number, Number) -> Bool as (<) from 'stdlib-external/runtime'
+import foreign wasm numberGreater : (Number, Number) -> Bool as (>) from 'stdlib-external/runtime'
+import foreign wasm numberLessEqual : (Number, Number) -> Bool as (<=) from 'stdlib-external/runtime'
+import foreign wasm numberGreaterEqual : (Number, Number) -> Bool as (>=) from 'stdlib-external/runtime'
 
 # Number bit/logical operations
 import foreign wasm numberLnot : Number -> Number as lnot from 'stdlib-external/runtime'

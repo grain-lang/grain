@@ -116,6 +116,8 @@ let transl_const =
   switch (c) {
   | Const_int32(i) => [@implicit_arity] Right("int32", Comp.int32(i))
   | Const_int64(i) => [@implicit_arity] Right("int64", Comp.int64(i))
+  | Const_float64(i) => [@implicit_arity] Right("float64", Comp.float64(i))
+  | Const_float32(i) => [@implicit_arity] Right("float32", Comp.float32(i))
   | Const_string(s) => [@implicit_arity] Right("str", Comp.string(s))
   | Const_float(_) => failwith("NYI: helpIConst: float")
   | _ => Left(Imm.const(c))

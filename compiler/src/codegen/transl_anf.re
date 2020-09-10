@@ -381,6 +381,8 @@ let compile_const = (c: Asttypes.constant) =>
   | Const_float(f_str) => failwith("NYI: compile_const float")
   | Const_int32(i32) => MConstI32(i32)
   | Const_int64(i64) => MConstI64(i64)
+  | Const_float32(f) => MConstF32(f)
+  | Const_float64(f) => MConstF64(f)
   | Const_bool(b) when b == true => const_true
   | Const_bool(_) => const_false
   | Const_void => const_void
@@ -577,6 +579,8 @@ let rec compile_comp = (env, c) => {
     | CString(s) => MAllocate(MString(s))
     | CInt32(i) => MAllocate(MInt32(i))
     | CInt64(i) => MAllocate(MInt64(i))
+    | CFloat32(f) => MAllocate(MFloat32(f))
+    | CFloat64(f) => MAllocate(MFloat64(f))
     | [@implicit_arity] CGetTupleItem(idx, tup) =>
       [@implicit_arity] MTupleOp(MTupleGet(idx), compile_imm(env, tup))
     | [@implicit_arity] CSetTupleItem(idx, tup, value) =>

@@ -132,11 +132,14 @@ let all_coherent = column => {
       | (Const_int32(_), Const_int32(_))
       | (Const_int64(_), Const_int64(_))
       | (Const_float(_), Const_float(_))
+      | (Const_float32(_), Const_float32(_))
+      | (Const_float64(_), Const_float64(_))
       | (Const_bool(_), Const_bool(_))
       | (Const_void, Const_void)
       | (Const_string(_), Const_string(_)) => true
       | (
-          Const_int(_) | Const_int32(_) | Const_int64(_) | Const_float(_) |
+          Const_int(_) | Const_int32(_) | Const_int64(_) |
+          Const_float(_) | Const_float32(_) | Const_float64(_) |
           Const_bool(_) |
           Const_void |
           Const_string(_),
@@ -244,6 +247,7 @@ let const_compare = (x, y) =>
     Stdlib.compare(if (b1) {1} else {0}, if (b2) {1} else {0})
   | (
       Const_int(_) | Const_string(_) | Const_float(_) | Const_bool(_) |
+      Const_float32(_) | Const_float64(_) |
       Const_void |
       Const_int32(_) |
       Const_int64(_),
@@ -2068,7 +2072,9 @@ let inactive = (~partial, pat) =>
         | Const_bool(_)
         | Const_float(_)
         | Const_int32(_)
-        | Const_int64(_) => true
+        | Const_int64(_)
+        | Const_float32(_)
+        | Const_float64(_) => true
         }
       | TPatTuple(ps)
       | [@implicit_arity] TPatConstruct(_, _, ps) =>

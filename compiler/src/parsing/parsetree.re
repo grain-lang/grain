@@ -87,6 +87,9 @@ type constant =
   | PConstNumber(int)
   | PConstInt32(int32)
   | PConstInt64(int64)
+  | PConstFloat32(float)
+  | PConstFloat64(float)
+  | PConstIntOverflow(string)
   | PConstBool(bool)
   | PConstVoid
   | PConstString(string);
@@ -127,6 +130,9 @@ type prim1 =
   | FailWith
   | Int64FromNumber
   | Int64ToNumber
+  | Int32ToNumber
+  | Float64ToNumber
+  | Float32ToNumber
   | Int64Lnot;
 
 /** Two-argument operators */
