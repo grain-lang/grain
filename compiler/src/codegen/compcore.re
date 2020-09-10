@@ -46,7 +46,8 @@ let table_size = Ident.create_persistent("GRAIN$TABLE_SIZE");
 let runtime_mod = Ident.create_persistent("grainRuntime");
 let data_structures_mod = Ident.create_persistent("dataStructures");
 let numbers_mod = Ident.create_persistent("numbers");
-let stdlib_external_runtime_mod = Ident.create_persistent("stdlib-external/runtime");
+let stdlib_external_runtime_mod =
+  Ident.create_persistent("stdlib-external/runtime");
 let console_mod = Ident.create_persistent("console");
 let check_memory_ident = Ident.create_persistent("checkMemory");
 let throw_error_ident = Ident.create_persistent("throwError");
@@ -66,7 +67,8 @@ let number_mod_ident = Ident.create_persistent("numberMod");
 let number_less_ident = Ident.create_persistent("numberLess");
 let number_greater_ident = Ident.create_persistent("numberGreater");
 let number_less_equal_ident = Ident.create_persistent("numberLessEqual");
-let number_greater_equal_ident = Ident.create_persistent("numberGreaterEqual");
+let number_greater_equal_ident =
+  Ident.create_persistent("numberGreaterEqual");
 let number_eq_ident = Ident.create_persistent("numberEq");
 let number_lsl_ident = Ident.create_persistent("numberLsl");
 let number_lsr_ident = Ident.create_persistent("numberLsr");
@@ -78,8 +80,10 @@ let number_lnot_ident = Ident.create_persistent("numberLnot");
 let number_to_int64_ident = Ident.create_persistent("coerceNumberToInt64");
 let int64_to_number_ident = Ident.create_persistent("coerceInt64ToNumber");
 let int32_to_number_ident = Ident.create_persistent("coerceInt32ToNumber");
-let float32_to_number_ident = Ident.create_persistent("coerceFloat32ToNumber");
-let float64_to_number_ident = Ident.create_persistent("coerceFloat64ToNumber");
+let float32_to_number_ident =
+  Ident.create_persistent("coerceFloat32ToNumber");
+let float64_to_number_ident =
+  Ident.create_persistent("coerceFloat64ToNumber");
 /* Variants used for tracing */
 let incref_adt_ident = Ident.create_persistent("incRefADT");
 let incref_array_ident = Ident.create_persistent("incRefArray");
@@ -374,7 +378,8 @@ let runtime_function_imports =
       {
         mimp_mod: stdlib_external_runtime_mod,
         mimp_name: new_rational_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
+        mimp_type:
+          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
@@ -409,112 +414,128 @@ let runtime_function_imports =
       {
         mimp_mod: stdlib_external_runtime_mod,
         mimp_name: number_plus_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
+        mimp_type:
+          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: stdlib_external_runtime_mod,
         mimp_name: number_minus_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
+        mimp_type:
+          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: stdlib_external_runtime_mod,
         mimp_name: number_times_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
+        mimp_type:
+          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: stdlib_external_runtime_mod,
         mimp_name: number_divide_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
+        mimp_type:
+          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: stdlib_external_runtime_mod,
         mimp_name: number_mod_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
+        mimp_type:
+          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: stdlib_external_runtime_mod,
         mimp_name: number_less_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
+        mimp_type:
+          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: stdlib_external_runtime_mod,
         mimp_name: number_greater_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
+        mimp_type:
+          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: stdlib_external_runtime_mod,
         mimp_name: number_less_equal_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
+        mimp_type:
+          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: stdlib_external_runtime_mod,
         mimp_name: number_greater_equal_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
+        mimp_type:
+          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: stdlib_external_runtime_mod,
         mimp_name: number_eq_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
+        mimp_type:
+          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: stdlib_external_runtime_mod,
         mimp_name: number_lsl_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
+        mimp_type:
+          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: stdlib_external_runtime_mod,
         mimp_name: number_lsr_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
+        mimp_type:
+          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: stdlib_external_runtime_mod,
         mimp_name: number_land_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
+        mimp_type:
+          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: stdlib_external_runtime_mod,
         mimp_name: number_lor_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
+        mimp_type:
+          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: stdlib_external_runtime_mod,
         mimp_name: number_lxor_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
+        mimp_type:
+          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: stdlib_external_runtime_mod,
         mimp_name: number_asr_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
+        mimp_type:
+          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
@@ -1053,7 +1074,10 @@ let call_number_less_equal = (wasm_mod, env, args) =>
 let call_number_greater_equal = (wasm_mod, env, args) =>
   Expression.call(
     wasm_mod,
-    get_imported_name(stdlib_external_runtime_mod, number_greater_equal_ident),
+    get_imported_name(
+      stdlib_external_runtime_mod,
+      number_greater_equal_ident,
+    ),
     args,
     Type.int32,
   );
@@ -2345,19 +2369,19 @@ let allocate_string = (wasm_mod, env, str) => {
 };
 
 let allocate_float32 = (wasm_mod, env, i) => {
-  call_new_float32(wasm_mod, env, [i])
+  call_new_float32(wasm_mod, env, [i]);
 };
 
 let allocate_float64 = (wasm_mod, env, i) => {
-  call_new_float64(wasm_mod, env, [i])
+  call_new_float64(wasm_mod, env, [i]);
 };
 
 let allocate_int32 = (wasm_mod, env, i) => {
-  call_new_int32(wasm_mod, env, [i])
+  call_new_int32(wasm_mod, env, [i]);
 };
 
 let allocate_int64 = (wasm_mod, env, i) => {
-  call_new_int64(wasm_mod, env, [i])
+  call_new_int64(wasm_mod, env, [i]);
 };
 
 /* Store an int64 */
@@ -2367,10 +2391,7 @@ let allocate_int64_imm = (wasm_mod, env, i) => {
   Expression.block(
     wasm_mod,
     gensym_label("allocate_int64_imm"),
-    [
-      set_swap64(i),
-      call_new_int64(wasm_mod, env, [get_swap64()]),
-    ],
+    [set_swap64(i), call_new_int64(wasm_mod, env, [get_swap64()])],
   );
 };
 
@@ -3047,18 +3068,12 @@ let compile_prim1 = (wasm_mod, env, p1, arg): Expression.t => {
       ],
     )
   | FailWith => call_error_handler(wasm_mod, env, Failure, [arg])
-  | Int64FromNumber =>
-    call_number_to_int64(wasm_mod, env, [compiled_arg])
-  | Int64ToNumber =>
-    call_int64_to_number(wasm_mod, env, [compiled_arg])
-  | Int32ToNumber =>
-    call_int32_to_number(wasm_mod, env, [compiled_arg])
-  | Float32ToNumber =>
-    call_float32_to_number(wasm_mod, env, [compiled_arg])
-  | Float64ToNumber =>
-    call_float64_to_number(wasm_mod, env, [compiled_arg])
-  | Int64Lnot =>
-    call_number_lnot(wasm_mod, env, [compiled_arg])
+  | Int64FromNumber => call_number_to_int64(wasm_mod, env, [compiled_arg])
+  | Int64ToNumber => call_int64_to_number(wasm_mod, env, [compiled_arg])
+  | Int32ToNumber => call_int32_to_number(wasm_mod, env, [compiled_arg])
+  | Float32ToNumber => call_float32_to_number(wasm_mod, env, [compiled_arg])
+  | Float64ToNumber => call_float64_to_number(wasm_mod, env, [compiled_arg])
+  | Int64Lnot => call_number_lnot(wasm_mod, env, [compiled_arg])
   | Box => failwith("Unreachable case; should never get here: Box")
   | Unbox => failwith("Unreachable case; should never get here: Unbox")
   };
@@ -3110,7 +3125,11 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
     call_number_greater(wasm_mod, env, [compiled_arg1(), compiled_arg2()])
   | GreaterEq
   | Int64Gte =>
-    call_number_greater_equal(wasm_mod, env, [compiled_arg1(), compiled_arg2()])
+    call_number_greater_equal(
+      wasm_mod,
+      env,
+      [compiled_arg1(), compiled_arg2()],
+    )
   | Less
   | Int64Lt =>
     call_number_less(wasm_mod, env, [compiled_arg1(), compiled_arg2()])
@@ -3156,10 +3175,30 @@ let compile_allocation = (wasm_mod, env, alloc_type) =>
   | MString(str) => allocate_string(wasm_mod, env, str)
   | [@implicit_arity] MADT(ttag, vtag, elts) =>
     allocate_adt(wasm_mod, env, ttag, vtag, elts)
-  | MInt32(i) => allocate_int32(wasm_mod, env, Expression.const(wasm_mod, Literal.int32(i)))
-  | MInt64(i) => allocate_int64(wasm_mod, env, Expression.const(wasm_mod, Literal.int64(i)))
-  | MFloat32(i) => allocate_float32(wasm_mod, env, Expression.const(wasm_mod, Literal.float32(i)))
-  | MFloat64(i) => allocate_float64(wasm_mod, env, Expression.const(wasm_mod, Literal.float64(i)))
+  | MInt32(i) =>
+    allocate_int32(
+      wasm_mod,
+      env,
+      Expression.const(wasm_mod, Literal.int32(i)),
+    )
+  | MInt64(i) =>
+    allocate_int64(
+      wasm_mod,
+      env,
+      Expression.const(wasm_mod, Literal.int64(i)),
+    )
+  | MFloat32(i) =>
+    allocate_float32(
+      wasm_mod,
+      env,
+      Expression.const(wasm_mod, Literal.float32(i)),
+    )
+  | MFloat64(i) =>
+    allocate_float64(
+      wasm_mod,
+      env,
+      Expression.const(wasm_mod, Literal.float64(i)),
+    )
   };
 
 let collect_backpatches = (env, f) => {

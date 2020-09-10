@@ -73,7 +73,7 @@ let numbers_too_big = (errs, super) => {
   let iter_expr = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
     | PExpConstant(PConstIntOverflow(s)) =>
-      errs := [NumberDoesntFit(s, loc), ...errs^];
+      errs := [NumberDoesntFit(s, loc), ...errs^]
     | _ => ()
     };
     super.expr(self, e);

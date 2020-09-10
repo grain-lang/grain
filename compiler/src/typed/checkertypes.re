@@ -81,7 +81,8 @@ let constant: Parsetree.constant => result(Asttypes.constant, error) = (
   | PConstBool(b) => Ok(Const_bool(b))
   | PConstVoid => Ok(Const_void)
   | PConstString(s) => Ok(Const_string(s))
-  | PConstIntOverflow(_) => failwith("Impossible: PCosntIntOverflow post-well_formedness"):
+  | PConstIntOverflow(_) =>
+    failwith("Impossible: PCosntIntOverflow post-well_formedness"):
     Parsetree.constant => result(Asttypes.constant, error)
 );
 

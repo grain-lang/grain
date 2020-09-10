@@ -1567,7 +1567,7 @@ let number_tests = [
   t("numbers3", "0.0 + ((1 / 3) * (1 / 3))", "0.1111111111111111"),
   t("numbers4", "1 / 3", "1/3"),
   t("numbers5", "1.0 / 3", "0.3333333333333333"),
-]
+];
 
 let comment_tests = {
   open Grain_parsing;
