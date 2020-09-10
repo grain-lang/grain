@@ -37,10 +37,11 @@ import {
 } from './ascutils/dataStructures'
 
 
+// [TODO] pretty much all of the overflow values we pass here are suboptimal...really need to rework this
 // @ts-ignore: decorator
 @inline
-function throwOverflowError(): u32 {
-  return throwError(GRAIN_ERR_OVERFLOW, 0, 0)
+function throwOverflowError(x: u32): u32 {
+  return throwError(GRAIN_ERR_OVERFLOW, x, 0)
 }
 
 // @ts-ignore: decorator
@@ -83,7 +84,7 @@ function unboxSimple(x: u32): i32 {
 @inline
 function safeI64toI32(x: i64): i32 {
   if (x > I32.MAX_VALUE || x < I32.MIN_VALUE) {
-    return throwOverflowError()
+    return throwOverflowError(<u32>(x))
   } else {
     return <i32>(x)
   }
@@ -178,7 +179,7 @@ function reducedInteger(x: i64): u32 {
 function safeI32Multiply(x: i32, y: i32): i32 {
   let prod = <i64>(x) * <i64>(y)
   if (prod > I32.MAX_VALUE || prod < I32.MIN_VALUE) {
-    return throwOverflowError()
+    return throwOverflowError(<u32>(x))
   }
   return <i32>(prod);
 }
@@ -188,7 +189,9 @@ function safeI32Multiply(x: i32, y: i32): i32 {
 function safeI64Multiply(x: i64, y: i64): i64 {
   let prod = x * y
   if (x != 0 && prod / x != y) {
-    return throwOverflowError()
+    // [TODO] just passing x is kind of bad UX
+    // [TODO] once we have exception handling, this will leak
+    return throwOverflowError(newInt64(x))
   }
   return prod;
 }
@@ -278,7 +281,7 @@ function coerceFloat32(x: u32): f32 {
       let xval = boxedFloat64Number(x)
       if (xval > F32.MAX_VALUE || xval < F32.MIN_VALUE) {
         // Not an actual return value
-        return <f32>(throwOverflowError())
+        return <f32>(throwOverflowError(x))
       } else {
         return <f32>(xval)
       }
@@ -330,7 +333,7 @@ function coerceInt64(x: u32): i64 {
 function coerceInt32(x: u32): i32 {
   let asInt64 = coerceInt64(x)
   if (asInt64 > <i64>(I32.MAX_VALUE) || asInt64 < <i64>(I32.MIN_VALUE)) {
-    return throwOverflowError()
+    return throwOverflowError(x)
   }
   return <i32>(asInt64)
 }
@@ -562,9 +565,9 @@ function numberPlusMinusSimpleHelp(x: u32, y: u32, isMinus: bool): u32 {
       let xval64 = <i64>(xval)
       let sum = xval64 + yBoxedVal
       if (yBoxedVal >= 0 && sum < xval64) {
-        return throwOverflowError()
+        return throwOverflowError(y)
       } else if (yBoxedVal < 0 && sum > xval64) {
-        return throwOverflowError()
+        return throwOverflowError(y)
       } else {
         return reducedInteger(sum)
       }
@@ -575,7 +578,7 @@ function numberPlusMinusSimpleHelp(x: u32, y: u32, isMinus: bool): u32 {
       let expandedXNumerator = safeI64Multiply(<i64>(xval), yDenominator)
       let sum = <i64>(expandedXNumerator) + <i64>(yNumerator)
       if (sum < I32.MIN_VALUE || sum > I32.MAX_VALUE) {
-        return throwOverflowError()
+        return throwOverflowError(y)
       }
       return reducedFraction64(sum, <i64>(yDenominator))
     } case GRAIN_FLOAT32_BOXED_NUM_TAG: {
@@ -595,7 +598,14 @@ function numberPlusMinusSimpleHelp(x: u32, y: u32, isMinus: bool): u32 {
 function numberPlusMinusInt64Help(xval: i64, y: u32, isMinus: bool): u32 {
   // PRECONDITION: x is a "simple" number (value tag is 0) and isNumber(y)
   if (isSimpleNumber(y)) {
-    return reducedInteger(<i64>(xval) + <i64>(unboxSimple(y) * (isMinus ? -1 : 1)))
+    let yval = <i64>(unboxSimple(y) * (isMinus ? -1 : 1))
+    let sum = xval + yval
+    if (yval >= 0 && sum < xval) {
+      return throwOverflowError(y)
+    } else if (yval < 0 && sum > xval) {
+      return throwOverflowError(y)
+    }
+    return reducedInteger(sum)
   }
   let yBoxedNumberTag = boxedNumberTag(y)
   switch (yBoxedNumberTag) {
@@ -607,9 +617,9 @@ function numberPlusMinusInt64Help(xval: i64, y: u32, isMinus: bool): u32 {
       let xval64 = xval
       let sum = xval64 + yBoxedVal
       if (yBoxedVal >= 0 && sum < xval64) {
-        return throwOverflowError()
+        return throwOverflowError(y)
       } else if (yBoxedVal < 0 && sum > xval64) {
-        return throwOverflowError()
+        return throwOverflowError(y)
       } else {
         return reducedInteger(sum)
       }
@@ -620,7 +630,7 @@ function numberPlusMinusInt64Help(xval: i64, y: u32, isMinus: bool): u32 {
       let expandedXNumerator = safeI64Multiply(xval, yDenominator)
       let sum = expandedXNumerator + <i64>(yNumerator)
       if (sum < I32.MIN_VALUE || sum > I32.MAX_VALUE) {
-        return throwOverflowError()
+        return throwOverflowError(y)
       }
       return reducedFraction64(sum, <i64>(yDenominator))
     } case GRAIN_FLOAT32_BOXED_NUM_TAG: {
@@ -1097,7 +1107,7 @@ export function coerceNumberToFloat32(x: u32): u32 {
   if (!isSimpleNumber(x) && boxedNumberTag(x) == GRAIN_FLOAT64_BOXED_NUM_TAG) {
     let xval = boxedFloat64Number(x)
     if (xval > F32.MAX_VALUE || xval < F32.MIN_VALUE) {
-      return throwOverflowError()
+      return throwOverflowError(x)
     }
   }
   return x
