@@ -9,6 +9,7 @@ import {
   GRAIN_FLOAT32_BOXED_NUM_TAG,
   GRAIN_FLOAT64_BOXED_NUM_TAG,
   GRAIN_RATIONAL_BOXED_NUM_TAG,
+  GRAIN_GENERIC_HEAP_TAG_TYPE,
 } from './tags'
 
 /**
@@ -79,7 +80,7 @@ export function allocateInt64(): u32 {
 export function newInt64(value: i64): u32 {
   let ptr = allocateInt64()
   store<i64>(ptr + 8, value)
-  return ptr
+  return ptr | GRAIN_GENERIC_HEAP_TAG_TYPE
 }
 
 /**
@@ -111,7 +112,7 @@ export function allocateInt32(): u32 {
 export function newInt32(value: i32): u32 {
   let ptr = allocateInt32()
   store<i32>(ptr + 8, value)
-  return ptr
+  return ptr | GRAIN_GENERIC_HEAP_TAG_TYPE
 }
 
 /**
@@ -145,7 +146,7 @@ export function allocateFloat32(): u32 {
 export function newFloat32(value: f32): u32 {
   let ptr = allocateFloat32()
   store<f32>(ptr + 8, value)
-  return ptr
+  return ptr | GRAIN_GENERIC_HEAP_TAG_TYPE
 }
 
 /**
@@ -177,7 +178,7 @@ export function allocateFloat64(): u32 {
 export function newFloat64(value: f64): u32 {
   let ptr = allocateFloat64()
   store<f64>(ptr + 8, value)
-  return ptr
+  return ptr | GRAIN_GENERIC_HEAP_TAG_TYPE
 }
 
 /**
@@ -212,7 +213,7 @@ export function newRational(numerator: i32, denominator: i32): u32 {
   let ptr = allocateRational()
   store<i32>(ptr + 8, numerator)
   store<i32>(ptr + 12, denominator)
-  return ptr
+  return ptr | GRAIN_GENERIC_HEAP_TAG_TYPE
 }
 
 /**

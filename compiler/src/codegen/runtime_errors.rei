@@ -25,6 +25,8 @@ type grain_error =
   | AssertionError
   | Failure
   | SystemError
+  | NotIntLikeError
+  | NotRationalError
   | GenericNumberError;
 
 let all_grain_errors: list(grain_error);
@@ -45,6 +47,8 @@ let err_SET_ITEM_INDEX_NOT_NUMBER: int;
 let err_SET_ITEM_INDEX_TOO_SMALL: int;
 let err_SET_ITEM_INDEX_TOO_LARGE: int;
 let err_SWITCH: int;
+let err_NOT_INTLIKE: int;
+let err_NOT_RATIONAL: int;
 let err_GENERIC_NUM: int;
 
 let code_of_error: grain_error => int;

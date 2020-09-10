@@ -16,7 +16,8 @@ import {
 import {
   GRAIN_ERR_OVERFLOW,
   GRAIN_ERR_DIVISION_BY_ZERO,
-  GRAIN_ERR_NOT_INTLIKE
+  GRAIN_ERR_NOT_INTLIKE,
+  GRAIN_ERR_NOT_RATIONAL,
 } from './ascutils/errors'
 
 import {
@@ -25,6 +26,7 @@ import {
 } from './ascutils/primitives'
 
 import { throwError } from './ascutils/grainRuntime'
+import { log, debug } from './ascutils/console'
 
 import {
   newRational,
@@ -51,6 +53,12 @@ function throwDivideByZero(): u32 {
 @inline
 function throwNotIntLike(x: u32): u32 {
   return throwError(GRAIN_ERR_NOT_INTLIKE, x, 0)
+}
+
+// @ts-ignore: decorator
+@inline
+function throwNotRational(x: u32): u32 {
+  return throwError(GRAIN_ERR_NOT_RATIONAL, x, 0)
 }
 
 // @ts-ignore: decorator
@@ -211,43 +219,43 @@ function safeI64Multiply(x: i64, y: i64): i64 {
 // @ts-ignore: decorator
 @inline
 function boxedNumberTag(xptr: u32): u32 {
-  return load<u32>(xptr, 1 * 4)
+  return load<u32>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 1 * 4)
 }
 
 // @ts-ignore: decorator
 @inline
 function boxedInt32Number(xptr: u32): i32 {
-  return load<i32>(xptr, 2 * 4)
+  return load<i32>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
 }
 
 // @ts-ignore: decorator
 @inline
 function boxedInt64Number(xptr: u32): i64 {
-  return load<i64>(xptr, 2 * 4)
+  return load<i64>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
 }
 
 // @ts-ignore: decorator
 @inline
 function boxedFloat32Number(xptr: u32): f32 {
-  return load<f32>(xptr, 2 * 4)
+  return load<f32>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
 }
 
 // @ts-ignore: decorator
 @inline
 function boxedFloat64Number(xptr: u32): f64 {
-  return load<f64>(xptr, 2 * 4)
+  return load<f64>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
 }
 
 // @ts-ignore: decorator
 @inline
 function boxedRationalNumerator(xptr: u32): i32 {
-  return load<i32>(xptr, 2 * 4)
+  return load<i32>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
 }
 
 // @ts-ignore: decorator
 @inline
 function boxedRationalDenominator(xptr: u32): u32 {
-  return load<u32>(xptr, 3 * 4)
+  return load<u32>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 3 * 4)
 }
 
 
@@ -267,7 +275,13 @@ function coerceFloat32(x: u32): f32 {
     } case GRAIN_FLOAT32_BOXED_NUM_TAG: {
       return boxedFloat32Number(x)
     } case GRAIN_FLOAT64_BOXED_NUM_TAG: {
-      return <f32>(boxedFloat64Number(x))
+      let xval = boxedFloat64Number(x)
+      if (xval > F32.MAX_VALUE || xval < F32.MIN_VALUE) {
+        // Not an actual return value
+        return <f32>(throwOverflowError())
+      } else {
+        return <f32>(xval)
+      }
     } default: {
       return 0.0
     }
@@ -313,6 +327,14 @@ function coerceInt64(x: u32): i64 {
   }
 }
 
+function coerceInt32(x: u32): i32 {
+  let asInt64 = coerceInt64(x)
+  if (asInt64 > <i64>(I32.MAX_VALUE) || asInt64 < <i64>(I32.MIN_VALUE)) {
+    return throwOverflowError()
+  }
+  return <i32>(asInt64)
+}
+
 // @ts-ignore: decorator
 @inline
 function isSimpleNumber(x: u32): bool {
@@ -324,6 +346,12 @@ function isSimpleNumber(x: u32): bool {
 function isBoxedNumber(x: u32): bool {
   return ((x & GRAIN_GENERIC_TAG_MASK) == GRAIN_GENERIC_HEAP_TAG_TYPE) &&
     ((load<u32>(x ^ GRAIN_GENERIC_HEAP_TAG_TYPE) == GRAIN_BOXED_NUM_HEAP_TAG))
+}
+
+// @ts-ignore: decorator
+@inline
+function boxedNumberPtr(x: u32): u32 {
+  return x ^ GRAIN_GENERIC_HEAP_TAG_TYPE
 }
 
 // @ts-ignore: decorator
@@ -342,10 +370,11 @@ export function isNumber(x: u32): bool {
   *       export them!
   */
 
-function numberEqualSimpleHelp(x: u32, y: u32): bool {
+function numberEqualSimpleHelp(x: u32, yTagged: u32): bool {
   // PRECONDITION: x is a "simple" number (value tag is 0) and x !== y and isNumber(y)
   // We know y is a heap number, so let's not beat around the bush
   let xval = x >> 1 // <- actual int value of x
+  let y = boxedNumberPtr(yTagged)
   let yBoxedNumberTag = boxedNumberTag(y)
   switch (yBoxedNumberTag) {
     case GRAIN_INT32_BOXED_NUM_TAG: {
@@ -706,7 +735,7 @@ export function numberMinus(x: u32, y: u32): u32 {
 function numberTimesDivideSimpleHelp(x: u32, y: u32, isDivide: bool): u32 {
   // PRECONDITION: x is a "simple" number (value tag is 0) and isNumber(y)
   let xval = unboxSimple(x) // <- actual int value of x
-  return numberTimesDivideInt64Help(xval, y, isDivide)
+  return numberTimesDivideInt64Help(<i64>(xval), y, isDivide)
 }
 
 function numberTimesDivideInt32Help(xval: i32, y: u32, isDivide: bool): u32 {
@@ -972,6 +1001,12 @@ export function numberEq(x: u32, y: u32): u32 {
  * ===== LOGICAL OPERATIONS =====
  * Only valid for int-like numbers. Coerce to i64 and do operations
  */
+// [TODO] Semantics around when things should stay i32/i64
+
+export function numberLnot(x: u32): u32 {
+  let xval = coerceInt64(x)
+  return reducedInteger(~x)
+}
 
 export function numberLsl(x: u32, y: u32): u32 {
   let xval = coerceInt64(x)
@@ -1017,4 +1052,110 @@ export function numberIncr(x: u32): u32 {
 
 export function numberDecr(x: u32): u32 {
   return numberMinus(x, boxSimple(1));
+}
+
+
+/// USER-EXPOSED COERCION FUNCTIONS
+//
+// [NOTE]: Coercion is a *conservative* process! For example, even if a float is 1.0,
+//         we will fail if attempting to coerce to an int!
+
+export function coerceNumberToInt32(x: u32): u32 {
+  if (isSimpleNumber(x) || boxedNumberTag(x) == GRAIN_INT32_BOXED_NUM_TAG) {
+    // avoid extra malloc
+    return x
+  }
+  // probably will fail, but
+  return reducedInteger(coerceInt32(x))
+}
+
+export function coerceNumberToInt64(x: u32): u32 {
+  if (isSimpleNumber(x)) {
+    return x
+  }
+  let tag = boxedNumberTag(x)
+  if (tag == GRAIN_INT32_BOXED_NUM_TAG || tag == GRAIN_INT64_BOXED_NUM_TAG) {
+    return x
+  }
+  return throwNotIntLike(x)
+}
+
+// Effectively asserts that the number is non-float
+export function coerceNumberToRational(x: u32): u32 {
+  if (isSimpleNumber(x)) {
+    return x
+  }
+  let tag = boxedNumberTag(x)
+  if (tag == GRAIN_INT32_BOXED_NUM_TAG || tag == GRAIN_INT64_BOXED_NUM_TAG || tag == GRAIN_RATIONAL_BOXED_NUM_TAG) {
+    return x
+  }
+  return throwNotRational(x)
+}
+
+export function coerceNumberToFloat32(x: u32): u32 {
+  // [TODO] I think Int64s should be safe?
+  if (!isSimpleNumber(x) && boxedNumberTag(x) == GRAIN_FLOAT64_BOXED_NUM_TAG) {
+    let xval = boxedFloat64Number(x)
+    if (xval > F32.MAX_VALUE || xval < F32.MIN_VALUE) {
+      return throwOverflowError()
+    }
+  }
+  return x
+}
+
+export function coerceNumberToFloat64(x: u32): u32 {
+  return x
+}
+
+export function coerceInt32ToNumber(x: u32): u32 {
+  return x
+}
+
+export function coerceInt64ToNumber(x: u32): u32 {
+  return x
+}
+
+export function coerceRationalToNumber(x: u32): u32 {
+  return x
+}
+
+export function coerceFloat32ToNumber(x: u32): u32 {
+  return x
+}
+
+export function coerceFloat64ToNumber(x: u32): u32 {
+  return x
+}
+
+/// USER-EXPOSED CONVERSION FUNCTIONS
+
+export function convertExactToInexact(x: u32): u32 {
+  return x
+}
+
+export function convertInexactToExact(x: u32): u32 {
+  if (isSimpleNumber(x)) {
+    return x
+  }
+  let tag = boxedNumberTag(x)
+  if (tag == GRAIN_INT32_BOXED_NUM_TAG || tag == GRAIN_INT64_BOXED_NUM_TAG || tag == GRAIN_RATIONAL_BOXED_NUM_TAG) {
+    return x
+  }
+  switch (tag) {
+    case GRAIN_INT32_BOXED_NUM_TAG:
+    case GRAIN_INT64_BOXED_NUM_TAG:
+    case GRAIN_RATIONAL_BOXED_NUM_TAG: {
+      return x
+    }
+    case GRAIN_FLOAT32_BOXED_NUM_TAG: {
+      return reducedInteger(<i64>(<f32>(nearest(boxedFloat32Number(x)))))
+    }
+    case GRAIN_FLOAT64_BOXED_NUM_TAG: {
+      return reducedInteger(<i64>(<f64>(nearest(boxedFloat64Number(x)))))
+    }
+    default: {
+      // Should trap or something
+      return reducedInteger(0xF00BAE)
+    }
+  }
 }

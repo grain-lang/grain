@@ -16,6 +16,8 @@ export const memory = new WebAssembly.Memory({initial: 16});
 export const table = new WebAssembly.Table({element: 'anyfunc', initial: 1024});
 export const view = new Int32Array(memory.buffer);
 export const uview = new Uint32Array(memory.buffer);
+export const f32view = new Float32Array(memory.buffer);
+export const f64view = new Float64Array(memory.buffer);
 export const encoder = new TextEncoder("utf-8");
 export const decoder = new TextDecoder("utf-8");
 export const managedMemory = new ManagedMemory(memory);
@@ -71,6 +73,7 @@ const importObj = {
     incRef64: managedMemory.incRef64.bind(managedMemory),
     decRef: managedMemory.decRef.bind(managedMemory),
     decRef64: managedMemory.decRef64.bind(managedMemory),
+    print,
     ...tracingImports
   },
   grainBuiltins: {

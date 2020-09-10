@@ -1,4 +1,4 @@
-import { memory, view, encoder, decoder, managedMemory, uview } from '../runtime';
+import { memory, view, encoder, decoder, managedMemory, uview, f32view, f64view } from '../runtime';
 import { grainHeapAllocate } from '../core/heap';
 import { GrainError } from '../errors/errors';
 import { grainDOMRefs } from '../lib/DOM';
@@ -12,8 +12,12 @@ import {
   GRAIN_ADT_HEAP_TAG,
   GRAIN_RECORD_HEAP_TAG,
   GRAIN_ARRAY_HEAP_TAG,
-  GRAIN_INT32_HEAP_TAG,
-  GRAIN_INT64_HEAP_TAG,
+  GRAIN_BOXED_NUM_HEAP_TAG,
+  GRAIN_INT32_BOXED_NUM_TAG,
+  GRAIN_INT64_BOXED_NUM_TAG,
+  GRAIN_RATIONAL_BOXED_NUM_TAG,
+  GRAIN_FLOAT32_BOXED_NUM_TAG,
+  GRAIN_FLOAT64_BOXED_NUM_TAG,
 } from '../core/tags';
 
 import {
@@ -156,42 +160,52 @@ export function grainHeapValueToString(runtime, n) {
       }
       return `[> ${values.join(', ')}]`
     }
-    case GRAIN_INT32_HEAP_TAG: {
+    case GRAIN_BOXED_NUM_HEAP_TAG: {
       let x = n / 4
+      let tag = view[x + 1]
+      switch (tag) {
+        case GRAIN_INT32_BOXED_NUM_TAG: {
+          return view[x + 2].toString(10)
+        }
+        case GRAIN_INT64_BOXED_NUM_TAG: {
+          let low = uview[x + 2]
+          let high = view[x + 3]
+          let negative = high < 0
 
-      let int = view[x + 1]
+          let digits = []
+          if (negative) {
+            high = ~high
+            low = ~low + 1
+          }
 
-      return int.toString(10)
-    }
-    case GRAIN_INT64_HEAP_TAG: {
-      let x = n / 4
+          let digit = ((high % 10) * (2 ** 32) + low) % 10
+          digits.unshift(digit)
 
-      let low = uview[x + 1]
-      let high = view[x + 2]
+          while (low >= 10 || high > 0) {
+            low = Math.floor(((high % 10) * (2 ** 32) + low) / 10)
+            high = Math.floor(high / 10)
+            digit = ((high % 10) * (2 ** 32) + low) % 10
+            digits.unshift(digit)
+          }
 
-      let negative = high < 0
+          if (negative) {
+            digits.unshift('-')
+          }
 
-      let digits = []
-      if (negative) {
-        high = ~high
-        low = ~low + 1
+          return digits.join('')
+        }
+        case GRAIN_RATIONAL_BOXED_NUM_TAG: {
+          let numerator = view[x + 2]
+          let denominator = view[x + 3]
+          return `${numerator.toString(10)}/${denominator.toString(10)}`
+        }
+        case GRAIN_FLOAT32_BOXED_NUM_TAG: {
+          return f32view[x + 2].toString(10)
+        }
+        case GRAIN_FLOAT64_BOXED_NUM_TAG: {
+          return '[TODO] Float64 toString()'
+        }
       }
-
-      let digit = ((high % 10) * (2 ** 32) + low) % 10
-      digits.unshift(digit)
-
-      while (low >= 10 || high > 0) {
-        low = Math.floor(((high % 10) * (2 ** 32) + low) / 10)
-        high = Math.floor(high / 10)
-        digit = ((high % 10) * (2 ** 32) + low) % 10
-        digits.unshift(digit)
-      }
-
-      if (negative) {
-        digits.unshift('-')
-      }
-
-      return digits.join('')
     }
     default: {
       return `<unknown heap type: ${view[n / 4]}>`;
