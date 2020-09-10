@@ -247,10 +247,6 @@ pipe :
 equal :
   | eols? EQUAL eols? { () }
 
-const_conv :
-  | INT_GEN { compile_int_gen dyp $1 }
-  | FLOAT_GEN { Exp.prim1 ~loc:(symbol_rloc dyp) Float64ToNumber (Exp.constant ~loc:(symbol_rloc dyp) (Const.float64 $1)) }
-
 const :
   | INT32 { Const.int32 $1 }
   | INT64 { Const.int64 $1 }
@@ -486,7 +482,8 @@ id_expr :
   | id { prerr_string "\nsimple_expr\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); Exp.ident ~loc:(symbol_rloc dyp) $1 }
 
 simple_expr :
-  | const_conv { $1 }
+  | INT_GEN { compile_int_gen dyp $1 }
+  | FLOAT_GEN { Exp.prim1 ~loc:(symbol_rloc dyp) Float64ToNumber (Exp.constant ~loc:(symbol_rloc dyp) (Const.float64 $1)) }
   | const { Exp.constant ~loc:(symbol_rloc dyp) $1 }
   | lparen tuple_exprs rparen { Exp.tuple ~loc:(symbol_rloc dyp) $2 }
   | lbrace record_exprs rbrace { Exp.record ~loc:(symbol_rloc dyp) $2 }
