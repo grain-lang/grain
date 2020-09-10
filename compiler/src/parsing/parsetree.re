@@ -207,6 +207,7 @@ and value_binding = {
 and match_branch = {
   pmb_pat: pattern,
   pmb_body: expression,
+  pmb_guard: option(expression),
   [@sexp_drop_if sexp_locs_disabled]
   pmb_loc: Location.t,
 };

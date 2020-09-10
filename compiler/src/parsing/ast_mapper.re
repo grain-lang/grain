@@ -194,9 +194,11 @@ module V = {
 };
 
 module MB = {
-  let map = (sub, {pmb_pat: pat, pmb_body: expr, pmb_loc: loc}) => {
+  let map =
+      (sub, {pmb_pat: pat, pmb_body: expr, pmb_guard: guard, pmb_loc: loc}) => {
     pmb_pat: sub.pat(sub, pat),
     pmb_body: sub.expr(sub, expr),
+    pmb_guard: Option.map(sub.expr(sub), guard),
     pmb_loc: sub.location(sub, loc),
   };
 };
