@@ -298,7 +298,7 @@ let fdStats = (fd) => {
 
   let mut rightsInheritingList = []
   List.forEachi((flag, i) => {
-    if (rightsInheriting && Int64.lsl(1L, i) > 0L) {
+    if ((rightsInheriting && Int64.lsl(1L, i)) > 0L) {
       ignore(rightsInheritingList = [flag, ...rightsInheritingList])
     }
   }, orderedRights)
