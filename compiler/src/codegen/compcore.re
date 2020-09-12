@@ -2796,7 +2796,8 @@ let compile_prim1 = (wasm_mod, env, p1, arg): Expression.t => {
   | Int32ToNumber => call_int32_to_number(wasm_mod, env, [compiled_arg])
   | Float32ToNumber => call_float32_to_number(wasm_mod, env, [compiled_arg])
   | Float64ToNumber => call_float64_to_number(wasm_mod, env, [compiled_arg])
-  | Int64Lnot => failwith("Unreachable case; should never get here: Int64LNot")
+  | Int64Lnot =>
+    failwith("Unreachable case; should never get here: Int64LNot")
   | Box => failwith("Unreachable case; should never get here: Box")
   | Unbox => failwith("Unreachable case; should never get here: Unbox")
   };
@@ -2810,16 +2811,11 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
   // [TODO] (#300) Clean out a lot of these unreachable cases
 
   switch (p2) {
-  | Plus =>
-    failwith("Unreachable case; should never get here: Plus")
-  | Minus =>
-    failwith("Unreachable case; should never get here: Minus")
-  | Times =>
-    failwith("Unreachable case; should never get here: Times")
-  | Divide =>
-    failwith("Unreachable case; should never get here: Divide")
-  | Mod =>
-    failwith("Unreachable case; should never get here: Mod")
+  | Plus => failwith("Unreachable case; should never get here: Plus")
+  | Minus => failwith("Unreachable case; should never get here: Minus")
+  | Times => failwith("Unreachable case; should never get here: Times")
+  | Divide => failwith("Unreachable case; should never get here: Divide")
+  | Mod => failwith("Unreachable case; should never get here: Mod")
   | And =>
     Expression.if_(
       wasm_mod,
@@ -2859,16 +2855,12 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
     )
   | Int64Land =>
     failwith("Unreachable case; should never get here: Int64Land")
-  | Int64Lor =>
-    failwith("Unreachable case; should never get here: Int64Lor")
+  | Int64Lor => failwith("Unreachable case; should never get here: Int64Lor")
   | Int64Lxor =>
     failwith("Unreachable case; should never get here: Int64Lxor")
-  | Int64Lsl =>
-    failwith("Unreachable case; should never get here: Int64Lsl")
-  | Int64Lsr =>
-    failwith("Unreachable case; should never get here: Int64Lsr")
-  | Int64Asr =>
-    failwith("Unreachable case; should never get here: Int64Asr")
+  | Int64Lsl => failwith("Unreachable case; should never get here: Int64Lsl")
+  | Int64Lsr => failwith("Unreachable case; should never get here: Int64Lsr")
+  | Int64Asr => failwith("Unreachable case; should never get here: Int64Asr")
   | ArrayMake => allocate_array_n(wasm_mod, env, arg1, arg2)
   | ArrayInit => allocate_array_init(wasm_mod, env, arg1, arg2)
   };

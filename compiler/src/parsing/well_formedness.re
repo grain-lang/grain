@@ -53,7 +53,11 @@ let prepare_error =
       | NoLetRecMut(loc) =>
         errorf(~loc, "let rec may not be used with the `mut` keyword.")
       | NumberDoesntFit(num, loc) =>
-        errorf(~loc, "This number is outside of the signed 64-bit integer range: %s", num)
+        errorf(
+          ~loc,
+          "This number is outside of the signed 64-bit integer range: %s",
+          num,
+        )
     )
   );
 
