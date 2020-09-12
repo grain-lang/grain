@@ -10,11 +10,13 @@ You can find all of the tags in the code in [codegen/value_tags.re](https://gith
 
 ### Numbers
 
-The last bit of a value determines if that value is a number or something else. If it's 0, the value is a number. Conveniently, this means that every Grain number is stored as `n * 2`. This means that addition and subtraction don't require any additional instructions to compute, since `2a + 2b = 2(a + b)`. There are other tricks like this for the other operations that allow us to avoid unnecessary untagging.
+The last bit of a value determines if that value is a number or something else. If it's 0, the value is a "simple number" (defined to be a 31-bit integer). Conveniently, this means that every Grain simple number is stored as `n * 2`. This means that addition and subtraction don't require any additional instructions to compute, since `2a + 2b = 2(a + b)`. There are other tricks like this for the other operations that allow us to avoid unnecessary untagging.
 
-The downside of this tag for numbers is the loss of one bit of information. There are 2^31 possible values for signed numbers in Grain rather than 2^32.
+The downside of this tag for numbers is the loss of one bit of information. If larger numbers are needed, then users must use one of the other (heap-allocated) number types.
 
-To tag a number, we perform a shift left by 1. To untag a number, we perform an arithmetic (signed) shift right by 1.
+To tag a simple number, we perform a shift left by 1. To untag a simple number, we perform an arithmetic (signed) shift right by 1.
+
+In addition to simple numbers, Grain has alternative number values which are allocated on the heap (described in detail below).
 
 ### Other values
 
@@ -131,3 +133,80 @@ Strings are currently the only data type that stores data in 8-bit chunks rather
 The size is **untagged**. Note that Grain strings are UTF-8 encoded, so one byte does not necessarily fully represent one character. As such, the size set here is the size of the string in bytes, rather than the actual number of characters. The size will always be greater than or equal to the number of characters in the string.
 
 [More information on strings](./string.md)
+
+### Heap-Allocated Numbers
+
+All heap-allocated numbers have the following structure on the heap.
+
+```plaintext
+╔══════╦═══════════╤══════════════════╤════════════╗
+║ size ║ 32        │ 32               │ *          ║
+╠══════╬═══════════╪══════════════════╪════════════╣
+║ what ║ value tag │ boxed number tag │ payload    ║
+╚══════╩═══════════╧══════════════════╧════════════╝
+```
+
+The boxed number tag describes which variant the structure is an instance of, and, correspondingly,
+what the shape of the rest of the structure is.
+
+#### Int32
+
+The payload for Int32 values is a single, signed, 32-bit integer.
+
+```plaintext
+╔══════╦═══════════╤══════════════════╤══════════════╗
+║ size ║ 32        │ 32               │ 32           ║
+╠══════╬═══════════╪══════════════════╪══════════════╣
+║ what ║ value tag │ boxed number tag │ value (i32)  ║
+╚══════╩═══════════╧══════════════════╧══════════════╝
+```
+
+#### Int64
+
+The payload for Int64 values is a single, signed, 64-bit integer.
+
+```plaintext
+╔══════╦═══════════╤══════════════════╤══════════════╗
+║ size ║ 32        │ 32               │ 64           ║
+╠══════╬═══════════╪══════════════════╪══════════════╣
+║ what ║ value tag │ boxed number tag │ value (i64)  ║
+╚══════╩═══════════╧══════════════════╧══════════════╝
+```
+
+#### Float32
+
+The payload for Float32 values is a single, signed, 32-bit float.
+
+```plaintext
+╔══════╦═══════════╤══════════════════╤══════════════╗
+║ size ║ 32        │ 32               │ 32           ║
+╠══════╬═══════════╪══════════════════╪══════════════╣
+║ what ║ value tag │ boxed number tag │ value (f32)  ║
+╚══════╩═══════════╧══════════════════╧══════════════╝
+```
+
+#### Float64
+
+The payload for Float64 values is a single, signed, 64-bit float.
+
+```plaintext
+╔══════╦═══════════╤══════════════════╤══════════════╗
+║ size ║ 32        │ 32               │ 64           ║
+╠══════╬═══════════╪══════════════════╪══════════════╣
+║ what ║ value tag │ boxed number tag │ value (f64)  ║
+╚══════╩═══════════╧══════════════════╧══════════════╝
+```
+
+#### Rational
+
+The payload for rational numbers consists of two numbers. A signed 32-bit
+integer denotes the numerator of the represented fraction, and an unsigned 32-bit
+integer denotes the denominator of the represented fraction.
+
+```plaintext
+╔══════╦═══════════╤══════════════════╤══════════════════════════════════════╗
+║ size ║ 32        │ 32               │ 32              │ 32                 ║
+╠══════╬═══════════╪══════════════════╪═════════════════╪════════════════════╣
+║ what ║ value tag │ boxed number tag │ numerator (i32) │ denominator (u32)  ║
+╚══════╩═══════════╧══════════════════╧═════════════════╧════════════════════╝
+```
