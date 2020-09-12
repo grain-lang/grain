@@ -26,7 +26,7 @@ let in_valid_int_range = (op, x, y) =>
     false;
   } else {
     let n = op(get_int(x), get_int(y));
-    /* Numbers in Grain are stored double their value, so we need to check if the representation overflows */
+    /* Unboxed integers ("simple numbers") in Grain are stored double their value, so we need to check if the representation overflows */
     let n = n * 2;
     n < Int32.to_int(Int32.max_int) && n > Int32.to_int(Int32.min_int);
   };

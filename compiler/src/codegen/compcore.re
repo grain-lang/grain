@@ -44,8 +44,6 @@ let module_runtime_id = Ident.create_persistent("moduleRuntimeId");
 let reloc_base = Ident.create_persistent("relocBase");
 let table_size = Ident.create_persistent("GRAIN$TABLE_SIZE");
 let runtime_mod = Ident.create_persistent("grainRuntime");
-let data_structures_mod = Ident.create_persistent("dataStructures");
-let numbers_mod = Ident.create_persistent("numbers");
 let stdlib_external_runtime_mod =
   Ident.create_persistent("stdlib-external/runtime");
 let console_mod = Ident.create_persistent("console");
@@ -59,24 +57,6 @@ let new_float32_ident = Ident.create_persistent("newFloat32");
 let new_float64_ident = Ident.create_persistent("newFloat64");
 let new_int32_ident = Ident.create_persistent("newInt32");
 let new_int64_ident = Ident.create_persistent("newInt64");
-let number_plus_ident = Ident.create_persistent("numberPlus");
-let number_minus_ident = Ident.create_persistent("numberMinus");
-let number_times_ident = Ident.create_persistent("numberTimes");
-let number_divide_ident = Ident.create_persistent("numberDivide");
-let number_mod_ident = Ident.create_persistent("numberMod");
-let number_less_ident = Ident.create_persistent("numberLess");
-let number_greater_ident = Ident.create_persistent("numberGreater");
-let number_less_equal_ident = Ident.create_persistent("numberLessEqual");
-let number_greater_equal_ident =
-  Ident.create_persistent("numberGreaterEqual");
-let number_eq_ident = Ident.create_persistent("numberEq");
-let number_lsl_ident = Ident.create_persistent("numberLsl");
-let number_lsr_ident = Ident.create_persistent("numberLsr");
-let number_land_ident = Ident.create_persistent("numberLand");
-let number_lor_ident = Ident.create_persistent("numberLor");
-let number_lxor_ident = Ident.create_persistent("numberLxor");
-let number_asr_ident = Ident.create_persistent("numberAsr");
-let number_lnot_ident = Ident.create_persistent("numberLnot");
 let number_to_int64_ident = Ident.create_persistent("coerceNumberToInt64");
 let int64_to_number_ident = Ident.create_persistent("coerceInt64ToNumber");
 let int32_to_number_ident = Ident.create_persistent("coerceInt32ToNumber");
@@ -408,141 +388,6 @@ let runtime_function_imports =
         mimp_mod: stdlib_external_runtime_mod,
         mimp_name: new_int64_ident,
         mimp_type: [@implicit_arity] MFuncImport([I64Type], [I32Type]),
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: stdlib_external_runtime_mod,
-        mimp_name: number_plus_ident,
-        mimp_type:
-          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: stdlib_external_runtime_mod,
-        mimp_name: number_minus_ident,
-        mimp_type:
-          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: stdlib_external_runtime_mod,
-        mimp_name: number_times_ident,
-        mimp_type:
-          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: stdlib_external_runtime_mod,
-        mimp_name: number_divide_ident,
-        mimp_type:
-          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: stdlib_external_runtime_mod,
-        mimp_name: number_mod_ident,
-        mimp_type:
-          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: stdlib_external_runtime_mod,
-        mimp_name: number_less_ident,
-        mimp_type:
-          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: stdlib_external_runtime_mod,
-        mimp_name: number_greater_ident,
-        mimp_type:
-          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: stdlib_external_runtime_mod,
-        mimp_name: number_less_equal_ident,
-        mimp_type:
-          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: stdlib_external_runtime_mod,
-        mimp_name: number_greater_equal_ident,
-        mimp_type:
-          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: stdlib_external_runtime_mod,
-        mimp_name: number_eq_ident,
-        mimp_type:
-          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: stdlib_external_runtime_mod,
-        mimp_name: number_lsl_ident,
-        mimp_type:
-          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: stdlib_external_runtime_mod,
-        mimp_name: number_lsr_ident,
-        mimp_type:
-          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: stdlib_external_runtime_mod,
-        mimp_name: number_land_ident,
-        mimp_type:
-          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: stdlib_external_runtime_mod,
-        mimp_name: number_lor_ident,
-        mimp_type:
-          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: stdlib_external_runtime_mod,
-        mimp_name: number_lxor_ident,
-        mimp_type:
-          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: stdlib_external_runtime_mod,
-        mimp_name: number_asr_ident,
-        mimp_type:
-          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: stdlib_external_runtime_mod,
-        mimp_name: number_lnot_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
@@ -1015,128 +860,6 @@ let call_new_int64 = (wasm_mod, env, args) =>
     args,
     Type.int32,
   );
-let call_number_plus = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    get_imported_name(stdlib_external_runtime_mod, number_plus_ident),
-    args,
-    Type.int32,
-  );
-let call_number_minus = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    get_imported_name(stdlib_external_runtime_mod, number_minus_ident),
-    args,
-    Type.int32,
-  );
-let call_number_times = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    get_imported_name(stdlib_external_runtime_mod, number_times_ident),
-    args,
-    Type.int32,
-  );
-let call_number_divide = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    get_imported_name(stdlib_external_runtime_mod, number_divide_ident),
-    args,
-    Type.int32,
-  );
-let call_number_mod = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    get_imported_name(stdlib_external_runtime_mod, number_mod_ident),
-    args,
-    Type.int32,
-  );
-let call_number_less = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    get_imported_name(stdlib_external_runtime_mod, number_less_ident),
-    args,
-    Type.int32,
-  );
-let call_number_greater = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    get_imported_name(stdlib_external_runtime_mod, number_greater_ident),
-    args,
-    Type.int32,
-  );
-let call_number_less_equal = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    get_imported_name(stdlib_external_runtime_mod, number_less_equal_ident),
-    args,
-    Type.int32,
-  );
-let call_number_greater_equal = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    get_imported_name(
-      stdlib_external_runtime_mod,
-      number_greater_equal_ident,
-    ),
-    args,
-    Type.int32,
-  );
-let call_number_eq = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    get_imported_name(stdlib_external_runtime_mod, number_eq_ident),
-    args,
-    Type.int32,
-  );
-let call_number_lsl = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    get_imported_name(stdlib_external_runtime_mod, number_lsl_ident),
-    args,
-    Type.int32,
-  );
-let call_number_lsr = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    get_imported_name(stdlib_external_runtime_mod, number_lsr_ident),
-    args,
-    Type.int32,
-  );
-let call_number_land = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    get_imported_name(stdlib_external_runtime_mod, number_land_ident),
-    args,
-    Type.int32,
-  );
-let call_number_lor = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    get_imported_name(stdlib_external_runtime_mod, number_lor_ident),
-    args,
-    Type.int32,
-  );
-let call_number_lxor = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    get_imported_name(stdlib_external_runtime_mod, number_lxor_ident),
-    args,
-    Type.int32,
-  );
-let call_number_asr = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    get_imported_name(stdlib_external_runtime_mod, number_asr_ident),
-    args,
-    Type.int32,
-  );
-let call_number_lnot = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    get_imported_name(stdlib_external_runtime_mod, number_lnot_ident),
-    args,
-    Type.int32,
-  );
 let call_number_to_int64 = (wasm_mod, env, args) =>
   Expression.call(
     wasm_mod,
@@ -1183,7 +906,7 @@ let tracepoint = (wasm_mod, env, n) =>
     Type.int32,
   );
 
-/** Untags the number at the top of the stack */
+/** Untags the number */
 
 let untag_number = (wasm_mod, value) =>
   Expression.binary(
@@ -3073,7 +2796,7 @@ let compile_prim1 = (wasm_mod, env, p1, arg): Expression.t => {
   | Int32ToNumber => call_int32_to_number(wasm_mod, env, [compiled_arg])
   | Float32ToNumber => call_float32_to_number(wasm_mod, env, [compiled_arg])
   | Float64ToNumber => call_float64_to_number(wasm_mod, env, [compiled_arg])
-  | Int64Lnot => call_number_lnot(wasm_mod, env, [compiled_arg])
+  | Int64Lnot => failwith("Unreachable case; should never get here: Int64LNot")
   | Box => failwith("Unreachable case; should never get here: Box")
   | Unbox => failwith("Unreachable case; should never get here: Unbox")
   };
@@ -3084,28 +2807,19 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
   let compiled_arg2 = () => compile_imm(wasm_mod, env, arg2);
   let swap_get = () => get_swap(wasm_mod, env, 0);
   let swap_tee = tee_swap(wasm_mod, env, 0);
+  // [TODO] (#300) Clean out a lot of these unreachable cases
 
   switch (p2) {
   | Plus =>
-    call_number_plus(wasm_mod, env, [compiled_arg1(), compiled_arg2()])
+    failwith("Unreachable case; should never get here: Plus")
   | Minus =>
-    call_number_minus(wasm_mod, env, [compiled_arg1(), compiled_arg2()])
+    failwith("Unreachable case; should never get here: Minus")
   | Times =>
-    /* Untag one of the numbers:
-          ((a * 2) / 2) * (b * 2) = (a * b) * 2
-       */
-    call_number_times(wasm_mod, env, [compiled_arg1(), compiled_arg2()])
+    failwith("Unreachable case; should never get here: Times")
   | Divide =>
-    /*
-     While (2a) / b = 2(a/b), we can't just untag b since b could be a multiple of 2,
-           yielding an odd (untagged) result.
-           Instead, perform the division and retag after:
-           (2a / 2b) * 2 = (a / b) * 2
-        */
-    call_number_divide(wasm_mod, env, [compiled_arg1(), compiled_arg2()])
+    failwith("Unreachable case; should never get here: Divide")
   | Mod =>
-    /* Mod is not commutative, so untag everything and retag at the end */
-    call_number_mod(wasm_mod, env, [compiled_arg1(), compiled_arg2()])
+    failwith("Unreachable case; should never get here: Mod")
   | And =>
     Expression.if_(
       wasm_mod,
@@ -3122,20 +2836,16 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
     )
   | Greater
   | Int64Gt =>
-    call_number_greater(wasm_mod, env, [compiled_arg1(), compiled_arg2()])
+    failwith("Unreachable case; should never get here: Greater/Int64Gt")
   | GreaterEq
   | Int64Gte =>
-    call_number_greater_equal(
-      wasm_mod,
-      env,
-      [compiled_arg1(), compiled_arg2()],
-    )
+    failwith("Unreachable case; should never get here: GreaterEq/Int64Gte")
   | Less
   | Int64Lt =>
-    call_number_less(wasm_mod, env, [compiled_arg1(), compiled_arg2()])
+    failwith("Unreachable case; should never get here: Less/Int64Lt")
   | LessEq
   | Int64Lte =>
-    call_number_less_equal(wasm_mod, env, [compiled_arg1(), compiled_arg2()])
+    failwith("Unreachable case; should never get here: LessEq/Int64Lte")
   | Eq =>
     // Physical equality check
     encode_bool(
@@ -3148,17 +2858,17 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
       ),
     )
   | Int64Land =>
-    call_number_land(wasm_mod, env, [compiled_arg1(), compiled_arg2()])
+    failwith("Unreachable case; should never get here: Int64Land")
   | Int64Lor =>
-    call_number_lor(wasm_mod, env, [compiled_arg1(), compiled_arg2()])
+    failwith("Unreachable case; should never get here: Int64Lor")
   | Int64Lxor =>
-    call_number_lxor(wasm_mod, env, [compiled_arg1(), compiled_arg2()])
+    failwith("Unreachable case; should never get here: Int64Lxor")
   | Int64Lsl =>
-    call_number_lsl(wasm_mod, env, [compiled_arg1(), compiled_arg2()])
+    failwith("Unreachable case; should never get here: Int64Lsl")
   | Int64Lsr =>
-    call_number_lsr(wasm_mod, env, [compiled_arg1(), compiled_arg2()])
+    failwith("Unreachable case; should never get here: Int64Lsr")
   | Int64Asr =>
-    call_number_asr(wasm_mod, env, [compiled_arg1(), compiled_arg2()])
+    failwith("Unreachable case; should never get here: Int64Asr")
   | ArrayMake => allocate_array_n(wasm_mod, env, arg1, arg2)
   | ArrayInit => allocate_array_init(wasm_mod, env, arg1, arg2)
   };

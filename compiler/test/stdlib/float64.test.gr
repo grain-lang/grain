@@ -1,0 +1,16 @@
+import * from 'float64'
+
+assert fromNumber(5) == 5.0d
+assert fromNumber(0) == 0.0d
+
+assert toNumber(555.0d) == 555
+assert toNumber(0.0d) == 0
+
+assert gt(5.0d, 4.0d)
+assert gte(5.0d, 5.0d)
+assert lt(5.0d, 17.0d)
+assert lte(5.0d, 5.0d)
+assert !gt(5.0d, 5.0d)
+assert !gte(5.0d, 22.0d)
+assert !lt(5.0d, -17.0d)
+assert !lte(5.0d, 4.0d)

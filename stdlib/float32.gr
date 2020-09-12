@@ -1,0 +1,18 @@
+export *
+
+let fromNumber = coerceNumberToFloat32
+let toNumber = coerceFloat32ToNumber
+
+import foreign wasm numberIncr : Float32 -> Float32 as incr from 'stdlib-external/runtime'
+import foreign wasm numberDecr : Float32 -> Float32 as decr from 'stdlib-external/runtime'
+import foreign wasm numberPlus : (Float32, Float32) -> Float32 as plus from 'stdlib-external/runtime'
+import foreign wasm numberMinus : (Float32, Float32) -> Float32 as minus from 'stdlib-external/runtime'
+import foreign wasm numberTimes : (Float32, Float32) -> Float32 as times from 'stdlib-external/runtime'
+import foreign wasm numberDivide : (Float32, Float32) -> Float32 as divide from 'stdlib-external/runtime'
+import foreign wasm numberMod : (Float32, Float32) -> Float32 as mod from 'stdlib-external/runtime'
+
+# Float32 comparisons
+import foreign wasm numberLess : (Float32, Float32) -> Bool as lt from 'stdlib-external/runtime'
+import foreign wasm numberGreater : (Float32, Float32) -> Bool as gt from 'stdlib-external/runtime'
+import foreign wasm numberLessEqual : (Float32, Float32) -> Bool as lte from 'stdlib-external/runtime'
+import foreign wasm numberGreaterEqual : (Float32, Float32) -> Bool as gte from 'stdlib-external/runtime'

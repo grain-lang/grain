@@ -53,7 +53,7 @@ let prepare_error =
       | NoLetRecMut(loc) =>
         errorf(~loc, "let rec may not be used with the `mut` keyword.")
       | NumberDoesntFit(num, loc) =>
-        errorf(~loc, "Grain does not support numbers this big: %s", num)
+        errorf(~loc, "This number is outside of the signed 64-bit integer range: %s", num)
     )
   );
 
@@ -69,7 +69,7 @@ type well_formedness_checker = {
   iterator,
 };
 
-let numbers_too_big = (errs, super) => {
+let numbers_out_of_range = (errs, super) => {
   let iter_expr = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
     | PExpConstant(PConstIntOverflow(s)) =>
@@ -348,7 +348,7 @@ let well_formedness_checks = [
   no_empty_record_patterns,
   only_functions_oh_rhs_letrec,
   no_letrec_mut,
-  numbers_too_big,
+  numbers_out_of_range,
 ];
 
 let well_formedness_checker = () =>

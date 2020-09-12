@@ -31,7 +31,7 @@ import {
   GRAIN_FALSE,
   GRAIN_VOID,
 } from './ascutils/primitives'
-import { debug } from './ascutils/console'
+
 import {
   boxedNumberTag,
   boxedRationalNumerator,

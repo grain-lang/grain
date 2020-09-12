@@ -1,19 +1,29 @@
 export *
 
-primitive fromNumber : Number -> Int64 = '@int64.fromNumber'
-primitive toNumber : Int64 -> Number = '@int64.toNumber'
+let fromNumber = coerceNumberToInt64
+let toNumber = coerceInt64ToNumber
 
-primitive lnot : Int64 -> Int64 = '@int64.lnot'
+import foreign wasm numberIncr : Int64 -> Int64 as incr from 'stdlib-external/runtime'
+import foreign wasm numberDecr : Int64 -> Int64 as decr from 'stdlib-external/runtime'
+import foreign wasm numberPlus : (Int64, Int64) -> Int64 as plus from 'stdlib-external/runtime'
+import foreign wasm numberMinus : (Int64, Int64) -> Int64 as minus from 'stdlib-external/runtime'
+import foreign wasm numberTimes : (Int64, Int64) -> Int64 as times from 'stdlib-external/runtime'
+import foreign wasm numberDivide : (Int64, Int64) -> Int64 as divide from 'stdlib-external/runtime'
+import foreign wasm numberMod : (Int64, Int64) -> Int64 as mod from 'stdlib-external/runtime'
 
-primitive land : (Int64, Int64) -> Int64 = '@int64.land'
-primitive lor : (Int64, Int64) -> Int64 = '@int64.lor'
-primitive lxor : (Int64, Int64) -> Int64 = '@int64.lxor'
+# Int64 comparisons
+import foreign wasm numberLess : (Int64, Int64) -> Bool as lt from 'stdlib-external/runtime'
+import foreign wasm numberGreater : (Int64, Int64) -> Bool as gt from 'stdlib-external/runtime'
+import foreign wasm numberLessEqual : (Int64, Int64) -> Bool as lte from 'stdlib-external/runtime'
+import foreign wasm numberGreaterEqual : (Int64, Int64) -> Bool as gte from 'stdlib-external/runtime'
 
-primitive lsl : (Int64, Number) -> Int64 = '@int64.lsl'
-primitive lsr : (Int64, Number) -> Int64 = '@int64.lsr'
-primitive asr : (Int64, Number) -> Int64 = '@int64.asr'
+# Int64 bit/logical operations
+import foreign wasm numberLnot : Int64 -> Int64 as lnot from 'stdlib-external/runtime'
 
-primitive gt : (Int64, Int64) -> Bool = '@int64.gt'
-primitive gte : (Int64, Int64) -> Bool = '@int64.gte'
-primitive lt : (Int64, Int64) -> Bool = '@int64.lt'
-primitive lte : (Int64, Int64) -> Bool = '@int64.lte'
+import foreign wasm numberLand : (Int64, Int64) -> Int64 as land from 'stdlib-external/runtime'
+import foreign wasm numberLor : (Int64, Int64) -> Int64 as lor from 'stdlib-external/runtime'
+import foreign wasm numberLxor : (Int64, Int64) -> Int64 as lxor from 'stdlib-external/runtime'
+
+import foreign wasm numberLsl : (Int64, Number) -> Int64 as lsl from 'stdlib-external/runtime'
+import foreign wasm numberLsr : (Int64, Number) -> Int64 as lsr from 'stdlib-external/runtime'
+import foreign wasm numberAsr : (Int64, Number) -> Int64 as asr from 'stdlib-external/runtime'

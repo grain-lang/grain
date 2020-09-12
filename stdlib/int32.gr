@@ -1,0 +1,29 @@
+export *
+
+let fromNumber = coerceNumberToInt32
+let toNumber = coerceInt32ToNumber
+
+import foreign wasm numberIncr : Int32 -> Int32 as incr from 'stdlib-external/runtime'
+import foreign wasm numberDecr : Int32 -> Int32 as decr from 'stdlib-external/runtime'
+import foreign wasm numberPlus : (Int32, Int32) -> Int32 as plus from 'stdlib-external/runtime'
+import foreign wasm numberMinus : (Int32, Int32) -> Int32 as minus from 'stdlib-external/runtime'
+import foreign wasm numberTimes : (Int32, Int32) -> Int32 as times from 'stdlib-external/runtime'
+import foreign wasm numberDivide : (Int32, Int32) -> Int32 as divide from 'stdlib-external/runtime'
+import foreign wasm numberMod : (Int32, Int32) -> Int32 as mod from 'stdlib-external/runtime'
+
+# Int32 comparisons
+import foreign wasm numberLess : (Int32, Int32) -> Bool as lt from 'stdlib-external/runtime'
+import foreign wasm numberGreater : (Int32, Int32) -> Bool as gt from 'stdlib-external/runtime'
+import foreign wasm numberLessEqual : (Int32, Int32) -> Bool as lte from 'stdlib-external/runtime'
+import foreign wasm numberGreaterEqual : (Int32, Int32) -> Bool as gte from 'stdlib-external/runtime'
+
+# Int32 bit/logical operations
+import foreign wasm numberLnot : Int32 -> Int32 as lnot from 'stdlib-external/runtime'
+
+import foreign wasm numberLand : (Int32, Int32) -> Int32 as land from 'stdlib-external/runtime'
+import foreign wasm numberLor : (Int32, Int32) -> Int32 as lor from 'stdlib-external/runtime'
+import foreign wasm numberLxor : (Int32, Int32) -> Int32 as lxor from 'stdlib-external/runtime'
+
+import foreign wasm numberLsl : (Int32, Number) -> Int32 as lsl from 'stdlib-external/runtime'
+import foreign wasm numberLsr : (Int32, Number) -> Int32 as lsr from 'stdlib-external/runtime'
+import foreign wasm numberAsr : (Int32, Number) -> Int32 as asr from 'stdlib-external/runtime'
