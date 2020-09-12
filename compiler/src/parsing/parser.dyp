@@ -147,10 +147,14 @@ let make_program statements =
   } in
   fix_blocks {statements; comments=[]; prog_loc}
 
+(* Need to reserve a tag bit, so we can't support the full 32-bit range *)
+let simple_number_max = 1073741824L
+let simple_number_min = -1073741824L
+
 let compile_int_gen dyp v =
   match v with
   | (_, Some(s)) -> Exp.constant ~loc:(symbol_rloc dyp) (Const.int_overflow s)
-  | (n, _) when (Int64.compare n 1073741824L) < 0 && (Int64.compare n (-1073741824L)) > 0 -> Exp.constant ~loc:(symbol_rloc dyp) (Const.int (Int64.to_int n))
+  | (n, _) when (Int64.compare n simple_number_max) < 0 && (Int64.compare n simple_number_min) > 0 -> Exp.constant ~loc:(symbol_rloc dyp) (Const.int (Int64.to_int n))
   | (n, _) when (Int64.compare n (Int64.of_int32 Int32.max_int)) < 0 && (Int64.compare n (Int64.of_int32 Int32.min_int)) > 0 -> Exp.prim1 ~loc:(symbol_rloc dyp) Int32ToNumber (Exp.constant ~loc:(symbol_rloc dyp) (Const.int32 (Int64.to_int32 n)))
   | (n, _) -> Exp.prim1 ~loc:(symbol_rloc dyp) Int64ToNumber (Exp.constant ~loc:(symbol_rloc dyp) (Const.int64 n))
 }

@@ -139,8 +139,8 @@ rule token = parse
   | comment { parse_line_comment lexbuf; EOL }
   | blank { token lexbuf }
   | newline_chars { process_newlines lexbuf; EOL }
-  | (signed_float as x) 'l' { FLOAT32 (Float.of_string x) }
-  | (signed_float as x) 'L' { FLOAT64 (Float.of_string x) }
+  | (signed_float as x) 'f' { FLOAT32 (Float.of_string x) }
+  | (signed_float as x) 'd' { FLOAT64 (Float.of_string x) }
   | signed_float as x { FLOAT_GEN (Float.of_string x) }
   | (signed_int as x) 'l' { INT32 (Int32.of_string x) }
   | (signed_int as x) 'L' { INT64 (Int64.of_string x) }

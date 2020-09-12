@@ -38,7 +38,7 @@ import {
 } from './ascutils/dataStructures'
 
 
-// [TODO] pretty much all of the overflow values we pass here are suboptimal...really need to rework this
+// [TODO] (#301) pretty much all of the overflow values we pass here are suboptimal...really need to rework this
 // @ts-ignore: decorator
 @inline
 function throwOverflowError(x: u32): u32 {
@@ -71,13 +71,13 @@ function encodeBool(b: bool): u32 {
 
 // @ts-ignore: decorator
 @inline
-function boxSimple(x: i32): u32 {
+function tagSimple(x: i32): u32 {
   return x << 1
 }
 
 // @ts-ignore: decorator
 @inline
-function unboxSimple(x: u32): i32 {
+function untagSimple(x: u32): i32 {
   return <i32>(x) >> 1
 }
 
@@ -91,10 +91,8 @@ function safeI64toI32(x: i64): i32 {
   }
 }
 
-// Make fun of me all you want, but this is taken from
 // https://en.wikipedia.org/wiki/Binary_GCD_algorithm
-// [TODO] Make sure it's okay that x & y are signed
-function gcd(x: i64, y: i64): i64 {
+function gcdHelp(x: i64, y: i64): i64 {
   if (x == y) {
     return y
   }
@@ -108,19 +106,25 @@ function gcd(x: i64, y: i64): i64 {
     // x is even
     if ((y & 1) != 0) {
       // y is odd
-      return gcd(x >> 1, y)
+      return gcdHelp(x >> 1, y)
     } else {
-      return gcd(x >> 1, y >> 1) << 1
+      return gcdHelp(x >> 1, y >> 1) << 1
     }
   }
   if ((~y & 1) != 0) {
     // y is even and x is odd
-    return gcd(x, y >> 1)
+    return gcdHelp(x, y >> 1)
   }
   if (x > y) {
-    return gcd(x - y, y)
+    return gcdHelp(x - y, y)
   }
-  return gcd(y - x, x)
+  return gcdHelp(y - x, x)
+}
+
+function gcd(x: i64, y: i64): i64 {
+  // Algorithm above breaks on negatives, so
+  // we make sure that they are positive at the beginning
+  return gcdHelp(abs<i64>(x), abs<i64>(y))
 }
 
 function gcd32(x: i32, y: i32): i32 {
@@ -171,7 +175,7 @@ function reducedInteger(x: i64): u32 {
   } else if ((x > (I32.MAX_VALUE >> 1)) || (x < (I32.MIN_VALUE >> 1))) {
     return newInt32(<i32>(x))
   } else {
-    return boxSimple(<i32>(x))
+    return tagSimple(<i32>(x))
   }
 }
 
@@ -190,14 +194,14 @@ function safeI32Multiply(x: i32, y: i32): i32 {
 function safeI64Multiply(x: i64, y: i64): i64 {
   let prod = x * y
   if (x != 0 && prod / x != y) {
-    // [TODO] just passing x is kind of bad UX
-    // [TODO] once we have exception handling, this will leak
+    // [TODO] (#301) just passing x is kind of bad UX
+    // [TODO] (#302) once we have exception handling, this will leak
     return throwOverflowError(newInt64(x))
   }
   return prod;
 }
 
-// Accessor functions (Binaryen should inline these)
+// Accessor functions
 
 /* Memory Layout:
  * [GRAIN_BOXED_NUM_HEAP_TAG : u32, <boxed_num tag> : u32, <number-specific payload>...]
@@ -208,7 +212,7 @@ function safeI64Multiply(x: i64, y: i64): i64 {
  * [number: i32]
  *
  * For Int64:
- * [number: i32]
+ * [number: i64]
  *
  * For Float32:
  * [number: f32]
@@ -266,7 +270,7 @@ export function boxedRationalDenominator(xptr: u32): u32 {
 
 function coerceFloat32(x: u32): f32 {
   if (isSimpleNumber(x)) {
-    return <f32>(unboxSimple(x))
+    return <f32>(untagSimple(x))
   }
   let xtag = boxedNumberTag(x)
   switch (xtag) {
@@ -294,7 +298,7 @@ function coerceFloat32(x: u32): f32 {
 
 function coerceFloat64(x: u32): f64 {
   if (isSimpleNumber(x)) {
-    return <f64>(unboxSimple(x))
+    return <f64>(untagSimple(x))
   }
   let xtag = boxedNumberTag(x)
   switch (xtag) {
@@ -316,7 +320,7 @@ function coerceFloat64(x: u32): f64 {
 
 function coerceInt64(x: u32): i64 {
   if (isSimpleNumber(x)) {
-    return <i64>(unboxSimple(x))
+    return <i64>(untagSimple(x))
   }
   let xtag = boxedNumberTag(x)
   switch (xtag) {
@@ -380,7 +384,7 @@ function numberEqualSimpleHelp(x: u32, yTagged: u32): bool {
     // x !== y, so they must be different
     return false
   }
-  let xval = unboxSimple(x) // <- actual int value of x
+  let xval = untagSimple(x) // <- actual int value of x
   let y = boxedNumberPtr(yTagged)
   let yBoxedNumberTag = boxedNumberTag(y)
   switch (yBoxedNumberTag) {
@@ -411,7 +415,7 @@ function numberEqualInt64Help(xBoxedVal: i64, y: u32): bool {
   // PRECONDITION: x !== y and isNumber(y)
   // Basic number:
   if ((y & GRAIN_NUMBER_TAG_MASK) == GRAIN_NUMBER_TAG_TYPE) {
-    return xBoxedVal == <i64>(unboxSimple(y))
+    return xBoxedVal == <i64>(untagSimple(y))
   }
   // Boxed number:
   let yBoxedNumberTag = boxedNumberTag(y)
@@ -465,12 +469,12 @@ function numberEqualRationalHelp(xptr: u32, y: u32): bool {
     } case GRAIN_FLOAT32_BOXED_NUM_TAG: {
       let yBoxedVal = boxedFloat32Number(y)
       let xAsFloat = <f64>(xNumerator) / <f64>(xDenominator)
-      // [TODO] maybe we should have some sort of tolerance?
+      // [TODO] (#303) maybe we should have some sort of tolerance?
       return xAsFloat == yBoxedVal
     } case GRAIN_FLOAT64_BOXED_NUM_TAG: {
       let yBoxedVal = boxedFloat64Number(y)
       let xAsFloat = <f64>(xNumerator) / <f64>(xDenominator)
-      // [TODO] maybe we should have some sort of tolerance?
+      // [TODO] (#303) maybe we should have some sort of tolerance?
       return xAsFloat == yBoxedVal
     } default: {
       // ideally we should trap or something here
@@ -483,7 +487,7 @@ function numberEqualFloat64Help(x: f64, y: u32): bool {
   let xIsInteger = F64.isInteger(x)
   // Basic number:
   if ((y & GRAIN_NUMBER_TAG_MASK) == GRAIN_NUMBER_TAG_TYPE) {
-    return xIsInteger && x == <f64>(unboxSimple(y))
+    return xIsInteger && x == <f64>(untagSimple(y))
   }
   // Boxed number
   let yBoxedNumberTag = boxedNumberTag(y)
@@ -501,11 +505,11 @@ function numberEqualFloat64Help(x: f64, y: u32): bool {
       return x == yAsFloat
     } case GRAIN_FLOAT32_BOXED_NUM_TAG: {
       let yBoxedVal = boxedFloat32Number(y)
-      // [TODO] maybe we should have some sort of tolerance?
+      // [TODO] (#303) maybe we should have some sort of tolerance?
       return x == <f64>(yBoxedVal)
     } case GRAIN_FLOAT64_BOXED_NUM_TAG: {
       let yBoxedVal = boxedFloat64Number(y)
-      // [TODO] maybe we should have some sort of tolerance?
+      // [TODO] (#303) maybe we should have some sort of tolerance?
       return x == yBoxedVal
     } default: {
       // ideally we should trap or something here
@@ -556,9 +560,9 @@ export function numberEqual(x: u32, y: u32): bool {
 function numberPlusMinusSimpleHelp(x: u32, y: u32, isMinus: bool): u32 {
   // PRECONDITION: x is a "simple" number (value tag is 0) and isNumber(y)
   if (isSimpleNumber(y)) {
-    return reducedInteger(<i64>(unboxSimple(x)) + <i64>(unboxSimple(y) * (isMinus ? -1 : 1)))
+    return reducedInteger(<i64>(untagSimple(x)) + <i64>(untagSimple(y) * (isMinus ? -1 : 1)))
   }
-  let xval = unboxSimple(x) // <- actual int value of x
+  let xval = untagSimple(x) // <- actual int value of x
   let yBoxedNumberTag = boxedNumberTag(y)
   switch (yBoxedNumberTag) {
     case GRAIN_INT32_BOXED_NUM_TAG: {
@@ -587,7 +591,7 @@ function numberPlusMinusSimpleHelp(x: u32, y: u32, isMinus: bool): u32 {
       return reducedFraction64(sum, <i64>(yDenominator))
     } case GRAIN_FLOAT32_BOXED_NUM_TAG: {
       let yBoxedVal = boxedFloat32Number(y) * (isMinus ? -1.0 : 1.0)
-      // [TODO] is this safe?
+      // [TODO] (#304) is this safe?
       return newFloat32(<f32>(xval) + yBoxedVal)
     } case GRAIN_FLOAT64_BOXED_NUM_TAG: {
       let yBoxedVal = boxedFloat64Number(y) * <f64>(isMinus ? -1.0 : 1.0)
@@ -602,7 +606,7 @@ function numberPlusMinusSimpleHelp(x: u32, y: u32, isMinus: bool): u32 {
 function numberPlusMinusInt64Help(xval: i64, y: u32, isMinus: bool): u32 {
   // PRECONDITION: x is a "simple" number (value tag is 0) and isNumber(y)
   if (isSimpleNumber(y)) {
-    let yval = <i64>(unboxSimple(y) * (isMinus ? -1 : 1))
+    let yval = <i64>(untagSimple(y) * (isMinus ? -1 : 1))
     let sum = xval + yval
     if (yval >= 0 && sum < xval) {
       return throwOverflowError(y)
@@ -639,7 +643,7 @@ function numberPlusMinusInt64Help(xval: i64, y: u32, isMinus: bool): u32 {
       return reducedFraction64(sum, <i64>(yDenominator))
     } case GRAIN_FLOAT32_BOXED_NUM_TAG: {
       let yBoxedVal = boxedFloat32Number(y) * (isMinus ? -1.0 : 1.0)
-      // [TODO] is this safe?
+      // [TODO] (#304) this isn't safe enough
       return newFloat32(<f32>(xval) + yBoxedVal)
     } case GRAIN_FLOAT64_BOXED_NUM_TAG: {
       let yBoxedVal = boxedFloat64Number(y) * <f64>(isMinus ? -1.0 : 1.0)
@@ -663,7 +667,7 @@ function numberPlusMinusRationalHelp(x: u32, y: u32, isMinus: bool): u32 {
       let xDenominator = boxedRationalDenominator(x)
       let yNumerator = boxedRationalNumerator(y) * (isMinus ? -1 : 1)
       let yDenominator = boxedRationalDenominator(y)
-      // [TODO] this could be written in a more overflow-proof way
+      // [TODO] {#304) this could be written in a more overflow-proof way
       if (xDenominator == yDenominator) {
         return reducedFraction64(<i64>(xNumerator) + <i64>(yNumerator), xDenominator)
       }
@@ -748,7 +752,7 @@ export function numberMinus(x: u32, y: u32): u32 {
 
 function numberTimesDivideSimpleHelp(x: u32, y: u32, isDivide: bool): u32 {
   // PRECONDITION: x is a "simple" number (value tag is 0) and isNumber(y)
-  let xval = unboxSimple(x) // <- actual int value of x
+  let xval = untagSimple(x) // <- actual int value of x
   return numberTimesDivideInt64Help(<i64>(xval), y, isDivide)
 }
 
@@ -760,9 +764,9 @@ function numberTimesDivideInt64Help(xval: i64, y: u32, isDivide: bool): u32 {
   // PRECONDITION: x is a "simple" number (value tag is 0) and isNumber(y)
   if (isSimpleNumber(y)) {
     if (isDivide) {
-      return reducedFraction64(xval, <i64>(unboxSimple(y)))
+      return reducedFraction64(xval, <i64>(untagSimple(y)))
     } else {
-      return reducedInteger(safeI64Multiply(xval, <i64>(unboxSimple(y))))
+      return reducedInteger(safeI64Multiply(xval, <i64>(untagSimple(y))))
     }
   }
   let yBoxedNumberTag = boxedNumberTag(y)
@@ -796,7 +800,7 @@ function numberTimesDivideInt64Help(xval: i64, y: u32, isDivide: bool): u32 {
       }
     } case GRAIN_FLOAT32_BOXED_NUM_TAG: {
       let yBoxedVal = boxedFloat32Number(y)
-      // [TODO] is this safe?
+      // [TODO] (#304) is this safe?
       if (isDivide) {
         return newFloat32(<f32>(xval) / yBoxedVal)
       } else {
@@ -823,11 +827,11 @@ function numberTimesDivideRationalHelp(x: u32, y: u32, isDivide: bool): u32 {
   if (isSimpleNumber(y)) {
     if (isDivide) {
       // (a / b) / y == a / (b * y)
-      let denominator = safeI64Multiply(xDenominator, <i64>(unboxSimple(y)))
+      let denominator = safeI64Multiply(xDenominator, <i64>(untagSimple(y)))
       return reducedFraction64(xNumerator, denominator)
     } else {
       // (a / b) * y == (a * y) / b
-      let numerator = safeI64Multiply(xNumerator, <i64>(unboxSimple(y)))
+      let numerator = safeI64Multiply(xNumerator, <i64>(untagSimple(y)))
       return reducedFraction64(numerator, xDenominator)
     }
   }
@@ -864,7 +868,7 @@ function numberTimesDivideRationalHelp(x: u32, y: u32, isDivide: bool): u32 {
       let yDenominator = boxedRationalDenominator(y)
       // (a / b) * (c / d) == (a * c) / (b * d)
       // (a / b) / (c / d) == (a * d) / (b * c)
-      // [TODO] this could maybe be written in a more overflow-proof way
+      // [TODO] (#304) this could maybe be written in a more overflow-proof way
       let numerator = isDivide ? safeI64Multiply(xNumerator, yDenominator) : safeI64Multiply(xNumerator, yNumerator)
       let denominator = isDivide ? safeI64Multiply(xDenominator, yNumerator) : safeI64Multiply(xDenominator, yDenominator)
       return reducedFraction64(numerator, denominator)
@@ -963,7 +967,7 @@ export function numberMod(x: u32, y: u32): u32 {
   if (yval == 0) {
     return throwError(GRAIN_ERR_MODULO_BY_ZERO, 0, 0)
   }
-  // Tests were failing with simple modulo operator, so we have to get creative
+  // AssemblyScript's % is the remainder operator, so we implement modulo manually
   if (xval < 0 && yval > 0 || xval > 0 && yval < 0) {
     let modval = abs<i64>(xval) % abs<i64>(yval)
     return reducedInteger(modval != 0 ? (abs<i64>(yval) - modval) * (yval < 0 ? -1 : 1) : modval)
@@ -975,9 +979,9 @@ export function numberMod(x: u32, y: u32): u32 {
 /*
  * ===== LESS THAN / GREATER THAN / LESS EQUAL / GREATER EQUAL =====
  * Coerce to float64 and then do comparisons
- * [TODO] Could probably be made more efficient
+ * [TODO] (#305) Could probably be made more efficient
  */
-// [TODO] is this safe? I think it's safe?
+// [TODO] (#305) is this safe? I think it's safe?
 export function numberLess(x: u32, y: u32): u32 {
   let xval = coerceFloat64(x)
   let yval = coerceFloat64(y)
@@ -1024,7 +1028,7 @@ export function numberEq(x: u32, y: u32): u32 {
  * ===== LOGICAL OPERATIONS =====
  * Only valid for int-like numbers. Coerce to i64 and do operations
  */
-// [TODO] Semantics around when things should stay i32/i64
+// [TODO] (#306) Semantics around when things should stay i32/i64
 
 export function numberLnot(x: u32): u32 {
   let xval = coerceInt64(x)
@@ -1070,11 +1074,11 @@ export function numberAsr(x: u32, y: u32): u32 {
 // inc/dec
 
 export function numberIncr(x: u32): u32 {
-  return numberPlus(x, boxSimple(1));
+  return numberPlus(x, tagSimple(1));
 }
 
 export function numberDecr(x: u32): u32 {
-  return numberMinus(x, boxSimple(1));
+  return numberMinus(x, tagSimple(1));
 }
 
 
@@ -1116,7 +1120,6 @@ export function coerceNumberToRational(x: u32): u32 {
 }
 
 export function coerceNumberToFloat32(x: u32): u32 {
-  // [TODO] I think Int64s should be safe?
   if (!isSimpleNumber(x) && boxedNumberTag(x) == GRAIN_FLOAT64_BOXED_NUM_TAG) {
     let xval = boxedFloat64Number(x)
     if (xval > F32.MAX_VALUE || xval < F32.MIN_VALUE) {

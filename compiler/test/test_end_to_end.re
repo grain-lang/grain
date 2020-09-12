@@ -682,6 +682,9 @@ let stdlib_tests = [
   tlib("option.test"),
   tlib("hash.test"),
   tlib("int64.test"),
+  tlib("int32.test"),
+  tlib("float32.test"),
+  tlib("float64.test"),
   tlib("string.test"),
   tlib("sys.file.test"),
   tlib("map.test"),
@@ -1567,6 +1570,18 @@ let number_tests = [
   t("numbers3", "0.0 + ((1 / 3) * (1 / 3))", "0.1111111111111111"),
   t("numbers4", "1 / 3", "1/3"),
   t("numbers5", "1.0 / 3", "0.3333333333333333"),
+  t("numbers6", "2 / 6", "1/3"),
+  t("numbers7", "(1 / 3) + (1 / 6)", "1/2"),
+  t("numbers8", "(1 / 3) * (1 / 3)", "1/9"),
+  t("numbers9", "(1 / 3) / (1 / 3)", "1"),
+  // basic syntax tests
+  t("number_syntax1", "1.2", "1.2"),
+  t("number_syntax2", "1.2d", "1.2"),
+  t("number_syntax3", "1.2f", "1.2000000476837158"), // lol
+  t("number_syntax4", "1e2", "100"),
+  t("number_syntax5", "1.2e2", "120"),
+  t("number_syntax6", "1l", "1"),
+  t("number_syntax7", "1L", "1"),
 ];
 
 let comment_tests = {
