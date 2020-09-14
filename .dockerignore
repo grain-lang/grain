@@ -1,0 +1,45 @@
+# Useful for debugging since Docker doesn't have a built-in tool
+# to do this for some reason:
+#   $ go get -v -u github.com/pwaller/docker-show-context
+main
+*.mashtree
+**/*.mashtree
+*.swp
+**/*.swp
+/compiler/*.install
+/*.install
+/*.out
+output/*.o
+output/*.run
+output/*.s
+output/*.dSYM
+script/node_modules
+.installed-pkgs
+*.sw*
+*~
+**/*.o
+**/*.log
+_build/
+*/_build/
+.installed-pkgs
+notes.org
+node_modules/
+*/node_modules/
+**/*.wasm
+**/*.wasm.map
+**/*.wasm.wast
+**/*.wasm.modsig
+.tern-port
+setup.data
+setup.ml
+myocamlbuild.ml
+.merlin
+runtime/dist
+script/public/javascripts/grain-runtime.js
+script/public/javascripts/grain-runtime-browser.js
+/*.gr
+_esy/
+**/_esy/
+cli/bin/grainc.exe
+.git
+.gitignore
