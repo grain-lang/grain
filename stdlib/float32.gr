@@ -1,7 +1,7 @@
 export *
 
-let fromNumber = coerceNumberToFloat32
-let toNumber = coerceFloat32ToNumber
+import foreign wasm coerceNumberToFloat32 : Number -> Float32 as fromNumber from 'stdlib-external/runtime'
+import foreign wasm coerceFloat32ToNumber : Float32 -> Number as toNumber from 'stdlib-external/runtime'
 
 import foreign wasm numberIncr : Float32 -> Float32 as incr from 'stdlib-external/runtime'
 import foreign wasm numberDecr : Float32 -> Float32 as decr from 'stdlib-external/runtime'

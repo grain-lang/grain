@@ -28,19 +28,10 @@ import foreign wasm numberAsr : (Number, Number) -> Number as asr from 'stdlib-e
 
 
 # Number coercions & conversions
-import foreign wasm coerceInt64ToNumber : Int64 -> Number from 'stdlib-external/runtime'
-import foreign wasm coerceInt32ToNumber : Int32 -> Number from 'stdlib-external/runtime'
-import foreign wasm coerceFloat64ToNumber : Float64 -> Number from 'stdlib-external/runtime'
-import foreign wasm coerceFloat32ToNumber : Float32 -> Number from 'stdlib-external/runtime'
-import foreign wasm coerceRationalToNumber : Rational -> Number from 'stdlib-external/runtime'
-import foreign wasm coerceNumberToInt64 : Number -> Int64 from 'stdlib-external/runtime'
-import foreign wasm coerceNumberToInt32 : Number -> Int32 from 'stdlib-external/runtime'
-import foreign wasm coerceNumberToRational : Number -> Rational from 'stdlib-external/runtime'
-import foreign wasm coerceNumberToFloat64 : Number -> Float64 from 'stdlib-external/runtime'
-import foreign wasm coerceNumberToFloat32 : Number -> Float32 from 'stdlib-external/runtime'
 
-import foreign wasm convertExactToInexact : Number -> Number from 'stdlib-external/runtime'
-import foreign wasm convertInexactToExact : Number -> Number from 'stdlib-external/runtime'
+# [TODO] (#311) Commented until we nail down semantics
+#import foreign wasm convertExactToInexact : Number -> Number as inexact from 'stdlib-external/runtime'
+#import foreign wasm convertInexactToExact : Number -> Number as exact from 'stdlib-external/runtime'
 
 # Boolean operations
 primitive (!) : Bool -> Bool = "@not"

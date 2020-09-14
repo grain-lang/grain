@@ -37,6 +37,13 @@ import {
   newFloat64
 } from './ascutils/dataStructures'
 
+export {
+  newRational,
+  newInt32,
+  newInt64,
+  newFloat32,
+  newFloat64
+}
 
 // [TODO] (#301) pretty much all of the overflow values we pass here are suboptimal...really need to rework this
 // @ts-ignore: decorator
