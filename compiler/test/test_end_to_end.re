@@ -1305,11 +1305,11 @@ let optimization_tests = [
     ),
   ),
   /* Primarily a constant-folding test, but DAE removes the let bindings as well */
-  // tfinalanf(
-  //   "test_const_folding",
-  //   "{\n    let x = 4 + 5;\n    let y = x * 2;\n    let z = y - x;\n    let a = x + 7;\n    let b = 14;\n    a + b}",
-  //   AExp.comp(Comp.imm(Imm.const(Const_int(30)))),
-  // ),
+  tfinalanf(
+    "test_const_folding",
+    "{\n    let x = 4 + 5;\n    let y = x * 2;\n    let z = y - x;\n    let a = x + 7;\n    let b = 14;\n    a + b}",
+    AExp.comp(Comp.imm(Imm.const(Const_int(30)))),
+  ),
   tfinalanf(
     "test_cse",
     "((x) => {let a = x + 1; let b = x + 1; a + b})",
