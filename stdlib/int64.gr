@@ -1,7 +1,7 @@
 export *
 
-let fromNumber = coerceNumberToInt64
-let toNumber = coerceInt64ToNumber
+import foreign wasm coerceNumberToInt64 : Number -> Int64 as fromNumber from 'stdlib-external/runtime'
+import foreign wasm coerceInt64ToNumber : Int64 -> Number as toNumber from 'stdlib-external/runtime'
 
 import foreign wasm numberIncr : Int64 -> Int64 as incr from 'stdlib-external/runtime'
 import foreign wasm numberDecr : Int64 -> Int64 as decr from 'stdlib-external/runtime'

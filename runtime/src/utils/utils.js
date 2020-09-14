@@ -76,6 +76,7 @@ function float64At(idx) {
     // if aligned, return without extra allocations
     return f64view[(idx / 8) + 1]
   }
+  // TODO: (#309) Verify that we're always 8-byte aligned and don't need this case
   // not 8-byte aligned. Need load into temporary buffer
   let tmpbuf = new ArrayBuffer(8)
   let tmpview32 = new Uint32Array(tmpbuf)

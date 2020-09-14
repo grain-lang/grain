@@ -1,7 +1,7 @@
 export *
 
-let fromNumber = coerceNumberToInt32
-let toNumber = coerceInt32ToNumber
+import foreign wasm coerceNumberToInt32 : Number -> Int32 as fromNumber from 'stdlib-external/runtime'
+import foreign wasm coerceInt32ToNumber : Int32 -> Number as toNumber from 'stdlib-external/runtime'
 
 import foreign wasm numberIncr : Int32 -> Int32 as incr from 'stdlib-external/runtime'
 import foreign wasm numberDecr : Int32 -> Int32 as decr from 'stdlib-external/runtime'
