@@ -404,8 +404,7 @@ function numberEqualSimpleHelp(x: u32, yTagged: u32): bool {
       let yBoxedVal = boxedFloat64Number(y)
       return F64.isSafeInteger(yBoxedVal) && <i64>(xval) == <i64>(yBoxedVal)
     } default: {
-      // ideally we should trap or something here
-      return false
+      return unreachable()
     }
   }
 }
@@ -436,8 +435,7 @@ function numberEqualInt64Help(xBoxedVal: i64, y: u32): bool {
       let yBoxedVal = boxedFloat64Number(y)
       return F64.isSafeInteger(yBoxedVal) && xBoxedVal == <i64>(yBoxedVal)
     } default: {
-      // ideally we should trap or something here
-      return false
+      return unreachable()
     }
   }
 }
@@ -477,8 +475,7 @@ function numberEqualRationalHelp(xptr: u32, y: u32): bool {
       // [TODO] (#303) maybe we should have some sort of tolerance?
       return xAsFloat == yBoxedVal
     } default: {
-      // ideally we should trap or something here
-      return false
+      return unreachable()
     }
   }
 }
@@ -512,8 +509,7 @@ function numberEqualFloat64Help(x: f64, y: u32): bool {
       // [TODO] (#303) maybe we should have some sort of tolerance?
       return x == yBoxedVal
     } default: {
-      // ideally we should trap or something here
-      return false
+      return unreachable()
     }
   }
 }
@@ -546,8 +542,7 @@ export function numberEqual(x: u32, y: u32): bool {
     } case GRAIN_FLOAT64_BOXED_NUM_TAG: {
       return numberEqualFloat64Help(boxedFloat64Number(x), y)
     } default: {
-      // ideally we should trap or something here
-      return false
+      return unreachable()
     }
   }
 }
@@ -597,8 +592,7 @@ function numberPlusMinusSimpleHelp(x: u32, y: u32, isMinus: bool): u32 {
       let yBoxedVal = boxedFloat64Number(y) * <f64>(isMinus ? -1.0 : 1.0)
       return newFloat64(<f64>(xval) + yBoxedVal)
     } default: {
-      // ideally we should trap or something here
-      return 0xF00BAE
+      return unreachable()
     }
   }
 }
@@ -649,8 +643,7 @@ function numberPlusMinusInt64Help(xval: i64, y: u32, isMinus: bool): u32 {
       let yBoxedVal = boxedFloat64Number(y) * <f64>(isMinus ? -1.0 : 1.0)
       return newFloat64(<f64>(xval) + yBoxedVal)
     } default: {
-      // ideally we should trap or something here
-      return 0xF00BAE
+      return unreachable()
     }
   }
 }
@@ -682,8 +675,7 @@ function numberPlusMinusRationalHelp(x: u32, y: u32, isMinus: bool): u32 {
     case GRAIN_FLOAT64_BOXED_NUM_TAG: {
       return numberPlusMinusHelp(y, x, isMinus)
     } default: {
-      // should trap instead
-      return 0xF00BAE
+      return unreachable()
     }
   }
 }
@@ -732,7 +724,7 @@ function numberPlusMinusHelp(x: u32, y: u32, isMinus: bool): u32 {
       return numberPlusMinusFloat64Help(boxedFloat64Number(x), y, isMinus)
     }
     default: {
-      return 0xF000BAE
+      return unreachable()
     }
   }
 }
@@ -814,8 +806,7 @@ function numberTimesDivideInt64Help(xval: i64, y: u32, isDivide: bool): u32 {
         return newFloat64(<f64>(xval) * yBoxedVal)
       }
     } default: {
-      // ideally we should trap or something here
-      return 0xF00BAE
+      return unreachable()
     }
   }
 }
@@ -889,8 +880,7 @@ function numberTimesDivideRationalHelp(x: u32, y: u32, isDivide: bool): u32 {
         return newFloat64(asFloat * boxedFloat64Number(y))
       }
     } default: {
-      // should trap instead
-      return 0xF00BAE
+      return unreachable()
     }
   }
 }
@@ -943,7 +933,7 @@ function numberTimesDivideHelp(x: u32, y: u32, isDivide: bool): u32 {
       return numberTimesDivideFloat64Help(boxedFloat64Number(x), y, isDivide)
     }
     default: {
-      return 0xF000BAE
+      return unreachable()
     }
   }
 }
@@ -1180,8 +1170,7 @@ export function convertInexactToExact(x: u32): u32 {
       return reducedInteger(<i64>(<f64>(nearest(boxedFloat64Number(x)))))
     }
     default: {
-      // Should trap or something
-      return reducedInteger(0xF00BAE)
+      return unreachable()
     }
   }
 }
