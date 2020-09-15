@@ -43,6 +43,9 @@ type prim1 =
     | FailWith
     | Int64FromNumber
     | Int64ToNumber
+    | Int32ToNumber
+    | Float64ToNumber
+    | Float32ToNumber
     | Int64Lnot;
 
 type prim2 =

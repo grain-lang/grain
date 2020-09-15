@@ -34,6 +34,8 @@ module Comp = {
   let imm = (~loc=?, ~env=?, imm) => mk(~loc?, ~env?, CImmExpr(imm));
   let int32 = (~loc=?, ~env=?, i) => mk(~loc?, ~env?, CInt32(i));
   let int64 = (~loc=?, ~env=?, i) => mk(~loc?, ~env?, CInt64(i));
+  let float32 = (~loc=?, ~env=?, i) => mk(~loc?, ~env?, CFloat32(i));
+  let float64 = (~loc=?, ~env=?, i) => mk(~loc?, ~env?, CFloat64(i));
   let prim1 = (~loc=?, ~env=?, p1, a) =>
     mk(~loc?, ~env?, [@implicit_arity] CPrim1(p1, a));
   let prim2 = (~loc=?, ~env=?, p2, a1, a2) =>

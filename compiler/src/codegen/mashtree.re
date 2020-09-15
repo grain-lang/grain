@@ -37,6 +37,9 @@ type prim1 =
     | FailWith
     | Int64FromNumber
     | Int64ToNumber
+    | Int32ToNumber
+    | Float64ToNumber
+    | Float32ToNumber
     | Int64Lnot;
 
 type prim2 =
@@ -113,7 +116,9 @@ type allocation_type =
   | MADT(immediate, immediate, list(immediate)) /* Type Tag, Variant Tag, Elements */
   | MString(string)
   | MInt32(int32)
-  | MInt64(int64);
+  | MInt64(int64)
+  | MFloat32(float)
+  | MFloat64(float);
 
 [@deriving sexp]
 type tag_op =

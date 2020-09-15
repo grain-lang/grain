@@ -37,6 +37,9 @@ module Const: {
   let int: int => constant;
   let int32: int32 => constant;
   let int64: int64 => constant;
+  let float32: float => constant;
+  let float64: float => constant;
+  let int_overflow: string => constant;
   let bool: bool => constant;
   let void: constant;
 };

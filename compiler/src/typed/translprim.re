@@ -67,6 +67,9 @@ let prim_map =
       ("@int64.gte", Primitive2(Int64Gte)),
       ("@int64.lt", Primitive2(Int64Lt)),
       ("@int64.lte", Primitive2(Int64Lte)),
+      ("@int32.toNumber", Primitive1(Int32ToNumber)),
+      ("@float32.toNumber", Primitive1(Float32ToNumber)),
+      ("@float64.toNumber", Primitive1(Float64ToNumber)),
     ]),
   );
 

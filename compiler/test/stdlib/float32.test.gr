@@ -1,0 +1,16 @@
+import * from 'float32'
+
+assert fromNumber(5) == 5.0f
+assert fromNumber(0) == 0.0f
+
+assert toNumber(555.0f) == 555
+assert toNumber(0.0f) == 0
+
+assert gt(5.0f, 4.0f)
+assert gte(5.0f, 5.0f)
+assert lt(5.0f, 17.0f)
+assert lte(5.0f, 5.0f)
+assert !gt(5.0f, 5.0f)
+assert !gte(5.0f, 22.0f)
+assert !lt(5.0f, -17.0f)
+assert !lte(5.0f, 4.0f)

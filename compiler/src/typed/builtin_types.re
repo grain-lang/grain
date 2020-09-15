@@ -36,6 +36,9 @@ let ident_create_predef_exn = wrap(Ident.create_predef_exn);
 let ident_number = ident_create("Number")
 and ident_int32 = ident_create("Int32")
 and ident_int64 = ident_create("Int64")
+and ident_rational = ident_create("Rational")
+and ident_float32 = ident_create("Float32")
+and ident_float64 = ident_create("Float64")
 and ident_bool = ident_create("Bool")
 and ident_string = ident_create("String")
 and ident_void = ident_create("Void")
@@ -46,6 +49,9 @@ and ident_fd = ident_create("FileDescriptor");
 let path_number = PIdent(ident_number)
 and path_int32 = PIdent(ident_int32)
 and path_int64 = PIdent(ident_int64)
+and path_rational = PIdent(ident_rational)
+and path_float32 = PIdent(ident_float32)
+and path_float64 = PIdent(ident_float64)
 and path_bool = PIdent(ident_bool)
 and path_string = PIdent(ident_string)
 and path_void = PIdent(ident_void)
@@ -59,6 +65,12 @@ and type_int32 =
   newgenty([@implicit_arity] TTyConstr(path_int32, [], ref(TMemNil)))
 and type_int64 =
   newgenty([@implicit_arity] TTyConstr(path_int64, [], ref(TMemNil)))
+and type_rational =
+  newgenty([@implicit_arity] TTyConstr(path_rational, [], ref(TMemNil)))
+and type_float32 =
+  newgenty([@implicit_arity] TTyConstr(path_float32, [], ref(TMemNil)))
+and type_float64 =
+  newgenty([@implicit_arity] TTyConstr(path_float64, [], ref(TMemNil)))
 and type_bool =
   newgenty([@implicit_arity] TTyConstr(path_bool, [], ref(TMemNil)))
 and type_string =
@@ -139,6 +151,9 @@ let common_initial_env = (add_type, empty_env) =>
   |> add_type(ident_number, decl_abstr_imm(path_number))
   |> add_type(ident_int32, decl_abstr(path_int32))
   |> add_type(ident_int64, decl_abstr(path_int64))
+  |> add_type(ident_float32, decl_abstr(path_float32))
+  |> add_type(ident_float64, decl_abstr(path_float64))
+  |> add_type(ident_rational, decl_abstr(path_rational))
   |> add_type(ident_bool, decl_bool)
   |> add_type(ident_box, decl_box)
   |> add_type(ident_string, decl_abstr(path_string))

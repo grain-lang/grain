@@ -34,6 +34,7 @@ import {
   GRAIN_ERR_ASSERTION_ERROR,
   GRAIN_ERR_FAILURE,
   GRAIN_ERR_SYSTEM,
+  GRAIN_ERR_NOT_INTLIKE
 } from './error-codes';
 
 export class GrainError extends Error {
@@ -141,6 +142,12 @@ export function throwGrainError(errorCode, value1, value2) {
       break;
     case GRAIN_ERR_SYSTEM:
       message = `System error: ${value1AsGrain}`;
+      break;
+    case GRAIN_ERR_NOT_INTLIKE:
+      message = `Cannot coerce to integer: ${value1AsGrain}`
+      break;
+    case GRAIN_ERR_NOT_RATIONAL:
+      message = `Cannot coerce to rational: ${value1AsGrain}`
       break;
     default:
       message = `Unknown error code: ${errorCode}`;

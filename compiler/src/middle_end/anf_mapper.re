@@ -130,6 +130,8 @@ module MakeMap = (Iter: MapArgument) => {
       | CString(s) => CString(s)
       | CInt32(i) => CInt32(i)
       | CInt64(i) => CInt64(i)
+      | CFloat32(f) => CFloat32(f)
+      | CFloat64(f) => CFloat64(f)
       };
 
     Iter.leave_comp_expression({...c, comp_desc: d});

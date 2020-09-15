@@ -19,6 +19,8 @@ module Comp: {
   let imm: (~loc: loc=?, ~env: env=?, imm_expression) => comp_expression;
   let int32: (~loc: loc=?, ~env: env=?, int32) => comp_expression;
   let int64: (~loc: loc=?, ~env: env=?, int64) => comp_expression;
+  let float32: (~loc: loc=?, ~env: env=?, float) => comp_expression;
+  let float64: (~loc: loc=?, ~env: env=?, float) => comp_expression;
   let prim1:
     (~loc: loc=?, ~env: env=?, prim1, imm_expression) => comp_expression;
   let prim2:

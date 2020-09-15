@@ -179,6 +179,8 @@ let rec analyze_comp_expression =
       anf_expression_purity_internal(body);
     | CInt32(_)
     | CInt64(_)
+    | CFloat32(_)
+    | CFloat64(_)
     | CString(_) => true
     };
 

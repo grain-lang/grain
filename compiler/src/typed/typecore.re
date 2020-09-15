@@ -115,6 +115,9 @@ let prim1_type =
   | FailWith => (Builtin_types.type_string, newvar(~name="a", ()))
   | Int64FromNumber => (Builtin_types.type_number, Builtin_types.type_int64)
   | Int64ToNumber => (Builtin_types.type_int64, Builtin_types.type_number)
+  | Int32ToNumber => (Builtin_types.type_int32, Builtin_types.type_number)
+  | Float32ToNumber => (Builtin_types.type_float32, Builtin_types.type_number)
+  | Float64ToNumber => (Builtin_types.type_float64, Builtin_types.type_number)
   | Int64Lnot => (Builtin_types.type_int64, Builtin_types.type_int64);
 
 let prim2_type =
