@@ -12,7 +12,7 @@ You can find all of the tags in the code in [codegen/value_tags.re](https://gith
 
 The last bit of a value determines if that value is a number or something else. If it's 0, the value is a "simple number" (defined to be a 31-bit integer). Conveniently, this means that every Grain simple number is stored as `n * 2`. This means that addition and subtraction don't require any additional instructions to compute, since `2a + 2b = 2(a + b)`. There are other tricks like this for the other operations that allow us to avoid unnecessary untagging.
 
-The downside of this tag for numbers is the loss of one bit of information. If larger numbers are needed, then users must use one of the other (heap-allocated) number types.
+The downside of this tag for numbers is the loss of one bit of information. If larger numbers (or non-integer numbers) are needed, then Grain will fall back onto one of the other (heap-allocated) number types.
 
 To tag a simple number, we perform a shift left by 1. To untag a simple number, we perform an arithmetic (signed) shift right by 1.
 
