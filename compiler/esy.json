@@ -28,11 +28,11 @@
     "@opam/fp": "*",
     "@opam/fs": "*",
     "@opam/utf8": "*",
-    "ocaml": "~4.10.0"
+    "ocaml": "4.11.0"
   },
   "devDependencies": {
     "@opam/reason": "*",
-    "@opam/ocaml-lsp-server": "ocaml/ocaml-lsp:ocaml-lsp-server.opam#ce1840355541ff60b999e39388835027f89d8798"
+    "@opam/ocaml-lsp-server": "ocaml/ocaml-lsp:ocaml-lsp-server.opam#27e3d175bffb9beb1f18b3a48f908bab39145686"
   },
   "resolutions": {
     "@opam/grain": "link:./grain.opam",
@@ -44,7 +44,8 @@
     "@opam/grain_codegen": "link:./grain_codegen.opam",
     "@opam/fp": "facebookexperimental/reason-native:fp.opam#445493fca8d56ce58ee7c84a9e878a4303c9d296",
     "@opam/fs": "facebookexperimental/reason-native:fs.opam#445493fca8d56ce58ee7c84a9e878a4303c9d296",
-    "@opam/utf8": "facebookexperimental/reason-native:utf8.opam#445493fca8d56ce58ee7c84a9e878a4303c9d296"
+    "@opam/utf8": "facebookexperimental/reason-native:utf8.opam#445493fca8d56ce58ee7c84a9e878a4303c9d296",
+    "@opam/reason": "facebook/reason:reason.opam#d7dca24d89ab5035c3a76e23e701bd2d7c1211b4"
   },
   "installConfig": {
     "pnp": false
