@@ -11,7 +11,7 @@ This table shows which operators take precedence over other operators, and can b
 | 140 | Annotation | left-to-right | `… : …` |
 | 130 | Exponentiation | right-to-left | NYI |
 | 120 | Multiplication<br>Division<br>Modulus | left-to-right | `… * …`<br>`… / …`<br>`… % …` |
-| 110 | Addition<br>Subtraction | left-to-right | `… + …`<br>`… - …` |
+| 110 | Addition<br>Subtraction<br>String Concatenation | left-to-right | `… + …`<br>`… - …`<br>`… ++ …` |
 | 100 | Bitwise Shift Left<br>Bitwise Shift Right<br>Bitwise Arithmetic Shift Right | left-to-right | NYI |
 | 90 | Less Than<br>Less Than or Equal To<br>Greater Than<br>Greater Than or Equal To | left-to-right | `… < …`<br>`… <= …`<br>`… > …`<br>`… >= …` |
 | 80 | Structural Equality<br>Structural Inequality<br>Physical Equality<br>Physical Inequality | left-to-right | `… == …`<br>`… != …`<br>`… is …`<br>`… isnt …`(NYI) |
