@@ -14,7 +14,7 @@ jobs:
       - name: Prepare # <- https://github.com/docker/build-push-action
         id: prep
         run: |
-          DOCKER_IMAGE=name/app
+          DOCKER_IMAGE=grainlang/grain
           VERSION=noop
           if [ "${{ github.event_name }}" = "schedule" ]; then
             VERSION=nightly
