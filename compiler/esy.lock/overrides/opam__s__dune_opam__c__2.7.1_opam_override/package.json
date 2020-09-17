@@ -2,12 +2,6 @@
   "buildsInSource": true,
   "build": [
     [
-      "ocaml",
-      "configure.ml",
-      "--libdir",
-      "#{self.lib}"
-    ],
-    [
       "env",
       "-u",
       "OCAMLLIB",
