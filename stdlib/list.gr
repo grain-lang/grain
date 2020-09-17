@@ -195,3 +195,25 @@ let unique = (list) => {
   }
   iter(list, [])
 }
+
+let rec drop = (n, list) => {
+  if (n < 0) {
+    fail 'number of items to drop cannot be a negative number'
+  } else {
+    match ((n, list)) {
+      | (_,[]) => []
+      | (n, _) when n == 0 => list
+      | (n, [first, ...rest]) => drop(n - 1, rest)
+    }
+  }
+}
+
+let rec dropWhile = (fn, list) => {
+  match (list) {
+    | [] => list
+    | [first, ...rest] => if (fn(first)) dropWhile(fn, rest) else list
+  }
+}
+
+
+

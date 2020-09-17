@@ -127,3 +127,19 @@ assert rotate(-2, list) == [2, 3, 1]
 assert unique([]) == []
 assert unique(list) == list
 assert unique([1, 1, 1, 1]) == [1]
+
+# List.drop
+
+assert drop(4, []) == []
+assert drop(0, list) == list
+assert drop(2, list) == [3]
+assert drop(4, list) == []
+
+# List.dropWhile
+
+assert dropWhile(x => true, []) == []
+assert dropWhile(x => true, list) == []
+assert dropWhile(x => false, list) == list
+assert dropWhile(x => x < 3, list) == [3]
+assert dropWhile(x => x < 5, list) == []
+assert dropWhile(x => x > 5, list) == list
