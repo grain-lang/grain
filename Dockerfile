@@ -31,10 +31,7 @@ RUN yarn workspace @grain/compiler esy build-dependencies
 
 COPY . /grain
 RUN yarn setup
-# [TODO] Figure out why we need to keep calling esy install before running each of these commands
-RUN yarn workspace @grain/compiler esy install
 RUN yarn workspace @grain/compiler esy compile
-RUN yarn workspace @grain/compiler esy install
 RUN yarn workspace @grain/compiler esy copy-compiler
 
 # Set up container environment
