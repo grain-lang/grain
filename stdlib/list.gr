@@ -2,18 +2,24 @@
 
 export *
 
-let rec length = (list) => {
-  match (list) {
-    | [] => 0
-    | [_, ...rest] => 1 + length(rest)
+let length = (list) => {
+  let rec iter = (len, list) => {
+    match (list) {
+    | [] => len
+    | [_, ...rest] => iter(len + 1, rest)
+    }
   }
+  iter(0, list)
 }
 
-let rec sum = (list) => {
-  match (list) {
-    | [] => 0
-    | [first, ...rest] => first + sum(rest)
+let sum = list => {
+  let rec iter = (n, list) => {
+    match (list) {
+    | [] => n
+    | [first, ...rest] => iter(n + first, rest)
+    }
   }
+  iter(0, list)
 }
 
 let reverse = (list) => {
@@ -159,11 +165,14 @@ let rec insert = (value, index, list) => {
   }
 }
 
-let rec count = (fn, list) => {
-  match (list) {
-    | [] => 0
-    | [first, ...rest] => if (fn(first)) 1 + count(fn, rest) else count(fn, rest)
+let count = (fn, list) => {
+  let rec iter = (n, list) => {
+    match (list) {
+    | [] => n
+    | [first, ...rest] => if (fn(first)) iter(n + 1, rest) else iter(n, rest)
+    }
   }
+  iter(0, list)
 }
 
 let part = (count, list) => {
