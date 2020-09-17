@@ -41,10 +41,10 @@ let parenthesized_ident = name =>
   List.mem(name, ["or", "mod", "land", "lor", "lxor", "lsl", "lsr", "asr"])
   || (
     switch (name.[0]) {
-    | 'a'..'z'
-    | 'A'..'Z'
-    | '\223'..'\246'
-    | '\248'..'\255'
+    | 'a' .. 'z'
+    | 'A' .. 'Z'
+    | '\223' .. '\246'
+    | '\248' .. '\255'
     | '_' => false
     | _ => true
     }
@@ -66,7 +66,7 @@ let valid_float_lexeme = s => {
       s ++ ".";
     } else {
       switch (s.[i]) {
-      | '0'..'9'
+      | '0' .. '9'
       | '-' => loop(i + 1)
       | _ => s
       };
@@ -124,7 +124,7 @@ let escape_string = s => {
         | '\t'
         | '\r'
         | '\b' => 2
-        | '\000'..'\031'
+        | '\000' .. '\031'
         | '\127' => 4
         | _ => 1
         }
@@ -157,7 +157,7 @@ let escape_string = s => {
         Bytes.unsafe_set(s', n^, '\\');
         incr(n);
         Bytes.unsafe_set(s', n^, 'b');
-      | ('\000'..'\031' | '\127') as c =>
+      | ('\000' .. '\031' | '\127') as c =>
         let a = Char.code(c);
         Bytes.unsafe_set(s', n^, '\\');
         incr(n);
