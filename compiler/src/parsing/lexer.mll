@@ -78,12 +78,7 @@ let hex_int = '0' ['x' 'X'] hex_digit (hex_digit | '_')*
 let oct_int = '0' ['o' 'O'] oct_digit (oct_digit | '_')*
 let bin_int = '0' ['b' 'B'] bin_digit (bin_digit | '_')*
 
-let signed_dec_int = dec_int | ('-' dec_int)
-let signed_hex_int = hex_int | ('-' hex_int)
-let signed_oct_int = oct_int | ('-' oct_int)
-let signed_bin_int = bin_int | ('-' bin_int)
-
-let signed_int = signed_dec_int | signed_hex_int | signed_oct_int | signed_bin_int
+let unsigned_int = dec_int | hex_int | oct_int | bin_int
 
 let dec_float_exp = ['e' 'E'] ['+' '-']? dec_digit (dec_digit | '_')*
 let dec_float_decimal = '.' (dec_digit | '_')*
@@ -91,9 +86,7 @@ let dec_float_integral = dec_digit (dec_digit | '_')*
 
 let dec_float = dec_float_integral dec_float_decimal dec_float_exp? | dec_float_integral dec_float_exp
 
-let signed_dec_float = dec_float | ('-' dec_float)
-
-let signed_float = signed_dec_float
+let unsigned_float = dec_float
 
 let ident = ['a'-'z' '_']['a'-'z' 'A'-'Z' '0'-'9' '_']*
 let ident_cap = ['A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']*
@@ -134,12 +127,12 @@ rule token = parse
   | comment { parse_line_comment lexbuf; EOL }
   | blank { token lexbuf }
   | newline_chars { process_newlines lexbuf; EOL }
-  | (signed_float as x) 'f' { FLOAT32 x }
-  | (signed_float as x) 'd' { FLOAT64 x }
-  | signed_float as x { NUMBER_FLOAT x }
-  | (signed_int as x) 'l' { INT32 x }
-  | (signed_int as x) 'L' { INT64 x }
-  | signed_int as x { NUMBER_INT x }
+  | (unsigned_float as x) 'f' { FLOAT32 x }
+  | (unsigned_float as x) 'd' { FLOAT64 x }
+  | unsigned_float as x { NUMBER_FLOAT x }
+  | (unsigned_int as x) 'l' { INT32 x }
+  | (unsigned_int as x) 'L' { INT64 x }
+  | unsigned_int as x { NUMBER_INT x }
   | "primitive" { PRIMITIVE }
   | "foreign" { FOREIGN }
   | "wasm" { WASM }

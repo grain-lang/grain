@@ -149,6 +149,8 @@ let make_program statements =
 
 }
 
+
+
 /* Operator precedence may be found in /docs/contributor/operator_precedence.md */
 %relation p180<p170<p160<p150<p140<p130<p120<p110<p100<p90<p80<p70<p60<p50<p40<p30<p20<p10<p0
 
@@ -242,12 +244,12 @@ equal :
   | eols? EQUAL eols? { () }
 
 const :
-  | NUMBER_INT { Const.number (PConstNumberInt $1) }
-  | NUMBER_FLOAT { Const.number (PConstNumberFloat $1) }
-  | INT32 { Const.int32 $1 }
-  | INT64 { Const.int64 $1 }
-  | FLOAT32 { Const.float32 $1 }
-  | FLOAT64 { Const.float64 $1 }
+  | dash_op? NUMBER_INT { Const.number (PConstNumberInt (if Option.is_some $1 then "-" ^ $2 else $2)) }
+  | dash_op? NUMBER_FLOAT { Const.number (PConstNumberFloat (if Option.is_some $1 then "-" ^ $2 else $2)) }
+  | dash_op? INT32 { Const.int32 (if Option.is_some $1 then "-" ^ $2 else $2) }
+  | dash_op? INT64 { Const.int64 (if Option.is_some $1 then "-" ^ $2 else $2) }
+  | dash_op? FLOAT32 { Const.float32 (if Option.is_some $1 then "-" ^ $2 else $2) }
+  | dash_op? FLOAT64 { Const.float64 (if Option.is_some $1 then "-" ^ $2 else $2) }
   | TRUE { Const.bool true }
   | FALSE { Const.bool false }
   | VOID { Const.void }
@@ -258,21 +260,21 @@ expr :
   | binop_expr
 
 binop_expr :
-  | binop_expr(<=p110) eols? plus_op eols?      binop_expr(<p110) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p110
-  | binop_expr(<=p110) eols? dash_op eols?      binop_expr(<p110) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p110
-  | binop_expr(<=p120) eols? star_op eols?      binop_expr(<p120) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p120
-  | binop_expr(<=p120) eols? slash_op eols?     binop_expr(<p120) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p120
-  | binop_expr(<=p120) eols? percent_op eols?   binop_expr(<p120) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p120
-  | binop_expr(<=p80) eols? is_op eols?        binop_expr(<p80) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p80
-  | binop_expr(<=p80) eols? eqeq_op eols?      binop_expr(<p80) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p80
-  | binop_expr(<=p80) eols? noteq_op eols?     binop_expr(<p80) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p80
-  | binop_expr(<=p90) eols? lcaret_op eols?    binop_expr(<p90) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p90
-  | binop_expr(<=p90) eols? rcaret_op eols?    binop_expr(<p90) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p90
-  | binop_expr(<=p90) eols? lesseq_op eols?    binop_expr(<p90) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p90
-  | binop_expr(<=p90) eols? greatereq_op eols? binop_expr(<p90) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p90
-  | binop_expr(<=p40) eols? ampamp_op eols?    binop_expr(<p40) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p40
-  | binop_expr(<=p30) eols? pipepipe_op eols?  binop_expr(<p30) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p30
-  | binop_expr(<=p110) eols? plusplus_op eols?  binop_expr(<p110) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p110
+  | binop_expr(<=p110) plus_op eols?      binop_expr(<p110) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p110
+  | binop_expr(<=p110) dash_op eols?      binop_expr(<p110) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p110
+  | binop_expr(<=p120) star_op eols?      binop_expr(<p120) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p120
+  | binop_expr(<=p120) slash_op eols?     binop_expr(<p120) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p120
+  | binop_expr(<=p120) percent_op eols?   binop_expr(<p120) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p120
+  | binop_expr(<=p80) is_op eols?        binop_expr(<p80) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p80
+  | binop_expr(<=p80) eqeq_op eols?      binop_expr(<p80) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p80
+  | binop_expr(<=p80) noteq_op eols?     binop_expr(<p80) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p80
+  | binop_expr(<=p90) lcaret_op eols?    binop_expr(<p90) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p90
+  | binop_expr(<=p90) rcaret_op eols?    binop_expr(<p90) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p90
+  | binop_expr(<=p90) lesseq_op eols?    binop_expr(<p90) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p90
+  | binop_expr(<=p90) greatereq_op eols? binop_expr(<p90) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p90
+  | binop_expr(<=p40) ampamp_op eols?    binop_expr(<p40) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p40
+  | binop_expr(<=p30) pipepipe_op eols?  binop_expr(<p30) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p30
+  | binop_expr(<=p110) plusplus_op eols?  binop_expr(<p110) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p110
   | binop_expr colon typ { Exp.constraint_ ~loc:(symbol_rloc dyp) $1 $3 } p140
   | lam_expr { $1 } p0
   | non_assign_expr { $1 } p140
