@@ -157,7 +157,13 @@ let compile_int_gen dyp v =
   | (n, _) when (Int64.compare n simple_number_max) < 0 && (Int64.compare n simple_number_min) > 0 -> Exp.constant ~loc:(symbol_rloc dyp) (Const.int (Int64.to_int n))
   | (n, _) when (Int64.compare n (Int64.of_int32 Int32.max_int)) < 0 && (Int64.compare n (Int64.of_int32 Int32.min_int)) > 0 -> Exp.prim1 ~loc:(symbol_rloc dyp) Int32ToNumber (Exp.constant ~loc:(symbol_rloc dyp) (Const.int32 (Int64.to_int32 n)))
   | (n, _) -> Exp.prim1 ~loc:(symbol_rloc dyp) Int64ToNumber (Exp.constant ~loc:(symbol_rloc dyp) (Const.int64 n))
+
+let negate_int_gen v =
+  match v with
+  | (n, s) -> (Int64.neg n, s)
 }
+
+
 
 /* Operator precedence may be found in /docs/contributor/operator_precedence.md */
 %relation p180<p170<p160<p150<p140<p130<p120<p110<p100<p90<p80<p70<p60<p50<p40<p30<p20<p10<p0
@@ -252,10 +258,10 @@ equal :
   | eols? EQUAL eols? { () }
 
 const :
-  | INT32 { Const.int32 $1 }
-  | INT64 { Const.int64 $1 }
-  | FLOAT32 { Const.float32 $1 }
-  | FLOAT64 { Const.float64 $1 }
+  | dash_op? INT32 { Const.int32 (if Option.is_some $1 then Int32.neg $2 else $2) }
+  | dash_op? INT64 { Const.int64 (if Option.is_some $1 then Int64.neg $2 else $2) }
+  | dash_op? FLOAT32 { Const.float32 (if Option.is_some $1 then Float.neg $2 else $2) }
+  | dash_op? FLOAT64 { Const.float64 (if Option.is_some $1 then Float.neg $2 else $2) }
   | TRUE { Const.bool true }
   | FALSE { Const.bool false }
   | VOID { Const.void }
@@ -266,21 +272,21 @@ expr :
   | binop_expr
 
 binop_expr :
-  | binop_expr(<=p110) eols? plus_op eols?      binop_expr(<p110) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p110
-  | binop_expr(<=p110) eols? dash_op eols?      binop_expr(<p110) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p110
-  | binop_expr(<=p120) eols? star_op eols?      binop_expr(<p120) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p120
-  | binop_expr(<=p120) eols? slash_op eols?     binop_expr(<p120) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p120
-  | binop_expr(<=p120) eols? percent_op eols?   binop_expr(<p120) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p120
-  | binop_expr(<=p80) eols? is_op eols?        binop_expr(<p80) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p80
-  | binop_expr(<=p80) eols? eqeq_op eols?      binop_expr(<p80) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p80
-  | binop_expr(<=p80) eols? noteq_op eols?     binop_expr(<p80) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p80
-  | binop_expr(<=p90) eols? lcaret_op eols?    binop_expr(<p90) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p90
-  | binop_expr(<=p90) eols? rcaret_op eols?    binop_expr(<p90) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p90
-  | binop_expr(<=p90) eols? lesseq_op eols?    binop_expr(<p90) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p90
-  | binop_expr(<=p90) eols? greatereq_op eols? binop_expr(<p90) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p90
-  | binop_expr(<=p40) eols? ampamp_op eols?    binop_expr(<p40) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p40
-  | binop_expr(<=p30) eols? pipepipe_op eols?  binop_expr(<p30) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p30
-  | binop_expr(<=p110) eols? plusplus_op eols?  binop_expr(<p110) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$3]) [$1; $5] } p110
+  | binop_expr(<=p110) plus_op eols?      binop_expr(<p110) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p110
+  | binop_expr(<=p110) dash_op eols?      binop_expr(<p110) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p110
+  | binop_expr(<=p120) star_op eols?      binop_expr(<p120) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p120
+  | binop_expr(<=p120) slash_op eols?     binop_expr(<p120) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p120
+  | binop_expr(<=p120) percent_op eols?   binop_expr(<p120) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p120
+  | binop_expr(<=p80) is_op eols?        binop_expr(<p80) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p80
+  | binop_expr(<=p80) eqeq_op eols?      binop_expr(<p80) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p80
+  | binop_expr(<=p80) noteq_op eols?     binop_expr(<p80) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p80
+  | binop_expr(<=p90) lcaret_op eols?    binop_expr(<p90) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p90
+  | binop_expr(<=p90) rcaret_op eols?    binop_expr(<p90) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p90
+  | binop_expr(<=p90) lesseq_op eols?    binop_expr(<p90) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p90
+  | binop_expr(<=p90) greatereq_op eols? binop_expr(<p90) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p90
+  | binop_expr(<=p40) ampamp_op eols?    binop_expr(<p40) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p40
+  | binop_expr(<=p30) pipepipe_op eols?  binop_expr(<p30) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p30
+  | binop_expr(<=p110) plusplus_op eols?  binop_expr(<p110) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p110
   | binop_expr colon typ { Exp.constraint_ ~loc:(symbol_rloc dyp) $1 $3 } p140
   | lam_expr { $1 } p0
   | non_assign_expr { $1 } p140
@@ -486,8 +492,8 @@ id_expr :
   | id { prerr_string "\nsimple_expr\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); Exp.ident ~loc:(symbol_rloc dyp) $1 }
 
 simple_expr :
-  | INT_GEN { compile_int_gen dyp $1 }
-  | FLOAT_GEN { Exp.prim1 ~loc:(symbol_rloc dyp) Float64ToNumber (Exp.constant ~loc:(symbol_rloc dyp) (Const.float64 $1)) }
+  | dash_op? INT_GEN { compile_int_gen dyp (if Option.is_some $1 then negate_int_gen $2 else $2) }
+  | dash_op? FLOAT_GEN { Exp.prim1 ~loc:(symbol_rloc dyp) Float64ToNumber (Exp.constant ~loc:(symbol_rloc dyp) (Const.float64 (if Option.is_some $1 then Float.neg $2 else $2))) }
   | const { Exp.constant ~loc:(symbol_rloc dyp) $1 }
   | lparen tuple_exprs rparen { Exp.tuple ~loc:(symbol_rloc dyp) $2 }
   | lbrace record_exprs rbrace { Exp.record ~loc:(symbol_rloc dyp) $2 }
