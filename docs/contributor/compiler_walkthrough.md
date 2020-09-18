@@ -123,9 +123,9 @@ We couldn't think of a better name for this stage, but it's (mostly) the last re
 
 ## Code generation
 
-The code generation (or codegen) step is where we generate the actual WebAssembly code for the program. By this point, we should have reduced the complexity of the original program down enough that there is a straightforward set of wasm instructions for each action that needs to happen. You can see what some of this looks like in [codegen/compcore.re](https://github.com/grain-lang/grain/blob/master/compiler/src/codegen/compcore.re).
+The code generation (or codegen) step is where we generate the actual WebAssembly code for the program. By this point, we should have reduced the complexity of the original program down enough that there is a straightforward set of WebAssembly instructions for each action that needs to happen. We use a project called [Binaryen](https://github.com/WebAssembly/binaryen) to generate our wasm code, via [Binaryen.ml](https://github.com/grain-lang/binaryen.ml). You can get a general idea of how Binaryen works from the example in the [Binaryen.ml README](https://github.com/grain-lang/binaryen.ml/blob/master/README.md). You can then see how we use it in Grain in [codegen/compcore.re](https://github.com/grain-lang/grain/blob/master/compiler/src/codegen/compcore.re).
 
-You can check out the online version of the [wasm spec](https://webassembly.github.io/spec/core/index.html), but if you're looking for the OCaml types that Grain uses, you can check that out in [the Grain fork of the wasm-spec repository](https://github.com/grain-lang/wasm-spec).
+If you're curious about the wasm spec in general, you can check it out [here](https://webassembly.github.io/spec/core/index.html).
 
 ## Emission
 
