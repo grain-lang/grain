@@ -126,13 +126,20 @@ let extension_descr = (path_ext, ext) => {
   let (existentials, cstr_args, cstr_inlined) =
     constructor_args(ext.ext_args, Some(ty_res), path_ext);
 
+  let cstr_ext_type =
+    if (cstr_args == []) {
+      CstrExtensionConstant;
+    } else {
+      CstrExtensionBlock;
+    };
+
   {
     cstr_name: Path.last(path_ext),
     cstr_res: ty_res,
     cstr_existentials: existentials,
     cstr_args,
     cstr_arity: List.length(cstr_args),
-    cstr_tag: CstrExtension(ext.ext_runtime_id, path_ext, cstr_args == []),
+    cstr_tag: CstrExtension(ext.ext_runtime_id, path_ext, cstr_ext_type),
     cstr_consts: (-1),
     cstr_nonconsts: (-1),
     cstr_loc: ext.ext_loc,
