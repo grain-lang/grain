@@ -3,7 +3,6 @@ on:
   push:
     branches: [master]
     tags: ['v*.*.*']
-  pull_request:
 jobs:
   push_to_registries:
     name: Push Docker image to multiple registries
