@@ -71,14 +71,17 @@ and abbrev_memo =
   // Abbreviations can be found after this indirection
   | TMemLink(ref(abbrev_memo));
 
-/*true if a constant false if a block*/
-
 [@deriving (sexp, yojson)]
 type constructor_tag =
   | CstrConstant(int)
   | CstrBlock(int)
-  | CstrExtension(int, Path.t, bool)
+  | CstrExtension(int, Path.t, extension_constructor_type)
   | CstrUnboxed
+
+[@deriving (sexp, yojson)]
+and extension_constructor_type =
+  | CstrExtensionConstant
+  | CstrExtensionBlock
 
 [@deriving (sexp, yojson)]
 and constructor_description = {

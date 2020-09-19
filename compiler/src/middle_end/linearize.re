@@ -887,7 +887,7 @@ let bind_constructor =
   let rhs =
     switch (cstr_tag) {
     | CstrConstant(_) => compile_constant_constructor()
-    | CstrExtension(_, _, constant) when constant =>
+    | CstrExtension(_, _, CstrExtensionConstant) =>
       compile_constant_constructor()
     | CstrBlock(_)
     | CstrExtension(_) =>
