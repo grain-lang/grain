@@ -163,6 +163,11 @@ let basic_functionality_tests = [
   t("binop1", "2 + 2", "4"),
   t("binop2", "2 - 2", "0"),
   t("binop2.1", "2-2", "0"),
+  t("binop2.2", "2 -
+                 2", "0"),
+  t("binop2.3", "2
+                 - 2", "-2"),
+  t("binop2.4", "- 2", "-2"),
   t("binop3", "2 - 4", "-2"),
   t("binop4", "2 * 3", "6"),
   t("binop5", "10 / 5", "2"),
