@@ -230,9 +230,11 @@ let all_idents_cases = el => {
 };
 
 let constant:
-  Parsetree.constant => result(Asttypes.constant, Checkertypes.error) = (
+  (Location.t, Parsetree.constant) =>
+  result(Asttypes.constant, Location.error) = (
   Checkertypes.constant:
-    Parsetree.constant => result(Asttypes.constant, Checkertypes.error)
+    (Location.t, Parsetree.constant) =>
+    result(Asttypes.constant, Location.error)
 );
 
 let constant_or_raise = Checkertypes.constant_or_raise;

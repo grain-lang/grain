@@ -32,6 +32,7 @@ module Comp = {
     comp_analyses: ref([]),
   };
   let imm = (~loc=?, ~env=?, imm) => mk(~loc?, ~env?, CImmExpr(imm));
+  let number = (~loc=?, ~env=?, i) => mk(~loc?, ~env?, CNumber(i));
   let int32 = (~loc=?, ~env=?, i) => mk(~loc?, ~env?, CInt32(i));
   let int64 = (~loc=?, ~env=?, i) => mk(~loc?, ~env?, CInt64(i));
   let float32 = (~loc=?, ~env=?, i) => mk(~loc?, ~env?, CFloat32(i));

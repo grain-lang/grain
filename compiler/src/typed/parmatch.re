@@ -52,7 +52,12 @@ let rec omegas = i =>
 
 let omega_list = l => List.map(_ => omega, l);
 
-let zero = make_pat(TPatConstant(Const_int(0)), Ctype.none, Env.empty);
+let zero =
+  make_pat(
+    TPatConstant(Const_number(Const_number_int(0L))),
+    Ctype.none,
+    Env.empty,
+  );
 
 /*******************/
 /* Coherence check */
@@ -128,18 +133,16 @@ let all_coherent = column => {
       c.cstr_consts == c'.cstr_consts && c.cstr_nonconsts == c'.cstr_nonconsts
     | (TPatConstant(c1), TPatConstant(c2)) =>
       switch (c1, c2) {
-      | (Const_int(_), Const_int(_))
+      | (Const_number(_), Const_number(_))
       | (Const_int32(_), Const_int32(_))
       | (Const_int64(_), Const_int64(_))
-      | (Const_float(_), Const_float(_))
       | (Const_float32(_), Const_float32(_))
       | (Const_float64(_), Const_float64(_))
       | (Const_bool(_), Const_bool(_))
       | (Const_void, Const_void)
       | (Const_string(_), Const_string(_)) => true
       | (
-          Const_int(_) | Const_int32(_) | Const_int64(_) | Const_float(_) |
-          Const_float32(_) |
+          Const_number(_) | Const_int32(_) | Const_int64(_) | Const_float32(_) |
           Const_float64(_) |
           Const_bool(_) |
           Const_void |
@@ -241,14 +244,11 @@ let first_column = simplified_matrix => List.map(fst, simplified_matrix);
 
 let const_compare = (x, y) =>
   switch (x, y) {
-  | (Const_float(f1), Const_float(f2)) =>
-    Stdlib.compare(float_of_string(f1), float_of_string(f2))
   | (Const_string(s1), Const_string(s2)) => String.compare(s1, s2)
   | (Const_bool(b1), Const_bool(b2)) =>
     Stdlib.compare(if (b1) {1} else {0}, if (b2) {1} else {0})
   | (
-      Const_int(_) | Const_string(_) | Const_float(_) | Const_bool(_) |
-      Const_float32(_) |
+      Const_number(_) | Const_string(_) | Const_bool(_) | Const_float32(_) |
       Const_float64(_) |
       Const_void |
       Const_int32(_) |
@@ -886,15 +886,17 @@ let build_other = (ext, env) =>
       }
     | _ => build_other_constrs(env, p)
     }
-  | [({pat_desc: TPatConstant(Const_int(_))} as p, _), ..._] =>
+  | [({pat_desc: TPatConstant(Const_number(_))} as p, _), ..._] =>
     build_other_constant(
       fun
-      | TPatConstant(Const_int(i)) => i
+      | TPatConstant(Const_number(Const_number_int(i))) => i
+      | TPatConstant(Const_number(Const_number_float(_))) => 0L
+      | TPatConstant(Const_number(Const_number_rational(_))) => 0L
       | _ => assert(false),
       fun
-      | i => TPatConstant(Const_int(i)),
-      0,
-      succ,
+      | i => TPatConstant(Const_number(Const_number_int(i))),
+      0L,
+      Int64.succ,
       p,
       env,
     )
@@ -939,19 +941,6 @@ let build_other = (ext, env) =>
       p,
       env,
     )
-  | [({pat_desc: TPatConstant(Const_float(_))} as p, _), ..._] =>
-    build_other_constant(
-      fun
-      | TPatConstant(Const_float(f)) => float_of_string(f)
-      | _ => assert(false),
-      fun
-      | f => TPatConstant(Const_float(string_of_float(f))),
-      0.0,
-      f => f +. 1.0,
-      p,
-      env,
-    )
-
   | [] => omega
   | _ => omega
   };
@@ -1743,7 +1732,17 @@ let rec initial_only_guarded =
 /* FIXME: If we port over untypeast, then use its function instead */
 let untype_constant =
   fun
-  | Const_int(i) => Parsetree.PConstNumber(i)
+  | Const_number(Const_number_int(i)) =>
+    Parsetree.PConstNumber(Parsetree.PConstNumberInt(Int64.to_string(i)))
+  | Const_number(Const_number_float(f)) =>
+    Parsetree.PConstNumber(Parsetree.PConstNumberFloat(Float.to_string(f)))
+  | Const_number(Const_number_rational(n, d)) =>
+    Parsetree.PConstNumber(
+      Parsetree.PConstNumberRational(
+        Int64.to_string(n),
+        Int64.to_string(d),
+      ),
+    )
   | Const_string(s) => Parsetree.PConstString(s)
   | Const_bool(b) => Parsetree.PConstBool(b)
   | _ => failwith("NYI untype_constant");
@@ -2070,9 +2069,8 @@ let inactive = (~partial, pat) =>
         switch (c) {
         | Const_string(_)
         | Const_void
-        | Const_int(_)
+        | Const_number(_)
         | Const_bool(_)
-        | Const_float(_)
         | Const_int32(_)
         | Const_int64(_)
         | Const_float32(_)

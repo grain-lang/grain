@@ -112,6 +112,7 @@ and comp_expression_desc =
   | CAppBuiltin(string, string, list(imm_expression))
   | CLambda(list(Ident.t), anf_expression)
   | CString(string)
+  | CNumber(Asttypes.number_type)
   | CInt32(int32)
   | CInt64(int64)
   | CFloat32(float)

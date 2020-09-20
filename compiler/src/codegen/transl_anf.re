@@ -376,9 +376,10 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
 
 let compile_const = (c: Asttypes.constant) =>
   switch (c) {
-  | Const_int(i) => MConstI32(Int32.of_int(i))
-  | Const_string(_) => failwith("NYI: compile_const string")
-  | Const_float(f_str) => failwith("NYI: compile_const float")
+  | Const_number(Const_number_int(i)) => MConstI32(Int64.to_int32(i))
+  | Const_number(_) =>
+    failwith("compile_const: Const_number float/rational post-ANF")
+  | Const_string(_) => failwith("compile_const: Const_string post-ANF")
   | Const_int32(i32) => MConstI32(i32)
   | Const_int64(i64) => MConstI64(i64)
   | Const_float32(f) => MConstF32(f)
@@ -577,6 +578,20 @@ let rec compile_comp = (env, c) => {
         ),
       )
     | CString(s) => MAllocate(MString(s))
+    | CNumber(Const_number_int(n))
+        when
+          Int64.compare(n, Literals.simple_number_max) < 0
+          && Int64.compare(n, Literals.simple_number_min) > 0 =>
+      MImmediate(MImmConst(MConstI32(Int64.to_int32(n))))
+    | CNumber(Const_number_int(n))
+        when
+          Int64.compare(n, Int64.of_int32(Int32.max_int)) < 0
+          && Int64.compare(n, Int64.of_int32(Int32.min_int)) > 0 =>
+      MAllocate(MInt32(Int64.to_int32(n)))
+    | CNumber(Const_number_int(n)) => MAllocate(MInt64(n))
+    | CNumber(Const_number_float(f)) => MAllocate(MFloat64(f))
+    | CNumber(Const_number_rational(n, d)) =>
+      failwith("NYI: compile_comp Const_number_rational")
     | CInt32(i) => MAllocate(MInt32(i))
     | CInt64(i) => MAllocate(MInt64(i))
     | CFloat32(f) => MAllocate(MFloat32(f))

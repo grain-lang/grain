@@ -96,6 +96,7 @@ module MakeIter = (Iter: IterArgument) => {
       List.iter(iter_imm_expression, args)
     | [@implicit_arity] CLambda(idents, expr) => iter_anf_expression(expr)
     | CString(s) => ()
+    | CNumber(i) => ()
     | CInt32(i) => ()
     | CInt64(i) => ()
     | CFloat32(f) => ()

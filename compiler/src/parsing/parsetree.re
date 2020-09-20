@@ -84,15 +84,20 @@ type data_declaration = {
 
 [@deriving sexp]
 type constant =
-  | PConstNumber(int)
-  | PConstInt32(int32)
-  | PConstInt64(int64)
-  | PConstFloat32(float)
-  | PConstFloat64(float)
-  | PConstIntOverflow(string)
+  | PConstNumber(number_type)
+  | PConstInt32(string)
+  | PConstInt64(string)
+  | PConstFloat32(string)
+  | PConstFloat64(string)
   | PConstBool(bool)
   | PConstVoid
-  | PConstString(string);
+  | PConstString(string)
+
+[@deriving sexp]
+and number_type =
+  | PConstNumberInt(string)
+  | PConstNumberFloat(string)
+  | PConstNumberRational(string, string);
 
 /** Various binding forms */
 

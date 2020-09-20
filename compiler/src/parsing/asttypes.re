@@ -19,19 +19,22 @@ let sexp_locs_disabled = _ => ! Grain_utils.Config.sexp_locs_enabled^;
 
 /** Auxiliary AST types used by parsetree and typedtree. */;
 
-/* These are taken from OCaml. While not all fully supported,
-   we will likely want to support them. */
 [@deriving sexp]
 type constant =
-  | Const_int(int)
+  | Const_number(number_type)
   | Const_string(string)
-  | Const_float(string)
   | Const_int32(int32)
   | Const_int64(int64)
   | Const_float32(float)
   | Const_float64(float)
   | Const_bool(bool)
-  | Const_void;
+  | Const_void
+
+[@deriving sexp]
+and number_type =
+  | Const_number_int(int64)
+  | Const_number_float(float)
+  | Const_number_rational(int64, int64);
 
 /** Marker for exported/nonexported let bindings */
 

@@ -1,5 +1,6 @@
 open Anftree;
 open Grain_typed;
+open Grain_utils;
 open Types;
 
 let known_constants = ref(Ident.empty: Ident.tbl(constant));
@@ -16,6 +17,11 @@ module ConstantPropagationArg: Anf_mapper.MapArgument = {
       List.iter(
         ((id, v)) =>
           switch (v) {
+          | {comp_desc: CNumber(Const_number_int(n) as c')}
+              when
+                Int64.compare(n, Literals.simple_number_max) < 0
+                && Int64.compare(n, Literals.simple_number_min) > 0 =>
+            add_constant(id, Const_number(c'))
           | {comp_desc: CImmExpr({imm_desc: ImmConst(c)})} =>
             add_constant(id, c)
           | _ => ()

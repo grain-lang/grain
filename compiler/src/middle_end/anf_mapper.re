@@ -128,6 +128,7 @@ module MakeMap = (Iter: MapArgument) => {
         let expr = map_anf_expression(expr);
         [@implicit_arity] CLambda(idents, expr);
       | CString(s) => CString(s)
+      | CNumber(i) => CNumber(i)
       | CInt32(i) => CInt32(i)
       | CInt64(i) => CInt64(i)
       | CFloat32(f) => CFloat32(f)

@@ -1255,22 +1255,22 @@ let optimization_tests = [
   tfinalanf(
     "test_dead_branch_elimination_1",
     "{ if (true) {4} else {5} }",
-    AExp.comp(Comp.imm(Imm.const(Const_int(4)))),
+    AExp.comp(Comp.imm(Imm.const(Const_number(Const_number_int(4L))))),
   ),
   tfinalanf(
     "test_dead_branch_elimination_2",
     "{ if (false) {4} else {5} }",
-    AExp.comp(Comp.imm(Imm.const(Const_int(5)))),
+    AExp.comp(Comp.imm(Imm.const(Const_number(Const_number_int(5L))))),
   ),
   tfinalanf(
     "test_dead_branch_elimination_3",
     "{ let x = true; if (x) {4} else {5} }",
-    AExp.comp(Comp.imm(Imm.const(Const_int(4)))),
+    AExp.comp(Comp.imm(Imm.const(Const_number(Const_number_int(4L))))),
   ),
   tfinalanf(
     "test_dead_branch_elimination_4",
     "{let x = if (true) {4} else {5}; x}",
-    AExp.comp(Comp.imm(Imm.const(Const_int(4)))),
+    AExp.comp(Comp.imm(Imm.const(Const_number(Const_number_int(4L))))),
   ),
   t(
     "test_dead_branch_elimination_5",
@@ -1281,7 +1281,7 @@ let optimization_tests = [
   tfinalanf(
     "test_const_propagation",
     "{\n    let x = 4;\n    let y = x;\n    x}",
-    AExp.comp(Comp.imm(Imm.const(Const_int(4)))),
+    AExp.comp(Comp.imm(Imm.const(Const_number(Const_number_int(4L))))),
   ),
   /* Primarily a constant-propagation test, but DAE removes the let bindings as well */
   tfinalanf(
@@ -1291,7 +1291,12 @@ let optimization_tests = [
       open Grain_typed;
       let x = Ident.create("lambda_arg");
       AExp.comp(
-        Comp.lambda([x], AExp.comp(Comp.imm(Imm.const(Const_int(4))))),
+        Comp.lambda(
+          [x],
+          AExp.comp(
+            Comp.imm(Imm.const(Const_number(Const_number_int(4L)))),
+          ),
+        ),
       );
     },
   ),
@@ -1300,15 +1305,15 @@ let optimization_tests = [
     "test_const_propagation_shadowing",
     "{\n  let x = 5;\n  let y = 12;\n  let z = y;\n  {\n    let y = x;\n    x\n  }\n  x + y}",
     AExp.seq(
-      Comp.imm(Imm.const(Const_int(5))),
-      AExp.comp(Comp.imm(Imm.const(Const_int(17)))),
+      Comp.imm(Imm.const(Const_number(Const_number_int(5L)))),
+      AExp.comp(Comp.imm(Imm.const(Const_number(Const_number_int(17L))))),
     ),
   ),
   /* Primarily a constant-folding test, but DAE removes the let bindings as well */
   tfinalanf(
     "test_const_folding",
     "{\n    let x = 4 + 5;\n    let y = x * 2;\n    let z = y - x;\n    let a = x + 7;\n    let b = 14;\n    a + b}",
-    AExp.comp(Comp.imm(Imm.const(Const_int(30)))),
+    AExp.comp(Comp.imm(Imm.const(Const_number(Const_number_int(30L))))),
   ),
   tfinalanf(
     "test_cse",
@@ -1332,7 +1337,10 @@ let optimization_tests = [
                   a,
                   Comp.app(
                     Imm.id(plus),
-                    [Imm.id(x), Imm.const(Const_int(1))],
+                    [
+                      Imm.id(x),
+                      Imm.const(Const_number(Const_number_int(1L))),
+                    ],
                   ),
                 ),
               ],
@@ -1355,7 +1363,10 @@ let optimization_tests = [
         Comp.lambda([arg]) @@
         AExp.let_(Nonrecursive, [(x, Comp.imm(Imm.id(arg)))]) @@
         AExp.comp @@
-        Comp.app(Imm.id(plus), [Imm.id(x), Imm.const(Const_int(1))]),
+        Comp.app(
+          Imm.id(plus),
+          [Imm.id(x), Imm.const(Const_number(Const_number_int(1L)))],
+        ),
       );
     },
   ),
@@ -1366,7 +1377,12 @@ let optimization_tests = [
       open Grain_typed;
       let x = Ident.create("lambda_arg");
       AExp.comp(
-        Comp.lambda([x], AExp.comp(Comp.imm(Imm.const(Const_int(1))))),
+        Comp.lambda(
+          [x],
+          AExp.comp(
+            Comp.imm(Imm.const(Const_number(Const_number_int(1L)))),
+          ),
+        ),
       );
     },
   ),
@@ -1388,10 +1404,21 @@ let optimization_tests = [
       ) @@
       AExp.let_(
         Nonrecursive,
-        [(app, Comp.app(Imm.id(foo), [Imm.const(Const_int(3))]))],
+        [
+          (
+            app,
+            Comp.app(
+              Imm.id(foo),
+              [Imm.const(Const_number(Const_number_int(3L)))],
+            ),
+          ),
+        ],
       ) @@
       AExp.comp @@
-      Comp.app(Imm.id(plus), [Imm.id(app), Imm.const(Const_int(5))]);
+      Comp.app(
+        Imm.id(plus),
+        [Imm.id(app), Imm.const(Const_number(Const_number_int(5L)))],
+      );
     },
   ),
   tfsound("test_counter-mut_sound", "counter-mut", "1\n2\n3\nvoid"),

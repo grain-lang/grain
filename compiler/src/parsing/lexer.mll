@@ -66,11 +66,6 @@
     let loc = lexbuf_loc lexbuf in
     comments := line_comment source loc :: !comments
 
-  let parse_int_gen s =
-    match (Int64.of_string_opt s) with
-    | None -> (0L, Some(s))
-    | Some(n) -> (n, None)
-
 }
 
 let dec_digit = ['0'-'9']
@@ -139,12 +134,12 @@ rule token = parse
   | comment { parse_line_comment lexbuf; EOL }
   | blank { token lexbuf }
   | newline_chars { process_newlines lexbuf; EOL }
-  | (signed_float as x) 'f' { FLOAT32 (Float.of_string x) }
-  | (signed_float as x) 'd' { FLOAT64 (Float.of_string x) }
-  | signed_float as x { FLOAT_GEN (Float.of_string x) }
-  | (signed_int as x) 'l' { INT32 (Int32.of_string x) }
-  | (signed_int as x) 'L' { INT64 (Int64.of_string x) }
-  | signed_int as x { INT_GEN (parse_int_gen x) }
+  | (signed_float as x) 'f' { FLOAT32 x }
+  | (signed_float as x) 'd' { FLOAT64 x }
+  | signed_float as x { NUMBER_FLOAT x }
+  | (signed_int as x) 'l' { INT32 x }
+  | (signed_int as x) 'L' { INT64 x }
+  | signed_int as x { NUMBER_INT x }
   | "primitive" { PRIMITIVE }
   | "foreign" { FOREIGN }
   | "wasm" { WASM }

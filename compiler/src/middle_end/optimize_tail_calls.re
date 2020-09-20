@@ -205,7 +205,7 @@ module TailCallsArg: Anf_mapper.MapArgument = {
     CPrim1(
       Box,
       {
-        imm_desc: ImmConst(Const_int(0)),
+        imm_desc: ImmConst(Const_number(Const_number_int(0L))),
         imm_loc: anf_loc,
         imm_env: anf_env,
         imm_analyses: ref([]),
@@ -285,7 +285,10 @@ module TailCallsArg: Anf_mapper.MapArgument = {
         assign_id(next_id, first_f_id),
         /* Doesn't matter what's in this box, as it is immediately overwritten */
       ]) @@
-      bind(return_val_id, box @@ ImmConst(Const_int(0))) @@
+      bind(
+        return_val_id,
+        box @@ ImmConst(Const_number(Const_number_int(0L))),
+      ) @@
       sequence([
         wrap_comp(lambda) @@
         [@implicit_arity]
