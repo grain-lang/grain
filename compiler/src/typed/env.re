@@ -2036,7 +2036,6 @@ let add_components =
             Tbl.add(m, x, acc);
           } else {
             assert(
-              // TODO: Shouldn't this be a `try`?
               switch (IdTbl.find_name(m, env0_tbl, ~mark=false)) {
               | _ => false
               | exception _ => true
@@ -2230,7 +2229,6 @@ let open_signature_of_initially_opened_module =
     (~loc=Location.dummy_loc, root, env) => {
   let load_path = Grain_utils.Config.include_dirs^;
   let filter_modules = m =>
-    // TODO: Shouldn't this be a `try`?
     switch (locate_module_file(~loc, load_path, m)) {
     | _ => false
     | exception Not_found => true
