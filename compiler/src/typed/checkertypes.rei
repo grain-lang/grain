@@ -51,7 +51,9 @@ let mk_expected:
 
 let type_constant: Asttypes.constant => type_expr;
 
-let constant: Parsetree.constant => result(Asttypes.constant, error);
+let constant:
+  (Location.t, Parsetree.constant) =>
+  result(Asttypes.constant, Location.error);
 
 let constant_or_raise:
   (Env.t, Location.t, Parsetree.constant) => Asttypes.constant;

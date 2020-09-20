@@ -118,6 +118,7 @@ and comp_free_vars_help = (env, c: comp_expression) =>
       imm_free_vars_help(env, arg1),
       imm_free_vars_help(env, arg2),
     )
+  | CNumber(_)
   | CInt32(_)
   | CInt64(_)
   | CFloat32(_)

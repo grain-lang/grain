@@ -114,12 +114,12 @@ let extract_bindings = (mut_flag, pat, cexpr) => {
 let transl_const =
     (c: Types.constant): either(imm_expression, (string, comp_expression)) =>
   switch (c) {
+  | Const_number(n) => [@implicit_arity] Right("number", Comp.number(n))
   | Const_int32(i) => [@implicit_arity] Right("int32", Comp.int32(i))
   | Const_int64(i) => [@implicit_arity] Right("int64", Comp.int64(i))
   | Const_float64(i) => [@implicit_arity] Right("float64", Comp.float64(i))
   | Const_float32(i) => [@implicit_arity] Right("float32", Comp.float32(i))
   | Const_string(s) => [@implicit_arity] Right("str", Comp.string(s))
-  | Const_float(_) => failwith("NYI: helpIConst: float")
   | _ => Left(Imm.const(c))
   };
 
@@ -487,7 +487,11 @@ let rec transl_imm =
           Comp.record(
             ~loc,
             ~env,
-            Imm.const(~loc, ~env, Const_int(ty_id)),
+            Imm.const(
+              ~loc,
+              ~env,
+              Const_number(Const_number_int(Int64.of_int(ty_id))),
+            ),
             new_args,
           ),
         ),
@@ -872,16 +876,34 @@ let linearize_decl = (env, loc, typath, decl) => {
         Comp.adt(
           ~loc,
           ~env,
-          Imm.const(~loc, ~env, Const_int(ty_id)),
-          Imm.const(~loc, ~env, Const_int(compiled_tag)),
+          Imm.const(
+            ~loc,
+            ~env,
+            Const_number(Const_number_int(Int64.of_int(ty_id))),
+          ),
+          Imm.const(
+            ~loc,
+            ~env,
+            Const_number(Const_number_int(Int64.of_int(compiled_tag))),
+          ),
           [],
         );
       | CstrBlock(_) =>
         let compiled_tag = compile_constructor_tag(cstr_tag);
         let args = List.map(_ => gensym("constr_arg"), cstr_args);
         let arg_ids = List.map(a => Imm.id(~loc, ~env, a), args);
-        let imm_tytag = Imm.const(~loc, ~env, Const_int(ty_id));
-        let imm_tag = Imm.const(~loc, ~env, Const_int(compiled_tag));
+        let imm_tytag =
+          Imm.const(
+            ~loc,
+            ~env,
+            Const_number(Const_number_int(Int64.of_int(ty_id))),
+          );
+        let imm_tag =
+          Imm.const(
+            ~loc,
+            ~env,
+            Const_number(Const_number_int(Int64.of_int(compiled_tag))),
+          );
         Comp.lambda(
           ~loc,
           ~env,

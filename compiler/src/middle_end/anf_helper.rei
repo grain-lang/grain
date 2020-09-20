@@ -17,6 +17,8 @@ module Imm: {
 module Comp: {
   let mk: (~loc: loc=?, ~env: env=?, comp_expression_desc) => comp_expression;
   let imm: (~loc: loc=?, ~env: env=?, imm_expression) => comp_expression;
+  let number:
+    (~loc: loc=?, ~env: env=?, Asttypes.number_type) => comp_expression;
   let int32: (~loc: loc=?, ~env: env=?, int32) => comp_expression;
   let int64: (~loc: loc=?, ~env: env=?, int64) => comp_expression;
   let float32: (~loc: loc=?, ~env: env=?, float) => comp_expression;

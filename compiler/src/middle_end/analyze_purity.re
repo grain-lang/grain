@@ -177,6 +177,7 @@ let rec analyze_comp_expression =
       List.iter(i => set_id_purity(i, true), args);
       analyze_anf_expression(body);
       anf_expression_purity_internal(body);
+    | CNumber(_)
     | CInt32(_)
     | CInt64(_)
     | CFloat32(_)

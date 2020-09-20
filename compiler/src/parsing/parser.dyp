@@ -147,27 +147,17 @@ let make_program statements =
   } in
   fix_blocks {statements; comments=[]; prog_loc}
 
-(* Simple numbers span the 31-bit range as we reserve one tag bit *)
-let simple_number_max = 1073741824L
-let simple_number_min = -1073741824L
-
-let compile_int_gen dyp v =
-  match v with
-  | (_, Some(s)) -> Exp.constant ~loc:(symbol_rloc dyp) (Const.int_overflow s)
-  | (n, _) when (Int64.compare n simple_number_max) < 0 && (Int64.compare n simple_number_min) > 0 -> Exp.constant ~loc:(symbol_rloc dyp) (Const.int (Int64.to_int n))
-  | (n, _) when (Int64.compare n (Int64.of_int32 Int32.max_int)) < 0 && (Int64.compare n (Int64.of_int32 Int32.min_int)) > 0 -> Exp.prim1 ~loc:(symbol_rloc dyp) Int32ToNumber (Exp.constant ~loc:(symbol_rloc dyp) (Const.int32 (Int64.to_int32 n)))
-  | (n, _) -> Exp.prim1 ~loc:(symbol_rloc dyp) Int64ToNumber (Exp.constant ~loc:(symbol_rloc dyp) (Const.int64 n))
 }
 
 /* Operator precedence may be found in /docs/contributor/operator_precedence.md */
 %relation p180<p170<p160<p150<p140<p130<p120<p110<p100<p90<p80<p70<p60<p50<p40<p30<p20<p10<p0
 
-%token <int64 * (string option)> INT_GEN
-%token <int32> INT32
-%token <int64> INT64
-%token <float> FLOAT32
-%token <float> FLOAT64
-%token <float> FLOAT_GEN
+%token <string> NUMBER_INT
+%token <string> NUMBER_FLOAT
+%token <string> INT32
+%token <string> INT64
+%token <string> FLOAT32
+%token <string> FLOAT64
 %token <string> ID
 %token <string> TYPEID
 %token <string> STRING
@@ -252,6 +242,8 @@ equal :
   | eols? EQUAL eols? { () }
 
 const :
+  | NUMBER_INT { Const.number (PConstNumberInt $1) }
+  | NUMBER_FLOAT { Const.number (PConstNumberFloat $1) }
   | INT32 { Const.int32 $1 }
   | INT64 { Const.int64 $1 }
   | FLOAT32 { Const.float32 $1 }
@@ -486,8 +478,6 @@ id_expr :
   | id { prerr_string "\nsimple_expr\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); Exp.ident ~loc:(symbol_rloc dyp) $1 }
 
 simple_expr :
-  | INT_GEN { compile_int_gen dyp $1 }
-  | FLOAT_GEN { Exp.prim1 ~loc:(symbol_rloc dyp) Float64ToNumber (Exp.constant ~loc:(symbol_rloc dyp) (Const.float64 $1)) }
   | const { Exp.constant ~loc:(symbol_rloc dyp) $1 }
   | lparen tuple_exprs rparen { Exp.tuple ~loc:(symbol_rloc dyp) $2 }
   | lbrace record_exprs rbrace { Exp.record ~loc:(symbol_rloc dyp) $2 }
