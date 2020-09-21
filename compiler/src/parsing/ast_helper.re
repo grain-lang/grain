@@ -47,12 +47,11 @@ let ident_cons = {
 
 module Const = {
   let string = s => PConstString(s);
-  let int = i => PConstNumber(i);
+  let number = i => PConstNumber(i);
   let int32 = i => PConstInt32(i);
   let int64 = i => PConstInt64(i);
   let float32 = f => PConstFloat32(f);
   let float64 = f => PConstFloat64(f);
-  let int_overflow = s => PConstIntOverflow(s);
   let bool = b => PConstBool(b);
   let void = PConstVoid;
 };

@@ -261,7 +261,12 @@ module MatchTreeCompiler = {
       | [hd, ...tl] => (hd, tl)
       };
     switch (tree) {
-    | Leaf(i) => (Comp.imm(Imm.const(Const_int(i))), [])
+    | Leaf(i) => (
+        Comp.imm(
+          Imm.const(Const_number(Const_number_int(Int64.of_int(i)))),
+        ),
+        [],
+      )
     | Guard(mb, true_tree, false_tree) =>
       let guard =
         switch (mb.mb_guard) {
@@ -291,7 +296,7 @@ module MatchTreeCompiler = {
       );
     | Fail =>
       /* FIXME: We need a "throw error" node in ANF */
-      (Comp.imm(Imm.const(Const_int(0))), [])
+      (Comp.imm(Imm.const(Const_number(Const_number_int(0L)))), [])
     /* Optimizations to avoid unneeded destructuring: */
     | [@implicit_arity] Explode(_, Leaf(_) as inner)
     | [@implicit_arity] Explode(_, Guard(_) as inner)
@@ -363,7 +368,13 @@ module MatchTreeCompiler = {
             let setup = [
               BLet(
                 cmp_id_name,
-                Comp.prim2(Eq, value_constr_id, Imm.const(Const_int(tag))),
+                Comp.prim2(
+                  Eq,
+                  value_constr_id,
+                  Imm.const(
+                    Const_number(Const_number_int(Int64.of_int(tag))),
+                  ),
+                ),
               ),
             ];
             let (tree_ans, tree_setup) =

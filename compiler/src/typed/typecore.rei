@@ -150,6 +150,7 @@ exception Error_forward(Location.error);
     ref*/
 
 let constant:
-  Parsetree.constant => result(Asttypes.constant, Checkertypes.error);
+  (Location.t, Parsetree.constant) =>
+  result(Asttypes.constant, Location.error);
 
 let check_recursive_bindings: (Env.t, list(Typedtree.value_binding)) => unit;

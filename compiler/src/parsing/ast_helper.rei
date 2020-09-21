@@ -34,12 +34,11 @@ let with_default_loc_src: (unit => loc, unit => 'a) => 'a;
 
 module Const: {
   let string: string => constant;
-  let int: int => constant;
-  let int32: int32 => constant;
-  let int64: int64 => constant;
-  let float32: float => constant;
-  let float64: float => constant;
-  let int_overflow: string => constant;
+  let number: number_type => constant;
+  let int32: string => constant;
+  let int64: string => constant;
+  let float32: string => constant;
+  let float64: string => constant;
   let bool: bool => constant;
   let void: constant;
 };
