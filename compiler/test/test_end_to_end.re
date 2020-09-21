@@ -1609,6 +1609,22 @@ let number_tests = [
   t("number_syntax5", "1.2e2", "120"),
   t("number_syntax6", "1l", "1"),
   t("number_syntax7", "1L", "1"),
+  // syntax errors
+  te(
+    "number_syntax_err1",
+    "987654321987654321987654321",
+    "outside of the integer range",
+  ),
+  te(
+    "number_syntax_err2",
+    "987654321987654321987654321l",
+    "representable 32-bit",
+  ),
+  te(
+    "number_syntax_err3",
+    "987654321987654321987654321L",
+    "representable 64-bit",
+  ),
 ];
 
 let comment_tests = {
