@@ -104,8 +104,6 @@ let constant:
       switch (Literals.conv_number_rational(n, d)) {
       | Some((n, d)) when d == 1l =>
         Ok(Const_number(Const_number_int(Int64.of_int32(n))))
-      | Some((n, d)) when d == (-1l) =>
-        Ok(Const_number(Const_number_int(Int64.of_int32(Int32.neg(n)))))
       | Some((n, d)) => Ok(Const_number(Const_number_rational(n, d)))
       | None =>
         Error(
