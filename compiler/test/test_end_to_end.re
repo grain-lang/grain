@@ -172,7 +172,7 @@ let basic_functionality_tests = [
   t("binop4", "2 * 3", "6"),
   t("binop5", "10 / 5", "2"),
   t("binop6", "9 % 5", "4"),
-  te("division_by_zero", "9 / 0", "division by zero"),
+  te("division_by_zero", "let nine = 9; nine / 0", "division by zero"),
   te("modulo_by_zero", "9 % 0", "modulo by zero"),
   t("division1", "5 / 2", "5/2"),
   t("modulo1", "-17 % 4", "3"),
@@ -1622,6 +1622,7 @@ let number_tests = [
   t("numbers7", "(1 / 3) + (1 / 6)", "1/2"),
   t("numbers8", "(1 / 3) * (1 / 3)", "1/9"),
   t("numbers9", "(1 / 3) / (1 / 3)", "1"),
+  te("numbers10", "9 / 0", "denominator of zero"),
   // basic syntax tests
   t("number_syntax1", "1.2", "1.2"),
   t("number_syntax2", "1.2d", "1.2"),

@@ -118,7 +118,8 @@ type allocation_type =
   | MInt32(int32)
   | MInt64(int64)
   | MFloat32(float)
-  | MFloat64(float);
+  | MFloat64(float)
+  | MRational(int32, int32);
 
 [@deriving sexp]
 type tag_op =

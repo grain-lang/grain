@@ -2107,6 +2107,10 @@ let allocate_int64 = (wasm_mod, env, i) => {
   call_new_int64(wasm_mod, env, [i]);
 };
 
+let allocate_rational = (wasm_mod, env, n, d) => {
+  call_new_rational(wasm_mod, env, [n, d]);
+};
+
 /* Store an int64 */
 let allocate_int64_imm = (wasm_mod, env, i) => {
   let get_swap64 = () => get_swap(~ty=Type.int64, wasm_mod, env, 0);
@@ -2900,6 +2904,13 @@ let compile_allocation = (wasm_mod, env, alloc_type) =>
       wasm_mod,
       env,
       Expression.const(wasm_mod, Literal.float64(i)),
+    )
+  | MRational(n, d) =>
+    allocate_rational(
+      wasm_mod,
+      env,
+      Expression.const(wasm_mod, Literal.int32(n)),
+      Expression.const(wasm_mod, Literal.int32(d)),
     )
   };
 
