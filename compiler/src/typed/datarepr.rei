@@ -19,6 +19,9 @@
 
 open Types;
 
+let extension_descr:
+  (Path.t, extension_constructor) => constructor_description;
+
 let constructors_of_type:
   (Path.t, type_declaration) => list((Ident.t, constructor_description));
 

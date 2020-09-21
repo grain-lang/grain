@@ -37,6 +37,7 @@ type mapper = {
   value_binding: (mapper, value_binding) => value_binding,
   match_branch: (mapper, match_branch) => match_branch,
   value_description: (mapper, value_description) => value_description,
+  grain_exception: (mapper, type_exception) => type_exception,
   toplevel: (mapper, toplevel_stmt) => toplevel_stmt,
 };
 

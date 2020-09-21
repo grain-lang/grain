@@ -75,6 +75,7 @@ let translate_signature = sg =>
         [@implicit_arity]
         TSigValue(id, {...d, val_type: link_type_vars(d.val_type)})
       | TSigType(_)
+      | TSigTypeExt(_)
       | TSigModule(_)
       | TSigModType(_) => item
       },

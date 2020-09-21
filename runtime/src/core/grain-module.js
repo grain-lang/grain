@@ -114,41 +114,65 @@ export class GrainModule {
       }
       this._types = {};
       cmi.cmi_sign.forEach(elt => {
-        if (elt[0] !== "TSigType") {
-          return;
-        }
-        let id = elt[2].type_path[1].stamp
-        let typ = {};
-        this._types[id] = typ;
-        let desc = elt[2];
-        let kind = desc.type_kind;
-        if (!kind) return;
-        switch (kind[0]) {
-          case "TDataVariant": {
-            let variants = kind[1];
-            variants.forEach((variant, vidx) => {
-              let name = variant.cd_id.name;
-              let arity;
-              if (variant.cd_args[0] === "TConstrSingleton") {
-                arity = 0;
-              } else {
-                // TConstrTuple
-                arity = variant.cd_args[1].length;
+        switch (elt[0]) {
+          case "TSigType": {
+            let id = elt[2].type_path[1].stamp
+            let typ = {};
+            this._types[id] = typ;
+            let desc = elt[2];
+            let kind = desc.type_kind;
+            if (!kind) return;
+            switch (kind[0]) {
+              case "TDataVariant": {
+                let variants = kind[1];
+                variants.forEach((variant, vidx) => {
+                  let name = variant.cd_id.name;
+                  let arity;
+                  if (variant.cd_args[0] === "TConstrSingleton") {
+                    arity = 0;
+                  } else {
+                    // TConstrTuple
+                    arity = variant.cd_args[1].length;
+                  }
+                  typ[vidx] = [name, arity];
+                })
+                break;
               }
-              typ[vidx] = [name, arity];
-            })
+              case "TDataRecord": {
+                let fields = kind[1];
+                fields.forEach((field, fidx) => {
+                  let name = field.rf_name.name;
+                  typ[name] = fidx;
+                })
+                break;
+              }
+              default:
+                return
+            }
             break;
           }
-          case "TDataRecord": {
-            let fields = kind[1];
-            fields.forEach((field, fidx) => {
-              let name = field.rf_name.name;
-              typ[name] = fidx;
-            })
+          case "TSigTypeExt": {
+            let ident = elt[1]
+            let variant = elt[2];
+            let id = variant.ext_type_path[1].stamp
+            let typ;
+            if (this._types[id]) {
+              typ = this._types[id]
+            } else {
+              typ = {}
+              this._types[id] = typ;
+            }
+            let name = ident.name;
+            let arity;
+            if (variant.ext_args[0] === "TConstrSingleton") {
+              arity = 0;
+            } else {
+              // TConstrTuple
+              arity = variant.ext_args[1].length;
+            }
+            typ[variant.ext_runtime_id] = [name, arity];
             break;
           }
-          default:
-            return
         }
       })
     }

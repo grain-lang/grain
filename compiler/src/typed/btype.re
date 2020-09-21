@@ -158,6 +158,7 @@ type type_iterators = {
   it_signature_item: (type_iterators, signature_item) => unit,
   it_value_description: (type_iterators, value_description) => unit,
   it_type_declaration: (type_iterators, type_declaration) => unit,
+  it_extension_constructor: (type_iterators, extension_constructor) => unit,
   it_module_declaration: (type_iterators, module_declaration) => unit,
   it_modtype_declaration: (type_iterators, modtype_declaration) => unit,
   it_module_type: (type_iterators, module_type) => unit,
@@ -179,6 +180,7 @@ let map_type_expr_cstr_args = f =>
 
 let iter_type_expr_kind = f =>
   fun
+  | TDataOpen
   | TDataAbstract => ()
   | TDataVariant(cstrs) =>
     List.iter(cd => iter_type_expr_cstr_args(f, cd.cd_args), cstrs)
@@ -190,6 +192,8 @@ let type_iterators = {
     fun
     | [@implicit_arity] TSigValue(_, vd) => it.it_value_description(it, vd)
     | [@implicit_arity] TSigType(_, td, _) => it.it_type_declaration(it, td)
+    | [@implicit_arity] TSigTypeExt(_, td, _) =>
+      it.it_extension_constructor(it, td)
     | [@implicit_arity] TSigModule(_, md, _) =>
       it.it_module_declaration(it, md)
     | [@implicit_arity] TSigModType(_, mtd) =>
@@ -198,6 +202,11 @@ let type_iterators = {
   and it_type_declaration = (it, td) => {
     List.iter(it.it_type_expr(it), td.type_params);
     it.it_type_kind(it, td.type_kind);
+  }
+  and it_extension_constructor = (it, td) => {
+    it.it_path(td.ext_type_path);
+    List.iter(it.it_type_expr(it), td.ext_type_params);
+    iter_type_expr_cstr_args(it.it_type_expr(it), td.ext_args);
   }
   and it_module_type = it =>
     fun
@@ -228,6 +237,7 @@ let type_iterators = {
     it_module_type,
     it_type_declaration,
     it_value_description,
+    it_extension_constructor,
     it_module_declaration,
     it_modtype_declaration,
   };

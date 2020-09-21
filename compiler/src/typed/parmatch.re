@@ -707,7 +707,10 @@ let should_extend = (ext, env) =>
       | [@implicit_arity]
         TPatConstruct(
           _,
-          {cstr_tag: CstrConstant(_) | CstrBlock(_) | CstrUnboxed},
+          {
+            cstr_tag:
+              CstrConstant(_) | CstrBlock(_) | CstrExtension(_) | CstrUnboxed,
+          },
           _,
         ) =>
         let path = get_constructor_type_path(p.pat_type, p.pat_env);
@@ -876,6 +879,21 @@ let some_private_tag = "<some private tag>";
 
 let build_other = (ext, env) =>
   switch (env) {
+  | [
+      (
+        {pat_desc: TPatConstruct(_, {cstr_tag: CstrExtension(_)}, _)} as p,
+        _,
+      ),
+      ..._,
+    ] =>
+    make_pat(
+      TPatVar(
+        Ident.create("*extension*"),
+        {txt: "*extension*", loc: p.pat_loc},
+      ),
+      Ctype.none,
+      Env.empty,
+    )
   | [({pat_desc: TPatConstruct(_)} as p, _), ..._] =>
     switch (ext) {
     | Some(ext) =>
@@ -1763,6 +1781,7 @@ module Conv = {
     let constrs = Hashtbl.create(7);
     let rec loop = pat =>
       switch (pat.pat_desc) {
+      | TPatVar(_, {txt: "*extension*"} as nm) => mkpat(PPatVar(nm))
       | TPatAny
       | TPatVar(_) => mkpat(PPatAny)
       | [@implicit_arity] TPatAlias(p, _, _) => loop(p)
@@ -1791,7 +1810,14 @@ module Conv = {
 };
 
 /* Whether the counter-example contains an extension pattern */
-let contains_extension = pat => false;
+let contains_extension = pat => {
+  exists_pattern(
+    fun
+    | {pat_desc: TPatVar(_, {txt: "*extension*"})} => true
+    | _ => false,
+    pat,
+  );
+};
 
 /* Build an untyped or-pattern from its expected type */
 let ppat_of_type = (env, ty) =>
@@ -1895,7 +1921,10 @@ let rec collect_paths_from_pat = (r, p) =>
   | [@implicit_arity]
     TPatConstruct(
       _,
-      {cstr_tag: CstrConstant(_) | CstrBlock(_) | CstrUnboxed},
+      {
+        cstr_tag:
+          CstrConstant(_) | CstrBlock(_) | CstrExtension(_) | CstrUnboxed,
+      },
       ps,
     ) =>
     let path = get_constructor_type_path(p.pat_type, p.pat_env);

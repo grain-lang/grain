@@ -162,6 +162,12 @@ let basic_functionality_tests = [
   t("complex2", "print(2 + 3)", "5\nvoid"),
   t("binop1", "2 + 2", "4"),
   t("binop2", "2 - 2", "0"),
+  t("binop2.1", "2-2", "0"),
+  t("binop2.2", "2 -
+                 2", "0"),
+  t("binop2.3", "2
+                 - 2", "-2"),
+  t("binop2.4", "- 2", "-2"),
   t("binop3", "2 - 4", "-2"),
   t("binop4", "2 * 3", "6"),
   t("binop5", "10 / 5", "2"),
@@ -1564,6 +1570,21 @@ let string_tests = {
   ];
 };
 
+let exception_tests = [
+  t("exception_1", "exception Foo; Foo", "<adt value>"),
+  t("exception_2", "export exception Foo; Foo", "Foo"),
+  t(
+    "exception_3",
+    "export exception Foo(Bool, Number); Foo(false, 6)",
+    "Foo(false, 6)",
+  ),
+  t(
+    "exception_4",
+    "export exception Foo(Bool, Number); export exception Bar; Bar",
+    "Bar",
+  ),
+];
+
 let data_tests = [
   tfile("basicdata", "basicdata", "(false, true, true)"),
   tfile(
@@ -1672,4 +1693,6 @@ let tests =
   @ data_tests
   @ export_tests
   @ comment_tests
-  @ number_tests;
+  @ number_tests
+  @ exception_tests
+  @ export_tests;

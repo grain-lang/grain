@@ -837,6 +837,7 @@ let rec tree_of_type_decl = (id, decl) => {
     };
 
   switch (decl.type_kind) {
+  | TDataOpen
   | TDataAbstract => ()
   | TDataRecord(fields) =>
     List.iter(({rf_type}) => mark_loops(rf_type), fields)
@@ -894,6 +895,7 @@ let rec tree_of_type_decl = (id, decl) => {
       )
     | TDataVariant(cstrs) =>
       tree_of_manifest(Otyp_sum(List.map(tree_of_constructor, cstrs)))
+    | TDataOpen => tree_of_manifest(Otyp_open)
     };
 
   {
@@ -936,6 +938,78 @@ let constructor_arguments = (ppf, a) => {
   let tys = tree_of_constructor_arguments(a);
   Oprint.out_type^(ppf, Otyp_tuple(tys));
 };
+
+/* Print an extension declaration */
+
+let tree_of_extension_constructor = (id, ext, es) => {
+  let ty_name = Path.name(ext.ext_type_path);
+  let ty_params = filter_params(ext.ext_type_params);
+  List.iter(add_alias, ty_params);
+  List.iter(mark_loops, ty_params);
+  List.iter(check_name_of_type, ty_params);
+  mark_loops_constructor_arguments(ext.ext_args);
+  let type_param =
+    fun
+    | [@implicit_arity] Otyp_var(_, id) => id
+    | _ => "?";
+
+  let ty_params =
+    List.map(ty => type_param(tree_of_typexp(false, ty)), ty_params);
+
+  let name = Ident.name(id);
+  let args = tree_of_constructor_arguments(ext.ext_args);
+
+  let ext = {
+    oext_name: name,
+    oext_type_name: ty_name,
+    oext_type_params: ty_params,
+    oext_args: args,
+  };
+
+  let es =
+    switch (es) {
+    | TExtFirst => Oext_first
+    | TExtNext => Oext_next
+    | TExtException => Oext_exception
+    };
+
+  [@implicit_arity] Osig_typext(ext, es);
+};
+
+let extension_constructor = (id, ppf, ext) =>
+  Oprint.out_sig_item^(
+    ppf,
+    tree_of_extension_constructor(id, ext, TExtFirst),
+  );
+
+let extension_only_constructor = (id, ppf, ext) => {
+  let name = Ident.name(id);
+  let args = tree_of_constructor_arguments(ext.ext_args);
+  Format.fprintf(ppf, "@[<hv>%a@]", Oprint.out_constr^, (name, args, None));
+};
+
+/* Print a value declaration */
+
+let tree_of_value_description = (id, decl) => {
+  let id = Ident.name(id);
+  let ty = tree_of_type_scheme(decl.val_type);
+  let vd = {
+    oval_name: id,
+    oval_type: ty,
+    oval_prims: [],
+    oval_attributes: [],
+  };
+
+  let vd =
+    switch (decl.val_kind) {
+    | _ => vd
+    };
+
+  Osig_value(vd);
+};
+
+let value_description = (id, ppf, decl) =>
+  Oprint.out_sig_item^(ppf, tree_of_value_description(id, decl));
 
 /* Print a value declaration */
 
@@ -1056,6 +1130,9 @@ and trees_of_sigitem =
     ]
   | [@implicit_arity] TSigType(id, decl, rs) => [
       tree_of_type_declaration(id, decl, rs),
+    ]
+  | [@implicit_arity] TSigTypeExt(id, ext, es) => [
+      tree_of_extension_constructor(id, ext, es),
     ]
   | [@implicit_arity] TSigModule(id, md, rs) => [
       tree_of_module(id, md.md_type, rs, ~ellipsis=false),

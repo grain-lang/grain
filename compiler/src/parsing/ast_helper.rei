@@ -75,6 +75,12 @@ module Dat: {
     data_declaration;
 };
 
+module Except: {
+  let mk: (~loc: loc=?, str, constructor_arguments) => type_exception;
+  let singleton: (~loc: loc=?, str) => type_exception;
+  let tuple: (~loc: loc=?, str, list(parsed_type)) => type_exception;
+};
+
 module Pat: {
   let mk: (~loc: loc=?, pattern_desc) => pattern;
   let any: (~loc: loc=?, unit) => pattern;
@@ -134,6 +140,8 @@ module Top: {
     (~loc: loc=?, export_flag, rec_flag, mut_flag, list(value_binding)) =>
     toplevel_stmt;
   let expr: (~loc: loc=?, expression) => toplevel_stmt;
+  let grain_exception:
+    (~loc: loc=?, export_flag, type_exception) => toplevel_stmt;
   let export: (~loc: loc=?, list(export_declaration)) => toplevel_stmt;
   let export_all: (~loc: loc=?, list(export_except)) => toplevel_stmt;
 };

@@ -22,5 +22,7 @@ let out_module_type: ref((formatter, out_module_type) => unit);
 let out_sig_item: ref((formatter, out_sig_item) => unit);
 let out_signature: ref((formatter, list(out_sig_item)) => unit);
 let out_phrase: ref((formatter, out_phrase) => unit);
+let out_constr:
+  ref((formatter, (string, list(out_type), option(out_type))) => unit);
 
 let parenthesized_ident: string => bool;

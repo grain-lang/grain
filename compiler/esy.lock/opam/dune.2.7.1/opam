@@ -40,16 +40,17 @@ build: [
   ["./dune.exe" "build" "-p" name "--profile" "dune-bootstrap" "-j" jobs]
 ]
 depends: [
-  # Please keep the lower bound in sync with .travis.yml, dune-project
-  # and min_ocaml_version in bootstrap.ml
+  # Please keep the lower bound in sync with .github/workflows/workflow.yml,
+  # dune-project and min_ocaml_version in bootstrap.ml
   ("ocaml" {>= "4.08"} | ("ocaml" {< "4.08~~"} & "ocamlfind-secondary"))
   "base-unix"
   "base-threads"
 ]
+x-commit-hash: "5472766b2448308a7160dfd0fca1ec711e124a5c"
 url {
-  src: "https://github.com/ocaml/dune/releases/download/2.7.0/dune-2.7.0.tbz"
+  src: "https://github.com/ocaml/dune/releases/download/2.7.1/dune-2.7.1.tbz"
   checksum: [
-    "sha256=b417ca85bdce4171e71255be4a9c5a7572646cb1dcb221bba3757dc6ac8f1c15"
-    "sha512=5e5b649b1a16747bf2a0bf093ecf2dc701b2713c166e3d25731422bba2b94e807ded2242ee0e750e2264d21a03c966c24f4812c6d5ed690bba60543db7303f89"
+    "sha256=c3528f2f8b3a2e3fe18e166fc823e6caeee8b7c78ade6b6fe4d2fa978070925d"
+    "sha512=2b4b311824471dac8196181d7c7267f96b1b73f35341b72019f169cf6d42a19254e90bdfba2d3ecb138ad318e2e2431dd0ec6c38d9efe1da382ec95f5d9e959b"
   ]
 }

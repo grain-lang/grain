@@ -1009,6 +1009,139 @@ let transl_value_decl = (env, loc, valdecl) => {
   Builtin_attributes.warning_scope valdecl.pval_attributes
     (fun () -> transl_value_decl env loc valdecl)*/
 
+/* Translating type extensions */
+
+let transl_extension_constructor =
+    (env, type_path, type_params, typext_params, sext) => {
+  let id = Ident.create(sext.pext_name.txt);
+  let (args, kind) =
+    switch (sext.pext_kind) {
+    | PExtDecl(sargs) =>
+      let (targs, _, args, _, _) =
+        make_constructor(env, type_path, typext_params, sargs);
+
+      (args, TExtDecl(targs));
+    | PExtRebind(lid) =>
+      let cdescr = Env.lookup_constructor(lid.txt, env);
+      let (args, cstr_res) = Ctype.instance_constructor(cdescr);
+      let (res, ret_type) = (
+        Ctype.newconstr(type_path, typext_params),
+        None,
+      );
+
+      try(Ctype.unify(env, cstr_res, res)) {
+      | Ctype.Unify(trace) =>
+        raise(
+          [@implicit_arity]
+          Error(
+            lid.loc,
+            [@implicit_arity] Rebind_wrong_type(lid.txt, env, trace),
+          ),
+        )
+      };
+      /* Remove "_" names from parameters used in the constructor */
+      let vars = Ctype.free_variables(Btype.newgenty(TTyTuple(args)));
+
+      List.iter(
+        fun
+        | {desc: TTyVar(Some("_"))} as ty =>
+          if (List.memq(ty, vars)) {
+            ty.desc = TTyVar(None);
+          }
+        | _ => (),
+        typext_params,
+      );
+      /* Ensure that constructor's type matches the type being extended */
+      let (cstr_type_path, cstr_type_params) =
+        switch (cdescr.cstr_res.desc) {
+        | [@implicit_arity] TTyConstr(p, _, _) =>
+          let decl = Env.find_type(p, env);
+          (p, decl.type_params);
+        | _ => assert(false)
+        };
+
+      let cstr_types = [
+        Btype.newgenty(
+          [@implicit_arity]
+          TTyConstr(cstr_type_path, cstr_type_params, ref(TMemNil)),
+        ),
+        ...cstr_type_params,
+      ];
+
+      let ext_types = [
+        Btype.newgenty(
+          [@implicit_arity] TTyConstr(type_path, type_params, ref(TMemNil)),
+        ),
+        ...type_params,
+      ];
+
+      if (!Ctype.equal(env, true, cstr_types, ext_types)) {
+        raise(
+          [@implicit_arity]
+          Error(
+            lid.loc,
+            [@implicit_arity]
+            Rebind_mismatch(lid.txt, cstr_type_path, type_path),
+          ),
+        );
+      };
+      let path =
+        switch (cdescr.cstr_tag) {
+        | [@implicit_arity] CstrExtension(_, path, _) => path
+        | _ => assert(false)
+        };
+
+      let args = Types.TConstrTuple(args);
+
+      (args, [@implicit_arity] TExtRebind(path, lid));
+    };
+
+  let ext = {
+    ext_type_path: type_path,
+    ext_type_params: typext_params,
+    ext_args: args,
+    ext_runtime_id: id.stamp,
+    Types.ext_loc: sext.pext_loc,
+  };
+
+  {
+    ext_id: id,
+    ext_name: sext.pext_name,
+    ext_type: ext,
+    ext_kind: kind,
+    Typedtree.ext_loc: sext.pext_loc,
+  };
+};
+
+let transl_extension_constructor =
+    (env, type_path, type_params, typext_params, sext) =>
+  transl_extension_constructor(
+    env,
+    type_path,
+    type_params,
+    typext_params,
+    sext,
+  );
+
+let transl_exception = (env, sext) => {
+  reset_type_variables();
+  Ctype.begin_def();
+  let ext =
+    transl_extension_constructor(
+      env,
+      Builtin_types.path_exception,
+      [],
+      [],
+      sext,
+    );
+
+  Ctype.end_def();
+  /* Generalize types */
+  Btype.iter_type_expr_cstr_args(Ctype.generalize, ext.ext_type.ext_args);
+  let newenv = Env.add_extension(~check=true, ext.ext_id, ext.ext_type, env);
+  (ext, newenv);
+};
+
 /**** Error report ****/
 
 open Format;

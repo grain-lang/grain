@@ -49,6 +49,7 @@ let value_description: (Ident.t, formatter, value_description) => unit;
 let tree_of_type_declaration:
   (Ident.t, type_declaration, rec_status) => out_sig_item;
 let type_declaration: (Ident.t, formatter, type_declaration) => unit;
+let extension_constructor: (Ident.t, formatter, extension_constructor) => unit;
 let tree_of_module:
   (Ident.t, ~ellipsis: bool=?, module_type, rec_status) => out_sig_item;
 let modtype: (formatter, module_type) => unit;

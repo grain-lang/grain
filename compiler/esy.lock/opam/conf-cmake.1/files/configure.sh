@@ -1,4 +1,4 @@
-#/bin/bash -ex
+#/bin/sh -ex
 
 if command -v cmake3; then
     cmake_cmd=cmake3

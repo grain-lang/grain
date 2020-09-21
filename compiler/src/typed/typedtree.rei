@@ -92,7 +92,36 @@ and core_type_desc =
 
 type constructor_arguments =
   | TConstrTuple(list(core_type))
-  | TConstrSingleton;
+  | TConstrSingleton
+
+[@deriving sexp]
+and type_extension = {
+  tyext_path: Path.t,
+  tyext_txt: loc(Identifier.t),
+  tyext_params: list(core_type),
+  tyext_constructors: list(extension_constructor),
+  tyext_loc: Location.t,
+}
+
+[@deriving sexp]
+and type_exception = {
+  tyexn_constructor: extension_constructor,
+  tyexn_loc: Location.t,
+}
+
+[@deriving sexp]
+and extension_constructor = {
+  ext_id: Ident.t,
+  ext_name: loc(string),
+  ext_type: Types.extension_constructor,
+  ext_kind: extension_constructor_kind,
+  ext_loc: Location.t,
+}
+
+[@deriving sexp]
+and extension_constructor_kind =
+  | TExtDecl(constructor_arguments)
+  | TExtRebind(Path.t, loc(Identifier.t));
 
 [@deriving sexp]
 type constructor_declaration = {
@@ -244,6 +273,7 @@ type toplevel_stmt_desc =
   | TTopExport(list(export_declaration))
   | TTopData(list(data_declaration))
   | TTopLet(export_flag, rec_flag, mut_flag, list(value_binding))
+  | TTopException(export_flag, extension_constructor)
   | TTopExpr(expression);
 
 [@deriving sexp]
@@ -264,6 +294,8 @@ type typed_program = {
 
 let iter_pattern_desc: (pattern => unit, pattern_desc) => unit;
 let map_pattern_desc: (pattern => pattern, pattern_desc) => pattern_desc;
+
+let exists_pattern: (pattern => bool, pattern) => bool;
 
 let let_bound_idents: list(value_binding) => list(Ident.t);
 let rev_let_bound_idents: list(value_binding) => list(Ident.t);

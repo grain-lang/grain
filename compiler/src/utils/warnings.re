@@ -18,6 +18,7 @@ type t =
   | FragileMatch(string)
   | UnusedMatch
   | UnusedPat
+  | UnusedExtension
   | NonClosedRecordPattern(string)
   | UnreachableCase
   | ShadowConstructor(string)
@@ -39,9 +40,10 @@ let number =
   | UnreachableCase => 12
   | ShadowConstructor(_) => 13
   | NoCmiFile(_) => 14
-  | NonClosedRecordPattern(_) => 15;
+  | NonClosedRecordPattern(_) => 15
+  | UnusedExtension => 16;
 
-let last_warning_number = 15;
+let last_warning_number = 16;
 
 let message =
   fun
@@ -87,6 +89,7 @@ let message =
     ++ "."
   | UnusedMatch => "this match case is unused."
   | UnusedPat => "this sub-pattern is unused."
+  | UnusedExtension => "this type extension is unused."
   | UnreachableCase => "this mach case is unreachable."
   | ShadowConstructor(s) =>
     "the pattern variable " ++ s ++ " shadows a constructor of the same name."
