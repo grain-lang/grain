@@ -37,6 +37,7 @@ type iterator = {
   value_binding: (iterator, value_binding) => unit,
   match_branch: (iterator, match_branch) => unit,
   value_description: (iterator, value_description) => unit,
+  grain_exception: (iterator, type_exception) => unit,
   toplevel: (iterator, toplevel_stmt) => unit,
 };
 

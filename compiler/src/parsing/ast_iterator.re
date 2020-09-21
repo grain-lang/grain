@@ -16,6 +16,7 @@ type iterator = {
   value_binding: (iterator, value_binding) => unit,
   match_branch: (iterator, match_branch) => unit,
   value_description: (iterator, value_description) => unit,
+  grain_exception: (iterator, type_exception) => unit,
   toplevel: (iterator, toplevel_stmt) => unit,
 };
 
@@ -166,6 +167,23 @@ module D = {
   };
 };
 
+module Except = {
+  let iter = (sub, {ptyexn_constructor: ext, ptyexn_loc: loc}) => {
+    sub.location(sub, loc);
+    let {pext_name: n, pext_kind: k, pext_loc: loc} = ext;
+    iter_loc(sub, n);
+    sub.location(sub, loc);
+    switch (k) {
+    | PExtDecl(args) =>
+      switch (args) {
+      | PConstrTuple(ptl) => List.iter(sub.typ(sub), ptl)
+      | PConstrSingleton => ()
+      }
+    | PExtRebind(id) => iter_loc(sub, id)
+    };
+  };
+};
+
 module T = {
   let iter = (sub, {ptyp_desc: desc, ptyp_loc: loc}) => {
     sub.location(sub, loc);
@@ -280,6 +298,7 @@ module TL = {
     | [@implicit_arity] PTopLet(e, r, m, vb) =>
       List.iter(sub.value_binding(sub), vb)
     | PTopExpr(e) => sub.expr(sub, e)
+    | [@implicit_arity] PTopException(e, d) => sub.grain_exception(sub, d)
     };
   };
 };
@@ -299,5 +318,6 @@ let default_iterator = {
   value_binding: V.iter,
   match_branch: MB.iter,
   value_description: VD.iter,
+  grain_exception: Except.iter,
   toplevel: TL.iter,
 };

@@ -34,6 +34,7 @@ let ident_create = wrap(Ident.create);
 let ident_create_predef_exn = wrap(Ident.create_predef_exn);
 
 let ident_number = ident_create("Number")
+and ident_exception = ident_create("Exception")
 and ident_int32 = ident_create("Int32")
 and ident_int64 = ident_create("Int64")
 and ident_rational = ident_create("Rational")
@@ -47,6 +48,7 @@ and ident_array = ident_create("Array")
 and ident_fd = ident_create("FileDescriptor");
 
 let path_number = PIdent(ident_number)
+and path_exception = PIdent(ident_exception)
 and path_int32 = PIdent(ident_int32)
 and path_int64 = PIdent(ident_int64)
 and path_rational = PIdent(ident_rational)
@@ -61,6 +63,8 @@ and path_fd = PIdent(ident_fd);
 
 let type_number =
   newgenty([@implicit_arity] TTyConstr(path_number, [], ref(TMemNil)))
+and type_exception =
+  newgenty([@implicit_arity] TTyConstr(path_exception, [], ref(TMemNil)))
 and type_int32 =
   newgenty([@implicit_arity] TTyConstr(path_int32, [], ref(TMemNil)))
 and type_int64 =
@@ -117,6 +121,8 @@ let decl_create = decl => {
   decl;
 };
 
+let decl_exception =
+  decl_create({...decl_abstr(path_exception), type_kind: TDataOpen});
 let decl_bool =
   decl_create({
     ...decl_abstr(path_bool),
@@ -149,6 +155,7 @@ and decl_array = {
 let common_initial_env = (add_type, empty_env) =>
   empty_env
   |> add_type(ident_number, decl_abstr_imm(path_number))
+  |> add_type(ident_exception, decl_exception)
   |> add_type(ident_int32, decl_abstr(path_int32))
   |> add_type(ident_int64, decl_abstr(path_int64))
   |> add_type(ident_float32, decl_abstr(path_float32))

@@ -169,6 +169,10 @@ rule token = parse
   | "match" { MATCH }
   | "assert" { ASSERT }
   | "fail" { FAIL }
+  | "exception" { EXCEPTION }
+  | "try" { TRY }
+  | "raise" { RAISE }
+  | "catch" { CATCH }
   | "..." { ELLIPSIS }
   | "." { DOT }
   | "::" { COLONCOLON }

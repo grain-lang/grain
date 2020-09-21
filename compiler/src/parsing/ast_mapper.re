@@ -17,6 +17,7 @@ type mapper = {
   value_binding: (mapper, value_binding) => value_binding,
   match_branch: (mapper, match_branch) => match_branch,
   value_description: (mapper, value_description) => value_description,
+  grain_exception: (mapper, type_exception) => type_exception,
   toplevel: (mapper, toplevel_stmt) => toplevel_stmt,
 };
 
@@ -167,6 +168,29 @@ module D = {
   };
 };
 
+module Exc = {
+  let map = (sub, {ptyexn_constructor: ext, ptyexn_loc: loc}) => {
+    open Except;
+    let cloc = sub.location(sub, loc);
+    let {pext_name: n, pext_kind: k, pext_loc: loc} = ext;
+    let name = map_loc(sub, n);
+    let loc = sub.location(sub, loc);
+    let k =
+      switch (k) {
+      | PExtDecl(args) =>
+        PExtDecl(
+          switch (args) {
+          | PConstrTuple(ptl) => PConstrTuple(List.map(sub.typ(sub), ptl))
+          | PConstrSingleton => PConstrSingleton
+          },
+        )
+      | PExtRebind(id) => PExtRebind(map_loc(sub, id))
+      };
+    let ext = {pext_name: name, pext_kind: k, pext_loc: loc};
+    {ptyexn_constructor: ext, ptyexn_loc: cloc};
+  };
+};
+
 module T = {
   let map = (sub, {ptyp_desc: desc, ptyp_loc: loc}) => {
     open Typ;
@@ -295,6 +319,8 @@ module TL = {
     | [@implicit_arity] PTopLet(e, r, m, vb) =>
       Top.let_(~loc, e, r, m, List.map(sub.value_binding(sub), vb))
     | PTopExpr(e) => Top.expr(~loc, sub.expr(sub, e))
+    | [@implicit_arity] PTopException(e, d) =>
+      Top.grain_exception(~loc, e, sub.grain_exception(sub, d))
     | PTopExport(ex) => Top.export(~loc, sub.export(sub, ex))
     | PTopExportAll(ex) => Top.export_all(~loc, sub.export_all(sub, ex))
     };
@@ -316,5 +342,6 @@ let default_mapper = {
   value_binding: V.map,
   match_branch: MB.map,
   value_description: VD.map,
+  grain_exception: Exc.map,
   toplevel: TL.map,
 };

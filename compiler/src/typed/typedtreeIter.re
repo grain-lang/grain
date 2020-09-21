@@ -125,6 +125,7 @@ module MakeIterator =
     Iter.enter_toplevel_stmt(stmt);
     switch (stmt.ttop_desc) {
     | TTopData(decls) => List.iter(iter_data_declaration, decls)
+    | TTopException(_)
     | TTopForeign(_)
     | TTopImport(_)
     | TTopExport(_) => ()
@@ -139,6 +140,7 @@ module MakeIterator =
     List.iter(
       cur =>
         switch (cur.ttop_desc) {
+        | TTopException(_)
         | TTopForeign(_)
         | TTopImport(_)
         | TTopExport(_)

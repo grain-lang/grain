@@ -49,6 +49,7 @@ let type_path: (t, Path.t) => Path.t;
 
 let type_expr: (t, type_expr) => type_expr;
 let value_description: (t, value_description) => value_description;
+let extension_constructor: (t, extension_constructor) => extension_constructor;
 let type_declaration: (t, type_declaration) => type_declaration;
 let modtype: (t, module_type) => module_type;
 let signature: (t, signature) => signature;

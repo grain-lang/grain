@@ -175,6 +175,7 @@ type summary =
   | Env_empty
   | Env_value(summary, Ident.t, value_description)
   | Env_type(summary, Ident.t, type_declaration)
+  | Env_extension(summary, Ident.t, extension_constructor)
   | Env_module(summary, Ident.t, module_declaration)
   | Env_modtype(summary, Ident.t, modtype_declaration)
   | Env_open(summary, Path.t)
@@ -1241,6 +1242,7 @@ let copy_types = (l, env) => {
 let mark_value_used = (env, name, loc) => (); /*Printf.eprintf "Marking value %s used\n" name*/
 let mark_type_used = (env, name, loc) => ();
 let mark_module_used = (env, name, loc) => ();
+let mark_extension_used = (env, ext, loc) => ();
 
 let rec lookup_module_descr_aux = (~mark, id, env) =>
   Identifier.(
@@ -1604,6 +1606,12 @@ let rec prefix_idents = (root, pos, sub) =>
         prefix_idents(root, pos, Subst.add_type(id, p, sub), rem);
       ([p, ...pl], final_sub);
     }
+  | [[@implicit_arity] TSigTypeExt(id, ec, es), ...rem] => {
+      let p = [@implicit_arity] PExternal(root, Ident.name(id), pos);
+      let (pl, final_sub) =
+        prefix_idents(root, pos, Subst.add_type(id, p, sub), rem);
+      ([p, ...pl], final_sub);
+    }
   | [[@implicit_arity] TSigModule(id, _, _), ...rem] => {
       let p = [@implicit_arity] PExternal(root, Ident.name(id), pos);
       let (pl, final_sub) =
@@ -1765,6 +1773,10 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
             labels,
           );
           env := store_type_infos(id, decl, env^);
+        | [@implicit_arity] TSigTypeExt(id, ext, _) =>
+          let ext' = Subst.extension_constructor(sub, ext);
+          let descr = Datarepr.extension_descr(path, ext');
+          c.comp_constrs = add_to_tbl(Ident.name(id), descr, c.comp_constrs);
         | [@implicit_arity] TSigModule(id, md, _) =>
           let md' = EnvLazy.create((sub, md));
           c.comp_modules =
@@ -1899,6 +1911,39 @@ and store_type_infos = (id, info, env) =>
     summary: [@implicit_arity] Env_type(env.summary, id, info),
   }
 
+and store_extension = (~check, id, ext, env) => {
+  let cstr = Datarepr.extension_descr(PIdent(id), ext);
+  let val_desc = {
+    let val_type =
+      switch (cstr.cstr_args) {
+      | [] => cstr.cstr_res
+      | args =>
+        Btype.newgenty(
+          [@implicit_arity] TTyArrow(args, cstr.cstr_res, TComOk),
+        )
+      };
+    let val_type =
+      switch (cstr.cstr_existentials) {
+      | [] => val_type
+      | existentials =>
+        Btype.newgenty([@implicit_arity] TTyPoly(val_type, existentials))
+      };
+    {
+      val_type,
+      val_fullpath: PIdent(Ident.create(cstr.cstr_name)),
+      val_kind: TValConstructor(cstr),
+      val_mutable: false,
+      val_loc: cstr.cstr_loc,
+    };
+  };
+  {
+    ...env,
+    constructors: TycompTbl.add(id, cstr, env.constructors),
+    values: IdTbl.add(id, val_desc, env.values),
+    summary: [@implicit_arity] Env_extension(env.summary, id, ext),
+  };
+}
+
 and store_module = (~check, id, md, env) =>
   /*let loc = md.md_loc in
     if check then
@@ -1943,7 +1988,10 @@ let _ = {
 
 let add_value = (~check=?, id, desc, env) => store_value(id, desc, env);
 
-let add_type = (~check, id, info, env) => store_type(~check, id, info, env);
+let add_type = (~check, id, info, env) => store_type(~check, id, info, env)
+
+and add_extension = (~check, id, ext, env) =>
+  store_extension(~check, id, ext, env);
 
 let add_module_declaration = (~arg=false, ~check, id, md, env) => {
   let env = store_module(~check, id, md, env);
@@ -2006,6 +2054,8 @@ let add_item = (comp, env) =>
   | [@implicit_arity] TSigValue(id, decl) => add_value(id, decl, env)
   | [@implicit_arity] TSigType(id, decl, _) =>
     add_type(~check=false, id, decl, env)
+  | [@implicit_arity] TSigTypeExt(id, ext, _) =>
+    add_extension(~check=false, id, ext, env)
   | [@implicit_arity] TSigModule(id, md, _) =>
     add_module_declaration(~check=false, id, md, env)
   | [@implicit_arity] TSigModType(id, decl) => add_modtype(id, decl, env)
@@ -2140,6 +2190,7 @@ let check_opened = (mod_: Parsetree.import_declaration, env) => {
     | [@implicit_arity] Env_module(summary, _, _)
     | [@implicit_arity] Env_value(summary, _, _)
     | [@implicit_arity] Env_type(summary, _, _)
+    | [@implicit_arity] Env_extension(summary, _, _)
     | [@implicit_arity] Env_modtype(summary, _, _)
     | [@implicit_arity] Env_constraints(summary, _)
     | [@implicit_arity] Env_copy_types(summary, _)

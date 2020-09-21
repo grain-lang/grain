@@ -341,6 +341,8 @@ let pr_present =
     ppf => fprintf(ppf, "@ "),
   );
 
+let pr_var = Pprintast.tyvar;
+
 let pr_vars =
   print_list(
     (ppf, s) => fprintf(ppf, "'%s", s),
@@ -553,6 +555,13 @@ and print_out_label = (ppf, (name, mut, arg)) =>
 
 let out_type = ref(print_out_type);
 
+let print_type_parameter = (ppf, s) =>
+  if (s == "_") {
+    fprintf(ppf, "_");
+  } else {
+    pr_var(ppf, s);
+  };
+
 let type_parameter = (ppf, (ty, (co, cn))) =>
   fprintf(
     ppf,
@@ -577,6 +586,7 @@ let out_module_type = ref(_ => failwith("Oprint.out_module_type"));
 let out_sig_item = ref(_ => failwith("Oprint.out_sig_item"));
 let out_signature = ref(_ => failwith("Oprint.out_signature"));
 let out_type_extension = ref(_ => failwith("Oprint.out_type_extension"));
+let out_constr = ref(_ => failwith("Oprint.out_constr"));
 
 let rec print_out_functor = (funct, ppf, m) =>
   if (funct) {
@@ -604,6 +614,15 @@ and print_out_sig_item = ppf =>
     fprintf(ppf, "@[<2>module type %s@]", name)
   | [@implicit_arity] Osig_modtype(name, mty) =>
     fprintf(ppf, "@[<2>module type %s =@ %a@]", name, out_module_type^, mty)
+  | [@implicit_arity] Osig_typext(ext, Oext_exception) =>
+    fprintf(
+      ppf,
+      "@[<2>exception %a@]",
+      print_out_constr,
+      (ext.oext_name, ext.oext_args, None),
+    )
+  | [@implicit_arity] Osig_typext(ext, _es) =>
+    print_out_extension_constructor(ppf, ext)
   | [@implicit_arity] Osig_module(name, Omty_alias(id), _) =>
     fprintf(ppf, "@[<2>module %s =@ %a@]", name, print_ident, id)
   | [@implicit_arity] Osig_module(name, mty, rs) =>
@@ -782,6 +801,38 @@ and print_out_constr = (ppf, (name, tyl, ret_type_opt)) => {
       )
     }
   };
+}
+
+and print_out_extension_constructor = (ppf, ext) => {
+  let print_extended_type = ppf =>
+    switch (ext.oext_type_params) {
+    | [] => fprintf(ppf, "%s", ext.oext_type_name)
+    | [ty_param] =>
+      fprintf(
+        ppf,
+        "@[%a@ %s@]",
+        print_type_parameter,
+        ty_param,
+        ext.oext_type_name,
+      )
+    | _ =>
+      fprintf(
+        ppf,
+        "@[(@[%a)@]@ %s@]",
+        print_list(print_type_parameter, ppf => fprintf(ppf, ",@ ")),
+        ext.oext_type_params,
+        ext.oext_type_name,
+      )
+    };
+
+  fprintf(
+    ppf,
+    "@[<hv 2>type %t +=%s@;<1 2>%a@]",
+    print_extended_type,
+    "",
+    print_out_constr,
+    (ext.oext_name, ext.oext_args, None),
+  );
 };
 
 let _ = out_module_type := print_out_module_type;

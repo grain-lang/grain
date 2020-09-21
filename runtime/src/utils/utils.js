@@ -118,10 +118,13 @@ export function grainHeapValueToString(runtime, n) {
         let tyinfo = module.types[typeId];
         // console.log(`\tType Info: ${JSON.stringify(tyinfo)}`);
 
-        if (Object.keys(tyinfo).length === 0) return '<adt value>';
+        if (!tyinfo || Object.keys(tyinfo).length === 0) return '<adt value>';
 
         let info = tyinfo[variantId];
         // console.log(`\tVariant: ${info}`);
+
+        if (!info) return '<adt value>';
+        
         let [variantName, arity] = info;
 
         // Dirty hack to support list printing

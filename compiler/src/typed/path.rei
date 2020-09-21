@@ -7,6 +7,7 @@ type t =
 
 let same: (t, t) => bool;
 let compare: (t, t) => int;
+let find_free_opt: (list(Ident.t), t) => option(Ident.t);
 let isfree: (Ident.t, t) => bool;
 let binding_time: t => int;
 let flatten: t => (Ident.t, list(string));
