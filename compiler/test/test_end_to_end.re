@@ -1622,7 +1622,10 @@ let number_tests = [
   t("numbers7", "(1 / 3) + (1 / 6)", "1/2"),
   t("numbers8", "(1 / 3) * (1 / 3)", "1/9"),
   t("numbers9", "(1 / 3) / (1 / 3)", "1"),
-  te("numbers10", "9 / 0", "denominator of zero"),
+  t("numbers10", "-2 / 4", "-1/2"),
+  t("numbers11", "2 / -4", "-1/2"),
+  t("numbers12", "-2 / -4", "1/2"),
+  te("numbers13", "9 / 0", "denominator of zero"),
   // basic syntax tests
   t("number_syntax1", "1.2", "1.2"),
   t("number_syntax2", "1.2d", "1.2"),

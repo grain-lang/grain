@@ -43,8 +43,8 @@ let conv_number_rational = (n, d) => {
   | (Some(n), Some(d)) =>
     // Division by zero handled by well-formedness
     let factor = gcd(n, d);
-    if (n < 0l && d < 0l) {
-      // Never do negative/negative
+    if (d < 0l) {
+      // Never do negative/negative or negative denominator
       Some((
         div(neg(n), factor),
         div(neg(d), factor),
