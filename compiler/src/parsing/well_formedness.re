@@ -14,7 +14,8 @@ type wferr =
   | ExportAllShouldOnlyAppearOnce(Location.t)
   | EmptyRecordPattern(Location.t)
   | RHSLetRecMayOnlyBeFunction(Location.t)
-  | NoLetRecMut(Location.t);
+  | NoLetRecMut(Location.t)
+  | RationalZeroDenominator(Location.t);
 
 exception Error(wferr);
 
@@ -51,6 +52,8 @@ let prepare_error =
         )
       | NoLetRecMut(loc) =>
         errorf(~loc, "let rec may not be used with the `mut` keyword.")
+      | RationalZeroDenominator(loc) =>
+        errorf(~loc, "Rational numbers may not have a denominator of zero.")
     )
   );
 
@@ -319,6 +322,27 @@ let no_letrec_mut = (errs, super) => {
   {errs, iterator};
 };
 
+let no_zero_denominator_rational = (errs, super) => {
+  let iter_expr = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
+    switch (desc) {
+    | PExpConstant(PConstNumber(PConstNumberRational(_, d))) when d == "0" =>
+      errs := [RationalZeroDenominator(loc), ...errs^]
+    | _ => ()
+    };
+    super.expr(self, e);
+  };
+  let iter_pat = (self, {ppat_desc: desc, ppat_loc: loc} as p) => {
+    switch (desc) {
+    | PPatConstant(PConstNumber(PConstNumberRational(_, d))) when d == "0" =>
+      errs := [RationalZeroDenominator(loc), ...errs^]
+    | _ => ()
+    };
+    super.pat(self, p);
+  };
+  let iterator = {...super, expr: iter_expr, pat: iter_pat};
+  {errs, iterator};
+};
+
 let compose_well_formedness = ({errs, iterator}, cur) =>
   cur(errs, iterator);
 
@@ -332,6 +356,7 @@ let well_formedness_checks = [
   no_empty_record_patterns,
   only_functions_oh_rhs_letrec,
   no_letrec_mut,
+  no_zero_denominator_rational,
 ];
 
 let well_formedness_checker = () =>

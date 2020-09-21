@@ -100,8 +100,23 @@ let constant:
           ),
         )
       }
-    | PConstNumber(PConstNumberRational(_)) =>
-      failwith("NYI: checkertypes constant PConstNumberRational")
+    | PConstNumber(PConstNumberRational(n, d)) =>
+      switch (Literals.conv_number_rational(n, d)) {
+      | Some((n, d)) when d == 1l =>
+        Ok(Const_number(Const_number_int(Int64.of_int32(n))))
+      | Some((n, d)) when d == (-1l) =>
+        Ok(Const_number(Const_number_int(Int64.of_int32(Int32.neg(n)))))
+      | Some((n, d)) => Ok(Const_number(Const_number_rational(n, d)))
+      | None =>
+        Error(
+          Location.errorf(
+            ~loc,
+            "Number literal %s/%s is outside of the rational number range of the Number type.",
+            n,
+            d,
+          ),
+        )
+      }
     | PConstInt32(n) =>
       switch (Literals.conv_int32(n)) {
       | Some(n) => Ok(Const_int32(n))

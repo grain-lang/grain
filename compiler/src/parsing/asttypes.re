@@ -34,7 +34,7 @@ type constant =
 and number_type =
   | Const_number_int(int64)
   | Const_number_float(float)
-  | Const_number_rational(int64, int64);
+  | Const_number_rational(int32, int32);
 
 /** Marker for exported/nonexported let bindings */
 

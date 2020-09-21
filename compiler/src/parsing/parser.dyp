@@ -122,6 +122,11 @@ let no_array_access expr =
   | PExpArrayGet _ -> raise Dyp.Giveup
   | _ -> ()
 
+let no_rational_literal expr1 expr2 =
+  match expr1.pexp_desc, expr2.pexp_desc with
+  | PExpConstant(PConstNumber (PConstNumberInt _)), PExpConstant(PConstNumber (PConstNumberInt _)) -> raise Dyp.Giveup
+  | _ -> ()
+
 
 let mkid ns =
   let help ns =
@@ -246,6 +251,7 @@ equal :
 const :
   | dash_op? NUMBER_INT { Const.number (PConstNumberInt (if Option.is_some $1 then "-" ^ $2 else $2)) }
   | dash_op? NUMBER_FLOAT { Const.number (PConstNumberFloat (if Option.is_some $1 then "-" ^ $2 else $2)) }
+  | dash_op? NUMBER_INT SLASH eols? dash_op? NUMBER_INT { Const.number (PConstNumberRational ((if Option.is_some $1 then "-" ^ $2 else $2), (if Option.is_some $5 then "-" ^ $6 else $6))) }
   | dash_op? INT32 { Const.int32 (if Option.is_some $1 then "-" ^ $2 else $2) }
   | dash_op? INT64 { Const.int64 (if Option.is_some $1 then "-" ^ $2 else $2) }
   | dash_op? FLOAT32 { Const.float32 (if Option.is_some $1 then "-" ^ $2 else $2) }
@@ -263,7 +269,7 @@ binop_expr :
   | binop_expr(<=p110) plus_op eols?      binop_expr(<p110) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p110
   | binop_expr(<=p110) dash_op eols?      binop_expr(<p110) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p110
   | binop_expr(<=p120) star_op eols?      binop_expr(<p120) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p120
-  | binop_expr(<=p120) slash_op eols?     binop_expr(<p120) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p120
+  | binop_expr(<=p120) slash_op eols?     binop_expr(<p120) { no_rational_literal $1 $4; Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p120
   | binop_expr(<=p120) percent_op eols?   binop_expr(<p120) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p120
   | binop_expr(<=p80) is_op eols?        binop_expr(<p80) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p80
   | binop_expr(<=p80) eqeq_op eols?      binop_expr(<p80) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p80

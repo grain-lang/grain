@@ -590,8 +590,7 @@ let rec compile_comp = (env, c) => {
       MAllocate(MInt32(Int64.to_int32(n)))
     | CNumber(Const_number_int(n)) => MAllocate(MInt64(n))
     | CNumber(Const_number_float(f)) => MAllocate(MFloat64(f))
-    | CNumber(Const_number_rational(n, d)) =>
-      failwith("NYI: compile_comp Const_number_rational")
+    | CNumber(Const_number_rational(n, d)) => MAllocate(MRational(n, d))
     | CInt32(i) => MAllocate(MInt32(i))
     | CInt64(i) => MAllocate(MInt64(i))
     | CFloat32(f) => MAllocate(MFloat32(f))

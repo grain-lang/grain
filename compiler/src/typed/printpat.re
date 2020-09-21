@@ -30,7 +30,7 @@ let pretty_const = c =>
   | Const_number(Const_number_int(i)) => Printf.sprintf("%Ld", i)
   | Const_number(Const_number_float(f)) => Printf.sprintf("%f", f)
   | Const_number(Const_number_rational(n, d)) =>
-    Printf.sprintf("%Ld/%Ld", n, d)
+    Printf.sprintf("%ld/%ld", n, d)
   | Const_string(s) => Printf.sprintf("%S", s)
   | Const_float64(f)
   | Const_float32(f) => Printf.sprintf("%f", f)
