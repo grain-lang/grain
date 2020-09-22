@@ -31,6 +31,10 @@ RUN yarn workspace @grain/compiler esy build-dependencies
 
 COPY . /grain
 RUN yarn setup
+
+# Copying the files into the image after we already tell esy to build results in
+# an incorrect SHA, so we need to re-run install once to update it
+RUN yarn workspace @grain/compiler esy install
 RUN yarn workspace @grain/compiler esy compile
 RUN yarn workspace @grain/compiler esy copy-compiler
 
