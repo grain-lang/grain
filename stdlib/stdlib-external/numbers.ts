@@ -140,8 +140,9 @@ function gcd32(x: i32, y: i32): i32 {
 
 
 function reducedFraction(x: i32, y: i32): u32 {
-  if (x < 0 && y < 0) {
+  if (y < 0) {
     // Normalization 1: Never do negative/negative
+    // Normalization 2: Never allow a negative denominator
     x = -x
     y = -y
   }
@@ -158,7 +159,9 @@ function reducedFraction(x: i32, y: i32): u32 {
 }
 
 function reducedFraction64(x: i64, y: i64): u32 {
-  if (x < 0 && y < 0) {
+  if (y < 0) {
+    // Normalization 1: Never do negative/negative
+    // Normalization 2: Never allow a negative denominator
     x = -x
     y = -y
   }
