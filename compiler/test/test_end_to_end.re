@@ -973,6 +973,7 @@ let match_tests = [
     "data Rec = {foo: Number}; match ([{foo: 5}]) { | [] => 999 | [{foo}, ..._] => foo }",
     "5",
   ),
+  // Guarded branches
   t(
     "guarded_match_1",
     "match ((1, 2, 3)) { | (a, b, c) when a == 1 => 42 | _ => 99 }",
@@ -1052,6 +1053,17 @@ let match_tests = [
        | Bar => 79
      }",
     "79",
+  ),
+  // Constant patterns
+  t(
+    "constant_match_1",
+    "match (1/3) { | 5 => false | 2/6 => true | _ => false }",
+    "true",
+  ),
+  t(
+    "constant_match_2",
+    "match (('foo', 5, false)) { | ('bar', 5, false) => false | ('foo', _, true) => false | ('foo', _, false) => true | _ => false }",
+    "true",
   ),
   tfile("mixed_matching", "mixedPatternMatching", "true"),
 ];

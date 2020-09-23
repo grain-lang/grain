@@ -289,6 +289,7 @@ binop_expr :
 pattern :
   | pattern colon typ { Pat.constraint_ ~loc:(symbol_rloc dyp) $1 $3 }
   | UNDERSCORE { Pat.any ~loc:(symbol_rloc dyp) () }
+  | const { Pat.constant ~loc:(symbol_rloc dyp) $1 }
   /* If the pattern uses an external ID, we know it's a constructor, not a variable */
   | ext_constructor { Pat.construct ~loc:(symbol_rloc dyp) $1 [] }
   | [ID | infix] { Pat.var ~loc:(symbol_rloc dyp) (mkstr dyp $1) }
