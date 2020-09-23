@@ -44,6 +44,7 @@ type prim2 =
     | Greater
     | LessEq
     | GreaterEq
+    | Is
     | Eq
     | And
     | Or

@@ -58,7 +58,7 @@ import foreign wasm print : a -> Void from 'grainBuiltins'
 import foreign wasm equal : (a, a) -> Bool as (==) from 'stdlib-external/runtime'
 let (!=) : (a, a) -> Bool = (x, y) => !(x == y)
 # Checks the given items for physical equality.
-primitive (is) : (a, a) -> Bool = "@eq"
+primitive (is) : (a, a) -> Bool = "@is"
 
 # Converts the given value to a string
 import foreign wasm toString : a -> String from 'grainBuiltins'

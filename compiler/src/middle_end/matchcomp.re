@@ -616,19 +616,19 @@ let rec default_matrix = mtx => {
   );
 };
 
-let rec compile_matrix = (branches, mtx) =>
+let rec compile_matrix = mtx =>
   switch (mtx) {
-  | [] => {tree: Fail, branches} /* No branches to match. */
+  | [] => Fail /* No branches to match. */
   | [(pats, (mb, i)), ...rest_mtx]
       when List.for_all(pattern_always_matches, pats) =>
-    let (rest_tree, branches) =
+    let rest_tree =
       switch (mb.mb_guard) {
       | Some(guard) =>
-        let result = compile_matrix(branches, rest_mtx);
-        (Guard(mb, Leaf(i), result.tree), result.branches);
-      | None => (Leaf(i), branches)
+        let result = compile_matrix(rest_mtx);
+        Guard(mb, Leaf(i), result);
+      | None => Leaf(i)
       };
-    {tree: rest_tree, branches: [(i, mb.mb_body, mb.mb_pat), ...branches]};
+    rest_tree;
   | _ when !col_is_wildcard(mtx, 0) =>
     /* If the first column contains a non-wildcard pattern */
     let matrix_type = matrix_type(mtx);
@@ -639,8 +639,8 @@ let rec compile_matrix = (branches, mtx) =>
           ((row, mb)) => (flatten_pattern(arity, List.hd(row)), mb),
           mtx,
         );
-      let result = compile_matrix(branches, mtx);
-      {...result, tree: [@implicit_arity] Explode(matrix_type, result.tree)};
+      let result = compile_matrix(mtx);
+      Explode(matrix_type, result);
     | RecordMatrix(labels) =>
       let mtx =
         List.map(
@@ -648,19 +648,18 @@ let rec compile_matrix = (branches, mtx) =>
             (flatten_pattern(Array.length(labels), List.hd(row)), mb),
           mtx,
         );
-      let result = compile_matrix(branches, mtx);
-      {...result, tree: [@implicit_arity] Explode(matrix_type, result.tree)};
+      let result = compile_matrix(mtx);
+      Explode(matrix_type, result);
     | ConstructorMatrix(_) =>
       let constructors = matrix_head_constructors(mtx);
       /* Printf.eprintf "constructors:\n%s\n" (Sexplib.Sexp.to_string_hum ((Sexplib.Conv.sexp_of_list sexp_of_constructor_description) constructors)); */
-      let handle_constructor = (({branches}, switch_branches), cstr) => {
+      let handle_constructor = ((_, switch_branches), cstr) => {
         let arity = cstr.cstr_arity;
         let specialized = specialize_matrix(cstr, mtx);
-        let {tree} as result = compile_matrix(branches, specialized);
-        let final_tree =
-          [@implicit_arity] Explode(ConstructorMatrix(Some(arity)), tree);
+        let result = compile_matrix(specialized);
+        let final_tree = Explode(ConstructorMatrix(Some(arity)), result);
         (
-          {...result, tree: final_tree},
+          final_tree,
           [
             (compile_constructor_tag^(cstr.cstr_tag), final_tree),
             ...switch_branches,
@@ -675,25 +674,17 @@ let rec compile_matrix = (branches, mtx) =>
         )
       | _ =>
         let (result, switch_branches) =
-          List.fold_left(
-            handle_constructor,
-            ({branches, tree: Fail}, []),
-            constructors,
-          );
-        let {tree, branches} = result;
+          List.fold_left(handle_constructor, (Fail, []), constructors);
 
         let default = default_matrix(mtx);
-        let (default_tree, branches) =
+        let default_tree =
           if (List.length(default) != 0) {
-            let {tree, branches} = compile_matrix(branches, default);
-            (Some(tree), branches);
+            let tree = compile_matrix(default);
+            Some(tree);
           } else {
-            (None, branches);
+            None;
           };
-        {
-          tree: [@implicit_arity] Switch(switch_branches, default_tree),
-          branches,
-        };
+        Switch(switch_branches, default_tree);
       };
     };
   | _ =>
@@ -705,12 +696,115 @@ let rec compile_matrix = (branches, mtx) =>
           "Internal error: convert_match_branches: no non-wildcard column found but not all patterns always match (should be impossible)",
         )
       };
-    let {tree, _} as result = compile_matrix(branches, rotated);
-    {...result, tree: [@implicit_arity] Swap(i, tree)};
+    let result = compile_matrix(rotated);
+    Swap(i, result);
   };
+
+let prepare_match_branches = branches => {
+  let map_branch = branch => {
+    let guard = ref(branch.mb_guard);
+    let make_vd = (id, ty) => {
+      val_type: ty,
+      val_kind: TValReg,
+      val_fullpath: PIdent(id),
+      val_mutable: false,
+      val_loc: Location.dummy_loc,
+    };
+    let make_expr = (~ty=Builtin_types.type_bool, desc, env, loc) => {
+      exp_desc: desc,
+      exp_loc: loc,
+      exp_extra: [],
+      exp_env: env,
+      exp_type: ty,
+    };
+    let type_constant = c => {
+      switch (c) {
+      | Const_void => Builtin_types.type_void
+      | Const_bool(_) => Builtin_types.type_bool
+      | Const_number(_) => Builtin_types.type_number
+      | Const_int32(_) => Builtin_types.type_int32
+      | Const_int64(_) => Builtin_types.type_int64
+      | Const_float32(_) => Builtin_types.type_float32
+      | Const_float64(_) => Builtin_types.type_float64
+      | Const_string(_) => Builtin_types.type_string
+      };
+    };
+    let add_constant_guard = (id, c, loc) => {
+      let vd = make_vd(id, type_constant(c));
+      let ty = type_constant(c);
+      let expr = env => {
+        let ident =
+          TExpIdent(
+            PIdent(id),
+            {txt: IdentName(Ident.name(id)), loc},
+            vd,
+          );
+        let ident = make_expr(~ty, ident, env, loc);
+        let const = make_expr(~ty, TExpConstant(c), env, loc);
+        make_expr(TExpPrim2(Eq, ident, const), env, loc);
+      };
+      switch (guard^) {
+      | Some(g) =>
+        let env = g.exp_env;
+        let env = Env.add_value(id, vd, env);
+        guard := Some(make_expr(TExpPrim2(And, expr(env), g), env, loc));
+      | None =>
+        let env = branch.mb_body.exp_env;
+        let env = Env.add_value(id, vd, env);
+        guard := Some(expr(env));
+      };
+    };
+    let rec extract_constants = pat => {
+      switch (pat.pat_desc) {
+      | TPatAny
+      | TPatVar(_) => pat
+      | TPatConstant(c) =>
+        let id = Ident.create("match_constant");
+        add_constant_guard(id, c, pat.pat_loc);
+        {
+          ...pat,
+          pat_desc: TPatVar(id, {txt: Ident.name(id), loc: pat.pat_loc}),
+        };
+      | TPatAlias(p1, a, b) => {
+          ...pat,
+          pat_desc: TPatAlias(extract_constants(p1), a, b),
+        }
+      | TPatConstruct(a, b, args) => {
+          ...pat,
+          pat_desc: TPatConstruct(a, b, List.map(extract_constants, args)),
+        }
+      | TPatTuple(args) => {
+          ...pat,
+          pat_desc: TPatTuple(List.map(extract_constants, args)),
+        }
+      | TPatRecord(fields, c) => {
+          ...pat,
+          pat_desc:
+            TPatRecord(
+              List.map(
+                ((id, ld, pat)) => (id, ld, extract_constants(pat)),
+                fields,
+              ),
+              c,
+            ),
+        }
+      | TPatOr(p1, p2) => {
+          ...pat,
+          pat_desc: TPatOr(extract_constants(p1), extract_constants(p2)),
+        }
+      };
+    };
+    let pat = extract_constants(branch.mb_pat);
+    let guard = guard^;
+    {...branch, mb_guard: guard, mb_pat: pat};
+  };
+
+  List.map(map_branch, branches);
+};
 
 let convert_match_branches =
     (match_branches: list(Typedtree.match_branch)): conversion_result => {
+  let match_branches = prepare_match_branches(match_branches);
   let mtx = make_matrix(match_branches);
   /*prerr_string "Initial matrix:\n";
     prerr_string (Sexplib.Sexp.to_string_hum (Sexplib.Conv.sexp_of_list
@@ -718,5 +812,7 @@ let convert_match_branches =
                                                    (Sexplib.Conv.sexp_of_list sexp_of_pattern)
                                                    sexp_of_match_branch) mtx));
     prerr_newline();*/
-  compile_matrix([], mtx);
+  let branches =
+    List.map(((_, (mb, i))) => (i, mb.mb_body, mb.mb_pat), mtx);
+  {tree: compile_matrix(mtx), branches};
 };

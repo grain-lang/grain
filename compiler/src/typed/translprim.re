@@ -48,6 +48,7 @@ let prim_map =
       ("@greater", Primitive2(Greater)),
       ("@lesseq", Primitive2(LessEq)),
       ("@greatereq", Primitive2(GreaterEq)),
+      ("@is", Primitive2(Is)),
       ("@eq", Primitive2(Eq)),
       ("@and", Primitive2(And)),
       ("@or", Primitive2(Or)),
