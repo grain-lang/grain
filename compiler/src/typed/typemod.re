@@ -840,7 +840,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
 let type_module = type_module(false, None);
 
 let implicit_modules: ref(list((string, string))) = (
-  ref([("pervasives", "pervasives")]): ref(list((string, string)))
+  ref([("Pervasives", "pervasives")]): ref(list((string, string)))
 );
 
 let open_implicit_module = (m, env) => {
