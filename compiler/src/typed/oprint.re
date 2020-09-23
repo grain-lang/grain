@@ -344,15 +344,12 @@ let pr_present =
 let pr_var = Pprintast.tyvar;
 
 let pr_vars =
-  print_list(
-    (ppf, s) => fprintf(ppf, "'%s", s),
-    ppf => fprintf(ppf, "@ "),
-  );
+  print_list((ppf, s) => fprintf(ppf, "%s", s), ppf => fprintf(ppf, "@ "));
 
 let rec print_out_type = ppf =>
   fun
   | [@implicit_arity] Otyp_alias(ty, s) =>
-    fprintf(ppf, "@[%a@ as '%s@]", print_out_type, ty, s)
+    fprintf(ppf, "@[%a@ as %s@]", print_out_type, ty, s)
   | [@implicit_arity] Otyp_poly(sl, ty) =>
     fprintf(ppf, "@[<hov 2>%a.@ %a@]", pr_vars, sl, print_out_type, ty)
   | ty => print_out_type_1(ppf, ty)
@@ -400,7 +397,7 @@ and print_simple_out_type = ppf =>
     fprintf(ppf, "@[<2>< %a >@]", print_fields(rest), fields)
   | Otyp_stuff(s) => pp_print_string(ppf, s)
   | [@implicit_arity] Otyp_var(ng, s) =>
-    fprintf(ppf, "'%s%s", if (ng) {"_"} else {""}, s)
+    fprintf(ppf, "%s%s", if (ng) {"_"} else {""}, s)
   | [@implicit_arity] Otyp_variant(non_gen, row_fields, closed, tags) => {
       let print_present = ppf => (
         fun
@@ -573,11 +570,7 @@ let type_parameter = (ppf, (ty, (co, cn))) =>
     } else {
       "";
     },
-    if (ty == "_") {
-      ty;
-    } else {
-      "'" ++ ty;
-    },
+    ty,
   );
 
 /* Signature */
