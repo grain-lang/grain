@@ -17,15 +17,17 @@ let filename_to_module_name = fname => {
       | Relative(path) => Fp.baseName(path)
       }
     );
-  switch (baseName) {
-  | Some(baseName) => remove_extension(baseName)
-  | None =>
-    raise(
-      Invalid_argument(
-        Printf.sprintf("Invalid filepath (fname: '%s')", fname),
-      ),
-    )
-  };
+  let name =
+    switch (baseName) {
+    | Some(baseName) => remove_extension(baseName)
+    | None =>
+      raise(
+        Invalid_argument(
+          Printf.sprintf("Invalid filepath (fname: '%s')", fname),
+        ),
+      )
+    };
+  String.capitalize_ascii(name);
 };
 
 let ensure_parent_directory_exists = fname => {
