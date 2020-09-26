@@ -30,7 +30,7 @@ let specs: ref(list(config_spec)) = (ref([]): ref(list(config_spec)));
 let internal_opt: 'a. 'a => ref('a) =
   v => {
     let cur = ref(v);
-    opts := [Opt(cur, v), ...opts^];
+    opts := [Opt((cur, v)), ...opts^];
     cur;
   };
 
@@ -206,21 +206,21 @@ let toggle_flag:
 let save_config = () => {
   let single_save =
     fun
-    | Opt(cur, _) => SavedOpt(cur, cur^);
+    | Opt((cur, _)) => SavedOpt((cur, cur^));
   List.map(single_save, opts^);
 };
 
 let restore_config = {
   let single_restore =
     fun
-    | SavedOpt(ptr, value) => ptr := value;
+    | SavedOpt((ptr, value)) => ptr := value;
   List.iter(single_restore);
 };
 
 let reset_config = () => {
   let single_reset =
     fun
-    | Opt(cur, default) => cur := default;
+    | Opt((cur, default)) => cur := default;
   List.iter(single_reset, opts^);
 };
 
