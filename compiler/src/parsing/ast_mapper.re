@@ -37,9 +37,9 @@ module E = {
     | PExpConstant(c) => constant(~loc, sub.constant(sub, c))
     | PExpTuple(es) => tuple(~loc, List.map(sub.expr(sub), es))
     | PExpArray(es) => array(~loc, List.map(sub.expr(sub), es))
-    | [@implicit_arity] PExpArrayGet(a, i) =>
+    | PExpArrayGet(a, i) =>
       array_get(~loc, sub.expr(sub, a), sub.expr(sub, i))
-    | [@implicit_arity] PExpArraySet(a, i, arg) =>
+    | PExpArraySet(a, i, arg) =>
       array_set(
         ~loc,
         sub.expr(sub, a),
@@ -54,11 +54,11 @@ module E = {
           es,
         ),
       )
-    | [@implicit_arity] PExpRecordGet(e, f) =>
+    | PExpRecordGet(e, f) =>
       record_get(~loc, sub.expr(sub, e), map_loc(sub, f))
-    | [@implicit_arity] PExpRecordSet(e, f, v) =>
+    | PExpRecordSet(e, f, v) =>
       record_set(~loc, sub.expr(sub, e), map_loc(sub, f), sub.expr(sub, v))
-    | [@implicit_arity] PExpLet(r, m, vbs, e) =>
+    | PExpLet(r, m, vbs, e) =>
       let_(
         ~loc,
         r,
@@ -66,27 +66,25 @@ module E = {
         List.map(sub.value_binding(sub), vbs),
         sub.expr(sub, e),
       )
-    | [@implicit_arity] PExpMatch(e, mbs) =>
+    | PExpMatch(e, mbs) =>
       match(~loc, sub.expr(sub, e), List.map(sub.match_branch(sub), mbs))
-    | [@implicit_arity] PExpPrim1(p1, e) =>
-      prim1(~loc, p1, sub.expr(sub, e))
-    | [@implicit_arity] PExpPrim2(p2, e1, e2) =>
+    | PExpPrim1(p1, e) => prim1(~loc, p1, sub.expr(sub, e))
+    | PExpPrim2(p2, e1, e2) =>
       prim2(~loc, p2, sub.expr(sub, e1), sub.expr(sub, e2))
-    | [@implicit_arity] PExpBoxAssign(e1, e2) =>
+    | PExpBoxAssign(e1, e2) =>
       box_assign(~loc, sub.expr(sub, e1), sub.expr(sub, e2))
-    | [@implicit_arity] PExpAssign(e1, e2) =>
+    | PExpAssign(e1, e2) =>
       assign(~loc, sub.expr(sub, e1), sub.expr(sub, e2))
-    | [@implicit_arity] PExpIf(c, t, f) =>
+    | PExpIf(c, t, f) =>
       if_(~loc, sub.expr(sub, c), sub.expr(sub, t), sub.expr(sub, f))
-    | [@implicit_arity] PExpWhile(c, e) =>
-      while_(~loc, sub.expr(sub, c), sub.expr(sub, e))
-    | [@implicit_arity] PExpLambda(pl, e) =>
+    | PExpWhile(c, e) => while_(~loc, sub.expr(sub, c), sub.expr(sub, e))
+    | PExpLambda(pl, e) =>
       lambda(~loc, List.map(sub.pat(sub), pl), sub.expr(sub, e))
-    | [@implicit_arity] PExpApp(e, el) =>
+    | PExpApp(e, el) =>
       apply(~loc, sub.expr(sub, e), List.map(sub.expr(sub), el))
     | PExpBlock(el) => block(~loc, List.map(sub.expr(sub), el))
     | PExpNull => null(~loc, ())
-    | [@implicit_arity] PExpConstraint(e, t) =>
+    | PExpConstraint(e, t) =>
       constraint_(~loc, sub.expr(sub, e), sub.typ(sub, t))
     };
   };
@@ -100,7 +98,7 @@ module P = {
     | PPatAny => any(~loc, ())
     | PPatVar(sl) => var(~loc, map_loc(sub, sl))
     | PPatTuple(pl) => tuple(~loc, List.map(sub.pat(sub), pl))
-    | [@implicit_arity] PPatRecord(fs, c) =>
+    | PPatRecord(fs, c) =>
       record(
         ~loc,
         List.map(
@@ -110,14 +108,12 @@ module P = {
         ),
       )
     | PPatConstant(c) => constant(~loc, sub.constant(sub, c))
-    | [@implicit_arity] PPatConstraint(p, pt) =>
+    | PPatConstraint(p, pt) =>
       constraint_(~loc, sub.pat(sub, p), sub.typ(sub, pt))
-    | [@implicit_arity] PPatConstruct(id, pl) =>
+    | PPatConstruct(id, pl) =>
       construct(~loc, map_loc(sub, id), List.map(sub.pat(sub), pl))
-    | [@implicit_arity] PPatOr(p1, p2) =>
-      or_(~loc, sub.pat(sub, p1), sub.pat(sub, p2))
-    | [@implicit_arity] PPatAlias(p, id) =>
-      alias(~loc, sub.pat(sub, p), map_loc(sub, id))
+    | PPatOr(p1, p2) => or_(~loc, sub.pat(sub, p1), sub.pat(sub, p2))
+    | PPatAlias(p, id) => alias(~loc, sub.pat(sub, p), map_loc(sub, id))
     };
   };
 };
@@ -198,12 +194,12 @@ module T = {
     switch (desc) {
     | PTyAny => any(~loc, ())
     | PTyVar(v) => var(~loc, v)
-    | [@implicit_arity] PTyArrow(args, ret) =>
+    | PTyArrow(args, ret) =>
       arrow(~loc, List.map(sub.typ(sub), args), sub.typ(sub, ret))
     | PTyTuple(ts) => tuple(~loc, List.map(sub.typ(sub), ts))
-    | [@implicit_arity] PTyConstr(name, ts) =>
+    | PTyConstr(name, ts) =>
       constr(~loc, map_loc(sub, name), List.map(sub.typ(sub), ts))
-    | [@implicit_arity] PTyPoly(vars, t) =>
+    | PTyPoly(vars, t) =>
       poly(~loc, List.map(map_loc(sub), vars), sub.typ(sub, t))
     };
   };
@@ -310,16 +306,15 @@ module TL = {
     let loc = sub.location(sub, loc);
     switch (desc) {
     | PTopImport(decls) => Top.import(~loc, sub.import(sub, decls))
-    | [@implicit_arity] PTopForeign(e, d) =>
+    | PTopForeign(e, d) =>
       Top.foreign(~loc, e, sub.value_description(sub, d))
-    | [@implicit_arity] PTopPrimitive(e, d) =>
+    | PTopPrimitive(e, d) =>
       Top.primitive(~loc, e, sub.value_description(sub, d))
-    | [@implicit_arity] PTopData(e, dd) =>
-      Top.data(~loc, e, sub.data(sub, dd))
-    | [@implicit_arity] PTopLet(e, r, m, vb) =>
+    | PTopData(e, dd) => Top.data(~loc, e, sub.data(sub, dd))
+    | PTopLet(e, r, m, vb) =>
       Top.let_(~loc, e, r, m, List.map(sub.value_binding(sub), vb))
     | PTopExpr(e) => Top.expr(~loc, sub.expr(sub, e))
-    | [@implicit_arity] PTopException(e, d) =>
+    | PTopException(e, d) =>
       Top.grain_exception(~loc, e, sub.grain_exception(sub, d))
     | PTopExport(ex) => Top.export(~loc, sub.export(sub, ex))
     | PTopExportAll(ex) => Top.export_all(~loc, sub.export_all(sub, ex))

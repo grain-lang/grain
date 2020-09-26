@@ -157,14 +157,14 @@ let report_type_mismatch0 = (first, second, decl, ppf, err) => {
   | Field_mutable(s) =>
     pr("The mutability of field %s is different", Ident.name(s))
   | Field_arity(s) => pr("The arities for field %s differ", Ident.name(s))
-  | [@implicit_arity] Field_names(n, name1, name2) =>
+  | Field_names(n, name1, name2) =>
     pr(
       "Fields number %i have different names, %s and %s",
       n,
       Ident.name(name1),
       Ident.name(name2),
     )
-  | [@implicit_arity] Field_missing(b, s) =>
+  | Field_missing(b, s) =>
     pr(
       "The field %s is only present in %s %s",
       Ident.name(s),
@@ -234,15 +234,11 @@ and compare_variants =
     ) =>
   switch (cstrs1, cstrs2) {
   | ([], []) => []
-  | ([], [c, ..._]) => [
-      [@implicit_arity] Field_missing(true, c.Types.cd_id),
-    ]
-  | ([c, ..._], []) => [
-      [@implicit_arity] Field_missing(false, c.Types.cd_id),
-    ]
+  | ([], [c, ..._]) => [Field_missing(true, c.Types.cd_id)]
+  | ([c, ..._], []) => [Field_missing(false, c.Types.cd_id)]
   | ([cd1, ...rem1], [cd2, ...rem2]) =>
     if (Ident.name(cd1.cd_id) != Ident.name(cd2.cd_id)) {
-      [[@implicit_arity] Field_names(n, cd1.cd_id, cd2.cd_id)];
+      [Field_names(n, cd1.cd_id, cd2.cd_id)];
     } else {
       /*Builtin_attributes.check_deprecated_inclusion
         ~def:cd1.cd_loc
@@ -300,15 +296,11 @@ and compare_records =
     ) =>
   switch (labels1, labels2) {
   | ([], []) => []
-  | ([], [l, ..._]) => [
-      [@implicit_arity] Field_missing(true, l.Types.rf_name),
-    ]
-  | ([l, ..._], []) => [
-      [@implicit_arity] Field_missing(false, l.Types.rf_name),
-    ]
+  | ([], [l, ..._]) => [Field_missing(true, l.Types.rf_name)]
+  | ([l, ..._], []) => [Field_missing(false, l.Types.rf_name)]
   | ([ld1, ...rem1], [ld2, ...rem2]) =>
     if (Ident.name(ld1.rf_name) != Ident.name(ld2.rf_name)) {
-      [[@implicit_arity] Field_names(n, ld1.rf_name, ld2.rf_name)];
+      [Field_names(n, ld1.rf_name, ld2.rf_name)];
     } else {
       [];
     }

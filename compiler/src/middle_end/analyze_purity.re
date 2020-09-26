@@ -91,28 +91,28 @@ let rec analyze_comp_expression =
     | CImmExpr(i) =>
       analyze_imm_expression(i);
       imm_expression_purity_internal(i);
-    | [@implicit_arity] CPrim1(Box, _)
-    | [@implicit_arity] CPrim1(Unbox, _) => false
-    | [@implicit_arity] CPrim1(_, a) =>
+    | CPrim1(Box, _)
+    | CPrim1(Unbox, _) => false
+    | CPrim1(_, a) =>
       analyze_imm_expression(a);
       imm_expression_purity_internal(a);
-    | [@implicit_arity] CPrim2(_, a1, a2) =>
+    | CPrim2(_, a1, a2) =>
       analyze_imm_expression(a1);
       analyze_imm_expression(a2);
       imm_expression_purity_internal(a1)
       && imm_expression_purity_internal(a2);
-    | [@implicit_arity] CBoxAssign(_, _)
-    | [@implicit_arity] CAssign(_, _) =>
+    | CBoxAssign(_, _)
+    | CAssign(_, _) =>
       /* TODO: Would be nice if we could "scope" the purity analysis to local assignments */
       false
-    | [@implicit_arity] CArrayGet(a, i) =>
+    | CArrayGet(a, i) =>
       analyze_imm_expression(a);
       analyze_imm_expression(i);
       imm_expression_purity_internal(a) && imm_expression_purity_internal(i);
     | CArray(_)
     | CArraySet(_) => false
     | CTuple(args)
-    | [@implicit_arity] CAdt(_, _, args) =>
+    | CAdt(_, _, args) =>
       let arg_purities =
         List.map(
           arg => {
@@ -123,31 +123,31 @@ let rec analyze_comp_expression =
         );
       List.for_all(x => x, arg_purities);
     | CRecord(_) => false
-    | [@implicit_arity] CGetTupleItem(_, a) =>
+    | CGetTupleItem(_, a) =>
       analyze_imm_expression(a);
       imm_expression_purity_internal(a);
     | CSetTupleItem(_) => false
-    | [@implicit_arity] CGetAdtItem(_, a) =>
+    | CGetAdtItem(_, a) =>
       analyze_imm_expression(a);
       imm_expression_purity_internal(a);
     | CGetAdtTag(_) => true
-    | [@implicit_arity] CGetRecordItem(_, r) =>
+    | CGetRecordItem(_, r) =>
       analyze_imm_expression(r);
       imm_expression_purity_internal(r);
     | CSetRecordItem(_) => false
-    | [@implicit_arity] CIf(c, t, f) =>
+    | CIf(c, t, f) =>
       analyze_imm_expression(c);
       analyze_anf_expression(t);
       analyze_anf_expression(f);
       imm_expression_purity_internal(c)
       && anf_expression_purity_internal(t)
       && anf_expression_purity_internal(f);
-    | [@implicit_arity] CWhile(c, body) =>
+    | CWhile(c, body) =>
       analyze_anf_expression(c);
       analyze_anf_expression(body);
       anf_expression_purity_internal(c)
       && anf_expression_purity_internal(body);
-    | [@implicit_arity] CSwitch(exp, branches) =>
+    | CSwitch(exp, branches) =>
       analyze_imm_expression(exp);
       let branches_purities =
         List.map(
@@ -159,7 +159,7 @@ let rec analyze_comp_expression =
         );
       imm_expression_purity_internal(exp)
       && List.for_all(x => x, branches_purities);
-    | [@implicit_arity] CApp(f, args) =>
+    | CApp(f, args) =>
       let arg_purities =
         List.map(
           arg => {
@@ -170,10 +170,10 @@ let rec analyze_comp_expression =
         );
       analyze_imm_expression(f);
       imm_expression_purity_internal(f) && List.for_all(x => x, arg_purities);
-    | [@implicit_arity] CAppBuiltin(_module, f, args) =>
+    | CAppBuiltin(_module, f, args) =>
       List.iter(arg => analyze_imm_expression(arg), args);
       false;
-    | [@implicit_arity] CLambda(args, body) =>
+    | CLambda(args, body) =>
       List.iter(i => set_id_purity(i, true), args);
       analyze_anf_expression(body);
       anf_expression_purity_internal(body);
@@ -190,7 +190,7 @@ let rec analyze_comp_expression =
 
 and analyze_anf_expression = ({anf_desc: desc, anf_analyses: analyses}) =>
   switch (desc) {
-  | [@implicit_arity] AELet(g, Nonrecursive, binds, body) =>
+  | AELet(g, Nonrecursive, binds, body) =>
     let process_bind = ((id, bind)) => {
       analyze_comp_expression(bind);
       let purity = comp_expression_purity_internal(bind);
@@ -202,7 +202,7 @@ and analyze_anf_expression = ({anf_desc: desc, anf_analyses: analyses}) =>
     analyze_anf_expression(body);
     let purity = anf_expression_purity_internal(body) && bind_purity;
     push_purity(analyses, purity);
-  | [@implicit_arity] AELet(g, Recursive, binds, body) =>
+  | AELet(g, Recursive, binds, body) =>
     /* Initialize purity to true, just so they're in scope */
     List.iter(((id, _)) => set_id_purity(id, true), binds);
     /* Do the actual purity analysis */
@@ -217,7 +217,7 @@ and analyze_anf_expression = ({anf_desc: desc, anf_analyses: analyses}) =>
     analyze_anf_expression(body);
     let purity = anf_expression_purity_internal(body) && bind_purity;
     push_purity(analyses, purity);
-  | [@implicit_arity] AESeq(hd, tl) =>
+  | AESeq(hd, tl) =>
     analyze_comp_expression(hd);
     analyze_anf_expression(tl);
     let purity =

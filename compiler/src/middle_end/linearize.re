@@ -115,12 +115,12 @@ let extract_bindings = (mut_flag, pat, cexpr) => {
 let transl_const =
     (c: Types.constant): either(imm_expression, (string, comp_expression)) =>
   switch (c) {
-  | Const_number(n) => [@implicit_arity] Right("number", Comp.number(n))
-  | Const_int32(i) => [@implicit_arity] Right("int32", Comp.int32(i))
-  | Const_int64(i) => [@implicit_arity] Right("int64", Comp.int64(i))
-  | Const_float64(i) => [@implicit_arity] Right("float64", Comp.float64(i))
-  | Const_float32(i) => [@implicit_arity] Right("float32", Comp.float32(i))
-  | Const_string(s) => [@implicit_arity] Right("str", Comp.string(s))
+  | Const_number(n) => Right("number", Comp.number(n))
+  | Const_int32(i) => Right("int32", Comp.int32(i))
+  | Const_int64(i) => Right("int64", Comp.int64(i))
+  | Const_float64(i) => Right("float64", Comp.float64(i))
+  | Const_float32(i) => Right("float32", Comp.float32(i))
+  | Const_string(s) => Right("str", Comp.string(s))
   | _ => Left(Imm.const(c))
   };
 
@@ -135,16 +135,13 @@ let rec transl_imm =
         )
         : (imm_expression, list(anf_bind)) =>
   switch (exp_desc) {
-  | [@implicit_arity] TExpIdent(_, _, {val_kind: TValUnbound(_)}) =>
+  | TExpIdent(_, _, {val_kind: TValUnbound(_)}) =>
     failwith("Impossible: val_kind was unbound")
   | [@implicit_arity]
     TExpIdent(
-      [@implicit_arity] Path.PExternal(Path.PIdent(mod_) as p, ident, _),
+      Path.PExternal(Path.PIdent(mod_) as p, ident, _),
       _,
-      {
-        val_fullpath: [@implicit_arity] Path.PExternal(_, original_name, _),
-        val_mutable,
-      },
+      {val_fullpath: Path.PExternal(_, original_name, _), val_mutable},
     ) =>
     let mod_decl = Env.find_module(p, None, env);
     let id =
@@ -162,7 +159,7 @@ let rec transl_imm =
     };
   | [@implicit_arity]
     TExpIdent(
-      [@implicit_arity] Path.PExternal(Path.PIdent(mod_) as p, ident, _),
+      Path.PExternal(Path.PIdent(mod_) as p, ident, _),
       _,
       {val_mutable},
     ) =>
@@ -175,9 +172,9 @@ let rec transl_imm =
     } else {
       (id, []);
     };
-  | [@implicit_arity] TExpIdent(Path.PExternal(_), _, _) =>
+  | TExpIdent(Path.PExternal(_), _, _) =>
     failwith("NYI: transl_imm: TExpIdent with multiple PExternal")
-  | [@implicit_arity] TExpIdent(Path.PIdent(ident) as path, _, _) =>
+  | TExpIdent(Path.PIdent(ident) as path, _, _) =>
     switch (Env.find_value(path, env)) {
     | {val_fullpath: Path.PIdent(_), val_mutable} =>
       let id = Imm.id(~loc, ~env, ident);
@@ -189,8 +186,7 @@ let rec transl_imm =
         (id, []);
       };
     | {
-        val_fullpath:
-          [@implicit_arity] Path.PExternal(Path.PIdent(mod_) as p, ident, _),
+        val_fullpath: Path.PExternal(Path.PIdent(mod_) as p, ident, _),
         val_mutable,
       } =>
       let mod_decl = Env.find_module(p, None, env);
@@ -209,20 +205,19 @@ let rec transl_imm =
   | TExpConstant(c) =>
     switch (transl_const(c)) {
     | Left(imm) => (imm, [])
-    | [@implicit_arity] Right(name, cexpr) =>
+    | Right(name, cexpr) =>
       let tmp = gensym(name);
-      (Imm.id(~loc, ~env, tmp), [[@implicit_arity] BLet(tmp, cexpr)]);
+      (Imm.id(~loc, ~env, tmp), [BLet(tmp, cexpr)]);
     }
   | TExpNull => (Imm.const(~loc, ~env, Const_bool(false)), [])
-  | [@implicit_arity] TExpPrim1(op, arg) =>
+  | TExpPrim1(op, arg) =>
     let tmp = gensym("unary");
     let (arg_imm, arg_setup) = transl_imm(arg);
     (
       Imm.id(~loc, ~env, tmp),
-      arg_setup
-      @ [[@implicit_arity] BLet(tmp, Comp.prim1(~loc, ~env, op, arg_imm))],
+      arg_setup @ [BLet(tmp, Comp.prim1(~loc, ~env, op, arg_imm))],
     );
-  | [@implicit_arity] TExpPrim2(And, left, right) =>
+  | TExpPrim2(And, left, right) =>
     let tmp = gensym("boolBinop");
     let (left_imm, left_setup) = transl_imm(left);
     (
@@ -242,7 +237,7 @@ let rec transl_imm =
         ),
       ],
     );
-  | [@implicit_arity] TExpPrim2(Or, left, right) =>
+  | TExpPrim2(Or, left, right) =>
     let tmp = gensym("boolBinop");
     let (left_imm, left_setup) = transl_imm(left);
     (
@@ -262,7 +257,7 @@ let rec transl_imm =
         ),
       ],
     );
-  | [@implicit_arity] TExpPrim2(op, left, right) =>
+  | TExpPrim2(op, left, right) =>
     let tmp = gensym("binop");
     let (left_imm, left_setup) = transl_imm(left);
     let (right_imm, right_setup) = transl_imm(right);
@@ -275,7 +270,7 @@ let rec transl_imm =
         BLet(tmp, Comp.prim2(~loc, ~env, op, left_imm, right_imm)),
       ],
     );
-  | [@implicit_arity] TExpBoxAssign(left, right) =>
+  | TExpBoxAssign(left, right) =>
     let tmp = gensym("assign");
     let (left_imm, left_setup) = transl_imm(left);
     let (right_imm, right_setup) = transl_imm(right);
@@ -288,7 +283,7 @@ let rec transl_imm =
         BLet(tmp, Comp.box_assign(~loc, ~env, left_imm, right_imm)),
       ],
     );
-  | [@implicit_arity] TExpAssign(left, right) =>
+  | TExpAssign(left, right) =>
     let tmp = gensym("assign");
     let (left_imm, left_setup) = transl_imm(~boxed=true, left);
     let (right_imm, right_setup) = transl_imm(right);
@@ -301,7 +296,7 @@ let rec transl_imm =
         BLet(tmp, Comp.assign(~loc, ~env, left_imm, right_imm)),
       ],
     );
-  | [@implicit_arity] TExpIf(cond, _then, _else) =>
+  | TExpIf(cond, _then, _else) =>
     let tmp = gensym("if");
     let (cond_imm, cond_setup) = transl_imm(cond);
     (
@@ -321,7 +316,7 @@ let rec transl_imm =
         ),
       ],
     );
-  | [@implicit_arity] TExpWhile(cond, body) =>
+  | TExpWhile(cond, body) =>
     let tmp = gensym("while");
     (
       Imm.id(~loc, ~env, tmp),
@@ -338,7 +333,7 @@ let rec transl_imm =
         ),
       ],
     );
-  | [@implicit_arity] TExpApp(func, args) =>
+  | TExpApp(func, args) =>
     let tmp = gensym("app");
     let (new_func, func_setup) = transl_imm(func);
     let (new_args, new_setup) = List.split(List.map(transl_imm, args));
@@ -357,7 +352,7 @@ let rec transl_imm =
     let (rest_ans, rest_setup) =
       transl_imm({...e, exp_desc: TExpBlock(rest)});
     (rest_ans, fst_setup @ [BSeq(fst_ans)] @ rest_setup);
-  | [@implicit_arity] TExpLet(Nonrecursive, _, [], body) => transl_imm(body)
+  | TExpLet(Nonrecursive, _, [], body) => transl_imm(body)
   | [@implicit_arity]
     TExpLet(Nonrecursive, mut_flag, [{vb_expr, vb_pat}, ...rest], body) =>
     /* TODO: Destructuring on letrec */
@@ -366,11 +361,10 @@ let rec transl_imm =
     let (body_ans, body_setup) =
       transl_imm({
         ...e,
-        exp_desc:
-          [@implicit_arity] TExpLet(Nonrecursive, mut_flag, rest, body),
+        exp_desc: TExpLet(Nonrecursive, mut_flag, rest, body),
       });
     (body_ans, exp_setup @ binds_setup @ body_setup);
-  | [@implicit_arity] TExpLet(Recursive, mut_flag, binds, body) =>
+  | TExpLet(Recursive, mut_flag, binds, body) =>
     if (mut_flag == Mutable) {
       failwith("mutable let rec");
     };
@@ -387,7 +381,7 @@ let rec transl_imm =
     let names =
       List.map(
         fun
-        | {pat_desc: [@implicit_arity] TPatVar(id, _)} => id
+        | {pat_desc: TPatVar(id, _)} => id
         | _ => failwith("Non-name not allowed on LHS of let rec."),
         binds,
       );
@@ -398,23 +392,21 @@ let rec transl_imm =
       List.concat(new_setup)
       @ [BLetRec(List.combine(names, new_binds))]
       @ body_setup
-      @ [[@implicit_arity] BLet(tmp, body_ans)],
+      @ [BLet(tmp, body_ans)],
     );
-  | [@implicit_arity] TExpLambda([{mb_pat, mb_body: body}], _) =>
+  | TExpLambda([{mb_pat, mb_body: body}], _) =>
     let tmp = gensym("lam");
     let (lam, _) = transl_comp_expression(e);
-    (Imm.id(~loc, ~env, tmp), [[@implicit_arity] BLet(tmp, lam)]);
-  | [@implicit_arity] TExpLambda([], _) =>
-    failwith("Impossible: transl_imm: Empty lambda")
-  | [@implicit_arity] TExpLambda(_, _) =>
-    failwith("NYI: transl_imm: Multi-branch lambda")
+    (Imm.id(~loc, ~env, tmp), [BLet(tmp, lam)]);
+  | TExpLambda([], _) => failwith("Impossible: transl_imm: Empty lambda")
+  | TExpLambda(_, _) => failwith("NYI: transl_imm: Multi-branch lambda")
   | TExpTuple(args) =>
     let tmp = gensym("tup");
     let (new_args, new_setup) = List.split(List.map(transl_imm, args));
     (
       Imm.id(~loc, ~env, tmp),
       List.concat(new_setup)
-      @ [[@implicit_arity] BLet(tmp, Comp.tuple(~loc, ~env, new_args))],
+      @ [BLet(tmp, Comp.tuple(~loc, ~env, new_args))],
     );
   | TExpArray(args) =>
     let tmp = gensym("tup");
@@ -422,9 +414,9 @@ let rec transl_imm =
     (
       Imm.id(~loc, ~env, tmp),
       List.concat(new_setup)
-      @ [[@implicit_arity] BLet(tmp, Comp.array(~loc, ~env, new_args))],
+      @ [BLet(tmp, Comp.array(~loc, ~env, new_args))],
     );
-  | [@implicit_arity] TExpArrayGet(arr, idx) =>
+  | TExpArrayGet(arr, idx) =>
     let tmp = gensym("array_access");
     let (arr_var, arr_setup) = transl_imm(arr);
     let (idx_var, idx_setup) = transl_imm(idx);
@@ -437,7 +429,7 @@ let rec transl_imm =
         BLet(tmp, Comp.array_get(~loc, ~env, idx_var, arr_var)),
       ],
     );
-  | [@implicit_arity] TExpArraySet(arr, idx, arg) =>
+  | TExpArraySet(arr, idx, arg) =>
     let tmp = gensym("array_access");
     let (arr_var, arr_setup) = transl_imm(arr);
     let (idx_var, idx_setup) = transl_imm(idx);
@@ -460,7 +452,7 @@ let rec transl_imm =
       List.map(
         fun
         | Kept(_) => assert(false)
-        | [@implicit_arity] Overridden(name, def) => (name, def),
+        | Overridden(name, def) => (name, def),
         definitions,
       );
     let (new_args, new_setup) =
@@ -498,7 +490,7 @@ let rec transl_imm =
         ),
       ],
     );
-  | [@implicit_arity] TExpRecordGet(expr, field, ld) =>
+  | TExpRecordGet(expr, field, ld) =>
     let tmp = gensym("field");
     let (var, setup) = transl_imm(expr);
     (
@@ -512,7 +504,7 @@ let rec transl_imm =
         ),
       ],
     );
-  | [@implicit_arity] TExpRecordSet(expr, field, ld, arg) =>
+  | TExpRecordSet(expr, field, ld, arg) =>
     let tmp = gensym("field_set");
     let (record, rec_setup) = transl_imm(expr);
     let (arg, arg_setup) = transl_imm(arg);
@@ -528,7 +520,7 @@ let rec transl_imm =
         ),
       ],
     );
-  | [@implicit_arity] TExpMatch(exp, branches, _) =>
+  | TExpMatch(exp, branches, _) =>
     let tmp = gensym("match");
     let (exp_ans, exp_setup) = transl_imm(exp);
     let (ans, setup) =
@@ -584,7 +576,7 @@ and bind_patts =
     | _ => failwith("NYI: anf_patts_pass_one: TPatConstraint")
     };
     switch (pat_desc) {
-    | [@implicit_arity] TPatVar(bind, _) => Some((bind, (src, i), []))
+    | TPatVar(bind, _) => Some((bind, (src, i), []))
     | TPatAny => None
     | TPatTuple(patts) =>
       let tmp = gensym("tup_patt");
@@ -597,7 +589,7 @@ and bind_patts =
           patts,
         ),
       ));
-    | [@implicit_arity] TPatRecord(fields, _) =>
+    | TPatRecord(fields, _) =>
       let tmp = gensym("rec_patt");
       Some((
         tmp,
@@ -627,10 +619,10 @@ and transl_comp_expression =
     ({exp_desc, exp_loc: loc, exp_env: env, _} as e: expression)
     : (comp_expression, list(anf_bind)) =>
   switch (exp_desc) {
-  | [@implicit_arity] TExpPrim1(op, arg) =>
+  | TExpPrim1(op, arg) =>
     let (arg_imm, arg_setup) = transl_imm(arg);
     (Comp.prim1(~loc, ~env, op, arg_imm), arg_setup);
-  | [@implicit_arity] TExpPrim2(And, left, right) =>
+  | TExpPrim2(And, left, right) =>
     let (left_imm, left_setup) = transl_imm(left);
     (
       Comp.if_(
@@ -642,7 +634,7 @@ and transl_comp_expression =
       ),
       left_setup,
     );
-  | [@implicit_arity] TExpPrim2(Or, left, right) =>
+  | TExpPrim2(Or, left, right) =>
     let (left_imm, left_setup) = transl_imm(left);
     (
       Comp.if_(
@@ -654,14 +646,14 @@ and transl_comp_expression =
       ),
       left_setup,
     );
-  | [@implicit_arity] TExpPrim2(op, left, right) =>
+  | TExpPrim2(op, left, right) =>
     let (left_imm, left_setup) = transl_imm(left);
     let (right_imm, right_setup) = transl_imm(right);
     (
       Comp.prim2(~loc, ~env, op, left_imm, right_imm),
       left_setup @ right_setup,
     );
-  | [@implicit_arity] TExpIf(cond, _then, _else) =>
+  | TExpIf(cond, _then, _else) =>
     let (cond_imm, cond_setup) = transl_imm(cond);
     (
       Comp.if_(
@@ -680,17 +672,13 @@ and transl_comp_expression =
     let (rest_ans, rest_setup) =
       transl_comp_expression({...e, exp_desc: TExpBlock(rest)});
     (rest_ans, fst_setup @ [BSeq(fst_ans)] @ rest_setup);
-  | [@implicit_arity] TExpLet(Nonrecursive, _, [], body) =>
-    transl_comp_expression(body)
+  | TExpLet(Nonrecursive, _, [], body) => transl_comp_expression(body)
 
   | [@implicit_arity]
     TExpLet(
       Nonrecursive,
       mut_flag,
-      [
-        {vb_expr, vb_pat: {pat_desc: [@implicit_arity] TPatVar(bind, _)}},
-        ...rest,
-      ],
+      [{vb_expr, vb_pat: {pat_desc: TPatVar(bind, _)}}, ...rest],
       body,
     ) =>
     let (exp_ans, exp_setup) =
@@ -703,13 +691,9 @@ and transl_comp_expression =
     let (body_ans, body_setup) =
       transl_comp_expression({
         ...e,
-        exp_desc:
-          [@implicit_arity] TExpLet(Nonrecursive, mut_flag, rest, body),
+        exp_desc: TExpLet(Nonrecursive, mut_flag, rest, body),
       });
-    (
-      body_ans,
-      exp_setup @ [[@implicit_arity] BLet(bind, exp_ans)] @ body_setup,
-    );
+    (body_ans, exp_setup @ [BLet(bind, exp_ans)] @ body_setup);
   | [@implicit_arity]
     TExpLet(
       Nonrecursive,
@@ -732,19 +716,13 @@ and transl_comp_expression =
     let (body_ans, body_setup) =
       transl_comp_expression({
         ...e,
-        exp_desc:
-          [@implicit_arity] TExpLet(Nonrecursive, mut_flag, rest, body),
+        exp_desc: TExpLet(Nonrecursive, mut_flag, rest, body),
       });
-    (
-      body_ans,
-      exp_setup
-      @ [[@implicit_arity] BLet(tmp, exp_ans), ...anf_patts]
-      @ body_setup,
-    );
+    (body_ans, exp_setup @ [BLet(tmp, exp_ans), ...anf_patts] @ body_setup);
 
-  | [@implicit_arity] TExpLet(Nonrecursive, _, [_, ..._], _) =>
+  | TExpLet(Nonrecursive, _, [_, ..._], _) =>
     failwith("Impossible by pre_anf")
-  | [@implicit_arity] TExpLet(Recursive, mut_flag, binds, body) =>
+  | TExpLet(Recursive, mut_flag, binds, body) =>
     if (mut_flag == Mutable) {
       failwith("mutable let rec");
     };
@@ -760,7 +738,7 @@ and transl_comp_expression =
     let names =
       List.map(
         fun
-        | {pat_desc: [@implicit_arity] TPatVar(id, _)} => id
+        | {pat_desc: TPatVar(id, _)} => id
         | _ => failwith("Non-name not allowed on LHS of let rec."),
         binds,
       );
@@ -813,11 +791,11 @@ and transl_comp_expression =
     | _ =>
       failwith("Impossible: transl_imm: Lambda contained non-tuple pattern")
     }
-  | [@implicit_arity] TExpLambda([], _) =>
+  | TExpLambda([], _) =>
     failwith("transl_comp_expression: impossible: empty lambda")
-  | [@implicit_arity] TExpLambda(_, _) =>
+  | TExpLambda(_, _) =>
     failwith("transl_comp_expression: NYI: multi-branch lambda")
-  | [@implicit_arity] TExpApp(func, args) =>
+  | TExpApp(func, args) =>
     let (new_func, func_setup) = transl_imm(func);
     let (new_args, new_setup) = List.split(List.map(transl_imm, args));
     (
@@ -830,7 +808,7 @@ and transl_comp_expression =
   | TExpArray(args) =>
     let (new_args, new_setup) = List.split(List.map(transl_imm, args));
     (Comp.array(~loc, ~env, new_args), List.concat(new_setup));
-  | [@implicit_arity] TExpMatch(expr, branches, _) =>
+  | TExpMatch(expr, branches, _) =>
     let (exp_ans, exp_setup) = transl_imm(expr);
     let (ans, setup) =
       MatchCompiler.compile_result(
@@ -853,11 +831,10 @@ and transl_anf_expression =
     (bind, body) =>
       switch (bind) {
       | BSeq(exp) => AExp.seq(~loc, ~env, exp, body)
-      | [@implicit_arity] BLet(name, exp) =>
+      | BLet(name, exp) =>
         AExp.let_(~loc, ~env, Nonrecursive, [(name, exp)], body)
       | BLetRec(names) => AExp.let_(~loc, ~env, Recursive, names, body)
-      | [@implicit_arity] BLetExport(name, exp) =>
-        failwith("Global bind at non-toplevel")
+      | BLetExport(name, exp) => failwith("Global bind at non-toplevel")
       },
     ans_setup,
     AExp.comp(~loc, ~env, ans),
@@ -918,7 +895,7 @@ let bind_constructor =
       );
     | CstrUnboxed => failwith("NYI: ANF CstrUnboxed")
     };
-  [@implicit_arity] BLetExport(Nonrecursive, [(cd_id, rhs)]);
+  BLetExport(Nonrecursive, [(cd_id, rhs)]);
 };
 
 let linearize_decl = (env, loc, typath, decl) => {
@@ -941,7 +918,7 @@ let rec transl_anf_statement =
         ({ttop_desc, ttop_env: env, ttop_loc: loc} as s: toplevel_stmt)
         : (option(list(anf_bind)), list(import_spec)) =>
   switch (ttop_desc) {
-  | [@implicit_arity] TTopLet(_, _, _, []) => (None, [])
+  | TTopLet(_, _, _, []) => (None, [])
   | [@implicit_arity]
     TTopLet(
       export_flag,
@@ -961,8 +938,8 @@ let rec transl_anf_statement =
     let exported = export_flag == Exported;
     let setup =
       switch (vb_pat.pat_desc) {
-      | [@implicit_arity] TPatVar(bind, _)
-      | [@implicit_arity] TPatAlias({pat_desc: TPatAny}, bind, _) =>
+      | TPatVar(bind, _)
+      | TPatAlias({pat_desc: TPatAny}, bind, _) =>
         switch (mut_flag) {
         | Mutable =>
           let tmp = gensym("mut_bind_destructure");
@@ -985,8 +962,8 @@ let rec transl_anf_statement =
       | TPatTuple(_)
       | TPatRecord(_) =>
         let (tmp, anf_patts) = bind_patts(~exported, ~mut_flag, vb_pat);
-        [[@implicit_arity] BLet(tmp, exp_ans), ...anf_patts];
-      | [@implicit_arity] TPatAlias(patt, bind, _) =>
+        [BLet(tmp, exp_ans), ...anf_patts];
+      | TPatAlias(patt, bind, _) =>
         let binds =
           switch (mut_flag) {
           | Mutable =>
@@ -1016,7 +993,7 @@ let rec transl_anf_statement =
         )
       };
     (Some(exp_setup @ setup @ rest_setup), rest_imp);
-  | [@implicit_arity] TTopLet(export_flag, Recursive, mut_flag, binds) =>
+  | TTopLet(export_flag, Recursive, mut_flag, binds) =>
     let (binds, new_binds_setup) =
       List.split(
         List.map(
@@ -1029,7 +1006,7 @@ let rec transl_anf_statement =
     let names =
       List.map(
         fun
-        | {pat_desc: [@implicit_arity] TPatVar(id, _)} => id
+        | {pat_desc: TPatVar(id, _)} => id
         | _ => failwith("Non-name not allowed on LHS of let rec."),
         binds,
       );
@@ -1075,10 +1052,7 @@ let rec transl_anf_statement =
     } else {
       (None, []);
     };
-  | [@implicit_arity] TTopException(_, ext) => (
-      Some(linearize_exception(env, ext)),
-      [],
-    )
+  | TTopException(_, ext) => (Some(linearize_exception(env, ext)), [])
   | TTopForeign(desc) =>
     let arity = Ctype.arity(desc.tvd_desc.ctyp_type);
     (
@@ -1088,7 +1062,7 @@ let rec transl_anf_statement =
           desc.tvd_id,
           desc.tvd_mod.txt,
           desc.tvd_name.txt,
-          [@implicit_arity] FunctionShape(arity, 1),
+          FunctionShape(arity, 1),
         ),
       ],
     );

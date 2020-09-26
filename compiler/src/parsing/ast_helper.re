@@ -67,11 +67,10 @@ module Typ = {
   };
   let any = (~loc=?, ()) => mk(~loc?, PTyAny);
   let var = (~loc=?, a) => mk(~loc?, PTyVar(a));
-  let arrow = (~loc=?, a, b) => mk(~loc?, [@implicit_arity] PTyArrow(a, b));
+  let arrow = (~loc=?, a, b) => mk(~loc?, PTyArrow(a, b));
   let tuple = (~loc=?, a) => mk(~loc?, PTyTuple(a));
-  let constr = (~loc=?, a, b) =>
-    mk(~loc?, [@implicit_arity] PTyConstr(a, b));
-  let poly = (~loc=?, a, b) => mk(~loc?, [@implicit_arity] PTyPoly(a, b));
+  let constr = (~loc=?, a, b) => mk(~loc?, PTyConstr(a, b));
+  let poly = (~loc=?, a, b) => mk(~loc?, PTyPoly(a, b));
 
   let force_poly = t =>
     switch (t.ptyp_desc) {
@@ -158,13 +157,11 @@ module Pat = {
         a,
         ([], Asttypes.Closed),
       );
-    mk(~loc?, [@implicit_arity] PPatRecord(patterns, closed));
+    mk(~loc?, PPatRecord(patterns, closed));
   };
   let constant = (~loc=?, a) => mk(~loc?, PPatConstant(a));
-  let constraint_ = (~loc=?, a, b) =>
-    mk(~loc?, [@implicit_arity] PPatConstraint(a, b));
-  let construct = (~loc=?, a, b) =>
-    mk(~loc?, [@implicit_arity] PPatConstruct(a, b));
+  let constraint_ = (~loc=?, a, b) => mk(~loc?, PPatConstraint(a, b));
+  let construct = (~loc=?, a, b) => mk(~loc?, PPatConstruct(a, b));
   let list = (~loc=?, a, r) => {
     let base = Option.value(~default=construct(ident_empty, []), r);
     List.fold_right(
@@ -173,9 +170,8 @@ module Pat = {
       base,
     );
   };
-  let or_ = (~loc=?, a, b) => mk(~loc?, [@implicit_arity] PPatOr(a, b));
-  let alias = (~loc=?, a, b) =>
-    mk(~loc?, [@implicit_arity] PPatAlias(a, b));
+  let or_ = (~loc=?, a, b) => mk(~loc?, PPatOr(a, b));
+  let alias = (~loc=?, a, b) => mk(~loc?, PPatAlias(a, b));
 };
 
 module Exp = {
@@ -191,36 +187,22 @@ module Exp = {
   let constant = (~loc=?, a) => mk(~loc?, PExpConstant(a));
   let tuple = (~loc=?, a) => mk(~loc?, PExpTuple(a));
   let record = (~loc=?, a) => mk(~loc?, PExpRecord(a));
-  let record_get = (~loc=?, a, b) =>
-    mk(~loc?, [@implicit_arity] PExpRecordGet(a, b));
-  let record_set = (~loc=?, a, b, c) =>
-    mk(~loc?, [@implicit_arity] PExpRecordSet(a, b, c));
+  let record_get = (~loc=?, a, b) => mk(~loc?, PExpRecordGet(a, b));
+  let record_set = (~loc=?, a, b, c) => mk(~loc?, PExpRecordSet(a, b, c));
   let array = (~loc=?, a) => mk(~loc?, PExpArray(a));
-  let array_get = (~loc=?, a, b) =>
-    mk(~loc?, [@implicit_arity] PExpArrayGet(a, b));
-  let array_set = (~loc=?, a, b, c) =>
-    mk(~loc?, [@implicit_arity] PExpArraySet(a, b, c));
-  let let_ = (~loc=?, a, b, c, d) =>
-    mk(~loc?, [@implicit_arity] PExpLet(a, b, c, d));
-  let match = (~loc=?, a, b) =>
-    mk(~loc?, [@implicit_arity] PExpMatch(a, b));
-  let prim1 = (~loc=?, a, b) =>
-    mk(~loc?, [@implicit_arity] PExpPrim1(a, b));
-  let prim2 = (~loc=?, a, b, c) =>
-    mk(~loc?, [@implicit_arity] PExpPrim2(a, b, c));
-  let if_ = (~loc=?, a, b, c) =>
-    mk(~loc?, [@implicit_arity] PExpIf(a, b, c));
-  let while_ = (~loc=?, a, b) =>
-    mk(~loc?, [@implicit_arity] PExpWhile(a, b));
-  let constraint_ = (~loc=?, a, b) =>
-    mk(~loc?, [@implicit_arity] PExpConstraint(a, b));
-  let box_assign = (~loc=?, a, b) =>
-    mk(~loc?, [@implicit_arity] PExpBoxAssign(a, b));
-  let assign = (~loc=?, a, b) =>
-    mk(~loc?, [@implicit_arity] PExpAssign(a, b));
-  let lambda = (~loc=?, a, b) =>
-    mk(~loc?, [@implicit_arity] PExpLambda(a, b));
-  let apply = (~loc=?, a, b) => mk(~loc?, [@implicit_arity] PExpApp(a, b));
+  let array_get = (~loc=?, a, b) => mk(~loc?, PExpArrayGet(a, b));
+  let array_set = (~loc=?, a, b, c) => mk(~loc?, PExpArraySet(a, b, c));
+  let let_ = (~loc=?, a, b, c, d) => mk(~loc?, PExpLet(a, b, c, d));
+  let match = (~loc=?, a, b) => mk(~loc?, PExpMatch(a, b));
+  let prim1 = (~loc=?, a, b) => mk(~loc?, PExpPrim1(a, b));
+  let prim2 = (~loc=?, a, b, c) => mk(~loc?, PExpPrim2(a, b, c));
+  let if_ = (~loc=?, a, b, c) => mk(~loc?, PExpIf(a, b, c));
+  let while_ = (~loc=?, a, b) => mk(~loc?, PExpWhile(a, b));
+  let constraint_ = (~loc=?, a, b) => mk(~loc?, PExpConstraint(a, b));
+  let box_assign = (~loc=?, a, b) => mk(~loc?, PExpBoxAssign(a, b));
+  let assign = (~loc=?, a, b) => mk(~loc?, PExpAssign(a, b));
+  let lambda = (~loc=?, a, b) => mk(~loc?, PExpLambda(a, b));
+  let apply = (~loc=?, a, b) => mk(~loc?, PExpApp(a, b));
   let block = (~loc=?, a) => mk(~loc?, PExpBlock(a));
   let list = (~loc=?, a, base) => {
     let empty = ident(~loc?, ident_empty);
@@ -247,16 +229,13 @@ module Top = {
     {ptop_desc: d, ptop_loc: loc};
   };
   let import = (~loc=?, i) => mk(~loc?, PTopImport(i));
-  let foreign = (~loc=?, e, d) =>
-    mk(~loc?, [@implicit_arity] PTopForeign(e, d));
-  let primitive = (~loc=?, e, d) =>
-    mk(~loc?, [@implicit_arity] PTopPrimitive(e, d));
-  let data = (~loc=?, e, d) => mk(~loc?, [@implicit_arity] PTopData(e, d));
-  let let_ = (~loc=?, e, r, m, vb) =>
-    mk(~loc?, [@implicit_arity] PTopLet(e, r, m, vb));
+  let foreign = (~loc=?, e, d) => mk(~loc?, PTopForeign(e, d));
+  let primitive = (~loc=?, e, d) => mk(~loc?, PTopPrimitive(e, d));
+  let data = (~loc=?, e, d) => mk(~loc?, PTopData(e, d));
+  let let_ = (~loc=?, e, r, m, vb) => mk(~loc?, PTopLet(e, r, m, vb));
   let expr = (~loc=?, e) => mk(~loc?, PTopExpr(e));
   let grain_exception = (~loc=?, e, ext) =>
-    mk(~loc?, [@implicit_arity] PTopException(e, ext));
+    mk(~loc?, PTopException(e, ext));
   let export = (~loc=?, e) => mk(~loc?, PTopExport(e));
   let export_all = (~loc=?, e) => mk(~loc?, PTopExportAll(e));
 };

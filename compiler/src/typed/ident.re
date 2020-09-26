@@ -148,12 +148,12 @@ let mknode = (l, d, r) => {
   let hl =
     switch (l) {
     | Empty => 0
-    | [@implicit_arity] Node(_, _, _, h) => h
+    | Node(_, _, _, h) => h
     }
   and hr =
     switch (r) {
     | Empty => 0
-    | [@implicit_arity] Node(_, _, _, h) => h
+    | Node(_, _, _, h) => h
     };
   [@implicit_arity]
   Node(
@@ -172,54 +172,52 @@ let balance = (l, d, r) => {
   let hl =
     switch (l) {
     | Empty => 0
-    | [@implicit_arity] Node(_, _, _, h) => h
+    | Node(_, _, _, h) => h
     }
   and hr =
     switch (r) {
     | Empty => 0
-    | [@implicit_arity] Node(_, _, _, h) => h
+    | Node(_, _, _, h) => h
     };
   if (hl > hr + 1) {
     switch (l) {
-    | [@implicit_arity] Node(ll, ld, lr, _)
+    | Node(ll, ld, lr, _)
         when
           (
             switch (ll) {
             | Empty => 0
-            | [@implicit_arity] Node(_, _, _, h) => h
+            | Node(_, _, _, h) => h
             }
           )
           >= (
                switch (lr) {
                | Empty => 0
-               | [@implicit_arity] Node(_, _, _, h) => h
+               | Node(_, _, _, h) => h
                }
              ) =>
       mknode(ll, ld, mknode(lr, d, r))
-    | [@implicit_arity]
-      Node(ll, ld, [@implicit_arity] Node(lrl, lrd, lrr, _), _) =>
+    | [@implicit_arity] Node(ll, ld, Node(lrl, lrd, lrr, _), _) =>
       mknode(mknode(ll, ld, lrl), lrd, mknode(lrr, d, r))
     | _ => assert(false)
     };
   } else if (hr > hl + 1) {
     switch (r) {
-    | [@implicit_arity] Node(rl, rd, rr, _)
+    | Node(rl, rd, rr, _)
         when
           (
             switch (rr) {
             | Empty => 0
-            | [@implicit_arity] Node(_, _, _, h) => h
+            | Node(_, _, _, h) => h
             }
           )
           >= (
                switch (rl) {
                | Empty => 0
-               | [@implicit_arity] Node(_, _, _, h) => h
+               | Node(_, _, _, h) => h
                }
              ) =>
       mknode(mknode(l, d, rl), rd, rr)
-    | [@implicit_arity]
-      Node([@implicit_arity] Node(rll, rld, rlr, _), rd, rr, _) =>
+    | [@implicit_arity] Node(Node(rll, rld, rlr, _), rd, rr, _) =>
       mknode(mknode(l, d, rll), rld, mknode(rlr, rd, rr))
     | _ => assert(false)
     };
@@ -233,7 +231,7 @@ let rec add = (id, data) =>
   | Empty =>
     [@implicit_arity]
     Node(Empty, {ident: id, data, previous: None}, Empty, 1)
-  | [@implicit_arity] Node(l, k, r, h) => {
+  | Node(l, k, r, h) => {
       let c = compare(id.name, k.ident.name);
       if (c == 0) {
         [@implicit_arity]
@@ -263,7 +261,7 @@ let find_stamp_opt = (s, o) =>
 let rec find_same = id =>
   fun
   | Empty => raise(Not_found)
-  | [@implicit_arity] Node(l, k, r, _) => {
+  | Node(l, k, r, _) => {
       let c = compare(id.name, k.ident.name);
       if (c == 0) {
         if (id.stamp == k.ident.stamp) {
@@ -291,7 +289,7 @@ let find_same_opt = (id, tbl) =>
 let rec find_name = name =>
   fun
   | Empty => raise(Not_found)
-  | [@implicit_arity] Node(l, k, r, _) => {
+  | Node(l, k, r, _) => {
       let c = compare(name, k.ident.name);
       if (c == 0) {
         (k.ident, k.data);
@@ -320,7 +318,7 @@ let rec get_all =
 let rec find_all = name =>
   fun
   | Empty => []
-  | [@implicit_arity] Node(l, k, r, _) => {
+  | Node(l, k, r, _) => {
       let c = compare(name, k.ident.name);
       if (c == 0) {
         [(k.ident, k.data), ...get_all(k.previous)];
@@ -343,8 +341,7 @@ let rec fold_aux = (f, stack, accu) =>
     | [] => accu
     | [a, ...l] => fold_aux(f, l, accu, a)
     }
-  | [@implicit_arity] Node(l, k, r, _) =>
-    fold_aux(f, [l, ...stack], f(k, accu), r);
+  | Node(l, k, r, _) => fold_aux(f, [l, ...stack], f(k, accu), r);
 
 let fold_name = (f, tbl, accu) =>
   fold_aux(k => f(k.ident, k.data), [], accu, tbl);
@@ -363,7 +360,7 @@ let fold_all = (f, tbl, accu) =>
 let rec iter = f =>
   fun
   | Empty => ()
-  | [@implicit_arity] Node(l, k, r, _) => {
+  | Node(l, k, r, _) => {
       iter(f, l);
       f(k.ident, k.data);
       iter(f, r);

@@ -24,26 +24,26 @@ let push_tail_recursive = analysis =>
 let rec analyze_comp_expression =
         (is_tail, {comp_desc: desc, comp_analyses: analyses}) =>
   switch (desc) {
-  | [@implicit_arity] CIf(_, t, f) =>
+  | CIf(_, t, f) =>
     let t_branch = analyze_anf_expression(is_tail, t);
     let f_branch = analyze_anf_expression(is_tail, f);
     t_branch || f_branch;
-  | [@implicit_arity] CSwitch(_, branches) =>
+  | CSwitch(_, branches) =>
     List.fold_left(
       (has_tail_call, (_, b)) =>
         analyze_anf_expression(is_tail, b) || has_tail_call,
       false,
       branches,
     )
-  | [@implicit_arity] CWhile(_, body) =>
+  | CWhile(_, body) =>
     /* While this loop itself is not in tail position, we still want to analyze the body. */
     ignore @@ analyze_anf_expression(is_tail, body);
     false;
-  | [@implicit_arity] CLambda(args, body) =>
+  | CLambda(args, body) =>
     /* While this lambda itself is not in tail position, we still want to analyze the body. */
     ignore @@ analyze_anf_expression(true, body);
     false;
-  | [@implicit_arity] CApp({imm_desc: ImmId(id)}, _) =>
+  | CApp({imm_desc: ImmId(id)}, _) =>
     if (is_tail) {
       push_tail_call(analyses);
     };
@@ -83,19 +83,19 @@ let rec analyze_comp_expression =
 and analyze_anf_expression =
     (is_tail, {anf_desc: desc, anf_analyses: analyses}) =>
   switch (desc) {
-  | [@implicit_arity] AELet(_, Nonrecursive, binds, body) =>
+  | AELet(_, Nonrecursive, binds, body) =>
     /* None of these binds are in tail position */
     List.iter(
       ((_, exp)) => ignore @@ analyze_comp_expression(false, exp),
       binds,
     );
     analyze_anf_expression(is_tail, body);
-  | [@implicit_arity] AELet(_, Recursive, binds, body) =>
+  | AELet(_, Recursive, binds, body) =>
     List.iter(((id, _)) => push_tail_callable_name(id), binds);
     List.iter(
       ((_, {comp_desc, comp_analyses} as bind)) =>
         switch (comp_desc) {
-        | [@implicit_arity] CLambda(args, body) =>
+        | CLambda(args, body) =>
           if (analyze_anf_expression(true, body)) {
             push_tail_recursive(comp_analyses);
           }
@@ -105,7 +105,7 @@ and analyze_anf_expression =
     );
     List.iter(((id, _)) => pop_tail_callable_name(id), binds);
     analyze_anf_expression(is_tail, body);
-  | [@implicit_arity] AESeq(hd, tl) =>
+  | AESeq(hd, tl) =>
     /* Only the AEComp at the end of a sequence is in tail position */
     ignore @@ analyze_comp_expression(false, hd);
     analyze_anf_expression(is_tail, tl);

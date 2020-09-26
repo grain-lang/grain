@@ -22,7 +22,7 @@ let empty = Empty;
 let height =
   fun
   | Empty => 0
-  | [@implicit_arity] Node(_, _, _, _, h) => h;
+  | Node(_, _, _, _, h) => h;
 
 let create = (l, x, d, r) => {
   let hl = height(l)
@@ -46,21 +46,17 @@ let bal = (l, x, d, r) => {
   and hr = height(r);
   if (hl > hr + 1) {
     switch (l) {
-    | [@implicit_arity] Node(ll, lv, ld, lr, _)
-        when height(ll) >= height(lr) =>
+    | Node(ll, lv, ld, lr, _) when height(ll) >= height(lr) =>
       create(ll, lv, ld, create(lr, x, d, r))
-    | [@implicit_arity]
-      Node(ll, lv, ld, [@implicit_arity] Node(lrl, lrv, lrd, lrr, _), _) =>
+    | [@implicit_arity] Node(ll, lv, ld, Node(lrl, lrv, lrd, lrr, _), _) =>
       create(create(ll, lv, ld, lrl), lrv, lrd, create(lrr, x, d, r))
     | _ => assert(false)
     };
   } else if (hr > hl + 1) {
     switch (r) {
-    | [@implicit_arity] Node(rl, rv, rd, rr, _)
-        when height(rr) >= height(rl) =>
+    | Node(rl, rv, rd, rr, _) when height(rr) >= height(rl) =>
       create(create(l, x, d, rl), rv, rd, rr)
-    | [@implicit_arity]
-      Node([@implicit_arity] Node(rll, rlv, rld, rlr, _), rv, rd, rr, _) =>
+    | [@implicit_arity] Node(Node(rll, rlv, rld, rlr, _), rv, rd, rr, _) =>
       create(create(l, x, d, rll), rlv, rld, create(rlr, rv, rd, rr))
     | _ => assert(false)
     };
@@ -71,11 +67,11 @@ let bal = (l, x, d, r) => {
 
 let rec add = (x, data) =>
   fun
-  | Empty => [@implicit_arity] Node(Empty, x, data, Empty, 1)
-  | [@implicit_arity] Node(l, v, d, r, h) => {
+  | Empty => Node(Empty, x, data, Empty, 1)
+  | Node(l, v, d, r, h) => {
       let c = compare(x, v);
       if (c == 0) {
-        [@implicit_arity] Node(l, x, data, r, h);
+        Node(l, x, data, r, h);
       } else if (c < 0) {
         bal(add(x, data, l), v, d, r);
       } else {
@@ -86,7 +82,7 @@ let rec add = (x, data) =>
 let rec find = x =>
   fun
   | Empty => raise(Not_found)
-  | [@implicit_arity] Node(l, v, d, r, _) => {
+  | Node(l, v, d, r, _) => {
       let c = compare(x, v);
       if (c == 0) {
         d;
@@ -105,7 +101,7 @@ let rec find = x =>
 let rec find_str = (x: string) =>
   fun
   | Empty => raise(Not_found)
-  | [@implicit_arity] Node(l, v, d, r, _) => {
+  | Node(l, v, d, r, _) => {
       let c = compare(x, v);
       if (c == 0) {
         d;
@@ -124,7 +120,7 @@ let rec find_str = (x: string) =>
 let rec mem = x =>
   fun
   | Empty => false
-  | [@implicit_arity] Node(l, v, _d, r, _) => {
+  | Node(l, v, _d, r, _) => {
       let c = compare(x, v);
       c == 0
       || mem(
@@ -141,17 +137,14 @@ let rec merge = (t1, t2) =>
   switch (t1, t2) {
   | (Empty, t) => t
   | (t, Empty) => t
-  | (
-      [@implicit_arity] Node(l1, v1, d1, r1, _h1),
-      [@implicit_arity] Node(l2, v2, d2, r2, _h2),
-    ) =>
+  | (Node(l1, v1, d1, r1, _h1), Node(l2, v2, d2, r2, _h2)) =>
     bal(l1, v1, d1, bal(merge(r1, l2), v2, d2, r2))
   };
 
 let rec remove = x =>
   fun
   | Empty => Empty
-  | [@implicit_arity] Node(l, v, d, r, _h) => {
+  | Node(l, v, d, r, _h) => {
       let c = compare(x, v);
       if (c == 0) {
         merge(l, r);
@@ -165,7 +158,7 @@ let rec remove = x =>
 let rec iter = f =>
   fun
   | Empty => ()
-  | [@implicit_arity] Node(l, v, d, r, _) => {
+  | Node(l, v, d, r, _) => {
       iter(f, l);
       f(v, d);
       iter(f, r);
@@ -174,14 +167,12 @@ let rec iter = f =>
 let rec map = f =>
   fun
   | Empty => Empty
-  | [@implicit_arity] Node(l, v, d, r, h) =>
-    [@implicit_arity] Node(map(f, l), v, f(v, d), map(f, r), h);
+  | Node(l, v, d, r, h) => Node(map(f, l), v, f(v, d), map(f, r), h);
 
 let rec fold = (f, m, accu) =>
   switch (m) {
   | Empty => accu
-  | [@implicit_arity] Node(l, v, d, r, _) =>
-    fold(f, r, f(v, d, fold(f, l, accu)))
+  | Node(l, v, d, r, _) => fold(f, r, f(v, d, fold(f, l, accu)))
   };
 
 open Format;

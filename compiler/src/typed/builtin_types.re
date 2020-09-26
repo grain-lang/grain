@@ -61,34 +61,21 @@ and path_box = PIdent(ident_box)
 and path_array = PIdent(ident_array)
 and path_fd = PIdent(ident_fd);
 
-let type_number =
-  newgenty([@implicit_arity] TTyConstr(path_number, [], ref(TMemNil)))
-and type_exception =
-  newgenty([@implicit_arity] TTyConstr(path_exception, [], ref(TMemNil)))
-and type_int32 =
-  newgenty([@implicit_arity] TTyConstr(path_int32, [], ref(TMemNil)))
-and type_int64 =
-  newgenty([@implicit_arity] TTyConstr(path_int64, [], ref(TMemNil)))
-and type_rational =
-  newgenty([@implicit_arity] TTyConstr(path_rational, [], ref(TMemNil)))
-and type_float32 =
-  newgenty([@implicit_arity] TTyConstr(path_float32, [], ref(TMemNil)))
-and type_float64 =
-  newgenty([@implicit_arity] TTyConstr(path_float64, [], ref(TMemNil)))
-and type_bool =
-  newgenty([@implicit_arity] TTyConstr(path_bool, [], ref(TMemNil)))
-and type_string =
-  newgenty([@implicit_arity] TTyConstr(path_string, [], ref(TMemNil)))
-and type_void =
-  newgenty([@implicit_arity] TTyConstr(path_void, [], ref(TMemNil)))
-and type_box = var =>
-  newgenty([@implicit_arity] TTyConstr(path_box, [var], ref(TMemNil)))
+let type_number = newgenty(TTyConstr(path_number, [], ref(TMemNil)))
+and type_exception = newgenty(TTyConstr(path_exception, [], ref(TMemNil)))
+and type_int32 = newgenty(TTyConstr(path_int32, [], ref(TMemNil)))
+and type_int64 = newgenty(TTyConstr(path_int64, [], ref(TMemNil)))
+and type_rational = newgenty(TTyConstr(path_rational, [], ref(TMemNil)))
+and type_float32 = newgenty(TTyConstr(path_float32, [], ref(TMemNil)))
+and type_float64 = newgenty(TTyConstr(path_float64, [], ref(TMemNil)))
+and type_bool = newgenty(TTyConstr(path_bool, [], ref(TMemNil)))
+and type_string = newgenty(TTyConstr(path_string, [], ref(TMemNil)))
+and type_void = newgenty(TTyConstr(path_void, [], ref(TMemNil)))
+and type_box = var => newgenty(TTyConstr(path_box, [var], ref(TMemNil)))
 and type_array = var =>
-  newgenty([@implicit_arity] TTyConstr(path_array, [var], ref(TMemNil)))
-and type_fd =
-  newgenty([@implicit_arity] TTyConstr(path_fd, [], ref(TMemNil)))
-and type_lambda = (args, res) =>
-  newgenty([@implicit_arity] TTyArrow(args, res, TComOk));
+  newgenty(TTyConstr(path_array, [var], ref(TMemNil)))
+and type_fd = newgenty(TTyConstr(path_fd, [], ref(TMemNil)))
+and type_lambda = (args, res) => newgenty(TTyArrow(args, res, TComOk));
 
 let all_predef_exns = [];
 

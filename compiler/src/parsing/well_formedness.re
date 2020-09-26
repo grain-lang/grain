@@ -26,17 +26,17 @@ let prepare_error =
       | MalformedString(loc) => errorf(~loc, "Malformed string literal")
       | MultipleModuleName(loc) =>
         errorf(~loc, "Multiple modules in identifier")
-      | [@implicit_arity] TypeNameShouldBeUppercase(name, loc) =>
+      | TypeNameShouldBeUppercase(name, loc) =>
         errorf(~loc, "Type '%s' should have an uppercase name.", name)
-      | [@implicit_arity] IllegalAliasName(name, loc) =>
+      | IllegalAliasName(name, loc) =>
         errorf(~loc, "Alias '%s' should have proper casing.", name)
-      | [@implicit_arity] ExternalAlias(name, loc) =>
+      | ExternalAlias(name, loc) =>
         errorf(~loc, "Alias '%s' should be at most one level deep.", name)
-      | [@implicit_arity] ModuleNameShouldBeUppercase(name, loc) =>
+      | ModuleNameShouldBeUppercase(name, loc) =>
         errorf(~loc, "Module '%s' should have an uppercase name.", name)
-      | [@implicit_arity] ModuleImportNameShouldNotBeExternal(name, loc) =>
+      | ModuleImportNameShouldNotBeExternal(name, loc) =>
         errorf(~loc, "Module name '%s' should contain only one module.", name)
-      | [@implicit_arity] TyvarNameShouldBeLowercase(var, loc) =>
+      | TyvarNameShouldBeLowercase(var, loc) =>
         errorf(~loc, "Type variable '%s' should be lowercase.", var)
       | ExportAllShouldOnlyAppearOnce(loc) =>
         errorf(~loc, "An 'export *' statement should appear at most once.")
@@ -88,7 +88,7 @@ let malformed_identifiers = (errs, super) => {
   open Identifier;
   let iter_expr = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
-    | PExpId({txt: [@implicit_arity] IdentExternal(IdentExternal(_), _)}) =>
+    | PExpId({txt: IdentExternal(IdentExternal(_), _)}) =>
       errs := [MultipleModuleName(loc), ...errs^]
     | _ => ()
     };
@@ -116,8 +116,7 @@ let malformed_identifiers = (errs, super) => {
                   Some({txt: IdentName(alias), loc}),
                 )
                   when casing_mismatch(orig, alias) =>
-                errs :=
-                  [[@implicit_arity] IllegalAliasName(alias, loc), ...errs^]
+                errs := [IllegalAliasName(alias, loc), ...errs^]
               | (_, Some({txt: IdentExternal(_) as alias, loc})) =>
                 errs :=
                   [
@@ -143,7 +142,7 @@ let types_have_correct_case = (errs, super) => {
   let check_uppercase = (loc, s) => {
     let first_char = s.[0];
     if (!Char_utils.is_uppercase_letter(first_char)) {
-      errs := [[@implicit_arity] TypeNameShouldBeUppercase(s, loc), ...errs^];
+      errs := [TypeNameShouldBeUppercase(s, loc), ...errs^];
     };
   };
   let iter_data =
@@ -163,8 +162,7 @@ let modules_have_correct_case = (errs, super) => {
   let check_uppercase = (loc, s) => {
     let first_char = s.[0];
     if (!Char_utils.is_uppercase_letter(first_char)) {
-      errs :=
-        [[@implicit_arity] ModuleNameShouldBeUppercase(s, loc), ...errs^];
+      errs := [ModuleNameShouldBeUppercase(s, loc), ...errs^];
     };
   };
   let iter_mods = (self, imports) => {
@@ -236,10 +234,10 @@ let only_has_one_export_all = (errs, super) => {
 let no_empty_record_patterns = (errs, super) => {
   let iter_toplevel_binds = (self, {ptop_desc: desc, ptop_loc: loc} as e) => {
     switch (desc) {
-    | [@implicit_arity] PTopLet(_, _, _, vbs) =>
+    | PTopLet(_, _, _, vbs) =>
       List.iter(
         fun
-        | {pvb_pat: {ppat_desc: [@implicit_arity] PPatRecord(fields, _)}} =>
+        | {pvb_pat: {ppat_desc: PPatRecord(fields, _)}} =>
           if (List.length(fields) == 0) {
             errs := [EmptyRecordPattern(loc), ...errs^];
           }
@@ -252,10 +250,10 @@ let no_empty_record_patterns = (errs, super) => {
   };
   let iter_binds = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
-    | [@implicit_arity] PExpLet(_, _, vbs, _) =>
+    | PExpLet(_, _, vbs, _) =>
       List.iter(
         fun
-        | {pvb_pat: {ppat_desc: [@implicit_arity] PPatRecord(fields, _)}} =>
+        | {pvb_pat: {ppat_desc: PPatRecord(fields, _)}} =>
           if (List.length(fields) == 0) {
             errs := [EmptyRecordPattern(loc), ...errs^];
           }
@@ -273,7 +271,7 @@ let no_empty_record_patterns = (errs, super) => {
 let only_functions_oh_rhs_letrec = (errs, super) => {
   let iter_toplevel_binds = (self, {ptop_desc: desc, ptop_loc: loc} as e) => {
     switch (desc) {
-    | [@implicit_arity] PTopLet(_, Recursive, _, vbs) =>
+    | PTopLet(_, Recursive, _, vbs) =>
       List.iter(
         fun
         | {pvb_expr: {pexp_desc: PExpLambda(_)}} => ()
@@ -286,7 +284,7 @@ let only_functions_oh_rhs_letrec = (errs, super) => {
   };
   let iter_binds = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
-    | [@implicit_arity] PExpLet(Recursive, _, vbs, _) =>
+    | PExpLet(Recursive, _, vbs, _) =>
       List.iter(
         fun
         | {pvb_expr: {pexp_desc: PExpLambda(_)}} => ()
@@ -304,7 +302,7 @@ let only_functions_oh_rhs_letrec = (errs, super) => {
 let no_letrec_mut = (errs, super) => {
   let iter_toplevel_binds = (self, {ptop_desc: desc, ptop_loc: loc} as e) => {
     switch (desc) {
-    | [@implicit_arity] PTopLet(_, Recursive, Mutable, vbs) =>
+    | PTopLet(_, Recursive, Mutable, vbs) =>
       errs := [NoLetRecMut(loc), ...errs^]
     | _ => ()
     };
@@ -312,7 +310,7 @@ let no_letrec_mut = (errs, super) => {
   };
   let iter_binds = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
-    | [@implicit_arity] PExpLet(Recursive, Mutable, vbs, _) =>
+    | PExpLet(Recursive, Mutable, vbs, _) =>
       errs := [NoLetRecMut(loc), ...errs^]
     | _ => ()
     };

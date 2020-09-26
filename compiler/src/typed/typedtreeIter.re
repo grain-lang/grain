@@ -64,14 +64,14 @@ module MakeIterator =
     switch (ct.ctyp_desc) {
     | TTyAny
     | TTyVar(_) => ()
-    | [@implicit_arity] TTyArrow(args, ret) =>
+    | TTyArrow(args, ret) =>
       List.iter(iter_core_type, args);
       iter_core_type(ret);
-    | [@implicit_arity] TTyConstr(_, _, args)
+    | TTyConstr(_, _, args)
     | TTyTuple(args) => List.iter(iter_core_type, args)
     | TTyRecord(args) =>
       List.iter(((_, arg)) => iter_core_type(arg), args)
-    | [@implicit_arity] TTyPoly(_, typ) => iter_core_type(typ)
+    | TTyPoly(_, typ) => iter_core_type(typ)
     };
     Iter.leave_core_type(ct);
   }
@@ -130,7 +130,7 @@ module MakeIterator =
     | TTopImport(_)
     | TTopExport(_) => ()
     | TTopExpr(e) => iter_expression(e)
-    | [@implicit_arity] TTopLet(exportflag, recflag, mutflag, binds) =>
+    | TTopLet(exportflag, recflag, mutflag, binds) =>
       iter_bindings(exportflag, recflag, mutflag, binds)
     };
     Iter.leave_toplevel_stmt(stmt);
@@ -167,12 +167,12 @@ module MakeIterator =
     | TPatAny
     | TPatVar(_)
     | TPatConstant(_) => ()
-    | [@implicit_arity] TPatAlias(p1, _, _) => iter_pattern(p1)
-    | [@implicit_arity] TPatConstruct(_, _, args)
+    | TPatAlias(p1, _, _) => iter_pattern(p1)
+    | TPatConstruct(_, _, args)
     | TPatTuple(args) => List.iter(iter_pattern, args)
-    | [@implicit_arity] TPatRecord(fields, _) =>
+    | TPatRecord(fields, _) =>
       List.iter(((_, _, pat)) => iter_pattern(pat), fields)
-    | [@implicit_arity] TPatOr(p1, p2) =>
+    | TPatOr(p1, p2) =>
       iter_pattern(p1);
       iter_pattern(p2);
     };
@@ -192,56 +192,53 @@ module MakeIterator =
     | TExpNull
     | TExpIdent(_)
     | TExpConstant(_) => ()
-    | [@implicit_arity] TExpLet(recflag, mutflag, binds, body) =>
+    | TExpLet(recflag, mutflag, binds, body) =>
       iter_bindings(Nonexported, recflag, mutflag, binds);
       iter_expression(body);
-    | [@implicit_arity] TExpLambda(branches, _) =>
-      iter_match_branches(branches)
-    | [@implicit_arity] TExpApp(exp, args) =>
+    | TExpLambda(branches, _) => iter_match_branches(branches)
+    | TExpApp(exp, args) =>
       iter_expression(exp);
       List.iter(iter_expression, args);
-    | [@implicit_arity] TExpPrim1(_, e) => iter_expression(e)
-    | [@implicit_arity] TExpPrim2(_, e1, e2) =>
+    | TExpPrim1(_, e) => iter_expression(e)
+    | TExpPrim2(_, e1, e2) =>
       iter_expression(e1);
       iter_expression(e2);
-    | [@implicit_arity] TExpBoxAssign(e1, e2) =>
+    | TExpBoxAssign(e1, e2) =>
       iter_expression(e1);
       iter_expression(e2);
-    | [@implicit_arity] TExpAssign(e1, e2) =>
+    | TExpAssign(e1, e2) =>
       iter_expression(e1);
       iter_expression(e2);
-    | [@implicit_arity] TExpMatch(value, branches, _) =>
+    | TExpMatch(value, branches, _) =>
       iter_expression(value);
       iter_match_branches(branches);
     | TExpRecord(args) =>
       Array.iter(
         fun
-        | (_, [@implicit_arity] Overridden(_, expr)) =>
-          iter_expression(expr)
+        | (_, Overridden(_, expr)) => iter_expression(expr)
         | _ => (),
         args,
       )
-    | [@implicit_arity] TExpRecordGet(expr, _, _) => iter_expression(expr)
-    | [@implicit_arity] TExpRecordSet(e1, _, _, e2) =>
+    | TExpRecordGet(expr, _, _) => iter_expression(expr)
+    | TExpRecordSet(e1, _, _, e2) =>
       iter_expression(e1);
       iter_expression(e2);
     | TExpTuple(args)
     | TExpArray(args)
     | TExpBlock(args)
-    | [@implicit_arity] TExpConstruct(_, _, args) =>
-      List.iter(iter_expression, args)
-    | [@implicit_arity] TExpArrayGet(a1, a2) =>
+    | TExpConstruct(_, _, args) => List.iter(iter_expression, args)
+    | TExpArrayGet(a1, a2) =>
       iter_expression(a1);
       iter_expression(a2);
-    | [@implicit_arity] TExpArraySet(a1, a2, a3) =>
+    | TExpArraySet(a1, a2, a3) =>
       iter_expression(a1);
       iter_expression(a2);
       iter_expression(a3);
-    | [@implicit_arity] TExpIf(c, t, f) =>
+    | TExpIf(c, t, f) =>
       iter_expression(c);
       iter_expression(t);
       iter_expression(f);
-    | [@implicit_arity] TExpWhile(c, b) =>
+    | TExpWhile(c, b) =>
       iter_expression(c);
       iter_expression(b);
     };

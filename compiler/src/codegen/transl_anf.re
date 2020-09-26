@@ -150,51 +150,43 @@ module RegisterAllocation = {
     let desc =
       switch (instr.instr_desc) {
       | MImmediate(i) => MImmediate(apply_allocation_to_imm(i))
-      | [@implicit_arity] MTagOp(top, tt, i) =>
-        [@implicit_arity] MTagOp(top, tt, apply_allocation_to_imm(i))
-      | [@implicit_arity] MArityOp(aop, at, i) =>
-        [@implicit_arity] MArityOp(aop, at, apply_allocation_to_imm(i))
-      | [@implicit_arity] MPrim1(pop, i) =>
-        [@implicit_arity] MPrim1(pop, apply_allocation_to_imm(i))
-      | [@implicit_arity] MTupleOp(top, i) =>
-        [@implicit_arity] MTupleOp(top, apply_allocation_to_imm(i))
-      | [@implicit_arity] MBoxOp(bop, i) =>
-        [@implicit_arity] MBoxOp(bop, apply_allocation_to_imm(i))
-      | [@implicit_arity] MArrayOp(aop, i) =>
-        [@implicit_arity] MArrayOp(aop, apply_allocation_to_imm(i))
-      | [@implicit_arity] MRecordOp(rop, i) =>
-        [@implicit_arity] MRecordOp(rop, apply_allocation_to_imm(i))
-      | [@implicit_arity] MAdtOp(aop, i) =>
-        [@implicit_arity] MAdtOp(aop, apply_allocation_to_imm(i))
-      | [@implicit_arity] MCallKnown(i32, is) =>
+      | MTagOp(top, tt, i) => MTagOp(top, tt, apply_allocation_to_imm(i))
+      | MArityOp(aop, at, i) =>
+        MArityOp(aop, at, apply_allocation_to_imm(i))
+      | MPrim1(pop, i) => MPrim1(pop, apply_allocation_to_imm(i))
+      | MTupleOp(top, i) => MTupleOp(top, apply_allocation_to_imm(i))
+      | MBoxOp(bop, i) => MBoxOp(bop, apply_allocation_to_imm(i))
+      | MArrayOp(aop, i) => MArrayOp(aop, apply_allocation_to_imm(i))
+      | MRecordOp(rop, i) => MRecordOp(rop, apply_allocation_to_imm(i))
+      | MAdtOp(aop, i) => MAdtOp(aop, apply_allocation_to_imm(i))
+      | MCallKnown(i32, is) =>
         [@implicit_arity]
         MCallKnown(i32, List.map(apply_allocation_to_imm, is))
-      | [@implicit_arity] MError(e, is) =>
-        [@implicit_arity] MError(e, List.map(apply_allocation_to_imm, is))
-      | [@implicit_arity] MCallIndirect(imm, is) =>
+      | MError(e, is) => MError(e, List.map(apply_allocation_to_imm, is))
+      | MCallIndirect(imm, is) =>
         [@implicit_arity]
         MCallIndirect(
           apply_allocation_to_imm(imm),
           List.map(apply_allocation_to_imm, is),
         )
-      | [@implicit_arity] MIf(c, t, f) =>
+      | MIf(c, t, f) =>
         [@implicit_arity]
         MIf(
           apply_allocation_to_imm(c),
           apply_allocation_to_block(t),
           apply_allocation_to_block(f),
         )
-      | [@implicit_arity] MWhile(b1, b2) =>
+      | MWhile(b1, b2) =>
         [@implicit_arity]
         MWhile(apply_allocation_to_block(b1), apply_allocation_to_block(b2))
-      | [@implicit_arity] MSwitch(v, bs, d) =>
+      | MSwitch(v, bs, d) =>
         [@implicit_arity]
         MSwitch(
           apply_allocation_to_imm(v),
           List.map(((t, b)) => (t, apply_allocation_to_block(b)), bs),
           apply_allocation_to_block(d),
         )
-      | [@implicit_arity] MPrim2(pop, i1, i2) =>
+      | MPrim2(pop, i1, i2) =>
         [@implicit_arity]
         MPrim2(
           pop,
@@ -241,29 +233,26 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
     switch (instr.instr_desc) {
     | MDrop(i) => live_locals(i)
     | MImmediate(imm)
-    | [@implicit_arity] MTagOp(_, _, imm)
-    | [@implicit_arity] MArityOp(_, _, imm)
-    | [@implicit_arity] MPrim1(_, imm)
-    | [@implicit_arity] MTupleOp(_, imm)
-    | [@implicit_arity] MBoxOp(_, imm)
-    | [@implicit_arity] MArrayOp(_, imm)
-    | [@implicit_arity] MRecordOp(_, imm)
-    | [@implicit_arity] MAdtOp(_, imm) => imm_live_local(imm)
-    | [@implicit_arity] MCallKnown(_, is)
-    | [@implicit_arity] MError(_, is) =>
-      List.concat(List.map(imm_live_local, is))
-    | [@implicit_arity] MCallIndirect(imm, is) =>
+    | MTagOp(_, _, imm)
+    | MArityOp(_, _, imm)
+    | MPrim1(_, imm)
+    | MTupleOp(_, imm)
+    | MBoxOp(_, imm)
+    | MArrayOp(_, imm)
+    | MRecordOp(_, imm)
+    | MAdtOp(_, imm) => imm_live_local(imm)
+    | MCallKnown(_, is)
+    | MError(_, is) => List.concat(List.map(imm_live_local, is))
+    | MCallIndirect(imm, is) =>
       List.concat(List.map(imm_live_local, is)) @ imm_live_local(imm)
-    | [@implicit_arity] MIf(c, t, f) =>
+    | MIf(c, t, f) =>
       imm_live_local(c) @ block_live_locals(t) @ block_live_locals(f)
-    | [@implicit_arity] MWhile(b1, b2) =>
-      block_live_locals(b1) @ block_live_locals(b2)
-    | [@implicit_arity] MSwitch(v, bs, d) =>
+    | MWhile(b1, b2) => block_live_locals(b1) @ block_live_locals(b2)
+    | MSwitch(v, bs, d) =>
       imm_live_local(v)
       @ List.concat(List.map(((_, b)) => block_live_locals(b), bs))
       @ block_live_locals(d)
-    | [@implicit_arity] MPrim2(_, i1, i2) =>
-      imm_live_local(i1) @ imm_live_local(i2)
+    | MPrim2(_, i1, i2) => imm_live_local(i1) @ imm_live_local(i2)
     | MStore(bs) =>
       List.concat(
         List.map(((b, bk)) => bind_live_local(b) @ live_locals(bk), bs),
@@ -520,44 +509,41 @@ let rec compile_comp = (env, c) => {
           },
         ],
       );
-    | [@implicit_arity] CIf(cond, thn, els) =>
+    | CIf(cond, thn, els) =>
       [@implicit_arity]
       MIf(
         compile_imm(env, cond),
         compile_anf_expr(env, thn),
         compile_anf_expr(env, els),
       )
-    | [@implicit_arity] CWhile(cond, body) =>
+    | CWhile(cond, body) =>
       [@implicit_arity]
       MWhile(compile_anf_expr(env, cond), compile_anf_expr(env, body))
-    | [@implicit_arity] CPrim1(Box, arg) =>
-      MAllocate(MBox(compile_imm(env, arg)))
-    | [@implicit_arity] CPrim1(Unbox, arg) =>
-      [@implicit_arity] MBoxOp(MBoxUnbox, compile_imm(env, arg))
-    | [@implicit_arity] CPrim1(p1, arg) =>
-      [@implicit_arity] MPrim1(p1, compile_imm(env, arg))
-    | [@implicit_arity] CPrim2(p2, arg1, arg2) =>
+    | CPrim1(Box, arg) => MAllocate(MBox(compile_imm(env, arg)))
+    | CPrim1(Unbox, arg) => MBoxOp(MBoxUnbox, compile_imm(env, arg))
+    | CPrim1(p1, arg) => MPrim1(p1, compile_imm(env, arg))
+    | CPrim2(p2, arg1, arg2) =>
       [@implicit_arity]
       MPrim2(p2, compile_imm(env, arg1), compile_imm(env, arg2))
-    | [@implicit_arity] CAssign(arg1, arg2) =>
+    | CAssign(arg1, arg2) =>
       [@implicit_arity]
       MBoxOp(MBoxUpdate(compile_imm(env, arg2)), compile_imm(env, arg1))
-    | [@implicit_arity] CBoxAssign(arg1, arg2) =>
+    | CBoxAssign(arg1, arg2) =>
       [@implicit_arity]
       MBoxOp(MBoxUpdate(compile_imm(env, arg2)), compile_imm(env, arg1))
     | CTuple(args) => MAllocate(MTuple(List.map(compile_imm(env), args)))
     | CArray(args) => MAllocate(MArray(List.map(compile_imm(env), args)))
-    | [@implicit_arity] CArrayGet(idx, arr) =>
+    | CArrayGet(idx, arr) =>
       [@implicit_arity]
       MArrayOp(MArrayGet(compile_imm(env, idx)), compile_imm(env, arr))
-    | [@implicit_arity] CArraySet(idx, arr, arg) =>
+    | CArraySet(idx, arr, arg) =>
       [@implicit_arity]
       MArrayOp(
         [@implicit_arity]
         MArraySet(compile_imm(env, idx), compile_imm(env, arg)),
         compile_imm(env, arr),
       )
-    | [@implicit_arity] CRecord(ttag, args) =>
+    | CRecord(ttag, args) =>
       MAllocate(
         [@implicit_arity]
         MRecord(
@@ -568,7 +554,7 @@ let rec compile_comp = (env, c) => {
           ),
         ),
       )
-    | [@implicit_arity] CAdt(ttag, vtag, args) =>
+    | CAdt(ttag, vtag, args) =>
       MAllocate(
         [@implicit_arity]
         MADT(
@@ -595,33 +581,31 @@ let rec compile_comp = (env, c) => {
     | CInt64(i) => MAllocate(MInt64(i))
     | CFloat32(f) => MAllocate(MFloat32(f))
     | CFloat64(f) => MAllocate(MFloat64(f))
-    | [@implicit_arity] CGetTupleItem(idx, tup) =>
-      [@implicit_arity] MTupleOp(MTupleGet(idx), compile_imm(env, tup))
-    | [@implicit_arity] CSetTupleItem(idx, tup, value) =>
+    | CGetTupleItem(idx, tup) =>
+      MTupleOp(MTupleGet(idx), compile_imm(env, tup))
+    | CSetTupleItem(idx, tup, value) =>
       [@implicit_arity]
       MTupleOp(
-        [@implicit_arity] MTupleSet(idx, compile_imm(env, value)),
+        MTupleSet(idx, compile_imm(env, value)),
         compile_imm(env, tup),
       )
-    | [@implicit_arity] CGetAdtItem(idx, adt) =>
-      [@implicit_arity] MAdtOp(MAdtGet(idx), compile_imm(env, adt))
-    | CGetAdtTag(adt) =>
-      [@implicit_arity] MAdtOp(MAdtGetTag, compile_imm(env, adt))
-    | [@implicit_arity] CGetRecordItem(idx, record) =>
-      [@implicit_arity] MRecordOp(MRecordGet(idx), compile_imm(env, record))
-    | [@implicit_arity] CSetRecordItem(idx, record, arg) =>
+    | CGetAdtItem(idx, adt) => MAdtOp(MAdtGet(idx), compile_imm(env, adt))
+    | CGetAdtTag(adt) => MAdtOp(MAdtGetTag, compile_imm(env, adt))
+    | CGetRecordItem(idx, record) =>
+      MRecordOp(MRecordGet(idx), compile_imm(env, record))
+    | CSetRecordItem(idx, record, arg) =>
       [@implicit_arity]
       MRecordOp(
         MRecordSet(idx, compile_imm(env, arg)),
         compile_imm(env, record),
       )
-    | [@implicit_arity] CLambda(args, body) =>
+    | CLambda(args, body) =>
       MAllocate(MClosure(compile_lambda(env, args, body, c.comp_loc)))
-    | [@implicit_arity] CApp(f, args) =>
+    | CApp(f, args) =>
       /* TODO: Utilize MCallKnown */
       [@implicit_arity]
       MCallIndirect(compile_imm(env, f), List.map(compile_imm(env), args))
-    | [@implicit_arity] CAppBuiltin(modname, name, args) =>
+    | CAppBuiltin(modname, name, args) =>
       [@implicit_arity]
       MCallKnown("builtin", List.map(compile_imm(env), args))
     | CImmExpr(i) => MImmediate(compile_imm(env, i))
@@ -721,7 +705,7 @@ let lift_imports = (env, imports) => {
   let process_shape =
     fun
     | GlobalShape => MGlobalImport(I32Type)
-    | [@implicit_arity] FunctionShape(inputs, outputs) =>
+    | FunctionShape(inputs, outputs) =>
       [@implicit_arity]
       MFuncImport(
         List.init(inputs, _ => I32Type),
@@ -732,7 +716,7 @@ let lift_imports = (env, imports) => {
       ((imports, setups, env), {imp_use_id, imp_desc, imp_shape}) => {
     let glob = next_global(imp_use_id);
     switch (imp_desc) {
-    | [@implicit_arity] GrainValue(mod_, name) =>
+    | GrainValue(mod_, name) =>
       let new_mod = {
         mimp_mod: Ident.create(mod_),
         mimp_name: Ident.create(name),
@@ -776,7 +760,7 @@ let lift_imports = (env, imports) => {
             ),
         },
       );
-    | [@implicit_arity] WasmFunction(mod_, name) =>
+    | WasmFunction(mod_, name) =>
       let new_mod = {
         mimp_mod: Ident.create(mod_),
         mimp_name: Ident.create(name),
@@ -795,7 +779,7 @@ let lift_imports = (env, imports) => {
         [
           switch (imp_shape) {
           | GlobalShape => []
-          | [@implicit_arity] FunctionShape(inputs, outputs) =>
+          | FunctionShape(inputs, outputs) =>
             if (outputs > 1) {
               failwith("NYI: Multi-result wrapper");
             } else {

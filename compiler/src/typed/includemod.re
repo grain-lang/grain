@@ -121,13 +121,7 @@ let type_declarations =
 
   if (err != []) {
     raise(
-      Error([
-        (
-          cxt,
-          old_env,
-          [@implicit_arity] Type_declarations(id, decl1, decl2, err),
-        ),
-      ]),
+      Error([(cxt, old_env, Type_declarations(id, decl1, decl2, err))]),
     );
   };
 };
@@ -141,11 +135,7 @@ let extension_constructors = (~loc, env, ~mark, cxt, subst, id, ext1, ext2) => {
   if (Includecore.extension_constructors(~loc, env, ~mark, id, ext1, ext2)) {
     ();
   } else {
-    raise(
-      Error([
-        (cxt, env, [@implicit_arity] Extension_constructors(id, ext1, ext2)),
-      ]),
-    );
+    raise(Error([(cxt, env, Extension_constructors(id, ext1, ext2))]));
   };
 };
 
@@ -220,44 +210,24 @@ let kind_of_field_desc =
 
 let item_ident_name =
   fun
-  | [@implicit_arity] TSigValue(id, d) => (
-      id,
-      d.val_loc,
-      Field_value(Ident.name(id)),
-    )
-  | [@implicit_arity] TSigType(id, d, _) => (
-      id,
-      d.type_loc,
-      Field_type(Ident.name(id)),
-    )
-  | [@implicit_arity] TSigTypeExt(id, d, _) => (
-      id,
-      d.ext_loc,
-      Field_typext(Ident.name(id)),
-    )
-  | [@implicit_arity] TSigModule(id, d, _) => (
-      id,
-      d.md_loc,
-      Field_module(Ident.name(id)),
-    )
-  | [@implicit_arity] TSigModType(id, d) => (
-      id,
-      d.mtd_loc,
-      Field_modtype(Ident.name(id)),
-    );
+  | TSigValue(id, d) => (id, d.val_loc, Field_value(Ident.name(id)))
+  | TSigType(id, d, _) => (id, d.type_loc, Field_type(Ident.name(id)))
+  | TSigTypeExt(id, d, _) => (id, d.ext_loc, Field_typext(Ident.name(id)))
+  | TSigModule(id, d, _) => (id, d.md_loc, Field_module(Ident.name(id)))
+  | TSigModType(id, d) => (id, d.mtd_loc, Field_modtype(Ident.name(id)));
 /*  | Sig_class(id, d, _) -> (id, d.cty_loc, Field_class(Ident.name id))*/
 /*  | Sig_class_type(id, d, _) -> (id, d.clty_loc, Field_classtype(Ident.name id))*/
 
 let is_runtime_component =
   fun
-  | [@implicit_arity] TSigValue(_, {val_kind: TValPrim(_)})
-  | [@implicit_arity] TSigType(_, _, _)
-  | [@implicit_arity] TSigModType(_, _) =>
+  | TSigValue(_, {val_kind: TValPrim(_)})
+  | TSigType(_, _, _)
+  | TSigModType(_, _) =>
     /*| Sig_class_type(_,_,_)*/
     false
-  | [@implicit_arity] TSigValue(_, _)
-  | [@implicit_arity] TSigTypeExt(_, _, _)
-  | [@implicit_arity] TSigModule(_, _, _) =>
+  | TSigValue(_, _)
+  | TSigTypeExt(_, _, _)
+  | TSigModule(_, _, _) =>
     /*| Sig_class(_, _,_)*/
     true;
 
@@ -320,13 +290,7 @@ let rec modtypes = (~loc, env, ~mark, cxt, subst, mty1, mty2) =>
   try(try_modtypes(~loc, env, ~mark, cxt, subst, mty1, mty2)) {
   | Dont_match =>
     raise(
-      Error([
-        (
-          cxt,
-          env,
-          [@implicit_arity] Module_types(mty1, Subst.modtype(subst, mty2)),
-        ),
-      ]),
+      Error([(cxt, env, Module_types(mty1, Subst.modtype(subst, mty2)))]),
     )
   | Error(reasons) /* as err*/ =>
     switch (mty1, mty2) {
@@ -335,11 +299,7 @@ let rec modtypes = (~loc, env, ~mark, cxt, subst, mty1, mty2) =>
     | _ =>
       raise(
         Error([
-          (
-            cxt,
-            env,
-            [@implicit_arity] Module_types(mty1, Subst.modtype(subst, mty2)),
-          ),
+          (cxt, env, Module_types(mty1, Subst.modtype(subst, mty2))),
           ...reasons,
         ]),
       )
@@ -457,7 +417,7 @@ and signatures = (~loc, env, ~mark, cxt, subst, sig1, sig2) => {
     List.fold_left(
       ((l, pos)) =>
         fun
-        | [@implicit_arity] TSigModule(id, _, _) => (
+        | TSigModule(id, _, _) => (
             [(id, pos, None /*Tcoerce_none*/), ...l],
             pos + 1,
           )
@@ -596,14 +556,7 @@ and signature_components = (~loc, old_env, ~mark, env, cxt, subst, paired) => {
 
   switch (paired) {
   | [] => []
-  | [
-      (
-        [@implicit_arity] TSigValue(id1, valdecl1),
-        [@implicit_arity] TSigValue(_id2, valdecl2),
-        pos,
-      ),
-      ...rem,
-    ] =>
+  | [(TSigValue(id1, valdecl1), TSigValue(_id2, valdecl2), pos), ...rem] =>
     /*let cc =
         value_descriptions ~loc env ~mark cxt subst id1 valdecl1 valdecl2
       in*/
@@ -611,14 +564,7 @@ and signature_components = (~loc, old_env, ~mark, env, cxt, subst, paired) => {
     | TValPrim(_) => comps_rec(rem)
     | _ => [(pos, None /*cc*/), ...comps_rec(rem)]
     }
-  | [
-      (
-        [@implicit_arity] TSigType(id1, tydecl1, _),
-        [@implicit_arity] TSigType(_id2, tydecl2, _),
-        _pos,
-      ),
-      ...rem,
-    ] =>
+  | [(TSigType(id1, tydecl1, _), TSigType(_id2, tydecl2, _), _pos), ...rem] =>
     type_declarations(
       ~loc,
       ~old_env,
@@ -631,35 +577,14 @@ and signature_components = (~loc, old_env, ~mark, env, cxt, subst, paired) => {
       tydecl2,
     );
     comps_rec(rem);
-  | [
-      (
-        [@implicit_arity] TSigTypeExt(id1, ext1, _),
-        [@implicit_arity] TSigTypeExt(_id2, ext2, _),
-        pos,
-      ),
-      ...rem,
-    ] =>
+  | [(TSigTypeExt(id1, ext1, _), TSigTypeExt(_id2, ext2, _), pos), ...rem] =>
     extension_constructors(~loc, env, ~mark, cxt, subst, id1, ext1, ext2);
     [(pos, None), ...comps_rec(rem)];
-  | [
-      (
-        [@implicit_arity] TSigModule(id1, mty1, _),
-        [@implicit_arity] TSigModule(_id2, mty2, _),
-        pos,
-      ),
-      ...rem,
-    ] =>
+  | [(TSigModule(id1, mty1, _), TSigModule(_id2, mty2, _), pos), ...rem] =>
     let cc =
       module_declarations(~loc, env, ~mark, cxt, subst, id1, mty1, mty2);
     [(pos, cc), ...comps_rec(rem)];
-  | [
-      (
-        [@implicit_arity] TSigModType(id1, info1),
-        [@implicit_arity] TSigModType(_id2, info2),
-        _pos,
-      ),
-      ...rem,
-    ] =>
+  | [(TSigModType(id1, info1), TSigModType(_id2, info2), _pos), ...rem] =>
     modtype_infos(~loc, env, ~mark, cxt, subst, id1, info1, info2);
     comps_rec(rem);
   /*| (Sig_class(id1, decl1, _), Sig_class(_id2, decl2, _), pos) :: rem ->
@@ -723,12 +648,7 @@ and modtype_infos = (~loc, env, ~mark, cxt, subst, id, info1, info2) => {
     }
   ) {
   | Error(reasons) =>
-    raise(
-      Error([
-        (cxt, env, [@implicit_arity] Modtype_infos(id, info1, info2)),
-        ...reasons,
-      ]),
-    )
+    raise(Error([(cxt, env, Modtype_infos(id, info1, info2)), ...reasons]))
   };
 }
 
@@ -809,11 +729,7 @@ let compunit =
   | Error(reasons) =>
     raise(
       Error([
-        (
-          [],
-          Env.empty,
-          [@implicit_arity] Interface_mismatch(impl_name, intf_name),
-        ),
+        ([], Env.empty, Interface_mismatch(impl_name, intf_name)),
         ...reasons,
       ]),
     )
@@ -866,7 +782,7 @@ let show_locs = (ppf, (loc1, loc2)) => {
 
 let include_err = ppf =>
   fun
-  | [@implicit_arity] Missing_field(id, loc, kind) => {
+  | Missing_field(id, loc, kind) => {
       fprintf(
         ppf,
         "The %s `%a' is required but not provided",
@@ -876,7 +792,7 @@ let include_err = ppf =>
       );
       show_loc("Expected declaration", ppf, loc);
     }
-  | [@implicit_arity] Value_descriptions(id, d1, d2) => {
+  | Value_descriptions(id, d1, d2) => {
       fprintf(
         ppf,
         "@[<hv 2>Values do not match:@ %a@;<1 -2>is not included in@ %a@]",
@@ -887,7 +803,7 @@ let include_err = ppf =>
       );
       show_locs(ppf, (d1.val_loc, d2.val_loc));
     }
-  | [@implicit_arity] Type_declarations(id, d1, d2, errs) =>
+  | Type_declarations(id, d1, d2, errs) =>
     fprintf(
       ppf,
       "@[<v>@[<hv>%s:@;<1 2>%a@ %s@;<1 2>%a@]%a%a@]",
@@ -906,7 +822,7 @@ let include_err = ppf =>
       ),
       errs,
     )
-  | [@implicit_arity] Extension_constructors(id, x1, x2) => {
+  | Extension_constructors(id, x1, x2) => {
       fprintf(
         ppf,
         "@[<hv 2>Extension declarations do not match:@ %a@;<1 -2>is not included in@ %a@]",
@@ -917,7 +833,7 @@ let include_err = ppf =>
       );
       show_locs(ppf, (x1.ext_loc, x2.ext_loc));
     }
-  | [@implicit_arity] Module_types(mty1, mty2) =>
+  | Module_types(mty1, mty2) =>
     fprintf(
       ppf,
       "@[<hv 2>Modules do not match:@ %a@;<1 -2>is not included in@ %a@]",
@@ -926,7 +842,7 @@ let include_err = ppf =>
       modtype,
       mty2,
     )
-  | [@implicit_arity] Modtype_infos(id, d1, d2) =>
+  | Modtype_infos(id, d1, d2) =>
     fprintf(
       ppf,
       "@[<hv 2>Module type declarations do not match:@ %a@;<1 -2>does not match@ %a@]",
@@ -937,7 +853,7 @@ let include_err = ppf =>
     )
   | Modtype_permutation =>
     fprintf(ppf, "Illegal permutation of structure fields")
-  | [@implicit_arity] Interface_mismatch(impl_name, intf_name) =>
+  | Interface_mismatch(impl_name, intf_name) =>
     fprintf(
       ppf,
       "@[The implementation %s@ does not match the interface %s:",
@@ -1003,7 +919,7 @@ let path_of_context =
         fun
         | [] => path
         | [Module(id), ...rem] =>
-          subm([@implicit_arity] PExternal(path, Ident.name(id), -1), rem)
+          subm(PExternal(path, Ident.name(id), -1), rem)
         | _ => assert(false)
       );
       subm(PIdent(id), rem);

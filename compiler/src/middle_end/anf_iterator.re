@@ -42,59 +42,57 @@ module MakeIter = (Iter: IterArgument) => {
     Iter.enter_comp_expression(c);
     switch (desc) {
     | CImmExpr(i) => iter_imm_expression(i)
-    | [@implicit_arity] CPrim1(_, arg) => iter_imm_expression(arg)
-    | [@implicit_arity] CPrim2(_, arg1, arg2) =>
+    | CPrim1(_, arg) => iter_imm_expression(arg)
+    | CPrim2(_, arg1, arg2) =>
       iter_imm_expression(arg1);
       iter_imm_expression(arg2);
-    | [@implicit_arity] CBoxAssign(lhs, rhs) =>
+    | CBoxAssign(lhs, rhs) =>
       iter_imm_expression(lhs);
       iter_imm_expression(rhs);
-    | [@implicit_arity] CAssign(lhs, rhs) =>
+    | CAssign(lhs, rhs) =>
       iter_imm_expression(lhs);
       iter_imm_expression(rhs);
     | CTuple(elts) => List.iter(iter_imm_expression, elts)
     | CArray(elts) => List.iter(iter_imm_expression, elts)
-    | [@implicit_arity] CArrayGet(arg1, arg2) =>
+    | CArrayGet(arg1, arg2) =>
       iter_imm_expression(arg1);
       iter_imm_expression(arg2);
-    | [@implicit_arity] CArraySet(arg1, arg2, arg3) =>
+    | CArraySet(arg1, arg2, arg3) =>
       iter_imm_expression(arg1);
       iter_imm_expression(arg2);
       iter_imm_expression(arg3);
-    | [@implicit_arity] CRecord(ttag, elts) =>
+    | CRecord(ttag, elts) =>
       iter_imm_expression(ttag);
       List.iter(((_, elt)) => iter_imm_expression(elt), elts);
-    | [@implicit_arity] CAdt(ttag, vtag, elts) =>
+    | CAdt(ttag, vtag, elts) =>
       iter_imm_expression(ttag);
       iter_imm_expression(vtag);
       List.iter(iter_imm_expression, elts);
-    | [@implicit_arity] CGetTupleItem(_, tup) => iter_imm_expression(tup)
-    | [@implicit_arity] CSetTupleItem(_, tup, value) =>
+    | CGetTupleItem(_, tup) => iter_imm_expression(tup)
+    | CSetTupleItem(_, tup, value) =>
       iter_imm_expression(tup);
       iter_imm_expression(value);
-    | [@implicit_arity] CGetAdtItem(_, adt)
+    | CGetAdtItem(_, adt)
     | CGetAdtTag(adt) => iter_imm_expression(adt)
-    | [@implicit_arity] CGetRecordItem(_, record) =>
-      iter_imm_expression(record)
-    | [@implicit_arity] CSetRecordItem(_, record, arg) =>
+    | CGetRecordItem(_, record) => iter_imm_expression(record)
+    | CSetRecordItem(_, record, arg) =>
       iter_imm_expression(record);
       iter_imm_expression(arg);
-    | [@implicit_arity] CIf(c, t, f) =>
+    | CIf(c, t, f) =>
       iter_imm_expression(c);
       iter_anf_expression(t);
       iter_anf_expression(f);
-    | [@implicit_arity] CWhile(c, body) =>
+    | CWhile(c, body) =>
       iter_anf_expression(c);
       iter_anf_expression(body);
-    | [@implicit_arity] CSwitch(c, branches) =>
+    | CSwitch(c, branches) =>
       iter_imm_expression(c);
       List.iter(((_, body)) => iter_anf_expression(body), branches);
-    | [@implicit_arity] CApp(f, args) =>
+    | CApp(f, args) =>
       iter_imm_expression(f);
       List.iter(iter_imm_expression, args);
-    | [@implicit_arity] CAppBuiltin(_, _, args) =>
-      List.iter(iter_imm_expression, args)
-    | [@implicit_arity] CLambda(idents, expr) => iter_anf_expression(expr)
+    | CAppBuiltin(_, _, args) => List.iter(iter_imm_expression, args)
+    | CLambda(idents, expr) => iter_anf_expression(expr)
     | CString(s) => ()
     | CNumber(i) => ()
     | CInt32(i) => ()
@@ -108,10 +106,10 @@ module MakeIter = (Iter: IterArgument) => {
   and iter_anf_expression = ({anf_desc: desc} as anf) => {
     Iter.enter_anf_expression(anf);
     switch (desc) {
-    | [@implicit_arity] AELet(_, _, bindings, body) =>
+    | AELet(_, _, bindings, body) =>
       List.iter(((ident, bind)) => iter_comp_expression(bind), bindings);
       iter_anf_expression(body);
-    | [@implicit_arity] AESeq(hd, tl) =>
+    | AESeq(hd, tl) =>
       iter_comp_expression(hd);
       iter_anf_expression(tl);
     | AEComp(c) => iter_comp_expression(c)

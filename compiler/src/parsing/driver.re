@@ -42,7 +42,7 @@ exception Error(Location.t, error);
 let () =
   Location.register_error_of_exn(
     fun
-    | [@implicit_arity] Error(loc, err) =>
+    | Error(loc, err) =>
       Some(Location.error_of_printer(loc, report_error, err))
     | _ => None,
   );
@@ -64,7 +64,7 @@ let parse = (~name=?, lexbuf): Parsetree.parsed_program => {
   let loc_end = lexbuf.lex_curr_p;
   let startpos = {loc_start, loc_end, loc_ghost: true};
   switch (Parser.parse_program(Lexer.token, lexbuf)) {
-  | [] => raise([@implicit_arity] Error(startpos, NoValidParse))
+  | [] => raise(Error(startpos, NoValidParse))
   | [(x, _)] => {...x, comments: Lexer.consume_comments()}
   | parses =>
     raise(

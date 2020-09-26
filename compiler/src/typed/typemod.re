@@ -60,17 +60,15 @@ open Typedtree;
 let extract_sig = (env, loc, mty) =>
   switch (Env.scrape_alias(env, mty)) {
   | TModSignature(sg) => sg
-  | TModAlias(path) =>
-    raise([@implicit_arity] Error(loc, env, Cannot_scrape_alias(path)))
-  | _ => raise([@implicit_arity] Error(loc, env, Signature_expected))
+  | TModAlias(path) => raise(Error(loc, env, Cannot_scrape_alias(path)))
+  | _ => raise(Error(loc, env, Signature_expected))
   };
 
 let extract_sig_open = (env, loc, mty) =>
   switch (Env.scrape_alias(env, mty)) {
   | TModSignature(sg) => sg
-  | TModAlias(path) =>
-    raise([@implicit_arity] Error(loc, env, Cannot_scrape_alias(path)))
-  | mty => raise([@implicit_arity] Error(loc, env, Structure_expected(mty)))
+  | TModAlias(path) => raise(Error(loc, env, Cannot_scrape_alias(path)))
+  | mty => raise(Error(loc, env, Structure_expected(mty)))
   };
 
 /* Compute the environment after opening a module */
@@ -211,10 +209,7 @@ module StringSet =
 
 let check = (cl, loc, set_ref, name) =>
   if (StringSet.mem(name, set_ref^)) {
-    raise(
-      [@implicit_arity]
-      Error(loc, Env.empty, [@implicit_arity] Repeated_name(cl, name)),
-    );
+    raise([@implicit_arity] Error(loc, Env.empty, Repeated_name(cl, name)));
   } else {
     set_ref := StringSet.add(name, set_ref^);
   };
@@ -241,12 +236,9 @@ let check_modtype = (names, loc, s) =>
 
 let check_sig_item = (names, loc) =>
   fun
-  | [@implicit_arity] TSigType(id, _, _) =>
-    check_type(names, loc, Ident.name(id))
-  | [@implicit_arity] TSigModule(id, _, _) =>
-    check_module(names, loc, Ident.name(id))
-  | [@implicit_arity] TSigModType(id, _) =>
-    check_modtype(names, loc, Ident.name(id))
+  | TSigType(id, _, _) => check_type(names, loc, Ident.name(id))
+  | TSigModule(id, _, _) => check_module(names, loc, Ident.name(id))
+  | TSigModType(id, _) => check_modtype(names, loc, Ident.name(id))
   | _ => ();
 
 /* Check that all core type schemes in a structure are closed */
@@ -265,22 +257,20 @@ let rec closed_modtype = env =>
 
 and closed_signature_item = env =>
   fun
-  | [@implicit_arity] TSigValue(_id, desc) =>
-    Ctype.closed_schema(env, desc.val_type)
-  | [@implicit_arity] TSigModule(_id, md, _) =>
-    closed_modtype(env, md.md_type)
+  | TSigValue(_id, desc) => Ctype.closed_schema(env, desc.val_type)
+  | TSigModule(_id, md, _) => closed_modtype(env, md.md_type)
   | _ => true;
 
 let check_nongen_scheme = (env, sig_item) =>
   switch (sig_item) {
-  | [@implicit_arity] TSigValue(_id, vd) =>
+  | TSigValue(_id, vd) =>
     if (!Ctype.closed_schema(env, vd.val_type)) {
       raise(
         [@implicit_arity]
         Error(vd.val_loc, env, Non_generalizable(vd.val_type)),
       );
     }
-  | [@implicit_arity] TSigModule(_id, md, _) =>
+  | TSigModule(_id, md, _) =>
     if (!closed_modtype(env, md.md_type)) {
       raise(
         [@implicit_arity]
@@ -306,10 +296,8 @@ and normalize_signature = env => List.iter(normalize_signature_item(env))
 
 and normalize_signature_item = env =>
   fun
-  | [@implicit_arity] TSigValue(_id, desc) =>
-    Ctype.normalize_type(env, desc.val_type)
-  | [@implicit_arity] TSigModule(_id, md, _) =>
-    normalize_modtype(env, md.md_type)
+  | TSigValue(_id, desc) => Ctype.normalize_type(env, desc.val_type)
+  | TSigModule(_id, md, _) => normalize_modtype(env, md.md_type)
   | _ => ();
 
 let enrich_type_decls = (anchor, decls, oldenv, newenv) =>
@@ -320,7 +308,7 @@ let enrich_type_decls = (anchor, decls, oldenv, newenv) =>
       (e, info) => {
         let id = info.data_id;
         let info' = {
-          let p = [@implicit_arity] PExternal(p, Ident.name(id), nopos);
+          let p = PExternal(p, Ident.name(id), nopos);
           let decl = info.data_type;
           switch (decl.type_manifest) {
           | Some(_) => decl
@@ -404,8 +392,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       };
     let signature =
       switch (e) {
-      | Exported =>
-        Some([@implicit_arity] TSigValue(desc.tvd_id, desc.tvd_val))
+      | Exported => Some(TSigValue(desc.tvd_id, desc.tvd_val))
       | Nonexported => None
       };
     let foreign = {
@@ -426,13 +413,12 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       };
     let signature =
       switch (e) {
-      | Exported =>
-        Some([@implicit_arity] TSigValue(desc.tvd_id, desc.tvd_val))
+      | Exported => Some(TSigValue(desc.tvd_id, desc.tvd_val))
       | Nonexported => None
       };
     let (defs, newenv) = Translprim.transl_prim(newenv, desc);
     let prim = {
-      ttop_desc: [@implicit_arity] TTopLet(e, Nonrecursive, Immutable, defs),
+      ttop_desc: TTopLet(e, Nonrecursive, Immutable, defs),
       ttop_loc: loc,
       ttop_env: newenv,
     };
@@ -471,8 +457,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
               e;
             };
           switch (e) {
-          | Exported =>
-            [@implicit_arity] TSigType(info.data_id, info.data_type, rs)
+          | Exported => TSigType(info.data_id, info.data_type, rs)
           | Nonexported =>
             [@implicit_arity]
             TSigType(
@@ -528,8 +513,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
         export_flag;
       };
     let stmt = {
-      ttop_desc:
-        [@implicit_arity] TTopLet(export_flag, rec_flag, mut_flag, defs),
+      ttop_desc: TTopLet(export_flag, rec_flag, mut_flag, defs),
       ttop_loc: loc,
       ttop_env: env,
     };
@@ -544,7 +528,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
   let process_exception = (env, export_flag, ext, loc) => {
     let (ext, newenv) = Typedecl.transl_exception(env, ext);
     let stmt = {
-      ttop_desc: [@implicit_arity] TTopException(export_flag, ext),
+      ttop_desc: TTopException(export_flag, ext),
       ttop_loc: loc,
       ttop_env: newenv,
     };
@@ -602,7 +586,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       | None => ()
       };
       let type_ = Env.find_type(type_id, env);
-      [@implicit_arity] TSigType(Path.head(type_id), type_, rs);
+      TSigType(Path.head(type_id), type_, rs);
     };
     if (List.length(exports) > 1) {
       [
@@ -650,7 +634,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
         | PTopExport(ex) =>
           let (new_env, sigs, stmts) = process_export(env, ex, loc);
           (new_env, List.rev(sigs) @ signatures, stmts @ statements);
-        | [@implicit_arity] PTopForeign(e, d) =>
+        | PTopForeign(e, d) =>
           let (new_env, signature, statement) =
             process_foreign(env, e, d, loc);
           let signatures =
@@ -659,7 +643,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
             | None => signatures
             };
           (new_env, signatures, [statement, ...statements]);
-        | [@implicit_arity] PTopPrimitive(e, d) =>
+        | PTopPrimitive(e, d) =>
           let (new_env, signature, statement) =
             process_primitive(env, e, d, loc);
           let signatures =
@@ -668,20 +652,20 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
             | None => signatures
             };
           (new_env, signatures, [statement, ...statements]);
-        | [@implicit_arity] PTopData(e, d) =>
+        | PTopData(e, d) =>
           let (new_env, sigs, statement) = process_datas(env, e, [d], loc);
           (
             new_env,
             List.rev(sigs) @ signatures,
             [statement, ...statements],
           );
-        | [@implicit_arity] PTopLet(e, r, m, vb) =>
+        | PTopLet(e, r, m, vb) =>
           let (new_env, sigs, stmts) = process_let(env, e, r, m, vb, loc);
           (new_env, List.rev(sigs) @ signatures, stmts @ statements);
         | PTopExpr(e) =>
           let statement = process_expr(env, e, loc);
           (env, signatures, [statement, ...statements]);
-        | [@implicit_arity] PTopException(e, d) =>
+        | PTopException(e, d) =>
           let (new_env, signature, statement) =
             process_exception(env, e, d.ptyexn_constructor, loc);
           let signatures =
@@ -717,7 +701,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       | TTyUniVar(_) => expr
       | TTyLink(link) => {...expr, desc: TTyLink(resolve_type_expr(link))}
       | TTySubst(sub) => {...expr, desc: TTySubst(resolve_type_expr(sub))}
-      | [@implicit_arity] TTyArrow(args, result, c) => {
+      | TTyArrow(args, result, c) => {
           ...expr,
           desc:
             [@implicit_arity]
@@ -741,7 +725,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
               ),
             ),
         }
-      | [@implicit_arity] TTyPoly(one, all) => {
+      | TTyPoly(one, all) => {
           ...expr,
           desc:
             [@implicit_arity]
@@ -750,7 +734,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
               List.map(resolve_type_expr, all),
             ),
         }
-      | [@implicit_arity] TTyConstr(id, args, a) =>
+      | TTyConstr(id, args, a) =>
         let name =
           snd @@
           Option.value(~default=(id, id)) @@
@@ -798,14 +782,14 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       | _ => decl
       };
     switch (signature) {
-    | [@implicit_arity] TSigType(id, decl, rs) =>
+    | TSigType(id, decl, rs) =>
       switch (get_alias(type_export_aliases^, PIdent(id))) {
-      | None => [@implicit_arity] TSigType(id, resolve_type_decl(decl), rs)
+      | None => TSigType(id, resolve_type_decl(decl), rs)
       | Some((name, alias)) =>
         [@implicit_arity]
         TSigType(Path.head(alias), resolve_type_decl(decl), rs)
       }
-    | [@implicit_arity] TSigValue(id, {val_type, val_kind} as vd) =>
+    | TSigValue(id, {val_type, val_kind} as vd) =>
       let val_kind =
         switch (val_kind) {
         | TValConstructor({cstr_res, cstr_existentials, cstr_args} as cd) =>
@@ -951,7 +935,7 @@ let report_error = ppf =>
       identifier,
       lid,
     )
-  | [@implicit_arity] With_mismatch(lid, explanation) =>
+  | With_mismatch(lid, explanation) =>
     fprintf(
       ppf,
       "@[<v>@[In this `with' constraint, the new definition of %a@ does not match its original definition@ in the constrained signature:@]@ %a@]",
@@ -971,7 +955,7 @@ let report_error = ppf =>
       Includemod.report_error,
       explanation,
     )
-  | [@implicit_arity] With_changes_module_alias(lid, id, path) =>
+  | With_changes_module_alias(lid, id, path) =>
     fprintf(
       ppf,
       "@[<v>@[This `with' constraint on %a changes %s, which is aliased @ in the constrained signature (as %s)@].@]",
@@ -985,7 +969,7 @@ let report_error = ppf =>
       ppf,
       "@[<v>Destructive substitutions are not supported for constrained @ types (other than when replacing a type constructor with @ a type constructor with the same arguments).@]",
     )
-  | [@implicit_arity] Repeated_name(kind, name) =>
+  | Repeated_name(kind, name) =>
     fprintf(
       ppf,
       "@[Multiple definition of the %s name %s.@ Names must be unique in a given structure or signature.@]",
@@ -1040,7 +1024,7 @@ let report_error = ppf =>
       type_expr,
       ty,
     )
-  | [@implicit_arity] Scoping_pack(lid, ty) => {
+  | Scoping_pack(lid, ty) => {
       fprintf(
         ppf,
         "The type %a in this module cannot be exported.@ ",
@@ -1067,7 +1051,7 @@ let report_error = (env, ppf, err) =>
 let () =
   Location.register_error_of_exn(
     fun
-    | [@implicit_arity] Error(loc, env, err) =>
+    | Error(loc, env, err) =>
       Some(Location.error_of_printer(loc, report_error(env), err))
     | Error_forward(err) => Some(err)
     | _ => None,

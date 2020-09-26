@@ -49,15 +49,13 @@ module BranchArg: Anf_mapper.MapArgument = {
     switch (anf_desc) {
     | AEComp(comp) => {
         ...a,
-        anf_desc:
-          [@implicit_arity] AELet(global, Nonrecursive, [(id, comp)], cont),
+        anf_desc: AELet(global, Nonrecursive, [(id, comp)], cont),
       }
-    | [@implicit_arity] AESeq(comp, body) => {
+    | AESeq(comp, body) => {
         ...a,
-        anf_desc:
-          [@implicit_arity] AESeq(comp, relinearize(id, global, body, cont)),
+        anf_desc: AESeq(comp, relinearize(id, global, body, cont)),
       }
-    | [@implicit_arity] AELet(_global, _recursive, binds, body) => {
+    | AELet(_global, _recursive, binds, body) => {
         ...a,
         anf_desc:
           [@implicit_arity]
@@ -82,7 +80,7 @@ module BranchArg: Anf_mapper.MapArgument = {
           [@implicit_arity]
           CIf({imm_desc: ImmConst(Const_bool(false))}, _, branch),
       }) => branch
-    | [@implicit_arity] AELet(global, recursive, binds, body)
+    | AELet(global, recursive, binds, body)
         when has_simple_optimizable_conditional(binds) =>
       let binds =
         List.map(
@@ -99,11 +97,8 @@ module BranchArg: Anf_mapper.MapArgument = {
             },
           binds,
         );
-      {
-        ...a,
-        anf_desc: [@implicit_arity] AELet(global, recursive, binds, body),
-      };
-    | [@implicit_arity] AELet(global, Nonrecursive, binds, body)
+      {...a, anf_desc: AELet(global, recursive, binds, body)};
+    | AELet(global, Nonrecursive, binds, body)
         when has_optimizable_conditional(binds) =>
       /* We can't relinearize recursive bindings since they depend on each other */
       List.fold_right(

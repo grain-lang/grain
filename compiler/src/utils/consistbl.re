@@ -43,7 +43,7 @@ module Make =
     try({
       let (old_crc, old_source) = Module_name.Tbl.find(tbl, name);
       if (crc != old_crc) {
-        raise([@implicit_arity] Inconsistency(name, source, old_source));
+        raise(Inconsistency(name, source, old_source));
       };
     }) {
     | Not_found => Module_name.Tbl.add(tbl, name, (crc, source))
@@ -53,7 +53,7 @@ module Make =
     try({
       let (old_crc, old_source) = Module_name.Tbl.find(tbl, name);
       if (crc != old_crc) {
-        raise([@implicit_arity] Inconsistency(name, source, old_source));
+        raise(Inconsistency(name, source, old_source));
       };
     }) {
     | Not_found => raise(Not_available(name))

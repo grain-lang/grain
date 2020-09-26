@@ -30,7 +30,7 @@ let specs: ref(list(config_spec)) = (ref([]): ref(list(config_spec)));
 let internal_opt: 'a. 'a => ref('a) =
   v => {
     let cur = ref(v);
-    opts := [[@implicit_arity] Opt(cur, v), ...opts^];
+    opts := [Opt(cur, v), ...opts^];
     cur;
   };
 
@@ -127,11 +127,7 @@ let flag:
  =
   (~names, ~default as v) => {
     let cur = internal_opt(v);
-    specs :=
-      [
-        [@implicit_arity] Spec(Cmdliner.Arg.(vflag(v, names)), cur),
-        ...specs^,
-      ];
+    specs := [Spec(Cmdliner.Arg.(vflag(v, names)), cur), ...specs^];
     cur;
   };
 
@@ -210,21 +206,21 @@ let toggle_flag:
 let save_config = () => {
   let single_save =
     fun
-    | [@implicit_arity] Opt(cur, _) => [@implicit_arity] SavedOpt(cur, cur^);
+    | Opt(cur, _) => SavedOpt(cur, cur^);
   List.map(single_save, opts^);
 };
 
 let restore_config = {
   let single_restore =
     fun
-    | [@implicit_arity] SavedOpt(ptr, value) => ptr := value;
+    | SavedOpt(ptr, value) => ptr := value;
   List.iter(single_restore);
 };
 
 let reset_config = () => {
   let single_reset =
     fun
-    | [@implicit_arity] Opt(cur, default) => cur := default;
+    | Opt(cur, default) => cur := default;
   List.iter(single_reset, opts^);
 };
 
@@ -263,7 +259,7 @@ let with_cli_options = (term: 'a): Cmdliner.Term.t('a) => {
   open Term;
   let process_option = acc =>
     fun
-    | [@implicit_arity] Spec(arg, box) =>
+    | Spec(arg, box) =>
       const((a, b) => {
         box := a;
         b;

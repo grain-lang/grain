@@ -93,12 +93,12 @@ let rec narrow_unbound_lid_error: 'a. (_, _, _, _) => 'a =
         narrow_unbound_lid_error(env, loc, mlid, lid => Unbound_module(lid))
       };
 
-    let error = e => raise([@implicit_arity] Error(loc, env, e));
+    let error = e => raise(Error(loc, env, e));
     switch (lid) {
     | Identifier.IdentName(_) => ()
-    | [@implicit_arity] Identifier.IdentExternal(mlid, id) =>
+    | Identifier.IdentExternal(mlid, id) =>
       check_module(mlid);
-      error([@implicit_arity] Unbound_value_in_module(mlid, id));
+      error(Unbound_value_in_module(mlid, id));
     /* let md = Env.find_module (Env.lookup_module ~load:true mlid None env) None env in
        begin match Env.scrape_alias env md.md_type with
        | TModIdent _ ->
@@ -349,18 +349,18 @@ and transl_type_aux = (env, policy, styp) => {
     };
 
     ctyp(TTyVar(name), ty);
-  | [@implicit_arity] PTyArrow(st1, st2) =>
+  | PTyArrow(st1, st2) =>
     let cty1 = List.map(transl_type(env, policy), st1);
     let cty2 = transl_type(env, policy, st2);
     let ty1 = List.map(x => x.ctyp_type, cty1);
-    let ty = newty([@implicit_arity] TTyArrow(ty1, cty2.ctyp_type, TComOk));
-    ctyp([@implicit_arity] TTyArrow(cty1, cty2), ty);
+    let ty = newty(TTyArrow(ty1, cty2.ctyp_type, TComOk));
+    ctyp(TTyArrow(cty1, cty2), ty);
   | PTyTuple(stl) =>
     assert(List.length(stl) >= 2);
     let ctys = List.map(transl_type(env, policy), stl);
     let ty = newty(TTyTuple(List.map(ctyp => ctyp.ctyp_type, ctys)));
     ctyp(TTyTuple(ctys), ty);
-  | [@implicit_arity] PTyConstr(lid, stl) =>
+  | PTyConstr(lid, stl) =>
     let (path, decl) = find_type(env, lid.loc, lid.txt);
     let stl =
       switch (stl) {
@@ -408,12 +408,10 @@ and transl_type_aux = (env, policy, styp) => {
     let constr = newconstr(path, List.map(ctyp => ctyp.ctyp_type, args));
     try(Ctype.enforce_constraints(env, constr)) {
     | Unify(trace) =>
-      raise(
-        [@implicit_arity] Error(styp.ptyp_loc, env, Type_mismatch(trace)),
-      )
+      raise(Error(styp.ptyp_loc, env, Type_mismatch(trace)))
     };
-    ctyp([@implicit_arity] TTyConstr(path, lid, args), constr);
-  | [@implicit_arity] PTyPoly(vars, st) =>
+    ctyp(TTyConstr(path, lid, args), constr);
+  | PTyPoly(vars, st) =>
     let vars = List.map(v => v.txt, vars);
     begin_def();
     let new_univars = List.map(name => (name, newvar(~name, ())), vars);
@@ -436,11 +434,7 @@ and transl_type_aux = (env, policy, styp) => {
             | _ =>
               raise(
                 [@implicit_arity]
-                Error(
-                  styp.ptyp_loc,
-                  env,
-                  [@implicit_arity] Cannot_quantify(name, v),
-                ),
+                Error(styp.ptyp_loc, env, Cannot_quantify(name, v)),
               )
             };
           } else {
@@ -451,10 +445,9 @@ and transl_type_aux = (env, policy, styp) => {
         new_univars,
       );
 
-    let ty' =
-      Btype.newgenty([@implicit_arity] TTyPoly(ty, List.rev(ty_list)));
+    let ty' = Btype.newgenty(TTyPoly(ty, List.rev(ty_list)));
     unify_var(env, newvar(), ty');
-    ctyp([@implicit_arity] TTyPoly(vars, cty), ty');
+    ctyp(TTyPoly(vars, cty), ty');
   };
 };
 
@@ -500,8 +493,7 @@ let globalize_used_variables = (env, fixed) => {
       fun
       | (loc, t1, t2) =>
         try(unify(env, t1, t2)) {
-        | Unify(trace) =>
-          raise([@implicit_arity] Error(loc, env, Type_mismatch(trace)))
+        | Unify(trace) => raise(Error(loc, env, Type_mismatch(trace)))
         },
       r^,
     );
@@ -553,11 +545,7 @@ let transl_simple_type_univars = (env, styp) => {
   make_fixed_univars(typ.ctyp_type);
   {
     ...typ,
-    ctyp_type:
-      instance(
-        env,
-        Btype.newgenty([@implicit_arity] TTyPoly(typ.ctyp_type, univs)),
-      ),
+    ctyp_type: instance(env, Btype.newgenty(TTyPoly(typ.ctyp_type, univs))),
   };
 };
 
@@ -591,7 +579,7 @@ let spellcheck = (ppf, fold, env, lid) => {
   switch (lid) {
   | Identifier.IdentName(s) =>
     Misc.did_you_mean(ppf, () => choices(~path=None, s))
-  | [@implicit_arity] Identifier.IdentExternal(r, s) =>
+  | Identifier.IdentExternal(r, s) =>
     Misc.did_you_mean(ppf, () => choices(~path=Some(r), s))
   };
 };
@@ -633,7 +621,7 @@ let report_error = (env, ppf) =>
       path,
       p,
     )
-  | [@implicit_arity] Type_arity_mismatch(lid, expected, provided) =>
+  | Type_arity_mismatch(lid, expected, provided) =>
     fprintf(
       ppf,
       "@[The type constructor %a@ expects %i argument(s),@ but is here applied to %i argument(s)@]",
@@ -673,7 +661,7 @@ let report_error = (env, ppf) =>
     fprintf(ppf, "The present constructor %s has a conjunctive type", l)
   | Present_has_no_type(l) =>
     fprintf(ppf, "The present constructor %s has no type", l)
-  | [@implicit_arity] Constructor_mismatch(ty, ty') =>
+  | Constructor_mismatch(ty, ty') =>
     wrap_printing_env(
       ~error=true,
       env,
@@ -706,7 +694,7 @@ let report_error = (env, ppf) =>
       | _ => ()
       };
     }
-  | [@implicit_arity] Variant_tags(lab1, lab2) =>
+  | Variant_tags(lab1, lab2) =>
     fprintf(
       ppf,
       "@[Variant tags `%s@ and `%s have the same hash value.@ %s@]",
@@ -716,7 +704,7 @@ let report_error = (env, ppf) =>
     )
   | Invalid_variable_name(name) =>
     fprintf(ppf, "The type variable name %s is not allowed in programs", name)
-  | [@implicit_arity] Cannot_quantify(name, v) =>
+  | Cannot_quantify(name, v) =>
     fprintf(
       ppf,
       "@[<hov>The universal type variable '%s cannot be generalized:@ %s.@]",
@@ -731,7 +719,7 @@ let report_error = (env, ppf) =>
     )
   | Multiple_constraints_on_type(s) =>
     fprintf(ppf, "Multiple constraints for type %a", identifier, s)
-  | [@implicit_arity] Method_mismatch(l, ty, ty') =>
+  | Method_mismatch(l, ty, ty') =>
     wrap_printing_env(
       ~error=true,
       env,
@@ -752,7 +740,7 @@ let report_error = (env, ppf) =>
       fprintf(ppf, "Unbound value %a", identifier, lid);
       spellcheck(ppf, fold_values, env, lid);
     }
-  | [@implicit_arity] Unbound_value_in_module(mlid, lid) =>
+  | Unbound_value_in_module(mlid, lid) =>
     fprintf(ppf, "Unbound value %s in module %a", lid, identifier, mlid)
   | Unbound_module(lid) => {
       fprintf(ppf, "Unbound module %a", identifier, lid);
@@ -770,7 +758,7 @@ let report_error = (env, ppf) =>
       fprintf(ppf, "Unbound module type %a", identifier, lid);
       spellcheck(ppf, fold_modtypes, env, lid);
     }
-  | [@implicit_arity] Ill_typed_functor_application(flid, mlid, details) =>
+  | Ill_typed_functor_application(flid, mlid, details) =>
     switch (details) {
     | None =>
       fprintf(
@@ -795,7 +783,7 @@ let report_error = (env, ppf) =>
     }
   | Illegal_reference_to_recursive_module =>
     fprintf(ppf, "Illegal recursive module reference")
-  | [@implicit_arity] Wrong_use_of_module(lid, details) =>
+  | Wrong_use_of_module(lid, details) =>
     switch (details) {
     | `Structure_used_as_functor =>
       fprintf(
@@ -833,7 +821,7 @@ let report_error = (env, ppf) =>
         lid,
       )
     }
-  | [@implicit_arity] Cannot_scrape_alias(lid, p) =>
+  | Cannot_scrape_alias(lid, p) =>
     fprintf(
       ppf,
       "The module %a is an alias for module %a, which is missing",
@@ -865,7 +853,7 @@ let report_error = (env, ppf) =>
 let () =
   Location.register_error_of_exn(
     fun
-    | [@implicit_arity] Error(loc, env, err) =>
+    | Error(loc, env, err) =>
       Some(Location.error_of_printer(loc, report_error(env), err))
     | Error_forward(err) => Some(err)
     | _ => None,

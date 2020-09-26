@@ -38,7 +38,7 @@ let omega = make_pat(TPatAny, Ctype.none, Env.empty);
 
 let extra_pat =
   make_pat(
-    [@implicit_arity] TPatVar(Ident.create("+"), mknoloc("+")),
+    TPatVar(Ident.create("+"), mknoloc("+")),
     Ctype.none,
     Env.empty,
   );
@@ -126,10 +126,7 @@ let all_coherent = column => {
     switch (hp1.pat_desc, hp2.pat_desc) {
     | (TPatVar(_) | TPatAlias(_) | TPatOr(_), _)
     | (_, TPatVar(_) | TPatAlias(_) | TPatOr(_)) => assert(false)
-    | (
-        [@implicit_arity] TPatConstruct(_, c, _),
-        [@implicit_arity] TPatConstruct(_, c', _),
-      ) =>
+    | (TPatConstruct(_, c, _), TPatConstruct(_, c', _)) =>
       c.cstr_consts == c'.cstr_consts && c.cstr_nonconsts == c'.cstr_nonconsts
     | (TPatConstant(c1), TPatConstant(c2)) =>
       switch (c1, c2) {
@@ -272,17 +269,12 @@ module Compat =
     | (TPatAny | TPatVar(_), _)
     | (_, TPatAny | TPatVar(_)) => true
     /* Structural induction */
-    | ([@implicit_arity] TPatAlias(p, _, _), _) => compat(p, q)
-    | (_, [@implicit_arity] TPatAlias(q, _, _)) => compat(p, q)
-    | ([@implicit_arity] TPatOr(p1, p2), _) =>
-      compat(p1, q) || compat(p2, q)
-    | (_, [@implicit_arity] TPatOr(q1, q2)) =>
-      compat(p, q1) || compat(p, q2)
+    | (TPatAlias(p, _, _), _) => compat(p, q)
+    | (_, TPatAlias(q, _, _)) => compat(p, q)
+    | (TPatOr(p1, p2), _) => compat(p1, q) || compat(p2, q)
+    | (_, TPatOr(q1, q2)) => compat(p, q1) || compat(p, q2)
     /* Constructors, with special case for extension */
-    | (
-        [@implicit_arity] TPatConstruct(_, c1, ps1),
-        [@implicit_arity] TPatConstruct(_, c2, ps2),
-      ) =>
+    | (TPatConstruct(_, c1, ps1), TPatConstruct(_, c2, ps2)) =>
       Constr.equal(c1, c2) && compats(ps1, ps2)
     /* More standard stuff */
     | (TPatConstant(c1), TPatConstant(c2)) => const_compare(c1, c2) == 0
@@ -331,7 +323,7 @@ let clean_copy = ty =>
 let get_constructor_type_path = (ty, tenv) => {
   let ty = Ctype.repr(Ctype.expand_head(tenv, clean_copy(ty)));
   switch (ty.desc) {
-  | [@implicit_arity] TTyConstr(path, _, _) => path
+  | TTyConstr(path, _, _) => path
   | _ => assert(false)
   };
 };
@@ -343,10 +335,7 @@ let get_constructor_type_path = (ty, tenv) => {
 /* Check top matching */
 let simple_match = (p1, p2) =>
   switch (p1.pat_desc, p2.pat_desc) {
-  | (
-      [@implicit_arity] TPatConstruct(_, c1, _),
-      [@implicit_arity] TPatConstruct(_, c2, _),
-    ) =>
+  | (TPatConstruct(_, c1, _), TPatConstruct(_, c2, _)) =>
     Types.equal_tag(c1.cstr_tag, c2.cstr_tag)
   | (TPatConstant(c1), TPatConstant(c2)) => const_compare(c1, c2) == 0
   | (TPatTuple(p1s), TPatTuple(p2s)) => List.length(p1s) == List.length(p2s)
@@ -357,13 +346,13 @@ let simple_match = (p1, p2) =>
 /* Build argument list when p2 >= p1, where p1 is a simple pattern */
 let rec simple_match_args = (p1, p2) =>
   switch (p2.pat_desc) {
-  | [@implicit_arity] TPatAlias(p2, _, _) => simple_match_args(p1, p2)
-  | [@implicit_arity] TPatConstruct(_, _, args) => args
+  | TPatAlias(p2, _, _) => simple_match_args(p1, p2)
+  | TPatConstruct(_, _, args) => args
   | TPatTuple(args) => args
   | TPatAny
   | TPatVar(_) =>
     switch (p1.pat_desc) {
-    | [@implicit_arity] TPatConstruct(_, _, args) => omega_list(args)
+    | TPatConstruct(_, _, args) => omega_list(args)
     | TPatTuple(args) => omega_list(args)
     | _ => []
     }
@@ -380,22 +369,18 @@ let rec normalize_pat = q =>
   | TPatAny
   | TPatConstant(_) => q
   | TPatVar(_) => make_pat(TPatAny, q.pat_type, q.pat_env)
-  | [@implicit_arity] TPatAlias(p, _, _) => normalize_pat(p)
+  | TPatAlias(p, _, _) => normalize_pat(p)
   | TPatTuple(args) =>
     make_pat(TPatTuple(omega_list(args)), q.pat_type, q.pat_env)
-  | [@implicit_arity] TPatRecord(fields, c) =>
+  | TPatRecord(fields, c) =>
     make_pat(
       [@implicit_arity]
       TPatRecord(List.map(((id, ld, pat)) => (id, ld, omega), fields), c),
       q.pat_type,
       q.pat_env,
     )
-  | [@implicit_arity] TPatConstruct(lid, c, args) =>
-    make_pat(
-      [@implicit_arity] TPatConstruct(lid, c, omega_list(args)),
-      q.pat_type,
-      q.pat_env,
-    )
+  | TPatConstruct(lid, c, args) =>
+    make_pat(TPatConstruct(lid, c, omega_list(args)), q.pat_type, q.pat_env)
   | TPatOr(_) => fatal_error("Parmatch.normalize_pat")
   };
 
@@ -466,16 +451,9 @@ let do_set_args = (erase_mutable, q, r) =>
   | {pat_desc: TPatTuple(omegas)} =>
     let (args, rest) = read_args(omegas, r);
     [make_pat(TPatTuple(args), q.pat_type, q.pat_env), ...rest];
-  | {pat_desc: [@implicit_arity] TPatConstruct(lid, c, omegas)} =>
+  | {pat_desc: TPatConstruct(lid, c, omegas)} =>
     let (args, rest) = read_args(omegas, r);
-    [
-      make_pat(
-        [@implicit_arity] TPatConstruct(lid, c, args),
-        q.pat_type,
-        q.pat_env,
-      ),
-      ...rest,
-    ];
+    [make_pat(TPatConstruct(lid, c, args), q.pat_type, q.pat_env), ...rest];
   | {pat_desc: TPatConstant(_) | TPatAny} => [q, ...r] /* case any is used in matching.ml */
   | _ => fatal_error("Parmatch.set_args")
   };
@@ -509,9 +487,9 @@ and set_args_erase_mutable = (q, r) => do_set_args(true, q, r);
 let simplify_head_pat = (~add_column, p, ps, k) => {
   let rec simplify_head_pat = (p, ps, k) =>
     switch (p.pat_desc) {
-    | [@implicit_arity] TPatAlias(p, _, _) => simplify_head_pat(p, ps, k)
-    | [@implicit_arity] TPatVar(_, _) => add_column(omega, ps, k)
-    | [@implicit_arity] TPatOr(p1, p2) =>
+    | TPatAlias(p, _, _) => simplify_head_pat(p, ps, k)
+    | TPatVar(_, _) => add_column(omega, ps, k)
+    | TPatOr(p1, p2) =>
       simplify_head_pat(p1, ps, simplify_head_pat(p2, ps, k))
     | _ => add_column(p, ps, k)
     };
@@ -683,7 +661,7 @@ let full_match = (closing, env) =>
     /* discriminating patterns are simplified */
     assert(false)
   | [] => false
-  | [({pat_desc: [@implicit_arity] TPatConstruct(_, c, _)}, _), ..._] =>
+  | [({pat_desc: TPatConstruct(_, c, _)}, _), ..._] =>
     if (c.cstr_consts < 0) {
       false;
     } else {
@@ -763,8 +741,7 @@ let pat_of_constr = (ex_pat, cstr) => {
     ),
 };
 
-let orify = (x, y) =>
-  make_pat([@implicit_arity] TPatOr(x, y), x.pat_type, x.pat_env);
+let orify = (x, y) => make_pat(TPatOr(x, y), x.pat_type, x.pat_env);
 
 let rec orify_many =
   fun
@@ -783,7 +760,7 @@ let pat_of_constrs = (ex_pat, cstrs) =>
 let pats_of_type = (~always=false, env, ty) => {
   let ty' = Ctype.expand_head(env, ty);
   switch (ty'.desc) {
-  | [@implicit_arity] TTyConstr(path, _, _) =>
+  | TTyConstr(path, _, _) =>
     try(
       switch (Env.find_type(path, env).type_kind) {
       | TDataVariant(cl)
@@ -807,7 +784,7 @@ let pats_of_type = (~always=false, env, ty) => {
 
 let rec get_variant_constructors = (env, ty) =>
   switch (Ctype.repr(ty).desc) {
-  | [@implicit_arity] TTyConstr(path, _, _) =>
+  | TTyConstr(path, _, _) =>
     try(
       switch (Env.find_type(path, env)) {
       | {type_kind: TDataVariant(_)} => Env.find_type_descrs(path, env)
@@ -828,7 +805,7 @@ let rec get_variant_constructors = (env, ty) =>
 let complete_constrs = (p, all_tags) => {
   let c =
     switch (p.pat_desc) {
-    | [@implicit_arity] TPatConstruct(_, c, _) => c
+    | TPatConstruct(_, c, _) => c
     | _ => assert(false)
     };
   let tags_seen = complete_tags(c.cstr_consts, c.cstr_nonconsts, all_tags);
@@ -849,7 +826,7 @@ let build_other_constrs = (env, p) =>
     TPatConstruct(_, {cstr_tag: CstrConstant(_) | CstrBlock(_)}, _) =>
     let get_tag = (
       fun
-      | {pat_desc: [@implicit_arity] TPatConstruct(_, c, _)} => c.cstr_tag
+      | {pat_desc: TPatConstruct(_, c, _)} => c.cstr_tag
       | _ => fatal_error("Parmatch.get_tag")
     );
     let all_tags = List.map(((p, _)) => get_tag(p), env);
@@ -968,11 +945,11 @@ let rec has_instance = p =>
   | TPatAny
   | TPatVar(_)
   | TPatConstant(_) => true
-  | [@implicit_arity] TPatAlias(p, _, _) => has_instance(p)
-  | [@implicit_arity] TPatOr(p1, p2) => has_instance(p1) || has_instance(p2)
-  | [@implicit_arity] TPatConstruct(_, _, ps)
+  | TPatAlias(p, _, _) => has_instance(p)
+  | TPatOr(p1, p2) => has_instance(p1) || has_instance(p2)
+  | TPatConstruct(_, _, ps)
   | TPatTuple(ps) => has_instances(ps)
-  | [@implicit_arity] TPatRecord(fields, _) =>
+  | TPatRecord(fields, _) =>
     let ps = List.map(((_, _, p)) => p, fields);
     has_instances(ps);
   }
@@ -1011,9 +988,9 @@ let rec satisfiable = (pss, qs) =>
   | _ =>
     switch (qs) {
     | [] => false
-    | [{pat_desc: [@implicit_arity] TPatOr(q1, q2)}, ...qs] =>
+    | [{pat_desc: TPatOr(q1, q2)}, ...qs] =>
       satisfiable(pss, [q1, ...qs]) || satisfiable(pss, [q2, ...qs])
-    | [{pat_desc: [@implicit_arity] TPatAlias(q, _, _)}, ...qs] =>
+    | [{pat_desc: TPatAlias(q, _, _)}, ...qs] =>
       satisfiable(pss, [q, ...qs])
     | [{pat_desc: TPatAny | TPatVar(_)}, ...qs] =>
       let pss = simplify_first_col(pss);
@@ -1069,10 +1046,10 @@ let rec list_satisfying_vectors = (pss, qs) =>
   | _ =>
     switch (qs) {
     | [] => []
-    | [{pat_desc: [@implicit_arity] TPatOr(q1, q2)}, ...qs] =>
+    | [{pat_desc: TPatOr(q1, q2)}, ...qs] =>
       list_satisfying_vectors(pss, [q1, ...qs])
       @ list_satisfying_vectors(pss, [q2, ...qs])
-    | [{pat_desc: [@implicit_arity] TPatAlias(q, _, _)}, ...qs] =>
+    | [{pat_desc: TPatAlias(q, _, _)}, ...qs] =>
       list_satisfying_vectors(pss, [q, ...qs])
     | [{pat_desc: TPatAny | TPatVar(_)}, ...qs] =>
       let pss = simplify_first_col(pss);
@@ -1155,7 +1132,7 @@ let rec do_match = (pss, qs) =>
     }
   | [q, ...qs] =>
     switch (q) {
-    | {pat_desc: [@implicit_arity] TPatOr(q1, q2)} =>
+    | {pat_desc: TPatOr(q1, q2)} =>
       do_match(pss, [q1, ...qs]) || do_match(pss, [q2, ...qs])
     | {pat_desc: TPatAny} =>
       let rec remove_first_column = (
@@ -1374,7 +1351,7 @@ let make_rows = pss => List.map(make_row, pss);
 /* Useful to detect and expand  or pats inside as pats */
 let rec unalias = p =>
   switch (p.pat_desc) {
-  | [@implicit_arity] TPatAlias(p, _, _) => unalias(p)
+  | TPatAlias(p, _, _) => unalias(p)
   | _ => p
   };
 
@@ -1398,8 +1375,8 @@ let is_var_column = rs =>
 /* Standard or-args for left-to-right matching */
 let rec or_args = p =>
   switch (p.pat_desc) {
-  | [@implicit_arity] TPatOr(p1, p2) => (p1, p2)
-  | [@implicit_arity] TPatAlias(p, _, _) => or_args(p)
+  | TPatOr(p1, p2) => (p1, p2)
+  | TPatAlias(p, _, _) => or_args(p)
   | _ => assert(false)
   };
 
@@ -1547,7 +1524,7 @@ let rec every_satisfiables = (pss, qs) =>
           push_no_or(qs),
         );
       }
-    | [@implicit_arity] TPatOr(q1, q2) =>
+    | TPatOr(q1, q2) =>
       if (q1.pat_loc.Location.loc_ghost && q2.pat_loc.Location.loc_ghost) {
         /* syntactically generated or-pats should not be expanded */
         every_satisfiables(
@@ -1627,13 +1604,10 @@ and every_both = (pss, qs, q1, q2) => {
 let rec le_pat = (p, q) =>
   switch (p.pat_desc, q.pat_desc) {
   | (TPatVar(_) | TPatAny, _) => true
-  | ([@implicit_arity] TPatAlias(p, _, _), _) => le_pat(p, q)
-  | (_, [@implicit_arity] TPatAlias(q, _, _)) => le_pat(p, q)
+  | (TPatAlias(p, _, _), _) => le_pat(p, q)
+  | (_, TPatAlias(q, _, _)) => le_pat(p, q)
   | (TPatConstant(c1), TPatConstant(c2)) => const_compare(c1, c2) == 0
-  | (
-      [@implicit_arity] TPatConstruct(_, c1, ps),
-      [@implicit_arity] TPatConstruct(_, c2, qs),
-    ) =>
+  | (TPatConstruct(_, c1, ps), TPatConstruct(_, c2, qs)) =>
     Types.equal_tag(c1.cstr_tag, c2.cstr_tag) && le_pats(ps, qs)
 
   | (TPatTuple(ps), TPatTuple(qs)) => le_pats(ps, qs)
@@ -1667,34 +1641,27 @@ let get_mins = (le, ps) => {
 
 let rec lub = (p, q) =>
   switch (p.pat_desc, q.pat_desc) {
-  | ([@implicit_arity] TPatAlias(p, _, _), _) => lub(p, q)
-  | (_, [@implicit_arity] TPatAlias(q, _, _)) => lub(p, q)
+  | (TPatAlias(p, _, _), _) => lub(p, q)
+  | (_, TPatAlias(q, _, _)) => lub(p, q)
   | (TPatAny | TPatVar(_), _) => q
   | (_, TPatAny | TPatVar(_)) => p
-  | ([@implicit_arity] TPatOr(p1, p2), _) => orlub(p1, p2, q)
-  | (_, [@implicit_arity] TPatOr(q1, q2)) => orlub(q1, q2, p) /* Thanks god, lub is commutative */
+  | (TPatOr(p1, p2), _) => orlub(p1, p2, q)
+  | (_, TPatOr(q1, q2)) => orlub(q1, q2, p) /* Thanks god, lub is commutative */
   | (TPatConstant(c1), TPatConstant(c2)) when const_compare(c1, c2) == 0 => p
   | (TPatTuple(ps), TPatTuple(qs)) =>
     let rs = lubs(ps, qs);
     make_pat(TPatTuple(rs), p.pat_type, p.pat_env);
-  | (
-      [@implicit_arity] TPatConstruct(lid, c1, ps1),
-      [@implicit_arity] TPatConstruct(_, c2, ps2),
-    )
+  | (TPatConstruct(lid, c1, ps1), TPatConstruct(_, c2, ps2))
       when Types.equal_tag(c1.cstr_tag, c2.cstr_tag) =>
     let rs = lubs(ps1, ps2);
-    make_pat(
-      [@implicit_arity] TPatConstruct(lid, c1, rs),
-      p.pat_type,
-      p.pat_env,
-    );
+    make_pat(TPatConstruct(lid, c1, rs), p.pat_type, p.pat_env);
   | (_, _) => raise(Empty)
   }
 
 and orlub = (p1, p2, q) =>
   try({
     let r1 = lub(p1, q);
-    try({...q, pat_desc: [@implicit_arity] TPatOr(r1, lub(p2, q))}) {
+    try({...q, pat_desc: TPatOr(r1, lub(p2, q))}) {
     | Empty => r1
     };
   }) {
@@ -1788,12 +1755,11 @@ module Conv = {
       | TPatVar(_, {txt: "*extension*"} as nm) => mkpat(PPatVar(nm))
       | TPatAny
       | TPatVar(_) => mkpat(PPatAny)
-      | [@implicit_arity] TPatAlias(p, _, _) => loop(p)
-      | [@implicit_arity] TPatOr(pa, pb) =>
-        mkpat([@implicit_arity] PPatOr(loop(pa), loop(pb)))
+      | TPatAlias(p, _, _) => loop(p)
+      | TPatOr(pa, pb) => mkpat(PPatOr(loop(pa), loop(pb)))
       | TPatConstant(c) => mkpat(PPatConstant(untype_constant(c)))
       | TPatTuple(lst) => mkpat(PPatTuple(List.map(loop, lst)))
-      | [@implicit_arity] TPatRecord(fields, c) =>
+      | TPatRecord(fields, c) =>
         mkpat(
           [@implicit_arity]
           PPatRecord(
@@ -1801,11 +1767,11 @@ module Conv = {
             c,
           ),
         )
-      | [@implicit_arity] TPatConstruct(cstr_lid, cstr, lst) =>
+      | TPatConstruct(cstr_lid, cstr, lst) =>
         let id = fresh(cstr.cstr_name);
         let lid = {...cstr_lid, txt: Identifier.IdentName(id)};
         Hashtbl.add(constrs, id, cstr);
-        mkpat([@implicit_arity] PPatConstruct(lid, List.map(loop, lst)));
+        mkpat(PPatConstruct(lid, List.map(loop, lst)));
       };
 
     let ps = loop(typed);
@@ -1945,11 +1911,11 @@ let rec collect_paths_from_pat = (r, p) =>
   | TPatVar(_)
   | TPatConstant(_) => r
   | TPatTuple(ps) => List.fold_left(collect_paths_from_pat, r, ps)
-  | [@implicit_arity] TPatRecord(fields, _) =>
+  | TPatRecord(fields, _) =>
     let ps = List.map(((_, _, pat)) => pat, fields);
     List.fold_left(collect_paths_from_pat, r, ps);
-  | [@implicit_arity] TPatAlias(p, _, _) => collect_paths_from_pat(r, p)
-  | [@implicit_arity] TPatOr(p1, p2) =>
+  | TPatAlias(p, _, _) => collect_paths_from_pat(r, p)
+  | TPatOr(p1, p2) =>
     collect_paths_from_pat(collect_paths_from_pat(r, p1), p2)
   };
 
@@ -2110,12 +2076,11 @@ let inactive = (~partial, pat) =>
         | Const_float64(_) => true
         }
       | TPatTuple(ps)
-      | [@implicit_arity] TPatConstruct(_, _, ps) =>
-        List.for_all(p => loop(p), ps)
-      | [@implicit_arity] TPatRecord(fields, _) =>
+      | TPatConstruct(_, _, ps) => List.for_all(p => loop(p), ps)
+      | TPatRecord(fields, _) =>
         List.for_all(((_, _, p)) => loop(p), fields)
-      | [@implicit_arity] TPatAlias(p, _, _) => loop(p)
-      | [@implicit_arity] TPatOr(p, q) => loop(p) && loop(q)
+      | TPatAlias(p, _, _) => loop(p)
+      | TPatOr(p, q) => loop(p) && loop(q)
       };
 
     loop(pat);
@@ -2223,16 +2188,16 @@ let simplify_head_amb_pat =
     (head_bound_variables, varsets, ~add_column, p, ps, k) => {
   let rec simpl = (head_bound_variables, varsets, p, ps, k) =>
     switch (p.pat_desc) {
-    | [@implicit_arity] TPatAlias(p, x, _) =>
+    | TPatAlias(p, x, _) =>
       simpl(Ident.Set.add(x, head_bound_variables), varsets, p, ps, k)
-    | [@implicit_arity] TPatVar(x, _) =>
+    | TPatVar(x, _) =>
       let rest_of_the_row = {
         row: ps,
         varsets: [Ident.Set.add(x, head_bound_variables), ...varsets],
       };
 
       add_column(omega, rest_of_the_row, k);
-    | [@implicit_arity] TPatOr(p1, p2) =>
+    | TPatOr(p1, p2) =>
       simpl(
         head_bound_variables,
         varsets,
@@ -2422,7 +2387,7 @@ let all_rhs_idents = exp => {
       include TypedtreeIter.DefaultIteratorArgument;
       let enter_expression = exp =>
         switch (exp.exp_desc) {
-        | [@implicit_arity] TExpIdent(path, _lid, _descr) =>
+        | TExpIdent(path, _lid, _descr) =>
           List.iter(id => ids := Ident.Set.add(id, ids^), Path.heads(path))
         | _ => ()
         };

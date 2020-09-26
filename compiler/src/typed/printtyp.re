@@ -15,8 +15,7 @@ module String = Misc.Stdlib.String;
 let rec identifier = ppf =>
   fun
   | IdentName(s) => pp_print_string(ppf, s)
-  | [@implicit_arity] IdentExternal(p, s) =>
-    fprintf(ppf, "%a::%s", identifier, p, s);
+  | IdentExternal(p, s) => fprintf(ppf, "%a::%s", identifier, p, s);
 
 /* Print an identifier */
 
@@ -42,7 +41,7 @@ let ident_pervasives = Ident.create_persistent("Stdlib");
 let printing_env = ref(Env.empty);
 let non_shadowed_pervasive =
   fun
-  | [@implicit_arity] PExternal(PIdent(id), s, _pos) as path =>
+  | PExternal(PIdent(id), s, _pos) as path =>
     Ident.same(id, ident_pervasives)
     && (
       try(Path.same(path, Env.lookup_type(IdentName(s), printing_env^))) {
@@ -54,19 +53,16 @@ let non_shadowed_pervasive =
 let rec tree_of_path =
   fun
   | PIdent(id) => Oide_ident(ident_name(id))
-  | [@implicit_arity] PExternal(_, s, _pos) as path
-      when non_shadowed_pervasive(path) =>
+  | PExternal(_, s, _pos) as path when non_shadowed_pervasive(path) =>
     Oide_ident(s)
-  | [@implicit_arity] PExternal(p, s, _pos) =>
-    [@implicit_arity] Oide_dot(tree_of_path(p), s);
+  | PExternal(p, s, _pos) => Oide_dot(tree_of_path(p), s);
 
 let rec path = ppf =>
   fun
   | PIdent(id) => ident(ppf, id)
-  | [@implicit_arity] PExternal(_, s, _pos) as path
-      when non_shadowed_pervasive(path) =>
+  | PExternal(_, s, _pos) as path when non_shadowed_pervasive(path) =>
     pp_print_string(ppf, s)
-  | [@implicit_arity] PExternal(p, s, _pos) => {
+  | PExternal(p, s, _pos) => {
       path(ppf, p);
       pp_print_string(ppf, "::");
       pp_print_string(ppf, s);
@@ -75,8 +71,7 @@ let rec path = ppf =>
 let rec string_of_out_ident =
   fun
   | Oide_ident(s) => s
-  | [@implicit_arity] Oide_dot(id, s) =>
-    String.concat(".", [string_of_out_ident(id), s]);
+  | Oide_dot(id, s) => String.concat(".", [string_of_out_ident(id), s]);
 
 let string_of_path = p => string_of_out_ident(tree_of_path(p));
 
@@ -120,10 +115,7 @@ let rec safe_repr = v =>
 let rec list_of_memo =
   fun
   | TMemNil => []
-  | [@implicit_arity] TMemCons(p, _t1, _t2, rem) => [
-      p,
-      ...list_of_memo(rem),
-    ]
+  | TMemCons(p, _t1, _t2, rem) => [p, ...list_of_memo(rem)]
   | TMemLink(rem) => list_of_memo(rem^);
 
 let print_name = ppf =>
@@ -152,7 +144,7 @@ and raw_type_list = tl => raw_list(raw_type, tl)
 and raw_type_desc = ppf =>
   fun
   | TTyVar(name) => fprintf(ppf, "TTyVar %a", print_name, name)
-  | [@implicit_arity] TTyArrow(t1, t2, c) =>
+  | TTyArrow(t1, t2, c) =>
     fprintf(
       ppf,
       "@[<hov1>TTyArrow(@,%a,@,%a,@,%s)@]",
@@ -172,7 +164,7 @@ and raw_type_desc = ppf =>
       ),
       tl,
     )
-  | [@implicit_arity] TTyConstr(p, tl, abbrev) =>
+  | TTyConstr(p, tl, abbrev) =>
     fprintf(
       ppf,
       "@[<hov1>TTyConstr(@,%a,@,%a,@,%a)@]",
@@ -186,7 +178,7 @@ and raw_type_desc = ppf =>
   | TTyLink(t) => fprintf(ppf, "@[<1>TTyLink@,%a@]", raw_type, t)
   | TTySubst(t) => fprintf(ppf, "@[<1>TTySubst@,%a@]", raw_type, t)
   | TTyUniVar(name) => fprintf(ppf, "TTyUnivar %a", print_name, name)
-  | [@implicit_arity] TTyPoly(t, tl) =>
+  | TTyPoly(t, tl) =>
     fprintf(
       ppf,
       "@[<hov1>TTyPoly(@,%a,@,%a)@]",
@@ -271,7 +263,7 @@ let rec normalize_type_path = (~cache=false, env, p) =>
     let (params, ty, _) = Env.find_type_expansion(p, env);
     let params = List.map(repr, params);
     switch (repr(ty)) {
-    | {desc: [@implicit_arity] TTyConstr(p1, tyl, _)} =>
+    | {desc: TTyConstr(p1, tyl, _)} =>
       let tyl = List.map(repr, tyl);
       if (List.length(params) == List.length(tyl)
           && List.for_all2((===), params, tyl)) {
@@ -312,7 +304,7 @@ let penalty = s =>
 let rec path_size =
   fun
   | PIdent(id) => (penalty(Ident.name(id)), - Ident.binding_time(id))
-  | [@implicit_arity] PExternal(p, _, _) => {
+  | PExternal(p, _, _) => {
       let (l, b) = path_size(p);
       (1 + l, b);
     };
@@ -564,7 +556,7 @@ let aliasable = ty =>
   | TTyVar(_)
   | TTyUniVar(_)
   | TTyPoly(_) => false
-  | [@implicit_arity] TTyConstr(p, _, _) => !is_nth(snd(best_type_path(p)))
+  | TTyConstr(p, _, _) => !is_nth(snd(best_type_path(p)))
   | _ => true
   };
 
@@ -577,18 +569,18 @@ let rec mark_loops_rec = (visited, ty) => {
     let visited = [px, ...visited];
     switch (ty.desc) {
     | TTyVar(_) => add_named_var(ty)
-    | [@implicit_arity] TTyArrow(ty1, ty2, _) =>
+    | TTyArrow(ty1, ty2, _) =>
       List.iter(mark_loops_rec(visited), ty1);
       mark_loops_rec(visited, ty2);
     | TTyTuple(tyl) => List.iter(mark_loops_rec(visited), tyl)
     | TTyRecord(tyl) =>
       List.iter(((_, arg)) => (mark_loops_rec(visited))(arg), tyl)
-    | [@implicit_arity] TTyConstr(p, tyl, _) =>
+    | TTyConstr(p, tyl, _) =>
       let (_p', s) = best_type_path(p);
       List.iter(mark_loops_rec(visited), apply_subst(s, tyl));
     | TTySubst(ty) => mark_loops_rec(visited, ty)
     | TTyLink(_) => fatal_error("Printtyp.mark_loops_rec (2)")
-    | [@implicit_arity] TTyPoly(ty, tyl) =>
+    | TTyPoly(ty, tyl) =>
       List.iter(t => add_alias(t), tyl);
       mark_loops_rec(visited, ty);
     | TTyUniVar(_) => add_named_var(ty)
@@ -640,7 +632,7 @@ let rec tree_of_typexp = (sch, ty) => {
         },
         px,
       );
-    [@implicit_arity] Otyp_var(mark, name);
+    Otyp_var(mark, name);
   } else {
     let pr_typ = () =>
       switch (ty.desc) {
@@ -654,11 +646,11 @@ let rec tree_of_typexp = (sch, ty) => {
           } else {
             new_name;
           };
-        [@implicit_arity] Otyp_var(non_gen, name_of_type(name_gen, ty));
-      | [@implicit_arity] TTyArrow(ty1, ty2, _) =>
+        Otyp_var(non_gen, name_of_type(name_gen, ty));
+      | TTyArrow(ty1, ty2, _) =>
         let pr_arrow = (ty1, ty2) => {
           let t1 = tree_of_typlist(sch, ty1);
-          [@implicit_arity] Otyp_arrow(t1, tree_of_typexp(sch, ty2));
+          Otyp_arrow(t1, tree_of_typexp(sch, ty2));
         };
         pr_arrow(ty1, ty2);
       | TTyTuple(tyl) => Otyp_tuple(tree_of_typlist(sch, tyl))
@@ -669,7 +661,7 @@ let rec tree_of_typexp = (sch, ty) => {
             tyl,
           ),
         )
-      | [@implicit_arity] TTyConstr(p, tyl, _abbrev) =>
+      | TTyConstr(p, tyl, _abbrev) =>
         let (p', s) = best_type_path(p);
         let tyl' = apply_subst(s, tyl);
         if (is_nth(s) && !(tyl' == [])) {
@@ -680,8 +672,8 @@ let rec tree_of_typexp = (sch, ty) => {
         };
       | TTySubst(ty) => tree_of_typexp(sch, ty)
       | TTyLink(_) => fatal_error("Printtyp.tree_of_typexp")
-      | [@implicit_arity] TTyPoly(ty, []) => tree_of_typexp(sch, ty)
-      | [@implicit_arity] TTyPoly(ty, tyl) =>
+      | TTyPoly(ty, []) => tree_of_typexp(sch, ty)
+      | TTyPoly(ty, tyl) =>
         /*let print_names () =
           List.iter (fun (_, name) -> prerr_string (name ^ " ")) !names;
           prerr_string "; " in */
@@ -694,14 +686,13 @@ let rec tree_of_typexp = (sch, ty) => {
              printed once when used as proxy */
           List.iter(add_delayed, tyl);
           let tl = List.map(name_of_type(new_name), tyl);
-          let tr = [@implicit_arity] Otyp_poly(tl, tree_of_typexp(sch, ty));
+          let tr = Otyp_poly(tl, tree_of_typexp(sch, ty));
           /* Forget names when we leave scope */
           remove_names(tyl);
           delayed := old_delayed;
           tr;
         };
-      | TTyUniVar(_) =>
-        [@implicit_arity] Otyp_var(false, name_of_type(new_name, ty))
+      | TTyUniVar(_) => Otyp_var(false, name_of_type(new_name, ty))
       };
 
     if (List.memq(px, delayed^)) {
@@ -709,7 +700,7 @@ let rec tree_of_typexp = (sch, ty) => {
     };
     if (is_aliased(px) && aliasable(ty)) {
       check_name_of_type(px);
-      [@implicit_arity] Otyp_alias(pr_typ(), name_of_type(new_name, px));
+      Otyp_alias(pr_typ(), name_of_type(new_name, px));
     } else {
       pr_typ();
     };
@@ -853,7 +844,7 @@ let rec tree_of_type_decl = (id, decl) => {
 
   let type_param =
     fun
-    | [@implicit_arity] Otyp_var(_, id) => id
+    | Otyp_var(_, id) => id
     | _ => "?";
 
   let type_defined = decl => {
@@ -872,8 +863,7 @@ let rec tree_of_type_decl = (id, decl) => {
   let tree_of_manifest = ty1 =>
     switch (ty_manifest) {
     | None => ty1
-    | Some(ty) =>
-      [@implicit_arity] Otyp_manifest(tree_of_typexp(false, ty), ty1)
+    | Some(ty) => Otyp_manifest(tree_of_typexp(false, ty), ty1)
     };
 
   let (name, args) = type_defined(decl);
@@ -929,7 +919,7 @@ and tree_of_constructor = cd => {
 };
 
 let tree_of_type_declaration = (id, decl, rs) =>
-  [@implicit_arity] Osig_type(tree_of_type_decl(id, decl), tree_of_rec(rs));
+  Osig_type(tree_of_type_decl(id, decl), tree_of_rec(rs));
 
 let type_declaration = (id, ppf, decl) =>
   Oprint.out_sig_item^(ppf, tree_of_type_declaration(id, decl, TRecFirst));
@@ -950,7 +940,7 @@ let tree_of_extension_constructor = (id, ext, es) => {
   mark_loops_constructor_arguments(ext.ext_args);
   let type_param =
     fun
-    | [@implicit_arity] Otyp_var(_, id) => id
+    | Otyp_var(_, id) => id
     | _ => "?";
 
   let ty_params =
@@ -973,7 +963,7 @@ let tree_of_extension_constructor = (id, ext, es) => {
     | TExtException => Oext_exception
     };
 
-  [@implicit_arity] Osig_typext(ext, es);
+  Osig_typext(ext, es);
 };
 
 let extension_constructor = (id, ppf, ext) =>
@@ -1063,14 +1053,11 @@ let dummy = {
 
 let hide_rec_items =
   fun
-  | [[@implicit_arity] TSigType(id, _decl, rs), ...rem]
+  | [TSigType(id, _decl, rs), ...rem]
       when rs == TRecFirst && ! Clflags.real_paths^ => {
       let rec get_ids = (
         fun
-        | [[@implicit_arity] TSigType(id, _, TRecNext), ...rem] => [
-            id,
-            ...get_ids(rem),
-          ]
+        | [TSigType(id, _, TRecNext), ...rem] => [id, ...get_ids(rem)]
         | _ => []
       );
 
@@ -1107,8 +1094,8 @@ and tree_of_signature_rec = (env', in_type_group) =>
   | [item, ...rem] as items => {
       let in_type_group =
         switch (in_type_group, item) {
-        | (true, [@implicit_arity] TSigType(_, _, TRecNext)) => true
-        | (_, [@implicit_arity] TSigType(_, _, TRecNot | TRecFirst)) =>
+        | (true, TSigType(_, _, TRecNext)) => true
+        | (_, TSigType(_, _, TRecNot | TRecFirst)) =>
           set_printing_env(env');
           true;
         | _ =>
@@ -1125,21 +1112,13 @@ and tree_of_signature_rec = (env', in_type_group) =>
 
 and trees_of_sigitem =
   fun
-  | [@implicit_arity] TSigValue(id, decl) => [
-      tree_of_value_description(id, decl),
-    ]
-  | [@implicit_arity] TSigType(id, decl, rs) => [
-      tree_of_type_declaration(id, decl, rs),
-    ]
-  | [@implicit_arity] TSigTypeExt(id, ext, es) => [
-      tree_of_extension_constructor(id, ext, es),
-    ]
-  | [@implicit_arity] TSigModule(id, md, rs) => [
+  | TSigValue(id, decl) => [tree_of_value_description(id, decl)]
+  | TSigType(id, decl, rs) => [tree_of_type_declaration(id, decl, rs)]
+  | TSigTypeExt(id, ext, es) => [tree_of_extension_constructor(id, ext, es)]
+  | TSigModule(id, md, rs) => [
       tree_of_module(id, md.md_type, rs, ~ellipsis=false),
     ]
-  | [@implicit_arity] TSigModType(id, decl) => [
-      tree_of_modtype_declaration(id, decl),
-    ]
+  | TSigModType(id, decl) => [tree_of_modtype_declaration(id, decl)]
 
 and tree_of_modtype_declaration = (id, decl) => {
   let mty =
@@ -1148,7 +1127,7 @@ and tree_of_modtype_declaration = (id, decl) => {
     | Some(mty) => tree_of_modtype(mty)
     };
 
-  [@implicit_arity] Osig_modtype(Ident.name(id), mty);
+  Osig_modtype(Ident.name(id), mty);
 }
 
 and tree_of_module = (id, ~ellipsis=?, mty, rs) =>
@@ -1209,10 +1188,7 @@ let same_path = (t, t') => {
   t === t'
   || (
     switch (t.desc, t'.desc) {
-    | (
-        [@implicit_arity] TTyConstr(p, tl, _),
-        [@implicit_arity] TTyConstr(p', tl', _),
-      ) =>
+    | (TTyConstr(p, tl, _), TTyConstr(p', tl', _)) =>
       let (p1, s1) = best_type_path(p)
       and (p2, s2) = best_type_path(p');
       switch (s1, s2) {
@@ -1329,7 +1305,7 @@ let print_tags = (ppf, fields) =>
 
 let is_unit = (env, ty) =>
   switch (Ctype.expand_head(env, ty).desc) {
-  | [@implicit_arity] TTyConstr(p, _, _) => false /*Path.same p Predef.path_unit*/
+  | TTyConstr(p, _, _) => false /*Path.same p Predef.path_unit*/
   | _ => false
   };
 
@@ -1361,7 +1337,7 @@ let explanation = (env, unif, t3, t4): option(Format.formatter => unit) =>
       Some (fun ppf ->
         fprintf ppf
           "@,@[Hint: Did you forget to wrap the expression using `fun () ->'?@]")*/
-  | ([@implicit_arity] TTyConstr(p, _, _), TTyVar(_))
+  | (TTyConstr(p, _, _), TTyVar(_))
       when unif && t4.level < Path.binding_time(p) =>
     Some(
       ppf =>
@@ -1372,7 +1348,7 @@ let explanation = (env, unif, t3, t4): option(Format.formatter => unit) =>
           p,
         ),
     )
-  | (TTyVar(_), [@implicit_arity] TTyConstr(p, _, _))
+  | (TTyVar(_), TTyConstr(p, _, _))
       when unif && t3.level < Path.binding_time(p) =>
     Some(
       ppf =>
@@ -1449,7 +1425,7 @@ let explain = (mis, ppf) =>
 
 let warn_on_missing_def = (env, ppf, t) =>
   switch (t.desc) {
-  | [@implicit_arity] TTyConstr(p, _, _) =>
+  | TTyConstr(p, _, _) =>
     try(ignore(Env.find_type(p, env): Types.type_declaration)) {
     | Not_found =>
       fprintf(
@@ -1471,21 +1447,14 @@ let ident_same_name = (id1, id2) =>
 let rec path_same_name = (p1, p2) =>
   switch (p1, p2) {
   | (PIdent(id1), PIdent(id2)) => ident_same_name(id1, id2)
-  | (
-      [@implicit_arity] PExternal(p1, s1, _),
-      [@implicit_arity] PExternal(p2, s2, _),
-    )
-      when s1 == s2 =>
+  | (PExternal(p1, s1, _), PExternal(p2, s2, _)) when s1 == s2 =>
     path_same_name(p1, p2)
   | _ => ()
   };
 
 let type_same_name = (t1, t2) =>
   switch (repr(t1).desc, repr(t2).desc) {
-  | (
-      [@implicit_arity] TTyConstr(p1, _, _),
-      [@implicit_arity] TTyConstr(p2, _, _),
-    ) =>
+  | (TTyConstr(p1, _, _), TTyConstr(p2, _, _)) =>
     path_same_name(fst(best_type_path(p1)), fst(best_type_path(p2)))
   | _ => ()
   };

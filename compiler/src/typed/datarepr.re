@@ -39,7 +39,7 @@ let free_vars = (~param=false, ty) => {
 };
 
 let newgenconstr = (path, tyl) =>
-  newgenty([@implicit_arity] TTyConstr(path, tyl, ref(TMemNil)));
+  newgenty(TTyConstr(path, tyl, ref(TMemNil)));
 
 let constructor_existentials = (cd_args, cd_res) => {
   let tyl =
@@ -101,7 +101,7 @@ let constructor_descrs = (ty_path, decl, cstrs) => {
       constructor_args(
         cd_args,
         cd_res,
-        [@implicit_arity] Path.PExternal(ty_path, cstr_name, Path.nopos),
+        Path.PExternal(ty_path, cstr_name, Path.nopos),
       );
 
     let cstr = {

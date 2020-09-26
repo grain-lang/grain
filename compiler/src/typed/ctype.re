@@ -136,7 +136,7 @@ let is_object_type = path => {
   let name =
     switch (path) {
     | Path.PIdent(id) => Ident.name(id)
-    | [@implicit_arity] Path.PExternal(_, s, _) => s
+    | Path.PExternal(_, s, _) => s
     };
   name.[0] == '#';
 };
@@ -164,8 +164,7 @@ let newvar = (~name=?, ()) => newty2(current_level^, TTyVar(name));
 let newvar2 = (~name=?, level) => newty2(level, TTyVar(name));
 let new_global_var = (~name=?, ()) => newty2(global_level^, TTyVar(name));
 
-let newconstr = (path, tyl) =>
-  newty([@implicit_arity] TTyConstr(path, tyl, ref(TMemNil)));
+let newconstr = (path, tyl) => newty(TTyConstr(path, tyl, ref(TMemNil)));
 
 let none = newty(TTyTuple([])); /* Clearly ill-formed type */
 
@@ -252,7 +251,7 @@ let rec free_vars_rec = (real, ty) => {
     ty.level = pivot_level - ty.level;
     switch (ty.desc, really_closed^) {
     | (TTyVar(_), _) => free_variables := [(ty, real), ...free_variables^]
-    | ([@implicit_arity] TTyConstr(path, tl, _), Some(env)) =>
+    | (TTyConstr(path, tl, _), Some(env)) =>
       try({
         let (_, body, _) = Env.find_type_expansion(path, env);
         if (repr(body).level != generic_level) {
@@ -286,7 +285,7 @@ let free_variables = (~env=?, ty) => {
 let closed_type = ty =>
   switch (free_vars(ty)) {
   | [] => ()
-  | [(v, real), ..._] => raise([@implicit_arity] Non_closed(v, real))
+  | [(v, real), ..._] => raise(Non_closed(v, real))
   };
 
 let closed_parameterized_type = (params, ty) => {
@@ -336,7 +335,7 @@ let closed_type_decl = decl =>
       None;
     }
   ) {
-  | [@implicit_arity] Non_closed(ty, _) =>
+  | Non_closed(ty, _) =>
     unmark_type_decl(decl);
     Some(ty);
   };
@@ -364,8 +363,7 @@ let rec generalize = ty => {
   if (ty.level > current_level^ && ty.level != generic_level) {
     set_level(ty, generic_level);
     switch (ty.desc) {
-    | [@implicit_arity] TTyConstr(_, _, abbrev) =>
-      iter_abbrev(generalize, abbrev^)
+    | TTyConstr(_, _, abbrev) => iter_abbrev(generalize, abbrev^)
     | _ => ()
     };
     iter_type_expr(generalize, ty);
@@ -387,7 +385,7 @@ let rec generalize_structure = (var_level, ty) => {
     } else if (ty.level > current_level^
                && (
                  switch (ty.desc) {
-                 | [@implicit_arity] TTyConstr(p, _, abbrev) =>
+                 | TTyConstr(p, _, abbrev) =>
                    abbrev := TMemNil;
                    true;
                  | _ => true
@@ -412,17 +410,17 @@ let rec generalize_spine = ty => {
     ();
   } else {
     switch (ty.desc) {
-    | [@implicit_arity] TTyArrow(tyl, ty2, _) =>
+    | TTyArrow(tyl, ty2, _) =>
       set_level(ty, generic_level);
       List.iter(generalize_spine, tyl);
       generalize_spine(ty2);
-    | [@implicit_arity] TTyPoly(ty', _) =>
+    | TTyPoly(ty', _) =>
       set_level(ty, generic_level);
       generalize_spine(ty');
     | TTyTuple(tyl) =>
       set_level(ty, generic_level);
       List.iter(generalize_spine, tyl);
-    | [@implicit_arity] TTyConstr(p, tyl, memo) =>
+    | TTyConstr(p, tyl, memo) =>
       set_level(ty, generic_level);
       memo := TMemNil;
       List.iter(generalize_spine, tyl);
@@ -499,7 +497,7 @@ let rec update_level = (env, level, expand, ty) => {
            if level < get_level env p then raise (Unify [(ty, newvar2 level)]);
            iter_type_expr (update_level env level expand) ty
        end */
-    | [@implicit_arity] TTyConstr(_, [_, ..._], _) when expand =>
+    | TTyConstr(_, [_, ..._], _) when expand =>
       try(
         {
           link_type(ty, forward_try_expand_once^(env, ty));
@@ -541,7 +539,7 @@ let rec generalize_expansive = (env, var_level, visited, ty) => {
   } else if (!Hashtbl.mem(visited, ty.id)) {
     Hashtbl.add(visited, ty.id, ());
     switch (ty.desc) {
-    | [@implicit_arity] TTyConstr(path, tyl, abbrev) =>
+    | TTyConstr(path, tyl, abbrev) =>
       /*let variance =
         try (Env.find_type path env).type_variance
         with Not_found -> List.map (fun _ -> Variance.may_inv) tyl in*/
@@ -553,7 +551,7 @@ let rec generalize_expansive = (env, var_level, visited, ty) => {
         then generalize_structure var_level t
         else generalize_expansive env var_level visited t)
       variance tyl*/
-    | [@implicit_arity] TTyArrow(tl, t2, _) =>
+    | TTyArrow(tl, t2, _) =>
       List.iter(generalize_structure(var_level), tl);
       generalize_expansive(env, var_level, visited, t2);
     | _ => iter_type_expr(generalize_expansive(env, var_level, visited), ty)
@@ -647,9 +645,7 @@ let compute_univars = ty => {
   let node_univars = TypeHash.create(17);
   let rec add_univar = (univ, inv) =>
     switch (inv.inv_type.desc) {
-    | [@implicit_arity] TTyPoly(_ty, tl)
-        when List.memq(univ, List.map(repr, tl)) =>
-      ()
+    | TTyPoly(_ty, tl) when List.memq(univ, List.map(repr, tl)) => ()
     | _ =>
       try({
         let univs = TypeHash.find(node_univars, inv.inv_type);
@@ -688,9 +684,8 @@ let compute_univars = ty => {
 let rec find_repr = p1 =>
   fun
   | TMemNil => None
-  | [@implicit_arity] TMemCons(p2, ty, _, _) when Path.same(p1, p2) =>
-    Some(ty)
-  | [@implicit_arity] TMemCons(_, _, _, rem) => find_repr(p1, rem)
+  | TMemCons(p2, ty, _, _) when Path.same(p1, p2) => Some(ty)
+  | TMemCons(_, _, _, rem) => find_repr(p1, rem)
   | TMemLink({contents: rem}) => find_repr(p1, rem);
 
 /*
@@ -747,7 +742,7 @@ let rec copy = (~env=?, ~partial=?, ~keep_names=?, ty) => {
         ty.desc = TTySubst(t);
         t.desc = (
           switch (desc) {
-          | [@implicit_arity] TTyConstr(p, tl, _) =>
+          | TTyConstr(p, tl, _) =>
             let abbrevs = proper_abbrevs(p, tl, abbreviations^);
             switch (find_repr(p, abbrevs^)) {
             | Some(ty) when repr(ty) !== t => TTyLink(ty)
@@ -873,8 +868,7 @@ let instance_constructor = (~in_pattern=?, cstr) => {
       let path = Path.PIdent(Ident.create(get_new_abstract_name(name)));
       let new_env = Env.add_local_type(path, decl, env^);
       env := new_env;
-      let to_unify =
-        newty([@implicit_arity] TTyConstr(path, [], ref(TMemNil)));
+      let to_unify = newty(TTyConstr(path, [], ref(TMemNil)));
       let tv = copy(existential);
       assert(is_Tvar(tv));
       link_type(tv, to_unify);
@@ -995,7 +989,7 @@ let rec copy_sep = (fixed, free, bound, visited, ty) => {
       let copy_rec = copy_sep(fixed, free, bound, visited);
       t.desc = (
         switch (ty.desc) {
-        | [@implicit_arity] TTyPoly(t1, tl) =>
+        | TTyPoly(t1, tl) =>
           let tl = List.map(repr, tl);
           let tl' = List.map(t => newty(t.desc), tl);
           let bound = tl @ bound;
@@ -1060,7 +1054,7 @@ let instance_label = (fixed, lbl) => {
   let ty_res = copy(lbl.lbl_res);
   let (vars, ty_arg) =
     switch (repr(lbl.lbl_arg)) {
-    | {desc: [@implicit_arity] TTyPoly(ty, tl)} =>
+    | {desc: TTyPoly(ty, tl)} =>
       instance_poly'(~keep_names=false, fixed, tl, ty)
     | _ => ([], copy(lbl.lbl_arg))
     };
@@ -1084,7 +1078,7 @@ let subst = (env, level, priv, abbrev, ty, params, args, body) => {
     let body0 = newvar(); /* Stub */
     switch (ty) {
     | None => ()
-    | Some({desc: [@implicit_arity] TTyConstr(path, tl, _)} as ty) =>
+    | Some({desc: TTyConstr(path, tl, _)} as ty) =>
       let abbrev = proper_abbrevs(path, tl, abbrev);
       memorize_abbrev(abbrev, priv, path, ty, body0);
     | _ => assert(false)
@@ -1158,7 +1152,7 @@ let check_abbrev_env = env =>
 let expand_abbrev_gen = (kind, find_type_expansion, env, ty) => {
   check_abbrev_env(env);
   switch (ty) {
-  | {desc: [@implicit_arity] TTyConstr(path, args, abbrev), level} =>
+  | {desc: TTyConstr(path, args, abbrev), level} =>
     let lookup_abbrev = proper_abbrevs(path, args, abbrev);
     switch (find_expans(kind, path, lookup_abbrev^)) {
     | Some(ty') =>
@@ -1183,7 +1177,7 @@ let expand_abbrev_gen = (kind, find_type_expansion, env, ty) => {
         if (Path.same(path, path')) {
           raise(Cannot_expand);
         } else {
-          newty2(level, [@implicit_arity] TTyConstr(path', args, abbrev));
+          newty2(level, TTyConstr(path', args, abbrev));
         };
       | (params, body, lv) =>
         /* prerr_endline
@@ -1277,7 +1271,7 @@ let _ = forward_try_expand_once := try_expand_safe;
 let rec extract_concrete_typedecl = (env, ty) => {
   let ty = repr(ty);
   switch (ty.desc) {
-  | [@implicit_arity] TTyConstr(p, _, _) =>
+  | TTyConstr(p, _, _) =>
     let decl = Env.find_type(p, env);
     if (decl.type_kind != TDataAbstract) {
       (p, p, decl);
@@ -1334,7 +1328,7 @@ let expand_head_opt = (env, ty) => {
    respect the type constraints */
 let enforce_constraints = (env, ty) =>
   switch (ty) {
-  | {desc: [@implicit_arity] TTyConstr(path, args, _abbrev), level} =>
+  | {desc: TTyConstr(path, args, _abbrev), level} =>
     try({
       let decl = Env.find_type(path, env);
       ignore(
@@ -1405,7 +1399,7 @@ let rec occur_rec = (env, allow_recursive, visited, ty0) =>
         raise(Occur);
       };
       switch (ty.desc) {
-      | [@implicit_arity] TTyConstr(p, _tl, _abbrev) =>
+      | TTyConstr(p, _tl, _abbrev) =>
         if (allow_recursive && is_contractive(env, p)) {
           ();
         } else {
@@ -1495,7 +1489,7 @@ let rec local_non_recursive_abbrev = (strict, visited, env, p, ty) => {
   let ty = repr(ty);
   if (!List.memq(ty, visited)) {
     switch (ty.desc) {
-    | [@implicit_arity] TTyConstr(p', args, _abbrev) =>
+    | TTyConstr(p', args, _abbrev) =>
       if (Path.same(p, p')) {
         raise(Occur);
       };
@@ -1613,11 +1607,11 @@ let occur_univar = (env, ty) => {
         if (!TypeSet.mem(ty, bound)) {
           raise(Unify([(ty, newgenvar())]));
         }
-      | [@implicit_arity] TTyPoly(ty, tyl) =>
+      | TTyPoly(ty, tyl) =>
         let bound = List.fold_right(TypeSet.add, List.map(repr, tyl), bound);
         occur_rec(bound, ty);
-      | [@implicit_arity] TTyConstr(_, [], _) => ()
-      | [@implicit_arity] TTyConstr(p, tl, _) =>
+      | TTyConstr(_, [], _) => ()
+      | TTyConstr(p, tl, _) =>
         /*let td = Env.find_type p env in*/
         try(
           List.iter(
@@ -1683,7 +1677,7 @@ let univars_escape = (env, univar_pairs, vl, ty) => {
     } else {
       visited := TypeSet.add(t, visited^);
       switch (t.desc) {
-      | [@implicit_arity] TTyPoly(t, tl) =>
+      | TTyPoly(t, tl) =>
         if (List.exists(t => TypeSet.mem(repr(t), family), tl)) {
           ();
         } else {
@@ -1693,8 +1687,8 @@ let univars_escape = (env, univar_pairs, vl, ty) => {
         if (TypeSet.mem(t, family)) {
           raise(Occur);
         }
-      | [@implicit_arity] TTyConstr(_, [], _) => ()
-      | [@implicit_arity] TTyConstr(p, tl, _) =>
+      | TTyConstr(_, [], _) => ()
+      | TTyConstr(p, tl, _) =>
         /*let td = Env.find_type p env in*/
         try(
           List.iter(
@@ -1735,19 +1729,9 @@ let enter_poly = (env, univar_pairs, t1, tl1, t2, tl2, f) => {
   let tl1 = List.map(repr, tl1)
   and tl2 = List.map(repr, tl2);
   if (List.exists(t => TypeSet.mem(t, known_univars), tl1)
-      && univars_escape(
-           env,
-           old_univars,
-           tl1,
-           newty([@implicit_arity] TTyPoly(t2, tl2)),
-         )
+      && univars_escape(env, old_univars, tl1, newty(TTyPoly(t2, tl2)))
       || List.exists(t => TypeSet.mem(t, known_univars), tl2)
-      && univars_escape(
-           env,
-           old_univars,
-           tl2,
-           newty([@implicit_arity] TTyPoly(t1, tl1)),
-         )) {
+      && univars_escape(env, old_univars, tl2, newty(TTyPoly(t1, tl1)))) {
     raise(Unify([]));
   };
   let cl1 = List.map(t => (t, ref(None)), tl1)
@@ -1788,7 +1772,7 @@ let reify_univars = ty => {
   unmark_type(ty);
   let ty = copy(ty);
   cleanup_types();
-  newty2(ty.level, [@implicit_arity] TTyPoly(repr(ty), vars^));
+  newty2(ty.level, TTyPoly(repr(ty), vars^));
 };
 
 /*****************/
@@ -1798,7 +1782,7 @@ let reify_univars = ty => {
 let rec has_cached_expansion = (p, abbrev) =>
   switch (abbrev) {
   | TMemNil => false
-  | [@implicit_arity] TMemCons(p', _, _, rem) =>
+  | TMemCons(p', _, _, rem) =>
     Path.same(p, p') || has_cached_expansion(p, rem)
   | TMemLink(rem) => has_cached_expansion(p, rem^)
   };
@@ -1892,8 +1876,7 @@ let reify = (env, t) => {
       };
     let path = Path.PIdent(Ident.create(get_new_abstract_name(name)));
     let new_env = Env.add_local_type(path, decl, env^);
-    let t =
-      newty2(lev, [@implicit_arity] TTyConstr(path, [], ref(TMemNil)));
+    let t = newty2(lev, TTyConstr(path, [], ref(TMemNil)));
     env := new_env;
     t;
   };
@@ -1912,7 +1895,7 @@ let reify = (env, t) => {
         if (ty.level < newtype_level) {
           raise(Unify([(t, newvar2(ty.level))]));
         };
-      | [@implicit_arity] TTyConstr(p, _, _) when is_object_type(p) =>
+      | TTyConstr(p, _, _) when is_object_type(p) =>
         iter_type_expr(iterator, full_expand(env^, ty))
       | _ => iter_type_expr(iterator, ty)
       };
@@ -1946,7 +1929,7 @@ let compatible_paths = (p1, p2) => Builtin_types.(Path.same(p1, p2)); /*||
 let rec expands_to_datatype = (env, ty) => {
   let ty = repr(ty);
   switch (ty.desc) {
-  | [@implicit_arity] TTyConstr(p, _, _) =>
+  | TTyConstr(p, _, _) =>
     try(
       is_datatype(Env.find_type(p, env))
       || expands_to_datatype(env, try_expand_once(env, ty))
@@ -1978,11 +1961,7 @@ let rec mcomp = (type_pairs, env, t1, t2) =>
       switch (t1.desc, t2.desc) {
       | (TTyVar(_), _)
       | (_, TTyVar(_)) => ()
-      | (
-          [@implicit_arity] TTyConstr(p1, [], _),
-          [@implicit_arity] TTyConstr(p2, [], _),
-        )
-          when Path.same(p1, p2) =>
+      | (TTyConstr(p1, [], _), TTyConstr(p2, [], _)) when Path.same(p1, p2) =>
         ()
       | _ =>
         let t1' = expand_head_opt(env, t1);
@@ -1999,21 +1978,15 @@ let rec mcomp = (type_pairs, env, t1, t2) =>
             switch (t1'.desc, t2'.desc) {
             | (TTyVar(_), _)
             | (_, TTyVar(_)) => ()
-            | (
-                [@implicit_arity] TTyArrow(t1, u1, _),
-                [@implicit_arity] TTyArrow(t2, u2, _),
-              ) =>
+            | (TTyArrow(t1, u1, _), TTyArrow(t2, u2, _)) =>
               mcomp_list(type_pairs, env, t1, t2);
               mcomp(type_pairs, env, u1, u2);
             | (TTyTuple(tl1), TTyTuple(tl2)) =>
               mcomp_list(type_pairs, env, tl1, tl2)
-            | (
-                [@implicit_arity] TTyConstr(p1, tl1, _),
-                [@implicit_arity] TTyConstr(p2, tl2, _),
-              ) =>
+            | (TTyConstr(p1, tl1, _), TTyConstr(p2, tl2, _)) =>
               mcomp_type_decl(type_pairs, env, p1, p2, tl1, tl2)
-            | ([@implicit_arity] TTyConstr(p, _, _), _)
-            | (_, [@implicit_arity] TTyConstr(p, _, _)) =>
+            | (TTyConstr(p, _, _), _)
+            | (_, TTyConstr(p, _, _)) =>
               try({
                 let decl = Env.find_type(p, env);
                 if (non_aliasable(p, decl) || is_datatype(decl)) {
@@ -2022,15 +1995,9 @@ let rec mcomp = (type_pairs, env, t1, t2) =>
               }) {
               | Not_found => ()
               }
-            | (
-                [@implicit_arity] TTyPoly(t1, []),
-                [@implicit_arity] TTyPoly(t2, []),
-              ) =>
+            | (TTyPoly(t1, []), TTyPoly(t2, [])) =>
               mcomp(type_pairs, env, t1, t2)
-            | (
-                [@implicit_arity] TTyPoly(t1, tl1),
-                [@implicit_arity] TTyPoly(t2, tl2),
-              ) =>
+            | (TTyPoly(t1, tl1), TTyPoly(t2, tl2)) =>
               enter_poly(
                 env,
                 univar_pairs,
@@ -2177,9 +2144,9 @@ let package_subtype = ref((_, _, _, _, _, _, _) => assert(false));
 let rec concat_longident = lid1 =>
   Identifier.(
     fun
-    | IdentName(s) => [@implicit_arity] IdentExternal(lid1, s)
-    | [@implicit_arity] IdentExternal(lid2, s) =>
-      [@implicit_arity] IdentExternal(concat_longident(lid1, lid2), s)
+    | IdentName(s) => IdentExternal(lid1, s)
+    | IdentExternal(lid2, s) =>
+      IdentExternal(concat_longident(lid1, lid2), s)
   );
 
 let nondep_instance = (env, level, id, ty) => {
@@ -2335,10 +2302,7 @@ let rec unify = (env: ref(Env.t), t1, t2) =>
             unify_univar(t1, t2, univar_pairs^);
             update_level(env^, t1.level, t2);
             link_type(t1, t2);
-          | (
-              [@implicit_arity] TTyConstr(p1, [], a1),
-              [@implicit_arity] TTyConstr(p2, [], a2),
-            )
+          | (TTyConstr(p1, [], a1), TTyConstr(p2, [], a2))
               when
                 Path.same(p1, p2)  /* && actual_mode !env = Old */
                 /* This optimization assumes that t1 does not expand to t2
@@ -2350,10 +2314,7 @@ let rec unify = (env: ref(Env.t), t1, t2) =>
                    ) =>
             update_level(env^, t1.level, t2);
             link_type(t1, t2);
-          | (
-              [@implicit_arity] TTyConstr(p1, [], _),
-              [@implicit_arity] TTyConstr(p2, [], _),
-            )
+          | (TTyConstr(p1, [], _), TTyConstr(p2, [], _))
               when
                 Env.has_local_constraints(env^)
                 && is_newtype(env^, p1)
@@ -2410,11 +2371,11 @@ and unify2 = (env, t1, t2) => {
           /* Expand abbreviations hiding a lower level */
           /* Should also do it for parameterized types, after unification... */
           switch (t1.desc) {
-          | [@implicit_arity] TTyConstr(_, [], _) => t1'
+          | TTyConstr(_, [], _) => t1'
           | _ => t1
           },
           switch (t2.desc) {
-          | [@implicit_arity] TTyConstr(_, [], _) => t2'
+          | TTyConstr(_, [], _) => t2'
           | _ => t2
           },
         );
@@ -2463,10 +2424,7 @@ and unify3 = (env, t1, t1', t2, t2') => {
     try(
       {
         switch (d1, d2) {
-        | (
-            [@implicit_arity] TTyArrow(t1, u1, c1),
-            [@implicit_arity] TTyArrow(t2, u2, c2),
-          ) =>
+        | (TTyArrow(t1, u1, c1), TTyArrow(t2, u2, c2)) =>
           unify_list(env, t1, t2);
           unify(env, u1, u2);
           switch (commu_repr(c1), commu_repr(c2)) {
@@ -2475,10 +2433,7 @@ and unify3 = (env, t1, t1', t2, t2') => {
           | _ => ()
           };
         | (TTyTuple(tl1), TTyTuple(tl2)) => unify_list(env, tl1, tl2)
-        | (
-            [@implicit_arity] TTyConstr(p1, tl1, _),
-            [@implicit_arity] TTyConstr(p2, tl2, _),
-          )
+        | (TTyConstr(p1, tl1, _), TTyConstr(p2, tl2, _))
             when Path.same(p1, p2) =>
           if (umode^ == Expression || ! generate_equations^) {
             unify_list(env, tl1, tl2);
@@ -2518,22 +2473,15 @@ and unify3 = (env, t1, t1', t2, t2') => {
               /*inj*/ List.combine(tl1, tl2),
             );
           }
-        | ([@implicit_arity] TTyConstr(_, _, _), _)
-        | (_, [@implicit_arity] TTyConstr(_, _, _)) when umode^ == Pattern =>
+        | (TTyConstr(_, _, _), _)
+        | (_, TTyConstr(_, _, _)) when umode^ == Pattern =>
           reify(env, t1');
           reify(env, t2');
           if (generate_equations^) {
             mcomp(env^, t1', t2');
           };
-        | (
-            [@implicit_arity] TTyPoly(t1, []),
-            [@implicit_arity] TTyPoly(t2, []),
-          ) =>
-          unify(env, t1, t2)
-        | (
-            [@implicit_arity] TTyPoly(t1, tl1),
-            [@implicit_arity] TTyPoly(t2, tl2),
-          ) =>
+        | (TTyPoly(t1, []), TTyPoly(t2, [])) => unify(env, t1, t2)
+        | (TTyPoly(t1, tl1), TTyPoly(t2, tl2)) =>
           enter_poly(env^, univar_pairs, t1, tl1, t2, tl2, unify(env))
         | (_, _) => raise(Unify([]))
         };
@@ -2541,7 +2489,7 @@ and unify3 = (env, t1, t1', t2, t2') => {
            ||| Comments + change "create_recursion" */
         if (create_recursion) {
           switch (t2.desc) {
-          | [@implicit_arity] TTyConstr(p, tl, abbrev) =>
+          | TTyConstr(p, tl, abbrev) =>
             forget_abbrev(abbrev, p);
             let t2'' = expand_head_unif(env^, t2);
             if (!closed_parameterized_type(tl, t2'')) {
@@ -2651,10 +2599,10 @@ let filter_arrow = (arity, env, t) => {
     };
     let t2 = newvar2(lv);
 
-    let t' = newty2(lv, [@implicit_arity] TTyArrow(vars^, t2, TComOk));
+    let t' = newty2(lv, TTyArrow(vars^, t2, TComOk));
     link_type(t, t');
     (vars^, t2);
-  | [@implicit_arity] TTyArrow(t1, t2, _) =>
+  | TTyArrow(t1, t2, _) =>
     /*Printf.eprintf "filter_arrow: TTyArrow\n";*/
     (t1, t2)
   | _ => raise(Unify([]))
@@ -2718,10 +2666,7 @@ let rec moregen = (inst_nongen, type_pairs, env, t1, t2) =>
           moregen_occur(env, t1.level, t2);
           occur(env, t1, t2);
           link_type(t1, t2);
-        | (
-            [@implicit_arity] TTyConstr(p1, [], _),
-            [@implicit_arity] TTyConstr(p2, [], _),
-          )
+        | (TTyConstr(p1, [], _), TTyConstr(p2, [], _))
             when Path.same(p1, p2) =>
           ()
         | _ =>
@@ -2740,29 +2685,17 @@ let rec moregen = (inst_nongen, type_pairs, env, t1, t2) =>
               | (TTyVar(_), _) when may_instantiate(inst_nongen, t1') =>
                 moregen_occur(env, t1'.level, t2);
                 link_type(t1', t2);
-              | (
-                  [@implicit_arity] TTyArrow(t1, u1, _),
-                  [@implicit_arity] TTyArrow(t2, u2, _),
-                ) =>
+              | (TTyArrow(t1, u1, _), TTyArrow(t2, u2, _)) =>
                 moregen_list(inst_nongen, type_pairs, env, t1, t2);
                 moregen(inst_nongen, type_pairs, env, u1, u2);
               | (TTyTuple(tl1), TTyTuple(tl2)) =>
                 moregen_list(inst_nongen, type_pairs, env, tl1, tl2)
-              | (
-                  [@implicit_arity] TTyConstr(p1, tl1, _),
-                  [@implicit_arity] TTyConstr(p2, tl2, _),
-                )
+              | (TTyConstr(p1, tl1, _), TTyConstr(p2, tl2, _))
                   when Path.same(p1, p2) =>
                 moregen_list(inst_nongen, type_pairs, env, tl1, tl2)
-              | (
-                  [@implicit_arity] TTyPoly(t1, []),
-                  [@implicit_arity] TTyPoly(t2, []),
-                ) =>
+              | (TTyPoly(t1, []), TTyPoly(t2, [])) =>
                 moregen(inst_nongen, type_pairs, env, t1, t2)
-              | (
-                  [@implicit_arity] TTyPoly(t1, tl1),
-                  [@implicit_arity] TTyPoly(t2, tl2),
-                ) =>
+              | (TTyPoly(t1, tl1), TTyPoly(t2, tl2)) =>
                 enter_poly(
                   env,
                   univar_pairs,
@@ -2941,10 +2874,7 @@ let rec eqtype = (rename, type_pairs, subst, env, t1, t2) =>
             };
             subst := [(t1, t2), ...subst^];
           }
-        | (
-            [@implicit_arity] TTyConstr(p1, [], _),
-            [@implicit_arity] TTyConstr(p2, [], _),
-          )
+        | (TTyConstr(p1, [], _), TTyConstr(p2, [], _))
             when Path.same(p1, p2) =>
           ()
         | _ =>
@@ -2975,29 +2905,17 @@ let rec eqtype = (rename, type_pairs, subst, env, t1, t2) =>
                   };
                   subst := [(t1', t2'), ...subst^];
                 }
-              | (
-                  [@implicit_arity] TTyArrow(t1, u1, _),
-                  [@implicit_arity] TTyArrow(t2, u2, _),
-                ) =>
+              | (TTyArrow(t1, u1, _), TTyArrow(t2, u2, _)) =>
                 eqtype_list(rename, type_pairs, subst, env, t1, t2);
                 eqtype(rename, type_pairs, subst, env, u1, u2);
               | (TTyTuple(tl1), TTyTuple(tl2)) =>
                 eqtype_list(rename, type_pairs, subst, env, tl1, tl2)
-              | (
-                  [@implicit_arity] TTyConstr(p1, tl1, _),
-                  [@implicit_arity] TTyConstr(p2, tl2, _),
-                )
+              | (TTyConstr(p1, tl1, _), TTyConstr(p2, tl2, _))
                   when Path.same(p1, p2) =>
                 eqtype_list(rename, type_pairs, subst, env, tl1, tl2)
-              | (
-                  [@implicit_arity] TTyPoly(t1, []),
-                  [@implicit_arity] TTyPoly(t2, []),
-                ) =>
+              | (TTyPoly(t1, []), TTyPoly(t2, [])) =>
                 eqtype(rename, type_pairs, subst, env, t1, t2)
-              | (
-                  [@implicit_arity] TTyPoly(t1, tl1),
-                  [@implicit_arity] TTyPoly(t2, tl2),
-                ) =>
+              | (TTyPoly(t1, tl1), TTyPoly(t2, tl2)) =>
                 enter_poly(
                   env,
                   univar_pairs,
@@ -3083,7 +3001,7 @@ let unalias = ty => {
 /* Return the arity (as for curried functions) of the given type. */
 let rec arity = ty =>
   switch (repr(ty).desc) {
-  | [@implicit_arity] TTyArrow(tl, _, _) => List.length(tl)
+  | TTyArrow(tl, _, _) => List.length(tl)
   | _ => 0
   };
 
@@ -3092,7 +3010,7 @@ let cyclic_abbrev = (env, id, ty) => {
   let rec check_cycle = (seen, ty) => {
     let ty = repr(ty);
     switch (ty.desc) {
-    | [@implicit_arity] TTyConstr(p, _tl, _abbrev) =>
+    | TTyConstr(p, _tl, _abbrev) =>
       p == Path.PIdent(id)
       || List.memq(ty, seen)
       || (
@@ -3199,7 +3117,7 @@ let rec nondep_type_rec = (env, id, ty) =>
       TypeHash.add(nondep_hash, ty, ty');
       ty'.desc = (
         switch (ty.desc) {
-        | [@implicit_arity] TTyConstr(p, tl, _abbrev) =>
+        | TTyConstr(p, tl, _abbrev) =>
           if (Path.isfree(id, p)) {
             try(
               TTyLink(
@@ -3256,10 +3174,7 @@ let unroll_abbrev = (id, tl, ty) => {
     ty;
   } else {
     let ty' = newty2(ty.level, ty.desc);
-    link_type(
-      ty,
-      newty2(ty.level, [@implicit_arity] TTyConstr(path, tl, ref(TMemNil))),
-    );
+    link_type(ty, newty2(ty.level, TTyConstr(path, tl, ref(TMemNil))));
     ty';
   };
 };
@@ -3314,7 +3229,7 @@ let nondep_extension_constructor = (env, id, ext) =>
 
         let ty' = nondep_type_rec(env, id, ty);
         switch (repr(ty').desc) {
-        | [@implicit_arity] TTyConstr(p, tl, _) => (p, tl)
+        | TTyConstr(p, tl, _) => (p, tl)
         | _ => raise(Nondep_cannot_erase(id'))
         };
       | None =>
@@ -3358,11 +3273,7 @@ let same_constr = (env, t1, t2) => {
   let t1 = expand_head(env, t1);
   let t2 = expand_head(env, t2);
   switch (t1.desc, t2.desc) {
-  | (
-      [@implicit_arity] TTyConstr(p1, _, _),
-      [@implicit_arity] TTyConstr(p2, _, _),
-    ) =>
-    Path.same(p1, p2)
+  | (TTyConstr(p1, _, _), TTyConstr(p2, _, _)) => Path.same(p1, p2)
   | _ => false
   };
 };
@@ -3371,7 +3282,7 @@ let () = Env.same_constr := same_constr;
 
 let maybe_pointer_type = (env, typ) =>
   switch (repr(typ).desc) {
-  | [@implicit_arity] TTyConstr(p, _args, _abbrev) =>
+  | TTyConstr(p, _args, _abbrev) =>
     try({
       let type_decl = Env.find_type(p, env);
       !type_decl.type_immediate;
@@ -3387,5 +3298,5 @@ let maybe_pointer_type = (env, typ) =>
 let rec lid_of_path = (~hash="") =>
   fun
   | Path.PIdent(id) => Identifier.IdentName(hash ++ Ident.name(id))
-  | [@implicit_arity] Path.PExternal(p1, s, _) =>
-    [@implicit_arity] Identifier.IdentExternal(lid_of_path(p1), hash ++ s);
+  | Path.PExternal(p1, s, _) =>
+    Identifier.IdentExternal(lid_of_path(p1), hash ++ s);

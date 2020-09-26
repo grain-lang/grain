@@ -55,20 +55,20 @@ module MakeMap =
       switch (ct.ctyp_desc) {
       | TTyAny
       | TTyVar(_) => ct.ctyp_desc
-      | [@implicit_arity] TTyArrow(args, ret) =>
+      | TTyArrow(args, ret) =>
         let args = List.map(map_core_type, args);
         let ret = map_core_type(ret);
-        [@implicit_arity] TTyArrow(args, ret);
-      | [@implicit_arity] TTyConstr(a, b, args) =>
-        [@implicit_arity] TTyConstr(a, b, List.map(map_core_type, args))
+        TTyArrow(args, ret);
+      | TTyConstr(a, b, args) =>
+        TTyConstr(a, b, List.map(map_core_type, args))
       | TTyTuple(args) => TTyTuple(List.map(map_core_type, args))
       | TTyRecord(args) =>
         TTyRecord(
           List.map(((name, arg)) => (name, map_core_type(arg)), args),
         )
-      | [@implicit_arity] TTyPoly(args, typ) =>
+      | TTyPoly(args, typ) =>
         let typ = map_core_type(typ);
-        [@implicit_arity] TTyPoly(args, typ);
+        TTyPoly(args, typ);
       };
     Map.leave_core_type({...ct, ctyp_desc});
   }
@@ -129,7 +129,7 @@ module MakeMap =
       | TTopForeign(_)
       | TTopImport(_)
       | TTopExport(_) => stmt.ttop_desc
-      | [@implicit_arity] TTopLet(exportflag, recflag, mutflag, binds) =>
+      | TTopLet(exportflag, recflag, mutflag, binds) =>
         [@implicit_arity]
         TTopLet(
           exportflag,
@@ -160,19 +160,17 @@ module MakeMap =
       | TPatAny
       | TPatVar(_)
       | TPatConstant(_) => pat.pat_desc
-      | [@implicit_arity] TPatAlias(p1, a, b) =>
-        [@implicit_arity] TPatAlias(map_pattern(p1), a, b)
-      | [@implicit_arity] TPatConstruct(a, b, args) =>
-        [@implicit_arity] TPatConstruct(a, b, List.map(map_pattern, args))
+      | TPatAlias(p1, a, b) => TPatAlias(map_pattern(p1), a, b)
+      | TPatConstruct(a, b, args) =>
+        TPatConstruct(a, b, List.map(map_pattern, args))
       | TPatTuple(args) => TPatTuple(List.map(map_pattern, args))
-      | [@implicit_arity] TPatRecord(fields, c) =>
+      | TPatRecord(fields, c) =>
         [@implicit_arity]
         TPatRecord(
           List.map(((id, ld, pat)) => (id, ld, map_pattern(pat)), fields),
           c,
         )
-      | [@implicit_arity] TPatOr(p1, p2) =>
-        [@implicit_arity] TPatOr(map_pattern(p1), map_pattern(p2))
+      | TPatOr(p1, p2) => TPatOr(map_pattern(p1), map_pattern(p2))
       };
     Map.leave_pattern({...pat, pat_extra, pat_desc});
   }
@@ -193,7 +191,7 @@ module MakeMap =
       | TExpNull
       | TExpIdent(_)
       | TExpConstant(_) => exp.exp_desc
-      | [@implicit_arity] TExpLet(recflag, mutflag, binds, body) =>
+      | TExpLet(recflag, mutflag, binds, body) =>
         [@implicit_arity]
         TExpLet(
           recflag,
@@ -201,30 +199,29 @@ module MakeMap =
           map_bindings(recflag, mutflag, binds),
           map_expression(body),
         )
-      | [@implicit_arity] TExpLambda(branches, p) =>
-        [@implicit_arity] TExpLambda(map_match_branches(branches), p)
-      | [@implicit_arity] TExpApp(exp, args) =>
+      | TExpLambda(branches, p) =>
+        TExpLambda(map_match_branches(branches), p)
+      | TExpApp(exp, args) =>
         [@implicit_arity]
         TExpApp(map_expression(exp), List.map(map_expression, args))
-      | [@implicit_arity] TExpPrim1(o, e) =>
-        [@implicit_arity] TExpPrim1(o, map_expression(e))
-      | [@implicit_arity] TExpPrim2(o, e1, e2) =>
+      | TExpPrim1(o, e) => TExpPrim1(o, map_expression(e))
+      | TExpPrim2(o, e1, e2) =>
         [@implicit_arity]
         TExpPrim2(o, map_expression(e1), map_expression(e2))
-      | [@implicit_arity] TExpBoxAssign(e1, e2) =>
+      | TExpBoxAssign(e1, e2) =>
         [@implicit_arity]
         TExpBoxAssign(map_expression(e1), map_expression(e2))
-      | [@implicit_arity] TExpAssign(e1, e2) =>
-        [@implicit_arity] TExpAssign(map_expression(e1), map_expression(e2))
-      | [@implicit_arity] TExpMatch(value, branches, p) =>
+      | TExpAssign(e1, e2) =>
+        TExpAssign(map_expression(e1), map_expression(e2))
+      | TExpMatch(value, branches, p) =>
         [@implicit_arity]
         TExpMatch(map_expression(value), map_match_branches(branches), p)
       | TExpTuple(args) => TExpTuple(List.map(map_expression, args))
       | TExpArray(args) => TExpArray(List.map(map_expression, args))
-      | [@implicit_arity] TExpArrayGet(a1, a2) =>
+      | TExpArrayGet(a1, a2) =>
         [@implicit_arity]
         TExpArrayGet(map_expression(a1), map_expression(a2))
-      | [@implicit_arity] TExpArraySet(a1, a2, a3) =>
+      | TExpArraySet(a1, a2, a3) =>
         [@implicit_arity]
         TExpArraySet(
           map_expression(a1),
@@ -235,17 +232,17 @@ module MakeMap =
         TExpRecord(
           Array.map(
             fun
-            | (desc, [@implicit_arity] Overridden(name, expr)) => (
+            | (desc, Overridden(name, expr)) => (
                 desc,
-                [@implicit_arity] Overridden(name, map_expression(expr)),
+                Overridden(name, map_expression(expr)),
               )
             | (desc, def) => (desc, def),
             args,
           ),
         )
-      | [@implicit_arity] TExpRecordGet(record, field, ld) =>
-        [@implicit_arity] TExpRecordGet(map_expression(record), field, ld)
-      | [@implicit_arity] TExpRecordSet(record, field, ld, arg) =>
+      | TExpRecordGet(record, field, ld) =>
+        TExpRecordGet(map_expression(record), field, ld)
+      | TExpRecordSet(record, field, ld, arg) =>
         [@implicit_arity]
         TExpRecordSet(
           map_expression(record),
@@ -254,13 +251,12 @@ module MakeMap =
           map_expression(arg),
         )
       | TExpBlock(args) => TExpBlock(List.map(map_expression, args))
-      | [@implicit_arity] TExpConstruct(a, b, args) =>
-        [@implicit_arity] TExpConstruct(a, b, List.map(map_expression, args))
-      | [@implicit_arity] TExpIf(c, t, f) =>
+      | TExpConstruct(a, b, args) =>
+        TExpConstruct(a, b, List.map(map_expression, args))
+      | TExpIf(c, t, f) =>
         [@implicit_arity]
         TExpIf(map_expression(c), map_expression(t), map_expression(f))
-      | [@implicit_arity] TExpWhile(c, b) =>
-        [@implicit_arity] TExpWhile(map_expression(c), map_expression(b))
+      | TExpWhile(c, b) => TExpWhile(map_expression(c), map_expression(b))
       };
     Map.leave_expression({...exp, exp_extra, exp_desc});
   };

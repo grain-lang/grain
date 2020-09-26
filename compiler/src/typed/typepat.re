@@ -52,11 +52,11 @@ let iter_ppat = (f, p) =>
   | PPatVar(_)
   | PPatConstant(_) => ()
   | PPatTuple(lst) => List.iter(f, lst)
-  | [@implicit_arity] PPatRecord(fs, _) => List.iter(((_, p)) => f(p), fs)
-  | [@implicit_arity] PPatAlias(p, _)
-  | [@implicit_arity] PPatConstraint(p, _) => f(p)
-  | [@implicit_arity] PPatConstruct(_, lst) => List.iter(f, lst)
-  | [@implicit_arity] PPatOr(p1, p2) =>
+  | PPatRecord(fs, _) => List.iter(((_, p)) => f(p), fs)
+  | PPatAlias(p, _)
+  | PPatConstraint(p, _) => f(p)
+  | PPatConstruct(_, lst) => List.iter(f, lst)
+  | PPatOr(p1, p2) =>
     f(p1);
     f(p2);
   };
@@ -72,8 +72,7 @@ let map_fold_cont = (f, xs, k) =>
 /* unification inside type_pat*/
 let unify_pat_types = (loc, env, ty, ty') =>
   try(unify(env, ty, ty')) {
-  | Unify(trace) =>
-    raise([@implicit_arity] Error(loc, env, PatternTypeClash(trace)))
+  | Unify(trace) => raise(Error(loc, env, PatternTypeClash(trace)))
   };
 
 /* unification inside type_exp and type_expect */
@@ -82,10 +81,7 @@ let unify_exp_types = (loc, env, ty, expected_ty) =>
      Printtyp.raw_type_expr expected_ty; */
   try(unify(env, ty, expected_ty)) {
   | Unify(trace) =>
-    raise(
-      [@implicit_arity]
-      Error(loc, env, [@implicit_arity] ExprTypeClash(trace, None)),
-    )
+    raise([@implicit_arity] Error(loc, env, ExprTypeClash(trace, None)))
   };
 
 /* level at which to create the local type declarations */
@@ -104,12 +100,9 @@ let unify_pat_types_gadt = (loc, env, ty, ty') => {
     };
 
   try(unify_gadt(~newtype_level, env, ty, ty')) {
-  | Unify(trace) =>
-    raise([@implicit_arity] Error(loc, env^, PatternTypeClash(trace)))
+  | Unify(trace) => raise(Error(loc, env^, PatternTypeClash(trace)))
   | Unification_recursive_abbrev(trace) =>
-    raise(
-      [@implicit_arity] Error(loc, env^, RecursiveLocalConstraint(trace)),
-    )
+    raise(Error(loc, env^, RecursiveLocalConstraint(trace)))
   };
 };
 
@@ -167,7 +160,7 @@ let enter_variable = (~is_module=false, ~is_as_variable=false, loc, name, ty) =>
   if (is_module) {
     /* Note: unpack patterns enter a variable of the same name */
     if (! allow_modules^) {
-      raise([@implicit_arity] Error(loc, Env.empty, ModulesNotAllowed));
+      raise(Error(loc, Env.empty, ModulesNotAllowed));
     };
     module_variables := [(name, loc), ...module_variables^];
   } else {
@@ -202,31 +195,24 @@ let enter_orpat_variables = (loc, env, p1_vs, p2_vs) => {
         try(unify(env, t1, t2)) {
         | Unify(trace) =>
           raise(
-            [@implicit_arity]
-            Error(loc, env, [@implicit_arity] OrPatternTypeClash(x1, trace)),
+            [@implicit_arity] Error(loc, env, OrPatternTypeClash(x1, trace)),
           )
         };
         [(x2, x1), ...unify_vars(rem1, rem2)];
       }
     | ([], []) => []
     | ([(x, _, _, _, _), ..._], []) =>
-      raise(
-        [@implicit_arity]
-        Error(loc, env, [@implicit_arity] OrpatVars(x, [])),
-      )
+      raise([@implicit_arity] Error(loc, env, OrpatVars(x, [])))
     | ([], [(y, _, _, _, _), ..._]) =>
-      raise(
-        [@implicit_arity]
-        Error(loc, env, [@implicit_arity] OrpatVars(y, [])),
-      )
+      raise([@implicit_arity] Error(loc, env, OrpatVars(y, [])))
     | ([(x, _, _, _, _), ..._], [(y, _, _, _, _), ..._]) =>
       let err =
         if (Ident.name(x) < Ident.name(y)) {
-          [@implicit_arity] OrpatVars(x, vars(p2_vs));
+          OrpatVars(x, vars(p2_vs));
         } else {
-          [@implicit_arity] OrpatVars(y, vars(p1_vs));
+          OrpatVars(y, vars(p1_vs));
         };
-      raise([@implicit_arity] Error(loc, env, err));
+      raise(Error(loc, env, err));
     };
   };
   unify_vars(p1_vs, p2_vs);
@@ -234,11 +220,11 @@ let enter_orpat_variables = (loc, env, p1_vs, p2_vs) => {
 
 let rec build_as_type = (env, p) =>
   switch (p.pat_desc) {
-  | [@implicit_arity] TPatAlias(p1, _, _) => build_as_type(env, p1)
+  | TPatAlias(p1, _, _) => build_as_type(env, p1)
   | TPatTuple(pl) =>
     let tyl = List.map(build_as_type(env), pl);
     newty(TTyTuple(tyl));
-  | [@implicit_arity] TPatRecord(lpl, _) =>
+  | TPatRecord(lpl, _) =>
     let lbl = snd3(List.hd(lpl));
     let ty = newvar();
     let ppl = List.map(((_, l, p)) => (l.lbl_pos, p), lpl);
@@ -264,7 +250,7 @@ let rec build_as_type = (env, p) =>
     };
     Array.iter(do_label, lbl.lbl_all);
     ty;
-  | [@implicit_arity] TPatConstruct(_, cstr, pl) =>
+  | TPatConstruct(_, cstr, pl) =>
     let keep = cstr.cstr_existentials != [];
     if (keep) {
       p.pat_type;
@@ -278,7 +264,7 @@ let rec build_as_type = (env, p) =>
       );
       ty_res;
     };
-  | [@implicit_arity] TPatOr(p1, p2) =>
+  | TPatOr(p1, p2) =>
     let ty1 = build_as_type(env, p1)
     and ty2 = build_as_type(env, p2);
     unify_pat(env, {...p2, pat_type: ty2}, ty1);
@@ -373,10 +359,7 @@ let check_recordpat_labels = (loc, lbl_pat_list, closed) =>
 let rec find_record_qual =
   fun
   | [] => None
-  | [
-      ({txt: [@implicit_arity] Identifier.IdentExternal(modname, _)}, _),
-      ..._,
-    ] =>
+  | [({txt: Identifier.IdentExternal(modname, _)}, _), ..._] =>
     Some(modname)
   | [_, ...rest] => find_record_qual(rest);
 
@@ -405,11 +388,7 @@ let type_label_a_list =
             ((lid, a) as lid_a) =>
               switch (lid.txt) {
               | Identifier.IdentName(s) => (
-                  {
-                    ...lid,
-                    txt:
-                      [@implicit_arity] Identifier.IdentExternal(modname, s),
-                  },
+                  {...lid, txt: Identifier.IdentExternal(modname, s)},
                   a,
                 )
               | _ => lid_a
@@ -597,7 +576,7 @@ and type_pat_aux =
       rp(
         k,
         {
-          pat_desc: [@implicit_arity] TPatVar(id, name),
+          pat_desc: TPatVar(id, name),
           pat_loc: loc,
           pat_extra: [],
           pat_type: expected_ty,
@@ -617,7 +596,7 @@ and type_pat_aux =
     unify_pat_types(lloc, env^, ty, expected_ty);
     pattern_force := [force, ...pattern_force^];
     switch (ty.desc) {
-    | [@implicit_arity] TTyPoly(body, tyl) =>
+    | TTyPoly(body, tyl) =>
       begin_def();
       let (_, ty') = instance_poly(~keep_names=true, false, tyl, body);
       end_def();
@@ -626,7 +605,7 @@ and type_pat_aux =
       rp(
         k,
         {
-          pat_desc: [@implicit_arity] TPatVar(id, name),
+          pat_desc: TPatVar(id, name),
           pat_loc: lloc,
           pat_extra: [(TPatConstraint(cty), loc)],
           pat_type: ty,
@@ -635,7 +614,7 @@ and type_pat_aux =
       );
     | _ => assert(false)
     };
-  | [@implicit_arity] PPatAlias(sq, name) =>
+  | PPatAlias(sq, name) =>
     assert(constrs == None);
     type_pat(
       sq,
@@ -649,7 +628,7 @@ and type_pat_aux =
         rp(
           k,
           {
-            pat_desc: [@implicit_arity] TPatAlias(q, id, name),
+            pat_desc: TPatAlias(q, id, name),
             pat_loc: loc,
             pat_extra: [],
             pat_type: q.pat_type,
@@ -691,7 +670,7 @@ and type_pat_aux =
           },
         ),
     );
-  | [@implicit_arity] PPatRecord(lid_pat_list, closed) =>
+  | PPatRecord(lid_pat_list, closed) =>
     assert(lid_pat_list != []);
     let (opath, record_ty) =
       try({
@@ -709,14 +688,10 @@ and type_pat_aux =
       begin_def();
       let (_, ty_arg, ty_res) = instance_label(false, label);
       try(unify_pat_types(loc, env^, ty_res, instance(env^, record_ty))) {
-      | [@implicit_arity] Error(_loc, _env, PatternTypeClash(cl)) =>
+      | Error(_loc, _env, PatternTypeClash(cl)) =>
         raise(
           [@implicit_arity]
-          Error(
-            label_lid.loc,
-            env^,
-            [@implicit_arity] LabelMismatch(label_lid.txt, cl),
-          ),
+          Error(label_lid.loc, env^, LabelMismatch(label_lid.txt, cl)),
         )
       };
       end_def();
@@ -728,7 +703,7 @@ and type_pat_aux =
     let make_record_pat = lbl_pat_list => {
       check_recordpat_labels(loc, lbl_pat_list, closed);
       {
-        pat_desc: [@implicit_arity] TPatRecord(lbl_pat_list, closed),
+        pat_desc: TPatRecord(lbl_pat_list, closed),
         pat_loc: loc,
         pat_extra: [],
         pat_type: instance(env^, record_ty),
@@ -759,7 +734,7 @@ and type_pat_aux =
        type_label_a_list ~labels loc false !env type_label_pat opath
          lid_pat_list (fun lbl_pat_list -> k' (make_record_pat lbl_pat_list)) */
     };
-  | [@implicit_arity] PPatConstruct(lid, sargs) =>
+  | PPatConstruct(lid, sargs) =>
     let opath =
       /*try
           let (p0, p, _) = extract_concrete_variant !env expected_ty in
@@ -794,7 +769,7 @@ and type_pat_aux =
     /*Builtin_attributes.check_deprecated loc constr.cstr_attributes
       constr.cstr_name;*/
     if (no_existentials && constr.cstr_existentials != []) {
-      raise([@implicit_arity] Error(loc, env^, UnexpectedExistential));
+      raise(Error(loc, env^, UnexpectedExistential));
     };
     /* if constructor is gadt, we must verify that the expected type has the
        correct head */
@@ -853,7 +828,7 @@ and type_pat_aux =
         rp(
           k,
           {
-            pat_desc: [@implicit_arity] TPatConstruct(lid, constr, args),
+            pat_desc: TPatConstruct(lid, constr, args),
             pat_loc: loc,
             pat_extra: [],
             pat_type: expected_ty,
@@ -861,7 +836,7 @@ and type_pat_aux =
           },
         ),
     );
-  | [@implicit_arity] PPatOr(sp1, sp2) =>
+  | PPatOr(sp1, sp2) =>
     let state = save_state(env);
     switch (
       {
@@ -893,7 +868,7 @@ and type_pat_aux =
           pattern_variables := p1_variables;
           module_variables := p1_module_variables;
           {
-            pat_desc: [@implicit_arity] TPatOr(p1, alpha_pat(alpha_env, p2)),
+            pat_desc: TPatOr(p1, alpha_pat(alpha_env, p2)),
             pat_loc: loc,
             pat_extra: [],
             pat_type: expected_ty,
@@ -918,7 +893,7 @@ and type_pat_aux =
         type_pat(~mode, sp2, expected_ty, k);
       };
     };
-  | [@implicit_arity] PPatConstraint(sp, sty) =>
+  | PPatConstraint(sp, sty) =>
     /* Separate when not already separated by !principal */
     let separate = true;
     if (separate) {
@@ -950,7 +925,7 @@ and type_pat_aux =
             p;
           } else {
             switch (p.pat_desc) {
-            | [@implicit_arity] TPatVar(id, s) => {
+            | TPatVar(id, s) => {
                 ...p,
                 pat_type: ty,
                 pat_desc:
@@ -1066,9 +1041,7 @@ let check_unused = (~lev=get_current_level(), env, expected_ty, cases) =>
         )
       ) {
       | Some(pat) when refute =>
-        raise(
-          [@implicit_arity] Error(spat.ppat_loc, env, UnrefutedPattern(pat)),
-        )
+        raise(Error(spat.ppat_loc, env, UnrefutedPattern(pat)))
       | r => r
       },
     cases,
@@ -1166,7 +1139,7 @@ let report_type_expected_explanation_opt = (expl, ppf) =>
   };
 let report_error = (env, ppf) =>
   fun
-  | [@implicit_arity] ConstructorArityMismatch(lid, expected, provided) =>
+  | ConstructorArityMismatch(lid, expected, provided) =>
     fprintf(
       ppf,
       "@[The constructor %a@ expects %i argument(s),@ but is applied here to %i argument(s)@]",
@@ -1189,7 +1162,7 @@ let report_error = (env, ppf) =>
           "but a pattern was expected which matches values of type",
         ),
     )
-  | [@implicit_arity] ExprTypeClash(trace, explanation) =>
+  | ExprTypeClash(trace, explanation) =>
     report_unification_error(
       ppf,
       env,
@@ -1201,7 +1174,7 @@ let report_error = (env, ppf) =>
       fun
       | ppf => fprintf(ppf, "but a expression was expected of type"),
     )
-  | [@implicit_arity] LabelMismatch(lid, trace) =>
+  | LabelMismatch(lid, trace) =>
     report_unification_error(
       ppf,
       env,
@@ -1233,7 +1206,7 @@ let report_error = (env, ppf) =>
     fprintf(ppf, "Variable %s is bound several times in this matching", name)
   | ModulesNotAllowed =>
     fprintf(ppf, "Modules are not allowed in this pattern.")
-  | [@implicit_arity] OrpatVars(id, valid_idents) => {
+  | OrpatVars(id, valid_idents) => {
       fprintf(
         ppf,
         "Variable %s must occur on both sides of this | pattern",
@@ -1241,7 +1214,7 @@ let report_error = (env, ppf) =>
       );
       spellcheck_idents(ppf, id, valid_idents);
     }
-  | [@implicit_arity] OrPatternTypeClash(id, trace) =>
+  | OrPatternTypeClash(id, trace) =>
     report_unification_error(
       ppf,
       env,
@@ -1272,7 +1245,7 @@ let report_error = (env, ppf, err) =>
 let () =
   Location.register_error_of_exn(
     fun
-    | [@implicit_arity] Error(loc, env, err) =>
+    | Error(loc, env, err) =>
       Some(Location.error_of_printer(loc, report_error(env), err))
     | Error_forward(err) => Some(err)
     | _ => None,
