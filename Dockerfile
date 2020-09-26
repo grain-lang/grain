@@ -40,3 +40,4 @@ RUN yarn workspace @grain/compiler esy copy-compiler
 
 # Set up container environment
 WORKDIR /
+CMD [ "/bin/bash" ]
