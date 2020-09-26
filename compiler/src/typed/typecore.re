@@ -145,6 +145,7 @@ let prim2_type =
       Builtin_types.type_bool,
       Builtin_types.type_bool,
     )
+  | Is
   | Eq => {
       let v1 = newvar(~name="equal", ())
       and v2 = newvar(~name="equal", ());

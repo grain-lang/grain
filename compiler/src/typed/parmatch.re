@@ -1761,9 +1761,13 @@ let untype_constant =
         Int32.to_string(d),
       ),
     )
+  | Const_int32(i) => Parsetree.PConstInt32(Int32.to_string(i))
+  | Const_int64(i) => Parsetree.PConstInt64(Int64.to_string(i))
+  | Const_float32(f) => Parsetree.PConstFloat32(Float.to_string(f))
+  | Const_float64(f) => Parsetree.PConstFloat64(Float.to_string(f))
   | Const_string(s) => Parsetree.PConstString(s)
   | Const_bool(b) => Parsetree.PConstBool(b)
-  | _ => failwith("NYI untype_constant");
+  | Const_void => Parsetree.PConstVoid;
 
 /* conversion from Typedtree.pattern to Parsetree.pattern list */
 module Conv = {

@@ -64,6 +64,7 @@ let float32_to_number_ident =
   Ident.create_persistent("coerceFloat32ToNumber");
 let float64_to_number_ident =
   Ident.create_persistent("coerceFloat64ToNumber");
+let equal_ident = Ident.create_persistent("equal");
 /* Variants used for tracing */
 let incref_adt_ident = Ident.create_persistent("incRefADT");
 let incref_array_ident = Ident.create_persistent("incRefArray");
@@ -423,6 +424,14 @@ let runtime_function_imports =
         mimp_mod: stdlib_external_runtime_mod,
         mimp_name: float64_to_number_ident,
         mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]),
+        mimp_kind: MImportWasm,
+        mimp_setup: MSetupNone,
+      },
+      {
+        mimp_mod: stdlib_external_runtime_mod,
+        mimp_name: equal_ident,
+        mimp_type:
+          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
@@ -892,6 +901,13 @@ let call_float64_to_number = (wasm_mod, env, args) =>
   Expression.call(
     wasm_mod,
     get_imported_name(stdlib_external_runtime_mod, float64_to_number_ident),
+    args,
+    Type.int32,
+  );
+let call_equal = (wasm_mod, env, args) =>
+  Expression.call(
+    wasm_mod,
+    get_imported_name(stdlib_external_runtime_mod, equal_ident),
     args,
     Type.int32,
   );
@@ -2846,7 +2862,8 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
   | LessEq
   | Int64Lte =>
     failwith("Unreachable case; should never get here: LessEq/Int64Lte")
-  | Eq =>
+  | Eq => call_equal(wasm_mod, env, [compiled_arg1(), compiled_arg2()])
+  | Is =>
     // Physical equality check
     encode_bool(
       wasm_mod,
