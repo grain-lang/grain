@@ -94,7 +94,7 @@ let log_change = ch =>
   | None => ()
   | Some(r) =>
     let r' = ref(Unchanged);
-    r := [@implicit_arity] Change(ch, r');
+    r := Change(ch, r');
     Weak.set(trail, 0, Some(r'));
   };
 
@@ -105,7 +105,7 @@ let rec repr_link = (compress, t, d) =>
   | {desc: TTyLink(t') as d'} => repr_link(true, t, d', t')
   | t' => {
       if (compress) {
-        log_change([@implicit_arity] Ccompress(t, t.desc, d));
+        log_change(Ccompress(t, t.desc, d));
         t.desc = d;
       };
       t';
@@ -129,16 +129,16 @@ let rec commu_repr =
 let iter_type_expr = (f, ty) =>
   switch (ty.desc) {
   | TTyVar(_) => ()
-  | [@implicit_arity] TTyArrow(args, ret, _) =>
+  | TTyArrow(args, ret, _) =>
     List.iter(f, args);
     f(ret);
   | TTyTuple(ts) => List.iter(f, ts)
   | TTyRecord(ts) => List.iter(((_, t)) => f(t), ts)
-  | [@implicit_arity] TTyConstr(_, args, _) => List.iter(f, args)
+  | TTyConstr(_, args, _) => List.iter(f, args)
   | TTyLink(ty) => f(ty)
   | TTySubst(ty) => f(ty)
   | TTyUniVar(_) => ()
-  | [@implicit_arity] TTyPoly(t, l) =>
+  | TTyPoly(t, l) =>
     f(t);
     List.iter(f, l);
   };
@@ -146,7 +146,7 @@ let iter_type_expr = (f, ty) =>
 let rec iter_abbrev = f =>
   fun
   | TMemNil => ()
-  | [@implicit_arity] TMemCons(_, ty, ty', rem) => {
+  | TMemCons(_, ty, ty', rem) => {
       f(ty);
       f(ty');
       iter_abbrev(f, rem);
@@ -190,14 +190,11 @@ let type_iterators = {
   let it_signature = it => List.iter(it.it_signature_item(it))
   and it_signature_item = it =>
     fun
-    | [@implicit_arity] TSigValue(_, vd) => it.it_value_description(it, vd)
-    | [@implicit_arity] TSigType(_, td, _) => it.it_type_declaration(it, td)
-    | [@implicit_arity] TSigTypeExt(_, td, _) =>
-      it.it_extension_constructor(it, td)
-    | [@implicit_arity] TSigModule(_, md, _) =>
-      it.it_module_declaration(it, md)
-    | [@implicit_arity] TSigModType(_, mtd) =>
-      it.it_modtype_declaration(it, mtd)
+    | TSigValue(_, vd) => it.it_value_description(it, vd)
+    | TSigType(_, td, _) => it.it_type_declaration(it, td)
+    | TSigTypeExt(_, td, _) => it.it_extension_constructor(it, td)
+    | TSigModule(_, md, _) => it.it_module_declaration(it, md)
+    | TSigModType(_, mtd) => it.it_modtype_declaration(it, mtd)
   and it_value_description = (it, vd) => it.it_type_expr(it, vd.val_type)
   and it_type_declaration = (it, td) => {
     List.iter(it.it_type_expr(it), td.type_params);
@@ -221,7 +218,7 @@ let type_iterators = {
   and it_do_type_expr = (it, ty) => {
     iter_type_expr(it.it_type_expr(it), ty);
     switch (ty.desc) {
-    | [@implicit_arity] TTyConstr(p, _, _) => it.it_path(p)
+    | TTyConstr(p, _, _) => it.it_path(p)
     | _ => ()
     };
   }
@@ -274,19 +271,18 @@ let rec copy_type_desc = (~keep_names=false, f) =>
     } else {
       TTyVar(None);
     }
-  | [@implicit_arity] TTyArrow(tyl, ret, c) =>
-    [@implicit_arity] TTyArrow(List.map(f, tyl), f(ret), copy_commu(c))
+  | TTyArrow(tyl, ret, c) =>
+    TTyArrow(List.map(f, tyl), f(ret), copy_commu(c))
   | TTyTuple(l) => TTyTuple(List.map(f, l))
   | TTyRecord(l) =>
     TTyRecord(List.map(((name, arg)) => (name, f(arg)), l))
-  | [@implicit_arity] TTyConstr(p, l, _) =>
-    [@implicit_arity] TTyConstr(p, List.map(f, l), ref(TMemNil))
+  | TTyConstr(p, l, _) => TTyConstr(p, List.map(f, l), ref(TMemNil))
   | TTyUniVar(_) as ty => ty
   | TTySubst(_) => assert(false)
   | TTyLink(ty) => copy_type_desc(f, ty.desc)
-  | [@implicit_arity] TTyPoly(ty, tyl) => {
+  | TTyPoly(ty, tyl) => {
       let tyl = List.map(x => norm_univar(f(x)), tyl);
-      [@implicit_arity] TTyPoly(f(ty), tyl);
+      TTyPoly(f(ty), tyl);
     };
 
 /* Utilities for copying */
@@ -364,9 +360,8 @@ let unmark_type_decl = decl =>
 let rec find_expans = (priv, p1) =>
   fun
   | TMemNil => None
-  | [@implicit_arity] TMemCons(p2, _ty0, ty, _) when Path.same(p1, p2) =>
-    Some(ty)
-  | [@implicit_arity] TMemCons(_, _, _, rem) => find_expans(priv, p1, rem)
+  | TMemCons(p2, _ty0, ty, _) when Path.same(p1, p2) => Some(ty)
+  | TMemCons(_, _, _, rem) => find_expans(priv, p1, rem)
   | TMemLink({contents: rem}) => find_expans(priv, p1, rem);
 
 let memo = ref([]);
@@ -380,7 +375,7 @@ let cleanup_abbrev = () => {
 
 let memorize_abbrev = (mem, priv, path, v, v') => {
   /* Memorize the expansion of an abbreviation. */
-  mem := [@implicit_arity] TMemCons(path, v, v', mem^);
+  mem := TMemCons(path, v, v', mem^);
   /* check_expans [] v; */
   memo := [mem, ...memo^];
 };
@@ -388,9 +383,9 @@ let memorize_abbrev = (mem, priv, path, v, v') => {
 let rec forget_abbrev_rec = (mem, path) =>
   switch (mem) {
   | TMemNil => assert(false)
-  | [@implicit_arity] TMemCons(path', _, _, rem) when Path.same(path, path') => rem
-  | [@implicit_arity] TMemCons(path', v, v', rem) =>
-    [@implicit_arity] TMemCons(path', v, v', forget_abbrev_rec(rem, path))
+  | TMemCons(path', _, _, rem) when Path.same(path, path') => rem
+  | TMemCons(path', v, v', rem) =>
+    TMemCons(path', v, v', forget_abbrev_rec(rem, path))
   | TMemLink(mem') =>
     mem' := forget_abbrev_rec(mem'^, path);
     raise(Exit);
@@ -440,20 +435,20 @@ let extract_label = (l, ls) => extract_label_aux([], l, ls);
 
 let undo_change =
   fun
-  | [@implicit_arity] Ctype(ty, desc) => ty.desc = desc
-  | [@implicit_arity] Ccompress(ty, desc, _) => ty.desc = desc
-  | [@implicit_arity] Clevel(ty, level) => ty.level = level
-  | [@implicit_arity] Cname(r, v) => r := v
-  | [@implicit_arity] Ccommu(r, v) => r := v
-  | [@implicit_arity] Cuniv(r, v) => r := v
-  | [@implicit_arity] Ctypeset(r, v) => r := v;
+  | Ctype(ty, desc) => ty.desc = desc
+  | Ccompress(ty, desc, _) => ty.desc = desc
+  | Clevel(ty, level) => ty.level = level
+  | Cname(r, v) => r := v
+  | Ccommu(r, v) => r := v
+  | Cuniv(r, v) => r := v
+  | Ctypeset(r, v) => r := v;
 
 type snapshot = (ref(changes), int);
 let last_snapshot = ref(0);
 
 let log_type = ty =>
   if (ty.id <= last_snapshot^) {
-    log_change([@implicit_arity] Ctype(ty, ty.desc));
+    log_change(Ctype(ty, ty.desc));
   };
 let link_type = (ty, ty') => {
   log_type(ty);
@@ -482,24 +477,24 @@ let link_type = (ty, ty') => {
 /*  ; check_expans [] ty' */
 let set_level = (ty, level) => {
   if (ty.id <= last_snapshot^) {
-    log_change([@implicit_arity] Clevel(ty, ty.level));
+    log_change(Clevel(ty, ty.level));
   };
   ty.level = level;
 };
 let set_univar = (rty, ty) => {
-  log_change([@implicit_arity] Cuniv(rty, rty^));
+  log_change(Cuniv(rty, rty^));
   rty := Some(ty);
 };
 let set_name = (nm, v) => {
-  log_change([@implicit_arity] Cname(nm, nm^));
+  log_change(Cname(nm, nm^));
   nm := v;
 };
 let set_commu = (rc, c) => {
-  log_change([@implicit_arity] Ccommu(rc, rc^));
+  log_change(Ccommu(rc, rc^));
   rc := c;
 };
 let set_typeset = (rs, s) => {
-  log_change([@implicit_arity] Ctypeset(rs, rs^));
+  log_change(Ctypeset(rs, rs^));
   rs := s;
 };
 
@@ -519,7 +514,7 @@ let rec rev_log = accu =>
   fun
   | Unchanged => accu
   | Invalid => assert(false)
-  | [@implicit_arity] Change(ch, next) => {
+  | Change(ch, next) => {
       let d = next^;
       next := Invalid;
       rev_log([ch, ...accu], d);
@@ -542,9 +537,8 @@ let rec rev_compress_log = (log, r) =>
   switch (r^) {
   | Unchanged
   | Invalid => log
-  | [@implicit_arity] Change(Ccompress(_), next) =>
-    rev_compress_log([r, ...log], next)
-  | [@implicit_arity] Change(_, next) => rev_compress_log(log, next)
+  | Change(Ccompress(_), next) => rev_compress_log([r, ...log], next)
+  | Change(_, next) => rev_compress_log(log, next)
   };
 
 let undo_compress = ((changes, _old)) =>
@@ -556,8 +550,7 @@ let undo_compress = ((changes, _old)) =>
     List.iter(
       r =>
         switch (r^) {
-        | [@implicit_arity]
-          Change([@implicit_arity] Ccompress(ty, desc, d), next)
+        | [@implicit_arity] Change(Ccompress(ty, desc, d), next)
             when ty.desc === d =>
           ty.desc = desc;
           r := next^;

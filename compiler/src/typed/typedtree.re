@@ -326,14 +326,13 @@ type typed_program = {
 let iter_pattern_desc = (f, patt) =>
   switch (patt) {
   | TPatTuple(patts)
-  | [@implicit_arity] TPatConstruct(_, _, patts) => List.iter(f, patts)
-  | [@implicit_arity] TPatRecord(fields, _) =>
-    List.iter(((_, _, p)) => f(p), fields)
+  | TPatConstruct(_, _, patts) => List.iter(f, patts)
+  | TPatRecord(fields, _) => List.iter(((_, _, p)) => f(p), fields)
   | TPatAny
   | TPatVar(_)
   | TPatConstant(_) => ()
-  | [@implicit_arity] TPatAlias(p, _, _) => f(p)
-  | [@implicit_arity] TPatOr(p1, p2) =>
+  | TPatAlias(p, _, _) => f(p)
+  | TPatOr(p1, p2) =>
     f(p1);
     f(p2);
   };
@@ -341,15 +340,12 @@ let iter_pattern_desc = (f, patt) =>
 let map_pattern_desc = (f, patt) =>
   switch (patt) {
   | TPatTuple(patts) => TPatTuple(List.map(f, patts))
-  | [@implicit_arity] TPatRecord(fields, c) =>
+  | TPatRecord(fields, c) =>
     [@implicit_arity]
     TPatRecord(List.map(((id, ld, pat)) => (id, ld, f(pat)), fields), c)
-  | [@implicit_arity] TPatAlias(p1, id, s) =>
-    [@implicit_arity] TPatAlias(f(p1), id, s)
-  | [@implicit_arity] TPatConstruct(lid, c, pats) =>
-    [@implicit_arity] TPatConstruct(lid, c, List.map(f, pats))
-  | [@implicit_arity] TPatOr(p1, p2) =>
-    [@implicit_arity] TPatOr(f(p1), f(p2))
+  | TPatAlias(p1, id, s) => TPatAlias(f(p1), id, s)
+  | TPatConstruct(lid, c, pats) => TPatConstruct(lid, c, List.map(f, pats))
+  | TPatOr(p1, p2) => TPatOr(f(p1), f(p2))
   | _ => patt
   };
 
@@ -374,11 +370,11 @@ let pattern_bound_idents_and_locs = patt => {
   let ret = ref([]);
   let rec help = ({pat_desc: desc, _}) =>
     switch (desc) {
-    | [@implicit_arity] TPatVar(id, s) => ret := [(id, s), ...ret^]
-    | [@implicit_arity] TPatAlias(p, id, s) =>
+    | TPatVar(id, s) => ret := [(id, s), ...ret^]
+    | TPatAlias(p, id, s) =>
       help(p);
       ret := [(id, s), ...ret^];
-    | [@implicit_arity] TPatOr(p1, _) =>
+    | TPatOr(p1, _) =>
       /* Invariant: both arguments bind the same variables */
       help(p1)
     | _ => iter_pattern_desc(help, desc)
@@ -406,18 +402,15 @@ let alpha_var = (env, id) => List.assoc(id, env);
 
 let rec alpha_pat = (env, {pat_desc: desc, _} as p) =>
   switch (desc) {
-  | [@implicit_arity] TPatVar(id, s) =>
+  | TPatVar(id, s) =>
     let new_desc =
-      try([@implicit_arity] TPatVar(alpha_var(env, id), s)) {
+      try(TPatVar(alpha_var(env, id), s)) {
       | Not_found => TPatAny
       };
     {...p, pat_desc: new_desc};
-  | [@implicit_arity] TPatAlias(p1, id, s) =>
+  | TPatAlias(p1, id, s) =>
     let new_p = alpha_pat(env, p1);
-    try({
-      ...p,
-      pat_desc: [@implicit_arity] TPatAlias(new_p, alpha_var(env, id), s),
-    }) {
+    try({...p, pat_desc: TPatAlias(new_p, alpha_var(env, id), s)}) {
     | Not_found => new_p
     };
   | _ => {...p, pat_desc: map_pattern_desc(alpha_pat(env), desc)}

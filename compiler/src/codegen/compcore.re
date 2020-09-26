@@ -103,155 +103,154 @@ let traced_imports =
       {
         mimp_mod: runtime_mod,
         mimp_name: incref_adt_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
+        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: runtime_mod,
         mimp_name: incref_array_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
+        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: runtime_mod,
         mimp_name: incref_tuple_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
+        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: runtime_mod,
         mimp_name: incref_box_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
+        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: runtime_mod,
         mimp_name: incref_backpatch_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
+        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: runtime_mod,
         mimp_name: incref_swap_bind_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
+        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: runtime_mod,
         mimp_name: incref_arg_bind_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
+        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: runtime_mod,
         mimp_name: incref_local_bind_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
+        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: runtime_mod,
         mimp_name: incref_global_bind_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
+        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: runtime_mod,
         mimp_name: incref_closure_bind_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
+        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: runtime_mod,
         mimp_name: incref_cleanup_locals_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
+        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: runtime_mod,
         mimp_name: decref_array_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
+        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: runtime_mod,
         mimp_name: decref_tuple_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
+        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: runtime_mod,
         mimp_name: decref_box_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
+        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: runtime_mod,
         mimp_name: decref_swap_bind_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
+        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: runtime_mod,
         mimp_name: decref_arg_bind_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
+        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: runtime_mod,
         mimp_name: decref_local_bind_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
+        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: runtime_mod,
         mimp_name: decref_global_bind_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
+        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: runtime_mod,
         mimp_name: decref_closure_bind_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
+        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: runtime_mod,
         mimp_name: decref_cleanup_locals_ident,
-        mimp_type:
-          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]), /* Returns same pointer as argument */
+        mimp_type: MFuncImport([I32Type, I32Type], [I32Type]), /* Returns same pointer as argument */
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: runtime_mod,
         mimp_name: decref_cleanup_globals_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
+        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: runtime_mod,
         mimp_name: decref_drop_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
+        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
@@ -261,7 +260,7 @@ let traced_imports =
       {
         mimp_mod: runtime_mod,
         mimp_name: decref_ignore_zeros_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
+        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
@@ -291,56 +290,56 @@ let runtime_function_imports =
       {
         mimp_mod: console_mod,
         mimp_name: log_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]),
+        mimp_type: MFuncImport([I32Type], [I32Type]),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: runtime_mod,
         mimp_name: check_memory_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type], []),
+        mimp_type: MFuncImport([I32Type], []),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: runtime_mod,
         mimp_name: malloc_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]),
+        mimp_type: MFuncImport([I32Type], [I32Type]),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: runtime_mod,
         mimp_name: incref_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
+        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: runtime_mod,
         mimp_name: incref64_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I64Type], [I64Type]), /* Returns same pointer as argument */
+        mimp_type: MFuncImport([I64Type], [I64Type]), /* Returns same pointer as argument */
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: runtime_mod,
         mimp_name: decref_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
+        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: runtime_mod,
         mimp_name: decref64_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I64Type], [I64Type]), /* Returns same pointer as argument */
+        mimp_type: MFuncImport([I64Type], [I64Type]), /* Returns same pointer as argument */
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: console_mod,
         mimp_name: tracepoint_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type], []),
+        mimp_type: MFuncImport([I32Type], []),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
@@ -359,79 +358,77 @@ let runtime_function_imports =
       {
         mimp_mod: stdlib_external_runtime_mod,
         mimp_name: new_rational_ident,
-        mimp_type:
-          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
+        mimp_type: MFuncImport([I32Type, I32Type], [I32Type]),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: stdlib_external_runtime_mod,
         mimp_name: new_float32_ident,
-        mimp_type: [@implicit_arity] MFuncImport([F32Type], [I32Type]),
+        mimp_type: MFuncImport([F32Type], [I32Type]),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: stdlib_external_runtime_mod,
         mimp_name: new_float64_ident,
-        mimp_type: [@implicit_arity] MFuncImport([F64Type], [I32Type]),
+        mimp_type: MFuncImport([F64Type], [I32Type]),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: stdlib_external_runtime_mod,
         mimp_name: new_int32_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]),
+        mimp_type: MFuncImport([I32Type], [I32Type]),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: stdlib_external_runtime_mod,
         mimp_name: new_int64_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I64Type], [I32Type]),
+        mimp_type: MFuncImport([I64Type], [I32Type]),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: stdlib_external_runtime_mod,
         mimp_name: number_to_int64_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]),
+        mimp_type: MFuncImport([I32Type], [I32Type]),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: stdlib_external_runtime_mod,
         mimp_name: int64_to_number_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]),
+        mimp_type: MFuncImport([I32Type], [I32Type]),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: stdlib_external_runtime_mod,
         mimp_name: int32_to_number_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]),
+        mimp_type: MFuncImport([I32Type], [I32Type]),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: stdlib_external_runtime_mod,
         mimp_name: float32_to_number_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]),
+        mimp_type: MFuncImport([I32Type], [I32Type]),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: stdlib_external_runtime_mod,
         mimp_name: float64_to_number_ident,
-        mimp_type: [@implicit_arity] MFuncImport([I32Type], [I32Type]),
+        mimp_type: MFuncImport([I32Type], [I32Type]),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
       {
         mimp_mod: stdlib_external_runtime_mod,
         mimp_name: equal_ident,
-        mimp_type:
-          [@implicit_arity] MFuncImport([I32Type, I32Type], [I32Type]),
+        mimp_type: MFuncImport([I32Type, I32Type], [I32Type]),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
@@ -1511,7 +1508,7 @@ let compile_tuple_op = (~is_box=false, wasm_mod, env, tup_imm, op) => {
       wasm_mod,
       untag(wasm_mod, TupleTagType, tup),
     );
-  | [@implicit_arity] MTupleSet(idx, imm) =>
+  | MTupleSet(idx, imm) =>
     let idx_int = Int32.to_int(idx);
     let get_swap = get_swap(wasm_mod, env, 0);
     let set_swap = set_swap(wasm_mod, env, 0);
@@ -1567,7 +1564,7 @@ let compile_box_op = (wasm_mod, env, box_imm, op) =>
       wasm_mod,
       env,
       box_imm,
-      [@implicit_arity] MTupleSet(Int32.zero, imm),
+      MTupleSet(Int32.zero, imm),
     )
   };
 
@@ -1700,7 +1697,7 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
       ),
       Expression.const(wasm_mod, const_int32(1)),
     )
-  | [@implicit_arity] MArraySet(idx_imm, val_imm) =>
+  | MArraySet(idx_imm, val_imm) =>
     let idx = compile_imm(wasm_mod, env, idx_imm);
     let val_ = compile_imm(wasm_mod, env, val_imm);
     let get_arr = () => get_swap(0);
@@ -2893,11 +2890,9 @@ let compile_allocation = (wasm_mod, env, alloc_type) =>
   | MTuple(elts) => allocate_tuple(wasm_mod, env, elts)
   | MBox(elt) => allocate_box(wasm_mod, env, elt)
   | MArray(elts) => allocate_array(wasm_mod, env, elts)
-  | [@implicit_arity] MRecord(ttag, elts) =>
-    allocate_record(wasm_mod, env, ttag, elts)
+  | MRecord(ttag, elts) => allocate_record(wasm_mod, env, ttag, elts)
   | MString(str) => allocate_string(wasm_mod, env, str)
-  | [@implicit_arity] MADT(ttag, vtag, elts) =>
-    allocate_adt(wasm_mod, env, ttag, vtag, elts)
+  | MADT(ttag, vtag, elts) => allocate_adt(wasm_mod, env, ttag, vtag, elts)
   | MInt32(i) =>
     allocate_int32(
       wasm_mod,
@@ -3110,28 +3105,21 @@ and compile_instr = (wasm_mod, env, instr) =>
   | MTracepoint(x) => tracepoint(wasm_mod, env, x)
   | MImmediate(imm) => compile_imm(wasm_mod, env, imm)
   | MAllocate(alloc) => compile_allocation(wasm_mod, env, alloc)
-  | [@implicit_arity] MTupleOp(tuple_op, tup) =>
-    compile_tuple_op(wasm_mod, env, tup, tuple_op)
-  | [@implicit_arity] MBoxOp(box_op, box) =>
-    compile_box_op(wasm_mod, env, box, box_op)
-  | [@implicit_arity] MArrayOp(array_op, ret) =>
-    compile_array_op(wasm_mod, env, ret, array_op)
-  | [@implicit_arity] MAdtOp(adt_op, adt) =>
-    compile_adt_op(wasm_mod, env, adt, adt_op)
-  | [@implicit_arity] MRecordOp(record_op, record) =>
+  | MTupleOp(tuple_op, tup) => compile_tuple_op(wasm_mod, env, tup, tuple_op)
+  | MBoxOp(box_op, box) => compile_box_op(wasm_mod, env, box, box_op)
+  | MArrayOp(array_op, ret) => compile_array_op(wasm_mod, env, ret, array_op)
+  | MAdtOp(adt_op, adt) => compile_adt_op(wasm_mod, env, adt, adt_op)
+  | MRecordOp(record_op, record) =>
     compile_record_op(wasm_mod, env, record, record_op)
-  | [@implicit_arity] MPrim1(p1, arg) =>
-    compile_prim1(wasm_mod, env, p1, arg)
-  | [@implicit_arity] MPrim2(p2, arg1, arg2) =>
-    compile_prim2(wasm_mod, env, p2, arg1, arg2)
-  | [@implicit_arity] MSwitch(arg, branches, default) =>
+  | MPrim1(p1, arg) => compile_prim1(wasm_mod, env, p1, arg)
+  | MPrim2(p2, arg1, arg2) => compile_prim2(wasm_mod, env, p2, arg1, arg2)
+  | MSwitch(arg, branches, default) =>
     compile_switch(wasm_mod, env, arg, branches, default)
   | MStore(binds) => compile_store(wasm_mod, env, binds)
 
-  | [@implicit_arity] MCallIndirect(func, args) =>
-    call_lambda(wasm_mod, env, func, args)
+  | MCallIndirect(func, args) => call_lambda(wasm_mod, env, func, args)
 
-  | [@implicit_arity] MIf(cond, thn, els) =>
+  | MIf(cond, thn, els) =>
     let compiled_cond = compile_imm(wasm_mod, env, cond);
     let compiled_thn = compile_block(wasm_mod, env, thn);
     let compiled_els = compile_block(wasm_mod, env, els);
@@ -3142,7 +3130,7 @@ and compile_instr = (wasm_mod, env, instr) =>
       compiled_els,
     );
 
-  | [@implicit_arity] MWhile(cond, body) =>
+  | MWhile(cond, body) =>
     let compiled_cond = compile_block(wasm_mod, env, cond);
     let compiled_body = compile_block(wasm_mod, env, body);
     let block_label = gensym_label("MWhile");
@@ -3184,9 +3172,8 @@ and compile_instr = (wasm_mod, env, instr) =>
       ],
     );
 
-  | [@implicit_arity] MError(err, args) =>
-    call_error_handler(wasm_mod, env, err, args)
-  | [@implicit_arity] MCallKnown(func_name, args) =>
+  | MError(err, args) => call_error_handler(wasm_mod, env, err, args)
+  | MCallKnown(func_name, args) =>
     let compiled_args = List.map(compile_imm(wasm_mod, env), args);
     Expression.call(wasm_mod, func_name, compiled_args, Type.int32);
   | MArityOp(_) => failwith("NYI: (compile_instr): MArityOp")
@@ -3296,7 +3283,7 @@ let compile_imports = (wasm_mod, env, {imports}) => {
         Type.create([||]),
         Type.int32,
       )
-    | (_, [@implicit_arity] MFuncImport(args, ret)) =>
+    | (_, MFuncImport(args, ret)) =>
       let proc_list = l =>
         Type.create @@ Array.of_list @@ List.map(compile_asm_type, l);
       Import.add_function_import(
@@ -3645,7 +3632,7 @@ let module_to_bytes = wasm_mod => {
 let () =
   Printexc.register_printer(exc =>
     switch (exc) {
-    | [@implicit_arity] WasmRunnerError(wasm_mod, name, msg) =>
+    | WasmRunnerError(wasm_mod, name, msg) =>
       let formatted_name =
         switch (name) {
         | None => "<unknown>"

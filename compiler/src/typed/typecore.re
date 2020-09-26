@@ -258,8 +258,7 @@ let mkexp = (exp_desc, exp_type, exp_loc, exp_env) => {
 /* unification inside type_pat*/
 let unify_pat_types = (loc, env, ty, ty') =>
   try(unify(env, ty, ty')) {
-  | Unify(trace) =>
-    raise([@implicit_arity] Error(loc, env, Pattern_type_clash(trace)))
+  | Unify(trace) => raise(Error(loc, env, Pattern_type_clash(trace)))
   };
 
 /* unification inside type_exp and type_expect */
@@ -268,10 +267,7 @@ let unify_exp_types = (loc, env, ty, expected_ty) =>
     Printtyp.raw_type_expr expected_ty;*/
   try(unify(env, ty, expected_ty)) {
   | Unify(trace) =>
-    raise(
-      [@implicit_arity]
-      Error(loc, env, [@implicit_arity] Expr_type_clash(trace, None)),
-    )
+    raise([@implicit_arity] Error(loc, env, Expr_type_clash(trace, None)))
   };
 
 /* level at which to create the local type declarations */
@@ -291,11 +287,10 @@ let rec last = lst =>
 
 let rec final_subexpression = sexp =>
   switch (sexp.pexp_desc) {
-  | [@implicit_arity] PExpLet(_, _, _, e)
-  | [@implicit_arity] PExpIf(_, e, _)
-  | [@implicit_arity] PExpWhile(_, e)
-  | [@implicit_arity] PExpMatch(_, [{pmb_body: e}, ..._]) =>
-    final_subexpression(e)
+  | PExpLet(_, _, _, e)
+  | PExpIf(_, e, _)
+  | PExpWhile(_, e)
+  | PExpMatch(_, [{pmb_body: e}, ..._]) => final_subexpression(e)
   | PExpBlock(es) =>
     try(final_subexpression(last(es))) {
     | Not_found => sexp
@@ -310,23 +305,20 @@ let rec is_nonexpansive = exp =>
   | TExpLambda(_)
   | TExpNull => true
   | TExpTuple(es) => List.for_all(is_nonexpansive, es)
-  | [@implicit_arity] TExpLet(rec_flag, mut_flag, binds, body) =>
+  | TExpLet(rec_flag, mut_flag, binds, body) =>
     List.for_all(vb => is_nonexpansive(vb.vb_expr), binds)
     && is_nonexpansive(body)
-  | [@implicit_arity] TExpMatch(e, cases, _) =>
+  | TExpMatch(e, cases, _) =>
     is_nonexpansive(e)
     && List.for_all(({mb_pat, mb_body}) => is_nonexpansive(mb_body), cases)
-  | [@implicit_arity] TExpPrim1(_, e) => is_nonexpansive(e)
-  | [@implicit_arity] TExpPrim2(_, e1, e2) =>
-    is_nonexpansive(e1) && is_nonexpansive(e2)
-  | [@implicit_arity] TExpIf(c, t, f) =>
-    is_nonexpansive(t) && is_nonexpansive(f)
-  | [@implicit_arity] TExpWhile(c, b) => is_nonexpansive(b)
+  | TExpPrim1(_, e) => is_nonexpansive(e)
+  | TExpPrim2(_, e1, e2) => is_nonexpansive(e1) && is_nonexpansive(e2)
+  | TExpIf(c, t, f) => is_nonexpansive(t) && is_nonexpansive(f)
+  | TExpWhile(c, b) => is_nonexpansive(b)
   | TExpBlock([_, ..._] as es) => is_nonexpansive(last(es))
-  | [@implicit_arity] TExpApp(e, args) =>
+  | TExpApp(e, args) =>
     is_nonexpansive(e) && List.for_all(is_nonexpansive, args)
-  | [@implicit_arity] TExpConstruct(_, _, el) =>
-    List.for_all(is_nonexpansive, el)
+  | TExpConstruct(_, _, el) => List.for_all(is_nonexpansive, el)
   | _ => false
   };
 
@@ -336,7 +328,7 @@ let maybe_expansive = e => !is_nonexpansive(e);
 
 let rec approx_type = (env, sty) =>
   switch (sty.ptyp_desc) {
-  | [@implicit_arity] PTyArrow(args, ret) =>
+  | PTyArrow(args, ret) =>
     newty(
       [@implicit_arity]
       TTyArrow(
@@ -346,7 +338,7 @@ let rec approx_type = (env, sty) =>
       ),
     )
   | PTyTuple(args) => newty(TTyTuple(List.map(approx_type(env), args)))
-  | [@implicit_arity] PTyConstr(id, args) =>
+  | PTyConstr(id, args) =>
     try({
       let path = Env.lookup_type(id.txt, env);
       let decl = Env.find_type(path, env);
@@ -363,12 +355,11 @@ let rec approx_type = (env, sty) =>
 
 let rec type_approx = (env, sexp: Parsetree.expression) =>
   switch (sexp.pexp_desc) {
-  | [@implicit_arity] PExpLet(_, _, _, e) => type_approx(env, e)
-  | [@implicit_arity] PExpMatch(_, [{pmb_body: e}, ..._]) =>
-    type_approx(env, e)
-  | [@implicit_arity] PExpIf(_, e, _) => type_approx(env, e)
-  | [@implicit_arity] PExpWhile(_, e) => type_approx(env, e)
-  | [@implicit_arity] PExpLambda(args, e) =>
+  | PExpLet(_, _, _, e) => type_approx(env, e)
+  | PExpMatch(_, [{pmb_body: e}, ..._]) => type_approx(env, e)
+  | PExpIf(_, e, _) => type_approx(env, e)
+  | PExpWhile(_, e) => type_approx(env, e)
+  | PExpLambda(args, e) =>
     newty(
       [@implicit_arity]
       TTyArrow(List.map(x => newvar(), args), type_approx(env, e), TComOk),
@@ -403,7 +394,7 @@ let check_univars = (env, expans, kind, exp, ty_expected, vars) => {
   if (List.length(vars) == List.length(vars')) {
     ();
   } else {
-    let ty = newgenty([@implicit_arity] TTyPoly(repr(exp.exp_type), vars'))
+    let ty = newgenty(TTyPoly(repr(exp.exp_type), vars'))
     and ty_expected = repr(ty_expected);
     raise(
       [@implicit_arity]
@@ -484,7 +475,7 @@ let rec name_pattern = default =>
   | [] => Ident.create(default)
   | [{mb_pat: p, _}, ...rem] =>
     switch (p.pat_desc) {
-    | [@implicit_arity] TPatVar(id, _) => id
+    | TPatVar(id, _) => id
     /*| Tpat_alias(_, id, _) -> id*/
     | _ => name_pattern(default, rem)
     };
@@ -524,16 +515,11 @@ and with_explanation = (explanation, f) =>
   | None => f()
   | Some(explanation) =>
     try(f()) {
-    | [@implicit_arity]
-      Error(loc', env', [@implicit_arity] Expr_type_clash(trace', None))
+    | [@implicit_arity] Error(loc', env', Expr_type_clash(trace', None))
         when !loc'.Location.loc_ghost =>
       raise(
         [@implicit_arity]
-        Error(
-          loc',
-          env',
-          [@implicit_arity] Expr_type_clash(trace', Some(explanation)),
-        ),
+        Error(loc', env', Expr_type_clash(trace', Some(explanation))),
       )
     }
   }
@@ -567,7 +553,7 @@ and type_expect_ =
               Unbound_value_missing_rec(id.txt, desc.val_loc),
             ),
           )
-        | _ => [@implicit_arity] TExpIdent(path, id, desc)
+        | _ => TExpIdent(path, id, desc)
         },
       exp_loc: loc,
       exp_extra: [],
@@ -614,7 +600,7 @@ and type_expect_ =
       exp_type: instance(env, ty_expected),
       exp_env: env,
     });
-  | [@implicit_arity] PExpArrayGet(sarrexp, sidx) =>
+  | PExpArrayGet(sarrexp, sidx) =>
     let array_type = newvar(~name="a", ());
     let arrexp =
       type_expect(
@@ -635,13 +621,13 @@ and type_expect_ =
         ),
       );
     rue({
-      exp_desc: [@implicit_arity] TExpArrayGet(arrexp, idx),
+      exp_desc: TExpArrayGet(arrexp, idx),
       exp_loc: loc,
       exp_extra: [],
       exp_type: instance(env, array_type),
       exp_env: env,
     });
-  | [@implicit_arity] PExpArraySet(sarrexp, sidx, se) =>
+  | PExpArraySet(sarrexp, sidx, se) =>
     let array_type = newvar(~name="a", ());
     let arrexp =
       type_expect(
@@ -663,7 +649,7 @@ and type_expect_ =
       );
     let e = type_expect(env, se, mk_expected(array_type));
     rue({
-      exp_desc: [@implicit_arity] TExpArraySet(arrexp, idx, e),
+      exp_desc: TExpArraySet(arrexp, idx, e),
       exp_loc: loc,
       exp_extra: [],
       exp_type: instance(env, e.exp_type),
@@ -739,8 +725,7 @@ and type_expect_ =
       Array.map(
         lbl =>
           switch (matching_label(lbl)) {
-          | (lid, _lbl, lbl_exp) =>
-            [@implicit_arity] Overridden(lid, lbl_exp)
+          | (lid, _lbl, lbl_exp) => Overridden(lid, lbl_exp)
           | exception Not_found =>
             let present_indices =
               List.map(((_, lbl, _)) => lbl.lbl_pos, lbl_exp_list);
@@ -758,9 +743,7 @@ and type_expect_ =
             );
 
             let missing = missing_labels(0, label_names);
-            raise(
-              [@implicit_arity] Error(loc, env, Label_missing(missing)),
-            );
+            raise(Error(loc, env, Label_missing(missing)));
           },
         lbl.lbl_all,
       );
@@ -785,18 +768,18 @@ and type_expect_ =
       exp_type: instance(env, ty_expected),
       exp_env: env,
     });
-  | [@implicit_arity] PExpRecordGet(srecord, lid) =>
+  | PExpRecordGet(srecord, lid) =>
     let (record, label, _) = type_label_access(env, srecord, lid);
     let (_, ty_arg, ty_res) = instance_label(false, label);
     unify_exp(env, record, ty_res);
     rue({
-      exp_desc: [@implicit_arity] TExpRecordGet(record, lid, label),
+      exp_desc: TExpRecordGet(record, lid, label),
       exp_loc: loc,
       exp_extra: [],
       exp_type: ty_arg,
       exp_env: env,
     });
-  | [@implicit_arity] PExpRecordSet(srecord, lid, sval) =>
+  | PExpRecordSet(srecord, lid, sval) =>
     let (record, label, _) = type_label_access(env, srecord, lid);
     if (!label.lbl_mut) {
       raise(Error(loc, env, Label_not_mutable(lid.txt)));
@@ -806,13 +789,13 @@ and type_expect_ =
     let val_ = type_expect(env, sval, ty_expected_explained);
     unify_exp(env, val_, ty_arg);
     rue({
-      exp_desc: [@implicit_arity] TExpRecordSet(record, lid, label, val_),
+      exp_desc: TExpRecordSet(record, lid, label, val_),
       exp_loc: loc,
       exp_extra: [],
       exp_type: ty_arg,
       exp_env: env,
     });
-  | [@implicit_arity] PExpLet(rec_flag, mut_flag, pats, body) =>
+  | PExpLet(rec_flag, mut_flag, pats, body) =>
     let scp = None;
     let (pat_exp_list, new_env, unpacks) =
       type_let(env, rec_flag, mut_flag, pats, scp, true);
@@ -822,14 +805,13 @@ and type_expect_ =
         check_recursive_bindings env pat_exp_list
       in*/
     re({
-      exp_desc:
-        [@implicit_arity] TExpLet(rec_flag, mut_flag, pat_exp_list, body),
+      exp_desc: TExpLet(rec_flag, mut_flag, pat_exp_list, body),
       exp_loc: loc,
       exp_extra: [],
       exp_type: body.exp_type,
       exp_env: env,
     });
-  | [@implicit_arity] PExpLambda(args, body) =>
+  | PExpLambda(args, body) =>
     open Ast_helper;
     let pat =
       switch (args) {
@@ -846,7 +828,7 @@ and type_expect_ =
       (),
       [Mb.mk(pat, body, None)],
     );
-  | [@implicit_arity] PExpApp(func, args) =>
+  | PExpApp(func, args) =>
     begin_def(); /* one more level for non-returning functions */
     if (Grain_utils.Config.principal^) {
       begin_def();
@@ -873,13 +855,13 @@ and type_expect_ =
     end_def();
     unify_var(env, newvar(), funct.exp_type);
     rue({
-      exp_desc: [@implicit_arity] TExpApp(funct, args),
+      exp_desc: TExpApp(funct, args),
       exp_loc: loc,
       exp_extra: [],
       exp_type: ty_res,
       exp_env: env,
     });
-  | [@implicit_arity] PExpMatch(arg, branches) =>
+  | PExpMatch(arg, branches) =>
     begin_def();
     let arg = type_exp(env, arg);
     end_def();
@@ -890,34 +872,34 @@ and type_expect_ =
     let (val_cases, partial) =
       type_cases(env, arg.exp_type, ty_expected, true, loc, branches);
     re({
-      exp_desc: [@implicit_arity] TExpMatch(arg, val_cases, partial),
+      exp_desc: TExpMatch(arg, val_cases, partial),
       exp_loc: loc,
       exp_extra: [],
       exp_type: instance(env, ty_expected),
       exp_env: env,
     });
-  | [@implicit_arity] PExpPrim1(p1, sarg) =>
+  | PExpPrim1(p1, sarg) =>
     let (argtype, rettype) = prim1_type(p1);
     let arg = type_expect(env, sarg, mk_expected(argtype));
     rue({
-      exp_desc: [@implicit_arity] TExpPrim1(p1, arg),
+      exp_desc: TExpPrim1(p1, arg),
       exp_loc: loc,
       exp_extra: [],
       exp_type: rettype,
       exp_env: env,
     });
-  | [@implicit_arity] PExpPrim2(p2, sarg1, sarg2) =>
+  | PExpPrim2(p2, sarg1, sarg2) =>
     let (arg1type, arg2type, rettype) = prim2_type(p2);
     let arg1 = type_expect(env, sarg1, mk_expected(arg1type));
     let arg2 = type_expect(env, sarg2, mk_expected(arg2type));
     rue({
-      exp_desc: [@implicit_arity] TExpPrim2(p2, arg1, arg2),
+      exp_desc: TExpPrim2(p2, arg1, arg2),
       exp_loc: loc,
       exp_extra: [],
       exp_type: rettype,
       exp_env: env,
     });
-  | [@implicit_arity] PExpBoxAssign(sboxexpr, sval) =>
+  | PExpBoxAssign(sboxexpr, sval) =>
     let boxexpr =
       type_expect(
         env,
@@ -929,13 +911,13 @@ and type_expect_ =
     let val_ = type_expect(env, sval, ty_expected_explained);
     unify_exp(env, boxexpr) @@ Builtin_types.type_box(val_.exp_type);
     re({
-      exp_desc: [@implicit_arity] TExpBoxAssign(boxexpr, val_),
+      exp_desc: TExpBoxAssign(boxexpr, val_),
       exp_loc: loc,
       exp_extra: [],
       exp_type: val_.exp_type,
       exp_env: env,
     });
-  | [@implicit_arity] PExpAssign(sidexpr, sval) =>
+  | PExpAssign(sidexpr, sval) =>
     let idexpr = type_expect(env, sidexpr, ty_expected_explained);
     let (id, {val_mutable}) =
       switch (idexpr.exp_desc) {
@@ -955,7 +937,7 @@ and type_expect_ =
       exp_type: val_.exp_type,
       exp_env: env,
     });
-  | [@implicit_arity] PExpIf(scond, sifso, sifnot) =>
+  | PExpIf(scond, sifso, sifnot) =>
     let cond =
       type_expect(
         env,
@@ -993,13 +975,13 @@ and type_expect_ =
       };
 
     re({
-      exp_desc: [@implicit_arity] TExpIf(cond, ifso, ifnot),
+      exp_desc: TExpIf(cond, ifso, ifnot),
       exp_loc: loc,
       exp_extra: [],
       exp_type: ifso.exp_type,
       exp_env: env,
     });
-  | [@implicit_arity] PExpWhile(scond, sbody) =>
+  | PExpWhile(scond, sbody) =>
     let cond =
       type_expect(
         env,
@@ -1011,14 +993,14 @@ and type_expect_ =
       );
     let body = type_expect(env, sbody, ty_expected_explained);
     re({
-      exp_desc: [@implicit_arity] TExpWhile(cond, body),
+      exp_desc: TExpWhile(cond, body),
       exp_loc: loc,
       exp_extra: [],
       /* While loops don't evaluate to anything */
       exp_type: Builtin_types.type_void,
       exp_env: env,
     });
-  | [@implicit_arity] PExpConstraint(sarg, styp) =>
+  | PExpConstraint(sarg, styp) =>
     begin_def();
     let cty = Typetexp.transl_simple_type(env, false, styp);
     let ty = cty.ctyp_type;
@@ -1091,21 +1073,11 @@ and type_function =
   let rec arity = caselist =>
     switch (caselist) {
     | [] => failwith("Impossible: type_function: empty lambda")
-    | [
-        {pmb_pat: {ppat_desc: [@implicit_arity] PPatConstraint(p, _)}, _} as mb,
-      ] =>
+    | [{pmb_pat: {ppat_desc: PPatConstraint(p, _)}, _} as mb] =>
       arity([{...mb, pmb_pat: p}])
     | [{pmb_pat: {ppat_desc: PPatTuple(args)}, _}] => List.length(args)
     /* FIXME: Less hard-coding, please */
-    | [
-        {
-          pmb_pat: {
-            ppat_desc: [@implicit_arity] PPatConstruct({txt: ident, _}, []),
-            _,
-          },
-          _,
-        },
-      ]
+    | [{pmb_pat: {ppat_desc: PPatConstruct({txt: ident, _}, []), _}, _}]
         when Identifier.equal(ident, Identifier.IdentName("()")) => 0
     | _ => failwith("Impossible: type_function: impossible caselist")
     };
@@ -1155,14 +1127,10 @@ and type_function =
   /* TODO: Decide if this should be added to TExpLambda */
   /*let param = name_pattern "param" cases in*/
   re({
-    exp_desc: [@implicit_arity] TExpLambda(cases, partial),
+    exp_desc: TExpLambda(cases, partial),
     exp_loc: loc,
     exp_extra: [],
-    exp_type:
-      instance(
-        env,
-        newgenty([@implicit_arity] TTyArrow(ty_arg, ty_res, TComOk)),
-      ),
+    exp_type: instance(env, newgenty(TTyArrow(ty_arg, ty_res, TComOk))),
     exp_env: env,
   });
 }
@@ -1209,13 +1177,13 @@ and type_application = (env, funct, args) => {
         ),
       );
       (t_args, t_ret, ty_fun.level);
-    | [@implicit_arity] TTyArrow(t_args, t_ret, _)
+    | TTyArrow(t_args, t_ret, _)
         when List.length(t_args) == List.length(args) => (
         t_args,
         t_ret,
         ty_fun.level,
       )
-    | [@implicit_arity] TTyArrow(t_args, t_ret, _) =>
+    | TTyArrow(t_args, t_ret, _) =>
       raise(
         [@implicit_arity]
         Error(
@@ -1299,7 +1267,7 @@ and type_construct = (env, loc, lid, sarg, ty_expected_explained, attrs) => {
   let (ty_args, ty_res) = instance_constructor(constr);
   let texp =
     re({
-      exp_desc: [@implicit_arity] TExpConstruct(lid, constr, []),
+      exp_desc: TExpConstruct(lid, constr, []),
       exp_loc: loc,
       exp_extra: [],
       exp_type: ty_res,
@@ -1345,7 +1313,7 @@ and type_construct = (env, loc, lid, sarg, ty_expected_explained, attrs) => {
 
   let args = type_arguments(~recarg, env, sargs, ty_args, ty_args0);
   /* NOTE: shouldn't we call "re" on this final expression? -- AF */
-  {...texp, exp_desc: [@implicit_arity] TExpConstruct(lid, constr, args)};
+  {...texp, exp_desc: TExpConstruct(lid, constr, args)};
 }
 
 /* Typing of statements (expressions whose values are discarded) */
@@ -1368,9 +1336,7 @@ and type_statement_expr = (~explanation=?, env, sexp) => {
     switch (ty.desc) {
     /*| Tarrow _ -> [not really applicable with our syntax]
       Location.prerr_warning loc Warnings.Partial_application*/
-    | [@implicit_arity] TTyConstr(p, _, _)
-        when Path.same(p, Builtin_types.path_void) =>
-      ()
+    | TTyConstr(p, _, _) when Path.same(p, Builtin_types.path_void) => ()
     /*| Tvar _ ->
       add_delayed_check (fun () -> check_application_result env true exp)*/
     | _ => ()
@@ -1667,7 +1633,7 @@ and type_let =
       (pat, binding) => {
         let pat =
           switch (pat.pat_type.desc) {
-          | [@implicit_arity] TTyPoly(ty, tl) => {
+          | TTyPoly(ty, tl) => {
               ...pat,
               pat_type: snd(instance_poly(~keep_names=true, false, tl, ty)),
             }
@@ -1791,7 +1757,7 @@ and type_let =
           current_slot := slot;
         };
         switch (pat.pat_type.desc) {
-        | [@implicit_arity] TTyPoly(ty, tl) =>
+        | TTyPoly(ty, tl) =>
           /*Printf.eprintf "type_let: TTyPoly\n";*/
           begin_def();
           if (Grain_utils.Config.principal^) {
@@ -1868,11 +1834,8 @@ and type_let =
       ({vb_pat: pat}) =>
         switch (pat.pat_desc) {
         | TPatVar(_) => ()
-        | [@implicit_arity] TPatAlias({pat_desc: TPatAny}, _, _) => ()
-        | _ =>
-          raise(
-            [@implicit_arity] Error(pat.pat_loc, env, Illegal_letrec_pat),
-          )
+        | TPatAlias({pat_desc: TPatAny}, _, _) => ()
+        | _ => raise(Error(pat.pat_loc, env, Illegal_letrec_pat))
         },
       l,
     );
@@ -1929,8 +1892,7 @@ and type_label_exp = (create, env, loc, ty_expected, (lid, label, sarg)) => {
   try(unify(env, instance(env, ty_res), instance(env, ty_expected))) {
   | Unify(trace) =>
     raise(
-      [@implicit_arity]
-      Error(lid.loc, env, [@implicit_arity] Label_mismatch(lid.txt, trace)),
+      [@implicit_arity] Error(lid.loc, env, Label_mismatch(lid.txt, trace)),
     )
   };
   /* Instantiate so that we can generalize internal nodes */
@@ -1978,7 +1940,7 @@ and type_label_exp = (create, env, loc, ty_expected, (lid, label, sarg)) => {
           arg;
         }
       ) {
-      | [@implicit_arity] Error(_, _, Less_general(_)) as e => raise(e)
+      | Error(_, _, Less_general(_)) as e => raise(e)
       | _ => raise(exn)
       }
     };
@@ -2072,7 +2034,7 @@ let report_error = (env, ppf) =>
       lid,
       "You cannot instantiate it in a pattern.",
     )
-  | [@implicit_arity] Constructor_arity_mismatch(lid, expected, provided) =>
+  | Constructor_arity_mismatch(lid, expected, provided) =>
     fprintf(
       ppf,
       "@[The constructor %a@ expects %i argument(s),@ but is applied here to %i argument(s)@]",
@@ -2081,7 +2043,7 @@ let report_error = (env, ppf) =>
       expected,
       provided,
     )
-  | [@implicit_arity] Label_mismatch(lid, trace) =>
+  | Label_mismatch(lid, trace) =>
     report_unification_error(
       ppf,
       env,
@@ -2111,7 +2073,7 @@ let report_error = (env, ppf) =>
           "but a pattern was expected which matches values of type",
         ),
     )
-  | [@implicit_arity] Or_pattern_type_clash(id, trace) =>
+  | Or_pattern_type_clash(id, trace) =>
     report_unification_error(
       ppf,
       env,
@@ -2128,7 +2090,7 @@ let report_error = (env, ppf) =>
     )
   | Multiply_bound_variable(name) =>
     fprintf(ppf, "Variable %s is bound several times in this matching", name)
-  | [@implicit_arity] Orpat_vars(id, valid_idents) => {
+  | Orpat_vars(id, valid_idents) => {
       fprintf(
         ppf,
         "Variable %s must occur on both sides of this | pattern",
@@ -2136,7 +2098,7 @@ let report_error = (env, ppf) =>
       );
       spellcheck_idents(ppf, id, valid_idents);
     }
-  | [@implicit_arity] Expr_type_clash(trace, explanation) =>
+  | Expr_type_clash(trace, explanation) =>
     report_unification_error(
       ppf,
       env,
@@ -2189,7 +2151,7 @@ let report_error = (env, ppf) =>
     fprintf(ppf, "The record field %a is not mutable", identifier, lid)
   | Assign_not_mutable(id) =>
     fprintf(ppf, "The identifier %a was not declared mutable", identifier, id)
-  | [@implicit_arity] Arity_mismatch(typ, arity) =>
+  | Arity_mismatch(typ, arity) =>
     fprintf(
       ppf,
       "@[The type %a cannot be called with %d argument%s@]",
@@ -2226,7 +2188,7 @@ let report_error = (env, ppf) =>
       };
       spellcheck(ppf, name, valid_names);
     }
-  | [@implicit_arity] Name_type_mismatch(kind, lid, tp, tpl) => {
+  | Name_type_mismatch(kind, lid, tp, tpl) => {
       let name = label_of_kind(kind);
       report_ambiguous_type_error(
         ppf,
@@ -2264,7 +2226,7 @@ let report_error = (env, ppf) =>
       );
     }
   | Invalid_format(msg) => fprintf(ppf, "%s", msg)
-  | [@implicit_arity] Undefined_method(ty, me, valid_methods) => {
+  | Undefined_method(ty, me, valid_methods) => {
       reset_and_mark_loops(ty);
       fprintf(
         ppf,
@@ -2278,29 +2240,28 @@ let report_error = (env, ppf) =>
       | Some(valid_methods) => spellcheck(ppf, me, valid_methods)
       };
     }
-  | [@implicit_arity] Undefined_inherited_method(me, valid_methods) => {
+  | Undefined_inherited_method(me, valid_methods) => {
       fprintf(ppf, "This expression has no method %s", me);
       spellcheck(ppf, me, valid_methods);
     }
   | Virtual_class(cl) =>
     fprintf(ppf, "Cannot instantiate the virtual class %a", identifier, cl)
-  | [@implicit_arity] Unbound_instance_variable(var, valid_vars) => {
+  | Unbound_instance_variable(var, valid_vars) => {
       fprintf(ppf, "Unbound instance variable %s", var);
       spellcheck(ppf, var, valid_vars);
     }
-  | [@implicit_arity] Instance_variable_not_mutable(b, v) =>
+  | Instance_variable_not_mutable(b, v) =>
     if (b) {
       fprintf(ppf, "The instance variable %s is not mutable", v);
     } else {
       fprintf(ppf, "The value %s is not an instance variable", v);
     }
-  | [@implicit_arity] Not_subtype(tr1, tr2) =>
-    fprintf(ppf, "<subtyping error>")
+  | Not_subtype(tr1, tr2) => fprintf(ppf, "<subtyping error>")
   | Outside_class =>
     fprintf(ppf, "This object duplication occurs outside a method definition")
   | Value_multiply_overridden(v) =>
     fprintf(ppf, "The instance variable %s is overridden several times", v)
-  | [@implicit_arity] Coercion_failure(ty, ty', trace, b) => {
+  | Coercion_failure(ty, ty', trace, b) => {
       report_unification_error(
         ppf,
         env,
@@ -2328,7 +2289,7 @@ let report_error = (env, ppf) =>
         );
       };
     }
-  | [@implicit_arity] Too_many_arguments(in_function, ty, explanation) => {
+  | Too_many_arguments(in_function, ty, explanation) => {
       reset_and_mark_loops(ty);
       if (in_function) {
         fprintf(ppf, "This function expects too many arguments,@ ");
@@ -2350,7 +2311,7 @@ let report_error = (env, ppf) =>
         );
       };
     }
-  | [@implicit_arity] Scoping_let_module(id, ty) => {
+  | Scoping_let_module(id, ty) => {
       reset_and_mark_loops(ty);
       fprintf(
         ppf,
@@ -2373,7 +2334,7 @@ let report_error = (env, ppf) =>
     )
   | Private_type(ty) =>
     fprintf(ppf, "Cannot create values of the private type %a", type_expr, ty)
-  | [@implicit_arity] Private_label(lid, ty) =>
+  | Private_label(lid, ty) =>
     fprintf(
       ppf,
       "Cannot assign field %a of the private type %a",
@@ -2389,7 +2350,7 @@ let report_error = (env, ppf) =>
       fprintf(ppf, "in an order different from other calls.@ ");
       fprintf(ppf, "This is only allowed when the real type is known.");
     }
-  | [@implicit_arity] Less_general(kind, trace) =>
+  | Less_general(kind, trace) =>
     report_unification_error(
       ppf,
       env,
@@ -2422,7 +2383,7 @@ let report_error = (env, ppf) =>
       | ppf => fprintf(ppf, "with"),
     )
   | Unexpected_existential => fprintf(ppf, "Unexpected existential")
-  | [@implicit_arity] Unqualified_gadt_pattern(tpath, name) =>
+  | Unqualified_gadt_pattern(tpath, name) =>
     fprintf(
       ppf,
       "@[The GADT constructor %s of type %a@ %s.@]",
@@ -2468,7 +2429,7 @@ let report_error = (env, ppf) =>
       "Integer literal exceeds the range of representable integers of type %s",
       ty,
     )
-  | [@implicit_arity] Unknown_literal(n, m) =>
+  | Unknown_literal(n, m) =>
     fprintf(ppf, "Unknown modifier '%c' for literal %s%c", m, n, m)
   | Illegal_letrec_pat =>
     fprintf(ppf, "Only variables are allowed as left-hand side of `let rec'")
@@ -2479,7 +2440,7 @@ let report_error = (env, ppf) =>
     )
   | Illegal_class_expr =>
     fprintf(ppf, "This kind of recursive class expression is not allowed")
-  | [@implicit_arity] Unbound_value_missing_rec(lid, loc) => {
+  | Unbound_value_missing_rec(lid, loc) => {
       let (_, line, _) = Location.get_pos_info(loc.Location.loc_start);
       fprintf(
         ppf,
@@ -2496,7 +2457,7 @@ let report_error = (env, ppf, err) =>
 let () =
   Location.register_error_of_exn(
     fun
-    | [@implicit_arity] Error(loc, env, err) =>
+    | Error(loc, env, err) =>
       Some(Location.error_of_printer(loc, report_error(env), err))
     | Error_forward(err) => Some(err)
     | _ => None,

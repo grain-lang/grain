@@ -31,7 +31,7 @@ let print_lident = ppf =>
 let rec print_ident = ppf =>
   fun
   | Oide_ident(s) => print_lident(ppf, s)
-  | [@implicit_arity] Oide_dot(id, s) => {
+  | Oide_dot(id, s) => {
       print_ident(ppf, id);
       pp_print_char(ppf, '.');
       print_lident(ppf, s);
@@ -195,7 +195,7 @@ let print_out_string = (ppf, s) => {
 let print_out_value = (ppf, tree) => {
   let rec print_tree_1 = ppf =>
     fun
-    | [@implicit_arity] Oval_constr(name, [param]) =>
+    | Oval_constr(name, [param]) =>
       fprintf(
         ppf,
         "@[<1>%a@ %a@]",
@@ -204,7 +204,7 @@ let print_out_value = (ppf, tree) => {
         print_constr_param,
         param,
       )
-    | [@implicit_arity] Oval_constr(name, [_, ..._] as params) =>
+    | Oval_constr(name, [_, ..._] as params) =>
       fprintf(
         ppf,
         "@[<1>%a@ (%a)@]",
@@ -213,7 +213,7 @@ let print_out_value = (ppf, tree) => {
         print_tree_list(print_tree_1, ","),
         params,
       )
-    | [@implicit_arity] Oval_variant(name, Some(param)) =>
+    | Oval_variant(name, Some(param)) =>
       fprintf(ppf, "@[<2>`%s@ %a@]", name, print_constr_param, param)
     | tree => print_simple_tree(ppf, tree)
   and print_constr_param = ppf =>
@@ -224,7 +224,7 @@ let print_out_value = (ppf, tree) => {
     | Oval_nativeint(i) => parenthesize_if_neg(ppf, "%nin", i, i < 0n)
     | Oval_float(f) =>
       parenthesize_if_neg(ppf, "%s", float_repres(f), f < 0.0)
-    | [@implicit_arity] Oval_string(_, _, Ostr_bytes) as tree => {
+    | Oval_string(_, _, Ostr_bytes) as tree => {
         pp_print_char(ppf, '(');
         print_simple_tree(ppf, tree);
         pp_print_char(ppf, ')');
@@ -238,7 +238,7 @@ let print_out_value = (ppf, tree) => {
     | Oval_nativeint(i) => fprintf(ppf, "%nin", i)
     | Oval_float(f) => pp_print_string(ppf, float_repres(f))
     | Oval_char(c) => fprintf(ppf, "%C", c)
-    | [@implicit_arity] Oval_string(s, maxlen, kind) =>
+    | Oval_string(s, maxlen, kind) =>
       try({
         let len = String.length(s);
         let s =
@@ -262,8 +262,8 @@ let print_out_value = (ppf, tree) => {
       fprintf(ppf, "@[<1>[%a]@]", print_tree_list(print_tree_1, ";"), tl)
     | Oval_array(tl) =>
       fprintf(ppf, "@[<2>[|%a|]@]", print_tree_list(print_tree_1, ";"), tl)
-    | [@implicit_arity] Oval_constr(name, []) => print_ident(ppf, name)
-    | [@implicit_arity] Oval_variant(name, None) => fprintf(ppf, "`%s", name)
+    | Oval_constr(name, []) => print_ident(ppf, name)
+    | Oval_variant(name, None) => fprintf(ppf, "`%s", name)
     | Oval_stuff(s) => pp_print_string(ppf, s)
     | Oval_record(fel) =>
       fprintf(ppf, "@[<1>{%a}@]", cautious(print_fields(true)), fel)
@@ -348,15 +348,14 @@ let pr_vars =
 
 let rec print_out_type = ppf =>
   fun
-  | [@implicit_arity] Otyp_alias(ty, s) =>
-    fprintf(ppf, "@[%a@ as %s@]", print_out_type, ty, s)
-  | [@implicit_arity] Otyp_poly(sl, ty) =>
+  | Otyp_alias(ty, s) => fprintf(ppf, "@[%a@ as %s@]", print_out_type, ty, s)
+  | Otyp_poly(sl, ty) =>
     fprintf(ppf, "@[<hov 2>%a.@ %a@]", pr_vars, sl, print_out_type, ty)
   | ty => print_out_type_1(ppf, ty)
 
 and print_out_type_1 = ppf =>
   fun
-  | [@implicit_arity] Otyp_arrow(ty1, ty2) => {
+  | Otyp_arrow(ty1, ty2) => {
       pp_open_box(ppf, 0);
       fprintf(ppf, "@[<0>%a@]", print_typlist(print_out_type_2, ", "), ty1);
       pp_print_string(ppf, " ->");
@@ -377,7 +376,7 @@ and print_out_type_2 = ppf =>
   | ty => print_simple_out_type(ppf, ty)
 and print_simple_out_type = ppf =>
   fun
-  | [@implicit_arity] Otyp_class(ng, id, tyl) =>
+  | Otyp_class(ng, id, tyl) =>
     fprintf(
       ppf,
       "@[%a%s#%a@]",
@@ -387,18 +386,17 @@ and print_simple_out_type = ppf =>
       print_ident,
       id,
     )
-  | [@implicit_arity] Otyp_constr(id, tyl) => {
+  | Otyp_constr(id, tyl) => {
       pp_open_box(ppf, 0);
       print_ident(ppf, id);
       print_typargs(ppf, tyl);
       pp_close_box(ppf, ());
     }
-  | [@implicit_arity] Otyp_object(fields, rest) =>
+  | Otyp_object(fields, rest) =>
     fprintf(ppf, "@[<2>< %a >@]", print_fields(rest), fields)
   | Otyp_stuff(s) => pp_print_string(ppf, s)
-  | [@implicit_arity] Otyp_var(ng, s) =>
-    fprintf(ppf, "%s%s", if (ng) {"_"} else {""}, s)
-  | [@implicit_arity] Otyp_variant(non_gen, row_fields, closed, tags) => {
+  | Otyp_var(ng, s) => fprintf(ppf, "%s%s", if (ng) {"_"} else {""}, s)
+  | Otyp_variant(non_gen, row_fields, closed, tags) => {
       let print_present = ppf => (
         fun
         | None
@@ -449,9 +447,9 @@ and print_simple_out_type = ppf =>
   | Otyp_abstract
   | Otyp_open
   | Otyp_sum(_)
-  | [@implicit_arity] Otyp_manifest(_, _) => ()
+  | Otyp_manifest(_, _) => ()
   | Otyp_record(lbls) => print_record_decl(ppf, lbls)
-  | [@implicit_arity] Otyp_module(p, n, tyl) => {
+  | Otyp_module(p, n, tyl) => {
       fprintf(ppf, "@[<1>(module %s", p);
       let first = ref(true);
       List.iter2(
@@ -470,7 +468,7 @@ and print_simple_out_type = ppf =>
       );
       fprintf(ppf, ")@]");
     }
-  | [@implicit_arity] Otyp_attribute(t, attr) =>
+  | Otyp_attribute(t, attr) =>
     fprintf(ppf, "@[<1>(%a [@@%s])@]", print_out_type, t, attr.oattr_name)
 and print_record_decl = (ppf, lbls) =>
   fprintf(
@@ -603,22 +601,21 @@ and print_out_signature = ppf =>
     fprintf(ppf, "%a@ %a", out_sig_item^, item, print_out_signature, items)
 and print_out_sig_item = ppf =>
   fun
-  | [@implicit_arity] Osig_modtype(name, Omty_abstract) =>
+  | Osig_modtype(name, Omty_abstract) =>
     fprintf(ppf, "@[<2>module type %s@]", name)
-  | [@implicit_arity] Osig_modtype(name, mty) =>
+  | Osig_modtype(name, mty) =>
     fprintf(ppf, "@[<2>module type %s =@ %a@]", name, out_module_type^, mty)
-  | [@implicit_arity] Osig_typext(ext, Oext_exception) =>
+  | Osig_typext(ext, Oext_exception) =>
     fprintf(
       ppf,
       "@[<2>exception %a@]",
       print_out_constr,
       (ext.oext_name, ext.oext_args, None),
     )
-  | [@implicit_arity] Osig_typext(ext, _es) =>
-    print_out_extension_constructor(ppf, ext)
-  | [@implicit_arity] Osig_module(name, Omty_alias(id), _) =>
+  | Osig_typext(ext, _es) => print_out_extension_constructor(ppf, ext)
+  | Osig_module(name, Omty_alias(id), _) =>
     fprintf(ppf, "@[<2>module %s =@ %a@]", name, print_ident, id)
-  | [@implicit_arity] Osig_module(name, mty, rs) =>
+  | Osig_module(name, mty, rs) =>
     fprintf(
       ppf,
       "@[<2>%s %s :@ %a@]",
@@ -631,7 +628,7 @@ and print_out_sig_item = ppf =>
       out_module_type^,
       mty,
     )
-  | [@implicit_arity] Osig_type(td, rs) =>
+  | Osig_type(td, rs) =>
     print_out_type_decl(
       switch (rs) {
       | Orec_not => "type nonrec"
@@ -705,8 +702,7 @@ and print_out_type_decl = (kwd, ppf, td) => {
 
   let print_manifest = ppf =>
     fun
-    | [@implicit_arity] Otyp_manifest(ty, _) =>
-      fprintf(ppf, " =@ %a", out_type^, ty)
+    | Otyp_manifest(ty, _) => fprintf(ppf, " =@ %a", out_type^, ty)
     | _ => ();
 
   let print_name_params = ppf =>
@@ -714,7 +710,7 @@ and print_out_type_decl = (kwd, ppf, td) => {
 
   let ty =
     switch (td.otype_type) {
-    | [@implicit_arity] Otyp_manifest(_, ty) => ty
+    | Otyp_manifest(_, ty) => ty
     | _ => td.otype_type
     };
 
@@ -859,11 +855,10 @@ let rec print_items = ppf =>
 
 let print_out_phrase = ppf =>
   fun
-  | [@implicit_arity] Ophr_eval(outv, ty) =>
+  | Ophr_eval(outv, ty) =>
     fprintf(ppf, "@[- : %a@ =@ %a@]@.", out_type^, ty, out_value^, outv)
   | Ophr_signature([]) => ()
   | Ophr_signature(items) => fprintf(ppf, "@[<v>%a@]@.", print_items, items)
-  | [@implicit_arity] Ophr_exception(exn, outv) =>
-    print_out_exception(ppf, exn, outv);
+  | Ophr_exception(exn, outv) => print_out_exception(ppf, exn, outv);
 
 let out_phrase = ref(print_out_phrase);

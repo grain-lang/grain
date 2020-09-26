@@ -35,10 +35,10 @@ module E = {
     | PExpConstant(c) => sub.constant(sub, c)
     | PExpTuple(es) => List.iter(sub.expr(sub), es)
     | PExpArray(es) => List.iter(sub.expr(sub), es)
-    | [@implicit_arity] PExpArrayGet(a, i) =>
+    | PExpArrayGet(a, i) =>
       sub.expr(sub, a);
       sub.expr(sub, i);
-    | [@implicit_arity] PExpArraySet(a, i, arg) =>
+    | PExpArraySet(a, i, arg) =>
       sub.expr(sub, a);
       sub.expr(sub, i);
       sub.expr(sub, arg);
@@ -50,43 +50,43 @@ module E = {
         },
         es,
       )
-    | [@implicit_arity] PExpRecordGet(e, f) =>
+    | PExpRecordGet(e, f) =>
       sub.expr(sub, e);
       iter_loc(sub, f);
-    | [@implicit_arity] PExpRecordSet(e, f, v) =>
+    | PExpRecordSet(e, f, v) =>
       sub.expr(sub, e);
       iter_loc(sub, f);
       sub.expr(sub, v);
-    | [@implicit_arity] PExpLet(r, m, vbs, e) =>
+    | PExpLet(r, m, vbs, e) =>
       List.iter(sub.value_binding(sub), vbs);
       sub.expr(sub, e);
-    | [@implicit_arity] PExpMatch(e, mbs) =>
+    | PExpMatch(e, mbs) =>
       sub.expr(sub, e);
       List.iter(sub.match_branch(sub), mbs);
-    | [@implicit_arity] PExpPrim1(p1, e) => sub.expr(sub, e)
-    | [@implicit_arity] PExpPrim2(p2, e1, e2) =>
+    | PExpPrim1(p1, e) => sub.expr(sub, e)
+    | PExpPrim2(p2, e1, e2) =>
       sub.expr(sub, e1);
       sub.expr(sub, e2);
-    | [@implicit_arity] PExpBoxAssign(a, b) =>
+    | PExpBoxAssign(a, b) =>
       sub.expr(sub, a);
       sub.expr(sub, b);
-    | [@implicit_arity] PExpAssign(a, b) =>
+    | PExpAssign(a, b) =>
       sub.expr(sub, a);
       sub.expr(sub, b);
-    | [@implicit_arity] PExpIf(c, t, f) =>
+    | PExpIf(c, t, f) =>
       sub.expr(sub, c);
       sub.expr(sub, t);
       sub.expr(sub, f);
-    | [@implicit_arity] PExpWhile(c, b) =>
+    | PExpWhile(c, b) =>
       sub.expr(sub, c);
       sub.expr(sub, b);
-    | [@implicit_arity] PExpConstraint(e, t) =>
+    | PExpConstraint(e, t) =>
       sub.expr(sub, e);
       sub.typ(sub, t);
-    | [@implicit_arity] PExpLambda(pl, e) =>
+    | PExpLambda(pl, e) =>
       List.iter(sub.pat(sub), pl);
       sub.expr(sub, e);
-    | [@implicit_arity] PExpApp(e, el) =>
+    | PExpApp(e, el) =>
       sub.expr(sub, e);
       List.iter(sub.expr(sub), el);
     | PExpBlock(el) => List.iter(sub.expr(sub), el)
@@ -102,7 +102,7 @@ module P = {
     | PPatAny => ()
     | PPatVar(sl) => iter_loc(sub, sl)
     | PPatTuple(pl) => List.iter(sub.pat(sub), pl)
-    | [@implicit_arity] PPatRecord(fs, _) =>
+    | PPatRecord(fs, _) =>
       List.iter(
         ((id, pat)) => {
           iter_loc(sub, id);
@@ -111,16 +111,16 @@ module P = {
         fs,
       )
     | PPatConstant(c) => sub.constant(sub, c)
-    | [@implicit_arity] PPatConstraint(p, pt) =>
+    | PPatConstraint(p, pt) =>
       sub.pat(sub, p);
       sub.typ(sub, pt);
-    | [@implicit_arity] PPatConstruct(id, pl) =>
+    | PPatConstruct(id, pl) =>
       iter_loc(sub, id);
       List.iter(sub.pat(sub), pl);
-    | [@implicit_arity] PPatOr(p1, p2) =>
+    | PPatOr(p1, p2) =>
       sub.pat(sub, p1);
       sub.pat(sub, p2);
-    | [@implicit_arity] PPatAlias(p, id) =>
+    | PPatAlias(p, id) =>
       sub.pat(sub, p);
       iter_loc(sub, id);
     };
@@ -190,14 +190,14 @@ module T = {
     switch (desc) {
     | PTyAny => ()
     | PTyVar(v) => ()
-    | [@implicit_arity] PTyArrow(args, ret) =>
+    | PTyArrow(args, ret) =>
       List.iter(sub.typ(sub), args);
       sub.typ(sub, ret);
     | PTyTuple(ts) => List.iter(sub.typ(sub), ts)
-    | [@implicit_arity] PTyConstr(name, ts) =>
+    | PTyConstr(name, ts) =>
       iter_loc(sub, name);
       List.iter(sub.typ(sub), ts);
-    | [@implicit_arity] PTyPoly(args, t) =>
+    | PTyPoly(args, t) =>
       List.iter(iter_loc(sub), args);
       sub.typ(sub, t);
     };
@@ -291,14 +291,12 @@ module TL = {
     | PTopImport(id) => sub.import(sub, id)
     | PTopExport(ex) => sub.export(sub, ex)
     | PTopExportAll(ex) => sub.export_all(sub, ex)
-    | [@implicit_arity] PTopForeign(e, vd) => sub.value_description(sub, vd)
-    | [@implicit_arity] PTopPrimitive(e, vd) =>
-      sub.value_description(sub, vd)
-    | [@implicit_arity] PTopData(e, dd) => sub.data(sub, dd)
-    | [@implicit_arity] PTopLet(e, r, m, vb) =>
-      List.iter(sub.value_binding(sub), vb)
+    | PTopForeign(e, vd) => sub.value_description(sub, vd)
+    | PTopPrimitive(e, vd) => sub.value_description(sub, vd)
+    | PTopData(e, dd) => sub.data(sub, dd)
+    | PTopLet(e, r, m, vb) => List.iter(sub.value_binding(sub), vb)
     | PTopExpr(e) => sub.expr(sub, e)
-    | [@implicit_arity] PTopException(e, d) => sub.grain_exception(sub, d)
+    | PTopException(e, d) => sub.grain_exception(sub, d)
     };
   };
 };

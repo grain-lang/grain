@@ -15,10 +15,9 @@ let list_of_t = cl => {
     switch (cl) {
     | Empty => acc
     | Singleton(e) => [e, ...acc]
-    | [@implicit_arity] Append(l1, l2) =>
-      to_list_acc(l1, to_list_acc(l2, acc))
-    | [@implicit_arity] Cons(e, l) => [e, ...to_list_acc(l, acc)]
-    | [@implicit_arity] Snoc(l, e) => to_list_acc(l, [e, ...acc])
+    | Append(l1, l2) => to_list_acc(l1, to_list_acc(l2, acc))
+    | Cons(e, l) => [e, ...to_list_acc(l, acc)]
+    | Snoc(l, e) => to_list_acc(l, [e, ...acc])
     | Wrapped(l) => l
     };
   to_list_acc(cl, []);
@@ -37,13 +36,12 @@ let mapped_list_of_t = (f, cl) => {
     switch (cl) {
     | Empty => acc
     | Singleton(e) => [f(e), ...acc]
-    | [@implicit_arity] Append(l1, l2) =>
-      to_list_acc(l1, to_list_acc(l2, acc))
-    | [@implicit_arity] Cons(e, l) =>
+    | Append(l1, l2) => to_list_acc(l1, to_list_acc(l2, acc))
+    | Cons(e, l) =>
       let hd = f(e);
       let tl = to_list_acc(l, acc);
       [hd, ...tl];
-    | [@implicit_arity] Snoc(l, e) => to_list_acc(l, [f(e), ...acc])
+    | Snoc(l, e) => to_list_acc(l, [f(e), ...acc])
     | Wrapped(l) => map_onto(l, acc)
     };
   to_list_acc(cl, []);
@@ -54,11 +52,10 @@ let left_mapped_list_of_t = (f, cl) => {
     switch (cl) {
     | Empty => acc
     | Singleton(e) => [f(e), ...acc]
-    | [@implicit_arity] Append(left, right) =>
+    | Append(left, right) =>
       revmap_to_list_acc(f, revmap_to_list_acc(f, acc, left), right)
-    | [@implicit_arity] Cons(e, l) =>
-      revmap_to_list_acc(f, [f(e), ...acc], l)
-    | [@implicit_arity] Snoc(l, e) =>
+    | Cons(e, l) => revmap_to_list_acc(f, [f(e), ...acc], l)
+    | Snoc(l, e) =>
       let newhead = revmap_to_list_acc(f, acc, l);
       [f(e), ...newhead];
     | Wrapped(l) => List.rev_map(f, l)
@@ -70,13 +67,11 @@ let rec map = (f, cl) =>
   switch (cl) {
   | Empty => Empty
   | Singleton(e) => Singleton(f(e))
-  | [@implicit_arity] Append(l1, l2) =>
-    [@implicit_arity] Append(map(f, l1), map(f, l2))
-  | [@implicit_arity] Cons(e, l) => [@implicit_arity] Cons(f(e), map(f, l))
-  | [@implicit_arity] Snoc(l, e) => [@implicit_arity] Snoc(map(f, l), f(e))
+  | Append(l1, l2) => Append(map(f, l1), map(f, l2))
+  | Cons(e, l) => Cons(f(e), map(f, l))
+  | Snoc(l, e) => Snoc(map(f, l), f(e))
   | Wrapped([]) => Empty
-  | Wrapped([hd, ...tl]) =>
-    [@implicit_arity] Cons(f(hd), map(f, Wrapped(tl)))
+  | Wrapped([hd, ...tl]) => Cons(f(hd), map(f, Wrapped(tl)))
   };
 
 let rec iter: 'a. ('a => unit, t('a)) => unit =
@@ -84,13 +79,13 @@ let rec iter: 'a. ('a => unit, t('a)) => unit =
     switch (cl) {
     | Empty => ()
     | Singleton(e) => f(e)
-    | [@implicit_arity] Append(l1, l2) =>
+    | Append(l1, l2) =>
       iter(f, l1);
       iter(f, l2);
-    | [@implicit_arity] Cons(e, l) =>
+    | Cons(e, l) =>
       f(e);
       iter(f, l);
-    | [@implicit_arity] Snoc(l, e) =>
+    | Snoc(l, e) =>
       iter(f, l);
       f(e);
     | Wrapped(l) => List.iter(f, l)
@@ -100,10 +95,9 @@ let rec fold_left = (f, base, cl) =>
   switch (cl) {
   | Empty => base
   | Singleton(e) => f(base, e)
-  | [@implicit_arity] Append(l1, l2) =>
-    fold_left(f, fold_left(f, base, l1), l2)
-  | [@implicit_arity] Cons(e, l) => fold_left(f, f(base, e), l)
-  | [@implicit_arity] Snoc(l, e) => f(fold_left(f, base, l), e)
+  | Append(l1, l2) => fold_left(f, fold_left(f, base, l1), l2)
+  | Cons(e, l) => fold_left(f, f(base, e), l)
+  | Snoc(l, e) => f(fold_left(f, base, l), e)
   | Wrapped(l) => List.fold_left(f, base, l)
   };
 
@@ -111,10 +105,9 @@ let rec fold_right = (f, cl, base) =>
   switch (cl) {
   | Empty => base
   | Singleton(e) => f(e, base)
-  | [@implicit_arity] Append(l1, l2) =>
-    fold_right(f, l1, fold_right(f, l2, base))
-  | [@implicit_arity] Cons(e, l) => f(e, fold_right(f, l, base))
-  | [@implicit_arity] Snoc(l, e) => fold_right(f, l, f(e, base))
+  | Append(l1, l2) => fold_right(f, l1, fold_right(f, l2, base))
+  | Cons(e, l) => f(e, fold_right(f, l, base))
+  | Snoc(l, e) => fold_right(f, l, f(e, base))
   | Wrapped(l) => List.fold_right(f, l, base)
   };
 
@@ -124,7 +117,7 @@ let rec is_empty = cl =>
   switch (cl) {
   | Empty
   | Wrapped([]) => true
-  | [@implicit_arity] Append(l1, l2) => is_empty(l1) && is_empty(l2)
+  | Append(l1, l2) => is_empty(l1) && is_empty(l2)
   | _ => false
   };
 
@@ -133,21 +126,20 @@ let rec rev = cl =>
   | Empty
   | Singleton(_)
   | Wrapped([]) => cl
-  | [@implicit_arity] Append(l1, l2) =>
-    [@implicit_arity] Append(rev(l2), rev(l1))
-  | [@implicit_arity] Cons(e, l) => [@implicit_arity] Snoc(rev(l), e)
-  | [@implicit_arity] Snoc(l, e) => [@implicit_arity] Cons(e, rev(l))
-  | Wrapped([hd, ...tl]) => [@implicit_arity] Snoc(rev(Wrapped(tl)), hd)
+  | Append(l1, l2) => Append(rev(l2), rev(l1))
+  | Cons(e, l) => Snoc(rev(l), e)
+  | Snoc(l, e) => Cons(e, rev(l))
+  | Wrapped([hd, ...tl]) => Snoc(rev(Wrapped(tl)), hd)
   };
 
 let rec hd = cl =>
   switch (cl) {
   | Singleton(e)
-  | [@implicit_arity] Cons(e, _) => e
-  | [@implicit_arity] Snoc(l, e) when is_empty(l) => e
-  | [@implicit_arity] Snoc(l, _) => hd(l)
-  | [@implicit_arity] Append(l1, _) when !is_empty(l1) => hd(l1)
-  | [@implicit_arity] Append(_, l2) => hd(l2)
+  | Cons(e, _) => e
+  | Snoc(l, e) when is_empty(l) => e
+  | Snoc(l, _) => hd(l)
+  | Append(l1, _) when !is_empty(l1) => hd(l1)
+  | Append(_, l2) => hd(l2)
   | Wrapped([hd, ..._]) => hd
   | Wrapped([])
   | Empty => raise(Not_found)
@@ -158,12 +150,12 @@ let rec tl = cl =>
   | Singleton(_)
   | Empty
   | Wrapped([]) => raise(Failure("tl"))
-  | [@implicit_arity] Cons(_, rest) => rest
+  | Cons(_, rest) => rest
   | Wrapped([_, ...rest]) => Wrapped(rest)
-  | [@implicit_arity] Append(l1, rest) when is_empty(l1) => rest
-  | [@implicit_arity] Append(l1, l2) => [@implicit_arity] Append(tl(l1), l2)
-  | [@implicit_arity] Snoc(l, e) when is_empty(l) => Singleton(e)
-  | [@implicit_arity] Snoc(l, e) => [@implicit_arity] Snoc(tl(l), e)
+  | Append(l1, rest) when is_empty(l1) => rest
+  | Append(l1, l2) => Append(tl(l1), l2)
+  | Snoc(l, e) when is_empty(l) => Singleton(e)
+  | Snoc(l, e) => Snoc(tl(l), e)
   };
 
 /** Returns the last element of the given list. */
@@ -171,11 +163,11 @@ let rec tl = cl =>
 let rec last = cl =>
   switch (cl) {
   | Singleton(e)
-  | [@implicit_arity] Snoc(_, e) => e
-  | [@implicit_arity] Cons(e, l) when is_empty(l) => e
-  | [@implicit_arity] Cons(e, l) => last(l)
-  | [@implicit_arity] Append(_, l2) when !is_empty(l2) => last(l2)
-  | [@implicit_arity] Append(l1, _) => last(l1)
+  | Snoc(_, e) => e
+  | Cons(e, l) when is_empty(l) => e
+  | Cons(e, l) => last(l)
+  | Append(_, l2) when !is_empty(l2) => last(l2)
+  | Append(l1, _) => last(l1)
   | Wrapped([hd]) => hd
   | Wrapped([hd, ...rest]) => last(Wrapped(rest))
   | Wrapped([])
@@ -187,7 +179,7 @@ let rec mapped_t_of_list: 'a 'b. ('a => 'b, list('a)) => t('b) =
     switch (lst) {
     | [] => Empty
     | [x] => Singleton(f(x))
-    | [hd, ...tl] => [@implicit_arity] Cons(f(hd), mapped_t_of_list(f, tl))
+    | [hd, ...tl] => Cons(f(hd), mapped_t_of_list(f, tl))
     };
 
 let t_of_list: 'a. list('a) => t('a) = lst => Wrapped(lst);
@@ -205,27 +197,24 @@ let singleton: 'a. 'a => t('a) = x => Singleton(x);
 /** Appends the two given concatlists. */
 /** Adds the given item to the front of the given concatlist. */
 
-let append: 'a. (t('a), t('a)) => t('a) =
-  (a, b) => [@implicit_arity] Append(a, b);
+let append: 'a. (t('a), t('a)) => t('a) = (a, b) => Append(a, b);
 
 /** Adds the given item to the front of the given concatlist. */
 /** Adds the given item to the end of the given concatlist. */
 
-let cons: 'a. ('a, t('a)) => t('a) =
-  (a, b) => [@implicit_arity] Cons(a, b);
+let cons: 'a. ('a, t('a)) => t('a) = (a, b) => Cons(a, b);
 
 /** Adds the given item to the end of the given concatlist. */
 /** Wraps the given list into a concatlist (a synonym for [t_of_list])*/
 
-let snoc: 'a. (t('a), 'a) => t('a) =
-  (a, b) => [@implicit_arity] Snoc(a, b);
+let snoc: 'a. (t('a), 'a) => t('a) = (a, b) => Snoc(a, b);
 
 /** Wraps the given list into a concatlist (a synonym for [t_of_list])*/
 
 let wrapped: 'a. list('a) => t('a) = t_of_list;
 
 let (@) = append;
-let (@+) = (l1, l2) => [@implicit_arity] Append(l1, t_of_list(l2));
+let (@+) = (l1, l2) => Append(l1, t_of_list(l2));
 let (+@) = (@+);
 
 let flatten: 'a. list(t('a)) => t('a) =

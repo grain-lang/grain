@@ -90,8 +90,7 @@ let rec module_path = (s, path) =>
   | Not_found =>
     switch (path) {
     | PIdent(_) => path
-    | [@implicit_arity] PExternal(p, n, pos) =>
-      [@implicit_arity] PExternal(module_path(s, p), n, pos)
+    | PExternal(p, n, pos) => PExternal(module_path(s, p), n, pos)
     }
   };
 
@@ -106,8 +105,7 @@ let modtype_path = s =>
     ) {
     | Not_found => p
     }
-  | [@implicit_arity] PExternal(p, n, pos) =>
-    [@implicit_arity] PExternal(module_path(s, p), n, pos);
+  | PExternal(p, n, pos) => PExternal(module_path(s, p), n, pos);
 
 let type_path = (s, path) =>
   switch (PathMap.find(path, s.types)) {
@@ -116,8 +114,7 @@ let type_path = (s, path) =>
   | exception Not_found =>
     switch (path) {
     | PIdent(_) => path
-    | [@implicit_arity] PExternal(p, n, pos) =>
-      [@implicit_arity] PExternal(module_path(s, p), n, pos)
+    | PExternal(p, n, pos) => PExternal(module_path(s, p), n, pos)
     }
   };
 
@@ -192,13 +189,12 @@ let rec typexp = (s, ty) => {
     ty.desc = TTySubst(ty');
     ty'.desc = (
       switch (desc) {
-      | [@implicit_arity] TTyConstr(p, args, _abbrev) =>
+      | TTyConstr(p, args, _abbrev) =>
         let args = List.map(typexp(s), args);
         switch (PathMap.find(p, s.types)) {
         | exception Not_found =>
-          [@implicit_arity] TTyConstr(type_path(s, p), args, ref(TMemNil))
-        | Path(_) =>
-          [@implicit_arity] TTyConstr(type_path(s, p), args, ref(TMemNil))
+          TTyConstr(type_path(s, p), args, ref(TMemNil))
+        | Path(_) => TTyConstr(type_path(s, p), args, ref(TMemNil))
         | Type_function({params, body}) =>
           ctype_apply_env_empty^(params, body, args).desc
         };
@@ -285,7 +281,7 @@ let extension_constructor = (s, ext) => {
 let rec rename_bound_idents = (s, idents) =>
   fun
   | [] => (List.rev(idents), s)
-  | [[@implicit_arity] TSigType(id, _, _), ...sg] => {
+  | [TSigType(id, _, _), ...sg] => {
       let id' = Ident.rename(id);
       rename_bound_idents(
         add_type(id, PIdent(id'), s),
@@ -293,11 +289,11 @@ let rec rename_bound_idents = (s, idents) =>
         sg,
       );
     }
-  | [[@implicit_arity] TSigTypeExt(id, _, _), ...sg] => {
+  | [TSigTypeExt(id, _, _), ...sg] => {
       let id' = Ident.rename(id);
       rename_bound_idents(s, [id', ...idents], sg);
     }
-  | [[@implicit_arity] TSigModule(id, _, _), ...sg] => {
+  | [TSigModule(id, _, _), ...sg] => {
       let id' = Ident.rename(id);
       rename_bound_idents(
         add_module(id, PIdent(id'), s),
@@ -305,7 +301,7 @@ let rec rename_bound_idents = (s, idents) =>
         sg,
       );
     }
-  | [[@implicit_arity] TSigModType(id, _), ...sg] => {
+  | [TSigModType(id, _), ...sg] => {
       let id' = Ident.rename(id);
       rename_bound_idents(
         add_modtype(id, TModIdent(PIdent(id')), s),
@@ -313,7 +309,7 @@ let rec rename_bound_idents = (s, idents) =>
         sg,
       );
     }
-  | [[@implicit_arity] TSigValue(id, _), ...sg] => {
+  | [TSigValue(id, _), ...sg] => {
       let id' = Ident.rename(id);
       rename_bound_idents(s, [id', ...idents], sg);
     };
@@ -327,8 +323,8 @@ let rec modtype = s =>
       try(Tbl.find(id, s.modtypes)) {
       | Not_found => mty
       }
-    | [@implicit_arity] PExternal(p, n, pos) =>
-      TModIdent([@implicit_arity] PExternal(module_path(s, p), n, pos))
+    | PExternal(p, n, pos) =>
+      TModIdent(PExternal(module_path(s, p), n, pos))
     }
   | TModSignature(sg) => TModSignature(signature(s, sg))
 
@@ -343,20 +339,18 @@ and signature = (s, sg) => {
 
 and signature_component = (s, comp, newid) =>
   switch (comp) {
-  | [@implicit_arity] TSigValue(_id, d) =>
+  | TSigValue(_id, d) =>
     [@implicit_arity]
     TSigValue(
       newid,
       {...value_description(s, d), val_fullpath: Path.PIdent(_id)},
     )
-  | [@implicit_arity] TSigType(_id, d, rs) =>
-    [@implicit_arity] TSigType(newid, type_declaration(s, d), rs)
-  | [@implicit_arity] TSigTypeExt(_id, d, es) =>
-    [@implicit_arity] TSigTypeExt(newid, extension_constructor(s, d), es)
-  | [@implicit_arity] TSigModule(_id, d, rs) =>
-    [@implicit_arity] TSigModule(newid, module_declaration(s, d), rs)
-  | [@implicit_arity] TSigModType(_id, d) =>
-    [@implicit_arity] TSigModType(newid, modtype_declaration(s, d))
+  | TSigType(_id, d, rs) => TSigType(newid, type_declaration(s, d), rs)
+  | TSigTypeExt(_id, d, es) =>
+    TSigTypeExt(newid, extension_constructor(s, d), es)
+  | TSigModule(_id, d, rs) =>
+    TSigModule(newid, module_declaration(s, d), rs)
+  | TSigModType(_id, d) => TSigModType(newid, modtype_declaration(s, d))
   }
 
 and module_declaration = (s, decl) => {

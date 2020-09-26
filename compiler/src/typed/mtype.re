@@ -45,7 +45,7 @@ let rec strengthen = (~aliasable, env, mty, p) =>
 and strengthen_sig = (~aliasable, env, sg, p, pos) =>
   switch (sg) {
   | [] => []
-  | [[@implicit_arity] TSigValue(_, desc) as sigelt, ...rem] =>
+  | [TSigValue(_, desc) as sigelt, ...rem] =>
     let nextpos =
       switch (desc.val_kind) {
       | TValPrim(_) => pos
@@ -57,7 +57,7 @@ and strengthen_sig = (~aliasable, env, sg, p, pos) =>
     (TSigType(id', {type_private=Private}, _) :: _ as rem)
     when Ident.name id = Ident.name id' ^ "#row" ->
       strengthen_sig ~aliasable env rem p pos*/
-  | [[@implicit_arity] TSigType(id, decl, rs), ...rem] =>
+  | [TSigType(id, decl, rs), ...rem] =>
     let newdecl =
       switch (decl.type_manifest, /*decl.type_private,*/ decl.type_kind) {
       | (Some(_), /*Public,*/ _) => decl
@@ -68,7 +68,7 @@ and strengthen_sig = (~aliasable, env, sg, p, pos) =>
             Btype.newgenty(
               [@implicit_arity]
               TTyConstr(
-                [@implicit_arity] PExternal(p, Ident.name(id), nopos),
+                PExternal(p, Ident.name(id), nopos),
                 decl.type_params,
                 ref(TMemNil),
               ),
@@ -82,24 +82,24 @@ and strengthen_sig = (~aliasable, env, sg, p, pos) =>
       };
 
     [
-      [@implicit_arity] TSigType(id, newdecl, rs),
+      TSigType(id, newdecl, rs),
       ...strengthen_sig(~aliasable, env, rem, p, pos),
     ];
   | [TSigTypeExt(_) as sigelt, ...rem] => [
       sigelt,
       ...strengthen_sig(~aliasable, env, rem, p, pos + 1),
     ]
-  | [[@implicit_arity] TSigModule(id, md, rs), ...rem] =>
+  | [TSigModule(id, md, rs), ...rem] =>
     let str =
       strengthen_decl(
         ~aliasable,
         env,
         md,
-        [@implicit_arity] PExternal(p, Ident.name(id), pos),
+        PExternal(p, Ident.name(id), pos),
       );
 
     [
-      [@implicit_arity] TSigModule(id, str, rs),
+      TSigModule(id, str, rs),
       ...strengthen_sig(
            ~aliasable,
            Env.add_module_declaration(~check=false, id, md, env),
@@ -109,23 +109,18 @@ and strengthen_sig = (~aliasable, env, sg, p, pos) =>
          ),
     ];
   /* Need to add the module in case it defines manifest module types */
-  | [[@implicit_arity] TSigModType(id, decl), ...rem] =>
+  | [TSigModType(id, decl), ...rem] =>
     let newdecl =
       switch (decl.mtd_type) {
       | None => {
           ...decl,
-          mtd_type:
-            Some(
-              TModIdent(
-                [@implicit_arity] PExternal(p, Ident.name(id), nopos),
-              ),
-            ),
+          mtd_type: Some(TModIdent(PExternal(p, Ident.name(id), nopos))),
         }
       | Some(_) => decl
       };
 
     [
-      [@implicit_arity] TSigModType(id, newdecl),
+      TSigModType(id, newdecl),
       ...strengthen_sig(
            ~aliasable,
            Env.add_modtype(id, decl, env),
@@ -207,7 +202,7 @@ let nondep_supertype = (env, mid, mty) => {
     | [item, ...rem] => {
         let rem' = nondep_sig(env, va, rem);
         switch (item) {
-        | [@implicit_arity] TSigValue(id, d) => [
+        | TSigValue(id, d) => [
             [@implicit_arity]
             TSigValue(
               id,
@@ -215,7 +210,7 @@ let nondep_supertype = (env, mid, mty) => {
             ),
             ...rem',
           ]
-        | [@implicit_arity] TSigType(id, d, rs) => [
+        | TSigType(id, d, rs) => [
             [@implicit_arity]
             TSigType(
               id,
@@ -224,7 +219,7 @@ let nondep_supertype = (env, mid, mty) => {
             ),
             ...rem',
           ]
-        | [@implicit_arity] TSigTypeExt(id, ext, es) => [
+        | TSigTypeExt(id, ext, es) => [
             [@implicit_arity]
             TSigTypeExt(
               id,
@@ -233,7 +228,7 @@ let nondep_supertype = (env, mid, mty) => {
             ),
             ...rem',
           ]
-        | [@implicit_arity] TSigModule(id, md, rs) => [
+        | TSigModule(id, md, rs) => [
             [@implicit_arity]
             TSigModule(
               id,
@@ -242,11 +237,8 @@ let nondep_supertype = (env, mid, mty) => {
             ),
             ...rem',
           ]
-        | [@implicit_arity] TSigModType(id, d) =>
-          try([
-            [@implicit_arity] TSigModType(id, nondep_modtype_decl(env, d)),
-            ...rem',
-          ]) {
+        | TSigModType(id, d) =>
+          try([TSigModType(id, nondep_modtype_decl(env, d)), ...rem']) {
           | Not_found =>
             switch (va) {
             | Co => [
@@ -308,9 +300,7 @@ let enrich_typedecl = (env, p, id, decl) =>
         let env = Env.add_type(~check=false, id, decl, env);
         Ctype.mcomp(env, orig_ty, new_ty);
         let orig_ty =
-          Btype.newgenty(
-            [@implicit_arity] TTyConstr(p, decl.type_params, ref(TMemNil)),
-          );
+          Btype.newgenty(TTyConstr(p, decl.type_params, ref(TMemNil)));
 
         {...decl, type_manifest: Some(orig_ty)};
       };
@@ -335,19 +325,14 @@ let rec enrich_modtype = (env, p, mty) =>
 
 and enrich_item = (env, p) =>
   fun
-  | [@implicit_arity] TSigType(id, decl, rs) =>
+  | TSigType(id, decl, rs) =>
     [@implicit_arity]
     TSigType(
       id,
-      enrich_typedecl(
-        env,
-        [@implicit_arity] PExternal(p, Ident.name(id), nopos),
-        id,
-        decl,
-      ),
+      enrich_typedecl(env, PExternal(p, Ident.name(id), nopos), id, decl),
       rs,
     )
-  | [@implicit_arity] TSigModule(id, md, rs) =>
+  | TSigModule(id, md, rs) =>
     [@implicit_arity]
     TSigModule(
       id,
@@ -356,7 +341,7 @@ and enrich_item = (env, p) =>
         md_type:
           enrich_modtype(
             env,
-            [@implicit_arity] PExternal(p, Ident.name(id), nopos),
+            PExternal(p, Ident.name(id), nopos),
             md.md_type,
           ),
       },
@@ -375,30 +360,26 @@ let rec type_paths = (env, p, mty) =>
 and type_paths_sig = (env, p, pos, sg) =>
   switch (sg) {
   | [] => []
-  | [[@implicit_arity] TSigValue(_id, decl), ...rem] =>
+  | [TSigValue(_id, decl), ...rem] =>
     let pos' =
       switch (decl.val_kind) {
       | TValPrim(_) => pos
       | _ => pos + 1
       };
     type_paths_sig(env, p, pos', rem);
-  | [[@implicit_arity] TSigType(id, _decl, _), ...rem] => [
-      [@implicit_arity] PExternal(p, Ident.name(id), nopos),
+  | [TSigType(id, _decl, _), ...rem] => [
+      PExternal(p, Ident.name(id), nopos),
       ...type_paths_sig(env, p, pos, rem),
     ]
-  | [[@implicit_arity] TSigModule(id, md, _), ...rem] =>
-    type_paths(
-      env,
-      [@implicit_arity] PExternal(p, Ident.name(id), pos),
-      md.md_type,
-    )
+  | [TSigModule(id, md, _), ...rem] =>
+    type_paths(env, PExternal(p, Ident.name(id), pos), md.md_type)
     @ type_paths_sig(
         Env.add_module_declaration(~check=false, id, md, env),
         p,
         pos + 1,
         rem,
       )
-  | [[@implicit_arity] TSigModType(id, decl), ...rem] =>
+  | [TSigModType(id, decl), ...rem] =>
     type_paths_sig(Env.add_modtype(id, decl, env), p, pos, rem)
   | [TSigTypeExt(_) /*| Sig_class _*/, ...rem] =>
     type_paths_sig(env, p, pos + 1, rem)
@@ -418,12 +399,12 @@ let rec no_code_needed = (env, mty) =>
 and no_code_needed_sig = (env, sg) =>
   switch (sg) {
   | [] => true
-  | [[@implicit_arity] TSigValue(_id, decl), ...rem] =>
+  | [TSigValue(_id, decl), ...rem] =>
     switch (decl.val_kind) {
     | TValPrim(_) => no_code_needed_sig(env, rem)
     | _ => false
     }
-  | [[@implicit_arity] TSigModule(id, md, _), ...rem] =>
+  | [TSigModule(id, md, _), ...rem] =>
     no_code_needed(env, md.md_type)
     && no_code_needed_sig(
          Env.add_module_declaration(~check=false, id, md, env),
@@ -466,8 +447,7 @@ and contains_type_item = env =>
        is kept local to expressions.  */
     /*| Sig_typext (_, {ext_args = Cstr_record _}, _)*/
     raise(Exit)
-  | [@implicit_arity] TSigModule(_, {md_type: mty}, _) =>
-    contains_type(env, mty)
+  | TSigModule(_, {md_type: mty}, _) => contains_type(env, mty)
   | TSigValue(_)
   | TSigType(_)
   | TSigTypeExt(_) =>
@@ -493,14 +473,14 @@ module PathMap = Map.Make(Path);
 let rec get_prefixes =
   fun
   | PIdent(_) => PathSet.empty
-  | [@implicit_arity] PExternal(p, _, _) =>
+  | PExternal(p, _, _) =>
     /*| Papply (p, _)*/
     PathSet.add(p, get_prefixes(p));
 
 let rec get_arg_paths =
   fun
   | PIdent(_) => PathSet.empty
-  | [@implicit_arity] PExternal(p, _, _) => get_arg_paths(p);
+  | PExternal(p, _, _) => get_arg_paths(p);
 /*| Papply (p1, p2) ->
   PathSet.add p2
     (PathSet.union (get_prefixes p2)
@@ -511,12 +491,12 @@ let rec rollback_path = (subst, p) =>
   | Not_found =>
     switch (p) {
     | PIdent(_) /*| Papply _*/ => p
-    | [@implicit_arity] PExternal(p1, s, n) =>
+    | PExternal(p1, s, n) =>
       let p1' = rollback_path(subst, p1);
       if (Path.same(p1, p1')) {
         p;
       } else {
-        rollback_path(subst, [@implicit_arity] PExternal(p1', s, n));
+        rollback_path(subst, PExternal(p1', s, n));
       };
     }
   };
@@ -544,15 +524,15 @@ let collect_arg_paths = mty => {
   and it_signature_item = (it, si) => {
     type_iterators.it_signature_item(it, si);
     switch (si) {
-    | [@implicit_arity] TSigModule(id, {md_type: TModAlias(p)}, _) =>
+    | TSigModule(id, {md_type: TModAlias(p)}, _) =>
       bindings := Ident.add(id, p, bindings^)
-    | [@implicit_arity] TSigModule(id, {md_type: TModSignature(sg)}, _) =>
+    | TSigModule(id, {md_type: TModSignature(sg)}, _) =>
       List.iter(
         fun
-        | [@implicit_arity] TSigModule(id', _, _) =>
+        | TSigModule(id', _, _) =>
           subst :=
             PathMap.add(
-              [@implicit_arity] PExternal(PIdent(id), Ident.name(id'), -1),
+              PExternal(PIdent(id), Ident.name(id'), -1),
               id',
               subst^,
             )
@@ -589,7 +569,7 @@ let rec remove_aliases_mty = (env, excl, mty) =>
 and remove_aliases_sig = (env, excl, sg) =>
   switch (sg) {
   | [] => []
-  | [[@implicit_arity] TSigModule(id, md, rs), ...rem] =>
+  | [TSigModule(id, md, rs), ...rem] =>
     let mty =
       switch (md.md_type) {
       | TModAlias(_) when Ident.Set.mem(id, excl) => md.md_type
@@ -597,11 +577,11 @@ and remove_aliases_sig = (env, excl, sg) =>
       };
 
     [
-      [@implicit_arity] TSigModule(id, {...md, md_type: mty}, rs),
+      TSigModule(id, {...md, md_type: mty}, rs),
       ...remove_aliases_sig(Env.add_module(id, mty, None, env), excl, rem),
     ];
-  | [[@implicit_arity] TSigModType(id, mtd), ...rem] => [
-      [@implicit_arity] TSigModType(id, mtd),
+  | [TSigModType(id, mtd), ...rem] => [
+      TSigModType(id, mtd),
       ...remove_aliases_sig(Env.add_modtype(id, mtd, env), excl, rem),
     ]
   | [it, ...rem] => [it, ...remove_aliases_sig(env, excl, rem)]

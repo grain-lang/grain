@@ -244,15 +244,13 @@ module TailCallsArg: Anf_mapper.MapArgument = {
       CBoxAssign(wrap_id(lambda, id), wrap_imm(lambda, value));
     let bind = (id, value, body) =>
       wrap_anf_with_comp(lambda) @@
-      [@implicit_arity] AELet(Nonglobal, Nonrecursive, [(id, value)], body);
+      AELet(Nonglobal, Nonrecursive, [(id, value)], body);
     let box = value =>
-      wrap_comp(lambda) @@
-      [@implicit_arity] CPrim1(Box, wrap_imm(lambda, value));
+      wrap_comp(lambda) @@ CPrim1(Box, wrap_imm(lambda, value));
     let unbox = id => wrap_comp(lambda) @@ unbox_of(id, lambda);
     let sequence = (comp_exprs, anf_expr) =>
       List.fold_right(
-        (comp, seq) =>
-          wrap_anf_with_comp(lambda) @@ [@implicit_arity] AESeq(comp, seq),
+        (comp, seq) => wrap_anf_with_comp(lambda) @@ AESeq(comp, seq),
         comp_exprs,
         anf_expr,
       );
@@ -260,7 +258,7 @@ module TailCallsArg: Anf_mapper.MapArgument = {
 
     let lambda_args =
       switch (lambda.comp_desc) {
-      | [@implicit_arity] CLambda(args, _) => args
+      | CLambda(args, _) => args
       | _ => failwith("comp_expr was not a lambda")
       };
 
@@ -300,8 +298,7 @@ module TailCallsArg: Anf_mapper.MapArgument = {
           bind(unboxed_next_id, unbox(next_id)) @@
           bind(
             next_result_id,
-            [@implicit_arity] CApp(wrap_id(lambda, unboxed_next_id), [])
-            |> wrap_comp(lambda),
+            CApp(wrap_id(lambda, unboxed_next_id), []) |> wrap_comp(lambda),
           ) @@
           (assign_id(return_val_id, next_result_id) |> to_anf),
         ),
@@ -309,8 +306,7 @@ module TailCallsArg: Anf_mapper.MapArgument = {
       (unbox(return_val_id) |> to_anf);
     let lam_runner_body = sequence(arg_ref_assignments, run_loop);
     let lam_runner =
-      wrap_comp(lambda) @@
-      [@implicit_arity] CLambda(lambda_args, lam_runner_body);
+      wrap_comp(lambda) @@ CLambda(lambda_args, lam_runner_body);
     /* Prevent re-optimizing this lambda */
     Analyze_tail_calls.mark_not_tail_recursive(lam_runner);
     lam_runner;
@@ -318,7 +314,7 @@ module TailCallsArg: Anf_mapper.MapArgument = {
 
   let enter_anf_expression = ({anf_desc: desc} as a) =>
     switch (desc) {
-    | [@implicit_arity] AELet(global, Recursive, binds, body)
+    | AELet(global, Recursive, binds, body)
         when has_tail_recursive_binding(binds) =>
       let continue_loop_id = Ident.create("continue#tc");
       let next_f_id = Ident.create("next#tc");
@@ -335,8 +331,7 @@ module TailCallsArg: Anf_mapper.MapArgument = {
         List.map(
           ((id: Ident.t, {comp_desc} as bind)) =>
             switch (comp_desc) {
-            | [@implicit_arity] CLambda(args, body)
-                when comp_is_tail_recursive(bind) =>
+            | CLambda(args, body) when comp_is_tail_recursive(bind) =>
               let wrap_comp = wrap_comp(bind)
               and wrap_anf = wrap_anf(body)
               and default_ref = default_ref(a);
@@ -424,8 +419,7 @@ module TailCallsArg: Anf_mapper.MapArgument = {
             {
               ...a,
               anf_analyses: ref([]),
-              anf_desc:
-                [@implicit_arity] AELet(global, Recursive, new_binds, body),
+              anf_desc: AELet(global, Recursive, new_binds, body),
             },
           ),
       };
@@ -435,7 +429,7 @@ module TailCallsArg: Anf_mapper.MapArgument = {
   let enter_comp_expression = ({comp_desc: desc} as c) =>
     switch (desc) {
     /* Apply transformation to tail call within tail recursive function */
-    | [@implicit_arity] CApp({imm_desc: ImmId(f)}, args)
+    | CApp({imm_desc: ImmId(f)}, args)
         when has_transform_rule(f) && comp_is_tail_call(c) =>
       let {f_id: new_f, f_args: new_f_args, continue_loop_id, next_f_id} =
         get_transform_rule(f);
@@ -446,8 +440,7 @@ module TailCallsArg: Anf_mapper.MapArgument = {
         wrap_anf_with_comp(c) @@
         [@implicit_arity]
         AESeq(
-          wrap_comp(c) @@
-          [@implicit_arity] CBoxAssign(wrap_id(c, continue_loop_id), _true),
+          wrap_comp(c) @@ CBoxAssign(wrap_id(c, continue_loop_id), _true),
           wrap_anf_with_comp(c) @@
           [@implicit_arity]
           AESeq(
@@ -464,8 +457,7 @@ module TailCallsArg: Anf_mapper.MapArgument = {
             wrap_anf_with_comp(c) @@
             [@implicit_arity]
             AESeq(
-              wrap_comp(c) @@
-              [@implicit_arity] CBoxAssign(wrap_id(c, new_f_arg), arg),
+              wrap_comp(c) @@ CBoxAssign(wrap_id(c, new_f_arg), arg),
               seq,
             ),
           new_f_args,
@@ -482,7 +474,7 @@ module TailCallsArg: Anf_mapper.MapArgument = {
             replaced_tail_call,
           ),
       };
-    | [@implicit_arity] CLambda(args, _) =>
+    | CLambda(args, _) =>
       List.iter(arg => pop_rewrite_rule(arg), args);
       c;
     | _ => c

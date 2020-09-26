@@ -10,10 +10,7 @@ type t =
 let rec equal = (i1, i2) =>
   switch (i1, i2) {
   | (IdentName(n1), IdentName(n2)) => String.equal(n1, n2)
-  | (
-      [@implicit_arity] IdentExternal(mod1, n1),
-      [@implicit_arity] IdentExternal(mod2, n2),
-    ) =>
+  | (IdentExternal(mod1, n1), IdentExternal(mod2, n2)) =>
     equal(mod1, mod2) && String.equal(n1, n2)
   | _ => false
   };
@@ -23,8 +20,7 @@ open Format;
 let rec print_ident = ppf =>
   fun
   | IdentName(n) => fprintf(ppf, "%s", n)
-  | [@implicit_arity] IdentExternal(m, n) =>
-    fprintf(ppf, "%a%s%s", print_ident, m, sep, n);
+  | IdentExternal(m, n) => fprintf(ppf, "%a%s%s", print_ident, m, sep, n);
 
 let default_printer = (ppf, i) =>
   fprintf(ppf, "@{<id>%a@}@,", print_ident, i);
@@ -40,10 +36,7 @@ let rec string_of_ident = i => {
 let rec compare = (i1, i2) =>
   switch (i1, i2) {
   | (IdentName(n1), IdentName(n2)) => String.compare(n1, n2)
-  | (
-      [@implicit_arity] IdentExternal(mod1, n1),
-      [@implicit_arity] IdentExternal(mod2, n2),
-    ) =>
+  | (IdentExternal(mod1, n1), IdentExternal(mod2, n2)) =>
     let n_comp = String.compare(n1, n2);
     if (n_comp != 0) {
       n_comp;
@@ -58,7 +51,7 @@ let rec compare = (i1, i2) =>
 let last =
   fun
   | IdentName(s) => s
-  | [@implicit_arity] IdentExternal(_, s) => s;
+  | IdentExternal(_, s) => s;
 
 let rec split_at_dots = (s, pos) =>
   try({
@@ -72,7 +65,7 @@ let flatten = n => {
   let rec help = acc =>
     fun
     | IdentName(n) => List.rev([n, ...acc])
-    | [@implicit_arity] IdentExternal(p, n) => help([n, ...acc], p);
+    | IdentExternal(p, n) => help([n, ...acc], p);
 
   help([], n);
 };
@@ -82,11 +75,7 @@ let unflatten =
   | [] => None
   | [hd, ...tl] =>
     Some(
-      List.fold_left(
-        (p, s) => [@implicit_arity] IdentExternal(p, s),
-        IdentName(hd),
-        tl,
-      ),
+      List.fold_left((p, s) => IdentExternal(p, s), IdentName(hd), tl),
     );
 
 let parse = s =>
