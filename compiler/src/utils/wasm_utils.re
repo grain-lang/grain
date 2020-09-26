@@ -61,9 +61,9 @@ let read_leb128:
         switch (signed, next_byte()) {
         /* Check for invalid input */
         | (false, n) when n >= 1 lsl maxbits =>
-          raise([@implicit_arity] MalformedLEB(false, maxbits))
+          raise(MalformedLEB(false, maxbits))
         | (true, n) when n >= 1 lsl (maxbits - 1) =>
-          raise([@implicit_arity] MalformedLEB(true, maxbits))
+          raise(MalformedLEB(true, maxbits))
         /* Unsigned case: zero MSB => last byte */
         | (false, n) when n < 1 lsl min(maxbits, 7) => of_int(n)
         /* Signed case: zero MSB(s) => last byte */
@@ -219,7 +219,7 @@ let section_type_of_int = (~pos=?, ~name=?) =>
   | 9 => Element
   | 10 => Code
   | 11 => Data
-  | n => raise([@implicit_arity] MalformedSectionType(n, pos));
+  | n => raise(MalformedSectionType(n, pos));
 
 let int_of_section_type =
   fun
@@ -415,7 +415,7 @@ module BinarySection =
 let () =
   Printexc.register_printer(exc =>
     switch (exc) {
-    | [@implicit_arity] MalformedLEB(signed, maxbits) =>
+    | MalformedLEB(signed, maxbits) =>
       let sstr = if (signed) {"(signed)"} else {"(unsigned)"};
       Some(
         Printf.sprintf(
@@ -424,7 +424,7 @@ let () =
           maxbits,
         ),
       );
-    | [@implicit_arity] MalformedSectionType(tag, Some(pos)) =>
+    | MalformedSectionType(tag, Some(pos)) =>
       Some(
         Printf.sprintf(
           "Malformed WASM section tag at position %d: %d",
@@ -432,7 +432,7 @@ let () =
           tag,
         ),
       )
-    | [@implicit_arity] MalformedSectionType(tag, None) =>
+    | MalformedSectionType(tag, None) =>
       Some(Printf.sprintf("Malformed WASM section tag: %d", tag))
     | _ => None
     }

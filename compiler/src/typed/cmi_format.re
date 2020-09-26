@@ -137,7 +137,7 @@ let report_error = ppf =>
       Location.print_filename,
       filename,
     )
-  | [@implicit_arity] Wrong_version_interface(filename, older_newer) =>
+  | Wrong_version_interface(filename, older_newer) =>
     fprintf(
       ppf,
       "%a@ is not a compiled interface for this version of OCaml.@.It seems to be for %s version of OCaml.",

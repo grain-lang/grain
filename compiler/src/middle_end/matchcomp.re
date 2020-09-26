@@ -123,8 +123,8 @@ module MatchTreeCompiler = {
       switch (patt.pat_desc) {
       | TPatConstant(_)
       | TPatAny => []
-      | [@implicit_arity] TPatVar(id, _) => [(id, expr)]
-      | [@implicit_arity] TPatAlias(p, id, _) =>
+      | TPatVar(id, _) => [(id, expr)]
+      | TPatAlias(p, id, _) =>
         let bindings_p = extract_bindings(p, expr);
         [(id, expr), ...bindings_p];
       | TPatTuple(args) =>
@@ -160,7 +160,7 @@ module MatchTreeCompiler = {
         | [] => []
         | _ => [(tup_name, expr), ...binds]
         };
-      | [@implicit_arity] TPatRecord(fields, _) =>
+      | TPatRecord(fields, _) =>
         let rec_name = Ident.create("match_bind_rec");
         let rec_id = Imm.id(~loc, ~env, rec_name);
         let process_nested = (other_binds, (lid, ld, nested_pat)) => {
@@ -201,7 +201,7 @@ module MatchTreeCompiler = {
         | [] => []
         | _ => [(rec_name, expr), ...binds]
         };
-      | [@implicit_arity] TPatConstruct(_, _, args) =>
+      | TPatConstruct(_, _, args) =>
         let data_name = Ident.create("match_bind_data");
         let data_id = Imm.id(~loc, ~env, data_name);
         let process_nested = (other_binds, idx, nested_pat) => {
@@ -298,11 +298,11 @@ module MatchTreeCompiler = {
       /* FIXME: We need a "throw error" node in ANF */
       (Comp.imm(Imm.const(Const_number(Const_number_int(0L)))), [])
     /* Optimizations to avoid unneeded destructuring: */
-    | [@implicit_arity] Explode(_, Leaf(_) as inner)
-    | [@implicit_arity] Explode(_, Guard(_) as inner)
-    | [@implicit_arity] Explode(_, Fail as inner) =>
+    | Explode(_, Leaf(_) as inner)
+    | Explode(_, Guard(_) as inner)
+    | Explode(_, Fail as inner) =>
       compile_tree_help(inner, values, expr, helpI)
-    | [@implicit_arity] Explode(matrix_type, rest) =>
+    | Explode(matrix_type, rest) =>
       /* Tack on the new bindings. We assume that the indices of 'rest'
          already account for the new indices. */
       let bindings =
@@ -347,9 +347,9 @@ module MatchTreeCompiler = {
       let (rest_ans, rest_setup) =
         compile_tree_help(rest, new_values, expr, helpI);
       (rest_ans, bindings @ rest_setup);
-    | [@implicit_arity] Swap(idx, rest_tree) =>
+    | Swap(idx, rest_tree) =>
       compile_tree_help(rest_tree, swap_list(idx, values), expr, helpI)
-    | [@implicit_arity] Switch(branches, default_tree) =>
+    | Switch(branches, default_tree) =>
       /* Runs when no branches match */
       let base_tree = Option.value(~default=Fail, default_tree);
       let base = compile_tree_help(base_tree, values, expr, helpI);
@@ -429,9 +429,9 @@ let rec pattern_always_matches = patt =>
   switch (patt.pat_desc) {
   | TPatAny
   | TPatVar(_) => true
-  | [@implicit_arity] TPatAlias(p, _, _) => pattern_always_matches(p)
+  | TPatAlias(p, _, _) => pattern_always_matches(p)
   | TPatTuple(args) when List.for_all(pattern_always_matches, args) => true
-  | [@implicit_arity] TPatRecord(fields, _)
+  | TPatRecord(fields, _)
       when List.for_all(((_, _, p)) => pattern_always_matches(p), fields) =>
     true
   | _ => false
@@ -440,7 +440,7 @@ let rec pattern_always_matches = patt =>
 let flatten_pattern = (size, {pat_desc}) =>
   switch (pat_desc) {
   | TPatTuple(args) => args
-  | [@implicit_arity] TPatRecord([(_, {lbl_all}, _), ..._] as ps, _) =>
+  | TPatRecord([(_, {lbl_all}, _), ..._] as ps, _) =>
     let patterns = Array.init(Array.length(lbl_all), _ => Parmatch.omega);
     List.iter(((_, ld, pat)) => patterns[ld.lbl_pos] = pat, ps);
     Array.to_list(patterns);
@@ -459,26 +459,14 @@ let rec matrix_type =
     ConstructorMatrix(None)
   | [([{pat_desc: TPatTuple(ps)}, ..._], _), ..._] =>
     TupleMatrix(List.length(ps))
-  | [
-      (
-        [
-          {pat_desc: [@implicit_arity] TPatRecord([(_, ld, _), ..._], _)},
-          ..._,
-        ],
-        _,
-      ),
-      ..._,
-    ] =>
+  | [([{pat_desc: TPatRecord([(_, ld, _), ..._], _)}, ..._], _), ..._] =>
     RecordMatrix(Array.map(({lbl_pos}) => lbl_pos, ld.lbl_all))
   | [_, ...rest] => matrix_type(rest);
 
 let rec pattern_head_constructors_aux = (p, acc) =>
   switch (p.pat_desc) {
-  | [@implicit_arity] TPatConstruct(_, cd, _) when !List.mem(cd, acc) => [
-      cd,
-      ...acc,
-    ]
-  | [@implicit_arity] TPatOr(p1, p2) =>
+  | TPatConstruct(_, cd, _) when !List.mem(cd, acc) => [cd, ...acc]
+  | TPatOr(p1, p2) =>
     pattern_head_constructors_aux(p1, pattern_head_constructors_aux(p2, acc))
   | _ => acc
   };
@@ -566,12 +554,10 @@ let rec specialize_matrix = (cd, mtx) => {
       | _ when pattern_always_matches(p) =>
         let wildcards = List.init(arity, _ => {...p, pat_desc: TPatAny});
         [wildcards @ ptl];
-      | [@implicit_arity] TPatConstruct(_, pcd, args) when cd == pcd => [
-          args @ ptl,
-        ]
-      | [@implicit_arity] TPatOr(p1, p2) =>
+      | TPatConstruct(_, pcd, args) when cd == pcd => [args @ ptl]
+      | TPatOr(p1, p2) =>
         specialized_rows([p1, ...ptl]) @ specialized_rows([p2, ...ptl])
-      | [@implicit_arity] TPatAlias(p, _, _) => specialized_rows([p, ...ptl])
+      | TPatAlias(p, _, _) => specialized_rows([p, ...ptl])
       | _ => [] /* Specialization for non-constructors generates no rows. */
       }
     };
@@ -602,7 +588,7 @@ let rec default_matrix = mtx => {
     | [{pat_desc} as p, ...ptl] =>
       switch (pat_desc) {
       | _ when pattern_always_matches(p) => [ptl]
-      | [@implicit_arity] TPatOr(p1, p2) =>
+      | TPatOr(p1, p2) =>
         default_rows([p1, ...ptl]) @ default_rows([p2, ...ptl])
       | _ => []
       }

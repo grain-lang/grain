@@ -112,11 +112,7 @@ let update_type = (temp_env, env, id, loc) => {
   | Some(ty) =>
     let params = List.map(_ => Ctype.newvar(), decl.type_params);
     try(Ctype.unify(env, Ctype.newconstr(path, params), ty)) {
-    | Ctype.Unify(trace) =>
-      raise(
-        [@implicit_arity]
-        Error(loc, [@implicit_arity] Type_clash(env, trace)),
-      )
+    | Ctype.Unify(trace) => raise(Error(loc, Type_clash(env, trace)))
     };
   };
 };
@@ -132,8 +128,7 @@ module StringSet =
 let make_params = (env, params) => {
   let make_param = sty =>
     try(transl_type_param(env, sty)) {
-    | Already_bound =>
-      raise([@implicit_arity] Error(sty.ptyp_loc, Repeated_parameter))
+    | Already_bound => raise(Error(sty.ptyp_loc, Repeated_parameter))
     };
 
   List.map(make_param, params);
@@ -146,7 +141,7 @@ let transl_labels = (env, closed, lbls) => {
     ({pld_name: {txt: name, loc}}) => {
       let name = Identifier.string_of_ident(name);
       if (StringSet.mem(name, all_labels^)) {
-        raise([@implicit_arity] Error(loc, Duplicate_label(name)));
+        raise(Error(loc, Duplicate_label(name)));
       };
       all_labels := StringSet.add(name, all_labels^);
     },
@@ -174,7 +169,7 @@ let transl_labels = (env, closed, lbls) => {
         let ty = rf.rf_type.ctyp_type;
         let ty =
           switch (ty.desc) {
-          | [@implicit_arity] TTyPoly(t, []) => t
+          | TTyPoly(t, []) => t
           | _ => ty
           };
         {
@@ -207,7 +202,7 @@ let make_constructor = (env, type_path, type_params, sargs) => {
 let check_type_var = (loc, univ, id) => {
   let f = t => Btype.repr(t).id == id;
   if (!List.exists(f, univ)) {
-    raise([@implicit_arity] Error(loc, Wrong_unboxed_type_float));
+    raise(Error(loc, Wrong_unboxed_type_float));
   };
 };
 
@@ -250,10 +245,7 @@ let transl_declaration = (env, sdecl, id) => {
       List.iter(
         ({pcd_name: {txt: name}}) => {
           if (StringSet.mem(name, all_constrs^)) {
-            raise(
-              [@implicit_arity]
-              Error(sdecl.pdata_loc, Duplicate_constructor(name)),
-            );
+            raise(Error(sdecl.pdata_loc, Duplicate_constructor(name)));
           };
           all_constrs := StringSet.add(name, all_constrs^);
         },
@@ -264,9 +256,7 @@ let transl_declaration = (env, sdecl, id) => {
           )
           > Config.max_tag
           + 1) {
-        raise(
-          [@implicit_arity] Error(sdecl.pdata_loc, Too_many_constructors),
-        );
+        raise(Error(sdecl.pdata_loc, Too_many_constructors));
       };
       let make_cstr = scstr => {
         let name = Ident.create(scstr.pcd_name.txt);
@@ -361,10 +351,7 @@ let transl_declaration = (env, sdecl, id) => {
   | None => ()
   | Some(ty) =>
     if (Ctype.cyclic_abbrev(env, id, ty)) {
-      raise(
-        [@implicit_arity]
-        Error(sdecl.pdata_loc, Recursive_abbrev(sdecl.pdata_name.txt)),
-      );
+      raise(Error(sdecl.pdata_loc, Recursive_abbrev(sdecl.pdata_name.txt)));
     }
   };
   {
@@ -402,17 +389,12 @@ let check_well_founded = (env, loc, path, to_check, ty) => {
     if (TypeSet.mem(ty, parents)) {
       /*Format.eprintf "@[%a@]@." Printtyp.raw_type_expr ty;*/
       if (switch (ty0.desc) {
-          | [@implicit_arity] TTyConstr(p, _, _) => Path.same(p, path)
+          | TTyConstr(p, _, _) => Path.same(p, path)
           | _ => false
           }) {
-        raise(
-          [@implicit_arity] Error(loc, Recursive_abbrev(Path.name(path))),
-        );
+        raise(Error(loc, Recursive_abbrev(Path.name(path))));
       } else {
-        raise(
-          [@implicit_arity]
-          Error(loc, [@implicit_arity] Cycle_in_def(Path.name(path), ty0)),
-        );
+        raise(Error(loc, Cycle_in_def(Path.name(path), ty0)));
       };
     };
     let (fini, parents) =
@@ -432,7 +414,7 @@ let check_well_founded = (env, loc, path, to_check, ty) => {
     } else {
       let rec_ok =
         switch (ty.desc) {
-        | [@implicit_arity] TTyConstr(p, _, _) =>
+        | TTyConstr(p, _, _) =>
           Grain_utils.Config.recursive_types^ && Ctype.is_contractive(env, p)
         | _ => Grain_utils.Config.recursive_types^
         };
@@ -458,8 +440,7 @@ let check_well_founded = (env, loc, path, to_check, ty) => {
         };
 
       switch (ty.desc) {
-      | [@implicit_arity] TTyConstr(p, _, _)
-          when arg_exn != None || to_check(p) =>
+      | TTyConstr(p, _, _) when arg_exn != None || to_check(p) =>
         if (to_check(p)) {
           Option.iter(raise, arg_exn);
         } else {
@@ -529,14 +510,12 @@ let check_recursion = (env, loc, path, decl, to_check) =>
       if (!List.memq(ty, visited^)) {
         visited := [ty, ...visited^];
         switch (ty.desc) {
-        | [@implicit_arity] TTyConstr(path', args', _) =>
+        | TTyConstr(path', args', _) =>
           if (Path.same(path, path')) {
             if (!Ctype.equal(env, false, args, args')) {
               raise(
-                [@implicit_arity]
                 Error(
                   loc,
-                  [@implicit_arity]
                   Parameters_differ(cpath, ty, Ctype.newconstr(path, args)),
                 ),
               );
@@ -557,10 +536,8 @@ let check_recursion = (env, loc, path, decl, to_check) =>
               try(List.iter2(Ctype.unify(env), params, args')) {
               | Ctype.Unify(_) =>
                 raise(
-                  [@implicit_arity]
                   Error(
                     loc,
-                    [@implicit_arity]
                     Constraint_failed(ty, Ctype.newconstr(path', params0)),
                   ),
                 )
@@ -571,7 +548,7 @@ let check_recursion = (env, loc, path, decl, to_check) =>
             };
           };
           List.iter(check_regular(cpath, args, prev_exp), args');
-        | [@implicit_arity] TTyPoly(ty, tl) =>
+        | TTyPoly(ty, tl) =>
           let (_, ty) = Ctype.instance_poly(~keep_names=true, false, tl, ty);
           check_regular(cpath, args, prev_exp, ty);
         | _ => Btype.iter_type_expr(check_regular(cpath, args, prev_exp), ty)
@@ -788,13 +765,7 @@ let transl_data_decl = (env, rec_flag, sdecl_list) => {
       let decl = tdecl.data_type;
       switch (Ctype.closed_type_decl(decl)) {
       | Some(ty) =>
-        raise(
-          [@implicit_arity]
-          Error(
-            sdecl.pdata_loc,
-            [@implicit_arity] Unbound_type_var(ty, decl),
-          ),
-        )
+        raise(Error(sdecl.pdata_loc, Unbound_type_var(ty, decl)))
       | None => ()
       };
     },
@@ -860,12 +831,12 @@ let get_native_repr_attribute = (attrs, ~global_repr) =>
   | (None, Some(_), None) => Native_repr_attr_present(Untagged)
   | (Some({Location.loc}), _, _)
   | (_, Some({Location.loc}), _) =>
-    raise([@implicit_arity] Error(loc, Multiple_native_repr_attributes))
+    raise(Error(loc, Multiple_native_repr_attributes))
   };
 
 let native_repr_of_type = (env, kind, ty) =>
   switch (kind, Ctype.expand_head_opt(env, ty).desc) {
-  | (Untagged, [@implicit_arity] TTyConstr(path, _, _))
+  | (Untagged, TTyConstr(path, _, _))
       when Path.same(path, Builtin_types.path_number) =>
     Some(Untagged_int)
   /*| Unboxed, TTyConstr (path, _, _) when Path.same path Predef.path_float ->
@@ -894,7 +865,6 @@ let error_if_has_deep_native_repr_attributes = core_type => {
       ) {
       | Native_repr_attr_present(kind) =>
         raise(
-          [@implicit_arity]
           Error(core_type.ptyp_loc, Deep_unbox_or_untag_attribute(kind)),
         )
       | Native_repr_attr_absent => ()
@@ -917,10 +887,7 @@ let make_native_repr = (env, core_type, ty, ~global_repr) => {
       (_, ty) =>
         switch (native_repr_of_type(env, kind, ty)) {
         | None =>
-          raise(
-            [@implicit_arity]
-            Error(Location.dummy_loc, Cannot_unbox_or_untag_type(kind)),
-          )
+          raise(Error(Location.dummy_loc, Cannot_unbox_or_untag_type(kind)))
         | Some(repr) => repr
         },
       Same_as_ocaml_repr,
@@ -939,15 +906,8 @@ let rec parse_native_repr_attributes = (env, core_type, ty, ~global_repr) =>
     ),
   ) {
   | (PTyArrow(_), TTyArrow(_), Native_repr_attr_present(kind)) =>
-    raise(
-      [@implicit_arity]
-      Error(core_type.ptyp_loc, Cannot_unbox_or_untag_type(kind)),
-    )
-  | (
-      [@implicit_arity] PTyArrow(ct1, ct2),
-      [@implicit_arity] TTyArrow(t1, t2, _),
-      _,
-    ) =>
+    raise(Error(core_type.ptyp_loc, Cannot_unbox_or_untag_type(kind)))
+  | (PTyArrow(ct1, ct2), TTyArrow(t1, t2, _), _) =>
     let repr_arg = make_native_repr(env, ct1, t1, ~global_repr);
     let (repr_args, repr_res) =
       parse_native_repr_attributes(env, ct2, t2, ~global_repr);
@@ -1031,13 +991,7 @@ let transl_extension_constructor =
 
       try(Ctype.unify(env, cstr_res, res)) {
       | Ctype.Unify(trace) =>
-        raise(
-          [@implicit_arity]
-          Error(
-            lid.loc,
-            [@implicit_arity] Rebind_wrong_type(lid.txt, env, trace),
-          ),
-        )
+        raise(Error(lid.loc, Rebind_wrong_type(lid.txt, env, trace)))
       };
       /* Remove "_" names from parameters used in the constructor */
       let vars = Ctype.free_variables(Btype.newgenty(TTyTuple(args)));
@@ -1054,7 +1008,7 @@ let transl_extension_constructor =
       /* Ensure that constructor's type matches the type being extended */
       let (cstr_type_path, cstr_type_params) =
         switch (cdescr.cstr_res.desc) {
-        | [@implicit_arity] TTyConstr(p, _, _) =>
+        | TTyConstr(p, _, _) =>
           let decl = Env.find_type(p, env);
           (p, decl.type_params);
         | _ => assert(false)
@@ -1062,38 +1016,33 @@ let transl_extension_constructor =
 
       let cstr_types = [
         Btype.newgenty(
-          [@implicit_arity]
           TTyConstr(cstr_type_path, cstr_type_params, ref(TMemNil)),
         ),
         ...cstr_type_params,
       ];
 
       let ext_types = [
-        Btype.newgenty(
-          [@implicit_arity] TTyConstr(type_path, type_params, ref(TMemNil)),
-        ),
+        Btype.newgenty(TTyConstr(type_path, type_params, ref(TMemNil))),
         ...type_params,
       ];
 
       if (!Ctype.equal(env, true, cstr_types, ext_types)) {
         raise(
-          [@implicit_arity]
           Error(
             lid.loc,
-            [@implicit_arity]
             Rebind_mismatch(lid.txt, cstr_type_path, type_path),
           ),
         );
       };
       let path =
         switch (cdescr.cstr_tag) {
-        | [@implicit_arity] CstrExtension(_, path, _) => path
+        | CstrExtension(_, path, _) => path
         | _ => assert(false)
         };
 
       let args = Types.TConstrTuple(args);
 
-      (args, [@implicit_arity] TExtRebind(path, lid));
+      (args, TExtRebind(path, lid));
     };
 
   let ext = {
@@ -1216,7 +1165,7 @@ let report_error = ppf =>
   | Duplicate_label(s) => fprintf(ppf, "Two labels are named %s", s)
   | Recursive_abbrev(s) =>
     fprintf(ppf, "The type abbreviation %s is cyclic", s)
-  | [@implicit_arity] Cycle_in_def(s, ty) => {
+  | Cycle_in_def(s, ty) => {
       Printtyp.reset_and_mark_loops(ty);
       fprintf(
         ppf,
@@ -1226,7 +1175,7 @@ let report_error = ppf =>
         ty,
       );
     }
-  | [@implicit_arity] Definition_mismatch(ty, errs) => {
+  | Definition_mismatch(ty, errs) => {
       Printtyp.reset_and_mark_loops(ty);
       fprintf(
         ppf,
@@ -1243,7 +1192,7 @@ let report_error = ppf =>
         errs,
       );
     }
-  | [@implicit_arity] Constraint_failed(ty, ty') => {
+  | Constraint_failed(ty, ty') => {
       Printtyp.reset_and_mark_loops(ty);
       Printtyp.mark_loops(ty');
       fprintf(
@@ -1256,7 +1205,7 @@ let report_error = ppf =>
         ty',
       );
     }
-  | [@implicit_arity] Parameters_differ(path, ty, ty') => {
+  | Parameters_differ(path, ty, ty') => {
       Printtyp.reset_and_mark_loops(ty);
       Printtyp.mark_loops(ty');
       fprintf(
@@ -1269,7 +1218,7 @@ let report_error = ppf =>
         ty',
       );
     }
-  | [@implicit_arity] Inconsistent_constraint(env, trace) => {
+  | Inconsistent_constraint(env, trace) => {
       fprintf(ppf, "The type constraints are not consistent.@.");
       Printtyp.report_unification_error(
         ppf,
@@ -1279,7 +1228,7 @@ let report_error = ppf =>
         ppf => fprintf(ppf, "is not compatible with type"),
       );
     }
-  | [@implicit_arity] Type_clash(env, trace) =>
+  | Type_clash(env, trace) =>
     Printtyp.report_unification_error(
       ppf,
       env,
@@ -1296,7 +1245,7 @@ let report_error = ppf =>
       ppf,
       "@[<hv>An external function with more than 5 arguments requires a second stub function@ for native-code compilation@]",
     )
-  | [@implicit_arity] Unbound_type_var(ty, decl) => {
+  | Unbound_type_var(ty, decl) => {
       fprintf(ppf, "A type variable is unbound in this type declaration");
       let ty = Ctype.repr(ty);
       switch (decl.type_kind, decl.type_manifest) {
@@ -1337,7 +1286,7 @@ let report_error = ppf =>
       path,
       "is not extensible",
     )
-  | [@implicit_arity] Extension_mismatch(path, errs) =>
+  | Extension_mismatch(path, errs) =>
     fprintf(
       ppf,
       "@[<v>@[<hov>%s@ %s@;<1 2>%s@]%a@]",
@@ -1351,7 +1300,7 @@ let report_error = ppf =>
       ),
       errs,
     )
-  | [@implicit_arity] Rebind_wrong_type(lid, env, trace) =>
+  | Rebind_wrong_type(lid, env, trace) =>
     Printtyp.report_unification_error(
       ppf,
       env,
@@ -1367,7 +1316,7 @@ let report_error = ppf =>
       fun
       | ppf => fprintf(ppf, "but was expected to be of type"),
     )
-  | [@implicit_arity] Rebind_mismatch(lid, p, p') =>
+  | Rebind_mismatch(lid, p, p') =>
     fprintf(
       ppf,
       "@[%s@ %a@ %s@ %s@ %s@ %s@ %s@]",
@@ -1389,7 +1338,7 @@ let report_error = ppf =>
       lid,
       "is private",
     )
-  | [@implicit_arity] Bad_variance(n, v1, v2) => {
+  | Bad_variance(n, v1, v2) => {
       let variance = ((p, n, i)) => {
         let inj = if (i) {"injective "} else {""};
         switch (p, n) {
@@ -1516,7 +1465,7 @@ let report_error = ppf =>
 let () =
   Location.register_error_of_exn(
     fun
-    | [@implicit_arity] Error(loc, err) =>
+    | Error(loc, err) =>
       Some(Location.error_of_printer(loc, report_error, err))
     | _ => None,
   );

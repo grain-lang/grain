@@ -53,25 +53,25 @@ let message =
       name,
     )
   | NotPrincipal(s) => s ++ " is not principal."
-  | [@implicit_arity] NameOutOfScope(ty, [nm], false) =>
+  | NameOutOfScope(ty, [nm], false) =>
     nm
     ++ " was selected from type "
     ++ ty
     ++ ".\nIt is not visible in the current scope, and will not \nbe selected if the type becomes unknown."
-  | [@implicit_arity] NameOutOfScope(_, _, false) => assert(false)
-  | [@implicit_arity] NameOutOfScope(ty, slist, true) =>
+  | NameOutOfScope(_, _, false) => assert(false)
+  | NameOutOfScope(ty, slist, true) =>
     "this record of type "
     ++ ty
     ++ " contains fields that are \nnot visible in the current scope: "
     ++ String.concat(" ", slist)
     ++ ".\nThey will not be selected if the type becomes unknown."
-  | [@implicit_arity] AmbiguousName([s], tl, false) =>
+  | AmbiguousName([s], tl, false) =>
     s
     ++ " belongs to several types: "
     ++ String.concat(" ", tl)
     ++ "\nThe first one was selected. Please disambiguate if this is wrong."
-  | [@implicit_arity] AmbiguousName(_, _, false) => assert(false)
-  | [@implicit_arity] AmbiguousName(_slist, tl, true) =>
+  | AmbiguousName(_, _, false) => assert(false)
+  | AmbiguousName(_slist, tl, true) =>
     "these field labels belong to several types: "
     ++ String.concat(" ", tl)
     ++ "\nThe first one was selected. Please disambiguate if this is wrong."
@@ -93,9 +93,9 @@ let message =
   | UnreachableCase => "this mach case is unreachable."
   | ShadowConstructor(s) =>
     "the pattern variable " ++ s ++ " shadows a constructor of the same name."
-  | [@implicit_arity] NoCmiFile(name, None) =>
+  | NoCmiFile(name, None) =>
     "no cmi file was found in path for module " ++ name
-  | [@implicit_arity] NoCmiFile(name, Some(msg)) =>
+  | NoCmiFile(name, Some(msg)) =>
     Printf.sprintf(
       "no valid cmi file was found in path for module %s. %s",
       name,
@@ -130,9 +130,9 @@ let nerrors = ref(0);
 
 let defaults = [
   LetRecNonFunction(""),
-  [@implicit_arity] AmbiguousName([], [], false),
+  AmbiguousName([], [], false),
   NotPrincipal(""),
-  [@implicit_arity] NameOutOfScope("", [], false),
+  NameOutOfScope("", [], false),
   StatementType,
   NonreturningStatement,
   AllClausesGuarded,
@@ -142,7 +142,7 @@ let defaults = [
   NonClosedRecordPattern(""),
   UnreachableCase,
   ShadowConstructor(""),
-  [@implicit_arity] NoCmiFile("", None),
+  NoCmiFile("", None),
 ];
 
 let _ = List.iter(x => current^.active[number(x)] = true, defaults);

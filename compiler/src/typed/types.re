@@ -219,10 +219,7 @@ let equal_tag = (t1, t2) =>
   switch (t1, t2) {
   | (CstrBlock(i1), CstrBlock(i2))
   | (CstrConstant(i1), CstrConstant(i2)) => i1 == i2
-  | (
-      [@implicit_arity] CstrExtension(i1, p1, b1),
-      [@implicit_arity] CstrExtension(i2, p2, b2),
-    ) =>
+  | (CstrExtension(i1, p1, b1), CstrExtension(i2, p2, b2)) =>
     i1 == i2 && Path.same(p1, p2) && b1 == b2
   | (CstrUnboxed, CstrUnboxed) => true
   | _ => false

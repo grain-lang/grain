@@ -15,11 +15,8 @@ module BranchArg: Anf_mapper.MapArgument = {
     List.exists(
       ((_, {comp_desc})) =>
         switch (comp_desc) {
-        | [@implicit_arity]
-          CIf({imm_desc: ImmConst(Const_bool(true))}, branch, _)
-        | [@implicit_arity]
-          CIf({imm_desc: ImmConst(Const_bool(false))}, _, branch) =>
-          true
+        | CIf({imm_desc: ImmConst(Const_bool(true))}, branch, _)
+        | CIf({imm_desc: ImmConst(Const_bool(false))}, _, branch) => true
         | _ => false
         },
       binds,
@@ -29,10 +26,8 @@ module BranchArg: Anf_mapper.MapArgument = {
     List.for_all(
       ((_, {comp_desc})) =>
         switch (comp_desc) {
-        | [@implicit_arity]
-          CIf({imm_desc: ImmConst(Const_bool(true))}, branch, _)
-        | [@implicit_arity]
-          CIf({imm_desc: ImmConst(Const_bool(false))}, _, branch) =>
+        | CIf({imm_desc: ImmConst(Const_bool(true))}, branch, _)
+        | CIf({imm_desc: ImmConst(Const_bool(false))}, _, branch) =>
           is_simple_case(branch)
         | _ => true
         },
@@ -49,18 +44,15 @@ module BranchArg: Anf_mapper.MapArgument = {
     switch (anf_desc) {
     | AEComp(comp) => {
         ...a,
-        anf_desc:
-          [@implicit_arity] AELet(global, Nonrecursive, [(id, comp)], cont),
+        anf_desc: AELet(global, Nonrecursive, [(id, comp)], cont),
       }
-    | [@implicit_arity] AESeq(comp, body) => {
+    | AESeq(comp, body) => {
+        ...a,
+        anf_desc: AESeq(comp, relinearize(id, global, body, cont)),
+      }
+    | AELet(_global, _recursive, binds, body) => {
         ...a,
         anf_desc:
-          [@implicit_arity] AESeq(comp, relinearize(id, global, body, cont)),
-      }
-    | [@implicit_arity] AELet(_global, _recursive, binds, body) => {
-        ...a,
-        anf_desc:
-          [@implicit_arity]
           AELet(
             _global,
             _recursive,
@@ -73,25 +65,19 @@ module BranchArg: Anf_mapper.MapArgument = {
   let enter_anf_expression = ({anf_desc: desc} as a) =>
     switch (desc) {
     | AEComp({
-        comp_desc:
-          [@implicit_arity]
-          CIf({imm_desc: ImmConst(Const_bool(true))}, branch, _),
+        comp_desc: CIf({imm_desc: ImmConst(Const_bool(true))}, branch, _),
       })
     | AEComp({
-        comp_desc:
-          [@implicit_arity]
-          CIf({imm_desc: ImmConst(Const_bool(false))}, _, branch),
+        comp_desc: CIf({imm_desc: ImmConst(Const_bool(false))}, _, branch),
       }) => branch
-    | [@implicit_arity] AELet(global, recursive, binds, body)
+    | AELet(global, recursive, binds, body)
         when has_simple_optimizable_conditional(binds) =>
       let binds =
         List.map(
           ((id, {comp_desc} as comp)) =>
             switch (comp_desc) {
-            | [@implicit_arity]
-              CIf({imm_desc: ImmConst(Const_bool(true))}, branch, _)
-            | [@implicit_arity]
-              CIf({imm_desc: ImmConst(Const_bool(false))}, _, branch) => (
+            | CIf({imm_desc: ImmConst(Const_bool(true))}, branch, _)
+            | CIf({imm_desc: ImmConst(Const_bool(false))}, _, branch) => (
                 id,
                 extract_comp(branch),
               )
@@ -99,27 +85,20 @@ module BranchArg: Anf_mapper.MapArgument = {
             },
           binds,
         );
-      {
-        ...a,
-        anf_desc: [@implicit_arity] AELet(global, recursive, binds, body),
-      };
-    | [@implicit_arity] AELet(global, Nonrecursive, binds, body)
+      {...a, anf_desc: AELet(global, recursive, binds, body)};
+    | AELet(global, Nonrecursive, binds, body)
         when has_optimizable_conditional(binds) =>
       /* We can't relinearize recursive bindings since they depend on each other */
       List.fold_right(
         ((name, {comp_desc} as comp), cont) =>
           switch (comp_desc) {
-          | [@implicit_arity]
-            CIf({imm_desc: ImmConst(Const_bool(true))}, _true, _) =>
+          | CIf({imm_desc: ImmConst(Const_bool(true))}, _true, _) =>
             relinearize(name, global, _true, cont)
-          | [@implicit_arity]
-            CIf({imm_desc: ImmConst(Const_bool(false))}, _, _false) =>
+          | CIf({imm_desc: ImmConst(Const_bool(false))}, _, _false) =>
             relinearize(name, global, _false, cont)
           | _ => {
               ...a,
-              anf_desc:
-                [@implicit_arity]
-                AELet(global, Nonrecursive, [(name, comp)], cont),
+              anf_desc: AELet(global, Nonrecursive, [(name, comp)], cont),
             }
           },
         binds,

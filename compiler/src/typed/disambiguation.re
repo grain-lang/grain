@@ -29,7 +29,7 @@ let rec expand_path = (env, p) => {
   switch (decl) {
   | Some({type_manifest: Some(ty)}) =>
     switch (repr(ty)) {
-    | {desc: [@implicit_arity] TTyConstr(p, _, _)} => expand_path(env, p)
+    | {desc: TTyConstr(p, _, _)} => expand_path(env, p)
     | _ => p
     /* PR#6394: recursive module may introduce incoherent manifest */
     }
@@ -69,7 +69,7 @@ module NameChoice =
 
   let get_type_path = d =>
     switch (repr(get_type(d)).desc) {
-    | [@implicit_arity] TTyConstr(p, _, _) => p
+    | TTyConstr(p, _, _) => p
     | _ => assert(false)
     };
 
@@ -82,11 +82,9 @@ module NameChoice =
       | Not_found =>
         let names = List.map(get_name, descrs);
         raise(
-          [@implicit_arity]
           Error(
             lid.loc,
             env,
-            [@implicit_arity]
             WrongName("", mk_expected(newvar()), type_kind, tpath, s, names),
           ),
         );
@@ -150,7 +148,6 @@ module NameChoice =
           if (paths != []) {
             warn(
               lid.loc,
-              [@implicit_arity]
               Warnings.AmbiguousName(
                 [Identifier.last(lid.txt)],
                 paths,
@@ -187,7 +184,6 @@ module NameChoice =
                 if (paths != []) {
                   warn(
                     lid.loc,
-                    [@implicit_arity]
                     Warnings.AmbiguousName(
                       [Identifier.last(lid.txt)],
                       paths,
@@ -208,7 +204,6 @@ module NameChoice =
               let s = Printtyp.string_of_path(tpath);
               warn(
                 lid.loc,
-                [@implicit_arity]
                 Warnings.NameOutOfScope(
                   s,
                   [Identifier.last(lid.txt)],
@@ -237,11 +232,9 @@ module NameChoice =
                 );
 
               raise(
-                [@implicit_arity]
                 Error(
                   lid.loc,
                   env,
-                  [@implicit_arity]
                   NameTypeMismatch(type_kind, lid.txt, tp, tpl),
                 ),
               );
@@ -309,9 +302,8 @@ let disambiguate_lid_a_list = (loc, closed, env, opath, lid_a_list) => {
     Warnings.(
       switch (msg) {
       | NotPrincipal(_) => w_pr := true
-      | [@implicit_arity] AmbiguousName([s], l, _) =>
-        w_amb := [(s, l), ...w_amb^]
-      | [@implicit_arity] NameOutOfScope(ty, [s], _) =>
+      | AmbiguousName([s], l, _) => w_amb := [(s, l), ...w_amb^]
+      | NameOutOfScope(ty, [s], _) =>
         w_scope := [s, ...w_scope^];
         w_scope_ty := ty;
       | _ => Location.prerr_warning(loc, msg)
@@ -351,7 +343,6 @@ let disambiguate_lid_a_list = (loc, closed, env, opath, lid_a_list) => {
       switch (opath) {
       | None =>
         Env.error(
-          [@implicit_arity]
           Env.Unbound_label(lid.loc, Identifier.string_of_ident(lid.txt)),
         )
       | Some(_) => Label.disambiguate(lid, env, opath, [], ~warn)
@@ -374,7 +365,6 @@ let disambiguate_lid_a_list = (loc, closed, env, opath, lid_a_list) => {
       if (List.for_all(compare_type_path(env, path), List.tl(paths))) {
         Location.prerr_warning(
           loc,
-          [@implicit_arity]
           Warnings.AmbiguousName(List.map(fst, amb), types, true),
         );
       } else {
@@ -382,7 +372,7 @@ let disambiguate_lid_a_list = (loc, closed, env, opath, lid_a_list) => {
           ((s, l)) =>
             Location.prerr_warning(
               loc,
-              [@implicit_arity] Warnings.AmbiguousName([s], l, false),
+              Warnings.AmbiguousName([s], l, false),
             ),
           amb,
         );
@@ -393,7 +383,6 @@ let disambiguate_lid_a_list = (loc, closed, env, opath, lid_a_list) => {
   if (w_scope^ != []) {
     Location.prerr_warning(
       loc,
-      [@implicit_arity]
       Warnings.NameOutOfScope(w_scope_ty^, List.rev(w_scope^), true),
     );
   };
@@ -408,20 +397,8 @@ let spellcheck_idents = (ppf, unbound, valid_idents) =>
 
 let wrap_disambiguate = (kind, ty, f, x) =>
   try(f(x)) {
-  | [@implicit_arity]
-    Error(
-      loc,
-      env,
-      [@implicit_arity] WrongName("", _, tk, tp, name, valid_names),
-    ) =>
-    raise(
-      [@implicit_arity]
-      Error(
-        loc,
-        env,
-        [@implicit_arity] WrongName(kind, ty, tk, tp, name, valid_names),
-      ),
-    )
+  | Error(loc, env, WrongName("", _, tk, tp, name, valid_names)) =>
+    raise(Error(loc, env, WrongName(kind, ty, tk, tp, name, valid_names)))
   };
 
 open Format;
@@ -460,7 +437,7 @@ let report_type_expected_explanation_opt = (expl, ppf) =>
 
 let report_error = (env, ppf) =>
   fun
-  | [@implicit_arity] WrongName(eorp, ty_expected, kind, p, name, valid_names) => {
+  | WrongName(eorp, ty_expected, kind, p, name, valid_names) => {
       let {ty, explanation} = ty_expected;
       reset_and_mark_loops(ty);
       {
@@ -483,7 +460,7 @@ let report_error = (env, ppf) =>
       };
       spellcheck(ppf, name, valid_names);
     }
-  | [@implicit_arity] NameTypeMismatch(kind, lid, tp, tpl) => {
+  | NameTypeMismatch(kind, lid, tp, tpl) => {
       let name = label_of_kind(kind);
       report_ambiguous_type_error(
         ppf,
@@ -527,7 +504,7 @@ let report_error = (env, ppf, err) =>
 let () =
   Location.register_error_of_exn(
     fun
-    | [@implicit_arity] Error(loc, env, err) =>
+    | Error(loc, env, err) =>
       Some(Location.error_of_printer(loc, report_error(env), err))
     | Error_forward(err) => Some(err)
     | _ => None,

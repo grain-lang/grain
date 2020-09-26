@@ -51,9 +51,9 @@ let rec pretty_val = (ppf, v) =>
   | [] =>
     switch (v.pat_desc) {
     | TPatAny => fprintf(ppf, "_")
-    | [@implicit_arity] TPatVar(x, _) => fprintf(ppf, "%s", Ident.name(x))
+    | TPatVar(x, _) => fprintf(ppf, "%s", Ident.name(x))
     | TPatTuple(vs) => fprintf(ppf, "@[(%a)@]", pretty_vals(","), vs)
-    | [@implicit_arity] TPatRecord(lvs, c) =>
+    | TPatRecord(lvs, c) =>
       let filtered_lvs =
         List.filter(
           fun
@@ -74,15 +74,15 @@ let rec pretty_val = (ppf, v) =>
         fprintf(ppf, "@[{%a%t}@]", pretty_lvals, filtered_lvs, elision_mark);
       };
     | TPatConstant(c) => fprintf(ppf, "%s", pretty_const(c))
-    | [@implicit_arity] TPatConstruct(_, cstr, args) =>
+    | TPatConstruct(_, cstr, args) =>
       if (List.length(args) > 0) {
         fprintf(ppf, "@[%s(%a)@]", cstr.cstr_name, pretty_vals(","), args);
       } else {
         fprintf(ppf, "@[%s@]", cstr.cstr_name);
       }
-    | [@implicit_arity] TPatAlias(v, x, _) =>
+    | TPatAlias(v, x, _) =>
       fprintf(ppf, "@[(%a@ as %a)@]", pretty_val, v, Ident.print, x)
-    | [@implicit_arity] TPatOr(v, w) =>
+    | TPatOr(v, w) =>
       fprintf(ppf, "@[(%a|@,%a)@]", pretty_or, v, pretty_or, w)
     }
   }
@@ -104,8 +104,7 @@ and pretty_arg = (ppf, v) =>
 
 and pretty_or = (ppf, v) =>
   switch (v.pat_desc) {
-  | [@implicit_arity] TPatOr(v, w) =>
-    fprintf(ppf, "%a|@,%a", pretty_or, v, pretty_or, w)
+  | TPatOr(v, w) => fprintf(ppf, "%a|@,%a", pretty_or, v, pretty_or, w)
   | _ => pretty_val(ppf, v)
   }
 
