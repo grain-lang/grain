@@ -1065,6 +1065,16 @@ let match_tests = [
     "match (('foo', 5, false)) { | ('bar', 5, false) => false | ('foo', _, true) => false | ('foo', _, false) => true | _ => false }",
     "true",
   ),
+  t(
+    "constant_match_3",
+    "match ('foo') { | 'foo' when false => false | 'foo' when true => true | _ => false }",
+    "true",
+  ),
+  t(
+    "constant_match_4",
+    "match (('foo', 5)) { | ('foo', n) when n == 7 => false | ('foo', 9) when true => false | ('foo', n) when n == 5 => true | _ => false }",
+    "true",
+  ),
   tfile("mixed_matching", "mixedPatternMatching", "true"),
 ];
 
