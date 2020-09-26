@@ -97,7 +97,6 @@ let opt:
     let cur = internal_opt(v);
     specs :=
       [
-        [@implicit_arity]
         Spec(
           Cmdliner.Arg.(
             opt(
@@ -163,7 +162,6 @@ let toggle_flag:
     let cur = internal_opt(default);
     specs :=
       [
-        [@implicit_arity]
         Spec(
           Cmdliner.Arg.(
             vflag(

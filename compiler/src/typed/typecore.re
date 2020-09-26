@@ -266,8 +266,7 @@ let unify_exp_types = (loc, env, ty, expected_ty) =>
   /*Format.eprintf "Unifying: @[%a@ %a@]@." Printtyp.raw_type_expr ty
     Printtyp.raw_type_expr expected_ty;*/
   try(unify(env, ty, expected_ty)) {
-  | Unify(trace) =>
-    raise([@implicit_arity] Error(loc, env, Expr_type_clash(trace, None)))
+  | Unify(trace) => raise(Error(loc, env, Expr_type_clash(trace, None)))
   };
 
 /* level at which to create the local type declarations */
@@ -330,7 +329,6 @@ let rec approx_type = (env, sty) =>
   switch (sty.ptyp_desc) {
   | PTyArrow(args, ret) =>
     newty(
-      [@implicit_arity]
       TTyArrow(
         List.map(x => newvar(), args),
         approx_type(env, ret),
@@ -361,7 +359,6 @@ let rec type_approx = (env, sexp: Parsetree.expression) =>
   | PExpWhile(_, e) => type_approx(env, e)
   | PExpLambda(args, e) =>
     newty(
-      [@implicit_arity]
       TTyArrow(List.map(x => newvar(), args), type_approx(env, e), TComOk),
     )
   | PExpBlock([_, ..._] as es) => type_approx(env, last(es))
@@ -397,11 +394,9 @@ let check_univars = (env, expans, kind, exp, ty_expected, vars) => {
     let ty = newgenty(TTyPoly(repr(exp.exp_type), vars'))
     and ty_expected = repr(ty_expected);
     raise(
-      [@implicit_arity]
       Error(
         exp.exp_loc,
         env,
-        [@implicit_arity]
         Less_general(kind, [(ty, ty), (ty_expected, ty_expected)]),
       ),
     );
@@ -515,12 +510,9 @@ and with_explanation = (explanation, f) =>
   | None => f()
   | Some(explanation) =>
     try(f()) {
-    | [@implicit_arity] Error(loc', env', Expr_type_clash(trace', None))
+    | Error(loc', env', Expr_type_clash(trace', None))
         when !loc'.Location.loc_ghost =>
-      raise(
-        [@implicit_arity]
-        Error(loc', env', Expr_type_clash(trace', Some(explanation))),
-      )
+      raise(Error(loc', env', Expr_type_clash(trace', Some(explanation))))
     }
   }
 
@@ -545,13 +537,7 @@ and type_expect_ =
         switch (desc.val_kind) {
         | TValUnbound(ValUnboundGhostRecursive) =>
           raise(
-            [@implicit_arity]
-            Error(
-              loc,
-              env,
-              [@implicit_arity]
-              Unbound_value_missing_rec(id.txt, desc.val_loc),
-            ),
+            Error(loc, env, Unbound_value_missing_rec(id.txt, desc.val_loc)),
           )
         | _ => TExpIdent(path, id, desc)
         },
@@ -705,10 +691,7 @@ and type_expect_ =
     let rec check_duplicates = (
       fun
       | [(_, lbl1, _), (_, lbl2, _), ..._] when lbl1.lbl_pos == lbl2.lbl_pos =>
-        raise(
-          [@implicit_arity]
-          Error(loc, env, Label_multiply_defined(lbl1.lbl_name)),
-        )
+        raise(Error(loc, env, Label_multiply_defined(lbl1.lbl_name)))
       | [_, ...rem] => check_duplicates(rem)
       | [] => ()
     );
@@ -1088,11 +1071,9 @@ and type_function =
     try(filter_arrow(arity, env, exp_inst)) {
     | Unify(_) =>
       raise(
-        [@implicit_arity]
         Error(
           loc_fun,
           env,
-          [@implicit_arity]
           Too_many_arguments(in_function != None, ty_fun, explanation),
         ),
       )
@@ -1171,10 +1152,7 @@ and type_application = (env, funct, args) => {
       unify(
         env,
         ty_fun,
-        newty(
-          [@implicit_arity]
-          TTyArrow(t_args, t_ret, TComLink(ref(TComUnknown))),
-        ),
+        newty(TTyArrow(t_args, t_ret, TComLink(ref(TComUnknown)))),
       );
       (t_args, t_ret, ty_fun.level);
     | TTyArrow(t_args, t_ret, _)
@@ -1185,11 +1163,9 @@ and type_application = (env, funct, args) => {
       )
     | TTyArrow(t_args, t_ret, _) =>
       raise(
-        [@implicit_arity]
         Error(
           funct.exp_loc,
           env,
-          [@implicit_arity]
           Arity_mismatch(
             expand_head(env, funct.exp_type),
             List.length(args),
@@ -1198,7 +1174,6 @@ and type_application = (env, funct, args) => {
       )
     | td =>
       raise(
-        [@implicit_arity]
         Error(
           funct.exp_loc,
           env,
@@ -1245,11 +1220,9 @@ and type_construct = (env, loc, lid, sarg, ty_expected_explained, attrs) => {
     };
   if (List.length(sargs) != constr.cstr_arity) {
     raise(
-      [@implicit_arity]
       Error(
         loc,
         env,
-        [@implicit_arity]
         Constructor_arity_mismatch(
           lid.txt,
           constr.cstr_arity,
@@ -1891,9 +1864,7 @@ and type_label_exp = (create, env, loc, ty_expected, (lid, label, sarg)) => {
   };
   try(unify(env, instance(env, ty_res), instance(env, ty_expected))) {
   | Unify(trace) =>
-    raise(
-      [@implicit_arity] Error(lid.loc, env, Label_mismatch(lid.txt, trace)),
-    )
+    raise(Error(lid.loc, env, Label_mismatch(lid.txt, trace)))
   };
   /* Instantiate so that we can generalize internal nodes */
   let ty_arg = instance(env, ty_arg);
@@ -2164,8 +2135,7 @@ let report_error = (env, ppf) =>
         "s";
       },
     )
-  | [@implicit_arity]
-    Wrong_name(eorp, ty_expected, kind, p, name, valid_names) => {
+  | Wrong_name(eorp, ty_expected, kind, p, name, valid_names) => {
       let {ty, explanation} = ty_expected;
       reset_and_mark_loops(ty);
       {

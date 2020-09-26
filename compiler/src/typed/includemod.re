@@ -533,7 +533,6 @@ and signatures = (~loc, env, ~mark, cxt, subst, sig1, sig2) => {
                 (
                   cxt,
                   env,
-                  [@implicit_arity]
                   Missing_field(id2, loc, kind_of_field_desc(name2)),
                 ),
                 ...unpaired,

@@ -359,7 +359,6 @@ let type_declarations =
       | (None, Some(ty2)) =>
         let ty1 =
           Btype.newgenty(
-            [@implicit_arity]
             TTyConstr(PIdent(id), decl2.type_params, ref(TMemNil)),
           );
 
@@ -479,13 +478,11 @@ let type_declarations =
 let extension_constructors = (~loc, env, ~mark, id, ext1, ext2) => {
   let ty1 =
     Btype.newgenty(
-      [@implicit_arity]
       TTyConstr(ext1.ext_type_path, ext1.ext_type_params, ref(TMemNil)),
     );
 
   let ty2 =
     Btype.newgenty(
-      [@implicit_arity]
       TTyConstr(ext2.ext_type_path, ext2.ext_type_params, ref(TMemNil)),
     );
 

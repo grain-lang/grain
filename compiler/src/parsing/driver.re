@@ -66,10 +66,6 @@ let parse = (~name=?, lexbuf): Parsetree.parsed_program => {
   switch (Parser.parse_program(Lexer.token, lexbuf)) {
   | [] => raise(Error(startpos, NoValidParse))
   | [(x, _)] => {...x, comments: Lexer.consume_comments()}
-  | parses =>
-    raise(
-      [@implicit_arity]
-      Error(startpos, AmbiguousParse(List.map(fst, parses))),
-    )
+  | parses => raise(Error(startpos, AmbiguousParse(List.map(fst, parses))))
   };
 };

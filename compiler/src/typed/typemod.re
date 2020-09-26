@@ -209,7 +209,7 @@ module StringSet =
 
 let check = (cl, loc, set_ref, name) =>
   if (StringSet.mem(name, set_ref^)) {
-    raise([@implicit_arity] Error(loc, Env.empty, Repeated_name(cl, name)));
+    raise(Error(loc, Env.empty, Repeated_name(cl, name)));
   } else {
     set_ref := StringSet.add(name, set_ref^);
   };
@@ -265,17 +265,11 @@ let check_nongen_scheme = (env, sig_item) =>
   switch (sig_item) {
   | TSigValue(_id, vd) =>
     if (!Ctype.closed_schema(env, vd.val_type)) {
-      raise(
-        [@implicit_arity]
-        Error(vd.val_loc, env, Non_generalizable(vd.val_type)),
-      );
+      raise(Error(vd.val_loc, env, Non_generalizable(vd.val_type)));
     }
   | TSigModule(_id, md, _) =>
     if (!closed_modtype(env, md.md_type)) {
-      raise(
-        [@implicit_arity]
-        Error(md.md_loc, env, Non_generalizable_module(md.md_type)),
-      );
+      raise(Error(md.md_loc, env, Non_generalizable_module(md.md_type)));
     }
   | _ => ()
   };
@@ -323,7 +317,6 @@ let enrich_type_decls = (anchor, decls, oldenv, newenv) =>
                   type_manifest:
                     Some(
                       Btype.newgenty(
-                        [@implicit_arity]
                         TTyConstr(p, decl.type_params, ref(TMemNil)),
                       ),
                     ),
@@ -459,7 +452,6 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
           switch (e) {
           | Exported => TSigType(info.data_id, info.data_type, rs)
           | Nonexported =>
-            [@implicit_arity]
             TSigType(
               info.data_id,
               {...info.data_type, type_kind: TDataAbstract},
@@ -495,11 +487,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
         (id, sigs) =>
           if (ident_needs_export(id) || export_flag == Exported) {
             some_exported := true;
-            [
-              [@implicit_arity]
-              TSigValue(id, Env.find_value(PIdent(id), newenv)),
-              ...sigs,
-            ];
+            [TSigValue(id, Env.find_value(PIdent(id), newenv)), ...sigs];
           } else {
             sigs;
           },
@@ -535,10 +523,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
     let sign =
       switch (export_flag) {
       | Exported =>
-        Some(
-          [@implicit_arity]
-          TSigTypeExt(ext.ext_id, ext.ext_type, TExtException),
-        )
+        Some(TSigTypeExt(ext.ext_id, ext.ext_type, TExtException))
       | Nonexported => None
       };
     (newenv, sign, stmt);
@@ -704,7 +689,6 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       | TTyArrow(args, result, c) => {
           ...expr,
           desc:
-            [@implicit_arity]
             TTyArrow(
               List.map(resolve_type_expr, args),
               resolve_type_expr(result),
@@ -728,7 +712,6 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       | TTyPoly(one, all) => {
           ...expr,
           desc:
-            [@implicit_arity]
             TTyPoly(
               resolve_type_expr(one),
               List.map(resolve_type_expr, all),
@@ -741,9 +724,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
           get_alias(type_export_aliases^, id);
         {
           ...expr,
-          desc:
-            [@implicit_arity]
-            TTyConstr(name, List.map(resolve_type_expr, args), a),
+          desc: TTyConstr(name, List.map(resolve_type_expr, args), a),
         };
       };
 
@@ -786,7 +767,6 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       switch (get_alias(type_export_aliases^, PIdent(id))) {
       | None => TSigType(id, resolve_type_decl(decl), rs)
       | Some((name, alias)) =>
-        [@implicit_arity]
         TSigType(Path.head(alias), resolve_type_decl(decl), rs)
       }
     | TSigValue(id, {val_type, val_kind} as vd) =>
@@ -801,7 +781,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
           })
         | _ => val_kind
         };
-      [@implicit_arity]
+
       TSigValue(
         id,
         {...vd, val_kind, val_type: resolve_type_expr(val_type)},
@@ -944,8 +924,7 @@ let report_error = ppf =>
       Includemod.report_error,
       explanation,
     )
-  | [@implicit_arity]
-    With_makes_applicative_functor_ill_typed(lid, path, explanation) =>
+  | With_makes_applicative_functor_ill_typed(lid, path, explanation) =>
     fprintf(
       ppf,
       "@[<v>@[This `with' constraint on %a makes the applicative functor @ type %s ill-typed in the constrained signature:@]@ %a@]",

@@ -112,8 +112,7 @@ let update_type = (temp_env, env, id, loc) => {
   | Some(ty) =>
     let params = List.map(_ => Ctype.newvar(), decl.type_params);
     try(Ctype.unify(env, Ctype.newconstr(path, params), ty)) {
-    | Ctype.Unify(trace) =>
-      raise([@implicit_arity] Error(loc, Type_clash(env, trace)))
+    | Ctype.Unify(trace) => raise(Error(loc, Type_clash(env, trace)))
     };
   };
 };
@@ -246,10 +245,7 @@ let transl_declaration = (env, sdecl, id) => {
       List.iter(
         ({pcd_name: {txt: name}}) => {
           if (StringSet.mem(name, all_constrs^)) {
-            raise(
-              [@implicit_arity]
-              Error(sdecl.pdata_loc, Duplicate_constructor(name)),
-            );
+            raise(Error(sdecl.pdata_loc, Duplicate_constructor(name)));
           };
           all_constrs := StringSet.add(name, all_constrs^);
         },
@@ -355,10 +351,7 @@ let transl_declaration = (env, sdecl, id) => {
   | None => ()
   | Some(ty) =>
     if (Ctype.cyclic_abbrev(env, id, ty)) {
-      raise(
-        [@implicit_arity]
-        Error(sdecl.pdata_loc, Recursive_abbrev(sdecl.pdata_name.txt)),
-      );
+      raise(Error(sdecl.pdata_loc, Recursive_abbrev(sdecl.pdata_name.txt)));
     }
   };
   {
@@ -401,9 +394,7 @@ let check_well_founded = (env, loc, path, to_check, ty) => {
           }) {
         raise(Error(loc, Recursive_abbrev(Path.name(path))));
       } else {
-        raise(
-          [@implicit_arity] Error(loc, Cycle_in_def(Path.name(path), ty0)),
-        );
+        raise(Error(loc, Cycle_in_def(Path.name(path), ty0)));
       };
     };
     let (fini, parents) =
@@ -523,10 +514,8 @@ let check_recursion = (env, loc, path, decl, to_check) =>
           if (Path.same(path, path')) {
             if (!Ctype.equal(env, false, args, args')) {
               raise(
-                [@implicit_arity]
                 Error(
                   loc,
-                  [@implicit_arity]
                   Parameters_differ(cpath, ty, Ctype.newconstr(path, args)),
                 ),
               );
@@ -547,10 +536,8 @@ let check_recursion = (env, loc, path, decl, to_check) =>
               try(List.iter2(Ctype.unify(env), params, args')) {
               | Ctype.Unify(_) =>
                 raise(
-                  [@implicit_arity]
                   Error(
                     loc,
-                    [@implicit_arity]
                     Constraint_failed(ty, Ctype.newconstr(path', params0)),
                   ),
                 )
@@ -778,10 +765,7 @@ let transl_data_decl = (env, rec_flag, sdecl_list) => {
       let decl = tdecl.data_type;
       switch (Ctype.closed_type_decl(decl)) {
       | Some(ty) =>
-        raise(
-          [@implicit_arity]
-          Error(sdecl.pdata_loc, Unbound_type_var(ty, decl)),
-        )
+        raise(Error(sdecl.pdata_loc, Unbound_type_var(ty, decl)))
       | None => ()
       };
     },
@@ -881,7 +865,6 @@ let error_if_has_deep_native_repr_attributes = core_type => {
       ) {
       | Native_repr_attr_present(kind) =>
         raise(
-          [@implicit_arity]
           Error(core_type.ptyp_loc, Deep_unbox_or_untag_attribute(kind)),
         )
       | Native_repr_attr_absent => ()
@@ -904,10 +887,7 @@ let make_native_repr = (env, core_type, ty, ~global_repr) => {
       (_, ty) =>
         switch (native_repr_of_type(env, kind, ty)) {
         | None =>
-          raise(
-            [@implicit_arity]
-            Error(Location.dummy_loc, Cannot_unbox_or_untag_type(kind)),
-          )
+          raise(Error(Location.dummy_loc, Cannot_unbox_or_untag_type(kind)))
         | Some(repr) => repr
         },
       Same_as_ocaml_repr,
@@ -926,10 +906,7 @@ let rec parse_native_repr_attributes = (env, core_type, ty, ~global_repr) =>
     ),
   ) {
   | (PTyArrow(_), TTyArrow(_), Native_repr_attr_present(kind)) =>
-    raise(
-      [@implicit_arity]
-      Error(core_type.ptyp_loc, Cannot_unbox_or_untag_type(kind)),
-    )
+    raise(Error(core_type.ptyp_loc, Cannot_unbox_or_untag_type(kind)))
   | (PTyArrow(ct1, ct2), TTyArrow(t1, t2, _), _) =>
     let repr_arg = make_native_repr(env, ct1, t1, ~global_repr);
     let (repr_args, repr_res) =
@@ -1014,10 +991,7 @@ let transl_extension_constructor =
 
       try(Ctype.unify(env, cstr_res, res)) {
       | Ctype.Unify(trace) =>
-        raise(
-          [@implicit_arity]
-          Error(lid.loc, Rebind_wrong_type(lid.txt, env, trace)),
-        )
+        raise(Error(lid.loc, Rebind_wrong_type(lid.txt, env, trace)))
       };
       /* Remove "_" names from parameters used in the constructor */
       let vars = Ctype.free_variables(Btype.newgenty(TTyTuple(args)));
@@ -1042,7 +1016,6 @@ let transl_extension_constructor =
 
       let cstr_types = [
         Btype.newgenty(
-          [@implicit_arity]
           TTyConstr(cstr_type_path, cstr_type_params, ref(TMemNil)),
         ),
         ...cstr_type_params,
@@ -1055,10 +1028,8 @@ let transl_extension_constructor =
 
       if (!Ctype.equal(env, true, cstr_types, ext_types)) {
         raise(
-          [@implicit_arity]
           Error(
             lid.loc,
-            [@implicit_arity]
             Rebind_mismatch(lid.txt, cstr_type_path, type_path),
           ),
         );

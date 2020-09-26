@@ -27,7 +27,7 @@ let height =
 let create = (l, x, d, r) => {
   let hl = height(l)
   and hr = height(r);
-  [@implicit_arity]
+
   Node(
     l,
     x,
@@ -48,7 +48,7 @@ let bal = (l, x, d, r) => {
     switch (l) {
     | Node(ll, lv, ld, lr, _) when height(ll) >= height(lr) =>
       create(ll, lv, ld, create(lr, x, d, r))
-    | [@implicit_arity] Node(ll, lv, ld, Node(lrl, lrv, lrd, lrr, _), _) =>
+    | Node(ll, lv, ld, Node(lrl, lrv, lrd, lrr, _), _) =>
       create(create(ll, lv, ld, lrl), lrv, lrd, create(lrr, x, d, r))
     | _ => assert(false)
     };
@@ -56,7 +56,7 @@ let bal = (l, x, d, r) => {
     switch (r) {
     | Node(rl, rv, rd, rr, _) when height(rr) >= height(rl) =>
       create(create(l, x, d, rl), rv, rd, rr)
-    | [@implicit_arity] Node(Node(rll, rlv, rld, rlr, _), rv, rd, rr, _) =>
+    | Node(Node(rll, rlv, rld, rlr, _), rv, rd, rr, _) =>
       create(create(l, x, d, rll), rlv, rld, create(rlr, rv, rd, rr))
     | _ => assert(false)
     };

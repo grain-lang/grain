@@ -130,7 +130,6 @@ module MakeMap =
       | TTopImport(_)
       | TTopExport(_) => stmt.ttop_desc
       | TTopLet(exportflag, recflag, mutflag, binds) =>
-        [@implicit_arity]
         TTopLet(
           exportflag,
           recflag,
@@ -165,7 +164,6 @@ module MakeMap =
         TPatConstruct(a, b, List.map(map_pattern, args))
       | TPatTuple(args) => TPatTuple(List.map(map_pattern, args))
       | TPatRecord(fields, c) =>
-        [@implicit_arity]
         TPatRecord(
           List.map(((id, ld, pat)) => (id, ld, map_pattern(pat)), fields),
           c,
@@ -192,7 +190,6 @@ module MakeMap =
       | TExpIdent(_)
       | TExpConstant(_) => exp.exp_desc
       | TExpLet(recflag, mutflag, binds, body) =>
-        [@implicit_arity]
         TExpLet(
           recflag,
           mutflag,
@@ -202,27 +199,21 @@ module MakeMap =
       | TExpLambda(branches, p) =>
         TExpLambda(map_match_branches(branches), p)
       | TExpApp(exp, args) =>
-        [@implicit_arity]
         TExpApp(map_expression(exp), List.map(map_expression, args))
       | TExpPrim1(o, e) => TExpPrim1(o, map_expression(e))
       | TExpPrim2(o, e1, e2) =>
-        [@implicit_arity]
         TExpPrim2(o, map_expression(e1), map_expression(e2))
       | TExpBoxAssign(e1, e2) =>
-        [@implicit_arity]
         TExpBoxAssign(map_expression(e1), map_expression(e2))
       | TExpAssign(e1, e2) =>
         TExpAssign(map_expression(e1), map_expression(e2))
       | TExpMatch(value, branches, p) =>
-        [@implicit_arity]
         TExpMatch(map_expression(value), map_match_branches(branches), p)
       | TExpTuple(args) => TExpTuple(List.map(map_expression, args))
       | TExpArray(args) => TExpArray(List.map(map_expression, args))
       | TExpArrayGet(a1, a2) =>
-        [@implicit_arity]
         TExpArrayGet(map_expression(a1), map_expression(a2))
       | TExpArraySet(a1, a2, a3) =>
-        [@implicit_arity]
         TExpArraySet(
           map_expression(a1),
           map_expression(a2),
@@ -243,7 +234,6 @@ module MakeMap =
       | TExpRecordGet(record, field, ld) =>
         TExpRecordGet(map_expression(record), field, ld)
       | TExpRecordSet(record, field, ld, arg) =>
-        [@implicit_arity]
         TExpRecordSet(
           map_expression(record),
           field,
@@ -254,7 +244,6 @@ module MakeMap =
       | TExpConstruct(a, b, args) =>
         TExpConstruct(a, b, List.map(map_expression, args))
       | TExpIf(c, t, f) =>
-        [@implicit_arity]
         TExpIf(map_expression(c), map_expression(t), map_expression(f))
       | TExpWhile(c, b) => TExpWhile(map_expression(c), map_expression(b))
       };

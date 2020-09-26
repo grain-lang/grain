@@ -347,7 +347,6 @@ let runtime_function_imports =
         mimp_mod: runtime_mod,
         mimp_name: throw_error_ident,
         mimp_type:
-          [@implicit_arity]
           MFuncImport(
             List.init(Runtime_errors.max_arity + 1, _ => I32Type),
             [],
@@ -3493,10 +3492,7 @@ exception WasmRunnerError(Module.t, option(string), string);
 let validate_module = (~name=?, wasm_mod: Module.t) =>
   try(assert(Module.validate(wasm_mod) == 1)) {
   | Assert_failure(_) =>
-    raise(
-      [@implicit_arity]
-      WasmRunnerError(wasm_mod, name, "WARNING: Invalid module"),
-    )
+    raise(WasmRunnerError(wasm_mod, name, "WARNING: Invalid module"))
   };
 
 let prepare = (env, {imports} as prog) => {

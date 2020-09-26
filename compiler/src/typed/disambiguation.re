@@ -82,11 +82,9 @@ module NameChoice =
       | Not_found =>
         let names = List.map(get_name, descrs);
         raise(
-          [@implicit_arity]
           Error(
             lid.loc,
             env,
-            [@implicit_arity]
             WrongName("", mk_expected(newvar()), type_kind, tpath, s, names),
           ),
         );
@@ -150,7 +148,6 @@ module NameChoice =
           if (paths != []) {
             warn(
               lid.loc,
-              [@implicit_arity]
               Warnings.AmbiguousName(
                 [Identifier.last(lid.txt)],
                 paths,
@@ -187,7 +184,6 @@ module NameChoice =
                 if (paths != []) {
                   warn(
                     lid.loc,
-                    [@implicit_arity]
                     Warnings.AmbiguousName(
                       [Identifier.last(lid.txt)],
                       paths,
@@ -208,7 +204,6 @@ module NameChoice =
               let s = Printtyp.string_of_path(tpath);
               warn(
                 lid.loc,
-                [@implicit_arity]
                 Warnings.NameOutOfScope(
                   s,
                   [Identifier.last(lid.txt)],
@@ -237,11 +232,9 @@ module NameChoice =
                 );
 
               raise(
-                [@implicit_arity]
                 Error(
                   lid.loc,
                   env,
-                  [@implicit_arity]
                   NameTypeMismatch(type_kind, lid.txt, tp, tpl),
                 ),
               );
@@ -350,7 +343,6 @@ let disambiguate_lid_a_list = (loc, closed, env, opath, lid_a_list) => {
       switch (opath) {
       | None =>
         Env.error(
-          [@implicit_arity]
           Env.Unbound_label(lid.loc, Identifier.string_of_ident(lid.txt)),
         )
       | Some(_) => Label.disambiguate(lid, env, opath, [], ~warn)
@@ -373,7 +365,6 @@ let disambiguate_lid_a_list = (loc, closed, env, opath, lid_a_list) => {
       if (List.for_all(compare_type_path(env, path), List.tl(paths))) {
         Location.prerr_warning(
           loc,
-          [@implicit_arity]
           Warnings.AmbiguousName(List.map(fst, amb), types, true),
         );
       } else {
@@ -392,7 +383,6 @@ let disambiguate_lid_a_list = (loc, closed, env, opath, lid_a_list) => {
   if (w_scope^ != []) {
     Location.prerr_warning(
       loc,
-      [@implicit_arity]
       Warnings.NameOutOfScope(w_scope_ty^, List.rev(w_scope^), true),
     );
   };
@@ -407,12 +397,8 @@ let spellcheck_idents = (ppf, unbound, valid_idents) =>
 
 let wrap_disambiguate = (kind, ty, f, x) =>
   try(f(x)) {
-  | [@implicit_arity]
-    Error(loc, env, WrongName("", _, tk, tp, name, valid_names)) =>
-    raise(
-      [@implicit_arity]
-      Error(loc, env, WrongName(kind, ty, tk, tp, name, valid_names)),
-    )
+  | Error(loc, env, WrongName("", _, tk, tp, name, valid_names)) =>
+    raise(Error(loc, env, WrongName(kind, ty, tk, tp, name, valid_names)))
   };
 
 open Format;

@@ -120,7 +120,6 @@ let malformed_identifiers = (errs, super) => {
               | (_, Some({txt: IdentExternal(_) as alias, loc})) =>
                 errs :=
                   [
-                    [@implicit_arity]
                     ExternalAlias(Identifier.string_of_ident(alias), loc),
                     ...errs^,
                   ]
@@ -189,7 +188,6 @@ let module_imports_not_external = (errs, super) => {
     | Identifier.IdentExternal(_) =>
       errs :=
         [
-          [@implicit_arity]
           ModuleImportNameShouldNotBeExternal(
             Identifier.string_of_ident(id),
             loc,

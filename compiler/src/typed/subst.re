@@ -340,7 +340,6 @@ and signature = (s, sg) => {
 and signature_component = (s, comp, newid) =>
   switch (comp) {
   | TSigValue(_id, d) =>
-    [@implicit_arity]
     TSigValue(
       newid,
       {...value_description(s, d), val_fullpath: Path.PIdent(_id)},

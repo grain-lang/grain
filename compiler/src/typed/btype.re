@@ -550,8 +550,7 @@ let undo_compress = ((changes, _old)) =>
     List.iter(
       r =>
         switch (r^) {
-        | [@implicit_arity] Change(Ccompress(ty, desc, d), next)
-            when ty.desc === d =>
+        | Change(Ccompress(ty, desc, d), next) when ty.desc === d =>
           ty.desc = desc;
           r := next^;
         | _ => ()

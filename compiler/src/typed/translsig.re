@@ -48,7 +48,6 @@ let link_type_vars = ty => {
         | Not_found => ty
         }
       | TTyArrow(tyl, ret, c) =>
-        [@implicit_arity]
         TTyArrow(List.map(link_types, tyl), link_types(ret), c)
       | TTyTuple(l) => TTyTuple(List.map(link_types, l))
       | TTyRecord(l) =>
@@ -70,7 +69,6 @@ let translate_signature = sg =>
     item =>
       switch (item) {
       | TSigValue(id, d) =>
-        [@implicit_arity]
         TSigValue(id, {...d, val_type: link_type_vars(d.val_type)})
       | TSigType(_)
       | TSigTypeExt(_)

@@ -66,7 +66,6 @@ and strengthen_sig = (~aliasable, env, sg, p, pos) =>
         let manif =
           Some(
             Btype.newgenty(
-              [@implicit_arity]
               TTyConstr(
                 PExternal(p, Ident.name(id), nopos),
                 decl.type_params,
@@ -203,7 +202,6 @@ let nondep_supertype = (env, mid, mty) => {
         let rem' = nondep_sig(env, va, rem);
         switch (item) {
         | TSigValue(id, d) => [
-            [@implicit_arity]
             TSigValue(
               id,
               {...d, val_type: Ctype.nondep_type(env, mid, d.val_type)},
@@ -211,7 +209,6 @@ let nondep_supertype = (env, mid, mty) => {
             ...rem',
           ]
         | TSigType(id, d, rs) => [
-            [@implicit_arity]
             TSigType(
               id,
               Ctype.nondep_type_decl(env, mid, id, va == Co, d),
@@ -220,7 +217,6 @@ let nondep_supertype = (env, mid, mty) => {
             ...rem',
           ]
         | TSigTypeExt(id, ext, es) => [
-            [@implicit_arity]
             TSigTypeExt(
               id,
               Ctype.nondep_extension_constructor(env, mid, ext),
@@ -229,7 +225,6 @@ let nondep_supertype = (env, mid, mty) => {
             ...rem',
           ]
         | TSigModule(id, md, rs) => [
-            [@implicit_arity]
             TSigModule(
               id,
               {...md, md_type: nondep_mty(env, va, md.md_type)},
@@ -242,7 +237,6 @@ let nondep_supertype = (env, mid, mty) => {
           | Not_found =>
             switch (va) {
             | Co => [
-                [@implicit_arity]
                 TSigModType(
                   id,
                   {
@@ -284,7 +278,6 @@ let enrich_typedecl = (env, p, id, decl) =>
         let orig_ty =
           Ctype.reify_univars(
             Btype.newgenty(
-              [@implicit_arity]
               TTyConstr(p, orig_decl.type_params, ref(TMemNil)),
             ),
           );
@@ -292,7 +285,6 @@ let enrich_typedecl = (env, p, id, decl) =>
         let new_ty =
           Ctype.reify_univars(
             Btype.newgenty(
-              [@implicit_arity]
               TTyConstr(PIdent(id), decl.type_params, ref(TMemNil)),
             ),
           );
@@ -326,14 +318,12 @@ let rec enrich_modtype = (env, p, mty) =>
 and enrich_item = (env, p) =>
   fun
   | TSigType(id, decl, rs) =>
-    [@implicit_arity]
     TSigType(
       id,
       enrich_typedecl(env, PExternal(p, Ident.name(id), nopos), id, decl),
       rs,
     )
   | TSigModule(id, md, rs) =>
-    [@implicit_arity]
     TSigModule(
       id,
       {
