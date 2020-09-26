@@ -730,8 +730,8 @@ let prepare_match_branches = branches => {
       };
     };
     let add_constant_guard = (id, c, loc) => {
-      let vd = make_vd(id, type_constant(c));
       let ty = type_constant(c);
+      let vd = make_vd(id, ty);
       let expr = env => {
         let ident =
           TExpIdent(
