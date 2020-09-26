@@ -700,6 +700,9 @@ let rec compile_matrix = mtx =>
     Swap(i, result);
   };
 
+/* Currently, this only desugars constant patterns into guard expressions,
+ * but could be extended to do any other necessary preprocessing.
+ */
 let prepare_match_branches = branches => {
   let map_branch = branch => {
     let guard = ref(branch.mb_guard);
