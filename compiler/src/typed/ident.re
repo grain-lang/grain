@@ -155,7 +155,7 @@ let mknode = (l, d, r) => {
     | Empty => 0
     | Node(_, _, _, h) => h
     };
-  [@implicit_arity]
+
   Node(
     l,
     d,
@@ -196,7 +196,7 @@ let balance = (l, d, r) => {
                }
              ) =>
       mknode(ll, ld, mknode(lr, d, r))
-    | [@implicit_arity] Node(ll, ld, Node(lrl, lrd, lrr, _), _) =>
+    | Node(ll, ld, Node(lrl, lrd, lrr, _), _) =>
       mknode(mknode(ll, ld, lrl), lrd, mknode(lrr, d, r))
     | _ => assert(false)
     };
@@ -217,7 +217,7 @@ let balance = (l, d, r) => {
                }
              ) =>
       mknode(mknode(l, d, rl), rd, rr)
-    | [@implicit_arity] Node(Node(rll, rld, rlr, _), rd, rr, _) =>
+    | Node(Node(rll, rld, rlr, _), rd, rr, _) =>
       mknode(mknode(l, d, rll), rld, mknode(rlr, rd, rr))
     | _ => assert(false)
     };
@@ -228,13 +228,10 @@ let balance = (l, d, r) => {
 
 let rec add = (id, data) =>
   fun
-  | Empty =>
-    [@implicit_arity]
-    Node(Empty, {ident: id, data, previous: None}, Empty, 1)
+  | Empty => Node(Empty, {ident: id, data, previous: None}, Empty, 1)
   | Node(l, k, r, h) => {
       let c = compare(id.name, k.ident.name);
       if (c == 0) {
-        [@implicit_arity]
         Node(l, {ident: id, data, previous: Some(k)}, r, h);
       } else if (c < 0) {
         balance(add(id, data, l), k, r);

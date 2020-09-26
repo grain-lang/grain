@@ -374,7 +374,6 @@ let rec normalize_pat = q =>
     make_pat(TPatTuple(omega_list(args)), q.pat_type, q.pat_env)
   | TPatRecord(fields, c) =>
     make_pat(
-      [@implicit_arity]
       TPatRecord(List.map(((id, ld, pat)) => (id, ld, omega), fields), c),
       q.pat_type,
       q.pat_env,
@@ -682,8 +681,7 @@ let should_extend = (ext, env) =>
     | [] => assert(false)
     | [(p, _), ..._] =>
       switch (p.pat_desc) {
-      | [@implicit_arity]
-        TPatConstruct(
+      | TPatConstruct(
           _,
           {
             cstr_tag:
@@ -733,7 +731,6 @@ let complete_tags = (nconsts, nconstrs, tags) => {
 let pat_of_constr = (ex_pat, cstr) => {
   ...ex_pat,
   pat_desc:
-    [@implicit_arity]
     TPatConstruct(
       mknoloc(Identifier.IdentName("?pat_of_constr?")),
       cstr,
@@ -822,8 +819,7 @@ let complete_constrs = (p, all_tags) => {
 
 let build_other_constrs = (env, p) =>
   switch (p.pat_desc) {
-  | [@implicit_arity]
-    TPatConstruct(_, {cstr_tag: CstrConstant(_) | CstrBlock(_)}, _) =>
+  | TPatConstruct(_, {cstr_tag: CstrConstant(_) | CstrBlock(_)}, _) =>
     let get_tag = (
       fun
       | {pat_desc: TPatConstruct(_, c, _)} => c.cstr_tag
@@ -1761,7 +1757,6 @@ module Conv = {
       | TPatTuple(lst) => mkpat(PPatTuple(List.map(loop, lst)))
       | TPatRecord(fields, c) =>
         mkpat(
-          [@implicit_arity]
           PPatRecord(
             List.map(((id, _, pat)) => (id, loop(pat)), fields),
             c,
@@ -1888,8 +1883,7 @@ let extendable_path = path =>
 
 let rec collect_paths_from_pat = (r, p) =>
   switch (p.pat_desc) {
-  | [@implicit_arity]
-    TPatConstruct(
+  | TPatConstruct(
       _,
       {
         cstr_tag:

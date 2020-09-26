@@ -113,8 +113,7 @@ let rec narrow_unbound_lid_error: 'a. (_, _, _, _) => 'a =
 let find_component = (lookup: (~mark: _=?) => _, make_error, env, loc, lid) =>
   try(
     switch (lid) {
-    | [@implicit_arity]
-      Identifier.IdentExternal(Identifier.IdentName("*predef*"), s) =>
+    | Identifier.IdentExternal(Identifier.IdentName("*predef*"), s) =>
       lookup(Identifier.IdentName(s), Env.initial_safe_string)
     | _ => lookup(lid, env)
     }
@@ -242,10 +241,7 @@ let newvar = (~name=?, ()) => newvar(~name=?validate_name(name), ());
 let type_variable = (loc, name) =>
   try(Tbl.find(name, type_variables^)) {
   | Not_found =>
-    raise(
-      [@implicit_arity]
-      Error(loc, Env.empty, Unbound_type_variable("'" ++ name)),
-    )
+    raise(Error(loc, Env.empty, Unbound_type_variable("'" ++ name)))
   };
 
 let transl_type_param = (env, styp) => {
@@ -260,7 +256,6 @@ let transl_type_param = (env, styp) => {
         {
           if (name != "" && name.[0] == '_') {
             raise(
-              [@implicit_arity]
               Error(loc, Env.empty, Invalid_variable_name("'" ++ name)),
             );
           };
@@ -313,10 +308,7 @@ and transl_type_aux = (env, policy, styp) => {
       if (policy == Univars) {
         new_pre_univar();
       } else if (policy == Fixed) {
-        raise(
-          [@implicit_arity]
-          Error(styp.ptyp_loc, env, Unbound_type_variable("_")),
-        );
+        raise(Error(styp.ptyp_loc, env, Unbound_type_variable("_")));
       } else {
         newvar();
       };
@@ -326,7 +318,6 @@ and transl_type_aux = (env, policy, styp) => {
     let ty = {
       if (name != "" && name.[0] == '_') {
         raise(
-          [@implicit_arity]
           Error(styp.ptyp_loc, env, Invalid_variable_name("'" ++ name)),
         );
       };
@@ -371,11 +362,9 @@ and transl_type_aux = (env, policy, styp) => {
 
     if (List.length(stl) != decl.type_arity) {
       raise(
-        [@implicit_arity]
         Error(
           styp.ptyp_loc,
           env,
-          [@implicit_arity]
           Type_arity_mismatch(lid.txt, decl.type_arity, List.length(stl)),
         ),
       );
@@ -397,10 +386,7 @@ and transl_type_aux = (env, policy, styp) => {
       ((sty, cty), ty') =>
         try(unify_param(env, ty', cty.ctyp_type)) {
         | Unify(trace) =>
-          raise(
-            [@implicit_arity]
-            Error(sty.ptyp_loc, env, Type_mismatch(swap_list(trace))),
-          )
+          raise(Error(sty.ptyp_loc, env, Type_mismatch(swap_list(trace))))
         },
       List.combine(stl, args),
       params,
@@ -432,10 +418,7 @@ and transl_type_aux = (env, policy, styp) => {
               v.desc = TTyUniVar(name);
               [v, ...tyl];
             | _ =>
-              raise(
-                [@implicit_arity]
-                Error(styp.ptyp_loc, env, Cannot_quantify(name, v)),
-              )
+              raise(Error(styp.ptyp_loc, env, Cannot_quantify(name, v)))
             };
           } else {
             tyl;
@@ -474,10 +457,7 @@ let globalize_used_variables = (env, fixed) => {
         try(r := [(loc, v, Tbl.find(name, type_variables^)), ...r^]) {
         | Not_found =>
           if (fixed && Btype.is_Tvar(repr(ty))) {
-            raise(
-              [@implicit_arity]
-              Error(loc, env, Unbound_type_variable("'" ++ name)),
-            );
+            raise(Error(loc, env, Unbound_type_variable("'" ++ name)));
           };
           let v2 = new_global_var();
           r := [(loc, v, v2), ...r^];

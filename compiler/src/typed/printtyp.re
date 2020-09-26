@@ -667,7 +667,6 @@ let rec tree_of_typexp = (sch, ty) => {
         if (is_nth(s) && !(tyl' == [])) {
           tree_of_typexp(sch, List.hd(tyl'));
         } else {
-          [@implicit_arity]
           Otyp_constr(tree_of_path(p'), tree_of_typlist(sch, tyl'));
         };
       | TTySubst(ty) => tree_of_typexp(sch, ty)
@@ -1131,7 +1130,6 @@ and tree_of_modtype_declaration = (id, decl) => {
 }
 
 and tree_of_module = (id, ~ellipsis=?, mty, rs) =>
-  [@implicit_arity]
   Osig_module(
     Ident.name(id),
     tree_of_modtype(~ellipsis?, mty),

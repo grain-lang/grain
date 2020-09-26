@@ -160,34 +160,28 @@ module RegisterAllocation = {
       | MRecordOp(rop, i) => MRecordOp(rop, apply_allocation_to_imm(i))
       | MAdtOp(aop, i) => MAdtOp(aop, apply_allocation_to_imm(i))
       | MCallKnown(i32, is) =>
-        [@implicit_arity]
         MCallKnown(i32, List.map(apply_allocation_to_imm, is))
       | MError(e, is) => MError(e, List.map(apply_allocation_to_imm, is))
       | MCallIndirect(imm, is) =>
-        [@implicit_arity]
         MCallIndirect(
           apply_allocation_to_imm(imm),
           List.map(apply_allocation_to_imm, is),
         )
       | MIf(c, t, f) =>
-        [@implicit_arity]
         MIf(
           apply_allocation_to_imm(c),
           apply_allocation_to_block(t),
           apply_allocation_to_block(f),
         )
       | MWhile(b1, b2) =>
-        [@implicit_arity]
         MWhile(apply_allocation_to_block(b1), apply_allocation_to_block(b2))
       | MSwitch(v, bs, d) =>
-        [@implicit_arity]
         MSwitch(
           apply_allocation_to_imm(v),
           List.map(((t, b)) => (t, apply_allocation_to_block(b)), bs),
           apply_allocation_to_block(d),
         )
       | MPrim2(pop, i1, i2) =>
-        [@implicit_arity]
         MPrim2(
           pop,
           apply_allocation_to_imm(i1),
@@ -510,42 +504,33 @@ let rec compile_comp = (env, c) => {
         ],
       );
     | CIf(cond, thn, els) =>
-      [@implicit_arity]
       MIf(
         compile_imm(env, cond),
         compile_anf_expr(env, thn),
         compile_anf_expr(env, els),
       )
     | CWhile(cond, body) =>
-      [@implicit_arity]
       MWhile(compile_anf_expr(env, cond), compile_anf_expr(env, body))
     | CPrim1(Box, arg) => MAllocate(MBox(compile_imm(env, arg)))
     | CPrim1(Unbox, arg) => MBoxOp(MBoxUnbox, compile_imm(env, arg))
     | CPrim1(p1, arg) => MPrim1(p1, compile_imm(env, arg))
     | CPrim2(p2, arg1, arg2) =>
-      [@implicit_arity]
       MPrim2(p2, compile_imm(env, arg1), compile_imm(env, arg2))
     | CAssign(arg1, arg2) =>
-      [@implicit_arity]
       MBoxOp(MBoxUpdate(compile_imm(env, arg2)), compile_imm(env, arg1))
     | CBoxAssign(arg1, arg2) =>
-      [@implicit_arity]
       MBoxOp(MBoxUpdate(compile_imm(env, arg2)), compile_imm(env, arg1))
     | CTuple(args) => MAllocate(MTuple(List.map(compile_imm(env), args)))
     | CArray(args) => MAllocate(MArray(List.map(compile_imm(env), args)))
     | CArrayGet(idx, arr) =>
-      [@implicit_arity]
       MArrayOp(MArrayGet(compile_imm(env, idx)), compile_imm(env, arr))
     | CArraySet(idx, arr, arg) =>
-      [@implicit_arity]
       MArrayOp(
-        [@implicit_arity]
         MArraySet(compile_imm(env, idx), compile_imm(env, arg)),
         compile_imm(env, arr),
       )
     | CRecord(ttag, args) =>
       MAllocate(
-        [@implicit_arity]
         MRecord(
           compile_imm(env, ttag),
           List.map(
@@ -556,7 +541,6 @@ let rec compile_comp = (env, c) => {
       )
     | CAdt(ttag, vtag, args) =>
       MAllocate(
-        [@implicit_arity]
         MADT(
           compile_imm(env, ttag),
           compile_imm(env, vtag),
@@ -584,7 +568,6 @@ let rec compile_comp = (env, c) => {
     | CGetTupleItem(idx, tup) =>
       MTupleOp(MTupleGet(idx), compile_imm(env, tup))
     | CSetTupleItem(idx, tup, value) =>
-      [@implicit_arity]
       MTupleOp(
         MTupleSet(idx, compile_imm(env, value)),
         compile_imm(env, tup),
@@ -594,7 +577,6 @@ let rec compile_comp = (env, c) => {
     | CGetRecordItem(idx, record) =>
       MRecordOp(MRecordGet(idx), compile_imm(env, record))
     | CSetRecordItem(idx, record, arg) =>
-      [@implicit_arity]
       MRecordOp(
         MRecordSet(idx, compile_imm(env, arg)),
         compile_imm(env, record),
@@ -603,10 +585,9 @@ let rec compile_comp = (env, c) => {
       MAllocate(MClosure(compile_lambda(env, args, body, c.comp_loc)))
     | CApp(f, args) =>
       /* TODO: Utilize MCallKnown */
-      [@implicit_arity]
+
       MCallIndirect(compile_imm(env, f), List.map(compile_imm(env), args))
     | CAppBuiltin(modname, name, args) =>
-      [@implicit_arity]
       MCallKnown("builtin", List.map(compile_imm(env), args))
     | CImmExpr(i) => MImmediate(compile_imm(env, i))
     };
@@ -706,7 +687,6 @@ let lift_imports = (env, imports) => {
     fun
     | GlobalShape => MGlobalImport(I32Type)
     | FunctionShape(inputs, outputs) =>
-      [@implicit_arity]
       MFuncImport(
         List.init(inputs, _ => I32Type),
         List.init(outputs, _ => I32Type),

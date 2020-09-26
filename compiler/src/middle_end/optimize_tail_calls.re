@@ -201,7 +201,6 @@ module TailCallsArg: Anf_mapper.MapArgument = {
   include Anf_mapper.DefaultMapArgument;
 
   let default_ref = ({anf_loc, anf_env}) =>
-    [@implicit_arity]
     CPrim1(
       Box,
       {
@@ -213,7 +212,6 @@ module TailCallsArg: Anf_mapper.MapArgument = {
     );
 
   let unbox_of = (id, {comp_loc, comp_env}) =>
-    [@implicit_arity]
     CPrim1(
       Unbox,
       {
@@ -236,11 +234,9 @@ module TailCallsArg: Anf_mapper.MapArgument = {
       (lambda, {continue_id, next_id, first_f_id, arg_ref_ids}) => {
     let assign_id = (id, value) =>
       wrap_comp(lambda) @@
-      [@implicit_arity]
       CBoxAssign(wrap_id(lambda, id), wrap_id(lambda, value));
     let assign_imm = (id, value) =>
       wrap_comp(lambda) @@
-      [@implicit_arity]
       CBoxAssign(wrap_id(lambda, id), wrap_imm(lambda, value));
     let bind = (id, value, body) =>
       wrap_anf_with_comp(lambda) @@
@@ -289,7 +285,6 @@ module TailCallsArg: Anf_mapper.MapArgument = {
       ) @@
       sequence([
         wrap_comp(lambda) @@
-        [@implicit_arity]
         CWhile(
           unbox(continue_id) |> to_anf,
           sequence([
@@ -362,12 +357,9 @@ module TailCallsArg: Anf_mapper.MapArgument = {
               /* Make a new thunk that begins with new bindings to the would-be arguments */
               let iterative_lam =
                 wrap_comp @@
-                [@implicit_arity]
                 CLambda(
                   [],
-                  wrap_anf @@
-                  [@implicit_arity]
-                  AELet(Nonglobal, Nonrecursive, arg_derefs, body),
+                  wrap_anf @@ AELet(Nonglobal, Nonrecursive, arg_derefs, body),
                 );
 
               mark_tail_call_optimized(iterative_lam);
@@ -411,7 +403,6 @@ module TailCallsArg: Anf_mapper.MapArgument = {
         ...a,
         anf_analyses: ref([]),
         anf_desc:
-          [@implicit_arity]
           AELet(
             Nonglobal,
             Nonrecursive,
@@ -438,14 +429,11 @@ module TailCallsArg: Anf_mapper.MapArgument = {
       let comp_false = {...c, comp_desc: CImmExpr(_false)};
       let set_break_and_next =
         wrap_anf_with_comp(c) @@
-        [@implicit_arity]
         AESeq(
           wrap_comp(c) @@ CBoxAssign(wrap_id(c, continue_loop_id), _true),
           wrap_anf_with_comp(c) @@
-          [@implicit_arity]
           AESeq(
             wrap_comp(c) @@
-            [@implicit_arity]
             CBoxAssign(wrap_id(c, next_f_id), wrap_id(c, new_f)),
             wrap_anf_with_comp(c) @@
             AEComp(wrap_comp(c) @@ CImmExpr(_true)),
@@ -455,7 +443,6 @@ module TailCallsArg: Anf_mapper.MapArgument = {
         List.fold_right2(
           (new_f_arg, arg, seq) =>
             wrap_anf_with_comp(c) @@
-            [@implicit_arity]
             AESeq(
               wrap_comp(c) @@ CBoxAssign(wrap_id(c, new_f_arg), arg),
               seq,
@@ -467,7 +454,6 @@ module TailCallsArg: Anf_mapper.MapArgument = {
       {
         ...c,
         comp_desc:
-          [@implicit_arity]
           CIf(
             _false,
             wrap_anf_with_comp(c) @@ AEComp(comp_false),

@@ -341,7 +341,6 @@ let map_pattern_desc = (f, patt) =>
   switch (patt) {
   | TPatTuple(patts) => TPatTuple(List.map(f, patts))
   | TPatRecord(fields, c) =>
-    [@implicit_arity]
     TPatRecord(List.map(((id, ld, pat)) => (id, ld, f(pat)), fields), c)
   | TPatAlias(p1, id, s) => TPatAlias(f(p1), id, s)
   | TPatConstruct(lid, c, pats) => TPatConstruct(lid, c, List.map(f, pats))

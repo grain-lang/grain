@@ -137,8 +137,7 @@ let rec transl_imm =
   switch (exp_desc) {
   | TExpIdent(_, _, {val_kind: TValUnbound(_)}) =>
     failwith("Impossible: val_kind was unbound")
-  | [@implicit_arity]
-    TExpIdent(
+  | TExpIdent(
       Path.PExternal(Path.PIdent(mod_) as p, ident, _),
       _,
       {val_fullpath: Path.PExternal(_, original_name, _), val_mutable},
@@ -157,8 +156,7 @@ let rec transl_imm =
     } else {
       (id, []);
     };
-  | [@implicit_arity]
-    TExpIdent(
+  | TExpIdent(
       Path.PExternal(Path.PIdent(mod_) as p, ident, _),
       _,
       {val_mutable},
@@ -224,7 +222,6 @@ let rec transl_imm =
       Imm.id(~loc, ~env, tmp),
       left_setup
       @ [
-        [@implicit_arity]
         BLet(
           tmp,
           Comp.if_(
@@ -244,7 +241,6 @@ let rec transl_imm =
       Imm.id(~loc, ~env, tmp),
       left_setup
       @ [
-        [@implicit_arity]
         BLet(
           tmp,
           Comp.if_(
@@ -265,10 +261,7 @@ let rec transl_imm =
       Imm.id(~loc, ~env, tmp),
       left_setup
       @ right_setup
-      @ [
-        [@implicit_arity]
-        BLet(tmp, Comp.prim2(~loc, ~env, op, left_imm, right_imm)),
-      ],
+      @ [BLet(tmp, Comp.prim2(~loc, ~env, op, left_imm, right_imm))],
     );
   | TExpBoxAssign(left, right) =>
     let tmp = gensym("assign");
@@ -278,10 +271,7 @@ let rec transl_imm =
       Imm.id(~loc, ~env, tmp),
       left_setup
       @ right_setup
-      @ [
-        [@implicit_arity]
-        BLet(tmp, Comp.box_assign(~loc, ~env, left_imm, right_imm)),
-      ],
+      @ [BLet(tmp, Comp.box_assign(~loc, ~env, left_imm, right_imm))],
     );
   | TExpAssign(left, right) =>
     let tmp = gensym("assign");
@@ -291,10 +281,7 @@ let rec transl_imm =
       Imm.id(~loc, ~env, tmp),
       left_setup
       @ right_setup
-      @ [
-        [@implicit_arity]
-        BLet(tmp, Comp.assign(~loc, ~env, left_imm, right_imm)),
-      ],
+      @ [BLet(tmp, Comp.assign(~loc, ~env, left_imm, right_imm))],
     );
   | TExpIf(cond, _then, _else) =>
     let tmp = gensym("if");
@@ -303,7 +290,6 @@ let rec transl_imm =
       Imm.id(~loc, ~env, tmp),
       cond_setup
       @ [
-        [@implicit_arity]
         BLet(
           tmp,
           Comp.if_(
@@ -321,7 +307,6 @@ let rec transl_imm =
     (
       Imm.id(~loc, ~env, tmp),
       [
-        [@implicit_arity]
         BLet(
           tmp,
           Comp.while_(
@@ -340,10 +325,7 @@ let rec transl_imm =
     (
       Imm.id(~loc, ~env, tmp),
       (func_setup @ List.concat(new_setup))
-      @ [
-        [@implicit_arity]
-        BLet(tmp, Comp.app(~loc, ~env, new_func, new_args)),
-      ],
+      @ [BLet(tmp, Comp.app(~loc, ~env, new_func, new_args))],
     );
   | TExpBlock([]) => failwith("Impossible by syntax")
   | TExpBlock([stmt]) => transl_imm(stmt)
@@ -353,8 +335,7 @@ let rec transl_imm =
       transl_imm({...e, exp_desc: TExpBlock(rest)});
     (rest_ans, fst_setup @ [BSeq(fst_ans)] @ rest_setup);
   | TExpLet(Nonrecursive, _, [], body) => transl_imm(body)
-  | [@implicit_arity]
-    TExpLet(Nonrecursive, mut_flag, [{vb_expr, vb_pat}, ...rest], body) =>
+  | TExpLet(Nonrecursive, mut_flag, [{vb_expr, vb_pat}, ...rest], body) =>
     /* TODO: Destructuring on letrec */
     let (exp_ans, exp_setup) = transl_comp_expression(vb_expr);
     let binds_setup = extract_bindings(mut_flag, vb_pat, exp_ans);
@@ -424,10 +405,7 @@ let rec transl_imm =
       Imm.id(~loc, ~env, tmp),
       arr_setup
       @ idx_setup
-      @ [
-        [@implicit_arity]
-        BLet(tmp, Comp.array_get(~loc, ~env, idx_var, arr_var)),
-      ],
+      @ [BLet(tmp, Comp.array_get(~loc, ~env, idx_var, arr_var))],
     );
   | TExpArraySet(arr, idx, arg) =>
     let tmp = gensym("array_access");
@@ -439,10 +417,7 @@ let rec transl_imm =
       arr_setup
       @ idx_setup
       @ arg_setup
-      @ [
-        [@implicit_arity]
-        BLet(tmp, Comp.array_set(~loc, ~env, idx_var, arr_var, arg_var)),
-      ],
+      @ [BLet(tmp, Comp.array_set(~loc, ~env, idx_var, arr_var, arg_var))],
     );
   | TExpRecord(args) =>
     let tmp = gensym("record");
@@ -474,7 +449,6 @@ let rec transl_imm =
       Imm.id(~loc, ~env, tmp),
       List.concat(new_setup)
       @ [
-        [@implicit_arity]
         BLet(
           tmp,
           Comp.record(
@@ -497,7 +471,6 @@ let rec transl_imm =
       Imm.id(~loc, ~env, tmp),
       setup
       @ [
-        [@implicit_arity]
         BLet(
           tmp,
           Comp.record_get(~loc, ~env, Int32.of_int(ld.lbl_pos), var),
@@ -513,7 +486,6 @@ let rec transl_imm =
       rec_setup
       @ arg_setup
       @ [
-        [@implicit_arity]
         BLet(
           tmp,
           Comp.record_set(~loc, ~env, Int32.of_int(ld.lbl_pos), record, arg),
@@ -674,8 +646,7 @@ and transl_comp_expression =
     (rest_ans, fst_setup @ [BSeq(fst_ans)] @ rest_setup);
   | TExpLet(Nonrecursive, _, [], body) => transl_comp_expression(body)
 
-  | [@implicit_arity]
-    TExpLet(
+  | TExpLet(
       Nonrecursive,
       mut_flag,
       [{vb_expr, vb_pat: {pat_desc: TPatVar(bind, _)}}, ...rest],
@@ -694,15 +665,13 @@ and transl_comp_expression =
         exp_desc: TExpLet(Nonrecursive, mut_flag, rest, body),
       });
     (body_ans, exp_setup @ [BLet(bind, exp_ans)] @ body_setup);
-  | [@implicit_arity]
-    TExpLet(
+  | TExpLet(
       Nonrecursive,
       mut_flag,
       [{vb_expr, vb_pat: {pat_desc: TPatTuple(_)} as pat}, ...rest],
       body,
     )
-  | [@implicit_arity]
-    TExpLet(
+  | TExpLet(
       Nonrecursive,
       mut_flag,
       [{vb_expr, vb_pat: {pat_desc: TPatRecord(_)} as pat}, ...rest],
@@ -919,8 +888,7 @@ let rec transl_anf_statement =
         : (option(list(anf_bind)), list(import_spec)) =>
   switch (ttop_desc) {
   | TTopLet(_, _, _, []) => (None, [])
-  | [@implicit_arity]
-    TTopLet(
+  | TTopLet(
       export_flag,
       Nonrecursive,
       mut_flag,
@@ -930,9 +898,7 @@ let rec transl_anf_statement =
     let (rest_setup, rest_imp) =
       transl_anf_statement({
         ...s,
-        ttop_desc:
-          [@implicit_arity]
-          TTopLet(export_flag, Nonrecursive, mut_flag, rest),
+        ttop_desc: TTopLet(export_flag, Nonrecursive, mut_flag, rest),
       });
     let rest_setup = Option.value(~default=[], rest_setup);
     let exported = export_flag == Exported;
@@ -1015,10 +981,7 @@ let rec transl_anf_statement =
     | Exported => (
         Some(
           List.concat(new_setup)
-          @ [
-            [@implicit_arity]
-            BLetExport(Recursive, List.combine(names, new_binds)),
-          ],
+          @ [BLetExport(Recursive, List.combine(names, new_binds))],
         ),
         [],
       )

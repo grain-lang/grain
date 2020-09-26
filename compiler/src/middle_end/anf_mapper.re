@@ -56,17 +56,14 @@ module MakeMap = (Iter: MapArgument) => {
       | CTuple(elts) => CTuple(List.map(map_imm_expression, elts))
       | CArray(elts) => CArray(List.map(map_imm_expression, elts))
       | CArrayGet(arg1, arg2) =>
-        [@implicit_arity]
         CArrayGet(map_imm_expression(arg1), map_imm_expression(arg2))
       | CArraySet(arg1, arg2, arg3) =>
-        [@implicit_arity]
         CArraySet(
           map_imm_expression(arg1),
           map_imm_expression(arg2),
           map_imm_expression(arg3),
         )
       | CRecord(ttag, elts) =>
-        [@implicit_arity]
         CRecord(
           map_imm_expression(ttag),
           List.map(
@@ -75,7 +72,6 @@ module MakeMap = (Iter: MapArgument) => {
           ),
         )
       | CAdt(ttag, vtag, elts) =>
-        [@implicit_arity]
         CAdt(
           map_imm_expression(ttag),
           map_imm_expression(vtag),
@@ -92,7 +88,6 @@ module MakeMap = (Iter: MapArgument) => {
       | CGetRecordItem(idx, record) =>
         CGetRecordItem(idx, map_imm_expression(record))
       | CSetRecordItem(idx, record, arg) =>
-        [@implicit_arity]
         CSetRecordItem(
           idx,
           map_imm_expression(record),
@@ -120,7 +115,6 @@ module MakeMap = (Iter: MapArgument) => {
         let args = List.map(map_imm_expression, args);
         CApp(f, args);
       | CAppBuiltin(mod_, f, args) =>
-        [@implicit_arity]
         CAppBuiltin(mod_, f, List.map(map_imm_expression, args))
       | CLambda(idents, expr) =>
         let expr = map_anf_expression(expr);

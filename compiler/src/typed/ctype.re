@@ -756,7 +756,7 @@ let rec copy = (~env=?, ~partial=?, ~keep_names=?, ty) => {
                   ation can be released by changing the content of just
                   one reference.
                */
-              [@implicit_arity]
+
               TTyConstr(
                 p,
                 List.map(copy, tl),
@@ -995,7 +995,7 @@ let rec copy_sep = (fixed, free, bound, visited, ty) => {
           let bound = tl @ bound;
           let visited =
             List.map2((ty, t) => (ty, (t, bound)), tl, tl') @ visited;
-          [@implicit_arity]
+
           TTyPoly(copy_sep(fixed, free, bound, visited, t1), tl');
         | _ => copy_type_desc(copy_rec, ty.desc)
         }
@@ -3138,7 +3138,6 @@ let rec nondep_type_rec = (env, id, ty) =>
             | Unify(_) => raise(Not_found)
             };
           } else {
-            [@implicit_arity]
             TTyConstr(
               p,
               List.map(nondep_type_rec(env, id), tl),
@@ -3223,7 +3222,6 @@ let nondep_extension_constructor = (env, id, ext) =>
       | Some(id') =>
         let ty =
           newgenty(
-            [@implicit_arity]
             TTyConstr(ext.ext_type_path, ext.ext_type_params, ref(TMemNil)),
           );
 

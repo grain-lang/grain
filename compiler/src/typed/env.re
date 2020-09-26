@@ -770,7 +770,6 @@ let get_dependency_chain = (~loc, unit_name) => {
 let mark_in_progress = (~loc, unit_name, sourcefile) => {
   if (Hashtbl.mem(compilation_in_progress, sourcefile)) {
     error(
-      [@implicit_arity]
       Cyclic_dependencies(unit_name, get_dependency_chain(~loc, unit_name)),
     );
   };
@@ -947,10 +946,7 @@ let acknowledge_pers_struct =
     | Unsafe_string =>
       if (Config.safe_string^) {
         let (unit_name, _) = get_unit();
-        error(
-          [@implicit_arity]
-          Depend_on_unsafe_string_unit(ps.ps_name, unit_name),
-        );
+        error(Depend_on_unsafe_string_unit(ps.ps_name, unit_name));
       }
     | Opaque => add_imported_opaque(modname),
     ps.ps_flags,
@@ -1154,10 +1150,7 @@ let normalize_path = (oloc, env, path) =>
     | None => assert(false)
     | Some(loc) =>
       raise(
-        Error(
-          [@implicit_arity]
-          Missing_module(loc, path, normalize_path(true, env, path)),
-        ),
+        Error(Missing_module(loc, path, normalize_path(true, env, path))),
       )
     }
   };
@@ -2151,8 +2144,7 @@ let check_opened = (mod_: Parsetree.import_declaration, env) => {
   let rec find_open = summary =>
     switch (summary) {
     | Env_empty => None
-    | [@implicit_arity]
-      Env_module(summary, {name} as id, {md_filepath: Some(filepath)})
+    | Env_module(summary, {name} as id, {md_filepath: Some(filepath)})
         when same_filepath(filepath, mod_.pimp_path.txt) =>
       Some(PIdent(id))
     | Env_module(summary, _, _)
@@ -2264,7 +2256,6 @@ let check_imports = (found, all, where) =>
       } else {
         let {loc, txt} = comp;
         error(
-          [@implicit_arity]
           Value_not_found_in_module(
             loc,
             Identifier.string_of_ident(txt),
