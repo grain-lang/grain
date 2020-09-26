@@ -192,7 +192,7 @@ export function rawFloat64Ptr(wrappedFloat64: u32): u32 {
 // RATIONALS
 
 /**
- * Allocates a new Float32.
+ * Allocates a new Rational.
  *
  * @returns {u32}
  */
@@ -206,7 +206,7 @@ export function allocateRational(): u32 {
 }
 
 /**
- * Allocates a new Float32 with a prepopulated value
+ * Allocates a new Rational with a prepopulated value
  * @param value The value to store
  */
 export function newRational(numerator: i32, denominator: i32): u32 {
