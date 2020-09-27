@@ -19,19 +19,19 @@ assert lor(0b1010l, 0l) == 0b1010l
 assert lxor(0b1010l, 0b1101l) == 0b0111l
 assert lxor(0b1010l, 0l) == 0b1010l
 
-assert lsl(-1l, 1) == -2l
-assert lsl(-1l, 2) == -4l
-assert lsl(-1l, 3) == -8l
-assert lsl(-2l, 63) == 0l
-assert lsl(24l, 1) == 48l
+assert shl(-1l, 1l) == -2l
+assert shl(-1l, 2l) == -4l
+assert shl(-1l, 3l) == -8l
+assert shl(-2l, 63l) == 0l
+assert shl(24l, 1l) == 48l
 
-assert lsr(4l, 1) == 2l
-assert lsr(4l, 2) == 1l
-assert lsr(4l, 3) == 0l
-assert lsr(-1l, 63) == 1l
+assert shrU(4l, 1l) == 2l
+assert shrU(4l, 2l) == 1l
+assert shrU(4l, 3l) == 0l
+assert shrU(-1l, 63l) == 1l
 
-assert asr(-1l, 63) == -1l
-assert asr(-24l, 1) == -12l
+assert shr(-1l, 63l) == -1l
+assert shr(-24l, 1l) == -12l
 
 assert gt(5l, 4l)
 assert gte(5l, 5l)
