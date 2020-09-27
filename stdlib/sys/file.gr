@@ -284,21 +284,21 @@ let fdStats = (fd) => {
 
   let mut fdflagsList = []
   List.forEachi((flag, i) => {
-    if ((fdflags && Int64.lsl(1L, i)) > 0L) {
+    if ((fdflags && Int64.shl(1L, Int64.fromNumber(i))) > 0L) {
       ignore(fdflagsList = [flag, ...fdflagsList])
     }
   }, orderedFdflags)
 
   let mut rightsList = []
   List.forEachi((flag, i) => {
-    if ((rights && Int64.lsl(1L, i)) > 0L) {
+    if ((rights && Int64.shl(1L, Int64.fromNumber(i))) > 0L) {
       ignore(rightsList = [flag, ...rightsList])
     }
   }, orderedRights)
 
   let mut rightsInheritingList = []
   List.forEachi((flag, i) => {
-    if ((rightsInheriting && Int64.lsl(1L, i)) > 0L) {
+    if ((rightsInheriting && Int64.shl(1L, Int64.fromNumber(i))) > 0L) {
       ignore(rightsInheritingList = [flag, ...rightsInheritingList])
     }
   }, orderedRights)
