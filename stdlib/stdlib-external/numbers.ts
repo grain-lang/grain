@@ -27,7 +27,6 @@ import {
 } from './ascutils/primitives'
 
 import { throwError } from './ascutils/grainRuntime'
-import { log, debug } from './ascutils/console'
 
 import {
   newRational,
@@ -296,12 +295,13 @@ function coerceFloat32(x: u32): f32 {
       let xval = boxedFloat64Number(x)
       if (xval > F32.MAX_VALUE || xval < F32.MIN_VALUE) {
         // Not an actual return value
-        return <f32>(throwOverflowError(x))
+        throwOverflowError(x)
+        return unreachable()
       } else {
         return <f32>(xval)
       }
     } default: {
-      return 0.0
+      return unreachable()
     }
   }
 }
@@ -323,7 +323,7 @@ function coerceFloat64(x: u32): f64 {
     } case GRAIN_FLOAT64_BOXED_NUM_TAG: {
       return boxedFloat64Number(x)
     } default: {
-      return 0.0
+      return unreachable()
     }
   }
 }
@@ -1088,49 +1088,53 @@ export function numberDecr(x: u32): u32 {
 //         we will fail if attempting to coerce to an int!
 
 export function coerceNumberToInt32(x: u32): u32 {
-  if (isSimpleNumber(x) || boxedNumberTag(x) == GRAIN_INT32_BOXED_NUM_TAG) {
+  if (boxedNumberTag(x) == GRAIN_INT32_BOXED_NUM_TAG) {
     // avoid extra malloc
     return x
   }
-  // probably will fail, but
-  return reducedInteger(coerceInt32(x))
+  // can possibly fail
+  return newInt32(coerceInt32(x))
 }
 
 export function coerceNumberToInt64(x: u32): u32 {
-  if (isSimpleNumber(x)) {
+  if (boxedNumberTag(x) == GRAIN_INT64_BOXED_NUM_TAG) {
+    // avoid extra malloc
     return x
   }
-  let tag = boxedNumberTag(x)
-  if (tag == GRAIN_INT32_BOXED_NUM_TAG || tag == GRAIN_INT64_BOXED_NUM_TAG) {
-    return x
-  }
-  return throwNotIntLike(x)
+  return newInt64(coerceInt64(x))
 }
 
-// Effectively asserts that the number is non-float
 export function coerceNumberToRational(x: u32): u32 {
   if (isSimpleNumber(x)) {
-    return x
+    return newRational(x >> 1, 1)
   }
   let tag = boxedNumberTag(x)
-  if (tag == GRAIN_INT32_BOXED_NUM_TAG || tag == GRAIN_INT64_BOXED_NUM_TAG || tag == GRAIN_RATIONAL_BOXED_NUM_TAG) {
+  if (tag == GRAIN_RATIONAL_BOXED_NUM_TAG) {
     return x
+  }
+  if (tag == GRAIN_INT32_BOXED_NUM_TAG) {
+    return newRational(boxedInt32Number(x), 1)
+  }
+  if (tag == GRAIN_INT64_BOXED_NUM_TAG) {
+    return newRational(coerceInt32(x), 1)
   }
   return throwNotRational(x)
 }
 
 export function coerceNumberToFloat32(x: u32): u32 {
-  if (!isSimpleNumber(x) && boxedNumberTag(x) == GRAIN_FLOAT64_BOXED_NUM_TAG) {
-    let xval = boxedFloat64Number(x)
-    if (xval > F32.MAX_VALUE || xval < F32.MIN_VALUE) {
-      return throwOverflowError(x)
-    }
+  if (boxedNumberTag(x) == GRAIN_FLOAT32_BOXED_NUM_TAG) {
+    // avoid extra malloc
+    return x
   }
-  return x
+  return newFloat32(coerceFloat32(x))
 }
 
 export function coerceNumberToFloat64(x: u32): u32 {
-  return x
+  if (boxedNumberTag(x) == GRAIN_FLOAT64_BOXED_NUM_TAG) {
+    // avoid extra malloc
+    return x
+  }
+  return newFloat64(coerceFloat64(x))
 }
 
 export function coerceInt32ToNumber(x: u32): u32 {
