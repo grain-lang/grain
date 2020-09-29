@@ -1650,12 +1650,14 @@ let number_tests = [
   te("numbers13", "9 / 0", "denominator of zero"),
   // basic syntax tests
   t("number_syntax1", "1.2", "1.2"),
-  t("number_syntax2", "1.2d", "1.2"),
-  t("number_syntax3", "1.2f", "1.2000000476837158"), // lol
-  t("number_syntax4", "1e2", "100"),
-  t("number_syntax5", "1.2e2", "120"),
-  t("number_syntax6", "1l", "1"),
-  t("number_syntax7", "1L", "1"),
+  t("number_syntax2", "1.", "1"),
+  t("number_syntax3", ".2", "0.2"),
+  t("number_syntax4", "1.2d", "1.2"),
+  t("number_syntax5", "1.2f", "1.2000000476837158"),
+  t("number_syntax6", "1e2", "100"),
+  t("number_syntax7", "1.2e2", "120"),
+  t("number_syntax8", "1l", "1"),
+  t("number_syntax9", "1L", "1"),
   // syntax errors
   te(
     "number_syntax_err1",
