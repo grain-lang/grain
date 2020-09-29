@@ -82,9 +82,10 @@ let unsigned_int = dec_int | hex_int | oct_int | bin_int
 
 let dec_float_exp = ['e' 'E'] ['+' '-']? dec_digit (dec_digit | '_')*
 let dec_float_decimal = '.' (dec_digit | '_')*
+let dec_float_decimal_explicit = '.' dec_digit (dec_digit | '_')*
 let dec_float_integral = dec_digit (dec_digit | '_')*
 
-let dec_float = dec_float_integral dec_float_decimal dec_float_exp? | dec_float_integral dec_float_exp
+let dec_float = dec_float_integral dec_float_decimal dec_float_exp? | dec_float_decimal_explicit dec_float_exp? | dec_float_integral dec_float_exp
 
 let unsigned_float = dec_float
 
