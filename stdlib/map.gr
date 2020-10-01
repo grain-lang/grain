@@ -4,16 +4,16 @@ import List from 'list'
 import Array from 'array'
 import { hash } from 'hash'
 
-data Container<a> = {
-  mut size: Number,
-  mut buckets: Array<Option<a>>
-}
-
 # TODO: Consider implementing this as List<(Box<k>, Box<v>)>
 data Bucket<k, v> = {
   mut key: k,
   mut value: v,
   mut next: Option<Bucket<k, v>>
+}
+
+data Map<k, v> = {
+  mut size: Number,
+  mut buckets: Array<Option<Bucket<k, v>>>
 }
 
 # TODO: This could take an `eq` function to custom comparisons
