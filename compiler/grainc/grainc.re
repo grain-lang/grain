@@ -33,7 +33,8 @@ let safe_remove_extension = name =>
   | Invalid_argument(_) => name
   };
 
-let default_output_filename = name => safe_remove_extension(name) ++ ".wasm";
+let default_output_filename = name =>
+  safe_remove_extension(name) ++ ".gr.wasm";
 
 let default_assembly_filename = name =>
   safe_remove_extension(name) ++ ".wast";

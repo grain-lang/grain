@@ -13,7 +13,7 @@ export function defaultURLLocator(bases = []) {
   return async (raw) => {
     let module = raw.replace(/^GRAIN\$MODULE\$/, '');
     for (const base of bases) {
-      let fullpath = base + "/" + module + ".wasm";
+      let fullpath = base + "/" + module + ".gr.wasm";
       try {
         return await readURL(fullpath);
       } catch (e) {
@@ -31,7 +31,7 @@ export function defaultFileLocator(bases = []) {
   return async (raw) => {
     let module = raw.replace(/^GRAIN\$MODULE\$/, '');
     for (const base of bases) {
-      let fullpath = base + "/" + module + ".wasm";
+      let fullpath = base + "/" + module + ".gr.wasm";
       if (!fs.existsSync(fullpath)) {
         continue;
       }

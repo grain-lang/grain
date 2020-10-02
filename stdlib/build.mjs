@@ -19,7 +19,7 @@ await asc.ready;
 const filenames = await globby('stdlib-external/**/*.ts');
 
 const files = filenames.map((filename) =>
-  compileFile([filename, "-o", replaceExt(filename, ".wasm")])
+  compileFile([filename, "-o", replaceExt(filename, ".gr.wasm")])
 );
 
 await Promise.all(files);

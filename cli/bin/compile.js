@@ -6,7 +6,7 @@ const grainc = path.join(__dirname, 'grainc.exe');
 module.exports = (file, options) => {
   try {
     execSync(`${grainc} --stdlib=${options.stdlib} ${options.cflags ? options.cflags : ''} ${file}`);
-    return file.replace(/\.gr$/, '.wasm')
+    return file.replace(/\.gr$/, '.gr.wasm')
   } catch (e) {
     console.log(e.stdout.toString());
     if (options.graceful) {
