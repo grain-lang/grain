@@ -53,7 +53,7 @@ let rec readdir = (dir, excludes) => {
 let clean_stdlib = stdlib_dir =>
   Array.iter(
     file =>
-      if (Filename.check_suffix(file, ".wasm")) {
+      if (Filename.check_suffix(file, ".gr.wasm")) {
         Sys.remove(file);
       },
     readdir(stdlib_dir, ["stdlib-external"]),

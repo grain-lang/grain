@@ -806,7 +806,7 @@ let get_output_name = name => {
     try(Filename.chop_extension(name)) {
     | Invalid_argument(_) => name
     };
-  name ++ ".wasm";
+  name ++ ".gr.wasm";
 };
 
 let get_up_to_date = (~loc, unit_name) =>
@@ -853,7 +853,7 @@ let find_in_path_uncap = (~exts=[], path, name) => {
 
 let locate_module = (path, unit_name) => {
   let grain_src_exts = [".gr"];
-  switch (find_in_path_uncap(~exts=[".wasm"], path, unit_name)) {
+  switch (find_in_path_uncap(~exts=[".gr.wasm"], path, unit_name)) {
   | (objpath, dir, basename, ext) =>
     switch (find_ext_in_dir(dir, basename, grain_src_exts)) {
     | Some((srcpath, _, _, _)) => GrainModule(srcpath, Some(objpath))
@@ -882,7 +882,7 @@ let resolve_unit = unit_name =>
   try(Hashtbl.find(resolutions, unit_name)) {
   | Not_found =>
     let path = Grain_utils.Config.module_search_path();
-    let exts = [".gr", ".wasm"];
+    let exts = [".gr", ".gr.wasm"];
     let (_, dir, basename, _) = find_in_path_uncap(~exts, path, unit_name);
     let resolution =
       Grain_utils.Files.derelativize @@ Filename.concat(dir, basename);
