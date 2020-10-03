@@ -136,3 +136,45 @@ export let contains = (search, array) => {
   }
   found
 }
+
+export let find = (fn, array) => {
+  let length = length(array)
+  let mut count = 0
+  let mut matching = false
+  let mut matchedItem = array[0]
+  while (count < length) {
+    if(fn(array[count])) {
+      matching = true
+      matchedItem = array[count]
+      count = length
+    } else {
+      count = incr(count)
+    }
+  }
+  if(!matching) {
+    fail 'could not find a match'
+  } else {
+    matchedItem
+  }
+}
+
+export let findIndex = (fn, array) => {
+  let length = length(array)
+  let mut count = 0
+  let mut matching = false
+  let mut matchedIndex = 0
+  while (count < length) {
+    if(fn(array[count])) {
+      matching = true
+      matchedIndex = count
+      count = length
+    } else {
+      count = incr(count)
+    }
+  }
+  if(!matching) {
+    fail 'could not find a match'
+  } else {
+    matchedIndex
+  }
+}
