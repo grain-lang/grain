@@ -53,6 +53,8 @@ let pervasives_purity =
       ("&&", true),
       ("||", true),
       ("void", true),
+      ("[...]", true),
+      ("[]", true),
     ]),
   );
 
