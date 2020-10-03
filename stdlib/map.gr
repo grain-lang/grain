@@ -280,13 +280,11 @@ export let fromArray = (array) => {
 }
 
 export let filter = (predicate, map) => {
-  let filteredMap = make();
   forEach((key, value) => {
-    if (predicate(key, value)) {
-      set(key, value, filteredMap);
+    if (!predicate(key, value)) {
+      remove(key, map);
     }
-  }, map);
-  filteredMap
+  }, map)
 }
 
 export let reject = (predicate, map) => {
