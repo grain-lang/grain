@@ -164,7 +164,7 @@ data DirectoryEntry = {
 
 let filetypeFromNumber = (filetype) => {
   match (filetype) {
-    0 => Unknown
+    | 0 => Unknown
     | 1 => BlockDevice
     | 2 => CharacterDevice
     | 3 => Directory
