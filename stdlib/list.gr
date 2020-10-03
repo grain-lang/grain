@@ -77,6 +77,13 @@ let mapi = (fn, list) => {
   iter(fn, list, 0)
 }
 
+let rec flatMap = (fn, list) => {
+  match (list) {
+    | [] => []
+    | [first, ...rest] => append(fn(first), flatMap(fn, rest))
+  }
+}
+
 let every = (fn, list) => {
   reduce((acc, value) => { acc && fn(value) }, true, list)
 }
