@@ -1195,6 +1195,11 @@ let import_tests = [
   /* import module tests */
   t("import_module", "import Foo from 'exportStar'; Foo.x", "5"),
   t("import_module2", "import Foo from 'exportStar'; Foo.y(Foo.x)", "5"),
+  t(
+    "import_module3",
+    "import Foo from 'exportStar'; let s : Foo.Ty = Foo.Singleton",
+    "5",
+  ),
   /* import module errors */
   te(
     "import_module_error",

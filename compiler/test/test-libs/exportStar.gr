@@ -3,4 +3,6 @@ let y = (x) => { x };
 let z = "foo";
 let secret = "bar";
 
+data Ty = Singleton;
+
 export * except secret;
