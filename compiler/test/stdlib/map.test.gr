@@ -279,3 +279,69 @@ Map.set("🧱", 1, resize);
 
 # (nodeCount, bucketLength)
 assert Map.getInternalStats(resize) == (3, 2);
+
+### Map.filter()
+
+let makeFilterTestMap = () => Map.fromList([
+  (Grain, "g"),
+  (Sheep, "s"),
+  (Brick, "b")
+]);
+
+let filterTestMap = makeFilterTestMap();
+
+Map.filter((key, value) => key == Sheep, filterTestMap);
+
+assert Map.contains(Grain, filterTestMap) == false;
+assert Map.contains(Sheep, filterTestMap);
+assert Map.contains(Brick, filterTestMap) == false;
+
+let filterTestMap = makeFilterTestMap();
+
+Map.filter((key, value) => value == "b" || value == "s", filterTestMap);
+
+assert Map.contains(Grain, filterTestMap) == false;
+assert Map.contains(Sheep, filterTestMap);
+assert Map.contains(Brick, filterTestMap);
+
+let filterTestMap = makeFilterTestMap();
+
+Map.filter((key, value) => value == "invalid", filterTestMap);
+
+assert Map.size(filterTestMap) == 0;
+
+let filterTestMap = makeFilterTestMap();
+
+Map.filter((key, value) => true, filterTestMap);
+
+assert Map.size(filterTestMap) == 3;
+
+### Map.reject()
+
+let rejectTestMap = makeFilterTestMap();
+
+Map.reject((key, value) => key == Sheep, rejectTestMap);
+
+assert Map.contains(Grain, rejectTestMap);
+assert Map.contains(Sheep, rejectTestMap) == false;
+assert Map.contains(Brick, rejectTestMap);
+
+let rejectTestMap = makeFilterTestMap();
+
+Map.reject((key, value) => value == "b" || value == "s", rejectTestMap);
+
+assert Map.contains(Grain, rejectTestMap);
+assert Map.contains(Sheep, rejectTestMap) == false;
+assert Map.contains(Brick, rejectTestMap) == false;
+
+let rejectTestMap = makeFilterTestMap();
+
+Map.reject((key, value) => true, rejectTestMap);
+
+assert Map.size(rejectTestMap) == 0;
+
+let rejectTestMap = makeFilterTestMap();
+
+Map.reject((key, value) => false, rejectTestMap);
+
+assert Map.size(rejectTestMap) == 3;
