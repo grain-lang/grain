@@ -163,16 +163,17 @@ data DirectoryEntry = {
 }
 
 let filetypeFromNumber = (filetype) => {
-  # [oscar] We need match guards like I need air to breathe
-  if (filetype == 0) Unknown else
-    if (filetype == 1) BlockDevice else
-    if (filetype == 2) CharacterDevice else
-    if (filetype == 3) Directory else
-    if (filetype == 4) RegularFile else
-    if (filetype == 5) SocketDatagram else
-    if (filetype == 6) SocketStream else
-    if (filetype == 7) SymbolicLink else
-    fail "Unknown filetype"
+  match (filetype) {
+    0 => Unknown
+    | 1 => BlockDevice
+    | 2 => CharacterDevice
+    | 3 => Directory
+    | 4 => RegularFile
+    | 5 => SocketDatagram
+    | 6 => SocketStream
+    | 7 => SymbolicLink
+    | _ => fail "Unknown filetype"
+  }
 }
 
 # Open a file or directory
