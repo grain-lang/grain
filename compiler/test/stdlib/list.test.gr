@@ -44,6 +44,7 @@ assert mapi(multiply, []) == []
 # List.flatMap
 
 assert flatMap(x => [x + 1], list) == [2, 3, 4]
+assert flatMap(x => [x, x + 1], list) == [1, 2, 2, 3, 3, 4]
 assert flatMap(x => [], list) == []
 
 # List.reduce
