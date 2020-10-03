@@ -41,6 +41,11 @@ let multiply = (n, i) => n * i
 assert mapi(multiply, numbers) == [0, 3, 8]
 assert mapi(multiply, []) == []
 
+# List.flatMap
+
+assert flatMap(x => [x + 1], list) == [2, 3, 4]
+assert flatMap(x => [], list) == []
+
 # List.reduce
 
 assert reduce((acc, cur) => acc - cur, 0, list) == -6
