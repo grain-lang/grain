@@ -172,7 +172,7 @@ let make_program statements =
 %token CARET
 %token COMMA SEMI AS
 %token THICKARROW ARROW PIPE
-%token IS EQEQ LESSEQ GREATEREQ
+%token IS ISNT EQEQ LESSEQ GREATEREQ
 %token EQUAL GETS
 %token UNDERSCORE
 %token COLON COLONCOLON DOT ELLIPSIS
@@ -272,6 +272,7 @@ binop_expr :
   | binop_expr(<=p120) slash_op eols?     binop_expr(<p120) { no_rational_literal $1 $4; Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p120
   | binop_expr(<=p120) percent_op eols?   binop_expr(<p120) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p120
   | binop_expr(<=p80) is_op eols?        binop_expr(<p80) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p80
+  | binop_expr(<=p80) isnt_op eols?      binop_expr(<p80) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p80
   | binop_expr(<=p80) eqeq_op eols?      binop_expr(<p80) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p80
   | binop_expr(<=p80) noteq_op eols?     binop_expr(<p80) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p80
   | binop_expr(<=p90) lcaret_op eols?    binop_expr(<p90) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p90
@@ -420,6 +421,8 @@ percent_op :
   | PERCENT { "%" }
 is_op :
   | IS { "is" }
+isnt_op :
+  | ISNT { "isnt" }
 eqeq_op :
   | EQEQ { "==" }
 noteq_op :
@@ -454,6 +457,7 @@ infix_op :
   | slash_op
   | percent_op
   | is_op
+  | isnt_op
   | eqeq_op
   | plusplus_op
   | noteq_op
