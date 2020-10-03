@@ -224,5 +224,19 @@ let rec dropWhile = (fn, list) => {
   }
 }
 
+let rec find = (fn, list) => {
+  match (list) {
+    | [] => fail 'could not find a match'
+    | [first, ...rest] => if (fn(first)) first else find(fn, rest)
+  }
+}
 
-
+let findIndex = (fn, list) => {
+  let rec findItemIndex = (l, index) => {
+    match (l) {
+      | [] => fail 'could not find a match'
+      | [first, ...rest] => if (fn(first)) index else findItemIndex(rest, index + 1)
+    }
+  }
+  findItemIndex(list, 0)
+}
