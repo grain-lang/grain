@@ -143,3 +143,12 @@ assert dropWhile(x => false, list) == list
 assert dropWhile(x => x < 3, list) == [3]
 assert dropWhile(x => x < 5, list) == []
 assert dropWhile(x => x > 5, list) == list
+
+# List.find
+
+assert find(x => x == 2, list) == 2
+
+# List.findIndex
+
+assert findIndex(x => x == 1, list) == 0
+assert findIndex(x => x == 2, list) == 1
