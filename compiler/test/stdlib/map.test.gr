@@ -10,9 +10,9 @@ data ResourceData = { name: String, emoji: String }
 
 let e = Map.make();
 
-assert Map.isEmpty(e) == true;
+assert Map.isEmpty(e);
 Map.set("🌾", "🌾", e);
-assert Map.isEmpty(e) == false;
+assert !Map.isEmpty(e);
 
 ### Map.size()
 
@@ -32,11 +32,11 @@ Map.set("🌾", 1, c);
 Map.set("🐑", 2, c);
 Map.set("🧱", 3, c);
 
-assert Map.isEmpty(c) == false;
+assert !Map.isEmpty(c);
 
 assert Map.clear(c) == void;
 
-assert Map.isEmpty(c) == true;
+assert Map.isEmpty(c);
 
 ### Map.contains()
 
@@ -46,10 +46,10 @@ Map.set("🌾", 1, h);
 Map.set("🐑", 2, h);
 Map.set("🧱", 3, h);
 
-assert Map.contains("🌾", h) == true;
-assert Map.contains("🐑", h) == true;
-assert Map.contains("🧱", h) == true;
-assert Map.contains("🌳", h) == false;
+assert Map.contains("🌾", h);
+assert Map.contains("🐑", h);
+assert Map.contains("🧱", h);
+assert !Map.contains("🌳", h);
 
 ### Map.set() & Map.get()
 
@@ -196,7 +196,7 @@ let keys = Map.keys(kvs);
 assert List.contains(Grain, keys);
 assert List.contains(Sheep, keys);
 assert List.contains(Brick, keys);
-assert List.contains(Wood, keys) == false;
+assert !List.contains(Wood, keys);
 
 let vals = Map.values(kvs);
 
@@ -204,7 +204,7 @@ let vals = Map.values(kvs);
 assert List.contains("🌾", vals);
 assert List.contains("🐑", vals);
 assert List.contains("🧱", vals);
-assert List.contains("🌳", vals) == false;
+assert !List.contains("🌳", vals);
 
 ### Map.toList()
 
@@ -220,7 +220,7 @@ let lis = Map.toList(tl);
 assert List.contains((Grain, "🌾"), lis);
 assert List.contains((Sheep, "🐑"), lis);
 assert List.contains((Brick, "🧱"), lis);
-assert List.contains((Wood, "🌳"), lis) == false;
+assert !List.contains((Wood, "🌳"), lis);
 
 ### Map.fromList()
 
@@ -233,7 +233,7 @@ let fl = Map.fromList([
 assert Map.contains(Grain, fl);
 assert Map.contains(Sheep, fl);
 assert Map.contains(Brick, fl);
-assert Map.contains(Wood, fl) == false;
+assert !Map.contains(Wood, fl);
 
 ### Map.toArray()
 
@@ -249,7 +249,7 @@ let arr = Map.toArray(ta);
 assert Array.contains((Grain, "🌾"), arr);
 assert Array.contains((Sheep, "🐑"), arr);
 assert Array.contains((Brick, "🧱"), arr);
-assert Array.contains((Wood, "🌳"), arr) == false;
+assert !Array.contains((Wood, "🌳"), arr);
 
 ### Map.fromArray()
 
@@ -258,7 +258,7 @@ let fa = Map.fromArray([> (Grain, "🌾"), (Sheep, "🐑"), (Brick, "🧱")]);
 assert Map.contains(Grain, fa);
 assert Map.contains(Sheep, fa);
 assert Map.contains(Brick, fa);
-assert Map.contains(Wood, fa) == false;
+assert !Map.contains(Wood, fa);
 
 ### Resizes the map when it grows
 # TODO: Don't use these internals, as they need to change
@@ -292,15 +292,15 @@ let filterTestMap = makeFilterTestMap();
 
 Map.filter((key, value) => key == Sheep, filterTestMap);
 
-assert Map.contains(Grain, filterTestMap) == false;
+assert !Map.contains(Grain, filterTestMap);
 assert Map.contains(Sheep, filterTestMap);
-assert Map.contains(Brick, filterTestMap) == false;
+assert !Map.contains(Brick, filterTestMap);
 
 let filterTestMap = makeFilterTestMap();
 
 Map.filter((key, value) => value == "b" || value == "s", filterTestMap);
 
-assert Map.contains(Grain, filterTestMap) == false;
+assert !Map.contains(Grain, filterTestMap);
 assert Map.contains(Sheep, filterTestMap);
 assert Map.contains(Brick, filterTestMap);
 
@@ -323,7 +323,7 @@ let rejectTestMap = makeFilterTestMap();
 Map.reject((key, value) => key == Sheep, rejectTestMap);
 
 assert Map.contains(Grain, rejectTestMap);
-assert Map.contains(Sheep, rejectTestMap) == false;
+assert !Map.contains(Sheep, rejectTestMap);
 assert Map.contains(Brick, rejectTestMap);
 
 let rejectTestMap = makeFilterTestMap();
@@ -331,8 +331,8 @@ let rejectTestMap = makeFilterTestMap();
 Map.reject((key, value) => value == "b" || value == "s", rejectTestMap);
 
 assert Map.contains(Grain, rejectTestMap);
-assert Map.contains(Sheep, rejectTestMap) == false;
-assert Map.contains(Brick, rejectTestMap) == false;
+assert !Map.contains(Sheep, rejectTestMap);
+assert !Map.contains(Brick, rejectTestMap);
 
 let rejectTestMap = makeFilterTestMap();
 
