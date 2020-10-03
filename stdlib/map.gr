@@ -279,6 +279,20 @@ export let fromArray = (array) => {
   map
 }
 
+export let filter = (predicate, map) => {
+  let filteredMap = make();
+  forEach((key, value) => {
+    if (predicate(key, value)) {
+      set(key, value, filteredMap);
+    }
+  }, map);
+  filteredMap
+}
+
+export let reject = (predicate, map) => {
+  filter((key, value) => !predicate(key, value), map)
+}
+
 # TODO: Should return a Record type instead of a Tuple
 # Waiting on https://github.com/grain-lang/grain/issues/190
 export let getInternalStats = (map) => {
