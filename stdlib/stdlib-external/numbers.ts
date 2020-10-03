@@ -1088,7 +1088,7 @@ export function numberDecr(x: u32): u32 {
 //         we will fail if attempting to coerce to an int!
 
 export function coerceNumberToInt32(x: u32): u32 {
-  if (boxedNumberTag(x) == GRAIN_INT32_BOXED_NUM_TAG) {
+  if (!isSimpleNumber(x) && boxedNumberTag(x) == GRAIN_INT32_BOXED_NUM_TAG) {
     // avoid extra malloc
     return x
   }
@@ -1097,7 +1097,7 @@ export function coerceNumberToInt32(x: u32): u32 {
 }
 
 export function coerceNumberToInt64(x: u32): u32 {
-  if (boxedNumberTag(x) == GRAIN_INT64_BOXED_NUM_TAG) {
+  if (!isSimpleNumber(x) && boxedNumberTag(x) == GRAIN_INT64_BOXED_NUM_TAG) {
     // avoid extra malloc
     return x
   }
@@ -1122,7 +1122,7 @@ export function coerceNumberToRational(x: u32): u32 {
 }
 
 export function coerceNumberToFloat32(x: u32): u32 {
-  if (boxedNumberTag(x) == GRAIN_FLOAT32_BOXED_NUM_TAG) {
+  if (!isSimpleNumber(x) && boxedNumberTag(x) == GRAIN_FLOAT32_BOXED_NUM_TAG) {
     // avoid extra malloc
     return x
   }
@@ -1130,7 +1130,7 @@ export function coerceNumberToFloat32(x: u32): u32 {
 }
 
 export function coerceNumberToFloat64(x: u32): u32 {
-  if (boxedNumberTag(x) == GRAIN_FLOAT64_BOXED_NUM_TAG) {
+  if (!isSimpleNumber(x) && boxedNumberTag(x) == GRAIN_FLOAT64_BOXED_NUM_TAG) {
     // avoid extra malloc
     return x
   }
