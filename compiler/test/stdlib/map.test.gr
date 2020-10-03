@@ -282,56 +282,66 @@ assert Map.getInternalStats(resize) == (3, 2);
 
 ### Map.filter()
 
-let toFilter = Map.make();
+let makeFilterTestMap = () => Map.fromList([
+  (Grain, "g"),
+  (Sheep, "s"),
+  (Brick, "b")
+]);
 
-Map.set(Grain, "g", toFilter);
-Map.set(Sheep, "s", toFilter);
-Map.set(Brick, "b", toFilter);
+let filterTestMap = makeFilterTestMap();
 
-let filteredMap = Map.filter((key, value) => key == Sheep, toFilter)
+Map.filter((key, value) => key == Sheep, filterTestMap);
 
-assert Map.contains(Grain, filteredMap) == false;
-assert Map.contains(Sheep, filteredMap);
-assert Map.contains(Brick, filteredMap) == false;
+assert Map.contains(Grain, filterTestMap) == false;
+assert Map.contains(Sheep, filterTestMap);
+assert Map.contains(Brick, filterTestMap) == false;
 
-let filteredMap = Map.filter((key, value) => value == "b" || value == "s", toFilter)
+let filterTestMap = makeFilterTestMap();
 
-assert Map.contains(Grain, filteredMap) == false;
-assert Map.contains(Sheep, filteredMap);
-assert Map.contains(Brick, filteredMap);
+Map.filter((key, value) => value == "b" || value == "s", filterTestMap);
 
-let filteredMap = Map.filter((key, value) => value == "invalid", toFilter)
+assert Map.contains(Grain, filterTestMap) == false;
+assert Map.contains(Sheep, filterTestMap);
+assert Map.contains(Brick, filterTestMap);
 
-assert Map.size(filteredMap) == 0;
+let filterTestMap = makeFilterTestMap();
 
-let filteredMap = Map.filter((key, value) => true, toFilter)
+Map.filter((key, value) => value == "invalid", filterTestMap);
 
-assert Map.size(filteredMap) == 3;
+assert Map.size(filterTestMap) == 0;
+
+let filterTestMap = makeFilterTestMap();
+
+Map.filter((key, value) => true, filterTestMap);
+
+assert Map.size(filterTestMap) == 3;
 
 ### Map.reject()
 
-let toReject = Map.make();
+let rejectTestMap = makeFilterTestMap();
 
-Map.set(Grain, "g", toReject);
-Map.set(Sheep, "s", toReject);
-Map.set(Brick, "b", toReject);
+Map.reject((key, value) => key == Sheep, rejectTestMap);
 
-let filteredMap = Map.reject((key, value) => key == Sheep, toReject)
+assert Map.contains(Grain, rejectTestMap);
+assert Map.contains(Sheep, rejectTestMap) == false;
+assert Map.contains(Brick, rejectTestMap);
 
-assert Map.contains(Grain, filteredMap);
-assert Map.contains(Sheep, filteredMap) == false;
-assert Map.contains(Brick, filteredMap);
+let rejectTestMap = makeFilterTestMap();
 
-let filteredMap = Map.reject((key, value) => value == "b" || value == "s", toReject)
+Map.reject((key, value) => value == "b" || value == "s", rejectTestMap);
 
-assert Map.contains(Grain, filteredMap);
-assert Map.contains(Sheep, filteredMap) == false;
-assert Map.contains(Brick, filteredMap) == false;
+assert Map.contains(Grain, rejectTestMap);
+assert Map.contains(Sheep, rejectTestMap) == false;
+assert Map.contains(Brick, rejectTestMap) == false;
 
-let filteredMap = Map.reject((key, value) => true, toReject)
+let rejectTestMap = makeFilterTestMap();
 
-assert Map.size(filteredMap) == 0;
+Map.reject((key, value) => true, rejectTestMap);
 
-let filteredMap = Map.reject((key, value) => false, toReject)
+assert Map.size(rejectTestMap) == 0;
 
-assert Map.size(filteredMap) == 3;
+let rejectTestMap = makeFilterTestMap();
+
+Map.reject((key, value) => false, rejectTestMap);
+
+assert Map.size(rejectTestMap) == 3;
