@@ -92,7 +92,7 @@ grain hello.gr
 Alternatively, you can invoke the compiler directly:
 
 ```bash
-grainc hello.gr
+grain compile hello.gr
 ```
 
 Copyright ©️ 2017-2020 Philip Blair, Oscar Spencer, & contributors.
