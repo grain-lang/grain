@@ -2,6 +2,7 @@ import { GrainError } from '../errors/errors';
 
 import { WASI } from "@wasmer/wasi/lib/index.cjs";
 import { WasmFs } from "@wasmer/wasmfs";
+import wasmmap from "wasm-sourcemap";
 
 let bindings
 
@@ -211,11 +212,17 @@ export class GrainModule {
   }
 }
 
-export async function readFile(path) {
+export async function readFile(filepath) {
   const fs = require('fs');
-  let modname = path.replace(/\.gr\(lib\)?$/, '').replace(/.*\/([^/]+)/, '$1');
-  //console.log(`Reading module '${modname}' from file: ${path}`);
-  let module = await WebAssembly.compile(fs.readFileSync(path));
+  const path = require('path');
+  const modname = filepath.replace(/\.gr\(lib\)?$/, '').replace(/.*\/([^/]+)/, '$1');
+  const buffer = fs.readFileSync(filepath)
+
+  const abspath = path.resolve(process.cwd(), filepath);
+  const sourceMapURL = `file://${abspath}.map`
+  const sourceMappedBuffer = wasmmap.SetSourceMapURL(buffer, sourceMapURL);
+
+  const module = await WebAssembly.compile(sourceMappedBuffer);
   return new GrainModule(module, modname);
 }
 
