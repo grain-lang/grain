@@ -168,6 +168,7 @@ rule token = parse
   | ":=" { GETS }
   | ":" { COLON }
   | "is" { IS }
+  | "isnt" { ISNT }
   | "==" { EQEQ }
   | "=" { EQUAL }
   | "," { COMMA }
