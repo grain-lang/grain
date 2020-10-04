@@ -94,9 +94,9 @@ export let mapi = (fn, array) => {
 
 export let fill = (value, array) => {
   let length = length(array)
-  init(length, (index) => {
+  forEachi((_, index) => {
     array[index] := value
-  })
+  }, array)
   void
 }
 
@@ -111,11 +111,11 @@ export let fillRange = (value, start, stop, array) => {
   if (startIndex > stopIndex) {
     ignore(fail 'The start index cannot be higher than the stop index')
   }
-  init(length, (index) => {
+  forEachi((_, index) => {
     if (index >= startIndex && index < stopIndex) {
       ignore(array[index] := value)
     }
-  })
+  }, array)
   void
 }
 
