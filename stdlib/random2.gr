@@ -1,0 +1,50 @@
+import SysRandom from 'sys/random'
+import Int32 from 'int32'
+import Int64 from 'int64'
+
+# PCG RNG https://www.pcg-random.org/
+
+data RNG = {
+  mut state: Int64, # RNG state.  All values are possible.
+  mut inc: Int64 # Controls which RNG sequence (stream) is selected. Must *always* be odd.
+}
+
+let u64To32 = (u64) => {
+  Int32.fromNumber(Int64.toNumber(Int64.land(u64, 0xfffffffL)))
+}
+
+export let random_r = (rng) => {
+  let oldstate = rng.state
+  rng.state = Int64.add(Int64.mul(oldstate, 6364136223846793005L), rng.inc)
+  let xorshifted = u64To32(Int64.shrU(Int64.lxor(Int64.shrU(oldstate, 18L), oldstate), 27L))
+  let rot = u64To32(Int64.shrU(oldstate, 59L))
+  Int32.toNumber(Int32.lor(Int32.shrU(xorshifted, rot), Int32.shl(xorshifted, Int32.land(Int32.sub(0l, rot), 31l))))
+}
+
+export let srandom_r = (rng, initstate, initseq) => {
+  let initstate = Int64.fromNumber(initstate)
+  let initseq = Int64.fromNumber(initseq)
+
+  rng.state = 0L
+  rng.inc = Int64.lor(Int64.shl(initseq, 1L), 1L)
+  random_r(rng)
+  rng.state = Int64.add(rng.state, initstate)
+  random_r(rng)
+  void
+}
+
+export let create = (initstate, initseq) => {
+  let rng = { state: 0L, inc: 1L }
+  srandom_r(rng, initstate, initseq)
+  rng
+}
+
+let globalRNG = create(SysRandom.random(), SysRandom.random())
+
+export let srandom = (initstate, initseq) => {
+  srandom_r(globalRNG, initstate, initseq)
+}
+
+export let random = () => {
+  random_r(globalRNG)
+}
