@@ -179,6 +179,8 @@ assert Array.product([>], [>]) == [>]
 
 # Array.count
 
+let arr = [> 1, 2, 3]
+
 assert Array.count(x => x > 0, arr) == 3
 assert Array.count(x => x > 0, [>]) == 0
 assert Array.count(x => x == 3, arr) == 1
