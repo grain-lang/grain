@@ -247,3 +247,13 @@ let findIndex = (fn, list) => {
   }
   findItemIndex(list, 0)
 }
+
+let product = (a, b) => {
+  let mut list = []
+  forEach((aItem) => {
+    forEach((bItem) => {
+     list = append(list, [(aItem, bItem)])
+    },b)
+  }, a)
+  list
+}
