@@ -698,6 +698,7 @@ let stdlib_tests = [
   tlib("sys.file.test"),
   tlib("map.test"),
   tlib("result.test"),
+  tlib("queue.test"),
   tlib(~returns="", ~code=5, "sys.process.test"),
 ];
 
