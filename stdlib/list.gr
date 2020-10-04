@@ -252,8 +252,8 @@ let product = (a, b) => {
   let mut list = []
   forEach((aItem) => {
     forEach((bItem) => {
-     list = append(list, [(aItem, bItem)])
+     list = [(aItem, bItem), ...list]
     },b)
   }, a)
-  list
+  reverse(list)
 }
