@@ -210,3 +210,18 @@ export let findIndex = (fn, array) => {
     matchedIndex
   }
 }
+
+export let count = (fn, array) => {
+  let length = length(array)
+  let mut position = 0
+  let mut count = 0
+  while (position < length) {
+    if(fn(array[position])) {
+      count = incr(count)
+      position = incr(position) 
+    } else {
+      position = incr(position) 
+    }
+  }
+  count
+}
