@@ -92,6 +92,33 @@ export let mapi = (fn, array) => {
   })
 }
 
+export let fill = (value, array) => {
+  let length = length(array)
+  init(length, (index) => {
+    array[index] := value
+  })
+  void
+}
+
+export let fillRange = (value, start, stop, array) => {
+  let length = length(array)
+  let startIndex = if (start < 0) length + start else start
+  let stopIndex = if (stop < 0) length + stop else stop
+  
+  if (startIndex > length) {
+    ignore(fail 'The start index is outside the array')
+  }
+  if (startIndex > stopIndex) {
+    ignore(fail 'The start index cannot be higher than the stop index')
+  }
+  init(length, (index) => {
+    if (index >= startIndex && index < stopIndex) {
+      ignore(array[index] := value)
+    }
+  })
+  void
+}
+
 export let toList = (array) => {
   let rec buildList = (acc, index) => {
     let index = index - 1
