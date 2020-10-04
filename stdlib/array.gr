@@ -97,7 +97,6 @@ export let fill = (value, array) => {
   forEachi((_, index) => {
     array[index] := value
   }, array)
-  void
 }
 
 export let fillRange = (value, start, stop, array) => {
