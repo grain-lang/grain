@@ -211,6 +211,21 @@ export let findIndex = (fn, array) => {
   }
 }
 
+export let product = (a, b) => {
+  let lenA = length(a)
+  let lenB = length(b)
+  let mut indexA = -1
+
+  init(lenA * lenB, n => {
+    if(n % lenB == 0){
+      indexA = incr(indexA)
+    } else {
+      indexA = indexA
+    }
+    (a[indexA], b[n % lenB])
+  })
+}
+
 export let count = (fn, array) => {
   let length = length(array)
   let mut position = 0
