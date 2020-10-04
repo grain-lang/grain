@@ -1,0 +1,28 @@
+import Queue from 'queue'
+
+let empty = Queue.make()
+# 1 <- 2 <- 3
+let sampleQueue = Queue.enQueue(3, Queue.enQueue(2, Queue.enQueue(1, empty)))
+
+# Queue.isEmpty
+
+assert Queue.isEmpty(empty) == true
+assert Queue.isEmpty(sampleQueue) == false
+
+# Queue.head
+
+assert Queue.head(empty) == None
+assert Queue.head(sampleQueue) == Some(1)
+
+# Queue.enQueue
+
+assert Queue.head(Queue.enQueue(1, empty)) == Some(1)
+assert Queue.head(Queue.enQueue(4, sampleQueue)) == Some(1)
+
+# Queue.deQueue
+
+assert Queue.isEmpty(Queue.deQueue(empty)) == true
+assert Queue.isEmpty(Queue.deQueue(Queue.enQueue(1, empty))) == true
+assert Queue.isEmpty(Queue.deQueue(Queue.deQueue(Queue.deQueue(sampleQueue)))) == true
+assert Queue.head(Queue.deQueue(sampleQueue)) == Some(2)
+assert Queue.head(Queue.deQueue(Queue.enQueue(4, Queue.deQueue(sampleQueue)))) == Some(3)
