@@ -224,6 +224,7 @@ export let product = (a, b) => {
     }
     (a[indexA], b[n % lenB])
   })
+}
 
 export let count = (fn, array) => {
   let length = length(array)
