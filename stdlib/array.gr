@@ -224,4 +224,18 @@ export let product = (a, b) => {
     }
     (a[indexA], b[n % lenB])
   })
+
+export let count = (fn, array) => {
+  let length = length(array)
+  let mut position = 0
+  let mut count = 0
+  while (position < length) {
+    if(fn(array[position])) {
+      count = incr(count)
+      position = incr(position) 
+    } else {
+      position = incr(position) 
+    }
+  }
+  count
 }
