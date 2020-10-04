@@ -165,4 +165,16 @@ let arr = [> 1, 2, 3]
 Array.fillRange(10, -3, -1, arr)
 assert arr == [> 10, 10, 3]
 
+# Array.product
+
+let arrA = [> 1, 2]
+let arrB = [> 2, 3, 4]
+let arrC = [> 1]
+let arrD = [> 2]
+
+assert Array.product(arrA, arrB) == [>(1,2),(1,3),(1,4),(2,2),(2,3),(2,4)]
+assert Array.product(arrC, arrB) == [>(1,2),(1,3),(1,4)]
+assert Array.product(arrC, arrD) == [>(1,2)]
+assert Array.product([>], [>]) == [>]
+
 #TODO: test with wrong indexes and assert the exception.
