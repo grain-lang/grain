@@ -167,6 +167,9 @@ export let contains = (search, array) => {
 
 export let find = (fn, array) => {
   let length = length(array)
+  if(length == 0){
+    fail 'empty array provided'
+  }
   let mut count = 0
   let mut matching = false
   let mut matchedItem = array[0]
