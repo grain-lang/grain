@@ -20,14 +20,14 @@ export let head = (queue) => {
     }
 }
 
-export let enQueue = (value, queue) => {
+export let enqueue = (value, queue) => {
     match (queue) {
         | { forwards: [], backwards: [] } => { forwards: [value], backwards: [] }
         | { forwards, backwards } => { forwards, backwards: [value, ...backwards] }
     }
 }
 
-export let deQueue = (queue) => {
+export let dequeue = (queue) => {
     match (queue) {
         | { forwards: [], backwards: [] } => queue
         | { forwards: [head], backwards: [] } => { forwards: [], backwards: [] }
