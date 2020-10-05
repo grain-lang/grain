@@ -1,40 +1,37 @@
 import List from 'list'
 
-data Stacks<a> = { forwards: List<a>, backwards: List<a> }
-data QueueType<a> = Queue(Stacks<a>) | Empty
+data Queue<a> = { forwards: List<a>, backwards: List<a> }
 
-export let make = () => Empty
+export let make = () => {
+    { forwards: [], backwards: [] }
+}
 
 export let isEmpty = (queue) => {
     match (queue) {
-        | Empty => true
+        | { forwards: [], backwards: [] } => true
         | _ => false
     }
 }
 
 export let head = (queue) => {
     match (queue) {
-        | Empty => None
-        | Queue({ forwards, backwards }) => Some(List.head(forwards))
+        | { forwards: [], backwards: [] } => None
+        | { forwards, backwards } => Some(List.head(forwards))
     }
 }
 
 export let enQueue = (value, queue) => {
     match (queue) {
-        | Empty => Queue({ forwards: [value], backwards: [] })
-        | Queue({ forwards, backwards }) => Queue({ forwards, backwards: [value, ...backwards] })
+        | { forwards: [], backwards: [] } => { forwards: [value], backwards: [] }
+        | { forwards, backwards } => { forwards, backwards: [value, ...backwards] }
     }
 }
 
 export let deQueue = (queue) => {
     match (queue) {
-        | Empty => Empty
-        | Queue({ forwards, backwards }) => {
-            match ((List.tail(forwards), backwards)) {
-                | ([f, ...fs], backwards) => Queue({ forwards: [f, ...fs], backwards })
-                | (_, []) => Empty
-                | ([], backwards) => Queue({ forwards: List.reverse(backwards), backwards: [] })
-            }
-        }
+        | { forwards: [], backwards: [] } => queue
+        | { forwards: [head], backwards: [] } => { forwards: [], backwards: [] }
+        | { forwards: [head], backwards } => { forwards: List.reverse(backwards), backwards: [] }
+        | { forwards: [head, ...ftail], backwards } => { forwards: ftail, backwards }
     }
 }
