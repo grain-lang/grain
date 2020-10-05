@@ -21,8 +21,8 @@ assert Queue.head(Queue.enQueue(4, sampleQueue)) == Some(1)
 
 # Queue.deQueue
 
-assert Queue.isEmpty(Queue.deQueue(empty)) == true
-assert Queue.isEmpty(Queue.deQueue(Queue.enQueue(1, empty))) == true
-assert Queue.isEmpty(Queue.deQueue(Queue.deQueue(Queue.deQueue(sampleQueue)))) == true
+assert Queue.isEmpty(Queue.deQueue(empty))
+assert Queue.isEmpty(Queue.deQueue(Queue.enQueue(1, empty)))
+assert Queue.isEmpty(Queue.deQueue(Queue.deQueue(Queue.deQueue(sampleQueue))))
 assert Queue.head(Queue.deQueue(sampleQueue)) == Some(2)
 assert Queue.head(Queue.deQueue(Queue.enQueue(4, Queue.deQueue(sampleQueue)))) == Some(3)
