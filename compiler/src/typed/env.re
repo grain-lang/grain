@@ -736,17 +736,17 @@ let check_consistency = ps =>
 /* Reading persistent structures from .cmi files */
 
 let save_pers_struct = (crc, ps) => {
-  let modname = ps.ps_name;
-  Hashtbl.add(persistent_structures, modname, Some(ps));
+  let filename = ps.ps_filename;
+  Hashtbl.add(persistent_structures, filename, Some(ps));
   List.iter(
     fun
     | Rectypes => ()
     | Unsafe_string => ()
-    | Opaque => add_imported_opaque(modname),
+    | Opaque => add_imported_opaque(filename),
     ps.ps_flags,
   );
-  Consistbl.set(crc_units, modname, crc, ps.ps_filename);
-  add_import(modname);
+  Consistbl.set(crc_units, filename, crc, ps.ps_filename);
+  add_import(filename);
 };
 
 let get_dependency_chain = (~loc, unit_name) => {
@@ -911,8 +911,7 @@ module Persistent_signature = {
     );
 };
 
-let acknowledge_pers_struct =
-    (check, modname, {Persistent_signature.filename, cmi}) => {
+let acknowledge_pers_struct = (check, {Persistent_signature.filename, cmi}) => {
   let name = cmi.cmi_name;
   let sign = cmi.cmi_sign;
   let crcs = cmi.cmi_crcs;
@@ -948,31 +947,24 @@ let acknowledge_pers_struct =
         let (unit_name, _) = get_unit();
         error(Depend_on_unsafe_string_unit(ps.ps_name, unit_name));
       }
-    | Opaque => add_imported_opaque(modname),
+    | Opaque => add_imported_opaque(filename),
     ps.ps_flags,
   );
   if (check) {
     check_consistency(ps);
   };
-  Hashtbl.add(persistent_structures, modname, Some(ps));
+  Hashtbl.add(persistent_structures, filename, Some(ps));
   ps;
 };
 
-let read_pers_struct = (check, modname, filename) => {
-  add_import(modname);
+let read_pers_struct = (check, filename) => {
+  add_import(filename);
   let cmi = read_cmi(filename);
-  acknowledge_pers_struct(
-    check,
-    modname,
-    {Persistent_signature.filename, cmi},
-  );
+  acknowledge_pers_struct(check, {Persistent_signature.filename, cmi});
 };
 
-let find_pers_struct = (~loc, check, name, filepath) => {
-  if (name == "*predef*") {
-    raise(Not_found);
-  };
-  switch (Hashtbl.find(persistent_structures, name)) {
+let find_pers_struct = (~loc, check, filepath) => {
+  switch (Hashtbl.find(persistent_structures, filepath)) {
   | Some(ps) => ps
   | None => raise(Not_found)
   | exception Not_found =>
@@ -980,27 +972,23 @@ let find_pers_struct = (~loc, check, name, filepath) => {
     | Cannot_load_modules(_) => raise(Not_found)
     | Can_load_modules =>
       let ps = {
-        let filepath =
-          try(Option.get(filepath)) {
-          | Invalid_argument(_) => failwith("No file path specified")
-          };
         switch (Persistent_signature.load^(~loc, ~unit_name=filepath)) {
         | Some(ps) => ps
         | None =>
-          Hashtbl.add(persistent_structures, name, None);
+          Hashtbl.add(persistent_structures, filepath, None);
           raise(Not_found);
         };
       };
 
-      add_import(name);
-      acknowledge_pers_struct(check, name, ps);
+      add_import(filepath);
+      acknowledge_pers_struct(check, ps);
     }
   };
 };
 
 /* Emits a warning if there is no valid cmi for name */
 let check_pers_struct = (~loc, name, filename) =>
-  try(ignore(find_pers_struct(~loc, false, name, filename))) {
+  try(ignore(find_pers_struct(~loc, false, filename))) {
   | Not_found =>
     let err = No_module_file(name, None);
     error(err);
@@ -1037,18 +1025,16 @@ let check_pers_struct = (~loc, name, filename) =>
     error(err);
   };
 
-let read_pers_struct = (modname, filename) =>
-  read_pers_struct(true, modname, filename);
+let read_pers_struct = filename => read_pers_struct(true, filename);
 
-let find_pers_struct = (name, filename) =>
-  find_pers_struct(true, name, filename);
+let find_pers_struct = filename => find_pers_struct(true, filename);
 
 let check_pers_struct = (~loc, name, filename) =>
-  if (!Hashtbl.mem(persistent_structures, name)) {
+  if (!Hashtbl.mem(persistent_structures, filename)) {
     /* PR#6843: record the weak dependency ([add_import]) regardless of
        whether the check succeeds, to help make builds more
        deterministic. */
-    add_import(name);
+    add_import(filename);
     if (Warnings.is_active(Warnings.NoCmiFile("", None))) {
       add_delayed_check_forward^(() =>
         check_pers_struct(~loc, name, filename)
@@ -1062,12 +1048,9 @@ let rec find_module_descr = (path, filename, env) =>
     try(IdTbl.find_same(id, env.components)) {
     | Not_found =>
       let (_, unit_source) = get_unit();
-      if (Ident.persistent(id)
-          && !(
-               Option.value(~default=Ident.name(id), filename) == unit_source
-             )) {
-        find_pers_struct(~loc=Location.dummy_loc, Ident.name(id), filename).
-          ps_comps;
+      let filename = Option.value(~default=Ident.name(id), filename);
+      if (Ident.persistent(id) && !(filename == unit_source)) {
+        find_pers_struct(~loc=Location.dummy_loc, filename).ps_comps;
       } else {
         raise(Not_found);
       };
@@ -1115,17 +1098,10 @@ let find_module = (~alias, path, filename, env) =>
     }) {
     | Not_found =>
       let (_, unit_source) = get_unit();
-      if (Ident.persistent(id)
-          && !(
-               Option.value(~default=Ident.name(id), filename) == unit_source
-             )) {
-        let ps =
-          find_pers_struct(
-            ~loc=Location.dummy_loc,
-            Ident.name(id),
-            filename,
-          );
-        md(TModSignature(Lazy.force(ps.ps_sig)), filename);
+      let filename = Option.value(~default=Ident.name(id), filename);
+      if (Ident.persistent(id) && !(filename == unit_source)) {
+        let ps = find_pers_struct(~loc=Location.dummy_loc, filename);
+        md(TModSignature(Lazy.force(ps.ps_sig)), Some(filename));
       } else {
         raise(Not_found);
       };
@@ -1274,7 +1250,7 @@ and lookup_module = (~loc=?, ~load, ~mark, id, filename, env): Path.t =>
       if (!load) {
         raise(Not_found);
       } else {
-        ignore(find_pers_struct(~loc, s, filename));
+        ignore(find_pers_struct(~loc, Option.get(filename)));
       };
       p;
     }
@@ -2195,7 +2171,7 @@ let add_module_signature =
     |> add_module(mod_ident, mod_type, filename);
   | Some(_) => env0
   | None =>
-    let {ps_sig} = find_pers_struct(name, filename, mod_.pimp_loc);
+    let {ps_sig} = find_pers_struct(mod_.pimp_path.txt, mod_.pimp_loc);
     let sign = Lazy.force(ps_sig);
     let sign = Translsig.translate_signature(sign);
     let mod_type = TModSignature(sign);
@@ -2364,16 +2340,16 @@ let open_signature =
 };
 
 /* Read a signature from a file */
-let read_signature = (modname, filename) => {
-  let ps = read_pers_struct(modname, filename);
+let read_signature = filename => {
+  let ps = read_pers_struct(filename);
   Lazy.force(ps.ps_sig);
 };
 
 /* Return the CRC of the given compilation unit */
-let crc_of_unit = (name, filename) => {
-  let ps = find_pers_struct(~loc=Location.dummy_loc, name, filename);
+let crc_of_unit = filename => {
+  let ps = find_pers_struct(~loc=Location.dummy_loc, filename);
   let crco =
-    try(List.assoc(name, ps.ps_crcs)) {
+    try(List.assoc(filename, ps.ps_crcs)) {
     | Not_found => assert(false)
     };
 
