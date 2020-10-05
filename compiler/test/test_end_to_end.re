@@ -1701,6 +1701,11 @@ let comment_tests = {
         prog_loc: Location.dummy_loc,
       },
     ),
+    te(
+      "comment_line_numbers_1",
+      "#comment\n#comment\n5 + 5L",
+      "line 3, characters 4-6",
+    ),
   ];
 };
 
