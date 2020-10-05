@@ -6,8 +6,8 @@ let sampleQueue = Queue.enQueue(3, Queue.enQueue(2, Queue.enQueue(1, empty)))
 
 # Queue.isEmpty
 
-assert Queue.isEmpty(empty) == true
-assert Queue.isEmpty(sampleQueue) == false
+assert Queue.isEmpty(empty)
+assert !Queue.isEmpty(sampleQueue)
 
 # Queue.head
 
