@@ -92,7 +92,13 @@ grain hello.gr
 Alternatively, you can invoke the compiler directly:
 
 ```bash
-grainc hello.gr
+grain compile hello.gr
+```
+
+and then to run the compiled program:
+
+```bash
+grain run hello.gr.wasm
 ```
 
 Copyright ©️ 2017-2020 Philip Blair, Oscar Spencer, & contributors.
