@@ -1707,6 +1707,7 @@ let comment_tests = {
       "#comment\n#comment\n5 + 5L",
       "line 3, characters 4-6",
     ),
+    t("comment_lone_#", "#\nlet x = 10\nx", "10"),
   ];
 };
 
