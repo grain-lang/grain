@@ -277,6 +277,6 @@ let product = (a, b) => {
   reverse(list)
 }
 
-let sub = (start, lenght, list) => {
-  take(lenght, drop(start, list))
+let sub = (start, length, list) => {
+  take(length, drop(start, list))
 }
