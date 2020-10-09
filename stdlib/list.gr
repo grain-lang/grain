@@ -231,6 +231,25 @@ let rec dropWhile = (fn, list) => {
   }
 }
 
+let rec take = (n, list) => {
+  if (n < 0) {
+    fail 'number of items to take cannot be a negative number'
+  } else {
+    match ((n, list)) {
+      | (_, []) => list
+      | (n, _) when n == 0 => []
+      | (n, [first, ...rest]) => [first, ...take(n-1, rest)]
+    }
+  }
+}
+
+let rec takeWhile = (p, list) => {
+  match (list) {
+    | [] => []
+    | [first, ...rest] => if (p(first)) [first, ...takeWhile(p, rest)] else [] 
+  }
+}
+
 let rec find = (fn, list) => {
   match (list) {
     | [] => fail 'could not find a match'
@@ -256,4 +275,8 @@ let product = (a, b) => {
     },b)
   }, a)
   reverse(list)
+}
+
+let sub = (start, lenght, list) => {
+  take(lenght, drop(start, list))
 }
