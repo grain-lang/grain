@@ -170,3 +170,28 @@ assert product(listA, listB) == [(1,2),(1,3),(1,4),(2,2),(2,3),(2,4)]
 assert product(listC, listB) == [(1,2),(1,3),(1,4)]
 assert product(listC, listD) == [(1,2)]
 assert product([], []) == []
+
+# List.take
+
+let listTake = [1, 2, 3]
+
+assert take(0, listTake) == []
+assert take(2, listTake) == [1, 2]
+assert take(3, listTake) == listTake
+assert take(9, listTake) == listTake
+
+# List.takeWhile
+
+let listTakeWhile = [2, 2, 3, 4]
+
+assert takeWhile(x => x % 2 == 0, listTakeWhile) == [2, 2]
+assert takeWhile(x => x > 10, listTakeWhile) == []
+assert takeWhile(x => x > 1, listTakeWhile) == listTakeWhile
+
+# List.sub
+
+let listSub = [1, 2, 3]
+
+assert sub(0, 1, listSub) == [1]
+assert sub(0, 2, listSub) == [1, 2]
+assert sub(1, 2, listSub) == [2, 3]
