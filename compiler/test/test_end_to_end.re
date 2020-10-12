@@ -1299,6 +1299,11 @@ let import_tests = [
     "error",
   ),
   tfile("test_file_same_name", "list", "\"OK\"\nvoid"),
+  t(
+    "annotation_across_import",
+    "import TList, { Empty } from 'tlists'; let foo : TList.TList<String> = Empty; foo",
+    "Empty",
+  ),
 ];
 
 /* Note that optimizations are on by default, so all of the above tests
