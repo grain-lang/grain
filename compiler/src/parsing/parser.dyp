@@ -544,13 +544,9 @@ list_expr :
   | lbrack rbrack { Exp.list ~loc:(symbol_rloc dyp) [] None }
   | lbrack expr [comma expr {$2}]* list_expr_ending rbrack { Exp.list ~loc:(symbol_rloc dyp) ($2::$3) $4 }
 
-array_expr_ending :
-  | comma? { None }
-  | comma ELLIPSIS expr { Some $3 }
-
 array_expr :
   | lbrack rcaret rbrack { Exp.array ~loc:(symbol_rloc dyp) [] }
-  | lbrack rcaret expr [comma expr {$2}]* array_expr_ending rbrack { Exp.array ~loc:(symbol_rloc dyp) ($3::$4) }
+  | lbrack rcaret expr [comma expr {$2}]* comma? rbrack { Exp.array ~loc:(symbol_rloc dyp) ($3::$4) }
 
 stmt_expr :
   | ASSERT expr { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp ["assert"]) [$2] }
