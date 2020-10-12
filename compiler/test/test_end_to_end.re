@@ -464,6 +464,10 @@ let array_tests = [
     "let x = [> true, false, false]; (x[1] := true) + 3",
     "has type Bool but",
   ),
+  // trailing commas
+  t("array1_trailing", "[> 1, 2, 3,]", "[> 1, 2, 3]"),
+  t("array1_trailing_space", "[> 1, 2, 3, ]", "[> 1, 2, 3]"),
+  te("invalid_empty_trailing", "[> ,]", "Error: Syntax error"),
 ];
 
 let record_tests = [
