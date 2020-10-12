@@ -1,6 +1,6 @@
 import Array from 'array'
 
-let arr = [> 1, 2, 3]
+let arr = [> 1, 2, 3,]
 
 # Array.get
 
