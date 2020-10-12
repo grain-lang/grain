@@ -189,7 +189,7 @@ let open_signature_of_initially_opened_module:
 
 /* Read, save a signature to/from a file */
 
-let read_signature: (string, string) => signature;
+let read_signature: string => signature;
 /* Arguments: module name, file name. Results: signature. */
 let build_signature:
   (~deprecated: string=?, signature, string, string) => Cmi_format.cmi_infos;
@@ -208,7 +208,7 @@ let build_signature_with_imports:
 
 /* Return the CRC of the interface of the given compilation unit */
 
-let crc_of_unit: (string, option(string)) => Digest.t;
+let crc_of_unit: string => Digest.t;
 
 /* Return the set of compilation units imported, with their CRC */
 

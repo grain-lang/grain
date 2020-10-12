@@ -1273,6 +1273,7 @@ let import_tests = [
     "{let x = (1, 2); import * from 'tlists'; x}",
     "error",
   ),
+  tfile("test_file_same_name", "list", "\"OK\"\nvoid"),
 ];
 
 /* Note that optimizations are on by default, so all of the above tests
