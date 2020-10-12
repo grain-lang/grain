@@ -361,9 +361,9 @@ value_binds :
   | value_bind [comma value_bind {$2}]* { $1::$2 }
 
 import_shape :
-  | id { PImportModule, Some $1 }
-  | STAR [EXCEPT lbrace id [comma id {$2}]* rbrace {$3::$4}]? [AS id {$2}]? { PImportAllExcept (Option.value ~default:[] $2), $3 }
-  | lbrace [id [AS id {$2}]? [comma id [AS id {$2}]? {($2, $3)}]* {($1, $2)::$3}]? rbrace [AS id {$2}]? { PImportValues (Option.value ~default:[] $2), $4 }
+  | id { PImportModule $1 }
+  | STAR [EXCEPT lbrace id [comma id {$2}]* rbrace {$3::$4}]? { PImportAllExcept (Option.value ~default:[] $2) }
+  | lbrace [id [AS id {$2}]? [comma id [AS id {$2}]? {($2, $3)}]* {($1, $2)::$3}]? rbrace { PImportValues (Option.value ~default:[] $2) }
 
 import_stmt :
   | IMPORT import_shape [comma import_shape {$2}]* FROM file_path { Imp.mk ($2::$3) $5 }

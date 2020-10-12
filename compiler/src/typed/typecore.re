@@ -263,8 +263,8 @@ let unify_pat_types = (loc, env, ty, ty') =>
 
 /* unification inside type_exp and type_expect */
 let unify_exp_types = (loc, env, ty, expected_ty) =>
-  /*Format.eprintf "Unifying: @[%a@ %a@]@." Printtyp.raw_type_expr ty
-    Printtyp.raw_type_expr expected_ty;*/
+  /*Format.eprintf ("Unifying: @[%a@ %a@]@.", Printtyp.raw_type_expr, ty,
+    Printtyp.raw_type_expr, expected_ty);*/
   try(unify(env, ty, expected_ty)) {
   | Unify(trace) => raise(Error(loc, env, Expr_type_clash(trace, None)))
   };

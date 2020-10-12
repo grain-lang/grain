@@ -10,7 +10,7 @@ type iterator = {
   constructor: (iterator, constructor_declaration) => unit,
   label: (iterator, label_declaration) => unit,
   location: (iterator, Location.t) => unit,
-  import: (iterator, list(import_declaration)) => unit,
+  import: (iterator, import_declaration) => unit,
   export: (iterator, list(export_declaration)) => unit,
   export_all: (iterator, list(export_except)) => unit,
   value_binding: (iterator, value_binding) => unit,
@@ -221,18 +221,7 @@ module MB = {
 };
 
 module I = {
-  let iter_one =
-      (
-        sub,
-        {
-          pimp_mod_alias: alias,
-          pimp_path: path,
-          pimp_val: ival,
-          pimp_loc: loc,
-        },
-      ) => {
-    iter_opt(sub, alias);
-    iter_loc(sub, path);
+  let iter_shape = (sub, ival) => {
     switch (ival) {
     | PImportValues(values) =>
       List.iter(
@@ -243,11 +232,14 @@ module I = {
         values,
       )
     | PImportAllExcept(values) => List.iter(iter_loc(sub), values)
-    | PImportModule => ()
+    | PImportModule(id) => iter_loc(sub, id)
     };
-    sub.location(sub, loc);
   };
-  let iter = (sub, imports) => List.iter(iter_one(sub), imports);
+  let iter = (sub, {pimp_val, pimp_path, pimp_loc}) => {
+    List.iter(iter_shape(sub), pimp_val);
+    iter_loc(sub, pimp_path);
+    sub.location(sub, pimp_loc);
+  };
 };
 
 module Ex = {

@@ -252,7 +252,7 @@ and match_branch = {
 
 [@deriving sexp]
 type import_value =
-  | PImportModule
+  | PImportModule(loc(Identifier.t))
   | PImportAllExcept(list(loc(Identifier.t)))
   | PImportValues(list((loc(Identifier.t), option(loc(Identifier.t)))));
 
@@ -260,9 +260,8 @@ type import_value =
 
 [@deriving sexp]
 type import_declaration = {
-  pimp_mod_alias: option(loc(Identifier.t)),
   pimp_path: loc(string),
-  pimp_val: import_value,
+  pimp_val: list(import_value),
   [@sexp_drop_if sexp_locs_disabled]
   pimp_loc: Location.t,
 };
@@ -300,7 +299,7 @@ type export_except =
 
 [@deriving sexp]
 type toplevel_stmt_desc =
-  | PTopImport(list(import_declaration))
+  | PTopImport(import_declaration)
   | PTopForeign(export_flag, value_description)
   | PTopPrimitive(export_flag, value_description)
   | PTopData(export_flag, data_declaration)

@@ -94,7 +94,7 @@ let malformed_identifiers = (errs, super) => {
     };
     super.expr(self, e);
   };
-  let iter_import = (self, imports) => {
+  let iter_import = (self, import) => {
     let xor = (p, q) => p && !q || !p && q;
     let casing_mismatch = (orig, alias) => {
       let o = orig.[0];
@@ -105,7 +105,7 @@ let malformed_identifiers = (errs, super) => {
       );
     };
     List.iter(
-      ({pimp_val}) =>
+      pimp_val =>
         switch (pimp_val) {
         | PImportValues(values) =>
           List.iter(
@@ -129,9 +129,9 @@ let malformed_identifiers = (errs, super) => {
           )
         | _ => ()
         },
-      imports,
+      import.pimp_val,
     );
-    super.import(self, imports);
+    super.import(self, import);
   };
   let iterator = {...super, expr: iter_expr, import: iter_import};
   {errs, iterator};
@@ -164,20 +164,19 @@ let modules_have_correct_case = (errs, super) => {
       errs := [ModuleNameShouldBeUppercase(s, loc), ...errs^];
     };
   };
-  let iter_mods = (self, imports) => {
+  let iter_mod = (self, import) => {
     List.iter(
-      ({pimp_mod_alias: alias}) =>
-        switch (alias) {
-        | Some({loc: name_loc, txt: IdentName(name)}) =>
-          check_uppercase(name_loc, name)
-        | Some(_) /* IdentExternal handled by another WF rule */
-        | None => ()
-        },
-      imports,
+      fun
+      | PImportModule({loc: name_loc, txt: IdentName(name)}) =>
+        check_uppercase(name_loc, name)
+      | PImportModule(_) /* IdentExternal handled by another WF rule */
+      | PImportAllExcept(_)
+      | PImportValues(_) => (),
+      import.pimp_val,
     );
-    super.import(self, imports);
+    super.import(self, import);
   };
-  let iterator = {...super, import: iter_mods};
+  let iterator = {...super, import: iter_mod};
   {errs, iterator};
 };
 
@@ -195,18 +194,18 @@ let module_imports_not_external = (errs, super) => {
           ...errs^,
         ]
     };
-  let iter_mods = (self, imports) => {
+  let iter_mod = (self, import) => {
     List.iter(
-      ({pimp_mod_alias: alias}) =>
-        switch (alias) {
-        | Some({loc: name_loc, txt: name}) => check_name(name_loc, name)
-        | None => ()
-        },
-      imports,
+      fun
+      | PImportModule({loc: name_loc, txt: name}) =>
+        check_name(name_loc, name)
+      | PImportAllExcept(_)
+      | PImportValues(_) => (),
+      import.pimp_val,
     );
-    super.import(self, imports);
+    super.import(self, import);
   };
-  let iterator = {...super, import: iter_mods};
+  let iterator = {...super, import: iter_mod};
   {errs, iterator};
 };
 
