@@ -1114,10 +1114,33 @@ let find_module = (~alias, path, filename, env) =>
 
 let rec normalize_path = (lax, env, path) =>
   switch (path) {
-  | PExternal(p, s, pos) => PExternal(normalize_path(lax, env, p), s, pos)
-  | _ => path
+  | PIdent(id) when lax && Ident.persistent(id) => path
+  | PExternal(p, s, pos) =>
+    let p' = normalize_path(lax, env, p);
+    if (p == p') {
+      expand_path(lax, env, path);
+    } else {
+      expand_path(lax, env, PExternal(p', s, pos));
+    };
+  | PIdent(_) => expand_path(lax, env, path)
+  }
+and expand_path = (lax, env, path) =>
+  try(
+    switch (find_module(~alias=true, path, None, env)) {
+    | {md_type: TModAlias(path1)} => normalize_path(lax, env, path1)
+    | _ => path
+    }
+  ) {
+  | Not_found
+      when
+        lax
+        || (
+          switch (path) {
+          | PIdent(id) => !Ident.persistent(id)
+          | _ => true
+          }
+        ) => path
   };
-/* No module aliases, so this is all we need*/
 
 let normalize_path = (oloc, env, path) =>
   try(normalize_path(oloc == None, env, path)) {
@@ -2137,40 +2160,20 @@ let check_opened = (mod_: Parsetree.import_declaration, env) => {
 };
 
 let add_module_signature =
-    (~internal=false, mod_name, mod_: Parsetree.import_declaration, env0) => {
+    (mod_name, mod_: Parsetree.import_declaration, env0) => {
   let name =
     switch (mod_name) {
     | Identifier.IdentName(name) => name
     | Identifier.IdentExternal(_) => failwith("NYI mod identifer is external")
     };
 
-  let mod_alias =
-    switch (
-      Option.value(~default=Location.mknoloc(mod_name), mod_.pimp_mod_alias).
-        txt
-    ) {
-    | Identifier.IdentName(name) => name
-    | Identifier.IdentExternal(_) =>
-      failwith("NYI mod alias identifer is external")
-    };
-  let mod_ident =
-    if (internal) {
-      Ident.create(name);
-    } else {
-      Ident.create_persistent(mod_alias);
-    };
+  let mod_ident = Ident.create_persistent(name);
   let filename = Some(mod_.pimp_path.txt);
   switch (check_opened(mod_, env0)) {
-  | Some(path) when !internal =>
+  | Some(path) =>
     let mod_type = TModAlias(path);
-    add_modtype(
-      mod_ident,
-      {mtd_type: Some(mod_type), mtd_loc: mod_.pimp_loc},
-      env0,
-    )
-    |> add_module(mod_ident, mod_type, filename);
-  | Some(_) => env0
-  | None =>
+    env0 |> add_module(mod_ident, mod_type, filename);
+  | _ =>
     let {ps_sig} = find_pers_struct(mod_.pimp_path.txt, mod_.pimp_loc);
     let sign = Lazy.force(ps_sig);
     let sign = Translsig.translate_signature(sign);
@@ -2251,92 +2254,99 @@ let open_signature =
       mod_: Parsetree.import_declaration,
       env,
     ) => {
-  let env = add_module_signature(~internal=true, mod_name, mod_, env);
-  switch (mod_.pimp_val) {
-  | PImportModule => Some(add_module_signature(mod_name, mod_, env))
-  | PImportValues(values) =>
-    let imported = ref([]);
-    let filter_components = name => {
-      let value =
-        List.find_opt(
-          ((val_name, _)) =>
-            switch ((val_name: Parsetree.loc(Identifier.t)).txt) {
-            | Identifier.IdentName(id_name) => id_name == name
-            | Identifier.IdentExternal(_) => failwith("NYI")
-            },
-          values,
-        );
-      switch (value) {
-      | Some((val_name, val_alias)) =>
-        let new_name = Option.value(~default=val_name, val_alias);
-        switch (new_name.txt) {
-        | Identifier.IdentName(id_name) =>
-          imported := [val_name, ...imported^];
-          Some(id_name);
-        | Identifier.IdentExternal(_) => failwith("NYI")
-        };
-      | None => None
-      };
-    };
-
-    let root =
-      switch (check_opened(mod_, env)) {
-      | Some(path) => path
-      | None => assert(false)
-      };
-
-    let new_env =
-      open_signature(
-        ~filter_components,
-        None,
-        root,
-        Some(mod_.pimp_path.txt),
-        env,
-      );
-    check_imports(
-      imported^,
-      List.map(((value, _)) => value, values),
-      mod_.pimp_path.txt,
-    );
-    new_env;
-  | PImportAllExcept(exceptions) =>
-    let rejected = ref([]);
-    let filter_components = name =>
-      if (List.exists(
-            id =>
-              switch (id.txt) {
+  let env = add_module_signature(mod_name, mod_, env);
+  let env =
+    List.fold_left(
+      (env, shape) =>
+        switch ((shape: Parsetree.import_value)) {
+        | PImportModule(_) => env
+        | PImportValues(values) =>
+          let imported = ref([]);
+          let filter_components = name => {
+            let value =
+              List.find_opt(
+                ((val_name, _)) =>
+                  switch ((val_name: Parsetree.loc(Identifier.t)).txt) {
+                  | Identifier.IdentName(id_name) => id_name == name
+                  | Identifier.IdentExternal(_) => failwith("NYI")
+                  },
+                values,
+              );
+            switch (value) {
+            | Some((val_name, val_alias)) =>
+              let new_name = Option.value(~default=val_name, val_alias);
+              switch (new_name.txt) {
               | Identifier.IdentName(id_name) =>
-                if (id_name == name) {
-                  rejected := [id, ...rejected^];
-                  true;
-                } else {
-                  false;
-                }
+                imported := [val_name, ...imported^];
+                Some(id_name);
               | Identifier.IdentExternal(_) => failwith("NYI")
-              },
-            exceptions,
-          )) {
-        None;
-      } else {
-        Some(name);
-      };
-    let root =
-      switch (check_opened(mod_, env)) {
-      | Some(path) => path
-      | None => assert(false)
-      };
+              };
+            | None => None
+            };
+          };
 
-    let new_env =
-      open_signature(
-        ~filter_components,
-        None,
-        root,
-        Some(mod_.pimp_path.txt),
-        env,
-      );
-    check_imports(rejected^, exceptions, mod_.pimp_path.txt);
-    new_env;
-  };
+          let root =
+            switch (check_opened(mod_, env)) {
+            | Some(path) => path
+            | None => assert(false)
+            };
+
+          let new_env =
+            open_signature(
+              ~filter_components,
+              None,
+              root,
+              Some(mod_.pimp_path.txt),
+              env,
+            );
+          check_imports(
+            imported^,
+            List.map(((value, _)) => value, values),
+            mod_.pimp_path.txt,
+          );
+          Option.get(new_env);
+        | PImportAllExcept(exceptions) =>
+          let rejected = ref([]);
+          let filter_components = name =>
+            if (List.exists(
+                  id =>
+                    switch (id.txt) {
+                    | Identifier.IdentName(id_name) =>
+                      if (id_name == name) {
+                        rejected := [id, ...rejected^];
+                        true;
+                      } else {
+                        false;
+                      }
+                    | Identifier.IdentExternal(_) => failwith("NYI")
+                    },
+                  exceptions,
+                )) {
+              None;
+            } else {
+              Some(name);
+            };
+          let root =
+            switch (check_opened(mod_, env)) {
+            | Some(path) => path
+            | None => assert(false)
+            };
+
+          let new_env =
+            open_signature(
+              ~filter_components,
+              None,
+              root,
+              Some(mod_.pimp_path.txt),
+              env,
+            );
+          check_imports(rejected^, exceptions, mod_.pimp_path.txt);
+          Option.get(new_env);
+        },
+      env,
+      mod_.pimp_val,
+    );
+  Some(env);
 };
 
 /* Read a signature from a file */

@@ -287,16 +287,7 @@ module Imp = {
       | None => default_loc_src^()
       | Some(l) => l
       };
-    List.map(
-      ((shape, alias)) =>
-        {
-          pimp_val: shape,
-          pimp_path: path,
-          pimp_mod_alias: alias,
-          pimp_loc: loc,
-        },
-      shapes,
-    );
+    {pimp_val: shapes, pimp_path: path, pimp_loc: loc};
   };
 };
 

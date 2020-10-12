@@ -131,7 +131,7 @@ module Exp: {
 
 module Top: {
   let mk: (~loc: loc=?, toplevel_stmt_desc) => toplevel_stmt;
-  let import: (~loc: loc=?, list(import_declaration)) => toplevel_stmt;
+  let import: (~loc: loc=?, import_declaration) => toplevel_stmt;
   let foreign: (~loc: loc=?, export_flag, value_description) => toplevel_stmt;
   let primitive:
     (~loc: loc=?, export_flag, value_description) => toplevel_stmt;
@@ -167,9 +167,7 @@ module Mb: {
 };
 
 module Imp: {
-  let mk:
-    (~loc: loc=?, list((import_value, option(id))), str) =>
-    list(import_declaration);
+  let mk: (~loc: loc=?, list(import_value), str) => import_declaration;
 };
 
 module Ex: {

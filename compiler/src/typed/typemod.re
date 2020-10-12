@@ -76,9 +76,20 @@ let extract_sig_open = (env, loc, mty) =>
 let type_open_ = (~used_slot=?, ~toplevel=?, env, mod_) => {
   let filepath = Some(mod_.pimp_path.txt);
   let mod_name =
-    Identifier.IdentName(
-      Grain_utils.Files.filename_to_module_name(mod_.pimp_path.txt),
-    );
+    switch (
+      List.find_map(
+        fun
+        | PImportModule(id) => Some(id)
+        | _ => None,
+        mod_.pimp_val,
+      )
+    ) {
+    | Some({txt: IdentName(name)}) => name
+    | Some(_) => failwith("multilevel mod name")
+    | None =>
+      "`" ++ Grain_utils.Files.filename_to_module_name(mod_.pimp_path.txt)
+    };
+  let mod_name = Identifier.IdentName(mod_name);
   let path =
     Typetexp.lookup_module(
       ~load=true,
@@ -418,23 +429,9 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
     (newenv, signature, prim);
   };
 
-  let process_import = (env, imports, loc) => {
-    let (newenv, stmts) =
-      List.fold_left(
-        ((env, stmts), i) => {
-          let (_path, newenv, od) = type_open(env, i);
-          (
-            newenv,
-            [
-              {ttop_desc: TTopImport(od), ttop_loc: loc, ttop_env: env},
-              ...stmts,
-            ],
-          );
-        },
-        (env, []),
-        imports,
-      );
-    (newenv, List.rev(stmts));
+  let process_import = (env, import, loc) => {
+    let (_path, newenv, od) = type_open(env, import);
+    (newenv, {ttop_desc: TTopImport(od), ttop_loc: loc, ttop_env: env});
   };
 
   let process_datas = (env, e, datas, loc) => {
@@ -614,8 +611,8 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       ((env, signatures, statements), {ptop_desc, ptop_loc: loc}) =>
         switch (ptop_desc) {
         | PTopImport(i) =>
-          let (new_env, stmts) = process_import(env, i, loc);
-          (new_env, signatures, stmts @ statements);
+          let (new_env, stmt) = process_import(env, i, loc);
+          (new_env, signatures, [stmt, ...statements]);
         | PTopExport(ex) =>
           let (new_env, sigs, stmts) = process_export(env, ex, loc);
           (new_env, List.rev(sigs) @ signatures, stmts @ statements);
@@ -815,12 +812,11 @@ let open_implicit_module = (m, env) => {
     type_open_(
       env,
       {
-        pimp_mod_alias: None,
         pimp_path: {
           loc,
           txt: filename,
         },
-        pimp_val: PImportAllExcept([]),
+        pimp_val: [PImportAllExcept([])],
         pimp_loc: loc,
       },
     );
