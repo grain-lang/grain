@@ -498,7 +498,7 @@ simple_id :
   | ID { (mkid [$1]) (symbol_rloc dyp) }
 
 type_id :
-  | TYPEID { prerr_string "\nid\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); (mkid [$1]) (symbol_rloc dyp) }
+  | [TYPEID dot {$1}]* TYPEID { prerr_string "\nid\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); (mkid (List.append $1 [$2])) (symbol_rloc dyp) }
 
 id_expr :
   | id { prerr_string "\nsimple_expr\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); Exp.ident ~loc:(symbol_rloc dyp) $1 }
