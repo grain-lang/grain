@@ -590,7 +590,7 @@ block_body_stmt :
 
 tuple_exprs :
   | expr comma { [$1] }
-  | expr [comma expr {$2}]+ { $1::$2 }
+  | expr [comma expr {$2}]+ comma? { $1::$2 }
 
 array_get :
   | non_assign_expr lbrack expr rbrack { Exp.array_get ~loc:(symbol_rloc dyp) $1 $3 }
