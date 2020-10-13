@@ -384,6 +384,10 @@ let tuple_tests = [
   t("nested_tup_2", "let (a, b) = ((1, 2), (3, 4)); let (c, d) = b; d", "4"),
   t("nested_tup_3", "let (x, y) = ((1, 2), (3, 4)); let (a, b) = y; a", "3"),
   t("no_singleton_tup", "(1)", "1"),
+  // trailing commas
+  t("tup1_trailing", "(1, 2, 3,)", "(1, 2, 3)"),
+  t("tup1_trailing_space", "(1, 2, 3, )", "(1, 2, 3)"),
+  te("invalid_empty_trailing", "(,)", "Error: Syntax error"),
 ];
 
 let list_tests = [
