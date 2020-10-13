@@ -87,7 +87,7 @@ let type_open_ = (~used_slot=?, ~toplevel=?, env, mod_) => {
     | Some({txt: IdentName(name)}) => name
     | Some(_) => failwith("multilevel mod name")
     | None =>
-      "`" ++ Grain_utils.Files.filename_to_module_name(mod_.pimp_path.txt)
+      "%" ++ Grain_utils.Files.filename_to_module_name(mod_.pimp_path.txt)
     };
   let mod_name = Identifier.IdentName(mod_name);
   let path =
@@ -816,7 +816,10 @@ let open_implicit_module = (m, env) => {
           loc,
           txt: filename,
         },
-        pimp_val: [PImportAllExcept([])],
+        pimp_val: [
+          PImportModule(Location.mknoloc(Identifier.IdentName(modname))),
+          PImportAllExcept([]),
+        ],
         pimp_loc: loc,
       },
     );
