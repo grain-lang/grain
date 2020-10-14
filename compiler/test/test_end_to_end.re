@@ -209,7 +209,12 @@ let basic_functionality_tests = [
   t("comp16", "false == false", "true"),
   t("comp17", "false isnt true", "true"),
   t("comp18", "4 isnt 1", "true"),
-  t("comp19", "[1, 2] isnt [1, 2]", "true"),
+  // These get optimized into the same instance
+  t("comp19", "[1, 2] is [1, 2]", "true"),
+  t("comp20", "[1, 2] isnt [1, 2]", "false"),
+  // These are not optimized into the same instance (boxes are mutable)
+  t("comp21", "[box(1)] is [box(1)]", "false"),
+  t("comp22", "[box(1)] isnt [box(1)]", "true"),
   t("precedence1", "3 + 4 * 6", "27"),
   t("precedence2", "4 * 6 + 3", "27"),
   t("precedence3", "3 + 4 % 6", "7"),
