@@ -172,7 +172,7 @@ let make_program statements =
 %token CARET
 %token COMMA SEMI AS
 %token THICKARROW ARROW PIPE
-%token IS EQEQ LESSEQ GREATEREQ
+%token IS ISNT EQEQ LESSEQ GREATEREQ
 %token EQUAL GETS
 %token UNDERSCORE
 %token COLON COLONCOLON DOT ELLIPSIS
@@ -272,6 +272,7 @@ binop_expr :
   | binop_expr(<=p120) slash_op eols?     binop_expr(<p120) { no_rational_literal $1 $4; Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p120
   | binop_expr(<=p120) percent_op eols?   binop_expr(<p120) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p120
   | binop_expr(<=p80) is_op eols?        binop_expr(<p80) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p80
+  | binop_expr(<=p80) isnt_op eols?      binop_expr(<p80) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p80
   | binop_expr(<=p80) eqeq_op eols?      binop_expr(<p80) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p80
   | binop_expr(<=p80) noteq_op eols?     binop_expr(<p80) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p80
   | binop_expr(<=p90) lcaret_op eols?    binop_expr(<p90) { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp [$2]) [$1; $4] } p90
@@ -420,6 +421,8 @@ percent_op :
   | PERCENT { "%" }
 is_op :
   | IS { "is" }
+isnt_op :
+  | ISNT { "isnt" }
 eqeq_op :
   | EQEQ { "==" }
 noteq_op :
@@ -454,6 +457,7 @@ infix_op :
   | slash_op
   | percent_op
   | is_op
+  | isnt_op
   | eqeq_op
   | plusplus_op
   | noteq_op
@@ -542,7 +546,7 @@ list_expr :
 
 array_expr :
   | lbrack rcaret rbrack { Exp.array ~loc:(symbol_rloc dyp) [] }
-  | lbrack rcaret expr [comma expr {$2}]* rbrack { Exp.array ~loc:(symbol_rloc dyp) ($3::$4) }
+  | lbrack rcaret expr [comma expr {$2}]* comma? rbrack { Exp.array ~loc:(symbol_rloc dyp) ($3::$4) }
 
 stmt_expr :
   | ASSERT expr { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp ["assert"]) [$2] }
@@ -586,7 +590,7 @@ block_body_stmt :
 
 tuple_exprs :
   | expr comma { [$1] }
-  | expr [comma expr {$2}]+ { $1::$2 }
+  | expr [comma expr {$2}]+ comma? { $1::$2 }
 
 array_get :
   | non_assign_expr lbrack expr rbrack { Exp.array_get ~loc:(symbol_rloc dyp) $1 $3 }
@@ -646,7 +650,7 @@ primitive_stmt :
 exception_stmt :
   | EXCEPTION type_id_str { Except.singleton ~loc:(symbol_rloc dyp) $2 }
   | EXCEPTION type_id_str lparen typs rparen { Except.tuple ~loc:(symbol_rloc dyp) $2 $4 }
-  
+
 toplevel_stmt :
   | LET REC value_binds { Top.let_ Nonexported Recursive Immutable $3 }
   | LET value_binds { Top.let_ Nonexported Nonrecursive Immutable $2 }

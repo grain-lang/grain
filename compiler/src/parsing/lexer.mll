@@ -122,10 +122,10 @@ let num_esc = (unicode_esc | unicode4_esc | hex_esc | oct_esc)
 let newline_char = ("\r\n"|"\n\r"|'\n'|'\r')
 let newline_chars = (newline_char | blank)* newline_char
 
-let comment = '#' ((([^'|'])[^ '\r' '\n']*(newline_chars | eof)) | (newline_chars | eof))
+let comment = '#' (([^ '\r' '\n']*(newline_chars | eof)) | (newline_chars | eof))
 
 rule token = parse
-  | comment { parse_line_comment lexbuf; EOL }
+  | comment { parse_line_comment lexbuf; process_newlines lexbuf; EOL }
   | blank { token lexbuf }
   | newline_chars { process_newlines lexbuf; EOL }
   | (unsigned_float as x) 'f' { FLOAT32 x }
@@ -168,6 +168,7 @@ rule token = parse
   | ":=" { GETS }
   | ":" { COLON }
   | "is" { IS }
+  | "isnt" { ISNT }
   | "==" { EQEQ }
   | "=" { EQUAL }
   | "," { COMMA }

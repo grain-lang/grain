@@ -92,6 +92,34 @@ export let mapi = (fn, array) => {
   })
 }
 
+export let fill = (value, array) => {
+  let length = length(array)
+  forEachi((_, index) => {
+    array[index] := value
+  }, array)
+  void
+}
+
+export let fillRange = (value, start, stop, array) => {
+  let length = length(array)
+  let startIndex = if (start < 0) length + start else start
+  let stopIndex = if (stop < 0) length + stop else stop
+  
+  if (startIndex > length) {
+    ignore(fail 'The start index is outside the array')
+  }
+  if (startIndex > stopIndex) {
+    ignore(fail 'The start index cannot be higher than the stop index')
+  }
+
+  let mut index = startIndex
+  while (index < stopIndex && index < length) {
+    ignore(array[index] := value)
+    index += 1
+  }
+  void
+}
+
 export let toList = (array) => {
   let rec buildList = (acc, index) => {
     let index = index - 1
@@ -135,4 +163,80 @@ export let contains = (search, array) => {
     index += 1;
   }
   found
+}
+
+export let find = (fn, array) => {
+  let length = length(array)
+  if(length == 0){
+    fail 'empty array provided'
+  } else {
+    let mut count = 0
+    let mut matching = false
+    let mut matchedItem = array[0]
+    while (count < length) {
+      if(fn(array[count])) {
+        matching = true
+        matchedItem = array[count]
+        count = length
+      } else {
+        count = incr(count)
+      }
+    }
+    if(!matching) {
+      fail 'could not find a match'
+    } else {
+      matchedItem
+    }
+  }
+}
+
+export let findIndex = (fn, array) => {
+  let length = length(array)
+  let mut count = 0
+  let mut matching = false
+  let mut matchedIndex = 0
+  while (count < length) {
+    if(fn(array[count])) {
+      matching = true
+      matchedIndex = count
+      count = length
+    } else {
+      count = incr(count)
+    }
+  }
+  if(!matching) {
+    fail 'could not find a match'
+  } else {
+    matchedIndex
+  }
+}
+
+export let product = (a, b) => {
+  let lenA = length(a)
+  let lenB = length(b)
+  let mut indexA = -1
+
+  init(lenA * lenB, n => {
+    if(n % lenB == 0){
+      indexA = incr(indexA)
+    } else {
+      indexA = indexA
+    }
+    (a[indexA], b[n % lenB])
+  })
+}
+
+export let count = (fn, array) => {
+  let length = length(array)
+  let mut position = 0
+  let mut count = 0
+  while (position < length) {
+    if(fn(array[position])) {
+      count = incr(count)
+      position = incr(position) 
+    } else {
+      position = incr(position) 
+    }
+  }
+  count
 }

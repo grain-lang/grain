@@ -1,0 +1,37 @@
+import List from 'list'
+
+data Queue<a> = { forwards: List<a>, backwards: List<a> }
+
+export let make = () => {
+    { forwards: [], backwards: [] }
+}
+
+export let isEmpty = (queue) => {
+    match (queue) {
+        | { forwards: [], backwards: [] } => true
+        | _ => false
+    }
+}
+
+export let head = (queue) => {
+    match (queue) {
+        | { forwards: [], backwards: [] } => None
+        | { forwards, backwards } => Some(List.head(forwards))
+    }
+}
+
+export let enqueue = (value, queue) => {
+    match (queue) {
+        | { forwards: [], backwards: [] } => { forwards: [value], backwards: [] }
+        | { forwards, backwards } => { forwards, backwards: [value, ...backwards] }
+    }
+}
+
+export let dequeue = (queue) => {
+    match (queue) {
+        | { forwards: [], backwards: [] } => queue
+        | { forwards: [head], backwards: [] } => { forwards: [], backwards: [] }
+        | { forwards: [head], backwards } => { forwards: List.reverse(backwards), backwards: [] }
+        | { forwards: [head, ...ftail], backwards } => { forwards: ftail, backwards }
+    }
+}

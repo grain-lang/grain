@@ -207,6 +207,9 @@ let basic_functionality_tests = [
   t("comp14", "true == false", "false"),
   t("comp15", "false == true", "false"),
   t("comp16", "false == false", "true"),
+  t("comp17", "false isnt true", "true"),
+  t("comp18", "4 isnt 1", "true"),
+  t("comp19", "[1, 2] isnt [1, 2]", "true"),
   t("precedence1", "3 + 4 * 6", "27"),
   t("precedence2", "4 * 6 + 3", "27"),
   t("precedence3", "3 + 4 % 6", "7"),
@@ -381,6 +384,10 @@ let tuple_tests = [
   t("nested_tup_2", "let (a, b) = ((1, 2), (3, 4)); let (c, d) = b; d", "4"),
   t("nested_tup_3", "let (x, y) = ((1, 2), (3, 4)); let (a, b) = y; a", "3"),
   t("no_singleton_tup", "(1)", "1"),
+  // trailing commas
+  t("tup1_trailing", "(1, 2, 3,)", "(1, 2, 3)"),
+  t("tup1_trailing_space", "(1, 2, 3, )", "(1, 2, 3)"),
+  te("invalid_empty_trailing", "(,)", "Error: Syntax error"),
 ];
 
 let list_tests = [
@@ -461,6 +468,10 @@ let array_tests = [
     "let x = [> true, false, false]; (x[1] := true) + 3",
     "has type Bool but",
   ),
+  // trailing commas
+  t("array1_trailing", "[> 1, 2, 3,]", "[> 1, 2, 3]"),
+  t("array1_trailing_space", "[> 1, 2, 3, ]", "[> 1, 2, 3]"),
+  te("invalid_empty_trailing", "[> ,]", "Error: Syntax error"),
 ];
 
 let record_tests = [
@@ -695,6 +706,7 @@ let stdlib_tests = [
   tlib("sys.file.test"),
   tlib("map.test"),
   tlib("result.test"),
+  tlib("queue.test"),
   tlib(~returns="", ~code=5, "sys.process.test"),
 ];
 
@@ -1269,6 +1281,7 @@ let import_tests = [
     "{let x = (1, 2); import * from 'tlists'; x}",
     "error",
   ),
+  tfile("test_file_same_name", "list", "\"OK\"\nvoid"),
 ];
 
 /* Note that optimizations are on by default, so all of the above tests
@@ -1698,6 +1711,12 @@ let comment_tests = {
         prog_loc: Location.dummy_loc,
       },
     ),
+    te(
+      "comment_line_numbers_1",
+      "#comment\n#comment\n5 + 5L",
+      "line 3, characters 4-6",
+    ),
+    t("comment_lone_#", "#\nlet x = 10\nx", "10"),
   ];
 };
 

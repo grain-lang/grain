@@ -77,6 +77,13 @@ let mapi = (fn, list) => {
   iter(fn, list, 0)
 }
 
+let rec flatMap = (fn, list) => {
+  match (list) {
+    | [] => []
+    | [first, ...rest] => append(fn(first), flatMap(fn, rest))
+  }
+}
+
 let every = (fn, list) => {
   reduce((acc, value) => { acc && fn(value) }, true, list)
 }
@@ -224,6 +231,25 @@ let rec dropWhile = (fn, list) => {
   }
 }
 
+let rec take = (n, list) => {
+  if (n < 0) {
+    fail 'number of items to take cannot be a negative number'
+  } else {
+    match ((n, list)) {
+      | (_, []) => list
+      | (n, _) when n == 0 => []
+      | (n, [first, ...rest]) => [first, ...take(n-1, rest)]
+    }
+  }
+}
+
+let rec takeWhile = (p, list) => {
+  match (list) {
+    | [] => []
+    | [first, ...rest] => if (p(first)) [first, ...takeWhile(p, rest)] else [] 
+  }
+}
+
 let rec find = (fn, list) => {
   match (list) {
     | [] => fail 'could not find a match'
@@ -239,4 +265,18 @@ let findIndex = (fn, list) => {
     }
   }
   findItemIndex(list, 0)
+}
+
+let product = (a, b) => {
+  let mut list = []
+  forEach((aItem) => {
+    forEach((bItem) => {
+     list = [(aItem, bItem), ...list]
+    },b)
+  }, a)
+  reverse(list)
+}
+
+let sub = (start, length, list) => {
+  take(length, drop(start, list))
 }
