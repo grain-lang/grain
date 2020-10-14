@@ -526,10 +526,6 @@ and print_typlist = (print_elem, sep, ppf) =>
 and print_typargs = ppf =>
   fun
   | [] => ()
-  | [ty1] => {
-      print_simple_out_type(ppf, ty1);
-      pp_print_space(ppf, ());
-    }
   | tyl => {
       pp_open_box(ppf, 1);
       pp_print_char(ppf, '<');
