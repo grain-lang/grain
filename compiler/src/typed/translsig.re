@@ -32,8 +32,6 @@ let rec collect_type_vars = typ =>
   };
 
 let link_type_vars = ty => {
-  reset_type_variables();
-  collect_type_vars(ty);
   let rec link_types = texpr => {
     let desc =
       switch (texpr.desc) {
@@ -69,11 +67,87 @@ let translate_signature = sg =>
     item =>
       switch (item) {
       | TSigValue(id, d) =>
-        TSigValue(id, {...d, val_type: link_type_vars(d.val_type)})
-      | TSigType(_)
-      | TSigTypeExt(_)
+        reset_type_variables();
+        collect_type_vars(d.val_type);
+        TSigValue(id, {...d, val_type: link_type_vars(d.val_type)});
+      | TSigType(id, td, r) =>
+        reset_type_variables();
+        switch (td.type_kind) {
+        | TDataVariant(cds) =>
+          List.iter(
+            cd => {
+              switch (cd.cd_args) {
+              | TConstrSingleton => ()
+              | TConstrTuple(tys) => List.iter(collect_type_vars, tys)
+              };
+              Option.iter(collect_type_vars, cd.cd_res);
+            },
+            cds,
+          )
+        | TDataAbstract => ()
+        | TDataRecord(rfs) =>
+          List.iter(rf => {collect_type_vars(rf.rf_type)}, rfs)
+        | TDataOpen => ()
+        };
+        List.iter(collect_type_vars, td.type_params);
+        Option.iter(collect_type_vars, td.type_manifest);
+        let type_kind =
+          switch (td.type_kind) {
+          | TDataVariant(cds) =>
+            TDataVariant(
+              List.map(
+                cd => {
+                  let cd_args =
+                    switch (cd.cd_args) {
+                    | TConstrSingleton => TConstrSingleton
+                    | TConstrTuple(tys) =>
+                      TConstrTuple(List.map(link_type_vars, tys))
+                    };
+                  {
+                    ...cd,
+                    cd_args,
+                    cd_res: Option.map(link_type_vars, cd.cd_res),
+                  };
+                },
+                cds,
+              ),
+            )
+          | TDataAbstract => TDataAbstract
+          | TDataRecord(rfs) =>
+            TDataRecord(
+              List.map(
+                rf => {{...rf, rf_type: link_type_vars(rf.rf_type)}},
+                rfs,
+              ),
+            )
+          | TDataOpen => TDataOpen
+          };
+        TSigType(
+          id,
+          {
+            ...td,
+            type_params: List.map(link_type_vars, td.type_params),
+            type_manifest: Option.map(link_type_vars, td.type_manifest),
+            type_kind,
+          },
+          r,
+        );
+      | TSigTypeExt(id, ec, ext) =>
+        reset_type_variables();
+        List.iter(collect_type_vars, ec.ext_type_params);
+        switch (ec.ext_args) {
+        | TConstrSingleton => ()
+        | TConstrTuple(tys) => List.iter(collect_type_vars, tys)
+        };
+        let ext_type_params = List.map(link_type_vars, ec.ext_type_params);
+        let ext_args =
+          switch (ec.ext_args) {
+          | TConstrSingleton => TConstrSingleton
+          | TConstrTuple(tys) => TConstrTuple(List.map(link_type_vars, tys))
+          };
+        TSigTypeExt(id, {...ec, ext_type_params, ext_args}, ext);
       | TSigModule(_)
-      | TSigModType(_) => item
+      | TSigModType(_) => failwith("translsig: NYI for module types")
       },
     sg,
   );
