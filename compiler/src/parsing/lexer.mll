@@ -61,10 +61,16 @@
     comments := [];
     out_comments
 
-  let parse_line_comment lexbuf =
+  let parse_line_comment comment_type lexbuf =
     let source = lexeme lexbuf in
     let loc = lexbuf_loc lexbuf in
-    comments := line_comment source loc :: !comments
+    comments := comment_type source loc :: !comments
+
+  let wrap_block_comment_lexer comment comment_type lexbuf =
+    let start_loc = Location.curr lexbuf  in
+    let (s, end_loc) = comment lexbuf in
+    let loc = { start_loc with Location.loc_end = end_loc.Location.loc_end } in
+    comments := comment_type s loc :: !comments
 
 }
 
@@ -122,10 +128,14 @@ let num_esc = (unicode_esc | unicode4_esc | hex_esc | oct_esc)
 let newline_char = ("\r\n"|"\n\r"|'\n'|'\r')
 let newline_chars = (newline_char | blank)* newline_char
 
-let comment = '#' (([^ '\r' '\n']*(newline_chars | eof)) | (newline_chars | eof))
+let line_comment = "//" (([^ '\r' '\n']*(newline_chars | eof)) | (newline_chars | eof))
+let shebang_comment = "#!" (([^ '\r' '\n']*(newline_chars | eof)) | (newline_chars | eof))
 
 rule token = parse
-  | comment { parse_line_comment lexbuf; process_newlines lexbuf; EOL }
+  | line_comment { parse_line_comment line_comment lexbuf; process_newlines lexbuf; EOL }
+  | shebang_comment { parse_line_comment shebang_comment lexbuf; process_newlines lexbuf; EOL }
+  | "/*" { wrap_block_comment_lexer read_block_comment block_comment lexbuf; token lexbuf }
+  | "/**" { wrap_block_comment_lexer read_doc_comment doc_comment lexbuf; token lexbuf }
   | blank { token lexbuf }
   | newline_chars { process_newlines lexbuf; EOL }
   | (unsigned_float as x) 'f' { FLOAT32 x }
@@ -227,3 +237,11 @@ and read_squote_str buf =
     read_squote_str buf lexbuf }
   | '\'' { STRING (Buffer.contents buf) }
   | _ { raise (Error(lexbuf_loc lexbuf, IllegalStringCharacter(lexeme lexbuf))) }
+
+and read_block_comment =
+  shortest
+  | _* "*/" { process_newlines lexbuf; "/*" ^ (lexeme lexbuf), Location.curr lexbuf }
+
+and read_doc_comment =
+  shortest
+  | _* "*/" { process_newlines lexbuf; "/**" ^ (lexeme lexbuf), Location.curr lexbuf }
