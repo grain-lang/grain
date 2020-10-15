@@ -576,10 +576,7 @@ let error_to_json = ({loc, msg, sub, if_highlight}) => {
     lsp_message: msg,
   };
 
-  let json_string = Yojson.to_string(lsp_error_to_yojson(error_json));
-
-  json_string;
-  /* sprintf("%d %d %d %d\n%s\n", line, startchar, endline, endchar, msg); */
+  Yojson.to_string(lsp_error_to_yojson(error_json));
 };
 
 /* lsp - print error to stdout */
