@@ -398,8 +398,7 @@ let tuple_tests = [
 let list_tests = [
   t("list1", "[1, 2, 3]", "[1, 2, 3]"),
   t("list2", "[]", "[]"),
-  // TODO: This should fail with typechecker error
-  // t("list_heterogeneous", "[1, false, 2]", "[1, false, 2]"),
+  te("list_heterogeneous", "[1, false, 2]", "type"),
   t("list_spread", "let a = [3, 4]; [1, 2, ...a]", "[1, 2, 3, 4]"),
   te(
     "invalid_list_no_comma_before_spread",

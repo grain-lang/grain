@@ -17,28 +17,28 @@ export let toOption = (v) => {
 export let flatMap = (fn, v) => {
     match (v) {
         | Ok(x)  => fn(x)
-        | _      => v
+        | Err(e) => Err(e)
     }
 }
 
 export let flatMapErr = (fn, v) => {
     match (v) {
         | Err(e) => fn(e)
-        | _      => v
+        | Ok(x)  => Ok(x)
     }
 }
 
 export let map = (fn, v) => {
     match (v) {
-        | Ok(x) => Ok(fn(x))
-        | _     => v
+        | Ok(x)  => Ok(fn(x))
+        | Err(e) => Err(e)
     }
 }
 
 export let mapErr = (fn, v) => {
     match (v) {
-        | Err(x) => Err(fn(x))
-        | _      => v
+        | Err(e) => Err(fn(e))
+        | Ok(x)  => Ok(x)
     }
 }
 
