@@ -313,7 +313,7 @@ let function_tests = [
      let item = Calzone(Peppers, WholeWheat,)
      item
     ",
-    "<adt value>"
+    "<adt value>",
   ),
   t("lam_destructure_1", "((_) => 5)('foo')", "5"),
   t("lam_destructure_2", "let foo = (_) => 5; foo('foo')", "5"),
@@ -1645,7 +1645,11 @@ let data_tests = [
     "Foo\nBar\nBaz(\"baz\")\nQux(5, \"qux\", false)\nQuux\nFlip(\"flip\")\nvoid",
   ),
   t("adtprint_nonexported", "data Foo = Foo; Foo", "<adt value>"),
-  t("adt_trailing", "data Topping = Cheese(Bool,) | Pepperoni; Pepperoni", "<adt value>")
+  t(
+    "adt_trailing",
+    "data Topping = Cheese(Bool,) | Pepperoni; Pepperoni",
+    "<adt value>",
+  ),
 ];
 
 let export_tests = [
