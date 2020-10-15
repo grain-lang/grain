@@ -1,25 +1,25 @@
 import Queue from 'queue'
 
 let empty = Queue.make()
-# 1 <- 2 <- 3
+// 1 <- 2 <- 3
 let sampleQueue = Queue.enqueue(3, Queue.enqueue(2, Queue.enqueue(1, empty)))
 
-# Queue.isEmpty
+// Queue.isEmpty
 
 assert Queue.isEmpty(empty)
 assert !Queue.isEmpty(sampleQueue)
 
-# Queue.head
+// Queue.head
 
 assert Queue.head(empty) == None
 assert Queue.head(sampleQueue) == Some(1)
 
-# Queue.enqueue
+// Queue.enqueue
 
 assert Queue.head(Queue.enqueue(1, empty)) == Some(1)
 assert Queue.head(Queue.enqueue(4, sampleQueue)) == Some(1)
 
-# Queue.dequeue
+// Queue.dequeue
 
 assert Queue.isEmpty(Queue.dequeue(empty))
 assert Queue.isEmpty(Queue.dequeue(Queue.enqueue(1, empty)))

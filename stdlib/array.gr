@@ -24,7 +24,7 @@ export let append = (array1, array2) => {
 }
 
 export let concat = (arrays) => {
-  # This function is slightly verbose to avoid depending on the List stdlib.
+  // This function is slightly verbose to avoid depending on the List stdlib.
 
   let rec findLength = (arrays, acc) => {
     match (arrays) {
@@ -153,7 +153,7 @@ export let fromList = (list) => {
   init(listLength(list, 0), next)
 }
 
-# TODO: This should use recursion when we can pattern match arrays
+// TODO: This should use recursion when we can pattern match arrays
 export let contains = (search, array) => {
   let len = length(array);
   let mut index = 0;

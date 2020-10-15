@@ -2,14 +2,14 @@ import Array from 'array'
 
 let arr = [> 1, 2, 3,]
 
-# Array.get
+// Array.get
 
 assert Array.get(1, arr) == 2
 assert Array.get(-1, arr) == 3
 assert Array.get(-2, arr) == 2
 assert Array.get(0, arr) == 1
 
-# Array.set
+// Array.set
 
 let arr = [> 1, 2]
 
@@ -18,7 +18,7 @@ assert arr[0] == 5
 Array.set(-1, 5, arr)
 assert arr[1] == 5
 
-# Array.append
+// Array.append
 
 let arr1 = [> 1, 2]
 let arr2 = [> 3, 4, 5]
@@ -28,7 +28,7 @@ assert Array.append([>], [>]) == [>]
 assert Array.append(arr1, [>]) == arr1
 assert Array.append([>], arr1) == arr1
 
-# Array.concat
+// Array.concat
 
 let arr1 = [> 1, 2]
 let arr2 = [>]
@@ -41,7 +41,7 @@ assert Array.concat([[>], [>]]) == [>]
 assert Array.concat([arr3]) == [> 3, 4, 5]
 assert Array.concat([arr1, arr2, arr3, arr4]) == [> 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
-# Array.copy
+// Array.copy
 
 let arr1 = [>]
 let arr2 = [> 1, 2]
@@ -52,7 +52,7 @@ assert !(Array.copy(arr1) is arr1)
 assert Array.copy(arr2) == arr2
 assert !(Array.copy(arr2) is arr2)
 
-# Array.forEach
+// Array.forEach
 
 let arr1 = [> 1, 2, 3]
 let mut sum = 0
@@ -73,7 +73,7 @@ Array.forEach(addToSum, arr1)
 
 assert sum == 6
 
-# Array.forEachi
+// Array.forEachi
 
 let arr1 = [> 1, 2, 3]
 let mut sum = 0
@@ -94,22 +94,22 @@ Array.forEachi(addToSum, arr1)
 
 assert sum == 8
 
-# Array.toList
+// Array.toList
 
 assert Array.toList([>]) == []
 assert Array.toList([> 1, 2, 3]) == [1, 2, 3]
 
-# Array.fromList
+// Array.fromList
 
 assert Array.fromList([]) == [>]
 assert Array.fromList([1, 2, 3]) == [> 1, 2, 3]
 
-# Array.map
+// Array.map
 
 assert Array.map(incr, [>]) == [>]
 assert Array.map(incr, [> 2, 3, 4]) == [> 3, 4, 5]
 
-# Array.mapi
+// Array.mapi
 
 let numbers = [> 2, 3, 4]
 let square = (n, i) => n * numbers[i]
@@ -117,23 +117,23 @@ let square = (n, i) => n * numbers[i]
 assert Array.mapi(square, [>]) == [>]
 assert Array.mapi(square, numbers) == [> 4, 9, 16]
 
-# Array.contains
+// Array.contains
 
 let arr = [> 1, 2, 3]
 
 assert Array.contains(3, arr)
 assert !Array.contains(4, arr)
 
-# Array.find
+// Array.find
 
 assert Array.find(x => x == 2, arr) == 2
 
-# Array.findIndex
+// Array.findIndex
 
 assert Array.findIndex(x => x == 1, arr) == 0
 assert Array.findIndex(x => x == 2, arr) == 1
 
-# Array.fill
+// Array.fill
 
 let arr = [>]
 assert Array.fill(1, arr) == void
@@ -143,7 +143,7 @@ let arr = [> 1, 2, 3]
 Array.fill(4, arr)
 assert arr == [> 4, 4, 4]
 
-# Array.fillRange
+// Array.fillRange
 
 let arr = [>]
 assert Array.fillRange(0, 0, 0, arr) == void
@@ -165,7 +165,7 @@ let arr = [> 1, 2, 3]
 Array.fillRange(10, -3, -1, arr)
 assert arr == [> 10, 10, 3]
 
-# Array.product
+// Array.product
 
 let arrA = [> 1, 2]
 let arrB = [> 2, 3, 4]
@@ -177,7 +177,7 @@ assert Array.product(arrC, arrB) == [>(1,2),(1,3),(1,4)]
 assert Array.product(arrC, arrD) == [>(1,2)]
 assert Array.product([>], [>]) == [>]
 
-# Array.count
+// Array.count
 
 let arr = [> 1, 2, 3]
 
@@ -185,4 +185,4 @@ assert Array.count(x => x > 0, arr) == 3
 assert Array.count(x => x > 0, [>]) == 0
 assert Array.count(x => x == 3, arr) == 1
 
-#TODO: test with wrong indexes and assert the exception.
+// TODO: test with wrong indexes and assert the exception.

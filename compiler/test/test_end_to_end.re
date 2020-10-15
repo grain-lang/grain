@@ -120,6 +120,7 @@ let test_parse =
     comment => {
       switch (comment) {
       | Line(desc) => Line({...desc, cmt_loc: Location.dummy_loc})
+      | Shebang(desc) => Shebang({...desc, cmt_loc: Location.dummy_loc})
       | Block(desc) => Block({...desc, cmt_loc: Location.dummy_loc})
       | Doc(desc) => Doc({...desc, cmt_loc: Location.dummy_loc})
       };
@@ -1702,13 +1703,13 @@ let comment_tests = {
   [
     tparse(
       "comment_parse_1",
-      "# Test\n'foo'",
+      "// Test\n'foo'",
       {
         statements: [str("foo")],
         comments: [
           Parsetree.Line({
             cmt_content: "Test",
-            cmt_source: "# Test\n",
+            cmt_source: "// Test\n",
             cmt_loc: Location.dummy_loc,
           }),
         ],
@@ -1717,10 +1718,10 @@ let comment_tests = {
     ),
     te(
       "comment_line_numbers_1",
-      "#comment\n#comment\n5 + 5L",
+      "//comment\n//comment\n5 + 5L",
       "line 3, characters 4-6",
     ),
-    t("comment_lone_#", "#\nlet x = 10\nx", "10"),
+    t("comment_lone_//", "//\nlet x = 10\nx", "10"),
   ];
 };
 

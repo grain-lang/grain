@@ -1,4 +1,4 @@
-# Sanity tests for generic hashing.
+// Sanity tests for generic hashing.
 
 import Hash from 'hash'
 import List from 'list'

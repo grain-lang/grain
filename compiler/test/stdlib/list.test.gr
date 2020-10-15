@@ -2,38 +2,38 @@ import * from 'list'
 
 let list = [1, 2, 3]
 
-# List.sum
+// List.sum
 
 assert sum(list) == 6
 assert sum([]) == 0
 
-# List.reverse
+// List.reverse
 
 assert reverse([]) == []
 assert reverse(list) == [3, 2, 1]
 
-# List.length
+// List.length
 
 assert length([]) == 0
 assert length(list) == 3
 
-# List.append
+// List.append
 
 assert append(list, [4]) == [1, 2, 3, 4]
 assert append([], [4]) == [4]
 
-# List.contains
+// List.contains
 
 assert contains(3, list)
 assert contains(3, []) == false
 
-# List.map
+// List.map
 
 assert map(x => x + 1, list) == [2, 3, 4]
 assert map(x => x * 2, list) == [2, 4, 6]
 assert map(x => x + 1, []) == []
 
-# List.mapi
+// List.mapi
 
 let numbers = [2, 3, 4]
 let multiply = (n, i) => n * i
@@ -41,107 +41,107 @@ let multiply = (n, i) => n * i
 assert mapi(multiply, numbers) == [0, 3, 8]
 assert mapi(multiply, []) == []
 
-# List.flatMap
+// List.flatMap
 
 assert flatMap(x => [x + 1], list) == [2, 3, 4]
 assert flatMap(x => [x, x + 1], list) == [1, 2, 2, 3, 3, 4]
 assert flatMap(x => [], list) == []
 
-# List.reduce
+// List.reduce
 
 assert reduce((acc, cur) => acc - cur, 0, list) == -6
 assert reduce((acc, cur) => acc - cur, 0, []) == 0
 
-# List.reduceRight
+// List.reduceRight
 
 assert reduceRight((acc, cur) => acc - cur, 0, list) == 2
 assert reduceRight((acc, cur) => acc - cur, 0, []) == 0
 
-# List.every
+// List.every
 
 assert every(x => x > 0, list)
 assert !every(x => x > 2, list)
 assert every(x => x == 3, [])
 
-# List.some
+// List.some
 
 assert some(x => x > 0, list)
 assert !some(x => x > 3, list)
 assert !some(x => x == 3, [])
 
-# List.filter
+// List.filter
 
 assert filter(x => x > 0, list) == list
 assert filter(x => x > 3, list) == []
 assert filter(x => x == 3, list) == [3]
 
-# List.reject
+// List.reject
 
 assert reject(x => x > 0, list) == []
 assert reject(x => x > 3, list) == list
 assert reject(x => x == 3, list) == [1, 2]
 
-# List.head
+// List.head
 
 assert head(list) == 1
 assert head([2]) == 2
 
-# List.tail
+// List.tail
 
 assert tail(list) == [2, 3]
 assert tail([1]) == []
 
-# List.nth
+// List.nth
 
 assert nth(0, list) == 1
 assert nth(2, list) == 3
 
-# List.flatten
+// List.flatten
 
 assert flatten([[1], [2], [3]]) == list
 assert flatten([[], list]) == list
 assert flatten([list, []]) == list
 
-# List.insert
+// List.insert
 
 assert insert(1, 0, []) == [1]
 assert insert(0, 0, list) == [0, 1, 2, 3]
 assert insert(0, 2, list) == [1, 2, 0, 3]
 assert insert(0, 3, list) == [1, 2, 3, 0]
 
-# List.count
+// List.count
 
 assert count(x => x > 0, list) == 3
 assert count(x => x > 0, []) == 0
 assert count(x => x == 3, list) == 1
 
-# List.part
+// List.part
 
 assert part(0, list) == ([], list)
 assert part(3, list) == (list, [])
 assert part(2, list) == ([1, 2], [3])
 
-# List.rotate
+// List.rotate
 
 assert rotate(0, list) == list
 assert rotate(1, list) == [2, 3, 1]
 assert rotate(2, list) == [3, 1, 2]
 assert rotate(-2, list) == [2, 3, 1]
 
-# List.unique
+// List.unique
 
 assert unique([]) == []
 assert unique(list) == list
 assert unique([1, 1, 1, 1]) == [1]
 
-# List.drop
+// List.drop
 
 assert drop(4, []) == []
 assert drop(0, list) == list
 assert drop(2, list) == [3]
 assert drop(4, list) == []
 
-# List.dropWhile
+// List.dropWhile
 
 assert dropWhile(x => true, []) == []
 assert dropWhile(x => true, list) == []
@@ -150,16 +150,16 @@ assert dropWhile(x => x < 3, list) == [3]
 assert dropWhile(x => x < 5, list) == []
 assert dropWhile(x => x > 5, list) == list
 
-# List.find
+// List.find
 
 assert find(x => x == 2, list) == 2
 
-# List.findIndex
+// List.findIndex
 
 assert findIndex(x => x == 1, list) == 0
 assert findIndex(x => x == 2, list) == 1
 
-# List.product
+// List.product
 
 let listA = [1, 2]
 let listB = [2, 3, 4]
@@ -171,7 +171,7 @@ assert product(listC, listB) == [(1,2),(1,3),(1,4)]
 assert product(listC, listD) == [(1,2)]
 assert product([], []) == []
 
-# List.take
+// List.take
 
 let listTake = [1, 2, 3]
 
@@ -180,7 +180,7 @@ assert take(2, listTake) == [1, 2]
 assert take(3, listTake) == listTake
 assert take(9, listTake) == listTake
 
-# List.takeWhile
+// List.takeWhile
 
 let listTakeWhile = [2, 2, 3, 4]
 
@@ -188,7 +188,7 @@ assert takeWhile(x => x % 2 == 0, listTakeWhile) == [2, 2]
 assert takeWhile(x => x > 10, listTakeWhile) == []
 assert takeWhile(x => x > 1, listTakeWhile) == listTakeWhile
 
-# List.sub
+// List.sub
 
 let listSub = [1, 2, 3]
 

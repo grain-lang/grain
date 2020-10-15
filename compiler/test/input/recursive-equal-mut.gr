@@ -1,5 +1,5 @@
-# Note: This file doesn't include the Recursive type test
-# because it isn't achievable with `let mut`
+// Note: This file doesn't include the Recursive type test
+// because it isn't achievable with `let mut`
 
 export data Opt<a> = None | Some(a)
 

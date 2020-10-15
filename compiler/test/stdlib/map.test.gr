@@ -2,11 +2,11 @@ import Map from 'map';
 import List from 'list';
 import Array from 'array';
 
-# Data types used in multiple tests
+// Data types used in multiple tests
 data Resource = Grain | Sheep | Brick | Wood;
 data ResourceData = { name: String, emoji: String }
 
-### Map.isEmpty()
+// Map.isEmpty()
 
 let e = Map.make();
 
@@ -14,7 +14,7 @@ assert Map.isEmpty(e);
 Map.set("🌾", "🌾", e);
 assert !Map.isEmpty(e);
 
-### Map.size()
+// Map.size()
 
 let s = Map.make();
 
@@ -24,7 +24,7 @@ Map.set("🧱", 3, s);
 
 assert Map.size(s) == 3;
 
-### Map.clear()
+// Map.clear()
 
 let c = Map.make();
 
@@ -38,7 +38,7 @@ assert Map.clear(c) == void;
 
 assert Map.isEmpty(c);
 
-### Map.contains()
+// Map.contains()
 
 let h = Map.make();
 
@@ -51,9 +51,9 @@ assert Map.contains("🐑", h);
 assert Map.contains("🧱", h);
 assert !Map.contains("🌳", h);
 
-### Map.set() & Map.get()
+// Map.set() & Map.get()
 
-# With Number keys
+// With Number keys
 let nums = Map.make();
 
 assert Map.set(1, "🌾", nums) == void;
@@ -65,7 +65,7 @@ assert Map.get(2, nums) == Some("🐑");
 assert Map.get(3, nums) == Some("🧱");
 assert Map.get(4, nums) == None;
 
-# With String keys
+// With String keys
 let strs = Map.make();
 
 assert Map.set("🌾", 1, strs) == void;
@@ -77,7 +77,7 @@ assert Map.get("🐑", strs) == Some(2);
 assert Map.get("🧱", strs) == Some(3);
 assert Map.get("🌳", strs) == None;
 
-# With variant keys
+// With variant keys
 let vars = Map.make();
 
 assert Map.set(Grain, "🌾", vars) == void;
@@ -89,7 +89,7 @@ assert Map.get(Sheep, vars) == Some("🐑");
 assert Map.get(Brick, vars) == Some("🧱");
 assert Map.get(Wood, vars) == None;
 
-# With record keys
+// With record keys
 let recs = Map.make();
 
 assert Map.set({ name: "Grain", emoji: "🌾" }, 1, recs) == void;
@@ -101,7 +101,7 @@ assert Map.get({ name: "Sheep", emoji: "🐑" }, recs) == Some(2);
 assert Map.get({ name: "Brick", emoji: "🧱" }, recs) == Some(3);
 assert Map.get({ name: "Wood", emoji: "🌳" }, recs) == None;
 
-# Overwriting data
+// Overwriting data
 let o = Map.make();
 
 assert Map.set(1, "🐑", o) == void;
@@ -109,7 +109,7 @@ assert Map.set(1, "🌾", o) == void;
 
 assert Map.get(1, o) == Some("🌾");
 
-### Map.remove()
+// Map.remove()
 
 let r = Map.make();
 
@@ -136,7 +136,7 @@ assert Map.get("🧱", r) == None;
 
 assert Map.isEmpty(r);
 
-### Map.forEach()
+// Map.forEach()
 
 let fe = Map.make();
 
@@ -158,7 +158,7 @@ Map.forEach((key, value) => {
 
 assert called == 3;
 
-### Map.reduce()
+// Map.reduce()
 
 let r = Map.make();
 
@@ -182,7 +182,7 @@ let result = Map.reduce((acc, key, value) => {
 assert called == 3;
 assert result == 6;
 
-### Map.keys() & Map.values();
+// Map.keys() & Map.values();
 
 let kvs = Map.make();
 
@@ -192,7 +192,7 @@ Map.set(Brick, "🧱", kvs);
 
 let keys = Map.keys(kvs);
 
-# No order is guaranteed
+// No order is guaranteed
 assert List.contains(Grain, keys);
 assert List.contains(Sheep, keys);
 assert List.contains(Brick, keys);
@@ -200,13 +200,13 @@ assert !List.contains(Wood, keys);
 
 let vals = Map.values(kvs);
 
-# No order is guaranteed
+// No order is guaranteed
 assert List.contains("🌾", vals);
 assert List.contains("🐑", vals);
 assert List.contains("🧱", vals);
 assert !List.contains("🌳", vals);
 
-### Map.toList()
+// Map.toList()
 
 let tl = Map.make();
 
@@ -216,13 +216,13 @@ Map.set(Brick, "🧱", tl);
 
 let lis = Map.toList(tl);
 
-# No order is guaranteed
+// No order is guaranteed
 assert List.contains((Grain, "🌾"), lis);
 assert List.contains((Sheep, "🐑"), lis);
 assert List.contains((Brick, "🧱"), lis);
 assert !List.contains((Wood, "🌳"), lis);
 
-### Map.fromList()
+// Map.fromList()
 
 let fl = Map.fromList([
   (Grain, "🌾"),
@@ -235,7 +235,7 @@ assert Map.contains(Sheep, fl);
 assert Map.contains(Brick, fl);
 assert !Map.contains(Wood, fl);
 
-### Map.toArray()
+// Map.toArray()
 
 let ta = Map.make();
 
@@ -245,13 +245,13 @@ Map.set(Brick, "🧱", ta);
 
 let arr = Map.toArray(ta);
 
-# No order is guaranteed
+// No order is guaranteed
 assert Array.contains((Grain, "🌾"), arr);
 assert Array.contains((Sheep, "🐑"), arr);
 assert Array.contains((Brick, "🧱"), arr);
 assert !Array.contains((Wood, "🌳"), arr);
 
-### Map.fromArray()
+// Map.fromArray()
 
 let fa = Map.fromArray([> (Grain, "🌾"), (Sheep, "🐑"), (Brick, "🧱")]);
 
@@ -260,27 +260,27 @@ assert Map.contains(Sheep, fa);
 assert Map.contains(Brick, fa);
 assert !Map.contains(Wood, fa);
 
-### Resizes the map when it grows
-# TODO: Don't use these internals, as they need to change
-# after https://github.com/grain-lang/grain/issues/190 is fixed
+// Resizes the map when it grows
+// TODO: Don't use these internals, as they need to change
+// after https://github.com/grain-lang/grain/issues/190 is fixed
 
 let resize = Map.makeSized(1);
 
-# (nodeCount, bucketLength)
+// (nodeCount, bucketLength)
 assert Map.getInternalStats(resize) == (0, 1);
 
 Map.set("🌾", 1, resize);
 Map.set("🐑", 1, resize);
 
-# (nodeCount, bucketLength)
+// (nodeCount, bucketLength)
 assert Map.getInternalStats(resize) == (2, 1);
 
 Map.set("🧱", 1, resize);
 
-# (nodeCount, bucketLength)
+// (nodeCount, bucketLength)
 assert Map.getInternalStats(resize) == (3, 2);
 
-### Map.filter()
+// Map.filter()
 
 let makeFilterTestMap = () => Map.fromList([
   (Grain, "g"),
@@ -316,7 +316,7 @@ Map.filter((key, value) => true, filterTestMap);
 
 assert Map.size(filterTestMap) == 3;
 
-### Map.reject()
+// Map.reject()
 
 let rejectTestMap = makeFilterTestMap();
 
