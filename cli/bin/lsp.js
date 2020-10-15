@@ -9,7 +9,7 @@ const grainc = path.join(__dirname, 'grainc.exe');
 
 module.exports = (file, options) => {
   try {
-    execSync(`${grainc} --stdlib=${options.stdlib} ${options.cflags ? options.cflags : ''} --lsp ${file}`, { stdio: 'inherit' });
+    execSync(`${grainc} --stdlib=${options.stdlib} ${options.cflags ? options.cflags : ''} -g --lsp ${file}`, { stdio: 'inherit' });
     process.exit()
   } catch (e) {
     //  console.log(e); //.stdout.toString());
