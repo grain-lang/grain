@@ -68,6 +68,10 @@ let source_map: ref(bool);
 
 let safe_string: ref(bool);
 
+/** Just output errors and warnings for LSP mode. */
+
+let lsp_mode: ref(bool);
+
 /*** Configuration Saving/Restoring */
 
 /** Abstract type representing a saved set of configuration options */
