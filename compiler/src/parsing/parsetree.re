@@ -327,6 +327,7 @@ type comment_desc = {
 [@deriving sexp]
 type comment =
   | Line(comment_desc)
+  | Shebang(comment_desc)
   | Block(comment_desc)
   | Doc(comment_desc);
 

@@ -27,8 +27,20 @@ let debug_print_state () =
   when_debug !last_state_printer
 
 let line_comment source loc =
-  let content = String_utils.slice ~first:1 source |> String.trim in
+  let content = String_utils.slice ~first:2 source |> String.trim in
   Line { cmt_content=content; cmt_source=source; cmt_loc=loc }
+
+let shebang_comment source loc =
+  let content = String_utils.slice ~first:2 source |> String.trim in
+  Shebang { cmt_content=content; cmt_source=source; cmt_loc=loc }
+
+let block_comment source loc =
+  let content = String_utils.slice ~first:2 ~last:(-2) source |> String.trim in
+  Block { cmt_content=content; cmt_source=source; cmt_loc=loc }
+
+let doc_comment source loc =
+  let content = String_utils.slice ~first:3 ~last:(-2) source |> String.trim in
+  Doc { cmt_content=content; cmt_source=source; cmt_loc=loc }
 
 let symbol_rloc dyp =
   let ret = {
