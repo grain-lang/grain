@@ -8,6 +8,7 @@ const path = require('path');
 let program = require('commander');
 let compile = require('./compile.js');
 let run = require('./run.js');
+let lsp = require('./lsp.js');
 
 let pervasivesPath = require.resolve('@grain/stdlib');
 let stdlibPath = path.dirname(pervasivesPath);
@@ -51,6 +52,13 @@ program
   .description('compile a grain program into wasm')
   .action(function (file) {
     compile(file, program);
+  });
+
+program
+  .command('lsp <file>')
+  .description('check a grain file for LSP')
+  .action(function (file) {
+    lsp(file, program);
   });
 
 program

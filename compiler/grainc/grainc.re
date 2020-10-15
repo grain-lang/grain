@@ -42,6 +42,39 @@ let default_assembly_filename = name =>
 let default_mashtree_filename = name =>
   safe_remove_extension(name) ++ ".mashtree";
 
+
+
+/* LSP mode - read the file to compile from stdin and return nothing or compile errors on stdout */
+
+let compile_string = (name) => {
+
+   let program_str = ref("");
+   /* read from stdin until we get end of buffer */
+   try({
+     while(true) {
+       program_str :=  program_str^ ++ read_line() ++ "\n";
+     }
+   }) {
+     | exn  => ()
+   }
+
+   try({
+     ignore(Compile.compile_string(
+       ~hook=stop_after_typed,
+       ~name,
+       program_str^,
+     ))
+   }) {
+   | exn =>
+     let err_rep = Grain_parsing.Location.print_exception(exn);
+     print_string(err_rep);
+   };
+
+   /* as the compiler throws an exception on an error, we always just return OK */
+   `Ok();
+ };
+ 
+
 let compile_file = (name, outfile_arg) => {
   Grain_utils.Config.base_path := dirname(name);
   if (!Printexc.backtrace_status() && Grain_utils.Config.verbose^) {
@@ -74,6 +107,16 @@ let compile_file = (name, outfile_arg) => {
     exit(2);
   };
   `Ok();
+};
+
+/* add a wrapper so we can switch to LSP mode based on cli config */
+
+let compile_wrapper = (name, outfile_arg) => {
+  if (Grain_utils.Config.lsp_mode^) {
+    compile_string(name);
+   } else {
+    compile_file(name,outfile_arg);
+   }
 };
 
 /** Converter which checks that the given output filename is valid */
@@ -130,7 +173,7 @@ let cmd = {
   (
     Term.(
       ret(
-        Grain_utils.Config.with_cli_options(compile_file)
+        Grain_utils.Config.with_cli_options(compile_wrapper)
         $ input_filename
         $ output_filename,
       )

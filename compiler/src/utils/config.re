@@ -368,6 +368,9 @@ let unsound_optimizations =
 let source_map =
   toggle_flag(~names=["source-map"], ~doc="Generate source maps", false);
 
+let lsp_mode =
+  toggle_flag(~names=["lsp"], ~doc="Generate lsp errors and warnings only", false);
+
 /* To be filled in by grainc */
 let base_path = internal_opt("");
 
