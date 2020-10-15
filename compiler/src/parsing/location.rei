@@ -158,4 +158,4 @@ let report_exception: (formatter, exn) => unit;
 
 /* print the error to stdout in LSP friendly form */
 
-let print_exception: (exn) => string;
+let print_exception: exn => string;
