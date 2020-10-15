@@ -1,4 +1,4 @@
-# Contrived example to test simple tail calls
+// Contrived example to test simple tail calls
 
 let rec isEvenHelp = (n, b) => {
   if (n == 0) {

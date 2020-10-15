@@ -1,50 +1,50 @@
 import Result from 'result';
 
-# isOk
+// isOk
 assert Result.isOk(Ok(1)) == true
 assert Result.isOk(Err("Ooops")) == false
 
-# isErr
+// isErr
 assert Result.isErr(Ok(1)) == false
 assert Result.isErr(Err("Ooops")) == true
 
-# toOption
+// toOption
 assert Result.toOption(Ok(1)) == Some(1)
 assert Result.toOption(Err("Ooops")) == None
 
-# map
+// map
 assert Result.map((a) => "some other type", Ok(1)) == Ok("some other type")
 assert Result.map((v) => fail "Shouldn't run", Err("Ooops")) == Err("Ooops")
 
-# mapErr
+// mapErr
 assert Result.mapErr((x) => fail "Shouldn't run", Ok(1)) == Ok(1)
 assert Result.mapErr(incr, Err(1)) == Err(2)
 
-# flatMap
+// flatMap
 assert Result.flatMap((a) => Ok("some other type"), Ok(1)) == Ok("some other type")
 assert Result.flatMap((a) => Err("some other type"), Ok(1)) == Err("some other type")
 assert Result.flatMap((x) => fail "Shouldn't run", Err("Ooops")) == Err("Ooops")
 
-# flatMapErr
+// flatMapErr
 assert Result.flatMapErr((x) => fail "Shouldn't run", Ok(1)) == Ok(1)
 assert Result.flatMapErr((x) => Err(incr(x)), Err(1)) == Err(2)
 assert Result.flatMapErr((x) => Ok(incr(x)), Err(1)) == Ok(2)
 
-# mapWithDefault
+// mapWithDefault
 assert Result.mapWithDefault(toString, "Nope!", Ok(1)) == "1"
 assert Result.mapWithDefault(toString, "Nope!", Err(1)) == "Nope!"
 
-# mapWithDefaultFn
+// mapWithDefaultFn
 assert Result.mapWithDefaultFn(toString, (x) => fail "Shouldn't run", Ok(1)) == "1"
 assert Result.mapWithDefaultFn((x) => fail "Shouldn't run", (x) => "7", Err("Awesome")) == "7"
 
-# or
+// or
 assert Result.or(Ok(1), Ok(2)) == Ok(1)
 assert Result.or(Ok(1), Err(2)) == Ok(1)
 assert Result.or(Err(1), Ok(2)) == Ok(2)
 assert Result.or(Err(1), Err(2)) == Err(2)
 
-# and
+// and
 assert Result.and(Ok(1), Ok(2)) == Ok(2)
 assert Result.and(Ok(1), Err(2)) == Err(2)
 assert Result.and(Err(1), Ok(2)) == Err(1)
@@ -56,7 +56,7 @@ let testMut = (f) => {
     f()
 }
 
-# peek
+// peek
 testMut(() => {
     Result.peek(
        (v) => a = v,
@@ -74,7 +74,7 @@ testMut(() => {
     assert a == 2
 })
 
-# peekOk
+// peekOk
 testMut(() => {
     Result.peekOk((v) => a = v, Ok(2))
     assert a == 2
@@ -84,7 +84,7 @@ testMut(() => {
     assert a == 1
 })
 
-# peekErr
+// peekErr
 testMut(() => {
     Result.peekErr((v) => a = v, Ok(2))
     assert a == 1

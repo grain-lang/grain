@@ -13,129 +13,129 @@ let stderr = FileDescriptor(2)
 let pwdfd = FileDescriptor(3)
 
 data LookupFlag =
-  # Follow symlinks
+  // Follow symlinks
   SymlinkFollow
 
 data OpenFlag =
-  # Create file if it does not exist.
+  // Create file if it does not exist.
   | Create
-  # Fail if not a directory.
+  // Fail if not a directory.
   | Directory
-  # Fail if file already exists.
+  // Fail if file already exists.
   | Exclusive
-  # Truncate file to size 0.
+  // Truncate file to size 0.
   | Truncate
 
 data Rights =
-  # The right to invoke `fdDatasync`.
-  # If `PathOpen` is set, includes the right to invoke
-  # `pathOpen` with `FdFlag::Dsync`.
+  // The right to invoke `fdDatasync`.
+  // If `PathOpen` is set, includes the right to invoke
+  // `pathOpen` with `FdFlag::Dsync`.
   | FdDatasync
-  # The right to invoke `fdRead`.
-  # If `Rights::FdSeek` is set, includes the right to invoke `fdPread`.
+  // The right to invoke `fdRead`.
+  // If `Rights::FdSeek` is set, includes the right to invoke `fdPread`.
   | FdRead
-  # The right to invoke `fdSeek`. This flag implies `Rights::FdTell`.
+  // The right to invoke `fdSeek`. This flag implies `Rights::FdTell`.
   | FdSeek
-  # The right to invoke `fdSetFlags`.
+  // The right to invoke `fdSetFlags`.
   | FdSetFlags
-  # The right to invoke `fdSync`.
-  # If `PathOpen` is set, includes the right to invoke
-  # `pathOpen` with `FdFlag::Rsync` and `FdFlag::Dsync`.
+  // The right to invoke `fdSync`.
+  // If `PathOpen` is set, includes the right to invoke
+  // `pathOpen` with `FdFlag::Rsync` and `FdFlag::Dsync`.
   | FdSync
-  # The right to invoke `fdSeek` in such a way that the file offset
-  # remains unaltered (i.e., `Whence::Current` with offset zero), or to
-  # invoke `fdTell`.
+  // The right to invoke `fdSeek` in such a way that the file offset
+  // remains unaltered (i.e., `Whence::Current` with offset zero), or to
+  // invoke `fdTell`.
   | FdTell
-  # The right to invoke `fdWrite`.
-  # If `Rights::FdSeek` is set, includes the right to invoke `fdPwrite`.
+  // The right to invoke `fdWrite`.
+  // If `Rights::FdSeek` is set, includes the right to invoke `fdPwrite`.
   | FdWrite
-  # The right to invoke `fdAdvise`.
+  // The right to invoke `fdAdvise`.
   | FdAdvise
-  # The right to invoke `fdAllocate`.
+  // The right to invoke `fdAllocate`.
   | FdAllocate
-  # The right to invoke `pathCreateDirectory`.
+  // The right to invoke `pathCreateDirectory`.
   | PathCreateDirectory
-  # If `PathOpen` is set, the right to invoke `pathOpen` with `OpenFlag::Create`.
+  // If `PathOpen` is set, the right to invoke `pathOpen` with `OpenFlag::Create`.
   | PathCreateFile
-  # The right to invoke `pathLink` with the file descriptor as the
-  # source directory.
+  // The right to invoke `pathLink` with the file descriptor as the
+  // source directory.
   | PathLinkSource
-  # The right to invoke `pathLink` with the file descriptor as the
-  # target directory.
+  // The right to invoke `pathLink` with the file descriptor as the
+  // target directory.
   | PathLinkTarget
-  # The right to invoke `pathOpen`.
+  // The right to invoke `pathOpen`.
   | PathOpen
-  # The right to invoke `fdReaddir`.
+  // The right to invoke `fdReaddir`.
   | FdReaddir
-  # The right to invoke `pathReadlink`.
+  // The right to invoke `pathReadlink`.
   | PathReadlink
-  # The right to invoke `pathRename` with the file descriptor as the source directory.
+  // The right to invoke `pathRename` with the file descriptor as the source directory.
   | PathRenameSource
-  # The right to invoke `pathRename` with the file descriptor as the target directory.
+  // The right to invoke `pathRename` with the file descriptor as the target directory.
   | PathRenameTarget
-  # The right to invoke `pathFilestats`.
+  // The right to invoke `pathFilestats`.
   | PathFilestats
-  # The right to change a file's size (there's no `pathSetSize`).
-  # If `PathOpen` is set, includes the right to invoke `pathOpen` with `OpenFlag::Truncate`.
+  // The right to change a file's size (there's no `pathSetSize`).
+  // If `PathOpen` is set, includes the right to invoke `pathOpen` with `OpenFlag::Truncate`.
   | PathSetSize
-  # The right to invoke `pathSetAccessTime`, `pathSetAccessTimeNow`, `pathSetModifiedTime`, or `pathSetModifiedTimeNow`.
+  // The right to invoke `pathSetAccessTime`, `pathSetAccessTimeNow`, `pathSetModifiedTime`, or `pathSetModifiedTimeNow`.
   | PathSetTimes
-  # The right to invoke `fdFilestats`.
+  // The right to invoke `fdFilestats`.
   | FdFilestats
-  # The right to invoke `fdSetSize`.
+  // The right to invoke `fdSetSize`.
   | FdSetSize
-  # The right to invoke `fdSetAccessTime`, `fdSetAccessTimeNow`, `fdSetModifiedTime`, or `fdSetModifiedTimeNow`.
+  // The right to invoke `fdSetAccessTime`, `fdSetAccessTimeNow`, `fdSetModifiedTime`, or `fdSetModifiedTimeNow`.
   | FdSetTimes
-  # The right to invoke `pathSymlink`.
+  // The right to invoke `pathSymlink`.
   | PathSymlink
-  # The right to invoke `pathRemoveDirectory`.
+  // The right to invoke `pathRemoveDirectory`.
   | PathRemoveDirectory
-  # The right to invoke `pathUnlinkFile`.
+  // The right to invoke `pathUnlinkFile`.
   | PathUnlinkFile
-  # If `Rights::FdRead` is set, includes the right to invoke `pollOneoff` (not yet implemented) to subscribe to `EventType::FdRead`.
-  # If `Rights::FdWrite` is set, includes the right to invoke `pollOneoff` (not yet implemented) to subscribe to `EventType::FdWrite`.
+  // If `Rights::FdRead` is set, includes the right to invoke `pollOneoff` (not yet implemented) to subscribe to `EventType::FdRead`.
+  // If `Rights::FdWrite` is set, includes the right to invoke `pollOneoff` (not yet implemented) to subscribe to `EventType::FdWrite`.
   | PollFdReadwrite
-  # The right to invoke `sockShutdown` (not yet implemented).
+  // The right to invoke `sockShutdown` (not yet implemented).
   | SockShutdown
 
 data FdFlag =
-  # Append mode: Data written to the file is always appended to the file's end.
+  // Append mode: Data written to the file is always appended to the file's end.
   | Append
-  # Write according to synchronized I/O data integrity completion. Only the data stored in the file is synchronized.
+  // Write according to synchronized I/O data integrity completion. Only the data stored in the file is synchronized.
   | Dsync
-  # Non-blocking mode.
+  // Non-blocking mode.
   | Nonblock
-  # Synchronized read I/O operations.
+  // Synchronized read I/O operations.
   | Rsync
-  # Write according to synchronized I/O file integrity completion. In
-  # addition to synchronizing the data stored in the file, the implementation
-  # may also synchronously update the file's metadata.
+  // Write according to synchronized I/O file integrity completion. In
+  // addition to synchronizing the data stored in the file, the implementation
+  // may also synchronously update the file's metadata.
   | Sync
 
 data Filetype =
-  # The type of the file descriptor or file is unknown or is different from any of the other types specified.
+  // The type of the file descriptor or file is unknown or is different from any of the other types specified.
   | Unknown
-  # The file descriptor or file refers to a block device inode.
+  // The file descriptor or file refers to a block device inode.
   | BlockDevice
-  # The file descriptor or file refers to a character device inode.
+  // The file descriptor or file refers to a character device inode.
   | CharacterDevice
-  # The file descriptor or file refers to a directory inode.
+  // The file descriptor or file refers to a directory inode.
   | Directory
-  # The file descriptor or file refers to a regular file inode.
+  // The file descriptor or file refers to a regular file inode.
   | RegularFile
-  # The file descriptor or file refers to a datagram socket.
+  // The file descriptor or file refers to a datagram socket.
   | SocketDatagram
-  # The file descriptor or file refers to a byte-stream socket.
+  // The file descriptor or file refers to a byte-stream socket.
   | SocketStream
-  # The file refers to a symbolic link inode.
+  // The file refers to a symbolic link inode.
   | SymbolicLink
 
 data Whence =
-  # Seek relative to start-of-file.
+  // Seek relative to start-of-file.
   | Set
-  # Seek relative to current position.
+  // Seek relative to current position.
   | Current
-  # Seek relative to end-of-file.
+  // Seek relative to end-of-file.
   | End
 
 data Stats = {
@@ -176,65 +176,65 @@ let filetypeFromNumber = (filetype) => {
   }
 }
 
-# Open a file or directory
-# @param workingDirectory: FileDescriptor The directory in which path resolution starts
-# @param lookupFlags: List<LookupFlag> Flags which affect path resolution
-# @param path: String The path to the file or directory
-# @param openFlags: List<OpenFlag> Flags that decide how the path will be opened
-# @param rights: List<Rights> The rights that dictate what may be done with the returned file descriptor
-# @param rightsInheriting: List<Rights> The rights that dictate what may be done with file descriptors derived from this file descriptor
-# @param flags: List<FdFlag> Flags which affect read/write operations on this file descriptor
-# @returns FileDescriptor The opened file or directory
+// Open a file or directory
+// @param workingDirectory: FileDescriptor The directory in which path resolution starts
+// @param lookupFlags: List<LookupFlag> Flags which affect path resolution
+// @param path: String The path to the file or directory
+// @param openFlags: List<OpenFlag> Flags that decide how the path will be opened
+// @param rights: List<Rights> The rights that dictate what may be done with the returned file descriptor
+// @param rightsInheriting: List<Rights> The rights that dictate what may be done with file descriptors derived from this file descriptor
+// @param flags: List<FdFlag> Flags which affect read/write operations on this file descriptor
+// @returns FileDescriptor The opened file or directory
 import foreign wasm pathOpen : (FileDescriptor, List<LookupFlag>, String, List<OpenFlag>, List<Rights>, List<Rights>, List<FdFlag>) -> FileDescriptor from 'stdlib-external/fs'
 
-# Read from a file descriptor
-# @param fd: FileDescriptor The file descriptor to read from
-# @param nBytes: Number The maximum number of bytes to read from the file descriptor
-# @returns (String, Number) The bytes read and the number of bytes read
+// Read from a file descriptor
+// @param fd: FileDescriptor The file descriptor to read from
+// @param nBytes: Number The maximum number of bytes to read from the file descriptor
+// @returns (String, Number) The bytes read and the number of bytes read
 import foreign wasm fdRead : (FileDescriptor, Number) -> (String, Number) from 'stdlib-external/fs'
 
-# Read from a file descriptor without updating the file descriptor's offset
-# @param fd: FileDescriptor The file descriptor to read from
-# @param offset: Int64 The position within the file to begin reading
-# @param nBytes: Number The maximum number of bytes to read from the file descriptor
-# @returns (String, Number) The bytes read and the number of bytes read
+// Read from a file descriptor without updating the file descriptor's offset
+// @param fd: FileDescriptor The file descriptor to read from
+// @param offset: Int64 The position within the file to begin reading
+// @param nBytes: Number The maximum number of bytes to read from the file descriptor
+// @returns (String, Number) The bytes read and the number of bytes read
 import foreign wasm fdPread : (FileDescriptor, Int64, Number) -> (String, Number) from 'stdlib-external/fs'
 
-# Write to a file descriptor
-# @param fd: FileDescriptor The file descriptor to which data will be written
-# @param buf: String The data to be written
-# @returns Number The number of bytes written
+// Write to a file descriptor
+// @param fd: FileDescriptor The file descriptor to which data will be written
+// @param buf: String The data to be written
+// @returns Number The number of bytes written
 import foreign wasm fdWrite : (FileDescriptor, String) -> Number from 'stdlib-external/fs'
 
-# Write to a file descriptor without updating the file descriptor's offset
-# @param fd: FileDescriptor The file descriptor to which data will be written
-# @param buf: String The data to be written
-# @param offset: Int64 The position within the file to begin writing
-# @returns Number The number of bytes written
+// Write to a file descriptor without updating the file descriptor's offset
+// @param fd: FileDescriptor The file descriptor to which data will be written
+// @param buf: String The data to be written
+// @param offset: Int64 The position within the file to begin writing
+// @returns Number The number of bytes written
 import foreign wasm fdPwrite : (FileDescriptor, String, Int64) -> Number from 'stdlib-external/fs'
 
-# Allocate space within a file
-# @param fd: FileDescriptor The file descriptor in which space will be allocated
-# @param offset: Int64 The position within the file to begin writing
-# @param nBytes: Int64 The number of bytes to allocate
+// Allocate space within a file
+// @param fd: FileDescriptor The file descriptor in which space will be allocated
+// @param offset: Int64 The position within the file to begin writing
+// @param nBytes: Int64 The number of bytes to allocate
 import foreign wasm fdAllocate : (FileDescriptor, Int64, Int64) -> Void from 'stdlib-external/fs'
 
-# Close a file descriptor
-# @param fd: FileDescriptor The file descriptor to close
+// Close a file descriptor
+// @param fd: FileDescriptor The file descriptor to close
 import foreign wasm fdClose : (FileDescriptor) -> Void from 'stdlib-external/fs'
 
-# Synchronize the data of a file to disk
-# @param fd: FileDescriptor The file descriptor to synchronize
+// Synchronize the data of a file to disk
+// @param fd: FileDescriptor The file descriptor to synchronize
 import foreign wasm fdDatasync : (FileDescriptor) -> Void from 'stdlib-external/fs'
 
-# Synchronize the data and metadata of a file to disk
-# @param fd: FileDescriptor The file descriptor to synchronize
+// Synchronize the data and metadata of a file to disk
+// @param fd: FileDescriptor The file descriptor to synchronize
 import foreign wasm fdSync : (FileDescriptor) -> Void from 'stdlib-external/fs'
 
 import foreign wasm fdStats : (FileDescriptor) -> (Number, Int64, Int64, Int64) from 'stdlib-external/fs'
-# Retrieve information about a file descriptor
-# @param fd: FileDescriptor The file descriptor of which to retrieve information
-# @returns Stats A record containing the filetype, flags, rights, and inheriting rights associated with the file descriptor
+// Retrieve information about a file descriptor
+// @param fd: FileDescriptor The file descriptor of which to retrieve information
+// @returns Stats A record containing the filetype, flags, rights, and inheriting rights associated with the file descriptor
 let fdStats = (fd) => {
   let (filetype, fdflags, rights, rightsInheriting) = fdStats(fd)
 
@@ -307,19 +307,19 @@ let fdStats = (fd) => {
   { filetype, flags: fdflagsList, rights: rightsList, rightsInheriting: rightsInheritingList }
 }
 
-# Update the flags associated with a file descriptor
-# @param fd: FileDescriptor The file descriptor to update flags
+// Update the flags associated with a file descriptor
+// @param fd: FileDescriptor The file descriptor to update flags
 import foreign wasm fdSetFlags : (FileDescriptor, List<FdFlag>) -> Void from 'stdlib-external/fs'
 
-# Update the rights associated with a file descriptor
-# @param rights: List<Rights> Rights to apply to the file descriptor
-# @param rightsInheriting: List<Rights> Inheriting rights to apply to the file descriptor
+// Update the rights associated with a file descriptor
+// @param rights: List<Rights> Rights to apply to the file descriptor
+// @param rightsInheriting: List<Rights> Inheriting rights to apply to the file descriptor
 import foreign wasm fdSetRights : (FileDescriptor, List<Rights>, List<Rights>) -> Void from 'stdlib-external/fs'
 
 import foreign wasm fdFilestats : (FileDescriptor) -> (Int64, Int64, Number, Int64, Int64, Int64, Int64, Int64) from 'stdlib-external/fs'
-# Retrieve information about a file
-# @param fd: FileDescriptor The file descriptor of the file to retrieve information
-# @returns Filestats A record containing the information about the file
+// Retrieve information about a file
+// @param fd: FileDescriptor The file descriptor of the file to retrieve information
+// @returns Filestats A record containing the information about the file
 let fdFilestats = (fd) => {
   let (device, inode, filetype, linkcount, size, accessed, modified, changed) = fdFilestats(fd)
 
@@ -328,33 +328,33 @@ let fdFilestats = (fd) => {
   { device, inode, filetype, linkcount, size, accessed, modified, changed }
 }
 
-# Set (truncate) the size of a file
-# @param fd: FileDescriptor The file descriptor of the file to truncate
-# @param size: Int64 The number of bytes to retain in the file
+// Set (truncate) the size of a file
+// @param fd: FileDescriptor The file descriptor of the file to truncate
+// @param size: Int64 The number of bytes to retain in the file
 import foreign wasm fdSetSize : (FileDescriptor, Int64) -> Void from 'stdlib-external/fs'
 
-# Set the access (created) time of a file
-# @param fd: FileDescriptor The file descriptor of the file to update
-# @param timestamp: Int64 The time to set
+// Set the access (created) time of a file
+// @param fd: FileDescriptor The file descriptor of the file to update
+// @param timestamp: Int64 The time to set
 import foreign wasm fdSetAccessTime : (FileDescriptor, Int64) -> Void from 'stdlib-external/fs'
 
-# Set the access (created) time of a file to the current time
-# @param fd: FileDescriptor The file descriptor of the file to update
+// Set the access (created) time of a file to the current time
+// @param fd: FileDescriptor The file descriptor of the file to update
 import foreign wasm fdSetAccessTimeNow : (FileDescriptor) -> Void from 'stdlib-external/fs'
 
-# Set the modified time of a file
-# @param fd: FileDescriptor The file descriptor of the file to update
-# @param timestamp: Int64 The time to set
+// Set the modified time of a file
+// @param fd: FileDescriptor The file descriptor of the file to update
+// @param timestamp: Int64 The time to set
 import foreign wasm fdSetModifiedTime : (FileDescriptor, Int64) -> Void from 'stdlib-external/fs'
 
-# Set the modified time of a file to the current time
-# @param fd: FileDescriptor The file descriptor of the file to update
+// Set the modified time of a file to the current time
+// @param fd: FileDescriptor The file descriptor of the file to update
 import foreign wasm fdSetModifiedTimeNow : (FileDescriptor) -> Void from 'stdlib-external/fs'
 
 import foreign wasm fdReaddir : (FileDescriptor) -> Array<(Int64, String, Number)> as fdReaddirRaw from 'stdlib-external/fs'
-# Read the entires of a directory
-# @param fd: FileDescriptor The directory to read
-# @returns Array<DirectoryEntry> An array of records containing information about each entry in the directory
+// Read the entires of a directory
+// @param fd: FileDescriptor The directory to read
+// @returns Array<DirectoryEntry> An array of records containing information about each entry in the directory
 let fdReaddir = (fd) => {
   let dirents = fdReaddirRaw(fd)
   Array.map((dirent) => {
@@ -364,35 +364,35 @@ let fdReaddir = (fd) => {
   }, dirents)
 }
 
-# Atomically replace a file descriptor by renumbering another file descriptor
-# @param from: FileDescriptor The file descriptor to renumber
-# @param to: FileDescriptor The file descriptor to overwrite
+// Atomically replace a file descriptor by renumbering another file descriptor
+// @param from: FileDescriptor The file descriptor to renumber
+// @param to: FileDescriptor The file descriptor to overwrite
 import foreign wasm fdRenumber : (FileDescriptor, FileDescriptor) -> Void from 'stdlib-external/fs'
 
-# Update a file descriptor's offset
-# @param fd: FileDescriptor The file descriptor to operate on
-# @param delta: Int64 The number of bytes to move the offset
-# @param whence: Whence The location from which the offset is relative
-# @returns Int64 The new offset of the file descriptor, relative to the start of the file
+// Update a file descriptor's offset
+// @param fd: FileDescriptor The file descriptor to operate on
+// @param delta: Int64 The number of bytes to move the offset
+// @param whence: Whence The location from which the offset is relative
+// @returns Int64 The new offset of the file descriptor, relative to the start of the file
 import foreign wasm fdSeek : (FileDescriptor, Int64, Whence) -> Int64 from 'stdlib-external/fs'
 
-# Read a file descriptor's offset
-# @param fd: FileDescriptor The file descriptor to read the offset
-# @returns Int64 The offset of the file descriptor, relative to the start of the file
+// Read a file descriptor's offset
+// @param fd: FileDescriptor The file descriptor to read the offset
+// @returns Int64 The offset of the file descriptor, relative to the start of the file
 import foreign wasm fdTell : (FileDescriptor) -> Int64 from 'stdlib-external/fs'
 
 
-# Create a directory
-# @param workingDirectory: FileDescriptor The directory in which path resolution starts
-# @param path: String The path to the new directory
+// Create a directory
+// @param workingDirectory: FileDescriptor The directory in which path resolution starts
+// @param path: String The path to the new directory
 import foreign wasm pathCreateDirectory : (FileDescriptor, String) -> Void from 'stdlib-external/fs'
 
 import foreign wasm pathFilestats : (FileDescriptor, List<LookupFlag>, String) -> (Int64, Int64, Number, Int64, Int64, Int64, Int64, Int64) as pathFilestatsRaw from 'stdlib-external/fs'
-# Retrieve information about a file
-# @param workingDirectory: FileDescriptor The directory in which path resolution starts
-# @param flags: List<LookupFlag> Flags which affect path resolution
-# @param path: String The path to retrieve information about
-# @returns Filestats A record containing information about the file
+// Retrieve information about a file
+// @param workingDirectory: FileDescriptor The directory in which path resolution starts
+// @param flags: List<LookupFlag> Flags which affect path resolution
+// @param path: String The path to retrieve information about
+// @returns Filestats A record containing information about the file
 let pathFilestats = (fd, flags, path) => {
   let (device, inode, filetype, linkcount, size, accessed, modified, changed) = pathFilestatsRaw(fd, flags, path)
 
@@ -401,66 +401,66 @@ let pathFilestats = (fd, flags, path) => {
   { device, inode, filetype, linkcount, size, accessed, modified, changed }
 }
 
-# Set the access (created) time of a file
-# @param workingDirectory: FileDescriptor The directory in which path resolution starts
-# @param flags: List<LookupFlag> Flags which affect path resolution
-# @param path: String The path to set the time
-# @param timestamp: Int64 The time to set
+// Set the access (created) time of a file
+// @param workingDirectory: FileDescriptor The directory in which path resolution starts
+// @param flags: List<LookupFlag> Flags which affect path resolution
+// @param path: String The path to set the time
+// @param timestamp: Int64 The time to set
 import foreign wasm pathSetAccessTime : (FileDescriptor, List<LookupFlag>, String, Int64) -> Void from 'stdlib-external/fs'
 
-# Set the access (created) time of a file to the current time
-# @param workingDirectory: FileDescriptor The directory in which path resolution starts
-# @param flags: List<LookupFlag> Flags which affect path resolution
-# @param path: String The path to set the time
+// Set the access (created) time of a file to the current time
+// @param workingDirectory: FileDescriptor The directory in which path resolution starts
+// @param flags: List<LookupFlag> Flags which affect path resolution
+// @param path: String The path to set the time
 import foreign wasm pathSetAccessTimeNow : (FileDescriptor, List<LookupFlag>, String) -> Void from 'stdlib-external/fs'
 
-# Set the modified time of a file
-# @param workingDirectory: FileDescriptor The directory in which path resolution starts
-# @param flags: List<LookupFlag> Flags which affect path resolution
-# @param path: String The path to set the time
-# @param timestamp: Int64 The time to set
+// Set the modified time of a file
+// @param workingDirectory: FileDescriptor The directory in which path resolution starts
+// @param flags: List<LookupFlag> Flags which affect path resolution
+// @param path: String The path to set the time
+// @param timestamp: Int64 The time to set
 import foreign wasm pathSetModifiedTime : (FileDescriptor, List<LookupFlag>, String, Int64) -> Void from 'stdlib-external/fs'
 
-# Set the modified time of a file to the current time
-# @param workingDirectory: FileDescriptor The directory in which path resolution starts
-# @param flags: List<LookupFlag> Flags which affect path resolution
-# @param path: String The path to set the time
+// Set the modified time of a file to the current time
+// @param workingDirectory: FileDescriptor The directory in which path resolution starts
+// @param flags: List<LookupFlag> Flags which affect path resolution
+// @param path: String The path to set the time
 import foreign wasm pathSetModifiedTimeNow : (FileDescriptor, List<LookupFlag>, String) -> Void from 'stdlib-external/fs'
 
-# Create a hard link
-# @param sourceWorkingDirectory: FileDescriptor The directory in which the source path resolution starts
-# @param flags: List<LookupFlag> Flags which affect path resolution
-# @param sourcePath: String The path to the source of the link
-# @param targetWorkingDirectory: FileDescriptor The directory in which the target path resolution starts
-# @param targetPath: String The path to the target of the link
+// Create a hard link
+// @param sourceWorkingDirectory: FileDescriptor The directory in which the source path resolution starts
+// @param flags: List<LookupFlag> Flags which affect path resolution
+// @param sourcePath: String The path to the source of the link
+// @param targetWorkingDirectory: FileDescriptor The directory in which the target path resolution starts
+// @param targetPath: String The path to the target of the link
 import foreign wasm pathLink : (FileDescriptor, List<LookupFlag>, String, FileDescriptor, String) -> Void from 'stdlib-external/fs'
 
-# Create a symlink
-# @param workingDirectory: FileDescriptor The directory in which path resolution starts
-# @param sourcePath: String The path to the source of the link
-# @param targetPath: String The path to the target of the link
+// Create a symlink
+// @param workingDirectory: FileDescriptor The directory in which path resolution starts
+// @param sourcePath: String The path to the source of the link
+// @param targetPath: String The path to the target of the link
 import foreign wasm pathSymlink : (FileDescriptor, String, String) -> Void from 'stdlib-external/fs'
 
-# Unlink a file
-# @param workingDirectory: FileDescriptor The directory in which path resolution starts
-# @param path: String The path of the file to unlink
+// Unlink a file
+// @param workingDirectory: FileDescriptor The directory in which path resolution starts
+// @param path: String The path of the file to unlink
 import foreign wasm pathUnlink : (FileDescriptor, String) -> Void from 'stdlib-external/fs'
 
-# Read the contents of a symbolic link
-# @param workingDirectory: FileDescriptor The directory in which path resolution starts
-# @param path: String The path to the symlink
-# @param nBytes: The number of bytes to read
-# @returns (String, Number) The bytes read and the number of bytes read
+// Read the contents of a symbolic link
+// @param workingDirectory: FileDescriptor The directory in which path resolution starts
+// @param path: String The path to the symlink
+// @param nBytes: The number of bytes to read
+// @returns (String, Number) The bytes read and the number of bytes read
 import foreign wasm pathReadlink : (FileDescriptor, String, Number) -> (String, Number) from 'stdlib-external/fs'
 
-# Remove a directory
-# @param workingDirectory: FileDescriptor The directory in which path resolution starts
-# @param path: String The path to the directory to remove
+// Remove a directory
+// @param workingDirectory: FileDescriptor The directory in which path resolution starts
+// @param path: String The path to the directory to remove
 import foreign wasm pathRemoveDirectory : (FileDescriptor, String) -> Void from 'stdlib-external/fs'
 
-# Rename a file or directory
-# @param sourceWorkingDirectory: FileDescriptor The directory in which the source path resolution starts
-# @param sourcePath: String The path of the file to rename
-# @param targetWorkingDirectory: FileDescriptor The directory in which the target path resolution starts
-# @param targetPath: String The new path of the file
+// Rename a file or directory
+// @param sourceWorkingDirectory: FileDescriptor The directory in which the source path resolution starts
+// @param sourcePath: String The path of the file to rename
+// @param targetWorkingDirectory: FileDescriptor The directory in which the target path resolution starts
+// @param targetPath: String The new path of the file
 import foreign wasm pathRename : (FileDescriptor, String, FileDescriptor, String) -> Void from 'stdlib-external/fs'

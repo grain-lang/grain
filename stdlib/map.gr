@@ -1,10 +1,10 @@
-# Standard library for Map (aka HashMap) functionality
+// Standard library for Map (aka HashMap) functionality
 
 import List from 'list'
 import Array from 'array'
 import { hash } from 'hash'
 
-# TODO: Consider implementing this as List<(Box<k>, Box<v>)>
+// TODO: Consider implementing this as List<(Box<k>, Box<v>)>
 data Bucket<k, v> = {
   mut key: k,
   mut value: v,
@@ -16,7 +16,7 @@ data Map<k, v> = {
   mut buckets: Array<Option<Bucket<k, v>>>
 }
 
-# TODO: This could take an `eq` function to custom comparisons
+// TODO: This could take an `eq` function to custom comparisons
 export let makeSized = (size) => {
   let buckets = Array.make(size, None);
   {
@@ -46,13 +46,13 @@ let rec copyNodeWithNewHash = (oldNode, next, tail) => {
           next[idx] := newNode;
         }
         | Some(tailNode) => {
-          # If there's already a tail node, we add this to the end
+          // If there's already a tail node, we add this to the end
           tailNode.next = newNode;
         }
       }
-      # Always place this node as the new tail
+      // Always place this node as the new tail
       tail[idx] := newNode;
-      # Recurse with the next node
+      // Recurse with the next node
       copyNodeWithNewHash(node.next, next, tail);
     }
   }
@@ -64,7 +64,7 @@ let resize = (map) => {
   let nextSize = currentSize * 2;
   if (nextSize >= currentSize) {
     let nextBuckets = Array.make(nextSize, None);
-    # This tracks the tail nodes so we can set their `next` to None
+    // This tracks the tail nodes so we can set their `next` to None
     let tailNodes = Array.make(nextSize, None);
     map.buckets = nextBuckets;
     Array.forEach((old) => {
@@ -111,7 +111,7 @@ export let set = (key, value, map) => {
       };
     }
   }
-  # Resize if there are more than 2x the amount of nodes as buckets
+  // Resize if there are more than 2x the amount of nodes as buckets
   if (map.size > (Array.length(buckets) * 2)) {
     resize(map);
   } else {
@@ -182,7 +182,7 @@ export let remove = (key, map) => {
   match (bucket) {
     | None => void
     | Some(node) => {
-      # If it is a top-level node, just replace with next node
+      // If it is a top-level node, just replace with next node
       if (key == node.key) {
         map.size = decr(map.size);
         buckets[idx] := node.next;
@@ -295,8 +295,8 @@ export let reject = (predicate, map) => {
   filter((key, value) => !predicate(key, value), map)
 }
 
-# TODO: Should return a Record type instead of a Tuple
-# Waiting on https://github.com/grain-lang/grain/issues/190
+// TODO: Should return a Record type instead of a Tuple
+// Waiting on https://github.com/grain-lang/grain/issues/190
 export let getInternalStats = (map) => {
   (map.size, Array.length(map.buckets))
 }
