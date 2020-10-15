@@ -11,8 +11,6 @@ bug-reports: "https://github.com/grain-lang/grain/issues"
 depends: [
   "dune" {>= "2.0"}
   "reason" {>= "3.6.0"}
-  "ocamlfind" {build & >= "1.7.3"}
-  "ocamlbuild" {build & >= "0.12.0"}
   "ppx_expect" {>= "0.14.0"}
   "ppx_sexp_conv" {>= "0.14.0"}
   "sexplib" {>= "0.14.0"}
@@ -21,7 +19,6 @@ depends: [
   "fp" {>= "0.0.0"}
   "fs" {>= "0.0.0"}
   "cmdliner" {>= "1.0.2"}
-  "ocamlgraph" {>= "1.8.8"}
 ]
 build: [
   ["dune" "subst"] {pinned}
