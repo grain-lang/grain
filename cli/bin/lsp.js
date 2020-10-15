@@ -12,7 +12,6 @@ module.exports = (file, options) => {
     execSync(`${grainc} --stdlib=${options.stdlib} ${options.cflags ? options.cflags : ''} -g --lsp ${file}`, { stdio: 'inherit' });
     process.exit()
   } catch (e) {
-    //  console.log(e); //.stdout.toString());
     console.log(e);
     if (options.graceful) {
       process.exit()
