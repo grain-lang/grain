@@ -3,8 +3,8 @@
  (public_name grain)
  ;; Note: 'dyp' is provided by the 'dypgen' OPAM package
  (libraries cmdliner compiler-libs.common grain_codegen grain_middle_end
-   grain_parsing grain_typed grain_utils ocamlgraph oUnit
-   ppx_sexp_conv.runtime-lib sexplib)
+   grain_parsing grain_typed grain_utils oUnit ppx_sexp_conv.runtime-lib
+   sexplib)
  (preprocess
   (pps ppx_sexp_conv)))
 
