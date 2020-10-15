@@ -303,6 +303,18 @@ let function_tests = [
   t("shorthand_2", "let foo = (x) => x + 3; foo(1)", "4"),
   t("shorthand_3", "let foo = x => x; foo(1)", "1"),
   t("shorthand_4", "let foo = x => x + 3; foo(1)", "4"),
+  // Trailing commas
+  t("fn_trailing_comma", "let testFn = (x, y,) => x + y; testFn(2, 3,)", "5"),
+  t(
+    "adt_trailing_comma",
+    "data Topping = Cheese | Pepperoni | Peppers | Pineapple
+     data Dough = WholeWheat | GlutenFree
+     data Menu = Pizza(Topping,Dough,) | Calzone(Topping,Dough,)
+     let item = Calzone(Peppers, WholeWheat,)
+     item
+    ",
+    "<adt value>"
+  ),
   t("lam_destructure_1", "((_) => 5)('foo')", "5"),
   t("lam_destructure_2", "let foo = (_) => 5; foo('foo')", "5"),
   t("lam_destructure_3", "(((a, b, c)) => a + b + c)((1, 2, 3))", "6"),
@@ -1633,6 +1645,7 @@ let data_tests = [
     "Foo\nBar\nBaz(\"baz\")\nQux(5, \"qux\", false)\nQuux\nFlip(\"flip\")\nvoid",
   ),
   t("adtprint_nonexported", "data Foo = Foo; Foo", "<adt value>"),
+  t("adt_trailing", "data Topping = Cheese(Bool,) | Pepperoni; Pepperoni", "<adt value>")
 ];
 
 let export_tests = [

@@ -348,7 +348,7 @@ typ :
   | data_typ
 
 typs :
-  | [typ [comma typ {$2}]* {$1::$2}]? { Option.value ~default:[] $1 }
+  | [typ [comma typ {$2}]* {$1::$2}]? comma? { Option.value ~default:[] $1 }
 
 tuple_typs :
   | typ comma { [$1] }
@@ -412,9 +412,9 @@ app_arg_exprs :
   | [expr [comma expr {$2}]* { $1::$2 }]? { Option.value ~default:[] $1 }
 
 app_expr :
-  | id_expr lparen app_arg_exprs rparen { prerr_string "\napp_expr\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); Exp.apply ~loc:(symbol_rloc dyp) $1 $3 }
-  | paren_expr lparen app_arg_exprs rparen { prerr_string "\napp_expr\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); Exp.apply ~loc:(symbol_rloc dyp) $1 $3 }
-  | app_expr lparen app_arg_exprs rparen { prerr_string "\napp_expr\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); Exp.apply ~loc:(symbol_rloc dyp) $1 $3 }
+  | id_expr lparen app_arg_exprs comma? rparen { prerr_string "\napp_expr\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); Exp.apply ~loc:(symbol_rloc dyp) $1 $3 }
+  | paren_expr lparen app_arg_exprs comma? rparen { prerr_string "\napp_expr\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); Exp.apply ~loc:(symbol_rloc dyp) $1 $3 }
+  | app_expr lparen app_arg_exprs comma? rparen { prerr_string "\napp_expr\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); Exp.apply ~loc:(symbol_rloc dyp) $1 $3 }
 
 ext_constructor :
   | TYPEID [dot TYPEID {$2}]+ { prerr_string "\nid\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); (mkid ($1::$2)) (symbol_rloc dyp) }
@@ -523,7 +523,7 @@ lam_args :
   | patterns? { Option.value ~default:[] $1 }
 
 lam_expr :
-  | lparen lam_args rparen thickarrow block_or_expr { Exp.lambda ~loc:(symbol_rloc dyp) $2 $5 }
+  | lparen lam_args comma? rparen thickarrow block_or_expr { Exp.lambda ~loc:(symbol_rloc dyp) $2 $5 }
   | ID thickarrow block_or_expr { Exp.lambda ~loc:(symbol_rloc dyp) [Pat.var ~loc:(rhs_loc dyp 1) (mkstr dyp $1)] $3 }
 
 let_expr :
