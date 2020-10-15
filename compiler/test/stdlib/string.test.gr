@@ -9,12 +9,12 @@ let multi = 'a
 b
 c'
 
-# encoding tests
-# valid code points 0x0000...0xD7FF and 0xE000...0x10FFFF
-# invalid code points will not compile in Grain
+// encoding tests
+// valid code points 0x0000...0xD7FF and 0xE000...0x10FFFF
+// invalid code points will not compile in Grain
 assert '🌾' == '\u{1F33E}'
 assert '💪🏾' == '\u{1f4aa}\u{1f3fe}'
-# extended grapheme cluster
+// extended grapheme cluster
 assert '🤦🏼‍♂️' == '\u{1F926}\u{1F3FC}\u{200D}\u{2642}\u{FE0F}'
 
 assert 'a' == '\x61'
@@ -22,10 +22,10 @@ assert 'a' == '\141'
 assert 'a' == '\u0061'
 assert 'a' == '\u{61}'
 
-# Grain doesn't normalize strings
-# ñ as a single code point
+// Grain doesn't normalize strings
+// ñ as a single code point
 let ene = '\u{00f1}'
-# ñ as a combined character
+// ñ as a combined character
 let combining_tilde = '\u{0303}'
 let combined_ene = String.concat('n', combining_tilde)
 
@@ -35,7 +35,7 @@ assert ene != combined_ene
 assert String.length(ene) == 1
 assert String.length(combined_ene) == 2
 
-# concat tests
+// concat tests
 assert String.concat('', '') == ''
 assert String.concat(short, '') == short
 assert String.concat('', short) == short
@@ -43,22 +43,22 @@ assert String.concat(short, short) == 'foxfox'
 assert String.concat(emoji, emoji) == '🌾🌾'
 assert String.concat(multi, emoji) == 'a\nb\nc🌾'
 
-# length tests
+// length tests
 assert String.length(empty) == 0
 assert String.length(short) == 3
 assert String.length(emoji) == 1
 assert String.length(fox) == 44
 assert String.length(emojis) == 74
-# Single grapheme composed of two code points
+// Single grapheme composed of two code points
 assert String.length('💪🏼') == 2 
 
-# byteLength tests
+// byteLength tests
 assert String.byteLength(empty) == 0
 assert String.byteLength('a') == 1
 assert String.byteLength(emoji) == 4
 assert String.byteLength(emojis) == 98
 
-# slice tests
+// slice tests
 assert String.slice(empty, 0, 0) == empty
 assert String.slice(fox, 0, 1) == 'T'
 assert String.slice(fox, 0, 2) == 'Th'
@@ -78,7 +78,7 @@ assert String.slice(emoji, -1, -1) == empty
 assert String.slice('💪🏾', 0, 1) == '💪'
 assert String.slice('💪🏾', 1, 2) == '🏾'
 
-# contains tests
+// contains tests
 assert String.contains(short, '')
 assert String.contains(short, 'f')
 assert String.contains(short, 'o')
@@ -95,7 +95,7 @@ assert !String.contains(short, 'F')
 assert !String.contains('fox', 'foxes')
 assert !String.contains(fox, 'LAZY DOG')
 
-# startsWith tests
+// startsWith tests
 assert String.startsWith(empty, empty)
 assert String.startsWith(short, empty)
 assert String.startsWith(short, short)
@@ -108,7 +108,7 @@ assert !String.startsWith(short, 'foxes')
 assert !String.startsWith(emoji, 'q')
 assert !String.startsWith(fox, 'THE QUICK')
 
-# endsWith tests
+// endsWith tests
 assert String.endsWith(empty, empty)
 assert String.endsWith(short, empty)
 assert String.endsWith(short, short)

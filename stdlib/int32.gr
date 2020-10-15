@@ -14,13 +14,13 @@ import foreign wasm rem : (Int32, Int32) -> Int32 from 'stdlib-external/int32'
 import foreign wasm remU : (Int32, Int32) -> Int32 from 'stdlib-external/int32'
 import foreign wasm mod : (Int32, Int32) -> Int32 from 'stdlib-external/int32'
 
-# Int32 comparisons
+// Int32 comparisons
 import foreign wasm lt : (Int32, Int32) -> Bool from 'stdlib-external/int32'
 import foreign wasm gt : (Int32, Int32) -> Bool from 'stdlib-external/int32'
 import foreign wasm lte : (Int32, Int32) -> Bool from 'stdlib-external/int32'
 import foreign wasm gte : (Int32, Int32) -> Bool from 'stdlib-external/int32'
 
-# Int32 bit/logical operations
+// Int32 bit/logical operations
 import foreign wasm lnot : Int32 -> Int32 from 'stdlib-external/int32'
 
 import foreign wasm land : (Int32, Int32) -> Int32 from 'stdlib-external/int32'

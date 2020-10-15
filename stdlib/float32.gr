@@ -8,7 +8,7 @@ import foreign wasm sub : (Float32, Float32) -> Float32 from 'stdlib-external/fl
 import foreign wasm mul : (Float32, Float32) -> Float32 from 'stdlib-external/float32'
 import foreign wasm div : (Float32, Float32) -> Float32 from 'stdlib-external/float32'
 
-# Float32 comparisons
+// Float32 comparisons
 import foreign wasm lt : (Float32, Float32) -> Bool from 'stdlib-external/float32'
 import foreign wasm gt : (Float32, Float32) -> Bool from 'stdlib-external/float32'
 import foreign wasm lte : (Float32, Float32) -> Bool from 'stdlib-external/float32'
