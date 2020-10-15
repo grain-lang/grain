@@ -132,10 +132,10 @@ let line_comment = "//" (([^ '\r' '\n']*(newline_chars | eof)) | (newline_chars 
 let shebang_comment = "#!" (([^ '\r' '\n']*(newline_chars | eof)) | (newline_chars | eof))
 
 rule token = parse
-  | line_comment { parse_line_comment line_comment lexbuf; process_newlines lexbuf; EOL }
-  | shebang_comment { parse_line_comment shebang_comment lexbuf; process_newlines lexbuf; EOL }
-  | "/*" { wrap_block_comment_lexer read_block_comment block_comment lexbuf; token lexbuf }
-  | "/**" { wrap_block_comment_lexer read_doc_comment doc_comment lexbuf; token lexbuf }
+  | line_comment { parse_line_comment make_line_comment lexbuf; process_newlines lexbuf; EOL }
+  | shebang_comment { parse_line_comment make_shebang_comment lexbuf; process_newlines lexbuf; EOL }
+  | "/*" { wrap_block_comment_lexer read_block_comment make_block_comment lexbuf; token lexbuf }
+  | "/**" { wrap_block_comment_lexer read_doc_comment make_doc_comment lexbuf; token lexbuf }
   | blank { token lexbuf }
   | newline_chars { process_newlines lexbuf; EOL }
   | (unsigned_float as x) 'f' { FLOAT32 x }
