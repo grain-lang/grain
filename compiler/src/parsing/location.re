@@ -543,6 +543,26 @@ let rec report_exception = (ppf, exn) => {
   loop(10, exn);
 };
 
+/* output error in a format friendly for LSP processing */
+let error_to_string = ({loc, msg, sub, if_highlight}) =>  {
+  let (file, line, startchar) = get_pos_info(loc.loc_start);
+  let (_, endline, endchar) = get_pos_info(loc.loc_end);
+  sprintf("%d %d %d %d\n%s\n", line, startchar, endline, endchar, msg);
+  
+}
+
+/* lsp - print error to stdout */
+let rec print_exception = (exn) => {
+  let rec loop = (n, exn) =>
+    switch (error_of_exn(exn)) {
+    | None => reraise(exn)
+    | Some(`Already_displayed) => ""
+    | Some(`Ok(err)) => error_to_string(err)
+    | exception exn when n > 0 => loop(n - 1, exn)
+    };
+  loop(10, exn);
+};
+
 exception Error(error);
 
 let () =
