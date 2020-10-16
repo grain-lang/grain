@@ -14,7 +14,7 @@
   },
   "scripts": {
     "vscode": "node .vscode/setup-ocaml-lsp.js && yarn compiler setup",
-    "setup": "yarn runtime build && yarn stdlib build && yarn cli link && yarn compiler link",
+    "setup": "yarn runtime build && yarn stdlib build && yarn cli link",
     "test": "yarn compiler test",
     "cli": "yarn workspace @grain/cli run",
     "runtime": "yarn workspace @grain/runtime run",
