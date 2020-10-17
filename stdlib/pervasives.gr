@@ -65,13 +65,13 @@ let (isnt) : (a, a) -> Bool = (x, y) => !(x is y)
 // Converts the given value to a string
 import foreign wasm toString : a -> String from 'grainBuiltins'
 
-export data List<a> = [] | [...](a, List<a>)
+export enum List<a> { [], [...](a, List<a>) }
 
 // Maybe some data, maybe not!
-data Option<a> = Some(a) | None
+enum Option<a> { Some(a), None }
 
 // Maybe some data, maybe an error!
-data Result<t, e> = Ok(t) | Err(e)
+enum Result<t, e> { Ok(t), Err(e) }
 
 // Identity function
 let identity = (x) => x
