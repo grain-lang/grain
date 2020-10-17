@@ -382,7 +382,6 @@ let rec no_code_needed = (env, mty) =>
   | TModIdent(_) => false
   | TModSignature(sg) => no_code_needed_sig(env, sg)
   /*| Mty_functor(_, _, _) -> false*/
-  /*| Mty_alias(Mta_absent, _) -> true*/
   | TModAlias(_) => false
   }
 

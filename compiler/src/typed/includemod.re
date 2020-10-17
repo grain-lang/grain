@@ -175,10 +175,10 @@ let expand_module_path = (env, cxt, path) =>
   | Not_found => raise(Error([(cxt, env, Unbound_modtype_path(path))]))
   };
 
-/* let expand_module_alias env cxt path =
-   try (Env.find_module path env).md_type
-   with Not_found ->
-     raise(Error[cxt, env, Unbound_module_path path]) */
+let expand_module_alias = (env, cxt, path) =>
+  try(Env.find_module(path, None, env).md_type) {
+  | Not_found => raise(Error([(cxt, env, Unbound_module_path(path))]))
+  };
 
 /*
  let rec normalize_module_path env cxt path =
@@ -308,43 +308,30 @@ let rec modtypes = (~loc, env, ~mark, cxt, subst, mty1, mty2) =>
 
 and try_modtypes = (~loc, env, ~mark, cxt, subst, mty1, mty2) =>
   switch (mty1, mty2) {
-  /*| (Mty_alias(pres1, p1), Mty_alias(pres2, p2)) -> begin
-        if Env.is_functor_arg p2 env then
-          raise (Error[cxt, env, Invalid_module_alias p2]);
-        if not (Path.same p1 p2) then begin
-          let p1 = Env.normalize_path None env p1
-          and p2 = Env.normalize_path None env (Subst.module_path subst p2) in
-          if not (Path.same p1 p2) then raise Dont_match
-        end;
-        match pres1, pres2 with
-        | Mta_present, Mta_present -> Tcoerce_none
-        (* Should really be Tcoerce_ignore if it existed *)
-        | Mta_absent, Mta_absent -> Tcoerce_none
-        (* Should really be Tcoerce_empty if it existed *)
-        | Mta_present, Mta_absent -> Tcoerce_none
-        | Mta_absent, Mta_present ->
-          let p1 = try
-              Env.normalize_path (Some Location.none) env p1
-            with Env.Error (Env.Missing_module (_, _, path)) ->
-              raise (Error[cxt, env, Unbound_module_path path])
-          in
-          Tcoerce_alias (p1, Tcoerce_none)
-      end
-    | (Mty_alias(pres1, p1), _) -> begin
-        let p1 = try
-            Env.normalize_path (Some Location.none) env p1
-          with Env.Error (Env.Missing_module (_, _, path)) ->
-            raise (Error[cxt, env, Unbound_module_path path])
-        in
-        let mty1 =
-          Mtype.strengthen ~aliasable:true env
-            (expand_module_alias env cxt p1) p1
-        in
-        let cc = modtypes ~loc env ~mark cxt subst mty1 mty2 in
-        match pres1 with
-        | Mta_present -> cc
-        | Mta_absent -> Tcoerce_alias (p1, cc)
-      end*/
+  | (TModAlias(p1), TModAlias(p2)) =>
+    if (!Path.same(p1, p2)) {
+      let p1 = Env.normalize_path(None, env, p1);
+      let p2 = Env.normalize_path(None, env, Subst.module_path(subst, p2));
+      if (!Path.same(p1, p2)) {
+        ignore(raise(Dont_match));
+      };
+    };
+    None;
+  | (TModAlias(p1), _) =>
+    let p1 =
+      try(Env.normalize_path(Some(Location.dummy_loc), env, p1)) {
+      | Env.Error(Env.Missing_module(_, _, path)) =>
+        raise(Error([(cxt, env, Unbound_module_path(path))]))
+      };
+    let mty1 =
+      Mtype.strengthen(
+        ~aliasable=true,
+        env,
+        expand_module_alias(env, cxt, p1),
+        p1,
+      );
+    let cc = modtypes(~loc, env, ~mark, cxt, subst, mty1, mty2);
+    cc;
   | (TModIdent(p1), _) when may_expand_module_path(env, p1) =>
     try_modtypes(
       ~loc,

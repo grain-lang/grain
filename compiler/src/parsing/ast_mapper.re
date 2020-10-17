@@ -11,7 +11,7 @@ type mapper = {
   constructor: (mapper, constructor_declaration) => constructor_declaration,
   label: (mapper, label_declaration) => label_declaration,
   location: (mapper, Location.t) => Location.t,
-  import: (mapper, list(import_declaration)) => list(import_declaration),
+  import: (mapper, import_declaration) => import_declaration,
   export: (mapper, list(export_declaration)) => list(export_declaration),
   export_all: (mapper, list(export_except)) => list(export_except),
   value_binding: (mapper, value_binding) => value_binding,
@@ -224,19 +224,8 @@ module MB = {
 };
 
 module I = {
-  let map_one =
-      (
-        sub,
-        {
-          pimp_mod_alias: alias,
-          pimp_path: path,
-          pimp_val: ival,
-          pimp_loc: loc,
-        },
-      ) => {
-    open Imp;
-    let loc = sub.location(sub, loc);
-    let ival =
+  let map_shape = (sub, ival) => {
+    Imp.(
       switch (ival) {
       | PImportValues(values) =>
         PImportValues(
@@ -247,16 +236,17 @@ module I = {
         )
       | PImportAllExcept(values) =>
         PImportAllExcept(List.map(map_loc(sub), values))
-      | PImportModule => ival
-      };
+      | PImportModule(id) => PImportModule(map_loc(sub, id))
+      }
+    );
+  };
+  let map = (sub, {pimp_val, pimp_path, pimp_loc}) => {
     {
-      pimp_mod_alias: map_opt(sub, alias),
-      pimp_path: map_loc(sub, path),
-      pimp_val: ival,
-      pimp_loc: loc,
+      pimp_path: map_loc(sub, pimp_path),
+      pimp_val: List.map(map_shape(sub), pimp_val),
+      pimp_loc: sub.location(sub, pimp_loc),
     };
   };
-  let map = (sub, imports) => List.map(map_one(sub), imports);
 };
 
 module Ex = {
