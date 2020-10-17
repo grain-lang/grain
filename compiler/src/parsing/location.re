@@ -583,7 +583,7 @@ let error_to_json = ({loc, msg, sub, if_highlight}) => {
 let rec print_exception = exn => {
   let rec loop = (n, exn) =>
     switch (error_of_exn(exn)) {
-    | None => reraise(exn)
+    | None => ""
     | Some(`Already_displayed) => ""
     | Some(`Ok(err)) => error_to_json(err)
     | exception exn when n > 0 => loop(n - 1, exn)
