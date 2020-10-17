@@ -28,8 +28,8 @@ export let concat = (arrays) => {
 
   let rec findLength = (arrays, acc) => {
     match (arrays) {
-      | [fst, ...rest] => findLength(rest, acc + length(fst))
-      | [] => acc
+      [fst, ...rest] => findLength(rest, acc + length(fst)),
+      [] => acc
     }
   }
 
@@ -38,14 +38,14 @@ export let concat = (arrays) => {
 
   let rec next = (index) => {
     let array = match (arrs) {
-      | [fst, ..._] => fst
-      | [] => fail "end of arrays list"
+      [fst, ..._] => fst,
+      [] => fail "end of arrays list"
     }
     if (index - offset == length(array)) {
       offset += length(array)
       arrs = match (arrs) {
-        | [_, ...rest] => rest
-        | [] => fail "end of arrays list"
+        [_, ...rest] => rest,
+        [] => fail "end of arrays list"
       }
       next(index)
     } else {
@@ -135,19 +135,19 @@ export let toList = (array) => {
 export let fromList = (list) => {
   let rec listLength = (list, acc) => {
     match (list) {
-      | [_, ...rest] => listLength(rest, acc + 1)
-      | [] => acc
+      [_, ...rest] => listLength(rest, acc + 1),
+      [] => acc
     }
   }
 
   let mut lst = list
   let rec next = (index) => {
     match (lst) {
-      | [fst, ...rest] => {
+      [fst, ...rest] => {
         lst = rest
         fst
-      }
-      | [] => next(index)
+      },
+      [] => next(index)
     }
   }
   init(listLength(list, 0), next)

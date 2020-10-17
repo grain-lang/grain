@@ -5,13 +5,13 @@ import Array from 'array'
 import { hash } from 'hash'
 
 // TODO: Consider implementing this as List<(Box<k>, Box<v>)>
-data Bucket<k, v> = {
+record Bucket<k, v> {
   mut key: k,
   mut value: v,
   mut next: Option<Bucket<k, v>>
 }
 
-data Map<k, v> = {
+record Map<k, v> {
   mut size: Number,
   mut buckets: Array<Option<Bucket<k, v>>>
 }
@@ -37,15 +37,15 @@ let getBucketIndex = (key, buckets) => {
 
 let rec copyNodeWithNewHash = (oldNode, next, tail) => {
   match (oldNode) {
-    | None => void
-    | Some(node) => {
+    None => void,
+    Some(node) => {
       let idx = getBucketIndex(node.key, next);
       let newNode = Some(node);
       match (tail[idx]) {
-        | None => {
+        None => {
           next[idx] := newNode;
-        }
-        | Some(tailNode) => {
+        },
+        Some(tailNode) => {
           // If there's already a tail node, we add this to the end
           tailNode.next = newNode;
         }
@@ -72,8 +72,8 @@ let resize = (map) => {
     }, currentBuckets);
     Array.forEach((tail) => {
       match (tail) {
-        | None => void
-        | Some(node) => {
+        None => void,
+        Some(node) => {
           node.next = None;
         }
       }
@@ -89,8 +89,8 @@ let rec replaceInBucket = (key, value, node) => {
     false
   } else {
     match (node.next) {
-      | None => true
-      | Some(next) => replaceInBucket(key, value, next)
+      None => true,
+      Some(next) => replaceInBucket(key, value, next)
     }
   }
 }
@@ -100,11 +100,11 @@ export let set = (key, value, map) => {
   let idx = getBucketIndex(key, buckets)
   let bucket = buckets[idx];
   match (bucket) {
-    | None => {
+    None => {
       buckets[idx] := Some({ key, value, next: None });
       map.size = incr(map.size);
-    }
-    | Some(node) => {
+    },
+    Some(node) => {
       if (replaceInBucket(key, value, node)) {
         buckets[idx] := Some({ key, value, next: bucket });
         map.size = incr(map.size);
@@ -124,8 +124,8 @@ let rec valueFromBucket = (key, node) => {
     Some(node.value)
   } else {
     match (node.next) {
-      | None => None
-      | Some(next) => valueFromBucket(key, next)
+      None => None,
+      Some(next) => valueFromBucket(key, next)
     }
   }
 }
@@ -135,8 +135,8 @@ export let get = (key, map) => {
   let idx = getBucketIndex(key, buckets);
   let bucket = buckets[idx];
   match (bucket) {
-    | None => None
-    | Some(node) => valueFromBucket(key, node)
+    None => None,
+    Some(node) => valueFromBucket(key, node)
   }
 }
 
@@ -145,8 +145,8 @@ let rec nodeInBucket = (key, node) => {
     true
   } else {
     match (node.next) {
-      | None => false
-      | Some(next) => nodeInBucket(key, next)
+      None => false,
+      Some(next) => nodeInBucket(key, next)
     }
   }
 }
@@ -156,15 +156,15 @@ export let contains = (key, map) => {
   let idx = getBucketIndex(key, buckets);
   let bucket = buckets[idx];
   match (bucket) {
-    | None => false
-    | Some(node) => nodeInBucket(key, node)
+    None => false,
+    Some(node) => nodeInBucket(key, node)
   }
 }
 
 let rec removeInBucket = (key, node) => {
   match (node.next) {
-    | None => false
-    | Some(next) => {
+    None => false,
+    Some(next) => {
       if (key == next.key) {
         node.next = next.next;
         true
@@ -180,8 +180,8 @@ export let remove = (key, map) => {
   let idx = getBucketIndex(key, buckets);
   let bucket = buckets[idx];
   match (bucket) {
-    | None => void
-    | Some(node) => {
+    None => void,
+    Some(node) => {
       // If it is a top-level node, just replace with next node
       if (key == node.key) {
         map.size = decr(map.size);
@@ -213,8 +213,8 @@ export let clear = (map) => {
 
 let rec forEachBucket = (fn, node) => {
   match (node) {
-    | None => void
-    | Some({ key, value, next }) => {
+    None => void,
+    Some({ key, value, next }) => {
       fn(key, value);
       forEachBucket(fn, next);
     }
@@ -230,8 +230,8 @@ export let forEach = (fn, map) => {
 
 let rec reduceEachBucket = (fn, node, acc) => {
   match (node) {
-    | None => acc
-    | Some({ key, value, next }) =>
+    None => acc,
+    Some({ key, value, next }) =>
       reduceEachBucket(fn, next, fn(acc, key, value))
   }
 }

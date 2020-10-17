@@ -1,62 +1,63 @@
 export *
 
-data Signal =
+enum Signal {
   // Hangup.
-  | HUP
+  HUP,
   // Terminate interrupt signal.
-  | INT
+  INT,
   // Terminal quit signal.
-  | QUIT
+  QUIT,
   // Illegal instruction.
-  | ILL
+  ILL,
   // Trace/breakpoint trap.
-  | TRAP
+  TRAP,
   // Process abort signal.
-  | ABRT
+  ABRT,
   // Access to an undefined portion of a memory object.
-  | BUS
+  BUS,
   // Erroneous arithmetic operation.
-  | FPE
+  FPE,
   // Kill.
-  | KILL
+  KILL,
   // User-defined signal 1.
-  | USR1
+  USR1,
   // Invalid memory reference.
-  | SEGV
+  SEGV,
   // User-defined signal 2.
-  | USR2
+  USR2,
   // Write on a pipe with no one to read it.
-  | PIPE
+  PIPE,
   // Alarm clock.
-  | ALRM
+  ALRM,
   // Termination signal.
-  | TERM
+  TERM,
   // Child process terminated, stopped, or continued.
-  | CHLD
+  CHLD,
   // Continue executing, if stopped.
-  | CONT
+  CONT,
   // Stop executing.
-  | STOP
+  STOP,
   // Terminal stop signal.
-  | TSTP
+  TSTP,
   // Background process attempting read.
-  | TTIN
+  TTIN,
   // Background process attempting write.
-  | TTOU
+  TTOU,
   // High bandwidth data is available at a socket.
-  | URG
+  URG,
   // CPU time limit exceeded.
-  | XCPU
+  XCPU,
   // File size limit exceeded.
-  | XFSZ
+  XFSZ,
   // Virtual timer expired.
-  | VTALRM
-  | PROF
-  | WINCH
-  | POLL
-  | PWR
+  VTALRM,
+  PROF,
+  WINCH,
+  POLL,
+  PWR,
   // Bad system call.
-  | SYS
+  SYS,
+}
 
 // Access command line arguments
 // @returns Array<String> The positional string arguments to the process

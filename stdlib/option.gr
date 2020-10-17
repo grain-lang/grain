@@ -4,29 +4,29 @@ export *
 
 let isSome = (option) => {
   match (option) {
-    | Some(_) => true
-    | None => false
+    Some(_) => true,
+    None => false
   }
 }
 
 let isNone = (option) => {
   match (option) {
-    | None => true
-    | Some(_) => false
+    None => true,
+    Some(_) => false
   }
 }
 
 let contains = (val, option) => {
   match (option) {
-    | Some(x) => x == val
-    | None => false
+    Some(x) => x == val,
+    None => false
   }
 }
 
 let expect = (msg, option) => {
   match (option) {
-    | Some(x) => x
-    | None => fail msg
+    Some(x) => x,
+    None => fail msg
   }
 }
 
@@ -36,90 +36,90 @@ let unwrap = (option) => {
 
 let unwrapWithDefault = (default, option) => {
   match (option) {
-    | Some(x) => x
-    | None => default
+    Some(x) => x,
+    None => default
   }
 }
 
 let map = (fn, option) => {
   match (option) {
-    | Some(x) => Some(fn(x))
-    | None => None
+    Some(x) => Some(fn(x)),
+    None => None
   }
 }
 
 let mapWithDefault = (fn, default, option) => {
   match (option) {
-    | Some(x) => fn(x)
-    | None => default
+    Some(x) => fn(x),
+    None => default
   }
 }
 
 let mapWithDefaultFn = (fn, defaultFn, option) => {
   match (option) {
-    | Some(x) => fn(x)
-    | None => defaultFn()
+    Some(x) => fn(x),
+    None => defaultFn()
   }
 }
 
 let flatMap = (fn, option) => {
   match (option) {
-    | Some(x) => fn(x)
-    | None => None
+    Some(x) => fn(x),
+    None => None
   }
 }
 
 let filter = (pred, option) => {
   match (option) {
-    | Some(x) =>
+    Some(x) =>
       if (pred(x)) {
         Some(x)
       } else {
         None
-      }
-    | None => None
+      },
+    None => None
   }
 }
 
 let zip = (optionA, optionB) => {
   match ((optionA, optionB)) {
-    | (Some(a), Some(b)) => Some((a, b))
-    | _ => None
+    (Some(a), Some(b)) => Some((a, b)),
+    _ => None
   }
 }
 
 let zipWith = (fn, optionA, optionB) => {
   match ((optionA, optionB)) {
-    | (Some(a), Some(b)) => Some(fn(a, b))
-    | _ => None
+    (Some(a), Some(b)) => Some(fn(a, b)),
+    _ => None
   }
 }
 
 let flatten = (option) => {
   match (option) {
-    | Some(Some(x)) => Some(x)
-    | _ => None
+    Some(Some(x)) => Some(x),
+    _ => None
   }
 }
 
 let toList = (option) => {
   match (option) {
-    | Some(x) => [x]
-    | None => []
+    Some(x) => [x],
+    None => []
   }
 }
 
 let toArray = (option) => {
   match (option) {
-    | Some(x) => [> x]
-    | None => [>]
+    Some(x) => [> x],
+    None => [>]
   }
 }
 
 let sideEffect = (fn, option) => {
   match (option) {
-    | Some(x) => fn(x)
-    | None => void
+    Some(x) => fn(x),
+    None => void
   }
 }
 
@@ -130,21 +130,21 @@ let peek = (fn, option) => {
 
 let or = (r1, r2) => {
   match (r1) {
-    | Some(x) => r1
-    | None => r2
+    Some(x) => r1,
+    None => r2
   }
 }
 
 let and = (r1, r2) => {
   match (r1) {
-    | Some(_) => r2
-    | None => r1
+    Some(_) => r2,
+    None => r1
   }
 }
 
 let toResult = (err, option) => {
   match (option) {
-    | Some(a) => Ok(a)
-    | None    => Err(err)
+    Some(a) => Ok(a),
+    None    => Err(err)
   }
 }
