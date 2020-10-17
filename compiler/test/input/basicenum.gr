@@ -1,12 +1,13 @@
-data List<a> =
-  | Empty
-  | Cons(a, List<a>);
+enum List<a> {
+  Empty,
+  Cons(a, List<a>)
+};
 
 
 let rec contains = (e, l) => {
   match (l) {
-    | Empty => false
-    | Cons(hd, tl) =>
+    Empty => false,
+    Cons(hd, tl) =>
     if (hd == e) {
       true
     } else {

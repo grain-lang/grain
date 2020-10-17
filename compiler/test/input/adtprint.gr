@@ -1,10 +1,11 @@
-export data Printable =
-  | Foo
-  | Bar
-  | Baz(String)
-  | Qux(Number, String, Bool)
-  | Quux
-  | Flip(String)
+export enum Printable {
+  Foo,
+  Bar,
+  Baz(String),
+  Qux(Number, String, Bool),
+  Quux,
+  Flip(String),
+}
 
 print(Foo)
 print(Bar)

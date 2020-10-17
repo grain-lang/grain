@@ -1,7 +1,7 @@
 // Note: This file doesn't include the Recursive type test
 // because it isn't achievable with `let mut`
 
-export data Opt<a> = None | Some(a)
+export enum Opt<a> { None, Some(a) }
 
 let mut z = None
 z = Some(z)
@@ -13,22 +13,22 @@ assert !(z == y)
 y = Some(y)
 assert z == y
 
-export data Rec = {
+export record Rec {
   int: Number,
-  mut record: Opt<Rec>
+  mut r: Opt<Rec>
 }
 
-let a = { int: 5, record: None }
-let b = { int: 5, record: None }
+let a = { int: 5, r: None }
+let b = { int: 5, r: None }
 
-a.record = Some(a)
+a.r = Some(a)
 
 assert a is a
 assert a == a
 
 assert !(a == b)
 
-b.record = Some(b)
+b.r = Some(b)
 
 assert !(a is b)
 assert a == b
