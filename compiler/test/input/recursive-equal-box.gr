@@ -1,4 +1,4 @@
-export data Opt<a> = None | Some(a)
+export enum Opt<a> { None, Some(a) }
 
 let z = box(None)
 z := Some(z)
@@ -10,7 +10,7 @@ assert !(z == y)
 y := Some(y)
 assert z == y
 
-export data R = Atom | Recursive(Box<Opt<R>>)
+export enum R { Atom, Recursive(Box<Opt<R>>) }
 
 let t = box(None)
 let u = box(None)
@@ -25,22 +25,22 @@ u := Some(w)
 
 assert x == w
 
-export data Rec = {
+export record Rec {
   int: Number,
-  record: Box<Opt<Rec>>
+  r: Box<Opt<Rec>>
 }
 
-let a = { int: 5, record: box(None) }
-let b = { int: 5, record: box(None) }
+let a = { int: 5, r: box(None) }
+let b = { int: 5, r: box(None) }
 
-a.record := Some(a)
+a.r := Some(a)
 
 assert a is a
 assert a == a
 
 assert !(a == b)
 
-b.record := Some(b)
+b.r := Some(b)
 
 assert !(a is b)
 assert a == b

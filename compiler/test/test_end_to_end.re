@@ -307,9 +307,9 @@ let function_tests = [
   t("fn_trailing_comma", "let testFn = (x, y,) => x + y; testFn(2, 3,)", "5"),
   t(
     "adt_trailing_comma",
-    "data Topping = Cheese | Pepperoni | Peppers | Pineapple
-     data Dough = WholeWheat | GlutenFree
-     data Menu = Pizza(Topping,Dough,) | Calzone(Topping,Dough,)
+    "enum Topping { Cheese, Pepperoni, Peppers, Pineapple, }
+     enum Dough { WholeWheat, GlutenFree }
+     enum Menu { Pizza(Topping,Dough,), Calzone(Topping,Dough,) }
      let item = Calzone(Peppers, WholeWheat,)
      item
     ",
@@ -492,155 +492,155 @@ let array_tests = [
 ];
 
 let record_tests = [
-  t("record_1", "data Rec = {foo: Number}; {foo: 4}", "<record value>"),
+  t("record_1", "record Rec {foo: Number}; {foo: 4}", "<record value>"),
   t(
     "record_2",
-    "export data Rec = {foo: Number}; {foo: 4}",
+    "export record Rec {foo: Number}; {foo: 4}",
     "{\n  foo: 4\n}",
   ),
   t(
     "record_multiple",
-    "export data Rec = {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: 'boo', baz: true}",
+    "export record Rec {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: 'boo', baz: true}",
     "{\n  foo: 4,\n  bar: \"boo\",\n  baz: true\n}",
   ),
   t(
     "record_pun",
-    "export data Rec = {foo: Number}; let foo = 4; {foo}",
+    "export record Rec {foo: Number}; let foo = 4; {foo}",
     "{\n  foo: 4\n}",
   ),
   t(
     "record_pun_multiple",
-    "export data Rec = {foo: Number, bar: Bool}; let foo = 4; let bar = false; {foo, bar}",
+    "export record Rec {foo: Number, bar: Bool}; let foo = 4; let bar = false; {foo, bar}",
     "{\n  foo: 4,\n  bar: false\n}",
   ),
   t(
     "record_pun_mixed",
-    "export data Rec = {foo: Number, bar: Bool}; let foo = 4; {foo, bar: false}",
+    "export record Rec {foo: Number, bar: Bool}; let foo = 4; {foo, bar: false}",
     "{\n  foo: 4,\n  bar: false\n}",
   ),
   t(
     "record_pun_mixed_2",
-    "export data Rec = {foo: Number, bar: Bool}; let bar = false; {foo: 4, bar}",
+    "export record Rec {foo: Number, bar: Bool}; let bar = false; {foo: 4, bar}",
     "{\n  foo: 4,\n  bar: false\n}",
   ),
   te("record_err_1", "{foo: 4}", "Unbound record label foo"),
   te(
     "record_err_2",
-    "data Rec = {foo: Number}; {foo: 4, bar: 4}",
+    "record Rec {foo: Number}; {foo: 4, bar: 4}",
     "Unbound record label bar",
   ),
   t(
     "record_get_1",
-    "data Rec = {foo: Number}; let bar = {foo: 4}; bar.foo",
+    "record Rec {foo: Number}; let bar = {foo: 4}; bar.foo",
     "4",
   ),
-  t("record_get_2", "data Rec = {foo: Number}; {foo: 4}.foo", "4"),
+  t("record_get_2", "record Rec {foo: Number}; {foo: 4}.foo", "4"),
   t(
     "record_get_multiple",
-    "data Rec = {foo: Number, bar: Number}; let x = {foo: 4, bar: 9}; x.foo + x.bar",
+    "record Rec {foo: Number, bar: Number}; let x = {foo: 4, bar: 9}; x.foo + x.bar",
     "13",
   ),
   t(
     "record_get_multilevel",
-    "data Rec1 = {foo: Number, bar: Number}; data Rec2 = {baz: Rec1}; let x = {baz: {foo: 4, bar: 9}}; x.baz.bar",
+    "record Rec1 {foo: Number, bar: Number}; record Rec2 {baz: Rec1}; let x = {baz: {foo: 4, bar: 9}}; x.baz.bar",
     "9",
   ),
   te(
     "record_get_err",
-    "data Rec1 = {foo: Number, bar: Number}; let x = {foo: 4, bar: 9}; x.baz",
+    "record Rec1 {foo: Number, bar: Number}; let x = {foo: 4, bar: 9}; x.baz",
     "The field baz does not belong to type Rec1",
   ),
   /* mutable record fields */
   t(
     "record_mut_1",
-    "data Rec = {foo: Number, mut bar: String, baz: Bool}; let a = {foo: 4, bar: 'boo', baz: true}; a.bar = 'hoo'; a.bar",
+    "record Rec {foo: Number, mut bar: String, baz: Bool}; let a = {foo: 4, bar: 'boo', baz: true}; a.bar = 'hoo'; a.bar",
     "\"hoo\"",
   ),
   te(
     "record_mut_1",
-    "data Rec = {foo: Number, mut bar: String, baz: Bool}; let a = {foo: 4, bar: 'boo', baz: true}; a.foo = 5; a.foo",
+    "record Rec {foo: Number, mut bar: String, baz: Bool}; let a = {foo: 4, bar: 'boo', baz: true}; a.foo = 5; a.foo",
     "The record field foo is not mutable",
   ),
   /* record destructured assignment */
   t(
     "record_destruct_1",
-    "data Rec = {foo: Number, bar: String, baz: Bool}; let { foo, _ } = {foo: 4, bar: 'boo', baz: true}; foo",
+    "record Rec {foo: Number, bar: String, baz: Bool}; let { foo, _ } = {foo: 4, bar: 'boo', baz: true}; foo",
     "4",
   ),
   t(
     "record_destruct_2",
-    "data Rec = {foo: Number, bar: String, baz: Bool}; let { bar, _ } = {foo: 4, bar: 'boo', baz: true}; bar",
+    "record Rec {foo: Number, bar: String, baz: Bool}; let { bar, _ } = {foo: 4, bar: 'boo', baz: true}; bar",
     "\"boo\"",
   ),
   t(
     "record_destruct_3",
-    "data Rec = {foo: Number, bar: Number, baz: Number}; let { foo, bar, _ } = {foo: 4, bar: 5, baz: 6}; foo + bar",
+    "record Rec {foo: Number, bar: Number, baz: Number}; let { foo, bar, _ } = {foo: 4, bar: 5, baz: 6}; foo + bar",
     "9",
   ),
   t(
     "record_destruct_4",
-    "data Rec = {foo: Number, bar: Number, baz: Number}; let { foo, bar, baz } = {foo: 4, bar: 5, baz: 6}; foo + bar + baz",
+    "record Rec {foo: Number, bar: Number, baz: Number}; let { foo, bar, baz } = {foo: 4, bar: 5, baz: 6}; foo + bar + baz",
     "15",
   ),
   t(
     "record_destruct_deep",
-    "data Rec = {foo: Number}; data Rec2 = {bar: Rec}; let { bar: { foo } } = {bar: {foo: 4}}; foo",
+    "record Rec {foo: Number}; record Rec2 {bar: Rec}; let { bar: { foo } } = {bar: {foo: 4}}; foo",
     "4",
   ),
   te(
     "record_destruct_deep_alias",
-    "data Rec = {foo: Number}; data Rec2 = {bar: Rec}; let { bar: { foo } } = {bar: {foo: 4}}; bar",
+    "record Rec {foo: Number}; record Rec2 {bar: Rec}; let { bar: { foo } } = {bar: {foo: 4}}; bar",
     "Unbound value bar",
   ),
   // Record trailing commas
   t(
     "record_definition_trailing",
-    "export data Rec = {foo: Number,}; {foo: 4}",
+    "export record Rec {foo: Number,}; {foo: 4}",
     "{\n  foo: 4\n}",
   ),
   t(
     "record_value_trailing",
-    "export data Rec = {foo: Number}; {foo: 4,}",
+    "export record Rec {foo: Number}; {foo: 4,}",
     "{\n  foo: 4\n}",
   ),
   t(
     "record_both_trailing",
-    "export data Rec = {foo: Number,}; {foo: 4,}",
+    "export record Rec {foo: Number,}; {foo: 4,}",
     "{\n  foo: 4\n}",
   ),
   t(
     "record_multiple_fields_definition_trailing",
-    "export data Rec = {foo: Number, bar: String, baz: Bool,}; {foo: 4, bar: 'boo', baz: true}",
+    "export record Rec {foo: Number, bar: String, baz: Bool,}; {foo: 4, bar: 'boo', baz: true}",
     "{\n  foo: 4,\n  bar: \"boo\",\n  baz: true\n}",
   ),
   t(
     "record_multiple_fields_value_trailing",
-    "export data Rec = {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: 'boo', baz: true,}",
+    "export record Rec {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: 'boo', baz: true,}",
     "{\n  foo: 4,\n  bar: \"boo\",\n  baz: true\n}",
   ),
   t(
     "record_multiple_fields_both_trailing",
-    "export data Rec = {foo: Number, bar: String, baz: Bool,}; {foo: 4, bar: 'boo', baz: true,}",
+    "export record Rec {foo: Number, bar: String, baz: Bool,}; {foo: 4, bar: 'boo', baz: true,}",
     "{\n  foo: 4,\n  bar: \"boo\",\n  baz: true\n}",
   ),
   t(
     "record_pun_trailing",
-    "export data Rec = {foo: Number}; let foo = 4; {foo,}",
+    "export record Rec {foo: Number}; let foo = 4; {foo,}",
     "{\n  foo: 4\n}",
   ),
   t(
     "record_pun_multiple_trailing",
-    "export data Rec = {foo: Number, bar: Bool}; let foo = 4; let bar = false; {foo, bar,}",
+    "export record Rec {foo: Number, bar: Bool}; let foo = 4; let bar = false; {foo, bar,}",
     "{\n  foo: 4,\n  bar: false\n}",
   ),
   t(
     "record_pun_mixed_trailing",
-    "export data Rec = {foo: Number, bar: Bool}; let foo = 4; {foo, bar: false,}",
+    "export record Rec {foo: Number, bar: Bool}; let foo = 4; {foo, bar: false,}",
     "{\n  foo: 4,\n  bar: false\n}",
   ),
   t(
     "record_pun_mixed_2_trailing",
-    "export data Rec = {foo: Number, bar: Bool}; let bar = false; {foo: 4, bar,}",
+    "export record Rec {foo: Number, bar: Bool}; let bar = false; {foo: 4, bar,}",
     "{\n  foo: 4,\n  bar: false\n}",
   ),
 ];
@@ -680,22 +680,22 @@ let stdlib_tests = [
   ),
   t(
     "stdlib_equal_19",
-    "data Rec = {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: 'boo', baz: true} == {foo: 4, bar: 'boo', baz: true}",
+    "record Rec {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: 'boo', baz: true} == {foo: 4, bar: 'boo', baz: true}",
     "true",
   ),
   t(
     "stdlib_equal_20",
-    "data Rec = {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: 'boo', baz: true} == {foo: 4, bar: 'bar', baz: true}",
+    "record Rec {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: 'boo', baz: true} == {foo: 4, bar: 'bar', baz: true}",
     "false",
   ),
   t(
     "stdlib_equal_21",
-    "data Rec = {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: 'boo', baz: true} == {foo: 78, bar: 'boo', baz: true}",
+    "record Rec {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: 'boo', baz: true} == {foo: 78, bar: 'boo', baz: true}",
     "false",
   ),
   t(
     "stdlib_equal_22",
-    "data Rec = {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: 'boo', baz: true} == {foo: 4, bar: 'boo', baz: false}",
+    "record Rec {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: 'boo', baz: true} == {foo: 4, bar: 'boo', baz: false}",
     "false",
   ),
   tfile("recursive_equal_box", "recursive-equal-box", "void"),
@@ -799,12 +799,12 @@ let let_mut_tests = [
   ),
   t(
     "let-mut_destructure3",
-    "data Rec = {foo: Number, bar: Bool}; let mut {foo, bar} = {foo: 5, bar: false}; foo = 6; bar = true; print(foo); print(bar)",
+    "record Rec {foo: Number, bar: Bool}; let mut {foo, bar} = {foo: 5, bar: false}; foo = 6; bar = true; print(foo); print(bar)",
     "6\ntrue\nvoid",
   ),
   t(
     "let-mut_destructure4",
-    "data Rec = {foo: Number, bar: Bool}; {let mut {foo, bar} = {foo: 5, bar: false}; foo = 6; bar = true; print(foo); print(bar)}",
+    "record Rec {foo: Number, bar: Bool}; {let mut {foo, bar} = {foo: 5, bar: false}; foo = 6; bar = true; print(foo); print(bar)}",
     "6\ntrue\nvoid",
   ),
   // not-mut let errors
@@ -825,7 +825,7 @@ let let_mut_tests = [
   ),
   te(
     "let-mut_err4",
-    "data Rec = {foo: Number, bar: Bool}; let {foo, bar} = {foo: 1, bar: false}; foo = 6",
+    "record Rec {foo: Number, bar: Bool}; let {foo, bar} = {foo: 1, bar: false}; foo = 6",
     "The identifier foo was not declared mutable",
   ),
   /* Operations on mutable `Number`s */
@@ -884,7 +884,7 @@ let gc = [
   tgc(
     "gc2",
     2560,
-    "data Opt<x> = None | Some(x);\n     let f = (() => {\n      let x = (box(None), 2);\n      let (fst, _) = x\n      fst := Some(x)\n      });\n      {\n        f();\n        let x = (1, 2);\n        x\n      }",
+    "enum Opt<x> { None, Some(x) };\n     let f = (() => {\n      let x = (box(None), 2);\n      let (fst, _) = x\n      fst := Some(x)\n      });\n      {\n        f();\n        let x = (1, 2);\n        x\n      }",
     "(1, 2)",
   ),
   tgcfile("fib_gc_err", 1024, "fib-gc", "Out of memory"),
@@ -898,210 +898,210 @@ let gc = [
 
 let match_tests = [
   /* Pattern matching on tuples */
-  t("tuple_match_1", "match ((1,)) { | (a,) => a }", "1"),
-  t("tuple_match_2", "match ((1, 2, 3)) { | (a, b, c) => a + b + c }", "6"),
+  t("tuple_match_1", "match ((1,)) { (a,) => a }", "1"),
+  t("tuple_match_2", "match ((1, 2, 3)) { (a, b, c) => a + b + c }", "6"),
   t(
     "tuple_match_3",
-    "match ((1, 'boop', false)) { | (a, b, c) => (a, b, c) }",
+    "match ((1, 'boop', false)) { (a, b, c) => (a, b, c) }",
     "(1, \"boop\", false)",
   ),
   t(
     "tuple_match_deep",
-    "match ((1, (4, 5), 3)) { | (a, (d, e), c) => a + c + d + e }",
+    "match ((1, (4, 5), 3)) { (a, (d, e), c) => a + c + d + e }",
     "13",
   ),
   t(
     "tuple_match_deep2",
-    "match ((1, (2, (3, (4, 5, (6, 7)))))) { | (a, (b, (c, (d, e, (f, g))))) => a + b + c + d + e + f + g }",
+    "match ((1, (2, (3, (4, 5, (6, 7)))))) { (a, (b, (c, (d, e, (f, g))))) => a + b + c + d + e + f + g }",
     "28",
   ),
   t(
     "tuple_match_deep3",
-    "match ((1, [])) { | (a, []) => a | (a, [b]) => a + b | (a, [b, c]) => a + b + c | (a, [b, c, d]) => a + b + c + d | (_, [_, ..._]) => 999 }",
+    "match ((1, [])) { (a, []) => a, (a, [b]) => a + b, (a, [b, c]) => a + b + c, (a, [b, c, d]) => a + b + c + d, (_, [_, ..._]) => 999 }",
     "1",
   ),
   t(
     "tuple_match_deep4",
-    "match ((1, [2])) { | (a, []) => a | (a, [b]) => a + b | (a, [b, c]) => a + b + c | (a, [b, c, d]) => a + b + c + d | (_, [_, ..._]) => 999 }",
+    "match ((1, [2])) { (a, []) => a, (a, [b]) => a + b, (a, [b, c]) => a + b + c, (a, [b, c, d]) => a + b + c + d, (_, [_, ..._]) => 999 }",
     "3",
   ),
   t(
     "tuple_match_deep5",
-    "match ((1, [4, 5])) { | (a, []) => a | (a, [b]) => a + b | (a, [b, c]) => a + b + c | (a, [b, c, d]) => a + b + c + d | (_, [_, ..._]) => 999 }",
+    "match ((1, [4, 5])) { (a, []) => a, (a, [b]) => a + b, (a, [b, c]) => a + b + c, (a, [b, c, d]) => a + b + c + d, (_, [_, ..._]) => 999 }",
     "10",
   ),
   t(
     "tuple_match_deep6",
-    "match ((1, [4, 5, 6])) { | (a, []) => a | (a, [b]) => a + b | (a, [b, c]) => a + b + c | (a, [b, c, d]) => a + b + c + d | (_, [_, ..._]) => 999 }",
+    "match ((1, [4, 5, 6])) { (a, []) => a, (a, [b]) => a + b, (a, [b, c]) => a + b + c, (a, [b, c, d]) => a + b + c + d, (_, [_, ..._]) => 999 }",
     "16",
   ),
   t(
     "tuple_match_deep7",
-    "match ((1, [4, 5, 6, 7])) { | (a, []) => a | (a, [b]) => a + b | (a, [b, c]) => a + b + c | (a, [b, c, d]) => a + b + c + d | (_, [_, ..._]) => 999 }",
+    "match ((1, [4, 5, 6, 7])) { (a, []) => a, (a, [b]) => a + b, (a, [b, c]) => a + b + c, (a, [b, c, d]) => a + b + c + d, (_, [_, ..._]) => 999 }",
     "999",
   ),
   /* Pattern matching on records */
   t(
     "record_match_1",
-    "data Rec = {foo: Number, bar: String, baz: Bool}; match ({foo: 4, bar: 'boo', baz: true}) { | { foo, _ } => foo }",
+    "record Rec {foo: Number, bar: String, baz: Bool}; match ({foo: 4, bar: 'boo', baz: true}) { { foo, _ } => foo }",
     "4",
   ),
   t(
     "record_match_2",
-    "data Rec = {foo: Number, bar: String, baz: Bool}; match ({foo: 4, bar: 'boo', baz: true}) { | { bar, _ } => bar }",
+    "record Rec {foo: Number, bar: String, baz: Bool}; match ({foo: 4, bar: 'boo', baz: true}) { { bar, _ } => bar }",
     "\"boo\"",
   ),
   t(
     "record_match_3",
-    "data Rec = {foo: Number, bar: Number, baz: Number}; match ({foo: 4, bar: 5, baz: 6}) { | { foo, bar, _ } => foo + bar }",
+    "record Rec {foo: Number, bar: Number, baz: Number}; match ({foo: 4, bar: 5, baz: 6}) { { foo, bar, _ } => foo + bar }",
     "9",
   ),
   t(
     "record_match_4",
-    "data Rec = {foo: Number, bar: Number, baz: Number}; match ({foo: 4, bar: 5, baz: 6}) { | { foo, bar, baz } => foo + bar + baz}",
+    "record Rec {foo: Number, bar: Number, baz: Number}; match ({foo: 4, bar: 5, baz: 6}) { { foo, bar, baz } => foo + bar + baz}",
     "15",
   ),
   t(
     "record_match_deep",
-    "data Rec = {foo: Number}; data Rec2 = {bar: Rec}; match ({bar: {foo: 4}}) { | { bar: { foo } } => foo }",
+    "record Rec {foo: Number}; record Rec2 {bar: Rec}; match ({bar: {foo: 4}}) { { bar: { foo } } => foo }",
     "4",
   ),
   te(
     "record_match_deep_alias",
-    "data Rec = {foo: Number}; data Rec2 = {bar: Rec}; match ({bar: {foo: 4}}) { | { bar: { foo } } => bar }",
+    "record Rec {foo: Number}; record Rec2 {bar: Rec}; match ({bar: {foo: 4}}) { { bar: { foo } } => bar }",
     "Unbound value bar",
   ),
   /* Pattern matching on ADTs */
   t(
     "adt_match_1",
-    "match ([]) { | [] => 0 | [b] => b | [b, c] => b + c | [b, c, d] => b + c + d | [_, ..._] => 999 }",
+    "match ([]) { [] => 0, [b] => b, [b, c] => b + c, [b, c, d] => b + c + d, [_, ..._] => 999 }",
     "0",
   ),
   t(
     "adt_match_2",
-    "match ([2]) { | [] => 0 | [b] => b | [b, c] => b + c | [b, c, d] => b + c + d | [_, ..._] => 999 }",
+    "match ([2]) { [] => 0, [b] => b, [b, c] => b + c, [b, c, d] => b + c + d, [_, ..._] => 999 }",
     "2",
   ),
   t(
     "adt_match_3",
-    "match ([4, 5]) { | [] => 0 | [b] => b | [b, c] => b + c | [b, c, d] => b + c + d | [_, ..._] => 999 }",
+    "match ([4, 5]) { [] => 0, [b] => b, [b, c] => b + c, [b, c, d] => b + c + d, [_, ..._] => 999 }",
     "9",
   ),
   t(
     "adt_match_4",
-    "match ([4, 5, 6]) { | [] => 0 | [b] => b | [b, c] => b + c | [b, c, d] => b + c + d | [_, ..._] => 999 }",
+    "match ([4, 5, 6]) { [] => 0, [b] => b, [b, c] => b + c, [b, c, d] => b + c + d, [_, ..._] => 999 }",
     "15",
   ),
   t(
     "adt_match_5",
-    "match ([4, 5, 6, 7]) { | [] => 0 | [b] => b | [b, c] => b + c | [b, c, d] => b + c + d | [_, ..._] => 999 }",
+    "match ([4, 5, 6, 7]) { [] => 0, [b] => b, [b, c] => b + c, [b, c, d] => b + c + d, [_, ..._] => 999 }",
     "999",
   ),
   t(
     "adt_match_deep",
-    "data Rec = {foo: Number}; match ([{foo: 5}]) { | [] => 999 | [{foo}, ..._] => foo }",
+    "record Rec {foo: Number}; match ([{foo: 5}]) { [] => 999, [{foo}, ..._] => foo }",
     "5",
   ),
   // Guarded branches
   t(
     "guarded_match_1",
-    "match ((1, 2, 3)) { | (a, b, c) when a == 1 => 42 | _ => 99 }",
+    "match ((1, 2, 3)) { (a, b, c) when a == 1 => 42, _ => 99 }",
     "42",
   ),
   t(
     "guarded_match_2",
-    "match ((2, 2, 3)) { | (a, b, c) when a == 1 => 42 | _ => 99 }",
+    "match ((2, 2, 3)) { (a, b, c) when a == 1 => 42, _ => 99 }",
     "99",
   ),
   t(
     "guarded_match_3",
-    "match ((2, 2, 3)) { | (a, b, c) when (a == 2) && (c == 3) => 42 | _ => 99 }",
+    "match ((2, 2, 3)) { (a, b, c) when (a == 2) && (c == 3) => 42, _ => 99 }",
     "42",
   ),
   t(
     "guarded_match_4",
-    "match ((8, 2, 3)) { | (a, b, c) when (a == 2) && (c == 3) => 42 | _ => 99 }",
+    "match ((8, 2, 3)) { (a, b, c) when (a == 2) && (c == 3) => 42, _ => 99 }",
     "99",
   ),
   t(
     "guarded_match_5",
-    "data ADT = Foo((String, Number)) | Bar
+    "enum ADT { Foo((String, Number)), Bar }
      match (Foo(('abcd', 4))) {
-       | Foo((s, n)) when (s == 'abcd') && (n == 4) => 42
-       | Foo((s, n)) when (s == 'wxyz') && (n == 4) => 99
-       | Foo(_) when false => 90
-       | Foo(_) => 89
-       | Bar => 79
+       Foo((s, n)) when (s == 'abcd') && (n == 4) => 42,
+       Foo((s, n)) when (s == 'wxyz') && (n == 4) => 99,
+       Foo(_) when false => 90,
+       Foo(_) => 89,
+       Bar => 79
      }",
     "42",
   ),
   t(
     "guarded_match_6",
-    "data ADT = Foo((String, Number)) | Bar
+    "enum ADT { Foo((String, Number)), Bar }
      match (Foo(('abcd', 3))) {
-       | Foo((s, n)) when (s == 'abcd') && (n == 4) => 42
-       | Foo((s, n)) when (s == 'wxyz') && (n == 4) => 99
-       | Foo(_) when false => 90
-       | Foo(_) => 89
-       | Bar => 79
+       Foo((s, n)) when (s == 'abcd') && (n == 4) => 42,
+       Foo((s, n)) when (s == 'wxyz') && (n == 4) => 99,
+       Foo(_) when false => 90,
+       Foo(_) => 89,
+       Bar => 79
      }",
     "89",
   ),
   t(
     "guarded_match_7",
-    "data ADT = Foo((String, Number)) | Bar
+    "enum ADT { Foo((String, Number)), Bar }
      match (Foo(('wxyz', 4))) {
-       | Foo((s, n)) when (s == 'abcd') && (n == 4) => 42
-       | Foo((s, n)) when (s == 'wxyz') && (n == 4) => 99
-       | Foo(_) when false => 90
-       | Foo(_) => 89
-       | Bar => 79
+       Foo((s, n)) when (s == 'abcd') && (n == 4) => 42,
+       Foo((s, n)) when (s == 'wxyz') && (n == 4) => 99,
+       Foo(_) when false => 90,
+       Foo(_) => 89,
+       Bar => 79
      }",
     "99",
   ),
   t(
     "guarded_match_8",
-    "data ADT = Foo((String, Number)) | Bar
+    "enum ADT { Foo((String, Number)), Bar }
      match (Foo(('wxyz', 15))) {
-       | Foo((s, n)) when (s == 'abcd') && (n == 4) => 42
-       | Foo((s, n)) when (s == 'wxyz') && (n == 4) => 99
-       | Foo(_) when false => 90
-       | Foo(_) => 89
-       | Bar => 79
+       Foo((s, n)) when (s == 'abcd') && (n == 4) => 42,
+       Foo((s, n)) when (s == 'wxyz') && (n == 4) => 99,
+       Foo(_) when false => 90,
+       Foo(_) => 89,
+       Bar => 79
      }",
     "89",
   ),
   t(
     "guarded_match_9",
-    "data ADT = Foo((String, Number)) | Bar
+    "enum ADT { Foo((String, Number)), Bar }
      match (Bar) {
-       | Foo((s, n)) when (s == 'abcd') && (n == 4) => 42
-       | Foo((s, n)) when (s == 'wxyz') && (n == 4) => 99
-       | Foo(_) when false => 90
-       | Foo(_) => 89
-       | Bar => 79
+       Foo((s, n)) when (s == 'abcd') && (n == 4) => 42,
+       Foo((s, n)) when (s == 'wxyz') && (n == 4) => 99,
+       Foo(_) when false => 90,
+       Foo(_) => 89,
+       Bar => 79
      }",
     "79",
   ),
   // Constant patterns
   t(
     "constant_match_1",
-    "match (1/3) { | 5 => false | 2/6 => true | _ => false }",
+    "match (1/3) { 5 => false, 2/6 => true, _ => false }",
     "true",
   ),
   t(
     "constant_match_2",
-    "match (('foo', 5, false)) { | ('bar', 5, false) => false | ('foo', _, true) => false | ('foo', _, false) => true | _ => false }",
+    "match (('foo', 5, false)) { ('bar', 5, false) => false, ('foo', _, true) => false, ('foo', _, false) => true, _ => false }",
     "true",
   ),
   t(
     "constant_match_3",
-    "match ('foo') { | 'foo' when false => false | 'foo' when true => true | _ => false }",
+    "match ('foo') { 'foo' when false => false, 'foo' when true => true, _ => false }",
     "true",
   ),
   t(
     "constant_match_4",
-    "match (('foo', 5)) { | ('foo', n) when n == 7 => false | ('foo', 9) when true => false | ('foo', n) when n == 5 => true | _ => false }",
+    "match (('foo', 5)) { ('foo', n) when n == 7 => false, ('foo', 9) when true => false, ('foo', n) when n == 5 => true, _ => false }",
     "true",
   ),
   tfile("mixed_matching", "mixedPatternMatching", "true"),
@@ -1642,17 +1642,17 @@ let exception_tests = [
   ),
 ];
 
-let data_tests = [
-  tfile("basicdata", "basicdata", "(false, true, true)"),
+let enum_tests = [
+  tfile("basicenum", "basicenum", "(false, true, true)"),
   tfile(
     "adtprint",
     "adtprint",
     "Foo\nBar\nBaz(\"baz\")\nQux(5, \"qux\", false)\nQuux\nFlip(\"flip\")\nvoid",
   ),
-  t("adtprint_nonexported", "data Foo = Foo; Foo", "<adt value>"),
+  t("adtprint_nonexported", "enum Foo { Foo }; Foo", "<adt value>"),
   t(
     "adt_trailing",
-    "data Topping = Cheese(Bool,) | Pepperoni; Pepperoni",
+    "enum Topping { Cheese(Bool,), Pepperoni }; Pepperoni",
     "<adt value>",
   ),
 ];
@@ -1813,7 +1813,7 @@ let tests =
   @ import_tests
   @ optimization_tests
   @ string_tests
-  @ data_tests
+  @ enum_tests
   @ export_tests
   @ comment_tests
   @ number_tests

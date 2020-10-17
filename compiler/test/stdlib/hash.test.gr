@@ -40,7 +40,7 @@ assert Hash.hash('') == Hash.hash('')
 assert Hash.hash('grain > ore > wool > lumber > brick') == Hash.hash('grain > ore > wool > lumber > brick')
 
 
-data Variants = A | B | C | D(Number, List<Variants>) | E(String)
+enum Variants { A, B, C, D(Number, List<Variants>), E(String) }
 
 let variants = [
   A, B, C,
@@ -66,7 +66,7 @@ assert uniq(List.map(n => Hash.hash(n), tuples))
 assert Hash.hash((12, E('wasm'), 'gr')) == Hash.hash((12, E('wasm'), 'gr'))
 assert Hash.hash((0, A, '')) == Hash.hash((0, A, ''))
 
-data Rec = {
+record Rec {
   num: Number,
   var: Variants,
   str: String
