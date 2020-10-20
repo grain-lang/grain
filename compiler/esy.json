@@ -18,34 +18,31 @@
     "check-format": "dune build @fmt"
   },
   "dependencies": {
-    "@opam/grain": "*",
-    "@opam/grainc": "*",
-    "@opam/grain_utils": "*",
-    "@opam/grain_parsing": "*",
-    "@opam/grain_typed": "*",
-    "@opam/grain_middle_end": "*",
-    "@opam/grain_codegen": "*",
-    "@opam/fp": "*",
-    "@opam/fs": "*",
-    "@opam/utf8": "*",
+    "@grain/binaryen.ml": ">= 0.3.1",
+    "@opam/cmdliner": ">= 1.0.2",
+    "@opam/dune-build-info": ">= 2.0.0",
+    "@opam/dune": ">= 2.0.0",
+    "@opam/fp": "0.0.1",
+    "@opam/fs": "0.0.2",
+    "@opam/grain_dypgen": "0.2",
+    "@opam/ppx_deriving_yojson": ">= 3.5.2",
+    "@opam/ppx_expect": ">= 0.14.0",
+    "@opam/ppx_sexp_conv": ">= 0.14.0",
+    "@opam/reason": ">= 3.6.0",
+    "@opam/sexplib": ">= 0.14.0",
+    "@opam/utf8": "0.1.0",
+    "@opam/yojson": ">= 1.7.0",
     "ocaml": "4.11.0"
   },
   "devDependencies": {
-    "@opam/reason": "*",
-    "@opam/ocaml-lsp-server": "ocaml/ocaml-lsp:ocaml-lsp-server.opam#27e3d175bffb9beb1f18b3a48f908bab39145686"
+    "@opam/ocaml-lsp-server": "ocaml/ocaml-lsp:ocaml-lsp-server.opam#27e3d175bffb9beb1f18b3a48f908bab39145686",
+    "@opam/ounit": ">= 2.0.0"
   },
   "resolutions": {
-    "@opam/grain": "link:./grain.opam",
-    "@opam/grainc": "link:./grainc.opam",
-    "@opam/grain_utils": "link:./grain_utils.opam",
-    "@opam/grain_parsing": "link:./grain_parsing.opam",
-    "@opam/grain_typed": "link:./grain_typed.opam",
-    "@opam/grain_middle_end": "link:./grain_middle_end.opam",
-    "@opam/grain_codegen": "link:./grain_codegen.opam",
-    "@opam/fp": "facebookexperimental/reason-native:fp.opam#445493fca8d56ce58ee7c84a9e878a4303c9d296",
-    "@opam/fs": "facebookexperimental/reason-native:fs.opam#445493fca8d56ce58ee7c84a9e878a4303c9d296",
-    "@opam/utf8": "facebookexperimental/reason-native:utf8.opam#445493fca8d56ce58ee7c84a9e878a4303c9d296",
-    "@opam/reason": "facebook/reason:reason.opam#d7dca24d89ab5035c3a76e23e701bd2d7c1211b4"
+    "@opam/fp": "facebookexperimental/reason-native:fp.opam#a33f1528a6dd86c67f365e226c81312733181c87",
+    "@opam/fs": "facebookexperimental/reason-native:fs.opam#a33f1528a6dd86c67f365e226c81312733181c87",
+    "@opam/reason": "facebook/reason:reason.opam#d7dca24d89ab5035c3a76e23e701bd2d7c1211b4",
+    "@opam/utf8": "facebookexperimental/reason-native:utf8.opam#a33f1528a6dd86c67f365e226c81312733181c87"
   },
   "installConfig": {
     "pnp": false
