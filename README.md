@@ -22,7 +22,7 @@ There are tons of ways to contribute to Grain. Check out our [contributing guide
 
 ## Building
 
-To build Grain, you'll need [Node.js](https://nodejs.org/en/download/current/) v14, [Yarn](https://yarnpkg.com/getting-started/install), and [CMake](https://cgold.readthedocs.io/en/latest/first-step/installation.html). To get everything set up, run:
+To build Grain, you'll need [Node.js](https://nodejs.org/en/download/current/) v14 and [Yarn](https://yarnpkg.com/getting-started/install). To get everything set up, run:
 
 ```bash
 yarn
