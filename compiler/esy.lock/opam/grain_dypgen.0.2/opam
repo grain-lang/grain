@@ -10,11 +10,9 @@ depends: [
 ]
 patches: ["install-bsd-compatible.patch"]
 install: [
-  make
-  "install"
-  "DYPGENLIBDIR=%{lib}%"
-  "BINDIR=%{bin}%"
-  "MANDIR=%{man}%/man1"
+  [make "install" "DYPGENLIBDIR=%{lib}%" "BINDIR=%{bin}%" "MANDIR=%{man}%/man1"]
+  ["sh.exe" "-c" "if [ -f '%{bin}%/dypgen' ] && [ ! -f '%{bin}%/dypgen.exe' ] ; then mv '%{bin}%/dypgen' '%{bin}%/dypgen.exe' ; fi" ] { os = "win32" }
+  ["sh.exe" "-c" "if [ -f '%{bin}%/dypgen.opt' ] && [ ! -f '%{bin}%/dypgen.opt.exe' ] ; then mv '%{bin}%/dypgen.opt' '%{bin}%/dypgen.opt.exe' ; fi" ] { os = "win32" }
 ]
 synopsis: "Self-extensible parsers and lexers for OCaml"
 description: """
@@ -27,9 +25,9 @@ extra-files: [
   ["dypgen.install" "md5=3af2bc7343588caf1a6de8af49a3b1b5"]
 ]
 url {
-  src: "https://github.com/grain-lang/dypgen/archive/0.1.tar.gz"
+  src: "https://github.com/grain-lang/dypgen/archive/0.2.tar.gz"
   checksum: [
-    "md5=abf5514b873721d675f6568378b605c9"
-    "sha512=0e742efc003b9d974e7d1e82f51af7e550d25fc77bd024a6fc8f7d1a148678bdee1c58c14e6ef3bf335d7e4176446ff5b41d695020c7bd08bb960b14ef278831"
+    "md5=321d677c64368b4b6fae4a31aa8def64"
+    "sha512=b01044243d76550194ea1a9e93eb53f525ae9e88ef0a1d69c5c00ef7adf3791d88df72f8ccb47fe0966c54fc214ff8e54f3cdf34c7627ea10b3a1a64f2e683a0"
   ]
 }
