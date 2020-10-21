@@ -356,8 +356,10 @@ let rec print_out_type = ppf =>
 and print_out_type_1 = ppf =>
   fun
   | Otyp_arrow(ty1, ty2) => {
-      pp_open_box(ppf, 0);
+      pp_open_box(ppf, 1);
+      pp_print_char(ppf, '(');
       fprintf(ppf, "@[<0>%a@]", print_typlist(print_out_type_2, ", "), ty1);
+      pp_print_char(ppf, ')');
       pp_print_string(ppf, " ->");
       pp_print_space(ppf, ());
       print_out_type_1(ppf, ty2);
@@ -366,13 +368,18 @@ and print_out_type_1 = ppf =>
   | ty => print_out_type_2(ppf, ty)
 and print_out_type_2 = ppf =>
   fun
-  | Otyp_tuple(tyl) =>
-    fprintf(
-      ppf,
-      "@[<0>%a@]",
-      print_typlist(print_simple_out_type, " *"),
-      tyl,
-    )
+  | Otyp_tuple(tyl) => {
+      pp_open_box(ppf, 1);
+      pp_print_char(ppf, '(');
+      fprintf(
+        ppf,
+        "@[<0>%a@]",
+        print_typlist(print_simple_out_type, ", "),
+        tyl,
+      );
+      pp_print_char(ppf, ')');
+      pp_close_box(ppf, ());
+    }
   | ty => print_simple_out_type(ppf, ty)
 and print_simple_out_type = ppf =>
   fun
