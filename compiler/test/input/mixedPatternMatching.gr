@@ -1,32 +1,33 @@
 import * from 'list';
 
-export data Rec = {
+export record Rec {
   foo: List<Number>,
   bar: String
 };
 
-export data Poly =
-  | PList(List<Number>)
-  | PAssoc(Rec)
-  | PMulti(List<String>, Number, Rec)
-  | PPoly(List<Poly>);
+export enum Poly {
+  PList(List<Number>),
+  PAssoc(Rec),
+  PMulti(List<String>, Number, Rec),
+  PPoly(List<Poly>)
+};
 
 let test = (test) => {
   let (input, expected) = test;
   let result = match (input) {
-    | PList([]) => 1
-    | PList([a, b]) => a + b
-    | PList([a, ..._]) => a
-    | PAssoc({foo: [], _}) => 1
-    | PAssoc({foo: [a, b], _}) => a + b
-    | PAssoc({foo: [a, ..._], _}) => a
-    | PMulti([], a, {foo: [], _}) => a
-    | PMulti([_, ..._], a, {foo: [b, ..._], _}) => a + b
-    | PMulti([], _, {foo: [b, ..._], _}) => b
-    | PMulti([_, ..._], a, {foo: [b, c, ..._], _}) => a + b + c
-    | PPoly([PList([a]), PAssoc({foo: [b], _}), PMulti([], c, {foo: [d], _})]) => a + b + c + d
-    | PPoly([]) => 42
-    | PPoly([_, ..._]) => 43
+    PList([]) => 1,
+    PList([a, b]) => a + b,
+    PList([a, ..._]) => a,
+    PAssoc({foo: [], _}) => 1,
+    PAssoc({foo: [a, b], _}) => a + b,
+    PAssoc({foo: [a, ..._], _}) => a,
+    PMulti([], a, {foo: [], _}) => a,
+    PMulti([_, ..._], a, {foo: [b, ..._], _}) => a + b,
+    PMulti([], _, {foo: [b, ..._], _}) => b,
+    PMulti([_, ..._], a, {foo: [b, c, ..._], _}) => a + b + c,
+    PPoly([PList([a]), PAssoc({foo: [b], _}), PMulti([], c, {foo: [d], _})]) => a + b + c + d,
+    PPoly([]) => 42,
+    PPoly([_, ..._]) => 43,
   };
   result == expected
 };

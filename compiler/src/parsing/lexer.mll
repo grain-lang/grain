@@ -160,7 +160,8 @@ rule token = parse
   | "from" { FROM }
   | "->" { ARROW }
   | "=>" { THICKARROW }
-  | "data" { DATA }
+  | "enum" { ENUM }
+  | "record" { RECORD }
   | "|" { PIPE }
   | "let" { LET }
   | "mut" { MUT }

@@ -5,8 +5,8 @@ export *
 let length = (list) => {
   let rec iter = (len, list) => {
     match (list) {
-    | [] => len
-    | [_, ...rest] => iter(len + 1, rest)
+      [] => len,
+      [_, ...rest] => iter(len + 1, rest)
     }
   }
   iter(0, list)
@@ -15,8 +15,8 @@ let length = (list) => {
 let sum = list => {
   let rec iter = (n, list) => {
     match (list) {
-    | [] => n
-    | [first, ...rest] => iter(n + first, rest)
+      [] => n,
+      [first, ...rest] => iter(n + first, rest)
     }
   }
   iter(0, list)
@@ -25,8 +25,8 @@ let sum = list => {
 let reverse = (list) => {
   let rec iter = (list, acc) => {
     match (list) {
-      | [] => acc
-      | [first, ...rest] => iter(rest, [first, ...acc])
+      [] => acc,
+      [first, ...rest] => iter(rest, [first, ...acc])
     }
   }
   iter(list, [])
@@ -34,44 +34,44 @@ let reverse = (list) => {
 
 let rec append = (list1, list2) => {
   match (list1) {
-    | [] => list2
-    | [first, ...rest] => [first, ...append(rest, list2)]
+    [] => list2,
+    [first, ...rest] => [first, ...append(rest, list2)]
   }
 }
 
 let rec contains = (value, list) => {
   match (list) {
-    | [] => false
-    | [first, ...rest] => (first == value) || contains(value, rest)
+    [] => false,
+    [first, ...rest] => (first == value) || contains(value, rest)
   }
 }
 
 let rec reduce = (fn, acc, list) => {
   match (list) {
-    | [] => acc
-    | [first, ...rest] => reduce(fn, fn(acc, first), rest)
+    [] => acc,
+    [first, ...rest] => reduce(fn, fn(acc, first), rest)
   }
 }
 
 let rec reduceRight = (fn, acc, list) => {
   match (list) {
-    | [] => acc
-    | [first, ...rest] => fn(first, reduceRight(fn, acc, rest))
+    [] => acc,
+    [first, ...rest] => fn(first, reduceRight(fn, acc, rest))
   }
 }
 
 let rec map = (fn, list) => {
   match (list) {
-    | [] => []
-    | [first, ...rest] => [fn(first), ...map(fn, rest)]
+    [] => [],
+    [first, ...rest] => [fn(first), ...map(fn, rest)]
   }
 }
 
 let mapi = (fn, list) => {
   let rec iter = (fn, list, index) => {
     match (list) {
-      | [] => []
-      | [first, ...rest] => [fn(first, index), ...iter(fn, rest, index + 1)]
+      [] => [],
+      [first, ...rest] => [fn(first, index), ...iter(fn, rest, index + 1)]
     }
   }
   iter(fn, list, 0)
@@ -79,8 +79,8 @@ let mapi = (fn, list) => {
 
 let rec flatMap = (fn, list) => {
   match (list) {
-    | [] => []
-    | [first, ...rest] => append(fn(first), flatMap(fn, rest))
+    [] => [],
+    [first, ...rest] => append(fn(first), flatMap(fn, rest))
   }
 }
 
@@ -94,8 +94,8 @@ let some = (fn, list) => {
 
 let rec forEach = (fn, list) => {
   match (list) {
-    | [] => void
-    | [first, ...rest] => {
+    [] => void,
+    [first, ...rest] => {
       fn(first)
       forEach(fn, rest)
     }
@@ -105,8 +105,8 @@ let rec forEach = (fn, list) => {
 let forEachi = (fn, list) => {
   let rec iter = (fn, list, index) => {
     match (list) {
-      | [] => void
-      | [first, ...rest] => {
+      [] => void,
+      [first, ...rest] => {
         fn(first, index)
         iter(fn, rest, index + 1)
       }
@@ -117,29 +117,29 @@ let forEachi = (fn, list) => {
 
 let rec filter = (fn, list) => {
   match (list) {
-    | [] => []
-    | [first, ...rest] => if (fn(first)) [first, ...filter(fn, rest)] else filter(fn, rest)
+    [] => [],
+    [first, ...rest] => if (fn(first)) [first, ...filter(fn, rest)] else filter(fn, rest)
   }
 }
 
 let rec reject = (fn, list) => {
   match (list) {
-    | [] => []
-    | [first, ...rest] => if (!fn(first)) [first, ...reject(fn, rest)] else reject(fn, rest)
+    [] => [],
+    [first, ...rest] => if (!fn(first)) [first, ...reject(fn, rest)] else reject(fn, rest)
   }
 }
 
 let head = (list) => {
   match (list) {
-    | [] => fail 'head cannot get the first element of an empty List'
-    | [first, ..._] => first
+    [] => fail 'head cannot get the first element of an empty List',
+    [first, ..._] => first
   }
 }
 
 let tail = (list) => {
   match (list) {
-    | [] => fail 'tail cannot get any elements from an empty List'
-    | [_, ...rest] => rest
+    [] => fail 'tail cannot get any elements from an empty List',
+    [_, ...rest] => rest
   }
 }
 
@@ -148,16 +148,16 @@ let rec nth = (index, list) => {
     fail 'nth index cannot be a negative number'
   } else {
     match (list) {
-      | [] => fail 'nth index is out-of-bounds'
-      | [first, ...rest] => if (index == 0) first else nth(index - 1, rest)
+      [] => fail 'nth index is out-of-bounds',
+      [first, ...rest] => if (index == 0) first else nth(index - 1, rest)
     }
   }
 }
 
 let rec flatten = (list) => {
   match (list) {
-    | [] => []
-    | [first, ...rest] => append(first, flatten(rest))
+    [] => [],
+    [first, ...rest] => append(first, flatten(rest))
   }
 }
 
@@ -166,8 +166,8 @@ let rec insert = (value, index, list) => {
     fail 'insert index cannot be a negative number'
   } else {
     match(list) {
-      | [] => if (index == 0) [value] else fail 'insert index is out-of-bounds'
-      | [first, ...rest] => if (index == 0) [value, ...list] else [first, ...insert(value, index - 1, rest)]
+      [] => if (index == 0) [value] else fail 'insert index is out-of-bounds',
+      [first, ...rest] => if (index == 0) [value, ...list] else [first, ...insert(value, index - 1, rest)]
     }
   }
 }
@@ -175,8 +175,8 @@ let rec insert = (value, index, list) => {
 let count = (fn, list) => {
   let rec iter = (n, list) => {
     match (list) {
-    | [] => n
-    | [first, ...rest] => if (fn(first)) iter(n + 1, rest) else iter(n, rest)
+      [] => n,
+      [first, ...rest] => if (fn(first)) iter(n + 1, rest) else iter(n, rest)
     }
   }
   iter(0, list)
@@ -188,8 +188,8 @@ let part = (count, list) => {
   } else {
     let rec iter = (list1, list2, count) => {
       match (list2) {
-        | [] => if (count > 0) fail 'part count is out-of-bounds' else (list1, list2)
-        | [first, ...rest] => if (count > 0) iter([first, ...list1], rest, count - 1) else (list1, list2)
+        [] => if (count > 0) fail 'part count is out-of-bounds' else (list1, list2),
+        [first, ...rest] => if (count > 0) iter([first, ...list1], rest, count - 1) else (list1, list2)
       }
     }
     let (pt1, pt2) = iter([], list, count)
@@ -205,8 +205,8 @@ let rotate = (count, list) => {
 let unique = (list) => {
   let rec iter = (list, acc) => {
     match (list) {
-      | [] => reverse(acc)
-      | [first, ...rest] => if (contains(first, acc)) iter(rest, acc) else iter(rest, [first, ...acc])
+      [] => reverse(acc),
+      [first, ...rest] => if (contains(first, acc)) iter(rest, acc) else iter(rest, [first, ...acc])
     }
   }
   iter(list, [])
@@ -217,17 +217,17 @@ let rec drop = (n, list) => {
     fail 'number of items to drop cannot be a negative number'
   } else {
     match ((n, list)) {
-      | (_,[]) => []
-      | (n, _) when n == 0 => list
-      | (n, [first, ...rest]) => drop(n - 1, rest)
+      (_,[]) => [],
+      (n, _) when n == 0 => list,
+      (n, [first, ...rest]) => drop(n - 1, rest)
     }
   }
 }
 
 let rec dropWhile = (fn, list) => {
   match (list) {
-    | [] => list
-    | [first, ...rest] => if (fn(first)) dropWhile(fn, rest) else list
+    [] => list,
+    [first, ...rest] => if (fn(first)) dropWhile(fn, rest) else list
   }
 }
 
@@ -236,32 +236,32 @@ let rec take = (n, list) => {
     fail 'number of items to take cannot be a negative number'
   } else {
     match ((n, list)) {
-      | (_, []) => list
-      | (n, _) when n == 0 => []
-      | (n, [first, ...rest]) => [first, ...take(n-1, rest)]
+      (_, []) => list,
+      (n, _) when n == 0 => [],
+      (n, [first, ...rest]) => [first, ...take(n-1, rest)]
     }
   }
 }
 
 let rec takeWhile = (p, list) => {
   match (list) {
-    | [] => []
-    | [first, ...rest] => if (p(first)) [first, ...takeWhile(p, rest)] else [] 
+    [] => [],
+    [first, ...rest] => if (p(first)) [first, ...takeWhile(p, rest)] else [] 
   }
 }
 
 let rec find = (fn, list) => {
   match (list) {
-    | [] => fail 'could not find a match'
-    | [first, ...rest] => if (fn(first)) first else find(fn, rest)
+    [] => fail 'could not find a match',
+    [first, ...rest] => if (fn(first)) first else find(fn, rest)
   }
 }
 
 let findIndex = (fn, list) => {
   let rec findItemIndex = (l, index) => {
     match (l) {
-      | [] => fail 'could not find a match'
-      | [first, ...rest] => if (fn(first)) index else findItemIndex(rest, index + 1)
+      [] => fail 'could not find a match',
+      [first, ...rest] => if (fn(first)) index else findItemIndex(rest, index + 1)
     }
   }
   findItemIndex(list, 0)

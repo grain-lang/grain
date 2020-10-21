@@ -3,8 +3,8 @@ import List from 'list';
 import Array from 'array';
 
 // Data types used in multiple tests
-data Resource = Grain | Sheep | Brick | Wood;
-data ResourceData = { name: String, emoji: String }
+enum Resource { Grain, Sheep, Brick, Wood };
+record ResourceData { name: String, emoji: String }
 
 // Map.isEmpty()
 
@@ -149,10 +149,10 @@ let mut called = 0;
 Map.forEach((key, value) => {
   called += 1;
   match (key) {
-    | Grain => assert value == "🌾"
-    | Sheep => assert value == "🐑"
-    | Brick => assert value == "🧱"
-    | _ => fail "Map.forEach() should not contain this value."
+    Grain => assert value == "🌾",
+    Sheep => assert value == "🐑",
+    Brick => assert value == "🧱",
+    _ => fail "Map.forEach() should not contain this value."
   }
 }, fe);
 
@@ -171,10 +171,10 @@ let mut called = 0;
 let result = Map.reduce((acc, key, value) => {
   called += 1;
   match (key) {
-    | Grain => assert value == 1
-    | Sheep => assert value == 2
-    | Brick => assert value == 3
-    | _ => fail "Map.reduce() should not contain this value."
+    Grain => assert value == 1,
+    Sheep => assert value == 2,
+    Brick => assert value == 3,
+    _ => fail "Map.reduce() should not contain this value."
   };
   acc + value
 }, 0, r);
