@@ -1,5 +1,5 @@
 import { GrainError } from '../errors/errors';
-import { wasi, readFile, readURL } from './grain-module';
+import { wasi, readFile, readURL, readBuffer } from './grain-module';
 import { makePrint } from '../lib/print';
 import { makeToString } from '../lib/to-string';
 import { grainToString } from '../utils/utils';
@@ -129,6 +129,21 @@ export class GrainRunner {
 
   async runURLUnboxed(path) {
     let module = await this.loadURL(path);
+    return module.runUnboxed();
+  }
+
+  async loadBuffer(buffer) {
+    let module = await readBuffer(buffer);
+    return this.load(module.name, module);
+  }
+
+  async runBuffer(buffer) {
+    let module = await this.loadBuffer(buffer);
+    return module.start();
+  }
+
+  async runBufferUnboxed(buffer) {
+    let module = await this.loadBuffer(buffer);
     return module.runUnboxed();
   }
 }

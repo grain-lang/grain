@@ -233,3 +233,8 @@ export async function readURL(url) {
   let module = await WebAssembly.compileStreaming(response);
   return new GrainModule(module, modname);
 }
+
+export async function readBuffer(buffer, modname) {
+  let module = await WebAssembly.compile(buffer);
+  return new GrainModule(module, modname);
+}
