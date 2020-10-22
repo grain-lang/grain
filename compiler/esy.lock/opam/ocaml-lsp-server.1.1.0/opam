@@ -1,0 +1,51 @@
+opam-version: "2.0"
+synopsis: "LSP Server for OCaml"
+description: "An LSP server for OCaml."
+maintainer: ["Rudi Grinberg <me@rgrinerg.com>"]
+authors: [
+  "Andrey Popp <8mayday@gmail.com>"
+  "Rusty Key <iam@stfoo.ru>"
+  "Louis Roché <louis@louisroche.net>"
+  "Oleksiy Golovko <alexei.golovko@gmail.com>"
+  "Rudi Grinberg <me@rgrinberg.com>"
+  "Sacha Ayoun <sachaayoun@gmail.com>"
+  "cannorin <cannorin@gmail.com>"
+]
+license: "ISC"
+homepage: "https://github.com/ocaml/ocaml-lsp"
+bug-reports: "https://github.com/ocaml/ocaml-lsp/issues"
+depends: [
+  "yojson"
+  "stdlib-shims"
+  "menhir"
+  "ppx_yojson_conv_lib"
+  "dune-build-info"
+  "csexp" {>= "1.2.3"}
+  "result" {>= "1.5"}
+  "ocamlformat" {with-test}
+  "reason" {with-test}
+  "ocamlfind" {>= "1.5.2"}
+  "ocaml" {>= "4.06"}
+  "dune" {>= "2.5.0"}
+]
+dev-repo: "git+https://github.com/ocaml/ocaml-lsp.git"
+build: [
+  ["dune" "subst"] {pinned}
+  [
+    "dune"
+    "build"
+    "-j"
+    jobs
+    "ocaml-lsp-server.install"
+    "--release"
+  ]
+]
+x-commit-hash: "fee074471b2c345f7e42c6ed3482363279d4f32c"
+url {
+  src:
+    "https://github.com/ocaml/ocaml-lsp/releases/download/1.1.0/ocaml-lsp-server-1.1.0.tbz"
+  checksum: [
+    "sha256=fa0ca1d3c5c3377f798c221381228a65e8f49fece42715d279ebe91f2f4f74c8"
+    "sha512=c00ad47478a4ddfebe3798895700d2bececa29a610c7757619f47a5b90ede921afa56efc776df3a1c4a8b2f082898423a5806d00c041dae137da1b57ee487a9b"
+  ]
+}
