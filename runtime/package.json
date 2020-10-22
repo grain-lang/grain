@@ -1,6 +1,6 @@
 {
   "name": "@grain/runtime",
-  "version": "0.0.0",
+  "version": "0.2.0",
   "description": "The JavaScript runtime for the Grain language.",
   "main": "src/index.js",
   "scripts": {
