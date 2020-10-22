@@ -37,7 +37,7 @@
     "ocaml": "4.11.0"
   },
   "devDependencies": {
-    "@opam/ocaml-lsp-server": "ocaml/ocaml-lsp:ocaml-lsp-server.opam#27e3d175bffb9beb1f18b3a48f908bab39145686",
+    "@opam/ocaml-lsp-server": "1.1.0",
     "@opam/ounit": ">= 2.0.0"
   },
   "resolutions": {
