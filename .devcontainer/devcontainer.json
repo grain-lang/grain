@@ -3,7 +3,8 @@
 {
   "name": "Grain",
   "build": {
-    "dockerfile": "Dockerfile"
+    "dockerfile": "Dockerfile",
+    "context": ".."
   },
   // Set *default* container specific settings.json values on container create.
   "settings": {
