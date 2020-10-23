@@ -3,10 +3,7 @@
 {
   "name": "Grain",
   "build": {
-    "dockerfile": "Dockerfile",
-    "args": {
-      "VARIANT": "14"
-    }
+    "dockerfile": "Dockerfile"
   },
   // Set *default* container specific settings.json values on container create.
   "settings": {
@@ -15,8 +12,9 @@
   // Add the IDs of extensions you want installed when the container is created.
   "extensions": [
     "ocamllabs.ocaml-platform",
-    "grain-lang.vscode-grain"
+    "grain-lang.vscode-grain",
+    "ms-azuretools.vscode-docker",
   ],
   // Specifies a command that should be run after the container has been created.
-  "postCreateCommand": "yarn; yarn vscode; yarn setup; yarn compiler build;"
+  "postCreateCommand": "yarn setup; yarn compiler build;"
 }
