@@ -1,0 +1,27 @@
+// For format details, see https://aka.ms/vscode-remote/devcontainer.json or this file's README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.134.0/containers/javascript-node
+{
+  "name": "Grain",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "args": {
+      "VARIANT": "14"
+    }
+  },
+  // Set *default* container specific settings.json values on container create.
+  "settings": {
+    "terminal.integrated.shell.linux": "/bin/bash"
+  },
+  // Add the IDs of extensions you want installed when the container is created.
+  "extensions": [
+    "ocamllabs.ocaml-platform",
+    "grain-lang.vscode-grain"
+  ],
+  // Specifies a command that should be run after the container has been created.
+  "postCreateCommand": [
+    "yarn",
+    "yarn vscode",
+    "yarn setup",
+    "yarn compiler build"
+  ]
+}
