@@ -18,10 +18,5 @@
     "grain-lang.vscode-grain"
   ],
   // Specifies a command that should be run after the container has been created.
-  "postCreateCommand": [
-    "yarn",
-    "yarn vscode",
-    "yarn setup",
-    "yarn compiler build"
-  ]
+  "postCreateCommand": "yarn; yarn vscode; yarn setup; yarn compiler build;"
 }
