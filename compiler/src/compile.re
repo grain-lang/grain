@@ -32,28 +32,6 @@ type compilation_action =
 let compile_prog = p =>
   Compcore.module_to_bytes @@ Compcore.compile_wasm_module(p);
 
-let initial_funcs = [
-  ("print", (Lexing.dummy_pos, Lexing.dummy_pos), false),
-  ("equal", (Lexing.dummy_pos, Lexing.dummy_pos), true),
-  ("toString", (Lexing.dummy_pos, Lexing.dummy_pos), true),
-  ("input", (Lexing.dummy_pos, Lexing.dummy_pos), false),
-  ("strcat", (Lexing.dummy_pos, Lexing.dummy_pos), true),
-  ("strlen", (Lexing.dummy_pos, Lexing.dummy_pos), true),
-  ("strslice", (Lexing.dummy_pos, Lexing.dummy_pos), true),
-  ("DOM::query", (Lexing.dummy_pos, Lexing.dummy_pos), false),
-  ("DOM::setText", (Lexing.dummy_pos, Lexing.dummy_pos), false),
-  (
-    "DOM::dangerouslySetInnerHTML",
-    (Lexing.dummy_pos, Lexing.dummy_pos),
-    false,
-  ),
-  ("DOM::addEventListener", (Lexing.dummy_pos, Lexing.dummy_pos), false),
-];
-
-/* Environment containing initial functions */
-/* Deprecated */
-let initial_load_env = List.map(((n, l, _)) => (n, l), initial_funcs);
-
 let log_state = state =>
   if (Grain_utils.Config.verbose^) {
     let prerr_sexp = (conv, x) =>
