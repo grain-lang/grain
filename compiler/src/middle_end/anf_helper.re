@@ -95,13 +95,17 @@ module AExp = {
 };
 
 module Imp = {
-  let mk = (use_id, d, s) => {
+  let mk = (use_id, d, s, e) => {
     imp_use_id: use_id,
     imp_desc: d,
     imp_shape: s,
+    imp_exported: e,
     imp_analyses: ref([]),
   };
-  let grain_value = (a, md, name, s) => mk(a, GrainValue(md, name), s);
-  let wasm_func = (a, md, name, s) => mk(a, WasmFunction(md, name), s);
-  let js_func = (a, md, name, s) => mk(a, JSFunction(md, name), s);
+  let grain_value = (~glob=Nonglobal, a, md, name, s) =>
+    mk(a, GrainValue(md, name), s, glob);
+  let wasm_func = (~glob=Nonglobal, a, md, name, s) =>
+    mk(a, WasmFunction(md, name), s, glob);
+  let js_func = (~glob=Nonglobal, a, md, name, s) =>
+    mk(a, JSFunction(md, name), s, glob);
 };

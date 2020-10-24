@@ -131,8 +131,11 @@ module AExp: {
 };
 
 module Imp: {
-  let mk: (ident, import_desc, import_shape) => import_spec;
-  let grain_value: (ident, string, string, import_shape) => import_spec;
-  let wasm_func: (ident, string, string, import_shape) => import_spec;
-  let js_func: (ident, string, string, import_shape) => import_spec;
+  let mk: (ident, import_desc, import_shape, global_flag) => import_spec;
+  let grain_value:
+    (~glob: global_flag=?, ident, string, string, import_shape) => import_spec;
+  let wasm_func:
+    (~glob: global_flag=?, ident, string, string, import_shape) => import_spec;
+  let js_func:
+    (~glob: global_flag=?, ident, string, string, import_shape) => import_spec;
 };

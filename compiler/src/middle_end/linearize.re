@@ -1016,12 +1016,18 @@ let rec transl_anf_statement =
       (None, []);
     };
   | TTopException(_, ext) => (Some(linearize_exception(env, ext)), [])
-  | TTopForeign(desc) =>
+  | TTopForeign(exported, desc) =>
     let arity = Ctype.arity(desc.tvd_desc.ctyp_type);
+    let glob =
+      switch (exported) {
+      | Exported => Global
+      | Nonexported => Nonglobal
+      };
     (
       None,
       [
         Imp.wasm_func(
+          ~glob,
           desc.tvd_id,
           desc.tvd_mod.txt,
           desc.tvd_name.txt,
