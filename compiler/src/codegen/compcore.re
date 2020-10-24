@@ -3328,14 +3328,8 @@ let compile_exports =
     export;
   };
 
-  let compile_lambda_export = (i, _) => {
-    let internal_name = "func_" ++ string_of_int(i + env.func_offset);
-    let external_name = "GRAIN$LAM_" ++ string_of_int(i);
-    Export.add_function_export(wasm_mod, internal_name, external_name);
-  };
   let main_idx = env.func_offset + List.length(functions);
   let cleanup_globals_idx = main_idx + 1;
-  ignore @@ List.mapi(compile_lambda_export, functions);
   let exports = {
     let exported = Hashtbl.create(14);
     /* Exports are already reversed, so keeping the first of any name is the correct behavior. */
