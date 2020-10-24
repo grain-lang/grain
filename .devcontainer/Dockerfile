@@ -3,14 +3,14 @@ FROM mcr.microsoft.com/vscode/devcontainers/javascript-node:14
 
 # We want to cache the heavy stuff, so we first just copy in the dependencies
 # and install them with yarn/esy:
-COPY ./package.json /
-COPY ./compiler/package.json /compiler/
-COPY ./runtime/package.json /runtime/
-COPY ./cli/package.json /cli/
-COPY ./stdlib/package.json /stdlib/
-COPY ./compiler/esy.json /compiler
-COPY ./compiler/esy.lock /compiler
-COPY ./yarn.lock /
+COPY ./package.json /root/workspace/grain/
+COPY ./compiler/package.json /root/workspace/grain/compiler/
+COPY ./compiler/esy.json /root/workspace/grain/compiler/
+COPY ./compiler/esy.lock /root/workspace/grain/compiler/
+COPY ./runtime/package.json /root/workspace/grain/runtime/
+COPY ./cli/package.json /root/workspace/grain/cli/
+COPY ./stdlib/package.json /root/workspace/grain/stdlib/
+COPY ./yarn.lock /root/workspace/grain/
 
 RUN yarn install --pure-lockfile
 RUN yarn compiler setup
