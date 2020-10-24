@@ -17,5 +17,5 @@
     "ms-azuretools.vscode-docker",
   ],
   // Specifies a command that should be run after the container has been created.
-  "postCreateCommand": "yarn; yarn setup; yarn compiler setup; yarn compiler import-from /prebuild/_exports; yarn compiler build;"
+  "postCreateCommand": "yarn; yarn setup; yarn compiler setup; yarn compiler import-from /prebuild/_export; yarn compiler build;"
 }
