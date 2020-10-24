@@ -53,14 +53,18 @@ let next_lift = () => {
 
 /** Global index (index of global variables) */
 
-let global_table = ref(Ident.empty: Ident.tbl((int32, int32)));
+let global_table = ref(Ident.empty: Ident.tbl((bool, int32, int32)));
 let global_index = ref(0);
 
 let global_exports = () => {
   let tbl = global_table^;
   Ident.fold_all(
-    (ex_name, (ex_global_index, ex_getter_index), acc) =>
-      [{ex_name, ex_global_index, ex_getter_index}, ...acc],
+    (ex_name, (exported, ex_global_index, ex_getter_index), acc) =>
+      if (exported) {
+        [{ex_name, ex_global_index, ex_getter_index}, ...acc];
+      } else {
+        acc;
+      },
     tbl,
     [],
   );
@@ -71,17 +75,17 @@ let reset_global = () => {
   global_index := 0;
 };
 
-let next_global = id =>
+let next_global = (exported, id) =>
   /* RIP Hygiene (this behavior works as expected until we have more metaprogramming constructs) */
   switch (Ident.find_same_opt(id, global_table^)) {
-  | Some((ret, ret_get)) => (Int32.to_int(ret), Int32.to_int(ret_get))
+  | Some((_, ret, ret_get)) => (Int32.to_int(ret), Int32.to_int(ret_get))
   | None =>
     let ret = global_index^;
     let ret_get = next_lift();
     global_table :=
       Ident.add(
         id,
-        (Int32.of_int(ret), Int32.of_int(ret_get)),
+        (exported, Int32.of_int(ret), Int32.of_int(ret_get)),
         global_table^,
       );
     global_index := ret + 1;
@@ -460,8 +464,8 @@ let compile_wrapper = (env, func_name, arity): Mashtree.closure_data => {
   };
 };
 
-let next_global = id => {
-  let (ret, idx) = next_global(id);
+let next_global = (~exported=false, id) => {
+  let (ret, idx) = next_global(exported, id);
   if (ret != global_index^ - 1) {
     ret;
   } else {
@@ -602,7 +606,7 @@ and compile_anf_expr = (env, a) =>
   | AELet(global, recflag, binds, body) =>
     let get_loc = (idx, (id, _)) =>
       switch (global) {
-      | Global => MGlobalBind(Int32.of_int(next_global(id)))
+      | Global => MGlobalBind(Int32.of_int(next_global(~exported=true, id)))
       | Nonglobal => MLocalBind(Int32.of_int(env.ce_stack_idx + idx))
       };
     let locations = List.mapi(get_loc, binds);
@@ -693,8 +697,11 @@ let lift_imports = (env, imports) => {
       );
 
   let process_import =
-      ((imports, setups, env), {imp_use_id, imp_desc, imp_shape}) => {
-    let glob = next_global(imp_use_id);
+      (
+        (imports, setups, env),
+        {imp_use_id, imp_desc, imp_shape, imp_exported},
+      ) => {
+    let glob = next_global(~exported=imp_exported == Global, imp_use_id);
     switch (imp_desc) {
     | GrainValue(mod_, name) =>
       let new_mod = {

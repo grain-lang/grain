@@ -157,6 +157,7 @@ type import_spec = {
   imp_use_id: Ident.t, /* <- internal references to the name will use this */
   imp_desc: import_desc,
   imp_shape: import_shape,
+  imp_exported: global_flag,
   imp_analyses: ref(list(analysis)),
 };
 

@@ -400,7 +400,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       | Nonexported => None
       };
     let foreign = {
-      ttop_desc: TTopForeign(desc),
+      ttop_desc: TTopForeign(e, desc),
       ttop_loc: loc,
       ttop_env: env,
     };
