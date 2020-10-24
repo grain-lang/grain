@@ -22,6 +22,7 @@
     "check-format": "esy check-format",
     "import-dependencies": "esy import-dependencies _export",
     "export-dependencies": "esy export-dependencies",
-    "build-dependencies": "esy build-dependencies"
+    "build-dependencies": "esy build-dependencies",
+    "import-from": "esy import-dependencies"
   }
 }
