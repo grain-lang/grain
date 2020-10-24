@@ -12,6 +12,7 @@ COPY ./cli/package.json /root/workspace/grain/cli/
 COPY ./stdlib/package.json /root/workspace/grain/stdlib/
 COPY ./yarn.lock /root/workspace/grain/
 
+WORKDIR /root/workspace/grain
 RUN yarn install --pure-lockfile
 RUN yarn compiler setup
 # Slow!
