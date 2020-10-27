@@ -57,12 +57,29 @@ let compile_string = name => {
 
   try(
     ignore(
-      Compile.compile_string(~hook=stop_after_typed, ~name, program_str^),
+      {
+        let compileState =
+          Compile.compile_string(~hook=stop_after_typed, ~name, program_str^);
+
+        switch (compileState.cstate_desc) {
+        | TypeChecked(typed_program) =>
+          // print_endline("Typed OK");
+          let lenses: list(Lsp.Lenses.lens_t) =
+            Lsp.Lenses.output_lenses(typed_program);
+
+          let json = Lsp.Output.result_to_json(~errors=[], ~lenses);
+          print_endline(json);
+        | _ => ()
+        };
+      },
     )
   ) {
   | exn =>
-    let err_rep = Grain_parsing.Location.print_exception(exn);
-    print_string(err_rep);
+    //  let err_rep = Lsp.Output.exnToJson(exn);
+    //  print_string(err_rep);
+
+    let json = Lsp.Output.result_to_json(~errors=[], ~lenses=[]);
+    print_endline(json);
   };
 
   /* as the compiler throws an exception on an error, we always just return OK */
