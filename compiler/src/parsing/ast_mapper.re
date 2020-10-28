@@ -337,8 +337,8 @@ module TL = {
     switch (desc) {
     | PTopImport(decls) =>
       Top.import(~loc, ~attributes, sub.import(sub, decls))
-    | PTopForeign(e, d) =>
-      Top.foreign(~loc, ~attributes, e, sub.value_description(sub, d))
+    | PTopForeign(e, t, d) =>
+      Top.foreign(~loc, ~attributes, e, t, sub.value_description(sub, d))
     | PTopPrimitive(e, d) =>
       Top.primitive(~loc, ~attributes, e, sub.value_description(sub, d))
     | PTopData(e, dd) => Top.data(~loc, ~attributes, e, sub.data(sub, dd))

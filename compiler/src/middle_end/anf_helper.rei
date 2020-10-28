@@ -347,4 +347,7 @@ module Imp: {
   let js_func:
     (~global: global_flag=?, ident, string, string, import_shape) =>
     import_spec;
+  let js_value:
+    (~global: global_flag=?, ident, string, string, import_shape) =>
+    import_spec;
 };

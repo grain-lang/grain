@@ -17,6 +17,8 @@ type loc('a) =
 type export_flag = Asttypes.export_flag = | Nonexported | Exported;
 type rec_flag = Asttypes.rec_flag = | Nonrecursive | Recursive;
 type mut_flag = Asttypes.mut_flag = | Mutable | Immutable;
+type foreign_module_type =
+  Asttypes.foreign_module_type = | WasmForeign | JSForeign;
 
 /** Type for syntax-level types */
 
@@ -496,7 +498,7 @@ type export_except =
 [@deriving (sexp, yojson)]
 type toplevel_stmt_desc =
   | PTopImport(import_declaration)
-  | PTopForeign(export_flag, value_description)
+  | PTopForeign(export_flag, foreign_module_type, value_description)
   | PTopPrimitive(export_flag, value_description)
   | PTopData(export_flag, data_declaration)
   | PTopLet(export_flag, rec_flag, mut_flag, list(value_binding))

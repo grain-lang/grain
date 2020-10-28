@@ -219,7 +219,13 @@ module Top: {
     (~loc: loc=?, ~attributes: attributes=?, import_declaration) =>
     toplevel_stmt;
   let foreign:
-    (~loc: loc=?, ~attributes: attributes=?, export_flag, value_description) =>
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      export_flag,
+      foreign_module_type,
+      value_description
+    ) =>
     toplevel_stmt;
   let primitive:
     (~loc: loc=?, ~attributes: attributes=?, export_flag, value_description) =>

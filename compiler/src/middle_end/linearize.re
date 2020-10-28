@@ -1348,7 +1348,7 @@ let rec transl_anf_statement =
       (None, []);
     };
   | TTopException(_, ext) => (Some(linearize_exception(env, ext)), [])
-  | TTopForeign(exported, desc) =>
+  | TTopForeign(exported, foreign_type, desc) =>
     let global =
       switch (exported) {
       | Exported => Global
@@ -1358,10 +1358,15 @@ let rec transl_anf_statement =
     | TTyArrow(_) =>
       let (argsty, retty) =
         get_fn_allocation_type(env, desc.tvd_desc.ctyp_type);
+      let func =
+        switch (foreign_type) {
+        | WasmForeign => Imp.wasm_func
+        | JSForeign => Imp.js_func
+        };
       (
         None,
         [
-          Imp.wasm_func(
+          func(
             ~global,
             desc.tvd_id,
             desc.tvd_mod.txt,
@@ -1372,10 +1377,15 @@ let rec transl_anf_statement =
       );
     | _ =>
       let ty = get_allocation_type(env, desc.tvd_desc.ctyp_type);
+      let value =
+        switch (foreign_type) {
+        | WasmForeign => Imp.wasm_value
+        | JSForeign => Imp.js_value
+        };
       (
         None,
         [
-          Imp.wasm_value(
+          value(
             ~global,
             desc.tvd_id,
             desc.tvd_mod.txt,

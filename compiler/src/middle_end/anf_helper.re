@@ -336,4 +336,6 @@ module Imp = {
     mk(a, WasmValue(md, name), s, global);
   let js_func = (~global=Nonglobal, a, md, name, s) =>
     mk(a, JSFunction(md, name), s, global);
+  let js_value = (~global=Nonglobal, a, md, name, s) =>
+    mk(a, JSValue(md, name), s, global);
 };

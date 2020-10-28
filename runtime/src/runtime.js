@@ -27,7 +27,7 @@ function debugPrint(v) {
   console.log(`0x${v.toString(16)} (0b${v.toString(2)})`);
 }
 
-const importObj = {
+const wasmImports = {
   env: {
     memory,
     abort(err) {
@@ -49,10 +49,19 @@ const importObj = {
   },
 };
 
+const jsImports = {
+  /*
+    someModule: {
+      someFunc: () => {}
+    }
+  */
+};
+
 export function buildGrainRunner(locator, opts) {
   // [TODO] Find something which avoids global state!
   let runner = new GrainRunner(locator || ((x) => null), managedMemory, opts);
   runner.addImports(importObj);
+  runner.addJSImports(jsImports);
   managedMemory.setRuntime(runner);
   return runner;
 }

@@ -48,6 +48,13 @@ type export_flag =
   | Nonexported
   | Exported;
 
+/** Marker for foreign import/export type */
+
+[@deriving (sexp, yojson)]
+type foreign_module_type =
+  | WasmForeign
+  | JSForeign;
+
 /** Marker for recursive/nonrecursive let bindings */
 
 [@deriving (sexp, yojson)]
