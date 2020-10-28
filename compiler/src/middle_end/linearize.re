@@ -81,7 +81,7 @@ let convert_binds = anf_binds => {
     | BSeq(exp) => AExp.comp(exp)
     | BLet(name, exp) => AExp.let_(Nonrecursive, [(name, exp)], void)
     | BLetRec(names) => AExp.let_(Recursive, names, void)
-    | BLetExport(rf, binds) => AExp.let_(~glob=Global, rf, binds, void)
+    | BLetExport(rf, binds) => AExp.let_(~global=Global, rf, binds, void)
     };
   List.fold_left(
     (body, bind) =>
@@ -89,7 +89,7 @@ let convert_binds = anf_binds => {
       | BSeq(exp) => AExp.seq(exp, body)
       | BLet(name, exp) => AExp.let_(Nonrecursive, [(name, exp)], body)
       | BLetRec(names) => AExp.let_(Recursive, names, body)
-      | BLetExport(rf, binds) => AExp.let_(~glob=Global, rf, binds, body)
+      | BLetExport(rf, binds) => AExp.let_(~global=Global, rf, binds, body)
       },
     ans,
     top_binds,
@@ -1018,7 +1018,7 @@ let rec transl_anf_statement =
   | TTopException(_, ext) => (Some(linearize_exception(env, ext)), [])
   | TTopForeign(exported, desc) =>
     let arity = Ctype.arity(desc.tvd_desc.ctyp_type);
-    let glob =
+    let global =
       switch (exported) {
       | Exported => Global
       | Nonexported => Nonglobal
@@ -1027,7 +1027,7 @@ let rec transl_anf_statement =
       None,
       [
         Imp.wasm_func(
-          ~glob,
+          ~global,
           desc.tvd_id,
           desc.tvd_mod.txt,
           desc.tvd_name.txt,
