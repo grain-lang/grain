@@ -296,8 +296,8 @@ module TL = {
     let loc = sub.location(sub, loc);
     switch (desc) {
     | PTopImport(decls) => Top.import(~loc, sub.import(sub, decls))
-    | PTopForeign(e, d) =>
-      Top.foreign(~loc, e, sub.value_description(sub, d))
+    | PTopForeign(t, e, d) =>
+      Top.foreign(~loc, t, e, sub.value_description(sub, d))
     | PTopPrimitive(e, d) =>
       Top.primitive(~loc, e, sub.value_description(sub, d))
     | PTopData(e, dd) => Top.data(~loc, e, sub.data(sub, dd))

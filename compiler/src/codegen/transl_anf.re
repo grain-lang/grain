@@ -740,9 +740,15 @@ let lift_imports = (env, imports) => {
             ),
         },
       );
-    | WasmFunction(mod_, name) =>
+    | WasmFunction(mod_, name)
+    | JSFunction(mod_, name) =>
+      let real_mod_ =
+        switch (imp_desc) {
+        | JSFunction(_) => "js/" ++ mod_
+        | _ => mod_
+        };
       let new_mod = {
-        mimp_mod: Ident.create(mod_),
+        mimp_mod: Ident.create(real_mod_),
         mimp_name: Ident.create(name),
         mimp_type: process_shape(imp_shape),
         mimp_kind: MImportWasm,
@@ -797,7 +803,6 @@ let lift_imports = (env, imports) => {
             ),
         },
       );
-    | JSFunction(_) => failwith("NYI: lift_imports JSFunction")
     };
   };
 

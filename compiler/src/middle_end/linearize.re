@@ -1016,12 +1016,25 @@ let rec transl_anf_statement =
       (None, []);
     };
   | TTopException(_, ext) => (Some(linearize_exception(env, ext)), [])
-  | TTopForeign(desc) =>
+  | TTopForeign(WasmForeign, desc) =>
     let arity = Ctype.arity(desc.tvd_desc.ctyp_type);
     (
       None,
       [
         Imp.wasm_func(
+          desc.tvd_id,
+          desc.tvd_mod.txt,
+          desc.tvd_name.txt,
+          FunctionShape(arity, 1),
+        ),
+      ],
+    );
+  | TTopForeign(JSForeign, desc) =>
+    let arity = Ctype.arity(desc.tvd_desc.ctyp_type);
+    (
+      None,
+      [
+        Imp.js_func(
           desc.tvd_id,
           desc.tvd_mod.txt,
           desc.tvd_name.txt,

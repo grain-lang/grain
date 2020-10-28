@@ -229,7 +229,7 @@ module Top = {
     {ptop_desc: d, ptop_loc: loc};
   };
   let import = (~loc=?, i) => mk(~loc?, PTopImport(i));
-  let foreign = (~loc=?, e, d) => mk(~loc?, PTopForeign(e, d));
+  let foreign = (~loc=?, t, e, d) => mk(~loc?, PTopForeign(t, e, d));
   let primitive = (~loc=?, e, d) => mk(~loc?, PTopPrimitive(e, d));
   let data = (~loc=?, e, d) => mk(~loc?, PTopData(e, d));
   let let_ = (~loc=?, e, r, m, vb) => mk(~loc?, PTopLet(e, r, m, vb));

@@ -147,6 +147,7 @@ rule token = parse
   | "primitive" { PRIMITIVE }
   | "foreign" { FOREIGN }
   | "wasm" { WASM }
+  | "js" { JS }
   | "while" { WHILE }
   | "if" { IF }
   | "when" { WHEN }

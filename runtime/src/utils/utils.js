@@ -469,6 +469,8 @@ export function JSToGrainVal(v) {
       byteView[i + (ptr * 4) + 8] = buf[i];
     }
     return userPtr | GRAIN_GENERIC_HEAP_TAG_TYPE;
+  } else if (typeof v === 'undefined' || v === null) {
+    return GRAIN_VOID;
   } else {
     throw new GrainError(-1, "JSToGrainVal not implemented for value with type " + (typeof v));
   }

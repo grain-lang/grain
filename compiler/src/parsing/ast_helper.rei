@@ -132,7 +132,9 @@ module Exp: {
 module Top: {
   let mk: (~loc: loc=?, toplevel_stmt_desc) => toplevel_stmt;
   let import: (~loc: loc=?, import_declaration) => toplevel_stmt;
-  let foreign: (~loc: loc=?, export_flag, value_description) => toplevel_stmt;
+  let foreign:
+    (~loc: loc=?, foreign_module_type, export_flag, value_description) =>
+    toplevel_stmt;
   let primitive:
     (~loc: loc=?, export_flag, value_description) => toplevel_stmt;
   let data: (~loc: loc=?, export_flag, data_declaration) => toplevel_stmt;

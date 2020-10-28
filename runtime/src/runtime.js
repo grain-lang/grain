@@ -53,7 +53,7 @@ const tracingImports = TRACE_MEMORY ? {
   decRefIgnoreZeros: managedMemory.decRefIgnoreZeros.bind(managedMemory)
 };
 
-const importObj = {
+const wasmImports = {
   env: {
     memory
   },
@@ -81,9 +81,18 @@ const importObj = {
   }
 };
 
+const jsImports = {
+  /*
+    someModule: {
+      someFunc: () => {}
+    }
+  */
+};
+
 export function buildGrainRunner(locator, opts) {
   let runner = new GrainRunner(locator || ((x) => null), opts);
-  runner.addImports(importObj);
+  runner.addImports(wasmImports);
+  runner.addJSImports(jsImports);
   // [TODO] Find something which avoids global state!
   managedMemory.setRuntime(runner);
   return runner;
