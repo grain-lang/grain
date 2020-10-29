@@ -88,20 +88,24 @@ module AExp = {
     anf_env: or_default_env(env),
     anf_analyses: ref([]),
   };
-  let let_ = (~loc=?, ~env=?, ~glob=Nonglobal, rec_flag, binds, body) =>
-    mk(~loc?, ~env?, AELet(glob, rec_flag, binds, body));
+  let let_ = (~loc=?, ~env=?, ~global=Nonglobal, rec_flag, binds, body) =>
+    mk(~loc?, ~env?, AELet(global, rec_flag, binds, body));
   let seq = (~loc=?, ~env=?, hd, tl) => mk(~loc?, ~env?, AESeq(hd, tl));
   let comp = (~loc=?, ~env=?, e) => mk(~loc?, ~env?, AEComp(e));
 };
 
 module Imp = {
-  let mk = (use_id, d, s) => {
+  let mk = (use_id, d, s, e) => {
     imp_use_id: use_id,
     imp_desc: d,
     imp_shape: s,
+    imp_exported: e,
     imp_analyses: ref([]),
   };
-  let grain_value = (a, md, name, s) => mk(a, GrainValue(md, name), s);
-  let wasm_func = (a, md, name, s) => mk(a, WasmFunction(md, name), s);
-  let js_func = (a, md, name, s) => mk(a, JSFunction(md, name), s);
+  let grain_value = (~global=Nonglobal, a, md, name, s) =>
+    mk(a, GrainValue(md, name), s, global);
+  let wasm_func = (~global=Nonglobal, a, md, name, s) =>
+    mk(a, WasmFunction(md, name), s, global);
+  let js_func = (~global=Nonglobal, a, md, name, s) =>
+    mk(a, JSFunction(md, name), s, global);
 };

@@ -118,7 +118,7 @@ module AExp: {
     (
       ~loc: loc=?,
       ~env: env=?,
-      ~glob: global_flag=?,
+      ~global: global_flag=?,
       rec_flag,
       list((ident, comp_expression)),
       anf_expression
@@ -131,8 +131,14 @@ module AExp: {
 };
 
 module Imp: {
-  let mk: (ident, import_desc, import_shape) => import_spec;
-  let grain_value: (ident, string, string, import_shape) => import_spec;
-  let wasm_func: (ident, string, string, import_shape) => import_spec;
-  let js_func: (ident, string, string, import_shape) => import_spec;
+  let mk: (ident, import_desc, import_shape, global_flag) => import_spec;
+  let grain_value:
+    (~global: global_flag=?, ident, string, string, import_shape) =>
+    import_spec;
+  let wasm_func:
+    (~global: global_flag=?, ident, string, string, import_shape) =>
+    import_spec;
+  let js_func:
+    (~global: global_flag=?, ident, string, string, import_shape) =>
+    import_spec;
 };
