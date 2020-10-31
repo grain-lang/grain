@@ -2,7 +2,7 @@ open Sexplib.Conv;
 
 let sep = ".";
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 type t =
   | IdentName(string)
   | IdentExternal(t, string);

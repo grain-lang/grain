@@ -7,6 +7,7 @@ open Asttypes;
 
 let sexp_locs_disabled = _ => ! Grain_utils.Config.sexp_locs_enabled^;
 
+[@deriving yojson]
 type loc('a) =
   Asttypes.loc('a) = {
     txt: 'a,
@@ -19,7 +20,7 @@ type mut_flag = Asttypes.mut_flag = | Mutable | Immutable;
 
 /** Type for syntax-level types */
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 type parsed_type_desc =
   | PTyAny
   | PTyVar(string)
@@ -36,12 +37,12 @@ and parsed_type = {
 
 /** Type for arguments to a constructor */
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 type constructor_arguments =
   | PConstrTuple(list(parsed_type))
   | PConstrSingleton
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 and type_extension = {
   ptyext_path: loc(Identifier.t),
   ptyext_params: list(parsed_type),
@@ -49,27 +50,27 @@ and type_extension = {
   ptyext_loc: Location.t,
 }
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 and extension_constructor = {
   pext_name: loc(string),
   pext_kind: extension_constructor_kind,
   pext_loc: Location.t,
 }
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 and type_exception = {
   ptyexn_constructor: extension_constructor,
   ptyexn_loc: Location.t,
 }
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 and extension_constructor_kind =
   | PExtDecl(constructor_arguments)
   | PExtRebind(loc(Identifier.t));
 
 /** Type for branches within data declarations */
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 type constructor_declaration = {
   pcd_name: loc(string),
   pcd_args: constructor_arguments,
@@ -79,7 +80,7 @@ type constructor_declaration = {
 
 /** Type for fields within a record */
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 type label_declaration = {
   pld_name: loc(Identifier.t),
   pld_type: parsed_type,
@@ -90,14 +91,14 @@ type label_declaration = {
 
 /** Different types of data which can be declared. Currently only one. */
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 type data_kind =
   | PDataVariant(list(constructor_declaration))
   | PDataRecord(list(label_declaration));
 
 /** Type for data declarations. */
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 type data_declaration = {
   pdata_name: loc(string),
   pdata_params: list(parsed_type),
@@ -108,7 +109,7 @@ type data_declaration = {
 
 /** Constants supported by Grain */
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 type constant =
   | PConstNumber(number_type)
   | PConstInt32(string)
@@ -119,7 +120,7 @@ type constant =
   | PConstVoid
   | PConstString(string)
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 and number_type =
   | PConstNumberInt(string)
   | PConstNumberFloat(string)
@@ -127,7 +128,7 @@ and number_type =
 
 /** Various binding forms */
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 type pattern_desc =
   | PPatAny
   | PPatVar(loc(string))
@@ -139,7 +140,7 @@ type pattern_desc =
   | PPatOr(pattern, pattern)
   | PPatAlias(pattern, loc(string))
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 and pattern = {
   ppat_desc: pattern_desc,
   [@sexp_drop_if sexp_locs_disabled]
@@ -148,7 +149,7 @@ and pattern = {
 
 /** Single-argument operators */
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 type prim1 =
   | Incr
   | Decr
@@ -168,7 +169,7 @@ type prim1 =
 
 /** Two-argument operators */
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 type prim2 =
   | Plus
   | Minus
@@ -198,14 +199,14 @@ type prim2 =
 
 /** Type for expressions (i.e. things which evaluate to something) */
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 type expression = {
   pexp_desc: expression_desc,
   [@sexp_drop_if sexp_locs_disabled]
   pexp_loc: Location.t,
 }
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 and expression_desc =
   | PExpId(loc(Identifier.t))
   | PExpConstant(constant)
@@ -233,7 +234,7 @@ and expression_desc =
 
 /** let-binding form */
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 and value_binding = {
   pvb_pat: pattern,
   pvb_expr: expression,
@@ -241,7 +242,7 @@ and value_binding = {
   pvb_loc: Location.t,
 }
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 and match_branch = {
   pmb_pat: pattern,
   pmb_body: expression,
@@ -250,7 +251,7 @@ and match_branch = {
   pmb_loc: Location.t,
 };
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 type import_value =
   | PImportModule(loc(Identifier.t))
   | PImportAllExcept(list(loc(Identifier.t)))
@@ -258,7 +259,7 @@ type import_value =
 
 /** Type for import statements */
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 type import_declaration = {
   pimp_path: loc(string),
   pimp_val: list(import_value),
@@ -266,7 +267,7 @@ type import_declaration = {
   pimp_loc: Location.t,
 };
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 type value_description = {
   pval_mod: loc(string),
   pval_name: loc(string),
@@ -277,7 +278,7 @@ type value_description = {
   pval_loc: Location.t,
 };
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 type export_declaration_desc = {
   pex_name: loc(string),
   pex_alias: option(loc(string)),
@@ -285,19 +286,19 @@ type export_declaration_desc = {
   pex_loc: Location.t,
 }
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 and export_declaration =
   | ExportData(export_declaration_desc)
   | ExportValue(export_declaration_desc);
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 type export_except =
   | ExportExceptData(loc(string))
   | ExportExceptValue(loc(string));
 
 /** Statements which can exist at the top level */
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 type toplevel_stmt_desc =
   | PTopImport(import_declaration)
   | PTopForeign(export_flag, value_description)
@@ -309,21 +310,21 @@ type toplevel_stmt_desc =
   | PTopExport(list(export_declaration))
   | PTopExportAll(list(export_except));
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 type toplevel_stmt = {
   ptop_desc: toplevel_stmt_desc,
   [@sexp_drop_if sexp_locs_disabled]
   ptop_loc: Location.t,
 };
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 type comment_desc = {
   cmt_content: string,
   cmt_source: string,
   cmt_loc: Location.t,
 };
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 type comment =
   | Line(comment_desc)
   | Shebang(comment_desc)
@@ -332,7 +333,7 @@ type comment =
 
 /** The type for parsed programs */
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 type parsed_program = {
   statements: list(toplevel_stmt),
   comments: list(comment),

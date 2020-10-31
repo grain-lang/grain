@@ -19,7 +19,7 @@ let sexp_locs_disabled = _ => ! Grain_utils.Config.sexp_locs_enabled^;
 
 /** Auxiliary AST types used by parsetree and typedtree. */;
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 type constant =
   | Const_number(number_type)
   | Const_string(string)
@@ -30,7 +30,7 @@ type constant =
   | Const_bool(bool)
   | Const_void
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 and number_type =
   | Const_number_int(int64)
   | Const_number_float(float)
@@ -38,35 +38,35 @@ and number_type =
 
 /** Marker for exported/nonexported let bindings */
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 type export_flag =
   | Nonexported
   | Exported;
 
 /** Marker for recursive/nonrecursive let bindings */
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 type rec_flag =
   | Nonrecursive
   | Recursive;
 
 /** Marker for mutable/immutable let bindings */
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 type mut_flag =
   | Mutable
   | Immutable;
 
 /** Marker for closed/open records */
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 type closed_flag =
   | Closed
   | Open;
 
 /** A location-tagged value. */
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 type loc('a) =
   Location.loc('a) = {
     txt: 'a,
