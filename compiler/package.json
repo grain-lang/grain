@@ -14,7 +14,7 @@
   "scripts": {
     "link": "yarn link",
     "clean": "esy clean",
-    "setup": "esy install",
+    "prepare": "esy install",
     "build": "esy",
     "postbuild": "esy copy-compiler",
     "test": "esy test",

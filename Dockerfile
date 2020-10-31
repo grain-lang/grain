@@ -18,7 +18,7 @@ COPY ./yarn.lock /grain/
 
 WORKDIR /grain
 RUN yarn install --pure-lockfile
-RUN yarn compiler setup
+RUN yarn compiler prepare
 # Slow!
 RUN yarn compiler build-dependencies
 
@@ -26,7 +26,7 @@ RUN yarn compiler build-dependencies
 # (probably won't be cached from this point on)
 
 COPY . /grain
-RUN yarn setup
+RUN yarn prepare
 RUN yarn compiler build
 
 # Set up container environment
