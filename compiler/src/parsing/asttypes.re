@@ -65,6 +65,11 @@ type closed_flag =
   | Closed
   | Open;
 
+[@deriving sexp]
+type private_flag =
+  | Public
+  | Private;
+
 /** A location-tagged value. */
 
 [@deriving (sexp, yojson)]
