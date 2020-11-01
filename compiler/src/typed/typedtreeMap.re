@@ -113,6 +113,7 @@ module MakeMap =
     let data_params = List.map(map_type_parameter, decl.data_params);
     let data_kind =
       switch (decl.data_kind) {
+      | TDataAbstract => TDataAbstract
       | TDataVariant(cstrs) =>
         TDataVariant(List.map(map_constructor_declaration, cstrs))
       | TDataRecord(lbls) => TDataRecord(List.map(map_record_field, lbls))

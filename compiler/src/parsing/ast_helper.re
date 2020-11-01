@@ -98,12 +98,21 @@ module LDecl = {
 };
 
 module Dat = {
-  let mk = (~loc=?, n, t, k) => {
+  let mk = (~loc=?, n, t, k, m) => {
     let loc = Option.value(~default=default_loc_src^(), loc);
-    {pdata_name: n, pdata_params: t, pdata_kind: k, pdata_loc: loc};
+    {
+      pdata_name: n,
+      pdata_params: t,
+      pdata_kind: k,
+      pdata_manifest: m,
+      pdata_loc: loc,
+    };
   };
-  let variant = (~loc=?, n, t, cdl) => mk(~loc?, n, t, PDataVariant(cdl));
-  let record = (~loc=?, n, t, ldl) => mk(~loc?, n, t, PDataRecord(ldl));
+  let abstract = (~loc=?, n, t, m) => mk(~loc?, n, t, PDataAbstract, m);
+  let variant = (~loc=?, n, t, cdl) =>
+    mk(~loc?, n, t, PDataVariant(cdl), None);
+  let record = (~loc=?, n, t, ldl) =>
+    mk(~loc?, n, t, PDataRecord(ldl), None);
 };
 
 module Except = {

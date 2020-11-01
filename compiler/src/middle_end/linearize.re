@@ -1404,6 +1404,7 @@ let rec transl_anf_statement =
           | TDataVariant(_) =>
             let typath = Path.PIdent(decl.data_id);
             linearize_decl(env, loc, typath, decl.data_type);
+          | TDataAbstract
           | TDataRecord(_) => []
           },
         decls,
@@ -1481,7 +1482,7 @@ let gather_type_metadata = statements => {
       switch (ttop_desc) {
       | TTopData(decls) =>
         let info =
-          List.map(
+          List.filter_map(
             decl => {
               let typath = Path.PIdent(decl.data_id);
               let id = get_type_id(typath);
@@ -1498,12 +1499,15 @@ let gather_type_metadata = statements => {
                       ),
                     descrs,
                   );
-                ADTMetadata(id, meta);
+                Some(ADTMetadata(id, meta));
               | TDataRecord(fields) =>
-                RecordMetadata(
-                  id,
-                  List.map(field => Ident.name(field.rf_name), fields),
+                Some(
+                  RecordMetadata(
+                    id,
+                    List.map(field => Ident.name(field.rf_name), fields),
+                  ),
                 )
+              | TDataAbstract => None
               };
             },
             decls,
