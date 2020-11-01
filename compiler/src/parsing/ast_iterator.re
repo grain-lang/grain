@@ -169,6 +169,7 @@ module D = {
     iter_loc(sub, name);
     List.iter(sub.typ(sub), args);
     switch (kind) {
+    | PDataAbstract => ()
     | PDataVariant(cdl) => List.iter(sub.constructor(sub), cdl)
     | PDataRecord(ldl) => List.iter(sub.label(sub), ldl)
     };

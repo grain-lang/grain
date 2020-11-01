@@ -42,7 +42,7 @@ include Parser_header
 %token AMPAMP PIPEPIPE NOT AT
 %token AMP PIPE
 
-%token ENUM RECORD IMPORT EXPORT FOREIGN WASM PRIMITIVE
+%token TYPE ENUM RECORD IMPORT EXPORT FOREIGN WASM PRIMITIVE
 %token EXCEPT FROM
 %token EOL EOF
 
@@ -258,6 +258,7 @@ data_labels :
   | lbrace data_label [comma data_label {$2}]* trailing_comma? rbrace { $2::$3 }
 
 data_declaration :
+  | TYPE TYPEID [lcaret ID [comma ID {$2}]* rcaret {$2::$3}]? [equal typ {$2}]? { Dat.abstract ~loc:(symbol_rloc dyp) (mkstr dyp $2) (List.map Typ.var (Option.value ~default:[] $3)) $4 }
   | ENUM TYPEID [lcaret ID [comma ID {$2}]* rcaret {$2::$3}]? data_constructors { Dat.variant ~loc:(symbol_rloc dyp) (mkstr dyp $2) (List.map Typ.var (Option.value ~default:[] $3)) $4 }
   | RECORD TYPEID [lcaret ID [comma ID {$2}]* rcaret {$2::$3}]? data_labels { Dat.record ~loc:(symbol_rloc dyp) (mkstr dyp $2) (List.map Typ.var (Option.value ~default:[] $3)) $4 }
 

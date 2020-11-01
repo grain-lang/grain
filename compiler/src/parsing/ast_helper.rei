@@ -71,7 +71,11 @@ module LDecl: {
 
 module Dat: {
   let mk:
-    (~loc: loc=?, str, list(parsed_type), data_kind) => data_declaration;
+    (~loc: loc=?, str, list(parsed_type), data_kind, option(parsed_type)) =>
+    data_declaration;
+  let abstract:
+    (~loc: loc=?, str, list(parsed_type), option(parsed_type)) =>
+    data_declaration;
   let variant:
     (~loc: loc=?, str, list(parsed_type), list(constructor_declaration)) =>
     data_declaration;
