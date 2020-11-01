@@ -143,6 +143,7 @@ type record_field = {
 };
 
 type data_kind =
+  | TDataAbstract
   | TDataVariant(list(constructor_declaration))
   | TDataRecord(list(record_field));
 
@@ -153,6 +154,7 @@ type data_declaration = {
   data_params: list(core_type),
   data_type: Types.type_declaration,
   data_kind,
+  data_manifest: option(core_type),
   data_loc: Location.t,
 };
 

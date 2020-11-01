@@ -1024,6 +1024,7 @@ let rec transl_anf_statement =
           | TDataVariant(_) =>
             let typath = Path.PIdent(decl.data_id);
             linearize_decl(env, loc, typath, decl.data_type);
+          | TDataAbstract
           | TDataRecord(_) => []
           },
         decls,

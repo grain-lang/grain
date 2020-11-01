@@ -93,6 +93,7 @@ type label_declaration = {
 
 [@deriving (sexp, yojson)]
 type data_kind =
+  | PDataAbstract
   | PDataVariant(list(constructor_declaration))
   | PDataRecord(list(label_declaration));
 
@@ -103,6 +104,7 @@ type data_declaration = {
   pdata_name: loc(string),
   pdata_params: list(parsed_type),
   pdata_kind: data_kind,
+  pdata_manifest: option(parsed_type),
   [@sexp_drop_if sexp_locs_disabled]
   pdata_loc: Location.t,
 };

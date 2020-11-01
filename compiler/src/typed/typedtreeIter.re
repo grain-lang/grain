@@ -114,6 +114,7 @@ module MakeIterator =
     Iter.enter_data_declaration(decl);
     List.iter(iter_type_parameter, decl.data_params);
     switch (decl.data_kind) {
+    | TDataAbstract => ()
     | TDataVariant(cstrs) => List.iter(iter_constructor_declaration, cstrs)
     | TDataRecord(labels) => List.iter(iter_record_field, labels)
     };
