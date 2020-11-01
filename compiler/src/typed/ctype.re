@@ -1076,13 +1076,6 @@ let subst = (env, level, priv, abbrev, ty, params, args, body) => {
   current_level := level;
   try({
     let body0 = newvar(); /* Stub */
-    switch (ty) {
-    | None => ()
-    | Some({desc: TTyConstr(path, tl, _)} as ty) =>
-      let abbrev = proper_abbrevs(path, tl, abbrev);
-      memorize_abbrev(abbrev, priv, path, ty, body0);
-    | _ => assert(false)
-    };
     abbreviations := abbrev;
     let (params', body') = instance_parameterized_type(params, body);
     abbreviations := ref(TMemNil);
