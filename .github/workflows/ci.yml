@@ -31,11 +31,10 @@ jobs:
       - name: Set up runtime and CLI
         run: |
           yarn
-          yarn setup
 
       - name: Esy setup
         run: |
-          yarn compiler setup
+          yarn compiler prepare
 
       - name: Esy cache
         id: esy-cache
