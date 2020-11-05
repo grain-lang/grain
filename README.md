@@ -26,7 +26,6 @@ To build Grain, you'll need [Node.js](https://nodejs.org/en/download/current/) v
 
 ```bash
 yarn
-yarn setup
 yarn compiler build
 ```
 
