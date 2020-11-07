@@ -1,18 +1,19 @@
 open Grain_typed;
 
+[@deriving yojson]
 type lens_t = {
   line: int,
   signature: string,
 };
 
-let lens_to_yojson = (l: lens_t): Yojson.t =>
-  `Assoc([("line", `Int(l.line)), ("signature", `String(l.signature))]);
+[@deriving yojson]
+type lens_list_t = {lenses: list(lens_t)};
 
-let lens_list_to_yojson = (lenses: list(lens_t)): Yojson.t =>
-  `List(List.map(l => lens_to_yojson(l), lenses));
-
-let lenses_to_json_string = (l: list(lens_t)): string =>
-  Yojson.to_string(lens_list_to_yojson(l));
+let lenses_to_json_string = (lenses: list(lens_t)): string => {
+  let lensList: lens_list_t = {lenses: lenses};
+  let json_list = lens_list_t_to_yojson(lensList);
+  Yojson.Basic.pretty_to_string(Yojson.Safe.to_basic(json_list));
+};
 
 let output_lenses = (program: Typedtree.typed_program): list(lens_t) => {
   let lenses =

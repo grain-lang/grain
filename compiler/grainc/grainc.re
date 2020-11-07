@@ -57,10 +57,10 @@ let compile_string = name => {
   try(
     ignore(
       {
-        let compileState =
+        let compile_state =
           Compile.compile_string(~hook=stop_after_typed, ~name, program_str^);
 
-        switch (compileState.cstate_desc) {
+        switch (compile_state.cstate_desc) {
         | TypeChecked(typed_program) =>
           let lenses: list(Lsp.Lenses.lens_t) =
             Lsp.Lenses.output_lenses(typed_program);

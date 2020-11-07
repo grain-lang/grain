@@ -116,8 +116,6 @@
     (fs (>= 0.0.0))
     (cmdliner (>= 1.0.2))))
 
-
-
 (package
  (name lsp)
  (synopsis "LSP support")
