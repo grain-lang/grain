@@ -22,22 +22,25 @@ let output_lenses = (program: Typedtree.typed_program): list(lens_t) => {
       (statement: Typedtree.toplevel_stmt) => {
         let d = statement.ttop_desc;
         switch (d) {
+        | TTopExpr(expr) =>
+          let buf = Buffer.create(64);
+          let ppf = Format.formatter_of_buffer(buf);
+          let t: Types.type_expr = expr.exp_type;
+          Printtyp.type_expr(ppf, t);
+          Format.pp_print_flush(ppf, ());
+          let signt = Buffer.contents(buf);
+          let lens: lens_t = {
+            line: statement.ttop_loc.loc_start.pos_lnum,
+            signature: signt,
+          };
+          Some(lens);
         | TTopLet(_, _, _, valueBindings) =>
-          // print_endline(
-          //   "Let on line "
-          //   ++ string_of_int(statement.ttop_loc.loc_start.pos_lnum),
-          // );
-
           let signatures =
             List.map(
               (vb: Typedtree.value_binding) => {
                 let expr = vb.vb_expr;
 
                 let t: Types.type_expr = expr.exp_type;
-
-                // let desc = t.desc;
-
-                // print_type_desc(desc);
 
                 let buf = Buffer.create(64);
                 let ppf = Format.formatter_of_buffer(buf);
@@ -46,7 +49,6 @@ let output_lenses = (program: Typedtree.typed_program): list(lens_t) => {
 
                 Format.pp_print_flush(ppf, ());
                 let msg = Buffer.contents(buf);
-                // print_endline(msg);
                 msg;
               },
               valueBindings,

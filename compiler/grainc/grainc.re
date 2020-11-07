@@ -78,7 +78,15 @@ let compile_string = name => {
     //  let err_rep = Lsp.Output.exnToJson(exn);
     //  print_string(err_rep);
 
-    let json = Lsp.Output.result_to_json(~errors=[], ~lenses=[]);
+    let error = Lsp.Output.exn_to_lsp_error(exn);
+
+    let errors =
+      switch (error) {
+      | None => []
+      | Some(err) => [err]
+      };
+
+    let json = Lsp.Output.result_to_json(~errors, ~lenses=[]);
     print_endline(json);
   };
 
