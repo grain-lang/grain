@@ -115,3 +115,18 @@
     (fp (>= 0.0.0))
     (fs (>= 0.0.0))
     (cmdliner (>= 1.0.2))))
+
+
+
+(package
+ (name lsp)
+ (synopsis "LSP support")
+ (depends
+  (reason (>= 3.6.0))
+  (ppx_sexp_conv (>= 0.14.0))
+  (sexplib (>= 0.14.0))
+  (ounit (>= 2.0.0))
+  (ppx_deriving_yojson (>= 3.5.2))
+  (yojson (>= 1.7.0))
+  (grain_utils (>= 0))
+  (grain_parsing (>= 0))))
