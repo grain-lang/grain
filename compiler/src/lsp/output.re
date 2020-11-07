@@ -17,37 +17,6 @@ let lsp_error_to_yojson = (e: lsp_error): Yojson.t =>
     ("lsp_message", `String(e.lsp_message)),
   ]);
 
-/* output error in a format friendly for LSP processing */
-// let error_to_json = ({loc, msg, sub, if_highlight}) => {
-//   let (file, line, startchar) =
-//     Grain_parsing.Location.get_pos_info(loc.loc_start);
-//   let (_, endline, endchar) =
-//     Grain_parsing.Location.get_pos_info(loc.loc_end);
-
-//   let error_json: lsp_error = {
-//     file,
-//     line,
-//     startchar,
-//     endline,
-//     endchar,
-//     lsp_message: msg,
-//   };
-
-//   lsp_error_to_yojson(error_json);
-// };
-
-/* lsp - print error to stdout */
-//let rec print_exception = exn => {
-//   let rec loop = (n, exn) =>
-//     switch (error_of_exn(exn)) {
-//     | None => ""
-//     | Some(`Already_displayed) => ""
-//     | Some(`Ok(err)) => error_to_json(err)
-//     | exception exn when n > 0 => loop(n - 1, exn)
-//     };
-//   loop(10, exn);
-// };
-
 let exn_to_lsp_error = (exn: exn): option(lsp_error) => {
   let error = Grain_parsing.Location.error_of_exn(exn);
 

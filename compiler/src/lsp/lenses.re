@@ -15,8 +15,6 @@ let lenses_to_json_string = (l: list(lens_t)): string =>
   Yojson.to_string(lens_list_to_yojson(l));
 
 let output_lenses = (program: Typedtree.typed_program): list(lens_t) => {
-  //print_endline("LSP lenses");
-
   let lenses =
     List.map(
       (statement: Typedtree.toplevel_stmt) => {
@@ -41,15 +39,11 @@ let output_lenses = (program: Typedtree.typed_program): list(lens_t) => {
                 let expr = vb.vb_expr;
 
                 let t: Types.type_expr = expr.exp_type;
-
                 let buf = Buffer.create(64);
                 let ppf = Format.formatter_of_buffer(buf);
-
                 Printtyp.type_expr(ppf, t);
-
                 Format.pp_print_flush(ppf, ());
-                let msg = Buffer.contents(buf);
-                msg;
+                Buffer.contents(buf);
               },
               valueBindings,
             );

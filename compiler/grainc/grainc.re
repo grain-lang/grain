@@ -43,7 +43,6 @@ let default_mashtree_filename = name =>
   safe_remove_extension(name) ++ ".mashtree";
 
 /* LSP mode - read the file to compile from stdin and return nothing or compile errors on stdout */
-
 let compile_string = name => {
   let program_str = ref("");
   /* read from stdin until we get end of buffer */
@@ -63,10 +62,8 @@ let compile_string = name => {
 
         switch (compileState.cstate_desc) {
         | TypeChecked(typed_program) =>
-          // print_endline("Typed OK");
           let lenses: list(Lsp.Lenses.lens_t) =
             Lsp.Lenses.output_lenses(typed_program);
-
           let json = Lsp.Output.result_to_json(~errors=[], ~lenses);
           print_endline(json);
         | _ => ()
@@ -75,11 +72,7 @@ let compile_string = name => {
     )
   ) {
   | exn =>
-    //  let err_rep = Lsp.Output.exnToJson(exn);
-    //  print_string(err_rep);
-
     let error = Lsp.Output.exn_to_lsp_error(exn);
-
     let errors =
       switch (error) {
       | None => []
