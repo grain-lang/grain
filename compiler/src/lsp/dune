@@ -1,8 +1,0 @@
-(library
- (name lsp)
- (public_name lsp)
- (synopsis "LSP modules for Grain compiler")
- (libraries compiler-libs.common dyp grain_utils grain_typed utf8.lib str
-   ppx_deriving_yojson.runtime ppx_sexp_conv.runtime-lib sexplib yojson)
- (preprocess
-  (pps ppx_sexp_conv ppx_deriving_yojson)))

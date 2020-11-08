@@ -29,6 +29,7 @@
     (grain_parsing (>= 0))
     (grain_typed (>= 0))
     (grain_middle_end (>= 0))
+    (grain_diagnostics (>= 0))
     (grain_codegen (>= 0))))
 
 (package
@@ -117,12 +118,10 @@
     (cmdliner (>= 1.0.2))))
 
 (package
- (name lsp)
- (synopsis "LSP support")
+ (name grain_diagnostics)
+ (synopsis "Diagnostics support")
  (depends
   (reason (>= 3.6.0))
-  (ppx_sexp_conv (>= 0.14.0))
-  (sexplib (>= 0.14.0))
   (ounit (>= 2.0.0))
   (ppx_deriving_yojson (>= 3.5.2))
   (yojson (>= 1.7.0))
