@@ -4,7 +4,7 @@ open Format;
 
 /** The type of identifiers. */
 
-[@deriving sexp]
+[@deriving (sexp, yojson)]
 type t =
   | /** A simple name. */
     IdentName(string)
