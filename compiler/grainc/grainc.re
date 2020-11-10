@@ -165,16 +165,6 @@ let output_filename = {
   );
 };
 
-let help_flag = {
-  let doc = "Show this help message";
-  Arg.(value & flag & info(["h"], ~doc));
-};
-
-let help_cmd = (
-  Term.(ret(const(_ => `Help((`Pager, None))) $ help_flag)),
-  Term.info("help"),
-);
-
 let cmd = {
   let doc = sprintf("Compile Grain programs");
   let version =
