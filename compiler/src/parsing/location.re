@@ -543,54 +543,6 @@ let rec report_exception = (ppf, exn) => {
   loop(10, exn);
 };
 
-type lsp_error = {
-  file: string,
-  line: int,
-  startchar: int,
-  endline: int,
-  endchar: int,
-  lsp_message: string,
-};
-
-let lsp_error_to_yojson = (e: lsp_error): Yojson.t =>
-  `Assoc([
-    ("file", `String(e.file)),
-    ("line", `Int(e.line)),
-    ("startchar", `Int(e.startchar)),
-    ("endline", `Int(e.endline)),
-    ("endchar", `Int(e.endchar)),
-    ("lsp_message", `String(e.lsp_message)),
-  ]);
-
-/* output error in a format friendly for LSP processing */
-let error_to_json = ({loc, msg, sub, if_highlight}) => {
-  let (file, line, startchar) = get_pos_info(loc.loc_start);
-  let (_, endline, endchar) = get_pos_info(loc.loc_end);
-
-  let error_json: lsp_error = {
-    file,
-    line,
-    startchar,
-    endline,
-    endchar,
-    lsp_message: msg,
-  };
-
-  Yojson.to_string(lsp_error_to_yojson(error_json));
-};
-
-/* lsp - print error to stdout */
-let rec print_exception = exn => {
-  let rec loop = (n, exn) =>
-    switch (error_of_exn(exn)) {
-    | None => ""
-    | Some(`Already_displayed) => ""
-    | Some(`Ok(err)) => error_to_json(err)
-    | exception exn when n > 0 => loop(n - 1, exn)
-    };
-  loop(10, exn);
-};
-
 exception Error(error);
 
 let () =

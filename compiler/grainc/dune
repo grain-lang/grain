@@ -3,4 +3,4 @@
  (public_name grainc)
  (package grain)
  (modules grainc)
- (libraries grain binaryen.native dune-build-info))
+ (libraries grain grain_diagnostics binaryen.native dune-build-info))
