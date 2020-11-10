@@ -155,7 +155,3 @@ let default_error_reporter: (formatter, error) => unit;
 /** Reraise the exception if it is unknown. */
 
 let report_exception: (formatter, exn) => unit;
-
-/* print the error to stdout in LSP friendly form */
-
-let print_exception: exn => string;

@@ -42,8 +42,7 @@ let default_assembly_filename = name =>
 let default_mashtree_filename = name =>
   safe_remove_extension(name) ++ ".mashtree";
 
-/* LSP mode - read the file to compile from stdin and return nothing or compile errors on stdout */
-
+/* Diagnostic mode - read the file to compile from stdin and return nothing or compile errors on stdout */
 let compile_string = name => {
   let program_str = ref("");
   /* read from stdin until we get end of buffer */
@@ -57,12 +56,32 @@ let compile_string = name => {
 
   try(
     ignore(
-      Compile.compile_string(~hook=stop_after_typed, ~name, program_str^),
+      {
+        let compile_state =
+          Compile.compile_string(~hook=stop_after_typed, ~name, program_str^);
+
+        switch (compile_state.cstate_desc) {
+        | TypeChecked(typed_program) =>
+          let lenses: list(Grain_diagnostics.Lenses.lens_t) =
+            Grain_diagnostics.Lenses.output_lenses(typed_program);
+          let json =
+            Grain_diagnostics.Output.result_to_json(~errors=[], ~lenses);
+          print_endline(json);
+        | _ => ()
+        };
+      },
     )
   ) {
   | exn =>
-    let err_rep = Grain_parsing.Location.print_exception(exn);
-    print_string(err_rep);
+    let error = Grain_diagnostics.Output.exn_to_lsp_error(exn);
+    let errors =
+      switch (error) {
+      | None => []
+      | Some(err) => [err]
+      };
+
+    let json = Grain_diagnostics.Output.result_to_json(~errors, ~lenses=[]);
+    print_endline(json);
   };
 
   /* as the compiler throws an exception on an error, we always just return OK */

@@ -29,6 +29,7 @@
     (grain_parsing (>= 0))
     (grain_typed (>= 0))
     (grain_middle_end (>= 0))
+    (grain_diagnostics (>= 0))
     (grain_codegen (>= 0))))
 
 (package
@@ -115,3 +116,14 @@
     (fp (>= 0.0.0))
     (fs (>= 0.0.0))
     (cmdliner (>= 1.0.2))))
+
+(package
+ (name grain_diagnostics)
+ (synopsis "Diagnostics support")
+ (depends
+  (reason (>= 3.6.0))
+  (ounit (>= 2.0.0))
+  (ppx_deriving_yojson (>= 3.5.2))
+  (yojson (>= 1.7.0))
+  (grain_utils (>= 0))
+  (grain_parsing (>= 0))))
