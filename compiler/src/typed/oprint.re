@@ -31,6 +31,7 @@ let print_lident = ppf =>
 let rec print_ident = ppf =>
   fun
   | Oide_ident(s) => print_lident(ppf, s)
+  | Oide_dot(Oide_ident("Pervasives"), s) => print_lident(ppf, s)
   | Oide_dot(id, s) => {
       print_ident(ppf, id);
       pp_print_char(ppf, '.');
@@ -539,7 +540,6 @@ and print_typargs = ppf =>
       print_typlist(print_out_type, ",", ppf, tyl);
       pp_print_char(ppf, '>');
       pp_close_box(ppf, ());
-      pp_print_space(ppf, ());
     }
 and print_out_label = (ppf, (name, mut, arg)) =>
   fprintf(
