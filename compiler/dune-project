@@ -30,6 +30,7 @@
     (grain_typed (>= 0))
     (grain_middle_end (>= 0))
     (grain_diagnostics (>= 0))
+    (grain_format (>= 0))
     (grain_codegen (>= 0))))
 
 (package
@@ -127,3 +128,11 @@
   (yojson (>= 1.7.0))
   (grain_utils (>= 0))
   (grain_parsing (>= 0))))
+
+(package
+  (name grain_format)
+  (synopsis "The Grain formatter")
+  (depends
+    (reason (>= 3.6.0))
+    (grain_utils (>= 0))
+    (grain_parsing (>= 0))))

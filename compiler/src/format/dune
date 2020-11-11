@@ -1,0 +1,5 @@
+(library
+ (name grain_format)
+ (public_name grain_format)
+ (synopsis "Source code formatter for Grain")
+ (libraries grain_parsing grain_utils))
