@@ -9,6 +9,9 @@ const output = `{
   "ocaml.sandbox": {
     "root": "${compilerPath}",
     "kind": "esy"
+  },
+  "files.associations": {
+    "*.dyp": "ocaml.ocamllex"
   }
 }`;
 
