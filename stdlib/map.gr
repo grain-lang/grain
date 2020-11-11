@@ -195,6 +195,14 @@ export let remove = (key, map) => {
   }
 }
 
+export let update = (key, fn, map) => {
+  let val = get(key, map);
+  match (fn(val)) {
+    Some(next) => set(key, next, map),
+    None => remove(key, map)
+  }
+}
+
 export let size = (map) => {
   map.size
 }
@@ -280,7 +288,7 @@ export let fromArray = (array) => {
 }
 
 export let filter = (predicate, map) => {
-  let keysToRemove = reduce((list, key, value) => 
+  let keysToRemove = reduce((list, key, value) =>
     if (!predicate(key, value)) {
       [key, ...list]
     } else {
