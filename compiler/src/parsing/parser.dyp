@@ -4,7 +4,7 @@ open Parsetree
 open Ast_helper
 
 (* Including the Parser_extra file allows it to be written in Reason and have editor tooling *)
-include Parser_extra
+include Parser_header
 }
 
 /* Operator precedence may be found in /docs/contributor/operator_precedence.md */
