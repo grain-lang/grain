@@ -732,7 +732,10 @@ and tree_of_typfields = (sch, rest) =>
 let typexp = (sch, ppf, ty) =>
   Oprint.out_type^(ppf, tree_of_typexp(sch, ty));
 
-let type_expr = (ppf, ty) => typexp(false, ppf, ty)
+let type_expr = (ppf, ty) => {
+  reset_and_mark_loops(ty);
+  typexp(false, ppf, ty);
+}
 
 and type_sch = (ppf, ty) => typexp(true, ppf, ty)
 
