@@ -1,172 +1,11 @@
 {
-open Location
-open Identifier
-open Dyp
+(* These opens are used inside the actual parser *)
 open Parsetree
 open Ast_helper
-open Grain_utils
 
-(* Used for error messages and as a default, in case anything slips through
-   without an explicit loc. *)
-let first_loc = ref Location.dummy_loc
-let last_loc = ref Location.dummy_loc
-let dyp_merge = keep_all
-
-let last_state_printer = ref (fun () -> ())
-
-let when_debug ?n thunk =
-  match n with
-  | Some(n) ->
-      if !Grain_utils.Config.parser_debug_level >= n then
-        thunk()
-  | None -> ()
-
-let prerr_string s = when_debug ~n:1 (fun () -> Stdlib.prerr_string s)
-
-let debug_print_state () =
-  when_debug !last_state_printer
-
-let make_line_comment source loc =
-  let content = String_utils.slice ~first:2 source |> String.trim in
-  Line { cmt_content=content; cmt_source=source; cmt_loc=loc }
-
-let make_shebang_comment source loc =
-  let content = String_utils.slice ~first:2 source |> String.trim in
-  Shebang { cmt_content=content; cmt_source=source; cmt_loc=loc }
-
-let make_block_comment source loc =
-  let content = String_utils.slice ~first:2 ~last:(-2) source |> String.trim in
-  Block { cmt_content=content; cmt_source=source; cmt_loc=loc }
-
-let make_doc_comment source loc =
-  let content = String_utils.slice ~first:3 ~last:(-2) source |> String.trim in
-  Doc { cmt_content=content; cmt_source=source; cmt_loc=loc }
-
-let symbol_rloc dyp =
-  let ret = {
-    loc_start = dyp.symbol_start_pos ();
-    loc_end = dyp.symbol_end_pos ();
-    loc_ghost = false;
-  } in
-  last_state_printer := (fun () -> dyp.print_state stderr);
-  when_debug ~n:1 !last_state_printer;
-  last_loc := ret;
-  ret
-
-let symbol_gloc dyp =
-  let ret = {
-    loc_start = dyp.symbol_start_pos ();
-    loc_end = dyp.symbol_end_pos ();
-    loc_ghost = true;
-  } in
-  last_state_printer := (fun () -> dyp.print_state stderr);
-  when_debug ~n:1 !last_state_printer;
-  last_loc := ret;
-  ret
-
-let rhs_loc dyp n =
-  let ret = {
-    loc_start = dyp.rhs_start_pos n;
-    loc_end = dyp.rhs_end_pos n;
-    loc_ghost = false;
-  } in
-  last_state_printer := (fun () -> dyp.print_state stderr);
-  when_debug ~n:1 !last_state_printer;
-  last_loc := ret;
-  ret
-
-let fix_block_mapper super =
-  let open Ast_mapper in
-  let expr mapper ({pexp_desc; pexp_loc} as e) =
-    match pexp_desc with
-    | PExpBlock([]) -> super.expr mapper e
-    | PExpBlock(elts) ->
-      let elts = List.map (mapper.expr mapper) elts in
-      (* Properly nest let bindings *)
-      let elts = List.fold_right (fun ({pexp_desc} as stmt) elts ->
-        match pexp_desc with
-        | PExpLet(r, m, binds, _) -> [{stmt with pexp_desc=PExpLet(r, m, binds, {stmt with pexp_desc=PExpBlock(elts)})}]
-        | _ -> stmt::elts
-      ) elts [] in
-      {e with pexp_desc=PExpBlock(elts)}
-    | _ -> super.expr mapper e in
-  {super with expr}
-
-let fix_tyvar_mapper super =
-  let open Ast_mapper in
-  let open Ast_helper in
-  let typ mapper ({ptyp_desc; ptyp_loc} as t) =
-    match ptyp_desc with
-    | PTyVar v when (v <> "") && (match v.[0] with 'A'..'Z' -> true | _ -> false) ->
-      let id = mkloc (IdentName v) ptyp_loc in
-      {t with ptyp_desc=PTyConstr(id, [])}
-    | _ -> super.typ mapper t in
-  {super with typ}
-
-let fix_blocks ({statements} as prog) =
-  let open Ast_mapper in
-  let mapper = default_mapper
-    |> fix_block_mapper
-    |> fix_tyvar_mapper in
-  {prog with
-   statements=List.map (mapper.toplevel mapper) statements}
-
-let no_record_block exprs =
-  match exprs with
-  | [{pexp_desc=PExpId {txt=IdentName _}}] -> raise Dyp.Giveup
-  | _ -> ()
-
-let no_brace_expr expr =
-  match expr.pexp_desc with
-  | PExpBlock _
-  | PExpRecord _ -> raise Dyp.Giveup
-  | _ -> ()
-
-let no_uppercase_ident expr =
-  match expr.pexp_desc with
-  | PExpId {txt=id} ->
-    let first_char = String.get (Identifier.last id) 0 in
-    if Char_utils.is_uppercase_letter first_char then raise Dyp.Giveup
-  | _ -> ()
-
-let no_array_access expr =
-  match expr.pexp_desc with
-  | PExpArrayGet _ -> raise Dyp.Giveup
-  | _ -> ()
-
-let no_rational_literal expr1 expr2 =
-  match expr1.pexp_desc, expr2.pexp_desc with
-  | PExpConstant(PConstNumber (PConstNumberInt _)), PExpConstant(PConstNumber (PConstNumberInt _)) -> raise Dyp.Giveup
-  | _ -> ()
-
-
-let mkid ns =
-  let help ns =
-    let rec help ns (acc_ident, acc_str) =
-      let ident = Option.fold ~some:(fun i -> IdentExternal(i, acc_str)) ~none:(IdentName acc_str) acc_ident in
-      match ns with
-        | [] -> ident
-        | n::tl -> help tl (Some ident, n) in
-    match ns with
-      | [] -> failwith "Should be impossible"
-      | n::tl -> help tl (None, n) in
-  mkloc @@ help ns
-
-let mkid_expr dyp ns = Exp.ident ~loc:(symbol_rloc dyp) (mkid ns (symbol_rloc dyp))
-
-let mkstr dyp s = mkloc s (symbol_rloc dyp)
-
-let make_program statements =
-  let prog_loc = {
-    loc_start=(!first_loc).loc_end;
-    loc_end=(!last_loc).loc_end;
-    loc_ghost=false;
-  } in
-  fix_blocks {statements; comments=[]; prog_loc}
-
+(* Including the Parser_extra file allows it to be written in Reason and have editor tooling *)
+include Parser_header
 }
-
-
 
 /* Operator precedence may be found in /docs/contributor/operator_precedence.md */
 %relation p180<p170<p160<p150<p140<p130<p120<p110<p100<p90<p80<p70<p60<p50<p40<p30<p20<p10<p0
@@ -686,24 +525,8 @@ program :
 %%
 
 {
-let parse_program t lexbuf =
-  Dyp.dypgen_verbose := !Grain_utils.Config.parser_debug_level;
-  first_loc := Location.curr lexbuf;
-  with_default_loc_src (fun() -> !last_loc) (fun() -> program t lexbuf)
-
-let print_syntax_error =
-  let open Printf in
-  let open Location in
-  function
-  | Syntax_error -> begin
-      debug_print_state();
-      Some(errorf ~loc:(!last_loc) "Syntax error")
-    end
-  | _ -> None
-
-let () =
-  Dyp.dypgen_verbose := !Grain_utils.Config.parser_debug_level;
-  Location.register_error_of_exn print_syntax_error
+(* Partially apply the `program` from the parser to our parse_program method *)
+let parse_program = parse_program program
 }
 
 %mli {
