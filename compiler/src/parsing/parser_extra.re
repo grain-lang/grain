@@ -94,11 +94,10 @@ let fix_block_mapper = super => {
         List.fold_right(
           ({pexp_desc} as stmt, elts) =>
             switch (pexp_desc) {
-            | [@implicit_arity] PExpLet(r, m, binds, _) => [
+            | PExpLet(r, m, binds, _) => [
                 {
                   ...stmt,
                   pexp_desc:
-                    [@implicit_arity]
                     PExpLet(
                       r,
                       m,
@@ -133,7 +132,7 @@ let fix_tyvar_mapper = super => {
             }
           ) =>
       let id = mkloc(IdentName(v), ptyp_loc);
-      {...t, ptyp_desc: [@implicit_arity] PTyConstr(id, [])};
+      {...t, ptyp_desc: PTyConstr(id, [])};
     | _ => super.typ(mapper, t)
     };
   {...super, typ};
@@ -189,7 +188,7 @@ let mkid = ns => {
     let rec help = (ns, (acc_ident, acc_str)) => {
       let ident =
         Option.fold(
-          ~some=i => [@implicit_arity] IdentExternal(i, acc_str),
+          ~some=i => IdentExternal(i, acc_str),
           ~none=IdentName(acc_str),
           acc_ident,
         );
