@@ -345,3 +345,28 @@ let rejectTestMap = makeFilterTestMap();
 Map.reject((key, value) => false, rejectTestMap);
 
 assert Map.size(rejectTestMap) == 3;
+
+// Map.update()
+
+let toUpdate = Map.fromList([("a", 1), ("b", 2), ("c", 3)]);
+
+Map.update("b", (old) => {
+  assert old == Some(2)
+  Some(4)
+}, toUpdate);
+
+assert Map.get("b", toUpdate) == Some(4);
+
+Map.update("d", (old) => {
+  assert old == None
+  Some(10)
+}, toUpdate);
+
+assert Map.get("d", toUpdate) == Some(10);
+
+Map.update("c", (old) => {
+  assert old == Some(3)
+  None
+}, toUpdate);
+
+assert Map.contains("c", toUpdate) == false;
