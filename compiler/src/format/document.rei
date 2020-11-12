@@ -33,3 +33,5 @@ let single_quote: t;
 let double_quote: t;
 
 let join: (~sep: t, list(t)) => t;
+
+let to_string: (~width: int, ~indent: int, t) => string;
