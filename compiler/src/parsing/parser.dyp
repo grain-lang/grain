@@ -20,7 +20,7 @@ include Parser_header
 %token <string> TYPEID
 %token <string> STRING
 %token LBRACK RBRACK LPAREN LPARENNOSPACE RPAREN LBRACE RBRACE LCARET RCARET
-%token CARET LCARETLCARET RCARETRCARET RCARETRCARETRCARET
+%token CARET LLCARET RRCARET RRRCARET
 %token COMMA SEMI AS
 %token THICKARROW ARROW
 %token IS ISNT EQEQ LESSEQ GREATEREQ
@@ -290,13 +290,13 @@ caret_op :
 lcaret_op :
   | LCARET { "<" }
 llcaret_op :
-  | LCARETLCARET { "<<" }
+  | LLCARET { "<<" }
 rcaret_op :
   | RCARET { ">" }
 rrcaret_op :
-  | RCARETRCARET { ">>" }
+  | RRCARET { ">>" }
 rrrcaret_op :
-  | RCARETRCARETRCARET { ">>>" }
+  | RRRCARET { ">>>" }
 lesseq_op :
   | LESSEQ { "<=" }
 greatereq_op :
