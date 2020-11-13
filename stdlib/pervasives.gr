@@ -44,7 +44,6 @@ import foreign wasm concat : (String, String) -> String as (++) from 'stdlib-ext
 // Box operations
 primitive box : a -> Box<a> = "@box"
 primitive unbox : Box<a> -> a = "@unbox"
-primitive (^) : Box<a> -> a = "@unbox"
 
 // Other operations
 primitive ignore : a -> Void = "@ignore"
