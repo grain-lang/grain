@@ -18,13 +18,13 @@ import foreign wasm numberGreaterEqual : (Number, Number) -> Bool as (>=) from '
 // Number bit/logical operations
 import foreign wasm numberLnot : Number -> Number as lnot from 'stdlib-external/runtime'
 
-import foreign wasm numberLand : (Number, Number) -> Number as land from 'stdlib-external/runtime'
-import foreign wasm numberLor : (Number, Number) -> Number as lor from 'stdlib-external/runtime'
-import foreign wasm numberLxor : (Number, Number) -> Number as lxor from 'stdlib-external/runtime'
+import foreign wasm numberLand : (Number, Number) -> Number as (&) from 'stdlib-external/runtime'
+import foreign wasm numberLor : (Number, Number) -> Number as (|) from 'stdlib-external/runtime'
+import foreign wasm numberLxor : (Number, Number) -> Number as (^) from 'stdlib-external/runtime'
 
-import foreign wasm numberLsl : (Number, Number) -> Number as lsl from 'stdlib-external/runtime'
-import foreign wasm numberLsr : (Number, Number) -> Number as lsr from 'stdlib-external/runtime'
-import foreign wasm numberAsr : (Number, Number) -> Number as asr from 'stdlib-external/runtime'
+import foreign wasm numberLsl : (Number, Number) -> Number as (<<) from 'stdlib-external/runtime'
+import foreign wasm numberLsr : (Number, Number) -> Number as (>>>) from 'stdlib-external/runtime'
+import foreign wasm numberAsr : (Number, Number) -> Number as (>>) from 'stdlib-external/runtime'
 
 
 // Number coercions & conversions

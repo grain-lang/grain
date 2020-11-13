@@ -193,10 +193,7 @@ rule token = parse
   | "]" { RBRACK }
   | "^" { CARET }
   | "<" { LCARET }
-  | "<<" { LLCARET }
   | ">" { RCARET }
-  | ">>" { RRCARET }
-  | ">>>" { RRRCARET }
   | "^" { CARET }
   | "++" { PLUSPLUS }
   | "+" { PLUS }
