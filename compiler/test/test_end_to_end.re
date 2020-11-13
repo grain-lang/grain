@@ -743,7 +743,6 @@ let box_tests = [
     "let b = box(box(4));\n            {\n              unbox(unbox(b))\n            }",
     "4",
   ),
-  t("box3_2", "let b = box(box(4)); ^^b", "4"),
   t(
     "box4",
     "let b = box(4);\n            {\n              b := 3;\n              unbox(b)\n            }",
@@ -764,20 +763,27 @@ let box_tests = [
   ),
   /* Operations on Box<Number> */
   t("box_addition1", "let b = box(4); b := unbox(b) + 19", "23"),
-  t("box_addition2", "let b = box(4); b := unbox(b) + 19; ^b", "23"),
+  t("box_addition2", "let b = box(4); b := unbox(b) + 19; unbox(b)", "23"),
   t("box_subtraction1", "let b = box(4); b := unbox(b) - 19", "-15"),
-  t("box_subtraction2", "let b = box(4); b := unbox(b) - 19; ^b", "-15"),
+  t(
+    "box_subtraction2",
+    "let b = box(4); b := unbox(b) - 19; unbox(b)",
+    "-15",
+  ),
   t("box_multiplication1", "let b = box(4); b := unbox(b) * 19", "76"),
-  t("box_multiplication2", "let b = box(4); b := unbox(b) * 19; ^b", "76"),
+  t(
+    "box_multiplication2",
+    "let b = box(4); b := unbox(b) * 19; unbox(b)",
+    "76",
+  ),
   t("box_division1", "let b = box(76); b := unbox(b) / 19", "4"),
-  t("box_division2", "let b = box(76); b := unbox(b) / 19; ^b", "4"),
+  t("box_division2", "let b = box(76); b := unbox(b) / 19; unbox(b)", "4"),
 ];
 
 let let_mut_tests = [
   t("let-mut1", "let mut b = 4;b", "4"),
   t("let-mut2", "let mut b = (4, (5, 6));b", "(4, (5, 6))"),
   t("let-mut3", "let mut b = box(4);unbox(b)", "4"),
-  t("let-mut3_2", "let mut b = box(4); ^b", "4"),
   t("let-mut4", "let mut b = 4;b = 3;b", "3"),
   t("let-mut5", "let mut b = 4;b = b - 1;b", "3"),
   tfile("counter-mut", "counter-mut", "1\n2\n3\nvoid"),

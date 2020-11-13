@@ -243,7 +243,6 @@ data_declaration :
 
 prim1_expr :
   | NOT non_assign_expr { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp ["!"]) [$2] }
-  | CARET non_assign_expr { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp ["^"]) [$2] }
 
 paren_expr :
   | lparen expr rparen { $2 }
@@ -329,7 +328,6 @@ infix :
 
 prefix :
   | lparen NOT rparen { "!" }
-  | lparen CARET rparen { "^" }
 
 id :
   | [TYPEID dot {$1}]* [ID | TYPEID | infix | prefix] { prerr_string "\nid\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); (mkid (List.append $1 [$2])) (symbol_rloc dyp) }
