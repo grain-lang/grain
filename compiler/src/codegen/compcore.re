@@ -2135,82 +2135,107 @@ let allocate_int64_imm = (wasm_mod, env, i) => {
 };
 
 let allocate_closure =
-    (wasm_mod, env, ~lambda=?, {func_idx, arity, variables} as closure_data) => {
+    (
+      wasm_mod,
+      env,
+      ~lambda=?,
+      ~skip_patching=false,
+      {func_idx, arity, variables} as closure_data,
+    ) => {
   let num_free_vars = List.length(variables);
   let closure_size = num_free_vars + 3;
   let get_swap = () => get_swap(wasm_mod, env, 0);
-  let access_lambda =
-    Option.value(
-      ~default=
-        Expression.binary(
-          wasm_mod,
-          Op.sub_int32,
-          get_swap(),
-          Expression.const(
+  let patches = ref([]);
+  if (skip_patching) {
+    let access_lambda =
+      Option.value(
+        ~default=
+          Expression.binary(
             wasm_mod,
-            const_int32 @@ 4 * round_allocation_size(closure_size),
+            Op.sub_int32,
+            get_swap(),
+            Expression.const(
+              wasm_mod,
+              const_int32 @@ 4 * round_allocation_size(closure_size),
+            ),
           ),
-        ),
-      lambda,
-    );
-  env.backpatches := [(access_lambda, closure_data), ...env.backpatches^];
-  Expression.block(
-    wasm_mod,
-    gensym_label("allocate_closure"),
-    [
+        lambda,
+      );
+    env.backpatches := [(access_lambda, closure_data), ...env.backpatches^];
+  } else {
+    let patch_var = (idx, var) =>
       store(
-        ~offset=0,
+        ~offset=4 * (idx + 3),
         wasm_mod,
-        tee_swap(
-          ~skip_incref=true,
+        get_swap(),
+        call_incref_backpatch(
           wasm_mod,
           env,
-          0,
-          heap_allocate(wasm_mod, env, closure_size),
+          [compile_imm(wasm_mod, env, var)],
         ),
-        Expression.const(wasm_mod, wrap_int32(arity)),
-      ),
-      store(
-        ~offset=4,
-        wasm_mod,
-        get_swap(),
-        Expression.binary(
-          wasm_mod,
-          Op.add_int32,
-          Expression.global_get(
-            wasm_mod,
-            get_imported_name(runtime_mod, reloc_base),
-            Type.int32,
-          ),
-          Expression.const(
-            wasm_mod,
-            wrap_int32(Int32.(add(func_idx, of_int(env.func_offset)))),
-          ),
-        ),
-      ),
-      store(
-        ~offset=8,
-        wasm_mod,
-        get_swap(),
-        Expression.const(wasm_mod, const_int32(num_free_vars)),
-      ),
+      );
+    patches := List.mapi(patch_var, variables);
+  };
+  let preamble = [
+    store(
+      ~offset=0,
+      wasm_mod,
       tee_swap(
         ~skip_incref=true,
-        ~skip_decref=true,
         wasm_mod,
         env,
         0,
-        Expression.binary(
+        heap_allocate(wasm_mod, env, closure_size),
+      ),
+      Expression.const(wasm_mod, wrap_int32(arity)),
+    ),
+    store(
+      ~offset=4,
+      wasm_mod,
+      get_swap(),
+      Expression.binary(
+        wasm_mod,
+        Op.add_int32,
+        Expression.global_get(
           wasm_mod,
-          Op.or_int32,
-          get_swap(),
-          Expression.const(
-            wasm_mod,
-            const_int32 @@ tag_val_of_tag_type(LambdaTagType),
-          ),
+          get_imported_name(runtime_mod, reloc_base),
+          Type.int32,
+        ),
+        Expression.const(
+          wasm_mod,
+          wrap_int32(Int32.(add(func_idx, of_int(env.func_offset)))),
         ),
       ),
-    ],
+    ),
+    store(
+      ~offset=8,
+      wasm_mod,
+      get_swap(),
+      Expression.const(wasm_mod, const_int32(num_free_vars)),
+    ),
+  ];
+  let postamble = [
+    tee_swap(
+      ~skip_incref=true,
+      ~skip_decref=true,
+      wasm_mod,
+      env,
+      0,
+      Expression.binary(
+        wasm_mod,
+        Op.or_int32,
+        get_swap(),
+        Expression.const(
+          wasm_mod,
+          const_int32 @@ tag_val_of_tag_type(LambdaTagType),
+        ),
+      ),
+    ),
+  ];
+  Expression.block(
+    wasm_mod,
+    gensym_label("allocate_closure"),
+    List.concat([preamble, patches^, postamble]),
   );
 };
 
@@ -2984,7 +3009,13 @@ let rec compile_store = (wasm_mod, env, binds) => {
       let (compiled_instr, store_bind) =
         switch (instr.instr_desc) {
         | MAllocate(MClosure(cdata)) => (
-            allocate_closure(wasm_mod, env, ~lambda=get_bind, cdata),
+            allocate_closure(
+              wasm_mod,
+              env,
+              ~lambda=get_bind,
+              ~skip_patching=true,
+              cdata,
+            ),
             store_bind_no_incref,
           )
         /* HACK: We expect values returned from functions to have a refcount of 1, so we don't increment it when storing */
