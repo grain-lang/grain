@@ -13,7 +13,7 @@ jobs:
 
     steps:
       - name: Setup Node.js
-        uses: actions/setup-node@v2.1.0
+        uses: actions/setup-node@v2.1.2
         with:
           node-version: '14'
           check-latest: true
