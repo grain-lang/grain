@@ -200,6 +200,8 @@ module MakeMap =
         TExpLambda(map_match_branches(branches), p)
       | TExpApp(exp, args) =>
         TExpApp(map_expression(exp), List.map(map_expression, args))
+      | TExpCurry(exp) =>
+        TExpCurry(map_expression(exp))
       | TExpPrim1(o, e) => TExpPrim1(o, map_expression(e))
       | TExpPrim2(o, e1, e2) =>
         TExpPrim2(o, map_expression(e1), map_expression(e2))

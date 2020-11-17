@@ -327,6 +327,10 @@ let rec transl_imm =
       (func_setup @ List.concat(new_setup))
       @ [BLet(tmp, Comp.app(~loc, ~env, new_func, new_args))],
     );
+  | TExpCurry(func) =>
+    let tmp = gensym("curry");
+    let (lam, setup) = transl_comp_expression(e);
+    (Imm.id(~loc, ~env, tmp), setup @ [BLet(tmp, lam)]);
   | TExpBlock([]) => failwith("Impossible by syntax")
   | TExpBlock([stmt]) => transl_imm(stmt)
   | TExpBlock([fst, ...rest]) =>
@@ -771,6 +775,17 @@ and transl_comp_expression =
       Comp.app(~loc, ~env, new_func, new_args),
       func_setup @ List.concat(new_setup),
     );
+  | TExpCurry(func) =>
+    let func_args = switch (func.exp_type.desc) {
+      | TTyArrow(args, _, _) => args
+      | _ => failwith("Impossible after typechecking")
+    };
+    let (new_func, func_setup) = transl_imm(func);
+    let arg_names = List.map((_) => gensym("curry_arg"), func_args);
+    let args = List.map(Imm.id(~loc, ~env), arg_names);
+    let exp_body = if (List.length(args) > 0) Comp.app(~loc, ~env, new_func, args) else Comp.imm(~loc, ~env, new_func);
+    let exp = List.fold_right((arg, body) => Comp.lambda(~loc, ~env, [arg], AExp.comp(~loc, ~env, body)), arg_names, exp_body);
+    (exp, func_setup)
   | TExpTuple(args) =>
     let (new_args, new_setup) = List.split(List.map(transl_imm, args));
     (Comp.tuple(~loc, ~env, new_args), List.concat(new_setup));

@@ -844,6 +844,25 @@ and type_expect_ =
       exp_type: ty_res,
       exp_env: env,
     });
+  | PExpCurry(arg) =>
+    begin_def();
+    let arg = type_exp(env, arg);
+    end_def();
+    let ty = switch (arg.exp_type.desc) {
+      | TTyArrow([], _, _) => arg.exp_type
+      | TTyArrow(args, res, comm) =>
+        List.fold_right((arg, ty_acc) => {
+          newty(TTyArrow([arg], ty_acc, comm))
+        }, args, res)
+      | _ => failwith("not a func")
+    };
+    rue({
+      exp_desc: TExpCurry(arg),
+      exp_loc: loc,
+      exp_extra: [],
+      exp_type: ty,
+      exp_env: env,
+    });
   | PExpMatch(arg, branches) =>
     begin_def();
     let arg = type_exp(env, arg);

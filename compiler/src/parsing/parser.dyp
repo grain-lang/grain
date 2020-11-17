@@ -28,7 +28,7 @@ include Parser_header
 %token UNDERSCORE
 %token COLON COLONCOLON DOT ELLIPSIS
 
-%token ASSERT FAIL EXCEPTION TRY RAISE CATCH
+%token ASSERT FAIL CURRY EXCEPTION TRY RAISE CATCH
 
 %token PLUS PLUSPLUS DASH STAR SLASH PERCENT
 %token TRUE FALSE VOID
@@ -426,6 +426,7 @@ array_expr :
 stmt_expr :
   | ASSERT expr { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp ["assert"]) [$2] }
   | FAIL expr { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp ["fail"]) [$2] }
+  | CURRY expr { Exp.curry ~loc:(symbol_rloc dyp) $2 }
 
 assign_binop_op :
   | pluseq_op

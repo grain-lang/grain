@@ -89,6 +89,8 @@ module E = {
     | PExpApp(e, el) =>
       sub.expr(sub, e);
       List.iter(sub.expr(sub), el);
+    | PExpCurry(e) =>
+      sub.expr(sub, e);
     | PExpBlock(el) => List.iter(sub.expr(sub), el)
     | PExpNull => ()
     };

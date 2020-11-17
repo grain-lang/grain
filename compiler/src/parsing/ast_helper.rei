@@ -124,6 +124,7 @@ module Exp: {
   let assign: (~loc: loc=?, expression, expression) => expression;
   let lambda: (~loc: loc=?, list(pattern), expression) => expression;
   let apply: (~loc: loc=?, expression, list(expression)) => expression;
+  let curry: (~loc: loc=?, expression) => expression;
   let block: (~loc: loc=?, list(expression)) => expression;
   let null: (~loc: loc=?, unit) => expression;
   let ignore: expression => expression;

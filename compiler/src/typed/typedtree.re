@@ -243,6 +243,7 @@ and expression_desc =
   | TExpWhile(expression, expression)
   | TExpLambda(list(match_branch), partial)
   | TExpApp(expression, list(expression))
+  | TExpCurry(expression)
   | TExpConstruct(
       loc(Identifier.t),
       constructor_description,

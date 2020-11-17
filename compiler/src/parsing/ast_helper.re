@@ -203,6 +203,7 @@ module Exp = {
   let assign = (~loc=?, a, b) => mk(~loc?, PExpAssign(a, b));
   let lambda = (~loc=?, a, b) => mk(~loc?, PExpLambda(a, b));
   let apply = (~loc=?, a, b) => mk(~loc?, PExpApp(a, b));
+  let curry = (~loc=?, a) => mk(~loc?, PExpCurry(a));
   let block = (~loc=?, a) => mk(~loc?, PExpBlock(a));
   let list = (~loc=?, a, base) => {
     let empty = ident(~loc?, ident_empty);

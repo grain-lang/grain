@@ -168,6 +168,7 @@ rule token = parse
   | "rec" { REC }
   | "match" { MATCH }
   | "assert" { ASSERT }
+  | "curry" { CURRY }
   | "fail" { FAIL }
   | "exception" { EXCEPTION }
   | "try" { TRY }

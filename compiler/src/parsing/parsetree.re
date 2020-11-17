@@ -226,6 +226,7 @@ and expression_desc =
   | PExpConstraint(expression, parsed_type)
   | PExpLambda(list(pattern), expression)
   | PExpApp(expression, list(expression))
+  | PExpCurry(expression)
   | PExpBlock(list(expression))
   | PExpBoxAssign(expression, expression)
   | PExpAssign(expression, expression)

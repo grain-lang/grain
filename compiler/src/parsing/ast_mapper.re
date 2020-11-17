@@ -82,6 +82,8 @@ module E = {
       lambda(~loc, List.map(sub.pat(sub), pl), sub.expr(sub, e))
     | PExpApp(e, el) =>
       apply(~loc, sub.expr(sub, e), List.map(sub.expr(sub), el))
+    | PExpCurry(e) =>
+      curry(~loc, sub.expr(sub, e))
     | PExpBlock(el) => block(~loc, List.map(sub.expr(sub), el))
     | PExpNull => null(~loc, ())
     | PExpConstraint(e, t) =>
