@@ -191,6 +191,7 @@ rule token = parse
   | "}" { RBRACE }
   | "[" { LBRACK }
   | "]" { RBRACK }
+  | "^" { CARET }
   | "<" { LCARET }
   | ">" { RCARET }
   | "^" { CARET }
@@ -202,7 +203,9 @@ rule token = parse
   | "%" { PERCENT }
   | "<=" { LESSEQ }
   | ">=" { GREATEREQ }
+  | "&" { AMP }
   | "&&" { AMPAMP }
+  | "|" { PIPE }
   | "||" { PIPEPIPE }
   | "!" { NOT }
   | '"'   { read_dquote_str (Buffer.create 16) lexbuf }
