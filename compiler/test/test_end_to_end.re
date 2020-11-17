@@ -301,6 +301,7 @@ let function_tests = [
   t("func_no_args", "let foo = (() => {print(5)});\nfoo()", "5\nvoid"),
   te("multi_bind", "let x = 2, y = x + 1; y", "Unbound value x"),
   t("multi_bind2", "let x = 2, y = 3; y", "3"),
+  t("curried_func", "let add = a => b => a + b; add(2)(3)", "5"),
   te("unbound_fun", "2 + foo()", "unbound"),
   te("unbound_id_simple", "5 - x", "unbound"),
   te("unbound_id_let", "let x = x; 2 + 2", "unbound"),
