@@ -1,0 +1,4 @@
+export let add = (+)
+export let sub = (-)
+export let mul = (*)
+export let div = (/)
