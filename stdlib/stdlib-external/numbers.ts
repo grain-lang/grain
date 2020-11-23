@@ -306,7 +306,7 @@ function coerceFloat32(x: u32): f32 {
   }
 }
 
-function coerceFloat64(x: u32): f64 {
+export function coerceFloat64(x: u32): f64 {
   if (isSimpleNumber(x)) {
     return <f64>(untagSimple(x))
   }

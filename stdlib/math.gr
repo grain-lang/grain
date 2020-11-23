@@ -1,3 +1,7 @@
+export *
+
+import foreign wasm mathSqrt : (Number) -> Number from 'stdlib-external/math'
+
 export let add = (+)
 export let sub = (-)
 export let mul = (*)
