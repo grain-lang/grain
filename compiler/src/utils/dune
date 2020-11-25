@@ -3,7 +3,7 @@
  (public_name grain_utils)
  (synopsis "Utilities for the Grain compiler")
  (libraries fp fs.lib cmdliner compiler-libs.common ppx_sexp_conv.runtime-lib
-   sexplib)
+   sexplib str)
  (inline_tests)
  (preprocess
   (pps ppx_sexp_conv ppx_expect)))
