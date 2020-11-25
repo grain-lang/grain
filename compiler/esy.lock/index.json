@@ -1,5 +1,5 @@
 {
-  "checksum": "700ed4d0077a73bcc21c457188ad3e9d",
+  "checksum": "c8b520dea4c617e46751e37275545792",
   "root": "@grain/compiler@link-dev:./esy.json",
   "node": {
     "ocaml@4.11.0@d41d8cd9": {
@@ -1823,6 +1823,7 @@
         "@opam/grain_dypgen@opam:0.2@ef01d3b4",
         "@opam/fs@github:facebookexperimental/reason-native:fs.opam#a33f1528a6dd86c67f365e226c81312733181c87@d41d8cd9",
         "@opam/fp@github:facebookexperimental/reason-native:fp.opam#a33f1528a6dd86c67f365e226c81312733181c87@d41d8cd9",
+        "@opam/dune-configurator@opam:2.7.1@96307faa",
         "@opam/dune-build-info@opam:2.7.1@da03d61d",
         "@opam/dune@opam:2.7.1@f5f493bc",
         "@opam/cmdliner@opam:1.0.4@93208aac",
