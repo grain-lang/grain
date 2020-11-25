@@ -39,7 +39,7 @@
   },
   "dependencies": {},
   "scripts": {
-    "build": "./build.mjs",
+    "build": "node --harmony-top-level-await ./build.mjs",
     "clean": "del-cli '**/*.wasm' '**/*.wasm.modsig' '**/*.wasm.wast' '!stdlib-external/**'"
   }
 }

@@ -1,6 +1,3 @@
-#!/bin/sh
-// 2>/dev/null; exec /usr/bin/env node --harmony-top-level-await "$0"
-
 import { promisify } from 'util';
 import { createRequire } from 'module';
 
