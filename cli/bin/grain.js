@@ -1,5 +1,4 @@
-#!/bin/sh
-// 2>/dev/null; exec /usr/bin/env node --experimental-wasm-bigint "$0" "$@"
+#!/usr/bin/env node --experimental-wasm-bigint
 // https://github.com/grain-lang/grain/issues/114
 
 const { execSync } = require('child_process');
