@@ -1,3 +1,4 @@
+import path from 'path';
 import { readFile, readURL } from '../core/grain-module';
 
 function normalizeSlash(s) {
@@ -31,7 +32,7 @@ export function defaultFileLocator(bases = []) {
   return async (raw) => {
     let module = raw.replace(/^GRAIN\$MODULE\$/, '');
     for (const base of bases) {
-      let fullpath = base + "/" + module + ".gr.wasm";
+      let fullpath = path.join(base, module + ".gr.wasm");
       if (!fs.existsSync(fullpath)) {
         continue;
       }
