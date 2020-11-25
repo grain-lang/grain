@@ -25,7 +25,7 @@ depends: [
   "ocamlformat" {with-test}
   "reason" {with-test}
   "ocamlfind" {>= "1.5.2"}
-  "ocaml" {>= "4.06"}
+  "ocaml" {>= "4.06" & < "4.12"}
   "dune" {>= "2.5.0"}
 ]
 dev-repo: "git+https://github.com/ocaml/ocaml-lsp.git"
