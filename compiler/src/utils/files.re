@@ -9,9 +9,23 @@ let remove_extension = baseName => {
   };
 };
 
+// These utilities are needed until https://github.com/facebookexperimental/reason-native/pull/251
+// is merged into the reason-native/fp library to support Windows-style separators
+let normalize_separators = path => {
+  let platform_sep = Str.regexp(Filename.dir_sep);
+  let normal_sep = "/";
+  Str.global_replace(platform_sep, normal_sep, path);
+};
+
+let to_fp = fname => {
+  Fp.testForPath(normalize_separators(fname));
+};
+
+let get_cwd = () => normalize_separators(Sys.getcwd());
+
 let filename_to_module_name = fname => {
   let baseName =
-    Option.bind(Fp.testForPath(fname), p =>
+    Option.bind(to_fp(fname), p =>
       switch (p) {
       | Absolute(path) => Fp.baseName(path)
       | Relative(path) => Fp.baseName(path)
@@ -33,11 +47,11 @@ let filename_to_module_name = fname => {
 let ensure_parent_directory_exists = fname => {
   // TODO: Use `derelativize` once Fp.t is used everywhere
   let fullPath =
-    switch (Fp.testForPath(fname)) {
+    switch (to_fp(fname)) {
     | Some(Absolute(path)) => path
     | Some(Relative(path)) =>
-      let cwd = Fp.absoluteExn(Sys.getcwd());
-      Fp.join(cwd, path);
+      let base = Fp.absoluteExn(get_cwd());
+      Fp.join(base, path);
     | None =>
       raise(
         Invalid_argument(
@@ -58,12 +72,12 @@ let ensure_parent_directory_exists = fname => {
 */
 let derelativize = (~base=?, fname) => {
   let fullPath =
-    switch (Fp.testForPath(fname)) {
+    switch (to_fp(fname)) {
     | Some(Absolute(path)) => path
     | Some(Relative(path)) =>
       let b =
         switch (base) {
-        | None => Fp.absolute(Sys.getcwd())
+        | None => Fp.absolute(get_cwd())
         | Some(path) => Fp.absolute(path)
         };
       switch (b) {
