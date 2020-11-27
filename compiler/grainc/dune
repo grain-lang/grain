@@ -3,4 +3,7 @@
  (public_name grainc)
  (package grain)
  (modules grainc)
+ (flags
+  (:standard
+   (:include ./config/flags.sexp)))
  (libraries grain grain_diagnostics binaryen.native dune-build-info))
