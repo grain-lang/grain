@@ -31,7 +31,7 @@
     "@opam/ppx_deriving_yojson": ">= 3.5.2",
     "@opam/ppx_expect": ">= 0.14.0",
     "@opam/ppx_sexp_conv": ">= 0.14.0",
-    "@opam/reason": ">= 3.6.0",
+    "@opam/reason": ">= 3.6.2",
     "@opam/sexplib": ">= 0.14.0",
     "@opam/utf8": "0.1.0",
     "@opam/yojson": ">= 1.7.0",
@@ -44,7 +44,6 @@
   "resolutions": {
     "@opam/fp": "facebookexperimental/reason-native:fp.opam#a33f1528a6dd86c67f365e226c81312733181c87",
     "@opam/fs": "facebookexperimental/reason-native:fs.opam#a33f1528a6dd86c67f365e226c81312733181c87",
-    "@opam/reason": "facebook/reason:reason.opam#d7dca24d89ab5035c3a76e23e701bd2d7c1211b4",
     "@opam/utf8": "facebookexperimental/reason-native:utf8.opam#a33f1528a6dd86c67f365e226c81312733181c87"
   },
   "installConfig": {
