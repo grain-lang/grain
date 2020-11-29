@@ -14,15 +14,14 @@ build: [
   ["dune" "build" "@doc" "-p" name "-j" jobs] {with-doc}
 ]
 depends: [
-  "ocaml" {>= "4.07.0" & < "4.12"}
+  "ocaml" {>= "4.07.0"} # TODO: change back to OCaml >= 4.05 when stdlib-shims 0.2.0 is released (same for ppx_deriving 5.0 and 5.1)
   "dune" {>= "1.6.3"}
   "cppo" {build}
   "ocamlfind"
-  "ocaml-migrate-parsetree" {< "2.0.0"}
   "ppx_derivers"
-  "ppxlib" {>= "0.14.0" & < "0.16.0"}
+  "ppxlib" {>= "0.20.0"}
   "result"
-  "ounit" {with-test}
+  "ounit2" {with-test}
 ]
 synopsis: "Type-driven code generation for OCaml"
 description: """
@@ -32,10 +31,10 @@ for common tasks.
 """
 url {
   src:
-    "https://github.com/ocaml-ppx/ppx_deriving/releases/download/v5.1/ppx_deriving-v5.1.tbz"
+    "https://github.com/ocaml-ppx/ppx_deriving/releases/download/v5.2/ppx_deriving-v5.2.tbz"
   checksum: [
-    "sha256=b04f3b22b754e65af50812730695863192ae410e802e074b55ebbb8c4f73c4c4"
-    "sha512=abcccda4878a82b0d0eedcc23127da6ae5c10bface59335a226a714752a46b987bff01f48fbe432910b26bfc7b332b301d191da71a9da0db593d86335bc83cd9"
+    "sha256=1c2d2626824ca350c365bf6c8bc3a23c8045c3995c170f2bc500e53baeda2ee6"
+    "sha512=03ce8b3a0d8ed56b6c078212ac54862d99e4296c0e31cc982f9e632bae973a955207cfa968dbcd9d88aa444addda557556f549ef926ae7196534f9b7c007cf10"
   ]
 }
-x-commit-hash: "b29509ff51f79f0f47dd85d60ab837ded5d2c6e4"
+x-commit-hash: "b5c1c30692819393b3a6f9f5ffccf16b59594b4a"
