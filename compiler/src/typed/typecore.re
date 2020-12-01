@@ -1000,7 +1000,14 @@ and type_expect_ =
       exp_env: env,
       exp_extra: [(TExpConstraint(cty), loc), ...arg.exp_extra],
     });
-  | PExpBlock([]) => failwith("Internal error: type_expect_ block was empty")
+  | PExpBlock([]) =>
+    rue({
+      exp_desc: TExpBlock([]),
+      exp_loc: loc,
+      exp_type: Builtin_types.type_void,
+      exp_env: env,
+      exp_extra: [],
+    })
   | PExpBlock(es) =>
     let rec process_es = rem =>
       switch (rem) {
