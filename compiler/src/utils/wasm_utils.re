@@ -157,18 +157,14 @@ let read_leb128_u64_stream = stream =>
 
 let read_int32 = inchan => {
   let bytes = Bytes.create(4);
-  if (input(inchan, bytes, 0, 4) != 4) {
-    raise(End_of_file);
-  };
+  really_input(inchan, bytes, 0, 4);
   Bytes.get_int32_le(bytes, 0);
 };
 
 let read_abi_version = inchan => {
   let num_bytes = 4 * 3;
   let bytes = Bytes.create(num_bytes);
-  if (input(inchan, bytes, 0, num_bytes) != num_bytes) {
-    raise(End_of_file);
-  };
+  really_input(inchan, bytes, 0, num_bytes);
   open Int32;
   let major = to_int(Bytes.get_int32_le(bytes, 0));
   let minor = to_int(Bytes.get_int32_le(bytes, 4));
@@ -242,6 +238,7 @@ let get_wasm_sections = (~reset=false, inchan) => {
     let magic = [0x00, 0x61, 0x73, 0x6D];
     let version = [0x01, 0x00, 0x00, 0x00];
     let expect = (strbuilder, b) => {
+      // TODO: This can raise End_of_file. Should we really be letting that bubble all the way up?
       let actual = input_byte(inchan);
       if (actual != b) {
         raise(Invalid_argument(strbuilder(b, actual)));
@@ -321,10 +318,7 @@ let get_grain_custom_info = inchan =>
       let version = read_abi_version(inchan);
       let section_name_length = Int32.to_int(read_int32(inchan));
       let section_name_bytes = Bytes.create(section_name_length);
-      if (input(inchan, section_name_bytes, 0, section_name_length)
-          != section_name_length) {
-        raise(End_of_file);
-      };
+      really_input(inchan, section_name_bytes, 0, section_name_length);
       let section_name = Bytes.to_string(section_name_bytes);
       Some((version, section_name));
     };
