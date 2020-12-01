@@ -327,7 +327,7 @@ let rec transl_imm =
       (func_setup @ List.concat(new_setup))
       @ [BLet(tmp, Comp.app(~loc, ~env, new_func, new_args))],
     );
-  | TExpBlock([]) => failwith("Impossible by syntax")
+  | TExpBlock([]) => (Imm.const(Const_void), [])
   | TExpBlock([stmt]) => transl_imm(stmt)
   | TExpBlock([fst, ...rest]) =>
     let (fst_ans, fst_setup) = transl_comp_expression(fst);
@@ -637,7 +637,7 @@ and transl_comp_expression =
       ),
       cond_setup,
     );
-  | TExpBlock([]) => failwith("Impossible by syntax")
+  | TExpBlock([]) => (Comp.imm(Imm.const(Const_void)), [])
   | TExpBlock([stmt]) => transl_comp_expression(stmt)
   | TExpBlock([fst, ...rest]) =>
     let (fst_ans, fst_setup) = transl_comp_expression(fst);
