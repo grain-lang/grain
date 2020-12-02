@@ -358,6 +358,13 @@ let sexp_locs_enabled =
     true,
   );
 
+let no_gc =
+  toggle_flag(
+    ~names=["no-gc"],
+    ~doc="Turn off reference counting garbage collection.",
+    false,
+  );
+
 let unsound_optimizations =
   toggle_flag(
     ~names=["Ounsound"],
@@ -386,10 +393,3 @@ let module_search_path = () =>
   | Some(x) => [base_path^, ...include_dirs^] @ [x] /* stdlib goes last */
   | None => [base_path^, ...include_dirs^]
   };
-
-let no_gc =
-  toggle_flag(
-    ~names=["no-gc"],
-    ~doc="Turn off reference counting garbage collection.",
-    false,
-  );
