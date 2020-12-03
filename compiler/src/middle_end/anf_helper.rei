@@ -102,7 +102,13 @@ module Comp: {
     ) =>
     comp_expression;
   let app:
-    (~loc: loc=?, ~env: env=?, imm_expression, list(imm_expression)) =>
+    (
+      ~loc: loc=?,
+      ~env: env=?,
+      ~tail: bool=?,
+      imm_expression,
+      list(imm_expression)
+    ) =>
     comp_expression;
   let app_builtin:
     (~loc: loc=?, ~env: env=?, string, string, list(imm_expression)) =>
