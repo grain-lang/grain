@@ -1445,7 +1445,13 @@ let optimization_tests = [
                   ),
                 ),
               ],
-              AExp.comp(Comp.app(Imm.id(plus), [Imm.id(a), Imm.id(a)])),
+              AExp.comp(
+                Comp.app(
+                  ~tail=true,
+                  Imm.id(plus),
+                  [Imm.id(a), Imm.id(a)],
+                ),
+              ),
             ),
           ),
         ),
@@ -1465,6 +1471,7 @@ let optimization_tests = [
         AExp.let_(Nonrecursive, [(x, Comp.imm(Imm.id(arg)))]) @@
         AExp.comp @@
         Comp.app(
+          ~tail=true,
           Imm.id(plus),
           [Imm.id(x), Imm.const(Const_number(Const_number_int(1L)))],
         ),
@@ -1517,6 +1524,7 @@ let optimization_tests = [
       ) @@
       AExp.comp @@
       Comp.app(
+        ~tail=true,
         Imm.id(plus),
         [Imm.id(app), Imm.const(Const_number(Const_number_int(5L)))],
       );
