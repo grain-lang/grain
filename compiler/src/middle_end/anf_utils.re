@@ -70,7 +70,7 @@ and comp_free_vars_help = (env, c: comp_expression) =>
       imm_free_vars_help(env, arg1),
       imm_free_vars_help(env, arg2),
     )
-  | CApp(fn, args) =>
+  | CApp(fn, args, _) =>
     List.fold_left(
       (acc, a) => Ident.Set.union(imm_free_vars_help(env, a), acc),
       imm_free_vars_help(env, fn),
@@ -159,7 +159,7 @@ and comp_count_vars = c =>
   | CWhile(c, b) => anf_count_vars(c) + anf_count_vars(b)
   | CSwitch(_, bs) =>
     List.fold_left(max, 0) @@ List.map(((_, b)) => anf_count_vars(b), bs)
-  | CApp(_, args) => List.length(args)
+  | CApp(_, args, _) => List.length(args)
   | CAppBuiltin(_, _, args) => List.length(args)
   | _ => 0
   };

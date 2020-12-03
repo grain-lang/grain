@@ -73,7 +73,7 @@ module Comp = {
   let switch_ = (~loc=?, ~env=?, arg, branches) =>
     mk(~loc?, ~env?, CSwitch(arg, branches));
   let app = (~loc=?, ~env=?, func, args) =>
-    mk(~loc?, ~env?, CApp(func, args));
+    mk(~loc?, ~env?, CApp(func, args, false));
   let app_builtin = (~loc=?, ~env=?, modname, name, args) =>
     mk(~loc?, ~env?, CAppBuiltin(modname, name, args));
   let lambda = (~loc=?, ~env=?, args, body) =>

@@ -15,7 +15,7 @@ function onFlags(err, flags) {
   flaggedRespawn(
     flags,
     process.argv,
-    ["--experimental-wasm-bigint"],
+    ["--experimental-wasm-bigint", "--experimental-wasm-return-call"],
     onRespawn
   );
 }
