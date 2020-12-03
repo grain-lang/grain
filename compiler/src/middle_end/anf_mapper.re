@@ -110,10 +110,10 @@ module MakeMap = (Iter: MapArgument) => {
             branches,
           );
         CSwitch(c, branches);
-      | CApp(f, args) =>
+      | CApp(f, args, tail) =>
         let f = map_imm_expression(f);
         let args = List.map(map_imm_expression, args);
-        CApp(f, args);
+        CApp(f, args, tail);
       | CAppBuiltin(mod_, f, args) =>
         CAppBuiltin(mod_, f, List.map(map_imm_expression, args))
       | CLambda(idents, expr) =>

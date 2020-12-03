@@ -12,7 +12,7 @@ function onFlags(err, flags) {
   }
 
   // https://github.com/grain-lang/grain/issues/114
-  flaggedRespawn(flags, process.argv, ['--experimental-wasm-bigint'], onRespawn);
+  flaggedRespawn(flags, process.argv, ['--experimental-wasm-bigint', '--experimental-wasm-return-call'], onRespawn);
 }
 
 function onRespawn(ready, proc, argv) {

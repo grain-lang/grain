@@ -88,7 +88,7 @@ module MakeIter = (Iter: IterArgument) => {
     | CSwitch(c, branches) =>
       iter_imm_expression(c);
       List.iter(((_, body)) => iter_anf_expression(body), branches);
-    | CApp(f, args) =>
+    | CApp(f, args, _) =>
       iter_imm_expression(f);
       List.iter(iter_imm_expression, args);
     | CAppBuiltin(_, _, args) => List.iter(iter_imm_expression, args)
