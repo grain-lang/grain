@@ -1,4 +1,4 @@
-import { view, grainModule } from '../runtime';
+import { managedMemory, grainModule } from '../runtime';
 import { throwGrainError } from '../errors/errors';
 import { grainToJSVal, JSToGrainVal } from '../utils/utils';
 import { GRAIN_ERR_ARITY_MISMATCH } from '../errors/error-codes';
@@ -7,6 +7,8 @@ import { print } from '../lib/print';
 
 export class GrainClosure {
   constructor(loc) {
+    const view = managedMemory.view;
+
     this.loc = loc;
     this.arity = view[loc];
     this.ptr = view[loc + 1];
@@ -28,6 +30,8 @@ export class GrainClosure {
 };
 
 export function printClosure(c) {
+  const view = managedMemory.view;
+
   c /= 4;
   let arity = view[c];
   let idx = view[c + 1];

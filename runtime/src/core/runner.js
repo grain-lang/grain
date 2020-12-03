@@ -9,12 +9,15 @@ function roundUp(num, multiple) {
   return multiple * (Math.floor((num - 1) / multiple) + 1);
 }
 
+const MALLOC_MODULE = 'stdlib-external/runtime/malloc';
+
 export class GrainRunner {
-  constructor(locator, opts, limit) {
+  constructor(locator, managedMemory, opts) {
     this.modules = {};
     this.imports = {};
     this.idMap = {};
     this.locator = locator;
+    this.managedMemory = managedMemory;
     opts = opts || {};
     this.opts = opts;
     this.ptr = 0;
@@ -32,6 +35,27 @@ export class GrainRunner {
       toString: makeToString(boundGrainToString),
       print: makePrint(boundGrainToString)
     };
+    this.loadMemoryManager()
+  }
+
+  async loadMemoryManager() {
+    const mod = await this.locator(MALLOC_MODULE);
+    if (mod) {
+      this.memoryManager = mod
+      this.memoryManager.instantiate({
+        env: {
+          memory: this.managedMemory._memory
+        },
+        memoryManager: {
+          _malloc: this.managedMemory._malloc.bind(this.managedMemory),
+          _free: this.managedMemory._free.bind(this.managedMemory),
+          _growHeap: this.managedMemory.growHeap.bind(this.managedMemory),
+          _initialHeapSize: this.managedMemory._memory.buffer.byteLength,
+        }
+      }, this)
+    } else {
+      throw new GrainError(-1, 'Failed to locate the memory manager.');
+    }
   }
 
   checkMemory() {
@@ -103,13 +127,9 @@ export class GrainRunner {
     return this.load(module.name, module);
   }
 
-  async runFileUnboxed(path, cleanupGlobals) {
+  async runFileUnboxed(path) {
     let module = await this.loadFile(path);
-    let ret = module.runUnboxed();
-    if (cleanupGlobals) {
-      module.cleanupGlobals();
-    }
-    return ret;
+    return module.runUnboxed();
   }
 
   async runFile(path) {
