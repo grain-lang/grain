@@ -452,6 +452,7 @@ let list_tests = [
 let array_tests = [
   t("array1", "[> 1, 2, 3]", "[> 1, 2, 3]"),
   t("array2", "[>]", "[> ]"),
+  t("array3", "[>\n1, 2, 3]", "[> 1, 2, 3]"),
   te("array_error", "[> 1, false, 2]", "has type Bool but"),
   t("array_access", "let x = [> 1, 2, 3]; x[0]", "1"),
   t("array_access2", "let x = [> 1, 2, 3]; x[1]", "2"),
