@@ -26,7 +26,7 @@ function onRespawn(ready, proc, argv) {
 
   let program = require('commander');
   // Workaround to defer loading of the grain runtime until the memory settings have been parsed
-  let imports = {
+  let actions = {
     get compile() {
       return require('./compile.js');
     },
@@ -77,28 +77,28 @@ function onRespawn(ready, proc, argv) {
     // The root command that compiles & runs
     .arguments('<file>')
     .action(function (file) {
-      imports.run(imports.compile(file, program), program);
+      actions.run(actions.compile(file, program), program);
     })
 
   program
     .command('compile <file>')
     .description('compile a grain program into wasm')
     .action(function (file) {
-      imports.compile(file, program);
+      actions.compile(file, program);
     });
 
   program
     .command('lsp <file>')
     .description('check a grain file for LSP')
     .action(function (file) {
-      imports.lsp(file, program);
+      actions.lsp(file, program);
     });
 
   program
     .command('run <file>')
     .description('run a wasm file with the grain runtime')
     .action(function (wasmFile) {
-      imports.run(wasmFile, program);
+      actions.run(wasmFile, program);
     });
 
   program.parse(argv);
