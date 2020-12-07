@@ -28,6 +28,39 @@ export function byteLength(s: u32): u32 {
   return size << 1
 }
 
+export function indexOf(s: u32, p: u32): u32 {
+  s = s ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  p = p ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  const size = stringSize(s)
+  const psize = stringSize(p)
+
+  if (psize > size) return -1 << 1
+
+  let idx = 0
+  let ptr = s + 8
+  let pptr = p + 8
+  const end = ptr + size - psize + 1
+
+  while (ptr < end) {
+    if (memory.compare(ptr, pptr, psize) === 0) {
+      return idx << 1
+    }
+    idx++
+    const byte = load<u8>(ptr)
+    if ((byte & 0x80) === 0x00) {
+      ptr += 1
+    } else if ((byte & 0xF0) === 0xF0) {
+      ptr += 4
+    } else if ((byte & 0xE0) === 0xE0) {
+      ptr += 3
+    } else {
+      ptr += 2
+    }
+  }
+
+  return -1 << 1
+}
+
 export function slice(s: u32, from: i32, to: i32): u32 {
   const len = i32(length(s) >> 1)
 
