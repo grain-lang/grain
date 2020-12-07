@@ -25,7 +25,10 @@ let emit_module = ({asm, signature}, outfile) => {
     };
   let (encoded, map) = Binaryen.Module.write(asm, source_map_name);
   let oc = open_out_bin(outfile);
+  let fd = Unix.descr_of_out_channel(oc);
+  Unix.lockf(fd, Unix.F_LOCK, 0);
   output_bytes(oc, encoded);
+  Unix.lockf(fd, Unix.F_ULOCK, 0);
   close_out(oc);
   switch (map) {
   | Some(map) =>
