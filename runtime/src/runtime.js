@@ -12,7 +12,8 @@ import * as libDOM from './lib/DOM';
 
 export let grainModule;
 
-export const memory = new WebAssembly.Memory({initial: 16});
+// Workaround for this memory being initialized statically on module load
+export const memory = new WebAssembly.Memory({initial: process.env.GRAIN_INIT_MEMORY_PAGES || 16});
 export const table = new WebAssembly.Table({element: 'anyfunc', initial: 1024});
 export const view = new Int32Array(memory.buffer);
 export const uview = new Uint32Array(memory.buffer);

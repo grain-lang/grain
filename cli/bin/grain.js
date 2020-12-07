@@ -25,9 +25,18 @@ function onRespawn(ready, proc, argv) {
   const path = require('path');
 
   let program = require('commander');
-  let compile = require('./compile.js');
-  let run = require('./run.js');
-  let lsp = require('./lsp.js');
+  // Workaround to defer loading of the grain runtime until the memory settings have been parsed
+  let actions = {
+    get compile() {
+      return require('./compile.js');
+    },
+    get run() {
+      return require('./run.js');
+    },
+    get lsp() {
+      return require('./lsp.js');
+    }
+  }
 
   let pervasivesPath = require.resolve('@grain/stdlib');
   let stdlibPath = path.dirname(pervasivesPath);
@@ -60,31 +69,36 @@ function onRespawn(ready, proc, argv) {
     .option('-f, --cflags <cflags>', 'pass flags to the Grain compiler')
     .option('-S, --stdlib <path>', 'override the standard libary with your own', stdlibPath)
     .option('--limitMemory <size>', 'maximum allowed heap size', num, -1)
+    .option('--init-memory-pages <size>', 'number of pages used to initialize the grain runtime')
+    .on('option:init-memory-pages', (pages) => {
+      // Workaround for the runtime's memory being initialized statically on module load
+      process.env.GRAIN_INIT_MEMORY_PAGES = parseInt(pages, 10);
+    })
     // The root command that compiles & runs
     .arguments('<file>')
     .action(function (file) {
-      run(compile(file, program), program);
+      actions.run(actions.compile(file, program), program);
     })
 
   program
     .command('compile <file>')
     .description('compile a grain program into wasm')
     .action(function (file) {
-      compile(file, program);
+      actions.compile(file, program);
     });
 
   program
     .command('lsp <file>')
     .description('check a grain file for LSP')
     .action(function (file) {
-      lsp(file, program);
+      actions.lsp(file, program);
     });
 
   program
     .command('run <file>')
     .description('run a wasm file with the grain runtime')
     .action(function (wasmFile) {
-      run(wasmFile, program);
+      actions.run(wasmFile, program);
     });
 
   program.parse(argv);
