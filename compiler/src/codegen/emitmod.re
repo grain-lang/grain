@@ -26,7 +26,8 @@ let emit_module = ({asm, signature}, outfile) => {
   let (encoded, map) = Binaryen.Module.write(asm, source_map_name);
   let oc = open_out_bin(outfile);
   let fd = Unix.descr_of_out_channel(oc);
-  Unix.lockf(fd, Unix.F_LOCK, 0);
+  // Create a lock on the file for the full length we plan to write
+  Unix.lockf(fd, Unix.F_LOCK, Bytes.length(encoded));
   output_bytes(oc, encoded);
   Unix.lockf(fd, Unix.F_ULOCK, 0);
   close_out(oc);
