@@ -107,7 +107,6 @@ let read_cmi = filename => {
   try(
     switch (CmiBinarySection.load(ic)) {
     | Some(cmi) =>
-      Unix.lockf(fd, Unix.F_ULOCK, 0);
       close_in(ic);
       cmi;
     | None => raise(End_of_file)
@@ -115,11 +114,9 @@ let read_cmi = filename => {
   ) {
   | End_of_file
   | Failure(_) =>
-    Unix.lockf(fd, Unix.F_ULOCK, 0);
     close_in(ic);
     raise(Error(Corrupted_interface(filename)));
   | Error(e) =>
-    Unix.lockf(fd, Unix.F_ULOCK, 0);
     close_in(ic);
     raise(Error(e));
   };

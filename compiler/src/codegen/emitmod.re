@@ -29,7 +29,6 @@ let emit_module = ({asm, signature}, outfile) => {
   // Create a lock on the file for the full length we plan to write
   Unix.lockf(fd, Unix.F_LOCK, Bytes.length(encoded));
   output_bytes(oc, encoded);
-  Unix.lockf(fd, Unix.F_ULOCK, 0);
   close_out(oc);
   switch (map) {
   | Some(map) =>
