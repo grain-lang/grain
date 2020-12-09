@@ -93,9 +93,9 @@ export let mapi = (fn, array) => {
 }
 
 export let reduce = (fn, initial, array) => {
-  let acc = box(initial);
-  forEach((el) => acc := fn(unbox(acc), el), array);
-  unbox(acc)
+  let mut acc = initial;
+  forEach((el) => acc = fn(acc, el), array);
+  acc
 }
 
 export let flatMap = (fn, array) => {
