@@ -201,10 +201,10 @@ assert Array.flatMap(x => fail "Shouldn't be called", [>]) == [>]
 
 assert Array.every(x => x < 4, arr) == true
 assert Array.every(x => x > 4, arr) == false
-assert Array.every(x => fail "Shouldn't be called", [>]) == true
+assert Array.every(x => fail "Shouldn't be called", [>])
 
 // Array.some
 
 assert Array.some(x => x > 1, arr) == true
 assert Array.some(x => x > 4, arr) == false
-assert Array.some(x => fail "Shouldn't be called", [>]) == false
+assert !Array.some(x => fail "Shouldn't be called", [>])
