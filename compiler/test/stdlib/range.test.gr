@@ -1,0 +1,10 @@
+import Range from 'range'
+
+// Range.isBetween
+let range = Range.inclusive(1, 5)
+
+assert Range.isBetween(1, range)
+assert Range.isBetween(3, range)
+assert Range.isBetween(5, range)
+assert Range.isBetween(10, range) == false
+assert Range.isBetween(-1, range) == false

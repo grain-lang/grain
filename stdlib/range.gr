@@ -1,0 +1,15 @@
+// TODO: Exclusive
+enum Range {
+  Inclusive(Number, Number),
+}
+
+export let inclusive = (lower, upper) => {
+  Inclusive(lower, upper)
+}
+
+export let isBetween = (value, range) => {
+  match (range) {
+    Inclusive(lower, upper) when value >= lower && value <= upper => true,
+    _ => false
+  }
+}
