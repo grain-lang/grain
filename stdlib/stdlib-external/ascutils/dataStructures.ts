@@ -28,6 +28,18 @@ export function allocateArray(numElts: u32): u32 {
 }
 
 /**
+ * Stores an item in a Grain array.
+ *
+ * @param {u32} array The (untagged) array to store the item in
+ * @param {u32} idx The index to store the item
+ * @param {u32} item The item to store
+ */
+@inline
+export function storeInArray(arr: u32, idx: u32, item: u32): void {
+  store<u32>(arr + idx * 4, item, 8)
+}
+
+/**
  * Allocates a new Grain tuple.
  *
  * @param {u32} numElts The number of elements to be contained in this tuple

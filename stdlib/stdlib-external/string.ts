@@ -1,7 +1,7 @@
 import { throwError } from './ascutils/grainRuntime'
 import { GRAIN_ERR_ARRAY_INDEX_OUT_OF_BOUNDS, GRAIN_ERR_INVALID_ARGUMENT } from './ascutils/errors'
 import { GRAIN_GENERIC_HEAP_TAG_TYPE } from './ascutils/tags'
-import { stringSize, allocateString } from './ascutils/dataStructures'
+import { stringSize, allocateString, allocateArray, storeInArray } from './ascutils/dataStructures'
 import { GRAIN_TRUE, GRAIN_FALSE } from './ascutils/primitives'
 
 export function length(s: u32): u32 {
@@ -26,6 +26,148 @@ export function byteLength(s: u32): u32 {
   const size = stringSize(s)
 
   return size << 1
+}
+
+export function indexOf(s: u32, p: u32): u32 {
+  s = s ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  p = p ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  const size = stringSize(s)
+  const psize = stringSize(p)
+
+  if (psize > size) return -1 << 1
+
+  let idx = 0
+  let ptr = s + 8
+  let pptr = p + 8
+  const end = ptr + size - psize + 1
+
+  while (ptr < end) {
+    if (memory.compare(ptr, pptr, psize) === 0) {
+      return idx << 1
+    }
+    idx++
+    const byte = load<u8>(ptr)
+    if ((byte & 0x80) === 0x00) {
+      ptr += 1
+    } else if ((byte & 0xF0) === 0xF0) {
+      ptr += 4
+    } else if ((byte & 0xE0) === 0xE0) {
+      ptr += 3
+    } else {
+      ptr += 2
+    }
+  }
+
+  return -1 << 1
+}
+
+export function explode(str: u32): u32 {
+  let s = str ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  const size = stringSize(s)
+  const len = length(str) >> 1
+  
+  let ptr = s + 8
+  const end = ptr + size
+
+  let arr = allocateArray(len)
+  let arrIdx = 0
+
+  while (ptr < end) {
+    const byte = load<u8>(ptr)
+    let n: u32
+    if ((byte & 0x80) === 0x00) {
+      n = 1
+    } else if ((byte & 0xF0) === 0xF0) {
+      n = 4
+    } else if ((byte & 0xE0) === 0xE0) {
+      n = 3
+    } else {
+      n = 2
+    }
+
+    let c = allocateString(n)
+    memory.copy(c + 8, ptr, n)
+    storeInArray(arr, arrIdx, c ^ GRAIN_GENERIC_HEAP_TAG_TYPE)
+    arrIdx++
+    ptr += n
+  }
+
+  return arr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+}
+
+export function split(str: u32, pat: u32): u32 {
+  let s = str ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let p = pat ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  const size = stringSize(s)
+  const psize = stringSize(p)
+
+  if (psize === 0) {
+    return explode(str)
+  }
+  
+  if (psize > size) {
+    let ptr = allocateArray(1)
+    storeInArray(ptr, 0, str)
+    return ptr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  }
+
+  let ptr = s + 8
+  let pptr = p + 8
+  const end = ptr + size - psize + 1
+
+  let numStrings = 1
+
+  while (ptr < end) {
+    if (memory.compare(ptr, pptr, psize) === 0) {
+      numStrings++
+    }
+    const byte = load<u8>(ptr)
+    if ((byte & 0x80) === 0x00) {
+      ptr += 1
+    } else if ((byte & 0xF0) === 0xF0) {
+      ptr += 4
+    } else if ((byte & 0xE0) === 0xE0) {
+      ptr += 3
+    } else {
+      ptr += 2
+    }
+  }
+
+  ptr = s + 8
+  let last = ptr
+  let arr = allocateArray(numStrings)
+  let arrIdx = 0
+
+  while (ptr < end) {
+    if (memory.compare(ptr, pptr, psize) === 0) {
+      let strSize = ptr - last
+      let str = allocateString(strSize)
+      memory.copy(str + 8, last, strSize)
+      storeInArray(arr, arrIdx, str ^ GRAIN_GENERIC_HEAP_TAG_TYPE)
+      arrIdx++
+      ptr += psize
+      last = ptr
+      continue
+    }
+    const byte = load<u8>(ptr)
+    if ((byte & 0x80) === 0x00) {
+      ptr += 1
+    } else if ((byte & 0xF0) === 0xF0) {
+      ptr += 4
+    } else if ((byte & 0xE0) === 0xE0) {
+      ptr += 3
+    } else {
+      ptr += 2
+    }
+  }
+
+  // Grab last string
+  let strSize = s + 8 + size - last
+  let str = allocateString(strSize)
+  memory.copy(str + 8, last, strSize)
+  storeInArray(arr, arrIdx, str ^ GRAIN_GENERIC_HEAP_TAG_TYPE)
+
+  return arr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
 }
 
 export function slice(s: u32, from: i32, to: i32): u32 {

@@ -16,6 +16,31 @@ import foreign wasm length : String -> Number from 'stdlib-external/string'
 // @returns Number
 import foreign wasm byteLength : String -> Number from 'stdlib-external/string'
 
+import foreign wasm indexOf : (String, String) -> Number from 'stdlib-external/string'
+// Find the start index of a substring.
+// @param input: String - The string to check
+// @param sub: String - The substring to find
+// @returns Option<Number>
+let indexOf = (s, p) => {
+  let result = indexOf(s, p)
+  if (result < 0) {
+    None
+  } else {
+    Some(result)
+  }
+}
+
+// Split a string into its UTF-8 characters
+// @param input: String - The string to split
+// @returns Array<String>
+import foreign wasm explode : String -> Array<String> from 'stdlib-external/string'
+
+// Split a string by the given sequence
+// @param input: String - The string to split
+// @param sequence: String - The sequence to split on
+// @returns Array<String>
+import foreign wasm split : (String, String) -> Array<String> from 'stdlib-external/string'
+
 // Get a portion of a string.
 // @param input: String - The input string
 // @param from: Number - The start index of the substring
