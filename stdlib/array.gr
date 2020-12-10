@@ -186,7 +186,7 @@ export let contains = (search, array) => {
 export let find = (fn, array) => {
   let length = length(array)
   if(length == 0){
-    fail 'empty array provided'
+    None
   } else {
     let mut count = 0
     let mut matching = false
@@ -201,31 +201,35 @@ export let find = (fn, array) => {
       }
     }
     if(!matching) {
-      fail 'could not find a match'
+      None
     } else {
-      matchedItem
+      Some(matchedItem)
     }
   }
 }
 
 export let findIndex = (fn, array) => {
   let length = length(array)
-  let mut count = 0
-  let mut matching = false
-  let mut matchedIndex = 0
-  while (count < length) {
-    if(fn(array[count])) {
-      matching = true
-      matchedIndex = count
-      count = length
-    } else {
-      count = incr(count)
-    }
-  }
-  if(!matching) {
-    fail 'could not find a match'
+  if(length == 0){
+    None
   } else {
-    matchedIndex
+    let mut count = 0
+    let mut matching = false
+    let mut matchedIndex = 0
+    while (count < length) {
+      if(fn(array[count])) {
+        matching = true
+        matchedIndex = count
+        count = length
+      } else {
+        count = incr(count)
+      }
+    }
+    if(!matching) {
+      None
+    } else {
+      Some(matchedIndex)
+    }
   }
 }
 
