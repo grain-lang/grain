@@ -186,3 +186,25 @@ assert Array.count(x => x > 0, [>]) == 0
 assert Array.count(x => x == 3, arr) == 1
 
 // TODO: test with wrong indexes and assert the exception.
+
+// Array.reduce
+
+assert Array.reduce((acc, x) => acc + x, 0, arr) == 6
+assert Array.reduce((acc, x) => fail "Shouldn't be called", 0, [>]) == 0
+
+// Array.flatMap
+
+assert Array.flatMap(x => [> x, x * 2], arr) == [>1, 2, 2, 4, 3, 6]
+assert Array.flatMap(x => fail "Shouldn't be called", [>]) == [>]
+
+// Array.every
+
+assert Array.every(x => x < 4, arr) == true
+assert Array.every(x => x > 4, arr) == false
+assert Array.every(x => fail "Shouldn't be called", [>])
+
+// Array.some
+
+assert Array.some(x => x > 1, arr) == true
+assert Array.some(x => x > 4, arr) == false
+assert !Array.some(x => fail "Shouldn't be called", [>])

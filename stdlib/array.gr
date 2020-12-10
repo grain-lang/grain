@@ -92,6 +92,24 @@ export let mapi = (fn, array) => {
   })
 }
 
+export let reduce = (fn, initial, array) => {
+  let mut acc = initial;
+  forEach((el) => acc = fn(acc, el), array);
+  acc
+}
+
+export let flatMap = (fn, array) => {
+  reduce((result, value) => append(result, fn(value)), [>], array)
+}
+
+export let every = (fn, array) => {
+  reduce((acc, value) => { acc && fn(value) }, true, array)
+}
+
+export let some = (fn, array) => {
+  reduce((acc, value) => { acc || fn(value) }, false, array)
+}
+
 export let fill = (value, array) => {
   let length = length(array)
   forEachi((_, index) => {
