@@ -58,6 +58,28 @@ assert String.byteLength('a') == 1
 assert String.byteLength(emoji) == 4
 assert String.byteLength(emojis) == 98
 
+// indexOf tests
+assert String.indexOf(empty, empty) == Some(0)
+assert String.indexOf(short, empty) == Some(0)
+assert String.indexOf(fox, short) == Some(16)
+assert String.indexOf(emojis, '🚀') == Some(15)
+assert String.indexOf(short, short) == Some(0)
+assert String.indexOf(emoji, emojis) == None
+assert String.indexOf('aaa', 'aa') == Some(0)
+
+// explode tests
+assert String.explode(emoji) == [> '🌾']
+assert String.explode(empty) == [>]
+assert String.explode(short) == [> 'f', 'o', 'x']
+
+// split tests
+assert String.split(empty, empty) == [>]
+assert String.split(short, empty) == [> 'f', 'o', 'x']
+assert String.split(fox, ' ') == [> 'The', 'quick', 'brown', 'fox', 'jumps', 'over', 'the', 'lazy', 'dog.']
+assert String.split(fox, 'brown fox') == [> 'The quick ', ' jumps over the lazy dog.']
+assert String.split(emojis, '🚀 ') == [> 'we found a path', 'to greatness🏅but the grind never quits😤💪🏼 keep milling💯🔥😈']
+assert String.split(' foo bar baz ', ' ') == [> '', 'foo', 'bar', 'baz', '']
+
 // slice tests
 assert String.slice(empty, 0, 0) == empty
 assert String.slice(fox, 0, 1) == 'T'
