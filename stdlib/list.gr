@@ -131,25 +131,25 @@ let rec reject = (fn, list) => {
 
 let head = (list) => {
   match (list) {
-    [] => fail 'head cannot get the first element of an empty List',
-    [first, ..._] => first
+    [] => None,
+    [first, ..._] => Some(first)
   }
 }
 
 let tail = (list) => {
   match (list) {
-    [] => fail 'tail cannot get any elements from an empty List',
-    [_, ...rest] => rest
+    [] => None,
+    [_, ...rest] => Some(rest)
   }
 }
 
 let rec nth = (index, list) => {
   if (index < 0) {
-    fail 'nth index cannot be a negative number'
+    None
   } else {
     match (list) {
-      [] => fail 'nth index is out-of-bounds',
-      [first, ...rest] => if (index == 0) first else nth(index - 1, rest)
+      [] => None,
+      [first, ...rest] => if (index == 0) Some(first) else nth(index - 1, rest)
     }
   }
 }
@@ -246,22 +246,22 @@ let rec take = (n, list) => {
 let rec takeWhile = (p, list) => {
   match (list) {
     [] => [],
-    [first, ...rest] => if (p(first)) [first, ...takeWhile(p, rest)] else [] 
+    [first, ...rest] => if (p(first)) [first, ...takeWhile(p, rest)] else []
   }
 }
 
 let rec find = (fn, list) => {
   match (list) {
-    [] => fail 'could not find a match',
-    [first, ...rest] => if (fn(first)) first else find(fn, rest)
+    [] => None,
+    [first, ...rest] => if (fn(first)) Some(first) else find(fn, rest)
   }
 }
 
 let findIndex = (fn, list) => {
   let rec findItemIndex = (l, index) => {
     match (l) {
-      [] => fail 'could not find a match',
-      [first, ...rest] => if (fn(first)) index else findItemIndex(rest, index + 1)
+      [] => None,
+      [first, ...rest] => if (fn(first)) Some(index) else findItemIndex(rest, index + 1)
     }
   }
   findItemIndex(list, 0)
