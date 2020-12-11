@@ -83,18 +83,21 @@ assert reject(x => x == 3, list) == [1, 2]
 
 // List.head
 
-assert head(list) == 1
-assert head([2]) == 2
+assert head(list) == Some(1)
+assert head([2]) == Some(2)
+assert head([]) == None
 
 // List.tail
 
-assert tail(list) == [2, 3]
-assert tail([1]) == []
+assert tail(list) == Some([2, 3])
+assert tail([1]) == Some([])
+assert tail([]) == None
 
 // List.nth
 
-assert nth(0, list) == 1
-assert nth(2, list) == 3
+assert nth(0, list) == Some(1)
+assert nth(2, list) == Some(3)
+assert nth(10, list) == None
 
 // List.flatten
 
@@ -152,12 +155,14 @@ assert dropWhile(x => x > 5, list) == list
 
 // List.find
 
-assert find(x => x == 2, list) == 2
+assert find(x => x == 2, list) == Some(2)
+assert find(x => false, list) == None
 
 // List.findIndex
 
-assert findIndex(x => x == 1, list) == 0
-assert findIndex(x => x == 2, list) == 1
+assert findIndex(x => x == 1, list) == Some(0)
+assert findIndex(x => x == 2, list) == Some(1)
+assert findIndex(x => false, list) == None
 
 // List.product
 

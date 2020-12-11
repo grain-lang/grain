@@ -122,7 +122,7 @@ export let fillRange = (value, start, stop, array) => {
   let length = length(array)
   let startIndex = if (start < 0) length + start else start
   let stopIndex = if (stop < 0) length + stop else stop
-  
+
   if (startIndex > length) {
     ignore(fail 'The start index is outside the array')
   }
@@ -255,9 +255,9 @@ export let count = (fn, array) => {
   while (position < length) {
     if(fn(array[position])) {
       count = incr(count)
-      position = incr(position) 
+      position = incr(position)
     } else {
-      position = incr(position) 
+      position = incr(position)
     }
   }
   count

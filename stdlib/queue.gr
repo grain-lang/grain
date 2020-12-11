@@ -16,7 +16,7 @@ export let isEmpty = (queue) => {
 export let head = (queue) => {
     match (queue) {
         { forwards: [], backwards: [] } => None,
-        { forwards, backwards } => Some(List.head(forwards))
+        { forwards, backwards } => List.head(forwards)
     }
 }
 
