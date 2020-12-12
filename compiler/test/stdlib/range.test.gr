@@ -6,17 +6,17 @@ let range = Range.Inclusive(1, 5)
 assert Range.isBetween(1, range)
 assert Range.isBetween(3, range)
 assert Range.isBetween(5, range)
-assert Range.isBetween(10, range) == false
-assert Range.isBetween(-1, range) == false
+assert !Range.isBetween(10, range)
+assert !Range.isBetween(-1, range)
 
 // Range.isBetween (Exclusive)
 let range = Range.Exclusive(1, 5)
 
 assert Range.isBetween(1, range)
 assert Range.isBetween(3, range)
-assert Range.isBetween(5, range) == false
-assert Range.isBetween(10, range) == false
-assert Range.isBetween(-1, range) == false
+assert !Range.isBetween(5, range)
+assert !Range.isBetween(10, range)
+assert !Range.isBetween(-1, range)
 
 // Range.forEach (Inclusive)
 let range = Range.Inclusive(1, 5)
