@@ -740,6 +740,7 @@ let stdlib_tests = [
   tlib("int32.test"),
   tlib("float32.test"),
   tlib("float64.test"),
+  tlib("range.test"),
   tlib("string.test"),
   tlib("sys.file.test"),
   tlib("map.test"),

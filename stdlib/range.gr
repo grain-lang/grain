@@ -1,0 +1,47 @@
+export enum Range {
+  Inclusive(Number, Number),
+  Exclusive(Number, Number),
+}
+
+export let inRange = (value, range) => {
+  match (range) {
+    Inclusive(lower, upper) when value >= lower && value <= upper => true,
+    Inclusive(upper, lower) when value >= lower && value <= upper => true,
+    Exclusive(lower, upper) when value >= lower && value < upper => true,
+    Exclusive(upper, lower) when value >= lower && value < upper => true,
+    _ => false
+  }
+}
+
+export let forEach = (fn: (Number) -> Void, range) => {
+  match (range) {
+    Inclusive(lower, upper) when lower <= upper => {
+      let mut idx = lower;
+      while (idx <= upper) {
+        fn(idx);
+        idx += 1;
+      }
+    },
+    Inclusive(upper, lower) => {
+      let mut idx = upper;
+      while (idx >= lower) {
+        fn(idx);
+        idx -= 1;
+      }
+    },
+    Exclusive(lower, upper) when lower <= upper => {
+      let mut idx = lower;
+      while (idx < upper) {
+        fn(idx);
+        idx += 1;
+      }
+    },
+    Exclusive(upper, lower) => {
+      let mut idx = upper;
+      while (idx > lower) {
+        fn(idx);
+        idx -= 1;
+      }
+    },
+  }
+}
