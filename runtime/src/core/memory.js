@@ -427,7 +427,7 @@ export class ManagedMemory {
               }
             }
           default:
-            // No extra traversal needed for Strings and DOM elements
+            // No extra traversal needed for Strings
         }
         break;
       default:

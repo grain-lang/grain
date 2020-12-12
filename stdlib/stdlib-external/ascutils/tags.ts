@@ -8,7 +8,6 @@ export const GRAIN_NUMBER_TAG_MASK: i32 = 0b0001;
 export const GRAIN_GENERIC_TAG_MASK: i32 = 0b0111;
 
 export const GRAIN_STRING_HEAP_TAG: i32 = 1;
-export const GRAIN_DOM_ELEM_TAG: i32 = 2;
 export const GRAIN_ADT_HEAP_TAG: i32 = 3;
 export const GRAIN_RECORD_HEAP_TAG: i32 = 4;
 export const GRAIN_ARRAY_HEAP_TAG: i32 = 5;
