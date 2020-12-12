@@ -22,7 +22,6 @@ import {
   GRAIN_ERR_ARRAY_INDEX_OUT_OF_BOUNDS,
   GRAIN_ERR_SWITCH,
   GRAIN_ERR_NOT_ADT_VAL_GENERIC,
-  GRAIN_ERR_NOT_DOM_ELEMENT_GENERIC,
   GRAIN_ERR_NOT_STRING_GENERIC,
   GRAIN_ERR_NOT_BOOLEAN_GENERIC,
   GRAIN_ERR_NOT_TUPLE_GENERIC,
@@ -92,9 +91,6 @@ export function throwGrainError(errorCode, value1, value2) {
       break;
     case GRAIN_ERR_NOT_ADT_VAL_GENERIC:
       message = `expected an ADT value, got value: ${value1AsGrain}`;
-      break;
-    case GRAIN_ERR_NOT_DOM_ELEMENT_GENERIC:
-      message = `expected a DOM element, got value: ${value1AsGrain}`;
       break;
     case GRAIN_ERR_GET_NOT_TUP:
       message = `tuple access expected tuple, got value: ${value1AsGrain}`;

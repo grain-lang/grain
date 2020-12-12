@@ -4,7 +4,6 @@ open Sexplib.Conv;
 [@deriving sexp]
 type heap_tag_type =
   | StringType
-  | DOMType
   | ADTType
   | RecordType
   | ArrayType
@@ -13,7 +12,6 @@ type heap_tag_type =
 let tag_val_of_heap_tag_type =
   fun
   | StringType => 1
-  | DOMType => 2
   | ADTType => 3
   | RecordType => 4
   | ArrayType => 5
@@ -22,7 +20,6 @@ let tag_val_of_heap_tag_type =
 let heap_tag_type_of_tag_val =
   fun
   | x when x == 1 => StringType
-  | x when x == 2 => DOMType
   | x when x == 3 => ADTType
   | x when x == 4 => RecordType
   | x when x == 5 => ArrayType
