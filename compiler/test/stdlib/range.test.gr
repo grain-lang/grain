@@ -1,0 +1,77 @@
+import Range from 'range'
+
+let inclusiveAscendingRange = Range.Inclusive(1, 5)
+let inclusiveDescendingRange = Range.Inclusive(5, 1)
+let inclusiveSameRange = Range.Inclusive(1, 1)
+let exclusiveAscendingRange = Range.Exclusive(1, 5)
+let exclusiveDescendingRange = Range.Exclusive(5, 1)
+let exclusiveSameRange = Range.Exclusive(1, 1)
+
+// Range.inRange
+assert Range.inRange(1, inclusiveAscendingRange)
+assert Range.inRange(3, inclusiveAscendingRange)
+assert Range.inRange(5, inclusiveAscendingRange)
+assert !Range.inRange(10, inclusiveAscendingRange)
+assert !Range.inRange(-1, inclusiveAscendingRange)
+
+assert Range.inRange(1, inclusiveDescendingRange)
+assert Range.inRange(3, inclusiveDescendingRange)
+assert Range.inRange(5, inclusiveDescendingRange)
+assert !Range.inRange(10, inclusiveDescendingRange)
+assert !Range.inRange(-1, inclusiveDescendingRange)
+
+assert Range.inRange(1, inclusiveSameRange)
+assert !Range.inRange(3, inclusiveSameRange)
+
+assert Range.inRange(1, exclusiveAscendingRange)
+assert Range.inRange(3, exclusiveAscendingRange)
+assert !Range.inRange(5, exclusiveAscendingRange)
+assert !Range.inRange(10, exclusiveAscendingRange)
+assert !Range.inRange(-1, exclusiveAscendingRange)
+
+assert Range.inRange(1, exclusiveDescendingRange)
+assert Range.inRange(3, exclusiveDescendingRange)
+assert !Range.inRange(5, exclusiveDescendingRange)
+assert !Range.inRange(10, exclusiveDescendingRange)
+assert !Range.inRange(-1, exclusiveDescendingRange)
+
+assert !Range.inRange(1, exclusiveSameRange)
+assert !Range.inRange(3, exclusiveSameRange)
+
+// Range.forEach
+// Note: the lists in these tests are reverse the iteration
+// order because we use `...results` to append the lists
+
+let mut results = []
+Range.forEach((idx) => {
+  results = [idx, ...results];
+}, inclusiveAscendingRange)
+assert results == [5, 4, 3, 2, 1]
+
+let mut results = []
+Range.forEach((idx) => {
+  results = [idx, ...results];
+}, inclusiveDescendingRange)
+assert results == [1, 2, 3, 4, 5]
+
+let mut results = []
+Range.forEach((idx) => {
+  results = [idx, ...results];
+}, inclusiveSameRange)
+assert results == [1]
+
+let mut results = []
+Range.forEach((idx) => {
+  results = [idx, ...results];
+}, exclusiveAscendingRange)
+assert results == [4, 3, 2, 1]
+
+let mut results = []
+Range.forEach((idx) => {
+  results = [idx, ...results];
+}, exclusiveDescendingRange)
+assert results == [2, 3, 4, 5]
+
+Range.forEach((idx) => {
+  fail "Shouldn't be called"
+}, exclusiveSameRange)
