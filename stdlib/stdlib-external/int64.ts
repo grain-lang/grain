@@ -1,17 +1,11 @@
 import { GRAIN_GENERIC_HEAP_TAG_TYPE } from './ascutils/tags'
-import { newInt64, rawInt64Ptr } from "./ascutils/dataStructures";
+import { newInt64, rawInt64Ptr, loadI64 } from "./ascutils/dataStructures";
 import { GRAIN_FALSE, GRAIN_TRUE } from "./ascutils/primitives";
 import {
   GRAIN_ERR_DIVISION_BY_ZERO,
   GRAIN_ERR_MODULO_BY_ZERO,
 } from './ascutils/errors'
 import { throwError } from './ascutils/grainRuntime'
-
-// @ts-ignore: decorator
-@inline
-function loadI64(xptr: u32): i64 {
-  return load<i64>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
-}
 
 // @ts-ignore: decorator
 @inline

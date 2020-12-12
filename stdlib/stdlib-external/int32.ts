@@ -1,5 +1,5 @@
 import { GRAIN_GENERIC_HEAP_TAG_TYPE } from './ascutils/tags'
-import { newInt32, rawInt32Ptr } from "./ascutils/dataStructures";
+import { newInt32, rawInt32Ptr, loadI32 } from "./ascutils/dataStructures";
 import { GRAIN_FALSE, GRAIN_TRUE } from "./ascutils/primitives";
 import {
   GRAIN_ERR_DIVISION_BY_ZERO,
@@ -7,11 +7,7 @@ import {
 } from './ascutils/errors'
 import { throwError } from './ascutils/grainRuntime'
 
-// @ts-ignore: decorator
-@inline
-function loadI32(xptr: u32): i32 {
-  return load<i32>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
-}
+// [TODO] Should this helper be migrated to ascutils/dataStructures as well?
 
 // @ts-ignore: decorator
 @inline

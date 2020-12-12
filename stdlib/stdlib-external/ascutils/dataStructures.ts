@@ -1,3 +1,4 @@
+import { consoleLog } from './console'
 import { malloc } from './grainRuntime'
 
 import {
@@ -82,6 +83,19 @@ export function allocateChar(): u32 {
   return char
 }
 
+
+export function wrapString(str: string): u32 {
+  let utf8Size = String.UTF8.byteLength(str, false)
+  consoleLog(str.concat(' ; utf8Size: '.concat(utf8Size.toString(10))))
+  let dest = allocateString(utf8Size)
+  let buf = String.UTF8.encode(str, false)
+  let view = Uint8Array.wrap(buf)
+  for (let i = 0; i < utf8Size; ++i) {
+    store<u8>(dest + 8 + i, view[i])
+  }
+  return dest | GRAIN_GENERIC_HEAP_TAG_TYPE
+}
+
 // [TODO] should probably migrate over the accessors in numbers.ts
 // INT32/INT64
 
@@ -117,6 +131,12 @@ export function rawInt64Ptr(wrappedInt64: u32): u32 {
   return wrappedInt64 + 8
 }
 
+// @ts-ignore: decorator
+@inline
+export function loadI64(xptr: u32): i64 {
+  return load<i64>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
+}
+
 /**
  * Allocates a new Int32.
  *
@@ -147,6 +167,12 @@ export function newInt32(value: i32): u32 {
  */
 export function rawInt32Ptr(wrappedInt32: u32): u32 {
   return wrappedInt32 + 8
+}
+
+// @ts-ignore: decorator
+@inline
+export function loadI32(xptr: u32): i32 {
+  return load<i32>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
 }
 
 // FLOATS
@@ -183,6 +209,12 @@ export function rawFloat32Ptr(wrappedFloat32: u32): u32 {
   return wrappedFloat32 + 8
 }
 
+// @ts-ignore: decorator
+@inline
+export function loadF32(xptr: u32): f32 {
+  return load<f32>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
+}
+
 /**
  * Allocates a new Float64.
  *
@@ -213,6 +245,12 @@ export function newFloat64(value: f64): u32 {
  */
 export function rawFloat64Ptr(wrappedFloat64: u32): u32 {
   return wrappedFloat64 + 8
+}
+
+// @ts-ignore: decorator
+@inline
+export function loadF64(xptr: u32): f64 {
+  return load<f64>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
 }
 
 // RATIONALS
@@ -256,6 +294,18 @@ export function rawRationalNumeratorPtr(wrappedRational: u32): u32 {
  */
 export function rawRationalDenominatorPtr(wrappedRational: u32): u32 {
   return wrappedRational + 12
+}
+
+// @ts-ignore: decorator
+@inline
+export function loadRationalNumerator(xptr: u32): i32 {
+  return load<i32>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
+}
+
+// @ts-ignore: decorator
+@inline
+export function loadRationalDenominator(xptr: u32): u32 {
+  return load<u32>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 3 * 4)
 }
 
 

@@ -1,12 +1,6 @@
 import { GRAIN_GENERIC_HEAP_TAG_TYPE } from './ascutils/tags'
-import { newFloat64 } from "./ascutils/dataStructures";
+import { newFloat64, loadF64 } from "./ascutils/dataStructures";
 import { GRAIN_FALSE, GRAIN_TRUE } from "./ascutils/primitives";
-
-// @ts-ignore: decorator
-@inline
-function loadF64(xptr: u32): f64 {
-  return load<f64>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
-}
 
 export function add(x: u32, y: u32): u32 {
   const result = loadF64(x) + loadF64(y)
