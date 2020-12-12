@@ -200,3 +200,9 @@ let listSub = [1, 2, 3]
 assert sub(0, 1, listSub) == [1]
 assert sub(0, 2, listSub) == [1, 2]
 assert sub(1, 2, listSub) == [2, 3]
+
+// List.init
+
+assert init(4, idx => idx) == [0, 1, 2, 3]
+assert init(0, idx => fail "Shouldn't be called") == []
+assert init(-10, idx => fail "Shouldn't be called") == []
