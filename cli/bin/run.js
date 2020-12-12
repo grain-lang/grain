@@ -8,7 +8,7 @@ module.exports = async function run(filename, options) {
     let locator = runtime.defaultFileLocator(includeDirs);
     let GrainRunner = runtime.buildGrainRunner(locator, {limitMemory: options.limitMemory});
     if (options.printOutput) {
-      let result = await GrainRunner.runFileUnboxed(filename, true);
+      let result = await GrainRunner.runFileUnboxed(filename);
       console.log(runtime.grainToString(GrainRunner, result));
     } else {
       await GrainRunner.runFile(filename);

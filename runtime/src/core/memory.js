@@ -1,16 +1,9 @@
-import { mallocJSModule, printAllocations } from './malloc';
 import { getTagType, tagToString, heapTagToString, GRAIN_CONST_TAG_TYPE, GRAIN_NUMBER_TAG_TYPE, GRAIN_TUPLE_TAG_TYPE, GRAIN_GENERIC_HEAP_TAG_TYPE, GRAIN_LAMBDA_TAG_TYPE,
          GRAIN_ADT_HEAP_TAG } from './tags';
 import { toHex, toBinary } from '../utils/utils';
 import treeify from 'treeify';
 
 export const TRACE_MEMORY = false;
-
-// Graph coloring
-const GREEN = Symbol('GREEN');
-const RED = Symbol('RED');
-const BLUE = Symbol('BLUE');
-const BLACK = Symbol('BLACK');
 
 function trace(msg) {
   if (__DEBUG && TRACE_MEMORY) {
@@ -48,21 +41,13 @@ function trace(msg) {
 export class ManagedMemory {
   constructor(memory) {
     this._memory = memory;
+    this._view = new Int32Array(memory.buffer);
+    this._uview = new Uint32Array(memory.buffer);
+    this._u8view = new Uint8Array(memory.buffer);
+    this._f32view = new Float32Array(memory.buffer);
+    this._f64view = new Float64Array(memory.buffer);
     this._headerSize = 8; // 32 bits in bytes (extra space needed for alignment)
     this._runtime = null;
-    if (typeof window === 'undefined') {
-      this._globNS = global;
-    } else {
-      this._globNS = window;
-    }
-    this._mallocModule = mallocJSModule(this._globNS, {
-      initialHeapSize: memory.buffer.byteLength,
-      growHeap: () => this._growHeap()
-    }, this._memory.buffer);
-    this._grown = 0;
-    this._colors = {};
-    this._markQueue = [];
-    this._jumpStack = [];
     if (TRACE_MEMORY) {
       this._allocatedAddresses = new Set();
       this._freedAddresses = new Set();
@@ -74,23 +59,43 @@ export class ManagedMemory {
     }
   }
 
-  _growHeap() {
-    if (this._runtime && this._runtime.limitMemory >= 0 && this._grown >= this._runtime.limitMemory) {
-      return -1;
-    }
-    this._grown += 1024;
-    return 0;
+  growHeap(pages) {
+    const ptr = this._memory.buffer.byteLength
+    this._memory.grow(pages)
+    this._refreshViews()
+    return ptr;
+  }
+
+  _refreshViews() {
+    this._view = new Int32Array(this._memory.buffer);
+    this._uview = new Uint32Array(this._memory.buffer);
+    this._u8view = new Uint8Array(this._memory.buffer);
+    this._f32view = new Float32Array(this._memory.buffer);
+    this._f64view = new Float64Array(this._memory.buffer);
+  }
+
+  get view() {
+    return this._view;
+  }
+
+  get uview() {
+    return this._uview;
+  }
+
+  get u8view() {
+    return this._u8view;
+  }
+
+  get f32view() {
+    return this._f32view;
+  }
+
+  get f64view() {
+    return this._f64view;
   }
 
   setRuntime(runtime) {
     this._runtime = runtime;
-    if (runtime.limitMemory >= 0) {
-      this._mallocModule = mallocJSModule(this._globNS, {
-        initialHeapSize: runtime.limitMemory,
-        growHeap: () => this._growHeap()
-      }, this._memory.buffer);
-      this._grown = 0;
-    }
     if (TRACE_MEMORY) {
       runtime.postImports = () => {
         this._allocatedAddresses = new Set();
@@ -103,11 +108,9 @@ export class ManagedMemory {
     }
   }
 
-  malloc(size) {
-    this._scanQueue();
+  _malloc(rawPtr, size) {
     trace(`malloc(0x${this._toHex(size)})`);
-    let rawPtr = this._mallocModule.malloc(size + this._headerSize);
-    if (rawPtr === -1 || (this._runtime && this._runtime.limitMemory >= 0 && this._runtime.limitMemory <= rawPtr)) {
+    if (rawPtr === -1 || (this._runtime && this._runtime.limitMemory >= 0 && (this._memory.buffer.byteLength - this._runtime.limitMemory) > rawPtr)) {
       trace(`OOM; ret=${rawPtr}; limit=${this._runtime && this._runtime.limitMemory}; less than=${this._runtime && this._runtime.limitMemory >= 0 && this._runtime.limitMemory <= rawPtr}`);
       throw 'Out of memory';
     }
@@ -132,14 +135,13 @@ export class ManagedMemory {
       this._freedAddresses.delete(userPtr);
     }
     this._markIncRefSource(userPtr, 'MALLOC');
-    this._colors[userPtr] = GREEN;
     return userPtr; // offset by headerSize
   }
 
   populateHeader(rawPtr) {
     let tag = 0x0; // reserved
     trace('populateHeader');
-    var heap = new Uint8Array(this._memory.buffer);
+    var heap = this.u8view;
     for (let i = 0; i < this._headerSize; ++i) {
       heap[rawPtr + i] = 0;
     }
@@ -151,7 +153,7 @@ export class ManagedMemory {
   _getRefCount(userPtr) {
     trace('_getRefCount');
     let rawPtr = (userPtr & (~7)) - this._headerSize;
-    let heap = new Uint8Array(this._memory.buffer);
+    let heap = this.u8view;
     trace(`\tas binary: ${this._toBinary(heap[rawPtr], 8, 8)}|${this._toBinary(heap[rawPtr + 1], 8, 8)}|${this._toBinary(heap[rawPtr + 2], 8, 8)}`)
     let count = heap[rawPtr] & 0b0111; // reserved bit should always be zero, but let's be safe
     count = count << 8;
@@ -165,7 +167,7 @@ export class ManagedMemory {
   _getValueTag(userPtr) {
     trace('_getValueTag');
     let rawPtr = userPtr - this._headerSize;
-    let heap = new Uint8Array(this._memory.buffer);
+    let heap = this.u8view;
     return heap[rawPtr + 3];
   }
 
@@ -194,7 +196,7 @@ export class ManagedMemory {
     if (!TRACE_MEMORY) {
       return;
     }
-    let heap = new Uint8Array(this._memory.buffer);
+    let heap = this.u8view;
     return `Dump: 0x${this._toHex(heap[userPtr-8])} 0x${this._toHex(heap[userPtr-7])} 0x${this._toHex(heap[userPtr-6])} 0x${this._toHex(heap[userPtr-5])} 0x${this._toHex(heap[userPtr-4])} 0x${this._toHex(heap[userPtr-3])} 0x${this._toHex(heap[userPtr-2])} 0x${this._toHex(heap[userPtr-1])} @ 0x${this._toHex(userPtr)} (raw: 0x${this._toHex(userPtr - this._headerSize)})`
   }
 
@@ -342,7 +344,7 @@ export class ManagedMemory {
   }
 
   _setRefCount(rawPtr, count) {
-    const heap = new Uint8Array(this._memory.buffer);
+    const heap = this.u8view;
     trace('_setRefCount:')
     trace(`\told as binary: ${this._toBinary(heap[rawPtr], 8, 8)}|${this._toBinary(heap[rawPtr + 1], 8, 8)}|${this._toBinary(heap[rawPtr + 2], 8, 8)}`)
     heap[rawPtr] = (count & (0b01111111 << 16)) >> 16;
@@ -363,9 +365,6 @@ export class ManagedMemory {
       return origInput;
     }
     userPtr = userPtr & (~7);
-    // Lins 4: Copy(R, <S,T>)
-    // Colour(T) := green
-    this._colors[userPtr] = GREEN;
     if (TRACE_MEMORY) {
       this._knownTagTypes[userPtr] = ptrTagType;
       let heapTag = '';
@@ -441,120 +440,6 @@ export class ManagedMemory {
     return !(userPtr === 0 || ptrTagType === GRAIN_NUMBER_TAG_TYPE || ptrTagType === GRAIN_CONST_TAG_TYPE);
   }
 
-  _getColor(userPtr) {
-    return this._colors[userPtr & (~7)] || GREEN;
-  }
-
-  _recolor(userPtr, color, ignoreZeros) {
-    if (this._getColor(userPtr) === color) {
-      // fast case
-      return;
-    }
-    if (TRACE_MEMORY) {
-      trace(`recolor 0x${this._toHex(userPtr & (~7))}: ${(this._colors[userPtr & (~7)] || GREEN).toString()} -> ${color.toString()}`)
-    }
-    this._colors[userPtr & (~7)] = color;
-  }
-
-  _markRed(userPtr, ignoreZeros) {
-    if (!this._isReference(userPtr)) {
-      return;
-    }
-    trace(`\t_markRed: 0x${this._toHex(userPtr)}`);
-    if (this._getColor(userPtr) !== RED) {
-      this._recolor(userPtr, RED, ignoreZeros);
-      for (let childUserPtr of this.references(userPtr)) {
-        this._decrementRefCount(childUserPtr, ignoreZeros);
-      }
-      let isInserted = false;
-      for (let childUserPtr of this.references(userPtr)) { // <- for T in Sons(S)
-        if (this._getColor(childUserPtr) !== RED) {
-          this._markRed(childUserPtr, ignoreZeros);
-        }
-        if (this._getRefCount(childUserPtr) > 0 && !this._jumpStack.includes(childUserPtr)) {
-          // [TODO] isInserted is not in the Lins paper, but does it makes sense to not have it?
-          this._jumpStack.push(childUserPtr);
-        }
-      }
-    }
-  }
-
-  _scan(userPtr, ignoreZeros) {
-    let origInput = userPtr;
-    let ptrTagType = getTagType(userPtr, true);
-    if (!this._isReference(userPtr)) {
-      // no ref-counting for primitives
-      // [TODO] The type-checker should make this not ever be called ideally, but it
-      //        significantly complicates our codegen
-      trace(`\tscan: bailing out (ptrTagType: ${ptrTagType})`);
-      return origInput;
-    }
-    trace(`\t_scan: 0x${this._toHex(userPtr)}`);
-    if (this._getRefCount(userPtr) > 0) {
-      this._scanGreen(userPtr, ignoreZeros);
-      this._jumpStack = [];
-    } else {
-      while (this._jumpStack.length > 0) {
-        let topOfStack = this._jumpStack.pop();
-        trace(`\tscan: popped from jumpStack: 0x${this._toHex(topOfStack)} [color=${this._getColor(topOfStack).toString()}]`);
-        if (this._getColor(topOfStack) === RED && this._getRefCount(topOfStack) > 0) {
-          this._scanGreen(topOfStack, ignoreZeros)
-        }
-      }
-      this._collect(userPtr, ignoreZeros);
-    }
-  }
-
-  _scanGreen(userPtr, ignoreZeros) {
-    if (!this._isReference(userPtr)) {
-      return;
-    }
-    trace(`\t_scanGreen: 0x${this._toHex(userPtr)}`);
-    this._recolor(userPtr, GREEN, ignoreZeros);
-    for (let childUserPtr of this.references(userPtr)) {
-      this._incrementRefCount(childUserPtr);
-      if (this._getColor(childUserPtr) !== GREEN) {
-        this._scanGreen(childUserPtr, ignoreZeros);
-      }
-    }
-  }
-
-  _collect(userPtr, ignoreZeros) {
-    if (!this._isReference(userPtr)) {
-      return;
-    }
-    trace(`\t_collect: 0x${this._toHex(userPtr)}`);
-    if (this._getColor(userPtr) === RED) {
-      this._recolor(userPtr, GREEN, ignoreZeros);
-      for (let childUserPtr of this.references(userPtr)) {
-        if (this._getColor(childUserPtr) === RED) {
-          this._collect(childUserPtr, ignoreZeros);
-        }
-      }
-      // In Lins 3, this is inside of the for loop...looks like a bug?
-      this.free(userPtr & (~7));
-      if (this._markQueue.includes(userPtr)) {
-        this._markQueue = this._markQueue.filter(x => x != userPtr);
-      }
-      if (this._markQueue.includes(userPtr & (~7))) {
-        this._markQueue = this._markQueue.filter(x => x != (userPtr & (~7)));
-      }
-    }
-  }
-
-  // Lins 4: scan_Q
-  _scanQueue() {
-    this._markQueue.reverse();
-    while (this._markQueue.length > 0) {
-      let top = this._markQueue.pop();
-      trace(`popped from markQueue: 0x${this._toHex(top)}`);
-      if (this._getColor(top) === BLACK) {
-        this._markRed(top);
-        this._scan(top);
-      }
-    }
-  }
-
   _incrementRefCount(userPtr) {
     if (!this._isReference(userPtr)) {
       // no ref-counting for primitives
@@ -586,7 +471,6 @@ export class ManagedMemory {
         trace('ignoring zero refcount');
         return userPtr;
       }
-      trace(`colors: ${JSON.stringify(this._colors)}`);
       throw new Error(`decRef called when reference count was zero. ${this._memdump(userPtr)}`);
     }
     let rawPtr = userPtr - this._headerSize;
@@ -596,9 +480,6 @@ export class ManagedMemory {
   decRef(userPtr, src, ignoreZeros) {
     // [TODO] This does not properly handle cycles yet!!
     trace(`decRef(0x${this._toHex(userPtr)})`);
-    if (src && src !== 'COLLECT') {
-      this._jumpStack = [];
-    }
     let origInput = userPtr;
     let ptrTagType = getTagType(userPtr, true);
     if (userPtr === 0 || ptrTagType === GRAIN_NUMBER_TAG_TYPE || ptrTagType === GRAIN_CONST_TAG_TYPE) {
@@ -617,7 +498,7 @@ export class ManagedMemory {
       trace(`\ttrue ptr: 0x${this._toHex(userPtr)} (${tagToString(ptrTagType)}${heapTag} (${ptrTagType})); raw: 0x${this._toHex(userPtr - this._headerSize)}`);
     }
     this._markDecRefSource(userPtr, src || 'UNK');
-    let heap = new Uint8Array(this._memory.buffer);
+    let heap = this.u8view;
     let rawPtr = userPtr - this._headerSize;
     let refCount = this._getRefCount(userPtr);
     // [TODO] This is a blazing-hot code path. Should we eschew error-checking?
@@ -626,7 +507,6 @@ export class ManagedMemory {
         trace('ignoring zero refcount');
         return userPtr;
       }
-      trace(`colors: ${JSON.stringify(this._colors)}`);
       throw new Error(`decRef called when reference count was zero. ${this._memdump(userPtr)}`);
     }
     --refCount;
@@ -637,20 +517,22 @@ export class ManagedMemory {
       for (let childUserPtr of this.references(origInput)) {
         this.decRef(childUserPtr, 'FREE');
       }
-      this._recolor(userPtr, GREEN, ignoreZeros);
       this._setRefCount(rawPtr, refCount);
       this.free(userPtr);
     } else {
       this._setRefCount(rawPtr, refCount);
-      this._recolor(origInput, BLACK);
-      this._markQueue.push(origInput);
-
     }
     return origInput;
   }
 
-  free(userPtr) { // [TODO] Do we even need this?
-    // stub
+  malloc(userPtr) {
+    return this._runtime.memoryManager.requiredExport('malloc')(userPtr)
+  }
+  free(userPtr) {
+    this._runtime.memoryManager.requiredExport('free')(userPtr)
+  }
+
+  _free(userPtr) {
     trace(`free 0x${(new Number(userPtr)).toString(16)}`);
     trace(this._memdump(userPtr));
     if (TRACE_MEMORY) {
@@ -659,13 +541,7 @@ export class ManagedMemory {
       if (this._freedAddresses.has(userPtr)) {
         throw 'Double free!';
       }
-      if (userPtr == 0xfed98) {
-        printAllocations(this._mallocModule, this._memory.buffer);
-      }
     }
-    trace(`calling actual free at 0x${this._toHex(userPtr - this._headerSize)}`);
-    this._mallocModule.free(userPtr - this._headerSize);
-    trace('finished calling actual free')
     if (TRACE_MEMORY) {
       this._allocatedAddresses.delete(userPtr);
       this._freedAddresses.add(userPtr);
@@ -736,13 +612,11 @@ export class ManagedMemory {
     }
     trace('Pre-Shutdown Queue Scan');
     //this._dumpRefTree();
-    this._scanQueue();
     trace('==== MEMORY TRACE INFO ===');
     trace(`Max used span size: ${this._maxAddress - this._minAddress}`);
     trace(`Objects allocated:  ${this._numAllocations()}`);
     trace(`Objects freed:      ${this._numFrees()}`);
     trace(`Objects leaked:     ${this._allocatedAddresses.size}`);
-    trace(`Colors:             ${JSON.stringify(this._colors)}`)
     trace('---- LEAKED OBJECTS ---');
     (this._allocatedAddresses).forEach((x) => {
       let ptrTagType = this._knownTagTypes[x] || -1;

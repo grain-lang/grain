@@ -13,12 +13,8 @@ import * as libDOM from './lib/DOM';
 export let grainModule;
 
 // Workaround for this memory being initialized statically on module load
-export const memory = new WebAssembly.Memory({initial: process.env.GRAIN_INIT_MEMORY_PAGES || 16});
+export const memory = new WebAssembly.Memory({initial: process.env.GRAIN_INIT_MEMORY_PAGES || 64});
 export const table = new WebAssembly.Table({element: 'anyfunc', initial: 1024});
-export const view = new Int32Array(memory.buffer);
-export const uview = new Uint32Array(memory.buffer);
-export const f32view = new Float32Array(memory.buffer);
-export const f64view = new Float64Array(memory.buffer);
 export const encoder = new TextEncoder("utf-8");
 export const decoder = new TextDecoder("utf-8");
 export const managedMemory = new ManagedMemory(memory);
@@ -68,8 +64,8 @@ const importObj = {
     mem: memory,
     tbl: table,
     throwError: throwGrainError,
-    malloc: managedMemory.malloc.bind(managedMemory),
-    free: managedMemory.free.bind(managedMemory),
+    malloc,
+    free,
     incRef: managedMemory.incRef.bind(managedMemory),
     incRef64: managedMemory.incRef64.bind(managedMemory),
     decRef: managedMemory.decRef.bind(managedMemory),
@@ -83,9 +79,9 @@ const importObj = {
 };
 
 export function buildGrainRunner(locator, opts) {
-  let runner = new GrainRunner(locator || ((x) => null), opts);
-  runner.addImports(importObj);
   // [TODO] Find something which avoids global state!
+  let runner = new GrainRunner(locator || ((x) => null), managedMemory, opts);
+  runner.addImports(importObj);
   managedMemory.setRuntime(runner);
   return runner;
 }
@@ -95,16 +91,16 @@ export function dumpMemoryStats() {
   managedMemory.prepareExit();
 }
 
-let runner = buildGrainRunner();
-
 // TODO: Migrate API to expose runner object directly
 
 export async function GrainNodeRunner(path) {
+  let runner = buildGrainRunner();
   let loaded = await runner.loadFile(path);
   return loaded.run();
 }
 
 export default async function GrainRunner(uri) {
+  let runner = buildGrainRunner();
   let loaded = await runner.loadURL(uri);
   return loaded.run();
 }

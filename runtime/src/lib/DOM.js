@@ -1,4 +1,4 @@
-import { view } from '../runtime';
+import { managedMemory } from '../runtime';
 import { assertString, assertDOMElement, assertLambda, GRAIN_DOM_ELEM_TAG } from '../core/tags';
 import { GRAIN_FALSE } from '../core/primitives';
 import { grainHeapAllocate } from '../core/heap';
@@ -8,6 +8,7 @@ export const grainDOMRefs = [];
 
 export function DOMQuery(n) {
   assertString(n);
+  const view = managedMemory.view;
   let query = grainToJSVal(null, n);
   let elem = document.querySelector(query);
   if (elem) {
