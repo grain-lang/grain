@@ -575,261 +575,382 @@ let call_malloc = (wasm_mod, env, args) =>
     args,
     Type.int32,
   );
-let call_incref = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    get_imported_name(runtime_mod, incref_ident),
-    args,
-    Type.int32,
-  );
-let call_incref_adt = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    name_of_memory_tracing_func(runtime_mod, incref_adt_ident, incref_ident),
-    args,
-    Type.int32,
-  );
-let call_incref_array = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    name_of_memory_tracing_func(
-      runtime_mod,
-      incref_array_ident,
-      incref_ident,
-    ),
-    args,
-    Type.int32,
-  );
-let call_incref_tuple = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    name_of_memory_tracing_func(
-      runtime_mod,
-      incref_tuple_ident,
-      incref_ident,
-    ),
-    args,
-    Type.int32,
-  );
-let call_incref_box = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    name_of_memory_tracing_func(runtime_mod, incref_box_ident, incref_ident),
-    args,
-    Type.int32,
-  );
-let call_incref_backpatch = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    name_of_memory_tracing_func(
-      runtime_mod,
-      incref_backpatch_ident,
-      incref_ident,
-    ),
-    args,
-    Type.int32,
-  );
-let call_incref_swap_bind = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    name_of_memory_tracing_func(
-      runtime_mod,
-      incref_swap_bind_ident,
-      incref_ident,
-    ),
-    args,
-    Type.int32,
-  );
-let call_incref_arg_bind = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    name_of_memory_tracing_func(
-      runtime_mod,
-      incref_arg_bind_ident,
-      incref_ident,
-    ),
-    args,
-    Type.int32,
-  );
-let call_incref_local_bind = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    name_of_memory_tracing_func(
-      runtime_mod,
-      incref_local_bind_ident,
-      incref_ident,
-    ),
-    args,
-    Type.int32,
-  );
-let call_incref_global_bind = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    name_of_memory_tracing_func(
-      runtime_mod,
-      incref_global_bind_ident,
-      incref_ident,
-    ),
-    args,
-    Type.int32,
-  );
-let call_incref_closure_bind = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    name_of_memory_tracing_func(
-      runtime_mod,
-      incref_closure_bind_ident,
-      incref_ident,
-    ),
-    args,
-    Type.int32,
-  );
-let call_incref_cleanup_locals = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    name_of_memory_tracing_func(
-      runtime_mod,
-      incref_cleanup_locals_ident,
-      incref_ident,
-    ),
-    args,
-    Type.int32,
-  );
-let call_incref_64 = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    get_imported_name(runtime_mod, incref64_ident),
-    args,
-    Type.int32,
-  );
-let call_decref = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    get_imported_name(runtime_mod, decref_ident),
-    args,
-    Type.int32,
-  );
-let call_decref_64 = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    get_imported_name(runtime_mod, decref64_ident),
-    args,
-    Type.int32,
-  );
-let call_decref_array = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    name_of_memory_tracing_func(
-      runtime_mod,
-      decref_array_ident,
-      decref_ident,
-    ),
-    args,
-    Type.int32,
-  );
-let call_decref_tuple = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    name_of_memory_tracing_func(
-      runtime_mod,
-      decref_tuple_ident,
-      decref_ident,
-    ),
-    args,
-    Type.int32,
-  );
-let call_decref_box = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    name_of_memory_tracing_func(runtime_mod, decref_box_ident, decref_ident),
-    args,
-    Type.int32,
-  );
-let call_decref_swap_bind = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    name_of_memory_tracing_func(
-      runtime_mod,
-      decref_swap_bind_ident,
-      decref_ident,
-    ),
-    args,
-    Type.int32,
-  );
-let call_decref_arg_bind = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    name_of_memory_tracing_func(
-      runtime_mod,
-      decref_arg_bind_ident,
-      decref_ident,
-    ),
-    args,
-    Type.int32,
-  );
-let call_decref_local_bind = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    name_of_memory_tracing_func(
-      runtime_mod,
-      decref_local_bind_ident,
-      decref_ident,
-    ),
-    args,
-    Type.int32,
-  );
-let call_decref_global_bind = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    name_of_memory_tracing_func(
-      runtime_mod,
-      decref_global_bind_ident,
-      decref_ident,
-    ),
-    args,
-    Type.int32,
-  );
-let call_decref_closure_bind = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    name_of_memory_tracing_func(
-      runtime_mod,
-      decref_closure_bind_ident,
-      decref_ident,
-    ),
-    args,
-    Type.int32,
-  );
+let call_incref = (wasm_mod, env, arg) =>
+  if (Config.no_gc^) {
+    arg;
+  } else {
+    Expression.call(
+      wasm_mod,
+      get_imported_name(runtime_mod, incref_ident),
+      [arg],
+      Type.int32,
+    );
+  };
+let call_incref_adt = (wasm_mod, env, arg) =>
+  if (Config.no_gc^) {
+    arg;
+  } else {
+    Expression.call(
+      wasm_mod,
+      name_of_memory_tracing_func(
+        runtime_mod,
+        incref_adt_ident,
+        incref_ident,
+      ),
+      [arg],
+      Type.int32,
+    );
+  };
+let call_incref_array = (wasm_mod, env, arg) =>
+  if (Config.no_gc^) {
+    arg;
+  } else {
+    Expression.call(
+      wasm_mod,
+      name_of_memory_tracing_func(
+        runtime_mod,
+        incref_array_ident,
+        incref_ident,
+      ),
+      [arg],
+      Type.int32,
+    );
+  };
+let call_incref_tuple = (wasm_mod, env, arg) =>
+  if (Config.no_gc^) {
+    arg;
+  } else {
+    Expression.call(
+      wasm_mod,
+      name_of_memory_tracing_func(
+        runtime_mod,
+        incref_tuple_ident,
+        incref_ident,
+      ),
+      [arg],
+      Type.int32,
+    );
+  };
+let call_incref_box = (wasm_mod, env, arg) =>
+  if (Config.no_gc^) {
+    arg;
+  } else {
+    Expression.call(
+      wasm_mod,
+      name_of_memory_tracing_func(
+        runtime_mod,
+        incref_box_ident,
+        incref_ident,
+      ),
+      [arg],
+      Type.int32,
+    );
+  };
+let call_incref_backpatch = (wasm_mod, env, arg) =>
+  if (Config.no_gc^) {
+    arg;
+  } else {
+    Expression.call(
+      wasm_mod,
+      name_of_memory_tracing_func(
+        runtime_mod,
+        incref_backpatch_ident,
+        incref_ident,
+      ),
+      [arg],
+      Type.int32,
+    );
+  };
+let call_incref_swap_bind = (wasm_mod, env, arg) =>
+  if (Config.no_gc^) {
+    arg;
+  } else {
+    Expression.call(
+      wasm_mod,
+      name_of_memory_tracing_func(
+        runtime_mod,
+        incref_swap_bind_ident,
+        incref_ident,
+      ),
+      [arg],
+      Type.int32,
+    );
+  };
+let call_incref_arg_bind = (wasm_mod, env, arg) =>
+  if (Config.no_gc^) {
+    arg;
+  } else {
+    Expression.call(
+      wasm_mod,
+      name_of_memory_tracing_func(
+        runtime_mod,
+        incref_arg_bind_ident,
+        incref_ident,
+      ),
+      [arg],
+      Type.int32,
+    );
+  };
+let call_incref_local_bind = (wasm_mod, env, arg) =>
+  if (Config.no_gc^) {
+    arg;
+  } else {
+    Expression.call(
+      wasm_mod,
+      name_of_memory_tracing_func(
+        runtime_mod,
+        incref_local_bind_ident,
+        incref_ident,
+      ),
+      [arg],
+      Type.int32,
+    );
+  };
+let call_incref_global_bind = (wasm_mod, env, arg) =>
+  if (Config.no_gc^) {
+    arg;
+  } else {
+    Expression.call(
+      wasm_mod,
+      name_of_memory_tracing_func(
+        runtime_mod,
+        incref_global_bind_ident,
+        incref_ident,
+      ),
+      [arg],
+      Type.int32,
+    );
+  };
+let call_incref_closure_bind = (wasm_mod, env, arg) =>
+  if (Config.no_gc^) {
+    arg;
+  } else {
+    Expression.call(
+      wasm_mod,
+      name_of_memory_tracing_func(
+        runtime_mod,
+        incref_closure_bind_ident,
+        incref_ident,
+      ),
+      [arg],
+      Type.int32,
+    );
+  };
+let call_incref_cleanup_locals = (wasm_mod, env, arg) =>
+  if (Config.no_gc^) {
+    arg;
+  } else {
+    Expression.call(
+      wasm_mod,
+      name_of_memory_tracing_func(
+        runtime_mod,
+        incref_cleanup_locals_ident,
+        incref_ident,
+      ),
+      [arg],
+      Type.int32,
+    );
+  };
+let call_incref_64 = (wasm_mod, env, arg) =>
+  if (Config.no_gc^) {
+    arg;
+  } else {
+    Expression.call(
+      wasm_mod,
+      get_imported_name(runtime_mod, incref64_ident),
+      [arg],
+      Type.int32,
+    );
+  };
+let call_decref = (wasm_mod, env, arg) =>
+  if (Config.no_gc^) {
+    arg;
+  } else {
+    Expression.call(
+      wasm_mod,
+      get_imported_name(runtime_mod, decref_ident),
+      [arg],
+      Type.int32,
+    );
+  };
+let call_decref_64 = (wasm_mod, env, arg) =>
+  if (Config.no_gc^) {
+    arg;
+  } else {
+    Expression.call(
+      wasm_mod,
+      get_imported_name(runtime_mod, decref64_ident),
+      [arg],
+      Type.int32,
+    );
+  };
+let call_decref_array = (wasm_mod, env, arg) =>
+  if (Config.no_gc^) {
+    arg;
+  } else {
+    Expression.call(
+      wasm_mod,
+      name_of_memory_tracing_func(
+        runtime_mod,
+        decref_array_ident,
+        decref_ident,
+      ),
+      [arg],
+      Type.int32,
+    );
+  };
+let call_decref_tuple = (wasm_mod, env, arg) =>
+  if (Config.no_gc^) {
+    arg;
+  } else {
+    Expression.call(
+      wasm_mod,
+      name_of_memory_tracing_func(
+        runtime_mod,
+        decref_tuple_ident,
+        decref_ident,
+      ),
+      [arg],
+      Type.int32,
+    );
+  };
+let call_decref_box = (wasm_mod, env, arg) =>
+  if (Config.no_gc^) {
+    arg;
+  } else {
+    Expression.call(
+      wasm_mod,
+      name_of_memory_tracing_func(
+        runtime_mod,
+        decref_box_ident,
+        decref_ident,
+      ),
+      [arg],
+      Type.int32,
+    );
+  };
+let call_decref_swap_bind = (wasm_mod, env, arg) =>
+  if (Config.no_gc^) {
+    arg;
+  } else {
+    Expression.call(
+      wasm_mod,
+      name_of_memory_tracing_func(
+        runtime_mod,
+        decref_swap_bind_ident,
+        decref_ident,
+      ),
+      [arg],
+      Type.int32,
+    );
+  };
+let call_decref_arg_bind = (wasm_mod, env, arg) =>
+  if (Config.no_gc^) {
+    arg;
+  } else {
+    Expression.call(
+      wasm_mod,
+      name_of_memory_tracing_func(
+        runtime_mod,
+        decref_arg_bind_ident,
+        decref_ident,
+      ),
+      [arg],
+      Type.int32,
+    );
+  };
+let call_decref_local_bind = (wasm_mod, env, arg) =>
+  if (Config.no_gc^) {
+    arg;
+  } else {
+    Expression.call(
+      wasm_mod,
+      name_of_memory_tracing_func(
+        runtime_mod,
+        decref_local_bind_ident,
+        decref_ident,
+      ),
+      [arg],
+      Type.int32,
+    );
+  };
+let call_decref_global_bind = (wasm_mod, env, arg) =>
+  if (Config.no_gc^) {
+    arg;
+  } else {
+    Expression.call(
+      wasm_mod,
+      name_of_memory_tracing_func(
+        runtime_mod,
+        decref_global_bind_ident,
+        decref_ident,
+      ),
+      [arg],
+      Type.int32,
+    );
+  };
+let call_decref_closure_bind = (wasm_mod, env, arg) =>
+  if (Config.no_gc^) {
+    arg;
+  } else {
+    Expression.call(
+      wasm_mod,
+      name_of_memory_tracing_func(
+        runtime_mod,
+        decref_closure_bind_ident,
+        decref_ident,
+      ),
+      [arg],
+      Type.int32,
+    );
+  };
 let call_decref_cleanup_locals = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    name_of_memory_tracing_func(
-      runtime_mod,
-      decref_cleanup_locals_ident,
-      decref_ignore_zeros_ident,
-    ),
-    args,
-    Type.int32,
-  );
+  if (Config.no_gc^) {
+    List.hd(args);
+  } else {
+    Expression.call(
+      wasm_mod,
+      name_of_memory_tracing_func(
+        runtime_mod,
+        decref_cleanup_locals_ident,
+        decref_ignore_zeros_ident,
+      ),
+      args,
+      Type.int32,
+    );
+  };
 let decref_cleanup_globals_name =
   name_of_memory_tracing_func(
     runtime_mod,
     decref_cleanup_globals_ident,
     decref_ignore_zeros_ident,
   );
-let call_decref_cleanup_globals = (wasm_mod, env, args) =>
-  Expression.call(wasm_mod, decref_cleanup_globals_name, args, Type.int32);
-let call_decref_drop = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    name_of_memory_tracing_func(
-      runtime_mod,
-      decref_drop_ident,
-      decref_ignore_zeros_ident,
-    ),
-    args,
-    Type.int32,
-  );
+let call_decref_cleanup_globals = (wasm_mod, env, arg) =>
+  if (Config.no_gc^) {
+    arg;
+  } else {
+    Expression.call(
+      wasm_mod,
+      decref_cleanup_globals_name,
+      [arg],
+      Type.int32,
+    );
+  };
+let call_decref_drop = (wasm_mod, env, arg) =>
+  if (Config.no_gc^) {
+    arg;
+  } else {
+    Expression.call(
+      wasm_mod,
+      name_of_memory_tracing_func(
+        runtime_mod,
+        decref_drop_ident,
+        decref_ignore_zeros_ident,
+      ),
+      [arg],
+      Type.int32,
+    );
+  };
 let call_new_rational = (wasm_mod, env, args) =>
   Expression.call(
     wasm_mod,
@@ -1005,15 +1126,14 @@ let compile_bind =
     switch (typ) {
     | _ when skip_incref => arg /* This case is used for storing swap values that have freshly been heap-allocated. */
     | typ when typ === Type.int32 =>
-      let args = [arg];
       switch (b) {
-      | MArgBind(_) => call_incref_arg_bind(wasm_mod, env, args)
-      | MLocalBind(_) => call_incref_local_bind(wasm_mod, env, args)
-      | MSwapBind(_) => call_incref_swap_bind(wasm_mod, env, args)
-      | MGlobalBind(_) => call_incref_global_bind(wasm_mod, env, args)
-      | MClosureBind(_) => call_incref_closure_bind(wasm_mod, env, args)
-      | _ => call_incref(wasm_mod, env, args)
-      };
+      | MArgBind(_) => call_incref_arg_bind(wasm_mod, env, arg)
+      | MLocalBind(_) => call_incref_local_bind(wasm_mod, env, arg)
+      | MSwapBind(_) => call_incref_swap_bind(wasm_mod, env, arg)
+      | MGlobalBind(_) => call_incref_global_bind(wasm_mod, env, arg)
+      | MClosureBind(_) => call_incref_closure_bind(wasm_mod, env, arg)
+      | _ => call_incref(wasm_mod, env, arg)
+      }
     | typ when typ === Type.int64 =>
       /* https://github.com/dcodeIO/webassembly/issues/26#issuecomment-410157370 */
       /* call_incref_64 env */
@@ -1025,15 +1145,14 @@ let compile_bind =
     switch (typ) {
     | _ when skip_decref => arg /* This case is used for storing swap values that have freshly been heap-allocated. */
     | typ when typ === Type.int32 =>
-      let args = [arg];
       switch (b) {
-      | MArgBind(_) => call_decref_arg_bind(wasm_mod, env, args)
-      | MLocalBind(_) => call_decref_local_bind(wasm_mod, env, args)
-      | MSwapBind(_) => call_decref_swap_bind(wasm_mod, env, args)
-      | MGlobalBind(_) => call_decref_global_bind(wasm_mod, env, args)
-      | MClosureBind(_) => call_decref_closure_bind(wasm_mod, env, args)
-      | _ => call_decref(wasm_mod, env, args)
-      };
+      | MArgBind(_) => call_decref_arg_bind(wasm_mod, env, arg)
+      | MLocalBind(_) => call_decref_local_bind(wasm_mod, env, arg)
+      | MSwapBind(_) => call_decref_swap_bind(wasm_mod, env, arg)
+      | MGlobalBind(_) => call_decref_global_bind(wasm_mod, env, arg)
+      | MClosureBind(_) => call_decref_closure_bind(wasm_mod, env, arg)
+      | _ => call_decref(wasm_mod, env, arg)
+      }
     | typ when typ === Type.int64 =>
       /* https://github.com/dcodeIO/webassembly/issues/26#issuecomment-410157370 */
       /* call_decref_64 env */
@@ -1279,7 +1398,7 @@ let compile_bind =
 };
 
 let safe_drop = (wasm_mod, env, arg) =>
-  Expression.drop(wasm_mod, call_decref_drop(wasm_mod, env, [arg]));
+  Expression.drop(wasm_mod, call_decref_drop(wasm_mod, env, arg));
 
 let get_swap = (~ty as typ=Type.int32, wasm_mod, env, idx) =>
   switch (typ) {
@@ -1408,7 +1527,7 @@ let cleanup_locals = (wasm_mod, env: codegen_env, arg): Expression.t => {
       call_incref_cleanup_locals(
         wasm_mod,
         env,
-        [tee_swap(wasm_mod, env, 0, arg)],
+        tee_swap(wasm_mod, env, 0, arg),
       ),
     )
     @ cleanup_local_slot_instructions(wasm_mod, env)
@@ -1528,12 +1647,12 @@ let compile_tuple_op = (~is_box=false, wasm_mod, env, tup_imm, op) => {
                 (if (is_box) {call_incref_box} else {call_incref_tuple})(
                   wasm_mod,
                   env,
-                  [compile_imm(wasm_mod, env, imm)],
+                  compile_imm(wasm_mod, env, imm),
                 ),
                 (if (is_box) {call_decref_box} else {call_decref_tuple})(
                   wasm_mod,
                   env,
-                  [load(~offset=4 * (idx_int + 1), wasm_mod, get_swap)],
+                  load(~offset=4 * (idx_int + 1), wasm_mod, get_swap),
                 ),
               ],
             ),
@@ -1807,7 +1926,7 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
             untag(wasm_mod, GenericHeapType(Some(ArrayType)), get_arr()),
           ),
           /* [TODO] decref the old item */
-          call_incref(wasm_mod, env, [tee_swap(1, val_)]),
+          call_incref(wasm_mod, env, tee_swap(1, val_)),
         ),
         get_swap(1),
       ],
@@ -1871,21 +1990,15 @@ let compile_record_op = (wasm_mod, env, rec_imm, op) => {
             Expression.tuple_make(
               wasm_mod,
               [
-                call_incref(
-                  wasm_mod,
-                  env,
-                  [tee_swap(wasm_mod, env, 1, arg)],
-                ),
+                call_incref(wasm_mod, env, tee_swap(wasm_mod, env, 1, arg)),
                 call_decref(
                   wasm_mod,
                   env,
-                  [
-                    load(
-                      ~offset=4 * (idx_int + 4),
-                      wasm_mod,
-                      get_swap(wasm_mod, env, 0),
-                    ),
-                  ],
+                  load(
+                    ~offset=4 * (idx_int + 4),
+                    wasm_mod,
+                    get_swap(wasm_mod, env, 0),
+                  ),
                 ),
               ],
             ),
@@ -2171,7 +2284,7 @@ let allocate_closure =
         call_incref_backpatch(
           wasm_mod,
           env,
-          [compile_imm(wasm_mod, env, var)],
+          compile_imm(wasm_mod, env, var),
         ),
       );
     patches := List.mapi(patch_var, variables);
@@ -2250,7 +2363,7 @@ let allocate_adt = (wasm_mod, env, ttag, vtag, elts) => {
       ~offset=4 * (idx + 5),
       wasm_mod,
       get_swap(),
-      call_incref_adt(wasm_mod, env, [compile_imm(wasm_mod, env, elt)]),
+      call_incref_adt(wasm_mod, env, compile_imm(wasm_mod, env, elt)),
     );
 
   let preamble = [
@@ -2335,7 +2448,7 @@ let allocate_tuple = (~is_box=false, wasm_mod, env, elts) => {
       (if (is_box) {call_incref_box} else {call_incref_tuple})(
         wasm_mod,
         env,
-        [compile_imm(wasm_mod, env, elt)],
+        compile_imm(wasm_mod, env, elt),
       ),
     );
 
@@ -2391,7 +2504,7 @@ let allocate_array = (wasm_mod, env, elts) => {
       ~offset=4 * (idx + 2),
       wasm_mod,
       get_swap(),
-      call_incref_array(wasm_mod, env, [compile_imm(wasm_mod, env, elt)]),
+      call_incref_array(wasm_mod, env, compile_imm(wasm_mod, env, elt)),
     );
 
   let preamble = [
@@ -2805,7 +2918,7 @@ let compile_prim1 = (wasm_mod, env, p1, arg): Expression.t => {
       [
         Expression.drop(
           wasm_mod,
-          call_decref_drop(wasm_mod, env, [compiled_arg]),
+          call_decref_drop(wasm_mod, env, compiled_arg),
         ),
         Expression.const(wasm_mod, const_void()),
       ],
@@ -2980,7 +3093,7 @@ let do_backpatches = (wasm_mod, env, backpatches) => {
         call_incref_backpatch(
           wasm_mod,
           env,
-          [compile_imm(wasm_mod, env, var)],
+          compile_imm(wasm_mod, env, var),
         ),
       );
     [preamble, ...List.mapi(backpatch_var, variables)];
@@ -3474,13 +3587,11 @@ let compile_global_cleanup_function =
         call_decref_cleanup_globals(
           wasm_mod,
           env,
-          [
-            Expression.global_get(
-              wasm_mod,
-              Printf.sprintf("global_%d", n),
-              Type.int32,
-            ),
-          ],
+          Expression.global_get(
+            wasm_mod,
+            Printf.sprintf("global_%d", n),
+            Type.int32,
+          ),
         ),
       )
     );

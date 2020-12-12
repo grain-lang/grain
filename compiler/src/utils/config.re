@@ -358,6 +358,13 @@ let sexp_locs_enabled =
     true,
   );
 
+let no_gc =
+  toggle_flag(
+    ~names=["no-gc"],
+    ~doc="Turn off reference counting garbage collection.",
+    false,
+  );
+
 let unsound_optimizations =
   toggle_flag(
     ~names=["Ounsound"],
