@@ -1,15 +1,25 @@
-// TODO: Exclusive
-enum Range {
+export enum Range {
   Inclusive(Number, Number),
-}
-
-export let inclusive = (lower, upper) => {
-  Inclusive(lower, upper)
+  Exclusive(Number, Number),
 }
 
 export let isBetween = (value, range) => {
   match (range) {
     Inclusive(lower, upper) when value >= lower && value <= upper => true,
+    Exclusive(lower, upper) when value >= lower && value < upper => true,
     _ => false
+  }
+}
+
+export let forEach = (fn, range) => {
+  let (first, last) = match (range) {
+    Inclusive(lower, upper) => (lower, upper),
+    Exclusive(lower, upper) => (lower, upper - 1),
+  };
+
+  let mut idx = first;
+  while (idx <= last) {
+    fn(idx) == void
+    idx += 1;
   }
 }

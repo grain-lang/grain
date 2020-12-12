@@ -1,10 +1,41 @@
 import Range from 'range'
 
-// Range.isBetween
-let range = Range.inclusive(1, 5)
+// Range.isBetween (Inclusive)
+let range = Range.Inclusive(1, 5)
 
 assert Range.isBetween(1, range)
 assert Range.isBetween(3, range)
 assert Range.isBetween(5, range)
 assert Range.isBetween(10, range) == false
 assert Range.isBetween(-1, range) == false
+
+// Range.isBetween (Exclusive)
+let range = Range.Exclusive(1, 5)
+
+assert Range.isBetween(1, range)
+assert Range.isBetween(3, range)
+assert Range.isBetween(5, range) == false
+assert Range.isBetween(10, range) == false
+assert Range.isBetween(-1, range) == false
+
+// Range.forEach (Inclusive)
+let range = Range.Inclusive(1, 5)
+
+let mut results = []
+
+Range.forEach((idx) => {
+  results = [idx, ...results];
+}, range)
+
+assert results == [5, 4, 3, 2, 1]
+
+// Range.forEach (Exclusive)
+let range = Range.Exclusive(1, 5)
+
+let mut results = []
+
+Range.forEach((idx) => {
+  results = [idx, ...results];
+}, range)
+
+assert results == [4, 3, 2, 1]
