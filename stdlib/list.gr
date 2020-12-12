@@ -2,6 +2,21 @@
 
 export *
 
+let init = (length, fn) => {
+  if (length <= 0) {
+    []
+  } else {
+    // TODO: How can I make this better?
+    let rec iter = (idx, list) => {
+      match (idx) {
+        0 => [fn(idx), ...list],
+        _ => iter(idx - 1, [fn(idx), ...list])
+      }
+    }
+    iter(length - 1, [])
+  }
+};
+
 let length = (list) => {
   let rec iter = (len, list) => {
     match (list) {
