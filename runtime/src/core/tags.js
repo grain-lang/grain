@@ -1,4 +1,4 @@
-import { memory, view } from '../runtime';
+import { memory, managedMemory } from '../runtime';
 import { throwGrainError } from '../errors/errors';
 import {
   GRAIN_ERR_NOT_NUMBER_GENERIC,
@@ -109,7 +109,7 @@ function assertGrainTag(tag, n, err) {
 function assertGrainHeapTag(tag, n, err) {
   assertGrainTag(GRAIN_GENERIC_HEAP_TAG_TYPE, n, err);
   let ptr = n ^ GRAIN_GENERIC_HEAP_TAG_TYPE;
-  if (view[ptr / 4] != tag) {
+  if (managedMemory.view[ptr / 4] != tag) {
     throwGrainError(err, n, 0);
   }
 }

@@ -103,10 +103,6 @@ export class GrainModule {
     return this.requiredExport("GRAIN$TABLE_SIZE");
   }
 
-  get cleanupGlobals() {
-    return this.requiredExport("GRAIN$CLEANUP_GLOBALS");
-  }
-
   get types() {
     if (!this._types) {
       let cmi = this.cmi;
