@@ -2,6 +2,20 @@
 
 export *
 
+let init = (length, fn) => {
+  // This method can be further improved by checking the length against a specific size
+  // and determining if it can be made tail-recursive, then use List.reverse on it.
+  // Which would be the same as OCaml does it in https://github.com/ocaml/ocaml/blob/03839754f46319aa36d9dad56940a6f3c3bcb48a/stdlib/list.ml#L79
+  let rec iter = (idx, length) => {
+    if (idx >= length) {
+      []
+    } else {
+      [fn(idx), ...iter(idx + 1, length)]
+    }
+  }
+  iter(0, length)
+};
+
 let length = (list) => {
   let rec iter = (len, list) => {
     match (list) {
