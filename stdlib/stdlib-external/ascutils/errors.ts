@@ -23,6 +23,7 @@ export const GRAIN_ERR_FAILURE: u32 = 22
 export const GRAIN_ERR_SYSTEM: u32 = 23
 export const GRAIN_ERR_NOT_INTLIKE: u32 = 24
 export const GRAIN_ERR_NOT_RATIONAL: u32 = 25
+export const GRAIN_ERR_MALFORMED_UTF8: u32 = 26
 export const GRAIN_ERR_NOT_ADT_VAL_GENERIC: u32 = 91
 export const GRAIN_ERR_NOT_STRING_GENERIC: u32 = 93
 export const GRAIN_ERR_NOT_BOOLEAN_GENERIC: u32 = 94

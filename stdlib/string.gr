@@ -32,8 +32,8 @@ let indexOf = (s, p) => {
 
 // Split a string into its UTF-8 characters
 // @param input: String - The string to split
-// @returns Array<String>
-import foreign wasm explode : String -> Array<String> from 'stdlib-external/string'
+// @returns Array<Char>
+import foreign wasm explode : String -> Array<Char> from 'stdlib-external/string'
 
 // Split a string by the given sequence
 // @param input: String - The string to split

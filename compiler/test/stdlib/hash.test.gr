@@ -2,6 +2,8 @@
 
 import Hash from 'hash'
 import List from 'list'
+import Array from 'array'
+import String from 'string'
 
 let uniq = (list) => {
   let mut itemsSeen = []
@@ -39,6 +41,12 @@ assert uniq(List.map(n => Hash.hash(n), strings))
 assert Hash.hash('') == Hash.hash('')
 assert Hash.hash('grain > ore > wool > lumber > brick') == Hash.hash('grain > ore > wool > lumber > brick')
 
+
+let chars = String.explode('!@#$%^&*()1234567890-qwertyuiop🌾💯🔥😈😤💪🏼')
+let charList = Array.toList(chars)
+
+assert uniq(List.map(Hash.hash, charList))
+Array.forEach((c) => assert Hash.hash(c) == Hash.hash(c), chars)
 
 enum Variants { A, B, C, D(Number, List<Variants>), E(String) }
 
