@@ -11,4 +11,4 @@
   (source_tree test-libs)
   (source_tree test-data))
  (action
-  (run %{<})))
+  (run %{<} -shards 1)))
