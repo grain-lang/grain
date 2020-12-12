@@ -14,6 +14,10 @@ let verbose: ref(bool);
 
 let sexp_locs_enabled: ref(bool);
 
+/** Whether to enable garbage collection */
+
+let no_gc: ref(bool);
+
 /** Whether optimizations should be run */
 
 let optimizations_enabled: ref(bool);
