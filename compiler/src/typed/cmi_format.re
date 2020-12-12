@@ -102,19 +102,16 @@ module CmiBinarySection =
 
 let read_cmi = filename => {
   let ic = open_in_bin(filename);
-  try(
-    switch (CmiBinarySection.load(ic)) {
-    | Some(cmi) =>
-      close_in(ic);
-      cmi;
-    | None => raise(End_of_file)
-    }
-  ) {
-  | End_of_file
-  | Failure(_) =>
+  switch (CmiBinarySection.load(ic)) {
+  | Some(cmi) =>
+    close_in(ic);
+    cmi;
+  | None
+  | exception End_of_file
+  | exception (Failure(_)) =>
     close_in(ic);
     raise(Error(Corrupted_interface(filename)));
-  | Error(e) =>
+  | exception (Error(e)) =>
     close_in(ic);
     raise(Error(e));
   };
@@ -140,7 +137,7 @@ let report_error = ppf =>
   | Wrong_version_interface(filename, older_newer) =>
     fprintf(
       ppf,
-      "%a@ is not a compiled interface for this version of OCaml.@.It seems to be for %s version of OCaml.",
+      "%a@ is not a compiled interface for this version of Grain.@.It seems to be for %s version of Grain.",
       Location.print_filename,
       filename,
       older_newer,
