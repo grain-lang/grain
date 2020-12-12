@@ -8,7 +8,6 @@ import { grainToString } from './utils/utils';
 import { defaultFileLocator } from './utils/locators';
 
 import { print, debugPrint } from './lib/print';
-import * as libDOM from './lib/DOM';
 
 export let grainModule;
 
@@ -73,9 +72,6 @@ const importObj = {
     print,
     ...tracingImports
   },
-  grainBuiltins: {
-    ...libDOM
-  }
 };
 
 export function buildGrainRunner(locator, opts) {

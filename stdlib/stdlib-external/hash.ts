@@ -14,7 +14,6 @@ import {
   GRAIN_GENERIC_TAG_MASK,
 
   GRAIN_STRING_HEAP_TAG,
-  GRAIN_DOM_ELEM_TAG,
   GRAIN_ADT_HEAP_TAG,
   GRAIN_RECORD_HEAP_TAG,
   GRAIN_ARRAY_HEAP_TAG,
@@ -114,10 +113,6 @@ function hashOne(val: u32, depth: u32): void {
         }
         if (rem != 0) hashRemaining(rem)
         finalize(length)
-        break
-      }
-      case GRAIN_DOM_ELEM_TAG: {
-        hash32(heapPtr)
         break
       }
       case GRAIN_ADT_HEAP_TAG: {

@@ -1,13 +1,11 @@
 import { memory, encoder, decoder, managedMemory } from '../runtime';
 import { grainHeapAllocate } from '../core/heap';
 import { GrainError } from '../errors/errors';
-import { grainDOMRefs } from '../lib/DOM';
 
 import {
   GRAIN_TUPLE_TAG_TYPE,
   GRAIN_LAMBDA_TAG_TYPE,
   GRAIN_GENERIC_HEAP_TAG_TYPE,
-  GRAIN_DOM_ELEM_TAG,
   GRAIN_STRING_HEAP_TAG,
   GRAIN_ADT_HEAP_TAG,
   GRAIN_RECORD_HEAP_TAG,
@@ -102,9 +100,6 @@ export function grainHeapValueToString(runtime, n) {
       let length = view[(n / 4) + 1];
       let slice = byteView.slice(n + 8, n + 8 + length);
       return `"${decoder.decode(slice)}"`;
-    }
-    case GRAIN_DOM_ELEM_TAG: {
-      return grainDOMRefs[view[(n + 4) / 4]].toString();
     }
     case GRAIN_ADT_HEAP_TAG: {
       let x = n / 4;
@@ -334,9 +329,6 @@ export function grainHeapValToJSVal(runtime, n) {
     let length = view[(n / 4) + 1];
     let slice = byteView.slice(n + 8, n + 8 + length);
     return decoder.decode(slice);
-  case GRAIN_DOM_ELEM_TAG:
-    let ref = n / 4;
-    return grainDOMRefs[view[ref + 1]];
   case GRAIN_ADT_HEAP_TAG:
     // TODO: Make this reversible
     let x = n / 4;
