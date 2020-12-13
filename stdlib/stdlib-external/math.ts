@@ -39,3 +39,14 @@ export function mathFloor(x: u32): u32 {
     let xval = coerceFloat64(x);
     return reducedInteger(<i64>floor(xval));
 }
+
+/** 
+ * Returns the integer part of a given number by removing any fractional digits.
+ * 
+ * @param   {u32} x - The input number.
+ * @returns {u32}
+ */
+export function mathTrunc(x: u32): u32 {
+    let xval = coerceFloat64(x);
+    return reducedInteger(<i64>trunc(xval));
+}
