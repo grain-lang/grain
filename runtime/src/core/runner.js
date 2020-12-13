@@ -126,13 +126,13 @@ export class GrainRunner {
 
   // [HACK] Temporarily used while we transition to AS-based runtime
   _makeGrainString(v) {
+    let buf = this.encoder.encode(v);
     let userPtr = this.managedMemory.malloc((4 * 2) + (((v.length - 1) / 4) + 1));
     let ptr = userPtr / 4;
     let view = this.managedMemory._view;
     view[ptr] = GRAIN_STRING_HEAP_TAG;
     view[ptr + 1] = v.length;
     let byteView = this.managedMemory.u8view;
-    let buf = this.encoder.encode(v);
     for (let i = 0; i < buf.length; ++i) {
       byteView[i + (ptr * 4) + 8] = buf[i];
     }

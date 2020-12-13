@@ -135,7 +135,7 @@ export class ManagedMemory {
       this._freedAddresses.delete(userPtr);
     }
     this._markIncRefSource(userPtr, 'MALLOC');
-    console.log(`malloc(${size}) -> 0x${this._toHex(userPtr)}`)
+    //trace(`malloc(${size}) -> 0x${this._toHex(userPtr)}`)
     return userPtr; // offset by headerSize
   }
 
@@ -534,7 +534,7 @@ export class ManagedMemory {
   }
 
   _free(userPtr) {
-    console.log(`free 0x${(new Number(userPtr)).toString(16)}`);
+    trace(`free 0x${(new Number(userPtr)).toString(16)}`);
     trace(this._memdump(userPtr));
     if (TRACE_MEMORY) {
       trace(`\tincrefs: ${JSON.stringify(this._incRefSources[userPtr] || {})}`);

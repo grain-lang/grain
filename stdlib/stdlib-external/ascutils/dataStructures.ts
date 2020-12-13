@@ -1,4 +1,3 @@
-import { consoleLog } from './console'
 import { malloc } from './grainRuntime'
 
 import {
@@ -83,16 +82,23 @@ export function allocateChar(): u32 {
   return char
 }
 
+export function singleCharacterString(char: u8): u32 {
+  let s = allocateString(1)
+  store<u8>(s + 8, char)
+  return s | GRAIN_GENERIC_HEAP_TAG_TYPE
+}
+
+export function twoCharacterString(char1: u8, char2: u8): u32 {
+  let s = allocateString(2)
+  store<u8>(s + 8, char1)
+  store<u8>(s + 8, char2, 1)
+  return s | GRAIN_GENERIC_HEAP_TAG_TYPE
+}
 
 export function wrapString(str: string): u32 {
   let utf8Size = String.UTF8.byteLength(str, false)
-  consoleLog(str.concat(' ; utf8Size: '.concat(utf8Size.toString(10))))
   let dest = allocateString(utf8Size)
-  let buf = String.UTF8.encode(str, false)
-  let view = Uint8Array.wrap(buf)
-  for (let i = 0; i < utf8Size; ++i) {
-    store<u8>(dest + 8 + i, view[i])
-  }
+  String.UTF8.encodeUnsafe(changetype<usize>(str), utf8Size, dest + 8, false)
   return dest | GRAIN_GENERIC_HEAP_TAG_TYPE
 }
 
