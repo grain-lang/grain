@@ -28,3 +28,14 @@ export function mathCeil(x: u32): u32 {
     let xval = coerceFloat64(x);
     return reducedInteger(<i64>ceil(xval));
 }
+
+/** 
+ * Returns the greatest integer less than the given number.
+ * 
+ * @param   {u32} x - The input number.
+ * @returns {u32}
+ */
+export function mathFloor(x: u32): u32 {
+    let xval = coerceFloat64(x);
+    return reducedInteger(<i64>floor(xval));
+}
