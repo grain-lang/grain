@@ -178,7 +178,7 @@ function reducedFraction64(x: i64, y: i64): u32 {
 
 // @ts-ignore: decorator
 @inline
-function reducedInteger(x: i64): u32 {
+export function reducedInteger(x: i64): u32 {
   if ((x > I32.MAX_VALUE) || (x < I32.MIN_VALUE)) {
     return newInt64(x)
   } else if ((x > (I32.MAX_VALUE >> 1)) || (x < (I32.MIN_VALUE >> 1))) {
