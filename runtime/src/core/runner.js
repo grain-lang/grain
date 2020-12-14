@@ -27,26 +27,25 @@ export class GrainRunner {
     this.encoder = new TextEncoder("utf-8");
     this.decoder = new TextDecoder("utf-8");
     const printNames = {};
-    const this_ = this;
     this.imports['grainRuntime'] = {
       checkMemory: this._checkMemory,
       relocBase: 0,
       moduleRuntimeId: 0,
       throwError: makeThrowGrainError(this),
       // Transition functions (to be used until this class is ported to AS; perhaps refactor at that time)
-      variantExists(moduleId, typeId, variantId) {
-        let moduleName = this_.idMap[moduleId]
+      variantExists: (moduleId, typeId, variantId) => {
+        let moduleName = this.idMap[moduleId]
         if (!moduleName) return false
-        let module = this_.modules[moduleName]
+        let module = this.modules[moduleName]
         if (!module) return false
         let tyinfo = module.types[typeId]
         if (!tyinfo || Object.keys(tyinfo).length === 0) return false
         let info = tyinfo[variantId]
         return !!info
       },
-      getVariantName(moduleId, typeId, variantId) {
-        let moduleName = this_.idMap[moduleId]
-        let module = this_.modules[moduleName]
+      getVariantName: (moduleId, typeId, variantId) => {
+        let moduleName = this.idMap[moduleId]
+        let module = this.modules[moduleName]
         let modulePrintNames = printNames[moduleName]
         if (!modulePrintNames) {
           printNames[moduleName] = {}
@@ -59,31 +58,31 @@ export class GrainRunner {
           tyPrintNames = modulePrintNames[typeId]
         }
         if (typeof tyPrintNames[variantId] === 'undefined') {
-          tyPrintNames[variantId] = this_._makeGrainString(tyinfo[variantId][0])
+          tyPrintNames[variantId] = this._makeGrainString(tyinfo[variantId][0])
         }
         return tyPrintNames[variantId]
       },
-      getVariantArity(moduleId, typeId, variantId) {
-        let moduleName = this_.idMap[moduleId]
-        let module = this_.modules[moduleName]
+      getVariantArity: (moduleId, typeId, variantId) => {
+        let moduleName = this.idMap[moduleId]
+        let module = this.modules[moduleName]
         let tyinfo = module.types[typeId]
         return tyinfo[variantId][1]
       },
-      recordTypeExists(moduleId, typeId) {
-        let moduleName = this_.idMap[moduleId]
-        let module = this_.modules[moduleName]
+      recordTypeExists: (moduleId, typeId) => {
+        let moduleName = this.idMap[moduleId]
+        let module = this.modules[moduleName]
         let tyinfo = module.types[typeId]
         return !!tyinfo;
       },
-      getRecordArity(moduleId, typeId) {
-        let moduleName = this_.idMap[moduleId]
-        let module = this_.modules[moduleName]
+      getRecordArity: (moduleId, typeId) => {
+        let moduleName = this.idMap[moduleId]
+        let module = this.modules[moduleName]
         let tyinfo = module.types[typeId]
         return Object.keys(tyinfo).length
       },
-      getRecordFieldName(moduleId, typeId, idx) {
-        let moduleName = this_.idMap[moduleId]
-        let module = this_.modules[moduleName]
+      getRecordFieldName: (moduleId, typeId, idx) => {
+        let moduleName = this.idMap[moduleId]
+        let module = this.modules[moduleName]
         let modulePrintNames = printNames[moduleName]
         if (!modulePrintNames) {
           printNames[moduleName] = {}
@@ -96,7 +95,7 @@ export class GrainRunner {
           tyPrintNames = modulePrintNames[typeId]
         }
         if (typeof tyPrintNames[idx] === 'undefined') {
-          tyPrintNames[idx] = this_._makeGrainString(Object.keys(tyinfo)[idx])
+          tyPrintNames[idx] = this._makeGrainString(Object.keys(tyinfo)[idx])
         }
         return tyPrintNames[idx]
       },
@@ -140,8 +139,8 @@ export class GrainRunner {
   }
 
   // [HACK] Temporarily used while we transition to AS-based runtime
-  grainToString(v) {
-    let grainString = this.imports['stdlib-external/runtime']['grainToGrainString'](v)
+  grainValueToString(v) {
+    let grainString = this.imports['stdlib-external/runtime']['grainToString'](v)
     let n = grainString ^ GRAIN_GENERIC_HEAP_TAG_TYPE
     let byteView = this.managedMemory.u8view
     let length = this.managedMemory.view[(n / 4) + 1]

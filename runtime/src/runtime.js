@@ -58,7 +58,6 @@ const importObj = {
     },
   },
   console: {
-    log: debugPrint,
     debug: debugPrint,
     printClosure: printClosure,
     tracepoint: (n) => console.log(`tracepoint ${n} reached`)

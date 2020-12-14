@@ -49,7 +49,7 @@ export function makeThrowGrainError(runtime) {
 export function throwGrainError(errorCode, value1, value2, runtime) {
   let message;
   // [TODO]: Pass a runtime here
-  let value1AsGrain = runtime ? runtime.grainToString(value1) : "<grain value>";
+  let value1AsGrain = runtime ? runtime.grainValueToString(value1) : "<grain value>";
 
   switch (errorCode) {
     case GRAIN_ERR_ARITY_MISMATCH:

@@ -49,7 +49,6 @@ let stdlib_external_runtime_mod =
 let console_mod = Ident.create_persistent("console");
 let check_memory_ident = Ident.create_persistent("checkMemory");
 let throw_error_ident = Ident.create_persistent("throwError");
-let log_ident = Ident.create_persistent("log");
 let malloc_ident = Ident.create_persistent("malloc");
 let incref_ident = Ident.create_persistent("incRef");
 let new_rational_ident = Ident.create_persistent("newRational");
@@ -287,13 +286,6 @@ let runtime_global_imports = [
 let runtime_function_imports =
   List.append(
     [
-      {
-        mimp_mod: console_mod,
-        mimp_name: log_ident,
-        mimp_type: MFuncImport([I32Type], [I32Type]),
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
       {
         mimp_mod: runtime_mod,
         mimp_name: check_memory_ident,
@@ -559,13 +551,6 @@ let call_runtime_throw_error = (wasm_mod, env, args) =>
     get_imported_name(runtime_mod, throw_error_ident),
     args,
     Type.none,
-  );
-let call_console_log = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    get_imported_name(runtime_mod, log_ident),
-    args,
-    Type.int32,
   );
 
 let call_malloc = (wasm_mod, env, args) =>
@@ -3180,8 +3165,6 @@ let rec compile_store = (wasm_mod, env, binds) => {
             compile_instr(wasm_mod, env, instr),
             store_bind_no_incref,
           )
-        /* [TODO] I think this is wrong? See commented out line above */
-        // | MCallIndirect(_)
         | _ => (compile_instr(wasm_mod, env, instr), store_bind)
         };
       [store_bind(compiled_instr), ...acc];
@@ -3383,21 +3366,14 @@ let compile_function =
     };
   let body_env = {...env, num_args: arity_int, stack_size};
   let body =
-    if (false) {
-      Expression.return(
+    Expression.return(
+      wasm_mod,
+      cleanup_locals(
         wasm_mod,
+        body_env,
         compile_block(wasm_mod, body_env, body_instrs),
-      );
-    } else {
-      Expression.return(
-        wasm_mod,
-        cleanup_locals(
-          wasm_mod,
-          body_env,
-          compile_block(wasm_mod, body_env, body_instrs),
-        ),
-      );
-    };
+      ),
+    );
   let locals =
     List.init(stack_size, n => Type.int32)
     |> Array.of_list

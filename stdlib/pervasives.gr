@@ -62,7 +62,7 @@ primitive (is) : (a, a) -> Bool = "@is"
 let (isnt) : (a, a) -> Bool = (x, y) => !(x is y)
 
 // Converts the given value to a string
-import foreign wasm grainToGrainString : a -> String as toString from 'stdlib-external/runtime'
+import foreign wasm grainToString : a -> String as toString from 'stdlib-external/runtime'
 
 export enum List<a> { [], [...](a, List<a>) }
 

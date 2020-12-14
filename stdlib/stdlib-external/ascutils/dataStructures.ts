@@ -95,7 +95,7 @@ export function twoCharacterString(char1: u8, char2: u8): u32 {
   return s | GRAIN_GENERIC_HEAP_TAG_TYPE
 }
 
-export function wrapString(str: string): u32 {
+export function ascStringToGrainString(str: string): u32 {
   let utf8Size = String.UTF8.byteLength(str, false)
   let dest = allocateString(utf8Size)
   String.UTF8.encodeUnsafe(changetype<usize>(str), utf8Size, dest + 8, false)
@@ -139,8 +139,14 @@ export function rawInt64Ptr(wrappedInt64: u32): u32 {
 
 // @ts-ignore: decorator
 @inline
-export function loadI64(xptr: u32): i64 {
+export function loadInt64(xptr: u32): i64 {
   return load<i64>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
+}
+
+// @ts-ignore: decorator
+@inline
+export function loadInt64Unsigned(xptr: u32): u64 {
+  return load<u64>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
 }
 
 /**
@@ -177,8 +183,14 @@ export function rawInt32Ptr(wrappedInt32: u32): u32 {
 
 // @ts-ignore: decorator
 @inline
-export function loadI32(xptr: u32): i32 {
+export function loadInt32(xptr: u32): i32 {
   return load<i32>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
+}
+
+// @ts-ignore: decorator
+@inline
+export function loadInt32Unsigned(xptr: u32): u32 {
+  return load<u32>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
 }
 
 // FLOATS
@@ -217,7 +229,7 @@ export function rawFloat32Ptr(wrappedFloat32: u32): u32 {
 
 // @ts-ignore: decorator
 @inline
-export function loadF32(xptr: u32): f32 {
+export function loadFloat32(xptr: u32): f32 {
   return load<f32>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
 }
 
@@ -255,7 +267,7 @@ export function rawFloat64Ptr(wrappedFloat64: u32): u32 {
 
 // @ts-ignore: decorator
 @inline
-export function loadF64(xptr: u32): f64 {
+export function loadFloat64(xptr: u32): f64 {
   return load<f64>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
 }
 

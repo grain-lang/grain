@@ -1,10 +1,12 @@
 import { decRef, malloc } from './grainRuntime'
-import { allocateString, stringSize, wrapString } from './dataStructures'
+import { allocateString, stringSize, ascStringToGrainString } from './dataStructures'
 import { GRAIN_GENERIC_HEAP_TAG_TYPE } from './tags';
-import { consoleLog } from './console';
 
 /*
  * This file is a modified version of AssemblyScript's std/assembly/util/number.ts
+ * Original file under Apache 2.0 License by AssemblyScript authors:
+ *
+ * https://github.com/AssemblyScript/assemblyscript/blob/d7ad4821a974d2491a0115cb35c85c649b34e7f0/LICENSE
  */
 
 // @ts-ignore: decorator
@@ -631,7 +633,7 @@ function utoa64_any_core(buffer: usize, num: u64, offset: usize, radix: i32): vo
 // This file produces JS (UTF-16) strings. We need to re-encode them as UTF-8 for Grain.
 // Note that all of the characters used in the strings produced in this file are ASCII,
 // so we can safely just halve the size of the string.
-// [TODO] Optimization: Make the functions in this file directly produce UTF-8
+// [TODO] (#475) Optimization: Make the functions in this file directly produce UTF-8
 function fixEncoding(utf16StringRaw: u32): u32 {
   let utf16String = utf16StringRaw & ~GRAIN_GENERIC_HEAP_TAG_TYPE
   let utf16Size = stringSize(utf16StringRaw)
@@ -646,19 +648,22 @@ export function utoa32(value: u32, radix: i32): u32 {
   if (radix < 2 || radix > 36) {
     throw new RangeError("toString() radix argument must be between 2 and 36");
   }
-  if (!value) return wrapString("0");
+  if (!value) return ascStringToGrainString("0");
   var out: u32 = 0;
 
   if (radix == 10) {
     let decimals = decimalCount32(value);
+    // (#475) Need to allocated twice the actual size for intermediate UTF-16 representation
     out = allocateString(decimals << 1);
     utoa32_dec_core(out + 8, value, decimals);
   } else if (radix == 16) {
     let decimals = (31 - clz(value) >> 2) + 1;
+    // (#475) Need to allocated twice the actual size for intermediate UTF-16 representation
     out = allocateString(decimals << 1);
     utoa32_hex_core(out + 8, value, decimals);
   } else {
     let decimals = ulog_base(value, radix);
+    // (#475) Need to allocated twice the actual size for intermediate UTF-16 representation
     out = allocateString(decimals << 1);
     utoa64_any_core(out + 8, value, decimals, radix);
   }
@@ -669,7 +674,7 @@ export function itoa32(value: i32, radix: i32): u32 {
   if (radix < 2 || radix > 36) {
     throw new RangeError("toString() radix argument must be between 2 and 36");
   }
-  if (!value) return wrapString("0");
+  if (!value) return ascStringToGrainString("0");
 
   var sign = value >>> 31;
   if (sign) value = -value;
@@ -677,15 +682,18 @@ export function itoa32(value: i32, radix: i32): u32 {
 
   if (radix == 10) {
     let decimals = decimalCount32(value) + sign;
+    // (#475) Need to allocated twice the actual size for intermediate UTF-16 representation
     out = allocateString(decimals << 1);
     utoa32_dec_core(<usize>(out + 8), value, decimals);
   } else if (radix == 16) {
     let decimals = (31 - clz(value) >> 2) + 1 + sign;
+    // (#475) Need to allocated twice the actual size for intermediate UTF-16 representation
     out = allocateString(decimals << 1);
     utoa32_hex_core(<usize>(out + 8), value, decimals);
   } else {
     let val32 = u32(value);
     let decimals = ulog_base(val32, radix) + sign;
+    // (#475) Need to allocated twice the actual size for intermediate UTF-16 representation
     out = allocateString(decimals << 1);
     utoa64_any_core(<usize>(out + 8), val32, decimals, radix);
   }
@@ -698,22 +706,25 @@ export function utoa64(value: u64, radix: i32): u32 {
   if (radix < 2 || radix > 36) {
     throw new RangeError("toString() radix argument must be between 2 and 36");
   }
-  if (!value) return wrapString("0");
+  if (!value) return ascStringToGrainString("0");
   var out: u32 = 0;
 
   if (radix == 10) {
     if (value <= u32.MAX_VALUE) {
       let val32    = <u32>value;
       let decimals = decimalCount32(val32);
+      // (#475) Need to allocated twice the actual size for intermediate UTF-16 representation
       out = allocateString(decimals << 1);
       utoa32_dec_core(out + 8, val32, decimals);
     } else {
       let decimals = decimalCount64High(value);
+      // (#475) Need to allocated twice the actual size for intermediate UTF-16 representation
       out = allocateString(decimals << 1);
       utoa64_dec_core(out + 8, value, decimals);
     }
   } else if (radix == 16) {
     let decimals = (63 - u32(clz(value)) >> 2) + 1;
+    // (#475) Need to allocated twice the actual size for intermediate UTF-16 representation
     out = allocateString(decimals << 1);
     utoa64_hex_core(out + 8, value, decimals);
   } else {
@@ -728,7 +739,7 @@ export function itoa64(value: i64, radix: i32): u32 {
   if (radix < 2 || radix > 36) {
     throw new RangeError("toString() radix argument must be between 2 and 36");
   }
-  if (!value) return wrapString("0");
+  if (!value) return ascStringToGrainString("0");
 
   var sign = u32(value >>> 63);
   if (sign) value = -value;
@@ -738,19 +749,23 @@ export function itoa64(value: i64, radix: i32): u32 {
     if (<u64>value <= <u64>u32.MAX_VALUE) {
       let val32    = <u32>value;
       let decimals = decimalCount32(val32) + sign;
+      // (#475) Need to allocated twice the actual size for intermediate UTF-16 representation
       out = allocateString(decimals << 1);
       utoa32_dec_core(out + 8, val32, decimals);
     } else {
       let decimals = decimalCount64High(value) + sign;
+      // (#475) Need to allocated twice the actual size for intermediate UTF-16 representation
       out = allocateString(decimals << 1);
       utoa64_dec_core(out + 8, value, decimals);
     }
   } else if (radix == 16) {
     let decimals = (63 - u32(clz(value)) >> 2) + 1 + sign;
+    // (#475) Need to allocated twice the actual size for intermediate UTF-16 representation
     out = allocateString(decimals << 1);
     utoa64_hex_core(out + 8, value, decimals);
   } else {
     let decimals = ulog_base(value, radix) + sign;
+    // (#475) Need to allocated twice the actual size for intermediate UTF-16 representation
     out = allocateString(decimals << 1);
     utoa64_any_core(out + 8, value, decimals, radix);
   }
@@ -1037,10 +1052,10 @@ function get_dtoa_buf(): usize {
 }
 
 export function dtoa(value: f64): u32 {
-  if (value == 0) return wrapString("0.0");
+  if (value == 0) return ascStringToGrainString("0.0");
   if (!isFinite(value)) {
-    if (isNaN(value)) return wrapString("NaN");
-    return wrapString(select<string>("-Infinity", "Infinity", value < 0));
+    if (isNaN(value)) return ascStringToGrainString("NaN");
+    return ascStringToGrainString(select<string>("-Infinity", "Infinity", value < 0));
   }
   var size = dtoa_core(get_dtoa_buf(), value);
   var result = allocateString(size);
