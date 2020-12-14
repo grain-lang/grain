@@ -283,3 +283,38 @@ export let counti = (fn, array) => {
   }
   count
 }
+
+export let filter = (fn, array) => {
+  let filtered = copy(array)
+  let mut position = 0
+  forEach((el) => {
+    if (fn(el)) {
+      filtered[position] := el
+      position = incr(position);
+    }
+  }, array)
+  init(position, (index) => {
+    filtered[index]
+  })
+}
+
+export let filteri = (fn, array) => {
+  let filtered = copy(array)
+  let mut position = 0
+  forEachi((el, index) => {
+    if (fn(el, index)) {
+      filtered[position] := el
+      position = incr(position);
+    }
+  }, array)
+  init(position, (index) => {
+    filtered[index]
+  })
+}
+
+export let unique = (array) => {
+  filteri(
+    (el, index) => findIndex(value => value == el, array) == Some(index),
+    array
+  )
+}
