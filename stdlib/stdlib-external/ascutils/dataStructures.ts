@@ -84,14 +84,14 @@ export function allocateChar(): u32 {
 
 export function singleCharacterString(char: u8): u32 {
   let s = allocateString(1)
-  store<u8>(s + 8, char)
+  store<u8>(s, char, 8)
   return s | GRAIN_GENERIC_HEAP_TAG_TYPE
 }
 
 export function twoCharacterString(char1: u8, char2: u8): u32 {
   let s = allocateString(2)
-  store<u8>(s + 8, char1)
-  store<u8>(s + 8, char2, 1)
+  store<u8>(s, char1, 8)
+  store<u8>(s, char2, 8 + 1)
   return s | GRAIN_GENERIC_HEAP_TAG_TYPE
 }
 

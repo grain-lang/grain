@@ -9,8 +9,6 @@ module.exports = async function run(filename, options) {
     let GrainRunner = runtime.buildGrainRunner(locator, {limitMemory: options.limitMemory});
     if (options.printOutput) {
       let result = await GrainRunner.runFileUnboxed(filename);
-      // For debugging:
-      //console.log(`got result: 0x${result.toString(16)}`)
       console.log(GrainRunner.grainToString(result));
     } else {
       await GrainRunner.runFile(filename);

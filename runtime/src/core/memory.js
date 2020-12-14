@@ -3,7 +3,7 @@ import { getTagType, tagToString, heapTagToString, GRAIN_CONST_TAG_TYPE, GRAIN_N
 import { toHex, toBinary } from '../utils/utils';
 import treeify from 'treeify';
 
-export const TRACE_MEMORY = true;
+export const TRACE_MEMORY = false;
 
 function trace(msg) {
   if (__DEBUG && TRACE_MEMORY) {
@@ -135,7 +135,6 @@ export class ManagedMemory {
       this._freedAddresses.delete(userPtr);
     }
     this._markIncRefSource(userPtr, 'MALLOC');
-    //trace(`malloc(${size}) -> 0x${this._toHex(userPtr)}`)
     return userPtr; // offset by headerSize
   }
 
@@ -693,4 +692,3 @@ class ManagedType {
     return address1 === address2;
   }
 }
-

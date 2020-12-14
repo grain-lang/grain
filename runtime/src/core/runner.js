@@ -129,7 +129,7 @@ export class GrainRunner {
     let buf = this.encoder.encode(v);
     let userPtr = this.managedMemory.malloc((4 * 2) + (((v.length - 1) / 4) + 1));
     let ptr = userPtr / 4;
-    let view = this.managedMemory._view;
+    let view = this.managedMemory.view;
     view[ptr] = GRAIN_STRING_HEAP_TAG;
     view[ptr + 1] = v.length;
     let byteView = this.managedMemory.u8view;
@@ -147,7 +147,7 @@ export class GrainRunner {
     let length = this.managedMemory.view[(n / 4) + 1]
     let slice = byteView.slice(n + 8, n + 8 + length)
     let ret = this.decoder.decode(slice)
-    this.imports['grainRuntime']['free'](grainString)
+    this.managedMemory.free(grainString)
     return ret
   }
 
@@ -178,7 +178,7 @@ export class GrainRunner {
     // First, load any dependencies which need loading
     for (let imp of moduleImports) {
       // useful for debugging:
-      //console.log(`processing import ${imp.module} [required by: ${name}] [imported symbol: ${imp.name}]`)
+      // console.log(`processing import ${imp.module} [required by: ${name}] [imported symbol: ${imp.name}]`)
       if (!(imp.module in this.imports)) {
         // Sanity check
         if (imp.module in this.modules) {

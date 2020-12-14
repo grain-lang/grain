@@ -1,5 +1,4 @@
 import { consoleLog } from '../ascutils/console'
-import { consoleLog } from '../ascutils/console'
 import { GRAIN_VOID } from '../ascutils/primitives'
 import { grainToString } from './string'
 

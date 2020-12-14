@@ -53,7 +53,6 @@ function debugPrint(v) {
 const importObj = {
   env: {
     memory,
-    // [TODO] Runner crashes without this. Why? Not referenced anywhere in our code
     abort(err) {
       throw new Error(`abort ${err}`)
     },

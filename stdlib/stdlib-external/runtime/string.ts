@@ -111,7 +111,6 @@ function quoteString(ptr: u32): u32 {
 function grainHeapValueToString(ptr: u32, extraIndents: u32): u32 {
   // ptr can be tagged or untagged
   const untaggedPtr = ptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE
-  //consoleLog('untaggedPtr: 0x'.concat(untaggedPtr.toString(16)))
   const tag = load<u32>(untaggedPtr)
   switch (tag) {
     case GRAIN_STRING_HEAP_TAG: {
