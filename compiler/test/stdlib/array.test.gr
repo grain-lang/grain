@@ -189,12 +189,23 @@ assert Array.count(x => x > 0, arr) == 3
 assert Array.count(x => x > 0, [>]) == 0
 assert Array.count(x => x == 3, arr) == 1
 
+// Array.counti
+
+assert Array.counti((x, i) => x - 1 == i, arr) == 3
+assert Array.counti((x, i) => x == i, [>]) == 0
+assert Array.counti((x, i) => i == 2, arr) == 1
+
 // TODO: test with wrong indexes and assert the exception.
 
 // Array.reduce
 
 assert Array.reduce((acc, x) => acc + x, 0, arr) == 6
 assert Array.reduce((acc, x) => fail "Shouldn't be called", 0, [>]) == 0
+
+// Array.reducei
+
+assert Array.reducei((acc, x, i) => acc + x + i, 0, arr) == 9
+assert Array.reducei((acc, x, i) => fail "Shouldn't be called", 0, [>]) == 0
 
 // Array.flatMap
 
