@@ -207,49 +207,35 @@ rule token = parse
   | "|" { PIPE }
   | "||" { PIPEPIPE }
   | "!" { NOT }
-  | '"'   { read_dquote_str (Buffer.create 16) lexbuf }
-  | '\'' { read_squote_str (Buffer.create 16) lexbuf }
-  | '`' { read_char (Buffer.create 4) lexbuf }
+  | '"'   { read_str (Buffer.create 16) lexbuf }
+  | '\'' { read_char (Buffer.create 4) lexbuf }
   | "_" { UNDERSCORE }
   | ident as x { ID x }
   | ident_cap as x { TYPEID x }
   | eof { EOF }
   | _ as c { raise (Error(lexbuf_loc lexbuf, UnrecognizedCharacter c)) }
 
-and read_dquote_str buf =
+and read_str buf =
   parse
-  | '\\' newline_char { read_dquote_str buf lexbuf }
-  | "\\n" { Buffer.add_char buf '\n'; read_dquote_str buf lexbuf }
-  | "\\r" { Buffer.add_char buf '\r'; read_dquote_str buf lexbuf }
-  | "\\\"" { Buffer.add_char buf '"'; read_dquote_str buf lexbuf }
-  | "\\\\" { Buffer.add_char buf '\\'; read_dquote_str buf lexbuf }
-  | num_esc { add_code_point buf (lexeme lexbuf) (lexbuf_loc lexbuf); read_dquote_str buf lexbuf }
+  | '\\' newline_char { read_str buf lexbuf }
+  | "\\n" { Buffer.add_char buf '\n'; read_str buf lexbuf }
+  | "\\r" { Buffer.add_char buf '\r'; read_str buf lexbuf }
+  | "\\\"" { Buffer.add_char buf '"'; read_str buf lexbuf }
+  | "\\\\" { Buffer.add_char buf '\\'; read_str buf lexbuf }
+  | num_esc { add_code_point buf (lexeme lexbuf) (lexbuf_loc lexbuf); read_str buf lexbuf }
   | [^ '"' '\\']+ { Buffer.add_string buf (lexeme lexbuf);
-    read_dquote_str buf lexbuf }
+    read_str buf lexbuf }
   | '"' { STRING (Buffer.contents buf) }
-  | _ { raise (Error(lexbuf_loc lexbuf, IllegalStringCharacter(lexeme lexbuf))) }
-
-and read_squote_str buf =
-  parse
-  | "\\" newline_char { read_squote_str buf lexbuf }
-  | "\\n" { Buffer.add_char buf '\n'; read_squote_str buf lexbuf }
-  | "\\r" { Buffer.add_char buf '\r'; read_squote_str buf lexbuf }
-  | "\\'" { Buffer.add_char buf '\''; read_squote_str buf lexbuf }
-  | "\\\\" { Buffer.add_char buf '\\'; read_squote_str buf lexbuf }
-  | num_esc { add_code_point buf (lexeme lexbuf) (lexbuf_loc lexbuf); read_squote_str buf lexbuf }
-  | [^ ''' '\\']+ { Buffer.add_string buf (lexeme lexbuf);
-    read_squote_str buf lexbuf }
-  | '\'' { STRING (Buffer.contents buf) }
   | _ { raise (Error(lexbuf_loc lexbuf, IllegalStringCharacter(lexeme lexbuf))) }
 
 and read_char buf =
   parse
-  | "\\n`" { CHAR "\n" }
-  | "\\r`" { CHAR "\r" }
-  | "\\``" { CHAR "`" }
-  | "\\\\`" { CHAR "\\" }
-  | (num_esc as esc) '`' { add_code_point buf esc (lexbuf_loc lexbuf); CHAR (Buffer.contents buf) }
-  | ([^ '`' '\\']+ as _match) '`' { Buffer.add_string buf _match; CHAR (Buffer.contents buf) }
+  | "\\n'" { CHAR "\n" }
+  | "\\r'" { CHAR "\r" }
+  | "\\'" { CHAR "'" }
+  | "\\\\'" { CHAR "\\" }
+  | (num_esc as esc) ''' { add_code_point buf esc (lexbuf_loc lexbuf); CHAR (Buffer.contents buf) }
+  | ([^ '\'' '\\']+ as _match) '\'' { Buffer.add_string buf _match; CHAR (Buffer.contents buf) }
   | _ { raise (Error(lexbuf_loc lexbuf, IllegalStringCharacter(lexeme lexbuf))) }
 
 and read_block_comment =

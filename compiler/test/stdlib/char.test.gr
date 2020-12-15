@@ -1,6 +1,6 @@
-import Char from 'char'
-import String from 'string'
-import Array from 'array'
+import Char from "char"
+import String from "string"
+import Array from "array"
 
 // isValid
 
@@ -15,7 +15,7 @@ assert !Char.isValid(0xD8FF)
 // code
 
 // Each of these characters are represented by one, two, three, and four bytes respectively.
-let testString = '\u{70}\u{700}\u{7000}\u{70000}'
+let testString = "\u{70}\u{700}\u{7000}\u{70000}"
 
 let chars = String.explode(testString)
 let codes = [> 0x70, 0x700, 0x7000, 0x70000]

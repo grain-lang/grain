@@ -1,4 +1,4 @@
-import * from 'list';
+import * from "list";
 
 export record Rec {
   foo: List<Number>,
@@ -37,15 +37,15 @@ let tests = [
   (PList([2]), 2),
   (PList([2, 7]), 9),
   (PList([2, 7, 10]), 2),
-  (PAssoc({foo: [], bar: 'bar'}), 1),
-  (PAssoc({foo: [2], bar: 'bar'}), 2),
-  (PAssoc({foo: [2, 7], bar: 'bar'}), 9),
-  (PAssoc({foo: [2, 7, 10], bar: 'bar'}), 2),
-  (PMulti([], 17, {foo: [], bar: 'bar'}), 17),
-  (PMulti(['foo'], 17, {foo: [3], bar: 'bar'}), 20),
-  (PMulti([], 11, {foo: [4], bar: 'bar'}), 4),
-  (PMulti(['foo'], 17, {foo: [3, 5], bar: 'bar'}), 20),
-  (PPoly([PList([1]), PAssoc({foo: [2], bar: 'bar'}), PMulti([], 3, {foo: [4], bar: 'bar'})]), 10),
+  (PAssoc({foo: [], bar: "bar"}), 1),
+  (PAssoc({foo: [2], bar: "bar"}), 2),
+  (PAssoc({foo: [2, 7], bar: "bar"}), 9),
+  (PAssoc({foo: [2, 7, 10], bar: "bar"}), 2),
+  (PMulti([], 17, {foo: [], bar: "bar"}), 17),
+  (PMulti(["foo"], 17, {foo: [3], bar: "bar"}), 20),
+  (PMulti([], 11, {foo: [4], bar: "bar"}), 4),
+  (PMulti(["foo"], 17, {foo: [3, 5], bar: "bar"}), 20),
+  (PPoly([PList([1]), PAssoc({foo: [2], bar: "bar"}), PMulti([], 3, {foo: [4], bar: "bar"})]), 10),
   (PPoly([]), 42),
   (PPoly([PPoly([])]), 43)
 ];

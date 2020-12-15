@@ -1,4 +1,4 @@
-import List from 'list'
+import List from "list"
 
 record Queue<a> { forwards: List<a>, backwards: List<a> }
 

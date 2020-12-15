@@ -18,12 +18,12 @@ let isValid = (n) => {
 // Returns the Unicode code point for the character
 // @param char: Char - the input character
 // @returns Number
-import foreign wasm code : Char -> Number from 'stdlib-external/char'
+import foreign wasm code : Char -> Number from "stdlib-external/char"
 
 // Returns the Char for the given code point. Fails if the code point is invalid.
 // @param codePoint: Number - the Unicode code point
 // @returns Char
-import foreign wasm fromCode : Number -> Char from 'stdlib-external/char'
+import foreign wasm fromCode : Number -> Char from "stdlib-external/char"
 
 // Returns the next valid Unicode character by code point. Fails if the input character is U+10FFFF.
 // @param char: Char - the input character
@@ -31,7 +31,7 @@ import foreign wasm fromCode : Number -> Char from 'stdlib-external/char'
 let succ = (c) => {
   let codePoint = code(c)
   if (codePoint == max) {
-    fail 'no valid Unicode code point past U+10FFF'
+    fail "no valid Unicode code point past U+10FFF"
   } else if (codePoint == 0xD7FF) {
     fromCode(0xE000)
   } else {
@@ -45,7 +45,7 @@ let succ = (c) => {
 let pred = (c) => {
   let codePoint = code(c)
   if (codePoint == min) {
-    fail 'no valid Unicode code point below U+0000'
+    fail "no valid Unicode code point below U+0000"
   } else if (codePoint == 0xE000) {
     fromCode(0xD7FF)
   } else {

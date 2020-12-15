@@ -1,4 +1,4 @@
-import Array from 'array'
+import Array from "array"
 
 let arr = [> 1, 2, 3,]
 

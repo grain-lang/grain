@@ -49,7 +49,7 @@ If you're only changing `.gr` stdlib files, you don't need to do anything specia
 It's usually easiest to create a small Grain program that imports your library to try it out, like so:
 
 ```grain
-import Array from 'array'
+import Array from "array"
 
 let appended = Array.append([> 1, 2, 3], [> 4, 5, 6])
 print(appended)

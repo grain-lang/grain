@@ -1,37 +1,37 @@
 export *
 
 // Math operations
-import foreign wasm numberIncr : Number -> Number as incr from 'stdlib-external/runtime'
-import foreign wasm numberDecr : Number -> Number as decr from 'stdlib-external/runtime'
-import foreign wasm numberPlus : (Number, Number) -> Number as (+) from 'stdlib-external/runtime'
-import foreign wasm numberMinus : (Number, Number) -> Number as (-) from 'stdlib-external/runtime'
-import foreign wasm numberTimes : (Number, Number) -> Number as (*) from 'stdlib-external/runtime'
-import foreign wasm numberDivide : (Number, Number) -> Number as (/) from 'stdlib-external/runtime'
-import foreign wasm numberMod : (Number, Number) -> Number as (%) from 'stdlib-external/runtime'
+import foreign wasm numberIncr : Number -> Number as incr from "stdlib-external/runtime"
+import foreign wasm numberDecr : Number -> Number as decr from "stdlib-external/runtime"
+import foreign wasm numberPlus : (Number, Number) -> Number as (+) from "stdlib-external/runtime"
+import foreign wasm numberMinus : (Number, Number) -> Number as (-) from "stdlib-external/runtime"
+import foreign wasm numberTimes : (Number, Number) -> Number as (*) from "stdlib-external/runtime"
+import foreign wasm numberDivide : (Number, Number) -> Number as (/) from "stdlib-external/runtime"
+import foreign wasm numberMod : (Number, Number) -> Number as (%) from "stdlib-external/runtime"
 
 // Number comparisons
-import foreign wasm numberLess : (Number, Number) -> Bool as (<) from 'stdlib-external/runtime'
-import foreign wasm numberGreater : (Number, Number) -> Bool as (>) from 'stdlib-external/runtime'
-import foreign wasm numberLessEqual : (Number, Number) -> Bool as (<=) from 'stdlib-external/runtime'
-import foreign wasm numberGreaterEqual : (Number, Number) -> Bool as (>=) from 'stdlib-external/runtime'
+import foreign wasm numberLess : (Number, Number) -> Bool as (<) from "stdlib-external/runtime"
+import foreign wasm numberGreater : (Number, Number) -> Bool as (>) from "stdlib-external/runtime"
+import foreign wasm numberLessEqual : (Number, Number) -> Bool as (<=) from "stdlib-external/runtime"
+import foreign wasm numberGreaterEqual : (Number, Number) -> Bool as (>=) from "stdlib-external/runtime"
 
 // Number bit/logical operations
-import foreign wasm numberLnot : Number -> Number as lnot from 'stdlib-external/runtime'
+import foreign wasm numberLnot : Number -> Number as lnot from "stdlib-external/runtime"
 
-import foreign wasm numberLand : (Number, Number) -> Number as (&) from 'stdlib-external/runtime'
-import foreign wasm numberLor : (Number, Number) -> Number as (|) from 'stdlib-external/runtime'
-import foreign wasm numberLxor : (Number, Number) -> Number as (^) from 'stdlib-external/runtime'
+import foreign wasm numberLand : (Number, Number) -> Number as (&) from "stdlib-external/runtime"
+import foreign wasm numberLor : (Number, Number) -> Number as (|) from "stdlib-external/runtime"
+import foreign wasm numberLxor : (Number, Number) -> Number as (^) from "stdlib-external/runtime"
 
-import foreign wasm numberLsl : (Number, Number) -> Number as (<<) from 'stdlib-external/runtime'
-import foreign wasm numberLsr : (Number, Number) -> Number as (>>>) from 'stdlib-external/runtime'
-import foreign wasm numberAsr : (Number, Number) -> Number as (>>) from 'stdlib-external/runtime'
+import foreign wasm numberLsl : (Number, Number) -> Number as (<<) from "stdlib-external/runtime"
+import foreign wasm numberLsr : (Number, Number) -> Number as (>>>) from "stdlib-external/runtime"
+import foreign wasm numberAsr : (Number, Number) -> Number as (>>) from "stdlib-external/runtime"
 
 
 // Number coercions & conversions
 
 // [TODO] (#311) Commented until we nail down semantics
-// import foreign wasm convertExactToInexact : Number -> Number as inexact from 'stdlib-external/runtime'
-// import foreign wasm convertInexactToExact : Number -> Number as exact from 'stdlib-external/runtime'
+// import foreign wasm convertExactToInexact : Number -> Number as inexact from "stdlib-external/runtime"
+// import foreign wasm convertInexactToExact : Number -> Number as exact from "stdlib-external/runtime"
 
 // Boolean operations
 primitive (!) : Bool -> Bool = "@not"
@@ -39,7 +39,7 @@ primitive (&&) : (Bool, Bool) -> Bool = "@and"
 primitive (||) : (Bool, Bool) -> Bool = "@or"
 
 // String operations
-import foreign wasm concat : (String, String) -> String as (++) from 'stdlib-external/runtime'
+import foreign wasm concat : (String, String) -> String as (++) from "stdlib-external/runtime"
 
 // Box operations
 primitive box : a -> Box<a> = "@box"
@@ -51,10 +51,10 @@ primitive assert : Bool -> Void = "@assert"
 primitive fail : String -> a = "@fail"
 
 // Prints the given value to the console.
-import foreign wasm print : a -> Void from 'grainBuiltins'
+import foreign wasm print : a -> Void from "grainBuiltins"
 
 // Checks the given items for structural equality.
-import foreign wasm equal : (a, a) -> Bool as (==) from 'stdlib-external/runtime'
+import foreign wasm equal : (a, a) -> Bool as (==) from "stdlib-external/runtime"
 let (!=) : (a, a) -> Bool = (x, y) => !(x == y)
 // Checks the given items for physical equality.
 primitive (is) : (a, a) -> Bool = "@is"
@@ -62,7 +62,7 @@ primitive (is) : (a, a) -> Bool = "@is"
 let (isnt) : (a, a) -> Bool = (x, y) => !(x is y)
 
 // Converts the given value to a string
-import foreign wasm toString : a -> String from 'grainBuiltins'
+import foreign wasm toString : a -> String from "grainBuiltins"
 
 export enum List<a> { [], [...](a, List<a>) }
 

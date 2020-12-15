@@ -28,7 +28,7 @@ let prepare_error =
       | IllegalCharacterLiteral(cl, loc) =>
         errorf(
           ~loc,
-          "This character literal contains multiple characters: `%s`\nDid you mean to create the string '%s' instead?",
+          "This character literal contains multiple characters: '%s'\nDid you mean to create the string \"%s\" instead?",
           cl,
           cl,
         )

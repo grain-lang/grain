@@ -116,7 +116,7 @@ export function grainHeapValueToString(runtime, n) {
         numBytes = 2
       }
       let slice = byteView.slice(n + 4, n + 4 + numBytes);
-      return `\`${decoder.decode(slice)}\``;
+      return `'${decoder.decode(slice)}'`;
     }
     case GRAIN_ADT_HEAP_TAG: {
       let x = n / 4;
