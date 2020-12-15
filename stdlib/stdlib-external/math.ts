@@ -87,4 +87,14 @@ export function mathMax(x: u32, y: u32): u32 {
     let yval = coerceFloat64(y);
     return newFloat64(<f64>min(xval, yval))
 }
+
+/**
+ * Returns the negative of the given number.
+ * 
+ * @param   {u32} x - The input number.
+ * @returns {u32} The negative of the given number. 
+ */
+export function mathNeg(x: u32): u32 {
+    let xval = coerceFloat64(x);
+    return newFloat64(-xval)
 }
