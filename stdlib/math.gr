@@ -4,6 +4,7 @@ import foreign wasm mathSqrt : (Number) -> Number from 'stdlib-external/math'
 import foreign wasm mathCeil : (Number) -> Number from 'stdlib-external/math'
 import foreign wasm mathFloor : (Number) -> Number from 'stdlib-external/math'
 import foreign wasm mathTrunc : (Number) -> Number from 'stdlib-external/math'
+import foreign wasm mathAbs : (Number) -> Number from 'stdlib-external/math'
 
 export let add = (+)
 export let sub = (-)
