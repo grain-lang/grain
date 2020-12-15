@@ -119,6 +119,7 @@ type constant =
   | PConstBool(bool)
   | PConstVoid
   | PConstString(string)
+  | PConstChar(string)
 
 [@deriving (sexp, yojson)]
 and number_type =

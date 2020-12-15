@@ -367,6 +367,7 @@ let compile_const = (c: Asttypes.constant) =>
   | Const_number(_) =>
     failwith("compile_const: Const_number float/rational post-ANF")
   | Const_string(_) => failwith("compile_const: Const_string post-ANF")
+  | Const_char(_) => failwith("compile_const: Const_char post-ANF")
   | Const_int32(i32) => MConstI32(i32)
   | Const_int64(i64) => MConstI64(i64)
   | Const_float32(f) => MConstF32(f)
@@ -552,6 +553,7 @@ let rec compile_comp = (env, c) => {
         ),
       )
     | CString(s) => MAllocate(MString(s))
+    | CChar(c) => MAllocate(MChar(c))
     | CNumber(Const_number_int(n))
         when
           Int64.compare(n, Literals.simple_number_max) < 0

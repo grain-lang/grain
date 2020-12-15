@@ -110,6 +110,7 @@ module Comp: {
   let lambda:
     (~loc: loc=?, ~env: env=?, list(ident), anf_expression) => comp_expression;
   let string: (~loc: loc=?, ~env: env=?, string) => comp_expression;
+  let char: (~loc: loc=?, ~env: env=?, string) => comp_expression;
 };
 
 module AExp: {

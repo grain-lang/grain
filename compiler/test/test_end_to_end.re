@@ -1656,8 +1656,33 @@ let string_tests = {
 };
 
 let char_tests = [
-  // No char literals, but they should still print
-  t("char1", "import { fromCode } from 'char'; fromCode(0x41)", "'A'"),
+  t("char1", "`A`", "`A`"),
+  t("char2", "`\\x41`", "`A`"),
+  t("char3", "`\\101`", "`A`"),
+  t("char4", "`\\u0041`", "`A`"),
+  t("char5", "`\\u{41}`", "`A`"),
+  t("char6", "`💯`", "`💯`"),
+  t("char7", "`\\u{1F33E}`", "`🌾`"),
+  t("char_eq1", "`🌾` == `🌾`", "true"),
+  t("char_eq2", "`🌾` == `💯`", "false"),
+  t(
+    "char_eq3",
+    "import Char from 'char'; Char.fromCode(0x1F33E) == `🌾`",
+    "true",
+  ),
+  t(
+    "char_eq4",
+    "import Char from 'char'; Char.fromCode(0x1F33E) == `💯`",
+    "false",
+  ),
+  te(
+    "char_illegal",
+    "`abc`",
+    "This character literal contains multiple characters: `abc`\nDid you mean to create the string 'abc' instead?",
+  ),
+  te("unicode_err1", "let x = `\\u{d800}`", "Illegal unicode code point"),
+  te("unicode_err2", "let x = `\\u{dfff}`", "Illegal unicode code point"),
+  te("unicode_err3", "let x = `\\u{110000}`", "Illegal unicode code point"),
 ];
 
 let exception_tests = [
