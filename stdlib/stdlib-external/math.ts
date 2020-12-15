@@ -61,3 +61,16 @@ export function mathAbs(x: u32): u32 {
     let xval = coerceFloat64(x);
     return newFloat64(<f64>abs(xval));
 }
+
+/** 
+ * Returns the minimum of 2 numbers.
+ * 
+ * @param   {u32} x - The first input.
+ * @param   {u32} y - The second input.
+ * @returns {u32}
+ */
+export function mathMin(x: u32, y: u32): u32 {
+    let xval = coerceFloat64(x);
+    let yval = coerceFloat64(y);
+    return newFloat64(<f64>min(xval, yval))
+}

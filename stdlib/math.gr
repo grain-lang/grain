@@ -1,10 +1,11 @@
 export *
 
-import foreign wasm mathSqrt : (Number) -> Number from 'stdlib-external/math'
-import foreign wasm mathCeil : (Number) -> Number from 'stdlib-external/math'
-import foreign wasm mathFloor : (Number) -> Number from 'stdlib-external/math'
-import foreign wasm mathTrunc : (Number) -> Number from 'stdlib-external/math'
-import foreign wasm mathAbs : (Number) -> Number from 'stdlib-external/math'
+import foreign wasm mathSqrt : (Number) -> Number as sqrt from 'stdlib-external/math'
+import foreign wasm mathCeil : (Number) -> Number as ceil from 'stdlib-external/math'
+import foreign wasm mathFloor : (Number) -> Number as floor from 'stdlib-external/math'
+import foreign wasm mathTrunc : (Number) -> Number as trunc from 'stdlib-external/math'
+import foreign wasm mathAbs : (Number) -> Number as abs from 'stdlib-external/math'
+import foreign wasm mathMin : (Number, Number) -> Number as min from 'stdlib-external/math'
 
 export let add = (+)
 export let sub = (-)
