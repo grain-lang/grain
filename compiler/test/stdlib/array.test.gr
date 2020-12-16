@@ -189,12 +189,23 @@ assert Array.count(x => x > 0, arr) == 3
 assert Array.count(x => x > 0, [>]) == 0
 assert Array.count(x => x == 3, arr) == 1
 
+// Array.counti
+
+assert Array.counti((x, i) => x - 1 == i, arr) == 3
+assert Array.counti((x, i) => x == i, [>]) == 0
+assert Array.counti((x, i) => i == 2, arr) == 1
+
 // TODO: test with wrong indexes and assert the exception.
 
 // Array.reduce
 
 assert Array.reduce((acc, x) => acc + x, 0, arr) == 6
 assert Array.reduce((acc, x) => fail "Shouldn't be called", 0, [>]) == 0
+
+// Array.reducei
+
+assert Array.reducei((acc, x, i) => acc + x + i, 0, arr) == 9
+assert Array.reducei((acc, x, i) => fail "Shouldn't be called", 0, [>]) == 0
 
 // Array.flatMap
 
@@ -212,3 +223,23 @@ assert Array.every(x => fail "Shouldn't be called", [>])
 assert Array.some(x => x > 1, arr) == true
 assert Array.some(x => x > 4, arr) == false
 assert !Array.some(x => fail "Shouldn't be called", [>])
+
+// Array.filter
+
+assert Array.filter(x => true, arr) == [> 1, 2, 3]
+assert Array.filter(x => x > 1, arr) == [> 2, 3]
+assert Array.filter(x => x % 2 == 0, arr) == [> 2]
+assert Array.filter(x => fail "Shouldn't be called", [>]) == [>]
+
+// Array.filteri
+
+assert Array.filteri((x, i) => x != i, [> 0, 1, 2, 3, 4]) == [>]
+assert Array.filteri((x, i) => x == i, [> 4, 3, 2, 1, 0]) == [> 2]
+assert Array.filteri((x, i) => fail "Shouldn't be called", [>]) == [>]
+
+// Array.unique
+
+assert Array.unique([> 1, 1, 2, 2, 3, 3]) == [> 1, 2, 3]
+assert Array.unique([> 0, 1, 2]) == [> 0, 1, 2]
+assert Array.unique([> 0, 0, 0, 0, 0, 0]) == [> 0]
+assert Array.unique([>]) == [>]
