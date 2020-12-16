@@ -98,6 +98,12 @@ export let reduce = (fn, initial, array) => {
   acc
 }
 
+export let reducei = (fn, initial, array) => {
+  let mut acc = initial;
+  forEachi((el, index) => acc = fn(acc, el, index), array);
+  acc
+}
+
 export let flatMap = (fn, array) => {
   reduce((result, value) => append(result, fn(value)), [>], array)
 }
@@ -261,4 +267,54 @@ export let count = (fn, array) => {
     }
   }
   count
+}
+
+export let counti = (fn, array) => {
+  let length = length(array)
+  let mut position = 0
+  let mut count = 0
+  while (position < length) {
+    if(fn(array[position], position)) {
+      count = incr(count)
+      position = incr(position)
+    } else {
+      position = incr(position)
+    }
+  }
+  count
+}
+
+export let filter = (fn, array) => {
+  let filtered = copy(array)
+  let mut position = 0
+  forEach((el) => {
+    if (fn(el)) {
+      filtered[position] := el
+      position = incr(position);
+    }
+  }, array)
+  init(position, (index) => {
+    filtered[index]
+  })
+}
+
+export let filteri = (fn, array) => {
+  let filtered = copy(array)
+  let mut position = 0
+  forEachi((el, index) => {
+    if (fn(el, index)) {
+      filtered[position] := el
+      position = incr(position);
+    }
+  }, array)
+  init(position, (index) => {
+    filtered[index]
+  })
+}
+
+export let unique = (array) => {
+  filteri(
+    (el, index) => findIndex(value => value == el, array) == Some(index),
+    array
+  )
 }
