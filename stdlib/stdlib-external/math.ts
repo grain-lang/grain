@@ -98,3 +98,14 @@ export function mathNeg(x: u32): u32 {
     let xval = coerceFloat64(x);
     return newFloat64(-xval)
 }
+
+/**
+ * Returns the number after rounding it to the nearest decimal.
+ * 
+ * @param   {u32} x - The input number.
+ * @returns {u32} The number after rounding it to the nearest decimal. 
+ */
+export function mathRound(x: u32): u32 {
+    let xval = coerceFloat64(x);
+    return newFloat64(<f64>Math.round(xval));
+}

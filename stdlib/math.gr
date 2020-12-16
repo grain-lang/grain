@@ -8,6 +8,7 @@ import foreign wasm mathAbs : (Number) -> Number as abs from 'stdlib-external/ma
 import foreign wasm mathMin : (Number, Number) -> Number as min from 'stdlib-external/math'
 import foreign wasm mathMax : (Number, Number) -> Number as max from 'stdlib-external/math'
 import foreign wasm mathNeg : (Number) -> Number as neg from 'stdlib-external/math'
+import foreign wasm mathRound : (Number) -> Number as round from 'stdlib-external/math'
 
 export let add = (+)
 export let sub = (-)
