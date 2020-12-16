@@ -1655,6 +1655,11 @@ let string_tests = {
   ];
 };
 
+let char_tests = [
+  // No char literals, but they should still print
+  t("char1", "import { fromCode } from 'char'; fromCode(0x41)", "'A'"),
+];
+
 let exception_tests = [
   t("exception_1", "exception Foo; Foo", "<adt value>"),
   t("exception_2", "export exception Foo; Foo", "Foo"),
@@ -1840,6 +1845,7 @@ let tests =
   @ match_tests
   @ import_tests
   @ optimization_tests
+  @ char_tests
   @ string_tests
   @ enum_tests
   @ export_tests

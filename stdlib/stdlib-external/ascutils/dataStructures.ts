@@ -3,6 +3,7 @@ import { malloc } from './grainRuntime'
 import {
   GRAIN_ARRAY_HEAP_TAG,
   GRAIN_STRING_HEAP_TAG,
+  GRAIN_CHAR_HEAP_TAG,
   GRAIN_BOXED_NUM_HEAP_TAG,
   GRAIN_INT32_BOXED_NUM_TAG,
   GRAIN_INT64_BOXED_NUM_TAG,
@@ -66,6 +67,19 @@ export function allocateString(size: u32): u32 {
   store<u32>(str, size, 4)
 
   return str
+}
+
+/**
+ * Allocates a new Grain char.
+ *
+ * @returns {u32} The (untagged) pointer to the char
+ */
+export function allocateChar(): u32 {
+  let char = malloc(8)
+
+  store<u32>(char, GRAIN_CHAR_HEAP_TAG)
+
+  return char
 }
 
 // [TODO] should probably migrate over the accessors in numbers.ts

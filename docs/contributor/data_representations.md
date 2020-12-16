@@ -120,7 +120,7 @@ The arity, wasm function pointer, and size are all **untagged**. All other eleme
 
 ### Strings
 
-Strings are currently the only data type that stores data in 8-bit chunks rather than 32 bits.
+Chars and Strings are currently the only data types that store data in 8-bit chunks rather than 32 bits.
 
 ```plaintext
 ╔══════╦═══════════╤══════╤════════╤════════╤═════╤════════╗
@@ -132,7 +132,34 @@ Strings are currently the only data type that stores data in 8-bit chunks rather
 
 The size is **untagged**. Note that Grain strings are UTF-8 encoded, so one byte does not necessarily fully represent one character. As such, the size set here is the size of the string in bytes, rather than the actual number of characters. The size will always be greater than or equal to the number of characters in the string.
 
-[More information on strings](./string.md)
+[More information on strings.](./string.md)
+
+### Chars
+
+A Char in Grain is a single [Unicode scalar value](http://www.unicode.org/glossary/#unicode_scalar_value), encoded in UTF-8. As such, it may use between 1-4 bytes to represent the character.
+
+```plaintext
+╔══════╦═══════════╤════════╤═════════╤═════════╤═════════╗
+║ size ║ 32        │ 8      │ 8       │ 8       │ 8       ║
+╠══════╬═══════════╪════════╪═════════╪═════════╪═════════╣
+║ what ║ value tag │ byte 1 │ byte 2? │ byte 3? │ byte 4? ║
+╚══════╩═══════════╧════════╧═════════╧═════════╧═════════╝
+```
+
+For completeness, here are the layouts of UTF-8 byte sequences:
+
+```plaintext
+╔═══════════╦══════════════════╦═════════════════╦══════════╦══════════╦══════════╦══════════╗
+║ Num bytes ║ First code point ║ Last code point ║  Byte 1  ║  Byte 2  ║  Byte 3  ║  Byte 4  ║
+╠═══════════╬══════════════════╬═════════════════╬══════════╬══════════╬══════════╬══════════╣
+║         1 ║ U+0000           ║ U+007F          ║ 0xxxxxxx ║          ║          ║          ║
+║         2 ║ U+0080           ║ U+07FF          ║ 110xxxxx ║ 10xxxxxx ║          ║          ║
+║         3 ║ U+0800           ║ U+FFFF          ║ 1110xxxx ║ 10xxxxxx ║ 10xxxxxx ║          ║
+║         4 ║ U+10000          ║ U+10FFFF        ║ 11110xxx ║ 10xxxxxx ║ 10xxxxxx ║ 10xxxxxx ║
+╚═══════════╩══════════════════╩═════════════════╩══════════╩══════════╩══════════╩══════════╝
+```
+
+Something worth mentioning: WebAssembly uses little-endian byte order. If you load the full 32-bit word for the character (instead of loading the bytes one-by-one), the bytes will be in reverse order, i.e. byte 1 is `word & 0xFF`, byte 2 is `word & 0xFF00 >> 8`, byte 3 is `word & 0xFF0000 >> 16`, and byte 4 is `word & 0xFF000000 >> 24`. This is useful to know if you're writing optimizations.
 
 ### Heap-Allocated Numbers
 
