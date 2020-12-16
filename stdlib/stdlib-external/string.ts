@@ -1,7 +1,7 @@
 import { throwError } from './ascutils/grainRuntime'
 import { GRAIN_ERR_ARRAY_INDEX_OUT_OF_BOUNDS, GRAIN_ERR_INVALID_ARGUMENT } from './ascutils/errors'
 import { GRAIN_GENERIC_HEAP_TAG_TYPE } from './ascutils/tags'
-import { stringSize, allocateString, allocateArray, storeInArray } from './ascutils/dataStructures'
+import { stringSize, allocateString, allocateChar, allocateArray, storeInArray } from './ascutils/dataStructures'
 import { GRAIN_TRUE, GRAIN_FALSE } from './ascutils/primitives'
 
 export function length(s: u32): u32 {
@@ -61,8 +61,9 @@ export function indexOf(s: u32, p: u32): u32 {
   return -1 << 1
 }
 
-export function explode(str: u32): u32 {
+function explodeHelp(str: u32, chars: bool): u32 {
   let s = str ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+
   const size = stringSize(s)
   const len = length(str) >> 1
   
@@ -85,14 +86,24 @@ export function explode(str: u32): u32 {
       n = 2
     }
 
-    let c = allocateString(n)
-    memory.copy(c + 8, ptr, n)
+    let c: u32
+    if (chars) {
+      c = allocateChar()
+      memory.copy(c + 4, ptr, n)
+    } else {
+      c = allocateString(n)
+      memory.copy(c + 8, ptr, n)
+    }
     storeInArray(arr, arrIdx, c ^ GRAIN_GENERIC_HEAP_TAG_TYPE)
     arrIdx++
     ptr += n
   }
 
   return arr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+}
+
+export function explode(str: u32): u32 {
+  return explodeHelp(str, true)
 }
 
 export function split(str: u32, pat: u32): u32 {
@@ -102,7 +113,7 @@ export function split(str: u32, pat: u32): u32 {
   const psize = stringSize(p)
 
   if (psize === 0) {
-    return explode(str)
+    return explodeHelp(str, false)
   }
   
   if (psize > size) {

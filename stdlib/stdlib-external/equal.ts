@@ -9,6 +9,7 @@ import {
   GRAIN_GENERIC_TAG_MASK,
 
   GRAIN_STRING_HEAP_TAG,
+  GRAIN_CHAR_HEAP_TAG,
   GRAIN_ADT_HEAP_TAG,
   GRAIN_RECORD_HEAP_TAG,
   GRAIN_ARRAY_HEAP_TAG,
@@ -142,6 +143,23 @@ function heapEqualHelp(heapTag: u32, xptr: u32, yptr: u32): bool {
       }
 
       return true
+    }
+    case GRAIN_CHAR_HEAP_TAG: {
+      const byte = load<u8>(xptr, 4)
+      let n: u32
+      if ((byte & 0x80) === 0x00) {
+        n = 1
+      } else if ((byte & 0xF0) === 0xF0) {
+        n = 4
+      } else if ((byte & 0xE0) === 0xE0) {
+        n = 3
+      } else {
+        n = 2
+      }
+      if (memory.compare(xptr + 4, yptr + 4, n) === 0) {
+        return true
+      }
+      return false
     }
     default: {
       // No other implementation

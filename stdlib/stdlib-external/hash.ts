@@ -14,6 +14,7 @@ import {
   GRAIN_GENERIC_TAG_MASK,
 
   GRAIN_STRING_HEAP_TAG,
+  GRAIN_CHAR_HEAP_TAG,
   GRAIN_ADT_HEAP_TAG,
   GRAIN_RECORD_HEAP_TAG,
   GRAIN_ARRAY_HEAP_TAG,
@@ -113,6 +114,23 @@ function hashOne(val: u32, depth: u32): void {
         }
         if (rem != 0) hashRemaining(rem)
         finalize(length)
+        break
+      }
+      case GRAIN_CHAR_HEAP_TAG: {
+        const word = load<u32>(heapPtr, 4)
+        // little-endian byte order
+        const byte = word & 0xFF
+        let shift: u32
+        if ((byte & 0x80) === 0x00) {
+          shift = 24
+        } else if ((byte & 0xF0) === 0xF0) {
+          shift = 0
+        } else if ((byte & 0xE0) === 0xE0) {
+          shift = 8
+        } else {
+          shift = 16
+        }
+        hash32(word << shift)
         break
       }
       case GRAIN_ADT_HEAP_TAG: {

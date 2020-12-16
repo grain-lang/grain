@@ -1,4 +1,6 @@
 import String from 'string'
+import Char from 'char'
+import Array from 'array'
 
 let fox = 'The quick brown fox jumps over the lazy dog.'
 let emojis = 'we found a path🚀 to greatness🏅but the grind never quits😤💪🏼 keep milling💯🔥😈'
@@ -68,9 +70,9 @@ assert String.indexOf(emoji, emojis) == None
 assert String.indexOf('aaa', 'aa') == Some(0)
 
 // explode tests
-assert String.explode(emoji) == [> '🌾']
-assert String.explode(empty) == [>]
-assert String.explode(short) == [> 'f', 'o', 'x']
+let codes = [> 119, 101, 32, 102, 111, 117, 110, 100, 32, 97, 32, 112, 97, 116, 104, 128640, 32, 116, 111, 32, 103, 114, 101, 97, 116, 110, 101, 115, 115, 127941, 98, 117, 116, 32, 116, 104, 101, 32, 103, 114, 105, 110, 100, 32, 110, 101, 118, 101, 114, 32, 113, 117, 105, 116, 115, 128548, 128170, 127996, 32, 107, 101, 101, 112, 32, 109, 105, 108, 108, 105, 110, 103, 128175, 128293, 128520]
+let chars = Array.map(Char.fromCode, codes)
+assert String.explode(emojis) == chars
 
 // split tests
 assert String.split(empty, empty) == [>]

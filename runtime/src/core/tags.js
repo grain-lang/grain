@@ -25,6 +25,7 @@ export const GRAIN_LAMBDA_TAG_TYPE       = 0b0101;
 export const GRAIN_GENERIC_HEAP_TAG_TYPE = 0b0011;
 
 export const GRAIN_STRING_HEAP_TAG = 1;
+export const GRAIN_CHAR_HEAP_TAG = 2;
 export const GRAIN_ADT_HEAP_TAG = 3;
 export const GRAIN_RECORD_HEAP_TAG = 4;
 export const GRAIN_ARRAY_HEAP_TAG = 5;
@@ -85,6 +86,8 @@ export function heapTagToString(t) {
   switch (t) {
     case GRAIN_STRING_HEAP_TAG:
       return 'string';
+    case GRAIN_CHAR_HEAP_TAG:
+      return 'char';
     case GRAIN_ADT_HEAP_TAG:
       return 'adt';
     case GRAIN_RECORD_HEAP_TAG:

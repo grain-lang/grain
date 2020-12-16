@@ -1,0 +1,35 @@
+import Char from 'char'
+import String from 'string'
+import Array from 'array'
+
+// isValid
+
+assert Char.isValid(0x70)
+assert Char.isValid(0x700)
+assert Char.isValid(0x7000)
+assert Char.isValid(0x70000)
+assert !Char.isValid(-5)
+assert !Char.isValid(0x11FFFF)
+assert !Char.isValid(0xD8FF)
+
+// code
+
+// Each of these characters are represented by one, two, three, and four bytes respectively.
+let testString = '\u{70}\u{700}\u{7000}\u{70000}'
+
+let chars = String.explode(testString)
+let codes = [> 0x70, 0x700, 0x7000, 0x70000]
+
+assert Array.map(Char.code, chars) == codes
+
+// fromCode
+
+assert Array.map(Char.fromCode, codes) == chars
+
+// succ
+assert Char.code(Char.succ(Char.fromCode(0x70))) == 0x71
+assert Char.code(Char.succ(Char.fromCode(0xD7FF))) == 0xE000
+
+// pred
+assert Char.code(Char.pred(Char.fromCode(0x70))) == 0x6F
+assert Char.code(Char.pred(Char.fromCode(0xE000))) == 0xD7FF

@@ -7,6 +7,7 @@ import {
   GRAIN_LAMBDA_TAG_TYPE,
   GRAIN_GENERIC_HEAP_TAG_TYPE,
   GRAIN_STRING_HEAP_TAG,
+  GRAIN_CHAR_HEAP_TAG,
   GRAIN_ADT_HEAP_TAG,
   GRAIN_RECORD_HEAP_TAG,
   GRAIN_ARRAY_HEAP_TAG,
@@ -100,6 +101,22 @@ export function grainHeapValueToString(runtime, n) {
       let length = view[(n / 4) + 1];
       let slice = byteView.slice(n + 8, n + 8 + length);
       return `"${decoder.decode(slice)}"`;
+    }
+    case GRAIN_CHAR_HEAP_TAG: {
+      let byteView = managedMemory.u8view;
+      let byte = byteView[n + 4]
+      let numBytes
+      if ((byte & 0x80) === 0x00) {
+        numBytes = 1
+      } else if ((byte & 0xF0) === 0xF0) {
+        numBytes = 4
+      } else if ((byte & 0xE0) === 0xE0) {
+        numBytes = 3
+      } else {
+        numBytes = 2
+      }
+      let slice = byteView.slice(n + 4, n + 4 + numBytes);
+      return `'${decoder.decode(slice)}'`;
     }
     case GRAIN_ADT_HEAP_TAG: {
       let x = n / 4;
