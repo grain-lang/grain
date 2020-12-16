@@ -670,8 +670,16 @@ let stdlib_tests = [
   t("stdlib_cons", mylist, "[1, 2, 3]"),
   /* With compiler optimizations, these are optimized into the same tuple instance */
   t("stdlib_equal_1", "import * from \"list\"; (1, 2) is (1, 2)", "true"),
-  t("stdlib_equal_2", "import * from \"pervasives\"; (1, 2) == (1, 2)", "true"),
-  t("stdlib_equal_3", "import * from \"list\"; [1, 2, 3] == [1, 2, 3]", "true"),
+  t(
+    "stdlib_equal_2",
+    "import * from \"pervasives\"; (1, 2) == (1, 2)",
+    "true",
+  ),
+  t(
+    "stdlib_equal_3",
+    "import * from \"list\"; [1, 2, 3] == [1, 2, 3]",
+    "true",
+  ),
   t("stdlib_equal_4", "import * from \"list\"; 1 == 1", "true"),
   t("stdlib_equal_5", "import * from \"list\"; 1 == 2", "false"),
   t("stdlib_equal_6", "import * from \"list\"; true == true", "true"),
@@ -1167,7 +1175,11 @@ let import_tests = [
     "import * except {Cons, append} from \"tlists\"; sum(Empty)",
     "0",
   ),
-  t("import_with_export_multiple", "import * from \"sameExport\"; foo()", "6"),
+  t(
+    "import_with_export_multiple",
+    "import * from \"sameExport\"; foo()",
+    "6",
+  ),
   /* import * errors */
   te(
     "import_all_except_error",
@@ -1651,7 +1663,11 @@ let string_tests = {
     te("string_err", "let x = \"hello\"; x + \", world\"", "type"),
     te("unicode_err1", "let x = \"\\u{d800}\"", "Illegal unicode code point"),
     te("unicode_err2", "let x = \"\\u{dfff}\"", "Illegal unicode code point"),
-    te("unicode_err3", "let x = \"\\u{110000}\"", "Illegal unicode code point"),
+    te(
+      "unicode_err3",
+      "let x = \"\\u{110000}\"",
+      "Illegal unicode code point",
+    ),
   ];
 };
 
