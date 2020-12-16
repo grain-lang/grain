@@ -102,6 +102,7 @@ module P = {
     | PPatAny => ()
     | PPatVar(sl) => iter_loc(sub, sl)
     | PPatTuple(pl) => List.iter(sub.pat(sub), pl)
+    | PPatArray(pl) => List.iter(sub.pat(sub), pl)
     | PPatRecord(fs, _) =>
       List.iter(
         ((id, pat)) => {

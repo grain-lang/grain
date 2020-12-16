@@ -170,6 +170,7 @@ module MakeIterator =
     | TPatAlias(p1, _, _) => iter_pattern(p1)
     | TPatConstruct(_, _, args)
     | TPatTuple(args) => List.iter(iter_pattern, args)
+    | TPatArray(args) => List.iter(iter_pattern, args)
     | TPatRecord(fields, _) =>
       List.iter(((_, _, pat)) => iter_pattern(pat), fields)
     | TPatOr(p1, p2) =>
