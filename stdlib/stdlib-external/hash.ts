@@ -38,7 +38,7 @@ import {
   boxedRationalDenominator,
   boxedInt32Number,
   boxedFloat32Number
-} from './numbers'
+} from './ascutils/shared_utils'
 
 const seed: u32 = 0xe444
 

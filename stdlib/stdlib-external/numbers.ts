@@ -36,6 +36,22 @@ import {
   newFloat64
 } from './ascutils/dataStructures'
 
+import {
+  reducedInteger,
+  coerceFloat64,
+
+  tagSimple,
+  untagSimple,
+  isSimpleNumber,
+  boxedNumberTag,
+  boxedInt32Number,
+  boxedInt64Number,
+  boxedRationalNumerator,
+  boxedRationalDenominator,
+  boxedFloat32Number,
+  boxedFloat64Number
+} from './ascutils/shared_utils'
+
 export {
   newRational,
   newInt32,
@@ -73,18 +89,6 @@ function throwNotRational(x: u32): u32 {
 @inline
 function encodeBool(b: bool): u32 {
   return b ? GRAIN_TRUE : GRAIN_FALSE
-}
-
-// @ts-ignore: decorator
-@inline
-function tagSimple(x: i32): u32 {
-  return x << 1
-}
-
-// @ts-ignore: decorator
-@inline
-function untagSimple(x: u32): i32 {
-  return <i32>(x) >> 1
 }
 
 // @ts-ignore: decorator
@@ -178,18 +182,6 @@ function reducedFraction64(x: i64, y: i64): u32 {
 
 // @ts-ignore: decorator
 @inline
-export function reducedInteger(x: i64): u32 {
-  if ((x > I32.MAX_VALUE) || (x < I32.MIN_VALUE)) {
-    return newInt64(x)
-  } else if ((x > (I32.MAX_VALUE >> 1)) || (x < (I32.MIN_VALUE >> 1))) {
-    return newInt32(<i32>(x))
-  } else {
-    return tagSimple(<i32>(x))
-  }
-}
-
-// @ts-ignore: decorator
-@inline
 function safeI32Multiply(x: i32, y: i32): i32 {
   let prod = <i64>(x) * <i64>(y)
   if (prod > I32.MAX_VALUE || prod < I32.MIN_VALUE) {
@@ -233,50 +225,6 @@ function safeI64Multiply(x: i64, y: i64): i64 {
  * [numerator: i32, denominator: u32]
  */
 
-// @ts-ignore: decorator
-@inline
-export function boxedNumberTag(xptr: u32): u32 {
-  return load<u32>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 1 * 4)
-}
-
-// @ts-ignore: decorator
-@inline
-export function boxedInt32Number(xptr: u32): i32 {
-  return load<i32>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
-}
-
-// @ts-ignore: decorator
-@inline
-export function boxedInt64Number(xptr: u32): i64 {
-  return load<i64>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
-}
-
-// @ts-ignore: decorator
-@inline
-export function boxedFloat32Number(xptr: u32): f32 {
-  return load<f32>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
-}
-
-// @ts-ignore: decorator
-@inline
-export function boxedFloat64Number(xptr: u32): f64 {
-  return load<f64>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
-}
-
-// @ts-ignore: decorator
-@inline
-export function boxedRationalNumerator(xptr: u32): i32 {
-  return load<i32>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
-}
-
-// @ts-ignore: decorator
-@inline
-export function boxedRationalDenominator(xptr: u32): u32 {
-  return load<u32>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 3 * 4)
-}
-
-
-
 function coerceFloat32(x: u32): f32 {
   if (isSimpleNumber(x)) {
     return <f32>(untagSimple(x))
@@ -306,28 +254,6 @@ function coerceFloat32(x: u32): f32 {
   }
 }
 
-export function coerceFloat64(x: u32): f64 {
-  if (isSimpleNumber(x)) {
-    return <f64>(untagSimple(x))
-  }
-  let xtag = boxedNumberTag(x)
-  switch (xtag) {
-    case GRAIN_INT32_BOXED_NUM_TAG: {
-      return <f64>(boxedInt32Number(x))
-    } case GRAIN_INT64_BOXED_NUM_TAG: {
-      return <f64>(boxedInt64Number(x))
-    } case GRAIN_RATIONAL_BOXED_NUM_TAG: {
-      return <f64>(boxedRationalNumerator(x)) / <f64>(boxedRationalDenominator(x))
-    } case GRAIN_FLOAT32_BOXED_NUM_TAG: {
-      return <f64>(boxedFloat32Number(x))
-    } case GRAIN_FLOAT64_BOXED_NUM_TAG: {
-      return boxedFloat64Number(x)
-    } default: {
-      return unreachable()
-    }
-  }
-}
-
 function coerceInt64(x: u32): i64 {
   if (isSimpleNumber(x)) {
     return <i64>(untagSimple(x))
@@ -351,12 +277,6 @@ function coerceInt32(x: u32): i32 {
     return throwOverflowError(x)
   }
   return <i32>(asInt64)
-}
-
-// @ts-ignore: decorator
-@inline
-function isSimpleNumber(x: u32): bool {
-  return (x & GRAIN_NUMBER_TAG_MASK) == GRAIN_NUMBER_TAG_TYPE
 }
 
 // @ts-ignore: decorator

@@ -1,7 +1,19 @@
-import { coerceFloat64, reducedInteger } from './numbers';
-import { newFloat64 } from './ascutils/dataStructures';
-import { throwError } from './ascutils/grainRuntime';
-import { GRAIN_ERR_NOT_NONNEG } from './ascutils/errors';
+import { 
+    coerceFloat64, 
+    reducedInteger 
+} from './ascutils/shared_utils'
+
+import { 
+    newFloat64 
+} from './ascutils/dataStructures'
+
+import { 
+    throwError 
+} from './ascutils/grainRuntime'
+
+import { 
+    GRAIN_ERR_NOT_NONNEG 
+} from './ascutils/errors'
 
 /**
  * Returns the square root of a given number.
@@ -84,7 +96,7 @@ export function mathMin(x: u32, y: u32): u32 {
 export function mathMax(x: u32, y: u32): u32 {
     let xval = coerceFloat64(x);
     let yval = coerceFloat64(y);
-    return newFloat64(<f64>min(xval, yval))
+    return newFloat64(<f64>max(xval, yval))
 }
 
 /**
