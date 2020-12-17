@@ -1,0 +1,223 @@
+import Set from "set"
+import List from "list"
+import Array from "array"
+
+// Data types used in multiple tests
+enum Resource { Grain, Sheep, Brick, Wood }
+record ResourceData { name: String, emoji: String }
+
+// Set.isEmpty
+
+let e = Set.make()
+
+assert Set.isEmpty(e)
+Set.add("🌾", e)
+assert !Set.isEmpty(e)
+
+// Set.size
+
+let s = Set.fromList(["🌾", "🐑", "🧱"])
+
+assert Set.size(s) == 3
+
+// Set.clear
+
+let c = Set.fromList(["🌾", "🐑", "🧱"])
+
+assert !Set.isEmpty(c)
+assert Set.clear(c) == void
+assert Set.isEmpty(c)
+
+// Set.contains
+
+let h = Set.fromList(["🌾", "🐑", "🧱"])
+
+assert Set.contains("🌾", h)
+assert Set.contains("🐑", h)
+assert Set.contains("🧱", h)
+assert !Set.contains("🌳", h)
+
+// Set.add
+
+let vars = Set.make()
+
+assert Set.add(Grain, vars) == void
+assert Set.add(Sheep, vars) == void
+assert Set.add(Grain, vars) == void
+
+assert Set.size(vars) == 2
+
+let recs = Set.make()
+
+assert Set.add({ name: "Grain", emoji: "🌾" }, recs) == void
+assert Set.add({ name: "Sheep", emoji: "🐑" }, recs) == void
+assert Set.add({ name: "Brick", emoji: "🧱" }, recs) == void
+assert Set.add({ name: "Grain", emoji: "🌾" }, recs) == void
+assert Set.add({ name: "Sheep", emoji: "🐑" }, recs) == void
+assert Set.add({ name: "Brick", emoji: "🧱" }, recs) == void
+
+assert Set.size(recs) == 3
+
+// Set.remove
+
+let r = Set.fromList(["🌾", "🐑", "🧱"])
+
+assert Set.size(r) == 3
+
+assert Set.remove("🌾", r) == void
+
+assert Set.size(r) == 2
+assert !Set.contains("🌾", r)
+
+assert Set.remove("🐑", r) == void
+assert Set.remove("🧱", r) == void
+
+assert Set.isEmpty(r)
+
+// Set.filter
+
+let makeTestSet = () => Set.fromList([Grain, Sheep, Brick])
+
+let emptySet = Set.make()
+
+let filterTestSet = makeTestSet()
+
+Set.filter((key) => fail "Shouldn't be called", emptySet)
+Set.filter((key) => key == Sheep, filterTestSet)
+
+assert !Set.contains(Grain, filterTestSet)
+assert Set.contains(Sheep, filterTestSet)
+assert !Set.contains(Brick, filterTestSet)
+
+// Set.reject
+
+let rejectTestSet = makeTestSet()
+
+Set.reject((key) => fail "Shouldn't be called", emptySet)
+Set.reject((key) => key == Sheep, rejectTestSet)
+
+assert Set.contains(Grain, rejectTestSet)
+assert !Set.contains(Sheep, rejectTestSet)
+assert Set.contains(Brick, rejectTestSet)
+
+// Set.reduce
+
+let reduceTestSet = makeTestSet()
+
+let result = Set.reduce((acc, key) => fail "Shouldn't be called", 0, emptySet)
+
+assert result == 0
+
+let mut called = 0
+
+let result = Set.reduce((acc, key) => {
+  called += 1
+  match (key) {
+    Grain => void,
+    Sheep => void,
+    Brick => void,
+    _ => fail "Set.reduce() should not contain this value."
+  }
+  [key, ...acc]
+}, [], reduceTestSet)
+
+assert called == 3
+assert List.contains(Grain, result)
+assert List.contains(Sheep, result)
+assert List.contains(Brick, result)
+
+// Set.forEach
+
+let forEachTestSet = makeTestSet()
+
+Set.forEach((key) => fail "Shouldn't be called", emptySet)
+
+let mut called = 0
+
+Set.forEach((key) => {
+  called += 1
+  match (key) {
+    Grain => void,
+    Sheep => void,
+    Brick => void,
+    _ => fail "Set.forEach() should not contain this value."
+  }
+}, forEachTestSet)
+
+assert called == 3
+
+// Set.diff
+
+let d = Set.fromList([0, 1, 2, 3])
+let e = Set.fromList([1, 2, 3, 4])
+
+let diffSet = Set.diff(d, e)
+
+assert Set.size(diffSet) == 2
+assert Set.contains(0, diffSet)
+assert !Set.contains(1, diffSet)
+assert !Set.contains(2, diffSet)
+assert !Set.contains(3, diffSet)
+assert Set.contains(4, diffSet)
+
+// Set.union
+
+let unionSet = Set.union(d, e)
+
+assert Set.size(unionSet) == 5
+assert Set.contains(0, unionSet)
+assert Set.contains(1, unionSet)
+assert Set.contains(2, unionSet)
+assert Set.contains(3, unionSet)
+assert Set.contains(4, unionSet)
+
+// Set.intersect
+
+let intersectSet = Set.intersect(d, e)
+
+assert Set.size(intersectSet) == 3
+assert !Set.contains(0, intersectSet)
+assert Set.contains(1, intersectSet)
+assert Set.contains(2, intersectSet)
+assert Set.contains(3, intersectSet)
+assert !Set.contains(4, intersectSet)
+
+// Set.fromList
+
+let k = Set.fromList([1, 1, 1])
+
+assert Set.size(k) == 1
+assert Set.contains(1, k)
+
+// Set.toList
+
+let o = Set.fromList([0, 1, 2, 3, 4])
+
+let l = Set.toList(o)
+
+assert List.length(l) == 5
+assert List.contains(0, l)
+assert List.contains(1, l)
+assert List.contains(2, l)
+assert List.contains(3, l)
+assert List.contains(4, l)
+
+// Set.fromArray
+
+let q = Set.fromArray([> 0, 0, 0])
+
+assert Set.size(q) == 1
+assert Set.contains(0, q)
+
+// Set.toArray
+
+let p = Set.fromArray([> 0, 1, 2, 3, 4, 3, 2, 1, 0])
+
+let r = Set.toArray(p)
+
+assert Array.length(r) == 5
+assert Array.contains(0, r)
+assert Array.contains(1, r)
+assert Array.contains(2, r)
+assert Array.contains(3, r)
+assert Array.contains(4, r)

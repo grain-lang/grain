@@ -1,0 +1,292 @@
+// Standard library for Set functionality
+
+import List from "list"
+import Array from "array"
+import { hash } from "hash"
+
+record Bucket<t> {
+  mut key: t,
+  mut next: Option<Bucket<t>>
+}
+
+record Set<k> {
+  mut size: Number,
+  mut buckets: Array<Option<Bucket<k>>>
+}
+
+// TODO: This could take an `eq` function to custom comparisons
+export let makeSized = (size) => {
+  let buckets = Array.make(size, None);
+  {
+    size: 0,
+    buckets
+  }
+}
+
+export let make = () => {
+  makeSized(16)
+}
+
+let getBucketIndex = (key, buckets) => {
+  let bucketsLength = Array.length(buckets);
+  let hashedKey = hash(key);
+  hashedKey % bucketsLength
+}
+
+let rec copyNodeWithNewHash = (oldNode, next, tail) => {
+  match (oldNode) {
+    None => void,
+    Some(node) => {
+      let idx = getBucketIndex(node.key, next);
+      let newNode = Some(node);
+      match (tail[idx]) {
+        None => {
+          next[idx] := newNode;
+        },
+        Some(tailNode) => {
+          // If there's already a tail node, we add this to the end
+          tailNode.next = newNode;
+        }
+      }
+      // Always place this node as the new tail
+      tail[idx] := newNode;
+      // Recurse with the next node
+      copyNodeWithNewHash(node.next, next, tail);
+    }
+  }
+}
+
+let resize = (set) => {
+  let currentBuckets = set.buckets;
+  let currentSize = Array.length(currentBuckets);
+  let nextSize = currentSize * 2;
+  if (nextSize >= currentSize) {
+    let nextBuckets = Array.make(nextSize, None);
+    // This tracks the tail nodes so we can set their `next` to None
+    let tailNodes = Array.make(nextSize, None);
+    set.buckets = nextBuckets;
+    Array.forEach((old) => {
+      copyNodeWithNewHash(old, nextBuckets, tailNodes);
+    }, currentBuckets);
+    Array.forEach((tail) => {
+      match (tail) {
+        None => void,
+        Some(node) => {
+          node.next = None;
+        }
+      }
+    }, tailNodes);
+  } else {
+    void
+  }
+}
+
+let rec nodeInBucket = (key, node) => {
+  if (key == node.key) {
+    true
+  } else {
+    match (node.next) {
+      None => false,
+      Some(next) => nodeInBucket(key, next)
+    }
+  }
+}
+
+export let add = (key, set) => {
+  let buckets = set.buckets;
+  let idx = getBucketIndex(key, buckets)
+  let bucket = buckets[idx];
+  match (bucket) {
+    None => {
+      buckets[idx] := Some({ key, next: None });
+      set.size = incr(set.size);
+    },
+    Some(node) => {
+      if (!nodeInBucket(key, node)) {
+        buckets[idx] := Some({ key, next: bucket });
+        set.size = incr(set.size);
+      };
+    }
+  }
+  // Resize if there are more than 2x the amount of nodes as buckets
+  if (set.size > (Array.length(buckets) * 2)) {
+    resize(set);
+  } else {
+    void
+  }
+}
+
+export let contains = (key, set) => {
+  let buckets = set.buckets;
+  let idx = getBucketIndex(key, buckets);
+  let bucket = buckets[idx];
+  match (bucket) {
+    None => false,
+    Some(node) => nodeInBucket(key, node)
+  }
+}
+
+let rec removeInBucket = (key, node) => {
+  match (node.next) {
+    None => false,
+    Some(next) => {
+      if (key == next.key) {
+        node.next = next.next;
+        true
+      } else {
+        removeInBucket(key, next)
+      }
+    }
+  }
+}
+
+export let remove = (key, set) => {
+  let buckets = set.buckets;
+  let idx = getBucketIndex(key, buckets);
+  let bucket = buckets[idx];
+  match (bucket) {
+    None => void,
+    Some(node) => {
+      // If it is a top-level node, just replace with next node
+      if (key == node.key) {
+        set.size = decr(set.size);
+        buckets[idx] := node.next;
+      } else {
+        if (removeInBucket(key, node)) {
+          set.size = decr(set.size);
+        }
+      }
+    }
+  }
+}
+
+export let size = (set) => {
+  set.size
+}
+
+export let isEmpty = (set) => {
+  size(set) == 0
+}
+
+export let clear = (set) => {
+  set.size = 0;
+  let buckets = set.buckets;
+  Array.forEachi((bucket, idx) => {
+    buckets[idx] := None;
+  }, buckets);
+}
+
+let rec forEachBucket = (fn, node) => {
+  match (node) {
+    None => void,
+    Some({ key, next }) => {
+      fn(key);
+      forEachBucket(fn, next);
+    }
+  }
+}
+
+export let forEach = (fn, set) => {
+  let buckets = set.buckets;
+  Array.forEach((bucket) => {
+    forEachBucket(fn, bucket)
+  }, buckets);
+}
+
+let rec reduceEachBucket = (fn, node, acc) => {
+  match (node) {
+    None => acc,
+    Some({ key, next }) =>
+      reduceEachBucket(fn, next, fn(acc, key))
+  }
+}
+
+export let reduce = (fn, init, set) => {
+  let buckets = set.buckets;
+  let mut acc = init;
+  Array.forEach((bucket) => {
+    acc = reduceEachBucket(fn, bucket, acc)
+  }, buckets);
+  acc
+}
+
+export let filter = (predicate, set) => {
+  let keysToRemove = reduce((list, key) =>
+    if (!predicate(key)) {
+      [key, ...list]
+    } else {
+      list
+    }, [], set);
+  List.forEach((key) => {
+    remove(key, set);
+  }, keysToRemove);
+}
+
+export let reject = (predicate, set) => {
+  filter((key) => !predicate(key), set)
+}
+
+export let toList = (set) => {
+  reduce((list, key) => [key, ...list], [], set)
+}
+
+export let fromList = (list) => {
+  let set = make();
+  List.forEach((key) => {
+    add(key, set);
+  }, list);
+  set
+}
+
+export let toArray = (set) => {
+  Array.fromList(toList(set))
+}
+
+export let fromArray = (array) => {
+  let set = make();
+  Array.forEach((key) => {
+    add(key, set);
+  }, array);
+  set
+}
+
+export let union = (set1, set2) => {
+  let set = make();
+  forEach((key) => {
+    add(key, set);
+  }, set1)
+  forEach((key) => {
+    add(key, set);
+  }, set2);
+  set
+}
+
+export let diff = (set1, set2) => {
+  let set = make();
+  forEach((key) => {
+    if (!contains(key, set2)) {
+      add(key, set);
+    }
+  }, set1)
+  forEach((key) => {
+    if (!contains(key, set1)) {
+      add(key, set);
+    }
+  }, set2);
+  set
+}
+
+export let intersect = (set1, set2) => {
+  let set = make();
+  forEach((key) => {
+    if (contains(key, set2)) {
+      add(key, set);
+    }
+  }, set1)
+  forEach((key) => {
+    if (contains(key, set1)) {
+      add(key, set);
+    }
+  }, set2);
+  set
+}
