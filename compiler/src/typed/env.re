@@ -2675,7 +2675,7 @@ let report_error = ppf =>
       );
     }
   | Illegal_value_name(_loc, name) =>
-    fprintf(ppf, "'%s' is not a valid value identifier.", name)
+    fprintf(ppf, "\"%s\" is not a valid value identifier.", name)
   | Unbound_label(_, label) =>
     fprintf(
       ppf,
@@ -2687,7 +2687,7 @@ let report_error = ppf =>
   | No_module_file(m, Some(msg)) =>
     fprintf(ppf, "Missing file for module %s: %s", m, msg)
   | Value_not_found_in_module(_, name, path) =>
-    fprintf(ppf, "Export '%s' was not found in '%s'", name, path)
+    fprintf(ppf, "Export \"%s\" was not found in \"%s\"", name, path)
   | Cyclic_dependencies(dep, chain) =>
     fprintf(
       ppf,

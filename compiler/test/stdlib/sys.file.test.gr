@@ -1,4 +1,4 @@
-import Fs from 'sys/file'
+import Fs from "sys/file"
 
 let foo = Fs.pathOpen(
   Fs.pwdfd,
@@ -14,5 +14,5 @@ let (buf, nread) = Fs.fdRead(foo, 40)
 
 Fs.fdClose(foo)
 
-assert buf == 'foo, bar, & baz'
+assert buf == "foo, bar, & baz"
 assert nread == 15

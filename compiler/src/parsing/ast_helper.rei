@@ -34,6 +34,7 @@ let with_default_loc_src: (unit => loc, unit => 'a) => 'a;
 
 module Const: {
   let string: string => constant;
+  let char: string => constant;
   let number: number_type => constant;
   let int32: string => constant;
   let int64: string => constant;

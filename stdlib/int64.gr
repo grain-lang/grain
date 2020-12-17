@@ -1,32 +1,32 @@
 export *
 
-import foreign wasm coerceNumberToInt64 : Number -> Int64 as fromNumber from 'stdlib-external/runtime'
-import foreign wasm coerceInt64ToNumber : Int64 -> Number as toNumber from 'stdlib-external/runtime'
+import foreign wasm coerceNumberToInt64 : Number -> Int64 as fromNumber from "stdlib-external/runtime"
+import foreign wasm coerceInt64ToNumber : Int64 -> Number as toNumber from "stdlib-external/runtime"
 
-import foreign wasm incr : Int64 -> Int64 from 'stdlib-external/int64'
-import foreign wasm decr : Int64 -> Int64 from 'stdlib-external/int64'
-import foreign wasm add : (Int64, Int64) -> Int64 from 'stdlib-external/int64'
-import foreign wasm sub : (Int64, Int64) -> Int64 from 'stdlib-external/int64'
-import foreign wasm mul : (Int64, Int64) -> Int64 from 'stdlib-external/int64'
-import foreign wasm div : (Int64, Int64) -> Int64 from 'stdlib-external/int64'
-import foreign wasm divU : (Int64, Int64) -> Int64 from 'stdlib-external/int64'
-import foreign wasm rem : (Int64, Int64) -> Int64 from 'stdlib-external/int64'
-import foreign wasm remU : (Int64, Int64) -> Int64 from 'stdlib-external/int64'
-import foreign wasm mod : (Int64, Int64) -> Int64 from 'stdlib-external/int64'
+import foreign wasm incr : Int64 -> Int64 from "stdlib-external/int64"
+import foreign wasm decr : Int64 -> Int64 from "stdlib-external/int64"
+import foreign wasm add : (Int64, Int64) -> Int64 from "stdlib-external/int64"
+import foreign wasm sub : (Int64, Int64) -> Int64 from "stdlib-external/int64"
+import foreign wasm mul : (Int64, Int64) -> Int64 from "stdlib-external/int64"
+import foreign wasm div : (Int64, Int64) -> Int64 from "stdlib-external/int64"
+import foreign wasm divU : (Int64, Int64) -> Int64 from "stdlib-external/int64"
+import foreign wasm rem : (Int64, Int64) -> Int64 from "stdlib-external/int64"
+import foreign wasm remU : (Int64, Int64) -> Int64 from "stdlib-external/int64"
+import foreign wasm mod : (Int64, Int64) -> Int64 from "stdlib-external/int64"
 
 // Int64 comparisons
-import foreign wasm lt : (Int64, Int64) -> Bool from 'stdlib-external/int64'
-import foreign wasm gt : (Int64, Int64) -> Bool from 'stdlib-external/int64'
-import foreign wasm lte : (Int64, Int64) -> Bool from 'stdlib-external/int64'
-import foreign wasm gte : (Int64, Int64) -> Bool from 'stdlib-external/int64'
+import foreign wasm lt : (Int64, Int64) -> Bool from "stdlib-external/int64"
+import foreign wasm gt : (Int64, Int64) -> Bool from "stdlib-external/int64"
+import foreign wasm lte : (Int64, Int64) -> Bool from "stdlib-external/int64"
+import foreign wasm gte : (Int64, Int64) -> Bool from "stdlib-external/int64"
 
 // Int64 bit/logical operations
-import foreign wasm lnot : Int64 -> Int64 from 'stdlib-external/int64'
+import foreign wasm lnot : Int64 -> Int64 from "stdlib-external/int64"
 
-import foreign wasm land : (Int64, Int64) -> Int64 from 'stdlib-external/int64'
-import foreign wasm lor : (Int64, Int64) -> Int64 from 'stdlib-external/int64'
-import foreign wasm lxor : (Int64, Int64) -> Int64 from 'stdlib-external/int64'
+import foreign wasm land : (Int64, Int64) -> Int64 from "stdlib-external/int64"
+import foreign wasm lor : (Int64, Int64) -> Int64 from "stdlib-external/int64"
+import foreign wasm lxor : (Int64, Int64) -> Int64 from "stdlib-external/int64"
 
-import foreign wasm shl : (Int64, Int64) -> Int64 from 'stdlib-external/int64'
-import foreign wasm shr : (Int64, Int64) -> Int64 from 'stdlib-external/int64'
-import foreign wasm shrU : (Int64, Int64) -> Int64 from 'stdlib-external/int64'
+import foreign wasm shl : (Int64, Int64) -> Int64 from "stdlib-external/int64"
+import foreign wasm shr : (Int64, Int64) -> Int64 from "stdlib-external/int64"
+import foreign wasm shrU : (Int64, Int64) -> Int64 from "stdlib-external/int64"

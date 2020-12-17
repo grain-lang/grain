@@ -1,4 +1,4 @@
-import * from 'list'
+import * from "list"
 
 let list = [1, 2, 3]
 

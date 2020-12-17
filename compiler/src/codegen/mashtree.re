@@ -116,6 +116,7 @@ type allocation_type =
   | MRecord(immediate, list((string, immediate)))
   | MADT(immediate, immediate, list(immediate)) /* Type Tag, Variant Tag, Elements */
   | MString(string)
+  | MChar(string)
   | MInt32(int32)
   | MInt64(int64)
   | MFloat32(float)

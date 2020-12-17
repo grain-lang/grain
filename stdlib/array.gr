@@ -130,10 +130,10 @@ export let fillRange = (value, start, stop, array) => {
   let stopIndex = if (stop < 0) length + stop else stop
 
   if (startIndex > length) {
-    ignore(fail 'The start index is outside the array')
+    ignore(fail "The start index is outside the array")
   }
   if (startIndex > stopIndex) {
-    ignore(fail 'The start index cannot be higher than the stop index')
+    ignore(fail "The start index cannot be higher than the stop index")
   }
 
   let mut index = startIndex

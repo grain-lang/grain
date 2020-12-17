@@ -251,7 +251,7 @@ let basic_functionality_tests = [
   te("comp_bool2", "if (2 > true) {3} else {4}", "type"),
   te("comp_bool3", "if (true >= 4) {3} else {4}", "type"),
   te("comp_bool4", "let x = true; if (x < 4) {3} else {5}", "type"),
-  t("void", "{'foo';}", "void"),
+  t("void", "{\"foo\";}", "void"),
   te("arith1", "2 + true", "type"),
   te("arith2", "true + 4", "type"),
   te("arith3", "false - 5", "type"),
@@ -335,8 +335,8 @@ let function_tests = [
     ",
     "<adt value>",
   ),
-  t("lam_destructure_1", "((_) => 5)('foo')", "5"),
-  t("lam_destructure_2", "let foo = (_) => 5; foo('foo')", "5"),
+  t("lam_destructure_1", "((_) => 5)(\"foo\")", "5"),
+  t("lam_destructure_2", "let foo = (_) => 5; foo(\"foo\")", "5"),
   t("lam_destructure_3", "(((a, b, c)) => a + b + c)((1, 2, 3))", "6"),
   t(
     "lam_destructure_4",
@@ -409,7 +409,7 @@ let function_tests = [
     "let rec may only be used with recursive function definitions",
   ),
   te("nonfunction_1", "let x = 5; x(3)", "type"),
-  t("lambda_pat_any", "let x = (_) => 5; x('foo')", "5"),
+  t("lambda_pat_any", "let x = (_) => 5; x(\"foo\")", "5"),
 ];
 
 let mylist = "[1, 2, 3]";
@@ -521,7 +521,7 @@ let record_tests = [
   ),
   t(
     "record_multiple",
-    "export record Rec {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: 'boo', baz: true}",
+    "export record Rec {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: \"boo\", baz: true}",
     "{\n  foo: 4,\n  bar: \"boo\",\n  baz: true\n}",
   ),
   t(
@@ -574,23 +574,23 @@ let record_tests = [
   /* mutable record fields */
   t(
     "record_mut_1",
-    "record Rec {foo: Number, mut bar: String, baz: Bool}; let a = {foo: 4, bar: 'boo', baz: true}; a.bar = 'hoo'; a.bar",
+    "record Rec {foo: Number, mut bar: String, baz: Bool}; let a = {foo: 4, bar: \"boo\", baz: true}; a.bar = \"hoo\"; a.bar",
     "\"hoo\"",
   ),
   te(
     "record_mut_1",
-    "record Rec {foo: Number, mut bar: String, baz: Bool}; let a = {foo: 4, bar: 'boo', baz: true}; a.foo = 5; a.foo",
+    "record Rec {foo: Number, mut bar: String, baz: Bool}; let a = {foo: 4, bar: \"boo\", baz: true}; a.foo = 5; a.foo",
     "The record field foo is not mutable",
   ),
   /* record destructured assignment */
   t(
     "record_destruct_1",
-    "record Rec {foo: Number, bar: String, baz: Bool}; let { foo, _ } = {foo: 4, bar: 'boo', baz: true}; foo",
+    "record Rec {foo: Number, bar: String, baz: Bool}; let { foo, _ } = {foo: 4, bar: \"boo\", baz: true}; foo",
     "4",
   ),
   t(
     "record_destruct_2",
-    "record Rec {foo: Number, bar: String, baz: Bool}; let { bar, _ } = {foo: 4, bar: 'boo', baz: true}; bar",
+    "record Rec {foo: Number, bar: String, baz: Bool}; let { bar, _ } = {foo: 4, bar: \"boo\", baz: true}; bar",
     "\"boo\"",
   ),
   t(
@@ -631,17 +631,17 @@ let record_tests = [
   ),
   t(
     "record_multiple_fields_definition_trailing",
-    "export record Rec {foo: Number, bar: String, baz: Bool,}; {foo: 4, bar: 'boo', baz: true}",
+    "export record Rec {foo: Number, bar: String, baz: Bool,}; {foo: 4, bar: \"boo\", baz: true}",
     "{\n  foo: 4,\n  bar: \"boo\",\n  baz: true\n}",
   ),
   t(
     "record_multiple_fields_value_trailing",
-    "export record Rec {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: 'boo', baz: true,}",
+    "export record Rec {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: \"boo\", baz: true,}",
     "{\n  foo: 4,\n  bar: \"boo\",\n  baz: true\n}",
   ),
   t(
     "record_multiple_fields_both_trailing",
-    "export record Rec {foo: Number, bar: String, baz: Bool,}; {foo: 4, bar: 'boo', baz: true,}",
+    "export record Rec {foo: Number, bar: String, baz: Bool,}; {foo: 4, bar: \"boo\", baz: true,}",
     "{\n  foo: 4,\n  bar: \"boo\",\n  baz: true\n}",
   ),
   t(
@@ -669,67 +669,75 @@ let record_tests = [
 let stdlib_tests = [
   t("stdlib_cons", mylist, "[1, 2, 3]"),
   /* With compiler optimizations, these are optimized into the same tuple instance */
-  t("stdlib_equal_1", "import * from 'list'; (1, 2) is (1, 2)", "true"),
-  t("stdlib_equal_2", "import * from 'pervasives'; (1, 2) == (1, 2)", "true"),
-  t("stdlib_equal_3", "import * from 'list'; [1, 2, 3] == [1, 2, 3]", "true"),
-  t("stdlib_equal_4", "import * from 'list'; 1 == 1", "true"),
-  t("stdlib_equal_5", "import * from 'list'; 1 == 2", "false"),
-  t("stdlib_equal_6", "import * from 'list'; true == true", "true"),
-  t("stdlib_equal_7", "import * from 'list'; true == false", "false"),
-  t("stdlib_equal_8", "import * from 'list'; [>] == [>]", "true"),
-  t("stdlib_equal_9", "import * from 'list'; [>] == [> 1]", "false"),
-  t("stdlib_equal_10", "import * from 'list'; [> 1] == [> 1]", "true"),
-  t("stdlib_equal_11", "import * from 'list'; [> 1, 2] == [> 1]", "false"),
+  t("stdlib_equal_1", "import * from \"list\"; (1, 2) is (1, 2)", "true"),
   t(
-    "stdlib_equal_12",
-    "import * from 'list'; [> 1, 2, 3, 4] == [> 1, 2, 3, 4]",
+    "stdlib_equal_2",
+    "import * from \"pervasives\"; (1, 2) == (1, 2)",
     "true",
   ),
-  t("stdlib_equal_13", "import * from 'list'; '' == ''", "true"),
-  t("stdlib_equal_14", "import * from 'list'; ' ' == ''", "false"),
-  t("stdlib_equal_15", "import * from 'list'; 'f' == ''", "false"),
-  t("stdlib_equal_16", "import * from 'list'; 'foo' == 'foo'", "true"),
+  t(
+    "stdlib_equal_3",
+    "import * from \"list\"; [1, 2, 3] == [1, 2, 3]",
+    "true",
+  ),
+  t("stdlib_equal_4", "import * from \"list\"; 1 == 1", "true"),
+  t("stdlib_equal_5", "import * from \"list\"; 1 == 2", "false"),
+  t("stdlib_equal_6", "import * from \"list\"; true == true", "true"),
+  t("stdlib_equal_7", "import * from \"list\"; true == false", "false"),
+  t("stdlib_equal_8", "import * from \"list\"; [>] == [>]", "true"),
+  t("stdlib_equal_9", "import * from \"list\"; [>] == [> 1]", "false"),
+  t("stdlib_equal_10", "import * from \"list\"; [> 1] == [> 1]", "true"),
+  t("stdlib_equal_11", "import * from \"list\"; [> 1, 2] == [> 1]", "false"),
+  t(
+    "stdlib_equal_12",
+    "import * from \"list\"; [> 1, 2, 3, 4] == [> 1, 2, 3, 4]",
+    "true",
+  ),
+  t("stdlib_equal_13", "import * from \"list\"; \"\" == \"\"", "true"),
+  t("stdlib_equal_14", "import * from \"list\"; \" \" == \"\"", "false"),
+  t("stdlib_equal_15", "import * from \"list\"; \"f\" == \"\"", "false"),
+  t("stdlib_equal_16", "import * from \"list\"; \"foo\" == \"foo\"", "true"),
   t(
     "stdlib_equal_17",
-    "import * from 'list'; 'foo 😂' == 'foo 😂'",
+    "import * from \"list\"; \"foo 😂\" == \"foo 😂\"",
     "true",
   ),
   t(
     "stdlib_equal_18",
-    "import * from 'list'; 'foo 😂' == 'foo 🙄'",
+    "import * from \"list\"; \"foo 😂\" == \"foo 🙄\"",
     "false",
   ),
   t(
     "stdlib_equal_19",
-    "record Rec {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: 'boo', baz: true} == {foo: 4, bar: 'boo', baz: true}",
+    "record Rec {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: \"boo\", baz: true} == {foo: 4, bar: \"boo\", baz: true}",
     "true",
   ),
   t(
     "stdlib_equal_20",
-    "record Rec {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: 'boo', baz: true} == {foo: 4, bar: 'bar', baz: true}",
+    "record Rec {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: \"boo\", baz: true} == {foo: 4, bar: \"bar\", baz: true}",
     "false",
   ),
   t(
     "stdlib_equal_21",
-    "record Rec {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: 'boo', baz: true} == {foo: 78, bar: 'boo', baz: true}",
+    "record Rec {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: \"boo\", baz: true} == {foo: 78, bar: \"boo\", baz: true}",
     "false",
   ),
   t(
     "stdlib_equal_22",
-    "record Rec {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: 'boo', baz: true} == {foo: 4, bar: 'boo', baz: false}",
+    "record Rec {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: \"boo\", baz: true} == {foo: 4, bar: \"boo\", baz: false}",
     "false",
   ),
   tfile("recursive_equal_box", "recursive-equal-box", "void"),
   tfile("recursive_equal_mut", "recursive-equal-mut", "void"),
-  /* te "stdlib_sum_err" "import * from 'list'; sum([true, false])" "This expression has type Bool but"; */
+  /* te "stdlib_sum_err" "import * from \"list\"; sum([true, false])" "This expression has type Bool but"; */
   te(
     "stdlib_length_err",
-    "import * from 'list'; length(true)",
+    "import * from \"list\"; length(true)",
     "This expression has type Bool but",
   ),
   te(
     "stdlib_reverse_err",
-    "import * from 'list'; reverse(1)",
+    "import * from \"list\"; reverse(1)",
     "This expression has type Number but",
   ),
   tlib("array.test"),
@@ -817,12 +825,12 @@ let let_mut_tests = [
   // let mut destructure tests
   t(
     "let-mut_destructure1",
-    "let mut (x, y, z) = (5, false, 'foo'); x = 6; y = true; z = 'bar'; print(x); print(y); print(z)",
+    "let mut (x, y, z) = (5, false, \"foo\"); x = 6; y = true; z = \"bar\"; print(x); print(y); print(z)",
     "6\ntrue\n\"bar\"\nvoid",
   ),
   t(
     "let-mut_destructure2",
-    "{let mut (x, y, z) = (5, false, 'foo'); x = 6; y = true; z = 'bar'; print(x); print(y); print(z)}",
+    "{let mut (x, y, z) = (5, false, \"foo\"); x = 6; y = true; z = \"bar\"; print(x); print(y); print(z)}",
     "6\ntrue\n\"bar\"\nvoid",
   ),
   t(
@@ -930,7 +938,7 @@ let match_tests = [
   t("tuple_match_2", "match ((1, 2, 3)) { (a, b, c) => a + b + c }", "6"),
   t(
     "tuple_match_3",
-    "match ((1, 'boop', false)) { (a, b, c) => (a, b, c) }",
+    "match ((1, \"boop\", false)) { (a, b, c) => (a, b, c) }",
     "(1, \"boop\", false)",
   ),
   t(
@@ -971,12 +979,12 @@ let match_tests = [
   /* Pattern matching on records */
   t(
     "record_match_1",
-    "record Rec {foo: Number, bar: String, baz: Bool}; match ({foo: 4, bar: 'boo', baz: true}) { { foo, _ } => foo }",
+    "record Rec {foo: Number, bar: String, baz: Bool}; match ({foo: 4, bar: \"boo\", baz: true}) { { foo, _ } => foo }",
     "4",
   ),
   t(
     "record_match_2",
-    "record Rec {foo: Number, bar: String, baz: Bool}; match ({foo: 4, bar: 'boo', baz: true}) { { bar, _ } => bar }",
+    "record Rec {foo: Number, bar: String, baz: Bool}; match ({foo: 4, bar: \"boo\", baz: true}) { { bar, _ } => bar }",
     "\"boo\"",
   ),
   t(
@@ -1054,9 +1062,9 @@ let match_tests = [
   t(
     "guarded_match_5",
     "enum ADT { Foo((String, Number)), Bar }
-     match (Foo(('abcd', 4))) {
-       Foo((s, n)) when (s == 'abcd') && (n == 4) => 42,
-       Foo((s, n)) when (s == 'wxyz') && (n == 4) => 99,
+     match (Foo((\"abcd\", 4))) {
+       Foo((s, n)) when (s == \"abcd\") && (n == 4) => 42,
+       Foo((s, n)) when (s == \"wxyz\") && (n == 4) => 99,
        Foo(_) when false => 90,
        Foo(_) => 89,
        Bar => 79
@@ -1066,9 +1074,9 @@ let match_tests = [
   t(
     "guarded_match_6",
     "enum ADT { Foo((String, Number)), Bar }
-     match (Foo(('abcd', 3))) {
-       Foo((s, n)) when (s == 'abcd') && (n == 4) => 42,
-       Foo((s, n)) when (s == 'wxyz') && (n == 4) => 99,
+     match (Foo((\"abcd\", 3))) {
+       Foo((s, n)) when (s == \"abcd\") && (n == 4) => 42,
+       Foo((s, n)) when (s == \"wxyz\") && (n == 4) => 99,
        Foo(_) when false => 90,
        Foo(_) => 89,
        Bar => 79
@@ -1078,9 +1086,9 @@ let match_tests = [
   t(
     "guarded_match_7",
     "enum ADT { Foo((String, Number)), Bar }
-     match (Foo(('wxyz', 4))) {
-       Foo((s, n)) when (s == 'abcd') && (n == 4) => 42,
-       Foo((s, n)) when (s == 'wxyz') && (n == 4) => 99,
+     match (Foo((\"wxyz\", 4))) {
+       Foo((s, n)) when (s == \"abcd\") && (n == 4) => 42,
+       Foo((s, n)) when (s == \"wxyz\") && (n == 4) => 99,
        Foo(_) when false => 90,
        Foo(_) => 89,
        Bar => 79
@@ -1090,9 +1098,9 @@ let match_tests = [
   t(
     "guarded_match_8",
     "enum ADT { Foo((String, Number)), Bar }
-     match (Foo(('wxyz', 15))) {
-       Foo((s, n)) when (s == 'abcd') && (n == 4) => 42,
-       Foo((s, n)) when (s == 'wxyz') && (n == 4) => 99,
+     match (Foo((\"wxyz\", 15))) {
+       Foo((s, n)) when (s == \"abcd\") && (n == 4) => 42,
+       Foo((s, n)) when (s == \"wxyz\") && (n == 4) => 99,
        Foo(_) when false => 90,
        Foo(_) => 89,
        Bar => 79
@@ -1103,8 +1111,8 @@ let match_tests = [
     "guarded_match_9",
     "enum ADT { Foo((String, Number)), Bar }
      match (Bar) {
-       Foo((s, n)) when (s == 'abcd') && (n == 4) => 42,
-       Foo((s, n)) when (s == 'wxyz') && (n == 4) => 99,
+       Foo((s, n)) when (s == \"abcd\") && (n == 4) => 42,
+       Foo((s, n)) when (s == \"wxyz\") && (n == 4) => 99,
        Foo(_) when false => 90,
        Foo(_) => 89,
        Bar => 79
@@ -1119,17 +1127,17 @@ let match_tests = [
   ),
   t(
     "constant_match_2",
-    "match (('foo', 5, false)) { ('bar', 5, false) => false, ('foo', _, true) => false, ('foo', _, false) => true, _ => false }",
+    "match ((\"foo\", 5, false)) { (\"bar\", 5, false) => false, (\"foo\", _, true) => false, (\"foo\", _, false) => true, _ => false }",
     "true",
   ),
   t(
     "constant_match_3",
-    "match ('foo') { 'foo' when false => false, 'foo' when true => true, _ => false }",
+    "match (\"foo\") { \"foo\" when false => false, \"foo\" when true => true, _ => false }",
     "true",
   ),
   t(
     "constant_match_4",
-    "match (('foo', 5)) { ('foo', n) when n == 7 => false, ('foo', 9) when true => false, ('foo', n) when n == 5 => true, _ => false }",
+    "match ((\"foo\", 5)) { (\"foo\", n) when n == 7 => false, (\"foo\", 9) when true => false, (\"foo\", n) when n == 5 => true, _ => false }",
     "true",
   ),
   tfile("mixed_matching", "mixedPatternMatching", "true"),
@@ -1139,197 +1147,201 @@ let import_tests = [
   /* import * tests */
   t(
     "import_all",
-    "import * from 'exportStar'; {print(x); print(y(4)); z}",
+    "import * from \"exportStar\"; {print(x); print(y(4)); z}",
     "5\n4\n\"foo\"",
   ),
   t(
     "import_all_except",
-    "import * except {y} from 'exportStar'; {print(x); z}",
+    "import * except {y} from \"exportStar\"; {print(x); z}",
     "5\n\"foo\"",
   ),
   t(
     "import_all_except_multiple",
-    "import * except {x, y} from 'exportStar'; z",
+    "import * except {x, y} from \"exportStar\"; z",
     "\"foo\"",
   ),
   t(
     "import_all_constructor",
-    "import * from 'tlists'; Cons(2, Empty)",
+    "import * from \"tlists\"; Cons(2, Empty)",
     "Cons(2, Empty)",
   ),
   t(
     "import_all_except_constructor",
-    "import * except {Cons} from 'tlists'; Empty",
+    "import * except {Cons} from \"tlists\"; Empty",
     "Empty",
   ),
   t(
     "import_all_except_multiple_constructor",
-    "import * except {Cons, append} from 'tlists'; sum(Empty)",
+    "import * except {Cons, append} from \"tlists\"; sum(Empty)",
     "0",
   ),
-  t("import_with_export_multiple", "import * from 'sameExport'; foo()", "6"),
+  t(
+    "import_with_export_multiple",
+    "import * from \"sameExport\"; foo()",
+    "6",
+  ),
   /* import * errors */
   te(
     "import_all_except_error",
-    "import * except {y} from 'exportStar'; {print(x); print(y); z}",
+    "import * except {y} from \"exportStar\"; {print(x); print(y); z}",
     "Unbound value y",
   ),
   te(
     "import_all_except_multiple_error",
-    "import * except {x, y} from 'exportStar'; {print(x); z}",
+    "import * except {x, y} from \"exportStar\"; {print(x); z}",
     "Unbound value x",
   ),
   te(
     "import_all_except_multiple_error2",
-    "import * except {x, y} from 'exportStar'; {print(x); print(y); z}",
+    "import * except {x, y} from \"exportStar\"; {print(x); print(y); z}",
     "Unbound value y",
   ),
   te(
     "import_all_except_error_constructor",
-    "import * except {Cons} from 'tlists'; Cons(2, Empty)",
+    "import * except {Cons} from \"tlists\"; Cons(2, Empty)",
     "Unbound value Cons",
   ),
   te(
     "import_all_except_multiple_error_constructor",
-    "import * except {Cons, append} from 'tlists'; append(Empty, Empty)",
+    "import * except {Cons, append} from \"tlists\"; append(Empty, Empty)",
     "Unbound value append",
   ),
   te(
     "import_all_except_multiple_error2_constructor",
-    "import * except {Cons, append} from 'tlists'; let x = Cons(2, Empty); append(x, Empty)",
+    "import * except {Cons, append} from \"tlists\"; let x = Cons(2, Empty); append(x, Empty)",
     "Unbound value Cons",
   ),
   /* import {} tests */
-  t("import_some", "import {x} from 'exportStar'; x", "5"),
-  t("import_some_multiple", "import {x, y} from 'exportStar'; y(x)", "5"),
+  t("import_some", "import {x} from \"exportStar\"; x", "5"),
+  t("import_some_multiple", "import {x, y} from \"exportStar\"; y(x)", "5"),
   t(
     "import_some_constructor",
-    "import {Cons, Empty} from 'tlists'; Cons(5, Empty)",
+    "import {Cons, Empty} from \"tlists\"; Cons(5, Empty)",
     "Cons(5, Empty)",
   ),
   t(
     "import_some_mixed",
-    "import {Cons, Empty, sum} from 'tlists'; sum(Cons(5, Empty))",
+    "import {Cons, Empty, sum} from \"tlists\"; sum(Cons(5, Empty))",
     "5",
   ),
-  t("import_alias", "import {x as y} from 'exportStar'; y", "5"),
+  t("import_alias", "import {x as y} from \"exportStar\"; y", "5"),
   t(
     "import_alias_multiple",
-    "import {x as y, y as x} from 'exportStar'; x(y)",
+    "import {x as y, y as x} from \"exportStar\"; x(y)",
     "5",
   ),
   t(
     "import_alias_constructor",
-    "import {Empty as None, sum} from 'tlists'; sum(None)",
+    "import {Empty as None, sum} from \"tlists\"; sum(None)",
     "0",
   ),
   t(
     "import_alias_multiple_constructor",
-    "import {Cons as Add, Empty as None, sum} from 'tlists'; sum(Add(1, None))",
+    "import {Cons as Add, Empty as None, sum} from \"tlists\"; sum(Add(1, None))",
     "1",
   ),
   /* import {} errors */
   te(
     "import_some_error",
-    "import {a} from 'exportStar'; a",
-    "Export 'a' was not found in 'exportStar'",
+    "import {a} from \"exportStar\"; a",
+    "Export \"a\" was not found in \"exportStar\"",
   ),
   te(
     "import_some_error2",
-    "import {x, a} from 'exportStar'; a",
-    "Export 'a' was not found in 'exportStar'",
+    "import {x, a} from \"exportStar\"; a",
+    "Export \"a\" was not found in \"exportStar\"",
   ),
   te(
     "import_some_error3",
-    "import {Foo} from 'exportStar'; a",
-    "Export 'Foo' was not found in 'exportStar'",
+    "import {Foo} from \"exportStar\"; a",
+    "Export \"Foo\" was not found in \"exportStar\"",
   ),
   te(
     "import_some_error3",
-    "import {x, Foo} from 'exportStar'; a",
-    "Export 'Foo' was not found in 'exportStar'",
+    "import {x, Foo} from \"exportStar\"; a",
+    "Export \"Foo\" was not found in \"exportStar\"",
   ),
   /* import module tests */
-  t("import_module", "import Foo from 'exportStar'; Foo.x", "5"),
-  t("import_module2", "import Foo from 'exportStar'; Foo.y(Foo.x)", "5"),
+  t("import_module", "import Foo from \"exportStar\"; Foo.x", "5"),
+  t("import_module2", "import Foo from \"exportStar\"; Foo.y(Foo.x)", "5"),
   /* import module errors */
   te(
     "import_module_error",
-    "import Foo from 'exportStar'; Foo.foo",
+    "import Foo from \"exportStar\"; Foo.foo",
     "Unbound value foo in module Foo",
   ),
   /* import well-formedness errors */
   te(
     "import_alias_illegal_renaming",
-    "import {Cons as cons, Empty} from 'list'; cons(3, Empty)",
+    "import {Cons as cons, Empty} from \"list\"; cons(3, Empty)",
     "Alias 'cons' should have proper casing",
   ),
   te(
     "import_alias_illegal_renaming2",
-    "import {sum as Sum, Empty} from 'list'; sum(Empty)",
+    "import {sum as Sum, Empty} from \"list\"; sum(Empty)",
     "Alias 'Sum' should have proper casing",
   ),
   te(
     "import_module_illegal_name",
-    "import foo from 'list';",
+    "import foo from \"list\";",
     "Module 'foo' should have an uppercase name",
   ),
   te(
     "import_module_not_external",
-    "import Foo.Foo from 'list';",
+    "import Foo.Foo from \"list\";",
     "Module name 'Foo.Foo' should contain only one module.",
   ),
   te(
     "import_value_not_external",
-    "import {foo as Foo.foo} from 'list';",
+    "import {foo as Foo.foo} from \"list\";",
     "Alias 'Foo.foo' should be at most one level deep",
   ),
   /* import multiple modules tests */
   t(
     "import_muliple_modules",
-    "import * from 'tlists'; import * from 'exportStar'; Cons(x, Empty)",
+    "import * from \"tlists\"; import * from \"exportStar\"; Cons(x, Empty)",
     "Cons(5, Empty)",
   ),
   /* import same module tests */
   t(
     "import_same_module_unify",
-    "import * from 'tlists'; import TList from 'tlists'; Cons(5, TList.Empty)",
+    "import * from \"tlists\"; import TList from \"tlists\"; Cons(5, TList.Empty)",
     "Cons(5, Empty)",
   ),
   t(
     "import_same_module_unify2",
-    "import *, TList from 'tlists'; Cons(5, TList.Empty)",
+    "import *, TList from \"tlists\"; Cons(5, TList.Empty)",
     "Cons(5, Empty)",
   ),
   /* import filepath tests */
-  t("import_relative_path", "import * from './exportStar'; x", "5"),
+  t("import_relative_path", "import * from \"./exportStar\"; x", "5"),
   t(
     "import_relative_path2",
-    "import * from '../test-libs/exportStar'; x",
+    "import * from \"../test-libs/exportStar\"; x",
     "5",
   ),
-  t("import_relative_path3", "import * from 'nested/nested'; j", "\"j\""),
+  t("import_relative_path3", "import * from \"nested/nested\"; j", "\"j\""),
   te(
     "import_missing_file",
-    "import * from 'foo'; 2",
+    "import * from \"foo\"; 2",
     "Missing file for module foo",
   ),
   /* Unbound module tests */
   te(
     "test_unbound_module",
-    "String.concat('hello ', 'world')",
+    "String.concat(\"hello \", \"world\")",
     "Unbound module String",
   ),
   /* Misc import tests */
   te(
     "test_bad_import",
-    "{let x = (1, 2); import * from 'tlists'; x}",
+    "{let x = (1, 2); import * from \"tlists\"; x}",
     "error",
   ),
   tfile("test_file_same_name", "list", "\"OK\"\nvoid"),
   t(
     "annotation_across_import",
-    "import TList, { Empty } from 'tlists'; let foo : TList.TList<String> = Empty; foo",
+    "import TList, { Empty } from \"tlists\"; let foo : TList.TList<String> = Empty; foo",
     "Empty",
   ),
 ];
@@ -1579,7 +1591,7 @@ let string_tests = {
     ),
     tparse(
       "string_parse_sqs1",
-      "'foobar'",
+      "\"foobar\"",
       {
         statements: [str("foobar")],
         comments: [],
@@ -1588,7 +1600,7 @@ let string_tests = {
     ),
     tparse(
       "string_parse_sqs2",
-      "'bar\\u{41}'",
+      "\"bar\\u{41}\"",
       {
         statements: [str("barA")],
         comments: [],
@@ -1597,7 +1609,7 @@ let string_tests = {
     ),
     tparse(
       "string_parse_sqs3",
-      "'bar\\x41'",
+      "\"bar\\x41\"",
       {
         statements: [str("barA")],
         comments: [],
@@ -1606,7 +1618,7 @@ let string_tests = {
     ),
     tparse(
       "string_parse_sqs4",
-      "'bar\\101'",
+      "\"bar\\101\"",
       {
         statements: [str("barA")],
         comments: [],
@@ -1615,7 +1627,7 @@ let string_tests = {
     ),
     tparse(
       "string_parse_sqs5",
-      "'bar\\u0041'",
+      "\"bar\\u0041\"",
       {
         statements: [str("barA")],
         comments: [],
@@ -1647,17 +1659,46 @@ let string_tests = {
       "\"making my way downtown, walking fast\"",
       "\"making my way downtown, walking fast\"",
     ),
-    t("concat", "'foo' ++ 'bar'", "\"foobar\""),
+    t("concat", "\"foo\" ++ \"bar\"", "\"foobar\""),
     te("string_err", "let x = \"hello\"; x + \", world\"", "type"),
-    te("unicode_err1", "let x = '\\u{d800}'", "Illegal unicode code point"),
-    te("unicode_err2", "let x = '\\u{dfff}'", "Illegal unicode code point"),
-    te("unicode_err3", "let x = '\\u{110000}'", "Illegal unicode code point"),
+    te("unicode_err1", "let x = \"\\u{d800}\"", "Illegal unicode code point"),
+    te("unicode_err2", "let x = \"\\u{dfff}\"", "Illegal unicode code point"),
+    te(
+      "unicode_err3",
+      "let x = \"\\u{110000}\"",
+      "Illegal unicode code point",
+    ),
   ];
 };
 
 let char_tests = [
-  // No char literals, but they should still print
-  t("char1", "import { fromCode } from 'char'; fromCode(0x41)", "'A'"),
+  t("char1", "'A'", "'A'"),
+  t("char2", "'\\x41'", "'A'"),
+  t("char3", "'\\101'", "'A'"),
+  t("char4", "'\\u0041'", "'A'"),
+  t("char5", "'\\u{41}'", "'A'"),
+  t("char6", "'💯'", "'💯'"),
+  t("char7", "'\\u{1F33E}'", "'🌾'"),
+  t("char_eq1", "'🌾' == '🌾'", "true"),
+  t("char_eq2", "'🌾' == '💯'", "false"),
+  t(
+    "char_eq3",
+    "import Char from \"char\"; Char.fromCode(0x1F33E) == '🌾'",
+    "true",
+  ),
+  t(
+    "char_eq4",
+    "import Char from \"char\"; Char.fromCode(0x1F33E) == '💯'",
+    "false",
+  ),
+  te(
+    "char_illegal",
+    "'abc'",
+    "This character literal contains multiple characters: 'abc'\nDid you mean to create the string \"abc\" instead?",
+  ),
+  te("unicode_err1", "let x = '\\u{d800}'", "Illegal unicode code point"),
+  te("unicode_err2", "let x = '\\u{dfff}'", "Illegal unicode code point"),
+  te("unicode_err3", "let x = '\\u{110000}'", "Illegal unicode code point"),
 ];
 
 let exception_tests = [
@@ -1691,18 +1732,18 @@ let enum_tests = [
 ];
 
 let export_tests = [
-  te("export1", "import * from 'noExports'; x", "Unbound value x"),
-  te("export2", "import * from 'noExports'; y", "Unbound value y"),
-  te("export3", "import * from 'noExports'; z", "Unbound value z"),
-  t("export4", "import * from 'onlyXExported'; x", "4"),
-  te("export5", "import * from 'onlyXExported'; y", "Unbound value y"),
-  te("export6", "import * from 'onlyXExported'; z", "Unbound value z"),
-  t("export7", "import * from 'exportStar'; x", "5"),
-  t("export8", "import * from 'exportStar'; x + y(4)", "9"),
-  t("export9", "import * from 'exportStar'; y(z)", "\"foo\""),
+  te("export1", "import * from \"noExports\"; x", "Unbound value x"),
+  te("export2", "import * from \"noExports\"; y", "Unbound value y"),
+  te("export3", "import * from \"noExports\"; z", "Unbound value z"),
+  t("export4", "import * from \"onlyXExported\"; x", "4"),
+  te("export5", "import * from \"onlyXExported\"; y", "Unbound value y"),
+  te("export6", "import * from \"onlyXExported\"; z", "Unbound value z"),
+  t("export7", "import * from \"exportStar\"; x", "5"),
+  t("export8", "import * from \"exportStar\"; x + y(4)", "9"),
+  t("export9", "import * from \"exportStar\"; y(z)", "\"foo\""),
   te(
     "export10",
-    "import * from 'exportStar'; y(secret)",
+    "import * from \"exportStar\"; y(secret)",
     "Unbound value secret",
   ),
 ];
@@ -1758,7 +1799,7 @@ let comment_tests = {
   [
     tparse(
       "comment_parse_1",
-      "// Test\n'foo'",
+      "// Test\n\"foo\"",
       {
         statements: [str("foo")],
         comments: [
@@ -1773,7 +1814,7 @@ let comment_tests = {
     ),
     tparse(
       "comment_parse_2",
-      "/* Test */'foo'",
+      "/* Test */\"foo\"",
       {
         statements: [str("foo")],
         comments: [
@@ -1788,7 +1829,7 @@ let comment_tests = {
     ),
     tparse(
       "comment_parse_3",
-      "/** Test */'foo'",
+      "/** Test */\"foo\"",
       {
         statements: [str("foo")],
         comments: [
@@ -1803,7 +1844,7 @@ let comment_tests = {
     ),
     tparse(
       "comment_parse_4",
-      "#!/bin/grain\n'foo'",
+      "#!/bin/grain\n\"foo\"",
       {
         statements: [str("foo")],
         comments: [

@@ -1,4 +1,4 @@
-import * from 'int32'
+import * from "int32"
 
 assert fromNumber(5) == 5l
 assert fromNumber(0) == 0l

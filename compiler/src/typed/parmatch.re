@@ -137,13 +137,15 @@ let all_coherent = column => {
       | (Const_float64(_), Const_float64(_))
       | (Const_bool(_), Const_bool(_))
       | (Const_void, Const_void)
-      | (Const_string(_), Const_string(_)) => true
+      | (Const_string(_), Const_string(_))
+      | (Const_char(_), Const_char(_)) => true
       | (
           Const_number(_) | Const_int32(_) | Const_int64(_) | Const_float32(_) |
           Const_float64(_) |
           Const_bool(_) |
           Const_void |
-          Const_string(_),
+          Const_string(_) |
+          Const_char(_),
           _,
         ) =>
         false
@@ -242,10 +244,12 @@ let first_column = simplified_matrix => List.map(fst, simplified_matrix);
 let const_compare = (x, y) =>
   switch (x, y) {
   | (Const_string(s1), Const_string(s2)) => String.compare(s1, s2)
+  | (Const_char(c1), Const_char(c2)) => String.compare(c1, c2)
   | (Const_bool(b1), Const_bool(b2)) =>
     Stdlib.compare(if (b1) {1} else {0}, if (b2) {1} else {0})
   | (
-      Const_number(_) | Const_string(_) | Const_bool(_) | Const_float32(_) |
+      Const_number(_) | Const_string(_) | Const_char(_) | Const_bool(_) |
+      Const_float32(_) |
       Const_float64(_) |
       Const_void |
       Const_int32(_) |
@@ -1729,6 +1733,7 @@ let untype_constant =
   | Const_float32(f) => Parsetree.PConstFloat32(Float.to_string(f))
   | Const_float64(f) => Parsetree.PConstFloat64(Float.to_string(f))
   | Const_string(s) => Parsetree.PConstString(s)
+  | Const_char(c) => Parsetree.PConstChar(c)
   | Const_bool(b) => Parsetree.PConstBool(b)
   | Const_void => Parsetree.PConstVoid;
 
@@ -2061,6 +2066,7 @@ let inactive = (~partial, pat) =>
       | TPatConstant(c) =>
         switch (c) {
         | Const_string(_)
+        | Const_char(_)
         | Const_void
         | Const_number(_)
         | Const_bool(_)

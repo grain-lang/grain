@@ -1,15 +1,15 @@
 export *
 
-import foreign wasm coerceNumberToFloat64 : Number -> Float64 as fromNumber from 'stdlib-external/runtime'
-import foreign wasm coerceFloat64ToNumber : Float64 -> Number as toNumber from 'stdlib-external/runtime'
+import foreign wasm coerceNumberToFloat64 : Number -> Float64 as fromNumber from "stdlib-external/runtime"
+import foreign wasm coerceFloat64ToNumber : Float64 -> Number as toNumber from "stdlib-external/runtime"
 
-import foreign wasm add : (Float64, Float64) -> Float64 from 'stdlib-external/float64'
-import foreign wasm sub : (Float64, Float64) -> Float64 from 'stdlib-external/float64'
-import foreign wasm mul : (Float64, Float64) -> Float64 from 'stdlib-external/float64'
-import foreign wasm div : (Float64, Float64) -> Float64 from 'stdlib-external/float64'
+import foreign wasm add : (Float64, Float64) -> Float64 from "stdlib-external/float64"
+import foreign wasm sub : (Float64, Float64) -> Float64 from "stdlib-external/float64"
+import foreign wasm mul : (Float64, Float64) -> Float64 from "stdlib-external/float64"
+import foreign wasm div : (Float64, Float64) -> Float64 from "stdlib-external/float64"
 
 // Float64 comparisons
-import foreign wasm lt : (Float64, Float64) -> Bool from 'stdlib-external/float64'
-import foreign wasm gt : (Float64, Float64) -> Bool from 'stdlib-external/float64'
-import foreign wasm lte : (Float64, Float64) -> Bool from 'stdlib-external/float64'
-import foreign wasm gte : (Float64, Float64) -> Bool from 'stdlib-external/float64'
+import foreign wasm lt : (Float64, Float64) -> Bool from "stdlib-external/float64"
+import foreign wasm gt : (Float64, Float64) -> Bool from "stdlib-external/float64"
+import foreign wasm lte : (Float64, Float64) -> Bool from "stdlib-external/float64"
+import foreign wasm gte : (Float64, Float64) -> Bool from "stdlib-external/float64"

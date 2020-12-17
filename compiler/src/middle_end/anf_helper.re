@@ -79,6 +79,7 @@ module Comp = {
   let lambda = (~loc=?, ~env=?, args, body) =>
     mk(~loc?, ~env?, CLambda(args, body));
   let string = (~loc=?, ~env=?, s) => mk(~loc?, ~env?, CString(s));
+  let char = (~loc=?, ~env=?, c) => mk(~loc?, ~env?, CChar(c));
 };
 
 module AExp = {

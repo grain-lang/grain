@@ -2216,6 +2216,57 @@ let allocate_string = (wasm_mod, env, str) => {
   );
 };
 
+let allocate_char = (wasm_mod, env, char) => {
+  // Copy bytes into a fresh buffer so we can guarantee a copy of a full word
+  let bytes = Bytes.make(4, Char.chr(0));
+  // OCaml String#length is byte length, not Unicode character length
+  // Guaranteed not to be longer than 4 bytes by well-formedness
+  Bytes.blit_string(char, 0, bytes, 0, String.length(char));
+  let value = Bytes.get_int32_le(bytes, 0);
+
+  let get_swap = () => get_swap(wasm_mod, env, 0);
+  let tee_swap = tee_swap(~skip_incref=true, wasm_mod, env, 0);
+  Expression.block(
+    wasm_mod,
+    gensym_label("allocate_char"),
+    [
+      store(
+        ~offset=0,
+        wasm_mod,
+        tee_swap(
+          call_malloc(
+            wasm_mod,
+            env,
+            [Expression.const(wasm_mod, const_int32(8))],
+          ),
+        ),
+        Expression.const(
+          wasm_mod,
+          const_int32(tag_val_of_heap_tag_type(CharType)),
+        ),
+      ),
+      store(
+        ~offset=4,
+        wasm_mod,
+        get_swap(),
+        Expression.const(wasm_mod, wrap_int32(value)),
+      ),
+      tee_swap(
+        Expression.binary(
+          wasm_mod,
+          Op.or_int32,
+          get_swap(),
+          Expression.const(
+            wasm_mod,
+            const_int32 @@
+            tag_val_of_tag_type(GenericHeapType(Some(CharType))),
+          ),
+        ),
+      ),
+    ],
+  );
+};
+
 let allocate_float32 = (wasm_mod, env, i) => {
   call_new_float32(wasm_mod, env, [i]);
 };
@@ -3029,6 +3080,7 @@ let compile_allocation = (wasm_mod, env, alloc_type) =>
   | MArray(elts) => allocate_array(wasm_mod, env, elts)
   | MRecord(ttag, elts) => allocate_record(wasm_mod, env, ttag, elts)
   | MString(str) => allocate_string(wasm_mod, env, str)
+  | MChar(char) => allocate_char(wasm_mod, env, char)
   | MADT(ttag, vtag, elts) => allocate_adt(wasm_mod, env, ttag, vtag, elts)
   | MInt32(i) =>
     allocate_int32(

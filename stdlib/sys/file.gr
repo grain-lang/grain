@@ -1,6 +1,6 @@
-import List from 'list'
-import Array from 'array'
-import Int64 from 'int64'
+import List from "list"
+import Array from "array"
+import Int64 from "int64"
 
 export *
 
@@ -192,53 +192,53 @@ let filetypeFromNumber = (filetype) => {
 // @param rightsInheriting: List<Rights> The rights that dictate what may be done with file descriptors derived from this file descriptor
 // @param flags: List<FdFlag> Flags which affect read/write operations on this file descriptor
 // @returns FileDescriptor The opened file or directory
-import foreign wasm pathOpen : (FileDescriptor, List<LookupFlag>, String, List<OpenFlag>, List<Rights>, List<Rights>, List<FdFlag>) -> FileDescriptor from 'stdlib-external/fs'
+import foreign wasm pathOpen : (FileDescriptor, List<LookupFlag>, String, List<OpenFlag>, List<Rights>, List<Rights>, List<FdFlag>) -> FileDescriptor from "stdlib-external/fs"
 
 // Read from a file descriptor
 // @param fd: FileDescriptor The file descriptor to read from
 // @param nBytes: Number The maximum number of bytes to read from the file descriptor
 // @returns (String, Number) The bytes read and the number of bytes read
-import foreign wasm fdRead : (FileDescriptor, Number) -> (String, Number) from 'stdlib-external/fs'
+import foreign wasm fdRead : (FileDescriptor, Number) -> (String, Number) from "stdlib-external/fs"
 
 // Read from a file descriptor without updating the file descriptor's offset
 // @param fd: FileDescriptor The file descriptor to read from
 // @param offset: Int64 The position within the file to begin reading
 // @param nBytes: Number The maximum number of bytes to read from the file descriptor
 // @returns (String, Number) The bytes read and the number of bytes read
-import foreign wasm fdPread : (FileDescriptor, Int64, Number) -> (String, Number) from 'stdlib-external/fs'
+import foreign wasm fdPread : (FileDescriptor, Int64, Number) -> (String, Number) from "stdlib-external/fs"
 
 // Write to a file descriptor
 // @param fd: FileDescriptor The file descriptor to which data will be written
 // @param buf: String The data to be written
 // @returns Number The number of bytes written
-import foreign wasm fdWrite : (FileDescriptor, String) -> Number from 'stdlib-external/fs'
+import foreign wasm fdWrite : (FileDescriptor, String) -> Number from "stdlib-external/fs"
 
 // Write to a file descriptor without updating the file descriptor's offset
 // @param fd: FileDescriptor The file descriptor to which data will be written
 // @param buf: String The data to be written
 // @param offset: Int64 The position within the file to begin writing
 // @returns Number The number of bytes written
-import foreign wasm fdPwrite : (FileDescriptor, String, Int64) -> Number from 'stdlib-external/fs'
+import foreign wasm fdPwrite : (FileDescriptor, String, Int64) -> Number from "stdlib-external/fs"
 
 // Allocate space within a file
 // @param fd: FileDescriptor The file descriptor in which space will be allocated
 // @param offset: Int64 The position within the file to begin writing
 // @param nBytes: Int64 The number of bytes to allocate
-import foreign wasm fdAllocate : (FileDescriptor, Int64, Int64) -> Void from 'stdlib-external/fs'
+import foreign wasm fdAllocate : (FileDescriptor, Int64, Int64) -> Void from "stdlib-external/fs"
 
 // Close a file descriptor
 // @param fd: FileDescriptor The file descriptor to close
-import foreign wasm fdClose : (FileDescriptor) -> Void from 'stdlib-external/fs'
+import foreign wasm fdClose : (FileDescriptor) -> Void from "stdlib-external/fs"
 
 // Synchronize the data of a file to disk
 // @param fd: FileDescriptor The file descriptor to synchronize
-import foreign wasm fdDatasync : (FileDescriptor) -> Void from 'stdlib-external/fs'
+import foreign wasm fdDatasync : (FileDescriptor) -> Void from "stdlib-external/fs"
 
 // Synchronize the data and metadata of a file to disk
 // @param fd: FileDescriptor The file descriptor to synchronize
-import foreign wasm fdSync : (FileDescriptor) -> Void from 'stdlib-external/fs'
+import foreign wasm fdSync : (FileDescriptor) -> Void from "stdlib-external/fs"
 
-import foreign wasm fdStats : (FileDescriptor) -> (Number, Int64, Int64, Int64) from 'stdlib-external/fs'
+import foreign wasm fdStats : (FileDescriptor) -> (Number, Int64, Int64, Int64) from "stdlib-external/fs"
 // Retrieve information about a file descriptor
 // @param fd: FileDescriptor The file descriptor of which to retrieve information
 // @returns Stats A record containing the filetype, flags, rights, and inheriting rights associated with the file descriptor
@@ -316,14 +316,14 @@ let fdStats = (fd) => {
 
 // Update the flags associated with a file descriptor
 // @param fd: FileDescriptor The file descriptor to update flags
-import foreign wasm fdSetFlags : (FileDescriptor, List<FdFlag>) -> Void from 'stdlib-external/fs'
+import foreign wasm fdSetFlags : (FileDescriptor, List<FdFlag>) -> Void from "stdlib-external/fs"
 
 // Update the rights associated with a file descriptor
 // @param rights: List<Rights> Rights to apply to the file descriptor
 // @param rightsInheriting: List<Rights> Inheriting rights to apply to the file descriptor
-import foreign wasm fdSetRights : (FileDescriptor, List<Rights>, List<Rights>) -> Void from 'stdlib-external/fs'
+import foreign wasm fdSetRights : (FileDescriptor, List<Rights>, List<Rights>) -> Void from "stdlib-external/fs"
 
-import foreign wasm fdFilestats : (FileDescriptor) -> (Int64, Int64, Number, Int64, Int64, Int64, Int64, Int64) from 'stdlib-external/fs'
+import foreign wasm fdFilestats : (FileDescriptor) -> (Int64, Int64, Number, Int64, Int64, Int64, Int64, Int64) from "stdlib-external/fs"
 // Retrieve information about a file
 // @param fd: FileDescriptor The file descriptor of the file to retrieve information
 // @returns Filestats A record containing the information about the file
@@ -338,27 +338,27 @@ let fdFilestats = (fd) => {
 // Set (truncate) the size of a file
 // @param fd: FileDescriptor The file descriptor of the file to truncate
 // @param size: Int64 The number of bytes to retain in the file
-import foreign wasm fdSetSize : (FileDescriptor, Int64) -> Void from 'stdlib-external/fs'
+import foreign wasm fdSetSize : (FileDescriptor, Int64) -> Void from "stdlib-external/fs"
 
 // Set the access (created) time of a file
 // @param fd: FileDescriptor The file descriptor of the file to update
 // @param timestamp: Int64 The time to set
-import foreign wasm fdSetAccessTime : (FileDescriptor, Int64) -> Void from 'stdlib-external/fs'
+import foreign wasm fdSetAccessTime : (FileDescriptor, Int64) -> Void from "stdlib-external/fs"
 
 // Set the access (created) time of a file to the current time
 // @param fd: FileDescriptor The file descriptor of the file to update
-import foreign wasm fdSetAccessTimeNow : (FileDescriptor) -> Void from 'stdlib-external/fs'
+import foreign wasm fdSetAccessTimeNow : (FileDescriptor) -> Void from "stdlib-external/fs"
 
 // Set the modified time of a file
 // @param fd: FileDescriptor The file descriptor of the file to update
 // @param timestamp: Int64 The time to set
-import foreign wasm fdSetModifiedTime : (FileDescriptor, Int64) -> Void from 'stdlib-external/fs'
+import foreign wasm fdSetModifiedTime : (FileDescriptor, Int64) -> Void from "stdlib-external/fs"
 
 // Set the modified time of a file to the current time
 // @param fd: FileDescriptor The file descriptor of the file to update
-import foreign wasm fdSetModifiedTimeNow : (FileDescriptor) -> Void from 'stdlib-external/fs'
+import foreign wasm fdSetModifiedTimeNow : (FileDescriptor) -> Void from "stdlib-external/fs"
 
-import foreign wasm fdReaddir : (FileDescriptor) -> Array<(Int64, String, Number)> as fdReaddirRaw from 'stdlib-external/fs'
+import foreign wasm fdReaddir : (FileDescriptor) -> Array<(Int64, String, Number)> as fdReaddirRaw from "stdlib-external/fs"
 // Read the entires of a directory
 // @param fd: FileDescriptor The directory to read
 // @returns Array<DirectoryEntry> An array of records containing information about each entry in the directory
@@ -374,27 +374,27 @@ let fdReaddir = (fd) => {
 // Atomically replace a file descriptor by renumbering another file descriptor
 // @param from: FileDescriptor The file descriptor to renumber
 // @param to: FileDescriptor The file descriptor to overwrite
-import foreign wasm fdRenumber : (FileDescriptor, FileDescriptor) -> Void from 'stdlib-external/fs'
+import foreign wasm fdRenumber : (FileDescriptor, FileDescriptor) -> Void from "stdlib-external/fs"
 
 // Update a file descriptor's offset
 // @param fd: FileDescriptor The file descriptor to operate on
 // @param delta: Int64 The number of bytes to move the offset
 // @param whence: Whence The location from which the offset is relative
 // @returns Int64 The new offset of the file descriptor, relative to the start of the file
-import foreign wasm fdSeek : (FileDescriptor, Int64, Whence) -> Int64 from 'stdlib-external/fs'
+import foreign wasm fdSeek : (FileDescriptor, Int64, Whence) -> Int64 from "stdlib-external/fs"
 
 // Read a file descriptor's offset
 // @param fd: FileDescriptor The file descriptor to read the offset
 // @returns Int64 The offset of the file descriptor, relative to the start of the file
-import foreign wasm fdTell : (FileDescriptor) -> Int64 from 'stdlib-external/fs'
+import foreign wasm fdTell : (FileDescriptor) -> Int64 from "stdlib-external/fs"
 
 
 // Create a directory
 // @param workingDirectory: FileDescriptor The directory in which path resolution starts
 // @param path: String The path to the new directory
-import foreign wasm pathCreateDirectory : (FileDescriptor, String) -> Void from 'stdlib-external/fs'
+import foreign wasm pathCreateDirectory : (FileDescriptor, String) -> Void from "stdlib-external/fs"
 
-import foreign wasm pathFilestats : (FileDescriptor, List<LookupFlag>, String) -> (Int64, Int64, Number, Int64, Int64, Int64, Int64, Int64) as pathFilestatsRaw from 'stdlib-external/fs'
+import foreign wasm pathFilestats : (FileDescriptor, List<LookupFlag>, String) -> (Int64, Int64, Number, Int64, Int64, Int64, Int64, Int64) as pathFilestatsRaw from "stdlib-external/fs"
 // Retrieve information about a file
 // @param workingDirectory: FileDescriptor The directory in which path resolution starts
 // @param flags: List<LookupFlag> Flags which affect path resolution
@@ -413,26 +413,26 @@ let pathFilestats = (fd, flags, path) => {
 // @param flags: List<LookupFlag> Flags which affect path resolution
 // @param path: String The path to set the time
 // @param timestamp: Int64 The time to set
-import foreign wasm pathSetAccessTime : (FileDescriptor, List<LookupFlag>, String, Int64) -> Void from 'stdlib-external/fs'
+import foreign wasm pathSetAccessTime : (FileDescriptor, List<LookupFlag>, String, Int64) -> Void from "stdlib-external/fs"
 
 // Set the access (created) time of a file to the current time
 // @param workingDirectory: FileDescriptor The directory in which path resolution starts
 // @param flags: List<LookupFlag> Flags which affect path resolution
 // @param path: String The path to set the time
-import foreign wasm pathSetAccessTimeNow : (FileDescriptor, List<LookupFlag>, String) -> Void from 'stdlib-external/fs'
+import foreign wasm pathSetAccessTimeNow : (FileDescriptor, List<LookupFlag>, String) -> Void from "stdlib-external/fs"
 
 // Set the modified time of a file
 // @param workingDirectory: FileDescriptor The directory in which path resolution starts
 // @param flags: List<LookupFlag> Flags which affect path resolution
 // @param path: String The path to set the time
 // @param timestamp: Int64 The time to set
-import foreign wasm pathSetModifiedTime : (FileDescriptor, List<LookupFlag>, String, Int64) -> Void from 'stdlib-external/fs'
+import foreign wasm pathSetModifiedTime : (FileDescriptor, List<LookupFlag>, String, Int64) -> Void from "stdlib-external/fs"
 
 // Set the modified time of a file to the current time
 // @param workingDirectory: FileDescriptor The directory in which path resolution starts
 // @param flags: List<LookupFlag> Flags which affect path resolution
 // @param path: String The path to set the time
-import foreign wasm pathSetModifiedTimeNow : (FileDescriptor, List<LookupFlag>, String) -> Void from 'stdlib-external/fs'
+import foreign wasm pathSetModifiedTimeNow : (FileDescriptor, List<LookupFlag>, String) -> Void from "stdlib-external/fs"
 
 // Create a hard link
 // @param sourceWorkingDirectory: FileDescriptor The directory in which the source path resolution starts
@@ -440,34 +440,34 @@ import foreign wasm pathSetModifiedTimeNow : (FileDescriptor, List<LookupFlag>, 
 // @param sourcePath: String The path to the source of the link
 // @param targetWorkingDirectory: FileDescriptor The directory in which the target path resolution starts
 // @param targetPath: String The path to the target of the link
-import foreign wasm pathLink : (FileDescriptor, List<LookupFlag>, String, FileDescriptor, String) -> Void from 'stdlib-external/fs'
+import foreign wasm pathLink : (FileDescriptor, List<LookupFlag>, String, FileDescriptor, String) -> Void from "stdlib-external/fs"
 
 // Create a symlink
 // @param workingDirectory: FileDescriptor The directory in which path resolution starts
 // @param sourcePath: String The path to the source of the link
 // @param targetPath: String The path to the target of the link
-import foreign wasm pathSymlink : (FileDescriptor, String, String) -> Void from 'stdlib-external/fs'
+import foreign wasm pathSymlink : (FileDescriptor, String, String) -> Void from "stdlib-external/fs"
 
 // Unlink a file
 // @param workingDirectory: FileDescriptor The directory in which path resolution starts
 // @param path: String The path of the file to unlink
-import foreign wasm pathUnlink : (FileDescriptor, String) -> Void from 'stdlib-external/fs'
+import foreign wasm pathUnlink : (FileDescriptor, String) -> Void from "stdlib-external/fs"
 
 // Read the contents of a symbolic link
 // @param workingDirectory: FileDescriptor The directory in which path resolution starts
 // @param path: String The path to the symlink
 // @param nBytes: The number of bytes to read
 // @returns (String, Number) The bytes read and the number of bytes read
-import foreign wasm pathReadlink : (FileDescriptor, String, Number) -> (String, Number) from 'stdlib-external/fs'
+import foreign wasm pathReadlink : (FileDescriptor, String, Number) -> (String, Number) from "stdlib-external/fs"
 
 // Remove a directory
 // @param workingDirectory: FileDescriptor The directory in which path resolution starts
 // @param path: String The path to the directory to remove
-import foreign wasm pathRemoveDirectory : (FileDescriptor, String) -> Void from 'stdlib-external/fs'
+import foreign wasm pathRemoveDirectory : (FileDescriptor, String) -> Void from "stdlib-external/fs"
 
 // Rename a file or directory
 // @param sourceWorkingDirectory: FileDescriptor The directory in which the source path resolution starts
 // @param sourcePath: String The path of the file to rename
 // @param targetWorkingDirectory: FileDescriptor The directory in which the target path resolution starts
 // @param targetPath: String The new path of the file
-import foreign wasm pathRename : (FileDescriptor, String, FileDescriptor, String) -> Void from 'stdlib-external/fs'
+import foreign wasm pathRename : (FileDescriptor, String, FileDescriptor, String) -> Void from "stdlib-external/fs"
