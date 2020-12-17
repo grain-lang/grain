@@ -223,8 +223,7 @@ and read_str buf =
   | "\\\"" { Buffer.add_char buf '"'; read_str buf lexbuf }
   | "\\\\" { Buffer.add_char buf '\\'; read_str buf lexbuf }
   | num_esc { add_code_point buf (lexeme lexbuf) (lexbuf_loc lexbuf); read_str buf lexbuf }
-  | [^ '"' '\\']+ { Buffer.add_string buf (lexeme lexbuf);
-    read_str buf lexbuf }
+  | [^ '"' '\\']+ { process_newlines lexbuf; Buffer.add_string buf (lexeme lexbuf); read_str buf lexbuf }
   | '"' { STRING (Buffer.contents buf) }
   | _ { raise (Error(lexbuf_loc lexbuf, IllegalStringCharacter(lexeme lexbuf))) }
 
