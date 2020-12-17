@@ -33,3 +33,7 @@ assert Char.code(Char.succ(Char.fromCode(0xD7FF))) == 0xE000
 // pred
 assert Char.code(Char.pred(Char.fromCode(0x70))) == 0x6F
 assert Char.code(Char.pred(Char.fromCode(0xE000))) == 0xD7FF
+
+// toString
+assert Char.toString('f') == "f"
+assert Char.toString('💯') == "💯"

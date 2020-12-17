@@ -1,7 +1,7 @@
 import { throwError } from './ascutils/grainRuntime'
 import { GRAIN_ERR_MALFORMED_UTF8 } from './ascutils/errors'
 import { GRAIN_GENERIC_HEAP_TAG_TYPE } from './ascutils/tags'
-import { allocateChar } from './ascutils/dataStructures'
+import { allocateChar, allocateString } from './ascutils/dataStructures'
 
 // Algorithm from https://encoding.spec.whatwg.org/#utf-8-decoder
 export function code(c: u32): u32 {
@@ -84,4 +84,22 @@ export function fromCode(code: u32): u32 {
   }
 
   return char ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+}
+
+export function toString(c: u32): u32 {
+  c = c ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  let byte = load<u8>(c, 4)
+  let n: u32
+  if ((byte & 0x80) === 0x00) {
+    n = 1
+  } else if ((byte & 0xF0) === 0xF0) {
+    n = 4
+  } else if ((byte & 0xE0) === 0xE0) {
+    n = 3
+  } else {
+    n = 2
+  }
+  let str = allocateString(n)
+  memory.copy(str + 8, c + 4, n)
+  return str ^ GRAIN_GENERIC_HEAP_TAG_TYPE
 }
