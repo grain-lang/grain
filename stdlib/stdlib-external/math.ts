@@ -1,11 +1,7 @@
-import {
-    coerceFloat64,
-    reducedInteger
-} from './numbers';
-
-import {
-    newFloat64
-} from './ascutils/dataStructures'
+import { coerceFloat64, reducedInteger } from './numbers';
+import { newFloat64 } from './ascutils/dataStructures';
+import { throwError } from './ascutils/grainRuntime';
+import { GRAIN_ERR_NOT_NONNEG } from './ascutils/errors';
 
 /**
  * Returns the square root of a given number.
@@ -15,6 +11,9 @@ import {
  */
 export function mathSqrt(x: u32): u32 {
     let xval = coerceFloat64(x);
+    if (xval < 0) {
+        throwError(GRAIN_ERR_NOT_NONNEG, newFloat64(xval), 0);
+    }
     return newFloat64(sqrt<f64>(xval));
 }
 
