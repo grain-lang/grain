@@ -1,32 +1,32 @@
 export *
 
-import foreign wasm coerceNumberToInt32 : Number -> Int32 as fromNumber from 'stdlib-external/runtime'
-import foreign wasm coerceInt32ToNumber : Int32 -> Number as toNumber from 'stdlib-external/runtime'
+import foreign wasm coerceNumberToInt32 : Number -> Int32 as fromNumber from "stdlib-external/runtime"
+import foreign wasm coerceInt32ToNumber : Int32 -> Number as toNumber from "stdlib-external/runtime"
 
-import foreign wasm incr : Int32 -> Int32 from 'stdlib-external/int32'
-import foreign wasm decr : Int32 -> Int32 from 'stdlib-external/int32'
-import foreign wasm add : (Int32, Int32) -> Int32 from 'stdlib-external/int32'
-import foreign wasm sub : (Int32, Int32) -> Int32 from 'stdlib-external/int32'
-import foreign wasm mul : (Int32, Int32) -> Int32 from 'stdlib-external/int32'
-import foreign wasm div : (Int32, Int32) -> Int32 from 'stdlib-external/int32'
-import foreign wasm divU : (Int32, Int32) -> Int32 from 'stdlib-external/int32'
-import foreign wasm rem : (Int32, Int32) -> Int32 from 'stdlib-external/int32'
-import foreign wasm remU : (Int32, Int32) -> Int32 from 'stdlib-external/int32'
-import foreign wasm mod : (Int32, Int32) -> Int32 from 'stdlib-external/int32'
+import foreign wasm incr : Int32 -> Int32 from "stdlib-external/int32"
+import foreign wasm decr : Int32 -> Int32 from "stdlib-external/int32"
+import foreign wasm add : (Int32, Int32) -> Int32 from "stdlib-external/int32"
+import foreign wasm sub : (Int32, Int32) -> Int32 from "stdlib-external/int32"
+import foreign wasm mul : (Int32, Int32) -> Int32 from "stdlib-external/int32"
+import foreign wasm div : (Int32, Int32) -> Int32 from "stdlib-external/int32"
+import foreign wasm divU : (Int32, Int32) -> Int32 from "stdlib-external/int32"
+import foreign wasm rem : (Int32, Int32) -> Int32 from "stdlib-external/int32"
+import foreign wasm remU : (Int32, Int32) -> Int32 from "stdlib-external/int32"
+import foreign wasm mod : (Int32, Int32) -> Int32 from "stdlib-external/int32"
 
 // Int32 comparisons
-import foreign wasm lt : (Int32, Int32) -> Bool from 'stdlib-external/int32'
-import foreign wasm gt : (Int32, Int32) -> Bool from 'stdlib-external/int32'
-import foreign wasm lte : (Int32, Int32) -> Bool from 'stdlib-external/int32'
-import foreign wasm gte : (Int32, Int32) -> Bool from 'stdlib-external/int32'
+import foreign wasm lt : (Int32, Int32) -> Bool from "stdlib-external/int32"
+import foreign wasm gt : (Int32, Int32) -> Bool from "stdlib-external/int32"
+import foreign wasm lte : (Int32, Int32) -> Bool from "stdlib-external/int32"
+import foreign wasm gte : (Int32, Int32) -> Bool from "stdlib-external/int32"
 
 // Int32 bit/logical operations
-import foreign wasm lnot : Int32 -> Int32 from 'stdlib-external/int32'
+import foreign wasm lnot : Int32 -> Int32 from "stdlib-external/int32"
 
-import foreign wasm land : (Int32, Int32) -> Int32 from 'stdlib-external/int32'
-import foreign wasm lor : (Int32, Int32) -> Int32 from 'stdlib-external/int32'
-import foreign wasm lxor : (Int32, Int32) -> Int32 from 'stdlib-external/int32'
+import foreign wasm land : (Int32, Int32) -> Int32 from "stdlib-external/int32"
+import foreign wasm lor : (Int32, Int32) -> Int32 from "stdlib-external/int32"
+import foreign wasm lxor : (Int32, Int32) -> Int32 from "stdlib-external/int32"
 
-import foreign wasm shl : (Int32, Int32) -> Int32 from 'stdlib-external/int32'
-import foreign wasm shr : (Int32, Int32) -> Int32 from 'stdlib-external/int32'
-import foreign wasm shrU : (Int32, Int32) -> Int32 from 'stdlib-external/int32'
+import foreign wasm shl : (Int32, Int32) -> Int32 from "stdlib-external/int32"
+import foreign wasm shr : (Int32, Int32) -> Int32 from "stdlib-external/int32"
+import foreign wasm shrU : (Int32, Int32) -> Int32 from "stdlib-external/int32"

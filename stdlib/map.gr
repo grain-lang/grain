@@ -1,8 +1,8 @@
 // Standard library for Map (aka HashMap) functionality
 
-import List from 'list'
-import Array from 'array'
-import { hash } from 'hash'
+import List from "list"
+import Array from "array"
+import { hash } from "hash"
 
 // TODO: Consider implementing this as List<(Box<k>, Box<v>)>
 record Bucket<k, v> {

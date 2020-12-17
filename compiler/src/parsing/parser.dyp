@@ -19,6 +19,7 @@ include Parser_header
 %token <string> ID
 %token <string> TYPEID
 %token <string> STRING
+%token <string> CHAR
 %token LBRACK RBRACK LPAREN LPARENNOSPACE RPAREN LBRACE RBRACE LCARET RCARET
 %token CARET
 %token COMMA SEMI AS
@@ -113,6 +114,7 @@ const :
   | FALSE { Const.bool false }
   | VOID { Const.void }
   | STRING { Const.string $1 }
+  | CHAR { Const.char $1 }
 
 expr :
   | stmt_expr

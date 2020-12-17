@@ -1,6 +1,6 @@
-import Map from 'map';
-import List from 'list';
-import Array from 'array';
+import Map from "map";
+import List from "list";
+import Array from "array";
 
 // Data types used in multiple tests
 enum Resource { Grain, Sheep, Brick, Wood };

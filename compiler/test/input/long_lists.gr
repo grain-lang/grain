@@ -1,4 +1,4 @@
-import * from 'list';
+import * from "list";
 
 let rec make_list = (x, n) => {
   let rec helper = (a, b, acc) => {

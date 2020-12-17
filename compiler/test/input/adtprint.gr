@@ -9,7 +9,7 @@ export enum Printable {
 
 print(Foo)
 print(Bar)
-print(Baz('baz'))
-print(Qux(5, 'qux', false))
+print(Baz("baz"))
+print(Qux(5, "qux", false))
 print(Quux)
-print(Flip('flip'))
+print(Flip("flip"))

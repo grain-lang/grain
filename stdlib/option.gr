@@ -31,7 +31,7 @@ let expect = (msg, option) => {
 }
 
 let unwrap = (option) => {
-  expect('Could not unwrap None value', option)
+  expect("Could not unwrap None value", option)
 }
 
 let unwrapWithDefault = (default, option) => {

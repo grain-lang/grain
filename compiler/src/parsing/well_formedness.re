@@ -4,6 +4,7 @@ open Grain_utils;
 
 type wferr =
   | MalformedString(Location.t)
+  | IllegalCharacterLiteral(string, Location.t)
   | MultipleModuleName(Location.t)
   | TypeNameShouldBeUppercase(string, Location.t)
   | IllegalAliasName(string, Location.t)
@@ -24,6 +25,13 @@ let prepare_error =
     Location.(
       fun
       | MalformedString(loc) => errorf(~loc, "Malformed string literal")
+      | IllegalCharacterLiteral(cl, loc) =>
+        errorf(
+          ~loc,
+          "This character literal contains multiple characters: '%s'\nDid you mean to create the string \"%s\" instead?",
+          cl,
+          cl,
+        )
       | MultipleModuleName(loc) =>
         errorf(~loc, "Multiple modules in identifier")
       | TypeNameShouldBeUppercase(name, loc) =>
@@ -75,6 +83,21 @@ let malformed_strings = (errs, super) => {
     | PExpConstant(PConstString(s)) =>
       if (!Utf8.validString(s)) {
         errs := [MalformedString(loc), ...errs^];
+      }
+    | _ => ()
+    };
+    super.expr(self, e);
+  };
+  let iterator = {...super, expr: iter_expr};
+  {errs, iterator};
+};
+
+let malformed_characters = (errs, super) => {
+  let iter_expr = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
+    switch (desc) {
+    | PExpConstant(PConstChar(c)) =>
+      if (Utf8.countInString(c) != 1) {
+        errs := [IllegalCharacterLiteral(c, loc), ...errs^];
       }
     | _ => ()
     };
@@ -343,6 +366,7 @@ let compose_well_formedness = ({errs, iterator}, cur) =>
 
 let well_formedness_checks = [
   malformed_strings,
+  malformed_characters,
   malformed_identifiers,
   types_have_correct_case,
   modules_have_correct_case,

@@ -177,10 +177,10 @@ let rec flatten = (list) => {
 
 let rec insert = (value, index, list) => {
   if (index < 0) {
-    fail 'insert index cannot be a negative number'
+    fail "insert index cannot be a negative number"
   } else {
     match(list) {
-      [] => if (index == 0) [value] else fail 'insert index is out-of-bounds',
+      [] => if (index == 0) [value] else fail "insert index is out-of-bounds",
       [first, ...rest] => if (index == 0) [value, ...list] else [first, ...insert(value, index - 1, rest)]
     }
   }
@@ -198,11 +198,11 @@ let count = (fn, list) => {
 
 let part = (count, list) => {
   if (count < 0) {
-    fail 'part count cannot be a negative number'
+    fail "part count cannot be a negative number"
   } else {
     let rec iter = (list1, list2, count) => {
       match (list2) {
-        [] => if (count > 0) fail 'part count is out-of-bounds' else (list1, list2),
+        [] => if (count > 0) fail "part count is out-of-bounds" else (list1, list2),
         [first, ...rest] => if (count > 0) iter([first, ...list1], rest, count - 1) else (list1, list2)
       }
     }
@@ -228,7 +228,7 @@ let unique = (list) => {
 
 let rec drop = (n, list) => {
   if (n < 0) {
-    fail 'number of items to drop cannot be a negative number'
+    fail "number of items to drop cannot be a negative number"
   } else {
     match ((n, list)) {
       (_,[]) => [],
@@ -247,7 +247,7 @@ let rec dropWhile = (fn, list) => {
 
 let rec take = (n, list) => {
   if (n < 0) {
-    fail 'number of items to take cannot be a negative number'
+    fail "number of items to take cannot be a negative number"
   } else {
     match ((n, list)) {
       (_, []) => list,

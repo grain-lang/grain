@@ -184,7 +184,8 @@ let rec analyze_comp_expression =
     | CInt64(_)
     | CFloat32(_)
     | CFloat64(_)
-    | CString(_) => true
+    | CString(_)
+    | CChar(_) => true
     };
 
   push_purity(analyses, purity);

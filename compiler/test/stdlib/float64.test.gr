@@ -1,4 +1,4 @@
-import * from 'float64'
+import * from "float64"
 
 assert fromNumber(5) == 5.0d
 assert fromNumber(0) == 0.0d

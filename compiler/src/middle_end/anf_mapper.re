@@ -120,6 +120,7 @@ module MakeMap = (Iter: MapArgument) => {
         let expr = map_anf_expression(expr);
         CLambda(idents, expr);
       | CString(s) => CString(s)
+      | CChar(c) => CChar(c)
       | CNumber(i) => CNumber(i)
       | CInt32(i) => CInt32(i)
       | CInt64(i) => CInt64(i)
