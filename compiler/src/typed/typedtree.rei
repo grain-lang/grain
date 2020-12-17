@@ -173,6 +173,7 @@ and pattern_desc =
   | TPatVar(Ident.t, loc(string))
   | TPatConstant(constant)
   | TPatTuple(list(pattern))
+  | TPatArray(list(pattern))
   | TPatRecord(
       list((loc(Identifier.t), label_description, pattern)),
       closed_flag,

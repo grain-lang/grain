@@ -7,6 +7,7 @@ export record Rec {
 
 export enum Poly {
   PList(List<Number>),
+  PArray(Array<Poly>),
   PAssoc(Rec),
   PMulti(List<String>, Number, Rec),
   PPoly(List<Poly>)
@@ -28,6 +29,10 @@ let test = (test) => {
     PPoly([PList([a]), PAssoc({foo: [b], _}), PMulti([], c, {foo: [d], _})]) => a + b + c + d,
     PPoly([]) => 42,
     PPoly([_, ..._]) => 43,
+    PArray([>]) => 44,
+    PArray([> PList([a, b])]) => a + b,
+    PArray([> PPoly([PList([a, b])]), PList([c, d])]) => a + b + c + d,
+    PArray(_) => 45
   };
   result == expected
 };
@@ -47,7 +52,11 @@ let tests = [
   (PMulti(["foo"], 17, {foo: [3, 5], bar: "bar"}), 20),
   (PPoly([PList([1]), PAssoc({foo: [2], bar: "bar"}), PMulti([], 3, {foo: [4], bar: "bar"})]), 10),
   (PPoly([]), 42),
-  (PPoly([PPoly([])]), 43)
+  (PPoly([PPoly([])]), 43),
+  (PArray([>]), 44),
+  (PArray([> PList([3, 4])]), 7),
+  (PArray([> PPoly([PList([3, 4])]), PList([5, 6])]), 18),
+  (PArray([> PList([3, 4]), PList([3, 4])]), 45),
 ];
 
 every(test, tests)

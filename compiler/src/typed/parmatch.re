@@ -151,6 +151,7 @@ let all_coherent = column => {
         false
       }
     | (TPatTuple(l1), TPatTuple(l2)) => List.length(l1) == List.length(l2)
+    | (TPatArray(_), TPatArray(_))
     | (TPatAny, _)
     | (_, TPatAny) => true
     | (_, _) => false
@@ -283,6 +284,8 @@ module Compat =
     /* More standard stuff */
     | (TPatConstant(c1), TPatConstant(c2)) => const_compare(c1, c2) == 0
     | (TPatTuple(ps), TPatTuple(qs)) => compats(ps, qs)
+    | (TPatArray(ps), TPatArray(qs)) =>
+      List.length(ps) == List.length(qs) && compats(ps, qs)
     | (_, _) => false
     }
 
@@ -343,6 +346,7 @@ let simple_match = (p1, p2) =>
     Types.equal_tag(c1.cstr_tag, c2.cstr_tag)
   | (TPatConstant(c1), TPatConstant(c2)) => const_compare(c1, c2) == 0
   | (TPatTuple(p1s), TPatTuple(p2s)) => List.length(p1s) == List.length(p2s)
+  | (TPatArray(p1s), TPatArray(p2s)) => List.length(p1s) == List.length(p2s)
   | (_, TPatAny | TPatVar(_)) => true
   | (_, _) => false
   };
@@ -353,11 +357,13 @@ let rec simple_match_args = (p1, p2) =>
   | TPatAlias(p2, _, _) => simple_match_args(p1, p2)
   | TPatConstruct(_, _, args) => args
   | TPatTuple(args) => args
+  | TPatArray(args) => args
   | TPatAny
   | TPatVar(_) =>
     switch (p1.pat_desc) {
     | TPatConstruct(_, _, args) => omega_list(args)
     | TPatTuple(args) => omega_list(args)
+    | TPatArray(args) => omega_list(args)
     | _ => []
     }
   | _ => []
@@ -376,6 +382,8 @@ let rec normalize_pat = q =>
   | TPatAlias(p, _, _) => normalize_pat(p)
   | TPatTuple(args) =>
     make_pat(TPatTuple(omega_list(args)), q.pat_type, q.pat_env)
+  | TPatArray(args) =>
+    make_pat(TPatArray(omega_list(args)), q.pat_type, q.pat_env)
   | TPatRecord(fields, c) =>
     make_pat(
       TPatRecord(List.map(((id, ld, pat)) => (id, ld, omega), fields), c),
@@ -421,6 +429,7 @@ let discr_pat = (q, pss) => {
       | TPatAny => refine_pat(acc, rows)
       | TPatTuple(_)
       | TPatRecord(_) => normalize_pat(head)
+      | TPatArray(_)
       | TPatConstant(_)
       | TPatConstruct(_) => acc
       };
@@ -457,6 +466,9 @@ let do_set_args = (erase_mutable, q, r) =>
   | {pat_desc: TPatConstruct(lid, c, omegas)} =>
     let (args, rest) = read_args(omegas, r);
     [make_pat(TPatConstruct(lid, c, args), q.pat_type, q.pat_env), ...rest];
+  | {pat_desc: TPatArray(omegas)} =>
+    let (args, rest) = read_args(omegas, r);
+    [make_pat(TPatArray(args), q.pat_type, q.pat_env), ...rest];
   | {pat_desc: TPatConstant(_) | TPatAny} => [q, ...r] /* case any is used in matching.ml */
   | _ => fatal_error("Parmatch.set_args")
   };
@@ -671,6 +683,7 @@ let full_match = (closing, env) =>
       /* extensions */
       List.length(env) == c.cstr_consts + c.cstr_nonconsts;
     }
+  | [({pat_desc: TPatArray(_)}, _), ..._]
   | [({pat_desc: TPatConstant(_)}, _), ..._] => false
   | [({pat_desc: TPatTuple(_)}, _), ..._]
   | [({pat_desc: TPatRecord(_)}, _), ..._] => true
@@ -697,6 +710,7 @@ let should_extend = (ext, env) =>
         Path.same(path, ext);
       | TPatConstant(_)
       | TPatTuple(_)
+      | TPatArray(_)
       | TPatRecord(_) => false
       | TPatAny
       | TPatVar(_)
@@ -881,6 +895,24 @@ let build_other = (ext, env) =>
       }
     | _ => build_other_constrs(env, p)
     }
+  | [({pat_desc: TPatArray(_)} as p, _), ..._] =>
+    let all_lengths =
+      List.map(
+        ((p, _)) => {
+          switch (p.pat_desc) {
+          | TPatArray(ps) => List.length(ps)
+          | _ => assert(false)
+          }
+        },
+        env,
+      );
+    let rec try_arrays = l =>
+      if (List.mem(l, all_lengths)) {
+        try_arrays(l + 1);
+      } else {
+        make_pat(TPatArray(omegas(l)), p.pat_type, p.pat_env);
+      };
+    try_arrays(0);
   | [({pat_desc: TPatConstant(Const_number(_))} as p, _), ..._] =>
     build_other_constant(
       fun
@@ -948,7 +980,8 @@ let rec has_instance = p =>
   | TPatAlias(p, _, _) => has_instance(p)
   | TPatOr(p1, p2) => has_instance(p1) || has_instance(p2)
   | TPatConstruct(_, _, ps)
-  | TPatTuple(ps) => has_instances(ps)
+  | TPatTuple(ps)
+  | TPatArray(ps) => has_instances(ps)
   | TPatRecord(fields, _) =>
     let ps = List.map(((_, _, p)) => p, fields);
     has_instances(ps);
@@ -1609,7 +1642,8 @@ let rec le_pat = (p, q) =>
   | (TPatConstant(c1), TPatConstant(c2)) => const_compare(c1, c2) == 0
   | (TPatConstruct(_, c1, ps), TPatConstruct(_, c2, qs)) =>
     Types.equal_tag(c1.cstr_tag, c2.cstr_tag) && le_pats(ps, qs)
-
+  | (TPatArray(ps), TPatArray(qs)) =>
+    List.length(ps) == List.length(qs) && le_pats(ps, qs)
   | (TPatTuple(ps), TPatTuple(qs)) => le_pats(ps, qs)
   /* In all other cases, enumeration is performed */
   | (_, _) => !satisfiable([[p]], [q])
@@ -1655,6 +1689,10 @@ let rec lub = (p, q) =>
       when Types.equal_tag(c1.cstr_tag, c2.cstr_tag) =>
     let rs = lubs(ps1, ps2);
     make_pat(TPatConstruct(lid, c1, rs), p.pat_type, p.pat_env);
+  | (TPatArray(ps1), TPatArray(ps2))
+      when List.length(ps1) == List.length(ps2) =>
+    let rs = lubs(ps1, ps2);
+    make_pat(TPatArray(rs), p.pat_type, p.pat_env);
   | (_, _) => raise(Empty)
   }
 
@@ -1760,6 +1798,7 @@ module Conv = {
       | TPatOr(pa, pb) => mkpat(PPatOr(loop(pa), loop(pb)))
       | TPatConstant(c) => mkpat(PPatConstant(untype_constant(c)))
       | TPatTuple(lst) => mkpat(PPatTuple(List.map(loop, lst)))
+      | TPatArray(lst) => mkpat(PPatArray(List.map(loop, lst)))
       | TPatRecord(fields, c) =>
         mkpat(
           PPatRecord(
@@ -1910,6 +1949,7 @@ let rec collect_paths_from_pat = (r, p) =>
   | TPatVar(_)
   | TPatConstant(_) => r
   | TPatTuple(ps) => List.fold_left(collect_paths_from_pat, r, ps)
+  | TPatArray(ps) => List.fold_left(collect_paths_from_pat, r, ps)
   | TPatRecord(fields, _) =>
     let ps = List.map(((_, _, pat)) => pat, fields);
     List.fold_left(collect_paths_from_pat, r, ps);
@@ -2063,6 +2103,7 @@ let inactive = (~partial, pat) =>
       switch (pat.pat_desc) {
       | TPatAny
       | TPatVar(_) => true
+      | TPatArray(_) => false
       | TPatConstant(c) =>
         switch (c) {
         | Const_string(_)

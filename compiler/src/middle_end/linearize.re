@@ -127,6 +127,7 @@ let transl_const =
 
 type item_get =
   | RecordPatGet(int)
+  | ArrayPatGet(int)
   | TuplePatGet(int);
 
 let rec transl_imm =
@@ -518,6 +519,11 @@ and bind_patts =
         | RecordPatGet(idx) =>
           Comp.record_get(Int32.of_int(idx), Imm.id(src))
         | TuplePatGet(idx) => Comp.tuple_get(Int32.of_int(idx), Imm.id(src))
+        | ArrayPatGet(idx) =>
+          Comp.array_get(
+            Imm.const(Const_number(Const_number_int(Int64.of_int(idx)))),
+            Imm.id(src),
+          )
         };
       let binds =
         switch (mut_flag) {
@@ -559,6 +565,17 @@ and bind_patts =
         postprocess @@
         List.mapi(
           (i, pat) => anf_patts_pass_one(tmp, TuplePatGet(i), pat),
+          patts,
+        ),
+      ));
+    | TPatArray(patts) =>
+      let tmp = gensym("arr_patt");
+      Some((
+        tmp,
+        (src, i),
+        postprocess @@
+        List.mapi(
+          (i, pat) => anf_patts_pass_one(tmp, ArrayPatGet(i), pat),
           patts,
         ),
       ));

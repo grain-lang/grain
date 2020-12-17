@@ -156,6 +156,8 @@ pattern :
   | ext_constructor { Pat.construct ~loc:(symbol_rloc dyp) $1 [] }
   | [ID | infix] { Pat.var ~loc:(symbol_rloc dyp) (mkstr dyp $1) }
   | lparen tuple_patterns rparen { Pat.tuple ~loc:(symbol_rloc dyp) $2 }
+  | lbrack rcaret patterns rbrack { Pat.array ~loc:(symbol_rloc dyp) $3 }
+  | lbrack rcaret rbrack { Pat.array ~loc:(symbol_rloc dyp) [] }
   | lparen pattern rparen { $2 }
   | lbrace record_patterns rbrace { Pat.record ~loc:(symbol_rloc dyp) $2 }
   | type_id lparen patterns rparen { Pat.construct ~loc:(symbol_rloc dyp) $1 $3 }

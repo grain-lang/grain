@@ -143,6 +143,7 @@ module Pat = {
   let any = (~loc=?, ()) => mk(~loc?, PPatAny);
   let var = (~loc=?, a) => mk(~loc?, PPatVar(a));
   let tuple = (~loc=?, a) => mk(~loc?, PPatTuple(a));
+  let array = (~loc=?, a) => mk(~loc?, PPatArray(a));
   let record = (~loc=?, a) => {
     let (patterns, closed) =
       List.fold_right(
