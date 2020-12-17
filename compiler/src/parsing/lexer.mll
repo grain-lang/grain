@@ -234,7 +234,7 @@ and read_char buf =
   | "\\'" { CHAR "'" }
   | "\\\\'" { CHAR "\\" }
   | (num_esc as esc) ''' { add_code_point buf esc (lexbuf_loc lexbuf); CHAR (Buffer.contents buf) }
-  | ([^ '\'' '\\']+ as _match) '\'' { Buffer.add_string buf _match; CHAR (Buffer.contents buf) }
+  | ([^ '\'' '\\']+ as _match) '\'' { process_newlines lexbuf; Buffer.add_string buf _match; CHAR (Buffer.contents buf) }
   | _ { raise (Error(lexbuf_loc lexbuf, IllegalStringCharacter(lexeme lexbuf))) }
 
 and read_block_comment =
