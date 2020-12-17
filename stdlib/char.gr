@@ -52,3 +52,8 @@ let pred = (c) => {
     fromCode(codePoint - 1)
   }
 }
+
+// Creates a new string containing the character.
+// @param char: Char - the character to convert
+// @returns String
+import foreign wasm toString : Char -> String from "stdlib-external/char"
