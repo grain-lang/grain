@@ -54,6 +54,7 @@ let rec pretty_val = (ppf, v) =>
     | TPatAny => fprintf(ppf, "_")
     | TPatVar(x, _) => fprintf(ppf, "%s", Ident.name(x))
     | TPatTuple(vs) => fprintf(ppf, "@[(%a)@]", pretty_vals(","), vs)
+    | TPatArray(vs) => fprintf(ppf, "@[[> %a]@]", pretty_vals(","), vs)
     | TPatRecord(lvs, c) =>
       let filtered_lvs =
         List.filter(

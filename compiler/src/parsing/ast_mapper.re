@@ -98,6 +98,7 @@ module P = {
     | PPatAny => any(~loc, ())
     | PPatVar(sl) => var(~loc, map_loc(sub, sl))
     | PPatTuple(pl) => tuple(~loc, List.map(sub.pat(sub), pl))
+    | PPatArray(pl) => array(~loc, List.map(sub.pat(sub), pl))
     | PPatRecord(fs, c) =>
       record(
         ~loc,

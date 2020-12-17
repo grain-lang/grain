@@ -87,6 +87,7 @@ module Pat: {
   let any: (~loc: loc=?, unit) => pattern;
   let var: (~loc: loc=?, str) => pattern;
   let tuple: (~loc: loc=?, list(pattern)) => pattern;
+  let array: (~loc: loc=?, list(pattern)) => pattern;
   let record:
     (~loc: loc=?, list((option((id, pattern)), Asttypes.closed_flag))) =>
     pattern;

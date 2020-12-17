@@ -194,6 +194,7 @@ and pattern_desc =
   | TPatVar(Ident.t, loc(string))
   | TPatConstant(constant)
   | TPatTuple(list(pattern))
+  | TPatArray(list(pattern))
   | TPatRecord(
       list((loc(Identifier.t), label_description, pattern)),
       closed_flag,
@@ -326,6 +327,7 @@ type typed_program = {
 let iter_pattern_desc = (f, patt) =>
   switch (patt) {
   | TPatTuple(patts)
+  | TPatArray(patts)
   | TPatConstruct(_, _, patts) => List.iter(f, patts)
   | TPatRecord(fields, _) => List.iter(((_, _, p)) => f(p), fields)
   | TPatAny
@@ -340,6 +342,7 @@ let iter_pattern_desc = (f, patt) =>
 let map_pattern_desc = (f, patt) =>
   switch (patt) {
   | TPatTuple(patts) => TPatTuple(List.map(f, patts))
+  | TPatArray(patts) => TPatArray(List.map(f, patts))
   | TPatRecord(fields, c) =>
     TPatRecord(List.map(((id, ld, pat)) => (id, ld, f(pat)), fields), c)
   | TPatAlias(p1, id, s) => TPatAlias(f(p1), id, s)

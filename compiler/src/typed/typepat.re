@@ -52,6 +52,7 @@ let iter_ppat = (f, p) =>
   | PPatVar(_)
   | PPatConstant(_) => ()
   | PPatTuple(lst) => List.iter(f, lst)
+  | PPatArray(lst) => List.iter(f, lst)
   | PPatRecord(fs, _) => List.iter(((_, p)) => f(p), fs)
   | PPatAlias(p, _)
   | PPatConstraint(p, _) => f(p)
@@ -265,6 +266,7 @@ let rec build_as_type = (env, p) =>
     ty1;
   | TPatAny
   | TPatVar(_)
+  | TPatArray(_)
   | TPatConstant(_) => p.pat_type
   };
 
@@ -652,6 +654,29 @@ and type_pat_aux =
           k,
           {
             pat_desc: TPatTuple(pl),
+            pat_loc: loc,
+            pat_extra: [],
+            pat_type: expected_ty,
+            pat_env: env^,
+          },
+        ),
+    );
+  | PPatArray(spl) =>
+    let arr_ty = newgenvar();
+    unify_pat_types(
+      loc,
+      env^,
+      Builtin_types.type_array(arr_ty),
+      expected_ty,
+    );
+    map_fold_cont(
+      p => type_pat(p, arr_ty),
+      spl,
+      pl =>
+        rp(
+          k,
+          {
+            pat_desc: TPatArray(pl),
             pat_loc: loc,
             pat_extra: [],
             pat_type: expected_ty,

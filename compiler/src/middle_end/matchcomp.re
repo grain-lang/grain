@@ -36,6 +36,7 @@ type decision_tree =
       (constructor_tag, nested_decision_tree) tuples,
       with an optional default branch. */
     Switch(
+      switch_type,
       list((int, decision_tree)),
       option(decision_tree),
     )
@@ -56,8 +57,13 @@ type decision_tree =
 
 and matrix_type =
   | TupleMatrix(int)
+  | ArrayMatrix(int)
   | RecordMatrix(array(int))
-  | ConstructorMatrix(option(int));
+  | ConstructorMatrix(option(int))
+
+and switch_type =
+  | ConstructorSwitch
+  | ArraySwitch;
 
 type conversion_result = {
   tree: decision_tree,
@@ -159,6 +165,48 @@ module MatchTreeCompiler = {
         switch (binds) {
         | [] => []
         | _ => [(tup_name, expr), ...binds]
+        };
+      | TPatArray(args) =>
+        let arr_name = Ident.create("match_bind_arr");
+        let arr_id = Imm.id(~loc, ~env, arr_name);
+        let process_nested = (other_binds, idx, nested_pat) => {
+          let this_binds =
+            if (pattern_could_contain_binding(nested_pat)) {
+              let arr_arg_name = Ident.create("match_bind_arr_arg");
+              let arr_arg_imm = Imm.id(~loc, ~env, arr_arg_name);
+              let arg_binds =
+                extract_bindings(
+                  nested_pat,
+                  Comp.imm(~loc, ~env, arr_arg_imm),
+                );
+              switch (arg_binds) {
+              | [] => []
+              | _ => [
+                  (
+                    arr_arg_name,
+                    Comp.array_get(
+                      ~loc,
+                      ~env,
+                      Imm.const(
+                        ~loc,
+                        ~env,
+                        Const_number(Const_number_int(Int64.of_int(idx))),
+                      ),
+                      arr_id,
+                    ),
+                  ),
+                  ...arg_binds,
+                ]
+              };
+            } else {
+              [];
+            };
+          this_binds @ other_binds;
+        };
+        let binds = List_utils.fold_lefti(process_nested, [], args);
+        switch (binds) {
+        | [] => []
+        | _ => [(arr_name, expr), ...binds]
         };
       | TPatRecord(fields, _) =>
         let rec_name = Ident.create("match_bind_rec");
@@ -325,6 +373,22 @@ module MatchTreeCompiler = {
               BLet(id, Comp.tuple_get(Int32.of_int(idx), cur_value));
             },
           )
+        | ArrayMatrix(arity) =>
+          List.init(
+            arity,
+            idx => {
+              let id = Ident.create("match_explode");
+              BLet(
+                id,
+                Comp.array_get(
+                  Imm.const(
+                    Const_number(Const_number_int(Int64.of_int(idx))),
+                  ),
+                  cur_value,
+                ),
+              );
+            },
+          )
         | RecordMatrix(label_poses) =>
           List.map(
             label_pos => {
@@ -349,13 +413,17 @@ module MatchTreeCompiler = {
       (rest_ans, bindings @ rest_setup);
     | Swap(idx, rest_tree) =>
       compile_tree_help(rest_tree, swap_list(idx, values), expr, helpI)
-    | Switch(branches, default_tree) =>
+    | Switch(switch_type, branches, default_tree) =>
       /* Runs when no branches match */
       let base_tree = Option.value(~default=Fail, default_tree);
       let base = compile_tree_help(base_tree, values, expr, helpI);
       let value_constr_name = Ident.create("match_constructor");
       let value_constr_id = Imm.id(value_constr_name);
-      let value_constr = Comp.adt_get_tag(cur_value);
+      let value_constr =
+        switch (switch_type) {
+        | ConstructorSwitch => Comp.adt_get_tag(cur_value)
+        | ArraySwitch => Comp.prim1(ArrayLength, cur_value)
+        };
       /* Fold left should be safe here, since there should be at most one branch
          per constructor */
       let (switch_body_ans, switch_body_setup) =
@@ -459,6 +527,8 @@ let rec matrix_type =
     ConstructorMatrix(None)
   | [([{pat_desc: TPatTuple(ps)}, ..._], _), ..._] =>
     TupleMatrix(List.length(ps))
+  | [([{pat_desc: TPatArray(ps)}, ..._], _), ..._] =>
+    ArrayMatrix(List.length(ps))
   | [([{pat_desc: TPatRecord([(_, ld, _), ..._], _)}, ..._], _), ..._] =>
     RecordMatrix(Array.map(({lbl_pos}) => lbl_pos, ld.lbl_all))
   | [_, ...rest] => matrix_type(rest);
@@ -481,6 +551,30 @@ let matrix_head_constructors = mtx => {
     | [([], _), ..._] => failwith("Impossible: Empty pattern matrix")
     | [([p, ..._], mb), ...tl] =>
       help(tl, pattern_head_constructors_aux(p, acc))
+    };
+  help(mtx, []);
+};
+
+let rec pattern_head_arities_aux = (p, acc) =>
+  switch (p.pat_desc) {
+  | TPatArray(ps) when !List.mem(List.length(ps), acc) => [
+      List.length(ps),
+      ...acc,
+    ]
+  | TPatOr(p1, p2) =>
+    pattern_head_arities_aux(p1, pattern_head_arities_aux(p2, acc))
+  | _ => acc
+  };
+
+let pattern_head_arities = patt => pattern_head_arities_aux(patt, []);
+
+let matrix_head_arities = mtx => {
+  let rec help = (mtx, acc) =>
+    switch (mtx) {
+    | [] => acc
+    | [([], _), ..._] => failwith("Impossible: Empty pattern matrix")
+    | [([p, ..._], mb), ...tl] =>
+      help(tl, pattern_head_arities_aux(p, acc))
     };
   help(mtx, []);
 };
@@ -570,6 +664,31 @@ let rec specialize_matrix = (cd, mtx) => {
   );
 };
 
+let rec specialize_array_matrix = (arity, mtx) => {
+  let rec specialized_rows = row =>
+    switch (row) {
+    | [] => failwith("Impossible: Empty pattern row in specialize_matrix")
+    | [{pat_desc} as p, ...ptl] =>
+      switch (pat_desc) {
+      | _ when pattern_always_matches(p) =>
+        let wildcards = List.init(arity, _ => {...p, pat_desc: TPatAny});
+        [wildcards @ ptl];
+      | TPatArray(args) when arity == List.length(args) => [args @ ptl]
+      | TPatOr(p1, p2) =>
+        specialized_rows([p1, ...ptl]) @ specialized_rows([p2, ...ptl])
+      | TPatAlias(p, _, _) => specialized_rows([p, ...ptl])
+      | _ => [] /* Specialization for non-arrays generates no rows. */
+      }
+    };
+
+  List.fold_right(
+    ((row, mb), rem) =>
+      List.map(patts => (patts, mb), specialized_rows(row)) @ rem,
+    mtx,
+    [],
+  );
+};
+
 /* [See paper for details]
 
       Row: ([p_1; p_2; ...], a_j)
@@ -627,6 +746,34 @@ let rec compile_matrix = mtx =>
         );
       let result = compile_matrix(mtx);
       Explode(matrix_type, result);
+    | ArrayMatrix(arity) =>
+      let arities = matrix_head_arities(mtx);
+      let handle_arity = ((_, switch_branches), arity) => {
+        let specialized = specialize_array_matrix(arity, mtx);
+        let result = compile_matrix(specialized);
+        let final_tree = Explode(ArrayMatrix(arity), result);
+        (final_tree, [(arity, final_tree), ...switch_branches]);
+      };
+
+      switch (arities) {
+      | [] =>
+        failwith(
+          "Internal error: compile_matrix: non-wildcard column returned no arities",
+        )
+      | _ =>
+        let (_, switch_branches) =
+          List.fold_left(handle_arity, (Fail, []), arities);
+
+        let default = default_matrix(mtx);
+        let default_tree =
+          if (List.length(default) != 0) {
+            let tree = compile_matrix(default);
+            Some(tree);
+          } else {
+            None;
+          };
+        Switch(ArraySwitch, switch_branches, default_tree);
+      };
     | RecordMatrix(labels) =>
       let mtx =
         List.map(
@@ -670,7 +817,7 @@ let rec compile_matrix = mtx =>
           } else {
             None;
           };
-        Switch(switch_branches, default_tree);
+        Switch(ConstructorSwitch, switch_branches, default_tree);
       };
     };
   | _ =>
@@ -766,6 +913,10 @@ let prepare_match_branches = branches => {
       | TPatTuple(args) => {
           ...pat,
           pat_desc: TPatTuple(List.map(extract_constants, args)),
+        }
+      | TPatArray(args) => {
+          ...pat,
+          pat_desc: TPatArray(List.map(extract_constants, args)),
         }
       | TPatRecord(fields, c) => {
           ...pat,

@@ -134,6 +134,7 @@ type pattern_desc =
   | PPatAny
   | PPatVar(loc(string))
   | PPatTuple(list(pattern))
+  | PPatArray(list(pattern))
   | PPatRecord(list((loc(Identifier.t), pattern)), closed_flag)
   | PPatConstant(constant)
   | PPatConstraint(pattern, parsed_type)

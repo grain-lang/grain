@@ -163,6 +163,7 @@ module MakeMap =
       | TPatConstruct(a, b, args) =>
         TPatConstruct(a, b, List.map(map_pattern, args))
       | TPatTuple(args) => TPatTuple(List.map(map_pattern, args))
+      | TPatArray(args) => TPatArray(List.map(map_pattern, args))
       | TPatRecord(fields, c) =>
         TPatRecord(
           List.map(((id, ld, pat)) => (id, ld, map_pattern(pat)), fields),
