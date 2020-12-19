@@ -113,7 +113,7 @@ function grainListToString(ptr: u32, extraIndents: u32): u32 {
         decRef(oldRet)
       }
       isFirst = false
-      let itemString = grainToStringHelp(load<u32>(cur, 4 * 5), extraIndents)
+      let itemString = grainToStringHelp(load<u32>(cur, 4 * 5), extraIndents, false)
       let oldRet = ret
       ret = concat(ret, itemString)
       decRef(oldRet)
@@ -318,12 +318,15 @@ function getUnknownValueString(): u32 {
 }
 
 
-function grainHeapValueToString(ptr: u32, extraIndents: u32): u32 {
+function grainHeapValueToString(ptr: u32, extraIndents: u32, toplevel: bool): u32 {
   // ptr can be tagged or untagged
   const untaggedPtr = ptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE
   const tag = load<u32>(untaggedPtr)
   switch (tag) {
     case GRAIN_STRING_HEAP_TAG: {
+      if (toplevel) {
+        return ptr
+      }
       return quoteString(untaggedPtr)
     }
     case GRAIN_CHAR_HEAP_TAG: {
@@ -338,10 +341,16 @@ function grainHeapValueToString(ptr: u32, extraIndents: u32): u32 {
       } else {
         numBytes = 2
       }
-      let str = allocateString(numBytes + 2)
-      store<u8>(str + 8, <u8>(0x27))
-      memory.copy(str + 9, untaggedPtr + 4, numBytes)
-      store<u8>(str + 9 + numBytes, <u8>(0x27))
+      let str: u32
+      if (toplevel) {
+        str = allocateString(numBytes)
+        memory.copy(str + 8, untaggedPtr + 4, numBytes)
+      } else {
+        str = allocateString(numBytes + 2)
+        store<u8>(str + 8, <u8>(0x27))
+        memory.copy(str + 9, untaggedPtr + 4, numBytes)
+        store<u8>(str + 9 + numBytes, <u8>(0x27))
+      }
       return str | GRAIN_GENERIC_HEAP_TAG_TYPE;
     }
     case GRAIN_ADT_HEAP_TAG: {
@@ -369,7 +378,7 @@ function grainHeapValueToString(ptr: u32, extraIndents: u32): u32 {
           decRef(oldRet)
         }
         let oldRet = ret
-        let tmp = grainToStringHelp(load<u32>(untaggedPtr + 4 * (5 + i)), extraIndents)
+        let tmp = grainToStringHelp(load<u32>(untaggedPtr + 4 * (5 + i)), extraIndents, false)
         ret = concat(ret, tmp)
         decRef(tmp)
         decRef(oldRet)
@@ -404,7 +413,7 @@ function grainHeapValueToString(ptr: u32, extraIndents: u32): u32 {
         // [NOTE] do not decRef:
         let fieldName = getRecordFieldName(moduleId, typeId, i)
         // [NOTE] *do* decRef
-        let fieldValue = grainToStringHelp(load<u32>(untaggedPtr + 4 * (4 + i)), extraIndents + 1)
+        let fieldValue = grainToStringHelp(load<u32>(untaggedPtr + 4 * (4 + i)), extraIndents + 1, false)
         // [TODO] refactor to copy less here
         let oldRet = ret
         ret = concat(ret, fieldName)
@@ -444,7 +453,7 @@ function grainHeapValueToString(ptr: u32, extraIndents: u32): u32 {
           decRef(oldRet)
         }
         let oldRet = ret
-        let tmp = grainToStringHelp(load<u32>(untaggedPtr + 4 * (2 + i)), extraIndents)
+        let tmp = grainToStringHelp(load<u32>(untaggedPtr + 4 * (2 + i)), extraIndents, false)
         ret = concat(ret, tmp)
         decRef(tmp)
         decRef(oldRet)
@@ -546,7 +555,7 @@ function grainHeapValueToString(ptr: u32, extraIndents: u32): u32 {
   }
 }
 
-function grainToStringHelp(grainValue: u32, extraIndents: u32): u32 {
+function grainToStringHelp(grainValue: u32, extraIndents: u32, toplevel: bool): u32 {
   if (!(grainValue & 1)) {
     // Simple (unboxed) numbers
     return itoa32(<i32>(grainValue) >> 1, 10)
@@ -565,7 +574,7 @@ function grainToStringHelp(grainValue: u32, extraIndents: u32): u32 {
           decRef(oldRet)
         }
         let oldRet = ret
-        let tmp = grainToStringHelp(load<u32>(ptr + ((i + 1) * 4)), extraIndents)
+        let tmp = grainToStringHelp(load<u32>(ptr + ((i + 1) * 4)), extraIndents, false)
         ret = concat(ret, tmp)
         decRef(oldRet)
         decRef(tmp)
@@ -585,7 +594,7 @@ function grainToStringHelp(grainValue: u32, extraIndents: u32): u32 {
   } else if ((grainValue & 7) == GRAIN_LAMBDA_TAG_TYPE) {
     return getLambdaString()
   } else if ((grainValue & 7) == GRAIN_GENERIC_HEAP_TAG_TYPE) {
-    return grainHeapValueToString(grainValue, extraIndents)
+    return grainHeapValueToString(grainValue, extraIndents, toplevel)
   } else if (grainValue == GRAIN_TRUE) {
     return getTrueString()
   } else if (grainValue == GRAIN_FALSE) {
@@ -600,5 +609,5 @@ function grainToStringHelp(grainValue: u32, extraIndents: u32): u32 {
 // @ts-ignore: decorator
 @inline
 export function grainToString(grainValue: u32): u32 {
-  return grainToStringHelp(grainValue, 0)
+  return grainToStringHelp(grainValue, 0, true)
 }
