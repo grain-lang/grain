@@ -106,6 +106,56 @@ export function explode(str: u32): u32 {
   return explodeHelp(str, true)
 }
 
+export function implode(arr: u32): u32 {
+  arr = arr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+
+  let arrLength = load<u32>(arr, 4)
+
+  let stringByteLength = 0
+
+  for (let i: u32 = 0; i < arrLength; i++) {
+    const char = load<u32>(arr + (i << 2), 8) ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+    const byte = load<u8>(char, 4)
+
+    let n: u32
+    if ((byte & 0x80) === 0x00) {
+      n = 1
+    } else if ((byte & 0xF0) === 0xF0) {
+      n = 4
+    } else if ((byte & 0xE0) === 0xE0) {
+      n = 3
+    } else {
+      n = 2
+    }
+
+    stringByteLength += n
+  }
+
+  let str = allocateString(stringByteLength)
+  let offset = 8
+
+  for (let i: u32 = 0; i < arrLength; i++) {
+    const char = load<u32>(arr + (i << 2), 8) ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+    const byte = load<u8>(char, 4)
+
+    let n: u32
+    if ((byte & 0x80) === 0x00) {
+      n = 1
+    } else if ((byte & 0xF0) === 0xF0) {
+      n = 4
+    } else if ((byte & 0xE0) === 0xE0) {
+      n = 3
+    } else {
+      n = 2
+    }
+
+    memory.copy(str + offset, char + 4, n)
+    offset += n
+  }
+
+  return str ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+}
+
 export function split(str: u32, pat: u32): u32 {
   let s = str ^ GRAIN_GENERIC_HEAP_TAG_TYPE
   let p = pat ^ GRAIN_GENERIC_HEAP_TAG_TYPE

@@ -74,6 +74,11 @@ let codes = [> 119, 101, 32, 102, 111, 117, 110, 100, 32, 97, 32, 112, 97, 116, 
 let chars = Array.map(Char.fromCode, codes)
 assert String.explode(emojis) == chars
 
+// implode tests
+assert String.implode([>]) == ""
+assert String.implode([> '5', ' ', '4', '3', 'a', 'b', 'c']) == "5 43abc"
+assert String.implode(String.explode(emojis)) == emojis
+
 // split tests
 assert String.split(empty, empty) == [>]
 assert String.split(short, empty) == [> "f", "o", "x"]
