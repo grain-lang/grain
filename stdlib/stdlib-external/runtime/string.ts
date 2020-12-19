@@ -1,85 +1,9 @@
 import { GRAIN_ADT_HEAP_TAG, GRAIN_ARRAY_HEAP_TAG, GRAIN_GENERIC_HEAP_TAG_TYPE, GRAIN_RECORD_HEAP_TAG, GRAIN_CHAR_HEAP_TAG, GRAIN_STRING_HEAP_TAG, GRAIN_BOXED_NUM_HEAP_TAG, GRAIN_INT32_BOXED_NUM_TAG, GRAIN_INT64_BOXED_NUM_TAG, GRAIN_RATIONAL_BOXED_NUM_TAG, GRAIN_FLOAT32_BOXED_NUM_TAG, GRAIN_FLOAT64_BOXED_NUM_TAG, GRAIN_TUPLE_TAG_TYPE, GRAIN_LAMBDA_TAG_TYPE } from '../ascutils/tags'
-import { stringSize, allocateString, loadInt32, loadInt64, loadFloat32, loadFloat64, loadRationalNumerator, loadRationalDenominator, ascStringToGrainString, singleCharacterString, twoCharacterString } from '../ascutils/dataStructures'
+import { stringSize, allocateString, loadInt32, loadInt64, loadFloat32, loadFloat64, loadRationalNumerator, loadRationalDenominator, singleByteString, twoByteString } from '../ascutils/dataStructures'
 import { GRAIN_FALSE, GRAIN_TRUE, GRAIN_VOID } from '../ascutils/primitives'
-import { decRef } from '../ascutils/grainRuntime'
-import { dtoa, itoa32, itoa64 } from '../ascutils/numberUtils'
+import { incRef, decRef } from '../ascutils/grainRuntime'
+import { dtoa, itoa32, itoa64, CharCode } from '../ascutils/numberUtils'
 import { equal } from '../equal'
-
-// Some extra char codes are here in anticipation of hand-compiling some of
-// these constant strings in the future
-// @ts-ignore: decorator
-@inline
-const enum CharCode {
-  SPACE = 0x20,
-  QUOTE = 0x22,
-  PLUS = 0x2B,
-  COMMA = 0x2C,
-  MINUS = 0x2D,
-  DOT = 0x2E,
-  _0 = 0x30,
-  _1 = 0x31,
-  _2 = 0x32,
-  _3 = 0x33,
-  _4 = 0x34,
-  _5 = 0x35,
-  _6 = 0x36,
-  _7 = 0x37,
-  _8 = 0x38,
-  _9 = 0x39,
-  LANGLE = 0x3C, // "<"
-  RANGLE = 0x3E, // ">"
-  A = 0x41,
-  B = 0x42,
-  C = 0x43,
-  D = 0x44,
-  E = 0x45,
-  F = 0x46,
-  G = 0x47,
-  H = 0x48,
-  I = 0x49,
-  J = 0x4A,
-  K = 0x4B,
-  L = 0x4C,
-  M = 0x4D,
-  N = 0x4E,
-  O = 0x4F,
-  P = 0x50,
-  Q = 0x51,
-  R = 0x52,
-  S = 0x53,
-  T = 0x54,
-  U = 0x55,
-  V = 0x56,
-  W = 0x57,
-  X = 0x58,
-  Z = 0x5A,
-  a = 0x61,
-  b = 0x62,
-  c = 0x63,
-  d = 0x64,
-  e = 0x65,
-  f = 0x66,
-  g = 0x67,
-  h = 0x68,
-  i = 0x69,
-  j = 0x6A,
-  k = 0x6B,
-  l = 0x6C,
-  m = 0x6D,
-  n = 0x6E,
-  o = 0x6F,
-  p = 0x70,
-  q = 0x71,
-  r = 0x72,
-  s = 0x73,
-  t = 0x74,
-  u = 0x75,
-  v = 0x76,
-  w = 0x77,
-  x = 0x78,
-  y = 0x79,
-  z = 0x7A
-}
 
 // Introspection helpers for to-string (will eventually be part of the AS runtime)
 // @ts-ignore: decorator
@@ -122,29 +46,60 @@ export function concat(s1: u32, s2: u32): u32 {
   return newString ^ GRAIN_GENERIC_HEAP_TAG_TYPE
 }
 
+// [HACK] the c/c1/c2 arguments of these functions are u32
+//        in order to be directly compatible with CharCode.XXX usage
+
 // @ts-ignore: decorator
 @inline
-function leftLiteralConcat(s: string, gs: u32): u32 {
-  let encString = ascStringToGrainString(s)
-  let ret = concat(encString, gs)
-  decRef(encString)
-  return ret
+function leftLiteralConcat1(c: u32, gs: u32): u32 {
+  gs = gs & ~GRAIN_GENERIC_HEAP_TAG_TYPE
+  const gsSize = stringSize(gs)
+  let newString = allocateString(gsSize + 1)
+  memory.copy(newString + 9, gs + 8, gsSize)
+  store<u8>(newString, <u8>(c), 8)
+  return newString | GRAIN_GENERIC_HEAP_TAG_TYPE
+}
+
+// @ts-ignore: decorator
+@inline
+function leftLiteralConcat2(c1: u32, c2: u32, gs: u32): u32 {
+  gs = gs & ~GRAIN_GENERIC_HEAP_TAG_TYPE
+  const gsSize = stringSize(gs)
+  let newString = allocateString(gsSize + 2)
+  memory.copy(newString + 10, gs + 8, gsSize)
+  store<u8>(newString, <u8>(c1), 8)
+  store<u8>(newString, <u8>(c2), 9)
+  return newString | GRAIN_GENERIC_HEAP_TAG_TYPE
 }
 
 
 // @ts-ignore: decorator
 @inline
-function rightLiteralConcat(gs: u32, s: string): u32 {
-  let encString = ascStringToGrainString(s)
-  let ret = concat(gs, encString)
-  decRef(encString)
-  return ret
+function rightLiteralConcat1(gs: u32, c: u32): u32 {
+  gs = gs & ~GRAIN_GENERIC_HEAP_TAG_TYPE
+  const gsSize = stringSize(gs)
+  let newString = allocateString(gsSize + 1)
+  memory.copy(newString + 8, gs + 8, gsSize)
+  store<u8>(newString + 8 + gsSize, <u8>(c))
+  return newString | GRAIN_GENERIC_HEAP_TAG_TYPE
+}
+
+// @ts-ignore: decorator
+@inline
+function rightLiteralConcat2(gs: u32, c1: u32, c2: u32): u32 {
+  gs = gs & ~GRAIN_GENERIC_HEAP_TAG_TYPE
+  const gsSize = stringSize(gs)
+  let newString = allocateString(gsSize + 2)
+  memory.copy(newString + 8, gs + 8, gsSize)
+  store<u8>(newString + 8 + gsSize, <u8>(c1))
+  store<u8>(newString + 8 + gsSize, <u8>(c2), 1)
+  return newString | GRAIN_GENERIC_HEAP_TAG_TYPE
 }
 
 function grainListToString(ptr: u32, extraIndents: u32): u32 {
   const untaggedPtr = ptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE
   let cur = untaggedPtr
-  let ret = ascStringToGrainString('[')
+  let ret = singleByteString(CharCode.LBRACK)
   let isFirst = true
 
   while (true) {
@@ -154,7 +109,7 @@ function grainListToString(ptr: u32, extraIndents: u32): u32 {
     } else {
       if (!isFirst) {
         let oldRet = ret
-        ret = rightLiteralConcat(ret, ', ')
+        ret = rightLiteralConcat2(ret, CharCode.COMMA, CharCode.SPACE)
         decRef(oldRet)
       }
       isFirst = false
@@ -166,7 +121,7 @@ function grainListToString(ptr: u32, extraIndents: u32): u32 {
     }
   }
   let oldRet = ret
-  ret = rightLiteralConcat(ret, ']')
+  ret = rightLiteralConcat1(ret, CharCode.RBRACK)
   decRef(oldRet)
   return ret
 }
@@ -180,6 +135,186 @@ function quoteString(ptr: u32): u32 {
   memory.copy(ret + 9, untaggedPtr + 8, length)
   store<u8>(ret + 9 + length, CharCode.QUOTE)
   return ret | GRAIN_GENERIC_HEAP_TAG_TYPE
+}
+
+// For performance, we intern the constants produced by grainHeapValueToString. This is handled here.
+let ADT_VALUE_STRING: u32 = -1
+let LIST_VARIANT_STRING: u32 = -1
+let RECORD_VALUE_STRING: u32 = -1
+let CYCLIC_TUPLE_STRING: u32 = -1
+let LAMBDA_STRING: u32 = -1
+let TRUE_STRING: u32 = -1
+let FALSE_STRING: u32 = -1
+let VOID_STRING: u32 = -1
+let UNKNOWN_VALUE_STRING: u32 = -1
+
+function getAdtValueString(): u32 {
+  if (ADT_VALUE_STRING == <u32>(-1)) {
+    let newString = allocateString(11)
+    store<u8>(newString, CharCode.LANGLE, 8)
+    store<u8>(newString, CharCode.a, 8 + 1)
+    store<u8>(newString, CharCode.d, 8 + 2)
+    store<u8>(newString, CharCode.t, 8 + 3)
+    store<u8>(newString, CharCode.SPACE, 8 + 4)
+    store<u8>(newString, CharCode.v, 8 + 5)
+    store<u8>(newString, CharCode.a, 8 + 6)
+    store<u8>(newString, CharCode.l, 8 + 7)
+    store<u8>(newString, CharCode.u, 8 + 8)
+    store<u8>(newString, CharCode.e, 8 + 9)
+    store<u8>(newString, CharCode.RANGLE, 8 + 10)
+    ADT_VALUE_STRING = newString | GRAIN_GENERIC_HEAP_TAG_TYPE
+    incRef(ADT_VALUE_STRING) // <- avoid value getting GC'd
+  }
+  return ADT_VALUE_STRING
+}
+
+
+function getListVariantString(): u32 {
+  if (LIST_VARIANT_STRING == <u32>(-1)) {
+    let newString = allocateString(5)
+    store<u8>(newString, CharCode.LBRACK, 8)
+    store<u8>(newString, CharCode.DOT, 8 + 1)
+    store<u8>(newString, CharCode.DOT, 8 + 2)
+    store<u8>(newString, CharCode.DOT, 8 + 3)
+    store<u8>(newString, CharCode.RBRACK, 8 + 4)
+    LIST_VARIANT_STRING = newString | GRAIN_GENERIC_HEAP_TAG_TYPE
+    incRef(LIST_VARIANT_STRING) // <- avoid value getting GC'd
+  }
+  return LIST_VARIANT_STRING
+}
+
+
+function getRecordValueString(): u32 {
+  if (RECORD_VALUE_STRING == <u32>(-1)) {
+    let newString = allocateString(14)
+    store<u8>(newString, CharCode.LANGLE, 8)
+    store<u8>(newString, CharCode.r, 8 + 1)
+    store<u8>(newString, CharCode.e, 8 + 2)
+    store<u8>(newString, CharCode.c, 8 + 3)
+    store<u8>(newString, CharCode.o, 8 + 4)
+    store<u8>(newString, CharCode.r, 8 + 5)
+    store<u8>(newString, CharCode.d, 8 + 6)
+    store<u8>(newString, CharCode.SPACE, 8 + 7)
+    store<u8>(newString, CharCode.v, 8 + 8)
+    store<u8>(newString, CharCode.a, 8 + 9)
+    store<u8>(newString, CharCode.l, 8 + 10)
+    store<u8>(newString, CharCode.u, 8 + 11)
+    store<u8>(newString, CharCode.e, 8 + 12)
+    store<u8>(newString, CharCode.RANGLE, 8 + 13)
+    RECORD_VALUE_STRING = newString | GRAIN_GENERIC_HEAP_TAG_TYPE
+    incRef(RECORD_VALUE_STRING) // <- avoid value getting GC'd
+  }
+  return RECORD_VALUE_STRING
+}
+
+
+function getCyclicTupleString(): u32 {
+  if (CYCLIC_TUPLE_STRING == <u32>(-1)) {
+    let newString = allocateString(14)
+    store<u8>(newString, CharCode.LANGLE, 8)
+    store<u8>(newString, CharCode.c, 8 + 1)
+    store<u8>(newString, CharCode.y, 8 + 2)
+    store<u8>(newString, CharCode.c, 8 + 3)
+    store<u8>(newString, CharCode.l, 8 + 4)
+    store<u8>(newString, CharCode.i, 8 + 5)
+    store<u8>(newString, CharCode.c, 8 + 6)
+    store<u8>(newString, CharCode.SPACE, 8 + 7)
+    store<u8>(newString, CharCode.t, 8 + 8)
+    store<u8>(newString, CharCode.u, 8 + 9)
+    store<u8>(newString, CharCode.p, 8 + 10)
+    store<u8>(newString, CharCode.l, 8 + 11)
+    store<u8>(newString, CharCode.e, 8 + 12)
+    store<u8>(newString, CharCode.RANGLE, 8 + 13)
+    CYCLIC_TUPLE_STRING = newString | GRAIN_GENERIC_HEAP_TAG_TYPE
+    incRef(CYCLIC_TUPLE_STRING) // <- avoid value getting GC'd
+  }
+  return CYCLIC_TUPLE_STRING
+}
+
+
+function getLambdaString(): u32 {
+  if (LAMBDA_STRING == <u32>(-1)) {
+    let newString = allocateString(8)
+    store<u8>(newString, CharCode.LANGLE, 8)
+    store<u8>(newString, CharCode.l, 8 + 1)
+    store<u8>(newString, CharCode.a, 8 + 2)
+    store<u8>(newString, CharCode.m, 8 + 3)
+    store<u8>(newString, CharCode.b, 8 + 4)
+    store<u8>(newString, CharCode.d, 8 + 5)
+    store<u8>(newString, CharCode.a, 8 + 6)
+    store<u8>(newString, CharCode.RANGLE, 8 + 7)
+    LAMBDA_STRING = newString | GRAIN_GENERIC_HEAP_TAG_TYPE
+    incRef(LAMBDA_STRING) // <- avoid value getting GC'd
+  }
+  return LAMBDA_STRING
+}
+
+
+function getTrueString(): u32 {
+  if (TRUE_STRING == <u32>(-1)) {
+    let newString = allocateString(4)
+    store<u8>(newString, CharCode.t, 8)
+    store<u8>(newString, CharCode.r, 8 + 1)
+    store<u8>(newString, CharCode.u, 8 + 2)
+    store<u8>(newString, CharCode.e, 8 + 3)
+    TRUE_STRING = newString | GRAIN_GENERIC_HEAP_TAG_TYPE
+    incRef(TRUE_STRING) // <- avoid value getting GC'd
+  }
+  return TRUE_STRING
+}
+
+
+function getFalseString(): u32 {
+  if (FALSE_STRING == <u32>(-1)) {
+    let newString = allocateString(5)
+    store<u8>(newString, CharCode.f, 8)
+    store<u8>(newString, CharCode.a, 8 + 1)
+    store<u8>(newString, CharCode.l, 8 + 2)
+    store<u8>(newString, CharCode.s, 8 + 3)
+    store<u8>(newString, CharCode.e, 8 + 4)
+    FALSE_STRING = newString | GRAIN_GENERIC_HEAP_TAG_TYPE
+    incRef(FALSE_STRING) // <- avoid value getting GC'd
+  }
+  return FALSE_STRING
+}
+
+
+function getVoidString(): u32 {
+  if (VOID_STRING == <u32>(-1)) {
+    let newString = allocateString(4)
+    store<u8>(newString, CharCode.v, 8)
+    store<u8>(newString, CharCode.o, 8 + 1)
+    store<u8>(newString, CharCode.i, 8 + 2)
+    store<u8>(newString, CharCode.d, 8 + 3)
+    VOID_STRING = newString | GRAIN_GENERIC_HEAP_TAG_TYPE
+    incRef(VOID_STRING) // <- avoid value getting GC'd
+  }
+  return VOID_STRING
+}
+
+
+function getUnknownValueString(): u32 {
+  if (UNKNOWN_VALUE_STRING == <u32>(-1)) {
+    let newString = allocateString(15)
+    store<u8>(newString, CharCode.LANGLE, 8)
+    store<u8>(newString, CharCode.U, 8 + 1)
+    store<u8>(newString, CharCode.n, 8 + 2)
+    store<u8>(newString, CharCode.k, 8 + 3)
+    store<u8>(newString, CharCode.n, 8 + 4)
+    store<u8>(newString, CharCode.o, 8 + 5)
+    store<u8>(newString, CharCode.w, 8 + 6)
+    store<u8>(newString, CharCode.n, 8 + 7)
+    store<u8>(newString, CharCode.SPACE, 8 + 8)
+    store<u8>(newString, CharCode.v, 8 + 9)
+    store<u8>(newString, CharCode.a, 8 + 10)
+    store<u8>(newString, CharCode.l, 8 + 11)
+    store<u8>(newString, CharCode.u, 8 + 12)
+    store<u8>(newString, CharCode.e, 8 + 13)
+    store<u8>(newString, CharCode.RANGLE, 8 + 14)
+    UNKNOWN_VALUE_STRING = newString | GRAIN_GENERIC_HEAP_TAG_TYPE
+    incRef(UNKNOWN_VALUE_STRING) // <- avoid value getting GC'd
+  }
+  return UNKNOWN_VALUE_STRING
 }
 
 
@@ -216,22 +351,21 @@ function grainHeapValueToString(ptr: u32, extraIndents: u32): u32 {
       let typeId = load<i32>(untaggedPtr, 4 * 2) >> 1
       let variantId = load<i32>(untaggedPtr, 4 * 3) >> 1
       // probably a linking issue!
-      if (!variantExists(moduleId, typeId, variantId)) return ascStringToGrainString("<adt value>")
+      if (!variantExists(moduleId, typeId, variantId)) return getAdtValueString()
       let variantName: u32 = getVariantName(moduleId, typeId, variantId)
       // Check if this is a list
       // (hack to get list printing correct)
-      let listVariant = ascStringToGrainString('[...]')
+      let listVariant = getListVariantString()
       let isList = equal(variantName, listVariant) == GRAIN_TRUE
-      decRef(listVariant)
       if (isList) return grainListToString(untaggedPtr, extraIndents)
       let variantArity = getVariantArity(moduleId, typeId, variantId)
       if (variantArity == 0) return variantName
       // [NOTE] do not decRef variantName!
-      let ret = rightLiteralConcat(variantName, '(')
+      let ret = rightLiteralConcat1(variantName, CharCode.LPAREN)
       for (let i = 0; i < variantArity; ++i) {
         if (i > 0) {
           let oldRet = ret
-          ret = rightLiteralConcat(ret, ', ')
+          ret = rightLiteralConcat2(ret, CharCode.COMMA, CharCode.SPACE)
           decRef(oldRet)
         }
         let oldRet = ret
@@ -240,28 +374,28 @@ function grainHeapValueToString(ptr: u32, extraIndents: u32): u32 {
         decRef(tmp)
         decRef(oldRet)
       }
-      return rightLiteralConcat(ret, ')')
+      return rightLiteralConcat1(ret, CharCode.RPAREN)
     }
     case GRAIN_RECORD_HEAP_TAG: {
       // these are tagged ints
       let moduleId = load<i32>(untaggedPtr, 4 * 1) >> 1
       let typeId = load<i32>(untaggedPtr, 4 * 2) >> 1
       // probably a linking issue!
-      if (!recordTypeExists(moduleId, typeId)) return ascStringToGrainString('<record value>')
+      if (!recordTypeExists(moduleId, typeId)) return getRecordValueString()
       let recordArity = getRecordArity(moduleId, typeId)
-      if (recordArity == 0) return ascStringToGrainString('<record value>')
-      let lastSpacePadding = ascStringToGrainString('')
-      let spacePadding = ascStringToGrainString('  ')
+      if (recordArity == 0) return getRecordValueString()
+      let lastSpacePadding = allocateString(0) | GRAIN_GENERIC_HEAP_TAG_TYPE
+      let spacePadding = twoByteString(CharCode.SPACE, CharCode.SPACE)
       for (let i: u32 = 0; i < extraIndents; ++i) {
         decRef(lastSpacePadding)
         lastSpacePadding = spacePadding
-        spacePadding = rightLiteralConcat(spacePadding, '  ')
+        spacePadding = rightLiteralConcat2(spacePadding, CharCode.SPACE, CharCode.SPACE)
       }
-      let ret = leftLiteralConcat('{\n', spacePadding)
+      let ret = leftLiteralConcat2(CharCode.LBRACE, CharCode.NEWLINE, spacePadding)
       for (let i = 0; i < recordArity; ++i) {
         if (i > 0) {
           let oldRet = ret
-          ret = rightLiteralConcat(ret, ',\n')
+          ret = rightLiteralConcat2(ret, CharCode.COMMA, CharCode.NEWLINE)
           decRef(oldRet)
           oldRet = ret
           ret = concat(ret, spacePadding)
@@ -276,7 +410,7 @@ function grainHeapValueToString(ptr: u32, extraIndents: u32): u32 {
         ret = concat(ret, fieldName)
         decRef(oldRet)
         oldRet = ret
-        ret = rightLiteralConcat(ret, ': ')
+        ret = rightLiteralConcat2(ret, CharCode.COLON, CharCode.SPACE)
         decRef(oldRet)
         oldRet = ret
         ret = concat(ret, fieldValue)
@@ -285,24 +419,28 @@ function grainHeapValueToString(ptr: u32, extraIndents: u32): u32 {
       }
       decRef(spacePadding)
       let oldRet = ret
-      ret = rightLiteralConcat(ret, '\n')
+      ret = rightLiteralConcat1(ret, CharCode.NEWLINE)
       decRef(oldRet)
       oldRet = ret
       ret = concat(ret, lastSpacePadding)
       decRef(oldRet)
       oldRet = ret
-      ret = rightLiteralConcat(ret, '}')
+      ret = rightLiteralConcat1(ret, CharCode.RBRACE)
       decRef(oldRet)
       decRef(lastSpacePadding)
       return ret
     }
     case GRAIN_ARRAY_HEAP_TAG: {
-      let ret = ascStringToGrainString("[> ")
+      let ret = allocateString(3)
+      store<u8>(ret, CharCode.LBRACK, 8)
+      store<u8>(ret, CharCode.RANGLE, 8 + 1)
+      store<u8>(ret, CharCode.SPACE, 8 + 2)
+      ret = ret | GRAIN_GENERIC_HEAP_TAG_TYPE
       let arity = load<i32>(untaggedPtr, 4 * 1)
       for (let i = 0; i < arity; ++i) {
         if (i > 0) {
           let oldRet = ret
-          ret = rightLiteralConcat(ret, ', ')
+          ret = rightLiteralConcat2(ret, CharCode.COMMA, CharCode.SPACE)
           decRef(oldRet)
         }
         let oldRet = ret
@@ -312,7 +450,7 @@ function grainHeapValueToString(ptr: u32, extraIndents: u32): u32 {
         decRef(oldRet)
       }
       let oldRet = ret
-      ret = rightLiteralConcat(ret, ']')
+      ret = rightLiteralConcat1(ret, CharCode.RBRACK)
       decRef(oldRet)
       return ret
     }
@@ -330,7 +468,7 @@ function grainHeapValueToString(ptr: u32, extraIndents: u32): u32 {
           let denominator = loadRationalDenominator(untaggedPtr)
           let ret = itoa32(numerator, 10)
           let oldRet = ret
-          ret = rightLiteralConcat(ret, '/')
+          ret = rightLiteralConcat1(ret, CharCode.SLASH)
           decRef(oldRet)
           oldRet = ret
           let tmp = itoa32(denominator, 10)
@@ -349,16 +487,60 @@ function grainHeapValueToString(ptr: u32, extraIndents: u32): u32 {
     }
     default: {
       let tmp = itoa32(tag, 16)
-      let tmp2 = rightLiteralConcat(tmp, " | value: 0x")
+      let tmp2Rhs = allocateString(12)
+      store<u8>(tmp2Rhs, CharCode.SPACE, 8)
+      store<u8>(tmp2Rhs, CharCode.PIPE, 8 + 1)
+      store<u8>(tmp2Rhs, CharCode.SPACE, 8 + 2)
+      store<u8>(tmp2Rhs, CharCode.v, 8 + 3)
+      store<u8>(tmp2Rhs, CharCode.a, 8 + 4)
+      store<u8>(tmp2Rhs, CharCode.l, 8 + 5)
+      store<u8>(tmp2Rhs, CharCode.u, 8 + 6)
+      store<u8>(tmp2Rhs, CharCode.e, 8 + 7)
+      store<u8>(tmp2Rhs, CharCode.COLON, 8 + 8)
+      store<u8>(tmp2Rhs, CharCode.SPACE, 8 + 9)
+      store<u8>(tmp2Rhs, CharCode._0, 8 + 10)
+      store<u8>(tmp2Rhs, CharCode.x, 8 + 11)
+      tmp2Rhs = tmp2Rhs | GRAIN_GENERIC_HEAP_TAG_TYPE
+      let tmp2 = concat(tmp, tmp2Rhs)
       let tmp3 = itoa32(ptr, 16)
       let tmp4 = concat(tmp2, tmp3)
-      let tmp5 = rightLiteralConcat(tmp4, ">")
-      let ret = leftLiteralConcat("<unknown heap tag type: 0x", tmp5)
+      let tmp5 = rightLiteralConcat1(tmp4, CharCode.RANGLE)
+      let retLhs = allocateString(26)
+      store<u8>(retLhs, CharCode.LANGLE, 8)
+      store<u8>(retLhs, CharCode.u, 8 + 1)
+      store<u8>(retLhs, CharCode.n, 8 + 2)
+      store<u8>(retLhs, CharCode.k, 8 + 4)
+      store<u8>(retLhs, CharCode.n, 8 + 3)
+      store<u8>(retLhs, CharCode.o, 8 + 5)
+      store<u8>(retLhs, CharCode.w, 8 + 6)
+      store<u8>(retLhs, CharCode.n, 8 + 7)
+      store<u8>(retLhs, CharCode.SPACE, 8 + 8)
+      store<u8>(retLhs, CharCode.h, 8 + 9)
+      store<u8>(retLhs, CharCode.e, 8 + 10)
+      store<u8>(retLhs, CharCode.a, 8 + 11)
+      store<u8>(retLhs, CharCode.p, 8 + 12)
+      store<u8>(retLhs, CharCode.SPACE, 8 + 13)
+      store<u8>(retLhs, CharCode.t, 8 + 14)
+      store<u8>(retLhs, CharCode.a, 8 + 15)
+      store<u8>(retLhs, CharCode.g, 8 + 16)
+      store<u8>(retLhs, CharCode.SPACE, 8 + 17)
+      store<u8>(retLhs, CharCode.t, 8 + 18)
+      store<u8>(retLhs, CharCode.y, 8 + 19)
+      store<u8>(retLhs, CharCode.p, 8 + 20)
+      store<u8>(retLhs, CharCode.e, 8 + 21)
+      store<u8>(retLhs, CharCode.COLON, 8 + 22)
+      store<u8>(retLhs, CharCode.SPACE, 8 + 23)
+      store<u8>(retLhs, CharCode._0, 8 + 24)
+      store<u8>(retLhs, CharCode.x, 8 + 25)
+      retLhs = retLhs | GRAIN_GENERIC_HEAP_TAG_TYPE
+      let ret = concat(retLhs, tmp5)
       decRef(tmp5)
       decRef(tmp4)
       decRef(tmp3)
       decRef(tmp2)
+      decRef(tmp2Rhs)
       decRef(tmp)
+      decRef(retLhs)
       return ret
     }
   }
@@ -372,14 +554,14 @@ function grainToStringHelp(grainValue: u32, extraIndents: u32): u32 {
     let ptr = grainValue ^ 1
     let tupleLength = load<u32>(ptr)
     if (tupleLength & 0x80000000) {
-      return ascStringToGrainString("<cyclic tuple>"); // ${grainValue & 0x7FFFFFFF}
+      return getCyclicTupleString() // ${grainValue & 0x7FFFFFFF}
     } else {
       store<u32>(ptr, 0x80000000 | tupleLength)
-      let ret = ascStringToGrainString("(")
+      let ret = singleByteString(CharCode.LPAREN)
       for (let i: u32 = 0; i < tupleLength; ++i) {
         if (i > 0) {
           let oldRet = ret
-          ret = rightLiteralConcat(ret, ", ")
+          ret = rightLiteralConcat2(ret, CharCode.COMMA, CharCode.SPACE)
           decRef(oldRet)
         }
         let oldRet = ret
@@ -392,26 +574,26 @@ function grainToStringHelp(grainValue: u32, extraIndents: u32): u32 {
       if (tupleLength <= 1) {
         // Special case: unary tuple
         let oldRet = ret
-        ret = rightLiteralConcat(ret, ",")
+        ret = rightLiteralConcat1(ret, CharCode.COMMA)
         decRef(oldRet)
       }
       let oldRet = ret
-      ret = rightLiteralConcat(ret, ")")
+      ret = rightLiteralConcat1(ret, CharCode.RPAREN)
       decRef(oldRet)
       return ret
     }
   } else if ((grainValue & 7) == GRAIN_LAMBDA_TAG_TYPE) {
-    return ascStringToGrainString("<lambda>")
+    return getLambdaString()
   } else if ((grainValue & 7) == GRAIN_GENERIC_HEAP_TAG_TYPE) {
     return grainHeapValueToString(grainValue, extraIndents)
   } else if (grainValue == GRAIN_TRUE) {
-    return ascStringToGrainString("true")
+    return getTrueString()
   } else if (grainValue == GRAIN_FALSE) {
-    return ascStringToGrainString("false")
+    return getFalseString()
   } else if (grainValue == GRAIN_VOID) {
-    return ascStringToGrainString("void")
+    return getVoidString()
   } else {
-    return ascStringToGrainString("<Unknown value>")
+    return getUnknownValueString()
   }
 }
 

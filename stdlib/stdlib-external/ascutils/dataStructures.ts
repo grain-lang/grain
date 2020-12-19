@@ -82,24 +82,20 @@ export function allocateChar(): u32 {
   return char
 }
 
-export function singleCharacterString(char: u8): u32 {
+// [HACK] the char/char1/char2 arguments of these functions are u32
+//        in order to be directly compatible with CharCode.XXX usage
+
+export function singleByteString(char: u32): u32 {
   let s = allocateString(1)
-  store<u8>(s, char, 8)
+  store<u8>(s, <u8>(char), 8)
   return s | GRAIN_GENERIC_HEAP_TAG_TYPE
 }
 
-export function twoCharacterString(char1: u8, char2: u8): u32 {
+export function twoByteString(char1: u32, char2: u32): u32 {
   let s = allocateString(2)
-  store<u8>(s, char1, 8)
-  store<u8>(s, char2, 8 + 1)
+  store<u8>(s, <u8>(char1), 8)
+  store<u8>(s, <u8>(char2), 8 + 1)
   return s | GRAIN_GENERIC_HEAP_TAG_TYPE
-}
-
-export function ascStringToGrainString(str: string): u32 {
-  let utf8Size = String.UTF8.byteLength(str, false)
-  let dest = allocateString(utf8Size)
-  String.UTF8.encodeUnsafe(changetype<usize>(str), utf8Size, dest + 8, false)
-  return dest | GRAIN_GENERIC_HEAP_TAG_TYPE
 }
 
 // [TODO] should probably migrate over the accessors in numbers.ts
