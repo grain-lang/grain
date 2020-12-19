@@ -907,14 +907,14 @@ let loop_tests = [
 
 let oom = [
   tgcerr("oomgc1", 70, "(1, (3, 4))", "Out of memory"),
-  tgc("oomgc2", 96, "(1, (3, 4))", "(1, (3, 4))"),
-  tgc("oomgc3", 64, "(3, 4)", "(3, 4)"),
+  tgc("oomgc2", 356, "(1, (3, 4))", "(1, (3, 4))"),
+  tgc("oomgc3", 256, "(3, 4)", "(3, 4)"),
 ];
 
 let gc = [
   tgc(
     "gc1",
-    96,
+    256,
     "let f = (() => (1, 2));\n       {\n         f();\n         f();\n         f();\n         f()\n       }",
     "(1, 2)",
   ),
@@ -1766,13 +1766,13 @@ let number_tests = [
   te("numbers13", "9 / 0", "denominator of zero"),
   // basic syntax tests
   t("number_syntax1", "1.2", "1.2"),
-  t("number_syntax2", "1.", "1"),
+  t("number_syntax2", "1.", "1.0"),
   t("number_syntax3", ".2", "0.2"),
   te("number_syntax4", ".", "Syntax error"),
   t("number_syntax5", "1.2d", "1.2"),
-  t("number_syntax6", "1.2f", "1.2000000476837158"),
-  t("number_syntax7", "1e2", "100"),
-  t("number_syntax8", "1.2e2", "120"),
+  t("number_syntax6", "1.2f", "1.2000000476837159"),
+  t("number_syntax7", "1e2", "100.0"),
+  t("number_syntax8", "1.2e2", "120.0"),
   t("number_syntax9", "1l", "1"),
   t("number_syntax10", "1L", "1"),
   // syntax errors

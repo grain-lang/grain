@@ -51,7 +51,7 @@ primitive assert : Bool -> Void = "@assert"
 primitive fail : String -> a = "@fail"
 
 // Prints the given value to the console.
-import foreign wasm print : a -> Void from "grainBuiltins"
+import foreign wasm print : a -> Void from "stdlib-external/runtime"
 
 // Checks the given items for structural equality.
 import foreign wasm equal : (a, a) -> Bool as (==) from "stdlib-external/runtime"
@@ -62,7 +62,7 @@ primitive (is) : (a, a) -> Bool = "@is"
 let (isnt) : (a, a) -> Bool = (x, y) => !(x is y)
 
 // Converts the given value to a string
-import foreign wasm toString : a -> String from "grainBuiltins"
+import foreign wasm grainToString : a -> String as toString from "stdlib-external/runtime"
 
 export enum List<a> { [], [...](a, List<a>) }
 

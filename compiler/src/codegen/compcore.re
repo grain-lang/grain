@@ -49,7 +49,6 @@ let stdlib_external_runtime_mod =
 let console_mod = Ident.create_persistent("console");
 let check_memory_ident = Ident.create_persistent("checkMemory");
 let throw_error_ident = Ident.create_persistent("throwError");
-let log_ident = Ident.create_persistent("log");
 let malloc_ident = Ident.create_persistent("malloc");
 let incref_ident = Ident.create_persistent("incRef");
 let new_rational_ident = Ident.create_persistent("newRational");
@@ -287,13 +286,6 @@ let runtime_global_imports = [
 let runtime_function_imports =
   List.append(
     [
-      {
-        mimp_mod: console_mod,
-        mimp_name: log_ident,
-        mimp_type: MFuncImport([I32Type], [I32Type]),
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
       {
         mimp_mod: runtime_mod,
         mimp_name: check_memory_ident,
@@ -559,13 +551,6 @@ let call_runtime_throw_error = (wasm_mod, env, args) =>
     get_imported_name(runtime_mod, throw_error_ident),
     args,
     Type.none,
-  );
-let call_console_log = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    get_imported_name(runtime_mod, log_ident),
-    args,
-    Type.int32,
   );
 
 let call_malloc = (wasm_mod, env, args) =>
@@ -1510,16 +1495,6 @@ let cleanup_locals = (wasm_mod, env: codegen_env, arg): Expression.t => {
      - Move the current stack value into a designated return-value holder slot (maybe swap is fine)
      - Call incref() on the return value (to prevent premature free)
      - Call decref() on all locals (should include return value) */
-  let decref_args = [get_swap(wasm_mod, env, 0)];
-  let decref_args =
-    if (memory_tracing_enabled) {
-      List.append(
-        decref_args,
-        [Expression.const(wasm_mod, const_int32(-1))],
-      );
-    } else {
-      decref_args;
-    };
   Expression.block(wasm_mod, gensym_label("cleanup_locals")) @@
   Concatlist.list_of_t(
     singleton(
@@ -1531,7 +1506,7 @@ let cleanup_locals = (wasm_mod, env: codegen_env, arg): Expression.t => {
       ),
     )
     @ cleanup_local_slot_instructions(wasm_mod, env)
-    +@ [call_decref_cleanup_locals(wasm_mod, env, decref_args)],
+    +@ [get_swap(wasm_mod, env, 0)],
   );
 };
 
@@ -2874,7 +2849,7 @@ let allocate_record = (wasm_mod, env, ttag, elts) => {
       ~offset=4 * (idx + 4),
       wasm_mod,
       get_swap(),
-      compile_imm(wasm_mod, env, elt),
+      call_incref_box(wasm_mod, env, compile_imm(wasm_mod, env, elt)),
     );
 
   let preamble = [
@@ -3184,14 +3159,12 @@ let rec compile_store = (wasm_mod, env, binds) => {
             store_bind_no_incref,
           )
         /* HACK: We expect values returned from functions to have a refcount of 1, so we don't increment it when storing */
-        /* | (MCallIndirect _) */
+        | MCallIndirect(_)
         | MCallKnown(_)
         | MAllocate(_) => (
             compile_instr(wasm_mod, env, instr),
             store_bind_no_incref,
           )
-        /* [TODO] I think this is wrong? See commented out line above */
-        | MCallIndirect(_)
         | _ => (compile_instr(wasm_mod, env, instr), store_bind)
         };
       [store_bind(compiled_instr), ...acc];

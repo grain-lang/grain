@@ -1,5 +1,5 @@
 import { GRAIN_GENERIC_HEAP_TAG_TYPE } from './ascutils/tags'
-import { newInt32, rawInt32Ptr } from "./ascutils/dataStructures";
+import { newInt32, rawInt32Ptr, loadInt32, loadInt32Unsigned } from "./ascutils/dataStructures";
 import { GRAIN_FALSE, GRAIN_TRUE } from "./ascutils/primitives";
 import {
   GRAIN_ERR_DIVISION_BY_ZERO,
@@ -7,76 +7,65 @@ import {
 } from './ascutils/errors'
 import { throwError } from './ascutils/grainRuntime'
 
-// @ts-ignore: decorator
-@inline
-function loadI32(xptr: u32): i32 {
-  return load<i32>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
-}
-
-// @ts-ignore: decorator
-@inline
-function loadU32(xptr: u32): u32 {
-  return load<u32>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
-}
 
 export function incr(x: u32): u32 {
-  const result = loadI32(x) + 1
+  const result = loadInt32(x) + 1
   return newInt32(result)
 }
 
 export function decr(x: u32): u32 {
-  const result = loadI32(x) - 1
+  const result = loadInt32(x) - 1
   return newInt32(result)
 }
 
 export function add(x: u32, y: u32): u32 {
-  const result = loadI32(x) + loadI32(y)
+  const result = loadInt32(x) + loadInt32(y)
   return newInt32(result)
 }
 
 export function sub(x: u32, y: u32): u32 {
-  const result = loadI32(x) - loadI32(y)
+  const result = loadInt32(x) - loadInt32(y)
   return newInt32(result)
 }
 
 export function mul(x: u32, y: u32): u32 {
-  const result = loadI32(x) * loadI32(y)
+  const result = loadInt32(x) * loadInt32(y)
   return newInt32(result)
 }
 
 export function div(x: u32, y: u32): u32 {
-  const yval = loadI32(y)
+  const yval = loadInt32(y)
   if (yval == 0) {
     throwError(GRAIN_ERR_DIVISION_BY_ZERO, 0, 0)
   }
-  const result = loadI32(x) / yval
+  const result = loadInt32(x) / yval
   return newInt32(result)
 }
 
 export function divU(x: u32, y: u32): u32 {
-  const yval = loadU32(y)
+  const yval = loadInt32Unsigned(y)
   if (yval == 0) {
     throwError(GRAIN_ERR_DIVISION_BY_ZERO, 0, 0)
   }
-  const result = loadU32(x) / yval
+  const result = loadInt32Unsigned(x) / yval
   return newInt32(result)
 }
 
 export function rem(x: u32, y: u32): u32 {
-  const yval = loadI32(y)
+  const yval = loadInt32(y)
   if (yval == 0) {
     throwError(GRAIN_ERR_DIVISION_BY_ZERO, 0, 0)
   }
-  const result = loadI32(x) % yval
+  const result = loadInt32(x) % yval
   return newInt32(result)
 }
 
 export function remU(x: u32, y: u32): u32 {
-  const yval = loadU32(y)
+  const yval = loadInt32Unsigned(y)
   if (yval == 0) {
     throwError(GRAIN_ERR_DIVISION_BY_ZERO, 0, 0)
   }
-  const result = loadU32(x) % yval
+  const result = loadInt32Unsigned(x) % yval
   return newInt32(result)
 }
 
@@ -101,57 +90,57 @@ export function mod(x: u32, y: u32): u32 {
 }
 
 export function lt(x: u32, y: u32): u32 {
-  const result = loadI32(x) < loadI32(y)
+  const result = loadInt32(x) < loadInt32(y)
   return result ? GRAIN_TRUE : GRAIN_FALSE
 }
 
 export function gt(x: u32, y: u32): u32 {
-  const result = loadI32(x) > loadI32(y)
+  const result = loadInt32(x) > loadInt32(y)
   return result ? GRAIN_TRUE : GRAIN_FALSE
 }
 
 export function lte(x: u32, y: u32): u32 {
-  const result = loadI32(x) <= loadI32(y)
+  const result = loadInt32(x) <= loadInt32(y)
   return result ? GRAIN_TRUE : GRAIN_FALSE
 }
 
 export function gte(x: u32, y: u32): u32 {
-  const result = loadI32(x) >= loadI32(y)
+  const result = loadInt32(x) >= loadInt32(y)
   return result ? GRAIN_TRUE : GRAIN_FALSE
 }
 
 export function lnot(x: u32): u32 {
-  const result = ~loadI32(x)
+  const result = ~loadInt32(x)
   return newInt32(result)
 }
 
 export function land(x: u32, y: u32): u32 {
-  const result = loadI32(x) & loadI32(y)
+  const result = loadInt32(x) & loadInt32(y)
   return newInt32(result)
 }
 
 export function lor(x: u32, y: u32): u32 {
-  const result = loadI32(x) | loadI32(y)
+  const result = loadInt32(x) | loadInt32(y)
   return newInt32(result)
 }
 
 export function lxor(x: u32, y: u32): u32 {
-  const result = loadI32(x) ^ loadI32(y)
+  const result = loadInt32(x) ^ loadInt32(y)
   return newInt32(result)
 }
 
 export function shl(x: u32, y: u32): u32 {
-  const result = loadI32(x) << loadI32(y)
+  const result = loadInt32(x) << loadInt32(y)
   return newInt32(result)
 }
 
 export function shr(x: u32, y: u32): u32 {
-  const result = loadI32(x) >> loadI32(y)
+  const result = loadInt32(x) >> loadInt32(y)
   return newInt32(result)
 }
 
 export function shrU(x: u32, y: u32): u32 {
-  const result = loadI32(x) >>> loadI32(y)
+  const result = loadInt32(x) >>> loadInt32(y)
   return newInt32(result)
 }
 

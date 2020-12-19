@@ -25,26 +25,6 @@ import {
   GRAIN_VOID
 } from '../core/primitives';
 
-export function grainListToString(runtime, n) {
-  const view = managedMemory.view;
-
-  let cur = n;
-  let printedVals = [];
-
-  while (true) {
-    let x = cur / 4;
-    let variantId = view[x + 3] >> 1;
-    if (variantId === 0) {
-      break;
-    } else {
-      printedVals.push(grainToString(runtime, view[x + 5]));
-      cur = view[x + 6] ^ 3;
-    }
-  }
-
-  return `[${printedVals.join(', ' )}]`;
-}
-
 /**
  * Formats a number as hex. Useful for debug printing.
  *
@@ -89,203 +69,6 @@ function float64At(idx) {
   tmpview32[0] = view[(idx / 4) + 2]
   tmpview32[1] = view[(idx / 4) + 3]
   return tmpview[0]
-}
-
-export function grainHeapValueToString(runtime, n) {
-  const view = managedMemory.view;
-  const uview = managedMemory.uview;
-  const f32view = managedMemory.f32view;
-  switch (view[n / 4]) {
-    case GRAIN_STRING_HEAP_TAG: {
-      let byteView = managedMemory.u8view;
-      let length = view[(n / 4) + 1];
-      let slice = byteView.slice(n + 8, n + 8 + length);
-      return `"${decoder.decode(slice)}"`;
-    }
-    case GRAIN_CHAR_HEAP_TAG: {
-      let byteView = managedMemory.u8view;
-      let byte = byteView[n + 4]
-      let numBytes
-      if ((byte & 0x80) === 0x00) {
-        numBytes = 1
-      } else if ((byte & 0xF0) === 0xF0) {
-        numBytes = 4
-      } else if ((byte & 0xE0) === 0xE0) {
-        numBytes = 3
-      } else {
-        numBytes = 2
-      }
-      let slice = byteView.slice(n + 4, n + 4 + numBytes);
-      return `'${decoder.decode(slice)}'`;
-    }
-    case GRAIN_ADT_HEAP_TAG: {
-      let x = n / 4;
-      // ADT string coercion is tricky, so these log statements can help
-      // debug issues which might crop up:
-      // [ <value type tag>, <module_tag>, <type_tag>, <variant_tag>, <arity>, elts ... ]
-      // console.log(`<ADT Value: (${view[x + 1]}, ${view[x + 2]}, ${view[x + 3]}, ${view[x + 4]})>`);
-      if (runtime) {
-        // In-memory tags are tagged ints
-        let moduleId = view[x + 1] >> 1;
-        let typeId = view[x + 2] >> 1;
-        let variantId = view[x + 3] >> 1;
-        // console.log(`\tValue Type: ${view[x]}`);
-        // console.log(`\tModules: ${JSON.stringify(runtime.idMap)}`);
-        // console.log(`\tModule ID: ${moduleId}; Type ID: ${typeId}; Variant ID: ${variantId}`);
-        let moduleName = runtime.idMap[moduleId];
-        // console.log(`\tModule Name: ${moduleName}`);
-        let module = runtime.modules[moduleName];
-        // console.log(`\tModule: ${module}`);
-        let tyinfo = module.types[typeId];
-        // console.log(`\tType Info: ${JSON.stringify(tyinfo)}`);
-
-        if (!tyinfo || Object.keys(tyinfo).length === 0) return '<adt value>';
-
-        let info = tyinfo[variantId];
-        // console.log(`\tVariant: ${info}`);
-
-        if (!info) return '<adt value>';
-        
-        let [variantName, arity] = info;
-
-        // Dirty hack to support list printing
-        if (variantName === '[...]') return grainListToString(runtime, n);
-
-        let printedVals = [];
-        for (let i = 0; i < arity; ++i) {
-          printedVals.push(grainToString(runtime, view[x + 5 + i]));
-        }
-        if (arity === 0) {
-          return variantName;
-        } else {
-          return `${variantName}(${printedVals.join(", ")})`;
-        }
-      }
-      return "<adt value>";
-    }
-    case GRAIN_RECORD_HEAP_TAG: {
-      let x = n / 4;
-      // Record string coercion is tricky, so these log statements can help debug issues which might crop up
-      if (runtime) {
-        // In-memory tags are tagged ints
-        let moduleId = view[x + 1] >> 1;
-        let typeId = view[x + 2] >> 1;
-        // console.log(`\tModules: ${JSON.stringify(runtime.idMap)}`);
-        let moduleName = runtime.idMap[moduleId];
-        // console.log(`\tModule Name: ${moduleName}`);
-        let module = runtime.modules[moduleName];
-        // console.log(`\tModule: ${module}`);
-        let tyinfo = module.types[typeId];
-        // console.log(`\tType Info: ${JSON.stringify(tyinfo)}`);
-
-        if (Object.keys(tyinfo).length === 0) return '<record value>'
-
-        let values = [];
-        for (let [field, idx] of Object.entries(tyinfo)) {
-          values.push(`${field}: ${grainToString(runtime, view[x + 4 + idx]).replace(/\n/g, '\n  ')}`)
-        }
-        return `{\n  ${values.join(',\n  ')}\n}`
-      }
-      return "<record value>";
-    }
-    case GRAIN_ARRAY_HEAP_TAG: {
-      let x = n / 4;
-
-      let arity = view[x + 1];
-
-      let values = [];
-      for (let i = 0; i < arity; i++) {
-        values.push(grainToString(runtime, view[x + 2 + i]))
-      }
-      return `[> ${values.join(', ')}]`
-    }
-    case GRAIN_BOXED_NUM_HEAP_TAG: {
-      let x = n / 4
-      let tag = view[x + 1]
-      switch (tag) {
-        case GRAIN_INT32_BOXED_NUM_TAG: {
-          return view[x + 2].toString(10)
-        }
-        case GRAIN_INT64_BOXED_NUM_TAG: {
-          let low = uview[x + 2]
-          let high = view[x + 3]
-          let negative = high < 0
-
-          let digits = []
-          if (negative) {
-            high = ~high
-            low = ~low + 1
-          }
-
-          let digit = ((high % 10) * (2 ** 32) + low) % 10
-          digits.unshift(digit)
-
-          while (low >= 10 || high > 0) {
-            low = Math.floor(((high % 10) * (2 ** 32) + low) / 10)
-            high = Math.floor(high / 10)
-            digit = ((high % 10) * (2 ** 32) + low) % 10
-            digits.unshift(digit)
-          }
-
-          if (negative) {
-            digits.unshift('-')
-          }
-
-          return digits.join('')
-        }
-        case GRAIN_RATIONAL_BOXED_NUM_TAG: {
-          let numerator = view[x + 2]
-          let denominator = view[x + 3]
-          return `${numerator.toString(10)}/${denominator.toString(10)}`
-        }
-        case GRAIN_FLOAT32_BOXED_NUM_TAG: {
-          return f32view[x + 2].toString(10)
-        }
-        case GRAIN_FLOAT64_BOXED_NUM_TAG: {
-          return float64At(x * 4).toString(10)
-        }
-      }
-    }
-    default: {
-      return `<unknown heap type: ${view[n / 4]}>`;
-    }
-  }
-}
-
-export function grainToString(runtime, n) {
-  const view = managedMemory.view;
-  if (!(n & 1)) {
-    return (n >> 1).toString();
-  } else if ((n & 7) === GRAIN_TUPLE_TAG_TYPE) {
-    let tupleIdx = (n ^ 1) / 4;
-    let tupleLength = view[tupleIdx];
-    if (tupleLength & 0x80000000) {
-      return `<cyclic tuple ${n & 0x7FFFFFFF}>`;
-    } else {
-      view[tupleIdx] |= 0x80000000;
-      let elts = [];
-      for (let i = 0; i < tupleLength; ++i) {
-        elts.push(grainToString(runtime, view[tupleIdx + i + 1]));
-      }
-      if (elts.length == 1) {
-        elts.push("\b");
-      }
-      view[tupleIdx] = tupleLength;
-      return `(${elts.join(", ")})`;
-    }
-  } else if ((n & 7) === GRAIN_LAMBDA_TAG_TYPE) {
-    return "<lambda>";
-  } else if ((n & 7) === GRAIN_GENERIC_HEAP_TAG_TYPE) {
-    return grainHeapValueToString(runtime, n ^ 3);
-  } else if ((n === GRAIN_TRUE)) {
-    return "true";
-  } else if (n === GRAIN_FALSE) {
-    return "false";
-  } else if (n === GRAIN_VOID) {
-    return "void";
-  } else {
-    return `<Unknown value: 0x${n}>`;
-  }
 }
 
 // TODO: Move
@@ -432,7 +215,7 @@ export function grainToJSVal(runtime, x) {
   }
 }
 
-export function JSToGrainVal(v) {
+export function JSToGrainVal(v, runtime) {
   const view = managedMemory.view;
   if (typeof v === "number") {
     if (!Number.isInteger(v)) {
@@ -476,7 +259,7 @@ export function JSToGrainVal(v) {
       view[ptr + 3] = i32tmpbuf[1]
       return userPtr | GRAIN_GENERIC_HEAP_TAG_TYPE
     }
-    throwGrainError(GRAIN_ERR_OVERFLOW, -1, -1);
+    throwGrainError(GRAIN_ERR_OVERFLOW, -1, -1, runtime);
     return 0xF00BAE << 1;
   } else if (typeof v === "boolean") {
     if (v) {
