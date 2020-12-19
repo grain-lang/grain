@@ -755,6 +755,7 @@ let stdlib_tests = [
   tlib("set.test"),
   tlib("result.test"),
   tlib("queue.test"),
+  tlib("stack.test"),
   tlib(~returns="", ~code=5, "sys.process.test"),
 ];
 

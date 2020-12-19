@@ -1,0 +1,37 @@
+import List from "list"
+
+record Stack<a> {
+    data: List<a>
+}
+
+export let make = () => {
+    { data: [] }
+}
+
+export let isEmpty = (stack) => {
+    match (stack) {
+        { data: [] } => true,
+        _ => false
+    }
+}
+
+export let head = (stack) => {
+    match (stack) {
+        { data: [] } => None,
+        { data } => List.head(data)
+    }
+}
+
+export let push = (value, stack) => {
+    match (stack) {
+        { data: [] } => { data: [value] },
+        { data } => { data: [value, ...data] }
+    }
+}
+
+export let pop = (stack) => {
+    match (stack) {
+        { data: [] } => stack,
+        { data: [head, ...tail] } => { data: tail, }
+    }
+}

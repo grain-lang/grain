@@ -1,0 +1,28 @@
+import Stack from "stack"
+
+let empty = Stack.make()
+// 1 <- 2 <- 3
+let sampleStack = Stack.push(3, Stack.push(2, Stack.push(1, empty)))
+
+// Stack.isEmpty
+
+assert Stack.isEmpty(empty)
+assert !Stack.isEmpty(sampleStack)
+
+// Stack.head
+
+assert Stack.head(empty) == None
+assert Stack.head(sampleStack) == Some(3)
+
+// Stack.push
+
+assert Stack.head(Stack.push(1, empty)) == Some(1)
+assert Stack.head(Stack.push(4, sampleStack)) == Some(4)
+
+// Stack.pop
+
+assert Stack.isEmpty(Stack.pop(empty))
+assert Stack.isEmpty(Stack.pop(Stack.push(1, empty)))
+assert Stack.isEmpty(Stack.pop(Stack.pop(Stack.pop(sampleStack))))
+assert Stack.head(Stack.pop(sampleStack)) == Some(2)
+assert Stack.head(Stack.pop(Stack.push(4, Stack.pop(sampleStack)))) == Some(2)
