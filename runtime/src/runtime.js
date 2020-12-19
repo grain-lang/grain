@@ -3,11 +3,7 @@ import 'fast-text-encoding';
 import { printClosure } from './core/closures';
 import { ManagedMemory, TRACE_MEMORY } from './core/memory';
 import { GrainRunner } from './core/runner';
-import { throwGrainError } from './errors/errors';
-import { grainToString } from './utils/utils';
 import { defaultFileLocator } from './utils/locators';
-
-import { print, debugPrint } from './lib/print';
 
 export let grainModule;
 
@@ -49,12 +45,19 @@ const tracingImports = TRACE_MEMORY ? {
   decRefIgnoreZeros: managedMemory.decRefIgnoreZeros.bind(managedMemory)
 };
 
+function debugPrint(v) {
+  console.log(`0x${v.toString(16)} (0b${v.toString(2)})`);
+  return v;
+}
+
 const importObj = {
   env: {
-    memory
+    memory,
+    abort(err) {
+      throw new Error(`abort ${err}`)
+    },
   },
   console: {
-    log: print,
     debug: debugPrint,
     printClosure: printClosure,
     tracepoint: (n) => console.log(`tracepoint ${n} reached`)
@@ -62,14 +65,12 @@ const importObj = {
   grainRuntime: {
     mem: memory,
     tbl: table,
-    throwError: throwGrainError,
     malloc,
     free,
     incRef: managedMemory.incRef.bind(managedMemory),
     incRef64: managedMemory.incRef64.bind(managedMemory),
     decRef: managedMemory.decRef.bind(managedMemory),
     decRef64: managedMemory.decRef64.bind(managedMemory),
-    print,
     ...tracingImports
   },
 };
@@ -101,4 +102,4 @@ export default async function GrainRunner(uri) {
   return loaded.run();
 }
 
-export { defaultFileLocator, grainToString };
+export { defaultFileLocator };

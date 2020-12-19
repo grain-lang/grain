@@ -1,5 +1,3 @@
-import { grainToString } from '../utils/utils';
-
 import {
   GRAIN_ERR_NOT_NUMBER_COMP,
   GRAIN_ERR_NOT_NUMBER_ARITH,
@@ -44,10 +42,14 @@ export class GrainError extends Error {
   }
 }
 
-export function throwGrainError(errorCode, value1, value2) {
+export function makeThrowGrainError(runtime) {
+  return (errorCode, value1, value2) => throwGrainError(errorCode, value1, value2, runtime)
+}
+
+export function throwGrainError(errorCode, value1, value2, runtime) {
   let message;
   // [TODO]: Pass a runtime here
-  let value1AsGrain = grainToString(null, value1);
+  let value1AsGrain = runtime ? runtime.grainValueToString(value1) : "<grain value>";
 
   switch (errorCode) {
     case GRAIN_ERR_ARITY_MISMATCH:

@@ -692,4 +692,3 @@ class ManagedType {
     return address1 === address2;
   }
 }
-

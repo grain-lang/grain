@@ -82,6 +82,22 @@ export function allocateChar(): u32 {
   return char
 }
 
+// [HACK] the char/char1/char2 arguments of these functions are u32
+//        in order to be directly compatible with CharCode.XXX usage
+
+export function singleByteString(char: u32): u32 {
+  let s = allocateString(1)
+  store<u8>(s, <u8>(char), 8)
+  return s | GRAIN_GENERIC_HEAP_TAG_TYPE
+}
+
+export function twoByteString(char1: u32, char2: u32): u32 {
+  let s = allocateString(2)
+  store<u8>(s, <u8>(char1), 8)
+  store<u8>(s, <u8>(char2), 8 + 1)
+  return s | GRAIN_GENERIC_HEAP_TAG_TYPE
+}
+
 // [TODO] should probably migrate over the accessors in numbers.ts
 // INT32/INT64
 
@@ -117,6 +133,18 @@ export function rawInt64Ptr(wrappedInt64: u32): u32 {
   return wrappedInt64 + 8
 }
 
+// @ts-ignore: decorator
+@inline
+export function loadInt64(xptr: u32): i64 {
+  return load<i64>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
+}
+
+// @ts-ignore: decorator
+@inline
+export function loadInt64Unsigned(xptr: u32): u64 {
+  return load<u64>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
+}
+
 /**
  * Allocates a new Int32.
  *
@@ -147,6 +175,18 @@ export function newInt32(value: i32): u32 {
  */
 export function rawInt32Ptr(wrappedInt32: u32): u32 {
   return wrappedInt32 + 8
+}
+
+// @ts-ignore: decorator
+@inline
+export function loadInt32(xptr: u32): i32 {
+  return load<i32>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
+}
+
+// @ts-ignore: decorator
+@inline
+export function loadInt32Unsigned(xptr: u32): u32 {
+  return load<u32>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
 }
 
 // FLOATS
@@ -183,6 +223,12 @@ export function rawFloat32Ptr(wrappedFloat32: u32): u32 {
   return wrappedFloat32 + 8
 }
 
+// @ts-ignore: decorator
+@inline
+export function loadFloat32(xptr: u32): f32 {
+  return load<f32>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
+}
+
 /**
  * Allocates a new Float64.
  *
@@ -213,6 +259,12 @@ export function newFloat64(value: f64): u32 {
  */
 export function rawFloat64Ptr(wrappedFloat64: u32): u32 {
   return wrappedFloat64 + 8
+}
+
+// @ts-ignore: decorator
+@inline
+export function loadFloat64(xptr: u32): f64 {
+  return load<f64>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
 }
 
 // RATIONALS
@@ -256,6 +308,18 @@ export function rawRationalNumeratorPtr(wrappedRational: u32): u32 {
  */
 export function rawRationalDenominatorPtr(wrappedRational: u32): u32 {
   return wrappedRational + 12
+}
+
+// @ts-ignore: decorator
+@inline
+export function loadRationalNumerator(xptr: u32): i32 {
+  return load<i32>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
+}
+
+// @ts-ignore: decorator
+@inline
+export function loadRationalDenominator(xptr: u32): u32 {
+  return load<u32>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 3 * 4)
 }
 
 
