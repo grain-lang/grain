@@ -62,12 +62,12 @@ assert String.byteLength(emojis) == 98
 
 // indexOf tests
 assert String.indexOf(empty, empty) == Some(0)
-assert String.indexOf(short, empty) == Some(0)
-assert String.indexOf(fox, short) == Some(16)
-assert String.indexOf(emojis, "🚀") == Some(15)
+assert String.indexOf(empty, short) == Some(0)
+assert String.indexOf(short, fox) == Some(16)
+assert String.indexOf("🚀", emojis) == Some(15)
 assert String.indexOf(short, short) == Some(0)
 assert String.indexOf(emoji, emojis) == None
-assert String.indexOf("aaa", "aa") == Some(0)
+assert String.indexOf("aa", "aaa") == Some(0)
 
 // explode tests
 let codes = [> 119, 101, 32, 102, 111, 117, 110, 100, 32, 97, 32, 112, 97, 116, 104, 128640, 32, 116, 111, 32, 103, 114, 101, 97, 116, 110, 101, 115, 115, 127941, 98, 117, 116, 32, 116, 104, 101, 32, 103, 114, 105, 110, 100, 32, 110, 101, 118, 101, 114, 32, 113, 117, 105, 116, 115, 128548, 128170, 127996, 32, 107, 101, 101, 112, 32, 109, 105, 108, 108, 105, 110, 103, 128175, 128293, 128520]
@@ -81,72 +81,72 @@ assert String.implode(String.explode(emojis)) == emojis
 
 // split tests
 assert String.split(empty, empty) == [>]
-assert String.split(short, empty) == [> "f", "o", "x"]
-assert String.split(fox, " ") == [> "The", "quick", "brown", "fox", "jumps", "over", "the", "lazy", "dog."]
-assert String.split(fox, "brown fox") == [> "The quick ", " jumps over the lazy dog."]
-assert String.split(emojis, "🚀 ") == [> "we found a path", "to greatness🏅but the grind never quits😤💪🏼 keep milling💯🔥😈"]
-assert String.split(" foo bar baz ", " ") == [> "", "foo", "bar", "baz", ""]
+assert String.split(empty, short) == [> "f", "o", "x"]
+assert String.split(" ", fox) == [> "The", "quick", "brown", "fox", "jumps", "over", "the", "lazy", "dog."]
+assert String.split("brown fox", fox) == [> "The quick ", " jumps over the lazy dog."]
+assert String.split("🚀 ", emojis) == [> "we found a path", "to greatness🏅but the grind never quits😤💪🏼 keep milling💯🔥😈"]
+assert String.split(" ", " foo bar baz ") == [> "", "foo", "bar", "baz", ""]
 
 // slice tests
-assert String.slice(empty, 0, 0) == empty
-assert String.slice(fox, 0, 1) == "T"
-assert String.slice(fox, 0, 2) == "Th"
-assert String.slice(fox, 0, 3) == "The"
-assert String.slice(fox, 0, 4) == "The "
-assert String.slice(fox, 0, 5) == "The q"
-assert String.slice(fox, 35, 39) == "lazy"
-assert String.slice(fox, 35, 44) == "lazy dog."
-assert String.slice(fox, -9, -1) == "lazy dog"
-assert String.slice(fox, 35, -1) == "lazy dog"
-assert String.slice(fox, 35, -5) == "lazy"
-assert String.slice(fox, 0, 44) == fox
-assert String.slice(fox, 44, 44) == empty
-assert String.slice(emoji, 0, 1) == emoji
-assert String.slice(emoji, -2, 1) == emoji
-assert String.slice(emoji, -1, -1) == empty
-assert String.slice("💪🏾", 0, 1) == "💪"
-assert String.slice("💪🏾", 1, 2) == "🏾"
+assert String.slice(0, 0, empty) == empty
+assert String.slice(0, 1, fox) == "T"
+assert String.slice(0, 2, fox) == "Th"
+assert String.slice(0, 3, fox) == "The"
+assert String.slice(0, 4, fox) == "The "
+assert String.slice(0, 5, fox) == "The q"
+assert String.slice(35, 39, fox) == "lazy"
+assert String.slice(35, 44, fox) == "lazy dog."
+assert String.slice(-9, -1, fox) == "lazy dog"
+assert String.slice(35, -1, fox) == "lazy dog"
+assert String.slice(35, -5, fox) == "lazy"
+assert String.slice(0, 44, fox) == fox
+assert String.slice(44, 44, fox) == empty
+assert String.slice(0, 1, emoji) == emoji
+assert String.slice(-2, 1, emoji) == emoji
+assert String.slice(-1, -1, emoji) == empty
+assert String.slice(0, 1, "💪🏾") == "💪"
+assert String.slice(1, 2, "💪🏾") == "🏾"
 
 // contains tests
-assert String.contains(short, "")
-assert String.contains(short, "f")
-assert String.contains(short, "o")
-assert String.contains(short, "x")
-assert String.contains(short, "fo")
-assert String.contains(short, "ox")
-assert String.contains(short, "fox")
-assert String.contains(fox, "lazy")
+assert String.contains("", short)
+assert String.contains("f", short)
+assert String.contains("o", short)
+assert String.contains("x", short)
+assert String.contains("fo", short)
+assert String.contains("ox", short)
+assert String.contains("fox", short)
+assert String.contains("lazy", fox)
 assert String.contains(emoji, emoji)
-assert String.contains(emojis, "quits😤💪🏼 ")
+assert String.contains("quits😤💪🏼 ", emojis)
 assert String.contains(emojis, emojis)
-assert String.contains(multi, "\n")
-assert !String.contains(short, "F")
-assert !String.contains("fox", "foxes")
-assert !String.contains(fox, "LAZY DOG")
+assert String.contains("\n", multi)
+assert !String.contains("F", short)
+assert !String.contains("foxes", "fox")
+assert !String.contains("LAZY DOG", fox)
 
 // startsWith tests
 assert String.startsWith(empty, empty)
-assert String.startsWith(short, empty)
+assert String.startsWith(empty, short)
 assert String.startsWith(short, short)
-assert String.startsWith(short, "f")
-assert String.startsWith(short, "fo")
-assert String.startsWith(fox, "The quick")
+assert String.startsWith("f", short)
+assert String.startsWith("fo", short)
+assert String.startsWith("The quick", fox)
 assert String.startsWith(emoji, emoji)
 assert String.startsWith(emojis, emojis)
-assert !String.startsWith(short, "foxes")
-assert !String.startsWith(emoji, "q")
-assert !String.startsWith(fox, "THE QUICK")
+assert !String.startsWith("foxes", short)
+assert !String.startsWith("q", emoji)
+assert !String.startsWith("THE QUICK", fox)
 
 // endsWith tests
 assert String.endsWith(empty, empty)
-assert String.endsWith(short, empty)
+assert String.endsWith(empty, short)
 assert String.endsWith(short, short)
-assert String.endsWith(short, "x")
-assert String.endsWith(short, "ox")
-assert String.endsWith(fox, "lazy dog.")
-assert String.endsWith(fox, ".")
+assert String.endsWith("x", short)
+assert String.endsWith("ox", short)
+assert String.endsWith("lazy dog.", fox)
+assert String.endsWith(".", fox)
 assert String.endsWith(emoji, emoji)
 assert String.endsWith(emojis, emojis)
-assert !String.endsWith(short, "bluefox")
-assert !String.endsWith(emoji, "q")
-assert !String.endsWith(fox, "LAZY DOG.")
+assert !String.endsWith("bluefox", short)
+assert !String.endsWith("q", emoji)
+assert !String.endsWith("LAZY DOG.", fox)

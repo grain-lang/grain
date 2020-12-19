@@ -28,7 +28,7 @@ export function byteLength(s: u32): u32 {
   return size << 1
 }
 
-export function indexOf(s: u32, p: u32): u32 {
+export function indexOf(p: u32, s: u32): u32 {
   s = s ^ GRAIN_GENERIC_HEAP_TAG_TYPE
   p = p ^ GRAIN_GENERIC_HEAP_TAG_TYPE
   const size = stringSize(s)
@@ -156,7 +156,7 @@ export function implode(arr: u32): u32 {
   return str ^ GRAIN_GENERIC_HEAP_TAG_TYPE
 }
 
-export function split(str: u32, pat: u32): u32 {
+export function split(pat: u32, str: u32): u32 {
   let s = str ^ GRAIN_GENERIC_HEAP_TAG_TYPE
   let p = pat ^ GRAIN_GENERIC_HEAP_TAG_TYPE
   const size = stringSize(s)
@@ -224,14 +224,14 @@ export function split(str: u32, pat: u32): u32 {
 
   // Grab last string
   let strSize = s + 8 + size - last
-  let str = allocateString(strSize)
-  memory.copy(str + 8, last, strSize)
-  storeInArray(arr, arrIdx, str ^ GRAIN_GENERIC_HEAP_TAG_TYPE)
+  let lastStr = allocateString(strSize)
+  memory.copy(lastStr + 8, last, strSize)
+  storeInArray(arr, arrIdx, lastStr ^ GRAIN_GENERIC_HEAP_TAG_TYPE)
 
   return arr ^ GRAIN_GENERIC_HEAP_TAG_TYPE
 }
 
-export function slice(s: u32, from: i32, to: i32): u32 {
+export function slice(from: i32, to: i32, s: u32): u32 {
   const len = i32(length(s) >> 1)
 
   s = s ^ GRAIN_GENERIC_HEAP_TAG_TYPE
@@ -280,7 +280,7 @@ export function slice(s: u32, from: i32, to: i32): u32 {
   return newString ^ GRAIN_GENERIC_HEAP_TAG_TYPE
 }
 
-export function contains(s: u32, p: u32): u32 {
+export function contains(p: u32, s: u32): u32 {
   // "Not So Naive" string search algorithm
   // searching phase in O(nm) time complexity
   // slightly (by coefficient) sub-linear in the average case
@@ -333,7 +333,7 @@ export function contains(s: u32, p: u32): u32 {
   return GRAIN_FALSE
 }
 
-export function startsWith(s: u32, p: u32): u32 {
+export function startsWith(p: u32, s: u32): u32 {
   s = s ^ GRAIN_GENERIC_HEAP_TAG_TYPE
   p = p ^ GRAIN_GENERIC_HEAP_TAG_TYPE
 
@@ -351,7 +351,7 @@ export function startsWith(s: u32, p: u32): u32 {
     : GRAIN_FALSE
 }
 
-export function endsWith(s: u32, p: u32): u32 {
+export function endsWith(p: u32, s: u32): u32 {
   s = s ^ GRAIN_GENERIC_HEAP_TAG_TYPE
   p = p ^ GRAIN_GENERIC_HEAP_TAG_TYPE
 
