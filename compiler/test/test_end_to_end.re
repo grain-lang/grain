@@ -276,13 +276,9 @@ let basic_functionality_tests = [
   te("assert3", "assert false", "Assertion error"),
   te("assert4", "assert 4 - 1 == 14", "Assertion error"),
   /* Failures */
-  te("fail1", "ignore(fail \"boo\")", "Failure: \"boo\""),
-  te("fail2", "if (false) { 3 } else { fail \"boo\" }", "Failure: \"boo\""),
-  tfile(
-    "toplevel_statements",
-    "toplevelStatements",
-    "1\n2\n3\n4\n5\n\"foo\"",
-  ),
+  te("fail1", "ignore(fail \"boo\")", "Failure: boo"),
+  te("fail2", "if (false) { 3 } else { fail \"boo\" }", "Failure: boo"),
+  tfile("toplevel_statements", "toplevelStatements", "1\n2\n3\n4\n5\nfoo"),
 ];
 
 /* Tests for functions: basic, directly-recursive, and mutually-recursive. */
@@ -575,7 +571,7 @@ let record_tests = [
   t(
     "record_mut_1",
     "record Rec {foo: Number, mut bar: String, baz: Bool}; let a = {foo: 4, bar: \"boo\", baz: true}; a.bar = \"hoo\"; a.bar",
-    "\"hoo\"",
+    "hoo",
   ),
   te(
     "record_mut_1",
@@ -591,7 +587,7 @@ let record_tests = [
   t(
     "record_destruct_2",
     "record Rec {foo: Number, bar: String, baz: Bool}; let { bar, _ } = {foo: 4, bar: \"boo\", baz: true}; bar",
-    "\"boo\"",
+    "boo",
   ),
   t(
     "record_destruct_3",
@@ -828,12 +824,12 @@ let let_mut_tests = [
   t(
     "let-mut_destructure1",
     "let mut (x, y, z) = (5, false, \"foo\"); x = 6; y = true; z = \"bar\"; print(x); print(y); print(z)",
-    "6\ntrue\n\"bar\"\nvoid",
+    "6\ntrue\nbar\nvoid",
   ),
   t(
     "let-mut_destructure2",
     "{let mut (x, y, z) = (5, false, \"foo\"); x = 6; y = true; z = \"bar\"; print(x); print(y); print(z)}",
-    "6\ntrue\n\"bar\"\nvoid",
+    "6\ntrue\nbar\nvoid",
   ),
   t(
     "let-mut_destructure3",
@@ -987,7 +983,7 @@ let match_tests = [
   t(
     "record_match_2",
     "record Rec {foo: Number, bar: String, baz: Bool}; match ({foo: 4, bar: \"boo\", baz: true}) { { bar, _ } => bar }",
-    "\"boo\"",
+    "boo",
   ),
   t(
     "record_match_3",
@@ -1150,17 +1146,17 @@ let import_tests = [
   t(
     "import_all",
     "import * from \"exportStar\"; {print(x); print(y(4)); z}",
-    "5\n4\n\"foo\"",
+    "5\n4\nfoo",
   ),
   t(
     "import_all_except",
     "import * except {y} from \"exportStar\"; {print(x); z}",
-    "5\n\"foo\"",
+    "5\nfoo",
   ),
   t(
     "import_all_except_multiple",
     "import * except {x, y} from \"exportStar\"; z",
-    "\"foo\"",
+    "foo",
   ),
   t(
     "import_all_constructor",
@@ -1322,7 +1318,7 @@ let import_tests = [
     "import * from \"../test-libs/exportStar\"; x",
     "5",
   ),
-  t("import_relative_path3", "import * from \"nested/nested\"; j", "\"j\""),
+  t("import_relative_path3", "import * from \"nested/nested\"; j", "j"),
   te(
     "import_missing_file",
     "import * from \"foo\"; 2",
@@ -1340,7 +1336,7 @@ let import_tests = [
     "{let x = (1, 2); import * from \"tlists\"; x}",
     "error",
   ),
-  tfile("test_file_same_name", "list", "\"OK\"\nvoid"),
+  tfile("test_file_same_name", "list", "OK\nvoid"),
   t(
     "annotation_across_import",
     "import TList, { Empty } from \"tlists\"; let foo : TList.TList<String> = Empty; foo",
@@ -1654,14 +1650,14 @@ let string_tests = {
         prog_loc: Location.dummy_loc,
       },
     ),
-    t("string1", "\"foo\"", "\"foo\""),
-    t("string2", "\"💯\"", "\"💯\""),
+    t("string1", "\"foo\"", "foo"),
+    t("string2", "\"💯\"", "💯"),
     t(
       "string3",
       "\"making my way downtown, walking fast\"",
-      "\"making my way downtown, walking fast\"",
+      "making my way downtown, walking fast",
     ),
-    t("concat", "\"foo\" ++ \"bar\"", "\"foobar\""),
+    t("concat", "\"foo\" ++ \"bar\"", "foobar"),
     te("string_err", "let x = \"hello\"; x + \", world\"", "type"),
     te("unicode_err1", "let x = \"\\u{d800}\"", "Illegal unicode code point"),
     te("unicode_err2", "let x = \"\\u{dfff}\"", "Illegal unicode code point"),
@@ -1674,13 +1670,13 @@ let string_tests = {
 };
 
 let char_tests = [
-  t("char1", "'A'", "'A'"),
-  t("char2", "'\\x41'", "'A'"),
-  t("char3", "'\\101'", "'A'"),
-  t("char4", "'\\u0041'", "'A'"),
-  t("char5", "'\\u{41}'", "'A'"),
-  t("char6", "'💯'", "'💯'"),
-  t("char7", "'\\u{1F33E}'", "'🌾'"),
+  t("char1", "'A'", "A"),
+  t("char2", "'\\x41'", "A"),
+  t("char3", "'\\101'", "A"),
+  t("char4", "'\\u0041'", "A"),
+  t("char5", "'\\u{41}'", "A"),
+  t("char6", "'💯'", "💯"),
+  t("char7", "'\\u{1F33E}'", "🌾"),
   t("char_eq1", "'🌾' == '🌾'", "true"),
   t("char_eq2", "'🌾' == '💯'", "false"),
   t(
@@ -1742,7 +1738,7 @@ let export_tests = [
   te("export6", "import * from \"onlyXExported\"; z", "Unbound value z"),
   t("export7", "import * from \"exportStar\"; x", "5"),
   t("export8", "import * from \"exportStar\"; x + y(4)", "9"),
-  t("export9", "import * from \"exportStar\"; y(z)", "\"foo\""),
+  t("export9", "import * from \"exportStar\"; y(z)", "foo"),
   te(
     "export10",
     "import * from \"exportStar\"; y(secret)",
