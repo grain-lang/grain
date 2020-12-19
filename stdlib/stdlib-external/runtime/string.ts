@@ -2,7 +2,8 @@ import { GRAIN_ADT_HEAP_TAG, GRAIN_ARRAY_HEAP_TAG, GRAIN_GENERIC_HEAP_TAG_TYPE, 
 import { stringSize, allocateString, loadInt32, loadInt64, loadFloat32, loadFloat64, loadRationalNumerator, loadRationalDenominator, singleByteString, twoByteString } from '../ascutils/dataStructures'
 import { GRAIN_FALSE, GRAIN_TRUE, GRAIN_VOID } from '../ascutils/primitives'
 import { incRef, decRef } from '../ascutils/grainRuntime'
-import { dtoa, itoa32, itoa64, CharCode } from '../ascutils/numberUtils'
+import { dtoa, itoa32, itoa64 } from '../ascutils/numberUtils'
+import { CharCode } from '../ascutils/charCodes'
 import { equal } from '../equal'
 
 // Introspection helpers for to-string (will eventually be part of the AS runtime)
@@ -46,53 +47,50 @@ export function concat(s1: u32, s2: u32): u32 {
   return newString ^ GRAIN_GENERIC_HEAP_TAG_TYPE
 }
 
-// [HACK] the c/c1/c2 arguments of these functions are u32
-//        in order to be directly compatible with CharCode.XXX usage
-
 // @ts-ignore: decorator
 @inline
-function leftLiteralConcat1(c: u32, gs: u32): u32 {
+function leftLiteralConcat1(c: u8, gs: u32): u32 {
   gs = gs & ~GRAIN_GENERIC_HEAP_TAG_TYPE
   const gsSize = stringSize(gs)
   let newString = allocateString(gsSize + 1)
   memory.copy(newString + 9, gs + 8, gsSize)
-  store<u8>(newString, <u8>(c), 8)
+  store<u8>(newString, c, 8)
   return newString | GRAIN_GENERIC_HEAP_TAG_TYPE
 }
 
 // @ts-ignore: decorator
 @inline
-function leftLiteralConcat2(c1: u32, c2: u32, gs: u32): u32 {
+function leftLiteralConcat2(c1: u8, c2: u8, gs: u32): u32 {
   gs = gs & ~GRAIN_GENERIC_HEAP_TAG_TYPE
   const gsSize = stringSize(gs)
   let newString = allocateString(gsSize + 2)
   memory.copy(newString + 10, gs + 8, gsSize)
-  store<u8>(newString, <u8>(c1), 8)
-  store<u8>(newString, <u8>(c2), 9)
+  store<u8>(newString, c1, 8)
+  store<u8>(newString, c2, 9)
   return newString | GRAIN_GENERIC_HEAP_TAG_TYPE
 }
 
 
 // @ts-ignore: decorator
 @inline
-function rightLiteralConcat1(gs: u32, c: u32): u32 {
+function rightLiteralConcat1(gs: u32, c: u8): u32 {
   gs = gs & ~GRAIN_GENERIC_HEAP_TAG_TYPE
   const gsSize = stringSize(gs)
   let newString = allocateString(gsSize + 1)
   memory.copy(newString + 8, gs + 8, gsSize)
-  store<u8>(newString + 8 + gsSize, <u8>(c))
+  store<u8>(newString + 8 + gsSize, c)
   return newString | GRAIN_GENERIC_HEAP_TAG_TYPE
 }
 
 // @ts-ignore: decorator
 @inline
-function rightLiteralConcat2(gs: u32, c1: u32, c2: u32): u32 {
+function rightLiteralConcat2(gs: u32, c1: u8, c2: u8): u32 {
   gs = gs & ~GRAIN_GENERIC_HEAP_TAG_TYPE
   const gsSize = stringSize(gs)
   let newString = allocateString(gsSize + 2)
   memory.copy(newString + 8, gs + 8, gsSize)
-  store<u8>(newString + 8 + gsSize, <u8>(c1))
-  store<u8>(newString + 8 + gsSize, <u8>(c2), 1)
+  store<u8>(newString + 8 + gsSize, c1)
+  store<u8>(newString + 8 + gsSize, c2, 1)
   return newString | GRAIN_GENERIC_HEAP_TAG_TYPE
 }
 
