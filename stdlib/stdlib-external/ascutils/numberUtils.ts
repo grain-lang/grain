@@ -1,6 +1,7 @@
 import { decRef, malloc } from './grainRuntime'
 import { allocateString, singleByteString, stringSize } from './dataStructures'
 import { GRAIN_GENERIC_HEAP_TAG_TYPE } from './tags';
+import { CharCode } from './charCodes'
 
 /*
  * This file is a modified version of AssemblyScript's std/assembly/util/number.ts
@@ -8,93 +9,6 @@ import { GRAIN_GENERIC_HEAP_TAG_TYPE } from './tags';
  *
  * https://github.com/AssemblyScript/assemblyscript/blob/d7ad4821a974d2491a0115cb35c85c649b34e7f0/LICENSE
  */
-
- // [TODO] find a new home for this that isn't in numberUtils
-// @ts-ignore: decorator
-@inline
-export const enum CharCode {
-  NEWLINE = 0xA,
-  SPACE = 0x20,
-  QUOTE = 0x22,
-  LPAREN = 0x28,
-  RPAREN = 0x29,
-  STAR = 0x2A,
-  PLUS = 0x2B,
-  COMMA = 0x2C,
-  MINUS = 0x2D,
-  DOT = 0x2E,
-  SLASH = 0x2F,
-  _0 = 0x30,
-  _1 = 0x31,
-  _2 = 0x32,
-  _3 = 0x33,
-  _4 = 0x34,
-  _5 = 0x35,
-  _6 = 0x36,
-  _7 = 0x37,
-  _8 = 0x38,
-  _9 = 0x39,
-  COLON = 0x3A,
-  SEMICOLON = 0x3B,
-  LANGLE = 0x3C, // "<"
-  RANGLE = 0x3E, // ">"
-  A = 0x41,
-  B = 0x42,
-  C = 0x43,
-  D = 0x44,
-  E = 0x45,
-  F = 0x46,
-  G = 0x47,
-  H = 0x48,
-  I = 0x49,
-  J = 0x4A,
-  K = 0x4B,
-  L = 0x4C,
-  M = 0x4D,
-  N = 0x4E,
-  O = 0x4F,
-  P = 0x50,
-  Q = 0x51,
-  R = 0x52,
-  S = 0x53,
-  T = 0x54,
-  U = 0x55,
-  V = 0x56,
-  W = 0x57,
-  X = 0x58,
-  Z = 0x5A,
-  LBRACK = 0x5B, // "["
-  RBRACK = 0x5D, // "]"
-  a = 0x61,
-  b = 0x62,
-  c = 0x63,
-  d = 0x64,
-  e = 0x65,
-  f = 0x66,
-  g = 0x67,
-  h = 0x68,
-  i = 0x69,
-  j = 0x6A,
-  k = 0x6B,
-  l = 0x6C,
-  m = 0x6D,
-  n = 0x6E,
-  o = 0x6F,
-  p = 0x70,
-  q = 0x71,
-  r = 0x72,
-  s = 0x73,
-  t = 0x74,
-  u = 0x75,
-  v = 0x76,
-  w = 0x77,
-  x = 0x78,
-  y = 0x79,
-  z = 0x7A,
-  LBRACE = 0x7B,
-  PIPE = 0x7C,
-  RBRACE = 0x7D,
-}
 
 // @ts-ignore: decorator
 //@inline
