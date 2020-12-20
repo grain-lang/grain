@@ -316,6 +316,24 @@ Map.filter((key, value) => true, filterTestMap);
 
 assert Map.size(filterTestMap) == 3;
 
+// Regression tests for https://github.com/grain-lang/grain/issues/350
+
+let makeFilterTestMap = () => {
+  let map = Map.make();
+  Map.set(Grain, "g", map);
+  Map.set(Sheep, "s", map);
+  Map.set(Brick, "b", map);
+  map
+}
+
+let filterTestMap = makeFilterTestMap();
+
+Map.filter((key, value) => key == Sheep, filterTestMap);
+
+assert !Map.contains(Grain, filterTestMap);
+assert Map.contains(Sheep, filterTestMap);
+assert !Map.contains(Brick, filterTestMap);
+
 // Map.reject()
 
 let rejectTestMap = makeFilterTestMap();
