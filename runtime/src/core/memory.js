@@ -1,5 +1,16 @@
-import { getTagType, tagToString, heapTagToString, GRAIN_CONST_TAG_TYPE, GRAIN_NUMBER_TAG_TYPE, GRAIN_TUPLE_TAG_TYPE, GRAIN_GENERIC_HEAP_TAG_TYPE, GRAIN_LAMBDA_TAG_TYPE,
-         GRAIN_ADT_HEAP_TAG } from './tags';
+import { 
+  getTagType, 
+  tagToString, 
+  heapTagToString, 
+  GRAIN_CONST_TAG_TYPE,
+  GRAIN_NUMBER_TAG_TYPE,
+  GRAIN_TUPLE_TAG_TYPE,
+  GRAIN_GENERIC_HEAP_TAG_TYPE,
+  GRAIN_LAMBDA_TAG_TYPE,
+  GRAIN_ADT_HEAP_TAG, 
+  GRAIN_ARRAY_HEAP_TAG,
+  GRAIN_RECORD_HEAP_TAG
+} from './tags';
 import { toHex, toBinary } from '../utils/utils';
 import treeify from 'treeify';
 
@@ -417,15 +428,33 @@ export class ManagedMemory {
       case GRAIN_GENERIC_HEAP_TAG_TYPE:
         let genericHeapValUserPtr = userPtr;
         switch (view[genericHeapValUserPtr / 4]) {
-          case GRAIN_ADT_HEAP_TAG:
-            if (this._runtime) {
-              let x = genericHeapValUserPtr / 4;
-              let arity = view[x + 4];
-              trace(`traversing ${arity} ADT vals on ADT 0x${this._toHex(userPtr)}`);
-              for (let i = 0; i < arity; ++i) {
-                yield view[x + 5 + i];
-              }
+          case GRAIN_ADT_HEAP_TAG: {
+            let x = genericHeapValUserPtr / 4;
+            let arity = view[x + 4];
+            trace(`traversing ${arity} ADT vals on ADT 0x${this._toHex(userPtr)}`);
+            for (let i = 0; i < arity; ++i) {
+              yield view[x + 5 + i];
             }
+            break;
+          }
+          case GRAIN_RECORD_HEAP_TAG: {
+            let x = genericHeapValUserPtr / 4;
+            let arity = view[x + 3];
+            trace(`traversing ${arity} record vals on record 0x${this._toHex(userPtr)}`);
+            for (let i = 0; i < arity; ++i) {
+              yield view[x + 4 + i];
+            }
+            break;
+          }
+          case GRAIN_ARRAY_HEAP_TAG: {
+            let x = genericHeapValUserPtr / 4;
+            let arity = view[x + 1];
+            trace(`traversing ${arity} array vals on array 0x${this._toHex(userPtr)}`);
+            for (let i = 0; i < arity; ++i) {
+              yield view[x + 2 + i];
+            }
+            break;
+          }
           default:
             // No extra traversal needed for Strings
         }
