@@ -221,3 +221,30 @@ assert Array.contains(1, r)
 assert Array.contains(2, r)
 assert Array.contains(3, r)
 assert Array.contains(4, r)
+
+// Resizes the map when it grows
+// TODO: Don't use these internals, as they need to change
+// after https://github.com/grain-lang/grain/issues/190 is fixed
+
+let resize = Set.makeSized(1);
+
+// (nodeCount, bucketLength)
+assert Set.getInternalStats(resize) == (0, 1);
+
+Set.add("🌾", resize);
+Set.add("🐑", resize);
+
+// (nodeCount, bucketLength)
+assert Set.getInternalStats(resize) == (2, 1);
+
+Set.add("🧱", resize);
+
+// (nodeCount, bucketLength)
+assert Set.getInternalStats(resize) == (3, 2);
+
+// Regression tests for https://github.com/grain-lang/grain/issues/497
+
+let largeSet = Set.fromArray(Array.init(128, i => i))
+
+// (nodeCount, bucketLength)
+assert Set.getInternalStats(largeSet) == (128, 64);
