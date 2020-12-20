@@ -280,6 +280,13 @@ Map.set("🧱", 1, resize);
 // (nodeCount, bucketLength)
 assert Map.getInternalStats(resize) == (3, 2);
 
+// Regression tests for https://github.com/grain-lang/grain/issues/497
+
+let largeMap = Map.fromArray(Array.init(128, i => (i, i)))
+
+// (nodeCount, bucketLength)
+assert Map.getInternalStats(largeMap) == (128, 64);
+
 // Map.filter()
 
 let makeFilterTestMap = () => Map.fromList([
