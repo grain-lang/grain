@@ -40,13 +40,41 @@ let hover_val =
   make_value(~location, ~valType, ~sigStr);
 };
 
+let create_record_signature = (labels: list(Types.record_field)) => {
+  let recSig =
+    List.fold_left(
+      (acc, field: Types.record_field) => {
+        let comma = acc == "" ? "" : ", ";
+        let buf = Buffer.create(64);
+        let ppf = Format.formatter_of_buffer(buf);
+        Printtyp.type_expr(ppf, field.rf_type);
+        Format.pp_print_flush(ppf, ());
+        acc
+        ++ comma
+        ++ Ident.name(field.rf_name)
+        ++ " : "
+        ++ Buffer.contents(buf);
+      },
+      "",
+      labels,
+    );
+  "{" ++ recSig ++ " }";
+};
+
 let data_hover_val =
     (
       ~location: Grain_parsing.Location.t,
       ~t: Types.type_declaration,
       ~valType: string,
     ) => {
-  let sigStr = "data";
+  let sigStr =
+    switch (t.type_kind) {
+    | TDataVariant(cstrs) => "Variant"
+    | TDataRecord(labels) => create_record_signature(labels)
+    | TDataAbstract => "Abstract"
+    | TDataOpen => "Open"
+    };
+
   make_value(~location, ~valType, ~sigStr);
 };
 
@@ -98,6 +126,7 @@ let print_tree = (stmts: list(Grain_typed.Typedtree.toplevel_stmt)) => {
       | TTopExport(_)
       | TTopExpr(_)
       | TTopLet(_) => Iterator.iter_toplevel_stmt(cur)
+      // this is separate as the original emitted an enter data
       | TTopData(_) => Iterator.iter_toplevel_stmt(cur)
       };
     },
