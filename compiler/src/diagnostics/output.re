@@ -11,6 +11,7 @@ type lsp_error = {
 [@deriving yojson]
 type lsp_result = {
   errors: list(lsp_error),
+  values: list(Lenses.lens_t),
   lenses: list(Lenses.lens_t),
 };
 let exn_to_lsp_error = (exn: exn): option(lsp_error) => {
@@ -39,9 +40,11 @@ let exn_to_lsp_error = (exn: exn): option(lsp_error) => {
   };
 };
 
+// kept lenses as an empty array so older LSPs don't crash
+
 let result_to_json =
-    (~errors: list(lsp_error), ~lenses: list(Lenses.lens_t)) => {
-  let result: lsp_result = {errors, lenses};
+    (~errors: list(lsp_error), ~values: list(Lenses.lens_t)) => {
+  let result: lsp_result = {errors, values, lenses: []};
   Yojson.Basic.pretty_to_string(
     Yojson.Safe.to_basic(lsp_result_to_yojson(result)),
   );

@@ -62,10 +62,10 @@ let compile_string = name => {
 
         switch (compile_state.cstate_desc) {
         | TypeChecked(typed_program) =>
-          let lenses: list(Grain_diagnostics.Lenses.lens_t) =
-            Grain_diagnostics.Lenses.output_lenses(typed_program);
+          let values: list(Grain_diagnostics.Lenses.lens_t) =
+            Grain_diagnostics.Lenses.get_lenses_values(typed_program);
           let json =
-            Grain_diagnostics.Output.result_to_json(~errors=[], ~lenses);
+            Grain_diagnostics.Output.result_to_json(~errors=[], ~values);
           print_endline(json);
         | _ => ()
         };
@@ -80,7 +80,7 @@ let compile_string = name => {
       | Some(err) => [err]
       };
 
-    let json = Grain_diagnostics.Output.result_to_json(~errors, ~lenses=[]);
+    let json = Grain_diagnostics.Output.result_to_json(~errors, ~values=[]);
     print_endline(json);
   };
 
