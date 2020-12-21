@@ -4,22 +4,33 @@ open Grain_typed;
 type lens_t = {
   sl: int,
   sc: int,
+  sb: int,
   el: int,
   ec: int,
+  eb: int,
   s: string,
   t: string,
 };
 
+let get_raw_pos_info = (pos: Lexing.position) => (
+  pos.pos_fname,
+  pos.pos_lnum,
+  pos.pos_cnum - pos.pos_bol,
+  pos.pos_bol,
+);
+
 let make_value =
     (~location: Grain_parsing.Location.t, ~sigStr: string, ~valType: string) => {
-  let (file, startline, startchar) =
-    Location.get_pos_info(location.loc_start);
-  let (_, endline, endchar) = Location.get_pos_info(location.loc_end);
+  let (file, startline, startchar, sbol) =
+    get_raw_pos_info(location.loc_start);
+  let (_, endline, endchar, ebol) = get_raw_pos_info(location.loc_end);
   let lens: lens_t = {
     sl: startline,
     sc: startchar,
+    sb: sbol,
     el: endline,
     ec: endchar,
+    eb: ebol,
     s: sigStr,
     t: valType,
   };
@@ -105,15 +116,17 @@ let print_tree = (stmts: list(Grain_typed.Typedtree.toplevel_stmt)) => {
 
   List.iter(
     (cur: Grain_typed__Typedtree.toplevel_stmt) => {
-      let (file, startline, startchar) =
-        Location.get_pos_info(cur.ttop_loc.loc_start);
-      let (_, endline, endchar) =
-        Location.get_pos_info(cur.ttop_loc.loc_end);
+      let (file, startline, startchar, sbol) =
+        get_raw_pos_info(cur.ttop_loc.loc_start);
+      let (_, endline, endchar, ebol) =
+        get_raw_pos_info(cur.ttop_loc.loc_end);
       let lens: lens_t = {
         sl: startline,
         sc: startchar,
+        sb: sbol,
         el: endline,
         ec: endchar,
+        eb: ebol,
         s: "",
         t: "S",
       };
