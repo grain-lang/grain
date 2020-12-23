@@ -13,6 +13,7 @@ import {
 } from './tags';
 import { toHex, toBinary } from '../utils/utils';
 import treeify from 'treeify';
+import { GRAIN_CHAR_HEAP_TAG } from '../../../stdlib/stdlib-external/ascutils/tags';
 
 export const TRACE_MEMORY = false;
 
@@ -425,7 +426,7 @@ export class ManagedMemory {
           yield view[lambdaIdx + 3 + i];
         }
         break;
-      case GRAIN_GENERIC_HEAP_TAG_TYPE:
+      case GRAIN_GENERIC_HEAP_TAG_TYPE: {
         let genericHeapValUserPtr = userPtr;
         switch (view[genericHeapValUserPtr / 4]) {
           case GRAIN_ADT_HEAP_TAG: {
@@ -455,10 +456,17 @@ export class ManagedMemory {
             }
             break;
           }
-          default:
-            // No extra traversal needed for Strings
+          case GRAIN_CHAR_HEAP_TAG:
+          case GRAIN_STRING_HEAP_TAG:
+          case GRAIN_BOXED_NUM_HEAP_TAG:
+            // No traversal necessary
+            break;
+          default: {
+            console.warn(`<decRef: Unexpected heap tag: 0x${this._toHex(view[genericHeapValUserPtr / 4])}> [userPtr=0x${this._toHex(userPtr)}]`)
+          }
         }
         break;
+      }
       default:
         console.warn(`<decRef: Unexpected value tag: 0x${this._toHex(ptrTagType)}> [userPtr=0x${this._toHex(userPtr)}]`)
     }
