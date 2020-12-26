@@ -1,15 +1,24 @@
 open Grain_typed;
 
+// Left as a string not a variant as this is opaque to the 
+// work done here and gets parsed into a string immediately anyway
+
+// t:
+// S statement
+// D data
+// E expression
+// P pattern
+
 [@deriving yojson]
 type lens_t = {
-  sl: int,
-  sc: int,
-  sb: int,
-  el: int,
-  ec: int,
-  eb: int,
-  s: string,
-  t: string,
+  sl: int,  // start line
+  sc: int,  // start character
+  sb: int,  // start BOL
+  el: int,  // end line
+  ec: int,  // end character
+  eb: int,  // end BOL
+  s: string, // type signature
+  t: string,  // lens stype
 };
 
 let get_raw_pos_info = (pos: Lexing.position) => (
@@ -132,16 +141,8 @@ let print_tree = (stmts: list(Grain_typed.Typedtree.toplevel_stmt)) => {
       };
 
       lenses := List.append(lenses^, [lens]);
-      switch (cur.ttop_desc) {
-      | TTopException(_)
-      | TTopForeign(_)
-      | TTopImport(_)
-      | TTopExport(_)
-      | TTopExpr(_)
-      | TTopLet(_) => Iterator.iter_toplevel_stmt(cur)
-      // this is separate as the original emitted an enter data
-      | TTopData(_) => Iterator.iter_toplevel_stmt(cur)
-      };
+      Iterator.iter_toplevel_stmt(cur);
+      
     },
     stmts,
   );
