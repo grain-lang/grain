@@ -69,16 +69,18 @@ let create_record_signature = (labels: list(Types.record_field)) => {
         let ppf = Format.formatter_of_buffer(buf);
         Printtyp.type_expr(ppf, field.rf_type);
         Format.pp_print_flush(ppf, ());
-        acc
-        ++ comma
-        ++ Ident.name(field.rf_name)
-        ++ " : "
-        ++ Buffer.contents(buf);
+        Printf.sprintf(
+          "%s%s%s: %s",
+          acc,
+          comma,
+          Ident.name(field.rf_name),
+          Buffer.contents(buf),
+        );
       },
       "",
       labels,
     );
-  "{" ++ recSig ++ " }";
+  Printf.sprintf("{%s }", recSig);
 };
 
 let data_hover_val =
