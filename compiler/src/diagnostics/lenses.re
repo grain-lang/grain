@@ -1,6 +1,6 @@
 open Grain_typed;
 
-// Left as a string not a variant as this is opaque to the 
+// Left as a string not a variant as this is opaque to the
 // work done here and gets parsed into a string immediately anyway
 
 // t:
@@ -11,14 +11,14 @@ open Grain_typed;
 
 [@deriving yojson]
 type lens_t = {
-  sl: int,  // start line
-  sc: int,  // start character
-  sb: int,  // start BOL
-  el: int,  // end line
-  ec: int,  // end character
-  eb: int,  // end BOL
+  sl: int, // start line
+  sc: int, // start character
+  sb: int, // start BOL
+  el: int, // end line
+  ec: int, // end character
+  eb: int, // end BOL
   s: string, // type signature
-  t: string,  // lens stype
+  t: string // lens stype
 };
 
 let get_raw_pos_info = (pos: Lexing.position) => (
@@ -142,7 +142,6 @@ let print_tree = (stmts: list(Grain_typed.Typedtree.toplevel_stmt)) => {
 
       lenses := List.append(lenses^, [lens]);
       Iterator.iter_toplevel_stmt(cur);
-      
     },
     stmts,
   );
