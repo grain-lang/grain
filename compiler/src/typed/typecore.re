@@ -118,7 +118,11 @@ let prim1_type =
   | Int32ToNumber => (Builtin_types.type_int32, Builtin_types.type_number)
   | Float32ToNumber => (Builtin_types.type_float32, Builtin_types.type_number)
   | Float64ToNumber => (Builtin_types.type_float64, Builtin_types.type_number)
-  | Int64Lnot => (Builtin_types.type_int64, Builtin_types.type_int64);
+  | Int64Lnot => (Builtin_types.type_int64, Builtin_types.type_int64)
+  | WasmOfGrain => (newvar(~name="a", ()), Builtin_types.type_wasmi32)
+  | WasmToGrain => (Builtin_types.type_wasmi32, newvar(~name="a", ()))
+  | WasmUnaryI32 { boolean: true } => (Builtin_types.type_wasmi32, Builtin_types.type_bool)
+  | WasmUnaryI32 { boolean: false } => (Builtin_types.type_wasmi32, Builtin_types.type_wasmi32);
 
 let prim2_type =
   fun
@@ -184,6 +188,16 @@ let prim2_type =
       Builtin_types.type_int64,
       Builtin_types.type_int64,
       Builtin_types.type_bool,
+    )
+  | WasmBinaryI32 { boolean: true } => (
+      Builtin_types.type_wasmi32,
+      Builtin_types.type_wasmi32,
+      Builtin_types.type_bool,
+    )
+  | WasmBinaryI32 { boolean: false } => (
+      Builtin_types.type_wasmi32,
+      Builtin_types.type_wasmi32,
+      Builtin_types.type_wasmi32,
     );
 
 let maybe_add_pattern_variables_ghost = (loc_let, env, pv) =>

@@ -1,0 +1,42 @@
+
+// Conversions
+export primitive ofGrain : a -> WasmI32 = "@wasm.ofGrain"
+export primitive toGrain : WasmI32 -> a = "@wasm.toGrain"
+
+// WebAssembly Unary Instructions
+export primitive clz_i32 : WasmI32 -> WasmI32 = "@wasm.clz_i32"
+export primitive ctz_i32 : WasmI32 -> WasmI32 = "@wasm.ctz_i32"
+export primitive popcnt_i32 : WasmI32 -> WasmI32 = "@wasm.popcnt_i32"
+export primitive eq_z_i32 : WasmI32 -> Bool = "@wasm.eq_z_i32"
+
+// WebAssembly Binary Instructions
+export primitive add_i32 : (WasmI32, WasmI32) -> WasmI32 = "@wasm.add_i32"
+export primitive sub_i32 : (WasmI32, WasmI32) -> WasmI32 = "@wasm.sub_i32"
+export primitive mul_i32 : (WasmI32, WasmI32) -> WasmI32 = "@wasm.mul_i32"
+export primitive div_s_i32 : (WasmI32, WasmI32) -> WasmI32 = "@wasm.div_s_i32"
+export primitive div_u_i32 : (WasmI32, WasmI32) -> WasmI32 = "@wasm.div_u_i32"
+export primitive rem_s_i32 : (WasmI32, WasmI32) -> WasmI32 = "@wasm.rem_s_i32"
+export primitive rem_u_i32 : (WasmI32, WasmI32) -> WasmI32 = "@wasm.rem_u_i32"
+export primitive and_i32 : (WasmI32, WasmI32) -> WasmI32 = "@wasm.and_i32"
+export primitive or_i32 : (WasmI32, WasmI32) -> WasmI32 = "@wasm.or_i32"
+export primitive xor_i32 : (WasmI32, WasmI32) -> WasmI32 = "@wasm.xor_i32"
+export primitive shl_i32 : (WasmI32, WasmI32) -> WasmI32 = "@wasm.shl_i32"
+export primitive shr_u_i32 : (WasmI32, WasmI32) -> WasmI32 = "@wasm.shr_u_i32"
+export primitive shr_s_i32 : (WasmI32, WasmI32) -> WasmI32 = "@wasm.shr_s_i32"
+export primitive rot_l_i32 : (WasmI32, WasmI32) -> WasmI32 = "@wasm.rot_l_i32"
+export primitive rot_r_i32 : (WasmI32, WasmI32) -> WasmI32 = "@wasm.rot_r_i32"
+export primitive eq_i32 : (WasmI32, WasmI32) -> Bool = "@wasm.eq_i32"
+export primitive ne_i32 : (WasmI32, WasmI32) -> Bool = "@wasm.ne_i32"
+export primitive lt_s_i32 : (WasmI32, WasmI32) -> Bool = "@wasm.lt_s_i32"
+export primitive lt_u_i32 : (WasmI32, WasmI32) -> Bool = "@wasm.lt_u_i32"
+export primitive le_s_i32 : (WasmI32, WasmI32) -> Bool = "@wasm.le_s_i32"
+export primitive le_u_i32 : (WasmI32, WasmI32) -> Bool = "@wasm.le_u_i32"
+export primitive gt_s_i32 : (WasmI32, WasmI32) -> Bool = "@wasm.gt_s_i32"
+export primitive gt_u_i32 : (WasmI32, WasmI32) -> Bool = "@wasm.gt_u_i32"
+export primitive ge_s_i32 : (WasmI32, WasmI32) -> Bool = "@wasm.ge_s_i32"
+export primitive ge_u_i32 : (WasmI32, WasmI32) -> Bool = "@wasm.ge_u_i32"
+
+// Utilities
+export let print = (val) => {
+  print(toString(add_i32(val, val)) ++ "w")
+}

@@ -67,6 +67,7 @@ let type_constant =
   | Const_int64(_) => instance_def(Builtin_types.type_int64)
   | Const_float32(_) => instance_def(Builtin_types.type_float32)
   | Const_float64(_) => instance_def(Builtin_types.type_float64)
+  | Const_wasmi32(_) => instance_def(Builtin_types.type_wasmi32)
   | Const_bool(_) => instance_def(Builtin_types.type_bool)
   | Const_void => instance_def(Builtin_types.type_void)
   | Const_string(_) => instance_def(Builtin_types.type_string)
@@ -160,6 +161,18 @@ let constant:
           Location.errorf(
             ~loc,
             "Float64 literal %sd exceeds the range of representable 64-bit floats.",
+            n,
+          ),
+        )
+      }
+    | PConstWasmI32(n) =>
+      switch (Literals.conv_wasmi32(n)) {
+      | Some(n) => Ok(Const_wasmi32(n))
+      | None =>
+        Error(
+          Location.errorf(
+            ~loc,
+            "WasmI32 literal %sd exceeds the range of representable 32-bit integers.",
             n,
           ),
         )

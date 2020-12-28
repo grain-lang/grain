@@ -45,7 +45,10 @@ type prim1 =
     | Int32ToNumber
     | Float64ToNumber
     | Float32ToNumber
-    | Int64Lnot;
+    | Int64Lnot
+    | WasmOfGrain
+    | WasmToGrain
+    | WasmUnaryI32 { op: string, boolean: bool };
 
 type prim2 =
   Parsetree.prim2 =
@@ -73,7 +76,8 @@ type prim2 =
     | Int64Gt
     | Int64Gte
     | Int64Lt
-    | Int64Lte;
+    | Int64Lte
+    | WasmBinaryI32 { op: string, boolean: bool };
 
 type core_type = {
   ctyp_desc: core_type_desc,

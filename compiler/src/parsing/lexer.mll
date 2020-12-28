@@ -142,6 +142,7 @@ rule token = parse
   | unsigned_float as x { NUMBER_FLOAT x }
   | (unsigned_int as x) 'l' { INT32 x }
   | (unsigned_int as x) 'L' { INT64 x }
+  | (unsigned_int as x) 'w' { WASMI32 x }
   | unsigned_int as x { NUMBER_INT x }
   | "primitive" { PRIMITIVE }
   | "foreign" { FOREIGN }

@@ -116,6 +116,7 @@ type constant =
   | PConstInt64(string)
   | PConstFloat32(string)
   | PConstFloat64(string)
+  | PConstWasmI32(string)
   | PConstBool(bool)
   | PConstVoid
   | PConstString(string)
@@ -167,7 +168,10 @@ type prim1 =
   | Int32ToNumber
   | Float64ToNumber
   | Float32ToNumber
-  | Int64Lnot;
+  | Int64Lnot
+  | WasmOfGrain
+  | WasmToGrain
+  | WasmUnaryI32 { op: string, boolean: bool };
 
 /** Two-argument operators */
 
@@ -197,7 +201,8 @@ type prim2 =
   | Int64Gt
   | Int64Gte
   | Int64Lt
-  | Int64Lte;
+  | Int64Lte
+  | WasmBinaryI32 { op: string, boolean: bool };
 
 /** Type for expressions (i.e. things which evaluate to something) */
 
