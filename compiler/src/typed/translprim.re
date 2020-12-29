@@ -200,9 +200,13 @@ let transl_prim = (env, desc) => {
     | Not_found => failwith("This primitive does not exist.")
     };
 
+  let diable_gc = [Location.mknoloc("disableGC")];
+
   let value =
     switch (prim) {
+    | Primitive1(WasmUnaryI32(_) as p) => Exp.lambda(~loc, ~attributes=diable_gc, [pat_a], Exp.prim1(~loc, p, id_a))
     | Primitive1(p) => Exp.lambda(~loc, [pat_a], Exp.prim1(~loc, p, id_a))
+    | Primitive2(WasmBinaryI32(_) as p) => Exp.lambda(~loc, ~attributes=diable_gc, [pat_a, pat_b], Exp.prim2(~loc, p, id_a, id_b))
     | Primitive2(p) =>
       Exp.lambda(~loc, [pat_a, pat_b], Exp.prim2(~loc, p, id_a, id_b))
     };

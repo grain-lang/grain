@@ -3598,7 +3598,17 @@ let compile_global_cleanup_function =
 };
 
 let compile_functions = (wasm_mod, env, {functions, num_globals} as prog) => {
-  ignore @@ List.map(compile_function(wasm_mod, env), functions);
+  let handle_attrs = ({attrs} as func) => {
+    if (List.exists(({Grain_parsing.Asttypes.txt}) => txt == "disableGC", attrs)) {
+      Config.preserve_config(() => {
+        Config.no_gc := true;
+        compile_function(wasm_mod, env, func)
+      })
+    } else {
+      compile_function(wasm_mod, env, func)
+    }
+  }
+  ignore @@ List.map(handle_attrs, functions);
   ignore @@ compile_main(wasm_mod, env, prog);
   ignore @@ compile_global_cleanup_function(wasm_mod, env, prog);
 };

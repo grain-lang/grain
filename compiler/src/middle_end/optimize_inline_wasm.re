@@ -7,6 +7,14 @@ module IWArg: Anf_mapper.MapArgument = {
 
   let leave_comp_expression = ({comp_desc: desc} as c) => {
     switch (desc) {
+    | CApp({imm_desc: ImmId(id)}, [arg1])
+        when has_inline_wasm_type(id) =>
+      let prim1 =
+        switch (get_inline_wasm_type(id)) {
+        | WasmPrim1(prim1) => prim1
+        | _ => failwith("internal: WasmPrim2 was not found")
+        };
+      {...c, comp_desc: CPrim1(prim1, arg1)};
     | CApp({imm_desc: ImmId(id)}, [arg1, arg2])
         when has_inline_wasm_type(id) =>
       let prim2 =

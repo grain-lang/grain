@@ -38,5 +38,5 @@ export primitive ge_u_i32 : (WasmI32, WasmI32) -> Bool = "@wasm.ge_u_i32"
 
 // Utilities
 export let print = (val) => {
-  print(toString(add_i32(val, val)) ++ "w")
+  print(toString(shl_i32(val, 1w)) ++ "w")
 }
