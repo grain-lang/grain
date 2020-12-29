@@ -13,6 +13,9 @@ type global_flag =
 
 type loc('a) = Location.loc('a);
 
+[@deriving sexp]
+type attributes = Asttypes.attributes;
+
 type analysis = ..;
 
 type prim1 =
@@ -34,7 +37,10 @@ type prim1 =
     | Int64Lnot
     | WasmOfGrain
     | WasmToGrain
-    | WasmUnaryI32 { op: string, boolean: bool };
+    | WasmUnaryI32({
+        op: string,
+        boolean: bool,
+      });
 
 type prim2 =
   Parsetree.prim2 =
@@ -63,7 +69,10 @@ type prim2 =
     | Int64Gte
     | Int64Lt
     | Int64Lte
-    | WasmBinaryI32 { op: string, boolean: bool };
+    | WasmBinaryI32({
+        op: string,
+        boolean: bool,
+      });
 
 let (prim1_of_sexp, sexp_of_prim1) = (
   Parsetree.prim1_of_sexp,
@@ -99,6 +108,7 @@ type comp_expression = {
   [@sexp_drop_if sexp_locs_disabled]
   comp_loc: Location.t,
   comp_env: [@sexp.opaque] Env.t,
+  comp_attributes: attributes,
   comp_analyses: [@sexp.opaque] ref(list(analysis)),
 }
 

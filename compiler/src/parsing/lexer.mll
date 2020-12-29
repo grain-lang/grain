@@ -208,6 +208,7 @@ rule token = parse
   | "|" { PIPE }
   | "||" { PIPEPIPE }
   | "!" { NOT }
+  | "@" { AT }
   | '"'   { read_str (Buffer.create 16) lexbuf }
   | '\'' { read_char (Buffer.create 4) lexbuf }
   | "_" { UNDERSCORE }

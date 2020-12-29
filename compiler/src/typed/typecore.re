@@ -121,8 +121,14 @@ let prim1_type =
   | Int64Lnot => (Builtin_types.type_int64, Builtin_types.type_int64)
   | WasmOfGrain => (newvar(~name="a", ()), Builtin_types.type_wasmi32)
   | WasmToGrain => (Builtin_types.type_wasmi32, newvar(~name="a", ()))
-  | WasmUnaryI32 { boolean: true } => (Builtin_types.type_wasmi32, Builtin_types.type_bool)
-  | WasmUnaryI32 { boolean: false } => (Builtin_types.type_wasmi32, Builtin_types.type_wasmi32);
+  | WasmUnaryI32({boolean: true}) => (
+      Builtin_types.type_wasmi32,
+      Builtin_types.type_bool,
+    )
+  | WasmUnaryI32({boolean: false}) => (
+      Builtin_types.type_wasmi32,
+      Builtin_types.type_wasmi32,
+    );
 
 let prim2_type =
   fun
@@ -189,12 +195,12 @@ let prim2_type =
       Builtin_types.type_int64,
       Builtin_types.type_bool,
     )
-  | WasmBinaryI32 { boolean: true } => (
+  | WasmBinaryI32({boolean: true}) => (
       Builtin_types.type_wasmi32,
       Builtin_types.type_wasmi32,
       Builtin_types.type_bool,
     )
-  | WasmBinaryI32 { boolean: false } => (
+  | WasmBinaryI32({boolean: false}) => (
       Builtin_types.type_wasmi32,
       Builtin_types.type_wasmi32,
       Builtin_types.type_wasmi32,
@@ -259,12 +265,13 @@ let constant_or_raise = Checkertypes.constant_or_raise;
 /*let type_option ty =
   newty (TTyConstr(Predef.path_option,[ty], ref TMemNil))*/
 
-let mkexp = (exp_desc, exp_type, exp_loc, exp_env) => {
+let mkexp = (exp_desc, exp_type, exp_loc, exp_env, exp_attributes) => {
   exp_desc,
   exp_type,
   exp_loc,
   exp_env,
   exp_extra: [],
+  exp_attributes,
 };
 
 /* Typing of patterns */
@@ -534,6 +541,7 @@ and type_expect_ =
     (~in_function=?, ~recarg=Rejected, env, sexp, ty_expected_explained) => {
   let {ty: ty_expected, explanation} = ty_expected_explained;
   let loc = sexp.pexp_loc;
+  let attributes = sexp.pexp_attributes;
   /* Record the expression type before unifying it with the expected type */
   let with_explanation = with_explanation(explanation);
   let rue = exp => {
@@ -557,6 +565,7 @@ and type_expect_ =
         },
       exp_loc: loc,
       exp_extra: [],
+      exp_attributes: attributes,
       exp_type: instance(env, desc.val_type),
       exp_env: env,
     });
@@ -566,6 +575,7 @@ and type_expect_ =
       exp_desc: TExpConstant(cst),
       exp_loc: loc,
       exp_extra: [],
+      exp_attributes: attributes,
       exp_type: type_constant(cst),
       exp_env: env,
     });
@@ -584,6 +594,7 @@ and type_expect_ =
       exp_desc: TExpTuple(expl),
       exp_loc: loc,
       exp_extra: [],
+      exp_attributes: attributes,
       exp_type: newty(TTyTuple(List.map(e => e.exp_type, expl))),
       exp_env: env,
     });
@@ -597,6 +608,7 @@ and type_expect_ =
       exp_desc: TExpArray(expl),
       exp_loc: loc,
       exp_extra: [],
+      exp_attributes: attributes,
       exp_type: instance(env, ty_expected),
       exp_env: env,
     });
@@ -624,6 +636,7 @@ and type_expect_ =
       exp_desc: TExpArrayGet(arrexp, idx),
       exp_loc: loc,
       exp_extra: [],
+      exp_attributes: attributes,
       exp_type: instance(env, array_type),
       exp_env: env,
     });
@@ -652,6 +665,7 @@ and type_expect_ =
       exp_desc: TExpArraySet(arrexp, idx, e),
       exp_loc: loc,
       exp_extra: [],
+      exp_attributes: attributes,
       exp_type: instance(env, e.exp_type),
       exp_env: env,
     });
@@ -762,6 +776,7 @@ and type_expect_ =
       exp_desc: TExpRecord(fields),
       exp_loc: loc,
       exp_extra: [],
+      exp_attributes: attributes,
       exp_type: instance(env, ty_expected),
       exp_env: env,
     });
@@ -773,6 +788,7 @@ and type_expect_ =
       exp_desc: TExpRecordGet(record, lid, label),
       exp_loc: loc,
       exp_extra: [],
+      exp_attributes: attributes,
       exp_type: ty_arg,
       exp_env: env,
     });
@@ -789,6 +805,7 @@ and type_expect_ =
       exp_desc: TExpRecordSet(record, lid, label, val_),
       exp_loc: loc,
       exp_extra: [],
+      exp_attributes: attributes,
       exp_type: ty_arg,
       exp_env: env,
     });
@@ -805,6 +822,7 @@ and type_expect_ =
       exp_desc: TExpLet(rec_flag, mut_flag, pat_exp_list, body),
       exp_loc: loc,
       exp_extra: [],
+      exp_attributes: attributes,
       exp_type: body.exp_type,
       exp_env: env,
     });
@@ -819,7 +837,7 @@ and type_expect_ =
     type_function(
       ~in_function?,
       loc,
-      [],
+      attributes,
       env,
       ty_expected_explained,
       (),
@@ -855,6 +873,7 @@ and type_expect_ =
       exp_desc: TExpApp(funct, args),
       exp_loc: loc,
       exp_extra: [],
+      exp_attributes: attributes,
       exp_type: ty_res,
       exp_env: env,
     });
@@ -872,6 +891,7 @@ and type_expect_ =
       exp_desc: TExpMatch(arg, val_cases, partial),
       exp_loc: loc,
       exp_extra: [],
+      exp_attributes: attributes,
       exp_type: instance(env, ty_expected),
       exp_env: env,
     });
@@ -882,6 +902,7 @@ and type_expect_ =
       exp_desc: TExpPrim1(p1, arg),
       exp_loc: loc,
       exp_extra: [],
+      exp_attributes: attributes,
       exp_type: rettype,
       exp_env: env,
     });
@@ -893,6 +914,7 @@ and type_expect_ =
       exp_desc: TExpPrim2(p2, arg1, arg2),
       exp_loc: loc,
       exp_extra: [],
+      exp_attributes: attributes,
       exp_type: rettype,
       exp_env: env,
     });
@@ -911,6 +933,7 @@ and type_expect_ =
       exp_desc: TExpBoxAssign(boxexpr, val_),
       exp_loc: loc,
       exp_extra: [],
+      exp_attributes: attributes,
       exp_type: val_.exp_type,
       exp_env: env,
     });
@@ -931,6 +954,7 @@ and type_expect_ =
       exp_desc: TExpAssign(idexpr, val_),
       exp_loc: loc,
       exp_extra: [],
+      exp_attributes: attributes,
       exp_type: val_.exp_type,
       exp_env: env,
     });
@@ -949,6 +973,7 @@ and type_expect_ =
           exp_desc: TExpConstant(Const_void),
           exp_loc: loc,
           exp_extra: [],
+          exp_attributes: [],
           exp_type: Builtin_types.type_void,
           exp_env: env,
         };
@@ -975,6 +1000,7 @@ and type_expect_ =
       exp_desc: TExpIf(cond, ifso, ifnot),
       exp_loc: loc,
       exp_extra: [],
+      exp_attributes: attributes,
       exp_type: ifso.exp_type,
       exp_env: env,
     });
@@ -993,6 +1019,7 @@ and type_expect_ =
       exp_desc: TExpWhile(cond, body),
       exp_loc: loc,
       exp_extra: [],
+      exp_attributes: attributes,
       /* While loops don't evaluate to anything */
       exp_type: Builtin_types.type_void,
       exp_env: env,
@@ -1013,12 +1040,14 @@ and type_expect_ =
       exp_type: ty',
       exp_env: env,
       exp_extra: [(TExpConstraint(cty), loc), ...arg.exp_extra],
+      exp_attributes: attributes,
     });
   | PExpBlock([]) =>
     rue({
       exp_desc: TExpBlock([]),
       exp_loc: loc,
       exp_type: Builtin_types.type_void,
+      exp_attributes: attributes,
       exp_env: env,
       exp_extra: [],
     })
@@ -1045,6 +1074,7 @@ and type_expect_ =
       exp_desc: TExpBlock(exprs),
       exp_loc: loc,
       exp_extra: [],
+      exp_attributes: attributes,
       exp_type: typ,
       exp_env: env,
     });
@@ -1053,6 +1083,7 @@ and type_expect_ =
       exp_desc: TExpNull,
       exp_loc: loc,
       exp_extra: [],
+      exp_attributes: attributes,
       exp_type: instance(env, Builtin_types.type_void),
       exp_env: env,
     })
@@ -1132,6 +1163,7 @@ and type_function =
     exp_desc: TExpLambda(cases, partial),
     exp_loc: loc,
     exp_extra: [],
+    exp_attributes: attrs,
     exp_type: instance(env, newgenty(TTyArrow(ty_arg, ty_res, TComOk))),
     exp_env: env,
   });
@@ -1264,6 +1296,7 @@ and type_construct = (env, loc, lid, sarg, ty_expected_explained, attrs) => {
       exp_desc: TExpConstruct(lid, constr, []),
       exp_loc: loc,
       exp_extra: [],
+      exp_attributes: attrs,
       exp_type: ty_res,
       exp_env: env,
     });

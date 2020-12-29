@@ -75,3 +75,7 @@ type loc('a) =
     [@sexp_drop_if sexp_locs_disabled]
     loc: Location.t,
   };
+
+/** Addtional expression information that may affect compilation. */
+[@deriving (sexp, yojson)]
+type attributes = list(loc(string));

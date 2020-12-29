@@ -171,7 +171,10 @@ type prim1 =
   | Int64Lnot
   | WasmOfGrain
   | WasmToGrain
-  | WasmUnaryI32 { op: string, boolean: bool };
+  | WasmUnaryI32({
+      op: string,
+      boolean: bool,
+    });
 
 /** Two-argument operators */
 
@@ -202,13 +205,20 @@ type prim2 =
   | Int64Gte
   | Int64Lt
   | Int64Lte
-  | WasmBinaryI32 { op: string, boolean: bool };
+  | WasmBinaryI32({
+      op: string,
+      boolean: bool,
+    });
+
+[@deriving (sexp, yojson)]
+type attributes = Asttypes.attributes;
 
 /** Type for expressions (i.e. things which evaluate to something) */
 
 [@deriving (sexp, yojson)]
 type expression = {
   pexp_desc: expression_desc,
+  pexp_attributes: attributes,
   [@sexp_drop_if sexp_locs_disabled]
   pexp_loc: Location.t,
 }
@@ -320,6 +330,7 @@ type toplevel_stmt_desc =
 [@deriving (sexp, yojson)]
 type toplevel_stmt = {
   ptop_desc: toplevel_stmt_desc,
+  ptop_attributes: attributes,
   [@sexp_drop_if sexp_locs_disabled]
   ptop_loc: Location.t,
 };

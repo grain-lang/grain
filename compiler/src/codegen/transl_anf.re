@@ -31,6 +31,7 @@ type worklist_elt = {
   env: compilation_env,
   arity: int,
   idx: int, /* Lambda-lifted index */
+  attrs: attributes,
   stack_size: int,
   loc: Location.t,
 };
@@ -391,7 +392,7 @@ let compile_imm = (env, i: imm_expression) =>
   | ImmId(id) => MImmBinding(find_id(id, env))
   };
 
-let compile_lambda = (env, args, body, loc): Mashtree.closure_data => {
+let compile_lambda = (env, args, body, attrs, loc): Mashtree.closure_data => {
   let used_var_set = Anf_utils.anf_free_vars(body);
   let free_var_set = Ident.Set.diff(used_var_set) @@ Ident.Set.of_list(args);
   let free_vars = Ident.Set.elements(free_var_set);
@@ -427,6 +428,7 @@ let compile_lambda = (env, args, body, loc): Mashtree.closure_data => {
     env: lam_env,
     idx,
     arity,
+    attrs,
     stack_size,
     loc,
   };
@@ -463,6 +465,7 @@ let compile_wrapper = (env, func_name, arity): Mashtree.closure_data => {
     idx,
     arity: arity + 1,
     stack_size: 0,
+    attrs: [],
     loc: Location.dummy_loc,
   };
   worklist_enqueue(worklist_item);
@@ -490,6 +493,7 @@ let next_global = (~exported=false, id) => {
       idx,
       arity: 0, /* <- this function cannot be called by the user, so no self argument is needed. */
       stack_size: 0,
+      attrs: [],
       loc: Location.dummy_loc,
     };
     worklist_enqueue(worklist_item);
@@ -596,7 +600,7 @@ let rec compile_comp = (env, c) => {
         compile_imm(env, record),
       )
     | CLambda(args, body) =>
-      MAllocate(MClosure(compile_lambda(env, args, body, c.comp_loc)))
+      MAllocate(MClosure(compile_lambda(env, args, body, c.comp_attributes, c.comp_loc)))
     | CApp(f, args, true) =>
       /* TODO: Utilize MReturnCallKnown */
 
@@ -689,13 +693,17 @@ let fold_left_pop = (f, base) => {
 
 let compile_remaining_worklist = () => {
   let compile_one =
-      (funcs, {idx: index, arity, stack_size, loc} as cur: worklist_elt) => {
+      (
+        funcs,
+        {idx: index, arity, stack_size, attrs, loc} as cur: worklist_elt,
+      ) => {
     let body = compile_worklist_elt(cur);
     let func = {
       index: Int32.of_int(index),
       arity: Int32.of_int(arity),
       body,
       stack_size,
+      attrs,
       func_loc: loc,
     };
     [func, ...funcs];

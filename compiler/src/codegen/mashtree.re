@@ -14,6 +14,9 @@ type float64 = float;
 type tag_type = Value_tags.tag_type;
 type heap_tag_type = Value_tags.heap_tag_type;
 
+[@deriving sexp]
+type attributes = Asttypes.attributes;
+
 type grain_error = Runtime_errors.grain_error;
 let (prim1_of_sexp, sexp_of_prim1) = (
   Parsetree.prim1_of_sexp,
@@ -43,7 +46,10 @@ type prim1 =
     | Int64Lnot
     | WasmOfGrain
     | WasmToGrain
-    | WasmUnaryI32 { op: string, boolean: bool };
+    | WasmUnaryI32({
+        op: string,
+        boolean: bool,
+      });
 
 type prim2 =
   Parsetree.prim2 =
@@ -72,7 +78,10 @@ type prim2 =
     | Int64Gte
     | Int64Lt
     | Int64Lte
-    | WasmBinaryI32 { op: string, boolean: bool };
+    | WasmBinaryI32({
+        op: string,
+        boolean: bool,
+      });
 
 /* Types within the WASM output */
 [@deriving sexp]
@@ -241,6 +250,7 @@ type mash_function = {
   arity: int32, /* TODO: Proper typing of arguments */
   body: block,
   stack_size: int,
+  attrs: attributes,
   func_loc: Location.t,
 };
 

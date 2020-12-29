@@ -48,7 +48,10 @@ type prim1 =
     | Int64Lnot
     | WasmOfGrain
     | WasmToGrain
-    | WasmUnaryI32 { op: string, boolean: bool };
+    | WasmUnaryI32({
+        op: string,
+        boolean: bool,
+      });
 
 type prim2 =
   Parsetree.prim2 =
@@ -77,7 +80,10 @@ type prim2 =
     | Int64Gte
     | Int64Lt
     | Int64Lte
-    | WasmBinaryI32 { op: string, boolean: bool };
+    | WasmBinaryI32({
+        op: string,
+        boolean: bool,
+      });
 
 type core_type = {
   ctyp_desc: core_type_desc,
@@ -191,6 +197,7 @@ type expression = {
   exp_desc: expression_desc,
   exp_loc: Location.t,
   exp_extra: list((exp_extra, Location.t)),
+  exp_attributes: attributes,
   exp_type: type_expr,
   exp_env: Env.t,
 }
@@ -285,6 +292,7 @@ type toplevel_stmt_desc =
 [@deriving sexp]
 type toplevel_stmt = {
   ttop_desc: toplevel_stmt_desc,
+  ttop_attributes: attributes,
   ttop_loc: Location.t,
   ttop_env: Env.t,
 };

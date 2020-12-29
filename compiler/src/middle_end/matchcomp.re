@@ -850,6 +850,7 @@ let prepare_match_branches = branches => {
       exp_desc: desc,
       exp_loc: loc,
       exp_extra: [],
+      exp_attributes: [],
       exp_env: env,
       exp_type: ty,
     };

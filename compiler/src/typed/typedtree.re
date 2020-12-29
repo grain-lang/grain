@@ -49,7 +49,10 @@ type prim1 =
     | Int64Lnot
     | WasmOfGrain
     | WasmToGrain
-    | WasmUnaryI32 { op: string, boolean: bool };
+    | WasmUnaryI32({
+        op: string,
+        boolean: bool,
+      });
 
 type prim2 =
   Parsetree.prim2 =
@@ -78,7 +81,10 @@ type prim2 =
     | Int64Gte
     | Int64Lt
     | Int64Lte
-    | WasmBinaryI32 { op: string, boolean: bool };
+    | WasmBinaryI32({
+        op: string,
+        boolean: bool,
+      });
 
 let (prim1_of_sexp, sexp_of_prim1) = (
   Parsetree.prim1_of_sexp,
@@ -214,6 +220,7 @@ type expression = {
   exp_loc: Location.t,
   [@default []] [@sexp_drop_default (==)]
   exp_extra: list((exp_extra, Location.t)),
+  exp_attributes: attributes,
   exp_type: type_expr,
   exp_env: [@sexp.opaque] Env.t,
 }
@@ -316,6 +323,7 @@ type toplevel_stmt_desc =
 [@deriving sexp]
 type toplevel_stmt = {
   ttop_desc: toplevel_stmt_desc,
+  ttop_attributes: attributes,
   [@sexp_drop_if sexp_locs_disabled]
   ttop_loc: Location.t,
   ttop_env: [@sexp.opaque] Env.t,

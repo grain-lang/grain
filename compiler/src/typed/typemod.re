@@ -386,7 +386,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
     flag && (!) @@ List.exists(({txt}) => txt == str.txt, excepts);
   };
 
-  let process_foreign = (env, e, d, loc) => {
+  let process_foreign = (env, e, d, attributes, loc) => {
     let (desc, newenv) = Typedecl.transl_value_decl(env, loc, d);
     let e =
       if (string_needs_export(d.pval_name)) {
@@ -403,11 +403,12 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       ttop_desc: TTopForeign(e, desc),
       ttop_loc: loc,
       ttop_env: env,
+      ttop_attributes: attributes,
     };
     (newenv, signature, foreign);
   };
 
-  let process_primitive = (env, e, d, loc) => {
+  let process_primitive = (env, e, d, attributes, loc) => {
     let (desc, newenv) = Typedecl.transl_value_decl(env, loc, d);
     let e =
       if (string_needs_export(d.pval_name)) {
@@ -425,16 +426,25 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       ttop_desc: TTopLet(e, Nonrecursive, Immutable, defs),
       ttop_loc: loc,
       ttop_env: newenv,
+      ttop_attributes: attributes,
     };
     (newenv, signature, prim);
   };
 
-  let process_import = (env, import, loc) => {
+  let process_import = (env, import, attributes, loc) => {
     let (_path, newenv, od) = type_open(env, import);
-    (newenv, {ttop_desc: TTopImport(od), ttop_loc: loc, ttop_env: env});
+    (
+      newenv,
+      {
+        ttop_desc: TTopImport(od),
+        ttop_attributes: attributes,
+        ttop_loc: loc,
+        ttop_env: env,
+      },
+    );
   };
 
-  let process_datas = (env, e, datas, loc) => {
+  let process_datas = (env, e, datas, attributes, loc) => {
     let (decls, newenv) = Typedecl.transl_data_decl(env, Recursive, datas);
     let ty_decl =
       map_rec_type_with_row_types(
@@ -463,12 +473,14 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       ttop_desc: TTopData(decls),
       ttop_loc: loc,
       ttop_env: newenv,
+      ttop_attributes: attributes,
     };
     let newenv = enrich_type_decls(anchor, decls, env, newenv);
     (newenv, ty_decl, statement);
   };
 
-  let process_let = (env, export_flag, rec_flag, mut_flag, binds, loc) => {
+  let process_let =
+      (env, export_flag, rec_flag, mut_flag, binds, attributes, loc) => {
     Ctype.init_def(Ident.current_time());
     let scope = None;
     let (defs, newenv) =
@@ -501,21 +513,28 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       ttop_desc: TTopLet(export_flag, rec_flag, mut_flag, defs),
       ttop_loc: loc,
       ttop_env: env,
+      ttop_attributes: attributes,
     };
     (newenv, signatures, [stmt]);
   };
 
-  let process_expr = (env, expr, loc) => {
+  let process_expr = (env, expr, attributes, loc) => {
     let expr = Typecore.type_statement_expr(env, expr);
-    {ttop_desc: TTopExpr(expr), ttop_loc: loc, ttop_env: env};
+    {
+      ttop_desc: TTopExpr(expr),
+      ttop_attributes: attributes,
+      ttop_loc: loc,
+      ttop_env: env,
+    };
   };
 
-  let process_exception = (env, export_flag, ext, loc) => {
+  let process_exception = (env, export_flag, ext, attributes, loc) => {
     let (ext, newenv) = Typedecl.transl_exception(env, ext);
     let stmt = {
       ttop_desc: TTopException(export_flag, ext),
       ttop_loc: loc,
       ttop_env: newenv,
+      ttop_attributes: attributes,
     };
     let sign =
       switch (export_flag) {
@@ -545,6 +564,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
             pvb_expr: {
               pexp_loc: loc,
               pexp_desc: PExpId(name),
+              pexp_attributes: [],
             },
             pvb_loc: loc,
           };
@@ -580,7 +600,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
     };
   };
 
-  let process_export = (env, exports, loc) => {
+  let process_export = (env, exports, attributes, loc) => {
     let (values, datas) =
       List.fold_right(
         (export, (values, datas)) =>
@@ -599,7 +619,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       };
     let (env, sigs, stmts) =
       if (List.length(values) > 0) {
-        process_export_value(env, values, loc);
+        process_export_value(env, values, attributes, loc);
       } else {
         (env, [], []);
       };
@@ -608,17 +628,21 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
 
   let (final_env, signatures, statements) =
     List.fold_left(
-      ((env, signatures, statements), {ptop_desc, ptop_loc: loc}) =>
+      (
+        (env, signatures, statements),
+        {ptop_desc, ptop_attributes: attributes, ptop_loc: loc},
+      ) =>
         switch (ptop_desc) {
         | PTopImport(i) =>
-          let (new_env, stmt) = process_import(env, i, loc);
+          let (new_env, stmt) = process_import(env, i, attributes, loc);
           (new_env, signatures, [stmt, ...statements]);
         | PTopExport(ex) =>
-          let (new_env, sigs, stmts) = process_export(env, ex, loc);
+          let (new_env, sigs, stmts) =
+            process_export(env, ex, attributes, loc);
           (new_env, List.rev(sigs) @ signatures, stmts @ statements);
         | PTopForeign(e, d) =>
           let (new_env, signature, statement) =
-            process_foreign(env, e, d, loc);
+            process_foreign(env, e, d, attributes, loc);
           let signatures =
             switch (signature) {
             | Some(s) => [s, ...signatures]
@@ -627,7 +651,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
           (new_env, signatures, [statement, ...statements]);
         | PTopPrimitive(e, d) =>
           let (new_env, signature, statement) =
-            process_primitive(env, e, d, loc);
+            process_primitive(env, e, d, attributes, loc);
           let signatures =
             switch (signature) {
             | Some(s) => [s, ...signatures]
@@ -635,21 +659,23 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
             };
           (new_env, signatures, [statement, ...statements]);
         | PTopData(e, d) =>
-          let (new_env, sigs, statement) = process_datas(env, e, [d], loc);
+          let (new_env, sigs, statement) =
+            process_datas(env, e, [d], attributes, loc);
           (
             new_env,
             List.rev(sigs) @ signatures,
             [statement, ...statements],
           );
         | PTopLet(e, r, m, vb) =>
-          let (new_env, sigs, stmts) = process_let(env, e, r, m, vb, loc);
+          let (new_env, sigs, stmts) =
+            process_let(env, e, r, m, vb, attributes, loc);
           (new_env, List.rev(sigs) @ signatures, stmts @ statements);
         | PTopExpr(e) =>
-          let statement = process_expr(env, e, loc);
+          let statement = process_expr(env, e, attributes, loc);
           (env, signatures, [statement, ...statements]);
         | PTopException(e, d) =>
           let (new_env, signature, statement) =
-            process_exception(env, e, d.ptyexn_constructor, loc);
+            process_exception(env, e, d.ptyexn_constructor, attributes, loc);
           let signatures =
             switch (signature) {
             | Some(s) => [s, ...signatures]

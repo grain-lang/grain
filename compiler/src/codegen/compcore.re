@@ -2917,7 +2917,8 @@ let compile_prim1 = (wasm_mod, env, p1, arg): Expression.t => {
   | Unbox => failwith("Unreachable case; should never get here: Unbox")
   | WasmOfGrain
   | WasmToGrain => compiled_arg // These are no-ops
-  | WasmUnaryI32 { op, boolean } => compile_wasm_prim1(wasm_mod, env, op, ~boolean, compiled_arg)
+  | WasmUnaryI32({op, boolean}) =>
+    compile_wasm_prim1(wasm_mod, env, op, ~boolean, compiled_arg)
   };
 };
 
@@ -2982,7 +2983,15 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
   | Int64Asr => failwith("Unreachable case; should never get here: Int64Asr")
   | ArrayMake => allocate_array_n(wasm_mod, env, arg1, arg2)
   | ArrayInit => allocate_array_init(wasm_mod, env, arg1, arg2)
-  | WasmBinaryI32 { op, boolean } => compile_wasm_prim2(wasm_mod, env, op, ~boolean, compiled_arg1(), compiled_arg2())
+  | WasmBinaryI32({op, boolean}) =>
+    compile_wasm_prim2(
+      wasm_mod,
+      env,
+      op,
+      ~boolean,
+      compiled_arg1(),
+      compiled_arg2(),
+    )
   };
 };
 
@@ -3543,6 +3552,7 @@ let compile_main = (wasm_mod, env, prog) => {
       arity: Int32.zero,
       body: prog.main_body,
       stack_size: prog.main_body_stack_size,
+      attrs: [],
       func_loc: Grain_parsing.Location.dummy_loc,
     },
   );

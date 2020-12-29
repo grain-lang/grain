@@ -606,21 +606,24 @@ and bind_patts =
 }
 
 and transl_comp_expression =
-    ({exp_desc, exp_loc: loc, exp_env: env, _} as e: expression)
+    (
+      {exp_desc, exp_attributes: attributes, exp_loc: loc, exp_env: env, _} as e: expression,
+    )
     : (comp_expression, list(anf_bind)) =>
   switch (exp_desc) {
   | TExpPrim1(op, arg) =>
     let (arg_imm, arg_setup) = transl_imm(arg);
-    (Comp.prim1(~loc, ~env, op, arg_imm), arg_setup);
+    (Comp.prim1(~loc, ~attributes, ~env, op, arg_imm), arg_setup);
   | TExpPrim2(And, left, right) =>
     let (left_imm, left_setup) = transl_imm(left);
     (
       Comp.if_(
         ~loc,
+        ~attributes,
         ~env,
         left_imm,
         transl_anf_expression(right),
-        AExp.comp(~loc, ~env, Comp.imm(~loc, ~env, left_imm)),
+        AExp.comp(~loc, ~env, Comp.imm(~loc, ~attributes, ~env, left_imm)),
       ),
       left_setup,
     );
@@ -629,9 +632,10 @@ and transl_comp_expression =
     (
       Comp.if_(
         ~loc,
+        ~attributes,
         ~env,
         left_imm,
-        AExp.comp(~loc, ~env, Comp.imm(~loc, ~env, left_imm)),
+        AExp.comp(~loc, ~env, Comp.imm(~loc, ~attributes, ~env, left_imm)),
         transl_anf_expression(right),
       ),
       left_setup,
@@ -640,7 +644,7 @@ and transl_comp_expression =
     let (left_imm, left_setup) = transl_imm(left);
     let (right_imm, right_setup) = transl_imm(right);
     (
-      Comp.prim2(~loc, ~env, op, left_imm, right_imm),
+      Comp.prim2(~loc, ~attributes, ~env, op, left_imm, right_imm),
       left_setup @ right_setup,
     );
   | TExpIf(cond, _then, _else) =>
@@ -648,6 +652,7 @@ and transl_comp_expression =
     (
       Comp.if_(
         ~loc,
+        ~attributes,
         ~env,
         cond_imm,
         transl_anf_expression(_then),
@@ -670,6 +675,7 @@ and transl_comp_expression =
       [{vb_expr, vb_pat: {pat_desc: TPatVar(bind, _)}}, ...rest],
       body,
     ) =>
+    let vb_expr = {...vb_expr, exp_attributes: (attributes @ vb_expr.exp_attributes)};
     let (exp_ans, exp_setup) =
       if (mut_flag == Mutable) {
         let (imm, imm_setup) = transl_imm(vb_expr);
@@ -695,6 +701,7 @@ and transl_comp_expression =
       [{vb_expr, vb_pat: {pat_desc: TPatRecord(_)} as pat}, ...rest],
       body,
     ) =>
+    let vb_expr = {...vb_expr, exp_attributes: (attributes @ vb_expr.exp_attributes)};
     let (exp_ans, exp_setup) = transl_comp_expression(vb_expr);
 
     /* Extract items from destructure */
@@ -716,7 +723,10 @@ and transl_comp_expression =
     let (binds, new_binds_setup) =
       List.split(
         List.map(
-          ({vb_pat, vb_expr}) => (vb_pat, transl_comp_expression(vb_expr)),
+          ({vb_pat, vb_expr}) => {
+            let vb_expr = {...vb_expr, exp_attributes: (attributes @ vb_expr.exp_attributes)};
+            (vb_pat, transl_comp_expression(vb_expr));
+          },
           binds,
         ),
       );
@@ -747,7 +757,7 @@ and transl_comp_expression =
     )
       when Identifier.equal(ident, Identifier.IdentName("()")) =>
     let body = transl_anf_expression(body);
-    (Comp.lambda(~loc, ~env, [], body), []);
+    (Comp.lambda(~loc, ~attributes, ~env, [], body), []);
   | TExpLambda([{mb_pat, mb_body: body}], _) =>
     switch (mb_pat.pat_desc) {
     | TPatTuple(args) =>
@@ -774,7 +784,7 @@ and transl_comp_expression =
           args,
           ([], anf_body),
         );
-      (Comp.lambda(~loc, ~env, anf_args, anf_body), []);
+      (Comp.lambda(~loc, ~attributes, ~env, anf_args, anf_body), []);
     | _ =>
       failwith("Impossible: transl_imm: Lambda contained non-tuple pattern")
     }
@@ -786,15 +796,15 @@ and transl_comp_expression =
     let (new_func, func_setup) = transl_imm(func);
     let (new_args, new_setup) = List.split(List.map(transl_imm, args));
     (
-      Comp.app(~loc, ~env, new_func, new_args),
+      Comp.app(~loc, ~attributes, ~env, new_func, new_args),
       func_setup @ List.concat(new_setup),
     );
   | TExpTuple(args) =>
     let (new_args, new_setup) = List.split(List.map(transl_imm, args));
-    (Comp.tuple(~loc, ~env, new_args), List.concat(new_setup));
+    (Comp.tuple(~loc, ~attributes, ~env, new_args), List.concat(new_setup));
   | TExpArray(args) =>
     let (new_args, new_setup) = List.split(List.map(transl_imm, args));
-    (Comp.array(~loc, ~env, new_args), List.concat(new_setup));
+    (Comp.array(~loc, ~attributes, ~env, new_args), List.concat(new_setup));
   | TExpMatch(expr, branches, _) =>
     let (exp_ans, exp_setup) = transl_imm(expr);
     let (ans, setup) =
@@ -807,7 +817,7 @@ and transl_comp_expression =
     (ans, exp_setup @ setup);
   | _ =>
     let (imm, setup) = transl_imm(e);
-    (Comp.imm(~loc, ~env, imm), setup);
+    (Comp.imm(~loc, ~attributes, ~env, imm), setup);
   }
 
 and transl_anf_expression =
@@ -902,7 +912,14 @@ let linearize_exception = (env, ext) => {
 };
 
 let rec transl_anf_statement =
-        ({ttop_desc, ttop_env: env, ttop_loc: loc} as s: toplevel_stmt)
+        (
+          {
+            ttop_desc,
+            ttop_attributes: attributes,
+            ttop_env: env,
+            ttop_loc: loc,
+          } as s: toplevel_stmt,
+        )
         : (option(list(anf_bind)), list(import_spec)) =>
   switch (ttop_desc) {
   | TTopLet(_, _, _, []) => (None, [])
@@ -912,6 +929,7 @@ let rec transl_anf_statement =
       mut_flag,
       [{vb_expr, vb_pat}, ...rest],
     ) =>
+    let vb_expr = {...vb_expr, exp_attributes: (attributes @ vb_expr.exp_attributes)};
     let (exp_ans, exp_setup) = transl_comp_expression(vb_expr);
     let (rest_setup, rest_imp) =
       transl_anf_statement({
@@ -981,7 +999,10 @@ let rec transl_anf_statement =
     let (binds, new_binds_setup) =
       List.split(
         List.map(
-          ({vb_pat, vb_expr}) => (vb_pat, transl_comp_expression(vb_expr)),
+          ({vb_pat, vb_expr}) => {
+            let vb_expr = {...vb_expr, exp_attributes: (attributes @ vb_expr.exp_attributes)};
+            (vb_pat, transl_comp_expression(vb_expr));
+          },
           binds,
         ),
       );
@@ -1012,6 +1033,7 @@ let rec transl_anf_statement =
       )
     };
   | TTopExpr(expr) =>
+    let expr = {...expr, exp_attributes: attributes};
     let (comp, setup) = transl_comp_expression(expr);
     (Some(setup @ [BSeq(comp)]), []);
   | TTopData(decls) =>
