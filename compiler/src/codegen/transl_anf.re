@@ -197,6 +197,8 @@ module RegisterAllocation = {
           apply_allocation_to_imm(i1),
           apply_allocation_to_imm(i2),
         )
+      | MPrimN(pop, is) =>
+        MPrimN(pop, List.map(apply_allocation_to_imm, is))
       | MStore(bs) =>
         MStore(
           List.map(
@@ -259,6 +261,7 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
       @ List.concat(List.map(((_, b)) => block_live_locals(b), bs))
       @ block_live_locals(d)
     | MPrim2(_, i1, i2) => imm_live_local(i1) @ imm_live_local(i2)
+    | MPrimN(_, is) => List.concat(List.map(imm_live_local, is))
     | MStore(bs) =>
       List.concat(
         List.map(((b, bk)) => bind_live_local(b) @ live_locals(bk), bs),
@@ -533,6 +536,7 @@ let rec compile_comp = (env, c) => {
     | CPrim1(p1, arg) => MPrim1(p1, compile_imm(env, arg))
     | CPrim2(p2, arg1, arg2) =>
       MPrim2(p2, compile_imm(env, arg1), compile_imm(env, arg2))
+    | CPrimN(p, args) => MPrimN(p, List.map(compile_imm(env), args))
     | CAssign(arg1, arg2) =>
       MBoxOp(MBoxUpdate(compile_imm(env, arg2)), compile_imm(env, arg1))
     | CBoxAssign(arg1, arg2) =>

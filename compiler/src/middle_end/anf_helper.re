@@ -51,6 +51,8 @@ module Comp = {
     mk(~loc?, ~attributes?, ~env?, CPrim1(p1, a));
   let prim2 = (~loc=?, ~attributes=?, ~env=?, p2, a1, a2) =>
     mk(~loc?, ~attributes?, ~env?, CPrim2(p2, a1, a2));
+  let primn = (~loc=?, ~attributes=?, ~env=?, p, args) =>
+    mk(~loc?, ~attributes?, ~env?, CPrimN(p, args));
   let box_assign = (~loc=?, ~attributes=?, ~env=?, a1, a2) =>
     mk(~loc?, ~attributes?, ~env?, CBoxAssign(a1, a2));
   let assign = (~loc=?, ~attributes=?, ~env=?, a1, a2) =>

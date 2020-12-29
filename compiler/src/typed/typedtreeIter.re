@@ -204,6 +204,7 @@ module MakeIterator =
     | TExpPrim2(_, e1, e2) =>
       iter_expression(e1);
       iter_expression(e2);
+    | TExpPrimN(_, args) => List.iter(iter_expression, args)
     | TExpBoxAssign(e1, e2) =>
       iter_expression(e1);
       iter_expression(e2);

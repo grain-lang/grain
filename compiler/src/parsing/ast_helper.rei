@@ -161,6 +161,9 @@ module Exp: {
   let prim2:
     (~loc: loc=?, ~attributes: attributes=?, prim2, expression, expression) =>
     expression;
+  let primn:
+    (~loc: loc=?, ~attributes: attributes=?, primn, list(expression)) =>
+    expression;
   let if_:
     (
       ~loc: loc=?,

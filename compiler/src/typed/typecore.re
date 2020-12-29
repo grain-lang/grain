@@ -200,10 +200,22 @@ let prim2_type =
       Builtin_types.type_wasmi32,
       Builtin_types.type_bool,
     )
+  | WasmLoadI32
   | WasmBinaryI32({boolean: false}) => (
       Builtin_types.type_wasmi32,
       Builtin_types.type_wasmi32,
       Builtin_types.type_wasmi32,
+    );
+
+let primn_type =
+  fun
+  | WasmStoreI32 => (
+      [
+        Builtin_types.type_wasmi32,
+        Builtin_types.type_wasmi32,
+        Builtin_types.type_wasmi32,
+      ],
+      Builtin_types.type_void,
     );
 
 let maybe_add_pattern_variables_ghost = (loc_let, env, pv) =>
@@ -912,6 +924,22 @@ and type_expect_ =
     let arg2 = type_expect(env, sarg2, mk_expected(arg2type));
     rue({
       exp_desc: TExpPrim2(p2, arg1, arg2),
+      exp_loc: loc,
+      exp_extra: [],
+      exp_attributes: attributes,
+      exp_type: rettype,
+      exp_env: env,
+    });
+  | PExpPrimN(p, sargs) =>
+    let (argtypes, rettype) = primn_type(p);
+    let args =
+      List.map2(
+        (sarg, argtype) => type_expect(env, sarg, mk_expected(argtype)),
+        sargs,
+        argtypes,
+      );
+    rue({
+      exp_desc: TExpPrimN(p, args),
       exp_loc: loc,
       exp_extra: [],
       exp_attributes: attributes,

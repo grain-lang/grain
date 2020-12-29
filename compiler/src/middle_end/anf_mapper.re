@@ -46,6 +46,7 @@ module MakeMap = (Iter: MapArgument) => {
         let arg1 = map_imm_expression(arg1);
         let arg2 = map_imm_expression(arg2);
         CPrim2(p2, arg1, arg2);
+      | CPrimN(p, args) => CPrimN(p, List.map(map_imm_expression, args))
       | CBoxAssign(lhs, rhs) =>
         let lhs = map_imm_expression(lhs);
         let rhs = map_imm_expression(rhs);

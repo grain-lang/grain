@@ -4,7 +4,8 @@ open Grain_typed;
 
 type inline_type =
   | WasmPrim1(prim1)
-  | WasmPrim2(prim2);
+  | WasmPrim2(prim2)
+  | WasmPrimN(primn);
 
 type analysis +=
   | InlineableWasmTable(Ident.tbl(inline_type));
@@ -43,6 +44,8 @@ let primitive_map =
     List.to_seq([
       ("ofGrain", WasmPrim1(WasmOfGrain)),
       ("toGrain", WasmPrim1(WasmToGrain)),
+      ("load_i32", WasmPrim2(WasmLoadI32)),
+      ("store_i32", WasmPrimN(WasmStoreI32)),
       ("clz_i32", WasmPrim1(WasmUnaryI32({op: "clz_i32", boolean: false}))),
       ("ctz_i32", WasmPrim1(WasmUnaryI32({op: "ctz_i32", boolean: false}))),
       (

@@ -68,6 +68,7 @@ module E = {
     | PExpPrim2(p2, e1, e2) =>
       sub.expr(sub, e1);
       sub.expr(sub, e2);
+    | PExpPrimN(p, es) => List.iter(sub.expr(sub), es)
     | PExpBoxAssign(a, b) =>
       sub.expr(sub, a);
       sub.expr(sub, b);

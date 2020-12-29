@@ -26,6 +26,10 @@ let (prim2_of_sexp, sexp_of_prim2) = (
   Parsetree.prim2_of_sexp,
   Parsetree.sexp_of_prim2,
 );
+let (primn_of_sexp, sexp_of_primn) = (
+  Parsetree.primn_of_sexp,
+  Parsetree.sexp_of_primn,
+);
 
 type prim1 =
   Parsetree.prim1 =
@@ -78,10 +82,13 @@ type prim2 =
     | Int64Gte
     | Int64Lt
     | Int64Lte
+    | WasmLoadI32
     | WasmBinaryI32({
         op: string,
         boolean: bool,
       });
+
+type primn = Parsetree.primn = | WasmStoreI32;
 
 /* Types within the WASM output */
 [@deriving sexp]
@@ -200,6 +207,7 @@ and instr_desc =
   | MSwitch(immediate, list((int32, block)), block) /* value, branches, default */
   | MPrim1(prim1, immediate)
   | MPrim2(prim2, immediate, immediate)
+  | MPrimN(primn, list(immediate))
   | MTupleOp(tuple_op, immediate)
   | MBoxOp(box_op, immediate)
   | MArrayOp(array_op, immediate)

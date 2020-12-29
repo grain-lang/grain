@@ -3,7 +3,8 @@ open Grain_typed;
 
 type inline_type =
   | WasmPrim1(prim1)
-  | WasmPrim2(prim2);
+  | WasmPrim2(prim2)
+  | WasmPrimN(primn);
 
 let mod_has_inlineable_wasm: ref(bool);
 

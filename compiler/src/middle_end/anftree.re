@@ -69,10 +69,13 @@ type prim2 =
     | Int64Gte
     | Int64Lt
     | Int64Lte
+    | WasmLoadI32
     | WasmBinaryI32({
         op: string,
         boolean: bool,
       });
+
+type primn = Parsetree.primn = | WasmStoreI32;
 
 let (prim1_of_sexp, sexp_of_prim1) = (
   Parsetree.prim1_of_sexp,
@@ -81,6 +84,10 @@ let (prim1_of_sexp, sexp_of_prim1) = (
 let (prim2_of_sexp, sexp_of_prim2) = (
   Parsetree.prim2_of_sexp,
   Parsetree.sexp_of_prim2,
+);
+let (primn_of_sexp, sexp_of_primn) = (
+  Parsetree.primn_of_sexp,
+  Parsetree.sexp_of_primn,
 );
 let sexp_locs_disabled = _ => ! Grain_utils.Config.sexp_locs_enabled^;
 
@@ -117,6 +124,7 @@ and comp_expression_desc =
   | CImmExpr(imm_expression)
   | CPrim1(prim1, imm_expression)
   | CPrim2(prim2, imm_expression, imm_expression)
+  | CPrimN(primn, list(imm_expression))
   | CBoxAssign(imm_expression, imm_expression)
   | CAssign(imm_expression, imm_expression)
   | CTuple(list(imm_expression))

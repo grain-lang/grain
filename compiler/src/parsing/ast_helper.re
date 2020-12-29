@@ -217,6 +217,8 @@ module Exp = {
     mk(~loc?, ~attributes?, PExpPrim1(a, b));
   let prim2 = (~loc=?, ~attributes=?, a, b, c) =>
     mk(~loc?, ~attributes?, PExpPrim2(a, b, c));
+  let primn = (~loc=?, ~attributes=?, a, b) =>
+    mk(~loc?, ~attributes?, PExpPrimN(a, b));
   let if_ = (~loc=?, ~attributes=?, a, b, c) =>
     mk(~loc?, ~attributes?, PExpIf(a, b, c));
   let while_ = (~loc=?, ~attributes=?, a, b) =>

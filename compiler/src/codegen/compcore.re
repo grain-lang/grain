@@ -2983,6 +2983,14 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
   | Int64Asr => failwith("Unreachable case; should never get here: Int64Asr")
   | ArrayMake => allocate_array_n(wasm_mod, env, arg1, arg2)
   | ArrayInit => allocate_array_init(wasm_mod, env, arg1, arg2)
+  | WasmLoadI32 =>
+    switch (arg2) {
+    | MImmConst(MConstLiteral(MConstI32(offset))) =>
+      load(~offset=Int32.to_int(offset), wasm_mod, compiled_arg1())
+    | _ =>
+      // failwith("Offset provided to store operation must be an immediate.")
+      load(wasm_mod, compiled_arg1())
+    }
   | WasmBinaryI32({op, boolean}) =>
     compile_wasm_prim2(
       wasm_mod,
@@ -2992,6 +3000,43 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
       compiled_arg1(),
       compiled_arg2(),
     )
+  };
+};
+
+let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
+  switch (p) {
+  | WasmStoreI32 =>
+    switch (List.nth(args, 2)) {
+    | MImmConst(MConstLiteral(MConstI32(offset))) =>
+      Expression.block(
+        wasm_mod,
+        gensym_label("wasm_prim_store"),
+        [
+          store(
+            ~offset=Int32.to_int(offset),
+            wasm_mod,
+            compile_imm(wasm_mod, env, List.nth(args, 0)),
+            compile_imm(wasm_mod, env, List.nth(args, 1)),
+          ),
+          Expression.const(wasm_mod, const_void()),
+        ],
+      )
+
+    | _ =>
+      // failwith("Offset provided to store operation must be an immediate.")
+      Expression.block(
+        wasm_mod,
+        gensym_label("wasm_prim_store"),
+        [
+          store(
+            wasm_mod,
+            compile_imm(wasm_mod, env, List.nth(args, 0)),
+            compile_imm(wasm_mod, env, List.nth(args, 1)),
+          ),
+          Expression.const(wasm_mod, const_void()),
+        ],
+      )
+    }
   };
 };
 
@@ -3233,6 +3278,7 @@ and compile_instr = (wasm_mod, env, instr) =>
     compile_record_op(wasm_mod, env, record, record_op)
   | MPrim1(p1, arg) => compile_prim1(wasm_mod, env, p1, arg)
   | MPrim2(p2, arg1, arg2) => compile_prim2(wasm_mod, env, p2, arg1, arg2)
+  | MPrimN(p, args) => compile_primn(wasm_mod, env, p, args)
   | MSwitch(arg, branches, default) =>
     compile_switch(wasm_mod, env, arg, branches, default)
   | MStore(binds) => compile_store(wasm_mod, env, binds)
@@ -3598,16 +3644,18 @@ let compile_global_cleanup_function =
 };
 
 let compile_functions = (wasm_mod, env, {functions, num_globals} as prog) => {
-  let handle_attrs = ({attrs} as func) => {
-    if (List.exists(({Grain_parsing.Asttypes.txt}) => txt == "disableGC", attrs)) {
+  let handle_attrs = ({attrs} as func) =>
+    if (List.exists(
+          ({Grain_parsing.Asttypes.txt}) => txt == "disableGC",
+          attrs,
+        )) {
       Config.preserve_config(() => {
         Config.no_gc := true;
-        compile_function(wasm_mod, env, func)
-      })
+        compile_function(wasm_mod, env, func);
+      });
     } else {
-      compile_function(wasm_mod, env, func)
-    }
-  }
+      compile_function(wasm_mod, env, func);
+    };
   ignore @@ List.map(handle_attrs, functions);
   ignore @@ compile_main(wasm_mod, env, prog);
   ignore @@ compile_global_cleanup_function(wasm_mod, env, prog);

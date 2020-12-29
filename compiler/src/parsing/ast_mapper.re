@@ -86,6 +86,8 @@ module E = {
     | PExpPrim1(p1, e) => prim1(~loc, ~attributes, p1, sub.expr(sub, e))
     | PExpPrim2(p2, e1, e2) =>
       prim2(~loc, ~attributes, p2, sub.expr(sub, e1), sub.expr(sub, e2))
+    | PExpPrimN(p, es) =>
+      primn(~loc, ~attributes, p, List.map(sub.expr(sub), es))
     | PExpBoxAssign(e1, e2) =>
       box_assign(~loc, ~attributes, sub.expr(sub, e1), sub.expr(sub, e2))
     | PExpAssign(e1, e2) =>

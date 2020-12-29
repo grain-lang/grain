@@ -46,6 +46,7 @@ module MakeIter = (Iter: IterArgument) => {
     | CPrim2(_, arg1, arg2) =>
       iter_imm_expression(arg1);
       iter_imm_expression(arg2);
+    | CPrimN(_, elts) => List.iter(iter_imm_expression, elts)
     | CBoxAssign(lhs, rhs) =>
       iter_imm_expression(lhs);
       iter_imm_expression(rhs);

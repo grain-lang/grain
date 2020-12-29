@@ -3,6 +3,10 @@
 export primitive ofGrain : a -> WasmI32 = "@wasm.ofGrain"
 export primitive toGrain : WasmI32 -> a = "@wasm.toGrain"
 
+// WebAssembly Memory Instructions
+export primitive load_i32 : (WasmI32, WasmI32) -> WasmI32 = "@wasm.load_i32"
+export primitive store_i32 : (WasmI32, WasmI32, WasmI32) -> Void = "@wasm.store_i32"
+
 // WebAssembly Unary Instructions
 export primitive clz_i32 : WasmI32 -> WasmI32 = "@wasm.clz_i32"
 export primitive ctz_i32 : WasmI32 -> WasmI32 = "@wasm.ctz_i32"

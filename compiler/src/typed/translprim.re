@@ -5,7 +5,8 @@ open Parsetree;
 
 type primitive =
   | Primitive1(prim1)
-  | Primitive2(prim2);
+  | Primitive2(prim2)
+  | PrimitiveN(primn);
 
 module PrimMap =
   Hashtbl.Make({
@@ -25,8 +26,10 @@ let mkpatvar = name => {
 
 let id_a = mkident("a");
 let id_b = mkident("b");
+let id_c = mkident("c");
 let pat_a = mkpatvar("a");
 let pat_b = mkpatvar("b");
+let pat_c = mkpatvar("c");
 
 let prim_map =
   PrimMap.of_seq(
@@ -71,6 +74,8 @@ let prim_map =
       ("@int32.toNumber", Primitive1(Int32ToNumber)),
       ("@float32.toNumber", Primitive1(Float32ToNumber)),
       ("@float64.toNumber", Primitive1(Float64ToNumber)),
+      ("@wasm.load_i32", Primitive2(WasmLoadI32)),
+      ("@wasm.store_i32", PrimitiveN(WasmStoreI32)),
       (
         "@wasm.clz_i32",
         Primitive1(WasmUnaryI32({op: "clz_i32", boolean: false})),
@@ -204,11 +209,30 @@ let transl_prim = (env, desc) => {
 
   let value =
     switch (prim) {
-    | Primitive1(WasmUnaryI32(_) as p) => Exp.lambda(~loc, ~attributes=diable_gc, [pat_a], Exp.prim1(~loc, p, id_a))
+    | Primitive1(WasmUnaryI32(_) as p) =>
+      Exp.lambda(
+        ~loc,
+        ~attributes=diable_gc,
+        [pat_a],
+        Exp.prim1(~loc, p, id_a),
+      )
     | Primitive1(p) => Exp.lambda(~loc, [pat_a], Exp.prim1(~loc, p, id_a))
-    | Primitive2(WasmBinaryI32(_) as p) => Exp.lambda(~loc, ~attributes=diable_gc, [pat_a, pat_b], Exp.prim2(~loc, p, id_a, id_b))
+    | Primitive2((WasmBinaryI32(_) | WasmLoadI32) as p) =>
+      Exp.lambda(
+        ~loc,
+        ~attributes=diable_gc,
+        [pat_a, pat_b],
+        Exp.prim2(~loc, p, id_a, id_b),
+      )
     | Primitive2(p) =>
       Exp.lambda(~loc, [pat_a, pat_b], Exp.prim2(~loc, p, id_a, id_b))
+    | PrimitiveN(WasmStoreI32 as p) =>
+      Exp.lambda(
+        ~loc,
+        ~attributes=diable_gc,
+        [pat_a, pat_b, pat_c],
+        Exp.primn(~loc, p, [id_a, id_b, id_c]),
+      )
     };
 
   let binds = [

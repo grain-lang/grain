@@ -81,10 +81,13 @@ type prim2 =
     | Int64Gte
     | Int64Lt
     | Int64Lte
+    | WasmLoadI32
     | WasmBinaryI32({
         op: string,
         boolean: bool,
       });
+
+type primn = Parsetree.primn = | WasmStoreI32;
 
 let (prim1_of_sexp, sexp_of_prim1) = (
   Parsetree.prim1_of_sexp,
@@ -93,6 +96,10 @@ let (prim1_of_sexp, sexp_of_prim1) = (
 let (prim2_of_sexp, sexp_of_prim2) = (
   Parsetree.prim2_of_sexp,
   Parsetree.sexp_of_prim2,
+);
+let (primn_of_sexp, sexp_of_primn) = (
+  Parsetree.primn_of_sexp,
+  Parsetree.sexp_of_primn,
 );
 
 [@deriving sexp]
@@ -249,6 +256,7 @@ and expression_desc =
   | TExpMatch(expression, list(match_branch), partial)
   | TExpPrim1(prim1, expression)
   | TExpPrim2(prim2, expression, expression)
+  | TExpPrimN(primn, list(expression))
   | TExpBoxAssign(expression, expression)
   | TExpAssign(expression, expression)
   | TExpIf(expression, expression, expression)

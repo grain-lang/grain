@@ -80,10 +80,13 @@ type prim2 =
     | Int64Gte
     | Int64Lt
     | Int64Lte
+    | WasmLoadI32
     | WasmBinaryI32({
         op: string,
         boolean: bool,
       });
+
+type primn = Parsetree.primn = | WasmStoreI32;
 
 type core_type = {
   ctyp_desc: core_type_desc,
@@ -224,6 +227,7 @@ and expression_desc =
   | TExpMatch(expression, list(match_branch), partial)
   | TExpPrim1(prim1, expression)
   | TExpPrim2(prim2, expression, expression)
+  | TExpPrimN(primn, list(expression))
   | TExpBoxAssign(expression, expression)
   | TExpAssign(expression, expression)
   | TExpIf(expression, expression, expression)

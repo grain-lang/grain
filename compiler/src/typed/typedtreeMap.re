@@ -204,6 +204,7 @@ module MakeMap =
       | TExpPrim1(o, e) => TExpPrim1(o, map_expression(e))
       | TExpPrim2(o, e1, e2) =>
         TExpPrim2(o, map_expression(e1), map_expression(e2))
+      | TExpPrimN(o, args) => TExpPrimN(o, List.map(map_expression, args))
       | TExpBoxAssign(e1, e2) =>
         TExpBoxAssign(map_expression(e1), map_expression(e2))
       | TExpAssign(e1, e2) =>

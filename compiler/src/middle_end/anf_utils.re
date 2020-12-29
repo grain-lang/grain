@@ -60,6 +60,12 @@ and comp_free_vars_help = (env, c: comp_expression) =>
       imm_free_vars_help(env, arg1),
       imm_free_vars_help(env, arg2),
     )
+  | CPrimN(_, args) =>
+    List.fold_left(
+      (acc, a) => Ident.Set.union(imm_free_vars_help(env, a), acc),
+      Ident.Set.empty,
+      args,
+    )
   | CBoxAssign(arg1, arg2) =>
     Ident.Set.union(
       imm_free_vars_help(env, arg1),

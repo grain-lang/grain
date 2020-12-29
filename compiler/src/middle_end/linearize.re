@@ -265,6 +265,14 @@ let rec transl_imm =
       @ right_setup
       @ [BLet(tmp, Comp.prim2(~loc, ~env, op, left_imm, right_imm))],
     );
+  | TExpPrimN(op, args) =>
+    let tmp = gensym("primn");
+    let (new_args, new_setup) = List.split(List.map(transl_imm, args));
+    (
+      Imm.id(~loc, ~env, tmp),
+      List.concat(new_setup)
+      @ [BLet(tmp, Comp.primn(~loc, ~env, op, new_args))],
+    );
   | TExpBoxAssign(left, right) =>
     let tmp = gensym("assign");
     let (left_imm, left_setup) = transl_imm(left);
@@ -675,7 +683,10 @@ and transl_comp_expression =
       [{vb_expr, vb_pat: {pat_desc: TPatVar(bind, _)}}, ...rest],
       body,
     ) =>
-    let vb_expr = {...vb_expr, exp_attributes: (attributes @ vb_expr.exp_attributes)};
+    let vb_expr = {
+      ...vb_expr,
+      exp_attributes: attributes @ vb_expr.exp_attributes,
+    };
     let (exp_ans, exp_setup) =
       if (mut_flag == Mutable) {
         let (imm, imm_setup) = transl_imm(vb_expr);
@@ -701,7 +712,10 @@ and transl_comp_expression =
       [{vb_expr, vb_pat: {pat_desc: TPatRecord(_)} as pat}, ...rest],
       body,
     ) =>
-    let vb_expr = {...vb_expr, exp_attributes: (attributes @ vb_expr.exp_attributes)};
+    let vb_expr = {
+      ...vb_expr,
+      exp_attributes: attributes @ vb_expr.exp_attributes,
+    };
     let (exp_ans, exp_setup) = transl_comp_expression(vb_expr);
 
     /* Extract items from destructure */
@@ -724,7 +738,10 @@ and transl_comp_expression =
       List.split(
         List.map(
           ({vb_pat, vb_expr}) => {
-            let vb_expr = {...vb_expr, exp_attributes: (attributes @ vb_expr.exp_attributes)};
+            let vb_expr = {
+              ...vb_expr,
+              exp_attributes: attributes @ vb_expr.exp_attributes,
+            };
             (vb_pat, transl_comp_expression(vb_expr));
           },
           binds,
@@ -929,7 +946,10 @@ let rec transl_anf_statement =
       mut_flag,
       [{vb_expr, vb_pat}, ...rest],
     ) =>
-    let vb_expr = {...vb_expr, exp_attributes: (attributes @ vb_expr.exp_attributes)};
+    let vb_expr = {
+      ...vb_expr,
+      exp_attributes: attributes @ vb_expr.exp_attributes,
+    };
     let (exp_ans, exp_setup) = transl_comp_expression(vb_expr);
     let (rest_setup, rest_imp) =
       transl_anf_statement({
@@ -1000,7 +1020,10 @@ let rec transl_anf_statement =
       List.split(
         List.map(
           ({vb_pat, vb_expr}) => {
-            let vb_expr = {...vb_expr, exp_attributes: (attributes @ vb_expr.exp_attributes)};
+            let vb_expr = {
+              ...vb_expr,
+              exp_attributes: attributes @ vb_expr.exp_attributes,
+            };
             (vb_pat, transl_comp_expression(vb_expr));
           },
           binds,

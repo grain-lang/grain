@@ -205,10 +205,15 @@ type prim2 =
   | Int64Gte
   | Int64Lt
   | Int64Lte
+  | WasmLoadI32
   | WasmBinaryI32({
       op: string,
       boolean: bool,
     });
+
+[@deriving (sexp, yojson)]
+type primn =
+  | WasmStoreI32;
 
 [@deriving (sexp, yojson)]
 type attributes = Asttypes.attributes;
@@ -238,6 +243,7 @@ and expression_desc =
   | PExpMatch(expression, list(match_branch))
   | PExpPrim1(prim1, expression)
   | PExpPrim2(prim2, expression, expression)
+  | PExpPrimN(primn, list(expression))
   | PExpIf(expression, expression, expression)
   | PExpWhile(expression, expression)
   | PExpConstraint(expression, parsed_type)

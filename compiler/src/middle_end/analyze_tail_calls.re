@@ -77,6 +77,7 @@ let rec analyze_comp_expression =
   | CFloat64(_)
   | CPrim1(_)
   | CPrim2(_)
+  | CPrimN(_)
   | CImmExpr(_) => false
   }
 

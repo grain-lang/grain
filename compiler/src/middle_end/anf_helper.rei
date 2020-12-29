@@ -66,6 +66,15 @@ module Comp: {
       imm_expression
     ) =>
     comp_expression;
+  let primn:
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      ~env: env=?,
+      primn,
+      list(imm_expression)
+    ) =>
+    comp_expression;
   let box_assign:
     (
       ~loc: loc=?,

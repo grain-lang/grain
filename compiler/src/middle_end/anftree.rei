@@ -70,10 +70,13 @@ type prim2 =
     | Int64Gte
     | Int64Lt
     | Int64Lte
+    | WasmLoadI32
     | WasmBinaryI32({
         op: string,
         boolean: bool,
       });
+
+type primn = Parsetree.primn = | WasmStoreI32;
 
 /** Immediate expressions (requiring no computation) */
 
@@ -106,6 +109,7 @@ and comp_expression_desc =
   | CImmExpr(imm_expression)
   | CPrim1(prim1, imm_expression)
   | CPrim2(prim2, imm_expression, imm_expression)
+  | CPrimN(primn, list(imm_expression))
   | CBoxAssign(imm_expression, imm_expression)
   | CAssign(imm_expression, imm_expression)
   | CTuple(list(imm_expression))
