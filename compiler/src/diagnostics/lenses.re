@@ -60,7 +60,8 @@ let hover_val =
   make_value(~location, ~valType, ~sigStr);
 };
 
-let create_record_signature = (labels: list(Types.record_field)) => {
+let create_record_signature =
+    (labels: list(Types.record_field), name: string) => {
   let recSig =
     List.fold_left(
       (acc, field: Types.record_field) => {
@@ -80,7 +81,12 @@ let create_record_signature = (labels: list(Types.record_field)) => {
       "",
       labels,
     );
-  Printf.sprintf("{%s }", recSig);
+  Printf.sprintf("record %s {%s }", name, recSig);
+};
+
+let create_enum_signature =
+    (labels: list(Types.constructor_declaration), name: string) => {
+  Printf.sprintf("enum %s", name);
 };
 
 let data_hover_val =
@@ -88,13 +94,14 @@ let data_hover_val =
       ~location: Grain_parsing.Location.t,
       ~t: Types.type_declaration,
       ~valType: string,
+      ~name: Typedtree.loc(string),
     ) => {
   let sigStr =
     switch (t.type_kind) {
-    | TDataVariant(cstrs) => "Variant"
-    | TDataRecord(labels) => create_record_signature(labels)
-    | TDataAbstract => "Abstract"
-    | TDataOpen => "Open"
+    | TDataVariant(cstrs) => create_enum_signature(cstrs, name.txt)
+    | TDataRecord(labels) => create_record_signature(labels, name.txt)
+    | TDataAbstract => ""
+    | TDataOpen => ""
     };
 
   make_value(~location, ~valType, ~sigStr);
@@ -120,7 +127,12 @@ let print_tree = (stmts: list(Grain_typed.Typedtree.toplevel_stmt)) => {
       let enter_data_declaration =
           (d: Grain_typed__Typedtree.data_declaration) => {
         let lens =
-          data_hover_val(~t=d.data_type, ~location=d.data_loc, ~valType="D");
+          data_hover_val(
+            ~t=d.data_type,
+            ~location=d.data_loc,
+            ~valType="D",
+            ~name=d.data_name,
+          );
         lenses := List.append(lenses^, [lens]);
       };
     });
