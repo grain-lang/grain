@@ -22,8 +22,7 @@ module IWArg: Anf_mapper.MapArgument = {
         | _ => failwith("internal: WasmPrim2 was not found")
         };
       {...c, comp_desc: CPrim2(prim2, arg1, arg2)};
-    | CApp({imm_desc: ImmId(id)}, args)
-        when has_inline_wasm_type(id) =>
+    | CApp({imm_desc: ImmId(id)}, args) when has_inline_wasm_type(id) =>
       let primn =
         switch (get_inline_wasm_type(id)) {
         | WasmPrimN(primn) => primn
