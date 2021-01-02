@@ -9,11 +9,13 @@ import {
   GRAIN_LAMBDA_TAG_TYPE,
   GRAIN_ADT_HEAP_TAG, 
   GRAIN_ARRAY_HEAP_TAG,
-  GRAIN_RECORD_HEAP_TAG
+  GRAIN_RECORD_HEAP_TAG,
+  GRAIN_CHAR_HEAP_TAG,
+  GRAIN_STRING_HEAP_TAG,
+  GRAIN_BOXED_NUM_HEAP_TAG,
 } from './tags';
 import { toHex, toBinary } from '../utils/utils';
 import treeify from 'treeify';
-import { GRAIN_CHAR_HEAP_TAG } from '../../../stdlib/stdlib-external/ascutils/tags';
 
 export const TRACE_MEMORY = false;
 
