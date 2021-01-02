@@ -2664,7 +2664,7 @@ let allocate_array_n = (wasm_mod, env, num_elts, elt) => {
                       Expression.const(wasm_mod, const_int32(2)),
                     ),
                   ),
-                  elt,
+                  call_incref_array(wasm_mod, env, elt),
                 ),
                 set_loop_counter(
                   Expression.binary(
@@ -2789,19 +2789,23 @@ let allocate_array_init = (wasm_mod, env, num_elts, init_f) => {
                       Expression.const(wasm_mod, const_int32(2)),
                     ),
                   ),
-                  Expression.call_indirect(
+                  call_incref_array(
                     wasm_mod,
-                    load(
-                      ~offset=4,
+                    env,
+                    Expression.call_indirect(
                       wasm_mod,
-                      untag(wasm_mod, LambdaTagType, compiled_func()),
+                      load(
+                        ~offset=4,
+                        wasm_mod,
+                        untag(wasm_mod, LambdaTagType, compiled_func()),
+                      ),
+                      [
+                        untag(wasm_mod, LambdaTagType, compiled_func()),
+                        get_loop_counter(),
+                      ],
+                      Type.create([|Type.int32, Type.int32|]),
+                      Type.int32,
                     ),
-                    [
-                      untag(wasm_mod, LambdaTagType, compiled_func()),
-                      get_loop_counter(),
-                    ],
-                    Type.create([|Type.int32, Type.int32|]),
-                    Type.int32,
                   ),
                 ),
                 set_loop_counter(
