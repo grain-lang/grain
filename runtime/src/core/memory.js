@@ -1,5 +1,19 @@
-import { getTagType, tagToString, heapTagToString, GRAIN_CONST_TAG_TYPE, GRAIN_NUMBER_TAG_TYPE, GRAIN_TUPLE_TAG_TYPE, GRAIN_GENERIC_HEAP_TAG_TYPE, GRAIN_LAMBDA_TAG_TYPE,
-         GRAIN_ADT_HEAP_TAG } from './tags';
+import { 
+  getTagType, 
+  tagToString, 
+  heapTagToString, 
+  GRAIN_CONST_TAG_TYPE,
+  GRAIN_NUMBER_TAG_TYPE,
+  GRAIN_TUPLE_TAG_TYPE,
+  GRAIN_GENERIC_HEAP_TAG_TYPE,
+  GRAIN_LAMBDA_TAG_TYPE,
+  GRAIN_ADT_HEAP_TAG, 
+  GRAIN_ARRAY_HEAP_TAG,
+  GRAIN_RECORD_HEAP_TAG,
+  GRAIN_CHAR_HEAP_TAG,
+  GRAIN_STRING_HEAP_TAG,
+  GRAIN_BOXED_NUM_HEAP_TAG,
+} from './tags';
 import { toHex, toBinary } from '../utils/utils';
 import treeify from 'treeify';
 
@@ -414,22 +428,47 @@ export class ManagedMemory {
           yield view[lambdaIdx + 3 + i];
         }
         break;
-      case GRAIN_GENERIC_HEAP_TAG_TYPE:
+      case GRAIN_GENERIC_HEAP_TAG_TYPE: {
         let genericHeapValUserPtr = userPtr;
         switch (view[genericHeapValUserPtr / 4]) {
-          case GRAIN_ADT_HEAP_TAG:
-            if (this._runtime) {
-              let x = genericHeapValUserPtr / 4;
-              let arity = view[x + 4];
-              trace(`traversing ${arity} ADT vals on ADT 0x${this._toHex(userPtr)}`);
-              for (let i = 0; i < arity; ++i) {
-                yield view[x + 5 + i];
-              }
+          case GRAIN_ADT_HEAP_TAG: {
+            let x = genericHeapValUserPtr / 4;
+            let arity = view[x + 4];
+            trace(`traversing ${arity} ADT vals on ADT 0x${this._toHex(userPtr)}`);
+            for (let i = 0; i < arity; ++i) {
+              yield view[x + 5 + i];
             }
-          default:
-            // No extra traversal needed for Strings
+            break;
+          }
+          case GRAIN_RECORD_HEAP_TAG: {
+            let x = genericHeapValUserPtr / 4;
+            let arity = view[x + 3];
+            trace(`traversing ${arity} record vals on record 0x${this._toHex(userPtr)}`);
+            for (let i = 0; i < arity; ++i) {
+              yield view[x + 4 + i];
+            }
+            break;
+          }
+          case GRAIN_ARRAY_HEAP_TAG: {
+            let x = genericHeapValUserPtr / 4;
+            let arity = view[x + 1];
+            trace(`traversing ${arity} array vals on array 0x${this._toHex(userPtr)}`);
+            for (let i = 0; i < arity; ++i) {
+              yield view[x + 2 + i];
+            }
+            break;
+          }
+          case GRAIN_CHAR_HEAP_TAG:
+          case GRAIN_STRING_HEAP_TAG:
+          case GRAIN_BOXED_NUM_HEAP_TAG:
+            // No traversal necessary
+            break;
+          default: {
+            console.warn(`<decRef: Unexpected heap tag: 0x${this._toHex(view[genericHeapValUserPtr / 4])}> [userPtr=0x${this._toHex(userPtr)}]`)
+          }
         }
         break;
+      }
       default:
         console.warn(`<decRef: Unexpected value tag: 0x${this._toHex(ptrTagType)}> [userPtr=0x${this._toHex(userPtr)}]`)
     }
