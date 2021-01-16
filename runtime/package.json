@@ -7,6 +7,8 @@
     "build": "webpack --config webpack.prod.js",
     "build:dev": "webpack --config webpack.dev.js",
     "watch": "webpack --config webpack.dev.js --watch",
+    "format": "prettier --write .",
+    "check-format": "prettier --check .",
     "test": "jest"
   },
   "repository": {
@@ -38,6 +40,7 @@
     "babel-core": "^6.26.3",
     "babel-loader": "^7.1.5",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "prettier": "^2.2.1",
     "source-map-support": "^0.5.16",
     "webpack": "^4.42.1",
     "webpack-cli": "^3.3.11",

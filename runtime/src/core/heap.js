@@ -1,10 +1,10 @@
-import { memory, managedMemory } from '../runtime';
-import { GrainError } from '../errors/errors';
+import { memory, managedMemory } from "../runtime";
+import { GrainError } from "../errors/errors";
 
 export const heapController = {
   heapAdjust(n) {
     throw new GrainError(-1, "Grain runtime is not yet instantiated.");
-  }
+  },
 };
 
 function grainCheckMemory(runner, numBytes) {
@@ -12,7 +12,10 @@ function grainCheckMemory(runner, numBytes) {
     return;
   }
   let curTop = heapController.heapAdjust(0);
-  if ((runner.opts && runner.opts.limitMemory) > 0 && memory.buffer.byteLength >= runner.opts.limitMemory) {
+  if (
+    (runner.opts && runner.opts.limitMemory) > 0 &&
+    memory.buffer.byteLength >= runner.opts.limitMemory
+  ) {
     return;
   }
   if (memory.buffer.byteLength - curTop < numBytes) {
@@ -26,5 +29,5 @@ export function makeMemoryChecker(runner) {
 
 export function grainHeapAllocate(numWords) {
   // allocates the number of words
-  return managedMemory.malloc(numWords * 4)
+  return managedMemory.malloc(numWords * 4);
 }

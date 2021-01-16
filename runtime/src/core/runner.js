@@ -1,14 +1,14 @@
-import { GrainError, makeThrowGrainError } from '../errors/errors';
-import { wasi, readFile, readURL, readBuffer } from './grain-module';
-import { makeMemoryChecker } from './heap';
-import { managedMemory } from '../runtime';
-import { GRAIN_STRING_HEAP_TAG, GRAIN_GENERIC_HEAP_TAG_TYPE } from './tags'
+import { GrainError, makeThrowGrainError } from "../errors/errors";
+import { wasi, readFile, readURL, readBuffer } from "./grain-module";
+import { makeMemoryChecker } from "./heap";
+import { managedMemory } from "../runtime";
+import { GRAIN_STRING_HEAP_TAG, GRAIN_GENERIC_HEAP_TAG_TYPE } from "./tags";
 
 function roundUp(num, multiple) {
   return multiple * (Math.floor((num - 1) / multiple) + 1);
 }
 
-const MALLOC_MODULE = 'stdlib-external/runtime/malloc';
+const MALLOC_MODULE = "stdlib-external/runtime/malloc";
 
 export class GrainRunner {
   constructor(locator, managedMemory, opts) {
@@ -27,127 +27,132 @@ export class GrainRunner {
     this.encoder = new TextEncoder("utf-8");
     this.decoder = new TextDecoder("utf-8");
     const printNames = {};
-    this.imports['grainRuntime'] = {
+    this.imports["grainRuntime"] = {
       checkMemory: this._checkMemory,
       relocBase: 0,
       moduleRuntimeId: 0,
       throwError: makeThrowGrainError(this),
       // Transition functions (to be used until this class is ported to AS; perhaps refactor at that time)
       variantExists: (moduleId, typeId, variantId) => {
-        let moduleName = this.idMap[moduleId]
-        if (!moduleName) return false
-        let module = this.modules[moduleName]
-        if (!module) return false
-        let tyinfo = module.types[typeId]
-        if (!tyinfo || Object.keys(tyinfo).length === 0) return false
-        let info = tyinfo[variantId]
-        return !!info
+        let moduleName = this.idMap[moduleId];
+        if (!moduleName) return false;
+        let module = this.modules[moduleName];
+        if (!module) return false;
+        let tyinfo = module.types[typeId];
+        if (!tyinfo || Object.keys(tyinfo).length === 0) return false;
+        let info = tyinfo[variantId];
+        return !!info;
       },
       getVariantName: (moduleId, typeId, variantId) => {
-        let moduleName = this.idMap[moduleId]
-        let module = this.modules[moduleName]
-        let modulePrintNames = printNames[moduleName]
+        let moduleName = this.idMap[moduleId];
+        let module = this.modules[moduleName];
+        let modulePrintNames = printNames[moduleName];
         if (!modulePrintNames) {
-          printNames[moduleName] = {}
-          modulePrintNames = printNames[moduleName]
+          printNames[moduleName] = {};
+          modulePrintNames = printNames[moduleName];
         }
-        let tyinfo = module.types[typeId]
-        let tyPrintNames = modulePrintNames[typeId]
+        let tyinfo = module.types[typeId];
+        let tyPrintNames = modulePrintNames[typeId];
         if (!tyPrintNames) {
-          modulePrintNames[typeId] = {}
-          tyPrintNames = modulePrintNames[typeId]
+          modulePrintNames[typeId] = {};
+          tyPrintNames = modulePrintNames[typeId];
         }
-        if (typeof tyPrintNames[variantId] === 'undefined') {
-          tyPrintNames[variantId] = this._makeGrainString(tyinfo[variantId][0])
+        if (typeof tyPrintNames[variantId] === "undefined") {
+          tyPrintNames[variantId] = this._makeGrainString(tyinfo[variantId][0]);
         }
-        return tyPrintNames[variantId]
+        return tyPrintNames[variantId];
       },
       getVariantArity: (moduleId, typeId, variantId) => {
-        let moduleName = this.idMap[moduleId]
-        let module = this.modules[moduleName]
-        let tyinfo = module.types[typeId]
-        return tyinfo[variantId][1]
+        let moduleName = this.idMap[moduleId];
+        let module = this.modules[moduleName];
+        let tyinfo = module.types[typeId];
+        return tyinfo[variantId][1];
       },
       recordTypeExists: (moduleId, typeId) => {
-        let moduleName = this.idMap[moduleId]
-        let module = this.modules[moduleName]
-        let tyinfo = module.types[typeId]
+        let moduleName = this.idMap[moduleId];
+        let module = this.modules[moduleName];
+        let tyinfo = module.types[typeId];
         return !!tyinfo;
       },
       getRecordArity: (moduleId, typeId) => {
-        let moduleName = this.idMap[moduleId]
-        let module = this.modules[moduleName]
-        let tyinfo = module.types[typeId]
-        return Object.keys(tyinfo).length
+        let moduleName = this.idMap[moduleId];
+        let module = this.modules[moduleName];
+        let tyinfo = module.types[typeId];
+        return Object.keys(tyinfo).length;
       },
       getRecordFieldName: (moduleId, typeId, idx) => {
-        let moduleName = this.idMap[moduleId]
-        let module = this.modules[moduleName]
-        let modulePrintNames = printNames[moduleName]
+        let moduleName = this.idMap[moduleId];
+        let module = this.modules[moduleName];
+        let modulePrintNames = printNames[moduleName];
         if (!modulePrintNames) {
-          printNames[moduleName] = {}
-          modulePrintNames = printNames[moduleName]
+          printNames[moduleName] = {};
+          modulePrintNames = printNames[moduleName];
         }
-        let tyinfo = module.types[typeId]
-        let tyPrintNames = modulePrintNames[typeId]
+        let tyinfo = module.types[typeId];
+        let tyPrintNames = modulePrintNames[typeId];
         if (!tyPrintNames) {
-          modulePrintNames[typeId] = {}
-          tyPrintNames = modulePrintNames[typeId]
+          modulePrintNames[typeId] = {};
+          tyPrintNames = modulePrintNames[typeId];
         }
-        if (typeof tyPrintNames[idx] === 'undefined') {
-          tyPrintNames[idx] = this._makeGrainString(Object.keys(tyinfo)[idx])
+        if (typeof tyPrintNames[idx] === "undefined") {
+          tyPrintNames[idx] = this._makeGrainString(Object.keys(tyinfo)[idx]);
         }
-        return tyPrintNames[idx]
+        return tyPrintNames[idx];
       },
     };
-    this.loadMemoryManager()
+    this.loadMemoryManager();
   }
 
   async loadMemoryManager() {
     const mod = await this.locator(MALLOC_MODULE);
     if (mod) {
-      this.memoryManager = mod
-      this.memoryManager.instantiate({
-        env: {
-          memory: this.managedMemory._memory
+      this.memoryManager = mod;
+      this.memoryManager.instantiate(
+        {
+          env: {
+            memory: this.managedMemory._memory,
+          },
+          memoryManager: {
+            _malloc: this.managedMemory._malloc.bind(this.managedMemory),
+            _free: this.managedMemory._free.bind(this.managedMemory),
+            _growHeap: this.managedMemory.growHeap.bind(this.managedMemory),
+            _initialHeapSize: this.managedMemory._memory.buffer.byteLength,
+          },
         },
-        memoryManager: {
-          _malloc: this.managedMemory._malloc.bind(this.managedMemory),
-          _free: this.managedMemory._free.bind(this.managedMemory),
-          _growHeap: this.managedMemory.growHeap.bind(this.managedMemory),
-          _initialHeapSize: this.managedMemory._memory.buffer.byteLength,
-        }
-      }, this)
+        this
+      );
     } else {
-      throw new GrainError(-1, 'Failed to locate the memory manager.');
+      throw new GrainError(-1, "Failed to locate the memory manager.");
     }
   }
 
   // [HACK] Temporarily used while we transition to AS-based runtime
   _makeGrainString(v) {
     let buf = this.encoder.encode(v);
-    let userPtr = this.managedMemory.malloc((4 * 2) + (((v.length - 1) / 4) + 1));
+    let userPtr = this.managedMemory.malloc(4 * 2 + ((v.length - 1) / 4 + 1));
     let ptr = userPtr / 4;
     let view = this.managedMemory.view;
     view[ptr] = GRAIN_STRING_HEAP_TAG;
     view[ptr + 1] = v.length;
     let byteView = this.managedMemory.u8view;
     for (let i = 0; i < buf.length; ++i) {
-      byteView[i + (ptr * 4) + 8] = buf[i];
+      byteView[i + ptr * 4 + 8] = buf[i];
     }
     return userPtr | GRAIN_GENERIC_HEAP_TAG_TYPE;
   }
 
   // [HACK] Temporarily used while we transition to AS-based runtime
   grainValueToString(v) {
-    let grainString = this.imports['stdlib-external/runtime']['grainToString'](v)
-    let n = grainString ^ GRAIN_GENERIC_HEAP_TAG_TYPE
-    let byteView = this.managedMemory.u8view
-    let length = this.managedMemory.view[(n / 4) + 1]
-    let slice = byteView.slice(n + 8, n + 8 + length)
-    let ret = this.decoder.decode(slice)
-    this.managedMemory.free(grainString)
-    return ret
+    let grainString = this.imports["stdlib-external/runtime"]["grainToString"](
+      v
+    );
+    let n = grainString ^ GRAIN_GENERIC_HEAP_TAG_TYPE;
+    let byteView = this.managedMemory.u8view;
+    let length = this.managedMemory.view[n / 4 + 1];
+    let slice = byteView.slice(n + 8, n + 8 + length);
+    let ret = this.decoder.decode(slice);
+    this.managedMemory.free(grainString);
+    return ret;
   }
 
   checkMemory() {
@@ -159,7 +164,7 @@ export class GrainRunner {
   }
 
   addImports(importObj) {
-    Object.keys(importObj).forEach(m => {
+    Object.keys(importObj).forEach((m) => {
       if (m in this.imports) {
         this.imports[m] = Object.assign(this.imports[m], importObj[m]);
       } else {
@@ -184,14 +189,17 @@ export class GrainRunner {
           console.warn(`Ignoring possible cyclic dependency: ${imp.module}`);
           continue;
         }
-        if (imp.module.startsWith('wasi_')) {
+        if (imp.module.startsWith("wasi_")) {
           Object.assign(this.imports, wasi.getImports(mod.wasmModule));
           continue;
         }
         // Should return an instance of GrainModule
         let located = await this.locator(imp.module);
         if (!located) {
-          throw new GrainError(-1, `Failed to locate required module: ${imp.module} [required by: ${name}]`);
+          throw new GrainError(
+            -1,
+            `Failed to locate required module: ${imp.module} [required by: ${name}]`
+          );
         }
         this.modules[imp.module] = located;
         // This is a good point to debug when modules are loaded:
@@ -199,8 +207,8 @@ export class GrainRunner {
         await this.load(imp.module, located);
         if (located.isGrainModule) {
           await located.start();
-          this.imports['grainRuntime']['relocBase'] += located.tableSize;
-          ++this.imports['grainRuntime']['moduleRuntimeId'];
+          this.imports["grainRuntime"]["relocBase"] += located.tableSize;
+          ++this.imports["grainRuntime"]["moduleRuntimeId"];
         }
         this.ptrZero = this.ptr;
         this.imports[imp.module] = located.exports;
@@ -209,7 +217,7 @@ export class GrainRunner {
     this.postImports();
     // All of the dependencies have been loaded. Now we can instantiate with the import object.
     await mod.instantiate(this.imports, this);
-    this.idMap[this.imports['grainRuntime']['moduleRuntimeId']] = name;
+    this.idMap[this.imports["grainRuntime"]["moduleRuntimeId"]] = name;
     if (!(name in this.modules)) {
       this.modules[name] = mod;
     }

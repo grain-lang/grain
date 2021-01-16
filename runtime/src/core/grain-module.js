@@ -1,19 +1,19 @@
-import { GrainError } from '../errors/errors';
+import { GrainError } from "../errors/errors";
 
 import { WASI } from "@wasmer/wasi/lib/index.cjs";
 import { WasmFs } from "@wasmer/wasmfs";
 import wasmmap from "wasm-sourcemap";
 
-let bindings
+let bindings;
 
 if (__RUNTIME_BROWSER) {
   const wasmFs = new WasmFs();
   bindings = {
     ...wasiBindings.default,
-    fs: wasmFs.fs
-  }
+    fs: wasmFs.fs,
+  };
 } else {
-  bindings = wasiBindings.default
+  bindings = wasiBindings.default;
 }
 
 export const wasi = new WASI({
@@ -21,8 +21,8 @@ export const wasi = new WASI({
   env: __RUNTIME_BROWSER ? {} : process.env,
   bindings,
   preopens: {
-    '/sandbox': __RUNTIME_BROWSER ? '' : process.cwd()
-  }
+    "/sandbox": __RUNTIME_BROWSER ? "" : process.cwd(),
+  },
 });
 
 export class GrainModule {
@@ -40,7 +40,12 @@ export class GrainModule {
 
   get instantiated() {
     if (!this.isInstantiated) {
-      throw new GrainError(-1, `Module${this.name ? (" " + this.name) : ""} must be instantiated before use`);
+      throw new GrainError(
+        -1,
+        `Module${
+          this.name ? " " + this.name : ""
+        } must be instantiated before use`
+      );
     }
     return this._instantiated;
   }
@@ -49,14 +54,18 @@ export class GrainModule {
     if (!this._cmi) {
       let sections = WebAssembly.Module.customSections(this.wasmModule, "cmi");
       if (sections.length === 0) {
-        console.warn(`Grain Module${this.name ? (" " + this.name) : ""} missing CMI information`);
+        console.warn(
+          `Grain Module${
+            this.name ? " " + this.name : ""
+          } missing CMI information`
+        );
         return null;
       }
       let section = sections[0];
       let view = new Uint32Array(section.slice(0, 20));
       // [grain_magic, abi_major, abi_minor, abi_patch, sec_name_length]
       let sectionNameLength = view[4];
-      let startOffset = (4 * 5) + sectionNameLength;
+      let startOffset = 4 * 5 + sectionNameLength;
       let bytes = section.slice(startOffset, section.byteLength);
       let decoder = new TextDecoder("utf-8");
       let decodedSection = decoder.decode(bytes);
@@ -84,7 +93,7 @@ export class GrainModule {
   }
 
   get isGrainModule() {
-    return !!this.exports["_start"]
+    return !!this.exports["_start"];
   }
 
   requiredExport(key) {
@@ -96,7 +105,7 @@ export class GrainModule {
   }
 
   start() {
-    wasi.start(this.instantiated)
+    wasi.start(this.instantiated);
   }
 
   get tableSize() {
@@ -110,10 +119,10 @@ export class GrainModule {
         return null;
       }
       this._types = {};
-      cmi.cmi_sign.forEach(elt => {
+      cmi.cmi_sign.forEach((elt) => {
         switch (elt[0]) {
           case "TSigType": {
-            let id = elt[2].type_path[1].stamp
+            let id = elt[2].type_path[1].stamp;
             let typ = {};
             this._types[id] = typ;
             let desc = elt[2];
@@ -132,7 +141,7 @@ export class GrainModule {
                     arity = variant.cd_args[1].length;
                   }
                   typ[vidx] = [name, arity];
-                })
+                });
                 break;
               }
               case "TDataRecord": {
@@ -140,23 +149,23 @@ export class GrainModule {
                 fields.forEach((field, fidx) => {
                   let name = field.rf_name.name;
                   typ[name] = fidx;
-                })
+                });
                 break;
               }
               default:
-                return
+                return;
             }
             break;
           }
           case "TSigTypeExt": {
-            let ident = elt[1]
+            let ident = elt[1];
             let variant = elt[2];
-            let id = variant.ext_type_path[1].stamp
+            let id = variant.ext_type_path[1].stamp;
             let typ;
             if (this._types[id]) {
-              typ = this._types[id]
+              typ = this._types[id];
             } else {
-              typ = {}
+              typ = {};
               this._types[id] = typ;
             }
             let name = ident.name;
@@ -171,7 +180,7 @@ export class GrainModule {
             break;
           }
         }
-      })
+      });
     }
     return this._types;
   }
@@ -191,7 +200,10 @@ export class GrainModule {
     });*/
     this.runner = runner;
     try {
-      this._instantiated = await WebAssembly.instantiate(this.wasmModule, importObj);
+      this._instantiated = await WebAssembly.instantiate(
+        this.wasmModule,
+        importObj
+      );
     } catch (e) {
       console.error(`Exception while instantiating ${this.name}`);
       throw e;
@@ -203,19 +215,21 @@ export class GrainModule {
   async runUnboxed() {
     // This works because we use @wasmer/wasi, but will break in the future.
     // Only the tests currently rely on this.
-    wasi.setMemory(this.requiredExport('memory'));
-    return await this.requiredExport('_start')();
+    wasi.setMemory(this.requiredExport("memory"));
+    return await this.requiredExport("_start")();
   }
 }
 
 export async function readFile(filepath) {
-  const fs = require('fs');
-  const path = require('path');
-  const modname = filepath.replace(/\.gr\(lib\)?$/, '').replace(/.*\/([^/]+)/, '$1');
-  const buffer = fs.readFileSync(filepath)
+  const fs = require("fs");
+  const path = require("path");
+  const modname = filepath
+    .replace(/\.gr\(lib\)?$/, "")
+    .replace(/.*\/([^/]+)/, "$1");
+  const buffer = fs.readFileSync(filepath);
 
   const abspath = path.resolve(process.cwd(), filepath);
-  const sourceMapURL = `file://${abspath}.map`
+  const sourceMapURL = `file://${abspath}.map`;
   const sourceMappedBuffer = wasmmap.SetSourceMapURL(buffer, sourceMapURL);
 
   const module = await WebAssembly.compile(sourceMappedBuffer);
@@ -225,7 +239,8 @@ export async function readFile(filepath) {
 export async function readURL(url) {
   let modname = url; // FIXME
   let response = await fetch(url);
-  if (!response.ok) throw new Error(`[Grain] Could not load ${url} due to a network error.`);
+  if (!response.ok)
+    throw new Error(`[Grain] Could not load ${url} due to a network error.`);
   let module = await WebAssembly.compileStreaming(response);
   return new GrainModule(module, modname);
 }

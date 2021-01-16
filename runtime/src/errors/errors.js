@@ -31,8 +31,8 @@ import {
   GRAIN_ERR_ASSERTION_ERROR,
   GRAIN_ERR_FAILURE,
   GRAIN_ERR_SYSTEM,
-  GRAIN_ERR_NOT_INTLIKE
-} from './error-codes';
+  GRAIN_ERR_NOT_INTLIKE,
+} from "./error-codes";
 
 export class GrainError extends Error {
   constructor(code, message) {
@@ -43,13 +43,16 @@ export class GrainError extends Error {
 }
 
 export function makeThrowGrainError(runtime) {
-  return (errorCode, value1, value2) => throwGrainError(errorCode, value1, value2, runtime)
+  return (errorCode, value1, value2) =>
+    throwGrainError(errorCode, value1, value2, runtime);
 }
 
 export function throwGrainError(errorCode, value1, value2, runtime) {
   let message;
   // [TODO]: Pass a runtime here
-  let value1AsGrain = runtime ? runtime.grainValueToString(value1) : "<grain value>";
+  let value1AsGrain = runtime
+    ? runtime.grainValueToString(value1)
+    : "<grain value>";
 
   switch (errorCode) {
     case GRAIN_ERR_ARITY_MISMATCH:
@@ -115,7 +118,7 @@ export function throwGrainError(errorCode, value1, value2, runtime) {
       message = `tuple index too large: ${value1AsGrain} (tuple arity: ${value2})`;
       break;
     case GRAIN_ERR_ARRAY_INDEX_OUT_OF_BOUNDS:
-      message = 'array index out of bounds';
+      message = "array index out of bounds";
       break;
     case GRAIN_ERR_SWITCH:
       message = `value has no switch case: ${value1AsGrain}`;
@@ -142,10 +145,10 @@ export function throwGrainError(errorCode, value1, value2, runtime) {
       message = `System error: ${value1AsGrain}`;
       break;
     case GRAIN_ERR_NOT_INTLIKE:
-      message = `Cannot coerce to integer: ${value1AsGrain}`
+      message = `Cannot coerce to integer: ${value1AsGrain}`;
       break;
     case GRAIN_ERR_NOT_RATIONAL:
-      message = `Cannot coerce to rational: ${value1AsGrain}`
+      message = `Cannot coerce to rational: ${value1AsGrain}`;
       break;
     default:
       message = `Unknown error code: ${errorCode}`;
