@@ -8,6 +8,7 @@
     "build:dev": "webpack --config webpack.dev.js",
     "watch": "webpack --config webpack.dev.js --watch",
     "format": "prettier --write .",
+    "check-format": "prettier --check .",
     "test": "jest"
   },
   "repository": {

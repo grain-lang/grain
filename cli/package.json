@@ -9,6 +9,7 @@
   "scripts": {
     "link": "yarn link",
     "format": "prettier --write .",
+    "check-format": "prettier --check .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": {
