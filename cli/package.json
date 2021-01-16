@@ -8,6 +8,7 @@
   },
   "scripts": {
     "link": "yarn link",
+    "format": "prettier --write .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": {
@@ -33,5 +34,8 @@
     "commander": "^5.1.0",
     "flagged-respawn": "^1.0.1",
     "v8flags": "^3.2.0"
+  },
+  "devDependencies": {
+    "prettier": "^2.2.1"
   }
 }
