@@ -1,18 +1,22 @@
-const path = require('path');
-const { execSync } = require('child_process');
+const path = require("path");
+const { execSync } = require("child_process");
 
-const grainc = path.join(__dirname, 'grainc.exe');
+const grainc = path.join(__dirname, "grainc.exe");
 
 module.exports = (file, options) => {
   try {
-    execSync(`${grainc} --stdlib=${options.stdlib} ${options.cflags ? options.cflags : ''} ${file}`);
-    return file.replace(/\.gr$/, '.gr.wasm')
+    execSync(
+      `${grainc} --stdlib=${options.stdlib} ${
+        options.cflags ? options.cflags : ""
+      } ${file}`
+    );
+    return file.replace(/\.gr$/, ".gr.wasm");
   } catch (e) {
     console.log(e.stdout.toString());
     if (options.graceful) {
-      process.exit()
+      process.exit();
     } else {
-      process.exit(1)
+      process.exit(1);
     }
   }
-}
+};
