@@ -24,11 +24,12 @@ unit-tests for OCaml code. It is loosely based on [HUnit], a unit testing
 framework for Haskell. It is similar to [JUnit], and other XUnit testing
 frameworks.
 """
+x-commit-hash: "faf4936b17507406c7592186dcaa3f25c6fc138a"
 url {
   src:
-    "https://github.com/gildor478/ounit/releases/download/v2.2.3/ounit-v2.2.3.tbz"
+    "https://github.com/gildor478/ounit/releases/download/v2.2.4/ounit-v2.2.4.tbz"
   checksum: [
-    "sha256=e280a64aa7df64bd7335c9ed68a70d6ee168b39ae8bbfb6daedd2f4a04844ad9"
-    "sha512=dff04859d263e5f80a1606156d07493d0320a2756d0a7f134c63c53078550c7b056587486922bc66a288413af30c59a7e47157636502c6dd10626cf75587f981"
+    "sha256=b5c069a5d957220ca0669e945f1e81e6b6db9622766d860913e136e1168e3345"
+    "sha512=d69dc501a360c31f7854322b5e2c2abcb1e43890737e1cc00c167ee104d5dee471b6b8d8186f8044b0482c91a8f15210a25d833a1e03ed7baabfba923815962f"
   ]
 }
