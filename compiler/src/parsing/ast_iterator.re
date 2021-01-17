@@ -161,6 +161,7 @@ module D = {
         {
           pdata_name: name,
           pdata_params: args,
+          pdata_manifest: manifest,
           pdata_kind: kind,
           pdata_loc: loc,
         },
@@ -168,6 +169,7 @@ module D = {
     sub.location(sub, loc);
     iter_loc(sub, name);
     List.iter(sub.typ(sub), args);
+    Option.iter(sub.typ(sub), manifest);
     switch (kind) {
     | PDataAbstract => ()
     | PDataVariant(cdl) => List.iter(sub.constructor(sub), cdl)

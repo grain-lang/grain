@@ -329,6 +329,7 @@ and transl_type_aux = (env, policy, styp) => {
             if (policy == Univars) {
               new_pre_univar(~name, ());
             } else {
+              // instance(env, Tbl.find(name, type_variables^))
               newvar(~name, ());
             };
 

@@ -486,21 +486,23 @@ let rec update_level = (env, level, expand, ty) => {
   let ty = repr(ty);
   if (ty.level > level) {
     switch (ty.desc) {
-    /* | TTyConstr(p, _tl, _abbrev) when level < get_level env p ->
-       (* Try first to replace an abbreviation by its expansion. *)
-       begin try
-           link_type ty (!forward_try_expand_once env ty);
-           update_level env level expand ty
-         with Cannot_expand ->
-           (* +++ Levels should be restored... *)
-           (* Format.printf "update_level: %i < %i@." level (get_level env p); *)
-           if level < get_level env p then raise (Unify [(ty, newvar2 level)]);
-           iter_type_expr (update_level env level expand) ty
-       end */
+     /*| TTyConstr(p, _tl, _abbrev) when level < get_level (env, p) =>
+       /* Try first to replace an abbreviation by its expansion. */
+       try
+           ({link_type (ty, (forward_try_expand_once^ (env, ty)));
+           update_level (env, level, expand, ty)})
+         { | Cannot_expand =>
+           /* +++ Levels should be restored... */
+           /* Format.printf "update_level: %i < %i@." level (get_level env p); */
+           if (level < get_level (env, p)) { raise (Unify ([(ty, newvar2 (level))]))};
+           iter_type_expr ((update_level (env, level, expand)), ty)
+         }*/
+       
     | TTyConstr(_, [_, ..._], _) when expand =>
       try(
         {
           link_type(ty, forward_try_expand_once^(env, ty));
+          prerr_endline("linking up some bad boys");
           update_level(env, level, expand, ty);
         }
       ) {
@@ -1069,18 +1071,56 @@ let unify' =
   ref((_env, _ty1, _ty2) => raise(Unify([])));
 
 let subst = (env, level, priv, abbrev, ty, params, args, body) => {
+  let prerr_sexp = (conv, x) =>
+      prerr_string(Sexplib.Sexp.to_string_hum(conv(x)));
   if (List.length(params) != List.length(args)) {
     raise(Unify([]));
   };
   let old_level = current_level^;
   current_level := level;
+  let debug = ref(false);
   try({
     let body0 = newvar(); /* Stub */
+    switch (ty) {
+    | None => ()
+    | Some({desc: TTyConstr(path, tl, _)} as ty) =>
+      if (Path.last(path) == "MyTup") {debug := true};
+      let abbrev = proper_abbrevs(path, tl, abbrev);
+      memorize_abbrev(abbrev, priv, path, ty, body0);
+    | _ => assert(false)
+    };
     abbreviations := abbrev;
     let (params', body') = instance_parameterized_type(params, body);
     abbreviations := ref(TMemNil);
+    if (debug^) {
+
+    prerr_endline("Pre unification");
+    List.iter(prerr_sexp(Types.sexp_of_type_expr), params);
+    prerr_newline();
+    prerr_newline();
+    List.iter(prerr_sexp(Types.sexp_of_type_expr), args);
+    prerr_newline();
+    prerr_newline();
+    prerr_sexp(Types.sexp_of_type_desc, body'.desc);
+    prerr_newline();
+    prerr_newline();
+    }
     unify'^(env, body0, body');
     List.iter2(unify'^(env), params', args);
+    if (debug^) {
+
+    prerr_newline();
+    prerr_endline("Post unification");
+    List.iter(prerr_sexp(Types.sexp_of_type_expr), params);
+    prerr_newline();
+    prerr_newline();
+    List.iter(prerr_sexp(Types.sexp_of_type_expr), args);
+    prerr_newline();
+    prerr_newline();
+    prerr_sexp(Types.sexp_of_type_desc, body'.desc);
+    prerr_newline();
+    prerr_newline();
+    }
     current_level := old_level;
     body';
   }) {
@@ -1149,8 +1189,8 @@ let expand_abbrev_gen = (kind, find_type_expansion, env, ty) => {
     let lookup_abbrev = proper_abbrevs(path, args, abbrev);
     switch (find_expans(kind, path, lookup_abbrev^)) {
     | Some(ty') =>
-      /* prerr_endline
-         ("found a "^string_of_kind kind^" expansion for "^Path.name path);*/
+      prerr_endline
+         ("found an expansion for " ++ Path.name (path));
       if (level != generic_level) {
         try(update_level(env, level, ty')) {
         | Unify(_) =>
@@ -1173,8 +1213,8 @@ let expand_abbrev_gen = (kind, find_type_expansion, env, ty) => {
           newty2(level, TTyConstr(path', args, abbrev));
         };
       | (params, body, lv) =>
-        /* prerr_endline
-           ("add a "^string_of_kind kind^" expansion for "^Path.name path);*/
+        prerr_endline
+           ("add an expansion for "++Path.name (path));
         let ty' =
           subst(env, level, kind, abbrev, Some(ty), params, args, body);
         ty';
@@ -2273,19 +2313,23 @@ let unify1_var = (env, t1, t2) => {
 let rec unify = (env: ref(Env.t), t1, t2) =>
   /* First step: special cases (optimizations) */
   if (t1 === t2) {
+    prerr_endline("special case");
     ();
   } else {
     let t1 = repr(t1);
     let t2 = repr(t2);
     if (unify_eq(t1, t2)) {
+      prerr_endline("types eq");
       ();
     } else {
+      prerr_endline("types nq");
       /*let reset_tracing = check_trace_gadt_instances !env in*/
       try(
         {
           type_changed := true;
           switch (t1.desc, t2.desc) {
           | (TTyVar(_), TTyConstr(_)) when deep_occur(t1, t2) =>
+            prerr_endline("occurs deep");
             unify2(env, t1, t2)
           | (TTyConstr(_), TTyVar(_)) when deep_occur(t2, t1) =>
             unify2(env, t1, t2)
@@ -2400,6 +2444,7 @@ and unify3 = (env, t1, t1', t2, t2') => {
     unify_univar(t1', t2', univar_pairs^);
     link_type(t1', t2');
   | (TTyVar(_), _) =>
+    prerr_endline("Linking those bad boys");
     occur(env^, t1', t2);
     occur_univar(env^, t2);
     link_type(t1', t2);
@@ -2542,24 +2587,31 @@ let unify_var = (env, t1, t2) => {
   let t1 = repr(t1)
   and t2 = repr(t2);
   if (t1 === t2) {
+    prerr_endline("bail out");
     ();
   } else {
+    prerr_endline("no bail out");
     switch (t1.desc, t2.desc) {
     | (TTyVar(_), TTyConstr(_)) when deep_occur(t1, t2) =>
+      prerr_endline("deep occurs");
       unify(ref(env), t1, t2)
     | (TTyVar(_), _) =>
+      prerr_endline("no deep occur");
       try(
         {
-          occur(env, t1, t2);
-          update_level(env, t1.level, t2);
+          // occur(env, t1, t2);
+          prerr_endline("occur done");
+          // update_level(env, t1.level, t2);
+          prerr_endline("level update done");
           link_type(t1, t2);
+          prerr_endline("link_type done");
         }
       ) {
       | Unify(trace) =>
         let expanded_trace = expand_trace(env, [(t1, t2), ...trace]);
         raise(Unify(expanded_trace));
       }
-    | _ => unify(ref(env), t1, t2)
+    | _ => prerr_endline("the other CASE"); unify(ref(env), t1, t2)
     };
   };
 };

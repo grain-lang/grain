@@ -91,7 +91,11 @@ let enter_type = (rec_flag, env, sdecl, id) => {
       type_params: List.map(_ => Btype.newgenvar(), sdecl.pdata_params),
       type_arity: List.length(sdecl.pdata_params),
       type_kind: TDataAbstract,
-      type_manifest: None,
+      // type_manifest: None,
+      type_manifest: switch (sdecl.pdata_manifest) {
+        | Some(_) => Some(Ctype.newvar())
+        | None => None
+      },
       /*begin match sdecl.pdata_manifest with None -> None
         | Some _ -> Some(Ctype.newvar ()) end;*/
       type_newtype_level: None,
@@ -317,6 +321,10 @@ let transl_declaration = (env, sdecl, id) => {
     | None => (None, None)
     | Some(sty) =>
       let cty = transl_simple_type(env, true, sty);
+      // switch (cty.ctyp_type.desc) {
+      //   | TTyTuple([var, ...vars]) => Printf.eprintf("hello\n"); var.desc = TTyLink(List.hd(params))
+      //   | _ => ()
+      // };
       (Some(cty), Some(cty.ctyp_type));
     };
 
@@ -332,13 +340,16 @@ let transl_declaration = (env, sdecl, id) => {
   };
 
   /* Check constraints */
-  /*List.iter
-    (fun (cty, cty', loc) ->
-      let ty = cty.ctyp_type in
-      let ty' = cty'.ctyp_type in
-      try Ctype.unify env ty ty' with Ctype.Unify tr ->
-        raise(Error(loc, Inconsistent_constraint (env, tr))))
-    cstrs;*/
+  // List.iter(
+  //   ((cty, cty', loc)) => {
+  //     let ty = cty.ctyp_type;
+  //     let ty' = cty'.ctyp_type;
+  //     try (Ctype.unify(env, ty, ty')) { 
+  //       | Ctype.Unify(tr) =>
+  //         raise(Error(loc, Inconsistent_constraint (env, tr)))
+  //     }
+  //   },
+  //   cstrs);
   Ctype.end_def();
   /* Add abstract row */
   /*if is_fixed_type sdecl then begin

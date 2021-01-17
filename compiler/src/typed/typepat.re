@@ -1100,12 +1100,12 @@ let type_pattern_list = (~mut=false, env, spatl, scope, expected_tys, allow) => 
       (fun () ->
          type_pat new_env pat ty
       )*/
-    /*Format.eprintf "@[Typing pat: %s@]@."
-      (Sexplib.Sexp.to_string_hum (Parsetree.sexp_of_pattern pat));*/
+    // Format.eprintf( "@[Typing pat: %s@]@.",
+    //   (Sexplib.Sexp.to_string_hum (Parsetree.sexp_of_pattern (pat))));
     let ret = type_pat(new_env, pat, ty);
-    /*Format.eprintf "@[Typed: %s [type: %a]@]@."
-      (Sexplib.Sexp.to_string_hum (Typedtree.sexp_of_pattern ret))
-      Printtyp.raw_type_expr ret.pat_type;*/
+    // Format.eprintf ("@[Typed: %s [type: %a]@]@.",
+    //   (Sexplib.Sexp.to_string_hum (Typedtree.sexp_of_pattern (ret))),
+    //   Printtyp.raw_type_expr, (ret.pat_type));
     ret;
   };
 
