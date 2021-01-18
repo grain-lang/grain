@@ -157,7 +157,7 @@ let analyze = ({imports, body, analyses}) => {
   mod_has_inlineable_wasm := false;
   let process_import = ({imp_use_id, imp_desc}) => {
     switch (imp_desc) {
-    | GrainValue("wasm", name) =>
+    | GrainValue("wasmi32", name) =>
       mod_has_inlineable_wasm := true;
       switch (get_primitive(name)) {
       | Some(prim) => set_inlineable_wasm(imp_use_id, prim)

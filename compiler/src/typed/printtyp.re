@@ -1050,7 +1050,7 @@ let dummy = {
   type_newtype_level: None,
   type_loc: Location.dummy_loc,
   type_path: PIdent({stamp: (-1), name: "", flags: 0}),
-  type_immediate: false,
+  type_allocation: HeapAllocated,
 };
 
 let hide_rec_items =

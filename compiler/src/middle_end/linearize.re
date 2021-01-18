@@ -1107,7 +1107,7 @@ let linearize_builtins = (env, builtins) => {
     List.map(
       decl =>
         switch (decl.type_kind) {
-        | TDataVariant(_) when !decl.type_immediate =>
+        | TDataVariant(_) when decl.type_allocation == HeapAllocated =>
           linearize_decl(env, Location.dummy_loc, decl.type_path, decl)
         | _ => []
         },
