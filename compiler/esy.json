@@ -20,7 +20,7 @@
     "check-format": "dune build @fmt"
   },
   "dependencies": {
-    "@grain/binaryen.ml": ">= 0.4.0",
+    "@grain/binaryen.ml": ">= 0.5.0",
     "@opam/cmdliner": ">= 1.0.2",
     "@opam/dune-build-info": ">= 2.0.0",
     "@opam/dune": ">= 2.0.0",
