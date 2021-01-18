@@ -3218,6 +3218,7 @@ and compile_switch = (wasm_mod, env, arg, branches, default) => {
         );
       let default_block_body = compile_block(wasm_mod, env, default);
       Expression.block(
+        ~return_type=Type.int32,
         wasm_mod,
         branch_name,
         [
@@ -3233,6 +3234,7 @@ and compile_switch = (wasm_mod, env, arg, branches, default) => {
       );
     | [(lbl, hd), ...tl] =>
       Expression.block(
+        ~return_type=Type.int32,
         wasm_mod,
         branch_name,
         [
@@ -3255,6 +3257,7 @@ and compile_switch = (wasm_mod, env, arg, branches, default) => {
     };
   };
   Expression.block(
+    ~return_type=Type.int32,
     wasm_mod,
     outer_label,
     [process_branches(0, [], branches)],
