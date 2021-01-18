@@ -3283,7 +3283,7 @@ let maybe_pointer_type = (env, typ) =>
   | TTyConstr(p, _args, _abbrev) =>
     try({
       let type_decl = Env.find_type(p, env);
-      type_decl.type_allocation == HeapAllocated
+      type_decl.type_allocation == HeapAllocated;
     }) {
     | Not_found => true
     /* This can happen due to e.g. missing -I options,

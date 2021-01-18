@@ -58,7 +58,7 @@ let compile_wasm_prim1 = (wasm_mod, env, instr, ~boolean, arg) => {
       wasm_mod,
       op,
       Expression.const(wasm_mod, const_true()),
-      Expression.const(wasm_mod, const_false())
+      Expression.const(wasm_mod, const_false()),
     );
   } else {
     op;

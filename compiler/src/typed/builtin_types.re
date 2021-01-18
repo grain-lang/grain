@@ -88,7 +88,7 @@ and type_lambda = (args, res) => newgenty(TTyArrow(args, res, TComOk));
 
 let all_predef_exns = [];
 
-let decl_abstr = (path) => {
+let decl_abstr = path => {
   type_params: [],
   type_arity: 0,
   type_kind: TDataAbstract,
@@ -99,7 +99,10 @@ let decl_abstr = (path) => {
   type_allocation: HeapAllocated,
 };
 
-let decl_abstr_imm = (repr, path) => {...decl_abstr(path), type_allocation: StackAllocated(repr)};
+let decl_abstr_imm = (repr, path) => {
+  ...decl_abstr(path),
+  type_allocation: StackAllocated(repr),
+};
 
 let cstr = (id, args) => {
   cd_id: id,

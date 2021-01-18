@@ -9,6 +9,8 @@ type env = Env.t;
 type ident = Ident.t;
 type attributes = Asttypes.attributes;
 
+let get_allocation_type: (Env.t, type_expr) => allocation_type;
+
 module Imm: {
   let mk: (~loc: loc=?, ~env: env=?, imm_expression_desc) => imm_expression;
   let id: (~loc: loc=?, ~env: env=?, ident) => imm_expression;
@@ -20,12 +22,19 @@ module Comp: {
     (
       ~loc: loc=?,
       ~attributes: attributes=?,
+      ~allocation_type: allocation_type=?,
       ~env: env=?,
       comp_expression_desc
     ) =>
     comp_expression;
   let imm:
-    (~loc: loc=?, ~attributes: attributes=?, ~env: env=?, imm_expression) =>
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      ~allocation_type: allocation_type,
+      ~env: env=?,
+      imm_expression
+    ) =>
     comp_expression;
   let number:
     (
@@ -51,6 +60,7 @@ module Comp: {
     (
       ~loc: loc=?,
       ~attributes: attributes=?,
+      ~allocation_type: allocation_type,
       ~env: env=?,
       prim1,
       imm_expression
@@ -60,6 +70,7 @@ module Comp: {
     (
       ~loc: loc=?,
       ~attributes: attributes=?,
+      ~allocation_type: allocation_type,
       ~env: env=?,
       prim2,
       imm_expression,
@@ -70,6 +81,7 @@ module Comp: {
     (
       ~loc: loc=?,
       ~attributes: attributes=?,
+      ~allocation_type: allocation_type,
       ~env: env=?,
       primn,
       list(imm_expression)
@@ -79,6 +91,7 @@ module Comp: {
     (
       ~loc: loc=?,
       ~attributes: attributes=?,
+      ~allocation_type: allocation_type,
       ~env: env=?,
       imm_expression,
       imm_expression
@@ -88,6 +101,7 @@ module Comp: {
     (
       ~loc: loc=?,
       ~attributes: attributes=?,
+      ~allocation_type: allocation_type,
       ~env: env=?,
       imm_expression,
       imm_expression
@@ -113,6 +127,7 @@ module Comp: {
     (
       ~loc: loc=?,
       ~attributes: attributes=?,
+      ~allocation_type: allocation_type,
       ~env: env=?,
       imm_expression,
       imm_expression
@@ -122,6 +137,7 @@ module Comp: {
     (
       ~loc: loc=?,
       ~attributes: attributes=?,
+      ~allocation_type: allocation_type,
       ~env: env=?,
       imm_expression,
       imm_expression,
@@ -151,6 +167,7 @@ module Comp: {
     (
       ~loc: loc=?,
       ~attributes: attributes=?,
+      ~allocation_type: allocation_type,
       ~env: env=?,
       int32,
       imm_expression
@@ -160,6 +177,7 @@ module Comp: {
     (
       ~loc: loc=?,
       ~attributes: attributes=?,
+      ~allocation_type: allocation_type,
       ~env: env=?,
       int32,
       imm_expression,
@@ -170,6 +188,7 @@ module Comp: {
     (
       ~loc: loc=?,
       ~attributes: attributes=?,
+      ~allocation_type: allocation_type,
       ~env: env=?,
       int32,
       imm_expression
@@ -182,6 +201,7 @@ module Comp: {
     (
       ~loc: loc=?,
       ~attributes: attributes=?,
+      ~allocation_type: allocation_type,
       ~env: env=?,
       int32,
       imm_expression
@@ -191,6 +211,7 @@ module Comp: {
     (
       ~loc: loc=?,
       ~attributes: attributes=?,
+      ~allocation_type: allocation_type,
       ~env: env=?,
       int32,
       imm_expression,
@@ -201,6 +222,7 @@ module Comp: {
     (
       ~loc: loc=?,
       ~attributes: attributes=?,
+      ~allocation_type: allocation_type,
       ~env: env=?,
       imm_expression,
       anf_expression,
@@ -220,6 +242,7 @@ module Comp: {
     (
       ~loc: loc=?,
       ~attributes: attributes=?,
+      ~allocation_type: allocation_type,
       ~env: env=?,
       imm_expression,
       list((int, anf_expression))
@@ -228,9 +251,10 @@ module Comp: {
   let app:
     (
       ~loc: loc=?,
-      ~tail: bool=?,
       ~attributes: attributes=?,
+      ~allocation_type: allocation_type,
       ~env: env=?,
+      ~tail: bool=?,
       imm_expression,
       list(imm_expression)
     ) =>
@@ -239,6 +263,7 @@ module Comp: {
     (
       ~loc: loc=?,
       ~attributes: attributes=?,
+      ~allocation_type: allocation_type,
       ~env: env=?,
       string,
       string,

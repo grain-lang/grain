@@ -102,7 +102,7 @@ type comp_expression = {
   comp_env: Env.t,
   comp_attributes: attributes,
   comp_analyses: ref(list(analysis)),
-  comp_allocation_type: allocation_type
+  comp_allocation_type: allocation_type,
 }
 
 [@deriving sexp]

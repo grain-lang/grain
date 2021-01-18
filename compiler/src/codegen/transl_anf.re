@@ -604,7 +604,11 @@ let rec compile_comp = (env, c) => {
         compile_imm(env, record),
       )
     | CLambda(args, body) =>
-      MAllocate(MClosure(compile_lambda(env, args, body, c.comp_attributes, c.comp_loc)))
+      MAllocate(
+        MClosure(
+          compile_lambda(env, args, body, c.comp_attributes, c.comp_loc),
+        ),
+      )
     | CApp(f, args, true) =>
       /* TODO: Utilize MReturnCallKnown */
 
