@@ -3789,7 +3789,7 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
     Bytes.to_string(serialized_cmi),
   );
 
-  // validate_module(~name?, wasm_mod);
+  validate_module(~name?, wasm_mod);
   // TODO: Enable Binaryen optimizations
   // https://github.com/grain-lang/grain/issues/196
   // Module.optimize(wasm_mod);
