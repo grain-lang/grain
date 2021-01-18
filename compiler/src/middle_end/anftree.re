@@ -117,6 +117,7 @@ type comp_expression = {
   comp_env: [@sexp.opaque] Env.t,
   comp_attributes: attributes,
   comp_analyses: [@sexp.opaque] ref(list(analysis)),
+  comp_allocation_type: allocation_type
 }
 
 [@deriving sexp]

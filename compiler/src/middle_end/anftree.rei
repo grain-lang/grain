@@ -102,7 +102,8 @@ type comp_expression = {
   comp_env: Env.t,
   comp_attributes: attributes,
   comp_analyses: ref(list(analysis)),
-} /* Type Tag, Variant Tag, contents */ /* FIXME [philip]: I find it hard to believe that the condition is an [anf_expression] here */ /* Unwrapped function call (to WASM functions) */
+  comp_allocation_type: allocation_type
+}
 
 [@deriving sexp]
 and comp_expression_desc =
