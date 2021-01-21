@@ -940,6 +940,7 @@ let prepare_match_branches = branches => {
       | Const_float32(_) => Builtin_types.type_float32
       | Const_float64(_) => Builtin_types.type_float64
       | Const_wasmi32(_) => Builtin_types.type_wasmi32
+      | Const_wasmi64(_) => Builtin_types.type_wasmi64
       | Const_string(_) => Builtin_types.type_string
       | Const_char(_) => Builtin_types.type_char
       };

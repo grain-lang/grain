@@ -38,6 +38,7 @@ let pretty_const = c =>
   | Const_int32(i) => Printf.sprintf("%ldl", i)
   | Const_int64(i) => Printf.sprintf("%LdL", i)
   | Const_wasmi32(i) => Printf.sprintf("%ldw", i)
+  | Const_wasmi64(i) => Printf.sprintf("%LdW", i)
   | Const_bool(true) => "true"
   | Const_bool(false) => "false"
   | Const_void => "void"

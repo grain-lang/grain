@@ -108,6 +108,7 @@ let worklist_pop = () =>
 module IntMap = Map.Make(Int);
 module RegisterAllocation = {
   type t = (IntMap.t(int), list(int));
+
   let initialize = (num_locals: int): t => (
     IntMap.empty,
     List.init(num_locals, x => x),
@@ -132,18 +133,16 @@ module RegisterAllocation = {
 
   let get_allocations = ((allocs, _): t) => allocs;
 
-  let get_allocation = (var_id, (allocs, _): t) =>
-    IntMap.find(var_id, allocs);
-
-  let get_allocation_int32 = (var_id, allocs) =>
-    Int32.of_int(get_allocation(var_id, allocs));
+  let get_allocation = (var_id, (allocs, _)) => {
+    Int32.of_int(IntMap.find(var_id, allocs));
+  }
 
   let rec apply_allocations =
-          (allocs: t, instr: Mashtree.instr): Mashtree.instr => {
+          (ty: Mashtree.asmtype, allocs: t, instr: Mashtree.instr): Mashtree.instr => {
     let apply_allocation_to_bind =
       fun
-      | MLocalBind(n) =>
-        MLocalBind(get_allocation_int32(Int32.to_int(n), allocs))
+      | MLocalBind(n, ity) when ity == ty =>
+        MLocalBind(get_allocation(Int32.to_int(n), allocs), ty)
       | _ as b => b;
 
     let apply_allocation_to_imm =
@@ -151,7 +150,7 @@ module RegisterAllocation = {
       | MImmBinding(b) => MImmBinding(apply_allocation_to_bind(b))
       | _ as i => i;
 
-    let apply_allocation_to_block = List.map(apply_allocations(allocs));
+    let apply_allocation_to_block = List.map(apply_allocations(ty, allocs));
     let desc =
       switch (instr.instr_desc) {
       | MImmediate(i) => MImmediate(apply_allocation_to_imm(i))
@@ -203,17 +202,19 @@ module RegisterAllocation = {
         MStore(
           List.map(
             ((b, bk)) =>
-              (apply_allocation_to_bind(b), apply_allocations(allocs, bk)),
+              (apply_allocation_to_bind(b), apply_allocations(ty, allocs, bk)),
             bs,
           ),
         )
       | MAllocate(x) => MAllocate(x)
-      | MDrop(i) => MDrop(apply_allocations(allocs, i))
+      | MDrop(i) => MDrop(apply_allocations(ty, allocs, i))
       | MTracepoint(x) => MTracepoint(x)
       };
     {...instr, instr_desc: desc};
   };
 };
+
+type live_local = (Mashtree.asmtype, int);
 
 let run_register_allocation = (instrs: list(Mashtree.instr)) => {
   let uniq = l => {
@@ -227,12 +228,12 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
   };
   let bind_live_local =
     fun
-    | MLocalBind(n) => [Int32.to_int(n)]
+    | MLocalBind(n, ty) => [(ty, Int32.to_int(n))]
     | _ => [];
 
   let imm_live_local =
     fun
-    | MImmBinding(MLocalBind(n)) => [Int32.to_int(n)]
+    | MImmBinding(MLocalBind(n, ty)) => [(ty, Int32.to_int(n))]
     | _ => [];
 
   let rec live_locals = instr =>
@@ -274,102 +275,122 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
   /*** Mapping from (instruction index) -> (used locals) */
   let instr_live_sets =
     List.mapi((i, instr) => (i, uniq @@ live_locals(instr)), instrs);
-  let num_locals = {
-    let rec help = acc =>
+  let (num_locals_i32, num_locals_i64, num_locals_f32, num_locals_f64) = {
+    let rec help = ((ty, acc)) =>
       fun
-      | [] => acc
-      | [hd, ...tl] when hd > acc => help(hd, tl)
-      | [_, ...tl] => help(acc, tl);
-    1 + help(0, List.map(((_, lst)) => help(0, lst), instr_live_sets));
+      | [] => (ty, acc)
+      | [(hd_ty, hd), ...tl] when hd_ty == ty && hd > acc => help((ty, hd), tl)
+      | [_, ...tl] => help((ty, acc), tl);
+    let (_, i32) = help((I32Type, 0), List.map(((_, lst)) => help((I32Type, 0), lst), instr_live_sets));
+    let (_, i64) = help((I64Type, 0), List.map(((_, lst)) => help((I64Type, 0), lst), instr_live_sets));
+    let (_, f32) = help((F32Type, 0), List.map(((_, lst)) => help((F32Type, 0), lst), instr_live_sets));
+    let (_, f64) = help((F64Type, 0), List.map(((_, lst)) => help((F64Type, 0), lst), instr_live_sets));
+    (i32 + 1, i64 + 1, f32 + 1, f64 + 1)
   };
   /* Printf.eprintf "Live sets:\n";
      List.iter (fun (i, items) -> Printf.eprintf "%d -> [%s]\n" i (BatString.join ", " (List.map string_of_int items))) instr_live_sets; */
-  if (num_locals < 2) {
-    instrs;
-  } else {
-    /* flipped mapping of instr_live_sets; (used locals) -> (first_instruction_used, last_instruction_used) */
-    let live_intervals = {
-      let rec min =
-        List.fold_left(
-          (acc, cur) =>
-            if (cur < acc) {
-              cur;
-            } else {
-              acc;
-            },
-          List.length(instrs),
-        );
-      let rec max =
-        List.fold_left(
-          (acc, cur) =>
-            if (cur > acc) {
-              cur;
-            } else {
-              acc;
-            },
-          0,
-        );
-      let rec help = (acc: IntMap.t(list(int))) =>
-        fun
-        | [] => acc
-        | [(idx, items), ...tl] => {
-            let with_items: IntMap.t(list(int)) =
-              List.fold_left(
-                (acc, cur) => {
-                  let existing_elts: list(int) =
-                    Option.value(~default=[], IntMap.find_opt(cur, acc));
-                  IntMap.add(cur, [idx, ...existing_elts], acc);
-                },
-                acc,
-                items,
-              );
-            help(with_items, tl);
-          };
-      let interval_map = help(IntMap.empty, instr_live_sets);
-      List.sort(((_, (min1, _)), (_, (min2, _))) =>
-        if (min1 < min2) {
-          (-1);
-        } else if (min1 === min2) {
-          0;
-        } else {
-          1;
-        }
-      ) @@
-      List.map(
-        ((binding, indices)) => (binding, (min(indices), max(indices))),
-        IntMap.bindings(interval_map),
-      );
+  let run = (ty, instrs) => {
+    let num_locals = switch (ty) {
+      | I32Type => num_locals_i32
+      | I64Type => num_locals_i64
+      | F32Type => num_locals_f32
+      | F64Type => num_locals_f64
     };
-    /* Modified version of Linear-scan register allocation; we don't need to spill, since we are optimizing with an
-       unbounded number of memory locations */
-    /* Printf.eprintf "Intervals:\n";
-       List.iter (fun (v, (si, ei)) -> Printf.eprintf "%d: [%d,%d]\n" v si ei) live_intervals; */
-    let expire_old_intervals = (current_instr, allocs, active) => {
-      let rec help = ((allocs, active)) =>
-        fun
-        | [] => (allocs, active)
-        | [(var_id, (_, max)), ...tl] when max < current_instr =>
-          help((RegisterAllocation.release_var(var_id, allocs), active), tl)
-        | [hd, ...tl] => help((allocs, [hd, ...active]), tl);
-      help((allocs, []), active);
+    if (num_locals < 2) {
+      instrs;
+    } else {
+      /* flipped mapping of instr_live_sets; (used locals) -> (first_instruction_used, last_instruction_used) */
+      let live_intervals = {
+        let rec min =
+          List.fold_left(
+            (acc, cur) =>
+              if (cur < acc) {
+                cur;
+              } else {
+                acc;
+              },
+            List.length(instrs),
+          );
+        let rec max =
+          List.fold_left(
+            (acc, cur) =>
+              if (cur > acc) {
+                cur;
+              } else {
+                acc;
+              },
+            0,
+          );
+        let rec help = (acc: IntMap.t(list(int))) =>
+          fun
+          | [] => acc
+          | [(idx, items), ...tl] => {
+              let with_items: IntMap.t(list(int)) =
+                List.fold_left(
+                  (acc, (item_ty, cur)) => {
+                    if (item_ty == ty) {
+                    let existing_elts: list(int) =
+                      Option.value(~default=[], IntMap.find_opt(cur, acc));
+                    IntMap.add(cur, [idx, ...existing_elts], acc);
+                    } else {
+                      acc
+                    }
+                  },
+                  acc,
+                  items,
+                );
+              help(with_items, tl);
+            };
+        let interval_map = help(IntMap.empty, instr_live_sets);
+        List.sort(((_, (min1, _)), (_, (min2, _))) =>
+          if (min1 < min2) {
+            (-1);
+          } else if (min1 === min2) {
+            0;
+          } else {
+            1;
+          }
+        ) @@
+        List.map(
+          ((binding, indices)) => (binding, (min(indices), max(indices))),
+          IntMap.bindings(interval_map),
+        );
+      };
+      /* Modified version of Linear-scan register allocation; we don't need to spill, since we are optimizing with an
+        unbounded number of memory locations */
+      /* Printf.eprintf "Intervals:\n";
+        List.iter (fun (v, (si, ei)) -> Printf.eprintf "%d: [%d,%d]\n" v si ei) live_intervals; */
+      let expire_old_intervals = (current_instr, allocs, active) => {
+        let rec help = ((allocs, active)) =>
+          fun
+          | [] => (allocs, active)
+          | [(var_id, (_, max)), ...tl] when max < current_instr =>
+            help((RegisterAllocation.release_var(var_id, allocs), active), tl)
+          | [hd, ...tl] => help((allocs, [hd, ...active]), tl);
+        help((allocs, []), active);
+      };
+      let _ =
+        List_utils.fold_lefti(
+          ((allocs, active), i, (var_id, (start_inst, end_inst)) as cur) => {
+            let (allocs, active) =
+              expire_old_intervals(start_inst, allocs, active);
+            let (allocs, _) = RegisterAllocation.allocate(var_id, allocs);
+            let active = [cur, ...active];
+            (allocs, active);
+          },
+          (RegisterAllocation.initialize(num_locals), []),
+          live_intervals,
+        );
+      /* Printf.eprintf "Allocations:\n";
+        List.iter (fun (var_id, reg_id) -> Printf.eprintf "%d --> %d\n" var_id reg_id) (IntMap.bindings (RegisterAllocation.get_allocations allocs)); */
+      /* List.map (RegisterAllocation.apply_allocations allocs) instrs */
+      instrs;
     };
-    let _ =
-      List_utils.fold_lefti(
-        ((allocs, active), i, (var_id, (start_inst, end_inst)) as cur) => {
-          let (allocs, active) =
-            expire_old_intervals(start_inst, allocs, active);
-          let (allocs, _) = RegisterAllocation.allocate(var_id, allocs);
-          let active = [cur, ...active];
-          (allocs, active);
-        },
-        (RegisterAllocation.initialize(num_locals), []),
-        live_intervals,
-      );
-    /* Printf.eprintf "Allocations:\n";
-       List.iter (fun (var_id, reg_id) -> Printf.eprintf "%d --> %d\n" var_id reg_id) (IntMap.bindings (RegisterAllocation.get_allocations allocs)); */
-    /* List.map (RegisterAllocation.apply_allocations allocs) instrs */
-    instrs;
   };
+  run(I32Type, instrs) |>
+  run(I64Type) |>
+  run(F32Type) |>
+  run(F64Type)
 };
 
 let compile_const = (c: Asttypes.constant) =>
@@ -384,6 +405,7 @@ let compile_const = (c: Asttypes.constant) =>
   | Const_float32(f) => MConstF32(f)
   | Const_float64(f) => MConstF64(f)
   | Const_wasmi32(i32) => MConstLiteral(MConstI32(i32))
+  | Const_wasmi64(i64) => MConstLiteral(MConstI64(i64))
   | Const_bool(b) when b == true => const_true
   | Const_bool(_) => const_false
   | Const_void => const_void
@@ -413,7 +435,7 @@ let compile_lambda = (env, args, body, attrs, loc): Mashtree.closure_data => {
   let arg_binds =
     List_utils.fold_lefti(
       (acc, arg_idx, arg) =>
-        Ident.add(arg, MArgBind(Int32.of_int(arg_idx)), acc),
+        Ident.add(arg, MArgBind(Int32.of_int(arg_idx), I32Type), acc),
       free_binds,
       new_args,
     );
@@ -450,7 +472,7 @@ let compile_wrapper = (env, func_name, arity): Mashtree.closure_data => {
       instr_desc:
         MCallKnown(
           func_name,
-          List.init(arity, i => MImmBinding(MArgBind(Int32.of_int(i + 1)))),
+          List.init(arity, i => MImmBinding(MArgBind(Int32.of_int(i + 1), I32Type))),
         ),
       instr_loc: Location.dummy_loc,
     },
@@ -486,7 +508,7 @@ let next_global = (~exported=false, id) => {
   } else {
     let body = [
       {
-        instr_desc: MImmediate(MImmBinding(MGlobalBind(Int32.of_int(ret)))),
+        instr_desc: MImmediate(MImmBinding(MGlobalBind(Int32.of_int(ret), I32Type))),
         instr_loc: Location.dummy_loc,
       },
     ];
@@ -633,11 +655,19 @@ and compile_anf_expr = (env, a) =>
       ...compile_anf_expr(env, tl),
     ]
   | AELet(global, recflag, binds, body) =>
-    let get_loc = (idx, (id, _)) =>
-      switch (global) {
-      | Global => MGlobalBind(Int32.of_int(next_global(~exported=true, id)))
-      | Nonglobal => MLocalBind(Int32.of_int(env.ce_stack_idx + idx))
+    let get_loc = (idx, (id, {comp_allocation_type})) => {
+      let asmtype = switch (comp_allocation_type) {
+        | HeapAllocated
+        | StackAllocated(WasmI32) => I32Type
+        | StackAllocated(WasmI64) => I64Type
+        | StackAllocated(WasmF32) => F32Type
+        | StackAllocated(WasmF64) => F64Type
       };
+      switch (global) {
+      | Global => MGlobalBind(Int32.of_int(next_global(~exported=true, id)), asmtype)
+      | Nonglobal => MLocalBind(Int32.of_int(env.ce_stack_idx + idx), asmtype)
+      };
+    };
     let locations = List.mapi(get_loc, binds);
     let new_env =
       List.fold_left2(
@@ -646,7 +676,7 @@ and compile_anf_expr = (env, a) =>
             ...acc,
             ce_binds: Ident.add(id, new_loc, acc.ce_binds),
             ce_stack_idx: acc.ce_stack_idx + 1,
-          }, /* FIXME: Why is this not ce_stack_idx + (List.length binds)?? */
+          },
         env,
         locations,
         binds,
@@ -758,7 +788,7 @@ let lift_imports = (env, imports) => {
               instr_desc:
                 MStore([
                   (
-                    MGlobalBind(Int32.of_int(glob)),
+                    MGlobalBind(Int32.of_int(glob), I32Type),
                     {
                       instr_desc: MCallKnown(func_name, []),
                       instr_loc: Location.dummy_loc,
@@ -775,7 +805,7 @@ let lift_imports = (env, imports) => {
           ce_binds:
             Ident.add(
               imp_use_id,
-              MGlobalBind(Int32.of_int(glob)),
+              MGlobalBind(Int32.of_int(glob), I32Type),
               env.ce_binds,
             ),
         },
@@ -808,7 +838,7 @@ let lift_imports = (env, imports) => {
                   instr_desc:
                     MStore([
                       (
-                        MGlobalBind(Int32.of_int(glob)),
+                        MGlobalBind(Int32.of_int(glob), I32Type),
                         {
                           instr_desc:
                             MAllocate(
@@ -832,7 +862,7 @@ let lift_imports = (env, imports) => {
           ce_binds:
             Ident.add(
               imp_use_id,
-              MGlobalBind(Int32.of_int(glob)),
+              MGlobalBind(Int32.of_int(glob), I32Type),
               env.ce_binds,
             ),
         },

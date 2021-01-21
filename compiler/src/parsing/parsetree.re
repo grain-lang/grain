@@ -117,6 +117,7 @@ type constant =
   | PConstFloat32(string)
   | PConstFloat64(string)
   | PConstWasmI32(string)
+  | PConstWasmI64(string)
   | PConstBool(bool)
   | PConstVoid
   | PConstString(string)

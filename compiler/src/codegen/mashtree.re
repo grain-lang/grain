@@ -108,9 +108,9 @@ type constant =
 
 [@deriving sexp]
 type binding =
-  | MArgBind(int32)
-  | MLocalBind(int32)
-  | MGlobalBind(int32)
+  | MArgBind(int32, asmtype)
+  | MLocalBind(int32, asmtype)
+  | MGlobalBind(int32, asmtype)
   | MClosureBind(int32)
   | MSwapBind(int32) /* Used like a register would be */
   | MImport(int32); /* Index into list of imports */

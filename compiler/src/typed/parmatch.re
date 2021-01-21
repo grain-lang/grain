@@ -136,6 +136,7 @@ let all_coherent = column => {
       | (Const_float32(_), Const_float32(_))
       | (Const_float64(_), Const_float64(_))
       | (Const_wasmi32(_), Const_wasmi32(_))
+      | (Const_wasmi64(_), Const_wasmi64(_))
       | (Const_bool(_), Const_bool(_))
       | (Const_void, Const_void)
       | (Const_string(_), Const_string(_))
@@ -144,6 +145,7 @@ let all_coherent = column => {
           Const_number(_) | Const_int32(_) | Const_int64(_) | Const_float32(_) |
           Const_float64(_) |
           Const_wasmi32(_) |
+          Const_wasmi64(_) |
           Const_bool(_) |
           Const_void |
           Const_string(_) |
@@ -255,6 +257,7 @@ let const_compare = (x, y) =>
       Const_float32(_) |
       Const_float64(_) |
       Const_wasmi32(_) |
+      Const_wasmi64(_) |
       Const_void |
       Const_int32(_) |
       Const_int64(_),
@@ -1774,6 +1777,7 @@ let untype_constant =
   | Const_float32(f) => Parsetree.PConstFloat32(Float.to_string(f))
   | Const_float64(f) => Parsetree.PConstFloat64(Float.to_string(f))
   | Const_wasmi32(i) => Parsetree.PConstWasmI32(Int32.to_string(i))
+  | Const_wasmi64(i) => Parsetree.PConstWasmI64(Int64.to_string(i))
   | Const_string(s) => Parsetree.PConstString(s)
   | Const_char(c) => Parsetree.PConstChar(c)
   | Const_bool(b) => Parsetree.PConstBool(b)
@@ -2119,7 +2123,8 @@ let inactive = (~partial, pat) =>
         | Const_int64(_)
         | Const_float32(_)
         | Const_float64(_)
-        | Const_wasmi32(_) => true
+        | Const_wasmi32(_)
+        | Const_wasmi64(_) => true
         }
       | TPatTuple(ps)
       | TPatConstruct(_, _, ps) => List.for_all(p => loop(p), ps)

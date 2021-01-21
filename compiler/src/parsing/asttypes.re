@@ -29,6 +29,7 @@ type constant =
   | Const_float32(float)
   | Const_float64(float)
   | Const_wasmi32(int32)
+  | Const_wasmi64(int64)
   | Const_bool(bool)
   | Const_void
 

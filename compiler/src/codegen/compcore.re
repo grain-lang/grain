@@ -1039,10 +1039,13 @@ let compile_bind =
     | _ when skip_incref => arg /* This case is used for storing swap values that have freshly been heap-allocated. */
     | typ when typ === Type.int32 =>
       switch (b) {
-      | MArgBind(_) => call_incref_arg_bind(wasm_mod, env, arg)
-      | MLocalBind(_) => call_incref_local_bind(wasm_mod, env, arg)
+      | MArgBind(_, I32Type) => call_incref_arg_bind(wasm_mod, env, arg)
+      | MArgBind(_) => arg
+      | MLocalBind(_, I32Type) => call_incref_local_bind(wasm_mod, env, arg)
+      | MLocalBind(_) => arg
       | MSwapBind(_) => call_incref_swap_bind(wasm_mod, env, arg)
-      | MGlobalBind(_) => call_incref_global_bind(wasm_mod, env, arg)
+      | MGlobalBind(_, I32Type) => call_incref_global_bind(wasm_mod, env, arg)
+      | MGlobalBind(_) => arg
       | MClosureBind(_) => call_incref_closure_bind(wasm_mod, env, arg)
       | _ => call_incref(wasm_mod, env, arg)
       }
@@ -1058,10 +1061,13 @@ let compile_bind =
     | _ when skip_decref => arg /* This case is used for storing swap values that have freshly been heap-allocated. */
     | typ when typ === Type.int32 =>
       switch (b) {
-      | MArgBind(_) => call_decref_arg_bind(wasm_mod, env, arg)
-      | MLocalBind(_) => call_decref_local_bind(wasm_mod, env, arg)
+      | MArgBind(_, I32Type) => call_decref_arg_bind(wasm_mod, env, arg)
+      | MArgBind(_) => arg
+      | MLocalBind(_, I32Type) => call_decref_local_bind(wasm_mod, env, arg)
+      | MLocalBind(_) => arg
       | MSwapBind(_) => call_decref_swap_bind(wasm_mod, env, arg)
-      | MGlobalBind(_) => call_decref_global_bind(wasm_mod, env, arg)
+      | MGlobalBind(_, I32Type) => call_decref_global_bind(wasm_mod, env, arg)
+      | MGlobalBind(_) => arg
       | MClosureBind(_) => call_decref_closure_bind(wasm_mod, env, arg)
       | _ => call_decref(wasm_mod, env, arg)
       }
@@ -1073,7 +1079,7 @@ let compile_bind =
     };
 
   switch (b) {
-  | MArgBind(i) =>
+  | MArgBind(i, _) =>
     /* No adjustments are needed for argument bindings */
     let slot = Int32.to_int(i);
     switch (action) {
@@ -1124,9 +1130,15 @@ let compile_bind =
         typ,
       )
     };
-  | MLocalBind(i) =>
+  | MLocalBind(i, wasm_ty) =>
     /* Local bindings need to be offset to account for arguments and swap variables */
     let slot = env.num_args + Array.length(swap_slots) + Int32.to_int(i);
+    let typ = switch (wasm_ty) {
+      | I32Type => Type.int32
+      | I64Type => Type.int64
+      | F32Type => Type.float32
+      | F64Type => Type.float64
+    };
     switch (action) {
     | BindGet => Expression.local_get(wasm_mod, slot, typ)
     | BindSet(arg) =>
@@ -1226,10 +1238,16 @@ let compile_bind =
         typ,
       )
     };
-  | MGlobalBind(i) =>
+  | MGlobalBind(i, wasm_ty) =>
     /* Global bindings need to be offset to account for any imports */
     let slot =
       Printf.sprintf("global_%d") @@ env.global_offset + Int32.to_int(i);
+      let typ = switch (wasm_ty) {
+      | I32Type => Type.int32
+      | I64Type => Type.int64
+      | F32Type => Type.float32
+      | F64Type => Type.float64
+    };
     switch (action) {
     | BindGet => Expression.global_get(wasm_mod, slot, typ)
     | BindSet(arg) =>
