@@ -128,6 +128,14 @@ let prim1_type =
   | WasmUnaryI32({boolean: false}) => (
       Builtin_types.type_wasmi32,
       Builtin_types.type_wasmi32,
+    )
+  | WasmUnaryI64({boolean: true}) => (
+      Builtin_types.type_wasmi64,
+      Builtin_types.type_bool,
+    )
+  | WasmUnaryI64({boolean: false}) => (
+      Builtin_types.type_wasmi64,
+      Builtin_types.type_wasmi64,
     );
 
 let prim2_type =
@@ -201,10 +209,21 @@ let prim2_type =
       Builtin_types.type_bool,
     )
   | WasmLoadI32
+  | WasmLoadI64
   | WasmBinaryI32({boolean: false}) => (
       Builtin_types.type_wasmi32,
       Builtin_types.type_wasmi32,
       Builtin_types.type_wasmi32,
+    )
+  | WasmBinaryI64({boolean: true}) => (
+      Builtin_types.type_wasmi64,
+      Builtin_types.type_wasmi64,
+      Builtin_types.type_bool,
+    )
+  | WasmBinaryI64({boolean: false}) => (
+      Builtin_types.type_wasmi64,
+      Builtin_types.type_wasmi64,
+      Builtin_types.type_wasmi64,
     );
 
 let primn_type =
@@ -213,6 +232,14 @@ let primn_type =
       [
         Builtin_types.type_wasmi32,
         Builtin_types.type_wasmi32,
+        Builtin_types.type_wasmi32,
+      ],
+      Builtin_types.type_void,
+    )
+  | WasmStoreI64 => (
+      [
+        Builtin_types.type_wasmi32,
+        Builtin_types.type_wasmi64,
         Builtin_types.type_wasmi32,
       ],
       Builtin_types.type_void,

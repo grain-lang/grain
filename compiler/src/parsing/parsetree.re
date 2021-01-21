@@ -175,6 +175,10 @@ type prim1 =
   | WasmUnaryI32({
       op: string,
       boolean: bool,
+    })
+  | WasmUnaryI64({
+      op: string,
+      boolean: bool,
     });
 
 /** Two-argument operators */
@@ -207,14 +211,20 @@ type prim2 =
   | Int64Lt
   | Int64Lte
   | WasmLoadI32
+  | WasmLoadI64
   | WasmBinaryI32({
+      op: string,
+      boolean: bool,
+    })
+  | WasmBinaryI64({
       op: string,
       boolean: bool,
     });
 
 [@deriving (sexp, yojson)]
 type primn =
-  | WasmStoreI32;
+  | WasmStoreI32
+  | WasmStoreI64;
 
 [@deriving (sexp, yojson)]
 type attributes = Asttypes.attributes;

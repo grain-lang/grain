@@ -11,14 +11,20 @@ type compilation_env = {
   ce_binds: Ident.tbl(Mashtree.binding),
   /* Useful due to us needing a second pass over exports (for mutual recursion) */
   ce_exported_globals: Ident.tbl(int32),
-  ce_stack_idx: int,
+  ce_stack_idx_i32: int,
+  ce_stack_idx_i64: int,
+  ce_stack_idx_f32: int,
+  ce_stack_idx_f64: int,
   ce_arity: int,
 };
 
 let initial_compilation_env = {
   ce_binds: Ident.empty,
   ce_exported_globals: Ident.empty,
-  ce_stack_idx: 0,
+  ce_stack_idx_i32: 0,
+  ce_stack_idx_i64: 0,
+  ce_stack_idx_f32: 0,
+  ce_stack_idx_f64: 0,
   ce_arity: 0,
 };
 
@@ -32,7 +38,7 @@ type worklist_elt = {
   arity: int,
   idx: int, /* Lambda-lifted index */
   attrs: attributes,
-  stack_size: int,
+  stack_size: Mashtree.stack_size,
   loc: Location.t,
 };
 
@@ -135,10 +141,11 @@ module RegisterAllocation = {
 
   let get_allocation = (var_id, (allocs, _)) => {
     Int32.of_int(IntMap.find(var_id, allocs));
-  }
+  };
 
   let rec apply_allocations =
-          (ty: Mashtree.asmtype, allocs: t, instr: Mashtree.instr): Mashtree.instr => {
+          (ty: Mashtree.asmtype, allocs: t, instr: Mashtree.instr)
+          : Mashtree.instr => {
     let apply_allocation_to_bind =
       fun
       | MLocalBind(n, ity) when ity == ty =>
@@ -202,7 +209,10 @@ module RegisterAllocation = {
         MStore(
           List.map(
             ((b, bk)) =>
-              (apply_allocation_to_bind(b), apply_allocations(ty, allocs, bk)),
+              (
+                apply_allocation_to_bind(b),
+                apply_allocations(ty, allocs, bk),
+              ),
             bs,
           ),
         )
@@ -279,23 +289,41 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
     let rec help = ((ty, acc)) =>
       fun
       | [] => (ty, acc)
-      | [(hd_ty, hd), ...tl] when hd_ty == ty && hd > acc => help((ty, hd), tl)
+      | [(hd_ty, hd), ...tl] when hd_ty == ty && hd > acc =>
+        help((ty, hd), tl)
       | [_, ...tl] => help((ty, acc), tl);
-    let (_, i32) = help((I32Type, 0), List.map(((_, lst)) => help((I32Type, 0), lst), instr_live_sets));
-    let (_, i64) = help((I64Type, 0), List.map(((_, lst)) => help((I64Type, 0), lst), instr_live_sets));
-    let (_, f32) = help((F32Type, 0), List.map(((_, lst)) => help((F32Type, 0), lst), instr_live_sets));
-    let (_, f64) = help((F64Type, 0), List.map(((_, lst)) => help((F64Type, 0), lst), instr_live_sets));
-    (i32 + 1, i64 + 1, f32 + 1, f64 + 1)
+    let (_, i32) =
+      help(
+        (I32Type, 0),
+        List.map(((_, lst)) => help((I32Type, 0), lst), instr_live_sets),
+      );
+    let (_, i64) =
+      help(
+        (I64Type, 0),
+        List.map(((_, lst)) => help((I64Type, 0), lst), instr_live_sets),
+      );
+    let (_, f32) =
+      help(
+        (F32Type, 0),
+        List.map(((_, lst)) => help((F32Type, 0), lst), instr_live_sets),
+      );
+    let (_, f64) =
+      help(
+        (F64Type, 0),
+        List.map(((_, lst)) => help((F64Type, 0), lst), instr_live_sets),
+      );
+    (i32 + 1, i64 + 1, f32 + 1, f64 + 1);
   };
   /* Printf.eprintf "Live sets:\n";
      List.iter (fun (i, items) -> Printf.eprintf "%d -> [%s]\n" i (BatString.join ", " (List.map string_of_int items))) instr_live_sets; */
   let run = (ty, instrs) => {
-    let num_locals = switch (ty) {
+    let num_locals =
+      switch (ty) {
       | I32Type => num_locals_i32
       | I64Type => num_locals_i64
       | F32Type => num_locals_f32
       | F64Type => num_locals_f64
-    };
+      };
     if (num_locals < 2) {
       instrs;
     } else {
@@ -327,15 +355,14 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
           | [(idx, items), ...tl] => {
               let with_items: IntMap.t(list(int)) =
                 List.fold_left(
-                  (acc, (item_ty, cur)) => {
+                  (acc, (item_ty, cur)) =>
                     if (item_ty == ty) {
-                    let existing_elts: list(int) =
-                      Option.value(~default=[], IntMap.find_opt(cur, acc));
-                    IntMap.add(cur, [idx, ...existing_elts], acc);
+                      let existing_elts: list(int) =
+                        Option.value(~default=[], IntMap.find_opt(cur, acc));
+                      IntMap.add(cur, [idx, ...existing_elts], acc);
                     } else {
-                      acc
-                    }
-                  },
+                      acc;
+                    },
                   acc,
                   items,
                 );
@@ -352,20 +379,24 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
           }
         ) @@
         List.map(
-          ((binding, indices)) => (binding, (min(indices), max(indices))),
+          ((binding, indices)) =>
+            (binding, (min(indices), max(indices))),
           IntMap.bindings(interval_map),
         );
       };
       /* Modified version of Linear-scan register allocation; we don't need to spill, since we are optimizing with an
-        unbounded number of memory locations */
+         unbounded number of memory locations */
       /* Printf.eprintf "Intervals:\n";
-        List.iter (fun (v, (si, ei)) -> Printf.eprintf "%d: [%d,%d]\n" v si ei) live_intervals; */
+         List.iter (fun (v, (si, ei)) -> Printf.eprintf "%d: [%d,%d]\n" v si ei) live_intervals; */
       let expire_old_intervals = (current_instr, allocs, active) => {
         let rec help = ((allocs, active)) =>
           fun
           | [] => (allocs, active)
           | [(var_id, (_, max)), ...tl] when max < current_instr =>
-            help((RegisterAllocation.release_var(var_id, allocs), active), tl)
+            help(
+              (RegisterAllocation.release_var(var_id, allocs), active),
+              tl,
+            )
           | [hd, ...tl] => help((allocs, [hd, ...active]), tl);
         help((allocs, []), active);
       };
@@ -382,15 +413,12 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
           live_intervals,
         );
       /* Printf.eprintf "Allocations:\n";
-        List.iter (fun (var_id, reg_id) -> Printf.eprintf "%d --> %d\n" var_id reg_id) (IntMap.bindings (RegisterAllocation.get_allocations allocs)); */
+         List.iter (fun (var_id, reg_id) -> Printf.eprintf "%d --> %d\n" var_id reg_id) (IntMap.bindings (RegisterAllocation.get_allocations allocs)); */
       /* List.map (RegisterAllocation.apply_allocations allocs) instrs */
       instrs;
     };
   };
-  run(I32Type, instrs) |>
-  run(I64Type) |>
-  run(F32Type) |>
-  run(F64Type)
+  run(I32Type, instrs) |> run(I64Type) |> run(F32Type) |> run(F64Type);
 };
 
 let compile_const = (c: Asttypes.constant) =>
@@ -441,11 +469,15 @@ let compile_lambda = (env, args, body, attrs, loc): Mashtree.closure_data => {
     );
   let idx = next_lift();
   let arity = List.length(new_args);
-  let stack_size = Anf_utils.anf_count_vars(body);
+  let (stack_size_i32, stack_size_i64, stack_size_f32, stack_size_f64) =
+    Anf_utils.anf_count_vars(body);
   let lam_env = {
     ...env,
     ce_binds: arg_binds,
-    ce_stack_idx: 0,
+    ce_stack_idx_i32: 0,
+    ce_stack_idx_i64: 0,
+    ce_stack_idx_f32: 0,
+    ce_stack_idx_f64: 0,
     ce_arity: arity,
   };
   let worklist_item = {
@@ -454,7 +486,12 @@ let compile_lambda = (env, args, body, attrs, loc): Mashtree.closure_data => {
     idx,
     arity,
     attrs,
-    stack_size,
+    stack_size: {
+      stack_size_i32,
+      stack_size_i64,
+      stack_size_f32,
+      stack_size_f64,
+    },
     loc,
   };
   worklist_enqueue(worklist_item);
@@ -472,7 +509,9 @@ let compile_wrapper = (env, func_name, arity): Mashtree.closure_data => {
       instr_desc:
         MCallKnown(
           func_name,
-          List.init(arity, i => MImmBinding(MArgBind(Int32.of_int(i + 1), I32Type))),
+          List.init(arity, i =>
+            MImmBinding(MArgBind(Int32.of_int(i + 1), I32Type))
+          ),
         ),
       instr_loc: Location.dummy_loc,
     },
@@ -481,7 +520,10 @@ let compile_wrapper = (env, func_name, arity): Mashtree.closure_data => {
   let lam_env = {
     ...env,
     ce_binds: Ident.empty,
-    ce_stack_idx: 0,
+    ce_stack_idx_i32: 0,
+    ce_stack_idx_i64: 0,
+    ce_stack_idx_f32: 0,
+    ce_stack_idx_f64: 0,
     ce_arity: arity + 1,
   };
   let worklist_item = {
@@ -489,7 +531,12 @@ let compile_wrapper = (env, func_name, arity): Mashtree.closure_data => {
     env: lam_env,
     idx,
     arity: arity + 1,
-    stack_size: 0,
+    stack_size: {
+      stack_size_i32: 0,
+      stack_size_i64: 0,
+      stack_size_f32: 0,
+      stack_size_f64: 0,
+    },
     attrs: [],
     loc: Location.dummy_loc,
   };
@@ -508,7 +555,8 @@ let next_global = (~exported=false, id) => {
   } else {
     let body = [
       {
-        instr_desc: MImmediate(MImmBinding(MGlobalBind(Int32.of_int(ret), I32Type))),
+        instr_desc:
+          MImmediate(MImmBinding(MGlobalBind(Int32.of_int(ret), I32Type))),
         instr_loc: Location.dummy_loc,
       },
     ];
@@ -517,7 +565,12 @@ let next_global = (~exported=false, id) => {
       env: initial_compilation_env,
       idx,
       arity: 0, /* <- this function cannot be called by the user, so no self argument is needed. */
-      stack_size: 0,
+      stack_size: {
+        stack_size_i32: 0,
+        stack_size_i64: 0,
+        stack_size_f32: 0,
+        stack_size_f64: 0,
+      },
       attrs: [],
       loc: Location.dummy_loc,
     };
@@ -655,32 +708,54 @@ and compile_anf_expr = (env, a) =>
       ...compile_anf_expr(env, tl),
     ]
   | AELet(global, recflag, binds, body) =>
-    let get_loc = (idx, (id, {comp_allocation_type})) => {
-      let asmtype = switch (comp_allocation_type) {
-        | HeapAllocated
-        | StackAllocated(WasmI32) => I32Type
-        | StackAllocated(WasmI64) => I64Type
-        | StackAllocated(WasmF32) => F32Type
-        | StackAllocated(WasmF64) => F64Type
-      };
-      switch (global) {
-      | Global => MGlobalBind(Int32.of_int(next_global(~exported=true, id)), asmtype)
-      | Nonglobal => MLocalBind(Int32.of_int(env.ce_stack_idx + idx), asmtype)
+    let rec get_locs = (env, binds) => {
+      switch (binds) {
+      | [(id, {comp_allocation_type}), ...rest] =>
+        let (asmtype, stack_idx, next_env) =
+          switch (comp_allocation_type) {
+          | HeapAllocated
+          | StackAllocated(WasmI32) => (
+              I32Type,
+              env.ce_stack_idx_i32,
+              {...env, ce_stack_idx_i32: env.ce_stack_idx_i32 + 1},
+            )
+          | StackAllocated(WasmI64) => (
+              I64Type,
+              env.ce_stack_idx_i64,
+              {...env, ce_stack_idx_i64: env.ce_stack_idx_i64 + 1},
+            )
+          | StackAllocated(WasmF32) => (
+              F32Type,
+              env.ce_stack_idx_f32,
+              {...env, ce_stack_idx_f32: env.ce_stack_idx_f32 + 1},
+            )
+          | StackAllocated(WasmF64) => (
+              F64Type,
+              env.ce_stack_idx_f64,
+              {...env, ce_stack_idx_f64: env.ce_stack_idx_f64 + 1},
+            )
+          };
+        let (env, loc) =
+          switch (global) {
+          | Global => (
+              env,
+              MGlobalBind(
+                Int32.of_int(next_global(~exported=true, id)),
+                asmtype,
+              ),
+            )
+          | Nonglobal => (
+              next_env,
+              MLocalBind(Int32.of_int(stack_idx), asmtype),
+            )
+          };
+        let env = {...env, ce_binds: Ident.add(id, loc, env.ce_binds)};
+        let (new_env, locs) = get_locs(env, rest);
+        (new_env, [loc, ...locs]);
+      | [] => (env, [])
       };
     };
-    let locations = List.mapi(get_loc, binds);
-    let new_env =
-      List.fold_left2(
-        (acc, new_loc, (id, _)) =>
-          {
-            ...acc,
-            ce_binds: Ident.add(id, new_loc, acc.ce_binds),
-            ce_stack_idx: acc.ce_stack_idx + 1,
-          },
-        env,
-        locations,
-        binds,
-      );
+    let (new_env, locations) = get_locs(env, binds);
     switch (recflag) {
     | Nonrecursive =>
       List.fold_right2(
@@ -886,7 +961,14 @@ let transl_anf_program =
 
   let (imports, setups, env) =
     lift_imports(initial_compilation_env, anf_prog.imports);
-  let main_body_stack_size = Anf_utils.anf_count_vars(anf_prog.body);
+  let (stack_size_i32, stack_size_i64, stack_size_f32, stack_size_f64) =
+    Anf_utils.anf_count_vars(anf_prog.body);
+  let main_body_stack_size = {
+    stack_size_i32,
+    stack_size_i64,
+    stack_size_f32,
+    stack_size_f64,
+  };
   let main_body =
     run_register_allocation @@ setups @ compile_anf_expr(env, anf_prog.body);
   let exports = global_exports();

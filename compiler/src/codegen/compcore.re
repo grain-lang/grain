@@ -18,7 +18,7 @@ type codegen_env = {
   num_args: int,
   func_offset: int,
   global_offset: int,
-  stack_size: int,
+  stack_size,
   import_global_offset: int,
   import_func_offset: int,
   import_offset: int,
@@ -436,7 +436,12 @@ let init_codegen_env = () => {
   num_args: 0,
   func_offset: 0,
   global_offset: 2,
-  stack_size: 0,
+  stack_size: {
+    stack_size_i32: 0,
+    stack_size_i64: 0,
+    stack_size_f32: 0,
+    stack_size_f64: 0,
+  },
   import_global_offset: 0,
   import_func_offset: 0,
   import_offset: 0,
@@ -1000,7 +1005,7 @@ type bind_action =
 let cleanup_local_slot_instructions = (wasm_mod, env: codegen_env) => {
   let instrs =
     List.init(
-      env.stack_size,
+      env.stack_size.stack_size_i32,
       i => {
         let slot_no = i + env.num_args + Array.length(swap_slots);
         let args = [Expression.local_get(wasm_mod, slot_no, Type.int32)];
@@ -1044,7 +1049,8 @@ let compile_bind =
       | MLocalBind(_, I32Type) => call_incref_local_bind(wasm_mod, env, arg)
       | MLocalBind(_) => arg
       | MSwapBind(_) => call_incref_swap_bind(wasm_mod, env, arg)
-      | MGlobalBind(_, I32Type) => call_incref_global_bind(wasm_mod, env, arg)
+      | MGlobalBind(_, I32Type) =>
+        call_incref_global_bind(wasm_mod, env, arg)
       | MGlobalBind(_) => arg
       | MClosureBind(_) => call_incref_closure_bind(wasm_mod, env, arg)
       | _ => call_incref(wasm_mod, env, arg)
@@ -1066,7 +1072,8 @@ let compile_bind =
       | MLocalBind(_, I32Type) => call_decref_local_bind(wasm_mod, env, arg)
       | MLocalBind(_) => arg
       | MSwapBind(_) => call_decref_swap_bind(wasm_mod, env, arg)
-      | MGlobalBind(_, I32Type) => call_decref_global_bind(wasm_mod, env, arg)
+      | MGlobalBind(_, I32Type) =>
+        call_decref_global_bind(wasm_mod, env, arg)
       | MGlobalBind(_) => arg
       | MClosureBind(_) => call_decref_closure_bind(wasm_mod, env, arg)
       | _ => call_decref(wasm_mod, env, arg)
@@ -1132,13 +1139,37 @@ let compile_bind =
     };
   | MLocalBind(i, wasm_ty) =>
     /* Local bindings need to be offset to account for arguments and swap variables */
-    let slot = env.num_args + Array.length(swap_slots) + Int32.to_int(i);
-    let typ = switch (wasm_ty) {
-      | I32Type => Type.int32
-      | I64Type => Type.int64
-      | F32Type => Type.float32
-      | F64Type => Type.float64
-    };
+    let (typ, slot) =
+      switch (wasm_ty) {
+      | I32Type => (
+          Type.int32,
+          env.num_args + Array.length(swap_slots) + Int32.to_int(i),
+        )
+      | I64Type => (
+          Type.int64,
+          env.num_args
+          + Array.length(swap_slots)
+          + env.stack_size.stack_size_i32
+          + Int32.to_int(i),
+        )
+      | F32Type => (
+          Type.float32,
+          env.num_args
+          + Array.length(swap_slots)
+          + env.stack_size.stack_size_i32
+          + env.stack_size.stack_size_i64
+          + Int32.to_int(i),
+        )
+      | F64Type => (
+          Type.float64,
+          env.num_args
+          + Array.length(swap_slots)
+          + env.stack_size.stack_size_i32
+          + env.stack_size.stack_size_i64
+          + env.stack_size.stack_size_f32
+          + Int32.to_int(i),
+        )
+      };
     switch (action) {
     | BindGet => Expression.local_get(wasm_mod, slot, typ)
     | BindSet(arg) =>
@@ -1242,12 +1273,13 @@ let compile_bind =
     /* Global bindings need to be offset to account for any imports */
     let slot =
       Printf.sprintf("global_%d") @@ env.global_offset + Int32.to_int(i);
-      let typ = switch (wasm_ty) {
+    let typ =
+      switch (wasm_ty) {
       | I32Type => Type.int32
       | I64Type => Type.int64
       | F32Type => Type.float32
       | F64Type => Type.float64
-    };
+      };
     switch (action) {
     | BindGet => Expression.global_get(wasm_mod, slot, typ)
     | BindSet(arg) =>
@@ -2935,7 +2967,8 @@ let compile_prim1 = (wasm_mod, env, p1, arg): Expression.t => {
   | Unbox => failwith("Unreachable case; should never get here: Unbox")
   | WasmOfGrain
   | WasmToGrain => compiled_arg // These are no-ops
-  | WasmUnaryI32({op, boolean}) =>
+  | WasmUnaryI32({op, boolean})
+  | WasmUnaryI64({op, boolean}) =>
     compile_wasm_prim1(wasm_mod, env, op, ~boolean, compiled_arg)
   };
 };
@@ -3009,7 +3042,21 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
       // failwith("Offset provided to store operation must be an immediate.")
       load(wasm_mod, compiled_arg1())
     }
-  | WasmBinaryI32({op, boolean}) =>
+  | WasmLoadI64 =>
+    switch (arg2) {
+    | MImmConst(MConstLiteral(MConstI32(offset))) =>
+      load(
+        ~ty=Type.int64,
+        ~offset=Int32.to_int(offset),
+        wasm_mod,
+        compiled_arg1(),
+      )
+    | _ =>
+      // failwith("Offset provided to store operation must be an immediate.")
+      load(wasm_mod, compiled_arg1())
+    }
+  | WasmBinaryI32({op, boolean})
+  | WasmBinaryI64({op, boolean}) =>
     compile_wasm_prim2(
       wasm_mod,
       env,
@@ -3047,6 +3094,40 @@ let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
         gensym_label("wasm_prim_store"),
         [
           store(
+            wasm_mod,
+            compile_imm(wasm_mod, env, List.nth(args, 0)),
+            compile_imm(wasm_mod, env, List.nth(args, 1)),
+          ),
+          Expression.const(wasm_mod, const_void()),
+        ],
+      )
+    }
+  | WasmStoreI64 =>
+    switch (List.nth(args, 2)) {
+    | MImmConst(MConstLiteral(MConstI32(offset))) =>
+      Expression.block(
+        wasm_mod,
+        gensym_label("wasm_prim_store"),
+        [
+          store(
+            ~ty=Type.int64,
+            ~offset=Int32.to_int(offset),
+            wasm_mod,
+            compile_imm(wasm_mod, env, List.nth(args, 0)),
+            compile_imm(wasm_mod, env, List.nth(args, 1)),
+          ),
+          Expression.const(wasm_mod, const_void()),
+        ],
+      )
+
+    | _ =>
+      // failwith("Offset provided to store operation must be an immediate.")
+      Expression.block(
+        wasm_mod,
+        gensym_label("wasm_prim_store"),
+        [
+          store(
+            ~ty=Type.int64,
             wasm_mod,
             compile_imm(wasm_mod, env, List.nth(args, 0)),
             compile_imm(wasm_mod, env, List.nth(args, 1)),
@@ -3393,9 +3474,14 @@ let compile_function =
       ),
     );
   let locals =
-    List.init(stack_size, n => Type.int32)
-    |> Array.of_list
-    |> Array.append(swap_slots);
+    [
+      swap_slots,
+      Array.make(stack_size.stack_size_i32, Type.int32),
+      Array.make(stack_size.stack_size_i64, Type.int64),
+      Array.make(stack_size.stack_size_f32, Type.float32),
+      Array.make(stack_size.stack_size_f64, Type.float64),
+    ]
+    |> Array.concat;
   let func_ref =
     Function.add_function(
       wasm_mod,
@@ -3684,7 +3770,8 @@ exception WasmRunnerError(Module.t, option(string), string);
 let validate_module = (~name=?, wasm_mod: Module.t) =>
   try(assert(Module.validate(wasm_mod) == 1)) {
   | Assert_failure(_) =>
-    raise(WasmRunnerError(wasm_mod, name, "WARNING: Invalid module"))
+    Module.print(wasm_mod);
+    raise(WasmRunnerError(wasm_mod, name, "WARNING: Invalid module"));
   };
 
 let prepare = (env, {imports} as prog) => {

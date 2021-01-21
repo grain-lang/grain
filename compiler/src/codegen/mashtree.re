@@ -53,6 +53,10 @@ type prim1 =
     | WasmUnaryI32({
         op: string,
         boolean: bool,
+      })
+    | WasmUnaryI64({
+        op: string,
+        boolean: bool,
       });
 
 type prim2 =
@@ -83,12 +87,17 @@ type prim2 =
     | Int64Lt
     | Int64Lte
     | WasmLoadI32
+    | WasmLoadI64
     | WasmBinaryI32({
+        op: string,
+        boolean: bool,
+      })
+    | WasmBinaryI64({
         op: string,
         boolean: bool,
       });
 
-type primn = Parsetree.primn = | WasmStoreI32;
+type primn = Parsetree.primn = | WasmStoreI32 | WasmStoreI64;
 
 /* Types within the WASM output */
 [@deriving sexp]
@@ -257,9 +266,15 @@ type mash_function = {
   index: int32,
   arity: int32, /* TODO: Proper typing of arguments */
   body: block,
-  stack_size: int,
+  stack_size,
   attrs: attributes,
   func_loc: Location.t,
+}
+and stack_size = {
+  stack_size_i32: int,
+  stack_size_i64: int,
+  stack_size_f32: int,
+  stack_size_f64: int,
 };
 
 [@deriving sexp]
@@ -268,7 +283,7 @@ type mash_program = {
   imports: list(import),
   exports: list(export),
   main_body: block,
-  main_body_stack_size: int,
+  main_body_stack_size: stack_size,
   num_globals: int,
   signature: Cmi_format.cmi_infos,
 };

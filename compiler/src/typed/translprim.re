@@ -76,6 +76,8 @@ let prim_map =
       ("@float64.toNumber", Primitive1(Float64ToNumber)),
       ("@wasm.load_i32", Primitive2(WasmLoadI32)),
       ("@wasm.store_i32", PrimitiveN(WasmStoreI32)),
+      ("@wasm.load_i64", Primitive2(WasmLoadI64)),
+      ("@wasm.store_i64", PrimitiveN(WasmStoreI64)),
       (
         "@wasm.clz_i32",
         Primitive1(WasmUnaryI32({op: "clz_i32", boolean: false})),
@@ -192,6 +194,122 @@ let prim_map =
         "@wasm.ge_u_i32",
         Primitive2(WasmBinaryI32({op: "ge_u_i32", boolean: true})),
       ),
+      (
+        "@wasm.clz_i64",
+        Primitive1(WasmUnaryI64({op: "clz_i64", boolean: false})),
+      ),
+      (
+        "@wasm.ctz_i64",
+        Primitive1(WasmUnaryI64({op: "ctz_i64", boolean: false})),
+      ),
+      (
+        "@wasm.popcnt_i64",
+        Primitive1(WasmUnaryI64({op: "popcnt_i64", boolean: false})),
+      ),
+      (
+        "@wasm.eq_z_i64",
+        Primitive1(WasmUnaryI64({op: "eq_z_i64", boolean: true})),
+      ),
+      (
+        "@wasm.add_i64",
+        Primitive2(WasmBinaryI64({op: "add_i64", boolean: false})),
+      ),
+      (
+        "@wasm.sub_i64",
+        Primitive2(WasmBinaryI64({op: "sub_i64", boolean: false})),
+      ),
+      (
+        "@wasm.mul_i64",
+        Primitive2(WasmBinaryI64({op: "mul_i64", boolean: false})),
+      ),
+      (
+        "@wasm.div_s_i64",
+        Primitive2(WasmBinaryI64({op: "div_s_i64", boolean: false})),
+      ),
+      (
+        "@wasm.div_u_i64",
+        Primitive2(WasmBinaryI64({op: "div_u_i64", boolean: false})),
+      ),
+      (
+        "@wasm.rem_s_i64",
+        Primitive2(WasmBinaryI64({op: "rem_s_i64", boolean: false})),
+      ),
+      (
+        "@wasm.rem_u_i64",
+        Primitive2(WasmBinaryI64({op: "rem_u_i64", boolean: false})),
+      ),
+      (
+        "@wasm.and_i64",
+        Primitive2(WasmBinaryI64({op: "and_i64", boolean: false})),
+      ),
+      (
+        "@wasm.or_i64",
+        Primitive2(WasmBinaryI64({op: "or_i64", boolean: false})),
+      ),
+      (
+        "@wasm.xor_i64",
+        Primitive2(WasmBinaryI64({op: "xor_i64", boolean: false})),
+      ),
+      (
+        "@wasm.shl_i64",
+        Primitive2(WasmBinaryI64({op: "shl_i64", boolean: false})),
+      ),
+      (
+        "@wasm.shr_u_i64",
+        Primitive2(WasmBinaryI64({op: "shr_u_i64", boolean: false})),
+      ),
+      (
+        "@wasm.shr_s_i64",
+        Primitive2(WasmBinaryI64({op: "shr_s_i64", boolean: false})),
+      ),
+      (
+        "@wasm.rot_l_i64",
+        Primitive2(WasmBinaryI64({op: "rot_l_i64", boolean: false})),
+      ),
+      (
+        "@wasm.rot_r_i64",
+        Primitive2(WasmBinaryI64({op: "rot_r_i64", boolean: false})),
+      ),
+      (
+        "@wasm.eq_i64",
+        Primitive2(WasmBinaryI64({op: "eq_i64", boolean: true})),
+      ),
+      (
+        "@wasm.ne_i64",
+        Primitive2(WasmBinaryI64({op: "ne_i64", boolean: true})),
+      ),
+      (
+        "@wasm.lt_s_i64",
+        Primitive2(WasmBinaryI64({op: "lt_s_i64", boolean: true})),
+      ),
+      (
+        "@wasm.lt_u_i64",
+        Primitive2(WasmBinaryI64({op: "lt_u_i64", boolean: true})),
+      ),
+      (
+        "@wasm.le_s_i64",
+        Primitive2(WasmBinaryI64({op: "le_s_i64", boolean: true})),
+      ),
+      (
+        "@wasm.le_u_i64",
+        Primitive2(WasmBinaryI64({op: "le_u_i64", boolean: true})),
+      ),
+      (
+        "@wasm.gt_s_i64",
+        Primitive2(WasmBinaryI64({op: "gt_s_i64", boolean: true})),
+      ),
+      (
+        "@wasm.gt_u_i64",
+        Primitive2(WasmBinaryI64({op: "gt_u_i64", boolean: true})),
+      ),
+      (
+        "@wasm.ge_s_i64",
+        Primitive2(WasmBinaryI64({op: "ge_s_i64", boolean: true})),
+      ),
+      (
+        "@wasm.ge_u_i64",
+        Primitive2(WasmBinaryI64({op: "ge_u_i64", boolean: true})),
+      ),
       ("@wasm.ofGrain", Primitive1(WasmOfGrain)),
       ("@wasm.toGrain", Primitive1(WasmToGrain)),
     ]),
@@ -216,6 +334,9 @@ let transl_prim = (env, desc) => {
         [pat_a],
         Exp.prim1(~loc, p, id_a),
       )
+    | Primitive1(WasmUnaryI64(_)) =>
+      // HACK for now
+      Exp.lambda(~loc, ~attributes=diable_gc, [pat_a], id_a)
     | Primitive1(p) => Exp.lambda(~loc, [pat_a], Exp.prim1(~loc, p, id_a))
     | Primitive2((WasmBinaryI32(_) | WasmLoadI32) as p) =>
       Exp.lambda(
@@ -224,6 +345,9 @@ let transl_prim = (env, desc) => {
         [pat_a, pat_b],
         Exp.prim2(~loc, p, id_a, id_b),
       )
+    | Primitive2(WasmBinaryI64(_) | WasmLoadI64) =>
+      // HACK for now
+      Exp.lambda(~loc, ~attributes=diable_gc, [pat_a, pat_b], id_a)
     | Primitive2(p) =>
       Exp.lambda(~loc, [pat_a, pat_b], Exp.prim2(~loc, p, id_a, id_b))
     | PrimitiveN(WasmStoreI32 as p) =>
@@ -233,6 +357,9 @@ let transl_prim = (env, desc) => {
         [pat_a, pat_b, pat_c],
         Exp.primn(~loc, p, [id_a, id_b, id_c]),
       )
+    | PrimitiveN(WasmStoreI64) =>
+      // HACK for now
+      Exp.lambda(~loc, ~attributes=diable_gc, [pat_a, pat_b, pat_c], id_a)
     };
 
   let binds = [

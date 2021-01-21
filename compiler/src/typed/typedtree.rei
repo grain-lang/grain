@@ -51,6 +51,10 @@ type prim1 =
     | WasmUnaryI32({
         op: string,
         boolean: bool,
+      })
+    | WasmUnaryI64({
+        op: string,
+        boolean: bool,
       });
 
 type prim2 =
@@ -81,12 +85,17 @@ type prim2 =
     | Int64Lt
     | Int64Lte
     | WasmLoadI32
+    | WasmLoadI64
     | WasmBinaryI32({
+        op: string,
+        boolean: bool,
+      })
+    | WasmBinaryI64({
         op: string,
         boolean: bool,
       });
 
-type primn = Parsetree.primn = | WasmStoreI32;
+type primn = Parsetree.primn = | WasmStoreI32 | WasmStoreI64;
 
 type core_type = {
   ctyp_desc: core_type_desc,
