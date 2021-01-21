@@ -597,13 +597,13 @@ let rec compile_comp = (env, c) => {
     | CLambda(args, body) =>
       MAllocate(MClosure(compile_lambda(env, args, body, c.comp_loc)))
     | CApp(f, args, true) =>
-      /* TODO: Utilize MCallKnown */
+      /* TODO: Utilize MReturnCallKnown */
 
       MReturnCallIndirect(
         compile_imm(env, f),
         List.map(compile_imm(env), args),
       )
-    | CApp(f, args, _) =>
+    | CApp(f, args, false) =>
       /* TODO: Utilize MCallKnown */
 
       MCallIndirect(compile_imm(env, f), List.map(compile_imm(env), args))
