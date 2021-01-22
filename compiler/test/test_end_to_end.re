@@ -922,7 +922,7 @@ let gc = [
     "(1, 2)",
   ),
   tgcfile("fib_gc_err", 1024, "fib-gc", "Out of memory"),
-  tgcfile("fib_gc", 4000, "fib-gc", "832040"),
+  tgcfile("fib_gc", 3424, "fib-gc", "832040"),
   /* tgcfile "fib_gc_bigger" 3072 "fib-gc" "832040";
      tgcfile "fib_gc_biggest" 512 "fib-gc" "832040"; */
   /* I've manually tested this test, but see TODO for automated testing */
