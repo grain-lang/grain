@@ -43,7 +43,7 @@ let rec analyze_comp_expression =
     /* While this lambda itself is not in tail position, we still want to analyze the body. */
     ignore @@ analyze_anf_expression(true, body);
     false;
-  | CApp({imm_desc: ImmId(id)}, _) =>
+  | CApp({imm_desc: ImmId(id)}, _, _) =>
     if (is_tail) {
       push_tail_call(analyses);
     };

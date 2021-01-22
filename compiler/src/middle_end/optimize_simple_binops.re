@@ -39,6 +39,7 @@ module ConstantFoldingArg: Anf_mapper.MapArgument = {
     | CApp(
         {imm_desc: ImmId({name})},
         [{imm_desc: ImmConst(x)} as i, {imm_desc: ImmConst(y)}],
+        _,
       ) =>
       let wrap_imm = imm => {
         ...c,

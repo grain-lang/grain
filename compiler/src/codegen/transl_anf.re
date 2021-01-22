@@ -171,6 +171,11 @@ module RegisterAllocation = {
           apply_allocation_to_imm(imm),
           List.map(apply_allocation_to_imm, is),
         )
+      | MReturnCallIndirect(imm, is) =>
+        MReturnCallIndirect(
+          apply_allocation_to_imm(imm),
+          List.map(apply_allocation_to_imm, is),
+        )
       | MIf(c, t, f) =>
         MIf(
           apply_allocation_to_imm(c),
@@ -242,6 +247,8 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
     | MCallKnown(_, is)
     | MError(_, is) => List.concat(List.map(imm_live_local, is))
     | MCallIndirect(imm, is) =>
+      List.concat(List.map(imm_live_local, is)) @ imm_live_local(imm)
+    | MReturnCallIndirect(imm, is) =>
       List.concat(List.map(imm_live_local, is)) @ imm_live_local(imm)
     | MIf(c, t, f) =>
       imm_live_local(c) @ block_live_locals(t) @ block_live_locals(f)
@@ -589,7 +596,14 @@ let rec compile_comp = (env, c) => {
       )
     | CLambda(args, body) =>
       MAllocate(MClosure(compile_lambda(env, args, body, c.comp_loc)))
-    | CApp(f, args) =>
+    | CApp(f, args, true) =>
+      /* TODO: Utilize MReturnCallKnown */
+
+      MReturnCallIndirect(
+        compile_imm(env, f),
+        List.map(compile_imm(env), args),
+      )
+    | CApp(f, args, false) =>
       /* TODO: Utilize MCallKnown */
 
       MCallIndirect(compile_imm(env, f), List.map(compile_imm(env), args))

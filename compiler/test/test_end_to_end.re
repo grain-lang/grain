@@ -922,7 +922,7 @@ let gc = [
     "(1, 2)",
   ),
   tgcfile("fib_gc_err", 1024, "fib-gc", "Out of memory"),
-  tgcfile("fib_gc", 3072, "fib-gc", "832040"),
+  tgcfile("fib_gc", 3424, "fib-gc", "832040"),
   /* tgcfile "fib_gc_bigger" 3072 "fib-gc" "832040";
      tgcfile "fib_gc_biggest" 512 "fib-gc" "832040"; */
   /* I've manually tested this test, but see TODO for automated testing */
@@ -1445,7 +1445,13 @@ let optimization_tests = [
                   ),
                 ),
               ],
-              AExp.comp(Comp.app(Imm.id(plus), [Imm.id(a), Imm.id(a)])),
+              AExp.comp(
+                Comp.app(
+                  ~tail=true,
+                  Imm.id(plus),
+                  [Imm.id(a), Imm.id(a)],
+                ),
+              ),
             ),
           ),
         ),
@@ -1465,6 +1471,7 @@ let optimization_tests = [
         AExp.let_(Nonrecursive, [(x, Comp.imm(Imm.id(arg)))]) @@
         AExp.comp @@
         Comp.app(
+          ~tail=true,
           Imm.id(plus),
           [Imm.id(x), Imm.const(Const_number(Const_number_int(1L)))],
         ),
@@ -1517,6 +1524,7 @@ let optimization_tests = [
       ) @@
       AExp.comp @@
       Comp.app(
+        ~tail=true,
         Imm.id(plus),
         [Imm.id(app), Imm.const(Const_number(Const_number_int(5L)))],
       );

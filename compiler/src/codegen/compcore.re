@@ -2107,11 +2107,15 @@ let buf_to_ints = (buf: Buffer.t): list(int64) => {
   List.init(num_ints, i => {Bytes.get_int64_ne(bytes, i * 8)});
 };
 
-let call_lambda = (wasm_mod, env, func, args) => {
+let call_lambda = (~tail=false, wasm_mod, env, func, args) => {
   let compiled_func = () => compile_imm(wasm_mod, env, func);
   let compiled_args = List.map(compile_imm(wasm_mod, env), args);
   let untagged_fn = () => untag(wasm_mod, LambdaTagType, compiled_func());
-  Expression.call_indirect(
+  let instr =
+    if (tail) {Expression.return_call_indirect} else {
+      Expression.call_indirect
+    };
+  instr(
     wasm_mod,
     load(~offset=4, wasm_mod, untagged_fn()),
     [untagged_fn(), ...compiled_args],
@@ -3163,6 +3167,7 @@ let rec compile_store = (wasm_mod, env, binds) => {
             store_bind_no_incref,
           )
         /* HACK: We expect values returned from functions to have a refcount of 1, so we don't increment it when storing */
+        | MReturnCallIndirect(_)
         | MCallIndirect(_)
         | MCallKnown(_)
         | MAllocate(_) => (
@@ -3213,6 +3218,7 @@ and compile_switch = (wasm_mod, env, arg, branches, default) => {
         );
       let default_block_body = compile_block(wasm_mod, env, default);
       Expression.block(
+        ~return_type=Type.int32,
         wasm_mod,
         branch_name,
         [
@@ -3228,6 +3234,7 @@ and compile_switch = (wasm_mod, env, arg, branches, default) => {
       );
     | [(lbl, hd), ...tl] =>
       Expression.block(
+        ~return_type=Type.int32,
         wasm_mod,
         branch_name,
         [
@@ -3250,6 +3257,7 @@ and compile_switch = (wasm_mod, env, arg, branches, default) => {
     };
   };
   Expression.block(
+    ~return_type=Type.int32,
     wasm_mod,
     outer_label,
     [process_branches(0, [], branches)],
@@ -3290,6 +3298,8 @@ and compile_instr = (wasm_mod, env, instr) =>
   | MStore(binds) => compile_store(wasm_mod, env, binds)
 
   | MCallIndirect(func, args) => call_lambda(wasm_mod, env, func, args)
+  | MReturnCallIndirect(func, args) =>
+    call_lambda(~tail=true, wasm_mod, env, func, args)
 
   | MIf(cond, thn, els) =>
     let compiled_cond = compile_imm(wasm_mod, env, cond);
@@ -3761,7 +3771,11 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
       Filename.basename(Option.get(name)),
     );
   };
-  let _ = Module.set_features(wasm_mod, [Features.mvp, Features.multivalue]);
+  let _ =
+    Module.set_features(
+      wasm_mod,
+      [Features.mvp, Features.multivalue, Features.tail_call],
+    );
   let _ =
     Memory.set_memory(wasm_mod, 0, Memory.unlimited, "memory", [], false);
   let () = ignore @@ compile_functions(wasm_mod, env, prog);

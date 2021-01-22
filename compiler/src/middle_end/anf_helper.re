@@ -72,8 +72,8 @@ module Comp = {
     mk(~loc?, ~env?, CWhile(cond, body));
   let switch_ = (~loc=?, ~env=?, arg, branches) =>
     mk(~loc?, ~env?, CSwitch(arg, branches));
-  let app = (~loc=?, ~env=?, func, args) =>
-    mk(~loc?, ~env?, CApp(func, args));
+  let app = (~loc=?, ~env=?, ~tail=false, func, args) =>
+    mk(~loc?, ~env?, CApp(func, args, tail));
   let app_builtin = (~loc=?, ~env=?, modname, name, args) =>
     mk(~loc?, ~env?, CAppBuiltin(modname, name, args));
   let lambda = (~loc=?, ~env=?, args, body) =>
