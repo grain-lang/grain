@@ -3047,8 +3047,15 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
     | MImmConst(MConstLiteral(MConstI32(offset))) =>
       load(~offset=Int32.to_int(offset), wasm_mod, compiled_arg1())
     | _ =>
-      // failwith("Offset provided to store operation must be an immediate.")
-      load(wasm_mod, compiled_arg1())
+      load(
+        wasm_mod,
+        Expression.binary(
+          wasm_mod,
+          Op.add_int32,
+          compiled_arg1(),
+          compiled_arg2(),
+        ),
+      )
     }
   | WasmLoadI64 =>
     switch (arg2) {
@@ -3060,8 +3067,16 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
         compiled_arg1(),
       )
     | _ =>
-      // failwith("Offset provided to store operation must be an immediate.")
-      load(~ty=Type.int64, wasm_mod, compiled_arg1())
+      load(
+        ~ty=Type.int64,
+        wasm_mod,
+        Expression.binary(
+          wasm_mod,
+          Op.add_int32,
+          compiled_arg1(),
+          compiled_arg2(),
+        ),
+      )
     }
   | WasmBinaryI32({op, boolean})
   | WasmBinaryI64({op, boolean}) =>
@@ -3096,14 +3111,18 @@ let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
       )
 
     | _ =>
-      // failwith("Offset provided to store operation must be an immediate.")
       Expression.block(
         wasm_mod,
         gensym_label("wasm_prim_store"),
         [
           store(
             wasm_mod,
-            compile_imm(wasm_mod, env, List.nth(args, 0)),
+            Expression.binary(
+              wasm_mod,
+              Op.add_int32,
+              compile_imm(wasm_mod, env, List.nth(args, 0)),
+              compile_imm(wasm_mod, env, List.nth(args, 2)),
+            ),
             compile_imm(wasm_mod, env, List.nth(args, 1)),
           ),
           Expression.const(wasm_mod, const_void()),
@@ -3137,7 +3156,12 @@ let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
           store(
             ~ty=Type.int64,
             wasm_mod,
-            compile_imm(wasm_mod, env, List.nth(args, 0)),
+            Expression.binary(
+              wasm_mod,
+              Op.add_int32,
+              compile_imm(wasm_mod, env, List.nth(args, 0)),
+              compile_imm(wasm_mod, env, List.nth(args, 2)),
+            ),
             compile_imm(wasm_mod, env, List.nth(args, 1)),
           ),
           Expression.const(wasm_mod, const_void()),
