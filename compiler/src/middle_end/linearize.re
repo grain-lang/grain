@@ -896,8 +896,17 @@ and transl_comp_expression =
       _,
     )
       when Identifier.equal(ident, Identifier.IdentName("()")) =>
-    let body = transl_anf_expression(body);
-    (Comp.lambda(~loc, ~attributes, ~env, [], body), []);
+    let anf_body = transl_anf_expression(body);
+    (
+      Comp.lambda(
+        ~loc,
+        ~attributes,
+        ~env,
+        [],
+        (anf_body, get_allocation_type(body.exp_env, body.exp_type)),
+      ),
+      [],
+    );
   | TExpLambda([{mb_pat, mb_body: body}], _) =>
     switch (mb_pat.pat_desc) {
     | TPatTuple(args) =>
@@ -918,7 +927,10 @@ and transl_comp_expression =
                 ),
               );
             (
-              [tmp, ...anf_args],
+              [
+                (tmp, get_allocation_type(arg.pat_env, arg.pat_type)),
+                ...anf_args,
+              ],
               List.fold_right(
                 (bind, body) =>
                   AExp.let_(~loc, ~env, Nonrecursive, [bind], body),
@@ -930,7 +942,16 @@ and transl_comp_expression =
           args,
           ([], anf_body),
         );
-      (Comp.lambda(~loc, ~attributes, ~env, anf_args, anf_body), []);
+      (
+        Comp.lambda(
+          ~loc,
+          ~attributes,
+          ~env,
+          anf_args,
+          (anf_body, get_allocation_type(body.exp_env, body.exp_type)),
+        ),
+        [],
+      );
     | _ =>
       failwith("Impossible: transl_imm: Lambda contained non-tuple pattern")
     }
@@ -1013,8 +1034,12 @@ let bind_constructor =
     | CstrBlock(_)
     | CstrExtension(_) =>
       let compiled_tag = compile_constructor_tag(cstr_tag);
-      let args = List.map(_ => gensym("constr_arg"), cstr_args);
-      let arg_ids = List.map(a => Imm.id(~loc, ~env, a), args);
+      let args =
+        List.map(
+          ty => (gensym("constr_arg"), get_allocation_type(env, ty)),
+          cstr_args,
+        );
+      let arg_ids = List.map(((a, _)) => Imm.id(~loc, ~env, a), args);
       let imm_tytag =
         Imm.const(
           ~loc,
@@ -1031,10 +1056,13 @@ let bind_constructor =
         ~loc,
         ~env,
         args,
-        AExp.comp(
-          ~loc,
-          ~env,
-          Comp.adt(~loc, ~env, imm_tytag, imm_tag, arg_ids),
+        (
+          AExp.comp(
+            ~loc,
+            ~env,
+            Comp.adt(~loc, ~env, imm_tytag, imm_tag, arg_ids),
+          ),
+          HeapAllocated,
         ),
       );
     | CstrUnboxed => failwith("NYI: ANF CstrUnboxed")

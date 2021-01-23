@@ -9,16 +9,16 @@ type env = Env.t;
 type ident = Ident.t;
 type attributes = Asttypes.attributes;
 
-let get_allocation_type = (env, ty) => {
+let rec get_allocation_type = (env, ty) => {
   switch (ty.desc) {
   | TTyConstr(path, _, _) => Env.find_type(path, env).type_allocation
+  | TTyLink(linked) => get_allocation_type(env, linked)
   | TTyVar(_)
   | TTyArrow(_)
   | TTyTuple(_)
   | TTyRecord(_)
   | TTyUniVar(_)
   | TTyPoly(_)
-  | TTyLink(_)
   | TTySubst(_) => HeapAllocated
   };
 };

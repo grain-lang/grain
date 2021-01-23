@@ -154,7 +154,10 @@ and comp_expression_desc =
   | CSwitch(imm_expression, list((int, anf_expression)))
   | CApp(imm_expression, list(imm_expression), bool)
   | CAppBuiltin(string, string, list(imm_expression))
-  | CLambda(list(Ident.t), anf_expression)
+  | CLambda(
+      list((Ident.t, allocation_type)),
+      (anf_expression, allocation_type),
+    )
   | CString(string)
   | CChar(string)
   | CNumber(Asttypes.number_type)

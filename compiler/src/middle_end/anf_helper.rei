@@ -275,8 +275,8 @@ module Comp: {
       ~loc: loc=?,
       ~attributes: attributes=?,
       ~env: env=?,
-      list(ident),
-      anf_expression
+      list((ident, allocation_type)),
+      (anf_expression, allocation_type)
     ) =>
     comp_expression;
   let string:

@@ -203,8 +203,8 @@ let rec analyze_comp_expression =
     | CAppBuiltin(_module, f, args) =>
       List.iter(arg => analyze_imm_expression(arg), args);
       false;
-    | CLambda(args, body) =>
-      List.iter(i => set_id_purity(i, true), args);
+    | CLambda(args, (body, _)) =>
+      List.iter(((i, _)) => set_id_purity(i, true), args);
       analyze_anf_expression(body);
       anf_expression_purity_internal(body);
     | CNumber(_)

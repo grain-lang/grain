@@ -1418,12 +1418,15 @@ let optimization_tests = [
       let x = Ident.create("lambda_arg");
       AExp.comp(
         Comp.lambda(
-          [x],
-          AExp.comp(
-            Comp.imm(
-              ~allocation_type=StackAllocated(WasmI32),
-              Imm.const(Const_number(Const_number_int(4L))),
+          [(x, StackAllocated(WasmI32))],
+          (
+            AExp.comp(
+              Comp.imm(
+                ~allocation_type=StackAllocated(WasmI32),
+                Imm.const(Const_number(Const_number_int(4L))),
+              ),
             ),
+            HeapAllocated,
           ),
         ),
       );
@@ -1468,42 +1471,45 @@ let optimization_tests = [
       let a = Ident.create("a");
       AExp.comp(
         Comp.lambda(
-          [arg],
-          AExp.let_(
-            Nonrecursive,
-            [
-              (
-                x,
-                Comp.imm(
-                  ~allocation_type=StackAllocated(WasmI32),
-                  Imm.id(arg),
-                ),
-              ),
-            ],
+          [(arg, StackAllocated(WasmI32))],
+          (
             AExp.let_(
               Nonrecursive,
               [
                 (
-                  a,
-                  Comp.app(
+                  x,
+                  Comp.imm(
                     ~allocation_type=StackAllocated(WasmI32),
-                    Imm.id(plus),
-                    [
-                      Imm.id(x),
-                      Imm.const(Const_number(Const_number_int(1L))),
-                    ],
+                    Imm.id(arg),
                   ),
                 ),
               ],
-              AExp.comp(
-                Comp.app(
-                  ~allocation_type=StackAllocated(WasmI32),
-                  ~tail=true,
-                  Imm.id(plus),
-                  [Imm.id(a), Imm.id(a)],
+              AExp.let_(
+                Nonrecursive,
+                [
+                  (
+                    a,
+                    Comp.app(
+                      ~allocation_type=StackAllocated(WasmI32),
+                      Imm.id(plus),
+                      [
+                        Imm.id(x),
+                        Imm.const(Const_number(Const_number_int(1L))),
+                      ],
+                    ),
+                  ),
+                ],
+                AExp.comp(
+                  Comp.app(
+                    ~allocation_type=StackAllocated(WasmI32),
+                    ~tail=true,
+                    Imm.id(plus),
+                    [Imm.id(a), Imm.id(a)],
+                  ),
                 ),
               ),
             ),
+            HeapAllocated,
           ),
         ),
       );
@@ -1518,25 +1524,28 @@ let optimization_tests = [
       let arg = Ident.create("lambda_arg");
       let x = Ident.create("x");
       AExp.comp(
-        Comp.lambda([arg]) @@
-        AExp.let_(
-          Nonrecursive,
-          [
-            (
-              x,
-              Comp.imm(
-                ~allocation_type=StackAllocated(WasmI32),
-                Imm.id(arg),
+        Comp.lambda([(arg, StackAllocated(WasmI32))]) @@
+        (
+          AExp.let_(
+            Nonrecursive,
+            [
+              (
+                x,
+                Comp.imm(
+                  ~allocation_type=StackAllocated(WasmI32),
+                  Imm.id(arg),
+                ),
               ),
-            ),
-          ],
-        ) @@
-        AExp.comp @@
-        Comp.app(
-          ~allocation_type=StackAllocated(WasmI32),
-          ~tail=true,
-          Imm.id(plus),
-          [Imm.id(x), Imm.const(Const_number(Const_number_int(1L)))],
+            ],
+          ) @@
+          AExp.comp @@
+          Comp.app(
+            ~allocation_type=StackAllocated(WasmI32),
+            ~tail=true,
+            Imm.id(plus),
+            [Imm.id(x), Imm.const(Const_number(Const_number_int(1L)))],
+          ),
+          HeapAllocated,
         ),
       );
     },
@@ -1549,12 +1558,15 @@ let optimization_tests = [
       let x = Ident.create("lambda_arg");
       AExp.comp(
         Comp.lambda(
-          [x],
-          AExp.comp(
-            Comp.imm(
-              ~allocation_type=StackAllocated(WasmI32),
-              Imm.const(Const_number(Const_number_int(1L))),
+          [(x, StackAllocated(WasmI32))],
+          (
+            AExp.comp(
+              Comp.imm(
+                ~allocation_type=StackAllocated(WasmI32),
+                Imm.const(Const_number(Const_number_int(1L))),
+              ),
             ),
+            HeapAllocated,
           ),
         ),
       );
@@ -1575,10 +1587,13 @@ let optimization_tests = [
         [
           (
             foo,
-            Comp.lambda([arg]) @@
-            AExp.comp @@
-            Comp.imm(~allocation_type=StackAllocated(WasmI32)) @@
-            Imm.id(arg),
+            Comp.lambda([(arg, StackAllocated(WasmI32))]) @@
+            (
+              AExp.comp @@
+              Comp.imm(~allocation_type=StackAllocated(WasmI32)) @@
+              Imm.id(arg),
+              HeapAllocated,
+            ),
           ),
         ],
       ) @@

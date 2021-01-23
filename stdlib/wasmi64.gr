@@ -1,3 +1,6 @@
+import WasmI32 from "wasmi32"
+import Memory from "memory"
+
 // WebAssembly Memory Instructions
 export primitive load : (WasmI32, WasmI32) -> WasmI64 = "@wasm.load_i64"
 export primitive store : (WasmI32, WasmI64, WasmI32) -> Void = "@wasm.store_i64"
@@ -8,7 +11,7 @@ export primitive ctz : WasmI64 -> WasmI64 = "@wasm.ctz_i64"
 export primitive popcnt : WasmI64 -> WasmI64 = "@wasm.popcnt_i64"
 export primitive eqz : WasmI64 -> Bool = "@wasm.eq_z_i64"
 
-// WebAssembly Binary Instructions
+// // WebAssembly Binary Instructions
 export primitive add : (WasmI64, WasmI64) -> WasmI64 = "@wasm.add_i64"
 export primitive sub : (WasmI64, WasmI64) -> WasmI64 = "@wasm.sub_i64"
 export primitive mul : (WasmI64, WasmI64) -> WasmI64 = "@wasm.mul_i64"
@@ -35,7 +38,23 @@ export primitive gtU : (WasmI64, WasmI64) -> Bool = "@wasm.gt_u_i64"
 export primitive geS : (WasmI64, WasmI64) -> Bool = "@wasm.ge_s_i64"
 export primitive geU : (WasmI64, WasmI64) -> Bool = "@wasm.ge_u_i64"
 
+// Conversions
+@disableGC
+export let toInt64 = (n) => {
+  let _GRAIN_GENERIC_HEAP_TAG = 0b0011w
+  let _GRAIN_BOXED_NUM_HEAP_TAG = 6w
+  let _GRAIN_INT64_BOXED_NUM_TAG = 4w
+  
+  let ptr = Memory.malloc(16w)
+  WasmI32.store(ptr, _GRAIN_BOXED_NUM_HEAP_TAG, 0w)
+  WasmI32.store(ptr, _GRAIN_INT64_BOXED_NUM_TAG, 4w)
+  store(ptr, n, 8w)
+
+  WasmI32.toGrain(WasmI32.xor(ptr, _GRAIN_GENERIC_HEAP_TAG)) : Int64
+}
+
 // Utilities
-// export let print = (val) => {
-//   print(toString(shl(val, 1w)) ++ "w")
-// }
+@disableGC
+export let print = (val) => {
+  print(toString(toInt64(val)) ++ "W")
+}

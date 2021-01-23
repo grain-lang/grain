@@ -327,39 +327,32 @@ let transl_prim = (env, desc) => {
 
   let value =
     switch (prim) {
-    | Primitive1(WasmUnaryI32(_) as p) =>
+    | Primitive1((WasmUnaryI32(_) | WasmUnaryI64(_)) as p) =>
       Exp.lambda(
         ~loc,
         ~attributes=diable_gc,
         [pat_a],
         Exp.prim1(~loc, p, id_a),
       )
-    | Primitive1(WasmUnaryI64(_)) =>
-      // HACK for now
-      Exp.lambda(~loc, ~attributes=diable_gc, [pat_a], id_a)
     | Primitive1(p) => Exp.lambda(~loc, [pat_a], Exp.prim1(~loc, p, id_a))
-    | Primitive2((WasmBinaryI32(_) | WasmLoadI32) as p) =>
+    | Primitive2(
+        (WasmBinaryI32(_) | WasmBinaryI64(_) | WasmLoadI32 | WasmLoadI64) as p,
+      ) =>
       Exp.lambda(
         ~loc,
         ~attributes=diable_gc,
         [pat_a, pat_b],
         Exp.prim2(~loc, p, id_a, id_b),
       )
-    | Primitive2(WasmBinaryI64(_) | WasmLoadI64) =>
-      // HACK for now
-      Exp.lambda(~loc, ~attributes=diable_gc, [pat_a, pat_b], id_a)
     | Primitive2(p) =>
       Exp.lambda(~loc, [pat_a, pat_b], Exp.prim2(~loc, p, id_a, id_b))
-    | PrimitiveN(WasmStoreI32 as p) =>
+    | PrimitiveN((WasmStoreI32 | WasmStoreI64) as p) =>
       Exp.lambda(
         ~loc,
         ~attributes=diable_gc,
         [pat_a, pat_b, pat_c],
         Exp.primn(~loc, p, [id_a, id_b, id_c]),
       )
-    | PrimitiveN(WasmStoreI64) =>
-      // HACK for now
-      Exp.lambda(~loc, ~attributes=diable_gc, [pat_a, pat_b, pat_c], id_a)
     };
 
   let binds = [

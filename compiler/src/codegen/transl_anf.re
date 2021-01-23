@@ -35,7 +35,8 @@ type worklist_elt_body =
 type worklist_elt = {
   body: worklist_elt_body,
   env: compilation_env,
-  arity: int,
+  args: list(Types.allocation_type),
+  return_type: Types.allocation_type,
   idx: int, /* Lambda-lifted index */
   attrs: attributes,
   stack_size: Mashtree.stack_size,
@@ -56,6 +57,17 @@ let next_lift = () => {
   let ret = lift_index^;
   lift_index := ret + 1;
   ret;
+};
+
+let asmtype_of_alloctype = {
+  Types.(
+    fun
+    | HeapAllocated
+    | StackAllocated(WasmI32) => I32Type
+    | StackAllocated(WasmI64) => I64Type
+    | StackAllocated(WasmF32) => F32Type
+    | StackAllocated(WasmF64) => F64Type
+  );
 };
 
 /** Global index (index of global variables) */
@@ -446,8 +458,11 @@ let compile_imm = (env, i: imm_expression) =>
   };
 
 let compile_lambda = (env, args, body, attrs, loc): Mashtree.closure_data => {
+  let (body, return_type) = body;
   let used_var_set = Anf_utils.anf_free_vars(body);
-  let free_var_set = Ident.Set.diff(used_var_set) @@ Ident.Set.of_list(args);
+  let free_var_set =
+    Ident.Set.diff(used_var_set) @@
+    Ident.Set.of_list(List.map(((arg, _)) => arg, args));
   let free_vars = Ident.Set.elements(free_var_set);
   /* Bind all non-arguments in the function body to
      their respective closure slots */
@@ -458,17 +473,23 @@ let compile_lambda = (env, args, body, attrs, loc): Mashtree.closure_data => {
       Ident.empty,
       free_vars,
     );
-  let closure_arg = Ident.create("$self");
+  let closure_arg = (Ident.create("$self"), Types.HeapAllocated);
   let new_args = [closure_arg, ...args];
   let arg_binds =
     List_utils.fold_lefti(
-      (acc, arg_idx, arg) =>
-        Ident.add(arg, MArgBind(Int32.of_int(arg_idx), I32Type), acc),
+      (acc, arg_idx, (arg, arg_type)) => {
+        Ident.add(
+          arg,
+          MArgBind(Int32.of_int(arg_idx), asmtype_of_alloctype(arg_type)),
+          acc,
+        )
+      },
       free_binds,
       new_args,
     );
   let idx = next_lift();
-  let arity = List.length(new_args);
+  let args = List.map(((_, ty)) => ty, new_args);
+  let arity = List.length(args);
   let (stack_size_i32, stack_size_i64, stack_size_f32, stack_size_f64) =
     Anf_utils.anf_count_vars(body);
   let lam_env = {
@@ -484,7 +505,8 @@ let compile_lambda = (env, args, body, attrs, loc): Mashtree.closure_data => {
     body: Anf(body),
     env: lam_env,
     idx,
-    arity,
+    args,
+    return_type,
     attrs,
     stack_size: {
       stack_size_i32,
@@ -530,7 +552,8 @@ let compile_wrapper = (env, func_name, arity): Mashtree.closure_data => {
     body: Precompiled(body),
     env: lam_env,
     idx,
-    arity: arity + 1,
+    args: List.init(arity + 1, _ => Types.HeapAllocated),
+    return_type: Types.HeapAllocated,
     stack_size: {
       stack_size_i32: 0,
       stack_size_i64: 0,
@@ -564,7 +587,8 @@ let next_global = (~exported=false, id) => {
       body: Precompiled(body),
       env: initial_compilation_env,
       idx,
-      arity: 0, /* <- this function cannot be called by the user, so no self argument is needed. */
+      args: [], /* <- this function cannot be called by the user, so no self argument is needed. */
+      return_type: Types.HeapAllocated,
       stack_size: {
         stack_size_i32: 0,
         stack_size_i64: 0,
@@ -808,12 +832,13 @@ let compile_remaining_worklist = () => {
   let compile_one =
       (
         funcs,
-        {idx: index, arity, stack_size, attrs, loc} as cur: worklist_elt,
+        {idx: index, args, return_type, stack_size, attrs, loc} as cur: worklist_elt,
       ) => {
     let body = compile_worklist_elt(cur);
     let func = {
       index: Int32.of_int(index),
-      arity: Int32.of_int(arity),
+      args: List.map(asmtype_of_alloctype, args),
+      return_type: asmtype_of_alloctype(return_type),
       body,
       stack_size,
       attrs,

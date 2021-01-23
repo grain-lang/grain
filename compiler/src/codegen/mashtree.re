@@ -264,7 +264,8 @@ type export = {
 [@deriving sexp]
 type mash_function = {
   index: int32,
-  arity: int32, /* TODO: Proper typing of arguments */
+  args: list(asmtype),
+  return_type: asmtype,
   body: block,
   stack_size,
   attrs: attributes,

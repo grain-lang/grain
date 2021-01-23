@@ -1,4 +1,3 @@
-
 // Conversions
 export primitive ofGrain : a -> WasmI32 = "@wasm.ofGrain"
 export primitive toGrain : WasmI32 -> a = "@wasm.toGrain"

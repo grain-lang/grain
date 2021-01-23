@@ -1086,8 +1086,15 @@ let compile_bind =
     };
 
   switch (b) {
-  | MArgBind(i, _) =>
+  | MArgBind(i, wasm_ty) =>
     /* No adjustments are needed for argument bindings */
+    let typ =
+      switch (wasm_ty) {
+      | I32Type => Type.int32
+      | I64Type => Type.int64
+      | F32Type => Type.float32
+      | F64Type => Type.float64
+      };
     let slot = Int32.to_int(i);
     switch (action) {
     | BindGet => Expression.local_get(wasm_mod, slot, typ)
@@ -3452,10 +3459,10 @@ let compile_function =
       ~start=false,
       wasm_mod,
       env,
-      {index, arity, stack_size, body: body_instrs, func_loc},
+      {index, args, return_type, stack_size, body: body_instrs, func_loc},
     ) => {
   sources := [];
-  let arity_int = Int32.to_int(arity);
+  let arity = List.length(args);
   let index_int = Int32.to_int(index);
   let func_name =
     if (start) {
@@ -3463,16 +3470,18 @@ let compile_function =
     } else {
       Printf.sprintf("func_%d", env.func_offset + index_int);
     };
-  let body_env = {...env, num_args: arity_int, stack_size};
-  let body =
-    Expression.return(
-      wasm_mod,
+  let body_env = {...env, num_args: arity, stack_size};
+  let inner_body =
+    if (Config.no_gc^) {
+      compile_block(wasm_mod, body_env, body_instrs);
+    } else {
       cleanup_locals(
         wasm_mod,
         body_env,
         compile_block(wasm_mod, body_env, body_instrs),
-      ),
-    );
+      );
+    };
+  let body = Expression.return(wasm_mod, inner_body);
   let locals =
     [
       swap_slots,
@@ -3482,12 +3491,18 @@ let compile_function =
       Array.make(stack_size.stack_size_f64, Type.float64),
     ]
     |> Array.concat;
+  let wasm_type =
+    fun
+    | I32Type => Type.int32
+    | I64Type => Type.int64
+    | F32Type => Type.float32
+    | F64Type => Type.float64;
   let func_ref =
     Function.add_function(
       wasm_mod,
       func_name,
-      Type.create @@ Array.make(arity_int, Type.int32),
-      Type.int32,
+      Type.create @@ Array.of_list @@ List.map(wasm_type, args),
+      wasm_type @@ return_type,
       locals,
       body,
     );
@@ -3699,7 +3714,8 @@ let compile_main = (wasm_mod, env, prog) => {
     env,
     {
       index: Int32.of_int(-99),
-      arity: Int32.zero,
+      args: [],
+      return_type: I32Type,
       body: prog.main_body,
       stack_size: prog.main_body_stack_size,
       attrs: [],
