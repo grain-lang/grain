@@ -37,7 +37,7 @@ module ConstantFoldingArg: Anf_mapper.MapArgument = {
   let leave_comp_expression = ({comp_desc: desc} as c) =>
     switch (desc) {
     | CApp(
-        {imm_desc: ImmId({name})},
+        ({imm_desc: ImmId({name})}, _),
         [{imm_desc: ImmConst(x)} as i, {imm_desc: ImmConst(y)}],
         _,
       ) =>

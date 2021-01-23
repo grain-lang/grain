@@ -378,7 +378,13 @@ let rec transl_imm =
       @ [
         BLet(
           tmp,
-          Comp.app(~loc, ~env, ~allocation_type, new_func, new_args),
+          Comp.app(
+            ~loc,
+            ~env,
+            ~allocation_type,
+            (new_func, get_fn_allocation_type(func.exp_env, func.exp_type)),
+            new_args,
+          ),
         ),
       ],
     );
@@ -963,7 +969,14 @@ and transl_comp_expression =
     let (new_func, func_setup) = transl_imm(func);
     let (new_args, new_setup) = List.split(List.map(transl_imm, args));
     (
-      Comp.app(~loc, ~attributes, ~allocation_type, ~env, new_func, new_args),
+      Comp.app(
+        ~loc,
+        ~attributes,
+        ~allocation_type,
+        ~env,
+        (new_func, get_fn_allocation_type(func.exp_env, func.exp_type)),
+        new_args,
+      ),
       func_setup @ List.concat(new_setup),
     );
   | TExpTuple(args) =>

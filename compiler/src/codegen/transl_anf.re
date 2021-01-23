@@ -185,14 +185,14 @@ module RegisterAllocation = {
       | MCallKnown(i32, is) =>
         MCallKnown(i32, List.map(apply_allocation_to_imm, is))
       | MError(e, is) => MError(e, List.map(apply_allocation_to_imm, is))
-      | MCallIndirect(imm, is) =>
+      | MCallIndirect((imm, fty), is) =>
         MCallIndirect(
-          apply_allocation_to_imm(imm),
+          (apply_allocation_to_imm(imm), fty),
           List.map(apply_allocation_to_imm, is),
         )
-      | MReturnCallIndirect(imm, is) =>
+      | MReturnCallIndirect((imm, fty), is) =>
         MReturnCallIndirect(
-          apply_allocation_to_imm(imm),
+          (apply_allocation_to_imm(imm), fty),
           List.map(apply_allocation_to_imm, is),
         )
       | MIf(c, t, f) =>
@@ -272,9 +272,9 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
     | MAdtOp(_, imm) => imm_live_local(imm)
     | MCallKnown(_, is)
     | MError(_, is) => List.concat(List.map(imm_live_local, is))
-    | MCallIndirect(imm, is) =>
+    | MCallIndirect((imm, _), is) =>
       List.concat(List.map(imm_live_local, is)) @ imm_live_local(imm)
-    | MReturnCallIndirect(imm, is) =>
+    | MReturnCallIndirect((imm, _), is) =>
       List.concat(List.map(imm_live_local, is)) @ imm_live_local(imm)
     | MIf(c, t, f) =>
       imm_live_local(c) @ block_live_locals(t) @ block_live_locals(f)
@@ -708,17 +708,32 @@ let rec compile_comp = (env, c) => {
           compile_lambda(env, args, body, c.comp_attributes, c.comp_loc),
         ),
       )
-    | CApp(f, args, true) =>
-      /* TODO: Utilize MReturnCallKnown */
-
-      MReturnCallIndirect(
-        compile_imm(env, f),
-        List.map(compile_imm(env), args),
-      )
-    | CApp(f, args, false) =>
+    | CApp((f, (argsty, retty)), args, true) =>
       /* TODO: Utilize MCallKnown */
 
-      MCallIndirect(compile_imm(env, f), List.map(compile_imm(env), args))
+      MReturnCallIndirect(
+        (
+          compile_imm(env, f),
+          (
+            List.map(asmtype_of_alloctype, argsty),
+            asmtype_of_alloctype(retty),
+          ),
+        ),
+        List.map(compile_imm(env), args),
+      )
+    | CApp((f, (argsty, retty)), args, _) =>
+      /* TODO: Utilize MCallKnown */
+
+      MCallIndirect(
+        (
+          compile_imm(env, f),
+          (
+            List.map(asmtype_of_alloctype, argsty),
+            asmtype_of_alloctype(retty),
+          ),
+        ),
+        List.map(compile_imm(env), args),
+      )
     | CAppBuiltin(modname, name, args) =>
       MCallKnown("builtin", List.map(compile_imm(env), args))
     | CImmExpr(i) => MImmediate(compile_imm(env, i))

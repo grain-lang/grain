@@ -1,6 +1,13 @@
 open Mashtree;
 open Binaryen;
 
+let wasm_type =
+  fun
+  | I32Type => Type.int32
+  | I64Type => Type.int64
+  | F32Type => Type.float32
+  | F64Type => Type.float64;
+
 let encoded_int32 = n => n * 2;
 
 let const_int32 = n => Literal.int32(Int32.of_int(n));

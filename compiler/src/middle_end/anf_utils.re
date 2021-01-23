@@ -82,7 +82,7 @@ and comp_free_vars_help = (env, c: comp_expression) =>
       imm_free_vars_help(env, arg1),
       imm_free_vars_help(env, arg2),
     )
-  | CApp(fn, args, _) =>
+  | CApp((fn, _), args, _) =>
     List.fold_left(
       (acc, a) => Ident.Set.union(imm_free_vars_help(env, a), acc),
       imm_free_vars_help(env, fn),

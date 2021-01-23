@@ -48,9 +48,16 @@ export let toInt64 = (n) => {
   let ptr = Memory.malloc(16w)
   WasmI32.store(ptr, _GRAIN_BOXED_NUM_HEAP_TAG, 0w)
   WasmI32.store(ptr, _GRAIN_INT64_BOXED_NUM_TAG, 4w)
-  store(ptr, n, 8w)
+  // store is not inlined in this module, so can't use offset
+  store(WasmI32.add(ptr, 8w), n, 0w)
 
   WasmI32.toGrain(WasmI32.xor(ptr, _GRAIN_GENERIC_HEAP_TAG)) : Int64
+}
+
+@disableGC
+export let ofInt64 = (n: Int64) => {
+  let ptr = WasmI32.xor(WasmI32.ofGrain(n), 3w)
+  load(WasmI32.add(ptr, 8w), 0w)
 }
 
 // Utilities

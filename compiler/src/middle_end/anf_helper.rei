@@ -10,6 +10,8 @@ type ident = Ident.t;
 type attributes = Asttypes.attributes;
 
 let get_allocation_type: (Env.t, type_expr) => allocation_type;
+let get_fn_allocation_type:
+  (Env.t, type_expr) => (list(allocation_type), allocation_type);
 
 module Imm: {
   let mk: (~loc: loc=?, ~env: env=?, imm_expression_desc) => imm_expression;
@@ -255,7 +257,7 @@ module Comp: {
       ~allocation_type: allocation_type,
       ~env: env=?,
       ~tail: bool=?,
-      imm_expression,
+      (imm_expression, (list(allocation_type), allocation_type)),
       list(imm_expression)
     ) =>
     comp_expression;

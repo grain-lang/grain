@@ -205,8 +205,11 @@ type instr = {
 and instr_desc =
   | MImmediate(immediate)
   | MCallKnown(string, list(immediate))
-  | MCallIndirect(immediate, list(immediate))
-  | MReturnCallIndirect(immediate, list(immediate))
+  | MCallIndirect((immediate, (list(asmtype), asmtype)), list(immediate))
+  | MReturnCallIndirect(
+      (immediate, (list(asmtype), asmtype)),
+      list(immediate),
+    )
   | MError(grain_error, list(immediate))
   | MAllocate(allocation_type)
   | MTagOp(tag_op, tag_type, immediate)

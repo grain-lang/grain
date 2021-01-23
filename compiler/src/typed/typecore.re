@@ -209,7 +209,6 @@ let prim2_type =
       Builtin_types.type_bool,
     )
   | WasmLoadI32
-  | WasmLoadI64
   | WasmBinaryI32({boolean: false}) => (
       Builtin_types.type_wasmi32,
       Builtin_types.type_wasmi32,
@@ -219,6 +218,11 @@ let prim2_type =
       Builtin_types.type_wasmi64,
       Builtin_types.type_wasmi64,
       Builtin_types.type_bool,
+    )
+  | WasmLoadI64 => (
+      Builtin_types.type_wasmi32,
+      Builtin_types.type_wasmi32,
+      Builtin_types.type_wasmi64,
     )
   | WasmBinaryI64({boolean: false}) => (
       Builtin_types.type_wasmi64,

@@ -137,7 +137,11 @@ and comp_expression_desc =
   | CIf(imm_expression, anf_expression, anf_expression)
   | CWhile(anf_expression, anf_expression)
   | CSwitch(imm_expression, list((int, anf_expression)))
-  | CApp(imm_expression, list(imm_expression), bool)
+  | CApp(
+      (imm_expression, (list(allocation_type), allocation_type)),
+      list(imm_expression),
+      bool,
+    )
   | CAppBuiltin(string, string, list(imm_expression))
   | CLambda(
       list((Ident.t, allocation_type)),

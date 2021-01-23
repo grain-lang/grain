@@ -2091,7 +2091,8 @@ let buf_to_ints = (buf: Buffer.t): list(int64) => {
   List.init(num_ints, i => {Bytes.get_int64_ne(bytes, i * 8)});
 };
 
-let call_lambda = (~tail=false, wasm_mod, env, func, args) => {
+let call_lambda =
+    (~tail=false, wasm_mod, env, (func, (argsty, retty)), args) => {
   let compiled_func = () => compile_imm(wasm_mod, env, func);
   let compiled_args = List.map(compile_imm(wasm_mod, env), args);
   let untagged_fn = () => untag(wasm_mod, LambdaTagType, compiled_func());
@@ -2103,8 +2104,8 @@ let call_lambda = (~tail=false, wasm_mod, env, func, args) => {
     wasm_mod,
     load(~offset=4, wasm_mod, untagged_fn()),
     [untagged_fn(), ...compiled_args],
-    Type.create @@ Array.make(1 + List.length(args), Type.int32),
-    Type.int32,
+    Type.create @@ Array.map(wasm_type, Array.of_list([I32Type, ...argsty])),
+    wasm_type(retty),
   );
 };
 
@@ -3060,7 +3061,7 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
       )
     | _ =>
       // failwith("Offset provided to store operation must be an immediate.")
-      load(wasm_mod, compiled_arg1())
+      load(~ty=Type.int64, wasm_mod, compiled_arg1())
     }
   | WasmBinaryI32({op, boolean})
   | WasmBinaryI64({op, boolean}) =>
@@ -3491,12 +3492,6 @@ let compile_function =
       Array.make(stack_size.stack_size_f64, Type.float64),
     ]
     |> Array.concat;
-  let wasm_type =
-    fun
-    | I32Type => Type.int32
-    | I64Type => Type.int64
-    | F32Type => Type.float32
-    | F64Type => Type.float64;
   let func_ref =
     Function.add_function(
       wasm_mod,
@@ -3786,7 +3781,6 @@ exception WasmRunnerError(Module.t, option(string), string);
 let validate_module = (~name=?, wasm_mod: Module.t) =>
   try(assert(Module.validate(wasm_mod) == 1)) {
   | Assert_failure(_) =>
-    Module.print(wasm_mod);
     raise(WasmRunnerError(wasm_mod, name, "WARNING: Invalid module"));
   };
 

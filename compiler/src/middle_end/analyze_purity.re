@@ -189,7 +189,7 @@ let rec analyze_comp_expression =
         );
       imm_expression_purity_internal(exp)
       && List.for_all(x => x, branches_purities);
-    | CApp(f, args, _) =>
+    | CApp((f, _), args, _) =>
       let arg_purities =
         List.map(
           arg => {
