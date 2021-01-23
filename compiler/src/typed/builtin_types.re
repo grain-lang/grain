@@ -151,7 +151,7 @@ and decl_array = {
 
 let common_initial_env = (add_type, empty_env) =>
   empty_env
-  |> add_type(ident_number, decl_abstr_imm(WasmI32, path_number))
+  |> add_type(ident_number, decl_abstr(path_number))
   |> add_type(ident_exception, decl_exception)
   |> add_type(ident_int32, decl_abstr(path_int32))
   |> add_type(ident_int64, decl_abstr(path_int64))
