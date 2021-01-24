@@ -2975,9 +2975,9 @@ let compile_prim1 = (wasm_mod, env, p1, arg): Expression.t => {
   | Unbox => failwith("Unreachable case; should never get here: Unbox")
   | WasmOfGrain
   | WasmToGrain => compiled_arg // These are no-ops
-  | WasmUnaryI32({wasm_op, boolean})
-  | WasmUnaryI64({wasm_op, boolean}) =>
-    compile_wasm_prim1(wasm_mod, env, wasm_op, ~boolean, compiled_arg)
+  | WasmUnaryI32({wasm_op, ret_type})
+  | WasmUnaryI64({wasm_op, ret_type}) =>
+    compile_wasm_prim1(wasm_mod, env, wasm_op, ret_type, compiled_arg)
   };
 };
 
@@ -3078,13 +3078,13 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
         ),
       )
     }
-  | WasmBinaryI32({wasm_op, boolean})
-  | WasmBinaryI64({wasm_op, boolean}) =>
+  | WasmBinaryI32({wasm_op, ret_type})
+  | WasmBinaryI64({wasm_op, ret_type}) =>
     compile_wasm_prim2(
       wasm_mod,
       env,
       wasm_op,
-      ~boolean,
+      ret_type,
       compiled_arg1(),
       compiled_arg2(),
     )

@@ -151,7 +151,13 @@ and pattern = {
   ppat_loc: Location.t,
 };
 
-/** Single-argument operators */
+[@deriving (sexp, yojson)]
+type wasm_prim_type =
+  | Wasm_int32
+  | Wasm_int64
+  | Wasm_float32
+  | Wasm_float64
+  | Grain_bool;
 
 [@deriving (sexp, yojson)]
 type wasm_op =
@@ -286,6 +292,7 @@ type wasm_op =
   | Op_memory_size
   | Op_memory_grow;
 
+/** Single-argument operators */
 [@deriving (sexp, yojson)]
 type prim1 =
   | Incr
@@ -307,11 +314,13 @@ type prim1 =
   | WasmToGrain
   | WasmUnaryI32({
       wasm_op,
-      boolean: bool,
+      arg_type: wasm_prim_type,
+      ret_type: wasm_prim_type,
     })
   | WasmUnaryI64({
       wasm_op,
-      boolean: bool,
+      arg_type: wasm_prim_type,
+      ret_type: wasm_prim_type,
     });
 
 /** Two-argument operators */
@@ -347,11 +356,13 @@ type prim2 =
   | WasmLoadI64
   | WasmBinaryI32({
       wasm_op,
-      boolean: bool,
+      arg_types: (wasm_prim_type, wasm_prim_type),
+      ret_type: wasm_prim_type,
     })
   | WasmBinaryI64({
       wasm_op,
-      boolean: bool,
+      arg_types: (wasm_prim_type, wasm_prim_type),
+      ret_type: wasm_prim_type,
     });
 
 [@deriving (sexp, yojson)]

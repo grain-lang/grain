@@ -153,30 +153,30 @@ let get_op = name =>
     failwith(Printf.sprintf("internal: Wasm instruction not registered"))
   };
 
-let compile_wasm_prim1 = (wasm_mod, env, instr, ~boolean, arg) => {
+let compile_wasm_prim1 = (wasm_mod, env, instr, ret_type, arg) => {
   let op = Expression.unary(wasm_mod, get_op(instr), arg);
-  if (boolean) {
+  switch (ret_type) {
+  | Mashtree.Grain_bool =>
     Expression.select(
       wasm_mod,
       op,
       Expression.const(wasm_mod, const_true()),
       Expression.const(wasm_mod, const_false()),
-    );
-  } else {
-    op;
+    )
+  | _ => op
   };
 };
 
-let compile_wasm_prim2 = (wasm_mod, env, instr, ~boolean, arg1, arg2) => {
+let compile_wasm_prim2 = (wasm_mod, env, instr, ret_type, arg1, arg2) => {
   let op = Expression.binary(wasm_mod, get_op(instr), arg1, arg2);
-  if (boolean) {
+  switch (ret_type) {
+  | Mashtree.Grain_bool =>
     Expression.select(
       wasm_mod,
       op,
       Expression.const(wasm_mod, const_true()),
       Expression.const(wasm_mod, const_false()),
-    );
-  } else {
-    op;
+    )
+  | _ => op
   };
 };

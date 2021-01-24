@@ -18,6 +18,10 @@ type attributes = Asttypes.attributes;
 
 type analysis = ..;
 
+type wasm_prim_type =
+  Parsetree.wasm_prim_type =
+    | Wasm_int32 | Wasm_int64 | Wasm_float32 | Wasm_float64 | Grain_bool;
+
 type wasm_op =
   Parsetree.wasm_op =
     | Op_clz_int32
@@ -172,11 +176,13 @@ type prim1 =
     | WasmToGrain
     | WasmUnaryI32({
         wasm_op,
-        boolean: bool,
+        arg_type: wasm_prim_type,
+        ret_type: wasm_prim_type,
       })
     | WasmUnaryI64({
         wasm_op,
-        boolean: bool,
+        arg_type: wasm_prim_type,
+        ret_type: wasm_prim_type,
       });
 
 type prim2 =
@@ -210,11 +216,13 @@ type prim2 =
     | WasmLoadI64
     | WasmBinaryI32({
         wasm_op,
-        boolean: bool,
+        arg_types: (wasm_prim_type, wasm_prim_type),
+        ret_type: wasm_prim_type,
       })
     | WasmBinaryI64({
         wasm_op,
-        boolean: bool,
+        arg_types: (wasm_prim_type, wasm_prim_type),
+        ret_type: wasm_prim_type,
       });
 
 type primn = Parsetree.primn = | WasmStoreI32 | WasmStoreI64;

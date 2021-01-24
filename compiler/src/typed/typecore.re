@@ -90,6 +90,14 @@ type recarg =
   | Required
   | Rejected;
 
+let grain_type_of_wasm_prim_type =
+  fun
+  | Wasm_int32 => Builtin_types.type_wasmi32
+  | Wasm_int64 => Builtin_types.type_wasmi64
+  | Wasm_float32 => Builtin_types.type_wasmf32
+  | Wasm_float64 => Builtin_types.type_wasmf64
+  | Grain_bool => Builtin_types.type_bool;
+
 let prim1_type =
   fun
   | Incr
@@ -121,21 +129,10 @@ let prim1_type =
   | Int64Lnot => (Builtin_types.type_int64, Builtin_types.type_int64)
   | WasmOfGrain => (newvar(~name="a", ()), Builtin_types.type_wasmi32)
   | WasmToGrain => (Builtin_types.type_wasmi32, newvar(~name="a", ()))
-  | WasmUnaryI32({boolean: true}) => (
-      Builtin_types.type_wasmi32,
-      Builtin_types.type_bool,
-    )
-  | WasmUnaryI32({boolean: false}) => (
-      Builtin_types.type_wasmi32,
-      Builtin_types.type_wasmi32,
-    )
-  | WasmUnaryI64({boolean: true}) => (
-      Builtin_types.type_wasmi64,
-      Builtin_types.type_bool,
-    )
-  | WasmUnaryI64({boolean: false}) => (
-      Builtin_types.type_wasmi64,
-      Builtin_types.type_wasmi64,
+  | WasmUnaryI32({arg_type, ret_type})
+  | WasmUnaryI64({arg_type, ret_type}) => (
+      grain_type_of_wasm_prim_type(arg_type),
+      grain_type_of_wasm_prim_type(ret_type),
     );
 
 let prim2_type =
@@ -203,30 +200,20 @@ let prim2_type =
       Builtin_types.type_int64,
       Builtin_types.type_bool,
     )
-  | WasmBinaryI32({boolean: true}) => (
-      Builtin_types.type_wasmi32,
-      Builtin_types.type_wasmi32,
-      Builtin_types.type_bool,
+  | WasmBinaryI32({arg_types: (arg1_type, arg2_type), ret_type})
+  | WasmBinaryI64({arg_types: (arg1_type, arg2_type), ret_type}) => (
+      grain_type_of_wasm_prim_type(arg1_type),
+      grain_type_of_wasm_prim_type(arg2_type),
+      grain_type_of_wasm_prim_type(ret_type),
     )
-  | WasmLoadI32
-  | WasmBinaryI32({boolean: false}) => (
+  | WasmLoadI32 => (
       Builtin_types.type_wasmi32,
       Builtin_types.type_wasmi32,
       Builtin_types.type_wasmi32,
-    )
-  | WasmBinaryI64({boolean: true}) => (
-      Builtin_types.type_wasmi64,
-      Builtin_types.type_wasmi64,
-      Builtin_types.type_bool,
     )
   | WasmLoadI64 => (
       Builtin_types.type_wasmi32,
       Builtin_types.type_wasmi32,
-      Builtin_types.type_wasmi64,
-    )
-  | WasmBinaryI64({boolean: false}) => (
-      Builtin_types.type_wasmi64,
-      Builtin_types.type_wasmi64,
       Builtin_types.type_wasmi64,
     );
 

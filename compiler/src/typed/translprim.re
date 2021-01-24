@@ -80,235 +80,673 @@ let prim_map =
       ("@wasm.store_int64", PrimitiveN(WasmStoreI64)),
       (
         "@wasm.clz_int32",
-        Primitive1(WasmUnaryI32({wasm_op: Op_clz_int32, boolean: false})),
+        Primitive1(
+          WasmUnaryI32({
+            wasm_op: Op_clz_int32,
+            arg_type: Wasm_int32,
+            ret_type: Wasm_int32,
+          }),
+        ),
       ),
       (
         "@wasm.ctz_int32",
-        Primitive1(WasmUnaryI32({wasm_op: Op_ctz_int32, boolean: false})),
+        Primitive1(
+          WasmUnaryI32({
+            wasm_op: Op_ctz_int32,
+            arg_type: Wasm_int32,
+            ret_type: Wasm_int32,
+          }),
+        ),
       ),
       (
         "@wasm.popcnt_int32",
-        Primitive1(WasmUnaryI32({wasm_op: Op_popcnt_int32, boolean: false})),
+        Primitive1(
+          WasmUnaryI32({
+            wasm_op: Op_popcnt_int32,
+            arg_type: Wasm_int32,
+            ret_type: Wasm_int32,
+          }),
+        ),
       ),
       (
         "@wasm.eq_z_int32",
-        Primitive1(WasmUnaryI32({wasm_op: Op_eq_z_int32, boolean: true})),
+        Primitive1(
+          WasmUnaryI32({
+            wasm_op: Op_eq_z_int32,
+            arg_type: Wasm_int32,
+            ret_type: Grain_bool,
+          }),
+        ),
       ),
       (
         "@wasm.add_int32",
-        Primitive2(WasmBinaryI32({wasm_op: Op_add_int32, boolean: false})),
+        Primitive2(
+          WasmBinaryI32({
+            wasm_op: Op_add_int32,
+            arg_types: (Wasm_int32, Wasm_int32),
+            ret_type: Wasm_int32,
+          }),
+        ),
       ),
       (
         "@wasm.sub_int32",
-        Primitive2(WasmBinaryI32({wasm_op: Op_sub_int32, boolean: false})),
+        Primitive2(
+          WasmBinaryI32({
+            wasm_op: Op_sub_int32,
+            arg_types: (Wasm_int32, Wasm_int32),
+            ret_type: Wasm_int32,
+          }),
+        ),
       ),
       (
         "@wasm.mul_int32",
-        Primitive2(WasmBinaryI32({wasm_op: Op_mul_int32, boolean: false})),
+        Primitive2(
+          WasmBinaryI32({
+            wasm_op: Op_mul_int32,
+            arg_types: (Wasm_int32, Wasm_int32),
+            ret_type: Wasm_int32,
+          }),
+        ),
       ),
       (
         "@wasm.div_s_int32",
-        Primitive2(WasmBinaryI32({wasm_op: Op_div_s_int32, boolean: false})),
+        Primitive2(
+          WasmBinaryI32({
+            wasm_op: Op_div_s_int32,
+            arg_types: (Wasm_int32, Wasm_int32),
+            ret_type: Wasm_int32,
+          }),
+        ),
       ),
       (
         "@wasm.div_u_int32",
-        Primitive2(WasmBinaryI32({wasm_op: Op_div_u_int32, boolean: false})),
+        Primitive2(
+          WasmBinaryI32({
+            wasm_op: Op_div_u_int32,
+            arg_types: (Wasm_int32, Wasm_int32),
+            ret_type: Wasm_int32,
+          }),
+        ),
       ),
       (
         "@wasm.rem_s_int32",
-        Primitive2(WasmBinaryI32({wasm_op: Op_rem_s_int32, boolean: false})),
+        Primitive2(
+          WasmBinaryI32({
+            wasm_op: Op_rem_s_int32,
+            arg_types: (Wasm_int32, Wasm_int32),
+            ret_type: Wasm_int32,
+          }),
+        ),
       ),
       (
         "@wasm.rem_u_int32",
-        Primitive2(WasmBinaryI32({wasm_op: Op_rem_u_int32, boolean: false})),
+        Primitive2(
+          WasmBinaryI32({
+            wasm_op: Op_rem_u_int32,
+            arg_types: (Wasm_int32, Wasm_int32),
+            ret_type: Wasm_int32,
+          }),
+        ),
       ),
       (
         "@wasm.and_int32",
-        Primitive2(WasmBinaryI32({wasm_op: Op_and_int32, boolean: false})),
+        Primitive2(
+          WasmBinaryI32({
+            wasm_op: Op_and_int32,
+            arg_types: (Wasm_int32, Wasm_int32),
+            ret_type: Wasm_int32,
+          }),
+        ),
       ),
       (
         "@wasm.or_int32",
-        Primitive2(WasmBinaryI32({wasm_op: Op_or_int32, boolean: false})),
+        Primitive2(
+          WasmBinaryI32({
+            wasm_op: Op_or_int32,
+            arg_types: (Wasm_int32, Wasm_int32),
+            ret_type: Wasm_int32,
+          }),
+        ),
       ),
       (
         "@wasm.xor_int32",
-        Primitive2(WasmBinaryI32({wasm_op: Op_xor_int32, boolean: false})),
+        Primitive2(
+          WasmBinaryI32({
+            wasm_op: Op_xor_int32,
+            arg_types: (Wasm_int32, Wasm_int32),
+            ret_type: Wasm_int32,
+          }),
+        ),
       ),
       (
         "@wasm.shl_int32",
-        Primitive2(WasmBinaryI32({wasm_op: Op_shl_int32, boolean: false})),
+        Primitive2(
+          WasmBinaryI32({
+            wasm_op: Op_shl_int32,
+            arg_types: (Wasm_int32, Wasm_int32),
+            ret_type: Wasm_int32,
+          }),
+        ),
       ),
       (
         "@wasm.shr_u_int32",
-        Primitive2(WasmBinaryI32({wasm_op: Op_shr_u_int32, boolean: false})),
+        Primitive2(
+          WasmBinaryI32({
+            wasm_op: Op_shr_u_int32,
+            arg_types: (Wasm_int32, Wasm_int32),
+            ret_type: Wasm_int32,
+          }),
+        ),
       ),
       (
         "@wasm.shr_s_int32",
-        Primitive2(WasmBinaryI32({wasm_op: Op_shr_s_int32, boolean: false})),
+        Primitive2(
+          WasmBinaryI32({
+            wasm_op: Op_shr_s_int32,
+            arg_types: (Wasm_int32, Wasm_int32),
+            ret_type: Wasm_int32,
+          }),
+        ),
       ),
       (
         "@wasm.rot_l_int32",
-        Primitive2(WasmBinaryI32({wasm_op: Op_rot_l_int32, boolean: false})),
+        Primitive2(
+          WasmBinaryI32({
+            wasm_op: Op_rot_l_int32,
+            arg_types: (Wasm_int32, Wasm_int32),
+            ret_type: Wasm_int32,
+          }),
+        ),
       ),
       (
         "@wasm.rot_r_int32",
-        Primitive2(WasmBinaryI32({wasm_op: Op_rot_r_int32, boolean: false})),
+        Primitive2(
+          WasmBinaryI32({
+            wasm_op: Op_rot_r_int32,
+            arg_types: (Wasm_int32, Wasm_int32),
+            ret_type: Wasm_int32,
+          }),
+        ),
       ),
       (
         "@wasm.eq_int32",
-        Primitive2(WasmBinaryI32({wasm_op: Op_eq_int32, boolean: true})),
+        Primitive2(
+          WasmBinaryI32({
+            wasm_op: Op_eq_int32,
+            arg_types: (Wasm_int32, Wasm_int32),
+            ret_type: Grain_bool,
+          }),
+        ),
       ),
       (
         "@wasm.ne_int32",
-        Primitive2(WasmBinaryI32({wasm_op: Op_ne_int32, boolean: true})),
+        Primitive2(
+          WasmBinaryI32({
+            wasm_op: Op_ne_int32,
+            arg_types: (Wasm_int32, Wasm_int32),
+            ret_type: Grain_bool,
+          }),
+        ),
       ),
       (
         "@wasm.lt_s_int32",
-        Primitive2(WasmBinaryI32({wasm_op: Op_lt_s_int32, boolean: true})),
+        Primitive2(
+          WasmBinaryI32({
+            wasm_op: Op_lt_s_int32,
+            arg_types: (Wasm_int32, Wasm_int32),
+            ret_type: Grain_bool,
+          }),
+        ),
       ),
       (
         "@wasm.lt_u_int32",
-        Primitive2(WasmBinaryI32({wasm_op: Op_lt_u_int32, boolean: true})),
+        Primitive2(
+          WasmBinaryI32({
+            wasm_op: Op_lt_u_int32,
+            arg_types: (Wasm_int32, Wasm_int32),
+            ret_type: Grain_bool,
+          }),
+        ),
       ),
       (
         "@wasm.le_s_int32",
-        Primitive2(WasmBinaryI32({wasm_op: Op_le_s_int32, boolean: true})),
+        Primitive2(
+          WasmBinaryI32({
+            wasm_op: Op_le_s_int32,
+            arg_types: (Wasm_int32, Wasm_int32),
+            ret_type: Grain_bool,
+          }),
+        ),
       ),
       (
         "@wasm.le_u_int32",
-        Primitive2(WasmBinaryI32({wasm_op: Op_le_u_int32, boolean: true})),
+        Primitive2(
+          WasmBinaryI32({
+            wasm_op: Op_le_u_int32,
+            arg_types: (Wasm_int32, Wasm_int32),
+            ret_type: Grain_bool,
+          }),
+        ),
       ),
       (
         "@wasm.gt_s_int32",
-        Primitive2(WasmBinaryI32({wasm_op: Op_gt_s_int32, boolean: true})),
+        Primitive2(
+          WasmBinaryI32({
+            wasm_op: Op_gt_s_int32,
+            arg_types: (Wasm_int32, Wasm_int32),
+            ret_type: Grain_bool,
+          }),
+        ),
       ),
       (
         "@wasm.gt_u_int32",
-        Primitive2(WasmBinaryI32({wasm_op: Op_gt_u_int32, boolean: true})),
+        Primitive2(
+          WasmBinaryI32({
+            wasm_op: Op_gt_u_int32,
+            arg_types: (Wasm_int32, Wasm_int32),
+            ret_type: Grain_bool,
+          }),
+        ),
       ),
       (
         "@wasm.ge_s_int32",
-        Primitive2(WasmBinaryI32({wasm_op: Op_ge_s_int32, boolean: true})),
+        Primitive2(
+          WasmBinaryI32({
+            wasm_op: Op_ge_s_int32,
+            arg_types: (Wasm_int32, Wasm_int32),
+            ret_type: Grain_bool,
+          }),
+        ),
       ),
       (
         "@wasm.ge_u_int32",
-        Primitive2(WasmBinaryI32({wasm_op: Op_ge_u_int32, boolean: true})),
+        Primitive2(
+          WasmBinaryI32({
+            wasm_op: Op_ge_u_int32,
+            arg_types: (Wasm_int32, Wasm_int32),
+            ret_type: Grain_bool,
+          }),
+        ),
+      ),
+      (
+        "@wasm.wrap_int64",
+        Primitive1(
+          WasmUnaryI32({
+            wasm_op: Op_wrap_int64,
+            arg_type: Wasm_int32,
+            ret_type: Wasm_int32,
+          }),
+        ),
+      ),
+      (
+        "@wasm.trunc_s_float32_to_int32",
+        Primitive1(
+          WasmUnaryI32({
+            wasm_op: Op_trunc_s_float32_to_int32,
+            arg_type: Wasm_float32,
+            ret_type: Wasm_int32,
+          }),
+        ),
+      ),
+      (
+        "@wasm.trunc_u_float32_to_int32",
+        Primitive1(
+          WasmUnaryI32({
+            wasm_op: Op_trunc_u_float32_to_int32,
+            arg_type: Wasm_float32,
+            ret_type: Wasm_int32,
+          }),
+        ),
+      ),
+      (
+        "@wasm.trunc_s_float64_to_int32",
+        Primitive1(
+          WasmUnaryI32({
+            wasm_op: Op_trunc_s_float64_to_int32,
+            arg_type: Wasm_float64,
+            ret_type: Wasm_int32,
+          }),
+        ),
+      ),
+      (
+        "@wasm.trunc_u_float64_to_int32",
+        Primitive1(
+          WasmUnaryI32({
+            wasm_op: Op_trunc_u_float64_to_int32,
+            arg_type: Wasm_float64,
+            ret_type: Wasm_int32,
+          }),
+        ),
+      ),
+      (
+        "@wasm.trunc_u_float64_to_int32",
+        Primitive1(
+          WasmUnaryI32({
+            wasm_op: Op_trunc_u_float64_to_int32,
+            arg_type: Wasm_float64,
+            ret_type: Wasm_int32,
+          }),
+        ),
+      ),
+      (
+        "@wasm.reinterpret_float32",
+        Primitive1(
+          WasmUnaryI32({
+            wasm_op: Op_reinterpret_float32,
+            arg_type: Wasm_float32,
+            ret_type: Wasm_int32,
+          }),
+        ),
+      ),
+      (
+        "@wasm.extend_s8_int32",
+        Primitive1(
+          WasmUnaryI32({
+            wasm_op: Op_extend_s8_int32,
+            arg_type: Wasm_int32,
+            ret_type: Wasm_int32,
+          }),
+        ),
+      ),
+      (
+        "@wasm.extend_s16_int32",
+        Primitive1(
+          WasmUnaryI32({
+            wasm_op: Op_extend_s16_int32,
+            arg_type: Wasm_int32,
+            ret_type: Wasm_int32,
+          }),
+        ),
       ),
       (
         "@wasm.clz_int64",
-        Primitive1(WasmUnaryI64({wasm_op: Op_clz_int64, boolean: false})),
+        Primitive1(
+          WasmUnaryI64({
+            wasm_op: Op_clz_int64,
+            arg_type: Wasm_int64,
+            ret_type: Wasm_int64,
+          }),
+        ),
       ),
       (
         "@wasm.ctz_int64",
-        Primitive1(WasmUnaryI64({wasm_op: Op_ctz_int64, boolean: false})),
+        Primitive1(
+          WasmUnaryI64({
+            wasm_op: Op_ctz_int64,
+            arg_type: Wasm_int64,
+            ret_type: Wasm_int64,
+          }),
+        ),
       ),
       (
         "@wasm.popcnt_int64",
-        Primitive1(WasmUnaryI64({wasm_op: Op_popcnt_int64, boolean: false})),
+        Primitive1(
+          WasmUnaryI64({
+            wasm_op: Op_popcnt_int64,
+            arg_type: Wasm_int64,
+            ret_type: Wasm_int64,
+          }),
+        ),
       ),
       (
         "@wasm.eq_z_int64",
-        Primitive1(WasmUnaryI64({wasm_op: Op_eq_z_int64, boolean: true})),
+        Primitive1(
+          WasmUnaryI64({
+            wasm_op: Op_eq_z_int64,
+            arg_type: Wasm_int64,
+            ret_type: Grain_bool,
+          }),
+        ),
       ),
       (
         "@wasm.add_int64",
-        Primitive2(WasmBinaryI64({wasm_op: Op_add_int64, boolean: false})),
+        Primitive2(
+          WasmBinaryI64({
+            wasm_op: Op_add_int64,
+            arg_types: (Wasm_int64, Wasm_int64),
+            ret_type: Wasm_int64,
+          }),
+        ),
       ),
       (
         "@wasm.sub_int64",
-        Primitive2(WasmBinaryI64({wasm_op: Op_sub_int64, boolean: false})),
+        Primitive2(
+          WasmBinaryI64({
+            wasm_op: Op_sub_int64,
+            arg_types: (Wasm_int64, Wasm_int64),
+            ret_type: Wasm_int64,
+          }),
+        ),
       ),
       (
         "@wasm.mul_int64",
-        Primitive2(WasmBinaryI64({wasm_op: Op_mul_int64, boolean: false})),
+        Primitive2(
+          WasmBinaryI64({
+            wasm_op: Op_mul_int64,
+            arg_types: (Wasm_int64, Wasm_int64),
+            ret_type: Wasm_int64,
+          }),
+        ),
       ),
       (
         "@wasm.div_s_int64",
-        Primitive2(WasmBinaryI64({wasm_op: Op_div_s_int64, boolean: false})),
+        Primitive2(
+          WasmBinaryI64({
+            wasm_op: Op_div_s_int64,
+            arg_types: (Wasm_int64, Wasm_int64),
+            ret_type: Wasm_int64,
+          }),
+        ),
       ),
       (
         "@wasm.div_u_int64",
-        Primitive2(WasmBinaryI64({wasm_op: Op_div_u_int64, boolean: false})),
+        Primitive2(
+          WasmBinaryI64({
+            wasm_op: Op_div_u_int64,
+            arg_types: (Wasm_int64, Wasm_int64),
+            ret_type: Wasm_int64,
+          }),
+        ),
       ),
       (
         "@wasm.rem_s_int64",
-        Primitive2(WasmBinaryI64({wasm_op: Op_rem_s_int64, boolean: false})),
+        Primitive2(
+          WasmBinaryI64({
+            wasm_op: Op_rem_s_int64,
+            arg_types: (Wasm_int64, Wasm_int64),
+            ret_type: Wasm_int64,
+          }),
+        ),
       ),
       (
         "@wasm.rem_u_int64",
-        Primitive2(WasmBinaryI64({wasm_op: Op_rem_u_int64, boolean: false})),
+        Primitive2(
+          WasmBinaryI64({
+            wasm_op: Op_rem_u_int64,
+            arg_types: (Wasm_int64, Wasm_int64),
+            ret_type: Wasm_int64,
+          }),
+        ),
       ),
       (
         "@wasm.and_int64",
-        Primitive2(WasmBinaryI64({wasm_op: Op_and_int64, boolean: false})),
+        Primitive2(
+          WasmBinaryI64({
+            wasm_op: Op_and_int64,
+            arg_types: (Wasm_int64, Wasm_int64),
+            ret_type: Wasm_int64,
+          }),
+        ),
       ),
       (
         "@wasm.or_int64",
-        Primitive2(WasmBinaryI64({wasm_op: Op_or_int64, boolean: false})),
+        Primitive2(
+          WasmBinaryI64({
+            wasm_op: Op_or_int64,
+            arg_types: (Wasm_int64, Wasm_int64),
+            ret_type: Wasm_int64,
+          }),
+        ),
       ),
       (
         "@wasm.xor_int64",
-        Primitive2(WasmBinaryI64({wasm_op: Op_xor_int64, boolean: false})),
+        Primitive2(
+          WasmBinaryI64({
+            wasm_op: Op_xor_int64,
+            arg_types: (Wasm_int64, Wasm_int64),
+            ret_type: Wasm_int64,
+          }),
+        ),
       ),
       (
         "@wasm.shl_int64",
-        Primitive2(WasmBinaryI64({wasm_op: Op_shl_int64, boolean: false})),
+        Primitive2(
+          WasmBinaryI64({
+            wasm_op: Op_shl_int64,
+            arg_types: (Wasm_int64, Wasm_int64),
+            ret_type: Wasm_int64,
+          }),
+        ),
       ),
       (
         "@wasm.shr_u_int64",
-        Primitive2(WasmBinaryI64({wasm_op: Op_shr_u_int64, boolean: false})),
+        Primitive2(
+          WasmBinaryI64({
+            wasm_op: Op_shr_u_int64,
+            arg_types: (Wasm_int64, Wasm_int64),
+            ret_type: Wasm_int64,
+          }),
+        ),
       ),
       (
         "@wasm.shr_s_int64",
-        Primitive2(WasmBinaryI64({wasm_op: Op_shr_s_int64, boolean: false})),
+        Primitive2(
+          WasmBinaryI64({
+            wasm_op: Op_shr_s_int64,
+            arg_types: (Wasm_int64, Wasm_int64),
+            ret_type: Wasm_int64,
+          }),
+        ),
       ),
       (
         "@wasm.rot_l_int64",
-        Primitive2(WasmBinaryI64({wasm_op: Op_rot_l_int64, boolean: false})),
+        Primitive2(
+          WasmBinaryI64({
+            wasm_op: Op_rot_l_int64,
+            arg_types: (Wasm_int64, Wasm_int64),
+            ret_type: Wasm_int64,
+          }),
+        ),
       ),
       (
         "@wasm.rot_r_int64",
-        Primitive2(WasmBinaryI64({wasm_op: Op_rot_r_int64, boolean: false})),
+        Primitive2(
+          WasmBinaryI64({
+            wasm_op: Op_rot_r_int64,
+            arg_types: (Wasm_int64, Wasm_int64),
+            ret_type: Wasm_int64,
+          }),
+        ),
       ),
       (
         "@wasm.eq_int64",
-        Primitive2(WasmBinaryI64({wasm_op: Op_eq_int64, boolean: true})),
+        Primitive2(
+          WasmBinaryI64({
+            wasm_op: Op_eq_int64,
+            arg_types: (Wasm_int64, Wasm_int64),
+            ret_type: Grain_bool,
+          }),
+        ),
       ),
       (
         "@wasm.ne_int64",
-        Primitive2(WasmBinaryI64({wasm_op: Op_ne_int64, boolean: true})),
+        Primitive2(
+          WasmBinaryI64({
+            wasm_op: Op_ne_int64,
+            arg_types: (Wasm_int64, Wasm_int64),
+            ret_type: Grain_bool,
+          }),
+        ),
       ),
       (
         "@wasm.lt_s_int64",
-        Primitive2(WasmBinaryI64({wasm_op: Op_lt_s_int64, boolean: true})),
+        Primitive2(
+          WasmBinaryI64({
+            wasm_op: Op_lt_s_int64,
+            arg_types: (Wasm_int64, Wasm_int64),
+            ret_type: Grain_bool,
+          }),
+        ),
       ),
       (
         "@wasm.lt_u_int64",
-        Primitive2(WasmBinaryI64({wasm_op: Op_lt_u_int64, boolean: true})),
+        Primitive2(
+          WasmBinaryI64({
+            wasm_op: Op_lt_u_int64,
+            arg_types: (Wasm_int64, Wasm_int64),
+            ret_type: Grain_bool,
+          }),
+        ),
       ),
       (
         "@wasm.le_s_int64",
-        Primitive2(WasmBinaryI64({wasm_op: Op_le_s_int64, boolean: true})),
+        Primitive2(
+          WasmBinaryI64({
+            wasm_op: Op_le_s_int64,
+            arg_types: (Wasm_int64, Wasm_int64),
+            ret_type: Grain_bool,
+          }),
+        ),
       ),
       (
         "@wasm.le_u_int64",
-        Primitive2(WasmBinaryI64({wasm_op: Op_le_u_int64, boolean: true})),
+        Primitive2(
+          WasmBinaryI64({
+            wasm_op: Op_le_u_int64,
+            arg_types: (Wasm_int64, Wasm_int64),
+            ret_type: Grain_bool,
+          }),
+        ),
       ),
       (
         "@wasm.gt_s_int64",
-        Primitive2(WasmBinaryI64({wasm_op: Op_gt_s_int64, boolean: true})),
+        Primitive2(
+          WasmBinaryI64({
+            wasm_op: Op_gt_s_int64,
+            arg_types: (Wasm_int64, Wasm_int64),
+            ret_type: Grain_bool,
+          }),
+        ),
       ),
       (
         "@wasm.gt_u_int64",
-        Primitive2(WasmBinaryI64({wasm_op: Op_gt_u_int64, boolean: true})),
+        Primitive2(
+          WasmBinaryI64({
+            wasm_op: Op_gt_u_int64,
+            arg_types: (Wasm_int64, Wasm_int64),
+            ret_type: Grain_bool,
+          }),
+        ),
       ),
       (
         "@wasm.ge_s_int64",
-        Primitive2(WasmBinaryI64({wasm_op: Op_ge_s_int64, boolean: true})),
+        Primitive2(
+          WasmBinaryI64({
+            wasm_op: Op_ge_s_int64,
+            arg_types: (Wasm_int64, Wasm_int64),
+            ret_type: Grain_bool,
+          }),
+        ),
       ),
       (
         "@wasm.ge_u_int64",
-        Primitive2(WasmBinaryI64({wasm_op: Op_ge_u_int64, boolean: true})),
+        Primitive2(
+          WasmBinaryI64({
+            wasm_op: Op_ge_u_int64,
+            arg_types: (Wasm_int64, Wasm_int64),
+            ret_type: Grain_bool,
+          }),
+        ),
       ),
       ("@wasm.ofGrain", Primitive1(WasmOfGrain)),
       ("@wasm.toGrain", Primitive1(WasmToGrain)),
