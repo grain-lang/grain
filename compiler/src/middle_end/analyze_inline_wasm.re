@@ -42,603 +42,76 @@ module StringHash =
 let primitive_map_i32 =
   StringHash.of_seq(
     List.to_seq([
-      ("ofGrain", WasmPrim1(WasmOfGrain)),
-      ("toGrain", WasmPrim1(WasmToGrain)),
-      ("load", WasmPrim2(WasmLoadI32)),
-      ("store", WasmPrimN(WasmStoreI32)),
-      (
-        "clz",
-        WasmPrim1(
-          WasmUnaryI32({
-            wasm_op: Op_clz_int32,
-            arg_type: Wasm_int32,
-            ret_type: Wasm_int32,
-          }),
-        ),
-      ),
-      (
-        "ctz",
-        WasmPrim1(
-          WasmUnaryI32({
-            wasm_op: Op_ctz_int32,
-            arg_type: Wasm_int32,
-            ret_type: Wasm_int32,
-          }),
-        ),
-      ),
-      (
-        "popcnt",
-        WasmPrim1(
-          WasmUnaryI32({
-            wasm_op: Op_popcnt_int32,
-            arg_type: Wasm_int32,
-            ret_type: Wasm_int32,
-          }),
-        ),
-      ),
-      (
-        "eqz",
-        WasmPrim1(
-          WasmUnaryI32({
-            wasm_op: Op_eq_z_int32,
-            arg_type: Wasm_int32,
-            ret_type: Grain_bool,
-          }),
-        ),
-      ),
-      (
-        "add",
-        WasmPrim2(
-          WasmBinaryI32({
-            wasm_op: Op_add_int32,
-            arg_types: (Wasm_int32, Wasm_int32),
-            ret_type: Wasm_int32,
-          }),
-        ),
-      ),
-      (
-        "sub",
-        WasmPrim2(
-          WasmBinaryI32({
-            wasm_op: Op_sub_int32,
-            arg_types: (Wasm_int32, Wasm_int32),
-            ret_type: Wasm_int32,
-          }),
-        ),
-      ),
-      (
-        "mul",
-        WasmPrim2(
-          WasmBinaryI32({
-            wasm_op: Op_mul_int32,
-            arg_types: (Wasm_int32, Wasm_int32),
-            ret_type: Wasm_int32,
-          }),
-        ),
-      ),
-      (
-        "divS",
-        WasmPrim2(
-          WasmBinaryI32({
-            wasm_op: Op_div_s_int32,
-            arg_types: (Wasm_int32, Wasm_int32),
-            ret_type: Wasm_int32,
-          }),
-        ),
-      ),
-      (
-        "divU",
-        WasmPrim2(
-          WasmBinaryI32({
-            wasm_op: Op_div_u_int32,
-            arg_types: (Wasm_int32, Wasm_int32),
-            ret_type: Wasm_int32,
-          }),
-        ),
-      ),
-      (
-        "remS",
-        WasmPrim2(
-          WasmBinaryI32({
-            wasm_op: Op_rem_s_int32,
-            arg_types: (Wasm_int32, Wasm_int32),
-            ret_type: Wasm_int32,
-          }),
-        ),
-      ),
-      (
-        "remU",
-        WasmPrim2(
-          WasmBinaryI32({
-            wasm_op: Op_rem_u_int32,
-            arg_types: (Wasm_int32, Wasm_int32),
-            ret_type: Wasm_int32,
-          }),
-        ),
-      ),
-      (
-        "and",
-        WasmPrim2(
-          WasmBinaryI32({
-            wasm_op: Op_and_int32,
-            arg_types: (Wasm_int32, Wasm_int32),
-            ret_type: Wasm_int32,
-          }),
-        ),
-      ),
-      (
-        "or",
-        WasmPrim2(
-          WasmBinaryI32({
-            wasm_op: Op_or_int32,
-            arg_types: (Wasm_int32, Wasm_int32),
-            ret_type: Wasm_int32,
-          }),
-        ),
-      ),
-      (
-        "xor",
-        WasmPrim2(
-          WasmBinaryI32({
-            wasm_op: Op_xor_int32,
-            arg_types: (Wasm_int32, Wasm_int32),
-            ret_type: Wasm_int32,
-          }),
-        ),
-      ),
-      (
-        "shl",
-        WasmPrim2(
-          WasmBinaryI32({
-            wasm_op: Op_shl_int32,
-            arg_types: (Wasm_int32, Wasm_int32),
-            ret_type: Wasm_int32,
-          }),
-        ),
-      ),
-      (
-        "shrU",
-        WasmPrim2(
-          WasmBinaryI32({
-            wasm_op: Op_shr_u_int32,
-            arg_types: (Wasm_int32, Wasm_int32),
-            ret_type: Wasm_int32,
-          }),
-        ),
-      ),
-      (
-        "shrS",
-        WasmPrim2(
-          WasmBinaryI32({
-            wasm_op: Op_shr_s_int32,
-            arg_types: (Wasm_int32, Wasm_int32),
-            ret_type: Wasm_int32,
-          }),
-        ),
-      ),
-      (
-        "rotl",
-        WasmPrim2(
-          WasmBinaryI32({
-            wasm_op: Op_rot_l_int32,
-            arg_types: (Wasm_int32, Wasm_int32),
-            ret_type: Wasm_int32,
-          }),
-        ),
-      ),
-      (
-        "rotr",
-        WasmPrim2(
-          WasmBinaryI32({
-            wasm_op: Op_rot_r_int32,
-            arg_types: (Wasm_int32, Wasm_int32),
-            ret_type: Wasm_int32,
-          }),
-        ),
-      ),
-      (
-        "eq",
-        WasmPrim2(
-          WasmBinaryI32({
-            wasm_op: Op_eq_int32,
-            arg_types: (Wasm_int32, Wasm_int32),
-            ret_type: Grain_bool,
-          }),
-        ),
-      ),
-      (
-        "ne",
-        WasmPrim2(
-          WasmBinaryI32({
-            wasm_op: Op_ne_int32,
-            arg_types: (Wasm_int32, Wasm_int32),
-            ret_type: Grain_bool,
-          }),
-        ),
-      ),
-      (
-        "ltS",
-        WasmPrim2(
-          WasmBinaryI32({
-            wasm_op: Op_lt_s_int32,
-            arg_types: (Wasm_int32, Wasm_int32),
-            ret_type: Grain_bool,
-          }),
-        ),
-      ),
-      (
-        "ltU",
-        WasmPrim2(
-          WasmBinaryI32({
-            wasm_op: Op_lt_u_int32,
-            arg_types: (Wasm_int32, Wasm_int32),
-            ret_type: Grain_bool,
-          }),
-        ),
-      ),
-      (
-        "leS",
-        WasmPrim2(
-          WasmBinaryI32({
-            wasm_op: Op_le_s_int32,
-            arg_types: (Wasm_int32, Wasm_int32),
-            ret_type: Grain_bool,
-          }),
-        ),
-      ),
-      (
-        "leU",
-        WasmPrim2(
-          WasmBinaryI32({
-            wasm_op: Op_le_u_int32,
-            arg_types: (Wasm_int32, Wasm_int32),
-            ret_type: Grain_bool,
-          }),
-        ),
-      ),
-      (
-        "gtS",
-        WasmPrim2(
-          WasmBinaryI32({
-            wasm_op: Op_gt_s_int32,
-            arg_types: (Wasm_int32, Wasm_int32),
-            ret_type: Grain_bool,
-          }),
-        ),
-      ),
-      (
-        "gtU",
-        WasmPrim2(
-          WasmBinaryI32({
-            wasm_op: Op_gt_u_int32,
-            arg_types: (Wasm_int32, Wasm_int32),
-            ret_type: Grain_bool,
-          }),
-        ),
-      ),
-      (
-        "geS",
-        WasmPrim2(
-          WasmBinaryI32({
-            wasm_op: Op_ge_s_int32,
-            arg_types: (Wasm_int32, Wasm_int32),
-            ret_type: Grain_bool,
-          }),
-        ),
-      ),
-      (
-        "geU",
-        WasmPrim2(
-          WasmBinaryI32({
-            wasm_op: Op_ge_u_int32,
-            arg_types: (Wasm_int32, Wasm_int32),
-            ret_type: Grain_bool,
-          }),
-        ),
-      ),
+      ("ofGrain", "@wasm.ofGrain"),
+      ("toGrain", "@wasm.toGrain"),
+      ("load", "@wasm.load_int32"),
+      ("store", "@wasm.store_int32"),
+      ("clz", "@wasm.clz_int32"),
+      ("ctz", "@wasm.ctz_int32"),
+      ("popcnt", "@wasm.popcnt_int32"),
+      ("eqz", "@wasm.eq_z_int32"),
+      ("add", "@wasm.add_int32"),
+      ("sub", "@wasm.sub_int32"),
+      ("mul", "@wasm.mul_int32"),
+      ("divS", "@wasm.div_s_int32"),
+      ("divU", "@wasm.div_u_int32"),
+      ("remS", "@wasm.rem_s_int32"),
+      ("remU", "@wasm.rem_u_int32"),
+      ("and", "@wasm.and_int32"),
+      ("or", "@wasm.or_int32"),
+      ("xor", "@wasm.xor_int32"),
+      ("shl", "@wasm.shl_int32"),
+      ("shrU", "@wasm.shr_u_int32"),
+      ("shrS", "@wasm.shr_s_int32"),
+      ("rotl", "@wasm.rot_l_int32"),
+      ("rotr", "@wasm.rot_r_int32"),
+      ("eq", "@wasm.eq_int32"),
+      ("ne", "@wasm.ne_int32"),
+      ("ltS", "@wasm.lt_s_int32"),
+      ("ltU", "@wasm.lt_u_int32"),
+      ("leS", "@wasm.le_s_int32"),
+      ("leU", "@wasm.le_u_int32"),
+      ("gtS", "@wasm.gt_s_int32"),
+      ("gtU", "@wasm.gt_u_int32"),
+      ("geS", "@wasm.ge_s_int32"),
+      ("geU", "@wasm.ge_u_int32"),
+      ("wrapI64", "@wasm.wrap_int64"),
+      ("truncF32S", "@wasm.trunc_s_float32_to_int32"),
+      ("truncF32U", "@wasm.trunc_u_float32_to_int32"),
+      ("truncF64S", "@wasm.trunc_s_float64_to_int32"),
+      ("truncF64U", "@wasm.trunc_u_float64_to_int32"),
+      ("truncF64U", "@wasm.trunc_u_float64_to_int32"),
+      ("reinterpretF32", "@wasm.reinterpret_float32"),
+      ("extendS8", "@wasm.extend_s8_int32"),
+      ("extendS16", "@wasm.extend_s16_int32"),
     ]),
   );
 
 let primitive_map_i64 =
   StringHash.of_seq(
-    List.to_seq([
-      ("load", WasmPrim2(WasmLoadI64)),
-      ("store", WasmPrimN(WasmStoreI64)),
-      (
-        "clz",
-        WasmPrim1(
-          WasmUnaryI64({
-            wasm_op: Op_clz_int64,
-            arg_type: Wasm_int64,
-            ret_type: Wasm_int64,
-          }),
-        ),
-      ),
-      (
-        "ctz",
-        WasmPrim1(
-          WasmUnaryI64({
-            wasm_op: Op_ctz_int64,
-            arg_type: Wasm_int64,
-            ret_type: Wasm_int64,
-          }),
-        ),
-      ),
-      (
-        "popcnt",
-        WasmPrim1(
-          WasmUnaryI64({
-            wasm_op: Op_popcnt_int64,
-            arg_type: Wasm_int64,
-            ret_type: Wasm_int64,
-          }),
-        ),
-      ),
-      (
-        "eqz",
-        WasmPrim1(
-          WasmUnaryI64({
-            wasm_op: Op_eq_z_int64,
-            arg_type: Wasm_int64,
-            ret_type: Grain_bool,
-          }),
-        ),
-      ),
-      (
-        "add",
-        WasmPrim2(
-          WasmBinaryI64({
-            wasm_op: Op_add_int64,
-            arg_types: (Wasm_int64, Wasm_int64),
-            ret_type: Wasm_int64,
-          }),
-        ),
-      ),
-      (
-        "sub",
-        WasmPrim2(
-          WasmBinaryI64({
-            wasm_op: Op_sub_int64,
-            arg_types: (Wasm_int64, Wasm_int64),
-            ret_type: Wasm_int64,
-          }),
-        ),
-      ),
-      (
-        "mul",
-        WasmPrim2(
-          WasmBinaryI64({
-            wasm_op: Op_mul_int64,
-            arg_types: (Wasm_int64, Wasm_int64),
-            ret_type: Wasm_int64,
-          }),
-        ),
-      ),
-      (
-        "divS",
-        WasmPrim2(
-          WasmBinaryI64({
-            wasm_op: Op_div_s_int64,
-            arg_types: (Wasm_int64, Wasm_int64),
-            ret_type: Wasm_int64,
-          }),
-        ),
-      ),
-      (
-        "divU",
-        WasmPrim2(
-          WasmBinaryI64({
-            wasm_op: Op_div_u_int64,
-            arg_types: (Wasm_int64, Wasm_int64),
-            ret_type: Wasm_int64,
-          }),
-        ),
-      ),
-      (
-        "remS",
-        WasmPrim2(
-          WasmBinaryI64({
-            wasm_op: Op_rem_s_int64,
-            arg_types: (Wasm_int64, Wasm_int64),
-            ret_type: Wasm_int64,
-          }),
-        ),
-      ),
-      (
-        "remU",
-        WasmPrim2(
-          WasmBinaryI64({
-            wasm_op: Op_rem_u_int64,
-            arg_types: (Wasm_int64, Wasm_int64),
-            ret_type: Wasm_int64,
-          }),
-        ),
-      ),
-      (
-        "and",
-        WasmPrim2(
-          WasmBinaryI64({
-            wasm_op: Op_and_int64,
-            arg_types: (Wasm_int64, Wasm_int64),
-            ret_type: Wasm_int64,
-          }),
-        ),
-      ),
-      (
-        "or",
-        WasmPrim2(
-          WasmBinaryI64({
-            wasm_op: Op_or_int64,
-            arg_types: (Wasm_int64, Wasm_int64),
-            ret_type: Wasm_int64,
-          }),
-        ),
-      ),
-      (
-        "xor",
-        WasmPrim2(
-          WasmBinaryI64({
-            wasm_op: Op_xor_int64,
-            arg_types: (Wasm_int64, Wasm_int64),
-            ret_type: Wasm_int64,
-          }),
-        ),
-      ),
-      (
-        "shl",
-        WasmPrim2(
-          WasmBinaryI64({
-            wasm_op: Op_shl_int64,
-            arg_types: (Wasm_int64, Wasm_int64),
-            ret_type: Wasm_int64,
-          }),
-        ),
-      ),
-      (
-        "shrU",
-        WasmPrim2(
-          WasmBinaryI64({
-            wasm_op: Op_shr_u_int64,
-            arg_types: (Wasm_int64, Wasm_int64),
-            ret_type: Wasm_int64,
-          }),
-        ),
-      ),
-      (
-        "shrS",
-        WasmPrim2(
-          WasmBinaryI64({
-            wasm_op: Op_shr_s_int64,
-            arg_types: (Wasm_int64, Wasm_int64),
-            ret_type: Wasm_int64,
-          }),
-        ),
-      ),
-      (
-        "rotl",
-        WasmPrim2(
-          WasmBinaryI64({
-            wasm_op: Op_rot_l_int64,
-            arg_types: (Wasm_int64, Wasm_int64),
-            ret_type: Wasm_int64,
-          }),
-        ),
-      ),
-      (
-        "rotr",
-        WasmPrim2(
-          WasmBinaryI64({
-            wasm_op: Op_rot_r_int64,
-            arg_types: (Wasm_int64, Wasm_int64),
-            ret_type: Wasm_int64,
-          }),
-        ),
-      ),
-      (
-        "eq",
-        WasmPrim2(
-          WasmBinaryI64({
-            wasm_op: Op_eq_int64,
-            arg_types: (Wasm_int64, Wasm_int64),
-            ret_type: Grain_bool,
-          }),
-        ),
-      ),
-      (
-        "ne",
-        WasmPrim2(
-          WasmBinaryI64({
-            wasm_op: Op_ne_int64,
-            arg_types: (Wasm_int64, Wasm_int64),
-            ret_type: Grain_bool,
-          }),
-        ),
-      ),
-      (
-        "ltS",
-        WasmPrim2(
-          WasmBinaryI64({
-            wasm_op: Op_lt_s_int64,
-            arg_types: (Wasm_int64, Wasm_int64),
-            ret_type: Grain_bool,
-          }),
-        ),
-      ),
-      (
-        "ltU",
-        WasmPrim2(
-          WasmBinaryI64({
-            wasm_op: Op_lt_u_int64,
-            arg_types: (Wasm_int64, Wasm_int64),
-            ret_type: Grain_bool,
-          }),
-        ),
-      ),
-      (
-        "leS",
-        WasmPrim2(
-          WasmBinaryI64({
-            wasm_op: Op_le_s_int64,
-            arg_types: (Wasm_int64, Wasm_int64),
-            ret_type: Grain_bool,
-          }),
-        ),
-      ),
-      (
-        "leU",
-        WasmPrim2(
-          WasmBinaryI64({
-            wasm_op: Op_le_u_int64,
-            arg_types: (Wasm_int64, Wasm_int64),
-            ret_type: Grain_bool,
-          }),
-        ),
-      ),
-      (
-        "gtS",
-        WasmPrim2(
-          WasmBinaryI64({
-            wasm_op: Op_gt_s_int64,
-            arg_types: (Wasm_int64, Wasm_int64),
-            ret_type: Grain_bool,
-          }),
-        ),
-      ),
-      (
-        "gtU",
-        WasmPrim2(
-          WasmBinaryI64({
-            wasm_op: Op_gt_u_int64,
-            arg_types: (Wasm_int64, Wasm_int64),
-            ret_type: Grain_bool,
-          }),
-        ),
-      ),
-      (
-        "geS",
-        WasmPrim2(
-          WasmBinaryI64({
-            wasm_op: Op_ge_s_int64,
-            arg_types: (Wasm_int64, Wasm_int64),
-            ret_type: Grain_bool,
-          }),
-        ),
-      ),
-      (
-        "geU",
-        WasmPrim2(
-          WasmBinaryI64({
-            wasm_op: Op_ge_u_int64,
-            arg_types: (Wasm_int64, Wasm_int64),
-            ret_type: Grain_bool,
-          }),
-        ),
-      ),
-    ]),
+    List.to_seq(
+      [],
+        // FIXME: put the stuff here
+    ),
   );
 
-let get_primitive_i32 = id => StringHash.find_opt(primitive_map_i32, id);
-let get_primitive_i64 = id => StringHash.find_opt(primitive_map_i64, id);
+let get_primitive = (primitive_map, id) => {
+  Translprim.(
+    switch (StringHash.find_opt(primitive_map, id)) {
+    | Some(prim) =>
+      switch (PrimMap.find_opt(prim_map, prim)) {
+      | Some(Primitive1(prim)) => Some(WasmPrim1(prim))
+      | Some(Primitive2(prim)) => Some(WasmPrim2(prim))
+      | Some(PrimitiveN(prim)) => Some(WasmPrimN(prim))
+      | None => None
+      }
+    | None => None
+    }
+  );
+};
+
+let get_primitive_i32 = get_primitive(primitive_map_i32);
+let get_primitive_i64 = get_primitive(primitive_map_i64);
 
 let analyze = ({imports, body, analyses}) => {
   inline_wasm_tbl := Ident.empty;

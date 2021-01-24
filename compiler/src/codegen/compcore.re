@@ -3912,7 +3912,12 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
   let _ =
     Module.set_features(
       wasm_mod,
-      [Features.mvp, Features.multivalue, Features.tail_call],
+      [
+        Features.mvp,
+        Features.multivalue,
+        Features.tail_call,
+        Features.sign_ext,
+      ],
     );
   let _ =
     Memory.set_memory(wasm_mod, 0, Memory.unlimited, "memory", [], false);

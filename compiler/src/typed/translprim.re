@@ -373,7 +373,7 @@ let prim_map =
         Primitive1(
           WasmUnaryI32({
             wasm_op: Op_wrap_int64,
-            arg_type: Wasm_int32,
+            arg_type: Wasm_int64,
             ret_type: Wasm_int32,
           }),
         ),

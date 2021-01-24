@@ -40,15 +40,15 @@ export primitive geS : (WasmI32, WasmI32) -> Bool = "@wasm.ge_s_int32"
 export primitive geU : (WasmI32, WasmI32) -> Bool = "@wasm.ge_u_int32"
 
 // Conversion instructions
-// export primitive wrapI64 : WasmI64 -> WasmI32 = "@wasm.wrap_int64"
-// export primitive truncF32S : WasmF32 -> WasmI32 = "@wasm.trunc_s_float32_to_int32"
-// export primitive truncF32U : WasmF32 -> WasmI32 = "@wasm.trunc_u_float32_to_int32"
-// export primitive truncF64S : WasmF64 -> WasmI32 = "@wasm.trunc_s_float64_to_int32"
-// export primitive truncF64U : WasmF64 -> WasmI32 = "@wasm.trunc_u_float64_to_int32"
-// export primitive truncF64U : WasmF64 -> WasmI32 = "@wasm.trunc_u_float64_to_int32"
-// export primitive reinterpretF32 : WasmF32 -> WasmI32 = "@wasm.reinterpret_float32"
-// export primitive extendS8 : WasmI32 -> WasmI32 = "@wasm.extend_s8_int32"
-// export primitive extendS16 : WasmI32 -> WasmI32 = "@wasm.extend_s16_int32"
+export primitive wrapI64 : WasmI64 -> WasmI32 = "@wasm.wrap_int64"
+export primitive truncF32S : WasmF32 -> WasmI32 = "@wasm.trunc_s_float32_to_int32"
+export primitive truncF32U : WasmF32 -> WasmI32 = "@wasm.trunc_u_float32_to_int32"
+export primitive truncF64S : WasmF64 -> WasmI32 = "@wasm.trunc_s_float64_to_int32"
+export primitive truncF64U : WasmF64 -> WasmI32 = "@wasm.trunc_u_float64_to_int32"
+export primitive truncF64U : WasmF64 -> WasmI32 = "@wasm.trunc_u_float64_to_int32"
+export primitive reinterpretF32 : WasmF32 -> WasmI32 = "@wasm.reinterpret_float32"
+export primitive extendS8 : WasmI32 -> WasmI32 = "@wasm.extend_s8_int32"
+export primitive extendS16 : WasmI32 -> WasmI32 = "@wasm.extend_s16_int32"
 
 // Utilities
 export let print = (val) => {
