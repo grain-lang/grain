@@ -46,38 +46,122 @@ let primitive_map_i32 =
       ("toGrain", WasmPrim1(WasmToGrain)),
       ("load", WasmPrim2(WasmLoadI32)),
       ("store", WasmPrimN(WasmStoreI32)),
-      ("clz", WasmPrim1(WasmUnaryI32({op: "clz_i32", boolean: false}))),
-      ("ctz", WasmPrim1(WasmUnaryI32({op: "ctz_i32", boolean: false}))),
+      (
+        "clz",
+        WasmPrim1(WasmUnaryI32({wasm_op: Op_clz_int32, boolean: false})),
+      ),
+      (
+        "ctz",
+        WasmPrim1(WasmUnaryI32({wasm_op: Op_ctz_int32, boolean: false})),
+      ),
       (
         "popcnt",
-        WasmPrim1(WasmUnaryI32({op: "popcnt_i32", boolean: false})),
+        WasmPrim1(WasmUnaryI32({wasm_op: Op_popcnt_int32, boolean: false})),
       ),
-      ("eqz", WasmPrim1(WasmUnaryI32({op: "eq_z_i32", boolean: true}))),
-      ("add", WasmPrim2(WasmBinaryI32({op: "add_i32", boolean: false}))),
-      ("sub", WasmPrim2(WasmBinaryI32({op: "sub_i32", boolean: false}))),
-      ("mul", WasmPrim2(WasmBinaryI32({op: "mul_i32", boolean: false}))),
-      ("divS", WasmPrim2(WasmBinaryI32({op: "div_s_i32", boolean: false}))),
-      ("divU", WasmPrim2(WasmBinaryI32({op: "div_u_i32", boolean: false}))),
-      ("remS", WasmPrim2(WasmBinaryI32({op: "rem_s_i32", boolean: false}))),
-      ("remU", WasmPrim2(WasmBinaryI32({op: "rem_u_i32", boolean: false}))),
-      ("and", WasmPrim2(WasmBinaryI32({op: "and_i32", boolean: false}))),
-      ("or", WasmPrim2(WasmBinaryI32({op: "or_i32", boolean: false}))),
-      ("xor", WasmPrim2(WasmBinaryI32({op: "xor_i32", boolean: false}))),
-      ("shl", WasmPrim2(WasmBinaryI32({op: "shl_i32", boolean: false}))),
-      ("shrU", WasmPrim2(WasmBinaryI32({op: "shr_u_i32", boolean: false}))),
-      ("shrS", WasmPrim2(WasmBinaryI32({op: "shr_s_i32", boolean: false}))),
-      ("rotl", WasmPrim2(WasmBinaryI32({op: "rot_l_i32", boolean: false}))),
-      ("rotr", WasmPrim2(WasmBinaryI32({op: "rot_r_i32", boolean: false}))),
-      ("eq", WasmPrim2(WasmBinaryI32({op: "eq_i32", boolean: true}))),
-      ("ne", WasmPrim2(WasmBinaryI32({op: "ne_i32", boolean: true}))),
-      ("ltS", WasmPrim2(WasmBinaryI32({op: "lt_s_i32", boolean: true}))),
-      ("ltU", WasmPrim2(WasmBinaryI32({op: "lt_u_i32", boolean: true}))),
-      ("leS", WasmPrim2(WasmBinaryI32({op: "le_s_i32", boolean: true}))),
-      ("leU", WasmPrim2(WasmBinaryI32({op: "le_u_i32", boolean: true}))),
-      ("gtS", WasmPrim2(WasmBinaryI32({op: "gt_s_i32", boolean: true}))),
-      ("gtU", WasmPrim2(WasmBinaryI32({op: "gt_u_i32", boolean: true}))),
-      ("geS", WasmPrim2(WasmBinaryI32({op: "ge_s_i32", boolean: true}))),
-      ("geU", WasmPrim2(WasmBinaryI32({op: "ge_u_i32", boolean: true}))),
+      (
+        "eqz",
+        WasmPrim1(WasmUnaryI32({wasm_op: Op_eq_z_int32, boolean: true})),
+      ),
+      (
+        "add",
+        WasmPrim2(WasmBinaryI32({wasm_op: Op_add_int32, boolean: false})),
+      ),
+      (
+        "sub",
+        WasmPrim2(WasmBinaryI32({wasm_op: Op_sub_int32, boolean: false})),
+      ),
+      (
+        "mul",
+        WasmPrim2(WasmBinaryI32({wasm_op: Op_mul_int32, boolean: false})),
+      ),
+      (
+        "divS",
+        WasmPrim2(WasmBinaryI32({wasm_op: Op_div_s_int32, boolean: false})),
+      ),
+      (
+        "divU",
+        WasmPrim2(WasmBinaryI32({wasm_op: Op_div_u_int32, boolean: false})),
+      ),
+      (
+        "remS",
+        WasmPrim2(WasmBinaryI32({wasm_op: Op_rem_s_int32, boolean: false})),
+      ),
+      (
+        "remU",
+        WasmPrim2(WasmBinaryI32({wasm_op: Op_rem_u_int32, boolean: false})),
+      ),
+      (
+        "and",
+        WasmPrim2(WasmBinaryI32({wasm_op: Op_and_int32, boolean: false})),
+      ),
+      (
+        "or",
+        WasmPrim2(WasmBinaryI32({wasm_op: Op_or_int32, boolean: false})),
+      ),
+      (
+        "xor",
+        WasmPrim2(WasmBinaryI32({wasm_op: Op_xor_int32, boolean: false})),
+      ),
+      (
+        "shl",
+        WasmPrim2(WasmBinaryI32({wasm_op: Op_shl_int32, boolean: false})),
+      ),
+      (
+        "shrU",
+        WasmPrim2(WasmBinaryI32({wasm_op: Op_shr_u_int32, boolean: false})),
+      ),
+      (
+        "shrS",
+        WasmPrim2(WasmBinaryI32({wasm_op: Op_shr_s_int32, boolean: false})),
+      ),
+      (
+        "rotl",
+        WasmPrim2(WasmBinaryI32({wasm_op: Op_rot_l_int32, boolean: false})),
+      ),
+      (
+        "rotr",
+        WasmPrim2(WasmBinaryI32({wasm_op: Op_rot_r_int32, boolean: false})),
+      ),
+      (
+        "eq",
+        WasmPrim2(WasmBinaryI32({wasm_op: Op_eq_int32, boolean: true})),
+      ),
+      (
+        "ne",
+        WasmPrim2(WasmBinaryI32({wasm_op: Op_ne_int32, boolean: true})),
+      ),
+      (
+        "ltS",
+        WasmPrim2(WasmBinaryI32({wasm_op: Op_lt_s_int32, boolean: true})),
+      ),
+      (
+        "ltU",
+        WasmPrim2(WasmBinaryI32({wasm_op: Op_lt_u_int32, boolean: true})),
+      ),
+      (
+        "leS",
+        WasmPrim2(WasmBinaryI32({wasm_op: Op_le_s_int32, boolean: true})),
+      ),
+      (
+        "leU",
+        WasmPrim2(WasmBinaryI32({wasm_op: Op_le_u_int32, boolean: true})),
+      ),
+      (
+        "gtS",
+        WasmPrim2(WasmBinaryI32({wasm_op: Op_gt_s_int32, boolean: true})),
+      ),
+      (
+        "gtU",
+        WasmPrim2(WasmBinaryI32({wasm_op: Op_gt_u_int32, boolean: true})),
+      ),
+      (
+        "geS",
+        WasmPrim2(WasmBinaryI32({wasm_op: Op_ge_s_int32, boolean: true})),
+      ),
+      (
+        "geU",
+        WasmPrim2(WasmBinaryI32({wasm_op: Op_ge_u_int32, boolean: true})),
+      ),
     ]),
   );
 
@@ -86,38 +170,122 @@ let primitive_map_i64 =
     List.to_seq([
       ("load", WasmPrim2(WasmLoadI64)),
       ("store", WasmPrimN(WasmStoreI64)),
-      ("clz", WasmPrim1(WasmUnaryI64({op: "clz_i64", boolean: false}))),
-      ("ctz", WasmPrim1(WasmUnaryI64({op: "ctz_i64", boolean: false}))),
+      (
+        "clz",
+        WasmPrim1(WasmUnaryI64({wasm_op: Op_clz_int64, boolean: false})),
+      ),
+      (
+        "ctz",
+        WasmPrim1(WasmUnaryI64({wasm_op: Op_ctz_int64, boolean: false})),
+      ),
       (
         "popcnt",
-        WasmPrim1(WasmUnaryI64({op: "popcnt_i64", boolean: false})),
+        WasmPrim1(WasmUnaryI64({wasm_op: Op_popcnt_int64, boolean: false})),
       ),
-      ("eqz", WasmPrim1(WasmUnaryI64({op: "eq_z_i64", boolean: true}))),
-      ("add", WasmPrim2(WasmBinaryI64({op: "add_i64", boolean: false}))),
-      ("sub", WasmPrim2(WasmBinaryI64({op: "sub_i64", boolean: false}))),
-      ("mul", WasmPrim2(WasmBinaryI64({op: "mul_i64", boolean: false}))),
-      ("divS", WasmPrim2(WasmBinaryI64({op: "div_s_i64", boolean: false}))),
-      ("divU", WasmPrim2(WasmBinaryI64({op: "div_u_i64", boolean: false}))),
-      ("remS", WasmPrim2(WasmBinaryI64({op: "rem_s_i64", boolean: false}))),
-      ("remU", WasmPrim2(WasmBinaryI64({op: "rem_u_i64", boolean: false}))),
-      ("and", WasmPrim2(WasmBinaryI64({op: "and_i64", boolean: false}))),
-      ("or", WasmPrim2(WasmBinaryI64({op: "or_i64", boolean: false}))),
-      ("xor", WasmPrim2(WasmBinaryI64({op: "xor_i64", boolean: false}))),
-      ("shl", WasmPrim2(WasmBinaryI64({op: "shl_i64", boolean: false}))),
-      ("shrU", WasmPrim2(WasmBinaryI64({op: "shr_u_i64", boolean: false}))),
-      ("shrS", WasmPrim2(WasmBinaryI64({op: "shr_s_i64", boolean: false}))),
-      ("rotl", WasmPrim2(WasmBinaryI64({op: "rot_l_i64", boolean: false}))),
-      ("rotr", WasmPrim2(WasmBinaryI64({op: "rot_r_i64", boolean: false}))),
-      ("eq", WasmPrim2(WasmBinaryI64({op: "eq_i64", boolean: true}))),
-      ("ne", WasmPrim2(WasmBinaryI64({op: "ne_i64", boolean: true}))),
-      ("ltS", WasmPrim2(WasmBinaryI64({op: "lt_s_i64", boolean: true}))),
-      ("ltU", WasmPrim2(WasmBinaryI64({op: "lt_u_i64", boolean: true}))),
-      ("leS", WasmPrim2(WasmBinaryI64({op: "le_s_i64", boolean: true}))),
-      ("leU", WasmPrim2(WasmBinaryI64({op: "le_u_i64", boolean: true}))),
-      ("gtS", WasmPrim2(WasmBinaryI64({op: "gt_s_i64", boolean: true}))),
-      ("gtU", WasmPrim2(WasmBinaryI64({op: "gt_u_i64", boolean: true}))),
-      ("geS", WasmPrim2(WasmBinaryI64({op: "ge_s_i64", boolean: true}))),
-      ("geU", WasmPrim2(WasmBinaryI64({op: "ge_u_i64", boolean: true}))),
+      (
+        "eqz",
+        WasmPrim1(WasmUnaryI64({wasm_op: Op_eq_z_int64, boolean: true})),
+      ),
+      (
+        "add",
+        WasmPrim2(WasmBinaryI64({wasm_op: Op_add_int64, boolean: false})),
+      ),
+      (
+        "sub",
+        WasmPrim2(WasmBinaryI64({wasm_op: Op_sub_int64, boolean: false})),
+      ),
+      (
+        "mul",
+        WasmPrim2(WasmBinaryI64({wasm_op: Op_mul_int64, boolean: false})),
+      ),
+      (
+        "divS",
+        WasmPrim2(WasmBinaryI64({wasm_op: Op_div_s_int64, boolean: false})),
+      ),
+      (
+        "divU",
+        WasmPrim2(WasmBinaryI64({wasm_op: Op_div_u_int64, boolean: false})),
+      ),
+      (
+        "remS",
+        WasmPrim2(WasmBinaryI64({wasm_op: Op_rem_s_int64, boolean: false})),
+      ),
+      (
+        "remU",
+        WasmPrim2(WasmBinaryI64({wasm_op: Op_rem_u_int64, boolean: false})),
+      ),
+      (
+        "and",
+        WasmPrim2(WasmBinaryI64({wasm_op: Op_and_int64, boolean: false})),
+      ),
+      (
+        "or",
+        WasmPrim2(WasmBinaryI64({wasm_op: Op_or_int64, boolean: false})),
+      ),
+      (
+        "xor",
+        WasmPrim2(WasmBinaryI64({wasm_op: Op_xor_int64, boolean: false})),
+      ),
+      (
+        "shl",
+        WasmPrim2(WasmBinaryI64({wasm_op: Op_shl_int64, boolean: false})),
+      ),
+      (
+        "shrU",
+        WasmPrim2(WasmBinaryI64({wasm_op: Op_shr_u_int64, boolean: false})),
+      ),
+      (
+        "shrS",
+        WasmPrim2(WasmBinaryI64({wasm_op: Op_shr_s_int64, boolean: false})),
+      ),
+      (
+        "rotl",
+        WasmPrim2(WasmBinaryI64({wasm_op: Op_rot_l_int64, boolean: false})),
+      ),
+      (
+        "rotr",
+        WasmPrim2(WasmBinaryI64({wasm_op: Op_rot_r_int64, boolean: false})),
+      ),
+      (
+        "eq",
+        WasmPrim2(WasmBinaryI64({wasm_op: Op_eq_int64, boolean: true})),
+      ),
+      (
+        "ne",
+        WasmPrim2(WasmBinaryI64({wasm_op: Op_ne_int64, boolean: true})),
+      ),
+      (
+        "ltS",
+        WasmPrim2(WasmBinaryI64({wasm_op: Op_lt_s_int64, boolean: true})),
+      ),
+      (
+        "ltU",
+        WasmPrim2(WasmBinaryI64({wasm_op: Op_lt_u_int64, boolean: true})),
+      ),
+      (
+        "leS",
+        WasmPrim2(WasmBinaryI64({wasm_op: Op_le_s_int64, boolean: true})),
+      ),
+      (
+        "leU",
+        WasmPrim2(WasmBinaryI64({wasm_op: Op_le_u_int64, boolean: true})),
+      ),
+      (
+        "gtS",
+        WasmPrim2(WasmBinaryI64({wasm_op: Op_gt_s_int64, boolean: true})),
+      ),
+      (
+        "gtU",
+        WasmPrim2(WasmBinaryI64({wasm_op: Op_gt_u_int64, boolean: true})),
+      ),
+      (
+        "geS",
+        WasmPrim2(WasmBinaryI64({wasm_op: Op_ge_s_int64, boolean: true})),
+      ),
+      (
+        "geU",
+        WasmPrim2(WasmBinaryI64({wasm_op: Op_ge_u_int64, boolean: true})),
+      ),
     ]),
   );
 
