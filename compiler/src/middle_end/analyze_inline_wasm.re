@@ -89,10 +89,49 @@ let primitive_map_i32 =
 
 let primitive_map_i64 =
   StringHash.of_seq(
-    List.to_seq(
-      [],
-        // FIXME: put the stuff here
-    ),
+    List.to_seq([
+      ("load", "@wasm.load_int64"),
+      ("store", "@wasm.store_int64"),
+      ("clz", "@wasm.clz_int64"),
+      ("ctz", "@wasm.ctz_int64"),
+      ("popcnt", "@wasm.popcnt_int64"),
+      ("eqz", "@wasm.eq_z_int64"),
+      ("add", "@wasm.add_int64"),
+      ("sub", "@wasm.sub_int64"),
+      ("mul", "@wasm.mul_int64"),
+      ("divS", "@wasm.div_s_int64"),
+      ("divU", "@wasm.div_u_int64"),
+      ("remS", "@wasm.rem_s_int64"),
+      ("remU", "@wasm.rem_u_int64"),
+      ("and", "@wasm.and_int64"),
+      ("or", "@wasm.or_int64"),
+      ("xor", "@wasm.xor_int64"),
+      ("shl", "@wasm.shl_int64"),
+      ("shrU", "@wasm.shr_u_int64"),
+      ("shrS", "@wasm.shr_s_int64"),
+      ("rotl", "@wasm.rot_l_int64"),
+      ("rotr", "@wasm.rot_r_int64"),
+      ("eq", "@wasm.eq_int64"),
+      ("ne", "@wasm.ne_int64"),
+      ("ltS", "@wasm.lt_s_int64"),
+      ("ltU", "@wasm.lt_u_int64"),
+      ("leS", "@wasm.le_s_int64"),
+      ("leU", "@wasm.le_u_int64"),
+      ("gtS", "@wasm.gt_s_int64"),
+      ("gtU", "@wasm.gt_u_int64"),
+      ("geS", "@wasm.ge_s_int64"),
+      ("geU", "@wasm.ge_u_int64"),
+      ("extendI32S", "@wasm.extend_s_int32"),
+      ("extendI32U", "@wasm.extend_u_int32"),
+      ("truncF32S", "@wasm.trunc_s_float32_to_int64"),
+      ("truncF32U", "@wasm.trunc_u_float32_to_int64"),
+      ("truncF64S", "@wasm.trunc_s_float64_to_int64"),
+      ("truncF64U", "@wasm.trunc_u_float64_to_int64"),
+      ("reinterpretF64", "@wasm.reinterpret_float64"),
+      ("extendS8", "@wasm.extend_s8_int64"),
+      ("extendS16", "@wasm.extend_s16_int64"),
+      ("extendS32", "@wasm.extend_s16_int64"),
+    ]),
   );
 
 let get_primitive = (primitive_map, id) => {

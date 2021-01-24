@@ -748,6 +748,106 @@ let prim_map =
           }),
         ),
       ),
+      (
+        "@wasm.extend_s_int32",
+        Primitive1(
+          WasmUnaryI64({
+            wasm_op: Op_extend_s_int32,
+            arg_type: Wasm_int32,
+            ret_type: Wasm_int64,
+          }),
+        ),
+      ),
+      (
+        "@wasm.extend_u_int32",
+        Primitive1(
+          WasmUnaryI64({
+            wasm_op: Op_extend_u_int32,
+            arg_type: Wasm_int32,
+            ret_type: Wasm_int64,
+          }),
+        ),
+      ),
+      (
+        "@wasm.trunc_s_float32_to_int64",
+        Primitive1(
+          WasmUnaryI64({
+            wasm_op: Op_trunc_s_float32_to_int64,
+            arg_type: Wasm_float32,
+            ret_type: Wasm_int64,
+          }),
+        ),
+      ),
+      (
+        "@wasm.trunc_u_float32_to_int64",
+        Primitive1(
+          WasmUnaryI64({
+            wasm_op: Op_trunc_u_float32_to_int64,
+            arg_type: Wasm_float32,
+            ret_type: Wasm_int64,
+          }),
+        ),
+      ),
+      (
+        "@wasm.trunc_s_float64_to_int64",
+        Primitive1(
+          WasmUnaryI64({
+            wasm_op: Op_trunc_s_float64_to_int64,
+            arg_type: Wasm_float64,
+            ret_type: Wasm_int64,
+          }),
+        ),
+      ),
+      (
+        "@wasm.trunc_u_float64_to_int64",
+        Primitive1(
+          WasmUnaryI64({
+            wasm_op: Op_trunc_u_float64_to_int64,
+            arg_type: Wasm_float64,
+            ret_type: Wasm_int64,
+          }),
+        ),
+      ),
+      (
+        "@wasm.reinterpret_float64",
+        Primitive1(
+          WasmUnaryI64({
+            wasm_op: Op_reinterpret_float64,
+            arg_type: Wasm_float64,
+            ret_type: Wasm_int64,
+          }),
+        ),
+      ),
+      (
+        "@wasm.extend_s8_int64",
+        Primitive1(
+          WasmUnaryI64({
+            wasm_op: Op_extend_s8_int64,
+            arg_type: Wasm_int64,
+            ret_type: Wasm_int64,
+          }),
+        ),
+      ),
+      (
+        "@wasm.extend_s16_int64",
+        Primitive1(
+          WasmUnaryI64({
+            wasm_op: Op_extend_s16_int64,
+            arg_type: Wasm_int64,
+            ret_type: Wasm_int64,
+          }),
+        ),
+      ),
+      (
+        "@wasm.extend_s16_int64",
+        Primitive1(
+          WasmUnaryI64({
+            wasm_op: Op_extend_s16_int64,
+            arg_type: Wasm_int64,
+            ret_type: Wasm_int64,
+          }),
+        ),
+      ),
       ("@wasm.ofGrain", Primitive1(WasmOfGrain)),
       ("@wasm.toGrain", Primitive1(WasmToGrain)),
     ]),

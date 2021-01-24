@@ -38,6 +38,18 @@ export primitive gtU : (WasmI64, WasmI64) -> Bool = "@wasm.gt_u_int64"
 export primitive geS : (WasmI64, WasmI64) -> Bool = "@wasm.ge_s_int64"
 export primitive geU : (WasmI64, WasmI64) -> Bool = "@wasm.ge_u_int64"
 
+// WebAssembly Conversion instructions
+export primitive extendI32S : WasmI32 -> WasmI64 = "@wasm.extend_s_int32"
+export primitive extendI32U : WasmI32 -> WasmI64 = "@wasm.extend_u_int32"
+export primitive truncF32S : WasmF32 -> WasmI64 = "@wasm.trunc_s_float32_to_int64"
+export primitive truncF32U : WasmF32 -> WasmI64 = "@wasm.trunc_u_float32_to_int64"
+export primitive truncF64S : WasmF64 -> WasmI64 = "@wasm.trunc_s_float64_to_int64"
+export primitive truncF64U : WasmF64 -> WasmI64 = "@wasm.trunc_u_float64_to_int64"
+export primitive reinterpretF64 : WasmF64 -> WasmI64 = "@wasm.reinterpret_float64"
+export primitive extendS8 : WasmI64 -> WasmI64 = "@wasm.extend_s8_int64"
+export primitive extendS16 : WasmI64 -> WasmI64 = "@wasm.extend_s16_int64"
+export primitive extendS32 : WasmI64 -> WasmI64 = "@wasm.extend_s16_int64"
+
 // Conversions
 @disableGC
 export let toInt64 = (n) => {
