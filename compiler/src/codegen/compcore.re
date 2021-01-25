@@ -3200,7 +3200,6 @@ let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
       )
 
     | _ =>
-      // failwith("Offset provided to store operation must be an immediate.")
       Expression.block(
         wasm_mod,
         gensym_label("wasm_prim_store"),
@@ -3240,7 +3239,6 @@ let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
       )
 
     | _ =>
-      // failwith("Offset provided to store operation must be an immediate.")
       Expression.block(
         wasm_mod,
         gensym_label("wasm_prim_store"),
@@ -3279,7 +3277,6 @@ let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
       )
 
     | _ =>
-      // failwith("Offset provided to store operation must be an immediate.")
       Expression.block(
         wasm_mod,
         gensym_label("wasm_prim_store"),
