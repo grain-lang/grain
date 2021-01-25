@@ -42,6 +42,8 @@ module Const: {
   let float64: string => constant;
   let wasmi32: string => constant;
   let wasmi64: string => constant;
+  let wasmf32: string => constant;
+  let wasmf64: string => constant;
   let bool: bool => constant;
   let void: constant;
 };

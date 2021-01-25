@@ -18,6 +18,8 @@ include Parser_header
 %token <string> FLOAT64
 %token <string> WASMI32
 %token <string> WASMI64
+%token <string> WASMF32
+%token <string> WASMF64
 %token <string> ID
 %token <string> TYPEID
 %token <string> STRING
@@ -114,6 +116,8 @@ const :
   | dash_op? FLOAT64 { Const.float64 (if Option.is_some $1 then "-" ^ $2 else $2) }
   | dash_op? WASMI32 { Const.wasmi32 (if Option.is_some $1 then "-" ^ $2 else $2) }
   | dash_op? WASMI64 { Const.wasmi64 (if Option.is_some $1 then "-" ^ $2 else $2) }
+  | dash_op? WASMF32 { Const.wasmf32 (if Option.is_some $1 then "-" ^ $2 else $2) }
+  | dash_op? WASMF64 { Const.wasmf64 (if Option.is_some $1 then "-" ^ $2 else $2) }
   | TRUE { Const.bool true }
   | FALSE { Const.bool false }
   | VOID { Const.void }

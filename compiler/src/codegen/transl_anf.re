@@ -446,6 +446,8 @@ let compile_const = (c: Asttypes.constant) =>
   | Const_float64(f) => MConstF64(f)
   | Const_wasmi32(i32) => MConstLiteral(MConstI32(i32))
   | Const_wasmi64(i64) => MConstLiteral(MConstI64(i64))
+  | Const_wasmf32(f32) => MConstLiteral(MConstF32(f32))
+  | Const_wasmf64(f64) => MConstLiteral(MConstF64(f64))
   | Const_bool(b) when b == true => const_true
   | Const_bool(_) => const_false
   | Const_void => const_void

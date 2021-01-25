@@ -57,5 +57,5 @@ export primitive toGrain : WasmI32 -> a = "@wasm.toGrain"
 
 // Utilities
 export let print = (val) => {
-  print(toString(shl(val, 1w)) ++ "w")
+  print(toString(shl(val, 1n)) ++ "n")
 }

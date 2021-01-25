@@ -62,26 +62,26 @@ export primitive extendS32 : WasmI64 -> WasmI64 = "@wasm.extend_s16_int64"
 // Grain Conversions
 @disableGC
 export let toInt64 = (n) => {
-  let _GRAIN_GENERIC_HEAP_TAG = 0b0011w
-  let _GRAIN_BOXED_NUM_HEAP_TAG = 6w
-  let _GRAIN_INT64_BOXED_NUM_TAG = 4w
+  let _GRAIN_GENERIC_HEAP_TAG = 0b0011n
+  let _GRAIN_BOXED_NUM_HEAP_TAG = 6n
+  let _GRAIN_INT64_BOXED_NUM_TAG = 4n
   
-  let ptr = Memory.malloc(16w)
-  WasmI32.store(ptr, _GRAIN_BOXED_NUM_HEAP_TAG, 0w)
-  WasmI32.store(ptr, _GRAIN_INT64_BOXED_NUM_TAG, 4w)
-  store(ptr, n, 8w)
+  let ptr = Memory.malloc(16n)
+  WasmI32.store(ptr, _GRAIN_BOXED_NUM_HEAP_TAG, 0n)
+  WasmI32.store(ptr, _GRAIN_INT64_BOXED_NUM_TAG, 4n)
+  store(ptr, n, 8n)
 
   WasmI32.toGrain(WasmI32.xor(ptr, _GRAIN_GENERIC_HEAP_TAG)) : Int64
 }
 
 @disableGC
 export let ofInt64 = (n: Int64) => {
-  let ptr = WasmI32.xor(WasmI32.ofGrain(n), 3w)
-  load(ptr, 8w)
+  let ptr = WasmI32.xor(WasmI32.ofGrain(n), 3n)
+  load(ptr, 8n)
 }
 
 // Utilities
 @disableGC
 export let print = (val) => {
-  print(toString(toInt64(val)) ++ "W")
+  print(toString(toInt64(val)) ++ "N")
 }
