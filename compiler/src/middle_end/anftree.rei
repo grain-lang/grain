@@ -213,8 +213,14 @@ type prim2 =
     | Int64Gte
     | Int64Lt
     | Int64Lte
-    | WasmLoadI32
-    | WasmLoadI64
+    | WasmLoadI32({
+        sz: int,
+        signed: bool,
+      })
+    | WasmLoadI64({
+        sz: int,
+        signed: bool,
+      })
     | WasmBinaryI32({
         wasm_op,
         arg_types: (wasm_prim_type, wasm_prim_type),
@@ -226,7 +232,8 @@ type prim2 =
         ret_type: wasm_prim_type,
       });
 
-type primn = Parsetree.primn = | WasmStoreI32 | WasmStoreI64;
+type primn =
+  Parsetree.primn = | WasmStoreI32({sz: int}) | WasmStoreI64({sz: int});
 
 /** Immediate expressions (requiring no computation) */
 

@@ -74,10 +74,55 @@ let prim_map =
       ("@int32.toNumber", Primitive1(Int32ToNumber)),
       ("@float32.toNumber", Primitive1(Float32ToNumber)),
       ("@float64.toNumber", Primitive1(Float64ToNumber)),
-      ("@wasm.load_int32", Primitive2(WasmLoadI32)),
-      ("@wasm.store_int32", PrimitiveN(WasmStoreI32)),
-      ("@wasm.load_int64", Primitive2(WasmLoadI64)),
-      ("@wasm.store_int64", PrimitiveN(WasmStoreI64)),
+      ("@wasm.load_int32", Primitive2(WasmLoadI32({sz: 4, signed: false}))),
+      (
+        "@wasm.load_8_s_int32",
+        Primitive2(WasmLoadI32({sz: 1, signed: true})),
+      ),
+      (
+        "@wasm.load_8_u_int32",
+        Primitive2(WasmLoadI32({sz: 1, signed: false})),
+      ),
+      (
+        "@wasm.load_16_s_int32",
+        Primitive2(WasmLoadI32({sz: 2, signed: true})),
+      ),
+      (
+        "@wasm.load_16_u_int32",
+        Primitive2(WasmLoadI32({sz: 2, signed: false})),
+      ),
+      ("@wasm.store_int32", PrimitiveN(WasmStoreI32({sz: 4}))),
+      ("@wasm.store_8_int32", PrimitiveN(WasmStoreI32({sz: 1}))),
+      ("@wasm.store_16_int32", PrimitiveN(WasmStoreI32({sz: 2}))),
+      ("@wasm.load_int64", Primitive2(WasmLoadI64({sz: 8, signed: false}))),
+      (
+        "@wasm.load_8_s_int64",
+        Primitive2(WasmLoadI64({sz: 1, signed: true})),
+      ),
+      (
+        "@wasm.load_8_u_int64",
+        Primitive2(WasmLoadI64({sz: 1, signed: false})),
+      ),
+      (
+        "@wasm.load_16_s_int64",
+        Primitive2(WasmLoadI64({sz: 2, signed: true})),
+      ),
+      (
+        "@wasm.load_16_u_int64",
+        Primitive2(WasmLoadI64({sz: 2, signed: false})),
+      ),
+      (
+        "@wasm.load_32_s_int64",
+        Primitive2(WasmLoadI64({sz: 4, signed: true})),
+      ),
+      (
+        "@wasm.load_32_u_int64",
+        Primitive2(WasmLoadI64({sz: 4, signed: false})),
+      ),
+      ("@wasm.store_int64", PrimitiveN(WasmStoreI64({sz: 8}))),
+      ("@wasm.store_8_int64", PrimitiveN(WasmStoreI32({sz: 1}))),
+      ("@wasm.store_16_int64", PrimitiveN(WasmStoreI32({sz: 2}))),
+      ("@wasm.store_32_int64", PrimitiveN(WasmStoreI32({sz: 4}))),
       (
         "@wasm.clz_int32",
         Primitive1(
@@ -874,7 +919,7 @@ let transl_prim = (env, desc) => {
       )
     | Primitive1(p) => Exp.lambda(~loc, [pat_a], Exp.prim1(~loc, p, id_a))
     | Primitive2(
-        (WasmBinaryI32(_) | WasmBinaryI64(_) | WasmLoadI32 | WasmLoadI64) as p,
+        (WasmBinaryI32(_) | WasmBinaryI64(_) | WasmLoadI32(_) | WasmLoadI64(_)) as p,
       ) =>
       Exp.lambda(
         ~loc,
@@ -884,7 +929,7 @@ let transl_prim = (env, desc) => {
       )
     | Primitive2(p) =>
       Exp.lambda(~loc, [pat_a, pat_b], Exp.prim2(~loc, p, id_a, id_b))
-    | PrimitiveN((WasmStoreI32 | WasmStoreI64) as p) =>
+    | PrimitiveN((WasmStoreI32(_) | WasmStoreI64(_)) as p) =>
       Exp.lambda(
         ~loc,
         ~attributes=diable_gc,

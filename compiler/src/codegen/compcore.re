@@ -3042,12 +3042,13 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
   | Int64Asr => failwith("Unreachable case; should never get here: Int64Asr")
   | ArrayMake => allocate_array_n(wasm_mod, env, arg1, arg2)
   | ArrayInit => allocate_array_init(wasm_mod, env, arg1, arg2)
-  | WasmLoadI32 =>
+  | WasmLoadI32({sz, signed}) =>
     switch (arg2) {
     | MImmConst(MConstLiteral(MConstI32(offset))) =>
-      load(~offset=Int32.to_int(offset), wasm_mod, compiled_arg1())
+      load(~sz, ~offset=Int32.to_int(offset), wasm_mod, compiled_arg1())
     | _ =>
       load(
+        ~sz,
         wasm_mod,
         Expression.binary(
           wasm_mod,
@@ -3057,10 +3058,11 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
         ),
       )
     }
-  | WasmLoadI64 =>
+  | WasmLoadI64({sz, signed}) =>
     switch (arg2) {
     | MImmConst(MConstLiteral(MConstI32(offset))) =>
       load(
+        ~sz,
         ~ty=Type.int64,
         ~offset=Int32.to_int(offset),
         wasm_mod,
@@ -3068,6 +3070,7 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
       )
     | _ =>
       load(
+        ~sz,
         ~ty=Type.int64,
         wasm_mod,
         Expression.binary(
@@ -3093,7 +3096,7 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
 
 let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
   switch (p) {
-  | WasmStoreI32 =>
+  | WasmStoreI32({sz}) =>
     switch (List.nth(args, 2)) {
     | MImmConst(MConstLiteral(MConstI32(offset))) =>
       Expression.block(
@@ -3101,6 +3104,7 @@ let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
         gensym_label("wasm_prim_store"),
         [
           store(
+            ~sz,
             ~offset=Int32.to_int(offset),
             wasm_mod,
             compile_imm(wasm_mod, env, List.nth(args, 0)),
@@ -3116,6 +3120,7 @@ let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
         gensym_label("wasm_prim_store"),
         [
           store(
+            ~sz,
             wasm_mod,
             Expression.binary(
               wasm_mod,
@@ -3129,7 +3134,7 @@ let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
         ],
       )
     }
-  | WasmStoreI64 =>
+  | WasmStoreI64({sz}) =>
     switch (List.nth(args, 2)) {
     | MImmConst(MConstLiteral(MConstI32(offset))) =>
       Expression.block(
@@ -3137,6 +3142,7 @@ let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
         gensym_label("wasm_prim_store"),
         [
           store(
+            ~sz,
             ~ty=Type.int64,
             ~offset=Int32.to_int(offset),
             wasm_mod,
@@ -3154,6 +3160,7 @@ let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
         gensym_label("wasm_prim_store"),
         [
           store(
+            ~sz,
             ~ty=Type.int64,
             wasm_mod,
             Expression.binary(

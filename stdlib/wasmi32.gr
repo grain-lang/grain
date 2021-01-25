@@ -1,10 +1,12 @@
-// Conversions
-export primitive ofGrain : a -> WasmI32 = "@wasm.ofGrain"
-export primitive toGrain : WasmI32 -> a = "@wasm.toGrain"
-
 // WebAssembly Memory Instructions
 export primitive load : (WasmI32, WasmI32) -> WasmI32 = "@wasm.load_int32"
+export primitive load8S : (WasmI32, WasmI32) -> WasmI32 = "@wasm.load_8_s_int32"
+export primitive load8U : (WasmI32, WasmI32) -> WasmI32 = "@wasm.load_8_u_int32"
+export primitive load16S : (WasmI32, WasmI32) -> WasmI32 = "@wasm.load_16_s_int32"
+export primitive load16U : (WasmI32, WasmI32) -> WasmI32 = "@wasm.load_16_u_int32"
 export primitive store : (WasmI32, WasmI32, WasmI32) -> Void = "@wasm.store_int32"
+export primitive store8 : (WasmI32, WasmI32, WasmI32) -> Void = "@wasm.store_8_int32"
+export primitive store16 : (WasmI32, WasmI32, WasmI32) -> Void = "@wasm.store_16_int32"
 
 // WebAssembly Unary Instructions
 export primitive clz : WasmI32 -> WasmI32 = "@wasm.clz_int32"
@@ -39,7 +41,7 @@ export primitive gtU : (WasmI32, WasmI32) -> Bool = "@wasm.gt_u_int32"
 export primitive geS : (WasmI32, WasmI32) -> Bool = "@wasm.ge_s_int32"
 export primitive geU : (WasmI32, WasmI32) -> Bool = "@wasm.ge_u_int32"
 
-// WebAssembly Conversion instructions
+// WebAssembly Conversion Instructions
 export primitive wrapI64 : WasmI64 -> WasmI32 = "@wasm.wrap_int64"
 export primitive truncF32S : WasmF32 -> WasmI32 = "@wasm.trunc_s_float32_to_int32"
 export primitive truncF32U : WasmF32 -> WasmI32 = "@wasm.trunc_u_float32_to_int32"
@@ -48,6 +50,10 @@ export primitive truncF64U : WasmF64 -> WasmI32 = "@wasm.trunc_u_float64_to_int3
 export primitive reinterpretF32 : WasmF32 -> WasmI32 = "@wasm.reinterpret_float32"
 export primitive extendS8 : WasmI32 -> WasmI32 = "@wasm.extend_s8_int32"
 export primitive extendS16 : WasmI32 -> WasmI32 = "@wasm.extend_s16_int32"
+
+// Grain Conversions
+export primitive ofGrain : a -> WasmI32 = "@wasm.ofGrain"
+export primitive toGrain : WasmI32 -> a = "@wasm.toGrain"
 
 // Utilities
 export let print = (val) => {

@@ -54,8 +54,7 @@ let const_void = () => compile_const(const_void);
 /* WebAssembly helpers */
 
 /* These instructions get helpers due to their verbosity */
-let store =
-    (~ty=Type.int32, ~align=2, ~offset=0, ~sz=None, wasm_mod, ptr, arg) => {
+let store = (~ty=Type.int32, ~align=?, ~offset=0, ~sz=?, wasm_mod, ptr, arg) => {
   let sz =
     Option.value(
       ~default=
@@ -66,10 +65,11 @@ let store =
         },
       sz,
     );
+  let align = Option.value(~default=sz, align);
   Expression.store(wasm_mod, sz, offset, align, ptr, arg, ty);
 };
 
-let load = (~ty=Type.int32, ~align=2, ~offset=0, ~sz=None, wasm_mod, ptr) => {
+let load = (~ty=Type.int32, ~align=?, ~offset=0, ~sz=?, wasm_mod, ptr) => {
   let sz =
     Option.value(
       ~default=
@@ -80,5 +80,6 @@ let load = (~ty=Type.int32, ~align=2, ~offset=0, ~sz=None, wasm_mod, ptr) => {
         },
       sz,
     );
+  let align = Option.value(~default=sz, align);
   Expression.load(wasm_mod, sz, offset, align, ty, ptr);
 };

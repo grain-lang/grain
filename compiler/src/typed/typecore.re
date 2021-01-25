@@ -206,12 +206,12 @@ let prim2_type =
       grain_type_of_wasm_prim_type(arg2_type),
       grain_type_of_wasm_prim_type(ret_type),
     )
-  | WasmLoadI32 => (
+  | WasmLoadI32(_) => (
       Builtin_types.type_wasmi32,
       Builtin_types.type_wasmi32,
       Builtin_types.type_wasmi32,
     )
-  | WasmLoadI64 => (
+  | WasmLoadI64(_) => (
       Builtin_types.type_wasmi32,
       Builtin_types.type_wasmi32,
       Builtin_types.type_wasmi64,
@@ -219,7 +219,7 @@ let prim2_type =
 
 let primn_type =
   fun
-  | WasmStoreI32 => (
+  | WasmStoreI32(_) => (
       [
         Builtin_types.type_wasmi32,
         Builtin_types.type_wasmi32,
@@ -227,7 +227,7 @@ let primn_type =
       ],
       Builtin_types.type_void,
     )
-  | WasmStoreI64 => (
+  | WasmStoreI64(_) => (
       [
         Builtin_types.type_wasmi32,
         Builtin_types.type_wasmi64,
