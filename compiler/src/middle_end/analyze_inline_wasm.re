@@ -202,6 +202,14 @@ let primitive_map_f64 =
     ]),
   );
 
+let primitive_map_memory =
+  StringHash.of_seq(
+    List.to_seq([
+      ("copy", "@wasm.memory_copy"),
+      ("fill", "@wasm.memory_fill"),
+    ])
+  );
+
 let get_primitive = (primitive_map, id) => {
   Translprim.(
     switch (StringHash.find_opt(primitive_map, id)) {
@@ -221,6 +229,7 @@ let get_primitive_i32 = get_primitive(primitive_map_i32);
 let get_primitive_i64 = get_primitive(primitive_map_i64);
 let get_primitive_f32 = get_primitive(primitive_map_f32);
 let get_primitive_f64 = get_primitive(primitive_map_f64);
+let get_primitive_memory = get_primitive(primitive_map_memory);
 
 let analyze = ({imports, body, analyses}) => {
   inline_wasm_tbl := Ident.empty;
@@ -248,6 +257,12 @@ let analyze = ({imports, body, analyses}) => {
     | GrainValue("wasmf64", name) =>
       mod_has_inlineable_wasm := true;
       switch (get_primitive_f64(name)) {
+      | Some(prim) => set_inlineable_wasm(imp_use_id, prim)
+      | None => ()
+      };
+    | GrainValue("memory", name) =>
+      mod_has_inlineable_wasm := true;
+      switch (get_primitive_memory(name)) {
       | Some(prim) => set_inlineable_wasm(imp_use_id, prim)
       | None => ()
       };

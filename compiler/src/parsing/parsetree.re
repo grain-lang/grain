@@ -400,7 +400,9 @@ type primn =
   | WasmStoreI32({sz: int})
   | WasmStoreI64({sz: int})
   | WasmStoreF32
-  | WasmStoreF64;
+  | WasmStoreF64
+  | WasmMemoryCopy
+  | WasmMemoryFill;
 
 [@deriving (sexp, yojson)]
 type attributes = Asttypes.attributes;

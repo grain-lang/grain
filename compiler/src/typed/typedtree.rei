@@ -269,7 +269,9 @@ type primn =
     | WasmStoreI32({sz: int})
     | WasmStoreI64({sz: int})
     | WasmStoreF32
-    | WasmStoreF64;
+    | WasmStoreF64
+    | WasmMemoryCopy
+    | WasmMemoryFill;
 
 type core_type = {
   ctyp_desc: core_type_desc,

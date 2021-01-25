@@ -264,6 +264,15 @@ let primn_type =
         Builtin_types.type_wasmi32,
       ],
       Builtin_types.type_void,
+    )
+  | WasmMemoryCopy
+  | WasmMemoryFill => (
+      [
+        Builtin_types.type_wasmi32,
+        Builtin_types.type_wasmi32,
+        Builtin_types.type_wasmi32,
+      ],
+      Builtin_types.type_void,
     );
 
 let maybe_add_pattern_variables_ghost = (loc_let, env, pv) =>

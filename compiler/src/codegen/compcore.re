@@ -3296,6 +3296,20 @@ let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
         ],
       )
     }
+  | WasmMemoryCopy =>
+    Expression.memory_copy(
+      wasm_mod,
+      compile_imm(wasm_mod, env, List.nth(args, 0)),
+      compile_imm(wasm_mod, env, List.nth(args, 1)),
+      compile_imm(wasm_mod, env, List.nth(args, 2)),
+    )
+  | WasmMemoryFill =>
+    Expression.memory_fill(
+      wasm_mod,
+      compile_imm(wasm_mod, env, List.nth(args, 0)),
+      compile_imm(wasm_mod, env, List.nth(args, 1)),
+      compile_imm(wasm_mod, env, List.nth(args, 2)),
+    )
   };
 };
 
