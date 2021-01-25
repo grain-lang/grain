@@ -15,22 +15,22 @@ license: "ISC"
 homepage: "https://github.com/ocaml/ocaml-lsp"
 bug-reports: "https://github.com/ocaml/ocaml-lsp/issues"
 depends: [
+  "dune" {>= "2.5"}
   "yojson"
   "stdlib-shims"
-  "menhir"
   "ppx_yojson_conv_lib"
   "dune-build-info"
+  "dot-merlin-reader"
   "csexp" {>= "1.2.3"}
   "result" {>= "1.5"}
   "ocamlformat" {with-test}
-  "reason" {with-test}
   "ocamlfind" {>= "1.5.2"}
+  "odoc" {with-doc}
   "ocaml" {>= "4.06" & < "4.12"}
-  "dune" {>= "2.5.0"}
 ]
 dev-repo: "git+https://github.com/ocaml/ocaml-lsp.git"
 build: [
-  ["dune" "subst"] {pinned}
+  ["dune" "subst"] {dev}
   [
     "dune"
     "build"
@@ -40,12 +40,12 @@ build: [
     "--release"
   ]
 ]
-x-commit-hash: "fee074471b2c345f7e42c6ed3482363279d4f32c"
+x-commit-hash: "92924b6e36a91ce323b7f8eddfe20def4173e6e5"
 url {
   src:
-    "https://github.com/ocaml/ocaml-lsp/releases/download/1.1.0/ocaml-lsp-server-1.1.0.tbz"
+    "https://github.com/ocaml/ocaml-lsp/releases/download/1.4.0/jsonrpc-1.4.0.tbz"
   checksum: [
-    "sha256=fa0ca1d3c5c3377f798c221381228a65e8f49fece42715d279ebe91f2f4f74c8"
-    "sha512=c00ad47478a4ddfebe3798895700d2bececa29a610c7757619f47a5b90ede921afa56efc776df3a1c4a8b2f082898423a5806d00c041dae137da1b57ee487a9b"
+    "sha256=fd138e6c4fcff32c6d15eb66cc9391b7e1183717a6d1a47c688c7f6d320a159f"
+    "sha512=567a73b3c10bb59c5a4d4e8291d1aeefdfd34438a95313fba8a485638294ca5fb8034334719631243c304d3328c27afa90dfd564fdb1e7390507a06db3a4ad03"
   ]
 }
