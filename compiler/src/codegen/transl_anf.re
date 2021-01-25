@@ -711,7 +711,7 @@ let rec compile_comp = (env, c) => {
         ),
       )
     | CApp((f, (argsty, retty)), args, true) =>
-      /* TODO: Utilize MCallKnown */
+      /* TODO: Utilize MReturnCallKnown */
 
       MReturnCallIndirect(
         (
