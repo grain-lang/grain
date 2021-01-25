@@ -123,6 +123,10 @@ let prim_map =
       ("@wasm.store_8_int64", PrimitiveN(WasmStoreI32({sz: 1}))),
       ("@wasm.store_16_int64", PrimitiveN(WasmStoreI32({sz: 2}))),
       ("@wasm.store_32_int64", PrimitiveN(WasmStoreI32({sz: 4}))),
+      ("@wasm.load_float32", Primitive2(WasmLoadF32)),
+      ("@wasm.store_float32", PrimitiveN(WasmStoreF32)),
+      ("@wasm.load_float64", Primitive2(WasmLoadF64)),
+      ("@wasm.store_float64", PrimitiveN(WasmStoreF64)),
       (
         "@wasm.clz_int32",
         Primitive1(
@@ -893,6 +897,526 @@ let prim_map =
           }),
         ),
       ),
+      (
+        "@wasm.neg_float32",
+        Primitive1(
+          WasmUnaryF32({
+            wasm_op: Op_neg_float32,
+            arg_type: Wasm_float32,
+            ret_type: Wasm_float32,
+          }),
+        ),
+      ),
+      (
+        "@wasm.abs_float32",
+        Primitive1(
+          WasmUnaryF32({
+            wasm_op: Op_abs_float32,
+            arg_type: Wasm_float32,
+            ret_type: Wasm_float32,
+          }),
+        ),
+      ),
+      (
+        "@wasm.ceil_float32",
+        Primitive1(
+          WasmUnaryF32({
+            wasm_op: Op_ceil_float32,
+            arg_type: Wasm_float32,
+            ret_type: Wasm_float32,
+          }),
+        ),
+      ),
+      (
+        "@wasm.floor_float32",
+        Primitive1(
+          WasmUnaryF32({
+            wasm_op: Op_floor_float32,
+            arg_type: Wasm_float32,
+            ret_type: Wasm_float32,
+          }),
+        ),
+      ),
+      (
+        "@wasm.trunc_float32",
+        Primitive1(
+          WasmUnaryF32({
+            wasm_op: Op_trunc_float32,
+            arg_type: Wasm_float32,
+            ret_type: Wasm_float32,
+          }),
+        ),
+      ),
+      (
+        "@wasm.nearest_float32",
+        Primitive1(
+          WasmUnaryF32({
+            wasm_op: Op_nearest_float32,
+            arg_type: Wasm_float32,
+            ret_type: Wasm_float32,
+          }),
+        ),
+      ),
+      (
+        "@wasm.sqrt_float32",
+        Primitive1(
+          WasmUnaryF32({
+            wasm_op: Op_sqrt_float32,
+            arg_type: Wasm_float32,
+            ret_type: Wasm_float32,
+          }),
+        ),
+      ),
+      (
+        "@wasm.add_float32",
+        Primitive2(
+          WasmBinaryF32({
+            wasm_op: Op_add_float32,
+            arg_types: (Wasm_float32, Wasm_float32),
+            ret_type: Wasm_float32,
+          }),
+        ),
+      ),
+      (
+        "@wasm.sub_float32",
+        Primitive2(
+          WasmBinaryF32({
+            wasm_op: Op_sub_float32,
+            arg_types: (Wasm_float32, Wasm_float32),
+            ret_type: Wasm_float32,
+          }),
+        ),
+      ),
+      (
+        "@wasm.mul_float32",
+        Primitive2(
+          WasmBinaryF32({
+            wasm_op: Op_mul_float32,
+            arg_types: (Wasm_float32, Wasm_float32),
+            ret_type: Wasm_float32,
+          }),
+        ),
+      ),
+      (
+        "@wasm.div_float32",
+        Primitive2(
+          WasmBinaryF32({
+            wasm_op: Op_div_float32,
+            arg_types: (Wasm_float32, Wasm_float32),
+            ret_type: Wasm_float32,
+          }),
+        ),
+      ),
+      (
+        "@wasm.copy_sign_float32",
+        Primitive2(
+          WasmBinaryF32({
+            wasm_op: Op_copy_sign_float32,
+            arg_types: (Wasm_float32, Wasm_float32),
+            ret_type: Wasm_float32,
+          }),
+        ),
+      ),
+      (
+        "@wasm.min_float32",
+        Primitive2(
+          WasmBinaryF32({
+            wasm_op: Op_min_float32,
+            arg_types: (Wasm_float32, Wasm_float32),
+            ret_type: Wasm_float32,
+          }),
+        ),
+      ),
+      (
+        "@wasm.max_float32",
+        Primitive2(
+          WasmBinaryF32({
+            wasm_op: Op_max_float32,
+            arg_types: (Wasm_float32, Wasm_float32),
+            ret_type: Wasm_float32,
+          }),
+        ),
+      ),
+      (
+        "@wasm.eq_float32",
+        Primitive2(
+          WasmBinaryF32({
+            wasm_op: Op_eq_float32,
+            arg_types: (Wasm_float32, Wasm_float32),
+            ret_type: Grain_bool,
+          }),
+        ),
+      ),
+      (
+        "@wasm.ne_float32",
+        Primitive2(
+          WasmBinaryF32({
+            wasm_op: Op_ne_float32,
+            arg_types: (Wasm_float32, Wasm_float32),
+            ret_type: Grain_bool,
+          }),
+        ),
+      ),
+      (
+        "@wasm.lt_float32",
+        Primitive2(
+          WasmBinaryF32({
+            wasm_op: Op_lt_float32,
+            arg_types: (Wasm_float32, Wasm_float32),
+            ret_type: Grain_bool,
+          }),
+        ),
+      ),
+      (
+        "@wasm.le_float32",
+        Primitive2(
+          WasmBinaryF32({
+            wasm_op: Op_le_float32,
+            arg_types: (Wasm_float32, Wasm_float32),
+            ret_type: Grain_bool,
+          }),
+        ),
+      ),
+      (
+        "@wasm.gt_float32",
+        Primitive2(
+          WasmBinaryF32({
+            wasm_op: Op_gt_float32,
+            arg_types: (Wasm_float32, Wasm_float32),
+            ret_type: Grain_bool,
+          }),
+        ),
+      ),
+      (
+        "@wasm.ge_float32",
+        Primitive2(
+          WasmBinaryF32({
+            wasm_op: Op_ge_float32,
+            arg_types: (Wasm_float32, Wasm_float32),
+            ret_type: Grain_bool,
+          }),
+        ),
+      ),
+      (
+        "@wasm.reinterpret_int32",
+        Primitive1(
+          WasmUnaryF32({
+            wasm_op: Op_reinterpret_int32,
+            arg_type: Wasm_int32,
+            ret_type: Wasm_float32,
+          }),
+        ),
+      ),
+      (
+        "@wasm.convert_s_int32_to_float32",
+        Primitive1(
+          WasmUnaryF32({
+            wasm_op: Op_convert_s_int32_to_float32,
+            arg_type: Wasm_int32,
+            ret_type: Wasm_float32,
+          }),
+        ),
+      ),
+      (
+        "@wasm.convert_u_int32_to_float32",
+        Primitive1(
+          WasmUnaryF32({
+            wasm_op: Op_convert_u_int32_to_float32,
+            arg_type: Wasm_int32,
+            ret_type: Wasm_float32,
+          }),
+        ),
+      ),
+      (
+        "@wasm.convert_s_int64_to_float32",
+        Primitive1(
+          WasmUnaryF32({
+            wasm_op: Op_convert_s_int64_to_float32,
+            arg_type: Wasm_int64,
+            ret_type: Wasm_float32,
+          }),
+        ),
+      ),
+      (
+        "@wasm.convert_u_int64_to_float32",
+        Primitive1(
+          WasmUnaryF32({
+            wasm_op: Op_convert_u_int64_to_float32,
+            arg_type: Wasm_int64,
+            ret_type: Wasm_float32,
+          }),
+        ),
+      ),
+      (
+        "@wasm.demote_float64",
+        Primitive1(
+          WasmUnaryF32({
+            wasm_op: Op_demote_float64,
+            arg_type: Wasm_float64,
+            ret_type: Wasm_float32,
+          }),
+        ),
+      ),
+      (
+        "@wasm.neg_float64",
+        Primitive1(
+          WasmUnaryF64({
+            wasm_op: Op_neg_float64,
+            arg_type: Wasm_float64,
+            ret_type: Wasm_float64,
+          }),
+        ),
+      ),
+      (
+        "@wasm.abs_float64",
+        Primitive1(
+          WasmUnaryF64({
+            wasm_op: Op_abs_float64,
+            arg_type: Wasm_float64,
+            ret_type: Wasm_float64,
+          }),
+        ),
+      ),
+      (
+        "@wasm.ceil_float64",
+        Primitive1(
+          WasmUnaryF64({
+            wasm_op: Op_ceil_float64,
+            arg_type: Wasm_float64,
+            ret_type: Wasm_float64,
+          }),
+        ),
+      ),
+      (
+        "@wasm.floor_float64",
+        Primitive1(
+          WasmUnaryF64({
+            wasm_op: Op_floor_float64,
+            arg_type: Wasm_float64,
+            ret_type: Wasm_float64,
+          }),
+        ),
+      ),
+      (
+        "@wasm.trunc_float64",
+        Primitive1(
+          WasmUnaryF64({
+            wasm_op: Op_trunc_float64,
+            arg_type: Wasm_float64,
+            ret_type: Wasm_float64,
+          }),
+        ),
+      ),
+      (
+        "@wasm.nearest_float64",
+        Primitive1(
+          WasmUnaryF64({
+            wasm_op: Op_nearest_float64,
+            arg_type: Wasm_float64,
+            ret_type: Wasm_float64,
+          }),
+        ),
+      ),
+      (
+        "@wasm.sqrt_float64",
+        Primitive1(
+          WasmUnaryF64({
+            wasm_op: Op_sqrt_float64,
+            arg_type: Wasm_float64,
+            ret_type: Wasm_float64,
+          }),
+        ),
+      ),
+      (
+        "@wasm.add_float64",
+        Primitive2(
+          WasmBinaryF64({
+            wasm_op: Op_add_float64,
+            arg_types: (Wasm_float64, Wasm_float64),
+            ret_type: Wasm_float64,
+          }),
+        ),
+      ),
+      (
+        "@wasm.sub_float64",
+        Primitive2(
+          WasmBinaryF64({
+            wasm_op: Op_sub_float64,
+            arg_types: (Wasm_float64, Wasm_float64),
+            ret_type: Wasm_float64,
+          }),
+        ),
+      ),
+      (
+        "@wasm.mul_float64",
+        Primitive2(
+          WasmBinaryF64({
+            wasm_op: Op_mul_float64,
+            arg_types: (Wasm_float64, Wasm_float64),
+            ret_type: Wasm_float64,
+          }),
+        ),
+      ),
+      (
+        "@wasm.div_float64",
+        Primitive2(
+          WasmBinaryF64({
+            wasm_op: Op_div_float64,
+            arg_types: (Wasm_float64, Wasm_float64),
+            ret_type: Wasm_float64,
+          }),
+        ),
+      ),
+      (
+        "@wasm.copy_sign_float64",
+        Primitive2(
+          WasmBinaryF64({
+            wasm_op: Op_copy_sign_float64,
+            arg_types: (Wasm_float64, Wasm_float64),
+            ret_type: Wasm_float64,
+          }),
+        ),
+      ),
+      (
+        "@wasm.min_float64",
+        Primitive2(
+          WasmBinaryF64({
+            wasm_op: Op_min_float64,
+            arg_types: (Wasm_float64, Wasm_float64),
+            ret_type: Wasm_float64,
+          }),
+        ),
+      ),
+      (
+        "@wasm.max_float64",
+        Primitive2(
+          WasmBinaryF64({
+            wasm_op: Op_max_float64,
+            arg_types: (Wasm_float64, Wasm_float64),
+            ret_type: Wasm_float64,
+          }),
+        ),
+      ),
+      (
+        "@wasm.eq_float64",
+        Primitive2(
+          WasmBinaryF64({
+            wasm_op: Op_eq_float64,
+            arg_types: (Wasm_float64, Wasm_float64),
+            ret_type: Grain_bool,
+          }),
+        ),
+      ),
+      (
+        "@wasm.ne_float64",
+        Primitive2(
+          WasmBinaryF64({
+            wasm_op: Op_ne_float64,
+            arg_types: (Wasm_float64, Wasm_float64),
+            ret_type: Grain_bool,
+          }),
+        ),
+      ),
+      (
+        "@wasm.lt_float64",
+        Primitive2(
+          WasmBinaryF64({
+            wasm_op: Op_lt_float64,
+            arg_types: (Wasm_float64, Wasm_float64),
+            ret_type: Grain_bool,
+          }),
+        ),
+      ),
+      (
+        "@wasm.le_float64",
+        Primitive2(
+          WasmBinaryF64({
+            wasm_op: Op_le_float64,
+            arg_types: (Wasm_float64, Wasm_float64),
+            ret_type: Grain_bool,
+          }),
+        ),
+      ),
+      (
+        "@wasm.gt_float64",
+        Primitive2(
+          WasmBinaryF64({
+            wasm_op: Op_gt_float64,
+            arg_types: (Wasm_float64, Wasm_float64),
+            ret_type: Grain_bool,
+          }),
+        ),
+      ),
+      (
+        "@wasm.ge_float64",
+        Primitive2(
+          WasmBinaryF64({
+            wasm_op: Op_ge_float64,
+            arg_types: (Wasm_float64, Wasm_float64),
+            ret_type: Grain_bool,
+          }),
+        ),
+      ),
+      (
+        "@wasm.reinterpret_int64",
+        Primitive1(
+          WasmUnaryF64({
+            wasm_op: Op_reinterpret_int64,
+            arg_type: Wasm_int64,
+            ret_type: Wasm_float64,
+          }),
+        ),
+      ),
+      (
+        "@wasm.convert_s_int32_to_float64",
+        Primitive1(
+          WasmUnaryF64({
+            wasm_op: Op_convert_s_int32_to_float64,
+            arg_type: Wasm_int32,
+            ret_type: Wasm_float64,
+          }),
+        ),
+      ),
+      (
+        "@wasm.convert_u_int32_to_float64",
+        Primitive1(
+          WasmUnaryF64({
+            wasm_op: Op_convert_u_int32_to_float64,
+            arg_type: Wasm_int32,
+            ret_type: Wasm_float64,
+          }),
+        ),
+      ),
+      (
+        "@wasm.convert_s_int64_to_float64",
+        Primitive1(
+          WasmUnaryF64({
+            wasm_op: Op_convert_s_int64_to_float64,
+            arg_type: Wasm_int64,
+            ret_type: Wasm_float64,
+          }),
+        ),
+      ),
+      (
+        "@wasm.convert_u_int64_to_float64",
+        Primitive1(
+          WasmUnaryF64({
+            wasm_op: Op_convert_u_int64_to_float64,
+            arg_type: Wasm_int64,
+            ret_type: Wasm_float64,
+          }),
+        ),
+      ),
+      (
+        "@wasm.promote_float32",
+        Primitive1(
+          WasmUnaryF32({
+            wasm_op: Op_promote_float32,
+            arg_type: Wasm_float32,
+            ret_type: Wasm_float64,
+          }),
+        ),
+      ),
       ("@wasm.ofGrain", Primitive1(WasmOfGrain)),
       ("@wasm.toGrain", Primitive1(WasmToGrain)),
     ]),
@@ -910,7 +1434,9 @@ let transl_prim = (env, desc) => {
 
   let value =
     switch (prim) {
-    | Primitive1((WasmUnaryI32(_) | WasmUnaryI64(_)) as p) =>
+    | Primitive1(
+        (WasmUnaryI32(_) | WasmUnaryI64(_) | WasmUnaryF32(_) | WasmUnaryF64(_)) as p,
+      ) =>
       Exp.lambda(
         ~loc,
         ~attributes=diable_gc,
@@ -919,7 +1445,14 @@ let transl_prim = (env, desc) => {
       )
     | Primitive1(p) => Exp.lambda(~loc, [pat_a], Exp.prim1(~loc, p, id_a))
     | Primitive2(
-        (WasmBinaryI32(_) | WasmBinaryI64(_) | WasmLoadI32(_) | WasmLoadI64(_)) as p,
+        (
+          WasmBinaryI32(_) | WasmBinaryI64(_) | WasmBinaryF32(_) |
+          WasmBinaryF64(_) |
+          WasmLoadI32(_) |
+          WasmLoadI64(_) |
+          WasmLoadF32 |
+          WasmLoadF64
+        ) as p,
       ) =>
       Exp.lambda(
         ~loc,
@@ -929,7 +1462,9 @@ let transl_prim = (env, desc) => {
       )
     | Primitive2(p) =>
       Exp.lambda(~loc, [pat_a, pat_b], Exp.prim2(~loc, p, id_a, id_b))
-    | PrimitiveN((WasmStoreI32(_) | WasmStoreI64(_)) as p) =>
+    | PrimitiveN(
+        (WasmStoreI32(_) | WasmStoreI64(_) | WasmStoreF32 | WasmStoreF64) as p,
+      ) =>
       Exp.lambda(
         ~loc,
         ~attributes=diable_gc,

@@ -20,7 +20,7 @@ export primitive ctz : WasmI64 -> WasmI64 = "@wasm.ctz_int64"
 export primitive popcnt : WasmI64 -> WasmI64 = "@wasm.popcnt_int64"
 export primitive eqz : WasmI64 -> Bool = "@wasm.eq_z_int64"
 
-// // WebAssembly Binary Instructions
+// WebAssembly Binary Instructions
 export primitive add : (WasmI64, WasmI64) -> WasmI64 = "@wasm.add_int64"
 export primitive sub : (WasmI64, WasmI64) -> WasmI64 = "@wasm.sub_int64"
 export primitive mul : (WasmI64, WasmI64) -> WasmI64 = "@wasm.mul_int64"

@@ -184,6 +184,16 @@ type prim1 =
         wasm_op,
         arg_type: wasm_prim_type,
         ret_type: wasm_prim_type,
+      })
+    | WasmUnaryF32({
+        wasm_op,
+        arg_type: wasm_prim_type,
+        ret_type: wasm_prim_type,
+      })
+    | WasmUnaryF64({
+        wasm_op,
+        arg_type: wasm_prim_type,
+        ret_type: wasm_prim_type,
       });
 
 type prim2 =
@@ -221,6 +231,8 @@ type prim2 =
         sz: int,
         signed: bool,
       })
+    | WasmLoadF32
+    | WasmLoadF64
     | WasmBinaryI32({
         wasm_op,
         arg_types: (wasm_prim_type, wasm_prim_type),
@@ -230,10 +242,24 @@ type prim2 =
         wasm_op,
         arg_types: (wasm_prim_type, wasm_prim_type),
         ret_type: wasm_prim_type,
+      })
+    | WasmBinaryF32({
+        wasm_op,
+        arg_types: (wasm_prim_type, wasm_prim_type),
+        ret_type: wasm_prim_type,
+      })
+    | WasmBinaryF64({
+        wasm_op,
+        arg_types: (wasm_prim_type, wasm_prim_type),
+        ret_type: wasm_prim_type,
       });
 
 type primn =
-  Parsetree.primn = | WasmStoreI32({sz: int}) | WasmStoreI64({sz: int});
+  Parsetree.primn =
+    | WasmStoreI32({sz: int})
+    | WasmStoreI64({sz: int})
+    | WasmStoreF32
+    | WasmStoreF64;
 
 /** Immediate expressions (requiring no computation) */
 

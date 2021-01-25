@@ -134,6 +134,74 @@ let primitive_map_i64 =
     ]),
   );
 
+let primitive_map_f32 =
+  StringHash.of_seq(
+    List.to_seq([
+      ("load", "@wasm.load_float32"),
+      ("store", "@wasm.store_float32"),
+      ("neg", "@wasm.neg_float32"),
+      ("abs", "@wasm.abs_float32"),
+      ("ceil", "@wasm.ceil_float32"),
+      ("floor", "@wasm.floor_float32"),
+      ("trunc", "@wasm.trunc_float32"),
+      ("nearest", "@wasm.nearest_float32"),
+      ("sqrt", "@wasm.sqrt_float32"),
+      ("add", "@wasm.add_float32"),
+      ("sub", "@wasm.sub_float32"),
+      ("mul", "@wasm.mul_float32"),
+      ("div", "@wasm.div_float32"),
+      ("copySign", "@wasm.copy_sign_float32"),
+      ("min", "@wasm.min_float32"),
+      ("max", "@wasm.max_float32"),
+      ("eq", "@wasm.eq_float32"),
+      ("ne", "@wasm.ne_float32"),
+      ("lt", "@wasm.lt_float32"),
+      ("le", "@wasm.le_float32"),
+      ("gt", "@wasm.gt_float32"),
+      ("ge", "@wasm.ge_float32"),
+      ("reinterpretI32", "@wasm.reinterpret_int32"),
+      ("convertI32S", "@wasm.convert_s_int32_to_float32"),
+      ("convertI32U", "@wasm.convert_u_int32_to_float32"),
+      ("convertI64S", "@wasm.convert_s_int64_to_float32"),
+      ("convertI64U", "@wasm.convert_u_int64_to_float32"),
+      ("demoteF64", "@wasm.demote_float64"),
+    ]),
+  );
+
+let primitive_map_f64 =
+  StringHash.of_seq(
+    List.to_seq([
+      ("load", "@wasm.load_float64"),
+      ("store", "@wasm.store_float64"),
+      ("neg", "@wasm.neg_float64"),
+      ("abs", "@wasm.abs_float64"),
+      ("ceil", "@wasm.ceil_float64"),
+      ("floor", "@wasm.floor_float64"),
+      ("trunc", "@wasm.trunc_float64"),
+      ("nearest", "@wasm.nearest_float64"),
+      ("sqrt", "@wasm.sqrt_float64"),
+      ("add", "@wasm.add_float64"),
+      ("sub", "@wasm.sub_float64"),
+      ("mul", "@wasm.mul_float64"),
+      ("div", "@wasm.div_float64"),
+      ("copySign", "@wasm.copy_sign_float64"),
+      ("min", "@wasm.min_float64"),
+      ("max", "@wasm.max_float64"),
+      ("eq", "@wasm.eq_float64"),
+      ("ne", "@wasm.ne_float64"),
+      ("lt", "@wasm.lt_float64"),
+      ("le", "@wasm.le_float64"),
+      ("gt", "@wasm.gt_float64"),
+      ("ge", "@wasm.ge_float64"),
+      ("reinterpretI64", "@wasm.reinterpret_int64"),
+      ("convertI32S", "@wasm.convert_s_int32_to_float64"),
+      ("convertI32U", "@wasm.convert_u_int32_to_float64"),
+      ("convertI64S", "@wasm.convert_s_int64_to_float64"),
+      ("convertI64U", "@wasm.convert_u_int64_to_float64"),
+      ("promoteF32", "@wasm.promote_float32"),
+    ]),
+  );
+
 let get_primitive = (primitive_map, id) => {
   Translprim.(
     switch (StringHash.find_opt(primitive_map, id)) {
@@ -151,6 +219,8 @@ let get_primitive = (primitive_map, id) => {
 
 let get_primitive_i32 = get_primitive(primitive_map_i32);
 let get_primitive_i64 = get_primitive(primitive_map_i64);
+let get_primitive_f32 = get_primitive(primitive_map_f32);
+let get_primitive_f64 = get_primitive(primitive_map_f64);
 
 let analyze = ({imports, body, analyses}) => {
   inline_wasm_tbl := Ident.empty;
@@ -166,6 +236,18 @@ let analyze = ({imports, body, analyses}) => {
     | GrainValue("wasmi64", name) =>
       mod_has_inlineable_wasm := true;
       switch (get_primitive_i64(name)) {
+      | Some(prim) => set_inlineable_wasm(imp_use_id, prim)
+      | None => ()
+      };
+    | GrainValue("wasmf32", name) =>
+      mod_has_inlineable_wasm := true;
+      switch (get_primitive_f32(name)) {
+      | Some(prim) => set_inlineable_wasm(imp_use_id, prim)
+      | None => ()
+      };
+    | GrainValue("wasmf64", name) =>
+      mod_has_inlineable_wasm := true;
+      switch (get_primitive_f64(name)) {
       | Some(prim) => set_inlineable_wasm(imp_use_id, prim)
       | None => ()
       };

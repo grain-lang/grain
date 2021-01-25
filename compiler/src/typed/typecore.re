@@ -130,7 +130,9 @@ let prim1_type =
   | WasmOfGrain => (newvar(~name="a", ()), Builtin_types.type_wasmi32)
   | WasmToGrain => (Builtin_types.type_wasmi32, newvar(~name="a", ()))
   | WasmUnaryI32({arg_type, ret_type})
-  | WasmUnaryI64({arg_type, ret_type}) => (
+  | WasmUnaryI64({arg_type, ret_type})
+  | WasmUnaryF32({arg_type, ret_type})
+  | WasmUnaryF64({arg_type, ret_type}) => (
       grain_type_of_wasm_prim_type(arg_type),
       grain_type_of_wasm_prim_type(ret_type),
     );
@@ -201,7 +203,9 @@ let prim2_type =
       Builtin_types.type_bool,
     )
   | WasmBinaryI32({arg_types: (arg1_type, arg2_type), ret_type})
-  | WasmBinaryI64({arg_types: (arg1_type, arg2_type), ret_type}) => (
+  | WasmBinaryI64({arg_types: (arg1_type, arg2_type), ret_type})
+  | WasmBinaryF32({arg_types: (arg1_type, arg2_type), ret_type})
+  | WasmBinaryF64({arg_types: (arg1_type, arg2_type), ret_type}) => (
       grain_type_of_wasm_prim_type(arg1_type),
       grain_type_of_wasm_prim_type(arg2_type),
       grain_type_of_wasm_prim_type(ret_type),
@@ -215,6 +219,16 @@ let prim2_type =
       Builtin_types.type_wasmi32,
       Builtin_types.type_wasmi32,
       Builtin_types.type_wasmi64,
+    )
+  | WasmLoadF32 => (
+      Builtin_types.type_wasmi32,
+      Builtin_types.type_wasmi32,
+      Builtin_types.type_wasmf32,
+    )
+  | WasmLoadF64 => (
+      Builtin_types.type_wasmi32,
+      Builtin_types.type_wasmi32,
+      Builtin_types.type_wasmf64,
     );
 
 let primn_type =
@@ -231,6 +245,22 @@ let primn_type =
       [
         Builtin_types.type_wasmi32,
         Builtin_types.type_wasmi64,
+        Builtin_types.type_wasmi32,
+      ],
+      Builtin_types.type_void,
+    )
+  | WasmStoreF32 => (
+      [
+        Builtin_types.type_wasmi32,
+        Builtin_types.type_wasmf32,
+        Builtin_types.type_wasmi32,
+      ],
+      Builtin_types.type_void,
+    )
+  | WasmStoreF64 => (
+      [
+        Builtin_types.type_wasmi32,
+        Builtin_types.type_wasmf64,
         Builtin_types.type_wasmi32,
       ],
       Builtin_types.type_void,
