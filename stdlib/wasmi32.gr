@@ -1,3 +1,5 @@
+import Memory from "memory"
+
 // WebAssembly Memory Instructions
 export primitive load : (WasmI32, WasmI32) -> WasmI32 = "@wasm.load_int32"
 export primitive load8S : (WasmI32, WasmI32) -> WasmI32 = "@wasm.load_8_s_int32"
@@ -26,8 +28,8 @@ export primitive and : (WasmI32, WasmI32) -> WasmI32 = "@wasm.and_int32"
 export primitive or : (WasmI32, WasmI32) -> WasmI32 = "@wasm.or_int32"
 export primitive xor : (WasmI32, WasmI32) -> WasmI32 = "@wasm.xor_int32"
 export primitive shl : (WasmI32, WasmI32) -> WasmI32 = "@wasm.shl_int32"
-export primitive shrU : (WasmI32, WasmI32) -> WasmI32 = "@wasm.shr_u_int32"
 export primitive shrS : (WasmI32, WasmI32) -> WasmI32 = "@wasm.shr_s_int32"
+export primitive shrU : (WasmI32, WasmI32) -> WasmI32 = "@wasm.shr_u_int32"
 export primitive rotl : (WasmI32, WasmI32) -> WasmI32 = "@wasm.rot_l_int32"
 export primitive rotr : (WasmI32, WasmI32) -> WasmI32 = "@wasm.rot_r_int32"
 export primitive eq : (WasmI32, WasmI32) -> Bool = "@wasm.eq_int32"
@@ -55,7 +57,28 @@ export primitive extendS16 : WasmI32 -> WasmI32 = "@wasm.extend_s16_int32"
 export primitive ofGrain : a -> WasmI32 = "@wasm.ofGrain"
 export primitive toGrain : WasmI32 -> a = "@wasm.toGrain"
 
+@disableGC
+export let toInt32 = (n) => {
+  let _GRAIN_GENERIC_HEAP_TAG = 0b0011n
+  let _GRAIN_BOXED_NUM_HEAP_TAG = 6n
+  let _GRAIN_INT32_BOXED_NUM_TAG = 3n
+  
+  let ptr = Memory.malloc(12n)
+  store(ptr, _GRAIN_BOXED_NUM_HEAP_TAG, 0n)
+  store(ptr, _GRAIN_INT32_BOXED_NUM_TAG, 4n)
+  store(ptr, n, 8n)
+
+  toGrain(xor(ptr, _GRAIN_GENERIC_HEAP_TAG)) : Int32
+}
+
+@disableGC
+export let ofInt32 = (n: Int32) => {
+  let ptr = xor(ofGrain(n), 3n)
+  load(ptr, 8n)
+}
+
 // Utilities
+@disableGC
 export let print = (val) => {
-  print(toString(shl(val, 1n)) ++ "n")
+  print(toString(toInt32(val)) ++ "n")
 }

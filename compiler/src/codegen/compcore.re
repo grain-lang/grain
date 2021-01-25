@@ -3297,18 +3297,32 @@ let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
       )
     }
   | WasmMemoryCopy =>
-    Expression.memory_copy(
+    Expression.block(
       wasm_mod,
-      compile_imm(wasm_mod, env, List.nth(args, 0)),
-      compile_imm(wasm_mod, env, List.nth(args, 1)),
-      compile_imm(wasm_mod, env, List.nth(args, 2)),
+      gensym_label("memory_copy"),
+      [
+        Expression.memory_copy(
+          wasm_mod,
+          compile_imm(wasm_mod, env, List.nth(args, 0)),
+          compile_imm(wasm_mod, env, List.nth(args, 1)),
+          compile_imm(wasm_mod, env, List.nth(args, 2)),
+        ),
+        Expression.const(wasm_mod, const_void()),
+      ],
     )
   | WasmMemoryFill =>
-    Expression.memory_fill(
+    Expression.block(
       wasm_mod,
-      compile_imm(wasm_mod, env, List.nth(args, 0)),
-      compile_imm(wasm_mod, env, List.nth(args, 1)),
-      compile_imm(wasm_mod, env, List.nth(args, 2)),
+      gensym_label("memory_fill"),
+      [
+        Expression.memory_fill(
+          wasm_mod,
+          compile_imm(wasm_mod, env, List.nth(args, 0)),
+          compile_imm(wasm_mod, env, List.nth(args, 1)),
+          compile_imm(wasm_mod, env, List.nth(args, 2)),
+        ),
+        Expression.const(wasm_mod, const_void()),
+      ],
     )
   };
 };
@@ -4051,16 +4065,7 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
       Filename.basename(Option.get(name)),
     );
   };
-  let _ =
-    Module.set_features(
-      wasm_mod,
-      [
-        Features.mvp,
-        Features.multivalue,
-        Features.tail_call,
-        Features.sign_ext,
-      ],
-    );
+  let _ = Module.set_features(wasm_mod, [Features.all]);
   let _ =
     Memory.set_memory(wasm_mod, 0, Memory.unlimited, "memory", [], false);
   let () = ignore @@ compile_functions(wasm_mod, env, prog);

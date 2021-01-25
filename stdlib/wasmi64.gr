@@ -57,7 +57,7 @@ export primitive truncF64U : WasmF64 -> WasmI64 = "@wasm.trunc_u_float64_to_int6
 export primitive reinterpretF64 : WasmF64 -> WasmI64 = "@wasm.reinterpret_float64"
 export primitive extendS8 : WasmI64 -> WasmI64 = "@wasm.extend_s8_int64"
 export primitive extendS16 : WasmI64 -> WasmI64 = "@wasm.extend_s16_int64"
-export primitive extendS32 : WasmI64 -> WasmI64 = "@wasm.extend_s16_int64"
+export primitive extendS32 : WasmI64 -> WasmI64 = "@wasm.extend_s32_int64"
 
 // Grain Conversions
 @disableGC

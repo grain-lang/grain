@@ -130,7 +130,7 @@ let primitive_map_i64 =
       ("reinterpretF64", "@wasm.reinterpret_float64"),
       ("extendS8", "@wasm.extend_s8_int64"),
       ("extendS16", "@wasm.extend_s16_int64"),
-      ("extendS32", "@wasm.extend_s16_int64"),
+      ("extendS32", "@wasm.extend_s32_int64"),
     ]),
   );
 
@@ -207,7 +207,7 @@ let primitive_map_memory =
     List.to_seq([
       ("copy", "@wasm.memory_copy"),
       ("fill", "@wasm.memory_fill"),
-    ])
+    ]),
   );
 
 let get_primitive = (primitive_map, id) => {

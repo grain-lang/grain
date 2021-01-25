@@ -888,10 +888,10 @@ let prim_map =
         ),
       ),
       (
-        "@wasm.extend_s16_int64",
+        "@wasm.extend_s32_int64",
         Primitive1(
           WasmUnaryI64({
-            wasm_op: Op_extend_s16_int64,
+            wasm_op: Op_extend_s32_int64,
             arg_type: Wasm_int64,
             ret_type: Wasm_int64,
           }),
