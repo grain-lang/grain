@@ -746,6 +746,8 @@ let stdlib_tests = [
   tlib("float64.test"),
   tlib("wasmi32.test"),
   tlib("wasmi64.test"),
+  tlib("wasmf32.test"),
+  tlib("wasmf64.test"),
   tlib("range.test"),
   tlib("string.test"),
   tlib("sys.file.test"),
