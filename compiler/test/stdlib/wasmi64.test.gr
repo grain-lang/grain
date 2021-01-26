@@ -1,4 +1,4 @@
-import WasmI64 from "wasmi64"
+import WasmI64 from "unsafe/wasmi64"
 
 @disableGC
 let test = () => {

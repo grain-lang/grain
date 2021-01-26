@@ -1,4 +1,4 @@
-import WasmF32 from "wasmf32"
+import WasmF32 from "unsafe/wasmf32"
 
 @disableGC
 let test = () => {

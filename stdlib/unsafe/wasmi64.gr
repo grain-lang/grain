@@ -1,5 +1,5 @@
-import WasmI32 from "wasmi32"
-import Memory from "memory"
+import WasmI32 from "unsafe/wasmi32"
+import Memory from "unsafe/memory"
 
 // WebAssembly Memory Instructions
 export primitive load : (WasmI32, WasmI32) -> WasmI64 = "@wasm.load_int64"
