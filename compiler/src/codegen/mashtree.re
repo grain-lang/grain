@@ -299,7 +299,7 @@ type constant =
 type binding =
   | MArgBind(int32, asmtype)
   | MLocalBind(int32, asmtype)
-  | MGlobalBind(int32, asmtype)
+  | MGlobalBind(string, asmtype)
   | MClosureBind(int32)
   | MSwapBind(int32, asmtype) /* Used like a register would be */
   | MImport(int32); /* Index into list of imports */
@@ -450,7 +450,6 @@ type import = {
 type export = {
   ex_name: Ident.t,
   ex_global_index: int32,
-  ex_getter_index: int32,
 };
 
 [@deriving sexp]

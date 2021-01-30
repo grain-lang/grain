@@ -1266,10 +1266,7 @@ let compile_bind =
         typ,
       )
     };
-  | MGlobalBind(i, wasm_ty) =>
-    /* Global bindings need to be offset to account for any imports */
-    let slot =
-      Printf.sprintf("global_%d") @@ env.global_offset + Int32.to_int(i);
+  | MGlobalBind(slot, wasm_ty) =>
     let typ =
       switch (wasm_ty) {
       | I32Type => Type.int32
@@ -3570,10 +3567,22 @@ let compile_function =
   func_ref;
 };
 
-let compute_table_size = (env, {imports, exports, functions}) =>
-  List.length(functions)
-  + (List.length(imports) - List.length(runtime_global_imports))
-  + 2;
+let compute_num_wasm_function_imports = imports => {
+  List.fold_left(
+    (acc, imp) =>
+      switch (imp.mimp_kind, imp.mimp_type) {
+      | (MImportWasm, MFuncImport(_)) => acc + 1
+      | (_, _) => acc
+      },
+    0,
+    imports,
+  );
+};
+
+let compute_table_size = (env, {imports, exports, functions}) => {
+  let num_function_imports = compute_num_wasm_function_imports(imports);
+  List.length(functions) + num_function_imports + 2;
+};
 
 let compile_imports = (wasm_mod, env, {imports}) => {
   let compile_asm_type = t =>
@@ -3592,22 +3601,21 @@ let compile_imports = (wasm_mod, env, {imports}) => {
   let compile_import_name = name =>
     fun
     | MImportWasm => Ident.name(name)
-    | MImportGrain => "GRAIN$EXPORT$GET$" ++ Ident.name(name);
+    | MImportGrain => "GRAIN$EXPORT$" ++ Ident.name(name);
 
   let compile_import = ({mimp_mod, mimp_name, mimp_type, mimp_kind}) => {
-    /* TODO: When user imports become a thing, we'll need to worry about hygiene */
     let module_name = compile_module_name(mimp_mod, mimp_kind);
     let item_name = compile_import_name(mimp_name, mimp_kind);
     let internal_name = get_imported_name(mimp_mod, mimp_name);
     switch (mimp_kind, mimp_type) {
     | (MImportGrain, _) =>
-      Import.add_function_import(
+      Import.add_global_import(
         wasm_mod,
         internal_name,
         module_name,
         item_name,
-        Type.create([||]),
         Type.int32,
+        true,
       )
     | (_, MFuncImport(args, ret)) =>
       let proc_list = l =>
@@ -3646,12 +3654,11 @@ let compile_imports = (wasm_mod, env, {imports}) => {
 
 let compile_exports =
     (wasm_mod, env, {functions, imports, exports, num_globals}) => {
-  let compile_getter = (i, {ex_name, ex_global_index, ex_getter_index}) => {
-    let fidx = Int32.to_int(ex_getter_index) + env.func_offset;
-    let internal_name = Printf.sprintf("func_%d", fidx);
-    let exported_name = "GRAIN$EXPORT$GET$" ++ Ident.name(ex_name);
+  let compile_exports = (i, {ex_name, ex_global_index}) => {
+    let internal_name = Printf.sprintf("global_%ld", ex_global_index);
+    let exported_name = "GRAIN$EXPORT$" ++ Ident.name(ex_name);
     let export =
-      Export.add_function_export(wasm_mod, internal_name, exported_name);
+      Export.add_global_export(wasm_mod, internal_name, exported_name);
     export;
   };
 
@@ -3671,7 +3678,7 @@ let compile_exports =
       exports,
     );
   };
-  ignore @@ List.mapi(compile_getter, exports);
+  ignore @@ List.mapi(compile_exports, exports);
   ignore @@ Export.add_function_export(wasm_mod, "_start", "_start");
   ignore @@
   Export.add_function_export(
@@ -3693,8 +3700,7 @@ let compile_tables = (wasm_mod, env, {functions, imports} as prog) => {
     List.filter_map(
       ({mimp_kind, mimp_type, mimp_mod, mimp_name}) =>
         switch (mimp_kind, mimp_type) {
-        | (MImportGrain, _)
-        | (_, MFuncImport(_)) =>
+        | (MImportWasm, MFuncImport(_)) =>
           Some(get_imported_name(mimp_mod, mimp_name))
         | _ => None
         },
@@ -3707,7 +3713,10 @@ let compile_tables = (wasm_mod, env, {functions, imports} as prog) => {
     List.concat([
       import_names,
       function_names,
-      ["_start", function_name(table_size - 1)],
+      [
+        "_start",
+        function_name(env.func_offset + List.length(functions) + 1),
+      ],
     ]);
   Function_table.set_function_table(
     wasm_mod,
@@ -3892,7 +3901,7 @@ let prepare = (env, {imports} as prog) => {
     );
   let global_offset = import_global_offset;
   let func_offset =
-    List.length(runtime_function_imports) + List.length(imports);
+    import_func_offset + compute_num_wasm_function_imports(imports);
   (
     {
       ...new_env,
@@ -3935,6 +3944,7 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
         Features.tail_call,
         Features.sign_ext,
         Features.bulk_memory,
+        Features.mutable_globals,
       ],
     );
   let _ =
