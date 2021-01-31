@@ -1,0 +1,11 @@
+import WasmI32 from "unsafe/wasmi32"
+import WasmI64 from "unsafe/wasmi64"
+import WasmF32 from "unsafe/wasmf32"
+import WasmF64 from "unsafe/wasmf64"
+
+import { _I32_VAL, _I64_VAL, _F32_VAL, _F64_VAL } from "unsafeWasmGlobalsExports"
+
+WasmI32.print(_I32_VAL)
+WasmI64.print(_I64_VAL)
+WasmF32.print(_F32_VAL)
+WasmF64.print(_F64_VAL)

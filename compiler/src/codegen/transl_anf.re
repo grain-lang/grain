@@ -72,13 +72,13 @@ let asmtype_of_alloctype = {
 
 /** Global index (index of global variables) */
 
-let global_table = ref(Ident.empty: Ident.tbl((bool, int32)));
+let global_table = ref(Ident.empty: Ident.tbl((bool, int32, asmtype)));
 let global_index = ref(0);
 
 let global_exports = () => {
   let tbl = global_table^;
   Ident.fold_all(
-    (ex_name, (exported, ex_global_index), acc) =>
+    (ex_name, (exported, ex_global_index, _), acc) =>
       if (exported) {
         [{ex_name, ex_global_index}, ...acc];
       } else {
@@ -94,14 +94,14 @@ let reset_global = () => {
   global_index := 0;
 };
 
-let next_global = (exported, id) =>
+let next_global = (exported, id, ty) =>
   /* RIP Hygiene (this behavior works as expected until we have more metaprogramming constructs) */
   switch (Ident.find_same_opt(id, global_table^)) {
-  | Some((_, ret)) => Int32.to_int(ret)
+  | Some((_, ret, _)) => Int32.to_int(ret)
   | None =>
     let ret = global_index^;
     global_table :=
-      Ident.add(id, (exported, Int32.of_int(ret)), global_table^);
+      Ident.add(id, (exported, Int32.of_int(ret), ty), global_table^);
     global_index := ret + 1;
     ret;
   };
@@ -531,22 +531,30 @@ let compile_lambda = (env, args, body, attrs, loc): Mashtree.closure_data => {
   };
 };
 
-let compile_wrapper = (env, func_name, arity): Mashtree.closure_data => {
+let compile_wrapper = (env, func_name, args, ret): Mashtree.closure_data => {
   let body = [
     {
       instr_desc:
         MCallKnown({
           func: func_name,
-          func_type: (List.init(arity, i => I32Type), I32Type),
+          func_type: (
+            List.map(asmtype_of_alloctype, args),
+            asmtype_of_alloctype(ret),
+          ),
           args:
-            List.init(arity, i =>
-              MImmBinding(MArgBind(Int32.of_int(i + 1), I32Type))
+            List.mapi(
+              (i, arg) =>
+                MImmBinding(
+                  MArgBind(Int32.of_int(i + 1), asmtype_of_alloctype(arg)),
+                ),
+              args,
             ),
         }),
       instr_loc: Location.dummy_loc,
     },
   ];
   let idx = next_lift();
+  let arity = List.length(args);
   let lam_env = {
     ...env,
     ce_binds: Ident.empty,
@@ -560,7 +568,7 @@ let compile_wrapper = (env, func_name, arity): Mashtree.closure_data => {
     body: Precompiled(body),
     env: lam_env,
     idx,
-    args: List.init(arity + 1, _ => Types.HeapAllocated),
+    args: [Types.HeapAllocated, ...args],
     return_type: Types.HeapAllocated,
     stack_size: {
       stack_size_i32: 0,
@@ -579,8 +587,8 @@ let compile_wrapper = (env, func_name, arity): Mashtree.closure_data => {
   };
 };
 
-let next_global = (~exported=false, id) => {
-  let ret = next_global(exported, id);
+let next_global = (~exported=false, id, ty) => {
+  let ret = next_global(exported, id, ty);
   Printf.sprintf("global_%d", ret);
 };
 
@@ -748,26 +756,35 @@ and compile_anf_expr = (env, a) =>
     let rec get_locs = (env, binds) => {
       switch (binds) {
       | [(id, {comp_allocation_type}), ...rest] =>
-        let (asmtype, stack_idx, next_env) =
+        let (asmtype, gc, stack_idx, next_env) =
           switch (comp_allocation_type) {
-          | HeapAllocated
+          | HeapAllocated => (
+              I32Type,
+              true,
+              env.ce_stack_idx_i32,
+              {...env, ce_stack_idx_i32: env.ce_stack_idx_i32 + 1},
+            )
           | StackAllocated(WasmI32) => (
               I32Type,
+              false,
               env.ce_stack_idx_i32,
               {...env, ce_stack_idx_i32: env.ce_stack_idx_i32 + 1},
             )
           | StackAllocated(WasmI64) => (
               I64Type,
+              false,
               env.ce_stack_idx_i64,
               {...env, ce_stack_idx_i64: env.ce_stack_idx_i64 + 1},
             )
           | StackAllocated(WasmF32) => (
               F32Type,
+              false,
               env.ce_stack_idx_f32,
               {...env, ce_stack_idx_f32: env.ce_stack_idx_f32 + 1},
             )
           | StackAllocated(WasmF64) => (
               F64Type,
+              false,
               env.ce_stack_idx_f64,
               {...env, ce_stack_idx_f64: env.ce_stack_idx_f64 + 1},
             )
@@ -776,7 +793,11 @@ and compile_anf_expr = (env, a) =>
           switch (global) {
           | Global => (
               env,
-              MGlobalBind(next_global(~exported=true, id), asmtype),
+              MGlobalBind(
+                next_global(~exported=true, id, asmtype),
+                asmtype,
+                gc,
+              ),
             )
           | Nonglobal => (
               next_env,
@@ -862,11 +883,11 @@ let compile_remaining_worklist = () => {
 let lift_imports = (env, imports) => {
   let process_shape =
     fun
-    | GlobalShape => MGlobalImport(I32Type)
+    | GlobalShape(alloc) => MGlobalImport(asmtype_of_alloctype(alloc))
     | FunctionShape(inputs, outputs) =>
       MFuncImport(
-        List.init(inputs, _ => I32Type),
-        List.init(outputs, _ => I32Type),
+        List.map(asmtype_of_alloctype, inputs),
+        List.map(asmtype_of_alloctype, outputs),
       );
 
   let process_import =
@@ -878,10 +899,20 @@ let lift_imports = (env, imports) => {
     | GrainValue(mod_, name) =>
       let mimp_mod = Ident.create(mod_);
       let mimp_name = Ident.create(name);
+      let (asmtype, gc) =
+        switch (imp_shape) {
+        | GlobalShape(HeapAllocated as alloc) => (
+            asmtype_of_alloctype(alloc),
+            true,
+          )
+        | GlobalShape(alloc) => (asmtype_of_alloctype(alloc), false)
+        | FunctionShape(_) =>
+          failwith("internal: GrainValue had FunctionShape")
+        };
       let new_mod = {
         mimp_mod,
         mimp_name,
-        mimp_type: MGlobalImport(I32Type) /*process_shape imp_shape*/,
+        mimp_type: process_shape(imp_shape),
         mimp_kind: MImportGrain,
         mimp_setup: MCallGetter,
       };
@@ -899,14 +930,16 @@ let lift_imports = (env, imports) => {
                   Ident.unique_name(mimp_mod),
                   Ident.unique_name(mimp_name),
                 ),
-                I32Type,
+                asmtype,
+                gc,
               ),
               env.ce_binds,
             ),
         },
       );
     | WasmFunction(mod_, name) =>
-      let glob = next_global(~exported=imp_exported == Global, imp_use_id);
+      let glob =
+        next_global(~exported=imp_exported == Global, imp_use_id, I32Type);
       let new_mod = {
         mimp_mod: Ident.create(mod_),
         mimp_name: Ident.create(name),
@@ -924,9 +957,9 @@ let lift_imports = (env, imports) => {
         [new_mod, ...imports],
         [
           switch (imp_shape) {
-          | GlobalShape => []
+          | GlobalShape(_) => []
           | FunctionShape(inputs, outputs) =>
-            if (outputs > 1) {
+            if (List.length(outputs) > 1) {
               failwith("NYI: Multi-result wrapper");
             } else {
               [
@@ -934,12 +967,17 @@ let lift_imports = (env, imports) => {
                   instr_desc:
                     MStore([
                       (
-                        MGlobalBind(glob, I32Type),
+                        MGlobalBind(glob, I32Type, true),
                         {
                           instr_desc:
                             MAllocate(
                               MClosure(
-                                compile_wrapper(env, func_name, inputs),
+                                compile_wrapper(
+                                  env,
+                                  func_name,
+                                  inputs,
+                                  List.hd(outputs),
+                                ),
                               ),
                             ),
                           instr_loc: Location.dummy_loc,
@@ -956,7 +994,11 @@ let lift_imports = (env, imports) => {
         {
           ...env,
           ce_binds:
-            Ident.add(imp_use_id, MGlobalBind(glob, I32Type), env.ce_binds),
+            Ident.add(
+              imp_use_id,
+              MGlobalBind(glob, I32Type, true),
+              env.ce_binds,
+            ),
         },
       );
     | JSFunction(_) => failwith("NYI: lift_imports JSFunction")
@@ -1002,7 +1044,12 @@ let transl_anf_program =
     exports,
     main_body,
     main_body_stack_size,
-    num_globals: global_index^,
+    globals:
+      Ident.fold_all(
+        (_, (_, slot, ty), acc) => [(slot, ty), ...acc],
+        global_table^,
+        [],
+      ),
     signature: anf_prog.signature,
   };
 };

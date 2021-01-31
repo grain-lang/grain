@@ -1047,7 +1047,8 @@ let compile_bind =
     | MLocalBind(_) => arg
     | MSwapBind(_, I32Type) => call_incref_swap_bind(wasm_mod, env, arg)
     | MSwapBind(_) => arg
-    | MGlobalBind(_, I32Type) => call_incref_global_bind(wasm_mod, env, arg)
+    | MGlobalBind(_, I32Type, true) =>
+      call_incref_global_bind(wasm_mod, env, arg)
     | MGlobalBind(_) => arg
     | MClosureBind(_) => call_incref_closure_bind(wasm_mod, env, arg)
     | _ => call_incref(wasm_mod, env, arg)
@@ -1062,7 +1063,8 @@ let compile_bind =
     | MLocalBind(_) => arg
     | MSwapBind(_, I32Type) => call_decref_swap_bind(wasm_mod, env, arg)
     | MSwapBind(_) => arg
-    | MGlobalBind(_, I32Type) => call_decref_global_bind(wasm_mod, env, arg)
+    | MGlobalBind(_, I32Type, _) =>
+      call_decref_global_bind(wasm_mod, env, arg)
     | MGlobalBind(_) => arg
     | MClosureBind(_) => call_decref_closure_bind(wasm_mod, env, arg)
     | _ => call_decref(wasm_mod, env, arg)
@@ -1266,7 +1268,7 @@ let compile_bind =
         typ,
       )
     };
-  | MGlobalBind(slot, wasm_ty) =>
+  | MGlobalBind(slot, wasm_ty, gc) =>
     let typ =
       switch (wasm_ty) {
       | I32Type => Type.int32
@@ -1276,6 +1278,7 @@ let compile_bind =
       };
     switch (action) {
     | BindGet => Expression.global_get(wasm_mod, slot, typ)
+    | BindSet(arg) when !gc => Expression.global_set(wasm_mod, slot, arg)
     | BindSet(arg) =>
       Expression.global_set(
         wasm_mod,
@@ -1297,6 +1300,15 @@ let compile_bind =
           ),
           0,
         ),
+      )
+    | BindTee(arg) when !gc =>
+      Expression.block(
+        wasm_mod,
+        gensym_label("BindTee"),
+        [
+          Expression.global_set(wasm_mod, slot, arg),
+          Expression.global_get(wasm_mod, slot, typ),
+        ],
       )
     | BindTee(arg) =>
       Expression.block(
@@ -3608,13 +3620,13 @@ let compile_imports = (wasm_mod, env, {imports}) => {
     let item_name = compile_import_name(mimp_name, mimp_kind);
     let internal_name = get_imported_name(mimp_mod, mimp_name);
     switch (mimp_kind, mimp_type) {
-    | (MImportGrain, _) =>
+    | (MImportGrain, MGlobalImport(ty)) =>
       Import.add_global_import(
         wasm_mod,
         internal_name,
         module_name,
         item_name,
-        Type.int32,
+        wasm_type(ty),
         true,
       )
     | (_, MFuncImport(args, ret)) =>
@@ -3652,8 +3664,7 @@ let compile_imports = (wasm_mod, env, {imports}) => {
   Import.add_table_import(wasm_mod, "tbl", Ident.name(runtime_mod), "tbl");
 };
 
-let compile_exports =
-    (wasm_mod, env, {functions, imports, exports, num_globals}) => {
+let compile_exports = (wasm_mod, env, {functions, imports, exports, globals}) => {
   let compile_exports = (i, {ex_name, ex_global_index}) => {
     let internal_name = Printf.sprintf("global_%ld", ex_global_index);
     let exported_name = "GRAIN$EXPORT$" ++ Ident.name(ex_name);
@@ -3662,8 +3673,6 @@ let compile_exports =
     export;
   };
 
-  let main_idx = env.func_offset + List.length(functions);
-  let cleanup_globals_idx = main_idx + 1;
   let exports = {
     let exported = Hashtbl.create(14);
     /* Exports are already reversed, so keeping the first of any name is the correct behavior. */
@@ -3681,15 +3690,9 @@ let compile_exports =
   ignore @@ List.mapi(compile_exports, exports);
   ignore @@ Export.add_function_export(wasm_mod, "_start", "_start");
   ignore @@
-  Export.add_function_export(
-    wasm_mod,
-    Printf.sprintf("func_%d", cleanup_globals_idx),
-    "GRAIN$CLEANUP_GLOBALS",
-  );
-  ignore @@
   Export.add_global_export(
     wasm_mod,
-    Printf.sprintf("global_%d", num_globals + 1),
+    Printf.sprintf("global_%d", List.length(globals) + 1),
     Ident.name(table_size),
   );
 };
@@ -3710,14 +3713,7 @@ let compile_tables = (wasm_mod, env, {functions, imports} as prog) => {
   let function_names =
     List.mapi((i, _) => function_name(env.func_offset + i), functions);
   let all_import_names =
-    List.concat([
-      import_names,
-      function_names,
-      [
-        "_start",
-        function_name(env.func_offset + List.length(functions) + 1),
-      ],
-    ]);
+    List.concat([import_names, function_names, ["_start"]]);
   Function_table.set_function_table(
     wasm_mod,
     table_size,
@@ -3733,21 +3729,29 @@ let compile_tables = (wasm_mod, env, {functions, imports} as prog) => {
 
 let compile_elems = (wasm_mod, env, prog) => ();
 
-let compile_globals = (wasm_mod, env, {num_globals} as prog) => {
-  ignore @@
-  List.init(1 + num_globals, i =>
-    Global.add_global(
-      wasm_mod,
-      Printf.sprintf("global_%d", i),
-      Type.int32,
-      true,
-      Expression.const(wasm_mod, const_int32(0)),
-    )
+let compile_globals = (wasm_mod, env, {globals} as prog) => {
+  let initial_value =
+    fun
+    | I32Type => const_int32(0)
+    | I64Type => const_int64(0)
+    | F32Type => const_float32(0.)
+    | F64Type => const_float64(0.);
+  List.iter(
+    ((i, ty)) =>
+      ignore @@
+      Global.add_global(
+        wasm_mod,
+        Printf.sprintf("global_%ld", i),
+        wasm_type(ty),
+        true,
+        Expression.const(wasm_mod, initial_value(ty)),
+      ),
+    globals,
   );
   ignore @@
   Global.add_global(
     wasm_mod,
-    Printf.sprintf("global_%d", 1 + num_globals),
+    Printf.sprintf("global_%d", 1 + List.length(globals)),
     Type.int32,
     false,
     Expression.const(wasm_mod, const_int32(compute_table_size(env, prog))),
@@ -3772,46 +3776,7 @@ let compile_main = (wasm_mod, env, prog) => {
   );
 };
 
-let compile_global_cleanup_function =
-    (wasm_mod, env, {num_globals, functions}) => {
-  let cleanup_calls =
-    List.init(num_globals, n =>
-      Expression.drop(
-        wasm_mod,
-        call_decref_cleanup_globals(
-          wasm_mod,
-          env,
-          Expression.global_get(
-            wasm_mod,
-            Printf.sprintf("global_%d", n),
-            Type.int32,
-          ),
-        ),
-      )
-    );
-  let body =
-    Expression.return(
-      wasm_mod,
-      Expression.block(
-        wasm_mod,
-        gensym_label("global_cleanup_function"),
-        List.append(
-          cleanup_calls,
-          [Expression.const(wasm_mod, wrap_int32(Int32.zero))],
-        ),
-      ),
-    );
-  Function.add_function(
-    wasm_mod,
-    Printf.sprintf("func_%d", env.func_offset + List.length(functions) + 1),
-    Type.none,
-    Type.int32,
-    [||],
-    body,
-  );
-};
-
-let compile_functions = (wasm_mod, env, {functions, num_globals} as prog) => {
+let compile_functions = (wasm_mod, env, {functions} as prog) => {
   let handle_attrs = ({attrs} as func) =>
     if (List.mem(Disable_gc, attrs)) {
       Config.preserve_config(() => {
@@ -3823,7 +3788,6 @@ let compile_functions = (wasm_mod, env, {functions, num_globals} as prog) => {
     };
   ignore @@ List.map(handle_attrs, functions);
   ignore @@ compile_main(wasm_mod, env, prog);
-  ignore @@ compile_global_cleanup_function(wasm_mod, env, prog);
 };
 
 exception WasmRunnerError(Module.t, option(string), string);
@@ -3911,12 +3875,7 @@ let prepare = (env, {imports} as prog) => {
       global_offset,
       func_offset,
     },
-    {
-      ...prog,
-      imports: new_imports,
-      num_globals:
-        prog.num_globals + List.length(new_imports) + List.length(imports),
-    },
+    {...prog, imports: new_imports},
   );
 };
 
@@ -3962,7 +3921,6 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
     "cmi",
     Bytes.to_string(serialized_cmi),
   );
-
   validate_module(~name?, wasm_mod);
   // TODO: Enable Binaryen optimizations
   // https://github.com/grain-lang/grain/issues/196

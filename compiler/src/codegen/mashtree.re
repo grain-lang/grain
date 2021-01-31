@@ -299,7 +299,7 @@ type constant =
 type binding =
   | MArgBind(int32, asmtype)
   | MLocalBind(int32, asmtype)
-  | MGlobalBind(string, asmtype)
+  | MGlobalBind(string, asmtype, bool)
   | MClosureBind(int32)
   | MSwapBind(int32, asmtype) /* Used like a register would be */
   | MImport(int32); /* Index into list of imports */
@@ -476,7 +476,7 @@ type mash_program = {
   exports: list(export),
   main_body: block,
   main_body_stack_size: stack_size,
-  num_globals: int,
+  globals: list((int32, asmtype)),
   signature: Cmi_format.cmi_infos,
 };
 

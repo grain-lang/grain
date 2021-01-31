@@ -161,9 +161,13 @@ let test_run =
 let test_run_file = (~heap_size=?, filename, name, expected, test_ctxt) => {
   let input_filename = "input/" ++ filename ++ ".gr";
   let outfile = "output/" ++ name;
-  let cstate =
-    compile_file(~hook=stop_after_compiled, ~outfile, input_filename);
-  let result = run_output(~heap_size?, cstate, test_ctxt);
+  let result =
+    Config.preserve_config(() => {
+      Config.include_dirs := ["test-libs", ...Config.include_dirs^];
+      let cstate =
+        compile_file(~hook=stop_after_compiled, ~outfile, input_filename);
+      run_output(~heap_size?, cstate, test_ctxt);
+    });
   assert_equal(~printer=Fun.id, expected ++ "\n", result);
 };
 

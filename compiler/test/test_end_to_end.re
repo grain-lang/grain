@@ -279,6 +279,11 @@ let basic_functionality_tests = [
   te("fail1", "ignore(fail \"boo\")", "Failure: boo"),
   te("fail2", "if (false) { 3 } else { fail \"boo\" }", "Failure: boo"),
   tfile("toplevel_statements", "toplevelStatements", "1\n2\n3\n4\n5\nfoo"),
+  tfile(
+    "unsafe_wasm_globals",
+    "unsafeWasmGlobals",
+    "42n\n42N\n42.0w\n42.0W\nvoid",
+  ),
 ];
 
 /* Tests for functions: basic, directly-recursive, and mutually-recursive. */
