@@ -12,6 +12,7 @@ let optimization_passes = [
   Optimize_simple_binops.optimize,
   Optimize_dead_assignments.optimize,
   Optimize_dead_branches.optimize,
+  Optimize_dead_statements.optimize,
   Optimize_inline_wasm.optimize,
 ];
 

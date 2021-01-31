@@ -58,9 +58,7 @@ module E = {
       sub.expr(sub, e);
       iter_loc(sub, f);
       sub.expr(sub, v);
-    | PExpLet(r, m, vbs, e) =>
-      List.iter(sub.value_binding(sub), vbs);
-      sub.expr(sub, e);
+    | PExpLet(r, m, vbs) => List.iter(sub.value_binding(sub), vbs)
     | PExpMatch(e, mbs) =>
       sub.expr(sub, e);
       List.iter(sub.match_branch(sub), mbs);

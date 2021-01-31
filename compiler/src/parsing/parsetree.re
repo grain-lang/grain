@@ -430,7 +430,7 @@ and expression_desc =
   | PExpRecord(list((loc(Identifier.t), expression)))
   | PExpRecordGet(expression, loc(Identifier.t))
   | PExpRecordSet(expression, loc(Identifier.t), expression)
-  | PExpLet(rec_flag, mut_flag, list(value_binding), expression)
+  | PExpLet(rec_flag, mut_flag, list(value_binding))
   | PExpMatch(expression, list(match_branch))
   | PExpPrim1(prim1, expression)
   | PExpPrim2(prim2, expression, expression)

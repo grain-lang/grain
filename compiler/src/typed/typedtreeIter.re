@@ -193,9 +193,8 @@ module MakeIterator =
     | TExpNull
     | TExpIdent(_)
     | TExpConstant(_) => ()
-    | TExpLet(recflag, mutflag, binds, body) =>
-      iter_bindings(Nonexported, recflag, mutflag, binds);
-      iter_expression(body);
+    | TExpLet(recflag, mutflag, binds) =>
+      iter_bindings(Nonexported, recflag, mutflag, binds)
     | TExpLambda(branches, _) => iter_match_branches(branches)
     | TExpApp(exp, args) =>
       iter_expression(exp);

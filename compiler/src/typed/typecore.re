@@ -376,7 +376,6 @@ let rec last = lst =>
 
 let rec final_subexpression = sexp =>
   switch (sexp.pexp_desc) {
-  | PExpLet(_, _, _, e)
   | PExpIf(_, e, _)
   | PExpWhile(_, e)
   | PExpMatch(_, [{pmb_body: e}, ..._]) => final_subexpression(e)
@@ -394,9 +393,8 @@ let rec is_nonexpansive = exp =>
   | TExpLambda(_)
   | TExpNull => true
   | TExpTuple(es) => List.for_all(is_nonexpansive, es)
-  | TExpLet(rec_flag, mut_flag, binds, body) =>
+  | TExpLet(rec_flag, mut_flag, binds) =>
     List.for_all(vb => is_nonexpansive(vb.vb_expr), binds)
-    && is_nonexpansive(body)
   | TExpMatch(e, cases, _) =>
     is_nonexpansive(e)
     && List.for_all(({mb_pat, mb_body}) => is_nonexpansive(mb_body), cases)
@@ -443,7 +441,7 @@ let rec approx_type = (env, sty) =>
 
 let rec type_approx = (env, sexp: Parsetree.expression) =>
   switch (sexp.pexp_desc) {
-  | PExpLet(_, _, _, e) => type_approx(env, e)
+  | PExpLet(_, _, _) => Builtin_types.type_void
   | PExpMatch(_, [{pmb_body: e}, ..._]) => type_approx(env, e)
   | PExpIf(_, e, _) => type_approx(env, e)
   | PExpWhile(_, e) => type_approx(env, e)
@@ -878,22 +876,21 @@ and type_expect_ =
       exp_type: ty_arg,
       exp_env: env,
     });
-  | PExpLet(rec_flag, mut_flag, pats, body) =>
+  | PExpLet(rec_flag, mut_flag, pats) =>
     let scp = None;
     let (pat_exp_list, new_env, unpacks) =
       type_let(env, rec_flag, mut_flag, pats, scp, true);
-    let body = type_expect(new_env, body, ty_expected_explained);
     /*let () =
       if rec_flag = Recursive then
         check_recursive_bindings env pat_exp_list
       in*/
-    re({
-      exp_desc: TExpLet(rec_flag, mut_flag, pat_exp_list, body),
+    rue({
+      exp_desc: TExpLet(rec_flag, mut_flag, pat_exp_list),
       exp_loc: loc,
       exp_extra: [],
       exp_attributes: attributes,
-      exp_type: body.exp_type,
-      exp_env: env,
+      exp_type: Builtin_types.type_void,
+      exp_env: new_env,
     });
   | PExpLambda(args, body) =>
     open Ast_helper;
@@ -1137,24 +1134,20 @@ and type_expect_ =
       exp_extra: [],
     })
   | PExpBlock(es) =>
-    let rec process_es = rem =>
+    let rec process_es = (env, rem) =>
       switch (rem) {
       | [] => failwith("Impossible: empty case in process_es")
       | [e] =>
         let expr = type_expect(env, e, ty_expected_explained);
         ([expr], expr.exp_type);
       | [e, ...es] =>
-        let (exprs, typ) = process_es(es);
-        (
-          [
-            type_statement_expr(~explanation=Sequence_left_hand_side, env, e),
-            ...exprs,
-          ],
-          typ,
-        );
+        let expr =
+          type_statement_expr(~explanation=Sequence_left_hand_side, env, e);
+        let (exprs, typ) = process_es(expr.exp_env, es);
+        ([expr, ...exprs], typ);
       };
 
-    let (exprs, typ) = process_es(es);
+    let (exprs, typ) = process_es(env, es);
     re({
       exp_desc: TExpBlock(exprs),
       exp_loc: loc,

@@ -409,18 +409,15 @@ let rec transl_imm =
     let (rest_ans, rest_setup) =
       transl_imm({...e, exp_desc: TExpBlock(rest)});
     (rest_ans, fst_setup @ [BSeq(fst_ans)] @ rest_setup);
-  | TExpLet(Nonrecursive, _, [], body) => transl_imm(body)
-  | TExpLet(Nonrecursive, mut_flag, [{vb_expr, vb_pat}, ...rest], body) =>
+  | TExpLet(Nonrecursive, _, []) => (Imm.const(Const_void), [])
+  | TExpLet(Nonrecursive, mut_flag, [{vb_expr, vb_pat}, ...rest]) =>
     /* TODO: Destructuring on letrec */
     let (exp_ans, exp_setup) = transl_comp_expression(vb_expr);
     let binds_setup = extract_bindings(mut_flag, vb_pat, exp_ans);
     let (body_ans, body_setup) =
-      transl_imm({
-        ...e,
-        exp_desc: TExpLet(Nonrecursive, mut_flag, rest, body),
-      });
+      transl_imm({...e, exp_desc: TExpLet(Nonrecursive, mut_flag, rest)});
     (body_ans, exp_setup @ binds_setup @ body_setup);
-  | TExpLet(Recursive, mut_flag, binds, body) =>
+  | TExpLet(Recursive, mut_flag, binds) =>
     if (mut_flag == Mutable) {
       failwith("mutable let rec");
     };
@@ -441,14 +438,13 @@ let rec transl_imm =
         | _ => failwith("Non-name not allowed on LHS of let rec."),
         binds,
       );
-
-    let (body_ans, body_setup) = transl_comp_expression(body);
     (
       Imm.id(~loc, ~env, tmp),
       List.concat(new_setup)
-      @ [BLetRec(List.combine(names, new_binds))]
-      @ body_setup
-      @ [BLet(tmp, body_ans)],
+      @ [
+        BLetRec(List.combine(names, new_binds)),
+        BLet(tmp, Comp.imm(~allocation_type, Imm.const(Const_void))),
+      ],
     );
   | TExpLambda([{mb_pat, mb_body: body}], _) =>
     let tmp = gensym("lam");
@@ -818,13 +814,15 @@ and transl_comp_expression =
     let (rest_ans, rest_setup) =
       transl_comp_expression({...e, exp_desc: TExpBlock(rest)});
     (rest_ans, fst_setup @ [BSeq(fst_ans)] @ rest_setup);
-  | TExpLet(Nonrecursive, _, [], body) => transl_comp_expression(body)
+  | TExpLet(Nonrecursive, _, []) => (
+      Comp.imm(~allocation_type, Imm.const(Const_void)),
+      [],
+    )
 
   | TExpLet(
       Nonrecursive,
       mut_flag,
       [{vb_expr, vb_pat: {pat_desc: TPatVar(bind, _)}}, ...rest],
-      body,
     ) =>
     let vb_expr = {
       ...vb_expr,
@@ -840,20 +838,18 @@ and transl_comp_expression =
     let (body_ans, body_setup) =
       transl_comp_expression({
         ...e,
-        exp_desc: TExpLet(Nonrecursive, mut_flag, rest, body),
+        exp_desc: TExpLet(Nonrecursive, mut_flag, rest),
       });
     (body_ans, exp_setup @ [BLet(bind, exp_ans)] @ body_setup);
   | TExpLet(
       Nonrecursive,
       mut_flag,
       [{vb_expr, vb_pat: {pat_desc: TPatTuple(_)} as pat}, ...rest],
-      body,
     )
   | TExpLet(
       Nonrecursive,
       mut_flag,
       [{vb_expr, vb_pat: {pat_desc: TPatRecord(_)} as pat}, ...rest],
-      body,
     ) =>
     let vb_expr = {
       ...vb_expr,
@@ -867,13 +863,12 @@ and transl_comp_expression =
     let (body_ans, body_setup) =
       transl_comp_expression({
         ...e,
-        exp_desc: TExpLet(Nonrecursive, mut_flag, rest, body),
+        exp_desc: TExpLet(Nonrecursive, mut_flag, rest),
       });
     (body_ans, exp_setup @ [BLet(tmp, exp_ans), ...anf_patts] @ body_setup);
 
-  | TExpLet(Nonrecursive, _, [_, ..._], _) =>
-    failwith("Impossible by pre_anf")
-  | TExpLet(Recursive, mut_flag, binds, body) =>
+  | TExpLet(Nonrecursive, _, [_, ..._]) => failwith("Impossible by pre_anf")
+  | TExpLet(Recursive, mut_flag, binds) =>
     if (mut_flag == Mutable) {
       failwith("mutable let rec");
     };
@@ -899,12 +894,9 @@ and transl_comp_expression =
         | _ => failwith("Non-name not allowed on LHS of let rec."),
         binds,
       );
-
-    let (body_ans, body_setup) = transl_comp_expression(body);
     (
-      body_ans,
-      List.concat(new_setup)
-      @ [BLetRec(List.combine(names, new_binds)), ...body_setup],
+      Comp.imm(~allocation_type, Imm.const(Const_void)),
+      List.concat(new_setup) @ [BLetRec(List.combine(names, new_binds))],
     );
   | TExpLambda(
       [

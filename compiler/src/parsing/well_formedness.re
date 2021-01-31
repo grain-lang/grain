@@ -273,7 +273,7 @@ let no_empty_record_patterns = (errs, super) => {
   };
   let iter_binds = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
-    | PExpLet(_, _, vbs, _) =>
+    | PExpLet(_, _, vbs) =>
       List.iter(
         fun
         | {pvb_pat: {ppat_desc: PPatRecord(fields, _)}} =>
@@ -307,7 +307,7 @@ let only_functions_oh_rhs_letrec = (errs, super) => {
   };
   let iter_binds = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
-    | PExpLet(Recursive, _, vbs, _) =>
+    | PExpLet(Recursive, _, vbs) =>
       List.iter(
         fun
         | {pvb_expr: {pexp_desc: PExpLambda(_)}} => ()
@@ -333,7 +333,7 @@ let no_letrec_mut = (errs, super) => {
   };
   let iter_binds = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
-    | PExpLet(Recursive, Mutable, vbs, _) =>
+    | PExpLet(Recursive, Mutable, vbs) =>
       errs := [NoLetRecMut(loc), ...errs^]
     | _ => ()
     };

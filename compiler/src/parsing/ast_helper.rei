@@ -147,8 +147,7 @@ module Exp: {
       ~attributes: attributes=?,
       rec_flag,
       mut_flag,
-      list(value_binding),
-      expression
+      list(value_binding)
     ) =>
     expression;
   let match:
