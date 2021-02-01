@@ -406,6 +406,7 @@ let function_tests = [
   ),
   te("nonfunction_1", "let x = 5; x(3)", "type"),
   t("lambda_pat_any", "let x = (_) => 5; x(\"foo\")", "5"),
+  te("unknown_attribute", "@unknown let x = () => 5", "Unknown attribute"),
 ];
 
 let mylist = "[1, 2, 3]";
