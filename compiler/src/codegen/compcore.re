@@ -1047,8 +1047,7 @@ let compile_bind =
     | MLocalBind(_) => arg
     | MSwapBind(_, I32Type) => call_incref_swap_bind(wasm_mod, env, arg)
     | MSwapBind(_) => arg
-    | MGlobalBind(_, I32Type) =>
-      call_incref_global_bind(wasm_mod, env, arg)
+    | MGlobalBind(_, I32Type) => call_incref_global_bind(wasm_mod, env, arg)
     | MGlobalBind(_) => arg
     | MClosureBind(_) => call_incref_closure_bind(wasm_mod, env, arg)
     | _ => call_incref(wasm_mod, env, arg)
@@ -1057,17 +1056,16 @@ let compile_bind =
   let appropriate_decref = (env, arg) =>
     switch (b) {
     | _ when skip_decref => arg /* This case is used for storing swap values that have freshly been heap-allocated. */
-      | MArgBind(_, I32Type) => call_decref_arg_bind(wasm_mod, env, arg)
-      | MArgBind(_) => arg
-      | MLocalBind(_, I32Type) => call_decref_local_bind(wasm_mod, env, arg)
-      | MLocalBind(_) => arg
-      | MSwapBind(_, I32Type) => call_decref_swap_bind(wasm_mod, env, arg)
-      | MSwapBind(_) => arg
-      | MGlobalBind(_, I32Type) =>
-        call_decref_global_bind(wasm_mod, env, arg)
-      | MGlobalBind(_) => arg
-      | MClosureBind(_) => call_decref_closure_bind(wasm_mod, env, arg)
-      | _ => call_decref(wasm_mod, env, arg)
+    | MArgBind(_, I32Type) => call_decref_arg_bind(wasm_mod, env, arg)
+    | MArgBind(_) => arg
+    | MLocalBind(_, I32Type) => call_decref_local_bind(wasm_mod, env, arg)
+    | MLocalBind(_) => arg
+    | MSwapBind(_, I32Type) => call_decref_swap_bind(wasm_mod, env, arg)
+    | MSwapBind(_) => arg
+    | MGlobalBind(_, I32Type) => call_decref_global_bind(wasm_mod, env, arg)
+    | MGlobalBind(_) => arg
+    | MClosureBind(_) => call_decref_closure_bind(wasm_mod, env, arg)
+    | _ => call_decref(wasm_mod, env, arg)
     };
 
   switch (b) {
@@ -2972,6 +2970,76 @@ let compile_prim1 = (wasm_mod, env, p1, arg): Expression.t => {
   };
 };
 
+let compile_wasm_load =
+    (~sz=?, ~ty=?, ~signed=?, wasm_mod, compiled_arg1, compiled_arg2, offset) => {
+  switch (offset) {
+  | MImmConst(MConstLiteral(MConstI32(offset))) =>
+    load(
+      ~sz?,
+      ~ty?,
+      ~signed?,
+      ~offset=Int32.to_int(offset),
+      wasm_mod,
+      compiled_arg1(),
+    )
+  | _ =>
+    load(
+      ~sz?,
+      ~ty?,
+      ~signed?,
+      wasm_mod,
+      Expression.binary(
+        wasm_mod,
+        Op.add_int32,
+        compiled_arg1(),
+        compiled_arg2(),
+      ),
+    )
+  };
+};
+
+let compile_wasm_store = (~sz=?, ~ty=?, wasm_mod, env, args) => {
+  switch (List.nth(args, 2)) {
+  | MImmConst(MConstLiteral(MConstI32(offset))) =>
+    Expression.block(
+      wasm_mod,
+      gensym_label("wasm_prim_store"),
+      [
+        store(
+          ~sz?,
+          ~ty?,
+          ~offset=Int32.to_int(offset),
+          wasm_mod,
+          compile_imm(wasm_mod, env, List.nth(args, 0)),
+          compile_imm(wasm_mod, env, List.nth(args, 1)),
+        ),
+        Expression.const(wasm_mod, const_void()),
+      ],
+    )
+
+  | _ =>
+    Expression.block(
+      wasm_mod,
+      gensym_label("wasm_prim_store"),
+      [
+        store(
+          ~sz?,
+          ~ty?,
+          wasm_mod,
+          Expression.binary(
+            wasm_mod,
+            Op.add_int32,
+            compile_imm(wasm_mod, env, List.nth(args, 0)),
+            compile_imm(wasm_mod, env, List.nth(args, 2)),
+          ),
+          compile_imm(wasm_mod, env, List.nth(args, 1)),
+        ),
+        Expression.const(wasm_mod, const_void()),
+      ],
+    )
+  };
+};
+
 let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t => {
   let compiled_arg1 = () => compile_imm(wasm_mod, env, arg1);
   let compiled_arg2 = () => compile_imm(wasm_mod, env, arg2);
@@ -3034,86 +3102,41 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
   | ArrayMake => allocate_array_n(wasm_mod, env, arg1, arg2)
   | ArrayInit => allocate_array_init(wasm_mod, env, arg1, arg2)
   | WasmLoadI32({sz, signed}) =>
-    switch (arg2) {
-    | MImmConst(MConstLiteral(MConstI32(offset))) =>
-      load(~sz, ~offset=Int32.to_int(offset), wasm_mod, compiled_arg1())
-    | _ =>
-      load(
-        ~sz,
-        wasm_mod,
-        Expression.binary(
-          wasm_mod,
-          Op.add_int32,
-          compiled_arg1(),
-          compiled_arg2(),
-        ),
-      )
-    }
+    compile_wasm_load(
+      ~sz,
+      ~ty=Type.int32,
+      ~signed,
+      wasm_mod,
+      compiled_arg1,
+      compiled_arg2,
+      arg2,
+    )
   | WasmLoadI64({sz, signed}) =>
-    switch (arg2) {
-    | MImmConst(MConstLiteral(MConstI32(offset))) =>
-      load(
-        ~sz,
-        ~ty=Type.int64,
-        ~offset=Int32.to_int(offset),
-        wasm_mod,
-        compiled_arg1(),
-      )
-    | _ =>
-      load(
-        ~sz,
-        ~ty=Type.int64,
-        wasm_mod,
-        Expression.binary(
-          wasm_mod,
-          Op.add_int32,
-          compiled_arg1(),
-          compiled_arg2(),
-        ),
-      )
-    }
+    compile_wasm_load(
+      ~sz,
+      ~ty=Type.int64,
+      ~signed,
+      wasm_mod,
+      compiled_arg1,
+      compiled_arg2,
+      arg2,
+    )
   | WasmLoadF32 =>
-    switch (arg2) {
-    | MImmConst(MConstLiteral(MConstI32(offset))) =>
-      load(
-        ~ty=Type.float32,
-        ~offset=Int32.to_int(offset),
-        wasm_mod,
-        compiled_arg1(),
-      )
-    | _ =>
-      load(
-        ~ty=Type.float32,
-        wasm_mod,
-        Expression.binary(
-          wasm_mod,
-          Op.add_int32,
-          compiled_arg1(),
-          compiled_arg2(),
-        ),
-      )
-    }
+    compile_wasm_load(
+      ~ty=Type.float32,
+      wasm_mod,
+      compiled_arg1,
+      compiled_arg2,
+      arg2,
+    )
   | WasmLoadF64 =>
-    switch (arg2) {
-    | MImmConst(MConstLiteral(MConstI32(offset))) =>
-      load(
-        ~ty=Type.float64,
-        ~offset=Int32.to_int(offset),
-        wasm_mod,
-        compiled_arg1(),
-      )
-    | _ =>
-      load(
-        ~ty=Type.float64,
-        wasm_mod,
-        Expression.binary(
-          wasm_mod,
-          Op.add_int32,
-          compiled_arg1(),
-          compiled_arg2(),
-        ),
-      )
-    }
+    compile_wasm_load(
+      ~ty=Type.float64,
+      wasm_mod,
+      compiled_arg1,
+      compiled_arg2,
+      arg2,
+    )
   | WasmBinaryI32({wasm_op, ret_type})
   | WasmBinaryI64({wasm_op, ret_type})
   | WasmBinaryF32({wasm_op, ret_type})
@@ -3132,159 +3155,11 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
 let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
   switch (p) {
   | WasmStoreI32({sz}) =>
-    switch (List.nth(args, 2)) {
-    | MImmConst(MConstLiteral(MConstI32(offset))) =>
-      Expression.block(
-        wasm_mod,
-        gensym_label("wasm_prim_store"),
-        [
-          store(
-            ~sz,
-            ~offset=Int32.to_int(offset),
-            wasm_mod,
-            compile_imm(wasm_mod, env, List.nth(args, 0)),
-            compile_imm(wasm_mod, env, List.nth(args, 1)),
-          ),
-          Expression.const(wasm_mod, const_void()),
-        ],
-      )
-
-    | _ =>
-      Expression.block(
-        wasm_mod,
-        gensym_label("wasm_prim_store"),
-        [
-          store(
-            ~sz,
-            wasm_mod,
-            Expression.binary(
-              wasm_mod,
-              Op.add_int32,
-              compile_imm(wasm_mod, env, List.nth(args, 0)),
-              compile_imm(wasm_mod, env, List.nth(args, 2)),
-            ),
-            compile_imm(wasm_mod, env, List.nth(args, 1)),
-          ),
-          Expression.const(wasm_mod, const_void()),
-        ],
-      )
-    }
+    compile_wasm_store(~sz, ~ty=Type.int32, wasm_mod, env, args)
   | WasmStoreI64({sz}) =>
-    switch (List.nth(args, 2)) {
-    | MImmConst(MConstLiteral(MConstI32(offset))) =>
-      Expression.block(
-        wasm_mod,
-        gensym_label("wasm_prim_store"),
-        [
-          store(
-            ~sz,
-            ~ty=Type.int64,
-            ~offset=Int32.to_int(offset),
-            wasm_mod,
-            compile_imm(wasm_mod, env, List.nth(args, 0)),
-            compile_imm(wasm_mod, env, List.nth(args, 1)),
-          ),
-          Expression.const(wasm_mod, const_void()),
-        ],
-      )
-
-    | _ =>
-      Expression.block(
-        wasm_mod,
-        gensym_label("wasm_prim_store"),
-        [
-          store(
-            ~sz,
-            ~ty=Type.int64,
-            wasm_mod,
-            Expression.binary(
-              wasm_mod,
-              Op.add_int32,
-              compile_imm(wasm_mod, env, List.nth(args, 0)),
-              compile_imm(wasm_mod, env, List.nth(args, 2)),
-            ),
-            compile_imm(wasm_mod, env, List.nth(args, 1)),
-          ),
-          Expression.const(wasm_mod, const_void()),
-        ],
-      )
-    }
-  | WasmStoreF32 =>
-    switch (List.nth(args, 2)) {
-    | MImmConst(MConstLiteral(MConstI32(offset))) =>
-      Expression.block(
-        wasm_mod,
-        gensym_label("wasm_prim_store"),
-        [
-          store(
-            ~ty=Type.float32,
-            ~offset=Int32.to_int(offset),
-            wasm_mod,
-            compile_imm(wasm_mod, env, List.nth(args, 0)),
-            compile_imm(wasm_mod, env, List.nth(args, 1)),
-          ),
-          Expression.const(wasm_mod, const_void()),
-        ],
-      )
-
-    | _ =>
-      Expression.block(
-        wasm_mod,
-        gensym_label("wasm_prim_store"),
-        [
-          store(
-            ~ty=Type.float32,
-            wasm_mod,
-            Expression.binary(
-              wasm_mod,
-              Op.add_int32,
-              compile_imm(wasm_mod, env, List.nth(args, 0)),
-              compile_imm(wasm_mod, env, List.nth(args, 2)),
-            ),
-            compile_imm(wasm_mod, env, List.nth(args, 1)),
-          ),
-          Expression.const(wasm_mod, const_void()),
-        ],
-      )
-    }
-  | WasmStoreF64 =>
-    switch (List.nth(args, 2)) {
-    | MImmConst(MConstLiteral(MConstI32(offset))) =>
-      Expression.block(
-        wasm_mod,
-        gensym_label("wasm_prim_store"),
-        [
-          store(
-            ~ty=Type.float64,
-            ~offset=Int32.to_int(offset),
-            wasm_mod,
-            compile_imm(wasm_mod, env, List.nth(args, 0)),
-            compile_imm(wasm_mod, env, List.nth(args, 1)),
-          ),
-          Expression.const(wasm_mod, const_void()),
-        ],
-      )
-
-    | _ =>
-      Expression.block(
-        wasm_mod,
-        gensym_label("wasm_prim_store"),
-        [
-          store(
-            ~ty=Type.float64,
-            wasm_mod,
-            Expression.binary(
-              wasm_mod,
-              Op.add_int32,
-              compile_imm(wasm_mod, env, List.nth(args, 0)),
-              compile_imm(wasm_mod, env, List.nth(args, 2)),
-            ),
-            compile_imm(wasm_mod, env, List.nth(args, 1)),
-          ),
-          Expression.const(wasm_mod, const_void()),
-        ],
-      )
-    }
+    compile_wasm_store(~sz, ~ty=Type.int64, wasm_mod, env, args)
+  | WasmStoreF32 => compile_wasm_store(~ty=Type.float32, wasm_mod, env, args)
+  | WasmStoreF64 => compile_wasm_store(~ty=Type.float64, wasm_mod, env, args)
   | WasmMemoryCopy =>
     Expression.block(
       wasm_mod,

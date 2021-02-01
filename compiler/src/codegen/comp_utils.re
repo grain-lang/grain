@@ -69,7 +69,8 @@ let store = (~ty=Type.int32, ~align=?, ~offset=0, ~sz=?, wasm_mod, ptr, arg) => 
   Expression.store(wasm_mod, sz, offset, align, ptr, arg, ty);
 };
 
-let load = (~ty=Type.int32, ~align=?, ~offset=0, ~sz=?, wasm_mod, ptr) => {
+let load =
+    (~ty=Type.int32, ~align=?, ~offset=0, ~sz=?, ~signed=false, wasm_mod, ptr) => {
   let sz =
     Option.value(
       ~default=
@@ -81,5 +82,5 @@ let load = (~ty=Type.int32, ~align=?, ~offset=0, ~sz=?, wasm_mod, ptr) => {
       sz,
     );
   let align = Option.value(~default=sz, align);
-  Expression.load(wasm_mod, sz, offset, align, ty, ptr);
+  Expression.load(~signed, wasm_mod, sz, offset, align, ty, ptr);
 };
