@@ -98,31 +98,6 @@ let rec analyze_comp_expression =
     | CPrim1(_, a) =>
       analyze_imm_expression(a);
       imm_expression_purity_internal(a);
-    | CPrim2(
-        Plus | Minus | Times | Divide | Mod | Less | Greater | LessEq |
-        GreaterEq |
-        Is |
-        Eq |
-        And |
-        Or |
-        Int64Land |
-        Int64Lor |
-        Int64Lxor |
-        Int64Lsl |
-        Int64Lsr |
-        Int64Asr |
-        Int64Gt |
-        Int64Gte |
-        Int64Lt |
-        Int64Lte |
-        WasmBinaryI32(_),
-        a1,
-        a2,
-      ) =>
-      analyze_imm_expression(a1);
-      analyze_imm_expression(a2);
-      imm_expression_purity_internal(a1)
-      && imm_expression_purity_internal(a2);
     | CPrim2(_, a1, a2) =>
       analyze_imm_expression(a1);
       analyze_imm_expression(a2);
