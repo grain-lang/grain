@@ -161,6 +161,8 @@ type wasm_prim_type =
   | Wasm_float64
   | Grain_bool;
 
+/* If adding new wasm ops, be sure to add them in comp_wasm_prim.re and in the inline_wasm analysis and optimization. */
+
 [@deriving (sexp, yojson)]
 type wasm_op =
   | Op_clz_int32
