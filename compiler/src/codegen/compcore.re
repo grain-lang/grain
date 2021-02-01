@@ -3929,7 +3929,17 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
       Filename.basename(Option.get(name)),
     );
   };
-  let _ = Module.set_features(wasm_mod, [Features.all]);
+  let _ =
+    Module.set_features(
+      wasm_mod,
+      [
+        Features.mvp,
+        Features.multivalue,
+        Features.tail_call,
+        Features.sign_ext,
+        Features.bulk_memory,
+      ],
+    );
   let _ =
     Memory.set_memory(wasm_mod, 0, Memory.unlimited, "memory", [], false);
   let () = ignore @@ compile_functions(wasm_mod, env, prog);
