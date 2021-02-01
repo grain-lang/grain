@@ -42,7 +42,7 @@ module StringHash =
 let primitive_map_i32 =
   StringHash.of_seq(
     List.to_seq([
-      ("ofGrain", "@wasm.ofGrain"),
+      ("fromGrain", "@wasm.fromGrain"),
       ("toGrain", "@wasm.toGrain"),
       ("load", "@wasm.load_int32"),
       ("store", "@wasm.store_int32"),

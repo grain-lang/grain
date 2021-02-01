@@ -54,7 +54,7 @@ export primitive extendS8 : WasmI32 -> WasmI32 = "@wasm.extend_s8_int32"
 export primitive extendS16 : WasmI32 -> WasmI32 = "@wasm.extend_s16_int32"
 
 // Grain Conversions
-export primitive ofGrain : a -> WasmI32 = "@wasm.ofGrain"
+export primitive fromGrain : a -> WasmI32 = "@wasm.fromGrain"
 export primitive toGrain : WasmI32 -> a = "@wasm.toGrain"
 
 @disableGC
@@ -73,7 +73,7 @@ export let toInt32 = (n) => {
 
 @disableGC
 export let ofInt32 = (n: Int32) => {
-  let ptr = xor(ofGrain(n), 3n)
+  let ptr = xor(fromGrain(n), 3n)
   load(ptr, 8n)
 }
 

@@ -54,7 +54,7 @@ export let toFloat64 = (n) => {
 
 @disableGC
 export let ofFloat64 = (n: Float64) => {
-  let ptr = WasmI32.xor(WasmI32.ofGrain(n), 3n)
+  let ptr = WasmI32.xor(WasmI32.fromGrain(n), 3n)
   load(ptr, 8n)
 }
 
