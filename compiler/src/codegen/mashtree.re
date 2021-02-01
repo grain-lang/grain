@@ -15,7 +15,11 @@ type tag_type = Value_tags.tag_type;
 type heap_tag_type = Value_tags.heap_tag_type;
 
 [@deriving sexp]
-type attributes = Asttypes.attributes;
+type attributes = list(attribute)
+
+[@deriving sexp]
+and attribute =
+  | Disable_gc;
 
 type grain_error = Runtime_errors.grain_error;
 let (prim1_of_sexp, sexp_of_prim1) = (

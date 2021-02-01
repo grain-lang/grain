@@ -605,6 +605,17 @@ let next_global = (~exported=false, id) => {
   };
 };
 
+let transl_attributes = attrs => {
+  List.map(
+    ({txt}) =>
+      switch (txt) {
+      | "disableGC" => Disable_gc
+      | _ => failwith("impossible by well-formedness")
+      },
+    attrs,
+  );
+};
+
 let rec compile_comp = (env, c) => {
   let desc =
     switch (c.comp_desc) {
@@ -707,7 +718,13 @@ let rec compile_comp = (env, c) => {
     | CLambda(args, body) =>
       MAllocate(
         MClosure(
-          compile_lambda(env, args, body, c.comp_attributes, c.comp_loc),
+          compile_lambda(
+            env,
+            args,
+            body,
+            transl_attributes(c.comp_attributes),
+            c.comp_loc,
+          ),
         ),
       )
     | CApp((f, (argsty, retty)), args, true) =>
