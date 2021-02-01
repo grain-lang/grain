@@ -309,22 +309,26 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
       | [(hd_ty, hd), ...tl] when hd_ty == ty && hd > acc =>
         help((ty, hd), tl)
       | [_, ...tl] => help((ty, acc), tl);
-    let (_, i32) =
+    let i32 =
+      snd @@
       help(
         (I32Type, 0),
         List.map(((_, lst)) => help((I32Type, 0), lst), instr_live_sets),
       );
-    let (_, i64) =
+    let i64 =
+      snd @@
       help(
         (I64Type, 0),
         List.map(((_, lst)) => help((I64Type, 0), lst), instr_live_sets),
       );
-    let (_, f32) =
+    let f32 =
+      snd @@
       help(
         (F32Type, 0),
         List.map(((_, lst)) => help((F32Type, 0), lst), instr_live_sets),
       );
-    let (_, f64) =
+    let f64 =
+      snd @@
       help(
         (F64Type, 0),
         List.map(((_, lst)) => help((F64Type, 0), lst), instr_live_sets),
