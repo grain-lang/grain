@@ -1031,7 +1031,6 @@ let cleanup_local_slot_instructions = (wasm_mod, env: codegen_env) => {
 let compile_bind =
     (
       ~action,
-      ~ty as typ=Type.int32,
       ~skip_incref=false,
       ~skip_decref=false,
       wasm_mod: Module.t,
@@ -1040,49 +1039,35 @@ let compile_bind =
     )
     : Expression.t => {
   let appropriate_incref = (env, arg) =>
-    switch (typ) {
+    switch (b) {
     | _ when skip_incref => arg /* This case is used for storing swap values that have freshly been heap-allocated. */
-    | typ when typ === Type.int32 =>
-      switch (b) {
-      | MArgBind(_, I32Type) => call_incref_arg_bind(wasm_mod, env, arg)
-      | MArgBind(_) => arg
-      | MLocalBind(_, I32Type) => call_incref_local_bind(wasm_mod, env, arg)
-      | MLocalBind(_) => arg
-      | MSwapBind(_) => call_incref_swap_bind(wasm_mod, env, arg)
-      | MGlobalBind(_, I32Type) =>
-        call_incref_global_bind(wasm_mod, env, arg)
-      | MGlobalBind(_) => arg
-      | MClosureBind(_) => call_incref_closure_bind(wasm_mod, env, arg)
-      | _ => call_incref(wasm_mod, env, arg)
-      }
-    | typ when typ === Type.int64 =>
-      /* https://github.com/dcodeIO/webassembly/issues/26#issuecomment-410157370 */
-      /* call_incref_64 env */
-      arg
-    | _ => failwith("appropriate_incref called with non-i32/i64 type")
+    | MArgBind(_, I32Type) => call_incref_arg_bind(wasm_mod, env, arg)
+    | MArgBind(_) => arg
+    | MLocalBind(_, I32Type) => call_incref_local_bind(wasm_mod, env, arg)
+    | MLocalBind(_) => arg
+    | MSwapBind(_, I32Type) => call_incref_swap_bind(wasm_mod, env, arg)
+    | MSwapBind(_) => arg
+    | MGlobalBind(_, I32Type) =>
+      call_incref_global_bind(wasm_mod, env, arg)
+    | MGlobalBind(_) => arg
+    | MClosureBind(_) => call_incref_closure_bind(wasm_mod, env, arg)
+    | _ => call_incref(wasm_mod, env, arg)
     };
 
   let appropriate_decref = (env, arg) =>
-    switch (typ) {
+    switch (b) {
     | _ when skip_decref => arg /* This case is used for storing swap values that have freshly been heap-allocated. */
-    | typ when typ === Type.int32 =>
-      switch (b) {
       | MArgBind(_, I32Type) => call_decref_arg_bind(wasm_mod, env, arg)
       | MArgBind(_) => arg
       | MLocalBind(_, I32Type) => call_decref_local_bind(wasm_mod, env, arg)
       | MLocalBind(_) => arg
-      | MSwapBind(_) => call_decref_swap_bind(wasm_mod, env, arg)
+      | MSwapBind(_, I32Type) => call_decref_swap_bind(wasm_mod, env, arg)
+      | MSwapBind(_) => arg
       | MGlobalBind(_, I32Type) =>
         call_decref_global_bind(wasm_mod, env, arg)
       | MGlobalBind(_) => arg
       | MClosureBind(_) => call_decref_closure_bind(wasm_mod, env, arg)
       | _ => call_decref(wasm_mod, env, arg)
-      }
-    | typ when typ === Type.int64 =>
-      /* https://github.com/dcodeIO/webassembly/issues/26#issuecomment-410157370 */
-      /* call_decref_64 env */
-      arg
-    | _ => failwith("appropriate_decref called with non-i32/i64 type")
     };
 
   switch (b) {
@@ -1225,9 +1210,16 @@ let compile_bind =
         typ,
       )
     };
-  | MSwapBind(i) =>
+  | MSwapBind(i, wasm_ty) =>
     /* Swap bindings need to be offset to account for arguments */
     let slot = env.num_args + Int32.to_int(i);
+    let typ =
+      switch (wasm_ty) {
+      | I32Type => Type.int32
+      | I64Type => Type.int64
+      | F32Type => Type.float32
+      | F64Type => Type.float64
+      };
     switch (action) {
     | BindGet => Expression.local_get(wasm_mod, slot, typ)
     | BindSet(arg) =>
@@ -1351,7 +1343,7 @@ let compile_bind =
     load(
       ~offset=4 * (3 + Int32.to_int(i)),
       wasm_mod,
-      Expression.local_get(wasm_mod, 0, typ),
+      Expression.local_get(wasm_mod, 0, Type.int32),
     );
   | MImport(i) =>
     if (!(action == BindGet)) {
@@ -1362,16 +1354,16 @@ let compile_bind =
     /* Adjust for runtime functions */
     let slot =
       Printf.sprintf("global_%d", env.import_offset + Int32.to_int(i));
-    Expression.global_get(wasm_mod, slot, typ);
+    Expression.global_get(wasm_mod, slot, Type.int32);
   };
 };
 
 let safe_drop = (wasm_mod, env, arg) =>
   Expression.drop(wasm_mod, call_decref_drop(wasm_mod, env, arg));
 
-let get_swap = (~ty as typ=Type.int32, wasm_mod, env, idx) =>
+let get_swap = (~ty as typ=I32Type, wasm_mod, env, idx) =>
   switch (typ) {
-  | typ when typ === Type.int32 =>
+  | I32Type =>
     if (idx > Array.length(swap_slots_i32)) {
       raise(Not_found);
     };
@@ -1379,18 +1371,17 @@ let get_swap = (~ty as typ=Type.int32, wasm_mod, env, idx) =>
       ~action=BindGet,
       wasm_mod,
       env,
-      MSwapBind(Int32.of_int(idx + swap_i32_offset)),
+      MSwapBind(Int32.of_int(idx + swap_i32_offset), I32Type),
     );
-  | typ when typ === Type.int64 =>
+  | I64Type =>
     if (idx > Array.length(swap_slots_i64)) {
       raise(Not_found);
     };
     compile_bind(
       ~action=BindGet,
-      ~ty=Type.int64,
       wasm_mod,
       env,
-      MSwapBind(Int32.of_int(idx + swap_i64_offset)),
+      MSwapBind(Int32.of_int(idx + swap_i64_offset), I64Type),
     );
   | _ => raise(Not_found)
   };
@@ -1399,14 +1390,14 @@ let set_swap =
     (
       ~skip_incref=true,
       ~skip_decref=true,
-      ~ty as typ=Type.int32,
+      ~ty as typ=I32Type,
       wasm_mod,
       env,
       idx,
       arg,
     ) =>
   switch (typ) {
-  | typ when typ === Type.int32 =>
+  | I32Type =>
     if (idx > Array.length(swap_slots_i32)) {
       raise(Not_found);
     };
@@ -1416,9 +1407,9 @@ let set_swap =
       ~skip_decref,
       wasm_mod,
       env,
-      MSwapBind(Int32.of_int(idx + swap_i32_offset)),
+      MSwapBind(Int32.of_int(idx + swap_i32_offset), I32Type),
     );
-  | typ when typ === Type.int64 =>
+  | I64Type =>
     if (idx > Array.length(swap_slots_i64)) {
       raise(Not_found);
     };
@@ -1426,17 +1417,16 @@ let set_swap =
       ~action=BindSet(arg),
       ~skip_incref,
       ~skip_decref,
-      ~ty=Type.int64,
       wasm_mod,
       env,
-      MSwapBind(Int32.of_int(idx + swap_i64_offset)),
+      MSwapBind(Int32.of_int(idx + swap_i64_offset), I64Type),
     );
   | _ => raise(Not_found)
   };
 
 let tee_swap =
     (
-      ~ty as typ=Type.int32,
+      ~ty as typ=I32Type,
       ~skip_incref=true,
       ~skip_decref=true,
       wasm_mod,
@@ -1445,7 +1435,7 @@ let tee_swap =
       arg,
     ) =>
   switch (typ) {
-  | typ when typ === Type.int32 =>
+  | I32Type =>
     if (idx > Array.length(swap_slots_i32)) {
       raise(Not_found);
     };
@@ -1455,9 +1445,9 @@ let tee_swap =
       ~skip_decref,
       wasm_mod,
       env,
-      MSwapBind(Int32.of_int(idx + swap_i32_offset)),
+      MSwapBind(Int32.of_int(idx + swap_i32_offset), I32Type),
     );
-  | typ when typ === Type.int64 =>
+  | I64Type =>
     if (idx > Array.length(swap_slots_i64)) {
       raise(Not_found);
     };
@@ -1465,10 +1455,9 @@ let tee_swap =
       ~action=BindTee(arg),
       ~skip_incref,
       ~skip_decref,
-      ~ty=Type.int64,
       wasm_mod,
       env,
-      MSwapBind(Int32.of_int(idx + swap_i64_offset)),
+      MSwapBind(Int32.of_int(idx + swap_i64_offset), I64Type),
     );
   | _ => raise(Not_found)
   };
@@ -1538,14 +1527,14 @@ let check_overflow = (wasm_mod, env, arg) =>
     gensym_label("check_overflow"),
     [
       /* WASM has no concept of overflows, so we have to check manually */
-      set_swap(~ty=Type.int64, wasm_mod, env, 0, arg),
+      set_swap(~ty=I64Type, wasm_mod, env, 0, arg),
       error_if_true(
         wasm_mod,
         env,
         Expression.binary(
           wasm_mod,
           Op.gt_s_int64,
-          get_swap(~ty=Type.int64, wasm_mod, env, 0),
+          get_swap(~ty=I64Type, wasm_mod, env, 0),
           Expression.const(
             wasm_mod,
             const_int64(Int32.to_int(Int32.max_int)),
@@ -1560,7 +1549,7 @@ let check_overflow = (wasm_mod, env, arg) =>
         Expression.binary(
           wasm_mod,
           Op.lt_s_int64,
-          get_swap(~ty=Type.int64, wasm_mod, env, 0),
+          get_swap(~ty=I64Type, wasm_mod, env, 0),
           Expression.const(
             wasm_mod,
             const_int64(Int32.to_int(Int32.min_int)),
@@ -1569,7 +1558,7 @@ let check_overflow = (wasm_mod, env, arg) =>
         OverflowError,
         [dummy_err_val, dummy_err_val],
       ),
-      get_swap(~ty=Type.int64, wasm_mod, env, 0),
+      get_swap(~ty=I64Type, wasm_mod, env, 0),
     ],
   );
 
@@ -2253,8 +2242,8 @@ let allocate_rational = (wasm_mod, env, n, d) => {
 
 /* Store an int64 */
 let allocate_int64_imm = (wasm_mod, env, i) => {
-  let get_swap64 = () => get_swap(~ty=Type.int64, wasm_mod, env, 0);
-  let set_swap64 = set_swap(~ty=Type.int64, wasm_mod, env, 0);
+  let get_swap64 = () => get_swap(~ty=I64Type, wasm_mod, env, 0);
+  let set_swap64 = set_swap(~ty=I64Type, wasm_mod, env, 0);
   Expression.block(
     wasm_mod,
     gensym_label("allocate_int64_imm"),

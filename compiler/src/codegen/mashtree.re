@@ -297,7 +297,7 @@ type binding =
   | MLocalBind(int32, asmtype)
   | MGlobalBind(int32, asmtype)
   | MClosureBind(int32)
-  | MSwapBind(int32) /* Used like a register would be */
+  | MSwapBind(int32, asmtype) /* Used like a register would be */
   | MImport(int32); /* Index into list of imports */
 
 [@deriving sexp]
