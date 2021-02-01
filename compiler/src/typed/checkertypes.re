@@ -175,7 +175,7 @@ let constant:
         Error(
           Location.errorf(
             ~loc,
-            "WasmI32 literal %sw exceeds the range of representable 32-bit integers.",
+            "WasmI32 literal %sn exceeds the range of representable 32-bit integers.",
             n,
           ),
         )
@@ -187,7 +187,7 @@ let constant:
         Error(
           Location.errorf(
             ~loc,
-            "WasmI64 literal %sW exceeds the range of representable 64-bit integers.",
+            "WasmI64 literal %sN exceeds the range of representable 64-bit integers.",
             n,
           ),
         )
