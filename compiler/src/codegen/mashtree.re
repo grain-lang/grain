@@ -384,12 +384,21 @@ type instr = {
 [@deriving sexp]
 and instr_desc =
   | MImmediate(immediate)
-  | MCallKnown(string, list(immediate))
-  | MCallIndirect((immediate, (list(asmtype), asmtype)), list(immediate))
-  | MReturnCallIndirect(
-      (immediate, (list(asmtype), asmtype)),
-      list(immediate),
-    )
+  | MCallKnown({
+      func: string,
+      func_type: (list(asmtype), asmtype),
+      args: list(immediate),
+    })
+  | MCallIndirect({
+      func: immediate,
+      func_type: (list(asmtype), asmtype),
+      args: list(immediate),
+    })
+  | MReturnCallIndirect({
+      func: immediate,
+      func_type: (list(asmtype), asmtype),
+      args: list(immediate),
+    })
   | MError(grain_error, list(immediate))
   | MAllocate(allocation_type)
   | MTagOp(tag_op, tag_type, immediate)

@@ -2078,8 +2078,7 @@ let buf_to_ints = (buf: Buffer.t): list(int64) => {
   List.init(num_ints, i => {Bytes.get_int64_ne(bytes, i * 8)});
 };
 
-let call_lambda =
-    (~tail=false, wasm_mod, env, (func, (argsty, retty)), args) => {
+let call_lambda = (~tail=false, wasm_mod, env, func, (argsty, retty), args) => {
   let compiled_func = () => compile_imm(wasm_mod, env, func);
   let compiled_args = List.map(compile_imm(wasm_mod, env), args);
   let untagged_fn = () => untag(wasm_mod, LambdaTagType, compiled_func());
@@ -3434,9 +3433,10 @@ and compile_instr = (wasm_mod, env, instr) =>
     compile_switch(wasm_mod, env, arg, branches, default)
   | MStore(binds) => compile_store(wasm_mod, env, binds)
 
-  | MCallIndirect(func, args) => call_lambda(wasm_mod, env, func, args)
-  | MReturnCallIndirect(func, args) =>
-    call_lambda(~tail=true, wasm_mod, env, func, args)
+  | MCallIndirect({func, func_type, args}) =>
+    call_lambda(wasm_mod, env, func, func_type, args)
+  | MReturnCallIndirect({func, func_type, args}) =>
+    call_lambda(~tail=true, wasm_mod, env, func, func_type, args)
 
   | MIf(cond, thn, els) =>
     let compiled_cond = compile_imm(wasm_mod, env, cond);
@@ -3492,9 +3492,9 @@ and compile_instr = (wasm_mod, env, instr) =>
     );
 
   | MError(err, args) => call_error_handler(wasm_mod, env, err, args)
-  | MCallKnown(func_name, args) =>
+  | MCallKnown({func, func_type: (_, retty), args}) =>
     let compiled_args = List.map(compile_imm(wasm_mod, env), args);
-    Expression.call(wasm_mod, func_name, compiled_args, Type.int32);
+    Expression.call(wasm_mod, func, compiled_args, wasm_type(retty));
   | MArityOp(_) => failwith("NYI: (compile_instr): MArityOp")
   | MTagOp(_) => failwith("NYI: (compile_instr): MTagOp")
   };

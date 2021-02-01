@@ -182,19 +182,25 @@ module RegisterAllocation = {
       | MArrayOp(aop, i) => MArrayOp(aop, apply_allocation_to_imm(i))
       | MRecordOp(rop, i) => MRecordOp(rop, apply_allocation_to_imm(i))
       | MAdtOp(aop, i) => MAdtOp(aop, apply_allocation_to_imm(i))
-      | MCallKnown(i32, is) =>
-        MCallKnown(i32, List.map(apply_allocation_to_imm, is))
+      | MCallKnown({func, func_type, args}) =>
+        MCallKnown({
+          func,
+          func_type,
+          args: List.map(apply_allocation_to_imm, args),
+        })
       | MError(e, is) => MError(e, List.map(apply_allocation_to_imm, is))
-      | MCallIndirect((imm, fty), is) =>
-        MCallIndirect(
-          (apply_allocation_to_imm(imm), fty),
-          List.map(apply_allocation_to_imm, is),
-        )
-      | MReturnCallIndirect((imm, fty), is) =>
-        MReturnCallIndirect(
-          (apply_allocation_to_imm(imm), fty),
-          List.map(apply_allocation_to_imm, is),
-        )
+      | MCallIndirect({func, func_type, args}) =>
+        MCallIndirect({
+          func: apply_allocation_to_imm(func),
+          func_type,
+          args: List.map(apply_allocation_to_imm, args),
+        })
+      | MReturnCallIndirect({func, func_type, args}) =>
+        MReturnCallIndirect({
+          func: apply_allocation_to_imm(func),
+          func_type,
+          args: List.map(apply_allocation_to_imm, args),
+        })
       | MIf(c, t, f) =>
         MIf(
           apply_allocation_to_imm(c),
@@ -270,11 +276,10 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
     | MArrayOp(_, imm)
     | MRecordOp(_, imm)
     | MAdtOp(_, imm) => imm_live_local(imm)
-    | MCallKnown(_, is)
+    | MCallKnown({args: is})
     | MError(_, is) => List.concat(List.map(imm_live_local, is))
-    | MCallIndirect((imm, _), is) =>
-      List.concat(List.map(imm_live_local, is)) @ imm_live_local(imm)
-    | MReturnCallIndirect((imm, _), is) =>
+    | MCallIndirect({func: imm, args: is})
+    | MReturnCallIndirect({func: imm, args: is}) =>
       List.concat(List.map(imm_live_local, is)) @ imm_live_local(imm)
     | MIf(c, t, f) =>
       imm_live_local(c) @ block_live_locals(t) @ block_live_locals(f)
@@ -531,12 +536,14 @@ let compile_wrapper = (env, func_name, arity): Mashtree.closure_data => {
   let body = [
     {
       instr_desc:
-        MCallKnown(
-          func_name,
-          List.init(arity, i =>
-            MImmBinding(MArgBind(Int32.of_int(i + 1), I32Type))
-          ),
-        ),
+        MCallKnown({
+          func: func_name,
+          func_type: (List.init(arity, i => I32Type), I32Type),
+          args:
+            List.init(arity, i =>
+              MImmBinding(MArgBind(Int32.of_int(i + 1), I32Type))
+            ),
+        }),
       instr_loc: Location.dummy_loc,
     },
   ];
@@ -730,31 +737,31 @@ let rec compile_comp = (env, c) => {
     | CApp((f, (argsty, retty)), args, true) =>
       /* TODO: Utilize MReturnCallKnown */
 
-      MReturnCallIndirect(
-        (
-          compile_imm(env, f),
-          (
-            List.map(asmtype_of_alloctype, argsty),
-            asmtype_of_alloctype(retty),
-          ),
+      MReturnCallIndirect({
+        func: compile_imm(env, f),
+        func_type: (
+          List.map(asmtype_of_alloctype, argsty),
+          asmtype_of_alloctype(retty),
         ),
-        List.map(compile_imm(env), args),
-      )
+        args: List.map(compile_imm(env), args),
+      })
     | CApp((f, (argsty, retty)), args, _) =>
       /* TODO: Utilize MCallKnown */
 
-      MCallIndirect(
-        (
-          compile_imm(env, f),
-          (
-            List.map(asmtype_of_alloctype, argsty),
-            asmtype_of_alloctype(retty),
-          ),
+      MCallIndirect({
+        func: compile_imm(env, f),
+        func_type: (
+          List.map(asmtype_of_alloctype, argsty),
+          asmtype_of_alloctype(retty),
         ),
-        List.map(compile_imm(env), args),
-      )
+        args: List.map(compile_imm(env), args),
+      })
     | CAppBuiltin(modname, name, args) =>
-      MCallKnown("builtin", List.map(compile_imm(env), args))
+      MCallKnown({
+        func: "builtin",
+        func_type: (List.map(i => I32Type, args), I32Type),
+        args: List.map(compile_imm(env), args),
+      })
     | CImmExpr(i) => MImmediate(compile_imm(env, i))
     };
   {instr_desc: desc, instr_loc: c.comp_loc};
@@ -924,7 +931,12 @@ let lift_imports = (env, imports) => {
                   (
                     MGlobalBind(Int32.of_int(glob), I32Type),
                     {
-                      instr_desc: MCallKnown(func_name, []),
+                      instr_desc:
+                        MCallKnown({
+                          func: func_name,
+                          func_type: ([], I32Type),
+                          args: [],
+                        }),
                       instr_loc: Location.dummy_loc,
                     },
                   ),
