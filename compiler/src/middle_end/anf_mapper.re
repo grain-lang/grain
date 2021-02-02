@@ -99,10 +99,11 @@ module MakeMap = (Iter: MapArgument) => {
         let t = map_anf_expression(t);
         let f = map_anf_expression(f);
         CIf(c, t, f);
-      | CWhile(c, body) =>
-        let c = map_anf_expression(c);
+      | CFor(c, inc, body) =>
+        let c = Option.map(map_anf_expression, c);
+        let inc = Option.map(map_anf_expression, inc);
         let body = map_anf_expression(body);
-        CWhile(c, body);
+        CFor(c, inc, body);
       | CSwitch(c, branches) =>
         let c = map_imm_expression(c);
         let branches =

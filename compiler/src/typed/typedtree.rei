@@ -417,6 +417,12 @@ and expression_desc =
   | TExpAssign(expression, expression)
   | TExpIf(expression, expression, expression)
   | TExpWhile(expression, expression)
+  | TExpFor(
+      option(expression),
+      option(expression),
+      option(expression),
+      expression,
+    )
   | TExpLambda(list(match_branch), partial)
   | TExpApp(expression, list(expression))
   | TExpConstruct(

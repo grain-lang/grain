@@ -1092,7 +1092,7 @@ and type_expect_ =
         env,
         scond,
         mk_expected(
-          ~explanation=While_loop_conditional,
+          ~explanation=Loop_conditional,
           Builtin_types.type_bool,
         ),
       );
@@ -1103,6 +1103,45 @@ and type_expect_ =
       exp_extra: [],
       exp_attributes: attributes,
       /* While loops don't evaluate to anything */
+      exp_type: Builtin_types.type_void,
+      exp_env: env,
+    });
+  | PExpFor(sinit, scond, sinc, sbody) =>
+    let init =
+      Option.map(
+        sinit => {
+          type_expect(env, sinit, mk_expected(Builtin_types.type_void))
+        },
+        sinit,
+      );
+    let env =
+      Option.value(~default=env, Option.map(init => init.exp_env, init));
+    let cond =
+      Option.map(
+        scond => {
+          type_expect(
+            env,
+            scond,
+            mk_expected(
+              ~explanation=Loop_conditional,
+              Builtin_types.type_bool,
+            ),
+          )
+        },
+        scond,
+      );
+    let inc =
+      Option.map(
+        sinc => {type_expect(env, sinc, mk_expected(newvar()))},
+        sinc,
+      );
+    let body = type_expect(env, sbody, ty_expected_explained);
+    re({
+      exp_desc: TExpFor(init, cond, inc, body),
+      exp_loc: loc,
+      exp_extra: [],
+      exp_attributes: attributes,
+      /* For loops don't evaluate to anything */
       exp_type: Builtin_types.type_void,
       exp_env: env,
     });
@@ -2103,11 +2142,8 @@ let report_type_expected_explanation = (expl, ppf) =>
   | If_conditional => fprintf(ppf, "the condition of an if-statement")
   | If_no_else_branch =>
     fprintf(ppf, "the result of a conditional with no else branch")
-  | While_loop_conditional => fprintf(ppf, "the condition of a while-loop")
-  | While_loop_body => fprintf(ppf, "the body of a while-loop")
-  | For_loop_start_index => fprintf(ppf, "a for-loop start index")
-  | For_loop_stop_index => fprintf(ppf, "a for-loop stop index")
-  | For_loop_body => fprintf(ppf, "the body of a for-loop")
+  | Loop_conditional => fprintf(ppf, "the condition of a while-loop")
+  | Loop_body => fprintf(ppf, "the body of a while-loop")
   | Assert_condition => fprintf(ppf, "the condition of an assertion")
   | Sequence_left_hand_side =>
     fprintf(ppf, "the left-hand side of a sequence")

@@ -231,12 +231,13 @@ module Comp: {
       anf_expression
     ) =>
     comp_expression;
-  let while_:
+  let for_:
     (
       ~loc: loc=?,
       ~attributes: attributes=?,
       ~env: env=?,
-      anf_expression,
+      option(anf_expression),
+      option(anf_expression),
       anf_expression
     ) =>
     comp_expression;

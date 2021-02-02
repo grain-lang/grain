@@ -151,6 +151,7 @@ rule token = parse
   | "foreign" { FOREIGN }
   | "wasm" { WASM }
   | "while" { WHILE }
+  | "for" { FOR }
   | "if" { IF }
   | "when" { WHEN }
   | "else" { ELSE }

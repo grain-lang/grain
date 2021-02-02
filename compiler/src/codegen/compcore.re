@@ -3458,11 +3458,34 @@ and compile_instr = (wasm_mod, env, instr) =>
       compiled_els,
     );
 
-  | MWhile(cond, body) =>
-    let compiled_cond = compile_block(wasm_mod, env, cond);
+  | MFor(cond, inc, body) =>
+    let block_label = gensym_label("MFor");
+    let loop_label = gensym_label("MFor_loop");
+    let compiled_cond =
+      switch (cond) {
+      | Some(cond) => [
+          Expression.drop(wasm_mod) @@
+          Expression.break(
+            wasm_mod,
+            block_label,
+            Expression.unary(
+              wasm_mod,
+              Op.eq_z_int32,
+              decode_bool(wasm_mod, compile_block(wasm_mod, env, cond)),
+            ),
+            Expression.const(wasm_mod, const_void()),
+          ),
+        ]
+      | None => []
+      };
+    let compiled_inc =
+      switch (inc) {
+      | Some(inc) => [
+          Expression.drop(wasm_mod, compile_block(wasm_mod, env, inc)),
+        ]
+      | None => []
+      };
     let compiled_body = compile_block(wasm_mod, env, body);
-    let block_label = gensym_label("MWhile");
-    let loop_label = gensym_label("MWhile_loop");
     Expression.block(
       wasm_mod,
       block_label,
@@ -3473,27 +3496,26 @@ and compile_instr = (wasm_mod, env, instr) =>
           loop_label,
           Expression.block(
             wasm_mod,
-            gensym_label("MWhile_loop_body"),
-            [
-              Expression.drop(wasm_mod) @@
-              Expression.break(
-                wasm_mod,
-                block_label,
-                Expression.unary(
+            gensym_label("MFor_loop_body"),
+            List.concat([
+              compiled_cond,
+              [
+                Expression.block(
                   wasm_mod,
-                  Op.eq_z_int32,
-                  decode_bool(wasm_mod, compiled_cond),
+                  gensym_label("MFor_continue"),
+                  [Expression.drop(wasm_mod, compiled_body)],
                 ),
-                Expression.const(wasm_mod, const_void()),
-              ),
-              Expression.drop(wasm_mod, compiled_body),
-              Expression.break(
-                wasm_mod,
-                loop_label,
-                Expression.null(),
-                Expression.null(),
-              ),
-            ],
+              ],
+              compiled_inc,
+              [
+                Expression.break(
+                  wasm_mod,
+                  loop_label,
+                  Expression.null(),
+                  Expression.null(),
+                ),
+              ],
+            ]),
           ),
         ),
         Expression.const(wasm_mod, const_void()),
