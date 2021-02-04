@@ -82,41 +82,6 @@ let rhs_loc = (dyp, n) => {
   ret;
 };
 
-let fix_block_mapper = super => {
-  open Ast_mapper;
-  let expr = (mapper, {pexp_desc, pexp_loc} as e) =>
-    switch (pexp_desc) {
-    | PExpBlock([]) => super.expr(mapper, e)
-    | PExpBlock(elts) =>
-      let elts = List.map(mapper.expr(mapper), elts);
-      /* Properly nest let bindings */
-      let elts =
-        List.fold_right(
-          ({pexp_desc} as stmt, elts) =>
-            switch (pexp_desc) {
-            | PExpLet(r, m, binds, _) => [
-                {
-                  ...stmt,
-                  pexp_desc:
-                    PExpLet(
-                      r,
-                      m,
-                      binds,
-                      {...stmt, pexp_desc: PExpBlock(elts)},
-                    ),
-                },
-              ]
-            | _ => [stmt, ...elts]
-            },
-          elts,
-          [],
-        );
-      {...e, pexp_desc: PExpBlock(elts)};
-    | _ => super.expr(mapper, e)
-    };
-  {...super, expr};
-};
-
 let fix_tyvar_mapper = super => {
   open Ast_mapper;
   open Ast_helper;
@@ -140,7 +105,7 @@ let fix_tyvar_mapper = super => {
 
 let fix_blocks = ({statements} as prog) => {
   open Ast_mapper;
-  let mapper = default_mapper |> fix_block_mapper |> fix_tyvar_mapper;
+  let mapper = default_mapper |> fix_tyvar_mapper;
   {...prog, statements: List.map(mapper.toplevel(mapper), statements)};
 };
 

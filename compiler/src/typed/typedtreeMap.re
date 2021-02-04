@@ -190,13 +190,8 @@ module MakeMap =
       | TExpNull
       | TExpIdent(_)
       | TExpConstant(_) => exp.exp_desc
-      | TExpLet(recflag, mutflag, binds, body) =>
-        TExpLet(
-          recflag,
-          mutflag,
-          map_bindings(recflag, mutflag, binds),
-          map_expression(body),
-        )
+      | TExpLet(recflag, mutflag, binds) =>
+        TExpLet(recflag, mutflag, map_bindings(recflag, mutflag, binds))
       | TExpLambda(branches, p) =>
         TExpLambda(map_match_branches(branches), p)
       | TExpApp(exp, args) =>

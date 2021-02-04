@@ -408,7 +408,7 @@ and expression_desc =
       Types.label_description,
       expression,
     )
-  | TExpLet(rec_flag, mut_flag, list(value_binding), expression)
+  | TExpLet(rec_flag, mut_flag, list(value_binding))
   | TExpMatch(expression, list(match_branch), partial)
   | TExpPrim1(prim1, expression)
   | TExpPrim2(prim2, expression, expression)

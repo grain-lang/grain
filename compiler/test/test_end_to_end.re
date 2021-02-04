@@ -1200,7 +1200,7 @@ let import_tests = [
   te(
     "import_all_except_multiple_error2",
     "import * except {x, y} from \"exportStar\"; {print(x); print(y); z}",
-    "Unbound value y",
+    "Unbound value x",
   ),
   te(
     "import_all_except_error_constructor",
@@ -1449,16 +1449,10 @@ let optimization_tests = [
   tfinalanf(
     "test_const_propagation_shadowing",
     "{\n  let x = 5;\n  let y = 12;\n  let z = y;\n  {\n    let y = x;\n    x\n  }\n  x + y}",
-    AExp.seq(
+    AExp.comp(
       Comp.imm(
         ~allocation_type=HeapAllocated,
-        Imm.const(Const_number(Const_number_int(5L))),
-      ),
-      AExp.comp(
-        Comp.imm(
-          ~allocation_type=HeapAllocated,
-          Imm.const(Const_number(Const_number_int(17L))),
-        ),
+        Imm.const(Const_number(Const_number_int(17L))),
       ),
     ),
   ),

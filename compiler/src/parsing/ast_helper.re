@@ -212,8 +212,8 @@ module Exp = {
     mk(~loc?, ~attributes?, PExpArrayGet(a, b));
   let array_set = (~loc=?, ~attributes=?, a, b, c) =>
     mk(~loc?, ~attributes?, PExpArraySet(a, b, c));
-  let let_ = (~loc=?, ~attributes=?, a, b, c, d) =>
-    mk(~loc?, ~attributes?, PExpLet(a, b, c, d));
+  let let_ = (~loc=?, ~attributes=?, a, b, c) =>
+    mk(~loc?, ~attributes?, PExpLet(a, b, c));
   let match = (~loc=?, ~attributes=?, a, b) =>
     mk(~loc?, ~attributes?, PExpMatch(a, b));
   let prim1 = (~loc=?, ~attributes=?, a, b) =>
