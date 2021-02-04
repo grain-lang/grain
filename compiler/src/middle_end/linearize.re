@@ -39,7 +39,7 @@ let get_type_id = typath =>
     id;
   };
 
-let lookup_symbol = (mod_, mod_decl, name, original_name) => {
+let lookup_symbol = (~allocation_type, mod_, mod_decl, name, original_name) => {
   switch (Ident.find_same_opt(mod_, symbol_table^)) {
   | Some(_) => ()
   | None => symbol_table := Ident.add(mod_, Ident.empty, symbol_table^)
@@ -53,7 +53,12 @@ let lookup_symbol = (mod_, mod_decl, name, original_name) => {
     | Some(filepath) =>
       value_imports :=
         [
-          Imp.grain_value(fresh, filepath, original_name, GlobalShape),
+          Imp.grain_value(
+            fresh,
+            filepath,
+            original_name,
+            GlobalShape(allocation_type),
+          ),
           ...value_imports^,
         ]
     | None => ()
@@ -154,7 +159,7 @@ let rec transl_imm =
       Imm.id(
         ~loc,
         ~env,
-        lookup_symbol(mod_, mod_decl, ident, original_name),
+        lookup_symbol(~allocation_type, mod_, mod_decl, ident, original_name),
       );
     if (val_mutable && !boxed) {
       let tmp = gensym("unbox_mut");
@@ -171,7 +176,12 @@ let rec transl_imm =
       {val_mutable},
     ) =>
     let mod_decl = Env.find_module(p, None, env);
-    let id = Imm.id(~loc, ~env, lookup_symbol(mod_, mod_decl, ident, ident));
+    let id =
+      Imm.id(
+        ~loc,
+        ~env,
+        lookup_symbol(~allocation_type, mod_, mod_decl, ident, ident),
+      );
     if (val_mutable && !boxed) {
       let tmp = gensym("unbox_mut");
       let setup = [
@@ -202,7 +212,11 @@ let rec transl_imm =
       } =>
       let mod_decl = Env.find_module(p, None, env);
       let id =
-        Imm.id(~loc, ~env, lookup_symbol(mod_, mod_decl, ident, ident));
+        Imm.id(
+          ~loc,
+          ~env,
+          lookup_symbol(~allocation_type, mod_, mod_decl, ident, ident),
+        );
       if (val_mutable && !boxed) {
         let tmp = gensym("unbox_mut");
         let setup = [
@@ -1253,7 +1267,8 @@ let rec transl_anf_statement =
     };
   | TTopException(_, ext) => (Some(linearize_exception(env, ext)), [])
   | TTopForeign(exported, desc) =>
-    let arity = Ctype.arity(desc.tvd_desc.ctyp_type);
+    let (argsty, retty) =
+      get_fn_allocation_type(env, desc.tvd_desc.ctyp_type);
     let global =
       switch (exported) {
       | Exported => Global
@@ -1267,7 +1282,7 @@ let rec transl_anf_statement =
           desc.tvd_id,
           desc.tvd_mod.txt,
           desc.tvd_name.txt,
-          FunctionShape(arity, 1),
+          FunctionShape(argsty, [retty]),
         ),
       ],
     );

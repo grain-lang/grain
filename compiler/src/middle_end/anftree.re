@@ -371,8 +371,8 @@ and anf_expression_desc =
 
 [@deriving sexp]
 type import_shape =
-  | FunctionShape(int, int)
-  | GlobalShape;
+  | FunctionShape(list(allocation_type), list(allocation_type))
+  | GlobalShape(allocation_type);
 
 [@deriving sexp]
 type import_desc =
