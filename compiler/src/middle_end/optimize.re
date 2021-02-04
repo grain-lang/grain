@@ -10,7 +10,6 @@ let optimization_passes = [
   Optimize_tail_calls.optimize,
   Optimize_constants.optimize,
   Optimize_simple_binops.optimize,
-  Optimize_common_subexpressions.optimize,
   Optimize_dead_assignments.optimize,
   Optimize_dead_branches.optimize,
   Optimize_inline_wasm.optimize,

@@ -228,9 +228,8 @@ let basic_functionality_tests = [
   t("comp16", "false == false", "true"),
   t("comp17", "false isnt true", "true"),
   t("comp18", "4 isnt 1", "true"),
-  // These get optimized into the same instance
-  t("comp19", "[1, 2] is [1, 2]", "true"),
-  t("comp20", "[1, 2] isnt [1, 2]", "false"),
+  t("comp19", "[1, 2] is [1, 2]", "false"),
+  t("comp20", "[1, 2] isnt [1, 2]", "true"),
   // These are not optimized into the same instance (boxes are mutable)
   t("comp21", "[box(1)] is [box(1)]", "false"),
   t("comp22", "[box(1)] isnt [box(1)]", "true"),
@@ -670,8 +669,7 @@ let record_tests = [
 
 let stdlib_tests = [
   t("stdlib_cons", mylist, "[1, 2, 3]"),
-  /* With compiler optimizations, these are optimized into the same tuple instance */
-  t("stdlib_equal_1", "import * from \"list\"; (1, 2) is (1, 2)", "true"),
+  t("stdlib_equal_1", "import * from \"list\"; (1, 2) is (1, 2)", "false"),
   t(
     "stdlib_equal_2",
     "import * from \"pervasives\"; (1, 2) == (1, 2)",
@@ -920,7 +918,7 @@ let oom = [
 let gc = [
   tgc(
     "gc1",
-    256,
+    512,
     "let f = (() => (1, 2));\n       {\n         f();\n         f();\n         f();\n         f()\n       }",
     "(1, 2)",
   ),
@@ -1363,6 +1361,11 @@ let optimization_tests = [
     "let f1 = ((x, y) => {x}),\n         f2 = ((x, y) => {y});\n       f1(1, 2)",
     "1",
   ),
+  t(
+    "regression_no_elim_impure_call",
+    "let foo = (f) => { let g = f(5); 5 }; foo(print)",
+    "5\n5",
+  ),
   tfinalanf(
     "test_dead_branch_elimination_1",
     "{ if (true) {4} else {5} }",
@@ -1471,64 +1474,10 @@ let optimization_tests = [
     ),
   ),
   tfinalanf(
-    "test_cse",
-    "((x) => {let a = x + 1; let b = x + 1; a + b})",
-    {
-      open Grain_typed;
-      let plus = Ident.create("+");
-      let arg = Ident.create("lambda_arg");
-      let x = Ident.create("x");
-      let a = Ident.create("a");
-      AExp.comp(
-        Comp.lambda(
-          [(arg, HeapAllocated)],
-          (
-            AExp.let_(
-              Nonrecursive,
-              [(x, Comp.imm(~allocation_type=HeapAllocated, Imm.id(arg)))],
-              AExp.let_(
-                Nonrecursive,
-                [
-                  (
-                    a,
-                    Comp.app(
-                      ~allocation_type=HeapAllocated,
-                      (
-                        Imm.id(plus),
-                        ([HeapAllocated, HeapAllocated], HeapAllocated),
-                      ),
-                      [
-                        Imm.id(x),
-                        Imm.const(Const_number(Const_number_int(1L))),
-                      ],
-                    ),
-                  ),
-                ],
-                AExp.comp(
-                  Comp.app(
-                    ~allocation_type=HeapAllocated,
-                    ~tail=true,
-                    (
-                      Imm.id(plus),
-                      ([HeapAllocated, HeapAllocated], HeapAllocated),
-                    ),
-                    [Imm.id(a), Imm.id(a)],
-                  ),
-                ),
-              ),
-            ),
-            HeapAllocated,
-          ),
-        ),
-      );
-    },
-  ),
-  tfinalanf(
     "test_dae",
-    "((x) => {let a = x + 1; let b = x + 1; x + 1})",
+    "((x) => {let a = (x, 1); let b = (x, 1); (x, 1)})",
     {
       open Grain_typed;
-      let plus = Ident.create("+");
       let arg = Ident.create("lambda_arg");
       let x = Ident.create("x");
       AExp.comp(
@@ -1539,15 +1488,10 @@ let optimization_tests = [
             [(x, Comp.imm(~allocation_type=HeapAllocated, Imm.id(arg)))],
           ) @@
           AExp.comp @@
-          Comp.app(
-            ~allocation_type=HeapAllocated,
-            ~tail=true,
-            (
-              Imm.id(plus),
-              ([HeapAllocated, HeapAllocated], HeapAllocated),
-            ),
-            [Imm.id(x), Imm.const(Const_number(Const_number_int(1L)))],
-          ),
+          Comp.tuple([
+            Imm.id(x),
+            Imm.const(Const_number(Const_number_int(1L))),
+          ]),
           HeapAllocated,
         ),
       );
@@ -1578,7 +1522,7 @@ let optimization_tests = [
   /* All optimizations are needed to work completely on this input */
   tfinalanf(
     "test_optimizations_work_together",
-    "{\n    let x = 5;\n    let foo = ((y) => {y});\n    let y = foo(3) + 5;\n    foo(3) + x}",
+    "{\n    let x = 5;\n    let foo = ((y) => {y});\n    let y = (3, 5);\n    foo(3) + x}",
     {
       open Grain_typed;
       let plus = Ident.create("+");
