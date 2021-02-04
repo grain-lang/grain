@@ -72,15 +72,15 @@ let asmtype_of_alloctype = {
 
 /** Global index (index of global variables) */
 
-let global_table = ref(Ident.empty: Ident.tbl((bool, int32, int32)));
+let global_table = ref(Ident.empty: Ident.tbl((bool, int32)));
 let global_index = ref(0);
 
 let global_exports = () => {
   let tbl = global_table^;
   Ident.fold_all(
-    (ex_name, (exported, ex_global_index, ex_getter_index), acc) =>
+    (ex_name, (exported, ex_global_index), acc) =>
       if (exported) {
-        [{ex_name, ex_global_index, ex_getter_index}, ...acc];
+        [{ex_name, ex_global_index}, ...acc];
       } else {
         acc;
       },
@@ -97,18 +97,13 @@ let reset_global = () => {
 let next_global = (exported, id) =>
   /* RIP Hygiene (this behavior works as expected until we have more metaprogramming constructs) */
   switch (Ident.find_same_opt(id, global_table^)) {
-  | Some((_, ret, ret_get)) => (Int32.to_int(ret), Int32.to_int(ret_get))
+  | Some((_, ret)) => Int32.to_int(ret)
   | None =>
     let ret = global_index^;
-    let ret_get = next_lift();
     global_table :=
-      Ident.add(
-        id,
-        (exported, Int32.of_int(ret), Int32.of_int(ret_get)),
-        global_table^,
-      );
+      Ident.add(id, (exported, Int32.of_int(ret)), global_table^);
     global_index := ret + 1;
-    (ret, ret_get);
+    ret;
   };
 
 let find_id = (id, env) => Ident.find_same(id, env.ce_binds);
@@ -585,35 +580,8 @@ let compile_wrapper = (env, func_name, arity): Mashtree.closure_data => {
 };
 
 let next_global = (~exported=false, id) => {
-  let (ret, idx) = next_global(exported, id);
-  if (ret != global_index^ - 1) {
-    ret;
-  } else {
-    let body = [
-      {
-        instr_desc:
-          MImmediate(MImmBinding(MGlobalBind(Int32.of_int(ret), I32Type))),
-        instr_loc: Location.dummy_loc,
-      },
-    ];
-    let worklist_item = {
-      body: Precompiled(body),
-      env: initial_compilation_env,
-      idx,
-      args: [], /* <- this function cannot be called by the user, so no self argument is needed. */
-      return_type: Types.HeapAllocated,
-      stack_size: {
-        stack_size_i32: 0,
-        stack_size_i64: 0,
-        stack_size_f32: 0,
-        stack_size_f64: 0,
-      },
-      attrs: [],
-      loc: Location.dummy_loc,
-    };
-    worklist_enqueue(worklist_item);
-    ret;
-  };
+  let ret = next_global(exported, id);
+  Printf.sprintf("global_%d", ret);
 };
 
 let transl_attributes = attrs => {
@@ -808,10 +776,7 @@ and compile_anf_expr = (env, a) =>
           switch (global) {
           | Global => (
               env,
-              MGlobalBind(
-                Int32.of_int(next_global(~exported=true, id)),
-                asmtype,
-              ),
+              MGlobalBind(next_global(~exported=true, id), asmtype),
             )
           | Nonglobal => (
               next_env,
@@ -909,58 +874,39 @@ let lift_imports = (env, imports) => {
         (imports, setups, env),
         {imp_use_id, imp_desc, imp_shape, imp_exported},
       ) => {
-    let glob = next_global(~exported=imp_exported == Global, imp_use_id);
     switch (imp_desc) {
     | GrainValue(mod_, name) =>
+      let mimp_mod = Ident.create(mod_);
+      let mimp_name = Ident.create(name);
       let new_mod = {
-        mimp_mod: Ident.create(mod_),
-        mimp_name: Ident.create(name),
+        mimp_mod,
+        mimp_name,
         mimp_type: MGlobalImport(I32Type) /*process_shape imp_shape*/,
         mimp_kind: MImportGrain,
         mimp_setup: MCallGetter,
       };
-      let func_name =
-        Printf.sprintf(
-          "import_%s_%s",
-          Ident.unique_name(new_mod.mimp_mod),
-          Ident.unique_name(new_mod.mimp_name),
-        );
       (
         [new_mod, ...imports],
-        [
-          [
-            {
-              instr_desc:
-                MStore([
-                  (
-                    MGlobalBind(Int32.of_int(glob), I32Type),
-                    {
-                      instr_desc:
-                        MCallKnown({
-                          func: func_name,
-                          func_type: ([], I32Type),
-                          args: [],
-                        }),
-                      instr_loc: Location.dummy_loc,
-                    },
-                  ),
-                ]),
-              instr_loc: Location.dummy_loc,
-            },
-          ],
-          ...setups,
-        ],
+        setups,
         {
           ...env,
           ce_binds:
             Ident.add(
               imp_use_id,
-              MGlobalBind(Int32.of_int(glob), I32Type),
+              MGlobalBind(
+                Printf.sprintf(
+                  "import_%s_%s",
+                  Ident.unique_name(mimp_mod),
+                  Ident.unique_name(mimp_name),
+                ),
+                I32Type,
+              ),
               env.ce_binds,
             ),
         },
       );
     | WasmFunction(mod_, name) =>
+      let glob = next_global(~exported=imp_exported == Global, imp_use_id);
       let new_mod = {
         mimp_mod: Ident.create(mod_),
         mimp_name: Ident.create(name),
@@ -988,7 +934,7 @@ let lift_imports = (env, imports) => {
                   instr_desc:
                     MStore([
                       (
-                        MGlobalBind(Int32.of_int(glob), I32Type),
+                        MGlobalBind(glob, I32Type),
                         {
                           instr_desc:
                             MAllocate(
@@ -1010,11 +956,7 @@ let lift_imports = (env, imports) => {
         {
           ...env,
           ce_binds:
-            Ident.add(
-              imp_use_id,
-              MGlobalBind(Int32.of_int(glob), I32Type),
-              env.ce_binds,
-            ),
+            Ident.add(imp_use_id, MGlobalBind(glob, I32Type), env.ce_binds),
         },
       );
     | JSFunction(_) => failwith("NYI: lift_imports JSFunction")
