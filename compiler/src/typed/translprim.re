@@ -1417,7 +1417,7 @@ let prim_map =
           }),
         ),
       ),
-      ("@wasm.fromGrain", Primitive1(WasmOfGrain)),
+      ("@wasm.fromGrain", Primitive1(WasmFromGrain)),
       ("@wasm.toGrain", Primitive1(WasmToGrain)),
       ("@wasm.memory_copy", PrimitiveN(WasmMemoryCopy)),
       ("@wasm.memory_fill", PrimitiveN(WasmMemoryFill)),

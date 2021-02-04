@@ -183,7 +183,7 @@ type prim1 =
     | Float64ToNumber
     | Float32ToNumber
     | Int64Lnot
-    | WasmOfGrain
+    | WasmFromGrain
     | WasmToGrain
     | WasmUnaryI32({
         wasm_op,

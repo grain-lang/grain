@@ -2959,7 +2959,7 @@ let compile_prim1 = (wasm_mod, env, p1, arg): Expression.t => {
     failwith("Unreachable case; should never get here: Int64LNot")
   | Box => failwith("Unreachable case; should never get here: Box")
   | Unbox => failwith("Unreachable case; should never get here: Unbox")
-  | WasmOfGrain
+  | WasmFromGrain
   | WasmToGrain => compiled_arg // These are no-ops
   | WasmUnaryI32({wasm_op, ret_type})
   | WasmUnaryI64({wasm_op, ret_type})

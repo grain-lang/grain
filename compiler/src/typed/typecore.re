@@ -127,7 +127,7 @@ let prim1_type =
   | Float32ToNumber => (Builtin_types.type_float32, Builtin_types.type_number)
   | Float64ToNumber => (Builtin_types.type_float64, Builtin_types.type_number)
   | Int64Lnot => (Builtin_types.type_int64, Builtin_types.type_int64)
-  | WasmOfGrain => (newvar(~name="a", ()), Builtin_types.type_wasmi32)
+  | WasmFromGrain => (newvar(~name="a", ()), Builtin_types.type_wasmi32)
   | WasmToGrain => (Builtin_types.type_wasmi32, newvar(~name="a", ()))
   | WasmUnaryI32({arg_type, ret_type})
   | WasmUnaryI64({arg_type, ret_type})
