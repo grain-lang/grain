@@ -38,7 +38,7 @@ include Parser_header
 %token PLUS PLUSPLUS DASH STAR SLASH PERCENT
 %token TRUE FALSE VOID
 
-%token LET MUT REC IF WHEN ELSE MATCH WHILE FOR
+%token LET MUT REC IF WHEN ELSE MATCH WHILE FOR CONTINUE BREAK
 %token AMPAMP PIPEPIPE NOT AT
 %token AMP PIPE
 
@@ -444,6 +444,8 @@ array_expr :
 stmt_expr :
   | ASSERT expr { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp ["assert"]) [$2] }
   | FAIL expr { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp ["fail"]) [$2] }
+  | CONTINUE { Exp.continue ~loc:(symbol_rloc dyp) () }
+  | BREAK { Exp.break ~loc:(symbol_rloc dyp) () }
 
 assign_binop_op :
   | pluseq_op

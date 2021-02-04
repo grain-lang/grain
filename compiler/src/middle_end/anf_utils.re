@@ -60,6 +60,8 @@ and comp_free_vars_help = (env, c: comp_expression) =>
       Option.fold(~none=Ident.Set.empty, ~some=anf_free_vars_help(env), inc);
     let body = anf_free_vars_help(env, body);
     Ident.Set.union(cond, Ident.Set.union(inc, body));
+  | CContinue
+  | CBreak => Ident.Set.empty
   | CSwitch(arg, branches) =>
     List.fold_left(
       (acc, (_, b)) => Ident.Set.union(anf_free_vars_help(env, b), acc),

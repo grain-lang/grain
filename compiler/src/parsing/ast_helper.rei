@@ -188,6 +188,8 @@ module Exp: {
       expression
     ) =>
     expression;
+  let continue: (~loc: loc=?, ~attributes: attributes=?, unit) => expression;
+  let break: (~loc: loc=?, ~attributes: attributes=?, unit) => expression;
   let constraint_:
     (~loc: loc=?, ~attributes: attributes=?, expression, parsed_type) =>
     expression;

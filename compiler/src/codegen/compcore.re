@@ -3284,6 +3284,8 @@ let do_backpatches = (wasm_mod, env, backpatches) => {
   );
 };
 
+let loop_stack = ref([]: list((string, string)));
+
 let rec compile_store = (wasm_mod, env, binds) => {
   let process_binds = env => {
     let process_bind = ((b, instr), acc) => {
@@ -3461,6 +3463,7 @@ and compile_instr = (wasm_mod, env, instr) =>
   | MFor(cond, inc, body) =>
     let block_label = gensym_label("MFor");
     let loop_label = gensym_label("MFor_loop");
+    let continue_label = gensym_label("MFor_continue");
     let compiled_cond =
       switch (cond) {
       | Some(cond) => [
@@ -3485,7 +3488,9 @@ and compile_instr = (wasm_mod, env, instr) =>
         ]
       | None => []
       };
+    loop_stack := [(continue_label, block_label), ...loop_stack^];
     let compiled_body = compile_block(wasm_mod, env, body);
+    loop_stack := List.tl(loop_stack^);
     Expression.block(
       wasm_mod,
       block_label,
@@ -3502,7 +3507,7 @@ and compile_instr = (wasm_mod, env, instr) =>
               [
                 Expression.block(
                   wasm_mod,
-                  gensym_label("MFor_continue"),
+                  continue_label,
                   [Expression.drop(wasm_mod, compiled_body)],
                 ),
               ],
@@ -3521,7 +3526,22 @@ and compile_instr = (wasm_mod, env, instr) =>
         Expression.const(wasm_mod, const_void()),
       ],
     );
-
+  | MContinue =>
+    let (continue_label, _) = List.hd(loop_stack^);
+    Expression.break(
+      wasm_mod,
+      continue_label,
+      Expression.null(),
+      Expression.null(),
+    );
+  | MBreak =>
+    let (_, block_label) = List.hd(loop_stack^);
+    Expression.break(
+      wasm_mod,
+      block_label,
+      Expression.null(),
+      Expression.const(wasm_mod, const_void()),
+    );
   | MError(err, args) => call_error_handler(wasm_mod, env, err, args)
   | MCallKnown({func, func_type: (_, retty), args}) =>
     let compiled_args = List.map(compile_imm(wasm_mod, env), args);

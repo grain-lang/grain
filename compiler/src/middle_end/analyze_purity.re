@@ -125,6 +125,8 @@ let rec analyze_comp_expression =
       Option.fold(~none=true, ~some=anf_expression_purity_internal, c)
       && Option.fold(~none=true, ~some=anf_expression_purity_internal, inc)
       && anf_expression_purity_internal(body);
+    | CContinue
+    | CBreak => false
     | CSwitch(_, branches) =>
       let branches_purities =
         List.map(

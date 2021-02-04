@@ -250,6 +250,8 @@ module MakeMap =
           Option.map(map_expression, inc),
           map_expression(b),
         )
+      | TExpContinue => TExpContinue
+      | TExpBreak => TExpBreak
       };
     Map.leave_expression({...exp, exp_extra, exp_desc});
   };

@@ -104,6 +104,8 @@ module MakeMap = (Iter: MapArgument) => {
         let inc = Option.map(map_anf_expression, inc);
         let body = map_anf_expression(body);
         CFor(c, inc, body);
+      | CContinue => CContinue
+      | CBreak => CBreak
       | CSwitch(c, branches) =>
         let c = map_imm_expression(c);
         let branches =

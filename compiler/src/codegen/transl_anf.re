@@ -208,6 +208,8 @@ module RegisterAllocation = {
           Option.map(apply_allocation_to_block, b2),
           apply_allocation_to_block(b3),
         )
+      | MContinue => MContinue
+      | MBreak => MBreak
       | MSwitch(v, bs, d) =>
         MSwitch(
           apply_allocation_to_imm(v),
@@ -286,6 +288,8 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
       Option.fold(~none=[], ~some=block_live_locals, b1)
       @ Option.fold(~none=[], ~some=block_live_locals, b2)
       @ block_live_locals(b3)
+    | MContinue
+    | MBreak => []
     | MSwitch(v, bs, d) =>
       imm_live_local(v)
       @ List.concat(List.map(((_, b)) => block_live_locals(b), bs))
@@ -641,6 +645,8 @@ let rec compile_comp = (env, c) => {
         Option.map(compile_anf_expr(env), inc),
         compile_anf_expr(env, body),
       )
+    | CContinue => MContinue
+    | CBreak => MBreak
     | CPrim1(Box, arg) => MAllocate(MBox(compile_imm(env, arg)))
     | CPrim1(Unbox, arg) => MBoxOp(MBoxUnbox, compile_imm(env, arg))
     | CPrim1(p1, arg) => MPrim1(p1, compile_imm(env, arg))

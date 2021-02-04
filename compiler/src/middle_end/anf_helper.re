@@ -221,6 +221,22 @@ module Comp = {
       ~env?,
       CFor(cond, inc, body),
     );
+  let continue = (~loc=?, ~attributes=?, ~env=?, ()) =>
+    mk(
+      ~loc?,
+      ~attributes?,
+      ~allocation_type=StackAllocated(WasmI32),
+      ~env?,
+      CContinue,
+    );
+  let break = (~loc=?, ~attributes=?, ~env=?, ()) =>
+    mk(
+      ~loc?,
+      ~attributes?,
+      ~allocation_type=StackAllocated(WasmI32),
+      ~env?,
+      CBreak,
+    );
   let switch_ =
       (~loc=?, ~attributes=?, ~allocation_type, ~env=?, arg, branches) =>
     mk(~loc?, ~attributes?, ~allocation_type, ~env?, CSwitch(arg, branches));

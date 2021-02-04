@@ -1091,10 +1091,7 @@ and type_expect_ =
       type_expect(
         env,
         scond,
-        mk_expected(
-          ~explanation=Loop_conditional,
-          Builtin_types.type_bool,
-        ),
+        mk_expected(~explanation=Loop_conditional, Builtin_types.type_bool),
       );
     let body = type_expect(env, sbody, ty_expected_explained);
     re({
@@ -1145,6 +1142,26 @@ and type_expect_ =
       exp_type: Builtin_types.type_void,
       exp_env: env,
     });
+  | PExpContinue =>
+    rue({
+      exp_desc: TExpContinue,
+      exp_loc: loc,
+      exp_extra: [],
+      exp_attributes: attributes,
+      /* Doesn't evaluate to anything */
+      exp_type: Builtin_types.type_void,
+      exp_env: env,
+    })
+  | PExpBreak =>
+    rue({
+      exp_desc: TExpBreak,
+      exp_loc: loc,
+      exp_extra: [],
+      exp_attributes: attributes,
+      /* Doesn't evaluate to anything */
+      exp_type: Builtin_types.type_void,
+      exp_env: env,
+    })
   | PExpConstraint(sarg, styp) =>
     begin_def();
     let cty = Typetexp.transl_simple_type(env, false, styp);

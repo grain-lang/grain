@@ -407,6 +407,14 @@ let rec transl_imm =
         ),
       ],
     );
+  | TExpContinue => (
+      Imm.const(Const_void),
+      [BSeq(Comp.continue(~loc, ~env, ()))],
+    )
+  | TExpBreak => (
+      Imm.const(Const_void),
+      [BSeq(Comp.break(~loc, ~env, ()))],
+    )
   | TExpApp(func, args) =>
     let tmp = gensym("app");
     let (new_func, func_setup) = transl_imm(func);

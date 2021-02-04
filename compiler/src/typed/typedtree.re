@@ -452,6 +452,8 @@ and expression_desc =
       option(expression),
       expression,
     )
+  | TExpContinue
+  | TExpBreak
   | TExpLambda(list(match_branch), partial)
   | TExpApp(expression, list(expression))
   | TExpConstruct(

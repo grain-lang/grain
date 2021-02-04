@@ -241,6 +241,12 @@ module Comp: {
       anf_expression
     ) =>
     comp_expression;
+  let continue:
+    (~loc: loc=?, ~attributes: attributes=?, ~env: env=?, unit) =>
+    comp_expression;
+  let break:
+    (~loc: loc=?, ~attributes: attributes=?, ~env: env=?, unit) =>
+    comp_expression;
   let switch_:
     (
       ~loc: loc=?,

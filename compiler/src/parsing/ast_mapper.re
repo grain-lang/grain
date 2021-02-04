@@ -104,6 +104,8 @@ module E = {
         Option.map(sub.expr(sub), inc),
         sub.expr(sub, e),
       )
+    | PExpContinue => continue(~loc, ~attributes, ())
+    | PExpBreak => break(~loc, ~attributes, ())
     | PExpLambda(pl, e) =>
       lambda(
         ~loc,

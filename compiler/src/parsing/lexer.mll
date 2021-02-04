@@ -152,6 +152,8 @@ rule token = parse
   | "wasm" { WASM }
   | "while" { WHILE }
   | "for" { FOR }
+  | "continue" { CONTINUE }
+  | "break" { BREAK }
   | "if" { IF }
   | "when" { WHEN }
   | "else" { ELSE }

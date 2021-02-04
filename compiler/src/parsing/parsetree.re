@@ -443,6 +443,8 @@ and expression_desc =
       option(expression),
       expression,
     )
+  | PExpContinue
+  | PExpBreak
   | PExpConstraint(expression, parsed_type)
   | PExpLambda(list(pattern), expression)
   | PExpApp(expression, list(expression))
