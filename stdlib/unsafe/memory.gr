@@ -1,0 +1,7 @@
+export foreign wasm malloc: WasmI32 -> WasmI32 from "grainRuntime"
+export foreign wasm free: WasmI32 -> Void from "grainRuntime"
+export foreign wasm incRef: WasmI32 -> WasmI32 from "grainRuntime"
+export foreign wasm decRef: WasmI32 -> WasmI32 from "grainRuntime"
+
+export primitive copy: (WasmI32, WasmI32, WasmI32) -> Void = "@wasm.memory_copy"
+export primitive fill: (WasmI32, WasmI32, WasmI32) -> Void = "@wasm.memory_fill"

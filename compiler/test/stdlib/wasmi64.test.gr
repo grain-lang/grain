@@ -1,0 +1,73 @@
+import WasmI64 from "unsafe/wasmi64"
+
+@disableGC
+let test = () => {
+  // unary tests
+  assert WasmI64.eq(WasmI64.clz(0xfffffffN), 36N)
+  assert WasmI64.eq(WasmI64.ctz(0b111100001111100000N), 5N)
+  assert WasmI64.eq(WasmI64.popcnt(0b1111000011111N), 9N)
+  assert !WasmI64.eqz(0b1111000011111N)
+  assert WasmI64.eqz(0N)
+
+  // binary tests
+  assert WasmI64.eq(WasmI64.add(7N, 8N), 15N)
+  assert WasmI64.eq(WasmI64.sub(7N, 8N), -1N)
+  assert WasmI64.eq(WasmI64.mul(7N, 8N), 56N)
+  assert WasmI64.eq(WasmI64.divS(-2N, 2N), -1N)
+  assert WasmI64.eq(WasmI64.divU(-2N, 2N), 0x7fffffffffffffffN)
+  assert WasmI64.eq(WasmI64.remS(-3N, 2N), -1N)
+  assert WasmI64.eq(WasmI64.remU(-3N, 2N), 1N)
+  assert WasmI64.eq(WasmI64.and(0b11111N, 0b1010N), 0b1010N)
+  assert WasmI64.eq(WasmI64.or(0b10101N, 0b1010N), 0b11111N)
+  assert WasmI64.eq(WasmI64.xor(7N, 3N), 4N)
+  assert WasmI64.eq(WasmI64.shl(8N, 3N), 64N)
+  assert WasmI64.eq(WasmI64.shrS(-8N, 1N), -4N)
+  assert WasmI64.eq(WasmI64.shrU(-8N, 1N), 0x7ffffffffffffffcN)
+  assert WasmI64.eq(WasmI64.rotl(0b1010N, 2N), 0b101000N)
+  assert WasmI64.eq(WasmI64.rotr(0b1010N, 2N), 0x8000000000000002N)
+  assert !WasmI64.eq(-7N, 14N)
+  assert WasmI64.eq(-7N, -7N)
+  assert WasmI64.ne(-7N, 14N)
+  assert !WasmI64.ne(-7N, -7N)
+  assert WasmI64.ltS(-7N, 14N)
+  assert !WasmI64.ltS(70N, 14N)
+  assert WasmI64.ltU(7N, -14N)
+  assert !WasmI64.ltU(-7N, 14N)
+  assert WasmI64.leS(-7N, 14N)
+  assert WasmI64.leS(-7N, -7N)
+  assert !WasmI64.leS(70N, 14N)
+  assert WasmI64.leU(7N, -14N)
+  assert WasmI64.leU(7N, 7N)
+  assert !WasmI64.leU(-7N, 14N)
+  assert !WasmI64.gtS(-7N, 14N)
+  assert WasmI64.gtS(70N, 14N)
+  assert !WasmI64.gtU(7N, -14N)
+  assert WasmI64.gtU(-7N, 14N)
+  assert !WasmI64.geS(-7N, 14N)
+  assert WasmI64.geS(-7N, -7N)
+  assert WasmI64.geS(70N, 14N)
+  assert !WasmI64.geU(7N, -14N)
+  assert WasmI64.geU(7N, 7N)
+
+  // conversion tests
+  assert WasmI64.eq(WasmI64.extendI32S(-1n), -1N)
+  assert WasmI64.eq(WasmI64.extendI32U(-1n), 0xffffffffN)
+  assert WasmI64.eq(WasmI64.extendI32U(42n), 42N)
+  assert WasmI64.eq(WasmI64.truncF32S(42.17w), 42N)
+  assert WasmI64.eq(WasmI64.truncF32U(9.223372e+18w), 0x8000000000000000N)
+  assert WasmI64.eq(WasmI64.truncF64S(42.17W), 42N)
+  assert WasmI64.eq(WasmI64.truncF64U(9.233372e+18W), 0x802386E9DB09C000N)
+  assert WasmI64.eq(WasmI64.reinterpretF64(42.W), 0x4045000000000000N)
+  assert WasmI64.eq(WasmI64.extendS8(0x00N), 0x00N)
+  assert WasmI64.eq(WasmI64.extendS8(0x80N), 0xffffffffffffff80N)
+  assert WasmI64.eq(WasmI64.extendS16(0x0000N), 0x0000N)
+  assert WasmI64.eq(WasmI64.extendS16(0x8000N), 0xffffffffffff8000N)
+  assert WasmI64.eq(WasmI64.extendS32(0x00000000N), 0x00000000N)
+  assert WasmI64.eq(WasmI64.extendS32(0x80000000N), 0xffffffff80000000N)
+
+  // Grain conversion tests
+  assert WasmI64.toInt64(45N) == 45L
+  assert WasmI64.eq(WasmI64.ofInt64(45L), 45N)
+}
+
+test()

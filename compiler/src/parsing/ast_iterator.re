@@ -28,8 +28,9 @@ module Cnst = {
 };
 
 module E = {
-  let iter = (sub, {pexp_desc: desc, pexp_loc: loc}) => {
+  let iter = (sub, {pexp_desc: desc, pexp_attributes: attrs, pexp_loc: loc}) => {
     sub.location(sub, loc);
+    List.iter(iter_loc(sub), attrs);
     switch (desc) {
     | PExpId(i) => iter_loc(sub, i)
     | PExpConstant(c) => sub.constant(sub, c)
@@ -67,6 +68,7 @@ module E = {
     | PExpPrim2(p2, e1, e2) =>
       sub.expr(sub, e1);
       sub.expr(sub, e2);
+    | PExpPrimN(p, es) => List.iter(sub.expr(sub), es)
     | PExpBoxAssign(a, b) =>
       sub.expr(sub, a);
       sub.expr(sub, b);
@@ -278,8 +280,9 @@ module VD = {
 };
 
 module TL = {
-  let iter = (sub, {ptop_desc: desc, ptop_loc: loc}) => {
+  let iter = (sub, {ptop_desc: desc, ptop_attributes: attrs, ptop_loc: loc}) => {
     sub.location(sub, loc);
+    List.iter(iter_loc(sub), attrs);
     switch (desc) {
     | PTopImport(id) => sub.import(sub, id)
     | PTopExport(ex) => sub.export(sub, ex)

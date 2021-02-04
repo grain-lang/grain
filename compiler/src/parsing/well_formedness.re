@@ -16,7 +16,8 @@ type wferr =
   | EmptyRecordPattern(Location.t)
   | RHSLetRecMayOnlyBeFunction(Location.t)
   | NoLetRecMut(Location.t)
-  | RationalZeroDenominator(Location.t);
+  | RationalZeroDenominator(Location.t)
+  | UnknownAttribute(string, Location.t);
 
 exception Error(wferr);
 
@@ -62,6 +63,8 @@ let prepare_error =
         errorf(~loc, "let rec may not be used with the `mut` keyword.")
       | RationalZeroDenominator(loc) =>
         errorf(~loc, "Rational numbers may not have a denominator of zero.")
+      | UnknownAttribute(attr, loc) =>
+        errorf(~loc, "Unknown attribute `%s`.", attr)
     )
   );
 
@@ -361,6 +364,33 @@ let no_zero_denominator_rational = (errs, super) => {
   {errs, iterator};
 };
 
+let known_attributes = ["disableGC"];
+
+let no_unknown_attributes = (errs, super) => {
+  let iter_expr = (self, {pexp_attributes: attrs} as e) => {
+    List.iter(
+      ({txt, loc}) =>
+        if (!List.mem(txt, known_attributes)) {
+          errs := [UnknownAttribute(txt, loc), ...errs^];
+        },
+      attrs,
+    );
+    super.expr(self, e);
+  };
+  let iter_toplevel = (self, {ptop_attributes: attrs} as top) => {
+    List.iter(
+      ({txt, loc}) =>
+        if (!List.mem(txt, known_attributes)) {
+          errs := [UnknownAttribute(txt, loc), ...errs^];
+        },
+      attrs,
+    );
+    super.toplevel(self, top);
+  };
+  let iterator = {...super, expr: iter_expr, toplevel: iter_toplevel};
+  {errs, iterator};
+};
+
 let compose_well_formedness = ({errs, iterator}, cur) =>
   cur(errs, iterator);
 
@@ -376,6 +406,7 @@ let well_formedness_checks = [
   only_functions_oh_rhs_letrec,
   no_letrec_mut,
   no_zero_denominator_rational,
+  no_unknown_attributes,
 ];
 
 let well_formedness_checker = () =>

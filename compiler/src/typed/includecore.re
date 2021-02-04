@@ -439,7 +439,9 @@ let type_declarations =
           /* If attempt to assign a non-immediate type (e.g. string) to a type that
            * must be immediate, then we error */
           let err =
-            if (abstr && !decl1.type_immediate && decl2.type_immediate) {
+            if (abstr
+                && decl1.type_allocation == HeapAllocated
+                && decl2.type_allocation != HeapAllocated) {
               [Immediate];
             } else {
               [];

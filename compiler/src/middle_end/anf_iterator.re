@@ -46,6 +46,7 @@ module MakeIter = (Iter: IterArgument) => {
     | CPrim2(_, arg1, arg2) =>
       iter_imm_expression(arg1);
       iter_imm_expression(arg2);
+    | CPrimN(_, elts) => List.iter(iter_imm_expression, elts)
     | CBoxAssign(lhs, rhs) =>
       iter_imm_expression(lhs);
       iter_imm_expression(rhs);
@@ -88,11 +89,11 @@ module MakeIter = (Iter: IterArgument) => {
     | CSwitch(c, branches) =>
       iter_imm_expression(c);
       List.iter(((_, body)) => iter_anf_expression(body), branches);
-    | CApp(f, args, _) =>
+    | CApp((f, _), args, _) =>
       iter_imm_expression(f);
       List.iter(iter_imm_expression, args);
     | CAppBuiltin(_, _, args) => List.iter(iter_imm_expression, args)
-    | CLambda(idents, expr) => iter_anf_expression(expr)
+    | CLambda(idents, (expr, _)) => iter_anf_expression(expr)
     | CString(s) => ()
     | CChar(c) => ()
     | CNumber(i) => ()

@@ -97,7 +97,7 @@ let enter_type = (rec_flag, env, sdecl, id) => {
       type_newtype_level: None,
       type_loc: sdecl.pdata_loc,
       type_path: PIdent(id),
-      type_immediate: false,
+      type_allocation: HeapAllocated,
     };
 
     Env.add_type(~check=true, id, decl, env);
@@ -327,7 +327,7 @@ let transl_declaration = (env, sdecl, id) => {
     type_newtype_level: None,
     type_loc: sdecl.pdata_loc,
     type_path: PIdent(id),
-    type_immediate: false,
+    type_allocation: HeapAllocated,
   };
 
   /* Check constraints */

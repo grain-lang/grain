@@ -53,6 +53,10 @@ module Const = {
   let int64 = i => PConstInt64(i);
   let float32 = f => PConstFloat32(f);
   let float64 = f => PConstFloat64(f);
+  let wasmi32 = i => PConstWasmI32(i);
+  let wasmi64 = i => PConstWasmI64(i);
+  let wasmf32 = f => PConstWasmF32(f);
+  let wasmf64 = f => PConstWasmF64(f);
   let bool = b => PConstBool(b);
   let void = PConstVoid;
 };
@@ -177,69 +181,115 @@ module Pat = {
 };
 
 module Exp = {
-  let mk = (~loc=?, d) => {
+  let mk = (~loc=?, ~attributes=?, d) => {
     let loc =
       switch (loc) {
       | None => default_loc_src^()
       | Some(l) => l
       };
-    {pexp_desc: d, pexp_loc: loc};
+    let attributes =
+      switch (attributes) {
+      | None => []
+      | Some(l) => l
+      };
+    {pexp_desc: d, pexp_attributes: attributes, pexp_loc: loc};
   };
-  let ident = (~loc=?, a) => mk(~loc?, PExpId(a));
-  let constant = (~loc=?, a) => mk(~loc?, PExpConstant(a));
-  let tuple = (~loc=?, a) => mk(~loc?, PExpTuple(a));
-  let record = (~loc=?, a) => mk(~loc?, PExpRecord(a));
-  let record_get = (~loc=?, a, b) => mk(~loc?, PExpRecordGet(a, b));
-  let record_set = (~loc=?, a, b, c) => mk(~loc?, PExpRecordSet(a, b, c));
-  let array = (~loc=?, a) => mk(~loc?, PExpArray(a));
-  let array_get = (~loc=?, a, b) => mk(~loc?, PExpArrayGet(a, b));
-  let array_set = (~loc=?, a, b, c) => mk(~loc?, PExpArraySet(a, b, c));
-  let let_ = (~loc=?, a, b, c, d) => mk(~loc?, PExpLet(a, b, c, d));
-  let match = (~loc=?, a, b) => mk(~loc?, PExpMatch(a, b));
-  let prim1 = (~loc=?, a, b) => mk(~loc?, PExpPrim1(a, b));
-  let prim2 = (~loc=?, a, b, c) => mk(~loc?, PExpPrim2(a, b, c));
-  let if_ = (~loc=?, a, b, c) => mk(~loc?, PExpIf(a, b, c));
-  let while_ = (~loc=?, a, b) => mk(~loc?, PExpWhile(a, b));
-  let constraint_ = (~loc=?, a, b) => mk(~loc?, PExpConstraint(a, b));
-  let box_assign = (~loc=?, a, b) => mk(~loc?, PExpBoxAssign(a, b));
-  let assign = (~loc=?, a, b) => mk(~loc?, PExpAssign(a, b));
-  let lambda = (~loc=?, a, b) => mk(~loc?, PExpLambda(a, b));
-  let apply = (~loc=?, a, b) => mk(~loc?, PExpApp(a, b));
-  let block = (~loc=?, a) => mk(~loc?, PExpBlock(a));
-  let list = (~loc=?, a, base) => {
+  let ident = (~loc=?, ~attributes=?, a) =>
+    mk(~loc?, ~attributes?, PExpId(a));
+  let constant = (~loc=?, ~attributes=?, a) =>
+    mk(~loc?, ~attributes?, PExpConstant(a));
+  let tuple = (~loc=?, ~attributes=?, a) =>
+    mk(~loc?, ~attributes?, PExpTuple(a));
+  let record = (~loc=?, ~attributes=?, a) =>
+    mk(~loc?, ~attributes?, PExpRecord(a));
+  let record_get = (~loc=?, ~attributes=?, a, b) =>
+    mk(~loc?, ~attributes?, PExpRecordGet(a, b));
+  let record_set = (~loc=?, ~attributes=?, a, b, c) =>
+    mk(~loc?, ~attributes?, PExpRecordSet(a, b, c));
+  let array = (~loc=?, ~attributes=?, a) =>
+    mk(~loc?, ~attributes?, PExpArray(a));
+  let array_get = (~loc=?, ~attributes=?, a, b) =>
+    mk(~loc?, ~attributes?, PExpArrayGet(a, b));
+  let array_set = (~loc=?, ~attributes=?, a, b, c) =>
+    mk(~loc?, ~attributes?, PExpArraySet(a, b, c));
+  let let_ = (~loc=?, ~attributes=?, a, b, c, d) =>
+    mk(~loc?, ~attributes?, PExpLet(a, b, c, d));
+  let match = (~loc=?, ~attributes=?, a, b) =>
+    mk(~loc?, ~attributes?, PExpMatch(a, b));
+  let prim1 = (~loc=?, ~attributes=?, a, b) =>
+    mk(~loc?, ~attributes?, PExpPrim1(a, b));
+  let prim2 = (~loc=?, ~attributes=?, a, b, c) =>
+    mk(~loc?, ~attributes?, PExpPrim2(a, b, c));
+  let primn = (~loc=?, ~attributes=?, a, b) =>
+    mk(~loc?, ~attributes?, PExpPrimN(a, b));
+  let if_ = (~loc=?, ~attributes=?, a, b, c) =>
+    mk(~loc?, ~attributes?, PExpIf(a, b, c));
+  let while_ = (~loc=?, ~attributes=?, a, b) =>
+    mk(~loc?, ~attributes?, PExpWhile(a, b));
+  let constraint_ = (~loc=?, ~attributes=?, a, b) =>
+    mk(~loc?, ~attributes?, PExpConstraint(a, b));
+  let box_assign = (~loc=?, ~attributes=?, a, b) =>
+    mk(~loc?, ~attributes?, PExpBoxAssign(a, b));
+  let assign = (~loc=?, ~attributes=?, a, b) =>
+    mk(~loc?, ~attributes?, PExpAssign(a, b));
+  let lambda = (~loc=?, ~attributes=?, a, b) =>
+    mk(~loc?, ~attributes?, PExpLambda(a, b));
+  let apply = (~loc=?, ~attributes=?, a, b) =>
+    mk(~loc?, ~attributes?, PExpApp(a, b));
+  let block = (~loc=?, ~attributes=?, a) =>
+    mk(~loc?, ~attributes?, PExpBlock(a));
+  let list = (~loc=?, ~attributes=?, a, base) => {
     let empty = ident(~loc?, ident_empty);
     let cons = ident(ident_cons);
     let base = Option.value(~default=empty, base);
-    List.fold_right((expr, acc) => apply(cons, [expr, acc]), a, base);
+    List.fold_right(
+      (expr, acc) => apply(~attributes?, cons, [expr, acc]),
+      a,
+      base,
+    );
   };
-  let null = (~loc=?, ()) => mk(~loc?, PExpNull);
+  let null = (~loc=?, ~attributes=?, ()) =>
+    mk(~loc?, ~attributes?, PExpNull);
 
   let ignore = e =>
     switch (e.pexp_desc) {
     | PExpLet(_) => e
-    | _ => prim1(~loc=e.pexp_loc, Ignore, e)
+    | _ => prim1(~loc=e.pexp_loc, ~attributes=e.pexp_attributes, Ignore, e)
     };
 };
 
 module Top = {
-  let mk = (~loc=?, d) => {
+  let mk = (~loc=?, ~attributes=?, d) => {
     let loc =
       switch (loc) {
       | None => default_loc_src^()
       | Some(l) => l
       };
-    {ptop_desc: d, ptop_loc: loc};
+    let attributes =
+      switch (attributes) {
+      | None => []
+      | Some(l) => l
+      };
+    {ptop_desc: d, ptop_attributes: attributes, ptop_loc: loc};
   };
-  let import = (~loc=?, i) => mk(~loc?, PTopImport(i));
-  let foreign = (~loc=?, e, d) => mk(~loc?, PTopForeign(e, d));
-  let primitive = (~loc=?, e, d) => mk(~loc?, PTopPrimitive(e, d));
-  let data = (~loc=?, e, d) => mk(~loc?, PTopData(e, d));
-  let let_ = (~loc=?, e, r, m, vb) => mk(~loc?, PTopLet(e, r, m, vb));
-  let expr = (~loc=?, e) => mk(~loc?, PTopExpr(e));
-  let grain_exception = (~loc=?, e, ext) =>
-    mk(~loc?, PTopException(e, ext));
-  let export = (~loc=?, e) => mk(~loc?, PTopExport(e));
-  let export_all = (~loc=?, e) => mk(~loc?, PTopExportAll(e));
+  let import = (~loc=?, ~attributes=?, i) =>
+    mk(~loc?, ~attributes?, PTopImport(i));
+  let foreign = (~loc=?, ~attributes=?, e, d) =>
+    mk(~loc?, ~attributes?, PTopForeign(e, d));
+  let primitive = (~loc=?, ~attributes=?, e, d) =>
+    mk(~loc?, ~attributes?, PTopPrimitive(e, d));
+  let data = (~loc=?, ~attributes=?, e, d) =>
+    mk(~loc?, ~attributes?, PTopData(e, d));
+  let let_ = (~loc=?, ~attributes=?, e, r, m, vb) =>
+    mk(~loc?, ~attributes?, PTopLet(e, r, m, vb));
+  let expr = (~loc=?, ~attributes=?, e) =>
+    mk(~loc?, ~attributes?, PTopExpr(e));
+  let grain_exception = (~loc=?, ~attributes=?, e, ext) =>
+    mk(~loc?, ~attributes?, PTopException(e, ext));
+  let export = (~loc=?, ~attributes=?, e) =>
+    mk(~loc?, ~attributes?, PTopExport(e));
+  let export_all = (~loc=?, ~attributes=?, e) =>
+    mk(~loc?, ~attributes?, PTopExportAll(e));
 };
 
 module Val = {

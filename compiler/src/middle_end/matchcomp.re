@@ -139,19 +139,27 @@ module MatchTreeCompiler = {
         let process_nested = (other_binds, idx, nested_pat) => {
           let this_binds =
             if (pattern_could_contain_binding(nested_pat)) {
+              let allocation_type =
+                get_allocation_type(env, nested_pat.pat_type);
               let tup_arg_name = Ident.create("match_bind_tup_arg");
               let tup_arg_imm = Imm.id(~loc, ~env, tup_arg_name);
               let arg_binds =
                 extract_bindings(
                   nested_pat,
-                  Comp.imm(~loc, ~env, tup_arg_imm),
+                  Comp.imm(~loc, ~env, ~allocation_type, tup_arg_imm),
                 );
               switch (arg_binds) {
               | [] => []
               | _ => [
                   (
                     tup_arg_name,
-                    Comp.tuple_get(~loc, ~env, Int32.of_int(idx), tup_id),
+                    Comp.tuple_get(
+                      ~loc,
+                      ~env,
+                      ~allocation_type,
+                      Int32.of_int(idx),
+                      tup_id,
+                    ),
                   ),
                   ...arg_binds,
                 ]
@@ -172,12 +180,14 @@ module MatchTreeCompiler = {
         let process_nested = (other_binds, idx, nested_pat) => {
           let this_binds =
             if (pattern_could_contain_binding(nested_pat)) {
+              let allocation_type =
+                get_allocation_type(env, nested_pat.pat_type);
               let arr_arg_name = Ident.create("match_bind_arr_arg");
               let arr_arg_imm = Imm.id(~loc, ~env, arr_arg_name);
               let arg_binds =
                 extract_bindings(
                   nested_pat,
-                  Comp.imm(~loc, ~env, arr_arg_imm),
+                  Comp.imm(~loc, ~env, ~allocation_type, arr_arg_imm),
                 );
               switch (arg_binds) {
               | [] => []
@@ -187,6 +197,7 @@ module MatchTreeCompiler = {
                     Comp.array_get(
                       ~loc,
                       ~env,
+                      ~allocation_type,
                       Imm.const(
                         ~loc,
                         ~env,
@@ -214,6 +225,8 @@ module MatchTreeCompiler = {
         let process_nested = (other_binds, (lid, ld, nested_pat)) => {
           let this_binds =
             if (pattern_could_contain_binding(nested_pat)) {
+              let allocation_type =
+                get_allocation_type(env, nested_pat.pat_type);
               let rec_field_name =
                 Ident.create @@
                 "match_bind_rec_field_"
@@ -222,7 +235,7 @@ module MatchTreeCompiler = {
               let field_binds =
                 extract_bindings(
                   nested_pat,
-                  Comp.imm(~loc, ~env, rec_field_imm),
+                  Comp.imm(~loc, ~env, ~allocation_type, rec_field_imm),
                 );
               switch (field_binds) {
               | [] => []
@@ -232,6 +245,7 @@ module MatchTreeCompiler = {
                     Comp.record_get(
                       ~loc,
                       ~env,
+                      ~allocation_type,
                       Int32.of_int(ld.lbl_pos),
                       rec_id,
                     ),
@@ -255,19 +269,27 @@ module MatchTreeCompiler = {
         let process_nested = (other_binds, idx, nested_pat) => {
           let this_binds =
             if (pattern_could_contain_binding(nested_pat)) {
+              let allocation_type =
+                get_allocation_type(env, nested_pat.pat_type);
               let cstr_arg_name = Ident.create("match_bind_cstr_arg");
               let cstr_arg_imm = Imm.id(~loc, ~env, cstr_arg_name);
               let arg_binds =
                 extract_bindings(
                   nested_pat,
-                  Comp.imm(~loc, ~env, cstr_arg_imm),
+                  Comp.imm(~loc, ~env, ~allocation_type, cstr_arg_imm),
                 );
               switch (arg_binds) {
               | [] => []
               | _ => [
                   (
                     cstr_arg_name,
-                    Comp.adt_get(~loc, ~env, Int32.of_int(idx), data_id),
+                    Comp.adt_get(
+                      ~loc,
+                      ~env,
+                      ~allocation_type,
+                      Int32.of_int(idx),
+                      data_id,
+                    ),
                   ),
                   ...arg_binds,
                 ]
@@ -311,6 +333,7 @@ module MatchTreeCompiler = {
     switch (tree) {
     | Leaf(i) => (
         Comp.imm(
+          ~allocation_type=StackAllocated(WasmI32),
           Imm.const(Const_number(Const_number_int(Int64.of_int(i)))),
         ),
         [],
@@ -327,7 +350,14 @@ module MatchTreeCompiler = {
       let bindings =
         List.map(
           ((id, expr)) => BLet(id, expr),
-          extract_bindings(mb.mb_pat, Comp.imm(expr)),
+          extract_bindings(
+            mb.mb_pat,
+            Comp.imm(
+              ~allocation_type=
+                get_allocation_type(mb.mb_pat.pat_env, mb.mb_pat.pat_type),
+              expr,
+            ),
+          ),
         );
       let (cond, cond_setup) = helpI(guard);
       let (true_comp, true_setup) =
@@ -336,6 +366,7 @@ module MatchTreeCompiler = {
         compile_tree_help(false_tree, values, expr, helpI);
       (
         Comp.if_(
+          ~allocation_type=true_comp.comp_allocation_type,
           cond,
           fold_tree(true_setup, true_comp),
           fold_tree(false_setup, false_comp),
@@ -344,7 +375,13 @@ module MatchTreeCompiler = {
       );
     | Fail =>
       /* FIXME: We need a "throw error" node in ANF */
-      (Comp.imm(Imm.const(Const_number(Const_number_int(0L)))), [])
+      (
+        Comp.imm(
+          ~allocation_type=StackAllocated(WasmI32),
+          Imm.const(Const_number(Const_number_int(0L))),
+        ),
+        [],
+      )
     /* Optimizations to avoid unneeded destructuring: */
     | Explode(_, Leaf(_) as inner)
     | Explode(_, Guard(_) as inner)
@@ -360,7 +397,14 @@ module MatchTreeCompiler = {
             arity,
             idx => {
               let id = Ident.create("match_explode");
-              BLet(id, Comp.adt_get(Int32.of_int(idx), cur_value));
+              BLet(
+                id,
+                Comp.adt_get(
+                  ~allocation_type=HeapAllocated,
+                  Int32.of_int(idx),
+                  cur_value,
+                ),
+              );
             },
           )
         | ConstructorMatrix(None) =>
@@ -370,7 +414,14 @@ module MatchTreeCompiler = {
             arity,
             idx => {
               let id = Ident.create("match_explode");
-              BLet(id, Comp.tuple_get(Int32.of_int(idx), cur_value));
+              BLet(
+                id,
+                Comp.tuple_get(
+                  ~allocation_type=HeapAllocated,
+                  Int32.of_int(idx),
+                  cur_value,
+                ),
+              );
             },
           )
         | ArrayMatrix(arity) =>
@@ -381,6 +432,7 @@ module MatchTreeCompiler = {
               BLet(
                 id,
                 Comp.array_get(
+                  ~allocation_type=HeapAllocated,
                   Imm.const(
                     Const_number(Const_number_int(Int64.of_int(idx))),
                   ),
@@ -393,7 +445,14 @@ module MatchTreeCompiler = {
           List.map(
             label_pos => {
               let id = Ident.create("match_explode");
-              BLet(id, Comp.record_get(Int32.of_int(label_pos), cur_value));
+              BLet(
+                id,
+                Comp.record_get(
+                  ~allocation_type=HeapAllocated,
+                  Int32.of_int(label_pos),
+                  cur_value,
+                ),
+              );
             },
             Array.to_list(label_poses),
           )
@@ -422,7 +481,12 @@ module MatchTreeCompiler = {
       let value_constr =
         switch (switch_type) {
         | ConstructorSwitch => Comp.adt_get_tag(cur_value)
-        | ArraySwitch => Comp.prim1(ArrayLength, cur_value)
+        | ArraySwitch =>
+          Comp.prim1(
+            ~allocation_type=StackAllocated(WasmI32),
+            ArrayLength,
+            cur_value,
+          )
         };
       /* Fold left should be safe here, since there should be at most one branch
          per constructor */
@@ -437,6 +501,7 @@ module MatchTreeCompiler = {
               BLet(
                 cmp_id_name,
                 Comp.prim2(
+                  ~allocation_type=StackAllocated(WasmI32),
                   Eq,
                   value_constr_id,
                   Imm.const(
@@ -449,6 +514,7 @@ module MatchTreeCompiler = {
               compile_tree_help(tree, values, expr, helpI);
             let ans =
               Comp.if_(
+                ~allocation_type=tree_ans.comp_allocation_type,
                 cmp_id,
                 fold_tree(tree_setup, tree_ans),
                 fold_tree(body_setup, body_ans),
@@ -482,13 +548,23 @@ module MatchTreeCompiler = {
             List.fold_right(
               ((name, exp), body) =>
                 AExp.let_(Nonrecursive, [(name, exp)], body),
-              extract_bindings(orig_pat, Comp.imm(expr)),
+              extract_bindings(
+                orig_pat,
+                Comp.imm(~allocation_type=HeapAllocated, expr),
+              ),
               helpA(branch),
             ),
           ),
         branches,
       );
-    (Comp.switch_(Imm.id(jmp_name), switch_branches), setup);
+    (
+      Comp.switch_(
+        ~allocation_type=HeapAllocated,
+        Imm.id(jmp_name),
+        switch_branches,
+      ),
+      setup,
+    );
   };
 };
 
@@ -850,6 +926,7 @@ let prepare_match_branches = branches => {
       exp_desc: desc,
       exp_loc: loc,
       exp_extra: [],
+      exp_attributes: [],
       exp_env: env,
       exp_type: ty,
     };
@@ -862,6 +939,10 @@ let prepare_match_branches = branches => {
       | Const_int64(_) => Builtin_types.type_int64
       | Const_float32(_) => Builtin_types.type_float32
       | Const_float64(_) => Builtin_types.type_float64
+      | Const_wasmi32(_) => Builtin_types.type_wasmi32
+      | Const_wasmi64(_) => Builtin_types.type_wasmi64
+      | Const_wasmf32(_) => Builtin_types.type_wasmf32
+      | Const_wasmf64(_) => Builtin_types.type_wasmf64
       | Const_string(_) => Builtin_types.type_string
       | Const_char(_) => Builtin_types.type_char
       };

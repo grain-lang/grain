@@ -1,0 +1,65 @@
+import Memory from "unsafe/memory"
+import WasmI32 from "unsafe/wasmi32"
+
+// WebAssembly Memory Instructions
+export primitive load: (WasmI32, WasmI32) -> WasmF64 = "@wasm.load_float64"
+export primitive store: (WasmI32, WasmF64, WasmI32) -> Void = "@wasm.store_float64"
+
+// WebAssembly Unary Instructions
+export primitive neg: WasmF64 -> WasmF64 = "@wasm.neg_float64"
+export primitive abs: WasmF64 -> WasmF64 = "@wasm.abs_float64"
+export primitive ceil: WasmF64 -> WasmF64 = "@wasm.ceil_float64"
+export primitive floor: WasmF64 -> WasmF64 = "@wasm.floor_float64"
+export primitive trunc: WasmF64 -> WasmF64 = "@wasm.trunc_float64"
+export primitive nearest: WasmF64 -> WasmF64 = "@wasm.nearest_float64"
+export primitive sqrt: WasmF64 -> WasmF64 = "@wasm.sqrt_float64"
+
+// WebAssembly Binary Instructions
+export primitive add: (WasmF64, WasmF64) -> WasmF64 = "@wasm.add_float64"
+export primitive sub: (WasmF64, WasmF64) -> WasmF64 = "@wasm.sub_float64"
+export primitive mul: (WasmF64, WasmF64) -> WasmF64 = "@wasm.mul_float64"
+export primitive div: (WasmF64, WasmF64) -> WasmF64 = "@wasm.div_float64"
+export primitive copySign: (WasmF64, WasmF64) -> WasmF64 = "@wasm.copy_sign_float64"
+export primitive min: (WasmF64, WasmF64) -> WasmF64 = "@wasm.min_float64"
+export primitive max: (WasmF64, WasmF64) -> WasmF64 = "@wasm.max_float64"
+export primitive eq: (WasmF64, WasmF64) -> Bool = "@wasm.eq_float64"
+export primitive ne: (WasmF64, WasmF64) -> Bool = "@wasm.ne_float64"
+export primitive lt: (WasmF64, WasmF64) -> Bool = "@wasm.lt_float64"
+export primitive le: (WasmF64, WasmF64) -> Bool = "@wasm.le_float64"
+export primitive gt: (WasmF64, WasmF64) -> Bool = "@wasm.gt_float64"
+export primitive ge: (WasmF64, WasmF64) -> Bool = "@wasm.ge_float64"
+
+// WebAssembly Conversion instructions
+export primitive reinterpretI64: WasmI64 -> WasmF64 = "@wasm.reinterpret_int64"
+export primitive convertI32S: WasmI32 -> WasmF64 = "@wasm.convert_s_int32_to_float64"
+export primitive convertI32U: WasmI32 -> WasmF64 = "@wasm.convert_u_int32_to_float64"
+export primitive convertI64S: WasmI64 -> WasmF64 = "@wasm.convert_s_int64_to_float64"
+export primitive convertI64U: WasmI64 -> WasmF64 = "@wasm.convert_u_int64_to_float64"
+export primitive promoteF32: WasmF32 -> WasmF64 = "@wasm.promote_float32"
+
+// Grain Conversions
+@disableGC
+export let toFloat64 = (n) => {
+  let _GRAIN_GENERIC_HEAP_TAG = 0b0011n
+  let _GRAIN_BOXED_NUM_HEAP_TAG = 6n
+  let _GRAIN_FLOAT64_BOXED_NUM_TAG = 2n
+  
+  let ptr = Memory.malloc(16n)
+  WasmI32.store(ptr, _GRAIN_BOXED_NUM_HEAP_TAG, 0n)
+  WasmI32.store(ptr, _GRAIN_FLOAT64_BOXED_NUM_TAG, 4n)
+  store(ptr, n, 8n)
+
+  WasmI32.toGrain(WasmI32.xor(ptr, _GRAIN_GENERIC_HEAP_TAG)) : Float64
+}
+
+@disableGC
+export let ofFloat64 = (n: Float64) => {
+  let ptr = WasmI32.xor(WasmI32.fromGrain(n), 3n)
+  load(ptr, 8n)
+}
+
+// Utilities
+@disableGC
+export let print = (val) => {
+  print(toString(toFloat64(val)) ++ "W")
+}

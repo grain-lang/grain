@@ -16,6 +16,10 @@ include Parser_header
 %token <string> INT64
 %token <string> FLOAT32
 %token <string> FLOAT64
+%token <string> WASMI32
+%token <string> WASMI64
+%token <string> WASMF32
+%token <string> WASMF64
 %token <string> ID
 %token <string> TYPEID
 %token <string> STRING
@@ -35,7 +39,7 @@ include Parser_header
 %token TRUE FALSE VOID
 
 %token LET MUT REC IF WHEN ELSE MATCH WHILE
-%token AMPAMP PIPEPIPE NOT
+%token AMPAMP PIPEPIPE NOT AT
 %token AMP PIPE
 
 %token ENUM RECORD IMPORT EXPORT FOREIGN WASM PRIMITIVE
@@ -110,6 +114,10 @@ const :
   | dash_op? INT64 { Const.int64 (if Option.is_some $1 then "-" ^ $2 else $2) }
   | dash_op? FLOAT32 { Const.float32 (if Option.is_some $1 then "-" ^ $2 else $2) }
   | dash_op? FLOAT64 { Const.float64 (if Option.is_some $1 then "-" ^ $2 else $2) }
+  | dash_op? WASMI32 { Const.wasmi32 (if Option.is_some $1 then "-" ^ $2 else $2) }
+  | dash_op? WASMI64 { Const.wasmi64 (if Option.is_some $1 then "-" ^ $2 else $2) }
+  | dash_op? WASMF32 { Const.wasmf32 (if Option.is_some $1 then "-" ^ $2 else $2) }
+  | dash_op? WASMF64 { Const.wasmf64 (if Option.is_some $1 then "-" ^ $2 else $2) }
   | TRUE { Const.bool true }
   | FALSE { Const.bool false }
   | VOID { Const.void }
@@ -220,10 +228,10 @@ import_stmt :
   | IMPORT import_shape [comma import_shape {$2}]* FROM file_path { Imp.mk ($2::$3) $5 }
 
 export_stmt :
-  | EXPORT LET REC value_binds { Top.let_ Exported Recursive Immutable $4 }
-  | EXPORT LET value_binds { Top.let_ Exported Nonrecursive Immutable $3 }
-  | EXPORT LET REC MUT value_binds { Top.let_ Exported Recursive Mutable $5 }
-  | EXPORT LET MUT value_binds { Top.let_ Exported Nonrecursive Mutable $4 }
+  | attributes EXPORT LET REC value_binds { Top.let_ ~attributes:$1 Exported Recursive Immutable $5 }
+  | attributes EXPORT LET value_binds { Top.let_ ~attributes:$1 Exported Nonrecursive Immutable $4 }
+  | attributes EXPORT LET REC MUT value_binds { Top.let_ ~attributes:$1 Exported Recursive Mutable $6 }
+  | attributes EXPORT LET MUT value_binds { Top.let_ ~attributes:$1 Exported Nonrecursive Mutable $5 }
   | EXPORT foreign_stmt { Top.foreign ~loc:(symbol_rloc dyp) Exported $2 }
   | EXPORT primitive_stmt { Top.primitive ~loc:(symbol_rloc dyp) Exported $2 }
   | EXPORT data_declaration { Top.data Exported $2 }
@@ -393,11 +401,14 @@ lam_expr :
   | lparen lam_args trailing_comma? rparen thickarrow block_or_expr { Exp.lambda ~loc:(symbol_rloc dyp) $2 $6 }
   | ID thickarrow block_or_expr { Exp.lambda ~loc:(symbol_rloc dyp) [Pat.var ~loc:(rhs_loc dyp 1) (mkstr dyp $1)] $3 }
 
+attributes :
+  | [AT id_str eols? { $2 }]* { $1 }
+
 let_expr :
-  | LET REC value_binds { Exp.let_ ~loc:(symbol_rloc dyp) Recursive Immutable $3 (Exp.block []) }
-  | LET value_binds { Exp.let_ ~loc:(symbol_rloc dyp) Nonrecursive Immutable $2 (Exp.block []) }
-  | LET REC MUT value_binds { Exp.let_ ~loc:(symbol_rloc dyp) Recursive Mutable $4 (Exp.block []) }
-  | LET MUT value_binds { Exp.let_ ~loc:(symbol_rloc dyp) Nonrecursive Mutable $3 (Exp.block []) }
+  | attributes LET REC value_binds { Exp.let_ ~loc:(symbol_rloc dyp) ~attributes:$1 Recursive Immutable $4 (Exp.block []) }
+  | attributes LET value_binds { Exp.let_ ~loc:(symbol_rloc dyp) ~attributes:$1 Nonrecursive Immutable $3 (Exp.block []) }
+  | attributes LET REC MUT value_binds { Exp.let_ ~loc:(symbol_rloc dyp) ~attributes:$1 Recursive Mutable $5 (Exp.block []) }
+  | attributes LET MUT value_binds { Exp.let_ ~loc:(symbol_rloc dyp) ~attributes:$1 Nonrecursive Mutable $4 (Exp.block []) }
 
 if_expr :
   | IF lparen expr rparen eols? block_or_expr { Exp.if_ ~loc:(symbol_rloc dyp) $3 $6 (Exp.block []) }
@@ -531,10 +542,10 @@ exception_stmt :
   | EXCEPTION type_id_str lparen typs rparen { Except.tuple ~loc:(symbol_rloc dyp) $2 $4 }
 
 toplevel_stmt :
-  | LET REC value_binds { Top.let_ Nonexported Recursive Immutable $3 }
-  | LET value_binds { Top.let_ Nonexported Nonrecursive Immutable $2 }
-  | LET REC MUT value_binds { Top.let_ Nonexported Recursive Mutable $4 }
-  | LET MUT value_binds { Top.let_ Nonexported Nonrecursive Mutable $3 }
+  | attributes LET REC value_binds { Top.let_ ~attributes:$1 Nonexported Recursive Immutable $4 }
+  | attributes LET value_binds { Top.let_ ~attributes:$1 Nonexported Nonrecursive Immutable $3 }
+  | attributes LET REC MUT value_binds { Top.let_ ~attributes:$1 Nonexported Recursive Mutable $5 }
+  | attributes LET MUT value_binds { Top.let_ ~attributes:$1 Nonexported Nonrecursive Mutable $4 }
   | expr { Top.expr $1 }
   | import_stmt { Top.import $1 }
   | IMPORT foreign_stmt { Top.foreign ~loc:(symbol_rloc dyp) Nonexported $2 }

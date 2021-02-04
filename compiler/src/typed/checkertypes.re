@@ -67,6 +67,10 @@ let type_constant =
   | Const_int64(_) => instance_def(Builtin_types.type_int64)
   | Const_float32(_) => instance_def(Builtin_types.type_float32)
   | Const_float64(_) => instance_def(Builtin_types.type_float64)
+  | Const_wasmi32(_) => instance_def(Builtin_types.type_wasmi32)
+  | Const_wasmi64(_) => instance_def(Builtin_types.type_wasmi64)
+  | Const_wasmf32(_) => instance_def(Builtin_types.type_wasmf32)
+  | Const_wasmf64(_) => instance_def(Builtin_types.type_wasmf64)
   | Const_bool(_) => instance_def(Builtin_types.type_bool)
   | Const_void => instance_def(Builtin_types.type_void)
   | Const_string(_) => instance_def(Builtin_types.type_string)
@@ -160,6 +164,54 @@ let constant:
           Location.errorf(
             ~loc,
             "Float64 literal %sd exceeds the range of representable 64-bit floats.",
+            n,
+          ),
+        )
+      }
+    | PConstWasmI32(n) =>
+      switch (Literals.conv_wasmi32(n)) {
+      | Some(n) => Ok(Const_wasmi32(n))
+      | None =>
+        Error(
+          Location.errorf(
+            ~loc,
+            "WasmI32 literal %sn exceeds the range of representable 32-bit integers.",
+            n,
+          ),
+        )
+      }
+    | PConstWasmI64(n) =>
+      switch (Literals.conv_wasmi64(n)) {
+      | Some(n) => Ok(Const_wasmi64(n))
+      | None =>
+        Error(
+          Location.errorf(
+            ~loc,
+            "WasmI64 literal %sN exceeds the range of representable 64-bit integers.",
+            n,
+          ),
+        )
+      }
+    | PConstWasmF32(n) =>
+      switch (Literals.conv_wasmf32(n)) {
+      | Some(n) => Ok(Const_wasmf32(n))
+      | None =>
+        Error(
+          Location.errorf(
+            ~loc,
+            "WasmF32 literal %sw exceeds the range of representable 32-bit floats.",
+            n,
+          ),
+        )
+      }
+    | PConstWasmF64(n) =>
+      switch (Literals.conv_wasmf64(n)) {
+      | Some(n) => Ok(Const_wasmf64(n))
+      | None =>
+        Error(
+          Location.errorf(
+            ~loc,
+            "WasmF64 literal %sW exceeds the range of representable 64-bit floats.",
             n,
           ),
         )

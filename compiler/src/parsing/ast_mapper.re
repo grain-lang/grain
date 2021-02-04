@@ -29,19 +29,21 @@ module Cnst = {
 };
 
 module E = {
-  let map = (sub, {pexp_desc: desc, pexp_loc: loc}) => {
+  let map = (sub, {pexp_desc: desc, pexp_attributes: attrs, pexp_loc: loc}) => {
     open Exp;
     let loc = sub.location(sub, loc);
+    let attributes = List.map(map_loc(sub), attrs);
     switch (desc) {
-    | PExpId(i) => ident(~loc, map_loc(sub, i))
-    | PExpConstant(c) => constant(~loc, sub.constant(sub, c))
-    | PExpTuple(es) => tuple(~loc, List.map(sub.expr(sub), es))
-    | PExpArray(es) => array(~loc, List.map(sub.expr(sub), es))
+    | PExpId(i) => ident(~loc, ~attributes, map_loc(sub, i))
+    | PExpConstant(c) => constant(~loc, ~attributes, sub.constant(sub, c))
+    | PExpTuple(es) => tuple(~loc, ~attributes, List.map(sub.expr(sub), es))
+    | PExpArray(es) => array(~loc, ~attributes, List.map(sub.expr(sub), es))
     | PExpArrayGet(a, i) =>
-      array_get(~loc, sub.expr(sub, a), sub.expr(sub, i))
+      array_get(~loc, ~attributes, sub.expr(sub, a), sub.expr(sub, i))
     | PExpArraySet(a, i, arg) =>
       array_set(
         ~loc,
+        ~attributes,
         sub.expr(sub, a),
         sub.expr(sub, i),
         sub.expr(sub, arg),
@@ -49,43 +51,75 @@ module E = {
     | PExpRecord(es) =>
       record(
         ~loc,
+        ~attributes,
         List.map(
           ((name, expr)) => (map_loc(sub, name), sub.expr(sub, expr)),
           es,
         ),
       )
     | PExpRecordGet(e, f) =>
-      record_get(~loc, sub.expr(sub, e), map_loc(sub, f))
+      record_get(~loc, ~attributes, sub.expr(sub, e), map_loc(sub, f))
     | PExpRecordSet(e, f, v) =>
-      record_set(~loc, sub.expr(sub, e), map_loc(sub, f), sub.expr(sub, v))
+      record_set(
+        ~loc,
+        ~attributes,
+        sub.expr(sub, e),
+        map_loc(sub, f),
+        sub.expr(sub, v),
+      )
     | PExpLet(r, m, vbs, e) =>
       let_(
         ~loc,
+        ~attributes,
         r,
         m,
         List.map(sub.value_binding(sub), vbs),
         sub.expr(sub, e),
       )
     | PExpMatch(e, mbs) =>
-      match(~loc, sub.expr(sub, e), List.map(sub.match_branch(sub), mbs))
-    | PExpPrim1(p1, e) => prim1(~loc, p1, sub.expr(sub, e))
+      match(
+        ~loc,
+        ~attributes,
+        sub.expr(sub, e),
+        List.map(sub.match_branch(sub), mbs),
+      )
+    | PExpPrim1(p1, e) => prim1(~loc, ~attributes, p1, sub.expr(sub, e))
     | PExpPrim2(p2, e1, e2) =>
-      prim2(~loc, p2, sub.expr(sub, e1), sub.expr(sub, e2))
+      prim2(~loc, ~attributes, p2, sub.expr(sub, e1), sub.expr(sub, e2))
+    | PExpPrimN(p, es) =>
+      primn(~loc, ~attributes, p, List.map(sub.expr(sub), es))
     | PExpBoxAssign(e1, e2) =>
-      box_assign(~loc, sub.expr(sub, e1), sub.expr(sub, e2))
+      box_assign(~loc, ~attributes, sub.expr(sub, e1), sub.expr(sub, e2))
     | PExpAssign(e1, e2) =>
-      assign(~loc, sub.expr(sub, e1), sub.expr(sub, e2))
+      assign(~loc, ~attributes, sub.expr(sub, e1), sub.expr(sub, e2))
     | PExpIf(c, t, f) =>
-      if_(~loc, sub.expr(sub, c), sub.expr(sub, t), sub.expr(sub, f))
-    | PExpWhile(c, e) => while_(~loc, sub.expr(sub, c), sub.expr(sub, e))
+      if_(
+        ~loc,
+        ~attributes,
+        sub.expr(sub, c),
+        sub.expr(sub, t),
+        sub.expr(sub, f),
+      )
+    | PExpWhile(c, e) =>
+      while_(~loc, ~attributes, sub.expr(sub, c), sub.expr(sub, e))
     | PExpLambda(pl, e) =>
-      lambda(~loc, List.map(sub.pat(sub), pl), sub.expr(sub, e))
+      lambda(
+        ~loc,
+        ~attributes,
+        List.map(sub.pat(sub), pl),
+        sub.expr(sub, e),
+      )
     | PExpApp(e, el) =>
-      apply(~loc, sub.expr(sub, e), List.map(sub.expr(sub), el))
-    | PExpBlock(el) => block(~loc, List.map(sub.expr(sub), el))
-    | PExpNull => null(~loc, ())
+      apply(
+        ~loc,
+        ~attributes,
+        sub.expr(sub, e),
+        List.map(sub.expr(sub), el),
+      )
+    | PExpBlock(el) => block(~loc, ~attributes, List.map(sub.expr(sub), el))
+    | PExpNull => null(~loc, ~attributes, ())
     | PExpConstraint(e, t) =>
-      constraint_(~loc, sub.expr(sub, e), sub.typ(sub, t))
+      constraint_(~loc, ~attributes, sub.expr(sub, e), sub.typ(sub, t))
     };
   };
 };
@@ -292,23 +326,33 @@ module VD = {
 };
 
 module TL = {
-  let map = (sub, {ptop_desc: desc, ptop_loc: loc}) => {
+  let map = (sub, {ptop_desc: desc, ptop_attributes: attrs, ptop_loc: loc}) => {
     open Top;
     let loc = sub.location(sub, loc);
+    let attributes = List.map(map_loc(sub), attrs);
     switch (desc) {
-    | PTopImport(decls) => Top.import(~loc, sub.import(sub, decls))
+    | PTopImport(decls) =>
+      Top.import(~loc, ~attributes, sub.import(sub, decls))
     | PTopForeign(e, d) =>
-      Top.foreign(~loc, e, sub.value_description(sub, d))
+      Top.foreign(~loc, ~attributes, e, sub.value_description(sub, d))
     | PTopPrimitive(e, d) =>
-      Top.primitive(~loc, e, sub.value_description(sub, d))
-    | PTopData(e, dd) => Top.data(~loc, e, sub.data(sub, dd))
+      Top.primitive(~loc, ~attributes, e, sub.value_description(sub, d))
+    | PTopData(e, dd) => Top.data(~loc, ~attributes, e, sub.data(sub, dd))
     | PTopLet(e, r, m, vb) =>
-      Top.let_(~loc, e, r, m, List.map(sub.value_binding(sub), vb))
-    | PTopExpr(e) => Top.expr(~loc, sub.expr(sub, e))
+      Top.let_(
+        ~loc,
+        ~attributes,
+        e,
+        r,
+        m,
+        List.map(sub.value_binding(sub), vb),
+      )
+    | PTopExpr(e) => Top.expr(~loc, ~attributes, sub.expr(sub, e))
     | PTopException(e, d) =>
-      Top.grain_exception(~loc, e, sub.grain_exception(sub, d))
-    | PTopExport(ex) => Top.export(~loc, sub.export(sub, ex))
-    | PTopExportAll(ex) => Top.export_all(~loc, sub.export_all(sub, ex))
+      Top.grain_exception(~loc, ~attributes, e, sub.grain_exception(sub, d))
+    | PTopExport(ex) => Top.export(~loc, ~attributes, sub.export(sub, ex))
+    | PTopExportAll(ex) =>
+      Top.export_all(~loc, ~attributes, sub.export_all(sub, ex))
     };
   };
 };

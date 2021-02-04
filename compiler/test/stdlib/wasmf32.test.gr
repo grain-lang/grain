@@ -1,0 +1,59 @@
+import WasmF32 from "unsafe/wasmf32"
+
+@disableGC
+let test = () => {
+  // unary tests
+  assert WasmF32.eq(WasmF32.neg(-1.23w), 1.23w)
+  assert WasmF32.eq(WasmF32.neg(1.23w), -1.23w)
+  assert WasmF32.eq(WasmF32.abs(1.23w), 1.23w)
+  assert WasmF32.eq(WasmF32.abs(-1.23w), 1.23w)
+  assert WasmF32.eq(WasmF32.ceil(1.5w), 2.w)
+  assert WasmF32.eq(WasmF32.ceil(-1.5w), -1.w)
+  assert WasmF32.eq(WasmF32.floor(1.5w), 1.w)
+  assert WasmF32.eq(WasmF32.floor(-1.5w), -2.w)
+  assert WasmF32.eq(WasmF32.trunc(1.23w), 1.w)
+  assert WasmF32.eq(WasmF32.trunc(-1.23w), -1.w)
+  assert WasmF32.eq(WasmF32.nearest(1.23w), 1.w)
+  assert WasmF32.eq(WasmF32.nearest(1.73w), 2.w)
+  assert WasmF32.eq(WasmF32.nearest(-1.23w), -1.w)
+  assert WasmF32.eq(WasmF32.nearest(-1.73w), -2.w)
+  assert WasmF32.eq(WasmF32.sqrt(16.w), 4.w)
+
+  // binary tests
+  assert WasmF32.eq(WasmF32.add(2.5w, 4.w), 6.5w)
+  assert WasmF32.eq(WasmF32.sub(2.5w, 4.w), -1.5w)
+  assert WasmF32.eq(WasmF32.mul(2.5w, 4.w), 10.w)
+  assert WasmF32.eq(WasmF32.div(2.5w, 4.w), .625w)
+  assert WasmF32.eq(WasmF32.copySign(2.5w, 4.w), 2.5w)
+  assert WasmF32.eq(WasmF32.copySign(2.5w, -4.w), -2.5w)
+  assert WasmF32.eq(WasmF32.min(2.5w, 4.w), 2.5w)
+  assert WasmF32.eq(WasmF32.max(2.5w, 4.w), 4.w)
+  assert WasmF32.eq(1.23w, 1.23w)
+  assert !WasmF32.eq(1.23w, -1.23w)
+  assert WasmF32.ne(1.23w, -1.23w)
+  assert !WasmF32.ne(1.23w, 1.23w)
+  assert WasmF32.lt(1.23w, 1.24w)
+  assert !WasmF32.lt(1.23w, 1.22w)
+  assert WasmF32.le(1.23w, 1.24w)
+  assert WasmF32.le(1.23w, 1.23w)
+  assert !WasmF32.le(1.23w, 1.22w)
+  assert WasmF32.gt(1.23w, 1.22w)
+  assert !WasmF32.gt(1.23w, 1.24w)
+  assert WasmF32.ge(1.23w, 1.22w)
+  assert WasmF32.ge(1.23w, 1.23w)
+  assert !WasmF32.ge(1.23w, 1.24w)
+
+  // conversion tests
+  assert WasmF32.eq(WasmF32.reinterpretI32(0x42280000n), 42.w)
+  assert WasmF32.eq(WasmF32.convertI32S(-1n), -1.w)
+  assert WasmF32.eq(WasmF32.convertI32U(-1n), 4294967296.w)
+  assert WasmF32.eq(WasmF32.convertI64S(-1N), -1.w)
+  assert WasmF32.eq(WasmF32.convertI64U(-1N), 18446744073709552000.w)
+  assert WasmF32.eq(WasmF32.demoteF64(1.23W), 1.23w)
+
+  // Grain conversion tests
+  assert WasmF32.toFloat32(1.23w) == 1.23f
+  assert WasmF32.eq(WasmF32.ofFloat32(1.23f), 1.23w)
+}
+
+test()

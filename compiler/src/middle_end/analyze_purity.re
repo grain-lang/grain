@@ -103,6 +103,9 @@ let rec analyze_comp_expression =
       analyze_imm_expression(a2);
       imm_expression_purity_internal(a1)
       && imm_expression_purity_internal(a2);
+    | CPrimN(_, args) =>
+      List.iter(arg => analyze_imm_expression(arg), args);
+      false;
     | CBoxAssign(_, _)
     | CAssign(_, _) =>
       /* TODO: Would be nice if we could "scope" the purity analysis to local assignments */
@@ -161,7 +164,7 @@ let rec analyze_comp_expression =
         );
       imm_expression_purity_internal(exp)
       && List.for_all(x => x, branches_purities);
-    | CApp(f, args, _) =>
+    | CApp((f, _), args, _) =>
       let arg_purities =
         List.map(
           arg => {
@@ -175,8 +178,8 @@ let rec analyze_comp_expression =
     | CAppBuiltin(_module, f, args) =>
       List.iter(arg => analyze_imm_expression(arg), args);
       false;
-    | CLambda(args, body) =>
-      List.iter(i => set_id_purity(i, true), args);
+    | CLambda(args, (body, _)) =>
+      List.iter(((i, _)) => set_id_purity(i, true), args);
       analyze_anf_expression(body);
       anf_expression_purity_internal(body);
     | CNumber(_)

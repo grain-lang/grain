@@ -37,6 +37,10 @@ let ident_number = ident_create("Number")
 and ident_exception = ident_create("Exception")
 and ident_int32 = ident_create("Int32")
 and ident_int64 = ident_create("Int64")
+and ident_wasmi32 = ident_create("WasmI32")
+and ident_wasmi64 = ident_create("WasmI64")
+and ident_wasmf32 = ident_create("WasmF32")
+and ident_wasmf64 = ident_create("WasmF64")
 and ident_rational = ident_create("Rational")
 and ident_float32 = ident_create("Float32")
 and ident_float64 = ident_create("Float64")
@@ -52,6 +56,10 @@ let path_number = PIdent(ident_number)
 and path_exception = PIdent(ident_exception)
 and path_int32 = PIdent(ident_int32)
 and path_int64 = PIdent(ident_int64)
+and path_wasmi32 = PIdent(ident_wasmi32)
+and path_wasmi64 = PIdent(ident_wasmi64)
+and path_wasmf32 = PIdent(ident_wasmf32)
+and path_wasmf64 = PIdent(ident_wasmf64)
 and path_rational = PIdent(ident_rational)
 and path_float32 = PIdent(ident_float32)
 and path_float64 = PIdent(ident_float64)
@@ -70,6 +78,10 @@ and type_int64 = newgenty(TTyConstr(path_int64, [], ref(TMemNil)))
 and type_rational = newgenty(TTyConstr(path_rational, [], ref(TMemNil)))
 and type_float32 = newgenty(TTyConstr(path_float32, [], ref(TMemNil)))
 and type_float64 = newgenty(TTyConstr(path_float64, [], ref(TMemNil)))
+and type_wasmi32 = newgenty(TTyConstr(path_wasmi32, [], ref(TMemNil)))
+and type_wasmi64 = newgenty(TTyConstr(path_wasmi64, [], ref(TMemNil)))
+and type_wasmf32 = newgenty(TTyConstr(path_wasmf32, [], ref(TMemNil)))
+and type_wasmf64 = newgenty(TTyConstr(path_wasmf64, [], ref(TMemNil)))
 and type_bool = newgenty(TTyConstr(path_bool, [], ref(TMemNil)))
 and type_string = newgenty(TTyConstr(path_string, [], ref(TMemNil)))
 and type_char = newgenty(TTyConstr(path_char, [], ref(TMemNil)))
@@ -90,10 +102,13 @@ let decl_abstr = path => {
   type_path: path,
   type_manifest: None,
   type_newtype_level: Some((0, 0)),
-  type_immediate: false,
+  type_allocation: HeapAllocated,
 };
 
-let decl_abstr_imm = path => {...decl_abstr(path), type_immediate: true};
+let decl_abstr_imm = (repr, path) => {
+  ...decl_abstr(path),
+  type_allocation: StackAllocated(repr),
+};
 
 let cstr = (id, args) => {
   cd_id: id,
@@ -115,15 +130,13 @@ let decl_exception =
   decl_create({...decl_abstr(path_exception), type_kind: TDataOpen});
 let decl_bool =
   decl_create({
-    ...decl_abstr(path_bool),
+    ...decl_abstr_imm(WasmI32, path_bool),
     type_kind: TDataVariant([cstr(ident_false, []), cstr(ident_true, [])]),
-    type_immediate: true,
   })
 and decl_void =
   decl_create({
-    ...decl_abstr(path_void),
+    ...decl_abstr_imm(WasmI32, path_void),
     type_kind: TDataVariant([cstr(ident_void_cstr, [])]),
-    type_immediate: true,
   })
 and decl_box = {
   let tvar = newgenvar();
@@ -144,12 +157,16 @@ and decl_array = {
 
 let common_initial_env = (add_type, empty_env) =>
   empty_env
-  |> add_type(ident_number, decl_abstr_imm(path_number))
+  |> add_type(ident_number, decl_abstr(path_number))
   |> add_type(ident_exception, decl_exception)
   |> add_type(ident_int32, decl_abstr(path_int32))
   |> add_type(ident_int64, decl_abstr(path_int64))
   |> add_type(ident_float32, decl_abstr(path_float32))
   |> add_type(ident_float64, decl_abstr(path_float64))
+  |> add_type(ident_wasmi32, decl_abstr_imm(WasmI32, path_wasmi32))
+  |> add_type(ident_wasmi64, decl_abstr_imm(WasmI64, path_wasmi64))
+  |> add_type(ident_wasmf32, decl_abstr_imm(WasmF32, path_wasmf32))
+  |> add_type(ident_wasmf64, decl_abstr_imm(WasmF64, path_wasmf64))
   |> add_type(ident_rational, decl_abstr(path_rational))
   |> add_type(ident_bool, decl_bool)
   |> add_type(ident_box, decl_box)

@@ -46,6 +46,7 @@ module MakeMap = (Iter: MapArgument) => {
         let arg1 = map_imm_expression(arg1);
         let arg2 = map_imm_expression(arg2);
         CPrim2(p2, arg1, arg2);
+      | CPrimN(p, args) => CPrimN(p, List.map(map_imm_expression, args))
       | CBoxAssign(lhs, rhs) =>
         let lhs = map_imm_expression(lhs);
         let rhs = map_imm_expression(rhs);
@@ -110,15 +111,15 @@ module MakeMap = (Iter: MapArgument) => {
             branches,
           );
         CSwitch(c, branches);
-      | CApp(f, args, tail) =>
+      | CApp((f, fty), args, tail) =>
         let f = map_imm_expression(f);
         let args = List.map(map_imm_expression, args);
-        CApp(f, args, tail);
+        CApp((f, fty), args, tail);
       | CAppBuiltin(mod_, f, args) =>
         CAppBuiltin(mod_, f, List.map(map_imm_expression, args))
-      | CLambda(idents, expr) =>
+      | CLambda(idents, (expr, alloc_ty)) =>
         let expr = map_anf_expression(expr);
-        CLambda(idents, expr);
+        CLambda(idents, (expr, alloc_ty));
       | CString(s) => CString(s)
       | CChar(c) => CChar(c)
       | CNumber(i) => CNumber(i)

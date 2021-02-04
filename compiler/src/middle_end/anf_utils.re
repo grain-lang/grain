@@ -35,8 +35,14 @@ let rec anf_free_vars_help = (env, a: anf_expression) =>
 
 and comp_free_vars_help = (env, c: comp_expression) =>
   switch (c.comp_desc) {
-  | CLambda(args, body) =>
-    anf_free_vars_help(Ident.Set.union(env, Ident.Set.of_list(args)), body)
+  | CLambda(args, (body, _)) =>
+    anf_free_vars_help(
+      Ident.Set.union(
+        env,
+        Ident.Set.of_list(List.map(((arg, _)) => arg, args)),
+      ),
+      body,
+    )
   | CIf(cond, thn, els) =>
     Ident.Set.union(imm_free_vars_help(env, cond)) @@
     Ident.Set.union(
@@ -60,6 +66,12 @@ and comp_free_vars_help = (env, c: comp_expression) =>
       imm_free_vars_help(env, arg1),
       imm_free_vars_help(env, arg2),
     )
+  | CPrimN(_, args) =>
+    List.fold_left(
+      (acc, a) => Ident.Set.union(imm_free_vars_help(env, a), acc),
+      Ident.Set.empty,
+      args,
+    )
   | CBoxAssign(arg1, arg2) =>
     Ident.Set.union(
       imm_free_vars_help(env, arg1),
@@ -70,7 +82,7 @@ and comp_free_vars_help = (env, c: comp_expression) =>
       imm_free_vars_help(env, arg1),
       imm_free_vars_help(env, arg2),
     )
-  | CApp(fn, args, _) =>
+  | CApp((fn, _), args, _) =>
     List.fold_left(
       (acc, a) => Ident.Set.union(imm_free_vars_help(env, a), acc),
       imm_free_vars_help(env, fn),
@@ -138,30 +150,78 @@ let anf_free_vars = anf_free_vars_help(Ident.Set.empty);
 let comp_free_vars = comp_free_vars_help(Ident.Set.empty);
 let imm_free_vars = imm_free_vars_help(Ident.Set.empty);
 
+let tuple_max = ((a1, a2, a3, a4), (b1, b2, b3, b4)) => (
+  max(a1, b1),
+  max(a2, b2),
+  max(a3, b3),
+  max(a4, b4),
+);
+let tuple_add = ((a1, a2, a3, a4), (b1, b2, b3, b4)) => (
+  a1 + b1,
+  a2 + b2,
+  a3 + b3,
+  a4 + b4,
+);
+
 let rec anf_count_vars = a =>
   switch (a.anf_desc) {
-  | AELet(_, recflag, binds, body) =>
+  | AELet(global, recflag, binds, body) =>
     let max_binds =
-      List.fold_left(max, 0) @@
+      List.fold_left(tuple_max, (0, 0, 0, 0)) @@
       List.map(((_, c)) => comp_count_vars(c), binds);
-    switch (recflag) {
-    | Recursive => List.length(binds) + max(max_binds, anf_count_vars(body))
-    | Nonrecursive =>
-      max(max_binds, List.length(binds) + anf_count_vars(body))
+    let rec count_binds = (i32, i64, f32, f64, binds) => {
+      switch (global, binds) {
+      | (Global, [_, ...rest]) => count_binds(i32, i64, f32, f64, rest)
+      | (_, [(_, {comp_allocation_type: HeapAllocated}), ...rest])
+      | (
+          _,
+          [(_, {comp_allocation_type: StackAllocated(WasmI32)}), ...rest],
+        ) =>
+        count_binds(i32 + 1, i64, f32, f64, rest)
+      | (
+          _,
+          [(_, {comp_allocation_type: StackAllocated(WasmI64)}), ...rest],
+        ) =>
+        count_binds(i32, i64 + 1, f32, f64, rest)
+      | (
+          _,
+          [(_, {comp_allocation_type: StackAllocated(WasmF32)}), ...rest],
+        ) =>
+        count_binds(i32, i64, f32 + 1, f64, rest)
+      | (
+          _,
+          [(_, {comp_allocation_type: StackAllocated(WasmF64)}), ...rest],
+        ) =>
+        count_binds(i32, i64, f32, f64 + 1, rest)
+      | (_, []) => (i32, i64, f32, f64)
+      };
     };
-  | AESeq(hd, tl) => max(comp_count_vars(hd), anf_count_vars(tl))
+    switch (recflag) {
+    | Recursive =>
+      tuple_add(
+        count_binds(0, 0, 0, 0, binds),
+        tuple_max(max_binds, anf_count_vars(body)),
+      )
+    | Nonrecursive =>
+      tuple_max(
+        max_binds,
+        tuple_add(count_binds(0, 0, 0, 0, binds), anf_count_vars(body)),
+      )
+    };
+  | AESeq(hd, tl) => tuple_max(comp_count_vars(hd), anf_count_vars(tl))
   | AEComp(c) => comp_count_vars(c)
   }
 
 and comp_count_vars = c =>
   switch (c.comp_desc) {
-  | CIf(_, t, f) => max(anf_count_vars(t), anf_count_vars(f))
-  | CWhile(c, b) => anf_count_vars(c) + anf_count_vars(b)
+  | CIf(_, t, f) => tuple_max(anf_count_vars(t), anf_count_vars(f))
+  | CWhile(c, b) => tuple_add(anf_count_vars(c), anf_count_vars(b))
   | CSwitch(_, bs) =>
-    List.fold_left(max, 0) @@ List.map(((_, b)) => anf_count_vars(b), bs)
-  | CApp(_, args, _) => List.length(args)
-  | CAppBuiltin(_, _, args) => List.length(args)
-  | _ => 0
+    List.fold_left(tuple_max, (0, 0, 0, 0)) @@
+    List.map(((_, b)) => anf_count_vars(b), bs)
+  | CApp(_, args, _) => (List.length(args), 0, 0, 0)
+  | CAppBuiltin(_, _, args) => (List.length(args), 0, 0, 0)
+  | _ => (0, 0, 0, 0)
   };
 
 module ClearLocationsArg: Anf_mapper.MapArgument = {

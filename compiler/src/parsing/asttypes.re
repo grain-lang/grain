@@ -28,6 +28,10 @@ type constant =
   | Const_int64(int64)
   | Const_float32(float)
   | Const_float64(float)
+  | Const_wasmi32(int32)
+  | Const_wasmi64(int64)
+  | Const_wasmf32(float)
+  | Const_wasmf64(float)
   | Const_bool(bool)
   | Const_void
 
@@ -74,3 +78,7 @@ type loc('a) =
     [@sexp_drop_if sexp_locs_disabled]
     loc: Location.t,
   };
+
+/** Addtional expression information that may affect compilation. */
+[@deriving (sexp, yojson)]
+type attributes = list(loc(string));

@@ -1,0 +1,72 @@
+import WasmI32 from "unsafe/wasmi32"
+
+@disableGC
+let test = () => {
+  // unary tests
+  assert WasmI32.eq(WasmI32.clz(0xfffffffn), 4n)
+  assert WasmI32.eq(WasmI32.ctz(0b111100001111100000n), 5n)
+  assert WasmI32.eq(WasmI32.popcnt(0b1111000011111n), 9n)
+  assert !WasmI32.eqz(0b1111000011111n)
+  assert WasmI32.eqz(0n)
+
+  // binary tests
+  assert WasmI32.eq(WasmI32.add(7n, 8n), 15n)
+  assert WasmI32.eq(WasmI32.sub(7n, 8n), -1n)
+  assert WasmI32.eq(WasmI32.mul(7n, 8n), 56n)
+  assert WasmI32.eq(WasmI32.divS(-2n, 2n), -1n)
+  assert WasmI32.eq(WasmI32.divU(-2n, 2n), 0x7fffffffn)
+  assert WasmI32.eq(WasmI32.remS(-3n, 2n), -1n)
+  assert WasmI32.eq(WasmI32.remU(-3n, 2n), 1n)
+  assert WasmI32.eq(WasmI32.and(0b11111n, 0b1010n), 0b1010n)
+  assert WasmI32.eq(WasmI32.or(0b10101n, 0b1010n), 0b11111n)
+  assert WasmI32.eq(WasmI32.xor(7n, 3n), 4n)
+  assert WasmI32.eq(WasmI32.shl(8n, 3n), 64n)
+  assert WasmI32.eq(WasmI32.shrS(-8n, 1n), -4n)
+  assert WasmI32.eq(WasmI32.shrU(-8n, 1n), 2147483644n)
+  assert WasmI32.eq(WasmI32.rotl(0b1010n, 2n), 0b101000n)
+  assert WasmI32.eq(WasmI32.rotr(0b1010n, 2n), 0x80000002n)
+  assert !WasmI32.eq(-7n, 14n)
+  assert WasmI32.eq(-7n, -7n)
+  assert WasmI32.ne(-7n, 14n)
+  assert !WasmI32.ne(-7n, -7n)
+  assert WasmI32.ltS(-7n, 14n)
+  assert !WasmI32.ltS(70n, 14n)
+  assert WasmI32.ltU(7n, -14n)
+  assert !WasmI32.ltU(-7n, 14n)
+  assert WasmI32.leS(-7n, 14n)
+  assert WasmI32.leS(-7n, -7n)
+  assert !WasmI32.leS(70n, 14n)
+  assert WasmI32.leU(7n, -14n)
+  assert WasmI32.leU(7n, 7n)
+  assert !WasmI32.leU(-7n, 14n)
+  assert !WasmI32.gtS(-7n, 14n)
+  assert WasmI32.gtS(70n, 14n)
+  assert !WasmI32.gtU(7n, -14n)
+  assert WasmI32.gtU(-7n, 14n)
+  assert !WasmI32.geS(-7n, 14n)
+  assert WasmI32.geS(-7n, -7n)
+  assert WasmI32.geS(70n, 14n)
+  assert !WasmI32.geU(7n, -14n)
+  assert WasmI32.geU(7n, 7n)
+
+  // conversion tests
+  assert WasmI32.eq(WasmI32.wrapI64(42N), 42n)
+  assert WasmI32.eq(WasmI32.wrapI64(0x0000ffffffff0000N), 0xffff0000n)
+  assert WasmI32.eq(WasmI32.truncF32S(42.17w), 42n)
+  assert WasmI32.eq(WasmI32.truncF32U(2147483648.w), 0x80000000n)
+  assert WasmI32.eq(WasmI32.truncF64S(42.17W), 42n)
+  assert WasmI32.eq(WasmI32.truncF64U(2147483648.W), 0x80000000n)
+  assert WasmI32.eq(WasmI32.reinterpretF32(42.w), 0x42280000n)
+  assert WasmI32.eq(WasmI32.extendS8(0x00n), 0x00n)
+  assert WasmI32.eq(WasmI32.extendS8(0x80n), 0xffffff80n)
+  assert WasmI32.eq(WasmI32.extendS16(0x0000n), 0x0000n)
+  assert WasmI32.eq(WasmI32.extendS16(0x8000n), 0xffff8000n)
+
+  // Grain conversion tests
+  assert WasmI32.eq(WasmI32.fromGrain(true), -1n)
+  assert (WasmI32.toGrain(-1n): Bool)
+  assert WasmI32.toInt32(45n) == 45l
+  assert WasmI32.ofInt32(45l) == 45n
+}
+
+test()

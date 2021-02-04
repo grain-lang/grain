@@ -142,6 +142,10 @@ rule token = parse
   | unsigned_float as x { NUMBER_FLOAT x }
   | (unsigned_int as x) 'l' { INT32 x }
   | (unsigned_int as x) 'L' { INT64 x }
+  | (unsigned_int as x) 'n' { WASMI32 x }
+  | (unsigned_int as x) 'N' { WASMI64 x }
+  | (unsigned_float as x) 'w' { WASMF32 x }
+  | (unsigned_float as x) 'W' { WASMF64 x }
   | unsigned_int as x { NUMBER_INT x }
   | "primitive" { PRIMITIVE }
   | "foreign" { FOREIGN }
@@ -207,6 +211,7 @@ rule token = parse
   | "|" { PIPE }
   | "||" { PIPEPIPE }
   | "!" { NOT }
+  | "@" { AT }
   | '"'   { read_str (Buffer.create 16) lexbuf }
   | '\'' { read_char (Buffer.create 4) lexbuf }
   | "_" { UNDERSCORE }

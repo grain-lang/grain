@@ -150,6 +150,18 @@ type extension_constructor = {
 };
 
 [@deriving (sexp, yojson)]
+type allocation_type =
+  | StackAllocated(wasm_repr)
+  | HeapAllocated
+
+[@deriving (sexp, yojson)]
+and wasm_repr =
+  | WasmI32
+  | WasmI64
+  | WasmF32
+  | WasmF64;
+
+[@deriving (sexp, yojson)]
 type type_declaration = {
   type_params: list(type_expr),
   type_arity: int,
@@ -159,7 +171,7 @@ type type_declaration = {
   [@sexp_drop_if sexp_locs_disabled] [@default Location.dummy_loc]
   type_loc: Location.t,
   type_path: Path.t,
-  type_immediate: bool // Whether the type should not be a pointer
+  type_allocation: allocation_type,
 }
 
 and type_kind =

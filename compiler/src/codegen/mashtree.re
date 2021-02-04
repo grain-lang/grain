@@ -14,6 +14,13 @@ type float64 = float;
 type tag_type = Value_tags.tag_type;
 type heap_tag_type = Value_tags.heap_tag_type;
 
+[@deriving sexp]
+type attributes = list(attribute)
+
+[@deriving sexp]
+and attribute =
+  | Disable_gc;
+
 type grain_error = Runtime_errors.grain_error;
 let (prim1_of_sexp, sexp_of_prim1) = (
   Parsetree.prim1_of_sexp,
@@ -23,6 +30,147 @@ let (prim2_of_sexp, sexp_of_prim2) = (
   Parsetree.prim2_of_sexp,
   Parsetree.sexp_of_prim2,
 );
+let (primn_of_sexp, sexp_of_primn) = (
+  Parsetree.primn_of_sexp,
+  Parsetree.sexp_of_primn,
+);
+
+type wasm_prim_type =
+  Parsetree.wasm_prim_type =
+    | Wasm_int32 | Wasm_int64 | Wasm_float32 | Wasm_float64 | Grain_bool;
+
+type wasm_op =
+  Parsetree.wasm_op =
+    | Op_clz_int32
+    | Op_ctz_int32
+    | Op_popcnt_int32
+    | Op_neg_float32
+    | Op_abs_float32
+    | Op_ceil_float32
+    | Op_floor_float32
+    | Op_trunc_float32
+    | Op_nearest_float32
+    | Op_sqrt_float32
+    | Op_eq_z_int32
+    | Op_clz_int64
+    | Op_ctz_int64
+    | Op_popcnt_int64
+    | Op_neg_float64
+    | Op_abs_float64
+    | Op_ceil_float64
+    | Op_floor_float64
+    | Op_trunc_float64
+    | Op_nearest_float64
+    | Op_sqrt_float64
+    | Op_eq_z_int64
+    | Op_extend_s_int32
+    | Op_extend_u_int32
+    | Op_wrap_int64
+    | Op_trunc_s_float32_to_int32
+    | Op_trunc_s_float32_to_int64
+    | Op_trunc_u_float32_to_int32
+    | Op_trunc_u_float32_to_int64
+    | Op_trunc_s_float64_to_int32
+    | Op_trunc_s_float64_to_int64
+    | Op_trunc_u_float64_to_int32
+    | Op_trunc_u_float64_to_int64
+    | Op_reinterpret_float32
+    | Op_reinterpret_float64
+    | Op_convert_s_int32_to_float32
+    | Op_convert_s_int32_to_float64
+    | Op_convert_u_int32_to_float32
+    | Op_convert_u_int32_to_float64
+    | Op_convert_s_int64_to_float32
+    | Op_convert_s_int64_to_float64
+    | Op_convert_u_int64_to_float32
+    | Op_convert_u_int64_to_float64
+    | Op_promote_float32
+    | Op_demote_float64
+    | Op_reinterpret_int32
+    | Op_reinterpret_int64
+    | Op_extend_s8_int32
+    | Op_extend_s16_int32
+    | Op_extend_s8_int64
+    | Op_extend_s16_int64
+    | Op_extend_s32_int64
+    | Op_add_int32
+    | Op_sub_int32
+    | Op_mul_int32
+    | Op_div_s_int32
+    | Op_div_u_int32
+    | Op_rem_s_int32
+    | Op_rem_u_int32
+    | Op_and_int32
+    | Op_or_int32
+    | Op_xor_int32
+    | Op_shl_int32
+    | Op_shr_u_int32
+    | Op_shr_s_int32
+    | Op_rot_l_int32
+    | Op_rot_r_int32
+    | Op_eq_int32
+    | Op_ne_int32
+    | Op_lt_s_int32
+    | Op_lt_u_int32
+    | Op_le_s_int32
+    | Op_le_u_int32
+    | Op_gt_s_int32
+    | Op_gt_u_int32
+    | Op_ge_s_int32
+    | Op_ge_u_int32
+    | Op_add_int64
+    | Op_sub_int64
+    | Op_mul_int64
+    | Op_div_s_int64
+    | Op_div_u_int64
+    | Op_rem_s_int64
+    | Op_rem_u_int64
+    | Op_and_int64
+    | Op_or_int64
+    | Op_xor_int64
+    | Op_shl_int64
+    | Op_shr_u_int64
+    | Op_shr_s_int64
+    | Op_rot_l_int64
+    | Op_rot_r_int64
+    | Op_eq_int64
+    | Op_ne_int64
+    | Op_lt_s_int64
+    | Op_lt_u_int64
+    | Op_le_s_int64
+    | Op_le_u_int64
+    | Op_gt_s_int64
+    | Op_gt_u_int64
+    | Op_ge_s_int64
+    | Op_ge_u_int64
+    | Op_add_float32
+    | Op_sub_float32
+    | Op_mul_float32
+    | Op_div_float32
+    | Op_copy_sign_float32
+    | Op_min_float32
+    | Op_max_float32
+    | Op_eq_float32
+    | Op_ne_float32
+    | Op_lt_float32
+    | Op_le_float32
+    | Op_gt_float32
+    | Op_ge_float32
+    | Op_add_float64
+    | Op_sub_float64
+    | Op_mul_float64
+    | Op_div_float64
+    | Op_copy_sign_float64
+    | Op_min_float64
+    | Op_max_float64
+    | Op_eq_float64
+    | Op_ne_float64
+    | Op_lt_float64
+    | Op_le_float64
+    | Op_gt_float64
+    | Op_ge_float64
+    | Op_memory_size
+    | Op_memory_grow;
 
 type prim1 =
   Parsetree.prim1 =
@@ -40,7 +188,29 @@ type prim1 =
     | Int32ToNumber
     | Float64ToNumber
     | Float32ToNumber
-    | Int64Lnot;
+    | Int64Lnot
+    | WasmFromGrain
+    | WasmToGrain
+    | WasmUnaryI32({
+        wasm_op,
+        arg_type: wasm_prim_type,
+        ret_type: wasm_prim_type,
+      })
+    | WasmUnaryI64({
+        wasm_op,
+        arg_type: wasm_prim_type,
+        ret_type: wasm_prim_type,
+      })
+    | WasmUnaryF32({
+        wasm_op,
+        arg_type: wasm_prim_type,
+        ret_type: wasm_prim_type,
+      })
+    | WasmUnaryF64({
+        wasm_op,
+        arg_type: wasm_prim_type,
+        ret_type: wasm_prim_type,
+      });
 
 type prim2 =
   Parsetree.prim2 =
@@ -68,7 +238,46 @@ type prim2 =
     | Int64Gt
     | Int64Gte
     | Int64Lt
-    | Int64Lte;
+    | Int64Lte
+    | WasmLoadI32({
+        sz: int,
+        signed: bool,
+      })
+    | WasmLoadI64({
+        sz: int,
+        signed: bool,
+      })
+    | WasmLoadF32
+    | WasmLoadF64
+    | WasmBinaryI32({
+        wasm_op,
+        arg_types: (wasm_prim_type, wasm_prim_type),
+        ret_type: wasm_prim_type,
+      })
+    | WasmBinaryI64({
+        wasm_op,
+        arg_types: (wasm_prim_type, wasm_prim_type),
+        ret_type: wasm_prim_type,
+      })
+    | WasmBinaryF32({
+        wasm_op,
+        arg_types: (wasm_prim_type, wasm_prim_type),
+        ret_type: wasm_prim_type,
+      })
+    | WasmBinaryF64({
+        wasm_op,
+        arg_types: (wasm_prim_type, wasm_prim_type),
+        ret_type: wasm_prim_type,
+      });
+
+type primn =
+  Parsetree.primn =
+    | WasmStoreI32({sz: int})
+    | WasmStoreI64({sz: int})
+    | WasmStoreF32
+    | WasmStoreF64
+    | WasmMemoryCopy
+    | WasmMemoryFill;
 
 /* Types within the WASM output */
 [@deriving sexp]
@@ -88,11 +297,11 @@ type constant =
 
 [@deriving sexp]
 type binding =
-  | MArgBind(int32)
-  | MLocalBind(int32)
-  | MGlobalBind(int32)
+  | MArgBind(int32, asmtype)
+  | MLocalBind(int32, asmtype)
+  | MGlobalBind(int32, asmtype)
   | MClosureBind(int32)
-  | MSwapBind(int32) /* Used like a register would be */
+  | MSwapBind(int32, asmtype) /* Used like a register would be */
   | MImport(int32); /* Index into list of imports */
 
 [@deriving sexp]
@@ -175,9 +384,21 @@ type instr = {
 [@deriving sexp]
 and instr_desc =
   | MImmediate(immediate)
-  | MCallKnown(string, list(immediate))
-  | MCallIndirect(immediate, list(immediate))
-  | MReturnCallIndirect(immediate, list(immediate))
+  | MCallKnown({
+      func: string,
+      func_type: (list(asmtype), asmtype),
+      args: list(immediate),
+    })
+  | MCallIndirect({
+      func: immediate,
+      func_type: (list(asmtype), asmtype),
+      args: list(immediate),
+    })
+  | MReturnCallIndirect({
+      func: immediate,
+      func_type: (list(asmtype), asmtype),
+      args: list(immediate),
+    })
   | MError(grain_error, list(immediate))
   | MAllocate(allocation_type)
   | MTagOp(tag_op, tag_type, immediate)
@@ -187,6 +408,7 @@ and instr_desc =
   | MSwitch(immediate, list((int32, block)), block) /* value, branches, default */
   | MPrim1(prim1, immediate)
   | MPrim2(prim2, immediate, immediate)
+  | MPrimN(primn, list(immediate))
   | MTupleOp(tuple_op, immediate)
   | MBoxOp(box_op, immediate)
   | MArrayOp(array_op, immediate)
@@ -234,10 +456,18 @@ type export = {
 [@deriving sexp]
 type mash_function = {
   index: int32,
-  arity: int32, /* TODO: Proper typing of arguments */
+  args: list(asmtype),
+  return_type: asmtype,
   body: block,
-  stack_size: int,
+  stack_size,
+  attrs: attributes,
   func_loc: Location.t,
+}
+and stack_size = {
+  stack_size_i32: int,
+  stack_size_i64: int,
+  stack_size_f32: int,
+  stack_size_f64: int,
 };
 
 [@deriving sexp]
@@ -246,7 +476,7 @@ type mash_program = {
   imports: list(import),
   exports: list(export),
   main_body: block,
-  main_body_stack_size: int,
+  main_body_stack_size: stack_size,
   num_globals: int,
   signature: Cmi_format.cmi_infos,
 };

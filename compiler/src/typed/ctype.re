@@ -849,7 +849,7 @@ let new_declaration = (newtype, manifest) => {
   type_newtype_level: newtype,
   type_loc: Location.dummy_loc,
   type_path: PIdent({stamp: (-1), name: "", flags: 0}),
-  type_immediate: false,
+  type_allocation: HeapAllocated,
 };
 
 let instance_constructor = (~in_pattern=?, cstr) => {
@@ -3206,7 +3206,7 @@ let nondep_type_decl = (env, mid, id, is_covariant, decl) =>
       type_newtype_level: None,
       type_loc: decl.type_loc,
       type_path: decl.type_path,
-      type_immediate: decl.type_immediate,
+      type_allocation: decl.type_allocation,
     };
   }) {
   | Not_found =>
@@ -3283,7 +3283,7 @@ let maybe_pointer_type = (env, typ) =>
   | TTyConstr(p, _args, _abbrev) =>
     try({
       let type_decl = Env.find_type(p, env);
-      !type_decl.type_immediate;
+      type_decl.type_allocation == HeapAllocated;
     }) {
     | Not_found => true
     /* This can happen due to e.g. missing -I options,

@@ -71,3 +71,19 @@ let conv_float32 = s => {
 let conv_float64 = s => {
   Float.of_string_opt(s);
 };
+
+let conv_wasmi32 = s => {
+  Int32.of_string_opt(s);
+};
+
+let conv_wasmi64 = s => {
+  Int64.of_string_opt(s);
+};
+
+let conv_wasmf32 = s => {
+  Float.of_string_opt(s);
+};
+
+let conv_wasmf64 = s => {
+  Float.of_string_opt(s);
+};

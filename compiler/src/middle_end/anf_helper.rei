@@ -7,6 +7,11 @@ type str = loc(string);
 type loc = Location.t;
 type env = Env.t;
 type ident = Ident.t;
+type attributes = Asttypes.attributes;
+
+let get_allocation_type: (Env.t, type_expr) => allocation_type;
+let get_fn_allocation_type:
+  (Env.t, type_expr) => (list(allocation_type), allocation_type);
 
 module Imm: {
   let mk: (~loc: loc=?, ~env: env=?, imm_expression_desc) => imm_expression;
@@ -15,35 +20,126 @@ module Imm: {
 };
 
 module Comp: {
-  let mk: (~loc: loc=?, ~env: env=?, comp_expression_desc) => comp_expression;
-  let imm: (~loc: loc=?, ~env: env=?, imm_expression) => comp_expression;
+  let mk:
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      ~allocation_type: allocation_type=?,
+      ~env: env=?,
+      comp_expression_desc
+    ) =>
+    comp_expression;
+  let imm:
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      ~allocation_type: allocation_type,
+      ~env: env=?,
+      imm_expression
+    ) =>
+    comp_expression;
   let number:
-    (~loc: loc=?, ~env: env=?, Asttypes.number_type) => comp_expression;
-  let int32: (~loc: loc=?, ~env: env=?, int32) => comp_expression;
-  let int64: (~loc: loc=?, ~env: env=?, int64) => comp_expression;
-  let float32: (~loc: loc=?, ~env: env=?, float) => comp_expression;
-  let float64: (~loc: loc=?, ~env: env=?, float) => comp_expression;
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      ~env: env=?,
+      Asttypes.number_type
+    ) =>
+    comp_expression;
+  let int32:
+    (~loc: loc=?, ~attributes: attributes=?, ~env: env=?, int32) =>
+    comp_expression;
+  let int64:
+    (~loc: loc=?, ~attributes: attributes=?, ~env: env=?, int64) =>
+    comp_expression;
+  let float32:
+    (~loc: loc=?, ~attributes: attributes=?, ~env: env=?, float) =>
+    comp_expression;
+  let float64:
+    (~loc: loc=?, ~attributes: attributes=?, ~env: env=?, float) =>
+    comp_expression;
   let prim1:
-    (~loc: loc=?, ~env: env=?, prim1, imm_expression) => comp_expression;
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      ~allocation_type: allocation_type,
+      ~env: env=?,
+      prim1,
+      imm_expression
+    ) =>
+    comp_expression;
   let prim2:
-    (~loc: loc=?, ~env: env=?, prim2, imm_expression, imm_expression) =>
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      ~allocation_type: allocation_type,
+      ~env: env=?,
+      prim2,
+      imm_expression,
+      imm_expression
+    ) =>
+    comp_expression;
+  let primn:
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      ~allocation_type: allocation_type,
+      ~env: env=?,
+      primn,
+      list(imm_expression)
+    ) =>
     comp_expression;
   let box_assign:
-    (~loc: loc=?, ~env: env=?, imm_expression, imm_expression) =>
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      ~allocation_type: allocation_type,
+      ~env: env=?,
+      imm_expression,
+      imm_expression
+    ) =>
     comp_expression;
   let assign:
-    (~loc: loc=?, ~env: env=?, imm_expression, imm_expression) =>
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      ~allocation_type: allocation_type,
+      ~env: env=?,
+      imm_expression,
+      imm_expression
+    ) =>
     comp_expression;
   let tuple:
-    (~loc: loc=?, ~env: env=?, list(imm_expression)) => comp_expression;
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      ~env: env=?,
+      list(imm_expression)
+    ) =>
+    comp_expression;
   let array:
-    (~loc: loc=?, ~env: env=?, list(imm_expression)) => comp_expression;
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      ~env: env=?,
+      list(imm_expression)
+    ) =>
+    comp_expression;
   let array_get:
-    (~loc: loc=?, ~env: env=?, imm_expression, imm_expression) =>
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      ~allocation_type: allocation_type,
+      ~env: env=?,
+      imm_expression,
+      imm_expression
+    ) =>
     comp_expression;
   let array_set:
     (
       ~loc: loc=?,
+      ~attributes: attributes=?,
+      ~allocation_type: allocation_type,
       ~env: env=?,
       imm_expression,
       imm_expression,
@@ -53,6 +149,7 @@ module Comp: {
   let record:
     (
       ~loc: loc=?,
+      ~attributes: attributes=?,
       ~env: env=?,
       imm_expression,
       list((str, imm_expression))
@@ -61,6 +158,7 @@ module Comp: {
   let adt:
     (
       ~loc: loc=?,
+      ~attributes: attributes=?,
       ~env: env=?,
       imm_expression,
       imm_expression,
@@ -68,22 +166,65 @@ module Comp: {
     ) =>
     comp_expression;
   let tuple_get:
-    (~loc: loc=?, ~env: env=?, int32, imm_expression) => comp_expression;
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      ~allocation_type: allocation_type,
+      ~env: env=?,
+      int32,
+      imm_expression
+    ) =>
+    comp_expression;
   let tuple_set:
-    (~loc: loc=?, ~env: env=?, int32, imm_expression, imm_expression) =>
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      ~allocation_type: allocation_type,
+      ~env: env=?,
+      int32,
+      imm_expression,
+      imm_expression
+    ) =>
     comp_expression;
   let adt_get:
-    (~loc: loc=?, ~env: env=?, int32, imm_expression) => comp_expression;
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      ~allocation_type: allocation_type,
+      ~env: env=?,
+      int32,
+      imm_expression
+    ) =>
+    comp_expression;
   let adt_get_tag:
-    (~loc: loc=?, ~env: env=?, imm_expression) => comp_expression;
+    (~loc: loc=?, ~attributes: attributes=?, ~env: env=?, imm_expression) =>
+    comp_expression;
   let record_get:
-    (~loc: loc=?, ~env: env=?, int32, imm_expression) => comp_expression;
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      ~allocation_type: allocation_type,
+      ~env: env=?,
+      int32,
+      imm_expression
+    ) =>
+    comp_expression;
   let record_set:
-    (~loc: loc=?, ~env: env=?, int32, imm_expression, imm_expression) =>
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      ~allocation_type: allocation_type,
+      ~env: env=?,
+      int32,
+      imm_expression,
+      imm_expression
+    ) =>
     comp_expression;
   let if_:
     (
       ~loc: loc=?,
+      ~attributes: attributes=?,
+      ~allocation_type: allocation_type,
       ~env: env=?,
       imm_expression,
       anf_expression,
@@ -91,11 +232,19 @@ module Comp: {
     ) =>
     comp_expression;
   let while_:
-    (~loc: loc=?, ~env: env=?, anf_expression, anf_expression) =>
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      ~env: env=?,
+      anf_expression,
+      anf_expression
+    ) =>
     comp_expression;
   let switch_:
     (
       ~loc: loc=?,
+      ~attributes: attributes=?,
+      ~allocation_type: allocation_type,
       ~env: env=?,
       imm_expression,
       list((int, anf_expression))
@@ -104,19 +253,40 @@ module Comp: {
   let app:
     (
       ~loc: loc=?,
+      ~attributes: attributes=?,
+      ~allocation_type: allocation_type,
       ~env: env=?,
       ~tail: bool=?,
-      imm_expression,
+      (imm_expression, (list(allocation_type), allocation_type)),
       list(imm_expression)
     ) =>
     comp_expression;
   let app_builtin:
-    (~loc: loc=?, ~env: env=?, string, string, list(imm_expression)) =>
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      ~allocation_type: allocation_type,
+      ~env: env=?,
+      string,
+      string,
+      list(imm_expression)
+    ) =>
     comp_expression;
   let lambda:
-    (~loc: loc=?, ~env: env=?, list(ident), anf_expression) => comp_expression;
-  let string: (~loc: loc=?, ~env: env=?, string) => comp_expression;
-  let char: (~loc: loc=?, ~env: env=?, string) => comp_expression;
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      ~env: env=?,
+      list((ident, allocation_type)),
+      (anf_expression, allocation_type)
+    ) =>
+    comp_expression;
+  let string:
+    (~loc: loc=?, ~attributes: attributes=?, ~env: env=?, string) =>
+    comp_expression;
+  let char:
+    (~loc: loc=?, ~attributes: attributes=?, ~env: env=?, string) =>
+    comp_expression;
 };
 
 module AExp: {

@@ -406,6 +406,7 @@ let function_tests = [
   ),
   te("nonfunction_1", "let x = 5; x(3)", "type"),
   t("lambda_pat_any", "let x = (_) => 5; x(\"foo\")", "5"),
+  te("unknown_attribute", "@unknown let x = () => 5", "Unknown attribute"),
 ];
 
 let mylist = "[1, 2, 3]";
@@ -744,6 +745,10 @@ let stdlib_tests = [
   tlib("int32.test"),
   tlib("float32.test"),
   tlib("float64.test"),
+  tlib("wasmi32.test"),
+  tlib("wasmi64.test"),
+  tlib("wasmf32.test"),
+  tlib("wasmf64.test"),
   tlib("range.test"),
   tlib("string.test"),
   tlib("sys.file.test"),
@@ -1356,22 +1361,42 @@ let optimization_tests = [
   tfinalanf(
     "test_dead_branch_elimination_1",
     "{ if (true) {4} else {5} }",
-    AExp.comp(Comp.imm(Imm.const(Const_number(Const_number_int(4L))))),
+    AExp.comp(
+      Comp.imm(
+        ~allocation_type=HeapAllocated,
+        Imm.const(Const_number(Const_number_int(4L))),
+      ),
+    ),
   ),
   tfinalanf(
     "test_dead_branch_elimination_2",
     "{ if (false) {4} else {5} }",
-    AExp.comp(Comp.imm(Imm.const(Const_number(Const_number_int(5L))))),
+    AExp.comp(
+      Comp.imm(
+        ~allocation_type=HeapAllocated,
+        Imm.const(Const_number(Const_number_int(5L))),
+      ),
+    ),
   ),
   tfinalanf(
     "test_dead_branch_elimination_3",
     "{ let x = true; if (x) {4} else {5} }",
-    AExp.comp(Comp.imm(Imm.const(Const_number(Const_number_int(4L))))),
+    AExp.comp(
+      Comp.imm(
+        ~allocation_type=HeapAllocated,
+        Imm.const(Const_number(Const_number_int(4L))),
+      ),
+    ),
   ),
   tfinalanf(
     "test_dead_branch_elimination_4",
     "{let x = if (true) {4} else {5}; x}",
-    AExp.comp(Comp.imm(Imm.const(Const_number(Const_number_int(4L))))),
+    AExp.comp(
+      Comp.imm(
+        ~allocation_type=HeapAllocated,
+        Imm.const(Const_number(Const_number_int(4L))),
+      ),
+    ),
   ),
   t(
     "test_dead_branch_elimination_5",
@@ -1382,7 +1407,12 @@ let optimization_tests = [
   tfinalanf(
     "test_const_propagation",
     "{\n    let x = 4;\n    let y = x;\n    x}",
-    AExp.comp(Comp.imm(Imm.const(Const_number(Const_number_int(4L))))),
+    AExp.comp(
+      Comp.imm(
+        ~allocation_type=HeapAllocated,
+        Imm.const(Const_number(Const_number_int(4L))),
+      ),
+    ),
   ),
   /* Primarily a constant-propagation test, but DAE removes the let bindings as well */
   tfinalanf(
@@ -1393,9 +1423,15 @@ let optimization_tests = [
       let x = Ident.create("lambda_arg");
       AExp.comp(
         Comp.lambda(
-          [x],
-          AExp.comp(
-            Comp.imm(Imm.const(Const_number(Const_number_int(4L)))),
+          [(x, HeapAllocated)],
+          (
+            AExp.comp(
+              Comp.imm(
+                ~allocation_type=HeapAllocated,
+                Imm.const(Const_number(Const_number_int(4L))),
+              ),
+            ),
+            HeapAllocated,
           ),
         ),
       );
@@ -1406,15 +1442,28 @@ let optimization_tests = [
     "test_const_propagation_shadowing",
     "{\n  let x = 5;\n  let y = 12;\n  let z = y;\n  {\n    let y = x;\n    x\n  }\n  x + y}",
     AExp.seq(
-      Comp.imm(Imm.const(Const_number(Const_number_int(5L)))),
-      AExp.comp(Comp.imm(Imm.const(Const_number(Const_number_int(17L))))),
+      Comp.imm(
+        ~allocation_type=HeapAllocated,
+        Imm.const(Const_number(Const_number_int(5L))),
+      ),
+      AExp.comp(
+        Comp.imm(
+          ~allocation_type=HeapAllocated,
+          Imm.const(Const_number(Const_number_int(17L))),
+        ),
+      ),
     ),
   ),
   /* Primarily a constant-folding test, but DAE removes the let bindings as well */
   tfinalanf(
     "test_const_folding",
     "{\n    let x = 4 + 5;\n    let y = x * 2;\n    let z = y - x;\n    let a = x + 7;\n    let b = 14;\n    a + b}",
-    AExp.comp(Comp.imm(Imm.const(Const_number(Const_number_int(30L))))),
+    AExp.comp(
+      Comp.imm(
+        ~allocation_type=HeapAllocated,
+        Imm.const(Const_number(Const_number_int(30L))),
+      ),
+    ),
   ),
   tfinalanf(
     "test_cse",
@@ -1427,32 +1476,43 @@ let optimization_tests = [
       let a = Ident.create("a");
       AExp.comp(
         Comp.lambda(
-          [arg],
-          AExp.let_(
-            Nonrecursive,
-            [(x, Comp.imm(Imm.id(arg)))],
+          [(arg, HeapAllocated)],
+          (
             AExp.let_(
               Nonrecursive,
-              [
-                (
-                  a,
-                  Comp.app(
-                    Imm.id(plus),
-                    [
-                      Imm.id(x),
-                      Imm.const(Const_number(Const_number_int(1L))),
-                    ],
+              [(x, Comp.imm(~allocation_type=HeapAllocated, Imm.id(arg)))],
+              AExp.let_(
+                Nonrecursive,
+                [
+                  (
+                    a,
+                    Comp.app(
+                      ~allocation_type=HeapAllocated,
+                      (
+                        Imm.id(plus),
+                        ([HeapAllocated, HeapAllocated], HeapAllocated),
+                      ),
+                      [
+                        Imm.id(x),
+                        Imm.const(Const_number(Const_number_int(1L))),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-              AExp.comp(
-                Comp.app(
-                  ~tail=true,
-                  Imm.id(plus),
-                  [Imm.id(a), Imm.id(a)],
+                ],
+                AExp.comp(
+                  Comp.app(
+                    ~allocation_type=HeapAllocated,
+                    ~tail=true,
+                    (
+                      Imm.id(plus),
+                      ([HeapAllocated, HeapAllocated], HeapAllocated),
+                    ),
+                    [Imm.id(a), Imm.id(a)],
+                  ),
                 ),
               ),
             ),
+            HeapAllocated,
           ),
         ),
       );
@@ -1467,13 +1527,23 @@ let optimization_tests = [
       let arg = Ident.create("lambda_arg");
       let x = Ident.create("x");
       AExp.comp(
-        Comp.lambda([arg]) @@
-        AExp.let_(Nonrecursive, [(x, Comp.imm(Imm.id(arg)))]) @@
-        AExp.comp @@
-        Comp.app(
-          ~tail=true,
-          Imm.id(plus),
-          [Imm.id(x), Imm.const(Const_number(Const_number_int(1L)))],
+        Comp.lambda([(arg, HeapAllocated)]) @@
+        (
+          AExp.let_(
+            Nonrecursive,
+            [(x, Comp.imm(~allocation_type=HeapAllocated, Imm.id(arg)))],
+          ) @@
+          AExp.comp @@
+          Comp.app(
+            ~allocation_type=HeapAllocated,
+            ~tail=true,
+            (
+              Imm.id(plus),
+              ([HeapAllocated, HeapAllocated], HeapAllocated),
+            ),
+            [Imm.id(x), Imm.const(Const_number(Const_number_int(1L)))],
+          ),
+          HeapAllocated,
         ),
       );
     },
@@ -1486,9 +1556,15 @@ let optimization_tests = [
       let x = Ident.create("lambda_arg");
       AExp.comp(
         Comp.lambda(
-          [x],
-          AExp.comp(
-            Comp.imm(Imm.const(Const_number(Const_number_int(1L)))),
+          [(x, HeapAllocated)],
+          (
+            AExp.comp(
+              Comp.imm(
+                ~allocation_type=HeapAllocated,
+                Imm.const(Const_number(Const_number_int(1L))),
+              ),
+            ),
+            HeapAllocated,
           ),
         ),
       );
@@ -1507,7 +1583,16 @@ let optimization_tests = [
       AExp.let_(
         Nonrecursive,
         [
-          (foo, Comp.lambda([arg]) @@ AExp.comp @@ Comp.imm @@ Imm.id(arg)),
+          (
+            foo,
+            Comp.lambda([(arg, HeapAllocated)]) @@
+            (
+              AExp.comp @@
+              Comp.imm(~allocation_type=HeapAllocated) @@
+              Imm.id(arg),
+              HeapAllocated,
+            ),
+          ),
         ],
       ) @@
       AExp.let_(
@@ -1516,7 +1601,8 @@ let optimization_tests = [
           (
             app,
             Comp.app(
-              Imm.id(foo),
+              ~allocation_type=HeapAllocated,
+              (Imm.id(foo), ([HeapAllocated], HeapAllocated)),
               [Imm.const(Const_number(Const_number_int(3L)))],
             ),
           ),
@@ -1524,8 +1610,9 @@ let optimization_tests = [
       ) @@
       AExp.comp @@
       Comp.app(
+        ~allocation_type=HeapAllocated,
         ~tail=true,
-        Imm.id(plus),
+        (Imm.id(plus), ([HeapAllocated, HeapAllocated], HeapAllocated)),
         [Imm.id(app), Imm.const(Const_number(Const_number_int(5L)))],
       );
     },
