@@ -304,6 +304,8 @@ type prim1 =
   | Not
   | Box
   | Unbox
+  | BoxBind
+  | UnboxBind
   | Ignore
   | ArrayLength
   | Assert

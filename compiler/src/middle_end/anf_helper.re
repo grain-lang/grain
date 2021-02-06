@@ -122,6 +122,8 @@ module Comp = {
     mk(~loc?, ~attributes?, ~allocation_type, ~env?, CPrimN(p, args));
   let box_assign = (~loc=?, ~attributes=?, ~allocation_type, ~env=?, a1, a2) =>
     mk(~loc?, ~attributes?, ~allocation_type, ~env?, CBoxAssign(a1, a2));
+  let local_assign = (~loc=?, ~attributes=?, ~allocation_type, ~env=?, a1, a2) =>
+    mk(~loc?, ~attributes?, ~allocation_type, ~env?, CLocalAssign(a1, a2));
   let assign = (~loc=?, ~attributes=?, ~allocation_type, ~env=?, a1, a2) =>
     mk(~loc?, ~attributes?, ~allocation_type, ~env?, CAssign(a1, a2));
   let tuple = (~loc=?, ~attributes=?, ~env=?, elts) =>
@@ -287,8 +289,17 @@ module AExp = {
     anf_env: or_default_env(env),
     anf_analyses: ref([]),
   };
-  let let_ = (~loc=?, ~env=?, ~global=Nonglobal, rec_flag, binds, body) =>
-    mk(~loc?, ~env?, AELet(global, rec_flag, binds, body));
+  let let_ =
+      (
+        ~loc=?,
+        ~env=?,
+        ~global=Nonglobal,
+        ~mut_flag=Immutable,
+        rec_flag,
+        binds,
+        body,
+      ) =>
+    mk(~loc?, ~env?, AELet(global, rec_flag, mut_flag, binds, body));
   let seq = (~loc=?, ~env=?, hd, tl) => mk(~loc?, ~env?, AESeq(hd, tl));
   let comp = (~loc=?, ~env=?, e) => mk(~loc?, ~env?, AEComp(e));
 };
