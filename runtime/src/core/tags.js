@@ -12,13 +12,11 @@ import {
 import { GRAIN_TRUE, GRAIN_FALSE, GRAIN_VOID } from "./primitives";
 
 export const GRAIN_NUMBER_TAG_MASK = 0b0001;
-export const GRAIN_TUPLE_TAG_MASK = 0b0111;
+export const GRAIN_GENERIC_TAG_MASK = 0b0111;
 
-export const GRAIN_NUMBER_TAG_TYPE = 0b0000;
-export const GRAIN_CONST_TAG_TYPE = 0b1111;
-export const GRAIN_TUPLE_TAG_TYPE = 0b0001;
-export const GRAIN_LAMBDA_TAG_TYPE = 0b0101;
-export const GRAIN_GENERIC_HEAP_TAG_TYPE = 0b0011;
+export const GRAIN_NUMBER_TAG_TYPE = 0b0001;
+export const GRAIN_CONST_TAG_TYPE = 0b0111;
+export const GRAIN_GENERIC_HEAP_TAG_TYPE = 0b0000;
 
 export const GRAIN_STRING_HEAP_TAG = 1;
 export const GRAIN_CHAR_HEAP_TAG = 2;
@@ -26,6 +24,8 @@ export const GRAIN_ADT_HEAP_TAG = 3;
 export const GRAIN_RECORD_HEAP_TAG = 4;
 export const GRAIN_ARRAY_HEAP_TAG = 5;
 export const GRAIN_BOXED_NUM_HEAP_TAG = 6;
+export const GRAIN_LAMBDA_HEAP_TAG = 7;
+export const GRAIN_TUPLE_HEAP_TAG = 8;
 
 export const GRAIN_FLOAT32_BOXED_NUM_TAG = 1;
 export const GRAIN_FLOAT64_BOXED_NUM_TAG = 2;
@@ -45,13 +45,9 @@ function getAndMask(tag) {
 export function getTagType(n, quiet) {
   if (n === GRAIN_TRUE || n === GRAIN_FALSE || n === GRAIN_VOID) {
     return GRAIN_CONST_TAG_TYPE;
-  } else if (!(n & GRAIN_NUMBER_TAG_MASK)) {
+  } else if (n & GRAIN_NUMBER_TAG_MASK) {
     return GRAIN_NUMBER_TAG_TYPE;
-  } else if ((n & GRAIN_TUPLE_TAG_MASK) === GRAIN_TUPLE_TAG_TYPE) {
-    return GRAIN_TUPLE_TAG_TYPE;
-  } else if ((n & GRAIN_TUPLE_TAG_MASK) === GRAIN_LAMBDA_TAG_TYPE) {
-    return GRAIN_LAMBDA_TAG_TYPE;
-  } else if ((n & GRAIN_TUPLE_TAG_MASK) === GRAIN_GENERIC_HEAP_TAG_TYPE) {
+  } else if ((n & GRAIN_GENERIC_TAG_MASK) === GRAIN_GENERIC_HEAP_TAG_TYPE) {
     return GRAIN_GENERIC_HEAP_TAG_TYPE;
   } else {
     if (!quiet) {

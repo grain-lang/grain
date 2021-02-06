@@ -2,9 +2,7 @@ import { malloc, free, throwError } from "../ascutils/grainRuntime";
 
 import { GRAIN_ERR_SYSTEM } from "../ascutils/errors";
 
-import { GRAIN_GENERIC_HEAP_TAG_TYPE } from "../ascutils/tags";
-
-import { allocateArray, allocateString } from "../ascutils/dataStructures";
+import { allocateArray, allocateString, tagSimpleNumber } from "../ascutils/dataStructures";
 
 import {
   errno,
@@ -21,7 +19,7 @@ export function argv(): u32 {
   let err = args_sizes_get(argcPtr, argvBufSizePtr);
   if (err !== errno.SUCCESS) {
     free(argcPtr);
-    throwError(GRAIN_ERR_SYSTEM, err << 1, 0);
+    throwError(GRAIN_ERR_SYSTEM, tagSimpleNumber(err), 0);
   }
 
   let argc = load<u32>(argcPtr);
@@ -35,7 +33,7 @@ export function argv(): u32 {
     free(argcPtr);
     free(argvPtr);
     free(argvBufPtr);
-    throwError(GRAIN_ERR_SYSTEM, err << 1, 0);
+    throwError(GRAIN_ERR_SYSTEM, tagSimpleNumber(err), 0);
   }
 
   let arr = allocateArray(argc);
@@ -51,14 +49,14 @@ export function argv(): u32 {
     let grainStrPtr = allocateString(strLength);
     memory.copy(grainStrPtr + 8, strPtr, strLength);
 
-    store<u32>(arr + i, grainStrPtr | GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4);
+    store<u32>(arr + i, grainStrPtr, 2 * 4);
   }
 
   free(argcPtr);
   free(argvPtr);
   free(argvBufPtr);
 
-  return arr | GRAIN_GENERIC_HEAP_TAG_TYPE;
+  return arr;
 }
 
 export function env(): u32 {
@@ -68,7 +66,7 @@ export function env(): u32 {
   let err = environ_sizes_get(envcPtr, envvBufSizePtr);
   if (err !== errno.SUCCESS) {
     free(envcPtr);
-    throwError(GRAIN_ERR_SYSTEM, err << 1, 0);
+    throwError(GRAIN_ERR_SYSTEM, tagSimpleNumber(err), 0);
   }
 
   let envc = load<u32>(envcPtr);
@@ -82,7 +80,7 @@ export function env(): u32 {
     free(envcPtr);
     free(envvPtr);
     free(envvBufPtr);
-    throwError(GRAIN_ERR_SYSTEM, err << 1, 0);
+    throwError(GRAIN_ERR_SYSTEM, tagSimpleNumber(err), 0);
   }
 
   let arr = allocateArray(envc);
@@ -98,12 +96,12 @@ export function env(): u32 {
     let grainStrPtr = allocateString(strLength);
     memory.copy(grainStrPtr + 8, strPtr, strLength);
 
-    store<u32>(arr + i, grainStrPtr | GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4);
+    store<u32>(arr + i, grainStrPtr, 2 * 4);
   }
 
   free(envcPtr);
   free(envvPtr);
   free(envvBufPtr);
 
-  return arr | GRAIN_GENERIC_HEAP_TAG_TYPE;
+  return arr;
 }

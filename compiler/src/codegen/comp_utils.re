@@ -8,7 +8,7 @@ let wasm_type =
   | F32Type => Type.float32
   | F64Type => Type.float64;
 
-let encoded_int32 = n => n * 2;
+let encoded_int32 = n => n * 2 + 1;
 
 let const_int32 = n => Literal.int32(Int32.of_int(n));
 let const_int64 = n => Literal.int64(Int64.of_int(n));
@@ -29,8 +29,8 @@ let grain_number_min = (-0x3fffffff); // 0xC0000001
 
 let rec compile_const = (c): Literal.t => {
   let identity: 'a. 'a => 'a = x => x;
-  let conv_int32 = Int32.(mul(of_int(2)));
-  let conv_int64 = Int64.(mul(of_int(2)));
+  let conv_int32 = n => Int32.(add(mul(2l, n), 1l));
+  let conv_int64 = n => Int64.(add(mul(2L, n), 1L));
   let conv_float32 = identity;
   let conv_float64 = identity;
   switch (c) {

@@ -1,16 +1,14 @@
-import { memory, encoder, decoder, managedMemory } from "../runtime";
-import { grainHeapAllocate } from "../core/heap";
+import { encoder, decoder, managedMemory } from "../runtime";
 import { GrainError } from "../errors/errors";
 
 import {
-  GRAIN_TUPLE_TAG_TYPE,
-  GRAIN_LAMBDA_TAG_TYPE,
   GRAIN_GENERIC_HEAP_TAG_TYPE,
   GRAIN_STRING_HEAP_TAG,
   GRAIN_CHAR_HEAP_TAG,
   GRAIN_ADT_HEAP_TAG,
   GRAIN_RECORD_HEAP_TAG,
   GRAIN_ARRAY_HEAP_TAG,
+  GRAIN_LAMBDA_HEAP_TAG,
   GRAIN_BOXED_NUM_HEAP_TAG,
   GRAIN_INT32_BOXED_NUM_TAG,
   GRAIN_INT64_BOXED_NUM_TAG,
@@ -139,6 +137,16 @@ export function grainHeapValToJSVal(runtime, n) {
         }
         return new GrainAdtValue(ret);
       }
+    case GRAIN_LAMBDA_HEAP_TAG: {
+      return () => {
+        throw new GrainError(
+          "Computed Grain functions are not callable from JavaScript."
+        );
+      };
+    }
+    case GRAIN_TUPLE_HEAP_TAG: {
+      return grainTupleToJSVal(runtime, x);
+    }
     default:
       console.warn(`Unknown heap tag at ${n / 4}: ${view[n / 4]}`);
       return undefined;
@@ -169,38 +177,30 @@ export function grainAdtInfo(runtime, n) {
 export function grainTupleToJSVal(runtime, n) {
   const view = managedMemory.view;
   let tupleIdx = n / 4;
-  let tupleLength = view[tupleIdx];
+  let tupleLength = view[tupleIdx + 1];
   if (tupleLength & 0x80000000) {
     return Symbol.for("cyclic");
   } else {
-    view[tupleIdx] |= 0x80000000;
+    view[tupleIdx + 1] |= 0x80000000;
     let elts = [];
     for (let i = 0; i < tupleLength; ++i) {
-      let value = grainToJSVal(runtime, view[tupleIdx + i + 1]);
+      let value = grainToJSVal(runtime, view[tupleIdx + i + 2]);
       if (value === Symbol.for("cyclic")) {
         elts.push(elts);
       } else {
         elts.push(value);
       }
     }
-    view[tupleIdx] = tupleLength;
+    view[tupleIdx + 1] = tupleLength;
     return elts;
   }
 }
 
 export function grainToJSVal(runtime, x) {
-  if (!(x & 1)) {
+  if (x & 1) {
     return x >> 1;
-  } else if ((x & 7) == 5) {
-    return () => {
-      throw new GrainError(
-        "Computed Grain functions are not callable from JavaScript."
-      );
-    };
-  } else if ((x & 7) === 3) {
-    return grainHeapValToJSVal(runtime, x ^ 3);
-  } else if ((x & 7) === GRAIN_TUPLE_TAG_TYPE) {
-    return grainTupleToJSVal(runtime, x ^ GRAIN_TUPLE_TAG_TYPE);
+  } else if ((x & 7) === 0) {
+    return grainHeapValToJSVal(runtime, x);
   } else if (x === GRAIN_TRUE) {
     return true;
   } else if (x === GRAIN_FALSE) {
@@ -228,11 +228,11 @@ export function JSToGrainVal(v, runtime) {
       f64tmpbuf[0] = v;
       view[ptr + 2] = i32tmpbuf[0];
       view[ptr + 3] = i32tmpbuf[1];
-      return userPtr | GRAIN_GENERIC_HEAP_TAG_TYPE;
+      return userPtr;
     }
     if (v < 1 << 30 && v > -1 << 30) {
       // simple int
-      return v << 1;
+      return (v << 1) ^ 1;
     }
     if (v < 1 << 31 && v > -1 << 31) {
       // int32
@@ -241,7 +241,7 @@ export function JSToGrainVal(v, runtime) {
       view[ptr] = GRAIN_BOXED_NUM_HEAP_TAG;
       view[ptr + 1] = GRAIN_INT32_BOXED_NUM_TAG;
       view[ptr + 2] = v;
-      return userPtr | GRAIN_GENERIC_HEAP_TAG_TYPE;
+      return userPtr;
     }
     if (v < 1 << 63 && v > -1 << 63) {
       // int64
@@ -255,15 +255,15 @@ export function JSToGrainVal(v, runtime) {
       i64tmpbuf[0] = v;
       view[ptr + 2] = i32tmpbuf[0];
       view[ptr + 3] = i32tmpbuf[1];
-      return userPtr | GRAIN_GENERIC_HEAP_TAG_TYPE;
+      return userPtr;
     }
     throwGrainError(GRAIN_ERR_OVERFLOW, -1, -1, runtime);
-    return 0xf00bae << 1;
+    return (0xf00bae << 1) ^ 1;
   } else if (typeof v === "boolean") {
     if (v) {
-      return -1;
+      return GRAIN_TRUE;
     } else {
-      return 0x7fffffff;
+      return GRAIN_FALSE;
     }
   } else if (typeof v === "string") {
     let userPtr = managedMemory.malloc(4 * 2 + ((v.length - 1) / 4 + 1));
@@ -275,7 +275,7 @@ export function JSToGrainVal(v, runtime) {
     for (let i = 0; i < buf.length; ++i) {
       byteView[i + ptr * 4 + 8] = buf[i];
     }
-    return userPtr | GRAIN_GENERIC_HEAP_TAG_TYPE;
+    return userPtr;
   } else {
     throw new GrainError(
       -1,

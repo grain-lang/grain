@@ -1,6 +1,5 @@
 import { decRef, malloc } from './grainRuntime'
 import { allocateString, singleByteString, stringSize } from './dataStructures'
-import { GRAIN_GENERIC_HEAP_TAG_TYPE } from './tags';
 import { CharCode } from './charCodes'
 
 /*
@@ -907,14 +906,13 @@ function utoa64_any_core(buffer: usize, num: u64, offset: usize, radix: i32): vo
 // Note that all of the characters used in the strings produced in this file are ASCII,
 // so we can safely just halve the size of the string.
 // [TODO] (#475) Optimization: Make the functions in this file directly produce UTF-8
-function fixEncoding(utf16StringRaw: u32): u32 {
-  let utf16String = utf16StringRaw & ~GRAIN_GENERIC_HEAP_TAG_TYPE
-  let utf16Size = stringSize(utf16StringRaw)
+function fixEncoding(utf16String: u32): u32 {
+  let utf16Size = stringSize(utf16String)
   let utf8Size = utf16Size >> 1
   let ret = allocateString(utf8Size)
   String.UTF8.encodeUnsafe(<usize>(utf16String + 8), utf8Size, ret + 8, false)
-  decRef(utf16StringRaw)
-  return ret | GRAIN_GENERIC_HEAP_TAG_TYPE
+  decRef(utf16String)
+  return ret
 }
 
 export function utoa32(value: u32, radix: i32): u32 {
@@ -1334,14 +1332,14 @@ export function dtoa(value: f64): u32 {
     store<u8>(ret, CharCode._0, 8)
     store<u8>(ret, CharCode.DOT, 8 + 1)
     store<u8>(ret, CharCode._0, 8 + 2)
-    return ret | GRAIN_GENERIC_HEAP_TAG_TYPE
+    return ret
   } else if (!isFinite(value)) {
     if (isNaN(value)) {
       let ret = allocateString(3)
       store<u8>(ret, CharCode.N, 8)
       store<u8>(ret, CharCode.a, 8 + 1)
       store<u8>(ret, CharCode.N, 8 + 2)
-      return ret | GRAIN_GENERIC_HEAP_TAG_TYPE
+      return ret
     } else if (value < 0) {
       let ret = allocateString(9)
       store<u8>(ret, CharCode.MINUS, 8)
@@ -1353,7 +1351,7 @@ export function dtoa(value: f64): u32 {
       store<u8>(ret, CharCode.i, 8 + 6)
       store<u8>(ret, CharCode.t, 8 + 7)
       store<u8>(ret, CharCode.y, 8 + 8)
-      return ret | GRAIN_GENERIC_HEAP_TAG_TYPE
+      return ret
     } else {
       let ret = allocateString(8)
       store<u8>(ret, CharCode.I, 8)
@@ -1364,13 +1362,13 @@ export function dtoa(value: f64): u32 {
       store<u8>(ret, CharCode.i, 8 + 5)
       store<u8>(ret, CharCode.t, 8 + 6)
       store<u8>(ret, CharCode.y, 8 + 7)
-      return ret | GRAIN_GENERIC_HEAP_TAG_TYPE
+      return ret
     }
   }
   var size = dtoa_core(get_dtoa_buf(), value);
   var result = allocateString(size);
   String.UTF8.encodeUnsafe(get_dtoa_buf(), size, result + 8, false)
-  return result | GRAIN_GENERIC_HEAP_TAG_TYPE;
+  return result;
 }
 
 

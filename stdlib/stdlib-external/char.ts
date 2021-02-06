@@ -1,12 +1,9 @@
 import { throwError } from './ascutils/grainRuntime'
 import { GRAIN_ERR_MALFORMED_UTF8 } from './ascutils/errors'
-import { GRAIN_GENERIC_HEAP_TAG_TYPE } from './ascutils/tags'
-import { allocateChar, allocateString } from './ascutils/dataStructures'
+import { allocateChar, allocateString, tagSimpleNumber } from './ascutils/dataStructures'
 
 // Algorithm from https://encoding.spec.whatwg.org/#utf-8-decoder
 export function code(c: u32): u32 {
-  c = c ^ GRAIN_GENERIC_HEAP_TAG_TYPE
-
   let codePoint: u32 = 0
   let bytesSeen: u32 = 0
   let bytesNeeded: u32 = 0
@@ -19,7 +16,7 @@ export function code(c: u32): u32 {
     const byte = load<u8>(c + offset++, 4)
     if (bytesNeeded === 0) {
       if (byte >= 0x00 && byte <= 0x7F) {
-        return byte << 1
+        return tagSimpleNumber(byte)
       } else if (byte >= 0xC2 && byte <= 0xDF) {
         bytesNeeded = 1
         codePoint = byte & 0x1F
@@ -47,7 +44,7 @@ export function code(c: u32): u32 {
     codePoint = (codePoint << 6) | (byte & 0x3F)
     bytesSeen++
     if (bytesSeen === bytesNeeded) {
-      return codePoint << 1
+      return tagSimpleNumber(codePoint)
     }
   }
 }
@@ -58,7 +55,7 @@ export function fromCode(code: u32): u32 {
   if (code < 0x80) {
     let char = allocateChar()
     store<u8>(char, code, 4)
-    return char ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+    return char
   }
   let count: u32
   let offset: u32
@@ -83,11 +80,10 @@ export function fromCode(code: u32): u32 {
     count--
   }
 
-  return char ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  return char
 }
 
 export function toString(c: u32): u32 {
-  c = c ^ GRAIN_GENERIC_HEAP_TAG_TYPE
   let byte = load<u8>(c, 4)
   let n: u32
   if ((byte & 0x80) === 0x00) {
@@ -101,5 +97,5 @@ export function toString(c: u32): u32 {
   }
   let str = allocateString(n)
   memory.copy(str + 8, c + 4, n)
-  return str ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  return str
 }

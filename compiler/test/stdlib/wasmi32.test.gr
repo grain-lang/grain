@@ -63,8 +63,8 @@ let test = () => {
   assert WasmI32.eq(WasmI32.extendS16(0x8000n), 0xffff8000n)
 
   // Grain conversion tests
-  assert WasmI32.eq(WasmI32.fromGrain(true), -1n)
-  assert (WasmI32.toGrain(-1n): Bool)
+  assert WasmI32.eq(WasmI32.fromGrain(true), 0xfffffffen)
+  assert (WasmI32.toGrain(0xfffffffen): Bool)
   assert WasmI32.toInt32(45n) == 45l
   assert WasmI32.ofInt32(45l) == 45n
 }

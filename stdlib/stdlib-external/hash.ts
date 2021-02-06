@@ -6,8 +6,6 @@
 import {
   GRAIN_NUMBER_TAG_TYPE,
   GRAIN_CONST_TAG_TYPE,
-  GRAIN_TUPLE_TAG_TYPE,
-  GRAIN_LAMBDA_TAG_TYPE,
   GRAIN_GENERIC_HEAP_TAG_TYPE,
 
   GRAIN_NUMBER_TAG_MASK,
@@ -18,6 +16,8 @@ import {
   GRAIN_ADT_HEAP_TAG,
   GRAIN_RECORD_HEAP_TAG,
   GRAIN_ARRAY_HEAP_TAG,
+  GRAIN_TUPLE_HEAP_TAG,
+  GRAIN_LAMBDA_HEAP_TAG,
   GRAIN_BOXED_NUM_HEAP_TAG,
   GRAIN_INT32_BOXED_NUM_TAG,
   GRAIN_INT64_BOXED_NUM_TAG,
@@ -39,6 +39,10 @@ import {
   boxedInt32Number,
   boxedFloat32Number
 } from './numbers'
+
+import {
+  tagSimpleNumber
+} from './ascutils/dataStructures'
 
 const seed: u32 = 0xe444
 
@@ -85,20 +89,10 @@ function finalize(len: u32): void {
 function hashOne(val: u32, depth: u32): void {
   if (depth > MAX_HASH_DEPTH) return
 
-  if (!(val & GRAIN_NUMBER_TAG_MASK)) {
-    hash32(val)
-  } else if ((val & GRAIN_GENERIC_TAG_MASK) === GRAIN_TUPLE_TAG_TYPE) {
-    let tuplePtr = val ^ GRAIN_TUPLE_TAG_TYPE
-    let tupleLength = load<u32>(tuplePtr)
-    let l = tupleLength * 4
-    for (let i: u32 = 0; i < l; i += 4) {
-      hashOne(load<u32>(tuplePtr + i, 4), depth + 1)
-    }
-    finalize(tupleLength)
-  } else if ((val & GRAIN_GENERIC_TAG_MASK) === GRAIN_LAMBDA_TAG_TYPE) {
+  if (val & GRAIN_NUMBER_TAG_MASK) {
     hash32(val)
   } else if ((val & GRAIN_GENERIC_TAG_MASK) === GRAIN_GENERIC_HEAP_TAG_TYPE) {
-    let heapPtr = val ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+    let heapPtr = val
     switch (load<u32>(heapPtr)) {
       case GRAIN_STRING_HEAP_TAG: {
         let length = load<u32>(heapPtr, 4);
@@ -176,6 +170,19 @@ function hashOne(val: u32, depth: u32): void {
         finalize(arity)
         break
       }
+      case GRAIN_TUPLE_HEAP_TAG: {
+        let tupleLength = load<u32>(heapPtr, 4)
+        let l = tupleLength * 4
+        for (let i: u32 = 0; i < l; i += 4) {
+          hashOne(load<u32>(heapPtr + i, 8), depth + 1)
+        }
+        finalize(tupleLength)
+        break
+      }
+      case GRAIN_LAMBDA_HEAP_TAG: {
+        hash32(heapPtr)
+        break
+      }
       case GRAIN_BOXED_NUM_HEAP_TAG: {
         let tag = boxedNumberTag(heapPtr)
         switch (tag) {
@@ -232,5 +239,5 @@ export function hash(a: u32): u32 {
 
   // Tag the number on the way out.
   // Since Grain has proper modulus, negative numbers are okay.
-  return h << 1
+  return tagSimpleNumber(h)
 }

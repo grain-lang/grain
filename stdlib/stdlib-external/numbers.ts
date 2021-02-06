@@ -78,7 +78,7 @@ function encodeBool(b: bool): u32 {
 // @ts-ignore: decorator
 @inline
 function tagSimple(x: i32): u32 {
-  return x << 1
+  return (x << 1) ^ 1
 }
 
 // @ts-ignore: decorator
@@ -236,43 +236,43 @@ function safeI64Multiply(x: i64, y: i64): i64 {
 // @ts-ignore: decorator
 @inline
 export function boxedNumberTag(xptr: u32): u32 {
-  return load<u32>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 1 * 4)
+  return load<u32>(xptr, 1 * 4)
 }
 
 // @ts-ignore: decorator
 @inline
 export function boxedInt32Number(xptr: u32): i32 {
-  return load<i32>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
+  return load<i32>(xptr, 2 * 4)
 }
 
 // @ts-ignore: decorator
 @inline
 export function boxedInt64Number(xptr: u32): i64 {
-  return load<i64>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
+  return load<i64>(xptr, 2 * 4)
 }
 
 // @ts-ignore: decorator
 @inline
 export function boxedFloat32Number(xptr: u32): f32 {
-  return load<f32>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
+  return load<f32>(xptr, 2 * 4)
 }
 
 // @ts-ignore: decorator
 @inline
 export function boxedFloat64Number(xptr: u32): f64 {
-  return load<f64>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
+  return load<f64>(xptr, 2 * 4)
 }
 
 // @ts-ignore: decorator
 @inline
 export function boxedRationalNumerator(xptr: u32): i32 {
-  return load<i32>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 2 * 4)
+  return load<i32>(xptr, 2 * 4)
 }
 
 // @ts-ignore: decorator
 @inline
 export function boxedRationalDenominator(xptr: u32): u32 {
-  return load<u32>(xptr & ~GRAIN_GENERIC_HEAP_TAG_TYPE, 3 * 4)
+  return load<u32>(xptr, 3 * 4)
 }
 
 
@@ -363,13 +363,7 @@ function isSimpleNumber(x: u32): bool {
 @inline
 function isBoxedNumber(x: u32): bool {
   return ((x & GRAIN_GENERIC_TAG_MASK) == GRAIN_GENERIC_HEAP_TAG_TYPE) &&
-    ((load<u32>(x ^ GRAIN_GENERIC_HEAP_TAG_TYPE) == GRAIN_BOXED_NUM_HEAP_TAG))
-}
-
-// @ts-ignore: decorator
-@inline
-function boxedNumberPtr(x: u32): u32 {
-  return x ^ GRAIN_GENERIC_HEAP_TAG_TYPE
+  (load<u32>(x) == GRAIN_BOXED_NUM_HEAP_TAG)
 }
 
 // @ts-ignore: decorator
@@ -388,14 +382,13 @@ export function isNumber(x: u32): bool {
   *       export them!
   */
 
-function numberEqualSimpleHelp(x: u32, yTagged: u32): bool {
+function numberEqualSimpleHelp(x: u32, y: u32): bool {
   // PRECONDITION: x is a "simple" number (value tag is 0) and x !== y and isNumber(y)
-  if (isSimpleNumber(yTagged)) {
+  if (isSimpleNumber(y)) {
     // x !== y, so they must be different
     return false
   }
   let xval = untagSimple(x) // <- actual int value of x
-  let y = boxedNumberPtr(yTagged)
   let yBoxedNumberTag = boxedNumberTag(y)
   switch (yBoxedNumberTag) {
     case GRAIN_INT32_BOXED_NUM_TAG: {
