@@ -1,4 +1,4 @@
-import Memory from "unsafe/memory"
+/* compilation-mode: runtime */
 
 // WebAssembly Memory Instructions
 export primitive load : (WasmI32, WasmI32) -> WasmI32 = "@wasm.load_int32"
@@ -56,28 +56,3 @@ export primitive extendS16 : WasmI32 -> WasmI32 = "@wasm.extend_s16_int32"
 // Grain Conversions
 export primitive fromGrain : a -> WasmI32 = "@wasm.fromGrain"
 export primitive toGrain : WasmI32 -> a = "@wasm.toGrain"
-
-@disableGC
-export let toInt32 = (n) => {
-  let _GRAIN_BOXED_NUM_HEAP_TAG = 6n
-  let _GRAIN_INT32_BOXED_NUM_TAG = 3n
-  
-  let ptr = Memory.malloc(12n)
-  store(ptr, _GRAIN_BOXED_NUM_HEAP_TAG, 0n)
-  store(ptr, _GRAIN_INT32_BOXED_NUM_TAG, 4n)
-  store(ptr, n, 8n)
-
-  toGrain(ptr) : Int32
-}
-
-@disableGC
-export let ofInt32 = (n: Int32) => {
-  let ptr = fromGrain(n)
-  load(ptr, 8n)
-}
-
-// Utilities
-@disableGC
-export let print = (val) => {
-  print(toString(toInt32(val)) ++ "n")
-}

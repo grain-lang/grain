@@ -1,4 +1,5 @@
-import WasmI32 from "unsafe/wasmi32"
+import WasmI32 from "runtime/unsafe/wasmi32"
+import Conv from "runtime/unsafe/conv"
 
 @disableGC
 let test = () => {
@@ -65,8 +66,8 @@ let test = () => {
   // Grain conversion tests
   assert WasmI32.eq(WasmI32.fromGrain(true), 0xfffffffen)
   assert (WasmI32.toGrain(0xfffffffen): Bool)
-  assert WasmI32.toInt32(45n) == 45l
-  assert WasmI32.ofInt32(45l) == 45n
+  assert Conv.toInt32(45n) == 45l
+  assert Conv.fromInt32(45l) == 45n
 }
 
 test()

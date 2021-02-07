@@ -1,0 +1,70 @@
+import Memory from "runtime/unsafe/memory"
+import WasmI32 from "runtime/unsafe/wasmi32"
+import WasmI64 from "runtime/unsafe/wasmi64"
+import WasmF32 from "runtime/unsafe/wasmf32"
+import WasmF64 from "runtime/unsafe/wasmf64"
+import Tags from "runtime/unsafe/tags"
+
+@disableGC
+export let toInt32 = (n) => {
+  let ptr = Memory.malloc(12n)
+  WasmI32.store(ptr, Tags._GRAIN_BOXED_NUM_HEAP_TAG, 0n)
+  WasmI32.store(ptr, Tags._GRAIN_INT32_BOXED_NUM_TAG, 4n)
+  WasmI32.store(ptr, n, 8n)
+
+  WasmI32.toGrain(ptr) : Int32
+}
+
+@disableGC
+export let fromInt32 = (n: Int32) => {
+  let ptr = WasmI32.fromGrain(n)
+  WasmI32.load(ptr, 8n)
+}
+
+@disableGC
+export let toInt64 = (n) => {
+  let ptr = Memory.malloc(16n)
+  WasmI32.store(ptr, Tags._GRAIN_BOXED_NUM_HEAP_TAG, 0n)
+  WasmI32.store(ptr, Tags._GRAIN_INT64_BOXED_NUM_TAG, 4n)
+  WasmI64.store(ptr, n, 8n)
+
+  WasmI32.toGrain(ptr) : Int64
+}
+
+@disableGC
+export let fromInt64 = (n: Int64) => {
+  let ptr = WasmI32.fromGrain(n)
+  WasmI64.load(ptr, 8n)
+}
+
+@disableGC
+export let toFloat32 = (n) => {
+  let ptr = Memory.malloc(12n)
+  WasmI32.store(ptr, Tags._GRAIN_BOXED_NUM_HEAP_TAG, 0n)
+  WasmI32.store(ptr, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG, 4n)
+  WasmF32.store(ptr, n, 8n)
+
+  WasmI32.toGrain(ptr) : Float32
+}
+
+@disableGC
+export let fromFloat32 = (n: Float32) => {
+  let ptr = WasmI32.fromGrain(n)
+  WasmF32.load(ptr, 8n)
+}
+
+@disableGC
+export let toFloat64 = (n) => {
+  let ptr = Memory.malloc(16n)
+  WasmI32.store(ptr, Tags._GRAIN_BOXED_NUM_HEAP_TAG, 0n)
+  WasmI32.store(ptr, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG, 4n)
+  WasmF64.store(ptr, n, 8n)
+
+  WasmI32.toGrain(ptr) : Float64
+}
+
+@disableGC
+export let fromFloat64 = (n: Float64) => {
+  let ptr = WasmI32.fromGrain(n)
+  WasmF64.load(ptr, 8n)
+}

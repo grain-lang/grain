@@ -8,7 +8,7 @@ function roundUp(num, multiple) {
   return multiple * (Math.floor((num - 1) / multiple) + 1);
 }
 
-const MALLOC_MODULE = "stdlib-external/runtime/malloc";
+const MALLOC_MODULE = "GRAIN$MODULE$runtime/malloc";
 
 export class GrainRunner {
   constructor(locator, managedMemory, opts) {
@@ -100,30 +100,15 @@ export class GrainRunner {
         return tyPrintNames[idx];
       },
     };
-    this.loadMemoryManager();
   }
 
-  async loadMemoryManager() {
-    const mod = await this.locator(MALLOC_MODULE);
-    if (mod) {
-      this.memoryManager = mod;
-      this.memoryManager.instantiate(
-        {
-          env: {
-            memory: this.managedMemory._memory,
-          },
-          memoryManager: {
-            _malloc: this.managedMemory._malloc.bind(this.managedMemory),
-            _free: this.managedMemory._free.bind(this.managedMemory),
-            _growHeap: this.managedMemory.growHeap.bind(this.managedMemory),
-            _initialHeapSize: this.managedMemory._memory.buffer.byteLength,
-          },
-        },
-        this
-      );
-    } else {
-      throw new GrainError(-1, "Failed to locate the memory manager.");
+  get memoryManager() {
+    if (!this._memoryManager) {
+      this._memoryManager = this.modules[MALLOC_MODULE];
+      if (!this._memoryManager)
+        throw new GrainError(-1, "Failed to locate the memory manager.");
     }
+    return this._memoryManager;
   }
 
   // [HACK] Temporarily used while we transition to AS-based runtime

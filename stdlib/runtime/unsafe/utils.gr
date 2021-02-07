@@ -1,0 +1,21 @@
+import Conv from "runtime/unsafe/conv"
+
+@disableGC
+export let printI32 = (val) => {
+  print(toString(Conv.toInt32(val)) ++ "n")
+}
+
+@disableGC
+export let printI64 = (val) => {
+  print(toString(Conv.toInt64(val)) ++ "N")
+}
+
+@disableGC
+export let printF32 = (val) => {
+  print(toString(Conv.toFloat32(val)) ++ "w")
+}
+
+@disableGC
+export let printF64 = (val) => {
+  print(toString(Conv.toFloat64(val)) ++ "W")
+}

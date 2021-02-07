@@ -1,4 +1,5 @@
-import WasmF64 from "unsafe/wasmf64"
+import WasmF64 from "runtime/unsafe/wasmf64"
+import Conv from "runtime/unsafe/conv"
 
 @disableGC
 let test = () => {
@@ -52,8 +53,8 @@ let test = () => {
   assert WasmF64.eq(WasmF64.promoteF32(1.5w), 1.5W)
 
   // Grain conversion tests
-  assert WasmF64.toFloat64(1.23W) == 1.23d
-  assert WasmF64.eq(WasmF64.ofFloat64(1.23d), 1.23W)
+  assert Conv.toFloat64(1.23W) == 1.23d
+  assert WasmF64.eq(Conv.fromFloat64(1.23d), 1.23W)
 }
 
 test()

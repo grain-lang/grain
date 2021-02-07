@@ -1,4 +1,5 @@
-import WasmI64 from "unsafe/wasmi64"
+import WasmI64 from "runtime/unsafe/wasmi64"
+import Conv from "runtime/unsafe/conv"
 
 @disableGC
 let test = () => {
@@ -66,8 +67,8 @@ let test = () => {
   assert WasmI64.eq(WasmI64.extendS32(0x80000000N), 0xffffffff80000000N)
 
   // Grain conversion tests
-  assert WasmI64.toInt64(45N) == 45L
-  assert WasmI64.eq(WasmI64.ofInt64(45L), 45N)
+  assert Conv.toInt64(45N) == 45L
+  assert WasmI64.eq(Conv.fromInt64(45L), 45N)
 }
 
 test()

@@ -159,9 +159,16 @@ let add_local_type: (Path.t, type_declaration, t) => t;
 let add_item: (signature_item, t) => t;
 let add_signature: (signature, t) => t;
 
-/* Remember the current compilation unit: modname * filename. */
-let set_unit: ((string, string)) => unit;
-let get_unit: unit => (string, string);
+/* Remember the current compilation unit: modname * filename * compilation mode. */
+type compilation_mode =
+  | Normal
+  | Runtime
+  | MemoryAllocation;
+
+let set_unit: ((string, string, compilation_mode)) => unit;
+let get_unit: unit => (string, string, compilation_mode);
+let is_runtime_mode: unit => bool;
+let is_malloc_mode: unit => bool;
 
 /* Insertion of all fields of a signature, relative to the given path.
    Used to implement open. Returns None if the path refers to a functor,
