@@ -325,6 +325,7 @@ and comp_expression_desc =
     )
   | CAppBuiltin(string, string, list(imm_expression))
   | CLambda(
+      option(string),
       list((Ident.t, allocation_type)),
       (anf_expression, allocation_type),
     )

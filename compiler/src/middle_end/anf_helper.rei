@@ -294,6 +294,7 @@ module Comp: {
       ~loc: loc=?,
       ~attributes: attributes=?,
       ~env: env=?,
+      ~name: string=?,
       list((ident, allocation_type)),
       (anf_expression, allocation_type)
     ) =>

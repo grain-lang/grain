@@ -39,7 +39,7 @@ let rec analyze_comp_expression =
     /* While this loop itself is not in tail position, we still want to analyze the body. */
     ignore @@ analyze_anf_expression(false, body);
     false;
-  | CLambda(args, (body, _)) =>
+  | CLambda(_, args, (body, _)) =>
     /* While this lambda itself is not in tail position, we still want to analyze the body. */
     ignore @@ analyze_anf_expression(true, body);
     false;
@@ -100,7 +100,7 @@ and analyze_anf_expression =
     List.iter(
       ((_, {comp_desc, comp_analyses} as bind)) =>
         switch (comp_desc) {
-        | CLambda(args, (body, _)) =>
+        | CLambda(_, args, (body, _)) =>
           if (analyze_anf_expression(true, body)) {
             push_tail_recursive(comp_analyses);
           }

@@ -38,6 +38,7 @@ type worklist_elt = {
   args: list(Types.allocation_type),
   return_type: Types.allocation_type,
   idx: int, /* Lambda-lifted index */
+  name: option(string),
   attrs: attributes,
   stack_size: Mashtree.stack_size,
   loc: Location.t,
@@ -477,7 +478,8 @@ let compile_imm = (env, i: imm_expression) =>
   | ImmId(id) => MImmBinding(find_id(id, env))
   };
 
-let compile_lambda = (env, args, body, attrs, loc): Mashtree.closure_data => {
+let compile_lambda =
+    (~name=?, env, args, body, attrs, loc): Mashtree.closure_data => {
   let (body, return_type) = body;
   let used_var_set = Anf_utils.anf_free_vars(body);
   let free_var_set =
@@ -525,6 +527,7 @@ let compile_lambda = (env, args, body, attrs, loc): Mashtree.closure_data => {
     body: Anf(body),
     env: lam_env,
     idx,
+    name,
     args,
     return_type,
     attrs,
@@ -582,6 +585,7 @@ let compile_wrapper = (env, func_name, args, ret): Mashtree.closure_data => {
     body: Precompiled(body),
     env: lam_env,
     idx,
+    name: None,
     args: [Types.HeapAllocated, ...args],
     return_type: Types.HeapAllocated,
     stack_size: {
@@ -732,10 +736,11 @@ let rec compile_comp = (env, c) => {
         MRecordSet(idx, compile_imm(env, arg)),
         compile_imm(env, record),
       )
-    | CLambda(args, body) =>
+    | CLambda(name, args, body) =>
       MAllocate(
         MClosure(
           compile_lambda(
+            ~name?,
             env,
             args,
             body,
@@ -893,11 +898,12 @@ let compile_remaining_worklist = () => {
   let compile_one =
       (
         funcs,
-        {idx: index, args, return_type, stack_size, attrs, loc} as cur: worklist_elt,
+        {idx: index, name, args, return_type, stack_size, attrs, loc} as cur: worklist_elt,
       ) => {
     let body = compile_worklist_elt(cur);
     let func = {
       index: Int32.of_int(index),
+      name,
       args: List.map(asmtype_of_alloctype, args),
       return_type: asmtype_of_alloctype(return_type),
       body,
