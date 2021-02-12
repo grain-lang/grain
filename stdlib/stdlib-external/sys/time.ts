@@ -2,8 +2,6 @@ import { free, throwError } from "../ascutils/grainRuntime"
 
 import { GRAIN_ERR_SYSTEM } from "../ascutils/errors"
 
-import { GRAIN_GENERIC_HEAP_TAG_TYPE } from "../ascutils/tags"
-
 import { allocateInt64 } from "../ascutils/dataStructures"
 
 import { errno, clock_time_get, clockid } from "bindings/wasi"
@@ -17,7 +15,7 @@ function getClockTime(clockid: u32, precision: u64): u32 {
     throwError(GRAIN_ERR_SYSTEM, err, 0);
   }
 
-  return int64Ptr | GRAIN_GENERIC_HEAP_TAG_TYPE;
+  return int64Ptr;
 }
 
 export function realTime(): u32 {

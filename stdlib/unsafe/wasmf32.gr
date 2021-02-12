@@ -40,7 +40,6 @@ export primitive demoteF64: WasmF64 -> WasmF32 = "@wasm.demote_float64"
 // Grain Conversions
 @disableGC
 export let toFloat32 = (n) => {
-  let _GRAIN_GENERIC_HEAP_TAG = 0b0011n
   let _GRAIN_BOXED_NUM_HEAP_TAG = 6n
   let _GRAIN_FLOAT32_BOXED_NUM_TAG = 1n
   
@@ -49,12 +48,12 @@ export let toFloat32 = (n) => {
   WasmI32.store(ptr, _GRAIN_FLOAT32_BOXED_NUM_TAG, 4n)
   store(ptr, n, 8n)
 
-  WasmI32.toGrain(WasmI32.xor(ptr, _GRAIN_GENERIC_HEAP_TAG)) : Float32
+  WasmI32.toGrain(ptr) : Float32
 }
 
 @disableGC
 export let ofFloat32 = (n: Float32) => {
-  let ptr = WasmI32.xor(WasmI32.fromGrain(n), 3n)
+  let ptr = WasmI32.fromGrain(n)
   load(ptr, 8n)
 }
 

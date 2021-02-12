@@ -4,9 +4,9 @@ import {
   heapTagToString,
   GRAIN_CONST_TAG_TYPE,
   GRAIN_NUMBER_TAG_TYPE,
-  GRAIN_TUPLE_TAG_TYPE,
   GRAIN_GENERIC_HEAP_TAG_TYPE,
-  GRAIN_LAMBDA_TAG_TYPE,
+  GRAIN_TUPLE_HEAP_TAG,
+  GRAIN_LAMBDA_HEAP_TAG,
   GRAIN_ADT_HEAP_TAG,
   GRAIN_ARRAY_HEAP_TAG,
   GRAIN_RECORD_HEAP_TAG,
@@ -182,7 +182,7 @@ export class ManagedMemory {
   // [TODO] These next three methods can probably be made more efficient
   _getRefCount(userPtr) {
     trace("_getRefCount");
-    let rawPtr = (userPtr & ~7) - this._headerSize;
+    let rawPtr = userPtr - this._headerSize;
     let heap = this.u8view;
     trace(
       `\tas binary: ${this._toBinary(heap[rawPtr], 8, 8)}|${this._toBinary(
@@ -414,7 +414,6 @@ export class ManagedMemory {
   }
 
   incRef(userPtr, src) {
-    let origInput = userPtr;
     trace(`incRef(0x${this._toHex(userPtr)})`);
     let ptrTagType = getTagType(userPtr, true);
     if (
@@ -426,9 +425,8 @@ export class ManagedMemory {
       // [TODO] The type-checker should make this not ever be called ideally, but it
       //        significantly complicates our codegen
       trace(`\tbailing out (ptrTagType: ${ptrTagType})`);
-      return origInput;
+      return userPtr;
     }
-    userPtr = userPtr & ~7;
     if (TRACE_MEMORY) {
       this._knownTagTypes[userPtr] = ptrTagType;
       let heapTag = "";
@@ -453,47 +451,13 @@ export class ManagedMemory {
     trace(`\tnew count: ${refCount}`);
     this._setRefCount(rawPtr, refCount);
     trace(`\tdump: ${this._memdump(userPtr)}`);
-    return origInput;
+    return userPtr;
   }
 
   *references(userPtr) {
     const view = new Int32Array(this._memory.buffer);
     const ptrTagType = getTagType(userPtr, true);
-    const origInput = userPtr;
-    userPtr = userPtr & ~7; // <- strip tag
     switch (ptrTagType) {
-      case GRAIN_TUPLE_TAG_TYPE:
-        let tupleIdx = userPtr / 4;
-        let tupleLength = view[tupleIdx];
-        if (tupleLength & 0x80000000) {
-          // cyclic. return
-          return;
-        } else {
-          view[tupleIdx] |= 0x80000000;
-          trace(
-            `traversing ${tupleLength} tuple elts on tuple 0x${this._toHex(
-              userPtr
-            )}`
-          );
-          for (let i = 0; i < tupleLength; ++i) {
-            yield view[tupleIdx + i + 1];
-          }
-          view[tupleIdx] = tupleLength;
-        }
-        break;
-      case GRAIN_LAMBDA_TAG_TYPE:
-        // 4 * (idx + 3)
-        let lambdaIdx = userPtr / 4;
-        let numFreeVars = view[lambdaIdx + 2];
-        trace(
-          `traversing ${numFreeVars} free vars on lambda 0x${this._toHex(
-            userPtr
-          )}`
-        );
-        for (let i = 0; i < numFreeVars; ++i) {
-          yield view[lambdaIdx + 3 + i];
-        }
-        break;
       case GRAIN_GENERIC_HEAP_TAG_TYPE: {
         let genericHeapValUserPtr = userPtr;
         switch (view[genericHeapValUserPtr / 4]) {
@@ -531,6 +495,40 @@ export class ManagedMemory {
             );
             for (let i = 0; i < arity; ++i) {
               yield view[x + 2 + i];
+            }
+            break;
+          }
+          case GRAIN_TUPLE_HEAP_TAG: {
+            let tupleIdx = userPtr / 4;
+            let tupleLength = view[tupleIdx + 1];
+            if (tupleLength & 0x80000000) {
+              // cyclic. return
+              return;
+            } else {
+              view[tupleIdx + 1] |= 0x80000000;
+              trace(
+                `traversing ${tupleLength} tuple elts on tuple 0x${this._toHex(
+                  userPtr
+                )}`
+              );
+              for (let i = 0; i < tupleLength; ++i) {
+                yield view[tupleIdx + i + 2];
+              }
+              view[tupleIdx + 1] = tupleLength;
+            }
+            break;
+          }
+          case GRAIN_LAMBDA_HEAP_TAG: {
+            // 4 * (idx + 4)
+            let lambdaIdx = userPtr / 4;
+            let numFreeVars = view[lambdaIdx + 3];
+            trace(
+              `traversing ${numFreeVars} free vars on lambda 0x${this._toHex(
+                userPtr
+              )}`
+            );
+            for (let i = 0; i < numFreeVars; ++i) {
+              yield view[lambdaIdx + 4 + i];
             }
             break;
           }
@@ -576,7 +574,6 @@ export class ManagedMemory {
       trace(`\tbailing out (ptrTagType: ${ptrTagType})`);
       return;
     }
-    userPtr = userPtr & ~7;
     let rawPtr = userPtr - this._headerSize;
     let refCount = this._getRefCount(userPtr);
     this._setRefCount(rawPtr, refCount + 1);
@@ -591,7 +588,6 @@ export class ManagedMemory {
       trace(`\tbailing out (ptrTagType: ${ptrTagType})`);
       return;
     }
-    userPtr = userPtr & ~7;
     let refCount = this._getRefCount(userPtr);
     if (refCount === 0) {
       if (ignoreZeros) {
@@ -609,7 +605,6 @@ export class ManagedMemory {
   decRef(userPtr, src, ignoreZeros) {
     // [TODO] This does not properly handle cycles yet!!
     trace(`decRef(0x${this._toHex(userPtr)})`);
-    let origInput = userPtr;
     let ptrTagType = getTagType(userPtr, true);
     if (
       userPtr === 0 ||
@@ -620,9 +615,8 @@ export class ManagedMemory {
       // [TODO] The type-checker should make this not ever be called ideally, but it
       //        significantly complicates our codegen
       trace(`\tbailing out (ptrTagType: ${ptrTagType})`);
-      return origInput;
+      return userPtr;
     }
-    userPtr = userPtr & ~7;
     if (TRACE_MEMORY) {
       let heapTag = "";
       if (ptrTagType === GRAIN_GENERIC_HEAP_TAG_TYPE) {
@@ -639,7 +633,6 @@ export class ManagedMemory {
       );
     }
     this._markDecRefSource(userPtr, src || "UNK");
-    let heap = this.u8view;
     let rawPtr = userPtr - this._headerSize;
     let refCount = this._getRefCount(userPtr);
     // [TODO] This is a blazing-hot code path. Should we eschew error-checking?
@@ -657,7 +650,7 @@ export class ManagedMemory {
     trace(`\tnew count: ${refCount}`);
     if (refCount === 0) {
       trace("Should traverse elements and decref() here!");
-      for (let childUserPtr of this.references(origInput)) {
+      for (let childUserPtr of this.references(userPtr)) {
         this.decRef(childUserPtr, "FREE");
       }
       this._setRefCount(rawPtr, refCount);
@@ -665,7 +658,7 @@ export class ManagedMemory {
     } else {
       this._setRefCount(rawPtr, refCount);
     }
-    return origInput;
+    return userPtr;
   }
 
   malloc(userPtr) {

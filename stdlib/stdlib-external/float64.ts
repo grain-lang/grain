@@ -1,4 +1,3 @@
-import { GRAIN_GENERIC_HEAP_TAG_TYPE } from './ascutils/tags'
 import { newFloat64, loadFloat64 } from "./ascutils/dataStructures";
 import { GRAIN_FALSE, GRAIN_TRUE } from "./ascutils/primitives";
 

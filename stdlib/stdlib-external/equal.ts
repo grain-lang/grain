@@ -1,11 +1,6 @@
 import {
-  GRAIN_NUMBER_TAG_TYPE,
-  GRAIN_CONST_TAG_TYPE,
-  GRAIN_TUPLE_TAG_TYPE,
-  GRAIN_LAMBDA_TAG_TYPE,
   GRAIN_GENERIC_HEAP_TAG_TYPE,
 
-  GRAIN_NUMBER_TAG_MASK,
   GRAIN_GENERIC_TAG_MASK,
 
   GRAIN_STRING_HEAP_TAG,
@@ -13,6 +8,7 @@ import {
   GRAIN_ADT_HEAP_TAG,
   GRAIN_RECORD_HEAP_TAG,
   GRAIN_ARRAY_HEAP_TAG,
+  GRAIN_TUPLE_HEAP_TAG
 } from './ascutils/tags'
 
 import {
@@ -161,6 +157,35 @@ function heapEqualHelp(heapTag: u32, xptr: u32, yptr: u32): bool {
       }
       return false
     }
+    case GRAIN_TUPLE_HEAP_TAG: {
+      let xsize = load<u32>(xptr, 4)
+      let ysize = load<u32>(yptr, 4)
+
+      if (xsize !== ysize) {
+        return false
+      }
+
+      if ((xsize & cycleMarker) === cycleMarker) {
+        return true
+      }
+
+      store<u32>(xptr, xsize ^ cycleMarker, 4)
+      store<u32>(yptr, ysize ^ cycleMarker, 4)
+
+      let result = true
+      let bytes = xsize * 4
+      for (let i: u32 = 0; i < bytes; i += 4) {
+        if (!equalHelp(load<u32>(xptr + i, 8), load<u32>(yptr + i, 8))) {
+          result = false
+          break
+        }
+      }
+
+      store<u32>(xptr, xsize, 4)
+      store<u32>(yptr, ysize, 4)
+
+      return result
+    }
     default: {
       // No other implementation
       return xptr === yptr
@@ -176,42 +201,8 @@ function equalHelp(x: u32, y: u32): bool {
   // We only need to worry about heep allocated things since everything else
   // is handled by a simple x == y check at the end
   switch (x & GRAIN_GENERIC_TAG_MASK) {
-    case GRAIN_TUPLE_TAG_TYPE: {
-      let xptr = x ^ GRAIN_TUPLE_TAG_TYPE
-      let yptr = y ^ GRAIN_TUPLE_TAG_TYPE
-
-      let xsize = load<u32>(xptr)
-      let ysize = load<u32>(yptr)
-
-      if (xsize !== ysize) {
-        return false
-      }
-
-      if ((xsize & cycleMarker) === cycleMarker) {
-        return true
-      }
-
-      store<u32>(xptr, xsize ^ cycleMarker)
-      store<u32>(yptr, ysize ^ cycleMarker)
-
-      let result = true
-      let bytes = xsize * 4
-      for (let i: u32 = 0; i < bytes; i += 4) {
-        if (!equalHelp(load<u32>(xptr + i, 4), load<u32>(yptr + i, 4))) {
-          result = false
-          break
-        }
-      }
-
-      store<u32>(xptr, xsize)
-      store<u32>(yptr, ysize)
-
-      return result
-    }
     case GRAIN_GENERIC_HEAP_TAG_TYPE: {
-      let xptr = x ^ GRAIN_GENERIC_HEAP_TAG_TYPE
-      let yptr = y ^ GRAIN_GENERIC_HEAP_TAG_TYPE
-      return heapEqualHelp(load<u32>(xptr), xptr, yptr)
+      return heapEqualHelp(load<u32>(x), x, y)
     }
   }
 

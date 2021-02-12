@@ -1,4 +1,3 @@
-import { GRAIN_GENERIC_HEAP_TAG_TYPE } from './ascutils/tags'
 import { newInt32, rawInt32Ptr, loadInt32, loadInt32Unsigned } from "./ascutils/dataStructures";
 import { GRAIN_FALSE, GRAIN_TRUE } from "./ascutils/primitives";
 import {

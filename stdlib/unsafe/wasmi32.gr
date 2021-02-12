@@ -59,7 +59,6 @@ export primitive toGrain : WasmI32 -> a = "@wasm.toGrain"
 
 @disableGC
 export let toInt32 = (n) => {
-  let _GRAIN_GENERIC_HEAP_TAG = 0b0011n
   let _GRAIN_BOXED_NUM_HEAP_TAG = 6n
   let _GRAIN_INT32_BOXED_NUM_TAG = 3n
   
@@ -68,12 +67,12 @@ export let toInt32 = (n) => {
   store(ptr, _GRAIN_INT32_BOXED_NUM_TAG, 4n)
   store(ptr, n, 8n)
 
-  toGrain(xor(ptr, _GRAIN_GENERIC_HEAP_TAG)) : Int32
+  toGrain(ptr) : Int32
 }
 
 @disableGC
 export let ofInt32 = (n: Int32) => {
-  let ptr = xor(fromGrain(n), 3n)
+  let ptr = fromGrain(n)
   load(ptr, 8n)
 }
 

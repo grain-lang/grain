@@ -966,12 +966,17 @@ let untag_number = (wasm_mod, value) =>
     Expression.const(wasm_mod, const_int32(1)),
   );
 
-let untag = (wasm_mod, tag, value) =>
+let tag_number = (wasm_mod, value) =>
   Expression.binary(
     wasm_mod,
-    Op.xor_int32,
-    value,
-    Expression.const(wasm_mod, const_int32(tag_val_of_tag_type(tag))),
+    Op.or_int32,
+    Expression.binary(
+      wasm_mod,
+      Op.shl_int32,
+      value,
+      Expression.const(wasm_mod, const_int32(1)),
+    ),
+    Expression.const(wasm_mod, const_int32(1)),
   );
 
 let encode_bool = (wasm_mod, value) =>
@@ -1348,7 +1353,7 @@ let compile_bind =
       );
     };
     load(
-      ~offset=4 * (3 + Int32.to_int(i)),
+      ~offset=4 * (4 + Int32.to_int(i)),
       wasm_mod,
       Expression.local_get(wasm_mod, 0, Type.int32),
     );
@@ -1570,30 +1575,23 @@ let check_overflow = (wasm_mod, env, arg) =>
   );
 
 let compile_tuple_op = (~is_box=false, wasm_mod, env, tup_imm, op) => {
-  let tup = compile_imm(wasm_mod, env, tup_imm);
+  let tup = () => compile_imm(wasm_mod, env, tup_imm);
   switch (op) {
   | MTupleGet(idx) =>
     let idx_int = Int32.to_int(idx);
     /* Note that we're assuming the type-checker has done its
        job and this access is not out of bounds. */
-    load(
-      ~offset=4 * (idx_int + 1),
-      wasm_mod,
-      untag(wasm_mod, TupleTagType, tup),
-    );
+    load(~offset=4 * (idx_int + 2), wasm_mod, tup());
   | MTupleSet(idx, imm) =>
     let idx_int = Int32.to_int(idx);
-    let get_swap = get_swap(wasm_mod, env, 0);
-    let set_swap = set_swap(wasm_mod, env, 0);
     Expression.block(
       wasm_mod,
       gensym_label("MTupleSet"),
       [
-        set_swap(untag(wasm_mod, TupleTagType, tup)),
         store(
-          ~offset=4 * (idx_int + 1),
+          ~offset=4 * (idx_int + 2),
           wasm_mod,
-          get_swap,
+          tup(),
           Expression.tuple_extract(
             wasm_mod,
             Expression.tuple_make(
@@ -1607,7 +1605,7 @@ let compile_tuple_op = (~is_box=false, wasm_mod, env, tup_imm, op) => {
                 (if (is_box) {call_decref_box} else {call_decref_tuple})(
                   wasm_mod,
                   env,
-                  load(~offset=4 * (idx_int + 1), wasm_mod, get_swap),
+                  load(~offset=4 * (idx_int + 2), wasm_mod, tup()),
                 ),
               ],
             ),
@@ -1645,19 +1643,17 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
   let get_swap = n => get_swap(wasm_mod, env, n);
   let set_swap = n => set_swap(wasm_mod, env, n);
   let tee_swap = n => tee_swap(wasm_mod, env, n);
-  let arr = compile_imm(wasm_mod, env, arr_imm);
+  let get_arr = () => compile_imm(wasm_mod, env, arr_imm);
   switch (op) {
   | MArrayGet(idx_imm) =>
     let idx = compile_imm(wasm_mod, env, idx_imm);
-    let get_arr = () => get_swap(0);
     let get_idx = () => get_swap(1);
     /* Check that the index is in bounds */
     Expression.block(
       wasm_mod,
       gensym_label("MArrayGet"),
       [
-        set_swap(0, arr),
-        set_swap(1, idx),
+        set_swap(1, untag_number(wasm_mod, idx)),
         error_if_true(
           wasm_mod,
           env,
@@ -1667,16 +1663,8 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
             Expression.binary(
               wasm_mod,
               Op.mul_int32,
-              load(
-                ~offset=4,
-                wasm_mod,
-                untag(
-                  wasm_mod,
-                  GenericHeapType(Some(ArrayType)),
-                  get_arr(),
-                ),
-              ),
-              Expression.const(wasm_mod, const_int32(-2)),
+              load(~offset=4, wasm_mod, get_arr()),
+              Expression.const(wasm_mod, const_int32(-1)),
             ),
             get_idx(),
           ),
@@ -1689,20 +1677,7 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
           Expression.binary(
             wasm_mod,
             Op.le_s_int32,
-            Expression.binary(
-              wasm_mod,
-              Op.mul_int32,
-              load(
-                ~offset=4,
-                wasm_mod,
-                untag(
-                  wasm_mod,
-                  GenericHeapType(Some(ArrayType)),
-                  get_arr(),
-                ),
-              ),
-              Expression.const(wasm_mod, const_int32(2)),
-            ),
+            load(~offset=4, wasm_mod, get_arr()),
             get_idx(),
           ),
           ArrayIndexOutOfBounds,
@@ -1729,59 +1704,30 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
                 Expression.binary(
                   wasm_mod,
                   Op.add_int32,
-                  Expression.binary(
-                    wasm_mod,
-                    Op.shr_s_int32,
-                    get_idx(),
-                    Expression.const(wasm_mod, const_int32(1)),
-                  ),
-                  load(
-                    ~offset=4,
-                    wasm_mod,
-                    untag(
-                      wasm_mod,
-                      GenericHeapType(Some(ArrayType)),
-                      get_arr(),
-                    ),
-                  ),
-                ),
-                Expression.binary(
-                  wasm_mod,
-                  Op.shr_s_int32,
                   get_idx(),
-                  Expression.const(wasm_mod, const_int32(1)),
+                  load(~offset=4, wasm_mod, get_arr()),
                 ),
+                get_idx(),
               ),
               Expression.const(wasm_mod, const_int32(4)),
             ),
-            untag(wasm_mod, GenericHeapType(Some(ArrayType)), get_arr()),
+            get_arr(),
           ),
         ),
       ],
     );
   | MArrayLength =>
-    Expression.binary(
-      wasm_mod,
-      Op.shl_int32,
-      load(
-        ~offset=4,
-        wasm_mod,
-        untag(wasm_mod, GenericHeapType(Some(ArrayType)), arr),
-      ),
-      Expression.const(wasm_mod, const_int32(1)),
-    )
+    tag_number(wasm_mod, load(~offset=4, wasm_mod, get_arr()))
   | MArraySet(idx_imm, val_imm) =>
     let idx = compile_imm(wasm_mod, env, idx_imm);
     let val_ = compile_imm(wasm_mod, env, val_imm);
-    let get_arr = () => get_swap(0);
     let get_idx = () => get_swap(1);
     /* Check that the index is in bounds */
     Expression.block(
       wasm_mod,
       gensym_label("MArrayGet"),
       [
-        set_swap(0, arr),
-        set_swap(1, idx),
+        set_swap(1, untag_number(wasm_mod, idx)),
         error_if_true(
           wasm_mod,
           env,
@@ -1791,16 +1737,8 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
             Expression.binary(
               wasm_mod,
               Op.mul_int32,
-              load(
-                ~offset=4,
-                wasm_mod,
-                untag(
-                  wasm_mod,
-                  GenericHeapType(Some(ArrayType)),
-                  get_arr(),
-                ),
-              ),
-              Expression.const(wasm_mod, const_int32(-2)),
+              load(~offset=4, wasm_mod, get_arr()),
+              Expression.const(wasm_mod, const_int32(-1)),
             ),
             get_idx(),
           ),
@@ -1813,20 +1751,7 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
           Expression.binary(
             wasm_mod,
             Op.le_s_int32,
-            Expression.binary(
-              wasm_mod,
-              Op.mul_int32,
-              load(
-                ~offset=4,
-                wasm_mod,
-                untag(
-                  wasm_mod,
-                  GenericHeapType(Some(ArrayType)),
-                  get_arr(),
-                ),
-              ),
-              Expression.const(wasm_mod, const_int32(2)),
-            ),
+            load(~offset=4, wasm_mod, get_arr()),
             get_idx(),
           ),
           ArrayIndexOutOfBounds,
@@ -1853,32 +1778,14 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
                 Expression.binary(
                   wasm_mod,
                   Op.add_int32,
-                  Expression.binary(
-                    wasm_mod,
-                    Op.shr_s_int32,
-                    get_idx(),
-                    Expression.const(wasm_mod, const_int32(1)),
-                  ),
-                  load(
-                    ~offset=4,
-                    wasm_mod,
-                    untag(
-                      wasm_mod,
-                      GenericHeapType(Some(ArrayType)),
-                      get_arr(),
-                    ),
-                  ),
-                ),
-                Expression.binary(
-                  wasm_mod,
-                  Op.shr_s_int32,
                   get_idx(),
-                  Expression.const(wasm_mod, const_int32(1)),
+                  load(~offset=4, wasm_mod, get_arr()),
                 ),
+                get_idx(),
               ),
               Expression.const(wasm_mod, const_int32(4)),
             ),
-            untag(wasm_mod, GenericHeapType(Some(ArrayType)), get_arr()),
+            get_arr(),
           ),
           /* [TODO] decref the old item */
           call_incref(wasm_mod, env, tee_swap(1, val_)),
@@ -1894,39 +1801,21 @@ let compile_adt_op = (wasm_mod, env, adt_imm, op) => {
   switch (op) {
   | MAdtGet(idx) =>
     let idx_int = Int32.to_int(idx);
-    load(
-      ~offset=4 * (idx_int + 5),
-      wasm_mod,
-      untag(wasm_mod, GenericHeapType(Some(ADTType)), adt),
-    );
-  | MAdtGetModule =>
-    load(
-      ~offset=4,
-      wasm_mod,
-      untag(wasm_mod, GenericHeapType(Some(ADTType)), adt),
-    )
-  | MAdtGetTag =>
-    load(
-      ~offset=12,
-      wasm_mod,
-      untag(wasm_mod, GenericHeapType(Some(ADTType)), adt),
-    )
+    load(~offset=4 * (idx_int + 5), wasm_mod, adt);
+  | MAdtGetModule => load(~offset=4, wasm_mod, adt)
+  | MAdtGetTag => load(~offset=12, wasm_mod, adt)
   };
 };
 
 let compile_record_op = (wasm_mod, env, rec_imm, op) => {
-  let record = compile_imm(wasm_mod, env, rec_imm);
+  let record = () => compile_imm(wasm_mod, env, rec_imm);
   switch (op) {
   | MRecordGet(idx) =>
     let idx_int = Int32.to_int(idx);
-    load(
-      ~offset=4 * (idx_int + 4),
-      wasm_mod,
-      untag(wasm_mod, GenericHeapType(Some(RecordType)), record),
-    );
+    load(~offset=4 * (idx_int + 4), wasm_mod, record());
   | MRecordSet(idx, arg_imm) =>
     let idx_int = Int32.to_int(idx);
-    let arg = compile_imm(wasm_mod, env, arg_imm);
+    let arg = () => compile_imm(wasm_mod, env, arg_imm);
     Expression.block(
       wasm_mod,
       gensym_label("record_set"),
@@ -1934,33 +1823,24 @@ let compile_record_op = (wasm_mod, env, rec_imm, op) => {
         store(
           ~offset=4 * (idx_int + 4),
           wasm_mod,
-          tee_swap(
-            wasm_mod,
-            env,
-            0,
-            untag(wasm_mod, GenericHeapType(Some(RecordType)), record),
-          ),
+          record(),
           Expression.tuple_extract(
             wasm_mod,
             Expression.tuple_make(
               wasm_mod,
               [
-                call_incref(wasm_mod, env, tee_swap(wasm_mod, env, 1, arg)),
+                call_incref(wasm_mod, env, arg()),
                 call_decref(
                   wasm_mod,
                   env,
-                  load(
-                    ~offset=4 * (idx_int + 4),
-                    wasm_mod,
-                    get_swap(wasm_mod, env, 0),
-                  ),
+                  load(~offset=4 * (idx_int + 4), wasm_mod, record()),
                 ),
               ],
             ),
             0,
           ),
         ),
-        get_swap(wasm_mod, env, 1),
+        arg(),
       ],
     );
   };
@@ -1985,23 +1865,8 @@ let heap_allocate = (wasm_mod, env, num_words: int) => {
 
 let heap_allocate_imm =
     (~additional_words=0, wasm_mod, env, num_words: immediate) => {
-  let num_words = () => compile_imm(wasm_mod, env, num_words);
-  /*
-    Normally, this would be:
-      Untag num_words
-      Find remainder by 4
-      Untag num_words
-      Add (to get rounded value)
-      Multiply by 4 (to get bytes)
-
-    Instead, we do:
-      Find remainder by 8
-      Add (to get rounded value)
-      Multiply by 2 (to get bytes)
-
-    Proof:
-      This is an exercise left to the reader.
-   */
+  let num_words = () =>
+    untag_number(wasm_mod, compile_imm(wasm_mod, env, num_words));
   if (additional_words == 0) {
     call_malloc(
       wasm_mod,
@@ -2010,18 +1875,8 @@ let heap_allocate_imm =
         Expression.binary(
           wasm_mod,
           Op.mul_int32,
-          Expression.binary(
-            wasm_mod,
-            Op.add_int32,
-            num_words(),
-            Expression.binary(
-              wasm_mod,
-              Op.rem_s_int32,
-              num_words(),
-              Expression.const(wasm_mod, const_int32(8)),
-            ),
-          ),
-          Expression.const(wasm_mod, const_int32(2)),
+          num_words(),
+          Expression.const(wasm_mod, const_int32(4)),
         ),
       ],
     );
@@ -2032,45 +1887,18 @@ let heap_allocate_imm =
       [
         Expression.binary(
           wasm_mod,
-          Op.mul_int32,
+          Op.add_int32,
           Expression.binary(
             wasm_mod,
-            Op.add_int32,
-            Expression.binary(
-              wasm_mod,
-              Op.add_int32,
-              num_words(),
-              Expression.binary(
-                wasm_mod,
-                Op.rem_s_int32,
-                Expression.binary(
-                  wasm_mod,
-                  Op.add_int32,
-                  num_words(),
-                  Expression.const(
-                    wasm_mod,
-                    const_int32(additional_words * 2),
-                  ),
-                ),
-                Expression.const(wasm_mod, const_int32(8)),
-              ),
-            ),
-            Expression.const(wasm_mod, const_int32(additional_words * 2)),
+            Op.mul_int32,
+            num_words(),
+            Expression.const(wasm_mod, const_int32(4)),
           ),
-          Expression.const(wasm_mod, const_int32(2)),
+          Expression.const(wasm_mod, const_int32(additional_words * 4)),
         ),
       ],
     );
   };
-};
-
-let heap_check_memory = (wasm_mod, env, num_words: int) => {
-  let words_to_allocate = round_allocation_size(num_words);
-  call_runtime_check_memory(
-    wasm_mod,
-    env,
-    [Expression.const(wasm_mod, const_int32(4 * words_to_allocate))],
-  );
 };
 
 let buf_to_ints = (buf: Buffer.t): list(int64) => {
@@ -2090,15 +1918,14 @@ let buf_to_ints = (buf: Buffer.t): list(int64) => {
 let call_lambda = (~tail=false, wasm_mod, env, func, (argsty, retty), args) => {
   let compiled_func = () => compile_imm(wasm_mod, env, func);
   let compiled_args = List.map(compile_imm(wasm_mod, env), args);
-  let untagged_fn = () => untag(wasm_mod, LambdaTagType, compiled_func());
   let instr =
     if (tail) {Expression.return_call_indirect} else {
       Expression.call_indirect
     };
   instr(
     wasm_mod,
-    load(~offset=4, wasm_mod, untagged_fn()),
-    [untagged_fn(), ...compiled_args],
+    load(~offset=8, wasm_mod, compiled_func()),
+    [compiled_func(), ...compiled_args],
     Type.create @@ Array.map(wasm_type, Array.of_list([I32Type, ...argsty])),
     wasm_type(retty),
   );
@@ -2154,24 +1981,7 @@ let allocate_string = (wasm_mod, env, str) => {
   Expression.block(
     wasm_mod,
     gensym_label("allocate_string"),
-    List.concat([
-      preamble,
-      elts,
-      [
-        tee_swap(
-          Expression.binary(
-            wasm_mod,
-            Op.or_int32,
-            get_swap(),
-            Expression.const(
-              wasm_mod,
-              const_int32 @@
-              tag_val_of_tag_type(GenericHeapType(Some(StringType))),
-            ),
-          ),
-        ),
-      ],
-    ]),
+    List.concat([preamble, elts, [get_swap()]]),
   );
 };
 
@@ -2210,18 +2020,7 @@ let allocate_char = (wasm_mod, env, char) => {
         get_swap(),
         Expression.const(wasm_mod, wrap_int32(value)),
       ),
-      tee_swap(
-        Expression.binary(
-          wasm_mod,
-          Op.or_int32,
-          get_swap(),
-          Expression.const(
-            wasm_mod,
-            const_int32 @@
-            tag_val_of_tag_type(GenericHeapType(Some(CharType))),
-          ),
-        ),
-      ),
+      get_swap(),
     ],
   );
 };
@@ -2246,17 +2045,6 @@ let allocate_rational = (wasm_mod, env, n, d) => {
   call_new_rational(wasm_mod, env, [n, d]);
 };
 
-/* Store an int64 */
-let allocate_int64_imm = (wasm_mod, env, i) => {
-  let get_swap64 = () => get_swap(~ty=I64Type, wasm_mod, env, 0);
-  let set_swap64 = set_swap(~ty=I64Type, wasm_mod, env, 0);
-  Expression.block(
-    wasm_mod,
-    gensym_label("allocate_int64_imm"),
-    [set_swap64(i), call_new_int64(wasm_mod, env, [get_swap64()])],
-  );
-};
-
 let allocate_closure =
     (
       wasm_mod,
@@ -2266,7 +2054,7 @@ let allocate_closure =
       {func_idx, arity, variables} as closure_data,
     ) => {
   let num_free_vars = List.length(variables);
-  let closure_size = num_free_vars + 3;
+  let closure_size = num_free_vars + 4;
   let get_swap = () => get_swap(wasm_mod, env, 0);
   let patches = ref([]);
   if (skip_patching) {
@@ -2288,7 +2076,7 @@ let allocate_closure =
   } else {
     let patch_var = (idx, var) =>
       store(
-        ~offset=4 * (idx + 3),
+        ~offset=4 * (idx + 4),
         wasm_mod,
         get_swap(),
         call_incref_backpatch(
@@ -2310,10 +2098,19 @@ let allocate_closure =
         0,
         heap_allocate(wasm_mod, env, closure_size),
       ),
-      Expression.const(wasm_mod, wrap_int32(arity)),
+      Expression.const(
+        wasm_mod,
+        const_int32(tag_val_of_heap_tag_type(LambdaType)),
+      ),
     ),
     store(
       ~offset=4,
+      wasm_mod,
+      get_swap(),
+      Expression.const(wasm_mod, wrap_int32(arity)),
+    ),
+    store(
+      ~offset=8,
       wasm_mod,
       get_swap(),
       Expression.binary(
@@ -2331,30 +2128,13 @@ let allocate_closure =
       ),
     ),
     store(
-      ~offset=8,
+      ~offset=12,
       wasm_mod,
       get_swap(),
       Expression.const(wasm_mod, const_int32(num_free_vars)),
     ),
   ];
-  let postamble = [
-    tee_swap(
-      ~skip_incref=true,
-      ~skip_decref=true,
-      wasm_mod,
-      env,
-      0,
-      Expression.binary(
-        wasm_mod,
-        Op.or_int32,
-        get_swap(),
-        Expression.const(
-          wasm_mod,
-          const_int32 @@ tag_val_of_tag_type(LambdaTagType),
-        ),
-      ),
-    ),
-  ];
+  let postamble = [get_swap()];
   Expression.block(
     wasm_mod,
     gensym_label("allocate_closure"),
@@ -2422,24 +2202,7 @@ let allocate_adt = (wasm_mod, env, ttag, vtag, elts) => {
     ),
   ];
   let compiled_elts = List.mapi(compile_elt, elts);
-  let postamble = [
-    tee_swap(
-      ~skip_incref=true,
-      ~skip_decref=true,
-      wasm_mod,
-      env,
-      0,
-      Expression.binary(
-        wasm_mod,
-        Op.or_int32,
-        get_swap(),
-        Expression.const(
-          wasm_mod,
-          const_int32 @@ tag_val_of_tag_type(GenericHeapType(Some(ADTType))),
-        ),
-      ),
-    ),
-  ];
+  let postamble = [get_swap()];
   Expression.block(
     wasm_mod,
     gensym_label("allocate_adt"),
@@ -2452,7 +2215,7 @@ let allocate_tuple = (~is_box=false, wasm_mod, env, elts) => {
   let get_swap = () => get_swap(wasm_mod, env, 0);
   let compile_elt = (idx, elt) =>
     store(
-      ~offset=4 * (idx + 1),
+      ~offset=4 * (idx + 2),
       wasm_mod,
       get_swap(),
       (if (is_box) {call_incref_box} else {call_incref_tuple})(
@@ -2471,30 +2234,22 @@ let allocate_tuple = (~is_box=false, wasm_mod, env, elts) => {
         wasm_mod,
         env,
         0,
-        heap_allocate(wasm_mod, env, num_elts + 1),
+        heap_allocate(wasm_mod, env, num_elts + 2),
       ),
+      Expression.const(
+        wasm_mod,
+        const_int32(tag_val_of_heap_tag_type(TupleType)),
+      ),
+    ),
+    store(
+      ~offset=4,
+      wasm_mod,
+      get_swap(),
       Expression.const(wasm_mod, const_int32(num_elts)),
     ),
   ];
   let compiled_elts = List.mapi(compile_elt, elts);
-  let postamble = [
-    tee_swap(
-      ~skip_incref=true,
-      ~skip_decref=true,
-      wasm_mod,
-      env,
-      0,
-      Expression.binary(
-        wasm_mod,
-        Op.or_int32,
-        get_swap(),
-        Expression.const(
-          wasm_mod,
-          const_int32 @@ tag_val_of_tag_type(TupleTagType),
-        ),
-      ),
-    ),
-  ];
+  let postamble = [get_swap()];
   Expression.block(
     wasm_mod,
     gensym_label("allocate_tuple"),
@@ -2541,17 +2296,7 @@ let allocate_array = (wasm_mod, env, elts) => {
     ),
   ];
   let compiled_elts = List.mapi(compile_elt, elts);
-  let postamble = [
-    Expression.binary(
-      wasm_mod,
-      Op.or_int32,
-      get_swap(),
-      Expression.const(
-        wasm_mod,
-        const_int32 @@ tag_val_of_tag_type(GenericHeapType(Some(ArrayType))),
-      ),
-    ),
-  ];
+  let postamble = [get_swap()];
   Expression.block(
     wasm_mod,
     gensym_label("allocate_array"),
@@ -2580,7 +2325,7 @@ let allocate_array_n = (wasm_mod, env, num_elts, elt) => {
           wasm_mod,
           Op.lt_s_int32,
           compiled_num_elts(),
-          Expression.const(wasm_mod, const_int32(0)),
+          Expression.const(wasm_mod, encoded_const_int32(0)),
         ),
         InvalidArgument,
         [num_elts],
@@ -2604,14 +2349,9 @@ let allocate_array_n = (wasm_mod, env, num_elts, elt) => {
         ~offset=4,
         wasm_mod,
         get_arr_addr(),
-        Expression.binary(
-          wasm_mod,
-          Op.shr_s_int32,
-          compiled_num_elts(),
-          Expression.const(wasm_mod, const_int32(1)),
-        ),
+        untag_number(wasm_mod, compiled_num_elts()),
       ),
-      set_loop_counter(Expression.const(wasm_mod, const_int32(0))),
+      set_loop_counter(Expression.const(wasm_mod, encoded_const_int32(0))),
       Expression.block(
         wasm_mod,
         outer_label,
@@ -2644,8 +2384,8 @@ let allocate_array_n = (wasm_mod, env, num_elts, elt) => {
                     Expression.binary(
                       wasm_mod,
                       Op.mul_int32,
-                      get_loop_counter(),
-                      Expression.const(wasm_mod, const_int32(2)),
+                      untag_number(wasm_mod, get_loop_counter()),
+                      Expression.const(wasm_mod, const_int32(4)),
                     ),
                   ),
                   call_incref_array(wasm_mod, env, elt),
@@ -2669,16 +2409,7 @@ let allocate_array_n = (wasm_mod, env, num_elts, elt) => {
           ),
         ],
       ),
-      Expression.binary(
-        wasm_mod,
-        Op.or_int32,
-        get_arr_addr(),
-        Expression.const(
-          wasm_mod,
-          const_int32 @@
-          tag_val_of_tag_type(GenericHeapType(Some(ArrayType))),
-        ),
-      ),
+      get_arr_addr(),
     ],
   );
 };
@@ -2696,7 +2427,7 @@ let allocate_array_init = (wasm_mod, env, num_elts, init_f) => {
   let inner_label = gensym_label("inner");
   Expression.block(
     wasm_mod,
-    gensym_label("allocate_array_n"),
+    gensym_label("allocate_array_init"),
     [
       error_if_true(
         wasm_mod,
@@ -2705,7 +2436,7 @@ let allocate_array_init = (wasm_mod, env, num_elts, init_f) => {
           wasm_mod,
           Op.lt_s_int32,
           compiled_num_elts(),
-          Expression.const(wasm_mod, const_int32(0)),
+          Expression.const(wasm_mod, encoded_const_int32(0)),
         ),
         InvalidArgument,
         [num_elts],
@@ -2729,14 +2460,9 @@ let allocate_array_init = (wasm_mod, env, num_elts, init_f) => {
         ~offset=4,
         wasm_mod,
         get_arr_addr(),
-        Expression.binary(
-          wasm_mod,
-          Op.shr_s_int32,
-          compiled_num_elts(),
-          Expression.const(wasm_mod, const_int32(1)),
-        ),
+        untag_number(wasm_mod, compiled_num_elts()),
       ),
-      set_loop_counter(Expression.const(wasm_mod, const_int32(0))),
+      set_loop_counter(Expression.const(wasm_mod, encoded_const_int32(0))),
       Expression.block(
         wasm_mod,
         outer_label,
@@ -2769,8 +2495,8 @@ let allocate_array_init = (wasm_mod, env, num_elts, init_f) => {
                     Expression.binary(
                       wasm_mod,
                       Op.mul_int32,
-                      get_loop_counter(),
-                      Expression.const(wasm_mod, const_int32(2)),
+                      untag_number(wasm_mod, get_loop_counter()),
+                      Expression.const(wasm_mod, const_int32(4)),
                     ),
                   ),
                   call_incref_array(
@@ -2778,15 +2504,8 @@ let allocate_array_init = (wasm_mod, env, num_elts, init_f) => {
                     env,
                     Expression.call_indirect(
                       wasm_mod,
-                      load(
-                        ~offset=4,
-                        wasm_mod,
-                        untag(wasm_mod, LambdaTagType, compiled_func()),
-                      ),
-                      [
-                        untag(wasm_mod, LambdaTagType, compiled_func()),
-                        get_loop_counter(),
-                      ],
+                      load(~offset=8, wasm_mod, compiled_func()),
+                      [compiled_func(), get_loop_counter()],
                       Type.create([|Type.int32, Type.int32|]),
                       Type.int32,
                     ),
@@ -2811,16 +2530,7 @@ let allocate_array_init = (wasm_mod, env, num_elts, init_f) => {
           ),
         ],
       ),
-      Expression.binary(
-        wasm_mod,
-        Op.or_int32,
-        get_arr_addr(),
-        Expression.const(
-          wasm_mod,
-          const_int32 @@
-          tag_val_of_tag_type(GenericHeapType(Some(ArrayType))),
-        ),
-      ),
+      get_arr_addr(),
     ],
   );
 };
@@ -2881,18 +2591,7 @@ let allocate_record = (wasm_mod, env, ttag, elts) => {
     ),
   ];
   let compiled_elts = List.mapi(compile_elt, elts);
-  let postamble = [
-    Expression.binary(
-      wasm_mod,
-      Op.or_int32,
-      get_swap(),
-      Expression.const(
-        wasm_mod,
-        const_int32 @@
-        tag_val_of_tag_type(GenericHeapType(Some(RecordType))),
-      ),
-    ),
-  ];
+  let postamble = [get_swap()];
   Expression.block(
     wasm_mod,
     gensym_label("allocate_record"),
@@ -2905,25 +2604,33 @@ let compile_prim1 = (wasm_mod, env, p1, arg): Expression.t => {
   /* TODO: Overflow checks? */
   switch (p1) {
   | Incr =>
+    /*
+       2a + 1 -> number representation
+       2(a + 1) + 1 -> adding 1 to a
+       2a + 2 + 1
+       (2a + 1) + 2 -> can just add 2
+     */
     Expression.binary(
       wasm_mod,
       Op.add_int32,
       compiled_arg,
-      Expression.const(wasm_mod, encoded_const_int32(1)),
+      Expression.const(wasm_mod, const_int32(2)),
     )
   | Decr =>
+    /* Likewise, just subtract 2 */
     Expression.binary(
       wasm_mod,
       Op.sub_int32,
       compiled_arg,
-      Expression.const(wasm_mod, encoded_const_int32(1)),
+      Expression.const(wasm_mod, const_int32(2)),
     )
   | Not =>
+    /* Flip the first bit */
     Expression.binary(
       wasm_mod,
       Op.xor_int32,
       compiled_arg,
-      Expression.const(wasm_mod, const_int32(2147483648)),
+      Expression.const(wasm_mod, const_int32(0x80000000)),
     )
   | Ignore =>
     Expression.block(
@@ -3252,21 +2959,10 @@ let do_backpatches = (wasm_mod, env, backpatches) => {
   let do_backpatch = ((lam, {variables})) => {
     let get_swap = () => get_swap(wasm_mod, env, 0);
     let set_swap = set_swap(wasm_mod, env, 0);
-    let preamble =
-      set_swap(
-        Expression.binary(
-          wasm_mod,
-          Op.xor_int32,
-          lam,
-          Expression.const(
-            wasm_mod,
-            const_int32 @@ tag_val_of_tag_type(LambdaTagType),
-          ),
-        ),
-      );
+    let preamble = set_swap(lam);
     let backpatch_var = (idx, var) =>
       store(
-        ~offset=4 * (idx + 3),
+        ~offset=4 * (idx + 4),
         wasm_mod,
         get_swap(),
         call_incref_backpatch(
