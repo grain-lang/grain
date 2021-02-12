@@ -213,13 +213,29 @@ module Comp = {
     );
   let if_ = (~loc=?, ~attributes=?, ~allocation_type, ~env=?, cond, tru, fals) =>
     mk(~loc?, ~attributes?, ~allocation_type, ~env?, CIf(cond, tru, fals));
-  let while_ = (~loc=?, ~attributes=?, ~env=?, cond, body) =>
+  let for_ = (~loc=?, ~attributes=?, ~env=?, cond, inc, body) =>
     mk(
       ~loc?,
       ~attributes?,
       ~allocation_type=StackAllocated(WasmI32),
       ~env?,
-      CWhile(cond, body),
+      CFor(cond, inc, body),
+    );
+  let continue = (~loc=?, ~attributes=?, ~env=?, ()) =>
+    mk(
+      ~loc?,
+      ~attributes?,
+      ~allocation_type=StackAllocated(WasmI32),
+      ~env?,
+      CContinue,
+    );
+  let break = (~loc=?, ~attributes=?, ~env=?, ()) =>
+    mk(
+      ~loc?,
+      ~attributes?,
+      ~allocation_type=StackAllocated(WasmI32),
+      ~env?,
+      CBreak,
     );
   let switch_ =
       (~loc=?, ~attributes=?, ~allocation_type, ~env=?, arg, branches) =>

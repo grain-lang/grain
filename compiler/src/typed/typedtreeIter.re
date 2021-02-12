@@ -242,6 +242,13 @@ module MakeIterator =
     | TExpWhile(c, b) =>
       iter_expression(c);
       iter_expression(b);
+    | TExpFor(i, c, inc, b) =>
+      Option.iter(iter_expression, i);
+      Option.iter(iter_expression, c);
+      Option.iter(iter_expression, inc);
+      iter_expression(b);
+    | TExpContinue
+    | TExpBreak => ()
     };
     Iter.leave_expression(exp);
   };

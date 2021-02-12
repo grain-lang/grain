@@ -17,7 +17,8 @@ type wferr =
   | RHSLetRecMayOnlyBeFunction(Location.t)
   | NoLetRecMut(Location.t)
   | RationalZeroDenominator(Location.t)
-  | UnknownAttribute(string, Location.t);
+  | UnknownAttribute(string, Location.t)
+  | LoopControlOutsideLoop(string, Location.t);
 
 exception Error(wferr);
 
@@ -65,6 +66,8 @@ let prepare_error =
         errorf(~loc, "Rational numbers may not have a denominator of zero.")
       | UnknownAttribute(attr, loc) =>
         errorf(~loc, "Unknown attribute `%s`.", attr)
+      | LoopControlOutsideLoop(control, loc) =>
+        errorf(~loc, "`%s` statement used outside of a loop.", control)
     )
   );
 
@@ -391,6 +394,31 @@ let no_unknown_attributes = (errs, super) => {
   {errs, iterator};
 };
 
+let no_loop_control_statement_outside_of_loop = (errs, super) => {
+  let in_loop = ref(false);
+  let iter_expr = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
+    let after = in_loop^;
+    switch (desc) {
+    | PExpWhile(_)
+    | PExpFor(_) => in_loop := true
+    | PExpLambda(_) => in_loop := false
+    | PExpContinue =>
+      if (! in_loop^) {
+        errs := [LoopControlOutsideLoop("continue", loc), ...errs^];
+      }
+    | PExpBreak =>
+      if (! in_loop^) {
+        errs := [LoopControlOutsideLoop("break", loc), ...errs^];
+      }
+    | _ => ()
+    };
+    super.expr(self, e);
+    in_loop := after;
+  };
+  let iterator = {...super, expr: iter_expr};
+  {errs, iterator};
+};
+
 let compose_well_formedness = ({errs, iterator}, cur) =>
   cur(errs, iterator);
 
@@ -407,6 +435,7 @@ let well_formedness_checks = [
   no_letrec_mut,
   no_zero_denominator_rational,
   no_unknown_attributes,
+  no_loop_control_statement_outside_of_loop,
 ];
 
 let well_formedness_checker = () =>

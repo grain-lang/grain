@@ -38,7 +38,7 @@ include Parser_header
 %token PLUS PLUSPLUS DASH STAR SLASH PERCENT
 %token TRUE FALSE VOID
 
-%token LET MUT REC IF WHEN ELSE MATCH WHILE
+%token LET MUT REC IF WHEN ELSE MATCH WHILE FOR CONTINUE BREAK
 %token AMPAMP PIPEPIPE NOT AT
 %token AMP PIPE
 
@@ -57,8 +57,8 @@ eols :
   | eol+ { () }
 
 eos :
-  | eols { None }
-  | SEMI eols? { None }
+  | eols { () }
+  | SEMI eols? { () }
 
 lbrack :
   | LBRACK eols? { () }
@@ -417,6 +417,9 @@ if_expr :
 while_expr :
   | WHILE lparen expr rparen block { Exp.while_ ~loc:(symbol_rloc dyp) $3 $5 }
 
+for_expr :
+  | FOR lparen block_body_expr? eols? SEMI eols? expr? eols? SEMI eols? expr? rparen block { Exp.for_ ~loc:(symbol_rloc dyp) $3 $7 $11 $13 }
+
 match_branch :
   | pattern [WHEN expr {$2}]? thickarrow expr { Mb.mk ~loc:(symbol_rloc dyp) $1 $4 $2 }
 
@@ -441,6 +444,8 @@ array_expr :
 stmt_expr :
   | ASSERT expr { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp ["assert"]) [$2] }
   | FAIL expr { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp ["fail"]) [$2] }
+  | CONTINUE { Exp.continue ~loc:(symbol_rloc dyp) () }
+  | BREAK { Exp.break ~loc:(symbol_rloc dyp) () }
 
 assign_binop_op :
   | pluseq_op
@@ -465,6 +470,7 @@ non_assign_expr :
   | block_expr  { $1 }
   | if_expr     { $1 }
   | while_expr  { $1 }
+  | for_expr    { $1 }
   | match_expr  { $1 }
   | list_expr   { $1 }
   | array_get   { $1 }

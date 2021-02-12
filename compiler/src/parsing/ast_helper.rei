@@ -178,6 +178,18 @@ module Exp: {
   let while_:
     (~loc: loc=?, ~attributes: attributes=?, expression, expression) =>
     expression;
+  let for_:
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      option(expression),
+      option(expression),
+      option(expression),
+      expression
+    ) =>
+    expression;
+  let continue: (~loc: loc=?, ~attributes: attributes=?, unit) => expression;
+  let break: (~loc: loc=?, ~attributes: attributes=?, unit) => expression;
   let constraint_:
     (~loc: loc=?, ~attributes: attributes=?, expression, parsed_type) =>
     expression;

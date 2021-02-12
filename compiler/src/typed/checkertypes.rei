@@ -13,11 +13,8 @@ open Types;
 type type_forcing_context =
   | If_conditional
   | If_no_else_branch
-  | While_loop_conditional
-  | While_loop_body
-  | For_loop_start_index
-  | For_loop_stop_index
-  | For_loop_body
+  | Loop_conditional
+  | Loop_body
   | Assert_condition
   | Sequence_left_hand_side
   | Assign_not_box

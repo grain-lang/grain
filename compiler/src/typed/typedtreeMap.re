@@ -243,6 +243,15 @@ module MakeMap =
       | TExpIf(c, t, f) =>
         TExpIf(map_expression(c), map_expression(t), map_expression(f))
       | TExpWhile(c, b) => TExpWhile(map_expression(c), map_expression(b))
+      | TExpFor(i, c, inc, b) =>
+        TExpFor(
+          Option.map(map_expression, i),
+          Option.map(map_expression, c),
+          Option.map(map_expression, inc),
+          map_expression(b),
+        )
+      | TExpContinue => TExpContinue
+      | TExpBreak => TExpBreak
       };
     Map.leave_expression({...exp, exp_extra, exp_desc});
   };

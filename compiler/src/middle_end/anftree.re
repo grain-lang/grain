@@ -326,7 +326,9 @@ and comp_expression_desc =
   | CGetRecordItem(int32, imm_expression)
   | CSetRecordItem(int32, imm_expression, imm_expression)
   | CIf(imm_expression, anf_expression, anf_expression)
-  | CWhile(anf_expression, anf_expression)
+  | CFor(option(anf_expression), option(anf_expression), anf_expression)
+  | CContinue
+  | CBreak
   | CSwitch(imm_expression, list((int, anf_expression)))
   | CApp(
       (imm_expression, (list(allocation_type), allocation_type)),

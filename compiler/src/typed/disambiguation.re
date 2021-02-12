@@ -409,11 +409,8 @@ let report_type_expected_explanation = (expl, ppf) =>
   | If_conditional => fprintf(ppf, "the condition of an if-statement")
   | If_no_else_branch =>
     fprintf(ppf, "the result of a conditional with no else branch")
-  | While_loop_conditional => fprintf(ppf, "the condition of a while-loop")
-  | While_loop_body => fprintf(ppf, "the body of a while-loop")
-  | For_loop_start_index => fprintf(ppf, "a for-loop start index")
-  | For_loop_stop_index => fprintf(ppf, "a for-loop stop index")
-  | For_loop_body => fprintf(ppf, "the body of a for-loop")
+  | Loop_conditional => fprintf(ppf, "the condition of a loop")
+  | Loop_body => fprintf(ppf, "the body of a loop")
   | Assert_condition => fprintf(ppf, "the condition of an assertion")
   | Sequence_left_hand_side =>
     fprintf(ppf, "the left-hand side of a sequence")

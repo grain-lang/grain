@@ -80,6 +80,13 @@ module E = {
     | PExpWhile(c, b) =>
       sub.expr(sub, c);
       sub.expr(sub, b);
+    | PExpFor(i, c, inc, b) =>
+      Option.iter(sub.expr(sub), i);
+      Option.iter(sub.expr(sub), c);
+      Option.iter(sub.expr(sub), inc);
+      sub.expr(sub, b);
+    | PExpContinue
+    | PExpBreak => ()
     | PExpConstraint(e, t) =>
       sub.expr(sub, e);
       sub.typ(sub, t);

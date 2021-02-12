@@ -118,11 +118,15 @@ let rec analyze_comp_expression =
       analyze_anf_expression(t);
       analyze_anf_expression(f);
       anf_expression_purity_internal(t) && anf_expression_purity_internal(f);
-    | CWhile(c, body) =>
-      analyze_anf_expression(c);
+    | CFor(c, inc, body) =>
+      Option.iter(analyze_anf_expression, c);
+      Option.iter(analyze_anf_expression, inc);
       analyze_anf_expression(body);
-      anf_expression_purity_internal(c)
+      Option.fold(~none=true, ~some=anf_expression_purity_internal, c)
+      && Option.fold(~none=true, ~some=anf_expression_purity_internal, inc)
       && anf_expression_purity_internal(body);
+    | CContinue
+    | CBreak => false
     | CSwitch(_, branches) =>
       let branches_purities =
         List.map(

@@ -35,9 +35,9 @@ let rec analyze_comp_expression =
       false,
       branches,
     )
-  | CWhile(_, body) =>
+  | CFor(_, _, body) =>
     /* While this loop itself is not in tail position, we still want to analyze the body. */
-    ignore @@ analyze_anf_expression(is_tail, body);
+    ignore @@ analyze_anf_expression(false, body);
     false;
   | CLambda(args, (body, _)) =>
     /* While this lambda itself is not in tail position, we still want to analyze the body. */
@@ -68,6 +68,8 @@ let rec analyze_comp_expression =
   | CGetAdtTag(_)
   | CGetRecordItem(_)
   | CSetRecordItem(_)
+  | CContinue
+  | CBreak
   | CString(_)
   | CChar(_)
   | CNumber(_)

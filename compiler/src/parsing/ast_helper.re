@@ -226,6 +226,12 @@ module Exp = {
     mk(~loc?, ~attributes?, PExpIf(a, b, c));
   let while_ = (~loc=?, ~attributes=?, a, b) =>
     mk(~loc?, ~attributes?, PExpWhile(a, b));
+  let for_ = (~loc=?, ~attributes=?, a, b, c, d) =>
+    mk(~loc?, ~attributes?, PExpFor(a, b, c, d));
+  let continue = (~loc=?, ~attributes=?, ()) =>
+    mk(~loc?, ~attributes?, PExpContinue);
+  let break = (~loc=?, ~attributes=?, ()) =>
+    mk(~loc?, ~attributes?, PExpBreak);
   let constraint_ = (~loc=?, ~attributes=?, a, b) =>
     mk(~loc?, ~attributes?, PExpConstraint(a, b));
   let box_assign = (~loc=?, ~attributes=?, a, b) =>

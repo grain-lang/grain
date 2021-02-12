@@ -404,7 +404,9 @@ and instr_desc =
   | MTagOp(tag_op, tag_type, immediate)
   | MArityOp(arity_operand, arity_op, immediate)
   | MIf(immediate, block, block)
-  | MWhile(block, block)
+  | MFor(option(block), option(block), block)
+  | MContinue
+  | MBreak
   | MSwitch(immediate, list((int32, block)), block) /* value, branches, default */
   | MPrim1(prim1, immediate)
   | MPrim2(prim2, immediate, immediate)

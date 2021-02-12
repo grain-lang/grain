@@ -373,15 +373,48 @@ let rec transl_imm =
       [
         BLet(
           tmp,
-          Comp.while_(
+          Comp.for_(
             ~loc,
             ~env,
-            transl_anf_expression(cond),
+            Some(transl_anf_expression(cond)),
+            None,
             transl_anf_expression(body),
           ),
         ),
       ],
     );
+  | TExpFor(init, cond, inc, body) =>
+    let tmp = gensym("for");
+    let init_setup =
+      Option.fold(
+        ~none=[],
+        ~some=init => snd(transl_comp_expression(init)),
+        init,
+      );
+    (
+      Imm.id(~loc, ~env, tmp),
+      init_setup
+      @ [
+        BLet(
+          tmp,
+          Comp.for_(
+            ~loc,
+            ~env,
+            Option.map(transl_anf_expression, cond),
+            Option.map(transl_anf_expression, inc),
+            transl_anf_expression(body),
+          ),
+        ),
+      ],
+    );
+  | TExpContinue => (
+      Imm.const(Const_void),
+      [BSeq(Comp.continue(~loc, ~env, ()))],
+    )
+  | TExpBreak => (
+      Imm.const(Const_void),
+      [BSeq(Comp.break(~loc, ~env, ()))],
+    )
   | TExpApp(func, args) =>
     let tmp = gensym("app");
     let (new_func, func_setup) = transl_imm(func);

@@ -3284,6 +3284,8 @@ let do_backpatches = (wasm_mod, env, backpatches) => {
   );
 };
 
+let loop_stack = ref([]: list((string, string)));
+
 let rec compile_store = (wasm_mod, env, binds) => {
   let process_binds = env => {
     let process_bind = ((b, instr), acc) => {
@@ -3458,11 +3460,37 @@ and compile_instr = (wasm_mod, env, instr) =>
       compiled_els,
     );
 
-  | MWhile(cond, body) =>
-    let compiled_cond = compile_block(wasm_mod, env, cond);
+  | MFor(cond, inc, body) =>
+    let block_label = gensym_label("MFor");
+    let loop_label = gensym_label("MFor_loop");
+    let continue_label = gensym_label("MFor_continue");
+    let compiled_cond =
+      switch (cond) {
+      | Some(cond) => [
+          Expression.drop(wasm_mod) @@
+          Expression.break(
+            wasm_mod,
+            block_label,
+            Expression.unary(
+              wasm_mod,
+              Op.eq_z_int32,
+              decode_bool(wasm_mod, compile_block(wasm_mod, env, cond)),
+            ),
+            Expression.const(wasm_mod, const_void()),
+          ),
+        ]
+      | None => []
+      };
+    let compiled_inc =
+      switch (inc) {
+      | Some(inc) => [
+          Expression.drop(wasm_mod, compile_block(wasm_mod, env, inc)),
+        ]
+      | None => []
+      };
+    loop_stack := [(continue_label, block_label), ...loop_stack^];
     let compiled_body = compile_block(wasm_mod, env, body);
-    let block_label = gensym_label("MWhile");
-    let loop_label = gensym_label("MWhile_loop");
+    loop_stack := List.tl(loop_stack^);
     Expression.block(
       wasm_mod,
       block_label,
@@ -3473,33 +3501,47 @@ and compile_instr = (wasm_mod, env, instr) =>
           loop_label,
           Expression.block(
             wasm_mod,
-            gensym_label("MWhile_loop_body"),
-            [
-              Expression.drop(wasm_mod) @@
-              Expression.break(
-                wasm_mod,
-                block_label,
-                Expression.unary(
+            gensym_label("MFor_loop_body"),
+            List.concat([
+              compiled_cond,
+              [
+                Expression.block(
                   wasm_mod,
-                  Op.eq_z_int32,
-                  decode_bool(wasm_mod, compiled_cond),
+                  continue_label,
+                  [Expression.drop(wasm_mod, compiled_body)],
                 ),
-                Expression.const(wasm_mod, const_void()),
-              ),
-              Expression.drop(wasm_mod, compiled_body),
-              Expression.break(
-                wasm_mod,
-                loop_label,
-                Expression.null(),
-                Expression.null(),
-              ),
-            ],
+              ],
+              compiled_inc,
+              [
+                Expression.break(
+                  wasm_mod,
+                  loop_label,
+                  Expression.null(),
+                  Expression.null(),
+                ),
+              ],
+            ]),
           ),
         ),
         Expression.const(wasm_mod, const_void()),
       ],
     );
-
+  | MContinue =>
+    let (continue_label, _) = List.hd(loop_stack^);
+    Expression.break(
+      wasm_mod,
+      continue_label,
+      Expression.null(),
+      Expression.null(),
+    );
+  | MBreak =>
+    let (_, block_label) = List.hd(loop_stack^);
+    Expression.break(
+      wasm_mod,
+      block_label,
+      Expression.null(),
+      Expression.const(wasm_mod, const_void()),
+    );
   | MError(err, args) => call_error_handler(wasm_mod, env, err, args)
   | MCallKnown({func, func_type: (_, retty), args}) =>
     let compiled_args = List.map(compile_imm(wasm_mod, env), args);

@@ -437,6 +437,14 @@ and expression_desc =
   | PExpPrimN(primn, list(expression))
   | PExpIf(expression, expression, expression)
   | PExpWhile(expression, expression)
+  | PExpFor(
+      option(expression),
+      option(expression),
+      option(expression),
+      expression,
+    )
+  | PExpContinue
+  | PExpBreak
   | PExpConstraint(expression, parsed_type)
   | PExpLambda(list(pattern), expression)
   | PExpApp(expression, list(expression))

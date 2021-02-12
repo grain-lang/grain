@@ -202,8 +202,14 @@ module RegisterAllocation = {
           apply_allocation_to_block(t),
           apply_allocation_to_block(f),
         )
-      | MWhile(b1, b2) =>
-        MWhile(apply_allocation_to_block(b1), apply_allocation_to_block(b2))
+      | MFor(b1, b2, b3) =>
+        MFor(
+          Option.map(apply_allocation_to_block, b1),
+          Option.map(apply_allocation_to_block, b2),
+          apply_allocation_to_block(b3),
+        )
+      | MContinue => MContinue
+      | MBreak => MBreak
       | MSwitch(v, bs, d) =>
         MSwitch(
           apply_allocation_to_imm(v),
@@ -278,7 +284,12 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
       List.concat(List.map(imm_live_local, is)) @ imm_live_local(imm)
     | MIf(c, t, f) =>
       imm_live_local(c) @ block_live_locals(t) @ block_live_locals(f)
-    | MWhile(b1, b2) => block_live_locals(b1) @ block_live_locals(b2)
+    | MFor(b1, b2, b3) =>
+      Option.fold(~none=[], ~some=block_live_locals, b1)
+      @ Option.fold(~none=[], ~some=block_live_locals, b2)
+      @ block_live_locals(b3)
+    | MContinue
+    | MBreak => []
     | MSwitch(v, bs, d) =>
       imm_live_local(v)
       @ List.concat(List.map(((_, b)) => block_live_locals(b), bs))
@@ -628,8 +639,14 @@ let rec compile_comp = (env, c) => {
         compile_anf_expr(env, thn),
         compile_anf_expr(env, els),
       )
-    | CWhile(cond, body) =>
-      MWhile(compile_anf_expr(env, cond), compile_anf_expr(env, body))
+    | CFor(cond, inc, body) =>
+      MFor(
+        Option.map(compile_anf_expr(env), cond),
+        Option.map(compile_anf_expr(env), inc),
+        compile_anf_expr(env, body),
+      )
+    | CContinue => MContinue
+    | CBreak => MBreak
     | CPrim1(Box, arg) => MAllocate(MBox(compile_imm(env, arg)))
     | CPrim1(Unbox, arg) => MBoxOp(MBoxUnbox, compile_imm(env, arg))
     | CPrim1(p1, arg) => MPrim1(p1, compile_imm(env, arg))

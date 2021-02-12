@@ -95,6 +95,17 @@ module E = {
       )
     | PExpWhile(c, e) =>
       while_(~loc, ~attributes, sub.expr(sub, c), sub.expr(sub, e))
+    | PExpFor(i, c, inc, e) =>
+      for_(
+        ~loc,
+        ~attributes,
+        Option.map(sub.expr(sub), i),
+        Option.map(sub.expr(sub), c),
+        Option.map(sub.expr(sub), inc),
+        sub.expr(sub, e),
+      )
+    | PExpContinue => continue(~loc, ~attributes, ())
+    | PExpBreak => break(~loc, ~attributes, ())
     | PExpLambda(pl, e) =>
       lambda(
         ~loc,

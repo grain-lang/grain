@@ -49,11 +49,19 @@ and comp_free_vars_help = (env, c: comp_expression) =>
       anf_free_vars_help(env, thn),
       anf_free_vars_help(env, els),
     )
-  | CWhile(cond, body) =>
-    Ident.Set.union(
-      anf_free_vars_help(env, cond),
-      anf_free_vars_help(env, body),
-    )
+  | CFor(cond, inc, body) =>
+    let cond =
+      Option.fold(
+        ~none=Ident.Set.empty,
+        ~some=anf_free_vars_help(env),
+        cond,
+      );
+    let inc =
+      Option.fold(~none=Ident.Set.empty, ~some=anf_free_vars_help(env), inc);
+    let body = anf_free_vars_help(env, body);
+    Ident.Set.union(cond, Ident.Set.union(inc, body));
+  | CContinue
+  | CBreak => Ident.Set.empty
   | CSwitch(arg, branches) =>
     List.fold_left(
       (acc, (_, b)) => Ident.Set.union(anf_free_vars_help(env, b), acc),
@@ -163,11 +171,13 @@ let tuple_add = ((a1, a2, a3, a4), (b1, b2, b3, b4)) => (
   a4 + b4,
 );
 
+let tuple_zero = (0, 0, 0, 0);
+
 let rec anf_count_vars = a =>
   switch (a.anf_desc) {
   | AELet(global, recflag, binds, body) =>
     let max_binds =
-      List.fold_left(tuple_max, (0, 0, 0, 0)) @@
+      List.fold_left(tuple_max, tuple_zero) @@
       List.map(((_, c)) => comp_count_vars(c), binds);
     let rec count_binds = (i32, i64, f32, f64, binds) => {
       switch (global, binds) {
@@ -215,13 +225,17 @@ let rec anf_count_vars = a =>
 and comp_count_vars = c =>
   switch (c.comp_desc) {
   | CIf(_, t, f) => tuple_max(anf_count_vars(t), anf_count_vars(f))
-  | CWhile(c, b) => tuple_add(anf_count_vars(c), anf_count_vars(b))
+  | CFor(c, inc, b) =>
+    let c = Option.fold(~none=tuple_zero, ~some=anf_count_vars, c);
+    let inc = Option.fold(~none=tuple_zero, ~some=anf_count_vars, inc);
+    let b = anf_count_vars(b);
+    tuple_add(c, tuple_add(inc, b));
   | CSwitch(_, bs) =>
-    List.fold_left(tuple_max, (0, 0, 0, 0)) @@
+    List.fold_left(tuple_max, tuple_zero) @@
     List.map(((_, b)) => anf_count_vars(b), bs)
   | CApp(_, args, _) => (List.length(args), 0, 0, 0)
   | CAppBuiltin(_, _, args) => (List.length(args), 0, 0, 0)
-  | _ => (0, 0, 0, 0)
+  | _ => tuple_zero
   };
 
 module ClearLocationsArg: Anf_mapper.MapArgument = {
