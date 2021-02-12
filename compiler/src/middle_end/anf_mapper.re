@@ -52,8 +52,12 @@ module MakeMap = (Iter: MapArgument) => {
         let rhs = map_imm_expression(rhs);
         CBoxAssign(lhs, rhs);
       | CAssign(lhs, rhs) =>
+        let lhs = map_imm_expression(lhs);
         let rhs = map_imm_expression(rhs);
         CAssign(lhs, rhs);
+      | CLocalAssign(id, rhs) =>
+        let rhs = map_imm_expression(rhs);
+        CLocalAssign(id, rhs);
       | CTuple(elts) => CTuple(List.map(map_imm_expression, elts))
       | CArray(elts) => CArray(List.map(map_imm_expression, elts))
       | CArrayGet(arg1, arg2) =>
@@ -139,7 +143,7 @@ module MakeMap = (Iter: MapArgument) => {
     let {anf_desc: desc} as anf = Iter.enter_anf_expression(anf);
     let d =
       switch (desc) {
-      | AELet(g, r, bindings, body) =>
+      | AELet(g, r, m, bindings, body) =>
         let bindings =
           List.map(
             ((ident, bind)) => {
@@ -149,7 +153,7 @@ module MakeMap = (Iter: MapArgument) => {
             bindings,
           );
         let body = map_anf_expression(body);
-        AELet(g, r, bindings, body);
+        AELet(g, r, m, bindings, body);
       | AESeq(hd, tl) =>
         let hd = map_comp_expression(hd);
         let tl = map_anf_expression(tl);

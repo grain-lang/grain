@@ -114,7 +114,10 @@ let extract_bindings = (mut_flag, pat, cexpr) => {
     switch (mut_flag) {
     | Mutable => (
         ((name, e)) =>
-          BLet(name, {...e, comp_desc: CPrim1(Box, get_imm(e.comp_desc))})
+          BLet(
+            name,
+            {...e, comp_desc: CPrim1(BoxBind, get_imm(e.comp_desc))},
+          )
       )
     | Immutable => (((name, e)) => BLet(name, e))
     };
@@ -164,7 +167,7 @@ let rec transl_imm =
     if (val_mutable && !boxed) {
       let tmp = gensym("unbox_mut");
       let setup = [
-        BLet(tmp, Comp.prim1(~loc, ~env, ~allocation_type, Unbox, id)),
+        BLet(tmp, Comp.prim1(~loc, ~env, ~allocation_type, UnboxBind, id)),
       ];
       (Imm.id(~loc, ~env, tmp), setup);
     } else {
@@ -185,7 +188,7 @@ let rec transl_imm =
     if (val_mutable && !boxed) {
       let tmp = gensym("unbox_mut");
       let setup = [
-        BLet(tmp, Comp.prim1(~loc, ~env, ~allocation_type, Unbox, id)),
+        BLet(tmp, Comp.prim1(~loc, ~env, ~allocation_type, UnboxBind, id)),
       ];
       (Imm.id(~loc, ~env, tmp), setup);
     } else {
@@ -200,7 +203,7 @@ let rec transl_imm =
       if (val_mutable && !boxed) {
         let tmp = gensym("unbox_mut");
         let setup = [
-          BLet(tmp, Comp.prim1(~loc, ~env, ~allocation_type, Unbox, id)),
+          BLet(tmp, Comp.prim1(~loc, ~env, ~allocation_type, UnboxBind, id)),
         ];
         (Imm.id(~loc, ~env, tmp), setup);
       } else {
@@ -220,7 +223,7 @@ let rec transl_imm =
       if (val_mutable && !boxed) {
         let tmp = gensym("unbox_mut");
         let setup = [
-          BLet(tmp, Comp.prim1(~loc, ~env, ~allocation_type, Unbox, id)),
+          BLet(tmp, Comp.prim1(~loc, ~env, ~allocation_type, UnboxBind, id)),
         ];
         (Imm.id(~loc, ~env, tmp), setup);
       } else {
@@ -673,7 +676,11 @@ and bind_patts =
         | Mutable =>
           let tmp = gensym("mut_bind_destructure");
           let boxed =
-            Comp.prim1(~allocation_type=HeapAllocated, Box, Imm.id(tmp));
+            Comp.prim1(
+              ~allocation_type=get_allocation_type(pat.pat_env, pat.pat_type),
+              BoxBind,
+              Imm.id(tmp),
+            );
           if (exported) {
             [
               BLet(tmp, access),
@@ -864,7 +871,15 @@ and transl_comp_expression =
     let (exp_ans, exp_setup) =
       if (mut_flag == Mutable) {
         let (imm, imm_setup) = transl_imm(vb_expr);
-        (Comp.prim1(~allocation_type=HeapAllocated, Box, imm), imm_setup);
+        (
+          Comp.prim1(
+            ~allocation_type=
+              get_allocation_type(vb_expr.exp_env, vb_expr.exp_type),
+            BoxBind,
+            imm,
+          ),
+          imm_setup,
+        );
       } else {
         transl_comp_expression(vb_expr);
       };
@@ -1176,7 +1191,12 @@ let rec transl_anf_statement =
         | Mutable =>
           let tmp = gensym("mut_bind_destructure");
           let boxed =
-            Comp.prim1(~allocation_type=HeapAllocated, Box, Imm.id(tmp));
+            Comp.prim1(
+              ~allocation_type=
+                get_allocation_type(vb_expr.exp_env, vb_expr.exp_type),
+              BoxBind,
+              Imm.id(tmp),
+            );
           if (exported) {
             [
               BLet(tmp, exp_ans),
@@ -1202,7 +1222,12 @@ let rec transl_anf_statement =
           | Mutable =>
             let tmp = gensym("mut_bind_destructure");
             let boxed =
-              Comp.prim1(~allocation_type=HeapAllocated, Box, Imm.id(tmp));
+              Comp.prim1(
+                ~allocation_type=
+                  get_allocation_type(patt.pat_env, patt.pat_type),
+                BoxBind,
+                Imm.id(tmp),
+              );
             if (exported) {
               [
                 BLet(tmp, exp_ans),

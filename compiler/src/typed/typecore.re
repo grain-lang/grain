@@ -103,11 +103,13 @@ let prim1_type =
   | Incr
   | Decr => (Builtin_types.type_number, Builtin_types.type_number)
   | Not => (Builtin_types.type_bool, Builtin_types.type_bool)
-  | Box => {
+  | Box
+  | BoxBind => {
       let var = newvar(~name="a", ());
       (var, Builtin_types.type_box(var));
     }
-  | Unbox => {
+  | Unbox
+  | UnboxBind => {
       let var = newvar(~name="a", ());
       (Builtin_types.type_box(var), var);
     }

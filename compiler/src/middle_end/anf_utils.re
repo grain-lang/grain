@@ -10,7 +10,7 @@ let rec anf_free_vars_help = (env, a: anf_expression) =>
       anf_free_vars_help(env, rest),
     )
   | AEComp(c) => comp_free_vars_help(env, c)
-  | AELet(_, recflag, binds, body) =>
+  | AELet(_, recflag, _, binds, body) =>
     let with_names =
       List.fold_left((acc, (id, _)) => Ident.Set.add(id, acc), env, binds);
     let free_binds =
@@ -90,6 +90,7 @@ and comp_free_vars_help = (env, c: comp_expression) =>
       imm_free_vars_help(env, arg1),
       imm_free_vars_help(env, arg2),
     )
+  | CLocalAssign(arg1, arg2) => imm_free_vars_help(env, arg2)
   | CApp((fn, _), args, _) =>
     List.fold_left(
       (acc, a) => Ident.Set.union(imm_free_vars_help(env, a), acc),
@@ -175,7 +176,7 @@ let tuple_zero = (0, 0, 0, 0);
 
 let rec anf_count_vars = a =>
   switch (a.anf_desc) {
-  | AELet(global, recflag, binds, body) =>
+  | AELet(global, recflag, mutflag, binds, body) =>
     let max_binds =
       List.fold_left(tuple_max, tuple_zero) @@
       List.map(((_, c)) => comp_count_vars(c), binds);

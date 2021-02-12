@@ -162,6 +162,8 @@ type prim1 =
     | Not
     | Box
     | Unbox
+    | BoxBind
+    | UnboxBind
     | Ignore
     | ArrayLength
     | Assert
@@ -313,6 +315,7 @@ and comp_expression_desc =
   | CPrimN(primn, list(imm_expression))
   | CBoxAssign(imm_expression, imm_expression)
   | CAssign(imm_expression, imm_expression)
+  | CLocalAssign(Ident.t, imm_expression)
   | CTuple(list(imm_expression))
   | CArray(list(imm_expression))
   | CArrayGet(imm_expression, imm_expression)
@@ -365,6 +368,7 @@ and anf_expression_desc =
   | AELet(
       global_flag,
       rec_flag,
+      mut_flag,
       list((Ident.t, comp_expression)),
       anf_expression,
     )

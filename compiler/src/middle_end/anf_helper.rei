@@ -99,6 +99,16 @@ module Comp: {
       imm_expression
     ) =>
     comp_expression;
+  let local_assign:
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      ~allocation_type: allocation_type,
+      ~env: env=?,
+      Ident.t,
+      imm_expression
+    ) =>
+    comp_expression;
   let assign:
     (
       ~loc: loc=?,
@@ -303,6 +313,7 @@ module AExp: {
       ~loc: loc=?,
       ~env: env=?,
       ~global: global_flag=?,
+      ~mut_flag: mut_flag=?,
       rec_flag,
       list((ident, comp_expression)),
       anf_expression

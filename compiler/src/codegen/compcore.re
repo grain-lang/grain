@@ -2675,6 +2675,9 @@ let compile_prim1 = (wasm_mod, env, p1, arg): Expression.t => {
     failwith("Unreachable case; should never get here: Int64LNot")
   | Box => failwith("Unreachable case; should never get here: Box")
   | Unbox => failwith("Unreachable case; should never get here: Unbox")
+  | BoxBind => failwith("Unreachable case; should never get here: BoxBind")
+  | UnboxBind =>
+    failwith("Unreachable case; should never get here: UnboxBind")
   | WasmFromGrain
   | WasmToGrain => compiled_arg // These are no-ops
   | WasmUnaryI32({wasm_op, ret_type})
@@ -3027,6 +3030,15 @@ let rec compile_store = (wasm_mod, env, binds) => {
   List.append(instrs, [do_backpatches(wasm_mod, env, backpatches)]);
 }
 
+and compile_set = (wasm_mod, env, b, i) => {
+  compile_bind(
+    ~action=BindTee(compile_instr(wasm_mod, env, i)),
+    wasm_mod,
+    env,
+    b,
+  );
+}
+
 and compile_switch = (wasm_mod, env, arg, branches, default) => {
   /* Constructs the jump table. Assumes that branch 0 is the default */
   let switch_label = gensym_label("switch");
@@ -3139,7 +3151,7 @@ and compile_instr = (wasm_mod, env, instr) =>
   | MSwitch(arg, branches, default) =>
     compile_switch(wasm_mod, env, arg, branches, default)
   | MStore(binds) => compile_store(wasm_mod, env, binds)
-
+  | MSet(b, i) => compile_set(wasm_mod, env, b, i)
   | MCallIndirect({func, func_type, args}) =>
     call_lambda(wasm_mod, env, func, func_type, args)
   | MReturnCallIndirect({func, func_type, args}) =>

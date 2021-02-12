@@ -44,18 +44,20 @@ module BranchArg: Anf_mapper.MapArgument = {
     switch (anf_desc) {
     | AEComp(comp) => {
         ...a,
-        anf_desc: AELet(global, Nonrecursive, [(id, comp)], cont),
+        anf_desc:
+          AELet(global, Nonrecursive, Immutable, [(id, comp)], cont),
       }
     | AESeq(comp, body) => {
         ...a,
         anf_desc: AESeq(comp, relinearize(id, global, body, cont)),
       }
-    | AELet(_global, _recursive, binds, body) => {
+    | AELet(global, recursive, mutable_, binds, body) => {
         ...a,
         anf_desc:
           AELet(
-            _global,
-            _recursive,
+            global,
+            recursive,
+            mutable_,
             binds,
             relinearize(id, global, body, cont),
           ),
@@ -70,7 +72,7 @@ module BranchArg: Anf_mapper.MapArgument = {
     | AEComp({
         comp_desc: CIf({imm_desc: ImmConst(Const_bool(false))}, _, branch),
       }) => branch
-    | AELet(global, recursive, binds, body)
+    | AELet(global, recursive, mutable_, binds, body)
         when has_simple_optimizable_conditional(binds) =>
       let binds =
         List.map(
@@ -85,8 +87,8 @@ module BranchArg: Anf_mapper.MapArgument = {
             },
           binds,
         );
-      {...a, anf_desc: AELet(global, recursive, binds, body)};
-    | AELet(global, Nonrecursive, binds, body)
+      {...a, anf_desc: AELet(global, recursive, mutable_, binds, body)};
+    | AELet(global, Nonrecursive, mutable_, binds, body)
         when has_optimizable_conditional(binds) =>
       /* We can't relinearize recursive bindings since they depend on each other */
       List.fold_right(
@@ -98,7 +100,8 @@ module BranchArg: Anf_mapper.MapArgument = {
             relinearize(name, global, _false, cont)
           | _ => {
               ...a,
-              anf_desc: AELet(global, Nonrecursive, [(name, comp)], cont),
+              anf_desc:
+                AELet(global, Nonrecursive, mutable_, [(name, comp)], cont),
             }
           },
         binds,

@@ -883,6 +883,14 @@ let let_mut_tests = [
   t("let-mut_division1", "let mut b = 76; b = b / 19", "4"),
   t("let-mut_division2", "let mut b = 76; b = b / 19; b", "4"),
   t("let-mut_division3", "let mut b = 76; b /= 19; b", "4"),
+  /* Exported let mut */
+  t(
+    "let-mut_export1",
+    "import { x } from \"letMutExport\"; x = 5; x = 6; print(x)",
+    "6\nvoid",
+  ),
+  /* unsafe let mut in a loop */
+  tfile("let-mut_loop", "letMutForLoop", "0N\n1N\n2N\n3N\n4N\nvoid"),
 ];
 
 let loop_tests = [
@@ -1556,6 +1564,85 @@ let optimization_tests = [
             ),
             HeapAllocated,
           ),
+        ),
+      );
+    },
+  ),
+  tfinalanf(
+    "test_local_mutations1",
+    "let mut x = 5; x = 6",
+    {
+      open Grain_typed;
+      let x = Ident.create("x");
+      AExp.let_(
+        Nonrecursive,
+        ~mut_flag=Mutable,
+        [
+          (
+            x,
+            Comp.imm(
+              ~allocation_type=HeapAllocated,
+              Imm.const(Const_number(Const_number_int(5L))),
+            ),
+          ),
+        ],
+      ) @@
+      AExp.comp(
+        Comp.local_assign(
+          ~allocation_type=HeapAllocated,
+          x,
+          Imm.const(Const_number(Const_number_int(6L))),
+        ),
+      );
+    },
+  ),
+  tfinalanf(
+    "test_no_local_mutation_optimization_of_closure_scope_mut",
+    "let mut x = 5; let foo = () => x; foo()",
+    {
+      open Grain_typed;
+      let x = Ident.create("x");
+      let foo = Ident.create("foo");
+      AExp.let_(
+        Nonrecursive,
+        [
+          (
+            x,
+            Comp.prim1(
+              ~allocation_type=HeapAllocated,
+              BoxBind,
+              Imm.const(Const_number(Const_number_int(5L))),
+            ),
+          ),
+        ],
+      ) @@
+      AExp.let_(
+        Nonrecursive,
+        [
+          (
+            foo,
+            Comp.lambda(
+              [],
+              (
+                AExp.comp(
+                  Comp.prim1(
+                    ~allocation_type=HeapAllocated,
+                    UnboxBind,
+                    Imm.id(x),
+                  ),
+                ),
+                HeapAllocated,
+              ),
+            ),
+          ),
+        ],
+      ) @@
+      AExp.comp(
+        Comp.app(
+          ~tail=true,
+          ~allocation_type=HeapAllocated,
+          (Imm.id(foo), ([], HeapAllocated)),
+          [],
         ),
       );
     },

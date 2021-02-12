@@ -235,6 +235,8 @@ module RegisterAllocation = {
             bs,
           ),
         )
+      | MSet(b, i) =>
+        MSet(apply_allocation_to_bind(b), apply_allocations(ty, allocs, i))
       | MAllocate(x) => MAllocate(x)
       | MDrop(i) => MDrop(apply_allocations(ty, allocs, i))
       | MTracepoint(x) => MTracepoint(x)
@@ -300,6 +302,7 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
       List.concat(
         List.map(((b, bk)) => bind_live_local(b) @ live_locals(bk), bs),
       )
+    | MSet(b, i) => bind_live_local(b) @ live_locals(i)
     | MAllocate(_)
     | MTracepoint(_) => []
     }
@@ -647,8 +650,10 @@ let rec compile_comp = (env, c) => {
       )
     | CContinue => MContinue
     | CBreak => MBreak
-    | CPrim1(Box, arg) => MAllocate(MBox(compile_imm(env, arg)))
-    | CPrim1(Unbox, arg) => MBoxOp(MBoxUnbox, compile_imm(env, arg))
+    | CPrim1(Box, arg)
+    | CPrim1(BoxBind, arg) => MAllocate(MBox(compile_imm(env, arg)))
+    | CPrim1(Unbox, arg)
+    | CPrim1(UnboxBind, arg) => MBoxOp(MBoxUnbox, compile_imm(env, arg))
     | CPrim1(p1, arg) => MPrim1(p1, compile_imm(env, arg))
     | CPrim2(p2, arg1, arg2) =>
       MPrim2(p2, compile_imm(env, arg1), compile_imm(env, arg2))
@@ -657,6 +662,14 @@ let rec compile_comp = (env, c) => {
       MBoxOp(MBoxUpdate(compile_imm(env, arg2)), compile_imm(env, arg1))
     | CBoxAssign(arg1, arg2) =>
       MBoxOp(MBoxUpdate(compile_imm(env, arg2)), compile_imm(env, arg1))
+    | CLocalAssign(arg1, arg2) =>
+      MSet(
+        find_id(arg1, env),
+        {
+          instr_desc: MImmediate(compile_imm(env, arg2)),
+          instr_loc: arg2.imm_loc,
+        },
+      )
     | CTuple(args) => MAllocate(MTuple(List.map(compile_imm(env), args)))
     | CArray(args) => MAllocate(MArray(List.map(compile_imm(env), args)))
     | CArrayGet(idx, arr) =>
@@ -769,7 +782,7 @@ and compile_anf_expr = (env, a) =>
       {instr_desc: MDrop(compile_comp(env, hd)), instr_loc: hd.comp_loc},
       ...compile_anf_expr(env, tl),
     ]
-  | AELet(global, recflag, binds, body) =>
+  | AELet(global, recflag, mutflag, binds, body) =>
     let rec get_locs = (env, binds) => {
       switch (binds) {
       | [(id, {comp_allocation_type}), ...rest] =>

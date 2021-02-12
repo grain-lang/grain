@@ -43,7 +43,8 @@ let rec analyze_comp_expression =
     switch (desc) {
     | CImmExpr(_) => true
     | CPrim1(
-        Incr | Decr | Not | Box | Unbox | Ignore | ArrayLength |
+        Incr | Decr | Not | Box | Unbox | BoxBind | UnboxBind | Ignore |
+        ArrayLength |
         Int64FromNumber |
         Int64ToNumber |
         Int32ToNumber |
@@ -100,9 +101,8 @@ let rec analyze_comp_expression =
       false
     | CArraySet(_)
     | CBoxAssign(_)
-    | CAssign(_) =>
-      /* TODO: Would be nice if we could "scope" the purity analysis to local assignments */
-      false
+    | CAssign(_)
+    | CLocalAssign(_) => false
     | CArrayGet(_)
     | CArray(_)
     | CTuple(_)
@@ -156,7 +156,7 @@ let rec analyze_comp_expression =
 
 and analyze_anf_expression = ({anf_desc: desc, anf_analyses: analyses}) =>
   switch (desc) {
-  | AELet(g, Nonrecursive, binds, body) =>
+  | AELet(g, Nonrecursive, _, binds, body) =>
     let process_bind = ((id, bind)) => {
       analyze_comp_expression(bind);
       comp_expression_purity_internal(bind);
@@ -166,7 +166,7 @@ and analyze_anf_expression = ({anf_desc: desc, anf_analyses: analyses}) =>
     analyze_anf_expression(body);
     let purity = anf_expression_purity_internal(body) && bind_purity;
     push_purity(analyses, purity);
-  | AELet(g, Recursive, binds, body) =>
+  | AELet(g, Recursive, _, binds, body) =>
     let process_bind = ((id, bind)) => {
       analyze_comp_expression(bind);
       comp_expression_purity_internal(bind);

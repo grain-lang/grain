@@ -53,6 +53,7 @@ module MakeIter = (Iter: IterArgument) => {
     | CAssign(lhs, rhs) =>
       iter_imm_expression(lhs);
       iter_imm_expression(rhs);
+    | CLocalAssign(lhs, rhs) => iter_imm_expression(rhs)
     | CTuple(elts) => List.iter(iter_imm_expression, elts)
     | CArray(elts) => List.iter(iter_imm_expression, elts)
     | CArrayGet(arg1, arg2) =>
@@ -111,7 +112,7 @@ module MakeIter = (Iter: IterArgument) => {
   and iter_anf_expression = ({anf_desc: desc} as anf) => {
     Iter.enter_anf_expression(anf);
     switch (desc) {
-    | AELet(_, _, bindings, body) =>
+    | AELet(_, _, _, bindings, body) =>
       List.iter(((ident, bind)) => iter_comp_expression(bind), bindings);
       iter_anf_expression(body);
     | AESeq(hd, tl) =>
