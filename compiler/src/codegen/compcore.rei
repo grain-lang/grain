@@ -5,11 +5,9 @@ open Binaryen;
 
 type codegen_env = {
   num_args: int,
-  func_offset: int,
   global_offset: int,
   stack_size,
   import_global_offset: int,
-  import_func_offset: int,
   import_offset: int,
   /* Allocated closures which need backpatching */
   backpatches: ref(list((Expression.t, closure_data))),

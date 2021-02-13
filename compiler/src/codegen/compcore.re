@@ -16,11 +16,9 @@ let memory_tracing_enabled = false;
 
 type codegen_env = {
   num_args: int,
-  func_offset: int,
   global_offset: int,
   stack_size,
   import_global_offset: int,
-  import_func_offset: int,
   import_offset: int,
   /* Allocated closures which need backpatching */
   backpatches: ref(list((Expression.t, closure_data))),
@@ -434,7 +432,6 @@ let runtime_imports =
 
 let init_codegen_env = () => {
   num_args: 0,
-  func_offset: 0,
   global_offset: 2,
   stack_size: {
     stack_size_i32: 0,
@@ -443,7 +440,6 @@ let init_codegen_env = () => {
     stack_size_f64: 0,
   },
   import_global_offset: 0,
-  import_func_offset: 0,
   import_offset: 0,
   backpatches: ref([]),
   imported_funcs: Ident.empty,
@@ -2121,10 +2117,7 @@ let allocate_closure =
           get_imported_name(runtime_mod, reloc_base),
           Type.int32,
         ),
-        Expression.const(
-          wasm_mod,
-          wrap_int32(Int32.(add(func_idx, of_int(env.func_offset)))),
-        ),
+        Expression.const(wasm_mod, wrap_int32(func_idx)),
       ),
     ),
     store(
@@ -3272,7 +3265,7 @@ let compile_function =
     if (start) {
       "_start";
     } else {
-      Printf.sprintf("func_%d", env.func_offset + index_int);
+      Printf.sprintf("func_%d", index_int);
     };
   let body_env = {...env, num_args: arity, stack_size};
   let inner_body =
@@ -3329,21 +3322,8 @@ let compile_function =
   func_ref;
 };
 
-let compute_num_wasm_function_imports = imports => {
-  List.fold_left(
-    (acc, imp) =>
-      switch (imp.mimp_kind, imp.mimp_type) {
-      | (MImportWasm, MFuncImport(_)) => acc + 1
-      | (_, _) => acc
-      },
-    0,
-    imports,
-  );
-};
-
-let compute_table_size = (env, {imports, exports, functions}) => {
-  let num_function_imports = compute_num_wasm_function_imports(imports);
-  List.length(functions) + num_function_imports + 2;
+let compute_table_size = (env, {functions}) => {
+  List.length(functions);
 };
 
 let compile_imports = (wasm_mod, env, {imports}) => {
@@ -3449,26 +3429,13 @@ let compile_exports = (wasm_mod, env, {functions, imports, exports, globals}) =>
 
 let compile_tables = (wasm_mod, env, {functions, imports} as prog) => {
   let table_size = compute_table_size(env, prog);
-  let import_names =
-    List.filter_map(
-      ({mimp_kind, mimp_type, mimp_mod, mimp_name}) =>
-        switch (mimp_kind, mimp_type) {
-        | (MImportWasm, MFuncImport(_)) =>
-          Some(get_imported_name(mimp_mod, mimp_name))
-        | _ => None
-        },
-      imports,
-    );
   let function_name = i => Printf.sprintf("func_%d", i);
-  let function_names =
-    List.mapi((i, _) => function_name(env.func_offset + i), functions);
-  let all_import_names =
-    List.concat([import_names, function_names, ["_start"]]);
+  let function_names = List.mapi((i, _) => function_name(i), functions);
   Function_table.set_function_table(
     wasm_mod,
     table_size,
     max_int,
-    all_import_names,
+    function_names,
     Expression.global_get(
       wasm_mod,
       get_imported_name(runtime_mod, reloc_base),
@@ -3476,8 +3443,6 @@ let compile_tables = (wasm_mod, env, {functions, imports} as prog) => {
     ),
   );
 };
-
-let compile_elems = (wasm_mod, env, prog) => ();
 
 let compile_globals = (wasm_mod, env, {globals} as prog) => {
   let initial_value =
@@ -3591,7 +3556,6 @@ let prepare = (env, {imports} as prog) => {
     {...acc_env, imported_funcs, imported_globals};
   };
   let import_offset = List.length(runtime_imports);
-  let import_func_offset = List.length(runtime_function_imports);
   let import_global_offset = import_offset + List.length(imports);
 
   let new_imports = List.append(runtime_imports, imports);
@@ -3614,17 +3578,8 @@ let prepare = (env, {imports} as prog) => {
       imports,
     );
   let global_offset = import_global_offset;
-  let func_offset =
-    import_func_offset + compute_num_wasm_function_imports(imports);
   (
-    {
-      ...new_env,
-      import_offset,
-      import_func_offset,
-      import_global_offset,
-      global_offset,
-      func_offset,
-    },
+    {...new_env, import_offset, import_global_offset, global_offset},
     {...prog, imports: new_imports},
   );
 };
@@ -3663,7 +3618,6 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
   let () = ignore @@ compile_exports(wasm_mod, env, prog);
   let () = ignore @@ compile_globals(wasm_mod, env, prog);
   let () = ignore @@ compile_tables(wasm_mod, env, prog);
-  let () = ignore @@ compile_elems(wasm_mod, env, prog);
 
   let serialized_cmi = Cmi_format.serialize_cmi(prog.signature);
   Module.add_custom_section(
