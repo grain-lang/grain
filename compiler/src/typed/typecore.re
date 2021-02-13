@@ -1080,7 +1080,7 @@ and type_expect_ =
         (ifso, ifnot);
       };
 
-    re({
+    rue({
       exp_desc: TExpIf(cond, ifso, ifnot),
       exp_loc: loc,
       exp_extra: [],
