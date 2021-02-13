@@ -460,6 +460,7 @@ type export = {
 [@deriving sexp]
 type mash_function = {
   index: int32,
+  name: option(string),
   args: list(asmtype),
   return_type: asmtype,
   body: block,

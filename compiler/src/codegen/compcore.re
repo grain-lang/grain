@@ -3395,12 +3395,15 @@ let compile_imports = (wasm_mod, env, {imports}) => {
 };
 
 let compile_exports = (wasm_mod, env, {functions, imports, exports, globals}) => {
-  let compile_exports = (i, {ex_name, ex_global_index}) => {
+  let compile_export = (i, {ex_name, ex_global_index}) => {
     let internal_name = Printf.sprintf("global_%ld", ex_global_index);
     let exported_name = "GRAIN$EXPORT$" ++ Ident.name(ex_name);
-    let export =
-      Export.add_global_export(wasm_mod, internal_name, exported_name);
-    export;
+    ignore @@ Export.add_global_export(wasm_mod, internal_name, exported_name);
+  };
+
+  let compile_external_function_export = ((internal_name, external_name)) => {
+    ignore @@
+    Export.add_function_export(wasm_mod, internal_name, external_name);
   };
 
   let exports = {
@@ -3417,7 +3420,27 @@ let compile_exports = (wasm_mod, env, {functions, imports, exports, globals}) =>
       exports,
     );
   };
-  ignore @@ List.mapi(compile_exports, exports);
+  let functions = {
+    let exported = Hashtbl.create(14);
+    /* Functions will be reversed, so keeping the first of any name is the correct behavior. */
+    List.filter_map(
+      ({index, name}) =>
+        switch (name) {
+        | Some(name) =>
+          if (Hashtbl.mem(exported, name)) {
+            None;
+          } else {
+            Hashtbl.add(exported, name, ());
+            let internal_name = Printf.sprintf("func_%ld", index);
+            Some((internal_name, name));
+          }
+        | None => None
+        },
+      functions,
+    );
+  };
+  List.iteri(compile_export, exports);
+  List.iter(compile_external_function_export, List.rev(functions));
   ignore @@ Export.add_function_export(wasm_mod, "_start", "_start");
   ignore @@
   Export.add_global_export(
@@ -3481,6 +3504,7 @@ let compile_main = (wasm_mod, env, prog) => {
     env,
     {
       index: Int32.of_int(-99),
+      name: Some("_start"),
       args: [],
       return_type: I32Type,
       body: prog.main_body,

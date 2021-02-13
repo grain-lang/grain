@@ -262,13 +262,13 @@ module Comp = {
       ~env?,
       CAppBuiltin(modname, name, args),
     );
-  let lambda = (~loc=?, ~attributes=?, ~env=?, args, body) =>
+  let lambda = (~loc=?, ~attributes=?, ~env=?, ~name=?, args, body) =>
     mk(
       ~loc?,
       ~attributes?,
       ~allocation_type=HeapAllocated,
       ~env?,
-      CLambda(args, body),
+      CLambda(name, args, body),
     );
   let string = (~loc=?, ~attributes=?, ~env=?, s) =>
     mk(

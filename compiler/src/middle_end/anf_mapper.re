@@ -124,9 +124,9 @@ module MakeMap = (Iter: MapArgument) => {
         CApp((f, fty), args, tail);
       | CAppBuiltin(mod_, f, args) =>
         CAppBuiltin(mod_, f, List.map(map_imm_expression, args))
-      | CLambda(idents, (expr, alloc_ty)) =>
+      | CLambda(name, idents, (expr, alloc_ty)) =>
         let expr = map_anf_expression(expr);
-        CLambda(idents, (expr, alloc_ty));
+        CLambda(name, idents, (expr, alloc_ty));
       | CString(s) => CString(s)
       | CChar(c) => CChar(c)
       | CNumber(i) => CNumber(i)

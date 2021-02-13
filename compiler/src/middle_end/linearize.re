@@ -764,6 +764,7 @@ and bind_patts =
 
 and transl_comp_expression =
     (
+      ~name=?,
       {
         exp_desc,
         exp_type,
@@ -962,6 +963,7 @@ and transl_comp_expression =
         ~loc,
         ~attributes,
         ~env,
+        ~name?,
         [],
         (anf_body, get_allocation_type(body.exp_env, body.exp_type)),
       ),
@@ -1007,6 +1009,7 @@ and transl_comp_expression =
           ~loc,
           ~attributes,
           ~env,
+          ~name?,
           anf_args,
           (anf_body, get_allocation_type(body.exp_env, body.exp_type)),
         ),
@@ -1175,14 +1178,23 @@ let rec transl_anf_statement =
       ...vb_expr,
       exp_attributes: attributes @ vb_expr.exp_attributes,
     };
-    let (exp_ans, exp_setup) = transl_comp_expression(vb_expr);
+    let exported = export_flag == Exported;
+    let name =
+      if (exported) {
+        switch (vb_pat.pat_desc) {
+        | TPatVar(bind, _) => Some(Ident.name(bind))
+        | _ => None
+        };
+      } else {
+        None;
+      };
+    let (exp_ans, exp_setup) = transl_comp_expression(~name?, vb_expr);
     let (rest_setup, rest_imp) =
       transl_anf_statement({
         ...s,
         ttop_desc: TTopLet(export_flag, Nonrecursive, mut_flag, rest),
       });
     let rest_setup = Option.value(~default=[], rest_setup);
-    let exported = export_flag == Exported;
     let setup =
       switch (vb_pat.pat_desc) {
       | TPatVar(bind, _)
