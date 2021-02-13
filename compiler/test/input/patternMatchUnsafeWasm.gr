@@ -1,0 +1,22 @@
+@disableGC
+let test = () => {
+  @disableGC
+  let foo = (val) => {
+    match (val) {
+      1n => print(1),
+      2n => print(2),
+      3n => print(3),
+      4n => print(4),
+      5n => print(5),
+      6n => print(6),
+      _ => print("other")
+    }
+  }
+  foo(0n)
+  foo(1n)
+  foo(5n)
+  foo(8n)
+  foo(42n)
+}
+
+test()
