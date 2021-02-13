@@ -947,6 +947,26 @@ let prepare_match_branches = branches => {
       | Const_char(_) => Builtin_types.type_char
       };
     };
+    let equality_operator = c => {
+      switch (c) {
+      | Const_number(_)
+      | Const_int32(_)
+      | Const_int64(_)
+      | Const_float32(_)
+      | Const_float64(_)
+      | Const_string(_)
+      | Const_char(_) => Eq
+      | Const_void
+      | Const_bool(_)
+      | Const_wasmi32(_) => Is
+      | Const_wasmi64(_)
+      | Const_wasmf32(_)
+      | Const_wasmf64(_) =>
+        failwith(
+          "Pattern matching not supported on low-level i64/f32/f64 types.",
+        )
+      };
+    };
     let add_constant_guard = (id, c, loc) => {
       let ty = type_constant(c);
       let vd = make_vd(id, ty);
@@ -959,7 +979,7 @@ let prepare_match_branches = branches => {
           );
         let ident = make_expr(~ty, ident, env, loc);
         let const = make_expr(~ty, TExpConstant(c), env, loc);
-        make_expr(TExpPrim2(Eq, ident, const), env, loc);
+        make_expr(TExpPrim2(equality_operator(c), ident, const), env, loc);
       };
       switch (guard^) {
       | Some(g) =>

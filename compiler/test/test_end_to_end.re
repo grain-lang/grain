@@ -288,6 +288,11 @@ let basic_functionality_tests = [
     "unsafeWasmGlobals",
     "42n\n42N\n42.0w\n42.0W\nvoid",
   ),
+  tfile(
+    "pattern_match_unsafe_wasm",
+    "patternMatchUnsafeWasm",
+    "other\n1\n5\nother\nother\nvoid",
+  ),
 ];
 
 /* Tests for functions: basic, directly-recursive, and mutually-recursive. */
