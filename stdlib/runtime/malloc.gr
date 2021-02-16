@@ -23,8 +23,6 @@ primitive (!) : Bool -> Bool = "@not"
 primitive (&&) : (Bool, Bool) -> Bool = "@and"
 primitive (||) : (Bool, Bool) -> Bool = "@or"
 
-import foreign wasm _malloc: (WasmI32, WasmI32) -> WasmI32 as extMalloc from "memoryManager"
-import foreign wasm _free: (WasmI32) -> WasmI32 as extFree from "memoryManager"
 import foreign wasm _growHeap: (WasmI32) -> WasmI32 as extGrowHeap from "memoryManager"
 import foreign wasm _initialHeapSize: WasmI32 as initialHeapSize from "memoryManager"
 
@@ -72,7 +70,7 @@ let logMallocHeaderSize = 3n
  */
 let mut heapSize = 0n
 
-let _RESERVED_RUNTIME_SPACE = 4096n;
+export let _RESERVED_RUNTIME_SPACE = 4096n;
 
 let _NEXT_OFFSET = 0n
 let _SIZE_OFFSET = 4n
@@ -144,10 +142,7 @@ let growHeap = (nbytes: WasmI32) => {
  * @param ap: WasmI32 - The pointer to free
  */
 export let free = (ap: WasmI32) => {
-  // Let memory manager know we're freeing this pointer
-  extFree(ap)
-
-  let mut blockPtr = ap - 16n // 8 bytes for malloc header + 8 bytes for GC header
+  let mut blockPtr = ap - 8n // 8 bytes for malloc header
   let mut p = freePtr
 
   // Edge case: for the first free (called by morecore), the free pointer
@@ -177,7 +172,7 @@ export let free = (ap: WasmI32) => {
     }
     // Set the free list head to this block
     freePtr = p;
-  };
+  }
 }
 
 /**
@@ -201,8 +196,7 @@ let morecore = (nbytes: WasmI32) => {
     let grownAmount = heapSize - origSize
     setSize(cp, grownAmount)
     // Call free() with the new block to add it to the free list.
-    // Add an additional 8 for the expected GC header
-    free(cp + 8n + 8n)
+    free(cp + 8n)
     // Return the free list pointer.
     freePtr
   }
@@ -215,8 +209,7 @@ let morecore = (nbytes: WasmI32) => {
  * @return WasmI32 - The pointer to the allocated region (8-byte aligned), or -1 if the allocation failed.
  */
 export let malloc = (nb: WasmI32) => {
-  // Add space for GC header
-  let mut nbytes = nb + 8n
+  let mut nbytes = nb
   let mut prevp = freePtr
 
   // Set nbytes to the next multiple of mallocHeaderSize greater
@@ -250,11 +243,10 @@ export let malloc = (nb: WasmI32) => {
         setSize(p, nbytes)
       }
       // Update the pointer to the free list.
-      freePtr = prevp;
+      freePtr = prevp
 
-      // Let runtime set up reference counting
-      // Address of the region past the malloc header
-      ret = extMalloc(p + 8n, nb)
+      // Return region past the header
+      ret = p + 8n
       break
     }
 
@@ -264,7 +256,6 @@ export let malloc = (nb: WasmI32) => {
       p = morecore(nbytes)
       // If growing the heap failed, return -1.
       if (p == -1n) {
-        // Error
         ret = -1n
         break
       }

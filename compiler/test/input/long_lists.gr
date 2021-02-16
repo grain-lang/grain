@@ -20,4 +20,4 @@ loop = (n) => {
   }
 };
 
-loop(45) // <- eats up a lot of heap
+loop(25) // <- eats up a lot of heap
