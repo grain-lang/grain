@@ -1,30 +1,51 @@
 export *
 
+import {
+  numberIncr as incr,
+  numberDecr as decr,
+  numberPlus as (+),
+  numberMinus as (-),
+  numberTimes as (*),
+  numberDivide as (/),
+  numberMod as (%),
+  numberLess as (<),
+  numberGreater as (>),
+  numberLessEqual as (<=),
+  numberGreaterEqual as (>=),
+  numberLnot as lnot,
+  numberLand as (&),
+  numberLor as (|),
+  numberLxor as (^),
+  numberLsl as (<<),
+  numberLsr as (>>>),
+  numberAsr as (>>)
+} from "runtime/numbers"
+
 // Math operations
-import foreign wasm numberIncr : Number -> Number as incr from "stdlib-external/runtime"
-import foreign wasm numberDecr : Number -> Number as decr from "stdlib-external/runtime"
-import foreign wasm numberPlus : (Number, Number) -> Number as (+) from "stdlib-external/runtime"
-import foreign wasm numberMinus : (Number, Number) -> Number as (-) from "stdlib-external/runtime"
-import foreign wasm numberTimes : (Number, Number) -> Number as (*) from "stdlib-external/runtime"
-import foreign wasm numberDivide : (Number, Number) -> Number as (/) from "stdlib-external/runtime"
-import foreign wasm numberMod : (Number, Number) -> Number as (%) from "stdlib-external/runtime"
+export incr
+export decr
+export (+)
+export (-)
+export (*)
+export (/)
+export (%)
 
 // Number comparisons
-import foreign wasm numberLess : (Number, Number) -> Bool as (<) from "stdlib-external/runtime"
-import foreign wasm numberGreater : (Number, Number) -> Bool as (>) from "stdlib-external/runtime"
-import foreign wasm numberLessEqual : (Number, Number) -> Bool as (<=) from "stdlib-external/runtime"
-import foreign wasm numberGreaterEqual : (Number, Number) -> Bool as (>=) from "stdlib-external/runtime"
+export (<)
+export (>)
+export (<=)
+export (>=)
 
 // Number bit/logical operations
-import foreign wasm numberLnot : Number -> Number as lnot from "stdlib-external/runtime"
+export lnot
 
-import foreign wasm numberLand : (Number, Number) -> Number as (&) from "stdlib-external/runtime"
-import foreign wasm numberLor : (Number, Number) -> Number as (|) from "stdlib-external/runtime"
-import foreign wasm numberLxor : (Number, Number) -> Number as (^) from "stdlib-external/runtime"
+export (&)
+export (|)
+export (^)
 
-import foreign wasm numberLsl : (Number, Number) -> Number as (<<) from "stdlib-external/runtime"
-import foreign wasm numberLsr : (Number, Number) -> Number as (>>>) from "stdlib-external/runtime"
-import foreign wasm numberAsr : (Number, Number) -> Number as (>>) from "stdlib-external/runtime"
+export (<<)
+export (>>>)
+export (>>)
 
 
 // Number coercions & conversions

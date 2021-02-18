@@ -283,12 +283,21 @@ module Comp = {
 };
 
 module AExp = {
-  let mk = (~loc=?, ~env=?, d) => {
+  let mk = (~loc=?, ~env=?, ~alloc_type, d) => {
     anf_desc: d,
     anf_loc: or_default_loc(loc),
     anf_env: or_default_env(env),
     anf_analyses: ref([]),
+    anf_allocation_type: alloc_type,
   };
+
+  let rec alloc_type = a =>
+    switch (a.anf_desc) {
+    | AELet(_, _, _, _, b) => alloc_type(b)
+    | AESeq(_, b) => alloc_type(b)
+    | AEComp(e) => e.comp_allocation_type
+    };
+
   let let_ =
       (
         ~loc=?,
@@ -299,9 +308,16 @@ module AExp = {
         binds,
         body,
       ) =>
-    mk(~loc?, ~env?, AELet(global, rec_flag, mut_flag, binds, body));
-  let seq = (~loc=?, ~env=?, hd, tl) => mk(~loc?, ~env?, AESeq(hd, tl));
-  let comp = (~loc=?, ~env=?, e) => mk(~loc?, ~env?, AEComp(e));
+    mk(
+      ~loc?,
+      ~env?,
+      ~alloc_type=alloc_type(body),
+      AELet(global, rec_flag, mut_flag, binds, body),
+    );
+  let seq = (~loc=?, ~env=?, hd, tl) =>
+    mk(~loc?, ~env?, ~alloc_type=alloc_type(tl), AESeq(hd, tl));
+  let comp = (~loc=?, ~env=?, e) =>
+    mk(~loc?, ~env?, ~alloc_type=e.comp_allocation_type, AEComp(e));
 };
 
 module Imp = {

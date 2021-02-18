@@ -1,7 +1,12 @@
 export *
 
-import foreign wasm coerceNumberToInt32 : Number -> Int32 as fromNumber from "stdlib-external/runtime"
-import foreign wasm coerceInt32ToNumber : Int32 -> Number as toNumber from "stdlib-external/runtime"
+import {
+  coerceNumberToInt32 as fromNumber,
+  coerceInt32ToNumber as toNumber
+} from "runtime/numbers"
+
+export fromNumber
+export toNumber
 
 import foreign wasm incr : Int32 -> Int32 from "stdlib-external/int32"
 import foreign wasm decr : Int32 -> Int32 from "stdlib-external/int32"

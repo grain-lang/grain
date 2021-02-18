@@ -43,14 +43,7 @@ let rec analyze_comp_expression =
     switch (desc) {
     | CImmExpr(_) => true
     | CPrim1(
-        Incr | Decr | Not | Box | Unbox | BoxBind | UnboxBind | Ignore |
-        ArrayLength |
-        Int64FromNumber |
-        Int64ToNumber |
-        Int32ToNumber |
-        Float64ToNumber |
-        Float32ToNumber |
-        Int64Lnot |
+        Not | Box | Unbox | BoxBind | UnboxBind | Ignore | ArrayLength |
         WasmFromGrain |
         WasmToGrain |
         WasmUnaryI32(_) |
@@ -62,25 +55,7 @@ let rec analyze_comp_expression =
       true
     | CPrim1(Assert | FailWith, _) => false
     | CPrim2(
-        Plus | Minus | Times | Divide | Mod | Less | Greater | LessEq |
-        GreaterEq |
-        Is |
-        Eq |
-        And |
-        Or |
-        ArrayMake |
-        Int64Land |
-        Int64Lor |
-        Int64Lxor |
-        Int64Lsl |
-        Int64Lsr |
-        Int64Asr |
-        Int64Gt |
-        Int64Gte |
-        Int64Lt |
-        Int64Lte |
-        WasmLoadI32(_) |
-        WasmLoadI64(_) |
+        Is | Eq | And | Or | ArrayMake | WasmLoadI32(_) | WasmLoadI64(_) |
         WasmLoadF32 |
         WasmLoadF64 |
         WasmBinaryI32(_) |
