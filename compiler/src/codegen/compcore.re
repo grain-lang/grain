@@ -1514,7 +1514,6 @@ let call_error_handler = (wasm_mod, env, err, args) => {
     gensym_label("call_error_handler"),
     [
       call_runtime_throw_error(wasm_mod, env, compiled_args),
-      Expression.unreachable(wasm_mod),
     ],
   );
 };
