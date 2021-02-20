@@ -1490,5 +1490,11 @@ let transl_prim = (env, desc) => {
     },
   ];
   let mut_flag = desc.tvd_val.val_mutable ? Mutable : Immutable;
-  Typecore.type_binding(env, Nonrecursive, mut_flag, binds, None);
+  let (binds, env) =
+    Typecore.type_binding(env, Nonrecursive, mut_flag, binds, None);
+  let (path, val_desc) =
+    Env.lookup_value(Identifier.IdentName(desc.tvd_name.txt), env);
+  // Ensure the binding has a proper value_description
+  let new_env = Env.add_value(Path.head(path), desc.tvd_val, env);
+  (binds, new_env);
 };
