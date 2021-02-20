@@ -455,6 +455,8 @@ let var_of_ext_global = (env, modname, itemname) =>
 let lookup_ext_func = (env, modname, itemname) =>
   Ident.find_same(itemname, Ident.find_same(modname, env.imported_funcs));
 
+let global_function_table = "tbl";
+
 let get_imported_name = (mod_, name) =>
   Printf.sprintf(
     "import_%s_%s",
@@ -1514,7 +1516,7 @@ let call_error_handler = (wasm_mod, env, err, args) => {
     gensym_label("call_error_handler"),
     [
       call_runtime_throw_error(wasm_mod, env, compiled_args),
-      Expression.unreachable(wasm_mod),
+      Expression.const(wasm_mod, const_void()),
     ],
   );
 };
@@ -1523,7 +1525,7 @@ let error_if_true = (wasm_mod, env, cond, err, args) =>
   Expression.if_(
     wasm_mod,
     cond,
-    call_error_handler(wasm_mod, env, err, args),
+    Expression.drop(wasm_mod, call_error_handler(wasm_mod, env, err, args)),
     Expression.null(),
   );
 
@@ -1920,6 +1922,7 @@ let call_lambda = (~tail=false, wasm_mod, env, func, (argsty, retty), args) => {
     };
   instr(
     wasm_mod,
+    global_function_table,
     load(~offset=8, wasm_mod, compiled_func()),
     [compiled_func(), ...compiled_args],
     Type.create @@ Array.map(wasm_type, Array.of_list([I32Type, ...argsty])),
@@ -2497,6 +2500,7 @@ let allocate_array_init = (wasm_mod, env, num_elts, init_f) => {
                     env,
                     Expression.call_indirect(
                       wasm_mod,
+                      global_function_table,
                       load(~offset=8, wasm_mod, compiled_func()),
                       [compiled_func(), get_loop_counter()],
                       Type.create([|Type.int32, Type.int32|]),
@@ -3055,7 +3059,6 @@ and compile_switch = (wasm_mod, env, arg, branches, default) => {
     switch (bs) {
     | [] =>
       let inner_block_body =
-        /* Expression.nop wasm_mod in */
         Expression.switch_(
           wasm_mod,
           create_table(stack),
@@ -3391,7 +3394,12 @@ let compile_imports = (wasm_mod, env, {imports}) => {
     "mem",
     false,
   );
-  Import.add_table_import(wasm_mod, "tbl", Ident.name(runtime_mod), "tbl");
+  Import.add_table_import(
+    wasm_mod,
+    global_function_table,
+    Ident.name(runtime_mod),
+    global_function_table,
+  );
 };
 
 let compile_exports = (wasm_mod, env, {functions, imports, exports, globals}) => {

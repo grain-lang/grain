@@ -14,7 +14,7 @@ build: [
   ["dune" "build" "@doc" "-p" name "-j" jobs] {with-doc}
 ]
 depends: [
-  "ocaml" {>= "4.07.0"} # TODO: change back to OCaml >= 4.05 when stdlib-shims 0.2.0 is released (same for ppx_deriving 5.0 and 5.1)
+  "ocaml" {>= "4.05.0"}
   "dune" {>= "1.6.3"}
   "cppo" {build}
   "ocamlfind"
@@ -31,10 +31,10 @@ for common tasks.
 """
 url {
   src:
-    "https://github.com/ocaml-ppx/ppx_deriving/releases/download/v5.2/ppx_deriving-v5.2.tbz"
+    "https://github.com/ocaml-ppx/ppx_deriving/releases/download/v5.2.1/ppx_deriving-v5.2.1.tbz"
   checksum: [
-    "sha256=1c2d2626824ca350c365bf6c8bc3a23c8045c3995c170f2bc500e53baeda2ee6"
-    "sha512=03ce8b3a0d8ed56b6c078212ac54862d99e4296c0e31cc982f9e632bae973a955207cfa968dbcd9d88aa444addda557556f549ef926ae7196534f9b7c007cf10"
+    "sha256=e96b5fb25b7632570e4b329e22e097fcd4b8e8680d1e43ef003a8fbd742b0786"
+    "sha512=f28cd778a2d48ababa53f73131b25229a11b03685610d020b7b9228b1e25570891cd927b37475aeda49be72debaf5f2dda4c1518a0965db7a361c0ebe325a8d2"
   ]
 }
-x-commit-hash: "b5c1c30692819393b3a6f9f5ffccf16b59594b4a"
+x-commit-hash: "7211546d6527bf57d3eff8174c90fc3c22250dae"
