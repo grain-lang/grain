@@ -1,5 +1,7 @@
 export *
 
+import { equal as (==) } from "runtime/equal"
+
 import {
   numberIncr as incr,
   numberDecr as decr,
@@ -75,7 +77,7 @@ primitive fail : String -> a = "@fail"
 import foreign wasm print : a -> Void from "stdlib-external/runtime"
 
 // Checks the given items for structural equality.
-import foreign wasm equal : (a, a) -> Bool as (==) from "stdlib-external/runtime"
+export (==)
 let (!=) : (a, a) -> Bool = (x, y) => !(x == y)
 // Checks the given items for physical equality.
 primitive (is) : (a, a) -> Bool = "@is"
