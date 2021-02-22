@@ -917,14 +917,15 @@ let compile_remaining_worklist = () => {
 };
 
 let lift_imports = (env, imports) => {
-  let process_shape = mut =>
-    fun
+  let process_shape = (mut, shape) =>
+    switch (shape) {
     | GlobalShape(alloc) => MGlobalImport(asmtype_of_alloctype(alloc), mut)
     | FunctionShape(inputs, outputs) =>
       MFuncImport(
         List.map(asmtype_of_alloctype, inputs),
         List.map(asmtype_of_alloctype, outputs),
-      );
+      )
+    };
 
   let process_import =
       (

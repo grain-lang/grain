@@ -669,8 +669,7 @@ type compilation_mode =
 
 let current_unit = ref(("", "", Normal));
 
-let set_unit = ((name, source, mode)) =>
-  current_unit := (name, source, mode);
+let set_unit = unit => current_unit := unit;
 
 let get_unit = () => current_unit^;
 
@@ -678,14 +677,15 @@ let is_runtime_mode = () => {
   switch (current_unit^) {
   | (_, _, Runtime) => true
   | (_, _, MemoryAllocation) => true
-  | _ => false
+  | (_, _, Normal) => false
   };
 };
 
 let is_malloc_mode = () => {
   switch (current_unit^) {
   | (_, _, MemoryAllocation) => true
-  | _ => false
+  | (_, _, Runtime) => false
+  | (_, _, Normal) => false
   };
 };
 

@@ -1,5 +1,11 @@
 /* compilation-mode: malloc */
 
+/*
+ * This module implements a generic memory allocator.
+ * The algorithm is quite simple, being based on the memory allocator
+ * from pages 185-188 of K&R C (2nd edition).
+ */
+
 import WasmI32, { 
   add as (+),
   sub as (-),
@@ -68,20 +74,23 @@ let mut heapSize = 0n
 
 let _RESERVED_RUNTIME_SPACE = 4096n;
 
+let _NEXT_OFFSET = 0n
+let _SIZE_OFFSET = 4n
+
 let getNext = (ptr: WasmI32) => {
-  WasmI32.load(ptr, 0n)
+  WasmI32.load(ptr, _NEXT_OFFSET)
 }
 
 let setNext = (ptr: WasmI32, val: WasmI32) => {
-  WasmI32.store(ptr, val, 0n)
+  WasmI32.store(ptr, val, _NEXT_OFFSET)
 }
 
 let getSize = (ptr: WasmI32) => {
-  WasmI32.load(ptr, 4n)
+  WasmI32.load(ptr, _SIZE_OFFSET)
 }
 
 let setSize = (ptr: WasmI32, val: WasmI32) => {
-  WasmI32.store(ptr, val, 4n)
+  WasmI32.store(ptr, val, _SIZE_OFFSET)
 }
 
 /**

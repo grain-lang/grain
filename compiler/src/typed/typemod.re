@@ -826,13 +826,11 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
 
 let type_module = type_module(false, None);
 
-let implicit_modules: ref(list((string, string, bool))) = (
+let implicit_modules: ref(list((string, string, bool))) =
   ref([
     ("Pervasives", "pervasives", true),
     ("Malloc", "runtime/malloc", false),
-  ]):
-    ref(list((string, string, bool)))
-);
+  ]);
 
 let open_implicit_module = (m, env, in_env) => {
   open Asttypes;
