@@ -1,5 +1,5 @@
-import { decRef, malloc } from './grainRuntime'
-import { allocateString, singleByteString, stringSize } from './dataStructures'
+import { malloc } from './grainRuntime'
+import { allocateString, singleByteString } from './dataStructures'
 import { CharCode } from './charCodes'
 
 /*
@@ -51,107 +51,107 @@ let _DIGITS: usize = -1
 
 function get_DIGITS(): usize {
   if (_DIGITS == -1) {
-    _DIGITS = <usize>(malloc(100 * 4))
-    store<u32>(_DIGITS, 0x00300030, 0 * 4)
-    store<u32>(_DIGITS, 0x00310030, 1 * 4)
-    store<u32>(_DIGITS, 0x00320030, 2 * 4)
-    store<u32>(_DIGITS, 0x00330030, 3 * 4)
-    store<u32>(_DIGITS, 0x00340030, 4 * 4)
-    store<u32>(_DIGITS, 0x00350030, 5 * 4)
-    store<u32>(_DIGITS, 0x00360030, 6 * 4)
-    store<u32>(_DIGITS, 0x00370030, 7 * 4)
-    store<u32>(_DIGITS, 0x00380030, 8 * 4)
-    store<u32>(_DIGITS, 0x00390030, 9 * 4)
-    store<u32>(_DIGITS, 0x00300031, 10 * 4)
-    store<u32>(_DIGITS, 0x00310031, 11 * 4)
-    store<u32>(_DIGITS, 0x00320031, 12 * 4)
-    store<u32>(_DIGITS, 0x00330031, 13 * 4)
-    store<u32>(_DIGITS, 0x00340031, 14 * 4)
-    store<u32>(_DIGITS, 0x00350031, 15 * 4)
-    store<u32>(_DIGITS, 0x00360031, 16 * 4)
-    store<u32>(_DIGITS, 0x00370031, 17 * 4)
-    store<u32>(_DIGITS, 0x00380031, 18 * 4)
-    store<u32>(_DIGITS, 0x00390031, 19 * 4)
-    store<u32>(_DIGITS, 0x00300032, 20 * 4)
-    store<u32>(_DIGITS, 0x00310032, 21 * 4)
-    store<u32>(_DIGITS, 0x00320032, 22 * 4)
-    store<u32>(_DIGITS, 0x00330032, 23 * 4)
-    store<u32>(_DIGITS, 0x00340032, 24 * 4)
-    store<u32>(_DIGITS, 0x00350032, 25 * 4)
-    store<u32>(_DIGITS, 0x00360032, 26 * 4)
-    store<u32>(_DIGITS, 0x00370032, 27 * 4)
-    store<u32>(_DIGITS, 0x00380032, 28 * 4)
-    store<u32>(_DIGITS, 0x00390032, 29 * 4)
-    store<u32>(_DIGITS, 0x00300033, 30 * 4)
-    store<u32>(_DIGITS, 0x00310033, 31 * 4)
-    store<u32>(_DIGITS, 0x00320033, 32 * 4)
-    store<u32>(_DIGITS, 0x00330033, 33 * 4)
-    store<u32>(_DIGITS, 0x00340033, 34 * 4)
-    store<u32>(_DIGITS, 0x00350033, 35 * 4)
-    store<u32>(_DIGITS, 0x00360033, 36 * 4)
-    store<u32>(_DIGITS, 0x00370033, 37 * 4)
-    store<u32>(_DIGITS, 0x00380033, 38 * 4)
-    store<u32>(_DIGITS, 0x00390033, 39 * 4)
-    store<u32>(_DIGITS, 0x00300034, 40 * 4)
-    store<u32>(_DIGITS, 0x00310034, 41 * 4)
-    store<u32>(_DIGITS, 0x00320034, 42 * 4)
-    store<u32>(_DIGITS, 0x00330034, 43 * 4)
-    store<u32>(_DIGITS, 0x00340034, 44 * 4)
-    store<u32>(_DIGITS, 0x00350034, 45 * 4)
-    store<u32>(_DIGITS, 0x00360034, 46 * 4)
-    store<u32>(_DIGITS, 0x00370034, 47 * 4)
-    store<u32>(_DIGITS, 0x00380034, 48 * 4)
-    store<u32>(_DIGITS, 0x00390034, 49 * 4)
-    store<u32>(_DIGITS, 0x00300035, 50 * 4)
-    store<u32>(_DIGITS, 0x00310035, 51 * 4)
-    store<u32>(_DIGITS, 0x00320035, 52 * 4)
-    store<u32>(_DIGITS, 0x00330035, 53 * 4)
-    store<u32>(_DIGITS, 0x00340035, 54 * 4)
-    store<u32>(_DIGITS, 0x00350035, 55 * 4)
-    store<u32>(_DIGITS, 0x00360035, 56 * 4)
-    store<u32>(_DIGITS, 0x00370035, 57 * 4)
-    store<u32>(_DIGITS, 0x00380035, 58 * 4)
-    store<u32>(_DIGITS, 0x00390035, 59 * 4)
-    store<u32>(_DIGITS, 0x00300036, 60 * 4)
-    store<u32>(_DIGITS, 0x00310036, 61 * 4)
-    store<u32>(_DIGITS, 0x00320036, 62 * 4)
-    store<u32>(_DIGITS, 0x00330036, 63 * 4)
-    store<u32>(_DIGITS, 0x00340036, 64 * 4)
-    store<u32>(_DIGITS, 0x00350036, 65 * 4)
-    store<u32>(_DIGITS, 0x00360036, 66 * 4)
-    store<u32>(_DIGITS, 0x00370036, 67 * 4)
-    store<u32>(_DIGITS, 0x00380036, 68 * 4)
-    store<u32>(_DIGITS, 0x00390036, 69 * 4)
-    store<u32>(_DIGITS, 0x00300037, 70 * 4)
-    store<u32>(_DIGITS, 0x00310037, 71 * 4)
-    store<u32>(_DIGITS, 0x00320037, 72 * 4)
-    store<u32>(_DIGITS, 0x00330037, 73 * 4)
-    store<u32>(_DIGITS, 0x00340037, 74 * 4)
-    store<u32>(_DIGITS, 0x00350037, 75 * 4)
-    store<u32>(_DIGITS, 0x00360037, 76 * 4)
-    store<u32>(_DIGITS, 0x00370037, 77 * 4)
-    store<u32>(_DIGITS, 0x00380037, 78 * 4)
-    store<u32>(_DIGITS, 0x00390037, 79 * 4)
-    store<u32>(_DIGITS, 0x00300038, 80 * 4)
-    store<u32>(_DIGITS, 0x00310038, 81 * 4)
-    store<u32>(_DIGITS, 0x00320038, 82 * 4)
-    store<u32>(_DIGITS, 0x00330038, 83 * 4)
-    store<u32>(_DIGITS, 0x00340038, 84 * 4)
-    store<u32>(_DIGITS, 0x00350038, 85 * 4)
-    store<u32>(_DIGITS, 0x00360038, 86 * 4)
-    store<u32>(_DIGITS, 0x00370038, 87 * 4)
-    store<u32>(_DIGITS, 0x00380038, 88 * 4)
-    store<u32>(_DIGITS, 0x00390038, 89 * 4)
-    store<u32>(_DIGITS, 0x00300039, 90 * 4)
-    store<u32>(_DIGITS, 0x00310039, 91 * 4)
-    store<u32>(_DIGITS, 0x00320039, 92 * 4)
-    store<u32>(_DIGITS, 0x00330039, 93 * 4)
-    store<u32>(_DIGITS, 0x00340039, 94 * 4)
-    store<u32>(_DIGITS, 0x00350039, 95 * 4)
-    store<u32>(_DIGITS, 0x00360039, 96 * 4)
-    store<u32>(_DIGITS, 0x00370039, 97 * 4)
-    store<u32>(_DIGITS, 0x00380039, 98 * 4)
-    store<u32>(_DIGITS, 0x00390039, 99 * 4)
+    _DIGITS = <usize>(malloc(100 * 2))
+    store<u16>(_DIGITS, 0x3030, 0 * 2)
+    store<u16>(_DIGITS, 0x3130, 1 * 2)
+    store<u16>(_DIGITS, 0x3230, 2 * 2)
+    store<u16>(_DIGITS, 0x3330, 3 * 2)
+    store<u16>(_DIGITS, 0x3430, 4 * 2)
+    store<u16>(_DIGITS, 0x3530, 5 * 2)
+    store<u16>(_DIGITS, 0x3630, 6 * 2)
+    store<u16>(_DIGITS, 0x3730, 7 * 2)
+    store<u16>(_DIGITS, 0x3830, 8 * 2)
+    store<u16>(_DIGITS, 0x3930, 9 * 2)
+    store<u16>(_DIGITS, 0x3031, 10 * 2)
+    store<u16>(_DIGITS, 0x3131, 11 * 2)
+    store<u16>(_DIGITS, 0x3231, 12 * 2)
+    store<u16>(_DIGITS, 0x3331, 13 * 2)
+    store<u16>(_DIGITS, 0x3431, 14 * 2)
+    store<u16>(_DIGITS, 0x3531, 15 * 2)
+    store<u16>(_DIGITS, 0x3631, 16 * 2)
+    store<u16>(_DIGITS, 0x3731, 17 * 2)
+    store<u16>(_DIGITS, 0x3831, 18 * 2)
+    store<u16>(_DIGITS, 0x3931, 19 * 2)
+    store<u16>(_DIGITS, 0x3032, 20 * 2)
+    store<u16>(_DIGITS, 0x3132, 21 * 2)
+    store<u16>(_DIGITS, 0x3232, 22 * 2)
+    store<u16>(_DIGITS, 0x3332, 23 * 2)
+    store<u16>(_DIGITS, 0x3432, 24 * 2)
+    store<u16>(_DIGITS, 0x3532, 25 * 2)
+    store<u16>(_DIGITS, 0x3632, 26 * 2)
+    store<u16>(_DIGITS, 0x3732, 27 * 2)
+    store<u16>(_DIGITS, 0x3832, 28 * 2)
+    store<u16>(_DIGITS, 0x3932, 29 * 2)
+    store<u16>(_DIGITS, 0x3033, 30 * 2)
+    store<u16>(_DIGITS, 0x3133, 31 * 2)
+    store<u16>(_DIGITS, 0x3233, 32 * 2)
+    store<u16>(_DIGITS, 0x3333, 33 * 2)
+    store<u16>(_DIGITS, 0x3433, 34 * 2)
+    store<u16>(_DIGITS, 0x3533, 35 * 2)
+    store<u16>(_DIGITS, 0x3633, 36 * 2)
+    store<u16>(_DIGITS, 0x3733, 37 * 2)
+    store<u16>(_DIGITS, 0x3833, 38 * 2)
+    store<u16>(_DIGITS, 0x3933, 39 * 2)
+    store<u16>(_DIGITS, 0x3034, 40 * 2)
+    store<u16>(_DIGITS, 0x3134, 41 * 2)
+    store<u16>(_DIGITS, 0x3234, 42 * 2)
+    store<u16>(_DIGITS, 0x3334, 43 * 2)
+    store<u16>(_DIGITS, 0x3434, 44 * 2)
+    store<u16>(_DIGITS, 0x3534, 45 * 2)
+    store<u16>(_DIGITS, 0x3634, 46 * 2)
+    store<u16>(_DIGITS, 0x3734, 47 * 2)
+    store<u16>(_DIGITS, 0x3834, 48 * 2)
+    store<u16>(_DIGITS, 0x3934, 49 * 2)
+    store<u16>(_DIGITS, 0x3035, 50 * 2)
+    store<u16>(_DIGITS, 0x3135, 51 * 2)
+    store<u16>(_DIGITS, 0x3235, 52 * 2)
+    store<u16>(_DIGITS, 0x3335, 53 * 2)
+    store<u16>(_DIGITS, 0x3435, 54 * 2)
+    store<u16>(_DIGITS, 0x3535, 55 * 2)
+    store<u16>(_DIGITS, 0x3635, 56 * 2)
+    store<u16>(_DIGITS, 0x3735, 57 * 2)
+    store<u16>(_DIGITS, 0x3835, 58 * 2)
+    store<u16>(_DIGITS, 0x3935, 59 * 2)
+    store<u16>(_DIGITS, 0x3036, 60 * 2)
+    store<u16>(_DIGITS, 0x3136, 61 * 2)
+    store<u16>(_DIGITS, 0x3236, 62 * 2)
+    store<u16>(_DIGITS, 0x3336, 63 * 2)
+    store<u16>(_DIGITS, 0x3436, 64 * 2)
+    store<u16>(_DIGITS, 0x3536, 65 * 2)
+    store<u16>(_DIGITS, 0x3636, 66 * 2)
+    store<u16>(_DIGITS, 0x3736, 67 * 2)
+    store<u16>(_DIGITS, 0x3836, 68 * 2)
+    store<u16>(_DIGITS, 0x3936, 69 * 2)
+    store<u16>(_DIGITS, 0x3037, 70 * 2)
+    store<u16>(_DIGITS, 0x3137, 71 * 2)
+    store<u16>(_DIGITS, 0x3237, 72 * 2)
+    store<u16>(_DIGITS, 0x3337, 73 * 2)
+    store<u16>(_DIGITS, 0x3437, 74 * 2)
+    store<u16>(_DIGITS, 0x3537, 75 * 2)
+    store<u16>(_DIGITS, 0x3637, 76 * 2)
+    store<u16>(_DIGITS, 0x3737, 77 * 2)
+    store<u16>(_DIGITS, 0x3837, 78 * 2)
+    store<u16>(_DIGITS, 0x3937, 79 * 2)
+    store<u16>(_DIGITS, 0x3038, 80 * 2)
+    store<u16>(_DIGITS, 0x3138, 81 * 2)
+    store<u16>(_DIGITS, 0x3238, 82 * 2)
+    store<u16>(_DIGITS, 0x3338, 83 * 2)
+    store<u16>(_DIGITS, 0x3438, 84 * 2)
+    store<u16>(_DIGITS, 0x3538, 85 * 2)
+    store<u16>(_DIGITS, 0x3638, 86 * 2)
+    store<u16>(_DIGITS, 0x3738, 87 * 2)
+    store<u16>(_DIGITS, 0x3838, 88 * 2)
+    store<u16>(_DIGITS, 0x3938, 89 * 2)
+    store<u16>(_DIGITS, 0x3039, 90 * 2)
+    store<u16>(_DIGITS, 0x3139, 91 * 2)
+    store<u16>(_DIGITS, 0x3239, 92 * 2)
+    store<u16>(_DIGITS, 0x3339, 93 * 2)
+    store<u16>(_DIGITS, 0x3439, 94 * 2)
+    store<u16>(_DIGITS, 0x3539, 95 * 2)
+    store<u16>(_DIGITS, 0x3639, 96 * 2)
+    store<u16>(_DIGITS, 0x3739, 97 * 2)
+    store<u16>(_DIGITS, 0x3839, 98 * 2)
+    store<u16>(_DIGITS, 0x3939, 99 * 2)
   }
   return _DIGITS
 }
@@ -162,278 +162,278 @@ let _HEX_DIGITS: usize = -1
 
 function get_HEX_DIGITS(): usize {
   if (_HEX_DIGITS == -1) {
-    _HEX_DIGITS = <usize>(malloc(256 << 2))
-    store<u32>(_HEX_DIGITS, 0x00300030, 0 * 4) // 00
-    store<u32>(_HEX_DIGITS, 0x00310030, 1 * 4) // 01
-    store<u32>(_HEX_DIGITS, 0x00320030, 2 * 4)
-    store<u32>(_HEX_DIGITS, 0x00330030, 3 * 4)
-    store<u32>(_HEX_DIGITS, 0x00340030, 4 * 4)
-    store<u32>(_HEX_DIGITS, 0x00350030, 5 * 4)
-    store<u32>(_HEX_DIGITS, 0x00360030, 6 * 4)
-    store<u32>(_HEX_DIGITS, 0x00370030, 7 * 4)
-    store<u32>(_HEX_DIGITS, 0x00380030, 8 * 4)
-    store<u32>(_HEX_DIGITS, 0x00390030, 9 * 4) // 09
-    store<u32>(_HEX_DIGITS, 0x00610030, 10 * 4) // 0a
-    store<u32>(_HEX_DIGITS, 0x00620030, 11 * 4)
-    store<u32>(_HEX_DIGITS, 0x00630030, 12 * 4)
-    store<u32>(_HEX_DIGITS, 0x00640030, 13 * 4)
-    store<u32>(_HEX_DIGITS, 0x00650030, 14 * 4)
-    store<u32>(_HEX_DIGITS, 0x00660030, 15 * 4) // 0f
+    _HEX_DIGITS = <usize>(malloc(256 << 1))
+    store<u16>(_HEX_DIGITS, 0x3030, 0 * 2) // 00
+    store<u16>(_HEX_DIGITS, 0x3130, 1 * 2) // 01
+    store<u16>(_HEX_DIGITS, 0x3230, 2 * 2)
+    store<u16>(_HEX_DIGITS, 0x3330, 3 * 2)
+    store<u16>(_HEX_DIGITS, 0x3430, 4 * 2)
+    store<u16>(_HEX_DIGITS, 0x3530, 5 * 2)
+    store<u16>(_HEX_DIGITS, 0x3630, 6 * 2)
+    store<u16>(_HEX_DIGITS, 0x3730, 7 * 2)
+    store<u16>(_HEX_DIGITS, 0x3830, 8 * 2)
+    store<u16>(_HEX_DIGITS, 0x3930, 9 * 2) // 09
+    store<u16>(_HEX_DIGITS, 0x6130, 10 * 2) // 0a
+    store<u16>(_HEX_DIGITS, 0x6230, 11 * 2)
+    store<u16>(_HEX_DIGITS, 0x6330, 12 * 2)
+    store<u16>(_HEX_DIGITS, 0x6430, 13 * 2)
+    store<u16>(_HEX_DIGITS, 0x6530, 14 * 2)
+    store<u16>(_HEX_DIGITS, 0x6630, 15 * 2) // 0f
 
-    store<u32>(_HEX_DIGITS, 0x00300031, 16 * 4) // 10
-    store<u32>(_HEX_DIGITS, 0x00310031, 17 * 4)
-    store<u32>(_HEX_DIGITS, 0x00320031, 18 * 4)
-    store<u32>(_HEX_DIGITS, 0x00330031, 19 * 4)
-    store<u32>(_HEX_DIGITS, 0x00340031, 20 * 4)
-    store<u32>(_HEX_DIGITS, 0x00350031, 21 * 4)
-    store<u32>(_HEX_DIGITS, 0x00360031, 22 * 4)
-    store<u32>(_HEX_DIGITS, 0x00370031, 23 * 4)
-    store<u32>(_HEX_DIGITS, 0x00380031, 24 * 4)
-    store<u32>(_HEX_DIGITS, 0x00390031, 25 * 4)
-    store<u32>(_HEX_DIGITS, 0x00610031, 26 * 4)
-    store<u32>(_HEX_DIGITS, 0x00620031, 27 * 4)
-    store<u32>(_HEX_DIGITS, 0x00630031, 28 * 4)
-    store<u32>(_HEX_DIGITS, 0x00640031, 29 * 4)
-    store<u32>(_HEX_DIGITS, 0x00650031, 30 * 4)
-    store<u32>(_HEX_DIGITS, 0x00660031, 31 * 4) // 1f
+    store<u16>(_HEX_DIGITS, 0x3031, 16 * 2) // 10
+    store<u16>(_HEX_DIGITS, 0x3131, 17 * 2)
+    store<u16>(_HEX_DIGITS, 0x3231, 18 * 2)
+    store<u16>(_HEX_DIGITS, 0x3331, 19 * 2)
+    store<u16>(_HEX_DIGITS, 0x3431, 20 * 2)
+    store<u16>(_HEX_DIGITS, 0x3531, 21 * 2)
+    store<u16>(_HEX_DIGITS, 0x3631, 22 * 2)
+    store<u16>(_HEX_DIGITS, 0x3731, 23 * 2)
+    store<u16>(_HEX_DIGITS, 0x3831, 24 * 2)
+    store<u16>(_HEX_DIGITS, 0x3931, 25 * 2)
+    store<u16>(_HEX_DIGITS, 0x6131, 26 * 2)
+    store<u16>(_HEX_DIGITS, 0x6231, 27 * 2)
+    store<u16>(_HEX_DIGITS, 0x6331, 28 * 2)
+    store<u16>(_HEX_DIGITS, 0x6431, 29 * 2)
+    store<u16>(_HEX_DIGITS, 0x6531, 30 * 2)
+    store<u16>(_HEX_DIGITS, 0x6631, 31 * 2) // 1f
 
-    store<u32>(_HEX_DIGITS, 0x00300032, 32 * 4) // 20
-    store<u32>(_HEX_DIGITS, 0x00310032, 33 * 4)
-    store<u32>(_HEX_DIGITS, 0x00320032, 34 * 4)
-    store<u32>(_HEX_DIGITS, 0x00330032, 35 * 4)
-    store<u32>(_HEX_DIGITS, 0x00340032, 36 * 4)
-    store<u32>(_HEX_DIGITS, 0x00350032, 37 * 4)
-    store<u32>(_HEX_DIGITS, 0x00360032, 38 * 4)
-    store<u32>(_HEX_DIGITS, 0x00370032, 39 * 4)
-    store<u32>(_HEX_DIGITS, 0x00380032, 40 * 4)
-    store<u32>(_HEX_DIGITS, 0x00390032, 41 * 4)
-    store<u32>(_HEX_DIGITS, 0x00610032, 42 * 4)
-    store<u32>(_HEX_DIGITS, 0x00620032, 43 * 4)
-    store<u32>(_HEX_DIGITS, 0x00630032, 44 * 4)
-    store<u32>(_HEX_DIGITS, 0x00640032, 45 * 4)
-    store<u32>(_HEX_DIGITS, 0x00650032, 46 * 4)
-    store<u32>(_HEX_DIGITS, 0x00660032, 47 * 4) // 2f
+    store<u16>(_HEX_DIGITS, 0x3032, 32 * 2) // 20
+    store<u16>(_HEX_DIGITS, 0x3132, 33 * 2)
+    store<u16>(_HEX_DIGITS, 0x3232, 34 * 2)
+    store<u16>(_HEX_DIGITS, 0x3332, 35 * 2)
+    store<u16>(_HEX_DIGITS, 0x3432, 36 * 2)
+    store<u16>(_HEX_DIGITS, 0x3532, 37 * 2)
+    store<u16>(_HEX_DIGITS, 0x3632, 38 * 2)
+    store<u16>(_HEX_DIGITS, 0x3732, 39 * 2)
+    store<u16>(_HEX_DIGITS, 0x3832, 40 * 2)
+    store<u16>(_HEX_DIGITS, 0x3932, 41 * 2)
+    store<u16>(_HEX_DIGITS, 0x6132, 42 * 2)
+    store<u16>(_HEX_DIGITS, 0x6232, 43 * 2)
+    store<u16>(_HEX_DIGITS, 0x6332, 44 * 2)
+    store<u16>(_HEX_DIGITS, 0x6432, 45 * 2)
+    store<u16>(_HEX_DIGITS, 0x6532, 46 * 2)
+    store<u16>(_HEX_DIGITS, 0x6632, 47 * 2) // 2f
 
-    store<u32>(_HEX_DIGITS, 0x00300033, 48 * 4) // 30
-    store<u32>(_HEX_DIGITS, 0x00310033, 49 * 4)
-    store<u32>(_HEX_DIGITS, 0x00320033, 50 * 4)
-    store<u32>(_HEX_DIGITS, 0x00330033, 51 * 4)
-    store<u32>(_HEX_DIGITS, 0x00340033, 52 * 4)
-    store<u32>(_HEX_DIGITS, 0x00350033, 53 * 4)
-    store<u32>(_HEX_DIGITS, 0x00360033, 54 * 4)
-    store<u32>(_HEX_DIGITS, 0x00370033, 55 * 4)
-    store<u32>(_HEX_DIGITS, 0x00380033, 56 * 4)
-    store<u32>(_HEX_DIGITS, 0x00390033, 57 * 4)
-    store<u32>(_HEX_DIGITS, 0x00610033, 58 * 4)
-    store<u32>(_HEX_DIGITS, 0x00620033, 59 * 4)
-    store<u32>(_HEX_DIGITS, 0x00630033, 60 * 4)
-    store<u32>(_HEX_DIGITS, 0x00640033, 61 * 4)
-    store<u32>(_HEX_DIGITS, 0x00650033, 62 * 4)
-    store<u32>(_HEX_DIGITS, 0x00660033, 63 * 4) // 3f
+    store<u16>(_HEX_DIGITS, 0x3033, 48 * 2) // 30
+    store<u16>(_HEX_DIGITS, 0x3133, 49 * 2)
+    store<u16>(_HEX_DIGITS, 0x3233, 50 * 2)
+    store<u16>(_HEX_DIGITS, 0x3333, 51 * 2)
+    store<u16>(_HEX_DIGITS, 0x3433, 52 * 2)
+    store<u16>(_HEX_DIGITS, 0x3533, 53 * 2)
+    store<u16>(_HEX_DIGITS, 0x3633, 54 * 2)
+    store<u16>(_HEX_DIGITS, 0x3733, 55 * 2)
+    store<u16>(_HEX_DIGITS, 0x3833, 56 * 2)
+    store<u16>(_HEX_DIGITS, 0x3933, 57 * 2)
+    store<u16>(_HEX_DIGITS, 0x6133, 58 * 2)
+    store<u16>(_HEX_DIGITS, 0x6233, 59 * 2)
+    store<u16>(_HEX_DIGITS, 0x6333, 60 * 2)
+    store<u16>(_HEX_DIGITS, 0x6433, 61 * 2)
+    store<u16>(_HEX_DIGITS, 0x6533, 62 * 2)
+    store<u16>(_HEX_DIGITS, 0x6633, 63 * 2) // 3f
 
-    store<u32>(_HEX_DIGITS, 0x00300034, 64 * 4) // 40
-    store<u32>(_HEX_DIGITS, 0x00310034, 65 * 4)
-    store<u32>(_HEX_DIGITS, 0x00320034, 66 * 4)
-    store<u32>(_HEX_DIGITS, 0x00330034, 67 * 4)
-    store<u32>(_HEX_DIGITS, 0x00340034, 68 * 4)
-    store<u32>(_HEX_DIGITS, 0x00350034, 69 * 4)
-    store<u32>(_HEX_DIGITS, 0x00360034, 70 * 4)
-    store<u32>(_HEX_DIGITS, 0x00370034, 71 * 4)
-    store<u32>(_HEX_DIGITS, 0x00380034, 72 * 4)
-    store<u32>(_HEX_DIGITS, 0x00390034, 73 * 4)
-    store<u32>(_HEX_DIGITS, 0x00610034, 74 * 4)
-    store<u32>(_HEX_DIGITS, 0x00620034, 75 * 4)
-    store<u32>(_HEX_DIGITS, 0x00630034, 76 * 4)
-    store<u32>(_HEX_DIGITS, 0x00640034, 77 * 4)
-    store<u32>(_HEX_DIGITS, 0x00650034, 78 * 4)
-    store<u32>(_HEX_DIGITS, 0x00660034, 79 * 4) // 4f
+    store<u16>(_HEX_DIGITS, 0x3034, 64 * 2) // 40
+    store<u16>(_HEX_DIGITS, 0x3134, 65 * 2)
+    store<u16>(_HEX_DIGITS, 0x3234, 66 * 2)
+    store<u16>(_HEX_DIGITS, 0x3334, 67 * 2)
+    store<u16>(_HEX_DIGITS, 0x3434, 68 * 2)
+    store<u16>(_HEX_DIGITS, 0x3534, 69 * 2)
+    store<u16>(_HEX_DIGITS, 0x3634, 70 * 2)
+    store<u16>(_HEX_DIGITS, 0x3734, 71 * 2)
+    store<u16>(_HEX_DIGITS, 0x3834, 72 * 2)
+    store<u16>(_HEX_DIGITS, 0x3934, 73 * 2)
+    store<u16>(_HEX_DIGITS, 0x6134, 74 * 2)
+    store<u16>(_HEX_DIGITS, 0x6234, 75 * 2)
+    store<u16>(_HEX_DIGITS, 0x6334, 76 * 2)
+    store<u16>(_HEX_DIGITS, 0x6434, 77 * 2)
+    store<u16>(_HEX_DIGITS, 0x6534, 78 * 2)
+    store<u16>(_HEX_DIGITS, 0x6634, 79 * 2) // 4f
 
-    store<u32>(_HEX_DIGITS, 0x00300035, 80 * 4) // 50
-    store<u32>(_HEX_DIGITS, 0x00310035, 81 * 4)
-    store<u32>(_HEX_DIGITS, 0x00320035, 82 * 4)
-    store<u32>(_HEX_DIGITS, 0x00330035, 83 * 4)
-    store<u32>(_HEX_DIGITS, 0x00340035, 84 * 4)
-    store<u32>(_HEX_DIGITS, 0x00350035, 85 * 4)
-    store<u32>(_HEX_DIGITS, 0x00360035, 86 * 4)
-    store<u32>(_HEX_DIGITS, 0x00370035, 87 * 4)
-    store<u32>(_HEX_DIGITS, 0x00380035, 88 * 4)
-    store<u32>(_HEX_DIGITS, 0x00390035, 89 * 4)
-    store<u32>(_HEX_DIGITS, 0x00610035, 90 * 4)
-    store<u32>(_HEX_DIGITS, 0x00620035, 91 * 4)
-    store<u32>(_HEX_DIGITS, 0x00630035, 92 * 4)
-    store<u32>(_HEX_DIGITS, 0x00640035, 93 * 4)
-    store<u32>(_HEX_DIGITS, 0x00650035, 94 * 4)
-    store<u32>(_HEX_DIGITS, 0x00660035, 95 * 4) // 5f
+    store<u16>(_HEX_DIGITS, 0x3035, 80 * 2) // 50
+    store<u16>(_HEX_DIGITS, 0x3135, 81 * 2)
+    store<u16>(_HEX_DIGITS, 0x3235, 82 * 2)
+    store<u16>(_HEX_DIGITS, 0x3335, 83 * 2)
+    store<u16>(_HEX_DIGITS, 0x3435, 84 * 2)
+    store<u16>(_HEX_DIGITS, 0x3535, 85 * 2)
+    store<u16>(_HEX_DIGITS, 0x3635, 86 * 2)
+    store<u16>(_HEX_DIGITS, 0x3735, 87 * 2)
+    store<u16>(_HEX_DIGITS, 0x3835, 88 * 2)
+    store<u16>(_HEX_DIGITS, 0x3935, 89 * 2)
+    store<u16>(_HEX_DIGITS, 0x6135, 90 * 2)
+    store<u16>(_HEX_DIGITS, 0x6235, 91 * 2)
+    store<u16>(_HEX_DIGITS, 0x6335, 92 * 2)
+    store<u16>(_HEX_DIGITS, 0x6435, 93 * 2)
+    store<u16>(_HEX_DIGITS, 0x6535, 94 * 2)
+    store<u16>(_HEX_DIGITS, 0x6635, 95 * 2) // 5f
 
-    store<u32>(_HEX_DIGITS, 0x00300036, 96 * 4) // 60
-    store<u32>(_HEX_DIGITS, 0x00310036, 97 * 4)
-    store<u32>(_HEX_DIGITS, 0x00320036, 98 * 4)
-    store<u32>(_HEX_DIGITS, 0x00330036, 99 * 4)
-    store<u32>(_HEX_DIGITS, 0x00340036, 100 * 4)
-    store<u32>(_HEX_DIGITS, 0x00350036, 101 * 4)
-    store<u32>(_HEX_DIGITS, 0x00360036, 102 * 4)
-    store<u32>(_HEX_DIGITS, 0x00370036, 103 * 4)
-    store<u32>(_HEX_DIGITS, 0x00380036, 104 * 4)
-    store<u32>(_HEX_DIGITS, 0x00390036, 105 * 4)
-    store<u32>(_HEX_DIGITS, 0x00610036, 106 * 4)
-    store<u32>(_HEX_DIGITS, 0x00620036, 107 * 4)
-    store<u32>(_HEX_DIGITS, 0x00630036, 108 * 4)
-    store<u32>(_HEX_DIGITS, 0x00640036, 109 * 4)
-    store<u32>(_HEX_DIGITS, 0x00650036, 110 * 4)
-    store<u32>(_HEX_DIGITS, 0x00660036, 111 * 4) // 6f
+    store<u16>(_HEX_DIGITS, 0x3036, 96 * 2) // 60
+    store<u16>(_HEX_DIGITS, 0x3136, 97 * 2)
+    store<u16>(_HEX_DIGITS, 0x3236, 98 * 2)
+    store<u16>(_HEX_DIGITS, 0x3336, 99 * 2)
+    store<u16>(_HEX_DIGITS, 0x3436, 100 * 2)
+    store<u16>(_HEX_DIGITS, 0x3536, 101 * 2)
+    store<u16>(_HEX_DIGITS, 0x3636, 102 * 2)
+    store<u16>(_HEX_DIGITS, 0x3736, 103 * 2)
+    store<u16>(_HEX_DIGITS, 0x3836, 104 * 2)
+    store<u16>(_HEX_DIGITS, 0x3936, 105 * 2)
+    store<u16>(_HEX_DIGITS, 0x6136, 106 * 2)
+    store<u16>(_HEX_DIGITS, 0x6236, 107 * 2)
+    store<u16>(_HEX_DIGITS, 0x6336, 108 * 2)
+    store<u16>(_HEX_DIGITS, 0x6436, 109 * 2)
+    store<u16>(_HEX_DIGITS, 0x6536, 110 * 2)
+    store<u16>(_HEX_DIGITS, 0x6636, 111 * 2) // 6f
 
-    store<u32>(_HEX_DIGITS, 0x00300037, 112 * 4) // 70
-    store<u32>(_HEX_DIGITS, 0x00310037, 113 * 4)
-    store<u32>(_HEX_DIGITS, 0x00320037, 114 * 4)
-    store<u32>(_HEX_DIGITS, 0x00330037, 115 * 4)
-    store<u32>(_HEX_DIGITS, 0x00340037, 116 * 4)
-    store<u32>(_HEX_DIGITS, 0x00350037, 117 * 4)
-    store<u32>(_HEX_DIGITS, 0x00360037, 118 * 4)
-    store<u32>(_HEX_DIGITS, 0x00370037, 119 * 4)
-    store<u32>(_HEX_DIGITS, 0x00380037, 120 * 4)
-    store<u32>(_HEX_DIGITS, 0x00390037, 121 * 4)
-    store<u32>(_HEX_DIGITS, 0x00610037, 122 * 4)
-    store<u32>(_HEX_DIGITS, 0x00620037, 123 * 4)
-    store<u32>(_HEX_DIGITS, 0x00630037, 124 * 4)
-    store<u32>(_HEX_DIGITS, 0x00640037, 125 * 4)
-    store<u32>(_HEX_DIGITS, 0x00650037, 126 * 4)
-    store<u32>(_HEX_DIGITS, 0x00660037, 127 * 4) // 7f
+    store<u16>(_HEX_DIGITS, 0x3037, 112 * 2) // 70
+    store<u16>(_HEX_DIGITS, 0x3137, 113 * 2)
+    store<u16>(_HEX_DIGITS, 0x3237, 114 * 2)
+    store<u16>(_HEX_DIGITS, 0x3337, 115 * 2)
+    store<u16>(_HEX_DIGITS, 0x3437, 116 * 2)
+    store<u16>(_HEX_DIGITS, 0x3537, 117 * 2)
+    store<u16>(_HEX_DIGITS, 0x3637, 118 * 2)
+    store<u16>(_HEX_DIGITS, 0x3737, 119 * 2)
+    store<u16>(_HEX_DIGITS, 0x3837, 120 * 2)
+    store<u16>(_HEX_DIGITS, 0x3937, 121 * 2)
+    store<u16>(_HEX_DIGITS, 0x6137, 122 * 2)
+    store<u16>(_HEX_DIGITS, 0x6237, 123 * 2)
+    store<u16>(_HEX_DIGITS, 0x6337, 124 * 2)
+    store<u16>(_HEX_DIGITS, 0x6437, 125 * 2)
+    store<u16>(_HEX_DIGITS, 0x6537, 126 * 2)
+    store<u16>(_HEX_DIGITS, 0x6637, 127 * 2) // 7f
 
-    store<u32>(_HEX_DIGITS, 0x00300038, 128 * 4) // 80
-    store<u32>(_HEX_DIGITS, 0x00310038, 129 * 4)
-    store<u32>(_HEX_DIGITS, 0x00320038, 130 * 4)
-    store<u32>(_HEX_DIGITS, 0x00330038, 131 * 4)
-    store<u32>(_HEX_DIGITS, 0x00340038, 132 * 4)
-    store<u32>(_HEX_DIGITS, 0x00350038, 133 * 4)
-    store<u32>(_HEX_DIGITS, 0x00360038, 134 * 4)
-    store<u32>(_HEX_DIGITS, 0x00370038, 135 * 4)
-    store<u32>(_HEX_DIGITS, 0x00380038, 136 * 4)
-    store<u32>(_HEX_DIGITS, 0x00390038, 137 * 4)
-    store<u32>(_HEX_DIGITS, 0x00610038, 138 * 4)
-    store<u32>(_HEX_DIGITS, 0x00620038, 139 * 4)
-    store<u32>(_HEX_DIGITS, 0x00630038, 140 * 4)
-    store<u32>(_HEX_DIGITS, 0x00640038, 141 * 4)
-    store<u32>(_HEX_DIGITS, 0x00650038, 142 * 4)
-    store<u32>(_HEX_DIGITS, 0x00660038, 143 * 4) // 8f
+    store<u16>(_HEX_DIGITS, 0x3038, 128 * 2) // 80
+    store<u16>(_HEX_DIGITS, 0x3138, 129 * 2)
+    store<u16>(_HEX_DIGITS, 0x3238, 130 * 2)
+    store<u16>(_HEX_DIGITS, 0x3338, 131 * 2)
+    store<u16>(_HEX_DIGITS, 0x3438, 132 * 2)
+    store<u16>(_HEX_DIGITS, 0x3538, 133 * 2)
+    store<u16>(_HEX_DIGITS, 0x3638, 134 * 2)
+    store<u16>(_HEX_DIGITS, 0x3738, 135 * 2)
+    store<u16>(_HEX_DIGITS, 0x3838, 136 * 2)
+    store<u16>(_HEX_DIGITS, 0x3938, 137 * 2)
+    store<u16>(_HEX_DIGITS, 0x6138, 138 * 2)
+    store<u16>(_HEX_DIGITS, 0x6238, 139 * 2)
+    store<u16>(_HEX_DIGITS, 0x6338, 140 * 2)
+    store<u16>(_HEX_DIGITS, 0x6438, 141 * 2)
+    store<u16>(_HEX_DIGITS, 0x6538, 142 * 2)
+    store<u16>(_HEX_DIGITS, 0x6638, 143 * 2) // 8f
 
-    store<u32>(_HEX_DIGITS, 0x00300039, 144 * 4) // 90
-    store<u32>(_HEX_DIGITS, 0x00310039, 145 * 4)
-    store<u32>(_HEX_DIGITS, 0x00320039, 146 * 4)
-    store<u32>(_HEX_DIGITS, 0x00330039, 147 * 4)
-    store<u32>(_HEX_DIGITS, 0x00340039, 148 * 4)
-    store<u32>(_HEX_DIGITS, 0x00350039, 149 * 4)
-    store<u32>(_HEX_DIGITS, 0x00360039, 150 * 4)
-    store<u32>(_HEX_DIGITS, 0x00370039, 151 * 4)
-    store<u32>(_HEX_DIGITS, 0x00380039, 152 * 4)
-    store<u32>(_HEX_DIGITS, 0x00390039, 153 * 4)
-    store<u32>(_HEX_DIGITS, 0x00610039, 154 * 4)
-    store<u32>(_HEX_DIGITS, 0x00620039, 155 * 4)
-    store<u32>(_HEX_DIGITS, 0x00630039, 156 * 4)
-    store<u32>(_HEX_DIGITS, 0x00640039, 157 * 4)
-    store<u32>(_HEX_DIGITS, 0x00650039, 158 * 4)
-    store<u32>(_HEX_DIGITS, 0x00660039, 159 * 4) // 9f
+    store<u16>(_HEX_DIGITS, 0x3039, 144 * 2) // 90
+    store<u16>(_HEX_DIGITS, 0x3139, 145 * 2)
+    store<u16>(_HEX_DIGITS, 0x3239, 146 * 2)
+    store<u16>(_HEX_DIGITS, 0x3339, 147 * 2)
+    store<u16>(_HEX_DIGITS, 0x3439, 148 * 2)
+    store<u16>(_HEX_DIGITS, 0x3539, 149 * 2)
+    store<u16>(_HEX_DIGITS, 0x3639, 150 * 2)
+    store<u16>(_HEX_DIGITS, 0x3739, 151 * 2)
+    store<u16>(_HEX_DIGITS, 0x3839, 152 * 2)
+    store<u16>(_HEX_DIGITS, 0x3939, 153 * 2)
+    store<u16>(_HEX_DIGITS, 0x6139, 154 * 2)
+    store<u16>(_HEX_DIGITS, 0x6239, 155 * 2)
+    store<u16>(_HEX_DIGITS, 0x6339, 156 * 2)
+    store<u16>(_HEX_DIGITS, 0x6439, 157 * 2)
+    store<u16>(_HEX_DIGITS, 0x6539, 158 * 2)
+    store<u16>(_HEX_DIGITS, 0x6639, 159 * 2) // 9f
 
-    store<u32>(_HEX_DIGITS, 0x00300061, 160 * 4) // a0
-    store<u32>(_HEX_DIGITS, 0x00310061, 161 * 4)
-    store<u32>(_HEX_DIGITS, 0x00320061, 162 * 4)
-    store<u32>(_HEX_DIGITS, 0x00330061, 163 * 4)
-    store<u32>(_HEX_DIGITS, 0x00340061, 164 * 4)
-    store<u32>(_HEX_DIGITS, 0x00350061, 165 * 4)
-    store<u32>(_HEX_DIGITS, 0x00360061, 166 * 4)
-    store<u32>(_HEX_DIGITS, 0x00370061, 167 * 4)
-    store<u32>(_HEX_DIGITS, 0x00380061, 168 * 4)
-    store<u32>(_HEX_DIGITS, 0x00390061, 169 * 4)
-    store<u32>(_HEX_DIGITS, 0x00610061, 170 * 4)
-    store<u32>(_HEX_DIGITS, 0x00620061, 171 * 4)
-    store<u32>(_HEX_DIGITS, 0x00630061, 172 * 4)
-    store<u32>(_HEX_DIGITS, 0x00640061, 173 * 4)
-    store<u32>(_HEX_DIGITS, 0x00650061, 174 * 4)
-    store<u32>(_HEX_DIGITS, 0x00660061, 175 * 4) // af
+    store<u16>(_HEX_DIGITS, 0x3061, 160 * 2) // a0
+    store<u16>(_HEX_DIGITS, 0x3161, 161 * 2)
+    store<u16>(_HEX_DIGITS, 0x3261, 162 * 2)
+    store<u16>(_HEX_DIGITS, 0x3361, 163 * 2)
+    store<u16>(_HEX_DIGITS, 0x3461, 164 * 2)
+    store<u16>(_HEX_DIGITS, 0x3561, 165 * 2)
+    store<u16>(_HEX_DIGITS, 0x3661, 166 * 2)
+    store<u16>(_HEX_DIGITS, 0x3761, 167 * 2)
+    store<u16>(_HEX_DIGITS, 0x3861, 168 * 2)
+    store<u16>(_HEX_DIGITS, 0x3961, 169 * 2)
+    store<u16>(_HEX_DIGITS, 0x6161, 170 * 2)
+    store<u16>(_HEX_DIGITS, 0x6261, 171 * 2)
+    store<u16>(_HEX_DIGITS, 0x6361, 172 * 2)
+    store<u16>(_HEX_DIGITS, 0x6461, 173 * 2)
+    store<u16>(_HEX_DIGITS, 0x6561, 174 * 2)
+    store<u16>(_HEX_DIGITS, 0x6661, 175 * 2) // af
 
-    store<u32>(_HEX_DIGITS, 0x00300062, 176 * 4) // b0
-    store<u32>(_HEX_DIGITS, 0x00310062, 177 * 4)
-    store<u32>(_HEX_DIGITS, 0x00320062, 178 * 4)
-    store<u32>(_HEX_DIGITS, 0x00330062, 179 * 4)
-    store<u32>(_HEX_DIGITS, 0x00340062, 180 * 4)
-    store<u32>(_HEX_DIGITS, 0x00350062, 181 * 4)
-    store<u32>(_HEX_DIGITS, 0x00360062, 182 * 4)
-    store<u32>(_HEX_DIGITS, 0x00370062, 183 * 4)
-    store<u32>(_HEX_DIGITS, 0x00380062, 184 * 4)
-    store<u32>(_HEX_DIGITS, 0x00390062, 185 * 4)
-    store<u32>(_HEX_DIGITS, 0x00610062, 186 * 4)
-    store<u32>(_HEX_DIGITS, 0x00620062, 187 * 4)
-    store<u32>(_HEX_DIGITS, 0x00630062, 188 * 4)
-    store<u32>(_HEX_DIGITS, 0x00640062, 189 * 4)
-    store<u32>(_HEX_DIGITS, 0x00650062, 190 * 4)
-    store<u32>(_HEX_DIGITS, 0x00660062, 191 * 4) // bf
+    store<u16>(_HEX_DIGITS, 0x3062, 176 * 2) // b0
+    store<u16>(_HEX_DIGITS, 0x3162, 177 * 2)
+    store<u16>(_HEX_DIGITS, 0x3262, 178 * 2)
+    store<u16>(_HEX_DIGITS, 0x3362, 179 * 2)
+    store<u16>(_HEX_DIGITS, 0x3462, 180 * 2)
+    store<u16>(_HEX_DIGITS, 0x3562, 181 * 2)
+    store<u16>(_HEX_DIGITS, 0x3662, 182 * 2)
+    store<u16>(_HEX_DIGITS, 0x3762, 183 * 2)
+    store<u16>(_HEX_DIGITS, 0x3862, 184 * 2)
+    store<u16>(_HEX_DIGITS, 0x3962, 185 * 2)
+    store<u16>(_HEX_DIGITS, 0x6162, 186 * 2)
+    store<u16>(_HEX_DIGITS, 0x6262, 187 * 2)
+    store<u16>(_HEX_DIGITS, 0x6362, 188 * 2)
+    store<u16>(_HEX_DIGITS, 0x6462, 189 * 2)
+    store<u16>(_HEX_DIGITS, 0x6562, 190 * 2)
+    store<u16>(_HEX_DIGITS, 0x6662, 191 * 2) // bf
 
-    store<u32>(_HEX_DIGITS, 0x00300063, 192 * 4) // c0
-    store<u32>(_HEX_DIGITS, 0x00310063, 193 * 4)
-    store<u32>(_HEX_DIGITS, 0x00320063, 194 * 4)
-    store<u32>(_HEX_DIGITS, 0x00330063, 195 * 4)
-    store<u32>(_HEX_DIGITS, 0x00340063, 196 * 4)
-    store<u32>(_HEX_DIGITS, 0x00350063, 197 * 4)
-    store<u32>(_HEX_DIGITS, 0x00360063, 198 * 4)
-    store<u32>(_HEX_DIGITS, 0x00370063, 199 * 4)
-    store<u32>(_HEX_DIGITS, 0x00380063, 200 * 4)
-    store<u32>(_HEX_DIGITS, 0x00390063, 201 * 4)
-    store<u32>(_HEX_DIGITS, 0x00610063, 202 * 4)
-    store<u32>(_HEX_DIGITS, 0x00620063, 203 * 4)
-    store<u32>(_HEX_DIGITS, 0x00630063, 204 * 4)
-    store<u32>(_HEX_DIGITS, 0x00640063, 205 * 4)
-    store<u32>(_HEX_DIGITS, 0x00650063, 206 * 4)
-    store<u32>(_HEX_DIGITS, 0x00660063, 207 * 4) // cf
+    store<u16>(_HEX_DIGITS, 0x3063, 192 * 2) // c0
+    store<u16>(_HEX_DIGITS, 0x3163, 193 * 2)
+    store<u16>(_HEX_DIGITS, 0x3263, 194 * 2)
+    store<u16>(_HEX_DIGITS, 0x3363, 195 * 2)
+    store<u16>(_HEX_DIGITS, 0x3463, 196 * 2)
+    store<u16>(_HEX_DIGITS, 0x3563, 197 * 2)
+    store<u16>(_HEX_DIGITS, 0x3663, 198 * 2)
+    store<u16>(_HEX_DIGITS, 0x3763, 199 * 2)
+    store<u16>(_HEX_DIGITS, 0x3863, 200 * 2)
+    store<u16>(_HEX_DIGITS, 0x3963, 201 * 2)
+    store<u16>(_HEX_DIGITS, 0x6163, 202 * 2)
+    store<u16>(_HEX_DIGITS, 0x6263, 203 * 2)
+    store<u16>(_HEX_DIGITS, 0x6363, 204 * 2)
+    store<u16>(_HEX_DIGITS, 0x6463, 205 * 2)
+    store<u16>(_HEX_DIGITS, 0x6563, 206 * 2)
+    store<u16>(_HEX_DIGITS, 0x6663, 207 * 2) // cf
 
-    store<u32>(_HEX_DIGITS, 0x00300064, 208 * 4) // d0
-    store<u32>(_HEX_DIGITS, 0x00310064, 209 * 4)
-    store<u32>(_HEX_DIGITS, 0x00320064, 210 * 4)
-    store<u32>(_HEX_DIGITS, 0x00330064, 211 * 4)
-    store<u32>(_HEX_DIGITS, 0x00340064, 212 * 4)
-    store<u32>(_HEX_DIGITS, 0x00350064, 213 * 4)
-    store<u32>(_HEX_DIGITS, 0x00360064, 214 * 4)
-    store<u32>(_HEX_DIGITS, 0x00370064, 215 * 4)
-    store<u32>(_HEX_DIGITS, 0x00380064, 216 * 4)
-    store<u32>(_HEX_DIGITS, 0x00390064, 217 * 4)
-    store<u32>(_HEX_DIGITS, 0x00610064, 218 * 4)
-    store<u32>(_HEX_DIGITS, 0x00620064, 219 * 4)
-    store<u32>(_HEX_DIGITS, 0x00630064, 220 * 4)
-    store<u32>(_HEX_DIGITS, 0x00640064, 221 * 4)
-    store<u32>(_HEX_DIGITS, 0x00650064, 222 * 4)
-    store<u32>(_HEX_DIGITS, 0x00660064, 223 * 4) // df
+    store<u16>(_HEX_DIGITS, 0x3064, 208 * 2) // d0
+    store<u16>(_HEX_DIGITS, 0x3164, 209 * 2)
+    store<u16>(_HEX_DIGITS, 0x3264, 210 * 2)
+    store<u16>(_HEX_DIGITS, 0x3364, 211 * 2)
+    store<u16>(_HEX_DIGITS, 0x3464, 212 * 2)
+    store<u16>(_HEX_DIGITS, 0x3564, 213 * 2)
+    store<u16>(_HEX_DIGITS, 0x3664, 214 * 2)
+    store<u16>(_HEX_DIGITS, 0x3764, 215 * 2)
+    store<u16>(_HEX_DIGITS, 0x3864, 216 * 2)
+    store<u16>(_HEX_DIGITS, 0x3964, 217 * 2)
+    store<u16>(_HEX_DIGITS, 0x6164, 218 * 2)
+    store<u16>(_HEX_DIGITS, 0x6264, 219 * 2)
+    store<u16>(_HEX_DIGITS, 0x6364, 220 * 2)
+    store<u16>(_HEX_DIGITS, 0x6464, 221 * 2)
+    store<u16>(_HEX_DIGITS, 0x6564, 222 * 2)
+    store<u16>(_HEX_DIGITS, 0x6664, 223 * 2) // df
 
-    store<u32>(_HEX_DIGITS, 0x00300065, 224 * 4) // e0
-    store<u32>(_HEX_DIGITS, 0x00310065, 225 * 4)
-    store<u32>(_HEX_DIGITS, 0x00320065, 226 * 4)
-    store<u32>(_HEX_DIGITS, 0x00330065, 227 * 4)
-    store<u32>(_HEX_DIGITS, 0x00340065, 228 * 4)
-    store<u32>(_HEX_DIGITS, 0x00350065, 229 * 4)
-    store<u32>(_HEX_DIGITS, 0x00360065, 230 * 4)
-    store<u32>(_HEX_DIGITS, 0x00370065, 231 * 4)
-    store<u32>(_HEX_DIGITS, 0x00380065, 232 * 4)
-    store<u32>(_HEX_DIGITS, 0x00390065, 233 * 4)
-    store<u32>(_HEX_DIGITS, 0x00610065, 234 * 4)
-    store<u32>(_HEX_DIGITS, 0x00620065, 235 * 4)
-    store<u32>(_HEX_DIGITS, 0x00630065, 236 * 4)
-    store<u32>(_HEX_DIGITS, 0x00640065, 237 * 4)
-    store<u32>(_HEX_DIGITS, 0x00650065, 238 * 4)
-    store<u32>(_HEX_DIGITS, 0x00660065, 239 * 4) // ef
+    store<u16>(_HEX_DIGITS, 0x3065, 224 * 2) // e0
+    store<u16>(_HEX_DIGITS, 0x3165, 225 * 2)
+    store<u16>(_HEX_DIGITS, 0x3265, 226 * 2)
+    store<u16>(_HEX_DIGITS, 0x3365, 227 * 2)
+    store<u16>(_HEX_DIGITS, 0x3465, 228 * 2)
+    store<u16>(_HEX_DIGITS, 0x3565, 229 * 2)
+    store<u16>(_HEX_DIGITS, 0x3665, 230 * 2)
+    store<u16>(_HEX_DIGITS, 0x3765, 231 * 2)
+    store<u16>(_HEX_DIGITS, 0x3865, 232 * 2)
+    store<u16>(_HEX_DIGITS, 0x3965, 233 * 2)
+    store<u16>(_HEX_DIGITS, 0x6165, 234 * 2)
+    store<u16>(_HEX_DIGITS, 0x6265, 235 * 2)
+    store<u16>(_HEX_DIGITS, 0x6365, 236 * 2)
+    store<u16>(_HEX_DIGITS, 0x6465, 237 * 2)
+    store<u16>(_HEX_DIGITS, 0x6565, 238 * 2)
+    store<u16>(_HEX_DIGITS, 0x6665, 239 * 2) // ef
 
-    store<u32>(_HEX_DIGITS, 0x00300066, 240 * 4) // f0
-    store<u32>(_HEX_DIGITS, 0x00310066, 241 * 4)
-    store<u32>(_HEX_DIGITS, 0x00320066, 242 * 4)
-    store<u32>(_HEX_DIGITS, 0x00330066, 243 * 4)
-    store<u32>(_HEX_DIGITS, 0x00340066, 244 * 4)
-    store<u32>(_HEX_DIGITS, 0x00350066, 245 * 4)
-    store<u32>(_HEX_DIGITS, 0x00360066, 246 * 4)
-    store<u32>(_HEX_DIGITS, 0x00370066, 247 * 4)
-    store<u32>(_HEX_DIGITS, 0x00380066, 248 * 4)
-    store<u32>(_HEX_DIGITS, 0x00390066, 249 * 4)
-    store<u32>(_HEX_DIGITS, 0x00610066, 250 * 4)
-    store<u32>(_HEX_DIGITS, 0x00620066, 251 * 4)
-    store<u32>(_HEX_DIGITS, 0x00630066, 252 * 4)
-    store<u32>(_HEX_DIGITS, 0x00640066, 253 * 4)
-    store<u32>(_HEX_DIGITS, 0x00650066, 254 * 4)
-    store<u32>(_HEX_DIGITS, 0x00660066, 255 * 4) // ff
+    store<u16>(_HEX_DIGITS, 0x3066, 240 * 2) // f0
+    store<u16>(_HEX_DIGITS, 0x3166, 241 * 2)
+    store<u16>(_HEX_DIGITS, 0x3266, 242 * 2)
+    store<u16>(_HEX_DIGITS, 0x3366, 243 * 2)
+    store<u16>(_HEX_DIGITS, 0x3466, 244 * 2)
+    store<u16>(_HEX_DIGITS, 0x3566, 245 * 2)
+    store<u16>(_HEX_DIGITS, 0x3666, 246 * 2)
+    store<u16>(_HEX_DIGITS, 0x3766, 247 * 2)
+    store<u16>(_HEX_DIGITS, 0x3866, 248 * 2)
+    store<u16>(_HEX_DIGITS, 0x3966, 249 * 2)
+    store<u16>(_HEX_DIGITS, 0x6166, 250 * 2)
+    store<u16>(_HEX_DIGITS, 0x6266, 251 * 2)
+    store<u16>(_HEX_DIGITS, 0x6366, 252 * 2)
+    store<u16>(_HEX_DIGITS, 0x6466, 253 * 2)
+    store<u16>(_HEX_DIGITS, 0x6566, 254 * 2)
+    store<u16>(_HEX_DIGITS, 0x6666, 255 * 2) // ff
   }
   return _HEX_DIGITS
 }
@@ -443,43 +443,43 @@ let _ANY_DIGITS: usize = -1;
 
 function get_ANY_DIGITS(): usize {
   if (_ANY_DIGITS == -1) {
-    _ANY_DIGITS = <usize>(malloc(36 << 1))
-    store<u16>(_ANY_DIGITS, CharCode._0)
-    store<u16>(_ANY_DIGITS, CharCode._1, 2 * 1)
-    store<u16>(_ANY_DIGITS, CharCode._2, 2 * 2)
-    store<u16>(_ANY_DIGITS, CharCode._3, 2 * 3)
-    store<u16>(_ANY_DIGITS, CharCode._4, 2 * 4)
-    store<u16>(_ANY_DIGITS, CharCode._5, 2 * 5)
-    store<u16>(_ANY_DIGITS, CharCode._6, 2 * 6)
-    store<u16>(_ANY_DIGITS, CharCode._7, 2 * 7)
-    store<u16>(_ANY_DIGITS, CharCode._8, 2 * 8)
-    store<u16>(_ANY_DIGITS, CharCode._9, 2 * 9)
-    store<u16>(_ANY_DIGITS, CharCode.a, 2 * 10)
-    store<u16>(_ANY_DIGITS, CharCode.b, 2 * 11)
-    store<u16>(_ANY_DIGITS, CharCode.c, 2 * 12)
-    store<u16>(_ANY_DIGITS, CharCode.d, 2 * 13)
-    store<u16>(_ANY_DIGITS, CharCode.e, 2 * 14)
-    store<u16>(_ANY_DIGITS, CharCode.f, 2 * 15)
-    store<u16>(_ANY_DIGITS, CharCode.g, 2 * 16)
-    store<u16>(_ANY_DIGITS, CharCode.h, 2 * 17)
-    store<u16>(_ANY_DIGITS, CharCode.i, 2 * 18)
-    store<u16>(_ANY_DIGITS, CharCode.j, 2 * 19)
-    store<u16>(_ANY_DIGITS, CharCode.k, 2 * 20)
-    store<u16>(_ANY_DIGITS, CharCode.l, 2 * 21)
-    store<u16>(_ANY_DIGITS, CharCode.m, 2 * 22)
-    store<u16>(_ANY_DIGITS, CharCode.n, 2 * 23)
-    store<u16>(_ANY_DIGITS, CharCode.o, 2 * 24)
-    store<u16>(_ANY_DIGITS, CharCode.p, 2 * 25)
-    store<u16>(_ANY_DIGITS, CharCode.q, 2 * 26)
-    store<u16>(_ANY_DIGITS, CharCode.r, 2 * 27)
-    store<u16>(_ANY_DIGITS, CharCode.s, 2 * 28)
-    store<u16>(_ANY_DIGITS, CharCode.t, 2 * 29)
-    store<u16>(_ANY_DIGITS, CharCode.u, 2 * 30)
-    store<u16>(_ANY_DIGITS, CharCode.v, 2 * 31)
-    store<u16>(_ANY_DIGITS, CharCode.w, 2 * 32)
-    store<u16>(_ANY_DIGITS, CharCode.x, 2 * 33)
-    store<u16>(_ANY_DIGITS, CharCode.y, 2 * 34)
-    store<u16>(_ANY_DIGITS, CharCode.z, 2 * 35)
+    _ANY_DIGITS = <usize>(malloc(36))
+    store<u8>(_ANY_DIGITS, CharCode._0)
+    store<u8>(_ANY_DIGITS, CharCode._1, 1)
+    store<u8>(_ANY_DIGITS, CharCode._2, 2)
+    store<u8>(_ANY_DIGITS, CharCode._3, 3)
+    store<u8>(_ANY_DIGITS, CharCode._4, 4)
+    store<u8>(_ANY_DIGITS, CharCode._5, 5)
+    store<u8>(_ANY_DIGITS, CharCode._6, 6)
+    store<u8>(_ANY_DIGITS, CharCode._7, 7)
+    store<u8>(_ANY_DIGITS, CharCode._8, 8)
+    store<u8>(_ANY_DIGITS, CharCode._9, 9)
+    store<u8>(_ANY_DIGITS, CharCode.a, 10)
+    store<u8>(_ANY_DIGITS, CharCode.b, 11)
+    store<u8>(_ANY_DIGITS, CharCode.c, 12)
+    store<u8>(_ANY_DIGITS, CharCode.d, 13)
+    store<u8>(_ANY_DIGITS, CharCode.e, 14)
+    store<u8>(_ANY_DIGITS, CharCode.f, 15)
+    store<u8>(_ANY_DIGITS, CharCode.g, 16)
+    store<u8>(_ANY_DIGITS, CharCode.h, 17)
+    store<u8>(_ANY_DIGITS, CharCode.i, 18)
+    store<u8>(_ANY_DIGITS, CharCode.j, 19)
+    store<u8>(_ANY_DIGITS, CharCode.k, 20)
+    store<u8>(_ANY_DIGITS, CharCode.l, 21)
+    store<u8>(_ANY_DIGITS, CharCode.m, 22)
+    store<u8>(_ANY_DIGITS, CharCode.n, 23)
+    store<u8>(_ANY_DIGITS, CharCode.o, 24)
+    store<u8>(_ANY_DIGITS, CharCode.p, 25)
+    store<u8>(_ANY_DIGITS, CharCode.q, 26)
+    store<u8>(_ANY_DIGITS, CharCode.r, 27)
+    store<u8>(_ANY_DIGITS, CharCode.s, 28)
+    store<u8>(_ANY_DIGITS, CharCode.t, 29)
+    store<u8>(_ANY_DIGITS, CharCode.u, 30)
+    store<u8>(_ANY_DIGITS, CharCode.v, 31)
+    store<u8>(_ANY_DIGITS, CharCode.w, 32)
+    store<u8>(_ANY_DIGITS, CharCode.x, 33)
+    store<u8>(_ANY_DIGITS, CharCode.y, 34)
+    store<u8>(_ANY_DIGITS, CharCode.z, 35)
   }
   return _ANY_DIGITS
 }
@@ -748,11 +748,11 @@ function utoa32_dec_lut(buffer: usize, num: u32, offset: usize): void {
     let d1 = r / 100;
     let d2 = r % 100;
 
-    let digits1 = <u64>load<u32>(get_DIGITS() + (<usize>d1 << alignof<u32>()));
-    let digits2 = <u64>load<u32>(get_DIGITS() + (<usize>d2 << alignof<u32>()));
+    let digits1 = <u32>load<u16>(get_DIGITS() + (<usize>d1 << alignof<u16>()));
+    let digits2 = <u32>load<u16>(get_DIGITS() + (<usize>d2 << alignof<u16>()));
 
     offset -= 4;
-    store<u64>(buffer + (offset << 1), digits1 | (digits2 << 32));
+    store<u32>(buffer + offset, digits1 | (digits2 << 16));
   }
 
   if (num >= 100) {
@@ -760,18 +760,18 @@ function utoa32_dec_lut(buffer: usize, num: u32, offset: usize): void {
     let d1 = num % 100;
     num = t;
     offset -= 2;
-    let digits = load<u32>(get_DIGITS() + (<usize>d1 << alignof<u32>()));
-    store<u32>(buffer + (offset << 1), digits);
+    let digits = load<u16>(get_DIGITS() + (<usize>d1 << alignof<u16>()));
+    store<u16>(buffer + offset, digits);
   }
 
   if (num >= 10) {
     offset -= 2;
-    let digits = load<u32>(get_DIGITS() + (<usize>num << alignof<u32>()));
-    store<u32>(buffer + (offset << 1), digits);
+    let digits = load<u16>(get_DIGITS() + (<usize>num << alignof<u16>()));
+    store<u16>(buffer + offset, digits);
   } else {
     offset -= 1;
     let digit = CharCode._0 + num;
-    store<u16>(buffer + (offset << 1), digit);
+    store<u8>(buffer + offset, digit);
   }
 }
 
@@ -789,17 +789,17 @@ function utoa64_dec_lut(buffer: usize, num: u64, offset: usize): void {
     let c1 = c / 100;
     let c2 = c % 100;
 
-    let digits1 = <u64>load<u32>(get_DIGITS() + (<usize>c1 << alignof<u32>()));
-    let digits2 = <u64>load<u32>(get_DIGITS() + (<usize>c2 << alignof<u32>()));
+    let digits1 = <u64>load<u16>(get_DIGITS() + (<usize>c1 << alignof<u16>()));
+    let digits2 = <u64>load<u16>(get_DIGITS() + (<usize>c2 << alignof<u16>()));
 
     offset -= 4;
-    store<u64>(buffer + (offset << 1), digits1 | (digits2 << 32));
+    store<u32>(buffer + offset, digits1 | (digits2 << 16));
 
-    digits1 = <u64>load<u32>(get_DIGITS() + (<usize>b1 << alignof<u32>()));
-    digits2 = <u64>load<u32>(get_DIGITS() + (<usize>b2 << alignof<u32>()));
+    digits1 = <u32>load<u16>(get_DIGITS() + (<usize>b1 << alignof<u16>()));
+    digits2 = <u32>load<u16>(get_DIGITS() + (<usize>b2 << alignof<u16>()));
 
     offset -= 4;
-    store<u64>(buffer + (offset << 1), digits1 | (digits2 << 32));
+    store<u32>(buffer + offset, digits1 | (digits2 << 16));
   }
 
   utoa32_dec_lut(buffer, <u32>num, offset);
@@ -809,14 +809,14 @@ function utoa_hex_lut(buffer: usize, num: u64, offset: usize): void {
   const lut = get_HEX_DIGITS()
   while (offset >= 2) {
     offset -= 2;
-    store<u32>(
-      buffer + (offset << 1),
-      load<u32>(lut + ((<usize>num & 0xFF) << alignof<u32>()))
+    store<u16>(
+      buffer + offset,
+      load<u16>(lut + ((<usize>num & 0xFF) << alignof<u16>()))
     );
     num >>= 8;
   }
   if (offset & 1) {
-    store<u16>(buffer, load<u16>(lut + (<usize>num << 6)));
+    store<u8>(buffer, load<u8>(lut + (<usize>num << 5)));
   }
 }
 
@@ -826,7 +826,7 @@ function utoa_dec_simple<T extends number>(buffer: usize, num: T, offset: usize)
     let r = <u32>(num % 10);
     num = changetype<T>(t);
     offset--;
-    store<u16>(buffer + (offset << 1), CharCode._0 + r);
+    store<u8>(buffer + offset, CharCode._0 + r);
   } while (num);
 }
 
@@ -835,7 +835,7 @@ function utoa_hex_simple<T extends number>(buffer: usize, num: T, offset: usize)
     let d = num & 0x0F | CharCode._0;
     d += select<T>(<T>0x27, <T>0, d > <T>CharCode._9);
     offset--;
-    store<u16>(buffer + (offset << 1), d);
+    store<u8>(buffer + offset, d);
     // @ts-ignore: type
     num >>= 4;
   } while (num);
@@ -889,30 +889,17 @@ function utoa64_any_core(buffer: usize, num: u64, offset: usize, radix: i32): vo
     let mask = base - 1;
     do {
       offset--;
-      store<u16>(buffer + (offset << 1), load<u16>(lut + (usize(num & mask) << 1)));
+      store<u8>(buffer + offset, load<u8>(lut + (usize(num & mask))));
       num >>= shift;
     } while (num);
   } else {
     do {
       offset--;
       let q = num / base;
-      store<u16>(buffer + (offset << 1), load<u16>(lut + (usize(num - q * base) << 1)));
+      store<u8>(buffer + offset, load<u8>(lut + (usize(num - q * base))));
       num = q;
     } while (num);
   }
-}
-
-// This file produces JS (UTF-16) strings. We need to re-encode them as UTF-8 for Grain.
-// Note that all of the characters used in the strings produced in this file are ASCII,
-// so we can safely just halve the size of the string.
-// [TODO] (#475) Optimization: Make the functions in this file directly produce UTF-8
-function fixEncoding(utf16String: u32): u32 {
-  let utf16Size = stringSize(utf16String)
-  let utf8Size = utf16Size >> 1
-  let ret = allocateString(utf8Size)
-  String.UTF8.encodeUnsafe(<usize>(utf16String + 8), utf8Size, ret + 8, false)
-  decRef(utf16String)
-  return ret
 }
 
 export function utoa32(value: u32, radix: i32): u32 {
@@ -925,21 +912,18 @@ export function utoa32(value: u32, radix: i32): u32 {
 
   if (radix == 10) {
     let decimals = decimalCount32(value);
-    // (#475) Need to allocated twice the actual size for intermediate UTF-16 representation
-    out = allocateString(decimals << 1);
+    out = allocateString(decimals);
     utoa32_dec_core(out + 8, value, decimals);
   } else if (radix == 16) {
     let decimals = (31 - clz(value) >> 2) + 1;
-    // (#475) Need to allocated twice the actual size for intermediate UTF-16 representation
-    out = allocateString(decimals << 1);
+    out = allocateString(decimals);
     utoa32_hex_core(out + 8, value, decimals);
   } else {
     let decimals = ulog_base(value, radix);
-    // (#475) Need to allocated twice the actual size for intermediate UTF-16 representation
-    out = allocateString(decimals << 1);
+    out = allocateString(decimals);
     utoa64_any_core(out + 8, value, decimals, radix);
   }
-  return fixEncoding(out); // retains
+  return out; // retains
 }
 
 export function itoa32(value: i32, radix: i32): u32 {
@@ -955,24 +939,20 @@ export function itoa32(value: i32, radix: i32): u32 {
 
   if (radix == 10) {
     let decimals = decimalCount32(value) + sign;
-    // (#475) Need to allocated twice the actual size for intermediate UTF-16 representation
-    out = allocateString(decimals << 1);
+    out = allocateString(decimals);
     utoa32_dec_core(<usize>(out + 8), value, decimals);
   } else if (radix == 16) {
     let decimals = (31 - clz(value) >> 2) + 1 + sign;
-    // (#475) Need to allocated twice the actual size for intermediate UTF-16 representation
-    out = allocateString(decimals << 1);
+    out = allocateString(decimals);
     utoa32_hex_core(<usize>(out + 8), value, decimals);
   } else {
     let val32 = u32(value);
     let decimals = ulog_base(val32, radix) + sign;
-    // (#475) Need to allocated twice the actual size for intermediate UTF-16 representation
-    out = allocateString(decimals << 1);
+    out = allocateString(decimals);
     utoa64_any_core(<usize>(out + 8), val32, decimals, radix);
   }
-  if (sign) store<u16>(<usize>(out + 8), CharCode.MINUS);
-  let ret = fixEncoding(out); // retains
-  return ret
+  if (sign) store<u8>(<usize>(out + 8), CharCode.MINUS);
+  return out; // retains
 }
 
 export function utoa64(value: u64, radix: i32): u32 {
@@ -987,26 +967,23 @@ export function utoa64(value: u64, radix: i32): u32 {
     if (value <= u32.MAX_VALUE) {
       let val32    = <u32>value;
       let decimals = decimalCount32(val32);
-      // (#475) Need to allocated twice the actual size for intermediate UTF-16 representation
-      out = allocateString(decimals << 1);
+      out = allocateString(decimals);
       utoa32_dec_core(out + 8, val32, decimals);
     } else {
       let decimals = decimalCount64High(value);
-      // (#475) Need to allocated twice the actual size for intermediate UTF-16 representation
-      out = allocateString(decimals << 1);
+      out = allocateString(decimals);
       utoa64_dec_core(out + 8, value, decimals);
     }
   } else if (radix == 16) {
     let decimals = (63 - u32(clz(value)) >> 2) + 1;
-    // (#475) Need to allocated twice the actual size for intermediate UTF-16 representation
-    out = allocateString(decimals << 1);
+    out = allocateString(decimals);
     utoa64_hex_core(out + 8, value, decimals);
   } else {
     let decimals = ulog_base(value, radix);
-    out = allocateString(decimals << 1);
+    out = allocateString(decimals);
     utoa64_any_core(out + 8, value, decimals, radix);
   }
-  return fixEncoding(out); // retains
+  return out; // retains
 }
 
 export function itoa64(value: i64, radix: i32): u32 {
@@ -1024,28 +1001,24 @@ export function itoa64(value: i64, radix: i32): u32 {
     if (<u64>value <= <u64>u32.MAX_VALUE) {
       let val32    = <u32>value;
       let decimals = decimalCount32(val32) + sign;
-      // (#475) Need to allocated twice the actual size for intermediate UTF-16 representation
-      out = allocateString(decimals << 1);
+      out = allocateString(decimals);
       utoa32_dec_core(out + 8, val32, decimals);
     } else {
       let decimals = decimalCount64High(value) + sign;
-      // (#475) Need to allocated twice the actual size for intermediate UTF-16 representation
-      out = allocateString(decimals << 1);
+      out = allocateString(decimals);
       utoa64_dec_core(out + 8, value, decimals);
     }
   } else if (radix == 16) {
     let decimals = (63 - u32(clz(value)) >> 2) + 1 + sign;
-    // (#475) Need to allocated twice the actual size for intermediate UTF-16 representation
-    out = allocateString(decimals << 1);
+    out = allocateString(decimals);
     utoa64_hex_core(out + 8, value, decimals);
   } else {
     let decimals = ulog_base(value, radix) + sign;
-    // (#475) Need to allocated twice the actual size for intermediate UTF-16 representation
-    out = allocateString(decimals << 1);
+    out = allocateString(decimals);
     utoa64_any_core(out + 8, value, decimals, radix);
   }
-  if (sign) store<u16>(out + 8, CharCode.MINUS);
-  return fixEncoding(out); // retains
+  if (sign) store<u8>(out + 8, CharCode.MINUS);
+  return out; // retains
 }
 
 // @ts-ignore: decorator
@@ -1116,8 +1089,8 @@ function normalizedBoundaries(f: u64, e: i32): void {
 // @ts-ignore: decorator
 @inline
 function grisuRound(buffer: usize, len: i32, delta: u64, rest: u64, ten_kappa: u64, wp_w: u64): void {
-  var lastp = buffer + ((len - 1) << 1);
-  var digit = load<u16>(lastp);
+  var lastp = buffer + len - 1;
+  var digit = load<u8>(lastp);
   while (
     rest < wp_w &&
     delta - rest >= ten_kappa && (
@@ -1128,7 +1101,7 @@ function grisuRound(buffer: usize, len: i32, delta: u64, rest: u64, ten_kappa: u
     --digit;
     rest += ten_kappa;
   }
-  store<u16>(lastp, digit);
+  store<u8>(lastp, digit);
 }
 
 // @ts-ignore: decorator
@@ -1208,7 +1181,7 @@ function genDigits(buffer: usize, w_frc: u64, w_exp: i32, mp_frc: u64, mp_exp: i
       default: { d = 0; break; }
     }
 
-    if (d | len) store<u16>(buffer + (len++ << 1), CharCode._0 + <u16>d);
+    if (d | len) store<u8>(buffer + (len++), CharCode._0 + <u8>d);
 
     --kappa;
     let tmp = ((<u64>p1) << one_exp) + p2;
@@ -1224,7 +1197,7 @@ function genDigits(buffer: usize, w_frc: u64, w_exp: i32, mp_frc: u64, mp_exp: i
     delta *= 10;
 
     let d = p2 >> one_exp;
-    if (d | len) store<u16>(buffer + (len++ << 1), CharCode._0 + <u16>d);
+    if (d | len) store<u8>(buffer + (len++), CharCode._0 + <u8>d);
 
     p2 &= mask;
     --kappa;
@@ -1244,13 +1217,13 @@ function genExponent(buffer: usize, k: i32): i32 {
   if (sign) k = -k;
   var decimals = decimalCount32(k) + 1;
   utoa32_dec_core(buffer, k, decimals);
-  store<u16>(buffer, <u16>select<u32>(CharCode.MINUS, CharCode.PLUS, sign));
+  store<u8>(buffer, <u8>select<u32>(CharCode.MINUS, CharCode.PLUS, sign));
   return decimals;
 }
 
 function prettify(buffer: usize, length: i32, k: i32): i32 {
   if (!k) {
-    store<u32>(buffer + (length << 1), CharCode.DOT | (CharCode._0 << 16));
+    store<u16>(buffer + length, CharCode.DOT | (CharCode._0 << 8));
     return length + 2;
   }
 
@@ -1258,48 +1231,48 @@ function prettify(buffer: usize, length: i32, k: i32): i32 {
   if (length <= kk && kk <= 21) {
     // 1234e7 -> 12340000000
     for (let i = length; i < kk; ++i) {
-      store<u16>(buffer + (i << 1), CharCode._0);
+      store<u8>(buffer + i, CharCode._0);
     }
-    store<u32>(buffer + (kk << 1), CharCode.DOT | (CharCode._0 << 16));
+    store<u16>(buffer + kk, CharCode.DOT | (CharCode._0 << 8));
     return kk + 2;
   } else if (kk > 0 && kk <= 21) {
     // 1234e-2 -> 12.34
-    let ptr = buffer + (kk << 1);
+    let ptr = buffer + kk;
     memory.copy(
-      ptr + 2,
+      ptr + 1,
       ptr,
-      -k << 1
+      -k
     );
-    store<u16>(buffer + (kk << 1), CharCode.DOT);
+    store<u8>(buffer + kk, CharCode.DOT);
     return length + 1;
   } else if (-6 < kk && kk <= 0) {
     // 1234e-6 -> 0.001234
     let offset = 2 - kk;
     memory.copy(
-      buffer + (offset << 1),
+      buffer + offset,
       buffer,
-      length << 1
+      length
     );
-    store<u32>(buffer, CharCode._0 | (CharCode.DOT << 16));
+    store<u16>(buffer, CharCode._0 | (CharCode.DOT << 8));
     for (let i = 2; i < offset; ++i) {
-      store<u16>(buffer + (i << 1), CharCode._0);
+      store<u8>(buffer + i, CharCode._0);
     }
     return length + offset;
   } else if (length == 1) {
     // 1e30
-    store<u16>(buffer, CharCode.e, 2);
-    length = genExponent(buffer + 4, kk - 1);
+    store<u8>(buffer, CharCode.e, 1);
+    length = genExponent(buffer + 2, kk - 1);
     return length + 2;
   } else {
-    let len = length << 1;
+    let len = length;
     memory.copy(
-      buffer + 4,
       buffer + 2,
-      len - 2
+      buffer + 1,
+      len - 1
     );
-    store<u16>(buffer,       CharCode.DOT, 2);
-    store<u16>(buffer + len, CharCode.e,   2);
-    length += genExponent(buffer + len + 4, kk - 1);
+    store<u8>(buffer,       CharCode.DOT, 1);
+    store<u8>(buffer + len, CharCode.e,   1);
+    length += genExponent(buffer + len + 2, kk - 1);
     return length + 2;
   }
 }
@@ -1308,11 +1281,11 @@ function dtoa_core(buffer: usize, value: f64): i32 {
   var sign = i32(value < 0);
   if (sign) {
     value = -value;
-    store<u16>(buffer, CharCode.MINUS);
+    store<u8>(buffer, CharCode.MINUS);
   }
   // assert(value > 0 && value <= 1.7976931348623157e308);
   var len = grisu2(value, buffer, sign);
-  len = prettify(buffer + (sign << 1), len - sign, _K);
+  len = prettify(buffer + sign, len - sign, _K);
   return len + sign;
 }
 
@@ -1321,7 +1294,7 @@ let _dtoa_buf: usize = -1
 
 function get_dtoa_buf(): usize {
   if (_dtoa_buf == -1) {
-    _dtoa_buf = <usize>(malloc(MAX_DOUBLE_LENGTH << 1))
+    _dtoa_buf = <usize>(malloc(MAX_DOUBLE_LENGTH))
   }
   return _dtoa_buf
 }
@@ -1367,32 +1340,32 @@ export function dtoa(value: f64): u32 {
   }
   var size = dtoa_core(get_dtoa_buf(), value);
   var result = allocateString(size);
-  String.UTF8.encodeUnsafe(get_dtoa_buf(), size, result + 8, false)
+  memory.copy(result + 8, get_dtoa_buf(), size)
   return result;
 }
 
 
 export function dtoa_buffered(buffer: usize, value: f64): u32 {
   if (value == 0) {
-    store<u16>(buffer, CharCode._0);
-    store<u16>(buffer, CharCode.DOT, 2);
-    store<u16>(buffer, CharCode._0,  4);
+    store<u8>(buffer, CharCode._0);
+    store<u8>(buffer, CharCode.DOT, 1);
+    store<u8>(buffer, CharCode._0,  2);
     return 3;
   }
   if (!isFinite(value)) {
     if (isNaN(value)) {
-      store<u16>(buffer, CharCode.N);
-      store<u16>(buffer, CharCode.a, 2);
-      store<u16>(buffer, CharCode.N, 4);
+      store<u8>(buffer, CharCode.N);
+      store<u8>(buffer, CharCode.a, 1);
+      store<u8>(buffer, CharCode.N, 2);
       return 3;
     } else {
       let sign = value < 0;
       if (sign) {
-        store<u16>(buffer, CharCode.MINUS); // -
-        buffer += 2;
+        store<u8>(buffer, CharCode.MINUS); // -
+        buffer += 1;
       }
-      store<u64>(buffer, 0x690066006E0049, 0); // ifnI
-      store<u64>(buffer, 0x7900740069006E, 8); // ytin
+      store<u32>(buffer, 0x69666E49, 0); // ifnI
+      store<u32>(buffer, 0x7974696E, 4); // ytin
       return 8 + u32(sign);
     }
   }
