@@ -395,7 +395,7 @@ let function_tests = [
      let item = Calzone(Peppers, WholeWheat,)
      item
     ",
-    "<adt value>",
+    "<enum value>",
   ),
   t("lam_destructure_1", "((_) => 5)(\"foo\")", "5"),
   t("lam_destructure_2", "let foo = (_) => 5; foo(\"foo\")", "5"),
@@ -1038,14 +1038,14 @@ let loop_tests = [
 
 let oom = [
   tgcerr("oomgc1", 70, "(1, (3, 4))", "Maximum memory size exceeded"),
-  tgc("oomgc2", 356, "(1, (3, 4))", "(1, (3, 4))"),
-  tgc("oomgc3", 256, "(3, 4)", "(3, 4)"),
+  tgc("oomgc2", 880, "(1, (3, 4))", "(1, (3, 4))"),
+  tgc("oomgc3", 440, "(3, 4)", "(3, 4)"),
 ];
 
 let gc = [
   tgc(
     "gc1",
-    512,
+    600,
     "let f = (() => (1, 2));\n       {\n         f();\n         f();\n         f();\n         f()\n       }",
     "(1, 2)",
   ),
@@ -1966,7 +1966,7 @@ let char_tests = [
 ];
 
 let exception_tests = [
-  t("exception_1", "exception Foo; Foo", "<adt value>"),
+  t("exception_1", "exception Foo; Foo", "<enum value>"),
   t("exception_2", "export exception Foo; Foo", "Foo"),
   t(
     "exception_3",
@@ -1987,11 +1987,11 @@ let enum_tests = [
     "adtprint",
     "Foo\nBar\nBaz(\"baz\")\nQux(5, \"qux\", false)\nQuux\nFlip(\"flip\")\nvoid",
   ),
-  t("adtprint_nonexported", "enum Foo { Foo }; Foo", "<adt value>"),
+  t("adtprint_nonexported", "enum Foo { Foo }; Foo", "<enum value>"),
   t(
     "adt_trailing",
     "enum Topping { Cheese(Bool,), Pepperoni }; Pepperoni",
-    "<adt value>",
+    "<enum value>",
   ),
 ];
 

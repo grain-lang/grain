@@ -1,8 +1,10 @@
 import { GrainError, makeThrowGrainError } from "../errors/errors";
 import { wasi, readFile, readURL, readBuffer } from "./grain-module";
 import { GRAIN_STRING_HEAP_TAG, GRAIN_GENERIC_HEAP_TAG_TYPE } from "./tags";
+import { GRAIN_TRUE, GRAIN_FALSE } from "./primitives";
 
 const MALLOC_MODULE = "GRAIN$MODULE$runtime/gc";
+const STRING_MODULE = "GRAIN$MODULE$runtime/string";
 
 export class GrainRunner {
   constructor(locator, managedMemory, opts) {
@@ -23,16 +25,16 @@ export class GrainRunner {
       relocBase: 0,
       moduleRuntimeId: 0,
       throwError: makeThrowGrainError(this),
-      // Transition functions (to be used until this class is ported to AS; perhaps refactor at that time)
+      // Transition functions (to be used until this class is ported; perhaps refactor at that time)
       variantExists: (moduleId, typeId, variantId) => {
         let moduleName = this.idMap[moduleId];
-        if (!moduleName) return false;
+        if (!moduleName) return GRAIN_FALSE;
         let module = this.modules[moduleName];
-        if (!module) return false;
+        if (!module) return GRAIN_FALSE;
         let tyinfo = module.types[typeId];
-        if (!tyinfo || Object.keys(tyinfo).length === 0) return false;
+        if (!tyinfo || Object.keys(tyinfo).length === 0) return GRAIN_FALSE;
         let info = tyinfo[variantId];
-        return !!info;
+        return info ? GRAIN_TRUE : GRAIN_FALSE;
       },
       getVariantName: (moduleId, typeId, variantId) => {
         let moduleName = this.idMap[moduleId];
@@ -53,23 +55,11 @@ export class GrainRunner {
         }
         return tyPrintNames[variantId];
       },
-      getVariantArity: (moduleId, typeId, variantId) => {
-        let moduleName = this.idMap[moduleId];
-        let module = this.modules[moduleName];
-        let tyinfo = module.types[typeId];
-        return tyinfo[variantId][1];
-      },
       recordTypeExists: (moduleId, typeId) => {
         let moduleName = this.idMap[moduleId];
         let module = this.modules[moduleName];
         let tyinfo = module.types[typeId];
-        return !!tyinfo;
-      },
-      getRecordArity: (moduleId, typeId) => {
-        let moduleName = this.idMap[moduleId];
-        let module = this.modules[moduleName];
-        let tyinfo = module.types[typeId];
-        return Object.keys(tyinfo).length;
+        return tyinfo && Object.keys(tyinfo).length ? GRAIN_TRUE : GRAIN_FALSE;
       },
       getRecordFieldName: (moduleId, typeId, idx) => {
         let moduleName = this.idMap[moduleId];
@@ -102,7 +92,16 @@ export class GrainRunner {
     return this._memoryManager;
   }
 
-  // [HACK] Temporarily used while we transition to AS-based runtime
+  get stringModule() {
+    if (!this._stringModule) {
+      this._stringModule = this.modules[STRING_MODULE];
+      if (!this._stringModule)
+        throw new GrainError(-1, "Failed to locate the runtime string module.");
+    }
+    return this._stringModule;
+  }
+
+  // [HACK] Temporarily used while we transition to Grain-based runtime
   _makeGrainString(v) {
     let buf = this.encoder.encode(v);
     let userPtr = this.managedMemory.malloc(4 * 2 + ((v.length - 1) / 4 + 1));
@@ -114,15 +113,15 @@ export class GrainRunner {
     for (let i = 0; i < buf.length; ++i) {
       byteView[i + ptr * 4 + 8] = buf[i];
     }
-    return userPtr | GRAIN_GENERIC_HEAP_TAG_TYPE;
+    return userPtr;
   }
 
-  // [HACK] Temporarily used while we transition to AS-based runtime
+  // [HACK] Temporarily used while we transition to Grain-based runtime
   grainValueToString(v) {
-    let grainString = this.modules["stdlib-external/runtime"].requiredExport(
-      "grainToString"
-    )(v);
-    let n = grainString ^ GRAIN_GENERIC_HEAP_TAG_TYPE;
+    let closure = this.stringModule.requiredExport("GRAIN$EXPORT$toString")
+      .value;
+    let grainString = this.stringModule.requiredExport("toString")(closure, v);
+    let n = grainString;
     let byteView = this.managedMemory.u8view;
     let length = this.managedMemory.view[n / 4 + 1];
     let slice = byteView.slice(n + 8, n + 8 + length);

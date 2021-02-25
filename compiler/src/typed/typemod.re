@@ -861,7 +861,16 @@ let initial_env = () => {
   Ident.reinit();
   let initial = Env.initial_safe_string;
   let env = initial;
-  let (unit_name, source, _) = Env.get_unit();
+  let (unit_name, source, mode) = Env.get_unit();
+  let implicit_modules =
+    if (Env.is_managed_runtime_mode()) {
+      List.filter(
+        ((name, _, _)) => name != "Pervasives",
+        implicit_modules^,
+      );
+    } else {
+      implicit_modules^;
+    };
   if (Env.is_runtime_mode()) {
     env;
   } else {
@@ -875,7 +884,7 @@ let initial_env = () => {
         };
       },
       env,
-      implicit_modules^,
+      implicit_modules,
     );
   };
 };
@@ -883,6 +892,7 @@ let initial_env = () => {
 let get_compilation_mode = prog => {
   switch (prog.comments) {
   | [Block({cmt_content: "compilation-mode: runtime"}), ..._] => Env.Runtime
+  | [Block({cmt_content: "compilation-mode: managed-runtime"}), ..._] => Env.ManagedRuntime
   | [Block({cmt_content: "compilation-mode: malloc"}), ..._] => Env.MemoryAllocation
   | _ => Env.Normal
   };

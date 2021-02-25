@@ -1,0 +1,380 @@
+/* compilation-mode: managed-runtime */
+
+import WasmI32, {
+  add as (+),
+  sub as (-),
+  mul as (*),
+  divS as (/),
+  shl as (<<),
+  shrS as (>>),
+  and as (&),
+  or as (|),
+  eq as (==),
+  ne as (!=),
+  geS as (>=),
+  gtS as (>),
+  leS as (<=)
+} from "runtime/unsafe/wasmi32"
+import WasmI64 from "runtime/unsafe/wasmi64"
+import WasmF32 from "runtime/unsafe/wasmf32"
+import WasmF64 from "runtime/unsafe/wasmf64"
+import Memory from "runtime/unsafe/memory"
+import Tags from "runtime/unsafe/tags"
+import NumberUtils from "runtime/numberUtils"
+
+import { allocateString } from "runtime/dataStructures"
+
+import foreign wasm variantExists: (WasmI32, WasmI32, WasmI32) -> Bool from "grainRuntime"
+import foreign wasm getVariantName: (WasmI32, WasmI32, WasmI32) -> String from "grainRuntime"
+import foreign wasm recordTypeExists: (WasmI32, WasmI32) -> Bool from "grainRuntime"
+import foreign wasm getRecordFieldName: (WasmI32, WasmI32, WasmI32) -> String from "grainRuntime"
+
+import foreign wasm fd_write: (WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+
+primitive (!) : Bool -> Bool = "@not"
+primitive (&&) : (Bool, Bool) -> Bool = "@and"
+primitive (||) : (Bool, Bool) -> Bool = "@or"
+
+enum StringList { [], [...](String, StringList) }
+
+@disableGC
+let rec totalBytes = (acc, list) => {
+  match (list) {
+    [hd, ...tl] => totalBytes(acc + WasmI32.load(WasmI32.fromGrain(hd), 4n), tl),
+    [] => acc
+  }
+}
+
+@disableGC
+let rec writeStrings = (buf, list) => {
+  match (list) {
+    [hd, ...tl] => {
+      let hd = WasmI32.fromGrain(hd)
+      let hdSize = WasmI32.load(hd, 4n)
+      Memory.copy(buf, hd + 8n, hdSize)
+      writeStrings(buf + hdSize, tl)
+    },
+    [] => void
+  }
+}
+
+@disableGC
+let join = (list) => {
+  let len = totalBytes(0n, list)
+  let str = allocateString(len)
+  writeStrings(str + 8n, list)
+  WasmI32.toGrain(str): String
+}
+
+let reverse = (list) => {
+  let rec iter = (list, acc) => {
+    match (list) {
+      [] => acc,
+      [first, ...rest] => iter(rest, [first, ...acc])
+    }
+  }
+  iter(list, [])
+}
+
+@disableGC
+export let concat = (s1: String, s2: String) => {
+  let ptr1 = WasmI32.fromGrain(s1)
+  let ptr2 = WasmI32.fromGrain(s2)
+  
+  let size1 = WasmI32.load(ptr1, 4n)
+  let size2 = WasmI32.load(ptr2, 4n)
+
+  let newString = allocateString(size1 + size2)
+
+  Memory.copy(newString + 8n, ptr1 + 8n, size1)
+  Memory.copy(newString + 8n + size1, ptr2 + 8n, size2)
+
+  WasmI32.toGrain(newString): String
+}
+
+@disableGC
+let isListVariant = (variant) => {
+  // Only lists can start with `[`, so only need to check for that
+  // Sort of a hack until we have a better solution
+  WasmI32.load8U(WasmI32.fromGrain(variant), 8n) == 0x5Bn
+}
+
+@disableGC
+let rec heapValueToString = (ptr, extraIndents, toplevel) => {
+  let tag = WasmI32.load(ptr, 0n)
+  match (tag) {
+    t when t == Tags._GRAIN_STRING_HEAP_TAG => {
+      if (toplevel) {
+        WasmI32.toGrain(ptr): String
+      } else {
+        let numBytes = WasmI32.load(ptr, 4n)
+        let str = allocateString(numBytes + 2n)
+        WasmI32.store8(str, 0x22n, 8n) // "
+        Memory.copy(str + 9n, ptr + 8n, numBytes)
+        WasmI32.store8(str + numBytes, 0x22n, 9n) // "
+        WasmI32.toGrain(str): String
+      }
+    },
+    t when t == Tags._GRAIN_CHAR_HEAP_TAG => {
+      let byte = WasmI32.load8U(ptr, 4n)
+      let numBytes = if ((byte & 0x80n) == 0x00n) {
+        1n
+      } else if ((byte & 0xF0n) == 0xF0n) {
+        4n
+      } else if ((byte & 0xE0n) == 0xE0n) {
+        3n
+      } else {
+        2n
+      }
+      if (toplevel) {
+        let str = allocateString(numBytes)
+        Memory.copy(str + 8n, ptr + 4n, numBytes)
+        WasmI32.toGrain(str): String
+      } else {
+        let str = allocateString(numBytes + 2n)
+        WasmI32.store8(str, 0x27n, 8n) // '
+        Memory.copy(str + 9n, ptr + 4n, numBytes)
+        WasmI32.store8(str + numBytes, 0x27n, 9n) // '
+        WasmI32.toGrain(str): String
+      }
+    },
+    t when t == Tags._GRAIN_ADT_HEAP_TAG => {
+      // [ <value type tag>, <module_tag>, <type_tag>, <variant_tag>, <arity>, elts ... ]
+      // these are tagged ints
+      let moduleId = WasmI32.load(ptr, 4n) >> 1n
+      let typeId = WasmI32.load(ptr, 8n) >> 1n
+      let variantId = WasmI32.load(ptr, 12n) >> 1n
+
+      if (!variantExists(moduleId, typeId, variantId)) {
+        "<enum value>"
+      } else {
+        let variantName = getVariantName(moduleId, typeId, variantId)
+        // Check if this is a list
+        if (isListVariant(variantName)) {
+          listToString(ptr, extraIndents)
+        } else {
+          let variantArity = WasmI32.load(ptr, 16n)
+          if (variantArity == 0n) {
+            variantName
+          } else {
+            let comspace = ", "
+            let mut strings = [")"]
+            for (let mut i = variantArity * 4n - 4n; i >= 0n; i -= 4n) {
+              let tmp = toStringHelp(WasmI32.load(ptr + i, 20n), extraIndents, false)
+              strings = [tmp, ...strings]
+              if (i > 0n) {
+                Memory.incRef(WasmI32.fromGrain(comspace))
+                strings = [comspace, ...strings];
+              }
+            }
+            Memory.incRef(WasmI32.fromGrain(variantName))
+            strings = [variantName, "(", ...strings]
+            let string = join(strings)
+            Memory.decRef(WasmI32.fromGrain(strings))
+            Memory.decRef(WasmI32.fromGrain(comspace))
+            string
+          }
+        }
+      }
+    },
+    t when t == Tags._GRAIN_RECORD_HEAP_TAG => {
+      // these are tagged ints
+      let moduleId = WasmI32.load(ptr, 4n) >> 1n
+      let typeId = WasmI32.load(ptr, 8n) >> 1n
+      let recordArity = WasmI32.load(ptr, 12n)
+      if (!recordTypeExists(moduleId, typeId) || recordArity == 0n) {
+        "<record value>"
+      } else {
+        let padAmount = (extraIndents + 1n) * 2n
+        let spacePadding = allocateString(padAmount)
+        Memory.fill(spacePadding + 8n, 0x20n, padAmount) // create indentation
+        let spacePadding = WasmI32.toGrain(spacePadding): String
+        let mut strings = ["\n}"]
+        let colspace = ": "
+        let comlf = ",\n"
+        for (let mut i = recordArity * 4n - 4n; i >= 0n;  i -= 4n) {
+          let fieldName = getRecordFieldName(moduleId, typeId, i / 4n)
+          let fieldValue = toStringHelp(WasmI32.load(ptr + i, 16n), extraIndents + 1n, false)
+          Memory.incRef(WasmI32.fromGrain(spacePadding))
+          Memory.incRef(WasmI32.fromGrain(fieldName))
+          Memory.incRef(WasmI32.fromGrain(colspace))
+          strings = [
+            spacePadding,
+            fieldName,
+            colspace,
+            fieldValue,
+            ...strings
+          ]
+          if (i > 0n) {
+            Memory.incRef(WasmI32.fromGrain(comlf))
+            strings = [comlf, ...strings];
+          }
+        }
+        strings = ["{\n", ...strings]
+        let string = join(strings)
+
+        Memory.decRef(WasmI32.fromGrain(strings))
+        Memory.decRef(WasmI32.fromGrain(spacePadding))
+        Memory.decRef(WasmI32.fromGrain(colspace))
+        Memory.decRef(WasmI32.fromGrain(comlf))
+
+        string
+      }
+    },
+    t when t == Tags._GRAIN_ARRAY_HEAP_TAG => {
+      let arity = WasmI32.load(ptr, 4n)
+      let mut strings = ["]"]
+      let comspace = ", "
+      for (let mut i = arity * 4n - 4n; i >= 0n; i -= 4n) {
+        let item = toStringHelp(WasmI32.load(ptr + i, 8n), extraIndents, false)
+        strings = [item, ...strings]
+        if (i > 0n) {
+          Memory.incRef(WasmI32.fromGrain(comspace))
+          strings = [comspace, ...strings];
+        }
+      }
+      strings = ["[> ", ...strings]
+      let string = join(strings)
+      Memory.decRef(WasmI32.fromGrain(strings))
+      Memory.decRef(WasmI32.fromGrain(comspace))
+
+      string
+    },
+    t when t == Tags._GRAIN_BOXED_NUM_HEAP_TAG => {
+      let numberTag = WasmI32.load(ptr, 4n)
+      match (numberTag) {
+        t when t == Tags._GRAIN_INT32_BOXED_NUM_TAG => {
+          NumberUtils.itoa32(WasmI32.load(ptr, 8n), 10n)
+        },
+        t when t == Tags._GRAIN_INT64_BOXED_NUM_TAG => {
+          NumberUtils.itoa64(WasmI64.load(ptr, 8n), 10n)
+        },
+        t when t == Tags._GRAIN_RATIONAL_BOXED_NUM_TAG => {
+          let numerator = NumberUtils.itoa32(WasmI32.load(ptr, 8n), 10n)
+          let denominator = NumberUtils.itoa32(WasmI32.load(ptr, 12n), 10n)
+          let strings = [numerator, "/", denominator]
+          let string = join(strings)
+          Memory.decRef(WasmI32.fromGrain(strings))
+          string
+        },
+        t when t == Tags._GRAIN_FLOAT32_BOXED_NUM_TAG => {
+          NumberUtils.dtoa(WasmF64.promoteF32(WasmF32.load(ptr, 8n)))
+        },
+        t when t == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG => {
+          NumberUtils.dtoa(WasmF64.load(ptr, 8n))
+        },
+        _ => {
+          "<unknown boxed number>"
+        }
+      }
+    },
+    t when t == Tags._GRAIN_TUPLE_HEAP_TAG => {
+      let tupleLength = WasmI32.load(ptr, 4n)
+      if ((tupleLength & 0x80000000n) != 0n) {
+        "<cyclic tuple>"
+      } else {
+        WasmI32.store(ptr, 0x80000000n | tupleLength, 4n)
+        let comspace = ", "
+        let mut strings = [")"]
+        if (tupleLength <= 1n) {
+          // Special case: unary tuple
+          strings = [",", ...strings];
+        }
+        for (let mut i = tupleLength * 4n - 4n; i >= 0n; i -= 4n) {
+          let item = toStringHelp(WasmI32.load(ptr + i, 8n), extraIndents, false)
+          strings = [item, ...strings]
+          if (i > 0n) {
+            Memory.incRef(WasmI32.fromGrain(comspace))
+            strings = [comspace, ...strings];
+          }
+        }
+        WasmI32.store(ptr, tupleLength, 4n)
+
+        strings = ["(", ...strings]
+
+        let string = join(strings)
+        Memory.decRef(WasmI32.fromGrain(strings))
+        Memory.decRef(WasmI32.fromGrain(comspace))
+
+        string
+      }
+    },
+    t when t == Tags._GRAIN_LAMBDA_HEAP_TAG => {
+      "<lambda>"
+    },
+    _ => {
+      let strings = [
+        "<unknown heap tag type: 0x",
+        NumberUtils.itoa32(tag, 16n),
+        " | value: 0x",
+        NumberUtils.itoa32(ptr, 16n),
+        ">"
+      ]
+      let string = join(strings)
+      Memory.decRef(WasmI32.fromGrain(strings))
+      string
+    }
+  }
+}, toStringHelp = (grainValue, extraIndents, toplevel) => {
+  if ((grainValue & 1n) != 0n) {
+    // Simple (unboxed) numbers
+    NumberUtils.itoa32(grainValue >> 1n, 10n)
+  } else if ((grainValue & 7n) == Tags._GRAIN_GENERIC_HEAP_TAG_TYPE) {
+    heapValueToString(grainValue, extraIndents, toplevel)
+  } else if (grainValue == WasmI32.fromGrain(true)) {
+    "true"
+  } else if (grainValue == WasmI32.fromGrain(false)) {
+    "false"
+  } else if (grainValue == WasmI32.fromGrain(void)) {
+    "void"
+  } else {
+    "<unknown value>"
+  }
+}, listToString = (ptr, extraIndents) => {
+  let mut cur = ptr
+  let mut isFirst = true
+
+  let mut strings = ["["]
+
+  while (true) {
+    let variantId = WasmI32.load(cur, 12n) >> 1n // tagged number
+    if (variantId == 0n) {
+      break
+    } else {
+      if (!isFirst) {
+        strings = [", ", ...strings];
+      }
+      isFirst = false
+      let item = toStringHelp(WasmI32.load(cur, 20n), extraIndents, false)
+      strings = [item, ...strings]
+      cur = WasmI32.load(cur, 24n);
+    }
+  }
+  strings = ["]", ...strings]
+  let reversed = reverse(strings)
+  let string = join(reversed)
+  Memory.decRef(WasmI32.fromGrain(strings))
+  Memory.decRef(WasmI32.fromGrain(reversed))
+  string
+}
+
+@disableGC
+export let toString = (value) => {
+  toStringHelp(WasmI32.fromGrain(value), 0n, true)
+}
+
+@disableGC
+export let print = (value) => {
+  let ptr = WasmI32.fromGrain(toString(value))
+  let buf = Memory.malloc(37n)
+  let iov = buf
+  let written = buf + 32n
+  let lf = buf + 36n
+  WasmI32.store(iov, ptr + 8n, 0n)
+  WasmI32.store(iov, WasmI32.load(ptr, 4n), 4n)
+  WasmI32.store8(lf, 10n, 0n)
+  WasmI32.store(iov, lf, 8n)
+  WasmI32.store(iov, 1n, 12n)
+  fd_write(1n, iov, 2n, written)
+  Memory.free(buf)
+}

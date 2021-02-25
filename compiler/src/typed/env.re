@@ -665,6 +665,7 @@ let get_components = c =>
 type compilation_mode =
   | Normal
   | Runtime
+  | ManagedRuntime
   | MemoryAllocation;
 
 let current_unit = ref(("", "", Normal));
@@ -677,15 +678,35 @@ let is_runtime_mode = () => {
   switch (current_unit^) {
   | (_, _, Runtime) => true
   | (_, _, MemoryAllocation) => true
+  | (_, _, ManagedRuntime) => false
+  | (_, _, Normal) => false
+  };
+};
+
+let is_managed_runtime_mode = () => {
+  switch (current_unit^) {
+  | (_, _, Runtime) => false
+  | (_, _, MemoryAllocation) => false
+  | (_, _, ManagedRuntime) => true
   | (_, _, Normal) => false
   };
 };
 
 let is_malloc_mode = () => {
   switch (current_unit^) {
-  | (_, _, MemoryAllocation) => true
   | (_, _, Runtime) => false
+  | (_, _, MemoryAllocation) => true
+  | (_, _, ManagedRuntime) => false
   | (_, _, Normal) => false
+  };
+};
+
+let is_normal_mode = () => {
+  switch (current_unit^) {
+  | (_, _, Runtime) => false
+  | (_, _, MemoryAllocation) => false
+  | (_, _, ManagedRuntime) => false
+  | (_, _, Normal) => true
   };
 };
 
