@@ -2971,23 +2971,6 @@ let compile_imports = (wasm_mod, env, {imports}) => {
     };
   };
 
-  let imports =
-    if (Env.is_normal_mode()) {
-      [
-        // HACK: Depend on runtime/string for the tests
-        {
-          mimp_mod: string_runtime_mod,
-          mimp_name: grain_to_string_ident,
-          mimp_type: MFuncImport([I32Type, I32Type], [I32Type]),
-          mimp_kind: MImportWasm,
-          mimp_setup: MSetupNone,
-        },
-        ...imports,
-      ];
-    } else {
-      imports;
-    };
-
   List.iter(compile_import, imports);
   Import.add_memory_import(
     wasm_mod,

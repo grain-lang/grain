@@ -9,6 +9,7 @@ module.exports = async function run(filename, options) {
     let GrainRunner = runtime.buildGrainRunner(locator);
     if (options.printOutput) {
       let result = await GrainRunner.runFileUnboxed(filename);
+      await GrainRunner.ensureStringModule();
       console.log(GrainRunner.grainValueToString(result));
     } else {
       await GrainRunner.runFile(filename);

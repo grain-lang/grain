@@ -701,15 +701,6 @@ let is_malloc_mode = () => {
   };
 };
 
-let is_normal_mode = () => {
-  switch (current_unit^) {
-  | (_, _, Runtime) => false
-  | (_, _, MemoryAllocation) => false
-  | (_, _, ManagedRuntime) => false
-  | (_, _, Normal) => true
-  };
-};
-
 /* Persistent structure descriptions */
 
 type pers_flags = Cmi_format.pers_flags = | Rectypes | Opaque | Unsafe_string;

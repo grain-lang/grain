@@ -101,6 +101,19 @@ export class GrainRunner {
     return this._stringModule;
   }
 
+  async ensureStringModule() {
+    if (this.modules[STRING_MODULE]) return;
+
+    let located = await this.locator(STRING_MODULE);
+    if (!located) {
+      throw new GrainError(-1, `Failed to ensure string module.`);
+    }
+    await this.load(STRING_MODULE, located);
+    await located.start();
+    // this.imports["grainRuntime"]["relocBase"] += located.tableSize;
+    // ++this.imports["grainRuntime"]["moduleRuntimeId"];
+  }
+
   // [HACK] Temporarily used while we transition to Grain-based runtime
   _makeGrainString(v) {
     let buf = this.encoder.encode(v);
@@ -128,6 +141,22 @@ export class GrainRunner {
     let ret = this.decoder.decode(slice);
     this.managedMemory.free(grainString);
     return ret;
+  }
+
+  grainErrorValueToString(v) {
+    // Supports basic numbers and strings
+    // This is to avoid having all modules depend on all of toString if they
+    // don't need it. Error values are only ever simple numbers or strings.
+    if (v & 1) return (v >> 1).toString();
+    if ((v & 7) === GRAIN_GENERIC_HEAP_TAG_TYPE) {
+      if (this.managedMemory.view[v / 4] === GRAIN_STRING_HEAP_TAG) {
+        let byteView = this.managedMemory.u8view;
+        let length = this.managedMemory.view[v / 4 + 1];
+        let slice = byteView.slice(v + 8, v + 8 + length);
+        return this.decoder.decode(slice);
+      }
+    }
+    return "<unknown value>";
   }
 
   addImport(name, obj) {
@@ -178,8 +207,6 @@ export class GrainRunner {
         await this.load(imp.module, located);
         if (located.isGrainModule) {
           await located.start();
-          this.imports["grainRuntime"]["relocBase"] += located.tableSize;
-          ++this.imports["grainRuntime"]["moduleRuntimeId"];
         }
         this.ptrZero = this.ptr;
         this.imports[imp.module] = located.exports;
@@ -189,6 +216,10 @@ export class GrainRunner {
     // All of the dependencies have been loaded. Now we can instantiate with the import object.
     await mod.instantiate(this.imports, this);
     this.idMap[this.imports["grainRuntime"]["moduleRuntimeId"]] = name;
+    if (mod.isGrainModule) {
+      this.imports["grainRuntime"]["relocBase"] += mod.tableSize;
+      ++this.imports["grainRuntime"]["moduleRuntimeId"];
+    }
     if (!(name in this.modules)) {
       this.modules[name] = mod;
     }
