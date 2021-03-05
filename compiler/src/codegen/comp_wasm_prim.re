@@ -140,8 +140,6 @@ let op_map = {
         (Op_le_float64, Op.le_float64),
         (Op_gt_float64, Op.gt_float64),
         (Op_ge_float64, Op.ge_float64),
-        (Op_memory_size, Op.memory_size),
-        (Op_memory_grow, Op.memory_grow),
       ]),
     )
   );

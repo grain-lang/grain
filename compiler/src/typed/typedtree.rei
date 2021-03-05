@@ -162,9 +162,7 @@ type wasm_op =
     | Op_lt_float64
     | Op_le_float64
     | Op_gt_float64
-    | Op_ge_float64
-    | Op_memory_size
-    | Op_memory_grow;
+    | Op_ge_float64;
 
 type prim1 =
   Parsetree.prim1 =
