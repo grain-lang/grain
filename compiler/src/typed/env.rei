@@ -162,8 +162,8 @@ let add_signature: (signature, t) => t;
 /* Remember the current compilation unit: modname * filename * compilation mode. */
 type compilation_mode =
   | Normal
-  | Runtime
   | ManagedRuntime
+  | Runtime
   | MemoryAllocation;
 
 let set_unit: ((string, string, compilation_mode)) => unit;
