@@ -663,10 +663,10 @@ let get_components = c =>
   };
 
 type compilation_mode =
-  | Normal
-  | Runtime
-  | ManagedRuntime
-  | MemoryAllocation;
+  | Normal /* Standard compilation with regular bells and whistles */
+  | ManagedRuntime /* Normal mode, but no Pervasives yet */
+  | Runtime /* GC doesn't exist yet, allocations happen in runtime heap */
+  | MemoryAllocation /* You _are_ the memory allocator and control the pointer to the runtime heap  */;
 
 let current_unit = ref(("", "", Normal));
 
