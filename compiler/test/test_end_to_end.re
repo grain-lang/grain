@@ -23,7 +23,8 @@ let tc = (~todo=?, name, program, expected) =>
   name >:: wrap_todo(todo) @@ test_run(~cmp=exists, program, name, expected);
 
 let make_gc_program = (program, heap_size) => {
-  {|
+  Printf.sprintf(
+    {|
     import WasmI32 from "runtime/unsafe/wasmi32"
     import Malloc from "runtime/malloc"
     import Memory from "runtime/unsafe/memory"
@@ -34,15 +35,16 @@ let make_gc_program = (program, heap_size) => {
       // Calculate how much memory is left
       let availableMemory = WasmI32.sub(offset, Malloc._RESERVED_RUNTIME_SPACE)
       // Calculate how much memory to leak
-      let toLeak = WasmI32.sub(availableMemory, |}
-  ++ string_of_int(heap_size)
-  ++ {|n)
+      let toLeak = WasmI32.sub(availableMemory, %dn)
       // Memory is not reclaimed due to no gc context
       Memory.malloc(toLeak);
     }
-    leak();
-  |}
-  ++ program;
+  leak();
+  %s
+|},
+    heap_size,
+    program,
+  );
 };
 
 let tgc = (~todo=?, name, heap_size, program, expected) => {
