@@ -44,12 +44,14 @@ let module_runtime_id = Ident.create_persistent("moduleRuntimeId");
 let reloc_base = Ident.create_persistent("relocBase");
 let table_size = Ident.create_persistent("GRAIN$TABLE_SIZE");
 let runtime_mod = Ident.create_persistent("grainRuntime");
+let malloc_mod = Ident.create_persistent("GRAIN$MODULE$runtime/malloc");
 let stdlib_external_runtime_mod =
   Ident.create_persistent("stdlib-external/runtime");
 let console_mod = Ident.create_persistent("console");
 let check_memory_ident = Ident.create_persistent("checkMemory");
 let throw_error_ident = Ident.create_persistent("throwError");
 let malloc_ident = Ident.create_persistent("malloc");
+let malloc_closure_ident = Ident.create_persistent("GRAIN$EXPORT$malloc");
 let incref_ident = Ident.create_persistent("incRef");
 let new_rational_ident = Ident.create_persistent("newRational");
 let new_float32_ident = Ident.create_persistent("newFloat32");
@@ -266,22 +268,35 @@ let traced_imports =
     ];
   };
 
-let runtime_global_imports = [
+let required_global_imports = [
   {
     mimp_mod: runtime_mod,
     mimp_name: reloc_base,
-    mimp_type: MGlobalImport(I32Type),
+    mimp_type: MGlobalImport(I32Type, false),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
   },
   {
     mimp_mod: runtime_mod,
     mimp_name: module_runtime_id,
-    mimp_type: MGlobalImport(I32Type),
+    mimp_type: MGlobalImport(I32Type, false),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
   },
 ];
+
+let grain_runtime_imports = [
+  {
+    mimp_mod: malloc_mod,
+    mimp_name: malloc_closure_ident,
+    mimp_type: MGlobalImport(I32Type, true),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+  },
+];
+
+let runtime_global_imports =
+  List.append(required_global_imports, grain_runtime_imports);
 
 let runtime_function_imports =
   List.append(
@@ -294,9 +309,9 @@ let runtime_function_imports =
         mimp_setup: MSetupNone,
       },
       {
-        mimp_mod: runtime_mod,
+        mimp_mod: malloc_mod,
         mimp_name: malloc_ident,
-        mimp_type: MFuncImport([I32Type], [I32Type]),
+        mimp_type: MFuncImport([I32Type, I32Type], [I32Type]),
         mimp_kind: MImportWasm,
         mimp_setup: MSetupNone,
       },
@@ -483,13 +498,22 @@ let call_runtime_throw_error = (wasm_mod, env, args) =>
     Type.none,
   );
 
-let call_malloc = (wasm_mod, env, args) =>
+let call_malloc = (wasm_mod, env, args) => {
+  let args = [
+    Expression.global_get(
+      wasm_mod,
+      get_imported_name(malloc_mod, malloc_closure_ident),
+      Type.int32,
+    ),
+    ...args,
+  ];
   Expression.call(
     wasm_mod,
-    get_imported_name(runtime_mod, malloc_ident),
+    get_imported_name(malloc_mod, malloc_ident),
     args,
     Type.int32,
   );
+};
 let call_incref = (wasm_mod, env, arg) =>
   if (Config.no_gc^) {
     arg;
@@ -1846,18 +1870,96 @@ let compile_record_op = (wasm_mod, env, rec_imm, op) => {
 
 /** Heap allocations. */
 
-let round_up = (num: int, multiple: int): int => num + num mod multiple;
+// Heap pointer used by runtime before memory allocation is available
+let runtime_heap_ptr_name = "_RUNTIME_HEAP_PTR";
+let runtime_heap_ptr = MGlobalBind(runtime_heap_ptr_name, I32Type, false);
 
 /** Rounds the given number of words to be aligned correctly */
+let round_to_even = num_words =>
+  if (num_words mod 2 == 0) {
+    num_words;
+  } else {
+    num_words + 1;
+  };
 
-let round_allocation_size = (num_words: int): int => round_up(num_words, 4);
+let heap_allocate = (wasm_mod, env, num_words: int) =>
+  if (Env.is_runtime_mode()) {
+    let addition =
+      Expression.binary(
+        wasm_mod,
+        Op.add_int32,
+        compile_bind(wasm_mod, env, ~action=BindGet, runtime_heap_ptr),
+        Expression.const(
+          wasm_mod,
+          const_int32(round_to_even(num_words) * 4),
+        ),
+      );
+    Expression.tuple_extract(
+      wasm_mod,
+      Expression.tuple_make(
+        wasm_mod,
+        [
+          compile_bind(wasm_mod, env, ~action=BindGet, runtime_heap_ptr),
+          compile_bind(
+            wasm_mod,
+            env,
+            ~action=BindTee(addition),
+            runtime_heap_ptr,
+          ),
+        ],
+      ),
+      0,
+    );
+  } else {
+    call_malloc(
+      wasm_mod,
+      env,
+      [Expression.const(wasm_mod, const_int32(4 * num_words))],
+    );
+  };
 
-let heap_allocate = (wasm_mod, env, num_words: int) => {
-  let words_to_allocate = round_allocation_size(num_words);
-  call_malloc(
+let heap_runtime_allocate_imm =
+    (~additional_words=0, wasm_mod, env, num_words: immediate) => {
+  let num_words = () =>
+    untag_number(wasm_mod, compile_imm(wasm_mod, env, num_words));
+  let addition =
+    Expression.binary(
+      wasm_mod,
+      Op.add_int32,
+      compile_bind(wasm_mod, env, ~action=BindGet, runtime_heap_ptr),
+      Expression.binary(
+        wasm_mod,
+        Op.mul_int32,
+        Expression.binary(
+          wasm_mod,
+          Op.and_int32,
+          Expression.binary(
+            wasm_mod,
+            Op.add_int32,
+            num_words(),
+            // Add 1 extra and clear final bit to round up to an even number of words
+            Expression.const(wasm_mod, const_int32(1 + additional_words)),
+          ),
+          Expression.const(wasm_mod, const_int32(0xfffffffe)),
+        ),
+        Expression.const(wasm_mod, const_int32(4)),
+      ),
+    );
+  Expression.tuple_extract(
     wasm_mod,
-    env,
-    [Expression.const(wasm_mod, const_int32(4 * words_to_allocate))],
+    Expression.tuple_make(
+      wasm_mod,
+      [
+        compile_bind(wasm_mod, env, ~action=BindGet, runtime_heap_ptr),
+        compile_bind(
+          wasm_mod,
+          env,
+          ~action=BindTee(addition),
+          runtime_heap_ptr,
+        ),
+      ],
+    ),
+    0,
   );
 };
 
@@ -1898,6 +2000,14 @@ let heap_allocate_imm =
     );
   };
 };
+
+let heap_allocate_imm =
+    (~additional_words=0, wasm_mod, env, num_words: immediate) =>
+  if (Env.is_runtime_mode()) {
+    heap_runtime_allocate_imm(~additional_words, wasm_mod, env, num_words);
+  } else {
+    heap_allocate_imm(~additional_words, wasm_mod, env, num_words);
+  };
 
 let buf_to_ints = (buf: Buffer.t): list(int64) => {
   let num_bytes = Buffer.length(buf);
@@ -1942,16 +2052,7 @@ let allocate_string = (wasm_mod, env, str) => {
       ~offset=0,
       wasm_mod,
       tee_swap(
-        call_malloc(
-          wasm_mod,
-          env,
-          [
-            Expression.const(
-              wasm_mod,
-              const_int32 @@ 4 * (2 + 2 * List.length(ints_to_push)),
-            ),
-          ],
-        ),
+        heap_allocate(wasm_mod, env, 2 + 2 * List.length(ints_to_push)),
       ),
       Expression.const(
         wasm_mod,
@@ -2001,13 +2102,7 @@ let allocate_char = (wasm_mod, env, char) => {
       store(
         ~offset=0,
         wasm_mod,
-        tee_swap(
-          call_malloc(
-            wasm_mod,
-            env,
-            [Expression.const(wasm_mod, const_int32(8))],
-          ),
-        ),
+        tee_swap(heap_allocate(wasm_mod, env, 2)),
         Expression.const(
           wasm_mod,
           const_int32(tag_val_of_heap_tag_type(CharType)),
@@ -2064,10 +2159,7 @@ let allocate_closure =
             wasm_mod,
             Op.sub_int32,
             get_swap(),
-            Expression.const(
-              wasm_mod,
-              const_int32 @@ 4 * round_allocation_size(closure_size),
-            ),
+            Expression.const(wasm_mod, const_int32 @@ 4 * closure_size),
           ),
         lambda,
       );
@@ -3348,19 +3440,27 @@ let compile_imports = (wasm_mod, env, {imports}) => {
     | MImportWasm => Ident.name(name)
     | MImportGrain => "GRAIN$EXPORT$" ++ Ident.name(name);
 
+  // HACK: The malloc module should have no Grain imports, though it does
+  // depend on the low-level wasm libraries. All of the wasm instructions are
+  // already inlined, so this dependency is unnecessary. Binaryen has an
+  // optimization pass which removes those imports, but Binaryen optimizations
+  // are disabled because of #196. For now, we just omit all Grain imports.
+  let malloc_mode = Env.is_malloc_mode();
+
   let compile_import = ({mimp_mod, mimp_name, mimp_type, mimp_kind}) => {
     let module_name = compile_module_name(mimp_mod, mimp_kind);
     let item_name = compile_import_name(mimp_name, mimp_kind);
     let internal_name = get_imported_name(mimp_mod, mimp_name);
     switch (mimp_kind, mimp_type) {
-    | (MImportGrain, MGlobalImport(ty)) =>
+    | (MImportGrain, _) when malloc_mode => ()
+    | (MImportGrain, MGlobalImport(ty, mut)) =>
       Import.add_global_import(
         wasm_mod,
         internal_name,
         module_name,
         item_name,
         wasm_type(ty),
-        true,
+        mut,
       )
     | (_, MFuncImport(args, ret)) =>
       let proc_list = l =>
@@ -3373,7 +3473,7 @@ let compile_imports = (wasm_mod, env, {imports}) => {
         proc_list(args),
         proc_list(ret),
       );
-    | (_, MGlobalImport(typ)) =>
+    | (_, MGlobalImport(typ, mut)) =>
       let typ = compile_asm_type(typ);
       Import.add_global_import(
         wasm_mod,
@@ -3381,7 +3481,7 @@ let compile_imports = (wasm_mod, env, {imports}) => {
         module_name,
         item_name,
         typ,
-        false,
+        mut,
       );
     };
   };
@@ -3590,7 +3690,12 @@ let prepare = (env, {imports} as prog) => {
   let import_offset = List.length(runtime_imports);
   let import_global_offset = import_offset + List.length(imports);
 
-  let new_imports = List.append(runtime_imports, imports);
+  let new_imports =
+    if (Env.is_runtime_mode()) {
+      List.append(required_global_imports, imports);
+    } else {
+      List.append(runtime_imports, imports);
+    };
   let new_env =
     List_utils.fold_lefti(
       process_import(~is_runtime_import=true),
@@ -3615,6 +3720,37 @@ let prepare = (env, {imports} as prog) => {
     {...prog, imports: new_imports},
   );
 };
+
+let setup_runtime_compilation = (wasm_mod, {exports}) =>
+  if (Env.is_malloc_mode()) {
+    // Disallow 0 as a valid Grain pointer
+    ignore @@
+    Global.add_global(
+      wasm_mod,
+      runtime_heap_ptr_name,
+      Type.int32,
+      true,
+      // TODO: We still have some AssemblyScript modules which use the data
+      // segment, so we offset where the runtime begins. Once those data
+      // segments are removed, this should be changed to 8.
+      Expression.const(wasm_mod, const_int32(256)),
+    );
+    ignore @@
+    Export.add_global_export(
+      wasm_mod,
+      runtime_heap_ptr_name,
+      runtime_heap_ptr_name,
+    );
+  } else {
+    Import.add_global_import(
+      wasm_mod,
+      runtime_heap_ptr_name,
+      Ident.name(malloc_mod),
+      runtime_heap_ptr_name,
+      Type.int32,
+      true,
+    );
+  };
 
 let compile_wasm_module = (~env=?, ~name=?, prog) => {
   let env =
@@ -3645,11 +3781,24 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
     );
   let _ =
     Memory.set_memory(wasm_mod, 0, Memory.unlimited, "memory", [], false);
-  let () = ignore @@ compile_functions(wasm_mod, env, prog);
-  let () = ignore @@ compile_imports(wasm_mod, env, prog);
-  let () = ignore @@ compile_exports(wasm_mod, env, prog);
-  let () = ignore @@ compile_globals(wasm_mod, env, prog);
-  let () = ignore @@ compile_tables(wasm_mod, env, prog);
+
+  let compile_all = () => {
+    ignore @@ compile_functions(wasm_mod, env, prog);
+    ignore @@ compile_imports(wasm_mod, env, prog);
+    ignore @@ compile_exports(wasm_mod, env, prog);
+    ignore @@ compile_globals(wasm_mod, env, prog);
+    ignore @@ compile_tables(wasm_mod, env, prog);
+  };
+
+  if (Env.is_runtime_mode()) {
+    setup_runtime_compilation(wasm_mod, prog);
+    Config.preserve_config(() => {
+      Config.no_gc := true;
+      compile_all();
+    });
+  } else {
+    compile_all();
+  };
 
   let serialized_cmi = Cmi_format.serialize_cmi(prog.signature);
   Module.add_custom_section(

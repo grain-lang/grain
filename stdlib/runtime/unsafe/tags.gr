@@ -1,0 +1,24 @@
+/* compilation-mode: runtime */
+
+export let _GRAIN_NUMBER_TAG_TYPE       = 0b0001n
+export let _GRAIN_CONST_TAG_TYPE        = 0b0110n
+export let _GRAIN_GENERIC_HEAP_TAG_TYPE = 0b0000n
+
+export let _GRAIN_NUMBER_TAG_MASK = 0b0001n
+export let _GRAIN_GENERIC_TAG_MASK = 0b0111n
+
+export let _GRAIN_STRING_HEAP_TAG = 1n
+export let _GRAIN_CHAR_HEAP_TAG = 2n
+export let _GRAIN_ADT_HEAP_TAG = 3n
+export let _GRAIN_RECORD_HEAP_TAG = 4n
+export let _GRAIN_ARRAY_HEAP_TAG = 5n
+export let _GRAIN_BOXED_NUM_HEAP_TAG = 6n
+export let _GRAIN_LAMBDA_HEAP_TAG = 7n
+export let _GRAIN_TUPLE_HEAP_TAG = 8n
+
+// Boxed number types
+export let _GRAIN_FLOAT32_BOXED_NUM_TAG = 1n
+export let _GRAIN_FLOAT64_BOXED_NUM_TAG = 2n
+export let _GRAIN_INT32_BOXED_NUM_TAG = 3n
+export let _GRAIN_INT64_BOXED_NUM_TAG = 4n
+export let _GRAIN_RATIONAL_BOXED_NUM_TAG = 5n

@@ -236,31 +236,31 @@ let analyze = ({imports, body, analyses}) => {
   mod_has_inlineable_wasm := false;
   let process_import = ({imp_use_id, imp_desc}) => {
     switch (imp_desc) {
-    | GrainValue("unsafe/wasmi32", name) =>
+    | GrainValue("runtime/unsafe/wasmi32", name) =>
       mod_has_inlineable_wasm := true;
       switch (get_primitive_i32(name)) {
       | Some(prim) => set_inlineable_wasm(imp_use_id, prim)
       | None => ()
       };
-    | GrainValue("unsafe/wasmi64", name) =>
+    | GrainValue("runtime/unsafe/wasmi64", name) =>
       mod_has_inlineable_wasm := true;
       switch (get_primitive_i64(name)) {
       | Some(prim) => set_inlineable_wasm(imp_use_id, prim)
       | None => ()
       };
-    | GrainValue("unsafe/wasmf32", name) =>
+    | GrainValue("runtime/unsafe/wasmf32", name) =>
       mod_has_inlineable_wasm := true;
       switch (get_primitive_f32(name)) {
       | Some(prim) => set_inlineable_wasm(imp_use_id, prim)
       | None => ()
       };
-    | GrainValue("unsafe/wasmf64", name) =>
+    | GrainValue("runtime/unsafe/wasmf64", name) =>
       mod_has_inlineable_wasm := true;
       switch (get_primitive_f64(name)) {
       | Some(prim) => set_inlineable_wasm(imp_use_id, prim)
       | None => ()
       };
-    | GrainValue("unsafe/memory", name) =>
+    | GrainValue("runtime/unsafe/memory", name) =>
       mod_has_inlineable_wasm := true;
       switch (get_primitive_memory(name)) {
       | Some(prim) => set_inlineable_wasm(imp_use_id, prim)
@@ -268,6 +268,7 @@ let analyze = ({imports, body, analyses}) => {
       };
     | GrainValue(_)
     | WasmFunction(_)
+    | WasmValue(_)
     | JSFunction(_) => ()
     };
   };

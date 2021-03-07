@@ -826,14 +826,25 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
 
 let type_module = type_module(false, None);
 
-let implicit_modules: ref(list((string, string))) = (
-  ref([("Pervasives", "pervasives")]): ref(list((string, string)))
-);
+let implicit_modules: ref(list((string, string, bool))) =
+  ref([
+    ("Pervasives", "pervasives", true),
+    ("Malloc", "runtime/malloc", false),
+  ]);
 
-let open_implicit_module = (m, env) => {
+let open_implicit_module = (m, env, in_env) => {
   open Asttypes;
   let loc = Location.dummy_loc;
-  let (modname, filename) = m;
+  let (modname, filename, _) = m;
+  let values =
+    if (in_env) {
+      [
+        PImportModule(Location.mknoloc(Identifier.IdentName(modname))),
+        PImportAllExcept([]),
+      ];
+    } else {
+      [];
+    };
   let (_path, newenv) =
     type_open_(
       env,
@@ -842,10 +853,7 @@ let open_implicit_module = (m, env) => {
           loc,
           txt: filename,
         },
-        pimp_val: [
-          PImportModule(Location.mknoloc(Identifier.IdentName(modname))),
-          PImportAllExcept([]),
-        ],
+        pimp_val: values,
         pimp_loc: loc,
       },
     );
@@ -856,26 +864,38 @@ let initial_env = () => {
   Ident.reinit();
   let initial = Env.initial_safe_string;
   let env = initial;
-  List.fold_left(
-    (env, m) => {
-      let (modname, _) = m;
-      let (unit_name, _) = Env.get_unit();
-      if (unit_name != modname) {
-        open_implicit_module(m, env);
-      } else {
-        env;
-      };
-    },
-    env,
-    implicit_modules^,
-  );
+  let (unit_name, source, _) = Env.get_unit();
+  if (Env.is_runtime_mode()) {
+    env;
+  } else {
+    List.fold_left(
+      (env, m) => {
+        let (modname, _, in_env) = m;
+        if (unit_name != modname) {
+          open_implicit_module(m, env, in_env);
+        } else {
+          env;
+        };
+      },
+      env,
+      implicit_modules^,
+    );
+  };
+};
+
+let get_compilation_mode = prog => {
+  switch (prog.comments) {
+  | [Block({cmt_content: "compilation-mode: runtime"}), ..._] => Env.Runtime
+  | [Block({cmt_content: "compilation-mode: malloc"}), ..._] => Env.MemoryAllocation
+  | _ => Env.Normal
+  };
 };
 
 let type_implementation = prog => {
   let sourcefile = prog.prog_loc.loc_start.pos_fname;
   /* TODO: Do we maybe need a fallback here? */
   let modulename = Grain_utils.Files.filename_to_module_name(sourcefile);
-  Env.set_unit((modulename, sourcefile));
+  Env.set_unit((modulename, sourcefile, get_compilation_mode(prog)));
   let initenv = initial_env();
   let (stritems, sg, finalenv) = type_module(initenv, prog);
   let (statements, env) = stritems;

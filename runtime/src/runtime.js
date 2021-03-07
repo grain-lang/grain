@@ -78,13 +78,17 @@ const importObj = {
   grainRuntime: {
     mem: memory,
     tbl: table,
-    malloc,
-    free,
     incRef: managedMemory.incRef.bind(managedMemory),
     incRef64: managedMemory.incRef64.bind(managedMemory),
     decRef: managedMemory.decRef.bind(managedMemory),
     decRef64: managedMemory.decRef64.bind(managedMemory),
     ...tracingImports,
+  },
+  memoryManager: {
+    _malloc: managedMemory._malloc.bind(managedMemory),
+    _free: managedMemory._free.bind(managedMemory),
+    _growHeap: managedMemory.growHeap.bind(managedMemory),
+    _initialHeapSize: managedMemory._memory.buffer.byteLength,
   },
 };
 

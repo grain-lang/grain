@@ -662,10 +662,19 @@ export class ManagedMemory {
   }
 
   malloc(userPtr) {
-    return this._runtime.memoryManager.requiredExport("malloc")(userPtr);
+    let closure = this._runtime.memoryManager.requiredExport(
+      "GRAIN$EXPORT$malloc"
+    ).value;
+    return this._runtime.memoryManager.requiredExport("malloc")(
+      closure,
+      userPtr
+    );
   }
   free(userPtr) {
-    this._runtime.memoryManager.requiredExport("free")(userPtr);
+    let closure = this._runtime.memoryManager.requiredExport(
+      "GRAIN$EXPORT$free"
+    ).value;
+    this._runtime.memoryManager.requiredExport("free")(closure, userPtr);
   }
 
   _free(userPtr) {

@@ -1,0 +1,284 @@
+/* compilation-mode: malloc */
+
+/*
+ * This module implements a generic memory allocator.
+ * The algorithm is quite simple, being based on the memory allocator
+ * from pages 185-188 of K&R C (2nd edition).
+ */
+
+import WasmI32, { 
+  add as (+),
+  sub as (-),
+  divU as (/),
+  gtU as (>),
+  geU as (>=),
+  ltU as (<),
+  shl as (<<),
+  shrU as (>>),
+  eq as (==),
+  ne as (!=)
+} from "runtime/unsafe/wasmi32"
+
+primitive (!) : Bool -> Bool = "@not"
+primitive (&&) : (Bool, Bool) -> Bool = "@and"
+primitive (||) : (Bool, Bool) -> Bool = "@or"
+
+import foreign wasm _malloc: (WasmI32, WasmI32) -> WasmI32 as extMalloc from "memoryManager"
+import foreign wasm _free: (WasmI32) -> WasmI32 as extFree from "memoryManager"
+import foreign wasm _growHeap: (WasmI32) -> WasmI32 as extGrowHeap from "memoryManager"
+import foreign wasm _initialHeapSize: WasmI32 as initialHeapSize from "memoryManager"
+
+/* UNDERSTANDING THE STRUCTURE OF THE FREE LIST
+ * The original K&R definition for the free list entry type was the following:
+ *
+ *     union header {
+ *         struct {
+ *             union header *ptr;
+ *             unsigned size;
+ *         } s;
+ *         long x; // <- forces 8-byte alignment
+ *     };
+ *
+ * In memory, this is really just two ints (assuming we're working in 32-bit mode).
+ * As such, we manually lay out the entries on the heap as follows (note that we
+ * use helpers to facilitate accessing and setting these values):
+ *
+ *   Grain             C Equivalent
+ *   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ *   let ptr      ===  union header *ptr
+ *   getNext(ptr) ===  ptr->s.ptr
+ *   getSize(ptr) ===  ptr->s.size
+ */
+
+/**
+ * Pointer to the start of the free list. This is always a multiple of
+ * 8, with the exception of its initial value (used as a sentinel).
+ */
+let mut freePtr = 1n
+
+/**
+ * Size (in bytes) of entries in the free list.
+ */
+let mallocHeaderSize = 8n
+
+/**
+ * log_2(mallocHeaderSize) (multiplication by the header
+ * size is equivalent to left-shifting by this amount)
+ */
+let logMallocHeaderSize = 3n
+
+/**
+ * The current size (in bytes) of the heap.
+ */
+let mut heapSize = 0n
+
+let _RESERVED_RUNTIME_SPACE = 4096n;
+
+let _NEXT_OFFSET = 0n
+let _SIZE_OFFSET = 4n
+
+let getNext = (ptr: WasmI32) => {
+  WasmI32.load(ptr, _NEXT_OFFSET)
+}
+
+let setNext = (ptr: WasmI32, val: WasmI32) => {
+  WasmI32.store(ptr, val, _NEXT_OFFSET)
+}
+
+let getSize = (ptr: WasmI32) => {
+  WasmI32.load(ptr, _SIZE_OFFSET)
+}
+
+let setSize = (ptr: WasmI32, val: WasmI32) => {
+  WasmI32.store(ptr, val, _SIZE_OFFSET)
+}
+
+/**
+ * Requests that the heap be grown by the given number of bytes.
+ *
+ * @param nbytes: WasmI32 - The number of bytes requested
+ * @return WasmI32 - If unsuccessful, -1. Otherwise, the pointer to the beginning of the extended region.
+ */
+let growHeap = (nbytes: WasmI32) => {
+  let mut reqSize = 0n
+  let mut reqResult = 0n
+  let mut origSize = heapSize
+
+  // If the size has not been initialized, do so.
+  if (heapSize == 0n) {
+    heapSize = initialHeapSize - _RESERVED_RUNTIME_SPACE
+    if (nbytes > heapSize) {
+      // More bytes requested than the initial heap size,
+      // so we need to request more anyway.
+      reqSize = nbytes - heapSize
+      reqSize = reqSize >> 16n
+      reqSize = reqSize + 1n
+      reqResult = extGrowHeap(reqSize)
+      if (reqResult == -1n) {
+        -1n
+      } else {
+        heapSize += reqSize << 16n
+        _RESERVED_RUNTIME_SPACE
+      }
+    } else {
+      _RESERVED_RUNTIME_SPACE
+    }
+  } else {
+    // The size has already been initialized, so call the external function.
+    reqSize = nbytes
+    reqSize = reqSize >> 16n
+    reqSize = reqSize + 1n
+    reqResult = extGrowHeap(reqSize)
+    if (reqResult == -1n) {
+      -1n
+    } else {
+      heapSize += reqSize << 16n
+      reqResult
+    }
+  }
+}
+
+/**
+ * Frees the given allocated pointer.
+ *
+ * @param ap: WasmI32 - The pointer to free
+ */
+export let free = (ap: WasmI32) => {
+  // Let memory manager know we're freeing this pointer
+  extFree(ap)
+
+  let mut blockPtr = ap - 16n // 8 bytes for malloc header + 8 bytes for GC header
+  let mut p = freePtr
+
+  // Edge case: for the first free (called by morecore), the free pointer
+  // is actually already pointing to this node, so we don't do anything.
+  if (blockPtr != freePtr) {
+    // Find the location to insert this block into the free list
+    for ( ; !((blockPtr > p) && (blockPtr < getNext(p))); p = getNext(p) ) {
+      if ((p >= getNext(p)) && ((blockPtr > p) || (blockPtr < getNext(p)))) {
+        break
+      }
+    }
+
+    // Merge the block into the adjacent free list entry above, if needed
+    if (blockPtr + getSize(blockPtr) == getNext(p)) {
+      let next = getNext(p)
+      setSize(blockPtr, getSize(blockPtr) + getSize(next))
+      setNext(blockPtr, getNext(next))
+    } else {
+      setNext(blockPtr, getNext(p))
+    }
+    // Merge the previous (adjacent) free list entry into this block, if needed
+    if (p + getSize(p) == blockPtr) {
+      setSize(p, getSize(p) + getSize(blockPtr))
+      setNext(p, getNext(blockPtr))
+    } else {
+      setNext(p, blockPtr)
+    }
+    // Set the free list head to this block
+    freePtr = p;
+  };
+}
+
+/**
+ * Asks the runtime for more heap memory.
+ * (if you can't tell from the fact that the name is reminiscient
+ *  of the 1970s, the name of this function is taken from K&R).
+ *
+ * @param nbytes: WasmI32 - The number of bytes to try to grow the heap by
+ * @return WasmI32 - If successful, a pointer to the start of the free list. If not successful, -1.
+ */
+let morecore = (nbytes: WasmI32) => {
+  let origSize = heapSize
+  let mut cp = growHeap(nbytes)
+
+  // If there was an error, return
+  if (cp == -1n) {
+    -1n
+  } else {
+    // Set the size of the new block to the amount the
+    // heap was grown.
+    let grownAmount = heapSize - origSize
+    setSize(cp, grownAmount)
+    // Call free() with the new block to add it to the free list.
+    // Add an additional 8 for the expected GC header
+    free(cp + 8n + 8n)
+    // Return the free list pointer.
+    freePtr
+  }
+}
+
+/**
+ * Allocates the requested number of bytes, returning a pointer.
+ *
+ * @param nbytes: WasmI32 - The number of bytes to allocate
+ * @return WasmI32 - The pointer to the allocated region (8-byte aligned), or -1 if the allocation failed.
+ */
+export let malloc = (nb: WasmI32) => {
+  // Add space for GC header
+  let mut nbytes = nb + 8n
+  let mut prevp = freePtr
+
+  // Set nbytes to the next multiple of mallocHeaderSize greater
+  // than the given size
+  let mut nunits = (nbytes + mallocHeaderSize - 1n) / mallocHeaderSize + 1n
+  nbytes = nunits << logMallocHeaderSize // multiply by header size
+
+  // Handle initialization
+  if (heapSize == 0n) {
+    WasmI32.store(_RESERVED_RUNTIME_SPACE, _RESERVED_RUNTIME_SPACE, 0n)
+    freePtr = _RESERVED_RUNTIME_SPACE
+    prevp = _RESERVED_RUNTIME_SPACE
+    WasmI32.store(_RESERVED_RUNTIME_SPACE, 0n, 4n)
+  }
+
+  let mut ret = -1n
+
+  // Search the freelist for any blocks large enough.
+  for (let mut p = getNext(prevp); ; {prevp = p; p = getNext(p)}) {
+    let size = getSize(p)
+    if (size >= nbytes) {
+      // If this block is big enough, allocate from it.
+      if (size == nbytes) {
+        // It's exactly the right size!
+        setNext(prevp, getNext(p))
+      } else {
+        // Shrink it as needed
+        let newSize = size - nbytes
+        setSize(p, newSize)
+        p = p + newSize
+        setSize(p, nbytes)
+      }
+      // Update the pointer to the free list.
+      freePtr = prevp;
+
+      // Let runtime set up reference counting
+      // Address of the region past the malloc header
+      ret = extMalloc(p + 8n, nb)
+      break
+    }
+
+    // We've reached the end of the free list. Time to grow the heap.
+    if (p == freePtr) {
+      // Attempt to grow the heap
+      p = morecore(nbytes)
+      // If growing the heap failed, return -1.
+      if (p == -1n) {
+        // Error
+        ret = -1n
+        break
+      }
+    }
+  }
+  ret
+}
+
+/**
+ * Returns the current free list pointer
+ * (used for debugging)
+ *
+ * @return WasmI32 - The free list pointer
+ */
+export let getFreePtr = () => {
+  freePtr
+}

@@ -1349,25 +1349,42 @@ let rec transl_anf_statement =
     };
   | TTopException(_, ext) => (Some(linearize_exception(env, ext)), [])
   | TTopForeign(exported, desc) =>
-    let (argsty, retty) =
-      get_fn_allocation_type(env, desc.tvd_desc.ctyp_type);
     let global =
       switch (exported) {
       | Exported => Global
       | Nonexported => Nonglobal
       };
-    (
-      None,
-      [
-        Imp.wasm_func(
-          ~global,
-          desc.tvd_id,
-          desc.tvd_mod.txt,
-          desc.tvd_name.txt,
-          FunctionShape(argsty, [retty]),
-        ),
-      ],
-    );
+    switch (desc.tvd_desc.ctyp_type.desc) {
+    | TTyArrow(_) =>
+      let (argsty, retty) =
+        get_fn_allocation_type(env, desc.tvd_desc.ctyp_type);
+      (
+        None,
+        [
+          Imp.wasm_func(
+            ~global,
+            desc.tvd_id,
+            desc.tvd_mod.txt,
+            desc.tvd_name.txt,
+            FunctionShape(argsty, [retty]),
+          ),
+        ],
+      );
+    | _ =>
+      let ty = get_allocation_type(env, desc.tvd_desc.ctyp_type);
+      (
+        None,
+        [
+          Imp.wasm_value(
+            ~global,
+            desc.tvd_id,
+            desc.tvd_mod.txt,
+            desc.tvd_name.txt,
+            GlobalShape(ty),
+          ),
+        ],
+      );
+    };
   | _ => (None, [])
   };
 

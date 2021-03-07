@@ -58,7 +58,7 @@
   let consume_comments () =
     let out_comments = !comments in
     comments := [];
-    out_comments
+    List.rev(out_comments)
 
   let parse_line_comment comment_type lexbuf =
     let source = lexeme lexbuf in

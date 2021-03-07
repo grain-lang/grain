@@ -427,7 +427,7 @@ and block = list(instr);
 [@deriving sexp]
 type import_type =
   | MFuncImport(list(asmtype), list(asmtype))
-  | MGlobalImport(asmtype);
+  | MGlobalImport(asmtype, bool);
 
 [@deriving sexp]
 type import_kind =

@@ -1,5 +1,4 @@
-import Memory from "unsafe/memory"
-import WasmI32 from "unsafe/wasmi32"
+/* compilation-mode: runtime */
 
 // WebAssembly Memory Instructions
 export primitive load: (WasmI32, WasmI32) -> WasmF64 = "@wasm.load_float64"
@@ -36,29 +35,3 @@ export primitive convertI32U: WasmI32 -> WasmF64 = "@wasm.convert_u_int32_to_flo
 export primitive convertI64S: WasmI64 -> WasmF64 = "@wasm.convert_s_int64_to_float64"
 export primitive convertI64U: WasmI64 -> WasmF64 = "@wasm.convert_u_int64_to_float64"
 export primitive promoteF32: WasmF32 -> WasmF64 = "@wasm.promote_float32"
-
-// Grain Conversions
-@disableGC
-export let toFloat64 = (n) => {
-  let _GRAIN_BOXED_NUM_HEAP_TAG = 6n
-  let _GRAIN_FLOAT64_BOXED_NUM_TAG = 2n
-  
-  let ptr = Memory.malloc(16n)
-  WasmI32.store(ptr, _GRAIN_BOXED_NUM_HEAP_TAG, 0n)
-  WasmI32.store(ptr, _GRAIN_FLOAT64_BOXED_NUM_TAG, 4n)
-  store(ptr, n, 8n)
-
-  WasmI32.toGrain(ptr) : Float64
-}
-
-@disableGC
-export let ofFloat64 = (n: Float64) => {
-  let ptr = WasmI32.fromGrain(n)
-  load(ptr, 8n)
-}
-
-// Utilities
-@disableGC
-export let print = (val) => {
-  print(toString(toFloat64(val)) ++ "W")
-}

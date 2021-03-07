@@ -1,5 +1,10 @@
-export foreign wasm malloc: WasmI32 -> WasmI32 from "grainRuntime"
-export foreign wasm free: WasmI32 -> Void from "grainRuntime"
+/* compilation-mode: runtime */
+
+import Malloc from "runtime/malloc"
+
+export let malloc = Malloc.malloc
+export let free = Malloc.free
+
 export foreign wasm incRef: WasmI32 -> WasmI32 from "grainRuntime"
 export foreign wasm decRef: WasmI32 -> WasmI32 from "grainRuntime"
 

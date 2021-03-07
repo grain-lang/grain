@@ -1,9 +1,10 @@
-import WasmI64 from "unsafe/wasmi64"
+import WasmI64 from "runtime/unsafe/wasmi64"
+import PrintWasm from "runtime/unsafe/printWasm"
 
 @disableGC
 let foo = () => {
   for (let mut x = 0N; WasmI64.ltS(x, 5N); x = WasmI64.add(x, 1N)) {
-    WasmI64.print(x)
+    PrintWasm.printI64(x)
   }
 }
 

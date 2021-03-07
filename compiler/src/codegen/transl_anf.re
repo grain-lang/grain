@@ -917,14 +917,15 @@ let compile_remaining_worklist = () => {
 };
 
 let lift_imports = (env, imports) => {
-  let process_shape =
-    fun
-    | GlobalShape(alloc) => MGlobalImport(asmtype_of_alloctype(alloc))
+  let process_shape = (mut, shape) =>
+    switch (shape) {
+    | GlobalShape(alloc) => MGlobalImport(asmtype_of_alloctype(alloc), mut)
     | FunctionShape(inputs, outputs) =>
       MFuncImport(
         List.map(asmtype_of_alloctype, inputs),
         List.map(asmtype_of_alloctype, outputs),
-      );
+      )
+    };
 
   let process_import =
       (
@@ -948,9 +949,50 @@ let lift_imports = (env, imports) => {
       let new_mod = {
         mimp_mod,
         mimp_name,
-        mimp_type: process_shape(imp_shape),
+        mimp_type: process_shape(true, imp_shape),
         mimp_kind: MImportGrain,
         mimp_setup: MCallGetter,
+      };
+      (
+        [new_mod, ...imports],
+        setups,
+        {
+          ...env,
+          ce_binds:
+            Ident.add(
+              imp_use_id,
+              MGlobalBind(
+                Printf.sprintf(
+                  "import_%s_%s",
+                  Ident.unique_name(mimp_mod),
+                  Ident.unique_name(mimp_name),
+                ),
+                asmtype,
+                gc,
+              ),
+              env.ce_binds,
+            ),
+        },
+      );
+    | WasmValue(mod_, name) =>
+      let mimp_mod = Ident.create(mod_);
+      let mimp_name = Ident.create(name);
+      let (asmtype, gc) =
+        switch (imp_shape) {
+        | GlobalShape(HeapAllocated as alloc) => (
+            asmtype_of_alloctype(alloc),
+            true,
+          )
+        | GlobalShape(alloc) => (asmtype_of_alloctype(alloc), false)
+        | FunctionShape(_) =>
+          failwith("internal: WasmValue had FunctionShape")
+        };
+      let new_mod = {
+        mimp_mod,
+        mimp_name,
+        mimp_type: process_shape(false, imp_shape),
+        mimp_kind: MImportWasm,
+        mimp_setup: MWrap(Int32.zero),
       };
       (
         [new_mod, ...imports],
@@ -979,7 +1021,7 @@ let lift_imports = (env, imports) => {
       let new_mod = {
         mimp_mod: Ident.create(mod_),
         mimp_name: Ident.create(name),
-        mimp_type: process_shape(imp_shape),
+        mimp_type: process_shape(false, imp_shape),
         mimp_kind: MImportWasm,
         mimp_setup: MWrap(Int32.zero),
       };

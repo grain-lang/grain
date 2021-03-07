@@ -662,11 +662,32 @@ let get_components = c =>
   | Some(c) => c
   };
 
-let current_unit = ref(("", ""));
+type compilation_mode =
+  | Normal
+  | Runtime
+  | MemoryAllocation;
 
-let set_unit = ((name, source)) => current_unit := (name, source);
+let current_unit = ref(("", "", Normal));
+
+let set_unit = unit => current_unit := unit;
 
 let get_unit = () => current_unit^;
+
+let is_runtime_mode = () => {
+  switch (current_unit^) {
+  | (_, _, Runtime) => true
+  | (_, _, MemoryAllocation) => true
+  | (_, _, Normal) => false
+  };
+};
+
+let is_malloc_mode = () => {
+  switch (current_unit^) {
+  | (_, _, MemoryAllocation) => true
+  | (_, _, Runtime) => false
+  | (_, _, Normal) => false
+  };
+};
 
 /* Persistent structure descriptions */
 
@@ -773,7 +794,7 @@ let mark_in_progress = (~loc, unit_name, sourcefile) => {
       Cyclic_dependencies(unit_name, get_dependency_chain(~loc, unit_name)),
     );
   };
-  let (stored_name, _) = get_unit();
+  let (stored_name, _, _) = get_unit();
   Hashtbl.add(
     compilation_in_progress,
     sourcefile,
@@ -939,12 +960,12 @@ let acknowledge_pers_struct = (check, {Persistent_signature.filename, cmi}) => {
     fun
     | Rectypes =>
       if (! Clflags.recursive_types^) {
-        let (unit_name, _) = get_unit();
+        let (unit_name, _, _) = get_unit();
         error(Need_recursive_types(ps.ps_name, unit_name));
       }
     | Unsafe_string =>
       if (Config.safe_string^) {
-        let (unit_name, _) = get_unit();
+        let (unit_name, _, _) = get_unit();
         error(Depend_on_unsafe_string_unit(ps.ps_name, unit_name));
       }
     | Opaque => add_imported_opaque(filename),
@@ -1047,7 +1068,7 @@ let rec find_module_descr = (path, filename, env) =>
   | PIdent(id) =>
     try(IdTbl.find_same(id, env.components)) {
     | Not_found =>
-      let (_, unit_source) = get_unit();
+      let (_, unit_source, _) = get_unit();
       let filename = Option.value(~default=Ident.name(id), filename);
       if (Ident.persistent(id) && !(filename == unit_source)) {
         find_pers_struct(~loc=Location.dummy_loc, filename).ps_comps;
@@ -1097,7 +1118,7 @@ let find_module = (~alias, path, filename, env) =>
       EnvLazy.force(subst_modtype_maker, data);
     }) {
     | Not_found =>
-      let (_, unit_source) = get_unit();
+      let (_, unit_source, _) = get_unit();
       let filename = Option.value(~default=Ident.name(id), filename);
       if (Ident.persistent(id) && !(filename == unit_source)) {
         let ps = find_pers_struct(~loc=Location.dummy_loc, filename);
@@ -1263,7 +1284,7 @@ and lookup_module = (~loc=?, ~load, ~mark, id, filename, env): Path.t =>
       p;
     }) {
     | Not_found =>
-      let (_, unit_source) = get_unit();
+      let (_, unit_source, _) = get_unit();
       if (Option.value(~default=s, filename) == unit_source) {
         raise(Not_found);
       };
