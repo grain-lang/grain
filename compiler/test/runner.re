@@ -108,7 +108,7 @@ let read_stream = cstream => {
   Bytes.to_string @@ Bytes.sub(buf, 0, i^);
 };
 
-let run_output = (~code=0, ~heap_size=?, cstate, test_ctxt) => {
+let run_output = (~code=0, ~num_pages=?, cstate, test_ctxt) => {
   let program = extract_wasm(cstate);
   let file = Filename.temp_file("test", ".gr.wasm");
   Emitmod.emit_module(program, file);
@@ -116,18 +116,24 @@ let run_output = (~code=0, ~heap_size=?, cstate, test_ctxt) => {
   let stdlib = Option.get(Grain_utils.Config.stdlib_dir^);
   let testlibs = Sys.getcwd() ++ "/test-libs";
   let result = ref("");
-  let heap_args =
-    switch (heap_size) {
-    | Some(x) => ["--limitMemory", string_of_int(x)]
-    | None => []
+  let env =
+    switch (num_pages) {
+    | Some(x) =>
+      Array.append(Unix.environment()) @@
+      [|
+        Printf.sprintf("GRAIN_INIT_MEMORY_PAGES=%d", x),
+        Printf.sprintf("GRAIN_MAX_MEMORY_PAGES=%d ", x),
+      |]
+    | None => Unix.environment()
     };
   assert_command(
     ~foutput=stream => result := read_stream(stream),
     ~exit_code=Unix.WEXITED(code),
     ~use_stderr=true,
     ~ctxt=test_ctxt,
+    ~env,
     "grain",
-    ["-pg", "-S", stdlib, "-I", testlibs] @ heap_args @ ["run", file],
+    ["-pg", "-S", stdlib, "-I", testlibs, "run", file],
   );
   result^;
 };
@@ -142,13 +148,13 @@ let run_anf = (p, out) => {
 };
 
 let test_run =
-    (~cmp=?, ~heap_size=?, program_str, outfile, expected, test_ctxt) => {
+    (~cmp=?, ~num_pages=?, program_str, outfile, expected, test_ctxt) => {
   let result =
     Config.preserve_config(() => {
       Config.include_dirs := ["test-libs", ...Config.include_dirs^];
       let cstate =
         compile_string(~hook=stop_after_compiled, ~name=outfile, program_str);
-      run_output(~heap_size?, cstate, test_ctxt);
+      run_output(~num_pages?, cstate, test_ctxt);
     });
   assert_equal(
     ~printer=Fun.id,
@@ -158,7 +164,7 @@ let test_run =
   );
 };
 
-let test_run_file = (~heap_size=?, filename, name, expected, test_ctxt) => {
+let test_run_file = (~num_pages=?, filename, name, expected, test_ctxt) => {
   let input_filename = "input/" ++ filename ++ ".gr";
   let outfile = "output/" ++ name;
   let result =
@@ -166,7 +172,7 @@ let test_run_file = (~heap_size=?, filename, name, expected, test_ctxt) => {
       Config.include_dirs := ["test-libs", ...Config.include_dirs^];
       let cstate =
         compile_file(~hook=stop_after_compiled, ~outfile, input_filename);
-      run_output(~heap_size?, cstate, test_ctxt);
+      run_output(~num_pages?, cstate, test_ctxt);
     });
   assert_equal(~printer=Fun.id, expected ++ "\n", result);
 };
@@ -231,7 +237,7 @@ let test_run_anf = (program_anf, outfile, expected, test_ctxt) => {
   assert_equal(expected ++ "\n", result, ~printer=Fun.id);
 };
 
-let test_err = (~heap_size=?, program_str, outfile, errmsg, test_ctxt) => {
+let test_err = (~num_pages=?, program_str, outfile, errmsg, test_ctxt) => {
   let result =
     try(
       Config.preserve_config(() => {
@@ -242,7 +248,7 @@ let test_err = (~heap_size=?, program_str, outfile, errmsg, test_ctxt) => {
             ~name=outfile,
             program_str,
           );
-        run_output(~heap_size?, cstate, test_ctxt);
+        run_output(~num_pages?, cstate, test_ctxt);
       })
     ) {
     | exn => Printexc.to_string(exn)

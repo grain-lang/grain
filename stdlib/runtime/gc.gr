@@ -1,0 +1,131 @@
+/* compilation-mode: runtime */
+
+/* Notes:
+ *
+ * Grain's memory system uses a reference-counted garbage collector.
+ * It is incumbent upon the compiler (and any external modules which interact
+ * with Grain's memory) to make sure that reference counting functionality
+ * exists at appropriate places in code. 
+ * 
+ * Here is the basic idea for how this looks for an n-byte heap object:
+ *
+ * [ 32-bit counter ][ 32-bit padding ][ n-bit payload ]
+ * ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
+ * {start address}                    {pointer used by Grain runtime}
+ *
+ * Variable Naming Conventions:
+ *   rawPtr  : The pointer returned by the call to the external malloc()
+ *   userPtr : The pointer returned (and referenced by) to the Grain runtime
+ */
+
+import Malloc from "runtime/malloc"
+import Tags from "runtime/unsafe/tags"
+import WasmI32, {
+  add as (+),
+  sub as (-),
+  mul as (*),
+  and as (&),
+  eq as (==)
+} from "runtime/unsafe/wasmi32"
+
+primitive (&&) : (Bool, Bool) -> Bool = "@and"
+primitive (||) : (Bool, Bool) -> Bool = "@or"
+primitive fail : String -> a = "@fail"
+
+let _HEADER_SIZE = 8n
+
+let getRefCount = (userPtr: WasmI32) => {
+  WasmI32.load(userPtr - _HEADER_SIZE, 0n)
+}
+
+let setRefCount = (userPtr: WasmI32, count: WasmI32) => {
+  WasmI32.store(userPtr - _HEADER_SIZE, count, 0n)
+}
+
+export let malloc = (size: WasmI32) => {
+  // Add space for header
+  let rawPtr = Malloc.malloc(size + _HEADER_SIZE)
+
+  // Populate GC header
+  WasmI32.store(rawPtr, 1n, 0n)
+  WasmI32.store(rawPtr, 0n, 4n)
+
+  // Return pointer past header
+  rawPtr + _HEADER_SIZE
+}
+
+export let free = (userPtr: WasmI32) => {
+  // Free the raw pointer
+  Malloc.free(userPtr - _HEADER_SIZE)
+}
+
+export let incRef = (userPtr: WasmI32) => {
+  if (WasmI32.eqz(userPtr & Tags._GRAIN_GENERIC_TAG_MASK) && WasmI32.ne(userPtr, 0n)) {
+    setRefCount(userPtr, getRefCount(userPtr) + 1n)
+  }
+  userPtr
+}
+
+let rec decRef = (userPtr: WasmI32, ignoreZeros: Bool) => {
+  if (WasmI32.eqz(userPtr & Tags._GRAIN_GENERIC_TAG_MASK) && WasmI32.ne(userPtr, 0n)) {
+    let refCount = getRefCount(userPtr)
+
+    if (WasmI32.eqz(refCount)) {
+      if (ignoreZeros) {
+        userPtr
+      } else {
+        fail "decRef called when reference count was zero."
+      }
+    } else {
+      let refCount = refCount - 1n
+      setRefCount(userPtr, refCount)
+
+      if (WasmI32.eqz(refCount)) {
+        decRefChildren(userPtr)
+        free(userPtr)
+      }
+
+      userPtr
+    }
+  } else {
+    userPtr
+  }
+}, decRefChildren = (userPtr: WasmI32) => {
+  match (WasmI32.load(userPtr, 0n)) {
+    t when t == Tags._GRAIN_ADT_HEAP_TAG => {
+      let arity = WasmI32.load(userPtr, 16n)
+      let maxOffset = arity * 4n
+      for (let mut i = 0n; WasmI32.ltU(i, maxOffset); i = i + 4n) {
+        decRef(WasmI32.load(userPtr + i, 20n), false);
+      }
+    },
+    t when t == Tags._GRAIN_RECORD_HEAP_TAG => {
+      let arity = WasmI32.load(userPtr, 12n)
+      let maxOffset = arity * 4n
+      for (let mut i = 0n; WasmI32.ltU(i, maxOffset); i = i + 4n) {
+        decRef(WasmI32.load(userPtr + i, 16n), false);
+      }
+    },
+    t when t == Tags._GRAIN_ARRAY_HEAP_TAG || t == Tags._GRAIN_TUPLE_HEAP_TAG => {
+      let arity = WasmI32.load(userPtr, 4n)
+      let maxOffset = arity * 4n
+      for (let mut i = 0n; WasmI32.ltU(i, maxOffset); i = i + 4n) {
+        decRef(WasmI32.load(userPtr + i, 8n), false);
+      }
+    },
+    t when t == Tags._GRAIN_LAMBDA_HEAP_TAG => {
+      let arity = WasmI32.load(userPtr, 12n)
+      let maxOffset = arity * 4n
+      for (let mut i = 0n; WasmI32.ltU(i, maxOffset); i = i + 4n) {
+        decRef(WasmI32.load(userPtr + i, 16n), false);
+      }
+    },
+    _ => {
+      // No travelsal necessary for other tags
+      void
+    }
+  }
+}
+
+export let decRefIgnoreZeros = (userPtr) => decRef(userPtr, true)
+export let decRef = (userPtr) => decRef(userPtr, false)

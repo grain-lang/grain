@@ -10,7 +10,7 @@ open Comp_wasm_prim;
 let sources: ref(list((Expression.t, Grain_parsing.Location.t))) = ref([]);
 
 /* [TODO] Should probably be a config variable */
-let memory_tracing_enabled = false;
+let memory_debugging_enabled = false;
 
 /** Environment */
 
@@ -45,14 +45,15 @@ let reloc_base = Ident.create_persistent("relocBase");
 let table_size = Ident.create_persistent("GRAIN$TABLE_SIZE");
 let runtime_mod = Ident.create_persistent("grainRuntime");
 let malloc_mod = Ident.create_persistent("GRAIN$MODULE$runtime/malloc");
+let gc_mod = Ident.create_persistent("GRAIN$MODULE$runtime/gc");
 let stdlib_external_runtime_mod =
   Ident.create_persistent("stdlib-external/runtime");
 let console_mod = Ident.create_persistent("console");
-let check_memory_ident = Ident.create_persistent("checkMemory");
 let throw_error_ident = Ident.create_persistent("throwError");
 let malloc_ident = Ident.create_persistent("malloc");
 let malloc_closure_ident = Ident.create_persistent("GRAIN$EXPORT$malloc");
 let incref_ident = Ident.create_persistent("incRef");
+let incref_closure_ident = Ident.create_persistent("GRAIN$EXPORT$incRef");
 let new_rational_ident = Ident.create_persistent("newRational");
 let new_float32_ident = Ident.create_persistent("newFloat32");
 let new_float64_ident = Ident.create_persistent("newFloat64");
@@ -66,207 +67,12 @@ let float32_to_number_ident =
 let float64_to_number_ident =
   Ident.create_persistent("coerceFloat64ToNumber");
 let equal_ident = Ident.create_persistent("equal");
-/* Variants used for tracing */
-let incref_adt_ident = Ident.create_persistent("incRefADT");
-let incref_array_ident = Ident.create_persistent("incRefArray");
-let incref_tuple_ident = Ident.create_persistent("incRefTuple");
-let incref_box_ident = Ident.create_persistent("incRefBox");
-let incref_backpatch_ident = Ident.create_persistent("incRefBackpatch");
-let incref_swap_bind_ident = Ident.create_persistent("incRefSwapBind");
-let incref_arg_bind_ident = Ident.create_persistent("incRefArgBind");
-let incref_local_bind_ident = Ident.create_persistent("incRefLocalBind");
-let incref_global_bind_ident = Ident.create_persistent("incRefGlobalBind");
-let incref_closure_bind_ident = Ident.create_persistent("incRefClosureBind");
-let incref_cleanup_locals_ident =
-  Ident.create_persistent("incRefCleanupLocals");
-let incref64_ident = Ident.create_persistent("incRef64");
 let decref_ident = Ident.create_persistent("decRef");
-let decref64_ident = Ident.create_persistent("decRef64");
-let decref_array_ident = Ident.create_persistent("decRefArray");
-let decref_tuple_ident = Ident.create_persistent("decRefTuple");
-let decref_box_ident = Ident.create_persistent("decRefBox");
-let decref_swap_bind_ident = Ident.create_persistent("decRefSwapBind");
-let decref_arg_bind_ident = Ident.create_persistent("decRefArgBind");
-let decref_local_bind_ident = Ident.create_persistent("decRefLocalBind");
-let decref_global_bind_ident = Ident.create_persistent("decRefGlobalBind");
-let decref_closure_bind_ident = Ident.create_persistent("decRefClosureBind");
-let decref_cleanup_locals_ident =
-  Ident.create_persistent("decRefCleanupLocals");
-let decref_cleanup_globals_ident =
-  Ident.create_persistent("decRefCleanupGlobals");
+let decref_closure_ident = Ident.create_persistent("GRAIN$EXPORT$decRef");
 let decref_ignore_zeros_ident = Ident.create_persistent("decRefIgnoreZeros");
-let decref_drop_ident = Ident.create_persistent("decRefDrop");
+let decref_ignore_zeros_closure_ident =
+  Ident.create_persistent("GRAIN$EXPORT$decRefIgnoreZeros");
 let tracepoint_ident = Ident.create_persistent("tracepoint");
-
-let traced_imports =
-  if (memory_tracing_enabled) {
-    [
-      {
-        mimp_mod: runtime_mod,
-        mimp_name: incref_adt_ident,
-        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: runtime_mod,
-        mimp_name: incref_array_ident,
-        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: runtime_mod,
-        mimp_name: incref_tuple_ident,
-        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: runtime_mod,
-        mimp_name: incref_box_ident,
-        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: runtime_mod,
-        mimp_name: incref_backpatch_ident,
-        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: runtime_mod,
-        mimp_name: incref_swap_bind_ident,
-        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: runtime_mod,
-        mimp_name: incref_arg_bind_ident,
-        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: runtime_mod,
-        mimp_name: incref_local_bind_ident,
-        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: runtime_mod,
-        mimp_name: incref_global_bind_ident,
-        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: runtime_mod,
-        mimp_name: incref_closure_bind_ident,
-        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: runtime_mod,
-        mimp_name: incref_cleanup_locals_ident,
-        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: runtime_mod,
-        mimp_name: decref_array_ident,
-        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: runtime_mod,
-        mimp_name: decref_tuple_ident,
-        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: runtime_mod,
-        mimp_name: decref_box_ident,
-        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: runtime_mod,
-        mimp_name: decref_swap_bind_ident,
-        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: runtime_mod,
-        mimp_name: decref_arg_bind_ident,
-        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: runtime_mod,
-        mimp_name: decref_local_bind_ident,
-        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: runtime_mod,
-        mimp_name: decref_global_bind_ident,
-        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: runtime_mod,
-        mimp_name: decref_closure_bind_ident,
-        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: runtime_mod,
-        mimp_name: decref_cleanup_locals_ident,
-        mimp_type: MFuncImport([I32Type, I32Type], [I32Type]), /* Returns same pointer as argument */
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: runtime_mod,
-        mimp_name: decref_cleanup_globals_ident,
-        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: runtime_mod,
-        mimp_name: decref_drop_ident,
-        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-    ];
-  } else {
-    [
-      {
-        mimp_mod: runtime_mod,
-        mimp_name: decref_ignore_zeros_ident,
-        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-    ];
-  };
 
 let required_global_imports = [
   {
@@ -287,8 +93,29 @@ let required_global_imports = [
 
 let grain_runtime_imports = [
   {
-    mimp_mod: malloc_mod,
+    mimp_mod: gc_mod,
     mimp_name: malloc_closure_ident,
+    mimp_type: MGlobalImport(I32Type, true),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+  },
+  {
+    mimp_mod: gc_mod,
+    mimp_name: incref_closure_ident,
+    mimp_type: MGlobalImport(I32Type, true),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+  },
+  {
+    mimp_mod: gc_mod,
+    mimp_name: decref_closure_ident,
+    mimp_type: MGlobalImport(I32Type, true),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+  },
+  {
+    mimp_mod: gc_mod,
+    mimp_name: decref_ignore_zeros_closure_ident,
     mimp_type: MGlobalImport(I32Type, true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -298,149 +125,134 @@ let grain_runtime_imports = [
 let runtime_global_imports =
   List.append(required_global_imports, grain_runtime_imports);
 
+let required_function_imports = [
+  {
+    mimp_mod: runtime_mod,
+    mimp_name: throw_error_ident,
+    mimp_type:
+      MFuncImport(List.init(Runtime_errors.max_arity + 1, _ => I32Type), []),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+  },
+];
+
+let grain_function_imports = [
+  {
+    mimp_mod: gc_mod,
+    mimp_name: malloc_ident,
+    mimp_type: MFuncImport([I32Type, I32Type], [I32Type]),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+  },
+  {
+    mimp_mod: gc_mod,
+    mimp_name: incref_ident,
+    mimp_type: MFuncImport([I32Type, I32Type], [I32Type]), /* Returns same pointer as argument */
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+  },
+  {
+    mimp_mod: gc_mod,
+    mimp_name: decref_ident,
+    mimp_type: MFuncImport([I32Type, I32Type], [I32Type]), /* Returns same pointer as argument */
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+  },
+  {
+    mimp_mod: gc_mod,
+    mimp_name: decref_ignore_zeros_ident,
+    mimp_type: MFuncImport([I32Type, I32Type], [I32Type]), /* Returns same pointer as argument */
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+  },
+  {
+    mimp_mod: console_mod,
+    mimp_name: tracepoint_ident,
+    mimp_type: MFuncImport([I32Type], []),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+  },
+  {
+    mimp_mod: stdlib_external_runtime_mod,
+    mimp_name: new_rational_ident,
+    mimp_type: MFuncImport([I32Type, I32Type], [I32Type]),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+  },
+  {
+    mimp_mod: stdlib_external_runtime_mod,
+    mimp_name: new_float32_ident,
+    mimp_type: MFuncImport([F32Type], [I32Type]),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+  },
+  {
+    mimp_mod: stdlib_external_runtime_mod,
+    mimp_name: new_float64_ident,
+    mimp_type: MFuncImport([F64Type], [I32Type]),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+  },
+  {
+    mimp_mod: stdlib_external_runtime_mod,
+    mimp_name: new_int32_ident,
+    mimp_type: MFuncImport([I32Type], [I32Type]),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+  },
+  {
+    mimp_mod: stdlib_external_runtime_mod,
+    mimp_name: new_int64_ident,
+    mimp_type: MFuncImport([I64Type], [I32Type]),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+  },
+  {
+    mimp_mod: stdlib_external_runtime_mod,
+    mimp_name: number_to_int64_ident,
+    mimp_type: MFuncImport([I32Type], [I32Type]),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+  },
+  {
+    mimp_mod: stdlib_external_runtime_mod,
+    mimp_name: int64_to_number_ident,
+    mimp_type: MFuncImport([I32Type], [I32Type]),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+  },
+  {
+    mimp_mod: stdlib_external_runtime_mod,
+    mimp_name: int32_to_number_ident,
+    mimp_type: MFuncImport([I32Type], [I32Type]),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+  },
+  {
+    mimp_mod: stdlib_external_runtime_mod,
+    mimp_name: float32_to_number_ident,
+    mimp_type: MFuncImport([I32Type], [I32Type]),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+  },
+  {
+    mimp_mod: stdlib_external_runtime_mod,
+    mimp_name: float64_to_number_ident,
+    mimp_type: MFuncImport([I32Type], [I32Type]),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+  },
+  {
+    mimp_mod: stdlib_external_runtime_mod,
+    mimp_name: equal_ident,
+    mimp_type: MFuncImport([I32Type, I32Type], [I32Type]),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+  },
+];
+
 let runtime_function_imports =
-  List.append(
-    [
-      {
-        mimp_mod: runtime_mod,
-        mimp_name: check_memory_ident,
-        mimp_type: MFuncImport([I32Type], []),
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: malloc_mod,
-        mimp_name: malloc_ident,
-        mimp_type: MFuncImport([I32Type, I32Type], [I32Type]),
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: runtime_mod,
-        mimp_name: incref_ident,
-        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: runtime_mod,
-        mimp_name: incref64_ident,
-        mimp_type: MFuncImport([I64Type], [I64Type]), /* Returns same pointer as argument */
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: runtime_mod,
-        mimp_name: decref_ident,
-        mimp_type: MFuncImport([I32Type], [I32Type]), /* Returns same pointer as argument */
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: runtime_mod,
-        mimp_name: decref64_ident,
-        mimp_type: MFuncImport([I64Type], [I64Type]), /* Returns same pointer as argument */
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: console_mod,
-        mimp_name: tracepoint_ident,
-        mimp_type: MFuncImport([I32Type], []),
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: runtime_mod,
-        mimp_name: throw_error_ident,
-        mimp_type:
-          MFuncImport(
-            List.init(Runtime_errors.max_arity + 1, _ => I32Type),
-            [],
-          ),
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: stdlib_external_runtime_mod,
-        mimp_name: new_rational_ident,
-        mimp_type: MFuncImport([I32Type, I32Type], [I32Type]),
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: stdlib_external_runtime_mod,
-        mimp_name: new_float32_ident,
-        mimp_type: MFuncImport([F32Type], [I32Type]),
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: stdlib_external_runtime_mod,
-        mimp_name: new_float64_ident,
-        mimp_type: MFuncImport([F64Type], [I32Type]),
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: stdlib_external_runtime_mod,
-        mimp_name: new_int32_ident,
-        mimp_type: MFuncImport([I32Type], [I32Type]),
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: stdlib_external_runtime_mod,
-        mimp_name: new_int64_ident,
-        mimp_type: MFuncImport([I64Type], [I32Type]),
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: stdlib_external_runtime_mod,
-        mimp_name: number_to_int64_ident,
-        mimp_type: MFuncImport([I32Type], [I32Type]),
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: stdlib_external_runtime_mod,
-        mimp_name: int64_to_number_ident,
-        mimp_type: MFuncImport([I32Type], [I32Type]),
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: stdlib_external_runtime_mod,
-        mimp_name: int32_to_number_ident,
-        mimp_type: MFuncImport([I32Type], [I32Type]),
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: stdlib_external_runtime_mod,
-        mimp_name: float32_to_number_ident,
-        mimp_type: MFuncImport([I32Type], [I32Type]),
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: stdlib_external_runtime_mod,
-        mimp_name: float64_to_number_ident,
-        mimp_type: MFuncImport([I32Type], [I32Type]),
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-      {
-        mimp_mod: stdlib_external_runtime_mod,
-        mimp_name: equal_ident,
-        mimp_type: MFuncImport([I32Type, I32Type], [I32Type]),
-        mimp_kind: MImportWasm,
-        mimp_setup: MSetupNone,
-      },
-    ],
-    traced_imports,
-  ); /* <- 2nd argument to List.append */
+  List.append(grain_function_imports, required_function_imports);
 
 let runtime_imports =
   List.append(runtime_global_imports, runtime_function_imports);
@@ -479,17 +291,6 @@ let get_imported_name = (mod_, name) =>
     Ident.unique_name(name),
   );
 
-let name_of_memory_tracing_func = (mod_, itemname, default) =>
-  get_imported_name(mod_) @@
-  (if (memory_tracing_enabled) {itemname} else {default});
-
-let call_runtime_check_memory = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    get_imported_name(runtime_mod, check_memory_ident),
-    args,
-    Type.int32,
-  );
 let call_runtime_throw_error = (wasm_mod, env, args) =>
   Expression.call(
     wasm_mod,
@@ -502,393 +303,80 @@ let call_malloc = (wasm_mod, env, args) => {
   let args = [
     Expression.global_get(
       wasm_mod,
-      get_imported_name(malloc_mod, malloc_closure_ident),
+      get_imported_name(gc_mod, malloc_closure_ident),
       Type.int32,
     ),
     ...args,
   ];
   Expression.call(
     wasm_mod,
-    get_imported_name(malloc_mod, malloc_ident),
+    get_imported_name(gc_mod, malloc_ident),
     args,
     Type.int32,
   );
 };
-let call_incref = (wasm_mod, env, arg) =>
+let call_incref = (wasm_mod, env, arg) => {
+  let args = [
+    Expression.global_get(
+      wasm_mod,
+      get_imported_name(gc_mod, incref_closure_ident),
+      Type.int32,
+    ),
+    arg,
+  ];
   if (Config.no_gc^) {
     arg;
   } else {
     Expression.call(
       wasm_mod,
-      get_imported_name(runtime_mod, incref_ident),
-      [arg],
-      Type.int32,
-    );
-  };
-let call_incref_adt = (wasm_mod, env, arg) =>
-  if (Config.no_gc^) {
-    arg;
-  } else {
-    Expression.call(
-      wasm_mod,
-      name_of_memory_tracing_func(
-        runtime_mod,
-        incref_adt_ident,
-        incref_ident,
-      ),
-      [arg],
-      Type.int32,
-    );
-  };
-let call_incref_array = (wasm_mod, env, arg) =>
-  if (Config.no_gc^) {
-    arg;
-  } else {
-    Expression.call(
-      wasm_mod,
-      name_of_memory_tracing_func(
-        runtime_mod,
-        incref_array_ident,
-        incref_ident,
-      ),
-      [arg],
-      Type.int32,
-    );
-  };
-let call_incref_tuple = (wasm_mod, env, arg) =>
-  if (Config.no_gc^) {
-    arg;
-  } else {
-    Expression.call(
-      wasm_mod,
-      name_of_memory_tracing_func(
-        runtime_mod,
-        incref_tuple_ident,
-        incref_ident,
-      ),
-      [arg],
-      Type.int32,
-    );
-  };
-let call_incref_box = (wasm_mod, env, arg) =>
-  if (Config.no_gc^) {
-    arg;
-  } else {
-    Expression.call(
-      wasm_mod,
-      name_of_memory_tracing_func(
-        runtime_mod,
-        incref_box_ident,
-        incref_ident,
-      ),
-      [arg],
-      Type.int32,
-    );
-  };
-let call_incref_backpatch = (wasm_mod, env, arg) =>
-  if (Config.no_gc^) {
-    arg;
-  } else {
-    Expression.call(
-      wasm_mod,
-      name_of_memory_tracing_func(
-        runtime_mod,
-        incref_backpatch_ident,
-        incref_ident,
-      ),
-      [arg],
-      Type.int32,
-    );
-  };
-let call_incref_swap_bind = (wasm_mod, env, arg) =>
-  if (Config.no_gc^) {
-    arg;
-  } else {
-    Expression.call(
-      wasm_mod,
-      name_of_memory_tracing_func(
-        runtime_mod,
-        incref_swap_bind_ident,
-        incref_ident,
-      ),
-      [arg],
-      Type.int32,
-    );
-  };
-let call_incref_arg_bind = (wasm_mod, env, arg) =>
-  if (Config.no_gc^) {
-    arg;
-  } else {
-    Expression.call(
-      wasm_mod,
-      name_of_memory_tracing_func(
-        runtime_mod,
-        incref_arg_bind_ident,
-        incref_ident,
-      ),
-      [arg],
-      Type.int32,
-    );
-  };
-let call_incref_local_bind = (wasm_mod, env, arg) =>
-  if (Config.no_gc^) {
-    arg;
-  } else {
-    Expression.call(
-      wasm_mod,
-      name_of_memory_tracing_func(
-        runtime_mod,
-        incref_local_bind_ident,
-        incref_ident,
-      ),
-      [arg],
-      Type.int32,
-    );
-  };
-let call_incref_global_bind = (wasm_mod, env, arg) =>
-  if (Config.no_gc^) {
-    arg;
-  } else {
-    Expression.call(
-      wasm_mod,
-      name_of_memory_tracing_func(
-        runtime_mod,
-        incref_global_bind_ident,
-        incref_ident,
-      ),
-      [arg],
-      Type.int32,
-    );
-  };
-let call_incref_closure_bind = (wasm_mod, env, arg) =>
-  if (Config.no_gc^) {
-    arg;
-  } else {
-    Expression.call(
-      wasm_mod,
-      name_of_memory_tracing_func(
-        runtime_mod,
-        incref_closure_bind_ident,
-        incref_ident,
-      ),
-      [arg],
-      Type.int32,
-    );
-  };
-let call_incref_cleanup_locals = (wasm_mod, env, arg) =>
-  if (Config.no_gc^) {
-    arg;
-  } else {
-    Expression.call(
-      wasm_mod,
-      name_of_memory_tracing_func(
-        runtime_mod,
-        incref_cleanup_locals_ident,
-        incref_ident,
-      ),
-      [arg],
-      Type.int32,
-    );
-  };
-let call_incref_64 = (wasm_mod, env, arg) =>
-  if (Config.no_gc^) {
-    arg;
-  } else {
-    Expression.call(
-      wasm_mod,
-      get_imported_name(runtime_mod, incref64_ident),
-      [arg],
-      Type.int32,
-    );
-  };
-let call_decref = (wasm_mod, env, arg) =>
-  if (Config.no_gc^) {
-    arg;
-  } else {
-    Expression.call(
-      wasm_mod,
-      get_imported_name(runtime_mod, decref_ident),
-      [arg],
-      Type.int32,
-    );
-  };
-let call_decref_64 = (wasm_mod, env, arg) =>
-  if (Config.no_gc^) {
-    arg;
-  } else {
-    Expression.call(
-      wasm_mod,
-      get_imported_name(runtime_mod, decref64_ident),
-      [arg],
-      Type.int32,
-    );
-  };
-let call_decref_array = (wasm_mod, env, arg) =>
-  if (Config.no_gc^) {
-    arg;
-  } else {
-    Expression.call(
-      wasm_mod,
-      name_of_memory_tracing_func(
-        runtime_mod,
-        decref_array_ident,
-        decref_ident,
-      ),
-      [arg],
-      Type.int32,
-    );
-  };
-let call_decref_tuple = (wasm_mod, env, arg) =>
-  if (Config.no_gc^) {
-    arg;
-  } else {
-    Expression.call(
-      wasm_mod,
-      name_of_memory_tracing_func(
-        runtime_mod,
-        decref_tuple_ident,
-        decref_ident,
-      ),
-      [arg],
-      Type.int32,
-    );
-  };
-let call_decref_box = (wasm_mod, env, arg) =>
-  if (Config.no_gc^) {
-    arg;
-  } else {
-    Expression.call(
-      wasm_mod,
-      name_of_memory_tracing_func(
-        runtime_mod,
-        decref_box_ident,
-        decref_ident,
-      ),
-      [arg],
-      Type.int32,
-    );
-  };
-let call_decref_swap_bind = (wasm_mod, env, arg) =>
-  if (Config.no_gc^) {
-    arg;
-  } else {
-    Expression.call(
-      wasm_mod,
-      name_of_memory_tracing_func(
-        runtime_mod,
-        decref_swap_bind_ident,
-        decref_ident,
-      ),
-      [arg],
-      Type.int32,
-    );
-  };
-let call_decref_arg_bind = (wasm_mod, env, arg) =>
-  if (Config.no_gc^) {
-    arg;
-  } else {
-    Expression.call(
-      wasm_mod,
-      name_of_memory_tracing_func(
-        runtime_mod,
-        decref_arg_bind_ident,
-        decref_ident,
-      ),
-      [arg],
-      Type.int32,
-    );
-  };
-let call_decref_local_bind = (wasm_mod, env, arg) =>
-  if (Config.no_gc^) {
-    arg;
-  } else {
-    Expression.call(
-      wasm_mod,
-      name_of_memory_tracing_func(
-        runtime_mod,
-        decref_local_bind_ident,
-        decref_ident,
-      ),
-      [arg],
-      Type.int32,
-    );
-  };
-let call_decref_global_bind = (wasm_mod, env, arg) =>
-  if (Config.no_gc^) {
-    arg;
-  } else {
-    Expression.call(
-      wasm_mod,
-      name_of_memory_tracing_func(
-        runtime_mod,
-        decref_global_bind_ident,
-        decref_ident,
-      ),
-      [arg],
-      Type.int32,
-    );
-  };
-let call_decref_closure_bind = (wasm_mod, env, arg) =>
-  if (Config.no_gc^) {
-    arg;
-  } else {
-    Expression.call(
-      wasm_mod,
-      name_of_memory_tracing_func(
-        runtime_mod,
-        decref_closure_bind_ident,
-        decref_ident,
-      ),
-      [arg],
-      Type.int32,
-    );
-  };
-let call_decref_cleanup_locals = (wasm_mod, env, args) =>
-  if (Config.no_gc^) {
-    List.hd(args);
-  } else {
-    Expression.call(
-      wasm_mod,
-      name_of_memory_tracing_func(
-        runtime_mod,
-        decref_cleanup_locals_ident,
-        decref_ignore_zeros_ident,
-      ),
+      get_imported_name(gc_mod, incref_ident),
       args,
       Type.int32,
     );
   };
-let decref_cleanup_globals_name =
-  name_of_memory_tracing_func(
-    runtime_mod,
-    decref_cleanup_globals_ident,
-    decref_ignore_zeros_ident,
-  );
-let call_decref_cleanup_globals = (wasm_mod, env, arg) =>
+};
+let call_decref_ignore_zeros = (wasm_mod, env, arg) => {
+  let args = [
+    Expression.global_get(
+      wasm_mod,
+      get_imported_name(gc_mod, decref_ignore_zeros_closure_ident),
+      Type.int32,
+    ),
+    arg,
+  ];
   if (Config.no_gc^) {
     arg;
   } else {
     Expression.call(
       wasm_mod,
-      decref_cleanup_globals_name,
-      [arg],
+      get_imported_name(gc_mod, decref_ignore_zeros_ident),
+      args,
       Type.int32,
     );
   };
-let call_decref_drop = (wasm_mod, env, arg) =>
-  if (Config.no_gc^) {
-    arg;
+};
+let call_decref = (wasm_mod, env, arg) =>
+  if (!memory_debugging_enabled) {
+    call_decref_ignore_zeros(wasm_mod, env, arg);
   } else {
-    Expression.call(
-      wasm_mod,
-      name_of_memory_tracing_func(
-        runtime_mod,
-        decref_drop_ident,
-        decref_ignore_zeros_ident,
+    let args = [
+      Expression.global_get(
+        wasm_mod,
+        get_imported_name(gc_mod, decref_closure_ident),
+        Type.int32,
       ),
-      [arg],
-      Type.int32,
-    );
+      arg,
+    ];
+    if (Config.no_gc^) {
+      arg;
+    } else {
+      Expression.call(
+        wasm_mod,
+        get_imported_name(gc_mod, decref_ident),
+        args,
+        Type.int32,
+      );
+    };
   };
 let call_new_rational = (wasm_mod, env, args) =>
   Expression.call(
@@ -1035,20 +523,11 @@ let cleanup_local_slot_instructions = (wasm_mod, env: codegen_env) => {
       env.stack_size.stack_size_i32,
       i => {
         let slot_no = i + env.num_args + Array.length(swap_slots);
-        let args = [Expression.local_get(wasm_mod, slot_no, Type.int32)];
-        let args =
-          if (memory_tracing_enabled) {
-            List.append(
-              args,
-              [Expression.const(wasm_mod, const_int32(slot_no))],
-            );
-          } else {
-            args;
-          };
+        let arg = Expression.local_get(wasm_mod, slot_no, Type.int32);
         singleton @@
         Expression.drop(
           wasm_mod,
-          call_decref_cleanup_locals(wasm_mod, env, args),
+          call_decref_ignore_zeros(wasm_mod, env, arg),
         );
       },
     );
@@ -1068,32 +547,30 @@ let compile_bind =
   let appropriate_incref = (env, arg) =>
     switch (b) {
     | _ when skip_incref => arg /* This case is used for storing swap values that have freshly been heap-allocated. */
-    | MArgBind(_, I32Type) => call_incref_arg_bind(wasm_mod, env, arg)
-    | MArgBind(_) => arg
-    | MLocalBind(_, I32Type) => call_incref_local_bind(wasm_mod, env, arg)
-    | MLocalBind(_) => arg
-    | MSwapBind(_, I32Type) => call_incref_swap_bind(wasm_mod, env, arg)
-    | MSwapBind(_) => arg
-    | MGlobalBind(_, I32Type, true) =>
-      call_incref_global_bind(wasm_mod, env, arg)
+    | MArgBind(_, I32Type)
+    | MLocalBind(_, I32Type)
+    | MSwapBind(_, I32Type)
+    | MClosureBind(_)
+    | MGlobalBind(_, I32Type, true) => call_incref(wasm_mod, env, arg)
+    | MArgBind(_)
+    | MLocalBind(_)
+    | MSwapBind(_)
     | MGlobalBind(_) => arg
-    | MClosureBind(_) => call_incref_closure_bind(wasm_mod, env, arg)
     | _ => call_incref(wasm_mod, env, arg)
     };
 
   let appropriate_decref = (env, arg) =>
     switch (b) {
     | _ when skip_decref => arg /* This case is used for storing swap values that have freshly been heap-allocated. */
-    | MArgBind(_, I32Type) => call_decref_arg_bind(wasm_mod, env, arg)
-    | MArgBind(_) => arg
-    | MLocalBind(_, I32Type) => call_decref_local_bind(wasm_mod, env, arg)
-    | MLocalBind(_) => arg
-    | MSwapBind(_, I32Type) => call_decref_swap_bind(wasm_mod, env, arg)
-    | MSwapBind(_) => arg
-    | MGlobalBind(_, I32Type, _) =>
-      call_decref_global_bind(wasm_mod, env, arg)
+    | MArgBind(_, I32Type)
+    | MLocalBind(_, I32Type)
+    | MSwapBind(_, I32Type)
+    | MClosureBind(_)
+    | MGlobalBind(_, I32Type, true) => call_decref(wasm_mod, env, arg)
+    | MArgBind(_)
+    | MLocalBind(_)
+    | MSwapBind(_)
     | MGlobalBind(_) => arg
-    | MClosureBind(_) => call_decref_closure_bind(wasm_mod, env, arg)
     | _ => call_decref(wasm_mod, env, arg)
     };
 
@@ -1393,7 +870,7 @@ let compile_bind =
 };
 
 let safe_drop = (wasm_mod, env, arg) =>
-  Expression.drop(wasm_mod, call_decref_drop(wasm_mod, env, arg));
+  Expression.drop(wasm_mod, call_decref_ignore_zeros(wasm_mod, env, arg));
 
 let get_swap = (~ty as typ=I32Type, wasm_mod, env, idx) =>
   switch (typ) {
@@ -1506,11 +983,7 @@ let cleanup_locals = (wasm_mod, env: codegen_env, arg): Expression.t => {
   Concatlist.list_of_t(
     singleton(
       Expression.drop(wasm_mod) @@
-      call_incref_cleanup_locals(
-        wasm_mod,
-        env,
-        tee_swap(wasm_mod, env, 0, arg),
-      ),
+      call_incref(wasm_mod, env, tee_swap(wasm_mod, env, 0, arg)),
     )
     @ cleanup_local_slot_instructions(wasm_mod, env)
     +@ [get_swap(wasm_mod, env, 0)],
@@ -1619,12 +1092,8 @@ let compile_tuple_op = (~is_box=false, wasm_mod, env, tup_imm, op) => {
             Expression.tuple_make(
               wasm_mod,
               [
-                (if (is_box) {call_incref_box} else {call_incref_tuple})(
-                  wasm_mod,
-                  env,
-                  compile_imm(wasm_mod, env, imm),
-                ),
-                (if (is_box) {call_decref_box} else {call_decref_tuple})(
+                call_incref(wasm_mod, env, compile_imm(wasm_mod, env, imm)),
+                call_decref(
                   wasm_mod,
                   env,
                   load(~offset=4 * (idx_int + 2), wasm_mod, tup()),
@@ -1891,7 +1360,7 @@ let heap_allocate = (wasm_mod, env, num_words: int) =>
         compile_bind(wasm_mod, env, ~action=BindGet, runtime_heap_ptr),
         Expression.const(
           wasm_mod,
-          const_int32(round_to_even(num_words) * 4),
+          const_int32(round_to_even(num_words + 2) * 4),
         ),
       );
     Expression.tuple_extract(
@@ -1899,7 +1368,33 @@ let heap_allocate = (wasm_mod, env, num_words: int) =>
       Expression.tuple_make(
         wasm_mod,
         [
-          compile_bind(wasm_mod, env, ~action=BindGet, runtime_heap_ptr),
+          Expression.block(
+            wasm_mod,
+            gensym_label("heap_allocate_runtime"),
+            [
+              store(
+                wasm_mod,
+                compile_bind(
+                  wasm_mod,
+                  env,
+                  ~action=BindGet,
+                  runtime_heap_ptr,
+                ),
+                Expression.const(wasm_mod, const_int32(1)),
+              ),
+              Expression.binary(
+                wasm_mod,
+                Op.add_int32,
+                compile_bind(
+                  wasm_mod,
+                  env,
+                  ~action=BindGet,
+                  runtime_heap_ptr,
+                ),
+                Expression.const(wasm_mod, const_int32(8)),
+              ),
+            ],
+          ),
           compile_bind(
             wasm_mod,
             env,
@@ -1937,8 +1432,8 @@ let heap_runtime_allocate_imm =
             wasm_mod,
             Op.add_int32,
             num_words(),
-            // Add 1 extra and clear final bit to round up to an even number of words
-            Expression.const(wasm_mod, const_int32(1 + additional_words)),
+            // Add 3 extra and clear final bit to round up to an even number of words + 2
+            Expression.const(wasm_mod, const_int32(3 + additional_words)),
           ),
           Expression.const(wasm_mod, const_int32(0xfffffffe)),
         ),
@@ -1950,7 +1445,23 @@ let heap_runtime_allocate_imm =
     Expression.tuple_make(
       wasm_mod,
       [
-        compile_bind(wasm_mod, env, ~action=BindGet, runtime_heap_ptr),
+        Expression.block(
+          wasm_mod,
+          gensym_label("heap_allocate_runtime_imm"),
+          [
+            store(
+              wasm_mod,
+              compile_bind(wasm_mod, env, ~action=BindGet, runtime_heap_ptr),
+              Expression.const(wasm_mod, const_int32(1)),
+            ),
+            Expression.binary(
+              wasm_mod,
+              Op.add_int32,
+              compile_bind(wasm_mod, env, ~action=BindGet, runtime_heap_ptr),
+              Expression.const(wasm_mod, const_int32(8)),
+            ),
+          ],
+        ),
         compile_bind(
           wasm_mod,
           env,
@@ -2170,11 +1681,7 @@ let allocate_closure =
         ~offset=4 * (idx + 4),
         wasm_mod,
         get_swap(),
-        call_incref_backpatch(
-          wasm_mod,
-          env,
-          compile_imm(wasm_mod, env, var),
-        ),
+        call_incref(wasm_mod, env, compile_imm(wasm_mod, env, var)),
       );
     patches := List.mapi(patch_var, variables);
   };
@@ -2241,7 +1748,7 @@ let allocate_adt = (wasm_mod, env, ttag, vtag, elts) => {
       ~offset=4 * (idx + 5),
       wasm_mod,
       get_swap(),
-      call_incref_adt(wasm_mod, env, compile_imm(wasm_mod, env, elt)),
+      call_incref(wasm_mod, env, compile_imm(wasm_mod, env, elt)),
     );
 
   let preamble = [
@@ -2306,11 +1813,7 @@ let allocate_tuple = (~is_box=false, wasm_mod, env, elts) => {
       ~offset=4 * (idx + 2),
       wasm_mod,
       get_swap(),
-      (if (is_box) {call_incref_box} else {call_incref_tuple})(
-        wasm_mod,
-        env,
-        compile_imm(wasm_mod, env, elt),
-      ),
+      call_incref(wasm_mod, env, compile_imm(wasm_mod, env, elt)),
     );
 
   let preamble = [
@@ -2357,7 +1860,7 @@ let allocate_array = (wasm_mod, env, elts) => {
       ~offset=4 * (idx + 2),
       wasm_mod,
       get_swap(),
-      call_incref_array(wasm_mod, env, compile_imm(wasm_mod, env, elt)),
+      call_incref(wasm_mod, env, compile_imm(wasm_mod, env, elt)),
     );
 
   let preamble = [
@@ -2476,7 +1979,7 @@ let allocate_array_n = (wasm_mod, env, num_elts, elt) => {
                       Expression.const(wasm_mod, const_int32(4)),
                     ),
                   ),
-                  call_incref_array(wasm_mod, env, elt),
+                  call_incref(wasm_mod, env, elt),
                 ),
                 set_loop_counter(
                   Expression.binary(
@@ -2587,7 +2090,7 @@ let allocate_array_init = (wasm_mod, env, num_elts, init_f) => {
                       Expression.const(wasm_mod, const_int32(4)),
                     ),
                   ),
-                  call_incref_array(
+                  call_incref(
                     wasm_mod,
                     env,
                     Expression.call_indirect(
@@ -2636,7 +2139,7 @@ let allocate_record = (wasm_mod, env, ttag, elts) => {
       ~offset=4 * (idx + 4),
       wasm_mod,
       get_swap(),
-      call_incref_box(wasm_mod, env, compile_imm(wasm_mod, env, elt)),
+      call_incref(wasm_mod, env, compile_imm(wasm_mod, env, elt)),
     );
 
   let preamble = [
@@ -2726,10 +2229,7 @@ let compile_prim1 = (wasm_mod, env, p1, arg): Expression.t => {
       wasm_mod,
       gensym_label("Ignore"),
       [
-        Expression.drop(
-          wasm_mod,
-          call_decref_drop(wasm_mod, env, compiled_arg),
-        ),
+        safe_drop(wasm_mod, env, compiled_arg),
         Expression.const(wasm_mod, const_void()),
       ],
     )
@@ -3057,11 +2557,7 @@ let do_backpatches = (wasm_mod, env, backpatches) => {
         ~offset=4 * (idx + 4),
         wasm_mod,
         get_swap(),
-        call_incref_backpatch(
-          wasm_mod,
-          env,
-          compile_imm(wasm_mod, env, var),
-        ),
+        call_incref(wasm_mod, env, compile_imm(wasm_mod, env, var)),
       );
     [preamble, ...List.mapi(backpatch_var, variables)];
   };
@@ -3692,7 +3188,11 @@ let prepare = (env, {imports} as prog) => {
 
   let new_imports =
     if (Env.is_runtime_mode()) {
-      List.append(required_global_imports, imports);
+      List.concat([
+        required_global_imports,
+        required_function_imports,
+        imports,
+      ]);
     } else {
       List.append(runtime_imports, imports);
     };

@@ -21,12 +21,43 @@ let t = (~todo=?, name, program, expected) =>
   name >:: wrap_todo(todo) @@ test_run(program, name, expected);
 let tc = (~todo=?, name, program, expected) =>
   name >:: wrap_todo(todo) @@ test_run(~cmp=exists, program, name, expected);
-let tgc = (~todo=?, name, heap_size, program, expected) =>
-  name >:: wrap_todo(todo) @@ test_run(~heap_size, program, name, expected);
+
+let make_gc_program = (program, heap_size) => {
+  Printf.sprintf(
+    {|
+    import WasmI32 from "runtime/unsafe/wasmi32"
+    import Malloc from "runtime/malloc"
+    import Memory from "runtime/unsafe/memory"
+    @disableGC
+    let leak = () => {
+      // find current memory pointer, subtract space for two malloc headers + 1 GC header
+      let offset = WasmI32.sub(Memory.malloc(8n), 24n)
+      // Calculate how much memory is left
+      let availableMemory = WasmI32.sub(offset, Malloc._RESERVED_RUNTIME_SPACE)
+      // Calculate how much memory to leak
+      let toLeak = WasmI32.sub(availableMemory, %dn)
+      // Memory is not reclaimed due to no gc context
+      Memory.malloc(toLeak);
+    }
+  leak();
+  %s
+|},
+    heap_size,
+    program,
+  );
+};
+
+let tgc = (~todo=?, name, heap_size, program, expected) => {
+  name
+  >:: wrap_todo(todo) @@
+  test_run(~num_pages=1, make_gc_program(program, heap_size), name, expected);
+};
 let terr = (~todo=?, name, program, expected) =>
   name >:: wrap_todo(todo) @@ test_err(program, name, expected);
 let tgcerr = (~todo=?, name, heap_size, program, expected) =>
-  name >:: wrap_todo(todo) @@ test_err(~heap_size, program, name, expected);
+  name
+  >:: wrap_todo(todo) @@
+  test_err(~num_pages=1, make_gc_program(program, heap_size), name, expected);
 
 let te = (~todo=?, name, program, expected) =>
   name >:: wrap_todo(todo) @@ test_err(program, name, expected);
@@ -45,10 +76,25 @@ let tlib = (~todo=?, ~returns=?, ~code=?, input_file) =>
   >:: wrap_todo(todo) @@
   test_run_stdlib(~returns?, ~code?, input_file);
 
+let read_whole_file = filename => {
+  let ch = open_in(filename);
+  let s = really_input_string(ch, in_channel_length(ch));
+  close_in(ch);
+  s;
+};
+
 let tgcfile = (~todo=?, name, heap_size, input_file, expected) =>
   name
   >:: wrap_todo(todo) @@
-  test_run_file(~heap_size, input_file, name, expected);
+  test_err(
+    ~num_pages=1,
+    make_gc_program(
+      read_whole_file("input/" ++ input_file ++ ".gr"),
+      heap_size,
+    ),
+    name,
+    expected,
+  );
 
 let test_final_anf =
     (
@@ -991,7 +1037,7 @@ let loop_tests = [
 ];
 
 let oom = [
-  tgcerr("oomgc1", 70, "(1, (3, 4))", "Out of memory"),
+  tgcerr("oomgc1", 70, "(1, (3, 4))", "Maximum memory size exceeded"),
   tgc("oomgc2", 356, "(1, (3, 4))", "(1, (3, 4))"),
   tgc("oomgc3", 256, "(3, 4)", "(3, 4)"),
 ];
@@ -1010,13 +1056,13 @@ let gc = [
     "enum Opt<x> { None, Some(x) };\n     let f = (() => {\n      let x = (box(None), 2);\n      let (fst, _) = x\n      fst := Some(x)\n      });\n      {\n        f();\n        let x = (1, 2);\n        x\n      }",
     "(1, 2)",
   ),
-  tgcfile("fib_gc_err", 1024, "fib-gc", "Out of memory"),
+  tgcfile("fib_gc_err", 1024, "fib-gc", "Maximum memory size exceeded"),
   tgcfile("fib_gc", 3424, "fib-gc", "832040"),
   /* tgcfile "fib_gc_bigger" 3072 "fib-gc" "832040";
      tgcfile "fib_gc_biggest" 512 "fib-gc" "832040"; */
   /* I've manually tested this test, but see TODO for automated testing */
   /* tgcfile ~todo:"Need to figure out how to disable dead assignment elimination to make sure this test is actually checking what we want" "sinister_gc" 3072 "sinister-tail-call-gc" "true"; */
-  tgcfile("long_lists", 70000, "long_lists", "true"),
+  tgcfile("long_lists", 20000, "long_lists", "true"),
 ];
 
 let match_tests = [

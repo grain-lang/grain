@@ -1,14 +1,8 @@
 import { GrainError, makeThrowGrainError } from "../errors/errors";
 import { wasi, readFile, readURL, readBuffer } from "./grain-module";
-import { makeMemoryChecker } from "./heap";
-import { managedMemory } from "../runtime";
 import { GRAIN_STRING_HEAP_TAG, GRAIN_GENERIC_HEAP_TAG_TYPE } from "./tags";
 
-function roundUp(num, multiple) {
-  return multiple * (Math.floor((num - 1) / multiple) + 1);
-}
-
-const MALLOC_MODULE = "GRAIN$MODULE$runtime/malloc";
+const MALLOC_MODULE = "GRAIN$MODULE$runtime/gc";
 
 export class GrainRunner {
   constructor(locator, managedMemory, opts) {
@@ -21,14 +15,11 @@ export class GrainRunner {
     this.opts = opts;
     this.ptr = 0;
     this.ptrZero = 0;
-    this._checkMemory = makeMemoryChecker(this);
-    this.limitMemory = opts.limitMemory || -1;
     this.postImports = () => {};
     this.encoder = new TextEncoder("utf-8");
     this.decoder = new TextDecoder("utf-8");
     const printNames = {};
     this.imports["grainRuntime"] = {
-      checkMemory: this._checkMemory,
       relocBase: 0,
       moduleRuntimeId: 0,
       throwError: makeThrowGrainError(this),
@@ -138,10 +129,6 @@ export class GrainRunner {
     let ret = this.decoder.decode(slice);
     this.managedMemory.free(grainString);
     return ret;
-  }
-
-  checkMemory() {
-    return this._checkMemory();
   }
 
   addImport(name, obj) {
