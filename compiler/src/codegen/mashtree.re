@@ -380,7 +380,7 @@ and instr_desc =
   | MFor(option(block), option(block), block)
   | MContinue
   | MBreak
-  | MSwitch(immediate, list((int32, block)), block, asmtype) /* value, branches, default */
+  | MSwitch(immediate, list((int32, block)), block, asmtype) /* value, branches, default, return type */
   | MPrim1(prim1, immediate)
   | MPrim2(prim2, immediate, immediate)
   | MPrimN(primn, list(immediate))
