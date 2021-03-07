@@ -2332,7 +2332,6 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
   let compiled_arg2 = () => compile_imm(wasm_mod, env, arg2);
   let swap_get = () => get_swap(wasm_mod, env, 0);
   let swap_tee = tee_swap(wasm_mod, env, 0);
-  // [TODO] (#300) Clean out a lot of these unreachable cases
 
   switch (p2) {
   | And =>
