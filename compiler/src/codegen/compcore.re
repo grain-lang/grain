@@ -304,7 +304,7 @@ let call_runtime_throw_error = (wasm_mod, env, args) =>
     wasm_mod,
     get_imported_name(runtime_mod, throw_error_ident),
     args,
-    Type.int32,
+    Type.none,
   );
 
 let call_malloc = (wasm_mod, env, args) => {
