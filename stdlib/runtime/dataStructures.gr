@@ -92,7 +92,6 @@ export let allocateChar = () => {
   char
 }
 
-// [TODO] should probably migrate over the accessors in numbers.gr
 // INT32/INT64
 
 /**
