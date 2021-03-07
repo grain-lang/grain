@@ -62,8 +62,16 @@ module ConstantFoldingArg: Anf_mapper.MapArgument = {
       | ">" => wrap_imm @@ Const_bool(get_int(x) > get_int(y))
       | ">=" => wrap_imm @@ Const_bool(get_int(x) >= get_int(y))
       | "==" => wrap_imm @@ Const_bool(x == y)
-      | "&&" => wrap_imm @@ Const_bool(get_bool(x) && get_bool(y))
-      | "||" => wrap_imm @@ Const_bool(get_bool(x) || get_bool(y))
+      | _ => c
+      };
+    | CPrim2(prim2, {imm_desc: ImmConst(x)} as i, {imm_desc: ImmConst(y)}) =>
+      let wrap_imm = imm => {
+        ...c,
+        comp_desc: CImmExpr({...i, imm_desc: ImmConst(imm)}),
+      };
+      switch (prim2) {
+      | And => wrap_imm @@ Const_bool(get_bool(x) && get_bool(y))
+      | Or => wrap_imm @@ Const_bool(get_bool(x) || get_bool(y))
       | _ => c
       };
     | _ => c

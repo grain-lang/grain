@@ -418,6 +418,16 @@ let rec transl_imm =
       Imm.const(Const_void),
       [BSeq(Comp.break(~loc, ~env, ()))],
     )
+  | TExpApp(
+      {exp_desc: TExpIdent(_, _, {val_kind: TValPrim("@and")})},
+      [arg1, arg2],
+    ) =>
+    transl_imm({...e, exp_desc: TExpPrim2(And, arg1, arg2)})
+  | TExpApp(
+      {exp_desc: TExpIdent(_, _, {val_kind: TValPrim("@or")})},
+      [arg1, arg2],
+    ) =>
+    transl_imm({...e, exp_desc: TExpPrim2(Or, arg1, arg2)})
   | TExpApp(func, args) =>
     let tmp = gensym("app");
     let (new_func, func_setup) = transl_imm(func);
@@ -1022,6 +1032,16 @@ and transl_comp_expression =
     failwith("transl_comp_expression: impossible: empty lambda")
   | TExpLambda(_, _) =>
     failwith("transl_comp_expression: NYI: multi-branch lambda")
+  | TExpApp(
+      {exp_desc: TExpIdent(_, _, {val_kind: TValPrim("@and")})},
+      [arg1, arg2],
+    ) =>
+    transl_comp_expression({...e, exp_desc: TExpPrim2(And, arg1, arg2)})
+  | TExpApp(
+      {exp_desc: TExpIdent(_, _, {val_kind: TValPrim("@or")})},
+      [arg1, arg2],
+    ) =>
+    transl_comp_expression({...e, exp_desc: TExpPrim2(Or, arg1, arg2)})
   | TExpApp(func, args) =>
     let (new_func, func_setup) = transl_imm(func);
     let (new_args, new_setup) = List.split(List.map(transl_imm, args));
