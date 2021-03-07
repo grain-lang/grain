@@ -1095,8 +1095,13 @@ and type_expect_ =
         scond,
         mk_expected(~explanation=Loop_conditional, Builtin_types.type_bool),
       );
-    let body = type_expect(env, sbody, ty_expected_explained);
-    re({
+    let body =
+      type_expect(
+        env,
+        sbody,
+        mk_expected(~explanation=Loop_body, Builtin_types.type_void),
+      );
+    rue({
       exp_desc: TExpWhile(cond, body),
       exp_loc: loc,
       exp_extra: [],
@@ -1134,8 +1139,13 @@ and type_expect_ =
         sinc => {type_expect(env, sinc, mk_expected(newvar()))},
         sinc,
       );
-    let body = type_expect(env, sbody, ty_expected_explained);
-    re({
+    let body =
+      type_expect(
+        env,
+        sbody,
+        mk_expected(~explanation=Loop_body, Builtin_types.type_void),
+      );
+    rue({
       exp_desc: TExpFor(init, cond, inc, body),
       exp_loc: loc,
       exp_extra: [],
@@ -2161,8 +2171,8 @@ let report_type_expected_explanation = (expl, ppf) =>
   | If_conditional => fprintf(ppf, "the condition of an if-statement")
   | If_no_else_branch =>
     fprintf(ppf, "the result of a conditional with no else branch")
-  | Loop_conditional => fprintf(ppf, "the condition of a while-loop")
-  | Loop_body => fprintf(ppf, "the body of a while-loop")
+  | Loop_conditional => fprintf(ppf, "the condition of a loop")
+  | Loop_body => fprintf(ppf, "the body of a loop")
   | Assert_condition => fprintf(ppf, "the condition of an assertion")
   | Sequence_left_hand_side =>
     fprintf(ppf, "the left-hand side of a sequence")

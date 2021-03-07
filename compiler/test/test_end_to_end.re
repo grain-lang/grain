@@ -912,23 +912,23 @@ let let_mut_tests = [
 let loop_tests = [
   t(
     "loop1",
-    "let b = box(3);\n            {\n              while (unbox(b) > 0) {\n                b := unbox(b) - 1\n              };\n              unbox(b)\n            }",
+    "let b = box(3);\n            {\n              while (unbox(b) > 0) {\n                b := unbox(b) - 1;\n              };\n              unbox(b)\n            }",
     "0",
   ),
   t(
     "loop2",
-    "let b = box(12);\n             let count = box(0);\n            {\n              while (unbox(b) > 0) {\n                b := unbox(b) - 1;\n                count := unbox(count) + 1\n              };\n              unbox(count)\n            }",
+    "let b = box(12);\n             let count = box(0);\n            {\n              while (unbox(b) > 0) {\n                b := unbox(b) - 1;\n                count := unbox(count) + 1;\n              };\n              unbox(count)\n            }",
     "12",
   ),
-  t("loop3", "let mut b = 3; while (b > 0) { b = b - 1 }; b ", "0"),
+  t("loop3", "let mut b = 3; while (b > 0) { b = b - 1; }; b ", "0"),
   t(
     "loop4",
-    "let mut b = 12; let mut count = 0; while (b > 0) { b = b - 1; count = count + 1 }; count",
+    "let mut b = 12; let mut count = 0; while (b > 0) { b = b - 1; count = count + 1; }; count",
     "12",
   ),
   t(
     "loop5",
-    "let mut b = 12; let mut count = 0; while ((b -= 1) >= 0) { count += 1 }; count",
+    "let mut b = 12; let mut count = 0; while ((b -= 1) >= 0) { count += 1; }; count",
     "12",
   ),
   t(
@@ -977,6 +977,16 @@ let loop_tests = [
     "loop_err5",
     "for (let mut x = 0; x <= 3; x += 1) { void }; x",
     "Unbound value x",
+  ),
+  te(
+    "loop_err6",
+    "let x = while (false) { 5 }; x + 3",
+    "has type Number but",
+  ),
+  te(
+    "loop_err7",
+    "let x = for (;false;) { 5 }; x + 3",
+    "has type Number but",
   ),
 ];
 
