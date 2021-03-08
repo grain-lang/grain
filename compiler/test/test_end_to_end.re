@@ -1910,6 +1910,28 @@ let string_tests = {
       "let x = \"\\u{110000}\"",
       "Illegal unicode code point",
     ),
+    t("string_float1", {|import * from "float32"; div(0.0f, 0.0f)|}, "NaN"),
+    t(
+      "string_float2",
+      {|import * from "float32"; div(1.0f, 0.0f)|},
+      "Infinity",
+    ),
+    t(
+      "string_float3",
+      {|import * from "float32"; div(-1.0f, 0.0f)|},
+      "-Infinity",
+    ),
+    t("string_float4", {|import * from "float64"; div(0.0d, 0.0d)|}, "NaN"),
+    t(
+      "string_float5",
+      {|import * from "float64"; div(1.0d, 0.0d)|},
+      "Infinity",
+    ),
+    t(
+      "string_float6",
+      {|import * from "float64"; div(-1.0d, 0.0d)|},
+      "-Infinity",
+    ),
   ];
 };
 
