@@ -1,0 +1,331 @@
+/* compilation-mode: runtime */
+
+import Memory from "runtime/unsafe/memory"
+import Tags from "runtime/unsafe/tags"
+import WasmI32, { 
+  add as (+),
+  mul as (*),
+  xor as (^),
+  shl as (<<)
+} from "runtime/unsafe/wasmi32"
+import WasmI64 from "runtime/unsafe/wasmi64"
+import WasmF32 from "runtime/unsafe/wasmf32"
+import WasmF64 from "runtime/unsafe/wasmf64"
+
+/**
+ * Allocates a new Grain array.
+ *
+ * @param {WasmI32} numElts The number of elements to be contained in this array
+ * @returns {WasmI32} The pointer to the array
+ */
+export let allocateArray = (numElts) => {
+  let arr = Memory.malloc((numElts + 2n) * 4n)
+
+  WasmI32.store(arr, Tags._GRAIN_ARRAY_HEAP_TAG, 0n)
+  WasmI32.store(arr, numElts, 4n)
+
+  arr
+}
+
+/**
+ * Stores an item in a Grain array.
+ *
+ * @param {WasmI32} array The array to store the item in
+ * @param {WasmI32} idx The index to store the item
+ * @param {WasmI32} item The item to store
+ */
+export let storeInArray = (arr, idx, item) => {
+  WasmI32.store(arr + idx * 4n, item, 8n)
+}
+
+/**
+ * Allocates a new Grain tuple.
+ *
+ * @param {WasmI32} numElts The number of elements to be contained in this tuple
+ * @returns {WasmI32} The pointer to the tuple
+ */
+export let allocateTuple = (numElts) => {
+  let tuple = Memory.malloc((numElts + 2n) * 4n)
+
+  WasmI32.store(tuple, Tags._GRAIN_TUPLE_HEAP_TAG, 0n)
+  WasmI32.store(tuple, numElts, 4n)
+
+  tuple
+}
+
+/**
+ * Stores an item in a Grain tuple.
+ *
+ * @param {WasmI32} tuple The tuple to store the item in
+ * @param {WasmI32} idx The index to store the item
+ * @param {WasmI32} item The item to store
+ */
+export let storeInTuple = (tuple, idx, item) => {
+  WasmI32.store(tuple + idx * 4n, item, 8n)
+}
+
+/**
+ * Allocates a new Grain string.
+ *
+ * @param {WasmI32} size The size (in bytes) of the string to allocate
+ * @returns {WasmI32} The pointer to the string
+ */
+export let allocateString = (size) => {
+  let str = Memory.malloc(size + 8n)
+
+  WasmI32.store(str, Tags._GRAIN_STRING_HEAP_TAG, 0n)
+  WasmI32.store(str, size, 4n)
+
+  str
+}
+
+/**
+ * Allocates a new Grain char.
+ *
+ * @returns {WasmI32} The pointer to the char
+ */
+export let allocateChar = () => {
+  let char = Memory.malloc(8n)
+
+  WasmI32.store(char, Tags._GRAIN_CHAR_HEAP_TAG, 0n)
+
+  char
+}
+
+// INT32/INT64
+
+/**
+ * Allocates a new Int64.
+ *
+ * @returns {WasmI32}
+ */
+export let allocateInt64 = () => {
+  let ptr = Memory.malloc(16n)
+
+  WasmI32.store(ptr, Tags._GRAIN_BOXED_NUM_HEAP_TAG, 0n)
+  WasmI32.store(ptr, Tags._GRAIN_INT64_BOXED_NUM_TAG, 4n)
+
+  ptr
+}
+
+/**
+ * Allocates a new Int64 with a prepopulated value
+ * @param value The value to store
+ */
+export let newInt64 = (value) => {
+  let ptr = allocateInt64()
+  WasmI64.store(ptr, value, 8n)
+  ptr
+}
+
+/**
+ * Returns a pointer to the heap location containing this boxed number's Int64
+ * @param wrappedInt64 The boxed int64 to return
+ */
+export let rawInt64Ptr = (wrappedInt64) => {
+  wrappedInt64 + 8n
+}
+
+export let loadInt64 = (xptr) => {
+  WasmI64.load(xptr, 8n)
+}
+
+/**
+ * Allocates a new Int32.
+ *
+ * @returns {WasmI32}
+ */
+export let allocateInt32 = () => {
+  let ptr = Memory.malloc(12n)
+
+  WasmI32.store(ptr, Tags._GRAIN_BOXED_NUM_HEAP_TAG, 0n)
+  WasmI32.store(ptr, Tags._GRAIN_INT32_BOXED_NUM_TAG, 4n)
+
+  ptr
+}
+
+/**
+ * Allocates a new Int32 with a prepopulated value
+ * @param value The value to store
+ */
+export let newInt32 = (value) => {
+  let ptr = allocateInt32()
+  WasmI32.store(ptr, value, 8n)
+  ptr
+}
+
+/**
+ * Returns a pointer to the heap location containing this boxed number's Int32
+ * @param wrappedInt32 The boxed int32 to return
+ */
+export let rawInt32Ptr = (wrappedInt32) => {
+  wrappedInt32 + 8n
+}
+
+export let loadInt32 = (xptr) => {
+  WasmI32.load(xptr, 8n)
+}
+
+// FLOATS
+
+/**
+ * Allocates a new Float32.
+ *
+ * @returns {WasmI32}
+ */
+export let allocateFloat32 = () => {
+  let ptr = Memory.malloc(12n)
+
+  WasmI32.store(ptr, Tags._GRAIN_BOXED_NUM_HEAP_TAG, 0n)
+  WasmI32.store(ptr, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG, 4n)
+
+  ptr
+}
+
+/**
+ * Allocates a new Float32 with a prepopulated value
+ * @param value The value to store
+ */
+export let newFloat32 = (value) => {
+  let ptr = allocateFloat32()
+  WasmF32.store(ptr, value, 8n)
+  ptr
+}
+
+/**
+ * Returns a pointer to the heap location containing this boxed number's Float32
+ * @param wrappedFloat32 The boxed float32 to return
+ */
+export let rawFloat32Ptr = (wrappedFloat32) => {
+  wrappedFloat32 + 8n
+}
+
+export let loadFloat32 = (xptr) => {
+  WasmF32.load(xptr, 8n)
+}
+
+/**
+ * Allocates a new Float64.
+ *
+ * @returns {WasmI32}
+ */
+export let allocateFloat64 = () => {
+  let ptr = Memory.malloc(16n)
+
+  WasmI32.store(ptr, Tags._GRAIN_BOXED_NUM_HEAP_TAG, 0n)
+  WasmI32.store(ptr, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG, 4n)
+
+  ptr
+}
+
+/**
+ * Allocates a new Float64 with a prepopulated value
+ * @param value The value to store
+ */
+export let newFloat64 = (value) => {
+  let ptr = allocateFloat64()
+  WasmF64.store(ptr, value, 8n)
+  ptr
+}
+
+/**
+ * Returns a pointer to the heap location containing this boxed number's Float64
+ * @param wrappedFloat64 The boxed float64 to return
+ */
+export let rawFloat64Ptr = (wrappedFloat64) => {
+  wrappedFloat64 + 8n
+}
+
+export let loadFloat64 = (xptr) => {
+  WasmF64.load(xptr, 8n)
+}
+
+// RATIONALS
+
+/**
+ * Allocates a new Rational.
+ *
+ * @returns {WasmI32}
+ */
+export let allocateRational = () => {
+  let ptr = Memory.malloc(16n)
+
+  WasmI32.store(ptr, Tags._GRAIN_BOXED_NUM_HEAP_TAG, 0n)
+  WasmI32.store(ptr, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG, 4n)
+
+  ptr
+}
+
+/**
+ * Allocates a new Rational with a prepopulated value
+ * @param value The value to store
+ */
+export let newRational = (numerator, denominator) =>{
+  let ptr = allocateRational()
+  WasmI32.store(ptr, numerator, 8n)
+  WasmI32.store(ptr, denominator, 12n)
+  ptr
+}
+
+/**
+ * Returns a pointer to the heap location containing this boxed number's Rational numerator
+ * @param wrappedRational The boxed rational to return
+ */
+export let rawRationalNumeratorPtr = (wrappedRational) => {
+  wrappedRational + 8n
+}
+
+/**
+ * Returns a pointer to the heap location containing this boxed number's Rational numerator
+ * @param wrappedRational The boxed rational to return
+ */
+export let rawRationalDenominatorPtr = (wrappedRational) => {
+  wrappedRational + 12n
+}
+
+export let loadRationalNumerator = (xptr) => {
+  WasmI32.load(xptr, 8n)
+}
+
+export let loadRationalDenominator = (xptr) => {
+  WasmI32.load(xptr, 12n)
+}
+
+
+/**
+ * Load a value from an ADT.
+ *
+ * @export
+ * @param {WasmI32} ptr Untagged pointer to the ADT
+ * @param {WasmI32} idx Index (from zero) of the item
+ * @returns {WasmI32} The value located at the index
+ */
+export let loadAdtVal = (ptr, idx) => {
+  WasmI32.load(ptr + (idx * 4n), 20n)
+}
+
+/**
+ * Load the (tagged) variant of an ADT.
+ *
+ * @export
+ * @param {WasmI32} ptr Untagged pointer to the ADT
+ * @returns {WasmI32} The (tagged) ADT variant id
+ */
+export let loadAdtVariant = (ptr) => {
+  WasmI32.load(ptr, 12n)
+}
+
+/**
+ * Load an untagged string's size.
+ *
+ * @export
+ * @param {WasmI32} ptr Untagged pointer to the string
+ * @returns {WasmI32} The string size (in bytes)
+ */
+export let stringSize = (ptr) => {
+  WasmI32.load(ptr, 4n)
+}
+
+export let tagSimpleNumber = (x) => {
+  WasmI32.toGrain((x << 1n) ^ 1n): Number
+}

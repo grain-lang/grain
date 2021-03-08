@@ -100,8 +100,6 @@ let grain_type_of_wasm_prim_type =
 
 let prim1_type =
   fun
-  | Incr
-  | Decr => (Builtin_types.type_number, Builtin_types.type_number)
   | Not => (Builtin_types.type_bool, Builtin_types.type_bool)
   | Box
   | BoxBind => {
@@ -123,12 +121,6 @@ let prim1_type =
     }
   | Assert => (Builtin_types.type_bool, Builtin_types.type_void)
   | FailWith => (Builtin_types.type_string, newvar(~name="a", ()))
-  | Int64FromNumber => (Builtin_types.type_number, Builtin_types.type_int64)
-  | Int64ToNumber => (Builtin_types.type_int64, Builtin_types.type_number)
-  | Int32ToNumber => (Builtin_types.type_int32, Builtin_types.type_number)
-  | Float32ToNumber => (Builtin_types.type_float32, Builtin_types.type_number)
-  | Float64ToNumber => (Builtin_types.type_float64, Builtin_types.type_number)
-  | Int64Lnot => (Builtin_types.type_int64, Builtin_types.type_int64)
   | WasmFromGrain => (newvar(~name="a", ()), Builtin_types.type_wasmi32)
   | WasmToGrain => (Builtin_types.type_wasmi32, newvar(~name="a", ()))
   | WasmUnaryI32({arg_type, ret_type})
@@ -141,23 +133,6 @@ let prim1_type =
 
 let prim2_type =
   fun
-  | Plus
-  | Minus
-  | Times
-  | Divide
-  | Mod => (
-      Builtin_types.type_number,
-      Builtin_types.type_number,
-      Builtin_types.type_number,
-    )
-  | Less
-  | Greater
-  | LessEq
-  | GreaterEq => (
-      Builtin_types.type_number,
-      Builtin_types.type_number,
-      Builtin_types.type_bool,
-    )
   | And
   | Or => (
       Builtin_types.type_bool,
@@ -182,28 +157,6 @@ let prim2_type =
         Builtin_types.type_array(var),
       );
     }
-  | Int64Land
-  | Int64Lor
-  | Int64Lxor => (
-      Builtin_types.type_int64,
-      Builtin_types.type_int64,
-      Builtin_types.type_int64,
-    )
-  | Int64Lsl
-  | Int64Lsr
-  | Int64Asr => (
-      Builtin_types.type_int64,
-      Builtin_types.type_number,
-      Builtin_types.type_int64,
-    )
-  | Int64Gt
-  | Int64Gte
-  | Int64Lt
-  | Int64Lte => (
-      Builtin_types.type_int64,
-      Builtin_types.type_int64,
-      Builtin_types.type_bool,
-    )
   | WasmBinaryI32({arg_types: (arg1_type, arg2_type), ret_type})
   | WasmBinaryI64({arg_types: (arg1_type, arg2_type), ret_type})
   | WasmBinaryF32({arg_types: (arg1_type, arg2_type), ret_type})

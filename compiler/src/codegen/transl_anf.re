@@ -211,11 +211,12 @@ module RegisterAllocation = {
         )
       | MContinue => MContinue
       | MBreak => MBreak
-      | MSwitch(v, bs, d) =>
+      | MSwitch(v, bs, d, ty) =>
         MSwitch(
           apply_allocation_to_imm(v),
           List.map(((t, b)) => (t, apply_allocation_to_block(b)), bs),
           apply_allocation_to_block(d),
+          ty,
         )
       | MPrim2(pop, i1, i2) =>
         MPrim2(
@@ -293,7 +294,7 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
       @ block_live_locals(b3)
     | MContinue
     | MBreak => []
-    | MSwitch(v, bs, d) =>
+    | MSwitch(v, bs, d, ty) =>
       imm_live_local(v)
       @ List.concat(List.map(((_, b)) => block_live_locals(b), bs))
       @ block_live_locals(d)
@@ -626,6 +627,12 @@ let rec compile_comp = (env, c) => {
     switch (c.comp_desc) {
     | CSwitch(arg, branches) =>
       let compiled_arg = compile_imm(env, arg);
+      let switch_type =
+        Option.fold(
+          ~none=I32Type,
+          ~some=((_, exp)) => asmtype_of_alloctype(exp.anf_allocation_type),
+          List.nth_opt(branches, 0),
+        );
       MSwitch(
         compiled_arg,
         List.map(
@@ -639,6 +646,7 @@ let rec compile_comp = (env, c) => {
             instr_loc: c.comp_loc,
           },
         ],
+        switch_type,
       );
     | CIf(cond, thn, els) =>
       MIf(

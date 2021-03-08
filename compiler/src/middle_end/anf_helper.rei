@@ -308,7 +308,14 @@ module Comp: {
 };
 
 module AExp: {
-  let mk: (~loc: loc=?, ~env: env=?, anf_expression_desc) => anf_expression;
+  let mk:
+    (
+      ~loc: loc=?,
+      ~env: env=?,
+      ~alloc_type: allocation_type,
+      anf_expression_desc
+    ) =>
+    anf_expression;
   let let_:
     (
       ~loc: loc=?,

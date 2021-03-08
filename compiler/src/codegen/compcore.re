@@ -46,6 +46,8 @@ let table_size = Ident.create_persistent("GRAIN$TABLE_SIZE");
 let runtime_mod = Ident.create_persistent("grainRuntime");
 let malloc_mod = Ident.create_persistent("GRAIN$MODULE$runtime/malloc");
 let gc_mod = Ident.create_persistent("GRAIN$MODULE$runtime/gc");
+let data_structures_mod =
+  Ident.create_persistent("GRAIN$MODULE$runtime/dataStructures");
 let stdlib_external_runtime_mod =
   Ident.create_persistent("stdlib-external/runtime");
 let console_mod = Ident.create_persistent("console");
@@ -55,17 +57,20 @@ let malloc_closure_ident = Ident.create_persistent("GRAIN$EXPORT$malloc");
 let incref_ident = Ident.create_persistent("incRef");
 let incref_closure_ident = Ident.create_persistent("GRAIN$EXPORT$incRef");
 let new_rational_ident = Ident.create_persistent("newRational");
+let new_rational_closure_ident =
+  Ident.create_persistent("GRAIN$EXPORT$newRational");
 let new_float32_ident = Ident.create_persistent("newFloat32");
+let new_float32_closure_ident =
+  Ident.create_persistent("GRAIN$EXPORT$newFloat32");
 let new_float64_ident = Ident.create_persistent("newFloat64");
+let new_float64_closure_ident =
+  Ident.create_persistent("GRAIN$EXPORT$newFloat64");
 let new_int32_ident = Ident.create_persistent("newInt32");
+let new_int32_closure_ident =
+  Ident.create_persistent("GRAIN$EXPORT$newInt32");
 let new_int64_ident = Ident.create_persistent("newInt64");
-let number_to_int64_ident = Ident.create_persistent("coerceNumberToInt64");
-let int64_to_number_ident = Ident.create_persistent("coerceInt64ToNumber");
-let int32_to_number_ident = Ident.create_persistent("coerceInt32ToNumber");
-let float32_to_number_ident =
-  Ident.create_persistent("coerceFloat32ToNumber");
-let float64_to_number_ident =
-  Ident.create_persistent("coerceFloat64ToNumber");
+let new_int64_closure_ident =
+  Ident.create_persistent("GRAIN$EXPORT$newInt64");
 let equal_ident = Ident.create_persistent("equal");
 let decref_ident = Ident.create_persistent("decRef");
 let decref_closure_ident = Ident.create_persistent("GRAIN$EXPORT$decRef");
@@ -116,6 +121,41 @@ let grain_runtime_imports = [
   {
     mimp_mod: gc_mod,
     mimp_name: decref_ignore_zeros_closure_ident,
+    mimp_type: MGlobalImport(I32Type, true),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+  },
+  {
+    mimp_mod: data_structures_mod,
+    mimp_name: new_rational_closure_ident,
+    mimp_type: MGlobalImport(I32Type, true),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+  },
+  {
+    mimp_mod: data_structures_mod,
+    mimp_name: new_float32_closure_ident,
+    mimp_type: MGlobalImport(I32Type, true),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+  },
+  {
+    mimp_mod: data_structures_mod,
+    mimp_name: new_float64_closure_ident,
+    mimp_type: MGlobalImport(I32Type, true),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+  },
+  {
+    mimp_mod: data_structures_mod,
+    mimp_name: new_int32_closure_ident,
+    mimp_type: MGlobalImport(I32Type, true),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+  },
+  {
+    mimp_mod: data_structures_mod,
+    mimp_name: new_int64_closure_ident,
     mimp_type: MGlobalImport(I32Type, true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -173,72 +213,37 @@ let grain_function_imports = [
     mimp_setup: MSetupNone,
   },
   {
-    mimp_mod: stdlib_external_runtime_mod,
+    mimp_mod: data_structures_mod,
     mimp_name: new_rational_ident,
+    mimp_type: MFuncImport([I32Type, I32Type, I32Type], [I32Type]),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+  },
+  {
+    mimp_mod: data_structures_mod,
+    mimp_name: new_float32_ident,
+    mimp_type: MFuncImport([I32Type, F32Type], [I32Type]),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+  },
+  {
+    mimp_mod: data_structures_mod,
+    mimp_name: new_float64_ident,
+    mimp_type: MFuncImport([I32Type, F64Type], [I32Type]),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+  },
+  {
+    mimp_mod: data_structures_mod,
+    mimp_name: new_int32_ident,
     mimp_type: MFuncImport([I32Type, I32Type], [I32Type]),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
   },
   {
-    mimp_mod: stdlib_external_runtime_mod,
-    mimp_name: new_float32_ident,
-    mimp_type: MFuncImport([F32Type], [I32Type]),
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-  },
-  {
-    mimp_mod: stdlib_external_runtime_mod,
-    mimp_name: new_float64_ident,
-    mimp_type: MFuncImport([F64Type], [I32Type]),
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-  },
-  {
-    mimp_mod: stdlib_external_runtime_mod,
-    mimp_name: new_int32_ident,
-    mimp_type: MFuncImport([I32Type], [I32Type]),
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-  },
-  {
-    mimp_mod: stdlib_external_runtime_mod,
+    mimp_mod: data_structures_mod,
     mimp_name: new_int64_ident,
-    mimp_type: MFuncImport([I64Type], [I32Type]),
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-  },
-  {
-    mimp_mod: stdlib_external_runtime_mod,
-    mimp_name: number_to_int64_ident,
-    mimp_type: MFuncImport([I32Type], [I32Type]),
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-  },
-  {
-    mimp_mod: stdlib_external_runtime_mod,
-    mimp_name: int64_to_number_ident,
-    mimp_type: MFuncImport([I32Type], [I32Type]),
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-  },
-  {
-    mimp_mod: stdlib_external_runtime_mod,
-    mimp_name: int32_to_number_ident,
-    mimp_type: MFuncImport([I32Type], [I32Type]),
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-  },
-  {
-    mimp_mod: stdlib_external_runtime_mod,
-    mimp_name: float32_to_number_ident,
-    mimp_type: MFuncImport([I32Type], [I32Type]),
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-  },
-  {
-    mimp_mod: stdlib_external_runtime_mod,
-    mimp_name: float64_to_number_ident,
-    mimp_type: MFuncImport([I32Type], [I32Type]),
+    mimp_type: MFuncImport([I32Type, I64Type], [I32Type]),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
   },
@@ -381,71 +386,71 @@ let call_decref = (wasm_mod, env, arg) =>
 let call_new_rational = (wasm_mod, env, args) =>
   Expression.call(
     wasm_mod,
-    get_imported_name(stdlib_external_runtime_mod, new_rational_ident),
-    args,
+    get_imported_name(data_structures_mod, new_rational_ident),
+    [
+      Expression.global_get(
+        wasm_mod,
+        get_imported_name(data_structures_mod, new_rational_closure_ident),
+        Type.int32,
+      ),
+      ...args,
+    ],
     Type.int32,
   );
 let call_new_float32 = (wasm_mod, env, args) =>
   Expression.call(
     wasm_mod,
-    get_imported_name(stdlib_external_runtime_mod, new_float32_ident),
-    args,
+    get_imported_name(data_structures_mod, new_float32_ident),
+    [
+      Expression.global_get(
+        wasm_mod,
+        get_imported_name(data_structures_mod, new_float32_closure_ident),
+        Type.int32,
+      ),
+      ...args,
+    ],
     Type.int32,
   );
 let call_new_float64 = (wasm_mod, env, args) =>
   Expression.call(
     wasm_mod,
-    get_imported_name(stdlib_external_runtime_mod, new_float64_ident),
-    args,
+    get_imported_name(data_structures_mod, new_float64_ident),
+    [
+      Expression.global_get(
+        wasm_mod,
+        get_imported_name(data_structures_mod, new_float64_closure_ident),
+        Type.int32,
+      ),
+      ...args,
+    ],
     Type.int32,
   );
 let call_new_int32 = (wasm_mod, env, args) =>
   Expression.call(
     wasm_mod,
-    get_imported_name(stdlib_external_runtime_mod, new_int32_ident),
-    args,
+    get_imported_name(data_structures_mod, new_int32_ident),
+    [
+      Expression.global_get(
+        wasm_mod,
+        get_imported_name(data_structures_mod, new_int32_closure_ident),
+        Type.int32,
+      ),
+      ...args,
+    ],
     Type.int32,
   );
 let call_new_int64 = (wasm_mod, env, args) =>
   Expression.call(
     wasm_mod,
-    get_imported_name(stdlib_external_runtime_mod, new_int64_ident),
-    args,
-    Type.int32,
-  );
-let call_number_to_int64 = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    get_imported_name(stdlib_external_runtime_mod, number_to_int64_ident),
-    args,
-    Type.int32,
-  );
-let call_int64_to_number = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    get_imported_name(stdlib_external_runtime_mod, int64_to_number_ident),
-    args,
-    Type.int32,
-  );
-let call_int32_to_number = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    get_imported_name(stdlib_external_runtime_mod, int32_to_number_ident),
-    args,
-    Type.int32,
-  );
-let call_float32_to_number = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    get_imported_name(stdlib_external_runtime_mod, float32_to_number_ident),
-    args,
-    Type.int32,
-  );
-let call_float64_to_number = (wasm_mod, env, args) =>
-  Expression.call(
-    wasm_mod,
-    get_imported_name(stdlib_external_runtime_mod, float64_to_number_ident),
-    args,
+    get_imported_name(data_structures_mod, new_int64_ident),
+    [
+      Expression.global_get(
+        wasm_mod,
+        get_imported_name(data_structures_mod, new_int64_closure_ident),
+        Type.int32,
+      ),
+      ...args,
+    ],
     Type.int32,
   );
 let call_equal = (wasm_mod, env, args) =>
@@ -1013,7 +1018,7 @@ let call_error_handler = (wasm_mod, env, err, args) => {
     gensym_label("call_error_handler"),
     [
       call_runtime_throw_error(wasm_mod, env, compiled_args),
-      Expression.const(wasm_mod, const_void()),
+      Expression.unreachable(wasm_mod),
     ],
   );
 };
@@ -2195,27 +2200,6 @@ let compile_prim1 = (wasm_mod, env, p1, arg): Expression.t => {
   let compiled_arg = compile_imm(wasm_mod, env, arg);
   /* TODO: Overflow checks? */
   switch (p1) {
-  | Incr =>
-    /*
-       2a + 1 -> number representation
-       2(a + 1) + 1 -> adding 1 to a
-       2a + 2 + 1
-       (2a + 1) + 2 -> can just add 2
-     */
-    Expression.binary(
-      wasm_mod,
-      Op.add_int32,
-      compiled_arg,
-      Expression.const(wasm_mod, const_int32(2)),
-    )
-  | Decr =>
-    /* Likewise, just subtract 2 */
-    Expression.binary(
-      wasm_mod,
-      Op.sub_int32,
-      compiled_arg,
-      Expression.const(wasm_mod, const_int32(2)),
-    )
   | Not =>
     /* Flip the first bit */
     Expression.binary(
@@ -2255,13 +2239,6 @@ let compile_prim1 = (wasm_mod, env, p1, arg): Expression.t => {
       ],
     )
   | FailWith => call_error_handler(wasm_mod, env, Failure, [arg])
-  | Int64FromNumber => call_number_to_int64(wasm_mod, env, [compiled_arg])
-  | Int64ToNumber => call_int64_to_number(wasm_mod, env, [compiled_arg])
-  | Int32ToNumber => call_int32_to_number(wasm_mod, env, [compiled_arg])
-  | Float32ToNumber => call_float32_to_number(wasm_mod, env, [compiled_arg])
-  | Float64ToNumber => call_float64_to_number(wasm_mod, env, [compiled_arg])
-  | Int64Lnot =>
-    failwith("Unreachable case; should never get here: Int64LNot")
   | Box => failwith("Unreachable case; should never get here: Box")
   | Unbox => failwith("Unreachable case; should never get here: Unbox")
   | BoxBind => failwith("Unreachable case; should never get here: BoxBind")
@@ -2352,14 +2329,8 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
   let compiled_arg2 = () => compile_imm(wasm_mod, env, arg2);
   let swap_get = () => get_swap(wasm_mod, env, 0);
   let swap_tee = tee_swap(wasm_mod, env, 0);
-  // [TODO] (#300) Clean out a lot of these unreachable cases
 
   switch (p2) {
-  | Plus => failwith("Unreachable case; should never get here: Plus")
-  | Minus => failwith("Unreachable case; should never get here: Minus")
-  | Times => failwith("Unreachable case; should never get here: Times")
-  | Divide => failwith("Unreachable case; should never get here: Divide")
-  | Mod => failwith("Unreachable case; should never get here: Mod")
   | And =>
     Expression.if_(
       wasm_mod,
@@ -2374,18 +2345,6 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
       swap_get(),
       compiled_arg2(),
     )
-  | Greater
-  | Int64Gt =>
-    failwith("Unreachable case; should never get here: Greater/Int64Gt")
-  | GreaterEq
-  | Int64Gte =>
-    failwith("Unreachable case; should never get here: GreaterEq/Int64Gte")
-  | Less
-  | Int64Lt =>
-    failwith("Unreachable case; should never get here: Less/Int64Lt")
-  | LessEq
-  | Int64Lte =>
-    failwith("Unreachable case; should never get here: LessEq/Int64Lte")
   | Eq => call_equal(wasm_mod, env, [compiled_arg1(), compiled_arg2()])
   | Is =>
     // Physical equality check
@@ -2398,14 +2357,6 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
         compiled_arg2(),
       ),
     )
-  | Int64Land =>
-    failwith("Unreachable case; should never get here: Int64Land")
-  | Int64Lor => failwith("Unreachable case; should never get here: Int64Lor")
-  | Int64Lxor =>
-    failwith("Unreachable case; should never get here: Int64Lxor")
-  | Int64Lsl => failwith("Unreachable case; should never get here: Int64Lsl")
-  | Int64Lsr => failwith("Unreachable case; should never get here: Int64Lsr")
-  | Int64Asr => failwith("Unreachable case; should never get here: Int64Asr")
   | ArrayMake => allocate_array_n(wasm_mod, env, arg1, arg2)
   | ArrayInit => allocate_array_init(wasm_mod, env, arg1, arg2)
   | WasmLoadI32({sz, signed}) =>
@@ -2624,11 +2575,12 @@ and compile_set = (wasm_mod, env, b, i) => {
   );
 }
 
-and compile_switch = (wasm_mod, env, arg, branches, default) => {
+and compile_switch = (wasm_mod, env, arg, branches, default, ty) => {
   /* Constructs the jump table. Assumes that branch 0 is the default */
   let switch_label = gensym_label("switch");
   let outer_label = switch_label ++ "_outer";
   let default_label = switch_label ++ "_default";
+  let switch_ty = wasm_type(ty);
   let create_table = stack => {
     let label_blocks =
       stack |> List.sort(((l1, _), (l2, _)) => compare(l1, l2));
@@ -2646,22 +2598,37 @@ and compile_switch = (wasm_mod, env, arg, branches, default) => {
       Printf.sprintf("%s_branch_%d", switch_label, count + 1);
     switch (bs) {
     | [] =>
+      // This default value is never used, but is necessary to make the wasm types work out
+      let default_value =
+        switch (ty) {
+        | I32Type => const_int32(0)
+        | I64Type => const_int64(0)
+        | F32Type => const_float32(0.)
+        | F64Type => const_float64(0.)
+        };
+      let default_value = Expression.const(wasm_mod, default_value);
       let inner_block_body =
         Expression.switch_(
           wasm_mod,
           create_table(stack),
           default_label,
           untag_number(wasm_mod, compile_imm(wasm_mod, env, arg)),
-          Expression.const(wasm_mod, const_int32(0)),
+          default_value,
         );
-      let default_block_body = compile_block(wasm_mod, env, default);
+      let default_block_body =
+        compile_block(~return_type=switch_ty, wasm_mod, env, default);
       Expression.block(
-        ~return_type=Type.int32,
+        ~return_type=switch_ty,
         wasm_mod,
         branch_name,
         [
           Expression.drop(wasm_mod) @@
-          Expression.block(wasm_mod, default_label, [inner_block_body]),
+          Expression.block(
+            ~return_type=switch_ty,
+            wasm_mod,
+            default_label,
+            [inner_block_body],
+          ),
           Expression.break(
             wasm_mod,
             outer_label,
@@ -2672,7 +2639,7 @@ and compile_switch = (wasm_mod, env, arg, branches, default) => {
       );
     | [(lbl, hd), ...tl] =>
       Expression.block(
-        ~return_type=Type.int32,
+        ~return_type=switch_ty,
         wasm_mod,
         branch_name,
         [
@@ -2695,13 +2662,13 @@ and compile_switch = (wasm_mod, env, arg, branches, default) => {
     };
   };
   Expression.block(
-    ~return_type=Type.int32,
+    ~return_type=switch_ty,
     wasm_mod,
     outer_label,
     [process_branches(0, [], branches)],
   );
 }
-and compile_block = (wasm_mod, env, block) => {
+and compile_block = (~return_type=?, wasm_mod, env, block) => {
   let compiled_instrs = List.map(compile_instr(wasm_mod, env), block);
   if (Config.source_map^) {
     sources :=
@@ -2714,7 +2681,12 @@ and compile_block = (wasm_mod, env, block) => {
         block,
       );
   };
-  Expression.block(wasm_mod, gensym_label("compile_block"), compiled_instrs);
+  Expression.block(
+    ~return_type?,
+    wasm_mod,
+    gensym_label("compile_block"),
+    compiled_instrs,
+  );
 }
 and compile_instr = (wasm_mod, env, instr) =>
   switch (instr.instr_desc) {
@@ -2732,8 +2704,8 @@ and compile_instr = (wasm_mod, env, instr) =>
   | MPrim1(p1, arg) => compile_prim1(wasm_mod, env, p1, arg)
   | MPrim2(p2, arg1, arg2) => compile_prim2(wasm_mod, env, p2, arg1, arg2)
   | MPrimN(p, args) => compile_primn(wasm_mod, env, p, args)
-  | MSwitch(arg, branches, default) =>
-    compile_switch(wasm_mod, env, arg, branches, default)
+  | MSwitch(arg, branches, default, ty) =>
+    compile_switch(wasm_mod, env, arg, branches, default, ty)
   | MStore(binds) => compile_store(wasm_mod, env, binds)
   | MSet(b, i) => compile_set(wasm_mod, env, b, i)
   | MCallIndirect({func, func_type, args}) =>

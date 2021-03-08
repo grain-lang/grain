@@ -1,7 +1,12 @@
 export *
 
-import foreign wasm coerceNumberToInt64 : Number -> Int64 as fromNumber from "stdlib-external/runtime"
-import foreign wasm coerceInt64ToNumber : Int64 -> Number as toNumber from "stdlib-external/runtime"
+import {
+  coerceNumberToInt64 as fromNumber,
+  coerceInt64ToNumber as toNumber
+} from "runtime/numbers"
+
+export fromNumber
+export toNumber
 
 import foreign wasm incr : Int64 -> Int64 from "stdlib-external/int64"
 import foreign wasm decr : Int64 -> Int64 from "stdlib-external/int64"

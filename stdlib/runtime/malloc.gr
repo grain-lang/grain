@@ -70,7 +70,7 @@ let logMallocHeaderSize = 3n
  */
 let mut heapSize = 0n
 
-export let _RESERVED_RUNTIME_SPACE = 4096n;
+export let _RESERVED_RUNTIME_SPACE = 16384n;
 
 let _NEXT_OFFSET = 0n
 let _SIZE_OFFSET = 4n

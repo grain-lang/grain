@@ -172,8 +172,6 @@ type wasm_op =
 
 type prim1 =
   Parsetree.prim1 =
-    | Incr
-    | Decr
     | Not
     | Box
     | Unbox
@@ -183,12 +181,6 @@ type prim1 =
     | ArrayLength
     | Assert
     | FailWith
-    | Int64FromNumber
-    | Int64ToNumber
-    | Int32ToNumber
-    | Float64ToNumber
-    | Float32ToNumber
-    | Int64Lnot
     | WasmFromGrain
     | WasmToGrain
     | WasmUnaryI32({
@@ -214,31 +206,12 @@ type prim1 =
 
 type prim2 =
   Parsetree.prim2 =
-    | Plus
-    | Minus
-    | Times
-    | Divide
-    | Mod
-    | Less
-    | Greater
-    | LessEq
-    | GreaterEq
     | Is
     | Eq
     | And
     | Or
     | ArrayMake
     | ArrayInit
-    | Int64Land
-    | Int64Lor
-    | Int64Lxor
-    | Int64Lsl
-    | Int64Lsr
-    | Int64Asr
-    | Int64Gt
-    | Int64Gte
-    | Int64Lt
-    | Int64Lte
     | WasmLoadI32({
         sz: int,
         signed: bool,
@@ -407,7 +380,7 @@ and instr_desc =
   | MFor(option(block), option(block), block)
   | MContinue
   | MBreak
-  | MSwitch(immediate, list((int32, block)), block) /* value, branches, default */
+  | MSwitch(immediate, list((int32, block)), block, asmtype) /* value, branches, default, return type */
   | MPrim1(prim1, immediate)
   | MPrim2(prim2, immediate, immediate)
   | MPrimN(primn, list(immediate))

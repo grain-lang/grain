@@ -297,8 +297,6 @@ type wasm_op =
 /** Single-argument operators */
 [@deriving (sexp, yojson)]
 type prim1 =
-  | Incr
-  | Decr
   | Not
   | Box
   | Unbox
@@ -308,12 +306,6 @@ type prim1 =
   | ArrayLength
   | Assert
   | FailWith
-  | Int64FromNumber
-  | Int64ToNumber
-  | Int32ToNumber
-  | Float64ToNumber
-  | Float32ToNumber
-  | Int64Lnot
   | WasmFromGrain
   | WasmToGrain
   | WasmUnaryI32({
@@ -341,31 +333,12 @@ type prim1 =
 
 [@deriving (sexp, yojson)]
 type prim2 =
-  | Plus
-  | Minus
-  | Times
-  | Divide
-  | Mod
-  | Less
-  | Greater
-  | LessEq
-  | GreaterEq
   | Is
   | Eq
   | And
   | Or
   | ArrayMake
   | ArrayInit
-  | Int64Land
-  | Int64Lor
-  | Int64Lxor
-  | Int64Lsl
-  | Int64Lsr
-  | Int64Asr
-  | Int64Gt
-  | Int64Gte
-  | Int64Lt
-  | Int64Lte
   | WasmLoadI32({
       sz: int,
       signed: bool,
