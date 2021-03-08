@@ -170,10 +170,7 @@ let required_function_imports = [
     mimp_mod: runtime_mod,
     mimp_name: throw_error_ident,
     mimp_type:
-      MFuncImport(
-        List.init(Runtime_errors.max_arity + 1, _ => I32Type),
-        [I32Type],
-      ),
+      MFuncImport(List.init(Runtime_errors.max_arity + 1, _ => I32Type), []),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
   },
@@ -1021,7 +1018,7 @@ let call_error_handler = (wasm_mod, env, err, args) => {
     gensym_label("call_error_handler"),
     [
       call_runtime_throw_error(wasm_mod, env, compiled_args),
-      Expression.const(wasm_mod, const_void()),
+      Expression.unreachable(wasm_mod),
     ],
   );
 };
