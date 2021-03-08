@@ -1,0 +1,209 @@
+/* compilation-mode: runtime */
+
+import WasmI32, {
+  eq as (==),
+  ne as (!=),
+  and as (&),
+  xor as (^),
+  add as (+),
+  sub as (-),
+  mul as (*),
+  ltS as (<),
+  remS as (%),
+  shl as (<<)
+} from "runtime/unsafe/wasmi32"
+import WasmI64 from "runtime/unsafe/wasmi64"
+import Tags from "runtime/unsafe/tags"
+
+primitive (!) : Bool -> Bool = "@not"
+
+import { isNumber, numberEqual } from "runtime/numbers"
+
+let cycleMarker = 0x80000000n
+
+let rec heapEqualHelp = (heapTag, xptr, yptr) => {
+  match (heapTag) {
+    t when t == Tags._GRAIN_ADT_HEAP_TAG => {
+      // Check if the same constructor variant
+      if (WasmI32.load(xptr, 12n) != WasmI32.load(yptr, 12n)) {
+        false
+      } else {
+        let xarity = WasmI32.load(xptr, 16n)
+        let yarity = WasmI32.load(yptr, 16n)
+
+        // Cycle check
+        if ((xarity & cycleMarker) == cycleMarker) {
+          true
+        } else {
+          WasmI32.store(xptr, xarity ^ cycleMarker, 16n)
+          WasmI32.store(yptr, yarity ^ cycleMarker, 16n)
+
+          let mut result = true
+
+          let bytes = xarity * 4n
+          for (let mut i = 0n; i < bytes; i += 4n) {
+            if (!equalHelp(WasmI32.load(xptr + i, 20n), WasmI32.load(yptr + i, 20n))) {
+              result = false
+              break
+            }
+          }
+          WasmI32.store(xptr, xarity, 16n)
+          WasmI32.store(yptr, yarity, 16n)
+
+          result
+        }
+      }
+    },
+    t when t == Tags._GRAIN_RECORD_HEAP_TAG => {
+      let xlength = WasmI32.load(xptr, 12n)
+      let ylength = WasmI32.load(yptr, 12n)
+
+      // Cycle check
+      if ((xlength & cycleMarker) == cycleMarker) {
+        true
+      } else {
+        WasmI32.store(xptr, xlength ^ cycleMarker, 12n)
+        WasmI32.store(yptr, ylength ^ cycleMarker, 12n)
+
+        let mut result = true
+
+        let bytes = xlength * 4n
+        for (let mut i = 0n; i < bytes; i += 4n) {
+          if (!equalHelp(WasmI32.load(xptr + i, 16n), WasmI32.load(yptr + i, 16n))) {
+            result = false
+            break
+          }
+        }
+        WasmI32.store(xptr, xlength, 12n)
+        WasmI32.store(yptr, ylength, 12n)
+
+        result
+      }
+    },
+    t when t == Tags._GRAIN_ARRAY_HEAP_TAG => {
+      let xlength = WasmI32.load(xptr, 4n)
+      let ylength = WasmI32.load(yptr, 4n)
+
+      // Check if the same length
+      if (xlength != ylength) {
+        false
+      } else if ((xlength & cycleMarker) == cycleMarker) {
+      // Cycle check
+        true
+      } else {
+        WasmI32.store(xptr, xlength ^ cycleMarker, 4n)
+        WasmI32.store(yptr, ylength ^ cycleMarker, 4n)
+
+        let mut result = true
+        let bytes = xlength * 4n
+        for (let mut i = 0n; i < bytes; i += 4n) {
+          if (!equalHelp(WasmI32.load(xptr + i, 8n), WasmI32.load(yptr + i, 8n))) {
+            result = false
+            break
+          }
+        }
+
+        WasmI32.store(xptr, xlength, 4n)
+        WasmI32.store(yptr, ylength, 4n)
+
+        result
+      }
+    },
+    t when t == Tags._GRAIN_STRING_HEAP_TAG => {
+      let xlength = WasmI32.load(xptr, 4n)
+      let ylength = WasmI32.load(yptr, 4n)
+
+      // Check if the same length
+      if (xlength != ylength) {
+        false
+      } else {
+        let extra = xlength % 8n
+        let first = xlength - extra
+        let mut result = true
+        for (let mut i = 0n; i < first; i += 8n) {
+          if (WasmI64.ne(WasmI64.load(xptr + i, 8n), WasmI64.load(yptr + i, 8n))) {
+            result = false
+            break
+          }
+        }
+        if (result) {
+          for (let mut i = 0n; i < extra; i += 1n) {
+            if (WasmI32.load8U(xptr + first + i, 8n) != WasmI32.load8U(yptr + first + i, 8n)) {
+              result = false
+              break
+            }
+          }
+        }
+
+        result
+      }
+    },
+    t when t == Tags._GRAIN_CHAR_HEAP_TAG => {
+      let byte = WasmI32.load8U(xptr, 4n)
+      let n = if ((byte & 0x80n) == 0x00n) {
+        1n
+      } else if ((byte & 0xF0n) == 0xF0n) {
+        4n
+      } else if ((byte & 0xE0n) == 0xE0n) {
+        3n
+      } else {
+        2n
+      }
+      // WebAssembly is little-endian, so bytes are in reverse order
+      let x = WasmI32.load(xptr, 4n) << ((4n - n) * 8n)
+      let y = WasmI32.load(yptr, 4n) << ((4n - n) * 8n)
+      x == y
+    },
+    t when t == Tags._GRAIN_TUPLE_HEAP_TAG => {
+      let xsize = WasmI32.load(xptr, 4n)
+      let ysize = WasmI32.load(yptr, 4n)
+
+      if ((xsize & cycleMarker) == cycleMarker) {
+        true
+      } else {
+        WasmI32.store(xptr, xsize ^ cycleMarker, 4n)
+        WasmI32.store(yptr, ysize ^ cycleMarker, 4n)
+
+        let mut result = true
+        let bytes = xsize * 4n
+        for (let mut i = 0n; i < bytes; i += 4n) {
+          if (!equalHelp(WasmI32.load(xptr + i, 8n), WasmI32.load(yptr + i, 8n))) {
+            result = false
+            break
+          }
+        }
+
+        WasmI32.store(xptr, xsize, 4n)
+        WasmI32.store(yptr, ysize, 4n)
+
+        result
+      }
+    },
+    _ => {
+      // No other implementation
+      xptr == yptr
+    }
+  }
+}, equalHelp = (x, y) => {
+  // Short circuit if value/pointer is the same
+  if (x == y) {
+    true
+  } else if (isNumber(x)) {
+    numberEqual(x, y)
+  } else {
+    // We only need to worry about heep allocated things since everything else
+    // is handled by a simple x == y check at the end
+    match (x & Tags._GRAIN_GENERIC_TAG_MASK) {
+      t when t == Tags._GRAIN_GENERIC_HEAP_TAG_TYPE => {
+        heapEqualHelp(WasmI32.load(x, 0n), x, y)
+      },
+      _ => {
+        x == y
+      }
+    }
+  }
+}
+
+export let equal = (x: a, y: a) => {
+  equalHelp(WasmI32.fromGrain(x), WasmI32.fromGrain(y))
+}

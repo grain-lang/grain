@@ -119,9 +119,9 @@ export class GrainRunner {
 
   // [HACK] Temporarily used while we transition to AS-based runtime
   grainValueToString(v) {
-    let grainString = this.imports["stdlib-external/runtime"]["grainToString"](
-      v
-    );
+    let grainString = this.modules["stdlib-external/runtime"].requiredExport(
+      "grainToString"
+    )(v);
     let n = grainString ^ GRAIN_GENERIC_HEAP_TAG_TYPE;
     let byteView = this.managedMemory.u8view;
     let length = this.managedMemory.view[n / 4 + 1];

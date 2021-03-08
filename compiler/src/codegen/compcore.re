@@ -50,6 +50,7 @@ let data_structures_mod =
   Ident.create_persistent("GRAIN$MODULE$runtime/dataStructures");
 let stdlib_external_runtime_mod =
   Ident.create_persistent("stdlib-external/runtime");
+let grain_to_string_ident = Ident.create_persistent("grainToString");
 let console_mod = Ident.create_persistent("console");
 let throw_error_ident = Ident.create_persistent("throwError");
 let malloc_ident = Ident.create_persistent("malloc");
@@ -71,7 +72,9 @@ let new_int32_closure_ident =
 let new_int64_ident = Ident.create_persistent("newInt64");
 let new_int64_closure_ident =
   Ident.create_persistent("GRAIN$EXPORT$newInt64");
+let equal_mod = Ident.create_persistent("GRAIN$MODULE$runtime/equal");
 let equal_ident = Ident.create_persistent("equal");
+let equal_closure_ident = Ident.create_persistent("GRAIN$EXPORT$equal");
 let decref_ident = Ident.create_persistent("decRef");
 let decref_closure_ident = Ident.create_persistent("GRAIN$EXPORT$decRef");
 let decref_ignore_zeros_ident = Ident.create_persistent("decRefIgnoreZeros");
@@ -156,6 +159,13 @@ let grain_runtime_imports = [
   {
     mimp_mod: data_structures_mod,
     mimp_name: new_int64_closure_ident,
+    mimp_type: MGlobalImport(I32Type, true),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+  },
+  {
+    mimp_mod: equal_mod,
+    mimp_name: equal_closure_ident,
     mimp_type: MGlobalImport(I32Type, true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -248,9 +258,17 @@ let grain_function_imports = [
     mimp_setup: MSetupNone,
   },
   {
-    mimp_mod: stdlib_external_runtime_mod,
+    mimp_mod: equal_mod,
     mimp_name: equal_ident,
-    mimp_type: MFuncImport([I32Type, I32Type], [I32Type]),
+    mimp_type: MFuncImport([I32Type, I32Type, I32Type], [I32Type]),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+  },
+  // HACK: Depend on stdlib-external/runtime for the tests
+  {
+    mimp_mod: stdlib_external_runtime_mod,
+    mimp_name: grain_to_string_ident,
+    mimp_type: MFuncImport([I32Type], [I32Type]),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
   },
@@ -456,8 +474,15 @@ let call_new_int64 = (wasm_mod, env, args) =>
 let call_equal = (wasm_mod, env, args) =>
   Expression.call(
     wasm_mod,
-    get_imported_name(stdlib_external_runtime_mod, equal_ident),
-    args,
+    get_imported_name(equal_mod, equal_ident),
+    [
+      Expression.global_get(
+        wasm_mod,
+        get_imported_name(equal_mod, equal_closure_ident),
+        Type.int32,
+      ),
+      ...args,
+    ],
     Type.int32,
   );
 
