@@ -1,4 +1,8 @@
-export *
+import WasmI32 from "runtime/unsafe/wasmi32"
+import WasmF32 from "runtime/unsafe/wasmf32"
+import {
+  newFloat32
+} from "runtime/dataStructures"
 
 import {
   coerceNumberToFloat32 as fromNumber,
@@ -8,13 +12,65 @@ import {
 export fromNumber
 export toNumber
 
-import foreign wasm add : (Float32, Float32) -> Float32 from "stdlib-external/float32"
-import foreign wasm sub : (Float32, Float32) -> Float32 from "stdlib-external/float32"
-import foreign wasm mul : (Float32, Float32) -> Float32 from "stdlib-external/float32"
-import foreign wasm div : (Float32, Float32) -> Float32 from "stdlib-external/float32"
+
+@disableGC
+export let add = (x: Float32, y: Float32) => {
+  let x = WasmF32.load(WasmI32.fromGrain(x), 8n)
+  let y = WasmF32.load(WasmI32.fromGrain(y), 8n)
+  let ptr = newFloat32(WasmF32.add(x, y))
+  WasmI32.toGrain(ptr) : Float32
+}
+
+@disableGC
+export let sub = (x: Float32, y: Float32) => {
+  let x = WasmF32.load(WasmI32.fromGrain(x), 8n)
+  let y = WasmF32.load(WasmI32.fromGrain(y), 8n)
+  let ptr = newFloat32(WasmF32.sub(x, y))
+  WasmI32.toGrain(ptr) : Float32
+}
+
+@disableGC
+export let mul = (x: Float32, y: Float32) => {
+  let x = WasmF32.load(WasmI32.fromGrain(x), 8n)
+  let y = WasmF32.load(WasmI32.fromGrain(y), 8n)
+  let ptr = newFloat32(WasmF32.mul(x, y))
+  WasmI32.toGrain(ptr) : Float32
+}
+
+@disableGC
+export let div = (x: Float32, y: Float32) => {
+  let x = WasmF32.load(WasmI32.fromGrain(x), 8n)
+  let y = WasmF32.load(WasmI32.fromGrain(y), 8n)
+  let ptr = newFloat32(WasmF32.div(x, y))
+  WasmI32.toGrain(ptr) : Float32
+}
+
 
 // Float32 comparisons
-import foreign wasm lt : (Float32, Float32) -> Bool from "stdlib-external/float32"
-import foreign wasm gt : (Float32, Float32) -> Bool from "stdlib-external/float32"
-import foreign wasm lte : (Float32, Float32) -> Bool from "stdlib-external/float32"
-import foreign wasm gte : (Float32, Float32) -> Bool from "stdlib-external/float32"
+@disableGC
+export let lt = (x: Float32, y: Float32) => {
+  let x = WasmF32.load(WasmI32.fromGrain(x), 8n)
+  let y = WasmF32.load(WasmI32.fromGrain(y), 8n)
+  WasmF32.lt(x, y)
+}
+
+@disableGC
+export let gt = (x: Float32, y: Float32) => {
+  let x = WasmF32.load(WasmI32.fromGrain(x), 8n)
+  let y = WasmF32.load(WasmI32.fromGrain(y), 8n)
+  WasmF32.gt(x, y)
+}
+
+@disableGC
+export let lte = (x: Float32, y: Float32) => {
+  let x = WasmF32.load(WasmI32.fromGrain(x), 8n)
+  let y = WasmF32.load(WasmI32.fromGrain(y), 8n)
+  WasmF32.le(x, y)
+}
+
+@disableGC
+export let gte = (x: Float32, y: Float32) => {
+  let x = WasmF32.load(WasmI32.fromGrain(x), 8n)
+  let y = WasmF32.load(WasmI32.fromGrain(y), 8n)
+  WasmF32.ge(x, y)
+}

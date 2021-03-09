@@ -1,4 +1,11 @@
-export *
+import WasmI32 from "runtime/unsafe/wasmi32"
+import Errors from "runtime/unsafe/errors"
+
+import foreign wasm throwError: (WasmI32, WasmI32, WasmI32) -> a from "grainRuntime"
+
+import {
+  newInt32
+} from "runtime/dataStructures"
 
 import {
   coerceNumberToInt32 as fromNumber,
@@ -8,30 +15,187 @@ import {
 export fromNumber
 export toNumber
 
-import foreign wasm incr : Int32 -> Int32 from "stdlib-external/int32"
-import foreign wasm decr : Int32 -> Int32 from "stdlib-external/int32"
-import foreign wasm add : (Int32, Int32) -> Int32 from "stdlib-external/int32"
-import foreign wasm sub : (Int32, Int32) -> Int32 from "stdlib-external/int32"
-import foreign wasm mul : (Int32, Int32) -> Int32 from "stdlib-external/int32"
-import foreign wasm div : (Int32, Int32) -> Int32 from "stdlib-external/int32"
-import foreign wasm divU : (Int32, Int32) -> Int32 from "stdlib-external/int32"
-import foreign wasm rem : (Int32, Int32) -> Int32 from "stdlib-external/int32"
-import foreign wasm remU : (Int32, Int32) -> Int32 from "stdlib-external/int32"
-import foreign wasm mod : (Int32, Int32) -> Int32 from "stdlib-external/int32"
+@disableGC
+export let incr = (n: Int32) => {
+  let n = WasmI32.fromGrain(n)
+  let ptr = newInt32(WasmI32.add(WasmI32.load(n, 8n), 1n))
+  WasmI32.toGrain(ptr): Int32
+}
+
+@disableGC
+export let decr = (n: Int32) => {
+  let n = WasmI32.fromGrain(n)
+  let ptr = newInt32(WasmI32.sub(WasmI32.load(n, 8n), 1n))
+  WasmI32.toGrain(ptr): Int32
+}
+
+@disableGC
+export let add = (x: Int32, y: Int32) => {
+  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let y = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let ptr = newInt32(WasmI32.add(x, y))
+  WasmI32.toGrain(ptr): Int32
+}
+
+@disableGC
+export let sub = (x: Int32, y: Int32) => {
+  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let y = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let ptr = newInt32(WasmI32.sub(x, y))
+  WasmI32.toGrain(ptr): Int32
+}
+
+@disableGC
+export let mul = (x: Int32, y: Int32) => {
+  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let y = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let ptr = newInt32(WasmI32.mul(x, y))
+  WasmI32.toGrain(ptr): Int32
+}
+
+@disableGC
+export let div = (x: Int32, y: Int32) => {
+  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let y = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let ptr = newInt32(WasmI32.divS(x, y))
+  WasmI32.toGrain(ptr): Int32
+}
+
+@disableGC
+export let divU = (x: Int32, y: Int32) => {
+  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let y = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let ptr = newInt32(WasmI32.divU(x, y))
+  WasmI32.toGrain(ptr): Int32
+}
+
+@disableGC
+export let rem = (x: Int32, y: Int32) => {
+  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let y = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let ptr = newInt32(WasmI32.remS(x, y))
+  WasmI32.toGrain(ptr): Int32
+}
+
+@disableGC
+export let remU = (x: Int32, y: Int32) => {
+  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let y = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let ptr = newInt32(WasmI32.remU(x, y))
+  WasmI32.toGrain(ptr): Int32
+}
+
+@disableGC
+let abs = (n) => {
+  let mask = WasmI32.shrS(n, 31n)
+  WasmI32.sub(WasmI32.xor(n, mask), mask)
+}
+
+@disableGC
+export let mod = (x: Int32, y: Int32) => {
+  let xval = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let yval = WasmI32.load(WasmI32.fromGrain(y), 8n)
+
+  if (WasmI32.eqz(yval)) {
+    throwError(Errors._GRAIN_ERR_MODULO_BY_ZERO, 0n, 0n)
+  }
+
+  let ptr = if (WasmI32.ltS(WasmI32.xor(xval, yval), 0n)) {
+    let xabs = abs(xval)
+    let yabs = abs(yval)
+    let mval = WasmI32.remS(xabs, yabs)
+    let mres = WasmI32.sub(yabs, mval)
+    newInt32(if (WasmI32.ne(mval, 0n)) (if (WasmI32.ltS(yval, 0n)) WasmI32.sub(0n, mres) else mres) else 0n)
+  } else {
+    newInt32(WasmI32.remS(xval, yval))
+  }
+  WasmI32.toGrain(ptr): Int32
+}
 
 // Int32 comparisons
-import foreign wasm lt : (Int32, Int32) -> Bool from "stdlib-external/int32"
-import foreign wasm gt : (Int32, Int32) -> Bool from "stdlib-external/int32"
-import foreign wasm lte : (Int32, Int32) -> Bool from "stdlib-external/int32"
-import foreign wasm gte : (Int32, Int32) -> Bool from "stdlib-external/int32"
+
+@disableGC
+export let lt = (x: Int32, y: Int32) => {
+  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let y = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  WasmI32.ltS(x, y)
+}
+
+@disableGC
+export let gt = (x: Int32, y: Int32) => {
+  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let y = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  WasmI32.gtS(x, y)
+}
+
+@disableGC
+export let lte = (x: Int32, y: Int32) => {
+  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let y = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  WasmI32.leS(x, y)
+}
+
+@disableGC
+export let gte = (x: Int32, y: Int32) => {
+  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let y = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  WasmI32.geS(x, y)
+}
 
 // Int32 bit/logical operations
-import foreign wasm lnot : Int32 -> Int32 from "stdlib-external/int32"
+@disableGC
+export let lnot = (x: Int32) => {
+  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let ptr = newInt32(WasmI32.xor(x, 0xffffffffn))
+  WasmI32.toGrain(ptr): Int32
+}
 
-import foreign wasm land : (Int32, Int32) -> Int32 from "stdlib-external/int32"
-import foreign wasm lor : (Int32, Int32) -> Int32 from "stdlib-external/int32"
-import foreign wasm lxor : (Int32, Int32) -> Int32 from "stdlib-external/int32"
 
-import foreign wasm shl : (Int32, Int32) -> Int32 from "stdlib-external/int32"
-import foreign wasm shr : (Int32, Int32) -> Int32 from "stdlib-external/int32"
-import foreign wasm shrU : (Int32, Int32) -> Int32 from "stdlib-external/int32"
+@disableGC
+export let land = (x: Int32, y: Int32) => {
+  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let y = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let ptr = newInt32(WasmI32.and(x, y))
+  WasmI32.toGrain(ptr): Int32
+}
+
+@disableGC
+export let lor = (x: Int32, y: Int32) => {
+  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let y = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let ptr = newInt32(WasmI32.or(x, y))
+  WasmI32.toGrain(ptr): Int32
+}
+
+@disableGC
+export let lxor = (x: Int32, y: Int32) => {
+  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let y = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let ptr = newInt32(WasmI32.xor(x, y))
+  WasmI32.toGrain(ptr): Int32
+}
+
+
+@disableGC
+export let shl = (x: Int32, y: Int32) => {
+  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let y = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let ptr = newInt32(WasmI32.shl(x, y))
+  WasmI32.toGrain(ptr): Int32
+}
+
+@disableGC
+export let shr = (x: Int32, y: Int32) => {
+  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let y = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let ptr = newInt32(WasmI32.shrS(x, y))
+  WasmI32.toGrain(ptr): Int32
+}
+
+@disableGC
+export let shrU = (x: Int32, y: Int32) => {
+  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let y = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let ptr = newInt32(WasmI32.shrU(x, y))
+  WasmI32.toGrain(ptr): Int32
+}
