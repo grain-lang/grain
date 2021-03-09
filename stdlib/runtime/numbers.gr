@@ -1,4 +1,4 @@
-/* compilation-mode: runtime */
+/* grainc-flags --compilation-mode=runtime */
 
 import Tags from "runtime/unsafe/tags"
 import Errors from "runtime/unsafe/errors"

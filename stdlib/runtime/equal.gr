@@ -1,4 +1,4 @@
-/* compilation-mode: runtime */
+/* grainc-flags --compilation-mode=runtime */
 
 import WasmI32, {
   eq as (==),

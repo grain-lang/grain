@@ -22,7 +22,7 @@ type config_info = {
 };
 
 type config_spec =
-  | Spec(Cmdliner.Arg.t('a), ref('a)): config_spec;
+  | Spec(Cmdliner.Arg.t('a), list(string), ref('a)): config_spec;
 
 let opts: ref(list(config_opt)) = (ref([]): ref(list(config_opt)));
 let specs: ref(list(config_spec)) = (ref([]): ref(list(config_spec)));
@@ -113,38 +113,13 @@ let opt:
               ),
             )
           ),
+          names,
           cur,
         ),
         ...specs^,
       ];
     cur;
   };
-
-let flag:
-  'a.
-  (~names: list(('a, Cmdliner.Arg.info)), ~default: 'a) => ref('a)
- =
-  (~names, ~default as v) => {
-    let cur = internal_opt(v);
-    specs := [Spec(Cmdliner.Arg.(vflag(v, names)), cur), ...specs^];
-    cur;
-  };
-
-let bool_flag:
-  (~true_info: Cmdliner.Arg.info=?, ~false_info: Cmdliner.Arg.info=?, 'a) =>
-  ref('a) = (
-  (~true_info=?, ~false_info=?, default) => {
-    let names = ref([]);
-    Option.iter(i => names := [(true, i), ...names^], true_info);
-    Option.iter(i => names := [(false, i), ...names^], false_info);
-    switch (names^) {
-    | [] => failwith("Internal error: bool_flag called with no info")
-    | names => flag(~names, ~default)
-    };
-  }:
-    (~true_info: Cmdliner.Arg.info=?, ~false_info: Cmdliner.Arg.info=?, 'a) =>
-    ref('a)
-);
 
 let toggle_flag:
   (
@@ -182,6 +157,7 @@ let toggle_flag:
               ],
             )
           ),
+          names,
           cur,
         ),
         ...specs^,
@@ -257,7 +233,7 @@ let with_cli_options = (term: 'a): Cmdliner.Term.t('a) => {
   open Term;
   let process_option = acc =>
     fun
-    | Spec(arg, box) =>
+    | Spec(arg, names, box) =>
       const((a, b) => {
         box := a;
         b;
@@ -266,6 +242,56 @@ let with_cli_options = (term: 'a): Cmdliner.Term.t('a) => {
       $ acc;
   let folded = List.fold_left(process_option, const(term), specs^);
   folded;
+};
+
+let with_unapplied_cli_options = (term: 'a): Cmdliner.Term.t('a) => {
+  open Cmdliner;
+  open Term;
+  let process_option = acc =>
+    fun
+    | Spec(arg, names, box) => const((a, b) => {b}) $ Arg.value(arg) $ acc;
+  let folded = List.fold_left(process_option, const(term), specs^);
+  folded;
+};
+
+let process_used_cli_options = term => {
+  open Cmdliner;
+  open Term;
+  let process_option = acc =>
+    fun
+    | Spec(arg, names, box) => {
+        const((a, (_, used), b) => {
+          if (List.fold_left(
+                (acc, name) =>
+                  acc
+                  || List.mem("--" ++ name, used)
+                  || List.mem("-" ++ name, used),
+                false,
+                names,
+              )) {
+            box := a;
+          };
+          b;
+        })
+        $ Arg.value(arg)
+        $ with_used_args(term)
+        $ acc;
+      };
+  let folded = List.fold_left(process_option, term, specs^);
+  folded;
+};
+
+let apply_inline_flags = (~err, flag_string) => {
+  open Cmdliner;
+  let cmd = (
+    process_used_cli_options(with_unapplied_cli_options(Term.const())),
+    Term.info("grainc"),
+  );
+  // Remove grainc-flags prefix
+  let len = String.length(flag_string) - 12;
+  let flag_string = String.sub(flag_string, 12, len);
+  let argv = Array.of_list(String.split_on_char(' ', flag_string));
+  Term.eval(~argv, ~err, cmd);
 };
 
 let option_conv = ((prsr, prntr)) => (
@@ -309,6 +335,22 @@ let principal =
     ~names=["principal-types"],
     ~doc="Enable principal types",
     false,
+  );
+
+let compilation_mode =
+  opt(
+    ~names=["compilation-mode"],
+    ~conv=
+      option_conv(
+        Cmdliner.Arg.enum([
+          ("normal", "normal"),
+          ("managed-runtime", "managed-runtime"),
+          ("runtime", "runtime"),
+          ("malloc", "malloc"),
+        ]),
+      ),
+    ~doc="Compilation mode (advanced use only)",
+    None,
   );
 
 let recursive_types =

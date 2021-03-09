@@ -1,4 +1,4 @@
-/* compilation-mode: runtime */
+/* grainc-flags --compilation-mode=runtime */
 
 import { malloc, free, incRef, decRef } from "runtime/gc"
 

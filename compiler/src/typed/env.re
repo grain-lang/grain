@@ -853,7 +853,9 @@ let get_up_to_date = (~loc, unit_name) =>
       mark_in_progress(~loc, unit_name, srcpath);
       let saved_unit = get_unit();
       let saved = Ident.save_state();
-      compile_module_dependency^(srcpath, outpath);
+      Grain_utils.Config.preserve_config(() =>
+        compile_module_dependency^(srcpath, outpath)
+      );
       Ident.restore_state(saved);
       set_unit(saved_unit);
       mark_completed(unit_name, srcpath);

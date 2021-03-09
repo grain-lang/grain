@@ -889,11 +889,11 @@ let initial_env = () => {
   };
 };
 
-let get_compilation_mode = prog => {
-  switch (prog.comments) {
-  | [Block({cmt_content: "compilation-mode: runtime"}), ..._] => Env.Runtime
-  | [Block({cmt_content: "compilation-mode: managed-runtime"}), ..._] => Env.ManagedRuntime
-  | [Block({cmt_content: "compilation-mode: malloc"}), ..._] => Env.MemoryAllocation
+let get_compilation_mode = () => {
+  switch (Grain_utils.Config.compilation_mode^) {
+  | Some("runtime") => Env.Runtime
+  | Some("managed-runtime") => Env.ManagedRuntime
+  | Some("malloc") => Env.MemoryAllocation
   | _ => Env.Normal
   };
 };
@@ -902,7 +902,7 @@ let type_implementation = prog => {
   let sourcefile = prog.prog_loc.loc_start.pos_fname;
   /* TODO: Do we maybe need a fallback here? */
   let modulename = Grain_utils.Files.filename_to_module_name(sourcefile);
-  Env.set_unit((modulename, sourcefile, get_compilation_mode(prog)));
+  Env.set_unit((modulename, sourcefile, get_compilation_mode()));
   let initenv = initial_env();
   let (stritems, sg, finalenv) = type_module(initenv, prog);
   let (statements, env) = stritems;
