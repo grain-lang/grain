@@ -280,8 +280,8 @@ module Top = {
   };
   let import = (~loc=?, ~attributes=?, i) =>
     mk(~loc?, ~attributes?, PTopImport(i));
-  let foreign = (~loc=?, ~attributes=?, e, d) =>
-    mk(~loc?, ~attributes?, PTopForeign(e, d));
+  let foreign = (~loc=?, ~attributes=?, e, t, d) =>
+    mk(~loc?, ~attributes?, PTopForeign(e, t, d));
   let primitive = (~loc=?, ~attributes=?, e, d) =>
     mk(~loc?, ~attributes?, PTopPrimitive(e, d));
   let data = (~loc=?, ~attributes=?, e, d) =>

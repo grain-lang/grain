@@ -386,7 +386,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
     flag && (!) @@ List.exists(({txt}) => txt == str.txt, excepts);
   };
 
-  let process_foreign = (env, e, d, attributes, loc) => {
+  let process_foreign = (env, t, e, d, attributes, loc) => {
     let (desc, newenv) = Typedecl.transl_value_decl(env, loc, d);
     let e =
       if (string_needs_export(d.pval_name)) {
@@ -400,7 +400,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       | Nonexported => None
       };
     let foreign = {
-      ttop_desc: TTopForeign(e, desc),
+      ttop_desc: TTopForeign(e, t, desc),
       ttop_loc: loc,
       ttop_env: env,
       ttop_attributes: attributes,
@@ -640,9 +640,9 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
           let (new_env, sigs, stmts) =
             process_export(env, ex, attributes, loc);
           (new_env, List.rev(sigs) @ signatures, stmts @ statements);
-        | PTopForeign(e, d) =>
+        | PTopForeign(t, e, d) =>
           let (new_env, signature, statement) =
-            process_foreign(env, e, d, attributes, loc);
+            process_foreign(env, e, t, d, attributes, loc);
           let signatures =
             switch (signature) {
             | Some(s) => [s, ...signatures]

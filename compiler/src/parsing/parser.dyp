@@ -42,7 +42,7 @@ include Parser_header
 %token AMPAMP PIPEPIPE NOT AT
 %token AMP PIPE
 
-%token ENUM RECORD IMPORT EXPORT FOREIGN WASM PRIMITIVE
+%token ENUM RECORD IMPORT EXPORT FOREIGN WASM JS PRIMITIVE
 %token EXCEPT FROM
 %token EOL EOF
 
@@ -232,7 +232,8 @@ export_stmt :
   | attributes EXPORT LET value_binds { Top.let_ ~attributes:$1 Exported Nonrecursive Immutable $4 }
   | attributes EXPORT LET REC MUT value_binds { Top.let_ ~attributes:$1 Exported Recursive Mutable $6 }
   | attributes EXPORT LET MUT value_binds { Top.let_ ~attributes:$1 Exported Nonrecursive Mutable $5 }
-  | EXPORT foreign_stmt { Top.foreign ~loc:(symbol_rloc dyp) Exported $2 }
+  | EXPORT wasm_foreign_stmt { Top.foreign Exported WasmForeign ~loc:(symbol_rloc dyp) $2 }
+  | EXPORT js_foreign_stmt { Top.foreign Exported JSForeign ~loc:(symbol_rloc dyp) $2 }
   | EXPORT primitive_stmt { Top.primitive ~loc:(symbol_rloc dyp) Exported $2 }
   | EXPORT data_declaration { Top.data Exported $2 }
   | EXPORT exception_stmt { Top.grain_exception ~loc:(symbol_rloc dyp) Exported $2 }
@@ -532,8 +533,11 @@ export_id_str :
   | id_str { ExportExceptValue $1 }
   | type_id_str { ExportExceptData $1 }
 
-foreign_stmt :
+wasm_foreign_stmt :
   | FOREIGN WASM id_str colon typ [AS id_str {$2}]? FROM file_path { Val.mk ~loc:(symbol_rloc dyp) ~mod_:$8 ~name:$3 ~alias:$6 ~typ:$5 ~prim:[] }
+
+js_foreign_stmt :
+  | FOREIGN JS id_str colon typ [AS id_str {$2}]? FROM file_path { Val.mk ~loc:(symbol_rloc dyp) ~mod_:$8 ~name:$3 ~alias:$6 ~typ:$5 ~prim:[] }
 
 primitive :
   | ASSERT { Location.mkloc "assert" (symbol_rloc dyp) }
@@ -554,7 +558,8 @@ toplevel_stmt :
   | attributes LET MUT value_binds { Top.let_ ~attributes:$1 Nonexported Nonrecursive Mutable $4 }
   | expr { Top.expr $1 }
   | import_stmt { Top.import $1 }
-  | IMPORT foreign_stmt { Top.foreign ~loc:(symbol_rloc dyp) Nonexported $2 }
+  | IMPORT wasm_foreign_stmt { Top.foreign Nonexported WasmForeign ~loc:(symbol_rloc dyp) $2 }
+  | IMPORT js_foreign_stmt { Top.foreign Nonexported JSForeign ~loc:(symbol_rloc dyp) $2 }
   | export_stmt { $1 }
   | primitive_stmt { Top.primitive ~loc:(symbol_rloc dyp) Nonexported $1 }
   | data_declaration { Top.data Nonexported $1 }

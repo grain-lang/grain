@@ -486,7 +486,7 @@ type value_description = {
 
 [@deriving sexp]
 type toplevel_stmt_desc =
-  | TTopForeign(export_flag, value_description)
+  | TTopForeign(export_flag, foreign_module_type, value_description)
   | TTopImport(import_declaration)
   | TTopExport(list(export_declaration))
   | TTopData(list(data_declaration))

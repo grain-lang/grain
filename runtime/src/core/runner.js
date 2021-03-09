@@ -1,5 +1,6 @@
 import { GrainError, makeThrowGrainError } from "../errors/errors";
 import { wasi, readFile, readURL, readBuffer } from "./grain-module";
+import { wrapJSModule } from "./ffi";
 import { GRAIN_STRING_HEAP_TAG, GRAIN_GENERIC_HEAP_TAG_TYPE } from "./tags";
 
 const MALLOC_MODULE = "GRAIN$MODULE$runtime/gc";
@@ -141,6 +142,21 @@ export class GrainRunner {
         this.imports[m] = Object.assign(this.imports[m], importObj[m]);
       } else {
         this.imports[m] = importObj[m];
+      }
+    });
+  }
+
+  addJSImports(importObj) {
+    Object.keys(importObj).forEach((mod) => {
+      const jsMod = `js/${mod}`;
+
+      if (jsMod in this.imports) {
+        this.imports[jsMod] = Object.assign(
+          this.imports[jsMod],
+          wrapJSModule(importObj[mod])
+        );
+      } else {
+        this.imports[jsMod] = wrapJSModule(importObj[mod]);
       }
     });
   }

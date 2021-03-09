@@ -269,7 +269,8 @@ let analyze = ({imports, body, analyses}) => {
     | GrainValue(_)
     | WasmFunction(_)
     | WasmValue(_)
-    | JSFunction(_) => ()
+    | JSFunction(_)
+    | JSValue(_) => ()
     };
   };
   List.iter(process_import, imports);

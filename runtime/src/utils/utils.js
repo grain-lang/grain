@@ -276,6 +276,8 @@ export function JSToGrainVal(v, runtime) {
       byteView[i + ptr * 4 + 8] = buf[i];
     }
     return userPtr;
+  } else if (typeof v === "undefined" || v === null) {
+    return GRAIN_VOID;
   } else {
     throw new GrainError(
       -1,
