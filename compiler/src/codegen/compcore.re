@@ -48,9 +48,9 @@ let malloc_mod = Ident.create_persistent("GRAIN$MODULE$runtime/malloc");
 let gc_mod = Ident.create_persistent("GRAIN$MODULE$runtime/gc");
 let data_structures_mod =
   Ident.create_persistent("GRAIN$MODULE$runtime/dataStructures");
-let stdlib_external_runtime_mod =
-  Ident.create_persistent("stdlib-external/runtime");
-let grain_to_string_ident = Ident.create_persistent("grainToString");
+let string_runtime_mod =
+  Ident.create_persistent("GRAIN$MODULE$runtime/string");
+let grain_to_string_ident = Ident.create_persistent("toString");
 let console_mod = Ident.create_persistent("console");
 let throw_error_ident = Ident.create_persistent("throwError");
 let malloc_ident = Ident.create_persistent("malloc");
@@ -261,14 +261,6 @@ let grain_function_imports = [
     mimp_mod: equal_mod,
     mimp_name: equal_ident,
     mimp_type: MFuncImport([I32Type, I32Type, I32Type], [I32Type]),
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-  },
-  // HACK: Depend on stdlib-external/runtime for the tests
-  {
-    mimp_mod: stdlib_external_runtime_mod,
-    mimp_name: grain_to_string_ident,
-    mimp_type: MFuncImport([I32Type], [I32Type]),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
   },

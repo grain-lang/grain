@@ -49,9 +49,9 @@ export function makeThrowGrainError(runtime) {
 
 export function throwGrainError(errorCode, value1, value2, runtime) {
   let message;
-  // [TODO]: Pass a runtime here
+
   let value1AsGrain = runtime
-    ? runtime.grainValueToString(value1)
+    ? runtime.grainErrorValueToString(value1)
     : "<grain value>";
 
   switch (errorCode) {

@@ -108,10 +108,13 @@ let read_stream = cstream => {
   Bytes.to_string @@ Bytes.sub(buf, 0, i^);
 };
 
-let run_output = (~code=0, ~num_pages=?, cstate, test_ctxt) => {
+let run_output =
+    (~code=0, ~num_pages=?, ~print_output=true, cstate, test_ctxt) => {
   let program = extract_wasm(cstate);
   let file = Filename.temp_file("test", ".gr.wasm");
   Emitmod.emit_module(program, file);
+
+  let cli_flags = if (print_output) {"-pg"} else {"-g"};
 
   let stdlib = Option.get(Grain_utils.Config.stdlib_dir^);
   let testlibs = Sys.getcwd() ++ "/test-libs";
@@ -133,7 +136,7 @@ let run_output = (~code=0, ~num_pages=?, cstate, test_ctxt) => {
     ~ctxt=test_ctxt,
     ~env,
     "grain",
-    ["-pg", "-S", stdlib, "-I", testlibs, "run", file],
+    [cli_flags, "-S", stdlib, "-I", testlibs, "run", file],
   );
   result^;
 };
@@ -148,18 +151,32 @@ let run_anf = (p, out) => {
 };
 
 let test_run =
-    (~cmp=?, ~num_pages=?, program_str, outfile, expected, test_ctxt) => {
+    (
+      ~cmp=?,
+      ~num_pages=?,
+      ~print_output=true,
+      program_str,
+      outfile,
+      expected,
+      test_ctxt,
+    ) => {
   let result =
     Config.preserve_config(() => {
       Config.include_dirs := ["test-libs", ...Config.include_dirs^];
       let cstate =
         compile_string(~hook=stop_after_compiled, ~name=outfile, program_str);
-      run_output(~num_pages?, cstate, test_ctxt);
+      run_output(~num_pages?, ~print_output, cstate, test_ctxt);
     });
+  let expected =
+    if (print_output) {
+      expected ++ "\n";
+    } else {
+      expected;
+    };
   assert_equal(
     ~printer=Fun.id,
     ~cmp=Option.value(~default=(==), cmp),
-    expected ++ "\n",
+    expected,
     result,
   );
 };
@@ -237,7 +254,15 @@ let test_run_anf = (program_anf, outfile, expected, test_ctxt) => {
   assert_equal(expected ++ "\n", result, ~printer=Fun.id);
 };
 
-let test_err = (~num_pages=?, program_str, outfile, errmsg, test_ctxt) => {
+let test_err =
+    (
+      ~num_pages=?,
+      ~print_output=true,
+      program_str,
+      outfile,
+      errmsg,
+      test_ctxt,
+    ) => {
   let result =
     try(
       Config.preserve_config(() => {
@@ -248,7 +273,7 @@ let test_err = (~num_pages=?, program_str, outfile, errmsg, test_ctxt) => {
             ~name=outfile,
             program_str,
           );
-        run_output(~num_pages?, cstate, test_ctxt);
+        run_output(~num_pages?, ~print_output, cstate, test_ctxt);
       })
     ) {
     | exn => Printexc.to_string(exn)

@@ -37,7 +37,8 @@ let make_gc_program = (program, heap_size) => {
       // Calculate how much memory to leak
       let toLeak = WasmI32.sub(availableMemory, %dn)
       // Memory is not reclaimed due to no gc context
-      Memory.malloc(toLeak);
+      // This will actually leak 16 extra bytes because of the headers
+      Memory.malloc(WasmI32.sub(toLeak, 16n));
     }
   leak();
   %s
@@ -47,17 +48,29 @@ let make_gc_program = (program, heap_size) => {
   );
 };
 
-let tgc = (~todo=?, name, heap_size, program, expected) => {
+let tgc = (~todo=?, name, heap_size, program) => {
   name
   >:: wrap_todo(todo) @@
-  test_run(~num_pages=1, make_gc_program(program, heap_size), name, expected);
+  test_run(
+    ~num_pages=1,
+    ~print_output=false,
+    make_gc_program(program, heap_size),
+    name,
+    "",
+  );
 };
 let terr = (~todo=?, name, program, expected) =>
   name >:: wrap_todo(todo) @@ test_err(program, name, expected);
 let tgcerr = (~todo=?, name, heap_size, program, expected) =>
   name
   >:: wrap_todo(todo) @@
-  test_err(~num_pages=1, make_gc_program(program, heap_size), name, expected);
+  test_err(
+    ~num_pages=1,
+    ~print_output=false,
+    make_gc_program(program, heap_size),
+    name,
+    expected,
+  );
 
 let te = (~todo=?, name, program, expected) =>
   name >:: wrap_todo(todo) @@ test_err(program, name, expected);
@@ -88,6 +101,7 @@ let tgcfile = (~todo=?, name, heap_size, input_file, expected) =>
   >:: wrap_todo(todo) @@
   test_err(
     ~num_pages=1,
+    ~print_output=false,
     make_gc_program(
       read_whole_file("input/" ++ input_file ++ ".gr"),
       heap_size,
@@ -395,7 +409,7 @@ let function_tests = [
      let item = Calzone(Peppers, WholeWheat,)
      item
     ",
-    "<adt value>",
+    "<enum value>",
   ),
   t("lam_destructure_1", "((_) => 5)(\"foo\")", "5"),
   t("lam_destructure_2", "let foo = (_) => 5; foo(\"foo\")", "5"),
@@ -1037,27 +1051,25 @@ let loop_tests = [
 ];
 
 let oom = [
-  tgcerr("oomgc1", 70, "(1, (3, 4))", "Maximum memory size exceeded"),
-  tgc("oomgc2", 356, "(1, (3, 4))", "(1, (3, 4))"),
-  tgc("oomgc3", 256, "(3, 4)", "(3, 4)"),
+  tgcerr("oomgc1", 48, "(1, (3, 4))", "Maximum memory size exceeded"),
+  tgc("oomgc2", 64, "(1, (3, 4))"),
+  tgc("oomgc3", 32, "(3, 4)"),
 ];
 
 let gc = [
   tgc(
     "gc1",
-    512,
+    160,
     "let f = (() => (1, 2));\n       {\n         f();\n         f();\n         f();\n         f()\n       }",
-    "(1, 2)",
   ),
   /* Test that cyclic tuples are GC'd properly */
   tgc(
     "gc2",
-    2560,
+    256,
     "enum Opt<x> { None, Some(x) };\n     let f = (() => {\n      let x = (box(None), 2);\n      let (fst, _) = x\n      fst := Some(x)\n      });\n      {\n        f();\n        let x = (1, 2);\n        x\n      }",
-    "(1, 2)",
   ),
   tgcfile("fib_gc_err", 1024, "fib-gc", "Maximum memory size exceeded"),
-  tgcfile("fib_gc", 3424, "fib-gc", "832040"),
+  tgcfile("fib_gc", 2048, "fib-gc", "832040"),
   /* tgcfile "fib_gc_bigger" 3072 "fib-gc" "832040";
      tgcfile "fib_gc_biggest" 512 "fib-gc" "832040"; */
   /* I've manually tested this test, but see TODO for automated testing */
@@ -1966,7 +1978,7 @@ let char_tests = [
 ];
 
 let exception_tests = [
-  t("exception_1", "exception Foo; Foo", "<adt value>"),
+  t("exception_1", "exception Foo; Foo", "<enum value>"),
   t("exception_2", "export exception Foo; Foo", "Foo"),
   t(
     "exception_3",
@@ -1987,11 +1999,11 @@ let enum_tests = [
     "adtprint",
     "Foo\nBar\nBaz(\"baz\")\nQux(5, \"qux\", false)\nQuux\nFlip(\"flip\")\nvoid",
   ),
-  t("adtprint_nonexported", "enum Foo { Foo }; Foo", "<adt value>"),
+  t("adtprint_nonexported", "enum Foo { Foo }; Foo", "<enum value>"),
   t(
     "adt_trailing",
     "enum Topping { Cheese(Bool,), Pepperoni }; Pepperoni",
-    "<adt value>",
+    "<enum value>",
   ),
 ];
 

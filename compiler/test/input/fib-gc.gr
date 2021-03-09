@@ -9,4 +9,4 @@ let fib = (x) => {
   };
   fib_help(x, (0, 1))
 };
-fib(30)
+print(fib(30))

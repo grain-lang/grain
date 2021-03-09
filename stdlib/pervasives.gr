@@ -61,9 +61,6 @@ primitive (!) : Bool -> Bool = "@not"
 primitive (&&) : (Bool, Bool) -> Bool = "@and"
 primitive (||) : (Bool, Bool) -> Bool = "@or"
 
-// String operations
-import foreign wasm concat : (String, String) -> String as (++) from "stdlib-external/runtime"
-
 // Box operations
 primitive box : a -> Box<a> = "@box"
 primitive unbox : Box<a> -> a = "@unbox"
@@ -73,8 +70,15 @@ primitive ignore : a -> Void = "@ignore"
 primitive assert : Bool -> Void = "@assert"
 primitive fail : String -> a = "@fail"
 
+import { toString, print, concat as (++) } from "runtime/string"
+
+// Converts the given value to a string
+export toString
 // Prints the given value to the console.
-import foreign wasm print : a -> Void from "stdlib-external/runtime"
+export print
+
+// String operations
+export (++)
 
 // Checks the given items for structural equality.
 export (==)
@@ -83,9 +87,6 @@ let (!=) : (a, a) -> Bool = (x, y) => !(x == y)
 primitive (is) : (a, a) -> Bool = "@is"
 // The opposite of is operator
 let (isnt) : (a, a) -> Bool = (x, y) => !(x is y)
-
-// Converts the given value to a string
-import foreign wasm grainToString : a -> String as toString from "stdlib-external/runtime"
 
 export enum List<a> { [], [...](a, List<a>) }
 

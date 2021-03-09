@@ -663,9 +663,10 @@ let get_components = c =>
   };
 
 type compilation_mode =
-  | Normal
-  | Runtime
-  | MemoryAllocation;
+  | Normal /* Standard compilation with regular bells and whistles */
+  | ManagedRuntime /* Normal mode, but no Pervasives yet */
+  | Runtime /* GC doesn't exist yet, allocations happen in runtime heap */
+  | MemoryAllocation /* You _are_ the memory allocator and control the pointer to the runtime heap  */;
 
 let current_unit = ref(("", "", Normal));
 
@@ -677,14 +678,25 @@ let is_runtime_mode = () => {
   switch (current_unit^) {
   | (_, _, Runtime) => true
   | (_, _, MemoryAllocation) => true
+  | (_, _, ManagedRuntime) => false
+  | (_, _, Normal) => false
+  };
+};
+
+let is_managed_runtime_mode = () => {
+  switch (current_unit^) {
+  | (_, _, Runtime) => false
+  | (_, _, MemoryAllocation) => false
+  | (_, _, ManagedRuntime) => true
   | (_, _, Normal) => false
   };
 };
 
 let is_malloc_mode = () => {
   switch (current_unit^) {
-  | (_, _, MemoryAllocation) => true
   | (_, _, Runtime) => false
+  | (_, _, MemoryAllocation) => true
+  | (_, _, ManagedRuntime) => false
   | (_, _, Normal) => false
   };
 };

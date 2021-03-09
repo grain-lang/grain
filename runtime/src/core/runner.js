@@ -1,8 +1,10 @@
 import { GrainError, makeThrowGrainError } from "../errors/errors";
 import { wasi, readFile, readURL, readBuffer } from "./grain-module";
 import { GRAIN_STRING_HEAP_TAG, GRAIN_GENERIC_HEAP_TAG_TYPE } from "./tags";
+import { GRAIN_TRUE, GRAIN_FALSE } from "./primitives";
 
 const MALLOC_MODULE = "GRAIN$MODULE$runtime/gc";
+const STRING_MODULE = "GRAIN$MODULE$runtime/string";
 
 export class GrainRunner {
   constructor(locator, managedMemory, opts) {
@@ -23,16 +25,16 @@ export class GrainRunner {
       relocBase: 0,
       moduleRuntimeId: 0,
       throwError: makeThrowGrainError(this),
-      // Transition functions (to be used until this class is ported to AS; perhaps refactor at that time)
+      // Transition functions (to be used until this class is ported; perhaps refactor at that time)
       variantExists: (moduleId, typeId, variantId) => {
         let moduleName = this.idMap[moduleId];
-        if (!moduleName) return false;
+        if (!moduleName) return GRAIN_FALSE;
         let module = this.modules[moduleName];
-        if (!module) return false;
+        if (!module) return GRAIN_FALSE;
         let tyinfo = module.types[typeId];
-        if (!tyinfo || Object.keys(tyinfo).length === 0) return false;
+        if (!tyinfo || Object.keys(tyinfo).length === 0) return GRAIN_FALSE;
         let info = tyinfo[variantId];
-        return !!info;
+        return info ? GRAIN_TRUE : GRAIN_FALSE;
       },
       getVariantName: (moduleId, typeId, variantId) => {
         let moduleName = this.idMap[moduleId];
@@ -53,23 +55,11 @@ export class GrainRunner {
         }
         return tyPrintNames[variantId];
       },
-      getVariantArity: (moduleId, typeId, variantId) => {
-        let moduleName = this.idMap[moduleId];
-        let module = this.modules[moduleName];
-        let tyinfo = module.types[typeId];
-        return tyinfo[variantId][1];
-      },
       recordTypeExists: (moduleId, typeId) => {
         let moduleName = this.idMap[moduleId];
         let module = this.modules[moduleName];
         let tyinfo = module.types[typeId];
-        return !!tyinfo;
-      },
-      getRecordArity: (moduleId, typeId) => {
-        let moduleName = this.idMap[moduleId];
-        let module = this.modules[moduleName];
-        let tyinfo = module.types[typeId];
-        return Object.keys(tyinfo).length;
+        return tyinfo && Object.keys(tyinfo).length ? GRAIN_TRUE : GRAIN_FALSE;
       },
       getRecordFieldName: (moduleId, typeId, idx) => {
         let moduleName = this.idMap[moduleId];
@@ -102,7 +92,27 @@ export class GrainRunner {
     return this._memoryManager;
   }
 
-  // [HACK] Temporarily used while we transition to AS-based runtime
+  get stringModule() {
+    if (!this._stringModule) {
+      this._stringModule = this.modules[STRING_MODULE];
+      if (!this._stringModule)
+        throw new GrainError(-1, "Failed to locate the runtime string module.");
+    }
+    return this._stringModule;
+  }
+
+  async ensureStringModule() {
+    if (this.modules[STRING_MODULE]) return;
+
+    let located = await this.locator(STRING_MODULE);
+    if (!located) {
+      throw new GrainError(-1, `Failed to ensure string module.`);
+    }
+    await this.load(STRING_MODULE, located);
+    await located.start();
+  }
+
+  // [HACK] Temporarily used while we transition to Grain-based runtime
   _makeGrainString(v) {
     let buf = this.encoder.encode(v);
     let userPtr = this.managedMemory.malloc(4 * 2 + ((v.length - 1) / 4 + 1));
@@ -114,21 +124,37 @@ export class GrainRunner {
     for (let i = 0; i < buf.length; ++i) {
       byteView[i + ptr * 4 + 8] = buf[i];
     }
-    return userPtr | GRAIN_GENERIC_HEAP_TAG_TYPE;
+    return userPtr;
   }
 
-  // [HACK] Temporarily used while we transition to AS-based runtime
+  // [HACK] Temporarily used while we transition to Grain-based runtime
   grainValueToString(v) {
-    let grainString = this.modules["stdlib-external/runtime"].requiredExport(
-      "grainToString"
-    )(v);
-    let n = grainString ^ GRAIN_GENERIC_HEAP_TAG_TYPE;
+    let closure = this.stringModule.requiredExport("GRAIN$EXPORT$toString")
+      .value;
+    let grainString = this.stringModule.requiredExport("toString")(closure, v);
+    let n = grainString;
     let byteView = this.managedMemory.u8view;
     let length = this.managedMemory.view[n / 4 + 1];
     let slice = byteView.slice(n + 8, n + 8 + length);
     let ret = this.decoder.decode(slice);
     this.managedMemory.free(grainString);
     return ret;
+  }
+
+  grainErrorValueToString(v) {
+    // Supports basic numbers and strings
+    // This is to avoid having all modules depend on all of toString if they
+    // don't need it. Error values are only ever simple numbers or strings.
+    if (v & 1) return (v >> 1).toString();
+    if ((v & 7) === GRAIN_GENERIC_HEAP_TAG_TYPE) {
+      if (this.managedMemory.view[v / 4] === GRAIN_STRING_HEAP_TAG) {
+        let byteView = this.managedMemory.u8view;
+        let length = this.managedMemory.view[v / 4 + 1];
+        let slice = byteView.slice(v + 8, v + 8 + length);
+        return this.decoder.decode(slice);
+      }
+    }
+    return "<unknown value>";
   }
 
   addImport(name, obj) {
@@ -179,8 +205,6 @@ export class GrainRunner {
         await this.load(imp.module, located);
         if (located.isGrainModule) {
           await located.start();
-          this.imports["grainRuntime"]["relocBase"] += located.tableSize;
-          ++this.imports["grainRuntime"]["moduleRuntimeId"];
         }
         this.ptrZero = this.ptr;
         this.imports[imp.module] = located.exports;
@@ -190,6 +214,10 @@ export class GrainRunner {
     // All of the dependencies have been loaded. Now we can instantiate with the import object.
     await mod.instantiate(this.imports, this);
     this.idMap[this.imports["grainRuntime"]["moduleRuntimeId"]] = name;
+    if (mod.isGrainModule) {
+      this.imports["grainRuntime"]["relocBase"] += mod.tableSize;
+      ++this.imports["grainRuntime"]["moduleRuntimeId"];
+    }
     if (!(name in this.modules)) {
       this.modules[name] = mod;
     }
