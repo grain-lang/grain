@@ -110,8 +110,6 @@ export class GrainRunner {
     }
     await this.load(STRING_MODULE, located);
     await located.start();
-    // this.imports["grainRuntime"]["relocBase"] += located.tableSize;
-    // ++this.imports["grainRuntime"]["moduleRuntimeId"];
   }
 
   // [HACK] Temporarily used while we transition to Grain-based runtime
