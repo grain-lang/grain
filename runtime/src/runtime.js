@@ -43,10 +43,6 @@ const importObj = {
     mem: memory,
     tbl: table,
   },
-  memoryManager: {
-    _growHeap: managedMemory.growHeap.bind(managedMemory),
-    _initialHeapSize: managedMemory._memory.buffer.byteLength,
-  },
 };
 
 export function buildGrainRunner(locator, opts) {

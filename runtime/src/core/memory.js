@@ -9,13 +9,6 @@ export class ManagedMemory {
     this._runtime = null;
   }
 
-  growHeap(pages) {
-    const ptr = this._memory.buffer.byteLength;
-    this._memory.grow(pages);
-    this._refreshViews();
-    return ptr;
-  }
-
   _refreshViews() {
     this._view = new Int32Array(this._memory.buffer);
     this._uview = new Uint32Array(this._memory.buffer);

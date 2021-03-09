@@ -1392,6 +1392,8 @@ let prim_map =
       ),
       ("@wasm.fromGrain", Primitive1(WasmFromGrain)),
       ("@wasm.toGrain", Primitive1(WasmToGrain)),
+      ("@wasm.memory_grow", Primitive1(WasmMemoryGrow)),
+      ("@wasm.memory_size", PrimitiveN(WasmMemorySize)),
       ("@wasm.memory_copy", PrimitiveN(WasmMemoryCopy)),
       ("@wasm.memory_fill", PrimitiveN(WasmMemoryFill)),
     ]),
@@ -1410,7 +1412,10 @@ let transl_prim = (env, desc) => {
   let value =
     switch (prim) {
     | Primitive1(
-        (WasmUnaryI32(_) | WasmUnaryI64(_) | WasmUnaryF32(_) | WasmUnaryF64(_)) as p,
+        (
+          WasmUnaryI32(_) | WasmUnaryI64(_) | WasmUnaryF32(_) | WasmUnaryF64(_) |
+          WasmMemoryGrow
+        ) as p,
       ) =>
       Exp.lambda(
         ~loc,
@@ -1437,6 +1442,8 @@ let transl_prim = (env, desc) => {
       )
     | Primitive2(p) =>
       Exp.lambda(~loc, [pat_a, pat_b], Exp.prim2(~loc, p, id_a, id_b))
+    | PrimitiveN(WasmMemorySize as p) =>
+      Exp.lambda(~loc, ~attributes=diable_gc, [], Exp.primn(~loc, p, []))
     | PrimitiveN(
         (
           WasmStoreI32(_) | WasmStoreI64(_) | WasmStoreF32 | WasmStoreF64 |

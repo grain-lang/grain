@@ -129,6 +129,10 @@ let prim1_type =
   | WasmUnaryF64({arg_type, ret_type}) => (
       grain_type_of_wasm_prim_type(arg_type),
       grain_type_of_wasm_prim_type(ret_type),
+    )
+  | WasmMemoryGrow => (
+      Builtin_types.type_wasmi32,
+      Builtin_types.type_wasmi32,
     );
 
 let prim2_type =
@@ -220,6 +224,7 @@ let primn_type =
       ],
       Builtin_types.type_void,
     )
+  | WasmMemorySize => ([], Builtin_types.type_wasmi32)
   | WasmMemoryCopy
   | WasmMemoryFill => (
       [

@@ -186,7 +186,8 @@ type prim1 =
         wasm_op,
         arg_type: wasm_prim_type,
         ret_type: wasm_prim_type,
-      });
+      })
+    | WasmMemoryGrow;
 
 type prim2 =
   Parsetree.prim2 =
@@ -234,7 +235,8 @@ type primn =
     | WasmStoreF32
     | WasmStoreF64
     | WasmMemoryCopy
-    | WasmMemoryFill;
+    | WasmMemoryFill
+    | WasmMemorySize;
 
 /** Immediate expressions (requiring no computation) */
 
