@@ -9,6 +9,7 @@
 import WasmI32, { 
   add as (+),
   sub as (-),
+  mul as (*),
   divU as (/),
   gtU as (>),
   geU as (>=),
@@ -19,12 +20,14 @@ import WasmI32, {
   ne as (!=)
 } from "runtime/unsafe/wasmi32"
 
+primitive memorySize: () -> WasmI32 = "@wasm.memory_size"
+primitive memoryGrow: (WasmI32) -> WasmI32 = "@wasm.memory_grow"
+
 primitive (!) : Bool -> Bool = "@not"
 primitive (&&) : (Bool, Bool) -> Bool = "@and"
 primitive (||) : (Bool, Bool) -> Bool = "@or"
 
-import foreign wasm _growHeap: (WasmI32) -> WasmI32 as extGrowHeap from "memoryManager"
-import foreign wasm _initialHeapSize: WasmI32 as initialHeapSize from "memoryManager"
+primitive fail : String -> a = "@fail"
 
 /* UNDERSTANDING THE STRUCTURE OF THE FREE LIST
  * The original K&R definition for the free list entry type was the following:
@@ -75,6 +78,11 @@ export let _RESERVED_RUNTIME_SPACE = 16384n;
 let _NEXT_OFFSET = 0n
 let _SIZE_OFFSET = 4n
 
+/**
+ * Size (in bytes) of a single WebAssembly page
+ */
+let _PAGE_SIZE = 65536n
+
 let getNext = (ptr: WasmI32) => {
   WasmI32.load(ptr, _NEXT_OFFSET)
 }
@@ -104,14 +112,14 @@ let growHeap = (nbytes: WasmI32) => {
 
   // If the size has not been initialized, do so.
   if (heapSize == 0n) {
-    heapSize = initialHeapSize - _RESERVED_RUNTIME_SPACE
+    heapSize = memorySize() * _PAGE_SIZE - _RESERVED_RUNTIME_SPACE
     if (nbytes > heapSize) {
       // More bytes requested than the initial heap size,
       // so we need to request more anyway.
       reqSize = nbytes - heapSize
       reqSize = reqSize >> 16n
       reqSize = reqSize + 1n
-      reqResult = extGrowHeap(reqSize)
+      reqResult = memoryGrow(reqSize)
       if (reqResult == -1n) {
         -1n
       } else {
@@ -126,7 +134,7 @@ let growHeap = (nbytes: WasmI32) => {
     reqSize = nbytes
     reqSize = reqSize >> 16n
     reqSize = reqSize + 1n
-    reqResult = extGrowHeap(reqSize)
+    reqResult = memoryGrow(reqSize)
     if (reqResult == -1n) {
       -1n
     } else {
@@ -187,9 +195,9 @@ let morecore = (nbytes: WasmI32) => {
   let origSize = heapSize
   let mut cp = growHeap(nbytes)
 
-  // If there was an error, return
+  // If there was an error, fail
   if (cp == -1n) {
-    -1n
+    fail "Maximum memory size exceeded"
   } else {
     // Set the size of the new block to the amount the
     // heap was grown.

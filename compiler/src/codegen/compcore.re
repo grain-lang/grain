@@ -2263,6 +2263,7 @@ let compile_prim1 = (wasm_mod, env, p1, arg): Expression.t => {
     failwith("Unreachable case; should never get here: UnboxBind")
   | WasmFromGrain
   | WasmToGrain => compiled_arg // These are no-ops
+  | WasmMemoryGrow => Expression.memory_grow(wasm_mod, compiled_arg)
   | WasmUnaryI32({wasm_op, ret_type})
   | WasmUnaryI64({wasm_op, ret_type})
   | WasmUnaryF32({wasm_op, ret_type})
@@ -2435,6 +2436,7 @@ let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
     compile_wasm_store(~sz, ~ty=Type.int64, wasm_mod, env, args)
   | WasmStoreF32 => compile_wasm_store(~ty=Type.float32, wasm_mod, env, args)
   | WasmStoreF64 => compile_wasm_store(~ty=Type.float64, wasm_mod, env, args)
+  | WasmMemorySize => Expression.memory_size(wasm_mod)
   | WasmMemoryCopy =>
     Expression.block(
       wasm_mod,

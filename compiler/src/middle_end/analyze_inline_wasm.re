@@ -207,6 +207,8 @@ let primitive_map_memory =
     List.to_seq([
       ("copy", "@wasm.memory_copy"),
       ("fill", "@wasm.memory_fill"),
+      ("grow", "@wasm.memory_grow"),
+      ("size", "@wasm.memory_size"),
     ]),
   );
 

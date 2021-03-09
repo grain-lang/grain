@@ -49,7 +49,8 @@ let rec analyze_comp_expression =
         WasmUnaryI32(_) |
         WasmUnaryI64(_) |
         WasmUnaryF32(_) |
-        WasmUnaryF64(_),
+        WasmUnaryF64(_) |
+        WasmMemoryGrow,
         _,
       ) =>
       true
@@ -70,7 +71,8 @@ let rec analyze_comp_expression =
     | CPrimN(
         WasmStoreI32(_) | WasmStoreI64(_) | WasmStoreF32 | WasmStoreF64 |
         WasmMemoryCopy |
-        WasmMemoryFill,
+        WasmMemoryFill |
+        WasmMemorySize,
         _,
       ) =>
       false
