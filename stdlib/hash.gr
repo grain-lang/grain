@@ -1,1 +1,210 @@
-export foreign wasm hash : a -> Number from "stdlib-external/hash"
+/* grainc-flags --no-gc */
+
+/**
+  This module implements MurmurHash3 for Grain data types.
+  https://en.wikipedia.org/wiki/MurmurHash
+*/
+
+import WasmI32, {
+  add as (+),
+  sub as (-),
+  mul as (*),
+  remU as (%),
+  xor as (^),
+  shrU as (>>>),
+  shl as (<<),
+  and as (&),
+  or as (|),
+  eq as (==),
+  ne as (!=),
+  gtU as (>),
+  ltU as (<)
+} from "runtime/unsafe/wasmi32"
+import Tags from "runtime/unsafe/tags"
+
+import { tagSimpleNumber } from "runtime/dataStructures"
+
+let seed = 0xe444n
+
+let _MAX_HASH_DEPTH = 31n
+
+let c1 = 0xcc9e2d51n
+let c2 = 0x1b873593n
+let r1 = 15n
+let r2 = 13n
+let m = 5n
+let n = 0xe6546b64n
+
+let mut h = seed
+
+let hash32 = (k) => {
+  let mut k = k * c1
+  k = WasmI32.rotl(k, r1)
+  k *= c2
+
+  h = h ^ k
+  h = WasmI32.rotl(h, r2)
+  h = (h * m) + n;
+}
+
+let hashRemaining = (r) => {
+  // Note: wasm is little-endian so no swap is necessary
+
+  let mut r = r * c1
+  r = WasmI32.rotl(r, r1)
+  r *= c2
+
+  h = h ^ r;
+}
+
+let finalize = (len) => {
+  h = h ^ len
+
+  h = h ^ (h >>> 16n)
+  h *= 0x85ebca6bn
+  h = h ^ (h >>> 13n)
+  h *= 0xc2b2ae35n
+  h = h ^ (h >>> 16n);
+}
+
+let rec hashOne = (val, depth) => {
+  if (depth > _MAX_HASH_DEPTH) {
+    void
+  } else if ((val & Tags._GRAIN_NUMBER_TAG_MASK) != 0n) {
+    hash32(val)
+  } else if ((val & Tags._GRAIN_GENERIC_TAG_MASK) == Tags._GRAIN_GENERIC_HEAP_TAG_TYPE) {
+    let heapPtr = val
+    match (WasmI32.load(heapPtr, 0n)) {
+      t when t == Tags._GRAIN_STRING_HEAP_TAG => {
+        let length = WasmI32.load(heapPtr, 4n)
+        let extra = length % 4n
+        let l = length - extra
+        for (let mut i = 0n; i < l; i += 4n) {
+          hash32(WasmI32.load(heapPtr + i, 8n))
+        }
+        let mut rem = 0n
+        for (let mut i = 0n; i < extra; i += 1n) {
+          rem = rem << 8n
+          rem = rem | WasmI32.load8U(heapPtr + l + i, 8n);
+        }
+        if (rem != 0n) hashRemaining(rem)
+        finalize(length)
+      },
+      t when t == Tags._GRAIN_CHAR_HEAP_TAG => {
+        let word = WasmI32.load(heapPtr, 4n)
+        // little-endian byte order
+        let byte = word & 0xFFn
+        let mut shift = 0n
+        if ((byte & 0x80n) == 0x00n) {
+          shift = 24n
+        } else if ((byte & 0xF0n) == 0xF0n) {
+          shift = 0n
+        } else if ((byte & 0xE0n) == 0xE0n) {
+          shift = 8n
+        } else {
+          shift = 16n
+        }
+        hash32(word << shift)
+      },
+      t when t == Tags._GRAIN_ADT_HEAP_TAG => {
+        // moduleId
+        hash32(WasmI32.load(heapPtr, 4n))
+        // typeId
+        hash32(WasmI32.load(heapPtr, 8n))
+        // variantId
+        hash32(WasmI32.load(heapPtr, 12n))
+
+        let arity = WasmI32.load(heapPtr, 16n)
+
+        let a = arity * 4n
+        for (let mut i = 0n; i < a; i += 4n) {
+          hashOne(WasmI32.load(heapPtr + i, 20n), depth + 1n)
+        }
+
+        finalize(arity)
+      },
+      t when t == Tags._GRAIN_RECORD_HEAP_TAG => {
+        // moduleId
+        hash32(WasmI32.load(heapPtr, 4n))
+        // typeId
+        hash32(WasmI32.load(heapPtr, 8n))
+
+        let arity = WasmI32.load(heapPtr, 12n)
+
+        let a = arity * 4n
+        for (let mut i = 0n; i < a; i += 4n) {
+          hashOne(WasmI32.load(heapPtr + i, 16n), depth + 1n)
+        }
+        finalize(arity)
+      },
+      t when t == Tags._GRAIN_ARRAY_HEAP_TAG => {
+        let arity = WasmI32.load(heapPtr, 4n)
+
+        let a = arity * 4n
+        for (let mut i = 0n; i < a; i += 4n) {
+          hashOne(WasmI32.load(heapPtr + i, 8n), depth + 1n)
+        }
+        finalize(arity)
+      },
+      t when t == Tags._GRAIN_TUPLE_HEAP_TAG => {
+        let tupleLength = WasmI32.load(heapPtr, 4n)
+        let l = tupleLength * 4n
+        for (let mut i = 0n; i < l; i += 4n) {
+          hashOne(WasmI32.load(heapPtr + i, 8n), depth + 1n)
+        }
+        finalize(tupleLength)
+      },
+      t when t == Tags._GRAIN_LAMBDA_HEAP_TAG => {
+        hash32(heapPtr)
+      },
+      t when t == Tags._GRAIN_BOXED_NUM_HEAP_TAG => {
+        let tag = WasmI32.load(heapPtr, 4n)
+        match (tag) {
+          t when t == Tags._GRAIN_INT32_BOXED_NUM_TAG => {
+            hash32(WasmI32.load(heapPtr, 8n))
+          },
+          t when t == Tags._GRAIN_INT64_BOXED_NUM_TAG => {
+            hash32(WasmI32.load(heapPtr, 8n))
+            hash32(WasmI32.load(heapPtr, 12n))
+          },
+          t when t == Tags._GRAIN_FLOAT32_BOXED_NUM_TAG => {
+            hash32(WasmI32.load(heapPtr, 8n))
+          },
+          t when t == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG => {
+            hash32(WasmI32.load(heapPtr, 8n))
+            hash32(WasmI32.load(heapPtr, 12n))
+          },
+          t when t == Tags._GRAIN_RATIONAL_BOXED_NUM_TAG => {
+            hash32(WasmI32.load(heapPtr, 8n))
+            hash32(WasmI32.load(heapPtr, 12n))
+          },
+          _ => {
+            hash32(heapPtr)
+          }
+        }
+      },
+      _ => {
+        hash32(heapPtr)
+      }
+    }
+  } else if (val == WasmI32.fromGrain(true)) {
+    hash32(val)
+  } else if (val == WasmI32.fromGrain(false)) {
+    hash32(val)
+  } else if (val == WasmI32.fromGrain(void)) {
+    hash32(val)
+  } else {
+    hash32(val)
+  }
+}
+
+export let hash = (a) => {
+  h = seed
+
+  hashOne(WasmI32.fromGrain(a), 0n)
+  finalize(0n)
+
+  // Tag the number on the way out.
+  // Since Grain has proper modulus, negative numbers are okay.
+  tagSimpleNumber(h)
+}
