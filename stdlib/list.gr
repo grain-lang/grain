@@ -14,7 +14,7 @@ let init = (length, fn) => {
     }
   }
   iter(0, length)
-};
+}
 
 let length = (list) => {
   let rec iter = (len, list) => {

@@ -1,7 +1,9 @@
 let counter = {
   let count = box(0)
   let rec counterHelp = () => {
-    count := unbox(count) + 1
+    let new = unbox(count) + 1
+    count := new
+    new
   }
   counterHelp
 }

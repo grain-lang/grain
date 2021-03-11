@@ -43,7 +43,7 @@ let rec copyNodeWithNewHash = (oldNode, next, tail) => {
       let newNode = Some(node);
       match (tail[idx]) {
         None => {
-          next[idx] := newNode;
+          next[idx] = newNode;
         },
         Some(tailNode) => {
           // If there's already a tail node, we add this to the end
@@ -51,7 +51,7 @@ let rec copyNodeWithNewHash = (oldNode, next, tail) => {
         }
       }
       // Always place this node as the new tail
-      tail[idx] := newNode;
+      tail[idx] = newNode;
       // Recurse with the next node
       copyNodeWithNewHash(node.next, next, tail);
     }
@@ -101,12 +101,12 @@ export let set = (key, value, map) => {
   let bucket = buckets[idx];
   match (bucket) {
     None => {
-      buckets[idx] := Some({ key, value, next: None });
+      buckets[idx] = Some({ key, value, next: None });
       map.size = incr(map.size);
     },
     Some(node) => {
       if (replaceInBucket(key, value, node)) {
-        buckets[idx] := Some({ key, value, next: bucket });
+        buckets[idx] = Some({ key, value, next: bucket });
         map.size = incr(map.size);
       };
     }
@@ -185,7 +185,7 @@ export let remove = (key, map) => {
       // If it is a top-level node, just replace with next node
       if (key == node.key) {
         map.size = decr(map.size);
-        buckets[idx] := node.next;
+        buckets[idx] = node.next;
       } else {
         if (removeInBucket(key, node)) {
           map.size = decr(map.size);
@@ -215,7 +215,7 @@ export let clear = (map) => {
   map.size = 0;
   let buckets = map.buckets;
   Array.forEachi((bucket, idx) => {
-    buckets[idx] := None;
+    buckets[idx] = None;
   }, buckets);
 }
 

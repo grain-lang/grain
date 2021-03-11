@@ -329,6 +329,10 @@ let basic_functionality_tests = [
   t("if4", "if (false) 1 else if (false) 2 else {3}", "3"),
   t("if_one_sided", "if (3 < 4) print(5)", "5\nvoid"),
   t("if_one_sided2", "if (3 > 4) print(5)", "void"),
+  t("if_one_sided3", "let mut x = 1; if (3 < 4) x = 2", "void"),
+  t("if_one_sided4", "let mut x = 1; if (3 < 4) x = 2; x", "2"),
+  t("if_one_sided5", "let mut x = 1; if (3 < 4) x = 2 + 3", "void"),
+  t("if_one_sided6", "let mut x = 1; if (3 < 4) x = 2 + 3; x", "5"),
   te(
     "if_one_sided_type_err",
     "let foo = (if (false) { 5; }); let bar = foo + 5; bar",
@@ -561,16 +565,16 @@ let array_tests = [
     "let x = [> 1, 2, 3]; x[false]",
     "has type Bool but",
   ),
-  t("array_set", "let x = [> 1, 2, 3]; x[0] := 4; x", "[> 4, 2, 3]"),
-  t("array_set2", "let x = [> 1, 2, 3]; x[-2] := 4; x", "[> 1, 4, 3]"),
+  t("array_set", "let x = [> 1, 2, 3]; x[0] = 4; x", "[> 4, 2, 3]"),
+  t("array_set2", "let x = [> 1, 2, 3]; x[-2] = 4; x", "[> 1, 4, 3]"),
   te(
     "array_set_err",
-    "let x = [> 1, 2, 3]; x[-2] := false",
+    "let x = [> 1, 2, 3]; x[-2] = false",
     "has type Bool but",
   ),
   te(
     "array_set_err2",
-    "let x = [> 1, 2, 3]; x[-12] := 4",
+    "let x = [> 1, 2, 3]; x[-12] = 4",
     "array index out of bounds",
   ),
   te(
@@ -580,8 +584,8 @@ let array_tests = [
   ),
   te(
     "array_type2",
-    "let x = [> true, false, false]; (x[1] := true) + 3",
-    "has type Bool but",
+    "let x = [> true, false, false]; (x[1] = true) + 3",
+    "has type Void but",
   ),
   // trailing commas
   t("array1_trailing", "[> 1, 2, 3,]", "[> 1, 2, 3]"),
@@ -655,7 +659,7 @@ let record_tests = [
     "hoo",
   ),
   te(
-    "record_mut_1",
+    "record_mut_2",
     "record Rec {foo: Number, mut bar: String, baz: Bool}; let a = {foo: 4, bar: \"boo\", baz: true}; a.foo = 5; a.foo",
     "The record field foo is not mutable",
   ),
@@ -865,7 +869,7 @@ let box_tests = [
     "let b = box(4);\n            {\n              b := unbox(b) - 1;\n              unbox(b)\n            }",
     "3",
   ),
-  t("test_set_extra1", "box(1) := 2", "2"),
+  t("test_set_extra1", "box(1) := 2", "void"),
   tfile("counter-box", "counter-box", "1\n2\n3\nvoid"),
   te("test_unbox_err", "unbox(5)", "Box"),
   te(
@@ -874,21 +878,21 @@ let box_tests = [
     "expression has type Bool but",
   ),
   /* Operations on Box<Number> */
-  t("box_addition1", "let b = box(4); b := unbox(b) + 19", "23"),
+  t("box_addition1", "let b = box(4); b := unbox(b) + 19", "void"),
   t("box_addition2", "let b = box(4); b := unbox(b) + 19; unbox(b)", "23"),
-  t("box_subtraction1", "let b = box(4); b := unbox(b) - 19", "-15"),
+  t("box_subtraction1", "let b = box(4); b := unbox(b) - 19", "void"),
   t(
     "box_subtraction2",
     "let b = box(4); b := unbox(b) - 19; unbox(b)",
     "-15",
   ),
-  t("box_multiplication1", "let b = box(4); b := unbox(b) * 19", "76"),
+  t("box_multiplication1", "let b = box(4); b := unbox(b) * 19", "void"),
   t(
     "box_multiplication2",
     "let b = box(4); b := unbox(b) * 19; unbox(b)",
     "76",
   ),
-  t("box_division1", "let b = box(76); b := unbox(b) / 19", "4"),
+  t("box_division1", "let b = box(76); b := unbox(b) / 19", "void"),
   t("box_division2", "let b = box(76); b := unbox(b) / 19; unbox(b)", "4"),
 ];
 
@@ -947,16 +951,16 @@ let let_mut_tests = [
     "The identifier foo was not declared mutable",
   ),
   /* Operations on mutable `Number`s */
-  t("let-mut_addition1", "let mut b = 4; b = b + 19", "23"),
+  t("let-mut_addition1", "let mut b = 4; b = b + 19", "void"),
   t("let-mut_addition2", "let mut b = 4; b = b + 19; b", "23"),
   t("let-mut_addition3", "let mut b = 4; b += 19; b", "23"),
-  t("let-mut_subtraction1", "let mut b = 4; b = b - 19", "-15"),
+  t("let-mut_subtraction1", "let mut b = 4; b = b - 19", "void"),
   t("let-mut_subtraction2", "let mut b = 4; b = b - 19; b", "-15"),
   t("let-mut_subtraction3", "let mut b = 4; b -= 19; b", "-15"),
-  t("let-mut_multiplication1", "let mut b = 4; b = b * 19", "76"),
+  t("let-mut_multiplication1", "let mut b = 4; b = b * 19", "void"),
   t("let-mut_multiplication2", "let mut b = 4; b = b * 19; b", "76"),
   t("let-mut_multiplication3", "let mut b = 4; b *= 19; b", "76"),
-  t("let-mut_division1", "let mut b = 76; b = b / 19", "4"),
+  t("let-mut_division1", "let mut b = 76; b = b / 19", "void"),
   t("let-mut_division2", "let mut b = 76; b = b / 19; b", "4"),
   t("let-mut_division3", "let mut b = 76; b /= 19; b", "4"),
   /* Exported let mut */
@@ -980,15 +984,15 @@ let loop_tests = [
     "let b = box(12);\n             let count = box(0);\n            {\n              while (unbox(b) > 0) {\n                b := unbox(b) - 1;\n                count := unbox(count) + 1;\n              };\n              unbox(count)\n            }",
     "12",
   ),
-  t("loop3", "let mut b = 3; while (b > 0) { b = b - 1; }; b ", "0"),
+  t("loop3", "let mut b = 3; while (b > 0) { b = b - 1 }; b ", "0"),
   t(
     "loop4",
-    "let mut b = 12; let mut count = 0; while (b > 0) { b = b - 1; count = count + 1; }; count",
+    "let mut b = 12; let mut count = 0; while (b > 0) { b = b - 1; count = count + 1 }; count",
     "12",
   ),
   t(
     "loop5",
-    "let mut b = 12; let mut count = 0; while ((b -= 1) >= 0) { count += 1; }; count",
+    "let mut b = 12; let mut count = 0; while ({b -= 1; b >= 0}) { count += 1 }; count",
     "12",
   ),
   t(
@@ -1003,7 +1007,7 @@ let loop_tests = [
   ),
   t(
     "for3",
-    "for (let mut x = 0; x <= 3;) { print(x); x += 1; }",
+    "for (let mut x = 0; x <= 3;) { print(x); x += 1 }",
     "0\n1\n2\n3\nvoid",
   ),
   t(
@@ -1668,7 +1672,7 @@ let optimization_tests = [
       ) @@
       AExp.comp(
         Comp.local_assign(
-          ~allocation_type=HeapAllocated,
+          ~allocation_type=StackAllocated(WasmI32),
           x,
           Imm.const(Const_number(Const_number_int(6L))),
         ),

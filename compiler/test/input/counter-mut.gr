@@ -1,7 +1,8 @@
 let counter = {
   let mut count = 0
   let rec counterHelp = () => {
-    count = count + 1
+    count += 1
+    count
   }
   counterHelp
 }

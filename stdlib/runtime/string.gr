@@ -164,7 +164,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
               strings = [tmp, ...strings]
               if (i > 0n) {
                 Memory.incRef(WasmI32.fromGrain(comspace))
-                strings = [comspace, ...strings];
+                strings = [comspace, ...strings]
               }
             }
             Memory.incRef(WasmI32.fromGrain(variantName))
@@ -207,7 +207,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
           ]
           if (i > 0n) {
             Memory.incRef(WasmI32.fromGrain(comlf))
-            strings = [comlf, ...strings];
+            strings = [comlf, ...strings]
           }
         }
         strings = ["{\n", ...strings]
@@ -230,7 +230,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
         strings = [item, ...strings]
         if (i > 0n) {
           Memory.incRef(WasmI32.fromGrain(comspace))
-          strings = [comspace, ...strings];
+          strings = [comspace, ...strings]
         }
       }
       strings = ["[> ", ...strings]
@@ -278,14 +278,14 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
         let mut strings = [")"]
         if (tupleLength <= 1n) {
           // Special case: unary tuple
-          strings = [",", ...strings];
+          strings = [",", ...strings]
         }
         for (let mut i = tupleLength * 4n - 4n; i >= 0n; i -= 4n) {
           let item = toStringHelp(WasmI32.load(ptr + i, 8n), extraIndents, false)
           strings = [item, ...strings]
           if (i > 0n) {
             Memory.incRef(WasmI32.fromGrain(comspace))
-            strings = [comspace, ...strings];
+            strings = [comspace, ...strings]
           }
         }
         WasmI32.store(ptr, tupleLength, 4n)
@@ -342,12 +342,12 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
       break
     } else {
       if (!isFirst) {
-        strings = [", ", ...strings];
+        strings = [", ", ...strings]
       }
       isFirst = false
       let item = toStringHelp(WasmI32.load(cur, 20n), extraIndents, false)
       strings = [item, ...strings]
-      cur = WasmI32.load(cur, 24n);
+      cur = WasmI32.load(cur, 24n)
     }
   }
   strings = ["]", ...strings]

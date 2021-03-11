@@ -44,7 +44,7 @@ let hash32 = (k) => {
 
   h = h ^ k
   h = WasmI32.rotl(h, r2)
-  h = (h * m) + n;
+  h = (h * m) + n
 }
 
 let hashRemaining = (r) => {
@@ -54,7 +54,7 @@ let hashRemaining = (r) => {
   r = WasmI32.rotl(r, r1)
   r *= c2
 
-  h = h ^ r;
+  h = h ^ r
 }
 
 let finalize = (len) => {
@@ -64,7 +64,7 @@ let finalize = (len) => {
   h *= 0x85ebca6bn
   h = h ^ (h >>> 13n)
   h *= 0xc2b2ae35n
-  h = h ^ (h >>> 16n);
+  h = h ^ (h >>> 16n)
 }
 
 let rec hashOne = (val, depth) => {
@@ -85,7 +85,7 @@ let rec hashOne = (val, depth) => {
         let mut rem = 0n
         for (let mut i = 0n; i < extra; i += 1n) {
           rem = rem << 8n
-          rem = rem | WasmI32.load8U(heapPtr + l + i, 8n);
+          rem = rem | WasmI32.load8U(heapPtr + l + i, 8n)
         }
         if (rem != 0n) hashRemaining(rem)
         finalize(length)
