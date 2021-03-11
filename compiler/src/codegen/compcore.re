@@ -33,7 +33,7 @@ let gensym_label = s => {
 };
 
 /* Number of swap variables to allocate */
-let swap_slots_i32 = [|Type.int32, Type.int32|];
+let swap_slots_i32 = [|Type.int32, Type.int32, Type.int32|];
 let swap_slots_i64 = [|Type.int64|];
 let swap_i32_offset = 0;
 let swap_i64_offset = Array.length(swap_slots_i32);
@@ -2465,6 +2465,102 @@ let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
         Expression.const(wasm_mod, const_void()),
       ],
     )
+  | WasmMemoryCompare =>
+    let lbl = gensym_label("memory_compare");
+    let loop_lbl = gensym_label("memory_compare_loop");
+    let set_ptr1 = set_swap(wasm_mod, env, 0);
+    let set_ptr2 = set_swap(wasm_mod, env, 1);
+    let set_count = set_swap(wasm_mod, env, 2);
+    let get_ptr1 = () => get_swap(wasm_mod, env, 0);
+    let get_ptr2 = () => get_swap(wasm_mod, env, 1);
+    let get_count = () => get_swap(wasm_mod, env, 2);
+    Expression.block(
+      wasm_mod,
+      lbl,
+      [
+        set_ptr1(compile_imm(wasm_mod, env, List.nth(args, 0))),
+        set_ptr2(compile_imm(wasm_mod, env, List.nth(args, 1))),
+        set_count(compile_imm(wasm_mod, env, List.nth(args, 2))),
+        Expression.loop(
+          wasm_mod,
+          loop_lbl,
+          Expression.block(
+            wasm_mod,
+            gensym_label("memory_compare_loop_inner"),
+            [
+              Expression.drop(wasm_mod) @@
+              Expression.break(
+                wasm_mod,
+                lbl,
+                Expression.unary(wasm_mod, Op.eq_z_int32, get_count()),
+                Expression.const(wasm_mod, const_int32(0)),
+              ),
+              Expression.if_(
+                wasm_mod,
+                Expression.binary(
+                  wasm_mod,
+                  Op.ne_int32,
+                  load(~sz=1, ~signed=false, wasm_mod, get_ptr1()),
+                  load(~sz=1, ~signed=false, wasm_mod, get_ptr2()),
+                ),
+                Expression.break(
+                  wasm_mod,
+                  lbl,
+                  Expression.null(),
+                  Expression.select(
+                    wasm_mod,
+                    Expression.binary(
+                      wasm_mod,
+                      Op.lt_u_int32,
+                      load(~sz=1, ~signed=false, wasm_mod, get_ptr1()),
+                      load(~sz=1, ~signed=false, wasm_mod, get_ptr2()),
+                    ),
+                    Expression.const(wasm_mod, const_int32(-1)),
+                    Expression.const(wasm_mod, const_int32(1)),
+                  ),
+                ),
+                Expression.block(
+                  wasm_mod,
+                  gensym_label("memory_compare_loop_incr"),
+                  [
+                    set_ptr1(
+                      Expression.binary(
+                        wasm_mod,
+                        Op.add_int32,
+                        get_ptr1(),
+                        Expression.const(wasm_mod, const_int32(1)),
+                      ),
+                    ),
+                    set_ptr2(
+                      Expression.binary(
+                        wasm_mod,
+                        Op.add_int32,
+                        get_ptr2(),
+                        Expression.const(wasm_mod, const_int32(1)),
+                      ),
+                    ),
+                    set_count(
+                      Expression.binary(
+                        wasm_mod,
+                        Op.sub_int32,
+                        get_count(),
+                        Expression.const(wasm_mod, const_int32(1)),
+                      ),
+                    ),
+                    Expression.break(
+                      wasm_mod,
+                      loop_lbl,
+                      Expression.null(),
+                      Expression.null(),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   };
 };
 

@@ -1612,17 +1612,12 @@ let optimization_tests = [
     {
       open Grain_typed;
       let arg = Ident.create("lambda_arg");
-      let x = Ident.create("x");
       AExp.comp(
         Comp.lambda([(arg, HeapAllocated)]) @@
         (
-          AExp.let_(
-            Nonrecursive,
-            [(x, Comp.imm(~allocation_type=HeapAllocated, Imm.id(arg)))],
-          ) @@
           AExp.comp @@
           Comp.tuple([
-            Imm.id(x),
+            Imm.id(arg),
             Imm.const(Const_number(Const_number_int(1L))),
           ]),
           HeapAllocated,

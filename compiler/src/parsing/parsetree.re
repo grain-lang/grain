@@ -379,7 +379,8 @@ type primn =
   | WasmStoreF64
   | WasmMemoryCopy
   | WasmMemoryFill
-  | WasmMemorySize;
+  | WasmMemorySize
+  | WasmMemoryCompare;
 
 [@deriving (sexp, yojson)]
 type attributes = Asttypes.attributes;

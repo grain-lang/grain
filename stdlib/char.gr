@@ -1,3 +1,9 @@
+import WasmI32 from "runtime/unsafe/wasmi32"
+import Memory from "runtime/unsafe/memory"
+import Errors from "runtime/unsafe/errors"
+import { tagSimpleNumber, allocateChar, allocateString } from "runtime/dataStructures"
+import foreign wasm throwError: (WasmI32, WasmI32, WasmI32) -> a from "grainRuntime"
+
 export *
 
 // The minimum value of Unicode characters
@@ -18,12 +24,125 @@ let isValid = (n) => {
 // Returns the Unicode code point for the character
 // @param char: Char - the input character
 // @returns Number
-import foreign wasm code : Char -> Number from "stdlib-external/char"
+@disableGC
+let code = (c: Char) => {
+  // Algorithm from https://encoding.spec.whatwg.org/#utf-8-decoder
+
+  let c = WasmI32.fromGrain(c)
+
+  let (+) = WasmI32.add
+  let (==) = WasmI32.eq
+  let (>=) = WasmI32.geU
+  let (<=) = WasmI32.leU
+  let (<<) = WasmI32.shl
+  let (&) = WasmI32.and
+  let (|) = WasmI32.or
+  
+  let mut codePoint = 0n
+  let mut bytesSeen = 0n
+  let mut bytesNeeded = 0n
+  let mut lowerBoundary = 0x80n
+  let mut upperBoundary = 0xBFn
+
+  let mut offset = 0n
+
+  let mut result = 0n
+
+  while (true) {
+    let byte = WasmI32.load8U(c + offset, 4n)
+    offset += 1n
+    if (bytesNeeded == 0n) {
+      if (byte >= 0x00n && byte <= 0x7Fn) {
+        result = byte
+        break
+      } else if (byte >= 0xC2n && byte <= 0xDFn) {
+        bytesNeeded = 1n
+        codePoint = byte & 0x1Fn;
+      } else if (byte >= 0xE0n && byte <= 0xEFn) {
+        if (byte == 0xE0n) { lowerBoundary = 0xA0n; }
+        if (byte == 0xEDn) { upperBoundary = 0x9Fn; }
+        bytesNeeded = 2n
+        codePoint = byte & 0xFn;
+      } else if (byte >= 0xF0n && byte <= 0xF4n) {
+        if (byte == 0xF0n) { lowerBoundary = 0x90n; }
+        if (byte == 0xF4n) { upperBoundary = 0x8Fn; }
+        bytesNeeded = 3n
+        codePoint = byte & 0x7n;
+      } else {
+        throwError(Errors._GRAIN_ERR_MALFORMED_UTF8, 0n, 0n)
+      }
+      continue
+    }
+    if (!(lowerBoundary <= byte && byte <= upperBoundary)) {
+      throwError(Errors._GRAIN_ERR_MALFORMED_UTF8, 0n, 0n)
+    }
+    lowerBoundary = 0x80n
+    upperBoundary = 0xBFn
+    codePoint = (codePoint << 6n) | (byte & 0x3Fn)
+    bytesSeen += 1n
+    if (bytesSeen == bytesNeeded) {
+      result = codePoint
+      break
+    }
+  }
+  tagSimpleNumber(result)
+}
 
 // Returns the Char for the given code point. Fails if the code point is invalid.
 // @param codePoint: Number - the Unicode code point
 // @returns Char
-import foreign wasm fromCode : Number -> Char from "stdlib-external/char"
+@disableGC
+let fromCode = (code: Number) => {
+  // Algorithm from https://encoding.spec.whatwg.org/#utf-8-encoder
+
+  let (+) = WasmI32.add
+  let (-) = WasmI32.sub
+  let (*) = WasmI32.mul
+  let (==) = WasmI32.eq
+  let (>) = WasmI32.gtU
+  let (<=) = WasmI32.leU
+  let (<) = WasmI32.ltU
+  let (>>>) = WasmI32.shrU
+  let (&) = WasmI32.and
+  let (|) = WasmI32.or
+
+  let code = WasmI32.fromGrain(code)
+  if ((code & 1n) == 0n) {
+    throwError(Errors._GRAIN_ERR_INVALID_ARGUMENT, code, 0n)
+  }
+
+  let code = code >>> 1n
+  if (code < 0x80n) {
+    let char = allocateChar()
+    WasmI32.store8(char, code, 4n)
+    WasmI32.toGrain(char): Char
+  } else {
+    let mut count = 0n
+    let mut offset = 0n
+    if (code <= 0x07FFn) {
+      count = 1n
+      offset = 0xC0n;
+    } else if (code <= 0xFFFFn) {
+      count = 2n
+      offset = 0xE0n;
+    } else {
+      count = 3n
+      offset = 0xF0n;
+    }
+    let char = allocateChar()
+    WasmI32.store8(char, (code >>> (6n * count)) + offset, 4n)
+
+    let mut n = 0n
+    while (count > 0n) {
+      n += 1n
+      let temp = code >>> (6n * (count - 1n))
+      WasmI32.store8(char + n, 0x80n | (temp & 0x3Fn), 4n)
+      count -= 1n;
+    }
+
+    WasmI32.toGrain(char): Char
+  }
+}
 
 // Returns the next valid Unicode character by code point. Fails if the input character is U+10FFFF.
 // @param char: Char - the input character
@@ -56,4 +175,24 @@ let pred = (c) => {
 // Creates a new string containing the character.
 // @param char: Char - the character to convert
 // @returns String
-import foreign wasm toString : Char -> String from "stdlib-external/char"
+@disableGC
+export let toString = (c: Char) => {
+  let (+) = WasmI32.add
+  let (&) = WasmI32.and
+  let (==) = WasmI32.eq
+  
+  let c = WasmI32.fromGrain(c)
+  let byte = WasmI32.load8U(c, 4n)
+  let n = if ((byte & 0x80n) == 0x00n) {
+    1n
+  } else if ((byte & 0xF0n) == 0xF0n) {
+    4n
+  } else if ((byte & 0xE0n) == 0xE0n) {
+    3n
+  } else {
+    2n
+  }
+  let str = allocateString(n)
+  Memory.copy(str + 8n, c + 4n, n)
+  WasmI32.toGrain(str): String
+}

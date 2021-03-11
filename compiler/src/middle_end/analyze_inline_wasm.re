@@ -224,6 +224,7 @@ let primitive_map_memory =
       ("fill", "@wasm.memory_fill"),
       ("grow", "@wasm.memory_grow"),
       ("size", "@wasm.memory_size"),
+      ("compare", "@wasm.memory_compare"),
     ]),
   );
 
