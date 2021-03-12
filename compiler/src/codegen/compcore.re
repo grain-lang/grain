@@ -2935,9 +2935,170 @@ and compile_instr = (wasm_mod, env, instr) =>
   | MTagOp(_) => failwith("NYI: (compile_instr): MTagOp")
   };
 
+let runtime_type_metadata_ptr = 256;
+
+type type_metadata =
+  | ADTMeta(int, list((int, string)))
+  | RecordMeta(int, list(string));
+
+let compile_type_metadata = (wasm_mod, env, type_metadata) => {
+  open Types;
+
+  // More information about this function can be found in the printing.md
+  // contributor document.
+
+  // Extension constructors defined by the module must be grouped together.
+  // For now, this only includes exceptions.
+  let (exception_meta, non_exception_meta) =
+    List.fold_left(
+      ((exception_meta, non_exception_meta), meta) => {
+        switch (meta) {
+        | ExceptionMetadata(_) => (
+            [meta, ...exception_meta],
+            non_exception_meta,
+          )
+        | ADTMetadata(id, variants) => (
+            exception_meta,
+            [ADTMeta(id, variants), ...non_exception_meta],
+          )
+        | RecordMetadata(id, fields) => (
+            exception_meta,
+            [RecordMeta(id, fields), ...non_exception_meta],
+          )
+        }
+      },
+      ([], []),
+      type_metadata,
+    );
+  let type_metadata =
+    switch (exception_meta) {
+    | [ExceptionMetadata(id, _, _), ..._] => [
+        ADTMeta(
+          id,
+          List.map(
+            meta => {
+              switch (meta) {
+              | ExceptionMetadata(_, variant, name) => (variant, name)
+              | _ => failwith("impossible by partition")
+              }
+            },
+            exception_meta,
+          ),
+        ),
+        ...non_exception_meta,
+      ]
+    | _ => non_exception_meta
+    };
+
+  let round_to_8 = n => Int.logand(n + 7, Int.lognot(7));
+
+  let buf = Buffer.create(256);
+  Buffer.add_int32_le(buf, 0l); // Slot where pointer to next will live
+  Buffer.add_int32_le(buf, 0l); // Slot where module id will live
+  Buffer.add_int32_le(buf, Int32.of_int(List.length(type_metadata)));
+
+  let alignBuffer = amount => {
+    for (_ in 1 to amount) {
+      Buffer.add_int8(buf, 0);
+    };
+  };
+
+  List.iter(
+    meta => {
+      switch (meta) {
+      | ADTMeta(id, cstrs) =>
+        let section_length =
+          List.fold_left(
+            (total, (_, cstr)) =>
+              total + 12 + round_to_8(String.length(cstr)),
+            8,
+            cstrs,
+          );
+        Buffer.add_int32_le(buf, Int32.of_int(section_length));
+        Buffer.add_int32_le(buf, Int32.of_int(id));
+        List.iter(
+          ((id, cstr)) => {
+            let length = String.length(cstr);
+            let aligned_length = round_to_8(length);
+            Buffer.add_int32_le(buf, Int32.of_int(aligned_length + 12));
+            Buffer.add_int32_le(buf, Int32.of_int(id));
+            Buffer.add_int32_le(buf, Int32.of_int(length));
+            Buffer.add_string(buf, cstr);
+            alignBuffer(aligned_length - length);
+          },
+          cstrs,
+        );
+      | RecordMeta(id, fields) =>
+        let section_length =
+          List.fold_left(
+            (total, field) => total + 8 + round_to_8(String.length(field)),
+            8,
+            fields,
+          );
+        Buffer.add_int32_le(buf, Int32.of_int(section_length));
+        Buffer.add_int32_le(buf, Int32.of_int(id));
+        List.iter(
+          field => {
+            let length = String.length(field);
+            let aligned_length = round_to_8(length);
+            Buffer.add_int32_le(buf, Int32.of_int(aligned_length + 8));
+            Buffer.add_int32_le(buf, Int32.of_int(length));
+            Buffer.add_string(buf, field);
+            alignBuffer(aligned_length - length);
+          },
+          fields,
+        );
+      }
+    },
+    type_metadata,
+  );
+
+  Expression.block(
+    wasm_mod,
+    gensym_label("compile_type_metadata"),
+    [
+      set_swap(
+        wasm_mod,
+        env,
+        0,
+        Expression.binary(
+          wasm_mod,
+          Op.add_int32,
+          allocate_string(wasm_mod, env, Buffer.contents(buf)),
+          Expression.const(wasm_mod, const_int32(8)),
+        ),
+      ),
+      store(
+        wasm_mod,
+        get_swap(wasm_mod, env, 0),
+        load(
+          wasm_mod,
+          Expression.const(wasm_mod, const_int32(runtime_type_metadata_ptr)),
+        ),
+      ),
+      store(
+        ~offset=4,
+        wasm_mod,
+        get_swap(wasm_mod, env, 0),
+        Expression.global_get(
+          wasm_mod,
+          get_imported_name(runtime_mod, module_runtime_id),
+          Type.int32,
+        ),
+      ),
+      store(
+        wasm_mod,
+        Expression.const(wasm_mod, const_int32(runtime_type_metadata_ptr)),
+        get_swap(wasm_mod, env, 0),
+      ),
+    ],
+  );
+};
+
 let compile_function =
     (
       ~start=false,
+      ~preamble=?,
       wasm_mod,
       env,
       {index, args, return_type, stack_size, body: body_instrs, func_loc},
@@ -2953,14 +3114,20 @@ let compile_function =
     };
   let body_env = {...env, num_args: arity, stack_size};
   let inner_body =
-    if (Config.no_gc^) {
-      compile_block(wasm_mod, body_env, body_instrs);
-    } else {
-      cleanup_locals(
+    switch (preamble) {
+    | Some(preamble) =>
+      Expression.block(
         wasm_mod,
-        body_env,
-        compile_block(wasm_mod, body_env, body_instrs),
-      );
+        gensym_label("compile_function_preamble"),
+        [preamble, compile_block(wasm_mod, body_env, body_instrs)],
+      )
+    | None => compile_block(wasm_mod, body_env, body_instrs)
+    };
+  let inner_body =
+    if (Config.no_gc^) {
+      inner_body;
+    } else {
+      cleanup_locals(wasm_mod, body_env, inner_body);
     };
   let body = Expression.return(wasm_mod, inner_body);
   let locals =
@@ -3186,9 +3353,16 @@ let compile_globals = (wasm_mod, env, {globals} as prog) => {
 };
 
 let compile_main = (wasm_mod, env, prog) => {
+  let preamble =
+    if (Config.elide_type_info^ || List.length(prog.type_metadata) == 0) {
+      Expression.nop(wasm_mod);
+    } else {
+      compile_type_metadata(wasm_mod, env, prog.type_metadata);
+    };
   ignore @@
   compile_function(
     ~start=true,
+    ~preamble,
     wasm_mod,
     env,
     {
@@ -3317,8 +3491,10 @@ let setup_runtime_compilation = (wasm_mod, {exports}) =>
       true,
       // TODO: We still have some AssemblyScript modules which use the data
       // segment, so we offset where the runtime begins. Once those data
-      // segments are removed, this should be changed to 8.
-      Expression.const(wasm_mod, const_int32(256)),
+      // segments are removed, this should be changed.
+      // Runtime space starts at pointer 256, but the first 8 bytes are
+      // reserved for runtime metadata.
+      Expression.const(wasm_mod, const_int32(264)),
     );
     ignore @@
     Export.add_global_export(

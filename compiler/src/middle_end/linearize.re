@@ -1403,6 +1403,64 @@ let linearize_builtins = (env, builtins) => {
   (bindings, []);
 };
 
+let gather_type_metadata = statements => {
+  List.fold_left(
+    (metadata, {ttop_desc}) => {
+      switch (ttop_desc) {
+      | TTopData(decls) =>
+        let info =
+          List.map(
+            decl => {
+              let typath = Path.PIdent(decl.data_id);
+              let id = get_type_id(typath);
+              switch (decl.data_kind) {
+              | TDataVariant(cnstrs) =>
+                let descrs =
+                  Datarepr.constructors_of_type(typath, decl.data_type);
+                let meta =
+                  List.map(
+                    ((_, cstr)) =>
+                      (
+                        compile_constructor_tag(cstr.cstr_tag),
+                        cstr.cstr_name,
+                      ),
+                    descrs,
+                  );
+                ADTMetadata(id, meta);
+              | TDataRecord(fields) =>
+                RecordMetadata(
+                  id,
+                  List.map(field => Ident.name(field.rf_name), fields),
+                )
+              };
+            },
+            decls,
+          );
+        List.append(info, metadata);
+      | TTopException(_, ext) =>
+        let ty_id = get_type_id(ext.ext_type.ext_type_path);
+        let id = ext.ext_id;
+        let cstr = Datarepr.extension_descr(Path.PIdent(id), ext.ext_type);
+        [
+          ExceptionMetadata(
+            ty_id,
+            compile_constructor_tag(cstr.cstr_tag),
+            cstr.cstr_name,
+          ),
+          ...metadata,
+        ];
+      | TTopExpr(_)
+      | TTopImport(_)
+      | TTopExport(_)
+      | TTopForeign(_)
+      | TTopLet(_) => metadata
+      }
+    },
+    [],
+    statements,
+  );
+};
+
 let transl_anf_module =
     ({statements, env, signature}: typed_program): anf_program => {
   PathMap.clear(type_map);
@@ -1425,7 +1483,8 @@ let transl_anf_module =
   let imports = List.rev(imports);
   let body = convert_binds(top_binds);
   let imports = imports @ value_imports^;
-  {body, env, imports, signature, analyses: ref([])};
+  let type_metadata = gather_type_metadata(statements);
+  {body, env, imports, signature, type_metadata, analyses: ref([])};
 };
 
 let () = Matchcomp.compile_constructor_tag := compile_constructor_tag;

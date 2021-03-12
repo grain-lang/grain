@@ -101,6 +101,12 @@ and value_unbound_reason =
   | ValUnboundGhostRecursive;
 
 [@deriving (sexp, yojson)]
+type type_metadata =
+  | ADTMetadata(int, list((int, string)))
+  | RecordMetadata(int, list(string))
+  | ExceptionMetadata(int, int, string);
+
+[@deriving (sexp, yojson)]
 type value_kind =
   | TValReg
   | TValPrim(string)

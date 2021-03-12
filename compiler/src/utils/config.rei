@@ -66,6 +66,10 @@ let debug: ref(bool);
 
 let unsound_optimizations: ref(bool);
 
+/** Whether or not to include runtime type information used by toString/print */
+
+let elide_type_info: ref(bool);
+
 /** Whether or not to generate source maps. */
 
 let source_map: ref(bool);

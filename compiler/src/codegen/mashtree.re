@@ -458,6 +458,7 @@ type mash_program = {
   main_body_stack_size: stack_size,
   globals: list((int32, asmtype)),
   signature: Cmi_format.cmi_infos,
+  type_metadata: list(Types.type_metadata),
 };
 
 let const_true = MConstLiteral(MConstI32(Int32.of_int(0xFFFFFFFE)));
