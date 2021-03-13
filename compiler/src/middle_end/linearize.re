@@ -644,6 +644,7 @@ let rec transl_imm =
     let (exp_ans, exp_setup) = transl_imm(exp);
     let (ans, setup) =
       MatchCompiler.compile_result(
+        ~allocation_type,
         Matchcomp.convert_match_branches(branches),
         transl_anf_expression,
         transl_imm,
@@ -1066,6 +1067,7 @@ and transl_comp_expression =
     let (exp_ans, exp_setup) = transl_imm(expr);
     let (ans, setup) =
       MatchCompiler.compile_result(
+        ~allocation_type,
         Matchcomp.convert_match_branches(branches),
         transl_anf_expression,
         transl_imm,

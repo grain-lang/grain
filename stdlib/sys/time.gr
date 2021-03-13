@@ -1,21 +1,53 @@
-export *
+/* grainc-flags --no-gc */
+
+import WasmI32, {
+  add as (+),
+  eq as (==),
+  ne as (!=)
+} from "runtime/unsafe/wasmi32"
+import Memory from "runtime/unsafe/memory"
+import Wasi from "runtime/wasi"
+import Errors from "runtime/unsafe/errors"
+import { allocateInt64 } from "runtime/dataStructures"
+
+import foreign wasm throwError: (WasmI32, WasmI32, WasmI32) -> a from "grainRuntime"
+
+let getClockTime = (clockid, precision) => {
+  let int64Ptr = allocateInt64()
+  let timePtr = int64Ptr + 4n
+  let err = Wasi.clock_time_get(clockid, precision, timePtr)
+  if (err != Wasi._ESUCCESS) {
+    Memory.free(int64Ptr)
+    throwError(Errors._GRAIN_ERR_SYSTEM, err, 0n)
+  }
+
+  WasmI32.toGrain(int64Ptr): Int64
+}
 
 // Get the current time, in nanoseconds.
 // Time value 0 corresponds with 1970-01-01T00:00:00Z.
 // @returns Int64 The current time
-import foreign wasm realTime : () -> Int64 from "stdlib-external/sys"
+export let realTime = () => {
+  getClockTime(Wasi._CLOCK_REALTIME, 1000N)
+}
 
 // Get the time of the system's high-resolution clock, in nanoseconds.
 // This system clock cannot be adjusted and cannot have negative time jumps.
 // The epoch of this clock is undefined, and thus time value 0 is meaningless.
 // Useful for calculation of precise time intervals.
 // @returns Int64 The current time
-import foreign wasm monotonicTime : () -> Int64 from "stdlib-external/sys"
+export let monotonicTime = () => {
+  getClockTime(Wasi._CLOCK_MONOTONIC, 1N)
+}
 
 // Get the number of nanoseconds elapsed since the process began
 // @returns Int64
-import foreign wasm processCpuTime : () -> Int64 from "stdlib-external/sys"
+export let processCpuTime = () => {
+  getClockTime(Wasi._CLOCK_PROCESS_CPUTIME, 1N)
+}
 
 // Get the number of nanoseconds elapsed since the thread began
 // @returns Int64
-import foreign wasm threadCpuTime : () -> Int64 from "stdlib-external/sys"
+export let threadCpuTime = () => {
+  getClockTime(Wasi._CLOCK_THREAD_CPUTIME, 1N)
+}

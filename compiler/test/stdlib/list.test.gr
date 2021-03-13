@@ -75,6 +75,15 @@ assert filter(x => x > 0, list) == list
 assert filter(x => x > 3, list) == []
 assert filter(x => x == 3, list) == [3]
 
+// List.filteri
+
+assert filteri((x, i) => i >= 0, list) == list
+assert filteri((x, i) => x == i, list) == []
+assert filteri((x, i) => x - 1 == i, list) == list
+assert filteri((x, i) => i + x > 2, list) == [2, 3]
+assert filteri((x, i) => x == 3, list) == [3]
+assert filteri((x, i) => x == 3, []) == []
+
 // List.reject
 
 assert reject(x => x > 0, list) == []

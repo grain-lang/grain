@@ -32,14 +32,10 @@
   },
   "homepage": "https://grain-lang.org",
   "devDependencies": {
-    "assemblyscript": "^0.14.7",
-    "del-cli": "^3.0.1",
-    "globby": "^11.0.1",
-    "replace-ext": "^2.0.0"
+    "del-cli": "^3.0.1"
   },
   "dependencies": {},
   "scripts": {
-    "build": "node --harmony-top-level-await ./build.mjs",
     "clean": "del-cli '**/*.wasm' '**/*.wasm.*' '**/*.gr.mashtree' '!stdlib-external/**'"
   }
 }

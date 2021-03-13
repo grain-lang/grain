@@ -1,4 +1,0 @@
-{
-  "extends": "assemblyscript/std/assembly",
-  "include": ["**/*.ts"]
-}
