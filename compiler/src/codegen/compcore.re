@@ -297,6 +297,16 @@ let var_of_ext_global = (env, modname, itemname) =>
 let lookup_ext_func = (env, modname, itemname) =>
   Ident.find_same(itemname, Ident.find_same(modname, env.imported_funcs));
 
+/** Static runtime values */
+
+// Static pointer to the runtime heap
+// Leaves low 1000 memory unused for Binaryen optimizations
+let runtime_heap_ptr = 0x400;
+// Start pointer for the runtime heap
+let runtime_heap_start = 0x410;
+// Static pointer to runtime type information
+let runtime_type_metadata_ptr = 0x408;
+
 let global_function_table = "tbl";
 
 let get_imported_name = (mod_, name) =>
@@ -1360,10 +1370,6 @@ let compile_record_op = (wasm_mod, env, rec_imm, op) => {
 
 /** Heap allocations. */
 
-// Heap pointer used by runtime before memory allocation is available
-let runtime_heap_ptr_name = "_RUNTIME_HEAP_PTR";
-let runtime_heap_ptr = MGlobalBind(runtime_heap_ptr_name, I32Type, false);
-
 /** Rounds the given number of words to be aligned correctly */
 let round_to_even = num_words =>
   if (num_words mod 2 == 0) {
@@ -1378,7 +1384,10 @@ let heap_allocate = (wasm_mod, env, num_words: int) =>
       Expression.binary(
         wasm_mod,
         Op.add_int32,
-        compile_bind(wasm_mod, env, ~action=BindGet, runtime_heap_ptr),
+        load(
+          wasm_mod,
+          Expression.const(wasm_mod, const_int32(runtime_heap_ptr)),
+        ),
         Expression.const(
           wasm_mod,
           const_int32(round_to_even(num_words + 2) * 4),
@@ -1395,32 +1404,36 @@ let heap_allocate = (wasm_mod, env, num_words: int) =>
             [
               store(
                 wasm_mod,
-                compile_bind(
+                load(
                   wasm_mod,
-                  env,
-                  ~action=BindGet,
-                  runtime_heap_ptr,
+                  Expression.const(wasm_mod, const_int32(runtime_heap_ptr)),
                 ),
                 Expression.const(wasm_mod, const_int32(1)),
               ),
               Expression.binary(
                 wasm_mod,
                 Op.add_int32,
-                compile_bind(
+                load(
                   wasm_mod,
-                  env,
-                  ~action=BindGet,
-                  runtime_heap_ptr,
+                  Expression.const(wasm_mod, const_int32(runtime_heap_ptr)),
                 ),
                 Expression.const(wasm_mod, const_int32(8)),
               ),
             ],
           ),
-          compile_bind(
+          Expression.block(
             wasm_mod,
-            env,
-            ~action=BindTee(addition),
-            runtime_heap_ptr,
+            gensym_label("store_runtime_heap_ptr"),
+            [
+              store(
+                wasm_mod,
+                Expression.const(wasm_mod, const_int32(runtime_heap_ptr)),
+                addition,
+              ),
+              // Binaryen tuples must include a concrete value (and tuples are
+              // the only way to use the stack)
+              Expression.const(wasm_mod, const_int32(0)),
+            ],
           ),
         ],
       ),
@@ -1442,7 +1455,10 @@ let heap_runtime_allocate_imm =
     Expression.binary(
       wasm_mod,
       Op.add_int32,
-      compile_bind(wasm_mod, env, ~action=BindGet, runtime_heap_ptr),
+      load(
+        wasm_mod,
+        Expression.const(wasm_mod, const_int32(runtime_heap_ptr)),
+      ),
       Expression.binary(
         wasm_mod,
         Op.mul_int32,
@@ -1472,22 +1488,36 @@ let heap_runtime_allocate_imm =
           [
             store(
               wasm_mod,
-              compile_bind(wasm_mod, env, ~action=BindGet, runtime_heap_ptr),
+              load(
+                wasm_mod,
+                Expression.const(wasm_mod, const_int32(runtime_heap_ptr)),
+              ),
               Expression.const(wasm_mod, const_int32(1)),
             ),
             Expression.binary(
               wasm_mod,
               Op.add_int32,
-              compile_bind(wasm_mod, env, ~action=BindGet, runtime_heap_ptr),
+              load(
+                wasm_mod,
+                Expression.const(wasm_mod, const_int32(runtime_heap_ptr)),
+              ),
               Expression.const(wasm_mod, const_int32(8)),
             ),
           ],
         ),
-        compile_bind(
+        Expression.block(
           wasm_mod,
-          env,
-          ~action=BindTee(addition),
-          runtime_heap_ptr,
+          gensym_label("store_runtime_heap_ptr"),
+          [
+            store(
+              wasm_mod,
+              Expression.const(wasm_mod, const_int32(runtime_heap_ptr)),
+              addition,
+            ),
+            // Binaryen tuples must include a concrete value (and tuples are
+            // the only way to use the stack)
+            Expression.const(wasm_mod, const_int32(0)),
+          ],
         ),
       ],
     ),
@@ -2935,8 +2965,6 @@ and compile_instr = (wasm_mod, env, instr) =>
   | MTagOp(_) => failwith("NYI: (compile_instr): MTagOp")
   };
 
-let runtime_type_metadata_ptr = 256;
-
 type type_metadata =
   | ADTMeta(int, list((int, string)))
   | RecordMeta(int, list(string));
@@ -3353,16 +3381,50 @@ let compile_globals = (wasm_mod, env, {globals} as prog) => {
 };
 
 let compile_main = (wasm_mod, env, prog) => {
-  let preamble =
-    if (Config.elide_type_info^ || List.length(prog.type_metadata) == 0) {
-      Expression.nop(wasm_mod);
+  let runtime_preamble =
+    if (Env.is_runtime_mode()) {
+      Some(
+        Expression.if_(
+          wasm_mod,
+          Expression.unary(
+            wasm_mod,
+            Op.eq_z_int32,
+            load(
+              wasm_mod,
+              Expression.const(wasm_mod, const_int32(runtime_heap_ptr)),
+            ),
+          ),
+          store(
+            wasm_mod,
+            Expression.const(wasm_mod, const_int32(runtime_heap_ptr)),
+            Expression.const(wasm_mod, const_int32(runtime_heap_start)),
+          ),
+          Expression.null(),
+        ),
+      );
     } else {
-      compile_type_metadata(wasm_mod, env, prog.type_metadata);
+      None;
+    };
+  let module_preamble =
+    if (Config.elide_type_info^ || List.length(prog.type_metadata) == 0) {
+      None;
+    } else {
+      Some(compile_type_metadata(wasm_mod, env, prog.type_metadata));
+    };
+  let preamble =
+    switch (runtime_preamble, module_preamble) {
+    | (Some(x), Some(y)) =>
+      Some(
+        Expression.block(wasm_mod, gensym_label("main_preamble"), [x, y]),
+      )
+    | (Some(x), None)
+    | (None, Some(x)) => Some(x)
+    | (None, None) => None
     };
   ignore @@
   compile_function(
     ~start=true,
-    ~preamble,
+    ~preamble?,
     wasm_mod,
     env,
     {
@@ -3480,39 +3542,6 @@ let prepare = (env, {imports} as prog) => {
   );
 };
 
-let setup_runtime_compilation = (wasm_mod, {exports}) =>
-  if (Env.is_malloc_mode()) {
-    // Disallow 0 as a valid Grain pointer
-    ignore @@
-    Global.add_global(
-      wasm_mod,
-      runtime_heap_ptr_name,
-      Type.int32,
-      true,
-      // TODO: We still have some AssemblyScript modules which use the data
-      // segment, so we offset where the runtime begins. Once those data
-      // segments are removed, this should be changed.
-      // Runtime space starts at pointer 256, but the first 8 bytes are
-      // reserved for runtime metadata.
-      Expression.const(wasm_mod, const_int32(264)),
-    );
-    ignore @@
-    Export.add_global_export(
-      wasm_mod,
-      runtime_heap_ptr_name,
-      runtime_heap_ptr_name,
-    );
-  } else {
-    Import.add_global_import(
-      wasm_mod,
-      runtime_heap_ptr_name,
-      Ident.name(malloc_mod),
-      runtime_heap_ptr_name,
-      Type.int32,
-      true,
-    );
-  };
-
 let compile_wasm_module = (~env=?, ~name=?, prog) => {
   let env =
     switch (env) {
@@ -3540,6 +3569,7 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
         Features.mutable_globals,
       ],
     );
+  let _ = Module.set_low_memory_unused(1);
   let _ =
     Memory.set_memory(wasm_mod, 0, Memory.unlimited, "memory", [], false);
 
@@ -3552,7 +3582,6 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
   };
 
   if (Env.is_runtime_mode()) {
-    setup_runtime_compilation(wasm_mod, prog);
     Config.preserve_config(() => {
       Config.no_gc := true;
       compile_all();

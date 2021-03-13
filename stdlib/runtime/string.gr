@@ -1,4 +1,4 @@
-/* grainc-flags --compilation-mode=managed-runtime */
+/* grainc-flags --no-pervasives */
 
 import WasmI32, {
   add as (+),
@@ -33,7 +33,7 @@ primitive (||) : (Bool, Bool) -> Bool = "@or"
 
 enum StringList { [], [...](String, StringList) }
 
-let _RUNTIME_TYPE_METADATA_PTR = 256n
+let _RUNTIME_TYPE_METADATA_PTR = 0x408n
 
 @disableGC
 let findTypeMetadata = (moduleId, typeId) => {

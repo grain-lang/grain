@@ -14,6 +14,10 @@ let verbose: ref(bool);
 
 let sexp_locs_enabled: ref(bool);
 
+/** Whether or not to automatically import Pervasives */
+
+let no_pervasives: ref(bool);
+
 /** Whether to enable garbage collection */
 
 let no_gc: ref(bool);

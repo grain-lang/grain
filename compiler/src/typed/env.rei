@@ -162,15 +162,11 @@ let add_signature: (signature, t) => t;
 /* Remember the current compilation unit: modname * filename * compilation mode. */
 type compilation_mode =
   | Normal
-  | ManagedRuntime
-  | Runtime
-  | MemoryAllocation;
+  | Runtime;
 
 let set_unit: ((string, string, compilation_mode)) => unit;
 let get_unit: unit => (string, string, compilation_mode);
 let is_runtime_mode: unit => bool;
-let is_managed_runtime_mode: unit => bool;
-let is_malloc_mode: unit => bool;
 
 /* Insertion of all fields of a signature, relative to the given path.
    Used to implement open. Returns None if the path refers to a functor,
