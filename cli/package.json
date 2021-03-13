@@ -12,6 +12,9 @@
     "check-format": "prettier --check .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "pkg": {
+    "assets": "bin/*.js"
+  },
   "bin": {
     "grain": "bin/grain.js"
   },

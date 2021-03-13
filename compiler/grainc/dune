@@ -7,3 +7,18 @@
   (:standard
    (:include ./config/flags.sexp)))
  (libraries grain grain_diagnostics binaryen.native dune-build-info))
+
+(rule
+ (target grainc_js.re)
+ (action
+  (copy %{dep:grainc.re} %{target})))
+
+(executable
+ (name grainc_js)
+ (modes
+  (byte js))
+ (modules grainc_js)
+ (libraries grain grain_diagnostics binaryen.js dune-build-info)
+ (js_of_ocaml
+  (flags --no-sourcemap --no-extern-fs --quiet)
+  (javascript_files runtime.js)))

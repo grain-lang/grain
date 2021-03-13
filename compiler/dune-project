@@ -37,6 +37,7 @@
   (synopsis "The core Grain language compiler CLI")
   (depends
     (reason (>= 3.6.0))
+    (js_of_ocaml-compiler (>= 3.6.0))
     (dune-build-info (>= 2.0))
     (ppx_sexp_conv (>= 0.14.0))
     (sexplib (>= 0.14.0))

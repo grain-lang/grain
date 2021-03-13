@@ -1,18 +1,14 @@
-const path = require("path");
-const { execSync } = require("child_process");
-
-const grainc = path.join(__dirname, "grainc.exe");
+const exec = require("./exec");
 
 module.exports = (file, options) => {
   try {
-    execSync(
-      `${grainc} --stdlib=${options.stdlib} ${
-        options.cflags ? options.cflags : ""
-      } ${file}`
-    );
+    // TODO: Should we console.log the output (stdout) of the exec?
+    exec(file, options);
     return file.replace(/\.gr$/, ".gr.wasm");
   } catch (e) {
     console.log(e.stdout.toString());
+    // TODO: Do we also want to print the stderr?
+    // console.log(e.stderr.toString());
     if (options.graceful) {
       process.exit();
     } else {
