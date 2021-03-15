@@ -1759,8 +1759,35 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
           env := store_type_infos(id, decl, env^);
         | TSigTypeExt(id, ext, _) =>
           let ext' = Subst.extension_constructor(sub, ext);
-          let descr = Datarepr.extension_descr(path, ext');
-          c.comp_constrs = add_to_tbl(Ident.name(id), descr, c.comp_constrs);
+          let desc = Datarepr.extension_descr(path, ext');
+          let val_type =
+            switch (desc.cstr_args) {
+            | [] => desc.cstr_res
+            | args => Btype.newgenty(TTyArrow(args, desc.cstr_res, TComOk))
+            };
+          let val_type =
+            switch (desc.cstr_existentials) {
+            | [] => val_type
+            | existentials => Btype.newgenty(TTyPoly(val_type, existentials))
+            };
+          let get_path = name =>
+            switch (path) {
+            | PIdent(_) => PIdent(Ident.create(name))
+            | PExternal(PIdent(mod_), _, level) =>
+              PExternal(PIdent(mod_), name, level)
+            | PExternal(PExternal(_), _, _) =>
+              failwith("NYI: Multiple PExternal")
+            };
+          let val_desc = {
+            val_type,
+            val_fullpath: get_path(desc.cstr_name),
+            val_kind: TValConstructor(desc),
+            val_loc: desc.cstr_loc,
+            val_mutable: false,
+          };
+          c.comp_values =
+            Tbl.add(Ident.name(id), (val_desc, nopos), c.comp_values);
+          c.comp_constrs = add_to_tbl(Ident.name(id), desc, c.comp_constrs);
         | TSigModule(id, md, _) =>
           let md' = EnvLazy.create((sub, md));
           c.comp_modules =
@@ -2595,8 +2622,7 @@ and fold_types = f => find_all(env => env.types, sc => sc.comp_types, f)
 and fold_modtypes = f =>
   find_all(env => env.modtypes, sc => sc.comp_modtypes, f);
 
-let (initial_safe_string, initial_unsafe_string) =
-  Builtin_types.build_initial_env(add_type(~check=false), empty);
+let initial_env = Builtin_types.initial_env(add_type(~check=false), empty);
 
 /* Return the environment summary */
 

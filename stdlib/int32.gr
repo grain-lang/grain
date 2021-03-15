@@ -1,7 +1,5 @@
 import WasmI32 from "runtime/unsafe/wasmi32"
-import Errors from "runtime/unsafe/errors"
-
-import foreign wasm throwError: (WasmI32, WasmI32, WasmI32) -> a from "grainRuntime"
+import Exception from "runtime/exception"
 
 import {
   newInt32
@@ -97,7 +95,7 @@ export let mod = (x: Int32, y: Int32) => {
   let yval = WasmI32.load(WasmI32.fromGrain(y), 8n)
 
   if (WasmI32.eqz(yval)) {
-    throwError(Errors._GRAIN_ERR_MODULO_BY_ZERO, 0n, 0n)
+    throw Exception.ModuloByZero
   }
 
   let ptr = if (WasmI32.ltS(WasmI32.xor(xval, yval), 0n)) {

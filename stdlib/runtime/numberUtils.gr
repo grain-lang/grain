@@ -17,12 +17,13 @@ import WasmI32, {
 } from "runtime/unsafe/wasmi32"
 import WasmI64 from "runtime/unsafe/wasmi64"
 import WasmF64 from "runtime/unsafe/wasmf64"
+import Exception from "runtime/exception"
 import { allocateString, singleByteString } from "runtime/dataStructures"
 
 primitive (!) : Bool -> Bool = "@not"
 primitive (&&) : (Bool, Bool) -> Bool = "@and"
 primitive (||) : (Bool, Bool) -> Bool = "@or"
-primitive fail : String -> a = "@fail"
+primitive throw : Exception -> a = "@throw"
 
 export let _MAX_DOUBLE_LENGTH = 28n
 
@@ -887,7 +888,7 @@ let utoa64_any_core = (buffer, num, offset, radix) => {
 
 export let utoa32 = (value, radix) => {
   if (WasmI32.ltS(radix, 2n) || WasmI32.gtS(radix, 36n)) {
-    fail "toString() radix argument must be between 2 and 36"
+    throw Exception.InvalidArgument("toString() radix argument must be between 2 and 36")
   }
   let str = if (WasmI32.eqz(value)) {
     singleByteString(_CHAR_CODE_0)
@@ -913,7 +914,7 @@ export let utoa32 = (value, radix) => {
 export let itoa32 = (value, radix) => {
   let mut value = value
   if (WasmI32.ltS(radix, 2n) || WasmI32.gtS(radix, 36n)) {
-    fail "toString() radix argument must be between 2 and 36"
+    throw Exception.InvalidArgument("toString() radix argument must be between 2 and 36")
   }
   let mut out = 0n
   let sign = WasmI32.shrU(value, 31n)
@@ -942,7 +943,7 @@ export let itoa32 = (value, radix) => {
 
 export let utoa64 = (value, radix) => {
   if (WasmI32.ltS(radix, 2n) || WasmI32.gtS(radix, 36n)) {
-    fail "toString() radix argument must be between 2 and 36"
+    throw Exception.InvalidArgument("toString() radix argument must be between 2 and 36")
   }
   let str = if (WasmI64.eqz(value)) {
     singleByteString(_CHAR_CODE_0)
@@ -975,7 +976,7 @@ export let utoa64 = (value, radix) => {
 
 export let itoa64 = (value, radix) => {
   if (WasmI32.ltS(radix, 2n) || WasmI32.gtS(radix, 36n)) {
-    fail "toString() radix argument must be between 2 and 36"
+    throw Exception.InvalidArgument("toString() radix argument must be between 2 and 36")
   }
 
   let mut value = value

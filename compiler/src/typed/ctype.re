@@ -225,7 +225,7 @@ let in_current_module =
 
 let in_pervasives = p => failwith("NYI: in_pervasives");
 /*in_current_module p &&
-  try ignore (Env.find_type p Env.initial_safe_string); true
+  try ignore (Env.find_type p Env.initial_env); true
   with Not_found -> false*/
 
 let is_datatype = decl =>

@@ -177,7 +177,7 @@ rule token = parse
   | "fail" { FAIL }
   | "exception" { EXCEPTION }
   | "try" { TRY }
-  | "raise" { RAISE }
+  | "throw" { THROW }
   | "catch" { CATCH }
   | "..." { ELLIPSIS }
   | "." { DOT }

@@ -1,5 +1,3 @@
-import { GrainError } from "../errors/errors";
-
 import { WASI } from "@wasmer/wasi/lib/index.cjs";
 import { WasmFs } from "@wasmer/wasmfs";
 import wasmmap from "wasm-sourcemap";
@@ -40,8 +38,7 @@ export class GrainModule {
 
   get instantiated() {
     if (!this.isInstantiated) {
-      throw new GrainError(
-        -1,
+      throw new Error(
         `Module${
           this.name ? " " + this.name : ""
         } must be instantiated before use`

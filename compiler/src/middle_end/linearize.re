@@ -419,6 +419,12 @@ let rec transl_imm =
       [BSeq(Comp.break(~loc, ~env, ()))],
     )
   | TExpApp(
+      {exp_desc: TExpIdent(_, _, {val_kind: TValPrim("@throw")})},
+      _,
+    ) =>
+    let (ans, ans_setup) = transl_comp_expression(e);
+    (Imm.trap(~loc, ~env, ()), ans_setup @ [BSeq(ans)]);
+  | TExpApp(
       {exp_desc: TExpIdent(_, _, {val_kind: TValPrim("@and")})},
       [arg1, arg2],
     ) =>
@@ -639,12 +645,13 @@ let rec transl_imm =
         ),
       ],
     );
-  | TExpMatch(exp, branches, _) =>
+  | TExpMatch(exp, branches, partial) =>
     let tmp = gensym("match");
     let (exp_ans, exp_setup) = transl_imm(exp);
     let (ans, setup) =
       MatchCompiler.compile_result(
         ~allocation_type,
+        ~partial,
         Matchcomp.convert_match_branches(branches),
         transl_anf_expression,
         transl_imm,
@@ -1034,6 +1041,27 @@ and transl_comp_expression =
   | TExpLambda(_, _) =>
     failwith("transl_comp_expression: NYI: multi-branch lambda")
   | TExpApp(
+      {exp_desc: TExpIdent(_, _, {val_kind: TValPrim("@throw")})} as func,
+      args,
+    ) =>
+    let (new_func, func_setup) = transl_imm(func);
+    let (new_args, new_setup) = List.split(List.map(transl_imm, args));
+    let (ans, ans_setup) = (
+      Comp.app(
+        ~loc,
+        ~attributes,
+        ~allocation_type,
+        ~env,
+        (new_func, get_fn_allocation_type(func.exp_env, func.exp_type)),
+        new_args,
+      ),
+      func_setup @ List.concat(new_setup),
+    );
+    (
+      Comp.imm(~attributes, ~allocation_type, ~env, Imm.trap(~loc, ~env, ())),
+      ans_setup @ [BSeq(ans)],
+    );
+  | TExpApp(
       {exp_desc: TExpIdent(_, _, {val_kind: TValPrim("@and")})},
       [arg1, arg2],
     ) =>
@@ -1063,11 +1091,12 @@ and transl_comp_expression =
   | TExpArray(args) =>
     let (new_args, new_setup) = List.split(List.map(transl_imm, args));
     (Comp.array(~loc, ~attributes, ~env, new_args), List.concat(new_setup));
-  | TExpMatch(expr, branches, _) =>
+  | TExpMatch(expr, branches, partial) =>
     let (exp_ans, exp_setup) = transl_imm(expr);
     let (ans, setup) =
       MatchCompiler.compile_result(
         ~allocation_type,
+        ~partial,
         Matchcomp.convert_match_branches(branches),
         transl_anf_expression,
         transl_imm,

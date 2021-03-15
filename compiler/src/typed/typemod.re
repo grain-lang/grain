@@ -536,6 +536,12 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       ttop_env: newenv,
       ttop_attributes: attributes,
     };
+    let export_flag =
+      if (string_needs_export(ext.ext_name)) {
+        Exported;
+      } else {
+        export_flag;
+      };
     let sign =
       switch (export_flag) {
       | Exported =>
@@ -859,7 +865,7 @@ let open_implicit_module = (m, env, in_env) => {
 
 let initial_env = () => {
   Ident.reinit();
-  let initial = Env.initial_safe_string;
+  let initial = Env.initial_env;
   let env = initial;
   let (unit_name, source, mode) = Env.get_unit();
   let implicit_modules =

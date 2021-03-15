@@ -1,7 +1,5 @@
 import { managedMemory, grainModule } from "../runtime";
-import { throwGrainError } from "../errors/errors";
 import { grainToJSVal, JSToGrainVal } from "../utils/utils";
-import { GRAIN_ERR_ARITY_MISMATCH } from "../errors/error-codes";
 
 export class GrainClosure {
   constructor(loc, runtime) {
@@ -17,19 +15,10 @@ export class GrainClosure {
   }
 
   jsFunc(...args) {
-    if (args.length != this.arity) {
-      throwGrainError(
-        GRAIN_ERR_ARITY_MISMATCH,
-        this.arity,
-        args.length,
-        this.runtime
-      );
-    } else {
-      let grainVals = args.map((x) => JSToGrainVal(x, this.runtime));
-      grainVals.unshift(this.loc * 4);
-      // [TODO]: We should feed in a runtime here.
-      return grainToJSVal(null, this.func(...grainVals));
-    }
+    let grainVals = args.map((x) => JSToGrainVal(x, this.runtime));
+    grainVals.unshift(this.loc * 4);
+    // [TODO]: We should feed in a runtime here.
+    return grainToJSVal(null, this.func(...grainVals));
   }
 }
 

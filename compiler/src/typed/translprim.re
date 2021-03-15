@@ -39,7 +39,7 @@ let prim_map =
       ("@unbox", Primitive1(Unbox)),
       ("@ignore", Primitive1(Ignore)),
       ("@assert", Primitive1(Assert)),
-      ("@fail", Primitive1(FailWith)),
+      ("@throw", Primitive1(Throw)),
       ("@is", Primitive2(Is)),
       ("@eq", Primitive2(Eq)),
       ("@and", Primitive2(And)),

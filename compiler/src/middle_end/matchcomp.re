@@ -375,13 +375,7 @@ module MatchTreeCompiler = {
       );
     | Fail =>
       /* FIXME: We need a "throw error" node in ANF */
-      (
-        Comp.imm(
-          ~allocation_type=StackAllocated(WasmI32),
-          Imm.const(Const_number(Const_number_int(0L))),
-        ),
-        [],
-      )
+      (Comp.imm(~allocation_type=StackAllocated(WasmI32), Imm.trap()), [])
     /* Optimizations to avoid unneeded destructuring: */
     | Explode(_, Leaf(_) as inner)
     | Explode(_, Guard(_) as inner)
@@ -502,7 +496,7 @@ module MatchTreeCompiler = {
                 cmp_id_name,
                 Comp.prim2(
                   ~allocation_type=StackAllocated(WasmI32),
-                  Eq,
+                  Is,
                   value_constr_id,
                   Imm.const(
                     Const_number(Const_number_int(Int64.of_int(tag))),
@@ -532,7 +526,7 @@ module MatchTreeCompiler = {
   };
 
   let compile_result =
-      (~allocation_type, {tree, branches}, helpA, helpI, expr)
+      (~allocation_type, ~partial, {tree, branches}, helpA, helpI, expr)
       : (Anftree.comp_expression, list(Anftree.anf_bind)) => {
     /*prerr_string "Compiling tree:";
       prerr_string (Sexplib.Sexp.to_string_hum (sexp_of_decision_tree tree));
@@ -558,7 +552,12 @@ module MatchTreeCompiler = {
         branches,
       );
     (
-      Comp.switch_(~allocation_type, Imm.id(jmp_name), switch_branches),
+      Comp.switch_(
+        ~allocation_type,
+        Imm.id(jmp_name),
+        switch_branches,
+        partial,
+      ),
       setup,
     );
   };

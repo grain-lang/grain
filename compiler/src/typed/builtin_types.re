@@ -155,7 +155,7 @@ and decl_array = {
   });
 };
 
-let common_initial_env = (add_type, empty_env) =>
+let initial_env = (add_type, empty_env) =>
   empty_env
   |> add_type(ident_number, decl_abstr(path_number))
   |> add_type(ident_exception, decl_exception)
@@ -175,15 +175,6 @@ let common_initial_env = (add_type, empty_env) =>
   |> add_type(ident_void, decl_void)
   |> add_type(ident_array, decl_array)
   |> add_type(ident_fd, decl_abstr(path_fd));
-
-let build_initial_env = (add_type, empty_env) => {
-  let common = common_initial_env(add_type, empty_env);
-  /*let safe_string = add_type ident_bytes decl_abstr common in
-    let decl_bytes_unsafe = {decl_abstr with type_manifest = Some type_string} in
-    let unsafe_string = add_type ident_bytes decl_bytes_unsafe common in
-      (safe_string, unsafe_string)*/
-  (common, common);
-};
 
 let builtin_values =
   List.map(

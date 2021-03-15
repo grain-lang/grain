@@ -1,5 +1,7 @@
 export *
 
+import Exception from "runtime/exception"
+
 import { equal as (==) } from "runtime/equal"
 
 import {
@@ -65,10 +67,15 @@ primitive (||) : (Bool, Bool) -> Bool = "@or"
 primitive box : a -> Box<a> = "@box"
 primitive unbox : Box<a> -> a = "@unbox"
 
+// Exceptions
+exception Failure(String)
+exception InvalidArgument(String)
+
 // Other operations
 primitive ignore : a -> Void = "@ignore"
 primitive assert : Bool -> Void = "@assert"
-primitive fail : String -> a = "@fail"
+primitive throw : Exception -> a = "@throw"
+let fail : String -> a = msg => throw Failure(msg)
 
 import { toString, print, concat as (++) } from "runtime/string"
 
@@ -98,3 +105,14 @@ enum Result<t, e> { Ok(t), Err(e) }
 
 // Identity function
 let identity = (x) => x
+
+// Setup exception printing
+Exception.dangerouslyRegisterPrinter(e => {
+  match (e) {
+    Failure(msg) => Some("Failure: " ++ msg),
+    InvalidArgument(msg) => Some("Invalid argument: " ++ msg),
+    _ => None
+  }
+})
+
+Exception.registerBasePrinter(e => Some(toString(e)))

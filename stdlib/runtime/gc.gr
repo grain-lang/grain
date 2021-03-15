@@ -30,7 +30,9 @@ import WasmI32, {
 
 primitive (&&) : (Bool, Bool) -> Bool = "@and"
 primitive (||) : (Bool, Bool) -> Bool = "@or"
-primitive fail : String -> a = "@fail"
+primitive throw : Exception -> a = "@throw"
+
+exception DecRefError
 
 let _HEADER_SIZE = 8n
 
@@ -74,7 +76,7 @@ let rec decRef = (userPtr: WasmI32, ignoreZeros: Bool) => {
       if (ignoreZeros) {
         userPtr
       } else {
-        fail "decRef called when reference count was zero."
+        throw DecRefError
       }
     } else {
       let refCount = refCount - 1n

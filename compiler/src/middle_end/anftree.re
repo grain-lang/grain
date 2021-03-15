@@ -18,6 +18,9 @@ type attributes = Asttypes.attributes;
 
 type analysis = ..;
 
+[@deriving sexp]
+type partial = Typedtree.partial = | Partial | Total;
+
 type wasm_prim_type =
   Parsetree.wasm_prim_type =
     | Wasm_int32 | Wasm_int64 | Wasm_float32 | Wasm_float64 | Grain_bool;
@@ -163,7 +166,7 @@ type prim1 =
     | Ignore
     | ArrayLength
     | Assert
-    | FailWith
+    | Throw
     | WasmFromGrain
     | WasmToGrain
     | WasmUnaryI32({
@@ -266,7 +269,8 @@ type imm_expression = {
 [@deriving sexp]
 and imm_expression_desc =
   | ImmId(Ident.t)
-  | ImmConst(constant);
+  | ImmConst(constant)
+  | ImmTrap;
 
 /** Compound expressions (non-let-bound) */
 
@@ -306,7 +310,7 @@ and comp_expression_desc =
   | CFor(option(anf_expression), option(anf_expression), anf_expression)
   | CContinue
   | CBreak
-  | CSwitch(imm_expression, list((int, anf_expression)))
+  | CSwitch(imm_expression, list((int, anf_expression)), partial)
   | CApp(
       (imm_expression, (list(allocation_type), allocation_type)),
       list(imm_expression),

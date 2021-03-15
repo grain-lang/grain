@@ -110,14 +110,14 @@ module MakeMap = (Iter: MapArgument) => {
         CFor(c, inc, body);
       | CContinue => CContinue
       | CBreak => CBreak
-      | CSwitch(c, branches) =>
+      | CSwitch(c, branches, partial) =>
         let c = map_imm_expression(c);
         let branches =
           List.map(
             ((tag, body)) => (tag, map_anf_expression(body)),
             branches,
           );
-        CSwitch(c, branches);
+        CSwitch(c, branches, partial);
       | CApp((f, fty), args, tail) =>
         let f = map_imm_expression(f);
         let args = List.map(map_imm_expression, args);

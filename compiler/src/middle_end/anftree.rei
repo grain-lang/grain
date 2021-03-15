@@ -17,6 +17,9 @@ type loc('a) = Location.loc('a);
 [@deriving sexp]
 type attributes = Asttypes.attributes;
 
+[@deriving sexp]
+type partial = Typedtree.partial = | Partial | Total;
+
 type analysis = ..;
 
 type wasm_prim_type =
@@ -164,7 +167,7 @@ type prim1 =
     | Ignore
     | ArrayLength
     | Assert
-    | FailWith
+    | Throw
     | WasmFromGrain
     | WasmToGrain
     | WasmUnaryI32({
@@ -252,7 +255,8 @@ type imm_expression = {
 [@deriving sexp]
 and imm_expression_desc =
   | ImmId(Ident.t)
-  | ImmConst(constant);
+  | ImmConst(constant)
+  | ImmTrap;
 
 /** Compound expressions (non-let-bound) */
 
@@ -291,7 +295,7 @@ and comp_expression_desc =
   | CFor(option(anf_expression), option(anf_expression), anf_expression)
   | CContinue
   | CBreak
-  | CSwitch(imm_expression, list((int, anf_expression)))
+  | CSwitch(imm_expression, list((int, anf_expression)), partial)
   | CApp(
       (imm_expression, (list(allocation_type), allocation_type)),
       list(imm_expression),

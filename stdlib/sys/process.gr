@@ -11,11 +11,8 @@ import WasmI32, {
   ltS as (<)
 } from "runtime/unsafe/wasmi32"
 import Memory from "runtime/unsafe/memory"
-import Errors from "runtime/unsafe/errors"
 import Wasi from "runtime/wasi"
 import { tagSimpleNumber, allocateArray, allocateString } from "runtime/dataStructures"
-
-import foreign wasm throwError: (WasmI32, WasmI32, WasmI32) -> a from "grainRuntime"
 
 export enum Signal {
   // Hangup.
@@ -85,7 +82,7 @@ export let argv = () => {
   let mut err = Wasi.args_sizes_get(argcPtr, argvBufSizePtr)
   if (err != Wasi._ESUCCESS) {
     Memory.free(argcPtr)
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 
   let argc = WasmI32.load(argcPtr, 0n)
@@ -99,7 +96,7 @@ export let argv = () => {
     Memory.free(argcPtr)
     Memory.free(argvPtr)
     Memory.free(argvBufPtr)
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 
   let arr = allocateArray(argc)
@@ -134,7 +131,7 @@ export let env = () => {
   let mut err = Wasi.environ_sizes_get(envcPtr, envvBufSizePtr)
   if (err != Wasi._ESUCCESS) {
     Memory.free(envcPtr)
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 
   let envc = WasmI32.load(envcPtr, 0n)
@@ -148,7 +145,7 @@ export let env = () => {
     Memory.free(envcPtr)
     Memory.free(envvPtr)
     Memory.free(envvBufPtr)
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 
   let arr = allocateArray(envc)
@@ -180,7 +177,7 @@ export let exit = (code: Number) => {
   let mut code = WasmI32.fromGrain(code)
 
   if ((code & 1n) == 0n) {
-    throwError(Errors._GRAIN_ERR_INVALID_ARGUMENT, code, 0n)
+    throw InvalidArgument("Invalid exit code")
   }
 
   code = code >> 1n
@@ -194,7 +191,7 @@ export let sigRaise = (signalPtr: Signal) => {
   let signal = WasmI32.load(signal, 12n) >> 1n
   let err = Wasi.proc_raise(signal)
   if (err != Wasi._ESUCCESS) {
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 }
 
@@ -202,6 +199,6 @@ export let sigRaise = (signalPtr: Signal) => {
 export let schedYield = () => {
   let err = Wasi.sched_yield()
   if (err != Wasi._ESUCCESS) {
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 }

@@ -41,6 +41,7 @@ let rec analyze_comp_expression =
         ({comp_desc: desc, comp_analyses: analyses}) => {
   let purity =
     switch (desc) {
+    | CImmExpr({imm_desc: ImmTrap}) => false
     | CImmExpr(_) => true
     | CPrim1(
         Not | Box | Unbox | BoxBind | UnboxBind | Ignore | ArrayLength |
@@ -54,7 +55,7 @@ let rec analyze_comp_expression =
         _,
       ) =>
       true
-    | CPrim1(Assert | FailWith, _) => false
+    | CPrim1(Assert | Throw, _) => false
     | CPrim2(
         Is | Eq | And | Or | ArrayMake | WasmLoadI32(_) | WasmLoadI64(_) |
         WasmLoadF32 |
@@ -105,7 +106,7 @@ let rec analyze_comp_expression =
       && anf_expression_purity_internal(body);
     | CContinue
     | CBreak => false
-    | CSwitch(_, branches) =>
+    | CSwitch(_, branches, _) =>
       let branches_purities =
         List.map(
           ((t, b)) => {

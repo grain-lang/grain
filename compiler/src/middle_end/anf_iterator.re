@@ -90,7 +90,7 @@ module MakeIter = (Iter: IterArgument) => {
       iter_anf_expression(body);
     | CContinue
     | CBreak => ()
-    | CSwitch(c, branches) =>
+    | CSwitch(c, branches, _) =>
       iter_imm_expression(c);
       List.iter(((_, body)) => iter_anf_expression(body), branches);
     | CApp((f, _), args, _) =>

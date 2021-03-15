@@ -305,7 +305,7 @@ type prim1 =
   | Ignore
   | ArrayLength
   | Assert
-  | FailWith
+  | Throw
   | WasmFromGrain
   | WasmToGrain
   | WasmUnaryI32({

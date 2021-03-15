@@ -1,4 +1,3 @@
-import { GrainError, makeThrowGrainError } from "../errors/errors";
 import { wasi, readFile, readURL, readBuffer } from "./grain-module";
 import { GRAIN_STRING_HEAP_TAG, GRAIN_GENERIC_HEAP_TAG_TYPE } from "./tags";
 
@@ -20,7 +19,6 @@ export class GrainRunner {
     this.imports["grainRuntime"] = {
       relocBase: 0,
       moduleRuntimeId: 0,
-      throwError: makeThrowGrainError(this),
     };
   }
 
@@ -28,7 +26,7 @@ export class GrainRunner {
     if (!this._memoryManager) {
       this._memoryManager = this.modules[MALLOC_MODULE];
       if (!this._memoryManager)
-        throw new GrainError(-1, "Failed to locate the memory manager.");
+        throw new Error("Failed to locate the memory manager.");
     }
     return this._memoryManager;
   }
@@ -37,7 +35,7 @@ export class GrainRunner {
     if (!this._stringModule) {
       this._stringModule = this.modules[STRING_MODULE];
       if (!this._stringModule)
-        throw new GrainError(-1, "Failed to locate the runtime string module.");
+        throw new Error("Failed to locate the runtime string module.");
     }
     return this._stringModule;
   }
@@ -47,7 +45,7 @@ export class GrainRunner {
 
     let located = await this.locator(STRING_MODULE);
     if (!located) {
-      throw new GrainError(-1, `Failed to ensure string module.`);
+      throw new Error(`Failed to ensure string module.`);
     }
     await this.load(STRING_MODULE, located);
     await located.start();
@@ -119,8 +117,7 @@ export class GrainRunner {
         // Should return an instance of GrainModule
         let located = await this.locator(imp.module);
         if (!located) {
-          throw new GrainError(
-            -1,
+          throw new Error(
             `Failed to locate required module: ${imp.module} [required by: ${name}]`
           );
         }
