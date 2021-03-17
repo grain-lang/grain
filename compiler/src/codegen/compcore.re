@@ -3052,7 +3052,7 @@ let compile_tables = (wasm_mod, env, {functions, imports} as prog) => {
   Function_table.set_function_table(
     wasm_mod,
     table_size,
-    max_int,
+    Function_table.unlimited,
     function_names,
     Expression.global_get(
       wasm_mod,
