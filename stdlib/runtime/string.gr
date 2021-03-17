@@ -1,4 +1,4 @@
-/* compilation-mode: managed-runtime */
+/* grainc-flags --compilation-mode=managed-runtime */
 
 import WasmI32, {
   add as (+),

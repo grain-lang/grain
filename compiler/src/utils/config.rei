@@ -42,6 +42,10 @@ let color_enabled: ref(bool);
 
 let principal: ref(bool);
 
+/** Compilation mode to use when compiling */
+
+let compilation_mode: ref(option(string));
+
 /** Whether to allow cyclic types. */
 
 let recursive_types: ref(bool);
@@ -106,3 +110,9 @@ let preserve_config: (unit => 'a) => 'a;
 /** Wraps the given thunk with extractors for compiler command-line options */
 
 let with_cli_options: 'a => Cmdliner.Term.t('a);
+
+/** Applies compile flags provided at the start of a file */
+
+let apply_inline_flags:
+  (~err: Stdlib.Format.formatter, string) =>
+  Cmdliner.Term.result(Cmdliner.Term.t(unit));

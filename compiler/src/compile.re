@@ -29,6 +29,12 @@ type compilation_action =
   | Continue(compilation_state)
   | Stop;
 
+type error =
+  | Cannot_parse_inline_flags(string)
+  | Cannot_use_help_or_version;
+
+exception InlineFlagsError(Location.t, error);
+
 let compile_prog = p =>
   Compcore.module_to_bytes @@ Compcore.compile_wasm_module(p);
 
@@ -66,6 +72,31 @@ let log_state = state =>
     prerr_string("\n\n");
   };
 
+let apply_inline_flags = (prog: Parsetree.parsed_program) => {
+  switch (prog.comments) {
+  | [Block({cmt_content, cmt_loc}), ..._]
+      when
+        Str.string_match(Str.regexp_string("grainc-flags"), cmt_content, 0) =>
+    let err_buf = Buffer.create(80);
+    let err = Format.formatter_of_buffer(err_buf);
+    let result = Grain_utils.Config.apply_inline_flags(~err, cmt_content);
+    switch (result) {
+    | `Ok(_) => ()
+    | `Version
+    | `Help => raise(InlineFlagsError(cmt_loc, Cannot_use_help_or_version))
+    | `Error(_) =>
+      Format.pp_print_flush(err, ());
+      raise(
+        InlineFlagsError(
+          cmt_loc,
+          Cannot_parse_inline_flags(Buffer.contents(err_buf)),
+        ),
+      );
+    };
+  | _ => ()
+  };
+};
+
 let next_state = ({cstate_desc, cstate_filename} as cs) => {
   let cstate_desc =
     switch (cstate_desc) {
@@ -92,6 +123,7 @@ let next_state = ({cstate_desc, cstate_filename} as cs) => {
       cleanup();
       Parsed(parsed);
     | Parsed(p) =>
+      apply_inline_flags(p);
       Well_formedness.check_well_formedness(p);
       WellFormed(p);
     | WellFormed(p) => TypeChecked(Typemod.type_implementation(p))
@@ -213,6 +245,24 @@ let save_mashed = (f, outfile) =>
   };
 
 let free_vars = anfed => Ident.Set.elements @@ Anf_utils.anf_free_vars(anfed);
+
+let report_error = loc =>
+  Location.(
+    Printf.(
+      fun
+      | Cannot_parse_inline_flags(msg) =>
+        errorf(~loc, "Failed to parse inline flags: %s", msg)
+      | Cannot_use_help_or_version =>
+        errorf(~loc, "The --help and --version flags cannot be set inline.")
+    )
+  );
+
+let () =
+  Location.register_error_of_exn(
+    fun
+    | InlineFlagsError(loc, err) => Some(report_error(loc, err))
+    | _ => None,
+  );
 
 let () =
   Env.compile_module_dependency :=

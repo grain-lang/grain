@@ -1,4 +1,4 @@
-/* compilation-mode: runtime */
+/* grainc-flags --compilation-mode=runtime */
 
 /*
  * This file was inspired by AssemblyScript's std/assembly/util/number.ts

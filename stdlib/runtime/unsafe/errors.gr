@@ -1,4 +1,4 @@
-/* compilation-mode: runtime */
+/* grainc-flags --compilation-mode=runtime */
 
 export let _GRAIN_ERR_NOT_NUMBER_COMP = 0n
 export let _GRAIN_ERR_NOT_NUMBER_ARITH = 1n

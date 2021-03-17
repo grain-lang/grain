@@ -1,4 +1,4 @@
-/* compilation-mode: malloc */
+/* grainc-flags --compilation-mode=malloc */
 
 /*
  * This module implements a generic memory allocator.
