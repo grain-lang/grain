@@ -59,7 +59,7 @@ let read_leb128:
       } else {
         let byte = next_byte();
         /* Check for invalid input */
-        assert(byte < 256);
+        assert(byte >= 0 && byte < 256);
 
         switch (signed, byte) {
         /* Unsigned case: zero MSB => last byte */
