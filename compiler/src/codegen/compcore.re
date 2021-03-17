@@ -2927,19 +2927,11 @@ let compile_imports = (wasm_mod, env, {imports}) => {
     | MImportWasm => Ident.name(name)
     | MImportGrain => "GRAIN$EXPORT$" ++ Ident.name(name);
 
-  // HACK: The malloc module should have no Grain imports, though it does
-  // depend on the low-level wasm libraries. All of the wasm instructions are
-  // already inlined, so this dependency is unnecessary. Binaryen has an
-  // optimization pass which removes those imports, but Binaryen optimizations
-  // are disabled because of #196. For now, we just omit all Grain imports.
-  let malloc_mode = Env.is_malloc_mode();
-
   let compile_import = ({mimp_mod, mimp_name, mimp_type, mimp_kind}) => {
     let module_name = compile_module_name(mimp_mod, mimp_kind);
     let item_name = compile_import_name(mimp_name, mimp_kind);
     let internal_name = get_imported_name(mimp_mod, mimp_name);
     switch (mimp_kind, mimp_type) {
-    | (MImportGrain, _) when malloc_mode => ()
     | (MImportGrain, MGlobalImport(ty, mut)) =>
       Import.add_global_import(
         wasm_mod,
@@ -3298,9 +3290,7 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
     Bytes.to_string(serialized_cmi),
   );
   validate_module(~name?, wasm_mod);
-  // TODO: Enable Binaryen optimizations
-  // https://github.com/grain-lang/grain/issues/196
-  // Module.optimize(wasm_mod);
+  Module.optimize(wasm_mod);
   wasm_mod;
 };
 
