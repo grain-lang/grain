@@ -40,7 +40,6 @@ let latest_abi = {major: 1, minor: 0, patch: 0};
 let identity: 'a. 'a => 'a = x => x;
 let i32_of_u64 = Int64.to_int32;
 
-exception MalformedLEB(bool, int);
 exception MalformedSectionType(int, option(int));
 
 /** Reads an LEB128-encoded integer (which WebAssembly uses)
@@ -58,12 +57,11 @@ let read_leb128:
       if (maxbits <= 0) {
         zero;
       } else {
-        switch (signed, next_byte()) {
+        let byte = next_byte();
         /* Check for invalid input */
-        | (false, n) when n >= 1 lsl maxbits =>
-          raise(MalformedLEB(false, maxbits))
-        | (true, n) when n >= 1 lsl (maxbits - 1) =>
-          raise(MalformedLEB(true, maxbits))
+        assert(byte >= 0 && byte < 256);
+
+        switch (signed, byte) {
         /* Unsigned case: zero MSB => last byte */
         | (false, n) when n < 1 lsl min(maxbits, 7) => of_int(n)
         /* Signed case: zero MSB(s) => last byte */
@@ -409,15 +407,6 @@ module BinarySection =
 let () =
   Printexc.register_printer(exc =>
     switch (exc) {
-    | MalformedLEB(signed, maxbits) =>
-      let sstr = if (signed) {"(signed)"} else {"(unsigned)"};
-      Some(
-        Printf.sprintf(
-          "Malformed LEB-encoded %s number (expected at most %d bits)",
-          sstr,
-          maxbits,
-        ),
-      );
     | MalformedSectionType(tag, Some(pos)) =>
       Some(
         Printf.sprintf(
