@@ -9,3 +9,4 @@ export decRef
 
 export primitive copy: (WasmI32, WasmI32, WasmI32) -> Void = "@wasm.memory_copy"
 export primitive fill: (WasmI32, WasmI32, WasmI32) -> Void = "@wasm.memory_fill"
+export primitive compare: (WasmI32, WasmI32, WasmI32) -> WasmI32 = "@wasm.memory_compare"

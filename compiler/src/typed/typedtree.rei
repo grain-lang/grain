@@ -246,7 +246,8 @@ type primn =
     | WasmStoreF64
     | WasmMemoryCopy
     | WasmMemoryFill
-    | WasmMemorySize;
+    | WasmMemorySize
+    | WasmMemoryCompare;
 
 type core_type = {
   ctyp_desc: core_type_desc,

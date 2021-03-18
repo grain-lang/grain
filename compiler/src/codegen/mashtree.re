@@ -252,7 +252,8 @@ type primn =
     | WasmStoreF64
     | WasmMemoryCopy
     | WasmMemoryFill
-    | WasmMemorySize;
+    | WasmMemorySize
+    | WasmMemoryCompare;
 
 /* Types within the WASM output */
 [@deriving sexp]

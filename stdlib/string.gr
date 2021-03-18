@@ -1,72 +1,522 @@
-export *
+import WasmI32 from "runtime/unsafe/wasmi32"
+import Memory from "runtime/unsafe/memory"
+import Errors from "runtime/unsafe/errors"
+import { tagSimpleNumber, allocateArray, allocateChar, allocateString } from "runtime/dataStructures"
+import foreign wasm throwError: (WasmI32, WasmI32, WasmI32) -> a from "grainRuntime"
 
 // Concatenate two strings.
 // @param str1: String - The first string
 // @param str2: String - The second string
 // @returns String
-let concat = (++)
+export let concat = (++)
 
 // Get the character length of a string.
 // @param input: String - The string to check
 // @returns Number
-import foreign wasm length : String -> Number from "stdlib-external/string"
+@disableGC
+export let length = (s: String) => {
+  let s = WasmI32.fromGrain(s)
+  let size = WasmI32.load(s, 4n)
+
+  let mut len = 0n
+  let mut ptr = WasmI32.add(s, 8n)
+  let end = WasmI32.add(ptr, size)
+
+  while (WasmI32.ltU(ptr, end)) {
+    let byte = WasmI32.load8U(ptr, 0n)
+    if (WasmI32.ne(WasmI32.and(byte, 0xC0n), 0x80n)) {
+      len = WasmI32.add(len, 1n);
+    }
+    ptr = WasmI32.add(ptr, 1n);
+  }
+
+  tagSimpleNumber(len)
+}
 
 // Get the byte length of a string.
 // @param input: String - The string to check
 // @returns Number
-import foreign wasm byteLength : String -> Number from "stdlib-external/string"
+@disableGC
+export let byteLength = (s: String) => {
+  let s = WasmI32.fromGrain(s)
+  tagSimpleNumber(WasmI32.load(s, 4n))
+}
 
-import foreign wasm indexOf : (String, String) -> Number from "stdlib-external/string"
 // Find the start index of a substring.
 // @param sub: String - The substring to find
 // @param input: String - The string to check
 // @returns Option<Number>
-let indexOf = (p, s) => {
-  let result = indexOf(p, s)
-  if (result < 0) {
-    None
+@disableGC
+export let indexOf = (p: String, s: String) => {
+  let p = WasmI32.fromGrain(p)
+  let s = WasmI32.fromGrain(s)
+  
+  let size = WasmI32.load(s, 4n)
+  let psize = WasmI32.load(p, 4n)
+
+  let (>) = WasmI32.gtU
+  let (<) = WasmI32.ltU
+  let (==) = WasmI32.eq
+  let (+) = WasmI32.add
+  let (-) = WasmI32.sub
+  let (&) = WasmI32.and
+
+  if (psize > size) {
+    let none = None
+    Memory.incRef(WasmI32.fromGrain(none))
+    none
   } else {
-    Some(result)
+    let mut idx = 0n
+    let mut ptr = s + 8n
+    let mut pptr = p + 8n
+    let end = ptr + size - psize + 1n
+
+    let mut result = -1n
+
+    while (ptr < end) {
+      if (Memory.compare(ptr, pptr, psize) == 0n) {
+        result = idx
+        break
+      }
+      idx += 1n
+      let byte = WasmI32.load8U(ptr, 0n)
+      if ((byte & 0x80n) == 0x00n) {
+        ptr += 1n;
+      } else if ((byte & 0xF0n) == 0xF0n) {
+        ptr += 4n;
+      } else if ((byte & 0xE0n) == 0xE0n) {
+        ptr += 3n;
+      } else {
+        ptr += 2n;
+      }
+    }
+
+    if (result == -1n) {
+      let none = None
+      Memory.incRef(WasmI32.fromGrain(none))
+      none
+    } else {
+      Some(tagSimpleNumber(result))
+    }
   }
+}
+
+@disableGC
+let explodeHelp = (s: String, chars) => {
+  let (>>>) = WasmI32.shrU
+  let (+) = WasmI32.add
+  let (&) = WasmI32.and
+  let (<) = WasmI32.ltU
+  let (==) = WasmI32.eq
+
+  let size = WasmI32.fromGrain(byteLength(s)) >>> 1n
+  let len = WasmI32.fromGrain(length(s)) >>> 1n
+
+  let s = WasmI32.fromGrain(s)
+  
+  let mut ptr = s + 8n
+  let end = ptr + size
+
+  let arr = allocateArray(len)
+  let mut arrIdx = 0n
+
+  while (ptr < end) {
+    let byte = WasmI32.load8U(ptr, 0n)
+    let n = if ((byte & 0x80n) == 0x00n) {
+      1n
+    } else if ((byte & 0xF0n) == 0xF0n) {
+      4n
+    } else if ((byte & 0xE0n) == 0xE0n) {
+      3n
+    } else {
+      2n
+    }
+
+    let c = if (chars) {
+      let c = allocateChar()
+      Memory.copy(c + 4n, ptr, n)
+      c
+    } else {
+      let s = allocateString(n)
+      Memory.copy(s + 8n, ptr, n)
+      s
+    }
+
+    WasmI32.store(arr + arrIdx, c, 8n)
+    arrIdx += 4n
+    ptr += n;
+  }
+
+  arr
 }
 
 // Split a string into its UTF-8 characters
 // @param input: String - The string to split
 // @returns Array<Char>
-import foreign wasm explode : String -> Array<Char> from "stdlib-external/string"
+@disableGC
+export let explode = (str) => {
+  WasmI32.toGrain(explodeHelp(str, true)): Array<Char>
+}
 
 // Create a string from an array of characters
 // @param input: Array<Char> - The array to implode
 // @returns String
-import foreign wasm implode : Array<Char> -> String from "stdlib-external/string"
+@disableGC
+export let implode = (arr: Array<Char>) => {
+  let (+) = WasmI32.add
+  let (==) = WasmI32.eq
+  let (<) = WasmI32.ltU
+  let (<<) = WasmI32.shl
+  let (&) = WasmI32.and
+  
+  let arr = WasmI32.fromGrain(arr)
+  
+  let arrLength = WasmI32.load(arr, 4n)
+
+  let mut stringByteLength = 0n
+
+  for (let mut i = 0n; i < arrLength; i += 1n) {
+    let char = WasmI32.load(arr + (i << 2n), 8n)
+    let byte = WasmI32.load8U(char, 4n)
+
+    let n = if ((byte & 0x80n) == 0x00n) {
+      1n
+    } else if ((byte & 0xF0n) == 0xF0n) {
+      4n
+    } else if ((byte & 0xE0n) == 0xE0n) {
+      3n
+    } else {
+      2n
+    }
+
+    stringByteLength += n;
+  }
+
+  let str = allocateString(stringByteLength)
+  let mut offset = 8n
+
+  for (let mut i = 0n; i < arrLength; i += 1n) {
+    let char = WasmI32.load(arr + (i << 2n), 8n)
+    let byte = WasmI32.load8U(char, 4n)
+
+    let n = if ((byte & 0x80n) == 0x00n) {
+      1n
+    } else if ((byte & 0xF0n) == 0xF0n) {
+      4n
+    } else if ((byte & 0xE0n) == 0xE0n) {
+      3n
+    } else {
+      2n
+    }
+
+    Memory.copy(str + offset, char + 4n, n)
+    offset += n;
+  }
+
+  WasmI32.toGrain(str): String
+}
 
 // Split a string by the given sequence
 // @param sequence: String - The sequence to split on
 // @param input: String - The string to split
 // @returns Array<String>
-import foreign wasm split : (String, String) -> Array<String> from "stdlib-external/string"
+@disableGC
+export let split = (p: String, s: String) => {
+  let (+) = WasmI32.add
+  let (-) = WasmI32.sub
+  let (==) = WasmI32.eq
+  let (<) = WasmI32.ltU
+  let (>) = WasmI32.gtU
+  let (<<) = WasmI32.shl
+  let (>>) = WasmI32.shrS
+  let (&) = WasmI32.and
+  
+  let size = WasmI32.fromGrain(byteLength(s)) >> 1n
+  let psize = WasmI32.fromGrain(byteLength(p)) >> 1n
+
+  if (psize == 0n) {
+    WasmI32.toGrain(explodeHelp(s, false)): Array<String>
+  } else if (psize > size) {
+    let s = WasmI32.fromGrain(s)
+    let ptr = allocateArray(1n)
+    WasmI32.store(ptr, Memory.incRef(s), 8n)
+    WasmI32.toGrain(ptr): Array<String>
+  } else {
+    let s = WasmI32.fromGrain(s)
+    let p = WasmI32.fromGrain(p)
+
+    let mut ptr = s + 8n
+    let mut pptr = p + 8n
+    let end = ptr + size - psize + 1n
+
+    let mut numStrings = 1n
+
+    while (ptr < end) {
+      if (Memory.compare(ptr, pptr, psize) == 0n) {
+        numStrings += 1n;
+      }
+      let byte = WasmI32.load8U(ptr, 0n)
+      if ((byte & 0x80n) == 0x00n) {
+        ptr += 1n;
+      } else if ((byte & 0xF0n) == 0xF0n) {
+        ptr += 4n;
+      } else if ((byte & 0xE0n) == 0xE0n) {
+        ptr += 3n;
+      } else {
+        ptr += 2n;
+      }
+    }
+
+    ptr = s + 8n
+    let mut last = ptr
+    let arr = allocateArray(numStrings)
+    let mut arrIdx = 0n
+
+    while (ptr < end) {
+      if (Memory.compare(ptr, pptr, psize) == 0n) {
+        let strSize = ptr - last
+        let str = allocateString(strSize)
+        Memory.copy(str + 8n, last, strSize)
+        WasmI32.store(arr + arrIdx, str, 8n)
+        arrIdx += 4n
+        ptr += psize
+        last = ptr
+        continue
+      }
+      let byte = WasmI32.load8U(ptr, 0n)
+      if ((byte & 0x80n) == 0x00n) {
+        ptr += 1n;
+      } else if ((byte & 0xF0n) == 0xF0n) {
+        ptr += 4n;
+      } else if ((byte & 0xE0n) == 0xE0n) {
+        ptr += 3n;
+      } else {
+        ptr += 2n;
+      }
+    }
+
+    // Grab last string
+    let strSize = s + 8n + size - last
+    let lastStr = allocateString(strSize)
+    Memory.copy(lastStr + 8n, last, strSize)
+    WasmI32.store(arr + arrIdx, lastStr, 8n)
+
+    WasmI32.toGrain(arr): Array<String>
+  }
+}
 
 // Get a portion of a string.
 // @param from: Number - The start index of the substring
 // @param to: Number - The end index of the substring
 // @param input: String - The input string
 // @returns String
-import foreign wasm slice : (Number, Number, String) -> String from "stdlib-external/string"
+@disableGC
+export let slice = (start: Number, to: Number, s: String) => {
+  let (+) = WasmI32.add
+  let (-) = WasmI32.sub
+  let (==) = WasmI32.eq
+  let (!=) = WasmI32.ne
+  let (<) = WasmI32.ltS
+  let (>) = WasmI32.gtS
+  let (<<) = WasmI32.shl
+  let (>>) = WasmI32.shrS
+  let (&) = WasmI32.and
+  
+  let len = WasmI32.fromGrain(length(s)) >> 1n
+  let size = WasmI32.fromGrain(byteLength(s)) >> 1n
+
+  let s = WasmI32.fromGrain(s)
+
+  let mut start = WasmI32.fromGrain(start)
+  if ((start & 1n) != 1n) {
+    throwError(Errors._GRAIN_ERR_INVALID_ARGUMENT, start, 0n)
+  }
+  start = start >> 1n
+
+  let mut to = WasmI32.fromGrain(to)
+  if ((to & 1n) != 1n) {
+    throwError(Errors._GRAIN_ERR_INVALID_ARGUMENT, to, 0n)
+  }
+  to = to >> 1n
+
+  if (start < 0n) {
+    start += len;
+  }
+  if (to < 0n) {
+    to += len;
+  }
+
+  if (start > len || to > len) {
+    throwError(Errors._GRAIN_ERR_ARRAY_INDEX_OUT_OF_BOUNDS, 0n, 0n)
+  }
+
+  if (to < start) {
+    throwError(Errors._GRAIN_ERR_INVALID_ARGUMENT, WasmI32.fromGrain(tagSimpleNumber(to)), 0n)
+  }
+
+  let mut ptr = s + 8n
+  let mut begin = ptr
+  let mut end = ptr
+  let stop = ptr + size
+
+  let mut idx = 0n
+  while (ptr < stop) {
+    let byte = WasmI32.load8U(ptr, 0n)
+    if ((byte & 0xC0n) != 0x80n) {
+      if (idx == start) {
+        begin = ptr;
+      }
+      if (idx == to) {
+        end = ptr
+        break
+      }
+      idx += 1n;
+    }
+    ptr += 1n;
+  }
+  if (to == len) {
+    end = s + 8n + size;
+  }
+  if (start == to) {
+    begin = end;
+  }
+
+  let newSize = end - begin
+  let newString = allocateString(newSize)
+
+  Memory.copy(newString + 8n, begin, newSize)
+
+  WasmI32.toGrain(newString): String
+}
 
 // Check if a string contains a substring.
 // @param pattern: String - The substring to check
 // @param input: String - The input string
 // @returns Bool
-import foreign wasm contains : (String, String) -> Bool from "stdlib-external/string"
+@disableGC
+export let contains = (p: String, s: String) => {
+  // "Not So Naive" string search algorithm
+  // searching phase in O(nm) time complexity
+  // slightly (by coefficient) sub-linear in the average case
+  // http://igm.univ-mlv.fr/~lecroq/string/node13.html#SECTION00130
+
+  let (+) = WasmI32.add
+  let (-) = WasmI32.sub
+  let (==) = WasmI32.eq
+  let (<) = WasmI32.ltU
+  let (<=) = WasmI32.leU
+  let (>) = WasmI32.gtU
+  let (>>) = WasmI32.shrS
+
+  let n = WasmI32.fromGrain(byteLength(s)) >> 1n
+  let m = WasmI32.fromGrain(byteLength(p)) >> 1n
+
+  let mut s = WasmI32.fromGrain(s)
+  let mut p = WasmI32.fromGrain(p)
+
+  s += 8n
+  p += 8n
+
+  let mut j = 0n, k = 0n, ell = 0n
+
+  if (m > n) {
+    // Bail if pattern length is longer than input length
+    false
+  } else if (m < 2n) {
+    // Handle very small patterns
+    if (m == 0n) {
+      true
+    } else {
+      let pat = WasmI32.load8U(p, 0n)
+      let mut result = false
+      while (j < n) {
+        if (pat == WasmI32.load8U(s + j, 0n)) {
+          result = true
+          break
+        } else {
+          j += 1n;
+        }
+      }
+      result
+    }
+  } else {
+    // NSM preprocessing
+    if (WasmI32.load8U(p, 0n) == WasmI32.load8U(p, 1n)) {
+      k = 2n
+      ell = 1n;
+    } else {
+      k = 1n
+      ell = 2n;
+    }
+
+    let mut result = false
+    // NSM searching
+    while (j <= n - m) {
+      if (WasmI32.load8U(p, 1n) != WasmI32.load8U(s + j, 1n)) {
+        j += k;
+      } else {
+        if (Memory.compare(p + 2n, s + j + 2n, m - 2n) == 0n && WasmI32.load8U(p, 0n) == WasmI32.load8U(s + j, 0n)) {
+          result = true
+          break
+        }
+        j += ell;
+      }
+    }
+    result
+  }
+}
 
 // Check if a string begins with another string.
 // @param pattern: String - The substring to check
 // @param input: String - The input string
 // @returns Bool
-import foreign wasm startsWith : (String, String) -> Bool from "stdlib-external/string"
+@disableGC
+export let startsWith = (p: String, s: String) => {
+  let (+) = WasmI32.add
+  let (>) = WasmI32.gtU
+  let (==) = WasmI32.eq
+  
+  let mut p = WasmI32.fromGrain(p)
+  let mut s = WasmI32.fromGrain(s)
+  
+  let n = WasmI32.load(s, 4n)
+  let m = WasmI32.load(p, 4n)
+
+  s += 8n
+  p += 8n
+
+  // Bail if pattern length is longer than input length
+  if (m > n) {
+    false
+  } else {
+    Memory.compare(p, s, m) == 0n
+  }
+}
 
 // Check if a string ends with another string.
 // @param pattern: String - The substring to check
 // @param input: String - The input string
 // @returns Bool
-import foreign wasm endsWith : (String, String) -> Bool from "stdlib-external/string"
+@disableGC
+export let endsWith = (p: String, s: String) => {
+  let (+) = WasmI32.add
+  let (-) = WasmI32.sub
+  let (>) = WasmI32.gtU
+  let (==) = WasmI32.eq
+  
+  let mut p = WasmI32.fromGrain(p)
+  let mut s = WasmI32.fromGrain(s)
+  
+  let n = WasmI32.load(s, 4n)
+  let m = WasmI32.load(p, 4n)
+
+  s += 8n
+  p += 8n
+
+  // Bail if pattern length is longer than input length
+  if (m > n) {
+    false
+  } else {
+    Memory.compare(p, s + n - m, m) == 0n
+  }
+}

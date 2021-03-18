@@ -1396,6 +1396,7 @@ let prim_map =
       ("@wasm.memory_size", PrimitiveN(WasmMemorySize)),
       ("@wasm.memory_copy", PrimitiveN(WasmMemoryCopy)),
       ("@wasm.memory_fill", PrimitiveN(WasmMemoryFill)),
+      ("@wasm.memory_compare", PrimitiveN(WasmMemoryCompare)),
     ]),
   );
 
@@ -1448,7 +1449,8 @@ let transl_prim = (env, desc) => {
         (
           WasmStoreI32(_) | WasmStoreI64(_) | WasmStoreF32 | WasmStoreF64 |
           WasmMemoryCopy |
-          WasmMemoryFill
+          WasmMemoryFill |
+          WasmMemoryCompare
         ) as p,
       ) =>
       Exp.lambda(

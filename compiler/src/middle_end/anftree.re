@@ -235,7 +235,8 @@ type primn =
     | WasmStoreF64
     | WasmMemoryCopy
     | WasmMemoryFill
-    | WasmMemorySize;
+    | WasmMemorySize
+    | WasmMemoryCompare;
 
 let (prim1_of_sexp, sexp_of_prim1) = (
   Parsetree.prim1_of_sexp,
