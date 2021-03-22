@@ -154,6 +154,7 @@ binop_expr :
   | binop_expr colon typ { Exp.constraint_ ~loc:(symbol_rloc dyp) $1 $3 } p140
   | lam_expr { $1 } p0
   | non_assign_expr { $1 } p140
+  | one_sided_if_expr { $1 } p10
   | assign_expr { $1 } p10
 
 pattern :
@@ -411,8 +412,10 @@ let_expr :
   | attributes LET MUT value_binds { Exp.let_ ~loc:(symbol_rloc dyp) ~attributes:$1 Nonrecursive Mutable $4 }
 
 if_expr :
-  | IF lparen expr rparen eols? block_or_expr { Exp.if_ ~loc:(symbol_rloc dyp) $3 $6 (Exp.block []) }
   | IF lparen expr rparen eols? block_or_expr ELSE eols? block_or_expr { Exp.if_ ~loc:(symbol_rloc dyp) $3 $6 $9 }
+
+one_sided_if_expr :
+  | IF lparen expr rparen eols? block_or_expr { Exp.if_ ~loc:(symbol_rloc dyp) $3 $6 (Exp.block []) }
 
 while_expr :
   | WHILE lparen expr rparen block { Exp.while_ ~loc:(symbol_rloc dyp) $3 $5 }
