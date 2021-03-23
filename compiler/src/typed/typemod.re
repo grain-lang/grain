@@ -863,7 +863,7 @@ let initial_env = () => {
   let env = initial;
   let (unit_name, source, mode) = Env.get_unit();
   let implicit_modules =
-    if (Env.is_managed_runtime_mode()) {
+    if (Grain_utils.Config.no_pervasives^) {
       List.filter(
         ((name, _, _)) => name != "Pervasives",
         implicit_modules^,
@@ -892,8 +892,6 @@ let initial_env = () => {
 let get_compilation_mode = () => {
   switch (Grain_utils.Config.compilation_mode^) {
   | Some("runtime") => Env.Runtime
-  | Some("managed-runtime") => Env.ManagedRuntime
-  | Some("malloc") => Env.MemoryAllocation
   | _ => Env.Normal
   };
 };

@@ -342,12 +342,7 @@ let compilation_mode =
     ~names=["compilation-mode"],
     ~conv=
       option_conv(
-        Cmdliner.Arg.enum([
-          ("normal", "normal"),
-          ("managed-runtime", "managed-runtime"),
-          ("runtime", "runtime"),
-          ("malloc", "malloc"),
-        ]),
+        Cmdliner.Arg.enum([("normal", "normal"), ("runtime", "runtime")]),
       ),
     ~doc="Compilation mode (advanced use only)",
     None,
@@ -398,6 +393,13 @@ let sexp_locs_enabled =
     ~doc=
       "Hide locations from intermediate trees. Only has an effect with `--cdebug'.",
     true,
+  );
+
+let no_pervasives =
+  toggle_flag(
+    ~names=["no-pervasives"],
+    ~doc="Don't automatically import the Grain Pervasives module.",
+    false,
   );
 
 let no_gc =
