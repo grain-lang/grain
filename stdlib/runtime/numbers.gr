@@ -154,7 +154,7 @@ let reducedFraction = (x, y) => {
     // Normalization 1: Never do negative/negative
     // Normalization 2: Never allow a negative denominator
     x = i32neg(x)
-    y = i32neg(y);
+    y = i32neg(y)
   }
   if (WasmI32.eqz(y)) {
     throwDivideByZero()
@@ -177,7 +177,7 @@ let reducedFraction64 = (x, y) => {
     // Normalization 1: Never do negative/negative
     // Normalization 2: Never allow a negative denominator
     x = i64neg(x)
-    y = i64neg(y);
+    y = i64neg(y)
   }
   if (WasmI64.eqz(y)) {
     throwDivideByZero()

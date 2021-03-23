@@ -7,7 +7,7 @@ export let get = (index, array) => {
 }
 
 export let set = (index, value, array) => {
-  array[index] := value
+  array[index] = value
 }
 
 export let append = (array1, array2) => {
@@ -65,7 +65,7 @@ export let forEach = (fn, array) => {
   let mut count = 0
   while (count < length) {
     fn(array[count])
-    count = incr(count);
+    count = incr(count)
   }
 }
 
@@ -74,7 +74,7 @@ export let forEachi = (fn, array) => {
   let mut count = 0
   while (count < length) {
     fn(array[count], count)
-    count = incr(count);
+    count = incr(count)
   }
 }
 
@@ -93,14 +93,14 @@ export let mapi = (fn, array) => {
 }
 
 export let reduce = (fn, initial, array) => {
-  let mut acc = initial;
-  forEach((el) => acc = fn(acc, el), array);
+  let mut acc = initial
+  forEach((el) => acc = fn(acc, el), array)
   acc
 }
 
 export let reducei = (fn, initial, array) => {
-  let mut acc = initial;
-  forEachi((el, index) => acc = fn(acc, el, index), array);
+  let mut acc = initial
+  forEachi((el, index) => acc = fn(acc, el, index), array)
   acc
 }
 
@@ -119,7 +119,7 @@ export let some = (fn, array) => {
 export let fill = (value, array) => {
   let length = length(array)
   forEachi((_, index) => {
-    array[index] := value
+    array[index] = value
   }, array)
   void
 }
@@ -130,16 +130,16 @@ export let fillRange = (value, start, stop, array) => {
   let stopIndex = if (stop < 0) length + stop else stop
 
   if (startIndex > length) {
-    ignore(fail "The start index is outside the array")
+    fail "The start index is outside the array"
   }
   if (startIndex > stopIndex) {
-    ignore(fail "The start index cannot be higher than the stop index")
+    fail "The start index cannot be higher than the stop index"
   }
 
   let mut index = startIndex
   while (index < stopIndex && index < length) {
-    ignore(array[index] := value)
-    index += 1;
+    array[index] = value
+    index += 1
   }
   void
 }
@@ -179,12 +179,12 @@ export let fromList = (list) => {
 
 // TODO: This should use recursion when we can pattern match arrays
 export let contains = (search, array) => {
-  let len = length(array);
-  let mut index = 0;
-  let mut found = false;
+  let len = length(array)
+  let mut index = 0
+  let mut found = false
   while ((!found) && (index < len)) {
-    found = (array[index] == search);
-    index += 1;
+    found = (array[index] == search)
+    index += 1
   }
   found
 }
@@ -204,7 +204,7 @@ export let find = (fn, array) => {
         count = length
       } else {
         count = incr(count)
-      };
+      }
     }
     if(!matching) {
       None
@@ -229,7 +229,7 @@ export let findIndex = (fn, array) => {
         count = length
       } else {
         count = incr(count)
-      };
+      }
     }
     if(!matching) {
       None
@@ -264,7 +264,7 @@ export let count = (fn, array) => {
       position = incr(position)
     } else {
       position = incr(position)
-    };
+    }
   }
   count
 }
@@ -279,7 +279,7 @@ export let counti = (fn, array) => {
       position = incr(position)
     } else {
       position = incr(position)
-    };
+    }
   }
   count
 }
@@ -289,8 +289,8 @@ export let filter = (fn, array) => {
   let mut position = 0
   forEach((el) => {
     if (fn(el)) {
-      filtered[position] := el
-      position = incr(position);
+      filtered[position] = el
+      position = incr(position)
     }
   }, array)
   init(position, (index) => {
@@ -303,8 +303,8 @@ export let filteri = (fn, array) => {
   let mut position = 0
   forEachi((el, index) => {
     if (fn(el, index)) {
-      filtered[position] := el
-      position = incr(position);
+      filtered[position] = el
+      position = incr(position)
     }
   }, array)
   init(position, (index) => {

@@ -25,9 +25,9 @@ export let length = (s: String) => {
   while (WasmI32.ltU(ptr, end)) {
     let byte = WasmI32.load8U(ptr, 0n)
     if (WasmI32.ne(WasmI32.and(byte, 0xC0n), 0x80n)) {
-      len = WasmI32.add(len, 1n);
+      len = WasmI32.add(len, 1n)
     }
-    ptr = WasmI32.add(ptr, 1n);
+    ptr = WasmI32.add(ptr, 1n)
   }
 
   tagSimpleNumber(len)
@@ -81,13 +81,13 @@ export let indexOf = (p: String, s: String) => {
       idx += 1n
       let byte = WasmI32.load8U(ptr, 0n)
       if ((byte & 0x80n) == 0x00n) {
-        ptr += 1n;
+        ptr += 1n
       } else if ((byte & 0xF0n) == 0xF0n) {
-        ptr += 4n;
+        ptr += 4n
       } else if ((byte & 0xE0n) == 0xE0n) {
-        ptr += 3n;
+        ptr += 3n
       } else {
-        ptr += 2n;
+        ptr += 2n
       }
     }
 
@@ -144,7 +144,7 @@ let explodeHelp = (s: String, chars) => {
 
     WasmI32.store(arr + arrIdx, c, 8n)
     arrIdx += 4n
-    ptr += n;
+    ptr += n
   }
 
   arr
@@ -189,7 +189,7 @@ export let implode = (arr: Array<Char>) => {
       2n
     }
 
-    stringByteLength += n;
+    stringByteLength += n
   }
 
   let str = allocateString(stringByteLength)
@@ -210,7 +210,7 @@ export let implode = (arr: Array<Char>) => {
     }
 
     Memory.copy(str + offset, char + 4n, n)
-    offset += n;
+    offset += n
   }
 
   WasmI32.toGrain(str): String
@@ -253,17 +253,17 @@ export let split = (p: String, s: String) => {
 
     while (ptr < end) {
       if (Memory.compare(ptr, pptr, psize) == 0n) {
-        numStrings += 1n;
+        numStrings += 1n
       }
       let byte = WasmI32.load8U(ptr, 0n)
       if ((byte & 0x80n) == 0x00n) {
-        ptr += 1n;
+        ptr += 1n
       } else if ((byte & 0xF0n) == 0xF0n) {
-        ptr += 4n;
+        ptr += 4n
       } else if ((byte & 0xE0n) == 0xE0n) {
-        ptr += 3n;
+        ptr += 3n
       } else {
-        ptr += 2n;
+        ptr += 2n
       }
     }
 
@@ -285,13 +285,13 @@ export let split = (p: String, s: String) => {
       }
       let byte = WasmI32.load8U(ptr, 0n)
       if ((byte & 0x80n) == 0x00n) {
-        ptr += 1n;
+        ptr += 1n
       } else if ((byte & 0xF0n) == 0xF0n) {
-        ptr += 4n;
+        ptr += 4n
       } else if ((byte & 0xE0n) == 0xE0n) {
-        ptr += 3n;
+        ptr += 3n
       } else {
-        ptr += 2n;
+        ptr += 2n
       }
     }
 
@@ -340,10 +340,10 @@ export let slice = (start: Number, to: Number, s: String) => {
   to = to >> 1n
 
   if (start < 0n) {
-    start += len;
+    start += len
   }
   if (to < 0n) {
-    to += len;
+    to += len
   }
 
   if (start > len || to > len) {
@@ -364,21 +364,21 @@ export let slice = (start: Number, to: Number, s: String) => {
     let byte = WasmI32.load8U(ptr, 0n)
     if ((byte & 0xC0n) != 0x80n) {
       if (idx == start) {
-        begin = ptr;
+        begin = ptr
       }
       if (idx == to) {
         end = ptr
         break
       }
-      idx += 1n;
+      idx += 1n
     }
-    ptr += 1n;
+    ptr += 1n
   }
   if (to == len) {
-    end = s + 8n + size;
+    end = s + 8n + size
   }
   if (start == to) {
-    begin = end;
+    begin = end
   }
 
   let newSize = end - begin
@@ -434,7 +434,7 @@ export let contains = (p: String, s: String) => {
           result = true
           break
         } else {
-          j += 1n;
+          j += 1n
         }
       }
       result
@@ -443,23 +443,23 @@ export let contains = (p: String, s: String) => {
     // NSM preprocessing
     if (WasmI32.load8U(p, 0n) == WasmI32.load8U(p, 1n)) {
       k = 2n
-      ell = 1n;
+      ell = 1n
     } else {
       k = 1n
-      ell = 2n;
+      ell = 2n
     }
 
     let mut result = false
     // NSM searching
     while (j <= n - m) {
       if (WasmI32.load8U(p, 1n) != WasmI32.load8U(s + j, 1n)) {
-        j += k;
+        j += k
       } else {
         if (Memory.compare(p + 2n, s + j + 2n, m - 2n) == 0n && WasmI32.load8U(p, 0n) == WasmI32.load8U(s + j, 0n)) {
           result = true
           break
         }
-        j += ell;
+        j += ell
       }
     }
     result

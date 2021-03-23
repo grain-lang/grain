@@ -1125,7 +1125,7 @@ let compile_tuple_op = (~is_box=false, wasm_mod, env, tup_imm, op) => {
             0,
           ),
         ),
-        compile_imm(wasm_mod, env, imm),
+        Expression.const(wasm_mod, const_void()),
       ],
     );
   };
@@ -1155,7 +1155,6 @@ let compile_box_op = (wasm_mod, env, box_imm, op) =>
 let compile_array_op = (wasm_mod, env, arr_imm, op) => {
   let get_swap = n => get_swap(wasm_mod, env, n);
   let set_swap = n => set_swap(wasm_mod, env, n);
-  let tee_swap = n => tee_swap(wasm_mod, env, n);
   let get_arr = () => compile_imm(wasm_mod, env, arr_imm);
   switch (op) {
   | MArrayGet(idx_imm) =>
@@ -1301,9 +1300,9 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
             get_arr(),
           ),
           /* [TODO] decref the old item */
-          call_incref(wasm_mod, env, tee_swap(1, val_)),
+          call_incref(wasm_mod, env, val_),
         ),
-        get_swap(1),
+        Expression.const(wasm_mod, const_void()),
       ],
     );
   };
@@ -1353,7 +1352,7 @@ let compile_record_op = (wasm_mod, env, rec_imm, op) => {
             0,
           ),
         ),
-        arg(),
+        Expression.const(wasm_mod, const_void()),
       ],
     );
   };
@@ -2682,11 +2681,18 @@ let rec compile_store = (wasm_mod, env, binds) => {
 }
 
 and compile_set = (wasm_mod, env, b, i) => {
-  compile_bind(
-    ~action=BindTee(compile_instr(wasm_mod, env, i)),
+  Expression.block(
     wasm_mod,
-    env,
-    b,
+    gensym_label("compile_set"),
+    [
+      compile_bind(
+        ~action=BindSet(compile_instr(wasm_mod, env, i)),
+        wasm_mod,
+        env,
+        b,
+      ),
+      Expression.const(wasm_mod, const_void()),
+    ],
   );
 }
 

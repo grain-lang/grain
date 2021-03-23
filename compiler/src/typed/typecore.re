@@ -701,7 +701,7 @@ and type_expect_ =
       exp_loc: loc,
       exp_extra: [],
       exp_attributes: attributes,
-      exp_type: instance(env, e.exp_type),
+      exp_type: Builtin_types.type_void,
       exp_env: env,
     });
   | PExpRecord(es) =>
@@ -834,14 +834,14 @@ and type_expect_ =
     };
     let (_, ty_arg, ty_res) = instance_label(false, label);
     unify_exp(env, record, ty_res);
-    let val_ = type_expect(env, sval, ty_expected_explained);
+    let val_ = type_expect(env, sval, mk_expected(newvar()));
     unify_exp(env, val_, ty_arg);
     rue({
       exp_desc: TExpRecordSet(record, lid, label, val_),
       exp_loc: loc,
       exp_extra: [],
       exp_attributes: attributes,
-      exp_type: ty_arg,
+      exp_type: Builtin_types.type_void,
       exp_env: env,
     });
   | PExpLet(rec_flag, mut_flag, pats) =>
@@ -977,18 +977,18 @@ and type_expect_ =
         Builtin_types.type_box @@
         newvar(~name="a", ()),
       );
-    let val_ = type_expect(env, sval, ty_expected_explained);
+    let val_ = type_expect(env, sval, mk_expected(newvar()));
     unify_exp(env, boxexpr) @@ Builtin_types.type_box(val_.exp_type);
-    re({
+    rue({
       exp_desc: TExpBoxAssign(boxexpr, val_),
       exp_loc: loc,
       exp_extra: [],
       exp_attributes: attributes,
-      exp_type: val_.exp_type,
+      exp_type: Builtin_types.type_void,
       exp_env: env,
     });
   | PExpAssign(sidexpr, sval) =>
-    let idexpr = type_expect(env, sidexpr, ty_expected_explained);
+    let idexpr = type_expect(env, sidexpr, mk_expected(newvar()));
     let (id, {val_mutable}) =
       switch (idexpr.exp_desc) {
       | TExpIdent(_, id, vd) => (id, vd)
@@ -998,14 +998,14 @@ and type_expect_ =
     if (!val_mutable) {
       raise(Error(loc, env, Assign_not_mutable(id.txt)));
     };
-    let val_ = type_expect(env, sval, ty_expected_explained);
+    let val_ = type_expect(env, sval, mk_expected(newvar()));
     unify_exp(env, val_, idexpr.exp_type);
-    re({
+    rue({
       exp_desc: TExpAssign(idexpr, val_),
       exp_loc: loc,
       exp_extra: [],
       exp_attributes: attributes,
-      exp_type: val_.exp_type,
+      exp_type: Builtin_types.type_void,
       exp_env: env,
     });
   | PExpIf(scond, sifso, sifnot) =>

@@ -57,17 +57,17 @@ let code = (c: Char) => {
         break
       } else if (byte >= 0xC2n && byte <= 0xDFn) {
         bytesNeeded = 1n
-        codePoint = byte & 0x1Fn;
+        codePoint = byte & 0x1Fn
       } else if (byte >= 0xE0n && byte <= 0xEFn) {
-        if (byte == 0xE0n) { lowerBoundary = 0xA0n; }
-        if (byte == 0xEDn) { upperBoundary = 0x9Fn; }
+        if (byte == 0xE0n) lowerBoundary = 0xA0n
+        if (byte == 0xEDn) upperBoundary = 0x9Fn
         bytesNeeded = 2n
-        codePoint = byte & 0xFn;
+        codePoint = byte & 0xFn
       } else if (byte >= 0xF0n && byte <= 0xF4n) {
-        if (byte == 0xF0n) { lowerBoundary = 0x90n; }
-        if (byte == 0xF4n) { upperBoundary = 0x8Fn; }
+        if (byte == 0xF0n) lowerBoundary = 0x90n
+        if (byte == 0xF4n) upperBoundary = 0x8Fn
         bytesNeeded = 3n
-        codePoint = byte & 0x7n;
+        codePoint = byte & 0x7n
       } else {
         throwError(Errors._GRAIN_ERR_MALFORMED_UTF8, 0n, 0n)
       }
@@ -121,13 +121,13 @@ let fromCode = (code: Number) => {
     let mut offset = 0n
     if (code <= 0x07FFn) {
       count = 1n
-      offset = 0xC0n;
+      offset = 0xC0n
     } else if (code <= 0xFFFFn) {
       count = 2n
-      offset = 0xE0n;
+      offset = 0xE0n
     } else {
       count = 3n
-      offset = 0xF0n;
+      offset = 0xF0n
     }
     let char = allocateChar()
     WasmI32.store8(char, (code >>> (6n * count)) + offset, 4n)
@@ -137,7 +137,7 @@ let fromCode = (code: Number) => {
       n += 1n
       let temp = code >>> (6n * (count - 1n))
       WasmI32.store8(char + n, 0x80n | (temp & 0x3Fn), 4n)
-      count -= 1n;
+      count -= 1n
     }
 
     WasmI32.toGrain(char): Char
