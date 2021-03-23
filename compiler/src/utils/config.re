@@ -414,6 +414,13 @@ let unsound_optimizations =
     false,
   );
 
+let elide_type_info =
+  toggle_flag(
+    ~names=["elide-type-info"],
+    ~doc="Don't include runtime type information used by toString/print",
+    false,
+  );
+
 let source_map =
   toggle_flag(~names=["source-map"], ~doc="Generate source maps", false);
 

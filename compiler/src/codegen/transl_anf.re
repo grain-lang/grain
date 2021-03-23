@@ -1137,5 +1137,6 @@ let transl_anf_program =
         [],
       ),
     signature: anf_prog.signature,
+    type_metadata: anf_prog.type_metadata,
   };
 };

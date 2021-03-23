@@ -362,6 +362,7 @@ type anf_program = {
   env: Env.t,
   imports: list(import_spec),
   signature: Cmi_format.cmi_infos,
+  type_metadata: list(type_metadata),
   analyses: ref(list(analysis)),
 };
 

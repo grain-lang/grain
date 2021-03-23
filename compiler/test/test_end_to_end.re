@@ -413,7 +413,7 @@ let function_tests = [
      let item = Calzone(Peppers, WholeWheat,)
      item
     ",
-    "<enum value>",
+    "Calzone(Peppers, WholeWheat)",
   ),
   t("lam_destructure_1", "((_) => 5)(\"foo\")", "5"),
   t("lam_destructure_2", "let foo = (_) => 5; foo(\"foo\")", "5"),
@@ -594,7 +594,7 @@ let array_tests = [
 ];
 
 let record_tests = [
-  t("record_1", "record Rec {foo: Number}; {foo: 4}", "<record value>"),
+  t("record_1", "record Rec {foo: Number}; {foo: 4}", "{\n  foo: 4\n}"),
   t(
     "record_2",
     "export record Rec {foo: Number}; {foo: 4}",
@@ -1976,8 +1976,26 @@ let char_tests = [
   te("unicode_err3", "let x = '\\u{110000}'", "Illegal unicode code point"),
 ];
 
+let print_tests = [
+  t(
+    "elided_type_info_1",
+    "/* grainc-flags --elide-type-info */ enum Foo { Foo }; Foo",
+    "<enum value>",
+  ),
+  t(
+    "elided_type_info_2",
+    "/* grainc-flags --elide-type-info */ record Foo { foo: String }; { foo: \"foo\" }",
+    "<record value>",
+  ),
+  t(
+    "print_double_exception",
+    "exception Foo; exception Bar; print(Foo); print(Bar)",
+    "Foo\nBar\nvoid",
+  ),
+];
+
 let exception_tests = [
-  t("exception_1", "exception Foo; Foo", "<enum value>"),
+  t("exception_1", "exception Foo; Foo", "Foo"),
   t("exception_2", "export exception Foo; Foo", "Foo"),
   t(
     "exception_3",
@@ -1998,11 +2016,11 @@ let enum_tests = [
     "adtprint",
     "Foo\nBar\nBaz(\"baz\")\nQux(5, \"qux\", false)\nQuux\nFlip(\"flip\")\nvoid",
   ),
-  t("adtprint_nonexported", "enum Foo { Foo }; Foo", "<enum value>"),
+  t("adtprint_nonexported", "enum Foo { Foo }; Foo", "Foo"),
   t(
     "adt_trailing",
     "enum Topping { Cheese(Bool,), Pepperoni }; Pepperoni",
-    "<enum value>",
+    "Pepperoni",
   ),
 ];
 
@@ -2163,6 +2181,7 @@ let tests =
   @ optimization_tests
   @ char_tests
   @ string_tests
+  @ print_tests
   @ enum_tests
   @ export_tests
   @ comment_tests

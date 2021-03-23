@@ -13,7 +13,8 @@ import WasmI32, {
   ne as (!=),
   geS as (>=),
   gtS as (>),
-  leS as (<=)
+  leS as (<=),
+  ltS as (<)
 } from "runtime/unsafe/wasmi32"
 import WasmI64 from "runtime/unsafe/wasmi64"
 import WasmF32 from "runtime/unsafe/wasmf32"
@@ -22,12 +23,7 @@ import Memory from "runtime/unsafe/memory"
 import Tags from "runtime/unsafe/tags"
 import NumberUtils from "runtime/numberUtils"
 
-import { allocateString } from "runtime/dataStructures"
-
-import foreign wasm variantExists: (WasmI32, WasmI32, WasmI32) -> Bool from "grainRuntime"
-import foreign wasm getVariantName: (WasmI32, WasmI32, WasmI32) -> String from "grainRuntime"
-import foreign wasm recordTypeExists: (WasmI32, WasmI32) -> Bool from "grainRuntime"
-import foreign wasm getRecordFieldName: (WasmI32, WasmI32, WasmI32) -> String from "grainRuntime"
+import { allocateString, allocateArray } from "runtime/dataStructures"
 
 import foreign wasm fd_write: (WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
 
@@ -36,6 +32,98 @@ primitive (&&) : (Bool, Bool) -> Bool = "@and"
 primitive (||) : (Bool, Bool) -> Bool = "@or"
 
 enum StringList { [], [...](String, StringList) }
+
+let _RUNTIME_TYPE_METADATA_PTR = 256n
+
+@disableGC
+let findTypeMetadata = (moduleId, typeId) => {
+  let mut metadataPtr = WasmI32.load(_RUNTIME_TYPE_METADATA_PTR, 0n)
+  let mut modData = -1n
+  let mut modTypesCount = 0n
+  while (metadataPtr != 0n) {
+    if (WasmI32.load(metadataPtr, 4n) == moduleId) {
+      modData = metadataPtr + 12n
+      modTypesCount = WasmI32.load(metadataPtr, 8n)
+      break
+    }
+    metadataPtr = WasmI32.load(metadataPtr, 0n)
+  }
+
+  if (modData == -1n) {
+    -1n
+  } else {
+    let mut typeData = -1n
+    for (let mut i = 0n; i < modTypesCount; i += 1n) {
+      if (WasmI32.load(modData, 4n) == typeId) {
+        typeData = modData
+        break
+      }
+      modData += WasmI32.load(modData, 0n)
+    }
+
+    typeData
+  }
+}
+
+@disableGC
+let getVariantName = (variant) => {
+  let moduleId = WasmI32.load(variant, 4n) >> 1n
+  let typeId = WasmI32.load(variant, 8n) >> 1n
+  let variantId = WasmI32.load(variant, 12n) >> 1n
+
+  let mut block = findTypeMetadata(moduleId, typeId)
+
+  if (block == -1n) {
+    -1n
+  } else {
+    let sectionLength = WasmI32.load(block, 0n)
+    block += 8n
+
+    let end = block + sectionLength
+    let mut result = -1n
+    while (block < end) {
+      if (WasmI32.load(block, 4n) == variantId) {
+        let length = WasmI32.load(block, 8n)
+        let str = allocateString(length)
+        Memory.copy(str + 8n, block + 12n, length)
+        result = str
+        break
+      }
+      block += WasmI32.load(block, 0n)
+    }
+
+    result
+  }
+}
+
+@disableGC
+let getRecordFieldNames = (record_) => {
+  let moduleId = WasmI32.load(record_, 4n) >> 1n
+  let typeId = WasmI32.load(record_, 8n) >> 1n
+  let arity = WasmI32.load(record_, 12n)
+
+  let mut fields = findTypeMetadata(moduleId, typeId)
+
+  if (fields == -1n) {
+    -1n
+  } else {
+    fields += 8n
+    
+    let fieldArray = allocateArray(arity)
+
+    let mut fieldOffset = 0n
+    for (let mut i = 0n; i < arity; i += 1n) {
+      let fieldLength = WasmI32.load(fields + fieldOffset, 4n)
+      let fieldName = allocateString(fieldLength)
+      Memory.copy(fieldName + 8n, fields + fieldOffset + 8n, fieldLength)
+      WasmI32.store(fieldArray + (i * 4n), fieldName, 8n)
+
+      fieldOffset += WasmI32.load(fields + fieldOffset, 0n)
+    }
+
+    fieldArray
+  }
+}
 
 @disableGC
 let rec totalBytes = (acc, list) => {
@@ -93,7 +181,7 @@ export let concat = (s1: String, s2: String) => {
 }
 
 @disableGC
-let isListVariant = (variant) => {
+let isListVariant = (variant: String) => {
   // Only lists can start with `[`, so only need to check for that
   // Sort of a hack until we have a better solution
   WasmI32.load8U(WasmI32.fromGrain(variant), 8n) == 0x5Bn
@@ -140,15 +228,12 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
     },
     t when t == Tags._GRAIN_ADT_HEAP_TAG => {
       // [ <value type tag>, <module_tag>, <type_tag>, <variant_tag>, <arity>, elts ... ]
-      // these are tagged ints
-      let moduleId = WasmI32.load(ptr, 4n) >> 1n
-      let typeId = WasmI32.load(ptr, 8n) >> 1n
-      let variantId = WasmI32.load(ptr, 12n) >> 1n
+      let variantName = getVariantName(ptr)
 
-      if (!variantExists(moduleId, typeId, variantId)) {
+      if (variantName == -1n) {
         "<enum value>"
       } else {
-        let variantName = getVariantName(moduleId, typeId, variantId)
+        let variantName = WasmI32.toGrain(variantName): String
         // Check if this is a list
         if (isListVariant(variantName)) {
           listToString(ptr, extraIndents)
@@ -178,11 +263,9 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
       }
     },
     t when t == Tags._GRAIN_RECORD_HEAP_TAG => {
-      // these are tagged ints
-      let moduleId = WasmI32.load(ptr, 4n) >> 1n
-      let typeId = WasmI32.load(ptr, 8n) >> 1n
       let recordArity = WasmI32.load(ptr, 12n)
-      if (!recordTypeExists(moduleId, typeId) || recordArity == 0n) {
+      let fields = getRecordFieldNames(ptr)
+      if (fields == -1n) {
         "<record value>"
       } else {
         let padAmount = (extraIndents + 1n) * 2n
@@ -193,7 +276,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
         let colspace = ": "
         let comlf = ",\n"
         for (let mut i = recordArity * 4n - 4n; i >= 0n;  i -= 4n) {
-          let fieldName = getRecordFieldName(moduleId, typeId, i / 4n)
+          let fieldName = WasmI32.toGrain(WasmI32.load(fields + i, 8n)): String
           let fieldValue = toStringHelp(WasmI32.load(ptr + i, 16n), extraIndents + 1n, false)
           Memory.incRef(WasmI32.fromGrain(spacePadding))
           Memory.incRef(WasmI32.fromGrain(fieldName))
@@ -217,6 +300,8 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
         Memory.decRef(WasmI32.fromGrain(spacePadding))
         Memory.decRef(WasmI32.fromGrain(colspace))
         Memory.decRef(WasmI32.fromGrain(comlf))
+
+        Memory.free(fields) // Avoid double-free of record field names
 
         string
       }

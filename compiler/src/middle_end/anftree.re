@@ -378,6 +378,7 @@ type anf_program = {
   env: [@sexp.opaque] Env.t,
   imports: list(import_spec),
   signature: Cmi_format.cmi_infos,
+  type_metadata: list(type_metadata),
   analyses: [@sexp.opaque] ref(list(analysis)),
 };
 
