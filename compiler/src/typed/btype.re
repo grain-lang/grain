@@ -190,8 +190,8 @@ let type_iterators = {
   let it_signature = it => List.iter(it.it_signature_item(it))
   and it_signature_item = it =>
     fun
-    | TSigValue(_, vd) => it.it_value_description(it, vd)
-    | TSigType(_, td, _) => it.it_type_declaration(it, td)
+    | TSigValue(_, vd, _docblock) => it.it_value_description(it, vd)
+    | TSigType(_, td, _, _docblock) => it.it_type_declaration(it, td)
     | TSigTypeExt(_, td, _) => it.it_extension_constructor(it, td)
     | TSigModule(_, md, _) => it.it_module_declaration(it, md)
     | TSigModType(_, mtd) => it.it_modtype_declaration(it, mtd)

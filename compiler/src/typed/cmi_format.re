@@ -57,7 +57,7 @@ and cmi_crcs_to_yojson = [%to_yojson: list((string, option(cmi_digest)))];
 [@deriving (sexp, yojson)]
 type cmi_infos = {
   cmi_name: string,
-  cmi_sign: list(Types.signature_item),
+  cmi_sign: Types.signature,
   cmi_crcs,
   cmi_flags: list(pers_flags),
 };

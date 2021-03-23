@@ -1,0 +1,6 @@
+(executable
+ (name graindoc)
+ (public_name graindoc)
+ (package grain)
+ (modules graindoc)
+ (libraries cmdliner grain grain_diagnostics binaryen.native dune-build-info))

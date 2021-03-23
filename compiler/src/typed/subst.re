@@ -281,7 +281,7 @@ let extension_constructor = (s, ext) => {
 let rec rename_bound_idents = (s, idents) =>
   fun
   | [] => (List.rev(idents), s)
-  | [TSigType(id, _, _), ...sg] => {
+  | [TSigType(id, _, _, _), ...sg] => {
       let id' = Ident.rename(id);
       rename_bound_idents(
         add_type(id, PIdent(id'), s),
@@ -309,7 +309,7 @@ let rec rename_bound_idents = (s, idents) =>
         sg,
       );
     }
-  | [TSigValue(id, _), ...sg] => {
+  | [TSigValue(id, _, _docblock), ...sg] => {
       let id' = Ident.rename(id);
       rename_bound_idents(s, [id', ...idents], sg);
     };
@@ -339,12 +339,14 @@ and signature = (s, sg) => {
 
 and signature_component = (s, comp, newid) =>
   switch (comp) {
-  | TSigValue(_id, d) =>
+  | TSigValue(_id, d, docblock) =>
     TSigValue(
       newid,
       {...value_description(s, d), val_fullpath: Path.PIdent(_id)},
+      docblock,
     )
-  | TSigType(_id, d, rs) => TSigType(newid, type_declaration(s, d), rs)
+  | TSigType(_id, d, rs, docblock) =>
+    TSigType(newid, type_declaration(s, d), rs, docblock)
   | TSigTypeExt(_id, d, es) =>
     TSigTypeExt(newid, extension_constructor(s, d), es)
   | TSigModule(_id, d, rs) =>

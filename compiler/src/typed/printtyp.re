@@ -981,7 +981,6 @@ let extension_only_constructor = (id, ppf, ext) => {
 };
 
 /* Print a value declaration */
-
 let tree_of_value_description = (id, decl) => {
   let id = Ident.name(id);
   let ty = tree_of_type_scheme(decl.val_type);
@@ -992,35 +991,6 @@ let tree_of_value_description = (id, decl) => {
     oval_attributes: [],
   };
 
-  let vd =
-    switch (decl.val_kind) {
-    | _ => vd
-    };
-
-  Osig_value(vd);
-};
-
-let value_description = (id, ppf, decl) =>
-  Oprint.out_sig_item^(ppf, tree_of_value_description(id, decl));
-
-/* Print a value declaration */
-
-let tree_of_value_description = (id, decl) => {
-  /* Format.eprintf "@[%a@]@." raw_type_expr decl.val_type; */
-  let id = Ident.name(id);
-  let ty = tree_of_type_scheme(decl.val_type);
-  let vd = {
-    oval_name: id,
-    oval_type: ty,
-    oval_prims: [],
-    oval_attributes: [],
-  };
-
-  /*let vd =
-    match decl.val_kind with
-    | TValPrim p -> Primitive.print p vd
-    | _ -> vd
-    in*/
   Osig_value(vd);
 };
 
@@ -1055,11 +1025,14 @@ let dummy = {
 
 let hide_rec_items =
   fun
-  | [TSigType(id, _decl, rs), ...rem]
+  | [TSigType(id, _decl, rs, _docblock), ...rem]
       when rs == TRecFirst && ! Clflags.real_paths^ => {
       let rec get_ids = (
         fun
-        | [TSigType(id, _, TRecNext), ...rem] => [id, ...get_ids(rem)]
+        | [TSigType(id, _, TRecNext, _docblock), ...rem] => [
+            id,
+            ...get_ids(rem),
+          ]
         | _ => []
       );
 
@@ -1096,8 +1069,8 @@ and tree_of_signature_rec = (env', in_type_group) =>
   | [item, ...rem] as items => {
       let in_type_group =
         switch (in_type_group, item) {
-        | (true, TSigType(_, _, TRecNext)) => true
-        | (_, TSigType(_, _, TRecNot | TRecFirst)) =>
+        | (true, TSigType(_, _, TRecNext, _)) => true
+        | (_, TSigType(_, _, TRecNot | TRecFirst, _)) =>
           set_printing_env(env');
           true;
         | _ =>
@@ -1114,8 +1087,10 @@ and tree_of_signature_rec = (env', in_type_group) =>
 
 and trees_of_sigitem =
   fun
-  | TSigValue(id, decl) => [tree_of_value_description(id, decl)]
-  | TSigType(id, decl, rs) => [tree_of_type_declaration(id, decl, rs)]
+  | TSigValue(id, decl, _docblock) => [tree_of_value_description(id, decl)]
+  | TSigType(id, decl, rs, _docblock) => [
+      tree_of_type_declaration(id, decl, rs),
+    ]
   | TSigTypeExt(id, ext, es) => [tree_of_extension_constructor(id, ext, es)]
   | TSigModule(id, md, rs) => [
       tree_of_module(id, md.md_type, rs, ~ellipsis=false),

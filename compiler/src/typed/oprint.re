@@ -631,22 +631,42 @@ and print_out_sig_item = ppf =>
       out_module_type^,
       mty,
     )
-  | Osig_type(td, rs) =>
-    print_out_type_decl(
-      switch (rs) {
-      | Orec_not => "type nonrec"
-      | Orec_first => "type"
-      | Orec_next => "and"
-      },
-      ppf,
-      td,
-    )
+  | Osig_type(td, rs) => {
+      // let kwd = switch (rs) {
+      //   | Orec_not => "type nonrec"
+      //   | Orec_first => "type"
+      //   | Orec_next => "and"
+      //   };
+      let kwd =
+        switch (td.otype_type) {
+        | Otyp_record(_) => "record"
+        | Otyp_variant(_, _, _, _) => "enum"
+        // TODO: What is variant if sum is enum?
+        | Otyp_sum(_) => "enum"
+        // TODO: What to do with these?
+        | Otyp_abstract => "abstract"
+        | Otyp_open => "open"
+        | Otyp_alias(_, _) => "alias"
+        | Otyp_arrow(_, _) => "arrow"
+        | Otyp_class(_, _, _) => "class"
+        | Otyp_constr(_, _) => "constr"
+        | Otyp_manifest(_, _) => "manifest"
+        | Otyp_object(_, _) => "object"
+        | Otyp_stuff(_) => "stuff"
+        | Otyp_tuple(_) => "tuple"
+        | Otyp_var(_, _) => "var"
+        | Otyp_poly(_, _) => "poly"
+        | Otyp_module(_, _, _) => "module"
+        | Otyp_attribute(_, _) => "attribute"
+        };
+      print_out_type_decl(kwd, ppf, td);
+    }
   | Osig_value(vd) => {
       let kwd =
         if (vd.oval_prims == []) {
-          "val";
+          "";
         } else {
-          "external";
+          "foreign ";
         };
       let pr_prims = ppf => (
         fun
@@ -659,7 +679,7 @@ and print_out_sig_item = ppf =>
 
       fprintf(
         ppf,
-        "@[<2>%s %a :@ %a%a%a@]",
+        "@[<2>%s%a :@ %a%a%a@]",
         kwd,
         value_ident,
         vd.oval_name,
@@ -696,10 +716,11 @@ and print_out_type_decl = (kwd, ppf, td) => {
     | _ =>
       fprintf(
         ppf,
-        "@[(@[%a)@]@ %s@]",
+        // TODO: Fix the box, `<` and `>` are special characters in a box
+        "%s<@[%a@]>",
+        td.otype_name,
         print_list(type_parameter, ppf => fprintf(ppf, ",@ ")),
         td.otype_params,
-        td.otype_name,
       )
     };
 
@@ -738,8 +759,8 @@ and print_out_type_decl = (kwd, ppf, td) => {
     | Otyp_sum(constrs) =>
       fprintf(
         ppf,
-        " =@;<1 2>%a",
-        print_list(print_out_constr, ppf => fprintf(ppf, "@ | ")),
+        " {\n@;<1 2>%a\n}",
+        print_list(print_out_constr, ppf => fprintf(ppf, "\n ")),
         constrs,
       )
     | Otyp_open => fprintf(ppf, " = ..")
@@ -771,9 +792,9 @@ and print_out_constr = (ppf, (name, tyl, ret_type_opt)) => {
     | _ =>
       fprintf(
         ppf,
-        "@[<2>%s of@ %a@]",
+        "@[<2>%s(%a),@]",
         name,
-        print_typlist(print_simple_out_type, " *"),
+        print_typlist(print_simple_out_type, ","),
         tyl,
       )
     }

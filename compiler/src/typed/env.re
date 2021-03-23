@@ -1600,7 +1600,7 @@ let scrape_alias = (env, mty) => scrape_alias(env, mty);
 let rec prefix_idents = (root, pos, sub) =>
   fun
   | [] => ([], sub)
-  | [TSigValue(id, decl), ...rem] => {
+  | [TSigValue(id, decl, _docblock), ...rem] => {
       let p = PExternal(root, Ident.name(id), pos);
       let nextpos =
         switch (decl.val_kind) {
@@ -1610,7 +1610,7 @@ let rec prefix_idents = (root, pos, sub) =>
       let (pl, final_sub) = prefix_idents(root, nextpos, sub, rem);
       ([p, ...pl], final_sub);
     }
-  | [TSigType(id, _, _), ...rem] => {
+  | [TSigType(id, _, _, _docblock), ...rem] => {
       let p = PExternal(root, Ident.name(id), nopos);
       let (pl, final_sub) =
         prefix_idents(root, pos, Subst.add_type(id, p, sub), rem);
@@ -1711,7 +1711,7 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
     List.iter2(
       (item, path) =>
         switch (item) {
-        | TSigValue(id, decl) =>
+        | TSigValue(id, decl, _docblock) =>
           let decl' = Subst.value_description(sub, decl);
           let decl' = {...decl', val_fullpath: path};
           c.comp_values =
@@ -1720,7 +1720,7 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
           | TValPrim(_) => ()
           | _ => incr(pos)
           };
-        | TSigType(id, decl, _) =>
+        | TSigType(id, decl, _, _docblock) =>
           let decl' = Subst.type_declaration(sub, decl);
           let constructors = Datarepr.constructors_of_type(path, decl');
           let cstrs =
@@ -2048,8 +2048,8 @@ let enter_module = (~arg=?, s, mty, env) => {
 
 let add_item = (comp, env) =>
   switch (comp) {
-  | TSigValue(id, decl) => add_value(id, decl, env)
-  | TSigType(id, decl, _) => add_type(~check=false, id, decl, env)
+  | TSigValue(id, decl, _docblock) => add_value(id, decl, env)
+  | TSigType(id, decl, _, _docblock) => add_type(~check=false, id, decl, env)
   | TSigTypeExt(id, ext, _) => add_extension(~check=false, id, ext, env)
   | TSigModule(id, md, _) =>
     add_module_declaration(~check=false, id, md, env)

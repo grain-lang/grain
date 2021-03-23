@@ -151,7 +151,7 @@ let simplify_signature = sg => {
   let rec aux =
     fun
     | [] => ([], String.Set.empty, String.Set.empty)
-    | [TSigValue(id, _descr) as component, ...sg] => {
+    | [TSigValue(id, _descr, _docblock) as component, ...sg] => {
         let (sg, val_names, ext_names) as k = aux(sg);
         let name = Ident.name(id);
         if (String.Set.mem(name, val_names)) {
@@ -247,7 +247,7 @@ let check_modtype = (names, loc, s) =>
 
 let check_sig_item = (names, loc) =>
   fun
-  | TSigType(id, _, _) => check_type(names, loc, Ident.name(id))
+  | TSigType(id, _, _, _docblock) => check_type(names, loc, Ident.name(id))
   | TSigModule(id, _, _) => check_module(names, loc, Ident.name(id))
   | TSigModType(id, _) => check_modtype(names, loc, Ident.name(id))
   | _ => ();
@@ -268,13 +268,14 @@ let rec closed_modtype = env =>
 
 and closed_signature_item = env =>
   fun
-  | TSigValue(_id, desc) => Ctype.closed_schema(env, desc.val_type)
+  | TSigValue(_id, desc, _docblock) =>
+    Ctype.closed_schema(env, desc.val_type)
   | TSigModule(_id, md, _) => closed_modtype(env, md.md_type)
   | _ => true;
 
 let check_nongen_scheme = (env, sig_item) =>
   switch (sig_item) {
-  | TSigValue(_id, vd) =>
+  | TSigValue(_id, vd, _docblock) =>
     if (!Ctype.closed_schema(env, vd.val_type)) {
       raise(Error(vd.val_loc, env, Non_generalizable(vd.val_type)));
     }
@@ -301,7 +302,8 @@ and normalize_signature = env => List.iter(normalize_signature_item(env))
 
 and normalize_signature_item = env =>
   fun
-  | TSigValue(_id, desc) => Ctype.normalize_type(env, desc.val_type)
+  | TSigValue(_id, desc, _docblock) =>
+    Ctype.normalize_type(env, desc.val_type)
   | TSigModule(_id, md, _) => normalize_modtype(env, md.md_type)
   | _ => ();
 
@@ -371,6 +373,21 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
     sstr.Parsetree.statements,
   );
 
+  let get_docblock_from_location = loc => {
+    let lineNumber = loc.Location.loc_start.pos_lnum;
+    let prevLineNumber = lineNumber - 1;
+    List.find_map(
+      comment =>
+        switch (comment) {
+        | Doc({cmt_content, cmt_loc})
+            when cmt_loc.loc_end.pos_lnum == prevLineNumber =>
+          Some(cmt_content)
+        | _ => None
+        },
+      sstr.comments,
+    );
+  };
+
   let string_needs_export = (str: Grain_parsing.Parsetree.loc(string)) => {
     let (flag, excepts, _) = export_all^;
     flag && (!) @@ List.exists(({txt}) => txt == str.txt, excepts);
@@ -394,9 +411,10 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       } else {
         e;
       };
+    let docblock = get_docblock_from_location(loc);
     let signature =
       switch (e) {
-      | Exported => Some(TSigValue(desc.tvd_id, desc.tvd_val))
+      | Exported => Some(TSigValue(desc.tvd_id, desc.tvd_val, docblock))
       | Nonexported => None
       };
     let foreign = {
@@ -416,9 +434,10 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       } else {
         e;
       };
+    let docblock = get_docblock_from_location(loc);
     let signature =
       switch (e) {
-      | Exported => Some(TSigValue(desc.tvd_id, desc.tvd_val))
+      | Exported => Some(TSigValue(desc.tvd_id, desc.tvd_val, docblock))
       | Nonexported => None
       };
     let (defs, newenv) = Translprim.transl_prim(newenv, desc);
@@ -446,6 +465,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
 
   let process_datas = (env, e, datas, attributes, loc) => {
     let (decls, newenv) = Typedecl.transl_data_decl(env, Recursive, datas);
+    let docblock = get_docblock_from_location(loc);
     let ty_decl =
       map_rec_type_with_row_types(
         ~rec_flag=Recursive,
@@ -457,12 +477,13 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
               e;
             };
           switch (e) {
-          | Exported => TSigType(info.data_id, info.data_type, rs)
+          | Exported => TSigType(info.data_id, info.data_type, rs, docblock)
           | Nonexported =>
             TSigType(
               info.data_id,
               {...info.data_type, type_kind: TDataAbstract},
               rs,
+              None // TODO: include it when not exported?
             )
           };
         },
@@ -489,14 +510,17 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       if (rec_flag == Recursive) {
         Typecore.check_recursive_bindings(env, defs);
       };
-
+    let docblock = get_docblock_from_location(loc);
     let some_exported = ref(false);
     let signatures =
       List.fold_right(
         (id, sigs) =>
           if (ident_needs_export(id) || export_flag == Exported) {
             some_exported := true;
-            [TSigValue(id, Env.find_value(PIdent(id), newenv)), ...sigs];
+            [
+              TSigValue(id, Env.find_value(PIdent(id), newenv), docblock),
+              ...sigs,
+            ];
           } else {
             sigs;
           },
@@ -588,7 +612,8 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       | None => ()
       };
       let type_ = Env.find_type(type_id, env);
-      TSigType(Path.head(type_id), type_, rs);
+      let docblock = get_docblock_from_location(loc);
+      TSigType(Path.head(type_id), type_, rs, docblock);
     };
     if (List.length(exports) > 1) {
       [
@@ -786,13 +811,13 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       | _ => decl
       };
     switch (signature) {
-    | TSigType(id, decl, rs) =>
+    | TSigType(id, decl, rs, docblock) =>
       switch (get_alias(type_export_aliases^, PIdent(id))) {
-      | None => TSigType(id, resolve_type_decl(decl), rs)
+      | None => TSigType(id, resolve_type_decl(decl), rs, docblock)
       | Some((name, alias)) =>
-        TSigType(Path.head(alias), resolve_type_decl(decl), rs)
+        TSigType(Path.head(alias), resolve_type_decl(decl), rs, docblock)
       }
-    | TSigValue(id, {val_type, val_kind} as vd) =>
+    | TSigValue(id, {val_type, val_kind} as vd, docblock) =>
       let val_kind =
         switch (val_kind) {
         | TValConstructor({cstr_res, cstr_existentials, cstr_args} as cd) =>
@@ -808,6 +833,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       TSigValue(
         id,
         {...vd, val_kind, val_type: resolve_type_expr(val_type)},
+        docblock,
       );
     | _ => signature
     };

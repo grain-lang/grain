@@ -66,11 +66,15 @@ let translate_signature = sg =>
   List.map(
     item =>
       switch (item) {
-      | TSigValue(id, d) =>
+      | TSigValue(id, d, docblock) =>
         reset_type_variables();
         collect_type_vars(d.val_type);
-        TSigValue(id, {...d, val_type: link_type_vars(d.val_type)});
-      | TSigType(id, td, r) =>
+        TSigValue(
+          id,
+          {...d, val_type: link_type_vars(d.val_type)},
+          docblock,
+        );
+      | TSigType(id, td, r, docblock) =>
         reset_type_variables();
         switch (td.type_kind) {
         | TDataVariant(cds) =>
@@ -131,6 +135,7 @@ let translate_signature = sg =>
             type_kind,
           },
           r,
+          docblock,
         );
       | TSigTypeExt(id, ec, ext) =>
         reset_type_variables();

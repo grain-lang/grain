@@ -194,12 +194,13 @@ type ext_status =
 
 [@deriving (sexp, yojson)]
 type signature_item =
-  | TSigValue(Ident.t, value_description)
-  | TSigType(Ident.t, type_declaration, rec_status)
+  | TSigValue(Ident.t, value_description, option(string))
+  | TSigType(Ident.t, type_declaration, rec_status, option(string))
   | TSigTypeExt(Ident.t, extension_constructor, ext_status)
   | TSigModule(Ident.t, module_declaration, rec_status)
   | TSigModType(Ident.t, modtype_declaration)
 
+/** The interface of a module, which includes all [signature_item] exported by the module */
 and signature = list(signature_item)
 
 and module_type =

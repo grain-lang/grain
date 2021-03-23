@@ -45,7 +45,7 @@ let rec strengthen = (~aliasable, env, mty, p) =>
 and strengthen_sig = (~aliasable, env, sg, p, pos) =>
   switch (sg) {
   | [] => []
-  | [TSigValue(_, desc) as sigelt, ...rem] =>
+  | [TSigValue(_, desc, _docblock) as sigelt, ...rem] =>
     let nextpos =
       switch (desc.val_kind) {
       | TValPrim(_) => pos
@@ -57,7 +57,7 @@ and strengthen_sig = (~aliasable, env, sg, p, pos) =>
     (TSigType(id', {type_private=Private}, _) :: _ as rem)
     when Ident.name id = Ident.name id' ^ "#row" ->
       strengthen_sig ~aliasable env rem p pos*/
-  | [TSigType(id, decl, rs), ...rem] =>
+  | [TSigType(id, decl, rs, docblock), ...rem] =>
     let newdecl =
       switch (decl.type_manifest, /*decl.type_private,*/ decl.type_kind) {
       | (Some(_), /*Public,*/ _) => decl
@@ -81,7 +81,7 @@ and strengthen_sig = (~aliasable, env, sg, p, pos) =>
       };
 
     [
-      TSigType(id, newdecl, rs),
+      TSigType(id, newdecl, rs, docblock),
       ...strengthen_sig(~aliasable, env, rem, p, pos),
     ];
   | [TSigTypeExt(_) as sigelt, ...rem] => [
@@ -201,18 +201,20 @@ let nondep_supertype = (env, mid, mty) => {
     | [item, ...rem] => {
         let rem' = nondep_sig(env, va, rem);
         switch (item) {
-        | TSigValue(id, d) => [
+        | TSigValue(id, d, docblock) => [
             TSigValue(
               id,
               {...d, val_type: Ctype.nondep_type(env, mid, d.val_type)},
+              docblock,
             ),
             ...rem',
           ]
-        | TSigType(id, d, rs) => [
+        | TSigType(id, d, rs, docblock) => [
             TSigType(
               id,
               Ctype.nondep_type_decl(env, mid, id, va == Co, d),
               rs,
+              docblock,
             ),
             ...rem',
           ]
@@ -317,11 +319,12 @@ let rec enrich_modtype = (env, p, mty) =>
 
 and enrich_item = (env, p) =>
   fun
-  | TSigType(id, decl, rs) =>
+  | TSigType(id, decl, rs, docblock) =>
     TSigType(
       id,
       enrich_typedecl(env, PExternal(p, Ident.name(id), nopos), id, decl),
       rs,
+      docblock,
     )
   | TSigModule(id, md, rs) =>
     TSigModule(
@@ -350,14 +353,14 @@ let rec type_paths = (env, p, mty) =>
 and type_paths_sig = (env, p, pos, sg) =>
   switch (sg) {
   | [] => []
-  | [TSigValue(_id, decl), ...rem] =>
+  | [TSigValue(_id, decl, _docblock), ...rem] =>
     let pos' =
       switch (decl.val_kind) {
       | TValPrim(_) => pos
       | _ => pos + 1
       };
     type_paths_sig(env, p, pos', rem);
-  | [TSigType(id, _decl, _), ...rem] => [
+  | [TSigType(id, _decl, _, _docblock), ...rem] => [
       PExternal(p, Ident.name(id), nopos),
       ...type_paths_sig(env, p, pos, rem),
     ]
@@ -388,7 +391,7 @@ let rec no_code_needed = (env, mty) =>
 and no_code_needed_sig = (env, sg) =>
   switch (sg) {
   | [] => true
-  | [TSigValue(_id, decl), ...rem] =>
+  | [TSigValue(_id, decl, _docblock), ...rem] =>
     switch (decl.val_kind) {
     | TValPrim(_) => no_code_needed_sig(env, rem)
     | _ => false

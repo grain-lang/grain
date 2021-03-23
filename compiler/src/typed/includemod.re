@@ -210,8 +210,16 @@ let kind_of_field_desc =
 
 let item_ident_name =
   fun
-  | TSigValue(id, d) => (id, d.val_loc, Field_value(Ident.name(id)))
-  | TSigType(id, d, _) => (id, d.type_loc, Field_type(Ident.name(id)))
+  | TSigValue(id, d, _docblock) => (
+      id,
+      d.val_loc,
+      Field_value(Ident.name(id)),
+    )
+  | TSigType(id, d, _, _docblock) => (
+      id,
+      d.type_loc,
+      Field_type(Ident.name(id)),
+    )
   | TSigTypeExt(id, d, _) => (id, d.ext_loc, Field_typext(Ident.name(id)))
   | TSigModule(id, d, _) => (id, d.md_loc, Field_module(Ident.name(id)))
   | TSigModType(id, d) => (id, d.mtd_loc, Field_modtype(Ident.name(id)));
@@ -220,12 +228,12 @@ let item_ident_name =
 
 let is_runtime_component =
   fun
-  | TSigValue(_, {val_kind: TValPrim(_)})
-  | TSigType(_, _, _)
+  | TSigValue(_, {val_kind: TValPrim(_)}, _)
+  | TSigType(_, _, _, _)
   | TSigModType(_, _) =>
     /*| Sig_class_type(_,_,_)*/
     false
-  | TSigValue(_, _)
+  | TSigValue(_, _, _)
   | TSigTypeExt(_, _, _)
   | TSigModule(_, _, _) =>
     /*| Sig_class(_, _,_)*/
@@ -542,7 +550,14 @@ and signature_components = (~loc, old_env, ~mark, env, cxt, subst, paired) => {
 
   switch (paired) {
   | [] => []
-  | [(TSigValue(id1, valdecl1), TSigValue(_id2, valdecl2), pos), ...rem] =>
+  | [
+      (
+        TSigValue(id1, valdecl1, _docblock1),
+        TSigValue(_id2, valdecl2, _docblock2),
+        pos,
+      ),
+      ...rem,
+    ] =>
     /*let cc =
         value_descriptions ~loc env ~mark cxt subst id1 valdecl1 valdecl2
       in*/
@@ -550,7 +565,14 @@ and signature_components = (~loc, old_env, ~mark, env, cxt, subst, paired) => {
     | TValPrim(_) => comps_rec(rem)
     | _ => [(pos, None /*cc*/), ...comps_rec(rem)]
     }
-  | [(TSigType(id1, tydecl1, _), TSigType(_id2, tydecl2, _), _pos), ...rem] =>
+  | [
+      (
+        TSigType(id1, tydecl1, _, _docblock1),
+        TSigType(_id2, tydecl2, _, _docblock2),
+        _pos,
+      ),
+      ...rem,
+    ] =>
     type_declarations(
       ~loc,
       ~old_env,
