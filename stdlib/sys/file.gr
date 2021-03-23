@@ -680,6 +680,7 @@ export let fdStats = (fd: FileDescriptor) => {
 
 // Update the flags associated with a file descriptor
 // @param fd: FileDescriptor The file descriptor to update flags
+// @param flags: List<FdFlag> The flags to apply to the file descriptor
 export let fdSetFlags = (fd: FileDescriptor, flagsPtr: List<FdFlag>) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
@@ -694,6 +695,7 @@ export let fdSetFlags = (fd: FileDescriptor, flagsPtr: List<FdFlag>) => {
 }
 
 // Update the rights associated with a file descriptor
+// @param fd: FileDescriptor The file descriptor to update rights
 // @param rights: List<Rights> Rights to apply to the file descriptor
 // @param rightsInheriting: List<Rights> Inheriting rights to apply to the file descriptor
 export let fdSetRights = (fd: FileDescriptor, rightsPtr: List<Rights>, rightsInheritingPtr: List<Rights>) => {
