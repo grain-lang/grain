@@ -532,7 +532,7 @@ module MatchTreeCompiler = {
   };
 
   let compile_result =
-      ({tree, branches}, helpA, helpI, expr)
+      (~allocation_type, {tree, branches}, helpA, helpI, expr)
       : (Anftree.comp_expression, list(Anftree.anf_bind)) => {
     /*prerr_string "Compiling tree:";
       prerr_string (Sexplib.Sexp.to_string_hum (sexp_of_decision_tree tree));
@@ -558,11 +558,7 @@ module MatchTreeCompiler = {
         branches,
       );
     (
-      Comp.switch_(
-        ~allocation_type=HeapAllocated,
-        Imm.id(jmp_name),
-        switch_branches,
-      ),
+      Comp.switch_(~allocation_type, Imm.id(jmp_name), switch_branches),
       setup,
     );
   };

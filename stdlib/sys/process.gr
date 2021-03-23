@@ -1,6 +1,23 @@
-export *
+/* grainc-flags --no-gc */
 
-enum Signal {
+import WasmI32, {
+  add as (+),
+  mul as (*),
+  shrS as (>>),
+  shrU as (>>>),
+  and as (&),
+  eq as (==),
+  ne as (!=),
+  ltS as (<)
+} from "runtime/unsafe/wasmi32"
+import Memory from "runtime/unsafe/memory"
+import Errors from "runtime/unsafe/errors"
+import Wasi from "runtime/wasi"
+import { tagSimpleNumber, allocateArray, allocateString } from "runtime/dataStructures"
+
+import foreign wasm throwError: (WasmI32, WasmI32, WasmI32) -> a from "grainRuntime"
+
+export enum Signal {
   // Hangup.
   HUP,
   // Terminate interrupt signal.
@@ -61,19 +78,130 @@ enum Signal {
 
 // Access command line arguments
 // @returns Array<String> The positional string arguments to the process
-import foreign wasm argv : () -> Array<String> from "stdlib-external/sys"
+export let argv = () => {
+  let argcPtr = Memory.malloc(8n)
+  let argvBufSizePtr = argcPtr + 4n
+
+  let mut err = Wasi.args_sizes_get(argcPtr, argvBufSizePtr)
+  if (err != Wasi._ESUCCESS) {
+    Memory.free(argcPtr)
+    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+  }
+
+  let argc = WasmI32.load(argcPtr, 0n)
+  let argvBufSize = WasmI32.load(argvBufSizePtr, 0n)
+
+  let argvPtr = Memory.malloc(argc * 4n)
+  let argvBufPtr = Memory.malloc(argvBufSize)
+
+  err = Wasi.args_get(argvPtr, argvBufPtr)
+  if (err != Wasi._ESUCCESS) {
+    Memory.free(argcPtr)
+    Memory.free(argvPtr)
+    Memory.free(argvBufPtr)
+    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+  }
+
+  let arr = allocateArray(argc)
+
+  let argsLength = argc * 4n
+  for (let mut i = 0n; i < argsLength; i += 4n) {
+    let strPtr = WasmI32.load(argvPtr + i, 0n)
+    let mut strLength = 0n
+    while (WasmI32.load8U(strPtr + strLength, 0n) != 0n) {
+      strLength += 1n
+    }
+
+    let grainStrPtr = allocateString(strLength)
+    Memory.copy(grainStrPtr + 8n, strPtr, strLength)
+
+    WasmI32.store(arr + i, grainStrPtr, 8n)
+  }
+
+  Memory.free(argcPtr)
+  Memory.free(argvPtr)
+  Memory.free(argvBufPtr)
+
+  WasmI32.toGrain(arr): Array<String>
+}
 
 // Access environment variables
 // @returns Array<String> The environment variables supplied to the process
-import foreign wasm env : () -> Array<String> from "stdlib-external/sys"
+export let env = () => {
+  let envcPtr = Memory.malloc(8n)
+  let envvBufSizePtr = envcPtr + 4n
+
+  let mut err = Wasi.environ_sizes_get(envcPtr, envvBufSizePtr)
+  if (err != Wasi._ESUCCESS) {
+    Memory.free(envcPtr)
+    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+  }
+
+  let envc = WasmI32.load(envcPtr, 0n)
+  let envvBufSize = WasmI32.load(envvBufSizePtr, 0n)
+
+  let envvPtr = Memory.malloc(envc * 4n)
+  let envvBufPtr = Memory.malloc(envvBufSize)
+
+  err = Wasi.environ_get(envvPtr, envvBufPtr)
+  if (err != Wasi._ESUCCESS) {
+    Memory.free(envcPtr)
+    Memory.free(envvPtr)
+    Memory.free(envvBufPtr)
+    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+  }
+
+  let arr = allocateArray(envc)
+
+  let envsLength = envc * 4n
+  for (let mut i = 0n; i < envsLength; i += 4n) {
+    let strPtr = WasmI32.load(envvPtr + i, 0n)
+    let mut strLength = 0n
+    while (WasmI32.load8U(strPtr + strLength, 0n) != 0n) {
+      strLength += 1n
+    }
+
+    let grainStrPtr = allocateString(strLength)
+    Memory.copy(grainStrPtr + 8n, strPtr, strLength)
+
+    WasmI32.store(arr + i, grainStrPtr, 8n)
+  }
+
+  Memory.free(envcPtr)
+  Memory.free(envvPtr)
+  Memory.free(envvBufPtr)
+
+  WasmI32.toGrain(arr): Array<String>
+}
 
 // Terminate the process normally
 // @param code: Number The value to exit with. An exit code of 0 is considered normal, with other values having meaning depending on the platform
-import foreign wasm exit : (Number) -> Void from "stdlib-external/sys"
+export let exit = (code: Number) => {
+  let mut code = WasmI32.fromGrain(code)
+
+  if ((code & 1n) == 0n) {
+    throwError(Errors._GRAIN_ERR_INVALID_ARGUMENT, code, 0n)
+  }
+
+  code = code >> 1n
+  Wasi.proc_exit(code)
+}
 
 // Send a signal to the process of the calling thread
 // @param signal: Signal The signal to send
-import foreign wasm sigRaise : (Signal) -> Void from "stdlib-external/sys"
+export let sigRaise = (signalPtr: Signal) => {
+  let signal = WasmI32.fromGrain(signalPtr)
+  let signal = WasmI32.load(signal, 12n) >> 1n
+  let err = Wasi.proc_raise(signal)
+  if (err != Wasi._ESUCCESS) {
+    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+  }
+}
 
 // Yield execution to the calling thread
-import foreign wasm schedYield : () -> Void from "stdlib-external/sys"
+export let schedYield = () => {
+  let err = Wasi.sched_yield()
+  if (err != Wasi._ESUCCESS) {
+    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+  }
+}

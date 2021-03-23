@@ -1,0 +1,163 @@
+/* grainc-flags --no-gc */
+
+export *
+
+// env
+import foreign wasm args_get: (WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm args_sizes_get: (WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm environ_get: (WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm environ_sizes_get: (WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+
+// proc
+import foreign wasm proc_exit: (WasmI32) -> Void from "wasi_snapshot_preview1"
+import foreign wasm proc_raise: (WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm sched_yield: () -> WasmI32 from "wasi_snapshot_preview1"
+
+// random
+import foreign wasm random_get : (WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+
+// time
+import foreign wasm clock_time_get: (WasmI32, WasmI64, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+
+// file
+import foreign wasm path_open : (WasmI32, WasmI32, WasmI32, WasmI32, WasmI32, WasmI64, WasmI64, WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_read : (WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_pread : (WasmI32, WasmI32, WasmI32, WasmI64, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_write : (WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_pwrite : (WasmI32, WasmI32, WasmI32, WasmI64, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_allocate : (WasmI32, WasmI64, WasmI64) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_close : (WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_datasync : (WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_sync : (WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_fdstat_get : (WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_fdstat_set_flags : (WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_fdstat_set_rights : (WasmI32, WasmI64, WasmI64) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_filestat_get : (WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_filestat_set_size : (WasmI32, WasmI64) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_filestat_set_times : (WasmI32, WasmI64, WasmI64, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_readdir : (WasmI32, WasmI32, WasmI32, WasmI64, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_renumber : (WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_seek : (WasmI32, WasmI64, WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_tell : (WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm path_create_directory : (WasmI32, WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm path_filestat_get : (WasmI32, WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm path_filestat_set_times : (WasmI32, WasmI32, WasmI32, WasmI32, WasmI64, WasmI64, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm path_link : (WasmI32, WasmI32, WasmI32, WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm path_symlink : (WasmI32, WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm path_unlink_file : (WasmI32, WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm path_readlink : (WasmI32, WasmI32, WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm path_remove_directory : (WasmI32, WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm path_rename : (WasmI32, WasmI32, WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+
+// clocks
+let _CLOCK_REALTIME = 0n
+let _CLOCK_MONOTONIC = 1n
+let _CLOCK_PROCESS_CPUTIME = 2n
+let _CLOCK_THREAD_CPUTIME = 3n
+
+// time
+
+let _TIME_SET_ATIM = 1n
+let _TIME_SET_ATIM_NOW = 2n
+let _TIME_SET_MTIM = 4n
+let _TIME_SET_MTIM_NOW = 8n
+
+// lookup flags
+let _LOOKUP_FLAG_SYMLINK_FOLLOW = 1n
+
+// open flags
+let _OPEN_FLAG_CREAT = 1n
+let _OPEN_FLAG_DIRECTORY = 2n
+let _OPEN_FLAG_EXCL = 4n
+let _OPEN_FLAG_TRUNC = 8n
+
+// fdflags
+let _FDFLAG_APPEND = 1n
+let _FDFLAG_DSYNC = 2n
+let _FDFLAG_NONBLOCK = 4n
+let _FDFLAG_RSYNC = 8n
+let _FDFLAG_SYNC = 16n
+
+// whence
+let _WHENCE_SET = 0n
+let _WHENCE_CUR = 1n
+let _WHENCE_END = 2n
+
+// error codes
+let _ESUCCESS = 0n
+let _ETOOBIG = 1n
+let _EACCES = 2n
+let _EADDRINUSE = 3n
+let _EADDRNOTAVAIL = 4n
+let _EAFNOSUPPORT = 5n
+let _EAGAIN = 6n
+let _EALREADY = 7n
+let _EBADF = 8n
+let _EBADMSG = 9n
+let _EBUSY = 10n
+let _ECANCELED = 11n
+let _ECHILD = 12n
+let _ECONNABORTED = 13n
+let _ECONNREFUSED = 14n
+let _ECONNRESET = 15n
+let _EDEADLK = 16n
+let _EDESTADDRREQ = 17n
+let _EDOM = 18n
+let _EDQUOT = 19n
+let _EEXIST = 20n
+let _EFAULT = 21n
+let _EFBIG = 22n
+let _EHOSTUNREACH = 23n
+let _EIDRM = 24n
+let _EILSEQ = 25n
+let _EINPROGRESS = 26n
+let _EINTR = 27n
+let _EINVAL = 28n
+let _EIO = 29n
+let _EISCONN = 30n
+let _EISDIR = 31n
+let _ELOOP = 32n
+let _EMFILE = 33n
+let _EMLINK = 34n
+let _EMSGSIZE = 35n
+let _EMULTIHOP = 36n
+let _ENAMETOOLONG = 37n
+let _ENETDOWN = 38n
+let _ENETRESET = 39n
+let _ENETUNREACH = 40n
+let _ENFILE = 41n
+let _ENOBUFS = 42n
+let _ENODEV = 43n
+let _ENOENT = 44n
+let _ENOEXEC = 45n
+let _ENOLCK = 46n
+let _ENOLINK = 47n
+let _ENOMEM = 48n
+let _ENOMSG = 49n
+let _ENOPROTOOPT = 50n
+let _ENOSPC = 51n
+let _ENOSYS = 52n
+let _ENOTCONN = 53n
+let _ENOTDIR = 54n
+let _ENOTEMPTY = 55n
+let _ENOTRECOVERABLE = 56n
+let _ENOTSOCK = 57n
+let _ENOTSUP = 58n
+let _ENOTTY = 59n
+let _ENXIO = 60n
+let _EOVERFLOW = 61n
+let _EOWNERDEAD = 62n
+let _EPERM = 63n
+let _EPIPE = 64n
+let _EPROTO = 65n
+let _EPROTONOSUPPORT = 66n
+let _EPROTOTYPE = 67n
+let _ERANGE = 68n
+let _EROFS = 69n
+let _ESPIPE = 70n
+let _ESRCH = 71n
+let _ESTALE = 72n
+let _ETIMEDOUT = 73n
+let _ETXTBSY = 74n
+let _EXDEV = 75n
+let _ENOTCAPABLE = 76n
