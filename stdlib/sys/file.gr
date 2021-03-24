@@ -332,8 +332,8 @@ let filetypeFromNumber = (filetype) => {
 }
 
 // Open a file or directory
-// @param workingDirectory: FileDescriptor The directory in which path resolution starts
-// @param lookupFlags: List<LookupFlag> Flags which affect path resolution
+// @param dirFd: FileDescriptor The directory in which path resolution starts
+// @param dirFlags: List<LookupFlag> Flags which affect path resolution
 // @param path: String The path to the file or directory
 // @param openFlags: List<OpenFlag> Flags that decide how the path will be opened
 // @param rights: List<Rights> The rights that dictate what may be done with the returned file descriptor
@@ -341,35 +341,35 @@ let filetypeFromNumber = (filetype) => {
 // @param flags: List<FdFlag> Flags which affect read/write operations on this file descriptor
 // @returns FileDescriptor The opened file or directory
 export let pathOpen = (
-  dirfd: FileDescriptor,
-  dirflags: List<LookupFlag>,
+  dirFd: FileDescriptor,
+  dirFlags: List<LookupFlag>,
   path: String,
-  openflags: List<OpenFlag>,
-  fsRightsBase: List<Rights>,
-  fsRightsInheriting: List<Rights>,
-  fsFlags: List<FdFlag>
+  openFlags: List<OpenFlag>,
+  rights: List<Rights>,
+  rightsInheriting: List<Rights>,
+  flags: List<FdFlag>
 ) => {
-  let dirfd = match (dirfd) {
+  let dirFd = match (dirFd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
   }
-  
-  let combinedDirFlags = combineLookupFlags(dirflags)
+
+  let combinedDirFlags = combineLookupFlags(dirFlags)
 
   let mut path = WasmI32.fromGrain(path)
   let pathLength = WasmI32.load(path, 4n)
   path += 8n // Offset the string pointer to the start of the string
 
-  let combinedOFlags = combineOpenFlags(openflags)
+  let combinedOFlags = combineOpenFlags(openFlags)
 
-  let rightsBase = combineRights(fsRightsBase)
-  let rightsInheriting = combineRights(fsRightsInheriting)
-  
-  let combinedFsFlags = combineFdFlags(fsFlags)
+  let rightsBase = combineRights(rights)
+  let rightsInheriting = combineRights(rightsInheriting)
+
+  let combinedFsFlags = combineFdFlags(flags)
 
   let newFd = Memory.malloc(4n)
-  
+
   let err = Wasi.path_open(
-    dirfd,
+    dirFd,
     combinedDirFlags,
     path,
     pathLength,
@@ -393,14 +393,14 @@ export let pathOpen = (
 
 // Read from a file descriptor
 // @param fd: FileDescriptor The file descriptor to read from
-// @param nBytes: Number The maximum number of bytes to read from the file descriptor
+// @param size: Number The maximum number of bytes to read from the file descriptor
 // @returns (String, Number) The bytes read and the number of bytes read
-export let fdRead = (fd: FileDescriptor, n: Number) => {
+export let fdRead = (fd: FileDescriptor, size: Number) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
   }
 
-  let n = WasmI32.fromGrain(n) >> 1n
+  let n = WasmI32.fromGrain(size) >> 1n
 
   let iovs = Memory.malloc(3n * 4n)
   let strPtr = allocateString(n)
@@ -418,7 +418,7 @@ export let fdRead = (fd: FileDescriptor, n: Number) => {
   }
 
   nread = WasmI32.load(nread, 0n)
-  
+
   WasmI32.store(strPtr, nread, 4n)
 
   Memory.free(iovs)
@@ -429,16 +429,16 @@ export let fdRead = (fd: FileDescriptor, n: Number) => {
 // Read from a file descriptor without updating the file descriptor's offset
 // @param fd: FileDescriptor The file descriptor to read from
 // @param offset: Int64 The position within the file to begin reading
-// @param nBytes: Number The maximum number of bytes to read from the file descriptor
+// @param size: Number The maximum number of bytes to read from the file descriptor
 // @returns (String, Number) The bytes read and the number of bytes read
-export let fdPread = (fd: FileDescriptor, offsetPtr: Int64, n: Number) => {
+export let fdPread = (fd: FileDescriptor, offset: Int64, size: Number) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
   }
 
-  let offset = WasmI64.load(WasmI32.fromGrain(offsetPtr), 8n)
+  let offset = WasmI64.load(WasmI32.fromGrain(offset), 8n)
 
-  let n = WasmI32.fromGrain(n) >> 1n
+  let n = WasmI32.fromGrain(size) >> 1n
 
   let iovs = Memory.malloc(3n * 4n)
   let strPtr = allocateString(n)
@@ -456,7 +456,7 @@ export let fdPread = (fd: FileDescriptor, offsetPtr: Int64, n: Number) => {
   }
 
   nread = WasmI32.load(nread, 0n)
-  
+
   WasmI32.store(strPtr, nread, 4n)
 
   Memory.free(iovs)
@@ -466,7 +466,7 @@ export let fdPread = (fd: FileDescriptor, offsetPtr: Int64, n: Number) => {
 
 // Write to a file descriptor
 // @param fd: FileDescriptor The file descriptor to which data will be written
-// @param buf: String The data to be written
+// @param data: String The data to be written
 // @returns Number The number of bytes written
 export let fdWrite = (fd: FileDescriptor, data: String) => {
   let fd = match (fd) {
@@ -488,7 +488,7 @@ export let fdWrite = (fd: FileDescriptor, data: String) => {
   }
 
   nwritten = WasmI32.load(nwritten, 0n)
-  
+
   Memory.free(iovs)
 
   tagSimpleNumber(nwritten)
@@ -496,21 +496,21 @@ export let fdWrite = (fd: FileDescriptor, data: String) => {
 
 // Write to a file descriptor without updating the file descriptor's offset
 // @param fd: FileDescriptor The file descriptor to which data will be written
-// @param buf: String The data to be written
+// @param data: String The data to be written
 // @param offset: Int64 The position within the file to begin writing
 // @returns Number The number of bytes written
-export let fdPwrite = (fd: FileDescriptor, data: String, offsetPtr: Int64) => {
+export let fdPwrite = (fd: FileDescriptor, data: String, offset: Int64) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
   }
-  
+
   let iovs = Memory.malloc(3n * 4n)
   let strPtr = WasmI32.fromGrain(data)
-  
+
   WasmI32.store(iovs, strPtr + (2n * 4n), 0n)
   WasmI32.store(iovs, WasmI32.load(strPtr, 4n), 4n)
 
-  let offset = WasmI64.load(WasmI32.fromGrain(offsetPtr), 8n)
+  let offset = WasmI64.load(WasmI32.fromGrain(offset), 8n)
 
   let mut nwritten = iovs + (3n * 4n)
 
@@ -521,7 +521,7 @@ export let fdPwrite = (fd: FileDescriptor, data: String, offsetPtr: Int64) => {
   }
 
   nwritten = WasmI32.load(nwritten, 0n)
-  
+
   Memory.free(iovs)
 
   tagSimpleNumber(nwritten)
@@ -530,16 +530,16 @@ export let fdPwrite = (fd: FileDescriptor, data: String, offsetPtr: Int64) => {
 // Allocate space within a file
 // @param fd: FileDescriptor The file descriptor in which space will be allocated
 // @param offset: Int64 The position within the file to begin writing
-// @param nBytes: Int64 The number of bytes to allocate
-export let fdAllocate = (fd: FileDescriptor, offsetPtr: Int64, sizePtr: Int64) => {
+// @param size: Int64 The number of bytes to allocate
+export let fdAllocate = (fd: FileDescriptor, offset: Int64, size: Int64) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
   }
 
-  let offset = WasmI64.load(WasmI32.fromGrain(offsetPtr), 8n)
+  let offset = WasmI64.load(WasmI32.fromGrain(offset), 8n)
 
-  let size = WasmI64.load(WasmI32.fromGrain(sizePtr), 8n)
-  
+  let size = WasmI64.load(WasmI32.fromGrain(size), 8n)
+
   let err = Wasi.fd_allocate(fd, offset, size)
   if (err != Wasi._ESUCCESS) {
     throw Wasi.SystemError(tagSimpleNumber(err))
@@ -634,7 +634,7 @@ export let fdStats = (fd: FileDescriptor) => {
   }
 
   let structPtr = Memory.malloc(24n)
-  
+
   let err = Wasi.fd_fdstat_get(fd, structPtr)
   if (err != Wasi._ESUCCESS) {
     Memory.free(structPtr)
@@ -677,13 +677,14 @@ export let fdStats = (fd: FileDescriptor) => {
 
 // Update the flags associated with a file descriptor
 // @param fd: FileDescriptor The file descriptor to update flags
-export let fdSetFlags = (fd: FileDescriptor, flagsPtr: List<FdFlag>) => {
+// @param flags: List<FdFlag> The flags to apply to the file descriptor
+export let fdSetFlags = (fd: FileDescriptor, flags: List<FdFlag>) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
   }
 
-  let flags = combineFdFlags(flagsPtr)
-  
+  let flags = combineFdFlags(flags)
+
   let err = Wasi.fd_fdstat_set_flags(fd, flags)
   if (err != Wasi._ESUCCESS) {
     throw Wasi.SystemError(tagSimpleNumber(err))
@@ -691,16 +692,17 @@ export let fdSetFlags = (fd: FileDescriptor, flagsPtr: List<FdFlag>) => {
 }
 
 // Update the rights associated with a file descriptor
+// @param fd: FileDescriptor The file descriptor to update rights
 // @param rights: List<Rights> Rights to apply to the file descriptor
 // @param rightsInheriting: List<Rights> Inheriting rights to apply to the file descriptor
-export let fdSetRights = (fd: FileDescriptor, rightsPtr: List<Rights>, rightsInheritingPtr: List<Rights>) => {
+export let fdSetRights = (fd: FileDescriptor, rights: List<Rights>, rightsInheriting: List<Rights>) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
   }
 
-  let rights = combineRights(rightsPtr)
-  let rightsInheriting = combineRights(rightsInheritingPtr)
-  
+  let rights = combineRights(rights)
+  let rightsInheriting = combineRights(rightsInheriting)
+
   let err = Wasi.fd_fdstat_set_rights(fd, rights, rightsInheriting)
   if (err != Wasi._ESUCCESS) {
     throw Wasi.SystemError(tagSimpleNumber(err))
@@ -740,12 +742,12 @@ export let fdFilestats = (fd: FileDescriptor) => {
 // Set (truncate) the size of a file
 // @param fd: FileDescriptor The file descriptor of the file to truncate
 // @param size: Int64 The number of bytes to retain in the file
-export let fdSetSize = (fd: FileDescriptor, sizePtr: Int64) => {
+export let fdSetSize = (fd: FileDescriptor, size: Int64) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
   }
 
-  let size = WasmI64.load(WasmI32.fromGrain(sizePtr), 8n)
+  let size = WasmI64.load(WasmI32.fromGrain(size), 8n)
 
   let err = Wasi.fd_filestat_set_size(fd, size)
   if (err != Wasi._ESUCCESS) {
@@ -756,12 +758,12 @@ export let fdSetSize = (fd: FileDescriptor, sizePtr: Int64) => {
 // Set the access (created) time of a file
 // @param fd: FileDescriptor The file descriptor of the file to update
 // @param timestamp: Int64 The time to set
-export let fdSetAccessTime = (fd: FileDescriptor, timePtr: Int64) => {
+export let fdSetAccessTime = (fd: FileDescriptor, timestamp: Int64) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
   }
 
-  let time = WasmI64.load(WasmI32.fromGrain(timePtr), 8n)
+  let time = WasmI64.load(WasmI32.fromGrain(timestamp), 8n)
 
   let err = Wasi.fd_filestat_set_times(fd, time, 0N, Wasi._TIME_SET_ATIM)
   if (err != Wasi._ESUCCESS) {
@@ -785,12 +787,12 @@ export let fdSetAccessTimeNow = (fd: FileDescriptor) => {
 // Set the modified time of a file
 // @param fd: FileDescriptor The file descriptor of the file to update
 // @param timestamp: Int64 The time to set
-export let fdSetModifiedTime = (fd: FileDescriptor, timePtr: Int64) => {
+export let fdSetModifiedTime = (fd: FileDescriptor, timestamp: Int64) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
   }
 
-  let time = WasmI64.load(WasmI32.fromGrain(timePtr), 8n)
+  let time = WasmI64.load(WasmI32.fromGrain(timestamp), 8n)
 
   let err = Wasi.fd_filestat_set_times(fd, 0N, time, Wasi._TIME_SET_MTIM)
   if (err != Wasi._ESUCCESS) {
@@ -823,10 +825,10 @@ export let fdReaddir = (fd: FileDescriptor) => {
 
   let bufUsed = Memory.malloc(4n)
   let mut cookie = 0N
-  
+
   let mut buf = Memory.malloc(structWidth)
   let mut bufLen = structWidth
-  
+
   let err = Wasi.fd_readdir(fd, buf, bufLen, cookie, bufUsed)
   if (err != Wasi._ESUCCESS) {
     Memory.free(buf)
@@ -835,7 +837,7 @@ export let fdReaddir = (fd: FileDescriptor) => {
   }
 
   let used = WasmI32.load(bufUsed, 0n)
-  
+
   if (used <= 0n) {
     Memory.free(buf)
     Memory.free(bufUsed)
@@ -844,7 +846,7 @@ export let fdReaddir = (fd: FileDescriptor) => {
     bufLen = WasmI32.load(buf, 16n) + structWidth * 2n
 
     Memory.free(buf)
-    
+
     // simple linked list
     // ptr +0n -> current buffer
     // ptr +4n -> bufs
@@ -854,7 +856,7 @@ export let fdReaddir = (fd: FileDescriptor) => {
 
     while (true) {
       numEntries += 1n
-      
+
       buf = Memory.malloc(bufLen)
       let cons = Memory.malloc(8n)
       WasmI32.store(cons, buf, 0n)
@@ -898,7 +900,7 @@ export let fdReaddir = (fd: FileDescriptor) => {
       let path = WasmI32.toGrain(dirname): String
 
       let filetype = filetypeFromNumber(WasmI32.load8U(ent, 20n))
-      
+
       let dirent = { inode, path, filetype }
 
       WasmI32.store(arr + i * 4n, WasmI32.fromGrain(dirent), 8n)
@@ -909,14 +911,14 @@ export let fdReaddir = (fd: FileDescriptor) => {
 
       bufs = next
     }
-    
+
     WasmI32.toGrain(arr): Array<DirectoryEntry>
   }
 }
 
 // Atomically replace a file descriptor by renumbering another file descriptor
-// @param from: FileDescriptor The file descriptor to renumber
-// @param to: FileDescriptor The file descriptor to overwrite
+// @param fromFd: FileDescriptor The file descriptor to renumber
+// @param toFd: FileDescriptor The file descriptor to overwrite
 export let fdRenumber = (fromFd: FileDescriptor, toFd: FileDescriptor) => {
   let fromFd = match (fromFd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
@@ -934,17 +936,17 @@ export let fdRenumber = (fromFd: FileDescriptor, toFd: FileDescriptor) => {
 
 // Update a file descriptor's offset
 // @param fd: FileDescriptor The file descriptor to operate on
-// @param delta: Int64 The number of bytes to move the offset
+// @param offset: Int64 The number of bytes to move the offset
 // @param whence: Whence The location from which the offset is relative
 // @returns Int64 The new offset of the file descriptor, relative to the start of the file
-export let fdSeek = (fd: FileDescriptor, offsetPtr: Int64, whencePtr: Whence) => {
+export let fdSeek = (fd: FileDescriptor, offset: Int64, whence: Whence) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
   }
 
-  let offset = WasmI64.load(WasmI32.fromGrain(offsetPtr), 8n)
+  let offset = WasmI64.load(WasmI32.fromGrain(offset), 8n)
 
-  let whence = match (whencePtr) {
+  let whence = match (whence) {
     Set => Wasi._WHENCE_SET,
     Current => Wasi._WHENCE_CUR,
     End => Wasi._WHENCE_END
@@ -952,7 +954,7 @@ export let fdSeek = (fd: FileDescriptor, offsetPtr: Int64, whencePtr: Whence) =>
 
   let newoffset = allocateInt64()
   let newoffsetPtr = newoffset + 8n
-  
+
   let err = Wasi.fd_seek(fd, offset, whence, newoffsetPtr)
   if (err != Wasi._ESUCCESS) {
     Memory.free(newoffset)
@@ -972,7 +974,7 @@ export let fdTell = (fd: FileDescriptor) => {
 
   let offset = allocateInt64()
   let offsetPtr = offset + 8n
-  
+
   let err = Wasi.fd_tell(fd, offsetPtr)
   if (err != Wasi._ESUCCESS) {
     Memory.free(offset)
@@ -984,15 +986,15 @@ export let fdTell = (fd: FileDescriptor) => {
 
 
 // Create a directory
-// @param workingDirectory: FileDescriptor The directory in which path resolution starts
+// @param fd: FileDescriptor The file descriptor of the directory in which path resolution starts
 // @param path: String The path to the new directory
-export let pathCreateDirectory = (fd: FileDescriptor, stringPtr: String) => {
+export let pathCreateDirectory = (fd: FileDescriptor, path: String) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
   }
-  
-  let stringPtr = WasmI32.fromGrain(stringPtr)
-  
+
+  let stringPtr = WasmI32.fromGrain(path)
+
   let size = WasmI32.load(stringPtr, 4n)
 
   let err = Wasi.path_create_directory(fd, stringPtr + 8n, size)
@@ -1002,21 +1004,21 @@ export let pathCreateDirectory = (fd: FileDescriptor, stringPtr: String) => {
 }
 
 // Retrieve information about a file
-// @param workingDirectory: FileDescriptor The directory in which path resolution starts
-// @param flags: List<LookupFlag> Flags which affect path resolution
+// @param fd: FileDescriptor The file descriptor of the directory in which path resolution starts
+// @param dirFlags: List<LookupFlag> Flags which affect path resolution
 // @param path: String The path to retrieve information about
 // @returns Filestats A record containing information about the file
-export let pathFilestats = (fd: FileDescriptor, dirflags: List<LookupFlag>, pathPtr: String) => {
+export let pathFilestats = (fd: FileDescriptor, dirFlags: List<LookupFlag>, path: String) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
   }
 
-  let combinedDirFlags = combineLookupFlags(dirflags)
+  let combinedDirFlags = combineLookupFlags(dirFlags)
 
-  let mut pathPtr = WasmI32.fromGrain(pathPtr)
+  let mut pathPtr = WasmI32.fromGrain(path)
   let pathSize = WasmI32.load(pathPtr, 4n)
   pathPtr += 8n
-  
+
   let filestats = Memory.malloc(64n)
 
   let err = Wasi.path_filestat_get(fd, combinedDirFlags, pathPtr, pathSize, filestats)
@@ -1041,22 +1043,22 @@ export let pathFilestats = (fd: FileDescriptor, dirflags: List<LookupFlag>, path
 }
 
 // Set the access (created) time of a file
-// @param workingDirectory: FileDescriptor The directory in which path resolution starts
-// @param flags: List<LookupFlag> Flags which affect path resolution
+// @param fd: FileDescriptor The file descriptor of the directory in which path resolution starts
+// @param dirFlags: List<LookupFlag> Flags which affect path resolution
 // @param path: String The path to set the time
 // @param timestamp: Int64 The time to set
-export let pathSetAccessTime = (fd: FileDescriptor, dirflags: List<LookupFlag>, pathPtr: String, timePtr: Int64) => {
+export let pathSetAccessTime = (fd: FileDescriptor, dirFlags: List<LookupFlag>, path: String, timestamp: Int64) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
   }
 
-  let combinedDirFlags = combineLookupFlags(dirflags)
+  let combinedDirFlags = combineLookupFlags(dirFlags)
 
-  let mut pathPtr = WasmI32.fromGrain(pathPtr)
+  let mut pathPtr = WasmI32.fromGrain(path)
   let pathSize = WasmI32.load(pathPtr, 4n)
   pathPtr += 8n
 
-  let time = WasmI64.load(WasmI32.fromGrain(timePtr), 8n)
+  let time = WasmI64.load(WasmI32.fromGrain(timestamp), 8n)
 
   let err = Wasi.path_filestat_set_times(fd, combinedDirFlags, pathPtr, pathSize, time, 0N, Wasi._TIME_SET_ATIM)
   if (err != Wasi._ESUCCESS) {
@@ -1065,17 +1067,17 @@ export let pathSetAccessTime = (fd: FileDescriptor, dirflags: List<LookupFlag>, 
 }
 
 // Set the access (created) time of a file to the current time
-// @param workingDirectory: FileDescriptor The directory in which path resolution starts
-// @param flags: List<LookupFlag> Flags which affect path resolution
+// @param fd: FileDescriptor The file descriptor of the directory in which path resolution starts
+// @param dirFlags: List<LookupFlag> Flags which affect path resolution
 // @param path: String The path to set the time
-export let pathSetAccessTimeNow = (fd: FileDescriptor, dirflags: List<LookupFlag>, pathPtr: String) => {
+export let pathSetAccessTimeNow = (fd: FileDescriptor, dirFlags: List<LookupFlag>, path: String) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
   }
 
-  let combinedDirFlags = combineLookupFlags(dirflags)
+  let combinedDirFlags = combineLookupFlags(dirFlags)
 
-  let mut pathPtr = WasmI32.fromGrain(pathPtr)
+  let mut pathPtr = WasmI32.fromGrain(path)
   let pathSize = WasmI32.load(pathPtr, 4n)
   pathPtr += 8n
 
@@ -1086,22 +1088,22 @@ export let pathSetAccessTimeNow = (fd: FileDescriptor, dirflags: List<LookupFlag
 }
 
 // Set the modified time of a file
-// @param workingDirectory: FileDescriptor The directory in which path resolution starts
-// @param flags: List<LookupFlag> Flags which affect path resolution
+// @param fd: FileDescriptor The file descriptor of the directory in which path resolution starts
+// @param dirFlags: List<LookupFlag> Flags which affect path resolution
 // @param path: String The path to set the time
 // @param timestamp: Int64 The time to set
-export let pathSetModifiedTime = (fd: FileDescriptor, dirflags: List<LookupFlag>, pathPtr: String, timePtr: Int64) => {
+export let pathSetModifiedTime = (fd: FileDescriptor, dirFlags: List<LookupFlag>, path: String, timestamp: Int64) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
   }
 
-  let combinedDirFlags = combineLookupFlags(dirflags)
+  let combinedDirFlags = combineLookupFlags(dirFlags)
 
-  let mut pathPtr = WasmI32.fromGrain(pathPtr)
+  let mut pathPtr = WasmI32.fromGrain(path)
   let pathSize = WasmI32.load(pathPtr, 4n)
   pathPtr += 8n
 
-  let time = WasmI64.load(WasmI32.fromGrain(timePtr), 8n)
+  let time = WasmI64.load(WasmI32.fromGrain(timestamp), 8n)
 
   let err = Wasi.path_filestat_set_times(fd, combinedDirFlags, pathPtr, pathSize, 0N, time, Wasi._TIME_SET_MTIM)
   if (err != Wasi._ESUCCESS) {
@@ -1110,17 +1112,17 @@ export let pathSetModifiedTime = (fd: FileDescriptor, dirflags: List<LookupFlag>
 }
 
 // Set the modified time of a file to the current time
-// @param workingDirectory: FileDescriptor The directory in which path resolution starts
-// @param flags: List<LookupFlag> Flags which affect path resolution
+// @param fd: FileDescriptor The file descriptor of the directory in which path resolution starts
+// @param dirFlags: List<LookupFlag> Flags which affect path resolution
 // @param path: String The path to set the time
-export let pathSetModifiedTimeNow = (fd: FileDescriptor, dirflags: List<LookupFlag>, pathPtr: String) => {
+export let pathSetModifiedTimeNow = (fd: FileDescriptor, dirFlags: List<LookupFlag>, path: String) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
   }
 
-  let combinedDirFlags = combineLookupFlags(dirflags)
+  let combinedDirFlags = combineLookupFlags(dirFlags)
 
-  let mut pathPtr = WasmI32.fromGrain(pathPtr)
+  let mut pathPtr = WasmI32.fromGrain(path)
   let pathSize = WasmI32.load(pathPtr, 4n)
   pathPtr += 8n
 
@@ -1131,12 +1133,12 @@ export let pathSetModifiedTimeNow = (fd: FileDescriptor, dirflags: List<LookupFl
 }
 
 // Create a hard link
-// @param sourceWorkingDirectory: FileDescriptor The directory in which the source path resolution starts
-// @param flags: List<LookupFlag> Flags which affect path resolution
+// @param sourceFd: FileDescriptor The file descriptor of the directory in which the source path resolution starts
+// @param dirFlags: List<LookupFlag> Flags which affect path resolution
 // @param sourcePath: String The path to the source of the link
-// @param targetWorkingDirectory: FileDescriptor The directory in which the target path resolution starts
+// @param targetFd: FileDescriptor The file descriptor of the directory in which the target path resolution starts
 // @param targetPath: String The path to the target of the link
-export let pathLink = (sourceFd: FileDescriptor, dirflags: List<LookupFlag>, sourcePtr: String, targetFd: FileDescriptor, targetPtr: String) => {
+export let pathLink = (sourceFd: FileDescriptor, dirFlags: List<LookupFlag>, sourcePath: String, targetFd: FileDescriptor, targetPath: String) => {
   let sourceFd = match (sourceFd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
   }
@@ -1145,10 +1147,10 @@ export let pathLink = (sourceFd: FileDescriptor, dirflags: List<LookupFlag>, sou
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
   }
 
-  let combinedDirFlags = combineLookupFlags(dirflags)
+  let combinedDirFlags = combineLookupFlags(dirFlags)
 
-  let sourcePtr = WasmI32.fromGrain(sourcePtr)
-  let targetPtr = WasmI32.fromGrain(targetPtr)
+  let sourcePtr = WasmI32.fromGrain(sourcePath)
+  let targetPtr = WasmI32.fromGrain(targetPath)
 
   let sourceSize = WasmI32.load(sourcePtr, 4n)
   let targetSize = WasmI32.load(targetPtr, 4n)
@@ -1160,16 +1162,16 @@ export let pathLink = (sourceFd: FileDescriptor, dirflags: List<LookupFlag>, sou
 }
 
 // Create a symlink
-// @param workingDirectory: FileDescriptor The directory in which path resolution starts
+// @param fd: FileDescriptor The file descriptor to operate on
 // @param sourcePath: String The path to the source of the link
 // @param targetPath: String The path to the target of the link
-export let pathSymlink = (fd: FileDescriptor, sourcePtr: String, targetPtr: String) => {
+export let pathSymlink = (fd: FileDescriptor, sourcePath: String, targetPath: String) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
   }
 
-  let sourcePtr = WasmI32.fromGrain(sourcePtr)
-  let targetPtr = WasmI32.fromGrain(targetPtr)
+  let sourcePtr = WasmI32.fromGrain(sourcePath)
+  let targetPtr = WasmI32.fromGrain(targetPath)
 
   let sourceSize = WasmI32.load(sourcePtr, 4n)
   let targetSize = WasmI32.load(targetPtr, 4n)
@@ -1181,14 +1183,14 @@ export let pathSymlink = (fd: FileDescriptor, sourcePtr: String, targetPtr: Stri
 }
 
 // Unlink a file
-// @param workingDirectory: FileDescriptor The directory in which path resolution starts
+// @param fd: FileDescriptor The file descriptor to operate on
 // @param path: String The path of the file to unlink
-export let pathUnlink = (fd: FileDescriptor, pathPtr: String) => {
+export let pathUnlink = (fd: FileDescriptor, path: String) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
   }
 
-  let pathPtr = WasmI32.fromGrain(pathPtr)
+  let pathPtr = WasmI32.fromGrain(path)
   let pathSize = WasmI32.load(pathPtr, 4n)
 
   let err = Wasi.path_unlink_file(fd, pathPtr + 8n, pathSize)
@@ -1198,16 +1200,16 @@ export let pathUnlink = (fd: FileDescriptor, pathPtr: String) => {
 }
 
 // Read the contents of a symbolic link
-// @param workingDirectory: FileDescriptor The directory in which path resolution starts
+// @param fd: FileDescriptor The file descriptor of the directory in which path resolution starts
 // @param path: String The path to the symlink
-// @param nBytes: The number of bytes to read
+// @param size: The number of bytes to read
 // @returns (String, Number) The bytes read and the number of bytes read
-export let pathReadlink = (fd: FileDescriptor, pathPtr: String, size: Number) => {
+export let pathReadlink = (fd: FileDescriptor, path: String, size: Number) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
   }
 
-  let pathPtr = WasmI32.fromGrain(pathPtr)
+  let pathPtr = WasmI32.fromGrain(path)
   let pathSize = WasmI32.load(pathPtr, 4n)
 
   let size = WasmI32.fromGrain(size) >> 1n
@@ -1231,14 +1233,14 @@ export let pathReadlink = (fd: FileDescriptor, pathPtr: String, size: Number) =>
 }
 
 // Remove a directory
-// @param workingDirectory: FileDescriptor The directory in which path resolution starts
+// @param fd: FileDescriptor The file descriptor of the directory in which path resolution starts
 // @param path: String The path to the directory to remove
-export let pathRemoveDirectory = (fd: FileDescriptor, pathPtr: String) => {
+export let pathRemoveDirectory = (fd: FileDescriptor, path: String) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
   }
 
-  let pathPtr = WasmI32.fromGrain(pathPtr)
+  let pathPtr = WasmI32.fromGrain(path)
   let pathSize = WasmI32.load(pathPtr, 4n)
 
   let err = Wasi.path_remove_directory(fd, pathPtr + 8n, pathSize)
@@ -1248,11 +1250,11 @@ export let pathRemoveDirectory = (fd: FileDescriptor, pathPtr: String) => {
 }
 
 // Rename a file or directory
-// @param sourceWorkingDirectory: FileDescriptor The directory in which the source path resolution starts
+// @param sourceFd: FileDescriptor The file descriptor of the directory in which the source path resolution starts
 // @param sourcePath: String The path of the file to rename
-// @param targetWorkingDirectory: FileDescriptor The directory in which the target path resolution starts
+// @param targetFd: FileDescriptor The file descriptor of the directory in which the target path resolution starts
 // @param targetPath: String The new path of the file
-export let pathRename = (sourceFd: FileDescriptor, sourcePtr: String, targetFd: FileDescriptor, targetPtr: String) => {
+export let pathRename = (sourceFd: FileDescriptor, sourcePath: String, targetFd: FileDescriptor, targetPath: String) => {
   let sourceFd = match (sourceFd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
   }
@@ -1261,8 +1263,8 @@ export let pathRename = (sourceFd: FileDescriptor, sourcePtr: String, targetFd: 
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
   }
 
-  let sourcePtr = WasmI32.fromGrain(sourcePtr)
-  let targetPtr = WasmI32.fromGrain(targetPtr)
+  let sourcePtr = WasmI32.fromGrain(sourcePath)
+  let targetPtr = WasmI32.fromGrain(targetPath)
 
   let sourceSize = WasmI32.load(sourcePtr, 4n)
   let targetSize = WasmI32.load(targetPtr, 4n)
