@@ -47,21 +47,7 @@ export function toBinary(n, minWidth) {
 
 function float64At(idx) {
   const f64view = managedMemory.f64view;
-
-  if (idx % 8 == 0) {
-    // if aligned, return without extra allocations
-    return f64view[idx / 8 + 1];
-  }
-  // TODO: (#309) Verify that we're always 8-byte aligned and don't need this case
-  // not 8-byte aligned. Need load into temporary buffer
-  let tmpbuf = new ArrayBuffer(8);
-  let tmpview32 = new Uint32Array(tmpbuf);
-  let tmpview = new Float64Array(tmpbuf);
-  const view = managedMemory.view;
-
-  tmpview32[0] = view[idx / 4 + 2];
-  tmpview32[1] = view[idx / 4 + 3];
-  return tmpview[0];
+  return f64view[idx / 8 + 1];
 }
 
 // TODO: Move
