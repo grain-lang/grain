@@ -1162,7 +1162,7 @@ export let pathLink = (sourceFd: FileDescriptor, dirFlags: List<LookupFlag>, sou
 }
 
 // Create a symlink
-// @param fd: FileDescriptor The file descriptor to operate on
+// @param fd: FileDescriptor The file descriptor of the directory in which path resolution starts
 // @param sourcePath: String The path to the source of the link
 // @param targetPath: String The path to the target of the link
 export let pathSymlink = (fd: FileDescriptor, sourcePath: String, targetPath: String) => {
@@ -1183,7 +1183,7 @@ export let pathSymlink = (fd: FileDescriptor, sourcePath: String, targetPath: St
 }
 
 // Unlink a file
-// @param fd: FileDescriptor The file descriptor to operate on
+// @param fd: FileDescriptor The file descriptor of the directory in which path resolution starts
 // @param path: String The path of the file to unlink
 export let pathUnlink = (fd: FileDescriptor, path: String) => {
   let fd = match (fd) {
