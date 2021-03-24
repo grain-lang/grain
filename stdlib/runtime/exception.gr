@@ -1,0 +1,103 @@
+/* grainc-flags --compilation-mode=runtime */
+
+import WasmI32, {
+  eq as (==),
+  add as (+)
+} from "runtime/unsafe/wasmi32"
+
+import foreign wasm fd_write: (WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+
+enum Option<a> { Some(a), None }
+
+export let mut printers = 0n
+
+export let registerBasePrinter = (f) => {
+  let mut current = printers
+  while (true) {
+    // There will be at least one printer registered by the time this is called
+    let (_, next) = WasmI32.toGrain(current) : (Exception -> Option<String>, WasmI32)
+    if (next == 0n) {
+      // Using a tuple in runtime mode is typically disallowed as there is no way
+      // to reclaim the memory, but this function is only called once
+      let newBase = (WasmI32.fromGrain(f), 0n)
+      WasmI32.store(current, WasmI32.fromGrain(newBase), 12n)
+      break
+    }
+    current = next
+  }
+}
+
+export let dangerouslyRegisterPrinter = (f) => {
+  // This is dangerous because it leaks runtime memory.
+  // This should only be called by this module and Pervasives.
+  printers = WasmI32.fromGrain((f, printers))
+}
+
+let _GENERIC_EXCEPTION_NAME = "GrainException"
+
+let exceptionToString = (e: Exception) => {
+  let mut result = _GENERIC_EXCEPTION_NAME
+  let mut current = printers
+  while (true) {
+    if (current == 0n) {
+      break
+    }
+    let (printer, next) = WasmI32.toGrain(current) : (Exception -> Option<String>, WasmI32)
+    match (printer(e)) {
+      Some(str) => {
+        result = str
+        break
+      },
+      None => void
+    }
+    current = next
+  }
+  result
+}
+
+// HACK: Allocate static buffer for printing (40 bytes)
+// Would be nice to have a better way to allocate a static block from
+// the runtime heap, but this is the only module that needs to do it
+let iov = WasmI32.fromGrain([> 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n])
+
+export let printException = (e: Exception) => {
+  let ptr = WasmI32.fromGrain(exceptionToString(e))
+  let written = iov + 32n
+  let lf = iov + 36n
+  WasmI32.store(iov, ptr + 8n, 0n)
+  WasmI32.store(iov, WasmI32.load(ptr, 4n), 4n)
+  WasmI32.store8(lf, 10n, 0n)
+  WasmI32.store(iov, lf, 8n)
+  WasmI32.store(iov, 1n, 12n)
+  fd_write(2n, iov, 2n, written)
+  void
+}
+
+export exception IndexOutOfBounds
+export exception DivisionByZero
+export exception ModuloByZero
+export exception Overflow
+export exception NumberNotIntlike
+export exception NumberNotRational
+export exception MatchFailure
+export exception AssertionError
+export exception InvalidArgument(String)
+export exception OutOfMemory
+
+let runtimeErrorPrinter = (e) => {
+  match (e) {
+    IndexOutOfBounds => Some("IndexOutOfBounds: Index out of bounds"),
+    DivisionByZero => Some("DivisionByZero: Division by zero"),
+    ModuloByZero => Some("ModuloByZero: Modulo by zero"),
+    Overflow => Some("Overflow: Number overflow"),
+    NumberNotIntlike => Some("NumberNotIntlike: Can't coerce number to integer"),
+    NumberNotRational => Some("NumberNotRational: Can't coerce number to rational"),
+    MatchFailure => Some("MatchFailure: No matching pattern"),
+    AssertionError => Some("AssertionError: Assertion failed"),
+    OutOfMemory => Some("OutOfMemory: Maximum memory size exceeded"),
+    InvalidArgument(msg) => Some(msg),
+    _ => None
+  }
+}
+
+dangerouslyRegisterPrinter(runtimeErrorPrinter)

@@ -8,9 +8,7 @@ import WasmI32, {
 import Memory from "runtime/unsafe/memory"
 import Wasi from "runtime/wasi"
 import Errors from "runtime/unsafe/errors"
-import { allocateInt64 } from "runtime/dataStructures"
-
-import foreign wasm throwError: (WasmI32, WasmI32, WasmI32) -> a from "grainRuntime"
+import { allocateInt64, tagSimpleNumber } from "runtime/dataStructures"
 
 let getClockTime = (clockid, precision) => {
   let int64Ptr = allocateInt64()
@@ -18,7 +16,7 @@ let getClockTime = (clockid, precision) => {
   let err = Wasi.clock_time_get(clockid, precision, timePtr)
   if (err != Wasi._ESUCCESS) {
     Memory.free(int64Ptr)
-    throwError(Errors._GRAIN_ERR_SYSTEM, err, 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 
   WasmI32.toGrain(int64Ptr): Int64

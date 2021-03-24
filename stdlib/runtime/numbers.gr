@@ -1,19 +1,19 @@
 /* grainc-flags --compilation-mode=runtime */
 
 import Tags from "runtime/unsafe/tags"
-import Errors from "runtime/unsafe/errors"
+import Exception from "runtime/exception"
 
 import WasmI32 from "runtime/unsafe/wasmi32"
 import WasmI64 from "runtime/unsafe/wasmi64"
 import WasmF32 from "runtime/unsafe/wasmf32"
 import WasmF64 from "runtime/unsafe/wasmf64"
 
-import foreign wasm throwError: (WasmI32, WasmI32, WasmI32) -> a from "grainRuntime"
-
 primitive (!) : Bool -> Bool = "@not"
 primitive (&&) : (Bool, Bool) -> Bool = "@and"
 primitive (||) : (Bool, Bool) -> Bool = "@or"
-primitive fail : String -> a = "@fail"
+primitive throw : Exception -> a = "@throw"
+
+exception UnknownNumberTag
 
 import {
   newRational,
@@ -36,23 +36,6 @@ let _F32_MIN = 1.401298464324817e-45W
 let _F32_MAX_SAFE_INTEGER = 16777215.w
 let _F64_MAX_SAFE_INTEGER = 9007199254740991.W
 
-
-// TODO: (#301) pretty much all of the overflow values we pass here are suboptimal...really need to rework this
-let throwOverflowError = (x) => {
-  throwError(Errors._GRAIN_ERR_OVERFLOW, x, 0n)
-}
-
-let throwDivideByZero = () => {
-  throwError(Errors._GRAIN_ERR_DIVISION_BY_ZERO, 0n, 0n)
-}
-
-let throwNotIntLike = (x) => {
-  throwError(Errors._GRAIN_ERR_NOT_INTLIKE, x, 0n)
-}
-
-let throwNotRational = (x) => {
-  throwError(Errors._GRAIN_ERR_NOT_RATIONAL, x, 0n)
-}
 
 let tagSimple = (x) => {
   WasmI32.xor(WasmI32.shl(x, 1n), 1n)
@@ -81,7 +64,7 @@ export let isNumber = (x) => {
 
 let safeI64toI32 = (x) => {
   if (WasmI64.gtS(x, _I32_MAX) || WasmI64.ltS(x, _I32_MIN)) {
-    throwOverflowError(WasmI32.wrapI64(x))
+    throw Exception.Overflow
   } else {
     WasmI32.wrapI64(x)
   }
@@ -157,7 +140,7 @@ let reducedFraction = (x, y) => {
     y = i32neg(y)
   }
   if (WasmI32.eqz(y)) {
-    throwDivideByZero()
+    throw Exception.DivisionByZero
   }
   if (WasmI32.eqz(WasmI32.remS(x, y))) {
     // Avoid allocation if possible
@@ -180,7 +163,7 @@ let reducedFraction64 = (x, y) => {
     y = i64neg(y)
   }
   if (WasmI64.eqz(y)) {
-    throwDivideByZero()
+    throw Exception.DivisionByZero
   }
   if (WasmI64.eqz(WasmI64.remS(x, y))) {
     reducedInteger(WasmI64.divS(x, y))
@@ -195,7 +178,7 @@ let reducedFraction64 = (x, y) => {
 let safeI32Multiply = (x, y) => {
   let prod = WasmI64.mul(WasmI64.extendI32S(x), WasmI64.extendI32S(y))
   if (WasmI64.gtS(prod, _I32_MAX) || WasmI64.ltS(prod, _I32_MIN)) {
-    throwOverflowError(x)
+    throw Exception.Overflow
   }
   WasmI32.wrapI64(prod)
 }
@@ -204,9 +187,7 @@ let safeI64Multiply = (x, y) => {
   let prod = WasmI64.mul(x, y)
   if (WasmI64.ne(x, 0N)) {
     if (WasmI64.ne(WasmI64.divS(prod, x), y)) {
-      // TODO: (#301) just passing x is kind of bad UX
-      // TODO: (#302) once we have exception handling, this will leak
-      throwOverflowError(newInt64(x))
+      throw Exception.Overflow
     }
   }
   prod
@@ -287,13 +268,13 @@ let coerceFloat32 = (x) => {
         let xval = boxedFloat64Number(x)
         if (WasmF64.gt(xval, _F32_MAX) || WasmF64.lt(xval, _F32_MIN)) {
           // Not an actual return value
-          throwOverflowError(x)
+          throw Exception.Overflow
         } else {
           WasmF32.demoteF64(xval)
         }
       },
       _ => {
-        fail "Unknown boxed number tag"
+        throw UnknownNumberTag
       }
     }
   }
@@ -321,7 +302,7 @@ let coerceFloat64 = (x) => {
         boxedFloat64Number(x)
       },
       _ => {
-        fail "Unknown boxed number tag"
+        throw UnknownNumberTag
       }
     }
   }
@@ -341,7 +322,7 @@ let coerceInt64 = (x) => {
       },
       _ => {
         // rationals are never integral, and we refuse to coerce floats to ints
-        throwNotIntLike(x)
+        throw Exception.NumberNotIntlike
       }
     }
   }
@@ -350,7 +331,7 @@ let coerceInt64 = (x) => {
 let coerceInt32 = (x) => {
   let asInt64 = coerceInt64(x)
   if (WasmI64.gtS(asInt64, _I32_MAX) || WasmI64.ltS(asInt64, _I32_MIN)) {
-    throwOverflowError(x)
+    throw Exception.Overflow
   }
   WasmI32.wrapI64(asInt64)
 }
@@ -410,7 +391,7 @@ let numberEqualSimpleHelp = (x, y) => {
         isSafeIntegerF64(yBoxedVal) && WasmF64.eq(WasmF64.convertI32S(xval), yBoxedVal)
       },
       _ => {
-        fail "Unknown boxed number tag"
+        throw UnknownNumberTag
       }
     }
   }
@@ -447,7 +428,7 @@ let numberEqualInt64Help = (xBoxedVal, y) => {
         isSafeIntegerF64(yBoxedVal) && WasmI64.eq(xBoxedVal, WasmI64.truncF64S(yBoxedVal))
       },
       _ => {
-        fail "Unknown boxed number tag"
+        throw UnknownNumberTag
       }
     }
   }
@@ -493,7 +474,7 @@ let numberEqualRationalHelp = (xptr, y) => {
         WasmF64.eq(xAsFloat, yBoxedVal)
       },
       _ => {
-        fail "Unknown boxed number tag"
+        throw UnknownNumberTag
       }
     }
   }
@@ -533,7 +514,7 @@ let numberEqualFloat64Help = (x, y) => {
         WasmF64.eq(x, yBoxedVal)
       },
       _ => {
-        fail "Unknown boxed number tag"
+        throw UnknownNumberTag
       }
     }
   }
@@ -573,7 +554,7 @@ export let numberEqual = (x, y) => {
         numberEqualFloat64Help(boxedFloat64Number(x), y)
       },
       _ => {
-        fail "Unknown boxed number tag"
+        throw UnknownNumberTag
       }
     }
   }
@@ -610,9 +591,9 @@ let numberPlusMinusSimpleHelp = (x, y, isMinus) => {
         let xval64 = WasmI64.extendI32S(xval)
         let result = if (isMinus) WasmI64.sub(xval64, yBoxedVal) else WasmI64.add(xval64, yBoxedVal)
         if (WasmI64.geS(yBoxedVal, 0N) && WasmI64.ltS(result, xval64)) {
-          throwOverflowError(y)
+          throw Exception.Overflow
         } else if (WasmI64.ltS(yBoxedVal, 0N) && WasmI64.gtS(result, xval64)) {
-          throwOverflowError(y)
+          throw Exception.Overflow
         } else {
           reducedInteger(result)
         }
@@ -623,7 +604,7 @@ let numberPlusMinusSimpleHelp = (x, y, isMinus) => {
         let expandedXNumerator = safeI64Multiply(WasmI64.extendI32S(xval), yDenominator)
         let result = if (isMinus) WasmI64.sub(expandedXNumerator, yNumerator) else WasmI64.add(expandedXNumerator, yNumerator)
         if (WasmI64.ltS(result, _I32_MIN) || WasmI64.gtS(result, _I32_MAX)) {
-          throwOverflowError(y)
+          throw Exception.Overflow
         }
         reducedFraction64(result, yDenominator)
       },
@@ -641,7 +622,7 @@ let numberPlusMinusSimpleHelp = (x, y, isMinus) => {
         newFloat64(result)
       },
       _ => {
-        fail "Unknown boxed number tag"
+        throw UnknownNumberTag
       }
     }
   }
@@ -652,9 +633,9 @@ let numberPlusMinusInt64Help = (xval, y, isMinus) => {
     let yval = WasmI64.extendI32S(untagSimple(y))
     let result = if (isMinus) WasmI64.sub(xval, yval) else WasmI64.add(xval, yval)
     if (WasmI64.geS(yval, 0N) && WasmI64.ltS(result, xval)) {
-      throwOverflowError(y)
+      throw Exception.Overflow
     } else if (WasmI64.ltS(yval, 0N) && WasmI64.gtS(result, xval)) {
-      throwOverflowError(y)
+      throw Exception.Overflow
     }
     reducedInteger(result)
   } else {
@@ -670,9 +651,9 @@ let numberPlusMinusInt64Help = (xval, y, isMinus) => {
         let xval64 = xval
         let result = if (isMinus) WasmI64.sub(xval64, yBoxedVal) else WasmI64.add(xval64, yBoxedVal)
         if (WasmI64.geS(yBoxedVal, 0N) && WasmI64.ltS(result, xval64)) {
-          throwOverflowError(y)
+          throw Exception.Overflow
         } else if (WasmI64.ltS(yBoxedVal, 0N) && WasmI64.gtS(result, xval64)) {
-          throwOverflowError(y)
+          throw Exception.Overflow
         } else {
           reducedInteger(result)
         }
@@ -683,7 +664,7 @@ let numberPlusMinusInt64Help = (xval, y, isMinus) => {
         let expandedXNumerator = safeI64Multiply(xval, yDenominator)
         let result = if (isMinus) WasmI64.sub(expandedXNumerator, yNumerator) else WasmI64.add(expandedXNumerator, yNumerator)
         if (WasmI64.ltS(result, _I32_MIN) || WasmI64.gtS(result, _I32_MAX)) {
-          throwOverflowError(y)
+          throw Exception.Overflow
         }
         reducedFraction64(result, yDenominator)
       },
@@ -701,7 +682,7 @@ let numberPlusMinusInt64Help = (xval, y, isMinus) => {
         newFloat64(result)
       },
       _ => {
-        fail "Unknown boxed number tag"
+        throw UnknownNumberTag
       }
     }
   }
@@ -754,7 +735,7 @@ let rec numberPlusMinusHelp = (x, y, isMinus) => {
         numberPlusMinusFloat64Help(boxedFloat64Number(x), y, isMinus)
       },
       _ => {
-        fail "Unknown boxed number tag"
+        throw UnknownNumberTag
       }
     }
   }
@@ -795,7 +776,7 @@ numberPlusMinusRationalHelp = (x, y, isMinus) => {
         numberPlusMinusHelp(y, x, isMinus)
       },
       _ => {
-        fail "Unknown boxed number tag"
+        throw UnknownNumberTag
       }
     }
   }
@@ -873,7 +854,7 @@ let numberTimesDivideInt64Help = (xval, y, isDivide) => {
         }
       },
       _ => {
-        fail "Unknown boxed number tag"
+        throw UnknownNumberTag
       }
     }
   }
@@ -959,7 +940,7 @@ let numberTimesDivideRationalHelp = (x, y, isDivide) => {
         }
       },
       _ => {
-        fail "Unknown boxed number tag"
+        throw UnknownNumberTag
       }
     }
   }
@@ -1014,7 +995,7 @@ let numberTimesDivideHelp = (x, y, isDivide) => {
         numberTimesDivideFloat64Help(boxedFloat64Number(x), y, isDivide)
       },
       _ => {
-        fail "Unknown boxed number tag"
+        throw UnknownNumberTag
       }
     }
   }
@@ -1039,7 +1020,7 @@ let numberMod = (x, y) => {
   let xval = coerceInt64(x)
   let yval = coerceInt64(y)
   if (WasmI64.eqz(yval)) {
-    throwError(Errors._GRAIN_ERR_MODULO_BY_ZERO, 0n, 0n)
+    throw Exception.ModuloByZero
   }
   // We implement true modulo
   if (WasmI64.ltS(xval, 0N) && WasmI64.gtS(yval, 0N) || WasmI64.gtS(xval, 0N) && WasmI64.ltS(yval, 0N)) {
@@ -1211,7 +1192,7 @@ export let coerceNumberToRational = (x: Number) => {
     } else if (WasmI32.eq(tag, Tags._GRAIN_INT64_BOXED_NUM_TAG)) {
       newRational(coerceInt32(x), 1n)
     } else {
-      throwNotRational(x)
+      throw Exception.NumberNotRational
     }
   }
   WasmI32.toGrain(result): Rational
@@ -1284,7 +1265,7 @@ let convertInexactToExact = (x) => {
           reducedInteger(WasmI64.truncF64S(WasmF64.nearest(boxedFloat64Number(x))))
         },
         _ => {
-          fail "Unknown boxed number tag"
+          throw UnknownNumberTag
         }
       }
     }

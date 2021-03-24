@@ -62,7 +62,7 @@ and comp_free_vars_help = (env, c: comp_expression) =>
     Ident.Set.union(cond, Ident.Set.union(inc, body));
   | CContinue
   | CBreak => Ident.Set.empty
-  | CSwitch(arg, branches) =>
+  | CSwitch(arg, branches, _) =>
     List.fold_left(
       (acc, (_, b)) => Ident.Set.union(anf_free_vars_help(env, b), acc),
       imm_free_vars_help(env, arg),
@@ -231,7 +231,7 @@ and comp_count_vars = c =>
     let inc = Option.fold(~none=tuple_zero, ~some=anf_count_vars, inc);
     let b = anf_count_vars(b);
     tuple_add(c, tuple_add(inc, b));
-  | CSwitch(_, bs) =>
+  | CSwitch(_, bs, _) =>
     List.fold_left(tuple_max, tuple_zero) @@
     List.map(((_, b)) => anf_count_vars(b), bs)
   | CApp(_, args, _) => (List.length(args), 0, 0, 0)

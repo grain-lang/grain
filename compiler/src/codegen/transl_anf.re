@@ -477,6 +477,7 @@ let compile_imm = (env, i: imm_expression) =>
   switch (i.imm_desc) {
   | ImmConst(c) => MImmConst(compile_const(c))
   | ImmId(id) => MImmBinding(find_id(id, env))
+  | ImmTrap => MImmTrap
   };
 
 let compile_lambda =
@@ -625,7 +626,7 @@ let transl_attributes = attrs => {
 let rec compile_comp = (env, c) => {
   let desc =
     switch (c.comp_desc) {
-    | CSwitch(arg, branches) =>
+    | CSwitch(arg, branches, partial) =>
       let compiled_arg = compile_imm(env, arg);
       let switch_type =
         Option.fold(
@@ -633,6 +634,18 @@ let rec compile_comp = (env, c) => {
           ~some=((_, exp)) => asmtype_of_alloctype(exp.anf_allocation_type),
           List.nth_opt(branches, 0),
         );
+      let default =
+        switch (partial) {
+        | Partial => [
+            {
+              instr_desc: MError(Runtime_errors.MatchFailure, [compiled_arg]),
+              instr_loc: c.comp_loc,
+            },
+          ]
+        | Total => [
+            {instr_desc: MImmediate(MImmTrap), instr_loc: c.comp_loc},
+          ]
+        };
       MSwitch(
         compiled_arg,
         List.map(
@@ -640,12 +653,7 @@ let rec compile_comp = (env, c) => {
             (Int32.of_int(lbl), compile_anf_expr(env, body)),
           branches,
         ),
-        [
-          {
-            instr_desc: MError(Runtime_errors.SwitchError, [compiled_arg]),
-            instr_loc: c.comp_loc,
-          },
-        ],
+        default,
         switch_type,
       );
     | CIf(cond, thn, els) =>

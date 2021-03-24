@@ -24,8 +24,7 @@ type type_descriptions = (
 type t;
 
 let empty: t;
-let initial_safe_string: t;
-let initial_unsafe_string: t;
+let initial_env: t;
 
 type dependency_chain = list(Location.loc(string));
 

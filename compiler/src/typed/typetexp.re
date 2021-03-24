@@ -114,7 +114,7 @@ let find_component = (lookup: (~mark: _=?) => _, make_error, env, loc, lid) =>
   try(
     switch (lid) {
     | Identifier.IdentExternal(Identifier.IdentName("*predef*"), s) =>
-      lookup(Identifier.IdentName(s), Env.initial_safe_string)
+      lookup(Identifier.IdentName(s), Env.initial_env)
     | _ => lookup(lid, env)
     }
   ) {

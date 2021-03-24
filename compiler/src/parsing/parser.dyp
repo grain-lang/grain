@@ -33,7 +33,7 @@ include Parser_header
 %token UNDERSCORE
 %token COLON COLONCOLON DOT ELLIPSIS
 
-%token ASSERT FAIL EXCEPTION TRY RAISE CATCH
+%token ASSERT FAIL EXCEPTION TRY THROW CATCH
 
 %token PLUS PLUSPLUS DASH STAR SLASH PERCENT
 %token TRUE FALSE VOID
@@ -163,7 +163,7 @@ pattern :
   | const { Pat.constant ~loc:(symbol_rloc dyp) $1 }
   /* If the pattern uses an external ID, we know it's a constructor, not a variable */
   | ext_constructor { Pat.construct ~loc:(symbol_rloc dyp) $1 [] }
-  | [ID | infix] { Pat.var ~loc:(symbol_rloc dyp) (mkstr dyp $1) }
+  | [ID | special_id | primitive] { Pat.var ~loc:(symbol_rloc dyp) (mkstr dyp $1) }
   | lparen tuple_patterns rparen { Pat.tuple ~loc:(symbol_rloc dyp) $2 }
   | lbrack rcaret patterns rbrack { Pat.array ~loc:(symbol_rloc dyp) $3 }
   | lbrack rcaret rbrack { Pat.array ~loc:(symbol_rloc dyp) [] }
@@ -361,14 +361,19 @@ infix_op :
   | stareq_op
   | slasheq_op
 
-infix :
-  | lparen infix_op rparen { $2 }
+prefix_op :
+  | NOT { "!" }
 
-prefix :
-  | lparen NOT rparen { "!" }
+primitive :
+  | ASSERT { "assert" }
+  | THROW { "throw" }
+  | FAIL { "fail" }
+
+special_id :
+  | lparen [infix_op | prefix_op] rparen { $2 }
 
 id :
-  | [TYPEID dot {$1}]* [ID | TYPEID | infix | prefix] { prerr_string "\nid\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); (mkid (List.append $1 [$2])) (symbol_rloc dyp) }
+  | [TYPEID dot {$1}]* [ID | TYPEID | special_id] { prerr_string "\nid\n"; when_debug ~n:1 (fun () -> dyp.print_state stderr); (mkid (List.append $1 [$2])) (symbol_rloc dyp) }
 
 simple_id :
   | ID { (mkid [$1]) (symbol_rloc dyp) }
@@ -445,6 +450,7 @@ array_expr :
   | lbrack rcaret eols? expr [comma expr {$2}]* trailing_comma? rbrack { Exp.array ~loc:(symbol_rloc dyp) ($4::$5) }
 
 stmt_expr :
+  | THROW expr { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp ["throw"]) [$2] }
   | ASSERT expr { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp ["assert"]) [$2] }
   | FAIL expr { Exp.apply ~loc:(symbol_rloc dyp) (mkid_expr dyp ["fail"]) [$2] }
   | CONTINUE { Exp.continue ~loc:(symbol_rloc dyp) () }
@@ -521,8 +527,7 @@ file_path :
 
 id_str :
   | ID { Location.mkloc $1 (symbol_rloc dyp) }
-  | infix { Location.mkloc $1 (symbol_rloc dyp) }
-  | prefix { Location.mkloc $1 (symbol_rloc dyp) }
+  | special_id { Location.mkloc $1 (symbol_rloc dyp) }
 
 type_id_str :
   | TYPEID { Location.mkloc $1 (symbol_rloc dyp) }
@@ -538,13 +543,9 @@ export_id_str :
 foreign_stmt :
   | FOREIGN WASM id_str colon typ [AS id_str {$2}]? FROM file_path { Val.mk ~loc:(symbol_rloc dyp) ~mod_:$8 ~name:$3 ~alias:$6 ~typ:$5 ~prim:[] }
 
-primitive :
-  | ASSERT { Location.mkloc "assert" (symbol_rloc dyp) }
-  | FAIL { Location.mkloc "fail" (symbol_rloc dyp) }
-
 primitive_stmt :
   | PRIMITIVE id_str colon typ equal STRING { Val.mk ~loc:(symbol_rloc dyp) ~mod_:{$2 with txt="primitive"} ~name:$2 ~alias:None ~typ:$4 ~prim:[$6] }
-  | PRIMITIVE primitive colon typ equal STRING { Val.mk ~loc:(symbol_rloc dyp) ~mod_:{$2 with txt="primitive"} ~name:$2 ~alias:None ~typ:$4 ~prim:[$6] }
+  | PRIMITIVE [primitive { Location.mkloc $1 (symbol_rloc dyp) }] colon typ equal STRING { Val.mk ~loc:(symbol_rloc dyp) ~mod_:{$2 with txt="primitive"} ~name:$2 ~alias:None ~typ:$4 ~prim:[$6] }
 
 exception_stmt :
   | EXCEPTION type_id_str { Except.singleton ~loc:(symbol_rloc dyp) $2 }

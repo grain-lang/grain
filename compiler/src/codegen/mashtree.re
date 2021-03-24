@@ -180,7 +180,7 @@ type prim1 =
     | Ignore
     | ArrayLength
     | Assert
-    | FailWith
+    | Throw
     | WasmFromGrain
     | WasmToGrain
     | WasmUnaryI32({
@@ -283,7 +283,8 @@ type binding =
 [@deriving sexp]
 type immediate =
   | MImmConst(constant)
-  | MImmBinding(binding);
+  | MImmBinding(binding)
+  | MImmTrap;
 
 [@deriving sexp]
 type closure_data = {

@@ -28,7 +28,7 @@ let rec analyze_comp_expression =
     let t_branch = analyze_anf_expression(is_tail, t);
     let f_branch = analyze_anf_expression(is_tail, f);
     t_branch || f_branch;
-  | CSwitch(_, branches) =>
+  | CSwitch(_, branches, _) =>
     List.fold_left(
       (has_tail_call, (_, b)) =>
         analyze_anf_expression(is_tail, b) || has_tail_call,

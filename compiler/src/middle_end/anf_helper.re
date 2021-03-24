@@ -61,6 +61,7 @@ module Imm = {
   };
   let id = (~loc=?, ~env=?, id) => mk(~loc?, ~env?, ImmId(id));
   let const = (~loc=?, ~env=?, const) => mk(~loc?, ~env?, ImmConst(const));
+  let trap = (~loc=?, ~env=?, ()) => mk(~loc?, ~env?, ImmTrap);
 };
 
 module Comp = {
@@ -240,8 +241,22 @@ module Comp = {
       CBreak,
     );
   let switch_ =
-      (~loc=?, ~attributes=?, ~allocation_type, ~env=?, arg, branches) =>
-    mk(~loc?, ~attributes?, ~allocation_type, ~env?, CSwitch(arg, branches));
+      (
+        ~loc=?,
+        ~attributes=?,
+        ~allocation_type,
+        ~env=?,
+        arg,
+        branches,
+        partial,
+      ) =>
+    mk(
+      ~loc?,
+      ~attributes?,
+      ~allocation_type,
+      ~env?,
+      CSwitch(arg, branches, partial),
+    );
   let app =
       (
         ~loc=?,

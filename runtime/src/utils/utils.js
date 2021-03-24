@@ -1,5 +1,4 @@
 import { encoder, decoder, managedMemory } from "../runtime";
-import { GrainError } from "../errors/errors";
 
 import {
   GRAIN_GENERIC_HEAP_TAG_TYPE,
@@ -139,7 +138,7 @@ export function grainHeapValToJSVal(runtime, n) {
       }
     case GRAIN_LAMBDA_HEAP_TAG: {
       return () => {
-        throw new GrainError(
+        throw new Error(
           "Computed Grain functions are not callable from JavaScript."
         );
       };
@@ -257,7 +256,7 @@ export function JSToGrainVal(v, runtime) {
       view[ptr + 3] = i32tmpbuf[1];
       return userPtr;
     }
-    throwGrainError(GRAIN_ERR_OVERFLOW, -1, -1, runtime);
+    throw new Error("Can't convert number to Grain value");
     return (0xf00bae << 1) ^ 1;
   } else if (typeof v === "boolean") {
     if (v) {
@@ -277,8 +276,7 @@ export function JSToGrainVal(v, runtime) {
     }
     return userPtr;
   } else {
-    throw new GrainError(
-      -1,
+    throw new Error(
       "JSToGrainVal not implemented for value with type " + typeof v
     );
   }

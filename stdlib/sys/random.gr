@@ -6,10 +6,7 @@ import WasmI32, {
 } from "runtime/unsafe/wasmi32"
 import Memory from "runtime/unsafe/memory"
 import Wasi from "runtime/wasi"
-import Errors from "runtime/unsafe/errors"
 import { tagSimpleNumber } from "runtime/dataStructures"
-
-import foreign wasm throwError: (WasmI32, WasmI32, WasmI32) -> a from "grainRuntime"
 
 // Produce a random number. This function can be slow, so it's best to seed a generator if lots of random data is needed
 // @returns Number
@@ -19,7 +16,7 @@ export let random = () => {
   let err = Wasi.random_get(buf, 4n)
   if (err != Wasi._ESUCCESS) {
     Memory.free(buf)
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 
   let rand = WasmI32.load(buf, 0n)

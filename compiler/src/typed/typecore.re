@@ -120,7 +120,7 @@ let prim1_type =
       (Builtin_types.type_array(var), Builtin_types.type_number);
     }
   | Assert => (Builtin_types.type_bool, Builtin_types.type_void)
-  | FailWith => (Builtin_types.type_string, newvar(~name="a", ()))
+  | Throw => (Builtin_types.type_exception, newvar(~name="a", ()))
   | WasmFromGrain => (newvar(~name="a", ()), Builtin_types.type_wasmi32)
   | WasmToGrain => (Builtin_types.type_wasmi32, newvar(~name="a", ()))
   | WasmUnaryI32({arg_type, ret_type})

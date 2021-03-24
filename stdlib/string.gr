@@ -1,8 +1,7 @@
 import WasmI32 from "runtime/unsafe/wasmi32"
 import Memory from "runtime/unsafe/memory"
-import Errors from "runtime/unsafe/errors"
+import Exception from "runtime/exception"
 import { tagSimpleNumber, allocateArray, allocateChar, allocateString } from "runtime/dataStructures"
-import foreign wasm throwError: (WasmI32, WasmI32, WasmI32) -> a from "grainRuntime"
 
 // Concatenate two strings.
 // @param str1: String - The first string
@@ -329,13 +328,13 @@ export let slice = (start: Number, to: Number, s: String) => {
 
   let mut start = WasmI32.fromGrain(start)
   if ((start & 1n) != 1n) {
-    throwError(Errors._GRAIN_ERR_INVALID_ARGUMENT, start, 0n)
+    throw InvalidArgument("Invalid start index")
   }
   start = start >> 1n
 
   let mut to = WasmI32.fromGrain(to)
   if ((to & 1n) != 1n) {
-    throwError(Errors._GRAIN_ERR_INVALID_ARGUMENT, to, 0n)
+    throw InvalidArgument("Invalid end index")
   }
   to = to >> 1n
 
@@ -347,11 +346,11 @@ export let slice = (start: Number, to: Number, s: String) => {
   }
 
   if (start > len || to > len) {
-    throwError(Errors._GRAIN_ERR_ARRAY_INDEX_OUT_OF_BOUNDS, 0n, 0n)
+    throw Exception.IndexOutOfBounds
   }
 
   if (to < start) {
-    throwError(Errors._GRAIN_ERR_INVALID_ARGUMENT, WasmI32.fromGrain(tagSimpleNumber(to)), 0n)
+    throw InvalidArgument("Start index exceeds end index")
   }
 
   let mut ptr = s + 8n

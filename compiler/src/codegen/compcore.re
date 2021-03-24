@@ -46,13 +46,19 @@ let table_size = Ident.create_persistent("GRAIN$TABLE_SIZE");
 let runtime_mod = Ident.create_persistent("grainRuntime");
 let malloc_mod = Ident.create_persistent("GRAIN$MODULE$runtime/malloc");
 let gc_mod = Ident.create_persistent("GRAIN$MODULE$runtime/gc");
+let exception_mod = Ident.create_persistent("GRAIN$MODULE$runtime/exception");
 let data_structures_mod =
   Ident.create_persistent("GRAIN$MODULE$runtime/dataStructures");
-let string_runtime_mod =
-  Ident.create_persistent("GRAIN$MODULE$runtime/string");
-let grain_to_string_ident = Ident.create_persistent("toString");
 let console_mod = Ident.create_persistent("console");
-let throw_error_ident = Ident.create_persistent("throwError");
+let print_exception_ident = Ident.create_persistent("printException");
+let print_exception_closure_ident =
+  Ident.create_persistent("GRAIN$EXPORT$printException");
+let assertion_error_ident =
+  Ident.create_persistent("GRAIN$EXPORT$AssertionError");
+let index_out_of_bounds_ident =
+  Ident.create_persistent("GRAIN$EXPORT$IndexOutOfBounds");
+let match_failure_ident =
+  Ident.create_persistent("GRAIN$EXPORT$MatchFailure");
 let malloc_ident = Ident.create_persistent("malloc");
 let malloc_closure_ident = Ident.create_persistent("GRAIN$EXPORT$malloc");
 let incref_ident = Ident.create_persistent("incRef");
@@ -94,6 +100,34 @@ let required_global_imports = [
     mimp_mod: runtime_mod,
     mimp_name: module_runtime_id,
     mimp_type: MGlobalImport(I32Type, false),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+  },
+  {
+    mimp_mod: exception_mod,
+    mimp_name: print_exception_closure_ident,
+    mimp_type: MGlobalImport(I32Type, true),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+  },
+  {
+    mimp_mod: exception_mod,
+    mimp_name: assertion_error_ident,
+    mimp_type: MGlobalImport(I32Type, true),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+  },
+  {
+    mimp_mod: exception_mod,
+    mimp_name: index_out_of_bounds_ident,
+    mimp_type: MGlobalImport(I32Type, true),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+  },
+  {
+    mimp_mod: exception_mod,
+    mimp_name: match_failure_ident,
+    mimp_type: MGlobalImport(I32Type, true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
   },
@@ -177,10 +211,9 @@ let runtime_global_imports =
 
 let required_function_imports = [
   {
-    mimp_mod: runtime_mod,
-    mimp_name: throw_error_ident,
-    mimp_type:
-      MFuncImport(List.init(Runtime_errors.max_arity + 1, _ => I32Type), []),
+    mimp_mod: exception_mod,
+    mimp_name: print_exception_ident,
+    mimp_type: MFuncImport([I32Type, I32Type], [I32Type]),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
   },
@@ -316,13 +349,22 @@ let get_imported_name = (mod_, name) =>
     Ident.unique_name(name),
   );
 
-let call_runtime_throw_error = (wasm_mod, env, args) =>
+let call_exception_printer = (wasm_mod, env, args) => {
+  let args = [
+    Expression.global_get(
+      wasm_mod,
+      get_imported_name(exception_mod, print_exception_closure_ident),
+      Type.int32,
+    ),
+    ...args,
+  ];
   Expression.call(
     wasm_mod,
-    get_imported_name(runtime_mod, throw_error_ident),
+    get_imported_name(exception_mod, print_exception_ident),
     args,
-    Type.none,
+    Type.int32,
   );
+};
 
 let call_malloc = (wasm_mod, env, args) => {
   let args = [
@@ -1026,25 +1068,30 @@ let compile_imm = (wasm_mod, env: codegen_env, i: immediate): Expression.t =>
   switch (i) {
   | MImmConst(c) => Expression.const(wasm_mod, compile_const(c))
   | MImmBinding(b) => compile_bind(~action=BindGet, wasm_mod, env, b)
+  | MImmTrap => Expression.unreachable(wasm_mod)
   };
 
 let call_error_handler = (wasm_mod, env, err, args) => {
-  let pad_val = MImmConst(MConstI32(Int32.zero));
-  let args = Runtime_errors.pad_args(pad_val, args);
-  let err_code =
-    Expression.const(
+  let err =
+    switch (err) {
+    | Runtime_errors.MatchFailure => match_failure_ident
+    | Runtime_errors.IndexOutOfBounds => index_out_of_bounds_ident
+    | Runtime_errors.AssertionError => assertion_error_ident
+    };
+  let err =
+    Expression.global_get(
       wasm_mod,
-      const_int32 @@ Runtime_errors.code_of_error(err),
+      get_imported_name(exception_mod, err),
+      Type.int32,
     );
-  let compiled_args = [
-    err_code,
-    ...List.map(compile_imm(wasm_mod, env), args),
-  ];
   Expression.block(
     wasm_mod,
     gensym_label("call_error_handler"),
     [
-      call_runtime_throw_error(wasm_mod, env, compiled_args),
+      Expression.drop(
+        wasm_mod,
+        call_exception_printer(wasm_mod, env, [err]),
+      ),
       Expression.unreachable(wasm_mod),
     ],
   );
@@ -1056,49 +1103,6 @@ let error_if_true = (wasm_mod, env, cond, err, args) =>
     cond,
     Expression.drop(wasm_mod, call_error_handler(wasm_mod, env, err, args)),
     Expression.null(),
-  );
-
-let dummy_err_val = MImmConst(MConstI32(Int32.zero));
-/* Checks whether an Int64 overflowed */
-let check_overflow = (wasm_mod, env, arg) =>
-  Expression.block(
-    wasm_mod,
-    gensym_label("check_overflow"),
-    [
-      /* WASM has no concept of overflows, so we have to check manually */
-      set_swap(~ty=I64Type, wasm_mod, env, 0, arg),
-      error_if_true(
-        wasm_mod,
-        env,
-        Expression.binary(
-          wasm_mod,
-          Op.gt_s_int64,
-          get_swap(~ty=I64Type, wasm_mod, env, 0),
-          Expression.const(
-            wasm_mod,
-            const_int64(Int32.to_int(Int32.max_int)),
-          ),
-        ),
-        OverflowError,
-        [dummy_err_val, dummy_err_val],
-      ),
-      error_if_true(
-        wasm_mod,
-        env,
-        Expression.binary(
-          wasm_mod,
-          Op.lt_s_int64,
-          get_swap(~ty=I64Type, wasm_mod, env, 0),
-          Expression.const(
-            wasm_mod,
-            const_int64(Int32.to_int(Int32.min_int)),
-          ),
-        ),
-        OverflowError,
-        [dummy_err_val, dummy_err_val],
-      ),
-      get_swap(~ty=I64Type, wasm_mod, env, 0),
-    ],
   );
 
 let compile_tuple_op = (~is_box=false, wasm_mod, env, tup_imm, op) => {
@@ -1190,7 +1194,7 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
             ),
             get_idx(),
           ),
-          ArrayIndexOutOfBounds,
+          IndexOutOfBounds,
           [],
         ),
         error_if_true(
@@ -1202,7 +1206,7 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
             load(~offset=4, wasm_mod, get_arr()),
             get_idx(),
           ),
-          ArrayIndexOutOfBounds,
+          IndexOutOfBounds,
           [],
         ),
         load(
@@ -1264,7 +1268,7 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
             ),
             get_idx(),
           ),
-          ArrayIndexOutOfBounds,
+          IndexOutOfBounds,
           [],
         ),
         error_if_true(
@@ -1276,7 +1280,7 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
             load(~offset=4, wasm_mod, get_arr()),
             get_idx(),
           ),
-          ArrayIndexOutOfBounds,
+          IndexOutOfBounds,
           [],
         ),
         store(
@@ -1969,7 +1973,7 @@ let allocate_array_n = (wasm_mod, env, num_elts, elt) => {
           compiled_num_elts(),
           Expression.const(wasm_mod, encoded_const_int32(0)),
         ),
-        InvalidArgument,
+        IndexOutOfBounds,
         [num_elts],
       ),
       store(
@@ -2080,7 +2084,7 @@ let allocate_array_init = (wasm_mod, env, num_elts, init_f) => {
           compiled_num_elts(),
           Expression.const(wasm_mod, encoded_const_int32(0)),
         ),
-        InvalidArgument,
+        IndexOutOfBounds,
         [num_elts],
       ),
       store(
@@ -2284,7 +2288,7 @@ let compile_prim1 = (wasm_mod, env, p1, arg): Expression.t => {
         Expression.const(wasm_mod, const_void()),
       ],
     )
-  | FailWith => call_error_handler(wasm_mod, env, Failure, [arg])
+  | Throw => call_exception_printer(wasm_mod, env, [compiled_arg])
   | Box => failwith("Unreachable case; should never get here: Box")
   | Unbox => failwith("Unreachable case; should never get here: Unbox")
   | BoxBind => failwith("Unreachable case; should never get here: BoxBind")

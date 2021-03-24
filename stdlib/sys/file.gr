@@ -19,10 +19,7 @@ import WasmI32, {
 import WasmI64 from "runtime/unsafe/wasmi64"
 import Wasi from "runtime/wasi"
 import Memory from "runtime/unsafe/memory"
-import Errors from "runtime/unsafe/errors"
 import { tagSimpleNumber, allocateArray, allocateString, loadAdtVal, newInt64, allocateInt64 } from "runtime/dataStructures"
-
-import foreign wasm throwError: (WasmI32, WasmI32, WasmI32) -> a from "grainRuntime"
 
 import List from "list"
 
@@ -384,7 +381,7 @@ export let pathOpen = (
   )
   if (err != Wasi._ESUCCESS) {
     Memory.free(newFd)
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 
   let fd = FileDescriptor(tagSimpleNumber(WasmI32.load(newFd, 0n)))
@@ -417,7 +414,7 @@ export let fdRead = (fd: FileDescriptor, n: Number) => {
   if (err != Wasi._ESUCCESS) {
     Memory.free(iovs)
     Memory.free(strPtr)
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 
   nread = WasmI32.load(nread, 0n)
@@ -455,7 +452,7 @@ export let fdPread = (fd: FileDescriptor, offsetPtr: Int64, n: Number) => {
   if (err != Wasi._ESUCCESS) {
     Memory.free(iovs)
     Memory.free(strPtr)
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 
   nread = WasmI32.load(nread, 0n)
@@ -487,7 +484,7 @@ export let fdWrite = (fd: FileDescriptor, data: String) => {
   let err = Wasi.fd_write(fd, iovs, 1n, nwritten)
   if (err != Wasi._ESUCCESS) {
     Memory.free(iovs)
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 
   nwritten = WasmI32.load(nwritten, 0n)
@@ -520,7 +517,7 @@ export let fdPwrite = (fd: FileDescriptor, data: String, offsetPtr: Int64) => {
   let err = Wasi.fd_pwrite(fd, iovs, 1n, offset, nwritten)
   if (err != Wasi._ESUCCESS) {
     Memory.free(iovs)
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 
   nwritten = WasmI32.load(nwritten, 0n)
@@ -545,7 +542,7 @@ export let fdAllocate = (fd: FileDescriptor, offsetPtr: Int64, sizePtr: Int64) =
   
   let err = Wasi.fd_allocate(fd, offset, size)
   if (err != Wasi._ESUCCESS) {
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 }
 
@@ -558,7 +555,7 @@ export let fdClose = (fd: FileDescriptor) => {
 
   let err = Wasi.fd_close(fd)
   if (err != Wasi._ESUCCESS) {
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 }
 
@@ -571,7 +568,7 @@ export let fdDatasync = (fd: FileDescriptor) => {
 
   let err = Wasi.fd_datasync(fd)
   if (err != Wasi._ESUCCESS) {
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 }
 
@@ -584,7 +581,7 @@ export let fdSync = (fd: FileDescriptor) => {
 
   let err = Wasi.fd_sync(fd)
   if (err != Wasi._ESUCCESS) {
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 }
 
@@ -641,7 +638,7 @@ export let fdStats = (fd: FileDescriptor) => {
   let err = Wasi.fd_fdstat_get(fd, structPtr)
   if (err != Wasi._ESUCCESS) {
     Memory.free(structPtr)
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 
   let filetype = WasmI32.load8U(structPtr, 0n)
@@ -689,7 +686,7 @@ export let fdSetFlags = (fd: FileDescriptor, flagsPtr: List<FdFlag>) => {
   
   let err = Wasi.fd_fdstat_set_flags(fd, flags)
   if (err != Wasi._ESUCCESS) {
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 }
 
@@ -706,7 +703,7 @@ export let fdSetRights = (fd: FileDescriptor, rightsPtr: List<Rights>, rightsInh
   
   let err = Wasi.fd_fdstat_set_rights(fd, rights, rightsInheriting)
   if (err != Wasi._ESUCCESS) {
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 }
 
@@ -723,7 +720,7 @@ export let fdFilestats = (fd: FileDescriptor) => {
   let err = Wasi.fd_filestat_get(fd, filestats)
   if (err != Wasi._ESUCCESS) {
     Memory.free(filestats)
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 
   let device = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 0n))): Int64
@@ -752,7 +749,7 @@ export let fdSetSize = (fd: FileDescriptor, sizePtr: Int64) => {
 
   let err = Wasi.fd_filestat_set_size(fd, size)
   if (err != Wasi._ESUCCESS) {
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 }
 
@@ -768,7 +765,7 @@ export let fdSetAccessTime = (fd: FileDescriptor, timePtr: Int64) => {
 
   let err = Wasi.fd_filestat_set_times(fd, time, 0N, Wasi._TIME_SET_ATIM)
   if (err != Wasi._ESUCCESS) {
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 }
 
@@ -781,7 +778,7 @@ export let fdSetAccessTimeNow = (fd: FileDescriptor) => {
 
   let err = Wasi.fd_filestat_set_times(fd, 0N, 0N, Wasi._TIME_SET_ATIM_NOW)
   if (err != Wasi._ESUCCESS) {
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 }
 
@@ -797,7 +794,7 @@ export let fdSetModifiedTime = (fd: FileDescriptor, timePtr: Int64) => {
 
   let err = Wasi.fd_filestat_set_times(fd, 0N, time, Wasi._TIME_SET_MTIM)
   if (err != Wasi._ESUCCESS) {
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 }
 
@@ -810,7 +807,7 @@ export let fdSetModifiedTimeNow = (fd: FileDescriptor) => {
 
   let err = Wasi.fd_filestat_set_times(fd, 0N, 0N, Wasi._TIME_SET_MTIM_NOW)
   if (err != Wasi._ESUCCESS) {
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 }
 
@@ -834,7 +831,7 @@ export let fdReaddir = (fd: FileDescriptor) => {
   if (err != Wasi._ESUCCESS) {
     Memory.free(buf)
     Memory.free(bufUsed)
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 
   let used = WasmI32.load(bufUsed, 0n)
@@ -873,7 +870,7 @@ export let fdReaddir = (fd: FileDescriptor) => {
           bufs = next
         }
         Memory.free(bufUsed)
-        throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+        throw Wasi.SystemError(tagSimpleNumber(err))
       }
 
       if (WasmI32.load(bufUsed, 0n) != bufLen) {
@@ -931,7 +928,7 @@ export let fdRenumber = (fromFd: FileDescriptor, toFd: FileDescriptor) => {
 
   let err = Wasi.fd_renumber(fromFd, toFd)
   if (err != Wasi._ESUCCESS) {
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 }
 
@@ -959,7 +956,7 @@ export let fdSeek = (fd: FileDescriptor, offsetPtr: Int64, whencePtr: Whence) =>
   let err = Wasi.fd_seek(fd, offset, whence, newoffsetPtr)
   if (err != Wasi._ESUCCESS) {
     Memory.free(newoffset)
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 
   WasmI32.toGrain(newoffset): Int64
@@ -979,7 +976,7 @@ export let fdTell = (fd: FileDescriptor) => {
   let err = Wasi.fd_tell(fd, offsetPtr)
   if (err != Wasi._ESUCCESS) {
     Memory.free(offset)
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 
   WasmI32.toGrain(offset): Int64
@@ -1000,7 +997,7 @@ export let pathCreateDirectory = (fd: FileDescriptor, stringPtr: String) => {
 
   let err = Wasi.path_create_directory(fd, stringPtr + 8n, size)
   if (err != Wasi._ESUCCESS) {
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 }
 
@@ -1025,7 +1022,7 @@ export let pathFilestats = (fd: FileDescriptor, dirflags: List<LookupFlag>, path
   let err = Wasi.path_filestat_get(fd, combinedDirFlags, pathPtr, pathSize, filestats)
   if (err != Wasi._ESUCCESS) {
     Memory.free(filestats)
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 
   let device = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 0n))): Int64
@@ -1063,7 +1060,7 @@ export let pathSetAccessTime = (fd: FileDescriptor, dirflags: List<LookupFlag>, 
 
   let err = Wasi.path_filestat_set_times(fd, combinedDirFlags, pathPtr, pathSize, time, 0N, Wasi._TIME_SET_ATIM)
   if (err != Wasi._ESUCCESS) {
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 }
 
@@ -1084,7 +1081,7 @@ export let pathSetAccessTimeNow = (fd: FileDescriptor, dirflags: List<LookupFlag
 
   let err = Wasi.path_filestat_set_times(fd, combinedDirFlags, pathPtr, pathSize, 0N, 0N, Wasi._TIME_SET_ATIM_NOW)
   if (err != Wasi._ESUCCESS) {
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 }
 
@@ -1108,7 +1105,7 @@ export let pathSetModifiedTime = (fd: FileDescriptor, dirflags: List<LookupFlag>
 
   let err = Wasi.path_filestat_set_times(fd, combinedDirFlags, pathPtr, pathSize, 0N, time, Wasi._TIME_SET_MTIM)
   if (err != Wasi._ESUCCESS) {
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 }
 
@@ -1129,7 +1126,7 @@ export let pathSetModifiedTimeNow = (fd: FileDescriptor, dirflags: List<LookupFl
 
   let err = Wasi.path_filestat_set_times(fd, combinedDirFlags, pathPtr, pathSize, 0N, 0N, Wasi._TIME_SET_MTIM_NOW)
   if (err != Wasi._ESUCCESS) {
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 }
 
@@ -1158,7 +1155,7 @@ export let pathLink = (sourceFd: FileDescriptor, dirflags: List<LookupFlag>, sou
 
   let err = Wasi.path_link(sourceFd, combinedDirFlags, sourcePtr + 8n, sourceSize, targetFd, targetPtr + 8n, targetSize)
   if (err != Wasi._ESUCCESS) {
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 }
 
@@ -1179,7 +1176,7 @@ export let pathSymlink = (fd: FileDescriptor, sourcePtr: String, targetPtr: Stri
 
   let err = Wasi.path_symlink(sourcePtr + 8n, sourceSize, fd, targetPtr + 8n, targetSize)
   if (err != Wasi._ESUCCESS) {
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 }
 
@@ -1196,7 +1193,7 @@ export let pathUnlink = (fd: FileDescriptor, pathPtr: String) => {
 
   let err = Wasi.path_unlink_file(fd, pathPtr + 8n, pathSize)
   if (err != Wasi._ESUCCESS) {
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 }
 
@@ -1224,7 +1221,7 @@ export let pathReadlink = (fd: FileDescriptor, pathPtr: String, size: Number) =>
   if (err != Wasi._ESUCCESS) {
     Memory.free(grainStrPtr)
     Memory.free(nread)
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 
   let read = tagSimpleNumber(WasmI32.load(nread, 0n))
@@ -1246,7 +1243,7 @@ export let pathRemoveDirectory = (fd: FileDescriptor, pathPtr: String) => {
 
   let err = Wasi.path_remove_directory(fd, pathPtr + 8n, pathSize)
   if (err != Wasi._ESUCCESS) {
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 }
 
@@ -1272,6 +1269,6 @@ export let pathRename = (sourceFd: FileDescriptor, sourcePtr: String, targetFd: 
 
   let err = Wasi.path_rename(sourceFd, sourcePtr + 8n, sourceSize, targetFd, targetPtr + 8n, targetSize)
   if (err != Wasi._ESUCCESS) {
-    throwError(Errors._GRAIN_ERR_SYSTEM, WasmI32.fromGrain(tagSimpleNumber(err)), 0n)
+    throw Wasi.SystemError(tagSimpleNumber(err))
   }
 }

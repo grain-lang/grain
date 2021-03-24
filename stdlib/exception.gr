@@ -1,0 +1,7 @@
+import WasmI32 from "runtime/unsafe/wasmi32"
+import Exception from "runtime/exception"
+
+@disableGC
+export let registerPrinter = (f: Exception -> Option<String>) => {
+  Exception.printers = WasmI32.fromGrain((f, Exception.printers))
+}

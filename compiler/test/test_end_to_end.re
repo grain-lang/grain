@@ -233,8 +233,8 @@ let basic_functionality_tests = [
   t("binop4", "2 * 3", "6"),
   t("binop5", "10 / 5", "2"),
   t("binop6", "9 % 5", "4"),
-  te("division_by_zero", "let nine = 9; nine / 0", "division by zero"),
-  te("modulo_by_zero", "9 % 0", "modulo by zero"),
+  te("division_by_zero", "let nine = 9; nine / 0", "Division by zero"),
+  te("modulo_by_zero", "9 % 0", "Modulo by zero"),
   t("division1", "5 / 2", "5/2"),
   t("modulo1", "-17 % 4", "3"),
   t("modulo2", "17 % -4", "-3"),
@@ -342,13 +342,13 @@ let basic_functionality_tests = [
   t("int64_1", "99999999999999999L", "99999999999999999"),
   t("int64_pun_1", "9999999 * 99999999", "999999890000001"),
   t("int64_pun_2", "-99999999 - 999999999", "-1099999998"),
-  te("overflow1", "9223372036854775807 + 1", "overflow"),
+  te("overflow1", "9223372036854775807 + 1", "Overflow"),
   t("block_no_expression", "let f = () => { let x = 5 }; f()", "void"),
   /* Assertions */
   t("assert1", "assert true", "void"),
   t("assert2", "assert 3 + 3 == 6", "void"),
-  te("assert3", "assert false", "Assertion error"),
-  te("assert4", "assert 4 - 1 == 14", "Assertion error"),
+  te("assert3", "assert false", "AssertionError"),
+  te("assert4", "assert 4 - 1 == 14", "AssertionError"),
   /* Failures */
   te("fail1", "ignore(fail \"boo\")", "Failure: boo"),
   te("fail2", "if (false) { 3 } else { fail \"boo\" }", "Failure: boo"),
@@ -540,25 +540,21 @@ let array_tests = [
   t("array_access3", "let x = [> 1, 2, 3]; x[2]", "3"),
   t("array_access4", "let x = [> 1, 2, 3]; x[-2]", "2"),
   t("array_access5", "let x = [> 1, 2, 3]; x[-3]", "1"),
-  te(
-    "array_access_err",
-    "let x = [> 1, 2, 3]; x[3]",
-    "array index out of bounds",
-  ),
+  te("array_access_err", "let x = [> 1, 2, 3]; x[3]", "Index out of bounds"),
   te(
     "array_access_err2",
     "let x = [> 1, 2, 3]; x[-4]",
-    "array index out of bounds",
+    "Index out of bounds",
   ),
   te(
     "array_access_err3",
     "let x = [> 1, 2, 3]; x[99]",
-    "array index out of bounds",
+    "Index out of bounds",
   ),
   te(
     "array_access_err4",
     "let x = [> 1, 2, 3]; x[-99]",
-    "array index out of bounds",
+    "Index out of bounds",
   ),
   te(
     "array_access_err5",
@@ -575,7 +571,7 @@ let array_tests = [
   te(
     "array_set_err2",
     "let x = [> 1, 2, 3]; x[-12] = 4",
-    "array index out of bounds",
+    "Index out of bounds",
   ),
   te(
     "array_type",
@@ -2007,6 +2003,32 @@ let exception_tests = [
     "export exception Foo(Bool, Number); export exception Bar; Bar",
     "Bar",
   ),
+  te(
+    "throw_exception_1",
+    "exception HorribleError; let _ = throw HorribleError",
+    "HorribleError",
+  ),
+  te(
+    "throw_exception_2",
+    "exception HorribleError(String, Bool, Number); let _ = throw HorribleError(\"oh no\", false, 1/3)",
+    "HorribleError(\"oh no\", false, 1/3)",
+  ),
+  te(
+    "exception_register_1",
+    {|import Exception from "exception"; exception HorribleError; Exception.registerPrinter(e => match (e) { HorribleError => Some("Spooky error"), _ => None }); let _ = throw HorribleError|},
+    "Spooky error",
+  ),
+  te(
+    "exception_register_2",
+    {|
+    import Exception from "exception";
+    exception HorribleError;
+    Exception.registerPrinter(e => match (e) { HorribleError => Some("Spooky error 1"), _ => None });
+    Exception.registerPrinter(e => match (e) { HorribleError => Some("Spooky error 2"), _ => None });
+    let _ = throw HorribleError
+    |},
+    "Spooky error 2",
+  ),
 ];
 
 let enum_tests = [
@@ -2186,5 +2208,4 @@ let tests =
   @ export_tests
   @ comment_tests
   @ number_tests
-  @ exception_tests
-  @ export_tests;
+  @ exception_tests;
