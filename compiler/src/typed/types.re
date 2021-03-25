@@ -114,8 +114,26 @@ type value_kind =
   | TValConstructor(constructor_description);
 
 [@deriving (sexp, yojson)]
+type allocation_type =
+  | StackAllocated(wasm_repr)
+  | HeapAllocated
+
+[@deriving (sexp, yojson)]
+and wasm_repr =
+  | WasmI32
+  | WasmI64
+  | WasmF32
+  | WasmF64;
+
+[@deriving (sexp, yojson)]
+type val_repr =
+  | ReprFunction(list(wasm_repr), list(wasm_repr))
+  | ReprValue(wasm_repr);
+
+[@deriving (sexp, yojson)]
 type value_description = {
   val_type: type_expr,
+  val_repr,
   val_kind: value_kind,
   val_fullpath: Path.t,
   val_mutable: bool,
@@ -154,18 +172,6 @@ type extension_constructor = {
   [@sexp_drop_if sexp_locs_disabled]
   ext_loc: Location.t,
 };
-
-[@deriving (sexp, yojson)]
-type allocation_type =
-  | StackAllocated(wasm_repr)
-  | HeapAllocated
-
-[@deriving (sexp, yojson)]
-and wasm_repr =
-  | WasmI32
-  | WasmI64
-  | WasmF32
-  | WasmF64;
 
 [@deriving (sexp, yojson)]
 type type_declaration = {

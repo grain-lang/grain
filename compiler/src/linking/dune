@@ -1,0 +1,8 @@
+(library
+ (name grain_linking)
+ (public_name grain_linking)
+ (synopsis "The Grain linker")
+ (libraries compiler-libs.common grain_codegen grain_utils
+   ppx_sexp_conv.runtime-lib sexplib ocamlgraph binaryen)
+ (preprocess
+  (pps ppx_sexp_conv)))

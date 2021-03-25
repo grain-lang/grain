@@ -50,6 +50,14 @@ let principal: ref(bool);
 
 let compilation_mode: ref(option(string));
 
+/** Statically link modules after compilation */
+
+let statically_link: ref(bool);
+
+/** Enable tail-call optimizations */
+
+let experimental_tail_call: ref(bool);
+
 /** Whether to allow cyclic types. */
 
 let recursive_types: ref(bool);

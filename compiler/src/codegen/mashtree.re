@@ -363,17 +363,17 @@ and instr_desc =
   | MImmediate(immediate)
   | MCallKnown({
       func: string,
-      func_type: (list(asmtype), asmtype),
+      func_type: (list(asmtype), list(asmtype)),
       args: list(immediate),
     })
   | MCallIndirect({
       func: immediate,
-      func_type: (list(asmtype), asmtype),
+      func_type: (list(asmtype), list(asmtype)),
       args: list(immediate),
     })
   | MReturnCallIndirect({
       func: immediate,
-      func_type: (list(asmtype), asmtype),
+      func_type: (list(asmtype), list(asmtype)),
       args: list(immediate),
     })
   | MError(grain_error, list(immediate))
@@ -437,7 +437,7 @@ type mash_function = {
   index: int32,
   name: option(string),
   args: list(asmtype),
-  return_type: asmtype,
+  return_type: list(asmtype),
   body: block,
   stack_size,
   attrs: attributes,

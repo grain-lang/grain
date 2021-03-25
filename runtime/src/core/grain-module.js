@@ -89,7 +89,7 @@ export class GrainModule {
     return this.instantiated.exports;
   }
 
-  get isGrainModule() {
+  get isStartable() {
     return !!this.exports["_start"];
   }
 
@@ -105,8 +105,14 @@ export class GrainModule {
     wasi.start(this.instantiated);
   }
 
+  runUnboxed() {
+    // Only the tests currently rely on this.
+    wasi.setMemory(this.requiredExport("memory"));
+    return this.requiredExport("_gmain")();
+  }
+
   get tableSize() {
-    return this.requiredExport("GRAIN$TABLE_SIZE");
+    return this.exports["GRAIN$TABLE_SIZE"];
   }
 
   get types() {
@@ -207,13 +213,6 @@ export class GrainModule {
     }
     //console.log(`Instantiated: ${this._instantiated}.`);
     //console.log(`fields: ${Object.keys(this._instantiated)}`);
-  }
-
-  async runUnboxed() {
-    // This works because we use @wasmer/wasi, but will break in the future.
-    // Only the tests currently rely on this.
-    wasi.setMemory(this.requiredExport("memory"));
-    return await this.requiredExport("_start")();
   }
 }
 

@@ -290,20 +290,29 @@ let check_nongen_schemes = (env, sg) =>
 
 /* Normalize types in a signature */
 
-let rec normalize_modtype = env =>
-  fun
+let rec normalize_modtype = (env, modty) =>
+  switch (modty) {
   | TModIdent(_)
-  | TModAlias(_) => ()
-  | TModSignature(sg) => normalize_signature(env, sg)
+  | TModAlias(_) => modty
+  | TModSignature(sg) => TModSignature(normalize_signature(env, sg))
+  }
 /*| Mty_functor(_id, _param, body) -> normalize_modtype env body*/
 
-and normalize_signature = env => List.iter(normalize_signature_item(env))
+and normalize_signature = env => List.map(normalize_signature_item(env))
 
-and normalize_signature_item = env =>
-  fun
-  | TSigValue(_id, desc) => Ctype.normalize_type(env, desc.val_type)
-  | TSigModule(_id, md, _) => normalize_modtype(env, md.md_type)
-  | _ => ();
+and normalize_signature_item = (env, item) =>
+  switch (item) {
+  | TSigValue(id, desc) =>
+    Ctype.normalize_type(env, desc.val_type);
+    let desc = {
+      ...desc,
+      val_repr: Type_utils.repr_of_type(env, desc.val_type),
+    };
+    TSigValue(id, desc);
+  | TSigModule(id, md, rs) =>
+    TSigModule(id, {...md, md_type: normalize_modtype(env, md.md_type)}, rs)
+  | _ => item
+  };
 
 let enrich_type_decls = (anchor, decls, oldenv, newenv) =>
   switch (anchor) {
@@ -923,8 +932,8 @@ let type_implementation = prog => {
     );
 
   check_nongen_schemes(finalenv, simple_sg);
-  normalize_signature(finalenv, simple_sg);
-  let signature = Env.build_signature(simple_sg, modulename, filename);
+  let normalized_sig = normalize_signature(finalenv, simple_sg);
+  let signature = Env.build_signature(normalized_sig, modulename, filename);
   ignore(coercion);
   {statements, env, signature};
 };

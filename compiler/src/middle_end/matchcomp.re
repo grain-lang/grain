@@ -9,6 +9,7 @@ open Grain_typed;
 open Grain_utils;
 open Types;
 open Typedtree;
+open Type_utils;
 
 /** The type for compiled match pattern decision trees.
     These trees are evaluated with respect to a stack of values. */
@@ -907,11 +908,12 @@ let rec compile_matrix = mtx =>
 /* Currently, this only desugars constant patterns into guard expressions,
  * but could be extended to do any other necessary preprocessing.
  */
-let prepare_match_branches = branches => {
+let prepare_match_branches = (env, branches) => {
   let map_branch = branch => {
     let guard = ref(branch.mb_guard);
     let make_vd = (id, ty) => {
       val_type: ty,
+      val_repr: Type_utils.repr_of_type(env, ty),
       val_kind: TValReg,
       val_fullpath: PIdent(id),
       val_mutable: false,
@@ -1040,8 +1042,8 @@ let prepare_match_branches = branches => {
 };
 
 let convert_match_branches =
-    (match_branches: list(Typedtree.match_branch)): conversion_result => {
-  let match_branches = prepare_match_branches(match_branches);
+    (env, match_branches: list(Typedtree.match_branch)): conversion_result => {
+  let match_branches = prepare_match_branches(env, match_branches);
   let mtx = make_matrix(match_branches);
   /*prerr_string "Initial matrix:\n";
     prerr_string (Sexplib.Sexp.to_string_hum (Sexplib.Conv.sexp_of_list

@@ -48,7 +48,7 @@ export class GrainRunner {
       throw new Error(`Failed to ensure string module.`);
     }
     await this.load(STRING_MODULE, located);
-    await located.start();
+    located.start();
   }
 
   grainValueToString(v) {
@@ -125,8 +125,8 @@ export class GrainRunner {
         // This is a good point to debug when modules are loaded:
         // console.log(`Located module: ${imp.module}`);
         await this.load(imp.module, located);
-        if (located.isGrainModule) {
-          await located.start();
+        if (located.isStartable) {
+          located.start();
         }
         this.ptrZero = this.ptr;
         this.imports[imp.module] = located.exports;
@@ -136,8 +136,9 @@ export class GrainRunner {
     // All of the dependencies have been loaded. Now we can instantiate with the import object.
     await mod.instantiate(this.imports, this);
     this.idMap[this.imports["grainRuntime"]["moduleRuntimeId"]] = name;
-    if (mod.isGrainModule) {
-      this.imports["grainRuntime"]["relocBase"] += mod.tableSize;
+    if (mod.isStartable) {
+      this.imports["grainRuntime"]["relocBase"] += mod.tableSize || 0;
+
       ++this.imports["grainRuntime"]["moduleRuntimeId"];
     }
     if (!(name in this.modules)) {

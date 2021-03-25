@@ -348,6 +348,16 @@ let compilation_mode =
     None,
   );
 
+let statically_link =
+  toggle_flag(~names=["no-link"], ~doc="Disable static linking", true);
+
+let experimental_tail_call =
+  toggle_flag(
+    ~names=["experimental-wasm-tail-call"],
+    ~doc="Enables tail-call optimization",
+    false,
+  );
+
 let recursive_types =
   toggle_flag(
     ~names=["recursive-types"],

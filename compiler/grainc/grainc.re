@@ -99,7 +99,13 @@ let compile_file = (name, outfile_arg) => {
     if (Grain_utils.Config.debug^) {
       Compile.save_mashed(name, default_mashtree_filename(outfile));
     };
-    ignore(Compile.compile_file(~outfile, name));
+    let hook =
+      if (Grain_utils.Config.statically_link^) {
+        Compile.stop_after_assembled;
+      } else {
+        Compile.stop_after_object_file_emitted;
+      };
+    ignore(Compile.compile_file(~hook, ~outfile, name));
   }) {
   | exn =>
     let bt =

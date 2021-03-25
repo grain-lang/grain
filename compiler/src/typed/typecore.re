@@ -254,6 +254,7 @@ let maybe_add_pattern_variables_ghost = (loc_let, env, pv) =>
           id,
           {
             val_type: ty,
+            val_repr: Type_utils.repr_of_type(env, ty),
             val_fullpath: Path.PIdent(id),
             val_kind: TValUnbound(ValUnboundGhostRecursive),
             val_loc: loc_let,

@@ -36,7 +36,7 @@ type worklist_elt = {
   body: worklist_elt_body,
   env: compilation_env,
   args: list(Types.allocation_type),
-  return_type: Types.allocation_type,
+  return_type: list(Types.allocation_type),
   idx: int, /* Lambda-lifted index */
   name: option(string),
   attrs: attributes,
@@ -550,7 +550,7 @@ let compile_lambda =
   };
 };
 
-let compile_wrapper = (env, func_name, args, ret): Mashtree.closure_data => {
+let compile_wrapper = (env, func_name, args, rets): Mashtree.closure_data => {
   let body = [
     {
       instr_desc:
@@ -558,7 +558,7 @@ let compile_wrapper = (env, func_name, args, ret): Mashtree.closure_data => {
           func: func_name,
           func_type: (
             List.map(asmtype_of_alloctype, args),
-            asmtype_of_alloctype(ret),
+            List.map(asmtype_of_alloctype, rets),
           ),
           args:
             List.mapi(
@@ -572,6 +572,22 @@ let compile_wrapper = (env, func_name, args, ret): Mashtree.closure_data => {
       instr_loc: Location.dummy_loc,
     },
   ];
+  let (body, return_type) =
+    switch (rets) {
+    | [] => (
+        List.append(
+          body,
+          [
+            {
+              instr_desc: MImmediate(MImmConst(const_void)),
+              instr_loc: Location.dummy_loc,
+            },
+          ],
+        ),
+        [Types.StackAllocated(Types.WasmI32)],
+      )
+    | _ => (body, rets)
+    };
   let idx = next_lift();
   let arity = List.length(args);
   let lam_env = {
@@ -589,7 +605,7 @@ let compile_wrapper = (env, func_name, args, ret): Mashtree.closure_data => {
     idx,
     name: None,
     args: [Types.HeapAllocated, ...args],
-    return_type: Types.HeapAllocated,
+    return_type,
     stack_size: {
       stack_size_i32: 0,
       stack_size_i64: 0,
@@ -753,6 +769,8 @@ let rec compile_comp = (env, c) => {
         compile_imm(env, record),
       )
     | CLambda(name, args, body) =>
+      let (body, return_type) = body;
+      let body = (body, [return_type]);
       MAllocate(
         MClosure(
           compile_lambda(
@@ -764,7 +782,7 @@ let rec compile_comp = (env, c) => {
             c.comp_loc,
           ),
         ),
-      )
+      );
     | CApp((f, (argsty, retty)), args, true) =>
       /* TODO: Utilize MReturnCallKnown */
 
@@ -772,7 +790,7 @@ let rec compile_comp = (env, c) => {
         func: compile_imm(env, f),
         func_type: (
           List.map(asmtype_of_alloctype, argsty),
-          asmtype_of_alloctype(retty),
+          [asmtype_of_alloctype(retty)],
         ),
         args: List.map(compile_imm(env), args),
       })
@@ -783,14 +801,14 @@ let rec compile_comp = (env, c) => {
         func: compile_imm(env, f),
         func_type: (
           List.map(asmtype_of_alloctype, argsty),
-          asmtype_of_alloctype(retty),
+          [asmtype_of_alloctype(retty)],
         ),
         args: List.map(compile_imm(env), args),
       })
     | CAppBuiltin(modname, name, args) =>
       MCallKnown({
         func: "builtin",
-        func_type: (List.map(i => I32Type, args), I32Type),
+        func_type: (List.map(i => I32Type, args), [I32Type]),
         args: List.map(compile_imm(env), args),
       })
     | CImmExpr(i) => MImmediate(compile_imm(env, i))
@@ -921,7 +939,7 @@ let compile_remaining_worklist = () => {
       index: Int32.of_int(index),
       name,
       args: List.map(asmtype_of_alloctype, args),
-      return_type: asmtype_of_alloctype(return_type),
+      return_type: List.map(asmtype_of_alloctype, return_type),
       body,
       stack_size,
       attrs,
@@ -1070,7 +1088,7 @@ let lift_imports = (env, imports) => {
                                   env,
                                   func_name,
                                   inputs,
-                                  List.hd(outputs),
+                                  outputs,
                                 ),
                               ),
                             ),
