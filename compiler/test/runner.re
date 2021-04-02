@@ -23,6 +23,11 @@ let exists = (check, result) =>
   | Not_found => false
   };
 
+let not_exists = (check, result) =>
+  try(Str.search_forward(Str.regexp_string(check), result, 0) < 0) {
+  | Not_found => true
+  };
+
 /* Read a file into a string */
 let string_of_file = file_name => {
   let inchan = open_in(file_name);
@@ -258,6 +263,7 @@ let test_err =
     (
       ~num_pages=?,
       ~print_output=true,
+      ~check_exists=true,
       program_str,
       outfile,
       errmsg,
@@ -279,7 +285,8 @@ let test_err =
     | exn => Printexc.to_string(exn)
     };
 
-  assert_equal(errmsg, result, ~cmp=exists, ~printer=Fun.id);
+  let cmp = check_exists ? exists : not_exists;
+  assert_equal(errmsg, result, ~cmp, ~printer=Fun.id);
 };
 
 let test_run_file_err = (filename, name, errmsg, test_ctxt) => {

@@ -72,8 +72,10 @@ let tgcerr = (~todo=?, name, heap_size, program, expected) =>
     expected,
   );
 
-let te = (~todo=?, name, program, expected) =>
-  name >:: wrap_todo(todo) @@ test_err(program, name, expected);
+let te = (~todo=?, ~check_exists=true, name, program, expected) =>
+  name
+  >:: wrap_todo(todo) @@
+  test_err(~check_exists, program, name, expected);
 
 /** Tests that the file input/`input_file`.gr produces the given output */
 
@@ -2012,6 +2014,12 @@ let exception_tests = [
     "throw_exception_2",
     "exception HorribleError(String, Bool, Number); let _ = throw HorribleError(\"oh no\", false, 1/3)",
     "HorribleError(\"oh no\", false, 1/3)",
+  ),
+  te(
+    ~check_exists=false,
+    "throw_exception_3",
+    "exception HorribleError(String, Bool, Number); let _ = throw HorribleError(\"oh no\", false, 1/3); print(\"shouldn't be printed\")",
+    "shouldn't be printed",
   ),
   te(
     "exception_register_1",
