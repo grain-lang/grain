@@ -2288,7 +2288,18 @@ let compile_prim1 = (wasm_mod, env, p1, arg): Expression.t => {
         Expression.const(wasm_mod, const_void()),
       ],
     )
-  | Throw => call_exception_printer(wasm_mod, env, [compiled_arg])
+  | Throw =>
+    Expression.block(
+      wasm_mod,
+      gensym_label("throw"),
+      [
+        Expression.drop(
+          wasm_mod,
+          call_exception_printer(wasm_mod, env, [compiled_arg]),
+        ),
+        Expression.unreachable(wasm_mod),
+      ],
+    )
   | Box => failwith("Unreachable case; should never get here: Box")
   | Unbox => failwith("Unreachable case; should never get here: Unbox")
   | BoxBind => failwith("Unreachable case; should never get here: BoxBind")

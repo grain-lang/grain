@@ -11,7 +11,11 @@ enum Option<a> { Some(a), None }
 
 export let mut printers = 0n
 
-export let registerBasePrinter = (f) => {
+// These functions are dangerous because they leak runtime memory and perform
+// no GC operations. As such, they should only be called by this module and/or
+// modules that understand these restrictions, namely Pervasives.
+
+export let dangerouslyRegisterBasePrinter = (f) => {
   let mut current = printers
   while (true) {
     // There will be at least one printer registered by the time this is called
@@ -28,8 +32,6 @@ export let registerBasePrinter = (f) => {
 }
 
 export let dangerouslyRegisterPrinter = (f) => {
-  // This is dangerous because it leaks runtime memory.
-  // This should only be called by this module and Pervasives.
   printers = WasmI32.fromGrain((f, printers))
 }
 

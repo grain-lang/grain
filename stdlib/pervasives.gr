@@ -107,12 +107,17 @@ enum Result<t, e> { Ok(t), Err(e) }
 let identity = (x) => x
 
 // Setup exception printing
-Exception.dangerouslyRegisterPrinter(e => {
-  match (e) {
-    Failure(msg) => Some("Failure: " ++ msg),
-    InvalidArgument(msg) => Some("Invalid argument: " ++ msg),
-    _ => None
-  }
-})
+@disableGC
+let setupExceptions = () => {
+  Exception.dangerouslyRegisterPrinter(e => {
+    match (e) {
+      Failure(msg) => Some("Failure: " ++ msg),
+      InvalidArgument(msg) => Some("Invalid argument: " ++ msg),
+      _ => None
+    }
+  })
 
-Exception.registerBasePrinter(e => Some(toString(e)))
+  Exception.dangerouslyRegisterBasePrinter(e => Some(toString(e)))
+}
+
+setupExceptions()
