@@ -41,7 +41,7 @@
     (ppx_sexp_conv (>= 0.14.0))
     (sexplib (>= 0.14.0))
     (grain_dypgen (= 0.1))
-    (binaryen (= 0.9.0))
+    (binaryen (= 0.9.1))
     (ounit (>= 2.0.0))
     (cmdliner (>= 1.0.2))
     (grain (>= 0))))
@@ -56,7 +56,7 @@
     (grain_dypgen (= 0.1))
     (ounit (>= 2.0.0))
     (cmdliner (>= 1.0.2))
-    (binaryen (= 0.9.0))
+    (binaryen (= 0.9.1))
     (grain_utils (>= 0))
     (grain_middle_end (>= 0))))
 
