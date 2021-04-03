@@ -32,9 +32,7 @@
   "dependencies": {
     "@grain/runtime": "*",
     "@grain/stdlib": "*",
-    "commander": "^5.1.0",
-    "flagged-respawn": "^1.0.1",
-    "v8flags": "^3.2.0"
+    "commander": "^5.1.0"
   },
   "devDependencies": {
     "prettier": "^2.2.1"
