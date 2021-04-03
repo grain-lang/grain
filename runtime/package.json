@@ -3,7 +3,7 @@
   "version": "0.2.0",
   "description": "The JavaScript runtime for the Grain language.",
   "main": "dist/grain-runtime.js",
-  "broswer": "dist/grain-runtime-browser.js",
+  "browser": "dist/grain-runtime-browser.js",
   "scripts": {
     "build": "webpack --config webpack.prod.js",
     "build:dev": "webpack --config webpack.dev.js",
