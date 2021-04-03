@@ -61,7 +61,7 @@ export async function GrainNodeRunner(path) {
   return loaded.run();
 }
 
-export default async function GrainRunner(uri) {
+export default async function DefaultGrainRunner(uri) {
   let runner = buildGrainRunner();
   let loaded = await runner.loadURL(uri);
   return loaded.run();
