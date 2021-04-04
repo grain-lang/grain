@@ -2,7 +2,8 @@
   "name": "@grain/runtime",
   "version": "0.2.0",
   "description": "The JavaScript runtime for the Grain language.",
-  "main": "src/index.js",
+  "main": "dist/grain-runtime.js",
+  "browser": "dist/grain-runtime-browser.js",
   "scripts": {
     "build": "webpack --config webpack.prod.js",
     "build:dev": "webpack --config webpack.dev.js",
@@ -36,21 +37,19 @@
     "url": "https://github.com/grain-lang/grain/issues"
   },
   "homepage": "https://grain-lang.org",
+  "dependencies": {},
   "devDependencies": {
+    "@wasmer/wasi": "^0.11.2",
+    "@wasmer/wasmfs": "^0.11.2",
     "babel-core": "^6.26.3",
     "babel-loader": "^7.1.5",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "fast-text-encoding": "^1.0.0",
     "prettier": "^2.2.1",
     "source-map-support": "^0.5.16",
+    "wasm-sourcemap": "^1.0.0",
     "webpack": "^4.42.1",
     "webpack-cli": "^3.3.11",
     "webpack-merge": "^4.2.2"
-  },
-  "dependencies": {
-    "@wasmer/wasi": "^0.11.2",
-    "@wasmer/wasmfs": "^0.11.2",
-    "fast-text-encoding": "^1.0.0",
-    "treeify": "^1.1.0",
-    "wasm-sourcemap": "^1.0.0"
   }
 }
