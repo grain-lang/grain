@@ -3,6 +3,7 @@
  (public_name grainc)
  (package grain)
  (modules grainc)
+ (modes exe)
  (flags
   (:standard
    (:include ./config/flags.sexp)))
@@ -15,9 +16,11 @@
 
 (executable
  (name grainc_js)
- (modes
-  (byte js))
+ (public_name grainc_js)
+ (package grainc)
  (modules grainc_js)
+ ; exe is only generated so dune-build-info works
+ (modes exe js)
  (libraries grain grain_diagnostics binaryen.js dune-build-info)
  (js_of_ocaml
   (flags --no-sourcemap --no-extern-fs --quiet)
