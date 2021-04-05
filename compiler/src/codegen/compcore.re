@@ -1586,7 +1586,7 @@ let buf_to_ints = (buf: Buffer.t): list(int64) => {
   // Clear out those uninitialized bytes
   Bytes.fill(bytes, num_bytes, total_bytes - num_bytes, '\000');
 
-  List.init(num_ints, i => {Bytes.get_int64_ne(bytes, i * 8)});
+  List.init(num_ints, i => {Bytes.get_int64_le(bytes, i * 8)});
 };
 
 let call_lambda = (~tail=false, wasm_mod, env, func, (argsty, retty), args) => {
