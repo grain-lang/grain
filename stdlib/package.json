@@ -2,7 +2,7 @@
   "name": "@grain/stdlib",
   "version": "0.2.0",
   "description": "The standard library for the Grain language.",
-  "main": "pervasives.gr",
+  "main": "index.js",
   "engines": {
     "node": ">=14"
   },
