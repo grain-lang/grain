@@ -110,11 +110,12 @@ let compile_file = (name, outfile_arg) => {
       };
     Grain_parsing.Location.report_exception(Format.err_formatter, exn);
     Option.iter(
-      s => {
-        prerr_string("Backtrace:\n");
-        prerr_string(s);
-        prerr_string("\n");
-      },
+      s =>
+        if (Grain_utils.Config.debug^) {
+          prerr_string("Backtrace:\n");
+          prerr_string(s);
+          prerr_string("\n");
+        },
       bt,
     );
     exit(2);
