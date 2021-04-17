@@ -256,7 +256,6 @@ let add_delayed_check_forward: ref((unit => unit) => unit);
 let same_constr: ref((t, type_expr, type_expr) => bool);
 /* Forward declaration to break mutual recursion with Compile.
    Compiles the given input file to the given output file location. */
-let compile_module_dependency: ref((string, string) => unit);
 
 /* Analysis functions */
 

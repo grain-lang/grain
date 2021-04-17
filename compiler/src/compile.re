@@ -79,25 +79,19 @@ let log_state = state =>
 
 let apply_inline_flags = (prog: Parsetree.parsed_program) => {
   switch (prog.comments) {
-  | [Block({cmt_content, cmt_loc}), ..._]
-      when
-        Str.string_match(Str.regexp_string("grainc-flags"), cmt_content, 0) =>
-    let err_buf = Buffer.create(80);
-    let err = Format.formatter_of_buffer(err_buf);
-    let result = Grain_utils.Config.apply_inline_flags(~err, cmt_content);
-    switch (result) {
-    | `Ok(_) => ()
-    | `Version
-    | `Help => raise(InlineFlagsError(cmt_loc, Cannot_use_help_or_version))
-    | `Error(_) =>
-      Format.pp_print_flush(err, ());
-      raise(
-        InlineFlagsError(
-          cmt_loc,
-          Cannot_parse_inline_flags(Buffer.contents(err_buf)),
-        ),
-      );
-    };
+  | [Block({cmt_content, cmt_loc}), ..._] =>
+    Grain_utils.Config.apply_inline_flags(
+      ~on_error=
+        err => {
+          switch (err) {
+          | `Help =>
+            raise(InlineFlagsError(cmt_loc, Cannot_use_help_or_version))
+          | `Message(msg) =>
+            raise(InlineFlagsError(cmt_loc, Cannot_parse_inline_flags(msg)))
+          }
+        },
+      cmt_content,
+    )
   | _ => ()
   };
 };
@@ -197,7 +191,8 @@ let compile_string = (~hook=?, ~name=?, ~outfile=?, ~reset=true, str) => {
 
 let compile_file = (~hook=?, ~outfile=?, ~reset=true, filename) => {
   if (reset) {
-    Env.clear_imports();
+    Env.clear_imports(); // TODO: (#576) reenable if necessary (makes tests super slow, but seems to be safe?)
+                     // Grain_utils.Fs_access.flush_all_cached_data();
   };
   let cstate = {
     cstate_desc: Initial(InputFile(filename)),
@@ -289,7 +284,7 @@ let () =
   );
 
 let () =
-  Env.compile_module_dependency :=
+  Module_resolution.compile_module_dependency :=
     (
       (input, outfile) =>
         ignore(

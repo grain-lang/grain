@@ -841,8 +841,17 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
 
 let type_module = type_module(false, None);
 
-let implicit_modules =
-  ref([("Pervasives", "pervasives", true), ("GC", "runtime/gc", false)]);
+let lookup_implicit_module_spec = m =>
+  switch (m) {
+  | Grain_utils.Config.Pervasives_mod => ("Pervasives", "pervasives", true)
+  | Grain_utils.Config.Gc_mod => ("GC", "runtime/gc", false)
+  };
+
+let get_current_implicit_modules = () =>
+  List.map(
+    lookup_implicit_module_spec,
+    Grain_utils.Config.get_implicit_opens(),
+  );
 
 let open_implicit_module = (m, env, in_env) => {
   open Asttypes;
@@ -877,31 +886,18 @@ let initial_env = () => {
   let initial = Env.initial_env;
   let env = initial;
   let (unit_name, source, mode) = Env.get_unit();
-  let implicit_modules =
-    if (Grain_utils.Config.no_pervasives^) {
-      List.filter(
-        ((name, _, _)) => name != "Pervasives",
-        implicit_modules^,
-      );
-    } else {
-      implicit_modules^;
-    };
-  if (Env.is_runtime_mode()) {
-    env;
-  } else {
-    List.fold_left(
-      (env, m) => {
-        let (modname, _, in_env) = m;
-        if (unit_name != modname) {
-          open_implicit_module(m, env, in_env);
-        } else {
-          env;
-        };
-      },
-      env,
-      implicit_modules,
-    );
-  };
+  List.fold_left(
+    (env, m) => {
+      let (modname, _, in_env) = m;
+      if (unit_name != modname) {
+        open_implicit_module(m, env, in_env);
+      } else {
+        env;
+      };
+    },
+    env,
+    get_current_implicit_modules(),
+  );
 };
 
 let get_compilation_mode = () => {

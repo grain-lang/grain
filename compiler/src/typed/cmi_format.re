@@ -69,6 +69,12 @@ let build_full_cmi = (~name, ~sign, ~crcs, ~flags) => {
   {cmi_name: name, cmi_sign: sign, cmi_crcs: crcs, cmi_flags: flags};
 };
 
+let cmi_to_crc = ({cmi_name, cmi_sign}) => {
+  let ns_sign = Marshal.to_bytes((cmi_name, cmi_sign), []);
+  let crc = Digest.bytes(ns_sign);
+  crc;
+};
+
 let input_cmi = ic =>
   switch (cmi_infos_of_yojson @@ Yojson.Safe.from_channel(ic)) {
   | Result.Ok(x) => x

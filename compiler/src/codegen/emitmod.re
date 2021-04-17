@@ -24,12 +24,12 @@ let emit_module = ({asm, signature}, outfile) => {
       None;
     };
   let (encoded, map) = Binaryen.Module.write(asm, source_map_name);
-  let oc = open_out_bin(outfile);
+  let oc = Fs_access.open_file_for_writing(outfile);
   output_bytes(oc, encoded);
   close_out(oc);
   switch (map) {
   | Some(map) =>
-    let oc = open_out_bin(outfile ++ ".map");
+    let oc = Fs_access.open_file_for_writing(outfile ++ ".map");
     output_string(oc, map);
     close_out(oc);
   | None => ()

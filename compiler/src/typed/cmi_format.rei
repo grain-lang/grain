@@ -44,6 +44,8 @@ let input_cmi: in_channel => cmi_infos;
 /* read a cmi from a filename, checking the magic */
 let read_cmi: string => cmi_infos;
 
+let cmi_to_crc: cmi_infos => Digest.t;
+
 /* Error report */
 
 type error =
