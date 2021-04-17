@@ -3,7 +3,7 @@ const runtime = require("@grain/runtime");
 const preparePkg = require("./pkg");
 
 module.exports = async function run(filename, options) {
-  preparePkg(options.stdlib);
+  preparePkg();
 
   try {
     let basePath = path.dirname(filename);

@@ -12,9 +12,10 @@ let remove_extension = baseName => {
 // These utilities are needed until https://github.com/facebookexperimental/reason-native/pull/251
 // is merged into the reason-native/fp library to support Windows-style separators
 let normalize_separators = path => {
-  let platform_sep = Str.regexp(Filename.dir_sep);
+  // We hardcode Windows separator because JSOO always acts as unix
+  let windows_sep = Str.regexp("\\");
   let normal_sep = "/";
-  Str.global_replace(platform_sep, normal_sep, path);
+  Str.global_replace(windows_sep, normal_sep, path);
 };
 
 let to_fp = fname => {

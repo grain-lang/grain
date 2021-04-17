@@ -1,11 +1,17 @@
 // This function paves over some of the weird virtual filesystem stuff inside `pkg`
-function preparePkg(stdlibPath) {
-  if (!process.pkg || !stdlibPath) {
+function preparePkg() {
+  if (!process.pkg) {
     return;
   }
 
   const fs = require("fs");
   const path = require("path");
+  const stdlibPath = require("@grain/stdlib");
+  const stdlibPathWithTrailingSep = `${stdlibPath}${path.sep}`
+  // From https://github.com/sindresorhus/escape-string-regexp/blob/main/index.js
+  const regexpSafeStdlibPath = stdlibPathWithTrailingSep
+    .replace(/[|\\{}()[\]^$+*?.]/g, '\\$&')
+    .replace(/-/g, '\\x2d');
 
   const stdlibTarget = path.join(process.cwd(), "/target");
 
@@ -17,7 +23,7 @@ function preparePkg(stdlibPath) {
   }
 
   process.pkg.mount(
-    new RegExp(stdlibPath + "/(.+)(?<!.gr)$"),
+    new RegExp(`${regexpSafeStdlibPath}(.+)(?<!.gr)$`),
     function (_match, group1) {
       return path.join(stdlibTarget, group1);
     }

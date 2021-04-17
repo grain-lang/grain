@@ -6,6 +6,6 @@ program.option("--stdlib <path>").allowUnknownOption().parse(process.argv);
 
 const { stdlib } = program.opts();
 
-preparePkg(stdlib);
+preparePkg();
 
 require("./grainc_js.bc.js");
