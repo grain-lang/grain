@@ -9,7 +9,6 @@ module.exports = (file, options) => {
     exec(`-g --lsp ${file}`, options, { stdio: "inherit" });
     process.exit();
   } catch (e) {
-    console.log(e);
     if (options.graceful) {
       process.exit();
     } else {

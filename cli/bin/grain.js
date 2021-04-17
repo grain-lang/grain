@@ -40,7 +40,6 @@ function num(val) {
 }
 
 function graincVersion() {
-  // TODO: This prints "unknown" for the JSOO version of grainc
   return exec("--version").toString().trim();
 }
 
