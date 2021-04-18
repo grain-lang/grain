@@ -20,13 +20,6 @@
     "runtime": "yarn workspace @grain/runtime run",
     "compiler": "yarn workspace @grain/compiler run",
     "stdlib": "yarn workspace @grain/stdlib run",
-    "postcompiler": "yarn stdlib clean",
-    "build-pkg": "pkg ./cli/package.json --no-bytecode --output pkg/grain"
-  },
-  "devDependencies": {
-    "pkg": "^4.5.1"
-  },
-  "resolutions": {
-    "pkg": "phated/pkg"
+    "postcompiler": "yarn stdlib clean"
   }
 }
