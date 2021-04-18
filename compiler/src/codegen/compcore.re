@@ -88,6 +88,9 @@ let decref_ignore_zeros_closure_ident =
   Ident.create_persistent("GRAIN$EXPORT$decRefIgnoreZeros");
 let tracepoint_ident = Ident.create_persistent("tracepoint");
 
+let grain_main = "_gmain";
+let grain_start = "_start";
+
 let required_global_imports = [
   {
     mimp_mod: runtime_mod,
@@ -1602,7 +1605,7 @@ let call_lambda = (~tail=false, wasm_mod, env, func, (argsty, retty), args) => {
     load(~offset=8, wasm_mod, compiled_func()),
     [compiled_func(), ...compiled_args],
     Type.create @@ Array.map(wasm_type, Array.of_list([I32Type, ...argsty])),
-    wasm_type(retty),
+    Type.create @@ Array.map(wasm_type, Array.of_list(retty)),
   );
 };
 
@@ -2975,7 +2978,12 @@ and compile_instr = (wasm_mod, env, instr) =>
   | MError(err, args) => call_error_handler(wasm_mod, env, err, args)
   | MCallKnown({func, func_type: (_, retty), args}) =>
     let compiled_args = List.map(compile_imm(wasm_mod, env), args);
-    Expression.call(wasm_mod, func, compiled_args, wasm_type(retty));
+    Expression.call(
+      wasm_mod,
+      func,
+      compiled_args,
+      Type.create(Array.of_list(List.map(wasm_type, retty))),
+    );
   | MArityOp(_) => failwith("NYI: (compile_instr): MArityOp")
   | MTagOp(_) => failwith("NYI: (compile_instr): MTagOp")
   };
@@ -3140,7 +3148,7 @@ let compile_type_metadata = (wasm_mod, env, type_metadata) => {
 
 let compile_function =
     (
-      ~start=false,
+      ~name=?,
       ~preamble=?,
       wasm_mod,
       env,
@@ -3150,10 +3158,9 @@ let compile_function =
   let arity = List.length(args);
   let index_int = Int32.to_int(index);
   let func_name =
-    if (start) {
-      "_start";
-    } else {
-      Printf.sprintf("func_%d", index_int);
+    switch (name) {
+    | Some(name) => name
+    | None => Printf.sprintf("func_%d", index_int)
     };
   let body_env = {...env, num_args: arity, stack_size};
   let inner_body =
@@ -3187,7 +3194,7 @@ let compile_function =
       wasm_mod,
       func_name,
       Type.create @@ Array.of_list @@ List.map(wasm_type, args),
-      wasm_type @@ return_type,
+      Type.create @@ Array.of_list @@ List.map(wasm_type, return_type),
       locals,
       body,
     );
@@ -3340,7 +3347,8 @@ let compile_exports = (wasm_mod, env, {functions, imports, exports, globals}) =>
   };
   List.iteri(compile_export, exports);
   List.iter(compile_external_function_export, List.rev(functions));
-  ignore @@ Export.add_function_export(wasm_mod, "_start", "_start");
+  ignore @@ Export.add_function_export(wasm_mod, grain_main, grain_main);
+  ignore @@ Export.add_function_export(wasm_mod, grain_start, grain_start);
   ignore @@
   Export.add_global_export(
     wasm_mod,
@@ -3349,14 +3357,13 @@ let compile_exports = (wasm_mod, env, {functions, imports, exports, globals}) =>
   );
 };
 
-let compile_tables = (wasm_mod, env, {functions, imports} as prog) => {
-  let table_size = compute_table_size(env, prog);
+let compile_tables = (wasm_mod, env, {functions}) => {
   let function_name = i => Printf.sprintf("func_%d", i);
   let function_names = List.mapi((i, _) => function_name(i), functions);
-  Function_table.set_function_table(
+  Table.add_active_element_segment(
     wasm_mod,
-    table_size,
-    Function_table.unlimited,
+    global_function_table,
+    "elem",
     function_names,
     Expression.global_get(
       wasm_mod,
@@ -3438,20 +3445,31 @@ let compile_main = (wasm_mod, env, prog) => {
     };
   ignore @@
   compile_function(
-    ~start=true,
+    ~name=grain_main,
     ~preamble?,
     wasm_mod,
     env,
     {
       index: Int32.of_int(-99),
-      name: Some("_start"),
+      name: Some(grain_main),
       args: [],
-      return_type: I32Type,
+      return_type: [I32Type],
       body: prog.main_body,
       stack_size: prog.main_body_stack_size,
       attrs: [],
       func_loc: Grain_parsing.Location.dummy_loc,
     },
+  );
+  Function.add_function(
+    wasm_mod,
+    grain_start,
+    Type.none,
+    Type.none,
+    [||],
+    Expression.drop(
+      wasm_mod,
+      Expression.call(wasm_mod, grain_main, [], Type.int32),
+    ),
   );
 };
 

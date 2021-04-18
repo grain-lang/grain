@@ -112,6 +112,38 @@ let tgcfile = (~todo=?, name, heap_size, input_file, expected) =>
     expected,
   );
 
+let tlink = (~todo=?, name, program, expected) =>
+  name
+  >:: wrap_todo(todo) @@
+  test_run(
+    ~hook=stop_after_linked,
+    ~print_output=false,
+    program,
+    name,
+    expected,
+  );
+let telink = (~todo=?, name, program, expected) =>
+  name
+  >:: wrap_todo(todo) @@
+  test_err(
+    ~hook=stop_after_linked,
+    ~print_output=false,
+    program,
+    name,
+    expected,
+  );
+
+let tlinklib = (~todo=?, ~returns="", ~code=?, input_file) =>
+  input_file
+  >:: wrap_todo(todo) @@
+  test_run_stdlib(
+    ~hook=stop_after_linked,
+    ~print_output=false,
+    ~returns,
+    ~code?,
+    input_file,
+  );
+
 let test_final_anf =
     (
       program_str,
@@ -1679,7 +1711,7 @@ let optimization_tests = [
   ),
   tfinalanf(
     "test_no_local_mutation_optimization_of_closure_scope_mut",
-    "let mut x = 5; let foo = () => x; foo()",
+    "/* grainc-flags --experimental-wasm-tail-call */ let mut x = 5; let foo = () => x; foo()",
     {
       open Grain_typed;
       let x = Ident.create("x");
@@ -1731,7 +1763,7 @@ let optimization_tests = [
   /* All optimizations are needed to work completely on this input */
   tfinalanf(
     "test_optimizations_work_together",
-    "{\n    let x = 5;\n    let foo = ((y) => {y});\n    let y = (3, 5);\n    foo(3) + x}",
+    "/* grainc-flags --experimental-wasm-tail-call */ {\n    let x = 5;\n    let foo = ((y) => {y});\n    let y = (3, 5);\n    foo(3) + x}",
     {
       open Grain_typed;
       let plus = Ident.create("+");
@@ -2192,6 +2224,24 @@ let comment_tests = {
   ];
 };
 
+let link_tests = [
+  tlink("link_simple", {|print("Hello, world!")|}, "Hello, world!\n"),
+  telink(
+    "link_exception",
+    {|exception BadError(Number, String); let _ = throw BadError(5, "foo")|},
+    {|BadError(5, "foo")|},
+  ),
+  tlink(
+    "link_import",
+    {|import List from "list"; print(List.map(n => n + 1, [1, 2, 3]))|},
+    "[2, 3, 4]\n",
+  ),
+  tlinklib("array.test"),
+  tlinklib("list.test"),
+  tlinklib("hash.test"),
+  tlinklib("map.test"),
+];
+
 let tests =
   "End to end"
   >::: basic_functionality_tests
@@ -2216,4 +2266,5 @@ let tests =
   @ export_tests
   @ comment_tests
   @ number_tests
-  @ exception_tests;
+  @ exception_tests
+  @ link_tests;

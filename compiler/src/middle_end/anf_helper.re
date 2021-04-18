@@ -9,38 +9,6 @@ type env = Env.t;
 type ident = Ident.t;
 type attributes = Asttypes.attributes;
 
-let rec get_allocation_type = (env, ty) => {
-  switch (ty.desc) {
-  | TTyConstr(path, _, _) => Env.find_type(path, env).type_allocation
-  | TTyLink(linked) => get_allocation_type(env, linked)
-  | TTyVar(_)
-  | TTyArrow(_)
-  | TTyTuple(_)
-  | TTyRecord(_)
-  | TTyUniVar(_)
-  | TTyPoly(_)
-  | TTySubst(_) => HeapAllocated
-  };
-};
-
-let rec get_fn_allocation_type = (env, ty) => {
-  switch (ty.desc) {
-  | TTyLink(linked) => get_fn_allocation_type(env, linked)
-  | TTyArrow(args, ret, _) => (
-      List.map(get_allocation_type(env), args),
-      get_allocation_type(env, ret),
-    )
-  | TTyConstr(_)
-  | TTyVar(_)
-  | TTyTuple(_)
-  | TTyRecord(_)
-  | TTyUniVar(_)
-  | TTyPoly(_)
-  | TTySubst(_) =>
-    failwith("get_fn_allocation_type: function type was non-function")
-  };
-};
-
 let default_loc = Location.dummy_loc;
 let default_env = Env.empty;
 let default_attributes = [];

@@ -48,6 +48,18 @@
     (grain (>= 0))))
 
 (package
+  (name grain_linking)
+  (synopsis "The Grain linker")
+  (depends
+    (reason (>= 3.6.0))
+    (ppx_sexp_conv (>= 0.14.0))
+    (sexplib (>= 0.14.0))
+    (binaryen (= 0.9.1))
+    (ocamlgraph (>= 2.0.0))
+    (grain_utils (>= 0))
+    (grain_codegen (>= 0))))
+
+(package
   (name grain_codegen)
   (synopsis "Grain WebAssembly code generation")
   (depends

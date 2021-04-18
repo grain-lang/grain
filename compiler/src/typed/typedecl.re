@@ -931,6 +931,7 @@ let transl_value_decl = (env, loc, valdecl) => {
        raise (Error(valdecl.pval_loc, Val_in_structure)) */
     | [prim] => {
         val_type: ty,
+        val_repr: Type_utils.repr_of_type(env, ty),
         val_kind: TValPrim(prim),
         Types.val_loc: loc,
         val_fullpath: Path.PIdent(Ident.create("<bogus>")) /*val_attributes = valdecl.pval_attributes*/,
@@ -938,6 +939,7 @@ let transl_value_decl = (env, loc, valdecl) => {
       }
     | _ => {
         val_type: ty,
+        val_repr: Type_utils.repr_of_type(env, ty),
         val_kind: TValReg,
         Types.val_loc: loc,
         val_fullpath: Path.PIdent(Ident.create("<bogus>")) /*val_attributes = valdecl.pval_attributes*/,

@@ -2,6 +2,7 @@ open Grain_parsing;
 open Grain_typed;
 open Types;
 open Typedtree;
+open Type_utils;
 open Anftree;
 open Anf_helper;
 
@@ -652,7 +653,7 @@ let rec transl_imm =
       MatchCompiler.compile_result(
         ~allocation_type,
         ~partial,
-        Matchcomp.convert_match_branches(branches),
+        Matchcomp.convert_match_branches(env, branches),
         transl_anf_expression,
         transl_imm,
         exp_ans,
@@ -1097,7 +1098,7 @@ and transl_comp_expression =
       MatchCompiler.compile_result(
         ~allocation_type,
         ~partial,
-        Matchcomp.convert_match_branches(branches),
+        Matchcomp.convert_match_branches(env, branches),
         transl_anf_expression,
         transl_imm,
         exp_ans,
@@ -1389,6 +1390,12 @@ let rec transl_anf_statement =
     | TTyArrow(_) =>
       let (argsty, retty) =
         get_fn_allocation_type(env, desc.tvd_desc.ctyp_type);
+      let retty =
+        if (returns_void(desc.tvd_desc.ctyp_type)) {
+          [];
+        } else {
+          [retty];
+        };
       (
         None,
         [
@@ -1397,7 +1404,7 @@ let rec transl_anf_statement =
             desc.tvd_id,
             desc.tvd_mod.txt,
             desc.tvd_name.txt,
-            FunctionShape(argsty, [retty]),
+            FunctionShape(argsty, retty),
           ),
         ],
       );

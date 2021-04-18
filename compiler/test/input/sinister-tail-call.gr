@@ -1,3 +1,4 @@
+/* grainc-flags --experimental-wasm-tail-call */
 // Contrived example to test *ADVANCED* tail calls
 
 let rec isEvenHelp = (n, b) => {

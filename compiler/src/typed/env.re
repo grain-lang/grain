@@ -1718,6 +1718,12 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
                 | existentials =>
                   Btype.newgenty(TTyPoly(val_type, existentials))
                 };
+              let val_repr =
+                switch (desc.cstr_args) {
+                | [] => ReprValue(WasmI32)
+                | args =>
+                  ReprFunction(List.map(_ => WasmI32, args), [WasmI32])
+                };
               let get_path = name =>
                 switch (path) {
                 | PIdent(_) => PIdent(Ident.create(name))
@@ -1728,6 +1734,7 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
                 };
               let val_desc = {
                 val_type,
+                val_repr,
                 val_fullpath: get_path(desc.cstr_name),
                 val_kind: TValConstructor(desc),
                 val_loc: desc.cstr_loc,
@@ -1770,6 +1777,11 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
             | [] => val_type
             | existentials => Btype.newgenty(TTyPoly(val_type, existentials))
             };
+          let val_repr =
+            switch (desc.cstr_args) {
+            | [] => ReprValue(WasmI32)
+            | args => ReprFunction(List.map(_ => WasmI32, args), [WasmI32])
+            };
           let get_path = name =>
             switch (path) {
             | PIdent(_) => PIdent(Ident.create(name))
@@ -1780,6 +1792,7 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
             };
           let val_desc = {
             val_type,
+            val_repr,
             val_fullpath: get_path(desc.cstr_name),
             val_kind: TValConstructor(desc),
             val_loc: desc.cstr_loc,
@@ -1843,8 +1856,14 @@ and store_type = (~check, id, info, env) => {
           | [] => val_type
           | existentials => Btype.newgenty(TTyPoly(val_type, existentials))
           };
+        let val_repr =
+          switch (desc.cstr_args) {
+          | [] => ReprValue(WasmI32)
+          | args => ReprFunction(List.map(_ => WasmI32, args), [WasmI32])
+          };
         let val_desc = {
           val_type,
+          val_repr,
           val_fullpath: PIdent(Ident.create(desc.cstr_name)),
           val_kind: TValConstructor(desc),
           val_loc: desc.cstr_loc,
@@ -1930,8 +1949,14 @@ and store_extension = (~check, id, ext, env) => {
       | [] => val_type
       | existentials => Btype.newgenty(TTyPoly(val_type, existentials))
       };
+    let val_repr =
+      switch (cstr.cstr_args) {
+      | [] => ReprValue(WasmI32)
+      | args => ReprFunction(List.map(_ => WasmI32, args), [WasmI32])
+      };
     {
       val_type,
+      val_repr,
       val_fullpath: PIdent(Ident.create(cstr.cstr_name)),
       val_kind: TValConstructor(cstr),
       val_mutable: false,

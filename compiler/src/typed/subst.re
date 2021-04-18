@@ -264,6 +264,7 @@ let type_declaration = (s, decl) => {
 
 let value_description = (s, descr) => {
   val_type: type_expr(s, descr.val_type),
+  val_repr: descr.val_repr,
   val_kind: descr.val_kind,
   val_fullpath: Path.PIdent(Ident.create("<unknown>")),
   val_mutable: descr.val_mutable,

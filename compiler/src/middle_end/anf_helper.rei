@@ -9,10 +9,6 @@ type env = Env.t;
 type ident = Ident.t;
 type attributes = Asttypes.attributes;
 
-let get_allocation_type: (Env.t, type_expr) => allocation_type;
-let get_fn_allocation_type:
-  (Env.t, type_expr) => (list(allocation_type), allocation_type);
-
 module Imm: {
   let mk: (~loc: loc=?, ~env: env=?, imm_expression_desc) => imm_expression;
   let id: (~loc: loc=?, ~env: env=?, ident) => imm_expression;

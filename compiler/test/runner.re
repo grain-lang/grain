@@ -93,6 +93,7 @@ type result = either(string, string);
 let extract_wasm = ({cstate_desc}) =>
   switch (cstate_desc) {
   | Compiled(compiled) => compiled
+  | Linked(linked) => linked
   | _ => raise(Invalid_argument("Expected WASM State"))
   };
 
@@ -158,6 +159,7 @@ let run_anf = (p, out) => {
 let test_run =
     (
       ~cmp=?,
+      ~hook=stop_after_compiled,
       ~num_pages=?,
       ~print_output=true,
       program_str,
@@ -168,8 +170,7 @@ let test_run =
   let result =
     Config.preserve_config(() => {
       Config.include_dirs := ["test-libs", ...Config.include_dirs^];
-      let cstate =
-        compile_string(~hook=stop_after_compiled, ~name=outfile, program_str);
+      let cstate = compile_string(~hook, ~name=outfile, program_str);
       run_output(~num_pages?, ~print_output, cstate, test_ctxt);
     });
   let expected =
@@ -186,25 +187,39 @@ let test_run =
   );
 };
 
-let test_run_file = (~num_pages=?, filename, name, expected, test_ctxt) => {
+let test_run_file =
+    (
+      ~hook=stop_after_compiled,
+      ~num_pages=?,
+      filename,
+      name,
+      expected,
+      test_ctxt,
+    ) => {
   let input_filename = "input/" ++ filename ++ ".gr";
   let outfile = "output/" ++ name;
   let result =
     Config.preserve_config(() => {
       Config.include_dirs := ["test-libs", ...Config.include_dirs^];
-      let cstate =
-        compile_file(~hook=stop_after_compiled, ~outfile, input_filename);
+      let cstate = compile_file(~hook, ~outfile, input_filename);
       run_output(~num_pages?, cstate, test_ctxt);
     });
   assert_equal(~printer=Fun.id, expected ++ "\n", result);
 };
 
-let test_run_stdlib = (~returns="void\n", ~code=?, filename, test_ctxt) => {
+let test_run_stdlib =
+    (
+      ~hook=stop_after_compiled,
+      ~print_output=true,
+      ~returns="void\n",
+      ~code=?,
+      filename,
+      test_ctxt,
+    ) => {
   let input_filename = "stdlib/" ++ filename ++ ".gr";
   let outfile = "stdlib_output/" ++ filename;
-  let cstate =
-    compile_file(~hook=stop_after_compiled, ~outfile, input_filename);
-  let result = run_output(~code?, cstate, test_ctxt);
+  let cstate = compile_file(~hook, ~outfile, input_filename);
+  let result = run_output(~code?, ~print_output, cstate, test_ctxt);
   assert_equal(~printer=Fun.id, returns, result);
 };
 
@@ -261,6 +276,7 @@ let test_run_anf = (program_anf, outfile, expected, test_ctxt) => {
 
 let test_err =
     (
+      ~hook=stop_after_compiled,
       ~num_pages=?,
       ~print_output=true,
       ~check_exists=true,
@@ -273,12 +289,7 @@ let test_err =
     try(
       Config.preserve_config(() => {
         Config.include_dirs := ["test-libs", ...Config.include_dirs^];
-        let cstate =
-          compile_string(
-            ~hook=stop_after_compiled,
-            ~name=outfile,
-            program_str,
-          );
+        let cstate = compile_string(~hook, ~name=outfile, program_str);
         run_output(~num_pages?, ~print_output, cstate, test_ctxt);
       })
     ) {
@@ -289,13 +300,13 @@ let test_err =
   assert_equal(errmsg, result, ~cmp, ~printer=Fun.id);
 };
 
-let test_run_file_err = (filename, name, errmsg, test_ctxt) => {
+let test_run_file_err =
+    (~hook=stop_after_compiled, filename, name, errmsg, test_ctxt) => {
   let input_filename = "input/" ++ filename ++ ".gr";
   let outfile = "output/" ++ name;
   let result =
     try({
-      let cstate =
-        compile_file(~hook=stop_after_compiled, ~outfile, input_filename);
+      let cstate = compile_file(~hook, ~outfile, input_filename);
       run_output(cstate, test_ctxt);
     }) {
     | exn => Printexc.to_string(exn)

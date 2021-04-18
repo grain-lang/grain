@@ -2,6 +2,7 @@ open Grain_parsing;
 open Grain_typed;
 open Grain_middle_end;
 open Grain_codegen;
+open Grain_linking;
 open Optimize;
 
 type input_source =
@@ -17,6 +18,8 @@ type compilation_state_desc =
   | Optimized(Anftree.anf_program)
   | Mashed(Mashtree.mash_program)
   | Compiled(Compmod.compiled_program)
+  | ObjectFileEmitted(Compmod.compiled_program)
+  | Linked(Compmod.compiled_program)
   | Assembled;
 
 type compilation_state = {
@@ -67,6 +70,8 @@ let log_state = state =>
       prerr_string("\nMashed program:\n");
       prerr_sexp(Mashtree.sexp_of_mash_program, mashed);
     | Compiled(compiled) => prerr_string("\nCompiled successfully")
+    | ObjectFileEmitted(compiled) => prerr_string("\nEmitted successfully")
+    | Linked(linked) => prerr_string("\nLinked successfully")
     | Assembled => prerr_string("\nAssembled successfully")
     };
     prerr_string("\n\n");
@@ -144,7 +149,14 @@ let next_state = ({cstate_desc, cstate_filename} as cs) => {
       | Some(outfile) => Emitmod.emit_module(compiled, outfile)
       | None => ()
       };
-      Binaryen.Module.dispose(compiled.asm);
+      ObjectFileEmitted(compiled);
+    | ObjectFileEmitted(compiled) =>
+      Linked(Linkmod.statically_link_wasm_module(compiled))
+    | Linked(linked) =>
+      switch (cs.cstate_outfile) {
+      | Some(outfile) => Emitmod.emit_module(linked, outfile)
+      | None => ()
+      };
       Assembled;
     | Assembled => Assembled
     };
@@ -229,6 +241,18 @@ let stop_after_compiled =
   fun
   | {cstate_desc: Compiled(_)} => Stop
   | s => Continue(s);
+let stop_after_object_file_emitted =
+  fun
+  | {cstate_desc: ObjectFileEmitted(_)} => Stop
+  | s => Continue(s);
+let stop_after_linked =
+  fun
+  | {cstate_desc: Linked(_)} => Stop
+  | s => Continue(s);
+let stop_after_assembled =
+  fun
+  | {cstate_desc: Assembled} => Stop
+  | s => Continue(s);
 
 let anf = Linearize.transl_anf_module;
 
@@ -267,5 +291,13 @@ let () =
 let () =
   Env.compile_module_dependency :=
     (
-      (input, outfile) => ignore(compile_file(~outfile, ~reset=false, input))
+      (input, outfile) =>
+        ignore(
+          compile_file(
+            ~outfile,
+            ~reset=false,
+            ~hook=stop_after_object_file_emitted,
+            input,
+          ),
+        )
     );

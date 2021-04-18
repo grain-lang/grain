@@ -29,6 +29,7 @@
     "@opam/fp": "0.0.1",
     "@opam/fs": "0.0.2",
     "@opam/grain_dypgen": "0.2",
+    "@opam/ocamlgraph": ">= 2.0.0",
     "@opam/ppx_deriving_yojson": ">= 3.5.2",
     "@opam/ppx_expect": ">= 0.14.0",
     "@opam/ppx_sexp_conv": ">= 0.14.0",
@@ -44,6 +45,7 @@
     "@opam/ounit": ">= 2.0.0"
   },
   "resolutions": {
+    "@grain/binaryen.ml": "grain-lang/binaryen.ml#8a21a8a6ce6abad71f36e5f13492a7c7a625cb00",
     "@opam/ocamlfind": "1.8.1",
     "@opam/fp": "facebookexperimental/reason-native:fp.opam#a33f1528a6dd86c67f365e226c81312733181c87",
     "@opam/fs": "facebookexperimental/reason-native:fs.opam#a33f1528a6dd86c67f365e226c81312733181c87",
