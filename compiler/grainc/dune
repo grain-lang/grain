@@ -24,4 +24,4 @@
  (libraries grain grain_diagnostics binaryen.js dune-build-info)
  (js_of_ocaml
   (flags --no-sourcemap --no-extern-fs --quiet)
-  (javascript_files runtime.js)))
+  (javascript_files runtime.js jsoo_hacks.js)))
