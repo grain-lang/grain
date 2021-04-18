@@ -1,5 +1,5 @@
 {
-  "checksum": "673864f27d5b2033b4abcf2d1e59cdad",
+  "checksum": "786e2a240ac8342bc0795d844f02e36d",
   "root": "@grain/compiler@link-dev:./esy.json",
   "node": {
     "ocaml@4.11.0@d41d8cd9": {
@@ -1850,7 +1850,8 @@
       ],
       "devDependencies": [
         "@opam/ounit@opam:2.2.4@cb017d08",
-        "@opam/ocaml-lsp-server@opam:1.4.0@c9583433"
+        "@opam/ocaml-lsp-server@opam:1.4.0@c9583433",
+        "@opam/js_of_ocaml-compiler@opam:3.9.1@19f5797f"
       ],
       "installConfig": { "pnp": false }
     },

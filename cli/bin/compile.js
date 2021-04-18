@@ -1,18 +1,10 @@
-const path = require("path");
-const { execSync } = require("child_process");
-
-const grainc = path.join(__dirname, "grainc.exe");
+const exec = require("./exec");
 
 module.exports = (file, options) => {
   try {
-    execSync(
-      `${grainc} --stdlib=${options.stdlib} ${
-        options.cflags ? options.cflags : ""
-      } ${file}`
-    );
+    exec(file, options, { stdio: "inherit" });
     return file.replace(/\.gr$/, ".gr.wasm");
   } catch (e) {
-    console.log(e.stdout.toString());
     if (options.graceful) {
       process.exit();
     } else {

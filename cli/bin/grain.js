@@ -13,10 +13,9 @@ const v8 = require("v8");
 v8.setFlagsFromString("--experimental-wasm-bigint");
 v8.setFlagsFromString("--experimental-wasm-return-call");
 
-const { execSync } = require("child_process");
-const path = require("path");
+const program = require("commander");
+const exec = require("./exec");
 
-let program = require("commander");
 // Workaround to defer loading of the grain runtime until the memory settings have been parsed
 let actions = {
   get compile() {
@@ -30,8 +29,7 @@ let actions = {
   },
 };
 
-let pervasivesPath = require.resolve("@grain/stdlib");
-let stdlibPath = path.dirname(pervasivesPath);
+const stdlibPath = require("@grain/stdlib");
 
 function list(val) {
   return val.split(",");
@@ -42,9 +40,7 @@ function num(val) {
 }
 
 function graincVersion() {
-  const grainc = path.join(__dirname, "grainc.exe");
-
-  return execSync(`${grainc} --version`).toString().trim();
+  return exec("--version").toString().trim();
 }
 
 program

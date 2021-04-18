@@ -1,7 +1,10 @@
 const path = require("path");
-const runtime = require("@grain/runtime/dist/grain-runtime.js");
+const runtime = require("@grain/runtime");
+const preparePkg = require("./pkg");
 
 module.exports = async function run(filename, options) {
+  preparePkg();
+
   try {
     let basePath = path.dirname(filename);
     let includeDirs = [basePath, ...options.includeDirs, options.stdlib];
