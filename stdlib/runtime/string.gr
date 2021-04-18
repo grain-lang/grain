@@ -25,7 +25,7 @@ import NumberUtils from "runtime/numberUtils"
 
 import { allocateString, allocateArray } from "runtime/dataStructures"
 
-import foreign wasm fd_write: (WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+// import foreign wasm fd_write: (WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
 
 primitive (!) : Bool -> Bool = "@not"
 primitive (&&) : (Bool, Bool) -> Bool = "@and"
@@ -460,6 +460,6 @@ export let print = (value) => {
   WasmI32.store8(lf, 10n, 0n)
   WasmI32.store(iov, lf, 8n)
   WasmI32.store(iov, 1n, 12n)
-  fd_write(1n, iov, 2n, written)
+  // fd_write(1n, iov, 2n, written)
   Memory.free(buf)
 }

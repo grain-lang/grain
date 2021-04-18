@@ -5,7 +5,7 @@ import WasmI32, {
   add as (+)
 } from "runtime/unsafe/wasmi32"
 
-import foreign wasm fd_write: (WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+// import foreign wasm fd_write: (WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
 
 enum Option<a> { Some(a), None }
 
@@ -71,7 +71,7 @@ export let printException = (e: Exception) => {
   WasmI32.store8(lf, 10n, 0n)
   WasmI32.store(iov, lf, 8n)
   WasmI32.store(iov, 1n, 12n)
-  fd_write(2n, iov, 2n, written)
+  // fd_write(2n, iov, 2n, written)
   void
 }
 
