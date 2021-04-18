@@ -7,11 +7,11 @@ function preparePkg() {
   const fs = require("fs");
   const path = require("path");
   const stdlibPath = require("@grain/stdlib");
-  const stdlibPathWithTrailingSep = `${stdlibPath}${path.sep}`
+  const stdlibPathWithTrailingSep = `${stdlibPath}${path.sep}`;
   // From https://github.com/sindresorhus/escape-string-regexp/blob/main/index.js
   const regexpSafeStdlibPath = stdlibPathWithTrailingSep
-    .replace(/[|\\{}()[\]^$+*?.]/g, '\\$&')
-    .replace(/-/g, '\\x2d');
+    .replace(/[|\\{}()[\]^$+*?.]/g, "\\$&")
+    .replace(/-/g, "\\x2d");
 
   const stdlibTarget = path.join(process.cwd(), "/target");
 
