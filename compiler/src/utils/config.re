@@ -515,6 +515,13 @@ let no_gc =
     false,
   );
 
+let bulk_memory =
+  toggle_flag(
+    ~names=["no-bulk-memory"],
+    ~doc="Turn off Bulk Memory operations",
+    true,
+  );
+
 let elide_type_info =
   toggle_flag(
     ~names=["elide-type-info"],

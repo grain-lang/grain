@@ -1,6 +1,7 @@
 open Anftree;
 open Anf_iterator;
 open Grain_typed;
+open Grain_utils;
 
 type inline_type =
   | WasmPrim1(prim1)
@@ -235,8 +236,8 @@ let get_primitive_memory = id => {
     | "grow" => Some("@wasm.memory_grow")
     | "size" => Some("@wasm.memory_size")
     | "compare" => Some("@wasm.memory_compare")
-    | "copy" => Some("@wasm.memory_copy")
-    | "fill" => Some("@wasm.memory_fill")
+    | "copy" when Config.bulk_memory^ => Some("@wasm.memory_copy")
+    | "fill" when Config.bulk_memory^ => Some("@wasm.memory_fill")
     | _ => None
     };
 
