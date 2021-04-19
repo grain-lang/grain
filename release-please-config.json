@@ -1,0 +1,26 @@
+{
+  "bootstrap-sha": "620298225faf35265e7285fe3d4d2c8dee72dba3",
+  "bump-minor-pre-major": true,
+  "packages": {
+    ".": {
+      "package-name": "grain",
+      "release-type": "node"
+    },
+    "cli": {
+      "package-name": "@grain/cli",
+      "release-type": "node"
+    },
+    "compiler": {
+      "package-name": "@grain/compiler",
+      "release-type": "ocaml"
+    },
+    "runtime": {
+      "package-name": "@grain/runtime",
+      "release-type": "node"
+    },
+    "stdlib": {
+      "package-name": "@grain/stdlib",
+      "release-type": "node"
+    }
+  }
+}
