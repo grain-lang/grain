@@ -3,7 +3,7 @@
     [
       "bash",
       "-c",
-      "#{os == 'windows' ? 'patch -p1 < findlib-1.9.1.patch' : 'true'}"
+      "#{os == 'windows' ? 'patch -p1 < findlib-1.8.1.patch' : 'true'}"
     ],
     [
       "./configure",
