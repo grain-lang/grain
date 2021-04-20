@@ -30,6 +30,7 @@ let slice = (~first=?, ~last=?, string) => {
   };
 };
 
+/** TODO(#436): Re-enable these when we can include in the Windows build
 let%expect_test "empty string" = {
   print_endline(slice(""));
   %expect
@@ -134,3 +135,4 @@ let%expect_test "first + last: both negative" = {
   %expect
   {| b |};
 };
+*/;
