@@ -714,12 +714,25 @@ module StringSet =
 
 let imported_units = ref(StringSet.empty);
 
-let add_import = s => imported_units := StringSet.add(s, imported_units^);
+let add_import = s => {
+  imported_units := StringSet.add(s, imported_units^);
+};
 
 let imported_opaque_units = ref(StringSet.empty);
 
 let add_imported_opaque = s =>
   imported_opaque_units := StringSet.add(s, imported_opaque_units^);
+
+let with_cleared_imports = thunk => {
+  let old_imported_units = imported_units^;
+  let old_opaque_units = imported_opaque_units^;
+  imported_units := StringSet.empty;
+  imported_opaque_units := StringSet.empty;
+  let ret = thunk();
+  imported_units := old_imported_units;
+  imported_opaque_units := old_opaque_units;
+  ret;
+};
 
 let clear_imports = () => {
   Consistbl.clear(crc_units);
@@ -735,7 +748,12 @@ let check_consistency = ps =>
         | None => ()
         | Some(crc) =>
           add_import(name);
-          Consistbl.check(crc_units, name, crc, ps.ps_filename);
+          let resolved_file_name =
+            Module_resolution.resolve_unit(
+              ~search_path=Grain_utils.Config.module_search_path(),
+              name,
+            );
+          Consistbl.check(crc_units, resolved_file_name, crc, ps.ps_filename);
         },
       ps.ps_crcs,
     )
@@ -757,7 +775,6 @@ let save_pers_struct = (crc, ps) => {
     ps.ps_flags,
   );
   Consistbl.set(crc_units, filename, crc, ps.ps_filename);
-  add_import(filename);
 };
 
 let get_dependency_chain = (~loc, unit_name) => {
@@ -798,111 +815,6 @@ let mark_completed = (unit_name, sourcefile) => {
   Hashtbl.remove(unit_to_file, unit_name);
 };
 
-type module_location_result =
-  | GrainModule(string, option(string)) /* Grain Source file, Compiled object */
-  | WasmModule(string); /* Compiled object */
-
-let compile_module_dependency =
-  ref((filename, output_file) =>
-    failwith("compile_module Should be filled in by compile.ml")
-  );
-
-let file_older = (a, b) => {
-  let last_modified = f => Unix.(stat(f).st_mtime);
-  last_modified(a) < last_modified(b);
-};
-
-let get_output_name = name => {
-  let name =
-    try(Filename.chop_extension(name)) {
-    | Invalid_argument(_) => name
-    };
-  name ++ ".gr.wasm";
-};
-
-let get_up_to_date = (~loc, unit_name) =>
-  fun
-  | WasmModule(path) => path
-  | GrainModule(srcpath, Some(objpath)) when file_older(srcpath, objpath) => objpath
-  | GrainModule(srcpath, _) => {
-      let srcpath = Grain_utils.Files.derelativize(srcpath);
-      /* Note: This is a potential security issue? */
-      let outpath = get_output_name(srcpath);
-      mark_in_progress(~loc, unit_name, srcpath);
-      let saved_unit = get_unit();
-      let saved = Ident.save_state();
-      Grain_utils.Config.preserve_config(() =>
-        compile_module_dependency^(srcpath, outpath)
-      );
-      Ident.restore_state(saved);
-      set_unit(saved_unit);
-      mark_completed(unit_name, srcpath);
-      outpath;
-    };
-
-let find_ext_in_dir = (dir, name) => {
-  let file_exists = Sys.file_exists;
-  let fullname = Filename.concat(dir, name);
-  let rec process_ext =
-    fun
-    | [] => None
-    | [ext, ..._] when file_exists(fullname ++ ext) =>
-      Some((fullname ++ ext, dir, name, ext))
-    | [_, ...tl] => process_ext(tl);
-  process_ext;
-};
-
-let find_in_path_uncap = (~exts=[], path, name) => {
-  let rec try_dir =
-    fun
-    | [] => raise(Not_found)
-    | [dir, ...rem] =>
-      switch (find_ext_in_dir(dir, name, exts)) {
-      | Some(path) => path
-      | None => try_dir(rem)
-      };
-  try_dir(path);
-};
-
-let locate_module = (path, unit_name) => {
-  let grain_src_exts = [".gr"];
-  switch (find_in_path_uncap(~exts=[".gr.wasm"], path, unit_name)) {
-  | (objpath, dir, basename, ext) =>
-    switch (find_ext_in_dir(dir, basename, grain_src_exts)) {
-    | Some((srcpath, _, _, _)) => GrainModule(srcpath, Some(objpath))
-    | None => WasmModule(objpath)
-    }
-  | exception Not_found =>
-    let (srcpath, _, _, _) =
-      find_in_path_uncap(~exts=grain_src_exts, path, unit_name);
-    GrainModule(srcpath, None);
-  };
-};
-
-let locate_module_file = (~loc, path, unit_name) => {
-  /* NOTE: We need to take care here to *not* wrap get_up_to_date with this try/with, since
-     it will falsely raise No_module_file if a Not_found is raised during the compilation */
-  let located =
-    try(locate_module(path, unit_name)) {
-    | Not_found => error(No_module_file(unit_name, None))
-    };
-  get_up_to_date(~loc, unit_name, located);
-};
-
-let resolutions = Hashtbl.create(12);
-
-let resolve_unit = unit_name =>
-  try(Hashtbl.find(resolutions, unit_name)) {
-  | Not_found =>
-    let path = Grain_utils.Config.module_search_path();
-    let exts = [".gr", ".gr.wasm"];
-    let (_, dir, basename, _) = find_in_path_uncap(~exts, path, unit_name);
-    let resolution =
-      Grain_utils.Files.derelativize @@ Filename.concat(dir, basename);
-    Hashtbl.add(resolutions, unit_name, resolution);
-    resolution;
-  };
-
 module Persistent_signature = {
   type t = {
     filename: string,
@@ -910,18 +822,20 @@ module Persistent_signature = {
   };
 
   let load =
-    ref((~loc=Location.dummy_loc, ~unit_name) =>
+    ref((~loc=Location.dummy_loc, ~unit_name) => {
       switch (
-        locate_module_file(
+        Module_resolution.locate_module_file(
           ~loc,
           Grain_utils.Config.module_search_path(),
           unit_name,
         )
       ) {
-      | filename => Some({filename, cmi: read_cmi(filename)})
+      | filename =>
+        let ret = {filename, cmi: Module_resolution.read_file_cmi(filename)};
+        Some(ret);
       | exception Not_found => None
       }
-    );
+    });
 };
 
 let acknowledge_pers_struct = (check, {Persistent_signature.filename, cmi}) => {
@@ -1055,7 +969,7 @@ let check_pers_struct = (~loc, name, filename) =>
     };
   };
 
-let rec find_module_descr = (path, filename, env) =>
+let rec find_module_descr = (path, filename, env) => {
   switch (path) {
   | PIdent(id) =>
     try(IdTbl.find_same(id, env.components)) {
@@ -1073,6 +987,7 @@ let rec find_module_descr = (path, filename, env) =>
     let (descr, _pos) = Tbl.find(s, c.comp_components);
     descr;
   };
+};
 
 let find = (proj1, proj2, path, env) =>
   switch (path) {
@@ -2202,7 +2117,8 @@ let add_components =
 };
 
 let same_filepath = (unit1, unit2) =>
-  resolve_unit(unit1) == resolve_unit(unit2);
+  Module_resolution.resolve_unit(unit1)
+  == Module_resolution.resolve_unit(unit2);
 
 let check_opened = (mod_: Parsetree.import_declaration, env) => {
   let rec find_open = summary =>
@@ -2284,7 +2200,7 @@ let open_signature_of_initially_opened_module =
     (~loc=Location.dummy_loc, root, env) => {
   let load_path = Grain_utils.Config.include_dirs^;
   let filter_modules = m =>
-    switch (locate_module_file(~loc, load_path, m)) {
+    switch (Module_resolution.locate_module_file(~loc, load_path, m)) {
     | _ => false
     | exception Not_found => true
     };
@@ -2436,8 +2352,27 @@ let crc_of_unit = filename => {
 
 /* Return the list of imported interfaces with their CRCs */
 
-let imports = () =>
-  Consistbl.extract(StringSet.elements(imported_units^), crc_units);
+let imports = () => {
+  let ret =
+    Consistbl.extract(StringSet.elements(imported_units^), crc_units);
+  List.map(
+    ((unit, crc)) =>
+      switch (crc) {
+      | Some(_) => (unit, crc)
+      | None =>
+        try({
+          let cmi =
+            Module_resolution.read_file_cmi(
+              Module_resolution.locate_unit_object_file(unit),
+            );
+          (unit, Some(Cmi_format.cmi_to_crc(cmi)));
+        }) {
+        | _ => (unit, crc)
+        }
+      },
+    ret,
+  );
+};
 
 /* Returns true if [s] is an imported opaque module */
 let is_imported_opaque = s => StringSet.mem(s, imported_opaque_units^);
@@ -2775,3 +2710,42 @@ let () =
     | Error(err) => Some(Location.error_of_printer_file(report_error, err))
     | _ => None,
   );
+
+let () = {
+  Module_resolution.with_preserve_unit :=
+    (
+      (~loc, unit_name, srcpath, thunk) => {
+        mark_in_progress(~loc, unit_name, srcpath);
+        let saved_unit = get_unit();
+        let saved = Ident.save_state();
+        let cleanup = () => {
+          Ident.restore_state(saved);
+          set_unit(saved_unit);
+          mark_completed(unit_name, srcpath);
+        };
+        try({
+          let ret = with_cleared_imports(thunk);
+          cleanup();
+          ret;
+        }) {
+        | e =>
+          cleanup();
+          raise(e);
+        };
+      }
+    );
+  Module_resolution.current_unit_name :=
+    (
+      () => {
+        let (uname, _, _) = get_unit();
+        uname;
+      }
+    );
+  Module_resolution.current_filename :=
+    (
+      () => {
+        let (_, source, _) = get_unit();
+        source;
+      }
+    );
+};

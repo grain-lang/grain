@@ -35,6 +35,22 @@ module Make =
 
   let clear = Module_name.Tbl.clear;
 
+  let with_cleared = (tbl, thunk) => {
+    let orig_contents = Module_name.Tbl.to_seq(tbl);
+    Module_name.Tbl.clear(tbl);
+    try({
+      let res = thunk();
+      Module_name.Tbl.clear(tbl);
+      Module_name.Tbl.add_seq(tbl, orig_contents);
+      res;
+    }) {
+    | e =>
+      Module_name.Tbl.clear(tbl);
+      Module_name.Tbl.add_seq(tbl, orig_contents);
+      raise(e);
+    };
+  };
+
   exception Inconsistency(Module_name.t, filepath, filepath);
 
   exception Not_available(Module_name.t);
@@ -58,6 +74,10 @@ module Make =
     }) {
     | Not_found => raise(Not_available(name))
     };
+
+  let lookup_opt = (tbl, name) => {
+    Module_name.Tbl.find_opt(tbl, name);
+  };
 
   let set = (tbl, name, crc, source) =>
     Module_name.Tbl.add(tbl, name, (crc, source));

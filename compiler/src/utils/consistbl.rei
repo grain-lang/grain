@@ -39,6 +39,8 @@ module Make:
 
     let clear: t => unit;
 
+    let with_cleared: (t, unit => 'a) => 'a;
+
     let check: (t, Module_name.t, Digest.t, filepath) => unit;
     /* [check tbl name crc source]
        checks consistency of ([name], [crc]) with infos previously
@@ -50,6 +52,8 @@ module Make:
     let check_noadd: (t, Module_name.t, Digest.t, filepath) => unit;
     /* Same as [check], but raise [Not_available] if no CRC was previously
        associated with [name]. */
+
+    let lookup_opt: (t, Module_name.t) => option((Digest.t, filepath));
 
     let set: (t, Module_name.t, Digest.t, filepath) => unit;
     /* [set tbl name crc source] forcefully associates [name] with

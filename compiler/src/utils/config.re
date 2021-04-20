@@ -446,11 +446,74 @@ let lsp_mode =
 /* To be filled in by grainc */
 let base_path = internal_opt("");
 
+let with_base_path = (path, func) => {
+  let old_base_path = base_path^;
+  base_path := path;
+  try({
+    let ret = func();
+    base_path := old_base_path;
+    ret;
+  }) {
+  | e =>
+    base_path := old_base_path;
+    raise(e);
+  };
+};
+
 let stdlib_directory = (): option(string) =>
   Option.map(path => Files.derelativize(path), stdlib_dir^);
 
-let module_search_path = () =>
+let module_search_path_from_base_path = base_path => {
   switch (stdlib_directory()) {
-  | Some(x) => [base_path^, ...include_dirs^] @ [x] /* stdlib goes last */
-  | None => [base_path^, ...include_dirs^]
+  | Some(x) => [base_path, ...include_dirs^] @ [x] /* stdlib goes last */
+  | None => [base_path, ...include_dirs^]
   };
+};
+
+let module_search_path = () => {
+  module_search_path_from_base_path(base_path^);
+};
+
+let apply_inline_flags = (~on_error, cmt_content) =>
+  if (Str.string_match(Str.regexp_string("grainc-flags"), cmt_content, 0)) {
+    let err_buf = Buffer.create(80);
+    let err = Format.formatter_of_buffer(err_buf);
+    let result = apply_inline_flags(~err, cmt_content);
+    switch (result) {
+    | `Ok(_) => ()
+    | `Version
+    | `Help => on_error(`Help)
+    | `Error(_) =>
+      Format.pp_print_flush(err, ());
+      on_error(`Message(Buffer.contents(err_buf)));
+    };
+  };
+
+let with_inline_flags = (~on_error, cmt_content, thunk) => {
+  preserve_config(() => {
+    apply_inline_flags(~on_error, cmt_content);
+    thunk();
+  });
+};
+
+type implicit_opens =
+  | Pervasives_mod
+  | Gc_mod;
+
+let get_implicit_opens = () => {
+  let ret =
+    if (no_pervasives^) {
+      [];
+    } else {
+      [Pervasives_mod];
+    };
+  if (compilation_mode^ == Some("runtime")) {
+    [];
+  } else {
+    // Pervasives goes first, just for good measure.
+    List.rev([
+      Gc_mod,
+      ...ret,
+    ]);
+  };
+};

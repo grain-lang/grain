@@ -5,6 +5,10 @@ let stdlib_directory: unit => option(string);
 
 let module_search_path: unit => list(string);
 
+/** The list of directories to search for modules in, based on the current configuration (relative to the given base path) */
+
+let module_search_path_from_base_path: string => list(string);
+
 /** Whether verbose output should be written */
 
 let verbose: ref(bool);
@@ -127,8 +131,20 @@ let preserve_config: (unit => 'a) => 'a;
 
 let with_cli_options: 'a => Cmdliner.Term.t('a);
 
+/** Runs the given thunk with the given base_path value */
+let with_base_path: (string, unit => 'a) => 'a;
+
 /** Applies compile flags provided at the start of a file */
 
 let apply_inline_flags:
-  (~err: Stdlib.Format.formatter, string) =>
-  Cmdliner.Term.result(Cmdliner.Term.t(unit));
+  (~on_error: [> | `Help | `Message(string)] => unit, string) => unit;
+
+let with_inline_flags:
+  (~on_error: [> | `Help | `Message(string)] => unit, string, unit => 'a) =>
+  'a;
+
+type implicit_opens =
+  | Pervasives_mod
+  | Gc_mod;
+
+let get_implicit_opens: unit => list(implicit_opens);
