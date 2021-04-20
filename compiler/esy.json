@@ -2,7 +2,9 @@
   "name": "@grain/compiler",
   "version": "0.2.0",
   "esy": {
-    "build": [ "dune build --no-buffer" ],
+    "build": [
+      "dune build --no-buffer"
+    ],
     "buildEnv": {
       "DUNE_BUILD_DIR": "#{self.target_dir}",
       "GRAIN_STDLIB": "#{self.root / '..' / 'stdlib'}",
@@ -43,14 +45,12 @@
     "@opam/ounit": ">= 2.0.0"
   },
   "resolutions": {
-    "@grain/binaryen.ml": "grain-lang/binaryen.ml#8a21a8a6ce6abad71f36e5f13492a7c7a625cb00",
-    "@opam/ocamlfind": "1.8.1",
-    "@opam/fp":
-      "facebookexperimental/reason-native:fp.opam#a33f1528a6dd86c67f365e226c81312733181c87",
-    "@opam/fs":
-      "facebookexperimental/reason-native:fs.opam#a33f1528a6dd86c67f365e226c81312733181c87",
-    "@opam/utf8":
-      "facebookexperimental/reason-native:utf8.opam#a33f1528a6dd86c67f365e226c81312733181c87"
+    "@grain/binaryen.ml": "grain-lang/binaryen.ml#867de62ec6a8a6540151e49b4b83bc41f139cc6c",
+    "@opam/fp": "facebookexperimental/reason-native:fp.opam#a33f1528a6dd86c67f365e226c81312733181c87",
+    "@opam/fs": "facebookexperimental/reason-native:fs.opam#a33f1528a6dd86c67f365e226c81312733181c87",
+    "@opam/utf8": "facebookexperimental/reason-native:utf8.opam#a33f1528a6dd86c67f365e226c81312733181c87"
   },
-  "installConfig": { "pnp": false }
+  "installConfig": {
+    "pnp": false
+  }
 }
