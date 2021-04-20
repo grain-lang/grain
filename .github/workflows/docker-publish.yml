@@ -1,7 +1,7 @@
 name: Publish Docker image (HEAD)
 on:
   push:
-    branches: [master]
+    branches: [main]
     tags: ['v*.*.*']
 jobs:
   push_to_registries:
