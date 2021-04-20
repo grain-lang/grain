@@ -6,7 +6,7 @@ const exec = require("./exec");
 
 module.exports = (file, options) => {
   try {
-    exec(`-g --lsp ${file}`, options, { stdio: "inherit" });
+    exec(`--lsp ${file}`, options, { stdio: "inherit" });
     process.exit();
   } catch (e) {
     if (options.graceful) {
