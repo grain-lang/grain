@@ -1,9 +1,14 @@
 const exec = require("./exec");
 
-module.exports = (file, options) => {
+module.exports = (file, program) => {
+  const options = program.opts();
   try {
-    exec(file, options, { stdio: "inherit" });
-    return file.replace(/\.gr$/, ".gr.wasm");
+    exec(file, program, { stdio: "inherit" });
+    if (options.o) {
+      return options.o;
+    } else {
+      return file.replace(/\.gr$/, ".gr.wasm");
+    }
   } catch (e) {
     if (options.graceful) {
       process.exit();

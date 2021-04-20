@@ -4,12 +4,12 @@ const exec = require("./exec");
 // and we get the compiler output in stdout
 // we still take the file name so we have it available
 
-module.exports = (file, options) => {
+module.exports = (file, program) => {
   try {
-    exec(`--lsp ${file}`, options, { stdio: "inherit" });
+    exec(`--lsp ${file}`, program, { stdio: "inherit" });
     process.exit();
   } catch (e) {
-    if (options.graceful) {
+    if (options.opts().graceful) {
       process.exit();
     } else {
       process.exit(1);

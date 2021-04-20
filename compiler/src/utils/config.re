@@ -311,7 +311,7 @@ let optimizations_enabled =
 
 let include_dirs =
   opt(
-    ~names=["I"],
+    ~names=["I", "include-dirs"],
     ~conv=Cmdliner.Arg.(list(dir)),
     ~doc="Extra library include directories",
     ~docv="DIR",
@@ -330,12 +330,8 @@ let stdlib_dir =
 let color_enabled =
   toggle_flag(~names=["no-color"], ~doc="Disable colored output", true);
 
-let principal =
-  toggle_flag(
-    ~names=["principal-types"],
-    ~doc="Enable principal types",
-    false,
-  );
+// TODO: (#612) Add compiler flag when feature is complete or remove entirely
+let principal = ref(false);
 
 let compilation_mode =
   opt(
@@ -358,12 +354,8 @@ let experimental_tail_call =
     false,
   );
 
-let recursive_types =
-  toggle_flag(
-    ~names=["recursive-types"],
-    ~doc="Enable recursive types",
-    false,
-  );
+// TODO: (#612) Add compiler flag when feature is complete or remove entirely
+let recursive_types = ref(false);
 
 let strict_sequence =
   toggle_flag(
@@ -392,8 +384,8 @@ let debug =
 
 let verbose =
   toggle_flag(
-    ~names=["cdebug"],
-    ~doc="Print internal debug messages",
+    ~names=["verbose"],
+    ~doc="Print critical information at various stages of compilation",
     false,
   );
 
@@ -401,7 +393,7 @@ let sexp_locs_enabled =
   toggle_flag(
     ~names=["hide-locs"],
     ~doc=
-      "Hide locations from intermediate trees. Only has an effect with `--cdebug'.",
+      "Hide locations from intermediate trees. Only has an effect with `--verbose'.",
     true,
   );
 
@@ -416,13 +408,6 @@ let no_gc =
   toggle_flag(
     ~names=["no-gc"],
     ~doc="Turn off reference counting garbage collection.",
-    false,
-  );
-
-let unsound_optimizations =
-  toggle_flag(
-    ~names=["Ounsound"],
-    ~doc="Compile with optimizations which may remove runtime errors",
     false,
   );
 

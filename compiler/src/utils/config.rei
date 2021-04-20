@@ -14,7 +14,7 @@ let module_search_path_from_base_path: string => list(string);
 let verbose: ref(bool);
 
 /** Whether locations should be shown in s-expression-converted trees
-    (primarily useful with --cdebug). */
+    (primarily useful with --verbose). */
 
 let sexp_locs_enabled: ref(bool);
 
@@ -77,10 +77,6 @@ let parser_debug_level: ref(int);
 /** Whether debugging information should be included in the compiled output. */
 
 let debug: ref(bool);
-
-/** Whether optimizations which could elide runtime errors should be performed. */
-
-let unsound_optimizations: ref(bool);
 
 /** Whether or not to include runtime type information used by toString/print */
 
