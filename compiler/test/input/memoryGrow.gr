@@ -1,0 +1,13 @@
+import Array from "array"
+
+let array = Array.init(1_000_000, i => (i, i + 1))
+
+let mut sum = 0
+
+for (let mut i = 0; i < 1_000_000; i += 1) {
+  let (a, b) = array[i]
+  sum += a
+  sum += b
+}
+
+print(sum)
