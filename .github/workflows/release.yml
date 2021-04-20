@@ -1,7 +1,7 @@
 name: Release
 on:
   push:
-    branches: [ $default-branch ]
+    branches: [main]
 
 jobs:
   release-please:
