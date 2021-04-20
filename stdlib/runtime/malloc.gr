@@ -132,15 +132,18 @@ let growHeap = (nbytes: WasmI32) => {
     }
   } else {
     // The size has already been initialized, so call the external function.
+    let newRegionStart = memorySize() * _PAGE_SIZE
+
     reqSize = nbytes
     reqSize = reqSize >> 16n
     reqSize = reqSize + 1n
+    
     reqResult = memoryGrow(reqSize)
     if (reqResult == -1n) {
       -1n
     } else {
       heapSize += reqSize << 16n
-      reqResult
+      newRegionStart
     }
   }
 }

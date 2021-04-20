@@ -56,6 +56,7 @@ export class GrainRunner {
       .value;
     let grainString = this.stringModule.requiredExport("toString")(closure, v);
     let n = grainString;
+    this.managedMemory._refreshViews();
     let byteView = this.managedMemory.u8view;
     let length = this.managedMemory.view[n / 4 + 1];
     let slice = byteView.slice(n + 8, n + 8 + length);
