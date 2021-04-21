@@ -1,6 +1,6 @@
 {
   "name": "@grain/runtime",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "The JavaScript runtime for the Grain language.",
   "main": "dist/grain-runtime.js",
   "browser": "dist/grain-runtime-browser.js",
