@@ -339,7 +339,8 @@ module Dependency_graph =
             file_older(srcpath, objpath)
             && List.for_all(
                  ((name, crc)) => {
-                   let out_file_name = get_output_name(name);
+                   let resolved = resolve_unit(name);
+                   let out_file_name = get_output_name(resolved);
                    Fs_access.file_exists(out_file_name)
                    && (
                      switch (crc) {
