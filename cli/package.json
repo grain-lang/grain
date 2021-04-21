@@ -36,7 +36,7 @@
   "dependencies": {
     "@grain/runtime": "*",
     "@grain/stdlib": "*",
-    "commander": "^5.1.0"
+    "commander": "^7.2.0"
   },
   "devDependencies": {
     "@phated/pkg": "4.5.1-grain",

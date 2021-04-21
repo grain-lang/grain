@@ -17,10 +17,15 @@ function getGrainc() {
 
 const grainc = getGrainc();
 
-function exec(commandOrFile = "", options = {}, execOpts = { stdio: "pipe" }) {
-  let cflags = options.cflags ? options.cflags : "";
-  let stdlib = options.stdlib ? `--stdlib=${options.stdlib}` : "";
-  return execSync(`${grainc} ${stdlib} ${cflags} ${commandOrFile}`, execOpts);
+function exec(commandOrFile = "", program, execOpts = { stdio: "pipe" }) {
+  const flags = [];
+  program.options.forEach((option) => {
+    if (!option.grainc) return;
+    const flag = option.toFlag();
+    if (flag) flags.push(flag);
+  });
+
+  return execSync(`${grainc} ${flags.join(" ")} ${commandOrFile}`, execOpts);
 }
 
 module.exports = exec;
