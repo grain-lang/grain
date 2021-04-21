@@ -9,7 +9,7 @@ module.exports = (file, program) => {
     exec(`--lsp ${file}`, program, { stdio: "inherit" });
     process.exit();
   } catch (e) {
-    if (options.opts().graceful) {
+    if (program.opts().graceful) {
       process.exit();
     } else {
       process.exit(1);
