@@ -78,7 +78,7 @@ program
   })
   .description("Compile and run Grain programs. 🌾")
   .addOption(new program.Option("-p, --print-output").hideHelp())
-  .option("-g, --graceful", "return a 0 exit code if the program errors")
+  // .option("-g, --graceful", "return a 0 exit code if the program errors")
   .graincOption(
     "-I, --include-dirs <dirs>",
     "add additional dependency include directories",

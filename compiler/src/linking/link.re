@@ -299,6 +299,8 @@ let type_of_repr = repr => {
     | WasmI64 => Type.int64
     | WasmF32 => Type.float32
     | WasmF64 => Type.float64
+    | WasmFuncref => Type.funcref
+    | WasmExternref => Type.externref
     }
   );
 };

@@ -261,7 +261,9 @@ type asmtype =
   | I32Type
   | I64Type
   | F32Type
-  | F64Type;
+  | F64Type
+  | FuncrefType
+  | ExternrefType;
 
 [@deriving sexp]
 type constant =
@@ -448,6 +450,8 @@ and stack_size = {
   stack_size_i64: int,
   stack_size_f32: int,
   stack_size_f64: int,
+  stack_size_funcref: int,
+  stack_size_externref: int,
 };
 
 [@deriving sexp]

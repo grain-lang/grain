@@ -316,6 +316,8 @@ let init_codegen_env = () => {
     stack_size_i64: 0,
     stack_size_f32: 0,
     stack_size_f64: 0,
+    stack_size_funcref: 0,
+    stack_size_externref: 0,
   },
   import_global_offset: 0,
   import_offset: 0,
@@ -654,13 +656,7 @@ let compile_bind =
   switch (b) {
   | MArgBind(i, wasm_ty) =>
     /* No adjustments are needed for argument bindings */
-    let typ =
-      switch (wasm_ty) {
-      | I32Type => Type.int32
-      | I64Type => Type.int64
-      | F32Type => Type.float32
-      | F64Type => Type.float64
-      };
+    let typ = wasm_type(wasm_ty);
     let slot = Int32.to_int(i);
     switch (action) {
     | BindGet => Expression.local_get(wasm_mod, slot, typ)
@@ -742,6 +738,27 @@ let compile_bind =
           + env.stack_size.stack_size_f32
           + Int32.to_int(i),
         )
+      | FuncrefType => (
+          Type.funcref,
+          env.num_args
+          + Array.length(swap_slots)
+          + env.stack_size.stack_size_i32
+          + env.stack_size.stack_size_i64
+          + env.stack_size.stack_size_f32
+          + env.stack_size.stack_size_f64
+          + Int32.to_int(i),
+        )
+      | ExternrefType => (
+          Type.externref,
+          env.num_args
+          + Array.length(swap_slots)
+          + env.stack_size.stack_size_i32
+          + env.stack_size.stack_size_i64
+          + env.stack_size.stack_size_f32
+          + env.stack_size.stack_size_f64
+          + env.stack_size.stack_size_funcref
+          + Int32.to_int(i),
+        )
       };
     switch (action) {
     | BindGet => Expression.local_get(wasm_mod, slot, typ)
@@ -794,13 +811,7 @@ let compile_bind =
   | MSwapBind(i, wasm_ty) =>
     /* Swap bindings need to be offset to account for arguments */
     let slot = env.num_args + Int32.to_int(i);
-    let typ =
-      switch (wasm_ty) {
-      | I32Type => Type.int32
-      | I64Type => Type.int64
-      | F32Type => Type.float32
-      | F64Type => Type.float64
-      };
+    let typ = wasm_type(wasm_ty);
     switch (action) {
     | BindGet => Expression.local_get(wasm_mod, slot, typ)
     | BindSet(arg) =>
@@ -850,13 +861,7 @@ let compile_bind =
       )
     };
   | MGlobalBind(slot, wasm_ty, gc) =>
-    let typ =
-      switch (wasm_ty) {
-      | I32Type => Type.int32
-      | I64Type => Type.int64
-      | F32Type => Type.float32
-      | F64Type => Type.float64
-      };
+    let typ = wasm_type(wasm_ty);
     switch (action) {
     | BindGet => Expression.global_get(wasm_mod, slot, typ)
     | BindSet(arg) when !gc => Expression.global_set(wasm_mod, slot, arg)
@@ -3228,14 +3233,6 @@ let compute_table_size = (env, {functions}) => {
 };
 
 let compile_imports = (wasm_mod, env, {imports}) => {
-  let compile_asm_type = t =>
-    switch (t) {
-    | I32Type => Type.int32
-    | I64Type => Type.int64
-    | F32Type => Type.float32
-    | F64Type => Type.float64
-    };
-
   let compile_module_name = name =>
     fun
     | MImportWasm => Ident.name(name)
@@ -3262,7 +3259,7 @@ let compile_imports = (wasm_mod, env, {imports}) => {
       )
     | (_, MFuncImport(args, ret)) =>
       let proc_list = l =>
-        Type.create @@ Array.of_list @@ List.map(compile_asm_type, l);
+        Type.create @@ Array.of_list @@ List.map(wasm_type, l);
       Import.add_function_import(
         wasm_mod,
         internal_name,
@@ -3272,7 +3269,7 @@ let compile_imports = (wasm_mod, env, {imports}) => {
         proc_list(ret),
       );
     | (_, MGlobalImport(typ, mut)) =>
-      let typ = compile_asm_type(typ);
+      let typ = wasm_type(typ);
       Import.add_global_import(
         wasm_mod,
         internal_name,
@@ -3600,6 +3597,7 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
         Features.sign_ext,
         Features.bulk_memory,
         Features.mutable_globals,
+        Features.reference_types,
       ],
     );
   let _ = Module.set_low_memory_unused(1);

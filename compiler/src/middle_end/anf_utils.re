@@ -159,20 +159,24 @@ let anf_free_vars = anf_free_vars_help(Ident.Set.empty);
 let comp_free_vars = comp_free_vars_help(Ident.Set.empty);
 let imm_free_vars = imm_free_vars_help(Ident.Set.empty);
 
-let tuple_max = ((a1, a2, a3, a4), (b1, b2, b3, b4)) => (
+let tuple_max = ((a1, a2, a3, a4, a5, a6), (b1, b2, b3, b4, b5, b6)) => (
   max(a1, b1),
   max(a2, b2),
   max(a3, b3),
   max(a4, b4),
+  max(a5, b5),
+  max(a6, b6),
 );
-let tuple_add = ((a1, a2, a3, a4), (b1, b2, b3, b4)) => (
+let tuple_add = ((a1, a2, a3, a4, a5, a6), (b1, b2, b3, b4, b5, b6)) => (
   a1 + b1,
   a2 + b2,
   a3 + b3,
   a4 + b4,
+  a5 + b5,
+  a6 + b6,
 );
 
-let tuple_zero = (0, 0, 0, 0);
+let tuple_zero = (0, 0, 0, 0, 0, 0);
 
 let rec anf_count_vars = a =>
   switch (a.anf_desc) {
@@ -180,43 +184,53 @@ let rec anf_count_vars = a =>
     let max_binds =
       List.fold_left(tuple_max, tuple_zero) @@
       List.map(((_, c)) => comp_count_vars(c), binds);
-    let rec count_binds = (i32, i64, f32, f64, binds) => {
+    let rec count_binds = (i32, i64, f32, f64, funcref, externref, binds) => {
       switch (global, binds) {
-      | (Global, [_, ...rest]) => count_binds(i32, i64, f32, f64, rest)
+      | (Global, [_, ...rest]) => count_binds(i32, i64, f32, f64, funcref, externref, rest)
       | (_, [(_, {comp_allocation_type: HeapAllocated}), ...rest])
       | (
           _,
           [(_, {comp_allocation_type: StackAllocated(WasmI32)}), ...rest],
         ) =>
-        count_binds(i32 + 1, i64, f32, f64, rest)
+        count_binds(i32 + 1, i64, f32, f64, funcref, externref, rest)
       | (
           _,
           [(_, {comp_allocation_type: StackAllocated(WasmI64)}), ...rest],
         ) =>
-        count_binds(i32, i64 + 1, f32, f64, rest)
+        count_binds(i32, i64 + 1, f32, f64, funcref, externref, rest)
       | (
           _,
           [(_, {comp_allocation_type: StackAllocated(WasmF32)}), ...rest],
         ) =>
-        count_binds(i32, i64, f32 + 1, f64, rest)
+        count_binds(i32, i64, f32 + 1, f64, funcref, externref, rest)
       | (
           _,
           [(_, {comp_allocation_type: StackAllocated(WasmF64)}), ...rest],
         ) =>
-        count_binds(i32, i64, f32, f64 + 1, rest)
-      | (_, []) => (i32, i64, f32, f64)
+        count_binds(i32, i64, f32, f64 + 1, funcref, externref, rest)
+      | (
+          _,
+          [(_, {comp_allocation_type: StackAllocated(WasmFuncref)}), ...rest],
+        ) =>
+        count_binds(i32, i64, f32, f64, funcref + 1, externref, rest)
+      | (
+          _,
+          [(_, {comp_allocation_type: StackAllocated(WasmExternref)}), ...rest],
+        ) =>
+        count_binds(i32, i64, f32, f64, funcref, externref + 1, rest)
+      | (_, []) => (i32, i64, f32, f64, funcref, externref)
       };
     };
     switch (recflag) {
     | Recursive =>
       tuple_add(
-        count_binds(0, 0, 0, 0, binds),
+        count_binds(0, 0, 0, 0, 0, 0, binds),
         tuple_max(max_binds, anf_count_vars(body)),
       )
     | Nonrecursive =>
       tuple_max(
         max_binds,
-        tuple_add(count_binds(0, 0, 0, 0, binds), anf_count_vars(body)),
+        tuple_add(count_binds(0, 0, 0, 0, 0, 0, binds), anf_count_vars(body)),
       )
     };
   | AESeq(hd, tl) => tuple_max(comp_count_vars(hd), anf_count_vars(tl))
@@ -234,8 +248,8 @@ and comp_count_vars = c =>
   | CSwitch(_, bs, _) =>
     List.fold_left(tuple_max, tuple_zero) @@
     List.map(((_, b)) => anf_count_vars(b), bs)
-  | CApp(_, args, _) => (List.length(args), 0, 0, 0)
-  | CAppBuiltin(_, _, args) => (List.length(args), 0, 0, 0)
+  | CApp(_, args, _) => (List.length(args), 0, 0, 0, 0, 0)
+  | CAppBuiltin(_, _, args) => (List.length(args), 0, 0, 0, 0, 0)
   | _ => tuple_zero
   };
 

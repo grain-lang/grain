@@ -15,6 +15,8 @@ type compilation_env = {
   ce_stack_idx_i64: int,
   ce_stack_idx_f32: int,
   ce_stack_idx_f64: int,
+  ce_stack_idx_funcref: int,
+  ce_stack_idx_externref: int,
   ce_arity: int,
 };
 
@@ -25,6 +27,8 @@ let initial_compilation_env = {
   ce_stack_idx_i64: 0,
   ce_stack_idx_f32: 0,
   ce_stack_idx_f64: 0,
+  ce_stack_idx_funcref: 0,
+  ce_stack_idx_externref: 0,
   ce_arity: 0,
 };
 
@@ -68,6 +72,8 @@ let asmtype_of_alloctype = {
     | StackAllocated(WasmI64) => I64Type
     | StackAllocated(WasmF32) => F32Type
     | StackAllocated(WasmF64) => F64Type
+    | StackAllocated(WasmFuncref) => FuncrefType
+    | StackAllocated(WasmExternref) => ExternrefType
   );
 };
 
@@ -313,7 +319,7 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
   /*** Mapping from (instruction index) -> (used locals) */
   let instr_live_sets =
     List.mapi((i, instr) => (i, uniq @@ live_locals(instr)), instrs);
-  let (num_locals_i32, num_locals_i64, num_locals_f32, num_locals_f64) = {
+  let (num_locals_i32, num_locals_i64, num_locals_f32, num_locals_f64, num_locals_funcref, num_locals_externref) = {
     let rec help = ((ty, acc)) =>
       fun
       | [] => (ty, acc)
@@ -344,7 +350,19 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
         (F64Type, 0),
         List.map(((_, lst)) => help((F64Type, 0), lst), instr_live_sets),
       );
-    (i32 + 1, i64 + 1, f32 + 1, f64 + 1);
+    let funcref =
+      snd @@
+      help(
+        (FuncrefType, 0),
+        List.map(((_, lst)) => help((FuncrefType, 0), lst), instr_live_sets),
+      );
+    let externref =
+      snd @@
+      help(
+        (ExternrefType, 0),
+        List.map(((_, lst)) => help((ExternrefType, 0), lst), instr_live_sets),
+      );
+    (i32 + 1, i64 + 1, f32 + 1, f64 + 1, funcref + 1, externref + 1);
   };
   /* Printf.eprintf "Live sets:\n";
      List.iter (fun (i, items) -> Printf.eprintf "%d -> [%s]\n" i (BatString.join ", " (List.map string_of_int items))) instr_live_sets; */
@@ -355,6 +373,8 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
       | I64Type => num_locals_i64
       | F32Type => num_locals_f32
       | F64Type => num_locals_f64
+      | FuncrefType => num_locals_funcref
+      | ExternrefType => num_locals_externref
       };
     if (num_locals < 2) {
       instrs;
@@ -514,7 +534,7 @@ let compile_lambda =
   let idx = next_lift();
   let args = List.map(((_, ty)) => ty, new_args);
   let arity = List.length(args);
-  let (stack_size_i32, stack_size_i64, stack_size_f32, stack_size_f64) =
+  let (stack_size_i32, stack_size_i64, stack_size_f32, stack_size_f64, stack_size_funcref, stack_size_externref) =
     Anf_utils.anf_count_vars(body);
   let lam_env = {
     ...env,
@@ -523,6 +543,8 @@ let compile_lambda =
     ce_stack_idx_i64: 0,
     ce_stack_idx_f32: 0,
     ce_stack_idx_f64: 0,
+    ce_stack_idx_funcref: 0,
+    ce_stack_idx_externref: 0,
     ce_arity: arity,
   };
   let worklist_item = {
@@ -538,6 +560,8 @@ let compile_lambda =
       stack_size_i64,
       stack_size_f32,
       stack_size_f64,
+      stack_size_funcref,
+      stack_size_externref,
     },
     loc,
   };
@@ -597,6 +621,8 @@ let compile_wrapper = (env, func_name, args, rets): Mashtree.closure_data => {
     ce_stack_idx_i64: 0,
     ce_stack_idx_f32: 0,
     ce_stack_idx_f64: 0,
+    ce_stack_idx_funcref: 0,
+    ce_stack_idx_externref: 0,
     ce_arity: arity + 1,
   };
   let worklist_item = {
@@ -611,6 +637,8 @@ let compile_wrapper = (env, func_name, args, rets): Mashtree.closure_data => {
       stack_size_i64: 0,
       stack_size_f32: 0,
       stack_size_f64: 0,
+      stack_size_funcref: 0,
+      stack_size_externref: 0,
     },
     attrs: [],
     loc: Location.dummy_loc,
@@ -856,6 +884,18 @@ and compile_anf_expr = (env, a) =>
               false,
               env.ce_stack_idx_f64,
               {...env, ce_stack_idx_f64: env.ce_stack_idx_f64 + 1},
+            )
+          | StackAllocated(WasmFuncref) => (
+              FuncrefType,
+              false,
+              env.ce_stack_idx_funcref,
+              {...env, ce_stack_idx_funcref: env.ce_stack_idx_funcref + 1},
+            )
+          | StackAllocated(WasmExternref) => (
+              ExternrefType,
+              false,
+              env.ce_stack_idx_externref,
+              {...env, ce_stack_idx_externref: env.ce_stack_idx_externref + 1},
             )
           };
         let (env, loc) =
@@ -1132,13 +1172,15 @@ let transl_anf_program =
 
   let (imports, setups, env) =
     lift_imports(initial_compilation_env, anf_prog.imports);
-  let (stack_size_i32, stack_size_i64, stack_size_f32, stack_size_f64) =
+  let (stack_size_i32, stack_size_i64, stack_size_f32, stack_size_f64, stack_size_funcref, stack_size_externref) =
     Anf_utils.anf_count_vars(anf_prog.body);
   let main_body_stack_size = {
     stack_size_i32,
     stack_size_i64,
     stack_size_f32,
     stack_size_f64,
+    stack_size_funcref,
+    stack_size_externref,
   };
   let main_body =
     run_register_allocation @@ setups @ compile_anf_expr(env, anf_prog.body);

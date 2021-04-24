@@ -6,7 +6,10 @@ let wasm_type =
   | I32Type => Type.int32
   | I64Type => Type.int64
   | F32Type => Type.float32
-  | F64Type => Type.float64;
+  | F64Type => Type.float64
+  | FuncrefType => Type.funcref
+  | ExternrefType => Type.externref
+  ;
 
 let encoded_int32 = n => n * 2 + 1;
 
