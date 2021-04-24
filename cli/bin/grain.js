@@ -108,7 +108,8 @@ program
     "--experimental-wasm-tail-call",
     "enables tail-call optimization"
   )
-  .graincOption("-g", "compile with debugging information")
+  .graincOption("--debug", "compile with debugging information")
+  .graincOption("--wat", "additionally produce a WebAssembly Text (.wat) file")
   .graincOption(
     "--hide-locs",
     "hide locations from intermediate trees. Only has an effect with `--verbose`"

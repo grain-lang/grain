@@ -9,6 +9,10 @@ let remove_extension = baseName => {
   };
 };
 
+let replace_extension = (baseName, newExt) => {
+  Printf.sprintf("%s.%s", remove_extension(baseName), newExt);
+};
+
 // These utilities are needed until https://github.com/facebookexperimental/reason-native/pull/251
 // is merged into the reason-native/fp library to support Windows-style separators
 let normalize_separators = path => {
