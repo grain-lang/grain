@@ -1300,36 +1300,3 @@ export let dtoa = (value) => {
   }
   WasmI32.toGrain(str): String
 }
-
-
-export let dtoa_buffered = (buffer: usize, value: f64) => {
-  let mut buffer = buffer
-  let str = if (WasmF64.eq(value, 0.W)) {
-    WasmI32.store8(buffer, _CHAR_CODE_0, 0n)
-    WasmI32.store8(buffer, _CHAR_CODE_DOT, 1n)
-    WasmI32.store8(buffer, _CHAR_CODE_0,  2n)
-    3n
-  } else if (!isFinite(value)) {
-    if (isNaN(value)) {
-      WasmI32.store8(buffer, 0x4En, 0n) // N
-      WasmI32.store8(buffer, 0x61n, 1n) // a
-      WasmI32.store8(buffer, 0x4En, 2n) // N
-      3n
-    } else {
-      let sign = WasmF64.lt(value, 0.W)
-      if (sign) {
-        WasmI32.store8(buffer, _CHAR_CODE_MINUS, 0n)
-        buffer += 1n
-      }
-      // Would be nice if there were a way to specify alignment here as we
-      // don't know if this store is aligned. I don't know what's fastest—a
-      // misaligned store or an explict alignment check + branch to store with
-      // align=0 or align=3 _or_ just always align=0. I imagine just align=0?
-      WasmI64.store(buffer, 0x7974696E69666E49N, 0n) // ytinifnI
-      8n + (if (sign) 1n else 0n)
-    }
-  } else {
-    dtoa_core(buffer, value)
-  }
-  WasmI32.toGrain(str): String
-}
