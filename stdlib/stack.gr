@@ -15,7 +15,7 @@ export let isEmpty = (stack) => {
     }
 }
 
-export let head = (stack) => {
+export let peek = (stack) => {
     match (stack) {
         { data: [] } => None,
         { data } => List.head(data)
