@@ -50,7 +50,8 @@ and ident_char = ident_create("Char")
 and ident_void = ident_create("Void")
 and ident_box = ident_create("Box")
 and ident_array = ident_create("Array")
-and ident_fd = ident_create("FileDescriptor");
+and ident_fd = ident_create("FileDescriptor")
+and ident_bytes = ident_create("Bytes");
 
 let path_number = PIdent(ident_number)
 and path_exception = PIdent(ident_exception)
@@ -69,7 +70,8 @@ and path_char = PIdent(ident_char)
 and path_void = PIdent(ident_void)
 and path_box = PIdent(ident_box)
 and path_array = PIdent(ident_array)
-and path_fd = PIdent(ident_fd);
+and path_fd = PIdent(ident_fd)
+and path_bytes = PIdent(ident_bytes);
 
 let type_number = newgenty(TTyConstr(path_number, [], ref(TMemNil)))
 and type_exception = newgenty(TTyConstr(path_exception, [], ref(TMemNil)))
@@ -90,7 +92,8 @@ and type_box = var => newgenty(TTyConstr(path_box, [var], ref(TMemNil)))
 and type_array = var =>
   newgenty(TTyConstr(path_array, [var], ref(TMemNil)))
 and type_fd = newgenty(TTyConstr(path_fd, [], ref(TMemNil)))
-and type_lambda = (args, res) => newgenty(TTyArrow(args, res, TComOk));
+and type_lambda = (args, res) => newgenty(TTyArrow(args, res, TComOk))
+and type_bytes = newgenty(TTyConstr(path_bytes, [], ref(TMemNil)));
 
 let all_predef_exns = [];
 
@@ -174,7 +177,8 @@ let initial_env = (add_type, empty_env) =>
   |> add_type(ident_char, decl_abstr(path_char))
   |> add_type(ident_void, decl_void)
   |> add_type(ident_array, decl_array)
-  |> add_type(ident_fd, decl_abstr(path_fd));
+  |> add_type(ident_fd, decl_abstr(path_fd))
+  |> add_type(ident_bytes, decl_abstr(path_bytes));
 
 let builtin_values =
   List.map(
