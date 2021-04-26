@@ -13,21 +13,21 @@ export let isEmpty = (queue) => {
     }
 }
 
-export let head = (queue) => {
+export let peek = (queue) => {
     match (queue) {
         { forwards: [], backwards: [] } => None,
         { forwards, backwards } => List.head(forwards)
     }
 }
 
-export let enqueue = (value, queue) => {
+export let push = (value, queue) => {
     match (queue) {
         { forwards: [], backwards: [] } => { forwards: [value], backwards: [] },
         { forwards, backwards } => { forwards, backwards: [value, ...backwards] }
     }
 }
 
-export let dequeue = (queue) => {
+export let pop = (queue) => {
     match (queue) {
         { forwards: [], backwards: [] } => queue,
         { forwards: [head], backwards: [] } => { forwards: [], backwards: [] },
