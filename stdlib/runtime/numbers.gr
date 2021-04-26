@@ -565,7 +565,7 @@ export let numberEqual = (x, y) => {
  * (same schema as equal())
  */
 
-let numberPlusMinusSimpleHelp = (x, y, isMinus) => {
+let numberAddMinusSimpleHelp = (x, y, isMinus) => {
   // PRECONDITION: x is a "simple" number (value tag is 0) and isNumber(y)
   if (isSimpleNumber(y)) {
     let x = WasmI64.extendI32S(untagSimple(x))
@@ -628,7 +628,7 @@ let numberPlusMinusSimpleHelp = (x, y, isMinus) => {
   }
 }
 
-let numberPlusMinusInt64Help = (xval, y, isMinus) => {
+let numberAddMinusInt64Help = (xval, y, isMinus) => {
   if (isSimpleNumber(y)) {
     let yval = WasmI64.extendI32S(untagSimple(y))
     let result = if (isMinus) WasmI64.sub(xval, yval) else WasmI64.add(xval, yval)
@@ -688,7 +688,7 @@ let numberPlusMinusInt64Help = (xval, y, isMinus) => {
   }
 }
 
-let numberPlusMinusFloat32Help = (xval, y, isMinus) => {
+let numberAddMinusFloat32Help = (xval, y, isMinus) => {
   if (!isSimpleNumber(y) && WasmI32.eq(boxedNumberTag(y), Tags._GRAIN_FLOAT64_BOXED_NUM_TAG)) {
     // Special case: promote to f64 if RHS is f64
     let xval = WasmF64.promoteF32(xval)
@@ -702,37 +702,37 @@ let numberPlusMinusFloat32Help = (xval, y, isMinus) => {
   }
 }
 
-let numberPlusMinusFloat64Help = (xval, y, isMinus) => {
+let numberAddMinusFloat64Help = (xval, y, isMinus) => {
   let yval = coerceFloat64(y)
   let result = if (isMinus) WasmF64.sub(xval, yval) else WasmF64.add(xval, yval)
   newFloat64(result)
 }
 
 
-let numberPlusMinusInt32Help = (xval, y, isMinus) => {
-  numberPlusMinusInt64Help(WasmI64.extendI32S(xval), y, isMinus)
+let numberAddMinusInt32Help = (xval, y, isMinus) => {
+  numberAddMinusInt64Help(WasmI64.extendI32S(xval), y, isMinus)
 }
 
-let rec numberPlusMinusHelp = (x, y, isMinus) => {
+let rec numberAddMinusHelp = (x, y, isMinus) => {
   if (isSimpleNumber(x)) {
-    numberPlusMinusSimpleHelp(x, y, isMinus)
+    numberAddMinusSimpleHelp(x, y, isMinus)
   } else {
     let xtag = boxedNumberTag(x)
     match (xtag) {
       t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-        numberPlusMinusInt32Help(boxedInt32Number(x), y, isMinus)
+        numberAddMinusInt32Help(boxedInt32Number(x), y, isMinus)
       },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
-        numberPlusMinusInt64Help(boxedInt64Number(x), y, isMinus)
+        numberAddMinusInt64Help(boxedInt64Number(x), y, isMinus)
       },
       t when WasmI32.eq(t, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG) => {
-        numberPlusMinusRationalHelp(x, y, isMinus)
+        numberAddMinusRationalHelp(x, y, isMinus)
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
-        numberPlusMinusFloat32Help(boxedFloat32Number(x), y, isMinus)
+        numberAddMinusFloat32Help(boxedFloat32Number(x), y, isMinus)
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
-        numberPlusMinusFloat64Help(boxedFloat64Number(x), y, isMinus)
+        numberAddMinusFloat64Help(boxedFloat64Number(x), y, isMinus)
       },
       _ => {
         throw UnknownNumberTag
@@ -740,9 +740,9 @@ let rec numberPlusMinusHelp = (x, y, isMinus) => {
     }
   }
 },
-numberPlusMinusRationalHelp = (x, y, isMinus) => {
+numberAddMinusRationalHelp = (x, y, isMinus) => {
   if (isSimpleNumber(y)) {
-    numberPlusMinusSimpleHelp(y, x, isMinus)
+    numberAddMinusSimpleHelp(y, x, isMinus)
   } else {
     let ytag = boxedNumberTag(y)
     match (ytag) {
@@ -764,16 +764,16 @@ numberPlusMinusRationalHelp = (x, y, isMinus) => {
           reducedFraction64(numerator, denominator)
         }
       }, t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-        numberPlusMinusHelp(y, x, isMinus)
+        numberAddMinusHelp(y, x, isMinus)
       },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
-        numberPlusMinusHelp(y, x, isMinus)
+        numberAddMinusHelp(y, x, isMinus)
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
-        numberPlusMinusHelp(y, x, isMinus)
+        numberAddMinusHelp(y, x, isMinus)
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
-        numberPlusMinusHelp(y, x, isMinus)
+        numberAddMinusHelp(y, x, isMinus)
       },
       _ => {
         throw UnknownNumberTag
@@ -782,12 +782,12 @@ numberPlusMinusRationalHelp = (x, y, isMinus) => {
   }
 }
 
-let numberPlus = (x, y) => {
-  WasmI32.toGrain(numberPlusMinusHelp(x, y, false)): Number
+let numberAdd = (x, y) => {
+  WasmI32.toGrain(numberAddMinusHelp(x, y, false)): Number
 }
 
 let numberMinus = (x, y) => {
-  WasmI32.toGrain(numberPlusMinusHelp(x, y, true)): Number
+  WasmI32.toGrain(numberAddMinusHelp(x, y, true)): Number
 }
 
 /*
@@ -1038,7 +1038,7 @@ let numberMod = (x, y) => {
  * TODO: (#305) Could probably be made more efficient
  */
 // TODO: (#305) is this safe? I think it's safe?
-export let numberLess = (x: Number, y: Number) => {
+export let (<) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   let xval = coerceFloat64(x)
@@ -1046,7 +1046,7 @@ export let numberLess = (x: Number, y: Number) => {
   WasmF64.lt(xval, yval)
 }
 
-export let numberGreater = (x: Number, y: Number) => {
+export let (>) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   let xval = coerceFloat64(x)
@@ -1054,7 +1054,7 @@ export let numberGreater = (x: Number, y: Number) => {
   WasmF64.gt(xval, yval)
 }
 
-export let numberLessEqual = (x: Number, y: Number) => {
+export let (<=) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   // Equality is finicky, so delegate
@@ -1067,7 +1067,7 @@ export let numberLessEqual = (x: Number, y: Number) => {
   }
 }
 
-export let numberGreaterEqual = (x: Number, y: Number) => {
+export let (>=) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   // Equality is finicky, so delegate
@@ -1096,13 +1096,13 @@ export let numberEq = (x: Number, y: Number) => {
  */
 // TODO: (#306) Semantics around when things should stay i32/i64
 
-export let numberLnot = (x: Number) => {
+export let lnot = (x: Number) => {
   let x = WasmI32.fromGrain(x)
   let xval = coerceInt64(x)
   WasmI32.toGrain(reducedInteger(i64not(xval))): Number
 }
 
-export let numberLsl = (x: Number, y: Number) => {
+export let (<<) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   let xval = coerceInt64(x)
@@ -1110,7 +1110,7 @@ export let numberLsl = (x: Number, y: Number) => {
   WasmI32.toGrain(reducedInteger(WasmI64.shl(xval, yval))): Number
 }
 
-export let numberLsr = (x: Number, y: Number) => {
+export let (>>>) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   let xval = coerceInt64(x)
@@ -1118,7 +1118,7 @@ export let numberLsr = (x: Number, y: Number) => {
   WasmI32.toGrain(reducedInteger(WasmI64.shrU(xval, yval))): Number
 }
 
-export let numberLand = (x: Number, y: Number) => {
+export let (&) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   let xval = coerceInt64(x)
@@ -1126,7 +1126,7 @@ export let numberLand = (x: Number, y: Number) => {
   WasmI32.toGrain(reducedInteger(WasmI64.and(xval, yval))): Number
 }
 
-export let numberLor = (x: Number, y: Number) => {
+export let (|) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   let xval = coerceInt64(x)
@@ -1134,7 +1134,7 @@ export let numberLor = (x: Number, y: Number) => {
   WasmI32.toGrain(reducedInteger(WasmI64.or(xval, yval))): Number
 }
 
-export let numberLxor = (x: Number, y: Number) => {
+export let (^) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   let xval = coerceInt64(x)
@@ -1142,7 +1142,7 @@ export let numberLxor = (x: Number, y: Number) => {
   WasmI32.toGrain(reducedInteger(WasmI64.xor(xval, yval))): Number
 }
 
-export let numberAsr = (x: Number, y: Number) => {
+export let (>>) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   let xval = coerceInt64(x)
@@ -1276,31 +1276,31 @@ export let convertInexactToExact = (x: Number) => {
   WasmI32.toGrain(convertInexactToExact(WasmI32.fromGrain(x))): Number
 }
 
-export let numberPlus = (x: Number, y: Number) => {
+export let (+) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
-  numberPlus(x, y)
+  numberAdd(x, y)
 }
 
-export let numberMinus = (x: Number, y: Number) => {
+export let (-) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   numberMinus(x, y)
 }
 
-export let numberTimes = (x: Number, y: Number) => {
+export let (*) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   numberTimes(x, y)
 }
 
-export let numberDivide = (x: Number, y: Number) => {
+export let (/) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   numberDivide(x, y)
 }
 
-export let numberMod = (x: Number, y: Number) => {
+export let (%) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   WasmI32.toGrain(numberMod(x, y)): Number
@@ -1308,10 +1308,10 @@ export let numberMod = (x: Number, y: Number) => {
 
 // inc/dec
 
-export let numberIncr = (x) => {
-  numberPlus(x, 1)
+export let incr = (x) => {
+  x + 1
 }
 
-export let numberDecr = (x) => {
-  numberMinus(x, 1)
+export let decr = (x) => {
+  x - 1
 }
