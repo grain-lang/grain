@@ -17,8 +17,7 @@ export class GrainClosure {
   jsFunc(...args) {
     let grainVals = args.map((x) => JSToGrainVal(x, this.runtime));
     grainVals.unshift(this.loc * 4);
-    // [TODO]: We should feed in a runtime here.
-    return grainToJSVal(null, this.func(...grainVals));
+    return grainToJSVal(this.runtime, this.func(...grainVals));
   }
 }
 
