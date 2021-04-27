@@ -299,6 +299,7 @@ type allocation_type =
   | MArray(list(immediate))
   | MRecord(immediate, list((string, immediate)))
   | MADT(immediate, immediate, list(immediate)) /* Type Tag, Variant Tag, Elements */
+  | MBytes(bytes)
   | MString(string)
   | MChar(string)
   | MInt32(int32)

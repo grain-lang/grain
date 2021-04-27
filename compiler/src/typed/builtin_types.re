@@ -46,12 +46,12 @@ and ident_float32 = ident_create("Float32")
 and ident_float64 = ident_create("Float64")
 and ident_bool = ident_create("Bool")
 and ident_string = ident_create("String")
+and ident_bytes = ident_create("Bytes")
 and ident_char = ident_create("Char")
 and ident_void = ident_create("Void")
 and ident_box = ident_create("Box")
 and ident_array = ident_create("Array")
-and ident_fd = ident_create("FileDescriptor")
-and ident_bytes = ident_create("Bytes");
+and ident_fd = ident_create("FileDescriptor");
 
 let path_number = PIdent(ident_number)
 and path_exception = PIdent(ident_exception)
@@ -66,12 +66,12 @@ and path_float32 = PIdent(ident_float32)
 and path_float64 = PIdent(ident_float64)
 and path_bool = PIdent(ident_bool)
 and path_string = PIdent(ident_string)
+and path_bytes = PIdent(ident_bytes)
 and path_char = PIdent(ident_char)
 and path_void = PIdent(ident_void)
 and path_box = PIdent(ident_box)
 and path_array = PIdent(ident_array)
-and path_fd = PIdent(ident_fd)
-and path_bytes = PIdent(ident_bytes);
+and path_fd = PIdent(ident_fd);
 
 let type_number = newgenty(TTyConstr(path_number, [], ref(TMemNil)))
 and type_exception = newgenty(TTyConstr(path_exception, [], ref(TMemNil)))
@@ -86,14 +86,14 @@ and type_wasmf32 = newgenty(TTyConstr(path_wasmf32, [], ref(TMemNil)))
 and type_wasmf64 = newgenty(TTyConstr(path_wasmf64, [], ref(TMemNil)))
 and type_bool = newgenty(TTyConstr(path_bool, [], ref(TMemNil)))
 and type_string = newgenty(TTyConstr(path_string, [], ref(TMemNil)))
+and type_bytes = newgenty(TTyConstr(path_bytes, [], ref(TMemNil)))
 and type_char = newgenty(TTyConstr(path_char, [], ref(TMemNil)))
 and type_void = newgenty(TTyConstr(path_void, [], ref(TMemNil)))
 and type_box = var => newgenty(TTyConstr(path_box, [var], ref(TMemNil)))
 and type_array = var =>
   newgenty(TTyConstr(path_array, [var], ref(TMemNil)))
 and type_fd = newgenty(TTyConstr(path_fd, [], ref(TMemNil)))
-and type_lambda = (args, res) => newgenty(TTyArrow(args, res, TComOk))
-and type_bytes = newgenty(TTyConstr(path_bytes, [], ref(TMemNil)));
+and type_lambda = (args, res) => newgenty(TTyArrow(args, res, TComOk));
 
 let all_predef_exns = [];
 

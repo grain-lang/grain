@@ -22,6 +22,7 @@ let sexp_locs_disabled = _ => ! Grain_utils.Config.sexp_locs_enabled^;
 [@deriving (sexp, yojson)]
 type constant =
   | Const_number(number_type)
+  | Const_bytes(bytes)
   | Const_string(string)
   | Const_char(string)
   | Const_int32(int32)

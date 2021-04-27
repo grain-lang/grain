@@ -70,6 +70,7 @@ let type_constant =
   | Const_wasmf64(_) => instance_def(Builtin_types.type_wasmf64)
   | Const_bool(_) => instance_def(Builtin_types.type_bool)
   | Const_void => instance_def(Builtin_types.type_void)
+  | Const_bytes(_) => instance_def(Builtin_types.type_bytes)
   | Const_string(_) => instance_def(Builtin_types.type_string)
   | Const_char(_) => instance_def(Builtin_types.type_char);
 
@@ -215,6 +216,7 @@ let constant:
       }
     | PConstBool(b) => Ok(Const_bool(b))
     | PConstVoid => Ok(Const_void)
+    | PConstBytes(s) => Ok(Const_bytes(Bytes.of_string(s)))
     | PConstString(s) => Ok(Const_string(s))
     | PConstChar(c) => Ok(Const_char(c))
     };

@@ -1632,6 +1632,51 @@ let allocate_string = (wasm_mod, env, str) => {
   );
 };
 
+let allocate_bytes = (wasm_mod, env, bytes) => {
+  let buf = Buffer.create(80);
+  Buffer.add_bytes(buf, bytes);
+
+  let ints_to_push: list(int64) = buf_to_ints(buf);
+  let get_swap = () => get_swap(wasm_mod, env, 0);
+  let tee_swap = tee_swap(~skip_incref=true, wasm_mod, env, 0);
+  let preamble = [
+    store(
+      ~offset=0,
+      wasm_mod,
+      tee_swap(
+        heap_allocate(wasm_mod, env, 2 + 2 * List.length(ints_to_push)),
+      ),
+      Expression.const(
+        wasm_mod,
+        const_int32(tag_val_of_heap_tag_type(BytesType)),
+      ),
+    ),
+    store(
+      ~offset=4,
+      wasm_mod,
+      get_swap(),
+      Expression.const(wasm_mod, const_int32 @@ Bytes.length(bytes)),
+    ),
+  ];
+  let elts =
+    List.mapi(
+      (idx, i: int64) =>
+        store(
+          ~ty=Type.int64,
+          ~offset=8 * (idx + 1),
+          wasm_mod,
+          get_swap(),
+          Expression.const(wasm_mod, wrap_int64(i)),
+        ),
+      ints_to_push,
+    );
+  Expression.block(
+    wasm_mod,
+    gensym_label("allocate_bytes"),
+    List.concat([preamble, elts, [get_swap()]]),
+  );
+};
+
 let allocate_char = (wasm_mod, env, char) => {
   // Copy bytes into a fresh buffer so we can guarantee a copy of a full word
   let bytes = Bytes.make(4, Char.chr(0));
@@ -2362,6 +2407,7 @@ let compile_allocation = (wasm_mod, env, alloc_type) =>
   | MBox(elt) => allocate_box(wasm_mod, env, elt)
   | MArray(elts) => allocate_array(wasm_mod, env, elts)
   | MRecord(ttag, elts) => allocate_record(wasm_mod, env, ttag, elts)
+  | MBytes(bytes) => allocate_bytes(wasm_mod, env, bytes)
   | MString(str) => allocate_string(wasm_mod, env, str)
   | MChar(char) => allocate_char(wasm_mod, env, char)
   | MADT(ttag, vtag, elts) => allocate_adt(wasm_mod, env, ttag, vtag, elts)

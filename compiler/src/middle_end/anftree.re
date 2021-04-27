@@ -320,6 +320,7 @@ and comp_expression_desc =
       list((Ident.t, allocation_type)),
       (anf_expression, allocation_type),
     )
+  | CBytes(bytes)
   | CString(string)
   | CChar(string)
   | CNumber(Asttypes.number_type)

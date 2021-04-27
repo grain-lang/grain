@@ -122,6 +122,7 @@ type constant =
   | PConstWasmF64(string)
   | PConstBool(bool)
   | PConstVoid
+  | PConstBytes(string)
   | PConstString(string)
   | PConstChar(string)
 

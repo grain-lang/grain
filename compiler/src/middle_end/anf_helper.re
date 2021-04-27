@@ -253,6 +253,14 @@ module Comp = {
       ~env?,
       CLambda(name, args, body),
     );
+  let bytes = (~loc=?, ~attributes=?, ~env=?, b) =>
+    mk(
+      ~loc?,
+      ~attributes?,
+      ~allocation_type=HeapAllocated,
+      ~env?,
+      CBytes(b),
+    );
   let string = (~loc=?, ~attributes=?, ~env=?, s) =>
     mk(
       ~loc?,

@@ -71,6 +71,7 @@ let rec analyze_comp_expression =
   | CSetRecordItem(_)
   | CContinue
   | CBreak
+  | CBytes(_)
   | CString(_)
   | CChar(_)
   | CNumber(_)
