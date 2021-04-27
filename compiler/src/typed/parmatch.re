@@ -260,7 +260,8 @@ let const_compare = (x, y) =>
   | (Const_bool(b1), Const_bool(b2)) =>
     Stdlib.compare(if (b1) {1} else {0}, if (b2) {1} else {0})
   | (
-      Const_number(_) | Const_bytes(_) | Const_string(_) | Const_char(_) | Const_bool(_) |
+      Const_number(_) | Const_bytes(_) | Const_string(_) | Const_char(_) |
+      Const_bool(_) |
       Const_float32(_) |
       Const_float64(_) |
       Const_wasmi32(_) |
@@ -2126,6 +2127,7 @@ let inactive = (~partial, pat) =>
       | TPatArray(_) => false
       | TPatConstant(c) =>
         switch (c) {
+        | Const_bytes(_)
         | Const_string(_)
         | Const_char(_)
         | Const_void
