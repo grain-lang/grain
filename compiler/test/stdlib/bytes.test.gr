@@ -1,0 +1,4 @@
+import Bytes from "bytes";
+
+let buf = Bytes.make(64)
+assert Bytes.length(buf) == 64;
