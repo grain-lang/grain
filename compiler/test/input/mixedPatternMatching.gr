@@ -59,4 +59,4 @@ let tests = [
   (PArray([> PList([3, 4]), PList([3, 4])]), 45),
 ];
 
-every(test, tests)
+print(every(test, tests))

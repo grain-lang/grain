@@ -10,4 +10,4 @@ let rec fib = (n) => {
   }
 };
 
-fib(10)
+print(fib(10))

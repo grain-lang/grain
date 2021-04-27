@@ -1,14 +1,22 @@
-(executable
- (name test)
- (libraries grain str oUnit))
+(include_subdirs unqualified)
 
-(rule
- (alias runtest)
- (deps
-  (:< test.exe)
-  (source_tree input)
-  (source_tree stdlib)
-  (source_tree test-libs)
-  (source_tree test-data))
+(library
+ (name Grain_tests)
+ (public_name grain-tests.test)
+ (flags
+  (:standard -linkall -g -w -40))
+ (libraries grain rely.lib)
+ (modules
+  (:standard \ test)))
+
+(test
+ (name test)
+ (libraries grain-tests.test)
+ (modules test)
+ (flags
+  (:standard -w -40))
  (action
-  (run %{<} -shards 1)))
+  (setenv
+   GRAIN_TEST_FILTER
+   %{profile}
+   (run %{test}))))

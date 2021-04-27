@@ -1,101 +1,8 @@
-open Unix;
-open Filename;
-open Str;
+open TestFramework;
 open Grain.Compile;
-open Printf;
-open OUnit2;
-open Lexing;
-open Grain_codegen;
 open Grain_utils;
-
-type either('a, 'b) =
-  | Left('a)
-  | Right('b);
-
-let either_printer = e =>
-  switch (e) {
-  | Left(v) => sprintf("Error: %s\n", v)
-  | Right(v) => v
-  };
-
-let exists = (check, result) =>
-  try(Str.search_forward(Str.regexp_string(check), result, 0) >= 0) {
-  | Not_found => false
-  };
-
-let not_exists = (check, result) =>
-  try(Str.search_forward(Str.regexp_string(check), result, 0) < 0) {
-  | Not_found => true
-  };
-
-/* Read a file into a string */
-let string_of_file = file_name => {
-  let inchan = open_in(file_name);
-  let buf = Bytes.create(in_channel_length(inchan));
-  really_input(inchan, buf, 0, in_channel_length(inchan));
-  buf;
-};
-
-let string_of_position = p =>
-  sprintf(
-    "%s:line %d, col %d",
-    p.pos_fname,
-    p.pos_lnum,
-    p.pos_cnum - p.pos_bol,
-  );
-
-let parse = (name, lexbuf) => {
-  let ret = Grain_parsing.Driver.parse(~name, lexbuf);
-  open Grain_parsing;
-  open Location;
-  assert(ret.Parsetree.prog_loc.loc_start.pos_fname == name);
-  ret;
-};
-
-let parse_string = (name, s) => {
-  let lexbuf = Lexing.from_string(s);
-  parse(name, lexbuf);
-};
-
-let parse_file = (name, input_file) => {
-  let lexbuf = Lexing.from_channel(input_file);
-  parse(name, lexbuf);
-};
-
-let extract_anf = ({cstate_desc}) =>
-  switch (cstate_desc) {
-  | Linearized(anf)
-  | Optimized(anf) => anf
-  | _ => raise(Invalid_argument("Expected ANF-containing state"))
-  };
-
-let compile_string_to_anf = (name, s) =>
-  extract_anf(compile_string(~hook=stop_after_anf, ~name, s));
-
-let compile_string_to_final_anf = (name, s) =>
-  extract_anf(compile_string(~hook=stop_after_optimization, ~name, s));
-
-let make_tmpfiles = name => {
-  let (null_stdin, _) = pipe();
-  let stdout_name = temp_file("stdout_" ++ name, ".out");
-  let stdin_name = temp_file("stderr_" ++ name, ".err");
-  (
-    openfile(stdout_name, [O_RDWR], 0o600),
-    stdout_name,
-    openfile(stdin_name, [O_RDWR], 0o600),
-    stdin_name,
-    null_stdin,
-  );
-};
-
-type result = either(string, string);
-
-let extract_wasm = ({cstate_desc}) =>
-  switch (cstate_desc) {
-  | Compiled(compiled) => compiled
-  | Linked(linked) => linked
-  | _ => raise(Invalid_argument("Expected WASM State"))
-  };
+open Grain_middle_end.Anftree;
+open Grain_middle_end.Anf_helper;
 
 let read_stream = cstream => {
   let buf = Bytes.create(2048);
@@ -114,17 +21,38 @@ let read_stream = cstream => {
   Bytes.to_string @@ Bytes.sub(buf, 0, i^);
 };
 
-let run_output =
-    (~code=0, ~num_pages=?, ~print_output=true, cstate, test_ctxt) => {
-  let program = extract_wasm(cstate);
-  let file = Filename.temp_file("test", ".gr.wasm");
-  Emitmod.emit_module(program, file);
+let compile = (~hook=?, name, prog) => {
+  Config.preserve_config(() => {
+    Config.include_dirs := ["test-libs", ...Config.include_dirs^];
+    let outfile = "output/" ++ name ++ ".gr.wasm";
+    ignore @@ compile_string(~hook?, ~name, ~outfile, prog);
+  });
+};
 
-  let cli_flags = if (print_output) {"-pg"} else {"-g"};
+let compile_file = (~hook=?, filename, outfile) => {
+  Config.preserve_config(() => {
+    Config.include_dirs := ["test-libs", ...Config.include_dirs^];
+    ignore @@ compile_file(~hook?, ~outfile, filename);
+  });
+};
+
+let extract_anf = ({cstate_desc}) =>
+  switch (cstate_desc) {
+  | Linearized(anf)
+  | Optimized(anf) => anf
+  | _ => raise(Invalid_argument("Expected ANF-containing state"))
+  };
+
+let compile_string_to_final_anf = (name, s) =>
+  extract_anf(compile_string(~hook=stop_after_optimization, ~name, s));
+
+let wasmfile = name => "output/" ++ name ++ ".gr.wasm";
+
+let run = (~num_pages=?, file) => {
+  let cli_flags = "-g";
 
   let stdlib = Option.get(Grain_utils.Config.stdlib_dir^);
-  let testlibs = Sys.getcwd() ++ "/test-libs";
-  let result = ref("");
+  let testlibs = Sys.getcwd() ++ "test-libs";
   let env =
     switch (num_pages) {
     | Some(x) =>
@@ -135,182 +63,199 @@ let run_output =
       |]
     | None => Unix.environment()
     };
-  assert_command(
-    ~foutput=stream => result := read_stream(stream),
-    ~exit_code=Unix.WEXITED(code),
-    ~use_stderr=true,
-    ~ctxt=test_ctxt,
-    ~env,
-    "grain",
-    [cli_flags, "-S", stdlib, "-I", testlibs, "run", file],
-  );
-  result^;
-};
 
-let run_anf = (p, out) => {
-  let cstate = {
-    cstate_desc: Linearized(p),
-    cstate_filename: Some(out),
-    cstate_outfile: None,
-  };
-  run_output(compile_resume(~hook=stop_after_compiled, cstate));
-};
+  let args = ["grain", cli_flags, "-S", stdlib, "-I", testlibs, "run", file];
+  let command = String.concat(" ", args);
 
-let test_run =
-    (
-      ~cmp=?,
-      ~hook=stop_after_compiled,
-      ~num_pages=?,
-      ~print_output=true,
-      program_str,
-      outfile,
-      expected,
-      test_ctxt,
-    ) => {
-  let result =
-    Config.preserve_config(() => {
-      Config.include_dirs := ["test-libs", ...Config.include_dirs^];
-      let cstate = compile_string(~hook, ~name=outfile, program_str);
-      run_output(~num_pages?, ~print_output, cstate, test_ctxt);
-    });
-  let expected =
-    if (print_output) {
-      expected ++ "\n";
-    } else {
-      expected;
+  let (stdout, stdin, stderr) = Unix.open_process_full(command, env);
+
+  let pid = Unix.process_full_pid((stdout, stdin, stderr));
+  let (_, status) = Unix.waitpid([], pid);
+
+  let out = read_stream(Stream.of_channel(stdout));
+  let err = read_stream(Stream.of_channel(stderr));
+
+  close_in(stdout);
+  close_in(stderr);
+  close_out(stdin);
+
+  let code =
+    switch (status) {
+    | Unix.WEXITED(code) => code
+    | _ => failwith("process did not exit properly")
     };
-  assert_equal(
-    ~printer=Fun.id,
-    ~cmp=Option.value(~default=(==), cmp),
-    expected,
-    result,
+
+  (out ++ err, code);
+};
+
+let makeSnapshotRunner = (test, name, prog) => {
+  test(
+    name,
+    ({expect}) => {
+      compile(~hook=stop_after_object_file_emitted, name, prog);
+      let file = "output/" ++ name ++ ".gr.wat";
+      expect.file(file).toMatchSnapshot();
+    },
   );
 };
 
-let test_run_file =
-    (
-      ~hook=stop_after_compiled,
-      ~num_pages=?,
-      filename,
-      name,
-      expected,
-      test_ctxt,
-    ) => {
-  let input_filename = "input/" ++ filename ++ ".gr";
-  let outfile = "output/" ++ name;
-  let result =
-    Config.preserve_config(() => {
-      Config.include_dirs := ["test-libs", ...Config.include_dirs^];
-      let cstate = compile_file(~hook, ~outfile, input_filename);
-      run_output(~num_pages?, cstate, test_ctxt);
-    });
-  assert_equal(~printer=Fun.id, expected ++ "\n", result);
+let inputFilename = name => "input/" ++ name ++ ".gr";
+let outputFilename = name => "output/" ++ name ++ ".gr.wasm";
+let outputWat = name => "output/" ++ name ++ ".gr.wat";
+
+let makeSnapshotFileRunner = (test, name, filename) => {
+  test(
+    name,
+    ({expect}) => {
+      let infile = inputFilename(filename);
+      let outfile = outputFilename(name);
+      compile_file(~hook=stop_after_object_file_emitted, infile, outfile);
+      let file = outputWat(name);
+      expect.file(file).toMatchSnapshot();
+    },
+  );
 };
 
-let test_run_stdlib =
-    (
-      ~hook=stop_after_compiled,
-      ~print_output=true,
-      ~returns="void\n",
-      ~code=?,
-      filename,
-      test_ctxt,
-    ) => {
-  let input_filename = "stdlib/" ++ filename ++ ".gr";
-  let outfile = "stdlib_output/" ++ filename;
-  let cstate = compile_file(~hook, ~outfile, input_filename);
-  let result = run_output(~code?, ~print_output, cstate, test_ctxt);
-  assert_equal(~printer=Fun.id, returns, result);
+let makeCompileErrorRunner = (test, name, prog, msg) => {
+  test(
+    name,
+    ({expect}) => {
+      let error =
+        try(
+          {
+            compile(name, prog);
+            "";
+          }
+        ) {
+        | exn => Printexc.to_string(exn)
+        };
+      expect.string(error).toMatch(msg);
+    },
+  );
 };
 
-let test_optimizations_sound = (program_str, name, expected, test_ctxt) => {
-  let compile_and_run = () =>
-    run_output(
-      compile_string(~hook=stop_after_compiled, ~name, program_str),
-      test_ctxt,
-    );
-  let result_unoptimized =
-    Config.preserve_config(() => {
-      Config.optimizations_enabled := false;
-      compile_and_run();
-    });
-  let result_optimized =
-    Config.preserve_config(() => {
-      Config.optimizations_enabled := true;
-      compile_and_run();
-    });
-
-  assert_equal(result_optimized, result_unoptimized);
-  assert_equal(expected ++ "\n", result_optimized);
+let makeRunner = (test, ~num_pages=?, name, prog, expected) => {
+  test(
+    name,
+    ({expect}) => {
+      let hook = Option.map(_ => stop_after_object_file_emitted, num_pages);
+      compile(~hook?, name, prog);
+      let (result, _) = run(~num_pages?, wasmfile(name));
+      expect.string(result).toEqual(expected);
+    },
+  );
 };
 
-let test_file_optimizations_sound = (filename, name, expected, test_ctxt) => {
-  let input_filename = "input/" ++ filename ++ ".gr";
-  let full_outfile_unoptimized = "output/" ++ name ++ ".no-optimize";
-  let full_outfile_optimized = "output/" ++ name ++ "optimize";
-
-  let compile_and_run = outfile =>
-    run_output(
-      compile_file(~hook=stop_after_compiled, ~outfile, input_filename),
-      test_ctxt,
-    );
-  let result_unoptimized =
-    Config.preserve_config(() => {
-      Config.optimizations_enabled := false;
-      compile_and_run(full_outfile_unoptimized);
-    });
-  let result_optimized =
-    Config.preserve_config(() => {
-      Config.optimizations_enabled := true;
-      compile_and_run(full_outfile_optimized);
-    });
-
-  assert_equal(result_optimized, result_unoptimized);
-  assert_equal(expected ++ "\n", result_optimized);
+let makeErrorRunner =
+    (test, ~check_exists=true, ~num_pages=?, name, prog, expected) => {
+  test(
+    name,
+    ({expect}) => {
+      let hook = Option.map(_ => stop_after_object_file_emitted, num_pages);
+      compile(~hook?, name, prog);
+      let (result, _) = run(~num_pages?, wasmfile(name));
+      if (check_exists) {
+        expect.string(result).toMatch(expected);
+      } else {
+        expect.string(result).not.toMatch(expected);
+      };
+    },
+  );
 };
 
-let test_run_anf = (program_anf, outfile, expected, test_ctxt) => {
-  let result = run_anf(program_anf, outfile, test_ctxt);
-  assert_equal(expected ++ "\n", result, ~printer=Fun.id);
+let makeFileRunner = (test, name, filename, expected) => {
+  test(
+    name,
+    ({expect}) => {
+      let infile = inputFilename(filename);
+      let outfile = outputFilename(name);
+      compile_file(infile, outfile);
+      let (result, _) = run(outfile);
+      expect.string(result).toEqual(expected);
+    },
+  );
 };
 
-let test_err =
-    (
-      ~hook=stop_after_compiled,
-      ~num_pages=?,
-      ~print_output=true,
-      ~check_exists=true,
-      program_str,
-      outfile,
-      errmsg,
-      test_ctxt,
-    ) => {
-  let result =
-    try(
-      Config.preserve_config(() => {
-        Config.include_dirs := ["test-libs", ...Config.include_dirs^];
-        let cstate = compile_string(~hook, ~name=outfile, program_str);
-        run_output(~num_pages?, ~print_output, cstate, test_ctxt);
-      })
-    ) {
-    | exn => Printexc.to_string(exn)
-    };
-
-  let cmp = check_exists ? exists : not_exists;
-  assert_equal(errmsg, result, ~cmp, ~printer=Fun.id);
+let makeFileErrorRunner = (test, name, filename, expected) => {
+  test(
+    name,
+    ({expect}) => {
+      let infile = inputFilename(filename);
+      let outfile = outputFilename(name);
+      compile_file(infile, outfile);
+      let (result, _) = run(outfile);
+      expect.string(result).toMatch(expected);
+    },
+  );
 };
 
-let test_run_file_err =
-    (~hook=stop_after_compiled, filename, name, errmsg, test_ctxt) => {
-  let input_filename = "input/" ++ filename ++ ".gr";
-  let outfile = "output/" ++ name;
-  let result =
-    try({
-      let cstate = compile_file(~hook, ~outfile, input_filename);
-      run_output(cstate, test_ctxt);
-    }) {
-    | exn => Printexc.to_string(exn)
-    };
+let makeStdlibRunner = (test, ~code=0, name) => {
+  test(
+    name,
+    ({expect}) => {
+      let infile = "stdlib/" ++ name ++ ".gr";
+      let outfile = outputFilename(name);
+      compile_file(infile, outfile);
+      let (result, exit_code) = run(outfile);
+      expect.int(exit_code).toBe(code);
+      expect.string(result).toEqual("");
+    },
+  );
+};
 
-  assert_equal(errmsg, result, ~cmp=exists, ~printer=Fun.id);
+let parse = (name, lexbuf) => {
+  let ret = Grain_parsing.Driver.parse(~name, lexbuf);
+  open Grain_parsing;
+  open Location;
+  assert(ret.Parsetree.prog_loc.loc_start.pos_fname == name);
+  ret;
+};
+
+let parseString = (name, s) => {
+  let lexbuf = Lexing.from_string(s);
+  parse(name, lexbuf);
+};
+
+let parseFile = (name, input_file) => {
+  let lexbuf = Lexing.from_channel(input_file);
+  parse(name, lexbuf);
+};
+
+let makeParseRunner =
+    (test, name, input, expected: Grain_parsing.Parsetree.parsed_program) => {
+  test(
+    name,
+    ({expect}) => {
+      open Grain_parsing;
+      let location_stripper = {
+        ...Ast_mapper.default_mapper,
+        location: (_, _) => Location.dummy_loc,
+      };
+      let comment_loc_stripper: Parsetree.comment => Parsetree.comment =
+        comment => {
+          switch (comment) {
+          | Line(desc) => Line({...desc, cmt_loc: Location.dummy_loc})
+          | Shebang(desc) => Shebang({...desc, cmt_loc: Location.dummy_loc})
+          | Block(desc) => Block({...desc, cmt_loc: Location.dummy_loc})
+          | Doc(desc) => Doc({...desc, cmt_loc: Location.dummy_loc})
+          };
+        };
+      let strip_locs = ({statements, comments}: Parsetree.parsed_program) =>
+        Parsetree.{
+          statements:
+            List.map(
+              location_stripper.toplevel(location_stripper),
+              statements,
+            ),
+          comments: List.map(comment_loc_stripper, comments),
+          prog_loc: Location.dummy_loc,
+        };
+      let parsed = strip_locs @@ parseString(name, input);
+      let untagged = strip_locs @@ parsed;
+      let conv = p =>
+        Sexplib.Sexp.to_string_hum @@
+        Grain_parsing.Parsetree.sexp_of_parsed_program(p);
+      expect.string(conv(untagged)).toEqual(conv(expected));
+    },
+  );
 };

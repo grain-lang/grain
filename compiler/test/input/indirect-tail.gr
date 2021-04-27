@@ -1,4 +1,4 @@
 let add = (x, y) => {x + y};
 let double = ((x) => {add(x, x)});
 
-double(2) + double(3)
+print(double(2) + double(3))
