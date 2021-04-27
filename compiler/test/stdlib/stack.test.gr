@@ -9,20 +9,20 @@ let sampleStack = Stack.push(3, Stack.push(2, Stack.push(1, empty)))
 assert Stack.isEmpty(empty)
 assert !Stack.isEmpty(sampleStack)
 
-// Stack.peek
+// Stack.head
 
-assert Stack.peek(empty) == None
-assert Stack.peek(sampleStack) == Some(3)
+assert Stack.head(empty) == None
+assert Stack.head(sampleStack) == Some(3)
 
 // Stack.push
 
-assert Stack.peek(Stack.push(1, empty)) == Some(1)
-assert Stack.peek(Stack.push(4, sampleStack)) == Some(4)
+assert Stack.head(Stack.push(1, empty)) == Some(1)
+assert Stack.head(Stack.push(4, sampleStack)) == Some(4)
 
 // Stack.pop
 
 assert Stack.isEmpty(Stack.pop(empty))
 assert Stack.isEmpty(Stack.pop(Stack.push(1, empty)))
 assert Stack.isEmpty(Stack.pop(Stack.pop(Stack.pop(sampleStack))))
-assert Stack.peek(Stack.pop(sampleStack)) == Some(2)
-assert Stack.peek(Stack.pop(Stack.push(4, Stack.pop(sampleStack)))) == Some(2)
+assert Stack.head(Stack.pop(sampleStack)) == Some(2)
+assert Stack.head(Stack.pop(Stack.push(4, Stack.pop(sampleStack)))) == Some(2)
