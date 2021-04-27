@@ -63,11 +63,7 @@ module Const = {
 
 module Typ = {
   let mk = (~loc=?, d) => {
-    let loc =
-      switch (loc) {
-      | None => default_loc_src^()
-      | Some(l) => l
-      };
+    let loc = Option.value(~default=default_loc_src^(), loc);
     {ptyp_desc: d, ptyp_loc: loc};
   };
   let any = (~loc=?, ()) => mk(~loc?, PTyAny);
@@ -86,11 +82,7 @@ module Typ = {
 
 module CDecl = {
   let mk = (~loc=?, n, a) => {
-    let loc =
-      switch (loc) {
-      | None => default_loc_src^()
-      | Some(l) => l
-      };
+    let loc = Option.value(~default=default_loc_src^(), loc);
     {pcd_name: n, pcd_args: a, pcd_loc: loc};
   };
   let singleton = (~loc=?, n) => mk(~loc?, n, PConstrSingleton);
@@ -99,22 +91,14 @@ module CDecl = {
 
 module LDecl = {
   let mk = (~loc=?, n, t, m) => {
-    let loc =
-      switch (loc) {
-      | None => default_loc_src^()
-      | Some(l) => l
-      };
+    let loc = Option.value(~default=default_loc_src^(), loc);
     {pld_name: n, pld_type: t, pld_mutable: m, pld_loc: loc};
   };
 };
 
 module Dat = {
   let mk = (~loc=?, n, t, k) => {
-    let loc =
-      switch (loc) {
-      | None => default_loc_src^()
-      | Some(l) => l
-      };
+    let loc = Option.value(~default=default_loc_src^(), loc);
     {pdata_name: n, pdata_params: t, pdata_kind: k, pdata_loc: loc};
   };
   let variant = (~loc=?, n, t, cdl) => mk(~loc?, n, t, PDataVariant(cdl));
@@ -123,11 +107,7 @@ module Dat = {
 
 module Except = {
   let mk = (~loc=?, n, t) => {
-    let loc =
-      switch (loc) {
-      | None => default_loc_src^()
-      | Some(l) => l
-      };
+    let loc = Option.value(~default=default_loc_src^(), loc);
     let ext = {pext_name: n, pext_kind: PExtDecl(t), pext_loc: loc};
     {ptyexn_constructor: ext, ptyexn_loc: loc};
   };
@@ -137,11 +117,7 @@ module Except = {
 
 module Pat = {
   let mk = (~loc=?, d) => {
-    let loc =
-      switch (loc) {
-      | None => default_loc_src^()
-      | Some(l) => l
-      };
+    let loc = Option.value(~default=default_loc_src^(), loc);
     {ppat_desc: d, ppat_loc: loc};
   };
   let any = (~loc=?, ()) => mk(~loc?, PPatAny);
@@ -182,16 +158,8 @@ module Pat = {
 
 module Exp = {
   let mk = (~loc=?, ~attributes=?, d) => {
-    let loc =
-      switch (loc) {
-      | None => default_loc_src^()
-      | Some(l) => l
-      };
-    let attributes =
-      switch (attributes) {
-      | None => []
-      | Some(l) => l
-      };
+    let loc = Option.value(~default=default_loc_src^(), loc);
+    let attributes = Option.value(~default=[], attributes);
     {pexp_desc: d, pexp_attributes: attributes, pexp_loc: loc};
   };
   let ident = (~loc=?, ~attributes=?, a) =>
@@ -266,16 +234,8 @@ module Exp = {
 
 module Top = {
   let mk = (~loc=?, ~attributes=?, d) => {
-    let loc =
-      switch (loc) {
-      | None => default_loc_src^()
-      | Some(l) => l
-      };
-    let attributes =
-      switch (attributes) {
-      | None => []
-      | Some(l) => l
-      };
+    let loc = Option.value(~default=default_loc_src^(), loc);
+    let attributes = Option.value(~default=[], attributes);
     {ptop_desc: d, ptop_attributes: attributes, ptop_loc: loc};
   };
   let import = (~loc=?, ~attributes=?, i) =>
@@ -300,11 +260,7 @@ module Top = {
 
 module Val = {
   let mk = (~loc=?, ~mod_, ~name, ~alias, ~typ, ~prim) => {
-    let loc =
-      switch (loc) {
-      | None => default_loc_src^()
-      | Some(l) => l
-      };
+    let loc = Option.value(~default=default_loc_src^(), loc);
     {
       pval_mod: mod_,
       pval_name: name,
@@ -318,44 +274,28 @@ module Val = {
 
 module Vb = {
   let mk = (~loc=?, p, e) => {
-    let loc =
-      switch (loc) {
-      | None => default_loc_src^()
-      | Some(l) => l
-      };
+    let loc = Option.value(~default=default_loc_src^(), loc);
     {pvb_pat: p, pvb_expr: e, pvb_loc: loc};
   };
 };
 
 module Mb = {
   let mk = (~loc=?, p, e, g) => {
-    let loc =
-      switch (loc) {
-      | None => default_loc_src^()
-      | Some(l) => l
-      };
+    let loc = Option.value(~default=default_loc_src^(), loc);
     {pmb_pat: p, pmb_body: e, pmb_guard: g, pmb_loc: loc};
   };
 };
 
 module Imp = {
   let mk = (~loc=?, shapes, path) => {
-    let loc =
-      switch (loc) {
-      | None => default_loc_src^()
-      | Some(l) => l
-      };
+    let loc = Option.value(~default=default_loc_src^(), loc);
     {pimp_val: shapes, pimp_path: path, pimp_loc: loc};
   };
 };
 
 module Ex = {
   let mk = (~loc=?, exports) => {
-    let loc =
-      switch (loc) {
-      | None => default_loc_src^()
-      | Some(l) => l
-      };
+    let loc = Option.value(~default=default_loc_src^(), loc);
     List.map(
       ((name, alias)) => {
         let desc = {pex_name: name, pex_alias: alias, pex_loc: loc};
