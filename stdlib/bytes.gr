@@ -1,0 +1,10 @@
+import { allocateBytes } from "runtime/dataStructures"
+
+// Make a new Bytes buffer of n-bytes size
+// @param byteLength: Number - The number of bytes to store
+// @returns Bytes
+@disableGC
+export let make = (byteLength: Number) => {
+  let buf = allocateBytes(byteLength);
+  WasmI32.toGrain(buf): Bytes
+}

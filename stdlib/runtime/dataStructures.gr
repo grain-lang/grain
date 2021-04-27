@@ -28,6 +28,21 @@ export let allocateArray = (numElts) => {
 }
 
 /**
+ * Allocates a new Grain bytes.
+ *
+ * @param {WasmI32} numElts The number of bytes to be contained in this buffer
+ * @returns {WasmI32} The pointer to the bytes
+ */
+export let allocateBytes = (numBytes) => {
+  let buf = Memory.malloc((numBytes + 2n) * 4n)
+
+  WasmI32.store(buf, Tags._GRAIN_BYTES_HEAP_TAG, 0n)
+  WasmI32.store(buf, numBytes, 4n)
+
+  buf
+}
+
+/**
  * Stores an item in a Grain array.
  *
  * @param {WasmI32} array The array to store the item in
