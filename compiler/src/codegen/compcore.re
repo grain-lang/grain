@@ -3598,7 +3598,7 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
         Features.multivalue,
         Features.tail_call,
         Features.sign_ext,
-        Features.bulk_memory,
+        // Features.bulk_memory,
         Features.mutable_globals,
       ],
     );

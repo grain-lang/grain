@@ -220,8 +220,8 @@ let primitive_map_f64 =
 let primitive_map_memory =
   StringHash.of_seq(
     List.to_seq([
-      ("copy", "@wasm.memory_copy"),
-      ("fill", "@wasm.memory_fill"),
+      // ("copy", "@wasm.memory_copy"),
+      // ("fill", "@wasm.memory_fill"),
       ("grow", "@wasm.memory_grow"),
       ("size", "@wasm.memory_size"),
       ("compare", "@wasm.memory_compare"),

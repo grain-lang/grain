@@ -584,16 +584,17 @@ let link_all = (linked_mod, dependencies, signature) => {
     );
 
   let start_name = gensym(grain_start);
-  ignore @@
-  Function.add_function(
-    linked_mod,
-    start_name,
-    Type.none,
-    Type.none,
-    [||],
-    Expression.block(linked_mod, gensym("start"), starts),
-  );
-  ignore @@ Export.add_function_export(linked_mod, start_name, grain_start);
+  let start =
+    Function.add_function(
+      linked_mod,
+      start_name,
+      Type.none,
+      Type.none,
+      [||],
+      Expression.block(linked_mod, gensym("start"), starts),
+    );
+  Function.set_start(linked_mod, start);
+  // ignore @@ Export.add_function_export(linked_mod, start_name, grain_start);
 };
 
 let link_modules = ({asm: wasm_mod, signature}) => {
