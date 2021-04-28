@@ -2,6 +2,26 @@ import WasmI32 from "runtime/unsafe/wasmi32"
 import { coerceNumberToInt32} from "runtime/numbers"
 import { tagSimpleNumber, allocateBytes } from "runtime/dataStructures"
 
+// getInt8
+// setInt8
+// getInt8U
+// setInt8U
+// getInt16
+// setInt16
+// getInt16U
+// setInt16U
+// getInt32
+// setInt32
+// getInt64
+// setInt64
+// length
+// empty
+// copy
+// sub
+// extend
+// blit (though I'd love to find a better name for this)
+// append
+
 // Make a new Bytes buffer of n-bytes size
 // @param n: Number - The number of bytes to store
 // @returns Bytes
@@ -9,9 +29,12 @@ import { tagSimpleNumber, allocateBytes } from "runtime/dataStructures"
 export let make = (n: Number) => {
   let n = coerceNumberToInt32(n);
   let ptr = WasmI32.fromGrain(n)
-  let buf = allocateBytes(WasmI32.load(ptr, 8n));
-  WasmI32.toGrain(buf): Bytes
+  let bytes = allocateBytes(WasmI32.load(ptr, 8n));
+  WasmI32.toGrain(bytes): Bytes
 }
+
+@disableGC
+export let empty = make(0)
 
 // Get the byte length of a Bytes buffer.
 // @param input: Bytes - The Bytes buffer to check

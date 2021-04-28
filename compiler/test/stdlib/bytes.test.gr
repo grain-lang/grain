@@ -1,4 +1,11 @@
 import Bytes from "bytes";
 
-let buf = Bytes.make(64)
-assert Bytes.length(buf) == 64;
+// Bytes equality
+assert Bytes.empty == Bytes.empty;
+
+// Bytes length
+assert Bytes.length(Bytes.empty) == 0;
+
+let bytes = Bytes.make(64)
+
+assert Bytes.length(bytes) == 64;
