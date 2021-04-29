@@ -46,5 +46,7 @@ export let pop = (queue) => {
     }
 }
 
-/// @deprecated
+/**
+  @deprecated Please use `Queue.pop` instead. `Queue.dequeue` will be removed in v0.4.0.
+*/
 export let dequeue = pop;
