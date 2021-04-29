@@ -1,5 +1,21 @@
 # Changelog
 
+### [0.3.1](https://www.github.com/grain-lang/grain/compare/stdlib-v0.3.0...stdlib-v0.3.1) (2021-04-29)
+
+
+### ⚠ BREAKING CHANGES
+
+* rename Queue/Stack lib methods (#625)
+
+### Reverts
+
+* "chore!: rename Queue/Stack lib methods ([#625](https://www.github.com/grain-lang/grain/issues/625))" ([#632](https://www.github.com/grain-lang/grain/issues/632)) ([c9af90e](https://www.github.com/grain-lang/grain/commit/c9af90e77e5c5bb9649b8072b9cdff16ae2d1e60))
+
+
+### Miscellaneous Chores
+
+* rename Queue/Stack lib methods ([#625](https://www.github.com/grain-lang/grain/issues/625)) ([8117592](https://www.github.com/grain-lang/grain/commit/8117592dbaa09b4443003f234b6a2dcadb235a8b))
+
 ## [0.3.0](https://www.github.com/grain-lang/grain/compare/stdlib-v0.2.0...stdlib-v0.3.0) (2021-04-21)
 
 
