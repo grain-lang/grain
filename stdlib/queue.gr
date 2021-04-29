@@ -20,7 +20,9 @@ export let peek = (queue) => {
     }
 }
 
-/// @deprecated
+/**
+  @deprecated Please use `Queue.peek` instead. `Queue.head` will be removed in 0.4.0.
+*/
 export let head = peek;
 
 export let push = (value, queue) => {
