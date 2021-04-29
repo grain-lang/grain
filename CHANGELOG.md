@@ -1,5 +1,27 @@
 # Changelog
 
+### [0.3.1](https://www.github.com/grain-lang/grain/compare/grain-v0.3.0...grain-v0.3.1) (2021-04-29)
+
+
+### ⚠ BREAKING CHANGES
+
+* rename Queue/Stack lib methods (#625)
+
+### Bug Fixes
+
+* **cli:** Correct typo in lsp catch block ([#618](https://www.github.com/grain-lang/grain/issues/618)) ([b903ced](https://www.github.com/grain-lang/grain/commit/b903ced32ad7a6a2055a73473921e791adfd6ae4))
+* Workaround for Windows drive letters with jsoo & pkg ([#636](https://www.github.com/grain-lang/grain/issues/636)) ([d205cde](https://www.github.com/grain-lang/grain/commit/d205cde76c97d9b830653c48004b97ec9dc25840))
+
+
+### Reverts
+
+* "chore!: rename Queue/Stack lib methods ([#625](https://www.github.com/grain-lang/grain/issues/625))" ([#632](https://www.github.com/grain-lang/grain/issues/632)) ([c9af90e](https://www.github.com/grain-lang/grain/commit/c9af90e77e5c5bb9649b8072b9cdff16ae2d1e60))
+
+
+### Miscellaneous Chores
+
+* rename Queue/Stack lib methods ([#625](https://www.github.com/grain-lang/grain/issues/625)) ([8117592](https://www.github.com/grain-lang/grain/commit/8117592dbaa09b4443003f234b6a2dcadb235a8b))
+
 ## [0.3.0](https://www.github.com/grain-lang/grain/compare/grain-v0.2.0...grain-v0.3.0) (2021-04-21)
 
 
