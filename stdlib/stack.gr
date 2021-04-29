@@ -22,6 +22,9 @@ export let peek = (stack) => {
     }
 }
 
+/// @deprecated
+export let head = peek;
+
 export let push = (value, stack) => {
     match (stack) {
         { data: [] } => { data: [value] },
