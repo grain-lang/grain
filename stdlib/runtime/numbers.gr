@@ -1046,7 +1046,9 @@ export let (<) = (x: Number, y: Number) => {
   WasmF64.lt(xval, yval)
 }
 
-/// @deprecated
+/**
+  @deprecated Please use `Numbers.(<)` instead. `Numbers.numberLess` will be removed in 0.4.0.
+*/
 export let numberLess = (<);
 
 export let (>) = (x: Number, y: Number) => {
@@ -1057,7 +1059,9 @@ export let (>) = (x: Number, y: Number) => {
   WasmF64.gt(xval, yval)
 }
 
-/// @deprecated
+/**
+  @deprecated Please use `Numbers.(>)` instead. `Numbers.numberGreater` will be removed in 0.4.0.
+*/
 export let numberGreater = (>);
 
 export let (<=) = (x: Number, y: Number) => {
@@ -1073,7 +1077,9 @@ export let (<=) = (x: Number, y: Number) => {
   }
 }
 
-/// @deprecated
+/**
+  @deprecated Please use `Numbers.(<=)` instead. `Numbers.numberLessEqual` will be removed in 0.4.0.
+*/
 export let numberLessEqual = (<=);
 
 export let (>=) = (x: Number, y: Number) => {
@@ -1089,7 +1095,9 @@ export let (>=) = (x: Number, y: Number) => {
   }
 }
 
-/// @deprecated
+/**
+  @deprecated Please use `Numbers.(>=)` instead. `Numbers.numberGreaterEqual` will be removed in 0.4.0.
+*/
 export let numberGreaterEqual = (>=);
 
 /*
@@ -1114,7 +1122,9 @@ export let lnot = (x: Number) => {
   WasmI32.toGrain(reducedInteger(i64not(xval))): Number
 }
 
-/// @deprecated
+/**
+  @deprecated Please use `Numbers.lnot` instead. `Numbers.numberLnot` will be removed in 0.4.0.
+*/
 export let numberLnot = lnot;
 
 export let (<<) = (x: Number, y: Number) => {
@@ -1125,7 +1135,9 @@ export let (<<) = (x: Number, y: Number) => {
   WasmI32.toGrain(reducedInteger(WasmI64.shl(xval, yval))): Number
 }
 
-/// @deprecated
+/**
+  @deprecated Please use `Numbers.(<<)` instead. `Numbers.numberLsl` will be removed in 0.4.0.
+*/
 export let numberLsl = (<<);
 
 export let (>>>) = (x: Number, y: Number) => {
@@ -1136,7 +1148,9 @@ export let (>>>) = (x: Number, y: Number) => {
   WasmI32.toGrain(reducedInteger(WasmI64.shrU(xval, yval))): Number
 }
 
-/// @deprecated
+/**
+  @deprecated Please use `Numbers.(>>>)` instead. `Numbers.numberLsr` will be removed in 0.4.0.
+*/
 export let numberLsr = (>>>);
 
 export let (&) = (x: Number, y: Number) => {
@@ -1147,7 +1161,9 @@ export let (&) = (x: Number, y: Number) => {
   WasmI32.toGrain(reducedInteger(WasmI64.and(xval, yval))): Number
 }
 
-/// @deprecated
+/**
+  @deprecated Please use `Numbers.(&)` instead. `Numbers.numberLand` will be removed in 0.4.0.
+*/
 export let numberLand = (&);
 
 export let (|) = (x: Number, y: Number) => {
@@ -1158,7 +1174,9 @@ export let (|) = (x: Number, y: Number) => {
   WasmI32.toGrain(reducedInteger(WasmI64.or(xval, yval))): Number
 }
 
-/// @deprecated
+/**
+  @deprecated Please use `Numbers.(|)` instead. `Numbers.numberLor` will be removed in 0.4.0.
+*/
 export let numberLor = (|);
 
 export let (^) = (x: Number, y: Number) => {
@@ -1169,7 +1187,9 @@ export let (^) = (x: Number, y: Number) => {
   WasmI32.toGrain(reducedInteger(WasmI64.xor(xval, yval))): Number
 }
 
-/// @deprecated
+/**
+  @deprecated Please use `Numbers.(^)` instead. `Numbers.numberLxor` will be removed in 0.4.0.
+*/
 export let numberLxor = (^);
 
 export let (>>) = (x: Number, y: Number) => {
@@ -1180,7 +1200,9 @@ export let (>>) = (x: Number, y: Number) => {
   WasmI32.toGrain(reducedInteger(WasmI64.shrS(xval, yval))): Number
 }
 
-/// @deprecated
+/**
+  @deprecated Please use `Numbers.(>>)` instead. `Numbers.numberAsr` will be removed in 0.4.0.
+*/
 export let numberAsr = (>>);
 
 
@@ -1316,7 +1338,9 @@ export let (+) = (x: Number, y: Number) => {
 
 }
 
-/// @deprecated
+/**
+  @deprecated Please use `Numbers.(+)` instead. `Numbers.numberPlus` will be removed in 0.4.0.
+*/
 export let numberPlus = (+);
 
 export let (-) = (x: Number, y: Number) => {
@@ -1325,7 +1349,9 @@ export let (-) = (x: Number, y: Number) => {
   numberSub(x, y)
 }
 
-/// @deprecated
+/**
+  @deprecated Please use `Numbers.(-)` instead. `Numbers.numberMinus` will be removed in 0.4.0.
+*/
 export let numberMinus = (-);
 
 export let (*) = (x: Number, y: Number) => {
@@ -1334,7 +1360,9 @@ export let (*) = (x: Number, y: Number) => {
   numberTimes(x, y)
 }
 
-/// @deprecated
+/**
+  @deprecated Please use `Numbers.(*)` instead. `Numbers.numberTimes` will be removed in 0.4.0.
+*/
 export let numberTimes = (*);
 
 export let (/) = (x: Number, y: Number) => {
@@ -1343,7 +1371,9 @@ export let (/) = (x: Number, y: Number) => {
   numberDivide(x, y)
 }
 
-/// @deprecated
+/**
+  @deprecated Please use `Numbers.(/)` instead. `Numbers.numberDivide` will be removed in 0.4.0.
+*/
 export let numberDivide = (/);
 
 export let (%) = (x: Number, y: Number) => {
@@ -1352,7 +1382,9 @@ export let (%) = (x: Number, y: Number) => {
   WasmI32.toGrain(numberMod(x, y)): Number
 }
 
-/// @deprecated
+/**
+  @deprecated Please use `Numbers.(%)` instead. `Numbers.numberMod` will be removed in 0.4.0.
+*/
 export let numberMod = (%);
 
 // inc/dec
@@ -1361,12 +1393,16 @@ export let incr = (x) => {
   x + 1
 }
 
-/// @deprecated
+/**
+  @deprecated Please use `Numbers.incr` instead. `Numbers.numberIncr` will be removed in 0.4.0.
+*/
 export let numberIncr = incr;
 
 export let decr = (x) => {
   x - 1
 }
 
-/// @deprecated
+/**
+  @deprecated Please use `Numbers.decr` instead. `Numbers.numberDecr` will be removed in 0.4.0.
+*/
 export let numberDecr = decr;
