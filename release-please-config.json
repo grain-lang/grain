@@ -1,5 +1,5 @@
 {
-  "bootstrap-sha": "620298225faf35265e7285fe3d4d2c8dee72dba3",
+  "release-as": "0.3.1",
   "bump-minor-pre-major": true,
   "packages": {
     ".": {
