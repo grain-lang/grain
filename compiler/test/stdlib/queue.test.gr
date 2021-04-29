@@ -2,27 +2,27 @@ import Queue from "queue"
 
 let empty = Queue.make()
 // 1 <- 2 <- 3
-let sampleQueue = Queue.push(3, Queue.push(2, Queue.push(1, empty)))
+let sampleQueue = Queue.enqueue(3, Queue.enqueue(2, Queue.enqueue(1, empty)))
 
 // Queue.isEmpty
 
 assert Queue.isEmpty(empty)
 assert !Queue.isEmpty(sampleQueue)
 
-// Queue.peek
+// Queue.head
 
-assert Queue.peek(empty) == None
-assert Queue.peek(sampleQueue) == Some(1)
+assert Queue.head(empty) == None
+assert Queue.head(sampleQueue) == Some(1)
 
-// Queue.push
+// Queue.enqueue
 
-assert Queue.peek(Queue.push(1, empty)) == Some(1)
-assert Queue.peek(Queue.push(4, sampleQueue)) == Some(1)
+assert Queue.head(Queue.enqueue(1, empty)) == Some(1)
+assert Queue.head(Queue.enqueue(4, sampleQueue)) == Some(1)
 
-// Queue.pop
+// Queue.dequeue
 
-assert Queue.isEmpty(Queue.pop(empty))
-assert Queue.isEmpty(Queue.pop(Queue.push(1, empty)))
-assert Queue.isEmpty(Queue.pop(Queue.pop(Queue.pop(sampleQueue))))
-assert Queue.peek(Queue.pop(sampleQueue)) == Some(2)
-assert Queue.peek(Queue.pop(Queue.push(4, Queue.pop(sampleQueue)))) == Some(3)
+assert Queue.isEmpty(Queue.dequeue(empty))
+assert Queue.isEmpty(Queue.dequeue(Queue.enqueue(1, empty)))
+assert Queue.isEmpty(Queue.dequeue(Queue.dequeue(Queue.dequeue(sampleQueue))))
+assert Queue.head(Queue.dequeue(sampleQueue)) == Some(2)
+assert Queue.head(Queue.dequeue(Queue.enqueue(4, Queue.dequeue(sampleQueue)))) == Some(3)
