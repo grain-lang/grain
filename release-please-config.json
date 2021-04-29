@@ -1,13 +1,14 @@
 {
-  "release-as": "0.3.1",
   "bump-minor-pre-major": true,
+  "bump-patch-for-minor-pre-major": true,
+  "plugins": [
+    "node-workspace"
+  ],
   "packages": {
     ".": {
-      "package-name": "grain",
       "release-type": "node"
     },
     "cli": {
-      "package-name": "@grain/cli",
       "release-type": "node"
     },
     "compiler": {
@@ -15,11 +16,9 @@
       "release-type": "ocaml"
     },
     "runtime": {
-      "package-name": "@grain/runtime",
       "release-type": "node"
     },
     "stdlib": {
-      "package-name": "@grain/stdlib",
       "release-type": "node"
     }
   }
