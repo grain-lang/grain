@@ -1046,6 +1046,9 @@ export let (<) = (x: Number, y: Number) => {
   WasmF64.lt(xval, yval)
 }
 
+/// @deprecated
+export let numberLess = (<);
+
 export let (>) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
@@ -1053,6 +1056,9 @@ export let (>) = (x: Number, y: Number) => {
   let yval = coerceFloat64(y)
   WasmF64.gt(xval, yval)
 }
+
+/// @deprecated
+export let numberGreater = (>);
 
 export let (<=) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
@@ -1067,6 +1073,9 @@ export let (<=) = (x: Number, y: Number) => {
   }
 }
 
+/// @deprecated
+export let numberLessEqual = (<=);
+
 export let (>=) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
@@ -1079,6 +1088,9 @@ export let (>=) = (x: Number, y: Number) => {
     numberEqual(x, y)
   }
 }
+
+/// @deprecated
+export let numberGreaterEqual = (>=);
 
 /*
  * ===== EQUAL =====
@@ -1102,6 +1114,9 @@ export let lnot = (x: Number) => {
   WasmI32.toGrain(reducedInteger(i64not(xval))): Number
 }
 
+/// @deprecated
+export let numberLnot = (lnot);
+
 export let (<<) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
@@ -1109,6 +1124,9 @@ export let (<<) = (x: Number, y: Number) => {
   let yval = coerceInt64(y)
   WasmI32.toGrain(reducedInteger(WasmI64.shl(xval, yval))): Number
 }
+
+/// @deprecated
+export let numberLsl = (<<);
 
 export let (>>>) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
@@ -1118,6 +1136,9 @@ export let (>>>) = (x: Number, y: Number) => {
   WasmI32.toGrain(reducedInteger(WasmI64.shrU(xval, yval))): Number
 }
 
+/// @deprecated
+export let numberLsr = (>>>);
+
 export let (&) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
@@ -1125,6 +1146,9 @@ export let (&) = (x: Number, y: Number) => {
   let yval = coerceInt64(y)
   WasmI32.toGrain(reducedInteger(WasmI64.and(xval, yval))): Number
 }
+
+/// @deprecated
+export let numberLand = (&);
 
 export let (|) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
@@ -1134,6 +1158,9 @@ export let (|) = (x: Number, y: Number) => {
   WasmI32.toGrain(reducedInteger(WasmI64.or(xval, yval))): Number
 }
 
+/// @deprecated
+export let numberLor = (|);
+
 export let (^) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
@@ -1142,6 +1169,9 @@ export let (^) = (x: Number, y: Number) => {
   WasmI32.toGrain(reducedInteger(WasmI64.xor(xval, yval))): Number
 }
 
+/// @deprecated
+export let numberLxor = (^);
+
 export let (>>) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
@@ -1149,6 +1179,9 @@ export let (>>) = (x: Number, y: Number) => {
   let yval = coerceInt64(y)
   WasmI32.toGrain(reducedInteger(WasmI64.shrS(xval, yval))): Number
 }
+
+/// @deprecated
+export let numberAsr = (>>);
 
 
 /// USER-EXPOSED COERCION FUNCTIONS
@@ -1280,7 +1313,11 @@ export let (+) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   numberAdd(x, y)
+
 }
+
+/// @deprecated
+export let numberPlus = (+);
 
 export let (-) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
@@ -1288,11 +1325,17 @@ export let (-) = (x: Number, y: Number) => {
   numberSub(x, y)
 }
 
+/// @deprecated
+export let numberMinus = (-);
+
 export let (*) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   numberTimes(x, y)
 }
+
+/// @deprecated
+export let numberTimes = (*);
 
 export let (/) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
@@ -1300,11 +1343,17 @@ export let (/) = (x: Number, y: Number) => {
   numberDivide(x, y)
 }
 
+/// @deprecated
+export let numberDivide = (/);
+
 export let (%) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   WasmI32.toGrain(numberMod(x, y)): Number
 }
+
+/// @deprecated
+export let numberMod = (%);
 
 // inc/dec
 
@@ -1312,6 +1361,12 @@ export let incr = (x) => {
   x + 1
 }
 
+/// @deprecated
+export let numberIncr = incr;
+
 export let decr = (x) => {
   x - 1
 }
+
+/// @deprecated
+export let numberDecr = decr;
