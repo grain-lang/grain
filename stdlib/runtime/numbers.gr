@@ -1115,7 +1115,7 @@ export let lnot = (x: Number) => {
 }
 
 /// @deprecated
-export let numberLnot = (lnot);
+export let numberLnot = lnot;
 
 export let (<<) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
