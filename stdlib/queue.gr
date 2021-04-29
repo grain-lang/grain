@@ -32,7 +32,9 @@ export let push = (value, queue) => {
     }
 }
 
-/// @deprecated
+/**
+  @deprecated Please use `Queue.push` instead. `Queue.enqueue` will be removed in v0.4.0.
+*/
 export let enqueue = push;
 
 export let pop = (queue) => {
