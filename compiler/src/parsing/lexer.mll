@@ -168,7 +168,6 @@ rule token = parse
   | "=>" { THICKARROW }
   | "enum" { ENUM }
   | "record" { RECORD }
-  | "|" { PIPE }
   | "let" { LET }
   | "mut" { MUT }
   | "rec" { REC }
