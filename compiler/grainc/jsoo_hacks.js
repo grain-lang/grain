@@ -13,6 +13,10 @@ function caml_make_path(name) {
   // for Windows drives as root
   if (name.charCodeAt(0) != 47 && name.charCodeAt(1) != 58)
     name = caml_current_dir + name;
+
+  // clean up any Windows separators that made it through
+  name = name.replace(/\\/g,'/');
+
   var comp = name.split("/");
   var ncomp = []
   for (var i = 0; i < comp.length; i++) {
