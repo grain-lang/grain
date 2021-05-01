@@ -149,7 +149,6 @@ program
   .description("compile a grain program into wasm")
   .action(function (file) {
     var normalised_file = file.replace(/\\/g,'/');
-
     actions.compile(normalised_file, program);
   });
 
@@ -158,7 +157,6 @@ program
   .description("check a grain file for LSP")
   .action(function (file) {
     var normalised_file = file.replace(/\\/g,'/');
-
     actions.lsp(normalised_file, program);
   });
 
