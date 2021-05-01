@@ -140,7 +140,7 @@ program
   // The root command that compiles & runs
   .arguments("<file>")
   .action(function (file) {
-    var normalised_file = file.replace(/\\/g,'/');
+    var normalised_file = file.replace(/\\/g, "/");
     actions.run(actions.compile(normalised_file, program), program.opts());
   });
 
@@ -148,7 +148,7 @@ program
   .command("compile <file>")
   .description("compile a grain program into wasm")
   .action(function (file) {
-    var normalised_file = file.replace(/\\/g,'/');
+    var normalised_file = file.replace(/\\/g, "/");
     actions.compile(normalised_file, program);
   });
 
@@ -156,7 +156,7 @@ program
   .command("lsp <file>")
   .description("check a grain file for LSP")
   .action(function (file) {
-    var normalised_file = file.replace(/\\/g,'/');
+    var normalised_file = file.replace(/\\/g, "/");
     actions.lsp(normalised_file, program);
   });
 
@@ -164,7 +164,7 @@ program
   .command("run <file>")
   .description("run a wasm file with the grain runtime")
   .action(function (wasmFile) {
-    var normalised_wasm_file = wasmFile.replace(/\\/g,'/');
+    var normalised_wasm_file = wasmFile.replace(/\\/g, "/");
     actions.run(normalised_wasm_file, program.opts());
   });
 
