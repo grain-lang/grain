@@ -140,8 +140,8 @@ program
   // The root command that compiles & runs
   .arguments("<file>")
   .action(function (file) {
-    var normalised_file = file.replace(/\\/g, "/");
-    actions.run(actions.compile(normalised_file, program), program.opts());
+    const normalisedFile = file.replace(/\\/g, "/");
+    actions.run(actions.compile(normalisedFile, program), program.opts());
   });
 
 program
