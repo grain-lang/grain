@@ -15,12 +15,17 @@ export let isEmpty = (stack) => {
     }
 }
 
-export let head = (stack) => {
+export let peek = (stack) => {
     match (stack) {
         { data: [] } => None,
         { data } => List.head(data)
     }
 }
+
+/**
+  @deprecated Please use `Stack.peek` instead. `Stack.head` will be removed in v0.4.0.
+*/
+export let head = peek;
 
 export let push = (value, stack) => {
     match (stack) {
