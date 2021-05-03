@@ -164,8 +164,8 @@ program
   .command("run <file>")
   .description("run a wasm file with the grain runtime")
   .action(function (wasmFile) {
-    var normalised_wasm_file = wasmFile.replace(/\\/g, "/");
-    actions.run(normalised_wasm_file, program.opts());
+    const normalisedWasmFile = wasmFile.replace(/\\/g, "/");
+    actions.run(normalisedWasmFile, program.opts());
   });
 
 program.parse(process.argv);
