@@ -148,8 +148,8 @@ program
   .command("compile <file>")
   .description("compile a grain program into wasm")
   .action(function (file) {
-    var normalised_file = file.replace(/\\/g, "/");
-    actions.compile(normalised_file, program);
+    const normalisedFile = file.replace(/\\/g, "/");
+    actions.compile(normalisedFile, program);
   });
 
 program
