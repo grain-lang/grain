@@ -156,8 +156,8 @@ program
   .command("lsp <file>")
   .description("check a grain file for LSP")
   .action(function (file) {
-    var normalised_file = file.replace(/\\/g, "/");
-    actions.lsp(normalised_file, program);
+    const normalisedFile = file.replace(/\\/g, "/");
+    actions.lsp(normalisedFile, program);
   });
 
 program
