@@ -26,3 +26,9 @@ assert Queue.isEmpty(Queue.pop(Queue.push(1, empty)))
 assert Queue.isEmpty(Queue.pop(Queue.pop(Queue.pop(sampleQueue))))
 assert Queue.peek(Queue.pop(sampleQueue)) == Some(2)
 assert Queue.peek(Queue.pop(Queue.push(4, Queue.pop(sampleQueue)))) == Some(3)
+
+// Queue.size
+
+assert Queue.size(empty) == 0
+assert Queue.size(sampleQueue) == 3
+assert Queue.size(Queue.pop(Queue.pop(sampleQueue))) == 1
