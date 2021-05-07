@@ -40,3 +40,10 @@ export let pop = (stack) => {
         { data: [head, ...tail] } => { data: tail, }
     }
 }
+
+export let size = (stack) => {
+    match (stack) {
+        { data: [] } => 0,
+        { data } => List.length(data)
+    }
+}

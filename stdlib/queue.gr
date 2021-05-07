@@ -50,3 +50,12 @@ export let pop = (queue) => {
   @deprecated Please use `Queue.pop` instead. `Queue.dequeue` will be removed in v0.4.0.
 */
 export let dequeue = pop;
+
+export let size = (queue) => {
+    match (queue) {
+        { forwards: [], backwards: [] } => 0,
+        { forwards, backwards: [] } => List.length(forwards),
+        { forwards: [], backwards } => List.length(backwards),
+        { forwards, backwards } => List.length(forwards) + List.length(backwards),
+    }
+}

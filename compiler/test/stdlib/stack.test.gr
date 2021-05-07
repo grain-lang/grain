@@ -26,3 +26,9 @@ assert Stack.isEmpty(Stack.pop(Stack.push(1, empty)))
 assert Stack.isEmpty(Stack.pop(Stack.pop(Stack.pop(sampleStack))))
 assert Stack.peek(Stack.pop(sampleStack)) == Some(2)
 assert Stack.peek(Stack.pop(Stack.push(4, Stack.pop(sampleStack)))) == Some(2)
+
+// Stack.size
+
+assert Stack.size(empty) == 0
+assert Stack.size(sampleStack) == 3
+assert Stack.size(Stack.pop(Stack.pop(sampleStack))) == 1
