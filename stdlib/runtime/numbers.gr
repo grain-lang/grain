@@ -565,12 +565,12 @@ export let numberEqual = (x, y) => {
  * (same schema as equal())
  */
 
-let numberPlusMinusSimpleHelp = (x, y, isMinus) => {
+let numberAddSubSimpleHelp = (x, y, isSub) => {
   // PRECONDITION: x is a "simple" number (value tag is 0) and isNumber(y)
   if (isSimpleNumber(y)) {
     let x = WasmI64.extendI32S(untagSimple(x))
     let y = WasmI64.extendI32S(untagSimple(y))
-    let result = if (isMinus) {
+    let result = if (isSub) {
       WasmI64.sub(x, y)
     } else {
       WasmI64.add(x, y)
@@ -583,13 +583,13 @@ let numberPlusMinusSimpleHelp = (x, y, isMinus) => {
       t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
         let xval = WasmI64.extendI32S(xval)
         let yBoxedVal = WasmI64.extendI32S(boxedInt32Number(y))
-        let result = if (isMinus) WasmI64.sub(xval, yBoxedVal) else WasmI64.add(xval, yBoxedVal)
+        let result = if (isSub) WasmI64.sub(xval, yBoxedVal) else WasmI64.add(xval, yBoxedVal)
         reducedInteger(result)
       },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
         let yBoxedVal = boxedInt64Number(y)
         let xval64 = WasmI64.extendI32S(xval)
-        let result = if (isMinus) WasmI64.sub(xval64, yBoxedVal) else WasmI64.add(xval64, yBoxedVal)
+        let result = if (isSub) WasmI64.sub(xval64, yBoxedVal) else WasmI64.add(xval64, yBoxedVal)
         if (WasmI64.geS(yBoxedVal, 0N) && WasmI64.ltS(result, xval64)) {
           throw Exception.Overflow
         } else if (WasmI64.ltS(yBoxedVal, 0N) && WasmI64.gtS(result, xval64)) {
@@ -602,7 +602,7 @@ let numberPlusMinusSimpleHelp = (x, y, isMinus) => {
         let yNumerator = WasmI64.extendI32S(boxedRationalNumerator(y))
         let yDenominator = WasmI64.extendI32S(boxedRationalDenominator(y))
         let expandedXNumerator = safeI64Multiply(WasmI64.extendI32S(xval), yDenominator)
-        let result = if (isMinus) WasmI64.sub(expandedXNumerator, yNumerator) else WasmI64.add(expandedXNumerator, yNumerator)
+        let result = if (isSub) WasmI64.sub(expandedXNumerator, yNumerator) else WasmI64.add(expandedXNumerator, yNumerator)
         if (WasmI64.ltS(result, _I32_MIN) || WasmI64.gtS(result, _I32_MAX)) {
           throw Exception.Overflow
         }
@@ -611,14 +611,14 @@ let numberPlusMinusSimpleHelp = (x, y, isMinus) => {
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
         let yBoxedVal = boxedFloat32Number(y)
         let xval = WasmF32.convertI32S(xval)
-        let result = if (isMinus) WasmF32.sub(xval, yBoxedVal) else WasmF32.add(xval, yBoxedVal)
+        let result = if (isSub) WasmF32.sub(xval, yBoxedVal) else WasmF32.add(xval, yBoxedVal)
         // TODO: (#304) is this safe?
         newFloat32(result)
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
         let yBoxedVal = boxedFloat64Number(y)
         let xval = WasmF64.convertI32S(xval)
-        let result = if (isMinus) WasmF64.sub(xval, yBoxedVal) else WasmF64.add(xval, yBoxedVal)
+        let result = if (isSub) WasmF64.sub(xval, yBoxedVal) else WasmF64.add(xval, yBoxedVal)
         newFloat64(result)
       },
       _ => {
@@ -628,10 +628,10 @@ let numberPlusMinusSimpleHelp = (x, y, isMinus) => {
   }
 }
 
-let numberPlusMinusInt64Help = (xval, y, isMinus) => {
+let numberAddSubInt64Help = (xval, y, isSub) => {
   if (isSimpleNumber(y)) {
     let yval = WasmI64.extendI32S(untagSimple(y))
-    let result = if (isMinus) WasmI64.sub(xval, yval) else WasmI64.add(xval, yval)
+    let result = if (isSub) WasmI64.sub(xval, yval) else WasmI64.add(xval, yval)
     if (WasmI64.geS(yval, 0N) && WasmI64.ltS(result, xval)) {
       throw Exception.Overflow
     } else if (WasmI64.ltS(yval, 0N) && WasmI64.gtS(result, xval)) {
@@ -643,13 +643,13 @@ let numberPlusMinusInt64Help = (xval, y, isMinus) => {
     match (yBoxedNumberTag) {
       t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
         let yBoxedVal = WasmI64.extendI32S(boxedInt32Number(y))
-        let result = if (isMinus) WasmI64.sub(xval, yBoxedVal) else WasmI64.add(xval, yBoxedVal)
+        let result = if (isSub) WasmI64.sub(xval, yBoxedVal) else WasmI64.add(xval, yBoxedVal)
         reducedInteger(result)
       },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
         let yBoxedVal = boxedInt64Number(y)
         let xval64 = xval
-        let result = if (isMinus) WasmI64.sub(xval64, yBoxedVal) else WasmI64.add(xval64, yBoxedVal)
+        let result = if (isSub) WasmI64.sub(xval64, yBoxedVal) else WasmI64.add(xval64, yBoxedVal)
         if (WasmI64.geS(yBoxedVal, 0N) && WasmI64.ltS(result, xval64)) {
           throw Exception.Overflow
         } else if (WasmI64.ltS(yBoxedVal, 0N) && WasmI64.gtS(result, xval64)) {
@@ -662,7 +662,7 @@ let numberPlusMinusInt64Help = (xval, y, isMinus) => {
         let yNumerator = WasmI64.extendI32S(boxedRationalNumerator(y))
         let yDenominator = WasmI64.extendI32S(boxedRationalDenominator(y))
         let expandedXNumerator = safeI64Multiply(xval, yDenominator)
-        let result = if (isMinus) WasmI64.sub(expandedXNumerator, yNumerator) else WasmI64.add(expandedXNumerator, yNumerator)
+        let result = if (isSub) WasmI64.sub(expandedXNumerator, yNumerator) else WasmI64.add(expandedXNumerator, yNumerator)
         if (WasmI64.ltS(result, _I32_MIN) || WasmI64.gtS(result, _I32_MAX)) {
           throw Exception.Overflow
         }
@@ -671,14 +671,14 @@ let numberPlusMinusInt64Help = (xval, y, isMinus) => {
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
         let xval = WasmF32.convertI64S(xval)
         let yBoxedVal = boxedFloat32Number(y)
-        let result = if (isMinus) WasmF32.sub(xval, yBoxedVal) else WasmF32.add(xval, yBoxedVal)
+        let result = if (isSub) WasmF32.sub(xval, yBoxedVal) else WasmF32.add(xval, yBoxedVal)
         // TODO: (#304) this isn't safe enough
         newFloat32(result)
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
         let xval = WasmF64.convertI64S(xval)
         let yBoxedVal = boxedFloat64Number(y)
-        let result = if (isMinus) WasmF64.sub(xval, yBoxedVal) else WasmF64.add(xval, yBoxedVal)
+        let result = if (isSub) WasmF64.sub(xval, yBoxedVal) else WasmF64.add(xval, yBoxedVal)
         newFloat64(result)
       },
       _ => {
@@ -688,51 +688,51 @@ let numberPlusMinusInt64Help = (xval, y, isMinus) => {
   }
 }
 
-let numberPlusMinusFloat32Help = (xval, y, isMinus) => {
+let numberAddSubFloat32Help = (xval, y, isSub) => {
   if (!isSimpleNumber(y) && WasmI32.eq(boxedNumberTag(y), Tags._GRAIN_FLOAT64_BOXED_NUM_TAG)) {
     // Special case: promote to f64 if RHS is f64
     let xval = WasmF64.promoteF32(xval)
     let yval = boxedFloat64Number(y)
-    let result = if (isMinus) WasmF64.sub(xval, yval) else WasmF64.add(xval, yval)
+    let result = if (isSub) WasmF64.sub(xval, yval) else WasmF64.add(xval, yval)
     newFloat64(result)
   } else {
     let yval = coerceFloat32(y)
-    let result = if (isMinus) WasmF32.sub(xval, yval) else WasmF32.add(xval, yval)
+    let result = if (isSub) WasmF32.sub(xval, yval) else WasmF32.add(xval, yval)
     newFloat32(result)
   }
 }
 
-let numberPlusMinusFloat64Help = (xval, y, isMinus) => {
+let numberAddSubFloat64Help = (xval, y, isSub) => {
   let yval = coerceFloat64(y)
-  let result = if (isMinus) WasmF64.sub(xval, yval) else WasmF64.add(xval, yval)
+  let result = if (isSub) WasmF64.sub(xval, yval) else WasmF64.add(xval, yval)
   newFloat64(result)
 }
 
 
-let numberPlusMinusInt32Help = (xval, y, isMinus) => {
-  numberPlusMinusInt64Help(WasmI64.extendI32S(xval), y, isMinus)
+let numberAddSubInt32Help = (xval, y, isSub) => {
+  numberAddSubInt64Help(WasmI64.extendI32S(xval), y, isSub)
 }
 
-let rec numberPlusMinusHelp = (x, y, isMinus) => {
+let rec numberAddSubHelp = (x, y, isSub) => {
   if (isSimpleNumber(x)) {
-    numberPlusMinusSimpleHelp(x, y, isMinus)
+    numberAddSubSimpleHelp(x, y, isSub)
   } else {
     let xtag = boxedNumberTag(x)
     match (xtag) {
       t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-        numberPlusMinusInt32Help(boxedInt32Number(x), y, isMinus)
+        numberAddSubInt32Help(boxedInt32Number(x), y, isSub)
       },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
-        numberPlusMinusInt64Help(boxedInt64Number(x), y, isMinus)
+        numberAddSubInt64Help(boxedInt64Number(x), y, isSub)
       },
       t when WasmI32.eq(t, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG) => {
-        numberPlusMinusRationalHelp(x, y, isMinus)
+        numberAddSubRationalHelp(x, y, isSub)
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
-        numberPlusMinusFloat32Help(boxedFloat32Number(x), y, isMinus)
+        numberAddSubFloat32Help(boxedFloat32Number(x), y, isSub)
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
-        numberPlusMinusFloat64Help(boxedFloat64Number(x), y, isMinus)
+        numberAddSubFloat64Help(boxedFloat64Number(x), y, isSub)
       },
       _ => {
         throw UnknownNumberTag
@@ -740,9 +740,9 @@ let rec numberPlusMinusHelp = (x, y, isMinus) => {
     }
   }
 },
-numberPlusMinusRationalHelp = (x, y, isMinus) => {
+numberAddSubRationalHelp = (x, y, isSub) => {
   if (isSimpleNumber(y)) {
-    numberPlusMinusSimpleHelp(y, x, isMinus)
+    numberAddSubSimpleHelp(y, x, isSub)
   } else {
     let ytag = boxedNumberTag(y)
     match (ytag) {
@@ -754,26 +754,26 @@ numberPlusMinusRationalHelp = (x, y, isMinus) => {
         let yDenominator = WasmI64.extendI32S(boxedRationalDenominator(y))
         // TODO: {#304) this could be written in a more overflow-proof way
         if (WasmI64.eq(xDenominator, yDenominator)) {
-          let result = if (isMinus) WasmI64.sub(xNumerator, yNumerator) else WasmI64.add(xNumerator, yNumerator)
+          let result = if (isSub) WasmI64.sub(xNumerator, yNumerator) else WasmI64.add(xNumerator, yNumerator)
           reducedFraction64(result, xDenominator)
         } else {
           let numerator1 = safeI64Multiply(xNumerator, yDenominator)
           let numerator2 = safeI64Multiply(yNumerator, xDenominator)
-          let numerator = if (isMinus) WasmI64.sub(numerator1, numerator2) else WasmI64.add(numerator1, numerator2)
+          let numerator = if (isSub) WasmI64.sub(numerator1, numerator2) else WasmI64.add(numerator1, numerator2)
           let denominator = safeI64Multiply(xDenominator, yDenominator)
           reducedFraction64(numerator, denominator)
         }
       }, t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-        numberPlusMinusHelp(y, x, isMinus)
+        numberAddSubHelp(y, x, isSub)
       },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
-        numberPlusMinusHelp(y, x, isMinus)
+        numberAddSubHelp(y, x, isSub)
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
-        numberPlusMinusHelp(y, x, isMinus)
+        numberAddSubHelp(y, x, isSub)
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
-        numberPlusMinusHelp(y, x, isMinus)
+        numberAddSubHelp(y, x, isSub)
       },
       _ => {
         throw UnknownNumberTag
@@ -782,12 +782,12 @@ numberPlusMinusRationalHelp = (x, y, isMinus) => {
   }
 }
 
-let numberPlus = (x, y) => {
-  WasmI32.toGrain(numberPlusMinusHelp(x, y, false)): Number
+let numberAdd = (x, y) => {
+  WasmI32.toGrain(numberAddSubHelp(x, y, false)): Number
 }
 
-let numberMinus = (x, y) => {
-  WasmI32.toGrain(numberPlusMinusHelp(x, y, true)): Number
+let numberSub = (x, y) => {
+  WasmI32.toGrain(numberAddSubHelp(x, y, true)): Number
 }
 
 /*
@@ -1038,7 +1038,7 @@ let numberMod = (x, y) => {
  * TODO: (#305) Could probably be made more efficient
  */
 // TODO: (#305) is this safe? I think it's safe?
-export let numberLess = (x: Number, y: Number) => {
+export let (<) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   let xval = coerceFloat64(x)
@@ -1046,7 +1046,12 @@ export let numberLess = (x: Number, y: Number) => {
   WasmF64.lt(xval, yval)
 }
 
-export let numberGreater = (x: Number, y: Number) => {
+/**
+  @deprecated Please use `Numbers.(<)` instead. `Numbers.numberLess` will be removed in 0.4.0.
+*/
+export let numberLess = (<);
+
+export let (>) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   let xval = coerceFloat64(x)
@@ -1054,7 +1059,12 @@ export let numberGreater = (x: Number, y: Number) => {
   WasmF64.gt(xval, yval)
 }
 
-export let numberLessEqual = (x: Number, y: Number) => {
+/**
+  @deprecated Please use `Numbers.(>)` instead. `Numbers.numberGreater` will be removed in 0.4.0.
+*/
+export let numberGreater = (>);
+
+export let (<=) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   // Equality is finicky, so delegate
@@ -1067,7 +1077,12 @@ export let numberLessEqual = (x: Number, y: Number) => {
   }
 }
 
-export let numberGreaterEqual = (x: Number, y: Number) => {
+/**
+  @deprecated Please use `Numbers.(<=)` instead. `Numbers.numberLessEqual` will be removed in 0.4.0.
+*/
+export let numberLessEqual = (<=);
+
+export let (>=) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   // Equality is finicky, so delegate
@@ -1079,6 +1094,11 @@ export let numberGreaterEqual = (x: Number, y: Number) => {
     numberEqual(x, y)
   }
 }
+
+/**
+  @deprecated Please use `Numbers.(>=)` instead. `Numbers.numberGreaterEqual` will be removed in 0.4.0.
+*/
+export let numberGreaterEqual = (>=);
 
 /*
  * ===== EQUAL =====
@@ -1096,13 +1116,18 @@ export let numberEq = (x: Number, y: Number) => {
  */
 // TODO: (#306) Semantics around when things should stay i32/i64
 
-export let numberLnot = (x: Number) => {
+export let lnot = (x: Number) => {
   let x = WasmI32.fromGrain(x)
   let xval = coerceInt64(x)
   WasmI32.toGrain(reducedInteger(i64not(xval))): Number
 }
 
-export let numberLsl = (x: Number, y: Number) => {
+/**
+  @deprecated Please use `Numbers.lnot` instead. `Numbers.numberLnot` will be removed in 0.4.0.
+*/
+export let numberLnot = lnot;
+
+export let (<<) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   let xval = coerceInt64(x)
@@ -1110,7 +1135,12 @@ export let numberLsl = (x: Number, y: Number) => {
   WasmI32.toGrain(reducedInteger(WasmI64.shl(xval, yval))): Number
 }
 
-export let numberLsr = (x: Number, y: Number) => {
+/**
+  @deprecated Please use `Numbers.(<<)` instead. `Numbers.numberLsl` will be removed in 0.4.0.
+*/
+export let numberLsl = (<<);
+
+export let (>>>) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   let xval = coerceInt64(x)
@@ -1118,7 +1148,12 @@ export let numberLsr = (x: Number, y: Number) => {
   WasmI32.toGrain(reducedInteger(WasmI64.shrU(xval, yval))): Number
 }
 
-export let numberLand = (x: Number, y: Number) => {
+/**
+  @deprecated Please use `Numbers.(>>>)` instead. `Numbers.numberLsr` will be removed in 0.4.0.
+*/
+export let numberLsr = (>>>);
+
+export let (&) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   let xval = coerceInt64(x)
@@ -1126,7 +1161,12 @@ export let numberLand = (x: Number, y: Number) => {
   WasmI32.toGrain(reducedInteger(WasmI64.and(xval, yval))): Number
 }
 
-export let numberLor = (x: Number, y: Number) => {
+/**
+  @deprecated Please use `Numbers.(&)` instead. `Numbers.numberLand` will be removed in 0.4.0.
+*/
+export let numberLand = (&);
+
+export let (|) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   let xval = coerceInt64(x)
@@ -1134,7 +1174,12 @@ export let numberLor = (x: Number, y: Number) => {
   WasmI32.toGrain(reducedInteger(WasmI64.or(xval, yval))): Number
 }
 
-export let numberLxor = (x: Number, y: Number) => {
+/**
+  @deprecated Please use `Numbers.(|)` instead. `Numbers.numberLor` will be removed in 0.4.0.
+*/
+export let numberLor = (|);
+
+export let (^) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   let xval = coerceInt64(x)
@@ -1142,13 +1187,23 @@ export let numberLxor = (x: Number, y: Number) => {
   WasmI32.toGrain(reducedInteger(WasmI64.xor(xval, yval))): Number
 }
 
-export let numberAsr = (x: Number, y: Number) => {
+/**
+  @deprecated Please use `Numbers.(^)` instead. `Numbers.numberLxor` will be removed in 0.4.0.
+*/
+export let numberLxor = (^);
+
+export let (>>) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   let xval = coerceInt64(x)
   let yval = coerceInt64(y)
   WasmI32.toGrain(reducedInteger(WasmI64.shrS(xval, yval))): Number
 }
+
+/**
+  @deprecated Please use `Numbers.(>>)` instead. `Numbers.numberAsr` will be removed in 0.4.0.
+*/
+export let numberAsr = (>>);
 
 
 /// USER-EXPOSED COERCION FUNCTIONS
@@ -1276,42 +1331,78 @@ export let convertInexactToExact = (x: Number) => {
   WasmI32.toGrain(convertInexactToExact(WasmI32.fromGrain(x))): Number
 }
 
-export let numberPlus = (x: Number, y: Number) => {
+export let (+) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
-  numberPlus(x, y)
+  numberAdd(x, y)
+
 }
 
-export let numberMinus = (x: Number, y: Number) => {
+/**
+  @deprecated Please use `Numbers.(+)` instead. `Numbers.numberPlus` will be removed in 0.4.0.
+*/
+export let numberPlus = (+);
+
+export let (-) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
-  numberMinus(x, y)
+  numberSub(x, y)
 }
 
-export let numberTimes = (x: Number, y: Number) => {
+/**
+  @deprecated Please use `Numbers.(-)` instead. `Numbers.numberMinus` will be removed in 0.4.0.
+*/
+export let numberMinus = (-);
+
+export let (*) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   numberTimes(x, y)
 }
 
-export let numberDivide = (x: Number, y: Number) => {
+/**
+  @deprecated Please use `Numbers.(*)` instead. `Numbers.numberTimes` will be removed in 0.4.0.
+*/
+export let numberTimes = (*);
+
+export let (/) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   numberDivide(x, y)
 }
 
-export let numberMod = (x: Number, y: Number) => {
+/**
+  @deprecated Please use `Numbers.(/)` instead. `Numbers.numberDivide` will be removed in 0.4.0.
+*/
+export let numberDivide = (/);
+
+export let (%) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   WasmI32.toGrain(numberMod(x, y)): Number
 }
 
+/**
+  @deprecated Please use `Numbers.(%)` instead. `Numbers.numberMod` will be removed in 0.4.0.
+*/
+export let numberMod = (%);
+
 // inc/dec
 
-export let numberIncr = (x) => {
-  numberPlus(x, 1)
+export let incr = (x) => {
+  x + 1
 }
 
-export let numberDecr = (x) => {
-  numberMinus(x, 1)
+/**
+  @deprecated Please use `Numbers.incr` instead. `Numbers.numberIncr` will be removed in 0.4.0.
+*/
+export let numberIncr = incr;
+
+export let decr = (x) => {
+  x - 1
 }
+
+/**
+  @deprecated Please use `Numbers.decr` instead. `Numbers.numberDecr` will be removed in 0.4.0.
+*/
+export let numberDecr = decr;
