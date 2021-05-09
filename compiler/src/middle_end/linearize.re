@@ -1053,7 +1053,7 @@ and transl_comp_expression =
         ~attributes,
         ~allocation_type,
         ~env,
-        (new_func, get_fn_allocation_type(func.exp_env, func.exp_type)),
+        (new_func, ([HeapAllocated], StackAllocated(WasmI32))),
         new_args,
       ),
       func_setup @ List.concat(new_setup),
@@ -1309,7 +1309,7 @@ let rec transl_anf_statement =
           };
         let (tmp, anf_patts) = bind_patts(~exported, ~mut_flag, patt);
         binds @ [BLet(tmp, exp_ans), ...anf_patts];
-      | TPatAny => []
+      | TPatAny => [BSeq(exp_ans)]
       | _ =>
         failwith(
           "NYI: transl_anf_statement: Non-record or non-tuple destructuring in let",
