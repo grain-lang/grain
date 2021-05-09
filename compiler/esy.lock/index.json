@@ -1,5 +1,5 @@
 {
-  "checksum": "a88b8197b2d0d5c114e3cfd73b8a2ebd",
+  "checksum": "900207102b97849971c1a981d42b4243",
   "root": "@grain/compiler@link-dev:./esy.json",
   "node": {
     "ocaml@4.11.0@d41d8cd9": {
@@ -1355,7 +1355,7 @@
         "@opam/dune-build-info@opam:2.8.5@1dae72be",
         "@opam/dune@opam:2.8.5@83fb0224",
         "@opam/cmdliner@opam:1.0.4@93208aac",
-        "@grain/binaryen.ml@github:grain-lang/binaryen.ml#867de62ec6a8a6540151e49b4b83bc41f139cc6c@d41d8cd9"
+        "@grain/binaryen.ml@github:grain-lang/binaryen.ml#3d3626f58e4ddd0957da457213bce8a12ea28d86@d41d8cd9"
       ],
       "devDependencies": [
         "@opam/ounit@opam:2.2.4@cb017d08",
@@ -1364,16 +1364,16 @@
       ],
       "installConfig": { "pnp": false }
     },
-    "@grain/binaryen.ml@github:grain-lang/binaryen.ml#867de62ec6a8a6540151e49b4b83bc41f139cc6c@d41d8cd9": {
+    "@grain/binaryen.ml@github:grain-lang/binaryen.ml#3d3626f58e4ddd0957da457213bce8a12ea28d86@d41d8cd9": {
       "id":
-        "@grain/binaryen.ml@github:grain-lang/binaryen.ml#867de62ec6a8a6540151e49b4b83bc41f139cc6c@d41d8cd9",
+        "@grain/binaryen.ml@github:grain-lang/binaryen.ml#3d3626f58e4ddd0957da457213bce8a12ea28d86@d41d8cd9",
       "name": "@grain/binaryen.ml",
       "version":
-        "github:grain-lang/binaryen.ml#867de62ec6a8a6540151e49b4b83bc41f139cc6c",
+        "github:grain-lang/binaryen.ml#3d3626f58e4ddd0957da457213bce8a12ea28d86",
       "source": {
         "type": "install",
         "source": [
-          "github:grain-lang/binaryen.ml#867de62ec6a8a6540151e49b4b83bc41f139cc6c"
+          "github:grain-lang/binaryen.ml#3d3626f58e4ddd0957da457213bce8a12ea28d86"
         ]
       },
       "overrides": [],

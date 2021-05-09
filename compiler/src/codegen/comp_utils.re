@@ -66,7 +66,7 @@ let store = (~ty=Type.int32, ~align=?, ~offset=0, ~sz=?, wasm_mod, ptr, arg) => 
       sz,
     );
   let align = Option.value(~default=sz, align);
-  Expression.store(wasm_mod, sz, offset, align, ptr, arg, ty);
+  Expression.Store.make(wasm_mod, sz, offset, align, ptr, arg, ty);
 };
 
 let load =
@@ -82,5 +82,5 @@ let load =
       sz,
     );
   let align = Option.value(~default=sz, align);
-  Expression.load(~signed, wasm_mod, sz, offset, align, ty, ptr);
+  Expression.Load.make(~signed, wasm_mod, sz, offset, align, ty, ptr);
 };

@@ -261,8 +261,6 @@ let rec globalize_names = (local_names, expr) => {
   | SIMDShift
   | SIMDLoad
   | SIMDLoadStoreLane
-  | SIMDWiden
-  | Prefetch
   | MemoryInit
   | DataDrop
   | Pop
@@ -314,11 +312,19 @@ let write_exports = (linked_mod, {cmi_sign}, exported_names) => {
             let exported_name = "GRAIN$EXPORT$" ++ name;
             let internal_name = Hashtbl.find(exported_names, exported_name);
             let get_closure = () =>
-              Expression.global_get(linked_mod, internal_name, Type.int32);
+              Expression.Global_get.make(
+                linked_mod,
+                internal_name,
+                Type.int32,
+              );
             let arguments =
               List.mapi(
                 (i, arg) =>
-                  Expression.local_get(linked_mod, i, type_of_repr(arg)),
+                  Expression.Local_get.make(
+                    linked_mod,
+                    i,
+                    type_of_repr(arg),
+                  ),
                 args,
               );
             let arguments = [get_closure(), ...arguments];
@@ -333,9 +339,16 @@ let write_exports = (linked_mod, {cmi_sign}, exported_names) => {
                 ),
               );
             let func_ptr =
-              Expression.load(linked_mod, 4, 8, 2, Type.int32, get_closure());
+              Expression.Load.make(
+                linked_mod,
+                4,
+                8,
+                2,
+                Type.int32,
+                get_closure(),
+              );
             let function_call =
-              Expression.call_indirect(
+              Expression.Call_indirect.make(
                 linked_mod,
                 function_table,
                 func_ptr,
@@ -345,7 +358,7 @@ let write_exports = (linked_mod, {cmi_sign}, exported_names) => {
               );
             let function_body =
               switch (rets) {
-              | [] => Expression.drop(linked_mod, function_call)
+              | [] => Expression.Drop.make(linked_mod, function_call)
               | _ => function_call
               };
             let arg_types =
@@ -410,13 +423,13 @@ let link_all = (linked_mod, dependencies, signature) => {
             let value =
               switch (imported_name) {
               | "relocBase" =>
-                Expression.const(
+                Expression.Const.make(
                   wasm_mod,
                   Literal.int32(Int32.of_int(table_offset^)),
                 )
               | "moduleRuntimeId" =>
                 incr(module_id);
-                Expression.const(
+                Expression.Const.make(
                   wasm_mod,
                   Literal.int32(Int32.of_int(module_id^)),
                 );
@@ -539,15 +552,12 @@ let link_all = (linked_mod, dependencies, signature) => {
     let num_element_segments = Table.get_num_element_segments(wasm_mod);
     for (i in 0 to num_element_segments - 1) {
       let segment = Table.get_element_segment_by_index(wasm_mod, i);
-      let name = Table.element_segment_get_name(segment);
+      let name = Element_segment.get_name(segment);
       let new_name = gensym(name);
-      let size = Table.element_segment_get_length(segment);
+      let size = Element_segment.get_length(segment);
       let elems =
         List.init(size, i =>
-          Hashtbl.find(
-            local_names,
-            Table.element_segment_get_data(segment, i),
-          )
+          Hashtbl.find(local_names, Element_segment.get_data(segment, i))
         );
       ignore @@
       Table.add_active_element_segment(
@@ -555,7 +565,7 @@ let link_all = (linked_mod, dependencies, signature) => {
         function_table,
         new_name,
         elems,
-        Expression.const(
+        Expression.Const.make(
           wasm_mod,
           Literal.int32(Int32.of_int(table_offset^)),
         ),
@@ -570,9 +580,9 @@ let link_all = (linked_mod, dependencies, signature) => {
   let starts =
     List.map(
       dep => {
-        Expression.drop(
+        Expression.Drop.make(
           linked_mod,
-          Expression.call(
+          Expression.Call.make(
             linked_mod,
             Hashtbl.find(Hashtbl.find(exported_names, dep), grain_main),
             [],
@@ -591,7 +601,7 @@ let link_all = (linked_mod, dependencies, signature) => {
     Type.none,
     Type.none,
     [||],
-    Expression.block(linked_mod, gensym("start"), starts),
+    Expression.Block.make(linked_mod, gensym("start"), starts),
   );
   ignore @@ Export.add_function_export(linked_mod, start_name, grain_start);
 };
@@ -608,7 +618,7 @@ let link_modules = ({asm: wasm_mod, signature}) => {
 
   let features = Module.get_features(wasm_mod);
   let _ = Module.set_features(linked_mod, features);
-  let _ = Module.set_low_memory_unused(1);
+  let _ = Settings.set_low_memory_unused(true);
   if (Module.validate(linked_mod) != 1) {
     failwith("Generated invalid linked module");
   };
