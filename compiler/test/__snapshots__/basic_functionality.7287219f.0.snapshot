@@ -1,0 +1,31 @@
+basic functionality › asr1
+(module
+ (type $none_=>_none (func))
+ (type $none_=>_i32 (func (result i32)))
+ (type $i32_i32_i32_=>_i32 (func (param i32 i32 i32) (result i32)))
+ (import \"grainRuntime\" \"mem\" (memory $0 0))
+ (import \"grainRuntime\" \"tbl\" (table $tbl 0 funcref))
+ (import \"grainRuntime\" \"relocBase\" (global $import_grainRuntime_0_relocBase_0 i32))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$>>\" (global $import_pervasives_1130_>>_1131 (mut i32)))
+ (global $global_1 i32 (i32.const 0))
+ (export \"memory\" (memory $0))
+ (export \"_gmain\" (func $_gmain))
+ (export \"_start\" (func $_start))
+ (export \"GRAIN$TABLE_SIZE\" (global $global_1))
+ (func $_gmain (; has Stack IR ;) (result i32)
+  (return_call_indirect (type $i32_i32_i32_=>_i32)
+   (global.get $import_pervasives_1130_>>_1131)
+   (i32.const 359)
+   (i32.const 3)
+   (i32.load offset=8
+    (global.get $import_pervasives_1130_>>_1131)
+   )
+  )
+ )
+ (func $_start (; has Stack IR ;)
+  (drop
+   (call $_gmain)
+  )
+ )
+ ;; custom section \"cmi\", size 946
+)

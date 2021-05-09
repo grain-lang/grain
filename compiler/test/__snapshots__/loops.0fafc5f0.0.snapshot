@@ -1,0 +1,243 @@
+loops › loop5
+(module
+ (type $i32_i32_i32_=>_i32 (func (param i32 i32 i32) (result i32)))
+ (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
+ (type $none_=>_none (func))
+ (type $none_=>_i32 (func (result i32)))
+ (import \"grainRuntime\" \"mem\" (memory $0 0))
+ (import \"grainRuntime\" \"tbl\" (table $tbl 0 funcref))
+ (import \"grainRuntime\" \"relocBase\" (global $import_grainRuntime_0_relocBase_0 i32))
+ (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0 (mut i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRefIgnoreZeros\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$>=\" (global $import_pervasives_1148_>=_1149 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$-\" (global $import_pervasives_1150_-_1151 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $import_pervasives_1152_+_1153 (mut i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $import_GRAIN$MODULE$runtime/gc_0_incRef_0 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"decRefIgnoreZeros\" (func $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0 (param i32 i32) (result i32)))
+ (global $global_1 i32 (i32.const 0))
+ (export \"memory\" (memory $0))
+ (export \"_gmain\" (func $_gmain))
+ (export \"_start\" (func $_start))
+ (export \"GRAIN$TABLE_SIZE\" (global $global_1))
+ (func $_gmain (; has Stack IR ;) (result i32)
+  (local $0 i32)
+  (local $1 i32)
+  (local $2 i32)
+  (local $3 i32)
+  (local $4 i32)
+  (drop
+   (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+    (local.tee $4
+     (tuple.extract 0
+      (tuple.make
+       (block (result i32)
+        (local.set $1
+         (tuple.extract 0
+          (tuple.make
+           (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+            (i32.const 25)
+           )
+           (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+            (i32.const 0)
+           )
+          )
+         )
+        )
+        (local.set $2
+         (tuple.extract 0
+          (tuple.make
+           (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+            (i32.const 1)
+           )
+           (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+            (i32.const 0)
+           )
+          )
+         )
+        )
+        (local.set $0
+         (tuple.extract 0
+          (tuple.make
+           (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+            (loop $MFor_loop.6 (result i32)
+             (block $MFor.5 (result i32)
+              (local.set $0
+               (tuple.extract 0
+                (tuple.make
+                 (call_indirect (type $i32_i32_i32_=>_i32)
+                  (global.get $import_pervasives_1150_-_1151)
+                  (local.get $1)
+                  (i32.const 3)
+                  (i32.load offset=8
+                   (global.get $import_pervasives_1150_-_1151)
+                  )
+                 )
+                 (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+                  (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+                  (local.get $0)
+                 )
+                )
+               )
+              )
+              (local.set $3
+               (tuple.extract 0
+                (tuple.make
+                 (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+                  (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+                  (block (result i32)
+                   (local.set $1
+                    (tuple.extract 0
+                     (tuple.make
+                      (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+                       (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+                       (local.get $0)
+                      )
+                      (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+                       (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+                       (local.get $1)
+                      )
+                     )
+                    )
+                   )
+                   (i32.const 1879048190)
+                  )
+                 )
+                 (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+                  (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+                  (local.get $3)
+                 )
+                )
+               )
+              )
+              (drop
+               (br_if $MFor.5
+                (i32.const 1879048190)
+                (i32.eqz
+                 (i32.shr_u
+                  (call_indirect (type $i32_i32_i32_=>_i32)
+                   (global.get $import_pervasives_1148_>=_1149)
+                   (local.get $1)
+                   (i32.const 1)
+                   (i32.load offset=8
+                    (global.get $import_pervasives_1148_>=_1149)
+                   )
+                  )
+                  (i32.const 31)
+                 )
+                )
+               )
+              )
+              (local.set $0
+               (tuple.extract 0
+                (tuple.make
+                 (call_indirect (type $i32_i32_i32_=>_i32)
+                  (global.get $import_pervasives_1152_+_1153)
+                  (local.get $2)
+                  (i32.const 3)
+                  (i32.load offset=8
+                   (global.get $import_pervasives_1152_+_1153)
+                  )
+                 )
+                 (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+                  (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+                  (local.get $0)
+                 )
+                )
+               )
+              )
+              (local.set $2
+               (tuple.extract 0
+                (tuple.make
+                 (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+                  (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+                  (local.get $0)
+                 )
+                 (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+                  (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+                  (local.get $2)
+                 )
+                )
+               )
+              )
+              (br $MFor_loop.6)
+             )
+            )
+           )
+           (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+            (local.get $0)
+           )
+          )
+         )
+        )
+        (local.get $2)
+       )
+       (i32.const 0)
+      )
+     )
+    )
+   )
+  )
+  (drop
+   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+    (local.get $1)
+   )
+  )
+  (drop
+   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+    (local.get $2)
+   )
+  )
+  (drop
+   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+    (local.get $0)
+   )
+  )
+  (drop
+   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+    (local.get $3)
+   )
+  )
+  (drop
+   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+    (i32.const 0)
+   )
+  )
+  (drop
+   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+    (i32.const 0)
+   )
+  )
+  (drop
+   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+    (i32.const 0)
+   )
+  )
+  (drop
+   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+    (i32.const 0)
+   )
+  )
+  (local.get $4)
+ )
+ (func $_start (; has Stack IR ;)
+  (drop
+   (call $_gmain)
+  )
+ )
+ ;; custom section \"cmi\", size 947
+)
