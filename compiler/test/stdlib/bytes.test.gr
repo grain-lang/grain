@@ -1,11 +1,182 @@
 import Bytes from "bytes";
+import { coerceInt32ToNumber, coerceNumberToInt32 } from "runtime/numbers"
+import { tagSimpleNumber } from "runtime/dataStructures"
 
-// Bytes equality
+// Bytes.empty
 assert Bytes.empty == Bytes.empty;
 
-// Bytes length
+
+// Bytes.length
 assert Bytes.length(Bytes.empty) == 0;
 
-let bytes = Bytes.make(64)
 
+// Bytes.make
+let bytes = Bytes.make(64)
 assert Bytes.length(bytes) == 64;
+
+
+// Bytes.setInt8, Bytes.getInt8S, Bytes.getInt8U
+let bytes = Bytes.make(1);
+Bytes.setInt8(bytes, 0, 0x000000ffl);
+assert Bytes.getInt8S(bytes, 0) == 0xffffffffl;
+assert Bytes.getInt8U(bytes, 0) == 0x000000ffl;
+
+
+// Bytes.setInt16, Bytes.getInt16S, Bytes.getInt16U
+let bytes = Bytes.make(8);
+Bytes.setInt16(bytes, 0, 0x0000ffffl);
+Bytes.setInt16(bytes, 2, 0x00000001l);
+Bytes.setInt16(bytes, 4, 0x00000002l);
+Bytes.setInt16(bytes, 6, 0xffffff9cl);
+assert Bytes.getInt16S(bytes, 0) == 0xffffffffl;
+assert Bytes.getInt16U(bytes, 0) == 0x0000ffffl;
+assert Bytes.getInt16S(bytes, 1) == 0x000001ffl;
+assert Bytes.getInt16U(bytes, 1) == 0x000001ffl;
+assert Bytes.getInt16S(bytes, 2) == 0x00000001l;
+assert Bytes.getInt16U(bytes, 2) == 0x00000001l;
+assert Bytes.getInt16S(bytes, 3) == 0x00000200l;
+assert Bytes.getInt16U(bytes, 3) == 0x00000200l;
+assert Bytes.getInt16S(bytes, 4) == 0x00000002l;
+assert Bytes.getInt16U(bytes, 4) == 0x00000002l;
+assert Bytes.getInt16S(bytes, 5) == 0xffff9c00l;
+assert Bytes.getInt16U(bytes, 5) == 0x00009c00l;
+assert Bytes.getInt16S(bytes, 6) == 0xffffff9cl;
+assert Bytes.getInt16U(bytes, 6) == 0x0000ff9cl;
+
+
+// Bytes.setInt32, Bytes.getInt32
+let bytes = Bytes.make(4);
+Bytes.setInt32(bytes, 0, 0x7fffffffl);
+assert Bytes.getInt32(bytes, 0) == 0x7fffffffl;
+
+
+// Bytes.setFloat32, Bytes.getFloat32
+let bytes = Bytes.make(4);
+Bytes.setFloat32(bytes, 0, 42.0f);
+assert Bytes.getFloat32(bytes, 0) == 42.0f;
+
+
+// Bytes.setInt64, Bytes.getInt64
+let bytes = Bytes.make(8);
+Bytes.setInt64(bytes, 0, 0x7fffffffffffffffL);
+assert Bytes.getInt64(bytes, 0) == 0x7fffffffffffffffL;
+
+
+// Bytes.setFloat64, Bytes.getFloat64
+let bytes = Bytes.make(8);
+Bytes.setFloat64(bytes, 0, 42.0d);
+assert Bytes.getFloat64(bytes, 0) == 42.0d;
+
+// Bytes.copy
+
+let bytes0 = Bytes.make(8);
+assert Bytes.length(bytes0) == 8;
+for (let mut i = 0; i < 8; i+= 1) {
+  Bytes.setInt8(bytes0, i, coerceNumberToInt32(i));
+}
+let bytes1 = Bytes.copy(bytes0);
+assert Bytes.length(bytes1) == Bytes.length(bytes0);
+for (let mut i = 0; i < 8; i += 1) {
+  assert Bytes.getInt8S(bytes1, i) == Bytes.getInt8S(bytes0, i);
+}
+
+
+// Bytes.sub
+let bytes2 = Bytes.sub(bytes1, 0, 8);
+assert Bytes.length(bytes2) == Bytes.length(bytes1);
+for (let mut i = 0; i < 8; i += 1) {
+  assert Bytes.getInt8S(bytes2, i) == Bytes.getInt8S(bytes1, i);
+}
+let bytes3 = Bytes.sub(bytes2, 4, 2);
+assert Bytes.length(bytes3) == 2;
+for (let mut i = 0; i < Bytes.length(bytes3); i += 1) {
+  assert Bytes.getInt8S(bytes3, i) == Bytes.getInt8S(bytes2, i + 4);
+}
+let bytes4 = Bytes.sub(bytes2, 1, 6);
+assert Bytes.length(bytes4) == 6;
+for (let mut i = 0; i < Bytes.length(bytes4); i += 1) {
+  assert Bytes.getInt8S(bytes4, i) == Bytes.getInt8S(bytes2, i + 1);
+}
+
+// Bytes.extend
+let bytes5 = Bytes.extend(bytes0, 0, 0);
+assert Bytes.length(bytes5) == Bytes.length(bytes0);
+for (let mut i = 0; i < Bytes.length(bytes5); i += 1) {
+  assert Bytes.getInt8S(bytes5, i) == Bytes.getInt8S(bytes0, i);
+}
+let bytes5 = Bytes.extend(bytes0, 1, 1);
+assert Bytes.length(bytes5) == (Bytes.length(bytes0) + 2);
+assert Bytes.getInt8S(bytes5, 0) == 0l;
+assert Bytes.getInt8S(bytes5, 9) == 0l;
+for (let mut i = 0; i < Bytes.length(bytes0); i += 1) {
+  assert Bytes.getInt8S(bytes5, i + 1) == Bytes.getInt8S(bytes0, i);
+}
+let bytes5 = Bytes.extend(bytes0, 3, 0);
+assert Bytes.length(bytes5) == 11;
+assert Bytes.getInt8S(bytes5, 0) == 0l;
+assert Bytes.getInt8S(bytes5, 1) == 0l;
+assert Bytes.getInt8S(bytes5, 2) == 0l;
+for (let mut i = 0; i < Bytes.length(bytes0); i += 1) {
+  assert Bytes.getInt8S(bytes5, i + 3) == Bytes.getInt8S(bytes0, i);
+}
+let bytes5 = Bytes.extend(bytes0, 0, 3);
+assert Bytes.length(bytes5) == 11;
+assert Bytes.getInt8S(bytes5, 8) == 0l;
+assert Bytes.getInt8S(bytes5, 9) == 0l;
+assert Bytes.getInt8S(bytes5, 10) == 0l;
+for (let mut i = 0; i < Bytes.length(bytes0); i += 1) {
+  assert Bytes.getInt8S(bytes5, i) == Bytes.getInt8S(bytes0, i);
+}
+
+let bytes5 = Bytes.extend(bytes0, -4, 0);
+assert Bytes.length(bytes5) == 4;
+for (let mut i = 0; i < Bytes.length(bytes5); i += 1) {
+  assert Bytes.getInt8S(bytes5, i) == Bytes.getInt8S(bytes0, i + 4);
+}
+let bytes5 = Bytes.extend(bytes0, 0, -4);
+assert Bytes.length(bytes5) == 4;
+for (let mut i = 0; i < Bytes.length(bytes5); i += 1) {
+  assert Bytes.getInt8S(bytes5, i) == Bytes.getInt8S(bytes0, i);
+}
+let bytes5 = Bytes.extend(bytes0, -4, -4);
+assert Bytes.length(bytes5) == 0;
+
+// Bytes.blit
+let srcBytes = Bytes.copy(bytes0);
+let dstBytes = Bytes.make(16);
+Bytes.blit(srcBytes, 0, dstBytes, 8, 8);
+for (let mut i = 0; i < 16; i += 1) {
+  if (i < 8) {
+    assert Bytes.getInt8S(dstBytes, i) == 0l;  
+  } else {
+    assert Bytes.getInt8S(dstBytes, i) == Bytes.getInt8S(srcBytes, i - 8);
+  }
+}
+
+// Bytes.append
+let bytesA = Bytes.make(16);
+for (let mut i = 0; i < 16; i += 1) {
+  Bytes.setInt8(bytesA, i, 1l);
+}
+
+let bytesB = Bytes.make(16);
+for (let mut i = 0; i < 16; i += 1) {
+  Bytes.setInt8(bytesB, i, 2l);
+}
+
+let bytesC = Bytes.append(bytesA, bytesB);
+for (let mut i = 0; i < Bytes.length(bytesC); i += 1) {
+    if (i < 16) {
+    assert Bytes.getInt8S(bytesC, i) == 1l;
+  } else {
+    assert Bytes.getInt8S(bytesC, i) == 2l;
+  }
+}
+let bytesD = Bytes.append(bytesB, bytesA);
+for (let mut i = 0; i < Bytes.length(bytesD); i += 1) {
+    if (i < 16) {
+    assert Bytes.getInt8S(bytesD, i) == 2l;
+  } else {
+    assert Bytes.getInt8S(bytesD, i) == 1l;
+  }
+}

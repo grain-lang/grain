@@ -1,46 +1,505 @@
 import WasmI32 from "runtime/unsafe/wasmi32"
-import { coerceNumberToInt32} from "runtime/numbers"
-import { tagSimpleNumber, allocateBytes } from "runtime/dataStructures"
+import WasmI64 from "runtime/unsafe/wasmi64"
+import WasmF32 from "runtime/unsafe/wasmf32"
+import WasmF64 from "runtime/unsafe/wasmf64"
+import {
+  tagSimpleNumber,
+  allocateBytes,
+  newInt32,
+  newFloat32,
+  newInt64,
+  newFloat64
+} from "runtime/dataStructures"
+import { coerceNumberToInt32, coerceNumberToInt64 } from "runtime/numbers"
+import Exception from "runtime/exception"
 
-// getInt8
-// setInt8
-// getInt8U
-// setInt8U
-// getInt16
-// setInt16
-// getInt16U
-// setInt16U
-// getInt32
-// setInt32
-// getInt64
-// setInt64
-// length
-// empty
-// copy
-// sub
-// extend
-// blit (though I'd love to find a better name for this)
-// append
+// -----------------------------------------------------------------------------
+// Conversion Utils
+// -----------------------------------------------------------------------------
 
-// Make a new Bytes buffer of n-bytes size
-// @param n: Number - The number of bytes to store
-// @returns Bytes
+/** Converts Number to WasmI32 */
 @disableGC
-export let make = (n: Number) => {
-  let n = coerceNumberToInt32(n);
-  let ptr = WasmI32.fromGrain(n)
-  let bytes = allocateBytes(WasmI32.load(ptr, 8n));
-  WasmI32.toGrain(bytes): Bytes
+let numberToWasmI32 = n => {
+  let i32 = coerceNumberToInt32(n);
+  let ptr = WasmI32.fromGrain(i32);
+  WasmI32.load(ptr, 8n)
 }
 
 @disableGC
-export let empty = make(0)
+let int32ToWasmI32 = (n: Int32) => {
+  WasmI32.load(WasmI32.fromGrain(n), 8n)
+}
 
-// Get the byte length of a Bytes buffer.
-// @param input: Bytes - The Bytes buffer to check
-// @returns Number
 @disableGC
+let float32ToWasmF32 = (n: Float32) => {
+  WasmF32.load(WasmI32.fromGrain(n), 8n)
+}
+
+@disableGC
+let int64ToWasmI64 = (n: Int64) => {
+  WasmI64.load(WasmI32.fromGrain(n), 8n)
+}
+
+@disableGC
+let float64ToWasmF64 = (n: Float64) => {
+  WasmF64.load(WasmI32.fromGrain(n), 8n)
+}
+
+@disableGC
+let wasmI32ToInt32 = (n: WasmI32) => {
+  WasmI32.toGrain(newInt32(n)) : Int32
+}
+
+@disableGC
+let wasmI32ToFloat32 = (n: WasmF32) => {
+  WasmI32.toGrain(newFloat32(n)) : Float32
+}
+
+@disableGC
+let wasmI64ToInt64 = (n: WasmI64) => {
+  WasmI32.toGrain(newInt64(n)) : Int64
+}
+
+@disableGC
+let wasmF64ToFloat64 = (n: WasmF64) => {
+  WasmI32.toGrain(newFloat64(n)) : Float64
+}
+
+// -----------------------------------------------------------------------------
+// Pointer Utils
+// -----------------------------------------------------------------------------
+
+/** Throws an exception if the index specified is out-of-bounds */
+@disableGC
+let ensureIndexIsInBounds = (i, byteSize, max) => {
+  let (+) = WasmI32.add;
+  let (<) = WasmI32.ltS;
+  let (>) = WasmI32.gtS;
+  if (i < 0n) {
+    throw Exception.IndexOutOfBounds
+  }
+  if ((i + byteSize) > max) {
+    throw Exception.IndexOutOfBounds
+  }
+}
+
+/** Gets the Bytes pointer and size */
+@disableGC
+let getPointerAndSize = (bytes) => {
+  let ptr = WasmI32.fromGrain(bytes);
+  let size = WasmI32.load(ptr, 4n);
+  (ptr, size)
+}
+
+/** Gets the Bytes pointer and byte offset */
+@disableGC
+let getPointerAndOffset = (bytes, byteSize, i) => {
+  let (+) = WasmI32.add;
+  let (*) = WasmI32.mul;
+  let (ptr, size) = getPointerAndSize(bytes);
+  let i = numberToWasmI32(i);
+  ensureIndexIsInBounds(i, byteSize, size);
+  let offset = 8n + i;
+  (ptr, offset)
+}
+
+// -----------------------------------------------------------------------------
+// Public API
+// -----------------------------------------------------------------------------
+
+/**
+ * Sets a signed 8-bit integer starting at the given byte index.
+ * @param b: Bytes - The Bytes buffer
+ * @param i: Number - The byte index
+ * @param v: Int32 - The value to set
+ * @returns Void
+ */
+@disableGC
+export let setInt8 = (b: Bytes, i: Number, v: Int32) => {
+  let byteSize = 1n;
+  let (ptr, offset) = getPointerAndOffset(b, byteSize, i);
+  let value = int32ToWasmI32(v);
+  WasmI32.store8(ptr, value, offset);
+}
+
+/**
+ * Gets a signed 8-bit integer starting at the given byte index.
+ * @param b: Bytes - The Bytes buffer
+ * @param i: Number - The byte index
+ * @returns Int32
+ */
+@disableGC
+export let getInt8S = (b: Bytes, i: Number) => {
+  let byteSize = 1n;
+  let (ptr, offset) = getPointerAndOffset(b, byteSize, i);
+  let n = WasmI32.load8S(ptr, offset);
+  wasmI32ToInt32(n)
+}
+
+/**
+ * Gets an unsigned 8-bit integer starting at the given byte index.
+ * @param b: Bytes - The Bytes buffer
+ * @param i: Number - The byte index
+ * @returns Int32
+ */
+@disableGC
+export let getInt8U = (b: Bytes, i: Number) => {
+  let byteSize = 1n;
+  let (ptr, offset) = getPointerAndOffset(b, byteSize, i);
+  let n = WasmI32.load8U(ptr, offset);
+  wasmI32ToInt32(n)
+}
+
+/**
+ * Sets a signed 16-bit integer starting at the given byte index.
+ * @param b: Bytes - The Bytes buffer
+ * @param i: Number - The byte index
+ * @param v: Int32 - The value to set
+ * @returns Void
+ */
+@disableGC
+export let setInt16 = (b: Bytes, i: Number, v: Int32) => {
+  let byteSize = 2n;
+  let (ptr, offset) = getPointerAndOffset(b, byteSize, i);
+  let value = int32ToWasmI32(v);
+  WasmI32.store16(ptr, value, offset);
+}
+
+/**
+ * Gets a signed 16-bit integer starting at the given byte index.
+ * @param b: Bytes - The Bytes buffer
+ * @param i: Number - The byte index
+ * @returns Int32
+ */
+@disableGC
+export let getInt16S = (b: Bytes, i: Number) => {
+  let byteSize = 2n;
+  let (ptr, offset) = getPointerAndOffset(b, byteSize, i);
+  let n = WasmI32.load16S(ptr, offset);
+  wasmI32ToInt32(n)
+}
+
+/**
+ * Gets an unsigned 16-bit integer starting at the given byte index.
+ * @param b: Bytes - The Bytes buffer
+ * @param i: Number - The byte index
+ * @returns Int32
+ */
+@disableGC
+export let getInt16U = (b: Bytes, i: Number) => {
+  let byteSize = 2n;
+  let (ptr, offset) = getPointerAndOffset(b, byteSize, i);
+  let n = WasmI32.load16U(ptr, offset);
+  wasmI32ToInt32(n)
+
+}
+
+/**
+ * Sets a signed 32-bit integer starting at the given byte index.
+ * @param b: Bytes - The Bytes buffer
+ * @param i: Number - The byte index
+ * @param v: Int32 - The value to set
+ * @returns Void
+ */
+@disableGC
+export let setInt32 = (b: Bytes, i: Number, v: Int32) => {
+  let byteSize = 4n;
+  let (bytesPtr, offset) = getPointerAndOffset(b, byteSize, i);
+  let value = int32ToWasmI32(v);
+  WasmI32.store(bytesPtr, value, offset);
+}
+
+/**
+ * Gets a signed 32-bit integer starting at the given byte index.
+ * @param b: Bytes - The Bytes buffer
+ * @param i: Number - The byte index
+ * @returns Int32
+ */
+@disableGC
+export let getInt32 = (b: Bytes, i: Number) => {
+  let byteSize = 4n;
+  let (ptr, offset) = getPointerAndOffset(b, byteSize, i);
+  let n = WasmI32.load(ptr, offset);
+  wasmI32ToInt32(n)
+}
+
+/**
+ * Sets a 32-bit float starting at the given byte index.
+ * @param b: Bytes - The Bytes buffer
+ * @param i: Number - The byte index
+ * @param v: Float32 - The value to set
+ * @returns Void
+ */
+@disableGC
+export let setFloat32 = (b: Bytes, i: Number, v: Float32) => {
+  let byteSize = 4n;
+  let (ptr, offset) = getPointerAndOffset(b, byteSize, i);
+  let value = float32ToWasmF32(v);
+  WasmF32.store(ptr, value, offset);
+}
+
+/**
+ * Gets a 32-bit float starting at the given byte index.
+ * @param b: Bytes - The Bytes buffer
+ * @param i: Number - The byte index
+ * @returns Float32
+ */
+@disableGC
+export let getFloat32 = (b: Bytes, i: Number) => {
+  let byteSize = 4n;
+  let (ptr, offset) = getPointerAndOffset(b, byteSize, i);
+  let n = WasmF32.load(ptr, offset);
+  wasmI32ToFloat32(n)
+}
+
+/**
+ * Sets a signed 64-bit integer starting at the given byte index.
+ * @param b: Bytes - The Bytes buffer
+ * @param i: Number - The byte index
+ * @param v: Int64 - The value to set
+ * @returns Void
+ */
+@disableGC
+export let setInt64 = (b: Bytes, i: Number, v: Int64) => {
+  let byteSize = 8n;
+  let (ptr, offset) = getPointerAndOffset(b, byteSize, i);
+  let value = int64ToWasmI64(v);
+  WasmI64.store(ptr, value, offset);
+}
+
+/**
+ * Gets a signed 64-bit integer starting at the given byte index.
+ * @param b: Bytes - The Bytes buffer
+ * @param i: Number - The byte index
+ * @returns Int64
+ */
+@disableGC
+export let getInt64 = (b: Bytes, i: Number) => {
+  let byteSize = 8n;
+  let (ptr, offset) = getPointerAndOffset(b, byteSize, i);
+  let n = WasmI64.load(ptr, offset);
+  wasmI64ToInt64(n)
+}
+
+/**
+ * Sets a 64-bit float starting at the given byte index.
+ * @param b: Bytes - The Bytes buffer
+ * @param i: Number - The byte index
+ * @param v: Float64 - The value to set
+ * @returns Void
+ */
+@disableGC
+export let setFloat64 = (b: Bytes, i: Number, v: Float64) => {
+  let byteSize = 8n;
+  let (ptr, offset) = getPointerAndOffset(b, byteSize, i);
+  let value = float64ToWasmF64(v);
+  WasmF64.store(ptr, value, offset);
+}
+
+/**
+ * Gets a 64-bit float starting at the given byte index.
+ * @param b: Bytes - The Bytes buffer
+ * @param i: Number - The byte index
+ * @returns Float64
+ */
+@disableGC
+export let getFloat64 = (b: Bytes, i: Number) => {
+  let byteSize = 8n;
+  let (ptr, offset) = getPointerAndOffset(b, byteSize, i);
+  let n = WasmF64.load(ptr, offset);
+  wasmF64ToFloat64(n)
+}
+
+/**
+ * Return a new Bytes buffer that contains the same bytes as the argument.
+ * @param b: Bytes - The Bytes buffer to copy
+ * @returns Bytes
+ */
+@disableGC
+export let copy = (b: Bytes) => {
+  let (<) = WasmI32.ltS;
+  let (+) = WasmI32.add;
+  let (src, size) = getPointerAndSize(b);
+  let dst = allocateBytes(size);
+  for (let mut i = 0n; i < size; i += 4n) {
+    let n = WasmI32.load(src, 8n + i);
+    WasmI32.store(dst, n, 8n + i);
+  }
+  WasmI32.toGrain(dst): Bytes
+}
+
+/**
+ * Returns a new Bytes buffer containing a subset of the original Bytes buffer.
+ * @param b: Bytes - The Bytes buffer get a subset of bytes from
+ * @param i: Number - The start position to copy from
+ * @param len: Number - The number of bytes to copy
+ * @returns Bytes
+ */
+@disableGC
+export let sub = (b: Bytes, i: Number, len: Number) => {
+  let (>) = WasmI32.gtS;
+  let (%) = WasmI32.remS;
+  let (==) = WasmI32.eq;
+  let (<) = WasmI32.ltS;
+  let (+) = WasmI32.add;
+  let (src, size) = getPointerAndSize(b);
+  let i = numberToWasmI32(i);
+  let len = numberToWasmI32(len);
+  if ((i + len) > size) {
+    throw Exception.InvalidArgument("The given index and length do not specify a valid range of bytes");
+  }
+  let dst = allocateBytes(len);
+  let offset = i;
+  if (i % 4n == 0n) {
+    // If possible, copy 4 bytes at a time
+    for (let mut i = 0n; i < len; i += 4n) {
+      let n = WasmI32.load(src, 8n + i + offset);
+      WasmI32.store(dst, n, 8n + i);
+    }
+  } else {
+    // Otherwise, copy 1 byte at a time
+    for (let mut i = 0n; i < len; i += 1n) {
+      let n = WasmI32.load8S(src, 8n + i + offset);
+      WasmI32.store8(dst, n, 8n + i);
+    }
+  }
+  WasmI32.toGrain(dst): Bytes
+}
+
+
+/**
+ * Returns a new Bytes buffer with unintialized bytes prepended/appended to it.
+ * If the `left` or `right` parameters are negative, bytes will be removed from the corresponding side instead of appended.
+ * @param b: Bytes - The Bytes buffer get a subset of bytes from
+ * @param left: Number - The number of uninitialized bytes to prepend
+ * @param right: Number - The number of uninitialized bytes to append
+ * @returns Bytes
+ */
+@disableGC
+export let extend = (b: Bytes, left: Number, right: Number) => {
+  let (<) = WasmI32.ltS;
+  let (>) = WasmI32.gtS;
+  let (+) = WasmI32.add;
+  let (*) = WasmI32.mul;
+  let (%) = WasmI32.remS;
+  let (src, size) = getPointerAndSize(b);
+  let left = numberToWasmI32(left);
+  let right = numberToWasmI32(right);
+  let newLen = size + left + right;
+  if (newLen < 0n) {
+    throw Exception.InvalidArgument("The resulting length is less than 0");
+  }
+  let dst = allocateBytes(newLen);
+  let (start, offset) = if (left < 0n) {
+    (left * -1n, left)
+  } else {
+    (0n, left)
+  };
+  let end = if (right < 0n) {
+    size + right
+  } else {
+    size
+  };
+  // Copy relevant range of bytes
+  if (start < size && end > start) {
+    if (start % 4n == 0n && offset % 4n == 0n) {
+      // If possible, copy 4 bytes at a time
+      for (let mut i = start; i < end; i += 4n) {
+        let n = WasmI32.load(src, 8n + i);
+        WasmI32.store(dst, n, 8n + i + offset);
+      }
+    } else {
+      // Otherwise, copy 1 byte at a time
+      for (let mut i = start; i < end; i += 1n) {
+        let n = WasmI32.load8S(src, 8n + i);
+        WasmI32.store8(dst, n, 8n + i + offset);
+      }
+    }
+  }
+  WasmI32.toGrain(dst): Bytes
+}
+
+
+/**
+ * Copies a range of bytes bytes from a source buffer to a given location in a destination buffer.
+ * @param src: Bytes - The source buffer
+ * @param srcPos: Number - The starting byte index to copy bytes from
+ * @param dst: Bytes - The destination buffer
+ * @param dstPos: Number - The starting byte index to copy bytes into
+ * @param len: Number - The amount of bytes to copy from the source buffer
+ * @returns Void
+ */
+@disableGC
+export let blit = (src: Bytes, srcPos: Number, dst: Bytes, dstPos: Number, len: Number) => {
+  let (>) = WasmI32.gtS;
+  let (<) = WasmI32.ltS;
+  let (+) = WasmI32.add;
+  let (%) = WasmI32.remS;
+  let (src, srcSize) = getPointerAndSize(src);
+  let (dst, dstSize) = getPointerAndSize(dst);
+  let srcPos = numberToWasmI32(srcPos);
+  let dstPos = numberToWasmI32(dstPos);
+  let len = numberToWasmI32(len);
+  if ((srcPos + len) > srcSize) {
+    throw Exception.InvalidArgument("Invalid source bytes range");
+  }
+  if ((dstPos + len) > dstSize) {
+    throw Exception.InvalidArgument("Invalid destination bytes range");
+  }
+  let end = srcPos + len;
+  if (srcPos % 4n == 0n && dstPos % 4n == 0n) {
+    // If possible, copy 4 bytes at a time
+    for (let mut i = srcPos; i < end; i += 4n) {
+      let n = WasmI32.load(src, 8n + i);
+      WasmI32.store(dst, n, 8n + i + dstPos);
+    }
+  } else {
+    // Otherwise, copy 1 byte at a time
+    for (let mut i = srcPos; i < end; i += 1n) {
+      let n = WasmI32.load8S(src, 8n + i);
+      WasmI32.store8(dst, n, 8n + i + dstPos);
+    }
+  }
+}
+
+/**
+ * Get the byte length of a Bytes buffer.
+ * @param input: Bytes - The Bytes buffer to check
+ * @returns Number
+ */
+ @disableGC
 export let length = (s: Bytes) => {
   let s = WasmI32.fromGrain(s)
   tagSimpleNumber(WasmI32.load(s, 4n))
 }
+
+/**
+ * Creates a new Bytes buffer that contains the bytes of both buffers a and b.
+ * @param a: Bytes - The buffer to be copied first
+ * @param b: Bytes - The buffer to be appended
+ * @returns Bytes
+ */
+export let append = (a: Bytes, b: Bytes) => {
+  let alen = length(a);
+  let blen = length(b);
+  let c = extend(a, 0, blen);
+  blit(b, 0, c, alen, blen);
+  c
+}
+
+/**
+ * Make a new Bytes buffer of n-bytes size.
+ * @param n: Number - The number of bytes to store
+ * @returns Bytes
+ */
+@disableGC
+export let make = (n: Number) => {
+  let bytes = allocateBytes(numberToWasmI32(n));
+  WasmI32.toGrain(bytes): Bytes
+}
+
+/**
+ * An empty Bytes buffer
+ */
+export let empty = make(0)
+
