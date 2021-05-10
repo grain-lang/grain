@@ -1646,7 +1646,7 @@ let allocate_bytes = (wasm_mod, env, bytes) => {
       tee_swap(
         heap_allocate(wasm_mod, env, 2 + 2 * List.length(ints_to_push)),
       ),
-      Expression.const(
+      Expression.Const.make(
         wasm_mod,
         const_int32(tag_val_of_heap_tag_type(BytesType)),
       ),
@@ -1655,7 +1655,7 @@ let allocate_bytes = (wasm_mod, env, bytes) => {
       ~offset=4,
       wasm_mod,
       get_swap(),
-      Expression.const(wasm_mod, const_int32 @@ Bytes.length(bytes)),
+      Expression.Const.make(wasm_mod, const_int32 @@ Bytes.length(bytes)),
     ),
   ];
   let elts =
@@ -1666,11 +1666,11 @@ let allocate_bytes = (wasm_mod, env, bytes) => {
           ~offset=8 * (idx + 1),
           wasm_mod,
           get_swap(),
-          Expression.const(wasm_mod, wrap_int64(i)),
+          Expression.Const.make(wasm_mod, wrap_int64(i)),
         ),
       ints_to_push,
     );
-  Expression.block(
+  Expression.Block.make(
     wasm_mod,
     gensym_label("allocate_bytes"),
     List.concat([preamble, elts, [get_swap()]]),
