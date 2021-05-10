@@ -154,12 +154,22 @@ let output_file_conv = {
   (parse, Format.pp_print_string);
 };
 
+let input_file_conv = {
+  open Arg;
+  let (prsr, prntr) = non_dir_file;
+
+  (
+    filename => prsr(Grain_utils.Files.normalize_separators(filename)),
+    prntr,
+  );
+};
+
 let input_filename = {
   let doc = sprintf("Grain source file to compile");
   let docv = "FILE";
   Arg.(
     required
-    & pos(~rev=true, 0, some(non_dir_file), None)
+    & pos(~rev=true, 0, some(input_file_conv), None)
     & info([], ~docv, ~doc)
   );
 };
