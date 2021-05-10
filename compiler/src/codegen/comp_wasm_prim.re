@@ -152,28 +152,28 @@ let get_op = name =>
   };
 
 let compile_wasm_prim1 = (wasm_mod, env, instr, ret_type, arg) => {
-  let op = Expression.unary(wasm_mod, get_op(instr), arg);
+  let op = Expression.Unary.make(wasm_mod, get_op(instr), arg);
   switch (ret_type) {
   | Mashtree.Grain_bool =>
-    Expression.select(
+    Expression.Select.make(
       wasm_mod,
       op,
-      Expression.const(wasm_mod, const_true()),
-      Expression.const(wasm_mod, const_false()),
+      Expression.Const.make(wasm_mod, const_true()),
+      Expression.Const.make(wasm_mod, const_false()),
     )
   | _ => op
   };
 };
 
 let compile_wasm_prim2 = (wasm_mod, env, instr, ret_type, arg1, arg2) => {
-  let op = Expression.binary(wasm_mod, get_op(instr), arg1, arg2);
+  let op = Expression.Binary.make(wasm_mod, get_op(instr), arg1, arg2);
   switch (ret_type) {
   | Mashtree.Grain_bool =>
-    Expression.select(
+    Expression.Select.make(
       wasm_mod,
       op,
-      Expression.const(wasm_mod, const_true()),
-      Expression.const(wasm_mod, const_false()),
+      Expression.Const.make(wasm_mod, const_true()),
+      Expression.Const.make(wasm_mod, const_false()),
     )
   | _ => op
   };

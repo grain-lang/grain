@@ -1,5 +1,5 @@
 {
-  "checksum": "a88b8197b2d0d5c114e3cfd73b8a2ebd",
+  "checksum": "ead76a94b83d42897609d8b85e9e7f8c",
   "root": "@grain/compiler@link-dev:./esy.json",
   "node": {
     "ocaml@4.11.0@d41d8cd9": {
@@ -1355,7 +1355,7 @@
         "@opam/dune-build-info@opam:2.8.5@1dae72be",
         "@opam/dune@opam:2.8.5@83fb0224",
         "@opam/cmdliner@opam:1.0.4@93208aac",
-        "@grain/binaryen.ml@github:grain-lang/binaryen.ml#867de62ec6a8a6540151e49b4b83bc41f139cc6c@d41d8cd9"
+        "@grain/binaryen.ml@0.10.0@d41d8cd9"
       ],
       "devDependencies": [
         "@opam/ounit@opam:2.2.4@cb017d08",
@@ -1364,16 +1364,14 @@
       ],
       "installConfig": { "pnp": false }
     },
-    "@grain/binaryen.ml@github:grain-lang/binaryen.ml#867de62ec6a8a6540151e49b4b83bc41f139cc6c@d41d8cd9": {
-      "id":
-        "@grain/binaryen.ml@github:grain-lang/binaryen.ml#867de62ec6a8a6540151e49b4b83bc41f139cc6c@d41d8cd9",
+    "@grain/binaryen.ml@0.10.0@d41d8cd9": {
+      "id": "@grain/binaryen.ml@0.10.0@d41d8cd9",
       "name": "@grain/binaryen.ml",
-      "version":
-        "github:grain-lang/binaryen.ml#867de62ec6a8a6540151e49b4b83bc41f139cc6c",
+      "version": "0.10.0",
       "source": {
         "type": "install",
         "source": [
-          "github:grain-lang/binaryen.ml#867de62ec6a8a6540151e49b4b83bc41f139cc6c"
+          "archive:https://registry.npmjs.org/@grain/binaryen.ml/-/binaryen.ml-0.10.0.tgz#sha1:41aeb0f3c6def2fa13b63557fe50d29a7e3a57f1"
         ]
       },
       "overrides": [],

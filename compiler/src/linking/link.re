@@ -102,153 +102,153 @@ let rec globalize_names = (local_names, expr) => {
   | Invalid => failwith("Invalid expression")
   | Nop => ()
   | Block =>
-    let internal_name = Expression.block_get_name(expr);
+    let internal_name = Expression.Block.get_name(expr);
     Option.iter(
       internal_name => {
         let new_name = gensym(internal_name);
         Hashtbl.add(local_names, internal_name, new_name);
 
-        Expression.block_set_name(expr, new_name);
+        Expression.Block.set_name(expr, new_name);
       },
       internal_name,
     );
 
-    let num_children = Expression.block_get_num_children(expr);
+    let num_children = Expression.Block.get_num_children(expr);
     for (i in 0 to num_children - 1) {
-      globalize_names(local_names, Expression.block_get_child_at(expr, i));
+      globalize_names(local_names, Expression.Block.get_child_at(expr, i));
     };
   | If =>
-    globalize_names(local_names, Expression.if_get_condition(expr));
-    globalize_names(local_names, Expression.if_get_if_true(expr));
+    globalize_names(local_names, Expression.If.get_condition(expr));
+    globalize_names(local_names, Expression.If.get_if_true(expr));
     Option.iter(
       globalize_names(local_names),
-      Expression.if_get_if_false(expr),
+      Expression.If.get_if_false(expr),
     );
   | Loop =>
-    let internal_name = Expression.loop_get_name(expr);
+    let internal_name = Expression.Loop.get_name(expr);
     let new_name = gensym(internal_name);
     Hashtbl.add(local_names, internal_name, new_name);
 
-    Expression.loop_set_name(expr, new_name);
+    Expression.Loop.set_name(expr, new_name);
 
-    globalize_names(local_names, Expression.loop_get_body(expr));
+    globalize_names(local_names, Expression.Loop.get_body(expr));
   | Break =>
-    let internal_name = Expression.break_get_name(expr);
-    Expression.break_set_name(
+    let internal_name = Expression.Break.get_name(expr);
+    Expression.Break.set_name(
       expr,
       Hashtbl.find(local_names, internal_name),
     );
 
     Option.iter(
       globalize_names(local_names),
-      Expression.break_get_condition(expr),
+      Expression.Break.get_condition(expr),
     );
     Option.iter(
       globalize_names(local_names),
-      Expression.break_get_value(expr),
+      Expression.Break.get_value(expr),
     );
   | Switch =>
-    let num_names = Expression.switch_get_num_names(expr);
+    let num_names = Expression.Switch.get_num_names(expr);
     for (i in 0 to num_names - 1) {
-      let internal_name = Expression.switch_get_name_at(expr, i);
-      Expression.switch_set_name_at(
+      let internal_name = Expression.Switch.get_name_at(expr, i);
+      Expression.Switch.set_name_at(
         expr,
         i,
         Hashtbl.find(local_names, internal_name),
       );
     };
 
-    let internal_default_name = Expression.switch_get_default_name(expr);
+    let internal_default_name = Expression.Switch.get_default_name(expr);
     Option.iter(
       name =>
-        Expression.switch_set_default_name(
+        Expression.Switch.set_default_name(
           expr,
           Hashtbl.find(local_names, name),
         ),
       internal_default_name,
     );
 
-    globalize_names(local_names, Expression.switch_get_condition(expr));
+    globalize_names(local_names, Expression.Switch.get_condition(expr));
     Option.iter(
       globalize_names(local_names),
-      Expression.switch_get_value(expr),
+      Expression.Switch.get_value(expr),
     );
   | Call =>
-    let internal_name = Expression.call_get_target(expr);
-    Expression.call_set_target(
+    let internal_name = Expression.Call.get_target(expr);
+    Expression.Call.set_target(
       expr,
       Hashtbl.find(local_names, internal_name),
     );
 
-    let num_operands = Expression.call_get_num_operands(expr);
+    let num_operands = Expression.Call.get_num_operands(expr);
     for (i in 0 to num_operands - 1) {
-      globalize_names(local_names, Expression.call_get_operand_at(expr, i));
+      globalize_names(local_names, Expression.Call.get_operand_at(expr, i));
     };
   | CallIndirect =>
-    globalize_names(local_names, Expression.call_indirect_get_target(expr));
+    globalize_names(local_names, Expression.Call_indirect.get_target(expr));
 
-    Expression.call_indirect_set_table(expr, function_table);
+    Expression.Call_indirect.set_table(expr, function_table);
 
-    let num_operands = Expression.call_indirect_get_num_operands(expr);
+    let num_operands = Expression.Call_indirect.get_num_operands(expr);
     for (i in 0 to num_operands - 1) {
       globalize_names(
         local_names,
-        Expression.call_indirect_get_operand_at(expr, i),
+        Expression.Call_indirect.get_operand_at(expr, i),
       );
     };
   | LocalGet => ()
   | LocalSet =>
-    globalize_names(local_names, Expression.local_set_get_value(expr))
+    globalize_names(local_names, Expression.Local_set.get_value(expr))
   | GlobalGet =>
-    let internal_name = Expression.global_get_get_name(expr);
-    Expression.global_get_set_name(
+    let internal_name = Expression.Global_get.get_name(expr);
+    Expression.Global_get.set_name(
       expr,
       Hashtbl.find(local_names, internal_name),
     );
   | GlobalSet =>
-    let internal_name = Expression.global_set_get_name(expr);
-    Expression.global_set_set_name(
+    let internal_name = Expression.Global_set.get_name(expr);
+    Expression.Global_set.set_name(
       expr,
       Hashtbl.find(local_names, internal_name),
     );
-    globalize_names(local_names, Expression.global_set_get_value(expr));
-  | Load => globalize_names(local_names, Expression.load_get_ptr(expr))
+    globalize_names(local_names, Expression.Global_set.get_value(expr));
+  | Load => globalize_names(local_names, Expression.Load.get_ptr(expr))
   | Store =>
-    globalize_names(local_names, Expression.store_get_ptr(expr));
-    globalize_names(local_names, Expression.store_get_value(expr));
+    globalize_names(local_names, Expression.Store.get_ptr(expr));
+    globalize_names(local_names, Expression.Store.get_value(expr));
   | MemoryCopy =>
-    globalize_names(local_names, Expression.memory_copy_get_dest(expr));
-    globalize_names(local_names, Expression.memory_copy_get_source(expr));
-    globalize_names(local_names, Expression.memory_copy_get_size(expr));
+    globalize_names(local_names, Expression.Memory_copy.get_dest(expr));
+    globalize_names(local_names, Expression.Memory_copy.get_source(expr));
+    globalize_names(local_names, Expression.Memory_copy.get_size(expr));
   | MemoryFill =>
-    globalize_names(local_names, Expression.memory_fill_get_dest(expr));
-    globalize_names(local_names, Expression.memory_fill_get_value(expr));
-    globalize_names(local_names, Expression.memory_fill_get_size(expr));
+    globalize_names(local_names, Expression.Memory_fill.get_dest(expr));
+    globalize_names(local_names, Expression.Memory_fill.get_value(expr));
+    globalize_names(local_names, Expression.Memory_fill.get_size(expr));
   | Const => ()
-  | Unary => globalize_names(local_names, Expression.unary_get_value(expr))
+  | Unary => globalize_names(local_names, Expression.Unary.get_value(expr))
   | Binary =>
-    globalize_names(local_names, Expression.binary_get_left(expr));
-    globalize_names(local_names, Expression.binary_get_right(expr));
+    globalize_names(local_names, Expression.Binary.get_left(expr));
+    globalize_names(local_names, Expression.Binary.get_right(expr));
   | Select =>
-    globalize_names(local_names, Expression.select_get_if_true(expr));
-    globalize_names(local_names, Expression.select_get_if_false(expr));
-    globalize_names(local_names, Expression.select_get_condition(expr));
-  | Drop => globalize_names(local_names, Expression.drop_get_value(expr))
-  | Return => globalize_names(local_names, Expression.return_get_value(expr))
+    globalize_names(local_names, Expression.Select.get_if_true(expr));
+    globalize_names(local_names, Expression.Select.get_if_false(expr));
+    globalize_names(local_names, Expression.Select.get_condition(expr));
+  | Drop => globalize_names(local_names, Expression.Drop.get_value(expr))
+  | Return => globalize_names(local_names, Expression.Return.get_value(expr))
   | MemorySize => ()
   | MemoryGrow =>
-    globalize_names(local_names, Expression.memory_grow_get_delta(expr))
+    globalize_names(local_names, Expression.Memory_grow.get_delta(expr))
   | Unreachable => ()
   | TupleMake =>
-    let num_operands = Expression.tuple_make_get_num_operands(expr);
+    let num_operands = Expression.Tuple_make.get_num_operands(expr);
     for (i in 0 to num_operands - 1) {
       globalize_names(
         local_names,
-        Expression.tuple_make_get_operand_at(expr, i),
+        Expression.Tuple_make.get_operand_at(expr, i),
       );
     };
   | TupleExtract =>
-    globalize_names(local_names, Expression.tuple_extract_get_tuple(expr))
+    globalize_names(local_names, Expression.Tuple_extract.get_tuple(expr))
   | AtomicRMW
   | AtomicCmpxchg
   | AtomicWait
@@ -261,8 +261,6 @@ let rec globalize_names = (local_names, expr) => {
   | SIMDShift
   | SIMDLoad
   | SIMDLoadStoreLane
-  | SIMDWiden
-  | Prefetch
   | MemoryInit
   | DataDrop
   | Pop
@@ -314,11 +312,19 @@ let write_exports = (linked_mod, {cmi_sign}, exported_names) => {
             let exported_name = "GRAIN$EXPORT$" ++ name;
             let internal_name = Hashtbl.find(exported_names, exported_name);
             let get_closure = () =>
-              Expression.global_get(linked_mod, internal_name, Type.int32);
+              Expression.Global_get.make(
+                linked_mod,
+                internal_name,
+                Type.int32,
+              );
             let arguments =
               List.mapi(
                 (i, arg) =>
-                  Expression.local_get(linked_mod, i, type_of_repr(arg)),
+                  Expression.Local_get.make(
+                    linked_mod,
+                    i,
+                    type_of_repr(arg),
+                  ),
                 args,
               );
             let arguments = [get_closure(), ...arguments];
@@ -333,9 +339,16 @@ let write_exports = (linked_mod, {cmi_sign}, exported_names) => {
                 ),
               );
             let func_ptr =
-              Expression.load(linked_mod, 4, 8, 2, Type.int32, get_closure());
+              Expression.Load.make(
+                linked_mod,
+                4,
+                8,
+                2,
+                Type.int32,
+                get_closure(),
+              );
             let function_call =
-              Expression.call_indirect(
+              Expression.Call_indirect.make(
                 linked_mod,
                 function_table,
                 func_ptr,
@@ -345,7 +358,7 @@ let write_exports = (linked_mod, {cmi_sign}, exported_names) => {
               );
             let function_body =
               switch (rets) {
-              | [] => Expression.drop(linked_mod, function_call)
+              | [] => Expression.Drop.make(linked_mod, function_call)
               | _ => function_call
               };
             let arg_types =
@@ -410,13 +423,13 @@ let link_all = (linked_mod, dependencies, signature) => {
             let value =
               switch (imported_name) {
               | "relocBase" =>
-                Expression.const(
+                Expression.Const.make(
                   wasm_mod,
                   Literal.int32(Int32.of_int(table_offset^)),
                 )
               | "moduleRuntimeId" =>
                 incr(module_id);
-                Expression.const(
+                Expression.Const.make(
                   wasm_mod,
                   Literal.int32(Int32.of_int(module_id^)),
                 );
@@ -539,15 +552,12 @@ let link_all = (linked_mod, dependencies, signature) => {
     let num_element_segments = Table.get_num_element_segments(wasm_mod);
     for (i in 0 to num_element_segments - 1) {
       let segment = Table.get_element_segment_by_index(wasm_mod, i);
-      let name = Table.element_segment_get_name(segment);
+      let name = Element_segment.get_name(segment);
       let new_name = gensym(name);
-      let size = Table.element_segment_get_length(segment);
+      let size = Element_segment.get_length(segment);
       let elems =
         List.init(size, i =>
-          Hashtbl.find(
-            local_names,
-            Table.element_segment_get_data(segment, i),
-          )
+          Hashtbl.find(local_names, Element_segment.get_data(segment, i))
         );
       ignore @@
       Table.add_active_element_segment(
@@ -555,7 +565,7 @@ let link_all = (linked_mod, dependencies, signature) => {
         function_table,
         new_name,
         elems,
-        Expression.const(
+        Expression.Const.make(
           wasm_mod,
           Literal.int32(Int32.of_int(table_offset^)),
         ),
@@ -570,9 +580,9 @@ let link_all = (linked_mod, dependencies, signature) => {
   let starts =
     List.map(
       dep => {
-        Expression.drop(
+        Expression.Drop.make(
           linked_mod,
-          Expression.call(
+          Expression.Call.make(
             linked_mod,
             Hashtbl.find(Hashtbl.find(exported_names, dep), grain_main),
             [],
@@ -591,7 +601,7 @@ let link_all = (linked_mod, dependencies, signature) => {
     Type.none,
     Type.none,
     [||],
-    Expression.block(linked_mod, gensym("start"), starts),
+    Expression.Block.make(linked_mod, gensym("start"), starts),
   );
   ignore @@ Export.add_function_export(linked_mod, start_name, grain_start);
 };
@@ -608,7 +618,7 @@ let link_modules = ({asm: wasm_mod, signature}) => {
 
   let features = Module.get_features(wasm_mod);
   let _ = Module.set_features(linked_mod, features);
-  let _ = Module.set_low_memory_unused(1);
+  let _ = Settings.set_low_memory_unused(true);
   if (Module.validate(linked_mod) != 1) {
     failwith("Generated invalid linked module");
   };

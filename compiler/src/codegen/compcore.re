@@ -354,14 +354,14 @@ let get_imported_name = (mod_, name) =>
 
 let call_exception_printer = (wasm_mod, env, args) => {
   let args = [
-    Expression.global_get(
+    Expression.Global_get.make(
       wasm_mod,
       get_imported_name(exception_mod, print_exception_closure_ident),
       Type.int32,
     ),
     ...args,
   ];
-  Expression.call(
+  Expression.Call.make(
     wasm_mod,
     get_imported_name(exception_mod, print_exception_ident),
     args,
@@ -371,14 +371,14 @@ let call_exception_printer = (wasm_mod, env, args) => {
 
 let call_malloc = (wasm_mod, env, args) => {
   let args = [
-    Expression.global_get(
+    Expression.Global_get.make(
       wasm_mod,
       get_imported_name(gc_mod, malloc_closure_ident),
       Type.int32,
     ),
     ...args,
   ];
-  Expression.call(
+  Expression.Call.make(
     wasm_mod,
     get_imported_name(gc_mod, malloc_ident),
     args,
@@ -387,7 +387,7 @@ let call_malloc = (wasm_mod, env, args) => {
 };
 let call_incref = (wasm_mod, env, arg) => {
   let args = [
-    Expression.global_get(
+    Expression.Global_get.make(
       wasm_mod,
       get_imported_name(gc_mod, incref_closure_ident),
       Type.int32,
@@ -397,7 +397,7 @@ let call_incref = (wasm_mod, env, arg) => {
   if (Config.no_gc^) {
     arg;
   } else {
-    Expression.call(
+    Expression.Call.make(
       wasm_mod,
       get_imported_name(gc_mod, incref_ident),
       args,
@@ -407,7 +407,7 @@ let call_incref = (wasm_mod, env, arg) => {
 };
 let call_decref_ignore_zeros = (wasm_mod, env, arg) => {
   let args = [
-    Expression.global_get(
+    Expression.Global_get.make(
       wasm_mod,
       get_imported_name(gc_mod, decref_ignore_zeros_closure_ident),
       Type.int32,
@@ -417,7 +417,7 @@ let call_decref_ignore_zeros = (wasm_mod, env, arg) => {
   if (Config.no_gc^) {
     arg;
   } else {
-    Expression.call(
+    Expression.Call.make(
       wasm_mod,
       get_imported_name(gc_mod, decref_ignore_zeros_ident),
       args,
@@ -430,7 +430,7 @@ let call_decref = (wasm_mod, env, arg) =>
     call_decref_ignore_zeros(wasm_mod, env, arg);
   } else {
     let args = [
-      Expression.global_get(
+      Expression.Global_get.make(
         wasm_mod,
         get_imported_name(gc_mod, decref_closure_ident),
         Type.int32,
@@ -440,7 +440,7 @@ let call_decref = (wasm_mod, env, arg) =>
     if (Config.no_gc^) {
       arg;
     } else {
-      Expression.call(
+      Expression.Call.make(
         wasm_mod,
         get_imported_name(gc_mod, decref_ident),
         args,
@@ -449,11 +449,11 @@ let call_decref = (wasm_mod, env, arg) =>
     };
   };
 let call_new_rational = (wasm_mod, env, args) =>
-  Expression.call(
+  Expression.Call.make(
     wasm_mod,
     get_imported_name(data_structures_mod, new_rational_ident),
     [
-      Expression.global_get(
+      Expression.Global_get.make(
         wasm_mod,
         get_imported_name(data_structures_mod, new_rational_closure_ident),
         Type.int32,
@@ -463,11 +463,11 @@ let call_new_rational = (wasm_mod, env, args) =>
     Type.int32,
   );
 let call_new_float32 = (wasm_mod, env, args) =>
-  Expression.call(
+  Expression.Call.make(
     wasm_mod,
     get_imported_name(data_structures_mod, new_float32_ident),
     [
-      Expression.global_get(
+      Expression.Global_get.make(
         wasm_mod,
         get_imported_name(data_structures_mod, new_float32_closure_ident),
         Type.int32,
@@ -477,11 +477,11 @@ let call_new_float32 = (wasm_mod, env, args) =>
     Type.int32,
   );
 let call_new_float64 = (wasm_mod, env, args) =>
-  Expression.call(
+  Expression.Call.make(
     wasm_mod,
     get_imported_name(data_structures_mod, new_float64_ident),
     [
-      Expression.global_get(
+      Expression.Global_get.make(
         wasm_mod,
         get_imported_name(data_structures_mod, new_float64_closure_ident),
         Type.int32,
@@ -491,11 +491,11 @@ let call_new_float64 = (wasm_mod, env, args) =>
     Type.int32,
   );
 let call_new_int32 = (wasm_mod, env, args) =>
-  Expression.call(
+  Expression.Call.make(
     wasm_mod,
     get_imported_name(data_structures_mod, new_int32_ident),
     [
-      Expression.global_get(
+      Expression.Global_get.make(
         wasm_mod,
         get_imported_name(data_structures_mod, new_int32_closure_ident),
         Type.int32,
@@ -505,11 +505,11 @@ let call_new_int32 = (wasm_mod, env, args) =>
     Type.int32,
   );
 let call_new_int64 = (wasm_mod, env, args) =>
-  Expression.call(
+  Expression.Call.make(
     wasm_mod,
     get_imported_name(data_structures_mod, new_int64_ident),
     [
-      Expression.global_get(
+      Expression.Global_get.make(
         wasm_mod,
         get_imported_name(data_structures_mod, new_int64_closure_ident),
         Type.int32,
@@ -519,11 +519,11 @@ let call_new_int64 = (wasm_mod, env, args) =>
     Type.int32,
   );
 let call_equal = (wasm_mod, env, args) =>
-  Expression.call(
+  Expression.Call.make(
     wasm_mod,
     get_imported_name(equal_mod, equal_ident),
     [
-      Expression.global_get(
+      Expression.Global_get.make(
         wasm_mod,
         get_imported_name(equal_mod, equal_closure_ident),
         Type.int32,
@@ -536,55 +536,55 @@ let call_equal = (wasm_mod, env, args) =>
 /** Will print "tracepoint <n> reached" to the console when executed (for debugging WASM output) */
 
 let tracepoint = (wasm_mod, env, n) =>
-  Expression.call(
+  Expression.Call.make(
     wasm_mod,
     get_imported_name(runtime_mod, tracepoint_ident),
-    [Expression.const(wasm_mod, const_int32(n))],
+    [Expression.Const.make(wasm_mod, const_int32(n))],
     Type.int32,
   );
 
 /** Untags the number */
 
 let untag_number = (wasm_mod, value) =>
-  Expression.binary(
+  Expression.Binary.make(
     wasm_mod,
     Op.shr_s_int32,
     value,
-    Expression.const(wasm_mod, const_int32(1)),
+    Expression.Const.make(wasm_mod, const_int32(1)),
   );
 
 let tag_number = (wasm_mod, value) =>
-  Expression.binary(
+  Expression.Binary.make(
     wasm_mod,
     Op.or_int32,
-    Expression.binary(
+    Expression.Binary.make(
       wasm_mod,
       Op.shl_int32,
       value,
-      Expression.const(wasm_mod, const_int32(1)),
+      Expression.Const.make(wasm_mod, const_int32(1)),
     ),
-    Expression.const(wasm_mod, const_int32(1)),
+    Expression.Const.make(wasm_mod, const_int32(1)),
   );
 
 let encode_bool = (wasm_mod, value) =>
-  Expression.binary(
+  Expression.Binary.make(
     wasm_mod,
     Op.or_int32,
-    Expression.binary(
+    Expression.Binary.make(
       wasm_mod,
       Op.shl_int32,
       value,
-      Expression.const(wasm_mod, const_int32(31)),
+      Expression.Const.make(wasm_mod, const_int32(31)),
     ),
-    Expression.const(wasm_mod, const_false()),
+    Expression.Const.make(wasm_mod, const_false()),
   );
 
 let decode_bool = (wasm_mod, value) =>
-  Expression.binary(
+  Expression.Binary.make(
     wasm_mod,
     Op.shr_u_int32,
     value,
-    Expression.const(wasm_mod, const_int32(31)),
+    Expression.Const.make(wasm_mod, const_int32(31)),
   );
 
 let encoded_const_int32 = n => const_int32(encoded_int32(n));
@@ -600,9 +600,9 @@ let cleanup_local_slot_instructions = (wasm_mod, env: codegen_env) => {
       env.stack_size.stack_size_i32,
       i => {
         let slot_no = i + env.num_args + Array.length(swap_slots);
-        let arg = Expression.local_get(wasm_mod, slot_no, Type.int32);
+        let arg = Expression.Local_get.make(wasm_mod, slot_no, Type.int32);
         singleton @@
-        Expression.drop(
+        Expression.Drop.make(
           wasm_mod,
           call_decref_ignore_zeros(wasm_mod, env, arg),
         );
@@ -663,14 +663,14 @@ let compile_bind =
       };
     let slot = Int32.to_int(i);
     switch (action) {
-    | BindGet => Expression.local_get(wasm_mod, slot, typ)
+    | BindGet => Expression.Local_get.make(wasm_mod, slot, typ)
     | BindSet(arg) =>
-      Expression.local_set(
+      Expression.Local_set.make(
         wasm_mod,
         slot,
-        Expression.tuple_extract(
+        Expression.Tuple_extract.make(
           wasm_mod,
-          Expression.tuple_make(
+          Expression.Tuple_make.make(
             wasm_mod,
             [
               /* Call incref() on new value we're setting (we do this first, since we don't know if new == old).
@@ -679,7 +679,7 @@ let compile_bind =
               /* Get old value of slot and call decref() on it */
               appropriate_decref(
                 env,
-                Expression.local_get(wasm_mod, slot, typ),
+                Expression.Local_get.make(wasm_mod, slot, typ),
               ),
             ],
           ),
@@ -687,12 +687,12 @@ let compile_bind =
         ),
       )
     | BindTee(arg) =>
-      Expression.local_tee(
+      Expression.Local_tee.make(
         wasm_mod,
         slot,
-        Expression.tuple_extract(
+        Expression.Tuple_extract.make(
           wasm_mod,
-          Expression.tuple_make(
+          Expression.Tuple_make.make(
             wasm_mod,
             [
               /* Call incref() on new value we're setting (we do this first, since we don't know if new == old).
@@ -701,7 +701,7 @@ let compile_bind =
               /* Get old value of slot and call decref() on it */
               appropriate_decref(
                 env,
-                Expression.local_get(wasm_mod, slot, typ),
+                Expression.Local_get.make(wasm_mod, slot, typ),
               ),
             ],
           ),
@@ -744,14 +744,14 @@ let compile_bind =
         )
       };
     switch (action) {
-    | BindGet => Expression.local_get(wasm_mod, slot, typ)
+    | BindGet => Expression.Local_get.make(wasm_mod, slot, typ)
     | BindSet(arg) =>
-      Expression.local_set(
+      Expression.Local_set.make(
         wasm_mod,
         slot,
-        Expression.tuple_extract(
+        Expression.Tuple_extract.make(
           wasm_mod,
-          Expression.tuple_make(
+          Expression.Tuple_make.make(
             wasm_mod,
             [
               /* Call incref() on new value we're setting (we do this first, since we don't know if new == old).
@@ -760,7 +760,7 @@ let compile_bind =
               /* Get old value of slot and call decref() on it */
               appropriate_decref(
                 env,
-                Expression.local_get(wasm_mod, slot, typ),
+                Expression.Local_get.make(wasm_mod, slot, typ),
               ),
             ],
           ),
@@ -768,12 +768,12 @@ let compile_bind =
         ),
       )
     | BindTee(arg) =>
-      Expression.local_tee(
+      Expression.Local_tee.make(
         wasm_mod,
         slot,
-        Expression.tuple_extract(
+        Expression.Tuple_extract.make(
           wasm_mod,
-          Expression.tuple_make(
+          Expression.Tuple_make.make(
             wasm_mod,
             [
               /* Call incref() on new value we're setting (we do this first, since we don't know if new == old).
@@ -782,7 +782,7 @@ let compile_bind =
               /* Get old value of slot and call decref() on it */
               appropriate_decref(
                 env,
-                Expression.local_get(wasm_mod, slot, typ),
+                Expression.Local_get.make(wasm_mod, slot, typ),
               ),
             ],
           ),
@@ -802,14 +802,14 @@ let compile_bind =
       | F64Type => Type.float64
       };
     switch (action) {
-    | BindGet => Expression.local_get(wasm_mod, slot, typ)
+    | BindGet => Expression.Local_get.make(wasm_mod, slot, typ)
     | BindSet(arg) =>
-      Expression.local_set(
+      Expression.Local_set.make(
         wasm_mod,
         slot,
-        Expression.tuple_extract(
+        Expression.Tuple_extract.make(
           wasm_mod,
-          Expression.tuple_make(
+          Expression.Tuple_make.make(
             wasm_mod,
             [
               /* Call incref() on new value we're setting (we do this first, since we don't know if new == old).
@@ -818,7 +818,7 @@ let compile_bind =
               /* Get old value of slot and call decref() on it */
               appropriate_decref(
                 env,
-                Expression.local_get(wasm_mod, slot, typ),
+                Expression.Local_get.make(wasm_mod, slot, typ),
               ),
             ],
           ),
@@ -826,12 +826,12 @@ let compile_bind =
         ),
       )
     | BindTee(arg) =>
-      Expression.local_tee(
+      Expression.Local_tee.make(
         wasm_mod,
         slot,
-        Expression.tuple_extract(
+        Expression.Tuple_extract.make(
           wasm_mod,
-          Expression.tuple_make(
+          Expression.Tuple_make.make(
             wasm_mod,
             [
               /* Call incref() on new value we're setting (we do this first, since we don't know if new == old).
@@ -840,7 +840,7 @@ let compile_bind =
               /* Get old value of slot and call decref() on it */
               appropriate_decref(
                 env,
-                Expression.local_get(wasm_mod, slot, typ),
+                Expression.Local_get.make(wasm_mod, slot, typ),
               ),
             ],
           ),
@@ -858,15 +858,15 @@ let compile_bind =
       | F64Type => Type.float64
       };
     switch (action) {
-    | BindGet => Expression.global_get(wasm_mod, slot, typ)
-    | BindSet(arg) when !gc => Expression.global_set(wasm_mod, slot, arg)
+    | BindGet => Expression.Global_get.make(wasm_mod, slot, typ)
+    | BindSet(arg) when !gc => Expression.Global_set.make(wasm_mod, slot, arg)
     | BindSet(arg) =>
-      Expression.global_set(
+      Expression.Global_set.make(
         wasm_mod,
         slot,
-        Expression.tuple_extract(
+        Expression.Tuple_extract.make(
           wasm_mod,
-          Expression.tuple_make(
+          Expression.Tuple_make.make(
             wasm_mod,
             [
               /* Call incref() on new value we're setting (we do this first, since we don't know if new == old).
@@ -875,7 +875,7 @@ let compile_bind =
               /* Get old value of slot and call decref() on it */
               appropriate_decref(
                 env,
-                Expression.global_get(wasm_mod, slot, typ),
+                Expression.Global_get.make(wasm_mod, slot, typ),
               ),
             ],
           ),
@@ -883,25 +883,25 @@ let compile_bind =
         ),
       )
     | BindTee(arg) when !gc =>
-      Expression.block(
+      Expression.Block.make(
         wasm_mod,
         gensym_label("BindTee"),
         [
-          Expression.global_set(wasm_mod, slot, arg),
-          Expression.global_get(wasm_mod, slot, typ),
+          Expression.Global_set.make(wasm_mod, slot, arg),
+          Expression.Global_get.make(wasm_mod, slot, typ),
         ],
       )
     | BindTee(arg) =>
-      Expression.block(
+      Expression.Block.make(
         wasm_mod,
         gensym_label("BindTee"),
         [
-          Expression.global_set(
+          Expression.Global_set.make(
             wasm_mod,
             slot,
-            Expression.tuple_extract(
+            Expression.Tuple_extract.make(
               wasm_mod,
-              Expression.tuple_make(
+              Expression.Tuple_make.make(
                 wasm_mod,
                 [
                   /* Call incref() on new value we're setting (we do this first, since we don't know if new == old).
@@ -910,14 +910,14 @@ let compile_bind =
                   /* Get old value of slot and call decref() on it */
                   appropriate_decref(
                     env,
-                    Expression.global_get(wasm_mod, slot, typ),
+                    Expression.Global_get.make(wasm_mod, slot, typ),
                   ),
                 ],
               ),
               0,
             ),
           ),
-          Expression.global_get(wasm_mod, slot, typ),
+          Expression.Global_get.make(wasm_mod, slot, typ),
         ],
       )
     };
@@ -931,7 +931,7 @@ let compile_bind =
     load(
       ~offset=4 * (4 + Int32.to_int(i)),
       wasm_mod,
-      Expression.local_get(wasm_mod, 0, Type.int32),
+      Expression.Local_get.make(wasm_mod, 0, Type.int32),
     );
   | MImport(i) =>
     if (!(action == BindGet)) {
@@ -942,12 +942,15 @@ let compile_bind =
     /* Adjust for runtime functions */
     let slot =
       Printf.sprintf("global_%d", env.import_offset + Int32.to_int(i));
-    Expression.global_get(wasm_mod, slot, Type.int32);
+    Expression.Global_get.make(wasm_mod, slot, Type.int32);
   };
 };
 
 let safe_drop = (wasm_mod, env, arg) =>
-  Expression.drop(wasm_mod, call_decref_ignore_zeros(wasm_mod, env, arg));
+  Expression.Drop.make(
+    wasm_mod,
+    call_decref_ignore_zeros(wasm_mod, env, arg),
+  );
 
 let get_swap = (~ty as typ=I32Type, wasm_mod, env, idx) =>
   switch (typ) {
@@ -1056,10 +1059,10 @@ let cleanup_locals = (wasm_mod, env: codegen_env, arg): Expression.t => {
      - Move the current stack value into a designated return-value holder slot (maybe swap is fine)
      - Call incref() on the return value (to prevent premature free)
      - Call decref() on all locals (should include return value) */
-  Expression.block(wasm_mod, gensym_label("cleanup_locals")) @@
+  Expression.Block.make(wasm_mod, gensym_label("cleanup_locals")) @@
   Concatlist.list_of_t(
     singleton(
-      Expression.drop(wasm_mod) @@
+      Expression.Drop.make(wasm_mod) @@
       call_incref(wasm_mod, env, tee_swap(wasm_mod, env, 0, arg)),
     )
     @ cleanup_local_slot_instructions(wasm_mod, env)
@@ -1069,9 +1072,9 @@ let cleanup_locals = (wasm_mod, env: codegen_env, arg): Expression.t => {
 
 let compile_imm = (wasm_mod, env: codegen_env, i: immediate): Expression.t =>
   switch (i) {
-  | MImmConst(c) => Expression.const(wasm_mod, compile_const(c))
+  | MImmConst(c) => Expression.Const.make(wasm_mod, compile_const(c))
   | MImmBinding(b) => compile_bind(~action=BindGet, wasm_mod, env, b)
-  | MImmTrap => Expression.unreachable(wasm_mod)
+  | MImmTrap => Expression.Unreachable.make(wasm_mod)
   };
 
 let call_error_handler = (wasm_mod, env, err, args) => {
@@ -1082,30 +1085,33 @@ let call_error_handler = (wasm_mod, env, err, args) => {
     | Runtime_errors.AssertionError => assertion_error_ident
     };
   let err =
-    Expression.global_get(
+    Expression.Global_get.make(
       wasm_mod,
       get_imported_name(exception_mod, err),
       Type.int32,
     );
-  Expression.block(
+  Expression.Block.make(
     wasm_mod,
     gensym_label("call_error_handler"),
     [
-      Expression.drop(
+      Expression.Drop.make(
         wasm_mod,
         call_exception_printer(wasm_mod, env, [err]),
       ),
-      Expression.unreachable(wasm_mod),
+      Expression.Unreachable.make(wasm_mod),
     ],
   );
 };
 
 let error_if_true = (wasm_mod, env, cond, err, args) =>
-  Expression.if_(
+  Expression.If.make(
     wasm_mod,
     cond,
-    Expression.drop(wasm_mod, call_error_handler(wasm_mod, env, err, args)),
-    Expression.null(),
+    Expression.Drop.make(
+      wasm_mod,
+      call_error_handler(wasm_mod, env, err, args),
+    ),
+    Expression.Null.make(),
   );
 
 let compile_tuple_op = (~is_box=false, wasm_mod, env, tup_imm, op) => {
@@ -1118,7 +1124,7 @@ let compile_tuple_op = (~is_box=false, wasm_mod, env, tup_imm, op) => {
     load(~offset=4 * (idx_int + 2), wasm_mod, tup());
   | MTupleSet(idx, imm) =>
     let idx_int = Int32.to_int(idx);
-    Expression.block(
+    Expression.Block.make(
       wasm_mod,
       gensym_label("MTupleSet"),
       [
@@ -1126,9 +1132,9 @@ let compile_tuple_op = (~is_box=false, wasm_mod, env, tup_imm, op) => {
           ~offset=4 * (idx_int + 2),
           wasm_mod,
           tup(),
-          Expression.tuple_extract(
+          Expression.Tuple_extract.make(
             wasm_mod,
-            Expression.tuple_make(
+            Expression.Tuple_make.make(
               wasm_mod,
               [
                 call_incref(wasm_mod, env, compile_imm(wasm_mod, env, imm)),
@@ -1142,7 +1148,7 @@ let compile_tuple_op = (~is_box=false, wasm_mod, env, tup_imm, op) => {
             0,
           ),
         ),
-        Expression.const(wasm_mod, const_void()),
+        Expression.Const.make(wasm_mod, const_void()),
       ],
     );
   };
@@ -1178,7 +1184,7 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
     let idx = compile_imm(wasm_mod, env, idx_imm);
     let get_idx = () => get_swap(1);
     /* Check that the index is in bounds */
-    Expression.block(
+    Expression.Block.make(
       wasm_mod,
       gensym_label("MArrayGet"),
       [
@@ -1186,14 +1192,14 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
         error_if_true(
           wasm_mod,
           env,
-          Expression.binary(
+          Expression.Binary.make(
             wasm_mod,
             Op.gt_s_int32,
-            Expression.binary(
+            Expression.Binary.make(
               wasm_mod,
               Op.mul_int32,
               load(~offset=4, wasm_mod, get_arr()),
-              Expression.const(wasm_mod, const_int32(-1)),
+              Expression.Const.make(wasm_mod, const_int32(-1)),
             ),
             get_idx(),
           ),
@@ -1203,7 +1209,7 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
         error_if_true(
           wasm_mod,
           env,
-          Expression.binary(
+          Expression.Binary.make(
             wasm_mod,
             Op.le_s_int32,
             load(~offset=4, wasm_mod, get_arr()),
@@ -1215,22 +1221,22 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
         load(
           ~offset=8,
           wasm_mod,
-          Expression.binary(
+          Expression.Binary.make(
             wasm_mod,
             Op.add_int32,
-            Expression.binary(
+            Expression.Binary.make(
               wasm_mod,
               Op.mul_int32,
               /* Resolve a negative index */
-              Expression.if_(
+              Expression.If.make(
                 wasm_mod,
-                Expression.binary(
+                Expression.Binary.make(
                   wasm_mod,
                   Op.lt_s_int32,
                   get_idx(),
-                  Expression.const(wasm_mod, const_int32(0)),
+                  Expression.Const.make(wasm_mod, const_int32(0)),
                 ),
-                Expression.binary(
+                Expression.Binary.make(
                   wasm_mod,
                   Op.add_int32,
                   get_idx(),
@@ -1238,7 +1244,7 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
                 ),
                 get_idx(),
               ),
-              Expression.const(wasm_mod, const_int32(4)),
+              Expression.Const.make(wasm_mod, const_int32(4)),
             ),
             get_arr(),
           ),
@@ -1252,7 +1258,7 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
     let val_ = compile_imm(wasm_mod, env, val_imm);
     let get_idx = () => get_swap(1);
     /* Check that the index is in bounds */
-    Expression.block(
+    Expression.Block.make(
       wasm_mod,
       gensym_label("MArrayGet"),
       [
@@ -1260,14 +1266,14 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
         error_if_true(
           wasm_mod,
           env,
-          Expression.binary(
+          Expression.Binary.make(
             wasm_mod,
             Op.gt_s_int32,
-            Expression.binary(
+            Expression.Binary.make(
               wasm_mod,
               Op.mul_int32,
               load(~offset=4, wasm_mod, get_arr()),
-              Expression.const(wasm_mod, const_int32(-1)),
+              Expression.Const.make(wasm_mod, const_int32(-1)),
             ),
             get_idx(),
           ),
@@ -1277,7 +1283,7 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
         error_if_true(
           wasm_mod,
           env,
-          Expression.binary(
+          Expression.Binary.make(
             wasm_mod,
             Op.le_s_int32,
             load(~offset=4, wasm_mod, get_arr()),
@@ -1289,22 +1295,22 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
         store(
           ~offset=8,
           wasm_mod,
-          Expression.binary(
+          Expression.Binary.make(
             wasm_mod,
             Op.add_int32,
-            Expression.binary(
+            Expression.Binary.make(
               wasm_mod,
               Op.mul_int32,
               /* Resolve a negative index */
-              Expression.if_(
+              Expression.If.make(
                 wasm_mod,
-                Expression.binary(
+                Expression.Binary.make(
                   wasm_mod,
                   Op.lt_s_int32,
                   get_idx(),
-                  Expression.const(wasm_mod, const_int32(0)),
+                  Expression.Const.make(wasm_mod, const_int32(0)),
                 ),
-                Expression.binary(
+                Expression.Binary.make(
                   wasm_mod,
                   Op.add_int32,
                   get_idx(),
@@ -1312,14 +1318,14 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
                 ),
                 get_idx(),
               ),
-              Expression.const(wasm_mod, const_int32(4)),
+              Expression.Const.make(wasm_mod, const_int32(4)),
             ),
             get_arr(),
           ),
           /* [TODO] decref the old item */
           call_incref(wasm_mod, env, val_),
         ),
-        Expression.const(wasm_mod, const_void()),
+        Expression.Const.make(wasm_mod, const_void()),
       ],
     );
   };
@@ -1345,7 +1351,7 @@ let compile_record_op = (wasm_mod, env, rec_imm, op) => {
   | MRecordSet(idx, arg_imm) =>
     let idx_int = Int32.to_int(idx);
     let arg = () => compile_imm(wasm_mod, env, arg_imm);
-    Expression.block(
+    Expression.Block.make(
       wasm_mod,
       gensym_label("record_set"),
       [
@@ -1353,9 +1359,9 @@ let compile_record_op = (wasm_mod, env, rec_imm, op) => {
           ~offset=4 * (idx_int + 4),
           wasm_mod,
           record(),
-          Expression.tuple_extract(
+          Expression.Tuple_extract.make(
             wasm_mod,
-            Expression.tuple_make(
+            Expression.Tuple_make.make(
               wasm_mod,
               [
                 call_incref(wasm_mod, env, arg()),
@@ -1369,7 +1375,7 @@ let compile_record_op = (wasm_mod, env, rec_imm, op) => {
             0,
           ),
         ),
-        Expression.const(wasm_mod, const_void()),
+        Expression.Const.make(wasm_mod, const_void()),
       ],
     );
   };
@@ -1388,24 +1394,24 @@ let round_to_even = num_words =>
 let heap_allocate = (wasm_mod, env, num_words: int) =>
   if (Env.is_runtime_mode()) {
     let addition =
-      Expression.binary(
+      Expression.Binary.make(
         wasm_mod,
         Op.add_int32,
         load(
           wasm_mod,
-          Expression.const(wasm_mod, const_int32(runtime_heap_ptr)),
+          Expression.Const.make(wasm_mod, const_int32(runtime_heap_ptr)),
         ),
-        Expression.const(
+        Expression.Const.make(
           wasm_mod,
           const_int32(round_to_even(num_words + 2) * 4),
         ),
       );
-    Expression.tuple_extract(
+    Expression.Tuple_extract.make(
       wasm_mod,
-      Expression.tuple_make(
+      Expression.Tuple_make.make(
         wasm_mod,
         [
-          Expression.block(
+          Expression.Block.make(
             wasm_mod,
             gensym_label("heap_allocate_runtime"),
             [
@@ -1413,33 +1419,42 @@ let heap_allocate = (wasm_mod, env, num_words: int) =>
                 wasm_mod,
                 load(
                   wasm_mod,
-                  Expression.const(wasm_mod, const_int32(runtime_heap_ptr)),
+                  Expression.Const.make(
+                    wasm_mod,
+                    const_int32(runtime_heap_ptr),
+                  ),
                 ),
-                Expression.const(wasm_mod, const_int32(1)),
+                Expression.Const.make(wasm_mod, const_int32(1)),
               ),
-              Expression.binary(
+              Expression.Binary.make(
                 wasm_mod,
                 Op.add_int32,
                 load(
                   wasm_mod,
-                  Expression.const(wasm_mod, const_int32(runtime_heap_ptr)),
+                  Expression.Const.make(
+                    wasm_mod,
+                    const_int32(runtime_heap_ptr),
+                  ),
                 ),
-                Expression.const(wasm_mod, const_int32(8)),
+                Expression.Const.make(wasm_mod, const_int32(8)),
               ),
             ],
           ),
-          Expression.block(
+          Expression.Block.make(
             wasm_mod,
             gensym_label("store_runtime_heap_ptr"),
             [
               store(
                 wasm_mod,
-                Expression.const(wasm_mod, const_int32(runtime_heap_ptr)),
+                Expression.Const.make(
+                  wasm_mod,
+                  const_int32(runtime_heap_ptr),
+                ),
                 addition,
               ),
               // Binaryen tuples must include a concrete value (and tuples are
               // the only way to use the stack)
-              Expression.const(wasm_mod, const_int32(0)),
+              Expression.Const.make(wasm_mod, const_int32(0)),
             ],
           ),
         ],
@@ -1450,7 +1465,7 @@ let heap_allocate = (wasm_mod, env, num_words: int) =>
     call_malloc(
       wasm_mod,
       env,
-      [Expression.const(wasm_mod, const_int32(4 * num_words))],
+      [Expression.Const.make(wasm_mod, const_int32(4 * num_words))],
     );
   };
 
@@ -1459,37 +1474,40 @@ let heap_runtime_allocate_imm =
   let num_words = () =>
     untag_number(wasm_mod, compile_imm(wasm_mod, env, num_words));
   let addition =
-    Expression.binary(
+    Expression.Binary.make(
       wasm_mod,
       Op.add_int32,
       load(
         wasm_mod,
-        Expression.const(wasm_mod, const_int32(runtime_heap_ptr)),
+        Expression.Const.make(wasm_mod, const_int32(runtime_heap_ptr)),
       ),
-      Expression.binary(
+      Expression.Binary.make(
         wasm_mod,
         Op.mul_int32,
-        Expression.binary(
+        Expression.Binary.make(
           wasm_mod,
           Op.and_int32,
-          Expression.binary(
+          Expression.Binary.make(
             wasm_mod,
             Op.add_int32,
             num_words(),
             // Add 3 extra and clear final bit to round up to an even number of words + 2
-            Expression.const(wasm_mod, const_int32(3 + additional_words)),
+            Expression.Const.make(
+              wasm_mod,
+              const_int32(3 + additional_words),
+            ),
           ),
-          Expression.const(wasm_mod, const_int32(0xfffffffe)),
+          Expression.Const.make(wasm_mod, const_int32(0xfffffffe)),
         ),
-        Expression.const(wasm_mod, const_int32(4)),
+        Expression.Const.make(wasm_mod, const_int32(4)),
       ),
     );
-  Expression.tuple_extract(
+  Expression.Tuple_extract.make(
     wasm_mod,
-    Expression.tuple_make(
+    Expression.Tuple_make.make(
       wasm_mod,
       [
-        Expression.block(
+        Expression.Block.make(
           wasm_mod,
           gensym_label("heap_allocate_runtime_imm"),
           [
@@ -1497,33 +1515,39 @@ let heap_runtime_allocate_imm =
               wasm_mod,
               load(
                 wasm_mod,
-                Expression.const(wasm_mod, const_int32(runtime_heap_ptr)),
+                Expression.Const.make(
+                  wasm_mod,
+                  const_int32(runtime_heap_ptr),
+                ),
               ),
-              Expression.const(wasm_mod, const_int32(1)),
+              Expression.Const.make(wasm_mod, const_int32(1)),
             ),
-            Expression.binary(
+            Expression.Binary.make(
               wasm_mod,
               Op.add_int32,
               load(
                 wasm_mod,
-                Expression.const(wasm_mod, const_int32(runtime_heap_ptr)),
+                Expression.Const.make(
+                  wasm_mod,
+                  const_int32(runtime_heap_ptr),
+                ),
               ),
-              Expression.const(wasm_mod, const_int32(8)),
+              Expression.Const.make(wasm_mod, const_int32(8)),
             ),
           ],
         ),
-        Expression.block(
+        Expression.Block.make(
           wasm_mod,
           gensym_label("store_runtime_heap_ptr"),
           [
             store(
               wasm_mod,
-              Expression.const(wasm_mod, const_int32(runtime_heap_ptr)),
+              Expression.Const.make(wasm_mod, const_int32(runtime_heap_ptr)),
               addition,
             ),
             // Binaryen tuples must include a concrete value (and tuples are
             // the only way to use the stack)
-            Expression.const(wasm_mod, const_int32(0)),
+            Expression.Const.make(wasm_mod, const_int32(0)),
           ],
         ),
       ],
@@ -1541,11 +1565,11 @@ let heap_allocate_imm =
       wasm_mod,
       env,
       [
-        Expression.binary(
+        Expression.Binary.make(
           wasm_mod,
           Op.mul_int32,
           num_words(),
-          Expression.const(wasm_mod, const_int32(4)),
+          Expression.Const.make(wasm_mod, const_int32(4)),
         ),
       ],
     );
@@ -1554,16 +1578,16 @@ let heap_allocate_imm =
       wasm_mod,
       env,
       [
-        Expression.binary(
+        Expression.Binary.make(
           wasm_mod,
           Op.add_int32,
-          Expression.binary(
+          Expression.Binary.make(
             wasm_mod,
             Op.mul_int32,
             num_words(),
-            Expression.const(wasm_mod, const_int32(4)),
+            Expression.Const.make(wasm_mod, const_int32(4)),
           ),
-          Expression.const(wasm_mod, const_int32(additional_words * 4)),
+          Expression.Const.make(wasm_mod, const_int32(additional_words * 4)),
         ),
       ],
     );
@@ -1596,8 +1620,8 @@ let call_lambda = (~tail=false, wasm_mod, env, func, (argsty, retty), args) => {
   let compiled_func = () => compile_imm(wasm_mod, env, func);
   let compiled_args = List.map(compile_imm(wasm_mod, env), args);
   let instr =
-    if (tail) {Expression.return_call_indirect} else {
-      Expression.call_indirect
+    if (tail) {Expression.Call_indirect.make_return} else {
+      Expression.Call_indirect.make
     };
   instr(
     wasm_mod,
@@ -1623,7 +1647,7 @@ let allocate_string = (wasm_mod, env, str) => {
       tee_swap(
         heap_allocate(wasm_mod, env, 2 + 2 * List.length(ints_to_push)),
       ),
-      Expression.const(
+      Expression.Const.make(
         wasm_mod,
         const_int32(tag_val_of_heap_tag_type(StringType)),
       ),
@@ -1632,7 +1656,7 @@ let allocate_string = (wasm_mod, env, str) => {
       ~offset=4,
       wasm_mod,
       get_swap(),
-      Expression.const(wasm_mod, const_int32 @@ String.length(str)),
+      Expression.Const.make(wasm_mod, const_int32 @@ String.length(str)),
     ),
   ];
   let elts =
@@ -1643,11 +1667,11 @@ let allocate_string = (wasm_mod, env, str) => {
           ~offset=8 * (idx + 1),
           wasm_mod,
           get_swap(),
-          Expression.const(wasm_mod, wrap_int64(i)),
+          Expression.Const.make(wasm_mod, wrap_int64(i)),
         ),
       ints_to_push,
     );
-  Expression.block(
+  Expression.Block.make(
     wasm_mod,
     gensym_label("allocate_string"),
     List.concat([preamble, elts, [get_swap()]]),
@@ -1664,7 +1688,7 @@ let allocate_char = (wasm_mod, env, char) => {
 
   let get_swap = () => get_swap(wasm_mod, env, 0);
   let tee_swap = tee_swap(~skip_incref=true, wasm_mod, env, 0);
-  Expression.block(
+  Expression.Block.make(
     wasm_mod,
     gensym_label("allocate_char"),
     [
@@ -1672,7 +1696,7 @@ let allocate_char = (wasm_mod, env, char) => {
         ~offset=0,
         wasm_mod,
         tee_swap(heap_allocate(wasm_mod, env, 2)),
-        Expression.const(
+        Expression.Const.make(
           wasm_mod,
           const_int32(tag_val_of_heap_tag_type(CharType)),
         ),
@@ -1681,7 +1705,7 @@ let allocate_char = (wasm_mod, env, char) => {
         ~offset=4,
         wasm_mod,
         get_swap(),
-        Expression.const(wasm_mod, wrap_int32(value)),
+        Expression.Const.make(wasm_mod, wrap_int32(value)),
       ),
       get_swap(),
     ],
@@ -1724,11 +1748,11 @@ let allocate_closure =
     let access_lambda =
       Option.value(
         ~default=
-          Expression.binary(
+          Expression.Binary.make(
             wasm_mod,
             Op.sub_int32,
             get_swap(),
-            Expression.const(wasm_mod, const_int32 @@ 4 * closure_size),
+            Expression.Const.make(wasm_mod, const_int32 @@ 4 * closure_size),
           ),
         lambda,
       );
@@ -1754,7 +1778,7 @@ let allocate_closure =
         0,
         heap_allocate(wasm_mod, env, closure_size),
       ),
-      Expression.const(
+      Expression.Const.make(
         wasm_mod,
         const_int32(tag_val_of_heap_tag_type(LambdaType)),
       ),
@@ -1763,32 +1787,32 @@ let allocate_closure =
       ~offset=4,
       wasm_mod,
       get_swap(),
-      Expression.const(wasm_mod, wrap_int32(arity)),
+      Expression.Const.make(wasm_mod, wrap_int32(arity)),
     ),
     store(
       ~offset=8,
       wasm_mod,
       get_swap(),
-      Expression.binary(
+      Expression.Binary.make(
         wasm_mod,
         Op.add_int32,
-        Expression.global_get(
+        Expression.Global_get.make(
           wasm_mod,
           get_imported_name(runtime_mod, reloc_base),
           Type.int32,
         ),
-        Expression.const(wasm_mod, wrap_int32(func_idx)),
+        Expression.Const.make(wasm_mod, wrap_int32(func_idx)),
       ),
     ),
     store(
       ~offset=12,
       wasm_mod,
       get_swap(),
-      Expression.const(wasm_mod, const_int32(num_free_vars)),
+      Expression.Const.make(wasm_mod, const_int32(num_free_vars)),
     ),
   ];
   let postamble = [get_swap()];
-  Expression.block(
+  Expression.Block.make(
     wasm_mod,
     gensym_label("allocate_closure"),
     List.concat([preamble, patches^, postamble]),
@@ -1820,7 +1844,7 @@ let allocate_adt = (wasm_mod, env, ttag, vtag, elts) => {
         0,
         heap_allocate(wasm_mod, env, num_elts + 5),
       ),
-      Expression.const(
+      Expression.Const.make(
         wasm_mod,
         const_int32(tag_val_of_heap_tag_type(ADTType)),
       ),
@@ -1829,15 +1853,15 @@ let allocate_adt = (wasm_mod, env, ttag, vtag, elts) => {
       ~offset=4,
       wasm_mod,
       get_swap(),
-      Expression.binary(
+      Expression.Binary.make(
         wasm_mod,
         Op.mul_int32,
-        Expression.global_get(
+        Expression.Global_get.make(
           wasm_mod,
           get_imported_name(runtime_mod, module_runtime_id),
           Type.int32,
         ),
-        Expression.const(wasm_mod, const_int32(2)),
+        Expression.Const.make(wasm_mod, const_int32(2)),
       ),
     ),
     store(~offset=8, wasm_mod, get_swap(), compile_imm(wasm_mod, env, ttag)),
@@ -1851,12 +1875,12 @@ let allocate_adt = (wasm_mod, env, ttag, vtag, elts) => {
       ~offset=16,
       wasm_mod,
       get_swap(),
-      Expression.const(wasm_mod, const_int32(num_elts)),
+      Expression.Const.make(wasm_mod, const_int32(num_elts)),
     ),
   ];
   let compiled_elts = List.mapi(compile_elt, elts);
   let postamble = [get_swap()];
-  Expression.block(
+  Expression.Block.make(
     wasm_mod,
     gensym_label("allocate_adt"),
     List.concat([preamble, compiled_elts, postamble]),
@@ -1885,7 +1909,7 @@ let allocate_tuple = (~is_box=false, wasm_mod, env, elts) => {
         0,
         heap_allocate(wasm_mod, env, num_elts + 2),
       ),
-      Expression.const(
+      Expression.Const.make(
         wasm_mod,
         const_int32(tag_val_of_heap_tag_type(TupleType)),
       ),
@@ -1894,12 +1918,12 @@ let allocate_tuple = (~is_box=false, wasm_mod, env, elts) => {
       ~offset=4,
       wasm_mod,
       get_swap(),
-      Expression.const(wasm_mod, const_int32(num_elts)),
+      Expression.Const.make(wasm_mod, const_int32(num_elts)),
     ),
   ];
   let compiled_elts = List.mapi(compile_elt, elts);
   let postamble = [get_swap()];
-  Expression.block(
+  Expression.Block.make(
     wasm_mod,
     gensym_label("allocate_tuple"),
     List.concat([preamble, compiled_elts, postamble]),
@@ -1932,7 +1956,7 @@ let allocate_array = (wasm_mod, env, elts) => {
         0,
         heap_allocate(wasm_mod, env, num_elts + 2),
       ),
-      Expression.const(
+      Expression.Const.make(
         wasm_mod,
         const_int32(tag_val_of_heap_tag_type(ArrayType)),
       ),
@@ -1941,12 +1965,12 @@ let allocate_array = (wasm_mod, env, elts) => {
       ~offset=4,
       wasm_mod,
       get_swap(),
-      Expression.const(wasm_mod, const_int32(num_elts)),
+      Expression.Const.make(wasm_mod, const_int32(num_elts)),
     ),
   ];
   let compiled_elts = List.mapi(compile_elt, elts);
   let postamble = [get_swap()];
-  Expression.block(
+  Expression.Block.make(
     wasm_mod,
     gensym_label("allocate_array"),
     List.concat([preamble, compiled_elts, postamble]),
@@ -1963,18 +1987,18 @@ let allocate_array_n = (wasm_mod, env, num_elts, elt) => {
 
   let outer_label = gensym_label("outer");
   let inner_label = gensym_label("inner");
-  Expression.block(
+  Expression.Block.make(
     wasm_mod,
     gensym_label("allocate_array_n"),
     [
       error_if_true(
         wasm_mod,
         env,
-        Expression.binary(
+        Expression.Binary.make(
           wasm_mod,
           Op.lt_s_int32,
           compiled_num_elts(),
-          Expression.const(wasm_mod, encoded_const_int32(0)),
+          Expression.Const.make(wasm_mod, encoded_const_int32(0)),
         ),
         IndexOutOfBounds,
         [num_elts],
@@ -1989,7 +2013,7 @@ let allocate_array_n = (wasm_mod, env, num_elts, elt) => {
           0,
           heap_allocate_imm(~additional_words=2, wasm_mod, env, num_elts),
         ),
-        Expression.const(
+        Expression.Const.make(
           wasm_mod,
           const_int32(tag_val_of_heap_tag_type(ArrayType)),
         ),
@@ -2000,58 +2024,60 @@ let allocate_array_n = (wasm_mod, env, num_elts, elt) => {
         get_arr_addr(),
         untag_number(wasm_mod, compiled_num_elts()),
       ),
-      set_loop_counter(Expression.const(wasm_mod, encoded_const_int32(0))),
-      Expression.block(
+      set_loop_counter(
+        Expression.Const.make(wasm_mod, encoded_const_int32(0)),
+      ),
+      Expression.Block.make(
         wasm_mod,
         outer_label,
         [
-          Expression.loop(
+          Expression.Loop.make(
             wasm_mod,
             inner_label,
-            Expression.block(
+            Expression.Block.make(
               wasm_mod,
               gensym_label("loop"),
               [
-                Expression.break(
+                Expression.Break.make(
                   wasm_mod,
                   outer_label,
-                  Expression.binary(
+                  Expression.Binary.make(
                     wasm_mod,
                     Op.ge_s_int32,
                     get_loop_counter(),
                     compiled_num_elts(),
                   ),
-                  Expression.null(),
+                  Expression.Null.make(),
                 ),
                 store(
                   ~offset=8,
                   wasm_mod,
-                  Expression.binary(
+                  Expression.Binary.make(
                     wasm_mod,
                     Op.add_int32,
                     get_arr_addr(),
-                    Expression.binary(
+                    Expression.Binary.make(
                       wasm_mod,
                       Op.mul_int32,
                       untag_number(wasm_mod, get_loop_counter()),
-                      Expression.const(wasm_mod, const_int32(4)),
+                      Expression.Const.make(wasm_mod, const_int32(4)),
                     ),
                   ),
                   call_incref(wasm_mod, env, elt),
                 ),
                 set_loop_counter(
-                  Expression.binary(
+                  Expression.Binary.make(
                     wasm_mod,
                     Op.add_int32,
                     get_loop_counter(),
-                    Expression.const(wasm_mod, const_int32(2)),
+                    Expression.Const.make(wasm_mod, const_int32(2)),
                   ),
                 ),
-                Expression.break(
+                Expression.Break.make(
                   wasm_mod,
                   inner_label,
-                  Expression.null(),
-                  Expression.null(),
+                  Expression.Null.make(),
+                  Expression.Null.make(),
                 ),
               ],
             ),
@@ -2074,18 +2100,18 @@ let allocate_array_init = (wasm_mod, env, num_elts, init_f) => {
 
   let outer_label = gensym_label("outer");
   let inner_label = gensym_label("inner");
-  Expression.block(
+  Expression.Block.make(
     wasm_mod,
     gensym_label("allocate_array_init"),
     [
       error_if_true(
         wasm_mod,
         env,
-        Expression.binary(
+        Expression.Binary.make(
           wasm_mod,
           Op.lt_s_int32,
           compiled_num_elts(),
-          Expression.const(wasm_mod, encoded_const_int32(0)),
+          Expression.Const.make(wasm_mod, encoded_const_int32(0)),
         ),
         IndexOutOfBounds,
         [num_elts],
@@ -2100,7 +2126,7 @@ let allocate_array_init = (wasm_mod, env, num_elts, init_f) => {
           0,
           heap_allocate_imm(~additional_words=2, wasm_mod, env, num_elts),
         ),
-        Expression.const(
+        Expression.Const.make(
           wasm_mod,
           const_int32(tag_val_of_heap_tag_type(ArrayType)),
         ),
@@ -2111,47 +2137,49 @@ let allocate_array_init = (wasm_mod, env, num_elts, init_f) => {
         get_arr_addr(),
         untag_number(wasm_mod, compiled_num_elts()),
       ),
-      set_loop_counter(Expression.const(wasm_mod, encoded_const_int32(0))),
-      Expression.block(
+      set_loop_counter(
+        Expression.Const.make(wasm_mod, encoded_const_int32(0)),
+      ),
+      Expression.Block.make(
         wasm_mod,
         outer_label,
         [
-          Expression.loop(
+          Expression.Loop.make(
             wasm_mod,
             inner_label,
-            Expression.block(
+            Expression.Block.make(
               wasm_mod,
               gensym_label("loop"),
               [
-                Expression.break(
+                Expression.Break.make(
                   wasm_mod,
                   outer_label,
-                  Expression.binary(
+                  Expression.Binary.make(
                     wasm_mod,
                     Op.ge_s_int32,
                     get_loop_counter(),
                     compiled_num_elts(),
                   ),
-                  Expression.null(),
+                  Expression.Null.make(),
                 ),
                 store(
                   ~offset=8,
                   wasm_mod,
-                  Expression.binary(
+                  Expression.Binary.make(
                     wasm_mod,
                     Op.add_int32,
                     get_arr_addr(),
-                    Expression.binary(
+                    Expression.Binary.make(
                       wasm_mod,
                       Op.mul_int32,
                       untag_number(wasm_mod, get_loop_counter()),
-                      Expression.const(wasm_mod, const_int32(4)),
+                      Expression.Const.make(wasm_mod, const_int32(4)),
                     ),
                   ),
                   call_incref(
                     wasm_mod,
                     env,
-                    Expression.call_indirect(
+                    Expression.Call_indirect.make(
                       wasm_mod,
                       global_function_table,
                       load(~offset=8, wasm_mod, compiled_func()),
@@ -2162,18 +2190,18 @@ let allocate_array_init = (wasm_mod, env, num_elts, init_f) => {
                   ),
                 ),
                 set_loop_counter(
-                  Expression.binary(
+                  Expression.Binary.make(
                     wasm_mod,
                     Op.add_int32,
                     get_loop_counter(),
-                    Expression.const(wasm_mod, const_int32(2)),
+                    Expression.Const.make(wasm_mod, const_int32(2)),
                   ),
                 ),
-                Expression.break(
+                Expression.Break.make(
                   wasm_mod,
                   inner_label,
-                  Expression.null(),
-                  Expression.null(),
+                  Expression.Null.make(),
+                  Expression.Null.make(),
                 ),
               ],
             ),
@@ -2211,7 +2239,7 @@ let allocate_record = (wasm_mod, env, ttag, elts) => {
         0,
         heap_allocate(wasm_mod, env, num_elts + 4),
       ),
-      Expression.const(
+      Expression.Const.make(
         wasm_mod,
         const_int32(tag_val_of_heap_tag_type(RecordType)),
       ),
@@ -2221,15 +2249,15 @@ let allocate_record = (wasm_mod, env, ttag, elts) => {
       wasm_mod,
       get_swap(),
       /* Tag the runtime id */
-      Expression.binary(
+      Expression.Binary.make(
         wasm_mod,
         Op.mul_int32,
-        Expression.global_get(
+        Expression.Global_get.make(
           wasm_mod,
           get_imported_name(runtime_mod, module_runtime_id),
           Type.int32,
         ),
-        Expression.const(wasm_mod, const_int32(2)),
+        Expression.Const.make(wasm_mod, const_int32(2)),
       ),
     ),
     store(~offset=8, wasm_mod, get_swap(), compile_imm(wasm_mod, env, ttag)),
@@ -2237,12 +2265,12 @@ let allocate_record = (wasm_mod, env, ttag, elts) => {
       ~offset=12,
       wasm_mod,
       get_swap(),
-      Expression.const(wasm_mod, const_int32(num_elts)),
+      Expression.Const.make(wasm_mod, const_int32(num_elts)),
     ),
   ];
   let compiled_elts = List.mapi(compile_elt, elts);
   let postamble = [get_swap()];
-  Expression.block(
+  Expression.Block.make(
     wasm_mod,
     gensym_label("allocate_record"),
     List.concat([preamble, compiled_elts, postamble]),
@@ -2255,52 +2283,52 @@ let compile_prim1 = (wasm_mod, env, p1, arg): Expression.t => {
   switch (p1) {
   | Not =>
     /* Flip the first bit */
-    Expression.binary(
+    Expression.Binary.make(
       wasm_mod,
       Op.xor_int32,
       compiled_arg,
-      Expression.const(wasm_mod, const_int32(0x80000000)),
+      Expression.Const.make(wasm_mod, const_int32(0x80000000)),
     )
   | Ignore =>
-    Expression.block(
+    Expression.Block.make(
       wasm_mod,
       gensym_label("Ignore"),
       [
         safe_drop(wasm_mod, env, compiled_arg),
-        Expression.const(wasm_mod, const_void()),
+        Expression.Const.make(wasm_mod, const_void()),
       ],
     )
   | ArrayLength => compile_array_op(wasm_mod, env, arg, MArrayLength)
   | Assert =>
-    Expression.block(
+    Expression.Block.make(
       wasm_mod,
       gensym_label("Assert"),
       [
         error_if_true(
           wasm_mod,
           env,
-          Expression.binary(
+          Expression.Binary.make(
             wasm_mod,
             Op.eq_int32,
             compiled_arg,
-            Expression.const(wasm_mod, const_false()),
+            Expression.Const.make(wasm_mod, const_false()),
           ),
           AssertionError,
           [],
         ),
-        Expression.const(wasm_mod, const_void()),
+        Expression.Const.make(wasm_mod, const_void()),
       ],
     )
   | Throw =>
-    Expression.block(
+    Expression.Block.make(
       wasm_mod,
       gensym_label("throw"),
       [
-        Expression.drop(
+        Expression.Drop.make(
           wasm_mod,
           call_exception_printer(wasm_mod, env, [compiled_arg]),
         ),
-        Expression.unreachable(wasm_mod),
+        Expression.Unreachable.make(wasm_mod),
       ],
     )
   | Box => failwith("Unreachable case; should never get here: Box")
@@ -2310,7 +2338,7 @@ let compile_prim1 = (wasm_mod, env, p1, arg): Expression.t => {
     failwith("Unreachable case; should never get here: UnboxBind")
   | WasmFromGrain
   | WasmToGrain => compiled_arg // These are no-ops
-  | WasmMemoryGrow => Expression.memory_grow(wasm_mod, compiled_arg)
+  | WasmMemoryGrow => Expression.Memory_grow.make(wasm_mod, compiled_arg)
   | WasmUnaryI32({wasm_op, ret_type})
   | WasmUnaryI64({wasm_op, ret_type})
   | WasmUnaryF32({wasm_op, ret_type})
@@ -2337,7 +2365,7 @@ let compile_wasm_load =
       ~ty?,
       ~signed?,
       wasm_mod,
-      Expression.binary(
+      Expression.Binary.make(
         wasm_mod,
         Op.add_int32,
         compiled_arg1(),
@@ -2350,7 +2378,7 @@ let compile_wasm_load =
 let compile_wasm_store = (~sz=?, ~ty=?, wasm_mod, env, args) => {
   switch (List.nth(args, 2)) {
   | MImmConst(MConstLiteral(MConstI32(offset))) =>
-    Expression.block(
+    Expression.Block.make(
       wasm_mod,
       gensym_label("wasm_prim_store"),
       [
@@ -2362,12 +2390,12 @@ let compile_wasm_store = (~sz=?, ~ty=?, wasm_mod, env, args) => {
           compile_imm(wasm_mod, env, List.nth(args, 0)),
           compile_imm(wasm_mod, env, List.nth(args, 1)),
         ),
-        Expression.const(wasm_mod, const_void()),
+        Expression.Const.make(wasm_mod, const_void()),
       ],
     )
 
   | _ =>
-    Expression.block(
+    Expression.Block.make(
       wasm_mod,
       gensym_label("wasm_prim_store"),
       [
@@ -2375,7 +2403,7 @@ let compile_wasm_store = (~sz=?, ~ty=?, wasm_mod, env, args) => {
           ~sz?,
           ~ty?,
           wasm_mod,
-          Expression.binary(
+          Expression.Binary.make(
             wasm_mod,
             Op.add_int32,
             compile_imm(wasm_mod, env, List.nth(args, 0)),
@@ -2383,7 +2411,7 @@ let compile_wasm_store = (~sz=?, ~ty=?, wasm_mod, env, args) => {
           ),
           compile_imm(wasm_mod, env, List.nth(args, 1)),
         ),
-        Expression.const(wasm_mod, const_void()),
+        Expression.Const.make(wasm_mod, const_void()),
       ],
     )
   };
@@ -2397,14 +2425,14 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
 
   switch (p2) {
   | And =>
-    Expression.if_(
+    Expression.If.make(
       wasm_mod,
       decode_bool(wasm_mod, swap_tee(compiled_arg1())),
       compiled_arg2(),
       swap_get(),
     )
   | Or =>
-    Expression.if_(
+    Expression.If.make(
       wasm_mod,
       decode_bool(wasm_mod, swap_tee(compiled_arg1())),
       swap_get(),
@@ -2415,7 +2443,7 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
     // Physical equality check
     encode_bool(
       wasm_mod,
-      Expression.binary(
+      Expression.Binary.make(
         wasm_mod,
         Op.eq_int32,
         compiled_arg1(),
@@ -2483,33 +2511,33 @@ let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
     compile_wasm_store(~sz, ~ty=Type.int64, wasm_mod, env, args)
   | WasmStoreF32 => compile_wasm_store(~ty=Type.float32, wasm_mod, env, args)
   | WasmStoreF64 => compile_wasm_store(~ty=Type.float64, wasm_mod, env, args)
-  | WasmMemorySize => Expression.memory_size(wasm_mod)
+  | WasmMemorySize => Expression.Memory_size.make(wasm_mod)
   | WasmMemoryCopy =>
-    Expression.block(
+    Expression.Block.make(
       wasm_mod,
       gensym_label("memory_copy"),
       [
-        Expression.memory_copy(
+        Expression.Memory_copy.make(
           wasm_mod,
           compile_imm(wasm_mod, env, List.nth(args, 0)),
           compile_imm(wasm_mod, env, List.nth(args, 1)),
           compile_imm(wasm_mod, env, List.nth(args, 2)),
         ),
-        Expression.const(wasm_mod, const_void()),
+        Expression.Const.make(wasm_mod, const_void()),
       ],
     )
   | WasmMemoryFill =>
-    Expression.block(
+    Expression.Block.make(
       wasm_mod,
       gensym_label("memory_fill"),
       [
-        Expression.memory_fill(
+        Expression.Memory_fill.make(
           wasm_mod,
           compile_imm(wasm_mod, env, List.nth(args, 0)),
           compile_imm(wasm_mod, env, List.nth(args, 1)),
           compile_imm(wasm_mod, env, List.nth(args, 2)),
         ),
-        Expression.const(wasm_mod, const_void()),
+        Expression.Const.make(wasm_mod, const_void()),
       ],
     )
   | WasmMemoryCompare =>
@@ -2521,84 +2549,84 @@ let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
     let get_ptr1 = () => get_swap(wasm_mod, env, 0);
     let get_ptr2 = () => get_swap(wasm_mod, env, 1);
     let get_count = () => get_swap(wasm_mod, env, 2);
-    Expression.block(
+    Expression.Block.make(
       wasm_mod,
       lbl,
       [
         set_ptr1(compile_imm(wasm_mod, env, List.nth(args, 0))),
         set_ptr2(compile_imm(wasm_mod, env, List.nth(args, 1))),
         set_count(compile_imm(wasm_mod, env, List.nth(args, 2))),
-        Expression.loop(
+        Expression.Loop.make(
           wasm_mod,
           loop_lbl,
-          Expression.block(
+          Expression.Block.make(
             wasm_mod,
             gensym_label("memory_compare_loop_inner"),
             [
-              Expression.drop(wasm_mod) @@
-              Expression.break(
+              Expression.Drop.make(wasm_mod) @@
+              Expression.Break.make(
                 wasm_mod,
                 lbl,
-                Expression.unary(wasm_mod, Op.eq_z_int32, get_count()),
-                Expression.const(wasm_mod, const_int32(0)),
+                Expression.Unary.make(wasm_mod, Op.eq_z_int32, get_count()),
+                Expression.Const.make(wasm_mod, const_int32(0)),
               ),
-              Expression.if_(
+              Expression.If.make(
                 wasm_mod,
-                Expression.binary(
+                Expression.Binary.make(
                   wasm_mod,
                   Op.ne_int32,
                   load(~sz=1, ~signed=false, wasm_mod, get_ptr1()),
                   load(~sz=1, ~signed=false, wasm_mod, get_ptr2()),
                 ),
-                Expression.break(
+                Expression.Break.make(
                   wasm_mod,
                   lbl,
-                  Expression.null(),
-                  Expression.select(
+                  Expression.Null.make(),
+                  Expression.Select.make(
                     wasm_mod,
-                    Expression.binary(
+                    Expression.Binary.make(
                       wasm_mod,
                       Op.lt_u_int32,
                       load(~sz=1, ~signed=false, wasm_mod, get_ptr1()),
                       load(~sz=1, ~signed=false, wasm_mod, get_ptr2()),
                     ),
-                    Expression.const(wasm_mod, const_int32(-1)),
-                    Expression.const(wasm_mod, const_int32(1)),
+                    Expression.Const.make(wasm_mod, const_int32(-1)),
+                    Expression.Const.make(wasm_mod, const_int32(1)),
                   ),
                 ),
-                Expression.block(
+                Expression.Block.make(
                   wasm_mod,
                   gensym_label("memory_compare_loop_incr"),
                   [
                     set_ptr1(
-                      Expression.binary(
+                      Expression.Binary.make(
                         wasm_mod,
                         Op.add_int32,
                         get_ptr1(),
-                        Expression.const(wasm_mod, const_int32(1)),
+                        Expression.Const.make(wasm_mod, const_int32(1)),
                       ),
                     ),
                     set_ptr2(
-                      Expression.binary(
+                      Expression.Binary.make(
                         wasm_mod,
                         Op.add_int32,
                         get_ptr2(),
-                        Expression.const(wasm_mod, const_int32(1)),
+                        Expression.Const.make(wasm_mod, const_int32(1)),
                       ),
                     ),
                     set_count(
-                      Expression.binary(
+                      Expression.Binary.make(
                         wasm_mod,
                         Op.sub_int32,
                         get_count(),
-                        Expression.const(wasm_mod, const_int32(1)),
+                        Expression.Const.make(wasm_mod, const_int32(1)),
                       ),
                     ),
-                    Expression.break(
+                    Expression.Break.make(
                       wasm_mod,
                       loop_lbl,
-                      Expression.null(),
-                      Expression.null(),
+                      Expression.Null.make(),
+                      Expression.Null.make(),
                     ),
                   ],
                 ),
@@ -2625,32 +2653,32 @@ let compile_allocation = (wasm_mod, env, alloc_type) =>
     allocate_int32(
       wasm_mod,
       env,
-      Expression.const(wasm_mod, Literal.int32(i)),
+      Expression.Const.make(wasm_mod, Literal.int32(i)),
     )
   | MInt64(i) =>
     allocate_int64(
       wasm_mod,
       env,
-      Expression.const(wasm_mod, Literal.int64(i)),
+      Expression.Const.make(wasm_mod, Literal.int64(i)),
     )
   | MFloat32(i) =>
     allocate_float32(
       wasm_mod,
       env,
-      Expression.const(wasm_mod, Literal.float32(i)),
+      Expression.Const.make(wasm_mod, Literal.float32(i)),
     )
   | MFloat64(i) =>
     allocate_float64(
       wasm_mod,
       env,
-      Expression.const(wasm_mod, Literal.float64(i)),
+      Expression.Const.make(wasm_mod, Literal.float64(i)),
     )
   | MRational(n, d) =>
     allocate_rational(
       wasm_mod,
       env,
-      Expression.const(wasm_mod, Literal.int32(n)),
-      Expression.const(wasm_mod, Literal.int32(d)),
+      Expression.Const.make(wasm_mod, Literal.int32(n)),
+      Expression.Const.make(wasm_mod, Literal.int32(d)),
     )
   };
 
@@ -2674,7 +2702,7 @@ let do_backpatches = (wasm_mod, env, backpatches) => {
       );
     [preamble, ...List.mapi(backpatch_var, variables)];
   };
-  Expression.block(
+  Expression.Block.make(
     wasm_mod,
     gensym_label("do_backpatches"),
     List.concat @@ List.map(do_backpatch, backpatches),
@@ -2724,12 +2752,12 @@ let rec compile_store = (wasm_mod, env, binds) => {
     List.fold_right(process_bind, binds, []);
   };
   let (instrs, backpatches) = collect_backpatches(env, process_binds);
-  Expression.block(wasm_mod, gensym_label("compile_store")) @@
+  Expression.Block.make(wasm_mod, gensym_label("compile_store")) @@
   List.append(instrs, [do_backpatches(wasm_mod, env, backpatches)]);
 }
 
 and compile_set = (wasm_mod, env, b, i) => {
-  Expression.block(
+  Expression.Block.make(
     wasm_mod,
     gensym_label("compile_set"),
     [
@@ -2739,7 +2767,7 @@ and compile_set = (wasm_mod, env, b, i) => {
         env,
         b,
       ),
-      Expression.const(wasm_mod, const_void()),
+      Expression.Const.make(wasm_mod, const_void()),
     ],
   );
 }
@@ -2775,9 +2803,9 @@ and compile_switch = (wasm_mod, env, arg, branches, default, ty) => {
         | F32Type => const_float32(0.)
         | F64Type => const_float64(0.)
         };
-      let default_value = Expression.const(wasm_mod, default_value);
+      let default_value = Expression.Const.make(wasm_mod, default_value);
       let inner_block_body =
-        Expression.switch_(
+        Expression.Switch.make(
           wasm_mod,
           create_table(stack),
           default_label,
@@ -2786,33 +2814,33 @@ and compile_switch = (wasm_mod, env, arg, branches, default, ty) => {
         );
       let default_block_body =
         compile_block(~return_type=switch_ty, wasm_mod, env, default);
-      Expression.block(
+      Expression.Block.make(
         ~return_type=switch_ty,
         wasm_mod,
         branch_name,
         [
-          Expression.drop(wasm_mod) @@
-          Expression.block(
+          Expression.Drop.make(wasm_mod) @@
+          Expression.Block.make(
             ~return_type=switch_ty,
             wasm_mod,
             default_label,
             [inner_block_body],
           ),
-          Expression.break(
+          Expression.Break.make(
             wasm_mod,
             outer_label,
-            Expression.null(),
+            Expression.Null.make(),
             default_block_body,
           ),
         ],
       );
     | [(lbl, hd), ...tl] =>
-      Expression.block(
+      Expression.Block.make(
         ~return_type=switch_ty,
         wasm_mod,
         branch_name,
         [
-          Expression.drop(
+          Expression.Drop.make(
             wasm_mod,
             process_branches(
               count + 1,
@@ -2820,17 +2848,17 @@ and compile_switch = (wasm_mod, env, arg, branches, default, ty) => {
               tl,
             ),
           ),
-          Expression.break(
+          Expression.Break.make(
             wasm_mod,
             outer_label,
-            Expression.null(),
+            Expression.Null.make(),
             compile_block(wasm_mod, env, hd),
           ),
         ],
       )
     };
   };
-  Expression.block(
+  Expression.Block.make(
     ~return_type=switch_ty,
     wasm_mod,
     outer_label,
@@ -2850,7 +2878,7 @@ and compile_block = (~return_type=?, wasm_mod, env, block) => {
         block,
       );
   };
-  Expression.block(
+  Expression.Block.make(
     ~return_type?,
     wasm_mod,
     gensym_label("compile_block"),
@@ -2860,7 +2888,7 @@ and compile_block = (~return_type=?, wasm_mod, env, block) => {
 and compile_instr = (wasm_mod, env, instr) =>
   switch (instr.instr_desc) {
   | MDrop(arg) =>
-    Expression.drop(wasm_mod, compile_instr(wasm_mod, env, arg))
+    Expression.Drop.make(wasm_mod, compile_instr(wasm_mod, env, arg))
   | MTracepoint(x) => tracepoint(wasm_mod, env, x)
   | MImmediate(imm) => compile_imm(wasm_mod, env, imm)
   | MAllocate(alloc) => compile_allocation(wasm_mod, env, alloc)
@@ -2886,7 +2914,7 @@ and compile_instr = (wasm_mod, env, instr) =>
     let compiled_cond = compile_imm(wasm_mod, env, cond);
     let compiled_thn = compile_block(wasm_mod, env, thn);
     let compiled_els = compile_block(wasm_mod, env, els);
-    Expression.if_(
+    Expression.If.make(
       wasm_mod,
       decode_bool(wasm_mod, compiled_cond),
       compiled_thn,
@@ -2900,16 +2928,16 @@ and compile_instr = (wasm_mod, env, instr) =>
     let compiled_cond =
       switch (cond) {
       | Some(cond) => [
-          Expression.drop(wasm_mod) @@
-          Expression.break(
+          Expression.Drop.make(wasm_mod) @@
+          Expression.Break.make(
             wasm_mod,
             block_label,
-            Expression.unary(
+            Expression.Unary.make(
               wasm_mod,
               Op.eq_z_int32,
               decode_bool(wasm_mod, compile_block(wasm_mod, env, cond)),
             ),
-            Expression.const(wasm_mod, const_void()),
+            Expression.Const.make(wasm_mod, const_void()),
           ),
         ]
       | None => []
@@ -2917,68 +2945,68 @@ and compile_instr = (wasm_mod, env, instr) =>
     let compiled_inc =
       switch (inc) {
       | Some(inc) => [
-          Expression.drop(wasm_mod, compile_block(wasm_mod, env, inc)),
+          Expression.Drop.make(wasm_mod, compile_block(wasm_mod, env, inc)),
         ]
       | None => []
       };
     loop_stack := [(continue_label, block_label), ...loop_stack^];
     let compiled_body = compile_block(wasm_mod, env, body);
     loop_stack := List.tl(loop_stack^);
-    Expression.block(
+    Expression.Block.make(
       wasm_mod,
       block_label,
       [
-        Expression.drop(wasm_mod) @@
-        Expression.loop(
+        Expression.Drop.make(wasm_mod) @@
+        Expression.Loop.make(
           wasm_mod,
           loop_label,
-          Expression.block(
+          Expression.Block.make(
             wasm_mod,
             gensym_label("MFor_loop_body"),
             List.concat([
               compiled_cond,
               [
-                Expression.block(
+                Expression.Block.make(
                   wasm_mod,
                   continue_label,
-                  [Expression.drop(wasm_mod, compiled_body)],
+                  [Expression.Drop.make(wasm_mod, compiled_body)],
                 ),
               ],
               compiled_inc,
               [
-                Expression.break(
+                Expression.Break.make(
                   wasm_mod,
                   loop_label,
-                  Expression.null(),
-                  Expression.null(),
+                  Expression.Null.make(),
+                  Expression.Null.make(),
                 ),
               ],
             ]),
           ),
         ),
-        Expression.const(wasm_mod, const_void()),
+        Expression.Const.make(wasm_mod, const_void()),
       ],
     );
   | MContinue =>
     let (continue_label, _) = List.hd(loop_stack^);
-    Expression.break(
+    Expression.Break.make(
       wasm_mod,
       continue_label,
-      Expression.null(),
-      Expression.null(),
+      Expression.Null.make(),
+      Expression.Null.make(),
     );
   | MBreak =>
     let (_, block_label) = List.hd(loop_stack^);
-    Expression.break(
+    Expression.Break.make(
       wasm_mod,
       block_label,
-      Expression.null(),
-      Expression.const(wasm_mod, const_void()),
+      Expression.Null.make(),
+      Expression.Const.make(wasm_mod, const_void()),
     );
   | MError(err, args) => call_error_handler(wasm_mod, env, err, args)
   | MCallKnown({func, func_type: (_, retty), args}) =>
     let compiled_args = List.map(compile_imm(wasm_mod, env), args);
-    Expression.call(
+    Expression.Call.make(
       wasm_mod,
       func,
       compiled_args,
@@ -3104,7 +3132,7 @@ let compile_type_metadata = (wasm_mod, env, type_metadata) => {
     type_metadata,
   );
 
-  Expression.block(
+  Expression.Block.make(
     wasm_mod,
     gensym_label("compile_type_metadata"),
     [
@@ -3112,11 +3140,11 @@ let compile_type_metadata = (wasm_mod, env, type_metadata) => {
         wasm_mod,
         env,
         0,
-        Expression.binary(
+        Expression.Binary.make(
           wasm_mod,
           Op.add_int32,
           allocate_string(wasm_mod, env, Buffer.contents(buf)),
-          Expression.const(wasm_mod, const_int32(8)),
+          Expression.Const.make(wasm_mod, const_int32(8)),
         ),
       ),
       store(
@@ -3124,14 +3152,17 @@ let compile_type_metadata = (wasm_mod, env, type_metadata) => {
         get_swap(wasm_mod, env, 0),
         load(
           wasm_mod,
-          Expression.const(wasm_mod, const_int32(runtime_type_metadata_ptr)),
+          Expression.Const.make(
+            wasm_mod,
+            const_int32(runtime_type_metadata_ptr),
+          ),
         ),
       ),
       store(
         ~offset=4,
         wasm_mod,
         get_swap(wasm_mod, env, 0),
-        Expression.global_get(
+        Expression.Global_get.make(
           wasm_mod,
           get_imported_name(runtime_mod, module_runtime_id),
           Type.int32,
@@ -3139,7 +3170,10 @@ let compile_type_metadata = (wasm_mod, env, type_metadata) => {
       ),
       store(
         wasm_mod,
-        Expression.const(wasm_mod, const_int32(runtime_type_metadata_ptr)),
+        Expression.Const.make(
+          wasm_mod,
+          const_int32(runtime_type_metadata_ptr),
+        ),
         get_swap(wasm_mod, env, 0),
       ),
     ],
@@ -3166,7 +3200,7 @@ let compile_function =
   let inner_body =
     switch (preamble) {
     | Some(preamble) =>
-      Expression.block(
+      Expression.Block.make(
         wasm_mod,
         gensym_label("compile_function_preamble"),
         [preamble, compile_block(wasm_mod, body_env, body_instrs)],
@@ -3179,7 +3213,7 @@ let compile_function =
     } else {
       cleanup_locals(wasm_mod, body_env, inner_body);
     };
-  let body = Expression.return(wasm_mod, inner_body);
+  let body = Expression.Return.make(wasm_mod, inner_body);
   let locals =
     [
       swap_slots,
@@ -3365,7 +3399,7 @@ let compile_tables = (wasm_mod, env, {functions}) => {
     global_function_table,
     "elem",
     function_names,
-    Expression.global_get(
+    Expression.Global_get.make(
       wasm_mod,
       get_imported_name(runtime_mod, reloc_base),
       Type.int32,
@@ -3388,7 +3422,7 @@ let compile_globals = (wasm_mod, env, {globals} as prog) => {
         Printf.sprintf("global_%ld", i),
         wasm_type(ty),
         true,
-        Expression.const(wasm_mod, initial_value(ty)),
+        Expression.Const.make(wasm_mod, initial_value(ty)),
       ),
     globals,
   );
@@ -3398,7 +3432,10 @@ let compile_globals = (wasm_mod, env, {globals} as prog) => {
     Printf.sprintf("global_%d", 1 + List.length(globals)),
     Type.int32,
     false,
-    Expression.const(wasm_mod, const_int32(compute_table_size(env, prog))),
+    Expression.Const.make(
+      wasm_mod,
+      const_int32(compute_table_size(env, prog)),
+    ),
   );
 };
 
@@ -3406,22 +3443,22 @@ let compile_main = (wasm_mod, env, prog) => {
   let runtime_preamble =
     if (Env.is_runtime_mode()) {
       Some(
-        Expression.if_(
+        Expression.If.make(
           wasm_mod,
-          Expression.unary(
+          Expression.Unary.make(
             wasm_mod,
             Op.eq_z_int32,
             load(
               wasm_mod,
-              Expression.const(wasm_mod, const_int32(runtime_heap_ptr)),
+              Expression.Const.make(wasm_mod, const_int32(runtime_heap_ptr)),
             ),
           ),
           store(
             wasm_mod,
-            Expression.const(wasm_mod, const_int32(runtime_heap_ptr)),
-            Expression.const(wasm_mod, const_int32(runtime_heap_start)),
+            Expression.Const.make(wasm_mod, const_int32(runtime_heap_ptr)),
+            Expression.Const.make(wasm_mod, const_int32(runtime_heap_start)),
           ),
-          Expression.null(),
+          Expression.Null.make(),
         ),
       );
     } else {
@@ -3437,7 +3474,11 @@ let compile_main = (wasm_mod, env, prog) => {
     switch (runtime_preamble, module_preamble) {
     | (Some(x), Some(y)) =>
       Some(
-        Expression.block(wasm_mod, gensym_label("main_preamble"), [x, y]),
+        Expression.Block.make(
+          wasm_mod,
+          gensym_label("main_preamble"),
+          [x, y],
+        ),
       )
     | (Some(x), None)
     | (None, Some(x)) => Some(x)
@@ -3466,9 +3507,9 @@ let compile_main = (wasm_mod, env, prog) => {
     Type.none,
     Type.none,
     [||],
-    Expression.drop(
+    Expression.Drop.make(
       wasm_mod,
-      Expression.call(wasm_mod, grain_main, [], Type.int32),
+      Expression.Call.make(wasm_mod, grain_main, [], Type.int32),
     ),
   );
 };
@@ -3594,15 +3635,15 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
     Module.set_features(
       wasm_mod,
       [
-        Features.mvp,
-        Features.multivalue,
-        Features.tail_call,
-        Features.sign_ext,
-        Features.bulk_memory,
-        Features.mutable_globals,
+        Module.Feature.mvp,
+        Module.Feature.multivalue,
+        Module.Feature.tail_call,
+        Module.Feature.sign_ext,
+        Module.Feature.bulk_memory,
+        Module.Feature.mutable_globals,
       ],
     );
-  let _ = Module.set_low_memory_unused(1);
+  let _ = Settings.set_low_memory_unused(true);
   let _ =
     Memory.set_memory(wasm_mod, 0, Memory.unlimited, "memory", [], false);
 

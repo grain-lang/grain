@@ -21,7 +21,7 @@
     "check-format": "dune build @fmt"
   },
   "dependencies": {
-    "@grain/binaryen.ml": "0.9.1",
+    "@grain/binaryen.ml": "0.10.0",
     "@opam/cmdliner": ">= 1.0.2",
     "@opam/dune": ">= 2.0.0",
     "@opam/dune-build-info": ">= 2.0.0",
@@ -46,7 +46,6 @@
   },
   "resolutions": {
     "@opam/ocamlfind": "1.8.1",
-    "@grain/binaryen.ml": "grain-lang/binaryen.ml#867de62ec6a8a6540151e49b4b83bc41f139cc6c",
     "@opam/fp": "facebookexperimental/reason-native:fp.opam#a33f1528a6dd86c67f365e226c81312733181c87",
     "@opam/fs": "facebookexperimental/reason-native:fs.opam#a33f1528a6dd86c67f365e226c81312733181c87",
     "@opam/utf8": "facebookexperimental/reason-native:utf8.opam#a33f1528a6dd86c67f365e226c81312733181c87"
