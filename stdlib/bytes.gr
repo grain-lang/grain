@@ -418,6 +418,7 @@ export let extend = (b: Bytes, left: Number, right: Number) => {
   let (+) = WasmI32.add;
   let (*) = WasmI32.mul;
   let (%) = WasmI32.remS;
+  let (==) = WasmI32.eq;
   let pointerAndSize = getPointerAndSize(b);
   let (src, size) = pointerAndSize;
   Memory.free(WasmI32.fromGrain(pointerAndSize));
@@ -473,6 +474,7 @@ export let blit = (src: Bytes, srcPos: Number, dst: Bytes, dstPos: Number, len: 
   let (<) = WasmI32.ltS;
   let (+) = WasmI32.add;
   let (%) = WasmI32.remS;
+  let (==) = WasmI32.eq;
   let srcPointerAndSize = getPointerAndSize(src);
   let (src, srcSize) = srcPointerAndSize;
   Memory.free(WasmI32.fromGrain(srcPointerAndSize));
