@@ -1,3 +1,5 @@
+
+import Memory from "runtime/unsafe/memory"
 import WasmI32 from "runtime/unsafe/wasmi32"
 import WasmI64 from "runtime/unsafe/wasmi64"
 import WasmF32 from "runtime/unsafe/wasmf32"
@@ -96,7 +98,9 @@ let getPointerAndSize = (bytes) => {
 let getPointerAndOffset = (bytes, byteSize, i) => {
   let (+) = WasmI32.add;
   let (*) = WasmI32.mul;
-  let (ptr, size) = getPointerAndSize(bytes);
+  let pointerAndSize = getPointerAndSize(bytes);
+  let (ptr, size) = pointerAndSize;
+  Memory.free(WasmI32.fromGrain(pointerAndSize));
   let i = numberToWasmI32(i);
   ensureIndexIsInBounds(i, byteSize, size);
   let offset = 8n + i;
@@ -117,7 +121,9 @@ let getPointerAndOffset = (bytes, byteSize, i) => {
 @disableGC
 export let setInt8 = (b: Bytes, i: Number, v: Int32) => {
   let byteSize = 1n;
-  let (ptr, offset) = getPointerAndOffset(b, byteSize, i);
+  let pointerAndOffset = getPointerAndOffset(b, byteSize, i);
+  let (ptr, offset) = pointerAndOffset;
+  Memory.free(WasmI32.fromGrain(pointerAndOffset));
   let value = int32ToWasmI32(v);
   WasmI32.store8(ptr, value, offset);
 }
@@ -131,7 +137,9 @@ export let setInt8 = (b: Bytes, i: Number, v: Int32) => {
 @disableGC
 export let getInt8S = (b: Bytes, i: Number) => {
   let byteSize = 1n;
-  let (ptr, offset) = getPointerAndOffset(b, byteSize, i);
+  let pointerAndOffset = getPointerAndOffset(b, byteSize, i);
+  let (ptr, offset) = pointerAndOffset;
+  Memory.free(WasmI32.fromGrain(pointerAndOffset));
   let n = WasmI32.load8S(ptr, offset);
   wasmI32ToInt32(n)
 }
@@ -145,7 +153,9 @@ export let getInt8S = (b: Bytes, i: Number) => {
 @disableGC
 export let getInt8U = (b: Bytes, i: Number) => {
   let byteSize = 1n;
-  let (ptr, offset) = getPointerAndOffset(b, byteSize, i);
+  let pointerAndOffset = getPointerAndOffset(b, byteSize, i);
+  let (ptr, offset) = pointerAndOffset;
+  Memory.free(WasmI32.fromGrain(pointerAndOffset));
   let n = WasmI32.load8U(ptr, offset);
   wasmI32ToInt32(n)
 }
@@ -160,7 +170,9 @@ export let getInt8U = (b: Bytes, i: Number) => {
 @disableGC
 export let setInt16 = (b: Bytes, i: Number, v: Int32) => {
   let byteSize = 2n;
-  let (ptr, offset) = getPointerAndOffset(b, byteSize, i);
+  let pointerAndOffset = getPointerAndOffset(b, byteSize, i);
+  let (ptr, offset) = pointerAndOffset;
+  Memory.free(WasmI32.fromGrain(pointerAndOffset));
   let value = int32ToWasmI32(v);
   WasmI32.store16(ptr, value, offset);
 }
@@ -174,7 +186,9 @@ export let setInt16 = (b: Bytes, i: Number, v: Int32) => {
 @disableGC
 export let getInt16S = (b: Bytes, i: Number) => {
   let byteSize = 2n;
-  let (ptr, offset) = getPointerAndOffset(b, byteSize, i);
+  let pointerAndOffset = getPointerAndOffset(b, byteSize, i);
+  let (ptr, offset) = pointerAndOffset;
+  Memory.free(WasmI32.fromGrain(pointerAndOffset));
   let n = WasmI32.load16S(ptr, offset);
   wasmI32ToInt32(n)
 }
@@ -188,7 +202,9 @@ export let getInt16S = (b: Bytes, i: Number) => {
 @disableGC
 export let getInt16U = (b: Bytes, i: Number) => {
   let byteSize = 2n;
-  let (ptr, offset) = getPointerAndOffset(b, byteSize, i);
+  let pointerAndOffset = getPointerAndOffset(b, byteSize, i);
+  let (ptr, offset) = pointerAndOffset;
+  Memory.free(WasmI32.fromGrain(pointerAndOffset));
   let n = WasmI32.load16U(ptr, offset);
   wasmI32ToInt32(n)
 
@@ -204,9 +220,11 @@ export let getInt16U = (b: Bytes, i: Number) => {
 @disableGC
 export let setInt32 = (b: Bytes, i: Number, v: Int32) => {
   let byteSize = 4n;
-  let (bytesPtr, offset) = getPointerAndOffset(b, byteSize, i);
+  let pointerAndOffset = getPointerAndOffset(b, byteSize, i);
+  let (ptr, offset) = pointerAndOffset;
+  Memory.free(WasmI32.fromGrain(pointerAndOffset));
   let value = int32ToWasmI32(v);
-  WasmI32.store(bytesPtr, value, offset);
+  WasmI32.store(ptr, value, offset);
 }
 
 /**
@@ -218,7 +236,9 @@ export let setInt32 = (b: Bytes, i: Number, v: Int32) => {
 @disableGC
 export let getInt32 = (b: Bytes, i: Number) => {
   let byteSize = 4n;
-  let (ptr, offset) = getPointerAndOffset(b, byteSize, i);
+  let pointerAndOffset = getPointerAndOffset(b, byteSize, i);
+  let (ptr, offset) = pointerAndOffset;
+  Memory.free(WasmI32.fromGrain(pointerAndOffset));
   let n = WasmI32.load(ptr, offset);
   wasmI32ToInt32(n)
 }
@@ -233,7 +253,9 @@ export let getInt32 = (b: Bytes, i: Number) => {
 @disableGC
 export let setFloat32 = (b: Bytes, i: Number, v: Float32) => {
   let byteSize = 4n;
-  let (ptr, offset) = getPointerAndOffset(b, byteSize, i);
+  let pointerAndOffset = getPointerAndOffset(b, byteSize, i);
+  let (ptr, offset) = pointerAndOffset;
+  Memory.free(WasmI32.fromGrain(pointerAndOffset));
   let value = float32ToWasmF32(v);
   WasmF32.store(ptr, value, offset);
 }
@@ -247,7 +269,9 @@ export let setFloat32 = (b: Bytes, i: Number, v: Float32) => {
 @disableGC
 export let getFloat32 = (b: Bytes, i: Number) => {
   let byteSize = 4n;
-  let (ptr, offset) = getPointerAndOffset(b, byteSize, i);
+  let pointerAndOffset = getPointerAndOffset(b, byteSize, i);
+  let (ptr, offset) = pointerAndOffset;
+  Memory.free(WasmI32.fromGrain(pointerAndOffset));
   let n = WasmF32.load(ptr, offset);
   wasmI32ToFloat32(n)
 }
@@ -262,7 +286,9 @@ export let getFloat32 = (b: Bytes, i: Number) => {
 @disableGC
 export let setInt64 = (b: Bytes, i: Number, v: Int64) => {
   let byteSize = 8n;
-  let (ptr, offset) = getPointerAndOffset(b, byteSize, i);
+  let pointerAndOffset = getPointerAndOffset(b, byteSize, i);
+  let (ptr, offset) = pointerAndOffset;
+  Memory.free(WasmI32.fromGrain(pointerAndOffset));
   let value = int64ToWasmI64(v);
   WasmI64.store(ptr, value, offset);
 }
@@ -276,7 +302,9 @@ export let setInt64 = (b: Bytes, i: Number, v: Int64) => {
 @disableGC
 export let getInt64 = (b: Bytes, i: Number) => {
   let byteSize = 8n;
-  let (ptr, offset) = getPointerAndOffset(b, byteSize, i);
+  let pointerAndOffset = getPointerAndOffset(b, byteSize, i);
+  let (ptr, offset) = pointerAndOffset;
+  Memory.free(WasmI32.fromGrain(pointerAndOffset));
   let n = WasmI64.load(ptr, offset);
   wasmI64ToInt64(n)
 }
@@ -291,7 +319,9 @@ export let getInt64 = (b: Bytes, i: Number) => {
 @disableGC
 export let setFloat64 = (b: Bytes, i: Number, v: Float64) => {
   let byteSize = 8n;
-  let (ptr, offset) = getPointerAndOffset(b, byteSize, i);
+  let pointerAndOffset = getPointerAndOffset(b, byteSize, i);
+  let (ptr, offset) = pointerAndOffset;
+  Memory.free(WasmI32.fromGrain(pointerAndOffset));
   let value = float64ToWasmF64(v);
   WasmF64.store(ptr, value, offset);
 }
@@ -305,7 +335,9 @@ export let setFloat64 = (b: Bytes, i: Number, v: Float64) => {
 @disableGC
 export let getFloat64 = (b: Bytes, i: Number) => {
   let byteSize = 8n;
-  let (ptr, offset) = getPointerAndOffset(b, byteSize, i);
+  let pointerAndOffset = getPointerAndOffset(b, byteSize, i);
+  let (ptr, offset) = pointerAndOffset;
+  Memory.free(WasmI32.fromGrain(pointerAndOffset));
   let n = WasmF64.load(ptr, offset);
   wasmF64ToFloat64(n)
 }
@@ -319,7 +351,9 @@ export let getFloat64 = (b: Bytes, i: Number) => {
 export let copy = (b: Bytes) => {
   let (<) = WasmI32.ltS;
   let (+) = WasmI32.add;
-  let (src, size) = getPointerAndSize(b);
+  let pointerAndSize = getPointerAndSize(b);
+  let (src, size) = pointerAndSize;
+  Memory.free(WasmI32.fromGrain(pointerAndSize));
   let dst = allocateBytes(size);
   for (let mut i = 0n; i < size; i += 4n) {
     let n = WasmI32.load(src, 8n + i);
@@ -342,7 +376,9 @@ export let sub = (b: Bytes, i: Number, len: Number) => {
   let (==) = WasmI32.eq;
   let (<) = WasmI32.ltS;
   let (+) = WasmI32.add;
-  let (src, size) = getPointerAndSize(b);
+  let pointerAndSize = getPointerAndSize(b);
+  let (src, size) = pointerAndSize;
+  Memory.free(WasmI32.fromGrain(pointerAndSize));
   let i = numberToWasmI32(i);
   let len = numberToWasmI32(len);
   if ((i + len) > size) {
@@ -382,7 +418,9 @@ export let extend = (b: Bytes, left: Number, right: Number) => {
   let (+) = WasmI32.add;
   let (*) = WasmI32.mul;
   let (%) = WasmI32.remS;
-  let (src, size) = getPointerAndSize(b);
+  let pointerAndSize = getPointerAndSize(b);
+  let (src, size) = pointerAndSize;
+  Memory.free(WasmI32.fromGrain(pointerAndSize));
   let left = numberToWasmI32(left);
   let right = numberToWasmI32(right);
   let newLen = size + left + right;
@@ -435,8 +473,12 @@ export let blit = (src: Bytes, srcPos: Number, dst: Bytes, dstPos: Number, len: 
   let (<) = WasmI32.ltS;
   let (+) = WasmI32.add;
   let (%) = WasmI32.remS;
-  let (src, srcSize) = getPointerAndSize(src);
-  let (dst, dstSize) = getPointerAndSize(dst);
+  let srcPointerAndSize = getPointerAndSize(src);
+  let (src, srcSize) = srcPointerAndSize;
+  Memory.free(WasmI32.fromGrain(srcPointerAndSize));
+  let dstPointerAndSize = getPointerAndSize(dst);
+  let (dst, dstSize) = dstPointerAndSize;
+  Memory.free(WasmI32.fromGrain(dstPointerAndSize));
   let srcPos = numberToWasmI32(srcPos);
   let dstPos = numberToWasmI32(dstPos);
   let len = numberToWasmI32(len);
