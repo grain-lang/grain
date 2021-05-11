@@ -74,3 +74,13 @@ export let gte = (x: Float64, y: Float64) => {
   let y = WasmF64.load(WasmI32.fromGrain(y), 8n)
   WasmF64.ge(x, y)
 }
+
+@disableGC
+export let toWasm = (n: Float64) => {
+  WasmF64.load(WasmI32.fromGrain(n), 8n)
+}
+
+@disableGC
+export let fromWasm = (n: WasmF64) => {
+  WasmI32.toGrain(newFloat64(n)) : Float64
+}

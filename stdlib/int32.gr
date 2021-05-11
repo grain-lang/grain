@@ -197,3 +197,13 @@ export let shrU = (x: Int32, y: Int32) => {
   let ptr = newInt32(WasmI32.shrU(x, y))
   WasmI32.toGrain(ptr): Int32
 }
+
+@disableGC
+export let toWasm = (n: Int32) => {
+  WasmI32.load(WasmI32.fromGrain(n), 8n)
+}
+
+@disableGC
+export let fromWasm = (n: WasmI32) => {
+  WasmI32.toGrain(newInt32(n)) : Int32
+}
