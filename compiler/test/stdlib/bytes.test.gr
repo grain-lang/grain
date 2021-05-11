@@ -1,6 +1,6 @@
 import Bytes from "bytes";
-import { coerceInt32ToNumber, coerceNumberToInt32 } from "runtime/numbers"
-import { tagSimpleNumber } from "runtime/dataStructures"
+import Int32 from "int32"
+
 
 // Bytes.empty
 assert Bytes.empty == Bytes.empty;
@@ -67,12 +67,12 @@ let bytes = Bytes.make(8);
 Bytes.setFloat64(bytes, 0, 42.0d);
 assert Bytes.getFloat64(bytes, 0) == 42.0d;
 
-// Bytes.copy
 
+// Bytes.copy
 let bytes0 = Bytes.make(8);
 assert Bytes.length(bytes0) == 8;
 for (let mut i = 0; i < 8; i+= 1) {
-  Bytes.setInt8(bytes0, i, coerceNumberToInt32(i));
+  Bytes.setInt8(bytes0, i, Int32.fromNumber(i));
 }
 let bytes1 = Bytes.copy(bytes0);
 assert Bytes.length(bytes1) == Bytes.length(bytes0);
@@ -97,6 +97,7 @@ assert Bytes.length(bytes4) == 6;
 for (let mut i = 0; i < Bytes.length(bytes4); i += 1) {
   assert Bytes.getInt8S(bytes4, i) == Bytes.getInt8S(bytes2, i + 1);
 }
+
 
 // Bytes.extend
 let bytes5 = Bytes.extend(bytes0, 0, 0);
@@ -127,7 +128,6 @@ assert Bytes.getInt8S(bytes5, 10) == 0l;
 for (let mut i = 0; i < Bytes.length(bytes0); i += 1) {
   assert Bytes.getInt8S(bytes5, i) == Bytes.getInt8S(bytes0, i);
 }
-
 let bytes5 = Bytes.extend(bytes0, -4, 0);
 assert Bytes.length(bytes5) == 4;
 for (let mut i = 0; i < Bytes.length(bytes5); i += 1) {
@@ -141,6 +141,7 @@ for (let mut i = 0; i < Bytes.length(bytes5); i += 1) {
 let bytes5 = Bytes.extend(bytes0, -4, -4);
 assert Bytes.length(bytes5) == 0;
 
+
 // Bytes.blit
 let srcBytes = Bytes.copy(bytes0);
 let dstBytes = Bytes.make(16);
@@ -153,17 +154,16 @@ for (let mut i = 0; i < 16; i += 1) {
   }
 }
 
+
 // Bytes.append
 let bytesA = Bytes.make(16);
 for (let mut i = 0; i < 16; i += 1) {
   Bytes.setInt8(bytesA, i, 1l);
 }
-
 let bytesB = Bytes.make(16);
 for (let mut i = 0; i < 16; i += 1) {
   Bytes.setInt8(bytesB, i, 2l);
 }
-
 let bytesC = Bytes.append(bytesA, bytesB);
 for (let mut i = 0; i < Bytes.length(bytesC); i += 1) {
     if (i < 16) {
