@@ -356,8 +356,8 @@ export let copy = (b: Bytes) => {
   Memory.free(WasmI32.fromGrain(pointerAndSize));
   let dst = allocateBytes(size);
   for (let mut i = 0n; i < size; i += 4n) {
-    let n = WasmI32.load(src, 8n + i);
-    WasmI32.store(dst, n, 8n + i);
+    let n = WasmI32.load(src + i, 8n);
+    WasmI32.store(dst + i, n, 8n);
   }
   WasmI32.toGrain(dst): Bytes
 }
@@ -389,14 +389,14 @@ export let sub = (b: Bytes, i: Number, len: Number) => {
   if (i % 4n == 0n) {
     // If possible, copy 4 bytes at a time
     for (let mut i = 0n; i < len; i += 4n) {
-      let n = WasmI32.load(src, 8n + i + offset);
-      WasmI32.store(dst, n, 8n + i);
+      let n = WasmI32.load(src + i + offset, 8n);
+      WasmI32.store(dst + i, n, 8n);
     }
   } else {
     // Otherwise, copy 1 byte at a time
     for (let mut i = 0n; i < len; i += 1n) {
-      let n = WasmI32.load8S(src, 8n + i + offset);
-      WasmI32.store8(dst, n, 8n + i);
+      let n = WasmI32.load8S(src + i + offset, 8n);
+      WasmI32.store8(dst + i, n, 8n);
     }
   }
   WasmI32.toGrain(dst): Bytes
@@ -443,14 +443,14 @@ export let extend = (b: Bytes, left: Number, right: Number) => {
     if (start % 4n == 0n && offset % 4n == 0n) {
       // If possible, copy 4 bytes at a time
       for (let mut i = start; i < end; i += 4n) {
-        let n = WasmI32.load(src, 8n + i);
-        WasmI32.store(dst, n, 8n + i + offset);
+        let n = WasmI32.load(src + i, 8n);
+        WasmI32.store(dst + i + offset, n, 8n);
       }
     } else {
       // Otherwise, copy 1 byte at a time
       for (let mut i = start; i < end; i += 1n) {
-        let n = WasmI32.load8S(src, 8n + i);
-        WasmI32.store8(dst, n, 8n + i + offset);
+        let n = WasmI32.load8S(src + i, 8n);
+        WasmI32.store8(dst + i + offset, n, 8n);
       }
     }
   }
@@ -492,14 +492,14 @@ export let blit = (src: Bytes, srcPos: Number, dst: Bytes, dstPos: Number, len: 
   if (srcPos % 4n == 0n && dstPos % 4n == 0n) {
     // If possible, copy 4 bytes at a time
     for (let mut i = srcPos; i < end; i += 4n) {
-      let n = WasmI32.load(src, 8n + i);
-      WasmI32.store(dst, n, 8n + i + dstPos);
+      let n = WasmI32.load(src + i, 8n);
+      WasmI32.store(dst + i + dstPos, n, 8n);
     }
   } else {
     // Otherwise, copy 1 byte at a time
     for (let mut i = srcPos; i < end; i += 1n) {
-      let n = WasmI32.load8S(src, 8n + i);
-      WasmI32.store8(dst, n, 8n + i + dstPos);
+      let n = WasmI32.load8S(src + i, 8n);
+      WasmI32.store8(dst + i + dstPos, n, 8n);
     }
   }
 }
