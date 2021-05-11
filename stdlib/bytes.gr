@@ -12,7 +12,7 @@ import {
   newInt64,
   newFloat64
 } from "runtime/dataStructures"
-import { coerceNumberToInt32, coerceNumberToInt64 } from "runtime/numbers"
+import { coerceNumberToInt32 } from "runtime/numbers"
 import Exception from "runtime/exception"
 
 // -----------------------------------------------------------------------------
