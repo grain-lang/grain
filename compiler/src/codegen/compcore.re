@@ -1587,10 +1587,7 @@ let call_lambda = (~tail=false, wasm_mod, env, func, (argsty, retty), args) => {
   );
 };
 
-let allocate_string = (wasm_mod, env, str) => {
-  let buf = Buffer.create(80);
-  Buffer.add_string(buf, str);
-
+let allocate_buffer = (wasm_mod, env, buf, len, tag, label) => {
   let ints_to_push: list(int64) = buf_to_ints(buf);
   let get_swap = () => get_swap(wasm_mod, env, 0);
   let tee_swap = tee_swap(~skip_incref=true, wasm_mod, env, 0);
@@ -1603,14 +1600,14 @@ let allocate_string = (wasm_mod, env, str) => {
       ),
       Expression.Const.make(
         wasm_mod,
-        const_int32(tag_val_of_heap_tag_type(StringType)),
+        const_int32(tag_val_of_heap_tag_type(tag)),
       ),
     ),
     store(
       ~offset=4,
       wasm_mod,
       get_swap(),
-      Expression.Const.make(wasm_mod, const_int32 @@ String.length(str)),
+      Expression.Const.make(wasm_mod, const_int32 @@ len),
     ),
   ];
   let elts =
@@ -1627,53 +1624,34 @@ let allocate_string = (wasm_mod, env, str) => {
     );
   Expression.Block.make(
     wasm_mod,
-    gensym_label("allocate_string"),
+    gensym_label(label),
     List.concat([preamble, elts, [get_swap()]]),
+  );
+};
+
+let allocate_string = (wasm_mod, env, str) => {
+  let buf = Buffer.create(80);
+  Buffer.add_string(buf, str);
+  allocate_buffer(
+    wasm_mod,
+    env,
+    buf,
+    String.length(str),
+    StringType,
+    "allocate_string",
   );
 };
 
 let allocate_bytes = (wasm_mod, env, bytes) => {
   let buf = Buffer.create(80);
   Buffer.add_bytes(buf, bytes);
-
-  let ints_to_push: list(int64) = buf_to_ints(buf);
-  let get_swap = () => get_swap(wasm_mod, env, 0);
-  let tee_swap = tee_swap(~skip_incref=true, wasm_mod, env, 0);
-  let preamble = [
-    store(
-      ~offset=0,
-      wasm_mod,
-      tee_swap(
-        heap_allocate(wasm_mod, env, 2 + 2 * List.length(ints_to_push)),
-      ),
-      Expression.Const.make(
-        wasm_mod,
-        const_int32(tag_val_of_heap_tag_type(BytesType)),
-      ),
-    ),
-    store(
-      ~offset=4,
-      wasm_mod,
-      get_swap(),
-      Expression.Const.make(wasm_mod, const_int32 @@ Bytes.length(bytes)),
-    ),
-  ];
-  let elts =
-    List.mapi(
-      (idx, i: int64) =>
-        store(
-          ~ty=Type.int64,
-          ~offset=8 * (idx + 1),
-          wasm_mod,
-          get_swap(),
-          Expression.Const.make(wasm_mod, wrap_int64(i)),
-        ),
-      ints_to_push,
-    );
-  Expression.Block.make(
+  allocate_buffer(
     wasm_mod,
-    gensym_label("allocate_bytes"),
-    List.concat([preamble, elts, [get_swap()]]),
+    env,
+    buf,
+    Bytes.length(bytes),
+    BytesType,
+    "allocate_bytes",
   );
 };
 
