@@ -141,7 +141,6 @@ for (let mut i = 0; i < Bytes.length(bytes5); i += 1) {
 let bytes5 = Bytes.extend(bytes0, -4, -4);
 assert Bytes.length(bytes5) == 0;
 
-
 // Bytes.blit
 let srcBytes = Bytes.copy(bytes0);
 let dstBytes = Bytes.make(16);

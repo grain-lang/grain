@@ -355,10 +355,7 @@ export let copy = (b: Bytes) => {
   let (src, size) = pointerAndSize;
   Memory.free(WasmI32.fromGrain(pointerAndSize));
   let dst = allocateBytes(size);
-  for (let mut i = 0n; i < size; i += 4n) {
-    let n = WasmI32.load(src + i, 8n);
-    WasmI32.store(dst + i, n, 8n);
-  }
+  Memory.copy(dst + 8n, src + 8n, size);
   WasmI32.toGrain(dst): Bytes
 }
 
@@ -372,9 +369,6 @@ export let copy = (b: Bytes) => {
 @disableGC
 export let sub = (b: Bytes, i: Number, len: Number) => {
   let (>) = WasmI32.gtS;
-  let (%) = WasmI32.remS;
-  let (==) = WasmI32.eq;
-  let (<) = WasmI32.ltS;
   let (+) = WasmI32.add;
   let pointerAndSize = getPointerAndSize(b);
   let (src, size) = pointerAndSize;
@@ -386,19 +380,7 @@ export let sub = (b: Bytes, i: Number, len: Number) => {
   }
   let dst = allocateBytes(len);
   let offset = i;
-  if (i % 4n == 0n) {
-    // If possible, copy 4 bytes at a time
-    for (let mut i = 0n; i < len; i += 4n) {
-      let n = WasmI32.load(src + i + offset, 8n);
-      WasmI32.store(dst + i, n, 8n);
-    }
-  } else {
-    // Otherwise, copy 1 byte at a time
-    for (let mut i = 0n; i < len; i += 1n) {
-      let n = WasmI32.load8S(src + i + offset, 8n);
-      WasmI32.store8(dst + i, n, 8n);
-    }
-  }
+  Memory.copy(dst + 8n, src + 8n + i, len);
   WasmI32.toGrain(dst): Bytes
 }
 
@@ -416,9 +398,8 @@ export let extend = (b: Bytes, left: Number, right: Number) => {
   let (<) = WasmI32.ltS;
   let (>) = WasmI32.gtS;
   let (+) = WasmI32.add;
+  let (-) = WasmI32.sub;
   let (*) = WasmI32.mul;
-  let (%) = WasmI32.remS;
-  let (==) = WasmI32.eq;
   let pointerAndSize = getPointerAndSize(b);
   let (src, size) = pointerAndSize;
   Memory.free(WasmI32.fromGrain(pointerAndSize));
@@ -430,30 +411,17 @@ export let extend = (b: Bytes, left: Number, right: Number) => {
   }
   let dst = allocateBytes(newLen);
   let (start, offset) = if (left < 0n) {
-    (left * -1n, left)
+    (left * -1n, 0n)
   } else {
     (0n, left)
   };
-  let end = if (right < 0n) {
-    size + right
+  let len = if (right < 0n) {
+    (size + right) - start
   } else {
-    size
-  };
-  // Copy relevant range of bytes
-  if (start < size && end > start) {
-    if (start % 4n == 0n && offset % 4n == 0n) {
-      // If possible, copy 4 bytes at a time
-      for (let mut i = start; i < end; i += 4n) {
-        let n = WasmI32.load(src + i, 8n);
-        WasmI32.store(dst + i + offset, n, 8n);
-      }
-    } else {
-      // Otherwise, copy 1 byte at a time
-      for (let mut i = start; i < end; i += 1n) {
-        let n = WasmI32.load8S(src + i, 8n);
-        WasmI32.store8(dst + i + offset, n, 8n);
-      }
-    }
+    size - start
+  }
+  if (len > 0n) {
+    Memory.copy(dst + 8n + offset, src + 8n + start, len);
   }
   WasmI32.toGrain(dst): Bytes
 }
@@ -471,10 +439,7 @@ export let extend = (b: Bytes, left: Number, right: Number) => {
 @disableGC
 export let blit = (src: Bytes, srcPos: Number, dst: Bytes, dstPos: Number, len: Number) => {
   let (>) = WasmI32.gtS;
-  let (<) = WasmI32.ltS;
   let (+) = WasmI32.add;
-  let (%) = WasmI32.remS;
-  let (==) = WasmI32.eq;
   let srcPointerAndSize = getPointerAndSize(src);
   let (src, srcSize) = srcPointerAndSize;
   Memory.free(WasmI32.fromGrain(srcPointerAndSize));
@@ -491,19 +456,7 @@ export let blit = (src: Bytes, srcPos: Number, dst: Bytes, dstPos: Number, len: 
     throw Exception.InvalidArgument("Invalid destination bytes range");
   }
   let end = srcPos + len;
-  if (srcPos % 4n == 0n && dstPos % 4n == 0n) {
-    // If possible, copy 4 bytes at a time
-    for (let mut i = srcPos; i < end; i += 4n) {
-      let n = WasmI32.load(src + i, 8n);
-      WasmI32.store(dst + i + dstPos, n, 8n);
-    }
-  } else {
-    // Otherwise, copy 1 byte at a time
-    for (let mut i = srcPos; i < end; i += 1n) {
-      let n = WasmI32.load8S(src + i, 8n);
-      WasmI32.store8(dst + i + dstPos, n, 8n);
-    }
-  }
+  Memory.copy(dst + 8n + dstPos, src + 8n + srcPos, len);
 }
 
 /**
