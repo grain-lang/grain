@@ -1,75 +1,18 @@
-
 import Memory from "runtime/unsafe/memory"
 import WasmI32 from "runtime/unsafe/wasmi32"
 import WasmI64 from "runtime/unsafe/wasmi64"
 import WasmF32 from "runtime/unsafe/wasmf32"
 import WasmF64 from "runtime/unsafe/wasmf64"
-import {
-  tagSimpleNumber,
-  allocateBytes,
-  newInt32,
-  newFloat32,
-  newInt64,
-  newFloat64
-} from "runtime/dataStructures"
-import { coerceNumberToInt32 } from "runtime/numbers"
+import Conv from "runtime/unsafe/conv"
+import { tagSimpleNumber, allocateBytes } from "runtime/dataStructures"
 import Exception from "runtime/exception"
-
-// -----------------------------------------------------------------------------
-// Conversion Utils
-// -----------------------------------------------------------------------------
+import Int32 from "int32"
 
 /** Converts Number to WasmI32 */
 @disableGC
 let numberToWasmI32 = n => {
-  let i32 = coerceNumberToInt32(n)
-  let ptr = WasmI32.fromGrain(i32)
-  WasmI32.load(ptr, 8n)
+  Conv.fromInt32(Int32.fromNumber(n))
 }
-
-@disableGC
-let int32ToWasmI32 = (n: Int32) => {
-  WasmI32.load(WasmI32.fromGrain(n), 8n)
-}
-
-@disableGC
-let float32ToWasmF32 = (n: Float32) => {
-  WasmF32.load(WasmI32.fromGrain(n), 8n)
-}
-
-@disableGC
-let int64ToWasmI64 = (n: Int64) => {
-  WasmI64.load(WasmI32.fromGrain(n), 8n)
-}
-
-@disableGC
-let float64ToWasmF64 = (n: Float64) => {
-  WasmF64.load(WasmI32.fromGrain(n), 8n)
-}
-
-@disableGC
-let wasmI32ToInt32 = (n: WasmI32) => {
-  WasmI32.toGrain(newInt32(n)) : Int32
-}
-
-@disableGC
-let wasmI32ToFloat32 = (n: WasmF32) => {
-  WasmI32.toGrain(newFloat32(n)) : Float32
-}
-
-@disableGC
-let wasmI64ToInt64 = (n: WasmI64) => {
-  WasmI32.toGrain(newInt64(n)) : Int64
-}
-
-@disableGC
-let wasmF64ToFloat64 = (n: WasmF64) => {
-  WasmI32.toGrain(newFloat64(n)) : Float64
-}
-
-// -----------------------------------------------------------------------------
-// Pointer Utils
-// -----------------------------------------------------------------------------
 
 /** Throws an exception if the index specified is out-of-bounds */
 @disableGC
@@ -107,10 +50,6 @@ let getPointerAndOffset = (bytes, byteSize, i) => {
   (ptr, offset)
 }
 
-// -----------------------------------------------------------------------------
-// Public API
-// -----------------------------------------------------------------------------
-
 /**
  * Sets a signed 8-bit integer starting at the given byte index.
  * @param b: Bytes - The Bytes buffer
@@ -124,7 +63,7 @@ export let setInt8 = (b: Bytes, i: Number, v: Int32) => {
   let pointerAndOffset = getPointerAndOffset(b, byteSize, i)
   let (ptr, offset) = pointerAndOffset
   Memory.free(WasmI32.fromGrain(pointerAndOffset))
-  let value = int32ToWasmI32(v)
+  let value = Conv.fromInt32(v)
   WasmI32.store8(ptr, value, offset)
 }
 
@@ -141,7 +80,7 @@ export let getInt8S = (b: Bytes, i: Number) => {
   let (ptr, offset) = pointerAndOffset
   Memory.free(WasmI32.fromGrain(pointerAndOffset))
   let n = WasmI32.load8S(ptr, offset)
-  wasmI32ToInt32(n)
+  Conv.toInt32(n)
 }
 
 /**
@@ -157,7 +96,7 @@ export let getInt8U = (b: Bytes, i: Number) => {
   let (ptr, offset) = pointerAndOffset
   Memory.free(WasmI32.fromGrain(pointerAndOffset))
   let n = WasmI32.load8U(ptr, offset)
-  wasmI32ToInt32(n)
+  Conv.toInt32(n)
 }
 
 /**
@@ -173,7 +112,7 @@ export let setInt16 = (b: Bytes, i: Number, v: Int32) => {
   let pointerAndOffset = getPointerAndOffset(b, byteSize, i)
   let (ptr, offset) = pointerAndOffset
   Memory.free(WasmI32.fromGrain(pointerAndOffset))
-  let value = int32ToWasmI32(v)
+  let value = Conv.fromInt32(v)
   WasmI32.store16(ptr, value, offset)
 }
 
@@ -190,7 +129,7 @@ export let getInt16S = (b: Bytes, i: Number) => {
   let (ptr, offset) = pointerAndOffset
   Memory.free(WasmI32.fromGrain(pointerAndOffset))
   let n = WasmI32.load16S(ptr, offset)
-  wasmI32ToInt32(n)
+  Conv.toInt32(n)
 }
 
 /**
@@ -206,7 +145,7 @@ export let getInt16U = (b: Bytes, i: Number) => {
   let (ptr, offset) = pointerAndOffset
   Memory.free(WasmI32.fromGrain(pointerAndOffset))
   let n = WasmI32.load16U(ptr, offset)
-  wasmI32ToInt32(n)
+  Conv.toInt32(n)
 
 }
 
@@ -223,7 +162,7 @@ export let setInt32 = (b: Bytes, i: Number, v: Int32) => {
   let pointerAndOffset = getPointerAndOffset(b, byteSize, i)
   let (ptr, offset) = pointerAndOffset
   Memory.free(WasmI32.fromGrain(pointerAndOffset))
-  let value = int32ToWasmI32(v)
+  let value = Conv.fromInt32(v)
   WasmI32.store(ptr, value, offset)
 }
 
@@ -240,7 +179,7 @@ export let getInt32 = (b: Bytes, i: Number) => {
   let (ptr, offset) = pointerAndOffset
   Memory.free(WasmI32.fromGrain(pointerAndOffset))
   let n = WasmI32.load(ptr, offset)
-  wasmI32ToInt32(n)
+  Conv.toInt32(n)
 }
 
 /**
@@ -256,7 +195,7 @@ export let setFloat32 = (b: Bytes, i: Number, v: Float32) => {
   let pointerAndOffset = getPointerAndOffset(b, byteSize, i)
   let (ptr, offset) = pointerAndOffset
   Memory.free(WasmI32.fromGrain(pointerAndOffset))
-  let value = float32ToWasmF32(v)
+  let value = Conv.fromFloat32(v)
   WasmF32.store(ptr, value, offset)
 }
 
@@ -273,7 +212,7 @@ export let getFloat32 = (b: Bytes, i: Number) => {
   let (ptr, offset) = pointerAndOffset
   Memory.free(WasmI32.fromGrain(pointerAndOffset))
   let n = WasmF32.load(ptr, offset)
-  wasmI32ToFloat32(n)
+  Conv.toFloat32(n)
 }
 
 /**
@@ -289,7 +228,7 @@ export let setInt64 = (b: Bytes, i: Number, v: Int64) => {
   let pointerAndOffset = getPointerAndOffset(b, byteSize, i)
   let (ptr, offset) = pointerAndOffset
   Memory.free(WasmI32.fromGrain(pointerAndOffset))
-  let value = int64ToWasmI64(v)
+  let value = Conv.fromInt64(v)
   WasmI64.store(ptr, value, offset)
 }
 
@@ -306,7 +245,7 @@ export let getInt64 = (b: Bytes, i: Number) => {
   let (ptr, offset) = pointerAndOffset
   Memory.free(WasmI32.fromGrain(pointerAndOffset))
   let n = WasmI64.load(ptr, offset)
-  wasmI64ToInt64(n)
+  Conv.toInt64(n)
 }
 
 /**
@@ -322,7 +261,7 @@ export let setFloat64 = (b: Bytes, i: Number, v: Float64) => {
   let pointerAndOffset = getPointerAndOffset(b, byteSize, i)
   let (ptr, offset) = pointerAndOffset
   Memory.free(WasmI32.fromGrain(pointerAndOffset))
-  let value = float64ToWasmF64(v)
+  let value = Conv.fromFloat64(v)
   WasmF64.store(ptr, value, offset)
 }
 
@@ -339,7 +278,7 @@ export let getFloat64 = (b: Bytes, i: Number) => {
   let (ptr, offset) = pointerAndOffset
   Memory.free(WasmI32.fromGrain(pointerAndOffset))
   let n = WasmF64.load(ptr, offset)
-  wasmF64ToFloat64(n)
+  Conv.toFloat64(n)
 }
 
 /**
