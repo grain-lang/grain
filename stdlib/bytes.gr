@@ -349,10 +349,11 @@ export let extend = (b: Bytes, left: Number, right: Number) => {
     throw Exception.InvalidArgument("The resulting length is less than 0")
   }
   let dst = allocateBytes(newLen)
-  let (start, offset) = if (left < 0n) {
-    (left * -1n, 0n)
-  } else {
-    (0n, left)
+  let mut offset = left;
+  let mut start = 0n;
+  if (left < 0n) {
+    start = left * -1n;
+    offset = 0n;
   }
   let len = if (right < 0n) {
     (size + right) - start
