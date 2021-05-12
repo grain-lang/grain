@@ -52,13 +52,13 @@ let getPointerAndOffset = (bytes, byteSize, i) => {
 
 /**
  * Sets a signed 8-bit integer starting at the given byte index.
- * @param b: Bytes - The Bytes buffer
  * @param i: Number - The byte index
  * @param v: Int32 - The value to set
+ * @param b: Bytes - The Bytes buffer
  * @returns Void
  */
 @disableGC
-export let setInt8 = (b: Bytes, i: Number, v: Int32) => {
+export let setInt8 = (i: Number, v: Int32, b: Bytes) => {
   let byteSize = 1n
   let pointerAndOffset = getPointerAndOffset(b, byteSize, i)
   let (ptr, offset) = pointerAndOffset
@@ -69,12 +69,12 @@ export let setInt8 = (b: Bytes, i: Number, v: Int32) => {
 
 /**
  * Gets a signed 8-bit integer starting at the given byte index.
- * @param b: Bytes - The Bytes buffer
  * @param i: Number - The byte index
+ * @param b: Bytes - The Bytes buffer
  * @returns Int32
  */
 @disableGC
-export let getInt8S = (b: Bytes, i: Number) => {
+export let getInt8S = (i: Number, b: Bytes) => {
   let byteSize = 1n
   let pointerAndOffset = getPointerAndOffset(b, byteSize, i)
   let (ptr, offset) = pointerAndOffset
@@ -85,12 +85,12 @@ export let getInt8S = (b: Bytes, i: Number) => {
 
 /**
  * Gets an unsigned 8-bit integer starting at the given byte index.
- * @param b: Bytes - The Bytes buffer
  * @param i: Number - The byte index
+ * @param b: Bytes - The Bytes buffer
  * @returns Int32
  */
 @disableGC
-export let getInt8U = (b: Bytes, i: Number) => {
+export let getInt8U = (i: Number, b: Bytes) => {
   let byteSize = 1n
   let pointerAndOffset = getPointerAndOffset(b, byteSize, i)
   let (ptr, offset) = pointerAndOffset
@@ -101,13 +101,13 @@ export let getInt8U = (b: Bytes, i: Number) => {
 
 /**
  * Sets a signed 16-bit integer starting at the given byte index.
- * @param b: Bytes - The Bytes buffer
  * @param i: Number - The byte index
  * @param v: Int32 - The value to set
+ * @param b: Bytes - The Bytes buffer
  * @returns Void
  */
 @disableGC
-export let setInt16 = (b: Bytes, i: Number, v: Int32) => {
+export let setInt16 = (i: Number, v: Int32, b: Bytes) => {
   let byteSize = 2n
   let pointerAndOffset = getPointerAndOffset(b, byteSize, i)
   let (ptr, offset) = pointerAndOffset
@@ -118,12 +118,12 @@ export let setInt16 = (b: Bytes, i: Number, v: Int32) => {
 
 /**
  * Gets a signed 16-bit integer starting at the given byte index.
- * @param b: Bytes - The Bytes buffer
  * @param i: Number - The byte index
+ * @param b: Bytes - The Bytes buffer
  * @returns Int32
  */
 @disableGC
-export let getInt16S = (b: Bytes, i: Number) => {
+export let getInt16S = (i: Number, b: Bytes) => {
   let byteSize = 2n
   let pointerAndOffset = getPointerAndOffset(b, byteSize, i)
   let (ptr, offset) = pointerAndOffset
@@ -134,30 +134,29 @@ export let getInt16S = (b: Bytes, i: Number) => {
 
 /**
  * Gets an unsigned 16-bit integer starting at the given byte index.
- * @param b: Bytes - The Bytes buffer
  * @param i: Number - The byte index
+ * @param b: Bytes - The Bytes buffer
  * @returns Int32
  */
 @disableGC
-export let getInt16U = (b: Bytes, i: Number) => {
+export let getInt16U = (i: Number, b: Bytes) => {
   let byteSize = 2n
   let pointerAndOffset = getPointerAndOffset(b, byteSize, i)
   let (ptr, offset) = pointerAndOffset
   Memory.free(WasmI32.fromGrain(pointerAndOffset))
   let n = WasmI32.load16U(ptr, offset)
   Conv.toInt32(n)
-
 }
 
 /**
  * Sets a signed 32-bit integer starting at the given byte index.
- * @param b: Bytes - The Bytes buffer
  * @param i: Number - The byte index
  * @param v: Int32 - The value to set
+ * @param b: Bytes - The Bytes buffer
  * @returns Void
  */
 @disableGC
-export let setInt32 = (b: Bytes, i: Number, v: Int32) => {
+export let setInt32 = (i: Number, v: Int32, b: Bytes) => {
   let byteSize = 4n
   let pointerAndOffset = getPointerAndOffset(b, byteSize, i)
   let (ptr, offset) = pointerAndOffset
@@ -168,12 +167,12 @@ export let setInt32 = (b: Bytes, i: Number, v: Int32) => {
 
 /**
  * Gets a signed 32-bit integer starting at the given byte index.
- * @param b: Bytes - The Bytes buffer
  * @param i: Number - The byte index
+ * @param b: Bytes - The Bytes buffer
  * @returns Int32
  */
 @disableGC
-export let getInt32 = (b: Bytes, i: Number) => {
+export let getInt32 = (i: Number, b: Bytes) => {
   let byteSize = 4n
   let pointerAndOffset = getPointerAndOffset(b, byteSize, i)
   let (ptr, offset) = pointerAndOffset
@@ -184,13 +183,13 @@ export let getInt32 = (b: Bytes, i: Number) => {
 
 /**
  * Sets a 32-bit float starting at the given byte index.
- * @param b: Bytes - The Bytes buffer
  * @param i: Number - The byte index
  * @param v: Float32 - The value to set
+ * @param b: Bytes - The Bytes buffer
  * @returns Void
  */
 @disableGC
-export let setFloat32 = (b: Bytes, i: Number, v: Float32) => {
+export let setFloat32 = (i: Number, v: Float32, b: Bytes) => {
   let byteSize = 4n
   let pointerAndOffset = getPointerAndOffset(b, byteSize, i)
   let (ptr, offset) = pointerAndOffset
@@ -201,12 +200,12 @@ export let setFloat32 = (b: Bytes, i: Number, v: Float32) => {
 
 /**
  * Gets a 32-bit float starting at the given byte index.
- * @param b: Bytes - The Bytes buffer
  * @param i: Number - The byte index
+ * @param b: Bytes - The Bytes buffer
  * @returns Float32
  */
 @disableGC
-export let getFloat32 = (b: Bytes, i: Number) => {
+export let getFloat32 = (i: Number, b: Bytes) => {
   let byteSize = 4n
   let pointerAndOffset = getPointerAndOffset(b, byteSize, i)
   let (ptr, offset) = pointerAndOffset
@@ -217,13 +216,13 @@ export let getFloat32 = (b: Bytes, i: Number) => {
 
 /**
  * Sets a signed 64-bit integer starting at the given byte index.
- * @param b: Bytes - The Bytes buffer
  * @param i: Number - The byte index
  * @param v: Int64 - The value to set
+ * @param b: Bytes - The Bytes buffer
  * @returns Void
  */
 @disableGC
-export let setInt64 = (b: Bytes, i: Number, v: Int64) => {
+export let setInt64 = (i: Number, v: Int64, b: Bytes) => {
   let byteSize = 8n
   let pointerAndOffset = getPointerAndOffset(b, byteSize, i)
   let (ptr, offset) = pointerAndOffset
@@ -234,12 +233,12 @@ export let setInt64 = (b: Bytes, i: Number, v: Int64) => {
 
 /**
  * Gets a signed 64-bit integer starting at the given byte index.
- * @param b: Bytes - The Bytes buffer
  * @param i: Number - The byte index
+ * @param b: Bytes - The Bytes buffer
  * @returns Int64
  */
 @disableGC
-export let getInt64 = (b: Bytes, i: Number) => {
+export let getInt64 = (i: Number, b: Bytes) => {
   let byteSize = 8n
   let pointerAndOffset = getPointerAndOffset(b, byteSize, i)
   let (ptr, offset) = pointerAndOffset
@@ -250,13 +249,13 @@ export let getInt64 = (b: Bytes, i: Number) => {
 
 /**
  * Sets a 64-bit float starting at the given byte index.
- * @param b: Bytes - The Bytes buffer
  * @param i: Number - The byte index
  * @param v: Float64 - The value to set
+ * @param b: Bytes - The Bytes buffer
  * @returns Void
  */
 @disableGC
-export let setFloat64 = (b: Bytes, i: Number, v: Float64) => {
+export let setFloat64 = (i: Number, v: Float64, b: Bytes) => {
   let byteSize = 8n
   let pointerAndOffset = getPointerAndOffset(b, byteSize, i)
   let (ptr, offset) = pointerAndOffset
@@ -267,12 +266,12 @@ export let setFloat64 = (b: Bytes, i: Number, v: Float64) => {
 
 /**
  * Gets a 64-bit float starting at the given byte index.
- * @param b: Bytes - The Bytes buffer
  * @param i: Number - The byte index
+ * @param b: Bytes - The Bytes buffer
  * @returns Float64
  */
 @disableGC
-export let getFloat64 = (b: Bytes, i: Number) => {
+export let getFloat64 = (i: Number, b: Bytes) => {
   let byteSize = 8n
   let pointerAndOffset = getPointerAndOffset(b, byteSize, i)
   let (ptr, offset) = pointerAndOffset
@@ -300,13 +299,13 @@ export let copy = (b: Bytes) => {
 
 /**
  * Returns a new Bytes buffer containing a subset of the original Bytes buffer.
- * @param b: Bytes - The Bytes buffer get a subset of bytes from
  * @param i: Number - The start position to copy from
  * @param len: Number - The number of bytes to copy
+ * @param b: Bytes - The Bytes buffer get a subset of bytes from
  * @returns Bytes
  */
 @disableGC
-export let sub = (b: Bytes, i: Number, len: Number) => {
+export let sub = (i: Number, len: Number, b: Bytes) => {
   let (>) = WasmI32.gtS
   let (+) = WasmI32.add
   let pointerAndSize = getPointerAndSize(b)
@@ -327,13 +326,13 @@ export let sub = (b: Bytes, i: Number, len: Number) => {
 /**
  * Returns a new Bytes buffer with unintialized bytes prepended/appended to it.
  * If the `left` or `right` parameters are negative, bytes will be removed from the corresponding side instead of appended.
- * @param b: Bytes - The Bytes buffer get a subset of bytes from
  * @param left: Number - The number of uninitialized bytes to prepend
  * @param right: Number - The number of uninitialized bytes to append
+ * @param b: Bytes - The Bytes buffer get a subset of bytes from
  * @returns Bytes
  */
 @disableGC
-export let extend = (b: Bytes, left: Number, right: Number) => {
+export let extend = (left: Number, right: Number, b: Bytes) => {
   let (<) = WasmI32.ltS
   let (>) = WasmI32.gtS
   let (+) = WasmI32.add
@@ -369,15 +368,15 @@ export let extend = (b: Bytes, left: Number, right: Number) => {
 
 /**
  * Copies a range of bytes bytes from a source buffer to a given location in a destination buffer.
- * @param src: Bytes - The source buffer
  * @param srcPos: Number - The starting byte index to copy bytes from
- * @param dst: Bytes - The destination buffer
  * @param dstPos: Number - The starting byte index to copy bytes into
  * @param len: Number - The amount of bytes to copy from the source buffer
+ * @param src: Bytes - The source buffer
+ * @param dst: Bytes - The destination buffer
  * @returns Void
  */
 @disableGC
-export let blit = (src: Bytes, srcPos: Number, dst: Bytes, dstPos: Number, len: Number) => {
+export let blit = (srcPos: Number, dstPos: Number, len: Number, src: Bytes, dst: Bytes) => {
   let (>) = WasmI32.gtS
   let (+) = WasmI32.add
   let srcPointerAndSize = getPointerAndSize(src)
@@ -413,14 +412,14 @@ export let length = (s: Bytes) => {
 /**
  * Creates a new Bytes buffer that contains the bytes of both buffers a and b.
  * @param a: Bytes - The buffer to be copied first
- * @param b: Bytes - The buffer to be appended
+ * @param b: Bytes - The buffer to be copied last
  * @returns Bytes
  */
 export let append = (a: Bytes, b: Bytes) => {
   let alen = length(a)
   let blen = length(b)
-  let c = extend(a, 0, blen)
-  blit(b, 0, c, alen, blen)
+  let c = extend(0, blen, a)
+  blit(0, alen, blen, b, c)
   c
 }
 
