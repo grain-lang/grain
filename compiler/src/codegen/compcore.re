@@ -1644,13 +1644,7 @@ let allocate_string = (wasm_mod, env, str) => {
 let allocate_bytes = (wasm_mod, env, bytes) => {
   let buf = Buffer.create(80);
   Buffer.add_bytes(buf, bytes);
-  allocate_bytes_from_buffer(
-    wasm_mod,
-    env,
-    buf,
-    BytesType,
-    "allocate_bytes",
-  );
+  allocate_bytes_from_buffer(wasm_mod, env, buf, BytesType, "allocate_bytes");
 };
 
 let allocate_char = (wasm_mod, env, char) => {
