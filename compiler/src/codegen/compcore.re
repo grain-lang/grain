@@ -1587,7 +1587,7 @@ let call_lambda = (~tail=false, wasm_mod, env, func, (argsty, retty), args) => {
   );
 };
 
-let allocate_bytes_from_buffer = (wasm_mod, env, buf, len, tag, label) => {
+let allocate_bytes_from_buffer = (wasm_mod, env, buf, tag, label) => {
   let ints_to_push: list(int64) = buf_to_ints(buf);
   let get_swap = () => get_swap(wasm_mod, env, 0);
   let tee_swap = tee_swap(~skip_incref=true, wasm_mod, env, 0);
@@ -1607,7 +1607,7 @@ let allocate_bytes_from_buffer = (wasm_mod, env, buf, len, tag, label) => {
       ~offset=4,
       wasm_mod,
       get_swap(),
-      Expression.Const.make(wasm_mod, const_int32 @@ len),
+      Expression.Const.make(wasm_mod, const_int32 @@ Buffer.length(buf)),
     ),
   ];
   let elts =
@@ -1636,7 +1636,6 @@ let allocate_string = (wasm_mod, env, str) => {
     wasm_mod,
     env,
     buf,
-    String.length(str),
     StringType,
     "allocate_string",
   );
@@ -1649,7 +1648,6 @@ let allocate_bytes = (wasm_mod, env, bytes) => {
     wasm_mod,
     env,
     buf,
-    Bytes.length(bytes),
     BytesType,
     "allocate_bytes",
   );
