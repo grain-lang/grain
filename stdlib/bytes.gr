@@ -9,31 +9,18 @@ import Exception from "runtime/exception"
 import Int32 from "int32"
 
 /** Converts Number to WasmI32 */
-// @disableGC
-// let numberToWasmI32 = n => {
-//   let m = WasmI32.fromGrain(n)
-//   if (WasmI32.eqz(WasmI32.and(m, 1n))) {
-//     let i32 = Int32.fromNumber(n)
-//     let res = Conv.fromInt32(i32)
-//     Memory.free(WasmI32.fromGrain(i32))
-//     res
-//   } else {
-//     // fast path
-//     WasmI32.shrU(m, 1n)
-//   }
-// }
 @disableGC
 let numberToWasmI32 = n => {
-  let i32 = Int32.fromNumber(n)
-  let res = Conv.fromInt32(i32)
-  let ptr = WasmI32.fromGrain(i32)
-  // let (>) = Int32.gt;
-  // if (i32 > -1000l) {
-  //   Memory.free(ptr)
-  // } else {
-  //   print("yyy")
-  // }
-  res
+  let m = WasmI32.fromGrain(n)
+  if (WasmI32.eqz(WasmI32.and(m, 1n))) {
+    let i32 = Int32.fromNumber(n)
+    let res = Conv.fromInt32(i32)
+    Memory.free(WasmI32.fromGrain(i32))
+    res
+  } else {
+    // fast path
+    WasmI32.shrS(m, 1n)
+  }
 }
 
 /** Throws an exception if the index specified is out-of-bounds */
@@ -397,7 +384,6 @@ export let extend = (left: Number, right: Number, b: Bytes) => {
   WasmI32.toGrain(dst): Bytes
 }
 
-
 /**
  * Copies a range of bytes bytes from a source buffer to a given location in a destination buffer.
  * @param srcPos: Number - The starting byte index to copy bytes from
@@ -408,7 +394,7 @@ export let extend = (left: Number, right: Number, b: Bytes) => {
  * @returns Void
  */
 @disableGC
-export let blit = (srcPos: Number, dstPos: Number, len: Number, src: Bytes, dst: Bytes) => {
+export let move = (srcPos: Number, dstPos: Number, len: Number, src: Bytes, dst: Bytes) => {
   let (>) = WasmI32.gtS
   let (+) = WasmI32.add
   let src = WasmI32.fromGrain(src)
@@ -449,7 +435,7 @@ export let append = (a: Bytes, b: Bytes) => {
   let alen = length(a)
   let blen = length(b)
   let c = extend(0, blen, a)
-  blit(0, alen, blen, b, c)
+  move(0, alen, blen, b, c)
   c
 }
 
