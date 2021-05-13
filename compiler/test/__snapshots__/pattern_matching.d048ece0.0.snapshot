@@ -9,9 +9,9 @@ pattern matching › adt_match_5
  (import \"grainRuntime\" \"relocBase\" (global $import_grainRuntime_0_relocBase_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRefIgnoreZeros\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $import_pervasives_1188_+_1189 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$[]\" (global $import_pervasives_1190_[]_1191 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$[...]\" (global $import_pervasives_1192_[...]_1193 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $import_pervasives_1198_+_1199 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$[]\" (global $import_pervasives_1200_[]_1201 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$[...]\" (global $import_pervasives_1202_[...]_1203 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $import_GRAIN$MODULE$runtime/gc_0_incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRefIgnoreZeros\" (func $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0 (param i32 i32) (result i32)))
  (global $global_1 i32 (i32.const 0))
@@ -47,11 +47,11 @@ pattern matching › adt_match_5
          (tuple.extract 0
           (tuple.make
            (call_indirect (type $i32_i32_i32_=>_i32)
-            (global.get $import_pervasives_1192_[...]_1193)
+            (global.get $import_pervasives_1202_[...]_1203)
             (i32.const 15)
-            (global.get $import_pervasives_1190_[]_1191)
+            (global.get $import_pervasives_1200_[]_1201)
             (i32.load offset=8
-             (global.get $import_pervasives_1192_[...]_1193)
+             (global.get $import_pervasives_1202_[...]_1203)
             )
            )
            (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
@@ -65,11 +65,11 @@ pattern matching › adt_match_5
          (tuple.extract 0
           (tuple.make
            (call_indirect (type $i32_i32_i32_=>_i32)
-            (global.get $import_pervasives_1192_[...]_1193)
+            (global.get $import_pervasives_1202_[...]_1203)
             (i32.const 13)
             (local.get $9)
             (i32.load offset=8
-             (global.get $import_pervasives_1192_[...]_1193)
+             (global.get $import_pervasives_1202_[...]_1203)
             )
            )
            (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
@@ -83,11 +83,11 @@ pattern matching › adt_match_5
          (tuple.extract 0
           (tuple.make
            (call_indirect (type $i32_i32_i32_=>_i32)
-            (global.get $import_pervasives_1192_[...]_1193)
+            (global.get $import_pervasives_1202_[...]_1203)
             (i32.const 11)
             (local.get $10)
             (i32.load offset=8
-             (global.get $import_pervasives_1192_[...]_1193)
+             (global.get $import_pervasives_1202_[...]_1203)
             )
            )
            (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
@@ -101,11 +101,11 @@ pattern matching › adt_match_5
          (tuple.extract 0
           (tuple.make
            (call_indirect (type $i32_i32_i32_=>_i32)
-            (global.get $import_pervasives_1192_[...]_1193)
+            (global.get $import_pervasives_1202_[...]_1203)
             (i32.const 9)
             (local.get $11)
             (i32.load offset=8
-             (global.get $import_pervasives_1192_[...]_1193)
+             (global.get $import_pervasives_1202_[...]_1203)
             )
            )
            (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
@@ -564,11 +564,11 @@ pattern matching › adt_match_5
                 (tuple.extract 0
                  (tuple.make
                   (call_indirect (type $i32_i32_i32_=>_i32)
-                   (global.get $import_pervasives_1188_+_1189)
+                   (global.get $import_pervasives_1198_+_1199)
                    (local.get $7)
                    (local.get $5)
                    (i32.load offset=8
-                    (global.get $import_pervasives_1188_+_1189)
+                    (global.get $import_pervasives_1198_+_1199)
                    )
                   )
                   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
@@ -578,12 +578,14 @@ pattern matching › adt_match_5
                  )
                 )
                )
-               (return_call_indirect (type $i32_i32_i32_=>_i32)
-                (global.get $import_pervasives_1188_+_1189)
-                (local.get $6)
-                (local.get $1)
-                (i32.load offset=8
-                 (global.get $import_pervasives_1188_+_1189)
+               (br $switch.53_outer
+                (call_indirect (type $i32_i32_i32_=>_i32)
+                 (global.get $import_pervasives_1198_+_1199)
+                 (local.get $6)
+                 (local.get $1)
+                 (i32.load offset=8
+                  (global.get $import_pervasives_1198_+_1199)
+                 )
                 )
                )
               )
@@ -636,12 +638,14 @@ pattern matching › adt_match_5
                )
               )
              )
-             (return_call_indirect (type $i32_i32_i32_=>_i32)
-              (global.get $import_pervasives_1188_+_1189)
-              (local.get $1)
-              (local.get $3)
-              (i32.load offset=8
-               (global.get $import_pervasives_1188_+_1189)
+             (br $switch.53_outer
+              (call_indirect (type $i32_i32_i32_=>_i32)
+               (global.get $import_pervasives_1198_+_1199)
+               (local.get $1)
+               (local.get $3)
+               (i32.load offset=8
+                (global.get $import_pervasives_1198_+_1199)
+               )
               )
              )
             )

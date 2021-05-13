@@ -8,9 +8,9 @@ exports › export8
  (import \"grainRuntime\" \"tbl\" (table $tbl 0 funcref))
  (import \"grainRuntime\" \"relocBase\" (global $import_grainRuntime_0_relocBase_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRefIgnoreZeros\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0 (mut i32)))
- (import \"GRAIN$MODULE$exportStar\" \"GRAIN$EXPORT$y\" (global $import_exportStar_1141_y_1142 (mut i32)))
- (import \"GRAIN$MODULE$exportStar\" \"GRAIN$EXPORT$x\" (global $import_exportStar_1143_x_1144 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $import_pervasives_1145_+_1146 (mut i32)))
+ (import \"GRAIN$MODULE$exportStar\" \"GRAIN$EXPORT$y\" (global $import_exportStar_1151_y_1152 (mut i32)))
+ (import \"GRAIN$MODULE$exportStar\" \"GRAIN$EXPORT$x\" (global $import_exportStar_1153_x_1154 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $import_pervasives_1155_+_1156 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRefIgnoreZeros\" (func $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0 (param i32 i32) (result i32)))
  (global $global_1 i32 (i32.const 0))
  (export \"memory\" (memory $0))
@@ -23,10 +23,10 @@ exports › export8
    (tuple.extract 0
     (tuple.make
      (call_indirect (type $i32_i32_=>_i32)
-      (global.get $import_exportStar_1141_y_1142)
+      (global.get $import_exportStar_1151_y_1152)
       (i32.const 9)
       (i32.load offset=8
-       (global.get $import_exportStar_1141_y_1142)
+       (global.get $import_exportStar_1151_y_1152)
       )
      )
      (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
@@ -37,11 +37,11 @@ exports › export8
    )
   )
   (return_call_indirect (type $i32_i32_i32_=>_i32)
-   (global.get $import_pervasives_1145_+_1146)
-   (global.get $import_exportStar_1143_x_1144)
+   (global.get $import_pervasives_1155_+_1156)
+   (global.get $import_exportStar_1153_x_1154)
    (local.get $0)
    (i32.load offset=8
-    (global.get $import_pervasives_1145_+_1146)
+    (global.get $import_pervasives_1155_+_1156)
    )
   )
  )

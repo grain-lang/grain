@@ -57,7 +57,7 @@ records › record_value_trailing
              )
              (i64.store offset=24
               (local.get $0)
-              (i64.const 68719477863)
+              (i64.const 68719477873)
              )
              (i64.store offset=32
               (local.get $0)
@@ -111,7 +111,7 @@ records › record_value_trailing
         )
         (i32.store offset=8
          (local.get $0)
-         (i32.const 2255)
+         (i32.const 2275)
         )
         (i32.store offset=12
          (local.get $0)

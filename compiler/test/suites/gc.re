@@ -51,7 +51,7 @@ describe("garbage collection", ({test}) => {
       test,
       ~num_pages=1,
       name,
-      makeGcProgram(readWholeFile("input/" ++ file ++ ".gr"), heapSize),
+      makeGcProgram(readWholeFile("test/input/" ++ file ++ ".gr"), heapSize),
       expected,
     );
 

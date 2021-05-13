@@ -9,9 +9,9 @@ boxes › box_multiplication1
  (import \"grainRuntime\" \"relocBase\" (global $import_grainRuntime_0_relocBase_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRefIgnoreZeros\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$unbox\" (global $import_pervasives_1136_unbox_1137 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$*\" (global $import_pervasives_1138_*_1139 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$box\" (global $import_pervasives_1140_box_1141 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$unbox\" (global $import_pervasives_1146_unbox_1147 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$*\" (global $import_pervasives_1148_*_1149 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$box\" (global $import_pervasives_1150_box_1151 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $import_GRAIN$MODULE$runtime/gc_0_incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRefIgnoreZeros\" (func $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0 (param i32 i32) (result i32)))
  (global $global_1 i32 (i32.const 0))
@@ -35,10 +35,10 @@ boxes › box_multiplication1
          (tuple.extract 0
           (tuple.make
            (call_indirect (type $i32_i32_=>_i32)
-            (global.get $import_pervasives_1140_box_1141)
+            (global.get $import_pervasives_1150_box_1151)
             (i32.const 9)
             (i32.load offset=8
-             (global.get $import_pervasives_1140_box_1141)
+             (global.get $import_pervasives_1150_box_1151)
             )
            )
            (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
@@ -52,10 +52,10 @@ boxes › box_multiplication1
          (tuple.extract 0
           (tuple.make
            (call_indirect (type $i32_i32_=>_i32)
-            (global.get $import_pervasives_1136_unbox_1137)
+            (global.get $import_pervasives_1146_unbox_1147)
             (local.get $0)
             (i32.load offset=8
-             (global.get $import_pervasives_1136_unbox_1137)
+             (global.get $import_pervasives_1146_unbox_1147)
             )
            )
            (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
@@ -69,11 +69,11 @@ boxes › box_multiplication1
          (tuple.extract 0
           (tuple.make
            (call_indirect (type $i32_i32_i32_=>_i32)
-            (global.get $import_pervasives_1138_*_1139)
+            (global.get $import_pervasives_1148_*_1149)
             (local.get $1)
             (i32.const 39)
             (i32.load offset=8
-             (global.get $import_pervasives_1138_*_1139)
+             (global.get $import_pervasives_1148_*_1149)
             )
            )
            (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0

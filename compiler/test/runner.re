@@ -23,15 +23,15 @@ let read_stream = cstream => {
 
 let compile = (~hook=?, name, prog) => {
   Config.preserve_config(() => {
-    Config.include_dirs := ["test-libs", ...Config.include_dirs^];
-    let outfile = "output/" ++ name ++ ".gr.wasm";
+    Config.include_dirs := ["test/test-libs", ...Config.include_dirs^];
+    let outfile = "test/output/" ++ name ++ ".gr.wasm";
     ignore @@ compile_string(~hook?, ~name, ~outfile, prog);
   });
 };
 
 let compile_file = (~hook=?, filename, outfile) => {
   Config.preserve_config(() => {
-    Config.include_dirs := ["test-libs", ...Config.include_dirs^];
+    Config.include_dirs := ["test/test-libs", ...Config.include_dirs^];
     ignore @@ compile_file(~hook?, ~outfile, filename);
   });
 };
@@ -46,7 +46,7 @@ let extract_anf = ({cstate_desc}) =>
 let compile_string_to_final_anf = (name, s) =>
   extract_anf(compile_string(~hook=stop_after_optimization, ~name, s));
 
-let wasmfile = name => "output/" ++ name ++ ".gr.wasm";
+let wasmfile = name => "test/output/" ++ name ++ ".gr.wasm";
 
 let run = (~num_pages=?, file) => {
   let cli_flags = "-g";
@@ -93,15 +93,15 @@ let makeSnapshotRunner = (test, name, prog) => {
     name,
     ({expect}) => {
       compile(~hook=stop_after_object_file_emitted, name, prog);
-      let file = "output/" ++ name ++ ".gr.wat";
+      let file = "test/output/" ++ name ++ ".gr.wat";
       expect.file(file).toMatchSnapshot();
     },
   );
 };
 
-let inputFilename = name => "input/" ++ name ++ ".gr";
-let outputFilename = name => "output/" ++ name ++ ".gr.wasm";
-let outputWat = name => "output/" ++ name ++ ".gr.wat";
+let inputFilename = name => "test/input/" ++ name ++ ".gr";
+let outputFilename = name => "test/output/" ++ name ++ ".gr.wasm";
+let outputWat = name => "test/output/" ++ name ++ ".gr.wat";
 
 let makeSnapshotFileRunner = (test, name, filename) => {
   test(
@@ -193,7 +193,7 @@ let makeStdlibRunner = (test, ~code=0, name) => {
   test(
     name,
     ({expect}) => {
-      let infile = "stdlib/" ++ name ++ ".gr";
+      let infile = "test/stdlib/" ++ name ++ ".gr";
       let outfile = outputFilename(name);
       compile_file(infile, outfile);
       let (result, exit_code) = run(outfile);

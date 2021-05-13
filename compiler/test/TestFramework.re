@@ -56,12 +56,18 @@ let clean_stdlib = stdlib_dir =>
     readdir(stdlib_dir, []),
   );
 
+let clean_output = output =>
+  if (Sys.file_exists(output)) {
+    Array.iter(Sys.remove, readdir(output, []));
+  };
+
 let () = {
   /*** Override default stdlib location to use development version of stdlib */
   let stdlib_dir = Unix.getenv("GRAIN_STDLIB");
   let stdlib_dir = Grain_utils.Files.derelativize(stdlib_dir);
   Grain_utils.Config.stdlib_dir := Some(stdlib_dir);
   clean_stdlib(stdlib_dir);
+  clean_output("test/output");
   Grain_utils.Config.debug := true;
   Grain_utils.Config.wat := true;
   Grain_utils.Config.color_enabled := false;
@@ -71,29 +77,7 @@ let () = {
 include Rely.Make({
   let config =
     Rely.TestFrameworkConfig.initialize({
-      snapshotDir:
-        Filename.concat(Sys.getenv("GRAIN_TEST_ROOT"), "__snapshots__"),
-      projectDir: "./",
+      snapshotDir: "test/__snapshots__",
+      projectDir: "test",
     });
 });
-
-let cli = () => {
-  // This hack uses the Dune profile value to pass along a test filter.
-  let filter =
-    switch (Sys.getenv("GRAIN_TEST_FILTER")) {
-    | "release" => None
-    | filter => Some(filter)
-    };
-  let overrideSnapshots =
-    switch (Sys.getenv_opt("GRAIN_TEST_UPDATE_SNAPSHOTS")) {
-    | Some("true") => true
-    | _ => false
-    };
-  let config =
-    Rely.RunConfig.(
-      initialize()
-      |> updateSnapshots(overrideSnapshots)
-      |> withTestNamePattern(filter)
-    );
-  run(config);
-};

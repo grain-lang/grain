@@ -11,7 +11,7 @@ stdlib › stdlib_equal_19
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRefIgnoreZeros\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$==\" (global $import_pervasives_1136_==_1137 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$==\" (global $import_pervasives_1146_==_1147 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $import_GRAIN$MODULE$runtime/gc_0_malloc_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $import_GRAIN$MODULE$runtime/gc_0_incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRefIgnoreZeros\" (func $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0 (param i32 i32) (result i32)))
@@ -24,290 +24,343 @@ stdlib › stdlib_equal_19
   (local $0 i32)
   (local $1 i32)
   (local $2 i32)
-  (i32.store
-   (local.tee $0
-    (tuple.extract 0
-     (tuple.make
-      (block (result i32)
-       (i32.store
-        (local.tee $0
+  (local $3 i32)
+  (local $4 i32)
+  (drop
+   (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+    (local.tee $0
+     (tuple.extract 0
+      (tuple.make
+       (block (result i32)
+        (i32.store
+         (local.tee $0
+          (tuple.extract 0
+           (tuple.make
+            (block (result i32)
+             (i32.store
+              (local.tee $0
+               (tuple.extract 0
+                (tuple.make
+                 (call $import_GRAIN$MODULE$runtime/gc_0_malloc_0
+                  (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0)
+                  (i32.const 80)
+                 )
+                 (i32.const 0)
+                )
+               )
+              )
+              (i32.const 1)
+             )
+             (i32.store offset=4
+              (local.get $0)
+              (i32.const 68)
+             )
+             (i64.store offset=8
+              (local.get $0)
+              (i64.const 0)
+             )
+             (i64.store offset=16
+              (local.get $0)
+              (i64.const 240518168577)
+             )
+             (i64.store offset=24
+              (local.get $0)
+              (i64.const 68719477873)
+             )
+             (i64.store offset=32
+              (local.get $0)
+              (i64.const 31366206292230147)
+             )
+             (i64.store offset=40
+              (local.get $0)
+              (i64.const 68719476736)
+             )
+             (i64.store offset=48
+              (local.get $0)
+              (i64.const 32195220879704067)
+             )
+             (i64.store offset=56
+              (local.get $0)
+              (i64.const 68719476736)
+             )
+             (i64.store offset=64
+              (local.get $0)
+              (i64.const 34447020693389315)
+             )
+             (i64.store offset=72
+              (local.get $0)
+              (i64.const 0)
+             )
+             (i32.add
+              (local.get $0)
+              (i32.const 8)
+             )
+            )
+            (local.get $0)
+           )
+          )
+         )
+         (i32.load
+          (i32.const 1032)
+         )
+        )
+        (i32.store offset=4
+         (local.get $0)
+         (global.get $import_grainRuntime_0_moduleRuntimeId_0)
+        )
+        (i32.store
+         (i32.const 1032)
+         (local.get $0)
+        )
+        (local.set $1
          (tuple.extract 0
           (tuple.make
-           (call $import_GRAIN$MODULE$runtime/gc_0_malloc_0
-            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0)
-            (i32.const 80)
+           (block (result i32)
+            (i32.store
+             (local.tee $0
+              (tuple.extract 0
+               (tuple.make
+                (call $import_GRAIN$MODULE$runtime/gc_0_malloc_0
+                 (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0)
+                 (i32.const 16)
+                )
+                (local.get $0)
+               )
+              )
+             )
+             (i32.const 1)
+            )
+            (i32.store offset=4
+             (local.get $0)
+             (i32.const 3)
+            )
+            (i64.store offset=8
+             (local.get $0)
+             (i64.const 7303010)
+            )
+            (local.get $0)
            )
-           (i32.const 0)
+           (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+            (i32.const 0)
+           )
           )
          )
         )
-        (i32.const 1)
-       )
-       (i32.store offset=4
-        (local.get $0)
-        (i32.const 68)
-       )
-       (i64.store offset=8
-        (local.get $0)
-        (i64.const 0)
-       )
-       (i64.store offset=16
-        (local.get $0)
-        (i64.const 240518168577)
-       )
-       (i64.store offset=24
-        (local.get $0)
-        (i64.const 68719477863)
-       )
-       (i64.store offset=32
-        (local.get $0)
-        (i64.const 31366206292230147)
-       )
-       (i64.store offset=40
-        (local.get $0)
-        (i64.const 68719476736)
-       )
-       (i64.store offset=48
-        (local.get $0)
-        (i64.const 32195220879704067)
-       )
-       (i64.store offset=56
-        (local.get $0)
-        (i64.const 68719476736)
-       )
-       (i64.store offset=64
-        (local.get $0)
-        (i64.const 34447020693389315)
-       )
-       (i64.store offset=72
-        (local.get $0)
-        (i64.const 0)
-       )
-       (i32.add
-        (local.get $0)
-        (i32.const 8)
-       )
-      )
-      (local.get $0)
-     )
-    )
-   )
-   (i32.load
-    (i32.const 1032)
-   )
-  )
-  (i32.store offset=4
-   (local.get $0)
-   (global.get $import_grainRuntime_0_moduleRuntimeId_0)
-  )
-  (i32.store
-   (i32.const 1032)
-   (local.get $0)
-  )
-  (local.set $1
-   (tuple.extract 0
-    (tuple.make
-     (block (result i32)
-      (i32.store
-       (local.tee $0
-        (tuple.extract 0
-         (tuple.make
-          (call $import_GRAIN$MODULE$runtime/gc_0_malloc_0
-           (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0)
-           (i32.const 16)
+        (local.set $2
+         (tuple.extract 0
+          (tuple.make
+           (block (result i32)
+            (i32.store
+             (local.tee $0
+              (tuple.extract 0
+               (tuple.make
+                (call $import_GRAIN$MODULE$runtime/gc_0_malloc_0
+                 (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0)
+                 (i32.const 28)
+                )
+                (local.get $0)
+               )
+              )
+             )
+             (i32.const 4)
+            )
+            (i32.store offset=4
+             (local.get $0)
+             (i32.shl
+              (global.get $import_grainRuntime_0_moduleRuntimeId_0)
+              (i32.const 1)
+             )
+            )
+            (i32.store offset=8
+             (local.get $0)
+             (i32.const 2275)
+            )
+            (i32.store offset=12
+             (local.get $0)
+             (i32.const 3)
+            )
+            (i32.store offset=16
+             (local.get $0)
+             (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+              (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+              (i32.const 9)
+             )
+            )
+            (i32.store offset=20
+             (local.get $0)
+             (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+              (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+              (local.get $1)
+             )
+            )
+            (i32.store offset=24
+             (local.get $0)
+             (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+              (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+              (i32.const -2)
+             )
+            )
+            (local.get $0)
+           )
+           (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+            (i32.const 0)
+           )
           )
-          (local.get $0)
+         )
+        )
+        (local.set $3
+         (tuple.extract 0
+          (tuple.make
+           (block (result i32)
+            (i32.store
+             (local.tee $0
+              (tuple.extract 0
+               (tuple.make
+                (call $import_GRAIN$MODULE$runtime/gc_0_malloc_0
+                 (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0)
+                 (i32.const 16)
+                )
+                (local.get $0)
+               )
+              )
+             )
+             (i32.const 1)
+            )
+            (i32.store offset=4
+             (local.get $0)
+             (i32.const 3)
+            )
+            (i64.store offset=8
+             (local.get $0)
+             (i64.const 7303010)
+            )
+            (local.get $0)
+           )
+           (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+            (i32.const 0)
+           )
+          )
+         )
+        )
+        (local.set $4
+         (tuple.extract 0
+          (tuple.make
+           (block (result i32)
+            (i32.store
+             (local.tee $0
+              (tuple.extract 0
+               (tuple.make
+                (call $import_GRAIN$MODULE$runtime/gc_0_malloc_0
+                 (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0)
+                 (i32.const 28)
+                )
+                (local.get $0)
+               )
+              )
+             )
+             (i32.const 4)
+            )
+            (i32.store offset=4
+             (local.get $0)
+             (i32.shl
+              (global.get $import_grainRuntime_0_moduleRuntimeId_0)
+              (i32.const 1)
+             )
+            )
+            (i32.store offset=8
+             (local.get $0)
+             (i32.const 2275)
+            )
+            (i32.store offset=12
+             (local.get $0)
+             (i32.const 3)
+            )
+            (i32.store offset=16
+             (local.get $0)
+             (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+              (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+              (i32.const 9)
+             )
+            )
+            (i32.store offset=20
+             (local.get $0)
+             (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+              (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+              (local.get $3)
+             )
+            )
+            (i32.store offset=24
+             (local.get $0)
+             (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+              (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+              (i32.const -2)
+             )
+            )
+            (local.get $0)
+           )
+           (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+            (i32.const 0)
+           )
+          )
+         )
+        )
+        (call_indirect (type $i32_i32_i32_=>_i32)
+         (global.get $import_pervasives_1146_==_1147)
+         (local.get $2)
+         (local.get $4)
+         (i32.load offset=8
+          (global.get $import_pervasives_1146_==_1147)
          )
         )
        )
-       (i32.const 1)
-      )
-      (i32.store offset=4
        (local.get $0)
-       (i32.const 3)
       )
-      (i64.store offset=8
-       (local.get $0)
-       (i64.const 7303010)
-      )
-      (local.get $0)
-     )
-     (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-      (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
-      (i32.const 0)
-     )
-    )
-   )
-  )
-  (local.set $1
-   (tuple.extract 0
-    (tuple.make
-     (block (result i32)
-      (i32.store
-       (local.tee $0
-        (tuple.extract 0
-         (tuple.make
-          (call $import_GRAIN$MODULE$runtime/gc_0_malloc_0
-           (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0)
-           (i32.const 28)
-          )
-          (local.get $0)
-         )
-        )
-       )
-       (i32.const 4)
-      )
-      (i32.store offset=4
-       (local.get $0)
-       (i32.shl
-        (global.get $import_grainRuntime_0_moduleRuntimeId_0)
-        (i32.const 1)
-       )
-      )
-      (i32.store offset=8
-       (local.get $0)
-       (i32.const 2255)
-      )
-      (i32.store offset=12
-       (local.get $0)
-       (i32.const 3)
-      )
-      (i32.store offset=16
-       (local.get $0)
-       (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-        (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-        (i32.const 9)
-       )
-      )
-      (i32.store offset=20
-       (local.get $0)
-       (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-        (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-        (local.get $1)
-       )
-      )
-      (i32.store offset=24
-       (local.get $0)
-       (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-        (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-        (i32.const -2)
-       )
-      )
-      (local.get $0)
-     )
-     (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-      (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
-      (i32.const 0)
-     )
-    )
-   )
-  )
-  (local.set $2
-   (tuple.extract 0
-    (tuple.make
-     (block (result i32)
-      (i32.store
-       (local.tee $0
-        (tuple.extract 0
-         (tuple.make
-          (call $import_GRAIN$MODULE$runtime/gc_0_malloc_0
-           (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0)
-           (i32.const 16)
-          )
-          (local.get $0)
-         )
-        )
-       )
-       (i32.const 1)
-      )
-      (i32.store offset=4
-       (local.get $0)
-       (i32.const 3)
-      )
-      (i64.store offset=8
-       (local.get $0)
-       (i64.const 7303010)
-      )
-      (local.get $0)
-     )
-     (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-      (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
-      (i32.const 0)
      )
     )
    )
   )
-  (local.set $0
-   (tuple.extract 0
-    (tuple.make
-     (block (result i32)
-      (i32.store
-       (local.tee $0
-        (tuple.extract 0
-         (tuple.make
-          (call $import_GRAIN$MODULE$runtime/gc_0_malloc_0
-           (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0)
-           (i32.const 28)
-          )
-          (local.get $0)
-         )
-        )
-       )
-       (i32.const 4)
-      )
-      (i32.store offset=4
-       (local.get $0)
-       (i32.shl
-        (global.get $import_grainRuntime_0_moduleRuntimeId_0)
-        (i32.const 1)
-       )
-      )
-      (i32.store offset=8
-       (local.get $0)
-       (i32.const 2255)
-      )
-      (i32.store offset=12
-       (local.get $0)
-       (i32.const 3)
-      )
-      (i32.store offset=16
-       (local.get $0)
-       (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-        (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-        (i32.const 9)
-       )
-      )
-      (i32.store offset=20
-       (local.get $0)
-       (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-        (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-        (local.get $2)
-       )
-      )
-      (i32.store offset=24
-       (local.get $0)
-       (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-        (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-        (i32.const -2)
-       )
-      )
-      (local.get $0)
-     )
-     (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-      (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
-      (i32.const 0)
-     )
-    )
+  (drop
+   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+    (local.get $1)
    )
   )
-  (return_call_indirect (type $i32_i32_i32_=>_i32)
-   (global.get $import_pervasives_1136_==_1137)
-   (local.get $1)
-   (local.get $0)
-   (i32.load offset=8
-    (global.get $import_pervasives_1136_==_1137)
+  (drop
+   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+    (local.get $2)
    )
   )
+  (drop
+   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+    (local.get $3)
+   )
+  )
+  (drop
+   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+    (local.get $4)
+   )
+  )
+  (drop
+   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+    (i32.const 0)
+   )
+  )
+  (drop
+   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+    (i32.const 0)
+   )
+  )
+  (local.get $0)
  )
  (func $_start (; has Stack IR ;)
   (drop

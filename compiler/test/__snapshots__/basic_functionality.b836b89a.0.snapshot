@@ -8,7 +8,7 @@ basic functionality › complex1
  (import \"grainRuntime\" \"relocBase\" (global $import_grainRuntime_0_relocBase_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRefIgnoreZeros\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$print\" (global $import_pervasives_1144_print_1145 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$print\" (global $import_pervasives_1154_print_1155 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $import_GRAIN$MODULE$runtime/gc_0_incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRefIgnoreZeros\" (func $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0 (param i32 i32) (result i32)))
  (global $global_1 i32 (i32.const 0))
@@ -27,10 +27,10 @@ basic functionality › complex1
        (block (result i32)
         (drop
          (call_indirect (type $i32_i32_=>_i32)
-          (global.get $import_pervasives_1144_print_1145)
+          (global.get $import_pervasives_1154_print_1155)
           (i32.const 7)
           (i32.load offset=8
-           (global.get $import_pervasives_1144_print_1145)
+           (global.get $import_pervasives_1154_print_1155)
           )
          )
         )

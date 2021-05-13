@@ -37,7 +37,7 @@ describe("aux/wasm_utils", ({describe}) => {
   describe("WebAssembly Binary", ({describe}) => {
     describe("read sections", ({test}) => {
       test("test_get_wasm_sections", ({expect}) => {
-        let inchan = open_in_bin("test-data/testmod.wasm");
+        let inchan = open_in_bin("test/test-data/testmod.wasm");
         let sections = get_wasm_sections(inchan);
         close_in(inchan);
         expect.equal(

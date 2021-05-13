@@ -8,8 +8,8 @@ basic functionality › precedence3
  (import \"grainRuntime\" \"tbl\" (table $tbl 0 funcref))
  (import \"grainRuntime\" \"relocBase\" (global $import_grainRuntime_0_relocBase_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRefIgnoreZeros\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$%\" (global $import_pervasives_1133_%_1134 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $import_pervasives_1135_+_1136 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$%\" (global $import_pervasives_1143_%_1144 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $import_pervasives_1145_+_1146 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRefIgnoreZeros\" (func $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0 (param i32 i32) (result i32)))
  (global $global_1 i32 (i32.const 0))
  (export \"memory\" (memory $0))
@@ -22,11 +22,11 @@ basic functionality › precedence3
    (tuple.extract 0
     (tuple.make
      (call_indirect (type $i32_i32_i32_=>_i32)
-      (global.get $import_pervasives_1133_%_1134)
+      (global.get $import_pervasives_1143_%_1144)
       (i32.const 9)
       (i32.const 13)
       (i32.load offset=8
-       (global.get $import_pervasives_1133_%_1134)
+       (global.get $import_pervasives_1143_%_1144)
       )
      )
      (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
@@ -37,11 +37,11 @@ basic functionality › precedence3
    )
   )
   (return_call_indirect (type $i32_i32_i32_=>_i32)
-   (global.get $import_pervasives_1135_+_1136)
+   (global.get $import_pervasives_1145_+_1146)
    (i32.const 7)
    (local.get $0)
    (i32.load offset=8
-    (global.get $import_pervasives_1135_+_1136)
+    (global.get $import_pervasives_1145_+_1146)
    )
   )
  )

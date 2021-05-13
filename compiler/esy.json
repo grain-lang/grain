@@ -11,14 +11,13 @@
       "GRAINC_BIN_PATH": "#{self.target_dir / 'default' / 'grainc' / 'grainc.exe'}",
       "GRAINC_JS_PATH": "#{self.target_dir / 'default' / 'grainc' / 'grainc_js.bc.js'}",
       "CLI_BIN_DIR": "#{self.root / '..' / 'cli' / 'bin'}",
-      "GRAIN_TEST_ROOT": "#{self.root / 'test'}"
+      "TEST_EXEC_PATH": "#{self.target_dir / 'default' / 'test' / 'test.exe'}"
     }
   },
   "scripts": {
     "copy-compiler": "cp #{$GRAINC_BIN_PATH} #{$GRAINC_JS_PATH} #{$CLI_BIN_DIR}",
     "clean": "rm -rf #{self.root}/_esy",
-    "test": "dune runtest --force --no-buffer",
-    "test:filter": "dune runtest --force --no-buffer --profile",
+    "test": "#{$TEST_EXEC_PATH}",
     "format": "dune build @fmt --auto-promote",
     "check-format": "dune build @fmt"
   },

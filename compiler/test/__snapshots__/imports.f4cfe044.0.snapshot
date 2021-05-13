@@ -8,9 +8,9 @@ imports › import_some_mixed
  (import \"grainRuntime\" \"tbl\" (table $tbl 0 funcref))
  (import \"grainRuntime\" \"relocBase\" (global $import_grainRuntime_0_relocBase_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRefIgnoreZeros\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0 (mut i32)))
- (import \"GRAIN$MODULE$tlists\" \"GRAIN$EXPORT$Empty\" (global $import_tlists_1139_Empty_1140 (mut i32)))
- (import \"GRAIN$MODULE$tlists\" \"GRAIN$EXPORT$Cons\" (global $import_tlists_1141_Cons_1142 (mut i32)))
- (import \"GRAIN$MODULE$tlists\" \"GRAIN$EXPORT$sum\" (global $import_tlists_1143_sum_1144 (mut i32)))
+ (import \"GRAIN$MODULE$tlists\" \"GRAIN$EXPORT$Empty\" (global $import_tlists_1149_Empty_1150 (mut i32)))
+ (import \"GRAIN$MODULE$tlists\" \"GRAIN$EXPORT$Cons\" (global $import_tlists_1151_Cons_1152 (mut i32)))
+ (import \"GRAIN$MODULE$tlists\" \"GRAIN$EXPORT$sum\" (global $import_tlists_1153_sum_1154 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRefIgnoreZeros\" (func $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0 (param i32 i32) (result i32)))
  (global $global_1 i32 (i32.const 0))
  (export \"memory\" (memory $0))
@@ -23,11 +23,11 @@ imports › import_some_mixed
    (tuple.extract 0
     (tuple.make
      (call_indirect (type $i32_i32_i32_=>_i32)
-      (global.get $import_tlists_1141_Cons_1142)
+      (global.get $import_tlists_1151_Cons_1152)
       (i32.const 11)
-      (global.get $import_tlists_1139_Empty_1140)
+      (global.get $import_tlists_1149_Empty_1150)
       (i32.load offset=8
-       (global.get $import_tlists_1141_Cons_1142)
+       (global.get $import_tlists_1151_Cons_1152)
       )
      )
      (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
@@ -38,10 +38,10 @@ imports › import_some_mixed
    )
   )
   (return_call_indirect (type $i32_i32_=>_i32)
-   (global.get $import_tlists_1143_sum_1144)
+   (global.get $import_tlists_1153_sum_1154)
    (local.get $0)
    (i32.load offset=8
-    (global.get $import_tlists_1143_sum_1144)
+    (global.get $import_tlists_1153_sum_1154)
    )
   )
  )
