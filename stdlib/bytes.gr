@@ -299,7 +299,7 @@ export let getFloat64 = (i: Number, b: Bytes) => {
 }
 
 /**
- * Produces a copy of the input bytes.
+ * Return a new Bytes buffer that contains the same bytes as the argument.
  * @param b: Bytes - The Bytes buffer to copy
  * @returns Bytes
  */
@@ -339,7 +339,7 @@ export let sub = (i: Number, len: Number, b: Bytes) => {
 
 
 /**
- * Returns a new Bytes buffer with unintialized bytes prepended/appended to it.
+ * Returns a new Bytes buffer with uninitialized bytes prepended/appended to it.
  * If the `left` or `right` parameters are negative, bytes will be removed from the corresponding side instead of appended.
  * @param left: Number - The number of uninitialized bytes to prepend
  * @param right: Number - The number of uninitialized bytes to append
