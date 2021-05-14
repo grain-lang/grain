@@ -4,7 +4,7 @@ import WasmI64 from "runtime/unsafe/wasmi64"
 import WasmF32 from "runtime/unsafe/wasmf32"
 import WasmF64 from "runtime/unsafe/wasmf64"
 import Conv from "runtime/unsafe/conv"
-import { tagSimpleNumber, allocateBytes } from "runtime/dataStructures"
+import { tagSimpleNumber, allocateBytes, allocateString } from "runtime/dataStructures"
 import Exception from "runtime/exception"
 import Int32 from "int32"
 
@@ -305,7 +305,6 @@ export let getFloat64 = (i: Number, b: Bytes) => {
  */
 @disableGC
 export let copy = (b: Bytes) => {
-  let (<) = WasmI32.ltS
   let (+) = WasmI32.add
   let src = WasmI32.fromGrain(b)
   let size = getSize(src)
@@ -416,13 +415,13 @@ export let move = (srcPos: Number, dstPos: Number, len: Number, src: Bytes, dst:
 
 /**
  * Get the byte length of a Bytes buffer.
- * @param input: Bytes - The Bytes buffer to check
+ * @param b: Bytes - The Bytes buffer to check
  * @returns Number
  */
  @disableGC
-export let length = (s: Bytes) => {
-  let s = WasmI32.fromGrain(s)
-  tagSimpleNumber(WasmI32.load(s, 4n))
+export let length = (b: Bytes) => {
+  let b = WasmI32.fromGrain(b)
+  tagSimpleNumber(getSize(b))
 }
 
 /**
@@ -437,6 +436,22 @@ export let append = (a: Bytes, b: Bytes) => {
   let c = extend(0, blen, a)
   move(0, alen, blen, b, c)
   c
+}
+
+
+/**
+ * Creates a new String from a Bytes buffer.
+ * @param b: Bytes - The source buffer
+ * @returns String
+ */
+@disableGC
+export let toString = (b: Bytes) => {
+  let (+) = WasmI32.add
+  let src = WasmI32.fromGrain(b)
+  let size = getSize(src)
+  let dst = allocateString(size)
+  Memory.copy(dst + 8n, src + 8n, size)
+  WasmI32.toGrain(dst): String
 }
 
 /**

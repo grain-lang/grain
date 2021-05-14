@@ -1,6 +1,6 @@
 import Bytes from "bytes";
 import Int32 from "int32";
-
+import Array from "array";
 
 // Bytes.empty
 assert Bytes.empty == Bytes.empty
@@ -172,3 +172,15 @@ for (let mut i = 0; i < Bytes.length(bytesD); i += 1) {
     assert Bytes.getInt8S(i, bytesD) == 1l
   }
 }
+
+
+// Bytes.toString
+let xs = [> 0x4cl, 0x65l, 0x74l, 0x27l, 0x73l, 0x20l, 0x67l, 0x65l, 0x74l, 0x20l, 0x74l, 0x68l, 0x69l, 0x73l, 0x20l, 0xf0l, 0x9fl, 0x8dl, 0x9el]
+let bytes = Bytes.make(Array.length(xs))
+Array.forEachi((n, i) => {
+  Bytes.setInt8(i, n, bytes)
+}, xs)
+let str = Bytes.toString(bytes)
+print(str)
+assert str == "Let's get this 🍞"
+
