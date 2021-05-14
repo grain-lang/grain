@@ -42,10 +42,10 @@ let getSize = (ptr) => WasmI32.load(ptr, 4n)
 
 /**
  * Sets a signed 8-bit integer starting at the given byte index.
- * @param {Number} i - The byte index
- * @param {Int32} v - The value to set
- * @param {Bytes} b - The Bytes buffer
- * @returns {Void}
+ * @param i: Number - The byte index
+ * @param v: Int32 - The value to set
+ * @param b: Bytes - The Bytes buffer
+ * @returns Void
  */
 @disableGC
 export let setInt8 = (i: Number, v: Int32, b: Bytes) => {
@@ -299,7 +299,7 @@ export let getFloat64 = (i: Number, b: Bytes) => {
 }
 
 /**
- * Return a new Bytes buffer that contains the same bytes as the argument.
+ * Produces a copy of the input bytes.
  * @param b: Bytes - The Bytes buffer to copy
  * @returns Bytes
  */
