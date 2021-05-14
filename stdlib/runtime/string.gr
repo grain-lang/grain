@@ -203,6 +203,14 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
         WasmI32.toGrain(str): String
       }
     },
+    t when t == Tags._GRAIN_BYTES_HEAP_TAG => {
+      let numBytes = WasmI32.load(ptr, 4n)
+      let str = allocateString(numBytes + 2n)
+      WasmI32.store8(str, 0x3cn, 8n) // <
+      Memory.copy(str + 9n, ptr + 8n, numBytes)
+      WasmI32.store8(str + numBytes, 0x3en, 9n) // >
+      WasmI32.toGrain(str): String
+    },
     t when t == Tags._GRAIN_CHAR_HEAP_TAG => {
       let byte = WasmI32.load8U(ptr, 4n)
       let numBytes = if ((byte & 0x80n) == 0x00n) {
