@@ -1,6 +1,6 @@
-import Bytes from "bytes";
-import Int32 from "int32";
-import Array from "array";
+import Bytes from "bytes"
+import Int32 from "int32"
+import Array from "array"
 
 // Bytes.empty
 assert Bytes.empty == Bytes.empty
@@ -16,7 +16,7 @@ assert Bytes.length(bytes) == 64
 
 
 // Bytes.setInt8, Bytes.getInt8S, Bytes.getInt8U
-let bytes = Bytes.make(1);
+let bytes = Bytes.make(1)
 Bytes.setInt8(0, 0x000000ffl, bytes)
 assert Bytes.getInt8S(0, bytes) == 0xffffffffl
 assert Bytes.getInt8U(0, bytes) == 0x000000ffl
@@ -88,14 +88,14 @@ for (let mut i = 0; i < 8; i += 1) {
   assert Bytes.getInt8S(i, bytes2) == Bytes.getInt8S(i, bytes1)
 }
 let bytes3 = Bytes.sub(4, 2, bytes2)
-assert Bytes.length(bytes3) == 2;
+assert Bytes.length(bytes3) == 2
 for (let mut i = 0; i < Bytes.length(bytes3); i += 1) {
   assert Bytes.getInt8S(i, bytes3) == Bytes.getInt8S(i + 4, bytes2)
 }
 let bytes4 = Bytes.sub(1, 6, bytes2)
 assert Bytes.length(bytes4) == 6
 for (let mut i = 0; i < Bytes.length(bytes4); i += 1) {
-  assert Bytes.getInt8S(i, bytes4) == Bytes.getInt8S(i + 1, bytes2);
+  assert Bytes.getInt8S(i, bytes4) == Bytes.getInt8S(i + 1, bytes2)
 }
 
 
@@ -181,7 +181,6 @@ Array.forEachi((n, i) => {
   Bytes.setInt8(i, n, bytes)
 }, xs)
 let str = Bytes.toString(bytes)
-print(str)
 assert str == "Let's get this 🍞"
 
 
