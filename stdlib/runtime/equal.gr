@@ -16,6 +16,7 @@ import WasmI64 from "runtime/unsafe/wasmi64"
 import Tags from "runtime/unsafe/tags"
 
 primitive (!) : Bool -> Bool = "@not"
+primitive (||) : (Bool, Bool) -> Bool = "@or"
 
 import { isNumber, numberEqual } from "runtime/numbers"
 
@@ -109,7 +110,7 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
         result
       }
     },
-    t when t == Tags._GRAIN_STRING_HEAP_TAG => {
+    t when t == Tags._GRAIN_STRING_HEAP_TAG || t == Tags._GRAIN_BYTES_HEAP_TAG => {
       let xlength = WasmI32.load(xptr, 4n)
       let ylength = WasmI32.load(yptr, 4n)
 

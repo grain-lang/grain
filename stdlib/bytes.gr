@@ -438,7 +438,6 @@ export let append = (a: Bytes, b: Bytes) => {
   c
 }
 
-
 /**
  * Creates a new String from a Bytes buffer.
  * @param b: Bytes - The source buffer

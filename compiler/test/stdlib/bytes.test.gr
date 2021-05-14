@@ -184,3 +184,9 @@ let str = Bytes.toString(bytes)
 print(str)
 assert str == "Let's get this 🍞"
 
+
+// Bytes equality
+let bytesCopy = Bytes.copy(bytes)
+assert bytesCopy == bytes
+Bytes.setInt8(0, 0l, bytesCopy)
+assert bytesCopy != bytes
