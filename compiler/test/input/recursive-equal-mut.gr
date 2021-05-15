@@ -33,4 +33,4 @@ b.r = Some(b)
 assert !(a is b)
 assert a == b
 
-print(void)
+print("OK")

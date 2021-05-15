@@ -13,11 +13,7 @@ let emit_module = ({asm, signature}, outfile) => {
     close_out(oc);
   };
   if (Config.wat^) {
-    if (Grain_utils.Config.color_enabled^) {
-      Binaryen.Settings.set_colors_enabled(true);
-    } else {
-      Binaryen.Settings.set_colors_enabled(false);
-    };
+    Binaryen.Settings.set_colors_enabled(Grain_utils.Config.color_enabled^);
     let asm_string = Binaryen.Module.write_text(asm);
     let wat_file = Files.replace_extension(outfile, "wat");
     let oc = open_out(wat_file);

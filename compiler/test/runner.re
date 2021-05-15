@@ -4,6 +4,17 @@ open Grain_utils;
 open Grain_middle_end.Anftree;
 open Grain_middle_end.Anf_helper;
 
+let test_dir = Filename.concat(Sys.getcwd(), "test");
+let test_libs_dir = Filename.concat(test_dir, "test-libs");
+let test_input_dir = Filename.concat(test_dir, "input");
+let test_output_dir = Filename.concat(test_dir, "output");
+let test_stdlib_dir = Filename.concat(test_dir, "stdlib");
+
+let grainfile = name => Filename.concat(test_input_dir, name ++ ".gr");
+let stdlibfile = name => Filename.concat(test_stdlib_dir, name ++ ".gr");
+let wasmfile = name => Filename.concat(test_output_dir, name ++ ".gr.wasm");
+let watfile = name => Filename.concat(test_output_dir, name ++ ".gr.wat");
+
 let read_stream = cstream => {
   let buf = Bytes.create(2048);
   let i = ref(0);
@@ -23,15 +34,15 @@ let read_stream = cstream => {
 
 let compile = (~hook=?, name, prog) => {
   Config.preserve_config(() => {
-    Config.include_dirs := ["test/test-libs", ...Config.include_dirs^];
-    let outfile = "test/output/" ++ name ++ ".gr.wasm";
+    Config.include_dirs := [test_libs_dir, ...Config.include_dirs^];
+    let outfile = wasmfile(name);
     ignore @@ compile_string(~hook?, ~name, ~outfile, prog);
   });
 };
 
 let compile_file = (~hook=?, filename, outfile) => {
   Config.preserve_config(() => {
-    Config.include_dirs := ["test/test-libs", ...Config.include_dirs^];
+    Config.include_dirs := [test_libs_dir, ...Config.include_dirs^];
     ignore @@ compile_file(~hook?, ~outfile, filename);
   });
 };
@@ -46,13 +57,10 @@ let extract_anf = ({cstate_desc}) =>
 let compile_string_to_final_anf = (name, s) =>
   extract_anf(compile_string(~hook=stop_after_optimization, ~name, s));
 
-let wasmfile = name => "test/output/" ++ name ++ ".gr.wasm";
-
 let run = (~num_pages=?, file) => {
   let cli_flags = "-g";
 
   let stdlib = Option.get(Grain_utils.Config.stdlib_dir^);
-  let testlibs = Sys.getcwd() ++ "test-libs";
   let env =
     switch (num_pages) {
     | Some(x) =>
@@ -64,7 +72,16 @@ let run = (~num_pages=?, file) => {
     | None => Unix.environment()
     };
 
-  let args = ["grain", cli_flags, "-S", stdlib, "-I", testlibs, "run", file];
+  let args = [
+    "grain",
+    cli_flags,
+    "-S",
+    stdlib,
+    "-I",
+    test_libs_dir,
+    "run",
+    file,
+  ];
   let command = String.concat(" ", args);
 
   let (stdout, stdin, stderr) = Unix.open_process_full(command, env);
@@ -93,24 +110,19 @@ let makeSnapshotRunner = (test, name, prog) => {
     name,
     ({expect}) => {
       compile(~hook=stop_after_object_file_emitted, name, prog);
-      let file = "test/output/" ++ name ++ ".gr.wat";
-      expect.file(file).toMatchSnapshot();
+      expect.file(watfile(name)).toMatchSnapshot();
     },
   );
 };
-
-let inputFilename = name => "test/input/" ++ name ++ ".gr";
-let outputFilename = name => "test/output/" ++ name ++ ".gr.wasm";
-let outputWat = name => "test/output/" ++ name ++ ".gr.wat";
 
 let makeSnapshotFileRunner = (test, name, filename) => {
   test(
     name,
     ({expect}) => {
-      let infile = inputFilename(filename);
-      let outfile = outputFilename(name);
+      let infile = grainfile(filename);
+      let outfile = wasmfile(name);
       compile_file(~hook=stop_after_object_file_emitted, infile, outfile);
-      let file = outputWat(name);
+      let file = watfile(name);
       expect.file(file).toMatchSnapshot();
     },
   );
@@ -167,8 +179,8 @@ let makeFileRunner = (test, name, filename, expected) => {
   test(
     name,
     ({expect}) => {
-      let infile = inputFilename(filename);
-      let outfile = outputFilename(name);
+      let infile = grainfile(filename);
+      let outfile = wasmfile(name);
       compile_file(infile, outfile);
       let (result, _) = run(outfile);
       expect.string(result).toEqual(expected);
@@ -180,8 +192,8 @@ let makeFileErrorRunner = (test, name, filename, expected) => {
   test(
     name,
     ({expect}) => {
-      let infile = inputFilename(filename);
-      let outfile = outputFilename(name);
+      let infile = grainfile(filename);
+      let outfile = wasmfile(name);
       compile_file(infile, outfile);
       let (result, _) = run(outfile);
       expect.string(result).toMatch(expected);
@@ -193,8 +205,8 @@ let makeStdlibRunner = (test, ~code=0, name) => {
   test(
     name,
     ({expect}) => {
-      let infile = "test/stdlib/" ++ name ++ ".gr";
-      let outfile = outputFilename(name);
+      let infile = stdlibfile(name);
+      let outfile = wasmfile(name);
       compile_file(infile, outfile);
       let (result, exit_code) = run(outfile);
       expect.int(exit_code).toBe(code);
