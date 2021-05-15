@@ -44,14 +44,17 @@
       raise (Error(loc, IllegalUnicodeCodePoint(str)));
   end
 
-  let newline_regex = Str.regexp "\\(\r\\|\n\\)"
+  let newline_regex = Str.regexp "\\(\r\n\\|\n\\)"
 
   let process_newlines lexbuf =
     let input = lexeme lexbuf in
-    String.iter (fun c ->
-      if Str.string_match newline_regex (String.make 1 c) 0
-      then new_line lexbuf
-    ) input
+    let rec process pos =
+      match Str.search_forward newline_regex input pos with
+      | exception Not_found -> ()
+      | pos ->
+        new_line lexbuf;
+        process (pos + (String.length (Str.matched_string input))) in
+    process 0
 
   let comments = ref []
 
@@ -124,7 +127,7 @@ let hex_esc = "\\x" hex_digit hex_digit?
 let oct_esc = "\\" oct_digit (oct_digit oct_digit?)?
 let num_esc = (unicode_esc | unicode4_esc | hex_esc | oct_esc)
 
-let newline_char = ("\r\n"|"\n\r"|'\n'|'\r')
+let newline_char = ("\r\n"|'\n')
 let newline_chars = (newline_char | blank)* newline_char
 
 let line_comment = "//" (([^ '\r' '\n']*(newline_chars | eof)) | (newline_chars | eof))

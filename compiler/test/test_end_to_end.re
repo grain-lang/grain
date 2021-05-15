@@ -2218,6 +2218,16 @@ let comment_tests = {
       "//comment\n//comment\n5 + 5L",
       "line 3, characters 4-6",
     ),
+    te(
+      "comment_line_numbers_2",
+      "//comment\r\n//comment\r\n5 + 5L",
+      "line 3, characters 4-6",
+    ),
+    te(
+      "comment_line_numbers_3",
+      "//comment\n//comment\r\n5 + 5L",
+      "line 3, characters 4-6",
+    ),
     t("comment_lone_//", "//\nlet x = 10\nx", "10"),
     t("comment_block", "/* block 1 */let x = 10/* block 2 */\nx", "10"),
     t("comment_doc", "/** doc 1 */let x = 10/** doc 2 */\nx", "10"),
