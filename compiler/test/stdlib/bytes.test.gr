@@ -158,7 +158,7 @@ for (let mut i = 0; i < 16; i += 1) {
 }
 let bytesC = Bytes.append(bytesA, bytesB)
 for (let mut i = 0; i < Bytes.length(bytesC); i += 1) {
-    if (i < 16) {
+  if (i < 16) {
     assert Bytes.getInt8S(i, bytesC) == 1l
   } else {
     assert Bytes.getInt8S(i, bytesC) == 2l
@@ -166,7 +166,7 @@ for (let mut i = 0; i < Bytes.length(bytesC); i += 1) {
 }
 let bytesD = Bytes.append(bytesB, bytesA)
 for (let mut i = 0; i < Bytes.length(bytesD); i += 1) {
-    if (i < 16) {
+  if (i < 16) {
     assert Bytes.getInt8S(i, bytesD) == 2l
   } else {
     assert Bytes.getInt8S(i, bytesD) == 1l
