@@ -106,6 +106,7 @@ describe("stdlib", ({test}) => {
   assertStdlib("set.test");
   assertStdlib("result.test");
   assertStdlib("queue.test");
+  assertStdlib("regex.test");
   assertStdlib("stack.test");
   assertStdlib(~code=5, "sys.process.test");
 });
