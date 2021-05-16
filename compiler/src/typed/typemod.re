@@ -196,8 +196,29 @@ let map_rec_type = (~rec_flag, fn, decls, rem) =>
       | Recursive => TRecFirst
       | Nonrecursive => TRecNot
       };
-
     [fn(first, d1), ...map_end(fn(TRecNext), dl, rem)];
+  };
+
+let rec map2_end = (fn, lst, others, rem) => {
+  switch((lst, others)) {
+  | ([], _) => rem
+  | (_, []) => failwith("impossible: map2_end")
+  | ([d1, ...dl], [o1, ...ol]) => [fn(d1, o1), ...map2_end(fn, dl, ol, rem)]
+  }
+};
+
+let map2_rec_type = (~rec_flag, fn, decls, others, rem) =>
+  switch ((decls, others)) {
+  | ([], _) => rem
+  | (_, []) => failwith("impossible: map2_rec_type")
+  | ([d1, ...dl], [o1, ...ol]) =>
+    let first =
+      switch (rec_flag) {
+      | Recursive => TRecFirst
+      | Nonrecursive => TRecNot
+      };
+
+    [fn(first, d1, o1), ...map2_end(fn(TRecNext), dl, ol, rem)];
   };
 
 let rec map_rec_type_with_row_types = (~rec_flag, fn, decls, rem) =>
@@ -208,6 +229,16 @@ let rec map_rec_type_with_row_types = (~rec_flag, fn, decls, rem) =>
         fn Trec_not d1 :: map_rec_type_with_row_types ~rec_flag fn dl rem
       else*/
     map_rec_type(~rec_flag, fn, decls, rem)
+  };
+
+let rec map2_rec_type_with_row_types = (~rec_flag, fn, decls, others, rem) =>
+  switch (decls) {
+  | [] => rem
+  | [d1, ...dl] =>
+    /*if Btype.is_row_name (Ident.name d1.typ_id) then
+        fn Trec_not d1 :: map_rec_type_with_row_types ~rec_flag fn dl rem
+      else*/
+    map2_rec_type(~rec_flag, fn, decls, others, rem)
   };
 
 /* Auxiliaries for checking uniqueness of names in signatures and structures */
@@ -453,12 +484,13 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
     );
   };
 
-  let process_datas = (env, e, datas, attributes, loc) => {
-    let (decls, newenv) = Typedecl.transl_data_decl(env, Recursive, datas);
+  let process_datas = (env, data_decls, attributes, loc) => {
+    // e, datas
+    let (decls, newenv) = Typedecl.transl_data_decl(env, Recursive, List.map(((_, d)) => d, data_decls));
     let ty_decl =
-      map_rec_type_with_row_types(
+      map2_rec_type_with_row_types(
         ~rec_flag=Recursive,
-        (rs, info) => {
+        (rs, info, e) => {
           let e =
             if (data_needs_export(info.data_name)) {
               Exported;
@@ -476,6 +508,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
           };
         },
         decls,
+        List.map(((e, _)) => e, data_decls),
         [],
       );
     let statement = {
@@ -673,9 +706,9 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
             | None => signatures
             };
           (new_env, signatures, [statement, ...statements]);
-        | PTopData(e, d) =>
+        | PTopData(data_decls) =>
           let (new_env, sigs, statement) =
-            process_datas(env, e, [d], attributes, loc);
+            process_datas(env, data_decls, attributes, loc);
           (
             new_env,
             List.rev(sigs) @ signatures,

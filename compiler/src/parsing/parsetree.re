@@ -500,7 +500,7 @@ type toplevel_stmt_desc =
   | PTopImport(import_declaration)
   | PTopForeign(export_flag, value_description)
   | PTopPrimitive(export_flag, value_description)
-  | PTopData(export_flag, data_declaration)
+  | PTopData(list((export_flag, data_declaration)))
   | PTopLet(export_flag, rec_flag, mut_flag, list(value_binding))
   | PTopExpr(expression)
   | PTopException(export_flag, type_exception)

@@ -245,8 +245,8 @@ module Top = {
     mk(~loc?, ~attributes?, PTopForeign(e, d));
   let primitive = (~loc=?, ~attributes=?, e, d) =>
     mk(~loc?, ~attributes?, PTopPrimitive(e, d));
-  let data = (~loc=?, ~attributes=?, e, d) =>
-    mk(~loc?, ~attributes?, PTopData(e, d));
+  let data = (~loc=?, ~attributes=?, elts) =>
+    mk(~loc?, ~attributes?, PTopData(elts));
   let let_ = (~loc=?, ~attributes=?, e, r, m, vb) =>
     mk(~loc?, ~attributes?, PTopLet(e, r, m, vb));
   let expr = (~loc=?, ~attributes=?, e) =>
