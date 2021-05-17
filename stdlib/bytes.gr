@@ -34,7 +34,7 @@ let numberToWasmI32 = n => {
 
 /** Throws an exception if the index specified is out-of-bounds */
 @disableGC
-let ensureIndexIsInBounds = (i, byteSize, max) => {
+let checkIndexIsInBounds = (i, byteSize, max) => {
   let (+) = WasmI32.add
   let (<) = WasmI32.ltS
   let (>) = WasmI32.gtS
@@ -62,7 +62,7 @@ export let setInt8 = (i: Number, v: Int32, b: Bytes) => {
   let ptr = WasmI32.fromGrain(b)
   let size = getSize(ptr)
   let offset = numberToWasmI32(i)
-  ensureIndexIsInBounds(offset, _INT8_BYTE_SIZE, size)
+  checkIndexIsInBounds(offset, _INT8_BYTE_SIZE, size)
   let value = Conv.fromInt32(v)
   WasmI32.store8(ptr + offset, value, _VALUE_OFFSET)
 }
@@ -79,7 +79,7 @@ export let getInt8S = (i: Number, b: Bytes) => {
   let ptr = WasmI32.fromGrain(b)
   let size = getSize(ptr)
   let offset = numberToWasmI32(i)
-  ensureIndexIsInBounds(offset, _INT8_BYTE_SIZE, size)
+  checkIndexIsInBounds(offset, _INT8_BYTE_SIZE, size)
   let n = WasmI32.load8S(ptr + offset, _VALUE_OFFSET)
   Conv.toInt32(n)
 }
@@ -96,7 +96,7 @@ export let getInt8U = (i: Number, b: Bytes) => {
   let ptr = WasmI32.fromGrain(b)
   let size = getSize(ptr)
   let offset = numberToWasmI32(i)
-  ensureIndexIsInBounds(offset, _INT8_BYTE_SIZE, size)
+  checkIndexIsInBounds(offset, _INT8_BYTE_SIZE, size)
   let n = WasmI32.load8U(ptr + offset, _VALUE_OFFSET)
   Conv.toInt32(n)
 }
@@ -114,7 +114,7 @@ export let setInt16 = (i: Number, v: Int32, b: Bytes) => {
   let ptr = WasmI32.fromGrain(b)
   let size = getSize(ptr)
   let offset = numberToWasmI32(i)
-  ensureIndexIsInBounds(offset, _INT16_BYTE_SIZE, size)
+  checkIndexIsInBounds(offset, _INT16_BYTE_SIZE, size)
   let value = Conv.fromInt32(v)
   WasmI32.store16(ptr + offset, value, _VALUE_OFFSET)
 }
@@ -131,7 +131,7 @@ export let getInt16S = (i: Number, b: Bytes) => {
   let ptr = WasmI32.fromGrain(b)
   let size = getSize(ptr)
   let offset = numberToWasmI32(i)
-  ensureIndexIsInBounds(offset, _INT16_BYTE_SIZE, size)
+  checkIndexIsInBounds(offset, _INT16_BYTE_SIZE, size)
   let n = WasmI32.load16S(ptr + offset, _VALUE_OFFSET)
   Conv.toInt32(n)
 }
@@ -148,7 +148,7 @@ export let getInt16U = (i: Number, b: Bytes) => {
   let ptr = WasmI32.fromGrain(b)
   let size = getSize(ptr)
   let offset = numberToWasmI32(i)
-  ensureIndexIsInBounds(offset, _INT16_BYTE_SIZE, size)
+  checkIndexIsInBounds(offset, _INT16_BYTE_SIZE, size)
   let n = WasmI32.load16U(ptr + offset, _VALUE_OFFSET)
   Conv.toInt32(n)
 }
@@ -166,7 +166,7 @@ export let setInt32 = (i: Number, v: Int32, b: Bytes) => {
   let ptr = WasmI32.fromGrain(b)
   let size = getSize(ptr)
   let offset = numberToWasmI32(i)
-  ensureIndexIsInBounds(offset, _INT32_BYTE_SIZE, size)
+  checkIndexIsInBounds(offset, _INT32_BYTE_SIZE, size)
   let value = Conv.fromInt32(v)
   WasmI32.store(ptr + offset, value, _VALUE_OFFSET)
 }
@@ -183,7 +183,7 @@ export let getInt32 = (i: Number, b: Bytes) => {
   let ptr = WasmI32.fromGrain(b)
   let size = getSize(ptr)
   let offset = numberToWasmI32(i)
-  ensureIndexIsInBounds(offset, _INT32_BYTE_SIZE, size)
+  checkIndexIsInBounds(offset, _INT32_BYTE_SIZE, size)
   let n = WasmI32.load(ptr + offset, _VALUE_OFFSET)
   Conv.toInt32(n)
 }
@@ -201,7 +201,7 @@ export let setFloat32 = (i: Number, v: Float32, b: Bytes) => {
   let ptr = WasmI32.fromGrain(b)
   let size = getSize(ptr)
   let offset = numberToWasmI32(i)
-  ensureIndexIsInBounds(offset, _INT32_BYTE_SIZE, size)
+  checkIndexIsInBounds(offset, _INT32_BYTE_SIZE, size)
   let value = Conv.fromFloat32(v)
   WasmF32.store(ptr + offset, value, _VALUE_OFFSET)
 }
@@ -218,7 +218,7 @@ export let getFloat32 = (i: Number, b: Bytes) => {
   let ptr = WasmI32.fromGrain(b)
   let size = getSize(ptr)
   let offset = numberToWasmI32(i)
-  ensureIndexIsInBounds(offset, _INT32_BYTE_SIZE, size)
+  checkIndexIsInBounds(offset, _INT32_BYTE_SIZE, size)
   let n = WasmF32.load(ptr + offset, _VALUE_OFFSET)
   Conv.toFloat32(n)
 }
@@ -236,7 +236,7 @@ export let setInt64 = (i: Number, v: Int64, b: Bytes) => {
   let ptr = WasmI32.fromGrain(b)
   let size = getSize(ptr)
   let offset = numberToWasmI32(i)
-  ensureIndexIsInBounds(offset, _INT64_BYTE_SIZE, size)
+  checkIndexIsInBounds(offset, _INT64_BYTE_SIZE, size)
   let value = Conv.fromInt64(v)
   WasmI64.store(ptr + offset, value, _VALUE_OFFSET)
 }
@@ -253,7 +253,7 @@ export let getInt64 = (i: Number, b: Bytes) => {
   let ptr = WasmI32.fromGrain(b)
   let size = getSize(ptr)
   let offset = numberToWasmI32(i)
-  ensureIndexIsInBounds(offset, _INT64_BYTE_SIZE, size)
+  checkIndexIsInBounds(offset, _INT64_BYTE_SIZE, size)
   let n = WasmI64.load(ptr + offset, _VALUE_OFFSET)
   Conv.toInt64(n)
 }
@@ -271,7 +271,7 @@ export let setFloat64 = (i: Number, v: Float64, b: Bytes) => {
   let ptr = WasmI32.fromGrain(b)
   let size = getSize(ptr)
   let offset = numberToWasmI32(i)
-  ensureIndexIsInBounds(offset, _FLOAT64_BYTE_SIZE, size)
+  checkIndexIsInBounds(offset, _FLOAT64_BYTE_SIZE, size)
   let value = Conv.fromFloat64(v)
   WasmF64.store(ptr + offset, value, _VALUE_OFFSET)
 }
@@ -288,7 +288,7 @@ export let getFloat64 = (i: Number, b: Bytes) => {
   let ptr = WasmI32.fromGrain(b)
   let size = getSize(ptr)
   let offset = numberToWasmI32(i)
-  ensureIndexIsInBounds(offset, _FLOAT64_BYTE_SIZE, size)
+  checkIndexIsInBounds(offset, _FLOAT64_BYTE_SIZE, size)
   let n = WasmF64.load(ptr + offset, _VALUE_OFFSET)
   Conv.toFloat64(n)
 }
