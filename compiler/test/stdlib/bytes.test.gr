@@ -147,7 +147,7 @@ for (let mut i = 8; i < 16; i += 1) {
 }
 
 
-// Bytes.append
+// Bytes.concat
 let bytesA = Bytes.make(16)
 for (let mut i = 0; i < 16; i += 1) {
   Bytes.setInt8(i, 1l, bytesA)
@@ -156,7 +156,7 @@ let bytesB = Bytes.make(16);
 for (let mut i = 0; i < 16; i += 1) {
   Bytes.setInt8(i, 2l, bytesB)
 }
-let bytesC = Bytes.append(bytesA, bytesB)
+let bytesC = Bytes.concat(bytesA, bytesB)
 for (let mut i = 0; i < Bytes.length(bytesC); i += 1) {
   if (i < 16) {
     assert Bytes.getInt8S(i, bytesC) == 1l
@@ -164,7 +164,7 @@ for (let mut i = 0; i < Bytes.length(bytesC); i += 1) {
     assert Bytes.getInt8S(i, bytesC) == 2l
   }
 }
-let bytesD = Bytes.append(bytesB, bytesA)
+let bytesD = Bytes.concat(bytesB, bytesA)
 for (let mut i = 0; i < Bytes.length(bytesD); i += 1) {
   if (i < 16) {
     assert Bytes.getInt8S(i, bytesD) == 2l

@@ -425,7 +425,7 @@ export let length = (b: Bytes) => {
  * @param b: Bytes - The buffer to be copied last
  * @returns Bytes
  */
-export let append = (a: Bytes, b: Bytes) => {
+export let concat = (a: Bytes, b: Bytes) => {
   let alen = length(a)
   let blen = length(b)
   let c = extend(0, blen, a)
