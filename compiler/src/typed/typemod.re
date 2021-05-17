@@ -909,6 +909,7 @@ let get_compilation_mode = () => {
 
 let type_implementation = prog => {
   let sourcefile = prog.prog_loc.loc_start.pos_fname;
+  Grain_utils.Warnings.reset_warnings();
   /* TODO: Do we maybe need a fallback here? */
   let modulename = Grain_utils.Files.filename_to_module_name(sourcefile);
   Env.set_unit((modulename, sourcefile, get_compilation_mode()));

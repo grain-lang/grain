@@ -182,4 +182,6 @@ let warnings_this_run: ref(list((loc, t))) = ref([]);
 let add_warning = (l: loc, w: t) =>
   warnings_this_run := List.cons((l, w), warnings_this_run^);
 
+let reset_warnings = () => warnings_this_run := [];
+
 let get_warnings = () => warnings_this_run^;
