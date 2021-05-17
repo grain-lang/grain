@@ -81,18 +81,18 @@ for (let mut i = 0; i < 8; i += 1) {
 }
 
 
-// Bytes.sub
-let bytes2 = Bytes.sub(0, 8, bytes1)
+// Bytes.slice
+let bytes2 = Bytes.slice(0, 8, bytes1)
 assert Bytes.length(bytes2) == Bytes.length(bytes1)
 for (let mut i = 0; i < 8; i += 1) {
   assert Bytes.getInt8S(i, bytes2) == Bytes.getInt8S(i, bytes1)
 }
-let bytes3 = Bytes.sub(4, 2, bytes2)
+let bytes3 = Bytes.slice(4, 2, bytes2)
 assert Bytes.length(bytes3) == 2
 for (let mut i = 0; i < Bytes.length(bytes3); i += 1) {
   assert Bytes.getInt8S(i, bytes3) == Bytes.getInt8S(i + 4, bytes2)
 }
-let bytes4 = Bytes.sub(1, 6, bytes2)
+let bytes4 = Bytes.slice(1, 6, bytes2)
 assert Bytes.length(bytes4) == 6
 for (let mut i = 0; i < Bytes.length(bytes4); i += 1) {
   assert Bytes.getInt8S(i, bytes4) == Bytes.getInt8S(i + 1, bytes2)

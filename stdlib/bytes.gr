@@ -316,7 +316,7 @@ export let copy = (b: Bytes) => {
  * @returns Bytes
  */
 @disableGC
-export let sub = (i: Number, len: Number, b: Bytes) => {
+export let slice = (i: Number, len: Number, b: Bytes) => {
   let (>) = WasmI32.gtS
   let (+) = WasmI32.add
   let src = WasmI32.fromGrain(b)
