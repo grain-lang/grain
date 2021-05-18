@@ -67,6 +67,7 @@ let compile_string = name => {
           let warnings: list(Grain_diagnostics.Output.lsp_warning) =
             Grain_diagnostics.Output.convert_warnings(
               Grain_utils.Warnings.get_warnings(),
+              name,
             );
           let json =
             Grain_diagnostics.Output.result_to_json(
