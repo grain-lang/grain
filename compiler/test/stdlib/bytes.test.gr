@@ -99,38 +99,38 @@ for (let mut i = 0; i < Bytes.length(bytes4); i += 1) {
 }
 
 
-// Bytes.extend
-let bytes5 = Bytes.extend(0, 0, bytes0)
+// Bytes.resize
+let bytes5 = Bytes.resize(0, 0, bytes0)
 assert Bytes.length(bytes5) == Bytes.length(bytes0)
 for (let mut i = 0; i < Bytes.length(bytes5); i += 1) {
   assert Bytes.getInt8S(i, bytes5) == Bytes.getInt8S(i, bytes0)
 }
-let bytes5 = Bytes.extend(1, 1, bytes0)
+let bytes5 = Bytes.resize(1, 1, bytes0)
 assert Bytes.length(bytes5) == (Bytes.length(bytes0) + 2)
 for (let mut i = 0; i < Bytes.length(bytes0); i += 1) {
   assert Bytes.getInt8S(i + 1, bytes5) == Bytes.getInt8S(i, bytes0)
 }
-let bytes5 = Bytes.extend(3, 0, bytes0)
+let bytes5 = Bytes.resize(3, 0, bytes0)
 assert Bytes.length(bytes5) == 11
 for (let mut i = 0; i < Bytes.length(bytes0); i += 1) {
   assert Bytes.getInt8S(i + 3, bytes5) == Bytes.getInt8S(i, bytes0)
 }
-let bytes5 = Bytes.extend(0, 3, bytes0)
+let bytes5 = Bytes.resize(0, 3, bytes0)
 assert Bytes.length(bytes5) == 11
 for (let mut i = 0; i < Bytes.length(bytes0); i += 1) {
   assert Bytes.getInt8S(i, bytes5) == Bytes.getInt8S(i, bytes0)
 }
-let bytes5 = Bytes.extend(-4, 0, bytes0)
+let bytes5 = Bytes.resize(-4, 0, bytes0)
 assert Bytes.length(bytes5) == 4
 for (let mut i = 0; i < Bytes.length(bytes5); i += 1) {
   assert Bytes.getInt8S(i, bytes5) == Bytes.getInt8S(i + 4, bytes0)
 }
-let bytes5 = Bytes.extend(0, -4, bytes0)
+let bytes5 = Bytes.resize(0, -4, bytes0)
 assert Bytes.length(bytes5) == 4
 for (let mut i = 0; i < Bytes.length(bytes5); i += 1) {
   assert Bytes.getInt8S(i, bytes5) == Bytes.getInt8S(i, bytes0)
 }
-let bytes5 = Bytes.extend(-4, -4, bytes0)
+let bytes5 = Bytes.resize(-4, -4, bytes0)
 assert Bytes.length(bytes5) == 0
 
 

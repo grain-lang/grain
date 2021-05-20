@@ -342,7 +342,7 @@ export let slice = (i: Number, len: Number, b: Bytes) => {
  * @returns Bytes
  */
 @disableGC
-export let extend = (left: Number, right: Number, b: Bytes) => {
+export let resize = (left: Number, right: Number, b: Bytes) => {
   let (<) = WasmI32.ltS
   let (>) = WasmI32.gtS
   let (+) = WasmI32.add
@@ -428,7 +428,7 @@ export let length = (b: Bytes) => {
 export let concat = (a: Bytes, b: Bytes) => {
   let alen = length(a)
   let blen = length(b)
-  let c = extend(0, blen, a)
+  let c = resize(0, blen, a)
   move(0, alen, blen, b, c)
   c
 }
