@@ -53,7 +53,7 @@ let getSize = (ptr) => WasmI32.load(ptr, _SIZE_OFFSET)
  * Sets a signed 8-bit integer starting at the given byte index.
  * @param i: Number - The byte index
  * @param v: Int32 - The value to set
- * @param b: Bytes - The Bytes buffer
+ * @param b: Bytes - The byte sequence
  * @returns Void
  */
 @disableGC
@@ -70,7 +70,7 @@ export let setInt8 = (i: Number, v: Int32, b: Bytes) => {
 /**
  * Gets a signed 8-bit integer starting at the given byte index.
  * @param i: Number - The byte index
- * @param b: Bytes - The Bytes buffer
+ * @param b: Bytes - The byte sequence
  * @returns Int32
  */
 @disableGC
@@ -87,7 +87,7 @@ export let getInt8S = (i: Number, b: Bytes) => {
 /**
  * Gets an unsigned 8-bit integer starting at the given byte index.
  * @param i: Number - The byte index
- * @param b: Bytes - The Bytes buffer
+ * @param b: Bytes - The byte sequence
  * @returns Int32
  */
 @disableGC
@@ -105,7 +105,7 @@ export let getInt8U = (i: Number, b: Bytes) => {
  * Sets a signed 16-bit integer starting at the given byte index.
  * @param i: Number - The byte index
  * @param v: Int32 - The value to set
- * @param b: Bytes - The Bytes buffer
+ * @param b: Bytes - The byte sequence
  * @returns Void
  */
 @disableGC
@@ -122,7 +122,7 @@ export let setInt16 = (i: Number, v: Int32, b: Bytes) => {
 /**
  * Gets a signed 16-bit integer starting at the given byte index.
  * @param i: Number - The byte index
- * @param b: Bytes - The Bytes buffer
+ * @param b: Bytes - The byte sequence
  * @returns Int32
  */
 @disableGC
@@ -139,7 +139,7 @@ export let getInt16S = (i: Number, b: Bytes) => {
 /**
  * Gets an unsigned 16-bit integer starting at the given byte index.
  * @param i: Number - The byte index
- * @param b: Bytes - The Bytes buffer
+ * @param b: Bytes - The byte sequence
  * @returns Int32
  */
 @disableGC
@@ -157,7 +157,7 @@ export let getInt16U = (i: Number, b: Bytes) => {
  * Sets a signed 32-bit integer starting at the given byte index.
  * @param i: Number - The byte index
  * @param v: Int32 - The value to set
- * @param b: Bytes - The Bytes buffer
+ * @param b: Bytes - The byte sequence
  * @returns Void
  */
 @disableGC
@@ -174,7 +174,7 @@ export let setInt32 = (i: Number, v: Int32, b: Bytes) => {
 /**
  * Gets a signed 32-bit integer starting at the given byte index.
  * @param i: Number - The byte index
- * @param b: Bytes - The Bytes buffer
+ * @param b: Bytes - The byte sequence
  * @returns Int32
  */
 @disableGC
@@ -192,7 +192,7 @@ export let getInt32 = (i: Number, b: Bytes) => {
  * Sets a 32-bit float starting at the given byte index.
  * @param i: Number - The byte index
  * @param v: Float32 - The value to set
- * @param b: Bytes - The Bytes buffer
+ * @param b: Bytes - The byte sequence
  * @returns Void
  */
 @disableGC
@@ -209,7 +209,7 @@ export let setFloat32 = (i: Number, v: Float32, b: Bytes) => {
 /**
  * Gets a 32-bit float starting at the given byte index.
  * @param i: Number - The byte index
- * @param b: Bytes - The Bytes buffer
+ * @param b: Bytes - The byte sequence
  * @returns Float32
  */
 @disableGC
@@ -227,7 +227,7 @@ export let getFloat32 = (i: Number, b: Bytes) => {
  * Sets a signed 64-bit integer starting at the given byte index.
  * @param i: Number - The byte index
  * @param v: Int64 - The value to set
- * @param b: Bytes - The Bytes buffer
+ * @param b: Bytes - The byte sequence
  * @returns Void
  */
 @disableGC
@@ -244,7 +244,7 @@ export let setInt64 = (i: Number, v: Int64, b: Bytes) => {
 /**
  * Gets a signed 64-bit integer starting at the given byte index.
  * @param i: Number - The byte index
- * @param b: Bytes - The Bytes buffer
+ * @param b: Bytes - The byte sequence
  * @returns Int64
  */
 @disableGC
@@ -262,7 +262,7 @@ export let getInt64 = (i: Number, b: Bytes) => {
  * Sets a 64-bit float starting at the given byte index.
  * @param i: Number - The byte index
  * @param v: Float64 - The value to set
- * @param b: Bytes - The Bytes buffer
+ * @param b: Bytes - The byte sequence
  * @returns Void
  */
 @disableGC
@@ -279,7 +279,7 @@ export let setFloat64 = (i: Number, v: Float64, b: Bytes) => {
 /**
  * Gets a 64-bit float starting at the given byte index.
  * @param i: Number - The byte index
- * @param b: Bytes - The Bytes buffer
+ * @param b: Bytes - The byte sequence
  * @returns Float64
  */
 @disableGC
@@ -294,8 +294,8 @@ export let getFloat64 = (i: Number, b: Bytes) => {
 }
 
 /**
- * Return a new Bytes buffer that contains the same bytes as the argument.
- * @param b: Bytes - The Bytes buffer to copy
+ * Return a new byte sequence that contains the same bytes as the argument.
+ * @param b: Bytes - The byte sequence to copy
  * @returns Bytes
  */
 @disableGC
@@ -309,10 +309,10 @@ export let copy = (b: Bytes) => {
 }
 
 /**
- * Returns a new Bytes buffer containing a subset of the original Bytes buffer.
+ * Returns a new byte sequence containing a subset of the original byte sequence.
  * @param i: Number - The start position to copy from
  * @param len: Number - The number of bytes to copy
- * @param b: Bytes - The Bytes buffer get a subset of bytes from
+ * @param b: Bytes - The byte sequence get a subset of bytes from
  * @returns Bytes
  */
 @disableGC
@@ -334,11 +334,11 @@ export let slice = (i: Number, len: Number, b: Bytes) => {
 
 
 /**
- * Returns a new Bytes buffer with uninitialized bytes prepended/appended to it.
- * If the `left` or `right` parameters are negative, bytes will be removed from the corresponding side instead of appended.
+ * Add or remove bytes from the start and/or end of a byte sequence.
+ * A positive number represents bytes to add, while a negative number represents bytes to remove.
  * @param left: Number - The number of uninitialized bytes to prepend
  * @param right: Number - The number of uninitialized bytes to append
- * @param b: Bytes - The Bytes buffer get a subset of bytes from
+ * @param b: Bytes - The byte sequence get a subset of bytes from
  * @returns Bytes
  */
 @disableGC
@@ -409,8 +409,8 @@ export let move = (srcPos: Number, dstPos: Number, len: Number, src: Bytes, dst:
 }
 
 /**
- * Get the byte length of a Bytes buffer.
- * @param b: Bytes - The Bytes buffer to check
+ * Get the byte length of a byte sequence.
+ * @param b: Bytes - The byte sequence to check
  * @returns Number
  */
  @disableGC
@@ -420,7 +420,7 @@ export let length = (b: Bytes) => {
 }
 
 /**
- * Creates a new Bytes buffer that contains the bytes of both buffers a and b.
+ * Creates a new byte sequence that contains the bytes of both buffers a and b.
  * @param a: Bytes - The buffer to be copied first
  * @param b: Bytes - The buffer to be copied last
  * @returns Bytes
@@ -434,7 +434,7 @@ export let concat = (a: Bytes, b: Bytes) => {
 }
 
 /**
- * Creates a new String from a Bytes buffer.
+ * Creates a new String from a byte sequence.
  * @param b: Bytes - The source buffer
  * @returns String
  */
@@ -449,7 +449,7 @@ export let toString = (b: Bytes) => {
 }
 
 /**
- * Make a new Bytes buffer of n-bytes size.
+ * Make a new byte sequence of n-bytes size.
  * @param n: Number - The number of bytes to store
  * @returns Bytes
  */
@@ -460,7 +460,7 @@ export let make = (n: Number) => {
 }
 
 /**
- * An empty Bytes buffer
+ * An empty byte sequence
  */
 export let empty = make(0)
 
