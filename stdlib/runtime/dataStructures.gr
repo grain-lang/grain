@@ -71,11 +71,11 @@ export let storeInTuple = (tuple, idx, item) => {
  * @returns {WasmI32} The pointer to the bytes
  */
 export let allocateBytes = (size) => {
-  let bytes = Memory.malloc(size + 8n)
-
+  let len = size + 8n
+  let bytes = Memory.malloc(len)
+  Memory.fill(bytes, 0n, len)
   WasmI32.store(bytes, Tags._GRAIN_BYTES_HEAP_TAG, 0n)
   WasmI32.store(bytes, size, 4n)
-
   bytes
 }
 
