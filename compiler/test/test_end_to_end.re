@@ -2137,6 +2137,18 @@ let number_tests = [
   t("number_syntax8", "1.2e2", "120.0"),
   t("number_syntax9", "1l", "1"),
   t("number_syntax10", "1L", "1"),
+  // equality checks
+  t(
+    "nan_equality1",
+    {|import Float32 from "float32"; Float32.div(0.0f, 0.0f) == Float32.div(0.0f, 0.0f)|},
+    "false",
+  ),
+  t(
+    "nan_equality2",
+    {|import Float64 from "float64"; Float64.div(0.0d, 0.0d) == Float64.div(0.0d, 0.0d)|},
+    "false",
+  ),
+  t("nan_equality3", {|0.0 / 0.0 == 0.0 / 0.0|}, "false"),
   // syntax errors
   te(
     "number_syntax_err1",

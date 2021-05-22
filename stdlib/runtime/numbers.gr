@@ -525,13 +525,9 @@ let numberEqualFloat32Help = (x, y) => {
 }
 
 export let numberEqual = (x, y) => {
-  // Short circuit if value/pointer is the same
-  if (WasmI32.eq(x, y)) {
-    true
-  } else if (!isNumber(x) || !isNumber(y)) {
-    false
-  } else if (isSimpleNumber(x)) {
-    numberEqualSimpleHelp(x, y)
+  if (isSimpleNumber(x)) {
+    // Short circuit if non-pointer value is the same
+    WasmI32.eq(x, y) || numberEqualSimpleHelp(x, y)
   } else {
     // Boxed number
     let xBoxedNumberTag = boxedNumberTag(x)
