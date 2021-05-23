@@ -205,8 +205,6 @@ type prim2 =
     | Eq
     | And
     | Or
-    | ArrayMake
-    | ArrayInit
     | WasmLoadI32({
         sz: int,
         signed: bool,
