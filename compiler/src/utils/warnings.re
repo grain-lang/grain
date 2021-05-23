@@ -184,6 +184,9 @@ let add_warning = (l: loc, w: t) =>
 
 let get_warnings = () => warnings_this_run^;
 
+let reset_warnings = () => warnings_this_run := [];
+
+
 let with_preserve_warnings = thunk => {
   let saved = warnings_this_run^;
   warnings_this_run := [];

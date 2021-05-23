@@ -62,6 +62,7 @@ let restore: state => unit;
 // store the warnings for the LSP to report
 let add_warning: (loc, t) => unit;
 let get_warnings: unit => list((loc, t));
+let reset_warnings: unit => unit;
 
 // expose these for the LSP to use to format the warnings
 let message: t => string;
