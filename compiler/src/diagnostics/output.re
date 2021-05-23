@@ -67,8 +67,8 @@ let result_to_json =
 };
 
 let convert_warnings = (warnings_this_run, topLevelFileName) => {
-  List.fold_left(
-    (acc, w) => {
+  List.map(
+    w => {
       let (loc: Grain_utils.Warnings.loc, warn: Grain_utils.Warnings.t) = w;
       let (file, line, startchar) =
         Grain_parsing.Location.get_pos_info(loc.loc_start);
@@ -83,9 +83,8 @@ let convert_warnings = (warnings_this_run, topLevelFileName) => {
         number: Grain_utils.Warnings.number(warn),
         lsp_message: Grain_utils.Warnings.message(warn),
       };
-      List.cons(warning, acc);
+      warning;
     },
-    [],
     warnings_this_run,
   );
 };
