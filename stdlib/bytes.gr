@@ -379,7 +379,7 @@ export let resize = (left: Number, right: Number, b: Bytes) => {
 }
 
 /**
- * Copies a range of bytes bytes from a source buffer to a given location in a destination buffer.
+ * Copies a range of bytes from a source buffer to a given location in a destination buffer.
  * @param srcPos: Number - The starting byte index to copy bytes from
  * @param dstPos: Number - The starting byte index to copy bytes into
  * @param len: Number - The amount of bytes to copy from the source buffer
