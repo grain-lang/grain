@@ -20,6 +20,10 @@ export class GrainRunner {
       relocBase: 0,
       moduleRuntimeId: 0,
     };
+    this.table = new WebAssembly.Table({
+      element: "anyfunc",
+      initial: 1024,
+    });
   }
 
   get memoryManager() {

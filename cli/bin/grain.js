@@ -91,10 +91,15 @@ program
     null,
     stdlibPath
   )
-  .option("--limitMemory <size>", "maximum allowed heap size", num, -1)
-  .option(
-    "--init-memory-pages <size>",
-    "number of pages used to initialize the grain runtime"
+  .graincOption(
+    "--initial-memory-pages <size>",
+    "initial number of WebAssembly memory pages",
+    num
+  )
+  .graincOption(
+    "--maximum-memory-pages <size>",
+    "maximum number of WebAssembly memory pages",
+    num
   )
   .graincOption(
     "--compilation-mode <mode>",

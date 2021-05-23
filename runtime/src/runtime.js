@@ -5,50 +5,34 @@ import { ManagedMemory } from "./core/memory";
 import { GrainRunner } from "./core/runner";
 import { defaultFileLocator } from "./utils/locators";
 
-export let grainModule;
-
-// Workaround for this memory being initialized statically on module load
-export const memory = new WebAssembly.Memory({
-  initial: process.env.GRAIN_INIT_MEMORY_PAGES || 64,
-  maximum: process.env.GRAIN_MAX_MEMORY_PAGES,
-});
-export const table = new WebAssembly.Table({
-  element: "anyfunc",
-  initial: 1024,
-});
-export const encoder = new TextEncoder("utf-8");
-export const decoder = new TextDecoder("utf-8");
-export const managedMemory = new ManagedMemory(memory);
-
-export const malloc = managedMemory.malloc.bind(managedMemory);
-export const free = managedMemory.free.bind(managedMemory);
-
 function debugPrint(v) {
   console.log(`0x${v.toString(16)} (0b${v.toString(2)})`);
 }
 
-const importObj = {
-  env: {
-    memory,
-    abort(err) {
-      throw new Error(`abort ${err}`);
+function buildImportObj(runner) {
+  return {
+    env: {
+      memory: runner.managedMemory._memory,
+      abort(err) {
+        throw new Error(`abort ${err}`);
+      },
     },
-  },
-  console: {
-    debug: debugPrint,
-    printClosure: printClosure,
-    tracepoint: (n) => console.log(`tracepoint ${n} reached`),
-  },
-  grainRuntime: {
-    mem: memory,
-    tbl: table,
-  },
-};
+    console: {
+      debug: debugPrint,
+      printClosure: printClosure,
+      tracepoint: (n) => console.log(`tracepoint ${n} reached`),
+    },
+    grainRuntime: {
+      mem: runner.managedMemory._memory,
+      tbl: runner.table,
+    },
+  };
+}
 
 export function buildGrainRunner(locator, opts) {
-  // [TODO] Find something which avoids global state!
-  let runner = new GrainRunner(locator || ((x) => null), managedMemory, opts);
-  runner.addImports(importObj);
+  const managedMemory = new ManagedMemory(opts);
+  const runner = new GrainRunner(locator || (() => null), managedMemory, opts);
+  runner.addImports(buildImportObj(runner));
   managedMemory.setRuntime(runner);
   return runner;
 }
