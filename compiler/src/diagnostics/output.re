@@ -74,21 +74,16 @@ let convert_warnings = (warnings_this_run, topLevelFileName) => {
         Grain_parsing.Location.get_pos_info(loc.loc_start);
       let (_, endline, endchar) =
         Grain_parsing.Location.get_pos_info(loc.loc_end);
-
-      if (file == topLevelFileName) {
-        let warning: lsp_warning = {
-          file,
-          line,
-          startchar,
-          endline,
-          endchar,
-          number: Grain_utils.Warnings.number(warn),
-          lsp_message: Grain_utils.Warnings.message(warn),
-        };
-        List.cons(warning, acc);
-      } else {
-        acc;
+      let warning: lsp_warning = {
+        file,
+        line,
+        startchar,
+        endline,
+        endchar,
+        number: Grain_utils.Warnings.number(warn),
+        lsp_message: Grain_utils.Warnings.message(warn),
       };
+      List.cons(warning, acc);
     },
     [],
     warnings_this_run,
