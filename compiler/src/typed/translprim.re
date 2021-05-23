@@ -45,8 +45,6 @@ let prim_map =
       ("@and", Primitive2(And)),
       ("@or", Primitive2(Or)),
       ("@array.length", Primitive1(ArrayLength)),
-      ("@array.make", Primitive2(ArrayMake)),
-      ("@array.init", Primitive2(ArrayInit)),
       ("@wasm.load_int32", Primitive2(WasmLoadI32({sz: 4, signed: false}))),
       (
         "@wasm.load_8_s_int32",

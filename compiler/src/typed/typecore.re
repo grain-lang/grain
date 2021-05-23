@@ -149,18 +149,6 @@ let prim2_type =
       and v2 = newvar(~name="equal", ());
       (v1, v2, Builtin_types.type_bool);
     }
-  | ArrayMake => {
-      let var = newvar(~name="a", ());
-      (Builtin_types.type_number, var, Builtin_types.type_array(var));
-    }
-  | ArrayInit => {
-      let var = newvar(~name="a", ());
-      (
-        Builtin_types.type_number,
-        Builtin_types.type_lambda([Builtin_types.type_number], var),
-        Builtin_types.type_array(var),
-      );
-    }
   | WasmBinaryI32({arg_types: (arg1_type, arg2_type), ret_type})
   | WasmBinaryI64({arg_types: (arg1_type, arg2_type), ret_type})
   | WasmBinaryF32({arg_types: (arg1_type, arg2_type), ret_type})

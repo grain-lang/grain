@@ -1,6 +1,53 @@
-export primitive length : Array<a> -> Number = "@array.length"
-export primitive make : (Number, a) -> Array<a> = "@array.make"
-export primitive init : (Number, Number -> a) -> Array<a> = "@array.init"
+import WasmI32 from "runtime/unsafe/wasmi32"
+import Memory from "runtime/unsafe/memory"
+import { allocateArray, tagSimpleNumber } from "runtime/dataStructures"
+import Exception from "runtime/exception"
+
+let _ARRAY_LENGTH_OFFSET = 4n
+let _ARRAY_START_OFFSET = 8n
+
+@disableGC
+let initLength = (length) => {
+  let length = WasmI32.fromGrain(length)
+  if (WasmI32.eqz(WasmI32.and(length, 1n))) {
+    throw Exception.InvalidArgument("Length argument must be an integer")
+  }
+  let length = WasmI32.shrS(length, 1n)
+  if (WasmI32.ltS(length, 0n)) {
+    throw Exception.InvalidArgument("Length argument must be non-negative")
+  }
+  length
+}
+
+@disableGC
+export let length = (array) => {
+  let ptr = WasmI32.fromGrain(array: Array<a>)
+  tagSimpleNumber(WasmI32.load(ptr, _ARRAY_LENGTH_OFFSET))
+}
+
+@disableGC
+export let make : (Number, a) -> Array<a>  = (length, item) => {
+  let length = initLength(length)
+  let byteLength = WasmI32.mul(length, 4n)
+  let array = allocateArray(length)
+  for (let mut i = 0n; WasmI32.ltS(i, byteLength); i = WasmI32.add(i, 4n)) {
+    WasmI32.store(WasmI32.add(array, i), Memory.incRef(WasmI32.fromGrain(item)), _ARRAY_START_OFFSET)
+  }
+  WasmI32.toGrain(array)
+}
+
+@disableGC
+export let init : (Number, Number -> a) -> Array<a> = (length, f) => {
+  let length = initLength(length)
+  let byteLength = WasmI32.mul(length, 4n)
+  let array = allocateArray(length)
+  let mut index = 0
+  for (let mut i = 0n; WasmI32.ltS(i, byteLength); i = WasmI32.add(i, 4n)) {
+    WasmI32.store(WasmI32.add(array, i), WasmI32.fromGrain(f(index)), _ARRAY_START_OFFSET)
+    index += 1
+  }
+  WasmI32.toGrain(array)
+}
 
 export let get = (index, array) => {
   array[index]

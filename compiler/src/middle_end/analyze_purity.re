@@ -57,8 +57,7 @@ let rec analyze_comp_expression =
       true
     | CPrim1(Assert | Throw, _) => false
     | CPrim2(
-        Is | Eq | And | Or | ArrayMake | WasmLoadI32(_) | WasmLoadI64(_) |
-        WasmLoadF32 |
+        Is | Eq | And | Or | WasmLoadI32(_) | WasmLoadI64(_) | WasmLoadF32 |
         WasmLoadF64 |
         WasmBinaryI32(_) |
         WasmBinaryI64(_) |
@@ -68,7 +67,6 @@ let rec analyze_comp_expression =
         _,
       ) =>
       true
-    | CPrim2(ArrayInit, _, _) => false // Array.init takes (and calls) a function which could have side effects
     | CPrimN(
         WasmStoreI32(_) | WasmStoreI64(_) | WasmStoreF32 | WasmStoreF64 |
         WasmMemoryCopy |
