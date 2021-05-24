@@ -102,25 +102,6 @@ let ident_cap = ['A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']*
 
 let blank = [' ' '\t']+
 
-let std_escapes = (("\\" dec_digit dec_digit? dec_digit?)
-                 | ("\\x" hex_digit hex_digit?)
-                 | ("\\" oct_digit oct_digit? oct_digit?)
-                 | ("\\u" hex_digit hex_digit hex_digit hex_digit)
-                 | ("\\u{" hex_digit hex_digit? hex_digit? hex_digit? hex_digit? hex_digit? "}")
-                 | ("\\" ['\\' 'n' 'r' 't' '"' '\''] ))
-
-let tquot_str = "```" (std_escapes
-                    | "\\`"
-                    | "`"[^ '`']
-                    | "``"[^ '`']
-                    | [^ '`' '\\'])* "```"
-
-let dquot_str = '"' (std_escapes
-                   | [^ '\\' '"' '\n' '\r'])* '"'
-
-let squot_str = '\'' (std_escapes
-              | [^ '\\' '\'' '\n' '\r'])* '\''
-
 let unicode_esc = "\\u{" hex_digit (hex_digit (hex_digit (hex_digit (hex_digit hex_digit?)?)?)?)? "}"
 let unicode4_esc = "\\u" hex_digit hex_digit hex_digit hex_digit
 let hex_esc = "\\x" hex_digit hex_digit?
@@ -228,8 +209,12 @@ rule token = parse
 and read_str buf =
   parse
   | '\\' newline_char { read_str buf lexbuf }
+  | "\\b" { Buffer.add_char buf '\b'; read_str buf lexbuf }
+  | "\\f" { Buffer.add_char buf '\x0C'; read_str buf lexbuf }
   | "\\n" { Buffer.add_char buf '\n'; read_str buf lexbuf }
   | "\\r" { Buffer.add_char buf '\r'; read_str buf lexbuf }
+  | "\\t" { Buffer.add_char buf '\t'; read_str buf lexbuf }
+  | "\\v" { Buffer.add_char buf '\x0B'; read_str buf lexbuf }
   | "\\\"" { Buffer.add_char buf '"'; read_str buf lexbuf }
   | "\\\\" { Buffer.add_char buf '\\'; read_str buf lexbuf }
   | num_esc { add_code_point buf (lexeme lexbuf) (lexbuf_loc lexbuf); read_str buf lexbuf }
@@ -239,9 +224,13 @@ and read_str buf =
 
 and read_char buf =
   parse
+  | "\\b'" { CHAR "\b" }
+  | "\\f'" { CHAR "\x0C" }
   | "\\n'" { CHAR "\n" }
   | "\\r'" { CHAR "\r" }
-  | "\\'" { CHAR "'" }
+  | "\\t'" { CHAR "\t" }
+  | "\\v'" { CHAR "\x0B" }
+  | "\\''" { CHAR "'" }
   | "\\\\'" { CHAR "\\" }
   | (num_esc as esc) ''' { add_code_point buf esc (lexbuf_loc lexbuf); CHAR (Buffer.contents buf) }
   | ([^ '\'' '\\']+ as _match) '\'' { process_newlines lexbuf; Buffer.add_string buf _match; CHAR (Buffer.contents buf) }
