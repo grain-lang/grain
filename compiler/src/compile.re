@@ -177,9 +177,15 @@ let rec compile_resume = (~hook=?, s: compilation_state) => {
   };
 };
 
+let reset_compiler_state = () => {
+  Env.clear_imports(); // TODO: (#576) reenable if necessary (makes tests super slow, but seems to be safe?)
+  // Grain_utils.Fs_access.flush_all_cached_data();
+  Grain_utils.Warnings.reset_warnings();
+};
+
 let compile_string = (~hook=?, ~name=?, ~outfile=?, ~reset=true, str) => {
   if (reset) {
-    Env.clear_imports();
+    reset_compiler_state();
   };
   let cstate = {
     cstate_desc: Initial(InputString(str)),
@@ -191,8 +197,7 @@ let compile_string = (~hook=?, ~name=?, ~outfile=?, ~reset=true, str) => {
 
 let compile_file = (~hook=?, ~outfile=?, ~reset=true, filename) => {
   if (reset) {
-    Env.clear_imports(); // TODO: (#576) reenable if necessary (makes tests super slow, but seems to be safe?)
-                     // Grain_utils.Fs_access.flush_all_cached_data();
+    reset_compiler_state();
   };
   let cstate = {
     cstate_desc: Initial(InputFile(filename)),

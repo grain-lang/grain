@@ -64,8 +64,17 @@ let compile_string = name => {
         | TypeChecked(typed_program) =>
           let values: list(Grain_diagnostics.Lenses.lens_t) =
             Grain_diagnostics.Lenses.get_lenses_values(typed_program);
+          let warnings: list(Grain_diagnostics.Output.lsp_warning) =
+            Grain_diagnostics.Output.convert_warnings(
+              Grain_utils.Warnings.get_warnings(),
+              name,
+            );
           let json =
-            Grain_diagnostics.Output.result_to_json(~errors=[], ~values);
+            Grain_diagnostics.Output.result_to_json(
+              ~errors=[],
+              ~warnings,
+              ~values,
+            );
           print_endline(json);
         | _ => ()
         };
@@ -80,7 +89,12 @@ let compile_string = name => {
       | Some(err) => [err]
       };
 
-    let json = Grain_diagnostics.Output.result_to_json(~errors, ~values=[]);
+    let json =
+      Grain_diagnostics.Output.result_to_json(
+        ~errors,
+        ~warnings=[],
+        ~values=[],
+      );
     print_endline(json);
   };
 

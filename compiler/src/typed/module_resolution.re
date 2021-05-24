@@ -381,8 +381,10 @@ module Dependency_graph =
         | Seq.Cons((parent, unit_name), _) => unit_name
         };
       with_preserve_unit^(~loc, chosen_unit_name, srcpath, () =>
-        Grain_utils.Config.preserve_config(() =>
-          compile_module_dependency^(srcpath, outpath)
+        Grain_utils.Warnings.with_preserve_warnings(() =>
+          Grain_utils.Config.preserve_config(() =>
+            compile_module_dependency^(srcpath, outpath)
+          )
         )
       );
       dn.dn_latest_resolution := Some(GrainModule(srcpath, Some(outpath)));
