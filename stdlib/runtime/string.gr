@@ -205,14 +205,14 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
     },
     t when t == Tags._GRAIN_BYTES_HEAP_TAG => {
       let mut numBytes = WasmI32.load(ptr, 4n)
-      let mut longBoi = false
+      let mut needsEllipsis = false
       if (numBytes > 32n) {
         numBytes = 32n
-        longBoi = true
+        needsEllipsis = true
       }
       let headBytes = 8n // <bytes: 
       let hexBytes = numBytes * 3n
-      let tailBytes = if (longBoi) { 
+      let tailBytes = if (needsEllipsis) { 
         5n // ...>
       } else {
         1n // >
@@ -233,7 +233,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
         WasmI32.store16(strOffset, WasmI32.load16U(hex, k), j)
       }
 
-      if (longBoi) {
+      if (needsEllipsis) {
         WasmI32.store(strOffset + hexBytes, 0x3e2e2e2en, 0n) // ...>
       } else {
         WasmI32.store8(strOffset + hexBytes, 0x3en, 0n) // >
