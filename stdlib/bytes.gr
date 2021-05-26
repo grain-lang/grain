@@ -449,6 +449,35 @@ export let toString = (b: Bytes) => {
 }
 
 /**
+ * Creates a new byte sequence from a String.
+ * @param str: String - The String to copy into a byte sequence
+ * @returns Bytes
+ */
+@disableGC
+export let fromString = (str: String) => {
+  let (+) = WasmI32.add
+  let src = WasmI32.fromGrain(str)
+  let size = getSize(src)
+  let dst = allocateBytes(size)
+  Memory.copy(dst + _VALUE_OFFSET, src + _VALUE_OFFSET, size)
+  WasmI32.toGrain(dst): Bytes
+}
+
+/**
+ * Fills a byte sequence with a given value.
+ * @param v: Int32 - The value to fill the byte sequence with
+ * @param b: Bytes - The byte sequence to fill
+ */
+@disableGC
+export let fill = (v: Int32, b: Bytes) => {
+  let (+) = WasmI32.add
+  let src = WasmI32.fromGrain(b)
+  let size = getSize(src)
+  let value = Conv.fromInt32(v)
+  Memory.fill(src + _VALUE_OFFSET, value, size)
+}
+
+/**
  * Make a new byte sequence of n-bytes size.
  * @param n: Number - The number of bytes to store
  * @returns Bytes

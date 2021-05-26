@@ -1,6 +1,7 @@
 import Bytes from "bytes"
 import Int32 from "int32"
 import Array from "array"
+import String from "string"
 
 // Bytes.empty
 assert Bytes.empty == Bytes.empty
@@ -145,6 +146,17 @@ for (let mut i = 8; i < 16; i += 1) {
     assert Bytes.getInt8S(i, dstBytes) == Bytes.getInt8S(i - 8, srcBytes)
   }
 }
+let srcBytes = Bytes.make(32)
+let len = Bytes.length(srcBytes)
+let halfLen = len / 2
+for (let mut i = 0; i < len; i += 1) {
+  let value = if (i < halfLen) { 0x01l } else { 0x00l }
+  Bytes.setInt8(i, value, srcBytes)
+}
+Bytes.move(0, halfLen, halfLen, srcBytes, srcBytes)
+for (let mut i = 0; i < len; i += 1) {
+  assert Bytes.getInt8U(i, srcBytes) == 0x01l
+}
 
 
 // Bytes.concat
@@ -182,6 +194,23 @@ Array.forEachi((n, i) => {
 }, xs)
 let str = Bytes.toString(bytes)
 assert str == "Let's get this 🍞"
+
+
+// Bytes.fromString
+let bytes = Bytes.fromString("Let's get this 🍞")
+Array.forEachi((n, i) => {
+  assert Bytes.getInt8U(i, bytes) == n
+}, xs)
+let str = Bytes.toString(bytes)
+assert str == "Let's get this 🍞"
+
+
+// Bytes.fill
+let bytes = Bytes.fromString("🍞🍞🍞🍞🍞🍞🍞🍞")
+Bytes.fill(0xffl, bytes)
+for (let mut i = 0; i < Bytes.length(bytes); i += 1) {
+  assert Bytes.getInt8U(i, bytes) == 0xffl
+}
 
 
 // Bytes equality
