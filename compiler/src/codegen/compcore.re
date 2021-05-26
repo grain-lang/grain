@@ -1587,10 +1587,7 @@ let call_lambda = (~tail=false, wasm_mod, env, func, (argsty, retty), args) => {
   );
 };
 
-let allocate_string = (wasm_mod, env, str) => {
-  let buf = Buffer.create(80);
-  Buffer.add_string(buf, str);
-
+let allocate_byte_like_from_buffer = (wasm_mod, env, buf, tag, label) => {
   let ints_to_push: list(int64) = buf_to_ints(buf);
   let get_swap = () => get_swap(wasm_mod, env, 0);
   let tee_swap = tee_swap(~skip_incref=true, wasm_mod, env, 0);
@@ -1603,14 +1600,14 @@ let allocate_string = (wasm_mod, env, str) => {
       ),
       Expression.Const.make(
         wasm_mod,
-        const_int32(tag_val_of_heap_tag_type(StringType)),
+        const_int32(tag_val_of_heap_tag_type(tag)),
       ),
     ),
     store(
       ~offset=4,
       wasm_mod,
       get_swap(),
-      Expression.Const.make(wasm_mod, const_int32 @@ String.length(str)),
+      Expression.Const.make(wasm_mod, const_int32 @@ Buffer.length(buf)),
     ),
   ];
   let elts =
@@ -1627,8 +1624,32 @@ let allocate_string = (wasm_mod, env, str) => {
     );
   Expression.Block.make(
     wasm_mod,
-    gensym_label("allocate_string"),
+    gensym_label(label),
     List.concat([preamble, elts, [get_swap()]]),
+  );
+};
+
+let allocate_string = (wasm_mod, env, str) => {
+  let buf = Buffer.create(80);
+  Buffer.add_string(buf, str);
+  allocate_byte_like_from_buffer(
+    wasm_mod,
+    env,
+    buf,
+    StringType,
+    "allocate_string",
+  );
+};
+
+let allocate_bytes = (wasm_mod, env, bytes) => {
+  let buf = Buffer.create(80);
+  Buffer.add_bytes(buf, bytes);
+  allocate_byte_like_from_buffer(
+    wasm_mod,
+    env,
+    buf,
+    BytesType,
+    "allocate_bytes",
   );
 };
 
@@ -2362,6 +2383,7 @@ let compile_allocation = (wasm_mod, env, alloc_type) =>
   | MBox(elt) => allocate_box(wasm_mod, env, elt)
   | MArray(elts) => allocate_array(wasm_mod, env, elts)
   | MRecord(ttag, elts) => allocate_record(wasm_mod, env, ttag, elts)
+  | MBytes(bytes) => allocate_bytes(wasm_mod, env, bytes)
   | MString(str) => allocate_string(wasm_mod, env, str)
   | MChar(char) => allocate_char(wasm_mod, env, char)
   | MADT(ttag, vtag, elts) => allocate_adt(wasm_mod, env, ttag, vtag, elts)

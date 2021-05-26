@@ -179,7 +179,7 @@ let get_DIGITS = () => {
 // Lookup table for pairwise char codes in range [0x00-0xFF]
 let mut _HEX_DIGITS = -1n
 
-let get_HEX_DIGITS = () => {
+export let get_HEX_DIGITS = () => {
   if (_HEX_DIGITS == -1n) {
     _HEX_DIGITS = Memory.malloc(512n)
     WasmI32.store16(_HEX_DIGITS, 0x3030n, 0n) // 00

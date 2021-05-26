@@ -10,7 +10,8 @@ type heap_tag_type =
   | ArrayType
   | BoxedNumberType
   | LambdaType
-  | TupleType;
+  | TupleType
+  | BytesType;
 
 let tag_val_of_heap_tag_type =
   fun
@@ -21,7 +22,8 @@ let tag_val_of_heap_tag_type =
   | ArrayType => 5
   | BoxedNumberType => 6
   | LambdaType => 7
-  | TupleType => 8;
+  | TupleType => 8
+  | BytesType => 9;
 
 let heap_tag_type_of_tag_val =
   fun
@@ -33,6 +35,7 @@ let heap_tag_type_of_tag_val =
   | 6 => BoxedNumberType
   | 7 => LambdaType
   | 8 => TupleType
+  | 9 => BytesType
   | x => failwith(Printf.sprintf("Unknown tag type: %d", x));
 
 [@deriving sexp]

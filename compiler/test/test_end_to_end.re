@@ -863,6 +863,7 @@ let stdlib_tests = [
   tlib("wasmf32.test"),
   tlib("wasmf64.test"),
   tlib("range.test"),
+  tlib("bytes.test"),
   tlib("string.test"),
   tlib("sys.file.test"),
   tlib("map.test"),

@@ -133,6 +133,7 @@ let transl_const =
   | Const_int64(i) => Right(("int64", Comp.int64(i)))
   | Const_float64(i) => Right(("float64", Comp.float64(i)))
   | Const_float32(i) => Right(("float32", Comp.float32(i)))
+  | Const_bytes(b) => Right(("bytes", Comp.bytes(b)))
   | Const_string(s) => Right(("str", Comp.string(s)))
   | Const_char(c) => Right(("char", Comp.char(c)))
   | _ => Left(Imm.const(c))

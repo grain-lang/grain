@@ -15,6 +15,7 @@ export let _GRAIN_ARRAY_HEAP_TAG = 5n
 export let _GRAIN_BOXED_NUM_HEAP_TAG = 6n
 export let _GRAIN_LAMBDA_HEAP_TAG = 7n
 export let _GRAIN_TUPLE_HEAP_TAG = 8n
+export let _GRAIN_BYTES_HEAP_TAG = 9n
 
 // Boxed number types
 export let _GRAIN_FLOAT32_BOXED_NUM_TAG = 1n

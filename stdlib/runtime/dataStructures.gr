@@ -65,6 +65,21 @@ export let storeInTuple = (tuple, idx, item) => {
 }
 
 /**
+ * Allocates a new Grain bytes.
+ *
+ * @param {WasmI32} size The number of bytes to be contained in this buffer
+ * @returns {WasmI32} The pointer to the bytes
+ */
+export let allocateBytes = (size) => {
+  let len = size + 8n
+  let bytes = Memory.malloc(len)
+  Memory.fill(bytes, 0n, len)
+  WasmI32.store(bytes, Tags._GRAIN_BYTES_HEAP_TAG, 0n)
+  WasmI32.store(bytes, size, 4n)
+  bytes
+}
+
+/**
  * Allocates a new Grain string.
  *
  * @param {WasmI32} size The size (in bytes) of the string to allocate

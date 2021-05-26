@@ -124,6 +124,7 @@ let rec analyze_comp_expression =
     | CInt64(_)
     | CFloat32(_)
     | CFloat64(_)
+    | CBytes(_)
     | CString(_)
     | CChar(_) => true
     };

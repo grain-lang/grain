@@ -46,6 +46,7 @@ and ident_float32 = ident_create("Float32")
 and ident_float64 = ident_create("Float64")
 and ident_bool = ident_create("Bool")
 and ident_string = ident_create("String")
+and ident_bytes = ident_create("Bytes")
 and ident_char = ident_create("Char")
 and ident_void = ident_create("Void")
 and ident_box = ident_create("Box")
@@ -65,6 +66,7 @@ and path_float32 = PIdent(ident_float32)
 and path_float64 = PIdent(ident_float64)
 and path_bool = PIdent(ident_bool)
 and path_string = PIdent(ident_string)
+and path_bytes = PIdent(ident_bytes)
 and path_char = PIdent(ident_char)
 and path_void = PIdent(ident_void)
 and path_box = PIdent(ident_box)
@@ -84,6 +86,7 @@ and type_wasmf32 = newgenty(TTyConstr(path_wasmf32, [], ref(TMemNil)))
 and type_wasmf64 = newgenty(TTyConstr(path_wasmf64, [], ref(TMemNil)))
 and type_bool = newgenty(TTyConstr(path_bool, [], ref(TMemNil)))
 and type_string = newgenty(TTyConstr(path_string, [], ref(TMemNil)))
+and type_bytes = newgenty(TTyConstr(path_bytes, [], ref(TMemNil)))
 and type_char = newgenty(TTyConstr(path_char, [], ref(TMemNil)))
 and type_void = newgenty(TTyConstr(path_void, [], ref(TMemNil)))
 and type_box = var => newgenty(TTyConstr(path_box, [var], ref(TMemNil)))
@@ -174,7 +177,8 @@ let initial_env = (add_type, empty_env) =>
   |> add_type(ident_char, decl_abstr(path_char))
   |> add_type(ident_void, decl_void)
   |> add_type(ident_array, decl_array)
-  |> add_type(ident_fd, decl_abstr(path_fd));
+  |> add_type(ident_fd, decl_abstr(path_fd))
+  |> add_type(ident_bytes, decl_abstr(path_bytes));
 
 let builtin_values =
   List.map(

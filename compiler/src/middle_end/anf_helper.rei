@@ -297,6 +297,9 @@ module Comp: {
       (anf_expression, allocation_type)
     ) =>
     comp_expression;
+  let bytes:
+    (~loc: loc=?, ~attributes: attributes=?, ~env: env=?, bytes) =>
+    comp_expression;
   let string:
     (~loc: loc=?, ~attributes: attributes=?, ~env: env=?, string) =>
     comp_expression;

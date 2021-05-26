@@ -46,6 +46,7 @@ let ident_cons = {
 };
 
 module Const = {
+  let bytes = b => PConstBytes(b);
   let string = s => PConstString(s);
   let char = c => PConstChar(c);
   let number = i => PConstNumber(i);

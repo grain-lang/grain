@@ -458,6 +458,7 @@ let compile_const = (c: Asttypes.constant) =>
   | Const_number(Const_number_int(i)) => MConstI32(Int64.to_int32(i))
   | Const_number(_) =>
     failwith("compile_const: Const_number float/rational post-ANF")
+  | Const_bytes(_) => failwith("compile_const: Const_bytes post-ANF")
   | Const_string(_) => failwith("compile_const: Const_string post-ANF")
   | Const_char(_) => failwith("compile_const: Const_char post-ANF")
   | Const_int32(i32) => MConstI32(i32)
@@ -733,6 +734,7 @@ let rec compile_comp = (env, c) => {
           List.map(compile_imm(env), args),
         ),
       )
+    | CBytes(b) => MAllocate(MBytes(b))
     | CString(s) => MAllocate(MString(s))
     | CChar(c) => MAllocate(MChar(c))
     | CNumber(Const_number_int(n))

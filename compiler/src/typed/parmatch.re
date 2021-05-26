@@ -141,6 +141,7 @@ let all_coherent = column => {
       | (Const_wasmf64(_), Const_wasmf64(_))
       | (Const_bool(_), Const_bool(_))
       | (Const_void, Const_void)
+      | (Const_bytes(_), Const_bytes(_))
       | (Const_string(_), Const_string(_))
       | (Const_char(_), Const_char(_)) => true
       | (
@@ -152,6 +153,7 @@ let all_coherent = column => {
           Const_wasmf64(_) |
           Const_bool(_) |
           Const_void |
+          Const_bytes(_) |
           Const_string(_) |
           Const_char(_),
           _,
@@ -252,12 +254,14 @@ let first_column = simplified_matrix => List.map(fst, simplified_matrix);
 
 let const_compare = (x, y) =>
   switch (x, y) {
+  | (Const_bytes(b1), Const_bytes(b2)) => Bytes.compare(b1, b2)
   | (Const_string(s1), Const_string(s2)) => String.compare(s1, s2)
   | (Const_char(c1), Const_char(c2)) => String.compare(c1, c2)
   | (Const_bool(b1), Const_bool(b2)) =>
     Stdlib.compare(if (b1) {1} else {0}, if (b2) {1} else {0})
   | (
-      Const_number(_) | Const_string(_) | Const_char(_) | Const_bool(_) |
+      Const_number(_) | Const_bytes(_) | Const_string(_) | Const_char(_) |
+      Const_bool(_) |
       Const_float32(_) |
       Const_float64(_) |
       Const_wasmi32(_) |
@@ -1786,6 +1790,7 @@ let untype_constant =
   | Const_wasmi64(i) => Parsetree.PConstWasmI64(Int64.to_string(i))
   | Const_wasmf32(f) => Parsetree.PConstWasmF32(Float.to_string(f))
   | Const_wasmf64(f) => Parsetree.PConstWasmF64(Float.to_string(f))
+  | Const_bytes(b) => Parsetree.PConstBytes(Bytes.to_string(b))
   | Const_string(s) => Parsetree.PConstString(s)
   | Const_char(c) => Parsetree.PConstChar(c)
   | Const_bool(b) => Parsetree.PConstBool(b)
@@ -2122,6 +2127,7 @@ let inactive = (~partial, pat) =>
       | TPatArray(_) => false
       | TPatConstant(c) =>
         switch (c) {
+        | Const_bytes(_)
         | Const_string(_)
         | Const_char(_)
         | Const_void
