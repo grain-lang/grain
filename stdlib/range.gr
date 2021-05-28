@@ -45,3 +45,38 @@ export let forEach = (fn: (Number) -> Void, range) => {
     },
   }
 }
+
+export let map = (fn, range) => {
+  let mut result = []
+  match (range) {
+    Inclusive(lower, upper) when lower <= upper => {
+      let mut idx = upper;
+      while (idx >= lower) {
+        result = [fn(idx), ...result];
+        idx -= 1;
+      }
+    },
+    Inclusive(upper, lower) => {
+      let mut idx = lower;
+      while (idx <= upper) {
+        result = [fn(idx), ...result];
+        idx += 1;
+      }
+    },
+    Exclusive(lower, upper) when lower <= upper => {
+      let mut idx = upper - 1;
+      while (idx >= lower) {
+        result = [fn(idx), ...result];
+        idx -= 1;
+      }
+    },
+    Exclusive(upper, lower) => {
+      let mut idx = lower + 1;
+      while (idx <= upper) {
+        result = [fn(idx), ...result];
+        idx += 1;
+      }
+    },
+  }
+  result
+}

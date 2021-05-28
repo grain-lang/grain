@@ -75,3 +75,10 @@ assert results == [2, 3, 4, 5]
 Range.forEach((idx) => {
   fail "Shouldn't be called"
 }, exclusiveSameRange)
+
+assert Range.map(toString, inclusiveAscendingRange) == ["1", "2", "3", "4", "5"]
+assert Range.map(toString, inclusiveDescendingRange) == ["5", "4", "3", "2", "1"]
+assert Range.map(toString, inclusiveSameRange) == ["1"]
+assert Range.map(toString, exclusiveAscendingRange) == ["1", "2", "3", "4"]
+assert Range.map(toString, exclusiveDescendingRange) == ["5", "4", "3", "2"]
+assert Range.map(toString, exclusiveSameRange) == []
