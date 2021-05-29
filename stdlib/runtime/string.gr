@@ -181,6 +181,93 @@ export let concat = (s1: String, s2: String) => {
 }
 
 @disableGC
+let escape = (ptr, isString) => {
+  let _SEQ_B = 0x08n
+  let _SEQ_F = 0x0Cn
+  let _SEQ_N = 0x0An
+  let _SEQ_R = 0x0Dn
+  let _SEQ_T = 0x09n
+  let _SEQ_V = 0x0Bn
+  let _SEQ_SLASH = 0x5Cn
+  let _SEQ_DQUOTE = 0x22n
+  let _SEQ_SQUOTE = 0x27n
+
+  let _SEQ_QUOTE = if (isString) _SEQ_DQUOTE else _SEQ_SQUOTE
+  
+  let size = if (isString) {
+    WasmI32.load(ptr, 4n)
+  } else {
+    let byte = WasmI32.load8U(ptr, 4n)
+
+    // Calculate number of bytes via utf-8 encoding
+    if ((byte & 0x80n) == 0x00n) {
+      1n
+    } else if ((byte & 0xF0n) == 0xF0n) {
+      4n
+    } else if ((byte & 0xE0n) == 0xE0n) {
+      3n
+    } else {
+      2n
+    }
+  }
+
+  let startOffset = if (isString) 8n else 4n
+  let stringOffset = 8n
+
+  let mut newSize = 2n // extra space for quote characters
+  for (let mut i = 0n; i < size; i += 1n) {
+    let byte = WasmI32.load8U(ptr + i, startOffset)
+    if (byte >= _SEQ_B && byte <= _SEQ_R /* b, f, n, r, t, v */ || byte == _SEQ_V || byte == _SEQ_SLASH || byte == _SEQ_QUOTE) {
+      newSize += 2n
+    } else {
+      newSize += 1n
+    }
+  }
+
+  let escapedString = allocateString(newSize)
+
+  // one extra byte for leading quote character
+  let mut j = 1n
+
+  for (let mut i = 0n; i < size; i += 1n) {
+    let byte = WasmI32.load8U(ptr + i, startOffset)
+    if (byte >= _SEQ_B && byte <= _SEQ_R /* b, f, n, r, t, v */ || byte == _SEQ_V || byte == _SEQ_SLASH || byte == _SEQ_QUOTE) {
+      WasmI32.store8(escapedString + j, _SEQ_SLASH, stringOffset)
+      j += 1n
+      let seq = match (byte) {
+        b when b == _SEQ_B => 0x62n,
+        f when f == _SEQ_F => 0x66n,
+        n when n == _SEQ_N => 0x6en,
+        r when r == _SEQ_R => 0x72n,
+        t when t == _SEQ_T => 0x74n,
+        v when v == _SEQ_V => 0x76n,
+        _ => byte
+      }
+      WasmI32.store8(escapedString + j, seq, stringOffset)
+      j += 1n
+    } else {
+      WasmI32.store8(escapedString + j, byte, stringOffset)
+      j += 1n
+    }
+  }
+
+  WasmI32.store8(escapedString, _SEQ_QUOTE, 8n)
+  WasmI32.store8(escapedString + j, _SEQ_QUOTE, stringOffset)
+
+  WasmI32.toGrain(escapedString): String
+}
+
+@disableGC
+let escapeString = (s: String) => {
+  escape(WasmI32.fromGrain(s), true)
+}
+
+@disableGC
+let escapeChar = (c: Char) => {
+  escape(WasmI32.fromGrain(c), false)
+}
+
+@disableGC
 let isListVariant = (variant: String) => {
   // Only lists can start with `[`, so only need to check for that
   // Sort of a hack until we have a better solution
@@ -195,12 +282,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
       if (toplevel) {
         WasmI32.toGrain(ptr): String
       } else {
-        let numBytes = WasmI32.load(ptr, 4n)
-        let str = allocateString(numBytes + 2n)
-        WasmI32.store8(str, 0x22n, 8n) // "
-        Memory.copy(str + 9n, ptr + 8n, numBytes)
-        WasmI32.store8(str + numBytes, 0x22n, 9n) // "
-        WasmI32.toGrain(str): String
+        escapeString(WasmI32.toGrain(ptr))
       }
     },
     t when t == Tags._GRAIN_BYTES_HEAP_TAG => {
@@ -242,26 +324,22 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
       WasmI32.toGrain(str): String
     },
     t when t == Tags._GRAIN_CHAR_HEAP_TAG => {
-      let byte = WasmI32.load8U(ptr, 4n)
-      let numBytes = if ((byte & 0x80n) == 0x00n) {
-        1n
-      } else if ((byte & 0xF0n) == 0xF0n) {
-        4n
-      } else if ((byte & 0xE0n) == 0xE0n) {
-        3n
-      } else {
-        2n
-      }
       if (toplevel) {
+        let byte = WasmI32.load8U(ptr, 4n)
+        let numBytes = if ((byte & 0x80n) == 0x00n) {
+          1n
+        } else if ((byte & 0xF0n) == 0xF0n) {
+          4n
+        } else if ((byte & 0xE0n) == 0xE0n) {
+          3n
+        } else {
+          2n
+        }
         let str = allocateString(numBytes)
         Memory.copy(str + 8n, ptr + 4n, numBytes)
         WasmI32.toGrain(str): String
       } else {
-        let str = allocateString(numBytes + 2n)
-        WasmI32.store8(str, 0x27n, 8n) // '
-        Memory.copy(str + 9n, ptr + 4n, numBytes)
-        WasmI32.store8(str + numBytes, 0x27n, 9n) // '
-        WasmI32.toGrain(str): String
+        escapeChar(WasmI32.toGrain(ptr))
       }
     },
     t when t == Tags._GRAIN_ADT_HEAP_TAG => {
