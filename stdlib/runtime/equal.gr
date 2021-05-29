@@ -186,22 +186,16 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
     }
   }
 }, equalHelp = (x, y) => {
-  // Short circuit if value/pointer is the same
-  if (x == y) {
-    true
+  if ((x & Tags._GRAIN_GENERIC_TAG_MASK) != 0n) {
+    // Short circuit for non-pointer values
+    x == y
   } else if (isNumber(x)) {
+    // Numbers have special equality rules, e.g. NaN != NaN
     numberEqual(x, y)
   } else {
-    // We only need to worry about heep allocated things since everything else
-    // is handled by a simple x == y check at the end
-    match (x & Tags._GRAIN_GENERIC_TAG_MASK) {
-      t when t == Tags._GRAIN_GENERIC_HEAP_TAG_TYPE => {
-        heapEqualHelp(WasmI32.load(x, 0n), x, y)
-      },
-      _ => {
-        x == y
-      }
-    }
+    // Handle all other heap allocated things
+    // Can short circuit if pointers are the same
+    x == y || heapEqualHelp(WasmI32.load(x, 0n), x, y)
   }
 }
 
