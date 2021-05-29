@@ -474,9 +474,9 @@ export let fdWrite = (fd: FileDescriptor, data: String) => {
   }
 
   let iovs = Memory.malloc(3n * 4n)
-  let strPtr = WasmI32.fromGrain(data) + 8n
+  let strPtr = WasmI32.fromGrain(data)
 
-  WasmI32.store(iovs, strPtr, 0n)
+  WasmI32.store(iovs, strPtr + 8n, 0n)
   WasmI32.store(iovs, WasmI32.load(strPtr, 4n), 4n)
 
   let mut nwritten = iovs + (3n * 4n)

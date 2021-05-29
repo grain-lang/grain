@@ -1,5 +1,6 @@
 import Fs from "sys/file"
 
+// fdRead
 let foo = Fs.pathOpen(
   Fs.pwdfd,
   [Fs.SymlinkFollow],
@@ -16,3 +17,27 @@ Fs.fdClose(foo)
 
 assert buf == "foo, bar, & baz"
 assert nread == 15
+
+// fdWrite
+let foo = Fs.pathOpen(
+  Fs.pwdfd,
+  [Fs.SymlinkFollow],
+  "test-data/bar.txt",
+  [Fs.Create, Fs.Truncate],
+  [Fs.FdRead, Fs.FdWrite, Fs.FdSeek, Fs.FdSetSize],
+  [Fs.FdRead, Fs.FdWrite, Fs.FdSeek, Fs.FdSetSize],
+  []
+)
+
+assert Fs.fdWrite(foo, "this and that") == 13
+
+Fs.fdSeek(foo, 0L, Fs.Set)
+
+let (buf, nread) = Fs.fdRead(foo, 40)
+
+Fs.fdSetSize(foo, 0L)
+
+Fs.fdClose(foo)
+
+assert buf == "this and that"
+assert nread == 13
