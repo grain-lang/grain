@@ -850,6 +850,13 @@ let stdlib_tests = [
     "import * from \"list\"; reverse(1)",
     "This expression has type Number but",
   ),
+  // logging to the stdout file descriptor
+  t(
+    "stdlib_file_stdout",
+    {|import File from "sys/file"; ignore(File.fdWrite(File.stdout, "enterthe"))|},
+    "enterthevoid",
+  ),
+  // library tests
   tlib("array.test"),
   tlib("list.test"),
   tlib("option.test"),
