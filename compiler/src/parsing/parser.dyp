@@ -417,7 +417,7 @@ let_expr :
   | attributes LET MUT value_binds { Exp.let_ ~loc:(symbol_rloc dyp) ~attributes:$1 Nonrecursive Mutable $4 }
 
 if_expr :
-  | IF lparen expr rparen eols? block_or_expr ELSE eols? block_or_expr { Exp.if_ ~loc:(symbol_rloc dyp) $3 $6 $9 }
+  | IF lparen expr rparen eols? block_or_expr eols? ELSE eols? block_or_expr { Exp.if_ ~loc:(symbol_rloc dyp) $3 $6 $10 }
 
 one_sided_if_expr :
   | IF lparen expr rparen eols? block_or_expr { Exp.if_ ~loc:(symbol_rloc dyp) $3 $6 (Exp.block []) }
