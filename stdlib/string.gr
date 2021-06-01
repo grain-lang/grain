@@ -697,13 +697,6 @@ let _BYTES_OFFSET = 8n;
 // @returns Bytes
 @disableGC
 export let encode = (s: String, encoding: Encoding, includeBom: Bool) => {
-  let (>>>) = WasmI32.shrU
-  let (-) = WasmI32.sub
-  let (&) = WasmI32.and
-  let (<) = WasmI32.ltU
-  let (<=) = WasmI32.leU
-  let (==) = WasmI32.eq
-
   let size = encodedLength(s, encoding) + if (includeBom) {
     match(encoding) {
       UTF8 => 3,
@@ -713,6 +706,12 @@ export let encode = (s: String, encoding: Encoding, includeBom: Bool) => {
       UTF32_BE => 4,
     }
   } else 0
+  let (>>>) = WasmI32.shrU
+  let (-) = WasmI32.sub
+  let (&) = WasmI32.and
+  let (<) = WasmI32.ltU
+  let (<=) = WasmI32.leU
+  let (==) = WasmI32.eq
   let (+) = WasmI32.add
   let byteSize = WasmI32.fromGrain(byteLength(s)) >>> 1n
   let len = WasmI32.fromGrain(length(s)) >>> 1n
