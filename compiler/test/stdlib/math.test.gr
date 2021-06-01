@@ -1,0 +1,41 @@
+import Math from "math"
+// add
+assert Math.add(25, 5) == 30
+// sub
+assert Math.sub(25, 5) == 20
+// mul
+assert Math.mul(5, 5) == 25
+// div
+assert Math.div(25, 5) == 5
+// sqrt
+assert Math.sqrt(25) == 5.0 //fix this so it outputs an int if possible
+assert Math.sqrt(30.25) == 5.5
+// min
+assert Math.min(5, 6) == 5
+assert Math.min(6, 5) == 5
+// max
+assert Math.max(6, 5) == 6
+assert Math.max(5, 6) == 6
+// ceil
+assert Math.ceil(-25.5) == -25
+assert Math.ceil(25.5) == 26
+assert Math.ceil(25) == 25
+// floor
+assert Math.floor(-25.5) == -26
+assert Math.floor(25.5) == 25
+assert Math.floor(25) == 25
+// trunc
+assert Math.trunc(-25.5) == -25
+assert Math.trunc(25.5) == 25
+assert Math.trunc(25) == 25
+// round
+assert Math.round(-25.5) == -26
+assert Math.round(-25.25) == -25
+assert Math.round(25.25) == 25
+assert Math.round(25.5) == 26
+// abs
+assert Math.abs(-25.5) == 25.5
+assert Math.abs(25.5) == 25.5
+// neg
+assert Math.neg(-25.5) == -25.5
+assert Math.neg(25.5) == -25.5

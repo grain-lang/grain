@@ -1,0 +1,71 @@
+/* grainc-flags --compilation-mode=runtime */
+import WasmI32 from "runtime/unsafe/wasmi32"
+import WasmI64 from "runtime/unsafe/wasmi64"
+import WasmF64 from "runtime/unsafe/wasmf64"
+import {
+  (+),
+  (-),
+  (/),
+  (*),
+  (>),
+  coerceFloat64,
+  reducedInteger
+} from "runtime/numbers"
+import { newFloat64 } from "runtime/dataStructures"
+
+primitive (||) : (Bool, Bool) -> Bool = "@or"
+primitive throw : Exception -> a = "@throw"
+
+exception UnknownNumberTag
+
+// add
+export let add = (+)
+// sub
+export let sub = (-)
+// mul
+export let mul = (*)
+// div
+export let div = (/)
+// sqrt
+export let sqrt = (x: Number) => {
+  let x = WasmI32.fromGrain(x)
+  let xval = coerceFloat64(x)
+  let sqrtd = newFloat64(WasmF64.sqrt(xval))
+  WasmI32.toGrain(sqrtd): Number
+}
+// min
+export let min = (x: Number, y: Number) => if (y > x) x else y
+// max
+export let max = (x: Number, y: Number) => if (x > y) x else y
+// ceil
+export let ceil = (x: Number) => {
+  let x = WasmI32.fromGrain(x)
+  let xval = coerceFloat64(x)
+  let roofed = WasmI64.truncF64S(WasmF64.ceil(xval))
+  WasmI32.toGrain(reducedInteger(roofed)): Number
+}
+// floor
+export let floor = (x: Number) => {
+  let x = WasmI32.fromGrain(x)
+  let xval = coerceFloat64(x)
+  let floored = WasmI64.truncF64S(WasmF64.floor(xval))
+  WasmI32.toGrain(reducedInteger(floored)): Number
+}
+// trunc
+export let trunc = (x: Number) => {
+  let x = WasmI32.fromGrain(x)
+  let xval = coerceFloat64(x)
+  let trunced = WasmI64.truncF64S(xval)
+  WasmI32.toGrain(reducedInteger(trunced)): Number
+}
+// round
+export let round = (x: Number) => {
+  let x = WasmI32.fromGrain(x)
+  let xval = coerceFloat64(x)
+  let trunced = WasmI64.truncF64S(WasmF64.nearest(xval))
+  WasmI32.toGrain(reducedInteger(trunced)): Number
+}
+// abs
+export let abs = (x: Number) => if (0 > x) x * -1 else x
+// neg
+export let neg = (x: Number) => if (x > 0) x * -1 else x

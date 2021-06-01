@@ -119,7 +119,7 @@ let gcd32 = (x, y) => {
   WasmI32.wrapI64(gcd(WasmI64.extendI32S(x), WasmI64.extendI32S(y)))
 }
 
-let reducedInteger = (x) => {
+export let reducedInteger = (x) => {
   if (WasmI64.gtS(x, _I32_MAX) || WasmI64.ltS(x, _I32_MIN)) {
     newInt64(x)
   } else if (WasmI64.gtS(x, WasmI64.shrS(_I32_MAX, 1N)) || WasmI64.ltS(x, WasmI64.shrS(_I32_MIN, 1N))) {
@@ -280,7 +280,7 @@ let coerceFloat32 = (x) => {
   }
 }
 
-let coerceFloat64 = (x) => {
+export let coerceFloat64 = (x) => {
   if (isSimpleNumber(x)) {
     WasmF64.convertI32S(untagSimple(x))
   } else {
