@@ -118,8 +118,8 @@ export let round = (x: Number) => {
   WasmI32.toGrain(reducedInteger(trunced)): Number
 }
 /**
- * returns The number as a positive
- * @param x: Number - The number to conver into a positive
+ * Returns the absolute value of its operand, i.e. `x` if `x` is positive and the negation of `x` if `x` is negative.
+ * @param x: Number - The operand
  * @returns Number
  */
 export let abs = (x: Number) => if (0 > x) x * -1 else x
