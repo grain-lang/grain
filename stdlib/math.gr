@@ -12,9 +12,9 @@ primitive (!) : Bool -> Bool = "@not"
 primitive (&&) : (Bool, Bool) -> Bool = "@and"
 
 /**
- * returns The sum of the given numbers.
- * @param x: Number - The number to add
- * @param y: Number - The number to add
+ * Computes the sum of its operands.
+ * @param x: Number - The first operand
+ * @param y: Number - The second operand
  * @returns Number
  */
 export let add = (+)
