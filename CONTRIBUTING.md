@@ -8,7 +8,7 @@ Please note that this project is released with a [contributor code of conduct](h
 
 ## Joining the Discord
 
-You can use this link to chat with us on Discord: [grain-lang discord server](https://discord.gg/grain)
+You can use this link to chat with us on Discord: [grain-lang discord server](https://discord.com/invite/grain-lang)
 
 ## Getting up and running
 
