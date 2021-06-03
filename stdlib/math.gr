@@ -56,9 +56,9 @@ export let sqrt = (x: Number) => {
   }
 }
 /**
- * returns The smaller of the two numbers
- * @param x: Number - A number to compare
- * @param y: Number - A number to compare
+ * Returns the smaller of its two operands.
+ * @param x: Number - The first operand
+ * @param y: Number - The second operand
  * @returns Number
  */
 export let min = (x: Number, y: Number) => if (y > x) x else y
