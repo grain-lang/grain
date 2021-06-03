@@ -40,7 +40,7 @@ export let mul = (*)
  */
 export let div = (/)
 /**
- * returns The square root of the given number.
+ * Computes the square root of its operand.
  * @param x: Number - The number to square root
  * @returns Number
  */
