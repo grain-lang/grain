@@ -5,16 +5,18 @@ open Compmod;
 let emit_module = ({asm, signature}, outfile) => {
   Files.ensure_parent_directory_exists(outfile);
   if (Config.debug^) {
-    let asm_string = Binaryen.Module.write_text(asm);
     let sig_string =
       Sexplib.Sexp.to_string_hum(Cmi_format.sexp_of_cmi_infos(signature));
-    let wast_file = outfile ++ ".wast";
-    let sig_file = outfile ++ ".modsig";
-    let oc = open_out(wast_file);
-    output_string(oc, asm_string);
-    close_out(oc);
+    let sig_file = Files.replace_extension(outfile, "modsig");
     let oc = open_out(sig_file);
     output_string(oc, sig_string);
+    close_out(oc);
+  };
+  if (Config.wat^) {
+    let asm_string = Binaryen.Module.write_text(asm);
+    let wat_file = Files.replace_extension(outfile, "wat");
+    let oc = open_out(wat_file);
+    output_string(oc, asm_string);
     close_out(oc);
   };
   let source_map_name =

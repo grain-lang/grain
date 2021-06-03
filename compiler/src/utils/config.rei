@@ -78,6 +78,10 @@ let parser_debug_level: ref(int);
 
 let debug: ref(bool);
 
+/** Also produce a WebAssembly Text (.wat) file. */
+
+let wat: ref(bool);
+
 /** Whether or not to include runtime type information used by toString/print */
 
 let elide_type_info: ref(bool);

@@ -377,8 +377,15 @@ let parser_debug_level =
 
 let debug =
   toggle_flag(
-    ~names=["g"],
+    ~names=["debug"],
     ~doc="Compile with debugging information",
+    false,
+  );
+
+let wat =
+  toggle_flag(
+    ~names=["wat"],
+    ~doc="Additionally produce a WebAssembly Text (.wat) file",
     false,
   );
 

@@ -19,8 +19,8 @@ notes.org
 node_modules/
 *.wasm
 *.wasm.map
-*.wasm.wast
-*.wasm.modsig
+*.wat
+*.modsig
 .tern-port
 setup.data
 setup.ml
