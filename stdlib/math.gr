@@ -26,9 +26,9 @@ export let add = (+)
  */
 export let sub = (-)
 /**
- * returns x multiplied by y
- * @param x: Number - The base number to multiply
- * @param y: Number - The number to multiply by
+ * Computes the product of its operands.
+ * @param x: Number - The first operand
+ * @param y: Number - The second operand
  * @returns Number
  */
 export let mul = (*)
