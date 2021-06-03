@@ -1,4 +1,4 @@
-import Math from "math";
+import Math from "math"
 // add
 assert Math.add(25, 5) == 30
 // sub
