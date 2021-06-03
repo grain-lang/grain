@@ -57,6 +57,15 @@ let isBoxedNumber = (x) => {
   }
 }
 
+export let isFloat = (x) => {
+  if (isBoxedNumber(x)) {
+    let tag = WasmI32.load(x, 4n)
+    WasmI32.eq(tag, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) || WasmI32.eq(tag, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG)
+  } else {
+    false
+  }
+}
+
 export let isNumber = (x) => {
   // x is a number if it is a literal number or a boxed_num heap value
   isSimpleNumber(x) || isBoxedNumber(x)

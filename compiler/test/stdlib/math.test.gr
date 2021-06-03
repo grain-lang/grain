@@ -1,4 +1,4 @@
-import Math from "math"
+import Math from "math";
 // add
 assert Math.add(25, 5) == 30
 // sub
@@ -8,8 +8,9 @@ assert Math.mul(5, 5) == 25
 // div
 assert Math.div(25, 5) == 5
 // sqrt
-assert Math.sqrt(25) == 5.0 //fix this so it outputs an int if possible
-assert Math.sqrt(30.25) == 5.5
+assert Math.sqrt(25) == 5
+assert Math.sqrt(25.0) == 5.0
+assert Math.sqrt(35) == 5.916079783099616
 // min
 assert Math.min(5, 6) == 5
 assert Math.min(6, 5) == 5

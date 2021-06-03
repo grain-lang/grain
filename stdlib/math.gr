@@ -1,4 +1,3 @@
-/* grainc-flags --compilation-mode=runtime */
 import WasmI32 from "runtime/unsafe/wasmi32"
 import WasmI64 from "runtime/unsafe/wasmi64"
 import WasmF64 from "runtime/unsafe/wasmf64"
@@ -9,63 +8,129 @@ import {
   (*),
   (>),
   coerceFloat64,
-  reducedInteger
+  reducedInteger,
+  isFloat
 } from "runtime/numbers"
-import { newFloat64 } from "runtime/dataStructures"
+import { newFloat64, newInt64 } from "runtime/dataStructures"
 
-primitive (||) : (Bool, Bool) -> Bool = "@or"
-primitive throw : Exception -> a = "@throw"
+primitive (!) : Bool -> Bool = "@not"
+primitive (&&) : (Bool, Bool) -> Bool = "@and"
 
-exception UnknownNumberTag
-
-// add
+/**
+ * returns The sum of the given numbers.
+ * @param x: Number - The number to add
+ * @param y: Number - The number to add
+ * @returns Number
+ */
 export let add = (+)
-// sub
+/**
+ * returns The sum of x - y
+ * @param x: Number - The number to subtract from
+ * @param y: Number - The number to subtract with
+ * @returns Number
+ */
 export let sub = (-)
-// mul
+/**
+ * returns x multiplied by y
+ * @param x: Number - The base number to multiply
+ * @param y: Number - The number to multiply by
+ * @returns Number
+ */
 export let mul = (*)
-// div
+/**
+ * returns x / y
+ * @param x: Number - The dividend,
+ * @param y: Number - The divisior
+ * @returns Number
+ */
 export let div = (/)
-// sqrt
+/**
+ * returns The square root of the given number.
+ * @param x: Number - The number to square root
+ * @returns Number
+ */
+@disableGC
 export let sqrt = (x: Number) => {
   let x = WasmI32.fromGrain(x)
   let xval = coerceFloat64(x)
-  let sqrtd = newFloat64(WasmF64.sqrt(xval))
-  WasmI32.toGrain(sqrtd): Number
+  let sqrtd = WasmF64.sqrt(xval)
+  if (!isFloat(x) && WasmF64.eq(sqrtd, WasmF64.trunc(sqrtd))) {
+    WasmI32.toGrain(reducedInteger(WasmI64.truncF64S(sqrtd))): Number
+  } else {
+    WasmI32.toGrain(newFloat64(sqrtd)): Number
+  }
 }
-// min
+/**
+ * returns The smaller of the two numbers
+ * @param x: Number - A number to compare
+ * @param y: Number - A number to compare
+ * @returns Number
+ */
 export let min = (x: Number, y: Number) => if (y > x) x else y
-// max
+/**
+ * returns the larger of the two numbers
+ * @param x: Number - A number to compare
+ * @param y: Number - A number to compare
+ * @returns Number
+ */
 export let max = (x: Number, y: Number) => if (x > y) x else y
-// ceil
+/**
+ * returns The number rounded up
+ * @param x: Number - The number to ceil
+ * @returns Number
+ */
+@disableGC
 export let ceil = (x: Number) => {
   let x = WasmI32.fromGrain(x)
   let xval = coerceFloat64(x)
-  let roofed = WasmI64.truncF64S(WasmF64.ceil(xval))
-  WasmI32.toGrain(reducedInteger(roofed)): Number
+  let ceiling = WasmI64.truncF64S(WasmF64.ceil(xval))
+  WasmI32.toGrain(reducedInteger(ceiling)): Number
 }
-// floor
+/**
+ * returns The number rounded down
+ * @param x: Number - The number to floor
+ * @returns Number
+ */
+@disableGC
 export let floor = (x: Number) => {
   let x = WasmI32.fromGrain(x)
   let xval = coerceFloat64(x)
   let floored = WasmI64.truncF64S(WasmF64.floor(xval))
   WasmI32.toGrain(reducedInteger(floored)): Number
 }
-// trunc
+/**
+ * returns The number truncated
+ * @param x: Number - The number to truncate
+ * @returns Number
+ */
+@disableGC
 export let trunc = (x: Number) => {
   let x = WasmI32.fromGrain(x)
   let xval = coerceFloat64(x)
   let trunced = WasmI64.truncF64S(xval)
   WasmI32.toGrain(reducedInteger(trunced)): Number
 }
-// round
+/**
+ * returns The number rounded
+ * @param x: Number - The number to rounds
+ * @returns Number
+ */
+@disableGC
 export let round = (x: Number) => {
   let x = WasmI32.fromGrain(x)
   let xval = coerceFloat64(x)
   let trunced = WasmI64.truncF64S(WasmF64.nearest(xval))
   WasmI32.toGrain(reducedInteger(trunced)): Number
 }
-// abs
+/**
+ * returns The number as a positive
+ * @param x: Number - The number to conver into a positive
+ * @returns Number
+ */
 export let abs = (x: Number) => if (0 > x) x * -1 else x
-// neg
+/**
+ * returns The number as a negative
+ * @param x: Number - The number to conver into a negative
+ * @returns Number
+ */
 export let neg = (x: Number) => if (x > 0) x * -1 else x
