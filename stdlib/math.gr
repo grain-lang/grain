@@ -33,9 +33,9 @@ export let sub = (-)
  */
 export let mul = (*)
 /**
- * returns x / y
+ * Computes the quotient of its operands.
  * @param x: Number - The dividend,
- * @param y: Number - The divisior
+ * @param y: Number - The divisor
  * @returns Number
  */
 export let div = (/)
