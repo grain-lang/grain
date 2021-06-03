@@ -82,8 +82,8 @@ export let ceil = (x: Number) => {
   WasmI32.toGrain(reducedInteger(ceiling)): Number
 }
 /**
- * returns The number rounded down
- * @param x: Number - The number to floor
+ * Rounds its operand down to the largest integer less than the operand. 
+ * @param x: Number - The number to round
  * @returns Number
  */
 @disableGC
