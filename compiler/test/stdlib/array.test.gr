@@ -94,6 +94,11 @@ Array.forEachi(addToSum, arr1)
 
 assert sum == 8
 
+// Array.reverse
+
+assert Array.reverse([> ]) == [> ] // Empty
+assert Array.reverse([> 1, 2, 3, 4]) == [> 4, 3, 2, 1]
+
 // Array.toList
 
 assert Array.toList([>]) == []

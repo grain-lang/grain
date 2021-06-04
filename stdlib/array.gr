@@ -191,6 +191,14 @@ export let fillRange = (value, start, stop, array) => {
   void
 }
 
+export let reverse = (array) => {
+  let len = length(array)
+  init(len, (index) => {
+    let last = len - index - 1
+    array[last]
+  })
+}
+
 export let toList = (array) => {
   let rec buildList = (acc, index) => {
     let index = index - 1
