@@ -372,6 +372,8 @@ let basic_functionality_tests = [
     "let foo = (if (false) { 5; }); let bar = foo + 5; bar",
     "has type Void but",
   ),
+  t("if_newline_else1", "if (true) 5\nelse 6", "5"),
+  t("if_newline_else2", "if (true) { 5 }\nelse { 6 }", "5"),
   t("int32_1", "42l", "42"),
   t("int64_1", "99999999999999999L", "99999999999999999"),
   t("int64_pun_1", "9999999 * 99999999", "999999890000001"),
