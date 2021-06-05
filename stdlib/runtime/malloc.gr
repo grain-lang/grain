@@ -76,6 +76,17 @@ let mut heapSize = 0n
 
 export let _RESERVED_RUNTIME_SPACE = 16384n
 
+/**
+ * The base the heap. The block at this address will be size 0 and
+ * serve as the root of the free list.
+ */
+let _BASE = _RESERVED_RUNTIME_SPACE
+
+/**
+ * The start pointer of the heap.
+ */
+let _HEAP_START = _BASE + mallocHeaderSize
+
 let _NEXT_OFFSET = 0n
 let _SIZE_OFFSET = 4n
 
@@ -113,7 +124,7 @@ let growHeap = (nbytes: WasmI32) => {
 
   // If the size has not been initialized, do so.
   if (heapSize == 0n) {
-    heapSize = memorySize() * _PAGE_SIZE - _RESERVED_RUNTIME_SPACE
+    heapSize = memorySize() * _PAGE_SIZE - _HEAP_START
     if (nbytes > heapSize) {
       // More bytes requested than the initial heap size,
       // so we need to request more anyway.
@@ -125,10 +136,10 @@ let growHeap = (nbytes: WasmI32) => {
         -1n
       } else {
         heapSize += reqSize << 16n
-        _RESERVED_RUNTIME_SPACE
+        _HEAP_START
       }
     } else {
-      _RESERVED_RUNTIME_SPACE
+      _HEAP_START
     }
   } else {
     // The size has already been initialized, so call the external function.
@@ -231,10 +242,10 @@ export let malloc = (nb: WasmI32) => {
 
   // Handle initialization
   if (heapSize == 0n) {
-    WasmI32.store(_RESERVED_RUNTIME_SPACE, _RESERVED_RUNTIME_SPACE, 0n)
-    freePtr = _RESERVED_RUNTIME_SPACE
-    prevp = _RESERVED_RUNTIME_SPACE
-    WasmI32.store(_RESERVED_RUNTIME_SPACE, 0n, 4n)
+    WasmI32.store(_BASE, _BASE, _NEXT_OFFSET)
+    freePtr = _BASE
+    prevp = _BASE
+    WasmI32.store(_BASE, 0n, _SIZE_OFFSET)
   }
 
   let mut ret = -1n
