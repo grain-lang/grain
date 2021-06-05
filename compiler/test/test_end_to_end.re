@@ -1117,6 +1117,7 @@ let gc = [
   /* I've manually tested this test, but see TODO for automated testing */
   /* tgcfile ~todo:"Need to figure out how to disable dead assignment elimination to make sure this test is actually checking what we want" "sinister_gc" 3072 "sinister-tail-call-gc" "true"; */
   tgcfile("long_lists", 20000, "long_lists", "true"),
+  tfile("malloc_tight", "mallocTight", "void"),
   tfile("memory_grow1", "memoryGrow", "1000000000000\nvoid"),
 ];
 

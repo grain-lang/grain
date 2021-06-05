@@ -1,0 +1,30 @@
+/* grainc-flags --compilation-mode=runtime */
+
+import Malloc from "runtime/malloc"
+import WasmI32, { add as (+), sub as (-), mul as (*), eq as (==), ne as (!=) } from "runtime/unsafe/wasmi32"
+
+primitive assert : Bool -> Void = "@assert"
+primitive ignore : a -> Void = "@ignore"
+
+// Because we're in runtime mode, malloc has yet to be called
+// This provides us with a clean slate to test malloc
+
+// allow malloc to initialize
+ignore(Malloc.malloc(8n))
+
+// The free list should be pointing at the base
+let base = Malloc.getFreePtr()
+assert base == Malloc._RESERVED_RUNTIME_SPACE
+
+// grab the next (and only) block in the free list
+let block = WasmI32.load(Malloc.getFreePtr(), 0n)
+assert WasmI32.load(block, 0n) == base
+
+// When we allocate, an extra 8 bytes is reserved for the block header
+let remainingMemory = WasmI32.load(block, 4n) - 8n
+
+let firstPtr = Malloc.malloc(remainingMemory)
+let secondPtr = Malloc.malloc(remainingMemory)
+
+// These two pointers should (obviously) be different
+assert firstPtr != secondPtr
