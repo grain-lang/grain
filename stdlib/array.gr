@@ -385,6 +385,20 @@ export let zip = (a, b) => {
   }
 }
 
+export let unzip = (array) => {
+  let lenArr = length(array)
+
+  let a = init(lenArr, n => {
+    let (fst, _) = array[n]; fst
+  })
+
+  let b = init(lenArr, n => {
+    let (_, snd) = array[n]; snd
+  })
+
+  (a, b)
+}
+
 // @param separator: String - The separator to insert between items in the string
 // @param items: Array<String> - The input strings
 // @returns String
