@@ -18,6 +18,7 @@ primitive (&&) : (Bool, Bool) -> Bool = "@and"
  * @returns Number
  */
 export let add = (+)
+
 /**
  * returns The sum of x - y
  * @param x: Number - The number to subtract from
