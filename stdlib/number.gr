@@ -67,6 +67,7 @@ export let sqrt = (x: Number) => {
  * @returns Number
  */
 export let min = (x: Number, y: Number) => if (y > x) x else y
+
 /**
  * Returns the larger of its two operands.
  * @param x: Number - The first operand
