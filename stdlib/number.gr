@@ -59,6 +59,7 @@ export let sqrt = (x: Number) => {
     WasmI32.toGrain(newFloat64(sqrtd)): Number
   }
 }
+
 /**
  * Returns the smaller of its two operands.
  * @param x: Number - The first operand
