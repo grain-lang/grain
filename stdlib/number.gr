@@ -75,6 +75,7 @@ export let min = (x: Number, y: Number) => if (y > x) x else y
  * @returns Number
  */
 export let max = (x: Number, y: Number) => if (x > y) x else y
+
 /**
  * Rounds its operand up to the next largest integer.
  * @param x: Number - The number to round
