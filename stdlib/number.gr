@@ -88,6 +88,7 @@ export let ceil = (x: Number) => {
   let ceiling = WasmI64.truncF64S(WasmF64.ceil(xval))
   WasmI32.toGrain(reducedInteger(ceiling)): Number
 }
+
 /**
  * Rounds its operand down to the largest integer less than the operand. 
  * @param x: Number - The number to round
