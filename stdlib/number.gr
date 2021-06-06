@@ -101,6 +101,7 @@ export let floor = (x: Number) => {
   let floored = WasmI64.truncF64S(WasmF64.floor(xval))
   WasmI32.toGrain(reducedInteger(floored)): Number
 }
+
 /**
  * Returns the integer part of its operand, removing any fractional value.
  * @param x: Number - The number to truncate
