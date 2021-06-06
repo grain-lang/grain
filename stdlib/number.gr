@@ -127,6 +127,7 @@ export let round = (x: Number) => {
   let rounded = WasmI64.truncF64S(WasmF64.nearest(xval))
   WasmI32.toGrain(reducedInteger(rounded)): Number
 }
+
 /**
  * Returns the absolute value of its operand, i.e. `x` if `x` is positive and the negation of `x` if `x` is negative.
  * @param x: Number - The operand
