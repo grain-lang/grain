@@ -114,6 +114,7 @@ export let trunc = (x: Number) => {
   let trunced = WasmI64.truncF64S(xval)
   WasmI32.toGrain(reducedInteger(trunced)): Number
 }
+
 /**
  * Returns its operand rounded to its nearest integer.
  * @param x: Number - The number to round
