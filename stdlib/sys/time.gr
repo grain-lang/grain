@@ -12,7 +12,7 @@ import { allocateInt64, tagSimpleNumber } from "runtime/dataStructures"
 
 let getClockTime = (clockid, precision) => {
   let int64Ptr = allocateInt64()
-  let timePtr = int64Ptr + 4n
+  let timePtr = int64Ptr + 8n
   let err = Wasi.clock_time_get(clockid, precision, timePtr)
   if (err != Wasi._ESUCCESS) {
     Memory.free(int64Ptr)
