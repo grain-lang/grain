@@ -42,6 +42,7 @@ export let mul = (*)
  * @returns Number
  */
 export let div = (/)
+
 /**
  * Computes the square root of its operand.
  * @param x: Number - The number to square root
