@@ -134,6 +134,7 @@ export let round = (x: Number) => {
  * @returns Number
  */
 export let abs = (x: Number) => if (0 > x) x * -1 else x
+
 /**
  * Returns the negation of its operand.
  * @param x: Number - The number to negate
