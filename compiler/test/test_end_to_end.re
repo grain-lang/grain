@@ -527,6 +527,16 @@ let function_tests = [
   te("nonfunction_1", "let x = 5; x(3)", "type"),
   t("lambda_pat_any", "let x = (_) => 5; x(\"foo\")", "5"),
   te("unknown_attribute", "@unknown let x = () => 5", "Unknown attribute"),
+  t(
+    "func_record_associativity1",
+    "record Foo { f: () -> Bool }; let foo = {f: () => false}; !foo.f()",
+    "true",
+  ),
+  t(
+    "func_record_associativity2",
+    "record Foo { g: () -> Bool }; record Bar { f: Foo }; let foo = {f: {g: () => false}}; !foo.f.g()",
+    "true",
+  ),
 ];
 
 let mylist = "[1, 2, 3]";
