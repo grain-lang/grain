@@ -94,6 +94,13 @@ Array.forEachi(addToSum, arr1)
 
 assert sum == 8
 
+// Array.reverse
+
+assert Array.reverse([> ]) == [> ] // Empty
+let testArr = [> 1, 2, 3, 4]
+assert Array.reverse(testArr) == [> 4, 3, 2, 1] // array is reversed properly
+assert testArr == [> 1, 2, 3, 4] // original array is not modified
+
 // Array.toList
 
 assert Array.toList([>]) == []
