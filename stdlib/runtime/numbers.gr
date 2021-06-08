@@ -1216,6 +1216,10 @@ export let numberAsr = (>>);
 // [NOTE]: Coercion is a *conservative* process! For example, even if a float is 1.0,
 //         we will fail if attempting to coerce to an int!
 
+export let coerceNumberToWasmI32 = (x: Number) => {
+  coerceInt32(WasmI32.fromGrain(x))
+}
+
 export let coerceNumberToInt32 = (x: Number) => {
   let x = WasmI32.fromGrain(x)
   let result = if (!isSimpleNumber(x) && WasmI32.eq(boxedNumberTag(x), Tags._GRAIN_INT32_BOXED_NUM_TAG)) {

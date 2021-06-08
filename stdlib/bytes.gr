@@ -7,6 +7,7 @@ import Conv from "runtime/unsafe/conv"
 import { tagSimpleNumber, allocateBytes, allocateString } from "runtime/dataStructures"
 import Exception from "runtime/exception"
 import Int32 from "int32"
+import { coerceNumberToWasmI32 as numberToWasmI32 } from "runtime/numbers"
 
 let _SIZE_OFFSET = 4n;
 let _VALUE_OFFSET = 8n;
@@ -16,21 +17,6 @@ let _INT32_BYTE_SIZE = 4n;
 let _FLOAT32_BYTE_SIZE = 4n;
 let _INT64_BYTE_SIZE = 8n;
 let _FLOAT64_BYTE_SIZE = 8n;
-
-/** Converts Number to WasmI32 */
-@disableGC
-let numberToWasmI32 = n => {
-  let m = WasmI32.fromGrain(n)
-  if (WasmI32.eqz(WasmI32.and(m, 1n))) {
-    let i32 = Int32.fromNumber(n)
-    let res = Conv.fromInt32(i32)
-    Memory.free(WasmI32.fromGrain(i32))
-    res
-  } else {
-    // fast path
-    WasmI32.shrS(m, 1n)
-  }
-}
 
 /** Throws an exception if the index specified is out-of-bounds */
 @disableGC
