@@ -4,7 +4,7 @@ import Fs from "sys/file"
 let foo = Fs.pathOpen(
   Fs.pwdfd,
   [Fs.SymlinkFollow],
-  "test-data/foo.txt",
+  "test/test-data/foo.txt",
   [Fs.Create],
   [Fs.FdRead],
   [Fs.FdRead],

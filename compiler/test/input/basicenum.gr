@@ -16,4 +16,4 @@ let rec contains = (e, l) => {
   }
 };
 
-(contains(1, Empty), contains(1, Cons(1, Empty)), contains(3, Cons(1, Cons(3, Empty))))
+print((contains(1, Empty), contains(1, Cons(1, Empty)), contains(3, Cons(1, Cons(3, Empty)))))

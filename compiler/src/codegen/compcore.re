@@ -31,6 +31,7 @@ let gensym_label = s => {
   gensym_counter := gensym_counter^ + 1;
   Printf.sprintf("%s.%d", s, gensym_counter^);
 };
+let reset_labels = () => gensym_counter := 0;
 
 /* Number of swap variables to allocate */
 let swap_slots_i32 = [|Type.int32, Type.int32, Type.int32|];
@@ -3355,6 +3356,7 @@ let prepare = (env, {imports} as prog) => {
 };
 
 let compile_wasm_module = (~env=?, ~name=?, prog) => {
+  reset_labels();
   let env =
     switch (env) {
     | None => init_codegen_env()

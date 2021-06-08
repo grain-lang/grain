@@ -19,4 +19,4 @@ isOddHelp = (n, b) => {
 let isEven = (n) => {isEvenHelp(n, true)},
   isOdd = (n) => {isOddHelp(n, true)};
 
-isOdd(9999)
+print(isOdd(9999))

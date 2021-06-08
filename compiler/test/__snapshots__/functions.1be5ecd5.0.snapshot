@@ -1,0 +1,91 @@
+functions › shorthand_1
+(module
+ (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
+ (type $none_=>_none (func))
+ (type $none_=>_i32 (func (result i32)))
+ (import \"grainRuntime\" \"mem\" (memory $0 0))
+ (import \"grainRuntime\" \"tbl\" (table $tbl 0 funcref))
+ (elem $elem (global.get $import_grainRuntime_0_relocBase_0) $func_0)
+ (import \"grainRuntime\" \"relocBase\" (global $import_grainRuntime_0_relocBase_0 i32))
+ (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0 (mut i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0 (mut i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRefIgnoreZeros\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0 (mut i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $import_GRAIN$MODULE$runtime/gc_0_malloc_0 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $import_GRAIN$MODULE$runtime/gc_0_incRef_0 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"decRefIgnoreZeros\" (func $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0 (param i32 i32) (result i32)))
+ (global $global_1 i32 (i32.const 1))
+ (export \"memory\" (memory $0))
+ (export \"_gmain\" (func $_gmain))
+ (export \"_start\" (func $_start))
+ (export \"GRAIN$TABLE_SIZE\" (global $global_1))
+ (func $func_0 (; has Stack IR ;) (param $0 i32) (param $1 i32) (result i32)
+  (drop
+   (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+    (local.tee $0
+     (tuple.extract 0
+      (tuple.make
+       (local.get $1)
+       (i32.const 0)
+      )
+     )
+    )
+   )
+  )
+  (local.get $0)
+ )
+ (func $_gmain (; has Stack IR ;) (result i32)
+  (local $0 i32)
+  (return_call_indirect (type $i32_i32_=>_i32)
+   (local.tee $0
+    (tuple.extract 0
+     (tuple.make
+      (block (result i32)
+       (i32.store
+        (local.tee $0
+         (tuple.extract 0
+          (tuple.make
+           (call $import_GRAIN$MODULE$runtime/gc_0_malloc_0
+            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0)
+            (i32.const 16)
+           )
+           (i32.const 0)
+          )
+         )
+        )
+        (i32.const 7)
+       )
+       (i32.store offset=4
+        (local.get $0)
+        (i32.const 2)
+       )
+       (i32.store offset=8
+        (local.get $0)
+        (global.get $import_grainRuntime_0_relocBase_0)
+       )
+       (i32.store offset=12
+        (local.get $0)
+        (i32.const 0)
+       )
+       (local.get $0)
+      )
+      (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+       (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+       (i32.const 0)
+      )
+     )
+    )
+   )
+   (i32.const 3)
+   (i32.load offset=8
+    (local.get $0)
+   )
+  )
+ )
+ (func $_start (; has Stack IR ;)
+  (drop
+   (call $_gmain)
+  )
+ )
+ ;; custom section \"cmi\", size 953
+)

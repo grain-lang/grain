@@ -10,13 +10,14 @@
       "GRAIN_STDLIB": "#{self.root / '..' / 'stdlib'}",
       "GRAINC_BIN_PATH": "#{self.target_dir / 'default' / 'grainc' / 'grainc.exe'}",
       "GRAINC_JS_PATH": "#{self.target_dir / 'default' / 'grainc' / 'grainc_js.bc.js'}",
-      "CLI_BIN_DIR": "#{self.root / '..' / 'cli' / 'bin'}"
+      "CLI_BIN_DIR": "#{self.root / '..' / 'cli' / 'bin'}",
+      "TEST_EXEC_PATH": "#{self.target_dir / 'default' / 'test' / 'test.exe'}"
     }
   },
   "scripts": {
     "copy-compiler": "cp #{$GRAINC_BIN_PATH} #{$GRAINC_JS_PATH} #{$CLI_BIN_DIR}",
     "clean": "rm -rf #{self.root}/_esy",
-    "test": "dune runtest --force",
+    "test": "#{$TEST_EXEC_PATH}",
     "format": "dune build @fmt --auto-promote",
     "check-format": "dune build @fmt"
   },
@@ -42,7 +43,7 @@
   "devDependencies": {
     "@opam/js_of_ocaml-compiler": ">= 3.6.0",
     "@opam/ocaml-lsp-server": "1.4.0",
-    "@opam/ounit": ">= 2.0.0"
+    "@reason-native/rely": "^3.2.1"
   },
   "resolutions": {
     "@opam/ocamlfind": "1.8.1",

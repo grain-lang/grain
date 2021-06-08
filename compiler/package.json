@@ -17,6 +17,7 @@
     "prepare": "esy install",
     "build": "esy",
     "postbuild": "esy copy-compiler",
+    "pretest": "esy",
     "test": "esy test",
     "format": "esy format",
     "check-format": "esy check-format",

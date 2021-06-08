@@ -107,3 +107,21 @@ let derelativize = (~base=?, fname) => {
 
   Fp.toString(fullPath);
 };
+
+// Recursive readdir
+let rec readdir = (dir, excludes) => {
+  Sys.readdir(dir)
+  |> Array.fold_left(
+       (results, filename) => {
+         let filepath = Filename.concat(dir, filename);
+         Sys.is_directory(filepath)
+         && List.for_all(
+              exclude => !String_utils.starts_with(filename, exclude),
+              excludes,
+            )
+           ? Array.append(results, readdir(filepath, excludes))
+           : Array.append(results, [|filepath|]);
+       },
+       [||],
+     );
+};
