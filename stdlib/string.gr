@@ -712,9 +712,11 @@ let _BYTES_OFFSET = 8n;
 // @param s: String - The input string
 // @param encoding: Encoding - The encoding to use
 // @param includeBom: Bool - Whether to include the byte-order marker in the encoded output
-// @returns Bytes
+// @param dest: Bytes - The bytes object to write the encoded output into
+// @param destPos: Number - The location in the byte array to write the output
+// @returns Bytes - Returns `dest`
 @disableGC
-export let encodeInto = (s: String, encoding: Encoding, includeBom: Bool, dest: Bytes, destPos: Number) => {
+let encodeIntoHelp = (s: String, encoding: Encoding, includeBom: Bool, dest: Bytes, destPos: Number) => {
   let (>>>) = WasmI32.shrU
   let (-) = WasmI32.sub
   let (&) = WasmI32.and
@@ -848,10 +850,30 @@ export let encodeInto = (s: String, encoding: Encoding, includeBom: Bool, dest: 
 // Encodes the given string using the given encoding scheme
 // @param s: String - The input string
 // @param encoding: Encoding - The encoding to use
+// @param dest: Bytes - The bytes object to write the encoded output into
+// @param destPos: Number - The location in the byte array to write the output
+// @returns Bytes - Returns `dest`
+export let encodeInto = (s, encoding, dest, destPos) => {
+  encodeIntoHelp(s, encoding, false, dest, destPos)
+}
+
+// Encodes the given string using the given encoding scheme
+// @param s: String - The input string
+// @param encoding: Encoding - The encoding to use
+// @param dest: Bytes - The bytes object to write the encoded output into
+// @param destPos: Number - The location in the byte array to write the output
+// @returns Bytes - Returns `dest`
+export let encodeIntoWithBom = (s, encoding, dest, destPos) => {
+  encodeIntoHelp(s, encoding, true, dest, destPos)
+}
+
+// Encodes the given string using the given encoding scheme
+// @param s: String - The input string
+// @param encoding: Encoding - The encoding to use
 // @param includeBom: Bool - Whether to include the byte-order marker in the encoded output
 // @returns Bytes
 @disableGC
-export let encode = (s: String, encoding: Encoding, includeBom: Bool) => {
+let encodeHelp = (s: String, encoding: Encoding, includeBom: Bool) => {
   let size = encodedLength(s, encoding) + if (includeBom) {
     match(encoding) {
       UTF8 => 3,
@@ -863,7 +885,24 @@ export let encode = (s: String, encoding: Encoding, includeBom: Bool) => {
   } else 0
   let (>>>) = WasmI32.shrU
   let bytes = WasmI32.toGrain(allocateBytes(WasmI32.fromGrain(size) >>> 1n))
-  encodeInto(s, encoding, includeBom, bytes, 0)
+  encodeIntoHelp(s, encoding, includeBom, bytes, 0)
+}
+
+// Encodes the given string using the given encoding scheme. A byte-order marker
+// will not be included in the output.
+// @param s: String - The input string
+// @param encoding: Encoding - The encoding to use
+// @returns Bytes
+export let encode = (s: String, encoding: Encoding) => {
+  encodeHelp(s, encoding, false)
+}
+
+// Encodes the given string using the given encoding scheme, including a byte-order marker
+// @param s: String - The input string
+// @param encoding: Encoding - The encoding to use
+// @returns Bytes
+export let encodeWithBom = (s: String, encoding: Encoding) => {
+  encodeHelp(s, encoding, true)
 }
 
 // Byte->String decoding and helper functions:
@@ -1096,7 +1135,7 @@ let decodedLength = (bytes: Bytes, encoding: Encoding, start: WasmI32, size: Was
 // @param size: Number - The maximum number of bytes to decode
 // @returns String
 @disableGC
-export let decodeRange = (bytes: Bytes, encoding: Encoding, skipBom: Bool, start: Number, size: Number) => {
+let decodeRangeHelp = (bytes: Bytes, encoding: Encoding, skipBom: Bool, start: Number, size: Number) => {
   let (+) = WasmI32.add
   let (-) = WasmI32.sub
   let (<) = WasmI32.ltU
@@ -1204,14 +1243,54 @@ export let decodeRange = (bytes: Bytes, encoding: Encoding, skipBom: Bool, start
   }
 }
 
+// Decodes the given byte sequence into a string using the given encoding scheme, skipping
+// the byte-order marker, if it's present.
+// @param bytes: Bytes - The input bytes
+// @param encoding: Encoding - The encoding to use
+// @param start: Number - The byte offset to begin decoding from
+// @param size: Number - The maximum number of bytes to decode
+// @returns String
+export let decodeRange = (bytes: Bytes, encoding: Encoding, start: Number, size: Number) => {
+  decodeRangeHelp(bytes, encoding, true, start, size)
+}
+
+// Decodes the given byte sequence into a string using the given encoding scheme, including
+// the byte-order marker, if it's present.
+// @param bytes: Bytes - The input bytes
+// @param encoding: Encoding - The encoding to use
+// @param start: Number - The byte offset to begin decoding from
+// @param size: Number - The maximum number of bytes to decode
+// @returns String
+export let decodeRangeKeepBom = (bytes: Bytes, encoding: Encoding, start: Number, size: Number) => {
+  decodeRangeHelp(bytes, encoding, false, start, size)
+}
+
 // Decodes the given byte sequence into a string using the given encoding scheme
 // @param bytes: Bytes - The input bytes
 // @param encoding: Encoding - The encoding to use
 // @param skipBom: Bool - Whether to include the byte-order marker (if present) in the decoded output
 // @returns String
 @disableGC
-export let decode = (bytes: Bytes, encoding: Encoding, skipBom: Bool) => {
+let decodeHelp = (bytes: Bytes, encoding: Encoding, skipBom: Bool) => {
   let bytesPtr = WasmI32.fromGrain(bytes)
   let bytesSize = WasmI32.load(bytesPtr, 4n)
-  decodeRange(bytes, encoding, skipBom, 0, tagSimpleNumber(bytesSize))
+  decodeRangeHelp(bytes, encoding, skipBom, 0, tagSimpleNumber(bytesSize))
+}
+
+// Decodes the given byte sequence into a string using the given encoding scheme,
+// skipping the byte-order marker, if it's present.
+// @param bytes: Bytes - The input bytes
+// @param encoding: Encoding - The encoding to use
+// @returns String
+export let decode = (bytes: Bytes, encoding: Encoding) => {
+  decodeHelp(bytes, encoding, true)
+}
+
+// Decodes the given byte sequence into a string using the given encoding scheme,
+// including the byte-order marker, if it's present
+// @param bytes: Bytes - The input bytes
+// @param encoding: Encoding - The encoding to use
+// @returns String
+export let decodeKeepBom = (bytes: Bytes, encoding: Encoding) => {
+  decodeHelp(bytes, encoding, false)
 }
