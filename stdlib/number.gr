@@ -20,7 +20,7 @@ primitive (&&) : (Bool, Bool) -> Bool = "@and"
 export let add = (+)
 
 /**
- * returns The sum of x - y
+ * Computes the difference of its operands.
  * @param x: Number - The number to subtract from
  * @param y: Number - The number to subtract with
  * @returns Number
