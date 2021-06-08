@@ -873,6 +873,7 @@ let stdlib_tests = [
   tlib("list.test"),
   tlib("option.test"),
   tlib("hash.test"),
+  tlib("number.test"),
   tlib("int64.test"),
   tlib("int32.test"),
   tlib("float32.test"),

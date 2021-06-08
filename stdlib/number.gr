@@ -1,0 +1,141 @@
+import WasmI32 from "runtime/unsafe/wasmi32"
+import WasmI64 from "runtime/unsafe/wasmi64"
+import WasmF64 from "runtime/unsafe/wasmf64"
+import {
+  coerceFloat64,
+  reducedInteger,
+  isFloat
+} from "runtime/numbers"
+import { newFloat64, newInt64 } from "runtime/dataStructures"
+
+
+/**
+ * Computes the sum of its operands.
+ * @param x: Number - The first operand
+ * @param y: Number - The second operand
+ * @returns Number
+ */
+export let add = (+)
+
+/**
+ * Computes the difference of its operands.
+ * @param x: Number - The first operand
+ * @param y: Number - The second operand
+ * @returns Number
+ */
+export let sub = (-)
+
+/**
+ * Computes the product of its operands.
+ * @param x: Number - The first operand
+ * @param y: Number - The second operand
+ * @returns Number
+ */
+export let mul = (*)
+
+/**
+ * Computes the quotient of its operands.
+ * @param x: Number - The dividend
+ * @param y: Number - The divisor
+ * @returns Number
+ */
+export let div = (/)
+
+/**
+ * Computes the square root of its operand.
+ * @param x: Number - The number to square root
+ * @returns Number
+ */
+@disableGC
+export let sqrt = (x: Number) => {
+  let x = WasmI32.fromGrain(x)
+  let xval = coerceFloat64(x)
+  let sqrtd = WasmF64.sqrt(xval)
+  if (!isFloat(x) && WasmF64.eq(sqrtd, WasmF64.trunc(sqrtd))) {
+    WasmI32.toGrain(reducedInteger(WasmI64.truncF64S(sqrtd))): Number
+  } else {
+    WasmI32.toGrain(newFloat64(sqrtd)): Number
+  }
+}
+
+/**
+ * Returns the smaller of its two operands.
+ * @param x: Number - The first operand
+ * @param y: Number - The second operand
+ * @returns Number
+ */
+export let min = (x: Number, y: Number) => if (y > x) x else y
+
+/**
+ * Returns the larger of its two operands.
+ * @param x: Number - The first operand
+ * @param y: Number - The second operand
+ * @returns Number
+ */
+export let max = (x: Number, y: Number) => if (x > y) x else y
+
+/**
+ * Rounds its operand up to the next largest integer.
+ * @param x: Number - The number to round
+ * @returns Number
+ */
+@disableGC
+export let ceil = (x: Number) => {
+  let x = WasmI32.fromGrain(x)
+  let xval = coerceFloat64(x)
+  let ceiling = WasmI64.truncF64S(WasmF64.ceil(xval))
+  WasmI32.toGrain(reducedInteger(ceiling)): Number
+}
+
+/**
+ * Rounds its operand down to the largest integer less than the operand. 
+ * @param x: Number - The number to round
+ * @returns Number
+ */
+@disableGC
+export let floor = (x: Number) => {
+  let x = WasmI32.fromGrain(x)
+  let xval = coerceFloat64(x)
+  let floored = WasmI64.truncF64S(WasmF64.floor(xval))
+  WasmI32.toGrain(reducedInteger(floored)): Number
+}
+
+/**
+ * Returns the integer part of its operand, removing any fractional value.
+ * @param x: Number - The number to truncate
+ * @returns Number
+ */
+@disableGC
+export let trunc = (x: Number) => {
+  let x = WasmI32.fromGrain(x)
+  let xval = coerceFloat64(x)
+  let trunced = WasmI64.truncF64S(xval)
+  WasmI32.toGrain(reducedInteger(trunced)): Number
+}
+
+/**
+ * Returns its operand rounded to its nearest integer. `.5` and above return `1`, `.4` and below return `0`
+ * @param x: Number - The number to round
+ * @returns Number
+ */
+@disableGC
+export let round = (x: Number) => {
+  let x = WasmI32.fromGrain(x)
+  let xval = coerceFloat64(x)
+  let rounded = WasmI64.truncF64S(WasmF64.nearest(xval))
+  WasmI32.toGrain(reducedInteger(rounded)): Number
+}
+
+/**
+ * Returns the absolute value of a number. That is, it returns `x` if `x` is positive or zero, and the negation of `x` if `x` is negative.
+ * @param x: Number - The operand
+ * @returns Number
+ */
+export let abs = (x: Number) => if (0 > x) x * -1 else x
+
+/**
+ * Returns the negation of its operand.
+ * @param x: Number - The number to negate
+ * @returns Number
+ */
+export let neg = (x: Number) => if (x > 0) x * -1 else x

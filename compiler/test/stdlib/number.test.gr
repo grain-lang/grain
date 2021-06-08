@@ -1,0 +1,53 @@
+import Number from "number"
+// add
+assert Number.add(25, 5) == 30
+// sub
+assert Number.sub(25, 5) == 20
+// mul
+assert Number.mul(5, 5) == 25
+// div
+assert Number.div(25, 5) == 5
+// sqrt
+assert Number.sqrt(25) == 5
+assert Number.sqrt(25.0) == 5.0
+assert Number.sqrt(35) == 5.916079783099616
+assert Number.sqrt(2/4) == 0.7071067811865476
+// min
+assert Number.min(5, 6) == 5
+assert Number.min(6, 5) == 5
+assert Number.min(1/2, 1/4) == 1/4
+assert Number.min(0.5, 0.25) == 0.25
+// max
+assert Number.max(6, 5) == 6
+assert Number.max(5, 6) == 6
+assert Number.max(1/2, 1/4) == 1/2
+assert Number.max(0.5, 0.25) == 0.5
+// ceil
+assert Number.ceil(-25.5) == -25
+assert Number.ceil(25.5) == 26
+assert Number.ceil(25) == 25
+assert Number.ceil(22/7) == 4
+// floor
+assert Number.floor(-25.5) == -26
+assert Number.floor(25.5) == 25
+assert Number.floor(25) == 25
+assert Number.floor(22/7) == 3
+// trunc
+assert Number.trunc(-25.5) == -25
+assert Number.trunc(25.5) == 25
+assert Number.trunc(25) == 25
+assert Number.trunc(22/7) == 3
+// round
+assert Number.round(-25.5) == -26
+assert Number.round(-25.25) == -25
+assert Number.round(25.25) == 25
+assert Number.round(25.5) == 26
+assert Number.round(22/7) == 3
+// abs
+assert Number.abs(-25.5) == 25.5
+assert Number.abs(25.5) == 25.5
+assert Number.abs(-1/2) == 1/2
+// neg
+assert Number.neg(-25.5) == -25.5
+assert Number.neg(25.5) == -25.5
+assert Number.neg(1/2) == -1/2

@@ -57,6 +57,15 @@ let isBoxedNumber = (x) => {
   }
 }
 
+export let isFloat = (x) => {
+  if (isBoxedNumber(x)) {
+    let tag = WasmI32.load(x, 4n)
+    WasmI32.eq(tag, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) || WasmI32.eq(tag, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG)
+  } else {
+    false
+  }
+}
+
 export let isNumber = (x) => {
   // x is a number if it is a literal number or a boxed_num heap value
   isSimpleNumber(x) || isBoxedNumber(x)
@@ -119,7 +128,7 @@ let gcd32 = (x, y) => {
   WasmI32.wrapI64(gcd(WasmI64.extendI32S(x), WasmI64.extendI32S(y)))
 }
 
-let reducedInteger = (x) => {
+export let reducedInteger = (x) => {
   if (WasmI64.gtS(x, _I32_MAX) || WasmI64.ltS(x, _I32_MIN)) {
     newInt64(x)
   } else if (WasmI64.gtS(x, WasmI64.shrS(_I32_MAX, 1N)) || WasmI64.ltS(x, WasmI64.shrS(_I32_MIN, 1N))) {
@@ -280,7 +289,7 @@ let coerceFloat32 = (x) => {
   }
 }
 
-let coerceFloat64 = (x) => {
+export let coerceFloat64 = (x) => {
   if (isSimpleNumber(x)) {
     WasmF64.convertI32S(untagSimple(x))
   } else {
