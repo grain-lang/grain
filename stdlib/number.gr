@@ -116,7 +116,7 @@ export let trunc = (x: Number) => {
 }
 
 /**
- * Returns its operand rounded to its nearest integer.
+ * Returns its operand rounded to its nearest integer. `.5` and above return `1`, `.4` and below return `0`
  * @param x: Number - The number to round
  * @returns Number
  */
@@ -129,7 +129,7 @@ export let round = (x: Number) => {
 }
 
 /**
- * Returns the absolute value of its operand, i.e. `x` if `x` is positive and the negation of `x` if `x` is negative.
+ * returns the absolute value of a number. That is, it returns `x` if `x` is positive or zero, and the negation of `x` if `x` is negative.
  * @param x: Number - The operand
  * @returns Number
  */
