@@ -12,7 +12,7 @@ When committing, it's often useful to use the `git add -p` workflow to decide on
 
 ### Conventional Commits
 
-As of the [6202982](https://github.com/grain-lang/grain/commit/620298225faf35265e7285fe3d4d2c8dee72dba3) commit, Grain follows the [Conventional Commits (v1.0.0)](https://www.conventionalcommits.org/en/v1.0.0/) specification. Following this convention allow us to provide an automated release processs that also generates a detailed Changelog.
+As of the [6202982](https://github.com/grain-lang/grain/commit/620298225faf35265e7285fe3d4d2c8dee72dba3) commit, Grain follows the [Conventional Commits (v1.0.0)](https://www.conventionalcommits.org/en/v1.0.0/) specification. Following this convention allows us to provide an automated release processs that also generates a detailed changelog.
 
 As described by the spec, our commit messages should be written as:
 
@@ -56,6 +56,7 @@ Annotating **BREAKING CHANGES** is extremely important to our release process an
 
 ```
 feat!: Update assignment semantics (#560)
+feat(compiler)!: Rework async syntax
 ```
 
 ### Conventional Commits: Scopes
@@ -90,7 +91,7 @@ Sometimes, we don't merge pull requests with breaking changes immediately upon a
 
 Once approved by the required number of core team members, the submitter can merge their changes into the `main` branch. Sometimes, especially for external contributions, the final approver may merge the pull request instead of the submitter.
 
-We use "squash merging" to merge pull requests, this will cause all commits to be combined into one commit—another reason we want to keep pull requests small & focused.
+We use "squash merging" to merge pull requests. This will cause all commits to be combined into one commit—another reason we want to keep pull requests small & focused.
 
 ### Squash Merging
 
