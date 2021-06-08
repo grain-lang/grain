@@ -16,10 +16,12 @@ assert Number.sqrt(2/4) == 0.7071067811865476
 assert Number.min(5, 6) == 5
 assert Number.min(6, 5) == 5
 assert Number.min(1/2, 1/4) == 1/4
+assert Number.min(0.5, 0.25) == 0.25
 // max
 assert Number.max(6, 5) == 6
 assert Number.max(5, 6) == 6
 assert Number.max(1/2, 1/4) == 1/2
+assert Number.max(0.5, 0.25) == 0.5
 // ceil
 assert Number.ceil(-25.5) == -25
 assert Number.ceil(25.5) == 26
