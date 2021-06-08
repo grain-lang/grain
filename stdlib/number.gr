@@ -21,7 +21,7 @@ export let add = (+)
 
 /**
  * Computes the difference of its operands.
- * @param x: Number - The number to subtract from
+ * @param x: Number - The first operand
  * @param y: Number - The number to subtract with
  * @returns Number
  */
