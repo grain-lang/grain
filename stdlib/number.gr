@@ -37,7 +37,7 @@ export let mul = (*)
 
 /**
  * Computes the quotient of its operands.
- * @param x: Number - The dividend,
+ * @param x: Number - The dividend
  * @param y: Number - The divisor
  * @returns Number
  */
