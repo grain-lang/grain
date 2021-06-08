@@ -8,8 +8,6 @@ import {
 } from "runtime/numbers"
 import { newFloat64, newInt64 } from "runtime/dataStructures"
 
-primitive (!) : Bool -> Bool = "@not"
-primitive (&&) : (Bool, Bool) -> Bool = "@and"
 
 /**
  * Computes the sum of its operands.
