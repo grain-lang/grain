@@ -3,6 +3,16 @@ let explode = string => {
   List.init(String.length(string), get_char);
 };
 
+let starts_with = (string, prefix) => {
+  let prefixLength = String.length(prefix);
+  let stringLength = String.length(string);
+  if (stringLength < prefixLength) {
+    false;
+  } else {
+    String.sub(string, 0, prefixLength) == prefix;
+  };
+};
+
 /**
 Slices a string given optional zero-based [~first] and [~last] indexes. The character
 at the [~last] index will not be included in the result.

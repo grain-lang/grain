@@ -19,46 +19,18 @@ let () =
     }
   );
 
-let starts_with = (string, prefix) => {
-  let prefixLength = String.length(prefix);
-  let stringLength = String.length(string);
-  if (stringLength < prefixLength) {
-    false;
-  } else {
-    String.sub(string, 0, prefixLength) == prefix;
-  };
-};
-
-// Recursive readdir
-let rec readdir = (dir, excludes) => {
-  Sys.readdir(dir)
-  |> Array.fold_left(
-       (results, filename) => {
-         let filepath = Filename.concat(dir, filename);
-         Sys.is_directory(filepath)
-         && List.for_all(
-              exclude => !starts_with(filename, exclude),
-              excludes,
-            )
-           ? Array.append(results, readdir(filepath, excludes))
-           : Array.append(results, [|filepath|]);
-       },
-       [||],
-     );
-};
-
 let clean_stdlib = stdlib_dir =>
   Array.iter(
     file =>
       if (Filename.check_suffix(file, ".gr.wasm")) {
         Sys.remove(file);
       },
-    readdir(stdlib_dir, []),
+    Grain_utils.Files.readdir(stdlib_dir, []),
   );
 
 let clean_output = output =>
   if (Sys.file_exists(output)) {
-    Array.iter(Sys.remove, readdir(output, []));
+    Array.iter(Sys.remove, Grain_utils.Files.readdir(output, []));
   };
 
 let () = {

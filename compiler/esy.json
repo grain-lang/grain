@@ -38,21 +38,17 @@
     "@opam/sexplib": ">= 0.14.0",
     "@opam/utf8": "0.1.0",
     "@opam/yojson": ">= 1.7.0",
-    "@opam/rely": "^3.2.1",
     "ocaml": "4.11.0"
   },
   "devDependencies": {
     "@opam/js_of_ocaml-compiler": ">= 3.6.0",
-    "@opam/ocaml-lsp-server": "1.4.0"
+    "@opam/ocaml-lsp-server": "1.4.0",
+    "@reason-native/rely": "^3.2.1"
   },
   "resolutions": {
     "@opam/ocamlfind": "1.8.1",
     "@opam/fp": "facebookexperimental/reason-native:fp.opam#a33f1528a6dd86c67f365e226c81312733181c87",
     "@opam/fs": "facebookexperimental/reason-native:fs.opam#a33f1528a6dd86c67f365e226c81312733181c87",
-    "@opam/cli": "facebookexperimental/reason-native:cli.opam#a33f1528a6dd86c67f365e226c81312733181c87",
-    "@opam/pastel": "facebookexperimental/reason-native:pastel.opam#a33f1528a6dd86c67f365e226c81312733181c87",
-    "@opam/file-context-printer": "facebookexperimental/reason-native:file-context-printer.opam#a33f1528a6dd86c67f365e226c81312733181c87",
-    "@opam/rely": "facebookexperimental/reason-native:rely.opam#a33f1528a6dd86c67f365e226c81312733181c87",
     "@opam/utf8": "facebookexperimental/reason-native:utf8.opam#a33f1528a6dd86c67f365e226c81312733181c87"
   },
   "installConfig": {

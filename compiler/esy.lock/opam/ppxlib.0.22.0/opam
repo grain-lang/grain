@@ -12,8 +12,8 @@ OCaml syntax directly and `ppxlib.traverse` which provides various
 ways of automatically traversing values of a given type, in particular
 allowing to inject a complex structured value into generated code.
 """
-maintainer: ["opensource@janestreet.com"]
-authors: ["Jane Street Group, LLC <opensource@janestreet.com>"]
+maintainer: ["Jane Street developers"]
+authors: ["Jane Street Group, LLC"]
 license: "MIT"
 homepage: "https://github.com/ocaml-ppx/ppxlib"
 doc: "https://ocaml-ppx.github.io/ppxlib/"
