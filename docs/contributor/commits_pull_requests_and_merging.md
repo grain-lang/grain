@@ -99,7 +99,7 @@ When squash merging, we can keep intermediate Conventional Commits around by add
 
 When squashing, you want to update both the title of the commit to be a good Conventional Commit and adjust the body to contain any other Conventional Commits that you want to keep (not prefixed with `*`). We also keep any "Co-authored-by:" lines at the bottom of the commit if the change was done by multiple authors. If "Co-authored-by:" lines appear due to accepted PR suggestions, it's good to delete them so the author gets full credit for the change.
 
-Our overall approach to squashing is to be mindful of the impact of the commit—it populates our changelog and thus it's important to properly convey what change has happened, but it's also a record that we and others will go back and look at in the future. Thus, it's important to attribute the change to its correct authors and provide useful information that future-us would want to have.
+Our overall approach to squashing is to be mindful of the impact of each commit. The commits populate our changelog, so it's important to properly convey to Grain consumers what changes have happened. It is also a record that we and others will review in the future. Thus, we want to attribute the change to its correct authors and provide useful information that future contributors need.
 
 ### Merge Checklist
 
