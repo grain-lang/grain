@@ -40,12 +40,12 @@ build: [
     "--release"
   ]
 ]
-x-commit-hash: "92924b6e36a91ce323b7f8eddfe20def4173e6e5"
+x-commit-hash: "154ccd7142651807d40eb851969f318b873b7fb4"
 url {
   src:
-    "https://github.com/ocaml/ocaml-lsp/releases/download/1.4.0/jsonrpc-1.4.0.tbz"
+    "https://github.com/ocaml/ocaml-lsp/releases/download/1.4.1/jsonrpc-1.4.1.tbz"
   checksum: [
-    "sha256=fd138e6c4fcff32c6d15eb66cc9391b7e1183717a6d1a47c688c7f6d320a159f"
-    "sha512=567a73b3c10bb59c5a4d4e8291d1aeefdfd34438a95313fba8a485638294ca5fb8034334719631243c304d3328c27afa90dfd564fdb1e7390507a06db3a4ad03"
+    "sha256=cee8371e7048e24c90e916c373ef6f3aba6f474d8a5fcf507ab6650fd8575eeb"
+    "sha512=150ebf71d3484d3beec1a145877cf30d84581bd072dd20159e878ed07cc4fc647b019b98bb0c9fede839b87f7bd13de4a64b534c0760a2ec57d0e4a4deac6f0f"
   ]
 }

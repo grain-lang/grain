@@ -1,5 +1,5 @@
 {
-  "checksum": "263f13dafbac6c3858d5a73544aa5186",
+  "checksum": "7cc2eff314c5979c146dc8015838e6ce",
   "root": "@grain/compiler@link-dev:./esy.json",
   "node": {
     "ocaml@4.11.0@d41d8cd9": {
@@ -785,20 +785,20 @@
         "ocaml@4.11.0@d41d8cd9", "@opam/dune@opam:2.8.5@01003f12"
       ]
     },
-    "@opam/ocaml-lsp-server@opam:1.4.0@c9583433": {
-      "id": "@opam/ocaml-lsp-server@opam:1.4.0@c9583433",
+    "@opam/ocaml-lsp-server@opam:1.4.1@cd85c376": {
+      "id": "@opam/ocaml-lsp-server@opam:1.4.1@cd85c376",
       "name": "@opam/ocaml-lsp-server",
-      "version": "opam:1.4.0",
+      "version": "opam:1.4.1",
       "source": {
         "type": "install",
         "source": [
-          "archive:https://opam.ocaml.org/cache/sha256/fd/fd138e6c4fcff32c6d15eb66cc9391b7e1183717a6d1a47c688c7f6d320a159f#sha256:fd138e6c4fcff32c6d15eb66cc9391b7e1183717a6d1a47c688c7f6d320a159f",
-          "archive:https://github.com/ocaml/ocaml-lsp/releases/download/1.4.0/jsonrpc-1.4.0.tbz#sha256:fd138e6c4fcff32c6d15eb66cc9391b7e1183717a6d1a47c688c7f6d320a159f"
+          "archive:https://opam.ocaml.org/cache/sha256/ce/cee8371e7048e24c90e916c373ef6f3aba6f474d8a5fcf507ab6650fd8575eeb#sha256:cee8371e7048e24c90e916c373ef6f3aba6f474d8a5fcf507ab6650fd8575eeb",
+          "archive:https://github.com/ocaml/ocaml-lsp/releases/download/1.4.1/jsonrpc-1.4.1.tbz#sha256:cee8371e7048e24c90e916c373ef6f3aba6f474d8a5fcf507ab6650fd8575eeb"
         ],
         "opam": {
           "name": "ocaml-lsp-server",
-          "version": "1.4.0",
-          "path": "esy.lock/opam/ocaml-lsp-server.1.4.0"
+          "version": "1.4.1",
+          "path": "esy.lock/opam/ocaml-lsp-server.1.4.1"
         }
       },
       "overrides": [],
@@ -1538,7 +1538,7 @@
       ],
       "devDependencies": [
         "@reason-native/rely@3.2.1@d41d8cd9",
-        "@opam/ocaml-lsp-server@opam:1.4.0@c9583433",
+        "@opam/ocaml-lsp-server@opam:1.4.1@cd85c376",
         "@opam/js_of_ocaml-compiler@opam:3.9.1@19f5797f"
       ],
       "installConfig": { "pnp": false }

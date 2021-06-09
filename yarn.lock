@@ -1422,17 +1422,10 @@ esutils@^2.0.2:
   resolved "https://registry.yarnpkg.com/esutils/-/esutils-2.0.3.tgz#74d2eb4de0b8da1293711910d50775b9b710ef64"
   integrity sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==
 
-esy-solve-cudf@^0.1.10:
-  version "0.1.10"
-  resolved "https://registry.yarnpkg.com/esy-solve-cudf/-/esy-solve-cudf-0.1.10.tgz#2cd48af78183ae8f06c035a398beb65673c2d77d"
-  integrity sha512-/MrZOBH0wuJndvZN8pl+S3Mg3zJaK70PH9ZZwqDeJHulghEWROEZxpmenNiS9pqAaxyUVhTZJBt2/vL9jKCJbg==
-
-esy@0.6.7:
-  version "0.6.7"
-  resolved "https://registry.yarnpkg.com/esy/-/esy-0.6.7.tgz#a04f5c469280115f39364e5f51927d9e74180236"
-  integrity sha512-G/C0wXDQy19eDqlFNmPg2kHmrllUez9deZd1OOIk/VTKtc75STdeE/Nl1NusVY+La/+eCtovNqk0/ZAb4Mg8gw==
-  dependencies:
-    esy-solve-cudf "^0.1.10"
+esy@0.6.10:
+  version "0.6.10"
+  resolved "https://registry.yarnpkg.com/esy/-/esy-0.6.10.tgz#918de2ad7e40793978c63b8216563408527cc25e"
+  integrity sha512-O+mWNPB9NJqDr3CA1PUbWUO1ZSy53ksZWivGrvbquATR5INlp3CYguwkq4BzZACg1s1bVYyhr7byjB/l1nuGRA==
 
 events@^3.0.0:
   version "3.3.0"
