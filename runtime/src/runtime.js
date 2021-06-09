@@ -1,5 +1,3 @@
-import "fast-text-encoding";
-
 import { printClosure } from "./core/closures";
 import { ManagedMemory } from "./core/memory";
 import { GrainRunner } from "./core/runner";

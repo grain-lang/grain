@@ -139,10 +139,6 @@ program
     "--verbose",
     "print critical information at various stages of compilation"
   )
-  .on("option:init-memory-pages", (pages) => {
-    // Workaround for the runtime's memory being initialized statically on module load
-    process.env.GRAIN_INIT_MEMORY_PAGES = parseInt(pages, 10);
-  })
   // The root command that compiles & runs
   .arguments("<file>")
   .action(function (file) {

@@ -44,7 +44,6 @@
     "babel-core": "^6.26.3",
     "babel-loader": "^7.1.5",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "fast-text-encoding": "^1.0.0",
     "prettier": "^2.2.1",
     "source-map-support": "^0.5.16",
     "wasm-sourcemap": "^1.0.0",
