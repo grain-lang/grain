@@ -85,7 +85,7 @@ describe("comments", ({test}) => {
     "//comment\n//comment\r\n5 + 5L",
     "line 3, characters 4-6",
   );
-  assertSnapshot("comment_lone_//", "//\nlet x = 10\nx");
+  assertSnapshot("comment_alone", "//\nlet x = 10\nx");
   assertSnapshot("comment_block", "/* block 1 */let x = 10/* block 2 */\nx");
   assertSnapshot("comment_doc", "/** doc 1 */let x = 10/** doc 2 */\nx");
   assertSnapshot("comment_shebang", "#!/bin/grain\nlet x = 10\nx");

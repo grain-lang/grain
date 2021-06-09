@@ -1,4 +1,4 @@
-comments › comment_lone_//
+comments › comment_alone
 (module
  (type $none_=>_none (func))
  (type $none_=>_i32 (func (result i32)))
