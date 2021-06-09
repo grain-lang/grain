@@ -337,13 +337,14 @@ let coerceInt64 = (x) => {
   }
 }
 
-let coerceInt32 = (x) => {
-  let asInt64 = coerceInt64(x)
+export let coerceNumberToWasmI32 = (x: Number) => {
+  let asInt64 = coerceInt64(WasmI32.fromGrain(x))
   if (WasmI64.gtS(asInt64, _I32_MAX) || WasmI64.ltS(asInt64, _I32_MIN)) {
     throw Exception.Overflow
   }
   WasmI32.wrapI64(asInt64)
 }
+
 
 let isIntegerF32 = (value) => {
   WasmF32.eq(value, WasmF32.trunc(value))
@@ -1216,18 +1217,14 @@ export let numberAsr = (>>);
 // [NOTE]: Coercion is a *conservative* process! For example, even if a float is 1.0,
 //         we will fail if attempting to coerce to an int!
 
-export let coerceNumberToWasmI32 = (x: Number) => {
-  coerceInt32(WasmI32.fromGrain(x))
-}
-
 export let coerceNumberToInt32 = (x: Number) => {
-  let x = WasmI32.fromGrain(x)
-  let result = if (!isSimpleNumber(x) && WasmI32.eq(boxedNumberTag(x), Tags._GRAIN_INT32_BOXED_NUM_TAG)) {
+  let y = WasmI32.fromGrain(x)
+  let result = if (!isSimpleNumber(y) && WasmI32.eq(boxedNumberTag(y), Tags._GRAIN_INT32_BOXED_NUM_TAG)) {
     // avoid extra malloc
-    x
+    y
   } else {
     // can possibly fail
-    newInt32(coerceInt32(x))
+    newInt32(coerceNumberToWasmI32(x))
   }
   WasmI32.toGrain(result): Int32
 }
@@ -1244,17 +1241,17 @@ export let coerceNumberToInt64 = (x: Number) => {
 }
 
 export let coerceNumberToRational = (x: Number) => {
-  let x = WasmI32.fromGrain(x)
-  let result = if (isSimpleNumber(x)) {
-    newRational(untagSimple(x), 1n)
+  let y = WasmI32.fromGrain(x)
+  let result = if (isSimpleNumber(y)) {
+    newRational(untagSimple(y), 1n)
   } else {
-    let tag = boxedNumberTag(x)
+    let tag = boxedNumberTag(y)
     if (WasmI32.eq(tag, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG)) {
-      x
+      y
     } else if (WasmI32.eq(tag, Tags._GRAIN_INT32_BOXED_NUM_TAG)) {
-      newRational(boxedInt32Number(x), 1n)
+      newRational(boxedInt32Number(y), 1n)
     } else if (WasmI32.eq(tag, Tags._GRAIN_INT64_BOXED_NUM_TAG)) {
-      newRational(coerceInt32(x), 1n)
+      newRational(coerceNumberToWasmI32(x), 1n)
     } else {
       throw Exception.NumberNotRational
     }
