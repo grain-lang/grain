@@ -101,7 +101,7 @@ export let indexOf = (p: String, s: String) => {
 }
 
 @disableGC
-export let charAt = (s: String, idx) => {
+export let charAt = (idx, s: String) => {
   if (length(s) <= idx || idx < 0) {
     fail ("Invalid offset: " ++ toString(idx))
   }
