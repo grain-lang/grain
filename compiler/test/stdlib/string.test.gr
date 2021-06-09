@@ -52,7 +52,7 @@ assert String.length(emoji) == 1
 assert String.length(fox) == 44
 assert String.length(emojis) == 74
 // Single grapheme composed of two code points
-assert String.length("💪🏼") == 2 
+assert String.length("💪🏼") == 2
 
 // byteLength tests
 assert String.byteLength(empty) == 0
