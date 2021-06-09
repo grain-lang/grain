@@ -384,3 +384,19 @@ export let zip = (a, b) => {
     })
   }
 }
+
+// @param separator: String - The separator to insert between items in the string
+// @param items: Array<String> - The input strings
+// @returns String
+export let join = (separator: String, items: Array<String>) => {
+  let iter = (acc, str) => {
+    match (acc) {
+      None => Some(str),
+      Some(prev) => Some(prev ++ separator ++ str)
+    }
+  }
+  match(reduce(iter, None, items)) {
+    None => "",
+    Some(s) => s,
+  }
+}

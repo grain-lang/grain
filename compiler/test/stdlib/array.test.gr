@@ -250,3 +250,7 @@ assert Array.unique([> 1, 1, 2, 2, 3, 3]) == [> 1, 2, 3]
 assert Array.unique([> 0, 1, 2]) == [> 0, 1, 2]
 assert Array.unique([> 0, 0, 0, 0, 0, 0]) == [> 0]
 assert Array.unique([>]) == [>]
+
+// Array.join
+assert Array.join(", ", [> "a", "b", "c"]) == "a, b, c"
+assert Array.join(", ", [>]) == ""
