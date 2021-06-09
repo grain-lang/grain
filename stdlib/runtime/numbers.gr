@@ -1218,13 +1218,13 @@ export let numberAsr = (>>);
 //         we will fail if attempting to coerce to an int!
 
 export let coerceNumberToInt32 = (x: Number) => {
-  let y = WasmI32.fromGrain(x)
-  let result = if (!isSimpleNumber(y) && WasmI32.eq(boxedNumberTag(y), Tags._GRAIN_INT32_BOXED_NUM_TAG)) {
+  let x = WasmI32.fromGrain(x)
+  let result = if (!isSimpleNumber(x) && WasmI32.eq(boxedNumberTag(x), Tags._GRAIN_INT32_BOXED_NUM_TAG)) {
     // avoid extra malloc
-    y
+    x
   } else {
     // can possibly fail
-    newInt32(coerceNumberToWasmI32(x))
+    newInt32(coerceNumberToWasmI32(WasmI32.toGrain(x) : Number))
   }
   WasmI32.toGrain(result): Int32
 }
@@ -1241,17 +1241,17 @@ export let coerceNumberToInt64 = (x: Number) => {
 }
 
 export let coerceNumberToRational = (x: Number) => {
-  let y = WasmI32.fromGrain(x)
-  let result = if (isSimpleNumber(y)) {
-    newRational(untagSimple(y), 1n)
+  let x = WasmI32.fromGrain(x)
+  let result = if (isSimpleNumber(x)) {
+    newRational(untagSimple(x), 1n)
   } else {
-    let tag = boxedNumberTag(y)
+    let tag = boxedNumberTag(x)
     if (WasmI32.eq(tag, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG)) {
-      y
+      x
     } else if (WasmI32.eq(tag, Tags._GRAIN_INT32_BOXED_NUM_TAG)) {
-      newRational(boxedInt32Number(y), 1n)
+      newRational(boxedInt32Number(x), 1n)
     } else if (WasmI32.eq(tag, Tags._GRAIN_INT64_BOXED_NUM_TAG)) {
-      newRational(coerceNumberToWasmI32(x), 1n)
+      newRational(coerceNumberToWasmI32(WasmI32.toGrain(x) : Number), 1n)
     } else {
       throw Exception.NumberNotRational
     }
