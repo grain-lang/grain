@@ -74,3 +74,21 @@ export let gte = (x: Float64, y: Float64) => {
   let y = WasmF64.load(WasmI32.fromGrain(y), 8n)
   WasmF64.ge(x, y)
 }
+
+// floating-point constants:
+
+@disableGC
+let makeInfinity = () => {
+  let ptr = newFloat64(WasmF64.reinterpretI64(0b0111111111110000000000000000000000000000000000000000000000000000N))
+  WasmI32.toGrain(ptr) : Float64
+}
+
+export let infinity = makeInfinity()
+
+@disableGC
+let makeNaN = () => {
+  let ptr = newFloat64(WasmF64.reinterpretI64(0b0111111111110000000000000000000000000000000000000000000000000001N))
+  WasmI32.toGrain(ptr) : Float64
+}
+
+export let nan = makeNaN()
