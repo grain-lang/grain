@@ -81,7 +81,7 @@ The easiest way to do this is to have multiple Conventional Commits while you wo
 
 ### Reviews
 
-As the Grain core team has grown, we've adjusted our code review process. Currently, we require **two** approvals from core team members for any non-breaking pull request and **three** approvals for pull requests containing breaking changes.
+As the Grain core team has grown, we've adjusted our code review process. On the [grain-lang/grain](https://github.com/grain-lang/grain) repository, we require **two** approvals from core team members for any non-breaking pull request and **three** approvals for pull requests containing breaking changes. For any other repositories in the grain-lang organization, we require **one** approval.
 
 ### With Breaking Changes
 
