@@ -2,8 +2,8 @@
 open Grain_codegen;
 open Concatlist;
 
-open TestFramework;
-open Runner;
+open Grain_tests.TestFramework;
+open Grain_tests.Runner;
 
 let l1 = append(snoc(cons(1, empty), 2), cons(3, snoc(empty, 4)));
 

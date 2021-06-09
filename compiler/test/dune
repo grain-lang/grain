@@ -1,17 +1,16 @@
-(include_subdirs unqualified)
+(dirs :standard suites utils)
 
 (library
  (name Grain_tests)
- (public_name grain-tests.test)
- (flags
-  (:standard -linkall -g -w -40))
+ (public_name grain-tests.framework)
  (libraries grain rely.lib)
- (modules
-  (:standard \ test)))
+ (modules TestFramework runner))
 
 (executable
  (name test)
  (public_name test)
  (package grain-tests)
- (libraries grain-tests.test)
+ (flags
+  (:standard -linkall -g -w -40))
+ (libraries grain grain-tests.framework grain-tests.suites grain-tests.utils)
  (modules test))
