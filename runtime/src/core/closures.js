@@ -1,17 +1,16 @@
-import { managedMemory, grainModule } from "../runtime";
 import { grainToJSVal, JSToGrainVal } from "../utils/utils";
 
 export class GrainClosure {
   constructor(loc, runtime) {
-    const view = managedMemory.view;
+    const view = runtime.managedMemory.view;
 
     this.loc = loc;
     this.runtime = runtime;
-    this.arity = view[loc];
-    this.ptr = view[loc + 1];
-    this.closureSize = view[loc + 2];
-    this.closureElts = view.slice(loc + 3, loc + 3 + this.closureSize);
-    this.func = grainModule.instance.exports["GRAIN$LAM_" + this.ptr];
+    this.arity = view[loc + 1];
+    this.ptr = view[loc + 2];
+    this.closureSize = view[loc + 3];
+    this.closureElts = view.slice(loc + 4, loc + 4 + this.closureSize);
+    this.func = runtime.table.get(this.ptr);
   }
 
   jsFunc(...args) {
@@ -22,7 +21,7 @@ export class GrainClosure {
 }
 
 export function printClosure(c) {
-  const view = managedMemory.view;
+  const view = runtime.managedMemory.view;
 
   c /= 4;
   let arity = view[c];

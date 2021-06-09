@@ -9,7 +9,10 @@ module.exports = async function run(filename, options) {
     let basePath = path.dirname(filename);
     let includeDirs = [basePath, ...options.includeDirs, options.stdlib];
     let locator = runtime.defaultFileLocator(includeDirs);
-    let GrainRunner = runtime.buildGrainRunner(locator);
+    let GrainRunner = runtime.buildGrainRunner(locator, {
+      initialMemoryPages: options.initialMemoryPages,
+      maximumMemoryPages: options.maximumMemoryPages,
+    });
     if (options.printOutput) {
       let result = await GrainRunner.runFileUnboxed(filename);
       await GrainRunner.ensureStringModule();

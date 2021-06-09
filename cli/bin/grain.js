@@ -91,10 +91,15 @@ program
     null,
     stdlibPath
   )
-  .option("--limitMemory <size>", "maximum allowed heap size", num, -1)
-  .option(
-    "--init-memory-pages <size>",
-    "number of pages used to initialize the grain runtime"
+  .graincOption(
+    "--initial-memory-pages <size>",
+    "initial number of WebAssembly memory pages",
+    num
+  )
+  .graincOption(
+    "--maximum-memory-pages <size>",
+    "maximum number of WebAssembly memory pages",
+    num
   )
   .graincOption(
     "--compilation-mode <mode>",
@@ -134,10 +139,6 @@ program
     "--verbose",
     "print critical information at various stages of compilation"
   )
-  .on("option:init-memory-pages", (pages) => {
-    // Workaround for the runtime's memory being initialized statically on module load
-    process.env.GRAIN_INIT_MEMORY_PAGES = parseInt(pages, 10);
-  })
   // The root command that compiles & runs
   .arguments("<file>")
   .action(function (file) {

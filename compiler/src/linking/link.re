@@ -1,6 +1,7 @@
 open Grain_codegen;
 open Compmod;
 open Grain_typed;
+open Grain_utils;
 open Cmi_format;
 open Binaryen;
 open Graph;
@@ -575,7 +576,22 @@ let link_all = (linked_mod, dependencies, signature) => {
   };
   List.iter(link_one, dependencies);
   ignore @@ Table.add_table(linked_mod, function_table, table_offset^, -1);
-  Memory.set_memory(linked_mod, 64, Memory.unlimited, "memory", [], false);
+  let (initial_memory, maximum_memory) =
+    switch (Config.initial_memory_pages^, Config.maximum_memory_pages^) {
+    | (initial_memory, Some(maximum_memory)) => (
+        initial_memory,
+        maximum_memory,
+      )
+    | (initial_memory, None) => (initial_memory, Memory.unlimited)
+    };
+  Memory.set_memory(
+    linked_mod,
+    initial_memory,
+    maximum_memory,
+    "memory",
+    [],
+    false,
+  );
 
   let starts =
     List.map(

@@ -1,5 +1,3 @@
-import { memory, managedMemory } from "../runtime";
-
 import { GRAIN_TRUE, GRAIN_FALSE, GRAIN_VOID } from "./primitives";
 
 export const GRAIN_NUMBER_TAG_MASK = 0b0001;
