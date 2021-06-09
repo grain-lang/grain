@@ -373,3 +373,14 @@ export let unique = (array) => {
     array
   )
 }
+
+export let zip = (a, b) => {
+  let len = length(a)
+  if (len != length(b)) {
+    fail "arguments to zip must be same length"
+  } else {
+    init(len, n => {
+      (a[n], b[n])
+    })
+  }
+}
