@@ -1,5 +1,5 @@
-open TestFramework;
-open Runner;
+open Grain_tests.TestFramework;
+open Grain_tests.Runner;
 open Grain_middle_end.Anftree;
 open Grain_middle_end.Anf_helper;
 

@@ -1,8 +1,8 @@
 open Grain_utils;
 open Wasm_utils;
 
-open TestFramework;
-open Runner;
+open Grain_tests.TestFramework;
+open Grain_tests.Runner;
 
 let iter_bytes = bytes => {
   let bytes = ref(bytes);

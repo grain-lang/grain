@@ -1,5 +1,5 @@
-open TestFramework;
-open Runner;
+open Grain_tests.TestFramework;
+open Grain_tests.Runner;
 
 describe("print", ({test}) => {
   let assertRun = makeRunner(test);

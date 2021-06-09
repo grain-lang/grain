@@ -1,0 +1,5 @@
+(library
+ (name Grain_tests_utils)
+ (public_name grain-tests.utils)
+ (libraries grain grain-tests.framework)
+ (modules (:standard)))
