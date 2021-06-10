@@ -319,10 +319,6 @@ export let coerceNumberToWasmF64 = (x: Number) => {
   }
 }
 
-export let coerceFloat64 = (x) => {
-  coerceNumberToWasmF64(WasmI32.toGrain(x) : Number)
-}
-
 export let coerceNumberToWasmI64 = (x: Number) => {
   let x = WasmI32.fromGrain(x)
   if (isSimpleNumber(x)) {
