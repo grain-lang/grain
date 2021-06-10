@@ -19,4 +19,9 @@ describe("print", ({test}) => {
     "exception Foo; exception Bar; print(Foo); print(Bar)",
     "Foo\nBar\n",
   );
+  assertRun(
+    "print_nested_records",
+    "record Foo { foo: Number }; record Bar { bar: Foo }; print({ bar: { foo: 1 } })",
+    "{\n  bar: {\n    foo: 1\n  }\n}\n",
+  );
 });
