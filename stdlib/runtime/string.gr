@@ -384,11 +384,17 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
       if (fields == -1n) {
         "<record value>"
       } else {
+        let prevPadAmount = extraIndents * 2n
+        let prevSpacePadding = if (prevPadAmount == 0n) "" else {
+          let v = allocateString(prevPadAmount)
+          Memory.fill(v + 8n, 0x20n, prevPadAmount) // create indentation for closing brace
+          WasmI32.toGrain(v) : String
+        }
         let padAmount = (extraIndents + 1n) * 2n
         let spacePadding = allocateString(padAmount)
         Memory.fill(spacePadding + 8n, 0x20n, padAmount) // create indentation
         let spacePadding = WasmI32.toGrain(spacePadding): String
-        let mut strings = ["\n}"]
+        let mut strings = ["\n", prevSpacePadding, "}"]
         let colspace = ": "
         let comlf = ",\n"
         for (let mut i = recordArity * 4n - 4n; i >= 0n;  i -= 4n) {
