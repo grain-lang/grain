@@ -200,15 +200,18 @@ let map_rec_type = (~rec_flag, fn, decls, rem) =>
   };
 
 let rec map2_end = (fn, lst, others, rem) => {
-  switch((lst, others)) {
+  switch (lst, others) {
   | ([], _) => rem
   | (_, []) => failwith("impossible: map2_end")
-  | ([d1, ...dl], [o1, ...ol]) => [fn(d1, o1), ...map2_end(fn, dl, ol, rem)]
-  }
+  | ([d1, ...dl], [o1, ...ol]) => [
+      fn(d1, o1),
+      ...map2_end(fn, dl, ol, rem),
+    ]
+  };
 };
 
 let map2_rec_type = (~rec_flag, fn, decls, others, rem) =>
-  switch ((decls, others)) {
+  switch (decls, others) {
   | ([], _) => rem
   | (_, []) => failwith("impossible: map2_rec_type")
   | ([d1, ...dl], [o1, ...ol]) =>
@@ -486,7 +489,12 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
 
   let process_datas = (env, data_decls, attributes, loc) => {
     // e, datas
-    let (decls, newenv) = Typedecl.transl_data_decl(env, Recursive, List.map(((_, d)) => d, data_decls));
+    let (decls, newenv) =
+      Typedecl.transl_data_decl(
+        env,
+        Recursive,
+        List.map(((_, d)) => d, data_decls),
+      );
     let ty_decl =
       map2_rec_type_with_row_types(
         ~rec_flag=Recursive,

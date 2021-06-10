@@ -341,7 +341,12 @@ module TL = {
       Top.foreign(~loc, ~attributes, e, sub.value_description(sub, d))
     | PTopPrimitive(e, d) =>
       Top.primitive(~loc, ~attributes, e, sub.value_description(sub, d))
-    | PTopData(dd) => Top.data(~loc, ~attributes, List.map(((e, d)) => (e, sub.data(sub, d)), dd))
+    | PTopData(dd) =>
+      Top.data(
+        ~loc,
+        ~attributes,
+        List.map(((e, d)) => (e, sub.data(sub, d)), dd),
+      )
     | PTopLet(e, r, m, vb) =>
       Top.let_(
         ~loc,

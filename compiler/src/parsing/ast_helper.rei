@@ -225,7 +225,11 @@ module Top: {
     (~loc: loc=?, ~attributes: attributes=?, export_flag, value_description) =>
     toplevel_stmt;
   let data:
-    (~loc: loc=?, ~attributes: attributes=?, list((export_flag, data_declaration))) =>
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      list((export_flag, data_declaration))
+    ) =>
     toplevel_stmt;
   let let_:
     (
