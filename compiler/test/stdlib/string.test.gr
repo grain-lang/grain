@@ -52,7 +52,7 @@ assert String.length(emoji) == 1
 assert String.length(fox) == 44
 assert String.length(emojis) == 74
 // Single grapheme composed of two code points
-assert String.length("💪🏼") == 2 
+assert String.length("💪🏼") == 2
 
 // byteLength tests
 assert String.byteLength(empty) == 0
@@ -68,6 +68,12 @@ assert String.indexOf("🚀", emojis) == Some(15)
 assert String.indexOf(short, short) == Some(0)
 assert String.indexOf(emoji, emojis) == None
 assert String.indexOf("aa", "aaa") == Some(0)
+
+// charAt tests
+assert String.charAt(0, emojis) == 'w'
+assert String.charAt(15, emojis) == '🚀'
+assert String.charAt(16, emojis) == ' '
+assert String.charAt(17, emojis) == 't'
 
 // explode tests
 let codes = [> 119, 101, 32, 102, 111, 117, 110, 100, 32, 97, 32, 112, 97, 116, 104, 128640, 32, 116, 111, 32, 103, 114, 101, 97, 116, 110, 101, 115, 115, 127941, 98, 117, 116, 32, 116, 104, 101, 32, 103, 114, 105, 110, 100, 32, 110, 101, 118, 101, 114, 32, 113, 117, 105, 116, 115, 128548, 128170, 127996, 32, 107, 101, 101, 112, 32, 109, 105, 108, 108, 105, 110, 103, 128175, 128293, 128520]
