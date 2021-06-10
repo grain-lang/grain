@@ -534,7 +534,23 @@ let numberEqualFloat64Help = (x, y) => {
 }
 
 let numberEqualFloat32Help = (x, y) => {
-  numberEqualFloat64Help(WasmF64.promoteF32(x), y)
+  let xIsInteger = isIntegerF32(x)
+  // Basic number:
+  if (isSimpleNumber(y)) {
+    xIsInteger && WasmF64.eq(WasmF64.promoteF32(x), WasmF64.convertI32S(untagSimple(y)))
+  } else {
+    // Boxed number
+    let yBoxedNumberTag = boxedNumberTag(y)
+    match (yBoxedNumberTag) {
+      t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
+        // Special case: f32/f32 equality (need to handle here without promotion)
+        WasmF32.eq(x, boxedFloat32Number(y))
+      },
+      _ => {
+        numberEqualFloat64Help(WasmF64.promoteF32(x), y)
+      }
+    }
+  }
 }
 
 export let numberEqual = (x, y) => {
