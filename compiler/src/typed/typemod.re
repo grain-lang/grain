@@ -237,8 +237,7 @@ let rec map_rec_type_with_row_types = (~rec_flag, fn, decls, rem) =>
 let rec map2_rec_type_with_row_types = (~rec_flag, fn, decls, others, rem) =>
   switch (decls) {
   | [] => rem
-  | [d1, ...dl] =>
-    map2_rec_type(~rec_flag, fn, decls, others, rem)
+  | [d1, ...dl] => map2_rec_type(~rec_flag, fn, decls, others, rem)
   };
 
 /* Auxiliaries for checking uniqueness of names in signatures and structures */
