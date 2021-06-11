@@ -238,9 +238,6 @@ let rec map2_rec_type_with_row_types = (~rec_flag, fn, decls, others, rem) =>
   switch (decls) {
   | [] => rem
   | [d1, ...dl] =>
-    /*if Btype.is_row_name (Ident.name d1.typ_id) then
-        fn Trec_not d1 :: map_rec_type_with_row_types ~rec_flag fn dl rem
-      else*/
     map2_rec_type(~rec_flag, fn, decls, others, rem)
   };
 
@@ -488,7 +485,6 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
   };
 
   let process_datas = (env, data_decls, attributes, loc) => {
-    // e, datas
     let (decls, newenv) =
       Typedecl.transl_data_decl(
         env,
