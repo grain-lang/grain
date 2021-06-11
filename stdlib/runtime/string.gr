@@ -108,7 +108,7 @@ let getRecordFieldNames = (record_) => {
     -1n
   } else {
     fields += 8n
-    
+
     let fieldArray = allocateArray(arity)
 
     let mut fieldOffset = 0n
@@ -168,7 +168,7 @@ let reverse = (list) => {
 export let concat = (s1: String, s2: String) => {
   let ptr1 = WasmI32.fromGrain(s1)
   let ptr2 = WasmI32.fromGrain(s2)
-  
+
   let size1 = WasmI32.load(ptr1, 4n)
   let size2 = WasmI32.load(ptr2, 4n)
 
@@ -193,7 +193,7 @@ let escape = (ptr, isString) => {
   let _SEQ_SQUOTE = 0x27n
 
   let _SEQ_QUOTE = if (isString) _SEQ_DQUOTE else _SEQ_SQUOTE
-  
+
   let size = if (isString) {
     WasmI32.load(ptr, 4n)
   } else {
@@ -292,9 +292,9 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
         numBytes = 32n
         needsEllipsis = true
       }
-      let headBytes = 8n // <bytes: 
+      let headBytes = 8n // <bytes:
       let hexBytes = numBytes * 3n
-      let tailBytes = if (needsEllipsis) { 
+      let tailBytes = if (needsEllipsis) {
         5n // ...>
       } else {
         1n // >
@@ -306,8 +306,8 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
       let hex = NumberUtils.get_HEX_DIGITS()
 
       Memory.fill(str + 8n, 0x20n, strLen)
-      WasmI64.store(str, 0x203a73657479623cN, 8n) // <bytes: 
-      
+      WasmI64.store(str, 0x203a73657479623cN, 8n) // <bytes:
+
       for (let mut i = 0n; i < numBytes; i += 1n) {
         let n = WasmI32.load8U(bytesOffset, i)
         let j = i * 3n
@@ -384,11 +384,17 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
       if (fields == -1n) {
         "<record value>"
       } else {
+        let prevPadAmount = extraIndents * 2n
+        let prevSpacePadding = if (prevPadAmount == 0n) "" else {
+          let v = allocateString(prevPadAmount)
+          Memory.fill(v + 8n, 0x20n, prevPadAmount) // create indentation for closing brace
+          WasmI32.toGrain(v) : String
+        }
         let padAmount = (extraIndents + 1n) * 2n
         let spacePadding = allocateString(padAmount)
         Memory.fill(spacePadding + 8n, 0x20n, padAmount) // create indentation
         let spacePadding = WasmI32.toGrain(spacePadding): String
-        let mut strings = ["\n}"]
+        let mut strings = ["\n", prevSpacePadding, "}"]
         let colspace = ": "
         let comlf = ",\n"
         for (let mut i = recordArity * 4n - 4n; i >= 0n;  i -= 4n) {

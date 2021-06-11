@@ -333,6 +333,22 @@ let color_enabled =
 // TODO: (#612) Add compiler flag when feature is complete or remove entirely
 let principal = ref(false);
 
+let initial_memory_pages =
+  opt(
+    ~names=["initial-memory-pages"],
+    ~conv=Cmdliner.Arg.int,
+    ~doc="Initial number of WebAssembly memory pages",
+    64,
+  );
+
+let maximum_memory_pages =
+  opt(
+    ~names=["maximum-memory-pages"],
+    ~conv=option_conv(Cmdliner.Arg.int),
+    ~doc="Maximum number of WebAssembly memory pages",
+    None,
+  );
+
 let compilation_mode =
   opt(
     ~names=["compilation-mode"],

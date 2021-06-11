@@ -50,6 +50,14 @@ let color_enabled: ref(bool);
 
 let principal: ref(bool);
 
+/** Initial number of WebAssembly memory pages */
+
+let initial_memory_pages: ref(int);
+
+/** Maximum number of WebAssembly memory pages */
+
+let maximum_memory_pages: ref(option(int));
+
 /** Compilation mode to use when compiling */
 
 let compilation_mode: ref(option(string));

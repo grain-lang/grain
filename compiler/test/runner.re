@@ -59,18 +59,19 @@ let compile_string_to_final_anf = (name, s) =>
 
 let run = (~num_pages=?, file) => {
   let cli_flags = "-g";
-
-  let stdlib = Option.get(Grain_utils.Config.stdlib_dir^);
-  let env =
+  let cli_flags =
     switch (num_pages) {
     | Some(x) =>
-      Array.append(Unix.environment()) @@
-      [|
-        Printf.sprintf("GRAIN_INIT_MEMORY_PAGES=%d", x),
-        Printf.sprintf("GRAIN_MAX_MEMORY_PAGES=%d ", x),
-      |]
-    | None => Unix.environment()
+      Printf.sprintf(
+        "%s --initial-memory-pages %d --maximum-memory-pages %d",
+        cli_flags,
+        x,
+        x,
+      )
+    | None => cli_flags
     };
+
+  let stdlib = Option.get(Grain_utils.Config.stdlib_dir^);
 
   let args = [
     "grain",
@@ -84,7 +85,8 @@ let run = (~num_pages=?, file) => {
   ];
   let command = String.concat(" ", args);
 
-  let (stdout, stdin, stderr) = Unix.open_process_full(command, env);
+  let (stdout, stdin, stderr) =
+    Unix.open_process_full(command, Unix.environment());
 
   let pid = Unix.process_full_pid((stdout, stdin, stderr));
   let (_, status) = Unix.waitpid([], pid);
@@ -147,32 +149,40 @@ let makeCompileErrorRunner = (test, name, prog, msg) => {
 };
 
 let makeRunner = (test, ~num_pages=?, name, prog, expected) => {
-  test(
-    name,
-    ({expect}) => {
-      let hook = Option.map(_ => stop_after_object_file_emitted, num_pages);
-      compile(~hook?, name, prog);
+  test(name, ({expect}) => {
+    Config.preserve_config(() => {
+      switch (num_pages) {
+      | Some(pages) =>
+        Config.initial_memory_pages := pages;
+        Config.maximum_memory_pages := Some(pages);
+      | None => ()
+      };
+      compile(name, prog);
       let (result, _) = run(~num_pages?, wasmfile(name));
       expect.string(result).toEqual(expected);
-    },
-  );
+    })
+  });
 };
 
 let makeErrorRunner =
     (test, ~check_exists=true, ~num_pages=?, name, prog, expected) => {
-  test(
-    name,
-    ({expect}) => {
-      let hook = Option.map(_ => stop_after_object_file_emitted, num_pages);
-      compile(~hook?, name, prog);
+  test(name, ({expect}) => {
+    Config.preserve_config(() => {
+      switch (num_pages) {
+      | Some(pages) =>
+        Config.initial_memory_pages := pages;
+        Config.maximum_memory_pages := Some(pages);
+      | None => ()
+      };
+      compile(name, prog);
       let (result, _) = run(~num_pages?, wasmfile(name));
       if (check_exists) {
         expect.string(result).toMatch(expected);
       } else {
         expect.string(result).not.toMatch(expected);
       };
-    },
-  );
+    })
+  });
 };
 
 let makeFileRunner = (test, name, filename, expected) => {

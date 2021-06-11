@@ -49,7 +49,7 @@ export let byteLength = (s: String) => {
 export let indexOf = (p: String, s: String) => {
   let p = WasmI32.fromGrain(p)
   let s = WasmI32.fromGrain(s)
-  
+
   let size = WasmI32.load(s, 4n)
   let psize = WasmI32.load(p, 4n)
 
@@ -101,6 +101,51 @@ export let indexOf = (p: String, s: String) => {
 }
 
 @disableGC
+export let charAt = (idx, s: String) => {
+  if (length(s) <= idx || idx < 0) {
+    fail ("Invalid offset: " ++ toString(idx))
+  }
+  // Implementation is similar to explodeHelp, but doesn't perform unneeded memory allocations
+  let (>>>) = WasmI32.shrU
+  let (+) = WasmI32.add
+  let (&) = WasmI32.and
+  let (<) = WasmI32.ltU
+  let (==) = WasmI32.eq
+  let size = WasmI32.fromGrain(byteLength(s)) >>> 1n
+  let len = WasmI32.fromGrain(length(s)) >>> 1n
+  let idx = WasmI32.fromGrain(idx) >>> 1n
+  let s = WasmI32.fromGrain(s)
+  let mut ptr = s + 8n;
+  let end = ptr + size;
+  let mut counter = 0n;
+  let mut result = 0n
+  while (ptr < end) {
+    let byte = WasmI32.load8U(ptr, 0n)
+    let n = if ((byte & 0x80n) == 0x00n) {
+      1n
+    } else if ((byte & 0xF0n) == 0xF0n) {
+      4n
+    } else if ((byte & 0xE0n) == 0xE0n) {
+      3n
+    } else {
+      2n
+    }
+    if (counter == idx) {
+      let c = allocateChar()
+      Memory.copy(c + 4n, ptr, n)
+      result = c
+      break
+    }
+    counter += 1n
+    ptr += n
+  }
+  if (result == 0n) {
+    fail "charAt: should be impossible (please report)"
+  }
+  WasmI32.toGrain(result): Char
+}
+
+@disableGC
 let explodeHelp = (s: String, chars) => {
   let (>>>) = WasmI32.shrU
   let (+) = WasmI32.add
@@ -112,7 +157,7 @@ let explodeHelp = (s: String, chars) => {
   let len = WasmI32.fromGrain(length(s)) >>> 1n
 
   let s = WasmI32.fromGrain(s)
-  
+
   let mut ptr = s + 8n
   let end = ptr + size
 
@@ -167,9 +212,9 @@ export let implode = (arr: Array<Char>) => {
   let (<) = WasmI32.ltU
   let (<<) = WasmI32.shl
   let (&) = WasmI32.and
-  
+
   let arr = WasmI32.fromGrain(arr)
-  
+
   let arrLength = WasmI32.load(arr, 4n)
 
   let mut stringByteLength = 0n
@@ -229,7 +274,7 @@ export let split = (p: String, s: String) => {
   let (<<) = WasmI32.shl
   let (>>) = WasmI32.shrS
   let (&) = WasmI32.and
-  
+
   let size = WasmI32.fromGrain(byteLength(s)) >> 1n
   let psize = WasmI32.fromGrain(byteLength(p)) >> 1n
 
@@ -320,7 +365,7 @@ export let slice = (start: Number, to: Number, s: String) => {
   let (<<) = WasmI32.shl
   let (>>) = WasmI32.shrS
   let (&) = WasmI32.and
-  
+
   let len = WasmI32.fromGrain(length(s)) >> 1n
   let size = WasmI32.fromGrain(byteLength(s)) >> 1n
 
@@ -474,10 +519,10 @@ export let startsWith = (p: String, s: String) => {
   let (+) = WasmI32.add
   let (>) = WasmI32.gtU
   let (==) = WasmI32.eq
-  
+
   let mut p = WasmI32.fromGrain(p)
   let mut s = WasmI32.fromGrain(s)
-  
+
   let n = WasmI32.load(s, 4n)
   let m = WasmI32.load(p, 4n)
 
@@ -502,10 +547,10 @@ export let endsWith = (p: String, s: String) => {
   let (-) = WasmI32.sub
   let (>) = WasmI32.gtU
   let (==) = WasmI32.eq
-  
+
   let mut p = WasmI32.fromGrain(p)
   let mut s = WasmI32.fromGrain(s)
-  
+
   let n = WasmI32.load(s, 4n)
   let m = WasmI32.load(p, 4n)
 

@@ -1,11 +1,14 @@
 export class ManagedMemory {
-  constructor(memory) {
-    this._memory = memory;
-    this._view = new Int32Array(memory.buffer);
-    this._uview = new Uint32Array(memory.buffer);
-    this._u8view = new Uint8Array(memory.buffer);
-    this._f32view = new Float32Array(memory.buffer);
-    this._f64view = new Float64Array(memory.buffer);
+  constructor({ initialMemoryPages, maximumMemoryPages }) {
+    this._memory = new WebAssembly.Memory({
+      initial: initialMemoryPages || 64,
+      maximum: maximumMemoryPages,
+    });
+    this._view = new Int32Array(this._memory.buffer);
+    this._uview = new Uint32Array(this._memory.buffer);
+    this._u8view = new Uint8Array(this._memory.buffer);
+    this._f32view = new Float32Array(this._memory.buffer);
+    this._f64view = new Float64Array(this._memory.buffer);
     this._runtime = null;
   }
 

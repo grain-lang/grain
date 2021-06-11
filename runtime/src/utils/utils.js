@@ -1,12 +1,9 @@
-import { encoder, decoder, managedMemory } from "../runtime";
+const encoder = new TextEncoder("utf-8");
+const decoder = new TextDecoder("utf-8");
 
 import {
-  GRAIN_GENERIC_HEAP_TAG_TYPE,
   GRAIN_STRING_HEAP_TAG,
-  GRAIN_CHAR_HEAP_TAG,
   GRAIN_ADT_HEAP_TAG,
-  GRAIN_RECORD_HEAP_TAG,
-  GRAIN_ARRAY_HEAP_TAG,
   GRAIN_LAMBDA_HEAP_TAG,
   GRAIN_BOXED_NUM_HEAP_TAG,
   GRAIN_INT32_BOXED_NUM_TAG,
@@ -45,8 +42,8 @@ export function toBinary(n, minWidth) {
   return ret;
 }
 
-function float64At(idx) {
-  const f64view = managedMemory.f64view;
+function float64At(runtime, idx) {
+  const f64view = runtime.managedMemory.f64view;
   return f64view[idx / 8 + 1];
 }
 
@@ -70,15 +67,15 @@ GrainAdtValue.prototype.toString = function () {
 };
 
 export function grainBoxedNumberToJSVal(runtime, n) {
-  const view = managedMemory.view;
-  const uview = managedMemory.uview;
-  const f32view = managedMemory.f32view;
+  const view = runtime.managedMemory.view;
+  const uview = runtime.managedMemory.uview;
+  const f32view = runtime.managedMemory.f32view;
   let nInt = n / 4;
   switch (view[nInt + 1]) {
     case GRAIN_FLOAT32_BOXED_NUM_TAG:
       return f32view[nInt + 2];
     case GRAIN_FLOAT64_BOXED_NUM_TAG:
-      return float64At(n + 8);
+      return float64At(runtime, n + 8);
     case GRAIN_RATIONAL_BOXED_NUM_TAG:
       let numerator = view[nInt + 2];
       let denominator = view[nInt + 3];
@@ -99,12 +96,12 @@ export function grainBoxedNumberToJSVal(runtime, n) {
 }
 
 export function grainHeapValToJSVal(runtime, n) {
-  const view = managedMemory.view;
+  const view = runtime.managedMemory.view;
   switch (view[n / 4]) {
     case GRAIN_BOXED_NUM_HEAP_TAG:
       return grainBoxedNumberToJSVal(runtime, n);
     case GRAIN_STRING_HEAP_TAG:
-      let byteView = managedMemory.u8view;
+      let byteView = runtime.managedMemory.u8view;
       let length = view[n / 4 + 1];
       let slice = byteView.slice(n + 8, n + 8 + length);
       return decoder.decode(slice);
@@ -139,7 +136,7 @@ export function grainHeapValToJSVal(runtime, n) {
 }
 
 export function grainAdtInfo(runtime, n) {
-  const view = managedMemory.view;
+  const view = runtime.managedMemory.view;
   let x = n / 4;
   if (runtime) {
     // In-memory tags are tagged ints
@@ -160,7 +157,7 @@ export function grainAdtInfo(runtime, n) {
 }
 
 export function grainTupleToJSVal(runtime, n) {
-  const view = managedMemory.view;
+  const view = runtime.managedMemory.view;
   let tupleIdx = n / 4;
   let tupleLength = view[tupleIdx + 1];
   if (tupleLength & 0x80000000) {
@@ -199,11 +196,11 @@ export function grainToJSVal(runtime, x) {
 }
 
 export function JSToGrainVal(v, runtime) {
-  const view = managedMemory.view;
+  const view = runtime.managedMemory.view;
   if (typeof v === "number") {
     if (!Number.isInteger(v)) {
       // not an integer, so just pun into a float64
-      let userPtr = managedMemory.malloc(4 * 4);
+      let userPtr = runtime.managedMemory.malloc(4 * 4);
       let ptr = userPtr / 4;
       view[ptr] = GRAIN_BOXED_NUM_HEAP_TAG;
       view[ptr + 1] = GRAIN_FLOAT64_BOXED_NUM_TAG;
@@ -221,7 +218,7 @@ export function JSToGrainVal(v, runtime) {
     }
     if (v < 1 << 31 && v > -1 << 31) {
       // int32
-      let userPtr = managedMemory.malloc(4 * 3);
+      let userPtr = runtime.managedMemory.malloc(4 * 3);
       let ptr = userPtr / 4;
       view[ptr] = GRAIN_BOXED_NUM_HEAP_TAG;
       view[ptr + 1] = GRAIN_INT32_BOXED_NUM_TAG;
@@ -230,7 +227,7 @@ export function JSToGrainVal(v, runtime) {
     }
     if (v < 1 << 63 && v > -1 << 63) {
       // int64
-      let userPtr = managedMemory.malloc(4 * 4);
+      let userPtr = runtime.managedMemory.malloc(4 * 4);
       let ptr = userPtr / 4;
       view[ptr] = GRAIN_BOXED_NUM_HEAP_TAG;
       view[ptr + 1] = GRAIN_INT64_BOXED_NUM_TAG;
@@ -243,7 +240,6 @@ export function JSToGrainVal(v, runtime) {
       return userPtr;
     }
     throw new Error("Can't convert number to Grain value");
-    return (0xf00bae << 1) ^ 1;
   } else if (typeof v === "boolean") {
     if (v) {
       return GRAIN_TRUE;
@@ -251,11 +247,13 @@ export function JSToGrainVal(v, runtime) {
       return GRAIN_FALSE;
     }
   } else if (typeof v === "string") {
-    let userPtr = managedMemory.malloc(4 * 2 + ((v.length - 1) / 4 + 1));
+    let userPtr = runtime.managedMemory.malloc(
+      4 * 2 + ((v.length - 1) / 4 + 1)
+    );
     let ptr = userPtr / 4;
     view[ptr] = GRAIN_STRING_HEAP_TAG;
     view[ptr + 1] = v.length;
-    let byteView = managedMemory.u8view;
+    let byteView = runtime.managedMemory.u8view;
     let buf = encoder.encode(v);
     for (let i = 0; i < buf.length; ++i) {
       byteView[i + ptr * 4 + 8] = buf[i];
