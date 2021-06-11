@@ -48,8 +48,8 @@ export let div = (/)
  */
 @disableGC
 export let sqrt = (x: Number) => {
+  let xval = coerceNumberToWasmF64(x)
   let x = WasmI32.fromGrain(x)
-  let xval = coerceNumberToWasmF64(WasmI32.toGrain(x) : Number)
   let sqrtd = WasmF64.sqrt(xval)
   if (!isFloat(x) && WasmF64.eq(sqrtd, WasmF64.trunc(sqrtd))) {
     WasmI32.toGrain(reducedInteger(WasmI64.truncF64S(sqrtd))): Number
