@@ -416,7 +416,7 @@ export let join = (separator: String, items: Array<String>) => {
 }
 
 /**
- * Slices an array given zero-based start and end indexes. The character
+ * Slices an array given zero-based start and end indexes. The value
  * at the end index will not be included in the result.
  *
  * If either index is a negative number, it will be treated as a reverse index from
