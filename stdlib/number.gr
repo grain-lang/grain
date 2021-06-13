@@ -151,6 +151,9 @@ export let isFinite = (x: Number) => {
     // Boxed numbers can have multiple subtypes, Of which float32 and float64 can be infinite,
     let tag = WasmI32.load(asPtr, 4n)
     if (WasmI32.eq(tag, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG)) {
+      // uses the fact that all finite floats minus themselves are zero
+      // (NaN - NaN == NaN, inf - inf == NaN, 
+      //  -inf - -inf == NaN, inf - -inf == inf, -inf - inf == -inf)
       let wf64 = WasmF64.load(asPtr, 8n)
       WasmF64.eq(WasmF64.sub(wf64, wf64), 0.W)
     } else if (WasmI32.eq(tag, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG)) {
@@ -180,6 +183,7 @@ export let isNaN = (n: Number) => {
     // Boxed numbers can have multiple subtypes. Of which float32 and float64 can be NaN,
     let tag = WasmI32.load(x, 4n)
     if (WasmI32.eq(tag, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG)) {
+      // uses the fact that NaN is the only number not equal to itself
       let wf64 = WasmF64.load(x, 8n)
       WasmF64.ne(wf64, wf64)
     } else if (WasmI32.eq(tag, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG)) {
