@@ -420,7 +420,7 @@ export let join = (separator: String, items: Array<String>) => {
  * at the end index will not be included in the result.
  *
  * If either index is a negative number, it will be treated as a reverse index from
- * the end of the array. e.g. slice(1, -1, [> 'a', 'b', 'c']) === 'b'].
+ * the end of the array. e.g. slice(1, -1, [> 'a', 'b', 'c']) == [> 'b'].
  *
  * @param startIndex: Number The index of the array where the slice will begin (inclusive)
  * @param endIndex: Number The index of the array where the slice will end (exclusive)
