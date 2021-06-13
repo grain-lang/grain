@@ -537,7 +537,7 @@ let numberEqualFloat32Help = (x, y) => {
   let xIsInteger = isIntegerF32(x)
   // Basic number:
   if (isSimpleNumber(y)) {
-    xIsInteger && WasmF64.eq(WasmF64.promoteF32(x), WasmF64.convertI32S(untagSimple(y)))
+    xIsInteger && WasmF32.eq(x, WasmF32.convertI32S(untagSimple(y)))
   } else {
     // Boxed number
     let yBoxedNumberTag = boxedNumberTag(y)
