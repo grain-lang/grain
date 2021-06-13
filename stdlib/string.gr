@@ -716,7 +716,7 @@ let _BYTES_OFFSET = 8n;
 // @param destPos: Number - The location in the byte array to write the output
 // @returns Bytes - Returns `dest`
 @disableGC
-let encodeIntoHelp = (s: String, encoding: Encoding, includeBom: Bool, dest: Bytes, destPos: Number) => {
+let encodeAtHelp = (s: String, encoding: Encoding, includeBom: Bool, dest: Bytes, destPos: Number) => {
   let (>>>) = WasmI32.shrU
   let (-) = WasmI32.sub
   let (&) = WasmI32.and
@@ -853,8 +853,8 @@ let encodeIntoHelp = (s: String, encoding: Encoding, includeBom: Bool, dest: Byt
 // @param dest: Bytes - The bytes object to write the encoded output into
 // @param destPos: Number - The location in the byte array to write the output
 // @returns Bytes - Returns `dest`
-export let encodeInto = (s, encoding, dest, destPos) => {
-  encodeIntoHelp(s, encoding, false, dest, destPos)
+export let encodeAt = (s, encoding, dest, destPos) => {
+  encodeAtHelp(s, encoding, false, dest, destPos)
 }
 
 // Encodes the given string using the given encoding scheme
@@ -863,8 +863,8 @@ export let encodeInto = (s, encoding, dest, destPos) => {
 // @param dest: Bytes - The bytes object to write the encoded output into
 // @param destPos: Number - The location in the byte array to write the output
 // @returns Bytes - Returns `dest`
-export let encodeIntoWithBom = (s, encoding, dest, destPos) => {
-  encodeIntoHelp(s, encoding, true, dest, destPos)
+export let encodeAtWithBom = (s, encoding, dest, destPos) => {
+  encodeAtHelp(s, encoding, true, dest, destPos)
 }
 
 // Encodes the given string using the given encoding scheme
@@ -885,7 +885,7 @@ let encodeHelp = (s: String, encoding: Encoding, includeBom: Bool) => {
   } else 0
   let (>>>) = WasmI32.shrU
   let bytes = WasmI32.toGrain(allocateBytes(WasmI32.fromGrain(size) >>> 1n))
-  encodeIntoHelp(s, encoding, includeBom, bytes, 0)
+  encodeAtHelp(s, encoding, includeBom, bytes, 0)
 }
 
 // Encodes the given string using the given encoding scheme. A byte-order marker
