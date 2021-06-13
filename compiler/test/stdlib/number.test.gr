@@ -81,3 +81,18 @@ assert Number.isNaN(1/2) == false
 assert Number.isNaN(-1/2) == false
 assert Number.isNaN(1.0/0.0) == false // infinity
 assert Number.isNaN(-1.0/0.0) == false // -infinity
+
+// isInfinite
+assert Number.isInfinite(1.0/0.0) // infinity
+assert Number.isInfinite(-1.0/0.0) // -infinity
+assert Number.isInfinite(0.0/0.0) == false // NaN
+assert Number.isInfinite(1) == false
+assert Number.isInfinite(1.0) == false
+assert Number.isInfinite(0) == false
+assert Number.isInfinite(0.0) == false
+assert Number.isInfinite(-1) == false
+assert Number.isInfinite(-1.0) == false
+assert Number.isInfinite(25.76) == false
+assert Number.isInfinite(-25.00) == false
+assert Number.isInfinite(1/2) == false
+assert Number.isInfinite(-1/2) == false

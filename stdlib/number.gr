@@ -199,3 +199,32 @@ export let isNaN = (x: Number) => {
     false
   }
 }
+
+/**
+ * Checks if a number is infinite, that is either of floating point positive or negative infinity.
+ * 
+ * Note that this function is not the exact opposite of isFinite(Number) in that it doesn't return true for NaN.
+ * 
+ * @param x: Number - The number to check
+ * @returns Bool
+ */
+@disableGC
+export let isInfinite = (x: Number) => {
+  // The following code is equivalent to (!isFinite(x) && !isNaN(x)),
+  // so see those functions to understand what's going on here.
+  let asPtr = WasmI32.fromGrain(x)
+  if (isBoxedNumber(asPtr)) {
+    let tag = WasmI32.load(asPtr, 4n)
+    if (WasmI32.eq(tag, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG)) {
+      let wf64 = WasmF64.load(asPtr, 8n)
+      WasmF64.ne(WasmF64.sub(wf64, wf64), 0.W) && WasmF64.eq(wf64, wf64)
+    } else if (WasmI32.eq(tag, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG)) {
+      let wf32 = WasmF32.load(asPtr, 8n)
+      WasmF32.ne(WasmF32.sub(wf32, wf32), 0.w) && WasmF32.eq(wf32, wf32)
+    } else {
+      false
+    }
+  } else {
+    false
+  }
+}
