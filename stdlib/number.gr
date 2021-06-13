@@ -177,17 +177,17 @@ export let isFinite = (x: Number) => {
  * @returns Bool
  */
 @disableGC
-export let isNaN = (n: Number) => {
-  let x = WasmI32.fromGrain(n)
-  if (isBoxedNumber(x)) {
+export let isNaN = (x: Number) => {
+  let asPtr = WasmI32.fromGrain(x)
+  if (isBoxedNumber(asPtr)) {
     // Boxed numbers can have multiple subtypes. Of which float32 and float64 can be NaN,
-    let tag = WasmI32.load(x, 4n)
+    let tag = WasmI32.load(asPtr, 4n)
     if (WasmI32.eq(tag, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG)) {
       // uses the fact that NaN is the only number not equal to itself
-      let wf64 = WasmF64.load(x, 8n)
+      let wf64 = WasmF64.load(asPtr, 8n)
       WasmF64.ne(wf64, wf64)
     } else if (WasmI32.eq(tag, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG)) {
-      let wf32 = WasmF32.load(x, 8n)
+      let wf32 = WasmF32.load(asPtr, 8n)
       WasmF32.ne(wf32, wf32)
     } else {
       // Neither rational numbers nor boxed integers can be infinite or NaN.
