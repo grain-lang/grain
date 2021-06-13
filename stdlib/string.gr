@@ -1,7 +1,7 @@
 import WasmI32 from "runtime/unsafe/wasmi32"
 import Memory from "runtime/unsafe/memory"
 import Exception from "runtime/exception"
-import { tagSimpleNumber, allocateArray, allocateChar, allocateString } from "runtime/dataStructures"
+import { tagSimpleNumber, allocateArray, allocateChar, allocateString, allocateBytes } from "runtime/dataStructures"
 
 // Concatenate two strings.
 // @param str1: String - The first string
@@ -563,4 +563,734 @@ export let endsWith = (p: String, s: String) => {
   } else {
     Memory.compare(p, s + n - m, m) == 0n
   }
+}
+
+export enum Encoding {
+  UTF8,
+  UTF16_BE,
+  UTF16_LE,
+  UTF32_BE,
+  UTF32_LE,
+}
+
+// String->Byte encoding and helper functions:
+
+// these are globals to avoid memory leaks
+let _START_NAME = "start"
+let _SIZE_NAME = "size"
+let _OFFSET_NAME = "offset"
+
+@disableGC
+let grainToWasmNumber = (num, name) => {
+  let num = WasmI32.fromGrain(num)
+  if (WasmI32.eqz(WasmI32.and(num, 1n))) {
+    throw Exception.InvalidArgument(name ++ " argument must be an integer")
+  }
+  let num = WasmI32.shrS(num, 1n)
+  if (WasmI32.ltS(num, 0n)) {
+    throw Exception.InvalidArgument(name ++ " argument must be non-negative")
+  }
+  num
+}
+
+@disableGC
+let utf16Length = (s: String) => {
+  let (>>>) = WasmI32.shrU
+  let (<<) = WasmI32.shl
+  let (+) = WasmI32.add
+  let (&) = WasmI32.and
+  let (<) = WasmI32.ltU
+  let (==) = WasmI32.eq
+
+  let size = WasmI32.fromGrain(byteLength(s)) >>> 1n
+  let len = WasmI32.fromGrain(length(s)) >>> 1n
+
+  let s = WasmI32.fromGrain(s)
+
+  let mut ptr = s + 8n
+  let end = ptr + size
+  let mut size = 0n // <- number of UTF-16 code words
+
+  while (ptr < end) {
+    let byte = WasmI32.load8U(ptr, 0n)
+    let n = if ((byte & 0x80n) == 0x00n) {
+      1n
+    } else if ((byte & 0xF0n) == 0xF0n) {
+      4n
+    } else if ((byte & 0xE0n) == 0xE0n) {
+      3n
+    } else {
+      2n
+    }
+    if (n == 4n) {
+      size += 2n
+    } else {
+      size += 1n
+    }
+    ptr += n
+  }
+  // multiply by two to get number of bytes
+  tagSimpleNumber(size << 1n)
+}
+
+let encodedLength = (s: String, encoding) => {
+  match(encoding) {
+    UTF32_BE => length(s) * 4,
+    UTF32_LE => length(s) * 4,
+    UTF16_BE => utf16Length(s),
+    UTF16_LE => utf16Length(s),
+    UTF8 => byteLength(s),
+  }
+}
+
+exception MalformedUnicode
+
+@disableGC
+let getCodePoint = (ptr: WasmI32) => {
+  // Algorithm from https://encoding.spec.whatwg.org/#utf-8-decoder
+  let (+) = WasmI32.add
+  let (==) = WasmI32.eq
+  let (>=) = WasmI32.geU
+  let (<=) = WasmI32.leU
+  let (<<) = WasmI32.shl
+  let (&) = WasmI32.and
+  let (|) = WasmI32.or
+
+  let mut codePoint = 0n
+  let mut bytesSeen = 0n
+  let mut bytesNeeded = 0n
+  let mut lowerBoundary = 0x80n
+  let mut upperBoundary = 0xBFn
+
+  let mut offset = 0n
+
+  let mut result = 0n
+
+  while (true) {
+    let byte = WasmI32.load8U(ptr + offset, 0n)
+    offset += 1n
+    if (bytesNeeded == 0n) {
+      if (byte >= 0x00n && byte <= 0x7Fn) {
+        result = byte
+        break
+      } else if (byte >= 0xC2n && byte <= 0xDFn) {
+        bytesNeeded = 1n
+        codePoint = byte & 0x1Fn
+      } else if (byte >= 0xE0n && byte <= 0xEFn) {
+        if (byte == 0xE0n) lowerBoundary = 0xA0n
+        if (byte == 0xEDn) upperBoundary = 0x9Fn
+        bytesNeeded = 2n
+        codePoint = byte & 0xFn
+      } else if (byte >= 0xF0n && byte <= 0xF4n) {
+        if (byte == 0xF0n) lowerBoundary = 0x90n
+        if (byte == 0xF4n) upperBoundary = 0x8Fn
+        bytesNeeded = 3n
+        codePoint = byte & 0x7n
+      } else {
+        throw MalformedUnicode
+      }
+      continue
+    }
+    if (!(lowerBoundary <= byte && byte <= upperBoundary)) {
+      throw MalformedUnicode
+    }
+    lowerBoundary = 0x80n
+    upperBoundary = 0xBFn
+    codePoint = (codePoint << 6n) | (byte & 0x3Fn)
+    bytesSeen += 1n
+    if (bytesSeen == bytesNeeded) {
+      result = codePoint
+      break
+    }
+  }
+  result: WasmI32
+}
+
+let _BYTES_OFFSET = 8n;
+
+// Encodes the given string using the given encoding scheme
+// @param s: String - The input string
+// @param encoding: Encoding - The encoding to use
+// @param includeBom: Bool - Whether to include the byte-order marker in the encoded output
+// @param dest: Bytes - The bytes object to write the encoded output into
+// @param destPos: Number - The location in the byte array to write the output
+// @returns Bytes - Returns `dest`
+@disableGC
+let encodeAtHelp = (s: String, encoding: Encoding, includeBom: Bool, dest: Bytes, destPos: Number) => {
+  let (>>>) = WasmI32.shrU
+  let (-) = WasmI32.sub
+  let (&) = WasmI32.and
+  let (<) = WasmI32.ltU
+  let (<=) = WasmI32.leU
+  let (==) = WasmI32.eq
+  let (+) = WasmI32.add
+  let byteSize = WasmI32.fromGrain(byteLength(s)) >>> 1n
+  let len = WasmI32.fromGrain(length(s)) >>> 1n
+
+  let s = WasmI32.fromGrain(s)
+
+  let mut ptr = s + 8n
+  let end = ptr + byteSize
+
+  let bytes = WasmI32.fromGrain(dest)
+  let mut bytesIdx = grainToWasmNumber(destPos, _OFFSET_NAME)
+
+  if (includeBom) {
+    match(encoding) {
+      UTF8 => {
+        WasmI32.store8(bytes + bytesIdx, 0xEFn, _BYTES_OFFSET)
+        WasmI32.store8(bytes + bytesIdx + 1n, 0xBBn, _BYTES_OFFSET)
+        WasmI32.store8(bytes + bytesIdx + 2n, 0xBFn, _BYTES_OFFSET)
+        bytesIdx += 3n
+      },
+      UTF16_BE => {
+        WasmI32.store8(bytes + bytesIdx, 0xFEn, _BYTES_OFFSET)
+        WasmI32.store8(bytes + bytesIdx + 1n, 0xFFn, _BYTES_OFFSET)
+        bytesIdx += 2n
+      },
+      UTF16_LE => {
+        WasmI32.store8(bytes + bytesIdx, 0xFFn, _BYTES_OFFSET)
+        WasmI32.store8(bytes + bytesIdx + 1n, 0xFEn, _BYTES_OFFSET)
+        bytesIdx += 2n
+      },
+      UTF32_BE => {
+        WasmI32.store8(bytes + bytesIdx, 0n, _BYTES_OFFSET)
+        WasmI32.store8(bytes + bytesIdx + 1n, 0n, _BYTES_OFFSET)
+        WasmI32.store8(bytes + bytesIdx + 2n, 0xFEn, _BYTES_OFFSET)
+        WasmI32.store8(bytes + bytesIdx + 3n, 0xFFn, _BYTES_OFFSET)
+        bytesIdx += 4n
+      },
+      UTF32_LE => {
+        WasmI32.store8(bytes + bytesIdx, 0xFFn, _BYTES_OFFSET)
+        WasmI32.store8(bytes + bytesIdx + 1n, 0xFEn, _BYTES_OFFSET)
+        WasmI32.store8(bytes + bytesIdx + 2n, 0n, _BYTES_OFFSET)
+        WasmI32.store8(bytes + bytesIdx + 3n, 0n, _BYTES_OFFSET)
+        bytesIdx += 4n
+      }
+    }
+  }
+
+  while (ptr < end) {
+    let byte = WasmI32.load8U(ptr, 0n)
+    // number of bytes spanning this UTF-8-encoded scalar value
+    let n = if ((byte & 0x80n) == 0x00n) {
+      1n
+    } else if ((byte & 0xF0n) == 0xF0n) {
+      4n
+    } else if ((byte & 0xE0n) == 0xE0n) {
+      3n
+    } else {
+      2n
+    }
+    match(encoding) {
+      UTF8 => {
+        Memory.copy(bytes + bytesIdx + _BYTES_OFFSET, ptr, n);
+        bytesIdx += n
+      },
+      UTF16_BE => {
+        let codePoint = getCodePoint(ptr)
+        if (codePoint <= 0xFFFFn) {
+          // <hi><lo>
+          WasmI32.store8(bytes + bytesIdx, (codePoint & 0xff00n) >>> 8n, _BYTES_OFFSET)
+          WasmI32.store8(bytes + bytesIdx + 1n, codePoint & 0xffn, _BYTES_OFFSET)
+          bytesIdx += 2n
+        } else {
+          // https://en.wikipedia.org/wiki/UTF-16#Code_points_from_U+010000_to_U+10FFFF
+          let uPrime = codePoint - 0x10000n
+          let w1 = ((uPrime & 0b11111111110000000000n) >>> 10n) + 0xD800n // High surrogate
+          let w2 = (uPrime & 0b00000000001111111111n) + 0xDC00n // Low surrogate
+          WasmI32.store8(bytes + bytesIdx, (w1 & 0xff00n) >>> 8n, _BYTES_OFFSET)
+          WasmI32.store8(bytes + bytesIdx + 1n, w1 & 0xffn, _BYTES_OFFSET)
+          WasmI32.store8(bytes + bytesIdx + 2n, (w2 & 0xff00n) >>> 8n, _BYTES_OFFSET)
+          WasmI32.store8(bytes + bytesIdx + 3n, w2 & 0xffn, _BYTES_OFFSET)
+          bytesIdx += 4n
+        }
+      },
+      UTF16_LE => {
+        let codePoint = getCodePoint(ptr)
+        if (codePoint <= 0xFFFFn) {
+          // <lo><hi>
+          WasmI32.store8(bytes + bytesIdx, codePoint & 0xffn, _BYTES_OFFSET)
+          WasmI32.store8(bytes + bytesIdx + 1n, (codePoint & 0xff00n) >>> 8n, _BYTES_OFFSET)
+          bytesIdx += 2n
+        } else {
+          // https://en.wikipedia.org/wiki/UTF-16#Code_points_from_U+010000_to_U+10FFFF
+          let uPrime = codePoint - 0x10000n
+          let w1 = ((uPrime & 0b11111111110000000000n) >>> 10n) + 0xD800n // High surrogate
+          let w2 = (uPrime & 0b00000000001111111111n) + 0xDC00n // Low surrogate
+          WasmI32.store8(bytes + bytesIdx, w1 & 0xffn, _BYTES_OFFSET)
+          WasmI32.store8(bytes + bytesIdx + 1n, (w1 & 0xff00n) >>> 8n, _BYTES_OFFSET)
+          WasmI32.store8(bytes + bytesIdx + 2n, w2 & 0xffn, _BYTES_OFFSET)
+          WasmI32.store8(bytes + bytesIdx + 3n, (w2 & 0xff00n) >>> 8n, _BYTES_OFFSET)
+          bytesIdx += 4n
+        }
+      },
+      UTF32_BE => {
+        let codePoint = getCodePoint(ptr)
+        WasmI32.store8(bytes + bytesIdx, (codePoint & 0xff000000n) >>> 24n, _BYTES_OFFSET)
+        WasmI32.store8(bytes + bytesIdx + 1n, (codePoint & 0xff0000n) >>> 16n, _BYTES_OFFSET)
+        WasmI32.store8(bytes + bytesIdx + 2n, (codePoint & 0xff00n) >>> 8n, _BYTES_OFFSET)
+        WasmI32.store8(bytes + bytesIdx + 3n, codePoint & 0xffn, _BYTES_OFFSET)
+        bytesIdx += 4n
+      },
+      UTF32_LE => {
+        let codePoint = getCodePoint(ptr)
+        WasmI32.store8(bytes + bytesIdx, codePoint & 0xffn, _BYTES_OFFSET)
+        WasmI32.store8(bytes + bytesIdx + 1n, (codePoint & 0xff00n) >>> 8n, _BYTES_OFFSET)
+        WasmI32.store8(bytes + bytesIdx + 2n, (codePoint & 0xff0000n) >>> 16n, _BYTES_OFFSET)
+        WasmI32.store8(bytes + bytesIdx + 3n, (codePoint & 0xff000000n) >>> 24n, _BYTES_OFFSET)
+        bytesIdx += 4n
+      },
+    };
+    ptr += n
+  }
+  WasmI32.toGrain(bytes): Bytes
+}
+
+// Encodes the given string using the given encoding scheme
+// @param s: String - The input string
+// @param encoding: Encoding - The encoding to use
+// @param dest: Bytes - The bytes object to write the encoded output into
+// @param destPos: Number - The location in the byte array to write the output
+// @returns Bytes - Returns `dest`
+export let encodeAt = (s, encoding, dest, destPos) => {
+  encodeAtHelp(s, encoding, false, dest, destPos)
+}
+
+// Encodes the given string using the given encoding scheme
+// @param s: String - The input string
+// @param encoding: Encoding - The encoding to use
+// @param dest: Bytes - The bytes object to write the encoded output into
+// @param destPos: Number - The location in the byte array to write the output
+// @returns Bytes - Returns `dest`
+export let encodeAtWithBom = (s, encoding, dest, destPos) => {
+  encodeAtHelp(s, encoding, true, dest, destPos)
+}
+
+// Encodes the given string using the given encoding scheme
+// @param s: String - The input string
+// @param encoding: Encoding - The encoding to use
+// @param includeBom: Bool - Whether to include the byte-order marker in the encoded output
+// @returns Bytes
+@disableGC
+let encodeHelp = (s: String, encoding: Encoding, includeBom: Bool) => {
+  let size = encodedLength(s, encoding) + if (includeBom) {
+    match(encoding) {
+      UTF8 => 3,
+      UTF16_LE => 2,
+      UTF16_BE => 2,
+      UTF32_LE => 4,
+      UTF32_BE => 4,
+    }
+  } else 0
+  let (>>>) = WasmI32.shrU
+  let bytes = WasmI32.toGrain(allocateBytes(WasmI32.fromGrain(size) >>> 1n))
+  encodeAtHelp(s, encoding, includeBom, bytes, 0)
+}
+
+// Encodes the given string using the given encoding scheme. A byte-order marker
+// will not be included in the output.
+// @param s: String - The input string
+// @param encoding: Encoding - The encoding to use
+// @returns Bytes
+export let encode = (s: String, encoding: Encoding) => {
+  encodeHelp(s, encoding, false)
+}
+
+// Encodes the given string using the given encoding scheme, including a byte-order marker
+// @param s: String - The input string
+// @param encoding: Encoding - The encoding to use
+// @returns Bytes
+export let encodeWithBom = (s: String, encoding: Encoding) => {
+  encodeHelp(s, encoding, true)
+}
+
+// Byte->String decoding and helper functions:
+
+@disableGC
+let writeUtf8CodePoint = (ptr, codePoint) => {
+  let (>>>) = WasmI32.shrU
+  let (-) = WasmI32.sub
+  let (&) = WasmI32.and
+  let (|) = WasmI32.or
+  let (+) = WasmI32.add
+  let (<) = WasmI32.ltU
+  let (<=) = WasmI32.leU
+  let (==) = WasmI32.eq
+  if (codePoint <= 0x007Fn) {
+    WasmI32.store8(ptr, codePoint, 0n)
+    1n
+  } else if (codePoint <= 0x07FFn) {
+    let high = ((codePoint >>> 6n) & 0x1Fn) | 0xC0n
+    let low = (codePoint & 0x3Fn) | 0x08n
+    WasmI32.store8(ptr, high, 0n)
+    WasmI32.store8(ptr + 1n, low, 0n)
+    2n
+  } else if (codePoint < 0xFFFFn) {
+    let high = ((codePoint >>> 12n) & 0x0Fn) | 0xE0n
+    let mid = ((codePoint >>> 6n) & 0x3Fn) | 0x80n
+    let low = (codePoint & 0x3Fn) | 0x80n
+    WasmI32.store8(ptr, high, 0n)
+    WasmI32.store8(ptr + 1n, mid, 0n)
+    WasmI32.store8(ptr + 2n, low, 0n)
+    3n
+  } else {
+    let high = ((codePoint >>> 18n) & 0x07n) | 0xF0n
+    let mid1 = ((codePoint >>> 12n) & 0x3Fn) | 0x80n
+    let mid2 = ((codePoint >>> 6n) & 0x3Fn) | 0x80n
+    let low = (codePoint & 0x3Fn) | 0x80n
+    WasmI32.store8(ptr, high, 0n)
+    WasmI32.store8(ptr + 1n, mid1, 0n)
+    WasmI32.store8(ptr + 2n, mid2, 0n)
+    WasmI32.store8(ptr + 3n, low, 0n)
+    4n
+  }
+}
+
+let bytesHaveBom = (bytes: Bytes, encoding: Encoding, start: WasmI32) => {
+  let (+) = WasmI32.add
+  let (==) = WasmI32.eq
+  let (>=) = WasmI32.geU
+  let ptr = WasmI32.fromGrain(bytes)
+  let bytesSize = WasmI32.load(ptr, 4n)
+  let ptr = ptr + start
+  match (encoding) {
+    UTF8 => {
+      bytesSize >= 3n && WasmI32.load8U(ptr, _BYTES_OFFSET) == 0xEFn && WasmI32.load8U(ptr + 1n, _BYTES_OFFSET) == 0xBBn && WasmI32.load8U(ptr + 2n, _BYTES_OFFSET) == 0xBFn
+    },
+    UTF16_BE => {
+      bytesSize >= 2n && WasmI32.load8U(ptr, _BYTES_OFFSET) == 0xFEn && WasmI32.load8U(ptr + 1n, _BYTES_OFFSET) == 0xFFn
+    },
+    UTF16_LE => {
+      bytesSize >= 2n && WasmI32.load8U(ptr, _BYTES_OFFSET) == 0xFFn && WasmI32.load8U(ptr + 1n, _BYTES_OFFSET) == 0xFEn
+    },
+    UTF32_BE => {
+      bytesSize >= 4n && WasmI32.load8U(ptr, _BYTES_OFFSET) == 0x00n  && WasmI32.load8U(ptr + 1n, _BYTES_OFFSET) == 0x00n && WasmI32.load8U(ptr + 2n, _BYTES_OFFSET) == 0xFEn && WasmI32.load8U(ptr + 3n, _BYTES_OFFSET) == 0xFFn
+    },
+    UTF32_LE => {
+      bytesSize >= 4n && WasmI32.load8U(ptr, _BYTES_OFFSET) == 0xFFn && WasmI32.load8U(ptr + 1n, _BYTES_OFFSET) == 0xFEn && WasmI32.load8U(ptr + 2n, _BYTES_OFFSET) == 0x00n  && WasmI32.load8U(ptr + 3n, _BYTES_OFFSET) == 0x00n
+    }
+  }
+}
+
+@disableGC
+let decodedLength = (bytes: Bytes, encoding: Encoding, start: WasmI32, size: WasmI32) => {
+  let (+) = WasmI32.add
+  let (-) = WasmI32.sub
+  let (==) = WasmI32.eq
+  let (<) = WasmI32.ltU
+  let (>) = WasmI32.gtU
+  let (|) = WasmI32.or
+  let (&) = WasmI32.and
+  let (>>>) = WasmI32.shrU
+  let (<<) = WasmI32.shl
+  let (>=) = WasmI32.geU
+  let (<=) = WasmI32.leU
+  let ptr = WasmI32.fromGrain(bytes)
+  let bytesSize = {
+    let tmp = WasmI32.load(ptr, 4n) - start
+    if (size < tmp) {
+      size
+    } else {
+      tmp
+    }
+  }
+  let start = ptr + _BYTES_OFFSET + start
+  match(encoding) {
+    UTF8 => bytesSize,
+    UTF16_BE => {
+      let end = start + bytesSize
+      let mut ptr = start
+      let mut count = 0n
+      while (ptr < end) {
+        let codeWord = (WasmI32.load8U(ptr, 0n) << 8n) | (WasmI32.load8U(ptr, 1n))
+        let codeWord = if (codeWord >= 0xD800n && codeWord <= 0xDBFFn) {
+          // high surrogate. need to check that next character is low srurrogate
+          let ret = if (ptr + 2n >= end) {
+            throw MalformedUnicode
+          } else {
+            let nextCodeWord = (WasmI32.load8U(ptr, 2n) << 8n) | (WasmI32.load8U(ptr, 3n))
+            if (nextCodeWord < 0xDC00n || nextCodeWord > 0xDFFFn) {
+              // high surrogate without low surrogate
+              throw MalformedUnicode
+            } else {
+              let w1 = (codeWord & 0x03FFn) << 10n
+              let w2 = nextCodeWord & 0x03FFn
+              w1 + w2 + 0x10000n
+            }
+          }
+          // no problems, so go past both code words
+          ptr += 4n
+          ret
+        } else {
+          ptr += 2n
+          codeWord
+        }
+        if (codeWord <= 0x007Fn) {
+          count += 1n
+        } else if (codeWord <= 0x07FFn) {
+          count += 2n
+        } else if (codeWord <= 0xFFFFn) {
+          count += 3n
+        } else {
+          count += 4n
+        }
+      }
+      count
+    },
+    UTF16_LE => {
+      let end = start + bytesSize
+      let mut ptr = start
+      let mut count = 0n
+      while (ptr < end) {
+        let codeWord = (WasmI32.load8U(ptr, 1n) << 8n) | (WasmI32.load8U(ptr, 0n))
+        let codeWord = if (codeWord >= 0xD800n && codeWord <= 0xDBFFn) {
+          // high surrogate. need to check that next character is low srurrogate
+          let ret = if (ptr + 2n >= end) {
+            throw MalformedUnicode
+          } else {
+            let nextCodeWord = (WasmI32.load8U(ptr, 3n) << 8n) | (WasmI32.load8U(ptr, 2n))
+            if (nextCodeWord < 0xDC00n || nextCodeWord > 0xDFFFn) {
+              // high surrogate without low surrogate
+              throw MalformedUnicode
+            } else {
+              let w1 = (codeWord & 0x03FFn) << 10n
+              let w2 = nextCodeWord & 0x03FFn
+              w1 + w2 + 0x10000n
+            }
+          }
+          // no problems, so go past both code words
+          ptr += 4n
+          ret
+        } else {
+          ptr += 2n
+          codeWord
+        }
+        if (codeWord <= 0x007Fn) {
+          count += 1n
+        } else if (codeWord <= 0x07FFn) {
+          count += 2n
+        } else if (codeWord <= 0xFFFFn) {
+          count += 3n
+        } else {
+          count += 4n
+        }
+      }
+      count
+    },
+    UTF32_BE => {
+      // if not divisible by four, not proper UTF-32 sequence
+      if ((bytesSize & 0b11n) != 0n) {
+        throw MalformedUnicode
+      }
+      let end = start + bytesSize
+      let mut ptr = start
+      let mut count = 0n
+      while (ptr < end) {
+        let codeWord = (WasmI32.load8U(ptr, 0n) << 24n) | (WasmI32.load8U(ptr, 1n) << 16n) | (WasmI32.load8U(ptr, 2n) << 8n) | (WasmI32.load8U(ptr, 3n))
+        ptr += 4n
+        if (codeWord <= 0x007Fn) {
+          count += 1n
+        } else if (codeWord <= 0x07FFn) {
+          count += 2n
+        } else if (codeWord <= 0xFFFFn) {
+          count += 3n
+        } else {
+          count += 4n
+        }
+      }
+      count
+    },
+    UTF32_LE => {
+      // if not divisible by four, not proper UTF-32 sequence
+      if ((bytesSize & 0b11n) != 0n) {
+        throw MalformedUnicode
+      }
+      let end = start + bytesSize
+      let mut ptr = start
+      let mut count = 0n
+      while (ptr < end) {
+        let codeWord = (WasmI32.load8U(ptr, 3n) << 24n) | (WasmI32.load8U(ptr, 2n) << 16n) | (WasmI32.load8U(ptr, 1n) << 8n) | (WasmI32.load8U(ptr, 0n))
+        ptr += 4n
+        if (codeWord <= 0x007Fn) {
+          count += 1n
+        } else if (codeWord <= 0x07FFn) {
+          count += 2n
+        } else if (codeWord <= 0xFFFFn) {
+          count += 3n
+        } else {
+          count += 4n
+        }
+      }
+      count
+    }
+  }
+}
+
+// Decodes the given byte sequence into a string using the given encoding scheme
+// @param bytes: Bytes - The input bytes
+// @param encoding: Encoding - The encoding to use
+// @param skipBom: Bool - Whether to include the byte-order marker (if present) in the decoded output
+// @param start: Number - The byte offset to begin decoding from
+// @param size: Number - The maximum number of bytes to decode
+// @returns String
+@disableGC
+let decodeRangeHelp = (bytes: Bytes, encoding: Encoding, skipBom: Bool, start: Number, size: Number) => {
+  let (+) = WasmI32.add
+  let (-) = WasmI32.sub
+  let (<) = WasmI32.ltU
+  let (|) = WasmI32.or
+  let (&) = WasmI32.and
+  let (>>>) = WasmI32.shrU
+  let (<<) = WasmI32.shl
+  let (>=) = WasmI32.geU
+  let (<=) = WasmI32.leU
+  let start = grainToWasmNumber(start, _START_NAME)
+  let size = grainToWasmNumber(size, _SIZE_NAME)
+  let hasBom = bytesHaveBom(bytes, encoding, start)
+  let stringSize = decodedLength(bytes, encoding, start, size)
+  let stringSize = if (skipBom && hasBom) (stringSize - 3n) else stringSize
+  let str = allocateString(stringSize)
+  let mut bytesPtr = WasmI32.fromGrain(bytes)
+  let bytesSize = {
+    let tmp = WasmI32.load(bytesPtr, 4n) - start
+    if (size < tmp) {
+      size
+    } else {
+      tmp
+    }
+  }
+  bytesPtr += _BYTES_OFFSET + start
+  let mut strPtr = str + 8n
+  let mut bomRead = false
+  if (skipBom && hasBom) {
+    bytesPtr += match(encoding) {
+      UTF8 => 3n,
+      UTF16_LE => 2n,
+      UTF16_BE => 2n,
+      UTF32_LE => 4n,
+      UTF32_BE => 4n,
+    }
+  }
+  if (stringSize == 0n) {
+    WasmI32.toGrain(str) : String
+  } else {
+    match(encoding) {
+      UTF8 => {
+        Memory.copy(strPtr, bytesPtr, stringSize)
+      },
+      UTF16_BE => {
+        // NOTE: Because the size check passed, we know the string is well-formed
+        let end = bytesPtr + bytesSize
+        while (bytesPtr < end) {
+          let w1 = (WasmI32.load8U(bytesPtr, 0n) << 8n) | (WasmI32.load8U(bytesPtr, 1n))
+          let codeWord = if (w1 >= 0xD800n && w1 <= 0xDBFFn) {
+            // high surrogate. next character is low srurrogate
+            let w1 = (w1 & 0x03FFn) << 10n
+            let w2 = ((WasmI32.load8U(bytesPtr, 2n) << 8n) | (WasmI32.load8U(bytesPtr, 3n))) & 0x03FFn
+            let codeWord = w1 + w2 + 0x10000n
+            // no problems, so go past both code words
+            bytesPtr += 4n
+            codeWord
+          } else {
+            bytesPtr += 2n
+            w1
+          }
+          strPtr += writeUtf8CodePoint(strPtr, codeWord)
+        }
+      },
+      UTF16_LE => {
+        // NOTE: Because the size check passed, we know the string is well-formed
+        let end = bytesPtr + bytesSize
+        while (bytesPtr < end) {
+          let w1 = (WasmI32.load8U(bytesPtr, 1n) << 8n) | (WasmI32.load8U(bytesPtr, 0n))
+          let codeWord = if (w1 >= 0xD800n && w1 <= 0xDBFFn) {
+            // high surrogate. next character is low srurrogate
+            let w1 = (w1 & 0x03FFn) << 10n
+            let w2 = ((WasmI32.load8U(bytesPtr, 3n) << 8n) | (WasmI32.load8U(bytesPtr, 2n))) & 0x03FFn
+            //let uPrime = codePoint - 0x10000n
+            //let w1 = ((uPrime & 0b11111111110000000000n) >>> 10n) + 0xD800n // High surrogate
+            //let w2 = (uPrime & 0b00000000001111111111n) + 0xDC00n // Low surrogate
+            let codeWord = w1 + w2 + 0x10000n
+            // no problems, so go past both code words
+            bytesPtr += 4n
+            codeWord
+          } else {
+            bytesPtr += 2n
+            w1
+          }
+          strPtr += writeUtf8CodePoint(strPtr, codeWord)
+        }
+      },
+      UTF32_BE => {
+        let end = bytesPtr + bytesSize
+        while (bytesPtr < end) {
+          let codeWord = (WasmI32.load8U(bytesPtr, 0n) << 24n) | (WasmI32.load8U(bytesPtr, 1n) << 16n) | (WasmI32.load8U(bytesPtr, 2n) << 8n) | (WasmI32.load8U(bytesPtr, 3n))
+          bytesPtr += 4n
+          strPtr += writeUtf8CodePoint(strPtr, codeWord)
+        }
+      },
+      UTF32_LE => {
+        let end = bytesPtr + bytesSize
+        while (bytesPtr < end) {
+          let codeWord = (WasmI32.load8U(bytesPtr, 3n) << 24n) | (WasmI32.load8U(bytesPtr, 2n) << 16n) | (WasmI32.load8U(bytesPtr, 1n) << 8n) | (WasmI32.load8U(bytesPtr, 0n))
+          bytesPtr += 4n
+          strPtr += writeUtf8CodePoint(strPtr, codeWord)
+        }
+      }
+    }
+    WasmI32.toGrain(str) : String
+  }
+}
+
+// Decodes the given byte sequence into a string using the given encoding scheme, skipping
+// the byte-order marker, if it's present.
+// @param bytes: Bytes - The input bytes
+// @param encoding: Encoding - The encoding to use
+// @param start: Number - The byte offset to begin decoding from
+// @param size: Number - The maximum number of bytes to decode
+// @returns String
+export let decodeRange = (bytes: Bytes, encoding: Encoding, start: Number, size: Number) => {
+  decodeRangeHelp(bytes, encoding, true, start, size)
+}
+
+// Decodes the given byte sequence into a string using the given encoding scheme, including
+// the byte-order marker, if it's present.
+// @param bytes: Bytes - The input bytes
+// @param encoding: Encoding - The encoding to use
+// @param start: Number - The byte offset to begin decoding from
+// @param size: Number - The maximum number of bytes to decode
+// @returns String
+export let decodeRangeKeepBom = (bytes: Bytes, encoding: Encoding, start: Number, size: Number) => {
+  decodeRangeHelp(bytes, encoding, false, start, size)
+}
+
+// Decodes the given byte sequence into a string using the given encoding scheme
+// @param bytes: Bytes - The input bytes
+// @param encoding: Encoding - The encoding to use
+// @param skipBom: Bool - Whether to include the byte-order marker (if present) in the decoded output
+// @returns String
+@disableGC
+let decodeHelp = (bytes: Bytes, encoding: Encoding, skipBom: Bool) => {
+  let bytesPtr = WasmI32.fromGrain(bytes)
+  let bytesSize = WasmI32.load(bytesPtr, 4n)
+  decodeRangeHelp(bytes, encoding, skipBom, 0, tagSimpleNumber(bytesSize))
+}
+
+// Decodes the given byte sequence into a string using the given encoding scheme,
+// skipping the byte-order marker, if it's present.
+// @param bytes: Bytes - The input bytes
+// @param encoding: Encoding - The encoding to use
+// @returns String
+export let decode = (bytes: Bytes, encoding: Encoding) => {
+  decodeHelp(bytes, encoding, true)
+}
+
+// Decodes the given byte sequence into a string using the given encoding scheme,
+// including the byte-order marker, if it's present
+// @param bytes: Bytes - The input bytes
+// @param encoding: Encoding - The encoding to use
+// @returns String
+export let decodeKeepBom = (bytes: Bytes, encoding: Encoding) => {
+  decodeHelp(bytes, encoding, false)
 }
