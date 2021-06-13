@@ -304,3 +304,28 @@ let product = (a, b) => {
 let sub = (start, length, list) => {
   take(length, drop(start, list))
 }
+
+// Join the given list of strings with the given separator
+// @param separator: String - The separator to insert between items in the string
+// @param items: List<String> - The input strings
+// @returns String
+let join = (separator: String, items: List<String>) => {
+  let rec iter = (sep, acc, rem) => {
+    match(rem) {
+      [] => acc,
+      [hd, ...tl] => {
+        let newAcc = match(acc) {
+          None => Some(hd),
+          Some(s) => Some(hd ++ sep ++ s)
+        }
+        iter(sep, newAcc, tl)
+      }
+    }
+  }
+
+  // Reverse and reduce to take advantage of TCE
+  match(iter(separator, None, reverse(items))) {
+    None => "",
+    Some(s) => s,
+  }
+}

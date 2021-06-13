@@ -294,7 +294,7 @@ module TL = {
     | PTopExportAll(ex) => sub.export_all(sub, ex)
     | PTopForeign(e, vd) => sub.value_description(sub, vd)
     | PTopPrimitive(e, vd) => sub.value_description(sub, vd)
-    | PTopData(e, dd) => sub.data(sub, dd)
+    | PTopData(dd) => List.iter(((_, d)) => sub.data(sub, d), dd)
     | PTopLet(e, r, m, vb) => List.iter(sub.value_binding(sub), vb)
     | PTopExpr(e) => sub.expr(sub, e)
     | PTopException(e, d) => sub.grain_exception(sub, d)

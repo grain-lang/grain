@@ -215,3 +215,7 @@ assert sub(1, 2, listSub) == [2, 3]
 assert init(4, idx => idx) == [0, 1, 2, 3]
 assert init(0, idx => fail "Shouldn't be called") == []
 assert init(-10, idx => fail "Shouldn't be called") == []
+
+// List.join
+assert join(", ", ["a", "b", "c"]) == "a, b, c"
+assert join(", ", []) == ""

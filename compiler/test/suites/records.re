@@ -140,4 +140,21 @@ describe("records", ({test}) => {
     "record_pun_mixed_2_trailing",
     "export record Rec {foo: Number, bar: Bool}; let bar = false; {foo: 4, bar,}",
   );
+  assertSnapshot(
+    "record_recursive_data_definition",
+    {|
+      record Bar {
+        mut foo: Option<Foo>
+      },
+      record Foo {
+        mut bar: Option<Bar>
+      }
+
+      let foo = {bar: None,}
+      let bar = {foo: None,}
+
+      foo.bar = Some(bar)
+      bar.foo = Some(foo)
+    |},
+  );
 });

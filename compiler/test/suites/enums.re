@@ -17,4 +17,24 @@ describe("enums", ({test}) => {
     "adt_trailing",
     "enum Topping { Cheese(Bool,), Pepperoni }; Pepperoni",
   );
+  // Taken from https://en.wikipedia.org/wiki/Recursive_data_type#Mutually_recursive_data_types
+  let recursive_contents = {|
+    enum Tree<a> {
+      Empty,
+      Node(a, Forest<a>)
+    },
+    enum Forest<a> {
+      Nil,
+      Cons(Tree<a>, Forest<a>)
+    }
+
+    let forest = Cons(Node("tree 1", Cons(Node("tree 2", Nil), Nil)), Nil)
+    print(forest);
+  |};
+  assertSnapshot("enum_recursive_data_definition", recursive_contents);
+  assertRun(
+    "enum_recursive_data_definition_prints",
+    recursive_contents,
+    "Cons(Node(\"tree 1\", Cons(Node(\"tree 2\", Nil), Nil)), Nil)\n",
+  );
 });
