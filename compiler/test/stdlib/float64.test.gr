@@ -14,3 +14,9 @@ assert !gt(5.0d, 5.0d)
 assert !gte(5.0d, 22.0d)
 assert !lt(5.0d, -17.0d)
 assert !lte(5.0d, 4.0d)
+
+// smoke test:
+assert gt(infinity, 100000000.d)
+// test infinity-specific semantics:
+assert toNumber(infinity) == (toNumber(infinity) - 1)
+assert nan != nan
