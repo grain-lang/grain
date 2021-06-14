@@ -636,16 +636,38 @@ and print_out_sig_item = ppf =>
       out_module_type^,
       mty,
     )
-  | Osig_type(td, rs) =>
-    print_out_type_decl(
-      switch (rs) {
-      | Orec_not => "type nonrec"
-      | Orec_first => "type"
-      | Orec_next => "and"
-      },
-      ppf,
-      td,
-    )
+  | Osig_type(td, _rs) => {
+      // TODO: Do we want/need these?
+      // let kwd = switch (rs) {
+      //   | Orec_not => "type nonrec"
+      //   | Orec_first => "type"
+      //   | Orec_next => "and"
+      //   };
+      let kwd =
+        switch (td.otype_type) {
+        | Otyp_record(_) => "record"
+        | Otyp_sum(_) => "enum"
+        | Otyp_variant(_, _, _, _) =>
+          failwith("NYI: Otyp_variant pretty-printer")
+        | Otyp_abstract => failwith("NYI: Otyp_abstract pretty-printer")
+        | Otyp_open => failwith("NYI: Otyp_open pretty-printer")
+        | Otyp_alias(_, _) => failwith("NYI: Otyp_alias pretty-printer")
+        | Otyp_arrow(_, _) => failwith("NYI: Otyp_arrow pretty-printer")
+        | Otyp_class(_, _, _) => failwith("NYI: Otyp_class pretty-printer")
+        | Otyp_constr(_, _) => failwith("NYI: Otyp_constr pretty-printer")
+        | Otyp_manifest(_, _) =>
+          failwith("NYI: Otyp_manifest pretty-printer")
+        | Otyp_object(_, _) => failwith("NYI: Otyp_object pretty-printer")
+        | Otyp_stuff(_) => failwith("NYI: Otyp_stuff pretty-printer")
+        | Otyp_tuple(_) => failwith("NYI: Otyp_tuple pretty-printer")
+        | Otyp_var(_, _) => failwith("NYI: Otyp_var pretty-printer")
+        | Otyp_poly(_, _) => failwith("NYI: Otyp_poly pretty-printer")
+        | Otyp_module(_, _, _) => failwith("NYI: Otyp_module pretty-printer")
+        | Otyp_attribute(_, _) =>
+          failwith("NYI: Otyp_attribute pretty-printer")
+        };
+      print_out_type_decl(kwd, ppf, td);
+    }
   | Osig_value(vd) => {
       let kwd =
         if (vd.oval_prims == []) {
