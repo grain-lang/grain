@@ -468,11 +468,28 @@ type toplevel_stmt = {
   ttop_env: Env.t,
 };
 
+[@deriving (sexp, yojson)]
+type comment_desc =
+  Parsetree.comment_desc = {
+    cmt_content: string,
+    cmt_source: string,
+    cmt_loc: Location.t,
+  };
+
+[@deriving (sexp, yojson)]
+type comment =
+  Parsetree.comment =
+    | Line(comment_desc)
+    | Shebang(comment_desc)
+    | Block(comment_desc)
+    | Doc(comment_desc);
+
 [@deriving sexp]
 type typed_program = {
   statements: list(toplevel_stmt),
   env: Env.t,
   signature: Cmi_format.cmi_infos,
+  comments: list(comment),
 };
 
 /* Auxiliary functions over the AST */

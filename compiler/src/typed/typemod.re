@@ -967,7 +967,7 @@ let type_implementation = prog => {
   let normalized_sig = normalize_signature(finalenv, simple_sg);
   let signature = Env.build_signature(normalized_sig, modulename, filename);
   ignore(coercion);
-  {statements, env, signature};
+  {statements, env, signature, comments: prog.comments};
 };
 
 /* Error report */
