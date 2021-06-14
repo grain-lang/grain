@@ -180,7 +180,7 @@ export let isFinite = (x: Number) => {
 export let isNaN = (x: Number) => {
   let asPtr = WasmI32.fromGrain(x)
   if (isBoxedNumber(asPtr)) {
-    // Boxed numbers can have multiple subtypes. Of which float32 and float64 can be NaN,
+    // Boxed numbers can have multiple subtypes, of which float32 and float64 can be NaN.
     let tag = WasmI32.load(asPtr, 4n)
     if (WasmI32.eq(tag, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG)) {
       // uses the fact that NaN is the only number not equal to itself
