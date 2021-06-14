@@ -981,7 +981,6 @@ let extension_only_constructor = (id, ppf, ext) => {
 };
 
 /* Print a value declaration */
-
 let tree_of_value_description = (id, decl) => {
   let id = Ident.name(id);
   let ty = tree_of_type_scheme(decl.val_type);
@@ -992,35 +991,6 @@ let tree_of_value_description = (id, decl) => {
     oval_attributes: [],
   };
 
-  let vd =
-    switch (decl.val_kind) {
-    | _ => vd
-    };
-
-  Osig_value(vd);
-};
-
-let value_description = (id, ppf, decl) =>
-  Oprint.out_sig_item^(ppf, tree_of_value_description(id, decl));
-
-/* Print a value declaration */
-
-let tree_of_value_description = (id, decl) => {
-  /* Format.eprintf "@[%a@]@." raw_type_expr decl.val_type; */
-  let id = Ident.name(id);
-  let ty = tree_of_type_scheme(decl.val_type);
-  let vd = {
-    oval_name: id,
-    oval_type: ty,
-    oval_prims: [],
-    oval_attributes: [],
-  };
-
-  /*let vd =
-    match decl.val_kind with
-    | TValPrim p -> Primitive.print p vd
-    | _ -> vd
-    in*/
   Osig_value(vd);
 };
 
