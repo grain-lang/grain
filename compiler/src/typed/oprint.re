@@ -723,10 +723,11 @@ and print_out_type_decl = (kwd, ppf, td) => {
     | _ =>
       fprintf(
         ppf,
-        "@[(@[%a)@]@ %s@]",
+        // TODO: Fix the box, `<` and `>` are special characters in a box
+        "%s<@[%a@]>",
+        td.otype_name,
         print_list(type_parameter, ppf => fprintf(ppf, ",@ ")),
         td.otype_params,
-        td.otype_name,
       )
     };
 
