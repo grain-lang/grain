@@ -357,10 +357,15 @@ let rec print_out_type = ppf =>
 and print_out_type_1 = ppf =>
   fun
   | Otyp_arrow(ty1, ty2) => {
+      let args_length = List.length(ty1);
       pp_open_box(ppf, 1);
-      pp_print_char(ppf, '(');
+      if (args_length > 1) {
+        pp_print_char(ppf, '(');
+      };
       fprintf(ppf, "@[<0>%a@]", print_typlist(print_out_type_2, ","), ty1);
-      pp_print_char(ppf, ')');
+      if (args_length > 1) {
+        pp_print_char(ppf, ')');
+      };
       pp_print_string(ppf, " ->");
       pp_print_space(ppf, ());
       print_out_type_1(ppf, ty2);
