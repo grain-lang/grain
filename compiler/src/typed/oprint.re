@@ -766,8 +766,8 @@ and print_out_type_decl = (kwd, ppf, td) => {
     | Otyp_sum(constrs) =>
       fprintf(
         ppf,
-        " =@;<1 2>%a",
-        print_list(print_out_constr, ppf => fprintf(ppf, "@ | ")),
+        " {\n@;<2 2>%a\n}",
+        print_list(print_out_constr, ppf => fprintf(ppf, "\n  ")),
         constrs,
       )
     | Otyp_open => fprintf(ppf, " = ..")
@@ -799,9 +799,9 @@ and print_out_constr = (ppf, (name, tyl, ret_type_opt)) => {
     | _ =>
       fprintf(
         ppf,
-        "@[<2>%s of@ %a@]",
+        "@[<2>%s(%a),@]",
         name,
-        print_typlist(print_simple_out_type, " *"),
+        print_typlist(print_simple_out_type, ","),
         tyl,
       )
     }
