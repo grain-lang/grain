@@ -649,9 +649,9 @@ and print_out_sig_item = ppf =>
   | Osig_value(vd) => {
       let kwd =
         if (vd.oval_prims == []) {
-          "val";
+          "";
         } else {
-          "external";
+          "foreign ";
         };
       let pr_prims = ppf => (
         fun
@@ -664,7 +664,7 @@ and print_out_sig_item = ppf =>
 
       fprintf(
         ppf,
-        "@[<2>%s %a :@ %a%a%a@]",
+        "@[<2>%s%a :@ %a%a%a@]",
         kwd,
         value_ident,
         vd.oval_name,
