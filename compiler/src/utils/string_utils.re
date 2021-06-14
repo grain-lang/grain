@@ -15,7 +15,7 @@ let starts_with = (string, prefix) => {
 
 let trim_each_line = str => {
   str
-  |> Str.split(Str.regexp("[\n\r]"))
+  |> Str.split(Str.regexp("\\(\r\n\\|\n\\)"))
   |> List.map(String.trim)
   |> String.concat("\n");
 };
