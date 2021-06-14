@@ -428,8 +428,6 @@ export let join = (separator: String, items: Array<String>) => {
  * @returns Array<a> The subset of the array that was sliced
  */
 export let slice = (startIndex, endIndex, array) => {
-  // Note(blaine): Implementation taken directly from the String.slice method
-  // I wrote in Reason for Grain_utils.String
   let arrayLength = length(array)
 
   let wrapNegativeIndex = idx => {
