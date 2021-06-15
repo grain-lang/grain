@@ -723,7 +723,7 @@ and print_out_type_decl = (kwd, ppf, td) => {
     | _ =>
       fprintf(
         ppf,
-        // TODO: Fix the box, `<` and `>` are special characters in a box
+        // TODO: This no longer has an outer box, nor break hints, because `<` and `>` are special characters in a box. If this causes issues with line-wrapping, we should fix in the future.
         "%s<@[%a@]>",
         td.otype_name,
         print_list(type_parameter, ppf => fprintf(ppf, ",@ ")),
