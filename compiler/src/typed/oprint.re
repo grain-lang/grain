@@ -766,8 +766,8 @@ and print_out_type_decl = (kwd, ppf, td) => {
     | Otyp_sum(constrs) =>
       fprintf(
         ppf,
-        "@[<v> {@;<2 2>%a@;}@]",
-        print_list(print_out_constr, ppf => fprintf(ppf, "@;  ")),
+        "@[<hov> {@?@[<v>@;<0 2>%a@;<0 0>@]}@]",
+        print_list(print_out_constr, ppf => fprintf(ppf, "@;<0 2>")),
         constrs,
       )
     | Otyp_open => fprintf(ppf, " = ..")
