@@ -1145,6 +1145,7 @@ let decodeRangeHelp = (bytes: Bytes, encoding: Encoding, skipBom: Bool, start: N
   let (<<) = WasmI32.shl
   let (>=) = WasmI32.geU
   let (<=) = WasmI32.leU
+  let (==) = WasmI32.eq
   let start = grainToWasmNumber(start, _START_NAME)
   let size = grainToWasmNumber(size, _SIZE_NAME)
   let hasBom = bytesHaveBom(bytes, encoding, start)
