@@ -414,3 +414,45 @@ export let join = (separator: String, items: Array<String>) => {
     Some(s) => s,
   }
 }
+
+/**
+ * Slices an array given zero-based start and end indexes. The value
+ * at the end index will not be included in the result.
+ *
+ * If either index is a negative number, it will be treated as a reverse index from
+ * the end of the array. e.g. slice(1, -1, [> 'a', 'b', 'c']) == [> 'b'].
+ *
+ * @param startIndex: Number The index of the array where the slice will begin (inclusive)
+ * @param endIndex: Number The index of the array where the slice will end (exclusive)
+ * @param array: Array<a> The array to be sliced
+ * @returns Array<a> The subset of the array that was sliced
+ */
+export let slice = (startIndex, endIndex, array) => {
+  let arrayLength = length(array)
+
+  let wrapNegativeIndex = idx => {
+    if (idx >= 0) {
+      idx
+    } else {
+      arrayLength + idx
+    }
+  }
+
+  let startIndex = wrapNegativeIndex(startIndex)
+  let endIndex = wrapNegativeIndex(endIndex)
+  // Ensure we aren't working with an `end` value that is too big
+  let endIndex = if (endIndex > arrayLength) {
+    arrayLength
+  } else {
+    endIndex
+  }
+
+  let newLength = endIndex - startIndex;
+  if (newLength < 0) {
+    [>]
+  } else if (newLength > arrayLength) {
+    array
+  } else {
+    init(newLength, n => array[startIndex + n])
+  }
+}

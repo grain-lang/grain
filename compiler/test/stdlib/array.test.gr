@@ -269,3 +269,20 @@ assert Array.unique([>]) == [>]
 // Array.join
 assert Array.join(", ", [> "a", "b", "c"]) == "a, b, c"
 assert Array.join(", ", [>]) == ""
+
+// Array.slice
+let  testChars = [> 'a', 'b', 'c']
+
+assert Array.slice(0, 1, testChars) == [> 'a']
+assert Array.slice(1, Array.length(testChars), testChars) == [> 'b', 'c']
+assert Array.slice(0, 0, testChars) == [>]
+// Purposefully huge number
+assert Array.slice(1, 10000, testChars) == [> 'b', 'c']
+// Negative indexing
+assert Array.slice(1, -1, testChars) == [> 'b']
+assert Array.slice(-2, -1, testChars) == [> 'b']
+// Bad order
+assert Array.slice(2, 1, testChars) == [>]
+assert Array.slice(-1, -2, testChars) == [>]
+// Empty
+assert Array.slice(1, 4, [>]) == [>]
