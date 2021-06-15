@@ -41,6 +41,36 @@ describe("comments", ({test}) => {
     },
   );
   assertParse(
+    "comment_parse_block_multiline_trim",
+    "/* Test\n    Weird indent\n  Normal indent */\"foo\"",
+    {
+      statements: [str("foo")],
+      comments: [
+        Parsetree.Block({
+          cmt_content: "Test\nWeird indent\nNormal indent",
+          cmt_source: "/* Test\n    Weird indent\n  Normal indent */",
+          cmt_loc: Location.dummy_loc,
+        }),
+      ],
+      prog_loc: Location.dummy_loc,
+    },
+  );
+  assertParse(
+    "comment_parse_block_multiline_trim2",
+    "/* Test\r\n    Weird indent\r\n  Normal indent */\"foo\"",
+    {
+      statements: [str("foo")],
+      comments: [
+        Parsetree.Block({
+          cmt_content: "Test\nWeird indent\nNormal indent",
+          cmt_source: "/* Test\r\n    Weird indent\r\n  Normal indent */",
+          cmt_loc: Location.dummy_loc,
+        }),
+      ],
+      prog_loc: Location.dummy_loc,
+    },
+  );
+  assertParse(
     "comment_parse_3",
     "/** Test */\"foo\"",
     {
@@ -49,6 +79,36 @@ describe("comments", ({test}) => {
         Parsetree.Doc({
           cmt_content: "Test",
           cmt_source: "/** Test */",
+          cmt_loc: Location.dummy_loc,
+        }),
+      ],
+      prog_loc: Location.dummy_loc,
+    },
+  );
+  assertParse(
+    "comment_parse_doc_multiline_trim",
+    "/** Test\n    Weird indent\n  Normal indent */\"foo\"",
+    {
+      statements: [str("foo")],
+      comments: [
+        Parsetree.Doc({
+          cmt_content: "Test\nWeird indent\nNormal indent",
+          cmt_source: "/** Test\n    Weird indent\n  Normal indent */",
+          cmt_loc: Location.dummy_loc,
+        }),
+      ],
+      prog_loc: Location.dummy_loc,
+    },
+  );
+  assertParse(
+    "comment_parse_doc_multiline_trim2",
+    "/** Test\r\n    Weird indent\r\n  Normal indent */\"foo\"",
+    {
+      statements: [str("foo")],
+      comments: [
+        Parsetree.Doc({
+          cmt_content: "Test\nWeird indent\nNormal indent",
+          cmt_source: "/** Test\r\n    Weird indent\r\n  Normal indent */",
           cmt_loc: Location.dummy_loc,
         }),
       ],
