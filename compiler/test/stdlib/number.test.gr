@@ -51,3 +51,48 @@ assert Number.abs(-1/2) == 1/2
 assert Number.neg(-25.5) == -25.5
 assert Number.neg(25.5) == -25.5
 assert Number.neg(1/2) == -1/2
+
+// isFinite
+assert Number.isFinite(0.0/0.0) == false // NaN
+assert Number.isFinite(1.0/0.0) == false // infinity
+assert Number.isFinite(-1.0/0.0) == false // -infinity
+assert Number.isFinite(1)
+assert Number.isFinite(1.0)
+assert Number.isFinite(0)
+assert Number.isFinite(0.0)
+assert Number.isFinite(-1)
+assert Number.isFinite(-1.0)
+assert Number.isFinite(25.76)
+assert Number.isFinite(-25.00)
+assert Number.isFinite(1/2)
+assert Number.isFinite(-1/2)
+
+// isNaN
+assert Number.isNaN(0.0/0.0)
+assert Number.isNaN(1) == false
+assert Number.isNaN(1.0) == false
+assert Number.isNaN(0) == false
+assert Number.isNaN(0.0) == false
+assert Number.isNaN(-1) == false
+assert Number.isNaN(-1.0) == false
+assert Number.isNaN(25.76) == false
+assert Number.isNaN(-25.00) == false
+assert Number.isNaN(1/2) == false
+assert Number.isNaN(-1/2) == false
+assert Number.isNaN(1.0/0.0) == false // infinity
+assert Number.isNaN(-1.0/0.0) == false // -infinity
+
+// isInfinite
+assert Number.isInfinite(1.0/0.0) // infinity
+assert Number.isInfinite(-1.0/0.0) // -infinity
+assert Number.isInfinite(0.0/0.0) == false // NaN
+assert Number.isInfinite(1) == false
+assert Number.isInfinite(1.0) == false
+assert Number.isInfinite(0) == false
+assert Number.isInfinite(0.0) == false
+assert Number.isInfinite(-1) == false
+assert Number.isInfinite(-1.0) == false
+assert Number.isInfinite(25.76) == false
+assert Number.isInfinite(-25.00) == false
+assert Number.isInfinite(1/2) == false
+assert Number.isInfinite(-1/2) == false

@@ -1,13 +1,15 @@
 import WasmI32 from "runtime/unsafe/wasmi32"
 import WasmI64 from "runtime/unsafe/wasmi64"
+import WasmF32 from "runtime/unsafe/wasmf32"
 import WasmF64 from "runtime/unsafe/wasmf64"
 import {
   coerceNumberToWasmF64,
   reducedInteger,
-  isFloat
+  isFloat,
+  isBoxedNumber
 } from "runtime/numbers"
 import { newFloat64, newInt64 } from "runtime/dataStructures"
-
+import Tags from "runtime/unsafe/tags"
 
 /**
  * Computes the sum of its operands.
@@ -135,3 +137,94 @@ export let abs = (x: Number) => if (0 > x) x * -1 else x
  * @returns Number
  */
 export let neg = (x: Number) => if (x > 0) x * -1 else x
+
+/**
+ * Checks if a number is finite.
+ * All values are finite exept for floating point NaN, infinity or negative infinity.
+ * @param x: Number - The number to check
+ * @returns Bool
+ */
+@disableGC
+export let isFinite = (x: Number) => {
+  let asPtr = WasmI32.fromGrain(x)
+  if (isBoxedNumber(asPtr)) {
+    // Boxed numbers can have multiple subtypes, of which float32 and float64 can be infinite.
+    let tag = WasmI32.load(asPtr, 4n)
+    if (WasmI32.eq(tag, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG)) {
+      // uses the fact that all finite floats minus themselves are zero
+      // (NaN - NaN == NaN, inf - inf == NaN, 
+      //  -inf - -inf == NaN, inf - -inf == inf, -inf - inf == -inf)
+      let wf64 = WasmF64.load(asPtr, 8n)
+      WasmF64.eq(WasmF64.sub(wf64, wf64), 0.W)
+    } else if (WasmI32.eq(tag, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG)) {
+      let wf32 = WasmF32.load(asPtr, 8n)
+      WasmF32.eq(WasmF32.sub(wf32, wf32), 0.w)
+    } else {
+      // Neither rational numbers nor boxed integers can be infinite or NaN.
+      // Grain doesn't allow creating a rational with denominator of zero either.
+      true
+    }
+  } else {
+    // Simple numbers are integers and cannot be infinite.
+    true
+  }
+}
+
+/**
+ * Checks if a number contains the NaN value (Not A Number).
+ * Only boxed floating point numbers can contain NaN.
+ * @param x: Number - The number to check
+ * @returns Bool
+ */
+@disableGC
+export let isNaN = (x: Number) => {
+  let asPtr = WasmI32.fromGrain(x)
+  if (isBoxedNumber(asPtr)) {
+    // Boxed numbers can have multiple subtypes, of which float32 and float64 can be NaN.
+    let tag = WasmI32.load(asPtr, 4n)
+    if (WasmI32.eq(tag, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG)) {
+      // uses the fact that NaN is the only number not equal to itself
+      let wf64 = WasmF64.load(asPtr, 8n)
+      WasmF64.ne(wf64, wf64)
+    } else if (WasmI32.eq(tag, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG)) {
+      let wf32 = WasmF32.load(asPtr, 8n)
+      WasmF32.ne(wf32, wf32)
+    } else {
+      // Neither rational numbers nor boxed integers can be infinite or NaN.
+      // Grain doesn't allow creating a rational with denominator of zero either.
+      false
+    }
+  } else {
+    // Simple numbers are integers and cannot be NaN.
+    false
+  }
+}
+
+/**
+ * Checks if a number is infinite, that is either of floating point positive or negative infinity.
+ * 
+ * Note that this function is not the exact opposite of isFinite(Number) in that it doesn't return true for NaN.
+ * 
+ * @param x: Number - The number to check
+ * @returns Bool
+ */
+@disableGC
+export let isInfinite = (x: Number) => {
+  // The following code is equivalent to (!isFinite(x) && !isNaN(x)),
+  // so see those functions to understand what's going on here.
+  let asPtr = WasmI32.fromGrain(x)
+  if (isBoxedNumber(asPtr)) {
+    let tag = WasmI32.load(asPtr, 4n)
+    if (WasmI32.eq(tag, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG)) {
+      let wf64 = WasmF64.load(asPtr, 8n)
+      WasmF64.ne(WasmF64.sub(wf64, wf64), 0.W) && WasmF64.eq(wf64, wf64)
+    } else if (WasmI32.eq(tag, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG)) {
+      let wf32 = WasmF32.load(asPtr, 8n)
+      WasmF32.ne(WasmF32.sub(wf32, wf32), 0.w) && WasmF32.eq(wf32, wf32)
+    } else {
+      false
+    }
+  } else {
+    false
+  }
+}

@@ -49,7 +49,7 @@ let isSimpleNumber = (x) => {
   WasmI32.eq(WasmI32.and(x, Tags._GRAIN_NUMBER_TAG_MASK), Tags._GRAIN_NUMBER_TAG_TYPE)
 }
 
-let isBoxedNumber = (x) => {
+export let isBoxedNumber = (x) => {
   if (WasmI32.eq(WasmI32.and(x, Tags._GRAIN_GENERIC_TAG_MASK), Tags._GRAIN_GENERIC_HEAP_TAG_TYPE)) {
     WasmI32.eq(WasmI32.load(x, 0n), Tags._GRAIN_BOXED_NUM_HEAP_TAG)
   } else {
