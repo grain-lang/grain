@@ -357,10 +357,15 @@ let rec print_out_type = ppf =>
 and print_out_type_1 = ppf =>
   fun
   | Otyp_arrow(ty1, ty2) => {
+      let args_length = List.length(ty1);
       pp_open_box(ppf, 1);
-      pp_print_char(ppf, '(');
-      fprintf(ppf, "@[<0>%a@]", print_typlist(print_out_type_2, ", "), ty1);
-      pp_print_char(ppf, ')');
+      if (args_length > 1) {
+        pp_print_char(ppf, '(');
+      };
+      fprintf(ppf, "@[<0>%a@]", print_typlist(print_out_type_2, ","), ty1);
+      if (args_length > 1) {
+        pp_print_char(ppf, ')');
+      };
       pp_print_string(ppf, " ->");
       pp_print_space(ppf, ());
       print_out_type_1(ppf, ty2);
@@ -631,22 +636,44 @@ and print_out_sig_item = ppf =>
       out_module_type^,
       mty,
     )
-  | Osig_type(td, rs) =>
-    print_out_type_decl(
-      switch (rs) {
-      | Orec_not => "type nonrec"
-      | Orec_first => "type"
-      | Orec_next => "and"
-      },
-      ppf,
-      td,
-    )
+  | Osig_type(td, _rs) => {
+      // TODO: Do we want/need these?
+      // let kwd = switch (rs) {
+      //   | Orec_not => "type nonrec"
+      //   | Orec_first => "type"
+      //   | Orec_next => "and"
+      //   };
+      let kwd =
+        switch (td.otype_type) {
+        | Otyp_record(_) => "record"
+        | Otyp_sum(_) => "enum"
+        | Otyp_variant(_, _, _, _) =>
+          failwith("NYI: Otyp_variant pretty-printer")
+        | Otyp_abstract => failwith("NYI: Otyp_abstract pretty-printer")
+        | Otyp_open => failwith("NYI: Otyp_open pretty-printer")
+        | Otyp_alias(_, _) => failwith("NYI: Otyp_alias pretty-printer")
+        | Otyp_arrow(_, _) => failwith("NYI: Otyp_arrow pretty-printer")
+        | Otyp_class(_, _, _) => failwith("NYI: Otyp_class pretty-printer")
+        | Otyp_constr(_, _) => failwith("NYI: Otyp_constr pretty-printer")
+        | Otyp_manifest(_, _) =>
+          failwith("NYI: Otyp_manifest pretty-printer")
+        | Otyp_object(_, _) => failwith("NYI: Otyp_object pretty-printer")
+        | Otyp_stuff(_) => failwith("NYI: Otyp_stuff pretty-printer")
+        | Otyp_tuple(_) => failwith("NYI: Otyp_tuple pretty-printer")
+        | Otyp_var(_, _) => failwith("NYI: Otyp_var pretty-printer")
+        | Otyp_poly(_, _) => failwith("NYI: Otyp_poly pretty-printer")
+        | Otyp_module(_, _, _) => failwith("NYI: Otyp_module pretty-printer")
+        | Otyp_attribute(_, _) =>
+          failwith("NYI: Otyp_attribute pretty-printer")
+        };
+      print_out_type_decl(kwd, ppf, td);
+    }
   | Osig_value(vd) => {
       let kwd =
         if (vd.oval_prims == []) {
-          "val";
+          "";
         } else {
-          "external";
+          "foreign ";
         };
       let pr_prims = ppf => (
         fun
@@ -659,7 +686,7 @@ and print_out_sig_item = ppf =>
 
       fprintf(
         ppf,
-        "@[<2>%s %a :@ %a%a%a@]",
+        "@[<2>%s%a :@ %a%a%a@]",
         kwd,
         value_ident,
         vd.oval_name,
@@ -696,10 +723,11 @@ and print_out_type_decl = (kwd, ppf, td) => {
     | _ =>
       fprintf(
         ppf,
-        "@[(@[%a)@]@ %s@]",
+        // TODO: This no longer has an outer box, nor break hints, because `<` and `>` are special characters in a box. If this causes issues with line-wrapping, we should fix in the future.
+        "%s<@[%a@]>",
+        td.otype_name,
         print_list(type_parameter, ppf => fprintf(ppf, ",@ ")),
         td.otype_params,
-        td.otype_name,
       )
     };
 
@@ -738,8 +766,8 @@ and print_out_type_decl = (kwd, ppf, td) => {
     | Otyp_sum(constrs) =>
       fprintf(
         ppf,
-        " =@;<1 2>%a",
-        print_list(print_out_constr, ppf => fprintf(ppf, "@ | ")),
+        "@[<hov> {@?@[<v>@;<0 2>%a@;<0 0>@]}@]",
+        print_list(print_out_constr, ppf => fprintf(ppf, "@;<0 2>")),
         constrs,
       )
     | Otyp_open => fprintf(ppf, " = ..")
@@ -771,9 +799,9 @@ and print_out_constr = (ppf, (name, tyl, ret_type_opt)) => {
     | _ =>
       fprintf(
         ppf,
-        "@[<2>%s of@ %a@]",
+        "@[<2>%s(%a),@]",
         name,
-        print_typlist(print_simple_out_type, " *"),
+        print_typlist(print_simple_out_type, ","),
         tyl,
       )
     }
