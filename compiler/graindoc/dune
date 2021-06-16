@@ -1,0 +1,40 @@
+(library
+ (name docblock)
+ (public_name graindoc.docblock)
+ (modules docblock)
+ (libraries grain grain_diagnostics grain_utils))
+
+(executable
+ (enabled_if
+  (<> %{profile} jsoo))
+ (name graindoc)
+ (public_name graindoc)
+ (package graindoc)
+ (modules graindoc)
+ (libraries cmdliner grain grain_diagnostics grain_utils graindoc.docblock
+   binaryen.native dune-build-info))
+
+(rule
+ (target graindoc_js.re)
+ (action
+  ; This cats the jsoo_header.re to the top of graindoc.re to build graindoc_js.re
+  (with-stdout-to
+   %{target}
+   (progn
+    (cat %{dep:jsoo_header.re})
+    (cat %{dep:graindoc.re})))))
+
+(executable
+ (enabled_if
+  (= %{profile} jsoo))
+ (name graindoc_js)
+ (public_name graindoc_js)
+ (package grainc)
+ (modules graindoc_js)
+ ; exe is only here so dune-build-info works
+ (modes exe js)
+ (libraries cmdliner grain grain_diagnostics grain_utils graindoc.docblock
+   binaryen.js dune-build-info js_of_ocaml)
+ (js_of_ocaml
+  (flags --no-sourcemap --no-extern-fs --quiet)
+  (javascript_files runtime.js jsoo_hacks.js)))
