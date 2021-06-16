@@ -1079,18 +1079,41 @@ let compile_imm = (wasm_mod, env: codegen_env, i: immediate): Expression.t =>
   };
 
 let call_error_handler = (wasm_mod, env, err, args) => {
-  let err =
+  let err_ident =
     switch (err) {
     | Runtime_errors.MatchFailure => match_failure_ident
     | Runtime_errors.IndexOutOfBounds => index_out_of_bounds_ident
     | Runtime_errors.AssertionError => assertion_error_ident
     };
-  let err =
+  let mk_err = () =>
     Expression.Global_get.make(
       wasm_mod,
-      get_imported_name(exception_mod, err),
+      get_imported_name(exception_mod, err_ident),
       Type.int32,
     );
+  let err = switch (args) {
+    | [] => mk_err()
+    | _ => {
+      let (args_setup, args) = List.fold_right((mk_arg, (setup, args)) => {
+        let (arg_setup, arg) = mk_arg();
+        (List.append(arg_setup, setup), [arg, ...args])
+      }, List.rev(args), ([], []))
+      let compiled_args = List.map(compile_imm(wasm_mod, env), args);
+      Expression.Block.make(
+        wasm_mod,
+        "make_error",
+        List.append(args_setup, [
+          Expression.Call_indirect.make(
+            wasm_mod,
+            global_function_table,
+            load(~offset=8, wasm_mod, mk_err()),
+            [mk_err(), ...compiled_args],
+            Type.create @@ Array.map(wasm_type, Array.of_list([I32Type, ...List.map(_ => I32Type, args)])),
+            Type.create @@ Array.map(wasm_type, Array.of_list([I32Type])),
+          )
+        ]))
+    }
+  };
   Expression.Block.make(
     wasm_mod,
     gensym_label("call_error_handler"),
@@ -2017,7 +2040,7 @@ let allocate_record = (wasm_mod, env, ttag, elts) => {
   );
 };
 
-let compile_prim1 = (wasm_mod, env, p1, arg): Expression.t => {
+let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
   let compiled_arg = compile_imm(wasm_mod, env, arg);
   /* TODO: Overflow checks? */
   switch (p1) {
@@ -2054,7 +2077,21 @@ let compile_prim1 = (wasm_mod, env, p1, arg): Expression.t => {
             Expression.Const.make(wasm_mod, const_false()),
           ),
           AssertionError,
-          [],
+          [
+            () => ([], MImmConst(MConstI32(Int32.of_int(loc.Grain_parsing.Location.loc_start.pos_lnum)))),
+            () => {
+              let set_fname = set_swap(
+                ~ty=I32Type,
+                wasm_mod,
+                env,
+                0,
+                allocate_string(wasm_mod, env, loc.Grain_parsing.Location.loc_start.pos_fname)
+              );
+              ([
+                Expression.Drop.make(wasm_mod, set_fname),
+               ], MImmBinding(MSwapBind(Int32.zero, I32Type)))
+            }
+          ],
         ),
         Expression.Const.make(wasm_mod, const_void()),
       ],
@@ -2637,7 +2674,7 @@ and compile_instr = (wasm_mod, env, instr) =>
   | MAdtOp(adt_op, adt) => compile_adt_op(wasm_mod, env, adt, adt_op)
   | MRecordOp(record_op, record) =>
     compile_record_op(wasm_mod, env, record, record_op)
-  | MPrim1(p1, arg) => compile_prim1(wasm_mod, env, p1, arg)
+  | MPrim1(p1, arg) => compile_prim1(wasm_mod, env, p1, arg, instr.instr_loc)
   | MPrim2(p2, arg1, arg2) => compile_prim2(wasm_mod, env, p2, arg1, arg2)
   | MPrimN(p, args) => compile_primn(wasm_mod, env, p, args)
   | MSwitch(arg, branches, default, ty) =>
@@ -2742,7 +2779,7 @@ and compile_instr = (wasm_mod, env, instr) =>
       Expression.Null.make(),
       Expression.Const.make(wasm_mod, const_void()),
     );
-  | MError(err, args) => call_error_handler(wasm_mod, env, err, args)
+  | MError(err, args) => call_error_handler(wasm_mod, env, err, List.map(a => (() => ([], a)), args))
   | MCallKnown({func, func_type: (_, retty), args}) =>
     let compiled_args = List.map(compile_imm(wasm_mod, env), args);
     Expression.Call.make(

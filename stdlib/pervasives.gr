@@ -111,6 +111,7 @@ let identity = (x) => x
 let setupExceptions = () => {
   Exception.dangerouslyRegisterPrinter(e => {
     match (e) {
+      Exception.AssertionError(lineno, filename) => Some("AssertionError: Assertion failed at " ++ filename ++ ":" ++ toString(lineno)),
       Failure(msg) => Some("Failure: " ++ msg),
       InvalidArgument(msg) => Some("Invalid argument: " ++ msg),
       _ => None
