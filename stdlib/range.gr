@@ -1,5 +1,5 @@
 /**
-  @module Range: Utilities for working with ranges. A range represents an interval, or a set of values with a beginning and an end.
+  @module Range: Utilities for working with ranges. A range represents an interval—a set of values with a beginning and an end.
   @example import Range from "range"
 */
 
