@@ -1,8 +1,34 @@
+/**
+  @module Range: Utilities for working with ranges. A range represents an interval—a set of values with a beginning and an end.
+  @example import Range from "range"
+*/
+
+/**
+  @section Types: Type declarations included in the Range module.
+*/
+
+/**
+  Ranges can be inclusive or exclusive. When `Inclusive`, the end value will be included in operations. When `Exclusive`, the end value will be excluded from operations.
+*/
 export enum Range {
   Inclusive(Number, Number),
   Exclusive(Number, Number),
 }
 
+/**
+  @section Values: Functions and constants included in the Range module.
+*/
+
+/**
+  Checks if the given number is within the range.
+
+  @param value: The number being checked
+  @param range: The range to check within
+  @returns Whether or not the value is within range
+
+  @example Range.inRange(1, Range.Inclusive(0, 2)) == true
+  @example Range.inRange(10, Range.Inclusive(0, 2)) == false
+*/
 export let inRange = (value, range) => {
   match (range) {
     Inclusive(lower, upper) when value >= lower && value <= upper => true,
@@ -13,6 +39,14 @@ export let inRange = (value, range) => {
   }
 }
 
+/**
+  Calls the given function with each number in the range. For increasing ranges, the value is increased by `1` in each iteration, and for decreasing ranges, the value is decreased by `1`. The value is always changed by `1`, even if non-integer values were provided in the range.
+
+  @param fn: The function to be executed on each number in the range
+  @param range: The range to iterate
+
+  @example Range.forEach(val => print(val), Range.Exclusive(0, 2))
+*/
 export let forEach = (fn: (Number) -> Void, range) => {
   match (range) {
     Inclusive(lower, upper) when lower <= upper => {
@@ -46,6 +80,15 @@ export let forEach = (fn: (Number) -> Void, range) => {
   }
 }
 
+/**
+  Produces a list by calling the given function on each number included in the range. For increasing ranges, the value is increased by `1` in each iteration, and for decreasing ranges, the value is decreased by `1`. The value is always changed by `1`, even if non-integer values were provided in the range.
+
+  @param fn: The function called on each number in the range that returns the value for the output list
+  @param range: The range to iterate
+  @returns A list containing all values returned from the `fn`
+
+  @example Range.map(val => val * 2, Range.Inclusive(0, 2)) == [0, 2, 4]
+*/
 export let map = (fn, range) => {
   let mut result = []
   match (range) {
