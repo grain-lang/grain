@@ -60,15 +60,11 @@ jobs:
           yarn compiler import-dependencies
           shx rm -rf compiler/_export
 
+      # Don't build grainc.exe, only the JS builds
+      # TODO(#589): Actually build the exe's these once users can install them locally
       - name: Build compiler
         run: |
-          yarn compiler build
-
-      # To avoid bundling the wrong grainc.exe for the platform
-      # TODO(#589): Actually bundle these once users can install them locally
-      - name: Remove grainc.exe
-        run: |
-          shx rm cli/bin/grainc.exe
+          yarn compiler build:js
 
       # This will log a warning because we removed the grainc.exe file
       - name: Build Binaries
