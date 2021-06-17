@@ -27,6 +27,9 @@ let actions = {
   get lsp() {
     return require("./lsp.js");
   },
+  get doc() {
+    return require("./doc.js");
+  },
 };
 
 const stdlibPath = require("@grain/stdlib");
@@ -40,7 +43,7 @@ function num(val) {
 }
 
 function graincVersion() {
-  return exec("--version", program).toString().trim();
+  return exec.grainc("--version", program).toString().trim();
 }
 
 class GraincOption extends program.Option {
@@ -164,6 +167,13 @@ program
   .description("run a wasm file with the grain runtime")
   .action(function (wasmFile) {
     actions.run(wasmFile, program.opts());
+  });
+
+program
+  .command("doc <file>")
+  .description("generate documentation for a grain file")
+  .action(function (file) {
+    actions.doc(file, program);
   });
 
 program.parse(process.argv);
