@@ -1094,24 +1094,15 @@ let call_error_handler = (wasm_mod, env, err, args) => {
   let err = switch (args) {
     | [] => mk_err()
     | _ => {
-      let (args_setup, args) = List.fold_right((mk_arg, (setup, args)) => {
-        let (arg_setup, arg) = mk_arg();
-        (List.append(arg_setup, setup), [arg, ...args])
-      }, List.rev(args), ([], []))
-      let compiled_args = List.map(compile_imm(wasm_mod, env), args);
-      Expression.Block.make(
+      let compiled_args = args;
+      Expression.Call_indirect.make(
         wasm_mod,
-        "make_error",
-        List.append(args_setup, [
-          Expression.Call_indirect.make(
-            wasm_mod,
-            global_function_table,
-            load(~offset=8, wasm_mod, mk_err()),
-            [mk_err(), ...compiled_args],
-            Type.create @@ Array.map(wasm_type, Array.of_list([I32Type, ...List.map(_ => I32Type, args)])),
-            Type.create @@ Array.map(wasm_type, Array.of_list([I32Type])),
-          )
-        ]))
+        global_function_table,
+        load(~offset=8, wasm_mod, mk_err()),
+        [mk_err(), ...compiled_args],
+        Type.create @@ Array.map(wasm_type, Array.of_list([I32Type, ...List.map(_ => I32Type, args)])),
+        Type.create @@ Array.map(wasm_type, Array.of_list([I32Type])),
+      )
     }
   };
   Expression.Block.make(
@@ -2078,19 +2069,8 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
           ),
           AssertionError,
           [
-            () => ([], MImmConst(MConstI32(Int32.of_int(loc.Grain_parsing.Location.loc_start.pos_lnum)))),
-            () => {
-              let set_fname = set_swap(
-                ~ty=I32Type,
-                wasm_mod,
-                env,
-                0,
-                allocate_string(wasm_mod, env, loc.Grain_parsing.Location.loc_start.pos_fname)
-              );
-              ([
-                Expression.Drop.make(wasm_mod, set_fname),
-               ], MImmBinding(MSwapBind(Int32.zero, I32Type)))
-            }
+            compile_imm(wasm_mod, env, MImmConst(MConstI32(Int32.of_int(loc.Grain_parsing.Location.loc_start.pos_lnum)))),
+            allocate_string(wasm_mod, env, loc.Grain_parsing.Location.loc_start.pos_fname),
           ],
         ),
         Expression.Const.make(wasm_mod, const_void()),
@@ -2779,7 +2759,7 @@ and compile_instr = (wasm_mod, env, instr) =>
       Expression.Null.make(),
       Expression.Const.make(wasm_mod, const_void()),
     );
-  | MError(err, args) => call_error_handler(wasm_mod, env, err, List.map(a => (() => ([], a)), args))
+  | MError(err, args) => call_error_handler(wasm_mod, env, err, List.map(compile_imm(wasm_mod, env), args))
   | MCallKnown({func, func_type: (_, retty), args}) =>
     let compiled_args = List.map(compile_imm(wasm_mod, env), args);
     Expression.Call.make(
