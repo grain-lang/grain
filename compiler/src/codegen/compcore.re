@@ -1098,20 +1098,24 @@ let call_error_handler = (wasm_mod, env, err, args) => {
       get_imported_name(exception_mod, err_ident),
       Type.int32,
     );
-  let err = switch (args) {
+  let err =
+    switch (args) {
     | [] => mk_err()
-    | _ => {
+    | _ =>
       let compiled_args = args;
       Expression.Call_indirect.make(
         wasm_mod,
         global_function_table,
         load(~offset=8, wasm_mod, mk_err()),
         [mk_err(), ...compiled_args],
-        Type.create @@ Array.map(wasm_type, Array.of_list([I32Type, ...List.map(_ => I32Type, args)])),
+        Type.create @@
+        Array.map(
+          wasm_type,
+          Array.of_list([I32Type, ...List.map(_ => I32Type, args)]),
+        ),
         Type.create @@ Array.map(wasm_type, Array.of_list([I32Type])),
-      )
-    }
-  };
+      );
+    };
   Expression.Block.make(
     wasm_mod,
     gensym_label("call_error_handler"),
@@ -2076,7 +2080,15 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
           ),
           AssertionError,
           [
-            allocate_string(wasm_mod, env, Printf.sprintf("AssertionError: Assertion failed at %s:%d", loc.Grain_parsing.Location.loc_start.pos_fname, loc.Grain_parsing.Location.loc_start.pos_lnum)),
+            allocate_string(
+              wasm_mod,
+              env,
+              Printf.sprintf(
+                "AssertionError: Assertion failed at %s:%d",
+                loc.Grain_parsing.Location.loc_start.pos_fname,
+                loc.Grain_parsing.Location.loc_start.pos_lnum,
+              ),
+            ),
           ],
         ),
         Expression.Const.make(wasm_mod, const_void()),
@@ -2765,7 +2777,13 @@ and compile_instr = (wasm_mod, env, instr) =>
       Expression.Null.make(),
       Expression.Const.make(wasm_mod, const_void()),
     );
-  | MError(err, args) => call_error_handler(wasm_mod, env, err, List.map(compile_imm(wasm_mod, env), args))
+  | MError(err, args) =>
+    call_error_handler(
+      wasm_mod,
+      env,
+      err,
+      List.map(compile_imm(wasm_mod, env), args),
+    )
   | MCallKnown({func, func_type: (_, retty), args}) =>
     let compiled_args = List.map(compile_imm(wasm_mod, env), args);
     Expression.Call.make(
