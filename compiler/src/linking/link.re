@@ -103,7 +103,8 @@ let is_function_imported = func =>
 //       probably succeeded the first time the subexpression was found, but,
 //       because this process is not idempotent, failed on the second time. The fix
 //       for this problem is to produce two separate expression instances when
-//       constructing the AST.
+//       constructing the AST (either through constructing two separate instances or by
+//       using Expression.copy())
 
 let rec globalize_names = (local_names, expr) => {
   let kind = Expression.get_kind(expr);
