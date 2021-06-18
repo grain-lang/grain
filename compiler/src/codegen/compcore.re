@@ -7,6 +7,13 @@ open Grain_utils;
 open Comp_utils;
 open Comp_wasm_prim;
 
+/*
+ GENERAL NOTES (extend as desired)
+ =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+ Make sure that all nodes in the Binaryen AST are distinct instances! See note in link.re.
+ */
+
 let sources: ref(list((Expression.t, Grain_parsing.Location.t))) = ref([]);
 
 /* [TODO] Should probably be a config variable */
