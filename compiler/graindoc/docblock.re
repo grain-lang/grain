@@ -124,7 +124,9 @@ let to_markdown = docblock => {
   let buf = Buffer.create(0);
   Buffer.add_string(buf, Markdown.heading(~level=3, docblock.name));
   Buffer.add_string(buf, Markdown.code_block(docblock.type_sig));
-  Buffer.add_string(buf, Markdown.paragraph(docblock.description));
+  if (String.length(docblock.description) > 0) {
+    Buffer.add_string(buf, Markdown.paragraph(docblock.description));
+  };
   let params =
     docblock.attributes
     |> List.filter(Comments.Attribute.is_param)
