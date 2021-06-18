@@ -130,6 +130,36 @@ describe("comments", ({test}) => {
       prog_loc: Location.dummy_loc,
     },
   );
+  assertParse(
+    "comment_parse_block_deasterisk",
+    "/* Test\n* no space before\n * space before\n  * tab before\n *no space after */\"foo\"",
+    {
+      statements: [str("foo")],
+      comments: [
+        Parsetree.Block({
+          cmt_content: "Test\nno space before\nspace before\ntab before\nno space after",
+          cmt_source: "/* Test\n* no space before\n * space before\n  * tab before\n *no space after */",
+          cmt_loc: Location.dummy_loc,
+        }),
+      ],
+      prog_loc: Location.dummy_loc,
+    },
+  );
+  assertParse(
+    "comment_parse_doc_deasterisk",
+    "/** Test\n* no space before\n * space before\n  * tab before\n *no space after */\"foo\"",
+    {
+      statements: [str("foo")],
+      comments: [
+        Parsetree.Doc({
+          cmt_content: "Test\nno space before\nspace before\ntab before\nno space after",
+          cmt_source: "/** Test\n* no space before\n * space before\n  * tab before\n *no space after */",
+          cmt_loc: Location.dummy_loc,
+        }),
+      ],
+      prog_loc: Location.dummy_loc,
+    },
+  );
   assertCompileError(
     "comment_line_numbers_1",
     "//comment\n//comment\n5 + 5L",

@@ -39,6 +39,7 @@ let make_shebang_comment = (source, loc) => {
 let make_block_comment = (source, loc) => {
   let content =
     String_utils.slice(~first=2, ~last=-2, source)
+    |> String_utils.deasterisk_each_line
     |> String_utils.trim_each_line;
   Block({cmt_content: content, cmt_source: source, cmt_loc: loc});
 };
@@ -46,6 +47,7 @@ let make_block_comment = (source, loc) => {
 let make_doc_comment = (source, loc) => {
   let content =
     String_utils.slice(~first=3, ~last=-2, source)
+    |> String_utils.deasterisk_each_line
     |> String_utils.trim_each_line;
   Doc({cmt_content: content, cmt_source: source, cmt_loc: loc});
 };
