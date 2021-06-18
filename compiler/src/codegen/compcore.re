@@ -2069,8 +2069,7 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
           ),
           AssertionError,
           [
-            compile_imm(wasm_mod, env, MImmConst(MConstI32(Int32.of_int(loc.Grain_parsing.Location.loc_start.pos_lnum)))),
-            allocate_string(wasm_mod, env, loc.Grain_parsing.Location.loc_start.pos_fname),
+            allocate_string(wasm_mod, env, Printf.sprintf("AssertionError: Assertion failed at %s:%d", loc.Grain_parsing.Location.loc_start.pos_fname, loc.Grain_parsing.Location.loc_start.pos_lnum)),
           ],
         ),
         Expression.Const.make(wasm_mod, const_void()),
