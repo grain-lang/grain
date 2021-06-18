@@ -5,9 +5,15 @@
 </p>
 
 <p align="center">
-    <a target="_blank" rel="noopener noreferrer" href="https://github.com/grain-lang/grain/workflows/Grain%20CI%20Workflow/badge.svg"><img src="https://github.com/grain-lang/grain/workflows/Grain%20CI%20Workflow/badge.svg" alt="Grain CI Workflow" style="max-width:100%;"></a>
-    <a href="https://www.gnu.org/licenses/lgpl-3.0" rel="nofollow"><img src="https://camo.githubusercontent.com/4e8beb53bf7fc54e0addd2106a833503fc81a083/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f4c6963656e73652d4c47504c25323076332d626c75652e737667" alt="License: LGPL v3" data-canonical-src="https://img.shields.io/badge/License-LGPL%20v3-blue.svg" style="max-width:100%;"></a>
-    <a href="https://badge.fury.io/gh/grain-lang%2Fgrain" rel="nofollow"><img src="https://camo.githubusercontent.com/909d4481f00303c64c5b47ae8d62b791726960d3/68747470733a2f2f62616467652e667572792e696f2f67682f677261696e2d6c616e67253246677261696e2e737667" alt="GitHub version" data-canonical-src="https://badge.fury.io/gh/grain-lang%2Fgrain.svg" style="max-width:100%;"></a>
+    <a href="https://github.com/grain-lang/grain/workflows/Grain%20CI%20Workflow/badge.svg">
+        <img src="https://img.shields.io/github/workflow/status/grain-lang/grain/Grain%20CI%20Workflow?style=flat-square" alt="Grain CI Workflow">
+    </a>
+    <a href="https://choosealicense.com/licenses/lgpl-3.0/">
+        <img src="https://img.shields.io/badge/License-LGPL%20v3-blue.svg?style=flat-square" alt="License: LGPL v3">
+    </a>
+    <a href="https://github.com/grain-lang/grain/releases">
+        <img alt="Grain latest release version" src="https://img.shields.io/github/package-json/v/grain-lang/grain?color=rgb%28255%2C%20133%2C%2014%29&style=flat-square">
+    </a>
 </p>
 
 ---
