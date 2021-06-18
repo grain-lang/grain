@@ -83,46 +83,54 @@ let generate_docs = (outfile, program: Typedtree.typed_program) => {
   | None => ()
   };
 
+  let add_docblock = sig_item => {
+    let docblock = Docblock.for_signature_item(~env, sig_item);
+    switch (docblock) {
+    | Some(docblock) =>
+      Buffer.add_buffer(buf, Docblock.to_markdown(docblock))
+    | None => ()
+    };
+  };
+
   let section_comments = Comments.Doc.find_sections();
-  List.iteri(
-    (idx, (comment, desc, attrs)) => {
-      let next_section_start_line =
-        Option.fold(
-          ~none=max_int,
-          ~some=((comment, _, _)) => Comments.start_line(comment),
-          List.nth_opt(section_comments, idx + 1),
-        );
-      let range =
-        Grain_utils.Range.Exclusive(
-          Comments.end_line(comment),
-          next_section_start_line,
-        );
-      List.iter(
-        (attr: Comments.Attribute.t) => {
-          switch (attr) {
-          | Section({attr_name, attr_desc}) =>
-            Buffer.add_string(buf, Markdown.heading(~level=2, attr_name));
-            Buffer.add_string(buf, Markdown.paragraph(attr_desc));
-          | _ => ()
-          }
-        },
-        attrs,
-      );
-      List.iter(
-        sig_item =>
-          if (Docblock.signature_item_in_range(~env, sig_item, range)) {
-            let docblock = Docblock.for_signature_item(~env, sig_item);
-            switch (docblock) {
-            | Some(docblock) =>
-              Buffer.add_buffer(buf, Docblock.to_markdown(docblock))
-            | None => ()
-            };
+  if (List.length(section_comments) == 0) {
+    List.iter(add_docblock, signature_items);
+  } else {
+    List.iteri(
+      (idx, (comment, desc, attrs)) => {
+        let next_section_start_line =
+          Option.fold(
+            ~none=max_int,
+            ~some=((comment, _, _)) => Comments.start_line(comment),
+            List.nth_opt(section_comments, idx + 1),
+          );
+        let range =
+          Grain_utils.Range.Exclusive(
+            Comments.end_line(comment),
+            next_section_start_line,
+          );
+        List.iter(
+          (attr: Comments.Attribute.t) => {
+            switch (attr) {
+            | Section({attr_name, attr_desc}) =>
+              Buffer.add_string(buf, Markdown.heading(~level=2, attr_name));
+              Buffer.add_string(buf, Markdown.paragraph(attr_desc));
+            | _ => ()
+            }
           },
-        signature_items,
-      );
-    },
-    section_comments,
-  );
+          attrs,
+        );
+        List.iter(
+          sig_item =>
+            if (Docblock.signature_item_in_range(~env, sig_item, range)) {
+              add_docblock(sig_item);
+            },
+          signature_items,
+        );
+      },
+      section_comments,
+    );
+  };
 
   let contents = Buffer.to_bytes(buf);
   switch (outfile) {
