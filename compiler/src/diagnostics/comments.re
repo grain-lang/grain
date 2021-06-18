@@ -31,11 +31,9 @@ module Attribute = {
 
   let extract = comment => {
     let attrs = ref([]);
-    // https://regexper.com/#%5E%40%28param%7Creturns%29%28%5B%20%5Ct%5D%28%5B%5E%3A%5D%2B%29%3A%29%3F%5B%20%5Ct%5D%28.*%29%24
-    let re =
-      Str.regexp(
-        "^@\\(param\\|returns\\|module\\|example\\|section\\)\\([ \t]\\([^:]+\\):\\)?[ \t]\\(.*\\)$",
-      );
+    // TODO: We should probably be using a less-janky RegExp library
+    // https://regexper.com/#%5E%40%28%5Ba-zA-Z_%5D%2B%29%28%5B%20%5D%2B%28%5B%5E%3A%5D%2B%29%3A%29%3F%5B%20%5D%2B%28.*%29%24
+    let re = Str.regexp({|^@\([a-zA-Z_]+\)\([ ]+\([^:]+\):\)?[ ]+\(.*\)$|});
     let out =
       Str.global_substitute(
         re,
