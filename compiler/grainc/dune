@@ -1,4 +1,6 @@
 (executable
+ (enabled_if
+  (<> %{profile} jsoo))
  (name grainc)
  (public_name grainc)
  (package grain)
@@ -20,6 +22,8 @@
     (cat %{dep:grainc.re})))))
 
 (executable
+ (enabled_if
+  (= %{profile} jsoo))
  (name grainc_js)
  (public_name grainc_js)
  (package grainc)
