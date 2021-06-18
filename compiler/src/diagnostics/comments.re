@@ -3,6 +3,9 @@ open Grain_typed;
 
 // Attributes in a comment are prefixed with `@` symbol, such as `@param`
 module Attribute = {
+  exception InvalidAttribute(string);
+  exception MalformedAttribute(string, string);
+
   type attr_name = string;
   type attr_desc = string;
   // The `attr_type` always starts as `None` and is applied later by something like Graindoc
@@ -29,6 +32,11 @@ module Attribute = {
         attr_desc,
       });
 
+  let try_or_malformed = (~attr, ~hint, fn) =>
+    try(fn()) {
+    | _ => raise(MalformedAttribute(attr, hint))
+    };
+
   let extract = comment => {
     let attrs = ref([]);
     // TODO: We should probably be using a less-janky RegExp library
@@ -41,25 +49,55 @@ module Attribute = {
           let attr = Str.matched_group(1, comment);
           switch (attr) {
           | "param" =>
-            let attr_name = Str.matched_group(3, comment);
-            let attr_desc = Str.matched_group(4, comment);
-            attrs :=
-              [Param({attr_name, attr_desc, attr_type: None}), ...attrs^];
+            try_or_malformed(
+              ~attr,
+              ~hint="@param ParamName: Description of param value",
+              () => {
+                let attr_name = Str.matched_group(3, comment);
+                let attr_desc = Str.matched_group(4, comment);
+                attrs :=
+                  [Param({attr_name, attr_desc, attr_type: None}), ...attrs^];
+              },
+            )
           | "returns" =>
-            let attr_desc = Str.matched_group(4, comment);
-            attrs := [Returns({attr_desc, attr_type: None}), ...attrs^];
+            try_or_malformed(
+              ~attr,
+              ~hint="@returns Description of return value",
+              () => {
+                let attr_desc = Str.matched_group(4, comment);
+                attrs := [Returns({attr_desc, attr_type: None}), ...attrs^];
+              },
+            )
           | "module" =>
-            let attr_name = Str.matched_group(3, comment);
-            let attr_desc = Str.matched_group(4, comment);
-            attrs := [Module({attr_name, attr_desc}), ...attrs^];
+            try_or_malformed(
+              ~attr,
+              ~hint="@module ModuleName: Description of module",
+              () => {
+                let attr_name = Str.matched_group(3, comment);
+                let attr_desc = Str.matched_group(4, comment);
+                attrs := [Module({attr_name, attr_desc}), ...attrs^];
+              },
+            )
           | "example" =>
-            let attr_desc = Str.matched_group(4, comment);
-            attrs := [Example({attr_desc: attr_desc}), ...attrs^];
+            try_or_malformed(
+              ~attr,
+              ~hint="@example single-line code example",
+              () => {
+                let attr_desc = Str.matched_group(4, comment);
+                attrs := [Example({attr_desc: attr_desc}), ...attrs^];
+              },
+            )
           | "section" =>
-            let attr_name = Str.matched_group(3, comment);
-            let attr_desc = Str.matched_group(4, comment);
-            attrs := [Section({attr_name, attr_desc}), ...attrs^];
-          | _ => failwith("No docblock attribute defined for " ++ attr)
+            try_or_malformed(
+              ~attr,
+              ~hint="@section SectionName: Description of section",
+              () => {
+                let attr_name = Str.matched_group(3, comment);
+                let attr_desc = Str.matched_group(4, comment);
+                attrs := [Section({attr_name, attr_desc}), ...attrs^];
+              },
+            )
+          | _ => raise(InvalidAttribute(attr))
           };
 
           // Replace it with nothing
@@ -105,6 +143,28 @@ module Attribute = {
     | _ => false
     };
   };
+
+  let () =
+    Printexc.register_printer(exc =>
+      switch (exc) {
+      | InvalidAttribute(attr_name) =>
+        Some(
+          Printf.sprintf(
+            "No DocBlock attribute defined for `@%s`",
+            attr_name,
+          ),
+        )
+      | MalformedAttribute(attr_name, example) =>
+        Some(
+          Printf.sprintf(
+            "Incorrect formatting of `@%s` DocBlock—must be `%s`",
+            attr_name,
+            example,
+          ),
+        )
+      | _ => None
+      }
+    );
 };
 
 type attributes = list(Attribute.t);
