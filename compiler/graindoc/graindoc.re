@@ -144,6 +144,11 @@ let generate_docs = (outfile, program: Typedtree.typed_program) => {
   `Ok();
 };
 
+let graindoc = (outfile, program) =>
+  try(generate_docs(outfile, program)) {
+  | e => `Error((false, Printexc.to_string(e)))
+  };
+
 let input_file_conv = {
   open Arg;
   let (prsr, prntr) = non_dir_file;
@@ -200,7 +205,7 @@ let cmd = {
   (
     Term.(
       ret(
-        const(generate_docs)
+        const(graindoc)
         $ output_filename
         $ ret(
             Grain_utils.Config.with_cli_options(compile_typed)
