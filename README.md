@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-    <a href="https://github.com/grain-lang/grain/workflows/Grain%20CI%20Workflow/badge.svg">
+    <a href="https://github.com/grain-lang/grain/actions/workflows/ci.yml">
         <img src="https://img.shields.io/github/workflow/status/grain-lang/grain/Grain%20CI%20Workflow?style=flat-square" alt="Grain CI Workflow">
     </a>
     <a href="https://choosealicense.com/licenses/lgpl-3.0/">
