@@ -125,7 +125,12 @@ let next_state = ({cstate_desc, cstate_filename} as cs) => {
       apply_inline_flags(p);
       Well_formedness.check_well_formedness(p);
       WellFormed(p);
-    | WellFormed(p) => TypeChecked(Typemod.type_implementation(p))
+    | WellFormed(p) =>
+      let typed_mod = Typemod.type_implementation(p);
+      // This just emits warnings, so it's in the same step in the state machine.
+      // If there's a reason, this can be split out into a separate step.
+      Typed_well_formedness.check_well_formedness(typed_mod);
+      TypeChecked(typed_mod);
     | TypeChecked(typed_mod) =>
       Linearized(Linearize.transl_anf_module(typed_mod))
     | Linearized(anfed) =>
