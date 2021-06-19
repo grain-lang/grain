@@ -224,14 +224,17 @@ module Doc = {
     };
   };
 
-  let rec ending_on_lnum = lnum => {
-    let data = Hashtbl.find_opt(comments.by_end_lnum, lnum);
-    switch (data) {
-    | Some((Doc({cmt_content}), _, _)) => data
-    // Hack to handle code that has an attribute on the line before, such as `@disableGC`
-    | None => ending_on_lnum(lnum - 1)
-    | _ => None
+  let ending_on_lnum = lnum => {
+    let rec ending_on_lnum_help = (lnum, check_prev) => {
+      let data = Hashtbl.find_opt(comments.by_end_lnum, lnum);
+      switch (data) {
+      | Some((Doc({cmt_content}), _, _)) => data
+      // Hack to handle code that has an attribute on the line before, such as `@disableGC`
+      | None when check_prev => ending_on_lnum_help(lnum - 1, false)
+      | _ => None
+      };
     };
+    ending_on_lnum_help(lnum, true);
   };
 
   let find_module = () => {
