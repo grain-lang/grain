@@ -9,11 +9,16 @@ open TypedtreeIter;
  * are desired.
  */
 
-let wasm_unsafe_types = ["WasmI32", "WasmI64", "WasmF32", "WasmF64"];
+let wasm_unsafe_types = [
+  Builtin_types.path_wasmi32,
+  Builtin_types.path_wasmi64,
+  Builtin_types.path_wasmf32,
+  Builtin_types.path_wasmf64,
+];
 
 let exp_is_wasm_unsafe = ({exp_type: {desc}}) => {
   switch (desc) {
-  | TTyConstr(path, [], _) => List.mem(Path.name(path), wasm_unsafe_types)
+  | TTyConstr(path, _, _) => List.mem(path, wasm_unsafe_types)
   | _ => false
   };
 };
@@ -24,8 +29,14 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
   let enter_expression: expression => unit =
     ({exp_desc, exp_loc}) => {
       switch (exp_desc) {
-      | TExpApp({exp_desc: TExpIdent(val_fullpath, _, _)}, args)
-          when Path.name(val_fullpath) == "Pervasives.==" =>
+      | TExpApp(
+          {
+            exp_desc:
+              TExpIdent(Path.PExternal(Path.PIdent(mod_), fnc, _), _, _),
+          },
+          args,
+        )
+          when Ident.name(mod_) == "Pervasives" && fnc == "==" =>
         if (List.exists(exp_is_wasm_unsafe, args)) {
           let warning = Grain_utils.Warnings.EqualWasmUnsafe;
           if (Grain_utils.Warnings.is_active(warning)) {
