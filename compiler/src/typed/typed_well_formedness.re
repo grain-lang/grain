@@ -30,7 +30,11 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
       | TExpApp(
           {
             exp_desc:
-              TExpIdent(Path.PExternal(Path.PIdent({name: "Pervasives"}), "==", _), _, _),
+              TExpIdent(
+                Path.PExternal(Path.PIdent({name: "Pervasives"}), "==", _),
+                _,
+                _,
+              ),
           },
           args,
         ) =>
