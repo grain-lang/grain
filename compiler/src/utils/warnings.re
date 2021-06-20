@@ -105,7 +105,7 @@ let message =
     )
   | NonClosedRecordPattern(s) =>
     "the following fields are missing from the record pattern: " ++ s
-  | EqualWasmUnsafe => "it looks like you are using (==) on two unsafe WASM values here.\nPlease ensure that this is intentional.";
+  | EqualWasmUnsafe => "it looks like you are using Pervasives.(==) on two unsafe Wasm values here.\nThis is generally unsafe and will cause errors. Use `WasmI32.eq`, `WasmI64.eq`, `WasmF32.eq`, or `WasmF64.eq` instead.";
 
 let sub_locs =
   fun
