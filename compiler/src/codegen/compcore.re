@@ -7,13 +7,6 @@ open Grain_utils;
 open Comp_utils;
 open Comp_wasm_prim;
 
-/*
- GENERAL NOTES (extend as desired)
- =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-
- Make sure that all nodes in the Binaryen AST are distinct instances! See note in link.re.
- */
-
 let sources: ref(list((Expression.t, Grain_parsing.Location.t))) = ref([]);
 
 /* [TODO] Should probably be a config variable */
@@ -2084,7 +2077,7 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
               wasm_mod,
               env,
               Printf.sprintf(
-                "AssertionError: Assertion failed at %s:%d",
+                "AssertionError: Assertion failed in %s, line %d",
                 loc.Grain_parsing.Location.loc_start.pos_fname,
                 loc.Grain_parsing.Location.loc_start.pos_lnum,
               ),

@@ -82,7 +82,16 @@ export exception Overflow
 export exception NumberNotIntlike
 export exception NumberNotRational
 export exception MatchFailure
-export exception AssertionError(String) // <- since we can't malloc in this module, we put the full error message in the Exception object
+/*
+ * `assert <condition>` is essentially syntactic sugar for:
+ * `if (!<condition>) throw AssertionError(<message>)`
+ * where <message> is a string injected by the compiler, containing file and line information.
+ * This would be better as `AssertionError(String, Number)` to allow the exception printer in
+ * this file to construct the error, but constructing a string in this module is impractical as we
+ * don't have access to memory allocation since malloc.gr depends on this module.
+ */
+export exception AssertionError(String)
+export exception AssertionError(String)
 export exception InvalidArgument(String)
 export exception OutOfMemory
 
