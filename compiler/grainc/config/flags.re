@@ -3,6 +3,7 @@ module C = Configurator.V1;
 let () = {
   C.main(~name="grainc_flags", c => {
     let default = [];
+    Printf.eprintf("System: %s\n", Option.get(C.ocaml_config_var(c, "system")))
 
     let flags =
       switch (C.ocaml_config_var(c, "system")) {
@@ -11,6 +12,7 @@ let () = {
         // to avoid needing MinGW locations in the path
         // Ref https://github.com/grain-lang/binaryen.ml#static-linking
         ["-ccopt", "--", "-ccopt", "-static"]
+      | Some("linux") => ["-ccopt", "-static"] // [TODO] do we always want this?
       | Some(_) => default
       | None => default
       };

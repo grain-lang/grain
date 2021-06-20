@@ -73,10 +73,14 @@ LABEL description="Grain CLI and Runtime"
 LABEL vcs-url="https://github.com/grain-lang/grain"
 LABEL maintainer="philip@grain-lang.org"
 
+RUN apt-get update
+RUN apt-get install -y musl-tools
+RUN wget https://musl.cc/x86_64-linux-musl-native.tgz && tar xzf x86_64-linux-musl-native.tgz
+ENV PATH="/x86_64-linux-musl-native/bin:${PATH}"
+
 COPY . /grain
 
 WORKDIR /grain
-
 RUN yarn --pure-lockfile
 RUN yarn compiler build
 
