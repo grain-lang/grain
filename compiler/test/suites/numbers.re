@@ -49,6 +49,8 @@ describe("numbers", ({test}) => {
     "false\n",
   );
   assertRun("nan_equality3", {|print(0.0 / 0.0 == 0.0 / 0.0)|}, "false\n");
+  assertRun("number_equality", {|print(5.0 == 5)|}, "true\n");
+  assertRun("number_equality2", {|print(5 == 5.0)|}, "true\n");
   // syntax errors
   assertCompileError(
     "number_syntax_err1",
