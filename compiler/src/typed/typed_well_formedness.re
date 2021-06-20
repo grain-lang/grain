@@ -5,8 +5,6 @@ open TypedtreeIter;
 
 /*
  * This module provides well-formedness checks which are type/value resolution-dependent.
- * For the moment, this is just a warning on (==), but feel free to refactor once more checks
- * are desired.
  */
 
 let wasm_unsafe_types = [
