@@ -91,7 +91,6 @@ export exception MatchFailure
  * don't have access to memory allocation since malloc.gr depends on this module.
  */
 export exception AssertionError(String)
-export exception AssertionError(String)
 export exception InvalidArgument(String)
 export exception OutOfMemory
 
