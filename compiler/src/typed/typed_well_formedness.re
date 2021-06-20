@@ -30,11 +30,10 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
       | TExpApp(
           {
             exp_desc:
-              TExpIdent(Path.PExternal(Path.PIdent(mod_), fnc, _), _, _),
+              TExpIdent(Path.PExternal(Path.PIdent({name: "Pervasives"}), "==", _), _, _),
           },
           args,
-        )
-          when Ident.name(mod_) == "Pervasives" && fnc == "==" =>
+        ) =>
         if (List.exists(exp_is_wasm_unsafe, args)) {
           let warning = Grain_utils.Warnings.EqualWasmUnsafe;
           if (Grain_utils.Warnings.is_active(warning)) {
