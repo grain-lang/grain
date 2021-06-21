@@ -30,6 +30,9 @@ let actions = {
   get doc() {
     return require("./doc.js");
   },
+  get format() {
+    return require("./format.js");
+  },
 };
 
 const stdlibPath = require("@grain/stdlib");
@@ -174,6 +177,13 @@ program
   .description("generate documentation for a grain file")
   .action(function (file) {
     actions.doc(file, program);
+  });
+
+program
+  .command("format <file>")
+  .description("format a grain file")
+  .action(function (file) {
+    actions.format(file, program);
   });
 
 program.parse(process.argv);
