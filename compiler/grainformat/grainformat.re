@@ -35,13 +35,6 @@ let compile_parsed = filename => {
 let format_code = (outfile, program: Parsetree.parsed_program) => {
   Reformat.reformat_ast(program);
   `Ok();
-  // };
-  // | None => print_bytes(contents)
-  //   close_out(oc);
-  //   output_bytes(oc, contents);
-  //   let oc = Fs_access.open_file_for_writing(outfile);
-  // | Some(outfile) =>
-  // switch (outfile) {
 };
 
 let grainformat = (outfile, program) =>
