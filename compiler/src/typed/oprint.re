@@ -359,11 +359,11 @@ and print_out_type_1 = ppf =>
   | Otyp_arrow(ty1, ty2) => {
       let args_length = List.length(ty1);
       pp_open_box(ppf, 1);
-      if (args_length > 1) {
+      if (args_length != 1) {
         pp_print_char(ppf, '(');
       };
       fprintf(ppf, "@[<0>%a@]", print_typlist(print_out_type_2, ","), ty1);
-      if (args_length > 1) {
+      if (args_length != 1) {
         pp_print_char(ppf, ')');
       };
       pp_print_string(ppf, " ->");
