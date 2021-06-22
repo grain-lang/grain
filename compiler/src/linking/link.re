@@ -429,7 +429,7 @@ let link_all = (linked_mod, dependencies, signature) => {
           let new_name = gensym(internal_name);
           Hashtbl.add(local_names, internal_name, new_name);
 
-          if (imported_module == "grainRuntime") {
+          if (Comp_utils.is_grain_env(imported_module)) {
             let value =
               switch (imported_name) {
               | "relocBase" =>
