@@ -14,23 +14,11 @@ v8.setFlagsFromString("--experimental-wasm-bigint");
 v8.setFlagsFromString("--experimental-wasm-return-call");
 
 const program = require("commander");
-const exec = require("./exec");
-
-// Workaround to defer loading of the grain runtime until the memory settings have been parsed
-let actions = {
-  get compile() {
-    return require("./compile.js");
-  },
-  get run() {
-    return require("./run.js");
-  },
-  get lsp() {
-    return require("./lsp.js");
-  },
-  get doc() {
-    return require("./doc.js");
-  },
-};
+const exec = require("./exec.js");
+const compile = require("./compile.js");
+const run = require("./run.js");
+const lsp = require("./lsp.js");
+const doc = require("./doc.js");
 
 const stdlibPath = require("@grain/stdlib");
 
@@ -145,35 +133,35 @@ program
   // The root command that compiles & runs
   .arguments("<file>")
   .action(function (file) {
-    actions.run(actions.compile(file, program), program.opts());
+    run(compile(file, program), program.opts());
   });
 
 program
   .command("compile <file>")
   .description("compile a grain program into wasm")
   .action(function (file) {
-    actions.compile(file, program);
+    compile(file, program);
   });
 
 program
   .command("lsp <file>")
   .description("check a grain file for LSP")
   .action(function (file) {
-    actions.lsp(file, program);
+    lsp(file, program);
   });
 
 program
   .command("run <file>")
   .description("run a wasm file with the grain runtime")
   .action(function (wasmFile) {
-    actions.run(wasmFile, program.opts());
+    run(wasmFile, program.opts());
   });
 
 program
   .command("doc <file>")
   .description("generate documentation for a grain file")
   .action(function (file) {
-    actions.doc(file, program);
+    doc(file, program);
   });
 
 program.parse(process.argv);
