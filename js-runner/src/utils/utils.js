@@ -247,9 +247,7 @@ export function JSToGrainVal(v, runner) {
       return GRAIN_FALSE;
     }
   } else if (typeof v === "string") {
-    let userPtr = runner.managedMemory.malloc(
-      4 * 2 + ((v.length - 1) / 4 + 1)
-    );
+    let userPtr = runner.managedMemory.malloc(4 * 2 + ((v.length - 1) / 4 + 1));
     let ptr = userPtr / 4;
     view[ptr] = GRAIN_STRING_HEAP_TAG;
     view[ptr + 1] = v.length;
