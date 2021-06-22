@@ -169,15 +169,14 @@ module Attribute = {
 
 type attributes = list(Attribute.t);
 
+module IntMap = Map.Make(Int);
+
 type comments = {
-  by_start_lnum: Hashtbl.t(int, (Typedtree.comment, string, attributes)),
-  by_end_lnum: Hashtbl.t(int, (Typedtree.comment, string, attributes)),
+  mutable by_start_lnum: IntMap.t((Typedtree.comment, string, attributes)),
+  mutable by_end_lnum: IntMap.t((Typedtree.comment, string, attributes)),
 };
 
-let comments = {
-  by_start_lnum: Hashtbl.create(100),
-  by_end_lnum: Hashtbl.create(100),
-};
+let comments = {by_start_lnum: IntMap.empty, by_end_lnum: IntMap.empty};
 
 let setup_comments = (raw_comments: list(Typedtree.comment)) => {
   List.iter(
@@ -189,8 +188,15 @@ let setup_comments = (raw_comments: list(Typedtree.comment)) => {
       | Doc({cmt_loc, cmt_content}) =>
         let (description, attributes) = Attribute.extract(cmt_content);
         let data = (comment, description, attributes);
-        Hashtbl.add(comments.by_start_lnum, cmt_loc.loc_start.pos_lnum, data);
-        Hashtbl.add(comments.by_end_lnum, cmt_loc.loc_end.pos_lnum, data);
+
+        comments.by_start_lnum =
+          IntMap.add(
+            cmt_loc.loc_start.pos_lnum,
+            data,
+            comments.by_start_lnum,
+          );
+        comments.by_end_lnum =
+          IntMap.add(cmt_loc.loc_end.pos_lnum, data, comments.by_end_lnum);
       }
     },
     raw_comments,
@@ -217,7 +223,7 @@ let end_line = (comment: Typedtree.comment) => {
 
 module Doc = {
   let starting_on_lnum = lnum => {
-    let data = Hashtbl.find_opt(comments.by_start_lnum, lnum);
+    let data = IntMap.find_opt(lnum, comments.by_start_lnum);
     switch (data) {
     | Some((Doc({cmt_content}), _, _)) => data
     | _ => None
@@ -226,7 +232,7 @@ module Doc = {
 
   let ending_on_lnum = lnum => {
     let rec ending_on_lnum_help = (lnum, check_prev) => {
-      let data = Hashtbl.find_opt(comments.by_end_lnum, lnum);
+      let data = IntMap.find_opt(lnum, comments.by_end_lnum);
       switch (data) {
       | Some((Doc({cmt_content}), _, _)) => data
       // Hack to handle code that has an attribute on the line before, such as `@disableGC`
@@ -239,7 +245,7 @@ module Doc = {
 
   let find_module = () => {
     let module_comments = ref([]);
-    Hashtbl.iter(
+    IntMap.iter(
       (_, (_comment, _desc, attrs) as comment) =>
         if (List.exists(Attribute.is_module, attrs)) {
           module_comments := [comment, ...module_comments^];
@@ -255,7 +261,7 @@ module Doc = {
 
   let find_sections = () => {
     let section_comments = ref([]);
-    Hashtbl.iter(
+    IntMap.iter(
       (_, (_comment, _desc, attrs) as comment) =>
         if (List.exists(Attribute.is_section, attrs)) {
           section_comments := [comment, ...section_comments^];
