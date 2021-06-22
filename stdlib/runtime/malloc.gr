@@ -172,7 +172,7 @@ export let free = (ap: WasmI32) => {
   // is actually already pointing to this node, so we don't do anything.
   if (blockPtr != freePtr) {
     // Find the location to insert this block into the free list
-    for ( ; ; ) {
+    while (true) {
       let nextp = getNext(p)
       if ( ((blockPtr > p) && (blockPtr < nextp)) || ((p >= nextp) && ((blockPtr > p) || (blockPtr < nextp))) ) {
         break
