@@ -465,17 +465,45 @@ and print_expression = (expr: Parsetree.expression) => {
         Doc.text("("),
         print_expression(condition),
         Doc.text(")"),
+        Doc.line,
         print_expression(trueExpr),
         Doc.text(" else "),
         print_expression(falseExpr),
       ]),
     );
   | PExpWhile(expression, expression1) =>
-    print_endline("PExpWhile");
-    Doc.text("PExpWhile");
+    Doc.concat([
+      Doc.text("while "),
+      Doc.lparen,
+      print_expression(expression),
+      Doc.rparen,
+      Doc.line,
+      print_expression(expression1),
+    ])
+
   | PExpFor(optexpression1, optexpression2, optexpression3, expression4) =>
     print_endline("PExpFor");
-    Doc.text("PExpFor");
+    Doc.concat([
+      Doc.text("for "),
+      Doc.lparen,
+      switch (optexpression1) {
+      | Some(expr) => print_expression(expr)
+      | None => Doc.nil
+      },
+      Doc.text(";"),
+      switch (optexpression2) {
+      | Some(expr) => Doc.concat([Doc.space, print_expression(expr)])
+      | None => Doc.nil
+      },
+      Doc.text(";"),
+      switch (optexpression3) {
+      | Some(expr) => Doc.concat([Doc.space, print_expression(expr)])
+      | None => Doc.nil
+      },
+      Doc.rparen,
+      Doc.line,
+      print_expression(expression4),
+    ]);
   | PExpContinue =>
     print_endline("PExpContinue");
     Doc.group(Doc.concat([Doc.text("continue"), Doc.hardLine]));
