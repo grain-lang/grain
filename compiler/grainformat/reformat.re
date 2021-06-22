@@ -35,18 +35,13 @@ let infixop = (op: string) => {
 let rec remove_cons = (expression: Parsetree.expression) => {
   print_expression(expression);
 }
-and resugar_list = (expressions: list(Parsetree.expression)) => {
-  print_endline("resugar_list");
-  let second: Doc.t = print_expression(List.hd(List.tl(expressions)));
-  let first = print_expression(List.hd(expressions));
 
-  print_endline("first:" ++ Doc.toString(~width=100, first));
-  print_endline("second:" ++ Doc.toString(~width=100, second));
-
+and build_sugar_docs = (first: Doc.t, second: Doc.t) => {
+  // print_endline("first:" ++ Doc.toString(~width=100, first));
+  // print_endline("second:" ++ Doc.toString(~width=100, second));
   switch (second) {
   | Text(txt) =>
     if (txt == "[]") {
-      print_endline("start with empty");
       Doc.concat([Doc.lbracket, Doc.group(first), Doc.rbracket]);
     } else {
       Doc.concat([
@@ -54,7 +49,7 @@ and resugar_list = (expressions: list(Parsetree.expression)) => {
         Doc.group(first),
         Doc.comma,
         Doc.space,
-        Doc.group(second),
+        Doc.group(Doc.concat([Doc.text("..."), second])),
         Doc.rbracket,
       ]);
     }
@@ -78,6 +73,18 @@ and resugar_list = (expressions: list(Parsetree.expression)) => {
       Doc.rbracket,
     ])
   };
+}
+
+and resugar_list_patterns = (patterns: list(Parsetree.pattern)) => {
+  let second: Doc.t = print_pattern(List.hd(List.tl(patterns)));
+  let first = print_pattern(List.hd(patterns));
+  build_sugar_docs(first, second);
+}
+and resugar_list = (expressions: list(Parsetree.expression)) => {
+  let second: Doc.t = print_expression(List.hd(List.tl(expressions)));
+  let first = print_expression(List.hd(expressions));
+
+  build_sugar_docs(first, second);
 }
 and print_record_pattern =
     (
@@ -160,23 +167,44 @@ and print_pattern = (pat: Parsetree.pattern) => {
     ])
   | PPatConstruct(location, patterns) =>
     print_endline("PPatConstruct");
-    Doc.concat([
-      print_ident(location.txt),
-      if (List.length(patterns) > 0) {
-        Doc.group(
-          Doc.concat([
-            Doc.lparen,
-            Doc.join(
-              Doc.comma,
-              List.map(pat => print_pattern(pat), patterns),
-            ),
-            Doc.rparen,
-          ]),
-        );
-      } else {
-        Doc.nil;
-      },
-    ]);
+    let func =
+      switch (location.txt) {
+      | IdentName(name) => name
+      | _ => ""
+      };
+    if (func == "[...]") {
+      resugar_list_patterns(patterns);
+    } else if (List.length(patterns) > 0) {
+      Doc.group(
+        Doc.concat([
+          Doc.lparen,
+          Doc.join(
+            Doc.comma,
+            List.map(pat => print_pattern(pat), patterns),
+          ),
+          Doc.rparen,
+        ]),
+      );
+    } else {
+      Doc.nil;
+    };
+  // Doc.concat([
+  //   print_ident(location.txt),
+  //   if (List.length(patterns) > 0) {
+  //     Doc.group(
+  //       Doc.concat([
+  //         Doc.lparen,
+  //         Doc.join(
+  //           Doc.comma,
+  //           List.map(pat => print_pattern(pat), patterns),
+  //         ),
+  //         Doc.rparen,
+  //       ]),
+  //     );
+  //   } else {
+  //     Doc.nil;
+  //   },
+  // ]);
   | PPatOr(pattern1, pattern2) => Doc.text("PPatOr")
   | PPatAlias(pattern, loc) => Doc.text("PPatAlias")
   };
@@ -713,7 +741,8 @@ let import_print = (imp: Parsetree.import_declaration) => {
             Doc.text("*"),
             if (List.length(identlocs) > 0) {
               Doc.concat([
-                Doc.text(" except "), /// need to find the syntax for this
+                Doc.text(" except "),
+                Doc.lbrace,
                 Doc.join(
                   Doc.comma,
                   List.map(
@@ -722,6 +751,7 @@ let import_print = (imp: Parsetree.import_declaration) => {
                     identlocs,
                   ),
                 ),
+                Doc.rbrace,
               ]);
             } else {
               Doc.nil;
