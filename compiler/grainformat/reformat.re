@@ -437,10 +437,10 @@ and print_expression = (expr: Parsetree.expression) => {
     Doc.text("PExpFor");
   | PExpContinue =>
     print_endline("PExpContinue");
-    Doc.text("PExpContinue");
+    Doc.group(Doc.concat([Doc.text("continue"), Doc.hardLine]));
   | PExpBreak =>
     print_endline("PExpBreak");
-    Doc.text("PExpBreak");
+    Doc.group(Doc.concat([Doc.text("break"), Doc.hardLine]));
   | PExpConstraint(expression, parsed_type) =>
     print_endline("PExpConstraint");
     Doc.group(
@@ -504,7 +504,51 @@ and print_expression = (expr: Parsetree.expression) => {
     Doc.text("PExpBoxAssign");
   | PExpAssign(expression, expression1) =>
     print_endline("PExpAssign");
-    Doc.text("PExpAssign");
+
+    let desugared = print_expression(expression1);
+
+    let sugarMutableNumbers = (docs: list(Res_doc.t)) =>
+      // +=, -=, *=, /=, and %=
+      // operator should be second
+      if (List.length(docs) > 2) {
+        let op = List.nth(docs, 1);
+
+        let sugaredOp =
+          switch (op) {
+          | Text(operator) =>
+            let trimmedOperator = String.trim(operator);
+            switch (trimmedOperator) {
+            | "+"
+            | "-"
+            | "*"
+            | "/"
+            | "%" => Doc.text(trimmedOperator ++ "= ")
+            | _ => op
+            };
+
+          | _ => op
+          };
+
+        let start = Doc.concat([List.nth(docs, 0), sugaredOp]);
+        let tail = Doc.concat(List.map(d => d, List.tl(List.tl(docs))));
+        Doc.concat([start, tail]);
+      } else {
+        Doc.concat(docs);
+      };
+
+    let sugared =
+      switch (desugared) {
+      | Group(grp) =>
+        switch (grp.doc) {
+        | Concat(docs) => sugarMutableNumbers(docs)
+        | _ => desugared
+        }
+      | Concat(docs) => sugarMutableNumbers(docs)
+      | _ => desugared
+      };
+
+    sugared;
+
   | /** Used for modules without body expressions */ PExpNull =>
     print_endline("PExpNull");
     Doc.text("PExpNull");
@@ -536,9 +580,9 @@ and value_bind_print =
   Doc.group(
     Doc.concat([
       exported,
+      Doc.text("let "),
       recursive,
       mutble,
-      Doc.text("let "),
       print_pattern(vb.pvb_pat),
       Doc.text(" = "),
       print_expression(vb.pvb_expr),
