@@ -487,7 +487,7 @@ and print_record_decl = (ppf, lbls) =>
   fprintf(
     ppf,
     "{%a@;<1 -2>}",
-    print_list_init(print_out_label, ppf => fprintf(ppf, "@ ")),
+    print_list_init(print_out_label, ppf => fprintf(ppf, "@?")),
     lbls,
   )
 and print_fields = (rest, ppf) =>
@@ -549,8 +549,8 @@ and print_typargs = ppf =>
 and print_out_label = (ppf, (name, mut, arg)) =>
   fprintf(
     ppf,
-    "@[<2>%s%s :@ %a@];",
-    if (mut) {"mutable "} else {""},
+    "@[<v>@;<0 2>%s%s: %a,@]",
+    if (mut) {"mut "} else {""},
     name,
     print_out_type,
     arg,
@@ -719,7 +719,8 @@ and print_out_type_decl = (kwd, ppf, td) => {
     switch (td.otype_params) {
     | [] => pp_print_string(ppf, td.otype_name)
     | [param] =>
-      fprintf(ppf, "@[%a@ %s@]", type_parameter, param, td.otype_name)
+      // TODO: This no longer has an outer box, nor break hints, because `<` and `>` are special characters in a box. If this causes issues with line-wrapping, we should fix in the future.
+      fprintf(ppf, "%s<@[%a@]>", td.otype_name, type_parameter, param)
     | _ =>
       fprintf(
         ppf,
@@ -762,7 +763,7 @@ and print_out_type_decl = (kwd, ppf, td) => {
   let print_out_tkind = ppf =>
     fun
     | Otyp_abstract => ()
-    | Otyp_record(lbls) => fprintf(ppf, " = %a", print_record_decl, lbls)
+    | Otyp_record(lbls) => fprintf(ppf, " %a", print_record_decl, lbls)
     | Otyp_sum(constrs) =>
       fprintf(
         ppf,
