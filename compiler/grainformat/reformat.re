@@ -174,37 +174,26 @@ and print_pattern = (pat: Parsetree.pattern) => {
       };
     if (func == "[...]") {
       resugar_list_patterns(patterns);
-    } else if (List.length(patterns) > 0) {
-      Doc.group(
-        Doc.concat([
-          Doc.lparen,
-          Doc.join(
-            Doc.comma,
-            List.map(pat => print_pattern(pat), patterns),
-          ),
-          Doc.rparen,
-        ]),
-      );
     } else {
-      Doc.nil;
+      Doc.concat([
+        print_ident(location.txt),
+        if (List.length(patterns) > 0) {
+          Doc.group(
+            Doc.concat([
+              Doc.lparen,
+              Doc.join(
+                Doc.comma,
+                List.map(pat => print_pattern(pat), patterns),
+              ),
+              Doc.rparen,
+            ]),
+          );
+        } else {
+          Doc.nil;
+        },
+      ]);
     };
-  // Doc.concat([
-  //   print_ident(location.txt),
-  //   if (List.length(patterns) > 0) {
-  //     Doc.group(
-  //       Doc.concat([
-  //         Doc.lparen,
-  //         Doc.join(
-  //           Doc.comma,
-  //           List.map(pat => print_pattern(pat), patterns),
-  //         ),
-  //         Doc.rparen,
-  //       ]),
-  //     );
-  //   } else {
-  //     Doc.nil;
-  //   },
-  // ]);
+
   | PPatOr(pattern1, pattern2) => Doc.text("PPatOr")
   | PPatAlias(pattern, loc) => Doc.text("PPatAlias")
   };
@@ -651,6 +640,19 @@ let rec print_data = (d: Grain_parsing__Parsetree.data_declaration) => {
         Doc.space,
         Doc.text(nameloc.txt),
         Doc.space,
+        if (List.length(d.pdata_params) > 0) {
+          Doc.concat([
+            Doc.text("<"),
+            Doc.join(
+              Doc.text(","),
+              List.map(t => print_type(t), d.pdata_params),
+            ),
+            Doc.text(">"),
+            Doc.space,
+          ]);
+        } else {
+          Doc.nil;
+        },
         Doc.group(
           Doc.indent(
             Doc.group(
@@ -680,6 +682,19 @@ let rec print_data = (d: Grain_parsing__Parsetree.data_declaration) => {
         Doc.space,
         Doc.text(nameloc.txt),
         Doc.space,
+        if (List.length(d.pdata_params) > 0) {
+          Doc.concat([
+            Doc.text("<"),
+            Doc.join(
+              Doc.text(","),
+              List.map(t => print_type(t), d.pdata_params),
+            ),
+            Doc.text(">"),
+            Doc.space,
+          ]);
+        } else {
+          Doc.nil;
+        },
         Doc.indent(
           Doc.group(
             Doc.concat([
