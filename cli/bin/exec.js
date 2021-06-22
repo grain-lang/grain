@@ -87,11 +87,14 @@ function execGrainformat(
     if (flag) flags.push(flag);
   });
 
-  return execSync(`${grainformat} ${flags.join(" ")} ${commandOrFile}`, execOpts);
+  return execSync(
+    `${grainformat} ${flags.join(" ")} ${commandOrFile}`,
+    execOpts
+  );
 }
 
 module.exports = {
   grainc: execGrainc,
   graindoc: execGraindoc,
-  grainformat: execGrainformat
+  grainformat: execGrainformat,
 };
