@@ -31,7 +31,7 @@ export function buildGrainRunner(locator, opts) {
   const managedMemory = new ManagedMemory(opts);
   const runner = new GrainRunner(locator || (() => null), managedMemory, opts);
   runner.addImports(buildImportObj(runner));
-  managedMemory.setRuntime(runner);
+  managedMemory.setRunner(runner);
   return runner;
 }
 

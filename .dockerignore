@@ -34,9 +34,7 @@ setup.data
 setup.ml
 myocamlbuild.ml
 .merlin
-runtime/dist
-script/public/javascripts/grain-runtime.js
-script/public/javascripts/grain-runtime-browser.js
+js-runner/dist
 /*.gr
 _esy/
 **/_esy/

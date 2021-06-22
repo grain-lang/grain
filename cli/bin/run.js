@@ -1,5 +1,5 @@
 const path = require("path");
-const runtime = require("@grain/runtime");
+const runner = require("@grain/js-runner");
 const preparePkg = require("./pkg");
 
 module.exports = async function run(filename, options) {
@@ -8,8 +8,8 @@ module.exports = async function run(filename, options) {
   try {
     let basePath = path.dirname(filename);
     let includeDirs = [basePath, ...options.includeDirs, options.stdlib];
-    let locator = runtime.defaultFileLocator(includeDirs);
-    let GrainRunner = runtime.buildGrainRunner(locator, {
+    let locator = runner.defaultFileLocator(includeDirs);
+    let GrainRunner = runner.buildGrainRunner(locator, {
       initialMemoryPages: options.initialMemoryPages,
       maximumMemoryPages: options.maximumMemoryPages,
     });
