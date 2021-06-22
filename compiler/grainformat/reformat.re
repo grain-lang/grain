@@ -362,19 +362,38 @@ and print_expression = (expr: Parsetree.expression) => {
     );
   | PExpArrayGet(expression1, expression2) =>
     print_endline("PExpArrayGet");
-    Doc.text("PExpArrayGet");
+    Doc.concat([
+      print_expression(expression1),
+      Doc.lbracket,
+      print_expression(expression2),
+      Doc.rbracket,
+    ]);
   | PExpArraySet(expression1, expression2, expression3) =>
     print_endline("PExpArraySet");
-    Doc.text("PExpArraySet");
+    Doc.concat([
+      print_expression(expression1),
+      Doc.lbracket,
+      print_expression(expression2),
+      Doc.rbracket,
+      Doc.text(" = "),
+      print_expression(expression3),
+    ]);
+
   | PExpRecord(record) =>
     print_endline("PExpRecord");
     print_record(record);
-  | PExpRecordGet(expression, identloc) =>
+  | PExpRecordGet(expression, {txt, _}) =>
     print_endline("PExpRecordGet");
-    Doc.text("PExpRecordGet");
-  | PExpRecordSet(expression, identloc, expression2) =>
+    Doc.concat([print_expression(expression), Doc.dot, print_ident(txt)]);
+  | PExpRecordSet(expression, {txt, _}, expression2) =>
     print_endline("PExpRecordSet");
-    Doc.text("PExpRecordSet");
+    Doc.concat([
+      print_expression(expression),
+      Doc.dot,
+      print_ident(txt),
+      Doc.text(" = "),
+      print_expression(expression2),
+    ]);
   | PExpMatch(expression, match_branches) =>
     print_endline("PExpMatch");
     Doc.group(
