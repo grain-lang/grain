@@ -4,12 +4,6 @@ open Grain_utils;
 open Grain_middle_end.Anftree;
 open Grain_middle_end.Anf_helper;
 
-let test_dir = Filename.concat(Sys.getcwd(), "test");
-let test_libs_dir = Filename.concat(test_dir, "test-libs");
-let test_input_dir = Filename.concat(test_dir, "input");
-let test_output_dir = Filename.concat(test_dir, "output");
-let test_stdlib_dir = Filename.concat(test_dir, "stdlib");
-
 let grainfile = name => Filename.concat(test_input_dir, name ++ ".gr");
 let stdlibfile = name => Filename.concat(test_stdlib_dir, name ++ ".gr");
 let wasmfile = name => Filename.concat(test_output_dir, name ++ ".gr.wasm");

@@ -19,10 +19,19 @@ let () =
     }
   );
 
-let clean_stdlib = stdlib_dir =>
+let test_dir = Filename.concat(Sys.getcwd(), "test");
+let test_libs_dir = Filename.concat(test_dir, "test-libs");
+let test_input_dir = Filename.concat(test_dir, "input");
+let test_output_dir = Filename.concat(test_dir, "output");
+let test_stdlib_dir = Filename.concat(test_dir, "stdlib");
+let test_snapshots_dir = Filename.concat(test_dir, "__snapshots__");
+
+let clean_grain_output = stdlib_dir =>
   Array.iter(
     file =>
-      if (Filename.check_suffix(file, ".gr.wasm")) {
+      if (Filename.check_suffix(file, ".gr.wasm")
+          || Filename.check_suffix(file, ".gr.wat")
+          || Filename.check_suffix(file, ".gr.modsig")) {
         Sys.remove(file);
       },
     Grain_utils.Files.readdir(stdlib_dir, []),
@@ -38,8 +47,9 @@ let () = {
   let stdlib_dir = Unix.getenv("GRAIN_STDLIB");
   let stdlib_dir = Grain_utils.Files.derelativize(stdlib_dir);
   Grain_utils.Config.stdlib_dir := Some(stdlib_dir);
-  clean_stdlib(stdlib_dir);
-  clean_output("test/output");
+  clean_grain_output(stdlib_dir);
+  clean_grain_output(test_libs_dir);
+  clean_output(test_output_dir);
   Grain_utils.Config.debug := true;
   Grain_utils.Config.wat := true;
   Grain_utils.Config.color_enabled := false;
@@ -49,7 +59,7 @@ let () = {
 include Rely.Make({
   let config =
     Rely.TestFrameworkConfig.initialize({
-      snapshotDir: "test/__snapshots__",
-      projectDir: "test",
+      snapshotDir: test_snapshots_dir,
+      projectDir: test_dir,
     });
 });
