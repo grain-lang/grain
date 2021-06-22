@@ -660,14 +660,39 @@ let rec print_data = (d: Grain_parsing__Parsetree.data_declaration) => {
                 Doc.lbrace,
                 Doc.indent(
                   Doc.join(
-                    Doc.concat([Doc.line, Doc.comma]),
+                    Doc.concat([Doc.softLine, Doc.comma]),
                     List.map(
                       (d: Grain_parsing__Parsetree.constructor_declaration) =>
-                        Doc.text(d.pcd_name.txt),
+                        Doc.group(
+                          Doc.concat([
+                            Doc.line,
+                            Doc.text(d.pcd_name.txt),
+                            switch (d.pcd_args) {
+                            | PConstrTuple(parsed_types) =>
+                              if (List.length(parsed_types) > 0) {
+                                Doc.concat([
+                                  Doc.text("("),
+                                  Doc.join(
+                                    Doc.comma,
+                                    List.map(
+                                      t => print_type(t),
+                                      parsed_types,
+                                    ),
+                                  ),
+                                  Doc.text(")"),
+                                ]);
+                              } else {
+                                Doc.nil;
+                              }
+                            | PConstrSingleton => Doc.nil
+                            },
+                          ]),
+                        ),
                       constr_declarations,
                     ),
                   ),
                 ),
+                Doc.space,
                 Doc.rbrace,
               ]),
             ),
@@ -735,7 +760,8 @@ let data_print =
           ),
         ),
     ) => {
-  Doc.concat(
+  Doc.join(
+    Doc.text(","),
     List.map(
       data => {
         let (expt, decl) = data;
