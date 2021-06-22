@@ -49,3 +49,11 @@ let frontmatter = rows => {
   |> String.concat("\n")
   |> Format.sprintf("---\n%s\n---\n\n");
 };
+
+let bold = str => {
+  Format.sprintf("**%s**", str);
+};
+
+let blockquote = str => {
+  Format.sprintf("> %s\n\n", str);
+};
