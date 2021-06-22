@@ -39,6 +39,10 @@ and resugar_list = (expressions: list(Parsetree.expression)) => {
   print_endline("resugar_list");
   let second: Doc.t = print_expression(List.hd(List.tl(expressions)));
   let first = print_expression(List.hd(expressions));
+
+  print_endline("first:" ++ Doc.toString(~width=100, first));
+  print_endline("second:" ++ Doc.toString(~width=100, second));
+
   switch (second) {
   | Text(txt) =>
     if (txt == "[]") {
@@ -291,6 +295,7 @@ and print_application =
     (func: Parsetree.expression, expressions: list(Parsetree.expression)) => {
   let functionNameDoc = print_expression(func);
   let functionName = Doc.toString(~width=100, functionNameDoc);
+  print_endline("functioname is " ++ functionName);
   if (infixop(functionName)) {
     Doc.group(
       Doc.concat([
@@ -735,12 +740,17 @@ let import_print = (imp: Parsetree.import_declaration) => {
       },
       imp.pimp_val,
     );
+
+  let path = imp.pimp_path.txt;
+
   Doc.group(
     Doc.concat([
       Doc.text("import "),
       Doc.group(Doc.concat(vals)),
       Doc.text(" from "),
-      Doc.text("Path"),
+      Doc.doubleQuote,
+      Doc.text(path),
+      Doc.doubleQuote,
     ]),
   );
 };
