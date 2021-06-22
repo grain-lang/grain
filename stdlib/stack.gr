@@ -1,13 +1,40 @@
+/**
+ * @module Stack: An immutable stack implementation. A stack is a LIFO (last-in-first-out) data structure where new values are added, retrieved, and removed from the end.
+ * @example import Stack from "stack"
+ */
+
 import List from "list"
 
+/**
+ * @section Types: Type declarations included in the Stack module.
+ */
+
+/**
+ * Stacks are immutable data structures that store their data in a List.
+ */
 record Stack<a> {
     data: List<a>
 }
 
+/**
+ * @section Values: Functions and constants included in the Stack module.
+ */
+
+/**
+ * Creates a new stack.
+ *
+ * @returns An empty stack
+ */
 export let make = () => {
     { data: [] }
 }
 
+/**
+ * Checks if the given stack contains no items.
+ *
+ * @param stack: The stack to check
+ * @returns `true` if the stack has no items, and `false` otherwise
+ */
 export let isEmpty = (stack) => {
     match (stack) {
         { data: [] } => true,
@@ -15,6 +42,12 @@ export let isEmpty = (stack) => {
     }
 }
 
+/**
+ * Returns `Some(item)` where `item` is the value at the top of the stack, and `None` otherwise.
+ *
+ * @param stack: The stack to inspect
+ * @returns The value at the top of the stack, if it exists
+ */
 export let peek = (stack) => {
     match (stack) {
         { data: [] } => None,
@@ -23,10 +56,22 @@ export let peek = (stack) => {
 }
 
 /**
-  @deprecated Please use `Stack.peek` instead. `Stack.head` will be removed in v0.4.0.
-*/
+ * Returns `Some(item)` where `item` is the value at the top of the stack, and `None` otherwise.
+ *
+ * @param stack: The stack to inspect
+ * @returns The value at the top of the stack, if it exists
+ *
+ * @deprecated Please use `Stack.peek` instead. `Stack.head` will be removed in v0.4.0.
+ */
 export let head = peek;
 
+/**
+ * Adds a new item to the top of the stack.
+ *
+ * @param value: The item to be added
+ * @param stack: The stack being updated
+ * @returns A new stack with the item added to the end
+ */
 export let push = (value, stack) => {
     match (stack) {
         { data: [] } => { data: [value] },
@@ -34,6 +79,12 @@ export let push = (value, stack) => {
     }
 }
 
+/**
+ * Removes the item at the top of the stack.
+ *
+ * @param stack: The stack being updated
+ * @returns A new stack with the last item removed
+ */
 export let pop = (stack) => {
     match (stack) {
         { data: [] } => stack,
@@ -41,6 +92,12 @@ export let pop = (stack) => {
     }
 }
 
+/**
+ * Computes the size of the input stack.
+ *
+ * @param stack: The stack to inspect
+ * @returns The count of the items in the stack
+ */
 export let size = (stack) => {
     match (stack) {
         { data: [] } => 0,
