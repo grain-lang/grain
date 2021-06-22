@@ -157,8 +157,8 @@ and print_pattern = (pat: Parsetree.pattern) => {
       ]),
     )
   | PPatRecord(patternlocs, closedflag) =>
-    print_endline("PPatRecord");
-    print_record_pattern(patternlocs, closedflag);
+    //print_endline("PPatRecord");
+    print_record_pattern(patternlocs, closedflag)
   | PPatConstraint(pattern, parsed_type) =>
     Doc.concat([
       print_pattern(pattern),
@@ -166,7 +166,7 @@ and print_pattern = (pat: Parsetree.pattern) => {
       print_type(parsed_type),
     ])
   | PPatConstruct(location, patterns) =>
-    print_endline("PPatConstruct");
+    //print_endline("PPatConstruct");
     let func =
       switch (location.txt) {
       | IdentName(name) => name
@@ -220,7 +220,7 @@ and print_constant = (c: Parsetree.constant) => {
     | PConstVoid => "void"
     | PConstString(s) => Printf.sprintf("\"%s\"", s)
     };
-  print_endline(print_c);
+  // print_endline(print_c);
   Doc.text(print_c);
 }
 and print_ident = (ident: Identifier.t) => {
@@ -312,7 +312,7 @@ and print_application =
     (func: Parsetree.expression, expressions: list(Parsetree.expression)) => {
   let functionNameDoc = print_expression(func);
   let functionName = Doc.toString(~width=100, functionNameDoc);
-  print_endline("functioname is " ++ functionName);
+  // print_endline("functioname is " ++ functionName);
   if (infixop(functionName)) {
     Doc.group(
       Doc.concat([
@@ -345,16 +345,16 @@ and print_application =
 and print_expression = (expr: Parsetree.expression) => {
   switch (expr.pexp_desc) {
   | PExpConstant(x) =>
-    print_endline("PExpConstant");
-    print_constant(x);
+    // print_endline("PExpConstant");
+    print_constant(x)
   | PExpId({txt: id}) =>
-    print_endline("PExpId");
-    print_ident(id);
+    // print_endline("PExpId");
+    print_ident(id)
   | PExpLet(rec_flag, mut_flag, vbs) =>
-    print_endline("PExpLet");
-    value_bind_print(Asttypes.Nonexported, rec_flag, mut_flag, vbs);
+    // print_endline("PExpLet");
+    value_bind_print(Asttypes.Nonexported, rec_flag, mut_flag, vbs)
   | PExpTuple(expressions) =>
-    print_endline("PExpTuple");
+    // print_endline("PExpTuple");
     Doc.group(
       Doc.concat([
         Doc.lparen,
@@ -364,9 +364,9 @@ and print_expression = (expr: Parsetree.expression) => {
         ),
         Doc.rparen,
       ]),
-    );
+    )
   | PExpArray(expressions) =>
-    print_endline("PExpArray");
+    //print_endline("PExpArray");
     Doc.group(
       Doc.concat([
         Doc.lbracket,
@@ -376,17 +376,17 @@ and print_expression = (expr: Parsetree.expression) => {
         ),
         Doc.rbracket,
       ]),
-    );
+    )
   | PExpArrayGet(expression1, expression2) =>
-    print_endline("PExpArrayGet");
+    // print_endline("PExpArrayGet");
     Doc.concat([
       print_expression(expression1),
       Doc.lbracket,
       print_expression(expression2),
       Doc.rbracket,
-    ]);
+    ])
   | PExpArraySet(expression1, expression2, expression3) =>
-    print_endline("PExpArraySet");
+    //print_endline("PExpArraySet");
     Doc.concat([
       print_expression(expression1),
       Doc.lbracket,
@@ -394,25 +394,25 @@ and print_expression = (expr: Parsetree.expression) => {
       Doc.rbracket,
       Doc.text(" = "),
       print_expression(expression3),
-    ]);
+    ])
 
   | PExpRecord(record) =>
-    print_endline("PExpRecord");
-    print_record(record);
+    // print_endline("PExpRecord");
+    print_record(record)
   | PExpRecordGet(expression, {txt, _}) =>
-    print_endline("PExpRecordGet");
-    Doc.concat([print_expression(expression), Doc.dot, print_ident(txt)]);
+    // print_endline("PExpRecordGet");
+    Doc.concat([print_expression(expression), Doc.dot, print_ident(txt)])
   | PExpRecordSet(expression, {txt, _}, expression2) =>
-    print_endline("PExpRecordSet");
+    //  print_endline("PExpRecordSet");
     Doc.concat([
       print_expression(expression),
       Doc.dot,
       print_ident(txt),
       Doc.text(" = "),
       print_expression(expression2),
-    ]);
+    ])
   | PExpMatch(expression, match_branches) =>
-    print_endline("PExpMatch");
+    // print_endline("PExpMatch");
     Doc.group(
       Doc.concat([
         Doc.text("match"),
@@ -447,7 +447,7 @@ and print_expression = (expr: Parsetree.expression) => {
           ),
         ),
       ]),
-    );
+    )
   | PExpPrim1(prim1, expression) =>
     print_endline("PExpPrim1");
     Doc.text("PExpPrim1");
@@ -458,7 +458,7 @@ and print_expression = (expr: Parsetree.expression) => {
     print_endline("PExpPrimN");
     Doc.text("PExpPrimN");
   | PExpIf(condition, trueExpr, falseExpr) =>
-    print_endline("PExpIf");
+    // print_endline("PExpIf");
     Doc.group(
       Doc.concat([
         Doc.text("if "),
@@ -470,7 +470,7 @@ and print_expression = (expr: Parsetree.expression) => {
         Doc.text(" else "),
         print_expression(falseExpr),
       ]),
-    );
+    )
   | PExpWhile(expression, expression1) =>
     Doc.concat([
       Doc.text("while "),
@@ -482,7 +482,7 @@ and print_expression = (expr: Parsetree.expression) => {
     ])
 
   | PExpFor(optexpression1, optexpression2, optexpression3, expression4) =>
-    print_endline("PExpFor");
+    //  print_endline("PExpFor");
     Doc.concat([
       Doc.text("for "),
       Doc.lparen,
@@ -503,24 +503,24 @@ and print_expression = (expr: Parsetree.expression) => {
       Doc.rparen,
       Doc.line,
       print_expression(expression4),
-    ]);
+    ])
   | PExpContinue =>
-    print_endline("PExpContinue");
-    Doc.group(Doc.concat([Doc.text("continue"), Doc.hardLine]));
+    //print_endline("PExpContinue");
+    Doc.group(Doc.concat([Doc.text("continue"), Doc.hardLine]))
   | PExpBreak =>
-    print_endline("PExpBreak");
-    Doc.group(Doc.concat([Doc.text("break"), Doc.hardLine]));
+    //print_endline("PExpBreak");
+    Doc.group(Doc.concat([Doc.text("break"), Doc.hardLine]))
   | PExpConstraint(expression, parsed_type) =>
-    print_endline("PExpConstraint");
+    //print_endline("PExpConstraint");
     Doc.group(
       Doc.concat([
         print_expression(expression),
         Doc.text(": "),
         print_type(parsed_type),
       ]),
-    );
+    )
   | PExpLambda(patterns, expression) =>
-    print_endline("PExpLambda");
+    // print_endline("PExpLambda");
     Doc.group(
       Doc.concat([
         Doc.lparen,
@@ -542,12 +542,12 @@ and print_expression = (expr: Parsetree.expression) => {
         print_expression(expression),
         Doc.hardLine,
       ]),
-    );
+    )
   | PExpApp(func, expressions) =>
-    print_endline("PExpApp");
-    print_application(func, expressions);
+    // print_endline("PExpApp");
+    print_application(func, expressions)
   | PExpBlock(expressions) =>
-    print_endline("PExpBlock");
+    // print_endline("PExpBlock");
     Doc.group(
       Doc.concat([
         Doc.text("{"),
@@ -567,12 +567,16 @@ and print_expression = (expr: Parsetree.expression) => {
         Doc.hardLine,
         Doc.text("}"),
       ]),
-    );
+    )
   | PExpBoxAssign(expression, expression1) =>
-    print_endline("PExpBoxAssign");
-    Doc.text("PExpBoxAssign");
+    //  print_endline("PExpBoxAssign");
+    Doc.concat([
+      print_expression(expression),
+      Doc.text(" := "),
+      print_expression(expression1),
+    ])
   | PExpAssign(expression, expression1) =>
-    print_endline("PExpAssign");
+    //print_endline("PExpAssign");
 
     let desugared = print_expression(expression1);
 
@@ -793,7 +797,13 @@ let data_print =
     List.map(
       data => {
         let (expt, decl) = data;
-        print_data(decl);
+        Doc.concat([
+          switch ((expt: Asttypes.export_flag)) {
+          | Nonexported => Doc.nil
+          | Exported => Doc.text("export ")
+          },
+          print_data(decl),
+        ]);
       },
       datas,
     ),
@@ -872,12 +882,30 @@ let import_print = (imp: Parsetree.import_declaration) => {
     ]),
   );
 };
+
+let print_export_desc = (desc: Parsetree.export_declaration_desc) => {
+  Doc.concat([
+    Doc.text(desc.pex_name.txt),
+    switch (desc.pex_alias) {
+    | Some(alias) => Doc.concat([Doc.text(" as "), Doc.text(alias.txt)])
+    | None => Doc.nil
+    },
+  ]);
+};
+
+let print_export_declaration = (decl: Parsetree.export_declaration) => {
+  switch (decl) {
+  | ExportData(data) => print_export_desc(data)
+  | ExportValue(value) => print_export_desc(value)
+  };
+};
+
 let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
   let toplevel_print = (data: Grain_parsing__Parsetree.toplevel_stmt) => {
     switch (data.ptop_desc) {
     | PTopImport(import_declaration) =>
-      print_endline("PTopImport");
-      import_print(import_declaration);
+      //   print_endline("PTopImport");
+      import_print(import_declaration)
     | PTopForeign(export_flag, value_description) =>
       print_endline("PTopForeign");
       Doc.nil;
@@ -885,23 +913,51 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
       print_endline("PTopPrimitive");
       Doc.nil;
     | PTopData(data_declarations) =>
-      print_endline("PTopData");
-      data_print(data_declarations);
+      //print_endline("PTopData");
+      data_print(data_declarations)
     | PTopLet(export_flag, rec_flag, mut_flag, value_bindings) =>
-      print_endline("PTopLet");
-      value_bind_print(export_flag, rec_flag, mut_flag, value_bindings);
+      // print_endline("PTopLet");
+      value_bind_print(export_flag, rec_flag, mut_flag, value_bindings)
     | PTopExpr(expression) =>
-      print_endline("PTopExpr");
-      print_expression(expression);
+      // print_endline("PTopExpr");
+      print_expression(expression)
     | PTopException(export_flag, type_exception) =>
       print_endline("PTopException");
       Doc.nil;
     | PTopExport(export_declarations) =>
       print_endline("PTopExport");
-      Doc.nil;
+      Doc.group(
+        Doc.concat([
+          Doc.text("export "),
+          Doc.join(
+            Doc.concat([Doc.comma, Doc.line]),
+            List.map(e => print_export_declaration(e), export_declarations),
+          ),
+        ]),
+      );
     | PTopExportAll(export_excepts) =>
-      print_endline("PTopExportAll");
-      Doc.nil;
+      //  print_endline("PTopExportAll");
+      Doc.concat([
+        Doc.text("export * "),
+        if (List.length(export_excepts) > 0) {
+          Doc.concat([
+            Doc.text("except "),
+            Doc.join(
+              Doc.comma,
+              List.map(
+                (excpt: Parsetree.export_except) =>
+                  switch (excpt) {
+                  | ExportExceptData(data) => Doc.text(data.txt)
+                  | ExportExceptValue(value) => Doc.text(value.txt)
+                  },
+                export_excepts,
+              ),
+            ),
+          ]);
+        } else {
+          Doc.nil;
+        },
+      ])
     };
   };
   let printedDoc =
