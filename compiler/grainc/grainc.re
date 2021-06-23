@@ -58,7 +58,11 @@ let compile_string = name => {
     ignore(
       {
         let compile_state =
-          Compile.compile_string(~hook=stop_after_typed, ~name, program_str^);
+          Compile.compile_string(
+            ~hook=stop_after_typed_well_formed,
+            ~name,
+            program_str^,
+          );
 
         switch (compile_state.cstate_desc) {
         | TypeChecked(typed_program) =>

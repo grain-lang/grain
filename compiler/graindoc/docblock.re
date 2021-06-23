@@ -123,6 +123,28 @@ let signature_item_in_range =
 let to_markdown = docblock => {
   let buf = Buffer.create(0);
   Buffer.add_string(buf, Markdown.heading(~level=3, docblock.name));
+  let deprecations =
+    docblock.attributes
+    |> List.filter(Comments.Attribute.is_deprecated)
+    |> List.map((attr: Comments.Attribute.t) => {
+         switch (attr) {
+         | Deprecated({attr_desc}) => attr_desc
+         | _ =>
+           failwith(
+             "Unreachable: Non-`deprecated` attribute can't exist here.",
+           )
+         }
+       });
+  if (List.length(deprecations) > 0) {
+    List.iter(
+      msg =>
+        Buffer.add_string(
+          buf,
+          Markdown.blockquote(Markdown.bold("Deprecated:") ++ " " ++ msg),
+        ),
+      deprecations,
+    );
+  };
   Buffer.add_string(buf, Markdown.code_block(docblock.type_sig));
   if (String.length(docblock.description) > 0) {
     Buffer.add_string(buf, Markdown.paragraph(docblock.description));

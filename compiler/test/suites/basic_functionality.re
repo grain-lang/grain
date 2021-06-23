@@ -156,8 +156,16 @@ describe("basic functionality", ({test}) => {
   /* Assertions */
   assertSnapshot("assert1", "assert true");
   assertSnapshot("assert2", "assert 3 + 3 == 6");
-  assertRunError("assert3", "assert false", "AssertionError");
-  assertRunError("assert4", "assert 4 - 1 == 14", "AssertionError");
+  assertRunError(
+    "assert3",
+    "assert false",
+    "AssertionError: Assertion failed in assert3, line 1",
+  );
+  assertRunError(
+    "assert4",
+    "assert 4 - 1 == 14",
+    "AssertionError: Assertion failed in assert4, line 1",
+  );
   /* Failures */
   assertRunError("fail1", "ignore(fail \"boo\")", "Failure: boo");
   assertRunError(
