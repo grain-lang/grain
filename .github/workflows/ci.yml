@@ -28,7 +28,7 @@ jobs:
       - name: Checkout project
         uses: actions/checkout@v2
 
-      - name: Set up runtime and CLI
+      - name: Set up JS runner and CLI
         run: |
           yarn
 
@@ -67,7 +67,7 @@ jobs:
       - name: Run formatting lint
         run: |
           yarn compiler check-format
-          yarn runtime check-format
+          yarn js-runner check-format
           yarn cli check-format
 
       # This is to test the CLI is working

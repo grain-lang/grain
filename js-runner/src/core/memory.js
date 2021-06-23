@@ -9,7 +9,7 @@ export class ManagedMemory {
     this._u8view = new Uint8Array(this._memory.buffer);
     this._f32view = new Float32Array(this._memory.buffer);
     this._f64view = new Float64Array(this._memory.buffer);
-    this._runtime = null;
+    this._runner = null;
   }
 
   _refreshViews() {
@@ -40,54 +40,53 @@ export class ManagedMemory {
     return this._f64view;
   }
 
-  setRuntime(runtime) {
-    this._runtime = runtime;
+  setRunner(runner) {
+    this._runner = runner;
   }
 
   incRef(userPtr) {
-    let closure = this._runtime.memoryManager.requiredExport(
+    let closure = this._runner.memoryManager.requiredExport(
       "GRAIN$EXPORT$incRef"
     ).value;
-    return this._runtime.memoryManager.requiredExport("incRef")(
+    return this._runner.memoryManager.requiredExport("incRef")(
       closure,
       userPtr
     );
   }
 
   decRef(userPtr, src, ignoreZeros) {
-    let closure = this._runtime.memoryManager.requiredExport(
+    let closure = this._runner.memoryManager.requiredExport(
       "GRAIN$EXPORT$decRef"
     ).value;
-    return this._runtime.memoryManager.requiredExport("decRef")(
+    return this._runner.memoryManager.requiredExport("decRef")(
       closure,
       userPtr
     );
   }
 
   decRefIgnoreZeros(userPtr) {
-    let closure = this._runtime.memoryManager.requiredExport(
+    let closure = this._runner.memoryManager.requiredExport(
       "GRAIN$EXPORT$decRefIgnoreZeros"
     ).value;
-    return this._runtime.memoryManager.requiredExport("decRefIgnoreZeros")(
+    return this._runner.memoryManager.requiredExport("decRefIgnoreZeros")(
       closure,
       userPtr
     );
   }
 
   malloc(userPtr) {
-    let closure = this._runtime.memoryManager.requiredExport(
+    let closure = this._runner.memoryManager.requiredExport(
       "GRAIN$EXPORT$malloc"
     ).value;
-    return this._runtime.memoryManager.requiredExport("malloc")(
+    return this._runner.memoryManager.requiredExport("malloc")(
       closure,
       userPtr
     );
   }
 
   free(userPtr) {
-    let closure = this._runtime.memoryManager.requiredExport(
-      "GRAIN$EXPORT$free"
-    ).value;
-    this._runtime.memoryManager.requiredExport("free")(closure, userPtr);
+    let closure = this._runner.memoryManager.requiredExport("GRAIN$EXPORT$free")
+      .value;
+    this._runner.memoryManager.requiredExport("free")(closure, userPtr);
   }
 }

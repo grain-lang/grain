@@ -16,7 +16,7 @@ export class GrainRunner {
     this.postImports = () => {};
     this.encoder = new TextEncoder("utf-8");
     this.decoder = new TextDecoder("utf-8");
-    this.imports["grainRuntime"] = {
+    this.imports["_grainEnv"] = {
       relocBase: 0,
       moduleRuntimeId: 0,
     };
@@ -140,11 +140,11 @@ export class GrainRunner {
     this.postImports();
     // All of the dependencies have been loaded. Now we can instantiate with the import object.
     await mod.instantiate(this.imports, this);
-    this.idMap[this.imports["grainRuntime"]["moduleRuntimeId"]] = name;
+    this.idMap[this.imports["_grainEnv"]["moduleRuntimeId"]] = name;
     if (mod.isStartable) {
-      this.imports["grainRuntime"]["relocBase"] += mod.tableSize || 0;
+      this.imports["_grainEnv"]["relocBase"] += mod.tableSize || 0;
 
-      ++this.imports["grainRuntime"]["moduleRuntimeId"];
+      ++this.imports["_grainEnv"]["moduleRuntimeId"];
     }
     if (!(name in this.modules)) {
       this.modules[name] = mod;

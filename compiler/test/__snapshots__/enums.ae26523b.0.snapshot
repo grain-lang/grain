@@ -4,11 +4,11 @@ enums › enum_recursive_data_definition
  (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
  (type $none_=>_none (func))
  (type $none_=>_i32 (func (result i32)))
- (import \"grainRuntime\" \"mem\" (memory $0 0))
- (import \"grainRuntime\" \"tbl\" (table $tbl 0 funcref))
- (elem $elem (global.get $import_grainRuntime_0_relocBase_0) $func_0 $func_1)
- (import \"grainRuntime\" \"relocBase\" (global $import_grainRuntime_0_relocBase_0 i32))
- (import \"grainRuntime\" \"moduleRuntimeId\" (global $import_grainRuntime_0_moduleRuntimeId_0 i32))
+ (import \"_grainEnv\" \"mem\" (memory $0 0))
+ (import \"_grainEnv\" \"tbl\" (table $tbl 0 funcref))
+ (elem $elem (global.get $import__grainEnv_0_relocBase_0) $func_0 $func_1)
+ (import \"_grainEnv\" \"relocBase\" (global $import__grainEnv_0_relocBase_0 i32))
+ (import \"_grainEnv\" \"moduleRuntimeId\" (global $import__grainEnv_0_moduleRuntimeId_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRefIgnoreZeros\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0 (mut i32)))
@@ -54,7 +54,7 @@ enums › enum_recursive_data_definition
         (i32.store offset=4
          (local.get $0)
          (i32.shl
-          (global.get $import_grainRuntime_0_moduleRuntimeId_0)
+          (global.get $import__grainEnv_0_moduleRuntimeId_0)
           (i32.const 1)
          )
         )
@@ -119,7 +119,7 @@ enums › enum_recursive_data_definition
         (i32.store offset=4
          (local.get $0)
          (i32.shl
-          (global.get $import_grainRuntime_0_moduleRuntimeId_0)
+          (global.get $import__grainEnv_0_moduleRuntimeId_0)
           (i32.const 1)
          )
         )
@@ -256,7 +256,7 @@ enums › enum_recursive_data_definition
   )
   (i32.store offset=4
    (local.get $0)
-   (global.get $import_grainRuntime_0_moduleRuntimeId_0)
+   (global.get $import__grainEnv_0_moduleRuntimeId_0)
   )
   (i32.store
    (i32.const 1032)
@@ -283,7 +283,7 @@ enums › enum_recursive_data_definition
       (i32.store offset=4
        (local.get $0)
        (i32.shl
-        (global.get $import_grainRuntime_0_moduleRuntimeId_0)
+        (global.get $import__grainEnv_0_moduleRuntimeId_0)
         (i32.const 1)
        )
       )
@@ -333,7 +333,7 @@ enums › enum_recursive_data_definition
       (i32.store offset=8
        (local.get $0)
        (i32.add
-        (global.get $import_grainRuntime_0_relocBase_0)
+        (global.get $import__grainEnv_0_relocBase_0)
         (i32.const 1)
        )
       )
@@ -379,7 +379,7 @@ enums › enum_recursive_data_definition
       (i32.store offset=4
        (local.get $0)
        (i32.shl
-        (global.get $import_grainRuntime_0_moduleRuntimeId_0)
+        (global.get $import__grainEnv_0_moduleRuntimeId_0)
         (i32.const 1)
        )
       )
@@ -428,7 +428,7 @@ enums › enum_recursive_data_definition
       )
       (i32.store offset=8
        (local.get $0)
-       (global.get $import_grainRuntime_0_relocBase_0)
+       (global.get $import__grainEnv_0_relocBase_0)
       )
       (i32.store offset=12
        (local.get $0)

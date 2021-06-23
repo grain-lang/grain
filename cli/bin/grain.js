@@ -152,7 +152,7 @@ program
 
 program
   .command("run <file>")
-  .description("run a wasm file with the grain runtime")
+  .description("run a wasm file with grain's javascript runner")
   .action(function (wasmFile) {
     run(wasmFile, program.opts());
   });

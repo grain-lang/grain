@@ -27,7 +27,7 @@ const common = {
 const browserConfig = merge(common, {
   entry: "./src/index.js",
   output: {
-    filename: "grain-runtime-browser.js",
+    filename: "grain-runner-browser.js",
     path: __dirname + "/dist",
     library: "Grain",
     libraryTarget: "var",
@@ -40,15 +40,15 @@ const browserConfig = merge(common, {
       wasiBindings: "@wasmer/wasi/lib/bindings/browser",
     }),
     new webpack.DefinePlugin({
-      __RUNTIME_BROWSER: JSON.stringify(true),
+      __RUNNER_BROWSER: JSON.stringify(true),
     }),
   ],
 });
 
 const nodeConfig = merge(common, {
-  entry: "./src/runtime.js",
+  entry: "./src/runner.js",
   output: {
-    filename: "grain-runtime.js",
+    filename: "grain-runner.js",
     path: __dirname + "/dist",
     libraryTarget: "commonjs2",
   },
@@ -59,7 +59,7 @@ const nodeConfig = merge(common, {
       wasiBindings: "@wasmer/wasi/lib/bindings/node",
     }),
     new webpack.DefinePlugin({
-      __RUNTIME_BROWSER: JSON.stringify(false),
+      __RUNNER_BROWSER: JSON.stringify(false),
     }),
   ],
 });

@@ -5,7 +5,7 @@
   "description": "The Grain monorepo.",
   "workspaces": [
     "cli",
-    "runtime",
+    "js-runner",
     "stdlib",
     "compiler"
   ],
@@ -14,10 +14,10 @@
   },
   "scripts": {
     "vscode": "node .vscode/setup-ocaml-lsp.js && yarn compiler prepare",
-    "prepare": "yarn runtime build && yarn cli link",
+    "prepare": "yarn js-runner build && yarn cli link",
     "test": "yarn compiler test",
     "cli": "yarn workspace @grain/cli run",
-    "runtime": "yarn workspace @grain/runtime run",
+    "js-runner": "yarn workspace @grain/js-runner run",
     "compiler": "yarn workspace @grain/compiler run",
     "stdlib": "yarn workspace @grain/stdlib run",
     "postcompiler": "yarn stdlib clean"

@@ -84,3 +84,7 @@ let load =
   let align = Option.value(~default=sz, align);
   Expression.Load.make(~signed, wasm_mod, sz, offset, align, ty, ptr);
 };
+
+let grain_env_name = "_grainEnv";
+
+let is_grain_env = str => grain_env_name == str;
