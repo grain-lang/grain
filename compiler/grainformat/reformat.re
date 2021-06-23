@@ -32,6 +32,60 @@ let infixop = (op: string) => {
   | _ => false
   };
 };
+let get_raw_pos_info = (pos: Lexing.position) => (
+  pos.pos_fname,
+  pos.pos_lnum,
+  pos.pos_cnum - pos.pos_bol,
+  pos.pos_bol,
+);
+
+let find_comment =
+    (src_line: int, comments: list(Grain_parsing.Parsetree.comment)) =>
+  List.find_all(
+    (c: Grain_parsing.Parsetree.comment) => {
+      let line =
+        switch (c) {
+        | Line(cmt) =>
+          print_endline("Line");
+
+          let (file, startline, startchar, sbol) =
+            get_raw_pos_info(cmt.cmt_loc.loc_start);
+          print_endline(string_of_int(startline));
+          print_endline(cmt.cmt_content);
+          print_endline(cmt.cmt_source);
+          startline;
+
+        | Shebang(cmt) =>
+          print_endline("Shebang");
+          let (file, startline, startchar, sbol) =
+            get_raw_pos_info(cmt.cmt_loc.loc_start);
+
+          print_endline(cmt.cmt_content);
+          print_endline(cmt.cmt_source);
+          startline;
+        | Block(cmt) =>
+          print_endline("Block");
+          let (file, startline, startchar, sbol) =
+            get_raw_pos_info(cmt.cmt_loc.loc_start);
+
+          print_endline(cmt.cmt_content);
+          print_endline(cmt.cmt_source);
+          startline;
+        | Doc(cmt) =>
+          print_endline("Doc");
+          let (file, startline, startchar, sbol) =
+            get_raw_pos_info(cmt.cmt_loc.loc_start);
+
+          print_endline(cmt.cmt_content);
+          print_endline(cmt.cmt_source);
+          startline;
+        };
+
+      line == src_line;
+    },
+    comments,
+  );
+
 let rec remove_cons = (expression: Parsetree.expression) => {
   print_expression(expression);
 }
@@ -320,7 +374,7 @@ and print_application =
         Doc.space,
         print_expression(func),
         Doc.space,
-        print_expression(List.hd(List.tl(expressions))),
+        print_expression(List.hd(List.tl(expressions))) // assumes an infix only has two expressions
       ]),
     );
   } else {
@@ -332,9 +386,11 @@ and print_application =
         Doc.concat([
           funcName,
           Doc.lparen,
-          Doc.join(
-            Doc.concat([Doc.softLine, Doc.text(",")]),
-            List.map(e => print_expression(e), expressions),
+          Doc.indent(
+            Doc.join(
+              Doc.concat([Doc.softLine, Doc.text(",")]),
+              List.map(e => print_expression(e), expressions),
+            ),
           ),
           Doc.rparen,
         ]),
@@ -901,76 +957,126 @@ let print_export_declaration = (decl: Parsetree.export_declaration) => {
 };
 
 let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
-  let toplevel_print = (data: Grain_parsing__Parsetree.toplevel_stmt) => {
-    switch (data.ptop_desc) {
-    | PTopImport(import_declaration) =>
-      //   print_endline("PTopImport");
-      import_print(import_declaration)
-    | PTopForeign(export_flag, value_description) =>
-      print_endline("PTopForeign");
-      Doc.nil;
-    | PTopPrimitive(export_flag, value_description) =>
-      print_endline("PTopPrimitive");
-      Doc.nil;
-    | PTopData(data_declarations) =>
-      //print_endline("PTopData");
-      data_print(data_declarations)
-    | PTopLet(export_flag, rec_flag, mut_flag, value_bindings) =>
-      // print_endline("PTopLet");
-      value_bind_print(export_flag, rec_flag, mut_flag, value_bindings)
-    | PTopExpr(expression) =>
-      // print_endline("PTopExpr");
-      print_expression(expression)
-    | PTopException(export_flag, type_exception) =>
-      print_endline("PTopException");
-      Doc.nil;
-    | PTopExport(export_declarations) =>
-      print_endline("PTopExport");
-      Doc.group(
-        Doc.concat([
-          Doc.text("export "),
-          Doc.join(
-            Doc.concat([Doc.comma, Doc.line]),
-            List.map(e => print_export_declaration(e), export_declarations),
-          ),
-        ]),
-      );
-    | PTopExportAll(export_excepts) =>
-      //  print_endline("PTopExportAll");
-      Doc.concat([
-        Doc.text("export * "),
-        if (List.length(export_excepts) > 0) {
+  let toplevel_print = (data: Parsetree.toplevel_stmt) => {
+    let (file, startline, startchar, sbol) =
+      get_raw_pos_info(data.ptop_loc.loc_start);
+
+    let comments = find_comment(startline, parsed_program.comments);
+
+    let attributes = data.ptop_attributes;
+
+    let withoutComments =
+      switch (data.ptop_desc) {
+      | PTopImport(import_declaration) =>
+        //   print_endline("PTopImport");
+        import_print(import_declaration)
+      | PTopForeign(export_flag, value_description) =>
+        print_endline("PTopForeign");
+        Doc.nil;
+      | PTopPrimitive(export_flag, value_description) =>
+        print_endline("PTopPrimitive");
+        Doc.nil;
+      | PTopData(data_declarations) =>
+        //print_endline("PTopData");
+        data_print(data_declarations)
+      | PTopLet(export_flag, rec_flag, mut_flag, value_bindings) =>
+        // print_endline("PTopLet");
+        value_bind_print(export_flag, rec_flag, mut_flag, value_bindings)
+      | PTopExpr(expression) =>
+        // print_endline("PTopExpr");
+        print_expression(expression)
+      | PTopException(export_flag, type_exception) =>
+        print_endline("PTopException");
+        Doc.nil;
+      | PTopExport(export_declarations) =>
+        print_endline("PTopExport");
+        Doc.group(
           Doc.concat([
-            Doc.text("except "),
+            Doc.text("export "),
             Doc.join(
-              Doc.comma,
+              Doc.concat([Doc.comma, Doc.line]),
               List.map(
-                (excpt: Parsetree.export_except) =>
-                  switch (excpt) {
-                  | ExportExceptData(data) => Doc.text(data.txt)
-                  | ExportExceptValue(value) => Doc.text(value.txt)
-                  },
-                export_excepts,
+                e => print_export_declaration(e),
+                export_declarations,
               ),
             ),
-          ]);
-        } else {
-          Doc.nil;
-        },
-      ])
-    };
+          ]),
+        );
+      | PTopExportAll(export_excepts) =>
+        //  print_endline("PTopExportAll");
+        Doc.concat([
+          Doc.text("export * "),
+          if (List.length(export_excepts) > 0) {
+            Doc.concat([
+              Doc.text("except "),
+              Doc.join(
+                Doc.comma,
+                List.map(
+                  (excpt: Parsetree.export_except) =>
+                    switch (excpt) {
+                    | ExportExceptData(data) => Doc.text(data.txt)
+                    | ExportExceptValue(value) => Doc.text(value.txt)
+                    },
+                  export_excepts,
+                ),
+              ),
+            ]);
+          } else {
+            Doc.nil;
+          },
+        ])
+      };
+
+    let attributeText =
+      if (List.length(attributes) > 0) {
+        Doc.concat([
+          Doc.join(
+            Doc.space,
+            List.map(
+              (a: Location.loc(string)) =>
+                Doc.concat([Doc.text("@"), Doc.text(a.txt)]),
+              attributes,
+            ),
+          ),
+          Doc.hardLine,
+        ]);
+      } else {
+        Doc.nil;
+      };
+
+    let commentText =
+      if (List.length(comments) > 0) {
+        let comment = List.hd(comments);
+
+        switch (comment) {
+        | Line(cmt) => Doc.concat([Doc.space, Doc.text(cmt.cmt_source)])
+        | _ => Doc.nil
+        };
+      } else {
+        Doc.nil;
+      };
+
+    Doc.concat([attributeText, withoutComments, commentText]);
   };
   let printedDoc =
     Doc.join(
       Doc.hardLine,
-      List.map(stmt => {toplevel_print(stmt)}, parsed_program.statements),
+      List.map(
+        (stmt: Parsetree.toplevel_stmt) => {toplevel_print(stmt)},
+        parsed_program.statements,
+      ),
     );
+
+  Doc.debug(printedDoc);
+
+  //
+
   Doc.toString(~width=80, printedDoc) |> print_endline;
-  // print_endline(
-  //   Yojson.Basic.pretty_to_string(
-  //     Yojson.Safe.to_basic(
-  //       Grain_parsing__Parsetree.parsed_program_to_yojson(parsed_program),
-  //     ),
-  //   ),
-  // );
+  print_endline(
+    Yojson.Basic.pretty_to_string(
+      Yojson.Safe.to_basic(
+        Grain_parsing__Parsetree.parsed_program_to_yojson(parsed_program),
+      ),
+    ),
+  );
 };
