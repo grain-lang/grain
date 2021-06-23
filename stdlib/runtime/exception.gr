@@ -82,7 +82,15 @@ export exception Overflow
 export exception NumberNotIntlike
 export exception NumberNotRational
 export exception MatchFailure
-export exception AssertionError
+/*
+ * `assert <condition>` is essentially syntactic sugar for:
+ * `if (!<condition>) throw AssertionError(<message>)`
+ * where <message> is a string injected by the compiler, containing file and line information.
+ * This would be better as `AssertionError(String, Number)` to allow the exception printer in
+ * this file to construct the error, but constructing a string in this module is impractical as we
+ * don't have access to memory allocation since malloc.gr depends on this module.
+ */
+export exception AssertionError(String)
 export exception InvalidArgument(String)
 export exception OutOfMemory
 
@@ -95,7 +103,7 @@ let runtimeErrorPrinter = (e) => {
     NumberNotIntlike => Some("NumberNotIntlike: Can't coerce number to integer"),
     NumberNotRational => Some("NumberNotRational: Can't coerce number to rational"),
     MatchFailure => Some("MatchFailure: No matching pattern"),
-    AssertionError => Some("AssertionError: Assertion failed"),
+    AssertionError(s) => Some(s),
     OutOfMemory => Some("OutOfMemory: Maximum memory size exceeded"),
     InvalidArgument(msg) => Some(msg),
     _ => None

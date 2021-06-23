@@ -1064,6 +1064,11 @@ and transl_comp_expression =
       ans_setup @ [BSeq(ans)],
     );
   | TExpApp(
+      {exp_desc: TExpIdent(_, _, {val_kind: TValPrim("@assert")})},
+      [arg],
+    ) =>
+    transl_comp_expression({...e, exp_desc: TExpPrim1(Assert, arg)})
+  | TExpApp(
       {exp_desc: TExpIdent(_, _, {val_kind: TValPrim("@and")})},
       [arg1, arg2],
     ) =>
