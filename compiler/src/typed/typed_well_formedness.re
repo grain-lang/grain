@@ -31,13 +31,13 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
           {
             exp_desc:
               TExpIdent(
-                Path.PExternal(Path.PIdent({name: "Pervasives"}), "==", _),
+                Path.PExternal(Path.PIdent({name: "Pervasives"}), func, _),
                 _,
                 _,
               ),
           },
           args,
-        ) =>
+        ) when func == "==" || func == "!=" =>
         if (List.exists(exp_is_wasm_unsafe, args)) {
           let warning = Grain_utils.Warnings.EqualWasmUnsafe;
           if (Grain_utils.Warnings.is_active(warning)) {
