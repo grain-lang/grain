@@ -51,7 +51,7 @@
     "@opam/fp": "facebookexperimental/reason-native:fp.opam#a33f1528a6dd86c67f365e226c81312733181c87",
     "@opam/fs": "facebookexperimental/reason-native:fs.opam#a33f1528a6dd86c67f365e226c81312733181c87",
     "@opam/utf8": "facebookexperimental/reason-native:utf8.opam#a33f1528a6dd86c67f365e226c81312733181c87",
-    "@grain/binaryen.ml": "grain-lang/binaryen.ml#e091fd5",
+    "@grain/binaryen.ml": "grain-lang/binaryen.ml#a1803a1",
     "ocaml": "peblair/ocaml#3d09f526eb643cf974d4cd0451192468f0fbb76b"
   },
   "installConfig": {
