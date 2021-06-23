@@ -3,6 +3,9 @@
 import List from "list"
 import Array from "array"
 import { hash } from "hash"
+import Memory from "runtime/unsafe/memory"
+import WasmI32 from "runtime/unsafe/wasmi32"
+import { allocateArray } from "runtime/dataStructures"
 
 // TODO: Consider implementing this as List<(Box<k>, Box<v>)>
 record Bucket<k, v> {
@@ -274,8 +277,45 @@ export let fromList = (list) => {
   map
 }
 
+/* Benchmark
+
+import Map from "map"
+import Time from "sys/time"
+import Array from "array"
+import Int64 from "int64"
+
+let begin = Time.realTime()
+print(("making map", begin))
+
+let m = Map.fromArray(Array.init(9, idx => (idx, idx)))
+
+let beforeToArray = Time.realTime()
+print(("creation took", Int64.div(Int64.sub(beforeToArray, begin), 1000L)))
+print(("begin to array", beforeToArray))
+
+let a = Map.toArray(m)
+
+let afterToArray = Time.realTime()
+
+print(("toArray took", Int64.div(Int64.sub(afterToArray, beforeToArray), 1000L)))
+
+*/
+
+@disableGC
+let setInArray = ((i, array), key, value) => {
+  array[i] = (key, value);
+  (i + 1, array)
+}
+
+@disableGC
 export let toArray = (map) => {
-  Array.fromList(toList(map))
+  let length = WasmI32.shrS(WasmI32.fromGrain(map.size), 1n)
+  // TODO: Removing parens around Array<a> causes a parse error
+  let array = WasmI32.toGrain(allocateArray(length)): (Array<a>)
+  let acc = (0, array)
+  reduce(setInArray, acc, map)
+  Memory.free(WasmI32.fromGrain(acc))
+  array
 }
 
 export let fromArray = (array) => {
