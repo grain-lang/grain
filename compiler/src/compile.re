@@ -14,6 +14,7 @@ type compilation_state_desc =
   | Parsed(Parsetree.parsed_program)
   | WellFormed(Parsetree.parsed_program)
   | TypeChecked(Typedtree.typed_program)
+  | TypedWellFormed(Typedtree.typed_program)
   | Linearized(Anftree.anf_program)
   | Optimized(Anftree.anf_program)
   | Mashed(Mashtree.mash_program)
@@ -60,6 +61,8 @@ let log_state = state =>
     | TypeChecked(typed_mod) =>
       prerr_string("\nTyped program:\n");
       prerr_sexp(Grain_typed.Typedtree.sexp_of_typed_program, typed_mod);
+    | TypedWellFormed(typed_mod) =>
+      prerr_string("\nTyped well-formedness passed")
     | Linearized(anfed) =>
       prerr_string("\nANFed program:\n");
       prerr_sexp(Anftree.sexp_of_anf_program, anfed);
@@ -127,6 +130,9 @@ let next_state = ({cstate_desc, cstate_filename} as cs) => {
       WellFormed(p);
     | WellFormed(p) => TypeChecked(Typemod.type_implementation(p))
     | TypeChecked(typed_mod) =>
+      Typed_well_formedness.check_well_formedness(typed_mod);
+      TypedWellFormed(typed_mod);
+    | TypedWellFormed(typed_mod) =>
       Linearized(Linearize.transl_anf_module(typed_mod))
     | Linearized(anfed) =>
       if (Grain_utils.Config.optimizations_enabled^) {
@@ -220,6 +226,11 @@ let stop_after_well_formed =
 let stop_after_typed =
   fun
   | {cstate_desc: TypeChecked(_)} => Stop
+  | s => Continue(s);
+
+let stop_after_typed_well_formed =
+  fun
+  | {cstate_desc: TypedWellFormed(_)} => Stop
   | s => Continue(s);
 
 let stop_after_anf =
