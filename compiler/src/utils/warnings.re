@@ -105,7 +105,10 @@ let message =
     )
   | NonClosedRecordPattern(s) =>
     "the following fields are missing from the record pattern: " ++ s
-  | FuncWasmUnsafe(func) => "it looks like you are using " ++ func ++ " on two unsafe Wasm values here.\nThis is generally unsafe and will cause errors. Use one of the equivalent functions in `WasmI32`, `WasmI64`, `WasmF32`, or `WasmF64` instead.";
+  | FuncWasmUnsafe(func) =>
+    "it looks like you are using "
+    ++ func
+    ++ " on two unsafe Wasm values here.\nThis is generally unsafe and will cause errors. Use one of the equivalent functions in `WasmI32`, `WasmI64`, `WasmF32`, or `WasmF64` instead.";
 
 let sub_locs =
   fun
