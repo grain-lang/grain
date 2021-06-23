@@ -287,7 +287,7 @@ import Int64 from "int64"
 let begin = Time.realTime()
 print(("making map", begin))
 
-let m = Map.fromArray(Array.init(9, idx => (idx, idx)))
+let m = Map.fromArray(Array.init(100000, idx => (idx, idx)))
 
 let beforeToArray = Time.realTime()
 print(("creation took", Int64.div(Int64.sub(beforeToArray, begin), 1000L)))
