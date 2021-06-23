@@ -30,7 +30,8 @@ module Attribute = {
     | Section({
         attr_name,
         attr_desc,
-      });
+      })
+    | Deprecated({attr_desc});
 
   let try_or_malformed = (~attr, ~hint, fn) =>
     try(fn()) {
@@ -97,6 +98,15 @@ module Attribute = {
                 attrs := [Section({attr_name, attr_desc}), ...attrs^];
               },
             )
+          | "deprecated" =>
+            try_or_malformed(
+              ~attr,
+              ~hint="@deprecated Description of deprecation",
+              () => {
+                let attr_desc = Str.matched_group(4, comment);
+                attrs := [Deprecated({attr_desc: attr_desc}), ...attrs^];
+              },
+            )
           | _ => raise(InvalidAttribute(attr))
           };
 
@@ -140,6 +150,13 @@ module Attribute = {
   let is_section = (attr: t) => {
     switch (attr) {
     | Section(_) => true
+    | _ => false
+    };
+  };
+
+  let is_deprecated = (attr: t) => {
+    switch (attr) {
+    | Deprecated(_) => true
     | _ => false
     };
   };
