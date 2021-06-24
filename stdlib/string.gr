@@ -447,6 +447,7 @@ export let contains = (p: String, s: String) => {
   let (+) = WasmI32.add
   let (-) = WasmI32.sub
   let (==) = WasmI32.eq
+  let (!=) = WasmI32.ne
   let (<) = WasmI32.ltU
   let (<=) = WasmI32.leU
   let (>) = WasmI32.gtU
@@ -978,6 +979,7 @@ let decodedLength = (bytes: Bytes, encoding: Encoding, start: WasmI32, size: Was
   let (+) = WasmI32.add
   let (-) = WasmI32.sub
   let (==) = WasmI32.eq
+  let (!=) = WasmI32.ne
   let (<) = WasmI32.ltU
   let (>) = WasmI32.gtU
   let (|) = WasmI32.or
