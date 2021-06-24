@@ -156,7 +156,7 @@ let to_markdown = docblock => {
          switch (attr) {
          | Param({attr_name, attr_type, attr_desc}) => [
              Markdown.code(attr_name),
-             Option.value(~default="", attr_type),
+             Option.fold(~none="", ~some=Markdown.code, attr_type),
              attr_desc,
            ]
          | _ =>
@@ -176,7 +176,7 @@ let to_markdown = docblock => {
     |> List.map((attr: Comments.Attribute.t) => {
          switch (attr) {
          | Returns({attr_type, attr_desc}) => [
-             Option.value(~default="", attr_type),
+             Option.fold(~none="", ~some=Markdown.code, attr_type),
              attr_desc,
            ]
          | _ =>
