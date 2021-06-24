@@ -983,11 +983,12 @@ let print_export_declaration = (decl: Parsetree.export_declaration) => {
 //export foreign wasm debug: a -> Void from "console"
 let print_value_description = (vd: Parsetree.value_description) =>
   Doc.concat([
-    Doc.text(vd.pval_mod.txt),
-    Doc.space,
     Doc.text(vd.pval_name.txt),
     Doc.text(": "),
     print_type(vd.pval_type),
+    Doc.text(" from \""),
+    Doc.text(vd.pval_mod.txt),
+    Doc.text("\""),
   ]);
 
 let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
@@ -1009,7 +1010,7 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
 
         let export =
           switch (export_flag) {
-          | Nonexported => Doc.nil
+          | Nonexported => Doc.text("import ")
           | Exported => Doc.text("export ")
           };
         Doc.concat([
