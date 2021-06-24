@@ -277,35 +277,9 @@ export let fromList = (list) => {
   map
 }
 
-/* Benchmark
-
-import Map from "map"
-import Time from "sys/time"
-import Array from "array"
-import Int64 from "int64"
-
-let begin = Time.realTime()
-print(("making map", begin))
-
-let m = Map.fromArray(Array.init(100000, idx => (idx, idx)))
-
-let beforeToArray = Time.realTime()
-print(("creation took", Int64.div(Int64.sub(beforeToArray, begin), 1000L)))
-print(("begin to array", beforeToArray))
-
-let a = Map.toArray(m)
-
-let afterToArray = Time.realTime()
-
-print(("toArray took", Int64.div(Int64.sub(afterToArray, beforeToArray), 1000L)))
-
-*/
-
-@disableGC
-let setInArray = ((i, array), key, value) => {
-  Memory.incRef(WasmI32.fromGrain(array))
-  array[i] = (key, value);
-  (i + 1, array)
+let setInArray = (array) => (i, key, value) => {
+  array[i] = (key, value)
+  i + 1
 }
 
 @disableGC
@@ -313,11 +287,9 @@ export let toArray = (map) => {
   let length = WasmI32.shrS(WasmI32.fromGrain(map.size), 1n)
   // TODO: Removing parens around Array<a> causes a parse error
   let array = WasmI32.toGrain(allocateArray(length)): (Array<a>)
-  Memory.incRef(WasmI32.fromGrain(array))
-  let acc = (0, array)
-  let res = reduce(setInArray, acc, map)
-  Memory.free(WasmI32.fromGrain(res))
-  Memory.free(WasmI32.fromGrain(acc))
+  let setInArray = setInArray(array)
+  reduce(setInArray, 0, map)
+  Memory.decRef(WasmI32.fromGrain(setInArray))
   array
 }
 
