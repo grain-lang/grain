@@ -65,7 +65,7 @@ let compile_string = name => {
           );
 
         switch (compile_state.cstate_desc) {
-        | TypeChecked(typed_program) =>
+        | TypedWellFormed(typed_program) =>
           let values: list(Grain_diagnostics.Lenses.lens_t) =
             Grain_diagnostics.Lenses.get_lenses_values(typed_program);
           let warnings: list(Grain_diagnostics.Output.lsp_warning) =
@@ -80,7 +80,9 @@ let compile_string = name => {
               ~values,
             );
           print_endline(json);
-        | _ => ()
+        | _ =>
+          // If you reach this fail, your stop_after_* and variant are mismatched
+          failwith("Impossible by the `stop_after_*` hook")
         };
       },
     )
