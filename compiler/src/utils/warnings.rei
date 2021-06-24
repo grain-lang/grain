@@ -37,7 +37,7 @@ type t =
   | UnreachableCase
   | ShadowConstructor(string)
   | NoCmiFile(string, option(string))
-  | EqualWasmUnsafe;
+  | FuncWasmUnsafe(string);
 
 let is_active: t => bool;
 let is_error: t => bool;
