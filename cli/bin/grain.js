@@ -19,7 +19,7 @@ const compile = require("./compile.js");
 const run = require("./run.js");
 const lsp = require("./lsp.js");
 const doc = require("./doc.js");
-const format = require("./formay.js");
+const format = require("./format.js");
 
 const stdlibPath = require("@grain/stdlib");
 

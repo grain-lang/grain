@@ -344,8 +344,27 @@ and print_type = (p: Grain_parsing__Parsetree.parsed_type) => {
   switch (p.ptyp_desc) {
   | PTyAny => Doc.text("AnyType")
   | PTyVar(name) => Doc.text(name)
-  | PTyArrow(types, parsed_type) => Doc.text("PTyArrow")
-  | PTyTuple(parsed_types) => Doc.text("PTyTuple")
+  | PTyArrow(types, parsed_type) =>
+    Doc.concat([
+      if (List.length(types) == 1) {
+        print_type(List.hd(types));
+      } else {
+        Doc.concat([
+          Doc.lparen,
+          Doc.join(Doc.comma, List.map(t => print_type(t), types)),
+          Doc.rparen,
+        ]);
+      },
+      Doc.text(" -> "),
+      print_type(parsed_type),
+    ])
+
+  | PTyTuple(parsed_types) =>
+    Doc.concat([
+      Doc.lparen,
+      Doc.join(Doc.comma, List.map(t => print_type(t), parsed_types)),
+      Doc.rparen,
+    ])
   | PTyConstr(locidentifier, parsedtypes) =>
     let ident = locidentifier.txt;
     Doc.concat([
@@ -727,7 +746,6 @@ let rec print_data = (d: Grain_parsing__Parsetree.data_declaration) => {
         Doc.text("enum"),
         Doc.space,
         Doc.text(nameloc.txt),
-        Doc.space,
         if (List.length(d.pdata_params) > 0) {
           Doc.concat([
             Doc.text("<"),
@@ -817,14 +835,20 @@ let rec print_data = (d: Grain_parsing__Parsetree.data_declaration) => {
                   Doc.concat([Doc.line, Doc.comma]),
                   List.map(
                     (decl: Grain_parsing__Parsetree.label_declaration) => {
+                      let isMutable =
+                        switch (decl.pld_mutable) {
+                        | Mutable => Doc.text("mut ")
+                        | Immutable => Doc.nil
+                        };
                       Doc.group(
                         Doc.concat([
                           Doc.line,
+                          isMutable,
                           print_ident(decl.pld_name.txt),
                           Doc.text(":"),
                           print_type(decl.pld_type),
                         ]),
-                      )
+                      );
                     },
                     label_declarations,
                   ),
@@ -956,6 +980,16 @@ let print_export_declaration = (decl: Parsetree.export_declaration) => {
   };
 };
 
+//export foreign wasm debug: a -> Void from "console"
+let print_value_description = (vd: Parsetree.value_description) =>
+  Doc.concat([
+    Doc.text(vd.pval_mod.txt),
+    Doc.space,
+    Doc.text(vd.pval_name.txt),
+    Doc.text(": "),
+    print_type(vd.pval_type),
+  ]);
+
 let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
   let toplevel_print = (data: Parsetree.toplevel_stmt) => {
     let (file, startline, startchar, sbol) =
@@ -972,10 +1006,29 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
         import_print(import_declaration)
       | PTopForeign(export_flag, value_description) =>
         print_endline("PTopForeign");
-        Doc.nil;
+
+        let export =
+          switch (export_flag) {
+          | Nonexported => Doc.nil
+          | Exported => Doc.text("export ")
+          };
+        Doc.concat([
+          export,
+          Doc.text("foreign "),
+          print_value_description(value_description),
+        ]);
       | PTopPrimitive(export_flag, value_description) =>
         print_endline("PTopPrimitive");
-        Doc.nil;
+        let export =
+          switch (export_flag) {
+          | Nonexported => Doc.nil
+          | Exported => Doc.text("export ")
+          };
+        Doc.concat([
+          export,
+          Doc.text("primitive "),
+          print_value_description(value_description),
+        ]);
       | PTopData(data_declarations) =>
         //print_endline("PTopData");
         data_print(data_declarations)
@@ -986,10 +1039,45 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
         // print_endline("PTopExpr");
         print_expression(expression)
       | PTopException(export_flag, type_exception) =>
-        print_endline("PTopException");
-        Doc.nil;
+        // print_endline("PTopException");
+        let export =
+          switch (export_flag) {
+          | Nonexported => Doc.nil
+          | Exported => Doc.text("export ")
+          };
+        let cstr = type_exception.ptyexn_constructor;
+
+        let kind =
+          switch (cstr.pext_kind) {
+          | PExtDecl(sargs) =>
+            switch (sargs) {
+            | PConstrSingleton => Doc.nil
+            | PConstrTuple(parsed_types) =>
+              if (List.length(parsed_types) > 0) {
+                Doc.concat([
+                  Doc.text("("),
+                  Doc.join(
+                    Doc.comma,
+                    List.map(t => print_type(t), parsed_types),
+                  ),
+                  Doc.text(")"),
+                ]);
+              } else {
+                Doc.nil;
+              }
+            }
+
+          | PExtRebind(lid) => print_ident(lid.txt)
+          };
+
+        Doc.concat([
+          export,
+          Doc.text("exception "),
+          Doc.text(cstr.pext_name.txt),
+          kind,
+        ]);
       | PTopExport(export_declarations) =>
-        print_endline("PTopExport");
+        //  print_endline("PTopExport");
         Doc.group(
           Doc.concat([
             Doc.text("export "),
@@ -1001,7 +1089,7 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
               ),
             ),
           ]),
-        );
+        )
       | PTopExportAll(export_excepts) =>
         //  print_endline("PTopExportAll");
         Doc.concat([
@@ -1068,15 +1156,13 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
     );
 
   Doc.debug(printedDoc);
-
   //
-
   Doc.toString(~width=80, printedDoc) |> print_endline;
-  print_endline(
-    Yojson.Basic.pretty_to_string(
-      Yojson.Safe.to_basic(
-        Grain_parsing__Parsetree.parsed_program_to_yojson(parsed_program),
-      ),
-    ),
-  );
+  // print_endline(
+  //   Yojson.Basic.pretty_to_string(
+  //     Yojson.Safe.to_basic(
+  //       Grain_parsing__Parsetree.parsed_program_to_yojson(parsed_program),
+  //     ),
+  //   ),
+  // );
 };
