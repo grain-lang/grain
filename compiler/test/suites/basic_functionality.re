@@ -144,7 +144,7 @@ describe("basic functionality", ({test}) => {
   assertSnapshot("if_one_sided6", "let mut x = 1; if (3 < 4) x = 2 + 3; x");
   assertCompileError(
     "if_one_sided_type_err",
-    "let foo = (if (false) { 5; }); let bar = foo + 5; bar",
+    "let foo = (if (false) { ignore(5) }); let bar = foo + 5; bar",
     "has type Void but",
   );
   assertSnapshot("int32_1", "42l");

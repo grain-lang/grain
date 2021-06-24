@@ -503,7 +503,7 @@ block_body_expr :
   | expr  { $1 }
 
 block_body_stmt :
-  | block_body_expr SEMI eols? { Exp.ignore $1 }
+  | block_body_expr SEMI eols? { $1 }
   | block_body_expr eols { $1 }
 
 tuple_exprs :
@@ -532,7 +532,7 @@ record_exprs :
   | [record_field | record_pun] [comma [record_field | record_pun] {$2}]* trailing_comma? {$1::$2}
 
 block_body :
-  | block_body_stmt* block_body_expr SEMI { $1 @ [Exp.ignore $2] }
+  | block_body_stmt* block_body_expr SEMI { $1 @ [$2] }
   | block_body_stmt* block_body_expr { $1 @ [$2] }
 
 file_path :
