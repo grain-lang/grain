@@ -5,6 +5,26 @@ open Grain_utils;
 
 module Doc = Res_doc;
 
+let addParens = doc =>
+  Doc.group(
+    Doc.concat([
+      Doc.lparen,
+      Doc.indent(Doc.concat([Doc.softLine, doc])),
+      Doc.softLine,
+      Doc.rparen,
+    ]),
+  );
+
+let addBraces = doc =>
+  Doc.group(
+    Doc.concat([
+      Doc.lbrace,
+      Doc.indent(Doc.concat([Doc.softLine, doc])),
+      Doc.softLine,
+      Doc.rbrace,
+    ]),
+  );
+
 let infixop = (op: string) => {
   switch (op) {
   | "+"
@@ -195,13 +215,10 @@ and print_pattern = (pat: Parsetree.pattern) => {
   | PPatConstant(c) => print_constant(c)
   | PPatVar({txt, _}) => Doc.text(txt)
   | PPatTuple(patterns) =>
-    Doc.group(
-      Doc.concat([
-        Doc.lparen,
-        Doc.join(Doc.comma, List.map(p => print_pattern(p), patterns)),
-        Doc.rparen,
-      ]),
+    addParens(
+      Doc.join(Doc.comma, List.map(p => print_pattern(p), patterns)),
     )
+
   | PPatArray(patterns) =>
     Doc.group(
       Doc.concat([
@@ -232,15 +249,11 @@ and print_pattern = (pat: Parsetree.pattern) => {
       Doc.concat([
         print_ident(location.txt),
         if (List.length(patterns) > 0) {
-          Doc.group(
-            Doc.concat([
-              Doc.lparen,
-              Doc.join(
-                Doc.comma,
-                List.map(pat => print_pattern(pat), patterns),
-              ),
-              Doc.rparen,
-            ]),
+          addParens(
+            Doc.join(
+              Doc.comma,
+              List.map(pat => print_pattern(pat), patterns),
+            ),
           );
         } else {
           Doc.nil;
@@ -349,22 +362,19 @@ and print_type = (p: Grain_parsing__Parsetree.parsed_type) => {
       if (List.length(types) == 1) {
         print_type(List.hd(types));
       } else {
-        Doc.concat([
-          Doc.lparen,
+        addParens(
           Doc.join(Doc.comma, List.map(t => print_type(t), types)),
-          Doc.rparen,
-        ]);
+        );
       },
       Doc.text(" -> "),
       print_type(parsed_type),
     ])
 
   | PTyTuple(parsed_types) =>
-    Doc.concat([
-      Doc.lparen,
+    addParens(
       Doc.join(Doc.comma, List.map(t => print_type(t), parsed_types)),
-      Doc.rparen,
-    ])
+    )
+
   | PTyConstr(locidentifier, parsedtypes) =>
     let ident = locidentifier.txt;
     Doc.concat([
@@ -404,14 +414,12 @@ and print_application =
       Doc.group(
         Doc.concat([
           funcName,
-          Doc.lparen,
-          Doc.indent(
+          addParens(
             Doc.join(
               Doc.concat([Doc.softLine, Doc.text(",")]),
               List.map(e => print_expression(e), expressions),
             ),
           ),
-          Doc.rparen,
         ]),
       );
     };
@@ -430,16 +438,10 @@ and print_expression = (expr: Parsetree.expression) => {
     value_bind_print(Asttypes.Nonexported, rec_flag, mut_flag, vbs)
   | PExpTuple(expressions) =>
     // print_endline("PExpTuple");
-    Doc.group(
-      Doc.concat([
-        Doc.lparen,
-        Doc.join(
-          Doc.comma,
-          List.map(e => print_expression(e), expressions),
-        ),
-        Doc.rparen,
-      ]),
+    addParens(
+      Doc.join(Doc.comma, List.map(e => print_expression(e), expressions)),
     )
+
   | PExpArray(expressions) =>
     //print_endline("PExpArray");
     Doc.group(
@@ -492,9 +494,7 @@ and print_expression = (expr: Parsetree.expression) => {
       Doc.concat([
         Doc.text("match"),
         Doc.space,
-        Doc.lparen,
-        Doc.indent(Doc.concat([print_expression(expression)])),
-        Doc.rparen,
+        addParens(print_expression(expression)),
         Doc.group(Doc.indent(Doc.line)),
         Doc.indent(
           Doc.group(
@@ -549,9 +549,7 @@ and print_expression = (expr: Parsetree.expression) => {
   | PExpWhile(expression, expression1) =>
     Doc.concat([
       Doc.text("while "),
-      Doc.lparen,
-      print_expression(expression),
-      Doc.rparen,
+      addParens(print_expression(expression)),
       Doc.line,
       print_expression(expression1),
     ])
@@ -560,22 +558,24 @@ and print_expression = (expr: Parsetree.expression) => {
     //  print_endline("PExpFor");
     Doc.concat([
       Doc.text("for "),
-      Doc.lparen,
-      switch (optexpression1) {
-      | Some(expr) => print_expression(expr)
-      | None => Doc.nil
-      },
-      Doc.text(";"),
-      switch (optexpression2) {
-      | Some(expr) => Doc.concat([Doc.space, print_expression(expr)])
-      | None => Doc.nil
-      },
-      Doc.text(";"),
-      switch (optexpression3) {
-      | Some(expr) => Doc.concat([Doc.space, print_expression(expr)])
-      | None => Doc.nil
-      },
-      Doc.rparen,
+      addParens(
+        Doc.concat([
+          switch (optexpression1) {
+          | Some(expr) => print_expression(expr)
+          | None => Doc.nil
+          },
+          Doc.text(";"),
+          switch (optexpression2) {
+          | Some(expr) => Doc.concat([Doc.space, print_expression(expr)])
+          | None => Doc.nil
+          },
+          Doc.text(";"),
+          switch (optexpression3) {
+          | Some(expr) => Doc.concat([Doc.space, print_expression(expr)])
+          | None => Doc.nil
+          },
+        ]),
+      ),
       Doc.line,
       print_expression(expression4),
     ])
@@ -596,28 +596,23 @@ and print_expression = (expr: Parsetree.expression) => {
     )
   | PExpLambda(patterns, expression) =>
     // print_endline("PExpLambda");
-    Doc.group(
-      Doc.concat([
-        Doc.lparen,
-        Doc.indent(
-          Doc.group(
-            Doc.concat([
-              Doc.softLine,
-              Doc.join(
-                Doc.concat([Doc.softLine, Doc.text(",")]),
-                List.map(p => print_pattern(p), patterns),
-              ),
-            ]),
+    Doc.concat([
+      addParens(
+        Doc.concat([
+          Doc.softLine,
+          Doc.join(
+            Doc.concat([Doc.softLine, Doc.text(",")]),
+            List.map(p => print_pattern(p), patterns),
           ),
-        ),
-        Doc.rparen,
-        Doc.space,
-        Doc.text("=>"),
-        Doc.space,
-        print_expression(expression),
-        Doc.hardLine,
-      ]),
-    )
+        ]),
+      ),
+      Doc.space,
+      Doc.text("=>"),
+      Doc.space,
+      print_expression(expression),
+      Doc.hardLine,
+    ])
+
   | PExpApp(func, expressions) =>
     // print_endline("PExpApp");
     print_application(func, expressions)
