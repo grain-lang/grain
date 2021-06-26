@@ -42,8 +42,8 @@ export function toBinary(n, minWidth) {
   return ret;
 }
 
-function float64At(runtime, idx) {
-  const f64view = runtime.managedMemory.f64view;
+function float64At(runner, idx) {
+  const f64view = runner.managedMemory.f64view;
   return f64view[idx / 8 + 1];
 }
 
@@ -66,16 +66,16 @@ GrainAdtValue.prototype.toString = function () {
   }
 };
 
-export function grainBoxedNumberToJSVal(runtime, n) {
-  const view = runtime.managedMemory.view;
-  const uview = runtime.managedMemory.uview;
-  const f32view = runtime.managedMemory.f32view;
+export function grainBoxedNumberToJSVal(runner, n) {
+  const view = runner.managedMemory.view;
+  const uview = runner.managedMemory.uview;
+  const f32view = runner.managedMemory.f32view;
   let nInt = n / 4;
   switch (view[nInt + 1]) {
     case GRAIN_FLOAT32_BOXED_NUM_TAG:
       return f32view[nInt + 2];
     case GRAIN_FLOAT64_BOXED_NUM_TAG:
-      return float64At(runtime, n + 8);
+      return float64At(runner, n + 8);
     case GRAIN_RATIONAL_BOXED_NUM_TAG:
       let numerator = view[nInt + 2];
       let denominator = view[nInt + 3];
@@ -95,13 +95,13 @@ export function grainBoxedNumberToJSVal(runtime, n) {
   }
 }
 
-export function grainHeapValToJSVal(runtime, n) {
-  const view = runtime.managedMemory.view;
+export function grainHeapValToJSVal(runner, n) {
+  const view = runner.managedMemory.view;
   switch (view[n / 4]) {
     case GRAIN_BOXED_NUM_HEAP_TAG:
-      return grainBoxedNumberToJSVal(runtime, n);
+      return grainBoxedNumberToJSVal(runner, n);
     case GRAIN_STRING_HEAP_TAG:
-      let byteView = runtime.managedMemory.u8view;
+      let byteView = runner.managedMemory.u8view;
       let length = view[n / 4 + 1];
       let slice = byteView.slice(n + 8, n + 8 + length);
       return decoder.decode(slice);
@@ -109,13 +109,13 @@ export function grainHeapValToJSVal(runtime, n) {
       // TODO: Make this reversible
       let x = n / 4;
       //console.log(`<ADT Value: (${view[x + 1]}, ${view[x + 2]}, ${view[x + 3]}, ${view[x + 4]})>`);
-      if (runtime) {
-        let info = grainAdtInfo(runtime, n);
+      if (runner) {
+        let info = grainAdtInfo(runner, n);
         //console.log(`\tVariant: ${info}`);
         let [variantName, arity] = info;
         let ret = [variantName];
         for (let i = 0; i < arity; ++i) {
-          ret.push(grainToJSVal(runtime, view[x + 5 + i]));
+          ret.push(grainToJSVal(runner, view[x + 5 + i]));
         }
         return new GrainAdtValue(ret);
       }
@@ -127,7 +127,7 @@ export function grainHeapValToJSVal(runtime, n) {
       };
     }
     case GRAIN_TUPLE_HEAP_TAG: {
-      return grainTupleToJSVal(runtime, x);
+      return grainTupleToJSVal(runner, x);
     }
     default:
       console.warn(`Unknown heap tag at ${n / 4}: ${view[n / 4]}`);
@@ -135,17 +135,17 @@ export function grainHeapValToJSVal(runtime, n) {
   }
 }
 
-export function grainAdtInfo(runtime, n) {
-  const view = runtime.managedMemory.view;
+export function grainAdtInfo(runner, n) {
+  const view = runner.managedMemory.view;
   let x = n / 4;
-  if (runtime) {
+  if (runner) {
     // In-memory tags are tagged ints
     let moduleId = view[x + 1] >> 1;
     let typeId = view[x + 2] >> 1;
     let variantId = view[x + 3] >> 1;
-    let moduleName = runtime.idMap[moduleId];
+    let moduleName = runner.idMap[moduleId];
     //console.log(`\tModule Name: ${moduleName}`);
-    let module = runtime.modules[moduleName];
+    let module = runner.modules[moduleName];
     //console.log(`\tModule: ${module}`);
     let tyinfo = module.types[typeId];
     //console.log(`\tType Info: ${JSON.stringify(tyinfo)}`);
@@ -156,8 +156,8 @@ export function grainAdtInfo(runtime, n) {
   return null;
 }
 
-export function grainTupleToJSVal(runtime, n) {
-  const view = runtime.managedMemory.view;
+export function grainTupleToJSVal(runner, n) {
+  const view = runner.managedMemory.view;
   let tupleIdx = n / 4;
   let tupleLength = view[tupleIdx + 1];
   if (tupleLength & 0x80000000) {
@@ -166,7 +166,7 @@ export function grainTupleToJSVal(runtime, n) {
     view[tupleIdx + 1] |= 0x80000000;
     let elts = [];
     for (let i = 0; i < tupleLength; ++i) {
-      let value = grainToJSVal(runtime, view[tupleIdx + i + 2]);
+      let value = grainToJSVal(runner, view[tupleIdx + i + 2]);
       if (value === Symbol.for("cyclic")) {
         elts.push(elts);
       } else {
@@ -178,11 +178,11 @@ export function grainTupleToJSVal(runtime, n) {
   }
 }
 
-export function grainToJSVal(runtime, x) {
+export function grainToJSVal(runner, x) {
   if (x & 1) {
     return x >> 1;
   } else if ((x & 7) === 0) {
-    return grainHeapValToJSVal(runtime, x);
+    return grainHeapValToJSVal(runner, x);
   } else if (x === GRAIN_TRUE) {
     return true;
   } else if (x === GRAIN_FALSE) {
@@ -195,12 +195,12 @@ export function grainToJSVal(runtime, x) {
   }
 }
 
-export function JSToGrainVal(v, runtime) {
-  const view = runtime.managedMemory.view;
+export function JSToGrainVal(v, runner) {
+  const view = runner.managedMemory.view;
   if (typeof v === "number") {
     if (!Number.isInteger(v)) {
       // not an integer, so just pun into a float64
-      let userPtr = runtime.managedMemory.malloc(4 * 4);
+      let userPtr = runner.managedMemory.malloc(4 * 4);
       let ptr = userPtr / 4;
       view[ptr] = GRAIN_BOXED_NUM_HEAP_TAG;
       view[ptr + 1] = GRAIN_FLOAT64_BOXED_NUM_TAG;
@@ -218,7 +218,7 @@ export function JSToGrainVal(v, runtime) {
     }
     if (v < 1 << 31 && v > -1 << 31) {
       // int32
-      let userPtr = runtime.managedMemory.malloc(4 * 3);
+      let userPtr = runner.managedMemory.malloc(4 * 3);
       let ptr = userPtr / 4;
       view[ptr] = GRAIN_BOXED_NUM_HEAP_TAG;
       view[ptr + 1] = GRAIN_INT32_BOXED_NUM_TAG;
@@ -227,7 +227,7 @@ export function JSToGrainVal(v, runtime) {
     }
     if (v < 1 << 63 && v > -1 << 63) {
       // int64
-      let userPtr = runtime.managedMemory.malloc(4 * 4);
+      let userPtr = runner.managedMemory.malloc(4 * 4);
       let ptr = userPtr / 4;
       view[ptr] = GRAIN_BOXED_NUM_HEAP_TAG;
       view[ptr + 1] = GRAIN_INT64_BOXED_NUM_TAG;
@@ -247,13 +247,11 @@ export function JSToGrainVal(v, runtime) {
       return GRAIN_FALSE;
     }
   } else if (typeof v === "string") {
-    let userPtr = runtime.managedMemory.malloc(
-      4 * 2 + ((v.length - 1) / 4 + 1)
-    );
+    let userPtr = runner.managedMemory.malloc(4 * 2 + ((v.length - 1) / 4 + 1));
     let ptr = userPtr / 4;
     view[ptr] = GRAIN_STRING_HEAP_TAG;
     view[ptr + 1] = v.length;
-    let byteView = runtime.managedMemory.u8view;
+    let byteView = runner.managedMemory.u8view;
     let buf = encoder.encode(v);
     for (let i = 0; i < buf.length; ++i) {
       byteView[i + ptr * 4 + 8] = buf[i];

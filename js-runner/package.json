@@ -1,9 +1,9 @@
 {
-  "name": "@grain/runtime",
+  "name": "@grain/js-runner",
   "version": "0.3.0",
-  "description": "The JavaScript runtime for the Grain language.",
-  "main": "dist/grain-runtime.js",
-  "browser": "dist/grain-runtime-browser.js",
+  "description": "The JavaScript runner for the Grain language.",
+  "main": "dist/grain-runner.js",
+  "browser": "dist/grain-runner-browser.js",
   "scripts": {
     "build": "webpack --config webpack.prod.js",
     "build:dev": "webpack --config webpack.dev.js",
@@ -18,7 +18,7 @@
   },
   "keywords": [
     "grain",
-    "runtime"
+    "runner"
   ],
   "contributors": [
     {

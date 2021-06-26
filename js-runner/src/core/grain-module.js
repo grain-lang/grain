@@ -4,7 +4,7 @@ import wasmmap from "wasm-sourcemap";
 
 let bindings;
 
-if (__RUNTIME_BROWSER) {
+if (__RUNNER_BROWSER) {
   const wasmFs = new WasmFs();
   bindings = {
     ...wasiBindings.default,
@@ -15,11 +15,11 @@ if (__RUNTIME_BROWSER) {
 }
 
 export const wasi = new WASI({
-  args: __RUNTIME_BROWSER ? [] : process.argv,
-  env: __RUNTIME_BROWSER ? {} : process.env,
+  args: __RUNNER_BROWSER ? [] : process.argv,
+  env: __RUNNER_BROWSER ? {} : process.env,
   bindings,
   preopens: {
-    "/sandbox": __RUNTIME_BROWSER ? "" : process.cwd(),
+    "/sandbox": __RUNNER_BROWSER ? "" : process.cwd(),
   },
 });
 

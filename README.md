@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-    <a href="https://github.com/grain-lang/grain/workflows/Grain%20CI%20Workflow/badge.svg">
+    <a href="https://github.com/grain-lang/grain/actions/workflows/ci.yml">
         <img src="https://img.shields.io/github/workflow/status/grain-lang/grain/Grain%20CI%20Workflow?style=flat-square" alt="Grain CI Workflow">
     </a>
     <a href="https://choosealicense.com/licenses/lgpl-3.0/">
@@ -37,7 +37,7 @@ yarn
 yarn compiler build
 ```
 
-This will set up the Grain runtime, standard library, and CLI.
+This will set up the Grain JS runner, standard library, and CLI.
 
 If running tests is your kind of thing, run
 
@@ -61,10 +61,10 @@ To build the standard library:
 yarn stdlib build
 ```
 
-To build the runtime:
+To build the JS runner:
 
 ```bash
-yarn runtime build
+yarn js-runner build
 ```
 
 To link the CLI:

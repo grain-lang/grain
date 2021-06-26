@@ -264,16 +264,16 @@ export let coerceNumberToWasmF32 = (x: Number) => {
     match (xtag) {
       t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
         WasmF32.convertI32S(boxedInt32Number(x))
-      }, 
+      },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
         WasmF32.convertI64S(boxedInt64Number(x))
-      }, 
+      },
       t when WasmI32.eq(t, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG) => {
         WasmF32.div(WasmF32.convertI32S(boxedRationalNumerator(x)), WasmF32.convertI32S(boxedRationalDenominator(x)))
-      }, 
+      },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
         boxedFloat32Number(x)
-      }, 
+      },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
         let xval = boxedFloat64Number(x)
         if (WasmF64.gt(xval, _F32_MAX) || WasmF64.lt(xval, _F32_MIN)) {
@@ -534,7 +534,23 @@ let numberEqualFloat64Help = (x, y) => {
 }
 
 let numberEqualFloat32Help = (x, y) => {
-  numberEqualFloat64Help(WasmF64.promoteF32(x), y)
+  let xIsInteger = isIntegerF32(x)
+  // Basic number:
+  if (isSimpleNumber(y)) {
+    xIsInteger && WasmF32.eq(x, WasmF32.convertI32S(untagSimple(y)))
+  } else {
+    // Boxed number
+    let yBoxedNumberTag = boxedNumberTag(y)
+    match (yBoxedNumberTag) {
+      t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
+        // Special case: f32/f32 equality (need to handle here without promotion)
+        WasmF32.eq(x, boxedFloat32Number(y))
+      },
+      _ => {
+        numberEqualFloat64Help(WasmF64.promoteF32(x), y)
+      }
+    }
+  }
 }
 
 export let numberEqual = (x, y) => {

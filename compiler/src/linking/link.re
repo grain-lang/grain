@@ -97,6 +97,15 @@ let is_global_imported = global =>
 let is_function_imported = func =>
   Import.function_import_get_base(func) != "";
 
+// NOTE: A Not_found being raised in the below function likely means that there
+//       is more than one place in the Binaryen program which has the same
+//       subexpression (in an identity equality sense). The substitution
+//       probably succeeded the first time the subexpression was found, but,
+//       because this process is not idempotent, failed on the second time. The fix
+//       for this problem is to produce two separate expression instances when
+//       constructing the AST (either through constructing two separate instances or by
+//       using Expression.copy())
+
 let rec globalize_names = (local_names, expr) => {
   let kind = Expression.get_kind(expr);
   switch (kind) {
@@ -420,7 +429,7 @@ let link_all = (linked_mod, dependencies, signature) => {
           let new_name = gensym(internal_name);
           Hashtbl.add(local_names, internal_name, new_name);
 
-          if (imported_module == "grainRuntime") {
+          if (Comp_utils.is_grain_env(imported_module)) {
             let value =
               switch (imported_name) {
               | "relocBase" =>

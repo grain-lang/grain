@@ -20,7 +20,7 @@ function buildImportObj(runner) {
       printClosure: printClosure,
       tracepoint: (n) => console.log(`tracepoint ${n} reached`),
     },
-    grainRuntime: {
+    _grainEnv: {
       mem: runner.managedMemory._memory,
       tbl: runner.table,
     },
@@ -31,7 +31,7 @@ export function buildGrainRunner(locator, opts) {
   const managedMemory = new ManagedMemory(opts);
   const runner = new GrainRunner(locator || (() => null), managedMemory, opts);
   runner.addImports(buildImportObj(runner));
-  managedMemory.setRuntime(runner);
+  managedMemory.setRunner(runner);
   return runner;
 }
 

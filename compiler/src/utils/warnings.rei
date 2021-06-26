@@ -36,7 +36,8 @@ type t =
   | NonClosedRecordPattern(string)
   | UnreachableCase
   | ShadowConstructor(string)
-  | NoCmiFile(string, option(string));
+  | NoCmiFile(string, option(string))
+  | FuncWasmUnsafe(string);
 
 let is_active: t => bool;
 let is_error: t => bool;

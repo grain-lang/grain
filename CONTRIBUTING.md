@@ -31,16 +31,16 @@ yarn compiler test
 
 It can sometimes be helpful to run small Grain programs directly to test some functionality without running the full test suite.
 
-### Runtime
+### JS runner
 
-After making changes in the `runtime` directory, run:
+After making changes in the `js-runner` directory, run:
 
 ```bash
-yarn runtime build
-yarn runtime test
+yarn js-runner build
+yarn js-runner test
 ```
 
-Once the runtime has been built, it's the only one active. Grain programs that you run from the command line or the tests will use that version.
+Once the JS runner has been built, it's the only one active. Grain programs that you run from the command line or the tests will use that version.
 
 ### Standard library
 

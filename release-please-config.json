@@ -15,7 +15,7 @@
       "package-name": "@grain/compiler",
       "release-type": "ocaml"
     },
-    "runtime": {
+    "js-runner": {
       "release-type": "node"
     },
     "stdlib": {

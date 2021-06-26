@@ -69,7 +69,7 @@ RUN set -ex \
 
 # This Dockerfile constructs an environment in which Grain is built and can be used.
 LABEL name="Grain"
-LABEL description="Grain CLI and Runtime"
+LABEL description="Grain CLI"
 LABEL vcs-url="https://github.com/grain-lang/grain"
 LABEL maintainer="philip@grain-lang.org"
 

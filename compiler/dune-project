@@ -46,6 +46,16 @@
     (grain (>= 0))))
 
 (package
+  (name graindoc)
+  (synopsis "Grain documentation generator")
+  (depends
+    (reason (>= 3.6.0))
+    (dune-build-info (>= 2.0))
+    (binaryen (= 0.9.1))
+    (cmdliner (>= 1.0.2))
+    (grain (>= 0))))
+
+(package
   (name grain_linking)
   (synopsis "The Grain linker")
   (depends

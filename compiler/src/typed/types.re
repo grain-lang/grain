@@ -212,6 +212,7 @@ type signature_item =
   | TSigModule(Ident.t, module_declaration, rec_status)
   | TSigModType(Ident.t, modtype_declaration)
 
+/** The interface of a module, which includes all [signature_item] exported by the module */
 and signature = list(signature_item)
 
 and module_type =

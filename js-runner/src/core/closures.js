@@ -1,27 +1,27 @@
 import { grainToJSVal, JSToGrainVal } from "../utils/utils";
 
 export class GrainClosure {
-  constructor(loc, runtime) {
-    const view = runtime.managedMemory.view;
+  constructor(loc, runner) {
+    const view = runner.managedMemory.view;
 
     this.loc = loc;
-    this.runtime = runtime;
+    this.runner = runner;
     this.arity = view[loc + 1];
     this.ptr = view[loc + 2];
     this.closureSize = view[loc + 3];
     this.closureElts = view.slice(loc + 4, loc + 4 + this.closureSize);
-    this.func = runtime.table.get(this.ptr);
+    this.func = runner.table.get(this.ptr);
   }
 
   jsFunc(...args) {
-    let grainVals = args.map((x) => JSToGrainVal(x, this.runtime));
+    let grainVals = args.map((x) => JSToGrainVal(x, this.runner));
     grainVals.unshift(this.loc * 4);
-    return grainToJSVal(this.runtime, this.func(...grainVals));
+    return grainToJSVal(this.runner, this.func(...grainVals));
   }
 }
 
 export function printClosure(c) {
-  const view = runtime.managedMemory.view;
+  const view = runner.managedMemory.view;
 
   c /= 4;
   let arity = view[c];

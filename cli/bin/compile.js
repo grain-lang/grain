@@ -3,7 +3,7 @@ const exec = require("./exec");
 module.exports = (file, program) => {
   const options = program.opts();
   try {
-    exec(file, program, { stdio: "inherit" });
+    exec.grainc(file, program, { stdio: "inherit" });
     if (options.o) {
       return options.o;
     } else {

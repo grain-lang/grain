@@ -144,7 +144,7 @@ describe("basic functionality", ({test}) => {
   assertSnapshot("if_one_sided6", "let mut x = 1; if (3 < 4) x = 2 + 3; x");
   assertCompileError(
     "if_one_sided_type_err",
-    "let foo = (if (false) { 5; }); let bar = foo + 5; bar",
+    "let foo = (if (false) { ignore(5) }); let bar = foo + 5; bar",
     "has type Void but",
   );
   assertSnapshot("int32_1", "42l");
@@ -156,8 +156,16 @@ describe("basic functionality", ({test}) => {
   /* Assertions */
   assertSnapshot("assert1", "assert true");
   assertSnapshot("assert2", "assert 3 + 3 == 6");
-  assertRunError("assert3", "assert false", "AssertionError");
-  assertRunError("assert4", "assert 4 - 1 == 14", "AssertionError");
+  assertRunError(
+    "assert3",
+    "assert false",
+    "AssertionError: Assertion failed in assert3, line 1",
+  );
+  assertRunError(
+    "assert4",
+    "assert 4 - 1 == 14",
+    "AssertionError: Assertion failed in assert4, line 1",
+  );
   /* Failures */
   assertRunError("fail1", "ignore(fail \"boo\")", "Failure: boo");
   assertRunError(
