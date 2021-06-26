@@ -171,42 +171,26 @@ and print_record_pattern =
         ),
       closedflag: Grain_parsing__Asttypes.closed_flag,
     ) => {
-  Doc.group(
-    Doc.concat([
-      Doc.indent(
-        Doc.group(
+  addBraces(
+    Doc.join(
+      Doc.concat([Doc.comma, Doc.space]),
+      List.map(
+        (
+          patternloc: (
+            Grain_parsing__Location.loc(Grain_parsing__Identifier.t),
+            Grain_parsing__Parsetree.pattern,
+          ),
+        ) => {
+          let (loc, pat) = patternloc;
           Doc.concat([
-            Doc.lbrace,
-            Doc.space,
-            Doc.indent(
-              Doc.join(
-                Doc.concat([Doc.comma, Doc.space]),
-                List.map(
-                  (
-                    patternloc: (
-                      Grain_parsing__Location.loc(
-                        Grain_parsing__Identifier.t,
-                      ),
-                      Grain_parsing__Parsetree.pattern,
-                    ),
-                  ) => {
-                    let (loc, pat) = patternloc;
-                    Doc.concat([
-                      print_ident(loc.txt),
-                      Doc.text(": "),
-                      print_pattern(pat),
-                    ]);
-                  },
-                  patternlocs,
-                ),
-              ),
-            ),
-            Doc.space,
-            Doc.rbrace,
-          ]),
-        ),
+            print_ident(loc.txt),
+            Doc.text(": "),
+            print_pattern(pat),
+          ]);
+        },
+        patternlocs,
       ),
-    ]),
+    ),
   );
 }
 and print_pattern = (pat: Parsetree.pattern) => {
@@ -310,49 +294,33 @@ and print_record =
             Grain_parsing__Parsetree.expression,
           ),
         ),
-    ) => {
-  Doc.group(
-    Doc.concat([
-      Doc.group(Doc.indent(Doc.line)),
-      Doc.indent(
-        Doc.group(
-          Doc.concat([
-            Doc.lbrace,
-            Doc.indent(
-              Doc.join(
-                Doc.concat([Doc.comma, Doc.softLine]),
-                List.map(
-                  (
-                    field: (
-                      Grain_parsing__Location.loc(
-                        Grain_parsing__Identifier.t,
-                      ),
-                      Grain_parsing__Parsetree.expression,
-                    ),
-                  ) => {
-                    let (locidentifier, expr) = field;
-                    let ident = locidentifier.txt;
-                    Doc.group(
-                      Doc.concat([
-                        Doc.line,
-                        print_ident(ident),
-                        Doc.text(": "),
-                        print_expression(expr),
-                      ]),
-                    );
-                  },
-                  fields,
-                ),
-              ),
-            ),
-            //ifBreak(","),
-            Doc.rbrace,
-          ]),
-        ),
+    ) =>
+  addBraces(
+    Doc.join(
+      Doc.concat([Doc.comma, Doc.softLine]),
+      List.map(
+        (
+          field: (
+            Grain_parsing__Location.loc(Grain_parsing__Identifier.t),
+            Grain_parsing__Parsetree.expression,
+          ),
+        ) => {
+          let (locidentifier, expr) = field;
+          let ident = locidentifier.txt;
+          Doc.group(
+            Doc.concat([
+              Doc.line,
+              print_ident(ident),
+              Doc.text(": "),
+              print_expression(expr),
+            ]),
+          );
+        },
+        fields,
       ),
-    ]),
-  );
-}
+    ),
+  )
+
 and print_type = (p: Grain_parsing__Parsetree.parsed_type) => {
   switch (p.ptyp_desc) {
   | PTyAny => Doc.text("AnyType")
@@ -416,7 +384,7 @@ and print_application =
           funcName,
           addParens(
             Doc.join(
-              Doc.concat([Doc.softLine, Doc.text(",")]),
+              Doc.concat([Doc.text(",")]),
               List.map(e => print_expression(e), expressions),
             ),
           ),
@@ -495,34 +463,24 @@ and print_expression = (expr: Parsetree.expression) => {
         Doc.text("match"),
         Doc.space,
         addParens(print_expression(expression)),
-        Doc.group(Doc.indent(Doc.line)),
-        Doc.indent(
-          Doc.group(
-            Doc.concat([
-              Doc.lbrace,
-              Doc.indent(
-                Doc.join(
-                  Doc.comma,
-                  List.map(
-                    (branch: Parsetree.match_branch) => {
-                      Doc.concat([
-                        Doc.hardLine,
-                        print_pattern(branch.pmb_pat),
-                        Doc.text(" => "),
-                        print_expression(branch.pmb_body),
-                      ])
-                    },
-                    match_branches,
-                  ),
-                ),
-              ),
-              Doc.line,
-              Doc.rbrace,
-            ]),
+        addBraces(
+          Doc.join(
+            Doc.concat([Doc.comma, Doc.hardLine]),
+            List.map(
+              (branch: Parsetree.match_branch) => {
+                Doc.concat([
+                  print_pattern(branch.pmb_pat),
+                  Doc.text(" => "),
+                  print_expression(branch.pmb_body),
+                ])
+              },
+              match_branches,
+            ),
           ),
         ),
       ]),
     )
+
   | PExpPrim1(prim1, expression) =>
     print_endline("PExpPrim1");
     Doc.text("PExpPrim1");
@@ -754,53 +712,40 @@ let rec print_data = (d: Grain_parsing__Parsetree.data_declaration) => {
         } else {
           Doc.nil;
         },
-        Doc.group(
-          Doc.indent(
-            Doc.group(
-              Doc.concat([
-                Doc.lbrace,
-                Doc.indent(
-                  Doc.join(
-                    Doc.concat([Doc.softLine, Doc.comma]),
-                    List.map(
-                      (d: Grain_parsing__Parsetree.constructor_declaration) =>
-                        Doc.group(
-                          Doc.concat([
-                            Doc.line,
-                            Doc.text(d.pcd_name.txt),
-                            switch (d.pcd_args) {
-                            | PConstrTuple(parsed_types) =>
-                              if (List.length(parsed_types) > 0) {
-                                Doc.concat([
-                                  Doc.text("("),
-                                  Doc.join(
-                                    Doc.comma,
-                                    List.map(
-                                      t => print_type(t),
-                                      parsed_types,
-                                    ),
-                                  ),
-                                  Doc.text(")"),
-                                ]);
-                              } else {
-                                Doc.nil;
-                              }
-                            | PConstrSingleton => Doc.nil
-                            },
-                          ]),
-                        ),
-                      constr_declarations,
-                    ),
-                  ),
+        addBraces(
+          Doc.join(
+            Doc.concat([Doc.comma, Doc.softLine]),
+            List.map(
+              (d: Grain_parsing__Parsetree.constructor_declaration) =>
+                Doc.group(
+                  Doc.concat([
+                    Doc.line,
+                    Doc.text(d.pcd_name.txt),
+                    switch (d.pcd_args) {
+                    | PConstrTuple(parsed_types) =>
+                      if (List.length(parsed_types) > 0) {
+                        Doc.concat([
+                          Doc.text("("),
+                          Doc.join(
+                            Doc.comma,
+                            List.map(t => print_type(t), parsed_types),
+                          ),
+                          Doc.text(")"),
+                        ]);
+                      } else {
+                        Doc.nil;
+                      }
+                    | PConstrSingleton => Doc.nil
+                    },
+                  ]),
                 ),
-                Doc.space,
-                Doc.rbrace,
-              ]),
+              constr_declarations,
             ),
           ),
         ),
       ]),
     )
+
   | PDataRecord(label_declarations) =>
     Doc.group(
       Doc.concat([
@@ -821,36 +766,28 @@ let rec print_data = (d: Grain_parsing__Parsetree.data_declaration) => {
         } else {
           Doc.nil;
         },
-        Doc.indent(
-          Doc.group(
-            Doc.concat([
-              Doc.lbrace,
-              Doc.indent(
-                Doc.join(
-                  Doc.concat([Doc.line, Doc.comma]),
-                  List.map(
-                    (decl: Grain_parsing__Parsetree.label_declaration) => {
-                      let isMutable =
-                        switch (decl.pld_mutable) {
-                        | Mutable => Doc.text("mut ")
-                        | Immutable => Doc.nil
-                        };
-                      Doc.group(
-                        Doc.concat([
-                          Doc.line,
-                          isMutable,
-                          print_ident(decl.pld_name.txt),
-                          Doc.text(":"),
-                          print_type(decl.pld_type),
-                        ]),
-                      );
-                    },
-                    label_declarations,
-                  ),
-                ),
-              ),
-              Doc.rbrace,
-            ]),
+        addBraces(
+          Doc.join(
+            Doc.concat([Doc.line, Doc.comma]),
+            List.map(
+              (decl: Grain_parsing__Parsetree.label_declaration) => {
+                let isMutable =
+                  switch (decl.pld_mutable) {
+                  | Mutable => Doc.text("mut ")
+                  | Immutable => Doc.nil
+                  };
+                Doc.group(
+                  Doc.concat([
+                    Doc.line,
+                    isMutable,
+                    print_ident(decl.pld_name.txt),
+                    Doc.text(":"),
+                    print_type(decl.pld_type),
+                  ]),
+                );
+              },
+              label_declarations,
+            ),
           ),
         ),
       ]),
@@ -896,16 +833,16 @@ let import_print = (imp: Parsetree.import_declaration) => {
             if (List.length(identlocs) > 0) {
               Doc.concat([
                 Doc.text(" except "),
-                Doc.lbrace,
-                Doc.join(
-                  Doc.comma,
-                  List.map(
-                    (identloc: Location.loc(Grain_parsing__Identifier.t)) =>
-                      print_ident(identloc.txt),
-                    identlocs,
+                addBraces(
+                  Doc.join(
+                    Doc.comma,
+                    List.map(
+                      (identloc: Location.loc(Grain_parsing__Identifier.t)) =>
+                        print_ident(identloc.txt),
+                      identlocs,
+                    ),
                   ),
                 ),
-                Doc.rbrace,
               ]);
             } else {
               Doc.nil;
