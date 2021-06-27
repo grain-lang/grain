@@ -1115,7 +1115,7 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
           | Statement(prevs) =>
             let (_file, startline, _startchar, _sbol) =
               get_raw_pos_info(s.ptop_loc.loc_start);
-            let (_efile, endline, |_endchar, _ebol) =
+            let (_efile, endline, _endchar, _ebol) =
               get_raw_pos_info(prevs.ptop_loc.loc_end);
 
             print_endline(string_of_int(startline));
