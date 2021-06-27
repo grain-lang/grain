@@ -370,13 +370,15 @@ and print_application =
   let functionName = Doc.toString(~width=100, functionNameDoc);
   // print_endline("functioname is " ++ functionName);
   if (infixop(functionName)) {
-    Doc.concat([
-      print_expression(List.hd(expressions)),
-      Doc.space,
-      Doc.group(print_expression(func)),
-      Doc.space,
-      Doc.group(print_expression(List.hd(List.tl(expressions)))) // assumes an infix only has two expressions
-    ]);
+    Doc.group(
+      Doc.concat([
+        print_expression(List.hd(expressions)),
+        Doc.line,
+        Doc.group(print_expression(func)),
+        Doc.space,
+        Doc.group(print_expression(List.hd(List.tl(expressions)))) // assumes an infix only has two expressions
+      ]),
+    );
   } else {
     let funcName = print_expression(func);
     if (Doc.toString(~width=20, funcName) == "[...]") {
@@ -476,7 +478,7 @@ and print_expression = (expr: Parsetree.expression) => {
                     Doc.text(" => "),
                     Doc.indent(
                       Doc.concat([
-                        Doc.line,
+                        Doc.softLine,
                         print_expression(branch.pmb_body),
                       ]),
                     ),
@@ -1112,11 +1114,13 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
   // );
 };
 
-let toomayargs =
-    (
-      alphabet: string,
-      alphabet2: string,
-      alphabet3: string,
-      alphabet4: string,
-    ) =>
-  ();
+// let toomayargs =
+//     (
+//       alphabet: string,
+//       alphabet2: string,
+//       alphabet3: string,
+//       alphabet4: string,
+//     ) =>
+//   List.length(forwardsforwardsforwards)
+//   + List.length(forwardsforwardsforwardsbackwards)
+//   + List.length(forwardsforwardsforwardsbackwards);
