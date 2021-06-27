@@ -5,6 +5,10 @@ open Grain_utils;
 
 module Doc = Res_doc;
 
+type stmtList =
+  | BlankLine
+  | Statement(Parsetree.toplevel_stmt);
+
 let addParens = doc =>
   Doc.group(
     Doc.concat([
@@ -1091,14 +1095,55 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
 
     Doc.concat([attributeText, withoutComments, commentText]);
   };
+
+  let stmtsWithSpaces =
+    List.fold_left(
+      (acc, s: Parsetree.toplevel_stmt) => {
+        let (file, startline, startchar, sbol) =
+          get_raw_pos_info(s.ptop_loc.loc_start);
+
+        if (acc == []) {
+          if (startline > 0) {
+            [BlankLine, Statement(s)];
+          } else {
+            [Statement(s)];
+          };
+        } else {
+          let prev = List.hd(List.rev(acc)); //ugh, need to fix this
+          switch (prev) {
+          | BlankLine => List.concat([acc, [Statement(s)]])
+          | Statement(prevs) =>
+            let (_file, startline, _startchar, _sbol) =
+              get_raw_pos_info(s.ptop_loc.loc_start);
+            let (_efile, endline, |_endchar, _ebol) =
+              get_raw_pos_info(prevs.ptop_loc.loc_end);
+
+            print_endline(string_of_int(startline));
+            print_endline(string_of_int(endline));
+
+            if (startline - endline > 1) {
+              List.concat([acc, [BlankLine], [Statement(s)]]);
+            } else {
+              List.concat([acc, [Statement(s)]]);
+            };
+          };
+        };
+      },
+      [],
+      parsed_program.statements,
+    );
+
   let printedDoc =
     Doc.join(
       Doc.hardLine,
       List.map(
-        (stmt: Parsetree.toplevel_stmt) => {
-          Doc.group(toplevel_print(stmt))
+        (stmt: stmtList) => {
+          switch (stmt) {
+          | BlankLine => Doc.nil
+          | Statement(s) => Doc.group(toplevel_print(s))
+          }
         },
-        parsed_program.statements,
+        stmtsWithSpaces,
       ),
     );
 
