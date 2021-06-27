@@ -327,13 +327,18 @@ and print_type = (p: Grain_parsing__Parsetree.parsed_type) => {
   | PTyVar(name) => Doc.text(name)
   | PTyArrow(types, parsed_type) =>
     Doc.concat([
-      if (List.length(types) == 1) {
-        print_type(List.hd(types));
-      } else {
-        addParens(
-          Doc.join(Doc.comma, List.map(t => print_type(t), types)),
-        );
-      },
+      Doc.group(
+        if (List.length(types) == 1) {
+          print_type(List.hd(types));
+        } else {
+          addParens(
+            Doc.join(
+              Doc.concat([Doc.comma, Doc.line]),
+              List.map(t => print_type(t), types),
+            ),
+          );
+        },
+      ),
       Doc.text(" -> "),
       print_type(parsed_type),
     ])
@@ -365,31 +370,27 @@ and print_application =
   let functionName = Doc.toString(~width=100, functionNameDoc);
   // print_endline("functioname is " ++ functionName);
   if (infixop(functionName)) {
-    Doc.group(
-      Doc.concat([
-        print_expression(List.hd(expressions)),
-        Doc.space,
-        print_expression(func),
-        Doc.space,
-        print_expression(List.hd(List.tl(expressions))) // assumes an infix only has two expressions
-      ]),
-    );
+    Doc.concat([
+      print_expression(List.hd(expressions)),
+      Doc.space,
+      Doc.group(print_expression(func)),
+      Doc.space,
+      Doc.group(print_expression(List.hd(List.tl(expressions)))) // assumes an infix only has two expressions
+    ]);
   } else {
     let funcName = print_expression(func);
     if (Doc.toString(~width=20, funcName) == "[...]") {
       resugar_list(expressions);
     } else {
-      Doc.group(
-        Doc.concat([
-          funcName,
-          addParens(
-            Doc.join(
-              Doc.concat([Doc.text(",")]),
-              List.map(e => print_expression(e), expressions),
-            ),
+      Doc.concat([
+        funcName,
+        addParens(
+          Doc.join(
+            Doc.concat([Doc.text(",")]),
+            List.map(e => Doc.group(print_expression(e)), expressions),
           ),
-        ]),
-      );
+        ),
+      ]);
     };
   };
 }
@@ -463,16 +464,24 @@ and print_expression = (expr: Parsetree.expression) => {
         Doc.text("match"),
         Doc.space,
         addParens(print_expression(expression)),
+        Doc.space,
         addBraces(
           Doc.join(
             Doc.concat([Doc.comma, Doc.hardLine]),
             List.map(
               (branch: Parsetree.match_branch) => {
-                Doc.concat([
-                  print_pattern(branch.pmb_pat),
-                  Doc.text(" => "),
-                  print_expression(branch.pmb_body),
-                ])
+                Doc.group(
+                  Doc.concat([
+                    print_pattern(branch.pmb_pat),
+                    Doc.text(" => "),
+                    Doc.indent(
+                      Doc.concat([
+                        Doc.line,
+                        print_expression(branch.pmb_body),
+                      ]),
+                    ),
+                  ]),
+                )
               },
               match_branches,
             ),
@@ -918,7 +927,8 @@ let print_value_description = (vd: Parsetree.value_description) =>
     Doc.text(vd.pval_name.txt),
     Doc.text(": "),
     print_type(vd.pval_type),
-    Doc.text(" from \""),
+    Doc.text(" from "),
+    Doc.text("\""),
     Doc.text(vd.pval_mod.txt),
     Doc.text("\""),
   ]);
@@ -1083,7 +1093,9 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
     Doc.join(
       Doc.hardLine,
       List.map(
-        (stmt: Parsetree.toplevel_stmt) => {toplevel_print(stmt)},
+        (stmt: Parsetree.toplevel_stmt) => {
+          Doc.group(toplevel_print(stmt))
+        },
         parsed_program.statements,
       ),
     );
@@ -1099,3 +1111,12 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
   //   ),
   // );
 };
+
+let toomayargs =
+    (
+      alphabet: string,
+      alphabet2: string,
+      alphabet3: string,
+      alphabet4: string,
+    ) =>
+  ();
