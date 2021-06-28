@@ -1,0 +1,12 @@
+let f = () => {
+  "this is a thirty-two byte string"
+}
+
+for (let mut i = 0; i < 1024; i += 1) {
+  // Since f uses 64 bytes of memory at runtime, calling it 1024 times
+  // spans 1 WebAssembly page of memory. As the Grain runtime uses roughly
+  // half a page of memory, this sufficiently exercises garbage collection.
+  let s = f()
+}
+
+print("OK")

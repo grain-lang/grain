@@ -36,6 +36,7 @@ let readWholeFile = filename => {
 
 describe("garbage collection", ({test}) => {
   let assertFileRun = makeFileRunner(test);
+  let assertMemoryLimitedFileRun = makeFileRunner(~num_pages=1, test);
   let assertRunGC = (name, heapSize, prog) =>
     makeRunner(test, name, makeGcProgram(prog, heapSize), "");
   let assertRunGCError = (name, heapSize, prog, expected) =>
@@ -91,4 +92,9 @@ describe("garbage collection", ({test}) => {
   assertFileRunGC("long_lists", 20000, "long_lists", "true");
   assertFileRun("malloc_tight", "mallocTight", "");
   assertFileRun("memory_grow1", "memoryGrow", "1000000000000\n");
+  assertMemoryLimitedFileRun(
+    "loop_memory_reclaim",
+    "loopMemoryReclaim",
+    "OK\n",
+  );
 });
