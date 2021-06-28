@@ -7,6 +7,7 @@ module Doc = Res_doc;
 
 type stmtList =
   | BlankLine
+  | BlockComment(string)
   | Statement(Parsetree.toplevel_stmt);
 
 let addParens = doc =>
@@ -1103,14 +1104,35 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
           get_raw_pos_info(s.ptop_loc.loc_start);
 
         if (acc == []) {
-          if (startline > 0) {
-            [BlankLine, Statement(s)];
+          if (startline > 1) {
+            print_endline("there's something above");
+            let comments = find_comment(1, parsed_program.comments);
+            if (List.length(comments) > 0) {
+              let comment = List.hd(comments);
+
+              switch (comment) {
+              | Line(cmt) => [BlockComment(cmt.cmt_source), Statement(s)]
+              | Block(cmt) => [BlockComment(cmt.cmt_source), Statement(s)]
+              | Doc(cmt) => [BlockComment(cmt.cmt_source), Statement(s)]
+              | Shebang(cmt) => [BlockComment(cmt.cmt_source), Statement(s)]
+              };
+            } else {
+              [Statement(s)];
+            };
           } else {
-            [Statement(s)];
+            print_endline("there's nothing above");
+
+            [
+              BlockComment("/** Start the file with some comments *****/"),
+              Statement(s),
+            ];
           };
         } else {
           let prev = List.hd(List.rev(acc)); //ugh, need to fix this
           switch (prev) {
+          | BlockComment(_cmt) =>
+            print_endline("prev was a comment");
+            List.concat([acc, [Statement(s)]]);
           | BlankLine => List.concat([acc, [Statement(s)]])
           | Statement(prevs) =>
             let (_file, startline, _startchar, _sbol) =
@@ -1139,6 +1161,9 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
       List.map(
         (stmt: stmtList) => {
           switch (stmt) {
+          | BlockComment(cmt) =>
+            print_endline("print a comment");
+            Doc.concat([Doc.text(cmt), Doc.nil]);
           | BlankLine => Doc.nil
           | Statement(s) => Doc.group(toplevel_print(s))
           }
@@ -1147,7 +1172,7 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
       ),
     );
 
-  Doc.debug(printedDoc);
+  // Doc.debug(printedDoc);
   //
   Doc.toString(~width=80, printedDoc) |> print_endline;
   // print_endline(
