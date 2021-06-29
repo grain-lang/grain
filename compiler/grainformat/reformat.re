@@ -289,6 +289,24 @@ and print_ident = (ident: Identifier.t) => {
     ])
   };
 }
+
+and print_imported_ident = (ident: Identifier.t) => {
+  switch (ident) {
+  | IdentName(name) =>
+    if (infixop(name)) {
+      Doc.concat([Doc.lparen, Doc.text(name), Doc.rparen]);
+    } else {
+      Doc.text(name);
+    }
+
+  | IdentExternal(externalIdent, second) =>
+    Doc.concat([
+      print_ident(externalIdent),
+      Doc.text("."),
+      Doc.text(second),
+    ])
+  };
+}
 and print_record =
     (
       fields:
@@ -373,14 +391,31 @@ and print_application =
   let functionNameDoc = print_expression(func);
   let functionName = Doc.toString(~width=100, functionNameDoc);
   // print_endline("functioname is " ++ functionName);
+
   if (infixop(functionName)) {
+    let first = List.hd(expressions);
+    let second = List.hd(List.tl(expressions)); // assumes an infix only has two expressions
+
+    let firstBrackets =
+      switch (first.pexp_desc) {
+      | PExpApp(_) =>
+        Doc.concat([Doc.lparen, print_expression(first), Doc.rparen])
+      | _ => print_expression(first)
+      };
+
+    let secondBrackets =
+      switch (second.pexp_desc) {
+      | PExpApp(_) =>
+        Doc.concat([Doc.lparen, print_expression(second), Doc.rparen])
+      | _ => print_expression(second)
+      };
     Doc.group(
       Doc.concat([
-        print_expression(List.hd(expressions)),
+        firstBrackets,
         Doc.line,
         Doc.group(print_expression(func)),
         Doc.space,
-        Doc.group(print_expression(List.hd(List.tl(expressions)))) // assumes an infix only has two expressions
+        secondBrackets,
       ]),
     );
   } else {
@@ -881,7 +916,7 @@ let import_print = (imp: Parsetree.import_declaration) => {
                     ),
                   ) => {
                     let (loc, optloc) = identlocopt;
-                    print_ident(loc.txt);
+                    print_imported_ident(loc.txt);
                   },
                   identlocsopts,
                 ),
@@ -1226,15 +1261,7 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
   //     ),
   //   ),
   // );
+  // let a = (1 * 2 + 3) * 4;
+  // let b = 1 * 2 + 3 * 4;
+  // ();
 };
-
-// let toomayargs =
-//     (
-//       alphabet: string,
-//       alphabet2: string,
-//       alphabet3: string,
-//       alphabet4: string,
-//     ) =>
-//   List.length(forwardsforwardsforwards)
-//   + List.length(forwardsforwardsforwardsbackwards)
-//   + List.length(forwardsforwardsforwardsbackwards);
