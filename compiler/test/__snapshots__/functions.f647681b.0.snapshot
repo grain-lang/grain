@@ -22,15 +22,7 @@ functions › func_record_associativity1
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $global_1))
  (func $func_0 (; has Stack IR ;) (param $0 i32) (result i32)
-  (drop
-   (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-    (local.tee $0
-     (i32.const 2147483646)
-    )
-   )
-  )
-  (local.get $0)
+  (i32.const 2147483646)
  )
  (func $_gmain (; has Stack IR ;) (result i32)
   (local $0 i32)
