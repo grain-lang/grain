@@ -44,7 +44,7 @@ let swap_slots = Array.append(swap_slots_i32, swap_slots_i64);
 let module_runtime_id = Ident.create_persistent("moduleRuntimeId");
 let reloc_base = Ident.create_persistent("relocBase");
 let table_size = Ident.create_persistent("GRAIN$TABLE_SIZE");
-let runtime_mod = Ident.create_persistent("grainRuntime");
+let grain_env_mod = Ident.create_persistent(grain_env_name);
 let malloc_mod = Ident.create_persistent("GRAIN$MODULE$runtime/malloc");
 let gc_mod = Ident.create_persistent("GRAIN$MODULE$runtime/gc");
 let exception_mod = Ident.create_persistent("GRAIN$MODULE$runtime/exception");
@@ -94,14 +94,14 @@ let grain_start = "_start";
 
 let required_global_imports = [
   {
-    mimp_mod: runtime_mod,
+    mimp_mod: grain_env_mod,
     mimp_name: reloc_base,
     mimp_type: MGlobalImport(I32Type, false),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
   },
   {
-    mimp_mod: runtime_mod,
+    mimp_mod: grain_env_mod,
     mimp_name: module_runtime_id,
     mimp_type: MGlobalImport(I32Type, false),
     mimp_kind: MImportWasm,
@@ -539,7 +539,7 @@ let call_equal = (wasm_mod, env, args) =>
 let tracepoint = (wasm_mod, env, n) =>
   Expression.Call.make(
     wasm_mod,
-    get_imported_name(runtime_mod, tracepoint_ident),
+    get_imported_name(grain_env_mod, tracepoint_ident),
     [Expression.Const.make(wasm_mod, const_int32(n))],
     Type.int32,
   );
@@ -1792,7 +1792,7 @@ let allocate_closure =
         Op.add_int32,
         Expression.Global_get.make(
           wasm_mod,
-          get_imported_name(runtime_mod, reloc_base),
+          get_imported_name(grain_env_mod, reloc_base),
           Type.int32,
         ),
         Expression.Const.make(wasm_mod, wrap_int32(func_idx)),
@@ -1852,7 +1852,7 @@ let allocate_adt = (wasm_mod, env, ttag, vtag, elts) => {
         Op.mul_int32,
         Expression.Global_get.make(
           wasm_mod,
-          get_imported_name(runtime_mod, module_runtime_id),
+          get_imported_name(grain_env_mod, module_runtime_id),
           Type.int32,
         ),
         Expression.Const.make(wasm_mod, const_int32(2)),
@@ -2012,7 +2012,7 @@ let allocate_record = (wasm_mod, env, ttag, elts) => {
         Op.mul_int32,
         Expression.Global_get.make(
           wasm_mod,
-          get_imported_name(runtime_mod, module_runtime_id),
+          get_imported_name(grain_env_mod, module_runtime_id),
           Type.int32,
         ),
         Expression.Const.make(wasm_mod, const_int32(2)),
@@ -2937,7 +2937,7 @@ let compile_type_metadata = (wasm_mod, env, type_metadata) => {
         get_swap(wasm_mod, env, 0),
         Expression.Global_get.make(
           wasm_mod,
-          get_imported_name(runtime_mod, module_runtime_id),
+          get_imported_name(grain_env_mod, module_runtime_id),
           Type.int32,
         ),
       ),
@@ -3095,14 +3095,14 @@ let compile_imports = (wasm_mod, env, {imports}) => {
   Import.add_memory_import(
     wasm_mod,
     "mem",
-    Ident.name(runtime_mod),
+    Ident.name(grain_env_mod),
     "mem",
     false,
   );
   Import.add_table_import(
     wasm_mod,
     global_function_table,
-    Ident.name(runtime_mod),
+    Ident.name(grain_env_mod),
     global_function_table,
   );
 };
@@ -3174,7 +3174,7 @@ let compile_tables = (wasm_mod, env, {functions}) => {
     function_names,
     Expression.Global_get.make(
       wasm_mod,
-      get_imported_name(runtime_mod, reloc_base),
+      get_imported_name(grain_env_mod, reloc_base),
       Type.int32,
     ),
   );

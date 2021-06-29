@@ -67,7 +67,7 @@ let test = () => {
   assert WasmI32.eq(WasmI32.fromGrain(true), 0xfffffffen)
   assert (WasmI32.toGrain(0xfffffffen): Bool)
   assert Conv.toInt32(45n) == 45l
-  assert Conv.fromInt32(45l) == 45n
+  assert WasmI32.eq(Conv.fromInt32(45l), 45n)
 }
 
 test()
