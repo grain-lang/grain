@@ -64,52 +64,49 @@ let get_raw_pos_info = (pos: Lexing.position) => (
   pos.pos_bol,
 );
 
-let find_comment =
-    (src_line: int, comments: list(Grain_parsing.Parsetree.comment)) =>
+let find_comments_in_range =
+    (
+      range_start: int,
+      range_end: int,
+      comments: list(Grain_parsing.Parsetree.comment),
+    ) => {
   List.find_all(
     (c: Grain_parsing.Parsetree.comment) => {
-      let line =
-        switch (c) {
-        | Line(cmt) =>
-          print_endline("Line");
+      switch (c) {
+      | Line(cmt) =>
+        let (_file, startline, _startchar, _sbol) =
+          get_raw_pos_info(cmt.cmt_loc.loc_start);
 
-          let (file, startline, startchar, sbol) =
-            get_raw_pos_info(cmt.cmt_loc.loc_start);
-          print_endline(string_of_int(startline));
-          print_endline(cmt.cmt_content);
-          print_endline(cmt.cmt_source);
-          startline;
+        startline >= range_start && startline <= range_end;
 
-        | Shebang(cmt) =>
-          print_endline("Shebang");
-          let (file, startline, startchar, sbol) =
-            get_raw_pos_info(cmt.cmt_loc.loc_start);
+      | Shebang(cmt) =>
+        let (_file, startline, _startchar, _sbol) =
+          get_raw_pos_info(cmt.cmt_loc.loc_start);
 
-          print_endline(cmt.cmt_content);
-          print_endline(cmt.cmt_source);
-          startline;
-        | Block(cmt) =>
-          print_endline("Block");
-          let (file, startline, startchar, sbol) =
-            get_raw_pos_info(cmt.cmt_loc.loc_start);
+        startline >= range_start && startline <= range_end;
 
-          print_endline(cmt.cmt_content);
-          print_endline(cmt.cmt_source);
-          startline;
-        | Doc(cmt) =>
-          print_endline("Doc");
-          let (file, startline, startchar, sbol) =
-            get_raw_pos_info(cmt.cmt_loc.loc_start);
+      | Block(cmt) =>
+        let (_file, startline, _startchar, _sbol) =
+          get_raw_pos_info(cmt.cmt_loc.loc_start);
 
-          print_endline(cmt.cmt_content);
-          print_endline(cmt.cmt_source);
-          startline;
-        };
+        let (_efile, endline, _endchar, _ebol) =
+          get_raw_pos_info(cmt.cmt_loc.loc_end);
 
-      line == src_line;
+        startline >= range_start && endline <= range_end;
+
+      | Doc(cmt) =>
+        let (_file, startline, _startchar, _sbol) =
+          get_raw_pos_info(cmt.cmt_loc.loc_start);
+
+        let (_efile, endline, _endchar, _ebol) =
+          get_raw_pos_info(cmt.cmt_loc.loc_end);
+
+        startline >= range_start && endline <= range_end;
+      }
     },
     comments,
   );
+};
 
 let rec remove_cons = (expression: Parsetree.expression) => {
   print_expression(expression);
@@ -584,7 +581,7 @@ and print_expression = (expr: Parsetree.expression) => {
       Doc.text("=>"),
       Doc.space,
       print_expression(expression),
-      Doc.hardLine,
+      //Doc.hardLine,
     ])
 
   | PExpApp(func, expressions) =>
@@ -945,7 +942,7 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
     let (file, startline, startchar, sbol) =
       get_raw_pos_info(data.ptop_loc.loc_start);
 
-    let comments = find_comment(startline, parsed_program.comments);
+    let comments = []; //find_comment(startline, parsed_program.comments);
 
     let attributes = data.ptop_attributes;
 
@@ -955,7 +952,7 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
         //   print_endline("PTopImport");
         import_print(import_declaration)
       | PTopForeign(export_flag, value_description) =>
-        print_endline("PTopForeign");
+        // print_endline("PTopForeign");
 
         let export =
           switch (export_flag) {
@@ -968,7 +965,7 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
           print_value_description(value_description),
         ]);
       | PTopPrimitive(export_flag, value_description) =>
-        print_endline("PTopPrimitive");
+        //  print_endline("PTopPrimitive");
         let export =
           switch (export_flag) {
           | Nonexported => Doc.nil
@@ -1082,97 +1079,242 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
         Doc.nil;
       };
 
-    let commentText =
-      if (List.length(comments) > 0) {
-        let comment = List.hd(comments);
+    let commentText = Doc.nil;
+    // if (List.length(comments) > 0) {
+    //   let comment = List.hd(comments);
 
-        switch (comment) {
-        | Line(cmt) => Doc.concat([Doc.space, Doc.text(cmt.cmt_source)])
-        | _ => Doc.nil
-        };
-      } else {
-        Doc.nil;
-      };
+    //   switch (comment) {
+    //   | Line(cmt) => Doc.concat([Doc.space, Doc.text(cmt.cmt_source)])
+    //   | _ => Doc.nil
+    //   };
+    // } else {
+    //   Doc.nil;
+    // };
 
     Doc.concat([attributeText, withoutComments, commentText]);
   };
 
-  let stmtsWithSpaces =
-    List.fold_left(
-      (acc, s: Parsetree.toplevel_stmt) => {
-        let (file, startline, startchar, sbol) =
-          get_raw_pos_info(s.ptop_loc.loc_start);
+  // let stmtsWithSpaces =
+  //   List.fold_left(
+  //     (acc, s: Parsetree.toplevel_stmt) => {
+  //       let (file, startline, startchar, sbol) =
+  //         get_raw_pos_info(s.ptop_loc.loc_start);
 
-        if (acc == []) {
-          if (startline > 1) {
-            print_endline("there's something above");
-            let comments = find_comment(1, parsed_program.comments);
-            if (List.length(comments) > 0) {
-              let comment = List.hd(comments);
+  //       if (acc == []) {
+  //         if (startline > 1) {
+  //           print_endline("there's something above");
+  //           let comments = find_comment(1, parsed_program.comments);
+  //           if (List.length(comments) > 0) {
+  //             let comment = List.hd(comments);
 
-              switch (comment) {
-              | Line(cmt) => [BlockComment(cmt.cmt_source), Statement(s)]
-              | Block(cmt) => [BlockComment(cmt.cmt_source), Statement(s)]
-              | Doc(cmt) => [BlockComment(cmt.cmt_source), Statement(s)]
-              | Shebang(cmt) => [BlockComment(cmt.cmt_source), Statement(s)]
-              };
-            } else {
-              [Statement(s)];
-            };
-          } else {
-            print_endline("there's nothing above");
+  //             switch (comment) {
+  //             | Line(cmt) => [BlockComment(cmt.cmt_source), Statement(s)]
+  //             | Block(cmt) => [BlockComment(cmt.cmt_source), Statement(s)]
+  //             | Doc(cmt) => [BlockComment(cmt.cmt_source), Statement(s)]
+  //             | Shebang(cmt) => [BlockComment(cmt.cmt_source), Statement(s)]
+  //             };
+  //           } else {
+  //             [Statement(s)];
+  //           };
+  //         } else {
+  //           print_endline("there's nothing above");
 
-            [
-              BlockComment("/** Start the file with some comments *****/"),
-              Statement(s),
-            ];
-          };
-        } else {
-          let prev = List.hd(List.rev(acc)); //ugh, need to fix this
-          switch (prev) {
-          | BlockComment(_cmt) =>
-            print_endline("prev was a comment");
-            List.concat([acc, [Statement(s)]]);
-          | BlankLine => List.concat([acc, [Statement(s)]])
-          | Statement(prevs) =>
-            let (_file, startline, _startchar, _sbol) =
-              get_raw_pos_info(s.ptop_loc.loc_start);
-            let (_efile, endline, _endchar, _ebol) =
-              get_raw_pos_info(prevs.ptop_loc.loc_end);
+  //           [Statement(s)];
+  //         };
+  //       } else {
+  //         let prev = List.hd(List.rev(acc)); //ugh, need to fix this
+  //         switch (prev) {
+  //         | BlockComment(_cmt) =>
+  //           print_endline("prev was a comment");
+  //           List.concat([acc, [Statement(s)]]);
+  //         | BlankLine => List.concat([acc, [Statement(s)]])
+  //         | Statement(prevs) =>
+  //           let (_file, startline, _startchar, _sbol) =
+  //             get_raw_pos_info(s.ptop_loc.loc_start);
+  //           let (_efile, endline, _endchar, _ebol) =
+  //             get_raw_pos_info(prevs.ptop_loc.loc_end);
 
-            print_endline(string_of_int(startline));
-            print_endline(string_of_int(endline));
+  //           print_endline(string_of_int(startline));
+  //           print_endline(string_of_int(endline));
 
-            if (startline - endline > 1) {
-              List.concat([acc, [BlankLine], [Statement(s)]]);
-            } else {
-              List.concat([acc, [Statement(s)]]);
-            };
-          };
-        };
-      },
-      [],
-      parsed_program.statements,
-    );
+  //           let comments =
+  //             find_comment(startline - 1, parsed_program.comments);
+  //           if (List.length(comments) > 0) {
+  //             let comment = List.hd(comments);
+
+  //             switch (comment) {
+  //             | Line(cmt) =>
+  //               List.concat([
+  //                 acc,
+  //                 [BlockComment(cmt.cmt_source), Statement(s)],
+  //               ])
+  //             | Block(cmt) =>
+  //               List.concat([
+  //                 acc,
+  //                 [BlockComment(cmt.cmt_source), Statement(s)],
+  //               ])
+  //             | Doc(cmt) =>
+  //               List.concat([
+  //                 acc,
+  //                 [BlockComment(cmt.cmt_source), Statement(s)],
+  //               ])
+  //             | Shebang(cmt) =>
+  //               List.concat([
+  //                 acc,
+  //                 [BlockComment(cmt.cmt_source), Statement(s)],
+  //               ])
+  //             };
+  //           } else if (startline - endline > 1) {
+  //             List.concat([acc, [BlankLine], [Statement(s)]]);
+  //           } else {
+  //             List.concat([acc, [Statement(s)]]);
+  //           };
+  //         };
+  //       };
+  //     },
+  //     [],
+  //     parsed_program.statements,
+  //   );
+
+  // let printedDoc =
+  //   Doc.join(
+  //     Doc.hardLine,
+  //     List.map(
+  //       (stmt: stmtList) => {
+  //         switch (stmt) {
+
+  //         | BlockComment(cmt) =>
+  //           print_endline("print a comment");
+  //           Doc.concat([Doc.text(cmt), Doc.nil]);
+  //         | BlankLine => Doc.nil
+  //         | Statement(s) => Doc.group(toplevel_print(s))
+  //         }
+  //       },
+  //       stmtsWithSpaces,
+  //     ),
+  //   );
+
+  let commentToDoc = (comment: Parsetree.comment) =>
+    switch (comment) {
+    | Line(cmt) => Doc.text(cmt.cmt_source)
+    | Block(cmt) => Doc.concat([Doc.text(cmt.cmt_source), Doc.hardLine])
+    | Doc(cmt) => Doc.concat([Doc.text(cmt.cmt_source), Doc.hardLine])
+    | Shebang(cmt) => Doc.text(cmt.cmt_source)
+    };
+
+  let getCommentEndLine = (comment: Parsetree.comment) => {
+    let endloc =
+      switch (comment) {
+      | Line(cmt) => cmt.cmt_loc.loc_end
+      | Block(cmt) => cmt.cmt_loc.loc_end
+      | Doc(cmt) => cmt.cmt_loc.loc_end
+      | Shebang(cmt) => cmt.cmt_loc.loc_end
+      };
+
+    let (_, endline, _, _) = get_raw_pos_info(endloc);
+    endline;
+  };
+
+  let previousStatement: ref(option(Grain_parsing.Parsetree.toplevel_stmt)) =
+    ref(None);
 
   let printedDoc =
     Doc.join(
       Doc.hardLine,
       List.map(
-        (stmt: stmtList) => {
-          switch (stmt) {
-          | BlockComment(cmt) =>
-            print_endline("print a comment");
-            Doc.concat([Doc.text(cmt), Doc.nil]);
-          | BlankLine => Doc.nil
-          | Statement(s) => Doc.group(toplevel_print(s))
-          }
+        (stmt: Grain_parsing.Parsetree.toplevel_stmt) => {
+          // let's see if we had any comments above us
+
+          let commentsAbove =
+            switch (previousStatement^) {
+            | None =>
+              let (_file, stmtline, _startchar, _sbol) =
+                get_raw_pos_info(stmt.ptop_loc.loc_start);
+
+              find_comments_in_range(
+                1,
+                stmtline - 1,
+                parsed_program.comments,
+              );
+
+            | Some(prevStmt) =>
+              let (_file, stmtline, _startchar, _sbol) =
+                get_raw_pos_info(stmt.ptop_loc.loc_start);
+
+              let (_pfile, prevline, _pstartchar, _psbol) =
+                get_raw_pos_info(prevStmt.ptop_loc.loc_end);
+
+              find_comments_in_range(
+                prevline,
+                stmtline - 1,
+                parsed_program.comments,
+              );
+            };
+
+          let commentDocs =
+            Doc.concat(
+              List.map(
+                (c: Parsetree.comment) => commentToDoc(c),
+                commentsAbove,
+              ),
+            );
+
+          // we may also have blank lines, we want to reduce them to one
+
+          let (_, stmtstart, _, _) =
+            get_raw_pos_info(stmt.ptop_loc.loc_start);
+
+          //  print_endline("Statement line is " ++ string_of_int(stmtstart));
+
+          let lastCommentLine =
+            if (List.length(commentsAbove) > 0) {
+              Some(List.hd(List.rev(commentsAbove)));
+            } else {
+              None;
+            };
+
+          let lastLine =
+            switch (previousStatement^) {
+            | None =>
+              switch (lastCommentLine) {
+              | None => 1
+              | Some(cmt) => getCommentEndLine(cmt)
+              }
+            | Some(s) =>
+              switch (lastCommentLine) {
+              | None =>
+                let (_, prevline, _, _) =
+                  get_raw_pos_info(s.ptop_loc.loc_end);
+
+                prevline;
+
+              | Some(cmt) => getCommentEndLine(cmt)
+              }
+            };
+
+          print_endline("stmtstart " ++ string_of_int(stmtstart));
+          print_endline("lastLine " ++ string_of_int(lastLine));
+
+          let blankLineAbove =
+            if (stmtstart - lastLine > 1) {
+              print_endline("Add a blank line");
+              Doc.hardLine;
+            } else {
+              Doc.nil;
+            };
+
+          previousStatement := Some(stmt);
+          Doc.concat([
+            commentDocs,
+            blankLineAbove,
+            Doc.group(toplevel_print(stmt)),
+          ]);
         },
-        stmtsWithSpaces,
+        parsed_program.statements,
       ),
     );
 
-  // Doc.debug(printedDoc);
+  //Doc.debug(printedDoc);
   //
   Doc.toString(~width=80, printedDoc) |> print_endline;
   // print_endline(
