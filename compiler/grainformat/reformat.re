@@ -201,7 +201,13 @@ and print_pattern = (pat: Parsetree.pattern) => {
   switch (pat.ppat_desc) {
   | PPatAny => Doc.text("_")
   | PPatConstant(c) => print_constant(c)
-  | PPatVar({txt, _}) => Doc.text(txt)
+  | PPatVar({txt, _}) =>
+    if (infixop(txt)) {
+      Doc.concat([Doc.lparen, Doc.text(txt), Doc.rparen]);
+    } else {
+      Doc.text(txt);
+    }
+
   | PPatTuple(patterns) =>
     addParens(
       Doc.join(Doc.comma, List.map(p => print_pattern(p), patterns)),
@@ -333,7 +339,7 @@ and print_record =
             Doc.concat([
               Doc.line,
               print_ident(ident),
-              Doc.text(": "),
+              Doc.text(":"),
               print_expression(expr),
             ]),
           );
@@ -598,7 +604,7 @@ and print_expression = (expr: Parsetree.expression) => {
     Doc.group(
       Doc.concat([
         print_expression(expression),
-        Doc.text(": "),
+        Doc.text(":"),
         print_type(parsed_type),
       ]),
     )
@@ -946,8 +952,16 @@ let import_print = (imp: Parsetree.import_declaration) => {
 };
 
 let print_export_desc = (desc: Parsetree.export_declaration_desc) => {
+  let ident = desc.pex_name.txt;
+
+  let fixedIdent =
+    if (infixop(ident)) {
+      Doc.concat([Doc.lparen, Doc.text(ident), Doc.rparen]);
+    } else {
+      Doc.text(ident);
+    };
   Doc.concat([
-    Doc.text(desc.pex_name.txt),
+    fixedIdent,
     switch (desc.pex_alias) {
     | Some(alias) => Doc.concat([Doc.text(" as "), Doc.text(alias.txt)])
     | None => Doc.nil
@@ -963,9 +977,18 @@ let print_export_declaration = (decl: Parsetree.export_declaration) => {
 };
 
 //export foreign wasm debug: a -> Void from "console"
-let print_value_description = (vd: Parsetree.value_description) =>
+let print_foreign_value_description = (vd: Parsetree.value_description) => {
+  let ident = vd.pval_name.txt;
+
+  let fixedIdent =
+    if (infixop(ident) || ident == "!") {
+      Doc.concat([Doc.lparen, Doc.text(ident), Doc.rparen]);
+    } else {
+      Doc.text(ident);
+    };
+
   Doc.concat([
-    Doc.text(vd.pval_name.txt),
+    fixedIdent,
     Doc.text(": "),
     print_type(vd.pval_type),
     Doc.text(" from "),
@@ -973,6 +996,29 @@ let print_value_description = (vd: Parsetree.value_description) =>
     Doc.text(vd.pval_mod.txt),
     Doc.text("\""),
   ]);
+};
+
+let print_primitive_value_description = (vd: Parsetree.value_description) => {
+  let ident = vd.pval_name.txt;
+
+  let fixedIdent =
+    if (infixop(ident) || ident == "!") {
+      Doc.concat([Doc.lparen, Doc.text(ident), Doc.rparen]);
+    } else {
+      Doc.text(ident);
+    };
+
+  Doc.concat([
+    fixedIdent,
+    Doc.text(": "),
+    print_type(vd.pval_type),
+    Doc.text(" = "),
+    Doc.text("\""),
+    //   Doc.text(vd.pval_mod.txt),
+    Doc.join(Doc.text(","), List.map(p => Doc.text(p), vd.pval_prim)),
+    Doc.text("\""),
+  ]);
+};
 
 let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
   let toplevel_print = (data: Parsetree.toplevel_stmt) => {
@@ -999,7 +1045,7 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
         Doc.concat([
           export,
           Doc.text("foreign "),
-          print_value_description(value_description),
+          print_foreign_value_description(value_description),
         ]);
       | PTopPrimitive(export_flag, value_description) =>
         //  print_endline("PTopPrimitive");
@@ -1011,7 +1057,7 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
         Doc.concat([
           export,
           Doc.text("primitive "),
-          print_value_description(value_description),
+          print_primitive_value_description(value_description),
         ]);
       | PTopData(data_declarations) =>
         //print_endline("PTopData");
