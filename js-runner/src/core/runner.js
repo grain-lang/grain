@@ -56,7 +56,8 @@ export class GrainRunner {
   }
 
   grainValueToString(v) {
-    let closure = this.stringModule.requiredExport("GRAIN$EXPORT$toString").value;
+    let closure = this.stringModule.requiredExport("GRAIN$EXPORT$toString")
+      .value;
     let grainString = this.stringModule.requiredExport("toString")(closure, v);
     let n = grainString;
     this.managedMemory._refreshViews();
