@@ -13,7 +13,7 @@ export class GrainRunner {
     this.managedMemory = managedMemory;
     opts = opts || {};
     this.opts = opts;
-    this.postImports = () => {};
+    this.postImports = () => { };
     this.encoder = new TextEncoder("utf-8");
     this.decoder = new TextDecoder("utf-8");
     this.imports["_grainEnv"] = {
@@ -56,9 +56,7 @@ export class GrainRunner {
   }
 
   grainValueToString(v) {
-    let closure = this.stringModule.requiredExport(
-      "GRAIN$EXPORT$toString"
-    ).value;
+    let closure = this.stringModule.requiredExport("GRAIN$EXPORT$toString").value;
     let grainString = this.stringModule.requiredExport("toString")(closure, v);
     let n = grainString;
     this.managedMemory._refreshViews();
