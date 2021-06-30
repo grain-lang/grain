@@ -268,14 +268,14 @@ and print_constant = (c: Parsetree.constant) => {
       Printf.sprintf("%s/%s", n, d)
     | PConstBytes(b) => Printf.sprintf("%s", b)
     | PConstChar(c) => Printf.sprintf("'%s'", c)
-    | PConstFloat64(f)
-    | PConstFloat32(f) => Printf.sprintf("%s", f)
-    | PConstInt32(i) => Printf.sprintf("%s", i)
-    | PConstInt64(i) => Printf.sprintf("%s", i)
-    | PConstWasmI32(i) => Printf.sprintf("%s", i)
-    | PConstWasmI64(i) => Printf.sprintf("%s", i)
-    | PConstWasmF32(f) => Printf.sprintf("%s", f)
-    | PConstWasmF64(f) => Printf.sprintf("%s", f)
+    | PConstFloat64(f) => Printf.sprintf("%sd", f)
+    | PConstFloat32(f) => Printf.sprintf("%sf", f)
+    | PConstInt32(i) => Printf.sprintf("%sl", i)
+    | PConstInt64(i) => Printf.sprintf("%sL", i)
+    | PConstWasmI32(i) => Printf.sprintf("%sn", i)
+    | PConstWasmI64(i) => Printf.sprintf("%sN", i)
+    | PConstWasmF32(f) => Printf.sprintf("%sw", f)
+    | PConstWasmF64(f) => Printf.sprintf("%sW", f)
     | PConstBool(true) => "true"
     | PConstBool(false) => "false"
     | PConstVoid => "void"
@@ -548,6 +548,16 @@ and print_expression = (expr: Parsetree.expression) => {
     Doc.text("PExpPrimN");
   | PExpIf(condition, trueExpr, falseExpr) =>
     // print_endline("PExpIf");
+    let falseClause =
+      switch (falseExpr.pexp_desc) {
+      | PExpBlock(expressions) =>
+        if (List.length(expressions) > 0) {
+          Doc.concat([Doc.text(" else "), print_expression(falseExpr)]);
+        } else {
+          Doc.nil;
+        }
+      | _ => Doc.concat([Doc.text(" else "), print_expression(falseExpr)])
+      };
     Doc.group(
       Doc.concat([
         Doc.text("if "),
@@ -556,10 +566,9 @@ and print_expression = (expr: Parsetree.expression) => {
         Doc.text(")"),
         Doc.line,
         print_expression(trueExpr),
-        Doc.text(" else "),
-        print_expression(falseExpr),
+        falseClause,
       ]),
-    )
+    );
   | PExpWhile(expression, expression1) =>
     Doc.concat([
       Doc.text("while "),
@@ -660,51 +669,82 @@ and print_expression = (expr: Parsetree.expression) => {
       print_expression(expression1),
     ])
   | PExpAssign(expression, expression1) =>
-    //print_endline("PExpAssign");
+    switch (expression1.pexp_desc) {
+    | PExpApp(func, expressions) =>
+      let functionNameDoc = print_expression(func);
+      let op = Doc.toString(~width=100, functionNameDoc);
+      let trimmedOperator = String.trim(op);
+      //let desugared = print_expression(expression1);
 
-    let desugared = print_expression(expression1);
+      let left = print_expression(expression);
+      let first = print_expression(List.hd(expressions));
 
-    let sugarMutableNumbers = (docs: list(Res_doc.t)) =>
-      // +=, -=, *=, /=, and %=
-      // operator should be second
-      if (List.length(docs) > 2) {
-        let op = List.nth(docs, 1);
+      if (left == first) {
+        print_endline("Possible sugar as name is the same");
 
-        let sugaredOp =
-          switch (op) {
-          | Text(operator) =>
-            let trimmedOperator = String.trim(operator);
-            switch (trimmedOperator) {
-            | "+"
-            | "-"
-            | "*"
-            | "/"
-            | "%" => Doc.text(trimmedOperator ++ "= ")
-            | _ => op
-            };
+        // +=, -=, *=, /=, and %=
+        switch (trimmedOperator) {
+        | "+"
+        | "-"
+        | "*"
+        | "/"
+        | "%" =>
+          let sugaredOp = Doc.text(" " ++ trimmedOperator ++ "= ");
 
-          | _ => op
-          };
+          // let sugarMutableNumbers = (docs: list(Res_doc.t)) => {
+          //   //  let start = Doc.concat([List.nth(docs, 0), sugaredOp]);
+          //   let tail = Doc.concat(List.map(d => d, List.tl(List.tl(docs))));
+          //   //  Doc.concat([start, tail]);
+          //   tail;
+          // };
 
-        let start = Doc.concat([List.nth(docs, 0), sugaredOp]);
-        let tail = Doc.concat(List.map(d => d, List.tl(List.tl(docs))));
-        Doc.concat([start, tail]);
+          // let sugared =
+          //   switch (desugared) {
+          //   | Group(grp) =>
+          //     print_endline("AA");
+          //     switch (grp.doc) {
+          //     | Concat(docs) =>
+          //       print_endline("BB");
+          //       sugarMutableNumbers(docs);
+          //     | _ =>
+          //       print_endline("CC");
+          //       Doc.concat([Doc.text(" = "), desugared]);
+          //     };
+          //   | Concat(docs) =>
+          //     print_endline("DD");
+          //     sugarMutableNumbers(docs);
+          //   | _ =>
+          //     print_endline("EE");
+          //     Doc.concat([Doc.text(" = "), desugared]);
+          //   };
+
+          Doc.concat([
+            print_expression(expression),
+            sugaredOp,
+            print_expression(List.hd(List.tl(expressions))),
+          ]);
+        | _ =>
+          Doc.concat([
+            print_expression(expression),
+            Doc.text(" = "),
+            print_expression(expression1),
+          ])
+        };
       } else {
-        Doc.concat(docs);
+        Doc.concat([
+          print_expression(expression),
+          Doc.text(" = "),
+          print_expression(expression1),
+        ]);
       };
 
-    let sugared =
-      switch (desugared) {
-      | Group(grp) =>
-        switch (grp.doc) {
-        | Concat(docs) => sugarMutableNumbers(docs)
-        | _ => desugared
-        }
-      | Concat(docs) => sugarMutableNumbers(docs)
-      | _ => desugared
-      };
-
-    sugared;
+    | _ =>
+      Doc.concat([
+        print_expression(expression),
+        Doc.text(" = "),
+        print_expression(expression1),
+      ])
+    }
 
   | /** Used for modules without body expressions */ PExpNull =>
     print_endline("PExpNull");
