@@ -626,14 +626,20 @@ and print_expression = (expr: Parsetree.expression) => {
   | PExpLambda(patterns, expression) =>
     // print_endline("PExpLambda");
     Doc.concat([
-      addParens(
-        Doc.concat([
-          Doc.join(
-            Doc.concat([Doc.text(","), Doc.line]),
-            List.map(p => print_pattern(p), patterns),
-          ),
-        ]),
-      ),
+      if (List.length(patterns) == 0) {
+        Doc.text("()");
+      } else if (List.length(patterns) > 1) {
+        addParens(
+          Doc.concat([
+            Doc.join(
+              Doc.concat([Doc.text(","), Doc.line]),
+              List.map(p => print_pattern(p), patterns),
+            ),
+          ]),
+        );
+      } else {
+        print_pattern(List.hd(patterns));
+      },
       Doc.space,
       Doc.text("=>"),
       Doc.space,
@@ -695,33 +701,6 @@ and print_expression = (expr: Parsetree.expression) => {
         | "/"
         | "%" =>
           let sugaredOp = Doc.text(" " ++ trimmedOperator ++ "= ");
-
-          // let sugarMutableNumbers = (docs: list(Res_doc.t)) => {
-          //   //  let start = Doc.concat([List.nth(docs, 0), sugaredOp]);
-          //   let tail = Doc.concat(List.map(d => d, List.tl(List.tl(docs))));
-          //   //  Doc.concat([start, tail]);
-          //   tail;
-          // };
-
-          // let sugared =
-          //   switch (desugared) {
-          //   | Group(grp) =>
-          //     print_endline("AA");
-          //     switch (grp.doc) {
-          //     | Concat(docs) =>
-          //       print_endline("BB");
-          //       sugarMutableNumbers(docs);
-          //     | _ =>
-          //       print_endline("CC");
-          //       Doc.concat([Doc.text(" = "), desugared]);
-          //     };
-          //   | Concat(docs) =>
-          //     print_endline("DD");
-          //     sugarMutableNumbers(docs);
-          //   | _ =>
-          //     print_endline("EE");
-          //     Doc.concat([Doc.text(" = "), desugared]);
-          //   };
 
           Doc.concat([
             print_expression(expression),
@@ -967,7 +946,15 @@ let import_print = (imp: Parsetree.import_declaration) => {
                     ),
                   ) => {
                     let (loc, optloc) = identlocopt;
-                    print_imported_ident(loc.txt);
+                    switch (optloc) {
+                    | None => print_imported_ident(loc.txt)
+                    | Some(alias) =>
+                      Doc.concat([
+                        print_imported_ident(loc.txt),
+                        Doc.text(" as "),
+                        print_imported_ident(alias.txt),
+                      ])
+                    };
                   },
                   identlocsopts,
                 ),
