@@ -589,19 +589,21 @@ let unwrapResult = (r) => {
 }
 
 // Replacement tests (mostly testing replacement string syntax)
-assert replace(unwrapResult(make("b(ar)")), "foo bar", "baza\\1") == "foo bazaar"
-assert replace(unwrapResult(make("b(ar)")), "foo bar", "baza\\1_\\1") == "foo bazaar_ar"
-assert replace(unwrapResult(make("b(ar)")), "foo bar", "baza\\2") == "foo baza"
-assert replace(unwrapResult(make("b(ar)")), "foo bar bar", "baza\\1") == "foo bazaar bar"
+assert replace(unwrapResult(make("b(ar)")), "foo bar", "baza$1") == "foo bazaar"
+assert replace(unwrapResult(make("b(ar)")), "foo bar", "baza$1_$1") == "foo bazaar_ar"
+assert replace(unwrapResult(make("b(ar)")), "foo bar", "baza$2") == "foo baza"
+assert replace(unwrapResult(make("b(ar)")), "foo bar bar", "baza$1$$") == "foo bazaar$ bar"
 
 
 // *All variants
 assert List.map(mr => flattenResult(mr), findAll(unwrapResult(make("x.")), "12x4x6")) == [("x4", [>]), ("x6", [>])]
 assert List.map(mr => flattenResultPositions(mr), findAll(unwrapResult(make("x.")), "12x4x6")) == [((2, 4), [>]), ((4, 6), [>])]
 
-assert replaceAll(unwrapResult(make("b(ar)")), "foo bar bar", "baza\\1") == "foo bazaar bazaar"
+assert replaceAll(unwrapResult(make("b(ar)")), "foo bar bar", "baza$1") == "foo bazaar bazaar"
 assert replaceAll(unwrapResult(make("mi")), "mi casa", "su") == "su casa"
-assert replaceAll(unwrapResult(make("a(.)")), "xabcyawz", "\\&") == "x&cy&z"
-assert replaceAll(unwrapResult(make("a(.)")), "xabcyawz", "\\\\") == "x\\cy\\z"
-assert replaceAll(unwrapResult(make("a(.)")), "xabcyawz", "\\&\\1\\\\&\\99=") == "x&b\\ab=cy&w\\aw=z"
-assert replaceAll(unwrapResult(make("p")), "apple", "\\0\\$0") == "ap0p0le"
+assert replaceAll(unwrapResult(make("a(.)")), "xabcyawz", "&") == "x&cy&z"
+assert replaceAll(unwrapResult(make("a(.)")), "xabcyawz", "\\") == "x\\cy\\z"
+assert replaceAll(unwrapResult(make("a(.)")), "xabcyawz", "&$1\\$&$99=") == "x&b\\ab=cy&w\\aw=z"
+assert replaceAll(unwrapResult(make("p")), "apple", "$0$.0") == "ap0p0le"
+assert replaceAll(unwrapResult(make("b(ar)")), "bazbarfoo", "$`") == "bazbazfoo"
+assert replaceAll(unwrapResult(make("b(ar)")), "bazbarfoo", "$'") == "bazfoofoo"

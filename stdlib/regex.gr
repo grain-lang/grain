@@ -2837,6 +2837,8 @@ let computeReplacement = (matchBuf: MatchBuf, replacementString: String, start, 
   let replacementExploded = String.explode(replacementString)
   let len = Array.length(replacementExploded)
   let mut acc = []
+  let getBeforeMatch = () => String.slice(0, start, matchBuf.matchInput)
+  let getAfterMatch = () => String.slice(end, String.length(matchBuf.matchInput), matchBuf.matchInput)
   let getInputSubstr = (n) => {
     if (n == 0) {
       String.slice(start, end, matchBuf.matchInput)
@@ -2855,31 +2857,37 @@ let computeReplacement = (matchBuf: MatchBuf, replacementString: String, start, 
   let rec loop = (pos, since) => {
     if (pos == len) {
       consRange(since, pos, [])
-    } else if (replacementExploded[pos] == '&') {
-      consRange(since, pos, [getInputSubstr(0), ...loop(pos + 1, pos + 1)])
-    } else if (replacementExploded[pos] == '\\') {
-      consRange(since, pos, {
-        let c = if ((pos + 1) < len) Some(replacementExploded[pos + 1]) else None
-        if (c == Some('&') || c == Some('\\')) {
-          loop(pos + 2, pos + 1)
-        } else if (c == Some('$')) {
-          loop(pos + 2, pos + 2)
-        } else {
-          let rec dLoop = (pos, accum) => {
-            if (pos == len) {
-              [getInputSubstr(accum)]
-            } else {
-              let c = replacementExploded[pos]
-              if (Char.code('0') <= Char.code(c) && Char.code(c) <= Char.code('9')) {
-                dLoop(pos + 1, (10 * accum) + (Char.code(c) - Char.code('0')))
+    } else if (replacementExploded[pos] == '$') {
+      let c = if ((pos + 1) < len) Some(replacementExploded[pos + 1]) else None
+      if (c == Some('&')) {
+        consRange(since, pos, [getInputSubstr(0), ...loop(pos + 2, pos + 2)])
+      } else if (c == Some('`')) {
+        consRange(since, pos, [getBeforeMatch(), ...loop(pos + 2, pos + 2)])
+      } else if (c == Some('\'')) {
+        consRange(since, pos, [getAfterMatch(), ...loop(pos + 2, pos + 2)])
+      } else {
+        consRange(since, pos, {
+          if (c == Some('$')) {
+            loop(pos + 2, pos + 1)
+          } else if (c == Some('.')) {
+            loop(pos + 2, pos + 2)
+          } else {
+            let rec dLoop = (pos, accum) => {
+              if (pos == len) {
+                [getInputSubstr(accum)]
               } else {
-                [getInputSubstr(accum), ...loop(pos, pos)]
+                let c = replacementExploded[pos]
+                if (Char.code('0') <= Char.code(c) && Char.code(c) <= Char.code('9')) {
+                  dLoop(pos + 1, (10 * accum) + (Char.code(c) - Char.code('0')))
+                } else {
+                  [getInputSubstr(accum), ...loop(pos, pos)]
+                }
               }
             }
+            dLoop(pos + 1, 0)
           }
-          dLoop(pos + 1, 0)
-        }
-      })
+        })
+      }
     } else {
       loop(pos + 1, since)
     }
@@ -2919,10 +2927,12 @@ let regexReplaceHelp = (rx: RegularExpression, toSearch: String, replacement: St
 
 // Replaces the first match for the given regular expression contained within the given string with the given replacement.
 // Replacement strings support the following syntax:
-// - `&` - Replaced with the text of the matching portion of input (e.g. for `(foo)`, the search string `foo bar`, and the replacement `baz &`, the result will be `baz foo bar`)
-// - `\n` / `\nn` (where `n` is a digit) - Replaced with the text of group `nn`
-// - `\$` - Does nothing (this exists to support replacement strings such as `\4\$0`, which will place the contents of group 4 prior to a zero)
-// - `\&` / `\\` - Literal `&` and `\`, respectively
+// - `$&` - Replaced with the text of the matching portion of input (e.g. for `(foo)`, the search string `foo bar`, and the replacement `baz &`, the result will be `baz foo bar`)
+// - `$n` / `$nn` (where `n` is a digit) - Replaced with the text of group `nn`
+// - `$$` - Replaced with a literal `$`
+// - `$.` - Does nothing (this exists to support replacement strings such as `\4\$0`, which will place the contents of group 4 prior to a zero)
+// - `$\`` - Replaced with the text of the string prior to the matched subspan of text
+// - `$'` - Replaced with the text of the string after the matched subspan of text
 // - Any other character will be placed as-is in the replaced output.
 //
 // @param rx: RegularExpression - The regular expression to search for
