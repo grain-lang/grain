@@ -227,7 +227,7 @@ and print_pattern = (pat: Parsetree.pattern) => {
   | PPatConstraint(pattern, parsed_type) =>
     Doc.concat([
       print_pattern(pattern),
-      Doc.concat([Doc.text(":"), Doc.space]),
+      Doc.concat([Doc.text(" :"), Doc.space]),
       print_type(parsed_type),
     ])
   | PPatConstruct(location, patterns) =>
@@ -428,12 +428,18 @@ and print_application =
     let funcName = print_expression(func);
     if (Doc.toString(~width=20, funcName) == "[...]") {
       resugar_list(expressions);
+    } else if (Doc.toString(~width=20, funcName) == "throw") {
+      Doc.concat([
+        funcName,
+        Doc.space,
+        print_expression(List.hd(expressions)),
+      ]);
     } else {
       Doc.concat([
         funcName,
         addParens(
           Doc.join(
-            Doc.concat([Doc.text(",")]),
+            Doc.concat([Doc.text(", ")]),
             List.map(e => Doc.group(print_expression(e)), expressions),
           ),
         ),
@@ -564,7 +570,7 @@ and print_expression = (expr: Parsetree.expression) => {
         Doc.text("("),
         print_expression(condition),
         Doc.text(")"),
-        Doc.line,
+        Doc.space,
         print_expression(trueExpr),
         falseClause,
       ]),
@@ -613,7 +619,7 @@ and print_expression = (expr: Parsetree.expression) => {
     Doc.group(
       Doc.concat([
         print_expression(expression),
-        Doc.text(":"),
+        Doc.text(" : "),
         print_type(parsed_type),
       ]),
     )
@@ -622,9 +628,8 @@ and print_expression = (expr: Parsetree.expression) => {
     Doc.concat([
       addParens(
         Doc.concat([
-          Doc.softLine,
           Doc.join(
-            Doc.concat([Doc.softLine, Doc.text(",")]),
+            Doc.concat([Doc.text(","), Doc.line]),
             List.map(p => print_pattern(p), patterns),
           ),
         ]),
@@ -799,7 +804,7 @@ let rec print_data = (d: Grain_parsing__Parsetree.data_declaration) => {
           Doc.concat([
             Doc.text("<"),
             Doc.join(
-              Doc.text(","),
+              Doc.text(", "),
               List.map(t => print_type(t), d.pdata_params),
             ),
             Doc.text(">"),
@@ -1029,7 +1034,7 @@ let print_foreign_value_description = (vd: Parsetree.value_description) => {
 
   Doc.concat([
     fixedIdent,
-    Doc.text(": "),
+    Doc.text(" : "),
     print_type(vd.pval_type),
     Doc.text(" from "),
     Doc.text("\""),
@@ -1050,7 +1055,7 @@ let print_primitive_value_description = (vd: Parsetree.value_description) => {
 
   Doc.concat([
     fixedIdent,
-    Doc.text(": "),
+    Doc.text(" : "),
     print_type(vd.pval_type),
     Doc.text(" = "),
     Doc.text("\""),
