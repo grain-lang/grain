@@ -437,12 +437,12 @@ and print_application =
     } else {
       Doc.concat([
         funcName,
-        addParens(
-          Doc.join(
-            Doc.concat([Doc.text(", ")]),
-            List.map(e => Doc.group(print_expression(e)), expressions),
-          ),
+        Doc.lparen,
+        Doc.join(
+          Doc.concat([Doc.text(", ")]),
+          List.map(e => Doc.group(print_expression(e)), expressions),
         ),
+        Doc.rparen,
       ]);
     };
   };
@@ -1054,10 +1054,10 @@ let print_primitive_value_description = (vd: Parsetree.value_description) => {
 
 let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
   let toplevel_print = (data: Parsetree.toplevel_stmt) => {
-    let (file, startline, startchar, sbol) =
-      get_raw_pos_info(data.ptop_loc.loc_start);
+    // let (file, startline, startchar, sbol) =
+    //   get_raw_pos_info(data.ptop_loc.loc_start);
 
-    let comments = []; //find_comment(startline, parsed_program.comments);
+    // let comments = []; //find_comment(startline, parsed_program.comments);
 
     let attributes = data.ptop_attributes;
 
@@ -1343,3 +1343,7 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
   // let b = 1 * 2 + 3 * 4;
   // ();
 };
+
+// reallylongdfuncrionNamereallylongdfuncrionName(e => {
+//   Grain_parsing__Parsetree.parsed_program_to_yojson(parsed_program)
+// });
