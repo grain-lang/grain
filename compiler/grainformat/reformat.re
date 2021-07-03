@@ -227,7 +227,7 @@ and print_pattern = (pat: Parsetree.pattern) => {
   | PPatConstraint(pattern, parsed_type) =>
     Doc.concat([
       print_pattern(pattern),
-      Doc.concat([Doc.text(" :"), Doc.space]),
+      Doc.concat([Doc.text(":"), Doc.space]),
       print_type(parsed_type),
     ])
   | PPatConstruct(location, patterns) =>
@@ -643,7 +643,7 @@ and print_expression = (expr: Parsetree.expression) => {
     Doc.group(
       Doc.concat([
         print_expression(expression),
-        Doc.text(" : "),
+        Doc.text(": "),
         print_type(parsed_type),
       ]),
     )
@@ -666,13 +666,7 @@ and print_expression = (expr: Parsetree.expression) => {
 
         switch (pat.ppat_desc) {
         | PPatConstraint(_) =>
-          Doc.concat([
-            Doc.lparen,
-            Doc.space,
-            print_pattern(pat),
-            Doc.space,
-            Doc.rparen,
-          ])
+          Doc.concat([Doc.lparen, print_pattern(pat), Doc.rparen])
         | _ => print_pattern(pat)
         };
       },
