@@ -524,21 +524,27 @@ and print_expression = (expr: Parsetree.expression) => {
         Doc.indent(
           Doc.concat([
             Doc.line,
-            Doc.group(
-              Doc.join(
-                Doc.concat([Doc.comma, Doc.hardLine]),
-                List.map(
-                  (branch: Parsetree.match_branch) => {
+            Doc.join(
+              Doc.concat([Doc.comma, Doc.hardLine]),
+              List.map(
+                (branch: Parsetree.match_branch) => {
+                  Doc.group(
                     Doc.concat([
                       print_pattern(branch.pmb_pat),
-                      Doc.text(" => "),
-                      print_expression(branch.pmb_body),
-                    ])
-                  },
-                  match_branches,
-                ),
+                      Doc.text(" =>"),
+                      Doc.indent(
+                        Doc.concat([
+                          Doc.line,
+                          print_expression(branch.pmb_body),
+                        ]),
+                      ),
+                    ]),
+                  )
+                },
+                match_branches,
               ),
             ),
+            Doc.concat([Doc.comma]),
           ]),
         ),
         Doc.line,
@@ -561,11 +567,27 @@ and print_expression = (expr: Parsetree.expression) => {
       switch (falseExpr.pexp_desc) {
       | PExpBlock(expressions) =>
         if (List.length(expressions) > 0) {
-          Doc.concat([Doc.text(" else "), print_expression(falseExpr)]);
+          Doc.concat([
+            Doc.line,
+            Doc.text("else"),
+            Doc.indent(
+              Doc.concat([
+                Doc.line,
+                Doc.group(print_expression(falseExpr)),
+              ]),
+            ),
+          ]);
         } else {
           Doc.nil;
         }
-      | _ => Doc.concat([Doc.text(" else "), print_expression(falseExpr)])
+      | _ =>
+        Doc.concat([
+          Doc.line,
+          Doc.text("else"),
+          Doc.indent(
+            Doc.concat([Doc.line, Doc.group(print_expression(falseExpr))]),
+          ),
+        ])
       };
     Doc.group(
       Doc.concat([
@@ -573,8 +595,7 @@ and print_expression = (expr: Parsetree.expression) => {
         Doc.text("("),
         print_expression(condition),
         Doc.text(")"),
-        Doc.line,
-        print_expression(trueExpr),
+        Doc.indent(Doc.concat([Doc.line, print_expression(trueExpr)])),
         falseClause,
       ]),
     );
@@ -1375,20 +1396,20 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
 //   }
 // }
 
-type c =
-  | SomethingLong
-  | SomethiingLnger;
+// type c =
+//   | SomethingLong
+//   | SomethiingLnger;
 
-let d = SomethiingLnger;
+// let d = SomethiingLnger;
 
-switch (d) {
-| SomethiingLnger =>
-  if (c == SomethingLong) {
-    let a = 1 + 3 + 4;
-    ();
-  } else {
-    let c = 5 + 6 + 7 + 7 + 9;
-    ();
-  }
-| _ => ()
-};
+// switch (d) {
+// | SomethiingLnger =>
+//   if (c == SomethingLong) {
+//     let a = 1 + 3 + 4;
+//     ();
+//   } else {
+//     let c = 5 + 6 + 7 + 7 + 9;
+//     ();
+//   }
+// | _ => ()
+// };
