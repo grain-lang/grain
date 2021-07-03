@@ -532,11 +532,9 @@ and print_expression = (expr: Parsetree.expression) => {
                     Doc.concat([
                       print_pattern(branch.pmb_pat),
                       Doc.text(" =>"),
+                      Doc.space,
                       Doc.indent(
-                        Doc.concat([
-                          Doc.line,
-                          print_expression(branch.pmb_body),
-                        ]),
+                        Doc.concat([print_expression(branch.pmb_body)]),
                       ),
                     ]),
                   )
@@ -595,7 +593,11 @@ and print_expression = (expr: Parsetree.expression) => {
         Doc.text("("),
         print_expression(condition),
         Doc.text(")"),
-        Doc.indent(Doc.concat([Doc.line, print_expression(trueExpr)])),
+        // can't break here, if we do the { of the expression gets pushed to the next line
+        //  Doc.indent(Doc.concat([Doc.line, print_expression(trueExpr)])),
+        //  Doc.ifBreaks(Doc.nil, Doc.space),
+        Doc.space,
+        print_expression(trueExpr),
         falseClause,
       ]),
     );
@@ -683,20 +685,18 @@ and print_expression = (expr: Parsetree.expression) => {
   | PExpBlock(expressions) =>
     // print_endline("PExpBlock");
 
+    let block =
+      Doc.join(
+        Doc.hardLine,
+        List.map(e => Doc.group(print_expression(e)), expressions),
+      );
+
     Doc.concat([
-      Doc.text("{"),
-      Doc.indent(
-        Doc.concat([
-          Doc.line,
-          Doc.join(
-            Doc.hardLine,
-            List.map(e => Doc.group(print_expression(e)), expressions),
-          ),
-        ]),
-      ),
+      Doc.lbrace,
+      Doc.indent(Doc.concat([Doc.line, block])),
       Doc.line,
-      Doc.text("}"),
-    ])
+      Doc.rbrace,
+    ]);
 
   | PExpBoxAssign(expression, expression1) =>
     //  print_endline("PExpBoxAssign");
