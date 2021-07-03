@@ -1350,6 +1350,15 @@ export let forEachCodePoint = (f: (Number) -> Void, s: String) => {
   }
 }
 
+/**
+ * Iterates over Unicode code points in this string. This same as the
+ * forEachCodePoint function, but with a code point index provided for
+ * convenience.
+ * 
+ * @param f: (Number,Number) -> Void - The iterator function
+ * @param s: String - The string to iterate
+ * @returns Void
+ */
 @disableGC
 export let forEachCodePointi = (f: (Number,Number) -> Void, s: String) => {
   let (>>>) = WasmI32.shrU
