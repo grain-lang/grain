@@ -1007,39 +1007,47 @@ let import_print = (imp: Parsetree.import_declaration) => {
           ])
         | PImportValues(identlocsopts) =>
           Doc.concat([
-            Doc.text("{ "),
-            if (List.length(identlocsopts) > 0) {
-              Doc.join(
-                Doc.concat([Doc.comma, Doc.space]),
-                List.map(
-                  (
-                    identlocopt: (
-                      Grain_parsing.Parsetree.loc(Grain_parsing.Identifier.t),
-                      option(
-                        Grain_parsing.Parsetree.loc(
-                          Grain_parsing.Identifier.t,
+            Doc.lbrace,
+            Doc.indent(
+              Doc.concat([
+                Doc.line,
+                if (List.length(identlocsopts) > 0) {
+                  Doc.join(
+                    Doc.concat([Doc.comma, Doc.line]),
+                    List.map(
+                      (
+                        identlocopt: (
+                          Grain_parsing.Parsetree.loc(
+                            Grain_parsing.Identifier.t,
+                          ),
+                          option(
+                            Grain_parsing.Parsetree.loc(
+                              Grain_parsing.Identifier.t,
+                            ),
+                          ),
                         ),
-                      ),
+                      ) => {
+                        let (loc, optloc) = identlocopt;
+                        switch (optloc) {
+                        | None => print_imported_ident(loc.txt)
+                        | Some(alias) =>
+                          Doc.concat([
+                            print_imported_ident(loc.txt),
+                            Doc.text(" as "),
+                            print_imported_ident(alias.txt),
+                          ])
+                        };
+                      },
+                      identlocsopts,
                     ),
-                  ) => {
-                    let (loc, optloc) = identlocopt;
-                    switch (optloc) {
-                    | None => print_imported_ident(loc.txt)
-                    | Some(alias) =>
-                      Doc.concat([
-                        print_imported_ident(loc.txt),
-                        Doc.text(" as "),
-                        print_imported_ident(alias.txt),
-                      ])
-                    };
-                  },
-                  identlocsopts,
-                ),
-              );
-            } else {
-              Doc.nil;
-            },
-            Doc.text(" }"),
+                  );
+                } else {
+                  Doc.nil;
+                },
+              ]),
+            ),
+            Doc.line,
+            Doc.rbrace,
           ])
         }
       },
@@ -1051,7 +1059,8 @@ let import_print = (imp: Parsetree.import_declaration) => {
   Doc.group(
     Doc.concat([
       Doc.text("import "),
-      Doc.group(Doc.concat(vals)),
+      //   Doc.group(Doc.concat(vals)),
+      Doc.join(Doc.concat([Doc.comma, Doc.space]), vals),
       Doc.text(" from "),
       Doc.doubleQuote,
       Doc.text(path),
@@ -1384,8 +1393,8 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
               }
             };
 
-          // print_endline("stmtstart " ++ string_of_int(stmtstart));
-          // print_endline("lastLine " ++ string_of_int(lastLine));
+          //  print_endline("stmtstart " ++ string_of_int(stmtstart));
+          //  print_endline("lastLine " ++ string_of_int(lastLine));
 
           let blankLineAbove =
             if (stmtstart - lastLine > 1) {

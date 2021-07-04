@@ -1,0 +1,9 @@
+import Memory from "runtime/unsafe/memory"
+import Tags from "runtime/unsafe/tags"
+
+import WasmI32, {
+  add as (+),
+  mul as (*),
+  xor as (^),
+  shl as (<<)
+} from "runtime/unsafe/wasmi32"
