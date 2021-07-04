@@ -113,8 +113,8 @@ let rec remove_cons = (expression: Parsetree.expression) => {
 }
 
 and build_sugar_docs = (first: Doc.t, second: Doc.t) => {
-  // print_endline("first:" ++ Doc.toString(~width=100, first));
-  // print_endline("second:" ++ Doc.toString(~width=100, second));
+  //print_endline("first:" ++ Doc.toString(~width=100, first));
+  //print_endline("second:" ++ Doc.toString(~width=100, second));
   switch (second) {
   | Text(txt) =>
     if (txt == "[]") {
@@ -130,18 +130,24 @@ and build_sugar_docs = (first: Doc.t, second: Doc.t) => {
       ]);
     }
   | Concat(docs) =>
-    //let noBrack = Doc.concat(List.tl(docs));
-    let noBrack = Doc.concat([Doc.text("..."), Doc.concat(docs)]);
-    Doc.concat([
-      Doc.lbracket,
-      Doc.group(first),
-      Doc.comma,
-      Doc.space,
-      noBrack,
-      Doc.rbracket,
-    ]);
+    if (List.length(docs) == 1 && List.hd(docs) == Text("[]")) {
+      Doc.concat([Doc.lbracket, Doc.group(first), Doc.rbracket]);
+    } else {
+      let noBrack = Doc.concat(List.tl(docs));
+
+      // let noBrack = Doc.concat([Doc.text("..."), Doc.concat(docs)]);
+      Doc.concat([
+        Doc.lbracket,
+        Doc.group(first),
+        Doc.comma,
+        Doc.space,
+        noBrack,
+      ]);
+    }
   | _ =>
     // Should never end up here
+    print_endline("// reformatter has hit a bug in the following");
+
     Doc.concat([
       Doc.lbracket,
       Doc.group(first),
@@ -149,7 +155,7 @@ and build_sugar_docs = (first: Doc.t, second: Doc.t) => {
       Doc.space,
       Doc.group(second),
       Doc.rbracket,
-    ])
+    ]);
   };
 }
 
@@ -186,11 +192,24 @@ and print_record_pattern =
           ),
         ) => {
           let (loc, pat) = patternloc;
-          Doc.concat([
-            print_ident(loc.txt),
-            Doc.text(": "),
-            print_pattern(pat),
-          ]);
+
+          let printed_ident: Doc.t = print_ident(loc.txt);
+          let printed_pat = print_pattern(pat);
+
+          let pun =
+            switch (printed_ident) {
+            | Text(i) =>
+              switch (printed_pat) {
+              | Text(e) => i == e
+              | _ => false
+              }
+            | _ => false
+            };
+          if (pun) {
+            printed_ident;
+          } else {
+            Doc.concat([printed_ident, Doc.text(": "), printed_pat]);
+          };
         },
         patternlocs,
       ),
@@ -323,9 +342,11 @@ and print_record =
           ),
         ),
     ) =>
-  addBraces(
+  Doc.concat([
+    Doc.lbrace,
+    Doc.space,
     Doc.join(
-      Doc.concat([Doc.comma, Doc.softLine]),
+      Doc.concat([Doc.comma, Doc.line]),
       List.map(
         (
           field: (
@@ -335,19 +356,44 @@ and print_record =
         ) => {
           let (locidentifier, expr) = field;
           let ident = locidentifier.txt;
-          Doc.group(
-            Doc.concat([
-              Doc.line,
-              print_ident(ident),
-              Doc.text(":"),
-              print_expression(expr),
-            ]),
-          );
+
+          let printed_ident = print_ident(ident);
+          let printed_expr = print_expression(expr);
+
+          // print_endline("ident:");
+          // Doc.debug(printed_ident);
+          // print_endline("expr:");
+          // Doc.debug(printed_expr);
+
+          let pun =
+            switch (printed_ident) {
+            | Text(i) =>
+              switch (printed_expr) {
+              | Text(e) => i == e
+              | _ => false
+              }
+            | _ => false
+            };
+
+          if (!pun) {
+            Doc.group(
+              Doc.concat([
+                Doc.line,
+                printed_ident,
+                Doc.text(":"),
+                printed_expr,
+              ]),
+            );
+          } else {
+            Doc.group(printed_ident);
+          };
         },
         fields,
       ),
     ),
-  )
+    Doc.space,
+    Doc.rbrace,
+  ])
 
 and print_type = (p: Grain_parsing__Parsetree.parsed_type) => {
   switch (p.ptyp_desc) {

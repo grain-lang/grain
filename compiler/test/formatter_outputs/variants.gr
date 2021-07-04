@@ -1,0 +1,7 @@
+enum Animals{
+  VeryVeryLong,
+  VeryVeryLongVeryVeryLong,
+  VeryVeryLongVeryVeryLongVeryVeryLong
+  }
+
+enum SmallAnimals{ Abc, Def }
