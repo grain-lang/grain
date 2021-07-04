@@ -172,23 +172,27 @@ export let free = (ap: WasmI32) => {
   // is actually already pointing to this node, so we don't do anything.
   if (blockPtr != freePtr) {
     // Find the location to insert this block into the free list
-    for ( ; !((blockPtr > p) && (blockPtr < getNext(p))); p = getNext(p) ) {
-      if ((p >= getNext(p)) && ((blockPtr > p) || (blockPtr < getNext(p)))) {
+    while (true) {
+      let nextp = getNext(p)
+      if ( ((blockPtr > p) && (blockPtr < nextp)) || ((p >= nextp) && ((blockPtr > p) || (blockPtr < nextp))) ) {
         break
       }
+      p = nextp
     }
 
     // Merge the block into the adjacent free list entry above, if needed
-    if (blockPtr + getSize(blockPtr) == getNext(p)) {
-      let next = getNext(p)
-      setSize(blockPtr, getSize(blockPtr) + getSize(next))
+    let blockPtrSize = getSize(blockPtr)
+    let next = getNext(p)
+    if (blockPtr + blockPtrSize == next) {
+      setSize(blockPtr, blockPtrSize + getSize(next))
       setNext(blockPtr, getNext(next))
     } else {
-      setNext(blockPtr, getNext(p))
+      setNext(blockPtr, next)
     }
     // Merge the previous (adjacent) free list entry into this block, if needed
-    if (p + getSize(p) == blockPtr) {
-      setSize(p, getSize(p) + getSize(blockPtr))
+    let pSize = getSize(p)
+    if (p + pSize == blockPtr) {
+      setSize(p, pSize + getSize(blockPtr))
       setNext(p, getNext(blockPtr))
     } else {
       setNext(p, blockPtr)
