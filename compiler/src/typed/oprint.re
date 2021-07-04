@@ -380,7 +380,7 @@ and print_out_type_2 = ppf =>
       fprintf(
         ppf,
         "@[<0>%a@]",
-        print_typlist(print_simple_out_type, ", "),
+        print_typlist(print_simple_out_type, ","),
         tyl,
       );
       pp_print_char(ppf, ')');
