@@ -763,8 +763,7 @@ and print_expression = (expr: Parsetree.expression) => {
       let first = print_expression(List.hd(expressions));
 
       if (left == first) {
-        print_endline("Possible sugar as name is the same");
-
+        //print_endline("Possible sugar as name is the same");
         // +=, -=, *=, /=, and %=
         switch (trimmedOperator) {
         | "+"
@@ -803,8 +802,8 @@ and print_expression = (expr: Parsetree.expression) => {
     }
 
   | /** Used for modules without body expressions */ PExpNull =>
-    print_endline("PExpNull");
-    Doc.text("PExpNull");
+    //   print_endline("PExpNull");
+    Doc.text("PExpNull")
   };
 }
 and value_bind_print =
