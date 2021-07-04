@@ -181,7 +181,14 @@ and print_record_pattern =
         ),
       closedflag: Grain_parsing__Asttypes.closed_flag,
     ) => {
-  addBraces(
+  let close =
+    switch (closedflag) {
+    | Open => Doc.concat([Doc.text(","), Doc.space, Doc.text("_")])
+    | Closed => Doc.nil
+    };
+  Doc.concat([
+    Doc.lbrace,
+    Doc.space,
     Doc.join(
       Doc.concat([Doc.comma, Doc.space]),
       List.map(
@@ -214,7 +221,10 @@ and print_record_pattern =
         patternlocs,
       ),
     ),
-  );
+    close,
+    Doc.space,
+    Doc.rbrace,
+  ]);
 }
 and print_pattern = (pat: Parsetree.pattern) => {
   switch (pat.ppat_desc) {
@@ -377,12 +387,7 @@ and print_record =
 
           if (!pun) {
             Doc.group(
-              Doc.concat([
-                Doc.line,
-                printed_ident,
-                Doc.text(":"),
-                printed_expr,
-              ]),
+              Doc.concat([printed_ident, Doc.text(": "), printed_expr]),
             );
           } else {
             Doc.group(printed_ident);
@@ -861,7 +866,7 @@ let rec print_data = (d: Grain_parsing__Parsetree.data_declaration) => {
             Doc.space,
           ]);
         } else {
-          Doc.nil;
+          Doc.space;
         },
         Doc.lbrace,
         Doc.indent(
@@ -922,9 +927,11 @@ let rec print_data = (d: Grain_parsing__Parsetree.data_declaration) => {
         } else {
           Doc.nil;
         },
-        addBraces(
+        Doc.concat([
+          Doc.lbrace,
+          Doc.space,
           Doc.join(
-            Doc.concat([Doc.line, Doc.comma]),
+            Doc.concat([Doc.comma, Doc.line]),
             List.map(
               (decl: Grain_parsing__Parsetree.label_declaration) => {
                 let isMutable =
@@ -934,10 +941,10 @@ let rec print_data = (d: Grain_parsing__Parsetree.data_declaration) => {
                   };
                 Doc.group(
                   Doc.concat([
-                    Doc.line,
                     isMutable,
                     print_ident(decl.pld_name.txt),
                     Doc.text(":"),
+                    Doc.space,
                     print_type(decl.pld_type),
                   ]),
                 );
@@ -945,7 +952,9 @@ let rec print_data = (d: Grain_parsing__Parsetree.data_declaration) => {
               label_declarations,
             ),
           ),
-        ),
+          Doc.space,
+          Doc.rbrace,
+        ]),
       ]),
     )
   };

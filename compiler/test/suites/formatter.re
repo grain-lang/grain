@@ -12,4 +12,5 @@ describe("formatter", ({test}) => {
   // assertFormatOutput("spreads", "spreads");
   // assertFormatOutput("nested_matches", "nested_matches");
   assertFormatOutput("number_sugar", "number_sugar");
+  assertFormatOutput("records", "records");
 });

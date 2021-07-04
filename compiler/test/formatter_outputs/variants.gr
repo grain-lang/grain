@@ -1,7 +1,12 @@
-enum Animals{
+enum Animals {
   VeryVeryLong,
   VeryVeryLongVeryVeryLong,
   VeryVeryLongVeryVeryLongVeryVeryLong
   }
 
-enum SmallAnimals{ Abc, Def }
+enum SmallAnimals { Abc, Def }
+
+enum CabbageColor { Red, Green }
+enum Veggie { Squash, Cabbage(CabbageColor), Broccoli }
+
+let redCabbage = Cabbage(Red)

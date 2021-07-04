@@ -1,5 +1,6 @@
 import Memory from "runtime/unsafe/memory"
 import Tags from "runtime/unsafe/tags"
+import { length, map } from "list"
 
 import WasmI32, {
   add as (+),
