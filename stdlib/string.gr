@@ -707,6 +707,7 @@ let getCodePoint = (ptr: WasmI32) => {
   result: WasmI32
 }
 
+let _BYTES_SIZE_OFFSET = 4n;
 let _BYTES_OFFSET = 8n;
 
 // Encodes the given string using the given encoding scheme
@@ -722,6 +723,7 @@ let encodeAtHelp = (s: String, encoding: Encoding, includeBom: Bool, dest: Bytes
   let (-) = WasmI32.sub
   let (&) = WasmI32.and
   let (<) = WasmI32.ltU
+  let (>) = WasmI32.gtS
   let (<=) = WasmI32.leU
   let (==) = WasmI32.eq
   let (+) = WasmI32.add
@@ -735,26 +737,40 @@ let encodeAtHelp = (s: String, encoding: Encoding, includeBom: Bool, dest: Bytes
 
   let bytes = WasmI32.fromGrain(dest)
   let mut bytesIdx = grainToWasmNumber(destPos, _OFFSET_NAME)
+  
+  let destSize = WasmI32.load(bytes, _BYTES_SIZE_OFFSET)
 
   if (includeBom) {
     match(encoding) {
       UTF8 => {
+        if ((bytesIdx + 3n) > destSize) {
+          throw Exception.IndexOutOfBounds
+        }
         WasmI32.store8(bytes + bytesIdx, 0xEFn, _BYTES_OFFSET)
         WasmI32.store8(bytes + bytesIdx + 1n, 0xBBn, _BYTES_OFFSET)
         WasmI32.store8(bytes + bytesIdx + 2n, 0xBFn, _BYTES_OFFSET)
         bytesIdx += 3n
       },
       UTF16_BE => {
+        if ((bytesIdx + 2n) > destSize) {
+          throw Exception.IndexOutOfBounds
+        }
         WasmI32.store8(bytes + bytesIdx, 0xFEn, _BYTES_OFFSET)
         WasmI32.store8(bytes + bytesIdx + 1n, 0xFFn, _BYTES_OFFSET)
         bytesIdx += 2n
       },
       UTF16_LE => {
+        if ((bytesIdx + 2n) > destSize) {
+          throw Exception.IndexOutOfBounds
+        }
         WasmI32.store8(bytes + bytesIdx, 0xFFn, _BYTES_OFFSET)
         WasmI32.store8(bytes + bytesIdx + 1n, 0xFEn, _BYTES_OFFSET)
         bytesIdx += 2n
       },
       UTF32_BE => {
+        if ((bytesIdx + 4n) > destSize) {
+          throw Exception.IndexOutOfBounds
+        }
         WasmI32.store8(bytes + bytesIdx, 0n, _BYTES_OFFSET)
         WasmI32.store8(bytes + bytesIdx + 1n, 0n, _BYTES_OFFSET)
         WasmI32.store8(bytes + bytesIdx + 2n, 0xFEn, _BYTES_OFFSET)
@@ -762,6 +778,9 @@ let encodeAtHelp = (s: String, encoding: Encoding, includeBom: Bool, dest: Bytes
         bytesIdx += 4n
       },
       UTF32_LE => {
+        if ((bytesIdx + 4n) > destSize) {
+          throw Exception.IndexOutOfBounds
+        }
         WasmI32.store8(bytes + bytesIdx, 0xFFn, _BYTES_OFFSET)
         WasmI32.store8(bytes + bytesIdx + 1n, 0xFEn, _BYTES_OFFSET)
         WasmI32.store8(bytes + bytesIdx + 2n, 0n, _BYTES_OFFSET)
@@ -771,80 +790,117 @@ let encodeAtHelp = (s: String, encoding: Encoding, includeBom: Bool, dest: Bytes
     }
   }
 
-  while (ptr < end) {
-    let byte = WasmI32.load8U(ptr, 0n)
-    // number of bytes spanning this UTF-8-encoded scalar value
-    let n = if ((byte & 0x80n) == 0x00n) {
-      1n
-    } else if ((byte & 0xF0n) == 0xF0n) {
-      4n
-    } else if ((byte & 0xE0n) == 0xE0n) {
-      3n
-    } else {
-      2n
+  match(encoding) {
+    UTF8 => {
+      // Optimization: since internally strings in Grain are UTF8 encoded, when
+      // the target encoding is UTF8 as well, then copy the entire memory range
+      // in bulk. No need to iterate individual characters.
+      if ((bytesIdx + byteSize) > destSize) {
+        throw Exception.IndexOutOfBounds
+      }
+      Memory.copy(bytes + bytesIdx + _BYTES_OFFSET, ptr, byteSize)
+    },
+    _ => {
+      while (ptr < end) {
+        let byte = WasmI32.load8U(ptr, 0n)
+        // number of bytes spanning this UTF-8-encoded scalar value
+        let n = if ((byte & 0x80n) == 0x00n) {
+          1n
+        } else if ((byte & 0xF0n) == 0xF0n) {
+          4n
+        } else if ((byte & 0xE0n) == 0xE0n) {
+          3n
+        } else {
+          2n
+        }
+        match(encoding) {
+          UTF8 => {
+            // With the optimization above for bulk memory copy, this match
+            // should never occur for the UTF8 case.
+            if ((bytesIdx + n) > destSize) {
+              throw Exception.IndexOutOfBounds
+            }
+            Memory.copy(bytes + bytesIdx + _BYTES_OFFSET, ptr, n);
+            bytesIdx += n
+          },
+          UTF16_BE => {
+            let codePoint = getCodePoint(ptr)
+            if (codePoint <= 0xFFFFn) {
+              // <hi><lo>
+              if ((bytesIdx + 2n) > destSize) {
+                throw Exception.IndexOutOfBounds
+              }
+              WasmI32.store8(bytes + bytesIdx, (codePoint & 0xff00n) >>> 8n, _BYTES_OFFSET)
+              WasmI32.store8(bytes + bytesIdx + 1n, codePoint & 0xffn, _BYTES_OFFSET)
+              bytesIdx += 2n
+            } else {
+              // https://en.wikipedia.org/wiki/UTF-16#Code_points_from_U+010000_to_U+10FFFF
+              if ((bytesIdx + 4n) > destSize) {
+                throw Exception.IndexOutOfBounds
+              }
+              let uPrime = codePoint - 0x10000n
+              let w1 = ((uPrime & 0b11111111110000000000n) >>> 10n) + 0xD800n // High surrogate
+              let w2 = (uPrime & 0b00000000001111111111n) + 0xDC00n // Low surrogate
+              WasmI32.store8(bytes + bytesIdx, (w1 & 0xff00n) >>> 8n, _BYTES_OFFSET)
+              WasmI32.store8(bytes + bytesIdx + 1n, w1 & 0xffn, _BYTES_OFFSET)
+              WasmI32.store8(bytes + bytesIdx + 2n, (w2 & 0xff00n) >>> 8n, _BYTES_OFFSET)
+              WasmI32.store8(bytes + bytesIdx + 3n, w2 & 0xffn, _BYTES_OFFSET)
+              bytesIdx += 4n
+            }
+          },
+          UTF16_LE => {
+            let codePoint = getCodePoint(ptr)
+            if (codePoint <= 0xFFFFn) {
+              if ((bytesIdx + 2n) > destSize) {
+                throw Exception.IndexOutOfBounds
+              }
+              // <lo><hi>
+              WasmI32.store8(bytes + bytesIdx, codePoint & 0xffn, _BYTES_OFFSET)
+              WasmI32.store8(bytes + bytesIdx + 1n, (codePoint & 0xff00n) >>> 8n, _BYTES_OFFSET)
+              bytesIdx += 2n
+            } else {
+              // https://en.wikipedia.org/wiki/UTF-16#Code_points_from_U+010000_to_U+10FFFF
+              if ((bytesIdx + 4n) > destSize) {
+                throw Exception.IndexOutOfBounds
+              }
+              let uPrime = codePoint - 0x10000n
+              let w1 = ((uPrime & 0b11111111110000000000n) >>> 10n) + 0xD800n // High surrogate
+              let w2 = (uPrime & 0b00000000001111111111n) + 0xDC00n // Low surrogate
+              WasmI32.store8(bytes + bytesIdx, w1 & 0xffn, _BYTES_OFFSET)
+              WasmI32.store8(bytes + bytesIdx + 1n, (w1 & 0xff00n) >>> 8n, _BYTES_OFFSET)
+              WasmI32.store8(bytes + bytesIdx + 2n, w2 & 0xffn, _BYTES_OFFSET)
+              WasmI32.store8(bytes + bytesIdx + 3n, (w2 & 0xff00n) >>> 8n, _BYTES_OFFSET)
+              bytesIdx += 4n
+            }
+          },
+          UTF32_BE => {
+            if ((bytesIdx + 4n) > destSize) {
+              throw Exception.IndexOutOfBounds
+            }
+            let codePoint = getCodePoint(ptr)
+            WasmI32.store8(bytes + bytesIdx, (codePoint & 0xff000000n) >>> 24n, _BYTES_OFFSET)
+            WasmI32.store8(bytes + bytesIdx + 1n, (codePoint & 0xff0000n) >>> 16n, _BYTES_OFFSET)
+            WasmI32.store8(bytes + bytesIdx + 2n, (codePoint & 0xff00n) >>> 8n, _BYTES_OFFSET)
+            WasmI32.store8(bytes + bytesIdx + 3n, codePoint & 0xffn, _BYTES_OFFSET)
+            bytesIdx += 4n
+          },
+          UTF32_LE => {
+            if ((bytesIdx + 4n) > destSize) {
+              throw Exception.IndexOutOfBounds
+            }
+            let codePoint = getCodePoint(ptr)
+            WasmI32.store8(bytes + bytesIdx, codePoint & 0xffn, _BYTES_OFFSET)
+            WasmI32.store8(bytes + bytesIdx + 1n, (codePoint & 0xff00n) >>> 8n, _BYTES_OFFSET)
+            WasmI32.store8(bytes + bytesIdx + 2n, (codePoint & 0xff0000n) >>> 16n, _BYTES_OFFSET)
+            WasmI32.store8(bytes + bytesIdx + 3n, (codePoint & 0xff000000n) >>> 24n, _BYTES_OFFSET)
+            bytesIdx += 4n
+          },
+        };
+        ptr += n
+      }
     }
-    match(encoding) {
-      UTF8 => {
-        Memory.copy(bytes + bytesIdx + _BYTES_OFFSET, ptr, n);
-        bytesIdx += n
-      },
-      UTF16_BE => {
-        let codePoint = getCodePoint(ptr)
-        if (codePoint <= 0xFFFFn) {
-          // <hi><lo>
-          WasmI32.store8(bytes + bytesIdx, (codePoint & 0xff00n) >>> 8n, _BYTES_OFFSET)
-          WasmI32.store8(bytes + bytesIdx + 1n, codePoint & 0xffn, _BYTES_OFFSET)
-          bytesIdx += 2n
-        } else {
-          // https://en.wikipedia.org/wiki/UTF-16#Code_points_from_U+010000_to_U+10FFFF
-          let uPrime = codePoint - 0x10000n
-          let w1 = ((uPrime & 0b11111111110000000000n) >>> 10n) + 0xD800n // High surrogate
-          let w2 = (uPrime & 0b00000000001111111111n) + 0xDC00n // Low surrogate
-          WasmI32.store8(bytes + bytesIdx, (w1 & 0xff00n) >>> 8n, _BYTES_OFFSET)
-          WasmI32.store8(bytes + bytesIdx + 1n, w1 & 0xffn, _BYTES_OFFSET)
-          WasmI32.store8(bytes + bytesIdx + 2n, (w2 & 0xff00n) >>> 8n, _BYTES_OFFSET)
-          WasmI32.store8(bytes + bytesIdx + 3n, w2 & 0xffn, _BYTES_OFFSET)
-          bytesIdx += 4n
-        }
-      },
-      UTF16_LE => {
-        let codePoint = getCodePoint(ptr)
-        if (codePoint <= 0xFFFFn) {
-          // <lo><hi>
-          WasmI32.store8(bytes + bytesIdx, codePoint & 0xffn, _BYTES_OFFSET)
-          WasmI32.store8(bytes + bytesIdx + 1n, (codePoint & 0xff00n) >>> 8n, _BYTES_OFFSET)
-          bytesIdx += 2n
-        } else {
-          // https://en.wikipedia.org/wiki/UTF-16#Code_points_from_U+010000_to_U+10FFFF
-          let uPrime = codePoint - 0x10000n
-          let w1 = ((uPrime & 0b11111111110000000000n) >>> 10n) + 0xD800n // High surrogate
-          let w2 = (uPrime & 0b00000000001111111111n) + 0xDC00n // Low surrogate
-          WasmI32.store8(bytes + bytesIdx, w1 & 0xffn, _BYTES_OFFSET)
-          WasmI32.store8(bytes + bytesIdx + 1n, (w1 & 0xff00n) >>> 8n, _BYTES_OFFSET)
-          WasmI32.store8(bytes + bytesIdx + 2n, w2 & 0xffn, _BYTES_OFFSET)
-          WasmI32.store8(bytes + bytesIdx + 3n, (w2 & 0xff00n) >>> 8n, _BYTES_OFFSET)
-          bytesIdx += 4n
-        }
-      },
-      UTF32_BE => {
-        let codePoint = getCodePoint(ptr)
-        WasmI32.store8(bytes + bytesIdx, (codePoint & 0xff000000n) >>> 24n, _BYTES_OFFSET)
-        WasmI32.store8(bytes + bytesIdx + 1n, (codePoint & 0xff0000n) >>> 16n, _BYTES_OFFSET)
-        WasmI32.store8(bytes + bytesIdx + 2n, (codePoint & 0xff00n) >>> 8n, _BYTES_OFFSET)
-        WasmI32.store8(bytes + bytesIdx + 3n, codePoint & 0xffn, _BYTES_OFFSET)
-        bytesIdx += 4n
-      },
-      UTF32_LE => {
-        let codePoint = getCodePoint(ptr)
-        WasmI32.store8(bytes + bytesIdx, codePoint & 0xffn, _BYTES_OFFSET)
-        WasmI32.store8(bytes + bytesIdx + 1n, (codePoint & 0xff00n) >>> 8n, _BYTES_OFFSET)
-        WasmI32.store8(bytes + bytesIdx + 2n, (codePoint & 0xff0000n) >>> 16n, _BYTES_OFFSET)
-        WasmI32.store8(bytes + bytesIdx + 3n, (codePoint & 0xff000000n) >>> 24n, _BYTES_OFFSET)
-        bytesIdx += 4n
-      },
-    };
-    ptr += n
   }
+
   WasmI32.toGrain(bytes): Bytes
 }
 
