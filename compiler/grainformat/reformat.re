@@ -354,49 +354,53 @@ and print_record =
     ) =>
   Doc.concat([
     Doc.lbrace,
-    Doc.space,
-    Doc.join(
-      Doc.concat([Doc.comma, Doc.line]),
-      List.map(
-        (
-          field: (
-            Grain_parsing__Location.loc(Grain_parsing__Identifier.t),
-            Grain_parsing__Parsetree.expression,
+    Doc.indent(
+      Doc.concat([
+        Doc.line,
+        Doc.join(
+          Doc.concat([Doc.comma, Doc.line]),
+          List.map(
+            (
+              field: (
+                Grain_parsing__Location.loc(Grain_parsing__Identifier.t),
+                Grain_parsing__Parsetree.expression,
+              ),
+            ) => {
+              let (locidentifier, expr) = field;
+              let ident = locidentifier.txt;
+
+              let printed_ident = print_ident(ident);
+              let printed_expr = print_expression(expr);
+
+              // print_endline("ident:");
+              // Doc.debug(printed_ident);
+              // print_endline("expr:");
+              // Doc.debug(printed_expr);
+
+              let pun =
+                switch (printed_ident) {
+                | Text(i) =>
+                  switch (printed_expr) {
+                  | Text(e) => i == e
+                  | _ => false
+                  }
+                | _ => false
+                };
+
+              if (!pun) {
+                Doc.group(
+                  Doc.concat([printed_ident, Doc.text(": "), printed_expr]),
+                );
+              } else {
+                Doc.group(printed_ident);
+              };
+            },
+            fields,
           ),
-        ) => {
-          let (locidentifier, expr) = field;
-          let ident = locidentifier.txt;
-
-          let printed_ident = print_ident(ident);
-          let printed_expr = print_expression(expr);
-
-          // print_endline("ident:");
-          // Doc.debug(printed_ident);
-          // print_endline("expr:");
-          // Doc.debug(printed_expr);
-
-          let pun =
-            switch (printed_ident) {
-            | Text(i) =>
-              switch (printed_expr) {
-              | Text(e) => i == e
-              | _ => false
-              }
-            | _ => false
-            };
-
-          if (!pun) {
-            Doc.group(
-              Doc.concat([printed_ident, Doc.text(": "), printed_expr]),
-            );
-          } else {
-            Doc.group(printed_ident);
-          };
-        },
-        fields,
-      ),
+        ),
+      ]),
     ),
-    Doc.space,
+    Doc.line,
     Doc.rbrace,
   ])
 
@@ -929,30 +933,34 @@ let rec print_data = (d: Grain_parsing__Parsetree.data_declaration) => {
         },
         Doc.concat([
           Doc.lbrace,
-          Doc.space,
-          Doc.join(
-            Doc.concat([Doc.comma, Doc.line]),
-            List.map(
-              (decl: Grain_parsing__Parsetree.label_declaration) => {
-                let isMutable =
-                  switch (decl.pld_mutable) {
-                  | Mutable => Doc.text("mut ")
-                  | Immutable => Doc.nil
-                  };
-                Doc.group(
-                  Doc.concat([
-                    isMutable,
-                    print_ident(decl.pld_name.txt),
-                    Doc.text(":"),
-                    Doc.space,
-                    print_type(decl.pld_type),
-                  ]),
-                );
-              },
-              label_declarations,
-            ),
+          Doc.indent(
+            Doc.concat([
+              Doc.line,
+              Doc.join(
+                Doc.concat([Doc.comma, Doc.line]),
+                List.map(
+                  (decl: Grain_parsing__Parsetree.label_declaration) => {
+                    let isMutable =
+                      switch (decl.pld_mutable) {
+                      | Mutable => Doc.text("mut ")
+                      | Immutable => Doc.nil
+                      };
+                    Doc.group(
+                      Doc.concat([
+                        isMutable,
+                        print_ident(decl.pld_name.txt),
+                        Doc.text(":"),
+                        Doc.space,
+                        print_type(decl.pld_type),
+                      ]),
+                    );
+                  },
+                  label_declarations,
+                ),
+              ),
+            ]),
           ),
-          Doc.space,
+          Doc.line,
           Doc.rbrace,
         ]),
       ]),

@@ -8,3 +8,5 @@ x.foo + x.bar
 record Rec1 {foo: Number, bar: Number}; record Rec2 {baz: Rec1}; let x = {baz: {foo: 4, bar: 9}}; x.baz.bar
 
 record Rec {foo: Number, bar: String, baz: Bool}; let { foo, _ } = {foo: 4, bar: "boo", baz: true}; foo
+
+record Long {longField1: Number, longField2: Number, longField3:String, longField4:String, longField5:String}

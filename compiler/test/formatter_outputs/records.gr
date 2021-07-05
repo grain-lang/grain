@@ -11,3 +11,11 @@ x.baz.bar
 record Rec { foo: Number, bar: String, baz: Bool }
 let { foo, _ } = { foo: 4, bar: "boo", baz: true }
 foo
+
+record Long {
+  longField1: Number,
+  longField2: Number,
+  longField3: String,
+  longField4: String,
+  longField5: String
+}
