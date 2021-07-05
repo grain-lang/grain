@@ -1004,6 +1004,7 @@ let writeUtf8CodePoint = (ptr, codePoint) => {
   }
 }
 
+@disableGC
 let bytesHaveBom = (bytes: Bytes, encoding: Encoding, start: WasmI32) => {
   let (+) = WasmI32.add
   let (==) = WasmI32.eq

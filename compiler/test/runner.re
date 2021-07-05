@@ -179,17 +179,22 @@ let makeErrorRunner =
   });
 };
 
-let makeFileRunner = (test, name, filename, expected) => {
-  test(
-    name,
-    ({expect}) => {
+let makeFileRunner = (test, ~num_pages=?, name, filename, expected) => {
+  test(name, ({expect}) => {
+    Config.preserve_config(() => {
+      switch (num_pages) {
+      | Some(pages) =>
+        Config.initial_memory_pages := pages;
+        Config.maximum_memory_pages := Some(pages);
+      | None => ()
+      };
       let infile = grainfile(filename);
       let outfile = wasmfile(name);
       compile_file(infile, outfile);
       let (result, _) = run(outfile);
       expect.string(result).toEqual(expected);
-    },
-  );
+    })
+  });
 };
 
 let makeFileErrorRunner = (test, name, filename, expected) => {

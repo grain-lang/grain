@@ -241,6 +241,7 @@ module RegisterAllocation = {
         MSet(apply_allocation_to_bind(b), apply_allocations(ty, allocs, i))
       | MAllocate(x) => MAllocate(x)
       | MDrop(i) => MDrop(apply_allocations(ty, allocs, i))
+      | MIncRef(i) => MDrop(apply_allocations(ty, allocs, i))
       | MTracepoint(x) => MTracepoint(x)
       };
     {...instr, instr_desc: desc};
@@ -271,6 +272,7 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
 
   let rec live_locals = instr =>
     switch (instr.instr_desc) {
+    | MIncRef(i)
     | MDrop(i) => live_locals(i)
     | MImmediate(imm)
     | MTagOp(_, _, imm)

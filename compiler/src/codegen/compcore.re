@@ -611,6 +611,33 @@ let cleanup_local_slot_instructions = (wasm_mod, env: codegen_env) => {
     );
   flatten(instrs);
 };
+let appropriate_incref = (wasm_mod, env, arg, b) =>
+  switch (b) {
+  | MArgBind(_, I32Type)
+  | MLocalBind(_, I32Type)
+  | MSwapBind(_, I32Type)
+  | MClosureBind(_)
+  | MGlobalBind(_, I32Type, true) => call_incref(wasm_mod, env, arg)
+  | MArgBind(_)
+  | MLocalBind(_)
+  | MSwapBind(_)
+  | MGlobalBind(_) => arg
+  | _ => call_incref(wasm_mod, env, arg)
+  };
+
+let appropriate_decref = (wasm_mod, env, arg, b) =>
+  switch (b) {
+  | MArgBind(_, I32Type)
+  | MLocalBind(_, I32Type)
+  | MSwapBind(_, I32Type)
+  | MClosureBind(_)
+  | MGlobalBind(_, I32Type, true) => call_decref(wasm_mod, env, arg)
+  | MArgBind(_)
+  | MLocalBind(_)
+  | MSwapBind(_)
+  | MGlobalBind(_) => arg
+  | _ => call_decref(wasm_mod, env, arg)
+  };
 
 let compile_bind =
     (
@@ -623,33 +650,18 @@ let compile_bind =
     )
     : Expression.t => {
   let appropriate_incref = (env, arg) =>
-    switch (b) {
-    | _ when skip_incref => arg /* This case is used for storing swap values that have freshly been heap-allocated. */
-    | MArgBind(_, I32Type)
-    | MLocalBind(_, I32Type)
-    | MSwapBind(_, I32Type)
-    | MClosureBind(_)
-    | MGlobalBind(_, I32Type, true) => call_incref(wasm_mod, env, arg)
-    | MArgBind(_)
-    | MLocalBind(_)
-    | MSwapBind(_)
-    | MGlobalBind(_) => arg
-    | _ => call_incref(wasm_mod, env, arg)
+    /* This case is used for storing swap values that have freshly been heap-allocated. */
+    if (skip_incref) {
+      arg;
+    } else {
+      appropriate_incref(wasm_mod, env, arg, b);
     };
-
   let appropriate_decref = (env, arg) =>
-    switch (b) {
-    | _ when skip_decref => arg /* This case is used for storing swap values that have freshly been heap-allocated. */
-    | MArgBind(_, I32Type)
-    | MLocalBind(_, I32Type)
-    | MSwapBind(_, I32Type)
-    | MClosureBind(_)
-    | MGlobalBind(_, I32Type, true) => call_decref(wasm_mod, env, arg)
-    | MArgBind(_)
-    | MLocalBind(_)
-    | MSwapBind(_)
-    | MGlobalBind(_) => arg
-    | _ => call_decref(wasm_mod, env, arg)
+    /* This case is used for storing swap values that have freshly been heap-allocated. */
+    if (skip_decref) {
+      arg;
+    } else {
+      appropriate_decref(wasm_mod, env, arg, b);
     };
 
   switch (b) {
@@ -1054,18 +1066,45 @@ let tee_swap =
   | _ => raise(Not_found)
   };
 
-/* [TODO] This is going to need some sort of type argument as well...I think this could be indicative of a code smell */
+let rec finalize_gc = body_instrs => {
+  switch (body_instrs) {
+  | [
+      {
+        instr_desc:
+          MImmediate(MImmBinding(_)) | MTupleOp(MTupleGet(_), _) |
+          MBoxOp(MBoxUnbox, _) |
+          MArrayOp(MArrayGet(_), _) |
+          MAdtOp(MAdtGet(_), _) |
+          MRecordOp(MRecordGet(_), _),
+      } as i,
+    ] => [
+      {...i, instr_desc: MIncRef(i)},
+    ]
+  | [{instr_desc: MIf(value, true_, false_)} as i] => [
+      {
+        ...i,
+        instr_desc: MIf(value, finalize_gc(true_), finalize_gc(false_)),
+      },
+    ]
+  | [{instr_desc: MSwitch(value, branches, default, asmty)} as i] =>
+    let branches =
+      List.map(((n, block)) => (n, finalize_gc(block)), branches);
+    let default = finalize_gc(default);
+    [{...i, instr_desc: MSwitch(value, branches, default, asmty)}];
+  | [hd, ...tl] => [hd, ...finalize_gc(tl)]
+  | [] => []
+  };
+};
+
 let cleanup_locals = (wasm_mod, env: codegen_env, arg): Expression.t => {
   /* Do the following:
-     - Move the current stack value into a designated return-value holder slot (maybe swap is fine)
-     - Call incref() on the return value (to prevent premature free)
-     - Call decref() on all locals (should include return value) */
+        - Move the current stack value into a designated return-value holder slot (maybe swap is fine)
+        - Call decref() on all locals (should include return value)
+        Note: An incref() is applied to the return value by finalize_gc (to prevent premature free)
+     */
   Expression.Block.make(wasm_mod, gensym_label("cleanup_locals")) @@
   Concatlist.list_of_t(
-    singleton(
-      Expression.Drop.make(wasm_mod) @@
-      call_incref(wasm_mod, env, tee_swap(wasm_mod, env, 0, arg)),
-    )
+    singleton(set_swap(wasm_mod, env, 0, arg))
     @ cleanup_local_slot_instructions(wasm_mod, env)
     +@ [get_swap(wasm_mod, env, 0)],
   );
@@ -2656,6 +2695,17 @@ and compile_instr = (wasm_mod, env, instr) =>
   switch (instr.instr_desc) {
   | MDrop(arg) =>
     Expression.Drop.make(wasm_mod, compile_instr(wasm_mod, env, arg))
+  | MIncRef(arg) =>
+    switch (arg.instr_desc) {
+    | MImmediate(MImmBinding(bind)) =>
+      appropriate_incref(
+        wasm_mod,
+        env,
+        compile_instr(wasm_mod, env, arg),
+        bind,
+      )
+    | _ => call_incref(wasm_mod, env, compile_instr(wasm_mod, env, arg))
+    }
   | MTracepoint(x) => tracepoint(wasm_mod, env, x)
   | MImmediate(imm) => compile_imm(wasm_mod, env, imm)
   | MAllocate(alloc) => compile_allocation(wasm_mod, env, alloc)
@@ -2970,6 +3020,12 @@ let compile_function =
     | None => Printf.sprintf("func_%d", index_int)
     };
   let body_env = {...env, num_args: arity, stack_size};
+  let body_instrs =
+    if (Config.no_gc^) {
+      body_instrs;
+    } else {
+      finalize_gc(body_instrs);
+    };
   let inner_body =
     switch (preamble) {
     | Some(preamble) =>
