@@ -236,7 +236,7 @@ assert String.decode(String.encode(emojis, String.UTF32_LE), String.UTF32_LE) ==
 assert String.decode(String.encode(emojis, String.UTF32_BE), String.UTF32_BE) == emojis
 
 // codepoint iteration tests
-// conveniently reussing data from explode tests
+// conveniently reusing data from `explode` tests
 {
   let mut tmp = []
   String.forEachCodePoint((codePoint) => {

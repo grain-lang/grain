@@ -1299,11 +1299,10 @@ export let decodeKeepBom = (bytes: Bytes, encoding: Encoding) => {
 }
 
 /**
- * Iterates over Unicode code points in this string.
+ * Iterates over Unicode code points in a string.
  * 
- * @param f: (Number) -> Void - The iterator function
- * @param s: String - The string to iterate
- * @returns Void
+ * @param f: The iterator function
+ * @param s: The string to iterate
  */
 @disableGC
 export let forEachCodePoint = (f: (Number) -> Void, s: String) => {
@@ -1337,10 +1336,10 @@ export let forEachCodePoint = (f: (Number) -> Void, s: String) => {
 
     // Note that even if up to 4 bytes are needed to represent Unicode
     // codepoints, this doesn't mean 32 bits. The highest allowed code point is
-    // 0x10FFFF and it should not change in future versions of Unicode. Which
+    // 0x10FFFF and it should not change in future versions of Unicode. This
     // means no more than 21 bits are necessary to represent a code point and
     // thus we can use Grain's "simple" numbers that hold up to 31 bits and
-    // avoid heap allocations. I'm assuming here that getCodePoint would throw
+    // avoid heap allocations. `getCodePoint` will throw
     // MalformedUnicode exception for values exceeding this limit.
     let codePoint = getCodePoint(ptr)
     f(tagSimpleNumber(codePoint))
@@ -1351,16 +1350,15 @@ export let forEachCodePoint = (f: (Number) -> Void, s: String) => {
 }
 
 /**
- * Iterates over Unicode code points in this string. This same as the
- * forEachCodePoint function, but with a code point index provided for
- * convenience.
+ * Iterates over Unicode code points in a string. This is the same as
+ * `forEachCodePoint`, but provides the code point's index as the
+ * second argument to the iterator function.
  * 
- * @param f: (Number,Number) -> Void - The iterator function
- * @param s: String - The string to iterate
- * @returns Void
+ * @param f: The iterator function
+ * @param s: The string to iterate
  */
 @disableGC
-export let forEachCodePointi = (f: (Number,Number) -> Void, s: String) => {
+export let forEachCodePointi = (f: (Number, Number) -> Void, s: String) => {
   let (>>>) = WasmI32.shrU
   let (-) = WasmI32.sub
   let (&) = WasmI32.and
@@ -1391,13 +1389,11 @@ export let forEachCodePointi = (f: (Number,Number) -> Void, s: String) => {
 
     // Note that even if up to 4 bytes are needed to represent Unicode
     // codepoints, this doesn't mean 32 bits. The highest allowed code point is
-    // 0x10FFFF and it should not change in future versions of Unicode. Which
+    // 0x10FFFF and it should not change in future versions of Unicode. This
     // means no more than 21 bits are necessary to represent a code point and
     // thus we can use Grain's "simple" numbers that hold up to 31 bits and
-    // avoid heap allocations. I'm assuming here that getCodePoint would throw
-    // MalformedUnicode exception for values exceeding this limit. Idem for the
-    // index. String can never have more than 2^31 codepoints (or bytes for
-    // that matter).
+    // avoid heap allocations. `getCodePoint` will throw
+    // MalformedUnicode exception for values exceeding this limit.
     let codePoint = getCodePoint(ptr)
     f(tagSimpleNumber(codePoint), tagSimpleNumber(idx))
 
