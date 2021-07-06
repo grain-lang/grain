@@ -5,7 +5,7 @@ This guide documents Grain's memory management system. This document is aimed at
 We ultimately aim to replace Grain's in-house memory management with the WebAssembly GC instructions once [the proposal](https://github.com/WebAssembly/gc/blob/master/proposals/gc/Overview.md) is implemented, but, in the meantime, Grain implements its own memory allocator and garbage collector.
 
 ## Memory Allocator
-Grain uses a [memory allocator](https://github.com/grain-lang/grain/blob/main/stdlib/runtime/malloc.gr) derived from the `malloc`/`free` example given in Kernighan and Ritchie's "The C Programming Language" (K&R C). This module exports the following values:
+Grain uses a [memory allocator](https://github.com/grain-lang/grain/blob/main/stdlib/runtime/malloc.gr) derived from the `malloc`/`free` example given in Kernighan and Ritchie's ["The C Programming Language"](https://kremlin.cc/k&r.pdf) (K&R C), pages 185-188 (PDF page 199). This module exports the following values:
 
 ```grain
 /**
@@ -104,7 +104,7 @@ When writing code in the runtime, `decRefIgnoreZeros` should never be used. It e
 
 In most Grain programs, the above functions do not need to be invoked by users. Instead, the compiler automatically inserts calls to them where required. When developing in `compcore.re`, it is important to understand the conventions used by the garbage collector.
 
-**References from the local frame still count as references.** In other words, when a variable is stored inside of a WASM local, its reference count should be incremented. There is one exception to this rule: so-called "swap slots". These are special locals that Grain uses to store temporary results within a single compiled `Mashtree` instruction (similar to how CPU registers are used in native compilers). For performance reasons, we do not increment the reference counter when storing values in these slots. This is safe due to the fact that these values do not escape beyond a single `Mashtree` instruction; while they may still be physically present in the local, they are not read by later pieces of the program.
+**References from the local frame still count as references.** In other words, when a variable is stored inside of a Wasm local, its reference count should be incremented. There is one exception to this rule: so-called "swap slots". These are special locals that Grain uses to store temporary results within a single compiled `Mashtree` instruction (similar to how CPU registers are used in native compilers). For performance reasons, we do not increment the reference counter when storing values in these slots. This is safe due to the fact that these values do not escape beyond a single `Mashtree` instruction; while they may still be physically present in the local, they are not read by later pieces of the program.
 
 For non-swap locals, this gives rise to the following pseudocode when storing a value in a local variable (this order is important to account for situations in which `val` is already in `local0`):
 ```
@@ -131,6 +131,29 @@ When a function is exiting, it is imperative to clean up all references to value
 - Calling `decRefIgnoreZeros` on all locals
 
 This should result in a net change of zero references on the return value, and a net change of -1 references on all other locals.
+
+**References are caller-owned.** This has a few implications:
+- If a function is called with an argument, it is the responsibility of whoever called that function to `decRef` that argument
+- If a value is passed to a function, when it returns, it will have the same reference count as when the function was called (unless it was stored in an external location, in which case the reference count may be higher).
+
+Moreover, the Grain compiler is designed to minimize the overall number of calls to `incRef` and `decRef` calls in its produced code. This means that, rather than the following (pseudocode):
+```grain
+let f = x => {
+  incRef(x)
+  foo(x)
+  decRef(x)
+  incRef(x)
+  bar(x)
+  decRef(x)
+}
+```
+Grain's compiler will emit something more like this (again, note that `x` is an argument, so it is incumbent upon `f`'s caller to `decRef` it):
+```grain
+let f = x => {
+  foo(x)
+  bar(x)
+}
+```
 
 ## Disabling the Garbage Collector
 
