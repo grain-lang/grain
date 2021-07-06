@@ -572,7 +572,8 @@ export let toString = (value) => {
 
 @disableGC
 export let print = (value) => {
-  let ptr = WasmI32.fromGrain(toString(value))
+  let s = toString(value)
+  let ptr = WasmI32.fromGrain(s)
   let buf = Memory.malloc(37n)
   let iov = buf
   let written = buf + 32n
@@ -584,4 +585,11 @@ export let print = (value) => {
   WasmI32.store(iov, 1n, 12n)
   fd_write(1n, iov, 2n, written)
   Memory.free(buf)
+
+  // Deallocate the temporary string created from the input value, except in
+  // case the input value is already a string, in which case toString returns
+  // the same instance passed as input.
+  if (ptr != WasmI32.fromGrain(value)) {
+    Memory.free(ptr)
+  }
 }
