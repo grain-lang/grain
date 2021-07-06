@@ -503,8 +503,8 @@ REGEX PARSING DEFINITIONS
 
 // Range parsing ("[a-z]")
 
+// [TODO] (#769) When byte-based regexes are supported, we'll need another limit of 255 for those.
 let rangeLimit = 0x10FFFF
-//let rangeLimit = 255
 
 // These are snake-cased to avoid confusion with their capitalized counterparts
 
@@ -2620,9 +2620,9 @@ export let make = (regexString: String) => {
 
 //
 //
-//============
-//REGEX SEARCH
-//============
+// ============
+// REGEX SEARCH
+// ============
 //
 //
 
