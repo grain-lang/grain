@@ -280,6 +280,10 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
   match (tag) {
     t when t == Tags._GRAIN_STRING_HEAP_TAG => {
       if (toplevel) {
+        // We can just return the pointer since its already a string and
+        // doesn't need escaping in this case, but by convention its reference
+        // count needs to be incremented.
+        Memory.incRef(ptr)
         WasmI32.toGrain(ptr): String
       } else {
         escapeString(WasmI32.toGrain(ptr))
@@ -572,6 +576,11 @@ export let toString = (value) => {
 
 @disableGC
 export let print = (value) => {
+  // First convert the value to string, if it isn't one already. Calling
+  // toString will either return value instance itself if it's already a
+  // string, or a new string with the content of value object, which will need
+  // to be deallocated. In either case it's sufficient to force decrement its
+  // reference count.
   let s = toString(value)
   let ptr = WasmI32.fromGrain(s)
   let buf = Memory.malloc(37n)
@@ -585,11 +594,6 @@ export let print = (value) => {
   WasmI32.store(iov, 1n, 12n)
   fd_write(1n, iov, 2n, written)
   Memory.free(buf)
-
-  // Deallocate the temporary string created from the input value, except in
-  // case the input value is already a string, in which case toString returns
-  // the same instance passed as input.
-  if (ptr != WasmI32.fromGrain(value)) {
-    Memory.free(ptr)
-  }
+  Memory.decRef(ptr)
+  void
 }
