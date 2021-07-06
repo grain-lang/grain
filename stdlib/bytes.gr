@@ -33,6 +33,7 @@ let checkIndexIsInBounds = (i, byteSize, max) => {
 }
 
 /** Gets the size of a Bytes via its ptr */
+@disableGC
 let getSize = (ptr) => WasmI32.load(ptr, _SIZE_OFFSET)
 
 /**
