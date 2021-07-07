@@ -9,7 +9,7 @@ let filteri = (fn, list) => {
   let rec iter = (fn, list, index) => {
     match (list) {
       [] => [],
-      [first, ...rest] => 
+      [first, ...rest] =>
         if (fn(first, index)) 
           [first, fn, rest, index + 1)
         else
@@ -22,10 +22,8 @@ let filteri = (fn, list) => {
 let rec reject = (fn, list) => {
   match (list) {
     [] => [],
-    [first, ...rest] => 
-      if (!(fn(first))) 
-        [first, fn,rest)
-      else
-        reject(fn, rest),
+    [first, ...rest] =>
+      if (!(fn(first))) [first, fn,rest)
+      else reject(fn, rest),
   }
 }

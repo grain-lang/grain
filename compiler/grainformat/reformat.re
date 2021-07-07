@@ -684,6 +684,7 @@ and print_expression = (expr: Parsetree.expression) => {
                     Doc.concat([
                       print_pattern(branch.pmb_pat),
                       Doc.text(" =>"),
+                      //    Doc.group(print_expression(branch.pmb_body)),
                       Doc.indent(
                         Doc.concat([
                           Doc.line,
@@ -715,43 +716,66 @@ and print_expression = (expr: Parsetree.expression) => {
     Doc.text("PExpPrimN");
   | PExpIf(condition, trueExpr, falseExpr) =>
     // print_endline("PExpIf");
+    let trueClause =
+      switch (trueExpr.pexp_desc) {
+      | PExpBlock(expressions) =>
+        if (List.length(expressions) > 0) {
+          // Doc.indent(Doc.concat([Doc.line, print_expression(trueExpr)]));
+          print_expression(
+            trueExpr,
+          );
+        } else {
+          Doc.text("FORMATTER FAIL");
+        }
+
+      | _ =>
+        Doc.indent(
+          Doc.concat([Doc.line, Doc.group(print_expression(trueExpr))]),
+        )
+      };
+
     let falseClause =
       switch (falseExpr.pexp_desc) {
       | PExpBlock(expressions) =>
         if (List.length(expressions) > 0) {
           Doc.concat([
             Doc.line,
-            Doc.text("else"),
-            Doc.indent(
-              Doc.concat([
-                Doc.line,
-                Doc.group(print_expression(falseExpr)),
-              ]),
-            ),
+            Doc.text("else "),
+            // Doc.indent(
+            //   Doc.concat([
+            //     Doc.line,
+            Doc.group(print_expression(falseExpr)),
+            //   ]),
+            // ),
           ]);
         } else {
-          Doc.nil;
+          Doc.text("FORMATTER FAIL");
         }
       | _ =>
         Doc.concat([
           Doc.line,
-          Doc.text("else"),
-          Doc.indent(
-            Doc.concat([Doc.line, Doc.group(print_expression(falseExpr))]),
-          ),
+          Doc.text("else "),
+          Doc.group(print_expression(falseExpr)),
+          //   Doc.indent(
+          //     Doc.concat([Doc.line, Doc.group(print_expression(falseExpr))]),
+          //  ),
         ])
       };
     Doc.group(
       Doc.concat([
         Doc.text("if "),
-        Doc.text("("),
-        print_expression(condition),
-        Doc.text(")"),
+        Doc.group(
+          Doc.concat([
+            Doc.text("("),
+            print_expression(condition),
+            Doc.text(")"),
+          ]),
+        ),
         // can't break here, if we do the { of the expression gets pushed to the next line
         //  Doc.indent(Doc.concat([Doc.line, print_expression(trueExpr)])),
         //  Doc.ifBreaks(Doc.nil, Doc.space),
         Doc.space,
-        print_expression(trueExpr),
+        trueClause,
         falseClause,
       ]),
     );
@@ -847,12 +871,15 @@ and print_expression = (expr: Parsetree.expression) => {
         List.map(e => Doc.group(print_expression(e)), expressions),
       );
 
-    Doc.concat([
-      Doc.lbrace,
-      Doc.indent(Doc.concat([Doc.line, block])),
-      Doc.line,
-      Doc.rbrace,
-    ]);
+    Doc.breakableGroup(
+      ~forceBreak=true,
+      Doc.concat([
+        Doc.lbrace,
+        Doc.indent(Doc.concat([Doc.line, block])),
+        Doc.line,
+        Doc.rbrace,
+      ]),
+    );
 
   | PExpBoxAssign(expression, expression1) =>
     //  print_endline("PExpBoxAssign");
