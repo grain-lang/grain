@@ -10,6 +10,14 @@ type stmtList =
   | BlockComment(string)
   | Statement(Parsetree.toplevel_stmt);
 
+type sugaredListItem =
+  | Regular(Grain_parsing.Parsetree.expression)
+  | Spread(Grain_parsing.Parsetree.expression);
+
+type sugaredPatternItem =
+  | RegularPattern(Grain_parsing.Parsetree.pattern)
+  | SpreadPattern(Grain_parsing.Parsetree.pattern);
+
 let addParens = doc =>
   Doc.group(
     Doc.concat([
@@ -108,68 +116,140 @@ let find_comments_in_range =
   );
 };
 
-let rec remove_cons = (expression: Parsetree.expression) => {
-  print_expression(expression);
-}
-
-and build_sugar_docs = (first: Doc.t, second: Doc.t) => {
-  //print_endline("first:" ++ Doc.toString(~width=100, first));
-  //print_endline("second:" ++ Doc.toString(~width=100, second));
-  switch (second) {
-  | Text(txt) =>
-    if (txt == "[]") {
-      Doc.concat([Doc.lbracket, Doc.group(first), Doc.rbracket]);
-    } else {
-      Doc.concat([
-        Doc.lbracket,
-        Doc.group(first),
-        Doc.comma,
-        Doc.space,
-        Doc.group(Doc.concat([Doc.text("..."), second])),
-        Doc.rbracket,
-      ]);
-    }
-  | Concat(docs) =>
-    if (List.length(docs) == 1 && List.hd(docs) == Text("[]")) {
-      Doc.concat([Doc.lbracket, Doc.group(first), Doc.rbracket]);
-    } else {
-      let noBrack = Doc.concat(List.tl(docs));
-
-      // let noBrack = Doc.concat([Doc.text("..."), Doc.concat(docs)]);
-      Doc.concat([
-        Doc.lbracket,
-        Doc.group(first),
-        Doc.comma,
-        Doc.space,
-        noBrack,
-      ]);
-    }
-  | _ =>
-    // Should never end up here
-    print_endline("// reformatter has hit a bug in the following");
-
+let rec resugar_list_patterns = (patterns: list(Parsetree.pattern)) => {
+  let processed_list = resugar_pattern_list_inner(patterns);
+  let items =
+    List.map(
+      i =>
+        switch (i) {
+        | RegularPattern(e) => print_pattern(e)
+        | SpreadPattern(e) =>
+          Doc.concat([Doc.text("..."), print_pattern(e)])
+        },
+      processed_list,
+    );
+  Doc.group(
     Doc.concat([
       Doc.lbracket,
-      Doc.group(first),
-      Doc.comma,
-      Doc.space,
-      Doc.group(second),
+      Doc.join(Doc.concat([Doc.comma, Doc.space]), items),
       Doc.rbracket,
-    ]);
+    ]),
+  );
+}
+
+and resugar_pattern_list_inner = (patterns: list(Parsetree.pattern)) => {
+  let arg1 = List.nth(patterns, 0);
+  let arg2 = List.nth(patterns, 1);
+
+  switch (arg2.ppat_desc) {
+  | PPatConstruct(innerfunc, innerpatterns) =>
+    let func =
+      switch (innerfunc.txt) {
+      | IdentName(name) => name
+      | _ => ""
+      };
+    if (func == "[...]") {
+      let inner = resugar_pattern_list_inner(innerpatterns);
+      List.append([RegularPattern(arg1)], inner);
+    } else {
+      [RegularPattern(arg1), SpreadPattern(arg2)];
+    };
+  | _ =>
+    //print_endline(Doc.toString(~width=80, print_pattern(arg1)));
+    //print_endline(Doc.toString(~width=80, print_pattern(arg2)));
+    if (is_empty_pattern_array(arg2)) {
+      [RegularPattern(arg1)];
+    } else {
+      [RegularPattern(arg1), SpreadPattern(arg2)];
+    }
   };
 }
 
-and resugar_list_patterns = (patterns: list(Parsetree.pattern)) => {
-  let second: Doc.t = print_pattern(List.hd(List.tl(patterns)));
-  let first = print_pattern(List.hd(patterns));
-  build_sugar_docs(first, second);
-}
-and resugar_list = (expressions: list(Parsetree.expression)) => {
-  let second: Doc.t = print_expression(List.hd(List.tl(expressions)));
-  let first = print_expression(List.hd(expressions));
+and is_empty_array = (expr: Parsetree.expression) => {
+  switch (expr.pexp_desc) {
+  | PExpId(loc) =>
+    let loc_txt =
+      switch (loc.txt) {
+      | IdentName(name) => name
+      | _ => ""
+      };
 
-  build_sugar_docs(first, second);
+    if (loc_txt == "[]") {
+      true;
+    } else {
+      false;
+    };
+  | _ => false
+  };
 }
+
+and is_empty_pattern_array = (pat: Parsetree.pattern) => {
+  let _ =
+    switch (pat.ppat_desc) {
+    | PPatAny => false
+    | PPatConstant(c) => false
+    | PPatVar({txt, _}) =>
+      if (txt == "[]") {
+        true;
+      } else {
+        false;
+      }
+    | _ => false
+    };
+
+  false;
+}
+
+and resugar_list = (expressions: list(Parsetree.expression)) => {
+  let processed_list = resugar_list_inner(expressions);
+
+  let items =
+    List.map(
+      i =>
+        switch (i) {
+        | Regular(e) => print_expression(e)
+        | Spread(e) => Doc.concat([Doc.text("..."), print_expression(e)])
+        },
+      processed_list,
+    );
+
+  Doc.group(
+    Doc.concat([
+      Doc.lbracket,
+      Doc.join(Doc.concat([Doc.comma, Doc.space]), items),
+      Doc.rbracket,
+    ]),
+  );
+}
+
+and resugar_list_inner = (expressions: list(Parsetree.expression)) => {
+  let arg1 = List.nth(expressions, 0);
+  let arg2 = List.nth(expressions, 1);
+
+  switch (arg2.pexp_desc) {
+  | PExpApp(innerfunc, innerexpressions) =>
+    let funcName = print_expression(innerfunc);
+    let funcNameAsString = Doc.toString(~width=20, funcName);
+
+    if (funcNameAsString == "[...]") {
+      let inner = resugar_list_inner(innerexpressions);
+      List.append([Regular(arg1)], inner);
+    } else {
+      [Regular(arg1), Spread(arg2)];
+    };
+  | _ =>
+    print_endline(Doc.toString(~width=80, print_expression(arg1)));
+
+    print_endline(Doc.toString(~width=80, print_expression(arg2)));
+
+    if (is_empty_array(arg2)) {
+      [Regular(arg1)];
+    } else {
+      [Regular(arg1), Spread(arg2)];
+    };
+  };
+}
+
 and print_record_pattern =
     (
       patternlocs:
@@ -206,7 +286,7 @@ and print_record_pattern =
           let pun =
             switch (printed_ident) {
             | Text(i) =>
-              switch (printed_pat) {
+              switch ((printed_pat: Doc.t)) {
               | Text(e) => i == e
               | _ => false
               }
@@ -260,7 +340,6 @@ and print_pattern = (pat: Parsetree.pattern) => {
       print_type(parsed_type),
     ])
   | PPatConstruct(location, patterns) =>
-    //print_endline("PPatConstruct");
     let func =
       switch (location.txt) {
       | IdentName(name) => name
@@ -380,7 +459,7 @@ and print_record =
               let pun =
                 switch (printed_ident) {
                 | Text(i) =>
-                  switch (printed_expr) {
+                  switch ((printed_expr: Doc.t)) {
                   | Text(e) => i == e
                   | _ => false
                   }
@@ -483,7 +562,10 @@ and print_application =
     );
   } else {
     let funcName = print_expression(func);
-    if (Doc.toString(~width=20, funcName) == "[...]") {
+
+    let funcNameAsString = Doc.toString(~width=20, funcName);
+    // print_endline("Function application is " ++ funcNameAsString);
+    if (funcNameAsString == "[...]") {
       resugar_list(expressions);
     } else if (Doc.toString(~width=20, funcName) == "throw") {
       Doc.concat([
@@ -504,6 +586,7 @@ and print_application =
     };
   };
 }
+
 and print_expression = (expr: Parsetree.expression) => {
   switch (expr.pexp_desc) {
   | PExpConstant(x) =>

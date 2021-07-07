@@ -9,8 +9,8 @@ describe("formatter", ({test}) => {
   assertFormatOutput("matches", "matches");
   assertFormatOutput("imports", "imports");
   assertFormatOutput("wasm", "wasm");
-  // assertFormatOutput("spreads", "spreads");
-  // assertFormatOutput("nested_matches", "nested_matches");
+  assertFormatOutput("spreads", "spreads");
+  assertFormatOutput("nested_matches", "nested_matches");
   assertFormatOutput("number_sugar", "number_sugar");
   assertFormatOutput("records", "records");
 });
