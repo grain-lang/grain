@@ -131,7 +131,7 @@ let rec resugar_list_patterns = (patterns: list(Parsetree.pattern)) => {
   Doc.group(
     Doc.concat([
       Doc.lbracket,
-      Doc.join(Doc.concat([Doc.comma, Doc.space]), items),
+      Doc.join(Doc.concat([Doc.comma, Doc.line]), items),
       Doc.rbracket,
     ]),
   );
@@ -224,7 +224,13 @@ and resugar_list = (expressions: list(Parsetree.expression)) => {
   Doc.group(
     Doc.concat([
       Doc.lbracket,
-      Doc.join(Doc.concat([Doc.comma, Doc.space]), items),
+      Doc.indent(
+        Doc.concat([
+          Doc.softLine,
+          Doc.join(Doc.concat([Doc.comma, Doc.line]), items),
+        ]),
+      ),
+      Doc.softLine,
       Doc.rbracket,
     ]),
   );
@@ -678,9 +684,11 @@ and print_expression = (expr: Parsetree.expression) => {
                     Doc.concat([
                       print_pattern(branch.pmb_pat),
                       Doc.text(" =>"),
-                      Doc.space,
                       Doc.indent(
-                        Doc.concat([print_expression(branch.pmb_body)]),
+                        Doc.concat([
+                          Doc.line,
+                          print_expression(branch.pmb_body),
+                        ]),
                       ),
                     ]),
                   )
@@ -797,33 +805,35 @@ and print_expression = (expr: Parsetree.expression) => {
     )
   | PExpLambda(patterns, expression) =>
     // print_endline("PExpLambda");
-    Doc.concat([
-      if (List.length(patterns) == 0) {
-        Doc.text("()");
-      } else if (List.length(patterns) > 1) {
-        addParens(
-          Doc.concat([
-            Doc.join(
-              Doc.concat([Doc.text(","), Doc.line]),
-              List.map(p => print_pattern(p), patterns),
-            ),
-          ]),
-        );
-      } else {
-        let pat = List.hd(patterns);
+    Doc.group(
+      Doc.concat([
+        if (List.length(patterns) == 0) {
+          Doc.text("()");
+        } else if (List.length(patterns) > 1) {
+          addParens(
+            Doc.concat([
+              Doc.join(
+                Doc.concat([Doc.text(","), Doc.line]),
+                List.map(p => print_pattern(p), patterns),
+              ),
+            ]),
+          );
+        } else {
+          let pat = List.hd(patterns);
 
-        switch (pat.ppat_desc) {
-        | PPatConstraint(_) =>
-          Doc.concat([Doc.lparen, print_pattern(pat), Doc.rparen])
-        | _ => print_pattern(pat)
-        };
-      },
-      Doc.space,
-      Doc.text("=>"),
-      Doc.space,
-      print_expression(expression),
-      //Doc.hardLine,
-    ])
+          switch (pat.ppat_desc) {
+          | PPatConstraint(_) =>
+            Doc.concat([Doc.lparen, print_pattern(pat), Doc.rparen])
+          | _ => print_pattern(pat)
+          };
+        },
+        Doc.space,
+        Doc.text("=>"),
+        Doc.space,
+        print_expression(expression),
+        //Doc.hardLine,
+      ]),
+    )
 
   | PExpApp(func, expressions) =>
     // print_endline("PExpApp");
