@@ -1351,8 +1351,8 @@ export let forEachCodePoint = (f: (Number) -> Void, s: String) => {
 
 /**
  * Iterates over Unicode code points in a string. This is the same as
- * `forEachCodePoint`, but provides the code point's index as the
- * second argument to the iterator function.
+ * `forEachCodePoint`, but provides the code point's index in the string
+ * as the second argument to the iterator function.
  * 
  * @param f: The iterator function
  * @param s: The string to iterate
