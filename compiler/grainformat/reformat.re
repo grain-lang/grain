@@ -141,6 +141,10 @@ and resugar_pattern_list_inner = (patterns: list(Parsetree.pattern)) => {
   let arg1 = List.nth(patterns, 0);
   let arg2 = List.nth(patterns, 1);
 
+  // print_endline("resugar_pattern_list_inner");
+  // print_endline(Doc.toString(~width=80, print_pattern(arg1)));
+  // print_endline(Doc.toString(~width=80, print_pattern(arg2)));
+
   switch (arg2.ppat_desc) {
   | PPatConstruct(innerfunc, innerpatterns) =>
     let func =
@@ -148,15 +152,15 @@ and resugar_pattern_list_inner = (patterns: list(Parsetree.pattern)) => {
       | IdentName(name) => name
       | _ => ""
       };
-    if (func == "[...]") {
-      let inner = resugar_pattern_list_inner(innerpatterns);
-      List.append([RegularPattern(arg1)], inner);
+
+    if (func == "[]") {
+      [RegularPattern(arg1)];
+    } else if (is_empty_pattern_array(arg2)) {
+      [RegularPattern(arg1)];
     } else {
       [RegularPattern(arg1), SpreadPattern(arg2)];
     };
   | _ =>
-    //print_endline(Doc.toString(~width=80, print_pattern(arg1)));
-    //print_endline(Doc.toString(~width=80, print_pattern(arg2)));
     if (is_empty_pattern_array(arg2)) {
       [RegularPattern(arg1)];
     } else {
@@ -194,6 +198,10 @@ and is_empty_pattern_array = (pat: Parsetree.pattern) => {
       } else {
         false;
       }
+    | PPatTuple(patterns) => false
+    | PPatArray(patterns) => false
+    | PPatConstraint(pattern, parsed_type) => false
+    | PPatConstruct(location, patterns) => false
     | _ => false
     };
 
@@ -238,15 +246,15 @@ and resugar_list_inner = (expressions: list(Parsetree.expression)) => {
       [Regular(arg1), Spread(arg2)];
     };
   | _ =>
-    print_endline(Doc.toString(~width=80, print_expression(arg1)));
+    // print_endline(Doc.toString(~width=80, print_expression(arg1)));
 
-    print_endline(Doc.toString(~width=80, print_expression(arg2)));
+    // print_endline(Doc.toString(~width=80, print_expression(arg2)));
 
     if (is_empty_array(arg2)) {
       [Regular(arg1)];
     } else {
       [Regular(arg1), Spread(arg2)];
-    };
+    }
   };
 }
 
