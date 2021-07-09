@@ -90,8 +90,8 @@ export let init : (Number, Number -> a) -> Array<a> = (length, fn) => {
  * Retrieves the element from the array at the specified index.
  * A negative index is treated as an offset from the end of the array.
  *
- * @param index: The index being accessed
- * @param array: The array being accessed
+ * @param index: The index to access
+ * @param array: The array to access
  * @returns The element from the array
  */
 export let get = (index, array) => {
@@ -104,9 +104,9 @@ export let get = (index, array) => {
  * Sets the element at the specified index in the array to the new value.
  * A negative index is treated as an offset from the end of the array.
  *
- * @param index: The index being updated
- * @param value: The value being stored
- * @param array: The array being updated
+ * @param index: The index to update
+ * @param value: The value to store
+ * @param array: The array to update
  */
 export let set = (index, value, array) => {
   array[index] = value
