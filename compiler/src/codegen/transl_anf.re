@@ -38,6 +38,7 @@ type worklist_elt = {
   args: list(Types.allocation_type),
   return_type: list(Types.allocation_type),
   idx: int, /* Lambda-lifted index */
+  id: Ident.t,
   name: option(string),
   attrs: attributes,
   stack_size: Mashtree.stack_size,
@@ -178,9 +179,23 @@ module RegisterAllocation = {
       | MArrayOp(aop, i) => MArrayOp(aop, apply_allocation_to_imm(i))
       | MRecordOp(rop, i) => MRecordOp(rop, apply_allocation_to_imm(i))
       | MAdtOp(aop, i) => MAdtOp(aop, apply_allocation_to_imm(i))
-      | MCallKnown({func, func_type, args}) =>
+      | MCallRaw({func, func_type, args}) =>
+        MCallRaw({
+          func,
+          func_type,
+          args: List.map(apply_allocation_to_imm, args),
+        })
+      | MCallKnown({func, closure, func_type, args}) =>
         MCallKnown({
           func,
+          closure: apply_allocation_to_imm(closure),
+          func_type,
+          args: List.map(apply_allocation_to_imm, args),
+        })
+      | MReturnCallKnown({func, closure, func_type, args}) =>
+        MReturnCallKnown({
+          func,
+          closure: apply_allocation_to_imm(closure),
           func_type,
           args: List.map(apply_allocation_to_imm, args),
         })
@@ -283,8 +298,10 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
     | MArrayOp(_, imm)
     | MRecordOp(_, imm)
     | MAdtOp(_, imm) => imm_live_local(imm)
-    | MCallKnown({args: is})
+    | MCallRaw({args: is})
     | MError(_, is) => List.concat(List.map(imm_live_local, is))
+    | MCallKnown({closure: imm, args: is})
+    | MReturnCallKnown({closure: imm, args: is})
     | MCallIndirect({func: imm, args: is})
     | MReturnCallIndirect({func: imm, args: is}) =>
       List.concat(List.map(imm_live_local, is)) @ imm_live_local(imm)
@@ -483,8 +500,24 @@ let compile_imm = (env, i: imm_expression) =>
   | ImmTrap => MImmTrap
   };
 
+let known_functions = Ident_tbl.create(50);
+let register_function = id => Ident_tbl.add(known_functions, id, ());
+let clear_known_functions = () => Ident_tbl.clear(known_functions);
+let known_function = f =>
+  switch (f.imm_desc) {
+  | ImmId(id) =>
+    if (Ident_tbl.mem(known_functions, id)) {
+      Some(Ident.unique_name(id));
+    } else {
+      None;
+    }
+  | ImmConst(_)
+  | ImmTrap => failwith("Impossible: function application of non-function")
+  };
+
 let compile_lambda =
-    (~name=?, env, args, body, attrs, loc): Mashtree.closure_data => {
+    (~name=?, id, env, args, body, attrs, loc): Mashtree.closure_data => {
+  register_function(id);
   let (body, return_type) = body;
   let used_var_set = Anf_utils.anf_free_vars(body);
   let free_var_set =
@@ -532,6 +565,7 @@ let compile_lambda =
     body: Anf(body),
     env: lam_env,
     idx,
+    id,
     name,
     args,
     return_type,
@@ -553,11 +587,11 @@ let compile_lambda =
   };
 };
 
-let compile_wrapper = (env, func_name, args, rets): Mashtree.closure_data => {
+let compile_wrapper = (id, env, func_name, args, rets): Mashtree.closure_data => {
   let body = [
     {
       instr_desc:
-        MCallKnown({
+        MCallRaw({
           func: func_name,
           func_type: (
             List.map(asmtype_of_alloctype, args),
@@ -606,6 +640,7 @@ let compile_wrapper = (env, func_name, args, rets): Mashtree.closure_data => {
     body: Precompiled(body),
     env: lam_env,
     idx,
+    id,
     name: None,
     args: [Types.HeapAllocated, ...args],
     return_type,
@@ -642,7 +677,7 @@ let transl_attributes = attrs => {
   );
 };
 
-let rec compile_comp = (env, c) => {
+let rec compile_comp = (~id=?, env, c) => {
   let desc =
     switch (c.comp_desc) {
     | CSwitch(arg, branches, partial) =>
@@ -775,10 +810,20 @@ let rec compile_comp = (env, c) => {
     | CLambda(name, args, body) =>
       let (body, return_type) = body;
       let body = (body, [return_type]);
+      // Functions typically have an identifier associated with them, though
+      // a first-class function returned directly from a block/function does
+      // not. As a function returned this way will always be called indirectly,
+      // we can generate a fresh identifier for it.
+      let id =
+        switch (id) {
+        | Some(id) => id
+        | None => Ident.create("func")
+        };
       MAllocate(
         MClosure(
           compile_lambda(
             ~name?,
+            id,
             env,
             args,
             body,
@@ -788,29 +833,29 @@ let rec compile_comp = (env, c) => {
         ),
       );
     | CApp((f, (argsty, retty)), args, true) =>
-      /* TODO: Utilize MReturnCallKnown */
-
-      MReturnCallIndirect({
-        func: compile_imm(env, f),
-        func_type: (
-          List.map(asmtype_of_alloctype, argsty),
-          [asmtype_of_alloctype(retty)],
-        ),
-        args: List.map(compile_imm(env), args),
-      })
+      let func_type = (
+        List.map(asmtype_of_alloctype, argsty),
+        [asmtype_of_alloctype(retty)],
+      );
+      let closure = compile_imm(env, f);
+      let args = List.map(compile_imm(env), args);
+      switch (known_function(f)) {
+      | Some(func) => MReturnCallKnown({func, closure, func_type, args})
+      | None => MReturnCallIndirect({func: closure, func_type, args})
+      };
     | CApp((f, (argsty, retty)), args, _) =>
-      /* TODO: Utilize MCallKnown */
-
-      MCallIndirect({
-        func: compile_imm(env, f),
-        func_type: (
-          List.map(asmtype_of_alloctype, argsty),
-          [asmtype_of_alloctype(retty)],
-        ),
-        args: List.map(compile_imm(env), args),
-      })
+      let func_type = (
+        List.map(asmtype_of_alloctype, argsty),
+        [asmtype_of_alloctype(retty)],
+      );
+      let closure = compile_imm(env, f);
+      let args = List.map(compile_imm(env), args);
+      switch (known_function(f)) {
+      | Some(func) => MCallKnown({func, closure, func_type, args})
+      | None => MCallIndirect({func: closure, func_type, args})
+      };
     | CAppBuiltin(modname, name, args) =>
-      MCallKnown({
+      MCallRaw({
         func: "builtin",
         func_type: (List.map(i => I32Type, args), [I32Type]),
         args: List.map(compile_imm(env), args),
@@ -886,24 +931,26 @@ and compile_anf_expr = (env, a) =>
     let (new_env, locations) = get_locs(env, binds);
     switch (recflag) {
     | Nonrecursive =>
-      List.fold_right2(
-        (loc, (_, rhs), acc) =>
-          [
-            {
-              instr_desc: MStore([(loc, compile_comp(env, rhs))]),
-              instr_loc: rhs.comp_loc,
-            },
-            ...acc,
-          ],
-        locations,
-        binds,
-        compile_anf_expr(new_env, body),
-      )
+      let instrs =
+        List.fold_right2(
+          (loc, (id, rhs), acc) =>
+            [
+              {
+                instr_desc: MStore([(loc, compile_comp(~id, env, rhs))]),
+                instr_loc: rhs.comp_loc,
+              },
+              ...acc,
+            ],
+          locations,
+          binds,
+          [],
+        );
+      instrs @ compile_anf_expr(new_env, body);
     | Recursive =>
       let binds =
         List.fold_left2(
-          (acc, loc, (_, rhs)) =>
-            [(loc, compile_comp(new_env, rhs)), ...acc],
+          (acc, loc, (id, rhs)) =>
+            [(loc, compile_comp(~id, new_env, rhs)), ...acc],
           [],
           locations,
           binds,
@@ -936,11 +983,12 @@ let compile_remaining_worklist = () => {
   let compile_one =
       (
         funcs,
-        {idx: index, name, args, return_type, stack_size, attrs, loc} as cur: worklist_elt,
+        {idx: index, id, name, args, return_type, stack_size, attrs, loc} as cur: worklist_elt,
       ) => {
     let body = compile_worklist_elt(cur);
     let func = {
       index: Int32.of_int(index),
+      id,
       name,
       args: List.map(asmtype_of_alloctype, args),
       return_type: List.map(asmtype_of_alloctype, return_type),
@@ -1089,6 +1137,7 @@ let lift_imports = (env, imports) => {
                             MAllocate(
                               MClosure(
                                 compile_wrapper(
+                                  imp_use_id,
                                   env,
                                   func_name,
                                   inputs,
@@ -1133,6 +1182,7 @@ let transl_anf_program =
   reset_lift();
   reset_global();
   worklist_reset();
+  clear_known_functions();
 
   let (imports, setups, env) =
     lift_imports(initial_compilation_env, anf_prog.imports);

@@ -1628,21 +1628,32 @@ let buf_to_ints = (buf: Buffer.t): list(int64) => {
   List.init(num_ints, i => {Bytes.get_int64_le(bytes, i * 8)});
 };
 
-let call_lambda = (~tail=false, wasm_mod, env, func, (argsty, retty), args) => {
+let call_lambda =
+    (~tail=false, ~known=?, wasm_mod, env, func, (argsty, retty), args) => {
   let compiled_func = () => compile_imm(wasm_mod, env, func);
   let compiled_args = List.map(compile_imm(wasm_mod, env), args);
-  let instr =
-    if (tail) {Expression.Call_indirect.make_return} else {
-      Expression.Call_indirect.make
-    };
-  instr(
-    wasm_mod,
-    global_function_table,
-    load(~offset=8, wasm_mod, compiled_func()),
-    [compiled_func(), ...compiled_args],
-    Type.create @@ Array.map(wasm_type, Array.of_list([I32Type, ...argsty])),
-    Type.create @@ Array.map(wasm_type, Array.of_list(retty)),
-  );
+  let args = [compiled_func(), ...compiled_args];
+  let retty = Type.create @@ Array.map(wasm_type, Array.of_list(retty));
+  switch (known) {
+  | Some(name) =>
+    let instr =
+      if (tail) {Expression.Call.make_return} else {Expression.Call.make};
+    instr(wasm_mod, name, args, retty);
+  | None =>
+    let instr =
+      if (tail) {Expression.Call_indirect.make_return} else {
+        Expression.Call_indirect.make
+      };
+    instr(
+      wasm_mod,
+      global_function_table,
+      load(~offset=8, wasm_mod, compiled_func()),
+      args,
+      Type.create @@
+      Array.map(wasm_type, Array.of_list([I32Type, ...argsty])),
+      retty,
+    );
+  };
 };
 
 let allocate_byte_like_from_buffer = (wasm_mod, env, buf, tag, label) => {
@@ -2545,8 +2556,10 @@ let rec compile_store = (wasm_mod, env, binds) => {
           )
         /* HACK: We expect values returned from functions to have a refcount of 1, so we don't increment it when storing */
         | MReturnCallIndirect(_)
+        | MReturnCallKnown(_)
         | MCallIndirect(_)
         | MCallKnown(_)
+        | MCallRaw(_)
         | MAllocate(_) => (
             compile_instr(wasm_mod, env, instr),
             store_bind_no_incref,
@@ -2722,11 +2735,30 @@ and compile_instr = (wasm_mod, env, instr) =>
     compile_switch(wasm_mod, env, arg, branches, default, ty)
   | MStore(binds) => compile_store(wasm_mod, env, binds)
   | MSet(b, i) => compile_set(wasm_mod, env, b, i)
+  | MCallKnown({func, closure, func_type, args}) =>
+    call_lambda(~known=func, wasm_mod, env, closure, func_type, args)
+  | MReturnCallKnown({func, closure, func_type, args}) =>
+    call_lambda(
+      ~tail=true,
+      ~known=func,
+      wasm_mod,
+      env,
+      closure,
+      func_type,
+      args,
+    )
   | MCallIndirect({func, func_type, args}) =>
     call_lambda(wasm_mod, env, func, func_type, args)
   | MReturnCallIndirect({func, func_type, args}) =>
     call_lambda(~tail=true, wasm_mod, env, func, func_type, args)
-
+  | MCallRaw({func, func_type: (_, retty), args}) =>
+    let compiled_args = List.map(compile_imm(wasm_mod, env), args);
+    Expression.Call.make(
+      wasm_mod,
+      func,
+      compiled_args,
+      Type.create(Array.of_list(List.map(wasm_type, retty))),
+    );
   | MIf(cond, thn, els) =>
     let compiled_cond = compile_imm(wasm_mod, env, cond);
     let compiled_thn = compile_block(wasm_mod, env, thn);
@@ -2827,14 +2859,6 @@ and compile_instr = (wasm_mod, env, instr) =>
       err,
       List.map(compile_imm(wasm_mod, env), args),
     )
-  | MCallKnown({func, func_type: (_, retty), args}) =>
-    let compiled_args = List.map(compile_imm(wasm_mod, env), args);
-    Expression.Call.make(
-      wasm_mod,
-      func,
-      compiled_args,
-      Type.create(Array.of_list(List.map(wasm_type, retty))),
-    );
   | MArityOp(_) => failwith("NYI: (compile_instr): MArityOp")
   | MTagOp(_) => failwith("NYI: (compile_instr): MTagOp")
   };
@@ -3009,15 +3033,14 @@ let compile_function =
       ~preamble=?,
       wasm_mod,
       env,
-      {index, args, return_type, stack_size, body: body_instrs, func_loc},
+      {index, id, args, return_type, stack_size, body: body_instrs, func_loc},
     ) => {
   sources := [];
   let arity = List.length(args);
-  let index_int = Int32.to_int(index);
   let func_name =
     switch (name) {
     | Some(name) => name
-    | None => Printf.sprintf("func_%d", index_int)
+    | None => Ident.unique_name(id)
     };
   let body_env = {...env, num_args: arity, stack_size};
   let body_instrs =
@@ -3193,14 +3216,14 @@ let compile_exports = (wasm_mod, env, {functions, imports, exports, globals}) =>
     let exported = Hashtbl.create(14);
     /* Functions will be reversed, so keeping the first of any name is the correct behavior. */
     List.filter_map(
-      ({index, name}) =>
+      ({index, name, id}) =>
         switch (name) {
         | Some(name) =>
           if (Hashtbl.mem(exported, name)) {
             None;
           } else {
             Hashtbl.add(exported, name, ());
-            let internal_name = Printf.sprintf("func_%ld", index);
+            let internal_name = Ident.unique_name(id);
             Some((internal_name, name));
           }
         | None => None
@@ -3221,8 +3244,8 @@ let compile_exports = (wasm_mod, env, {functions, imports, exports, globals}) =>
 };
 
 let compile_tables = (wasm_mod, env, {functions}) => {
-  let function_name = i => Printf.sprintf("func_%d", i);
-  let function_names = List.mapi((i, _) => function_name(i), functions);
+  let function_names =
+    List.map(({id}) => Ident.unique_name(id), functions);
   Table.add_active_element_segment(
     wasm_mod,
     global_function_table,
@@ -3321,6 +3344,7 @@ let compile_main = (wasm_mod, env, prog) => {
     env,
     {
       index: Int32.of_int(-99),
+      id: Ident.create(grain_main),
       name: Some(grain_main),
       args: [],
       return_type: [I32Type],
