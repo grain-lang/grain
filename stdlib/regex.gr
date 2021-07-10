@@ -2682,23 +2682,13 @@ let searchMatch = (rx: RegularExpression, buf: MatchBuf, pos, startPos, endPos, 
  */
 export record MatchResult {
   /**
-   * Returns the contents of the given match group, raising
-   * an exception if that group was not matched.
-   */
-  group: Number -> String,
-  /**
    * Returns the contents of the given group
    */
-  groupOptional: Number -> Option<String>,
-  /**
-   * Returns the position of the given match group, raising
-   * an exception if that group was not matched.
-   */
-  groupPosition: Number -> (Number, Number),
+  group: Number -> Option<String>,
   /**
    * Returns the position of the given group
    */
-  groupPositionOptional: Number -> Option<(Number, Number)>,
+  groupPosition: Number -> Option<(Number, Number)>,
   /**
    * Returns the number of defined groups in this match object (includes group 0)
    */
@@ -2745,10 +2735,8 @@ let makeMatchResult = (origString, start, end, state) => {
     }, getAllMatchGroupPositions())
   }
   {
-    group: n => Option.unwrap(getMatchGroup(n)),
-    groupOptional: getMatchGroup,
-    groupPosition: n => Option.unwrap(getMatchGroupPosition(n)),
-    groupPositionOptional: getMatchGroupPosition,
+    group: getMatchGroup,
+    groupPosition: getMatchGroupPosition,
     numGroups: Array.length(state) + 1,
     allGroupPositions: getAllMatchGroupPositions,
     allGroups: getAllMatchGroups

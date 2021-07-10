@@ -1,5 +1,6 @@
 import Array from "array"
 import List from "list"
+import Option from "option"
 import Result from "result"
 import {
   make,
@@ -13,8 +14,8 @@ import {
 } from "regex"
 
 let flattenResult = (mr: MatchResult) => {
-  let otherGroups = Array.init(mr.numGroups - 1, (n) => (mr.groupOptional)(n + 1))
-  ((mr.group)(0), otherGroups)
+  let otherGroups = Array.init(mr.numGroups - 1, (n) => (mr.group)(n + 1))
+  (Option.unwrap((mr.group)(0)), otherGroups)
 }
 
 let flattenResultOption = (res) => {
@@ -27,8 +28,8 @@ let flattenResultOption = (res) => {
 }
 
 let flattenResultPositions = (mr: MatchResult) => {
-  let otherGroups = Array.init(mr.numGroups - 1, (n) => (mr.groupPositionOptional)(n + 1))
-  ((mr.groupPosition)(0), otherGroups)
+  let otherGroups = Array.init(mr.numGroups - 1, (n) => (mr.groupPosition)(n + 1))
+  (Option.unwrap((mr.groupPosition)(0)), otherGroups)
 }
 
 let flattenResultPositionsOption = (res) => {
