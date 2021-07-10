@@ -12,6 +12,16 @@ let emit_module = ({asm, signature}, outfile) => {
     output_string(oc, sig_string);
     close_out(oc);
   };
+  // Emit unoptimized version of module if debug and wat set:
+  if (Config.wat^ && Config.debug^) {
+    Binaryen.Settings.set_colors_enabled(Grain_utils.Config.color_enabled^);
+    let asm_string = Binaryen.Module.write_text(asm);
+    let wat_file = Files.replace_extension(outfile, "unoptimized.wat");
+    let oc = open_out(wat_file);
+    output_string(oc, asm_string);
+    close_out(oc);
+  };
+  Binaryen.Module.optimize(asm);
   if (Config.wat^) {
     Binaryen.Settings.set_colors_enabled(Grain_utils.Config.color_enabled^);
     let asm_string = Binaryen.Module.write_text(asm);
