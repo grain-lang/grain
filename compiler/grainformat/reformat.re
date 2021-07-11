@@ -600,6 +600,11 @@ and print_application =
         Doc.space,
         print_expression(~expr=List.hd(expressions), ~parentIsArrow=false),
       ]);
+    } else if (funcNameAsString == "!") {
+      Doc.concat([
+        funcName,
+        print_expression(~expr=List.hd(expressions), ~parentIsArrow=false),
+      ]);
     } else {
       Doc.concat([
         funcName,
@@ -792,27 +797,33 @@ and print_expression = (~expr: Parsetree.expression, ~parentIsArrow: bool) => {
   | PExpIf(condition, trueExpr, falseExpr) =>
     // print_endline("PExpIf");
     let trueClause =
-      switch (trueExpr.pexp_desc) {
-      | PExpBlock(expressions) =>
-        if (List.length(expressions) > 0) {
-          // Doc.indent(Doc.concat([Doc.line, print_expression(trueExpr)]));
-          Doc.concat([
-            print_expression(~expr=trueExpr, ~parentIsArrow=false),
-          ]);
-        } else {
-          Doc.text("FORMATTER FAIL");
-        }
-
-      | _ =>
-        Doc.indent(
-          Doc.concat([
-            Doc.line,
-            Doc.group(
-              print_expression(~expr=trueExpr, ~parentIsArrow=false),
-            ),
-          ]),
-        )
-      };
+      // switch (trueExpr.pexp_desc) {
+      // | PExpBlock(expressions) =>
+      //   if (List.length(expressions) > 0) {
+      //     // Doc.indent(Doc.concat([Doc.line, print_expression(trueExpr)]));
+      //     Doc.concat([
+      //       print_expression(~expr=trueExpr, ~parentIsArrow=false),
+      //     ]);
+      //   } else {
+      //     //Doc.text("FORMATTER FAIL");
+      //     Doc.nil;
+      //   }
+      // | _ =>
+      //   Doc.indent(
+      //     Doc.concat([
+      //       Doc.line,
+      //       Doc.group(
+      //         print_expression(~expr=trueExpr, ~parentIsArrow=false),
+      //       ),
+      //     ]),
+      //   )
+      // };
+      Doc.indent(
+        Doc.concat([
+          Doc.line,
+          Doc.group(print_expression(~expr=trueExpr, ~parentIsArrow=false)),
+        ]),
+      );
 
     let falseClause =
       switch (falseExpr.pexp_desc) {
@@ -821,18 +832,30 @@ and print_expression = (~expr: Parsetree.expression, ~parentIsArrow: bool) => {
           Doc.concat([
             Doc.line,
             Doc.text("else "),
-            Doc.group(
-              print_expression(~expr=falseExpr, ~parentIsArrow=false),
+            Doc.indent(
+              Doc.concat([
+                Doc.line,
+                Doc.group(
+                  print_expression(~expr=falseExpr, ~parentIsArrow=false),
+                ),
+              ]),
             ),
           ]);
         } else {
-          Doc.text("FORMATTER FAIL");
+          Doc.nil;
         }
       | _ =>
         Doc.concat([
           Doc.line,
           Doc.text("else "),
-          Doc.group(print_expression(~expr=falseExpr, ~parentIsArrow=false)),
+          Doc.indent(
+            Doc.concat([
+              Doc.line,
+              Doc.group(
+                print_expression(~expr=falseExpr, ~parentIsArrow=false),
+              ),
+            ]),
+          ),
         ])
       };
 
@@ -1716,3 +1739,5 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
 //   }
 // | _ => ()
 // };
+
+let num = 1 + 2 + (3 + 4 + (4 + 5));
