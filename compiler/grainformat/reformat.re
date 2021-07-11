@@ -1166,10 +1166,11 @@ let rec print_data = (d: Grain_parsing__Parsetree.data_declaration) => {
                 constr_declarations,
               ),
             ),
-            Doc.line,
-            Doc.rbrace,
           ]),
         ),
+        Doc.ifBreaks(Doc.text(","), Doc.nil),
+        Doc.line,
+        Doc.rbrace,
       ]),
     )
 

@@ -1,8 +1,8 @@
 enum Animals {
   VeryVeryLong,
   VeryVeryLongVeryVeryLong,
-  VeryVeryLongVeryVeryLongVeryVeryLong
-  }
+  VeryVeryLongVeryVeryLongVeryVeryLong,
+}
 
 enum SmallAnimals { Abc, Def }
 
