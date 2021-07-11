@@ -496,6 +496,7 @@ and print_record =
             fields,
           ),
         ),
+        Doc.ifBreaks(Doc.text(","), Doc.nil),
       ]),
     ),
     Doc.line,

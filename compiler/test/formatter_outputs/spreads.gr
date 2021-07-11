@@ -29,7 +29,7 @@ let rec reject = (fn, list) => {
     [first, ...rest] =>
       if (!fn(first))
         [first, ...reject(fn, rest)]
-      else 
+      else
         reject(fn, rest),
   }
 }
@@ -43,4 +43,3 @@ let rec reject2 = (fn, list) => {
     },
   }
 }
-
