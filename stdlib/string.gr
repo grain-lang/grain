@@ -1301,11 +1301,11 @@ export let decodeKeepBom = (bytes: Bytes, encoding: Encoding) => {
 /**
  * Iterates over Unicode code points in a string.
  * 
- * @param f: The iterator function
- * @param s: The string to iterate
+ * @param fn: The iterator function
+ * @param str: The string to iterate
  */
 @disableGC
-export let forEachCodePoint = (f: (Number) -> Void, s: String) => {
+export let forEachCodePoint = (fn: (Number) -> Void, str: String) => {
   let (>>>) = WasmI32.shrU
   let (-) = WasmI32.sub
   let (&) = WasmI32.and
@@ -1354,11 +1354,11 @@ export let forEachCodePoint = (f: (Number) -> Void, s: String) => {
  * `forEachCodePoint`, but provides the code point's index in the string
  * as the second argument to the iterator function.
  * 
- * @param f: The iterator function
- * @param s: The string to iterate
+ * @param fn: The iterator function
+ * @param str: The string to iterate
  */
 @disableGC
-export let forEachCodePointi = (f: (Number, Number) -> Void, s: String) => {
+export let forEachCodePointi = (fn: (Number, Number) -> Void, str: String) => {
   let (>>>) = WasmI32.shrU
   let (-) = WasmI32.sub
   let (&) = WasmI32.and
