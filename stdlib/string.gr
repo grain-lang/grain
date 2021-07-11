@@ -1314,11 +1314,11 @@ export let forEachCodePoint = (fn: (Number) -> Void, str: String) => {
   let (==) = WasmI32.eq
   let (+) = WasmI32.add
 
-  let s = WasmI32.fromGrain(s)
+  let strPtr = WasmI32.fromGrain(str)
 
-  let byteSize = WasmI32.load(s, 4n)
+  let byteSize = WasmI32.load(strPtr, 4n)
 
-  let mut ptr = s + 8n
+  let mut ptr = strPtr + 8n
   let end = ptr + byteSize
   
   let mut idx = 0n
@@ -1342,7 +1342,7 @@ export let forEachCodePoint = (fn: (Number) -> Void, str: String) => {
     // avoid heap allocations. `getCodePoint` will throw
     // MalformedUnicode exception for values exceeding this limit.
     let codePoint = getCodePoint(ptr)
-    f(tagSimpleNumber(codePoint))
+    fn(tagSimpleNumber(codePoint))
 
     ptr += codePointByteCount
     idx += 1n
@@ -1367,11 +1367,11 @@ export let forEachCodePointi = (fn: (Number, Number) -> Void, str: String) => {
   let (==) = WasmI32.eq
   let (+) = WasmI32.add
 
-  let s = WasmI32.fromGrain(s)
+  let strPtr = WasmI32.fromGrain(str)
 
-  let byteSize = WasmI32.load(s, 4n)
+  let byteSize = WasmI32.load(strPtr, 4n)
 
-  let mut ptr = s + 8n
+  let mut ptr = strPtr + 8n
   let end = ptr + byteSize
   
   let mut idx = 0n
@@ -1395,7 +1395,7 @@ export let forEachCodePointi = (fn: (Number, Number) -> Void, str: String) => {
     // avoid heap allocations. `getCodePoint` will throw
     // MalformedUnicode exception for values exceeding this limit.
     let codePoint = getCodePoint(ptr)
-    f(tagSimpleNumber(codePoint), tagSimpleNumber(idx))
+    fn(tagSimpleNumber(codePoint), tagSimpleNumber(idx))
 
     ptr += codePointByteCount
     idx += 1n
