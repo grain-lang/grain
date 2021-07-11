@@ -4,10 +4,10 @@
  */
 
 /*
- * This library provides support for regular expressions in Grain.
- * Its parser and analyzer are largely ported from Racket (https://racket-lang.org/),
- * which is licensed under Apache 2.0. Racket's regular expression
- * engine is itself inspired by the Spencer engine, as found in Tcl.
+ This library provides support for regular expressions in Grain.
+ Its parser and analyzer are largely ported from Racket (https://racket-lang.org/),
+ which is licensed under Apache 2.0. Racket's regular expression
+ engine is itself inspired by the Spencer engine, as found in Tcl.
  */
 import Array from "array"
 import Char from "char"
@@ -27,12 +27,14 @@ REGEX PARSER CONFIG DEFINITIONS
 
 */
 
-// We use boxes in these records in order to share
-// references across multiple objects.
-// For example, when a user types `(?i:...)`, we
-// want to create a new configuration which is
-// case-insensitive while still having the same group
-// number and reference counter.
+/*
+ We use boxes in these records in order to share
+ references across multiple objects.
+ For example, when a user types `(?i:...)`, we
+ want to create a new configuration which is
+ case-insensitive while still having the same group
+ number and reference counter.
+ */
 
 record RegExParserConfig {
   isPerlRegExp: Bool,
@@ -142,8 +144,8 @@ let eat = (buf: RegExBuf, char: Char) => {
 
 /**
  * Checks if the given regex buffer is empty
- * @param buf: RegExBuf - the buffer to check
- * @returns Bool
+ * @param buf: The buffer to check
+ * @returns `false` if the buffer is empty, `true` otherwise.
  */
 let more = (buf: RegExBuf) => {
   unbox(buf.cursor) < Array.length(buf.inputExploded)
@@ -1051,8 +1053,8 @@ parseMode = (buf: RegExBuf) => {
     }
     match(ml) {
       None => withCs,
-      Some(true) => configWithMultiLine(buf.config, true),
-      Some(_) => configWithMultiLine(buf.config, false),
+      Some(true) => configWithMultiLine(withCs, true),
+      Some(_) => configWithMultiLine(withCs, false),
     }
   }
   let rec help = ((cs, ml)) => {
@@ -1270,7 +1272,7 @@ parseBackslashLiteral = (buf: RegExBuf) => {
           },
           _ => {
             match(parseClass(buf)) {
-              Err(e) => Err(parseErr(buf, "illegal alphebetic escape", 0)),
+              Err(e) => Err(parseErr(buf, "illegal alphabetic escape", 0)),
               Ok(rng) => Ok(makeRERange(rng, rangeLimit))
             }
           }
@@ -1587,8 +1589,8 @@ let rec mustString = (re: ParsedRegularExpression) => {
     },
     REGroup(re, _) => mustString(re),
     RECut(re, _, _, _) => mustString(re),
-    RELookahead(re, m, _, _) when m => mustString(re),
-    RELookbehind(re, m, _, _, _, _) when m => mustString(re),
+    RELookahead(re, true, _, _) => mustString(re),
+    RELookbehind(re, true, _, _, _, _) => mustString(re),
     _ => None
   }
 }
@@ -1751,7 +1753,7 @@ let rec validate = (re: ParsedRegularExpression, numGroups) => {
         }
       },
       REMaybe(re, nonGreedy) => {
-        let (min1, max1, maxL1) = loop(re)
+        let (_, max1, maxL1) = loop(re)
         (0, max1, maxL1)
       },
       REConditional(reTest, reTrue, reFalse, _, _, _) => {
@@ -1761,7 +1763,7 @@ let rec validate = (re: ParsedRegularExpression, numGroups) => {
         (min(min2, min3), max(max2, max3), max(max(maxL1, maxL2), maxL3))
       },
       RELookahead(re, _, _, _) => {
-        let (min1, max1, maxL1) = loop(re)
+        let (_, _, maxL1) = loop(re)
         (0, 0, maxL1)
       },
       RELookbehind(re, _, lbMin, lbMax, _, _) => {
@@ -2380,7 +2382,7 @@ let compileRegexToMatcher = (re: ParsedRegularExpression) => {
         List.reduceRight(compile, next_m, res)
       },
       REAlts(re1, re2) => altsMatcher(compile(re1, next_m), compile(re2, next_m)),
-      REMaybe(re, nonGreedy) when nonGreedy => altsMatcher(next_m, compile(re, next_m)),
+      REMaybe(re, true) => altsMatcher(next_m, compile(re, next_m)), // non-greedy
       REMaybe(re, _) => altsMatcher(compile(re, next_m), next_m),
       RERepeat(actualRe, min, max, nonGreedy) => {
         // Special case: group around simple pattern in non-lazy repeat
@@ -2414,8 +2416,8 @@ let compileRegexToMatcher = (re: ParsedRegularExpression) => {
         }
       },
       REGroup(re, n) => groupPushMatcher(n, compile(re, groupSetMatcher(n, next_m))),
-      REReference(n, _) when n == 0 => neverMatcher,
-      REReference(n, caseSensitive) when caseSensitive => referenceMatcher(n - 1, next_m),
+      REReference(0, _) => neverMatcher,
+      REReference(n, true) when caseSensitive => referenceMatcher(n - 1, next_m), // case-sensitive
       REReference(n, _) => referenceMatcherCaseInsensitive(n - 1, next_m),
       RECut(re, nStart, numN, _) => cutMatcher(compile(re, done_m), nStart, numN, next_m),
       REConditional(tst, reTrue, reFalse, nStart, numN, _) => {
@@ -2451,14 +2453,14 @@ record RegularExpression {
 }
 
 /**
- * @section Values: Functions for working with the regular expressions.
+ * @section Values: Functions for working with regular expressions.
  */
 
 /**
  * Compiles the given pattern string into a regular expression object.
  *
  * For an overview of the theory regular expressions in general, readers are referred
- * to "Mastering Regular Expressions" by Friedl, or numerous alternative resources online.
+ * to ["Mastering Regular Expressions"](http://regex.info/book.html) by Friedl, or numerous alternative resources online.
  *
  * Regular expressions are a combination of normal and special characters. A normal
  * character in a pattern will match a one-character string containing that character.
@@ -2470,7 +2472,7 @@ record RegularExpression {
  *
  * - `.` - Matches any character, except for a newline in multi-line mode
  * - `^` - Matches the beginning of the input, or after a newline (`\n`) in multi-line mode
- * - `$` - Matches the end of the input, or the before a newline (`\n`) in multi-line mode
+ * - `$` - Matches the end of the input, or right before a newline (`\n`) in multi-line mode
  * - `«re»*` - Matches `«re»` zero or more times
  * - `«re»+` - Matches `«re»` one or more times
  * - `«re»?` - Matches `«re»` zero or one times
@@ -2587,7 +2589,7 @@ record RegularExpression {
  * - `C` - Union of `Cc`, `Cf`, `Cs`, `Cn`, and `Co`
  * - `.` - Union of all Unicode categories
  *
- * @param regexString: String - The regular expression to compile
+ * @param regexString: The regular expression to compile
  * @returns The compiled regular expression
  */
 export let make = (regexString: String) => {
@@ -2789,31 +2791,31 @@ let fastDriveRegexMatch = (rx, string, startOffset, endOffset) => {
 }
 
 /**
- * Returns true if the given regular expression has a match in the given string
- * @param rx: RegularExpression - The regular expression to search for
- * @param string: String - The string to search within
- * @returns Whether `rx` matches `string`
+ * Determines if the given regular expression has a match in the given string.
+ * @param rx: The regular expression to search for
+ * @param string: The string to search within
+ * @returns `true` if the RegExp matches the string, otherwise `false`
  */
 export let isMatch = (rx: RegularExpression, string: String) => {
   fastDriveRegexIsMatch(rx, string, 0, String.length(string))
 }
 
 /**
- * Returns true if the given regular expression has a match in the given string within the given start/end offsets
- * @param rx: RegularExpression - The regular expression to search for
- * @param string: String - The string to search within
- * @param start: Number - The start offset to search within
- * @param end: Number - The end offset to search within
- * @returns Whether `rx` matches `string` in the given range
+ * Determines if the given regular expression has a match in the given string between the given start/end offsets.
+ * @param rx: The regular expression to search for
+ * @param string: The string to search
+ * @param start: The start offset to search between
+ * @param end: The end offset to search between
+ * @returns `true` if the RegExp matches the string in the given range, otherwise `false`
  */
 export let isMatchRange = (rx: RegularExpression, string: String, start: Number, end: Number) => {
   fastDriveRegexIsMatch(rx, string, start, end)
 }
 
 /**
- * Returns the first match for the given regular expression contained within the given string
- * @param rx: RegularExpression - The regular expression to search for
- * @param string: String - The string to search within
+ * Returns the first match for the given regular expression contained within the given string.
+ * @param rx: The regular expression to search for
+ * @param string: The string to search
  * @returns The match result, if any
  */
 export let find = (rx: RegularExpression, string: String) => {
@@ -2821,12 +2823,12 @@ export let find = (rx: RegularExpression, string: String) => {
 }
 
 /**
- * Returns the first match for the given regular expression contained within the given string,
- * within the given start/end range.
- * @param rx: RegularExpression - The regular expression to search for
- * @param string: String - The string to search within
- * @param start: Number - The start offset to search within
- * @param end: Number - The end offset to search within
+ * Returns the first match for the given regular expression contained within the given string
+ * between the given start/end range.
+ * @param rx: The regular expression to search for
+ * @param string: The string to search
+ * @param start: The start offset to search between
+ * @param end: The end offset to search between
  * @returns The match result, if any
  */
 export let findRange = (rx: RegularExpression, string: String, start: Number, end: Number) => {
@@ -2834,23 +2836,23 @@ export let findRange = (rx: RegularExpression, string: String, start: Number, en
 }
 
 /**
- * Returns the all matches for the given regular expression contained within the given string
- * @param rx: RegularExpression - The regular expression to search for
- * @param string: String - The string to search within
- * @returns The list of results
+ * Returns all matches for the given regular expression contained within the given string.
+ * @param rx: The regular expression to search for
+ * @param string: The string to search
+ * @returns The list of matches
  */
 export let findAll = (rx: RegularExpression, string: String) => {
   fastDriveRegexMatchAll(rx, string, 0, String.length(string))
 }
 
 /**
- * Returns all matches for the given regular expression contained within the given string,
- * within the given start/end range.
- * @param rx: RegularExpression - The regular expression to search for
- * @param string: String - The string to search within
- * @param start: Number - The start offset to search within
- * @param end: Number - The end offset to search within
- * @returns The list of results
+ * Returns all matches for the given regular expression contained within the given string
+ * between the given start/end range.
+ * @param rx: The regular expression to search for
+ * @param string: The string to search
+ * @param start: The start offset to search between
+ * @param end: The end offset to search between
+ * @returns The list of matches
  */
 export let findAllRange = (rx: RegularExpression, string: String, start: Number, end: Number) => {
   fastDriveRegexMatchAll(rx, string, start, end)
@@ -2950,7 +2952,7 @@ let regexReplaceHelp = (rx: RegularExpression, toSearch: String, replacement: St
 }
 
 /**
- * Replaces the first match for the given regular expression contained within the given string with the given replacement.
+ * Replaces the first match for the given regular expression contained within the given string with the specified replacement.
  * Replacement strings support the following syntax:
  * - `$&` - Replaced with the text of the matching portion of input (e.g. for `(foo)`, the search string `foo bar`, and the replacement `baz $&`, the result will be `baz foo bar`)
  * - `$n` / `$nn` (where `n` is a digit) - Replaced with the text of group `nn`
@@ -2960,23 +2962,23 @@ let regexReplaceHelp = (rx: RegularExpression, toSearch: String, replacement: St
  * - `$'` - Replaced with the text of the string after the matched subspan of text
  * - Any other character will be placed as-is in the replaced output.
  *
- * @param rx: RegularExpression - The regular expression to search for
- * @param toSearch: String - The string to search within
- * @param replacement: String - The string to replace matches with
- * @returns The `replacement` string with the appropriate replacement, if any
+ * @param rx: The regular expression to search for
+ * @param toSearch: The string to search
+ * @param replacement: The string that replaces matches
+ * @returns The given string with the appropriate replacements, if any
  */
 export let replace = (rx: RegularExpression, toSearch: String, replacement: String) => {
   regexReplaceHelp(rx, toSearch, replacement, false)
 }
 
 /**
- * Replaces all matches for the given regular expression contained within the given string with the given replacement.
+ * Replaces all matches for the given regular expression contained within the given string with the specified replacement.
  * See `replace` for replacement string syntax.
  *
- * @param rx: RegularExpression - The regular expression to search for
- * @param toSearch: String - The string to search within
- * @param replacement: String - The string to replace matches with
- * @returns The `replacement` string with the appropriate replacements, if any
+ * @param rx: The regular expression to search for
+ * @param toSearch: The string to search
+ * @param replacement: The string that replaces matches
+ * @returns The input string with the appropriate replacements, if any
  */
 export let replaceAll = (rx: RegularExpression, toSearch: String, replacement: String) => {
   regexReplaceHelp(rx, toSearch, replacement, true)
