@@ -19,20 +19,15 @@ functions › shorthand_1
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $global_1))
  (func $func_0 (; has Stack IR ;) (param $0 i32) (param $1 i32) (result i32)
-  (drop
-   (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-    (local.tee $0
-     (tuple.extract 0
-      (tuple.make
-       (local.get $1)
-       (i32.const 0)
-      )
-     )
+  (tuple.extract 0
+   (tuple.make
+    (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+     (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+     (local.get $1)
     )
+    (i32.const 0)
    )
   )
-  (local.get $0)
  )
  (func $_gmain (; has Stack IR ;) (result i32)
   (local $0 i32)

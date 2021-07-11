@@ -1,7 +1,16 @@
+/**
+ * @module Array: Utilities for working with arrays.
+ * @example import Array from "array"
+ */
+
 import WasmI32 from "runtime/unsafe/wasmi32"
 import Memory from "runtime/unsafe/memory"
 import { allocateArray, tagSimpleNumber } from "runtime/dataStructures"
 import Exception from "runtime/exception"
+
+/**
+ * @section Values: Functions for working with the Array data type.
+ */
 
 let _ARRAY_LENGTH_OFFSET = 4n
 let _ARRAY_START_OFFSET = 8n
@@ -19,12 +28,27 @@ let initLength = (length) => {
   length
 }
 
+/**
+ * Returns the length of the input array.
+ *
+ * @param array: The array to inspect
+ */
 @disableGC
 export let length = (array) => {
   let ptr = WasmI32.fromGrain(array: Array<a>)
   tagSimpleNumber(WasmI32.load(ptr, _ARRAY_LENGTH_OFFSET))
 }
 
+/**
+ * Creates a new array of the specified length with each element being
+ * initialized with the given value.
+ *
+ * @param length: The length of the new array
+ * @param item: The value to store at each index
+ * @returns The new array
+ *
+ * @example Array.make(5, "foo") // [> "foo", "foo", "foo", "foo", "foo"]
+ */
 @disableGC
 export let make : (Number, a) -> Array<a>  = (length, item) => {
   let length = initLength(length)
@@ -36,27 +60,66 @@ export let make : (Number, a) -> Array<a>  = (length, item) => {
   WasmI32.toGrain(array)
 }
 
+/**
+ * Creates a new array of the specified length where each element is
+ * initialized with the result of an initializer function. The initializer
+ * is called with the index of each array element.
+ *
+ * @param length: The length of the new array
+ * @param fn: The initializer function to call with each index, where the value returned will be used to initialize the element
+ * @returns The new array
+ *
+ * @example Array.init(5, n => n + 3) // [> 8, 9, 10, 11, 12]
+ */
 @disableGC
-export let init : (Number, Number -> a) -> Array<a> = (length, f) => {
+export let init : (Number, Number -> a) -> Array<a> = (length, fn) => {
   let length = initLength(length)
   let byteLength = WasmI32.mul(length, 4n)
   let array = allocateArray(length)
   let mut index = 0
   for (let mut i = 0n; WasmI32.ltS(i, byteLength); i = WasmI32.add(i, 4n)) {
-    WasmI32.store(WasmI32.add(array, i), WasmI32.fromGrain(f(index)), _ARRAY_START_OFFSET)
+    WasmI32.store(WasmI32.add(array, i), WasmI32.fromGrain(fn(index)), _ARRAY_START_OFFSET)
     index += 1
   }
   WasmI32.toGrain(array)
 }
 
+/**
+ * An alias for normal syntactic array access, i.e. `array[n]`.
+ *
+ * Retrieves the element from the array at the specified index.
+ * A negative index is treated as an offset from the end of the array.
+ *
+ * @param index: The index to access
+ * @param array: The array to access
+ * @returns The element from the array
+ */
 export let get = (index, array) => {
   array[index]
 }
 
+/**
+ * An alias for normal syntactic array set, i.e. `array[n] = value`.
+ *
+ * Sets the element at the specified index in the array to the new value.
+ * A negative index is treated as an offset from the end of the array.
+ *
+ * @param index: The index to update
+ * @param value: The value to store
+ * @param array: The array to update
+ */
 export let set = (index, value, array) => {
   array[index] = value
 }
 
+/**
+ * Creates a new array with the items the first array, followed by
+ * the items of the second array. This does not modify the arguments.
+ *
+ * @param array1: The array containing elements to appear first
+ * @param array2: The array containing elements to appear second
+ * @returns The new array containing elements from `array1` followed by elements from `array2`
+ */
 export let append = (array1, array2) => {
   let len1 = length(array1)
   let len2 = length(array2)
@@ -70,6 +133,13 @@ export let append = (array1, array2) => {
   })
 }
 
+/**
+ * Creates a single array containing the elements of all arrays in the
+ * provided list. Does not modify any of the input arguments.
+ *
+ * @param arrays: A list containing all arrays to combine
+ * @returns The new array
+ */
 export let concat = (arrays) => {
   // This function is slightly verbose to avoid depending on the List stdlib.
 
@@ -103,10 +173,23 @@ export let concat = (arrays) => {
   init(findLength(arrays, 0), next)
 }
 
+/**
+ * Produces a shallow copy of the input array. The new array contains the
+ * same elements as the original.
+ *
+ * @param array: The array to copy
+ * @returns The new array containing the elements from the input
+ */
 export let copy = (array) => {
   init(length(array), n => array[n])
 }
 
+/**
+ * Iterates an array, calling an iterator function on each element.
+ *
+ * @param fn: The iterator function to call with each element
+ * @param array: The array to iterate
+ */
 export let forEach = (fn, array) => {
   let length = length(array)
   let mut count = 0
@@ -116,6 +199,13 @@ export let forEach = (fn, array) => {
   }
 }
 
+/**
+ * Iterates an array, calling an iterator function with each element.
+ * Also passes the index as the second argument to the function.
+ *
+ * @param fn: The iterator function to call with each element
+ * @param array: The array to iterate
+ */
 export let forEachi = (fn, array) => {
   let length = length(array)
   let mut count = 0
@@ -125,6 +215,14 @@ export let forEachi = (fn, array) => {
   }
 }
 
+/**
+ * Produces a new array initialized with the results of a mapper function
+ * called on each element of the input array.
+ *
+ * @param fn: The mapper function to call on each element, where the value returned will be used to initialize the element in the new array
+ * @param array: The array to iterate
+ * @returns The new array with mapped values
+ */
 export let map = (fn, array) => {
   let length = length(array)
   init(length, (i) => {
@@ -132,6 +230,14 @@ export let map = (fn, array) => {
   })
 }
 
+/**
+ * Produces a new array initialized with the results of a mapper function
+ * called on each element of the input array and its index.
+ *
+ * @param fn: The mapper function to call on each element, where the value returned will be used to initialize the element in the new array
+ * @param array: The array to iterate
+ * @returns The new array with mapped values
+ */
 export let mapi = (fn, array) => {
   let length = length(array)
   init(length, (index) => {
@@ -139,30 +245,93 @@ export let mapi = (fn, array) => {
   })
 }
 
+/**
+ * Combines all elements of an array using a reducer function,
+ * starting from the "head", or left side, of the array.
+ *
+ * In `Array.reduce(fn, initial, array)`, `fn` is called with
+ * an accumulator and each element of the array, and returns
+ * a new accumulator. The final value is the last accumulator
+ * returned. The accumulator starts with value `initial`.
+ *
+ * @param fn: The reducer function to call on each element, where the value returned will be the next accumulator value
+ * @param initial: The initial value to use for the accumulator on the first iteration
+ * @param array: The array to iterate
+ * @returns The final accumulator returned from `fn`
+ *
+ * @example Array.reduce((a, b) => a + b, 0, [> 1, 2, 3]) // 6
+ */
 export let reduce = (fn, initial, array) => {
   let mut acc = initial
   forEach((el) => acc = fn(acc, el), array)
   acc
 }
 
+/**
+ * Combines all elements of an array using a reducer function,
+ * starting from the "head", or left side, of the array.
+ *
+ * In `Array.reducei(fn, initial, array)`, `fn` is called with
+ * an accumulator, each element of the array, and the index
+ * of that element, and returns a new accumulator. The final
+ * value is the last accumulator returned. The accumulator
+ * starts with value `initial`.
+ *
+ * @param fn: The reducer function to call on each element, where the value returned will be the next accumulator value
+ * @param initial: The initial value to use for the accumulator on the first iteration
+ * @param array: The array to iterate
+ * @returns The final accumulator returned from `fn`
+ */
 export let reducei = (fn, initial, array) => {
   let mut acc = initial
   forEachi((el, index) => acc = fn(acc, el, index), array)
   acc
 }
 
+/**
+ * Produces a new array by calling a function on each element
+ * of the input array. Each iteration produces an intermediate
+ * array, which are all appended to produce a "flattened" array
+ * of all results.
+ *
+ * @param fn: The function to be called on each element, where the value returned will be an array that gets appended to the new array
+ * @param array: The array to iterate
+ * @returns The new array
+ */
 export let flatMap = (fn, array) => {
   reduce((result, value) => append(result, fn(value)), [>], array)
 }
 
+/**
+ * Checks that the given condition is satisfied for all
+ * elements in the input array.
+ *
+ * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
+ * @param array: The array to check
+ * @returns `true` if all elements satify the condition, otherwise `false`
+ */
 export let every = (fn, array) => {
   reduce((acc, value) => { acc && fn(value) }, true, array)
 }
 
+/**
+ * Checks that the given condition is satisfied **at least
+ * once** by an item in the input array.
+ *
+ * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
+ * @param array: The array to iterate
+ * @returns `true` if one or more elements satify the condition, otherwise `false`
+ */
 export let some = (fn, array) => {
   reduce((acc, value) => { acc || fn(value) }, false, array)
 }
 
+/**
+ * Replaces all elements in an array with the new value provided.
+ *
+ * @param value: The value replacing each element
+ * @param array: The array to update
+ */
 export let fill = (value, array) => {
   let length = length(array)
   forEachi((_, index) => {
@@ -171,6 +340,15 @@ export let fill = (value, array) => {
   void
 }
 
+/**
+ * Replaces all elements in the provided index range in the array
+ * with the new value provided. Fails if the index is out-of-bounds.
+ *
+ * @param value: The value replacing each element between the indexes
+ * @param start: The index to begin replacement
+ * @param stop: The (exclusive) index to end replacement
+ * @param array: The array to update
+ */
 export let fillRange = (value, start, stop, array) => {
   let length = length(array)
   let startIndex = if (start < 0) length + start else start
@@ -191,6 +369,12 @@ export let fillRange = (value, start, stop, array) => {
   void
 }
 
+/**
+ * Creates a new array with all elements in reverse order.
+ *
+ * @param array: The array to reverse
+ * @returns The new array
+ */
 export let reverse = (array) => {
   let len = length(array)
   init(len, (index) => {
@@ -199,6 +383,12 @@ export let reverse = (array) => {
   })
 }
 
+/**
+ * Converts the input array to a list.
+ *
+ * @param array: The array to convert
+ * @returns The list containing all elements from the array
+ */
 export let toList = (array) => {
   let rec buildList = (acc, index) => {
     let index = index - 1
@@ -211,6 +401,12 @@ export let toList = (array) => {
   buildList([], length(array))
 }
 
+/**
+ * Converts the input list to an array.
+ *
+ * @param list: The list to convert
+ * @returns The array containing all elements from the list
+ */
 export let fromList = (list) => {
   let rec listLength = (list, acc) => {
     match (list) {
@@ -232,8 +428,16 @@ export let fromList = (list) => {
   init(listLength(list, 0), next)
 }
 
-// TODO: This should use recursion when we can pattern match arrays
+/**
+ * Checks if the value is an element of the input array.
+ * Uses the generic `==` structural equality operator.
+ *
+ * @param search: The value to compare
+ * @param array: The array to iterate
+ * @returns `true` if the value exists in the array, otherwise `false`
+ */
 export let contains = (search, array) => {
+  // TODO: This should use recursion when we can pattern match arrays
   let len = length(array)
   let mut index = 0
   let mut found = false
@@ -244,6 +448,13 @@ export let contains = (search, array) => {
   found
 }
 
+/**
+ * Finds the first element in an array that satifies the given condition.
+ *
+ * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
+ * @param array: The array to search
+ * @returns `Some(element)` containing the first value found and `None` otherwise
+ */
 export let find = (fn, array) => {
   let length = length(array)
   if(length == 0){
@@ -269,6 +480,13 @@ export let find = (fn, array) => {
   }
 }
 
+/**
+ * Finds the first index in an array where the element satifies the given condition.
+ *
+ * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
+ * @param array: The array to search
+ * @returns `Some(index)` containing the index of the first element found and `None` otherwise
+ */
 export let findIndex = (fn, array) => {
   let length = length(array)
   if(length == 0){
@@ -294,9 +512,17 @@ export let findIndex = (fn, array) => {
   }
 }
 
-export let product = (a, b) => {
-  let lenA = length(a)
-  let lenB = length(b)
+/**
+ * Combines two arrays into a Cartesian product of tuples containing
+ * all ordered pairs `(a, b)`.
+ *
+ * @param array1: The array to provide values for the first tuple element
+ * @param array2: The array to provide values for the second tuple element
+ * @returns The new array containing all pairs of `(a, b)`
+ */
+export let product = (array1, array2) => {
+  let lenA = length(array1)
+  let lenB = length(array2)
   let mut indexA = -1
 
   init(lenA * lenB, n => {
@@ -305,10 +531,17 @@ export let product = (a, b) => {
     } else {
       indexA = indexA
     }
-    (a[indexA], b[n % lenB])
+    (array1[indexA], array2[n % lenB])
   })
 }
 
+/**
+ * Counts the number of elements in an array that satisfy the given condition.
+ *
+ * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
+ * @param array: The array to iterate
+ * @returns The total number of elements that satisfy the condition
+ */
 export let count = (fn, array) => {
   let length = length(array)
   let mut position = 0
@@ -324,6 +557,14 @@ export let count = (fn, array) => {
   count
 }
 
+/**
+ * Counts the number of elements in an array that satisfy the
+ * given condition. Also passes the index to the function.
+ *
+ * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
+ * @param array: The array to iterate
+ * @returns The total number of elements that satisfy the condition
+ */
 export let counti = (fn, array) => {
   let length = length(array)
   let mut position = 0
@@ -339,6 +580,15 @@ export let counti = (fn, array) => {
   count
 }
 
+/**
+ * Produces a new array by calling a function on each element of
+ * the input array and only including it in the result array if the element satisfies
+ * the condition.
+ *
+ * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
+ * @param array: The array to iterate
+ * @returns The new array containing elements where `fn` returned `true`
+ */
 export let filter = (fn, array) => {
   let filtered = copy(array)
   let mut position = 0
@@ -353,6 +603,15 @@ export let filter = (fn, array) => {
   })
 }
 
+/**
+ * Produces a new array by calling a function on each element of
+ * the input array and only including it in the result array if the element satisfies
+ * the condition. Also passes the index to the function.
+ *
+ * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
+ * @param array: The array to iterate
+ * @returns The new array containing elements where `fn` returned `true`
+ */
 export let filteri = (fn, array) => {
   let filtered = copy(array)
   let mut position = 0
@@ -367,6 +626,13 @@ export let filteri = (fn, array) => {
   })
 }
 
+/**
+ * Produces a new array with any duplicates removed.
+ * Uses the generic `==` structural equality operator.
+ *
+ * @param array: The array to filter
+ * @returns The new array with only unique values
+ */
 export let unique = (array) => {
   filteri(
     (el, index) => findIndex(value => value == el, array) == Some(index),
@@ -374,17 +640,34 @@ export let unique = (array) => {
   )
 }
 
-export let zip = (a, b) => {
-  let len = length(a)
-  if (len != length(b)) {
+/**
+ * Produces a new array filled with tuples of elements from both given arrays.
+ * The first tuple will contain the first item of each array, the second tuple
+ * will contain the second item of each array, and so on.
+ *
+ * Calling this function with arrays of different sizes will throw an error.
+ *
+ * @param array1: The array to provide values for the first tuple element
+ * @param array2: The array to provide values for the second tuple element
+ * @returns The new array containing indexed pairs of `(a, b)`
+ */
+export let zip = (array1, array2) => {
+  let len = length(array1)
+  if (len != length(array2)) {
     fail "arguments to zip must be same length"
   } else {
     init(len, n => {
-      (a[n], b[n])
+      (array1[n], array2[n])
     })
   }
 }
 
+/**
+ * Produces two arrays by splitting apart an array of tuples.
+ *
+ * @param array: The array of tuples to split
+ * @returns An array containing all elements from the first tuple element, and an array containing all elements from the second tuple element
+ */
 export let unzip = (array) => {
   let lenArr = length(array)
 
@@ -399,9 +682,13 @@ export let unzip = (array) => {
   (a, b)
 }
 
-// @param separator: String - The separator to insert between items in the string
-// @param items: Array<String> - The input strings
-// @returns String
+/**
+ * Concatenates an array of strings into a single string, separated by a separator string.
+ *
+ * @param separator: The separator to insert between items in the string
+ * @param items: The input strings
+ * @returns The concatenated string
+ */
 export let join = (separator: String, items: Array<String>) => {
   let iter = (acc, str) => {
     match (acc) {
@@ -420,12 +707,12 @@ export let join = (separator: String, items: Array<String>) => {
  * at the end index will not be included in the result.
  *
  * If either index is a negative number, it will be treated as a reverse index from
- * the end of the array. e.g. slice(1, -1, [> 'a', 'b', 'c']) == [> 'b'].
+ * the end of the array. e.g. `slice(1, -1, [> 'a', 'b', 'c']) == [> 'b']`.
  *
- * @param startIndex: Number The index of the array where the slice will begin (inclusive)
- * @param endIndex: Number The index of the array where the slice will end (exclusive)
- * @param array: Array<a> The array to be sliced
- * @returns Array<a> The subset of the array that was sliced
+ * @param startIndex: The index of the array where the slice will begin (inclusive)
+ * @param endIndex: The index of the array where the slice will end (exclusive)
+ * @param array: The array to be sliced
+ * @returns The subset of the array that was sliced
  */
 export let slice = (startIndex, endIndex, array) => {
   let arrayLength = length(array)
