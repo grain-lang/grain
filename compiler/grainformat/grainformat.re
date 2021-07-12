@@ -9,24 +9,24 @@ let compile_parsed = filename => {
   Grain_utils.Config.base_path := dirname(filename);
 
   // // force from stdin for now
-  let program_str = ref("");
-  /* read from stdin until we get end of buffer */
-  try(
-    while (true) {
-      program_str := program_str^ ++ read_line() ++ "\n";
-    }
-  ) {
-  | exn => ()
-  };
+  // let program_str = ref("");
+  // /* read from stdin until we get end of buffer */
+  // try(
+  //   while (true) {
+  //     program_str := program_str^ ++ read_line() ++ "\n";
+  //   }
+  // ) {
+  // | exn => ()
+  // };
 
-  let compile_state =
-    Compile.compile_string(
-      ~hook=stop_after_parse,
-      ~name=filename,
-      program_str^,
-    );
-  switch (compile_state) {
-  // switch (Compile.compile_file(~hook=stop_after_parse, filename)) {
+  // let compile_state =
+  //   Compile.compile_string(
+  //     ~hook=stop_after_parse,
+  //     ~name=filename,
+  //     program_str^,
+  //   );
+  // switch (compile_state) {
+  switch (Compile.compile_file(~hook=stop_after_parse, filename)) {
   | exception exn =>
     let bt =
       if (Printexc.backtrace_status()) {
