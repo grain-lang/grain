@@ -5,28 +5,29 @@ open Grain_parsing;
 open Grain_utils;
 open Filename;
 
-let compile_parsed = filename => {
-  Grain_utils.Config.base_path := dirname(filename);
+let compile_parsed = (filename: option(string)) => {
+  let compile_state =
+    switch (filename) {
+    | None =>
+      // force from stdin for now
+      let program_str = ref("");
+      /* read from stdin until we get end of buffer */
+      try(
+        while (true) {
+          program_str := program_str^ ++ read_line() ++ "\n";
+        }
+      ) {
+      | exn => ()
+      };
 
-  // // force from stdin for now
-  // let program_str = ref("");
-  // /* read from stdin until we get end of buffer */
-  // try(
-  //   while (true) {
-  //     program_str := program_str^ ++ read_line() ++ "\n";
-  //   }
-  // ) {
-  // | exn => ()
-  // };
+      Compile.compile_string(~hook=stop_after_parse, ~name="", program_str^);
+    | Some(filenm) =>
+      Grain_utils.Config.base_path := dirname(filenm);
+      Compile.compile_file(~hook=stop_after_parse, filenm);
+    };
 
-  // let compile_state =
-  //   Compile.compile_string(
-  //     ~hook=stop_after_parse,
-  //     ~name=filename,
-  //     program_str^,
-  //   );
   // switch (compile_state) {
-  switch (Compile.compile_file(~hook=stop_after_parse, filename)) {
+  switch (compile_state) {
   | exception exn =>
     let bt =
       if (Printexc.backtrace_status()) {
@@ -50,20 +51,19 @@ let compile_parsed = filename => {
   };
 };
 
-let format_code = (outfile, program: Parsetree.parsed_program) => {
+let format_code = (program: Parsetree.parsed_program) => {
   Reformat.reformat_ast(program);
   `Ok();
 };
 
-let grainformat = (outfile, program) =>
-  try(format_code(outfile, program)) {
+let grainformat = program =>
+  try(format_code(program)) {
   | e => `Error((false, Printexc.to_string(e)))
   };
 
 let input_file_conv = {
   open Arg;
   let (prsr, prntr) = non_dir_file;
-
   (
     filename => prsr(Grain_utils.Files.normalize_separators(filename)),
     prntr,
@@ -74,12 +74,11 @@ let input_filename = {
   let doc = "Grain source file to format";
   let docv = "FILE";
   Arg.(
-    required
-    & pos(~rev=true, 0, some(input_file_conv), None)
+    value
+    & pos(~rev=true, 0, some(~none="", input_file_conv), None)
     & info([], ~docv, ~doc)
   );
 };
-
 /** Converter which checks that the given output filename is valid */
 let output_file_conv = {
   let parse = s => {
@@ -117,7 +116,7 @@ let cmd = {
     Term.(
       ret(
         const(grainformat)
-        $ output_filename
+        // $ output_filename
         $ ret(
             Grain_utils.Config.with_cli_options(compile_parsed)
             $ input_filename,

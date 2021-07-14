@@ -166,7 +166,7 @@ program
   });
 
 program
-  .command("format <file>")
+  .command("format [file]")
   .description("format a grain file")
   .action(function (file) {
     format(file, program);
