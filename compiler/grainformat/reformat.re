@@ -744,48 +744,6 @@ and print_expression = (~expr: Parsetree.expression, ~parentIsArrow: bool) => {
       Doc.rbrace,
     ])
 
-  // Doc.group(
-  //   Doc.concat([
-  //     Doc.text("match"),
-  //     Doc.space,
-  //     addParens(print_expression(expression)),
-  //     Doc.space,
-  //     Doc.lbrace,
-  //     Doc.indent(
-  //       Doc.concat([
-  //         Doc.line,
-  //         Doc.join(
-  //           Doc.concat([Doc.comma, Doc.hardLine]),
-  //           List.map(
-  //             (branch: Parsetree.match_branch) => {
-  //               let mb = print_expression(branch.pmb_body);
-
-  //               Doc.group(
-  //                 Doc.concat([
-  //                   print_pattern(branch.pmb_pat),
-  //                   Doc.text(" =>"),
-  //                   Doc.space,
-  //                   Doc.group(print_expression(branch.pmb_body)),
-  //                   // Doc.indent(
-  //                   //   Doc.concat([
-  //                   //     Doc.line,
-  //                   //     print_expression(branch.pmb_body),
-  //                   //   ]),
-  //                   // ),
-  //                 ]),
-  //               );
-  //             },
-  //             match_branches,
-  //           ),
-  //         ),
-  //         Doc.concat([Doc.comma]),
-  //       ]),
-  //     ),
-  //     Doc.line,
-  //     Doc.rbrace,
-  //   ]),
-  // )
-
   | PExpPrim1(prim1, expression) =>
     print_endline("PExpPrim1");
     Doc.text("PExpPrim1");
@@ -798,33 +756,7 @@ and print_expression = (~expr: Parsetree.expression, ~parentIsArrow: bool) => {
   | PExpIf(condition, trueExpr, falseExpr) =>
     // print_endline("PExpIf");
     let trueClause =
-      // switch (trueExpr.pexp_desc) {
-      // | PExpBlock(expressions) =>
-      //   if (List.length(expressions) > 0) {
-      //     // Doc.indent(Doc.concat([Doc.line, print_expression(trueExpr)]));
-      //     Doc.concat([
-      //       print_expression(~expr=trueExpr, ~parentIsArrow=false),
-      //     ]);
-      //   } else {
-      //     //Doc.text("FORMATTER FAIL");
-      //     Doc.nil;
-      //   }
-      // | _ =>
-      //   Doc.indent(
-      //     Doc.concat([
-      //       Doc.line,
-      //       Doc.group(
-      //         print_expression(~expr=trueExpr, ~parentIsArrow=false),
-      //       ),
-      //     ]),
-      //   )
-      // };
-      Doc.indent(
-        Doc.concat([
-          Doc.line,
-          Doc.group(print_expression(~expr=trueExpr, ~parentIsArrow=false)),
-        ]),
-      );
+      Doc.group(print_expression(~expr=trueExpr, ~parentIsArrow=false));
 
     let falseClause =
       switch (falseExpr.pexp_desc) {
@@ -833,13 +765,8 @@ and print_expression = (~expr: Parsetree.expression, ~parentIsArrow: bool) => {
           Doc.concat([
             Doc.line,
             Doc.text("else "),
-            Doc.indent(
-              Doc.concat([
-                Doc.line,
-                Doc.group(
-                  print_expression(~expr=falseExpr, ~parentIsArrow=false),
-                ),
-              ]),
+            Doc.group(
+              print_expression(~expr=falseExpr, ~parentIsArrow=false),
             ),
           ]);
         } else {
@@ -849,14 +776,7 @@ and print_expression = (~expr: Parsetree.expression, ~parentIsArrow: bool) => {
         Doc.concat([
           Doc.line,
           Doc.text("else "),
-          Doc.indent(
-            Doc.concat([
-              Doc.line,
-              Doc.group(
-                print_expression(~expr=falseExpr, ~parentIsArrow=false),
-              ),
-            ]),
-          ),
+          Doc.group(print_expression(~expr=falseExpr, ~parentIsArrow=false)),
         ])
       };
 
@@ -868,9 +788,10 @@ and print_expression = (~expr: Parsetree.expression, ~parentIsArrow: bool) => {
             Doc.text("if "),
             Doc.group(
               Doc.concat([
-                Doc.text("("),
+                Doc.lparen,
                 print_expression(~expr=condition, ~parentIsArrow=false),
-                Doc.text(")"),
+                Doc.rparen,
+                Doc.space,
               ]),
             ),
             trueClause,
@@ -885,9 +806,10 @@ and print_expression = (~expr: Parsetree.expression, ~parentIsArrow: bool) => {
           Doc.text("if "),
           Doc.group(
             Doc.concat([
-              Doc.text("("),
+              Doc.lparen,
               print_expression(~expr=condition, ~parentIsArrow=false),
-              Doc.text(")"),
+              Doc.rparen,
+              Doc.space,
             ]),
           ),
           Doc.space,
