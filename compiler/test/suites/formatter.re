@@ -13,4 +13,5 @@ describe("formatter", ({test}) => {
   assertFormatOutput("nested_matches", "nested_matches");
   assertFormatOutput("number_sugar", "number_sugar");
   assertFormatOutput("records", "records");
+  assertFormatOutput("guards", "guards");
 });

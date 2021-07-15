@@ -727,6 +727,14 @@ and print_expression = (~expr: Parsetree.expression, ~parentIsArrow: bool) => {
               (branch: Parsetree.match_branch) =>
                 Doc.concat([
                   print_pattern(branch.pmb_pat),
+                  switch (branch.pmb_guard) {
+                  | None => Doc.nil
+                  | Some(guard) =>
+                    Doc.concat([
+                      Doc.text(" when "),
+                      print_expression(~expr=guard, ~parentIsArrow=false),
+                    ])
+                  },
                   Doc.text(" =>"),
                   Doc.ifBreaks(Doc.space, Doc.nil),
                   print_expression(
