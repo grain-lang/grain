@@ -822,8 +822,8 @@ and print_expression = (~expr: Parsetree.expression, ~parentIsArrow: bool) => {
     Doc.concat([
       Doc.text("while "),
       addParens(print_expression(~expr=expression, ~parentIsArrow=false)),
-      Doc.line,
-      print_expression(~expr=expression1, ~parentIsArrow=false),
+      Doc.space,
+      Doc.group(print_expression(~expr=expression1, ~parentIsArrow=false)),
     ])
 
   | PExpFor(optexpression1, optexpression2, optexpression3, expression4) =>
@@ -856,7 +856,7 @@ and print_expression = (~expr: Parsetree.expression, ~parentIsArrow: bool) => {
           },
         ]),
       ),
-      Doc.line,
+      Doc.space,
       print_expression(~expr=expression4, ~parentIsArrow=false),
     ])
   | PExpContinue =>
