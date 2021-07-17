@@ -26,6 +26,9 @@ let test_output_dir = Filename.concat(test_dir, "output");
 let test_stdlib_dir = Filename.concat(test_dir, "stdlib");
 let test_snapshots_dir = Filename.concat(test_dir, "__snapshots__");
 
+let test_formatter_in_dir = Filename.concat(test_dir, "formatter_inputs");
+let test_formatter_out_dir = Filename.concat(test_dir, "formatter_outputs");
+
 let clean_grain_output = stdlib_dir =>
   Array.iter(
     file =>
