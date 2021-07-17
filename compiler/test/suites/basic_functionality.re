@@ -153,6 +153,11 @@ describe("basic functionality", ({test}) => {
   assertSnapshot("int64_pun_2", "-99999999 - 999999999");
   assertRunError("overflow1", "9223372036854775807 + 1", "Overflow");
   assertSnapshot("block_no_expression", "let f = () => { let x = 5 }; f()");
+  assertSnapshotFile("func_shadow", "funcShadow");
+  assertSnapshotFile(
+    "func_shadow_and_indirect_call",
+    "funcShadowAndIndirect",
+  );
   /* Assertions */
   assertSnapshot("assert1", "assert true");
   assertSnapshot("assert2", "assert 3 + 3 == 6");

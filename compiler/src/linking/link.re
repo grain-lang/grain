@@ -516,11 +516,20 @@ let link_all = (linked_mod, dependencies, signature) => {
       imported_funcs,
     );
 
+    // Register all function names first as functions may be recursive
     List.iter(
       func => {
         let internal_name = Function.get_name(func);
         let new_name = gensym(internal_name);
         Hashtbl.add(local_names, internal_name, new_name);
+      },
+      funcs,
+    );
+
+    List.iter(
+      func => {
+        let internal_name = Function.get_name(func);
+        let new_name = Hashtbl.find(local_names, internal_name);
 
         let params = Function.get_params(func);
         let results = Function.get_results(func);

@@ -360,8 +360,20 @@ type instr = {
 [@deriving sexp]
 and instr_desc =
   | MImmediate(immediate)
+  | MCallRaw({
+      func: string,
+      func_type: (list(asmtype), list(asmtype)),
+      args: list(immediate),
+    })
   | MCallKnown({
       func: string,
+      closure: immediate,
+      func_type: (list(asmtype), list(asmtype)),
+      args: list(immediate),
+    })
+  | MReturnCallKnown({
+      func: string,
+      closure: immediate,
       func_type: (list(asmtype), list(asmtype)),
       args: list(immediate),
     })
@@ -435,6 +447,7 @@ type export = {
 [@deriving sexp]
 type mash_function = {
   index: int32,
+  id: Ident.t,
   name: option(string),
   args: list(asmtype),
   return_type: list(asmtype),
