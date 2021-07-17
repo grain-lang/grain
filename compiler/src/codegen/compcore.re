@@ -34,6 +34,8 @@ let gensym_label = s => {
 };
 let reset_labels = () => gensym_counter := 0;
 
+// Whether imports from the runtime/exception module should be included
+// Necessary to prevent a cirular dep for that module
 let needs_exceptions = ref(false);
 
 let reset = () => {
