@@ -1354,3 +1354,107 @@ export let decode = (bytes: Bytes, encoding: Encoding) => {
 export let decodeKeepBom = (bytes: Bytes, encoding: Encoding) => {
   decodeHelp(bytes, encoding, false)
 }
+
+/**
+ * Iterates over Unicode code points in a string.
+ * 
+ * @param fn: The iterator function
+ * @param str: The string to iterate
+ */
+@disableGC
+export let forEachCodePoint = (fn: (Number) -> Void, str: String) => {
+  let (>>>) = WasmI32.shrU
+  let (-) = WasmI32.sub
+  let (&) = WasmI32.and
+  let (<) = WasmI32.ltU
+  let (<=) = WasmI32.leU
+  let (==) = WasmI32.eq
+  let (+) = WasmI32.add
+
+  let strPtr = WasmI32.fromGrain(str)
+
+  let byteSize = WasmI32.load(strPtr, 4n)
+
+  let mut ptr = strPtr + 8n
+  let end = ptr + byteSize
+  
+  let mut idx = 0n
+  while (ptr < end) {
+    let byte = WasmI32.load8U(ptr, 0n)
+    let codePointByteCount = if ((byte & 0x80n) == 0x00n) {
+      1n
+    } else if ((byte & 0xF0n) == 0xF0n) {
+      4n
+    } else if ((byte & 0xE0n) == 0xE0n) {
+      3n
+    } else {
+      2n
+    }
+
+    // Note that even if up to 4 bytes are needed to represent Unicode
+    // codepoints, this doesn't mean 32 bits. The highest allowed code point is
+    // 0x10FFFF and it should not change in future versions of Unicode. This
+    // means no more than 21 bits are necessary to represent a code point and
+    // thus we can use Grain's "simple" numbers that hold up to 31 bits and
+    // avoid heap allocations. `getCodePoint` will throw
+    // MalformedUnicode exception for values exceeding this limit.
+    let codePoint = getCodePoint(ptr)
+    fn(tagSimpleNumber(codePoint))
+
+    ptr += codePointByteCount
+    idx += 1n
+  }
+}
+
+/**
+ * Iterates over Unicode code points in a string. This is the same as
+ * `forEachCodePoint`, but provides the code point's index in the string
+ * as the second argument to the iterator function.
+ * 
+ * @param fn: The iterator function
+ * @param str: The string to iterate
+ */
+@disableGC
+export let forEachCodePointi = (fn: (Number, Number) -> Void, str: String) => {
+  let (>>>) = WasmI32.shrU
+  let (-) = WasmI32.sub
+  let (&) = WasmI32.and
+  let (<) = WasmI32.ltU
+  let (<=) = WasmI32.leU
+  let (==) = WasmI32.eq
+  let (+) = WasmI32.add
+
+  let strPtr = WasmI32.fromGrain(str)
+
+  let byteSize = WasmI32.load(strPtr, 4n)
+
+  let mut ptr = strPtr + 8n
+  let end = ptr + byteSize
+  
+  let mut idx = 0n
+  while (ptr < end) {
+    let byte = WasmI32.load8U(ptr, 0n)
+    let codePointByteCount = if ((byte & 0x80n) == 0x00n) {
+      1n
+    } else if ((byte & 0xF0n) == 0xF0n) {
+      4n
+    } else if ((byte & 0xE0n) == 0xE0n) {
+      3n
+    } else {
+      2n
+    }
+
+    // Note that even if up to 4 bytes are needed to represent Unicode
+    // codepoints, this doesn't mean 32 bits. The highest allowed code point is
+    // 0x10FFFF and it should not change in future versions of Unicode. This
+    // means no more than 21 bits are necessary to represent a code point and
+    // thus we can use Grain's "simple" numbers that hold up to 31 bits and
+    // avoid heap allocations. `getCodePoint` will throw
+    // MalformedUnicode exception for values exceeding this limit.
+    let codePoint = getCodePoint(ptr)
+    fn(tagSimpleNumber(codePoint), tagSimpleNumber(idx))
+
+    ptr += codePointByteCount
+    idx += 1n
+  }
+}
