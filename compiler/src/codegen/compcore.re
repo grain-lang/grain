@@ -3501,7 +3501,6 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
     Bytes.to_string(serialized_cmi),
   );
   validate_module(~name?, wasm_mod);
-  Module.optimize(wasm_mod);
   wasm_mod;
 };
 
