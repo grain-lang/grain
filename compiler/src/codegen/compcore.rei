@@ -13,6 +13,7 @@ type codegen_env = {
   backpatches: ref(list((Expression.t, closure_data))),
   imported_funcs: Ident.tbl(Ident.tbl(int32)),
   imported_globals: Ident.tbl(Ident.tbl(string)),
+  required_imports: list(import),
 };
 
 let init_codegen_env: unit => codegen_env;

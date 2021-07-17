@@ -2,11 +2,17 @@ open Grain_tests.TestFramework;
 open Grain_tests.Runner;
 open Grain_middle_end.Anftree;
 open Grain_middle_end.Anf_helper;
+open Grain_utils;
 
 describe("optimizations", ({test}) => {
   let assertSnapshot = makeSnapshotRunner(test);
   let assertCompileError = makeCompileErrorRunner(test);
   let assertRun = makeRunner(test);
+  let assertBinaryenOptimizationsDisabledFileRun =
+    makeFileRunner(
+      ~config_fn=() => {Config.optimization_level := Config.Level_two},
+      test,
+    );
 
   let assertAnf =
       (
@@ -345,5 +351,11 @@ describe("optimizations", ({test}) => {
     "test_const_fold_times_one_sound",
     "let f = ((x) => {x * 1}); f(true)",
     "Number",
+  );
+  // Binaryen optimizations disabled
+  assertBinaryenOptimizationsDisabledFileRun(
+    "test_binaryen_optimizations_disabled",
+    "toplevelStatements",
+    "1\n2\n3\n4\n5\n",
   );
 });

@@ -119,7 +119,7 @@ program
     "don't automatically import the Grain Pervasives module"
   )
   .graincOption("-o <filename>", "output filename")
-  .graincOption("--O0", "disable optimizations")
+  .graincOption("-O <level>", "set the optimization level")
   .graincOption(
     "--parser-debug-level <level>",
     "debugging level for parser output"
