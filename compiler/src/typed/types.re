@@ -41,7 +41,7 @@ and type_desc =
   | TTyArrow(list(type_expr), type_expr, commutable) // A function type.
   | TTyTuple(list(type_expr)) // A tuple type.
   | TTyRecord(list((string, type_expr))) // A record type.
-  | TTyConstr(Path.t, list(type_expr), ref(abbrev_memo)) // A parameterized type.
+  | TTyConstr(Path.t, list(type_expr), [@sexp.opaque] ref(abbrev_memo)) // A parameterized type.
   | TTyUniVar(option(string)) // This is a special version of type variables which were introduced by a forall.
   | TTyPoly(type_expr, list(type_expr)) // This is a forall quantifier with the list type variables over the type.
   | TTyLink(type_expr) // Used internally by the unification engine.

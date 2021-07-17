@@ -335,6 +335,7 @@ type record_field = {
 
 [@deriving sexp]
 type data_kind =
+  | TDataAbstract
   | TDataVariant(list(constructor_declaration))
   | TDataRecord(list(record_field));
 
@@ -345,6 +346,7 @@ type data_declaration = {
   data_params: list(core_type),
   data_type: Types.type_declaration,
   data_kind,
+  data_manifest: option(core_type),
   [@sexp_drop_if sexp_locs_disabled]
   data_loc: Location.t,
 };

@@ -150,6 +150,7 @@ rule token = parse
   | "from" { FROM }
   | "->" { ARROW }
   | "=>" { THICKARROW }
+  | "type" { TYPE }
   | "enum" { ENUM }
   | "record" { RECORD }
   | "let" { LET }

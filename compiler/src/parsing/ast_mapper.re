@@ -187,6 +187,7 @@ module D = {
           pdata_name: name,
           pdata_params: args,
           pdata_kind: kind,
+          pdata_manifest: man,
           pdata_loc: loc,
         },
       ) => {
@@ -194,7 +195,9 @@ module D = {
     let loc = sub.location(sub, loc);
     let sname = map_loc(sub, name);
     let sargs = List.map(sub.typ(sub), args);
+    let sman = Option.map(sub.typ(sub), man);
     switch (kind) {
+    | PDataAbstract => abstract(~loc, sname, sargs, sman)
     | PDataVariant(cdl) =>
       variant(~loc, sname, sargs, List.map(sub.constructor(sub), cdl))
     | PDataRecord(ldl) =>
