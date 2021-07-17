@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.4.0](https://www.github.com/grain-lang/grain/compare/js-runner-v0.3.0...js-runner-v0.4.0) (2021-07-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* Rename JS "runtime" to "js-runner"/"runner" throughout project
+* **compiler:** Rename `grainRuntime` to `_grainEnv`
+* Refactor out references to "runtime" that aren't related to `stdlib/runtime` (#755)
+
+### Miscellaneous Chores
+
+* **compiler:** Rename `grainRuntime` to `_grainEnv` ([2d99c5a](https://www.github.com/grain-lang/grain/commit/2d99c5ab8fa527328f18d471e8a9128561af7056))
+* Refactor out references to "runtime" that aren't related to `stdlib/runtime` ([#755](https://www.github.com/grain-lang/grain/issues/755)) ([2d99c5a](https://www.github.com/grain-lang/grain/commit/2d99c5ab8fa527328f18d471e8a9128561af7056))
+* Rename JS "runtime" to "js-runner"/"runner" throughout project ([2d99c5a](https://www.github.com/grain-lang/grain/commit/2d99c5ab8fa527328f18d471e8a9128561af7056))
+
 ## [0.3.0](https://www.github.com/grain-lang/grain/compare/runtime-v0.2.0...runtime-v0.3.0) (2021-04-21)
 
 

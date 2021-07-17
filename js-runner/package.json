@@ -1,6 +1,6 @@
 {
   "name": "@grain/js-runner",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "The JavaScript runner for the Grain language.",
   "main": "dist/grain-runner.js",
   "browser": "dist/grain-runner-browser.js",
