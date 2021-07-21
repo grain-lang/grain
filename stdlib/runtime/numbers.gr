@@ -341,11 +341,28 @@ export let coerceNumberToWasmI64 = (x: Number) => {
 }
 
 export let coerceNumberToWasmI32 = (x: Number) => {
-  let asInt64 = coerceNumberToWasmI64(x)
-  if (WasmI64.gtS(asInt64, _I32_MAX) || WasmI64.ltS(asInt64, _I32_MIN)) {
-    throw Exception.Overflow
+  let x = WasmI32.fromGrain(x)
+  if (isSimpleNumber(x)) {
+    untagSimple(x)
+  } else {
+    let xtag = boxedNumberTag(x)
+    match (xtag) {
+      t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
+        boxedInt32Number(x)
+      },
+      t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
+        let int64 = boxedInt64Number(x)
+        if (WasmI64.gtS(int64, _I32_MAX) || WasmI64.ltS(int64, _I32_MIN)) {
+          throw Exception.Overflow
+        }
+        WasmI32.wrapI64(int64)
+      },
+      _ => {
+        // rationals are never integral, and we refuse to coerce floats to ints
+        throw Exception.NumberNotIntlike
+      }
+    }
   }
-  WasmI32.wrapI64(asInt64)
 }
 
 
