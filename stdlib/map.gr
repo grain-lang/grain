@@ -291,7 +291,7 @@ let setInArray = (array) => {
 @disableGC
 export let toArray = (map) => {
   let length = WasmI32.shrS(WasmI32.fromGrain(map.size), 1n)
-  // TODO: Removing parens around Array<a> causes a parse error
+  // TODO(#783): Removing parens around Array<a> causes a parse error
   let array = WasmI32.toGrain(allocateArray(length)): (Array<a>)
   let setInArray = setInArray(array)
   reduce(setInArray, 0, map)
