@@ -3,6 +3,9 @@
 import List from "list"
 import Array from "array"
 import { hash } from "hash"
+import Memory from "runtime/unsafe/memory"
+import WasmI32 from "runtime/unsafe/wasmi32"
+import { allocateArray } from "runtime/dataStructures"
 
 // TODO: Consider implementing this as List<(Box<k>, Box<v>)>
 record Bucket<k, v> {
@@ -274,8 +277,26 @@ export let fromList = (list) => {
   map
 }
 
+let setInArray = (array) => {
+  @disableGC
+  let iter = (i, key, value) => {
+    Memory.incRef(WasmI32.fromGrain(key))
+    Memory.incRef(WasmI32.fromGrain(value))
+    array[i] = (key, value)
+    i + 1
+  }
+  iter
+}
+
+@disableGC
 export let toArray = (map) => {
-  Array.fromList(toList(map))
+  let length = WasmI32.shrS(WasmI32.fromGrain(map.size), 1n)
+  // TODO(#783): Removing parens around Array<a> causes a parse error
+  let array = WasmI32.toGrain(allocateArray(length)): (Array<a>)
+  let setInArray = setInArray(array)
+  reduce(setInArray, 0, map)
+  Memory.decRef(WasmI32.fromGrain(setInArray))
+  array
 }
 
 export let fromArray = (array) => {
