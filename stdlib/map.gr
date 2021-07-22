@@ -277,9 +277,15 @@ export let fromList = (list) => {
   map
 }
 
-let setInArray = (array) => (i, key, value) => {
-  array[i] = (key, value)
-  i + 1
+let setInArray = (array) => {
+  @disableGC
+  let iter = (i, key, value) => {
+    Memory.incRef(WasmI32.fromGrain(key))
+    Memory.incRef(WasmI32.fromGrain(value))
+    array[i] = (key, value)
+    i + 1
+  }
+  iter
 }
 
 @disableGC
