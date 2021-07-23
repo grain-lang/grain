@@ -1,5 +1,6 @@
 open Grain_parsing;
 open Grain_typed;
+open Grain_utils;
 
 // Attributes in a comment are prefixed with `@` symbol, such as `@param`
 module Attribute = {
@@ -10,6 +11,7 @@ module Attribute = {
   type attr_desc = string;
   // The `attr_type` always starts as `None` and is applied later by something like Graindoc
   type attr_type = option(string);
+  type attr_version = string;
 
   type t =
     | Param({
@@ -31,7 +33,12 @@ module Attribute = {
         attr_name,
         attr_desc,
       })
-    | Deprecated({attr_desc});
+    | Deprecated({attr_desc})
+    | Since({attr_version})
+    | History({
+        attr_version,
+        attr_desc,
+      });
 
   let parse_param = (~attr, content) => {
     let re = Str.regexp({|^\([^:]+\):[ ]+\(.+\)$|});
@@ -112,6 +119,29 @@ module Attribute = {
     };
   };
 
+  let parse_since = (~attr, content) => {
+    let re = Str.regexp({|^v?\([0-9]+\.[0-9]+\.[0-9]+\)$|});
+    if (Str.string_match(re, content, 0)) {
+      let attr_version = Str.matched_group(1, content);
+      Since({attr_version: attr_version});
+    } else {
+      raise(MalformedAttribute(attr, "@since vX.Y.Z"));
+    };
+  };
+
+  let parse_history = (~attr, content) => {
+    let re = Str.regexp({|^v?\([0-9]+\.[0-9]+\.[0-9]+\):[ ]+\(.+\)$|});
+    if (Str.string_match(re, content, 0)) {
+      let attr_version = Str.matched_group(1, content);
+      let attr_desc = Str.matched_group(2, content);
+      History({attr_version, attr_desc});
+    } else {
+      raise(
+        MalformedAttribute(attr, "@history vX.Y.Z: Description of history"),
+      );
+    };
+  };
+
   let extract = comment => {
     let attrs = ref([]);
     let attr_line_re = Str.regexp({|^@\([a-zA-Z_]+\)\b\(.*\)$|});
@@ -143,6 +173,12 @@ module Attribute = {
           | "deprecated" =>
             let deprecated_attr = parse_deprecated(~attr, content);
             attrs := [deprecated_attr, ...attrs^];
+          | "since" =>
+            let since_attr = parse_since(~attr, content);
+            attrs := [since_attr, ...attrs^];
+          | "history" =>
+            let history_attr = parse_history(~attr, content);
+            attrs := [history_attr, ...attrs^];
           | _ => raise(InvalidAttribute(attr))
           };
 
@@ -193,6 +229,20 @@ module Attribute = {
   let is_deprecated = (attr: t) => {
     switch (attr) {
     | Deprecated(_) => true
+    | _ => false
+    };
+  };
+
+  let is_since = (attr: t) => {
+    switch (attr) {
+    | Since(_) => true
+    | _ => false
+    };
+  };
+
+  let is_history = (attr: t) => {
+    switch (attr) {
+    | History(_) => true
     | _ => false
     };
   };
