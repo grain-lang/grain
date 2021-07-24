@@ -5,6 +5,110 @@ open Grain_utils;
 
 module Doc = Res_doc;
 
+let allComments: ref(list(Parsetree.comment)) = ref([]);
+
+let getCommentLoc = (comment: Parsetree.comment) =>
+  switch (comment) {
+  | Line(cmt) => cmt.cmt_loc
+  | Block(cmt) => cmt.cmt_loc
+  | Doc(cmt) => cmt.cmt_loc
+  | Shebang(cmt) => cmt.cmt_loc
+  };
+
+let removeComment =
+    (comment: Parsetree.comment, comments: list(Parsetree.comment)) => {
+  let removeLoc = getCommentLoc(comment);
+  List.filter(
+    c => {
+      let loc = getCommentLoc(c);
+
+      if (loc == removeLoc) {
+        false;
+      } else {
+        true;
+      };
+    },
+    comments,
+  );
+};
+
+let get_raw_pos_info = (pos: Lexing.position) => (
+  pos.pos_fname,
+  pos.pos_lnum,
+  pos.pos_cnum - pos.pos_bol,
+  pos.pos_bol,
+);
+
+let print_loc = (msg: string, loc: Grain_parsing.Location.t) => {
+  let (file, line, startchar, _) = get_raw_pos_info(loc.loc_start);
+  let (_, endline, endchar, _) = get_raw_pos_info(loc.loc_end);
+  /*let endchar = loc.loc_end.pos_cnum - loc.loc_start.pos_cnum + startchar in*/
+
+  if (startchar >= 0) {
+    if (line == endline) {
+      print_endline(
+        msg
+        ++ " "
+        ++ string_of_int(line)
+        ++ ":"
+        ++ string_of_int(startchar)
+        ++ ","
+        ++ string_of_int(endchar),
+      );
+    } else {
+      print_endline(
+        msg
+        ++ " "
+        ++ string_of_int(line)
+        ++ ":"
+        ++ string_of_int(startchar)
+        ++ " - "
+        ++ string_of_int(endline)
+        ++ ":"
+        ++ string_of_int(endchar),
+      );
+    };
+  };
+};
+
+let print_comment = (comment: Parsetree.comment) => {
+  let endloc =
+    switch (comment) {
+    | Line(cmt) => cmt.cmt_loc.loc_end
+    | Block(cmt) => cmt.cmt_loc.loc_end
+    | Doc(cmt) => cmt.cmt_loc.loc_end
+    | Shebang(cmt) => cmt.cmt_loc.loc_end
+    };
+
+  let startloc =
+    switch (comment) {
+    | Line(cmt) => cmt.cmt_loc.loc_start
+    | Block(cmt) => cmt.cmt_loc.loc_start
+    | Doc(cmt) => cmt.cmt_loc.loc_start
+    | Shebang(cmt) => cmt.cmt_loc.loc_start
+    };
+
+  let (_file, stmtstartline, startchar, _sbol) = get_raw_pos_info(startloc);
+  let (_file, stmtendline, endchar, _sbol) = get_raw_pos_info(endloc);
+
+  print_int(stmtstartline);
+  print_string(":");
+  print_int(startchar);
+
+  print_string(",");
+  print_int(stmtendline);
+  print_string(":");
+  print_int(endchar);
+  print_string(" -  ");
+
+  switch (comment) {
+  | Line(cmt) => print_endline(cmt.cmt_source)
+  | Block(cmt) => print_endline(cmt.cmt_source)
+  | Doc(cmt) => print_endline(cmt.cmt_source)
+  | Shebang(cmt) => print_endline(cmt.cmt_source)
+  };
+};
+
 type stmtList =
   | BlankLine
   | BlockComment(string)
@@ -65,12 +169,197 @@ let infixop = (op: string) => {
   | _ => false
   };
 };
-let get_raw_pos_info = (pos: Lexing.position) => (
-  pos.pos_fname,
-  pos.pos_lnum,
-  pos.pos_cnum - pos.pos_bol,
-  pos.pos_bol,
-);
+
+let commentToDoc = (comment: Parsetree.comment) =>
+  switch (comment) {
+  | Line(cmt) => Doc.text(cmt.cmt_source)
+  | Block(cmt) =>
+    //  print_endline(cmt.cmt_source);
+    Doc.concat([Doc.text(cmt.cmt_source)])
+  | Doc(cmt) => Doc.concat([Doc.text(cmt.cmt_source)])
+  | Shebang(cmt) => Doc.text(cmt.cmt_source)
+  };
+
+let getCommentEndLine = (comment: Parsetree.comment) => {
+  let endloc =
+    switch (comment) {
+    | Line(cmt) => cmt.cmt_loc.loc_end
+    | Block(cmt) => cmt.cmt_loc.loc_end
+    | Doc(cmt) => cmt.cmt_loc.loc_end
+    | Shebang(cmt) => cmt.cmt_loc.loc_end
+    };
+
+  let (_, endline, _, _) = get_raw_pos_info(endloc);
+  endline;
+};
+
+let find_block_in_range =
+    (
+      loc: Grain_parsing.Location.t,
+      comments: list(Grain_parsing.Parsetree.comment),
+    ) => {
+  let (_, line, startchar, _) = get_raw_pos_info(loc.loc_start);
+
+  let (_, endline, endchar, _) = get_raw_pos_info(loc.loc_end);
+
+  // print_endline(
+  //   "finding blocks from a list of " ++ string_of_int(List.length(comments)),
+  // );
+
+  //print_loc("searching for a comment in", loc);
+
+  List.filter(
+    (c: Grain_parsing.Parsetree.comment) => {
+      switch (c) {
+      | Block(cmt) =>
+        //   print_loc("block", cmt.cmt_loc);
+        //  print_endline("checking a block");
+        let (_file, bstartline, bstartchar, _sbol) =
+          get_raw_pos_info(cmt.cmt_loc.loc_start);
+
+        let (_efile, bendline, bendchar, _ebol) =
+          get_raw_pos_info(cmt.cmt_loc.loc_end);
+
+        if (line == endline) {
+          //  print_endline("block same line");
+          bstartchar >= startchar && bendchar <= endchar;
+        } else {
+          //print_endline("block different lines");
+
+          let start_ok =
+            if (bstartline > line) {
+              true;
+            } else if (bstartline == line) {
+              bstartchar >= startchar;
+            } else {
+              false;
+            };
+
+          // if (start_ok) {
+          //   print_endline("start ok");
+          // };
+
+          let end_ok =
+            if (bendline < endline) {
+              true;
+            } else if (bendline == endline) {
+              bendchar <= endchar;
+            } else {
+              false;
+            };
+
+          // if (end_ok) {
+          //   print_endline("end_ok");
+          // };
+
+          start_ok && end_ok;
+        };
+
+      | Line(_) =>
+        //  print_endline("Line");
+        false
+      | Doc(_) =>
+        //    print_endline("Doc");
+        false
+      | Shebang(_) =>
+        // print_endline("Shebang");
+        false
+      }
+    },
+    comments,
+  );
+};
+
+let get_comments_between =
+    (
+      loc1: Grain_parsing.Location.t,
+      loc2: Grain_parsing.Location.t,
+      comments: list(Grain_parsing.Parsetree.comment),
+    ) => {
+  let (_, endline1, endchar1, _) = get_raw_pos_info(loc1.loc_end);
+  let (_, startline1, startchar2, _) = get_raw_pos_info(loc2.loc_start);
+
+  List.filter(
+    (c: Grain_parsing.Parsetree.comment) => {
+      switch (c) {
+      | Block(cmt)
+      | Line(cmt) =>
+        let (_efile, bstartline, bstartchar, _ebol) =
+          get_raw_pos_info(cmt.cmt_loc.loc_start);
+
+        let (_efile, bendline, bendchar, _ebol) =
+          get_raw_pos_info(cmt.cmt_loc.loc_end);
+
+        if (bstartline >= endline1 && bendline <= startline1) {
+          true;
+        } else {
+          false;
+        };
+
+      | _ => false
+      }
+    },
+    comments,
+  );
+};
+
+let get_comments_before =
+    (
+      loc: Grain_parsing.Location.t,
+      comments: list(Grain_parsing.Parsetree.comment),
+    ) => {
+  let (_, line, startchar, _) = get_raw_pos_info(loc.loc_start);
+
+  print_endline(
+    "gcb, line "
+    ++ string_of_int(line)
+    ++ " char: "
+    ++ string_of_int(startchar),
+  );
+
+  List.filter(
+    (c: Grain_parsing.Parsetree.comment) => {
+      switch (c) {
+      | Block(cmt)
+      | Line(cmt) =>
+        let (_efile, bstartline, bstartchar, _ebol) =
+          get_raw_pos_info(cmt.cmt_loc.loc_start);
+
+        let (_efile, bendline, bendchar, _ebol) =
+          get_raw_pos_info(cmt.cmt_loc.loc_end);
+
+        print_endline(
+          "gcb-block-starts, line "
+          ++ string_of_int(bstartline)
+          ++ " char: "
+          ++ string_of_int(bstartchar),
+        );
+        print_endline(
+          "gcb-block-ends, line "
+          ++ string_of_int(bendline)
+          ++ " char: "
+          ++ string_of_int(bendchar),
+        );
+
+        if (bendline < line) {
+          true;
+        } else if (bendline == line) {
+          bendchar < startchar;
+        } else {
+          false;
+        };
+
+      | Doc(_) =>
+        //    print_endline("Doc");
+        false
+      | Shebang(_) =>
+        // print_endline("Shebang");
+        false
+      }
+    },
+    comments,
+  );
+};
 
 let find_comments_in_range =
     (
@@ -242,10 +531,12 @@ and resugar_list_inner = (expressions: list(Parsetree.expression)) => {
 
   switch (arg2.pexp_desc) {
   | PExpApp(innerfunc, innerexpressions) =>
-    let funcName = print_expression(~expr=innerfunc, ~parentIsArrow=false);
-    let funcNameAsString = Doc.toString(~width=20, funcName);
+    // let funcName = print_expression(~expr=innerfunc, ~parentIsArrow=false);
+    // let funcNameAsString = Doc.toString(~width=20, funcName);
 
-    if (funcNameAsString == "[...]") {
+    let funcName = getFunctionName(innerfunc);
+
+    if (funcName == "[...]") {
       let inner = resugar_list_inner(innerexpressions);
       List.append([Regular(arg1)], inner);
     } else {
@@ -317,62 +608,105 @@ and print_record_pattern =
   ]);
 }
 and print_pattern = (pat: Parsetree.pattern) => {
-  switch (pat.ppat_desc) {
-  | PPatAny => Doc.text("_")
-  | PPatConstant(c) => print_constant(c)
-  | PPatVar({txt, _}) =>
-    if (infixop(txt)) {
-      Doc.concat([Doc.lparen, Doc.text(txt), Doc.rparen]);
-    } else {
-      Doc.text(txt);
-    }
-  | PPatTuple(patterns) =>
-    addParens(
-      Doc.join(Doc.comma, List.map(p => print_pattern(p), patterns)),
-    )
-  | PPatArray(patterns) =>
-    Doc.group(
-      Doc.concat([
-        Doc.lbracket,
-        Doc.join(Doc.comma, List.map(p => print_pattern(p), patterns)),
-        Doc.rbracket,
-      ]),
-    )
-  | PPatRecord(patternlocs, closedflag) =>
-    print_record_pattern(patternlocs, closedflag)
-  | PPatConstraint(pattern, parsed_type) =>
-    Doc.concat([
-      print_pattern(pattern),
-      Doc.concat([Doc.text(":"), Doc.space]),
-      print_type(parsed_type),
-    ])
-  | PPatConstruct(location, patterns) =>
-    let func =
-      switch (location.txt) {
-      | IdentName(name) => name
-      | _ => ""
+  // print_endline("Pattern loc");
+  // print_loc("pattern:", pat.ppat_loc);
+
+  let locAfter = Walktree.get_location_after(pat.ppat_loc);
+
+  let trailingComment =
+    switch (locAfter) {
+    | None =>
+      print_endline("No loc after pattern");
+      Doc.nil;
+    | Some(loc) =>
+      print_endline("We have an item after us");
+
+      let comments = get_comments_between(pat.ppat_loc, loc, allComments^);
+
+      if (List.length(comments) > 0) {
+        print_endline("A pattern is followed by comments");
+
+        List.iter(c => print_comment(c), comments);
       };
-    if (func == "[...]") {
-      resugar_list_patterns(patterns);
-    } else {
-      Doc.concat([
-        print_ident(location.txt),
-        if (List.length(patterns) > 0) {
-          addParens(
-            Doc.join(
-              Doc.comma,
-              List.map(pat => print_pattern(pat), patterns),
-            ),
-          );
-        } else {
-          Doc.nil;
-        },
-      ]);
+
+      Doc.nil;
     };
 
-  | PPatOr(pattern1, pattern2) => Doc.text("PPatOr")
-  | PPatAlias(pattern, loc) => Doc.text("PPatAlias")
+  let (leading, inside, trailing) =
+    Comments.partitionByLoc(allComments^, pat.ppat_loc);
+
+  //Comments.debug_expression("Pattern:");
+  Comments.debug_pattern(pat);
+
+  print_endline("leading " ++ string_of_int(List.length(leading)));
+  print_endline("inside " ++ string_of_int(List.length(inside)));
+  print_endline("trailing " ++ string_of_int(List.length(trailing)));
+
+  let commentsWithin = []; //find_block_in_range(pat.ppat_loc, allComments^);
+
+  if (List.length(commentsWithin) > 0) {
+    print_endline("Pattern has comments within");
   };
+
+  let printed_pattern =
+    switch (pat.ppat_desc) {
+    | PPatAny => Doc.text("_")
+    | PPatConstant(c) => print_constant(c)
+    | PPatVar({txt, _}) =>
+      if (infixop(txt)) {
+        Doc.concat([Doc.lparen, Doc.text(txt), Doc.rparen]);
+      } else {
+        Doc.text(txt);
+      }
+    | PPatTuple(patterns) =>
+      addParens(
+        Doc.join(Doc.comma, List.map(p => print_pattern(p), patterns)),
+      )
+    | PPatArray(patterns) =>
+      Doc.group(
+        Doc.concat([
+          Doc.lbracket,
+          Doc.join(Doc.comma, List.map(p => print_pattern(p), patterns)),
+          Doc.rbracket,
+        ]),
+      )
+    | PPatRecord(patternlocs, closedflag) =>
+      print_record_pattern(patternlocs, closedflag)
+    | PPatConstraint(pattern, parsed_type) =>
+      Doc.concat([
+        print_pattern(pattern),
+        Doc.concat([Doc.text(":"), Doc.space]),
+        print_type(parsed_type),
+      ])
+    | PPatConstruct(location, patterns) =>
+      let func =
+        switch (location.txt) {
+        | IdentName(name) => name
+        | _ => ""
+        };
+      if (func == "[...]") {
+        resugar_list_patterns(patterns);
+      } else {
+        Doc.concat([
+          print_ident(location.txt),
+          if (List.length(patterns) > 0) {
+            addParens(
+              Doc.join(
+                Doc.comma,
+                List.map(pat => print_pattern(pat), patterns),
+              ),
+            );
+          } else {
+            Doc.nil;
+          },
+        ]);
+      };
+
+    | PPatOr(pattern1, pattern2) => Doc.text("PPatOr")
+    | PPatAlias(pattern, loc) => Doc.text("PPatAlias")
+    };
+
+  Doc.concat([printed_pattern, Doc.nil]);
 }
 and print_constant = (c: Parsetree.constant) => {
   let print_c =
@@ -533,8 +867,10 @@ and print_type = (p: Grain_parsing__Parsetree.parsed_type) => {
 }
 and print_application =
     (func: Parsetree.expression, expressions: list(Parsetree.expression)) => {
-  let functionNameDoc = print_expression(~expr=func, ~parentIsArrow=false);
-  let functionName = Doc.toString(~width=100, functionNameDoc);
+  // let functionNameDoc = print_expression(~expr=func, ~parentIsArrow=false);
+  // let functionName = Doc.toString(~width=100, functionNameDoc);
+
+  let functionName = getFunctionName(func);
 
   if (infixop(functionName)) {
     let first = List.hd(expressions);
@@ -571,25 +907,27 @@ and print_application =
       ]),
     );
   } else {
-    let funcName = print_expression(~expr=func, ~parentIsArrow=false);
+    //   let funcName = print_expression(~expr=func, ~parentIsArrow=false);
 
-    let funcNameAsString = Doc.toString(~width=20, funcName);
-    if (funcNameAsString == "[...]") {
+    let funcName = getFunctionName(func);
+
+    // let funcNameAsString = Doc.toString(~width=20, funcName);
+    if (funcName == "[...]") {
       resugar_list(expressions);
-    } else if (Doc.toString(~width=20, funcName) == "throw") {
+    } else if (funcName == "throw") {
       Doc.concat([
-        funcName,
+        print_expression(~expr=func, ~parentIsArrow=false),
         Doc.space,
         print_expression(~expr=List.hd(expressions), ~parentIsArrow=false),
       ]);
-    } else if (funcNameAsString == "!") {
+    } else if (funcName == "!") {
       Doc.concat([
-        funcName,
+        print_expression(~expr=func, ~parentIsArrow=false),
         print_expression(~expr=List.hd(expressions), ~parentIsArrow=false),
       ]);
     } else {
       Doc.concat([
-        funcName,
+        print_expression(~expr=func, ~parentIsArrow=false),
         Doc.lparen,
         Doc.join(
           Doc.concat([Doc.text(","), Doc.line]),
@@ -604,27 +942,73 @@ and print_application =
   };
 }
 
-and print_expression = (~expr: Parsetree.expression, ~parentIsArrow: bool) => {
+and getFunctionName = (expr: Parsetree.expression) => {
   switch (expr.pexp_desc) {
-  | PExpConstant(x) => print_constant(x)
-  | PExpId({txt: id}) => print_ident(id)
-  | PExpLet(rec_flag, mut_flag, vbs) =>
-    value_bind_print(Asttypes.Nonexported, rec_flag, mut_flag, vbs)
-  | PExpTuple(expressions) =>
-    addParens(
-      Doc.join(
-        Doc.comma,
-        List.map(
-          e => print_expression(~expr=e, ~parentIsArrow=false),
-          expressions,
-        ),
-      ),
-    )
+  | PExpConstant(x) =>
+    print_endline("PExpConstant");
+    Doc.toString(~width=1000, print_constant(x));
+  | PExpId({txt: id}) =>
+    print_endline("PExpId");
+    Doc.toString(~width=1000, print_ident(id));
+  | _ => ""
+  };
+}
 
-  | PExpArray(expressions) =>
-    Doc.group(
-      Doc.concat([
-        Doc.lbracket,
+and print_expression = (~expr: Parsetree.expression, ~parentIsArrow: bool) => {
+  // let enclosedBlockComments =
+  //   find_block_in_range(expr.pexp_loc, allComments^);
+
+  // if (List.length(enclosedBlockComments) > 0) {
+  //   print_endline("Following block has an enclosed comment:");
+  // };
+
+  let (leading, inside, trailing) =
+    Comments.partitionByLoc(allComments^, expr.pexp_loc);
+
+  Comments.debug_expression(expr);
+
+  print_endline("leading " ++ string_of_int(List.length(leading)));
+  print_endline("inside " ++ string_of_int(List.length(inside)));
+  print_endline("trailing " ++ string_of_int(List.length(trailing)));
+
+  let commentsWithin = []; //find_block_in_range(expr.pexp_loc, allComments^);
+
+  if (List.length(commentsWithin) > 0) {
+    print_loc("Expressions contains comments", expr.pexp_loc);
+  };
+
+  // are there any comments ahead of me?
+
+  let commentsbefore = []; // get_comments_before(expr.pexp_loc, commentsWithin);
+
+  let commentsBeforeDocs =
+    if (List.length(commentsbefore) > 0) {
+      print_endline("Following block has comments before:");
+      List.iter(
+        c => allComments := removeComment(c, allComments^),
+        commentsbefore,
+      );
+      Doc.concat(List.map(c => commentToDoc(c), commentsbefore));
+    } else {
+      Doc.nil;
+    };
+
+  let expression_doc =
+    switch (expr.pexp_desc) {
+    | PExpConstant(x) =>
+      print_loc("PExpConstant", expr.pexp_loc);
+
+      print_constant(x);
+    | PExpId({txt: id}) =>
+      print_loc("PExpId", expr.pexp_loc);
+
+      print_ident(id);
+    | PExpLet(rec_flag, mut_flag, vbs) =>
+      print_loc("PExpLet", expr.pexp_loc);
+
+      value_bind_print(Asttypes.Nonexported, rec_flag, mut_flag, vbs);
+    | PExpTuple(expressions) =>
+      addParens(
         Doc.join(
           Doc.comma,
           List.map(
@@ -632,131 +1016,166 @@ and print_expression = (~expr: Parsetree.expression, ~parentIsArrow: bool) => {
             expressions,
           ),
         ),
-        Doc.rbracket,
-      ]),
-    )
-  | PExpArrayGet(expression1, expression2) =>
-    Doc.concat([
-      print_expression(~expr=expression1, ~parentIsArrow=false),
-      Doc.lbracket,
-      print_expression(~expr=expression2, ~parentIsArrow=false),
-      Doc.rbracket,
-    ])
-  | PExpArraySet(expression1, expression2, expression3) =>
-    Doc.concat([
-      print_expression(~expr=expression1, ~parentIsArrow=false),
-      Doc.lbracket,
-      print_expression(~expr=expression2, ~parentIsArrow=false),
-      Doc.rbracket,
-      Doc.text(" = "),
-      print_expression(~expr=expression3, ~parentIsArrow=false),
-    ])
+      )
 
-  | PExpRecord(record) => print_record(record)
-  | PExpRecordGet(expression, {txt, _}) =>
-    Doc.concat([
-      print_expression(~expr=expression, ~parentIsArrow=false),
-      Doc.dot,
-      print_ident(txt),
-    ])
-  | PExpRecordSet(expression, {txt, _}, expression2) =>
-    Doc.concat([
-      print_expression(~expr=expression, ~parentIsArrow=false),
-      Doc.dot,
-      print_ident(txt),
-      Doc.text(" = "),
-      print_expression(~expr=expression2, ~parentIsArrow=false),
-    ])
-  | PExpMatch(expression, match_branches) =>
-    Doc.concat([
+    | PExpArray(expressions) =>
       Doc.group(
         Doc.concat([
-          Doc.text("match "),
-          Doc.lparen,
-          Doc.indent(
-            Doc.concat([
-              Doc.softLine,
-              print_expression(~expr=expression, ~parentIsArrow=false),
-            ]),
-          ),
-          Doc.softLine,
-          Doc.rparen,
-        ]),
-      ),
-      Doc.space,
-      Doc.lbrace,
-      Doc.indent(
-        Doc.concat([
-          Doc.hardLine,
+          Doc.lbracket,
           Doc.join(
-            Doc.concat([Doc.comma, Doc.hardLine]),
+            Doc.comma,
             List.map(
-              (branch: Parsetree.match_branch) =>
-                Doc.concat([
-                  print_pattern(branch.pmb_pat),
-                  switch (branch.pmb_guard) {
-                  | None => Doc.nil
-                  | Some(guard) =>
-                    Doc.concat([
-                      Doc.text(" when "),
-                      print_expression(~expr=guard, ~parentIsArrow=false),
-                    ])
-                  },
-                  Doc.text(" =>"),
-                  Doc.ifBreaks(Doc.space, Doc.nil),
-                  print_expression(
-                    ~expr=branch.pmb_body,
-                    ~parentIsArrow=true,
-                  ),
-                ]),
-              match_branches,
+              e => print_expression(~expr=e, ~parentIsArrow=false),
+              expressions,
             ),
           ),
-          Doc.ifBreaks(Doc.text(","), Doc.nil),
+          Doc.rbracket,
         ]),
-      ),
-      Doc.hardLine,
-      Doc.rbrace,
-    ])
+      )
+    | PExpArrayGet(expression1, expression2) =>
+      Doc.concat([
+        print_expression(~expr=expression1, ~parentIsArrow=false),
+        Doc.lbracket,
+        print_expression(~expr=expression2, ~parentIsArrow=false),
+        Doc.rbracket,
+      ])
+    | PExpArraySet(expression1, expression2, expression3) =>
+      Doc.concat([
+        print_expression(~expr=expression1, ~parentIsArrow=false),
+        Doc.lbracket,
+        print_expression(~expr=expression2, ~parentIsArrow=false),
+        Doc.rbracket,
+        Doc.text(" = "),
+        print_expression(~expr=expression3, ~parentIsArrow=false),
+      ])
 
-  | PExpPrim1(prim1, expression) =>
-    print_endline("PExpPrim1");
-    Doc.text("PExpPrim1");
-  | PExpPrim2(prim2, expression, expression1) =>
-    print_endline("PExpPrim2");
-    Doc.text("PExpPrim2");
-  | PExpPrimN(primn, expressions) =>
-    print_endline("PExpPrimN");
-    Doc.text("PExpPrimN");
-  | PExpIf(condition, trueExpr, falseExpr) =>
-    let trueClause =
-      Doc.group(print_expression(~expr=trueExpr, ~parentIsArrow=false));
+    | PExpRecord(record) => print_record(record)
+    | PExpRecordGet(expression, {txt, _}) =>
+      Doc.concat([
+        print_expression(~expr=expression, ~parentIsArrow=false),
+        Doc.dot,
+        print_ident(txt),
+      ])
+    | PExpRecordSet(expression, {txt, _}, expression2) =>
+      Doc.concat([
+        print_expression(~expr=expression, ~parentIsArrow=false),
+        Doc.dot,
+        print_ident(txt),
+        Doc.text(" = "),
+        print_expression(~expr=expression2, ~parentIsArrow=false),
+      ])
+    | PExpMatch(expression, match_branches) =>
+      print_loc("PExpMatch", expr.pexp_loc);
 
-    let falseClause =
-      switch (falseExpr.pexp_desc) {
-      | PExpBlock(expressions) =>
-        if (List.length(expressions) > 0) {
+      Doc.concat([
+        Doc.group(
+          Doc.concat([
+            Doc.text("match "),
+            Doc.lparen,
+            Doc.indent(
+              Doc.concat([
+                Doc.softLine,
+                print_expression(~expr=expression, ~parentIsArrow=false),
+              ]),
+            ),
+            Doc.softLine,
+            Doc.rparen,
+          ]),
+        ),
+        Doc.space,
+        Doc.lbrace,
+        Doc.indent(
+          Doc.concat([
+            Doc.hardLine,
+            Doc.join(
+              Doc.concat([Doc.comma, Doc.hardLine]),
+              List.map(
+                (branch: Parsetree.match_branch) =>
+                  Doc.concat([
+                    print_pattern(branch.pmb_pat),
+                    switch (branch.pmb_guard) {
+                    | None => Doc.nil
+                    | Some(guard) =>
+                      Doc.concat([
+                        Doc.text(" when "),
+                        print_expression(~expr=guard, ~parentIsArrow=false),
+                      ])
+                    },
+                    Doc.text(" =>"),
+                    Doc.ifBreaks(Doc.space, Doc.nil),
+                    print_expression(
+                      ~expr=branch.pmb_body,
+                      ~parentIsArrow=true,
+                    ),
+                  ]),
+                match_branches,
+              ),
+            ),
+            Doc.ifBreaks(Doc.text(","), Doc.nil),
+          ]),
+        ),
+        Doc.hardLine,
+        Doc.rbrace,
+      ]);
+
+    | PExpPrim1(prim1, expression) =>
+      print_endline("PExpPrim1");
+      Doc.text("PExpPrim1");
+    | PExpPrim2(prim2, expression, expression1) =>
+      print_endline("PExpPrim2");
+      Doc.text("PExpPrim2");
+    | PExpPrimN(primn, expressions) =>
+      print_endline("PExpPrimN");
+      Doc.text("PExpPrimN");
+    | PExpIf(condition, trueExpr, falseExpr) =>
+      let trueClause =
+        Doc.group(print_expression(~expr=trueExpr, ~parentIsArrow=false));
+
+      let falseClause =
+        switch (falseExpr.pexp_desc) {
+        | PExpBlock(expressions) =>
+          if (List.length(expressions) > 0) {
+            Doc.concat([
+              Doc.line,
+              Doc.text("else "),
+              Doc.group(
+                print_expression(~expr=falseExpr, ~parentIsArrow=false),
+              ),
+            ]);
+          } else {
+            Doc.nil;
+          }
+        | _ =>
           Doc.concat([
             Doc.line,
             Doc.text("else "),
             Doc.group(
               print_expression(~expr=falseExpr, ~parentIsArrow=false),
             ),
-          ]);
-        } else {
-          Doc.nil;
-        }
-      | _ =>
-        Doc.concat([
-          Doc.line,
-          Doc.text("else "),
-          Doc.group(print_expression(~expr=falseExpr, ~parentIsArrow=false)),
-        ])
-      };
+          ])
+        };
 
-    if (parentIsArrow) {
-      Doc.group(
-        Doc.indent(
+      if (parentIsArrow) {
+        Doc.group(
+          Doc.indent(
+            Doc.concat([
+              Doc.line,
+              Doc.text("if "),
+              Doc.group(
+                Doc.concat([
+                  Doc.lparen,
+                  print_expression(~expr=condition, ~parentIsArrow=false),
+                  Doc.rparen,
+                  Doc.space,
+                ]),
+              ),
+              trueClause,
+              falseClause,
+            ]),
+          ),
+        );
+      } else {
+        Doc.group(
           Doc.concat([
             Doc.line,
             Doc.text("if "),
@@ -768,194 +1187,330 @@ and print_expression = (~expr: Parsetree.expression, ~parentIsArrow: bool) => {
                 Doc.space,
               ]),
             ),
+            Doc.space,
             trueClause,
             falseClause,
           ]),
+        );
+      };
+    | PExpWhile(expression, expression1) =>
+      Doc.concat([
+        Doc.text("while "),
+        addParens(print_expression(~expr=expression, ~parentIsArrow=false)),
+        Doc.space,
+        Doc.group(print_expression(~expr=expression1, ~parentIsArrow=false)),
+      ])
+
+    | PExpFor(optexpression1, optexpression2, optexpression3, expression4) =>
+      Doc.concat([
+        Doc.text("for "),
+        addParens(
+          Doc.concat([
+            switch (optexpression1) {
+            | Some(expr) => print_expression(~expr, ~parentIsArrow=false)
+            | None => Doc.nil
+            },
+            Doc.text(";"),
+            switch (optexpression2) {
+            | Some(expr) =>
+              Doc.concat([
+                Doc.space,
+                print_expression(~expr, ~parentIsArrow=false),
+              ])
+            | None => Doc.nil
+            },
+            Doc.text(";"),
+            switch (optexpression3) {
+            | Some(expr) =>
+              Doc.concat([
+                Doc.space,
+                print_expression(~expr, ~parentIsArrow=false),
+              ])
+            | None => Doc.nil
+            },
+          ]),
         ),
-      );
-    } else {
+        Doc.space,
+        print_expression(~expr=expression4, ~parentIsArrow=false),
+      ])
+    | PExpContinue =>
+      Doc.group(Doc.concat([Doc.text("continue"), Doc.hardLine]))
+    | PExpBreak => Doc.group(Doc.concat([Doc.text("break"), Doc.hardLine]))
+    | PExpConstraint(expression, parsed_type) =>
       Doc.group(
         Doc.concat([
-          Doc.line,
-          Doc.text("if "),
-          Doc.group(
-            Doc.concat([
-              Doc.lparen,
-              print_expression(~expr=condition, ~parentIsArrow=false),
-              Doc.rparen,
-              Doc.space,
-            ]),
-          ),
-          Doc.space,
-          trueClause,
-          falseClause,
+          print_expression(~expr=expression, ~parentIsArrow=false),
+          Doc.text(": "),
+          print_type(parsed_type),
         ]),
-      );
-    };
-  | PExpWhile(expression, expression1) =>
-    Doc.concat([
-      Doc.text("while "),
-      addParens(print_expression(~expr=expression, ~parentIsArrow=false)),
-      Doc.space,
-      Doc.group(print_expression(~expr=expression1, ~parentIsArrow=false)),
-    ])
+      )
+    | PExpLambda(patterns, expression) =>
+      print_loc("PExpLambda", expr.pexp_loc);
 
-  | PExpFor(optexpression1, optexpression2, optexpression3, expression4) =>
-    Doc.concat([
-      Doc.text("for "),
-      addParens(
+      // look for comments in the pattern
+      // these will come before the expression
+
+      // let commentsInsidePatterns =
+      //   if (List.length(patterns) == 0) {
+      //     [];
+      //   } else {
+      //     get_comments_between(
+      //       List.hd(patterns).ppat_loc,
+      //       expression.pexp_loc,
+      //       allComments^,
+      //     );
+      //   };
+
+      // if (List.length(commentsInsidePatterns) > 0) {
+      //   print_endline("Need to handle a comment inside the patterns");
+      // };
+
+      Doc.group(
         Doc.concat([
-          switch (optexpression1) {
-          | Some(expr) => print_expression(~expr, ~parentIsArrow=false)
-          | None => Doc.nil
+          if (List.length(patterns) == 0) {
+            Doc.text("()");
+          } else if (List.length(patterns) > 1) {
+            addParens(
+              Doc.concat([
+                Doc.join(
+                  Doc.concat([Doc.text(","), Doc.line]),
+                  List.map(p => print_pattern(p), patterns),
+                ),
+              ]),
+            );
+          } else {
+            let pat = List.hd(patterns);
+
+            let commentsForThisPattern =
+              get_comments_between(
+                pat.ppat_loc,
+                expression.pexp_loc,
+                allComments^,
+              );
+
+            let commentDocs = Doc.nil;
+            //   if (List.length(commentsForThisPattern) > 0) {
+            //     Doc.join(
+            //       Doc.space,
+            //       List.map(c => commentToDoc(c), commentsForThisPattern),
+            //     );
+            //   } else {
+            //     Doc.nil;
+            //   };
+
+            // // once printed, remove
+            // List.iter(
+            //   c => {allComments := removeComment(c, allComments^)},
+            //   commentsForThisPattern,
+            // );
+
+            switch (pat.ppat_desc) {
+            | PPatConstraint(_) =>
+              Doc.concat([
+                Doc.lparen,
+                print_pattern(pat),
+                commentDocs,
+                Doc.rparen,
+              ])
+            | _ =>
+              if (List.length(commentsForThisPattern) > 0) {
+                Doc.concat([print_pattern(pat), Doc.space, commentDocs]);
+              } else {
+                print_pattern(pat);
+              }
+            };
           },
-          Doc.text(";"),
-          switch (optexpression2) {
-          | Some(expr) =>
-            Doc.concat([
-              Doc.space,
-              print_expression(~expr, ~parentIsArrow=false),
-            ])
-          | None => Doc.nil
-          },
-          Doc.text(";"),
-          switch (optexpression3) {
-          | Some(expr) =>
-            Doc.concat([
-              Doc.space,
-              print_expression(~expr, ~parentIsArrow=false),
-            ])
-          | None => Doc.nil
-          },
+          Doc.space,
+          Doc.text("=>"),
+          Doc.space,
+          print_expression(~expr=expression, ~parentIsArrow=false),
         ]),
-      ),
-      Doc.space,
-      print_expression(~expr=expression4, ~parentIsArrow=false),
-    ])
-  | PExpContinue =>
-    Doc.group(Doc.concat([Doc.text("continue"), Doc.hardLine]))
-  | PExpBreak => Doc.group(Doc.concat([Doc.text("break"), Doc.hardLine]))
-  | PExpConstraint(expression, parsed_type) =>
-    Doc.group(
-      Doc.concat([
-        print_expression(~expr=expression, ~parentIsArrow=false),
-        Doc.text(": "),
-        print_type(parsed_type),
-      ]),
-    )
-  | PExpLambda(patterns, expression) =>
-    Doc.group(
-      Doc.concat([
-        if (List.length(patterns) == 0) {
-          Doc.text("()");
-        } else if (List.length(patterns) > 1) {
-          addParens(
-            Doc.concat([
-              Doc.join(
-                Doc.concat([Doc.text(","), Doc.line]),
-                List.map(p => print_pattern(p), patterns),
-              ),
-            ]),
-          );
-        } else {
-          let pat = List.hd(patterns);
-
-          switch (pat.ppat_desc) {
-          | PPatConstraint(_) =>
-            Doc.concat([Doc.lparen, print_pattern(pat), Doc.rparen])
-          | _ => print_pattern(pat)
-          };
-        },
-        Doc.space,
-        Doc.text("=>"),
-        Doc.space,
-        print_expression(~expr=expression, ~parentIsArrow=false),
-      ]),
-    )
-
-  | PExpApp(func, expressions) => print_application(func, expressions)
-  | PExpBlock(expressions) =>
-    let block =
-      Doc.join(
-        Doc.hardLine,
-        List.map(
-          e => Doc.group(print_expression(~expr=e, ~parentIsArrow=false)),
-          expressions,
-        ),
       );
 
-    Doc.breakableGroup(
-      ~forceBreak=true,
-      Doc.concat([
-        Doc.lbrace,
-        Doc.indent(Doc.concat([Doc.line, block])),
-        Doc.line,
-        Doc.rbrace,
-      ]),
-    );
-
-  | PExpBoxAssign(expression, expression1) =>
-    Doc.concat([
-      print_expression(~expr=expression, ~parentIsArrow=false),
-      Doc.text(" := "),
-      print_expression(~expr=expression1, ~parentIsArrow=false),
-    ])
-  | PExpAssign(expression, expression1) =>
-    switch (expression1.pexp_desc) {
     | PExpApp(func, expressions) =>
-      let functionNameDoc =
-        print_expression(~expr=func, ~parentIsArrow=false);
-      let op = Doc.toString(~width=100, functionNameDoc);
-      let trimmedOperator = String.trim(op);
+      print_loc("PExpApp", expr.pexp_loc);
 
-      let left = print_expression(~expr=expression, ~parentIsArrow=false);
+      print_application(func, expressions);
+    | PExpBlock(expressions) =>
+      print_loc("PExpBlock", expr.pexp_loc);
 
-      let first =
-        print_expression(~expr=List.hd(expressions), ~parentIsArrow=false);
+      //  let enclosedComments = ref(enclosedBlockComments);
 
-      if (left == first) {
-        // +=, -=, *=, /=, and %=
-        switch (trimmedOperator) {
-        | "+"
-        | "-"
-        | "*"
-        | "/"
-        | "%" =>
-          let sugaredOp = Doc.text(" " ++ trimmedOperator ++ "= ");
+      let block =
+        Doc.join(
+          Doc.hardLine,
+          List.map(
+            (e: Parsetree.expression) => {
+              // let (_file, stmtstartline, _startchar, _sbol) =
+              //   get_raw_pos_info(e.pexp_loc.loc_start);
+              // let (_file, stmtendline, _startchar, _sbol) =
+              //   get_raw_pos_info(e.pexp_loc.loc_end);
 
-          Doc.concat([
-            print_expression(~expr=expression, ~parentIsArrow=false),
-            sugaredOp,
-            print_expression(
-              ~expr=List.hd(List.tl(expressions)),
-              ~parentIsArrow=false,
-            ),
-          ]);
-        | _ =>
+              // let commentsBefore =
+              //   get_comments_before(e.pexp_loc, enclosedComments^);
+
+              // let commentsBeforeDoc =
+              //   if (List.length(commentsBefore) > 0) {
+              //     Doc.concat(
+              //       List.map(c => commentToDoc(c), commentsBefore),
+              //     );
+              //   } else {
+              //     Doc.nil;
+              //   };
+
+              // print_endline(
+              //   "to remove 1:" ++ string_of_int(List.length(commentsBefore)),
+              // );
+
+              // List.iter(
+              //   c => {
+              //     enclosedComments := removeComment(c, enclosedComments^)
+              //   },
+              //   commentsBefore,
+              // );
+
+              // print_endline(
+              //   "to remove 2:" ++ string_of_int(List.length(commentsBefore)),
+              // );
+
+              // List.iter(
+              //   c => {allComments := removeComment(c, allComments^)},
+              //   commentsBefore,
+              // );
+
+              print_endline("Adding comments before");
+
+              Doc.group(
+                Doc.concat([
+                  // commentsBeforeDocs,
+                  print_expression(~expr=e, ~parentIsArrow=false),
+                  // switch (comment) {
+                  // | None => Doc.nil
+                  // | Some(c) => Doc.concat([Doc.space, commentToDoc(c)])
+                  // },
+                ]),
+              );
+            },
+            expressions,
+          ),
+        );
+
+      Doc.breakableGroup(
+        ~forceBreak=true,
+        Doc.concat([
+          Doc.lbrace,
+          Doc.indent(Doc.concat([Doc.line, block])),
+          Doc.line,
+          Doc.rbrace,
+        ]),
+      );
+
+    | PExpBoxAssign(expression, expression1) =>
+      Doc.concat([
+        print_expression(~expr=expression, ~parentIsArrow=false),
+        Doc.text(" := "),
+        print_expression(~expr=expression1, ~parentIsArrow=false),
+      ])
+    | PExpAssign(expression, expression1) =>
+      print_loc("PExpAssign", expr.pexp_loc);
+
+      switch (expression1.pexp_desc) {
+      | PExpApp(func, expressions) =>
+        let functionName = getFunctionName(func);
+
+        let trimmedOperator = String.trim(functionName);
+
+        let left = print_expression(~expr=expression, ~parentIsArrow=false);
+
+        let first =
+          print_expression(~expr=List.hd(expressions), ~parentIsArrow=false);
+
+        if (left == first) {
+          // +=, -=, *=, /=, and %=
+          switch (trimmedOperator) {
+          | "+"
+          | "-"
+          | "*"
+          | "/"
+          | "%" =>
+            let sugaredOp = Doc.text(" " ++ trimmedOperator ++ "= ");
+
+            Doc.concat([
+              print_expression(~expr=expression, ~parentIsArrow=false),
+              sugaredOp,
+              print_expression(
+                ~expr=List.hd(List.tl(expressions)),
+                ~parentIsArrow=false,
+              ),
+            ]);
+          | _ =>
+            Doc.concat([
+              print_expression(~expr=expression, ~parentIsArrow=false),
+              Doc.text(" = "),
+              print_expression(~expr=expression1, ~parentIsArrow=false),
+            ])
+          };
+        } else {
           Doc.concat([
             print_expression(~expr=expression, ~parentIsArrow=false),
             Doc.text(" = "),
             print_expression(~expr=expression1, ~parentIsArrow=false),
-          ])
+          ]);
         };
-      } else {
+
+      | _ =>
         Doc.concat([
           print_expression(~expr=expression, ~parentIsArrow=false),
           Doc.text(" = "),
           print_expression(~expr=expression1, ~parentIsArrow=false),
-        ]);
+        ])
       };
 
-    | _ =>
-      Doc.concat([
-        print_expression(~expr=expression, ~parentIsArrow=false),
-        Doc.text(" = "),
-        print_expression(~expr=expression1, ~parentIsArrow=false),
-      ])
-    }
+    | /** Used for modules without body expressions */ PExpNull => Doc.nil
+    };
+  // Doc.concat([
+  //   expression_doc,
+  //   Doc.Text(" // add a comment to every expression"),
+  // ]);
 
-  | /** Used for modules without body expressions */ PExpNull => Doc.nil
-  };
+  // the inner expressions are parsed, let's see if we have an enclosed comment still
+
+  // let enclosedBlockComments =
+  //   find_block_in_range(expr.pexp_loc, allComments^);
+
+  // print_endline(
+  //   "we have " ++ string_of_int(List.length(allComments^)) ++ " comments",
+  // );
+
+  // // check again after the inner elements have been processed
+  // let finalEnclosedBlockComments =
+  //   find_block_in_range(expr.pexp_loc, allComments^);
+
+  // print_endline(
+  //   "we have "
+  //   ++ string_of_int(List.length(finalEnclosedBlockComments))
+  //   ++ " trailing comments",
+  // );
+
+  let commentDocs = Doc.nil;
+  // if (List.length(finalEnclosedBlockComments) > 0) {
+  //   print_endline("Has trailing enclosed comments");
+
+  //   let commentDocs =
+  //     Doc.concat(
+  //       List.map(c => commentToDoc(c), finalEnclosedBlockComments),
+  //     );
+
+  //   List.iter(
+  //     c => {allComments := removeComment(c, allComments^)},
+  //     finalEnclosedBlockComments,
+  //   );
+  //   commentDocs;
+  // } else {
+  //   Doc.nil;
+  // };
+
+  Doc.concat([commentsBeforeDocs, expression_doc, commentDocs]);
 }
 and value_bind_print =
     (
@@ -979,7 +1534,8 @@ and value_bind_print =
     | Immutable => Doc.nil
     | Mutable => Doc.text("mut ")
     };
-  let vb = List.hd(vbs);
+  let vb = List.hd(vbs); // FIX ME - multiple bindings ??
+  print_loc("value binding:", vb.pvb_loc);
   Doc.group(
     Doc.concat([
       exported,
@@ -1296,8 +1852,28 @@ let print_primitive_value_description = (vd: Parsetree.value_description) => {
 };
 
 let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
+  //  let walked_tree = Comments.walk_tree_add_comments(parsed_program);
+
+  let _ = Walktree.walktree(parsed_program.statements);
+
   let toplevel_print = (data: Parsetree.toplevel_stmt) => {
     let attributes = data.ptop_attributes;
+
+    print_loc("top level:", data.ptop_loc);
+
+    let commentsbefore = []; //get_comments_before(data.ptop_loc, allComments^);
+
+    let commentsBeforeDocs =
+      if (List.length(commentsbefore) > 0) {
+        print_endline("Following block has comments before:");
+        List.iter(
+          c => allComments := removeComment(c, allComments^),
+          commentsbefore,
+        );
+        Doc.concat(List.map(c => commentToDoc(c), commentsbefore));
+      } else {
+        Doc.nil;
+      };
 
     let withoutComments =
       switch (data.ptop_desc) {
@@ -1420,44 +1996,31 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
         Doc.nil;
       };
 
-    let commentText = Doc.nil;
-    // if (List.length(comments) > 0) {
-    //   let comment = List.hd(comments);
+    // let trailingComment =
+    //   find_comments_in_range(stmtstartline, stmtendline, comments);
 
-    //   switch (comment) {
-    //   | Line(cmt) => Doc.concat([Doc.space, Doc.text(cmt.cmt_source)])
-    //   | _ => Doc.nil
-    //   };
-    // } else {
-    //   Doc.nil;
-    // };
+    let trailingCommentDocs = [];
+    // List.map(
+    //   c => Doc.concat([Doc.space, commentToDoc(c)]),
+    //   trailingComment,
+    // );
 
-    Doc.concat([attributeText, withoutComments, commentText]);
-  };
-
-  let commentToDoc = (comment: Parsetree.comment) =>
-    switch (comment) {
-    | Line(cmt) => Doc.text(cmt.cmt_source)
-    | Block(cmt) => Doc.concat([Doc.text(cmt.cmt_source), Doc.hardLine])
-    | Doc(cmt) => Doc.concat([Doc.text(cmt.cmt_source), Doc.hardLine])
-    | Shebang(cmt) => Doc.text(cmt.cmt_source)
-    };
-
-  let getCommentEndLine = (comment: Parsetree.comment) => {
-    let endloc =
-      switch (comment) {
-      | Line(cmt) => cmt.cmt_loc.loc_end
-      | Block(cmt) => cmt.cmt_loc.loc_end
-      | Doc(cmt) => cmt.cmt_loc.loc_end
-      | Shebang(cmt) => cmt.cmt_loc.loc_end
-      };
-
-    let (_, endline, _, _) = get_raw_pos_info(endloc);
-    endline;
+    Doc.concat([
+      commentsBeforeDocs,
+      attributeText,
+      withoutComments,
+      Doc.join(Doc.nil, trailingCommentDocs),
+    ]);
   };
 
   let previousStatement: ref(option(Grain_parsing.Parsetree.toplevel_stmt)) =
     ref(None);
+
+  let comments = parsed_program.comments;
+
+  //let _ = List.map(c => print_comment(c), comments);
+
+  allComments := parsed_program.comments;
 
   let printedDoc =
     Doc.join(
@@ -1465,78 +2028,92 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
       List.map(
         (stmt: Grain_parsing.Parsetree.toplevel_stmt) => {
           // let's see if we had any comments above us
+          // or in us
 
-          let commentsAbove =
-            switch (previousStatement^) {
-            | None =>
-              let (_file, stmtline, _startchar, _sbol) =
-                get_raw_pos_info(stmt.ptop_loc.loc_start);
+          let (_file, stmtstartline, _startchar, _sbol) =
+            get_raw_pos_info(stmt.ptop_loc.loc_start);
+          let (_file, stmtendline, _startchar, _sbol) =
+            get_raw_pos_info(stmt.ptop_loc.loc_end);
 
-              find_comments_in_range(
-                1,
-                stmtline - 1,
-                parsed_program.comments,
-              );
+          // let commentsAbove =
+          //   switch (previousStatement^) {
+          //   | None =>
+          //     find_comments_in_range(
+          //       1,
+          //       stmtstartline - 1,
+          //       parsed_program.comments,
+          //     )
 
-            | Some(prevStmt) =>
-              let (_file, stmtline, _startchar, _sbol) =
-                get_raw_pos_info(stmt.ptop_loc.loc_start);
+          //   | Some(prevStmt) =>
+          //     let (_pfile, prevline, _pstartchar, _psbol) =
+          //       get_raw_pos_info(prevStmt.ptop_loc.loc_end);
 
-              let (_pfile, prevline, _pstartchar, _psbol) =
-                get_raw_pos_info(prevStmt.ptop_loc.loc_end);
+          //     find_comments_in_range(
+          //       prevline + 1,
+          //       stmtstartline - 1,
+          //       parsed_program.comments,
+          //     );
+          //   };
 
-              find_comments_in_range(
-                prevline,
-                stmtline - 1,
-                parsed_program.comments,
-              );
-            };
+          let commentDocs = Doc.nil;
+          // Doc.concat(
+          //   List.map(
+          //     (c: Parsetree.comment) => commentToDoc(c),
+          //     commentsAbove,
+          //   ),
+          // );
 
-          let commentDocs =
-            Doc.concat(
-              List.map(
-                (c: Parsetree.comment) => commentToDoc(c),
-                commentsAbove,
-              ),
-            );
+          // let commentsWithin =
+          //   find_comments_in_range(
+          //     stmtstartline,
+          //     stmtendline,
+          //     parsed_program.comments,
+          //   );
+
+          //   print_endline("Comments above " ++ string_of_int(stmtstartline));
+
+          //   let _ = List.map(c => print_comment(c), commentsAbove);
+
+          //   print_endline("Comments within " ++ string_of_int(stmtstartline));
+
+          //   let _ = List.map(c => print_comment(c), commentsWithin);
 
           // we may also have blank lines, we want to reduce them to one
 
-          let (_, stmtstart, _, _) =
-            get_raw_pos_info(stmt.ptop_loc.loc_start);
+          // let lastCommentLine =
+          //   if (List.length(commentsAbove) > 0) {
+          //     Some(List.hd(List.rev(commentsAbove)));
+          //   } else {
+          //     None;
+          //   };
 
-          let lastCommentLine =
-            if (List.length(commentsAbove) > 0) {
-              Some(List.hd(List.rev(commentsAbove)));
-            } else {
-              None;
-            };
+          // let lastLine =
+          //   switch (previousStatement^) {
+          //   | None =>
+          //     switch (lastCommentLine) {
+          //     | None => 1
+          //     | Some(cmt) => getCommentEndLine(cmt)
+          //     }
+          //   | Some(s) =>
+          //     switch (lastCommentLine) {
+          //     | None =>
+          //       let (_, prevline, _, _) =
+          //         get_raw_pos_info(s.ptop_loc.loc_end);
 
-          let lastLine =
-            switch (previousStatement^) {
-            | None =>
-              switch (lastCommentLine) {
-              | None => 1
-              | Some(cmt) => getCommentEndLine(cmt)
-              }
-            | Some(s) =>
-              switch (lastCommentLine) {
-              | None =>
-                let (_, prevline, _, _) =
-                  get_raw_pos_info(s.ptop_loc.loc_end);
+          //       prevline;
 
-                prevline;
+          //     | Some(cmt) => getCommentEndLine(cmt)
+          //     }
+          //   };
 
-              | Some(cmt) => getCommentEndLine(cmt)
-              }
-            };
+          // let blankLineAbove =
+          //   if (stmtstartline - lastLine > 1) {
+          //     Doc.hardLine;
+          //   } else {
+          //     Doc.nil;
+          //   };
 
-          let blankLineAbove =
-            if (stmtstart - lastLine > 1) {
-              Doc.hardLine;
-            } else {
-              Doc.nil;
-            };
+          let blankLineAbove = Doc.nil;
 
           previousStatement := Some(stmt);
           Doc.concat([
@@ -1549,12 +2126,26 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
       ),
     );
 
+  // print any comments below
+
+  let trailingComments = Doc.nil;
+  // if (List.length(allComments^) > 0) {
+  //   Doc.concat([
+  //     Doc.hardLine,
+  //     Doc.concat(List.map(c => commentToDoc(c), allComments^)),
+  //   ]);
+  // } else {
+  //   Doc.nil;
+  // };
+
+  let finalDoc = Doc.concat([printedDoc, trailingComments]);
+
   // Use this to check the generated output
-  //Doc.debug(printedDoc);
+  //Doc.debug(finalDoc);
   //
 
-  Doc.toString(~width=80, printedDoc) |> print_endline;
-  // use this to see the AST in JSON
+  Doc.toString(~width=80, finalDoc) |> print_endline;
+  //use this to see the AST in JSON
   // print_endline(
   //   Yojson.Basic.pretty_to_string(
   //     Yojson.Safe.to_basic(
@@ -1563,3 +2154,5 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
   //   ),
   // );
 };
+
+let x = 3 + /* comment  */ 2;
