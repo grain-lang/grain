@@ -824,7 +824,7 @@ let rec compile_comp = (~id=?, env, c) => {
       );
       let closure = compile_imm(env, f);
       let args = List.map(compile_imm(env), args);
-      switch (Functions.is_known(f)) {
+      switch (Functions.known_function(f)) {
       | Some(func) => MReturnCallKnown({func, closure, func_type, args})
       | None => MReturnCallIndirect({func: closure, func_type, args})
       };
@@ -835,7 +835,7 @@ let rec compile_comp = (~id=?, env, c) => {
       );
       let closure = compile_imm(env, f);
       let args = List.map(compile_imm(env), args);
-      switch (Functions.is_known(f)) {
+      switch (Functions.known_function(f)) {
       | Some(func) => MCallKnown({func, closure, func_type, args})
       | None => MCallIndirect({func: closure, func_type, args})
       };
