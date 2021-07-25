@@ -277,7 +277,7 @@ let get_comments_between =
       comments: list(Grain_parsing.Parsetree.comment),
     ) => {
   let (_, endline1, endchar1, _) = get_raw_pos_info(loc1.loc_end);
-  let (_, startline1, startchar2, _) = get_raw_pos_info(loc2.loc_start);
+  let (_, startline1, startchar1, _) = get_raw_pos_info(loc2.loc_start);
 
   List.filter(
     (c: Grain_parsing.Parsetree.comment) => {
@@ -290,7 +290,17 @@ let get_comments_between =
         let (_efile, bendline, bendchar, _ebol) =
           get_raw_pos_info(cmt.cmt_loc.loc_end);
 
-        if (bstartline >= endline1 && bendline <= startline1) {
+        if (bstartline == endline1) {
+          if (bstartchar > endchar1) {
+            if (bendchar < startchar1) {
+              true;
+            } else {
+              false;
+            };
+          } else {
+            false;
+          };
+        } else if (bstartline >= endline1 && bendline <= startline1) {
           true;
         } else {
           false;
@@ -627,26 +637,35 @@ and print_pattern = (pat: Parsetree.pattern) => {
         print_endline("A pattern is followed by comments");
 
         List.iter(c => print_comment(c), comments);
-      };
 
-      Doc.nil;
+        let commentDocs =
+          Doc.join(Doc.space, List.map(c => commentToDoc(c), comments));
+
+        List.iter(
+          c => allComments := removeComment(c, allComments^),
+          comments,
+        );
+        Doc.concat([Doc.space, commentDocs]);
+      } else {
+        Doc.nil;
+      };
     };
 
-  let (leading, inside, trailing) =
-    Comments.partitionByLoc(allComments^, pat.ppat_loc);
+  // let (leading, inside, trailing) =
+  //   Comments.partitionByLoc(allComments^, pat.ppat_loc);
 
-  //Comments.debug_expression("Pattern:");
+  // //Comments.debug_expression("Pattern:");
   Comments.debug_pattern(pat);
 
-  print_endline("leading " ++ string_of_int(List.length(leading)));
-  print_endline("inside " ++ string_of_int(List.length(inside)));
-  print_endline("trailing " ++ string_of_int(List.length(trailing)));
+  // print_endline("leading " ++ string_of_int(List.length(leading)));
+  // print_endline("inside " ++ string_of_int(List.length(inside)));
+  // print_endline("trailing " ++ string_of_int(List.length(trailing)));
 
-  let commentsWithin = []; //find_block_in_range(pat.ppat_loc, allComments^);
+  // let commentsWithin = []; //find_block_in_range(pat.ppat_loc, allComments^);
 
-  if (List.length(commentsWithin) > 0) {
-    print_endline("Pattern has comments within");
-  };
+  // if (List.length(commentsWithin) > 0) {
+  //   print_endline("Pattern has comments within");
+  // };
 
   let printed_pattern =
     switch (pat.ppat_desc) {
@@ -656,7 +675,7 @@ and print_pattern = (pat: Parsetree.pattern) => {
       if (infixop(txt)) {
         Doc.concat([Doc.lparen, Doc.text(txt), Doc.rparen]);
       } else {
-        Doc.text(txt);
+        Doc.concat([Doc.text(txt), trailingComment]);
       }
     | PPatTuple(patterns) =>
       addParens(
