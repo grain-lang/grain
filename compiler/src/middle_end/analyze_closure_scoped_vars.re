@@ -11,7 +11,7 @@ let is_closure_scoped_var = id => {
 module CSVArg: Anf_iterator.IterArgument = {
   include Anf_iterator.DefaultIterArgument;
 
-  let leave_comp_expression = ({comp_desc: desc} as c) =>
+  let leave_comp_expression = (~id=?, {comp_desc: desc} as c) =>
     switch (desc) {
     | CLambda(_) =>
       closure_scoped_vars :=

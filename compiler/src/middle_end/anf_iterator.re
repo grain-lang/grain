@@ -8,8 +8,8 @@ module type IterArgument = {
   let enter_imm_expression: imm_expression => unit;
   let leave_imm_expression: imm_expression => unit;
 
-  let enter_comp_expression: comp_expression => unit;
-  let leave_comp_expression: comp_expression => unit;
+  let enter_comp_expression: (~id: Ident.t=?, comp_expression) => unit;
+  let leave_comp_expression: (~id: Ident.t=?, comp_expression) => unit;
 
   let enter_anf_expression: anf_expression => unit;
   let leave_anf_expression: anf_expression => unit;
@@ -22,8 +22,8 @@ module DefaultIterArgument: IterArgument = {
   let enter_imm_expression = _ => ();
   let leave_imm_expression = _ => ();
 
-  let enter_comp_expression = _ => ();
-  let leave_comp_expression = _ => ();
+  let enter_comp_expression = (~id=?, _) => ();
+  let leave_comp_expression = (~id=?, _) => ();
 
   let enter_anf_expression = _ => ();
   let leave_anf_expression = _ => ();
@@ -38,8 +38,8 @@ module MakeIter = (Iter: IterArgument) => {
     Iter.leave_imm_expression(i);
   }
 
-  and iter_comp_expression = ({comp_desc: desc} as c) => {
-    Iter.enter_comp_expression(c);
+  and iter_comp_expression = (~id=?, {comp_desc: desc} as c) => {
+    Iter.enter_comp_expression(~id?, c);
     switch (desc) {
     | CImmExpr(i) => iter_imm_expression(i)
     | CPrim1(_, arg) => iter_imm_expression(arg)
@@ -107,14 +107,17 @@ module MakeIter = (Iter: IterArgument) => {
     | CFloat32(f) => ()
     | CFloat64(f) => ()
     };
-    Iter.leave_comp_expression(c);
+    Iter.leave_comp_expression(~id?, c);
   }
 
   and iter_anf_expression = ({anf_desc: desc} as anf) => {
     Iter.enter_anf_expression(anf);
     switch (desc) {
     | AELet(_, _, _, bindings, body) =>
-      List.iter(((ident, bind)) => iter_comp_expression(bind), bindings);
+      List.iter(
+        ((ident, bind)) => iter_comp_expression(~id=ident, bind),
+        bindings,
+      );
       iter_anf_expression(body);
     | AESeq(hd, tl) =>
       iter_comp_expression(hd);

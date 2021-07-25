@@ -6,6 +6,7 @@ open Grain_utils;
 open Asttypes;
 open Anftree;
 open Mashtree;
+open Functions;
 
 type compilation_env = {
   ce_binds: Ident.tbl(Mashtree.binding),
@@ -500,24 +501,8 @@ let compile_imm = (env, i: imm_expression) =>
   | ImmTrap => MImmTrap
   };
 
-let known_functions = Ident_tbl.create(50);
-let register_function = id => Ident_tbl.add(known_functions, id, ());
-let clear_known_functions = () => Ident_tbl.clear(known_functions);
-let known_function = f =>
-  switch (f.imm_desc) {
-  | ImmId(id) =>
-    if (Ident_tbl.mem(known_functions, id)) {
-      Some(Ident.unique_name(id));
-    } else {
-      None;
-    }
-  | ImmConst(_)
-  | ImmTrap => failwith("Impossible: function application of non-function")
-  };
-
 let compile_lambda =
     (~name=?, id, env, args, body, attrs, loc): Mashtree.closure_data => {
-  register_function(id);
   let (body, return_type) = body;
   let used_var_set = Anf_utils.anf_free_vars(body);
   let free_var_set =
@@ -839,7 +824,7 @@ let rec compile_comp = (~id=?, env, c) => {
       );
       let closure = compile_imm(env, f);
       let args = List.map(compile_imm(env), args);
-      switch (known_function(f)) {
+      switch (Functions.is_known(f)) {
       | Some(func) => MReturnCallKnown({func, closure, func_type, args})
       | None => MReturnCallIndirect({func: closure, func_type, args})
       };
@@ -850,7 +835,7 @@ let rec compile_comp = (~id=?, env, c) => {
       );
       let closure = compile_imm(env, f);
       let args = List.map(compile_imm(env), args);
-      switch (known_function(f)) {
+      switch (Functions.is_known(f)) {
       | Some(func) => MCallKnown({func, closure, func_type, args})
       | None => MCallIndirect({func: closure, func_type, args})
       };
@@ -1182,7 +1167,7 @@ let transl_anf_program =
   reset_lift();
   reset_global();
   worklist_reset();
-  clear_known_functions();
+  Functions.preprocess(anf_prog);
 
   let (imports, setups, env) =
     lift_imports(initial_compilation_env, anf_prog.imports);

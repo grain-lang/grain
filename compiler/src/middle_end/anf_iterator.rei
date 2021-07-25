@@ -7,8 +7,8 @@ module type IterArgument = {
   let enter_imm_expression: imm_expression => unit;
   let leave_imm_expression: imm_expression => unit;
 
-  let enter_comp_expression: comp_expression => unit;
-  let leave_comp_expression: comp_expression => unit;
+  let enter_comp_expression: (~id: Ident.t=?, comp_expression) => unit;
+  let leave_comp_expression: (~id: Ident.t=?, comp_expression) => unit;
 
   let enter_anf_expression: anf_expression => unit;
   let leave_anf_expression: anf_expression => unit;
@@ -23,7 +23,7 @@ module MakeIter:
   (Iter: IterArgument) =>
    {
     let iter_imm_expression: imm_expression => unit;
-    let iter_comp_expression: comp_expression => unit;
+    let iter_comp_expression: (~id: Ident.t=?, comp_expression) => unit;
     let iter_anf_expression: anf_expression => unit;
     let iter_anf_program: anf_program => unit;
   };

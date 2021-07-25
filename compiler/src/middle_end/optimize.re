@@ -23,7 +23,8 @@ module ClearAnalysesArg: Anf_iterator.IterArgument = {
 
   let leave_imm_expression = ({imm_analyses}) => imm_analyses := [];
 
-  let leave_comp_expression = ({comp_analyses}) => comp_analyses := [];
+  let leave_comp_expression = (~id=?, {comp_analyses}) =>
+    comp_analyses := [];
 
   let leave_anf_expression = ({anf_analyses}) => anf_analyses := [];
 
