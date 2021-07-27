@@ -84,6 +84,7 @@ let walktree = (statements: list(Grain_parsing.Parsetree.toplevel_stmt)) => {
 let get_location_after = (loc: Grain_parsing.Location.t) => {
   print_loc("looking for a node afte", loc);
   let (_, raw1l, raw1c, _) = get_raw_pos_info(loc.loc_start);
+  let (_, raw1le, raw1ce, _) = get_raw_pos_info(loc.loc_end);
 
   let afterloc: option(Grain_parsing.Location.t) =
     List.fold_left(
@@ -92,12 +93,13 @@ let get_location_after = (loc: Grain_parsing.Location.t) => {
         | Some(_) => acc // nothing more to do
         | None =>
           let (_, raw2l, raw2c, _) = get_raw_pos_info(l.loc_start);
+          // let (_, raw2le, raw2ce, _) = get_raw_pos_info(l.loc_end);
 
           if (raw2l > raw1l) {
             print_loc("A match", l);
             Some(l);
           } else if (raw2l == raw1l) {
-            if (raw2c > raw1c) {
+            if (raw2c > raw1ce) {
               print_loc("B match", l);
               Some(l);
             } else {
