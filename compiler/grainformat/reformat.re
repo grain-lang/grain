@@ -50,8 +50,8 @@ let makeStartLoc = (loc: Grain_parsing.Location.t) => {
 
 let makeEndLoc = (loc: Grain_parsing.Location.t) => {
   let mergedLoc: Grain_parsing.Location.t = {
-    loc_start: loc.loc_start,
-    loc_end: loc.loc_start,
+    loc_start: loc.loc_end,
+    loc_end: loc.loc_end,
     loc_ghost: loc.loc_ghost,
   };
   mergedLoc;
@@ -233,7 +233,7 @@ let get_comments_between =
         let (_efile, bendline, bendchar, _ebol) =
           get_raw_pos_info(cmt.cmt_loc.loc_end);
 
-        print_loc("comparing to ", cmt.cmt_loc);
+        // print_loc("comparing to ", cmt.cmt_loc);
         let after =
           if (bstartline > endline1) {
             true;
@@ -259,11 +259,11 @@ let get_comments_between =
             true;
           };
 
-        if (after && before) {
-          print_endline("Match!");
-        } else {
-          print_endline("No Match!");
-        };
+        // if (after && before) {
+        //   print_endline("Match!");
+        // } else {
+        //   print_endline("No Match!");
+        // };
 
         after && before;
 
@@ -1235,6 +1235,8 @@ and print_expression = (~expr: Parsetree.expression, ~parentIsArrow: bool) => {
           Doc.nil;
         };
 
+      let lastExpr = ref(None);
+
       let block =
         Doc.join(
           Doc.hardLine,
@@ -1276,18 +1278,46 @@ and print_expression = (~expr: Parsetree.expression, ~parentIsArrow: bool) => {
                     Doc.nil;
                   };
                 };
-
+              lastExpr := Some(e);
               Doc.group(Doc.concat([printed_expression, trailingComment]));
             },
             expressions,
           ),
         );
 
+      let trailingComments =
+        switch (lastExpr^) {
+        | None =>
+          print_endline("no last expr");
+          Doc.nil;
+        | Some(e) =>
+          print_endline(
+            "we still have these comments left at end of block "
+            ++ string_of_int(List.length(allComments^)),
+          );
+          let comments =
+            get_comments_between(
+              e.pexp_loc,
+              makeEndLoc(expr.pexp_loc),
+              allComments^,
+            );
+          if (List.length(comments) > 0) {
+            Doc.concat([
+              Doc.hardLine,
+              Doc.concat(List.map(c => commentToDoc(c), comments)),
+            ]);
+          } else {
+            Doc.nil;
+          };
+        };
+
       Doc.breakableGroup(
         ~forceBreak=true,
         Doc.concat([
           Doc.lbrace,
-          Doc.indent(Doc.concat([Doc.line, leadingComments, block])),
+          Doc.indent(
+            Doc.concat([Doc.line, leadingComments, block, trailingComments]),
+          ),
           Doc.line,
           Doc.rbrace,
         ]),
@@ -1956,15 +1986,39 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
 
   // print any comments below
 
-  let trailingComments = Doc.nil;
-  // if (List.length(allComments^) > 0) {
-  //   Doc.concat([
-  //     Doc.hardLine,
-  //     Doc.concat(List.map(c => commentToDoc(c), allComments^)),
-  //   ]);
-  // } else {
-  //   Doc.nil;
-  // };
+  let endpos: Stdlib__lexing.position = {
+    pos_fname: "",
+    pos_lnum: max_int,
+    pos_cnum: max_int,
+    pos_bol: 0,
+  };
+
+  let endLoc: Grain_parsing.Location.t = {
+    loc_start: endpos,
+    loc_end: endpos,
+    loc_ghost: false,
+  };
+
+  let trailingComments =
+    switch (previousStatement^) {
+    | None =>
+      print_endline("No previous statement at end?");
+      Doc.nil;
+    | Some(ps: Parsetree.toplevel_stmt) =>
+      print_endline(
+        "we still have these comments left "
+        ++ string_of_int(List.length(allComments^)),
+      );
+      let comments = get_comments_between(ps.ptop_loc, endLoc, allComments^);
+      if (List.length(comments) > 0) {
+        Doc.concat([
+          Doc.hardLine,
+          Doc.concat(List.map(c => commentToDoc(c), comments)),
+        ]);
+      } else {
+        Doc.nil;
+      };
+    };
 
   let finalDoc = Doc.concat([printedDoc, trailingComments]);
 
