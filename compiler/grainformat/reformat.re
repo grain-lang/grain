@@ -39,7 +39,16 @@ let get_raw_pos_info = (pos: Lexing.position) => (
   pos.pos_bol,
 );
 
-let mergeStartEnd = (loc: Grain_parsing.Location.t) => {
+let makeStartLoc = (loc: Grain_parsing.Location.t) => {
+  let mergedLoc: Grain_parsing.Location.t = {
+    loc_start: loc.loc_start,
+    loc_end: loc.loc_start,
+    loc_ghost: loc.loc_ghost,
+  };
+  mergedLoc;
+};
+
+let makeEndLoc = (loc: Grain_parsing.Location.t) => {
   let mergedLoc: Grain_parsing.Location.t = {
     loc_start: loc.loc_start,
     loc_end: loc.loc_start,
@@ -1210,13 +1219,13 @@ and print_expression = (~expr: Parsetree.expression, ~parentIsArrow: bool) => {
         if (List.length(expressions) > 0) {
           print_endline("looking for leading comments in a block");
 
-          print_loc("block starts", mergeStartEnd(expr.pexp_loc));
+          print_loc("block starts", makeStartLoc(expr.pexp_loc));
           print_loc("stmt starts", List.hd(expressions).pexp_loc);
           Doc.concat(
             List.map(
               c => commentToDoc(c),
               get_comments_between(
-                mergeStartEnd(expr.pexp_loc),
+                makeStartLoc(expr.pexp_loc),
                 List.hd(expressions).pexp_loc,
                 allComments^,
               ),
@@ -1258,10 +1267,10 @@ and print_expression = (~expr: Parsetree.expression, ~parentIsArrow: bool) => {
                         List.map(c => commentToDoc(c), comments),
                       );
 
-                    // List.iter(
-                    //   c => allComments := removeComment(c, allComments^),
-                    //   comments,
-                    // );
+                    List.iter(
+                      c => allComments := removeComment(c, allComments^),
+                      comments,
+                    );
                     Doc.concat([Doc.space, commentDocs]);
                   } else {
                     Doc.nil;
@@ -1857,11 +1866,22 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
   let previousStatement: ref(option(Grain_parsing.Parsetree.toplevel_stmt)) =
     ref(None);
 
-  let comments = parsed_program.comments;
-
-  //let _ = List.map(c => print_comment(c), comments);
-
   allComments := parsed_program.comments;
+
+  let pos: Stdlib__lexing.position = {
+    pos_fname: "",
+    pos_lnum: 0,
+    pos_cnum: 0,
+    pos_bol: 0,
+  };
+
+  let startLoc: Grain_parsing.Location.t = {
+    loc_start: pos,
+    loc_end: pos,
+    loc_ghost: false,
+  };
+
+  let prevLoc: ref(Grain_parsing.Location.t) = ref(startLoc);
 
   let printedDoc =
     Doc.join(
@@ -1871,53 +1891,20 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
           // let's see if we had any comments above us
           // or in us
 
-          let (_file, stmtstartline, _startchar, _sbol) =
-            get_raw_pos_info(stmt.ptop_loc.loc_start);
-          let (_file, stmtendline, _startchar, _sbol) =
-            get_raw_pos_info(stmt.ptop_loc.loc_end);
+          let commentsAbove =
+            get_comments_between(prevLoc^, stmt.ptop_loc, allComments^);
 
-          // let commentsAbove =
-          //   switch (previousStatement^) {
-          //   | None =>
-          //     find_comments_in_range(
-          //       1,
-          //       stmtstartline - 1,
-          //       parsed_program.comments,
-          //     )
-
-          //   | Some(prevStmt) =>
-          //     let (_pfile, prevline, _pstartchar, _psbol) =
-          //       get_raw_pos_info(prevStmt.ptop_loc.loc_end);
-
-          //     find_comments_in_range(
-          //       prevline + 1,
-          //       stmtstartline - 1,
-          //       parsed_program.comments,
-          //     );
-          //   };
-
-          let commentDocs = Doc.nil;
-          // Doc.concat(
-          //   List.map(
-          //     (c: Parsetree.comment) => commentToDoc(c),
-          //     commentsAbove,
-          //   ),
-          // );
-
-          // let commentsWithin =
-          //   find_comments_in_range(
-          //     stmtstartline,
-          //     stmtendline,
-          //     parsed_program.comments,
-          //   );
-
-          //   print_endline("Comments above " ++ string_of_int(stmtstartline));
-
-          //   let _ = List.map(c => print_comment(c), commentsAbove);
-
-          //   print_endline("Comments within " ++ string_of_int(stmtstartline));
-
-          //   let _ = List.map(c => print_comment(c), commentsWithin);
+          let commentsAboveDocs =
+            if (List.length(commentsAbove) > 0) {
+              Doc.concat(
+                List.map(
+                  (c: Parsetree.comment) => commentToDoc(c),
+                  commentsAbove,
+                ),
+              );
+            } else {
+              Doc.nil;
+            };
 
           // we may also have blank lines, we want to reduce them to one
 
@@ -1958,7 +1945,7 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
 
           previousStatement := Some(stmt);
           Doc.concat([
-            commentDocs,
+            commentsAboveDocs,
             blankLineAbove,
             Doc.group(toplevel_print(stmt)),
           ]);
