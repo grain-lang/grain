@@ -7,6 +7,22 @@ module Doc = Res_doc;
 
 let allComments: ref(list(Parsetree.comment)) = ref([]);
 
+let lastFileLoc = (): Grain_parsing.Location.t => {
+  let endpos: Stdlib__lexing.position = {
+    pos_fname: "",
+    pos_lnum: max_int,
+    pos_cnum: max_int,
+    pos_bol: 0,
+  };
+
+  let endLoc: Grain_parsing.Location.t = {
+    loc_start: endpos,
+    loc_end: endpos,
+    loc_ghost: false,
+  };
+  endLoc;
+};
+
 let getCommentLoc = (comment: Parsetree.comment) =>
   switch (comment) {
   | Line(cmt) => cmt.cmt_loc
@@ -57,6 +73,11 @@ let makeEndLoc = (loc: Grain_parsing.Location.t) => {
   mergedLoc;
 };
 
+let getLocLine = (loc: Grain_parsing.Location.t) => {
+  let (_, line, _, _) = get_raw_pos_info(loc.loc_start);
+  line;
+};
+
 let print_loc = (msg: string, loc: Grain_parsing.Location.t) => {
   let (file, line, startchar, _) = get_raw_pos_info(loc.loc_start);
   let (_, endline, endchar, _) = get_raw_pos_info(loc.loc_end);
@@ -87,6 +108,183 @@ let print_loc = (msg: string, loc: Grain_parsing.Location.t) => {
       );
     };
   };
+};
+
+let get_comments_between =
+    (
+      loc1: Grain_parsing.Location.t,
+      loc2: Grain_parsing.Location.t,
+      comments: list(Grain_parsing.Parsetree.comment),
+    ) => {
+  let (_, endline1, endchar1, _) = get_raw_pos_info(loc1.loc_end);
+  let (_, startline2, startchar2, _) = get_raw_pos_info(loc2.loc_start);
+
+  print_loc("get comment after", loc1);
+  print_loc("get comment before", loc2);
+
+  List.filter(
+    (c: Grain_parsing.Parsetree.comment) => {
+      switch (c) {
+      | Block(cmt)
+      | Line(cmt) =>
+        let (_efile, bstartline, bstartchar, _ebol) =
+          get_raw_pos_info(cmt.cmt_loc.loc_start);
+        let (_efile, bendline, bendchar, _ebol) =
+          get_raw_pos_info(cmt.cmt_loc.loc_end);
+
+        // print_loc("comparing to ", cmt.cmt_loc);
+        let after =
+          if (bstartline > endline1) {
+            true;
+          } else if (bstartline == endline1) {
+            if (bstartchar >= endchar1) {
+              true;
+            } else {
+              false;
+            };
+          } else {
+            false;
+          };
+        let before =
+          if (bendline > startline2) {
+            false;
+          } else if (bendline == startline2) {
+            if (bendchar <= startchar2) {
+              true;
+            } else {
+              false;
+            };
+          } else {
+            true;
+          };
+
+        // if (after && before) {
+        //   print_endline("Match!");
+        // } else {
+        //   print_endline("No Match!");
+        // };
+
+        after && before;
+
+      | _ => false
+      }
+    },
+    comments,
+  );
+};
+
+let commentToDoc = (comment: Parsetree.comment, addline: bool) => {
+  let cmtText =
+    switch (comment) {
+    | Line(cmt) => cmt.cmt_source
+    | Block(cmt) => cmt.cmt_source
+    | Doc(cmt) => cmt.cmt_source
+    | Shebang(cmt) => cmt.cmt_source
+    };
+
+  if (addline) {
+    Doc.concat([Doc.text(String.trim(cmtText)), Doc.hardLine]);
+  } else {
+    Doc.text(String.trim(cmtText));
+  };
+};
+
+let getCommentDocsInRange =
+    (
+      loc: Grain_parsing.Location.t,
+      addLineEnds: bool,
+      endLoc: Grain_parsing.Location.t,
+    ) => {
+  print_loc("getTrailingComments", loc);
+  // next user code
+  let nodeAfter: option(Walktree.node_t) = Walktree.get_node_after(loc);
+
+  // next node of any type
+  let nextAfter: option(Walktree.node_t) = Walktree.get_next_after(loc);
+
+  let comments =
+    switch (nextAfter) {
+    | None =>
+      print_endline("NIL A");
+
+      Doc.nil;
+    | Some(Code(_)) =>
+      print_endline("NIL B");
+      Doc.nil;
+    | Some(Comment(_)) =>
+      switch (nodeAfter) {
+      | None =>
+        // special case last line
+
+        let comments = get_comments_between(loc, endLoc, allComments^);
+        let prevLine = ref(getLocLine(loc));
+
+        let commentDocs =
+          Doc.join(
+            Doc.nil,
+            List.map(
+              c => {
+                let cmtLine = getLocLine(getCommentLoc(c));
+
+                let leadingBreak =
+                  if (cmtLine > prevLine^) {
+                    Doc.hardLine;
+                  } else {
+                    Doc.space;
+                  };
+                prevLine := cmtLine;
+                Doc.concat([leadingBreak, commentToDoc(c, addLineEnds)]);
+              },
+              comments,
+            ),
+          );
+
+        List.iter(
+          c => allComments := removeComment(c, allComments^),
+          comments,
+        );
+        commentDocs;
+      | Some(node) =>
+        let endloc = Walktree.getNodeLoc(node);
+        let comments = get_comments_between(loc, endloc, allComments^);
+
+        if (List.length(comments) > 0) {
+          let prevLine = ref(getLocLine(loc));
+          let commentDocs =
+            Doc.join(
+              Doc.nil,
+              List.map(
+                c => {
+                  let cmtLine = getLocLine(getCommentLoc(c));
+
+                  let leadingBreak =
+                    if (cmtLine > prevLine^) {
+                      Doc.hardLine;
+                    } else {
+                      Doc.space;
+                    };
+                  prevLine := cmtLine;
+                  Doc.concat([leadingBreak, commentToDoc(c, addLineEnds)]);
+                },
+                comments,
+              ),
+            );
+
+          List.iter(
+            c => allComments := removeComment(c, allComments^),
+            comments,
+          );
+          commentDocs;
+        } else {
+          print_endline("NIL A");
+          Doc.nil;
+        };
+      }
+    };
+
+  print_endline("generated trailing comments:");
+  Doc.debug(comments);
+  comments;
 };
 
 let print_comment = (comment: Parsetree.comment) => {
@@ -188,16 +386,6 @@ let infixop = (op: string) => {
   };
 };
 
-let commentToDoc = (comment: Parsetree.comment) =>
-  switch (comment) {
-  | Line(cmt) => Doc.text(cmt.cmt_source)
-  | Block(cmt) =>
-    //  print_endline(cmt.cmt_source);
-    Doc.concat([Doc.text(cmt.cmt_source)])
-  | Doc(cmt) => Doc.concat([Doc.text(cmt.cmt_source)])
-  | Shebang(cmt) => Doc.text(cmt.cmt_source)
-  };
-
 let getCommentEndLine = (comment: Parsetree.comment) => {
   let endloc =
     switch (comment) {
@@ -209,69 +397,6 @@ let getCommentEndLine = (comment: Parsetree.comment) => {
 
   let (_, endline, _, _) = get_raw_pos_info(endloc);
   endline;
-};
-
-let get_comments_between =
-    (
-      loc1: Grain_parsing.Location.t,
-      loc2: Grain_parsing.Location.t,
-      comments: list(Grain_parsing.Parsetree.comment),
-    ) => {
-  let (_, endline1, endchar1, _) = get_raw_pos_info(loc1.loc_end);
-  let (_, startline2, startchar2, _) = get_raw_pos_info(loc2.loc_start);
-
-  print_loc("get comment after", loc1);
-  print_loc("get comment before", loc2);
-
-  List.filter(
-    (c: Grain_parsing.Parsetree.comment) => {
-      switch (c) {
-      | Block(cmt)
-      | Line(cmt) =>
-        let (_efile, bstartline, bstartchar, _ebol) =
-          get_raw_pos_info(cmt.cmt_loc.loc_start);
-        let (_efile, bendline, bendchar, _ebol) =
-          get_raw_pos_info(cmt.cmt_loc.loc_end);
-
-        // print_loc("comparing to ", cmt.cmt_loc);
-        let after =
-          if (bstartline > endline1) {
-            true;
-          } else if (bstartline == endline1) {
-            if (bstartchar >= endchar1) {
-              true;
-            } else {
-              false;
-            };
-          } else {
-            false;
-          };
-        let before =
-          if (bendline > startline2) {
-            false;
-          } else if (bendline == startline2) {
-            if (bendchar <= startchar2) {
-              true;
-            } else {
-              false;
-            };
-          } else {
-            true;
-          };
-
-        // if (after && before) {
-        //   print_endline("Match!");
-        // } else {
-        //   print_endline("No Match!");
-        // };
-
-        after && before;
-
-      | _ => false
-      }
-    },
-    comments,
-  );
 };
 
 let get_comments_before =
@@ -578,74 +703,51 @@ and print_record_pattern =
     Doc.rbrace,
   ]);
 }
+
 and print_pattern = (pat: Parsetree.pattern) => {
   print_endline("Pattern loc");
   // print_loc("pattern:", pat.ppat_loc);
 
-  // Comments.debug_pattern(pat);
-
-  let locAfter = Walktree.get_location_after(pat.ppat_loc);
-
   let trailingComment =
-    switch (locAfter) {
-    | None =>
-      print_endline("No loc after pattern");
-      Doc.nil;
-    | Some(loc) =>
-      print_endline("We have an item after us");
+    getCommentDocsInRange(pat.ppat_loc, false, pat.ppat_loc);
 
-      let comments = get_comments_between(pat.ppat_loc, loc, allComments^);
-
-      if (List.length(comments) > 0) {
-        print_endline("A pattern is followed by comments");
-
-        List.iter(c => print_comment(c), comments);
-
-        let commentDocs =
-          Doc.join(Doc.space, List.map(c => commentToDoc(c), comments));
-
-        // List.iter(
-        //   c => allComments := removeComment(c, allComments^),
-        //   comments,
-        // );
-        Doc.concat([Doc.space, commentDocs]);
-      } else {
-        Doc.nil;
-      };
-    };
-
-  // Comments.debug_pattern(pat);
-
-  let printed_pattern =
+  let printed_pattern: (Doc.t, bool) =
     switch (pat.ppat_desc) {
-    | PPatAny => Doc.text("_")
-    | PPatConstant(c) => Doc.concat([print_constant(c), trailingComment])
+    | PPatAny => (Doc.text("_"), false)
+    | PPatConstant(c) => (print_constant(c), false)
     | PPatVar({txt, _}) =>
       if (infixop(txt)) {
-        Doc.concat([Doc.lparen, Doc.text(txt), Doc.rparen]);
+        (Doc.text(txt), true);
       } else {
-        Doc.concat([Doc.text(txt), trailingComment]);
+        (Doc.text(txt), false);
       }
-    | PPatTuple(patterns) =>
-      addParens(
+    | PPatTuple(patterns) => (
         Doc.join(Doc.comma, List.map(p => print_pattern(p), patterns)),
+        true,
       )
-    | PPatArray(patterns) =>
-      Doc.group(
+
+    | PPatArray(patterns) => (
+        Doc.group(
+          Doc.concat([
+            Doc.lbracket,
+            Doc.join(Doc.comma, List.map(p => print_pattern(p), patterns)),
+            Doc.rbracket,
+          ]),
+        ),
+        false,
+      )
+    | PPatRecord(patternlocs, closedflag) => (
+        print_record_pattern(patternlocs, closedflag),
+        false,
+      )
+    | PPatConstraint(pattern, parsed_type) => (
         Doc.concat([
-          Doc.lbracket,
-          Doc.join(Doc.comma, List.map(p => print_pattern(p), patterns)),
-          Doc.rbracket,
+          print_pattern(pattern),
+          Doc.concat([Doc.text(":"), Doc.space]),
+          print_type(parsed_type),
         ]),
+        false,
       )
-    | PPatRecord(patternlocs, closedflag) =>
-      print_record_pattern(patternlocs, closedflag)
-    | PPatConstraint(pattern, parsed_type) =>
-      Doc.concat([
-        print_pattern(pattern),
-        Doc.concat([Doc.text(":"), Doc.space]),
-        print_type(parsed_type),
-      ])
     | PPatConstruct(location, patterns) =>
       let func =
         switch (location.txt) {
@@ -653,28 +755,37 @@ and print_pattern = (pat: Parsetree.pattern) => {
         | _ => ""
         };
       if (func == "[...]") {
-        resugar_list_patterns(patterns);
+        (resugar_list_patterns(patterns), false);
       } else {
-        Doc.concat([
-          print_ident(location.txt),
-          if (List.length(patterns) > 0) {
-            addParens(
-              Doc.join(
-                Doc.comma,
-                List.map(pat => print_pattern(pat), patterns),
-              ),
-            );
-          } else {
-            Doc.nil;
-          },
-        ]);
+        (
+          Doc.concat([
+            print_ident(location.txt),
+            if (List.length(patterns) > 0) {
+              addParens(
+                Doc.join(
+                  Doc.comma,
+                  List.map(pat => print_pattern(pat), patterns),
+                ),
+              );
+            } else {
+              Doc.nil;
+            },
+          ]),
+          false,
+        );
       };
 
-    | PPatOr(pattern1, pattern2) => Doc.text("PPatOr")
-    | PPatAlias(pattern, loc) => Doc.text("PPatAlias")
+    | PPatOr(pattern1, pattern2) => (Doc.text("PPatOr"), false)
+    | PPatAlias(pattern, loc) => (Doc.text("PPatAlias"), false)
     };
 
-  Doc.concat([printed_pattern, Doc.nil]);
+  let (pattern, parens) = printed_pattern;
+
+  if (parens) {
+    Doc.concat([Doc.lparen, pattern, trailingComment, Doc.rparen]);
+  } else {
+    Doc.concat([pattern, trailingComment]);
+  };
 }
 and print_constant = (c: Parsetree.constant) => {
   let print_c =
@@ -1223,7 +1334,7 @@ and print_expression = (~expr: Parsetree.expression, ~parentIsArrow: bool) => {
           print_loc("stmt starts", List.hd(expressions).pexp_loc);
           Doc.concat(
             List.map(
-              c => commentToDoc(c),
+              c => commentToDoc(c, true),
               get_comments_between(
                 makeStartLoc(expr.pexp_loc),
                 List.hd(expressions).pexp_loc,
@@ -1244,40 +1355,14 @@ and print_expression = (~expr: Parsetree.expression, ~parentIsArrow: bool) => {
             (e: Parsetree.expression) => {
               let printed_expression =
                 print_expression(~expr=e, ~parentIsArrow=false);
-              let locAfter = Walktree.get_location_after(e.pexp_loc);
+
               let trailingComment =
-                switch (locAfter) {
-                | None =>
-                  print_endline("No loc after expression");
-                  Doc.nil;
-                | Some(loc) =>
-                  print_endline("We have an item after expression");
+                getCommentDocsInRange(
+                  e.pexp_loc,
+                  false,
+                  makeEndLoc(expr.pexp_loc),
+                );
 
-                  let comments =
-                    get_comments_between(e.pexp_loc, loc, allComments^);
-
-                  if (List.length(comments) > 0) {
-                    print_endline(
-                      "A block expression  is followed by comments",
-                    );
-
-                    List.iter(c => print_comment(c), comments);
-
-                    let commentDocs =
-                      Doc.join(
-                        Doc.space,
-                        List.map(c => commentToDoc(c), comments),
-                      );
-
-                    List.iter(
-                      c => allComments := removeComment(c, allComments^),
-                      comments,
-                    );
-                    Doc.concat([Doc.space, commentDocs]);
-                  } else {
-                    Doc.nil;
-                  };
-                };
               lastExpr := Some(e);
               Doc.group(Doc.concat([printed_expression, trailingComment]));
             },
@@ -1291,24 +1376,7 @@ and print_expression = (~expr: Parsetree.expression, ~parentIsArrow: bool) => {
           print_endline("no last expr");
           Doc.nil;
         | Some(e) =>
-          print_endline(
-            "we still have these comments left at end of block "
-            ++ string_of_int(List.length(allComments^)),
-          );
-          let comments =
-            get_comments_between(
-              e.pexp_loc,
-              makeEndLoc(expr.pexp_loc),
-              allComments^,
-            );
-          if (List.length(comments) > 0) {
-            Doc.concat([
-              Doc.hardLine,
-              Doc.concat(List.map(c => commentToDoc(c), comments)),
-            ]);
-          } else {
-            Doc.nil;
-          };
+          getCommentDocsInRange(e.pexp_loc, true, makeEndLoc(expr.pexp_loc))
         };
 
       Doc.breakableGroup(
@@ -1387,10 +1455,7 @@ and print_expression = (~expr: Parsetree.expression, ~parentIsArrow: bool) => {
     | /** Used for modules without body expressions */ PExpNull => Doc.nil
     };
 
-  let commentDocs = Doc.nil;
-  let commentsBeforeDocs = Doc.nil;
-
-  Doc.concat([commentsBeforeDocs, expression_doc, commentDocs]);
+  expression_doc;
 }
 and value_bind_print =
     (
@@ -1416,6 +1481,8 @@ and value_bind_print =
     };
   let vb = List.hd(vbs); // FIX ME - multiple bindings ??
   print_loc("value binding:", vb.pvb_loc);
+
+  let trailingComments = getCommentDocsInRange(vb.pvb_loc, false, vb.pvb_loc);
   Doc.group(
     Doc.concat([
       exported,
@@ -1425,6 +1492,7 @@ and value_bind_print =
       print_pattern(vb.pvb_pat),
       Doc.text(" = "),
       print_expression(~expr=vb.pvb_expr, ~parentIsArrow=false),
+      trailingComments,
     ]),
   );
 };
@@ -1734,26 +1802,13 @@ let print_primitive_value_description = (vd: Parsetree.value_description) => {
 let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
   //  let walked_tree = Comments.walk_tree_add_comments(parsed_program);
 
-  let _ = Walktree.walktree(parsed_program.statements);
+  let _ =
+    Walktree.walktree(parsed_program.statements, parsed_program.comments);
 
   let toplevel_print = (data: Parsetree.toplevel_stmt) => {
     let attributes = data.ptop_attributes;
 
     print_loc("top level:", data.ptop_loc);
-
-    let commentsbefore = []; //get_comments_before(data.ptop_loc, allComments^);
-
-    let commentsBeforeDocs =
-      if (List.length(commentsbefore) > 0) {
-        print_endline("Following block has comments before:");
-        List.iter(
-          c => allComments := removeComment(c, allComments^),
-          commentsbefore,
-        );
-        Doc.concat(List.map(c => commentToDoc(c), commentsbefore));
-      } else {
-        Doc.nil;
-      };
 
     let withoutComments =
       switch (data.ptop_desc) {
@@ -1876,21 +1931,16 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
         Doc.nil;
       };
 
-    // let trailingComment =
-    //   find_comments_in_range(stmtstartline, stmtendline, comments);
+    print_endline("without comments:");
+    Doc.debug(withoutComments);
 
-    let trailingCommentDocs = [];
-    // List.map(
-    //   c => Doc.concat([Doc.space, commentToDoc(c)]),
-    //   trailingComment,
-    // );
+    let trailingComments =
+      getCommentDocsInRange(data.ptop_loc, true, lastFileLoc());
 
-    Doc.concat([
-      commentsBeforeDocs,
-      attributeText,
-      withoutComments,
-      Doc.join(Doc.nil, trailingCommentDocs),
-    ]);
+    print_endline("top level trailing comments:");
+    Doc.debug(trailingComments);
+
+    Doc.concat([attributeText, withoutComments, trailingComments]);
   };
 
   let previousStatement: ref(option(Grain_parsing.Parsetree.toplevel_stmt)) =
@@ -1918,61 +1968,10 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
       Doc.hardLine,
       List.map(
         (stmt: Grain_parsing.Parsetree.toplevel_stmt) => {
-          // let's see if we had any comments above us
-          // or in us
-
-          let commentsAbove =
-            get_comments_between(prevLoc^, stmt.ptop_loc, allComments^);
-
           let commentsAboveDocs =
-            if (List.length(commentsAbove) > 0) {
-              Doc.concat(
-                List.map(
-                  (c: Parsetree.comment) => commentToDoc(c),
-                  commentsAbove,
-                ),
-              );
-            } else {
-              Doc.nil;
-            };
-
-          // we may also have blank lines, we want to reduce them to one
-
-          // let lastCommentLine =
-          //   if (List.length(commentsAbove) > 0) {
-          //     Some(List.hd(List.rev(commentsAbove)));
-          //   } else {
-          //     None;
-          //   };
-
-          // let lastLine =
-          //   switch (previousStatement^) {
-          //   | None =>
-          //     switch (lastCommentLine) {
-          //     | None => 1
-          //     | Some(cmt) => getCommentEndLine(cmt)
-          //     }
-          //   | Some(s) =>
-          //     switch (lastCommentLine) {
-          //     | None =>
-          //       let (_, prevline, _, _) =
-          //         get_raw_pos_info(s.ptop_loc.loc_end);
-
-          //       prevline;
-
-          //     | Some(cmt) => getCommentEndLine(cmt)
-          //     }
-          //   };
-
-          // let blankLineAbove =
-          //   if (stmtstartline - lastLine > 1) {
-          //     Doc.hardLine;
-          //   } else {
-          //     Doc.nil;
-          //   };
+            getCommentDocsInRange(prevLoc^, true, stmt.ptop_loc);
 
           let blankLineAbove = Doc.nil;
-
           previousStatement := Some(stmt);
           Doc.concat([
             commentsAboveDocs,
@@ -1986,18 +1985,18 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
 
   // print any comments below
 
-  let endpos: Stdlib__lexing.position = {
-    pos_fname: "",
-    pos_lnum: max_int,
-    pos_cnum: max_int,
-    pos_bol: 0,
-  };
+  // let endpos: Stdlib__lexing.position = {
+  //   pos_fname: "",
+  //   pos_lnum: max_int,
+  //   pos_cnum: max_int,
+  //   pos_bol: 0,
+  // };
 
-  let endLoc: Grain_parsing.Location.t = {
-    loc_start: endpos,
-    loc_end: endpos,
-    loc_ghost: false,
-  };
+  // let endLoc: Grain_parsing.Location.t = {
+  //   loc_start: endpos,
+  //   loc_end: endpos,
+  //   loc_ghost: false,
+  // };
 
   let trailingComments =
     switch (previousStatement^) {
@@ -2005,25 +2004,34 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
       print_endline("No previous statement at end?");
       Doc.nil;
     | Some(ps: Parsetree.toplevel_stmt) =>
-      print_endline(
-        "we still have these comments left "
-        ++ string_of_int(List.length(allComments^)),
-      );
-      let comments = get_comments_between(ps.ptop_loc, endLoc, allComments^);
-      if (List.length(comments) > 0) {
-        Doc.concat([
-          Doc.hardLine,
-          Doc.concat(List.map(c => commentToDoc(c), comments)),
-        ]);
+      print_endline("*** Getting last comments");
+      let cmts =
+        getCommentDocsInRange(makeEndLoc(ps.ptop_loc), true, lastFileLoc());
+
+      if (cmts == Doc.nil) {
+        cmts;
       } else {
-        Doc.nil;
+        Doc.concat([Doc.hardLine, cmts]);
       };
+    // print_endline(
+    //   "we still have these comments left "
+    //   ++ string_of_int(List.length(allComments^)),
+    // );
+    // let comments = get_comments_between(ps.ptop_loc, endLoc, allComments^);
+    // if (List.length(comments) > 0) {
+    //   Doc.concat([
+    //     Doc.hardLine,
+    //     Doc.concat(List.map(c => commentToDoc(c, true), comments)),
+    //   ]);
+    // } else {
+    //   Doc.nil;
+    // };
     };
 
   let finalDoc = Doc.concat([printedDoc, trailingComments]);
 
   // Use this to check the generated output
-  //Doc.debug(finalDoc);
+  Doc.debug(finalDoc);
   //
 
   Doc.toString(~width=80, finalDoc) |> print_endline;
