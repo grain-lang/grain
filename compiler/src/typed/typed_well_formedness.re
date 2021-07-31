@@ -116,9 +116,7 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
       | _ => ()
       };
       // For now, we only raise the error inside of functions.
-      // [TODO] This should also be raised for mutable globals, I think?
       if (exp_is_wasm_unsafe(exp)
-          && is_in_lambda()
           && !(
                Grain_utils.Config.no_gc^
                || Grain_utils.Config.compilation_mode^ == Some("runtime")
