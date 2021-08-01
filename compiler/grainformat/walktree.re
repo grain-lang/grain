@@ -72,41 +72,52 @@ let compare_locations =
   let (_, raw1le, raw1ce, _) = get_raw_pos_info(loc1.loc_end);
   let (_, raw2le, raw2ce, _) = get_raw_pos_info(loc2.loc_end);
 
-  let loc2startsAfter =
-    if (raw2l >= raw1l) {
-      if (raw2l > raw1l) {
-        true;
-      } else if (raw2c > raw1c) {
-        true;
-      } else {
-        false;
-      };
-    } else {
-      false;
-    };
-
-  let loc2finishedBefore =
-    if (raw2le <= raw1le) {
-      if (raw2le < raw1le) {
-        true;
-      } else if (raw2ce < raw1ce) {
-        true;
-      } else {
-        false;
-      };
-    } else {
-      false;
-    };
+  // print_loc("compare loc1", loc1);
+  // print_loc("to loc2", loc2);
 
   let res =
-    if (loc2startsAfter && loc2finishedBefore) {
+    if (raw1l == raw2l
+        && raw1c == raw2c
+        && raw1le == raw2le
+        && raw1ce == raw2ce) {
       0;
-    } else if (loc2startsAfter) {
-      (-1);
     } else {
-      1;
+      let loc2startsAfter =
+        if (raw2l >= raw1l) {
+          if (raw2l > raw1l) {
+            true;
+          } else if (raw2c > raw1c) {
+            true;
+          } else {
+            false;
+          };
+        } else {
+          false;
+        };
+
+      let loc2finishedBefore =
+        if (raw2le <= raw1le) {
+          if (raw2le < raw1le) {
+            true;
+          } else if (raw2ce < raw1ce) {
+            true;
+          } else {
+            false;
+          };
+        } else {
+          false;
+        };
+
+      if (loc2startsAfter && loc2finishedBefore) {
+        0;
+      } else if (loc2startsAfter) {
+        (-1);
+      } else {
+        1;
+      };
     };
 
+  //  print_endline("res is " ++ string_of_int(res));
   res;
 };
 
@@ -115,17 +126,16 @@ let walktree =
       statements: list(Grain_parsing.Parsetree.toplevel_stmt),
       comments: list(Grain_parsing.Parsetree.comment),
     ) => {
-  //let iterator = {...Ast_iterator.default_iterator,};
-
   let comment_locations =
     List.map(c => Comment((getCommentLoc(c), c)), comments);
 
   allLocations := comment_locations;
 
-  let iter_location = (self, location) => {
+  let iter_location = (self, location) =>
     // print_loc("walked location:", location);
-    allLocations := List.append(allLocations^, [Code(location)]);
-  };
+    if (!List.mem(Code(location), allLocations^)) {
+      allLocations := List.append(allLocations^, [Code(location)]);
+    };
 
   let iterator = {...Ast_iterator.default_iterator, location: iter_location};
 
@@ -142,15 +152,14 @@ let walktree =
       },
       allLocations^,
     );
-  // List.iter(l => print_loc("Sorted loc:", l), allLocations^);
-  // List.iter(
-  //   n =>
-  //     switch (n) {
-  //     | Comment((l, c)) => print_loc("comment", l)
-  //     | Code(l) => print_loc("code", l)
-  //     },
-  //   allLocations^,
-  // );
+  List.iter(
+    n =>
+      switch (n) {
+      | Comment((l, c)) => print_loc("comment", l)
+      | Code(l) => print_loc("code", l)
+      },
+    allLocations^,
+  );
 };
 
 // let get_loc_node_after =
@@ -248,15 +257,15 @@ let partitionNodeComments =
       allLocations^,
     );
 
-  // print_endline(
-  //   "We have a preceeding count of "
-  //   ++ string_of_int(List.length(preceeding)),
-  // );
+  print_endline(
+    "We have a preceeding count of "
+    ++ string_of_int(List.length(preceeding)),
+  );
 
-  // print_endline(
-  //   "We have a following count of " ++ string_of_int(List.length(following)),
-  // );
-  // List.iter(n => print_loc("post", getNodeLoc(n)), following);
+  print_endline(
+    "We have a following count of " ++ string_of_int(List.length(following)),
+  );
+  List.iter(n => print_loc("post", getNodeLoc(n)), following);
 
   let skip = ref(false);
   let preComments =
@@ -315,18 +324,18 @@ let partitionNodeComments =
       allLocations^,
     );
 
-  allLocations := cleanedList;
+  // allLocations := cleanedList;
 
-  // print_endline(
-  //   "We  finish with preceeding comments of  "
-  //   ++ string_of_int(List.length(preComments)),
-  // );
+  print_endline(
+    "We  finish with preceeding comments of  "
+    ++ string_of_int(List.length(preComments)),
+  );
 
-  // List.iter(n => print_loc("pre", getNodeLoc(n)), preceeding);
-  // print_endline(
-  //   "We finsh with a following count of "
-  //   ++ string_of_int(List.length(postComments)),
-  // );
+  List.iter(n => print_loc("pre", getNodeLoc(n)), preceeding);
+  print_endline(
+    "We finsh with a following count of "
+    ++ string_of_int(List.length(postComments)),
+  );
 
   (preComments, postComments);
 };
