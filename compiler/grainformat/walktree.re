@@ -75,50 +75,117 @@ let compare_locations =
   // print_loc("compare loc1", loc1);
   // print_loc("to loc2", loc2);
 
-  let res =
-    if (raw1l == raw2l
-        && raw1c == raw2c
-        && raw1le == raw2le
-        && raw1ce == raw2ce) {
-      0;
-    } else {
-      let loc2startsAfter =
-        if (raw2l >= raw1l) {
-          if (raw2l > raw1l) {
-            true;
-          } else if (raw2c > raw1c) {
-            true;
-          } else {
-            false;
-          };
-        } else {
-          false;
-        };
-
-      let loc2finishedBefore =
-        if (raw2le <= raw1le) {
-          if (raw2le < raw1le) {
-            true;
-          } else if (raw2ce < raw1ce) {
-            true;
-          } else {
-            false;
-          };
-        } else {
-          false;
-        };
-
-      if (loc2startsAfter && loc2finishedBefore) {
-        0;
-      } else if (loc2startsAfter) {
-        (-1);
+  let loc2_starts_before =
+    if (raw2l < raw1l) {
+      true;
+    } else if (raw2l == raw1l) {
+      if (raw2c < raw1c) {
+        true;
       } else {
-        1;
+        false;
       };
+    } else {
+      false;
     };
 
-  //  print_endline("res is " ++ string_of_int(res));
+  // simple comparison
+
+  let loc2_starts_same =
+    if (raw2l == raw1l && raw2c == raw1c) {
+      true;
+    } else {
+      false;
+    };
+
+  let loc2_ends_same =
+    if (raw2le == raw1le && raw2ce == raw1ce) {
+      true;
+    } else {
+      false;
+    };
+
+  let res =
+    if (loc2_starts_same && loc2_ends_same) {
+      0;
+    } else if (loc2_starts_before) {
+      1;
+    } else {
+      (-1);
+    };
+
   res;
+};
+
+let compare_partition_locations =
+    (loc1: Grain_parsing.Location.t, loc2: Grain_parsing.Location.t) => {
+  let (_, raw1l, raw1c, _) = get_raw_pos_info(loc1.loc_start);
+  let (_, raw2l, raw2c, _) = get_raw_pos_info(loc2.loc_start);
+
+  let (_, raw1le, raw1ce, _) = get_raw_pos_info(loc1.loc_end);
+  let (_, raw2le, raw2ce, _) = get_raw_pos_info(loc2.loc_end);
+
+  let loc2_starts_same =
+    if (raw2l == raw1l && raw2c == raw1c) {
+      true;
+    } else {
+      false;
+    };
+
+  let loc2_ends_same =
+    if (raw2le == raw1le && raw2ce == raw1ce) {
+      true;
+    } else {
+      false;
+    };
+
+  let loc2_starts_before =
+    if (raw2l < raw1l) {
+      true;
+    } else if (raw2l == raw1l) {
+      if (raw2c < raw1c) {
+        true;
+      } else {
+        false;
+      };
+    } else {
+      false;
+    };
+
+  let loc2_starts_after =
+    if (raw2l > raw1le) {
+      true;
+    } else if (raw2l == raw1le) {
+      if (raw2c > raw1ce) {
+        true;
+      } else {
+        false;
+      };
+    } else {
+      false;
+    };
+
+  let loc2_ends_before =
+    if (raw2le > raw1le) {
+      false;
+    } else if (raw2le == raw1le) {
+      if (raw2ce < raw1ce) {
+        true;
+      } else {
+        false;
+      };
+    } else {
+      true;
+    };
+
+  if (loc2_starts_same && loc2_ends_same) {
+    0;
+  } else if ((loc2_starts_same || loc2_starts_after) && loc2_ends_before) {
+    0;
+  } else if (loc2_starts_after) {
+    (-1);
+  } else {
+    1;
+  };
 };
 
 let walktree =
@@ -162,75 +229,6 @@ let walktree =
   );
 };
 
-// let get_loc_node_after =
-//     (loc: Grain_parsing.Location.t, allLocations: list(node_t))
-//     : option(node_t) => {
-//   // print_loc("looking for a node afte", loc);
-//   let (_, raw1l, raw1c, _) = get_raw_pos_info(loc.loc_start);
-//   let (_, raw1le, raw1ce, _) = get_raw_pos_info(loc.loc_end);
-
-//   let afterloc: option(node_t) =
-//     List.fold_left(
-//       (acc, node: node_t) => {
-//         switch (acc) {
-//         | Some(_) => acc // nothing more to do
-//         | None =>
-//           let l = getNodeLoc(node);
-//           let (_, raw2l, raw2c, _) = get_raw_pos_info(l.loc_start);
-//           // let (_, raw2le, raw2ce, _) = get_raw_pos_info(l.loc_end);
-
-//           if (raw2l > raw1l) {
-//             //  print_loc("A match", l);
-//             Some(node);
-//           } else if (raw2l == raw1l) {
-//             if (raw2c > raw1ce) {
-//               //  print_loc("B match", l);
-//               Some(node);
-//             } else {
-//               None;
-//             };
-//           } else {
-//             None;
-//           };
-//         }
-//       },
-//       None,
-//       allLocations,
-//     );
-
-//   afterloc;
-// };
-
-// let get_node_after = (loc: Grain_parsing.Location.t): option(node_t) => {
-//   let nodes =
-//     List.filter(
-//       n =>
-//         switch (n) {
-//         | Code(_) => true
-//         | Comment(_) => false
-//         },
-//       allLocations^,
-//     );
-//   get_loc_node_after(loc, nodes);
-// };
-
-// let get_comment_after = (loc: Grain_parsing.Location.t): option(node_t) => {
-//   let nodes =
-//     List.filter(
-//       n =>
-//         switch (n) {
-//         | Code(_) => false
-//         | Comment(_) => true
-//         },
-//       allLocations^,
-//     );
-//   get_loc_node_after(loc, nodes);
-// };
-
-// let get_next_after = (loc: Grain_parsing.Location.t): option(node_t) => {
-//   get_loc_node_after(loc, allLocations^);
-// };
-
 let partitionNodeComments =
     (loc: Grain_parsing.Location.t)
     : (
@@ -245,7 +243,7 @@ let partitionNodeComments =
         let (preceeding, following) = acc;
         let nodeLoc = getNodeLoc(n);
 
-        if (compare_locations(loc, nodeLoc) > 0) {
+        if (compare_partition_locations(loc, nodeLoc) > 0) {
           (preceeding @ [n], following);
         } else if (compare_locations(loc, nodeLoc) < 0) {
           (preceeding, following @ [n]);
@@ -257,15 +255,41 @@ let partitionNodeComments =
       allLocations^,
     );
 
-  print_endline(
-    "We have a preceeding count of "
-    ++ string_of_int(List.length(preceeding)),
-  );
+  // print_endline(
+  //   "We have a preceeding count of "
+  //   ++ string_of_int(List.length(preceeding)),
+  // );
 
-  print_endline(
-    "We have a following count of " ++ string_of_int(List.length(following)),
-  );
-  List.iter(n => print_loc("post", getNodeLoc(n)), following);
+  // print_endline(
+  //   "We have a following count of " ++ string_of_int(List.length(following)),
+  // );
+
+  let sortedPreceeding =
+    List.sort(
+      (node1: node_t, node2: node_t) => {
+        let loc1 = getNodeLoc(node1);
+
+        let loc2 = getNodeLoc(node2);
+
+        compare_locations(loc1, loc2);
+      },
+      preceeding,
+    );
+
+  let sortedFollowing =
+    List.sort(
+      (node1: node_t, node2: node_t) => {
+        let loc1 = getNodeLoc(node1);
+
+        let loc2 = getNodeLoc(node2);
+
+        compare_locations(loc1, loc2);
+      },
+      following,
+    );
+
+  List.iter(n => print_loc("pre", getNodeLoc(n)), sortedPreceeding);
+  List.iter(n => print_loc("post", getNodeLoc(n)), sortedFollowing);
 
   let skip = ref(false);
   let preComments =
@@ -282,7 +306,7 @@ let partitionNodeComments =
           };
         },
       [],
-      List.rev(preceeding),
+      List.rev(sortedPreceeding),
     );
 
   skip := false;
@@ -300,7 +324,7 @@ let partitionNodeComments =
           };
         },
       [],
-      following,
+      sortedFollowing,
     );
 
   // look for all comments after this node untl we hit a node not a comment
@@ -324,16 +348,15 @@ let partitionNodeComments =
       allLocations^,
     );
 
-  // allLocations := cleanedList;
+  allLocations := cleanedList;
 
   print_endline(
-    "We  finish with preceeding comments of  "
+    "We finish with preceeding comments of  "
     ++ string_of_int(List.length(preComments)),
   );
 
-  List.iter(n => print_loc("pre", getNodeLoc(n)), preceeding);
   print_endline(
-    "We finsh with a following count of "
+    "We finsh with a following comments of "
     ++ string_of_int(List.length(postComments)),
   );
 
