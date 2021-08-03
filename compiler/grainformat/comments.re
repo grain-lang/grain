@@ -7,14 +7,6 @@ let walk_tree_add_comments = (parsed_program: Parsetree.parsed_program) => {
   [];
 };
 
-let getCommentLoc = (comment: Parsetree.comment) =>
-  switch (comment) {
-  | Line(cmt) => cmt.cmt_loc
-  | Block(cmt) => cmt.cmt_loc
-  | Doc(cmt) => cmt.cmt_loc
-  | Shebang(cmt) => cmt.cmt_loc
-  };
-
 let get_raw_pos_info = (pos: Lexing.position) => (
   pos.pos_fname,
   pos.pos_lnum,
