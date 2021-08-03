@@ -359,26 +359,26 @@ let partitionNodeCommentsXX =
 
   allLocations := cleanedList;
 
-  print_endline(
-    "We finish with preceeding comments of  "
-    ++ string_of_int(List.length(preComments)),
-  );
+  // print_endline(
+  //   "We finish with preceeding comments of  "
+  //   ++ string_of_int(List.length(preComments)),
+  // );
 
-  List.iter(c => print_endline(getComment(c)), preComments);
+  // List.iter(c => print_endline(getComment(c)), preComments);
 
-  print_endline(
-    "We finsh with a following comments of "
-    ++ string_of_int(List.length(postComments)),
-  );
+  // print_endline(
+  //   "We finsh with a following comments of "
+  //   ++ string_of_int(List.length(postComments)),
+  // );
 
-  List.iter(c => print_endline(getComment(c)), postComments);
+  // List.iter(c => print_endline(getComment(c)), postComments);
 
   (preComments, postComments);
 };
 
 let getLeadingComments =
     (loc: Grain_parsing.Location.t): list(Grain_parsing.Parsetree.comment) => {
-  print_loc("****** getLeadingComments", loc);
+  //print_loc("****** getLeadingComments", loc);
 
   let preceeding =
     List.fold_left(
@@ -456,19 +456,19 @@ let getLeadingComments =
 
   allLocations := cleanedList;
 
-  print_endline(
-    "We finish with preceeding comments of  "
-    ++ string_of_int(List.length(preComments)),
-  );
+  // print_endline(
+  //   "We finish with preceeding comments of  "
+  //   ++ string_of_int(List.length(preComments)),
+  // );
 
-  List.iter(c => print_endline(getComment(c)), preComments);
+  // List.iter(c => print_endline(getComment(c)), preComments);
 
   preComments;
 };
 
 let getTrailingComments =
     (loc: Grain_parsing.Location.t): list(Grain_parsing.Parsetree.comment) => {
-  print_loc("****** getTrailingComments", loc);
+  //print_loc("****** getTrailingComments", loc);
 
   let following =
     List.fold_left(
@@ -541,12 +541,12 @@ let getTrailingComments =
 
   allLocations := cleanedList;
 
-  print_endline(
-    "We finsh with a following comments of "
-    ++ string_of_int(List.length(postComments)),
-  );
+  // print_endline(
+  //   "We finsh with a following comments of "
+  //   ++ string_of_int(List.length(postComments)),
+  // );
 
-  List.iter(c => print_endline(getComment(c)), postComments);
+  // List.iter(c => print_endline(getComment(c)), postComments);
 
   postComments;
 };

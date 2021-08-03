@@ -1104,6 +1104,20 @@ and print_expression =
       print_endline("PExpPrimN");
       Doc.text("PExpPrimN");
     | PExpIf(condition, trueExpr, falseExpr) =>
+      let leadingConditionComments =
+        Walktree.getLeadingComments(condition.pexp_loc);
+      let exprLine = getLocLine(condition.pexp_loc);
+
+      let leadingConditionCommentDocs =
+        if (List.length(leadingConditionComments) > 0) {
+          Doc.concat([
+            print_multi_comments_no_space(leadingConditionComments, exprLine),
+            Doc.space,
+          ]);
+        } else {
+          Doc.nil;
+        };
+
       let trueClause =
         Doc.group(
           print_expression(~expr=trueExpr, ~parentIsArrow=false, parent_loc),
@@ -1150,6 +1164,7 @@ and print_expression =
               Doc.group(
                 Doc.concat([
                   Doc.lparen,
+                  leadingConditionCommentDocs,
                   print_expression(
                     ~expr=condition,
                     ~parentIsArrow=false,
@@ -1172,6 +1187,7 @@ and print_expression =
             Doc.group(
               Doc.concat([
                 Doc.lparen,
+                leadingConditionCommentDocs,
                 print_expression(
                   ~expr=condition,
                   ~parentIsArrow=false,
@@ -1326,6 +1342,7 @@ and print_expression =
           leadingBlockCommentDocsInter;
         };
 
+      let prevExpr = ref(None);
       let block =
         Doc.join(
           Doc.hardLine,
@@ -1333,8 +1350,19 @@ and print_expression =
             (e: Parsetree.expression) => {
               let printed_expression =
                 print_expression(~expr=e, ~parentIsArrow=false, parent_loc);
+              let blankLine =
+                switch (prevExpr^) {
+                | None => Doc.nil
+                | Some(pexpr: Parsetree.expression) =>
+                  if (getLocLine(e.pexp_loc) > getLocLine(pexpr.pexp_loc) + 1) {
+                    Doc.hardLine;
+                  } else {
+                    Doc.nil;
+                  }
+                };
+              prevExpr := Some(e);
 
-              Doc.group(Doc.concat([printed_expression]));
+              Doc.group(Doc.concat([blankLine, printed_expression]));
             },
             expressions,
           ),
@@ -1931,8 +1959,6 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
     if (List.length(parsed_program.statements) > 0) {
       let firstStatement = List.hd(parsed_program.statements);
 
-      print_endline("leading:");
-
       let leadingComments =
         Walktree.getLeadingComments(firstStatement.ptop_loc);
 
@@ -1960,7 +1986,16 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
       Doc.hardLine,
       List.map(
         (stmt: Grain_parsing.Parsetree.toplevel_stmt) => {
-          let blankLineAbove = Doc.nil;
+          let blankLineAbove =
+            switch (previousStatement^) {
+            | None => Doc.nil
+            | Some(pstmt) =>
+              if (getLocLine(stmt.ptop_loc) > getLocLine(pstmt.ptop_loc) + 1) {
+                Doc.hardLine;
+              } else {
+                Doc.nil;
+              }
+            };
           previousStatement := Some(stmt);
           Doc.concat([blankLineAbove, Doc.group(toplevel_print(stmt))]);
         },
