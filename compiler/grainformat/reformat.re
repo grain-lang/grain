@@ -581,9 +581,9 @@ and print_record_pattern =
 and print_pattern =
     (pat: Parsetree.pattern, parent_loc: Grain_parsing__Location.t) => {
   //print_endline("Pattern loc");
-  print_loc("Pattern:", pat.ppat_loc);
+  // print_loc("Pattern:", pat.ppat_loc);
 
-  print_endline("pattern:");
+  // print_endline("pattern:");
 
   let leadingComments = Walktree.getLeadingComments(pat.ppat_loc);
   let trailingComments = Walktree.getTrailingComments(pat.ppat_loc);
@@ -669,16 +669,30 @@ and print_pattern =
 
   let (pattern, parens) = printed_pattern;
 
+  let withLeading =
+    if (leadingCommentDocs == Doc.nil) {
+      [pattern];
+    } else {
+      [leadingCommentDocs, pattern];
+    };
+  let withTrailing =
+    if (trailingCommentDocs == Doc.nil) {
+      withLeading;
+    } else {
+      List.append(withLeading, [trailingCommentDocs]);
+    };
+
+  let cleanPattern =
+    if (List.length(withTrailing) == 1) {
+      pattern;
+    } else {
+      Doc.concat([pattern]);
+    };
+
   if (parens) {
-    Doc.concat([
-      Doc.lparen,
-      leadingCommentDocs,
-      pattern,
-      trailingCommentDocs,
-      Doc.rparen,
-    ]);
+    Doc.concat([Doc.lparen, cleanPattern, Doc.rparen]);
   } else {
-    Doc.concat([leadingCommentDocs, pattern, trailingCommentDocs]);
+    cleanPattern;
   };
 }
 and print_constant = (c: Parsetree.constant) => {
@@ -936,9 +950,7 @@ and getFunctionName = (expr: Parsetree.expression) => {
   | PExpConstant(x) =>
     print_endline("PExpConstant");
     Doc.toString(~width=1000, print_constant(x));
-  | PExpId({txt: id}) =>
-    print_endline("PExpId");
-    Doc.toString(~width=1000, print_ident(id));
+  | PExpId({txt: id}) => Doc.toString(~width=1000, print_ident(id))
   | _ => ""
   };
 }
@@ -949,7 +961,6 @@ and print_expression =
       ~parentIsArrow: bool,
       parent_loc: Grain_parsing__Location.t,
     ) => {
-  print_endline("expr:");
   // let leadingComments = []; //Walktree.getLeadingComments(expr.pexp_loc);
   let trailingComments = Walktree.getTrailingComments(expr.pexp_loc);
 
@@ -962,17 +973,17 @@ and print_expression =
   let expression_doc =
     switch (expr.pexp_desc) {
     | PExpConstant(x) =>
-      print_loc("PExpConstant", expr.pexp_loc);
+      //   print_loc("PExpConstant", expr.pexp_loc);
 
-      print_constant(x);
+      print_constant(x)
     | PExpId({txt: id}) =>
-      print_loc("PExpId", expr.pexp_loc);
+      //  print_loc("PExpId", expr.pexp_loc);
 
-      print_ident(id);
+      print_ident(id)
     | PExpLet(rec_flag, mut_flag, vbs) =>
-      print_loc("PExpLet", expr.pexp_loc);
+      // print_loc("PExpLet", expr.pexp_loc);
 
-      value_bind_print(Asttypes.Nonexported, rec_flag, mut_flag, vbs);
+      value_bind_print(Asttypes.Nonexported, rec_flag, mut_flag, vbs)
     | PExpTuple(expressions) =>
       addParens(
         Doc.join(
@@ -988,6 +999,7 @@ and print_expression =
       Doc.group(
         Doc.concat([
           Doc.lbracket,
+          Doc.text(">"),
           Doc.join(
             Doc.comma,
             List.map(
@@ -1032,7 +1044,7 @@ and print_expression =
         print_expression(~expr=expression2, ~parentIsArrow=false, parent_loc),
       ])
     | PExpMatch(expression, match_branches) =>
-      print_loc("PExpMatch", expr.pexp_loc);
+      // print_loc("PExpMatch", expr.pexp_loc);
 
       Doc.concat([
         Doc.group(
@@ -1092,7 +1104,7 @@ and print_expression =
         ),
         Doc.hardLine,
         Doc.rbrace,
-      ]);
+      ])
 
     | PExpPrim1(prim1, expression) =>
       print_endline("PExpPrim1");
@@ -1119,23 +1131,19 @@ and print_expression =
         };
 
       let trueClause =
-        Doc.group(
-          print_expression(~expr=trueExpr, ~parentIsArrow=false, parent_loc),
-        );
+        print_expression(~expr=trueExpr, ~parentIsArrow=false, parent_loc);
 
       let falseClause =
         switch (falseExpr.pexp_desc) {
         | PExpBlock(expressions) =>
           if (List.length(expressions) > 0) {
             Doc.concat([
-              Doc.space,
-              Doc.text("else "),
-              Doc.group(
-                print_expression(
-                  ~expr=falseExpr,
-                  ~parentIsArrow=false,
-                  parent_loc,
-                ),
+              Doc.text("else"),
+              Doc.line,
+              print_expression(
+                ~expr=falseExpr,
+                ~parentIsArrow=false,
+                parent_loc,
               ),
             ]);
           } else {
@@ -1144,8 +1152,8 @@ and print_expression =
         | _ =>
           Doc.group(
             Doc.concat([
-              Doc.space,
-              Doc.text("else "),
+              Doc.text("else"),
+              Doc.line,
               print_expression(
                 ~expr=falseExpr,
                 ~parentIsArrow=false,
@@ -1159,6 +1167,7 @@ and print_expression =
         Doc.group(
           Doc.indent(
             Doc.concat([
+              Doc.line,
               Doc.text("if "),
               Doc.group(
                 Doc.concat([
@@ -1173,7 +1182,9 @@ and print_expression =
                   Doc.space,
                 ]),
               ),
+              Doc.line,
               trueClause,
+              Doc.line,
               falseClause,
             ]),
           ),
@@ -1181,9 +1192,9 @@ and print_expression =
       } else {
         Doc.group(
           Doc.concat([
-            Doc.text("if "),
             Doc.group(
               Doc.concat([
+                Doc.text("if "),
                 Doc.lparen,
                 leadingConditionCommentDocs,
                 print_expression(
@@ -1195,8 +1206,8 @@ and print_expression =
                 Doc.space,
               ]),
             ),
-            Doc.space,
             trueClause,
+            Doc.line,
             falseClause,
           ]),
         );
@@ -1270,7 +1281,7 @@ and print_expression =
         ]),
       )
     | PExpLambda(patterns, expression) =>
-      print_loc("PExpLambda", expr.pexp_loc);
+      //print_loc("PExpLambda", expr.pexp_loc);
 
       Doc.group(
         Doc.concat([
@@ -1307,20 +1318,18 @@ and print_expression =
             parent_loc,
           ),
         ]),
-      );
+      )
 
     | PExpApp(func, expressions) =>
-      print_loc("PExpApp", expr.pexp_loc);
+      // print_loc("PExpApp", expr.pexp_loc);
 
-      print_application(func, expressions, parent_loc);
+      print_application(func, expressions, parent_loc)
     | PExpBlock(expressions) =>
-      print_loc("PExpBlock", expr.pexp_loc);
+      // print_loc("PExpBlock", expr.pexp_loc);
 
       let leadingComments =
         if (List.length(expressions) > 0) {
           let firstStatement = List.hd(expressions);
-
-          print_endline("leading:");
 
           Walktree.getLeadingComments(firstStatement.pexp_loc);
         } else {
@@ -1383,7 +1392,7 @@ and print_expression =
         print_expression(~expr=expression1, ~parentIsArrow=false, parent_loc),
       ])
     | PExpAssign(expression, expression1) =>
-      print_loc("PExpAssign", expr.pexp_loc);
+      //print_loc("PExpAssign", expr.pexp_loc);
 
       switch (expression1.pexp_desc) {
       | PExpApp(func, expressions) =>
@@ -1391,10 +1400,19 @@ and print_expression =
 
         let trimmedOperator = String.trim(functionName);
 
-        let left = print_expression(~expr=expression, ~parentIsArrow=false);
+        let left =
+          print_expression(
+            ~expr=expression,
+            ~parentIsArrow=false,
+            parent_loc,
+          );
 
         let first =
-          print_expression(~expr=List.hd(expressions), ~parentIsArrow=false);
+          print_expression(
+            ~expr=List.hd(expressions),
+            ~parentIsArrow=false,
+            parent_loc,
+          );
 
         if (left == first) {
           // +=, -=, *=, /=, and %=
@@ -1405,7 +1423,6 @@ and print_expression =
           | "/"
           | "%" =>
             let sugaredOp = Doc.text(" " ++ trimmedOperator ++ "= ");
-
             Doc.concat([
               print_expression(
                 ~expr=expression,
@@ -1413,11 +1430,19 @@ and print_expression =
                 parent_loc,
               ),
               sugaredOp,
-              print_expression(
-                ~expr=List.hd(List.tl(expressions)),
-                ~parentIsArrow=false,
-                parent_loc,
-              ),
+              if (List.length(expressions) == 1) {
+                print_expression(
+                  ~expr=List.hd(expressions),
+                  ~parentIsArrow=false,
+                  parent_loc,
+                );
+              } else {
+                print_expression(
+                  ~expr=List.hd(List.tl(expressions)),
+                  ~parentIsArrow=false,
+                  parent_loc,
+                );
+              },
             ]);
           | _ =>
             Doc.concat([
@@ -1464,12 +1489,16 @@ and print_expression =
             parent_loc,
           ),
         ])
-      };
+      }
 
     | /** Used for modules without body expressions */ PExpNull => Doc.nil
     };
 
-  Doc.concat([expression_doc, trailingCommentDocs]);
+  if (trailingCommentDocs == Doc.nil) {
+    expression_doc;
+  } else {
+    Doc.concat([expression_doc, trailingCommentDocs]);
+  };
 }
 and value_bind_print =
     (
@@ -1494,7 +1523,7 @@ and value_bind_print =
     | Mutable => Doc.text("mut ")
     };
   let vb = List.hd(vbs); // FIX ME - multiple bindings ??
-  print_loc("value binding:", vb.pvb_loc);
+  // print_loc("value binding:", vb.pvb_loc);
 
   Doc.group(
     Doc.concat([
@@ -1820,7 +1849,7 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
   let toplevel_print = (data: Parsetree.toplevel_stmt) => {
     let attributes = data.ptop_attributes;
 
-    print_loc("top level:", data.ptop_loc);
+    //print_loc("top level:", data.ptop_loc);
 
     let withoutComments =
       switch (data.ptop_desc) {
@@ -2004,7 +2033,7 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
   let finalDoc = Doc.concat([leadingCommentDocs, printedDoc]);
 
   // Use this to check the generated output
-  Doc.debug(finalDoc);
+  //Doc.debug(finalDoc);
   //
 
   Doc.toString(~width=80, finalDoc) |> print_endline;

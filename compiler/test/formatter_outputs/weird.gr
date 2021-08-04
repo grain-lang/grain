@@ -1,7 +1,0 @@
-if (newLength < 0) {
-    [>]
-  } else if (newLength > arrayLength) {
-    array
-  } else {
-    init(newLength, n => array[startIndex + n])
-  }

@@ -14,5 +14,5 @@ describe("formatter", ({test}) => {
   assertFormatOutput("number_sugar", "number_sugar");
   assertFormatOutput("records", "records");
   assertFormatOutput("guards", "guards");
-  assertFormatOutput("weird", "weird");
+  assertFormatOutput("arrays", "arrays");
 });

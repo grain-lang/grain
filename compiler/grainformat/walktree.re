@@ -227,14 +227,14 @@ let walktree =
       },
       allLocations^,
     );
-  List.iter(
-    n =>
-      switch (n) {
-      | Comment((l, c)) => print_loc("comment", l)
-      | Code(l) => print_loc("code", l)
-      },
-    allLocations^,
-  );
+  // List.iter(
+  //   n =>
+  //     switch (n) {
+  //     | Comment((l, c)) => print_loc("comment", l)
+  //     | Code(l) => print_loc("code", l)
+  //     },
+  //   allLocations^,
+  // );
 };
 
 let partitionNodeCommentsXX =

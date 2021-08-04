@@ -2,8 +2,7 @@ let rec filter = (fn, list) => {
   match (list) {
     [] => [],
     [first, ...rest] =>
-      if (fn(first)) [first, ...filter(fn, rest)]
-      else filter(fn, rest),
+      if (fn(first)) [first, ...filter(fn, rest)] else filter(fn, rest),
   }
 }
 
@@ -12,7 +11,7 @@ let filteri = (fn, list) => {
     match (list) {
       [] => [],
       [first, ...rest] =>
-        if (fn(first, index)) [first, ...iter(fn, rest, index + 1)]
+        if (fn(first, index)) [first, ...iter(fn, rest, index + 1)] 
         else iter(fn, rest, index + 1),
     }
   }
@@ -23,8 +22,7 @@ let rec reject = (fn, list) => {
   match (list) {
     [] => [],
     [first, ...rest] =>
-      if (!fn(first)) [first, ...reject(fn, rest)]
-      else reject(fn, rest),
+      if (!fn(first)) [first, ...reject(fn, rest)] else reject(fn, rest),
   }
 }
 
