@@ -1142,24 +1142,23 @@ and print_expression =
             Doc.nil;
           }
         | _ =>
-          Doc.concat([
-            Doc.space,
-            Doc.text("else "),
-            Doc.group(
+          Doc.group(
+            Doc.concat([
+              Doc.space,
+              Doc.text("else "),
               print_expression(
                 ~expr=falseExpr,
                 ~parentIsArrow=false,
                 parent_loc,
               ),
-            ),
-          ])
+            ]),
+          )
         };
 
       if (parentIsArrow) {
         Doc.group(
           Doc.indent(
             Doc.concat([
-              Doc.line,
               Doc.text("if "),
               Doc.group(
                 Doc.concat([
@@ -1182,7 +1181,6 @@ and print_expression =
       } else {
         Doc.group(
           Doc.concat([
-            Doc.line,
             Doc.text("if "),
             Doc.group(
               Doc.concat([
@@ -2006,7 +2004,7 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
   let finalDoc = Doc.concat([leadingCommentDocs, printedDoc]);
 
   // Use this to check the generated output
-  // Doc.debug(finalDoc);
+  Doc.debug(finalDoc);
   //
 
   Doc.toString(~width=80, finalDoc) |> print_endline;
