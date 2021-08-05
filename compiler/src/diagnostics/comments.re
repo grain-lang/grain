@@ -33,80 +33,116 @@ module Attribute = {
       })
     | Deprecated({attr_desc});
 
-  let try_or_malformed = (~attr, ~hint, fn) =>
-    try(fn()) {
-    | _ => raise(MalformedAttribute(attr, hint))
+  let parse_param = (~attr, content) => {
+    let re = Str.regexp({|^\([^:]+\):[ ]+\(.+\)$|});
+    if (Str.string_match(re, content, 0)) {
+      let attr_name = Str.matched_group(1, content);
+      let attr_desc = Str.matched_group(2, content);
+      Param({attr_name, attr_desc, attr_type: None});
+    } else {
+      raise(
+        MalformedAttribute(
+          attr,
+          "@param ParamName: Description of param value",
+        ),
+      );
     };
+  };
+
+  let parse_returns = (~attr, content) => {
+    let re = Str.regexp({|^\(.+\)$|});
+    if (Str.string_match(re, content, 0)) {
+      let attr_desc = Str.matched_group(1, content);
+      Returns({attr_desc, attr_type: None});
+    } else {
+      raise(
+        MalformedAttribute(attr, "@returns Description of return value"),
+      );
+    };
+  };
+
+  let parse_module = (~attr, content) => {
+    let re = Str.regexp({|^\([^:]+\):[ ]+\(.+\)$|});
+    if (Str.string_match(re, content, 0)) {
+      let attr_name = Str.matched_group(1, content);
+      let attr_desc = Str.matched_group(2, content);
+      Module({attr_name, attr_desc});
+    } else {
+      raise(
+        MalformedAttribute(attr, "@module ModuleName: Description of module"),
+      );
+    };
+  };
+
+  let parse_example = (~attr, content) => {
+    let re = Str.regexp({|^\(.+\)$|});
+    if (Str.string_match(re, content, 0)) {
+      let attr_desc = Str.matched_group(1, content);
+      Example({attr_desc: attr_desc});
+    } else {
+      raise(MalformedAttribute(attr, "@example single-line code example"));
+    };
+  };
+
+  let parse_section = (~attr, content) => {
+    let re = Str.regexp({|^\([^:]+\):[ ]+\(.+\)$|});
+    if (Str.string_match(re, content, 0)) {
+      let attr_name = Str.matched_group(1, content);
+      let attr_desc = Str.matched_group(2, content);
+      Section({attr_name, attr_desc});
+    } else {
+      raise(
+        MalformedAttribute(
+          attr,
+          "@section SectionName: Description of section",
+        ),
+      );
+    };
+  };
+
+  let parse_deprecated = (~attr, content) => {
+    let re = Str.regexp({|^\(.+\)$|});
+    if (Str.string_match(re, content, 0)) {
+      let attr_desc = Str.matched_group(1, content);
+      Deprecated({attr_desc: attr_desc});
+    } else {
+      raise(
+        MalformedAttribute(attr, "@deprecated Description of deprecation"),
+      );
+    };
+  };
 
   let extract = comment => {
     let attrs = ref([]);
-    // TODO: We should probably be using a less-janky RegExp library
-    // https://regexper.com/#%5E%40%28%5Ba-zA-Z_%5D%2B%29%28%5B%20%5D%2B%28%5B%5E%3A%5D%2B%29%3A%29%3F%5B%20%5D%2B%28.*%29%24
-    let re = Str.regexp({|^@\([a-zA-Z_]+\)\([ ]+\([^:]+\):\)?[ ]+\(.*\)$|});
+    let attr_line_re = Str.regexp({|^@\([a-zA-Z_]+\)\b\(.*\)$|});
+
+    // TODO: We should probably transition to a lexer, instead of 2-passes of RegExp
     let out =
       Str.global_substitute(
-        re,
+        attr_line_re,
         _ => {
           let attr = Str.matched_group(1, comment);
+          // Trim this since we only match word boundaries now
+          let content = String.trim(Str.matched_group(2, comment));
           switch (attr) {
           | "param" =>
-            try_or_malformed(
-              ~attr,
-              ~hint="@param ParamName: Description of param value",
-              () => {
-                let attr_name = Str.matched_group(3, comment);
-                let attr_desc = Str.matched_group(4, comment);
-                attrs :=
-                  [Param({attr_name, attr_desc, attr_type: None}), ...attrs^];
-              },
-            )
+            let param_attr = parse_param(~attr, content);
+            attrs := [param_attr, ...attrs^];
           | "returns" =>
-            try_or_malformed(
-              ~attr,
-              ~hint="@returns Description of return value",
-              () => {
-                let attr_desc = Str.matched_group(4, comment);
-                attrs := [Returns({attr_desc, attr_type: None}), ...attrs^];
-              },
-            )
+            let returns_attr = parse_returns(~attr, content);
+            attrs := [returns_attr, ...attrs^];
           | "module" =>
-            try_or_malformed(
-              ~attr,
-              ~hint="@module ModuleName: Description of module",
-              () => {
-                let attr_name = Str.matched_group(3, comment);
-                let attr_desc = Str.matched_group(4, comment);
-                attrs := [Module({attr_name, attr_desc}), ...attrs^];
-              },
-            )
+            let module_attr = parse_module(~attr, content);
+            attrs := [module_attr, ...attrs^];
           | "example" =>
-            try_or_malformed(
-              ~attr,
-              ~hint="@example single-line code example",
-              () => {
-                let attr_desc = Str.matched_group(4, comment);
-                attrs := [Example({attr_desc: attr_desc}), ...attrs^];
-              },
-            )
+            let example_attr = parse_example(~attr, content);
+            attrs := [example_attr, ...attrs^];
           | "section" =>
-            try_or_malformed(
-              ~attr,
-              ~hint="@section SectionName: Description of section",
-              () => {
-                let attr_name = Str.matched_group(3, comment);
-                let attr_desc = Str.matched_group(4, comment);
-                attrs := [Section({attr_name, attr_desc}), ...attrs^];
-              },
-            )
+            let section_attr = parse_section(~attr, content);
+            attrs := [section_attr, ...attrs^];
           | "deprecated" =>
-            try_or_malformed(
-              ~attr,
-              ~hint="@deprecated Description of deprecation",
-              () => {
-                let attr_desc = Str.matched_group(4, comment);
-                attrs := [Deprecated({attr_desc: attr_desc}), ...attrs^];
-              },
-            )
+            let deprecated_attr = parse_deprecated(~attr, content);
+            attrs := [deprecated_attr, ...attrs^];
           | _ => raise(InvalidAttribute(attr))
           };
 

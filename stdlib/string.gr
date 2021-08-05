@@ -992,7 +992,7 @@ let writeUtf8CodePoint = (ptr, codePoint) => {
     WasmI32.store8(ptr, high, 0n)
     WasmI32.store8(ptr + 1n, low, 0n)
     2n
-  } else if (codePoint < 0xFFFFn) {
+  } else if (codePoint <= 0xFFFFn) {
     // Code points in the range 0x0800..0xFFFF are written as three bytes.
     // The first byte has a four bit prefix of 1110, followed by 4 bits of the
     // codepoint. Remaining bytes each have a two bit prefix of 10, followed by
