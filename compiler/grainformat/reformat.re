@@ -581,12 +581,16 @@ and print_record_pattern =
 and print_pattern =
     (pat: Parsetree.pattern, parent_loc: Grain_parsing__Location.t) => {
   //print_endline("Pattern loc");
-  // print_loc("Pattern:", pat.ppat_loc);
+  //print_loc("Pattern:", pat.ppat_loc);
 
   // print_endline("pattern:");
 
-  let leadingComments = Walktree.getLeadingComments(pat.ppat_loc);
-  let trailingComments = Walktree.getTrailingComments(pat.ppat_loc);
+  // let leadingComments = Walktree.getLeadingComments(pat.ppat_loc);
+  // let trailingComments = Walktree.getTrailingComments(pat.ppat_loc);
+
+  let (leadingComments, trailingComments) =
+    Walktree.partitionComments(pat.ppat_loc);
+  Walktree.removeUsedComments(leadingComments, trailingComments);
 
   let exprLine = getLocLine(pat.ppat_loc);
 
@@ -673,7 +677,7 @@ and print_pattern =
     if (leadingCommentDocs == Doc.nil) {
       [pattern];
     } else {
-      [leadingCommentDocs, pattern];
+      [leadingCommentDocs, Doc.space, pattern];
     };
   let withTrailing =
     if (trailingCommentDocs == Doc.nil) {
@@ -682,12 +686,7 @@ and print_pattern =
       List.append(withLeading, [trailingCommentDocs]);
     };
 
-  let cleanPattern =
-    if (List.length(withTrailing) == 1) {
-      pattern;
-    } else {
-      Doc.concat([pattern]);
-    };
+  let cleanPattern = Doc.concat(withTrailing);
 
   if (parens) {
     Doc.concat([Doc.lparen, cleanPattern, Doc.rparen]);
@@ -962,9 +961,13 @@ and print_expression =
       parent_loc: Grain_parsing__Location.t,
     ) => {
   // let leadingComments = []; //Walktree.getLeadingComments(expr.pexp_loc);
-  let trailingComments = Walktree.getTrailingComments(expr.pexp_loc);
+  // let trailingComments = Walktree.getTrailingComments(expr.pexp_loc);
 
   // let leadingCommentDocs = print_multi_comments(leadingComments);
+
+  let (_leadingComments, trailingComments) =
+    Walktree.partitionComments(expr.pexp_loc);
+  Walktree.removeUsedComments([], trailingComments);
 
   let exprLine = getLocLine(expr.pexp_loc);
 
@@ -1116,8 +1119,13 @@ and print_expression =
       print_endline("PExpPrimN");
       Doc.text("PExpPrimN");
     | PExpIf(condition, trueExpr, falseExpr) =>
-      let leadingConditionComments =
-        Walktree.getLeadingComments(condition.pexp_loc);
+      // let leadingConditionComments =
+      //   Walktree.getLeadingComments(condition.pexp_loc);
+
+      let (leadingConditionComments, _trailingComments) =
+        Walktree.partitionComments(condition.pexp_loc);
+      Walktree.removeUsedComments(leadingConditionComments, []);
+
       let exprLine = getLocLine(condition.pexp_loc);
 
       let leadingConditionCommentDocs =
@@ -1331,10 +1339,22 @@ and print_expression =
         if (List.length(expressions) > 0) {
           let firstStatement = List.hd(expressions);
 
-          Walktree.getLeadingComments(firstStatement.pexp_loc);
+          // Walktree.getLeadingComments(firstStatement.pexp_loc);
+
+          let (leadingComments, _trailingComments) =
+            Walktree.partitionComments(firstStatement.pexp_loc);
+          Walktree.removeUsedComments(leadingComments, []);
+
+          leadingComments;
         } else {
           // cheat with the name
-          Walktree.getTrailingComments(expr.pexp_loc);
+          // Walktree.getTrailingComments(expr.pexp_loc);
+
+          let (_leadingComments, trailingComments) =
+            Walktree.partitionComments(expr.pexp_loc);
+
+          Walktree.removeUsedComments([], trailingComments);
+          trailingComments;
         };
 
       let exprLine = getLocLine(expr.pexp_loc) + 1;
@@ -1986,8 +2006,13 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
     if (List.length(parsed_program.statements) > 0) {
       let firstStatement = List.hd(parsed_program.statements);
 
-      let leadingComments =
-        Walktree.getLeadingComments(firstStatement.ptop_loc);
+      // let leadingComments =
+      //   Walktree.getLeadingComments(firstStatement.ptop_loc);
+
+      let (leadingComments, _trailingComments) =
+        Walktree.partitionComments(firstStatement.ptop_loc);
+
+      Walktree.removeUsedComments(leadingComments, []);
 
       if (List.length(leadingComments) > 0) {
         Doc.concat([
