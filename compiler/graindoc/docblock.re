@@ -180,13 +180,14 @@ let to_markdown = (~current_version, docblock) => {
        });
   if (Option.is_some(since_attr) || List.length(history_attrs) > 0) {
     let summary = Option.value(~default="History", since_attr);
+    let disabled = List.length(history_attrs) == 0 ? true : false;
     let details =
       if (List.length(history_attrs) == 0) {
         "No other changes yet.";
       } else {
         Html.table(~headers=["version", "changes"], history_attrs);
       };
-    Buffer.add_string(buf, Html.details(~summary, details));
+    Buffer.add_string(buf, Html.details(~disabled, ~summary, details));
   };
   Buffer.add_string(buf, Markdown.code_block(docblock.type_sig));
   if (String.length(docblock.description) > 0) {

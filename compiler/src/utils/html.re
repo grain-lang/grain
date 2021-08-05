@@ -1,7 +1,8 @@
-let details = (~is_open=false, ~summary, str) => {
+let details = (~disabled=false, ~summary, str) => {
+  // The `disabled` html attribute doesn't do anything to <details> but we add it for easier styling
   Format.sprintf(
     "%s\n<summary>%s</summary>\n%s\n</details>\n\n",
-    is_open ? "<details open>" : "<details>",
+    disabled ? "<details disabled>" : "<details>",
     summary,
     str,
   );
