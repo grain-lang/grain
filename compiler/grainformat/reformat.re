@@ -59,6 +59,11 @@ let getLocLine = (loc: Grain_parsing.Location.t) => {
   line;
 };
 
+let getEndLocLine = (loc: Grain_parsing.Location.t) => {
+  let (_, line, _, _) = get_raw_pos_info(loc.loc_end);
+  line;
+};
+
 let print_loc = (msg: string, loc: Grain_parsing.Location.t) => {
   let (file, line, startchar, _) = get_raw_pos_info(loc.loc_start);
   let (_, endline, endchar, _) = get_raw_pos_info(loc.loc_end);
@@ -786,11 +791,15 @@ and print_record =
                   ~parentIsArrow=false,
                   locidentifier.loc,
                 );
+              let punned_expr = check_for_pun(expr);
+
+              // Doc.debug(printed_ident);
+              // Doc.debug(printed_expr);
 
               let pun =
                 switch (printed_ident) {
                 | Text(i) =>
-                  switch ((printed_expr: Doc.t)) {
+                  switch ((punned_expr: Doc.t)) {
                   | Text(e) => i == e
                   | _ => false
                   }
@@ -958,6 +967,12 @@ and getFunctionName = (expr: Parsetree.expression) => {
   | _ => ""
   };
 }
+
+and check_for_pun = (expr: Parsetree.expression) =>
+  switch (expr.pexp_desc) {
+  | PExpId({txt: id}) => print_ident(id)
+  | _ => Doc.nil
+  }
 
 and print_expression =
     (
@@ -1371,7 +1386,8 @@ and print_expression =
                 switch (prevExpr^) {
                 | None => Doc.nil
                 | Some(pexpr: Parsetree.expression) =>
-                  if (getLocLine(e.pexp_loc) > getLocLine(pexpr.pexp_loc) + 1) {
+                  if (getLocLine(e.pexp_loc) > getEndLocLine(pexpr.pexp_loc)
+                      + 1) {
                     Doc.hardLine;
                   } else {
                     Doc.nil;
