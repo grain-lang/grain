@@ -1,8 +1,11 @@
 let details = (~disabled=false, ~summary, str) => {
-  // The `disabled` html attribute doesn't do anything to <details> but we add it for easier styling
   Format.sprintf(
-    "%s\n<summary>%s</summary>\n%s\n</details>\n\n",
-    disabled ? "<details disabled>" : "<details>",
+    "%s\n%s%s</summary>\n%s\n</details>\n\n",
+    // The `disabled` html attribute doesn't do anything to <details> but we add it for easier styling
+    disabled ? {|<details disabled>|} : {|<details>|},
+    // We also add tabIndex="-1" if it is disabled so the element can't be tabbed to
+    // Let us know if that is bad and we can remove
+    disabled ? {|<summary tabindex="-1">|} : {|<summary>|},
     summary,
     str,
   );
