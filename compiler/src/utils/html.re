@@ -30,7 +30,11 @@ let table = (~headers: list(string), rows) => {
            |> Format.sprintf("<tr>%s</tr>")
          })
       |> String.concat("\n");
-    Format.sprintf("<table>\n%s\n%s\n</table>", header, body);
+    Format.sprintf(
+      "<table>\n<thead>\n%s\n</thead>\n<tbody>\n%s\n</tbody>\n</table>",
+      header,
+      body,
+    );
   } else {
     failwith("Your rows didn't all have the correct length");
   };
