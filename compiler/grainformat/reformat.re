@@ -554,6 +554,8 @@ and print_record_pattern =
           let printed_ident: Doc.t = print_ident(loc.txt);
           let printed_pat = print_pattern(pat, parent_loc);
 
+          Doc.debug(printed_pat);
+
           let pun =
             switch (printed_ident) {
             | Text(i) =>
@@ -566,7 +568,7 @@ and print_record_pattern =
           if (pun) {
             printed_ident;
           } else {
-            Doc.concat([printed_ident, Doc.text(": "), printed_pat]);
+            Doc.concat([printed_ident, Doc.text(":YY "), printed_pat]);
           };
         },
         patternlocs,
@@ -686,7 +688,12 @@ and print_pattern =
       List.append(withLeading, [trailingCommentDocs]);
     };
 
-  let cleanPattern = Doc.concat(withTrailing);
+  let cleanPattern =
+    if (List.length(withTrailing) == 1) {
+      List.hd(withTrailing);
+    } else {
+      Doc.concat(withTrailing);
+    };
 
   if (parens) {
     Doc.concat([Doc.lparen, cleanPattern, Doc.rparen]);
@@ -1146,8 +1153,7 @@ and print_expression =
         | PExpBlock(expressions) =>
           if (List.length(expressions) > 0) {
             Doc.concat([
-              Doc.text("else"),
-              Doc.line,
+              Doc.text(" else "),
               print_expression(
                 ~expr=falseExpr,
                 ~parentIsArrow=false,
@@ -1160,8 +1166,7 @@ and print_expression =
         | _ =>
           Doc.group(
             Doc.concat([
-              Doc.text("else"),
-              Doc.line,
+              Doc.text(" else "),
               print_expression(
                 ~expr=falseExpr,
                 ~parentIsArrow=false,
@@ -1190,9 +1195,7 @@ and print_expression =
                   Doc.space,
                 ]),
               ),
-              Doc.line,
               trueClause,
-              Doc.line,
               falseClause,
             ]),
           ),
@@ -1215,7 +1218,6 @@ and print_expression =
               ]),
             ),
             trueClause,
-            Doc.line,
             falseClause,
           ]),
         );
@@ -1389,14 +1391,14 @@ and print_expression =
                 };
               prevExpr := Some(e);
 
-              Doc.group(Doc.concat([blankLine, printed_expression]));
+              Doc.concat([blankLine, Doc.group(printed_expression)]);
             },
             expressions,
           ),
         );
 
       Doc.breakableGroup(
-        ~forceBreak=true,
+        ~forceBreak=false,
         Doc.concat([
           Doc.lbrace,
           Doc.indent(Doc.concat([Doc.line, leadingBlockCommentDocs, block])),
