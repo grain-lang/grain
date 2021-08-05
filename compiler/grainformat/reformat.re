@@ -554,8 +554,6 @@ and print_record_pattern =
           let printed_ident: Doc.t = print_ident(loc.txt);
           let printed_pat = print_pattern(pat, parent_loc);
 
-          Doc.debug(printed_pat);
-
           let pun =
             switch (printed_ident) {
             | Text(i) =>
@@ -568,7 +566,7 @@ and print_record_pattern =
           if (pun) {
             printed_ident;
           } else {
-            Doc.concat([printed_ident, Doc.text(":YY "), printed_pat]);
+            Doc.concat([printed_ident, Doc.text(": "), printed_pat]);
           };
         },
         patternlocs,
@@ -1126,9 +1124,6 @@ and print_expression =
       print_endline("PExpPrimN");
       Doc.text("PExpPrimN");
     | PExpIf(condition, trueExpr, falseExpr) =>
-      // let leadingConditionComments =
-      //   Walktree.getLeadingComments(condition.pexp_loc);
-
       let (leadingConditionComments, _trailingComments) =
         Walktree.partitionComments(condition.pexp_loc);
       Walktree.removeUsedComments(leadingConditionComments, []);
@@ -1164,16 +1159,14 @@ and print_expression =
             Doc.nil;
           }
         | _ =>
-          Doc.group(
-            Doc.concat([
-              Doc.text(" else "),
-              print_expression(
-                ~expr=falseExpr,
-                ~parentIsArrow=false,
-                parent_loc,
-              ),
-            ]),
-          )
+          Doc.concat([
+            Doc.text(" else "),
+            print_expression(
+              ~expr=falseExpr,
+              ~parentIsArrow=false,
+              parent_loc,
+            ),
+          ])
         };
 
       if (parentIsArrow) {
@@ -1201,26 +1194,24 @@ and print_expression =
           ),
         );
       } else {
-        Doc.group(
-          Doc.concat([
-            Doc.group(
-              Doc.concat([
-                Doc.text("if "),
-                Doc.lparen,
-                leadingConditionCommentDocs,
-                print_expression(
-                  ~expr=condition,
-                  ~parentIsArrow=false,
-                  parent_loc,
-                ),
-                Doc.rparen,
-                Doc.space,
-              ]),
-            ),
-            trueClause,
-            falseClause,
-          ]),
-        );
+        Doc.concat([
+          Doc.group(
+            Doc.concat([
+              Doc.text("if "),
+              Doc.lparen,
+              leadingConditionCommentDocs,
+              print_expression(
+                ~expr=condition,
+                ~parentIsArrow=false,
+                parent_loc,
+              ),
+              Doc.rparen,
+              Doc.space,
+            ]),
+          ),
+          trueClause,
+          falseClause,
+        ]);
       };
     | PExpWhile(expression, expression1) =>
       Doc.concat([
@@ -1341,8 +1332,6 @@ and print_expression =
         if (List.length(expressions) > 0) {
           let firstStatement = List.hd(expressions);
 
-          // Walktree.getLeadingComments(firstStatement.pexp_loc);
-
           let (leadingComments, _trailingComments) =
             Walktree.partitionComments(firstStatement.pexp_loc);
           Walktree.removeUsedComments(leadingComments, []);
@@ -1350,7 +1339,6 @@ and print_expression =
           leadingComments;
         } else {
           // cheat with the name
-          // Walktree.getTrailingComments(expr.pexp_loc);
 
           let (_leadingComments, trailingComments) =
             Walktree.partitionComments(expr.pexp_loc);
@@ -1397,12 +1385,13 @@ and print_expression =
           ),
         );
 
-      Doc.breakableGroup(
-        ~forceBreak=false,
+      Doc.group(
         Doc.concat([
           Doc.lbrace,
-          Doc.indent(Doc.concat([Doc.line, leadingBlockCommentDocs, block])),
-          Doc.line,
+          Doc.indent(
+            Doc.concat([Doc.softLine, leadingBlockCommentDocs, block]),
+          ),
+          Doc.ifBreaks(Doc.hardLine, Doc.nil),
           Doc.rbrace,
         ]),
       );
@@ -1517,9 +1506,9 @@ and print_expression =
     };
 
   if (trailingCommentDocs == Doc.nil) {
-    expression_doc;
+    Doc.group(expression_doc);
   } else {
-    Doc.concat([expression_doc, trailingCommentDocs]);
+    Doc.group(Doc.concat([expression_doc, trailingCommentDocs]));
   };
 }
 and value_bind_print =
@@ -2073,3 +2062,11 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
   //   ),
   // );
 };
+
+// if (newLength < 0) {
+//   [];
+// } else if (newLength > arrayLength) {
+//   array;
+// } else {
+//   init(newLength, n => array[startIndex + n]);
+// };
