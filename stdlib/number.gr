@@ -200,7 +200,7 @@ export let isFinite = (x: Number) => {
     let tag = WasmI32.load(asPtr, 4n)
     if (WasmI32.eq(tag, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG)) {
       // uses the fact that all finite floats minus themselves are zero
-      // (NaN - NaN == NaN, inf - inf == NaN, 
+      // (NaN - NaN == NaN, inf - inf == NaN,
       //  -inf - -inf == NaN, inf - -inf == inf, -inf - inf == -inf)
       let wf64 = WasmF64.load(asPtr, 8n)
       WasmF64.eq(WasmF64.sub(wf64, wf64), 0.W)
