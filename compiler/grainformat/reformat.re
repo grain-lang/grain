@@ -64,37 +64,6 @@ let getEndLocLine = (loc: Grain_parsing.Location.t) => {
   line;
 };
 
-let print_loc = (msg: string, loc: Grain_parsing.Location.t) => {
-  let (file, line, startchar, _) = get_raw_pos_info(loc.loc_start);
-  let (_, endline, endchar, _) = get_raw_pos_info(loc.loc_end);
-
-  if (startchar >= 0) {
-    if (line == endline) {
-      print_endline(
-        msg
-        ++ " "
-        ++ string_of_int(line)
-        ++ ":"
-        ++ string_of_int(startchar)
-        ++ ","
-        ++ string_of_int(endchar),
-      );
-    } else {
-      print_endline(
-        msg
-        ++ " "
-        ++ string_of_int(line)
-        ++ ":"
-        ++ string_of_int(startchar)
-        ++ " - "
-        ++ string_of_int(endline)
-        ++ ":"
-        ++ string_of_int(endchar),
-      );
-    };
-  };
-};
-
 let commentToDoc = (comment: Parsetree.comment) => {
   let cmtText =
     switch (comment) {
@@ -104,9 +73,7 @@ let commentToDoc = (comment: Parsetree.comment) => {
     | Shebang(cmt) => cmt.cmt_source
     };
 
-  let mainComment = Doc.text(String.trim(cmtText));
-
-  mainComment;
+  Doc.text(String.trim(cmtText));
 };
 
 let print_multi_comments_raw =
@@ -158,49 +125,10 @@ let print_multi_comments_no_space =
     (comments: list(Parsetree.comment), line: int) =>
   if (List.length(comments) > 0) {
     let leadSpace = Doc.nil;
-
     print_multi_comments_raw(comments, line, leadSpace);
   } else {
     Doc.nil;
   };
-
-let print_comment = (comment: Parsetree.comment) => {
-  let endloc =
-    switch (comment) {
-    | Line(cmt) => cmt.cmt_loc.loc_end
-    | Block(cmt) => cmt.cmt_loc.loc_end
-    | Doc(cmt) => cmt.cmt_loc.loc_end
-    | Shebang(cmt) => cmt.cmt_loc.loc_end
-    };
-
-  let startloc =
-    switch (comment) {
-    | Line(cmt) => cmt.cmt_loc.loc_start
-    | Block(cmt) => cmt.cmt_loc.loc_start
-    | Doc(cmt) => cmt.cmt_loc.loc_start
-    | Shebang(cmt) => cmt.cmt_loc.loc_start
-    };
-
-  let (_file, stmtstartline, startchar, _sbol) = get_raw_pos_info(startloc);
-  let (_file, stmtendline, endchar, _sbol) = get_raw_pos_info(endloc);
-
-  print_int(stmtstartline);
-  print_string(":");
-  print_int(startchar);
-
-  print_string(",");
-  print_int(stmtendline);
-  print_string(":");
-  print_int(endchar);
-  print_string(" -  ");
-
-  switch (comment) {
-  | Line(cmt) => print_endline(cmt.cmt_source)
-  | Block(cmt) => print_endline(cmt.cmt_source)
-  | Doc(cmt) => print_endline(cmt.cmt_source)
-  | Shebang(cmt) => print_endline(cmt.cmt_source)
-  };
-};
 
 type stmtList =
   | BlankLine
@@ -514,7 +442,6 @@ and print_pattern =
         ),
         true,
       )
-
     | PPatArray(patterns) => (
         Doc.group(
           Doc.concat([
@@ -688,9 +615,6 @@ and print_record =
                 );
               let punned_expr = check_for_pun(expr);
 
-              // Doc.debug(printed_ident);
-              // Doc.debug(printed_expr);
-
               let pun =
                 switch (printed_ident) {
                 | Text(i) =>
@@ -770,9 +694,6 @@ and print_application =
       expressions: list(Parsetree.expression),
       parent_loc: Location.t,
     ) => {
-  // let functionNameDoc = print_expression(~expr=func, ~parentIsArrow=false);
-  // let functionName = Doc.toString(~width=100, functionNameDoc);
-
   let functionName = getFunctionName(func);
 
   if (infixop(functionName)) {
@@ -810,11 +731,8 @@ and print_application =
       ]),
     );
   } else {
-    //   let funcName = print_expression(~expr=func, ~parentIsArrow=false);
-
     let funcName = getFunctionName(func);
 
-    // let funcNameAsString = Doc.toString(~width=20, funcName);
     if (funcName == "[...]") {
       resugar_list(expressions, parent_loc);
     } else if (funcName == "throw") {
@@ -1797,7 +1715,6 @@ let print_primitive_value_description = (vd: Parsetree.value_description) => {
     print_type(vd.pval_type),
     Doc.text(" = "),
     Doc.text("\""),
-    //   Doc.text(vd.pval_mod.txt),
     Doc.join(Doc.text(","), List.map(p => Doc.text(p), vd.pval_prim)),
     Doc.text("\""),
   ]);
@@ -1926,10 +1843,6 @@ let toplevel_print = (data: Parsetree.toplevel_stmt, previous_line: int) => {
       Doc.nil;
     };
 
-  // let leadingLine =
-  //   Doc.text("leading line " ++ string_of_int(previous_line));
-  // let's add a leading line if needed here
-
   let blankLineAbove =
     if (getLocLine(data.ptop_loc) > previous_line + 1) {
       Doc.hardLine;
@@ -1944,9 +1857,6 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
   let _ =
     Walktree.walktree(parsed_program.statements, parsed_program.comments);
 
-  // let previousStatement: ref(option(Grain_parsing.Parsetree.toplevel_stmt)) =
-  //   ref(None);
-
   // these are the first comments in the program file before any statements
   let programleadingComments =
     if (List.length(parsed_program.statements) > 0) {
@@ -1956,7 +1866,7 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
       Walktree.removeUsedComments(leadingComments, []);
       leadingComments;
     } else {
-      // it's all the comments
+      // it's all comments
       parsed_program.
         comments;
     };
@@ -1989,14 +1899,6 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
       Doc.hardLine,
       List.map(
         (stmt: Grain_parsing.Parsetree.toplevel_stmt) => {
-          // let blankLineAbove =
-          //   if (getLocLine(stmt.ptop_loc) > previousLine^ + 1) {
-          //     Doc.text("HARDLINE1");
-          //   } else {
-          //     Doc.nil;
-          //   };
-          //Doc.concat([blankLineAbove, Doc.group(toplevel_print(stmt, 0))]);
-
           let line = Doc.group(toplevel_print(stmt, previousLine^));
 
           previousLine := getEndLocLine(stmt.ptop_loc);
@@ -2022,15 +1924,3 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
   //   ),
   // );
 };
-
-// let rec iter = (fn, list, index) => {
-//   switch (list) {
-//   | [] => []
-//   | [first, ...rest] =>
-//     if (fn(first, index)) {
-//       [first, ...iter(fn, rest, index + 1)];
-//     } else {
-//       iter(fn, rest, index + 1);
-//     }
-//   };
-// };

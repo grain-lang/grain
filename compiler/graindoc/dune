@@ -11,8 +11,14 @@
  (public_name graindoc)
  (package graindoc)
  (modules graindoc)
- (libraries cmdliner grain grain_diagnostics grain_utils graindoc.docblock
-   binaryen.native dune-build-info))
+ (libraries
+  cmdliner
+  grain
+  grain_diagnostics
+  grain_utils
+  graindoc.docblock
+  binaryen.native
+  dune-build-info))
 
 (rule
  (target graindoc_js.re)
@@ -33,8 +39,15 @@
  (modules graindoc_js)
  ; exe is only here so dune-build-info works
  (modes exe js)
- (libraries cmdliner grain grain_diagnostics grain_utils graindoc.docblock
-   binaryen.js dune-build-info js_of_ocaml)
+ (libraries
+  cmdliner
+  grain
+  grain_diagnostics
+  grain_utils
+  graindoc.docblock
+  binaryen.js
+  dune-build-info
+  js_of_ocaml)
  (js_of_ocaml
   (flags --no-sourcemap --no-extern-fs --quiet)
   (javascript_files runtime.js jsoo_hacks.js)))
