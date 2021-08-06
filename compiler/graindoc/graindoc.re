@@ -54,7 +54,8 @@ let compile_typed = filename => {
   };
 };
 
-let generate_docs = (outfile, program: Typedtree.typed_program) => {
+let generate_docs =
+    (~version as current_version, outfile, program: Typedtree.typed_program) => {
   Comments.setup_comments(program.comments);
 
   let env = program.env;
@@ -64,22 +65,74 @@ let generate_docs = (outfile, program: Typedtree.typed_program) => {
   let module_comment = Comments.Doc.find_module();
   switch (module_comment) {
   | Some((_, desc, attrs)) =>
-    List.iter(
-      (attr: Comments.Attribute.t) => {
-        switch (attr) {
-        | Module({attr_name, attr_desc}) =>
-          Buffer.add_string(
-            buf,
-            Markdown.frontmatter([("title", attr_name)]),
-          );
-          Buffer.add_string(buf, Markdown.paragraph(attr_desc));
-        | Example({attr_desc}) =>
-          Buffer.add_string(buf, Markdown.code_block(attr_desc))
-        | _ => ()
-        }
-      },
-      attrs,
-    )
+    // TODO: Should we fail if more than one `@module` attribute?
+    let module_attr = attrs |> List.find(Comments.Attribute.is_module);
+    switch (module_attr) {
+    | Module({attr_name, attr_desc}) =>
+      Buffer.add_string(buf, Markdown.frontmatter([("title", attr_name)]));
+      Buffer.add_string(buf, Markdown.paragraph(attr_desc));
+    | _ => failwith("Unreachable: Non-`module` attribute can't exist here.")
+    };
+
+    // TODO: Should we fail if more than one `@since` attribute?
+    let since_attr =
+      attrs
+      |> List.find_opt(Comments.Attribute.is_since)
+      |> Option.map((attr: Comments.Attribute.t) => {
+           switch (attr) {
+           | Since({attr_version}) =>
+             let (<) = Version.String.less_than;
+             if (current_version < attr_version) {
+               Format.sprintf("Added in %s", Html.code("next"));
+             } else {
+               Format.sprintf("Added in %s", Html.code(attr_version));
+             };
+           | _ =>
+             failwith("Unreachable: Non-`since` attribute can't exist here.")
+           }
+         });
+    let history_attrs =
+      attrs
+      |> List.filter(Comments.Attribute.is_history)
+      |> List.map((attr: Comments.Attribute.t) => {
+           switch (attr) {
+           | History({attr_version, attr_desc}) =>
+             let (<) = Version.String.less_than;
+             if (current_version < attr_version) {
+               [Html.code("next"), attr_desc];
+             } else {
+               [Html.code(attr_version), attr_desc];
+             };
+           | _ =>
+             failwith("Unreachable: Non-`since` attribute can't exist here.")
+           }
+         });
+    if (Option.is_some(since_attr) || List.length(history_attrs) > 0) {
+      let summary = Option.value(~default="History", since_attr);
+      let disabled = List.length(history_attrs) == 0 ? true : false;
+      let details =
+        if (List.length(history_attrs) == 0) {
+          "No other changes yet.";
+        } else {
+          Html.table(~headers=["version", "changes"], history_attrs);
+        };
+      Buffer.add_string(buf, Html.details(~disabled, ~summary, details));
+    };
+
+    let example_attrs = attrs |> List.filter(Comments.Attribute.is_example);
+    if (List.length(example_attrs) > 0) {
+      List.iter(
+        (attr: Comments.Attribute.t) => {
+          switch (attr) {
+          | Example({attr_desc}) =>
+            Buffer.add_string(buf, Markdown.code_block(attr_desc))
+          | _ =>
+            failwith("Unreachable: Non-`example` attribute can't exist here.")
+          }
+        },
+        example_attrs,
+      );
+    };
   | None => ()
   };
 
@@ -87,7 +140,10 @@ let generate_docs = (outfile, program: Typedtree.typed_program) => {
     let docblock = Docblock.for_signature_item(~env, sig_item);
     switch (docblock) {
     | Some(docblock) =>
-      Buffer.add_buffer(buf, Docblock.to_markdown(docblock))
+      Buffer.add_buffer(
+        buf,
+        Docblock.to_markdown(~current_version, docblock),
+      )
     | None => ()
     };
   };
@@ -144,8 +200,8 @@ let generate_docs = (outfile, program: Typedtree.typed_program) => {
   `Ok();
 };
 
-let graindoc = (outfile, program) =>
-  try(generate_docs(outfile, program)) {
+let graindoc = (~version, outfile, program) =>
+  try(generate_docs(~version, outfile, program)) {
   | e => `Error((false, Printexc.to_string(e)))
   };
 
@@ -205,7 +261,7 @@ let cmd = {
   (
     Term.(
       ret(
-        const(graindoc)
+        const(graindoc(~version))
         $ output_filename
         $ ret(
             Grain_utils.Config.with_cli_options(compile_typed)

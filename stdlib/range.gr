@@ -1,6 +1,7 @@
 /**
  * @module Range: Utilities for working with ranges. A range represents an interval—a set of values with a beginning and an end.
  * @example import Range from "range"
+ * @since v0.3.0
  */
 
 /**
@@ -28,6 +29,8 @@ export enum Range {
  *
  * @example Range.inRange(1, Range.Inclusive(0, 2)) == true
  * @example Range.inRange(10, Range.Inclusive(0, 2)) == false
+ *
+ * @since v0.3.0
  */
 export let inRange = (value, range) => {
   match (range) {
@@ -46,6 +49,8 @@ export let inRange = (value, range) => {
  * @param range: The range to iterate
  *
  * @example Range.forEach(val => print(val), Range.Exclusive(0, 2))
+ *
+ * @since v0.3.0
  */
 export let forEach = (fn: (Number) -> Void, range) => {
   match (range) {
@@ -88,6 +93,8 @@ export let forEach = (fn: (Number) -> Void, range) => {
  * @returns A list containing all values returned from the `fn`
  *
  * @example Range.map(val => val * 2, Range.Inclusive(0, 2)) == [0, 2, 4]
+ *
+ * @since v0.3.2
  */
 export let map = (fn, range) => {
   let mut result = []

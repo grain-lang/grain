@@ -120,7 +120,7 @@ let signature_item_in_range =
   };
 };
 
-let to_markdown = docblock => {
+let to_markdown = (~current_version, docblock) => {
   let buf = Buffer.create(0);
   Buffer.add_string(buf, Markdown.heading(~level=3, docblock.name));
   let deprecations =
@@ -144,6 +144,50 @@ let to_markdown = docblock => {
         ),
       deprecations,
     );
+  };
+  // TODO: Should we fail if more than one `@since` attribute?
+  let since_attr =
+    docblock.attributes
+    |> List.find_opt(Comments.Attribute.is_since)
+    |> Option.map((attr: Comments.Attribute.t) => {
+         switch (attr) {
+         | Since({attr_version}) =>
+           let (<) = Version.String.less_than;
+           if (current_version < attr_version) {
+             Format.sprintf("Added in %s", Html.code("next"));
+           } else {
+             Format.sprintf("Added in %s", Html.code(attr_version));
+           };
+         | _ =>
+           failwith("Unreachable: Non-`since` attribute can't exist here.")
+         }
+       });
+  let history_attrs =
+    docblock.attributes
+    |> List.filter(Comments.Attribute.is_history)
+    |> List.map((attr: Comments.Attribute.t) => {
+         switch (attr) {
+         | History({attr_version, attr_desc}) =>
+           let (<) = Version.String.less_than;
+           if (current_version < attr_version) {
+             [Html.code("next"), attr_desc];
+           } else {
+             [Html.code(attr_version), attr_desc];
+           };
+         | _ =>
+           failwith("Unreachable: Non-`since` attribute can't exist here.")
+         }
+       });
+  if (Option.is_some(since_attr) || List.length(history_attrs) > 0) {
+    let summary = Option.value(~default="History", since_attr);
+    let disabled = List.length(history_attrs) == 0 ? true : false;
+    let details =
+      if (List.length(history_attrs) == 0) {
+        "No other changes yet.";
+      } else {
+        Html.table(~headers=["version", "changes"], history_attrs);
+      };
+    Buffer.add_string(buf, Html.details(~disabled, ~summary, details));
   };
   Buffer.add_string(buf, Markdown.code_block(docblock.type_sig));
   if (String.length(docblock.description) > 0) {
