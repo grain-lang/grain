@@ -1,0 +1,8 @@
+if (true) {
+  5
+  "a reallly long string long long long lfd dsds dsds dsds"
+} else if (false)
+  "aaa"
+else {
+  "short"
+}

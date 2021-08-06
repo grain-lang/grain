@@ -15,4 +15,7 @@ describe("formatter", ({test}) => {
   assertFormatOutput("records", "records");
   assertFormatOutput("guards", "guards");
   assertFormatOutput("arrays", "arrays");
+  assertFormatOutput("ifthenelse", "ifthenelse");
+  assertFormatOutput("comments", "comments");
+  assertFormatOutput("for_loops", "for_loops");
 });
