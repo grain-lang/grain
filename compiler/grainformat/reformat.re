@@ -415,6 +415,8 @@ and print_record_pattern =
 
 and print_pattern =
     (pat: Parsetree.pattern, parent_loc: Grain_parsing__Location.t) => {
+  Debug.debug_pattern(pat);
+
   let (leadingComments, trailingComments) =
     Walktree.partitionComments(pat.ppat_loc);
   Walktree.removeUsedComments(leadingComments, trailingComments);
@@ -801,7 +803,7 @@ and print_expression =
       ~parentIsArrow: bool,
       parent_loc: Grain_parsing__Location.t,
     ) => {
-  //Debug.debug_expression(expr);
+  Debug.debug_expression(expr);
   let (_leadingComments, trailingComments) =
     Walktree.partitionComments(expr.pexp_loc);
   Walktree.removeUsedComments([], trailingComments);
@@ -1171,48 +1173,52 @@ and print_expression =
     | PExpLambda(patterns, expression) =>
       //print_loc("PExpLambda", expr.pexp_loc);
 
-      Doc.group(
-        Doc.concat([
-          if (List.length(patterns) == 0) {
-            Doc.text("()");
-          } else if (List.length(patterns) > 1) {
-            addParens(
-              Doc.concat([
-                Doc.join(
-                  Doc.concat([Doc.text(","), Doc.line]),
-                  List.map(p => print_pattern(p, parent_loc), patterns),
-                ),
-              ]),
-            );
-          } else {
-            let pat = List.hd(patterns);
+      let args =
+        Doc.indent(
+          Doc.concat([
+            Doc.line,
+            if (List.length(patterns) == 0) {
+              Doc.text("()");
+            } else if (List.length(patterns) > 1) {
+              addParens(
+                Doc.concat([
+                  Doc.join(
+                    Doc.concat([Doc.text(","), Doc.line]),
+                    List.map(p => print_pattern(p, parent_loc), patterns),
+                  ),
+                ]),
+              );
+            } else {
+              let pat = List.hd(patterns);
 
-            switch (pat.ppat_desc) {
-            | PPatConstraint(_) =>
-              Doc.concat([
-                Doc.lparen,
-                print_pattern(pat, parent_loc),
-                Doc.rparen,
-              ])
-            | PPatTuple(_) =>
-              Doc.concat([
-                Doc.lparen,
-                print_pattern(pat, parent_loc),
-                Doc.rparen,
-              ])
-            | _ => print_pattern(pat, parent_loc)
-            };
-          },
-          Doc.space,
-          Doc.text("=>"),
-          Doc.space,
-          print_expression(
-            ~expr=expression,
-            ~parentIsArrow=false,
-            parent_loc,
-          ),
-        ]),
-      )
+              switch (pat.ppat_desc) {
+              | PPatConstraint(_) =>
+                Doc.concat([
+                  Doc.lparen,
+                  print_pattern(pat, parent_loc),
+                  Doc.rparen,
+                ])
+              | PPatTuple(_) =>
+                Doc.concat([
+                  Doc.lparen,
+                  print_pattern(pat, parent_loc),
+                  Doc.rparen,
+                ])
+              | _ => print_pattern(pat, parent_loc)
+              };
+            },
+          ]),
+        );
+
+      //Doc.group(
+      Doc.concat([
+        args,
+        Doc.space,
+        Doc.text("=>"),
+        Doc.space,
+        print_expression(~expr=expression, ~parentIsArrow=false, parent_loc),
+      ]);
+    //);
 
     | PExpApp(func, expressions) =>
       // print_loc("PExpApp", expr.pexp_loc);
@@ -1277,7 +1283,8 @@ and print_expression =
           ),
         );
 
-      Doc.group(
+      Doc.breakableGroup(
+        ~forceBreak=true,
         Doc.concat([
           Doc.lbrace,
           Doc.indent(Doc.concat([Doc.line, leadingBlockCommentDocs, block])),
@@ -1396,10 +1403,15 @@ and print_expression =
     | /** Used for modules without body expressions */ PExpNull => Doc.nil
     };
 
+  // if (trailingCommentDocs == Doc.nil) {
+  //   Doc.group(expression_doc);
+  // } else {
+  //   Doc.group(Doc.concat([expression_doc, trailingCommentDocs]));
+  // };
   if (trailingCommentDocs == Doc.nil) {
-    Doc.group(expression_doc);
+    expression_doc;
   } else {
-    Doc.group(Doc.concat([expression_doc, trailingCommentDocs]));
+    Doc.concat([expression_doc, trailingCommentDocs]);
   };
 }
 and value_bind_print =
@@ -1430,17 +1442,20 @@ and value_bind_print =
   let expression =
     print_expression(~expr=vb.pvb_expr, ~parentIsArrow=false, vb.pvb_loc);
 
-  Doc.group(
-    Doc.concat([
-      exported,
-      Doc.text("let "),
-      recursive,
-      mutble,
-      print_pattern(vb.pvb_pat, vb.pvb_loc),
-      Doc.text(" ="),
-      Doc.indent(Doc.concat([Doc.line, expression])),
-    ]),
-  );
+  Doc.concat([
+    Doc.group(
+      Doc.concat([
+        exported,
+        Doc.text("let "),
+        recursive,
+        mutble,
+        print_pattern(vb.pvb_pat, vb.pvb_loc),
+        Doc.text(" = "),
+      ]),
+    ),
+    expression,
+    //  Doc.indent(Doc.concat([Doc.line, expression])),
+  ]);
 };
 let rec print_data = (d: Grain_parsing__Parsetree.data_declaration) => {
   let nameloc = d.pdata_name;
@@ -1935,7 +1950,7 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
   let finalDoc = Doc.concat([programLeadingCommentsDocs, printedDoc]);
 
   // Use this to check the generated output
-  //Doc.debug(finalDoc);
+  Doc.debug(finalDoc);
   //
 
   Doc.toString(~width=80, finalDoc) |> print_endline;
