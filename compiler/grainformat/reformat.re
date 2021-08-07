@@ -494,8 +494,8 @@ and print_pattern =
         );
       };
 
-    | PPatOr(pattern1, pattern2) => (Doc.text("PPatOr"), false)
-    | PPatAlias(pattern, loc) => (Doc.text("PPatAlias"), false)
+    | PPatOr(pattern1, pattern2) => (Doc.text("PPatOr"), false) // Need to understand
+    | PPatAlias(pattern, loc) => (Doc.text("PPatAlias"), false) // Need to understand
     };
 
   let (pattern, parens) = printed_pattern;
@@ -546,7 +546,7 @@ and print_constant = (c: Parsetree.constant) => {
     | PConstBool(true) => "true"
     | PConstBool(false) => "false"
     | PConstVoid => "void"
-    | PConstString(s) => Printf.sprintf("\"%s\"", s)
+    | PConstString(s) => Printf.sprintf("\"%s\"", String.escaped(s))
     };
   Doc.text(print_c);
 }
@@ -793,6 +793,7 @@ and print_expression =
       ~parentIsArrow: bool,
       parent_loc: Grain_parsing__Location.t,
     ) => {
+  //Debug.debug_expression(expr);
   let (_leadingComments, trailingComments) =
     Walktree.partitionComments(expr.pexp_loc);
   Walktree.removeUsedComments([], trailingComments);
@@ -855,13 +856,23 @@ and print_expression =
         Doc.rbracket,
       ])
     | PExpArraySet(expression1, expression2, expression3) =>
+      //print_endline("PExpArraySet");
       Doc.concat([
         print_expression(~expr=expression1, ~parentIsArrow=false, parent_loc),
         Doc.lbracket,
         print_expression(~expr=expression2, ~parentIsArrow=false, parent_loc),
         Doc.rbracket,
-        Doc.text(" := "),
-        print_expression(~expr=expression3, ~parentIsArrow=false, parent_loc),
+        Doc.text(" ="),
+        Doc.indent(
+          Doc.concat([
+            Doc.line,
+            print_expression(
+              ~expr=expression3,
+              ~parentIsArrow=false,
+              parent_loc,
+            ),
+          ]),
+        ),
       ])
 
     | PExpRecord(record) => print_record(record)
@@ -1175,6 +1186,12 @@ and print_expression =
                 print_pattern(pat, parent_loc),
                 Doc.rparen,
               ])
+            | PPatTuple(_) =>
+              Doc.concat([
+                Doc.lparen,
+                print_pattern(pat, parent_loc),
+                Doc.rparen,
+              ])
             | _ => print_pattern(pat, parent_loc)
             };
           },
@@ -1255,10 +1272,9 @@ and print_expression =
       Doc.group(
         Doc.concat([
           Doc.lbrace,
-          Doc.indent(
-            Doc.concat([Doc.softLine, leadingBlockCommentDocs, block]),
-          ),
-          Doc.ifBreaks(Doc.hardLine, Doc.nil),
+          Doc.indent(Doc.concat([Doc.line, leadingBlockCommentDocs, block])),
+          //    Doc.ifBreaks(Doc.hardLine, Doc.nil),
+          Doc.line,
           Doc.rbrace,
         ]),
       );

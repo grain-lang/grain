@@ -20,4 +20,6 @@ describe("formatter", ({test}) => {
   assertFormatOutput("for_loops", "for_loops");
   assertFormatOutput("strings", "strings");
   assertFormatOutput("tuples", "tuples");
+  assertFormatOutput("blocks", "blocks");
+  assertFormatOutput("lambda", "lambda");
 });
