@@ -37,7 +37,7 @@ let initLength = (length) => {
  * Returns the length of the input array.
  *
  * @param array: The array to inspect
- * @returns The amount of elements in the array
+ * @returns The number of elements in the array
  *
  * @since v0.1.0
  */
