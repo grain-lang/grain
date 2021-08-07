@@ -758,13 +758,21 @@ and print_application =
       Doc.concat([
         print_expression(~expr=func, ~parentIsArrow=false, parent_loc),
         Doc.lparen,
-        Doc.join(
-          Doc.concat([Doc.text(","), Doc.line]),
-          List.map(
-            e => print_expression(~expr=e, ~parentIsArrow=false, parent_loc),
-            expressions,
-          ),
+        Doc.indent(
+          Doc.concat([
+            Doc.line,
+            Doc.join(
+              Doc.concat([Doc.text(","), Doc.line]),
+              List.map(
+                e =>
+                  print_expression(~expr=e, ~parentIsArrow=false, parent_loc),
+                expressions,
+              ),
+            ),
+            Doc.ifBreaks(Doc.comma, Doc.nil),
+          ]),
         ),
+        Doc.ifBreaks(Doc.hardLine, Doc.nil),
         Doc.rparen,
       ]);
     };
@@ -1429,8 +1437,8 @@ and value_bind_print =
       recursive,
       mutble,
       print_pattern(vb.pvb_pat, vb.pvb_loc),
-      Doc.text(" = "),
-      expression,
+      Doc.text(" ="),
+      Doc.indent(Doc.concat([Doc.line, expression])),
     ]),
   );
 };
