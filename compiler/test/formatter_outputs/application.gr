@@ -1,0 +1,8 @@
+import Array from "array"
+import Option from "option"
+
+let data = [>]
+
+let busNumbers = Array.map(((num, idx)) => {
+  (Option.expect("Expected a number", None), idx)
+}, data)

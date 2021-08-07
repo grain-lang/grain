@@ -1,0 +1,3 @@
+import String from "string"
+
+let data = String.split("\n", "a long string")

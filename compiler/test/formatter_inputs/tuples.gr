@@ -1,0 +1,3 @@
+let user = ("Klaus Teuber", 67, "yellow")
+
+let (name, age, color) = user

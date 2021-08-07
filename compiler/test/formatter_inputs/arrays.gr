@@ -1,7 +1,9 @@
-if (newLength < 0) {
-    [>]
-  } else if (newLength > arrayLength) {
-    array
-  } else {
-    init(newLength, n => array[startIndex + n])
-  }
+import Array from "array"
+
+let empty = [>]
+
+let someNums = Array.init(5, n => n + 3)
+
+let second = someNums[1]
+
+someNums[2] := 3

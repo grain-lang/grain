@@ -3,7 +3,7 @@ open Grain_tests.Runner;
 
 describe("formatter", ({test}) => {
   let assertFormatOutput = makeFormatterRunner(test);
-
+  assertFormatOutput("application", "application");
   assertFormatOutput("function_params", "function_params");
   assertFormatOutput("variants", "variants");
   assertFormatOutput("matches", "matches");
@@ -18,4 +18,6 @@ describe("formatter", ({test}) => {
   assertFormatOutput("ifthenelse", "ifthenelse");
   assertFormatOutput("comments", "comments");
   assertFormatOutput("for_loops", "for_loops");
+  assertFormatOutput("strings", "strings");
+  assertFormatOutput("tuples", "tuples");
 });

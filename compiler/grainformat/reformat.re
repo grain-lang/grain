@@ -437,7 +437,7 @@ and print_pattern =
       }
     | PPatTuple(patterns) => (
         Doc.join(
-          Doc.comma,
+          Doc.concat([Doc.comma, Doc.space]),
           List.map(p => print_pattern(p, pat.ppat_loc), patterns),
         ),
         true,
@@ -447,7 +447,7 @@ and print_pattern =
           Doc.concat([
             Doc.lbracket,
             Doc.join(
-              Doc.comma,
+              Doc.concat([Doc.comma, Doc.space]),
               List.map(p => print_pattern(p, parent_loc), patterns),
             ),
             Doc.rbracket,
@@ -823,7 +823,7 @@ and print_expression =
     | PExpTuple(expressions) =>
       addParens(
         Doc.join(
-          Doc.comma,
+          Doc.concat([Doc.comma, Doc.space]),
           List.map(
             e => print_expression(~expr=e, ~parentIsArrow=false, parent_loc),
             expressions,
@@ -860,7 +860,7 @@ and print_expression =
         Doc.lbracket,
         print_expression(~expr=expression2, ~parentIsArrow=false, parent_loc),
         Doc.rbracket,
-        Doc.text(" = "),
+        Doc.text(" := "),
         print_expression(~expr=expression3, ~parentIsArrow=false, parent_loc),
       ])
 
