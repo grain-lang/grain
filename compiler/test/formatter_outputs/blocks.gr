@@ -1,4 +1,6 @@
-{ 1 + 1 }
+{
+  1 + 1
+}
 
 {
   1 + 1
@@ -15,38 +17,37 @@ let myFun = () => {
   true
 }
 
-let myfun1 = (a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p) => {
-  true
-  true
-  false
-};
-
-let myfun =
-    (
-      a,
-      b,
-      c,
-      d,
-      e,
-      f,
-      g,
-      h,
-      i,
-      j,
-      k,
-      l,
-      m,
-      n,
-      o,
-      p,
-      aaaaa,
-      bbbbb,
-      ccccc,
-      dddddd,
-      eeeee,
-    ) => {
+let myfun1 = (a, b) => {
   true
   true
   false
 }
 
+let myfun =
+  (
+    a,
+    b,
+    c,
+    d,
+    e,
+    f,
+    g,
+    h,
+    i,
+    j,
+    k,
+    l,
+    m,
+    n,
+    o,
+    p,
+    aaaaa,
+    bbbbb,
+    ccccc,
+    dddddd,
+    eeeee,
+  ) => {
+  true
+  true
+  false
+}

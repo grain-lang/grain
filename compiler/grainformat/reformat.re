@@ -415,7 +415,7 @@ and print_record_pattern =
 
 and print_pattern =
     (pat: Parsetree.pattern, parent_loc: Grain_parsing__Location.t) => {
-  Debug.debug_pattern(pat);
+  //Debug.debug_pattern(pat);
 
   let (leadingComments, trailingComments) =
     Walktree.partitionComments(pat.ppat_loc);
@@ -762,7 +762,7 @@ and print_application =
         Doc.lparen,
         Doc.indent(
           Doc.concat([
-            Doc.line,
+            Doc.softLine,
             Doc.join(
               Doc.concat([Doc.text(","), Doc.line]),
               List.map(
@@ -774,7 +774,7 @@ and print_application =
             Doc.ifBreaks(Doc.comma, Doc.nil),
           ]),
         ),
-        Doc.ifBreaks(Doc.hardLine, Doc.nil),
+        // Doc.ifBreaks(Doc.hardLine, Doc.nil),
         Doc.rparen,
       ]);
     };
@@ -803,7 +803,7 @@ and print_expression =
       ~parentIsArrow: bool,
       parent_loc: Grain_parsing__Location.t,
     ) => {
-  Debug.debug_expression(expr);
+  // Debug.debug_expression(expr);
   let (_leadingComments, trailingComments) =
     Walktree.partitionComments(expr.pexp_loc);
   Walktree.removeUsedComments([], trailingComments);
@@ -902,66 +902,185 @@ and print_expression =
       ])
     | PExpMatch(expression, match_branches) =>
       // print_loc("PExpMatch", expr.pexp_loc);
+      let arg =
+        Doc.concat([
+          Doc.lparen,
+          print_expression(
+            ~expr=expression,
+            ~parentIsArrow=false,
+            parent_loc,
+          ),
+          Doc.rparen,
+        ]);
 
-      Doc.concat([
-        Doc.group(
-          Doc.concat([
-            Doc.text("match "),
-            Doc.lparen,
-            Doc.indent(
-              Doc.concat([
-                Doc.softLine,
-                print_expression(
-                  ~expr=expression,
-                  ~parentIsArrow=false,
-                  parent_loc,
-                ),
-              ]),
-            ),
-            Doc.softLine,
-            Doc.rparen,
-          ]),
-        ),
-        Doc.space,
-        Doc.lbrace,
-        Doc.indent(
-          Doc.concat([
-            Doc.hardLine,
-            Doc.join(
-              Doc.concat([Doc.comma, Doc.hardLine]),
-              List.map(
-                (branch: Parsetree.match_branch) =>
-                  Doc.concat([
-                    print_pattern(branch.pmb_pat, parent_loc),
-                    switch (branch.pmb_guard) {
-                    | None => Doc.nil
-                    | Some(guard) =>
+      Doc.breakableGroup(
+        ~forceBreak=true,
+        Doc.concat([
+          Doc.group(Doc.concat([Doc.text("match "), arg, Doc.space])),
+          Doc.text("{"),
+          Doc.indent(
+            Doc.concat([
+              Doc.line,
+              //     Doc.group(
+              Doc.join(
+                Doc.concat([Doc.comma, Doc.hardLine]),
+                List.map(
+                  (branch: Parsetree.match_branch) =>
+                    Doc.group(
                       Doc.concat([
-                        Doc.text(" when "),
-                        print_expression(
-                          ~expr=guard,
-                          ~parentIsArrow=false,
-                          parent_loc,
+                        Doc.group(
+                          Doc.concat([
+                            print_pattern(branch.pmb_pat, parent_loc),
+                            switch (branch.pmb_guard) {
+                            | None => Doc.nil
+                            | Some(guard) =>
+                              Doc.concat([
+                                Doc.text(" when "),
+                                print_expression(
+                                  ~expr=guard,
+                                  ~parentIsArrow=false,
+                                  parent_loc,
+                                ),
+                              ])
+                            },
+                            Doc.text(" =>"),
+                          ]),
                         ),
-                      ])
-                    },
-                    Doc.text(" =>"),
-                    Doc.ifBreaks(Doc.space, Doc.nil),
-                    print_expression(
-                      ~expr=branch.pmb_body,
-                      ~parentIsArrow=true,
-                      parent_loc,
+                        Doc.indent(
+                          Doc.concat([
+                            Doc.line,
+                            Doc.group(
+                              print_expression(
+                                ~expr=branch.pmb_body,
+                                ~parentIsArrow=true,
+                                parent_loc,
+                              ),
+                            ),
+                          ]),
+                        ),
+                      ]),
                     ),
-                  ]),
-                match_branches,
+                  match_branches,
+                ),
               ),
-            ),
-            Doc.ifBreaks(Doc.text(","), Doc.nil),
-          ]),
-        ),
-        Doc.hardLine,
-        Doc.rbrace,
-      ])
+              Doc.ifBreaks(Doc.text(","), Doc.nil),
+              //  ),
+            ]),
+          ),
+          Doc.line,
+          Doc.text("}"),
+        ]),
+      );
+
+    // Doc.concat([
+    //   //  Doc.group(Doc.concat([Doc.text("match "), arg, Doc.space])),
+    //   //   Doc.group(
+    //   Doc.concat([
+    //     Doc.text("{"),
+    //     Doc.indent(
+    //       Doc.concat([
+    //         Doc.line,
+    //         Doc.join(
+    //           Doc.concat([Doc.comma, Doc.hardLine]),
+    //           List.map(
+    //             (branch: Parsetree.match_branch) =>
+    //               Doc.concat([
+    //                 // print_pattern(branch.pmb_pat, parent_loc),
+    //                 // Doc.concat([
+    //                 //   switch (branch.pmb_guard) {
+    //                 //   | None => Doc.nil
+    //                 //   | Some(guard) =>
+    //                 //     Doc.concat([
+    //                 //       Doc.text(" when "),
+    //                 //       print_expression(
+    //                 //         ~expr=guard,
+    //                 //         ~parentIsArrow=false,
+    //                 //         parent_loc,
+    //                 //       ),
+    //                 //     ])
+    //                 //   },
+    //                 //   Doc.text(" =>"),
+    //                 // ]),
+    //                 // Doc.line,
+    //                 Doc.group(
+    //                   print_expression(
+    //                     ~expr=branch.pmb_body,
+    //                     ~parentIsArrow=true,
+    //                     parent_loc,
+    //                   ),
+    //                 ),
+    //               ]),
+    //             match_branches,
+    //           ),
+    //         ),
+    //         Doc.ifBreaks(Doc.text(","), Doc.nil),
+    //       ]),
+    //     ),
+    //     Doc.line,
+    //     Doc.text("}"),
+    //   ]),
+    //   //  ),
+    // ]);
+
+    // Doc.concat([
+    //   Doc.group(
+    //     Doc.concat([
+    //       Doc.text("match "),
+    //       Doc.lparen,
+    //       Doc.indent(
+    //         Doc.concat([
+    //           Doc.softLine,
+    //           print_expression(
+    //             ~expr=expression,
+    //             ~parentIsArrow=false,
+    //             parent_loc,
+    //           ),
+    //         ]),
+    //       ),
+    //       Doc.softLine,
+    //       Doc.rparen,
+    //     ]),
+    //   ),
+    //   Doc.space,
+    //   Doc.lbrace,
+    //   Doc.indent(
+    //     Doc.concat([
+    //       Doc.hardLine,
+    //       Doc.join(
+    //         Doc.concat([Doc.comma, Doc.hardLine]),
+    //         List.map(
+    //           (branch: Parsetree.match_branch) =>
+    //             Doc.concat([
+    //               print_pattern(branch.pmb_pat, parent_loc),
+    //               switch (branch.pmb_guard) {
+    //               | None => Doc.nil
+    //               | Some(guard) =>
+    //                 Doc.concat([
+    //                   Doc.text(" when "),
+    //                   print_expression(
+    //                     ~expr=guard,
+    //                     ~parentIsArrow=false,
+    //                     parent_loc,
+    //                   ),
+    //                 ])
+    //               },
+    //               Doc.text(" =>"),
+    //               Doc.ifBreaks(Doc.space, Doc.nil),
+    //               print_expression(
+    //                 ~expr=branch.pmb_body,
+    //                 ~parentIsArrow=true,
+    //                 parent_loc,
+    //               ),
+    //             ]),
+    //           match_branches,
+    //         ),
+    //       ),
+    //       Doc.ifBreaks(Doc.text(","), Doc.nil),
+    //     ]),
+    //   ),
+    //   Doc.hardLine,
+    //   Doc.rbrace,
+    // ])
 
     | PExpPrim1(prim1, expression) =>
       print_endline("PExpPrim1");
@@ -1001,18 +1120,20 @@ and print_expression =
           print_expression(~expr=trueExpr, ~parentIsArrow=false, parent_loc)
 
         | _ =>
-          Doc.concat([
-            Doc.indent(
-              Doc.concat([
-                Doc.line,
-                print_expression(
-                  ~expr=trueExpr,
-                  ~parentIsArrow=false,
-                  parent_loc,
-                ),
-              ]),
-            ),
-          ])
+          Doc.group(
+            Doc.concat([
+              Doc.indent(
+                Doc.concat([
+                  Doc.softLine,
+                  print_expression(
+                    ~expr=trueExpr,
+                    ~parentIsArrow=false,
+                    parent_loc,
+                  ),
+                ]),
+              ),
+            ]),
+          )
         };
 
       let falseClause =
@@ -1044,16 +1165,18 @@ and print_expression =
         | _ =>
           Doc.concat([
             trueFalseSpace,
-            Doc.text("else "),
-            Doc.indent(
-              Doc.concat([
-                Doc.line,
-                print_expression(
-                  ~expr=falseExpr,
-                  ~parentIsArrow=false,
-                  parent_loc,
-                ),
-              ]),
+            Doc.text("else"),
+            Doc.group(
+              Doc.indent(
+                Doc.concat([
+                  Doc.line,
+                  print_expression(
+                    ~expr=falseExpr,
+                    ~parentIsArrow=false,
+                    parent_loc,
+                  ),
+                ]),
+              ),
             ),
           ])
         };
@@ -1177,21 +1300,26 @@ and print_expression =
         if (List.length(patterns) == 0) {
           Doc.concat([Doc.lparen, Doc.rparen]);
         } else if (List.length(patterns) > 1) {
-          Doc.concat([
-            Doc.lparen,
-            Doc.group(
-              Doc.indent(
-                Doc.concat([
-                  Doc.line,
-                  Doc.join(
-                    Doc.concat([Doc.text(","), Doc.line]),
-                    List.map(p => print_pattern(p, parent_loc), patterns),
-                  ),
-                ]),
+          Doc.indent(
+            Doc.concat([
+              Doc.softLine,
+              Doc.lparen,
+              Doc.group(
+                Doc.indent(
+                  Doc.concat([
+                    Doc.softLine,
+                    Doc.join(
+                      Doc.concat([Doc.text(","), Doc.line]),
+                      List.map(p => print_pattern(p, parent_loc), patterns),
+                    ),
+                    Doc.ifBreaks(Doc.text(","), Doc.nil),
+                  ]),
+                ),
               ),
-            ),
-            Doc.rparen,
-          ]);
+              Doc.softLine,
+              Doc.rparen,
+            ]),
+          );
         } else {
           let pat = List.hd(patterns);
 
@@ -1283,22 +1411,22 @@ and print_expression =
               prevExpr := Some(e);
 
               //   Doc.concat([blankLine, Doc.group(printed_expression)]);
-              Doc.concat([blankLine, printed_expression]);
+              Doc.group(Doc.concat([blankLine, printed_expression]));
             },
             expressions,
           ),
         );
 
-      // Doc.breakableGroup(
-      //   ~forceBreak=true,
-      Doc.concat([
-        Doc.lbrace,
-        Doc.indent(Doc.concat([Doc.line, leadingBlockCommentDocs, block])),
-        //    Doc.ifBreaks(Doc.hardLine, Doc.nil),
-        Doc.line,
-        Doc.rbrace,
-      ]);
-    // );
+      Doc.breakableGroup(
+        ~forceBreak=true,
+        Doc.concat([
+          Doc.lbrace,
+          Doc.indent(Doc.concat([Doc.line, leadingBlockCommentDocs, block])),
+          //    Doc.ifBreaks(Doc.hardLine, Doc.nil),
+          Doc.line,
+          Doc.rbrace,
+        ]),
+      );
 
     | PExpBoxAssign(expression, expression1) =>
       Doc.concat([
@@ -1840,15 +1968,14 @@ let toplevel_print = (data: Parsetree.toplevel_stmt, previous_line: int) => {
         kind,
       ]);
     | PTopExport(export_declarations) =>
-      Doc.group(
-        Doc.concat([
-          Doc.text("export "),
-          Doc.join(
-            Doc.concat([Doc.comma, Doc.line]),
-            List.map(e => print_export_declaration(e), export_declarations),
-          ),
-        ]),
-      )
+      Doc.concat([
+        Doc.text("export "),
+        Doc.join(
+          Doc.concat([Doc.comma, Doc.line]),
+          List.map(e => print_export_declaration(e), export_declarations),
+        ),
+      ])
+
     | PTopExportAll(export_excepts) =>
       Doc.concat([
         Doc.text("export * "),
@@ -1959,45 +2086,52 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
   let finalDoc = Doc.concat([programLeadingCommentsDocs, printedDoc]);
 
   // Use this to check the generated output
-  Doc.debug(finalDoc);
+  //Doc.debug(finalDoc);
   //
 
-  // let finalDoc =
-  //   Doc.concat([
-  //     Doc.group(
-  //       Doc.concat([Doc.text("let "), Doc.text("myfun1"), Doc.text(" =")]),
-  //     ),
-  //     Doc.line,
-  //     Doc.group(
-  //       Doc.concat([
-  //         Doc.text("("),
-  //         Doc.breakableGroup(
-  //           ~forceBreak=false,
-  //           Doc.indent(
-  //             Doc.concat([
-  //               Doc.line,
-  //               Doc.text("a"),
-  //               Doc.text(", "),
-  //               Doc.line,
-  //               Doc.text("b"),
-  //             ]),
-  //           ),
-  //         ),
-  //         Doc.line,
-  //         Doc.text(")"),
-  //         Doc.text(" => "),
-  //       ]),
-  //     ),
-  //     Doc.breakableGroup(
-  //       ~forceBreak=true,
-  //       Doc.concat([
-  //         Doc.text("{"),
-  //         Doc.indent(Doc.concat([Doc.line, Doc.text("true")])),
-  //         Doc.line,
-  //         Doc.text("}"),
-  //       ]),
-  //     ),
-  //   ]);
+  let finalDoc4 =
+    Doc.concat([
+      Doc.group(
+        Doc.concat([Doc.text("let "), Doc.text("myfun1"), Doc.text(" =")]),
+      ),
+      Doc.line,
+      Doc.group(
+        Doc.concat([
+          Doc.text("("),
+          Doc.breakableGroup(
+            ~forceBreak=false,
+            Doc.indent(
+              Doc.concat([
+                Doc.line,
+                Doc.text("a"),
+                Doc.text(", "),
+                Doc.line,
+                Doc.text("b"),
+              ]),
+            ),
+          ),
+          Doc.line,
+          Doc.text(")"),
+          Doc.text(" => "),
+        ]),
+      ),
+      Doc.breakableGroup(
+        ~forceBreak=true,
+        Doc.concat([
+          Doc.text("{"),
+          Doc.indent(
+            Doc.concat([
+              Doc.line,
+              Doc.group(
+                Doc.concat([Doc.text("true"), Doc.line, Doc.text("false")]),
+              ),
+            ]),
+          ),
+          Doc.line,
+          Doc.text("}"),
+        ]),
+      ),
+    ]);
 
   Doc.toString(~width=80, finalDoc) |> print_endline;
   //use this to see the AST in JSON
