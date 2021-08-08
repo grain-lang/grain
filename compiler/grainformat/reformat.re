@@ -144,24 +144,24 @@ type sugaredPatternItem =
   | SpreadPattern(Grain_parsing.Parsetree.pattern);
 
 let addParens = doc =>
-  Doc.group(
-    Doc.concat([
-      Doc.lparen,
-      Doc.indent(Doc.concat([Doc.softLine, doc])),
-      Doc.softLine,
-      Doc.rparen,
-    ]),
-  );
+  // Doc.group(
+  Doc.concat([
+    Doc.lparen,
+    Doc.indent(Doc.concat([Doc.softLine, doc])),
+    Doc.softLine,
+    Doc.rparen,
+  ]);
+// );
 
 let addBraces = doc =>
-  Doc.group(
-    Doc.concat([
-      Doc.lbrace,
-      Doc.indent(Doc.concat([Doc.softLine, doc])),
-      Doc.softLine,
-      Doc.rbrace,
-    ]),
-  );
+  // Doc.group(
+  Doc.concat([
+    Doc.lbrace,
+    Doc.indent(Doc.concat([Doc.softLine, doc])),
+    Doc.softLine,
+    Doc.rbrace,
+  ]);
+//);
 
 let infixop = (op: string) => {
   switch (op) {
@@ -723,15 +723,15 @@ and print_application =
         ])
       | _ => print_expression(~expr=second, ~parentIsArrow=false, parent_loc)
       };
-    Doc.group(
-      Doc.concat([
-        firstBrackets,
-        Doc.space,
-        print_expression(~expr=func, ~parentIsArrow=false, parent_loc),
-        Doc.line,
-        secondBrackets,
-      ]),
-    );
+    //  Doc.group(
+    Doc.concat([
+      firstBrackets,
+      Doc.space,
+      print_expression(~expr=func, ~parentIsArrow=false, parent_loc),
+      Doc.line,
+      secondBrackets,
+    ]);
+    //);
   } else {
     let funcName = getFunctionName(func);
 
@@ -1174,51 +1174,56 @@ and print_expression =
       //print_loc("PExpLambda", expr.pexp_loc);
 
       let args =
-        Doc.indent(
+        if (List.length(patterns) == 0) {
+          Doc.concat([Doc.lparen, Doc.rparen]);
+        } else if (List.length(patterns) > 1) {
           Doc.concat([
-            Doc.line,
-            if (List.length(patterns) == 0) {
-              Doc.text("()");
-            } else if (List.length(patterns) > 1) {
-              addParens(
+            Doc.lparen,
+            Doc.group(
+              Doc.indent(
                 Doc.concat([
+                  Doc.line,
                   Doc.join(
                     Doc.concat([Doc.text(","), Doc.line]),
                     List.map(p => print_pattern(p, parent_loc), patterns),
                   ),
                 ]),
-              );
-            } else {
-              let pat = List.hd(patterns);
+              ),
+            ),
+            Doc.rparen,
+          ]);
+        } else {
+          let pat = List.hd(patterns);
 
-              switch (pat.ppat_desc) {
-              | PPatConstraint(_) =>
-                Doc.concat([
-                  Doc.lparen,
-                  print_pattern(pat, parent_loc),
-                  Doc.rparen,
-                ])
-              | PPatTuple(_) =>
-                Doc.concat([
-                  Doc.lparen,
-                  print_pattern(pat, parent_loc),
-                  Doc.rparen,
-                ])
-              | _ => print_pattern(pat, parent_loc)
-              };
-            },
-          ]),
-        );
+          switch (pat.ppat_desc) {
+          | PPatConstraint(_) =>
+            Doc.concat([
+              Doc.lparen,
+              print_pattern(pat, parent_loc),
+              Doc.rparen,
+            ])
+          | PPatTuple(_) =>
+            Doc.concat([
+              Doc.lparen,
+              print_pattern(pat, parent_loc),
+              Doc.rparen,
+            ])
+          | _ => print_pattern(pat, parent_loc)
+          };
+        };
 
-      //Doc.group(
       Doc.concat([
-        args,
-        Doc.space,
-        Doc.text("=>"),
-        Doc.space,
-        print_expression(~expr=expression, ~parentIsArrow=false, parent_loc),
+        Doc.group(Doc.concat([args, Doc.space, Doc.text("=>"), Doc.space])),
+        Doc.group(
+          print_expression(
+            ~expr=expression,
+            ~parentIsArrow=false,
+            parent_loc,
+          ),
+        ),
       ]);
-    //);
+
+    //        ,
 
     | PExpApp(func, expressions) =>
       // print_loc("PExpApp", expr.pexp_loc);
@@ -1277,22 +1282,23 @@ and print_expression =
                 };
               prevExpr := Some(e);
 
-              Doc.concat([blankLine, Doc.group(printed_expression)]);
+              //   Doc.concat([blankLine, Doc.group(printed_expression)]);
+              Doc.concat([blankLine, printed_expression]);
             },
             expressions,
           ),
         );
 
-      Doc.breakableGroup(
-        ~forceBreak=true,
-        Doc.concat([
-          Doc.lbrace,
-          Doc.indent(Doc.concat([Doc.line, leadingBlockCommentDocs, block])),
-          //    Doc.ifBreaks(Doc.hardLine, Doc.nil),
-          Doc.line,
-          Doc.rbrace,
-        ]),
-      );
+      // Doc.breakableGroup(
+      //   ~forceBreak=true,
+      Doc.concat([
+        Doc.lbrace,
+        Doc.indent(Doc.concat([Doc.line, leadingBlockCommentDocs, block])),
+        //    Doc.ifBreaks(Doc.hardLine, Doc.nil),
+        Doc.line,
+        Doc.rbrace,
+      ]);
+    // );
 
     | PExpBoxAssign(expression, expression1) =>
       Doc.concat([
@@ -1450,12 +1456,14 @@ and value_bind_print =
         recursive,
         mutble,
         print_pattern(vb.pvb_pat, vb.pvb_loc),
-        Doc.text(" = "),
+        Doc.text(" ="),
       ]),
     ),
+    Doc.line,
     expression,
-    //  Doc.indent(Doc.concat([Doc.line, expression])),
   ]);
+  //  Doc.indent(Doc.concat([Doc.line, expression])),
+  //]);
 };
 let rec print_data = (d: Grain_parsing__Parsetree.data_declaration) => {
   let nameloc = d.pdata_name;
@@ -1938,7 +1946,8 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
       Doc.hardLine,
       List.map(
         (stmt: Grain_parsing.Parsetree.toplevel_stmt) => {
-          let line = Doc.group(toplevel_print(stmt, previousLine^));
+          //let line = Doc.group(toplevel_print(stmt, previousLine^));
+          let line = toplevel_print(stmt, previousLine^);
 
           previousLine := getEndLocLine(stmt.ptop_loc);
           line;
@@ -1952,6 +1961,43 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
   // Use this to check the generated output
   Doc.debug(finalDoc);
   //
+
+  // let finalDoc =
+  //   Doc.concat([
+  //     Doc.group(
+  //       Doc.concat([Doc.text("let "), Doc.text("myfun1"), Doc.text(" =")]),
+  //     ),
+  //     Doc.line,
+  //     Doc.group(
+  //       Doc.concat([
+  //         Doc.text("("),
+  //         Doc.breakableGroup(
+  //           ~forceBreak=false,
+  //           Doc.indent(
+  //             Doc.concat([
+  //               Doc.line,
+  //               Doc.text("a"),
+  //               Doc.text(", "),
+  //               Doc.line,
+  //               Doc.text("b"),
+  //             ]),
+  //           ),
+  //         ),
+  //         Doc.line,
+  //         Doc.text(")"),
+  //         Doc.text(" => "),
+  //       ]),
+  //     ),
+  //     Doc.breakableGroup(
+  //       ~forceBreak=true,
+  //       Doc.concat([
+  //         Doc.text("{"),
+  //         Doc.indent(Doc.concat([Doc.line, Doc.text("true")])),
+  //         Doc.line,
+  //         Doc.text("}"),
+  //       ]),
+  //     ),
+  //   ]);
 
   Doc.toString(~width=80, finalDoc) |> print_endline;
   //use this to see the AST in JSON
