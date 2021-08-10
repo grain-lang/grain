@@ -22,4 +22,5 @@ describe("formatter", ({test}) => {
   assertFormatOutput("tuples", "tuples");
   assertFormatOutput("blocks", "blocks");
   assertFormatOutput("lambda", "lambda");
+  assertFormatOutput("operators", "operators");
 });

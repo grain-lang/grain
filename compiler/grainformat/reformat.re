@@ -191,6 +191,13 @@ let infixop = (op: string) => {
   };
 };
 
+let prefixop = (op: string) => {
+  switch (op) {
+  | "!" => true
+  | _ => false
+  };
+};
+
 let getCommentEndLine = (comment: Parsetree.comment) => {
   let endloc =
     switch (comment) {
@@ -437,8 +444,8 @@ and print_pattern =
     | PPatAny => (Doc.text("_"), false)
     | PPatConstant(c) => (print_constant(c), false)
     | PPatVar({txt, _}) =>
-      if (infixop(txt)) {
-        (Doc.text(txt), true);
+      if (infixop(txt) || prefixop(txt)) {
+        (Doc.concat([Doc.lparen, Doc.text(txt), Doc.rparen]), true);
       } else {
         (Doc.text(txt), false);
       }
@@ -559,7 +566,12 @@ and print_constant = (c: Parsetree.constant) => {
 }
 and print_ident = (ident: Identifier.t) => {
   switch (ident) {
-  | IdentName(name) => Doc.text(name)
+  | IdentName(name) =>
+    if (infixop(name) || prefixop(name)) {
+      Doc.concat([Doc.lparen, Doc.text(name), Doc.rparen]);
+    } else {
+      Doc.text(name);
+    }
   | IdentExternal(externalIdent, second) =>
     Doc.concat([
       print_ident(externalIdent),
@@ -572,7 +584,7 @@ and print_ident = (ident: Identifier.t) => {
 and print_imported_ident = (ident: Identifier.t) => {
   switch (ident) {
   | IdentName(name) =>
-    if (infixop(name)) {
+    if (infixop(name) || prefixop(name)) {
       Doc.concat([Doc.lparen, Doc.text(name), Doc.rparen]);
     } else {
       Doc.text(name);
@@ -705,7 +717,20 @@ and print_application =
     ) => {
   let functionName = getFunctionName(func);
 
-  if (infixop(functionName)) {
+  if (prefixop(functionName)) {
+    if (List.length(expressions) == 1) {
+      let first = List.hd(expressions);
+      Doc.concat([
+        Doc.text(functionName),
+        print_expression(~expr=first, ~parentIsArrow=false, parent_loc),
+      ]);
+    } else {
+      Doc.text(
+        functionName
+        ++ "/* formatter error prefix should have 1 arg exactly */",
+      );
+    };
+  } else if (infixop(functionName)) {
     let first = List.hd(expressions);
     let second = List.hd(List.tl(expressions)); // assumes an infix only has two expressions
 
@@ -734,7 +759,8 @@ and print_application =
     Doc.concat([
       firstBrackets,
       Doc.space,
-      print_expression(~expr=func, ~parentIsArrow=false, parent_loc),
+      // print_expression(~expr=func, ~parentIsArrow=false, parent_loc),
+      Doc.text(functionName),
       Doc.line,
       secondBrackets,
     ]);
@@ -793,7 +819,11 @@ and getFunctionName = (expr: Parsetree.expression) => {
   | PExpConstant(x) =>
     print_endline("PExpConstant");
     Doc.toString(~width=1000, print_constant(x));
-  | PExpId({txt: id}) => Doc.toString(~width=1000, print_ident(id))
+  | PExpId({txt: id}) =>
+    switch (id) {
+    | IdentName(name) => name
+    | _ => ""
+    }
   | _ => ""
   };
 }
@@ -1846,7 +1876,7 @@ let print_export_desc = (desc: Parsetree.export_declaration_desc) => {
   let ident = desc.pex_name.txt;
 
   let fixedIdent =
-    if (infixop(ident)) {
+    if (infixop(ident) || prefixop(ident)) {
       Doc.concat([Doc.lparen, Doc.text(ident), Doc.rparen]);
     } else {
       Doc.text(ident);
@@ -1871,7 +1901,7 @@ let print_foreign_value_description = (vd: Parsetree.value_description) => {
   let ident = vd.pval_name.txt;
 
   let fixedIdent =
-    if (infixop(ident) || ident == "!") {
+    if (infixop(ident) || prefixop(ident)) {
       Doc.concat([Doc.lparen, Doc.text(ident), Doc.rparen]);
     } else {
       Doc.text(ident);
@@ -1892,7 +1922,7 @@ let print_primitive_value_description = (vd: Parsetree.value_description) => {
   let ident = vd.pval_name.txt;
 
   let fixedIdent =
-    if (infixop(ident) || ident == "!") {
+    if (infixop(ident) || prefixop(ident)) {
       Doc.concat([Doc.lparen, Doc.text(ident), Doc.rparen]);
     } else {
       Doc.text(ident);
