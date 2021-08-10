@@ -7,4 +7,3 @@ match (myNumber) {
     _ when isTuesday => print("It's Tuesday"),
     _ => print("Nothing else matched")
 }
-

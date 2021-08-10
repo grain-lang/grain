@@ -306,28 +306,33 @@ and resugar_list =
       i =>
         switch (i) {
         | Regular(e) =>
-          print_expression(~expr=e, ~parentIsArrow=false, parent_loc)
-        | Spread(e) =>
-          Doc.concat([
-            Doc.text("..."),
+          Doc.group(
             print_expression(~expr=e, ~parentIsArrow=false, parent_loc),
-          ])
+          )
+        | Spread(e) =>
+          Doc.group(
+            Doc.concat([
+              Doc.text("..."),
+              print_expression(~expr=e, ~parentIsArrow=false, parent_loc),
+            ]),
+          )
         },
       processed_list,
     );
 
   Doc.group(
-    Doc.concat([
-      Doc.lbracket,
-      Doc.indent(
+    Doc.indent(
+      Doc.concat([
+        //  Doc.ifBreaks(Doc.line, Doc.nil),
+        Doc.lbracket,
         Doc.concat([
           Doc.softLine,
           Doc.join(Doc.concat([Doc.comma, Doc.line]), items),
         ]),
-      ),
-      Doc.softLine,
-      Doc.rbracket,
-    ]),
+        Doc.softLine,
+        Doc.rbracket,
+      ]),
+    ),
   );
 }
 
@@ -591,7 +596,9 @@ and print_record =
           ),
         ),
     ) =>
+  // Doc.group(
   Doc.concat([
+    Doc.softLine,
     Doc.lbrace,
     Doc.indent(
       Doc.concat([
@@ -914,50 +921,54 @@ and print_expression =
         ]);
 
       Doc.breakableGroup(
-        ~forceBreak=true,
+        ~forceBreak=false,
         Doc.concat([
-          Doc.group(Doc.concat([Doc.text("match "), arg, Doc.space])),
+          //Doc.group(Doc.concat([Doc.text("match "), arg, Doc.space])),
+          Doc.concat([Doc.text("match "), arg, Doc.space]),
           Doc.text("{"),
           Doc.indent(
             Doc.concat([
-              Doc.line,
+              Doc.hardLine,
               //     Doc.group(
               Doc.join(
-                Doc.concat([Doc.comma, Doc.hardLine]),
+                Doc.concat([Doc.comma, Doc.line]),
                 List.map(
                   (branch: Parsetree.match_branch) =>
                     Doc.group(
                       Doc.concat([
-                        Doc.group(
-                          Doc.concat([
-                            print_pattern(branch.pmb_pat, parent_loc),
-                            switch (branch.pmb_guard) {
-                            | None => Doc.nil
-                            | Some(guard) =>
-                              Doc.concat([
-                                Doc.text(" when "),
-                                print_expression(
-                                  ~expr=guard,
-                                  ~parentIsArrow=false,
-                                  parent_loc,
-                                ),
-                              ])
-                            },
-                            Doc.text(" =>"),
-                          ]),
-                        ),
-                        Doc.indent(
-                          Doc.concat([
-                            Doc.line,
-                            Doc.group(
+                        // Doc.group(
+                        Doc.concat([
+                          print_pattern(branch.pmb_pat, parent_loc),
+                          switch (branch.pmb_guard) {
+                          | None => Doc.nil
+                          | Some(guard) =>
+                            Doc.concat([
+                              Doc.text(" when "),
                               print_expression(
-                                ~expr=branch.pmb_body,
-                                ~parentIsArrow=true,
+                                ~expr=guard,
+                                ~parentIsArrow=false,
                                 parent_loc,
                               ),
+                            ])
+                          },
+                          Doc.text(" => "),
+                        ]),
+                        switch (branch.pmb_body.pexp_desc) {
+                        | PExpBlock(expressions) =>
+                          print_expression(
+                            ~expr=branch.pmb_body,
+                            ~parentIsArrow=true,
+                            parent_loc,
+                          )
+                        | _ =>
+                          Doc.indent(
+                            print_expression(
+                              ~expr=branch.pmb_body,
+                              ~parentIsArrow=true,
+                              parent_loc,
                             ),
-                          ]),
-                        ),
+                          )
+                        },
                       ]),
                     ),
                   match_branches,
@@ -1120,19 +1131,24 @@ and print_expression =
           print_expression(~expr=trueExpr, ~parentIsArrow=false, parent_loc)
 
         | _ =>
-          Doc.group(
-            Doc.concat([
-              Doc.indent(
-                Doc.concat([
-                  Doc.softLine,
-                  print_expression(
-                    ~expr=trueExpr,
-                    ~parentIsArrow=false,
-                    parent_loc,
-                  ),
-                ]),
-              ),
-            ]),
+          //   print_expression(~expr=trueExpr, ~parentIsArrow=false, parent_loc)
+          // };
+          Doc.ifBreaks(
+            Doc.indent(
+              Doc.concat([
+                Doc.line,
+                print_expression(
+                  ~expr=trueExpr,
+                  ~parentIsArrow=false,
+                  parent_loc,
+                ),
+              ]),
+            ),
+            print_expression(
+              ~expr=trueExpr,
+              ~parentIsArrow=false,
+              parent_loc,
+            ),
           )
         };
 
@@ -1183,27 +1199,27 @@ and print_expression =
 
       if (parentIsArrow) {
         Doc.group(
-          Doc.indent(
-            Doc.concat([
-              Doc.line,
-              Doc.text("if "),
-              Doc.group(
-                Doc.concat([
-                  Doc.lparen,
-                  leadingConditionCommentDocs,
-                  print_expression(
-                    ~expr=condition,
-                    ~parentIsArrow=false,
-                    parent_loc,
-                  ),
-                  Doc.rparen,
-                  Doc.space,
-                ]),
-              ),
-              trueClause,
-              falseClause,
-            ]),
-          ),
+          // Doc.indent(
+          Doc.concat([
+            Doc.line,
+            Doc.text("if "),
+            Doc.group(
+              Doc.concat([
+                Doc.lparen,
+                leadingConditionCommentDocs,
+                print_expression(
+                  ~expr=condition,
+                  ~parentIsArrow=false,
+                  parent_loc,
+                ),
+                Doc.rparen,
+                Doc.space,
+              ]),
+            ),
+            trueClause,
+            falseClause,
+          ]),
+          //   ),
         );
       } else {
         Doc.concat([
@@ -1587,11 +1603,9 @@ and value_bind_print =
         Doc.text(" ="),
       ]),
     ),
-    Doc.line,
+    Doc.space, // fix needed here?, we need to work out if all arguments fit on the line or will break
     expression,
   ]);
-  //  Doc.indent(Doc.concat([Doc.line, expression])),
-  //]);
 };
 let rec print_data = (d: Grain_parsing__Parsetree.data_declaration) => {
   let nameloc = d.pdata_name;
@@ -2088,50 +2102,6 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
   // Use this to check the generated output
   //Doc.debug(finalDoc);
   //
-
-  let finalDoc4 =
-    Doc.concat([
-      Doc.group(
-        Doc.concat([Doc.text("let "), Doc.text("myfun1"), Doc.text(" =")]),
-      ),
-      Doc.line,
-      Doc.group(
-        Doc.concat([
-          Doc.text("("),
-          Doc.breakableGroup(
-            ~forceBreak=false,
-            Doc.indent(
-              Doc.concat([
-                Doc.line,
-                Doc.text("a"),
-                Doc.text(", "),
-                Doc.line,
-                Doc.text("b"),
-              ]),
-            ),
-          ),
-          Doc.line,
-          Doc.text(")"),
-          Doc.text(" => "),
-        ]),
-      ),
-      Doc.breakableGroup(
-        ~forceBreak=true,
-        Doc.concat([
-          Doc.text("{"),
-          Doc.indent(
-            Doc.concat([
-              Doc.line,
-              Doc.group(
-                Doc.concat([Doc.text("true"), Doc.line, Doc.text("false")]),
-              ),
-            ]),
-          ),
-          Doc.line,
-          Doc.text("}"),
-        ]),
-      ),
-    ]);
 
   Doc.toString(~width=80, finalDoc) |> print_endline;
   //use this to see the AST in JSON
