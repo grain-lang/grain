@@ -73,6 +73,44 @@ let compare_locations =
   res;
 };
 
+// is loc1 inside loc2
+let isFirstInsideSecond =
+    (loc1: Grain_parsing.Location.t, loc2: Grain_parsing.Location.t) => {
+  let (_, raw1l, raw1c, _) = get_raw_pos_info(loc1.loc_start);
+  let (_, raw2l, raw2c, _) = get_raw_pos_info(loc2.loc_start);
+
+  let (_, raw1le, raw1ce, _) = get_raw_pos_info(loc1.loc_end);
+  let (_, raw2le, raw2ce, _) = get_raw_pos_info(loc2.loc_end);
+
+  if (raw1l < raw2l) {
+    false;
+  } else if (raw1le > raw2le) {
+    false;
+  } else {
+    let begins_inside =
+      if (raw1l > raw2l) {
+        true;
+      } else if (raw1c >= raw2c) {
+        true;
+      } else {
+        false;
+      };
+    let ends_inside =
+      if (raw1le < raw2le) {
+        true;
+      } else {
+        true;
+      }; // ignore the end of line so we catch trailing comments
+
+    // else if (raw1ce <= raw2ce) {
+    //   true;
+    // } else {
+    //   false;
+    // };
+    begins_inside && ends_inside;
+  };
+};
+
 let compare_partition_locations =
     (loc1: Grain_parsing.Location.t, loc2: Grain_parsing.Location.t) => {
   let (_, raw1l, raw1c, _) = get_raw_pos_info(loc1.loc_start);
@@ -130,12 +168,14 @@ let walktree =
 };
 
 let partitionComments =
-    (loc: Grain_parsing.Location.t)
+    (loc: Grain_parsing.Location.t, range: option(Grain_parsing.Location.t))
     : (
         list(Grain_parsing.Parsetree.comment),
         list(Grain_parsing.Parsetree.comment),
       ) => {
   let skip = ref(false);
+
+  Debug.print_loc("partitionComments", loc);
 
   let (preceeding, following) =
     List.fold_left(
@@ -146,22 +186,43 @@ let partitionComments =
           let (accPreceeding, accFollowing) = acc;
           let nodeLoc = getNodeLoc(node);
 
-          let comparedLoc = compare_partition_locations(loc, nodeLoc);
+          let inRange =
+            switch (range) {
+            | None => true
+            | Some(rangeloc) =>
+              //Debug.print_loc("nodeLoc", nodeLoc);
 
-          if (comparedLoc == 0) {
-            // hit the node we are looking for
-            acc;
-          } else if (comparedLoc > 0) {
-            switch (node) {
-            | Code(_) => ([], accFollowing)
-            | Comment((l, c)) => (accPreceeding @ [c], accFollowing)
+              //Debug.print_loc("range", rangeloc);
+
+              if (isFirstInsideSecond(nodeLoc, rangeloc)) {
+                true;
+                    // print_endline("in range");
+              } else {
+                false;
+                     // print_endline("out range");
+              }
             };
+
+          if (!inRange) {
+            acc;
           } else {
-            switch (node) {
-            | Code(_) =>
-              skip := true;
+            let comparedLoc = compare_partition_locations(loc, nodeLoc);
+
+            if (comparedLoc == 0) {
+              // hit the node we are looking for
               acc;
-            | Comment((l, c)) => (accPreceeding, accFollowing @ [c])
+            } else if (comparedLoc > 0) {
+              switch (node) {
+              | Code(_) => ([], accFollowing)
+              | Comment((l, c)) => (accPreceeding @ [c], accFollowing)
+              };
+            } else {
+              switch (node) {
+              | Code(_) =>
+                skip := true;
+                acc;
+              | Comment((l, c)) => (accPreceeding, accFollowing @ [c])
+              };
             };
           };
         },
