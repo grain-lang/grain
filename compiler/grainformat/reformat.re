@@ -883,7 +883,7 @@ and print_expression =
       ~parentIsArrow: bool,
       parent_loc: Grain_parsing__Location.t,
     ) => {
-  Debug.debug_expression(expr);
+  // Debug.debug_expression(expr);
   let (_leadingComments, trailingComments) =
     Walktree.partitionComments(expr.pexp_loc, Some(parent_loc));
 
@@ -1101,8 +1101,6 @@ and print_expression =
           print_expression(~expr=trueExpr, ~parentIsArrow=false, parent_loc)
 
         | _ =>
-          //   print_expression(~expr=trueExpr, ~parentIsArrow=false, parent_loc)
-          // };
           Doc.ifBreaks(
             Doc.indent(
               Doc.concat([
@@ -1335,8 +1333,6 @@ and print_expression =
         ),
       ]);
 
-    //        ,
-
     | PExpApp(func, expressions) =>
       // print_loc("PExpApp", expr.pexp_loc);
 
@@ -1344,74 +1340,88 @@ and print_expression =
     | PExpBlock(expressions) =>
       // print_loc("PExpBlock", expr.pexp_loc);
 
-      let leadingComments =
-        if (List.length(expressions) > 0) {
-          let firstStatement = List.hd(expressions);
-
-          let (leadingComments, _trailingComments) =
-            Walktree.partitionComments(
-              firstStatement.pexp_loc,
-              Some(parent_loc),
-            );
-          Walktree.removeUsedComments(leadingComments, []);
-
-          leadingComments;
-        } else {
-          let (_leadingComments, trailingComments) =
-            Walktree.partitionComments(expr.pexp_loc, Some(parent_loc));
-
-          Walktree.removeUsedComments([], trailingComments);
-          trailingComments;
-        };
-
-      let exprLine = getEndLocLine(expr.pexp_loc) + 1;
-
-      let leadingBlockCommentDocs =
-        if (List.length(leadingComments) > 0) {
-          Doc.concat([
-            print_multi_comments_no_space(leadingComments, exprLine),
+      if (List.length(expressions) > 0) {
+        let previousLine = ref(getLocLine(expr.pexp_loc));
+        let block =
+          Doc.join(
             Doc.hardLine,
-          ]);
-        } else {
-          Doc.nil;
-        };
+            List.map(
+              (e: Parsetree.expression) => {
+                // get the leading comments
+                let (leadingComments, _trailingComments) =
+                  Walktree.partitionComments(e.pexp_loc, None); //
+                Walktree.removeUsedComments(leadingComments, []);
 
-      let prevExpr = ref(None);
-      let block =
-        Doc.join(
-          Doc.hardLine,
-          List.map(
-            (e: Parsetree.expression) => {
-              let printed_expression =
-                print_expression(~expr=e, ~parentIsArrow=false, parent_loc);
-              // let blankLine =
-              //   switch (prevExpr^) {
-              //   | None => Doc.nil
-              //   | Some(pexpr: Parsetree.expression) =>
-              //     if (getLocLine(e.pexp_loc) > getEndLocLine(pexpr.pexp_loc)
-              //         + 1) {
-              //       Doc.hardLine;
-              //     } else {
-              //       Doc.nil;
-              //     }
-              //   };
-              prevExpr := Some(e);
+                let (stmtLeadingCommentDocs1, prevLine) =
+                  print_leading_comments(leadingComments, previousLine^);
 
-              Doc.group(Doc.concat([printed_expression]));
-            },
-            expressions,
-          ),
+                let stmtLeadingCommentDocs =
+                  if (List.length(leadingComments) > 0) {
+                    stmtLeadingCommentDocs1;
+                  } else {
+                    Doc.nil;
+                  };
+
+                let blankLineAbove =
+                  if (getLocLine(e.pexp_loc) > prevLine + 1) {
+                    Doc.hardLine;
+                  } else {
+                    Doc.nil;
+                  };
+
+                let printed_expression =
+                  print_expression(~expr=e, ~parentIsArrow=false, parent_loc);
+
+                previousLine := getEndLocLine(e.pexp_loc);
+
+                Doc.group(
+                  Doc.concat([
+                    stmtLeadingCommentDocs,
+                    blankLineAbove,
+                    printed_expression,
+                  ]),
+                );
+              },
+              expressions,
+            ),
+          );
+
+        Doc.breakableGroup(
+          ~forceBreak=true,
+          Doc.concat([
+            Doc.lbrace,
+            Doc.indent(Doc.concat([Doc.line, block])),
+            Doc.line,
+            Doc.rbrace,
+          ]),
         );
+      } else {
+        let (_leadingComments, trailingComments) =
+          Walktree.partitionComments(expr.pexp_loc, Some(parent_loc));
 
-      Doc.breakableGroup(
-        ~forceBreak=true,
-        Doc.concat([
-          Doc.lbrace,
-          Doc.indent(Doc.concat([Doc.line, leadingBlockCommentDocs, block])),
-          Doc.line,
-          Doc.rbrace,
-        ]),
-      );
+        Walktree.removeUsedComments([], trailingComments);
+
+        let exprLine = getEndLocLine(expr.pexp_loc) + 1;
+
+        let blockCommentDocs =
+          if (List.length(trailingComments) > 0) {
+            Doc.concat([
+              print_multi_comments_no_space(trailingComments, exprLine),
+              Doc.hardLine,
+            ]);
+          } else {
+            Doc.nil;
+          };
+        Doc.breakableGroup(
+          ~forceBreak=true,
+          Doc.concat([
+            Doc.lbrace,
+            Doc.indent(Doc.concat([Doc.line, blockCommentDocs])),
+            Doc.line,
+            Doc.rbrace,
+          ]),
+        );
+      }
 
     | PExpBoxAssign(expression, expression1) =>
       Doc.concat([
@@ -1882,7 +1892,7 @@ let print_primitive_value_description = (vd: Parsetree.value_description) => {
 let toplevel_print = (data: Parsetree.toplevel_stmt, previousLine: int) => {
   let attributes = data.ptop_attributes;
 
-  Debug.print_loc("top level:", data.ptop_loc);
+  //Debug.print_loc("top level:", data.ptop_loc);
 
   // get the leading comments
   let (leadingComments, _trailingComments) =
@@ -2041,45 +2051,9 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
   let _ =
     Walktree.walktree(parsed_program.statements, parsed_program.comments);
 
-  // these are the first comments in the program file before any statements
-  // let programleadingComments =
-  //   if (List.length(parsed_program.statements) > 0) {
-  //     let firstStatement = List.hd(parsed_program.statements);
-  //     let (leadingComments, _trailingComments) =
-  //       Walktree.partitionComments(firstStatement.ptop_loc, None);
-  //     Walktree.removeUsedComments(leadingComments, []);
-  //     leadingComments;
-  //   } else {
-  //     // it's all comments
-  //     parsed_program.
-  //       comments;
-  //   };
-
-  // let programLeadingCommentsDocs =
-  //   if (List.length(programleadingComments) > 0) {
-  //     Doc.concat([
-  //       print_multi_comments_no_space(programleadingComments, 1),
-  //       Doc.hardLine,
-  //     ]);
-  //   } else {
-  //     Doc.nil;
-  //   };
-
-  // let lastCommentLine =
-  //   if (List.length(programleadingComments) > 0) {
-  //     let lastComment =
-  //       List.nth(
-  //         programleadingComments,
-  //         List.length(programleadingComments) - 1,
-  //       );
-  //     getEndLocLine(getCommentLoc(lastComment));
-  //   } else {
-  //     0;
-  //   };
-
-  //let previousLine = ref(lastCommentLine);
+  let lastStmt = ref(None);
   let previousLine = ref(0);
-  let finalDoc =
+  let printedDoc =
     Doc.join(
       Doc.hardLine,
       List.map(
@@ -2087,11 +2061,27 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
           let line = toplevel_print(stmt, previousLine^);
 
           previousLine := getEndLocLine(stmt.ptop_loc);
+          lastStmt := Some(stmt);
           line;
         },
         parsed_program.statements,
       ),
     );
+
+  let (_leadingComments, trailingComments) =
+    switch (lastStmt^) {
+    | None => ([], [])
+    | Some(stmt) => Walktree.partitionComments(stmt.ptop_loc, None)
+    };
+
+  let trailingCommentDocs =
+    if (List.length(trailingComments) > 0) {
+      print_multi_comments(trailingComments, previousLine^);
+    } else {
+      Doc.nil;
+    };
+
+  let finalDoc = Doc.concat([printedDoc, trailingCommentDocs]);
 
   // Use this to check the generated output
   //Doc.debug(finalDoc);

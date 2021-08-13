@@ -175,7 +175,7 @@ let partitionComments =
       ) => {
   let skip = ref(false);
 
-  Debug.print_loc("partitionComments", loc);
+  //Debug.print_loc("partitionComments", loc);
 
   let (preceeding, following) =
     List.fold_left(

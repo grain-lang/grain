@@ -35,8 +35,8 @@ if (/*before*/true /*whyt*/) {
   true
   // c
   // d
-
-  ( /* why6 */ 6)
+  6
+  // trail
 } else {
   /* before */
   (7 /* arf*/)
@@ -70,7 +70,7 @@ if (a /*why*/) {
   // ending comment
 } else {
   7  // on time
-  let /* var*/ x = /* pre */ 55 /* ppost*/
+  let /* var*/ x = 55 /* ppost*/
   9
   // end block
 }
