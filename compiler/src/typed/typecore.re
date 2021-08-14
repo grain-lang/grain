@@ -233,7 +233,7 @@ let primn_type =
 
 let maybe_add_pattern_variables_ghost = (loc_let, env, pv) =>
   List.fold_right(
-    ((id, ty, _name, _loc, _as_var), env) => {
+    ((id, _exp, ty, _name, _loc, _as_var), env) => {
       let lid = Identifier.IdentName(Ident.name(id));
       switch (Env.lookup_value(~mark=false, lid, env)) {
       | _ => env
@@ -243,6 +243,7 @@ let maybe_add_pattern_variables_ghost = (loc_let, env, pv) =>
           {
             val_type: ty,
             val_repr: Type_utils.repr_of_type(env, ty),
+            val_direct: false,
             val_fullpath: Path.PIdent(id),
             val_kind: TValUnbound(ValUnboundGhostRecursive),
             val_loc: loc_let,
@@ -1555,7 +1556,7 @@ and type_cases =
               None;
             };
           let ty_arg = instance(~partial?, env, ty_arg);
-          Typepat.type_pattern(~lev, env, pmb_pat, scope, ty_arg);
+          Typepat.type_pattern(~lev, env, pmb_pat, None, scope, ty_arg);
         };
 
         pattern_force := force @ pattern_force^;
@@ -1745,7 +1746,7 @@ and type_let =
               spat
               sty*/
           | _ => spat
-          },
+          }, Some(sexp)
         ),
       spat_sexp_list,
     );
@@ -1753,7 +1754,7 @@ and type_let =
   let mut = mut_flag == Mutable;
   let (pat_list, new_env, force, unpacks, pv) =
     type_pattern_list(~mut, env, spatl, scope, nvs, allow);
-  let attrs_list = List.map(fst, spatl);
+  let attrs_list = List.map((attr, _, _) => attr, spatl);
   let is_recursive = rec_flag == Recursive;
   /* If recursive, first unify with an approximation of the expression */
   if (is_recursive) {

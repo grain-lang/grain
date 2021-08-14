@@ -914,6 +914,7 @@ let prepare_match_branches = (env, branches) => {
     let make_vd = (id, ty) => {
       val_type: ty,
       val_repr: Type_utils.repr_of_type(env, ty),
+      val_direct: false,
       val_kind: TValReg,
       val_fullpath: PIdent(id),
       val_mutable: false,

@@ -126,20 +126,15 @@ and wasm_repr =
   | WasmF64;
 
 [@deriving (sexp, yojson)]
-type func_kind =
-  | FuncDirect
-  | FuncIndirect
-  | FuncUnknown
-
-[@deriving (sexp, yojson)]
-and val_repr =
-  | ReprFunction(list(wasm_repr), list(wasm_repr), func_kind)
+type val_repr =
+  | ReprFunction(list(wasm_repr), list(wasm_repr))
   | ReprValue(wasm_repr);
 
 [@deriving (sexp, yojson)]
 type value_description = {
   val_type: type_expr,
   val_repr,
+  val_direct: bool,
   val_kind: value_kind,
   val_fullpath: Path.t,
   val_mutable: bool,

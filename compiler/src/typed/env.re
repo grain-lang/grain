@@ -1637,7 +1637,7 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
                 switch (desc.cstr_args) {
                 | [] => ReprValue(WasmI32)
                 | args =>
-                  ReprFunction(List.map(_ => WasmI32, args), [WasmI32], FuncUnknown)
+                  ReprFunction(List.map(_ => WasmI32, args), [WasmI32])
                 };
               let get_path = name =>
                 switch (path) {
@@ -1650,6 +1650,7 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
               let val_desc = {
                 val_type,
                 val_repr,
+                val_direct: false,
                 val_fullpath: get_path(desc.cstr_name),
                 val_kind: TValConstructor(desc),
                 val_loc: desc.cstr_loc,
@@ -1695,7 +1696,7 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
           let val_repr =
             switch (desc.cstr_args) {
             | [] => ReprValue(WasmI32)
-            | args => ReprFunction(List.map(_ => WasmI32, args), [WasmI32], FuncUnknown)
+            | args => ReprFunction(List.map(_ => WasmI32, args), [WasmI32])
             };
           let get_path = name =>
             switch (path) {
@@ -1708,6 +1709,7 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
           let val_desc = {
             val_type,
             val_repr,
+            val_direct: false,
             val_fullpath: get_path(desc.cstr_name),
             val_kind: TValConstructor(desc),
             val_loc: desc.cstr_loc,
@@ -1774,11 +1776,12 @@ and store_type = (~check, id, info, env) => {
         let val_repr =
           switch (desc.cstr_args) {
           | [] => ReprValue(WasmI32)
-          | args => ReprFunction(List.map(_ => WasmI32, args), [WasmI32], FuncUnknown)
+          | args => ReprFunction(List.map(_ => WasmI32, args), [WasmI32])
           };
         let val_desc = {
           val_type,
           val_repr,
+          val_direct: false,
           val_fullpath: PIdent(Ident.create(desc.cstr_name)),
           val_kind: TValConstructor(desc),
           val_loc: desc.cstr_loc,
@@ -1867,11 +1870,12 @@ and store_extension = (~check, id, ext, env) => {
     let val_repr =
       switch (cstr.cstr_args) {
       | [] => ReprValue(WasmI32)
-      | args => ReprFunction(List.map(_ => WasmI32, args), [WasmI32], FuncUnknown)
+      | args => ReprFunction(List.map(_ => WasmI32, args), [WasmI32])
       };
     {
       val_type,
       val_repr,
+      val_direct: false,
       val_fullpath: PIdent(Ident.create(cstr.cstr_name)),
       val_kind: TValConstructor(cstr),
       val_mutable: false,
