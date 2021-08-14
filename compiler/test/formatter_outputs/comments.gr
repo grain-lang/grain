@@ -1,4 +1,4 @@
-/* Let's start with a block
+/* Let's start with a block 
  followed by a blank line
 */
 
@@ -29,11 +29,13 @@ export let slice = (startIndex, endIndex, array) => {
 if (/*before*/ true /*whyt*/) {
   // 1
   //a
+
   true // b
 
   true
   // c
   // d
+
   6
   // trail
 } else {
@@ -66,7 +68,7 @@ if (a /*why*/) {
   // ending comment
 } else {
   7 // on time
-  let /* var*/ x = 55 /* ppost*/
+  let x = 55 /* ppost*/
   9
   // end block
 }
@@ -75,5 +77,3 @@ let myfun /*special*/ = (/*lead*/ x /*follow*/, y) => x + 5
 
 /* ending block 2 */
 // trailing comment 2
-
-

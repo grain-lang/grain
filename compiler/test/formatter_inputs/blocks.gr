@@ -15,3 +15,13 @@ let myfun1 = (a,b) => { true; true ; false}
 
 
 let myfun = (a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,aaaaa,bbbbb,ccccc,dddddd,eeeee) => { true; true ; false}
+
+let x = if (true) {
+  5
+} else {
+  if (true) {
+    // print
+    print("Oi")
+  }
+  6
+}

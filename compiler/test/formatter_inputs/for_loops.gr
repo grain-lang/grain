@@ -20,3 +20,10 @@ let size = 2n
   for (let mut i = 0n; i < size; i += 1n) {
     let  strLength = 0n
   }
+
+let verylongvariablenameforcingalinebreakhereplease = 2n
+
+  for (let mut i = 0n; i < verylongvariablenameforcingalinebreakhereplease; i += 1n) {
+    let  strLength = 0n
+    print("Loop")
+  }

@@ -128,10 +128,7 @@ let print_multi_comments_raw =
                 Doc.concat([Doc.hardLine, commentToDoc(c)]);
               };
             } else {
-              switch (c) {
-              // | Line(_) => Doc.concat([commentToDoc(c), Doc.hardLine])
-              | _ => commentToDoc(c)
-              };
+              commentToDoc(c);
             };
           prevLine := getEndLocLine(getCommentLoc(c));
           prevComment := Some(c);
@@ -190,24 +187,20 @@ type sugaredPatternItem =
   | SpreadPattern(Grain_parsing.Parsetree.pattern);
 
 let addParens = doc =>
-  // Doc.group(
   Doc.concat([
     Doc.lparen,
     Doc.indent(Doc.concat([Doc.softLine, doc])),
     Doc.softLine,
     Doc.rparen,
   ]);
-// );
 
 let addBraces = doc =>
-  // Doc.group(
   Doc.concat([
     Doc.lbrace,
     Doc.indent(Doc.concat([Doc.softLine, doc])),
     Doc.softLine,
     Doc.rbrace,
   ]);
-//);
 
 let infixop = (op: string) => {
   switch (op) {
@@ -343,7 +336,7 @@ and is_empty_pattern_array = (pat: Parsetree.pattern) => {
     | PPatConstruct(location, patterns) => false
     | _ => false
     };
-
+  // ignore all the above
   false;
 }
 
@@ -376,7 +369,6 @@ and resugar_list =
   Doc.group(
     Doc.indent(
       Doc.concat([
-        //  Doc.ifBreaks(Doc.line, Doc.nil),
         Doc.lbracket,
         Doc.concat([
           Doc.softLine,
@@ -473,7 +465,7 @@ and print_record_pattern =
 
 and print_pattern =
     (pat: Parsetree.pattern, parent_loc: Grain_parsing__Location.t) => {
-  //Debug.debug_pattern(pat);
+  // Debug.debug_pattern(pat);
 
   let (leadingComments, trailingComments) =
     Walktree.partitionComments(pat.ppat_loc, Some(parent_loc));
@@ -655,7 +647,6 @@ and print_record =
         ),
       parent_loc: Grain_parsing__Location.t,
     ) =>
-  // Doc.group(
   Doc.concat([
     Doc.softLine,
     Doc.lbrace,
@@ -798,16 +789,13 @@ and print_application =
         ])
       | _ => print_expression(~expr=second, ~parentIsArrow=false, parent_loc)
       };
-    //  Doc.group(
     Doc.concat([
       firstBrackets,
       Doc.space,
-      // print_expression(~expr=func, ~parentIsArrow=false, parent_loc),
       Doc.text(functionName),
       Doc.line,
       secondBrackets,
     ]);
-    //);
   } else {
     let funcName = getFunctionName(func);
 
@@ -833,26 +821,32 @@ and print_application =
         ),
       ]);
     } else {
-      Doc.concat([
-        print_expression(~expr=func, ~parentIsArrow=false, parent_loc),
-        Doc.lparen,
-        Doc.indent(
-          Doc.concat([
-            Doc.softLine,
-            Doc.join(
-              Doc.concat([Doc.text(","), Doc.line]),
-              List.map(
-                e =>
-                  print_expression(~expr=e, ~parentIsArrow=false, parent_loc),
-                expressions,
+      Doc.group(
+        Doc.concat([
+          print_expression(~expr=func, ~parentIsArrow=false, parent_loc),
+          Doc.lparen,
+          Doc.indent(
+            Doc.concat([
+              Doc.softLine,
+              Doc.join(
+                Doc.concat([Doc.text(","), Doc.line]),
+                List.map(
+                  e =>
+                    print_expression(
+                      ~expr=e,
+                      ~parentIsArrow=false,
+                      parent_loc,
+                    ),
+                  expressions,
+                ),
               ),
-            ),
-            Doc.ifBreaks(Doc.comma, Doc.nil),
-          ]),
-        ),
-        // Doc.ifBreaks(Doc.hardLine, Doc.nil),
-        Doc.rparen,
-      ]);
+              Doc.ifBreaks(Doc.comma, Doc.nil),
+            ]),
+          ),
+          Doc.softLine,
+          Doc.rparen,
+        ]),
+      );
     };
   };
 }
@@ -883,7 +877,7 @@ and print_expression =
       ~parentIsArrow: bool,
       parent_loc: Grain_parsing__Location.t,
     ) => {
-  // Debug.debug_expression(expr);
+  //Debug.debug_expression(expr);
   let (_leadingComments, trailingComments) =
     Walktree.partitionComments(expr.pexp_loc, Some(parent_loc));
 
@@ -1003,20 +997,17 @@ and print_expression =
       Doc.breakableGroup(
         ~forceBreak=false,
         Doc.concat([
-          //Doc.group(Doc.concat([Doc.text("match "), arg, Doc.space])),
           Doc.concat([Doc.text("match "), arg, Doc.space]),
           Doc.text("{"),
           Doc.indent(
             Doc.concat([
               Doc.hardLine,
-              //     Doc.group(
               Doc.join(
                 Doc.concat([Doc.comma, Doc.line]),
                 List.map(
                   (branch: Parsetree.match_branch) =>
                     Doc.group(
                       Doc.concat([
-                        // Doc.group(
                         Doc.concat([
                           print_pattern(branch.pmb_pat, parent_loc),
                           switch (branch.pmb_guard) {
@@ -1055,7 +1046,6 @@ and print_expression =
                 ),
               ),
               Doc.ifBreaks(Doc.text(","), Doc.nil),
-              //  ),
             ]),
           ),
           Doc.line,
@@ -1089,11 +1079,12 @@ and print_expression =
           Doc.nil;
         };
 
-      let trueFalseSpace =
-        switch (trueExpr.pexp_desc) {
-        | PExpBlock(expressions) => Doc.space
-        | _ => Doc.line
-        };
+      let trueFalseSpace = Doc.space;
+      // keep this - we need this if we don't force single lines into block expressions
+      // switch (trueExpr.pexp_desc) {
+      // | PExpBlock(expressions) => Doc.space
+      // | _ => Doc.line
+      // };
 
       let trueClause =
         switch (trueExpr.pexp_desc) {
@@ -1101,10 +1092,11 @@ and print_expression =
           print_expression(~expr=trueExpr, ~parentIsArrow=false, parent_loc)
 
         | _ =>
-          Doc.ifBreaks(
+          Doc.concat([
+            Doc.lbrace,
             Doc.indent(
               Doc.concat([
-                Doc.line,
+                Doc.hardLine,
                 print_expression(
                   ~expr=trueExpr,
                   ~parentIsArrow=false,
@@ -1112,12 +1104,26 @@ and print_expression =
                 ),
               ]),
             ),
-            print_expression(
-              ~expr=trueExpr,
-              ~parentIsArrow=false,
-              parent_loc,
-            ),
-          )
+            Doc.hardLine,
+            Doc.rbrace,
+          ])
+        // Doc.ifBreaks(
+        //   Doc.indent(
+        //     Doc.concat([
+        //       Doc.line,
+        //       print_expression(
+        //         ~expr=trueExpr,
+        //         ~parentIsArrow=false,
+        //         parent_loc,
+        //       ),
+        //     ]),
+        //   ),
+        //   print_expression(
+        //     ~expr=trueExpr,
+        //     ~parentIsArrow=false,
+        //     parent_loc,
+        //   ),
+        // )
         };
 
       let falseClause =
@@ -1151,16 +1157,22 @@ and print_expression =
             trueFalseSpace,
             Doc.text("else"),
             Doc.group(
-              Doc.indent(
-                Doc.concat([
-                  Doc.line,
-                  print_expression(
-                    ~expr=falseExpr,
-                    ~parentIsArrow=false,
-                    parent_loc,
-                  ),
-                ]),
-              ),
+              Doc.concat([
+                Doc.space,
+                Doc.lbrace,
+                Doc.indent(
+                  Doc.concat([
+                    Doc.hardLine,
+                    print_expression(
+                      ~expr=falseExpr,
+                      ~parentIsArrow=false,
+                      parent_loc,
+                    ),
+                  ]),
+                ),
+                Doc.hardLine,
+                Doc.rbrace,
+              ]),
             ),
           ])
         };
@@ -1229,32 +1241,54 @@ and print_expression =
 
     | PExpFor(optexpression1, optexpression2, optexpression3, expression4) =>
       Doc.concat([
-        Doc.text("for "),
-        addParens(
+        Doc.group(
           Doc.concat([
-            switch (optexpression1) {
-            | Some(expr) =>
-              print_expression(~expr, ~parentIsArrow=false, parent_loc)
-            | None => Doc.nil
-            },
-            Doc.text(";"),
-            switch (optexpression2) {
-            | Some(expr) =>
+            Doc.text("for "),
+            Doc.lparen,
+            Doc.indent(
               Doc.concat([
-                Doc.space,
-                print_expression(~expr, ~parentIsArrow=false, parent_loc),
-              ])
-            | None => Doc.nil
-            },
-            Doc.text(";"),
-            switch (optexpression3) {
-            | Some(expr) =>
-              Doc.concat([
-                Doc.space,
-                print_expression(~expr, ~parentIsArrow=false, parent_loc),
-              ])
-            | None => Doc.nil
-            },
+                Doc.line,
+                Doc.concat([
+                  switch (optexpression1) {
+                  | Some(expr) =>
+                    print_expression(~expr, ~parentIsArrow=false, parent_loc)
+                  | None => Doc.nil
+                  },
+                  Doc.text(";"),
+                  switch (optexpression2) {
+                  | Some(expr) =>
+                    Doc.concat([
+                      Doc.line,
+                      Doc.group(
+                        print_expression(
+                          ~expr,
+                          ~parentIsArrow=false,
+                          parent_loc,
+                        ),
+                      ),
+                    ])
+                  | None => Doc.nil
+                  },
+                  Doc.text(";"),
+                  switch (optexpression3) {
+                  | Some(expr) =>
+                    Doc.concat([
+                      Doc.line,
+                      Doc.group(
+                        print_expression(
+                          ~expr,
+                          ~parentIsArrow=false,
+                          parent_loc,
+                        ),
+                      ),
+                    ])
+                  | None => Doc.nil
+                  },
+                ]),
+              ]),
+            ),
+            Doc.line,
+            Doc.rparen,
           ]),
         ),
         Doc.space,
@@ -1532,11 +1566,6 @@ and print_expression =
     | /** Used for modules without body expressions */ PExpNull => Doc.nil
     };
 
-  // if (trailingCommentDocs == Doc.nil) {
-  //   Doc.group(expression_doc);
-  // } else {
-  //   Doc.group(Doc.concat([expression_doc, trailingCommentDocs]));
-  // };
   if (trailingCommentDocs == Doc.nil) {
     expression_doc;
   } else {
@@ -1566,7 +1595,7 @@ and value_bind_print =
     | Immutable => Doc.nil
     | Mutable => Doc.text("mut ")
     };
-  let vb = List.hd(vbs); // FIX ME - multiple bindings ??
+  let vb = List.hd(vbs); // FIX ME? - multiple bindings ??
   // print_loc("value binding:", vb.pvb_loc);
 
   let expression =
@@ -2043,7 +2072,7 @@ let toplevel_print = (data: Parsetree.toplevel_stmt, previousLine: int) => {
     stmtLeadingCommentDocs,
     blankLineAbove,
     attributeText,
-    withoutComments,
+    Doc.group(withoutComments),
   ]);
 };
 
@@ -2076,7 +2105,10 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
 
   let trailingCommentDocs =
     if (List.length(trailingComments) > 0) {
-      print_multi_comments(trailingComments, previousLine^);
+      Doc.concat([
+        print_multi_comments(trailingComments, previousLine^),
+        Doc.hardLine,
+      ]);
     } else {
       Doc.nil;
     };

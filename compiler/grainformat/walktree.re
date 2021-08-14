@@ -74,6 +74,7 @@ let compare_locations =
 };
 
 // is loc1 inside loc2
+// assumes loc2 ends at the end of the line,
 let isFirstInsideSecond =
     (loc1: Grain_parsing.Location.t, loc2: Grain_parsing.Location.t) => {
   let (_, raw1l, raw1c, _) = get_raw_pos_info(loc1.loc_start);
@@ -102,11 +103,6 @@ let isFirstInsideSecond =
         true;
       }; // ignore the end of line so we catch trailing comments
 
-    // else if (raw1ce <= raw2ce) {
-    //   true;
-    // } else {
-    //   false;
-    // };
     begins_inside && ends_inside;
   };
 };
@@ -175,8 +171,6 @@ let partitionComments =
       ) => {
   let skip = ref(false);
 
-  //Debug.print_loc("partitionComments", loc);
-
   let (preceeding, following) =
     List.fold_left(
       (acc, node) =>
@@ -190,16 +184,10 @@ let partitionComments =
             switch (range) {
             | None => true
             | Some(rangeloc) =>
-              //Debug.print_loc("nodeLoc", nodeLoc);
-
-              //Debug.print_loc("range", rangeloc);
-
               if (isFirstInsideSecond(nodeLoc, rangeloc)) {
                 true;
-                    // print_endline("in range");
               } else {
                 false;
-                     // print_endline("out range");
               }
             };
 

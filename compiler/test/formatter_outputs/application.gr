@@ -3,6 +3,24 @@ import Option from "option"
 
 let data = [>]
 
-let busNumbers = Array.map(((num, idx)) => {
+let busNumbers = Array.map(
+  ((num, idx)) => {
     (Option.expect("Expected a number", None), idx)
-  }, data)
+  },
+  data,
+)
+
+let sillyFunction = (a, b, c, d, e, f, g, h, j, k) => 10
+
+sillyFunction(
+  123456789,
+  123456789,
+  123456789,
+  123456789,
+  123456789,
+  123456789,
+  123456789,
+  123456789,
+  123456789,
+  123456789,
+)

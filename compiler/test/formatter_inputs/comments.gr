@@ -70,7 +70,7 @@ if (a /*why*/) {
   // ending comment
 } else {
   7  // on time
-  let /* var*/ x = 55 /* ppost*/
+  let x = 55 /* ppost*/
   9
   // end block
 }
