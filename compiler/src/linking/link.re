@@ -317,7 +317,7 @@ let write_exports = (linked_mod, {cmi_sign}, exported_names) => {
       List.iter(
         item => {
           switch (item) {
-          | TSigValue(id, {val_repr: ReprFunction(args, rets)}) =>
+          | TSigValue(id, {val_repr: ReprFunction(args, rets, _)}) =>
             let name = Ident.name(id);
             let exported_name = "GRAIN$EXPORT$" ++ name;
             let internal_name = Hashtbl.find(exported_names, exported_name);

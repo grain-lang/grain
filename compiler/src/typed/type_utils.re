@@ -93,7 +93,7 @@ let repr_of_type = (env, ty) =>
       } else {
         [wasm_repr_of_allocation_type(ret)];
       };
-    ReprFunction(args, rets);
+    ReprFunction(args, rets, FuncUnknown);
   } else {
     ReprValue(wasm_repr_of_allocation_type(get_allocation_type(env, ty)));
   };

@@ -126,8 +126,14 @@ and wasm_repr =
   | WasmF64;
 
 [@deriving (sexp, yojson)]
-type val_repr =
-  | ReprFunction(list(wasm_repr), list(wasm_repr))
+type func_kind =
+  | FuncDirect
+  | FuncIndirect
+  | FuncUnknown
+
+[@deriving (sexp, yojson)]
+and val_repr =
+  | ReprFunction(list(wasm_repr), list(wasm_repr), func_kind)
   | ReprValue(wasm_repr);
 
 [@deriving (sexp, yojson)]
