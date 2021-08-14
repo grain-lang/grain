@@ -6,7 +6,7 @@ functions › fn_trailing_comma
  (type $none_=>_i32 (func (result i32)))
  (import \"_grainEnv\" \"mem\" (memory $0 0))
  (import \"_grainEnv\" \"tbl\" (table $tbl 0 funcref))
- (elem $elem (global.get $import__grainEnv_0_relocBase_0) $func_0)
+ (elem $elem (global.get $import__grainEnv_0_relocBase_0) $testFn_1137)
  (import \"_grainEnv\" \"relocBase\" (global $import__grainEnv_0_relocBase_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0 (mut i32)))
@@ -20,7 +20,7 @@ functions › fn_trailing_comma
  (export \"_gmain\" (func $_gmain))
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $global_1))
- (func $func_0 (; has Stack IR ;) (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
+ (func $testFn_1137 (; has Stack IR ;) (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
   (return_call_indirect (type $i32_i32_i32_=>_i32)
    (i32.load offset=16
     (local.get $0)
@@ -87,13 +87,10 @@ functions › fn_trailing_comma
     (global.get $import_pervasives_1145_+_1146)
    )
   )
-  (return_call_indirect (type $i32_i32_i32_=>_i32)
+  (return_call $testFn_1137
    (local.get $1)
    (i32.const 5)
    (i32.const 7)
-   (i32.load offset=8
-    (local.get $1)
-   )
   )
  )
  (func $_start (; has Stack IR ;)

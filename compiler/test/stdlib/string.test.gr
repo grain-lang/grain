@@ -234,3 +234,21 @@ assert String.decodeRange(String.encodeAtWithBom(emojis, String.UTF32_LE, Bytes.
 // BOM stripping
 assert String.decode(String.encode(emojis, String.UTF32_LE), String.UTF32_LE) == emojis
 assert String.decode(String.encode(emojis, String.UTF32_BE), String.UTF32_BE) == emojis
+
+// codepoint iteration tests
+// conveniently reusing data from `explode` tests
+{
+  let mut tmp = []
+  String.forEachCodePoint((codePoint) => {
+    tmp = [codePoint, ...tmp]
+  }, emojis)
+  assert Array.reverse(Array.fromList(tmp)) == codes
+}
+
+{
+  let mut tmp = []
+  String.forEachCodePointi((codePoint,idx) => {
+    tmp = [(codePoint,idx), ...tmp]
+  }, emojis)
+  assert Array.reverse(Array.fromList(tmp)) == Array.mapi((c,i) => (c,i), codes)
+}

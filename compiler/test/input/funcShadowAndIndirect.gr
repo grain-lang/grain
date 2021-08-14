@@ -1,0 +1,8 @@
+let foo = () => "bar"
+print(foo())
+let foo = () => "baz"
+print(foo())
+
+let foo = () => () => "qux"
+let foo = foo()
+print(foo())
