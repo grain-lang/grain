@@ -1934,14 +1934,16 @@ let rec print_data = (data: Grain_parsing__Parsetree.data_declaration) => {
                         switch (d.pcd_args) {
                         | PConstrTuple(parsed_types) =>
                           if (List.length(parsed_types) > 0) {
-                            Doc.concat([
-                              Doc.text("("),
-                              Doc.join(
-                                Doc.concat([Doc.comma, Doc.line]),
-                                List.map(t => print_type(t), parsed_types),
-                              ),
-                              Doc.text(")"),
-                            ]);
+                            Doc.group(
+                              Doc.concat([
+                                Doc.text("("),
+                                Doc.join(
+                                  Doc.concat([Doc.comma, Doc.line]),
+                                  List.map(t => print_type(t), parsed_types),
+                                ),
+                                Doc.text(")"),
+                              ]),
+                            );
                           } else {
                             Doc.nil;
                           }

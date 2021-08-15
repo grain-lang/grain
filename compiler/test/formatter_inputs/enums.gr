@@ -12,3 +12,9 @@ export enum Instructions {
   MoveForward(Number),
   //trailing
 }
+
+
+export enum Ship {
+  // east/west, north/south, facing degrees
+  Ship(Number, Number, Number)
+}
