@@ -17,5 +17,15 @@ record Long {
   longField2: Number,
   longField3: String,
   longField4: String,
-  longField5: String
+  longField5: String,
+}
+
+record Commented {
+  // leading
+  name: String, // trail 1
+  // under 1
+  address: String, /*
+  stupid block */
+  age: Number,
+  // trailing
 }

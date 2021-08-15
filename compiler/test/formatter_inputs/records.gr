@@ -10,3 +10,13 @@ record Rec1 {foo2: Number, bar2: Number}; record Rec2 {baz2: Rec1}; let x = {baz
 record Rec3 {foo3: Number, bar3: String, baz3: Bool}; let { foo3, _ } = {foo3: 4, bar3: "boo", baz3: true}; foo3
 
 record Long {longField1: Number, longField2: Number, longField3:String, longField4:String, longField5:String}
+
+record Commented {
+  // leading
+  name: String, // trail 1
+  // under 1
+  address: String, /*
+  stupid block */
+  age: Number
+  // trailing
+}

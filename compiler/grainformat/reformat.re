@@ -1854,12 +1854,6 @@ let rec print_data = (data: Grain_parsing__Parsetree.data_declaration) => {
                       Some(data.pdata_loc),
                     );
 
-                  // print_endline("leading comments:");
-                  // List.iter(c => Debug.print_comment(c), leadingComments);
-
-                  // print_endline("trailing comments:");
-                  // List.iter(c => Debug.print_comment(c), trailingComments);
-
                   let this_line = getEndLocLine(d.pcd_loc);
 
                   let (thisLineComments, belowLineComments) =
@@ -1950,7 +1944,7 @@ let rec print_data = (data: Grain_parsing__Parsetree.data_declaration) => {
             Doc.concat([
               Doc.line,
               Doc.join(
-                Doc.concat([Doc.comma, Doc.line]),
+                Doc.concat([Doc.line]),
                 List.map(
                   (decl: Grain_parsing__Parsetree.label_declaration) => {
                     let isMutable =
@@ -1958,15 +1952,55 @@ let rec print_data = (data: Grain_parsing__Parsetree.data_declaration) => {
                       | Mutable => Doc.text("mut ")
                       | Immutable => Doc.nil
                       };
-                    Doc.group(
-                      Doc.concat([
-                        isMutable,
-                        print_ident(decl.pld_name.txt),
-                        Doc.text(":"),
-                        Doc.space,
-                        print_type(decl.pld_type),
-                      ]),
+
+                    let (leadingComments, trailingComments) =
+                      Walktree.partitionComments(
+                        decl.pld_loc,
+                        Some(data.pdata_loc),
+                      );
+
+                    let this_line = getEndLocLine(decl.pld_loc);
+
+                    let (thisLineComments, belowLineComments) =
+                      split_comments(trailingComments, this_line);
+
+                    Walktree.removeUsedComments(
+                      leadingComments,
+                      trailingComments,
                     );
+
+                    let (stmtLeadingCommentDocs1, prevLine) =
+                      print_leading_comments(leadingComments, this_line);
+                    let stmtLeadingCommentDocs =
+                      if (List.length(leadingComments) > 0) {
+                        stmtLeadingCommentDocs1;
+                      } else {
+                        Doc.nil;
+                      };
+                    let trailingLineCommentDocs =
+                      print_multi_comments(thisLineComments, this_line);
+                    let belowLineCommentDocs =
+                      print_multi_comments(belowLineComments, this_line);
+
+                    Doc.concat([
+                      Doc.group(
+                        Doc.concat([
+                          stmtLeadingCommentDocs,
+                          isMutable,
+                          print_ident(decl.pld_name.txt),
+                          Doc.text(":"),
+                          Doc.space,
+                          print_type(decl.pld_type),
+                          Doc.comma,
+                          trailingLineCommentDocs,
+                        ]),
+                      ),
+                      if (List.length(belowLineComments) > 0) {
+                        Doc.concat([belowLineCommentDocs]);
+                      } else {
+                        Doc.nil;
+                      },
+                    ]);
                   },
                   label_declarations,
                 ),

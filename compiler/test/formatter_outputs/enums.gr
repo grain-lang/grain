@@ -11,5 +11,4 @@ export enum Instructions {
   TurnRight(Number),
   MoveForward(Number),
   //trailing
-
 }
