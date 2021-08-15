@@ -1136,7 +1136,7 @@ and print_expression =
                               ),
                             ])
                           },
-                          Doc.text(" =>  "),
+                          Doc.text(" => "),
                         ]),
                         switch (branch.pmb_body.pexp_desc) {
                         | PExpBlock(expressions) =>
@@ -1797,21 +1797,42 @@ and value_bind_print =
     expression,
   ]);
 };
-let rec print_data = (d: Grain_parsing__Parsetree.data_declaration) => {
-  let nameloc = d.pdata_name;
-  switch (d.pdata_kind) {
+
+let split_comments =
+    (comments: list(Grain_parsing__Parsetree.comment), line: int)
+    : (
+        list(Grain_parsing__Parsetree.comment),
+        list(Grain_parsing__Parsetree.comment),
+      ) => {
+  List.fold_left(
+    (acc, c) =>
+      if (getLocLine(getCommentLoc(c)) == line) {
+        let (thisline, below) = acc;
+        (thisline @ [c], below);
+      } else {
+        let (thisline, below) = acc;
+        (thisline, below @ [c]);
+      },
+    ([], []),
+    comments,
+  );
+};
+
+let rec print_data = (data: Grain_parsing__Parsetree.data_declaration) => {
+  let nameloc = data.pdata_name;
+  switch (data.pdata_kind) {
   | PDataVariant(constr_declarations) =>
     Doc.group(
       Doc.concat([
         Doc.text("enum"),
         Doc.space,
         Doc.text(nameloc.txt),
-        if (List.length(d.pdata_params) > 0) {
+        if (List.length(data.pdata_params) > 0) {
           Doc.concat([
             Doc.text("<"),
             Doc.join(
               Doc.text(", "),
-              List.map(t => print_type(t), d.pdata_params),
+              List.map(t => print_type(t), data.pdata_params),
             ),
             Doc.text(">"),
             Doc.space,
@@ -1824,36 +1845,80 @@ let rec print_data = (d: Grain_parsing__Parsetree.data_declaration) => {
           Doc.concat([
             Doc.line,
             Doc.join(
-              Doc.concat([Doc.comma, Doc.line]),
+              Doc.concat([Doc.line]),
               List.map(
-                (d: Grain_parsing__Parsetree.constructor_declaration) =>
-                  Doc.group(
-                    Doc.concat([
-                      Doc.text(d.pcd_name.txt),
-                      switch (d.pcd_args) {
-                      | PConstrTuple(parsed_types) =>
-                        if (List.length(parsed_types) > 0) {
-                          Doc.concat([
-                            Doc.text("("),
-                            Doc.join(
-                              Doc.concat([Doc.comma, Doc.line]),
-                              List.map(t => print_type(t), parsed_types),
-                            ),
-                            Doc.text(")"),
-                          ]);
-                        } else {
-                          Doc.nil;
-                        }
-                      | PConstrSingleton => Doc.nil
-                      },
-                    ]),
-                  ),
+                (d: Grain_parsing__Parsetree.constructor_declaration) => {
+                  let (leadingComments, trailingComments) =
+                    Walktree.partitionComments(
+                      d.pcd_loc,
+                      Some(data.pdata_loc),
+                    );
+
+                  // print_endline("leading comments:");
+                  // List.iter(c => Debug.print_comment(c), leadingComments);
+
+                  // print_endline("trailing comments:");
+                  // List.iter(c => Debug.print_comment(c), trailingComments);
+
+                  let this_line = getEndLocLine(d.pcd_loc);
+
+                  let (thisLineComments, belowLineComments) =
+                    split_comments(trailingComments, this_line);
+
+                  Walktree.removeUsedComments(
+                    leadingComments,
+                    trailingComments,
+                  );
+
+                  let (stmtLeadingCommentDocs1, prevLine) =
+                    print_leading_comments(leadingComments, this_line);
+                  let stmtLeadingCommentDocs =
+                    if (List.length(leadingComments) > 0) {
+                      stmtLeadingCommentDocs1;
+                    } else {
+                      Doc.nil;
+                    };
+                  let trailingLineCommentDocs =
+                    print_multi_comments(thisLineComments, this_line);
+                  let belowLineCommentDocs =
+                    print_multi_comments(belowLineComments, this_line);
+                  Doc.concat([
+                    Doc.group(
+                      Doc.concat([
+                        stmtLeadingCommentDocs,
+                        Doc.text(d.pcd_name.txt),
+                        switch (d.pcd_args) {
+                        | PConstrTuple(parsed_types) =>
+                          if (List.length(parsed_types) > 0) {
+                            Doc.concat([
+                              Doc.text("("),
+                              Doc.join(
+                                Doc.concat([Doc.comma, Doc.line]),
+                                List.map(t => print_type(t), parsed_types),
+                              ),
+                              Doc.text(")"),
+                            ]);
+                          } else {
+                            Doc.nil;
+                          }
+                        | PConstrSingleton => Doc.nil
+                        },
+                        Doc.comma,
+                        trailingLineCommentDocs,
+                      ]),
+                    ),
+                    if (List.length(belowLineComments) > 0) {
+                      Doc.concat([belowLineCommentDocs]);
+                    } else {
+                      Doc.nil;
+                    },
+                  ]);
+                },
                 constr_declarations,
               ),
             ),
           ]),
         ),
-        Doc.ifBreaks(Doc.text(","), Doc.nil),
         Doc.line,
         Doc.rbrace,
       ]),
@@ -1866,12 +1931,12 @@ let rec print_data = (d: Grain_parsing__Parsetree.data_declaration) => {
         Doc.space,
         Doc.text(nameloc.txt),
         Doc.space,
-        if (List.length(d.pdata_params) > 0) {
+        if (List.length(data.pdata_params) > 0) {
           Doc.concat([
             Doc.text("<"),
             Doc.join(
               Doc.text(","),
-              List.map(t => print_type(t), d.pdata_params),
+              List.map(t => print_type(t), data.pdata_params),
             ),
             Doc.text(">"),
             Doc.space,
