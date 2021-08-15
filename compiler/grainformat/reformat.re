@@ -1115,14 +1115,15 @@ and print_expression =
             Doc.concat([
               Doc.hardLine,
               Doc.join(
-                //   Doc.concat([Doc.text(","), Doc.line]),
                 Doc.line, // need to inject comma before comments
                 List.map(
                   (branch: Parsetree.match_branch) =>
                     Doc.group(
                       Doc.concat([
                         Doc.concat([
-                          print_pattern(branch.pmb_pat, parent_loc),
+                          Doc.group(
+                            print_pattern(branch.pmb_pat, parent_loc),
+                          ),
                           switch (branch.pmb_guard) {
                           | None => Doc.nil
                           | Some(guard) =>
@@ -1136,26 +1137,34 @@ and print_expression =
                               ),
                             ])
                           },
-                          Doc.text(" => "),
+                          Doc.text(" =>"),
                         ]),
-                        switch (branch.pmb_body.pexp_desc) {
-                        | PExpBlock(expressions) =>
-                          print_expression(
-                            ~expr=branch.pmb_body,
-                            ~parentIsArrow=true,
-                            ~endChar=Some(Doc.comma),
-                            parent_loc,
-                          )
-                        | _ =>
-                          Doc.indent(
-                            print_expression(
-                              ~expr=branch.pmb_body,
-                              ~parentIsArrow=true,
-                              ~endChar=Some(Doc.comma),
-                              parent_loc,
-                            ),
-                          )
-                        },
+                        Doc.group(
+                          switch (branch.pmb_body.pexp_desc) {
+                          | PExpBlock(expressions) =>
+                            Doc.concat([
+                              Doc.space,
+                              print_expression(
+                                ~expr=branch.pmb_body,
+                                ~parentIsArrow=true,
+                                ~endChar=Some(Doc.comma),
+                                parent_loc,
+                              ),
+                            ])
+                          | _ =>
+                            Doc.indent(
+                              Doc.concat([
+                                Doc.line,
+                                print_expression(
+                                  ~expr=branch.pmb_body,
+                                  ~parentIsArrow=true,
+                                  ~endChar=Some(Doc.comma),
+                                  parent_loc,
+                                ),
+                              ]),
+                            )
+                          },
+                        ),
                       ]),
                     ),
                   match_branches,
