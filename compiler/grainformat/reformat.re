@@ -76,6 +76,26 @@ let commentToDoc = (comment: Parsetree.comment) => {
   Doc.text(String.trim(cmtText));
 };
 
+let split_comments =
+    (comments: list(Grain_parsing__Parsetree.comment), line: int)
+    : (
+        list(Grain_parsing__Parsetree.comment),
+        list(Grain_parsing__Parsetree.comment),
+      ) => {
+  List.fold_left(
+    (acc, c) =>
+      if (getLocLine(getCommentLoc(c)) == line) {
+        let (thisline, below) = acc;
+        (thisline @ [c], below);
+      } else {
+        let (thisline, below) = acc;
+        (thisline, below @ [c]);
+      },
+    ([], []),
+    comments,
+  );
+};
+
 let print_leading_comments = (comments: list(Parsetree.comment), line: int) => {
   let prevLine = ref(line);
   let prevComment: ref(option(Parsetree.comment)) = ref(None);
@@ -1117,56 +1137,97 @@ and print_expression =
               Doc.join(
                 Doc.line, // need to inject comma before comments
                 List.map(
-                  (branch: Parsetree.match_branch) =>
-                    Doc.group(
-                      Doc.concat([
+                  (branch: Parsetree.match_branch) => {
+                    let (leadingComments, trailingComments) =
+                      Walktree.partitionComments(
+                        branch.pmb_loc,
+                        Some(expr.pexp_loc),
+                      );
+
+                    let this_line = getEndLocLine(branch.pmb_loc);
+
+                    let (thisLineComments, belowLineComments) =
+                      split_comments(trailingComments, this_line);
+
+                    Walktree.removeUsedComments(
+                      leadingComments,
+                      trailingComments,
+                    );
+
+                    let (stmtLeadingCommentDocs1, prevLine) =
+                      print_leading_comments(leadingComments, this_line);
+                    let stmtLeadingCommentDocs =
+                      if (List.length(leadingComments) > 0) {
+                        stmtLeadingCommentDocs1;
+                      } else {
+                        Doc.nil;
+                      };
+                    let trailingLineCommentDocs =
+                      print_multi_comments(thisLineComments, this_line);
+                    let belowLineCommentDocs =
+                      print_multi_comments(belowLineComments, this_line);
+
+                    //
+                    Doc.concat([
+                      Doc.group(
                         Doc.concat([
-                          Doc.group(
-                            print_pattern(branch.pmb_pat, parent_loc),
-                          ),
-                          switch (branch.pmb_guard) {
-                          | None => Doc.nil
-                          | Some(guard) =>
-                            Doc.concat([
-                              Doc.text(" when "),
-                              print_expression(
-                                ~expr=guard,
-                                ~parentIsArrow=false,
-                                ~endChar=None,
-                                parent_loc,
-                              ),
-                            ])
-                          },
-                          Doc.text(" =>"),
-                        ]),
-                        Doc.group(
-                          switch (branch.pmb_body.pexp_desc) {
-                          | PExpBlock(expressions) =>
-                            Doc.concat([
-                              Doc.space,
-                              print_expression(
-                                ~expr=branch.pmb_body,
-                                ~parentIsArrow=true,
-                                ~endChar=Some(Doc.comma),
-                                parent_loc,
-                              ),
-                            ])
-                          | _ =>
-                            Doc.indent(
+                          stmtLeadingCommentDocs,
+                          Doc.concat([
+                            Doc.group(
+                              print_pattern(branch.pmb_pat, parent_loc),
+                            ),
+                            switch (branch.pmb_guard) {
+                            | None => Doc.nil
+                            | Some(guard) =>
                               Doc.concat([
-                                Doc.line,
+                                Doc.text(" when "),
+                                print_expression(
+                                  ~expr=guard,
+                                  ~parentIsArrow=false,
+                                  ~endChar=None,
+                                  parent_loc,
+                                ),
+                              ])
+                            },
+                            Doc.text(" =>"),
+                          ]),
+                          Doc.group(
+                            switch (branch.pmb_body.pexp_desc) {
+                            | PExpBlock(expressions) =>
+                              Doc.concat([
+                                Doc.space,
                                 print_expression(
                                   ~expr=branch.pmb_body,
                                   ~parentIsArrow=true,
-                                  ~endChar=Some(Doc.comma),
+                                  ~endChar=None, //Some(Doc.comma),
                                   parent_loc,
                                 ),
-                              ]),
-                            )
-                          },
-                        ),
-                      ]),
-                    ),
+                              ])
+                            | _ =>
+                              Doc.indent(
+                                Doc.concat([
+                                  Doc.line,
+                                  print_expression(
+                                    ~expr=branch.pmb_body,
+                                    ~parentIsArrow=true,
+                                    ~endChar=None, //Some(Doc.comma),
+                                    parent_loc,
+                                  ),
+                                ]),
+                              )
+                            },
+                          ),
+                          Doc.comma,
+                          trailingLineCommentDocs,
+                        ]),
+                      ),
+                      if (List.length(belowLineComments) > 0) {
+                        Doc.concat([belowLineCommentDocs]);
+                      } else {
+                        Doc.nil;
+                      },
+                    ]);
+                  },
                   match_branches,
                 ),
               ),
@@ -1805,26 +1866,6 @@ and value_bind_print =
     Doc.space, // fix needed here?, we need to work out if all arguments fit on the line or will break
     expression,
   ]);
-};
-
-let split_comments =
-    (comments: list(Grain_parsing__Parsetree.comment), line: int)
-    : (
-        list(Grain_parsing__Parsetree.comment),
-        list(Grain_parsing__Parsetree.comment),
-      ) => {
-  List.fold_left(
-    (acc, c) =>
-      if (getLocLine(getCommentLoc(c)) == line) {
-        let (thisline, below) = acc;
-        (thisline @ [c], below);
-      } else {
-        let (thisline, below) = acc;
-        (thisline, below @ [c]);
-      },
-    ([], []),
-    comments,
-  );
 };
 
 let rec print_data = (data: Grain_parsing__Parsetree.data_declaration) => {
