@@ -117,6 +117,9 @@ let compare_partition_locations =
 
   // compare the leading points
 
+  // Debug.print_loc("loc1", loc1);
+  // Debug.print_loc("loc2", loc2);
+
   let res =
     if (comparePoints(raw1l, raw1c, raw2l, raw2c) == 0
         && comparePoints(raw1le, raw1ce, raw2le, raw2ce) == 0) {
@@ -129,6 +132,8 @@ let compare_partition_locations =
     } else {
       comparePoints(raw1l, raw1c, raw2l, raw2c);
     };
+
+  //print_endline("res: " ++ string_of_int(res));
 
   res;
 };
@@ -170,6 +175,8 @@ let partitionComments =
         list(Grain_parsing.Parsetree.comment),
       ) => {
   let skip = ref(false);
+
+  //Debug.print_loc("partitionComments", loc);
 
   let (preceeding, following) =
     List.fold_left(

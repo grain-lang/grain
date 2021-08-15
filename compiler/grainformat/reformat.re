@@ -36,6 +36,22 @@ let get_raw_pos_info = (pos: Lexing.position) => (
   pos.pos_bol,
 );
 
+let makeLineStart = (loc: Grain_parsing.Location.t) => {
+  let startpos: Stdlib__lexing.position = {
+    pos_fname: "",
+    pos_lnum: loc.loc_start.pos_lnum,
+    pos_cnum: 0,
+    pos_bol: 0,
+  };
+
+  let mergedLoc: Grain_parsing.Location.t = {
+    loc_start: startpos,
+    loc_end: loc.loc_start,
+    loc_ghost: loc.loc_ghost,
+  };
+  mergedLoc;
+};
+
 let makeStartLoc = (loc: Grain_parsing.Location.t) => {
   let mergedLoc: Grain_parsing.Location.t = {
     loc_start: loc.loc_start,
@@ -619,7 +635,7 @@ and print_constant = (c: Parsetree.constant) => {
     | PConstNumber(PConstNumberRational(n, d)) =>
       Printf.sprintf("%s/%s", n, d)
     | PConstBytes(b) => Printf.sprintf("%s", b)
-    | PConstChar(c) => Printf.sprintf("'%s'", c)
+    | PConstChar(c) => Printf.sprintf("'%s'", String.escaped(c))
     | PConstFloat64(f) => Printf.sprintf("%sd", f)
     | PConstFloat32(f) => Printf.sprintf("%sf", f)
     | PConstInt32(i) => Printf.sprintf("%sl", i)
@@ -904,7 +920,7 @@ and print_application =
             ~expr=func,
             ~parentIsArrow=false,
             ~endChar=None,
-            parent_loc,
+            func.pexp_loc,
           ),
           Doc.lparen,
           Doc.indent(
@@ -962,12 +978,19 @@ and print_expression =
       parent_loc: Grain_parsing__Location.t,
     ) => {
   //Debug.debug_expression(expr);
-  let (_leadingComments, trailingComments) =
+  let (leadingComments, trailingComments) =
     Walktree.partitionComments(expr.pexp_loc, Some(parent_loc));
 
-  Walktree.removeUsedComments([], trailingComments);
+  Walktree.removeUsedComments(leadingComments, trailingComments);
 
   let exprLine = getEndLocLine(expr.pexp_loc);
+
+  let leadingCommentDocs =
+    if (List.length(trailingComments) > 0) {
+      Doc.concat([print_multi_comments(leadingComments, exprLine)]);
+    } else {
+      Doc.nil;
+    };
 
   let trailingCommentDocs =
     if (List.length(trailingComments) > 0) {
@@ -1420,13 +1443,19 @@ and print_expression =
     | PExpWhile(expression, expression1) =>
       Doc.concat([
         Doc.text("while "),
-        addParens(
-          print_expression(
-            ~expr=expression,
-            ~parentIsArrow=false,
-            ~endChar=None,
-            parent_loc,
-          ),
+        Doc.group(
+          Doc.concat([
+            Doc.lparen,
+            Doc.space,
+            print_expression(
+              ~expr=expression,
+              ~parentIsArrow=false,
+              ~endChar=None,
+              parent_loc,
+            ),
+            Doc.space,
+            Doc.rparen,
+          ]),
         ),
         Doc.space,
         Doc.group(
@@ -1813,9 +1842,14 @@ and print_expression =
     };
 
   if (trailingCommentDocs == Doc.nil) {
-    Doc.concat([expression_doc, endingDoc]);
+    Doc.concat([leadingCommentDocs, expression_doc, endingDoc]);
   } else {
-    Doc.concat([expression_doc, endingDoc, trailingCommentDocs]);
+    Doc.concat([
+      leadingCommentDocs,
+      expression_doc,
+      endingDoc,
+      trailingCommentDocs,
+    ]);
   };
 }
 and value_bind_print =
@@ -1852,6 +1886,14 @@ and value_bind_print =
       parent_loc,
     );
 
+  // fix needed here?, we need to work out if all arguments fit on the line or will break
+  let expressionGrp =
+    switch (vb.pvb_expr.pexp_desc) {
+    | PExpBlock(_) => expression
+    //| _ => Doc.indent(Doc.concat([Doc.space, expression]))
+    | _ => Doc.concat([Doc.space, expression])
+    };
+
   Doc.concat([
     Doc.group(
       Doc.concat([
@@ -1859,12 +1901,11 @@ and value_bind_print =
         Doc.text("let "),
         recursive,
         mutble,
-        print_pattern(vb.pvb_pat, vb.pvb_loc),
+        Doc.group(print_pattern(vb.pvb_pat, vb.pvb_loc)),
         Doc.text(" ="),
+        expressionGrp,
       ]),
     ),
-    Doc.space, // fix needed here?, we need to work out if all arguments fit on the line or will break
-    expression,
   ]);
 };
 
@@ -2257,7 +2298,7 @@ let toplevel_print = (data: Parsetree.toplevel_stmt, previousLine: int) => {
 
   // get the leading comments
   let (leadingComments, _trailingComments) =
-    Walktree.partitionComments(data.ptop_loc, None); //
+    Walktree.partitionComments(makeLineStart(data.ptop_loc), None); //
   Walktree.removeUsedComments(leadingComments, []);
 
   let (stmtLeadingCommentDocs, prevLine) =
@@ -2416,6 +2457,34 @@ let toplevel_print = (data: Parsetree.toplevel_stmt, previousLine: int) => {
 let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
   let _ =
     Walktree.walktree(parsed_program.statements, parsed_program.comments);
+
+  // let (leadingComments, _trailingComments) =
+  //   if (List.length(parsed_program.statements) > 0) {
+  //     let firstStmt = List.hd(parsed_program.statements);
+  //     // Debug.print_loc("first stmt", makeLineStart(firstStmt.ptop_loc));
+  //     Walktree.partitionComments(makeLineStart(firstStmt.ptop_loc), None);
+  //   } else {
+  //     ([], []);
+  //   };
+
+  // Walktree.removeUsedComments(leadingComments, []);
+
+  // let leadingCommentDocs =
+  //   if (List.length(leadingComments) > 0) {
+  //     if (List.length(parsed_program.statements) > 0) {
+  //       let firstStmt = List.hd(parsed_program.statements);
+  //       Doc.concat([
+  //         print_multi_comments(
+  //           leadingComments,
+  //           getLocLine(firstStmt.ptop_loc),
+  //         ),
+  //       ]);
+  //     } else {
+  //       Doc.nil;
+  //     };
+  //   } else {
+  //     Doc.nil;
+  //   };
 
   let lastStmt = ref(None);
   let previousLine = ref(0);
