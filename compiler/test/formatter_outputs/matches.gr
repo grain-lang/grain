@@ -1,10 +1,11 @@
 import List from "list"
 
-record Queue <a> { forwards: List<a>, backwards: List<a> }
+record Queue <a> { forwards: List<a>, backwards: List<a>, }
 
 export let push = (value, queue) => {
   match (queue) {
     { forwards: [], backwards: [] } => { forwards: [value], backwards: [] },
+    // comment
     { forwards, backwards } => { forwards, backwards: [value, ...backwards] },
   }
 }

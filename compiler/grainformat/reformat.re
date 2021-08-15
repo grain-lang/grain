@@ -681,7 +681,7 @@ and print_record =
       parent_loc: Grain_parsing__Location.t,
     ) =>
   Doc.concat([
-    Doc.softLine,
+    //  Doc.softLine,
     Doc.lbrace,
     Doc.indent(
       Doc.concat([
@@ -1376,7 +1376,7 @@ and print_expression =
       if (parentIsArrow) {
         Doc.group(
           Doc.concat([
-            Doc.line,
+            // Doc.line,
             Doc.text("if "),
             Doc.group(
               Doc.concat([
