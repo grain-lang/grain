@@ -1525,9 +1525,8 @@ and print_expression =
           parent_loc,
         ),
       ])
-    | PExpContinue =>
-      Doc.group(Doc.concat([Doc.text("continue"), Doc.hardLine]))
-    | PExpBreak => Doc.group(Doc.concat([Doc.text("break"), Doc.hardLine]))
+    | PExpContinue => Doc.group(Doc.concat([Doc.text("continue")]))
+    | PExpBreak => Doc.group(Doc.concat([Doc.text("break")]))
     | PExpConstraint(expression, parsed_type) =>
       Doc.group(
         Doc.concat([
