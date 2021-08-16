@@ -987,7 +987,10 @@ and print_expression =
 
   let leadingCommentDocs =
     if (List.length(leadingComments) > 0) {
-      Doc.concat([print_multi_comments(leadingComments, exprLine)]);
+      Doc.concat([
+        print_multi_comments_no_space(leadingComments, exprLine),
+        Doc.space,
+      ]);
     } else {
       Doc.nil;
     };
