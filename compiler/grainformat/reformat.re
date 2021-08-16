@@ -1673,7 +1673,7 @@ and print_expression =
                   Doc.concat([
                     stmtLeadingCommentDocs,
                     blankLineAbove,
-                    printed_expression,
+                    Doc.group(printed_expression),
                   ]),
                 );
               },
