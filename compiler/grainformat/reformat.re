@@ -547,6 +547,8 @@ and print_pattern =
         Doc.group(
           Doc.concat([
             Doc.lbracket,
+            Doc.text(">"),
+            Doc.space,
             Doc.join(
               Doc.concat([Doc.comma, Doc.space]),
               List.map(p => print_pattern(p, parent_loc), patterns),
