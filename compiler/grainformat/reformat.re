@@ -595,8 +595,8 @@ and print_pattern =
         );
       };
 
-    | PPatOr(pattern1, pattern2) => (Doc.text("PPatOr"), false) // Need to understand
-    | PPatAlias(pattern, loc) => (Doc.text("PPatAlias"), false) // Need to understand
+    | PPatOr(pattern1, pattern2) => (Doc.text("PPatOr"), false) // Need to understand where this may be used
+    | PPatAlias(pattern, loc) => (Doc.text("PPatAlias"), false) // Need to understand where this may be used
     };
 
   let (pattern, parens) = printed_pattern;
@@ -1326,23 +1326,6 @@ and print_expression =
             Doc.hardLine,
             Doc.rbrace,
           ])
-        // Doc.ifBreaks(
-        //   Doc.indent(
-        //     Doc.concat([
-        //       Doc.line,
-        //       print_expression(
-        //         ~expr=trueExpr,
-        //         ~parentIsArrow=false,
-        //         parent_loc,
-        //       ),
-        //     ]),
-        //   ),
-        //   print_expression(
-        //     ~expr=trueExpr,
-        //     ~parentIsArrow=false,
-        //     parent_loc,
-        //   ),
-        // )
         };
 
       let falseClause =
@@ -2501,34 +2484,6 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
   let _ =
     Walktree.walktree(parsed_program.statements, parsed_program.comments);
 
-  // let (leadingComments, _trailingComments) =
-  //   if (List.length(parsed_program.statements) > 0) {
-  //     let firstStmt = List.hd(parsed_program.statements);
-  //     // Debug.print_loc("first stmt", makeLineStart(firstStmt.ptop_loc));
-  //     Walktree.partitionComments(makeLineStart(firstStmt.ptop_loc), None);
-  //   } else {
-  //     ([], []);
-  //   };
-
-  // Walktree.removeUsedComments(leadingComments, []);
-
-  // let leadingCommentDocs =
-  //   if (List.length(leadingComments) > 0) {
-  //     if (List.length(parsed_program.statements) > 0) {
-  //       let firstStmt = List.hd(parsed_program.statements);
-  //       Doc.concat([
-  //         print_multi_comments(
-  //           leadingComments,
-  //           getLocLine(firstStmt.ptop_loc),
-  //         ),
-  //       ]);
-  //     } else {
-  //       Doc.nil;
-  //     };
-  //   } else {
-  //     Doc.nil;
-  //   };
-
   let lastStmt = ref(None);
   let previousLine = ref(0);
   let printedDoc =
@@ -2578,18 +2533,3 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
   //   ),
   // );
 };
-
-// let myfun /*before equals*/ = /* after equals */ (/*lead*/ x /*follow*/, y) =>
-//   x + 5;
-
-// let rec myFun1 = x => x + 1
-// and myFun2 = x => x + 1;
-
-// let myFunction2 = x => {
-//   let inter = x + 1;
-//   "some string";
-// }
-// and myFunction3 = y => {
-//   let myVal = 5;
-//   "some string";
-// };

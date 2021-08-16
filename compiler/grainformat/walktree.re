@@ -166,6 +166,7 @@ let walktree =
       },
       allLocations^,
     );
+  // useful for dumping for debug
   // List.iter(
   //   n =>
   //     switch (n) {
