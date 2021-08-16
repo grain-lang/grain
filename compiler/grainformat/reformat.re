@@ -2359,7 +2359,7 @@ let toplevel_print = (data: Parsetree.toplevel_stmt, previousLine: int) => {
         };
       Doc.concat([
         export,
-        Doc.text("foreign "),
+        Doc.text("foreign wasm "),
         print_foreign_value_description(value_description),
       ]);
     | PTopPrimitive(export_flag, value_description) =>
