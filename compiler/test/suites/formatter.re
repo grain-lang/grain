@@ -24,4 +24,5 @@ describe("formatter", ({test}) => {
   assertFormatOutput("lambda", "lambda");
   assertFormatOutput("operators", "operators");
   assertFormatOutput("enums", "enums");
+  assertFormatOutput("lets", "lets");
 });

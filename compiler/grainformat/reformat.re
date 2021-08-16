@@ -986,7 +986,7 @@ and print_expression =
   let exprLine = getEndLocLine(expr.pexp_loc);
 
   let leadingCommentDocs =
-    if (List.length(trailingComments) > 0) {
+    if (List.length(leadingComments) > 0) {
       Doc.concat([print_multi_comments(leadingComments, exprLine)]);
     } else {
       Doc.nil;
@@ -1598,17 +1598,44 @@ and print_expression =
           };
         };
 
-      Doc.concat([
-        Doc.group(Doc.concat([args, Doc.space, Doc.text("=>"), Doc.space])),
-        Doc.group(
-          print_expression(
-            ~expr=expression,
-            ~parentIsArrow=false,
-            ~endChar=None,
-            parent_loc,
-          ),
-        ),
-      ]);
+      let followsArrow =
+        switch (expression.pexp_desc) {
+        | PExpBlock(_) => [
+            Doc.group(
+              Doc.concat([args, Doc.space, Doc.text("=>"), Doc.space]),
+            ),
+            Doc.group(
+              print_expression(
+                ~expr=expression,
+                ~parentIsArrow=false,
+                ~endChar=None,
+                parent_loc,
+              ),
+            ),
+          ]
+        | _ => [
+            Doc.concat([
+              args,
+              Doc.space,
+              Doc.text("=>"),
+              Doc.indent(
+                Doc.concat([
+                  Doc.line,
+                  Doc.group(
+                    print_expression(
+                      ~expr=expression,
+                      ~parentIsArrow=false,
+                      ~endChar=None,
+                      parent_loc,
+                    ),
+                  ),
+                ]),
+              ),
+            ]),
+          ]
+        };
+
+      Doc.concat(followsArrow);
 
     | PExpApp(func, expressions) =>
       // print_loc("PExpApp", expr.pexp_loc);
@@ -1875,24 +1902,36 @@ and value_bind_print =
     | Immutable => Doc.nil
     | Mutable => Doc.text("mut ")
     };
-  let vb = List.hd(vbs); // FIX ME? - multiple bindings ??
-  // print_loc("value binding:", vb.pvb_loc);
 
-  let expression =
-    print_expression(
-      ~expr=vb.pvb_expr,
-      ~parentIsArrow=false,
-      ~endChar=None,
-      parent_loc,
+  let value_bindings =
+    List.map(
+      (vb: Parsetree.value_binding) => {
+        // Debug.print_loc("value binding to fix:", vb.pvb_loc);
+
+        let expression =
+          print_expression(
+            ~expr=vb.pvb_expr,
+            ~parentIsArrow=false,
+            ~endChar=None,
+            parent_loc,
+          );
+
+        // fix needed here?, we need to work out if all arguments fit on the line or will break
+        let expressionGrp =
+          switch (vb.pvb_expr.pexp_desc) {
+          | PExpBlock(_) => Doc.concat([Doc.space, expression])
+          //| _ => Doc.indent(Doc.concat([Doc.space, expression]))
+          | _ => Doc.concat([Doc.space, expression])
+          };
+
+        Doc.concat([
+          Doc.group(print_pattern(vb.pvb_pat, vb.pvb_loc)),
+          Doc.text(" ="),
+          Doc.group(expressionGrp),
+        ]);
+      },
+      vbs,
     );
-
-  // fix needed here?, we need to work out if all arguments fit on the line or will break
-  let expressionGrp =
-    switch (vb.pvb_expr.pexp_desc) {
-    | PExpBlock(_) => expression
-    //| _ => Doc.indent(Doc.concat([Doc.space, expression]))
-    | _ => Doc.concat([Doc.space, expression])
-    };
 
   Doc.concat([
     Doc.group(
@@ -1901,9 +1940,10 @@ and value_bind_print =
         Doc.text("let "),
         recursive,
         mutble,
-        Doc.group(print_pattern(vb.pvb_pat, vb.pvb_loc)),
-        Doc.text(" ="),
-        expressionGrp,
+        Doc.join(
+          Doc.concat([Doc.comma, Doc.hardLine]),
+          List.map(vb => vb, value_bindings),
+        ),
       ]),
     ),
   ]);
@@ -2535,3 +2575,18 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
   //   ),
   // );
 };
+
+// let myfun /*before equals*/ = /* after equals */ (/*lead*/ x /*follow*/, y) =>
+//   x + 5;
+
+// let rec myFun1 = x => x + 1
+// and myFun2 = x => x + 1;
+
+// let myFunction2 = x => {
+//   let inter = x + 1;
+//   "some string";
+// }
+// and myFunction3 = y => {
+//   let myVal = 5;
+//   "some string";
+// };

@@ -166,6 +166,14 @@ let walktree =
       },
       allLocations^,
     );
+  // List.iter(
+  //   n =>
+  //     switch (n) {
+  //     | Code(_) => Debug.print_loc("code", getNodeLoc(n))
+  //     | Comment(_) => Debug.print_loc("comment", getNodeLoc(n))
+  //     },
+  //   allLocations^,
+  // );
 };
 
 let partitionComments =
@@ -224,6 +232,15 @@ let partitionComments =
       ([], []),
       allLocations^,
     );
+
+  // List.iter(
+  //   c => Debug.print_loc("Comment preceeeding", getCommentLoc(c)),
+  //   preceeding,
+  // );
+  // List.iter(
+  //   c => Debug.print_loc("Comment following", getCommentLoc(c)),
+  //   following,
+  // );
 
   (preceeding, following);
 };
