@@ -1145,11 +1145,13 @@ and print_expression =
       let arg =
         Doc.concat([
           Doc.lparen,
-          print_expression(
-            ~expr=expression,
-            ~parentIsArrow=false,
-            ~endChar=None,
-            parent_loc,
+          Doc.group(
+            print_expression(
+              ~expr=expression,
+              ~parentIsArrow=false,
+              ~endChar=None,
+              parent_loc,
+            ),
           ),
           Doc.rparen,
         ]);
