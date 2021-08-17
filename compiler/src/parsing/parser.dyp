@@ -226,7 +226,7 @@ import_shape :
   | lbrace [id [AS id {$2}]? [comma id [AS id {$2}]? {($2, $3)}]* {($1, $2)::$3}]? rbrace { PImportValues (Option.value ~default:[] $2) }
 
 import_stmt :
-  | IMPORT import_shape [comma import_shape {$2}]* FROM file_path { Imp.mk ($2::$3) $5 }
+  | IMPORT import_shape [comma import_shape {$2}]* FROM file_path { Imp.mk ~loc:(symbol_rloc dyp) ($2::$3) $5 }
 
 data_declaration_stmt :
   | EXPORT data_declaration { (Exported, $2) }

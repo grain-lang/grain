@@ -2323,11 +2323,11 @@ let print_primitive_value_description = (vd: Parsetree.value_description) => {
 let toplevel_print = (data: Parsetree.toplevel_stmt, previousLine: int) => {
   let attributes = data.ptop_attributes;
 
-  //Debug.print_loc("top level:", data.ptop_loc);
+  // Debug.print_loc("top level:", data.ptop_loc);
 
   // get the leading comments
   let (leadingComments, _trailingComments) =
-    Walktree.partitionComments(makeLineStart(data.ptop_loc), None); //
+    Walktree.partitionComments(data.ptop_loc, None); //
   Walktree.removeUsedComments(leadingComments, []);
 
   let (stmtLeadingCommentDocs, prevLine) =
