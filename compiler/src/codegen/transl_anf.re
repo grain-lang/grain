@@ -1004,6 +1004,19 @@ let lift_imports = (env, imports) => {
         {imp_use_id, imp_desc, imp_shape, imp_exported},
       ) => {
     switch (imp_desc) {
+    | GrainFunction(mod_, name) =>
+      let new_mod = {
+        mimp_mod: Ident.create(mod_),
+        mimp_name: Ident.create(name),
+        mimp_type: process_shape(false, imp_shape),
+        mimp_kind: MImportWasm,
+        mimp_setup: MWrap(Int32.zero),
+      };
+      (
+        [new_mod, ...imports],
+        setups,
+        env,
+      );
     | GrainValue(mod_, name) =>
       let mimp_mod = Ident.create(mod_);
       let mimp_name = Ident.create(name);

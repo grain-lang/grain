@@ -319,6 +319,8 @@ module Imp = {
     imp_exported: e,
     imp_analyses: ref([]),
   };
+  let grain_func = (~global=Nonglobal, a, md, name, s) =>
+    mk(a, GrainFunction(md, name), s, global);
   let grain_value = (~global=Nonglobal, a, md, name, s) =>
     mk(a, GrainValue(md, name), s, global);
   let wasm_func = (~global=Nonglobal, a, md, name, s) =>

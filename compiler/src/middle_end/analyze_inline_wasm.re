@@ -285,6 +285,7 @@ let analyze = ({imports, body, analyses}) => {
       | None => ()
       };
     | GrainValue(_)
+    | GrainFunction(_)
     | WasmFunction(_)
     | WasmValue(_)
     | JSFunction(_) => ()
