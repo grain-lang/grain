@@ -5,10 +5,6 @@ let stdlib_directory: unit => option(string);
 
 let module_search_path: unit => list(string);
 
-/** The list of directories to search for modules in, based on the current configuration (relative to the given base path) */
-
-let module_search_path_from_base_path: string => list(string);
-
 /** Whether verbose output should be written */
 
 let verbose: ref(bool);

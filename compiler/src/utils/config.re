@@ -471,15 +471,11 @@ let with_base_path = (path, func) => {
 let stdlib_directory = (): option(string) =>
   Option.map(path => Files.derelativize(path), stdlib_dir^);
 
-let module_search_path_from_base_path = base_path => {
-  switch (stdlib_directory()) {
-  | Some(x) => [base_path, ...include_dirs^] @ [x] /* stdlib goes last */
-  | None => [base_path, ...include_dirs^]
-  };
-};
-
 let module_search_path = () => {
-  module_search_path_from_base_path(base_path^);
+  switch (stdlib_directory()) {
+  | Some(x) => include_dirs^ @ [x] /* stdlib goes last */
+  | None => include_dirs^
+  };
 };
 
 let apply_inline_flags = (~on_error, cmt_content) =>
