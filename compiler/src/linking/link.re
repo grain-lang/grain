@@ -27,11 +27,11 @@ let grain_start = "_start";
 let function_table = "tbl";
 
 let grain_module_name = mod_name => {
+  // Remove GRAIN$MODULE$
   Str.string_after(mod_name, 13);
 };
 
 let resolve = (~base_dir=?, mod_name) => {
-  // Remove GRAIN$MODULE$ and add extension
   let mod_name = grain_module_name(mod_name);
   let fullpath =
     Module_resolution.locate_unit_object_file(~base_dir?, mod_name);
