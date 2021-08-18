@@ -6,6 +6,7 @@ describe("imports", ({test}) => {
   let assertCompileError = makeCompileErrorRunner(test);
   let assertRun = makeRunner(test);
   let assertFileRun = makeFileRunner(test);
+  let assertFileSnapshot = makeSnapshotFileRunner(test);
 
   /* import * tests */
   assertRun(
@@ -169,16 +170,20 @@ describe("imports", ({test}) => {
     "import_same_module_unify2",
     "import *, TList from \"tlists\"; Cons(5, TList.Empty)",
   );
-  /* import filepath tests */
-  assertSnapshot("import_relative_path", "import * from \"./exportStar\"; x");
+  /* import filepath tests (test names are important to make relpaths work) */
   assertSnapshot(
-    "import_relative_path2",
+    "./test/test-libs/import_relative_path",
+    "import * from \"./exportStar\"; x",
+  );
+  assertSnapshot(
+    "./test/test-libs/import_relative_path2",
     "import * from \"../test-libs/exportStar\"; x",
   );
   assertSnapshot(
-    "import_relative_path3",
+    "./test/test-libs/import_relative_path3",
     "import * from \"nested/nested\"; j",
   );
+  assertFileSnapshot("import_relative_path4", "relativeImports/foo");
   assertCompileError(
     "import_missing_file",
     "import * from \"foo\"; 2",
