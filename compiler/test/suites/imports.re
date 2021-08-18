@@ -170,19 +170,10 @@ describe("imports", ({test}) => {
     "import_same_module_unify2",
     "import *, TList from \"tlists\"; Cons(5, TList.Empty)",
   );
-  /* import filepath tests (test names are important to make relpaths work) */
-  assertSnapshot(
-    "./test/test-libs/import_relative_path",
-    "import * from \"./exportStar\"; x",
-  );
-  assertSnapshot(
-    "./test/test-libs/import_relative_path2",
-    "import * from \"../test-libs/exportStar\"; x",
-  );
-  assertSnapshot(
-    "./test/test-libs/import_relative_path3",
-    "import * from \"nested/nested\"; j",
-  );
+  /* import filepath tests */
+  assertFileSnapshot("import_relative_path1", "relativeImport1");
+  assertFileSnapshot("import_relative_path2", "relativeImport2");
+  assertFileSnapshot("import_relative_path3", "relativeImport3");
   assertFileSnapshot("import_relative_path4", "relativeImports/foo");
   assertCompileError(
     "import_missing_file",
