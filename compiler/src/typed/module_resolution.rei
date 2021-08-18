@@ -1,10 +1,17 @@
 let locate_module_file:
   (~loc: Grain_parsing.Location.t, ~disable_relpath: bool=?, string) => string;
 
-let locate_unit_object_file: (~path: list(string)=?, ~base_dir: string=?, string) => string;
+let locate_unit_object_file:
+  (~path: list(string)=?, ~base_dir: string=?, string) => string;
 
 let resolve_unit:
-  (~search_path: list(string)=?, ~cache: bool=?, ~base_dir: string=?, string) => string;
+  (
+    ~search_path: list(string)=?,
+    ~cache: bool=?,
+    ~base_dir: string=?,
+    string
+  ) =>
+  string;
 
 let compile_module_dependency: ref((string, string) => unit);
 

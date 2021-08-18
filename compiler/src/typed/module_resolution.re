@@ -75,18 +75,19 @@ let find_ext_in_dir = (dir, name) => {
   process_ext;
 };
 
-let is_relpath = (path) => Filename.is_relative(path) && !Filename.is_implicit(path)
+let is_relpath = path =>
+  Filename.is_relative(path) && !Filename.is_implicit(path);
 
 let find_in_path_uncap = (~exts=[], base_dir, path, name) => {
   let rec try_dir =
     fun
     | [] => raise(Not_found)
     | [dir, ...rem] => {
-      switch (find_ext_in_dir(dir, name, exts)) {
-      | Some(path) => path
-      | None => try_dir(rem)
+        switch (find_ext_in_dir(dir, name, exts)) {
+        | Some(path) => path
+        | None => try_dir(rem)
+        };
       };
-    }
   if (!Filename.is_relative(name) && Grain_utils.Fs_access.file_exists(name)) {
     (
       name,
@@ -95,7 +96,7 @@ let find_in_path_uncap = (~exts=[], base_dir, path, name) => {
       Filename.extension(name),
     );
   } else if (is_relpath(name)) {
-    try_dir([base_dir])
+    try_dir([base_dir]);
   } else {
     try(try_dir(path)) {
     | Not_found => raise(Not_found)
@@ -103,41 +104,48 @@ let find_in_path_uncap = (~exts=[], base_dir, path, name) => {
   };
 };
 
-let realpath = (path) => {
-  switch(Fp.testForPath(path)) {
-    | None => None
-    | Some(Fp.Absolute(abspath)) => Some(Fp.toString(abspath))
-    | Some(Fp.Relative(relpath)) => Some(Fp.toString(Fp.join(Fp.absoluteExn(Sys.getcwd()), relpath)))
-  }
-}
+let realpath = path => {
+  switch (Fp.testForPath(path)) {
+  | None => None
+  | Some(Fp.Absolute(abspath)) => Some(Fp.toString(abspath))
+  | Some(Fp.Relative(relpath)) =>
+    Some(Fp.toString(Fp.join(Fp.absoluteExn(Sys.getcwd()), relpath)))
+  };
+};
 
-let realpath_quick = (path) => {
-  switch(realpath(path)) {
-    | None => path
-    | Some(rp) => rp
-  }
-}
+let realpath_quick = path => {
+  switch (realpath(path)) {
+  | None => path
+  | Some(rp) => rp
+  };
+};
 
 let smart_cat = (dir, file) => {
   switch (Fp.absolute(dir)) {
-    | None => Filename.concat(dir, file)
-    | Some(abspath) => {
-      switch (Fp.relative(file)) {
-        | None => Filename.concat(Fp.toString(abspath), file)
-        | Some(relpath) => Fp.toString(Fp.join(abspath, relpath))
-      }
+  | None => Filename.concat(dir, file)
+  | Some(abspath) =>
+    switch (Fp.relative(file)) {
+    | None => Filename.concat(Fp.toString(abspath), file)
+    | Some(relpath) => Fp.toString(Fp.join(abspath, relpath))
     }
-  }
-}
+  };
+};
 
 let canonicalize_relpath = (base_path, unit_name) => {
   // PRECONDITION: is_relpath(unit_name) == true
-  let abs_base_path = switch (realpath(base_path)) {
-    | None => failwith(Printf.sprintf("Internal Grain error; please report! testForPath failed: %s", base_path))
+  let abs_base_path =
+    switch (realpath(base_path)) {
+    | None =>
+      failwith(
+        Printf.sprintf(
+          "Internal Grain error; please report! testForPath failed: %s",
+          base_path,
+        ),
+      )
     | Some(abspath) => abspath
-  }
-  smart_cat(abs_base_path, unit_name)
-}
+    };
+  smart_cat(abs_base_path, unit_name);
+};
 
 module PathTbl = {
   type t('a) = Hashtbl.t(string, 'a);
@@ -145,27 +153,32 @@ module PathTbl = {
 
   let add: (t('a), (string, string), 'a) => unit =
     (tbl, (dir, unit_name), v) => {
-      let dir = realpath_quick(dir)
+      let dir = realpath_quick(dir);
       Hashtbl.add(tbl, smart_cat(dir, unit_name), v);
     };
 
-  let find_opt: (~disable_relpath: bool=?, t('a), string, list(string), string) => option('a) =
-    (~disable_relpath=false, tbl, base_path, path, unit_name) => {
+  let find_opt:
+    (~disable_relpath: bool=?, t('a), string, list(string), string) =>
+    option('a) =
+    (~disable_relpath=false, tbl, base_path, path, unit_name) =>
       if (!disable_relpath && is_relpath(unit_name)) {
-        Hashtbl.find_opt(tbl, canonicalize_relpath(base_path, unit_name))
+        Hashtbl.find_opt(tbl, canonicalize_relpath(base_path, unit_name));
       } else {
         List.fold_left(
           (acc, elt) => {
             switch (acc) {
             | Some(_) => acc
-            | None => Hashtbl.find_opt(tbl, smart_cat(realpath_quick(elt), unit_name))
+            | None =>
+              Hashtbl.find_opt(
+                tbl,
+                smart_cat(realpath_quick(elt), unit_name),
+              )
             }
           },
           None,
           path,
         );
-      }
-    };
+      };
 };
 
 let located_module_cache:
@@ -200,13 +213,14 @@ let log_resolution = (unit_name, dir, basename) => {
 };
 
 let resolve_unit = (~search_path=?, ~cache=true, ~base_dir=?, unit_name) => {
-  let base_dir = switch(base_dir) {
+  let base_dir =
+    switch (base_dir) {
     | None => Filename.dirname(current_filename^())
     | Some(bd) => bd
-  }
+    };
   let path =
     switch (search_path) {
-    | None => Grain_utils.Config.module_search_path();
+    | None => Grain_utils.Config.module_search_path()
     | Some(p) => p
     };
   switch (
@@ -216,7 +230,8 @@ let resolve_unit = (~search_path=?, ~cache=true, ~base_dir=?, unit_name) => {
   | (true, Some(res)) => res
   | _ =>
     let exts = [".gr", ".gr.wasm"];
-    let (_, dir, basename, _) = find_in_path_uncap(~exts, base_dir, path, unit_name);
+    let (_, dir, basename, _) =
+      find_in_path_uncap(~exts, base_dir, path, unit_name);
     if (cache) {
       log_resolution(unit_name, dir, basename);
     } else {
@@ -226,12 +241,22 @@ let resolve_unit = (~search_path=?, ~cache=true, ~base_dir=?, unit_name) => {
 };
 
 let locate_module = (~disable_relpath=false, base_dir, path, unit_name) => {
-  switch (PathTbl.find_opt(~disable_relpath, current_located_module_cache(), base_dir, path, unit_name)) {
+  switch (
+    PathTbl.find_opt(
+      ~disable_relpath,
+      current_located_module_cache(),
+      base_dir,
+      path,
+      unit_name,
+    )
+  ) {
   | Some(m) => m
   | None =>
     let grain_src_exts = [".gr"];
     let (dir, m) =
-      switch (find_in_path_uncap(~exts=[".gr.wasm"], base_dir, path, unit_name)) {
+      switch (
+        find_in_path_uncap(~exts=[".gr.wasm"], base_dir, path, unit_name)
+      ) {
       | (objpath, dir, basename, ext) =>
         ignore(log_resolution(unit_name, dir, basename));
         switch (find_ext_in_dir(dir, basename, grain_src_exts)) {
@@ -272,10 +297,11 @@ let located_to_out_file_name = (~base=?, located) => {
 };
 
 let locate_unit_object_file = (~path=?, ~base_dir=?, unit_name) => {
-  let base_dir = switch(base_dir) {
+  let base_dir =
+    switch (base_dir) {
     | None => Filename.dirname(current_filename^())
     | Some(bd) => bd
-  }
+    };
   let path =
     switch (path) {
     | Some(p) => p
@@ -297,7 +323,7 @@ module Dependency_graph =
 
     let get_dependencies: (t, string => option(t)) => list(t) =
       (dn, lookup) => {
-        let base_dir = Filename.dirname(dn.dn_file_name)
+        let base_dir = Filename.dirname(dn.dn_file_name);
         let active_search_path = Config.module_search_path();
         let located = dn.dn_latest_resolution^;
         // TODO: (#597) Propagating the compiler flag information correctly is tricky.
@@ -310,7 +336,8 @@ module Dependency_graph =
           let ret =
             List.map(
               name => {
-                let located = locate_module(base_dir, active_search_path, name);
+                let located =
+                  locate_module(base_dir, active_search_path, name);
                 let out_file_name = located_to_out_file_name(located);
                 let existing_dependency = lookup(out_file_name);
                 switch (existing_dependency) {
@@ -336,7 +363,8 @@ module Dependency_graph =
           let ret =
             List.map(
               ((name, _)) => {
-                let located = locate_module(base_dir, active_search_path, name);
+                let located =
+                  locate_module(base_dir, active_search_path, name);
                 let out_file_name = located_to_out_file_name(located);
                 let existing_dependency = lookup(out_file_name);
                 switch (existing_dependency) {
@@ -375,7 +403,7 @@ module Dependency_graph =
           // Compiled file is up-to-date if the srcpath is older than the objpath and
           // all dependencies have expected CRC. Otherwise, we need to recompile.
           let cmi = read_file_cmi(objpath);
-          let base_dir = Filename.dirname(srcpath)
+          let base_dir = Filename.dirname(srcpath);
           dn.dn_up_to_date :=
             file_older(srcpath, objpath)
             && List.for_all(
@@ -518,4 +546,4 @@ let () =
     | _ => None,
   );
 
-let () = Printexc.record_backtrace(true)
+let () = Printexc.record_backtrace(true);
