@@ -6,6 +6,7 @@ describe("imports", ({test}) => {
   let assertCompileError = makeCompileErrorRunner(test);
   let assertRun = makeRunner(test);
   let assertFileRun = makeFileRunner(test);
+  let assertFileSnapshot = makeSnapshotFileRunner(test);
 
   /* import * tests */
   assertRun(
@@ -170,15 +171,10 @@ describe("imports", ({test}) => {
     "import *, TList from \"tlists\"; Cons(5, TList.Empty)",
   );
   /* import filepath tests */
-  assertSnapshot("import_relative_path", "import * from \"./exportStar\"; x");
-  assertSnapshot(
-    "import_relative_path2",
-    "import * from \"../test-libs/exportStar\"; x",
-  );
-  assertSnapshot(
-    "import_relative_path3",
-    "import * from \"nested/nested\"; j",
-  );
+  assertFileSnapshot("import_relative_path1", "relativeImport1");
+  assertFileSnapshot("import_relative_path2", "relativeImport2");
+  assertFileSnapshot("import_relative_path3", "relativeImport3");
+  assertFileSnapshot("import_relative_path4", "relativeImports/foo");
   assertCompileError(
     "import_missing_file",
     "import * from \"foo\"; 2",

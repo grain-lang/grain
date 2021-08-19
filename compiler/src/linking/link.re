@@ -26,38 +26,38 @@ let grain_main = "_gmain";
 let grain_start = "_start";
 let function_table = "tbl";
 
-let resolve = mod_name => {
-  // Remove GRAIN$MODULE$ and add extension
-  let mod_name =
-    Printf.sprintf("%s.gr.wasm", Str.string_after(mod_name, 13));
-  let rec resolve =
-    fun
-    | [] => raise(Not_found)
-    | [base, ...rest] => {
-        let fullpath = Filename.concat(base, mod_name);
-        if (Sys.file_exists(fullpath)) {
-          let ic = open_in_bin(fullpath);
-          let length = in_channel_length(ic);
-          let module_bytes = Bytes.create(length);
-          really_input(ic, module_bytes, 0, length);
-          Module.read(module_bytes);
-        } else {
-          resolve(rest);
-        };
-      };
-  resolve(Grain_utils.Config.module_search_path());
+let grain_module_name = mod_name => {
+  // Remove GRAIN$MODULE$
+  Str.string_after(mod_name, 13);
+};
+
+let resolve = (~base_dir=?, mod_name) => {
+  let mod_name = grain_module_name(mod_name);
+  let fullpath =
+    Module_resolution.locate_unit_object_file(~base_dir?, mod_name);
+  let ic = open_in_bin(fullpath);
+  let length = in_channel_length(ic);
+  let module_bytes = Bytes.create(length);
+  really_input(ic, module_bytes, 0, length);
+  Module.read(module_bytes);
 };
 
 let is_grain_module = mod_name => {
   Str.string_match(Str.regexp_string("GRAIN$MODULE$"), mod_name, 0);
 };
 
+let new_base_dir = (cur_base_dir, imported_module) => {
+  let mod_name = grain_module_name(imported_module);
+  if (Module_resolution.is_relpath(mod_name)) {
+    Filename.concat(cur_base_dir, Filename.dirname(mod_name));
+  } else {
+    cur_base_dir;
+  };
+};
+
 let is_main_module = mod_name => mod_name == main_module;
 
-let rec build_dependency_graph = mod_name => {
-  if (!Hashtbl.mem(modules, mod_name)) {
-    Hashtbl.add(modules, mod_name, resolve(mod_name));
-  };
+let rec build_dependency_graph = (~base_dir, mod_name) => {
   let wasm_mod = Hashtbl.find(modules, mod_name);
   let num_globals = Global.get_num_globals(wasm_mod);
   for (i in 0 to num_globals - 1) {
@@ -65,7 +65,15 @@ let rec build_dependency_graph = mod_name => {
     let imported_module = Import.global_import_get_module(global);
     if (is_grain_module(imported_module)) {
       if (!Hashtbl.mem(modules, imported_module)) {
-        build_dependency_graph(imported_module);
+        Hashtbl.add(
+          modules,
+          imported_module,
+          resolve(~base_dir, imported_module),
+        );
+        build_dependency_graph(
+          ~base_dir=new_base_dir(base_dir, imported_module),
+          imported_module,
+        );
       };
       G.add_edge(dependency_graph, mod_name, imported_module);
     };
@@ -76,7 +84,15 @@ let rec build_dependency_graph = mod_name => {
     let imported_module = Import.function_import_get_module(func);
     if (is_grain_module(imported_module)) {
       if (!Hashtbl.mem(modules, imported_module)) {
-        build_dependency_graph(imported_module);
+        Hashtbl.add(
+          modules,
+          imported_module,
+          resolve(~base_dir, imported_module),
+        );
+        build_dependency_graph(
+          new_base_dir(base_dir, imported_module),
+          imported_module,
+        );
       };
       G.add_edge(dependency_graph, mod_name, imported_module);
     };
@@ -644,7 +660,10 @@ let link_modules = ({asm: wasm_mod, signature}) => {
   G.clear(dependency_graph);
   Hashtbl.clear(modules);
   Hashtbl.add(modules, main_module, wasm_mod);
-  build_dependency_graph(main_module);
+  build_dependency_graph(
+    ~base_dir=Filename.dirname(Module_resolution.current_filename^()),
+    main_module,
+  );
   let dependencies =
     Topo.fold((dep, acc) => [dep, ...acc], dependency_graph, []);
   let linked_mod = Module.create();
