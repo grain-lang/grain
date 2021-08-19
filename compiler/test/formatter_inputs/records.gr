@@ -20,3 +20,9 @@ record Commented {
   age: Number
   // trailing
 }
+
+record Bucket<k, v> {
+  mut key: k,
+  mut value: v,
+  mut nextkey: Option<Bucket<k, v>>
+}

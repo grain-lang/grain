@@ -511,7 +511,7 @@ and print_record_pattern =
 
 and print_pattern =
     (pat: Parsetree.pattern, parent_loc: Grain_parsing__Location.t) => {
-  // Debug.debug_pattern(pat);
+  //Debug.debug_pattern(pat);
 
   let (leadingComments, trailingComments) =
     Walktree.partitionComments(pat.ppat_loc, Some(parent_loc));
@@ -785,18 +785,21 @@ and print_type = (p: Grain_parsing__Parsetree.parsed_type) => {
 
   | PTyConstr(locidentifier, parsedtypes) =>
     let ident = locidentifier.txt;
-    Doc.concat([
-      print_ident(ident),
-      Doc.concat(
-        List.map(
-          typ => {
-            Doc.concat([Doc.text("<"), print_type(typ), Doc.text(">")])
-          },
-          parsedtypes,
+    if (List.length(parsedtypes) == 0) {
+      print_ident(ident);
+    } else {
+      Doc.concat([
+        print_ident(ident),
+        Doc.text("<"),
+        Doc.join(
+          Doc.concat([Doc.comma, Doc.space]),
+          List.map(typ => {print_type(typ)}, parsedtypes),
         ),
-      ),
-    ]);
-  | PTyPoly(locationstrings, parsed_type) => Doc.text("PTyPoly")
+        Doc.text(">"),
+      ]);
+    };
+  | PTyPoly(locationstrings, parsed_type) =>
+    Doc.text("/* Formatter error PTyPoly*/")
   };
 }
 and print_application =
@@ -979,7 +982,8 @@ and print_expression =
       ~endChar: option(Doc.t),
       parent_loc: Grain_parsing__Location.t,
     ) => {
-  //Debug.debug_expression(expr);
+  // Debug.debug_expression(expr);
+
   let (leadingComments, trailingComments) =
     Walktree.partitionComments(expr.pexp_loc, Some(parent_loc));
 
@@ -2046,19 +2050,18 @@ let rec print_data = (data: Grain_parsing__Parsetree.data_declaration) => {
         Doc.text("record"),
         Doc.space,
         Doc.text(nameloc.txt),
-        Doc.space,
         if (List.length(data.pdata_params) > 0) {
           Doc.concat([
             Doc.text("<"),
             Doc.join(
-              Doc.text(","),
+              Doc.concat([Doc.text(","), Doc.space]),
               List.map(t => print_type(t), data.pdata_params),
             ),
             Doc.text(">"),
             Doc.space,
           ]);
         } else {
-          Doc.nil;
+          Doc.space;
         },
         Doc.concat([
           Doc.lbrace,
