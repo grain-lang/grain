@@ -243,7 +243,13 @@ let parseFile = (name, input_file) => {
 };
 
 let makeParseRunner =
-    (test, name, input, expected: Grain_parsing.Parsetree.parsed_program) => {
+    (
+      ~keep_locs=false,
+      test,
+      name,
+      input,
+      expected: Grain_parsing.Parsetree.parsed_program,
+    ) => {
   test(
     name,
     ({expect}) => {
@@ -271,12 +277,16 @@ let makeParseRunner =
           comments: List.map(comment_loc_stripper, comments),
           prog_loc: Location.dummy_loc,
         };
-      let parsed = strip_locs @@ parseString(name, input);
-      let untagged = strip_locs @@ parsed;
+      let parsed =
+        if (keep_locs) {
+          parseString(name, input);
+        } else {
+          strip_locs @@ parseString(name, input);
+        };
       let conv = p =>
         Sexplib.Sexp.to_string_hum @@
         Grain_parsing.Parsetree.sexp_of_parsed_program(p);
-      expect.string(conv(untagged)).toEqual(conv(expected));
+      expect.string(conv(parsed)).toEqual(conv(expected));
     },
   );
 };
