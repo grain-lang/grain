@@ -96,6 +96,7 @@ let required_global_imports = [
   {
     mimp_mod: grain_env_mod,
     mimp_name: reloc_base,
+    mimp_use_id: reloc_base,
     mimp_type: MGlobalImport(I32Type, false),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -103,6 +104,7 @@ let required_global_imports = [
   {
     mimp_mod: grain_env_mod,
     mimp_name: module_runtime_id,
+    mimp_use_id: module_runtime_id,
     mimp_type: MGlobalImport(I32Type, false),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -110,6 +112,7 @@ let required_global_imports = [
   {
     mimp_mod: exception_mod,
     mimp_name: print_exception_closure_ident,
+    mimp_use_id: print_exception_closure_ident,
     mimp_type: MGlobalImport(I32Type, true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -117,6 +120,7 @@ let required_global_imports = [
   {
     mimp_mod: exception_mod,
     mimp_name: assertion_error_ident,
+    mimp_use_id: assertion_error_ident,
     mimp_type: MGlobalImport(I32Type, true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -124,6 +128,7 @@ let required_global_imports = [
   {
     mimp_mod: exception_mod,
     mimp_name: index_out_of_bounds_ident,
+    mimp_use_id: index_out_of_bounds_ident,
     mimp_type: MGlobalImport(I32Type, true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -131,6 +136,7 @@ let required_global_imports = [
   {
     mimp_mod: exception_mod,
     mimp_name: match_failure_ident,
+    mimp_use_id: match_failure_ident,
     mimp_type: MGlobalImport(I32Type, true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -141,6 +147,7 @@ let grain_runtime_imports = [
   {
     mimp_mod: gc_mod,
     mimp_name: malloc_closure_ident,
+    mimp_use_id: malloc_closure_ident,
     mimp_type: MGlobalImport(I32Type, true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -148,6 +155,7 @@ let grain_runtime_imports = [
   {
     mimp_mod: gc_mod,
     mimp_name: incref_closure_ident,
+    mimp_use_id: incref_closure_ident,
     mimp_type: MGlobalImport(I32Type, true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -155,6 +163,7 @@ let grain_runtime_imports = [
   {
     mimp_mod: gc_mod,
     mimp_name: decref_closure_ident,
+    mimp_use_id: decref_closure_ident,
     mimp_type: MGlobalImport(I32Type, true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -162,6 +171,7 @@ let grain_runtime_imports = [
   {
     mimp_mod: gc_mod,
     mimp_name: decref_ignore_zeros_closure_ident,
+    mimp_use_id: decref_ignore_zeros_closure_ident,
     mimp_type: MGlobalImport(I32Type, true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -169,6 +179,7 @@ let grain_runtime_imports = [
   {
     mimp_mod: data_structures_mod,
     mimp_name: new_rational_closure_ident,
+    mimp_use_id: new_rational_closure_ident,
     mimp_type: MGlobalImport(I32Type, true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -176,6 +187,7 @@ let grain_runtime_imports = [
   {
     mimp_mod: data_structures_mod,
     mimp_name: new_float32_closure_ident,
+    mimp_use_id: new_float32_closure_ident,
     mimp_type: MGlobalImport(I32Type, true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -183,6 +195,7 @@ let grain_runtime_imports = [
   {
     mimp_mod: data_structures_mod,
     mimp_name: new_float64_closure_ident,
+    mimp_use_id: new_float64_closure_ident,
     mimp_type: MGlobalImport(I32Type, true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -190,6 +203,7 @@ let grain_runtime_imports = [
   {
     mimp_mod: data_structures_mod,
     mimp_name: new_int32_closure_ident,
+    mimp_use_id: new_int32_closure_ident,
     mimp_type: MGlobalImport(I32Type, true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -197,6 +211,7 @@ let grain_runtime_imports = [
   {
     mimp_mod: data_structures_mod,
     mimp_name: new_int64_closure_ident,
+    mimp_use_id: new_int64_closure_ident,
     mimp_type: MGlobalImport(I32Type, true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -204,6 +219,7 @@ let grain_runtime_imports = [
   {
     mimp_mod: equal_mod,
     mimp_name: equal_closure_ident,
+    mimp_use_id: equal_closure_ident,
     mimp_type: MGlobalImport(I32Type, true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -217,6 +233,7 @@ let required_function_imports = [
   {
     mimp_mod: exception_mod,
     mimp_name: print_exception_ident,
+    mimp_use_id: print_exception_ident,
     mimp_type: MFuncImport([I32Type, I32Type], [I32Type]),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -227,6 +244,7 @@ let grain_function_imports = [
   {
     mimp_mod: gc_mod,
     mimp_name: malloc_ident,
+    mimp_use_id: malloc_ident,
     mimp_type: MFuncImport([I32Type, I32Type], [I32Type]),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -234,6 +252,7 @@ let grain_function_imports = [
   {
     mimp_mod: gc_mod,
     mimp_name: incref_ident,
+    mimp_use_id: incref_ident,
     mimp_type: MFuncImport([I32Type, I32Type], [I32Type]), /* Returns same pointer as argument */
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -241,6 +260,7 @@ let grain_function_imports = [
   {
     mimp_mod: gc_mod,
     mimp_name: decref_ident,
+    mimp_use_id: decref_ident,
     mimp_type: MFuncImport([I32Type, I32Type], [I32Type]), /* Returns same pointer as argument */
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -248,6 +268,7 @@ let grain_function_imports = [
   {
     mimp_mod: gc_mod,
     mimp_name: decref_ignore_zeros_ident,
+    mimp_use_id: decref_ignore_zeros_ident,
     mimp_type: MFuncImport([I32Type, I32Type], [I32Type]), /* Returns same pointer as argument */
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -255,6 +276,7 @@ let grain_function_imports = [
   {
     mimp_mod: console_mod,
     mimp_name: tracepoint_ident,
+    mimp_use_id: tracepoint_ident,
     mimp_type: MFuncImport([I32Type], []),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -262,6 +284,7 @@ let grain_function_imports = [
   {
     mimp_mod: data_structures_mod,
     mimp_name: new_rational_ident,
+    mimp_use_id: new_rational_ident,
     mimp_type: MFuncImport([I32Type, I32Type, I32Type], [I32Type]),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -269,6 +292,7 @@ let grain_function_imports = [
   {
     mimp_mod: data_structures_mod,
     mimp_name: new_float32_ident,
+    mimp_use_id: new_float32_ident,
     mimp_type: MFuncImport([I32Type, F32Type], [I32Type]),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -276,6 +300,7 @@ let grain_function_imports = [
   {
     mimp_mod: data_structures_mod,
     mimp_name: new_float64_ident,
+    mimp_use_id: new_float64_ident,
     mimp_type: MFuncImport([I32Type, F64Type], [I32Type]),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -283,6 +308,7 @@ let grain_function_imports = [
   {
     mimp_mod: data_structures_mod,
     mimp_name: new_int32_ident,
+    mimp_use_id: new_int32_ident,
     mimp_type: MFuncImport([I32Type, I32Type], [I32Type]),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -290,6 +316,7 @@ let grain_function_imports = [
   {
     mimp_mod: data_structures_mod,
     mimp_name: new_int64_ident,
+    mimp_use_id: new_int64_ident,
     mimp_type: MFuncImport([I32Type, I64Type], [I32Type]),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -297,6 +324,7 @@ let grain_function_imports = [
   {
     mimp_mod: equal_mod,
     mimp_name: equal_ident,
+    mimp_use_id: equal_ident,
     mimp_type: MFuncImport([I32Type, I32Type, I32Type], [I32Type]),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -346,12 +374,7 @@ let runtime_type_metadata_ptr = 0x408;
 
 let global_function_table = "tbl";
 
-let get_imported_name = (mod_, name) =>
-  Printf.sprintf(
-    "import_%s_%s",
-    Ident.unique_name(mod_),
-    Ident.unique_name(name),
-  );
+let get_imported_name = (mod_, name) => Ident.unique_name(name);
 
 let call_exception_printer = (wasm_mod, env, args) => {
   let args = [
@@ -3127,17 +3150,20 @@ let compile_imports = (wasm_mod, env, {imports}) => {
     | MImportWasm => Ident.name(name)
     | MImportGrain => "GRAIN$MODULE$" ++ Ident.name(name);
 
-  let compile_import_name = name =>
+  let compile_global_import_name = name =>
     fun
     | MImportWasm => Ident.name(name)
     | MImportGrain => "GRAIN$EXPORT$" ++ Ident.name(name);
 
-  let compile_import = ({mimp_mod, mimp_name, mimp_type, mimp_kind}) => {
+  let compile_function_import_name = Ident.name;
+
+  let compile_import =
+      ({mimp_mod, mimp_name, mimp_type, mimp_kind, mimp_use_id}) => {
     let module_name = compile_module_name(mimp_mod, mimp_kind);
-    let item_name = compile_import_name(mimp_name, mimp_kind);
-    let internal_name = get_imported_name(mimp_mod, mimp_name);
+    let internal_name = Ident.unique_name(mimp_use_id);
     switch (mimp_kind, mimp_type) {
     | (MImportGrain, MGlobalImport(ty, mut)) =>
+      let item_name = compile_global_import_name(mimp_name, mimp_kind);
       Import.add_global_import(
         wasm_mod,
         internal_name,
@@ -3145,8 +3171,9 @@ let compile_imports = (wasm_mod, env, {imports}) => {
         item_name,
         wasm_type(ty),
         mut,
-      )
+      );
     | (_, MFuncImport(args, ret)) =>
+      let item_name = compile_function_import_name(mimp_name);
       let proc_list = l =>
         Type.create @@ Array.of_list @@ List.map(compile_asm_type, l);
       Import.add_function_import(
@@ -3158,6 +3185,7 @@ let compile_imports = (wasm_mod, env, {imports}) => {
         proc_list(ret),
       );
     | (_, MGlobalImport(typ, mut)) =>
+      let item_name = compile_global_import_name(mimp_name, mimp_kind);
       let typ = compile_asm_type(typ);
       Import.add_global_import(
         wasm_mod,

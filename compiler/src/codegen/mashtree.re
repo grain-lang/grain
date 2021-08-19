@@ -433,6 +433,7 @@ type import_setup =
 type import = {
   mimp_mod: Ident.t,
   mimp_name: Ident.t,
+  mimp_use_id: Ident.t,
   mimp_type: import_type,
   mimp_kind: import_kind,
   mimp_setup: import_setup,

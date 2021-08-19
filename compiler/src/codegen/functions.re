@@ -73,9 +73,15 @@ module Preprocess: Grain_middle_end.Anf_iterator.IterArgument = {
     };
 };
 
+let process_import =
+  fun
+  | {imp_desc: GrainFunction(_), imp_use_id} => register_function(imp_use_id)
+  | _ => ();
+
 module Preprocessor = Grain_middle_end.Anf_iterator.MakeIter(Preprocess);
 
 let preprocess = anfprog => {
   clear_known_functions();
+  List.iter(process_import, anfprog.imports);
   Preprocessor.iter_anf_program(anfprog);
 };

@@ -83,6 +83,8 @@ let wasm_repr_of_allocation_type = alloc_type => {
   };
 };
 
+let allocation_type_of_wasm_repr = repr => StackAllocated(repr);
+
 let repr_of_type = (env, ty) =>
   if (is_function(ty)) {
     let (args, ret) = get_fn_allocation_type(env, ty);

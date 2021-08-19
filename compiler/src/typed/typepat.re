@@ -144,7 +144,8 @@ let reset_pattern = (scope, allow) => {
   module_variables := [];
 };
 
-let enter_variable = (~is_module=false, ~is_as_variable=false, ~expr=?, loc, name, ty) => {
+let enter_variable =
+    (~is_module=false, ~is_as_variable=false, ~expr=?, loc, name, ty) => {
   if (List.exists(
         ((id, _, _, _, _, _)) => Ident.name(id) == name.txt,
         pattern_variables^,
@@ -184,7 +185,10 @@ let enter_orpat_variables = (loc, env, p1_vs, p2_vs) => {
   let rec unify_vars = (p1_vs, p2_vs) => {
     let vars = vs => List.map(((x, _, _t, _, _l, _a)) => x, vs);
     switch (p1_vs, p2_vs) {
-    | ([(x1, _, t1, _, _l1, _a1), ...rem1], [(x2, _, t2, _, _l2, _a2), ...rem2])
+    | (
+        [(x1, _, t1, _, _l1, _a1), ...rem1],
+        [(x2, _, t2, _, _l2, _a2), ...rem2],
+      )
         when Ident.equal(x1, x2) =>
       if (x1 === x2) {
         unify_vars(rem1, rem2);
@@ -466,7 +470,15 @@ and type_pat_aux =
         ~explode=explode,
         ~env=env,
       ) =>
-    type_pat(~constrs, ~labels, ~no_existentials, ~mode, ~explode, ~env, ~expr?);
+    type_pat(
+      ~constrs,
+      ~labels,
+      ~no_existentials,
+      ~mode,
+      ~explode,
+      ~env,
+      ~expr?,
+    );
   let loc = sp.ppat_loc;
   let unif = (x: pattern): pattern => {
     unify_pat(env^, x, instance(env^, expected_ty));
@@ -619,7 +631,8 @@ and type_pat_aux =
         let ty_var = build_as_type(env^, q);
         end_def();
         generalize(ty_var);
-        let id = enter_variable(~expr?, ~is_as_variable=true, loc, name, ty_var);
+        let id =
+          enter_variable(~expr?, ~is_as_variable=true, loc, name, ty_var);
         rp(
           k,
           {
@@ -1060,10 +1073,11 @@ let check_unused = (~lev=get_current_level(), env, expected_ty, cases) =>
     cases,
   );
 
-let is_direct_function = expr => switch (expr) {
+let is_direct_function = expr =>
+  switch (expr) {
   | Some({pexp_desc: PExpLambda(_)}) => true
   | _ => false
-}
+  };
 
 let add_pattern_variables = (~check=?, ~check_as=?, ~mut=false, env) => {
   let pv = get_ref(pattern_variables);
@@ -1098,7 +1112,14 @@ let type_pattern = (~lev, env, spat, expr, scope, expected_ty) => {
   reset_pattern(/*scope*/ None, true);
   let new_env = ref(env);
   let pat =
-    type_pat(~allow_existentials=true, ~lev, ~expr?, new_env, spat, expected_ty);
+    type_pat(
+      ~allow_existentials=true,
+      ~lev,
+      ~expr?,
+      new_env,
+      spat,
+      expected_ty,
+    );
   let (new_env, unpacks, _) = add_pattern_variables(new_env^) /*~check:(fun s -> Warnings.Unused_var_strict s)  ~check_as:(fun s -> Warnings.Unused_var s)*/;
 
   (pat, new_env, get_ref(pattern_force), unpacks);

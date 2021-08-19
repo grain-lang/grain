@@ -1746,7 +1746,8 @@ and type_let =
               spat
               sty*/
           | _ => spat
-          }, Some(sexp)
+          },
+          Some(sexp),
         ),
       spat_sexp_list,
     );

@@ -1008,15 +1008,12 @@ let lift_imports = (env, imports) => {
       let new_mod = {
         mimp_mod: Ident.create(mod_),
         mimp_name: Ident.create(name),
+        mimp_use_id: imp_use_id,
         mimp_type: process_shape(false, imp_shape),
-        mimp_kind: MImportWasm,
+        mimp_kind: MImportGrain,
         mimp_setup: MWrap(Int32.zero),
       };
-      (
-        [new_mod, ...imports],
-        setups,
-        env,
-      );
+      ([new_mod, ...imports], setups, env);
     | GrainValue(mod_, name) =>
       let mimp_mod = Ident.create(mod_);
       let mimp_name = Ident.create(name);
@@ -1033,6 +1030,7 @@ let lift_imports = (env, imports) => {
       let new_mod = {
         mimp_mod,
         mimp_name,
+        mimp_use_id: imp_use_id,
         mimp_type: process_shape(true, imp_shape),
         mimp_kind: MImportGrain,
         mimp_setup: MCallGetter,
@@ -1045,15 +1043,7 @@ let lift_imports = (env, imports) => {
           ce_binds:
             Ident.add(
               imp_use_id,
-              MGlobalBind(
-                Printf.sprintf(
-                  "import_%s_%s",
-                  Ident.unique_name(mimp_mod),
-                  Ident.unique_name(mimp_name),
-                ),
-                asmtype,
-                gc,
-              ),
+              MGlobalBind(Ident.unique_name(imp_use_id), asmtype, gc),
               env.ce_binds,
             ),
         },
@@ -1074,6 +1064,7 @@ let lift_imports = (env, imports) => {
       let new_mod = {
         mimp_mod,
         mimp_name,
+        mimp_use_id: imp_use_id,
         mimp_type: process_shape(false, imp_shape),
         mimp_kind: MImportWasm,
         mimp_setup: MWrap(Int32.zero),
@@ -1086,15 +1077,7 @@ let lift_imports = (env, imports) => {
           ce_binds:
             Ident.add(
               imp_use_id,
-              MGlobalBind(
-                Printf.sprintf(
-                  "import_%s_%s",
-                  Ident.unique_name(mimp_mod),
-                  Ident.unique_name(mimp_name),
-                ),
-                asmtype,
-                gc,
-              ),
+              MGlobalBind(Ident.unique_name(imp_use_id), asmtype, gc),
               env.ce_binds,
             ),
         },
@@ -1105,16 +1088,12 @@ let lift_imports = (env, imports) => {
       let new_mod = {
         mimp_mod: Ident.create(mod_),
         mimp_name: Ident.create(name),
+        mimp_use_id: Ident.create(name),
         mimp_type: process_shape(false, imp_shape),
         mimp_kind: MImportWasm,
         mimp_setup: MWrap(Int32.zero),
       };
-      let func_name =
-        Printf.sprintf(
-          "import_%s_%s",
-          Ident.unique_name(new_mod.mimp_mod),
-          Ident.unique_name(new_mod.mimp_name),
-        );
+      let func_name = Ident.unique_name(new_mod.mimp_use_id);
       (
         [new_mod, ...imports],
         [

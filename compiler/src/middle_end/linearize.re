@@ -40,7 +40,15 @@ let get_type_id = typath =>
     id;
   };
 
-let lookup_symbol = (~allocation_type, mod_, mod_decl, name, original_name) => {
+let lookup_symbol =
+    (
+      ~allocation_type,
+      ~value_description,
+      mod_,
+      mod_decl,
+      name,
+      original_name,
+    ) => {
   switch (Ident.find_same_opt(mod_, symbol_table^)) {
   | Some(_) => ()
   | None => symbol_table := Ident.add(mod_, Ident.empty, symbol_table^)
@@ -61,7 +69,33 @@ let lookup_symbol = (~allocation_type, mod_, mod_decl, name, original_name) => {
             GlobalShape(allocation_type),
           ),
           ...value_imports^,
-        ]
+        ];
+      switch (value_description) {
+      | {val_repr: ReprFunction(args, results), val_direct: true} =>
+        // Add closure argument
+        let args = [WasmI32, ...args];
+        // Restore Void return
+        let results =
+          if (List.length(results) == 0) {
+            [WasmI32];
+          } else {
+            results;
+          };
+        value_imports :=
+          [
+            Imp.grain_func(
+              fresh,
+              filepath,
+              original_name,
+              FunctionShape(
+                List.map(allocation_type_of_wasm_repr, args),
+                List.map(allocation_type_of_wasm_repr, results),
+              ),
+            ),
+            ...value_imports^,
+          ];
+      | _ => ()
+      };
     | None => ()
     };
     symbol_table :=
@@ -157,14 +191,21 @@ let rec transl_imm =
   | TExpIdent(
       Path.PExternal(Path.PIdent(mod_) as p, ident, _),
       _,
-      {val_fullpath: Path.PExternal(_, original_name, _), val_mutable},
+      {val_fullpath: Path.PExternal(_, original_name, _), val_mutable} as value_description,
     ) =>
     let mod_decl = Env.find_module(p, None, env);
     let id =
       Imm.id(
         ~loc,
         ~env,
-        lookup_symbol(~allocation_type, mod_, mod_decl, ident, original_name),
+        lookup_symbol(
+          ~allocation_type,
+          ~value_description,
+          mod_,
+          mod_decl,
+          ident,
+          original_name,
+        ),
       );
     if (val_mutable && !boxed) {
       let tmp = gensym("unbox_mut");
@@ -178,14 +219,21 @@ let rec transl_imm =
   | TExpIdent(
       Path.PExternal(Path.PIdent(mod_) as p, ident, _),
       _,
-      {val_mutable},
+      {val_mutable} as value_description,
     ) =>
     let mod_decl = Env.find_module(p, None, env);
     let id =
       Imm.id(
         ~loc,
         ~env,
-        lookup_symbol(~allocation_type, mod_, mod_decl, ident, ident),
+        lookup_symbol(
+          ~allocation_type,
+          ~value_description,
+          mod_,
+          mod_decl,
+          ident,
+          ident,
+        ),
       );
     if (val_mutable && !boxed) {
       let tmp = gensym("unbox_mut");
@@ -214,13 +262,20 @@ let rec transl_imm =
     | {
         val_fullpath: Path.PExternal(Path.PIdent(mod_) as p, ident, _),
         val_mutable,
-      } =>
+      } as value_description =>
       let mod_decl = Env.find_module(p, None, env);
       let id =
         Imm.id(
           ~loc,
           ~env,
-          lookup_symbol(~allocation_type, mod_, mod_decl, ident, ident),
+          lookup_symbol(
+            ~allocation_type,
+            ~value_description,
+            mod_,
+            mod_decl,
+            ident,
+            ident,
+          ),
         );
       if (val_mutable && !boxed) {
         let tmp = gensym("unbox_mut");
@@ -1240,7 +1295,8 @@ let rec transl_anf_statement =
     let name =
       if (exported) {
         switch (vb_pat.pat_desc) {
-        | TPatVar(bind, _) => Some(Ident.name(bind))
+        | TPatVar(bind, _)
+        | TPatAlias({pat_desc: TPatAny}, bind, _) => Some(Ident.name(bind))
         | _ => None
         };
       } else {
@@ -1327,11 +1383,18 @@ let rec transl_anf_statement =
       List.split(
         List.map(
           ({vb_pat, vb_expr}) => {
+            let name =
+              switch (vb_pat.pat_desc) {
+              | TPatVar(bind, _)
+              | TPatAlias({pat_desc: TPatAny}, bind, _) =>
+                Some(Ident.name(bind))
+              | _ => None
+              };
             let vb_expr = {
               ...vb_expr,
               exp_attributes: attributes @ vb_expr.exp_attributes,
             };
-            (vb_pat, transl_comp_expression(vb_expr));
+            (vb_pat, transl_comp_expression(~name?, vb_expr));
           },
           binds,
         ),
