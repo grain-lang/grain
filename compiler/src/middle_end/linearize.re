@@ -491,6 +491,48 @@ let rec transl_imm =
       [arg1, arg2],
     ) =>
     transl_imm({...e, exp_desc: TExpPrim2(Or, arg1, arg2)})
+  | TExpApp(
+      {
+        exp_desc:
+          TExpIdent(
+            PExternal(PIdent({name: "Pervasives"}), "fail", _),
+            _,
+            _,
+          ),
+      } as func,
+      args,
+    ) =>
+    // Hack to make `fail` typecheck at the wasm level
+    let (new_func, func_setup) = transl_imm(func);
+    let (new_args, new_setup) = List.split(List.map(transl_imm, args));
+    let ret =
+      switch (wasm_repr_of_allocation_type(allocation_type)) {
+      | WasmI32 => Imm.const(Const_wasmi32(0l))
+      | WasmI64 => Imm.const(Const_wasmi64(0L))
+      | WasmF32 => Imm.const(Const_wasmf32(0.))
+      | WasmF64 => Imm.const(Const_wasmf64(0.))
+      };
+    (
+      ret,
+      (func_setup @ List.concat(new_setup))
+      @ [
+        BSeq(
+          Comp.app(
+            ~loc,
+            ~env,
+            ~allocation_type=StackAllocated(WasmI32),
+            (
+              new_func,
+              (
+                [StackAllocated(WasmI32), StackAllocated(WasmI32)],
+                StackAllocated(WasmI32),
+              ),
+            ),
+            new_args,
+          ),
+        ),
+      ],
+    );
   | TExpApp(func, args) =>
     let tmp = gensym("app");
     let (new_func, func_setup) = transl_imm(func);
@@ -1133,6 +1175,48 @@ and transl_comp_expression =
       [arg1, arg2],
     ) =>
     transl_comp_expression({...e, exp_desc: TExpPrim2(Or, arg1, arg2)})
+  | TExpApp(
+      {
+        exp_desc:
+          TExpIdent(
+            PExternal(PIdent({name: "Pervasives"}), "fail", _),
+            _,
+            _,
+          ),
+      } as func,
+      args,
+    ) =>
+    // Hack to make `fail` typecheck at the wasm level
+    let (new_func, func_setup) = transl_imm(func);
+    let (new_args, new_setup) = List.split(List.map(transl_imm, args));
+    let ret =
+      switch (wasm_repr_of_allocation_type(allocation_type)) {
+      | WasmI32 => Imm.const(Const_wasmi32(0l))
+      | WasmI64 => Imm.const(Const_wasmi64(0L))
+      | WasmF32 => Imm.const(Const_wasmf32(0.))
+      | WasmF64 => Imm.const(Const_wasmf64(0.))
+      };
+    (
+      Comp.imm(~allocation_type, ret),
+      (func_setup @ List.concat(new_setup))
+      @ [
+        BSeq(
+          Comp.app(
+            ~loc,
+            ~env,
+            ~allocation_type=StackAllocated(WasmI32),
+            (
+              new_func,
+              (
+                [StackAllocated(WasmI32), StackAllocated(WasmI32)],
+                StackAllocated(WasmI32),
+              ),
+            ),
+            new_args,
+          ),
+        ),
+      ],
+    );
   | TExpApp(func, args) =>
     let (new_func, func_setup) = transl_imm(func);
     let (new_args, new_setup) = List.split(List.map(transl_imm, args));

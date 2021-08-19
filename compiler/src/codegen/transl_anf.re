@@ -572,7 +572,8 @@ let compile_lambda =
   };
 };
 
-let compile_wrapper = (id, env, func_name, args, rets): Mashtree.closure_data => {
+let compile_wrapper =
+    (~exported, id, env, func_name, args, rets): Mashtree.closure_data => {
   let body = [
     {
       instr_desc:
@@ -612,6 +613,12 @@ let compile_wrapper = (id, env, func_name, args, rets): Mashtree.closure_data =>
     };
   let idx = next_lift();
   let arity = List.length(args);
+  let name =
+    if (exported) {
+      Some(Ident.name(id));
+    } else {
+      None;
+    };
   let lam_env = {
     ...env,
     ce_binds: Ident.empty,
@@ -626,7 +633,7 @@ let compile_wrapper = (id, env, func_name, args, rets): Mashtree.closure_data =>
     env: lam_env,
     idx,
     id,
-    name: None,
+    name,
     args: [Types.HeapAllocated, ...args],
     return_type,
     stack_size: {
@@ -1043,7 +1050,11 @@ let lift_imports = (env, imports) => {
           ce_binds:
             Ident.add(
               imp_use_id,
-              MGlobalBind(Ident.unique_name(imp_use_id), asmtype, gc),
+              MGlobalBind(
+                Printf.sprintf("global_%s", Ident.unique_name(imp_use_id)),
+                asmtype,
+                gc,
+              ),
               env.ce_binds,
             ),
         },
@@ -1077,14 +1088,18 @@ let lift_imports = (env, imports) => {
           ce_binds:
             Ident.add(
               imp_use_id,
-              MGlobalBind(Ident.unique_name(imp_use_id), asmtype, gc),
+              MGlobalBind(
+                Printf.sprintf("global_%s", Ident.unique_name(imp_use_id)),
+                asmtype,
+                gc,
+              ),
               env.ce_binds,
             ),
         },
       );
     | WasmFunction(mod_, name) =>
-      let glob =
-        next_global(~exported=imp_exported == Global, imp_use_id, I32Type);
+      let exported = imp_exported == Global;
+      let glob = next_global(~exported, imp_use_id, I32Type);
       let new_mod = {
         mimp_mod: Ident.create(mod_),
         mimp_name: Ident.create(name),
@@ -1114,6 +1129,7 @@ let lift_imports = (env, imports) => {
                             MAllocate(
                               MClosure(
                                 compile_wrapper(
+                                  ~exported,
                                   imp_use_id,
                                   env,
                                   func_name,
