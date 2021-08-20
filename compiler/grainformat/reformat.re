@@ -529,12 +529,7 @@ and print_pattern =
     | PPatConstant(c) => (print_constant(c), false)
     | PPatVar({txt, _}) =>
       if (infixop(txt) || prefixop(txt)) {
-        (
-          // if (String.contains(txt,"(")) {
-          // } else
-          Doc.concat([Doc.lparen, Doc.text(txt), Doc.rparen]),
-          false,
-        );
+        (Doc.concat([Doc.lparen, Doc.text(txt), Doc.rparen]), false);
       } else {
         (Doc.text(txt), false);
       }
@@ -822,15 +817,32 @@ and print_application =
   if (prefixop(functionName)) {
     if (List.length(expressions) == 1) {
       let first = List.hd(expressions);
-      Doc.concat([
-        Doc.text(functionName),
-        print_expression(
-          ~expr=first,
-          ~parentIsArrow=false,
-          ~endChar=None,
-          parent_loc,
-        ),
-      ]);
+
+      switch (first.pexp_desc) {
+      | PExpApp(fn, _) =>
+        Doc.concat([
+          Doc.text(functionName),
+          Doc.lparen,
+          print_expression(
+            ~expr=first,
+            ~parentIsArrow=false,
+            ~endChar=None,
+            parent_loc,
+          ),
+          Doc.rparen,
+        ])
+
+      | _ =>
+        Doc.concat([
+          Doc.text(functionName),
+          print_expression(
+            ~expr=first,
+            ~parentIsArrow=false,
+            ~endChar=None,
+            parent_loc,
+          ),
+        ])
+      };
     } else {
       Doc.text(
         functionName
@@ -906,7 +918,9 @@ and print_application =
 
     if (funcName == "[...]") {
       resugar_list(expressions, parent_loc);
-    } else if (funcName == "throw" || funcName == "assert") {
+    } else if (funcName == "throw"
+               || funcName == "assert"
+               || funcName == "fail") {
       Doc.concat([
         print_expression(
           ~expr=func,

@@ -29,7 +29,7 @@ let rec reject = (fn, list) => {
   match (list) {
     [] => [],
     [first, ...rest] =>
-      if (!fn(first)) {
+      if (!(fn(first))) {
         [first, ...reject(fn, rest)]
       } else {
         reject(fn, rest)
