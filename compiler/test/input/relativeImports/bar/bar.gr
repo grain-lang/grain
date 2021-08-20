@@ -1,0 +1,3 @@
+import {baz} from "./baz"
+
+export let bar = (n) => baz(n) * 3

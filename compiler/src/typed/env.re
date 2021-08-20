@@ -750,7 +750,7 @@ let check_consistency = ps =>
           add_import(name);
           let resolved_file_name =
             Module_resolution.resolve_unit(
-              ~search_path=Grain_utils.Config.module_search_path(),
+              ~base_dir=Filename.dirname(ps.ps_filename),
               name,
             );
           Consistbl.check(crc_units, resolved_file_name, crc, ps.ps_filename);
@@ -823,13 +823,7 @@ module Persistent_signature = {
 
   let load =
     ref((~loc=Location.dummy_loc, ~unit_name) => {
-      switch (
-        Module_resolution.locate_module_file(
-          ~loc,
-          Grain_utils.Config.module_search_path(),
-          unit_name,
-        )
-      ) {
+      switch (Module_resolution.locate_module_file(~loc, unit_name)) {
       | filename =>
         let ret = {filename, cmi: Module_resolution.read_file_cmi(filename)};
         Some(ret);
@@ -2198,9 +2192,12 @@ let open_pers_signature = (name, filepath, env) =>
 
 let open_signature_of_initially_opened_module =
     (~loc=Location.dummy_loc, root, env) => {
-  let load_path = Grain_utils.Config.include_dirs^;
   let filter_modules = m =>
-    switch (Module_resolution.locate_module_file(~loc, load_path, m)) {
+    // disabling relative paths should be overkill, but is technically the correct
+    // behavior for initially opened modules
+    switch (
+      Module_resolution.locate_module_file(~loc, ~disable_relpath=true, m)
+    ) {
     | _ => false
     | exception Not_found => true
     };

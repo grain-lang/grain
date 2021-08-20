@@ -1,3 +1,9 @@
+/**
+ * @module Number: Utilities for working with numbers.
+ * @example import Number from "number"
+ * @since v0.4.0
+ */
+
 import WasmI32 from "runtime/unsafe/wasmi32"
 import WasmI64 from "runtime/unsafe/wasmi64"
 import WasmF32 from "runtime/unsafe/wasmf32"
@@ -13,40 +19,55 @@ import Tags from "runtime/unsafe/tags"
 
 /**
  * Computes the sum of its operands.
- * @param x: Number - The first operand
- * @param y: Number - The second operand
- * @returns Number
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns The sum of the two operands
+ *
+ * @since v0.4.0
  */
 export let add = (+)
 
 /**
  * Computes the difference of its operands.
- * @param x: Number - The first operand
- * @param y: Number - The second operand
- * @returns Number
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns The difference of the two operands
+ *
+ * @since v0.4.0
  */
 export let sub = (-)
 
 /**
  * Computes the product of its operands.
- * @param x: Number - The first operand
- * @param y: Number - The second operand
- * @returns Number
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns The product of the two operands
+ *
+ * @since v0.4.0
  */
 export let mul = (*)
 
 /**
  * Computes the quotient of its operands.
- * @param x: Number - The dividend
- * @param y: Number - The divisor
- * @returns Number
+ *
+ * @param x: The dividend
+ * @param y: The divisor
+ * @returns The quotient of the two operands
+ *
+ * @since v0.4.0
  */
 export let div = (/)
 
 /**
  * Computes the square root of its operand.
- * @param x: Number - The number to square root
- * @returns Number
+ *
+ * @param x: The number to square root
+ * @returns The square root of the operand
+ *
+ * @since v0.4.0
  */
 @disableGC
 export let sqrt = (x: Number) => {
@@ -61,25 +82,34 @@ export let sqrt = (x: Number) => {
 }
 
 /**
- * Returns the smaller of its two operands.
- * @param x: Number - The first operand
- * @param y: Number - The second operand
- * @returns Number
+ * Returns the smaller of its operands.
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns The smaller of the two operands
+ *
+ * @since v0.4.0
  */
 export let min = (x: Number, y: Number) => if (y > x) x else y
 
 /**
- * Returns the larger of its two operands.
- * @param x: Number - The first operand
- * @param y: Number - The second operand
- * @returns Number
+ * Returns the larger of its operands.
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns The larger of the two operands
+ *
+ * @since v0.4.0
  */
 export let max = (x: Number, y: Number) => if (x > y) x else y
 
 /**
  * Rounds its operand up to the next largest integer.
- * @param x: Number - The number to round
- * @returns Number
+ *
+ * @param x: The number to round
+ * @returns The next largest integer of the operand
+ *
+ * @since v0.4.0
  */
 @disableGC
 export let ceil = (x: Number) => {
@@ -89,9 +119,12 @@ export let ceil = (x: Number) => {
 }
 
 /**
- * Rounds its operand down to the largest integer less than the operand. 
- * @param x: Number - The number to round
- * @returns Number
+ * Rounds its operand down to the largest integer less than the operand.
+ *
+ * @param x: The number to round
+ * @returns The previous integer of the operand
+ *
+ * @since v0.4.0
  */
 @disableGC
 export let floor = (x: Number) => {
@@ -102,8 +135,11 @@ export let floor = (x: Number) => {
 
 /**
  * Returns the integer part of its operand, removing any fractional value.
- * @param x: Number - The number to truncate
- * @returns Number
+ *
+ * @param x: The number to truncate
+ * @returns The integer part of the operand
+ *
+ * @since v0.4.0
  */
 @disableGC
 export let trunc = (x: Number) => {
@@ -114,8 +150,11 @@ export let trunc = (x: Number) => {
 
 /**
  * Returns its operand rounded to its nearest integer.
- * @param x: Number - The number to round
- * @returns Number
+ *
+ * @param x: The number to round
+ * @returns The nearest integer to the operand
+ *
+ * @since v0.4.0
  */
 @disableGC
 export let round = (x: Number) => {
@@ -126,23 +165,32 @@ export let round = (x: Number) => {
 
 /**
  * Returns the absolute value of a number. That is, it returns `x` if `x` is positive or zero and the negation of `x` if `x` is negative.
- * @param x: Number - The operand
- * @returns Number
+ *
+ * @param x: The operand
+ * @returns The absolute value of the operand
+ *
+ * @since v0.4.0
  */
 export let abs = (x: Number) => if (0 > x) x * -1 else x
 
 /**
  * Returns the negation of its operand.
- * @param x: Number - The number to negate
- * @returns Number
+ *
+ * @param x: The number to negate
+ * @returns The negated operand
+ *
+ * @since v0.4.0
  */
 export let neg = (x: Number) => if (x > 0) x * -1 else x
 
 /**
  * Checks if a number is finite.
  * All values are finite exept for floating point NaN, infinity or negative infinity.
- * @param x: Number - The number to check
- * @returns Bool
+ *
+ * @param x: The number to check
+ * @returns `true` if the value is finite, otherwise `false`
+ *
+ * @since v0.4.0
  */
 @disableGC
 export let isFinite = (x: Number) => {
@@ -152,7 +200,7 @@ export let isFinite = (x: Number) => {
     let tag = WasmI32.load(asPtr, 4n)
     if (WasmI32.eq(tag, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG)) {
       // uses the fact that all finite floats minus themselves are zero
-      // (NaN - NaN == NaN, inf - inf == NaN, 
+      // (NaN - NaN == NaN, inf - inf == NaN,
       //  -inf - -inf == NaN, inf - -inf == inf, -inf - inf == -inf)
       let wf64 = WasmF64.load(asPtr, 8n)
       WasmF64.eq(WasmF64.sub(wf64, wf64), 0.W)
@@ -173,8 +221,11 @@ export let isFinite = (x: Number) => {
 /**
  * Checks if a number contains the NaN value (Not A Number).
  * Only boxed floating point numbers can contain NaN.
- * @param x: Number - The number to check
- * @returns Bool
+ *
+ * @param x: The number to check
+ * @returns `true` if the value is NaN, otherwise `false`
+ *
+ * @since v0.4.0
  */
 @disableGC
 export let isNaN = (x: Number) => {
@@ -202,11 +253,12 @@ export let isNaN = (x: Number) => {
 
 /**
  * Checks if a number is infinite, that is either of floating point positive or negative infinity.
- * 
  * Note that this function is not the exact opposite of isFinite(Number) in that it doesn't return true for NaN.
- * 
- * @param x: Number - The number to check
- * @returns Bool
+ *
+ * @param x: The number to check
+ * @returns `true` if the value is infinite, otherwise `false`
+ *
+ * @since v0.4.0
  */
 @disableGC
 export let isInfinite = (x: Number) => {
