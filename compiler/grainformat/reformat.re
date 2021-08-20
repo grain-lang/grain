@@ -747,7 +747,8 @@ and print_record =
             fields,
           ),
         ),
-        Doc.ifBreaks(Doc.text(","), Doc.nil),
+        Doc.comma // always append a comma as single argument record look like block {data:val}
+        // Doc.ifBreaks(Doc.text(","), Doc.nil),
       ]),
     ),
     Doc.line,
@@ -1085,34 +1086,36 @@ and print_expression =
       ])
     | PExpArraySet(expression1, expression2, expression3) =>
       //print_endline("PExpArraySet");
-      Doc.concat([
-        print_expression(
-          ~expr=expression1,
-          ~parentIsArrow=false,
-          ~endChar=None,
-          parent_loc,
-        ),
-        Doc.lbracket,
-        print_expression(
-          ~expr=expression2,
-          ~parentIsArrow=false,
-          ~endChar=None,
-          parent_loc,
-        ),
-        Doc.rbracket,
-        Doc.text(" ="),
-        Doc.indent(
-          Doc.concat([
-            Doc.line,
-            print_expression(
-              ~expr=expression3,
-              ~parentIsArrow=false,
-              ~endChar=None,
-              parent_loc,
-            ),
-          ]),
-        ),
-      ])
+      Doc.group(
+        Doc.concat([
+          print_expression(
+            ~expr=expression1,
+            ~parentIsArrow=false,
+            ~endChar=None,
+            parent_loc,
+          ),
+          Doc.lbracket,
+          print_expression(
+            ~expr=expression2,
+            ~parentIsArrow=false,
+            ~endChar=None,
+            parent_loc,
+          ),
+          Doc.rbracket,
+          Doc.text(" ="),
+          Doc.indent(
+            Doc.concat([
+              Doc.line,
+              print_expression(
+                ~expr=expression3,
+                ~parentIsArrow=false,
+                ~endChar=None,
+                parent_loc,
+              ),
+            ]),
+          ),
+        ]),
+      )
 
     | PExpRecord(record) => print_record(record, parent_loc)
     | PExpRecordGet(expression, {txt, _}) =>
