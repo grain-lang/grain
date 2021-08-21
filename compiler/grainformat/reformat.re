@@ -852,9 +852,20 @@ and print_application =
   } else if (infixop(functionName)) {
     let first = List.hd(expressions);
     let second = List.hd(List.tl(expressions)); // assumes an infix only has two expressions
-
+    //  Debug.debug_expression(first);
     let firstBrackets =
       switch (first.pexp_desc) {
+      | PExpIf(_) =>
+        Doc.concat([
+          Doc.lparen,
+          print_expression(
+            ~expr=first,
+            ~parentIsArrow=false,
+            ~endChar=None,
+            parent_loc,
+          ),
+          Doc.rparen,
+        ])
       | PExpApp(fn, _) =>
         let leftfn = getFunctionName(fn);
         if (infixop(leftfn)) {
@@ -869,12 +880,16 @@ and print_application =
             Doc.rparen,
           ]);
         } else {
-          print_expression(
-            ~expr=first,
-            ~parentIsArrow=false,
-            ~endChar=None,
-            parent_loc,
-          );
+          Doc.concat([
+            Doc.lparen,
+            print_expression(
+              ~expr=first,
+              ~parentIsArrow=false,
+              ~endChar=None,
+              parent_loc,
+            ),
+            Doc.rparen,
+          ]);
         };
       | _ =>
         print_expression(
@@ -887,6 +902,7 @@ and print_application =
 
     let secondBrackets =
       switch (second.pexp_desc) {
+      | PExpIf(_)
       | PExpApp(_) =>
         Doc.concat([
           Doc.lparen,
@@ -910,7 +926,7 @@ and print_application =
       firstBrackets,
       Doc.space,
       Doc.text(functionName),
-      Doc.line,
+      Doc.space,
       secondBrackets,
     ]);
   } else {
