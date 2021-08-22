@@ -92,6 +92,22 @@ let commentToDoc = (comment: Parsetree.comment) => {
   Doc.text(String.trim(cmtText));
 };
 
+let isDisableFormattingComment = (comment: Parsetree.comment) => {
+  let cmtText =
+    switch (comment) {
+    | Line(cmt) => cmt.cmt_source
+    | Block(cmt) => cmt.cmt_source
+    | Doc(cmt) => cmt.cmt_source
+    | Shebang(cmt) => cmt.cmt_source
+    };
+
+  if (String.trim(cmtText) == "// formatter-ignore") {
+    true;
+  } else {
+    false;
+  };
+};
+
 let split_comments =
     (comments: list(Grain_parsing__Parsetree.comment), line: int)
     : (
@@ -2387,6 +2403,17 @@ let toplevel_print = (data: Parsetree.toplevel_stmt, previousLine: int) => {
   // get the leading comments
   let (leadingComments, _trailingComments) =
     Walktree.partitionComments(data.ptop_loc, None); //
+
+  // check to see if we have a comment to disable formatting
+
+  let disableFormatting =
+    List.exists(c => isDisableFormattingComment(c), leadingComments);
+
+  if (disableFormatting) {
+    print_endline("@!@! Disable formatting on next node");
+    Debug.print_loc("Skip formatting for", data.ptop_loc);
+  };
+
   Walktree.removeUsedComments(leadingComments, []);
 
   // remove all nodes before this top level statement
@@ -2591,13 +2618,13 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
 
   Doc.toString(~width=80, finalDoc) |> print_endline;
   //use this to see the AST in JSON
-  // print_endline(
-  //   Yojson.Basic.pretty_to_string(
-  //     Yojson.Safe.to_basic(
-  //       Grain_parsing__Parsetree.parsed_program_to_yojson(parsed_program),
-  //     ),
-  //   ),
-  // );
+  print_endline(
+    Yojson.Basic.pretty_to_string(
+      Yojson.Safe.to_basic(
+        Grain_parsing__Parsetree.parsed_program_to_yojson(parsed_program),
+      ),
+    ),
+  );
 };
 
 //(3 + 4) * 7;
