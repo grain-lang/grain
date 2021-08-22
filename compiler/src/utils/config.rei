@@ -32,6 +32,10 @@ let no_gc: ref(bool);
 
 let bulk_memory: ref(bool);
 
+/** Custom WASI implementation */
+
+let wasi_polyfill: ref(option(string));
+
 /** Whether optimizations should be run */
 
 let optimization_level: ref(optimization_level);

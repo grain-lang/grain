@@ -39,6 +39,22 @@ type error =
 
 exception InlineFlagsError(Location.t, error);
 
+/** `remove_extension` new enough that we should just use this */
+
+let safe_remove_extension = name =>
+  try(Filename.chop_extension(name)) {
+  | Invalid_argument(_) => name
+  };
+
+let default_output_filename = name =>
+  safe_remove_extension(name) ++ ".gr.wasm";
+
+let default_assembly_filename = name =>
+  safe_remove_extension(name) ++ ".wast";
+
+let default_mashtree_filename = name =>
+  safe_remove_extension(name) ++ ".mashtree";
+
 let compile_prog = p =>
   Compcore.module_to_bytes @@ Compcore.compile_wasm_module(p);
 
@@ -187,39 +203,6 @@ let rec compile_resume = (~is_root_file=false, ~hook=?, s: compilation_state) =>
   };
 };
 
-let reset_compiler_state = () => {
-  Env.clear_imports();
-  Module_resolution.clear_dependency_graph();
-  Grain_utils.Fs_access.flush_all_cached_data();
-  Grain_utils.Warnings.reset_warnings();
-};
-
-let compile_string =
-    (~is_root_file=false, ~hook=?, ~name=?, ~outfile=?, ~reset=true, str) => {
-  if (reset) {
-    reset_compiler_state();
-  };
-  let cstate = {
-    cstate_desc: Initial(InputString(str)),
-    cstate_filename: name,
-    cstate_outfile: outfile,
-  };
-  compile_resume(~is_root_file, ~hook?, cstate);
-};
-
-let compile_file =
-    (~is_root_file=false, ~hook=?, ~outfile=?, ~reset=true, filename) => {
-  if (reset) {
-    reset_compiler_state();
-  };
-  let cstate = {
-    cstate_desc: Initial(InputFile(filename)),
-    cstate_filename: Some(filename),
-    cstate_outfile: outfile,
-  };
-  compile_resume(~is_root_file, ~hook?, cstate);
-};
-
 let stop_after_parse =
   fun
   | {cstate_desc: Parsed(_)} => Stop
@@ -271,6 +254,57 @@ let stop_after_assembled =
   fun
   | {cstate_desc: Assembled} => Stop
   | s => Continue(s);
+
+let compile_wasi_polyfill = () => {
+  switch (Grain_utils.Config.wasi_polyfill^) {
+  | Some(file) =>
+    Grain_utils.Config.preserve_config(() => {
+      Grain_utils.Config.compilation_mode := Some("runtime");
+      let cstate = {
+        cstate_desc: Initial(InputFile(file)),
+        cstate_filename: Some(file),
+        cstate_outfile: Some(default_output_filename(file)),
+      };
+      ignore(compile_resume(~hook=stop_after_object_file_emitted, cstate));
+    })
+  | None => ()
+  };
+};
+
+let reset_compiler_state = () => {
+  Env.clear_imports();
+  Module_resolution.clear_dependency_graph();
+  Grain_utils.Fs_access.flush_all_cached_data();
+  Grain_utils.Warnings.reset_warnings();
+};
+
+let compile_string =
+    (~is_root_file=false, ~hook=?, ~name=?, ~outfile=?, ~reset=true, str) => {
+  if (reset) {
+    reset_compiler_state();
+    compile_wasi_polyfill();
+  };
+  let cstate = {
+    cstate_desc: Initial(InputString(str)),
+    cstate_filename: name,
+    cstate_outfile: outfile,
+  };
+  compile_resume(~is_root_file, ~hook?, cstate);
+};
+
+let compile_file =
+    (~is_root_file=false, ~hook=?, ~outfile=?, ~reset=true, filename) => {
+  if (reset) {
+    reset_compiler_state();
+    compile_wasi_polyfill();
+  };
+  let cstate = {
+    cstate_desc: Initial(InputFile(filename)),
+    cstate_filename: Some(filename),
+    cstate_outfile: outfile,
+  };
+  compile_resume(~is_root_file, ~hook?, cstate);
+};
 
 let anf = Linearize.transl_anf_module;
 

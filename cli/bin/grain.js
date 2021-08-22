@@ -117,6 +117,10 @@ program
     "--no-bulk-memory",
     "polyfill WebAssembly bulk memory instructions"
   )
+  .graincOption(
+    "--wasi-polyfill <filename>",
+    "path to custom WASI implementation"
+  )
   .graincOption("--no-link", "disable static linking")
   .graincOption(
     "--no-pervasives",
