@@ -109,6 +109,8 @@ let rec build_dependency_graph = (~base_dir, mod_name) => {
     } else if (has_wasi_polyfill
                && is_wasi_module(imported_module)
                && !is_wasi_polyfill_module(mod_name)) {
+      // Perform any WASI polyfilling. Note that we skip this step if we are compiling the polyfill module itself.
+      // If we are importing a foreign from WASI, then add a dependency to the polyfill instead.
       let imported_module = wasi_polyfill_module();
       if (!Hashtbl.mem(modules, imported_module)) {
         Hashtbl.add(modules, imported_module, resolve(imported_module));
@@ -443,6 +445,8 @@ let link_all = (linked_mod, dependencies, signature) => {
         } else if (has_wasi_polyfill
                    && is_wasi_module(imported_module)
                    && !is_wasi_polyfill_module(dep)) {
+          // Perform any WASI polyfilling. Note that we skip this step if we are compiling the polyfill module itself.
+          // If we are importing a foreign from WASI, then we swap it out for the foreign from the polyfill.
           let imported_name = Import.function_import_get_base(func);
           let internal_name = Function.get_name(func);
           let wasi_polyfill = wasi_polyfill_module();
