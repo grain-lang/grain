@@ -30,3 +30,5 @@ let current_filename: ref(unit => string);
 let dump_dependency_graph: unit => unit;
 
 let is_relpath: string => bool;
+
+let relativize: (~source: string, ~dest: string) => string;

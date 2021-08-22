@@ -1,5 +1,7 @@
 open Mashtree;
 open Binaryen;
+open Grain_typed;
+open Grain_utils;
 
 let wasm_type =
   fun
@@ -88,3 +90,120 @@ let load =
 let grain_env_name = "_grainEnv";
 
 let is_grain_env = str => grain_env_name == str;
+
+let get_exported_names = (~local_names=?, wasm_mod) => {
+  let num_exports = Export.get_num_exports(wasm_mod);
+  let exported_names: Hashtbl.t(string, string) = Hashtbl.create(10);
+  for (i in 0 to num_exports - 1) {
+    let export = Export.get_export_by_index(wasm_mod, i);
+    let export_kind = Export.export_get_kind(export);
+    if (export_kind == Export.external_function
+        || export_kind == Export.external_global) {
+      let exported_name = Export.get_name(export);
+      let internal_name = Export.get_value(export);
+      let new_internal_name =
+        switch (local_names) {
+        | Some(local_names) => Hashtbl.find(local_names, internal_name)
+        | None => internal_name
+        };
+      Hashtbl.add(exported_names, exported_name, new_internal_name);
+    };
+  };
+  exported_names;
+};
+
+let type_of_repr = repr => {
+  Types.(
+    switch (repr) {
+    | WasmI32 => Type.int32
+    | WasmI64 => Type.int64
+    | WasmF32 => Type.float32
+    | WasmF64 => Type.float64
+    }
+  );
+};
+
+let global_function_table = "tbl";
+
+let write_universal_exports =
+    (wasm_mod, {Cmi_format.cmi_sign}, exported_names) => {
+  Types.(
+    Type_utils.(
+      List.iter(
+        item => {
+          switch (item) {
+          | TSigValue(id, {val_repr: ReprFunction(args, rets)}) =>
+            let name = Ident.name(id);
+            let exported_name = "GRAIN$EXPORT$" ++ name;
+            let internal_name = Hashtbl.find(exported_names, exported_name);
+            let get_closure = () =>
+              Expression.Global_get.make(wasm_mod, internal_name, Type.int32);
+            let arguments =
+              List.mapi(
+                (i, arg) =>
+                  Expression.Local_get.make(wasm_mod, i, type_of_repr(arg)),
+                args,
+              );
+            let arguments = [get_closure(), ...arguments];
+            let call_arg_types =
+              Type.create(
+                Array.of_list(List.map(type_of_repr, [WasmI32, ...args])),
+              );
+            let call_result_types =
+              Type.create(
+                Array.of_list(
+                  List.map(type_of_repr, rets == [] ? [WasmI32] : rets),
+                ),
+              );
+            let func_ptr =
+              Expression.Load.make(
+                wasm_mod,
+                4,
+                8,
+                2,
+                Type.int32,
+                get_closure(),
+              );
+            let function_call =
+              Expression.Call_indirect.make(
+                wasm_mod,
+                global_function_table,
+                func_ptr,
+                arguments,
+                call_arg_types,
+                call_result_types,
+              );
+            let function_body =
+              switch (rets) {
+              | [] => Expression.Drop.make(wasm_mod, function_call)
+              | _ => function_call
+              };
+            let arg_types =
+              Type.create(Array.of_list(List.map(type_of_repr, args)));
+            let result_types =
+              Type.create(Array.of_list(List.map(type_of_repr, rets)));
+            ignore @@
+            Function.add_function(
+              wasm_mod,
+              name,
+              arg_types,
+              result_types,
+              [||],
+              function_body,
+            );
+            ignore @@ Export.add_function_export(wasm_mod, name, name);
+          | TSigValue(_)
+          | TSigType(_)
+          | TSigTypeExt(_)
+          | TSigModule(_)
+          | TSigModType(_) => ()
+          }
+        },
+        cmi_sign,
+      )
+    )
+  );
+};
+
+let compiling_wasi_polyfill = name =>
+  Option.is_some(Config.wasi_polyfill^) && Config.wasi_polyfill^ == name;

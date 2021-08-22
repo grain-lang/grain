@@ -4,6 +4,15 @@ open Grain_tests.Runner;
 describe("linking", ({test}) => {
   let assertRun = makeRunner(test);
   let assertRunError = makeErrorRunner(test);
+  let assertWasiPolyfillRun =
+    makeRunner(
+      ~setup=
+        () => {
+          Grain_utils.Config.wasi_polyfill :=
+            Some("test/input/wasiPolyfill.gr")
+        },
+      test,
+    );
 
   assertRun("link_simple", {|print("Hello, world!")|}, "Hello, world!\n");
   assertRunError(
@@ -16,4 +25,6 @@ describe("linking", ({test}) => {
     {|import List from "list"; print(List.map(n => n + 1, [1, 2, 3]))|},
     "[2, 3, 4]\n",
   );
+  // --wasi-polyfill
+  assertWasiPolyfillRun("wasi_polyfill", {|print("foo")|}, "foo\nfoo\nfoo\n");
 });

@@ -113,6 +113,10 @@ program
   .graincOption("--lsp", "generate lsp errors and warnings only")
   .graincOption("--no-color", "disable colored output")
   .graincOption("--no-gc", "turn off reference counting garbage collection")
+  .graincOption(
+    "--wasi-polyfill <filename>",
+    "path to custom WASI implementation"
+  )
   .graincOption("--no-link", "disable static linking")
   .graincOption(
     "--no-pervasives",

@@ -22,6 +22,10 @@ let no_pervasives: ref(bool);
 
 let no_gc: ref(bool);
 
+/** Custom WASI implementation */
+
+let wasi_polyfill: ref(option(string));
+
 /** Whether optimizations should be run */
 
 let optimizations_enabled: ref(bool);

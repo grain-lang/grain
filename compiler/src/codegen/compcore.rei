@@ -4,6 +4,7 @@ open Mashtree;
 open Binaryen;
 
 type codegen_env = {
+  name: option(string),
   num_args: int,
   global_offset: int,
   stack_size,
@@ -15,7 +16,7 @@ type codegen_env = {
   imported_globals: Ident.tbl(Ident.tbl(string)),
 };
 
-let init_codegen_env: unit => codegen_env;
+let init_codegen_env: option(string) => codegen_env;
 
 exception WasmRunnerError(Module.t, option(string), string);
 
