@@ -147,17 +147,6 @@ let canonicalize_relpath = (base_path, unit_name) => {
   smart_cat(abs_base_path, unit_name);
 };
 
-let relativize = (~source, ~dest) => {
-  let source = Option.get(Fp.relative(source));
-  let dest = Option.get(Fp.relative(dest));
-  let rel = Fp.relativizeExn(~source, ~dest);
-  // While this appears to be for debugging, it is named this way to
-  // warn developers that it may produce values containing `.` or `~`,
-  // which aren't meaningful in many contexts. In our case, we _want_
-  // the path containing `.` and `..`, to produce a relative filepath.
-  Fp.toDebugString(rel);
-};
-
 module PathTbl = {
   type t('a) = Hashtbl.t(string, 'a);
   let create: int => t('a) = Hashtbl.create;

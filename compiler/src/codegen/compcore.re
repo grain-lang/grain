@@ -3124,21 +3124,7 @@ let compile_imports = (wasm_mod, env, {imports}) => {
 
   let compile_module_name = name =>
     fun
-    | MImportWasm => {
-        switch (Config.wasi_polyfill^, name) {
-        | (Some(file), {Ident.name: "wasi_snapshot_preview1"})
-            when !compiling_wasi_polyfill(env.name) =>
-          let polyfill_path =
-            Filename.remove_extension(
-              Module_resolution.relativize(
-                ~source=Config.base_path^,
-                ~dest=file,
-              ),
-            );
-          "GRAIN$MODULE$" ++ polyfill_path;
-        | _ => Ident.name(name)
-        };
-      }
+    | MImportWasm => Ident.name(name)
     | MImportGrain => "GRAIN$MODULE$" ++ Ident.name(name);
 
   let compile_import_name = name =>

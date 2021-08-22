@@ -45,6 +45,17 @@ let is_grain_module = mod_name => {
   Str.string_match(Str.regexp_string("GRAIN$MODULE$"), mod_name, 0);
 };
 
+let wasi_polyfill_module = () => {
+  "GRAIN$MODULE$./"
+  ++ Filename.remove_extension(Option.get(Config.wasi_polyfill^));
+};
+
+let is_wasi_module = mod_name => {
+  mod_name == "wasi_snapshot_preview1";
+};
+
+let is_wasi_polyfill_module = mod_name => mod_name == wasi_polyfill_module();
+
 let new_base_dir = (cur_base_dir, imported_module) => {
   let mod_name = grain_module_name(imported_module);
   if (Module_resolution.is_relpath(mod_name)) {
@@ -78,6 +89,7 @@ let rec build_dependency_graph = (~base_dir, mod_name) => {
     };
   };
   let num_funcs = Function.get_num_functions(wasm_mod);
+  let has_wasi_polyfill = Option.is_some(Config.wasi_polyfill^);
   for (i in 0 to num_funcs - 1) {
     let func = Function.get_function_by_index(wasm_mod, i);
     let imported_module = Import.function_import_get_module(func);
@@ -90,6 +102,18 @@ let rec build_dependency_graph = (~base_dir, mod_name) => {
         );
         build_dependency_graph(
           new_base_dir(base_dir, imported_module),
+          imported_module,
+        );
+      };
+      G.add_edge(dependency_graph, mod_name, imported_module);
+    } else if (has_wasi_polyfill
+               && is_wasi_module(imported_module)
+               && !is_wasi_polyfill_module(mod_name)) {
+      let imported_module = wasi_polyfill_module();
+      if (!Hashtbl.mem(modules, imported_module)) {
+        Hashtbl.add(modules, imported_module, resolve(imported_module));
+        build_dependency_graph(
+          new_base_dir(Config.base_path^, imported_module),
           imported_module,
         );
       };
@@ -403,6 +427,7 @@ let link_all = (linked_mod, dependencies, signature) => {
     let (imported_funcs, funcs) =
       List.partition(is_function_imported, funcs);
 
+    let has_wasi_polyfill = Option.is_some(Config.wasi_polyfill^);
     List.iter(
       func => {
         let imported_module = Import.function_import_get_module(func);
@@ -412,6 +437,18 @@ let link_all = (linked_mod, dependencies, signature) => {
           let new_name =
             Hashtbl.find(
               Hashtbl.find(exported_names, imported_module),
+              imported_name,
+            );
+          Hashtbl.add(local_names, internal_name, new_name);
+        } else if (has_wasi_polyfill
+                   && is_wasi_module(imported_module)
+                   && !is_wasi_polyfill_module(dep)) {
+          let imported_name = Import.function_import_get_base(func);
+          let internal_name = Function.get_name(func);
+          let wasi_polyfill = wasi_polyfill_module();
+          let new_name =
+            Hashtbl.find(
+              Hashtbl.find(exported_names, wasi_polyfill),
               imported_name,
             );
           Hashtbl.add(local_names, internal_name, new_name);
