@@ -1607,11 +1607,11 @@ and print_expression =
         if (List.length(patterns) == 0) {
           Doc.concat([Doc.lparen, Doc.rparen]);
         } else if (List.length(patterns) > 1) {
-          Doc.indent(
-            Doc.concat([
-              Doc.softLine,
-              Doc.lparen,
-              Doc.group(
+          Doc.group(
+            Doc.indent(
+              Doc.concat([
+                Doc.softLine,
+                Doc.lparen,
                 Doc.indent(
                   Doc.concat([
                     Doc.softLine,
@@ -1622,10 +1622,10 @@ and print_expression =
                     Doc.ifBreaks(Doc.text(","), Doc.nil),
                   ]),
                 ),
-              ),
-              Doc.softLine,
-              Doc.rparen,
-            ]),
+                Doc.softLine,
+                Doc.rparen,
+              ]),
+            ),
           );
         } else {
           let pat = List.hd(patterns);
@@ -2388,6 +2388,10 @@ let toplevel_print = (data: Parsetree.toplevel_stmt, previousLine: int) => {
   let (leadingComments, _trailingComments) =
     Walktree.partitionComments(data.ptop_loc, None); //
   Walktree.removeUsedComments(leadingComments, []);
+
+  // remove all nodes before this top level statement
+
+  Walktree.removeNodesBefore(data.ptop_loc);
 
   let (stmtLeadingCommentDocs, prevLine) =
     print_leading_comments(leadingComments, previousLine);

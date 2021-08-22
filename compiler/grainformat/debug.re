@@ -10,6 +10,35 @@ let get_raw_pos_info = (pos: Lexing.position) => (
   pos.pos_bol,
 );
 
+let print_loc_string = (msg: string, loc: Grain_parsing.Location.t) => {
+  let (file, line, startchar, _) = get_raw_pos_info(loc.loc_start);
+  let (_, endline, endchar, _) = get_raw_pos_info(loc.loc_end);
+
+  if (startchar >= 0) {
+    if (line == endline) {
+      msg
+      ++ " "
+      ++ string_of_int(line)
+      ++ ":"
+      ++ string_of_int(startchar)
+      ++ ","
+      ++ string_of_int(endchar);
+    } else {
+      msg
+      ++ " "
+      ++ string_of_int(line)
+      ++ ":"
+      ++ string_of_int(startchar)
+      ++ " - "
+      ++ string_of_int(endline)
+      ++ ":"
+      ++ string_of_int(endchar);
+    };
+  } else {
+    "";
+  };
+};
+
 let print_loc = (msg: string, loc: Grain_parsing.Location.t) => {
   let (file, line, startchar, _) = get_raw_pos_info(loc.loc_start);
   let (_, endline, endchar, _) = get_raw_pos_info(loc.loc_end);

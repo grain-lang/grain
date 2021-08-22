@@ -4,6 +4,10 @@ type node_t =
   | Code(Grain_parsing.Location.t)
   | Comment((Grain_parsing.Location.t, Grain_parsing.Parsetree.comment));
 
+type node_tree =
+  | Empty
+  | Node(node_tree, node_t, node_tree);
+
 let allLocations: ref(list(node_t)) = ref([]);
 
 let getNodeLoc = (node: node_t): Grain_parsing.Location.t =>
@@ -138,6 +142,43 @@ let compare_partition_locations =
   res;
 };
 
+let rec insert = (node, value) =>
+  switch (node) {
+  | Empty => Node(Empty, value, Empty)
+  | Node(leftNode, currentValue, rightNode) =>
+    if (compare_partition_locations(
+          getNodeLoc(currentValue),
+          getNodeLoc(value),
+        )
+        < 0) {
+      /*Right side*/
+      Node(leftNode, currentValue, insert(rightNode, value));
+    } else {
+      /*Left side*/
+      Node(insert(leftNode, value), currentValue, rightNode);
+    }
+  };
+
+let rec printer = (node, level) =>
+  switch (node) {
+  | Empty => "empty"
+  | Node(leftNode, currentValue, rightNode) =>
+    " [ "
+    ++ (
+      switch (currentValue) {
+      | Code(_) => Debug.print_loc_string("code", getNodeLoc(currentValue))
+      | Comment(_) =>
+        Debug.print_loc_string("comment", getNodeLoc(currentValue))
+      }
+    )
+    ++ ", "
+    ++ printer(leftNode, level + 1)
+    ++ ", "
+    ++ printer(rightNode, level + 1)
+    ++ " ]"
+  };
+let print = node => printer(node, 1);
+
 let walktree =
     (
       statements: list(Grain_parsing.Parsetree.toplevel_stmt),
@@ -146,12 +187,15 @@ let walktree =
   let comment_locations =
     List.map(c => Comment((getCommentLoc(c), c)), comments);
 
+  let ast_tree = ref(Empty);
+
   allLocations := comment_locations;
 
   let iter_location = (self, location) =>
     if (!List.mem(Code(location), allLocations^)) {
       allLocations := List.append(allLocations^, [Code(location)]);
     };
+  // ast_tree := insert(ast_tree^, Code(location));
 
   let iterator = {...Ast_iterator.default_iterator, location: iter_location};
 
@@ -175,6 +219,7 @@ let walktree =
   //     },
   //   allLocations^,
   // );
+  //print_endline(print(ast_tree^));
 };
 
 let partitionComments =
@@ -259,6 +304,30 @@ let removeUsedComments = (preComments, postComments) => {
           } else {
             true;
           }
+        },
+      allLocations^,
+    );
+
+  allLocations := cleanedList;
+};
+
+let removeNodesBefore = (loc: Location.t) => {
+  let skip = ref(false);
+  let cleanedList =
+    List.filter(
+      n =>
+        if (skip^) {
+          true;
+        } else {
+          let nodeLoc = getNodeLoc(n);
+          let comparedLoc = compare_partition_locations(nodeLoc, loc);
+
+          if (comparedLoc == 0) {
+            skip := true;
+            true;
+          } else {
+            false;
+          };
         },
       allLocations^,
     );

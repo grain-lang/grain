@@ -9,3 +9,19 @@ let busNumbers = Array.map(((num, idx)) => { (Option.expect("Expected a number",
 let sillyFunction = (a,b,c,d,e,f,g,h,j,k) => 10
 
 sillyFunction(123456789,123456789,123456789,123456789,123456789,123456789,123456789,123456789,123456789,123456789)
+
+/**
+ * Produces a new array with any duplicates removed.
+ * Uses the generic `==` structural equality operator.
+ *
+ * @param array: The array to filter
+ * @returns The new array with only unique values
+ */
+export let unique = array => {
+  filteri(
+      (el, index
+      ) =>
+      (findIndex(value => value == el, array)) == (Some(index)),
+    array,
+  )
+}
