@@ -237,10 +237,10 @@ data_declaration_stmts :
   | data_declaration_stmt { [$1] }
 
 export_stmt :
-  | attributes EXPORT LET REC value_binds { Top.let_ ~attributes:$1 Exported Recursive Immutable $5 }
-  | attributes EXPORT LET value_binds { Top.let_ ~attributes:$1 Exported Nonrecursive Immutable $4 }
-  | attributes EXPORT LET REC MUT value_binds { Top.let_ ~attributes:$1 Exported Recursive Mutable $6 }
-  | attributes EXPORT LET MUT value_binds { Top.let_ ~attributes:$1 Exported Nonrecursive Mutable $5 }
+  | attributes EXPORT LET REC value_binds { Top.let_ ~loc:(symbol_rloc dyp) ~attributes:$1 Exported Recursive Immutable $5 }
+  | attributes EXPORT LET value_binds { Top.let_ ~loc:(symbol_rloc dyp) ~attributes:$1 Exported Nonrecursive Immutable $4 }
+  | attributes EXPORT LET REC MUT value_binds { Top.let_ ~loc:(symbol_rloc dyp) ~attributes:$1 Exported Recursive Mutable $6 }
+  | attributes EXPORT LET MUT value_binds { Top.let_ ~loc:(symbol_rloc dyp) ~attributes:$1 Exported Nonrecursive Mutable $5 }
   | EXPORT foreign_stmt { Top.foreign ~loc:(symbol_rloc dyp) Exported $2 }
   | EXPORT primitive_stmt { Top.primitive ~loc:(symbol_rloc dyp) Exported $2 }
   | EXPORT exception_stmt { Top.grain_exception ~loc:(symbol_rloc dyp) Exported $2 }
@@ -565,14 +565,14 @@ exception_stmt :
   | EXCEPTION type_id_str lparen typs rparen { Except.tuple ~loc:(symbol_rloc dyp) $2 $4 }
 
 toplevel_stmt :
-  | attributes LET REC value_binds { Top.let_ ~attributes:$1 Nonexported Recursive Immutable $4 }
-  | attributes LET value_binds { Top.let_ ~attributes:$1 Nonexported Nonrecursive Immutable $3 }
-  | attributes LET REC MUT value_binds { Top.let_ ~attributes:$1 Nonexported Recursive Mutable $5 }
-  | attributes LET MUT value_binds { Top.let_ ~attributes:$1 Nonexported Nonrecursive Mutable $4 }
-  | expr { Top.expr $1 }
-  | import_stmt { Top.import $1 }
+  | attributes LET REC value_binds { Top.let_ ~loc:(symbol_rloc dyp) ~attributes:$1 Nonexported Recursive Immutable $4 }
+  | attributes LET value_binds { Top.let_ ~loc:(symbol_rloc dyp) ~attributes:$1 Nonexported Nonrecursive Immutable $3 }
+  | attributes LET REC MUT value_binds { Top.let_ ~loc:(symbol_rloc dyp) ~attributes:$1 Nonexported Recursive Mutable $5 }
+  | attributes LET MUT value_binds { Top.let_ ~loc:(symbol_rloc dyp) ~attributes:$1 Nonexported Nonrecursive Mutable $4 }
+  | expr { Top.expr ~loc:(symbol_rloc dyp) $1 }
+  | import_stmt { Top.import ~loc:(symbol_rloc dyp) $1 }
   | IMPORT foreign_stmt { Top.foreign ~loc:(symbol_rloc dyp) Nonexported $2 }
-  | data_declaration_stmts { Top.data $1 }
+  | data_declaration_stmts { Top.data ~loc:(symbol_rloc dyp) $1 }
   | export_stmt { $1 }
   | primitive_stmt { Top.primitive ~loc:(symbol_rloc dyp) Nonexported $1 }
   | exception_stmt { Top.grain_exception ~loc:(symbol_rloc dyp) Nonexported $1 }

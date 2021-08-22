@@ -2,15 +2,38 @@ open Grain_tests.TestFramework;
 open Grain_tests.Runner;
 open Grain_middle_end.Anftree;
 open Grain_middle_end.Anf_helper;
+open Grain_utils.Warnings;
 
 describe("strings", ({test}) => {
   let assertSnapshot = makeSnapshotRunner(test);
   let assertCompileError = makeCompileErrorRunner(test);
   let assertRun = makeRunner(test);
   let assertParse = makeParseRunner(test);
+  let assertParseWithLocs = makeParseRunner(~keep_locs=true, test);
   open Grain_parsing;
   open Ast_helper;
-  let str = s => Top.expr @@ Exp.constant(Const.string(s));
+  let mk_loc =
+      (
+        file,
+        (start_line, start_col, start_bol),
+        (end_line, end_col, end_bol),
+      ) => {
+    loc_start: {
+      pos_fname: file,
+      pos_lnum: start_line,
+      pos_bol: start_bol,
+      pos_cnum: start_col,
+    },
+    loc_end: {
+      pos_fname: file,
+      pos_lnum: end_line,
+      pos_bol: end_bol,
+      pos_cnum: end_col,
+    },
+    loc_ghost: false,
+  };
+  let str = (~loc=?, s) =>
+    Top.expr(~loc?) @@ Exp.constant(~loc?, Const.string(s));
   assertParse(
     "string_parse_dqs1",
     "\"foo\"",
@@ -63,6 +86,52 @@ describe("strings", ({test}) => {
     "string_parse_emoji_literal",
     "\"💯\"",
     {statements: [str("💯")], comments: [], prog_loc: Location.dummy_loc},
+  );
+  /* String parse locations */
+  assertParseWithLocs(
+    "string_loc_single_line",
+    "\"foo\"",
+    {
+      statements: [
+        str(
+          ~loc=mk_loc("string_loc_single_line", (1, 0, 0), (1, 5, 0)),
+          "foo",
+        ),
+      ],
+      comments: [],
+      prog_loc: mk_loc("string_loc_single_line", (1, 0, 0), (1, 5, 0)),
+    },
+  );
+  assertParseWithLocs(
+    "string_loc_multi_line",
+    "\"foo\nbar\nbaz\nqux\nquux\"",
+    {
+      statements: [
+        str(
+          ~loc=mk_loc("string_loc_multi_line", (1, 0, 0), (5, 22, 17)),
+          "foo\nbar\nbaz\nqux\nquux",
+        ),
+      ],
+      comments: [],
+      prog_loc: mk_loc("string_loc_multi_line", (1, 0, 0), (5, 22, 17)),
+    },
+  );
+  // With current parsing semantics, the string is reported as byte length
+  // rather than utf8 char length
+  assertParseWithLocs(
+    "string_loc_single_line_emoji",
+    "\"💯\"",
+    {
+      statements: [
+        str(
+          ~loc=mk_loc("string_loc_single_line_emoji", (1, 0, 0), (1, 6, 0)),
+          "💯",
+        ),
+      ],
+      comments: [],
+      prog_loc:
+        mk_loc("string_loc_single_line_emoji", (1, 0, 0), (1, 6, 0)),
+    },
   );
   assertSnapshot("string1", "\"foo\"");
   assertSnapshot("string2", "\"💯\"");

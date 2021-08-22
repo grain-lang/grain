@@ -74,6 +74,12 @@
     let loc = { start_loc with Location.loc_end = end_loc.Location.loc_end } in
     comments := comment_type s loc :: !comments
 
+  let wrap_string_lexer read_string lexbuf =
+    let start_loc = lexbuf.lex_start_p  in
+    let token = read_string lexbuf in
+    let () = lexbuf.lex_start_p <- start_loc in
+    token
+
 }
 
 let dec_digit = ['0'-'9']
@@ -198,7 +204,7 @@ rule token = parse
   | "||" { PIPEPIPE }
   | "!" { NOT }
   | "@" { AT }
-  | '"'   { read_str (Buffer.create 16) lexbuf }
+  | '"'   { wrap_string_lexer (read_str (Buffer.create 16)) lexbuf }
   | '\'' { read_char (Buffer.create 4) lexbuf }
   | "_" { UNDERSCORE }
   | ident as x { ID x }
@@ -218,7 +224,8 @@ and read_str buf =
   | "\\\"" { Buffer.add_char buf '"'; read_str buf lexbuf }
   | "\\\\" { Buffer.add_char buf '\\'; read_str buf lexbuf }
   | num_esc { add_code_point buf (lexeme lexbuf) (lexbuf_loc lexbuf); read_str buf lexbuf }
-  | [^ '"' '\\']+ { process_newlines lexbuf; Buffer.add_string buf (lexeme lexbuf); read_str buf lexbuf }
+  | '\n' as char { Buffer.add_char buf char; new_line lexbuf; read_str buf lexbuf }
+  | [^ '"' '\\' '\n']+ { Buffer.add_string buf (lexeme lexbuf); read_str buf lexbuf }
   | '"' { STRING (Buffer.contents buf) }
   | _ { raise (Error(lexbuf_loc lexbuf, IllegalStringCharacter(lexeme lexbuf))) }
 
