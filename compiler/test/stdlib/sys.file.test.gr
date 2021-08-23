@@ -22,7 +22,7 @@ assert nread == 15
 let foo = Fs.pathOpen(
   Fs.pwdfd,
   [Fs.SymlinkFollow],
-  "test-data/bar.txt",
+  "test/test-data/bar.txt",
   [Fs.Create, Fs.Truncate],
   [Fs.FdRead, Fs.FdWrite, Fs.FdSeek, Fs.FdSetSize],
   [Fs.FdRead, Fs.FdWrite, Fs.FdSeek, Fs.FdSetSize],
