@@ -45,17 +45,6 @@ let is_grain_module = mod_name => {
   Str.string_match(Str.regexp_string("GRAIN$MODULE$"), mod_name, 0);
 };
 
-let wasi_polyfill_module = () => {
-  "GRAIN$MODULE$./"
-  ++ Filename.remove_extension(Option.get(Config.wasi_polyfill^));
-};
-
-let is_wasi_module = mod_name => {
-  mod_name == "wasi_snapshot_preview1";
-};
-
-let is_wasi_polyfill_module = mod_name => mod_name == wasi_polyfill_module();
-
 let new_base_dir = (cur_base_dir, imported_module) => {
   let mod_name = grain_module_name(imported_module);
   if (Module_resolution.is_relpath(mod_name)) {
@@ -73,54 +62,37 @@ let rec build_dependency_graph = (~base_dir, mod_name) => {
   for (i in 0 to num_globals - 1) {
     let global = Global.get_global_by_index(wasm_mod, i);
     let imported_module = Import.global_import_get_module(global);
-    if (is_grain_module(imported_module)) {
-      if (!Hashtbl.mem(modules, imported_module)) {
-        Hashtbl.add(
-          modules,
-          imported_module,
-          resolve(~base_dir, imported_module),
-        );
-        build_dependency_graph(
-          ~base_dir=new_base_dir(base_dir, imported_module),
-          imported_module,
-        );
-      };
-      G.add_edge(dependency_graph, mod_name, imported_module);
+    if (!Hashtbl.mem(modules, imported_module)
+        && is_grain_module(imported_module)) {
+      Hashtbl.add(
+        modules,
+        imported_module,
+        resolve(~base_dir, imported_module),
+      );
+      build_dependency_graph(
+        ~base_dir=new_base_dir(base_dir, imported_module),
+        imported_module,
+      );
     };
+    G.add_edge(dependency_graph, mod_name, imported_module);
   };
   let num_funcs = Function.get_num_functions(wasm_mod);
-  let has_wasi_polyfill = Option.is_some(Config.wasi_polyfill^);
   for (i in 0 to num_funcs - 1) {
     let func = Function.get_function_by_index(wasm_mod, i);
     let imported_module = Import.function_import_get_module(func);
-    if (is_grain_module(imported_module)) {
-      if (!Hashtbl.mem(modules, imported_module)) {
-        Hashtbl.add(
-          modules,
-          imported_module,
-          resolve(~base_dir, imported_module),
-        );
-        build_dependency_graph(
-          new_base_dir(base_dir, imported_module),
-          imported_module,
-        );
-      };
-      G.add_edge(dependency_graph, mod_name, imported_module);
-    } else if (has_wasi_polyfill
-               && is_wasi_module(imported_module)
-               && !is_wasi_polyfill_module(mod_name)) {
-      // Perform any WASI polyfilling. Note that we skip this step if we are compiling the polyfill module itself.
-      // If we are importing a foreign from WASI, then add a dependency to the polyfill instead.
-      let imported_module = wasi_polyfill_module();
-      if (!Hashtbl.mem(modules, imported_module)) {
-        Hashtbl.add(modules, imported_module, resolve(imported_module));
-        build_dependency_graph(
-          new_base_dir(Config.base_path^, imported_module),
-          imported_module,
-        );
-      };
-      G.add_edge(dependency_graph, mod_name, imported_module);
+    if (!Hashtbl.mem(modules, imported_module)
+        && is_grain_module(imported_module)) {
+      Hashtbl.add(
+        modules,
+        imported_module,
+        resolve(~base_dir, imported_module),
+      );
+      build_dependency_graph(
+        new_base_dir(base_dir, imported_module),
+        imported_module,
+      );
     };
+    G.add_edge(dependency_graph, mod_name, imported_module);
   };
 };
 
@@ -351,6 +323,7 @@ let link_all = (linked_mod, dependencies, signature) => {
   table_offset := 0;
 
   let link_one = dep => {
+    Printf.eprintf("linking one %s\n", dep);
     let local_names: Hashtbl.t(string, string) = Hashtbl.create(128);
 
     let wasm_mod = Hashtbl.find(modules, dep);
@@ -360,7 +333,7 @@ let link_all = (linked_mod, dependencies, signature) => {
       let global = Global.get_global_by_index(wasm_mod, i);
       if (is_global_imported(global)) {
         let imported_module = Import.global_import_get_module(global);
-        if (is_grain_module(imported_module)) {
+        if (Hashtbl.mem(modules, imported_module) && imported_module != dep) {
           let imported_name = Import.global_import_get_base(global);
           let internal_name = Global.get_name(global);
           let new_name =
@@ -429,30 +402,15 @@ let link_all = (linked_mod, dependencies, signature) => {
     let (imported_funcs, funcs) =
       List.partition(is_function_imported, funcs);
 
-    let has_wasi_polyfill = Option.is_some(Config.wasi_polyfill^);
     List.iter(
       func => {
         let imported_module = Import.function_import_get_module(func);
-        if (is_grain_module(imported_module)) {
+        if (Hashtbl.mem(modules, imported_module) && imported_module != dep) {
           let imported_name = Import.function_import_get_base(func);
           let internal_name = Function.get_name(func);
           let new_name =
             Hashtbl.find(
               Hashtbl.find(exported_names, imported_module),
-              imported_name,
-            );
-          Hashtbl.add(local_names, internal_name, new_name);
-        } else if (has_wasi_polyfill
-                   && is_wasi_module(imported_module)
-                   && !is_wasi_polyfill_module(dep)) {
-          // Perform any WASI polyfilling. Note that we skip this step if we are compiling the polyfill module itself.
-          // If we are importing a foreign from WASI, then we swap it out for the foreign from the polyfill.
-          let imported_name = Import.function_import_get_base(func);
-          let internal_name = Function.get_name(func);
-          let wasi_polyfill = wasi_polyfill_module();
-          let new_name =
-            Hashtbl.find(
-              Hashtbl.find(exported_names, wasi_polyfill),
               imported_name,
             );
           Hashtbl.add(local_names, internal_name, new_name);
@@ -546,7 +504,13 @@ let link_all = (linked_mod, dependencies, signature) => {
       table_offset := table_offset^ + size;
     };
   };
-  List.iter(link_one, dependencies);
+  List.iter(
+    dep =>
+      if (Hashtbl.mem(modules, dep)) {
+        link_one(dep);
+      },
+    dependencies,
+  );
   ignore @@
   Table.add_table(
     linked_mod,
@@ -572,18 +536,23 @@ let link_all = (linked_mod, dependencies, signature) => {
   );
 
   let starts =
-    List.map(
-      dep => {
-        Expression.Drop.make(
-          linked_mod,
-          Expression.Call.make(
-            linked_mod,
-            Hashtbl.find(Hashtbl.find(exported_names, dep), grain_main),
-            [],
-            Type.int32,
-          ),
-        )
-      },
+    List.filter_map(
+      dep =>
+        if (Hashtbl.mem(modules, dep)) {
+          Some(
+            Expression.Drop.make(
+              linked_mod,
+              Expression.Call.make(
+                linked_mod,
+                Hashtbl.find(Hashtbl.find(exported_names, dep), grain_main),
+                [],
+                Type.int32,
+              ),
+            ),
+          );
+        } else {
+          None;
+        },
       dependencies,
     );
 
@@ -600,16 +569,39 @@ let link_all = (linked_mod, dependencies, signature) => {
   ignore @@ Export.add_function_export(linked_mod, start_name, grain_start);
 };
 
+let apply_wasi_polyfill = () => {
+  let wasi_polyfill =
+    "GRAIN$MODULE$./"
+    ++ Filename.remove_extension(Option.get(Config.wasi_polyfill^));
+  prerr_endline(wasi_polyfill);
+  let wasi_module = "wasi_snapshot_preview1";
+  let base_dir = Filename.dirname(Module_resolution.current_filename^());
+  prerr_endline(base_dir);
+  Hashtbl.add(modules, wasi_module, resolve(wasi_polyfill));
+  prerr_endline("resolved the polyfill");
+  build_dependency_graph(
+    ~base_dir=new_base_dir(base_dir, wasi_polyfill),
+    wasi_module,
+  );
+};
+
 let link_modules = ({asm: wasm_mod, signature}) => {
   G.clear(dependency_graph);
   Hashtbl.clear(modules);
   Hashtbl.add(modules, main_module, wasm_mod);
+  if (Option.is_some(Config.wasi_polyfill^)) {
+    apply_wasi_polyfill();
+  };
+  let dependencies =
+    Topo.fold((dep, acc) => [dep, ...acc], dependency_graph, []);
+  List.iter(prerr_endline, dependencies);
   build_dependency_graph(
     ~base_dir=Filename.dirname(Module_resolution.current_filename^()),
     main_module,
   );
   let dependencies =
     Topo.fold((dep, acc) => [dep, ...acc], dependency_graph, []);
+  List.iter(prerr_endline, dependencies);
   let linked_mod = Module.create();
   link_all(linked_mod, dependencies, signature);
 
