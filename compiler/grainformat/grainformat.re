@@ -6,15 +6,20 @@ open Grain_utils;
 open Filename;
 
 let compile_parsed = (filename: option(string)) => {
+  let program_str = ref("");
+  let lines = ref([]);
+
   let compile_state =
     switch (filename) {
     | None =>
       // force from stdin for now
-      let program_str = ref("");
+
       /* read from stdin until we get end of buffer */
       try(
         while (true) {
-          program_str := program_str^ ++ read_line() ++ "\n";
+          let line = read_line();
+          program_str := program_str^ ++ line ++ "\n";
+          lines := lines^ @ [line];
         }
       ) {
       | exn => ()
@@ -22,6 +27,23 @@ let compile_parsed = (filename: option(string)) => {
 
       Compile.compile_string(~hook=stop_after_parse, ~name="", program_str^);
     | Some(filenm) =>
+      // need to read the source file in case we want to use the content
+      // for formatter-ignore or decision making
+      program_str := "This is the original source";
+
+      let ic = open_in(filenm);
+
+      try(
+        while (true) {
+          let line = input_line(ic);
+
+          program_str := program_str^ ++ line ++ "\n";
+          lines := lines^ @ [line];
+        }
+      ) {
+      | exn => ()
+      };
+
       Grain_utils.Config.base_path := dirname(filenm);
       Compile.compile_file(~hook=stop_after_parse, filenm);
     };
@@ -46,18 +68,19 @@ let compile_parsed = (filename: option(string)) => {
       bt,
     );
     exit(2);
-  | {cstate_desc: Parsed(parsed_program)} => `Ok(parsed_program)
+  | {cstate_desc: Parsed(parsed_program)} => `Ok((parsed_program, lines^))
   | _ => `Error((false, "Invalid compilation state"))
   };
 };
 
-let format_code = (program: Parsetree.parsed_program) => {
-  Reformat.reformat_ast(program);
+let format_code =
+    (program: Parsetree.parsed_program, original_source: list(string)) => {
+  Reformat.reformat_ast(program, original_source);
   `Ok();
 };
 
-let grainformat = program =>
-  try(format_code(program)) {
+let grainformat = ((program, source: list(string))) =>
+  try(format_code(program, source)) {
   | e => `Error((false, Printexc.to_string(e)))
   };
 

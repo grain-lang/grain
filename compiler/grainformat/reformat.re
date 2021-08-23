@@ -5,6 +5,33 @@ open Grain_utils;
 
 module Doc = Res_doc;
 
+let get_raw_pos_info = (pos: Lexing.position) => (
+  pos.pos_fname,
+  pos.pos_lnum,
+  pos.pos_cnum - pos.pos_bol,
+  pos.pos_bol,
+);
+
+let getOriginalCode =
+    (location: Grain_parsing.Location.t, source: list(string)) => {
+  let (_, startline, startc, _) = get_raw_pos_info(location.loc_start);
+  let (_, endline, endc, _) = get_raw_pos_info(location.loc_end);
+
+  print_endline(
+    "source line length:" ++ string_of_int(List.length(source)),
+  );
+
+  let text = ref("");
+  if (List.length(source) > endline) {
+    for (line in startline - 1 to endline - 1) {
+      text := text^ ++ List.nth(source, line) ++ "\n"; // What about Windows?
+    };
+    text^;
+  } else {
+    "/* Formatter error*/";
+  };
+};
+
 let lastFileLoc = (): Grain_parsing.Location.t => {
   let endpos: Stdlib__lexing.position = {
     pos_fname: "",
@@ -28,13 +55,6 @@ let getCommentLoc = (comment: Parsetree.comment) =>
   | Doc(cmt) => cmt.cmt_loc
   | Shebang(cmt) => cmt.cmt_loc
   };
-
-let get_raw_pos_info = (pos: Lexing.position) => (
-  pos.pos_fname,
-  pos.pos_lnum,
-  pos.pos_cnum - pos.pos_bol,
-  pos.pos_bol,
-);
 
 let makeLineStart = (loc: Grain_parsing.Location.t) => {
   let startpos: Stdlib__lexing.position = {
@@ -396,6 +416,7 @@ and resugar_list =
     (
       expressions: list(Parsetree.expression),
       parent_loc: Grain_parsing.Location.t,
+      original_source: list(string),
     ) => {
   let processed_list = resugar_list_inner(expressions, parent_loc);
 
@@ -409,6 +430,7 @@ and resugar_list =
               ~expr=e,
               ~parentIsArrow=false,
               ~endChar=None,
+              ~original_source,
               parent_loc,
             ),
           )
@@ -420,6 +442,7 @@ and resugar_list =
                 ~expr=e,
                 ~parentIsArrow=false,
                 ~endChar=None,
+                ~original_source,
                 parent_loc,
               ),
             ]),
@@ -713,6 +736,7 @@ and print_record =
           ),
         ),
       parent_loc: Grain_parsing__Location.t,
+      original_source: list(string),
     ) =>
   Doc.concat([
     //  Doc.softLine,
@@ -738,6 +762,7 @@ and print_record =
                   ~expr,
                   ~parentIsArrow=false,
                   ~endChar=None,
+                  ~original_source,
                   parent_loc,
                 );
               let punned_expr = check_for_pun(expr);
@@ -827,6 +852,7 @@ and print_application =
       func: Parsetree.expression,
       expressions: list(Parsetree.expression),
       parent_loc: Location.t,
+      original_source: list(string),
     ) => {
   let functionName = getFunctionName(func);
 
@@ -843,6 +869,7 @@ and print_application =
             ~expr=first,
             ~parentIsArrow=false,
             ~endChar=None,
+            ~original_source,
             parent_loc,
           ),
           Doc.rparen,
@@ -855,6 +882,7 @@ and print_application =
             ~expr=first,
             ~parentIsArrow=false,
             ~endChar=None,
+            ~original_source,
             parent_loc,
           ),
         ])
@@ -878,6 +906,7 @@ and print_application =
             ~expr=first,
             ~parentIsArrow=false,
             ~endChar=None,
+            ~original_source,
             parent_loc,
           ),
           Doc.rparen,
@@ -891,6 +920,7 @@ and print_application =
               ~expr=first,
               ~parentIsArrow=false,
               ~endChar=None,
+              ~original_source,
               parent_loc,
             ),
             Doc.rparen,
@@ -902,6 +932,7 @@ and print_application =
               ~expr=first,
               ~parentIsArrow=false,
               ~endChar=None,
+              ~original_source,
               parent_loc,
             ),
             Doc.rparen,
@@ -912,6 +943,7 @@ and print_application =
           ~expr=first,
           ~parentIsArrow=false,
           ~endChar=None,
+          ~original_source,
           parent_loc,
         )
       };
@@ -926,6 +958,7 @@ and print_application =
             ~expr=second,
             ~parentIsArrow=false,
             ~endChar=None,
+            ~original_source,
             parent_loc,
           ),
           Doc.rparen,
@@ -935,6 +968,7 @@ and print_application =
           ~expr=second,
           ~parentIsArrow=false,
           ~endChar=None,
+          ~original_source,
           parent_loc,
         )
       };
@@ -949,7 +983,7 @@ and print_application =
     let funcName = getFunctionName(func);
 
     if (funcName == "[...]") {
-      resugar_list(expressions, parent_loc);
+      resugar_list(expressions, parent_loc, original_source);
     } else if (funcName == "throw"
                || funcName == "assert"
                || funcName == "fail") {
@@ -958,6 +992,7 @@ and print_application =
           ~expr=func,
           ~parentIsArrow=false,
           ~endChar=None,
+          ~original_source,
           parent_loc,
         ),
         Doc.space,
@@ -965,6 +1000,7 @@ and print_application =
           ~expr=List.hd(expressions),
           ~parentIsArrow=false,
           ~endChar=None,
+          ~original_source,
           parent_loc,
         ),
       ]);
@@ -974,12 +1010,14 @@ and print_application =
           ~expr=func,
           ~parentIsArrow=false,
           ~endChar=None,
+          ~original_source,
           parent_loc,
         ),
         print_expression(
           ~expr=List.hd(expressions),
           ~parentIsArrow=false,
           ~endChar=None,
+          ~original_source,
           parent_loc,
         ),
       ]);
@@ -990,6 +1028,7 @@ and print_application =
             ~expr=func,
             ~parentIsArrow=false,
             ~endChar=None,
+            ~original_source,
             func.pexp_loc,
           ),
           Doc.lparen,
@@ -1004,6 +1043,7 @@ and print_application =
                       ~expr=e,
                       ~parentIsArrow=false,
                       ~endChar=None,
+                      ~original_source,
                       parent_loc,
                     ),
                   expressions,
@@ -1045,6 +1085,7 @@ and print_expression =
       ~expr: Parsetree.expression,
       ~parentIsArrow: bool,
       ~endChar: option(Doc.t),
+      ~original_source: list(string),
       parent_loc: Grain_parsing__Location.t,
     ) => {
   // Debug.debug_expression(expr);
@@ -1092,6 +1133,7 @@ and print_expression =
         mut_flag,
         vbs,
         parent_loc,
+        original_source,
       )
     | PExpTuple(expressions) =>
       addParens(
@@ -1103,6 +1145,7 @@ and print_expression =
                 ~expr=e,
                 ~parentIsArrow=false,
                 ~endChar=None,
+                ~original_source,
                 parent_loc,
               ),
             expressions,
@@ -1126,6 +1169,7 @@ and print_expression =
                     ~expr=e,
                     ~parentIsArrow=false,
                     ~endChar=None,
+                    ~original_source,
                     parent_loc,
                   ),
                 expressions,
@@ -1142,6 +1186,7 @@ and print_expression =
           ~expr=expression1,
           ~parentIsArrow=false,
           ~endChar=None,
+          ~original_source,
           parent_loc,
         ),
         Doc.lbracket,
@@ -1149,6 +1194,7 @@ and print_expression =
           ~expr=expression2,
           ~parentIsArrow=false,
           ~endChar=None,
+          ~original_source,
           parent_loc,
         ),
         Doc.rbracket,
@@ -1161,6 +1207,7 @@ and print_expression =
             ~expr=expression1,
             ~parentIsArrow=false,
             ~endChar=None,
+            ~original_source,
             parent_loc,
           ),
           Doc.lbracket,
@@ -1168,6 +1215,7 @@ and print_expression =
             ~expr=expression2,
             ~parentIsArrow=false,
             ~endChar=None,
+            ~original_source,
             parent_loc,
           ),
           Doc.rbracket,
@@ -1179,6 +1227,7 @@ and print_expression =
                 ~expr=expression3,
                 ~parentIsArrow=false,
                 ~endChar=None,
+                ~original_source,
                 parent_loc,
               ),
             ]),
@@ -1186,13 +1235,14 @@ and print_expression =
         ]),
       )
 
-    | PExpRecord(record) => print_record(record, parent_loc)
+    | PExpRecord(record) => print_record(record, parent_loc, original_source)
     | PExpRecordGet(expression, {txt, _}) =>
       Doc.concat([
         print_expression(
           ~expr=expression,
           ~parentIsArrow=false,
           ~endChar=None,
+          ~original_source,
           parent_loc,
         ),
         Doc.dot,
@@ -1204,6 +1254,7 @@ and print_expression =
           ~expr=expression,
           ~parentIsArrow=false,
           ~endChar=None,
+          ~original_source,
           parent_loc,
         ),
         Doc.dot,
@@ -1213,6 +1264,7 @@ and print_expression =
           ~expr=expression2,
           ~parentIsArrow=false,
           ~endChar=None,
+          ~original_source,
           parent_loc,
         ),
       ])
@@ -1226,6 +1278,7 @@ and print_expression =
               ~expr=expression,
               ~parentIsArrow=false,
               ~endChar=None,
+              ~original_source,
               parent_loc,
             ),
           ),
@@ -1291,6 +1344,7 @@ and print_expression =
                                   ~expr=guard,
                                   ~parentIsArrow=false,
                                   ~endChar=None,
+                                  ~original_source,
                                   parent_loc,
                                 ),
                               ])
@@ -1305,7 +1359,8 @@ and print_expression =
                                 print_expression(
                                   ~expr=branch.pmb_body,
                                   ~parentIsArrow=true,
-                                  ~endChar=None, //Some(Doc.comma),
+                                  ~endChar=None,
+                                  ~original_source,
                                   parent_loc,
                                 ),
                               ])
@@ -1316,7 +1371,8 @@ and print_expression =
                                   print_expression(
                                     ~expr=branch.pmb_body,
                                     ~parentIsArrow=true,
-                                    ~endChar=None, //Some(Doc.comma),
+                                    ~endChar=None,
+                                    ~original_source,
                                     parent_loc,
                                   ),
                                 ]),
@@ -1386,6 +1442,7 @@ and print_expression =
             ~expr=trueExpr,
             ~parentIsArrow=false,
             ~endChar=None,
+            ~original_source,
             parent_loc,
           )
 
@@ -1399,6 +1456,7 @@ and print_expression =
                   ~expr=trueExpr,
                   ~parentIsArrow=false,
                   ~endChar=None,
+                  ~original_source,
                   parent_loc,
                 ),
               ]),
@@ -1419,6 +1477,7 @@ and print_expression =
                 ~expr=falseExpr,
                 ~parentIsArrow=false,
                 ~endChar=None,
+                ~original_source,
                 parent_loc,
               ),
             ]);
@@ -1433,6 +1492,7 @@ and print_expression =
               ~expr=falseExpr,
               ~parentIsArrow=false,
               ~endChar=None,
+              ~original_source,
               parent_loc,
             ),
           ])
@@ -1451,6 +1511,7 @@ and print_expression =
                       ~expr=falseExpr,
                       ~parentIsArrow=false,
                       ~endChar=None,
+                      ~original_source,
                       parent_loc,
                     ),
                   ]),
@@ -1475,6 +1536,7 @@ and print_expression =
                   ~expr=condition,
                   ~parentIsArrow=false,
                   ~endChar=None,
+                  ~original_source,
                   parent_loc,
                 ),
                 Doc.rparen,
@@ -1496,6 +1558,7 @@ and print_expression =
                 ~expr=condition,
                 ~parentIsArrow=false,
                 ~endChar=None,
+                ~original_source,
                 parent_loc,
               ),
               Doc.rparen,
@@ -1517,6 +1580,7 @@ and print_expression =
               ~expr=expression,
               ~parentIsArrow=false,
               ~endChar=None,
+              ~original_source,
               parent_loc,
             ),
             Doc.space,
@@ -1529,6 +1593,7 @@ and print_expression =
             ~expr=expression1,
             ~parentIsArrow=false,
             ~endChar=None,
+            ~original_source,
             parent_loc,
           ),
         ),
@@ -1550,6 +1615,7 @@ and print_expression =
                       ~expr,
                       ~parentIsArrow=false,
                       ~endChar=None,
+                      ~original_source,
                       parent_loc,
                     )
                   | None => Doc.nil
@@ -1564,6 +1630,7 @@ and print_expression =
                           ~expr,
                           ~parentIsArrow=false,
                           ~endChar=None,
+                          ~original_source,
                           parent_loc,
                         ),
                       ),
@@ -1580,6 +1647,7 @@ and print_expression =
                           ~expr,
                           ~parentIsArrow=false,
                           ~endChar=None,
+                          ~original_source,
                           parent_loc,
                         ),
                       ),
@@ -1598,6 +1666,7 @@ and print_expression =
           ~expr=expression4,
           ~parentIsArrow=false,
           ~endChar=None,
+          ~original_source,
           parent_loc,
         ),
       ])
@@ -1610,6 +1679,7 @@ and print_expression =
             ~expr=expression,
             ~parentIsArrow=false,
             ~endChar=None,
+            ~original_source,
             parent_loc,
           ),
           Doc.text(": "),
@@ -1674,6 +1744,7 @@ and print_expression =
                 ~expr=expression,
                 ~parentIsArrow=false,
                 ~endChar=None,
+                ~original_source,
                 parent_loc,
               ),
             ),
@@ -1691,6 +1762,7 @@ and print_expression =
                       ~expr=expression,
                       ~parentIsArrow=false,
                       ~endChar=None,
+                      ~original_source,
                       parent_loc,
                     ),
                   ),
@@ -1705,7 +1777,7 @@ and print_expression =
     | PExpApp(func, expressions) =>
       // print_loc("PExpApp", expr.pexp_loc);
 
-      print_application(func, expressions, parent_loc)
+      print_application(func, expressions, parent_loc, original_source)
     | PExpBlock(expressions) =>
       // print_loc("PExpBlock", expr.pexp_loc);
 
@@ -1718,8 +1790,17 @@ and print_expression =
               (e: Parsetree.expression) => {
                 // get the leading comments
                 let (leadingComments, _trailingComments) =
-                  Walktree.partitionComments(e.pexp_loc, None); //
+                  Walktree.partitionComments(e.pexp_loc, None);
+
+                let disableFormatting =
+                  List.exists(
+                    c => isDisableFormattingComment(c),
+                    leadingComments,
+                  );
+
                 Walktree.removeUsedComments(leadingComments, []);
+
+                // YOYO
 
                 let (stmtLeadingCommentDocs1, prevLine) =
                   print_leading_comments(leadingComments, previousLine^);
@@ -1738,23 +1819,37 @@ and print_expression =
                     Doc.nil;
                   };
 
-                let printed_expression =
-                  print_expression(
-                    ~expr=e,
-                    ~parentIsArrow=false,
-                    ~endChar=None,
-                    parent_loc,
-                  );
+                if (disableFormatting) {
+                  print_endline("@!@! Disable formatting on next block node");
+                  Debug.print_loc("Skip formatting for", e.pexp_loc);
 
-                previousLine := getEndLocLine(e.pexp_loc);
-
-                Doc.group(
+                  let originalCode =
+                    getOriginalCode(e.pexp_loc, original_source);
                   Doc.concat([
                     stmtLeadingCommentDocs,
                     blankLineAbove,
-                    Doc.group(printed_expression),
-                  ]),
-                );
+                    Doc.group(Doc.text(originalCode)),
+                  ]);
+                } else {
+                  let printed_expression =
+                    print_expression(
+                      ~expr=e,
+                      ~parentIsArrow=false,
+                      ~endChar=None,
+                      ~original_source,
+                      parent_loc,
+                    );
+
+                  previousLine := getEndLocLine(e.pexp_loc);
+
+                  Doc.group(
+                    Doc.concat([
+                      stmtLeadingCommentDocs,
+                      blankLineAbove,
+                      Doc.group(printed_expression),
+                    ]),
+                  );
+                };
               },
               expressions,
             ),
@@ -1803,6 +1898,7 @@ and print_expression =
           ~expr=expression,
           ~parentIsArrow=false,
           ~endChar=None,
+          ~original_source,
           parent_loc,
         ),
         Doc.text(" := "),
@@ -1810,6 +1906,7 @@ and print_expression =
           ~expr=expression1,
           ~parentIsArrow=false,
           ~endChar=None,
+          ~original_source,
           parent_loc,
         ),
       ])
@@ -1852,6 +1949,7 @@ and print_expression =
                 ~expr=expression,
                 ~parentIsArrow=false,
                 ~endChar=None,
+                ~original_source,
                 parent_loc,
               ),
               sugaredOp,
@@ -1860,6 +1958,7 @@ and print_expression =
                   ~expr=List.hd(expressions),
                   ~parentIsArrow=false,
                   ~endChar=None,
+                  ~original_source,
                   parent_loc,
                 );
               } else {
@@ -1867,6 +1966,7 @@ and print_expression =
                   ~expr=List.hd(List.tl(expressions)),
                   ~parentIsArrow=false,
                   ~endChar=None,
+                  ~original_source,
                   parent_loc,
                 );
               },
@@ -1877,6 +1977,7 @@ and print_expression =
                 ~expr=expression,
                 ~parentIsArrow=false,
                 ~endChar=None,
+                ~original_source,
                 parent_loc,
               ),
               Doc.text(" = "),
@@ -1884,6 +1985,7 @@ and print_expression =
                 ~expr=expression1,
                 ~parentIsArrow=false,
                 ~endChar=None,
+                ~original_source,
                 parent_loc,
               ),
             ])
@@ -1894,6 +1996,7 @@ and print_expression =
               ~expr=expression,
               ~parentIsArrow=false,
               ~endChar=None,
+              ~original_source,
               parent_loc,
             ),
             Doc.text(" = "),
@@ -1901,6 +2004,7 @@ and print_expression =
               ~expr=expression1,
               ~parentIsArrow=false,
               ~endChar=None,
+              ~original_source,
               parent_loc,
             ),
           ]);
@@ -1912,6 +2016,7 @@ and print_expression =
             ~expr=expression,
             ~parentIsArrow=false,
             ~endChar=None,
+            ~original_source,
             parent_loc,
           ),
           Doc.text(" = "),
@@ -1919,6 +2024,7 @@ and print_expression =
             ~expr=expression1,
             ~parentIsArrow=false,
             ~endChar=None,
+            ~original_source,
             parent_loc,
           ),
         ])
@@ -1951,6 +2057,7 @@ and value_bind_print =
       mut_flag,
       vbs: list(Parsetree.value_binding),
       parent_loc: Grain_parsing__Location.t,
+      original_source: list(string),
     ) => {
   let exported =
     switch (export_flag) {
@@ -1978,6 +2085,7 @@ and value_bind_print =
             ~expr=vb.pvb_expr,
             ~parentIsArrow=false,
             ~endChar=None,
+            ~original_source,
             parent_loc,
           );
 
@@ -2395,7 +2503,12 @@ let print_primitive_value_description = (vd: Parsetree.value_description) => {
   ]);
 };
 
-let toplevel_print = (data: Parsetree.toplevel_stmt, previousLine: int) => {
+let toplevel_print =
+    (
+      data: Parsetree.toplevel_stmt,
+      original_source: list(string),
+      previousLine: int,
+    ) => {
   let attributes = data.ptop_attributes;
 
   // Debug.print_loc("top level:", data.ptop_loc);
@@ -2408,11 +2521,6 @@ let toplevel_print = (data: Parsetree.toplevel_stmt, previousLine: int) => {
 
   let disableFormatting =
     List.exists(c => isDisableFormattingComment(c), leadingComments);
-
-  if (disableFormatting) {
-    print_endline("@!@! Disable formatting on next node");
-    Debug.print_loc("Skip formatting for", data.ptop_loc);
-  };
 
   Walktree.removeUsedComments(leadingComments, []);
 
@@ -2436,118 +2544,6 @@ let toplevel_print = (data: Parsetree.toplevel_stmt, previousLine: int) => {
     } else {
       Doc.nil;
     };
-
-  let withoutComments =
-    switch (data.ptop_desc) {
-    | PTopImport(import_declaration) => import_print(import_declaration)
-    | PTopForeign(export_flag, value_description) =>
-      let export =
-        switch (export_flag) {
-        | Nonexported => Doc.text("import ")
-        | Exported => Doc.text("export ")
-        };
-      Doc.concat([
-        export,
-        Doc.text("foreign wasm "),
-        print_foreign_value_description(value_description),
-      ]);
-    | PTopPrimitive(export_flag, value_description) =>
-      let export =
-        switch (export_flag) {
-        | Nonexported => Doc.nil
-        | Exported => Doc.text("export ")
-        };
-      Doc.concat([
-        export,
-        Doc.text("primitive "),
-        print_primitive_value_description(value_description),
-      ]);
-    | PTopData(data_declarations) => data_print(data_declarations)
-    | PTopLet(export_flag, rec_flag, mut_flag, value_bindings) =>
-      value_bind_print(
-        export_flag,
-        rec_flag,
-        mut_flag,
-        value_bindings,
-        data.ptop_loc,
-      )
-    | PTopExpr(expression) =>
-      print_expression(
-        ~expr=expression,
-        ~parentIsArrow=false,
-        ~endChar=None,
-        data.ptop_loc,
-      )
-    | PTopException(export_flag, type_exception) =>
-      let export =
-        switch (export_flag) {
-        | Nonexported => Doc.nil
-        | Exported => Doc.text("export ")
-        };
-      let cstr = type_exception.ptyexn_constructor;
-
-      let kind =
-        switch (cstr.pext_kind) {
-        | PExtDecl(sargs) =>
-          switch (sargs) {
-          | PConstrSingleton => Doc.nil
-          | PConstrTuple(parsed_types) =>
-            if (List.length(parsed_types) > 0) {
-              Doc.concat([
-                Doc.text("("),
-                Doc.join(
-                  Doc.comma,
-                  List.map(t => print_type(t), parsed_types),
-                ),
-                Doc.text(")"),
-              ]);
-            } else {
-              Doc.nil;
-            }
-          }
-
-        | PExtRebind(lid) => print_ident(lid.txt)
-        };
-
-      Doc.concat([
-        export,
-        Doc.text("exception "),
-        Doc.text(cstr.pext_name.txt),
-        kind,
-      ]);
-    | PTopExport(export_declarations) =>
-      Doc.concat([
-        Doc.text("export "),
-        Doc.join(
-          Doc.concat([Doc.comma, Doc.line]),
-          List.map(e => print_export_declaration(e), export_declarations),
-        ),
-      ])
-
-    | PTopExportAll(export_excepts) =>
-      Doc.concat([
-        Doc.text("export * "),
-        if (List.length(export_excepts) > 0) {
-          Doc.concat([
-            Doc.text("except "),
-            Doc.join(
-              Doc.comma,
-              List.map(
-                (excpt: Parsetree.export_except) =>
-                  switch (excpt) {
-                  | ExportExceptData(data) => Doc.text(data.txt)
-                  | ExportExceptValue(value) => Doc.text(value.txt)
-                  },
-                export_excepts,
-              ),
-            ),
-          ]);
-        } else {
-          Doc.nil;
-        },
-      ])
-    };
-
   let attributeText =
     if (List.length(attributes) > 0) {
       Doc.concat([
@@ -2565,15 +2561,142 @@ let toplevel_print = (data: Parsetree.toplevel_stmt, previousLine: int) => {
       Doc.nil;
     };
 
-  Doc.concat([
-    stmtLeadingCommentDocs,
-    blankLineAbove,
-    attributeText,
-    Doc.group(withoutComments),
-  ]);
+  if (disableFormatting) {
+    print_endline("@!@! Disable formatting on next node");
+    Debug.print_loc("Skip formatting for", data.ptop_loc);
+
+    let originalCode = getOriginalCode(data.ptop_loc, original_source);
+    Doc.concat([
+      stmtLeadingCommentDocs,
+      blankLineAbove,
+      attributeText,
+      Doc.group(Doc.text(originalCode)),
+    ]);
+  } else {
+    let withoutComments =
+      switch (data.ptop_desc) {
+      | PTopImport(import_declaration) => import_print(import_declaration)
+      | PTopForeign(export_flag, value_description) =>
+        let export =
+          switch (export_flag) {
+          | Nonexported => Doc.text("import ")
+          | Exported => Doc.text("export ")
+          };
+        Doc.concat([
+          export,
+          Doc.text("foreign wasm "),
+          print_foreign_value_description(value_description),
+        ]);
+      | PTopPrimitive(export_flag, value_description) =>
+        let export =
+          switch (export_flag) {
+          | Nonexported => Doc.nil
+          | Exported => Doc.text("export ")
+          };
+        Doc.concat([
+          export,
+          Doc.text("primitive "),
+          print_primitive_value_description(value_description),
+        ]);
+      | PTopData(data_declarations) => data_print(data_declarations)
+      | PTopLet(export_flag, rec_flag, mut_flag, value_bindings) =>
+        value_bind_print(
+          export_flag,
+          rec_flag,
+          mut_flag,
+          value_bindings,
+          data.ptop_loc,
+          original_source,
+        )
+      | PTopExpr(expression) =>
+        print_expression(
+          ~expr=expression,
+          ~parentIsArrow=false,
+          ~endChar=None,
+          ~original_source,
+          data.ptop_loc,
+        )
+      | PTopException(export_flag, type_exception) =>
+        let export =
+          switch (export_flag) {
+          | Nonexported => Doc.nil
+          | Exported => Doc.text("export ")
+          };
+        let cstr = type_exception.ptyexn_constructor;
+
+        let kind =
+          switch (cstr.pext_kind) {
+          | PExtDecl(sargs) =>
+            switch (sargs) {
+            | PConstrSingleton => Doc.nil
+            | PConstrTuple(parsed_types) =>
+              if (List.length(parsed_types) > 0) {
+                Doc.concat([
+                  Doc.text("("),
+                  Doc.join(
+                    Doc.comma,
+                    List.map(t => print_type(t), parsed_types),
+                  ),
+                  Doc.text(")"),
+                ]);
+              } else {
+                Doc.nil;
+              }
+            }
+
+          | PExtRebind(lid) => print_ident(lid.txt)
+          };
+
+        Doc.concat([
+          export,
+          Doc.text("exception "),
+          Doc.text(cstr.pext_name.txt),
+          kind,
+        ]);
+      | PTopExport(export_declarations) =>
+        Doc.concat([
+          Doc.text("export "),
+          Doc.join(
+            Doc.concat([Doc.comma, Doc.line]),
+            List.map(e => print_export_declaration(e), export_declarations),
+          ),
+        ])
+
+      | PTopExportAll(export_excepts) =>
+        Doc.concat([
+          Doc.text("export * "),
+          if (List.length(export_excepts) > 0) {
+            Doc.concat([
+              Doc.text("except "),
+              Doc.join(
+                Doc.comma,
+                List.map(
+                  (excpt: Parsetree.export_except) =>
+                    switch (excpt) {
+                    | ExportExceptData(data) => Doc.text(data.txt)
+                    | ExportExceptValue(value) => Doc.text(value.txt)
+                    },
+                  export_excepts,
+                ),
+              ),
+            ]);
+          } else {
+            Doc.nil;
+          },
+        ])
+      };
+
+    Doc.concat([
+      stmtLeadingCommentDocs,
+      blankLineAbove,
+      attributeText,
+      Doc.group(withoutComments),
+    ]);
+  };
 };
 
-let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
+let reformat_ast =
+    (parsed_program: Parsetree.parsed_program, original_source: list(string)) => {
   let _ =
     Walktree.walktree(parsed_program.statements, parsed_program.comments);
 
@@ -2584,7 +2707,7 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
       Doc.hardLine,
       List.map(
         (stmt: Grain_parsing.Parsetree.toplevel_stmt) => {
-          let line = toplevel_print(stmt, previousLine^);
+          let line = toplevel_print(stmt, original_source, previousLine^);
 
           previousLine := getEndLocLine(stmt.ptop_loc);
           lastStmt := Some(stmt);
@@ -2618,13 +2741,13 @@ let reformat_ast = (parsed_program: Parsetree.parsed_program) => {
 
   Doc.toString(~width=80, finalDoc) |> print_endline;
   //use this to see the AST in JSON
-  print_endline(
-    Yojson.Basic.pretty_to_string(
-      Yojson.Safe.to_basic(
-        Grain_parsing__Parsetree.parsed_program_to_yojson(parsed_program),
-      ),
-    ),
-  );
+  // print_endline(
+  //   Yojson.Basic.pretty_to_string(
+  //     Yojson.Safe.to_basic(
+  //       Grain_parsing__Parsetree.parsed_program_to_yojson(parsed_program),
+  //     ),
+  //   ),
+  // );
 };
 
 //(3 + 4) * 7;
