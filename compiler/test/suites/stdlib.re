@@ -101,7 +101,7 @@ describe("stdlib", ({test}) => {
   assertStdlib("wasmf64.test");
   assertStdlib("range.test");
   assertStdlib("string.test");
-  // assertStdlib("sys.file.test");
+  assertStdlib("sys.file.test");
   assertStdlib("map.test");
   assertStdlib("set.test");
   assertStdlib("result.test");
