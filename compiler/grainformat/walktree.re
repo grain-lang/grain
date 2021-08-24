@@ -8,15 +8,15 @@ type node_tree =
   | Empty
   | Node(node_tree, node_t, node_tree);
 
-let allLocations: ref(list(node_t)) = ref([]);
+let all_locations: ref(list(node_t)) = ref([]);
 
-let getNodeLoc = (node: node_t): Grain_parsing.Location.t =>
+let get_node_loc = (node: node_t): Grain_parsing.Location.t =>
   switch (node) {
   | Code(loc) => loc
   | Comment((loc, _)) => loc
   };
 
-let getCommentLoc = (comment: Parsetree.comment) =>
+let get_comment_loc = (comment: Parsetree.comment) =>
   switch (comment) {
   | Line(cmt) => cmt.cmt_loc
   | Block(cmt) => cmt.cmt_loc
@@ -31,15 +31,7 @@ let get_raw_pos_info = (pos: Lexing.position) => (
   pos.pos_bol,
 );
 
-let getComment = (comment: Parsetree.comment) =>
-  switch (comment) {
-  | Line(cmt) => cmt.cmt_content
-  | Block(cmt) => cmt.cmt_content
-  | Doc(cmt) => cmt.cmt_content
-  | Shebang(cmt) => cmt.cmt_content
-  };
-
-let comparePoints = (line1, char1, line2, char2) =>
+let compare_points = (line1, char1, line2, char2) =>
   if (line1 == line2 && char1 == char2) {
     0;
   } else if (line1 <= line2) {
@@ -67,11 +59,11 @@ let compare_locations =
   // compare the leading points
 
   let res =
-    if (comparePoints(raw1l, raw1c, raw2l, raw2c) == 0
-        && comparePoints(raw1le, raw1ce, raw2le, raw2ce) == 0) {
+    if (compare_points(raw1l, raw1c, raw2l, raw2c) == 0
+        && compare_points(raw1le, raw1ce, raw2le, raw2ce) == 0) {
       0;
     } else {
-      comparePoints(raw1l, raw1c, raw2l, raw2c);
+      compare_points(raw1l, raw1c, raw2l, raw2c);
     };
 
   res;
@@ -79,7 +71,7 @@ let compare_locations =
 
 // is loc1 inside loc2
 // assumes loc2 ends at the end of the line,
-let isFirstInsideSecond =
+let is_first_inside_second =
     (loc1: Grain_parsing.Location.t, loc2: Grain_parsing.Location.t) => {
   let (_, raw1l, raw1c, _) = get_raw_pos_info(loc1.loc_start);
   let (_, raw2l, raw2c, _) = get_raw_pos_info(loc2.loc_start);
@@ -121,38 +113,18 @@ let compare_partition_locations =
 
   // compare the leading points
 
-  if (comparePoints(raw1l, raw1c, raw2l, raw2c) == 0
-      && comparePoints(raw1le, raw1ce, raw2le, raw2ce) == 0) {
+  if (compare_points(raw1l, raw1c, raw2l, raw2c) == 0
+      && compare_points(raw1le, raw1ce, raw2le, raw2ce) == 0) {
     0;
   } else if
     // is loc2 inside loc1
-    (comparePoints(raw1l, raw1c, raw2l, raw2c) < 1
-     && comparePoints(raw2le, raw2ce, raw1le, raw1ce) < 1) {
+    (compare_points(raw1l, raw1c, raw2l, raw2c) < 1
+     && compare_points(raw2le, raw2ce, raw1le, raw1ce) < 1) {
     0;
   } else {
-    comparePoints(raw1l, raw1c, raw2l, raw2c);
+    compare_points(raw1l, raw1c, raw2l, raw2c);
   };
 };
-
-let rec printer = (node, level) =>
-  switch (node) {
-  | Empty => "empty"
-  | Node(leftNode, currentValue, rightNode) =>
-    " [ "
-    ++ (
-      switch (currentValue) {
-      | Code(_) => Debug.print_loc_string("code", getNodeLoc(currentValue))
-      | Comment(_) =>
-        Debug.print_loc_string("comment", getNodeLoc(currentValue))
-      }
-    )
-    ++ ", "
-    ++ printer(leftNode, level + 1)
-    ++ ", "
-    ++ printer(rightNode, level + 1)
-    ++ " ]"
-  };
-let print = node => printer(node, 1);
 
 let walktree =
     (
@@ -160,40 +132,40 @@ let walktree =
       comments: list(Grain_parsing.Parsetree.comment),
     ) => {
   let comment_locations =
-    List.map(c => Comment((getCommentLoc(c), c)), comments);
+    List.map(c => Comment((get_comment_loc(c), c)), comments);
 
-  allLocations := comment_locations;
+  all_locations := comment_locations;
 
   let iter_location = (self, location) =>
-    if (!List.mem(Code(location), allLocations^)) {
-      allLocations := List.append(allLocations^, [Code(location)]);
+    if (!List.mem(Code(location), all_locations^)) {
+      all_locations := List.append(all_locations^, [Code(location)]);
     };
 
   let iterator = {...Ast_iterator.default_iterator, location: iter_location};
 
   List.iter(iterator.toplevel(iterator), statements);
 
-  allLocations :=
+  all_locations :=
     List.sort(
       (node1: node_t, node2: node_t) => {
-        let loc1 = getNodeLoc(node1);
-        let loc2 = getNodeLoc(node2);
+        let loc1 = get_node_loc(node1);
+        let loc2 = get_node_loc(node2);
         compare_locations(loc1, loc2);
       },
-      allLocations^,
+      all_locations^,
     );
   // useful for dumping for debug
   // List.iter(
   //   n =>
   //     switch (n) {
-  //     | Code(_) => Debug.print_loc("code", getNodeLoc(n))
-  //     | Comment(_) => Debug.print_loc("comment", getNodeLoc(n))
+  //     | Code(_) => Debug.print_loc("code", get_node_loc(n))
+  //     | Comment(_) => Debug.print_loc("comment", get_node_loc(n))
   //     },
-  //   allLocations^,
+  //   all_locations^,
   // );
 };
 
-let partitionComments =
+let partition_comments =
     (loc: Grain_parsing.Location.t, range: option(Grain_parsing.Location.t))
     : (
         list(Grain_parsing.Parsetree.comment),
@@ -208,13 +180,13 @@ let partitionComments =
           acc;
         } else {
           let (accPreceeding, accFollowing) = acc;
-          let nodeLoc = getNodeLoc(node);
+          let nodeLoc = get_node_loc(node);
 
           let inRange =
             switch (range) {
             | None => true
             | Some(rangeloc) =>
-              if (isFirstInsideSecond(nodeLoc, rangeloc)) {
+              if (is_first_inside_second(nodeLoc, rangeloc)) {
                 true;
               } else {
                 false;
@@ -245,33 +217,33 @@ let partitionComments =
           };
         },
       ([], []),
-      allLocations^,
+      all_locations^,
     );
 
   (preceeding, following);
 };
 
-let removeUsedComments = (preComments, postComments) => {
-  let cleanedList =
+let remove_used_comments = (pre_comments, post_comments) => {
+  let cleaned_list =
     List.filter(
       n =>
         switch (n) {
         | Code(_) => true
         | Comment((loc, comment)) =>
-          if (List.mem(comment, preComments)
-              || List.mem(comment, postComments)) {
+          if (List.mem(comment, pre_comments)
+              || List.mem(comment, post_comments)) {
             false;
           } else {
             true;
           }
         },
-      allLocations^,
+      all_locations^,
     );
 
-  allLocations := cleanedList;
+  all_locations := cleaned_list;
 };
 
-let removeNodesBefore = (loc: Location.t) => {
+let remove_nodes_before = (loc: Location.t) => {
   let skip = ref(false);
   let cleanedList =
     List.filter(
@@ -279,7 +251,7 @@ let removeNodesBefore = (loc: Location.t) => {
         if (skip^) {
           true;
         } else {
-          let nodeLoc = getNodeLoc(n);
+          let nodeLoc = get_node_loc(n);
           let comparedLoc = compare_partition_locations(nodeLoc, loc);
 
           if (comparedLoc == 0) {
@@ -289,23 +261,24 @@ let removeNodesBefore = (loc: Location.t) => {
             false;
           };
         },
-      allLocations^,
+      all_locations^,
     );
 
-  allLocations := cleanedList;
+  all_locations := cleanedList;
 };
 
-let removeCommentsInIgnoreBlock = (loc: Location.t) => {
+let remove_comments_in_ignore_block = (loc: Location.t) => {
   let cleanedList =
     List.filter(
       n => {
         switch (n) {
         | Code(_) => true
-        | Comment((commentloc, _)) => !isFirstInsideSecond(commentloc, loc)
+        | Comment((commentloc, _)) =>
+          !is_first_inside_second(commentloc, loc)
         }
       },
-      allLocations^,
+      all_locations^,
     );
 
-  allLocations := cleanedList;
+  all_locations := cleanedList;
 };
