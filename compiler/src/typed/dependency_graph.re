@@ -83,10 +83,12 @@ module Make = (DV: Dependency_value) => {
       | None => ()
       };
       // Process recursive dependencies
+      let deps = DV.get_dependencies(dependency, lookup_filename);
       List.iter(
-        do_register(~parent=dependency),
-        DV.get_dependencies(dependency, lookup_filename),
+        d => Hashtbl.add(filename_to_nodes, DV.get_filename(d), d),
+        deps,
       );
+      List.iter(do_register(~parent=dependency), deps);
     } else {
       switch (parent) {
       | Some(p)
@@ -100,8 +102,8 @@ module Make = (DV: Dependency_value) => {
   };
 
   let register = dependency => {
-    do_register(dependency);
     Hashtbl.add(filename_to_nodes, DV.get_filename(dependency), dependency);
+    do_register(dependency);
   };
 
   let solve_next_out_of_date = (~stop: option(DV.t)) => {
@@ -177,6 +179,7 @@ module Make = (DV: Dependency_value) => {
   };
 
   let clear = () => {
+    Hashtbl.clear(filename_to_nodes);
     G.clear(graph);
   };
 };

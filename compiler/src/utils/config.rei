@@ -152,6 +152,14 @@ let with_config: (config, unit => 'a) => 'a;
 
 let preserve_config: (unit => 'a) => 'a;
 
+/** Runs the given thunk with the given root configuration */
+let with_root_config: (config, unit => 'a) => 'a;
+
+/** Runs the given thunk, making sure that any changes to the configuration
+    and root configuration are contained to its execution. */
+
+let preserve_all_configs: (unit => 'a) => 'a;
+
 /** Wraps the given thunk with extractors for compiler command-line options */
 
 let with_cli_options: 'a => Cmdliner.Term.t('a);

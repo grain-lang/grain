@@ -125,7 +125,7 @@ let compile_file = (name, outfile_arg) => {
       } else {
         Compile.stop_after_object_file_emitted;
       };
-    ignore(Compile.compile_file(~hook, ~outfile, name));
+    ignore(Compile.compile_file(~is_root_file=true, ~hook, ~outfile, name));
   }) {
   | exn =>
     let bt =

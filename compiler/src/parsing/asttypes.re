@@ -80,6 +80,9 @@ type loc('a) =
     loc: Location.t,
   };
 
+let mkloc = Location.mkloc;
+let mknoloc = Location.mknoloc;
+
 /** Addtional expression information that may affect compilation. */
 [@deriving (sexp, yojson)]
 type attributes = list(loc(string));

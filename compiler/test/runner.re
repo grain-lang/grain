@@ -26,18 +26,49 @@ let read_stream = cstream => {
   Bytes.to_string @@ Bytes.sub(buf, 0, i^);
 };
 
-let compile = (~hook=?, name, prog) => {
-  Config.preserve_config(() => {
-    Config.include_dirs := [test_libs_dir, ...Config.include_dirs^];
-    let outfile = wasmfile(name);
-    ignore @@ compile_string(~hook?, ~name, ~outfile, prog);
+let compile = (~num_pages=?, ~config_fn=?, ~hook=?, name, prog) => {
+  Config.preserve_all_configs(() => {
+    Config.with_config(
+      [],
+      () => {
+        switch (config_fn) {
+        | Some(fn) => fn()
+        | None => ()
+        };
+        switch (num_pages) {
+        | Some(pages) =>
+          Config.initial_memory_pages := pages;
+          Config.maximum_memory_pages := Some(pages);
+        | None => ()
+        };
+        Config.include_dirs := [test_libs_dir, ...Config.include_dirs^];
+        let outfile = wasmfile(name);
+        ignore @@
+        compile_string(~is_root_file=true, ~hook?, ~name, ~outfile, prog);
+      },
+    )
   });
 };
 
-let compile_file = (~hook=?, filename, outfile) => {
-  Config.preserve_config(() => {
-    Config.include_dirs := [test_libs_dir, ...Config.include_dirs^];
-    ignore @@ compile_file(~hook?, ~outfile, filename);
+let compile_file = (~num_pages=?, ~config_fn=?, ~hook=?, filename, outfile) => {
+  Config.preserve_all_configs(() => {
+    Config.with_config(
+      [],
+      () => {
+        switch (config_fn) {
+        | Some(fn) => fn()
+        | None => ()
+        };
+        switch (num_pages) {
+        | Some(pages) =>
+          Config.initial_memory_pages := pages;
+          Config.maximum_memory_pages := Some(pages);
+        | None => ()
+        };
+        Config.include_dirs := [test_libs_dir, ...Config.include_dirs^];
+        ignore @@ compile_file(~is_root_file=true, ~hook?, ~outfile, filename);
+      },
+    )
   });
 };
 
@@ -158,18 +189,8 @@ let makeCompileErrorRunner = (test, name, prog, msg) => {
 
 let makeRunner = (test, ~num_pages=?, ~config_fn=?, name, prog, expected) => {
   test(name, ({expect}) => {
-    Config.preserve_config(() => {
-      switch (config_fn) {
-      | Some(fn) => fn()
-      | None => ()
-      };
-      switch (num_pages) {
-      | Some(pages) =>
-        Config.initial_memory_pages := pages;
-        Config.maximum_memory_pages := Some(pages);
-      | None => ()
-      };
-      compile(name, prog);
+    Config.preserve_all_configs(() => {
+      compile(~num_pages?, ~config_fn?, name, prog);
       let (result, _) = run(~num_pages?, wasmfile(name));
       expect.string(result).toEqual(expected);
     })
@@ -187,18 +208,8 @@ let makeErrorRunner =
       expected,
     ) => {
   test(name, ({expect}) => {
-    Config.preserve_config(() => {
-      switch (config_fn) {
-      | Some(fn) => fn()
-      | None => ()
-      };
-      switch (num_pages) {
-      | Some(pages) =>
-        Config.initial_memory_pages := pages;
-        Config.maximum_memory_pages := Some(pages);
-      | None => ()
-      };
-      compile(name, prog);
+    Config.preserve_all_configs(() => {
+      compile(~num_pages?, ~config_fn?, name, prog);
       let (result, _) = run(~num_pages?, wasmfile(name));
       if (check_exists) {
         expect.string(result).toMatch(expected);
@@ -212,20 +223,10 @@ let makeErrorRunner =
 let makeFileRunner =
     (test, ~num_pages=?, ~config_fn=?, name, filename, expected) => {
   test(name, ({expect}) => {
-    Config.preserve_config(() => {
-      switch (config_fn) {
-      | Some(fn) => fn()
-      | None => ()
-      };
-      switch (num_pages) {
-      | Some(pages) =>
-        Config.initial_memory_pages := pages;
-        Config.maximum_memory_pages := Some(pages);
-      | None => ()
-      };
+    Config.preserve_all_configs(() => {
       let infile = grainfile(filename);
       let outfile = wasmfile(name);
-      compile_file(infile, outfile);
+      compile_file(~num_pages?, ~config_fn?, infile, outfile);
       let (result, _) = run(outfile);
       expect.string(result).toEqual(expected);
     })
