@@ -796,7 +796,7 @@ and print_out_constr = (ppf, (name, tyl, ret_type_opt)) => {
   switch (ret_type_opt) {
   | None =>
     switch (tyl) {
-    | [] => pp_print_string(ppf, name)
+    | [] => fprintf(ppf, "@[<2>%s,@]", name)
     | _ =>
       fprintf(
         ppf,
