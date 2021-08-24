@@ -16,10 +16,10 @@ let getClockTime = (clockid, precision) => {
   let err = Wasi.clock_time_get(clockid, precision, timePtr)
   if (err != Wasi._ESUCCESS) {
     Memory.free(int64Ptr)
-    throw Wasi.SystemError(tagSimpleNumber(err))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    Ok(WasmI32.toGrain(int64Ptr): Int64)
   }
-
-  WasmI32.toGrain(int64Ptr): Int64
 }
 
 // Get the current time, in nanoseconds.

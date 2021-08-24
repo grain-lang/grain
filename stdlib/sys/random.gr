@@ -16,10 +16,10 @@ export let random = () => {
   let err = Wasi.random_get(buf, 4n)
   if (err != Wasi._ESUCCESS) {
     Memory.free(buf)
-    throw Wasi.SystemError(tagSimpleNumber(err))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    let rand = WasmI32.load(buf, 0n)
+    Memory.free(buf)
+    Ok(tagSimpleNumber(rand))
   }
-
-  let rand = WasmI32.load(buf, 0n)
-  Memory.free(buf)
-  tagSimpleNumber(rand)
 }

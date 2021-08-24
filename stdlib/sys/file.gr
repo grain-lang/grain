@@ -381,14 +381,14 @@ export let pathOpen = (
   )
   if (err != Wasi._ESUCCESS) {
     Memory.free(newFd)
-    throw Wasi.SystemError(tagSimpleNumber(err))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    let fd = FileDescriptor(tagSimpleNumber(WasmI32.load(newFd, 0n)))
+
+    Memory.free(newFd)
+
+    Ok(fd)
   }
-
-  let fd = FileDescriptor(tagSimpleNumber(WasmI32.load(newFd, 0n)))
-
-  Memory.free(newFd)
-
-  fd
 }
 
 // Read from a file descriptor
@@ -414,16 +414,16 @@ export let fdRead = (fd: FileDescriptor, size: Number) => {
   if (err != Wasi._ESUCCESS) {
     Memory.free(iovs)
     Memory.free(strPtr)
-    throw Wasi.SystemError(tagSimpleNumber(err))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    nread = WasmI32.load(nread, 0n)
+
+    WasmI32.store(strPtr, nread, 4n)
+
+    Memory.free(iovs)
+
+    Ok((WasmI32.toGrain(strPtr): String, tagSimpleNumber(nread)))
   }
-
-  nread = WasmI32.load(nread, 0n)
-
-  WasmI32.store(strPtr, nread, 4n)
-
-  Memory.free(iovs)
-
-  (WasmI32.toGrain(strPtr): String, tagSimpleNumber(nread))
 }
 
 // Read from a file descriptor without updating the file descriptor's offset
@@ -452,16 +452,16 @@ export let fdPread = (fd: FileDescriptor, offset: Int64, size: Number) => {
   if (err != Wasi._ESUCCESS) {
     Memory.free(iovs)
     Memory.free(strPtr)
-    throw Wasi.SystemError(tagSimpleNumber(err))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    nread = WasmI32.load(nread, 0n)
+
+    WasmI32.store(strPtr, nread, 4n)
+
+    Memory.free(iovs)
+
+    Ok((WasmI32.toGrain(strPtr): String, tagSimpleNumber(nread)))
   }
-
-  nread = WasmI32.load(nread, 0n)
-
-  WasmI32.store(strPtr, nread, 4n)
-
-  Memory.free(iovs)
-
-  (WasmI32.toGrain(strPtr): String, tagSimpleNumber(nread))
 }
 
 // Write to a file descriptor
@@ -484,14 +484,14 @@ export let fdWrite = (fd: FileDescriptor, data: String) => {
   let err = Wasi.fd_write(fd, iovs, 1n, nwritten)
   if (err != Wasi._ESUCCESS) {
     Memory.free(iovs)
-    throw Wasi.SystemError(tagSimpleNumber(err))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    nwritten = WasmI32.load(nwritten, 0n)
+
+    Memory.free(iovs)
+
+    Ok(tagSimpleNumber(nwritten))
   }
-
-  nwritten = WasmI32.load(nwritten, 0n)
-
-  Memory.free(iovs)
-
-  tagSimpleNumber(nwritten)
 }
 
 // Write to a file descriptor without updating the file descriptor's offset
@@ -517,14 +517,14 @@ export let fdPwrite = (fd: FileDescriptor, data: String, offset: Int64) => {
   let err = Wasi.fd_pwrite(fd, iovs, 1n, offset, nwritten)
   if (err != Wasi._ESUCCESS) {
     Memory.free(iovs)
-    throw Wasi.SystemError(tagSimpleNumber(err))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    nwritten = WasmI32.load(nwritten, 0n)
+
+    Memory.free(iovs)
+
+    Ok(tagSimpleNumber(nwritten))
   }
-
-  nwritten = WasmI32.load(nwritten, 0n)
-
-  Memory.free(iovs)
-
-  tagSimpleNumber(nwritten)
 }
 
 // Allocate space within a file
@@ -542,7 +542,9 @@ export let fdAllocate = (fd: FileDescriptor, offset: Int64, size: Int64) => {
 
   let err = Wasi.fd_allocate(fd, offset, size)
   if (err != Wasi._ESUCCESS) {
-    throw Wasi.SystemError(tagSimpleNumber(err))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    Ok(void)
   }
 }
 
@@ -555,7 +557,9 @@ export let fdClose = (fd: FileDescriptor) => {
 
   let err = Wasi.fd_close(fd)
   if (err != Wasi._ESUCCESS) {
-    throw Wasi.SystemError(tagSimpleNumber(err))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    Ok(void)
   }
 }
 
@@ -568,7 +572,9 @@ export let fdDatasync = (fd: FileDescriptor) => {
 
   let err = Wasi.fd_datasync(fd)
   if (err != Wasi._ESUCCESS) {
-    throw Wasi.SystemError(tagSimpleNumber(err))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    Ok(void)
   }
 }
 
@@ -581,7 +587,9 @@ export let fdSync = (fd: FileDescriptor) => {
 
   let err = Wasi.fd_sync(fd)
   if (err != Wasi._ESUCCESS) {
-    throw Wasi.SystemError(tagSimpleNumber(err))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    Ok(void)
   }
 }
 
@@ -613,41 +621,41 @@ export let fdStats = (fd: FileDescriptor) => {
   let err = Wasi.fd_fdstat_get(fd, structPtr)
   if (err != Wasi._ESUCCESS) {
     Memory.free(structPtr)
-    throw Wasi.SystemError(tagSimpleNumber(err))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    let filetype = WasmI32.load8U(structPtr, 0n)
+
+    let filetype = filetypeFromNumber(filetype)
+
+    let flagsToWasmVal = (flag, i) => {
+      let fdflags = WasmI32.load16U(structPtr, 4n)
+      WasmI32.gtU((fdflags & (1n << (WasmI32.fromGrain(i) >> 1n))), 0n)
+    }
+    let fdflagsList = List.filteri(flagsToWasmVal, orderedFdflags)
+    Memory.free(WasmI32.fromGrain(flagsToWasmVal))
+
+    let (&) = WasmI64.and
+    let (>) = WasmI64.gtU
+    let (<<) = WasmI64.shl
+
+    let flagsToWasmVal = (flag, i) => {
+      let rights = WasmI64.load(structPtr, 8n)
+      (rights & (1N << WasmI64.extendI32U(WasmI32.fromGrain(i) >> 1n))) > 0N
+    }
+    let rightsList = List.filteri(flagsToWasmVal, orderedRights)
+    Memory.free(WasmI32.fromGrain(flagsToWasmVal))
+
+    let flagsToWasmVal = (flag, i) => {
+      let rightsInheriting = WasmI64.load(structPtr, 16n)
+      (rightsInheriting & (1N << WasmI64.extendI32U(WasmI32.fromGrain(i) >> 1n))) > 0N
+    }
+    let rightsInheritingList = List.filteri(flagsToWasmVal, orderedRights)
+    Memory.free(WasmI32.fromGrain(flagsToWasmVal))
+
+    Memory.free(structPtr)
+
+    Ok({ filetype, flags: fdflagsList, rights: rightsList, rightsInheriting: rightsInheritingList })
   }
-
-  let filetype = WasmI32.load8U(structPtr, 0n)
-
-  let filetype = filetypeFromNumber(filetype)
-
-  let flagsToWasmVal = (flag, i) => {
-    let fdflags = WasmI32.load16U(structPtr, 4n)
-    WasmI32.gtU((fdflags & (1n << (WasmI32.fromGrain(i) >> 1n))), 0n)
-  }
-  let fdflagsList = List.filteri(flagsToWasmVal, orderedFdflags)
-  Memory.free(WasmI32.fromGrain(flagsToWasmVal))
-
-  let (&) = WasmI64.and
-  let (>) = WasmI64.gtU
-  let (<<) = WasmI64.shl
-
-  let flagsToWasmVal = (flag, i) => {
-    let rights = WasmI64.load(structPtr, 8n)
-    (rights & (1N << WasmI64.extendI32U(WasmI32.fromGrain(i) >> 1n))) > 0N
-  }
-  let rightsList = List.filteri(flagsToWasmVal, orderedRights)
-  Memory.free(WasmI32.fromGrain(flagsToWasmVal))
-
-  let flagsToWasmVal = (flag, i) => {
-    let rightsInheriting = WasmI64.load(structPtr, 16n)
-    (rightsInheriting & (1N << WasmI64.extendI32U(WasmI32.fromGrain(i) >> 1n))) > 0N
-  }
-  let rightsInheritingList = List.filteri(flagsToWasmVal, orderedRights)
-  Memory.free(WasmI32.fromGrain(flagsToWasmVal))
-
-  Memory.free(structPtr)
-
-  { filetype, flags: fdflagsList, rights: rightsList, rightsInheriting: rightsInheritingList }
 }
 
 // Update the flags associated with a file descriptor
@@ -662,7 +670,9 @@ export let fdSetFlags = (fd: FileDescriptor, flags: List<FdFlag>) => {
 
   let err = Wasi.fd_fdstat_set_flags(fd, flags)
   if (err != Wasi._ESUCCESS) {
-    throw Wasi.SystemError(tagSimpleNumber(err))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    Ok(void)
   }
 }
 
@@ -680,7 +690,9 @@ export let fdSetRights = (fd: FileDescriptor, rights: List<Rights>, rightsInheri
 
   let err = Wasi.fd_fdstat_set_rights(fd, rights, rightsInheriting)
   if (err != Wasi._ESUCCESS) {
-    throw Wasi.SystemError(tagSimpleNumber(err))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    Ok(void)
   }
 }
 
@@ -697,21 +709,21 @@ export let fdFilestats = (fd: FileDescriptor) => {
   let err = Wasi.fd_filestat_get(fd, filestats)
   if (err != Wasi._ESUCCESS) {
     Memory.free(filestats)
-    throw Wasi.SystemError(tagSimpleNumber(err))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    let device = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 0n))): Int64
+    let inode = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 8n))): Int64
+    let filetype = filetypeFromNumber(WasmI32.load8U(filestats, 16n))
+    let linkcount = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 24n))): Int64
+    let size = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 32n))): Int64
+    let accessed = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 40n))): Int64
+    let modified = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 48n))): Int64
+    let changed = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 56n))): Int64
+
+    Memory.free(filestats)
+
+    Ok({ device, inode, filetype, linkcount, size, accessed, modified, changed })
   }
-
-  let device = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 0n))): Int64
-  let inode = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 8n))): Int64
-  let filetype = filetypeFromNumber(WasmI32.load8U(filestats, 16n))
-  let linkcount = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 24n))): Int64
-  let size = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 32n))): Int64
-  let accessed = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 40n))): Int64
-  let modified = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 48n))): Int64
-  let changed = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 56n))): Int64
-
-  Memory.free(filestats)
-
-  { device, inode, filetype, linkcount, size, accessed, modified, changed }
 }
 
 // Set (truncate) the size of a file
@@ -726,7 +738,9 @@ export let fdSetSize = (fd: FileDescriptor, size: Int64) => {
 
   let err = Wasi.fd_filestat_set_size(fd, size)
   if (err != Wasi._ESUCCESS) {
-    throw Wasi.SystemError(tagSimpleNumber(err))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    Ok(void)
   }
 }
 
@@ -742,7 +756,9 @@ export let fdSetAccessTime = (fd: FileDescriptor, timestamp: Int64) => {
 
   let err = Wasi.fd_filestat_set_times(fd, time, 0N, Wasi._TIME_SET_ATIM)
   if (err != Wasi._ESUCCESS) {
-    throw Wasi.SystemError(tagSimpleNumber(err))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    Ok(void)
   }
 }
 
@@ -755,7 +771,9 @@ export let fdSetAccessTimeNow = (fd: FileDescriptor) => {
 
   let err = Wasi.fd_filestat_set_times(fd, 0N, 0N, Wasi._TIME_SET_ATIM_NOW)
   if (err != Wasi._ESUCCESS) {
-    throw Wasi.SystemError(tagSimpleNumber(err))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    Ok(void)
   }
 }
 
@@ -771,7 +789,9 @@ export let fdSetModifiedTime = (fd: FileDescriptor, timestamp: Int64) => {
 
   let err = Wasi.fd_filestat_set_times(fd, 0N, time, Wasi._TIME_SET_MTIM)
   if (err != Wasi._ESUCCESS) {
-    throw Wasi.SystemError(tagSimpleNumber(err))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    Ok(void)
   }
 }
 
@@ -784,7 +804,9 @@ export let fdSetModifiedTimeNow = (fd: FileDescriptor) => {
 
   let err = Wasi.fd_filestat_set_times(fd, 0N, 0N, Wasi._TIME_SET_MTIM_NOW)
   if (err != Wasi._ESUCCESS) {
-    throw Wasi.SystemError(tagSimpleNumber(err))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    Ok(void)
   }
 }
 
@@ -808,86 +830,93 @@ export let fdReaddir = (fd: FileDescriptor) => {
   if (err != Wasi._ESUCCESS) {
     Memory.free(buf)
     Memory.free(bufUsed)
-    throw Wasi.SystemError(tagSimpleNumber(err))
-  }
-
-  let used = WasmI32.load(bufUsed, 0n)
-
-  if (used <= 0n) {
-    Memory.free(buf)
-    Memory.free(bufUsed)
-    WasmI32.toGrain(allocateArray(0n)): Array<DirectoryEntry>
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
-    bufLen = WasmI32.load(buf, 16n) + structWidth * 2n
+    let used = WasmI32.load(bufUsed, 0n)
 
-    Memory.free(buf)
+    if (used <= 0n) {
+      Memory.free(buf)
+      Memory.free(bufUsed)
+      Ok(WasmI32.toGrain(allocateArray(0n)): Array<DirectoryEntry>)
+    } else {
+      bufLen = WasmI32.load(buf, 16n) + structWidth * 2n
 
-    // simple linked list
-    // ptr +0n -> current buffer
-    // ptr +4n -> bufs
-    let mut bufs = 0n
+      Memory.free(buf)
 
-    let mut numEntries = 0n
+      // simple linked list
+      // ptr +0n -> current buffer
+      // ptr +4n -> bufs
+      let mut bufs = 0n
 
-    while (true) {
-      numEntries += 1n
+      let mut numEntries = 0n
+      let mut hasErr = None
 
-      buf = Memory.malloc(bufLen)
-      let cons = Memory.malloc(8n)
-      WasmI32.store(cons, buf, 0n)
-      WasmI32.store(cons, bufs, 4n)
-      bufs = cons
+      while (true) {
+        numEntries += 1n
 
-      let err = Wasi.fd_readdir(fd, buf, bufLen, cookie, bufUsed)
-      if (err != Wasi._ESUCCESS) {
-        while (bufs != 0n) {
-          Memory.free(WasmI32.load(bufs, 0n))
-          let next = WasmI32.load(bufs, 4n)
-          Memory.free(bufs)
-          bufs = next
+        buf = Memory.malloc(bufLen)
+        let cons = Memory.malloc(8n)
+        WasmI32.store(cons, buf, 0n)
+        WasmI32.store(cons, bufs, 4n)
+        bufs = cons
+
+        let err = Wasi.fd_readdir(fd, buf, bufLen, cookie, bufUsed)
+        if (err != Wasi._ESUCCESS) {
+          while (bufs != 0n) {
+            Memory.free(WasmI32.load(bufs, 0n))
+            let next = WasmI32.load(bufs, 4n)
+            Memory.free(bufs)
+            bufs = next
+          }
+          Memory.free(bufUsed)
+          hasErr = Some(Err(Wasi.SystemError(tagSimpleNumber(err))))
+          break
         }
-        Memory.free(bufUsed)
-        throw Wasi.SystemError(tagSimpleNumber(err))
+
+        if (WasmI32.load(bufUsed, 0n) != bufLen) {
+          break
+        } else {
+          let curLen = WasmI32.load(buf, 16n)
+          cookie = WasmI64.load(buf, 0n)
+          let nextDirentPtr = buf + structWidth + curLen
+          bufLen = WasmI32.load(nextDirentPtr, 16n) + structWidth * 2n
+        }
       }
 
-      if (WasmI32.load(bufUsed, 0n) != bufLen) {
-        break
-      } else {
-        let curLen = WasmI32.load(buf, 16n)
-        cookie = WasmI64.load(buf, 0n)
-        let nextDirentPtr = buf + structWidth + curLen
-        bufLen = WasmI32.load(nextDirentPtr, 16n) + structWidth * 2n
+      match (hasErr) {
+        Some(err) => err,
+        None => {
+          Memory.free(bufUsed)
+
+          let arr = allocateArray(numEntries)
+
+          for (let mut i = numEntries - 1n; i >= 0n; i -= 1n) {
+            let ent = WasmI32.load(bufs, 0n)
+
+            let inode = WasmI32.toGrain(newInt64(WasmI64.load(ent, 8n))): Int64
+
+            let dirnameLen = WasmI32.load(ent, 16n)
+            let dirname = allocateString(dirnameLen)
+            Memory.copy(dirname + 8n, ent + structWidth, dirnameLen)
+            let path = WasmI32.toGrain(dirname): String
+
+            let filetype = filetypeFromNumber(WasmI32.load8U(ent, 20n))
+
+            let dirent = { inode, path, filetype }
+
+            WasmI32.store(arr + i * 4n, WasmI32.fromGrain(dirent), 8n)
+
+            let next = WasmI32.load(bufs, 4n)
+            Memory.free(bufs)
+            Memory.free(ent)
+
+            bufs = next
+          }
+
+          Ok(WasmI32.toGrain(arr): Array<DirectoryEntry>)
+        }
       }
     }
-
-    Memory.free(bufUsed)
-
-    let arr = allocateArray(numEntries)
-
-    for (let mut i = numEntries - 1n; i >= 0n; i -= 1n) {
-      let ent = WasmI32.load(bufs, 0n)
-
-      let inode = WasmI32.toGrain(newInt64(WasmI64.load(ent, 8n))): Int64
-
-      let dirnameLen = WasmI32.load(ent, 16n)
-      let dirname = allocateString(dirnameLen)
-      Memory.copy(dirname + 8n, ent + structWidth, dirnameLen)
-      let path = WasmI32.toGrain(dirname): String
-
-      let filetype = filetypeFromNumber(WasmI32.load8U(ent, 20n))
-
-      let dirent = { inode, path, filetype }
-
-      WasmI32.store(arr + i * 4n, WasmI32.fromGrain(dirent), 8n)
-
-      let next = WasmI32.load(bufs, 4n)
-      Memory.free(bufs)
-      Memory.free(ent)
-
-      bufs = next
-    }
-
-    WasmI32.toGrain(arr): Array<DirectoryEntry>
   }
 }
 
@@ -905,7 +934,9 @@ export let fdRenumber = (fromFd: FileDescriptor, toFd: FileDescriptor) => {
 
   let err = Wasi.fd_renumber(fromFd, toFd)
   if (err != Wasi._ESUCCESS) {
-    throw Wasi.SystemError(tagSimpleNumber(err))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    Ok(void)
   }
 }
 
@@ -933,10 +964,10 @@ export let fdSeek = (fd: FileDescriptor, offset: Int64, whence: Whence) => {
   let err = Wasi.fd_seek(fd, offset, whence, newoffsetPtr)
   if (err != Wasi._ESUCCESS) {
     Memory.free(newoffset)
-    throw Wasi.SystemError(tagSimpleNumber(err))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    Ok(WasmI32.toGrain(newoffset): Int64)
   }
-
-  WasmI32.toGrain(newoffset): Int64
 }
 
 // Read a file descriptor's offset
@@ -953,10 +984,10 @@ export let fdTell = (fd: FileDescriptor) => {
   let err = Wasi.fd_tell(fd, offsetPtr)
   if (err != Wasi._ESUCCESS) {
     Memory.free(offset)
-    throw Wasi.SystemError(tagSimpleNumber(err))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    Ok(WasmI32.toGrain(offset): Int64)
   }
-
-  WasmI32.toGrain(offset): Int64
 }
 
 
@@ -974,7 +1005,9 @@ export let pathCreateDirectory = (fd: FileDescriptor, path: String) => {
 
   let err = Wasi.path_create_directory(fd, stringPtr + 8n, size)
   if (err != Wasi._ESUCCESS) {
-    throw Wasi.SystemError(tagSimpleNumber(err))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    Ok(void)
   }
 }
 
@@ -999,22 +1032,22 @@ export let pathFilestats = (fd: FileDescriptor, dirFlags: List<LookupFlag>, path
   let err = Wasi.path_filestat_get(fd, combinedDirFlags, pathPtr, pathSize, filestats)
   if (err != Wasi._ESUCCESS) {
     Memory.free(filestats)
-    throw Wasi.SystemError(tagSimpleNumber(err))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    let device = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 0n))): Int64
+    let inode = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 8n))): Int64
+    let filetype = filetypeFromNumber(WasmI32.load8U(filestats, 16n))
+    let linkcount = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 24n))): Int64
+    let size = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 32n))): Int64
+    let accessed = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 40n))): Int64
+    let modified = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 48n))): Int64
+    let changed = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 56n))): Int64
+
+
+    Memory.free(filestats)
+
+    Ok({ device, inode, filetype, linkcount, size, accessed, modified, changed })
   }
-
-  let device = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 0n))): Int64
-  let inode = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 8n))): Int64
-  let filetype = filetypeFromNumber(WasmI32.load8U(filestats, 16n))
-  let linkcount = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 24n))): Int64
-  let size = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 32n))): Int64
-  let accessed = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 40n))): Int64
-  let modified = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 48n))): Int64
-  let changed = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 56n))): Int64
-
-
-  Memory.free(filestats)
-
-  { device, inode, filetype, linkcount, size, accessed, modified, changed }
 }
 
 // Set the access (created) time of a file
@@ -1037,7 +1070,9 @@ export let pathSetAccessTime = (fd: FileDescriptor, dirFlags: List<LookupFlag>, 
 
   let err = Wasi.path_filestat_set_times(fd, combinedDirFlags, pathPtr, pathSize, time, 0N, Wasi._TIME_SET_ATIM)
   if (err != Wasi._ESUCCESS) {
-    throw Wasi.SystemError(tagSimpleNumber(err))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    Ok(void)
   }
 }
 
@@ -1058,7 +1093,9 @@ export let pathSetAccessTimeNow = (fd: FileDescriptor, dirFlags: List<LookupFlag
 
   let err = Wasi.path_filestat_set_times(fd, combinedDirFlags, pathPtr, pathSize, 0N, 0N, Wasi._TIME_SET_ATIM_NOW)
   if (err != Wasi._ESUCCESS) {
-    throw Wasi.SystemError(tagSimpleNumber(err))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    Ok(void)
   }
 }
 
@@ -1082,7 +1119,9 @@ export let pathSetModifiedTime = (fd: FileDescriptor, dirFlags: List<LookupFlag>
 
   let err = Wasi.path_filestat_set_times(fd, combinedDirFlags, pathPtr, pathSize, 0N, time, Wasi._TIME_SET_MTIM)
   if (err != Wasi._ESUCCESS) {
-    throw Wasi.SystemError(tagSimpleNumber(err))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    Ok(void)
   }
 }
 
@@ -1103,7 +1142,9 @@ export let pathSetModifiedTimeNow = (fd: FileDescriptor, dirFlags: List<LookupFl
 
   let err = Wasi.path_filestat_set_times(fd, combinedDirFlags, pathPtr, pathSize, 0N, 0N, Wasi._TIME_SET_MTIM_NOW)
   if (err != Wasi._ESUCCESS) {
-    throw Wasi.SystemError(tagSimpleNumber(err))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    Ok(void)
   }
 }
 
@@ -1132,7 +1173,9 @@ export let pathLink = (sourceFd: FileDescriptor, dirFlags: List<LookupFlag>, sou
 
   let err = Wasi.path_link(sourceFd, combinedDirFlags, sourcePtr + 8n, sourceSize, targetFd, targetPtr + 8n, targetSize)
   if (err != Wasi._ESUCCESS) {
-    throw Wasi.SystemError(tagSimpleNumber(err))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    Ok(void)
   }
 }
 
@@ -1153,7 +1196,9 @@ export let pathSymlink = (fd: FileDescriptor, sourcePath: String, targetPath: St
 
   let err = Wasi.path_symlink(sourcePtr + 8n, sourceSize, fd, targetPtr + 8n, targetSize)
   if (err != Wasi._ESUCCESS) {
-    throw Wasi.SystemError(tagSimpleNumber(err))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    Ok(void)
   }
 }
 
@@ -1170,7 +1215,9 @@ export let pathUnlink = (fd: FileDescriptor, path: String) => {
 
   let err = Wasi.path_unlink_file(fd, pathPtr + 8n, pathSize)
   if (err != Wasi._ESUCCESS) {
-    throw Wasi.SystemError(tagSimpleNumber(err))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    Ok(void)
   }
 }
 
@@ -1198,13 +1245,13 @@ export let pathReadlink = (fd: FileDescriptor, path: String, size: Number) => {
   if (err != Wasi._ESUCCESS) {
     Memory.free(grainStrPtr)
     Memory.free(nread)
-    throw Wasi.SystemError(tagSimpleNumber(err))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    let read = tagSimpleNumber(WasmI32.load(nread, 0n))
+    Memory.free(nread)
+
+    Ok((WasmI32.toGrain(grainStrPtr): String, read))
   }
-
-  let read = tagSimpleNumber(WasmI32.load(nread, 0n))
-  Memory.free(nread)
-
-  (WasmI32.toGrain(grainStrPtr): String, read)
 }
 
 // Remove a directory
@@ -1220,7 +1267,9 @@ export let pathRemoveDirectory = (fd: FileDescriptor, path: String) => {
 
   let err = Wasi.path_remove_directory(fd, pathPtr + 8n, pathSize)
   if (err != Wasi._ESUCCESS) {
-    throw Wasi.SystemError(tagSimpleNumber(err))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    Ok(void)
   }
 }
 
@@ -1246,6 +1295,8 @@ export let pathRename = (sourceFd: FileDescriptor, sourcePath: String, targetFd:
 
   let err = Wasi.path_rename(sourceFd, sourcePtr + 8n, sourceSize, targetFd, targetPtr + 8n, targetSize)
   if (err != Wasi._ESUCCESS) {
-    throw Wasi.SystemError(tagSimpleNumber(err))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    Ok(void)
   }
 }

@@ -1,7 +1,8 @@
 import Fs from "sys/file"
+import Result from "result"
 
 // fdRead
-let foo = Fs.pathOpen(
+let foo = Result.unwrap(Fs.pathOpen(
   Fs.pwdfd,
   [Fs.SymlinkFollow],
   "test/test-data/foo.txt",
@@ -9,9 +10,9 @@ let foo = Fs.pathOpen(
   [Fs.FdRead],
   [Fs.FdRead],
   []
-)
+))
 
-let (buf, nread) = Fs.fdRead(foo, 40)
+let (buf, nread) = Result.unwrap(Fs.fdRead(foo, 40))
 
 Fs.fdClose(foo)
 
@@ -19,7 +20,7 @@ assert buf == "foo, bar, & baz"
 assert nread == 15
 
 // fdWrite
-let foo = Fs.pathOpen(
+let foo = Result.unwrap(Fs.pathOpen(
   Fs.pwdfd,
   [Fs.SymlinkFollow],
   "test/test-data/bar.txt",
@@ -27,13 +28,13 @@ let foo = Fs.pathOpen(
   [Fs.FdRead, Fs.FdWrite, Fs.FdSeek, Fs.FdSetSize],
   [Fs.FdRead, Fs.FdWrite, Fs.FdSeek, Fs.FdSetSize],
   []
-)
+))
 
-assert Fs.fdWrite(foo, "this and that") == 13
+assert Fs.fdWrite(foo, "this and that") == Ok(13)
 
 Fs.fdSeek(foo, 0L, Fs.Set)
 
-let (buf, nread) = Fs.fdRead(foo, 40)
+let (buf, nread) = Result.unwrap(Fs.fdRead(foo, 40))
 
 Fs.fdSetSize(foo, 0L)
 
