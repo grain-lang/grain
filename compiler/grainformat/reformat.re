@@ -18,9 +18,13 @@ let getOriginalCode =
   let (_, endline, endc, _) = get_raw_pos_info(location.loc_end);
 
   let text = ref("");
-  if (List.length(source) > endline) {
+  if (List.length(source) > endline - 1) {
     if (startline == endline) {
-      text := text^ ++ List.nth(source, startline - 1);
+      let full_line = List.nth(source, startline - 1);
+
+      let without_trailing = Str.string_before(full_line, endc);
+
+      text := text^ ++ without_trailing;
     } else {
       for (line in startline - 1 to endline - 1) {
         if (line + 1 == startline) {

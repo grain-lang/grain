@@ -20,3 +20,6 @@ if (true) {
   let zz = [5,
   6]
 }
+
+// formatter-ignore
+      let single_ast_line = "x"
