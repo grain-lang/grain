@@ -1,4 +1,11 @@
 /* grainc-flags --no-gc */
+/**
+ * @module Sys/File: Utilities for accessing the filesystem & working with files.
+ *
+ * Many of the functions in this module are not intended to be used directly, but rather for other libraries to be built on top of them.
+ *
+ * @example import File from "sys/file"
+ */
 
 import WasmI32, {
   add as (+),
@@ -23,21 +30,26 @@ import { tagSimpleNumber, allocateArray, allocateString, loadAdtVal, newInt64, a
 
 import List from "list"
 
+/**
+ * @section Types: Type declarations included in the Sys/File module.
+ */
+
+/**
+ * Represents a handle to an open file on the system.
+ */
 export enum FileDescriptor {
   FileDescriptor(Number)
 }
 
-export let stdin = FileDescriptor(0)
-export let stdout = FileDescriptor(1)
-export let stderr = FileDescriptor(2)
-export let pwdfd = FileDescriptor(3)
-
+/**
+ * Flags that determine how paths should be resolved when looking up a file or directory.
+ */
 export enum LookupFlag {
   // Follow symlinks
   SymlinkFollow
 }
 
-
+// TODO(#775): This has specific ordering requirements because of ambiguous type inference
 let rec combineLookupFlagsHelp = (acc, dirflags) => {
   match (dirflags) {
     [hd, ...tl] => {
@@ -53,6 +65,9 @@ let combineLookupFlags = (dirflags) => {
   combineLookupFlagsHelp(0n, dirflags)
 }
 
+/**
+ * Flags that determine how a file or directory should be opened.
+ */
 export enum OpenFlag {
   // Create file if it does not exist.
   Create,
@@ -64,6 +79,7 @@ export enum OpenFlag {
   Truncate,
 }
 
+// TODO(#775): This has specific ordering requirements because of ambiguous type inference
 let rec combineOpenFlagsHelp = (acc, dirflags) => {
   match (dirflags) {
     [hd, ...tl] => {
@@ -82,6 +98,10 @@ let combineOpenFlags = (dirflags) => {
   combineOpenFlagsHelp(0n, dirflags)
 }
 
+/**
+ * Flags that determine which rights a `FileDescriptor` should have
+ * and which rights new `FileDescriptor`s should inherit from it.
+ */
 export enum Rights {
   // The right to invoke `fdDatasync`.
   // If `PathOpen` is set, includes the right to invoke
@@ -187,6 +207,7 @@ let _RIGHT_PATH_UNLINK_FILE = 67108864N
 let _RIGHT_POLL_FD_READWRITE = 134217728N
 let _RIGHT_SOCK_SHUTDOWN = 268435456N
 
+// TODO(#775): This has specific ordering requirements because of ambiguous type inference
 let rec combineRightsHelp = (acc, dirflags) => {
   match (dirflags) {
     [] => acc,
@@ -231,6 +252,9 @@ let combineRights = (dirflags) => {
   combineRightsHelp(0N, dirflags)
 }
 
+/**
+ * Flags that determine the mode(s) that a `FileDescriptor` operates in.
+ */
 export enum FdFlag {
   // Append mode: Data written to the file is always appended to the file's end.
   Append,
@@ -246,6 +270,7 @@ export enum FdFlag {
   Sync,
 }
 
+// TODO(#775): This has specific ordering requirements because of ambiguous type inference
 let rec combineFdFlagsHelp = (acc, dirflags) => {
   match (dirflags) {
     [hd, ...tl] => {
@@ -265,6 +290,9 @@ let combineFdFlags = (dirflags) => {
   combineFdFlagsHelp(0n, dirflags)
 }
 
+/**
+ * The type of file a `FileDescriptor` refers to.
+ */
 export enum Filetype {
   // The type of the file descriptor or file is unknown or is different from any of the other types specified.
   Unknown,
@@ -284,39 +312,7 @@ export enum Filetype {
   SymbolicLink,
 }
 
-export enum Whence {
-  // Seek relative to start-of-file.
-  Set,
-  // Seek relative to current position.
-  Current,
-  // Seek relative to end-of-file.
-  End,
-}
-
-export record Stats {
-  filetype: Filetype,
-  flags: List<FdFlag>,
-  rights: List<Rights>,
-  rightsInheriting: List<Rights>
-}
-
-export record Filestats {
-  device: Int64,
-  inode: Int64,
-  filetype: Filetype,
-  linkcount: Int64,
-  size: Int64,
-  accessed: Int64,
-  modified: Int64,
-  changed: Int64
-}
-
-export record DirectoryEntry {
-  inode: Int64,
-  filetype: Filetype,
-  path: String
-}
-
+// TODO(#775): This has specific ordering requirements because of ambiguous type inference
 let filetypeFromNumber = (filetype) => {
   match (filetype) {
     0n => Unknown,
@@ -331,15 +327,84 @@ let filetypeFromNumber = (filetype) => {
   }
 }
 
-// Open a file or directory
-// @param dirFd: FileDescriptor The directory in which path resolution starts
-// @param dirFlags: List<LookupFlag> Flags which affect path resolution
-// @param path: String The path to the file or directory
-// @param openFlags: List<OpenFlag> Flags that decide how the path will be opened
-// @param rights: List<Rights> The rights that dictate what may be done with the returned file descriptor
-// @param rightsInheriting: List<Rights> The rights that dictate what may be done with file descriptors derived from this file descriptor
-// @param flags: List<FdFlag> Flags which affect read/write operations on this file descriptor
-// @returns FileDescriptor The opened file or directory
+/**
+ * Flags that determine where seeking should begin in a file.
+ */
+export enum Whence {
+  // Seek relative to start-of-file.
+  Set,
+  // Seek relative to current position.
+  Current,
+  // Seek relative to end-of-file.
+  End,
+}
+
+/**
+ * Information about a `FileDescriptor`.
+ */
+export record Stats {
+  filetype: Filetype,
+  flags: List<FdFlag>,
+  rights: List<Rights>,
+  rightsInheriting: List<Rights>
+}
+
+/**
+ * Information about the file that a `FileDescriptor` refers to.
+ */
+export record Filestats {
+  device: Int64,
+  inode: Int64,
+  filetype: Filetype,
+  linkcount: Int64,
+  size: Int64,
+  accessed: Int64,
+  modified: Int64,
+  changed: Int64
+}
+
+/**
+ * An entry in a directory.
+ */
+export record DirectoryEntry {
+  inode: Int64,
+  filetype: Filetype,
+  path: String
+}
+
+/**
+ * @section Values: Functions and constants included in the Sys/File module.
+ */
+
+/**
+ * The `FileDescriptor` for `stdin`.
+ */
+export let stdin = FileDescriptor(0)
+/**
+ * The `FileDescriptor` for `stdout`.
+ */
+export let stdout = FileDescriptor(1)
+/**
+ * The `FileDescriptor` for `stderr`.
+ */
+export let stderr = FileDescriptor(2)
+/**
+ * The `FileDescriptor` for the current working directory of the process.
+ */
+export let pwdfd = FileDescriptor(3)
+
+/**
+ * Open a file or directory.
+ *
+ * @param dirFd: The directory in which path resolution starts
+ * @param dirFlags: Flags which affect path resolution
+ * @param path: The path to the file or directory
+ * @param openFlags: Flags that decide how the path will be opened
+ * @param rights: The rights that dictate what may be done with the returned file descriptor
+ * @param rightsInheriting: The rights that dictate what may be done with file descriptors derived from this file descriptor
+ * @param flags: Flags which affect read/write operations on this file descriptor
+ * @returns `Ok(fd)` of the opened file or directory if successful or `Err(exception)` otherwise
+ */
 export let pathOpen = (
   dirFd: FileDescriptor,
   dirFlags: List<LookupFlag>,
@@ -391,10 +456,13 @@ export let pathOpen = (
   }
 }
 
-// Read from a file descriptor
-// @param fd: FileDescriptor The file descriptor to read from
-// @param size: Number The maximum number of bytes to read from the file descriptor
-// @returns (String, Number) The bytes read and the number of bytes read
+/**
+ * Read from a file descriptor.
+ *
+ * @param fd: The file descriptor to read from
+ * @param size: The maximum number of bytes to read from the file descriptor
+ * @returns `Ok((contents, numBytes))` of bytes read and the number of bytes read if successful or `Err(exception)` otherwise
+ */
 export let fdRead = (fd: FileDescriptor, size: Number) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
@@ -426,11 +494,14 @@ export let fdRead = (fd: FileDescriptor, size: Number) => {
   }
 }
 
-// Read from a file descriptor without updating the file descriptor's offset
-// @param fd: FileDescriptor The file descriptor to read from
-// @param offset: Int64 The position within the file to begin reading
-// @param size: Number The maximum number of bytes to read from the file descriptor
-// @returns (String, Number) The bytes read and the number of bytes read
+/**
+ * Read from a file descriptor without updating the file descriptor's offset.
+ *
+ * @param fd: The file descriptor to read from
+ * @param offset: The position within the file to begin reading
+ * @param size: The maximum number of bytes to read from the file descriptor
+ * @returns `Ok((contents, numBytes)) of bytes read and the number of bytes read if successful or `Err(exception)` otherwise
+ */
 export let fdPread = (fd: FileDescriptor, offset: Int64, size: Number) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
@@ -464,10 +535,13 @@ export let fdPread = (fd: FileDescriptor, offset: Int64, size: Number) => {
   }
 }
 
-// Write to a file descriptor
-// @param fd: FileDescriptor The file descriptor to which data will be written
-// @param data: String The data to be written
-// @returns Number The number of bytes written
+/**
+ * Write to a file descriptor.
+ *
+ * @param fd: The file descriptor to which data will be written
+ * @param data: The data to be written
+ * @returns `Ok(numBytes)` of the number of bytes written if successful or `Err(Exception)` otherwise
+ */
 export let fdWrite = (fd: FileDescriptor, data: String) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
@@ -494,11 +568,14 @@ export let fdWrite = (fd: FileDescriptor, data: String) => {
   }
 }
 
-// Write to a file descriptor without updating the file descriptor's offset
-// @param fd: FileDescriptor The file descriptor to which data will be written
-// @param data: String The data to be written
-// @param offset: Int64 The position within the file to begin writing
-// @returns Number The number of bytes written
+/**
+ * Write to a file descriptor without updating the file descriptor's offset.
+ *
+ * @param fd: The file descriptor to which data will be written
+ * @param data: The data to be written
+ * @param offset: The position within the file to begin writing
+ * @returns `Ok(numBytes)` of the number of bytes written if successful or `Err(exception)` otherwise
+ */
 export let fdPwrite = (fd: FileDescriptor, data: String, offset: Int64) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
@@ -527,10 +604,14 @@ export let fdPwrite = (fd: FileDescriptor, data: String, offset: Int64) => {
   }
 }
 
-// Allocate space within a file
-// @param fd: FileDescriptor The file descriptor in which space will be allocated
-// @param offset: Int64 The position within the file to begin writing
-// @param size: Int64 The number of bytes to allocate
+/**
+ * Allocate space within a file.
+ *
+ * @param fd: The file descriptor in which space will be allocated
+ * @param offset: The position within the file to begin writing
+ * @param size: The number of bytes to allocate
+ * @returns `Ok(void)` if successful or `Err(exception)` otherwise
+ */
 export let fdAllocate = (fd: FileDescriptor, offset: Int64, size: Int64) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
@@ -548,8 +629,12 @@ export let fdAllocate = (fd: FileDescriptor, offset: Int64, size: Int64) => {
   }
 }
 
-// Close a file descriptor
-// @param fd: FileDescriptor The file descriptor to close
+/**
+ * Close a file descriptor.
+ *
+ * @param fd: The file descriptor to close
+ * @returns `Ok(void)` if successful or `Err(exception)` otherwise
+ */
 export let fdClose = (fd: FileDescriptor) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
@@ -563,8 +648,12 @@ export let fdClose = (fd: FileDescriptor) => {
   }
 }
 
-// Synchronize the data of a file to disk
-// @param fd: FileDescriptor The file descriptor to synchronize
+/**
+ * Synchronize the data of a file to disk.
+ *
+ * @param fd: The file descriptor to synchronize
+ * @returns `Ok(void)` if successful or `Err(exception)` otherwise
+ */
 export let fdDatasync = (fd: FileDescriptor) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
@@ -578,8 +667,12 @@ export let fdDatasync = (fd: FileDescriptor) => {
   }
 }
 
-// Synchronize the data and metadata of a file to disk
-// @param fd: FileDescriptor The file descriptor to synchronize
+/**
+ * Synchronize the data and metadata of a file to disk.
+ *
+ * @param fd: The file descriptor to synchronize
+ * @returns `Ok(void)` if successful or `Err(exception)` otherwise
+ */
 export let fdSync = (fd: FileDescriptor) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
@@ -608,9 +701,12 @@ let wasmSafeCons = (a, b) => {
 let orderedFdflags = wasmSafeCons(Append, wasmSafeCons(Dsync, wasmSafeCons(Nonblock, wasmSafeCons(Rsync, wasmSafeCons(Sync, [])))))
 let orderedRights = wasmSafeCons(FdDatasync, wasmSafeCons(FdRead, wasmSafeCons(FdSeek, wasmSafeCons(FdSetFlags, wasmSafeCons(FdSync, wasmSafeCons(FdTell, wasmSafeCons(FdWrite, wasmSafeCons(FdAdvise, wasmSafeCons(FdAllocate, wasmSafeCons(PathCreateDirectory, wasmSafeCons(PathCreateFile, wasmSafeCons(PathLinkSource, wasmSafeCons(PathLinkTarget, wasmSafeCons(PathOpen, wasmSafeCons(FdReaddir, wasmSafeCons(PathReadlink, wasmSafeCons(PathRenameSource, wasmSafeCons(PathRenameTarget, wasmSafeCons(PathFilestats, wasmSafeCons(PathSetSize, wasmSafeCons(PathSetTimes, wasmSafeCons(FdFilestats, wasmSafeCons(FdSetSize, wasmSafeCons(FdSetTimes, wasmSafeCons(PathSymlink, wasmSafeCons(PathRemoveDirectory, wasmSafeCons(PathUnlinkFile, wasmSafeCons(PollFdReadwrite, wasmSafeCons(SockShutdown, [])))))))))))))))))))))))))))))
 
-// Retrieve information about a file descriptor
-// @param fd: FileDescriptor The file descriptor of which to retrieve information
-// @returns Stats A record containing the filetype, flags, rights, and inheriting rights associated with the file descriptor
+/**
+ * Retrieve information about a file descriptor.
+ *
+ * @param fd: The file descriptor of which to retrieve information
+ * @returns `Ok(stats)` of the `Stats` associated with the file descriptor if successful or `Err(exception)` otherwise
+ */
 export let fdStats = (fd: FileDescriptor) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
@@ -658,9 +754,13 @@ export let fdStats = (fd: FileDescriptor) => {
   }
 }
 
-// Update the flags associated with a file descriptor
-// @param fd: FileDescriptor The file descriptor to update flags
-// @param flags: List<FdFlag> The flags to apply to the file descriptor
+/**
+ * Update the flags associated with a file descriptor.
+ *
+ * @param fd: The file descriptor to update flags
+ * @param flags: The flags to apply to the file descriptor
+ * @returns `Ok(void)` if successful or `Err(exception)` otherwise
+ */
 export let fdSetFlags = (fd: FileDescriptor, flags: List<FdFlag>) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
@@ -676,10 +776,14 @@ export let fdSetFlags = (fd: FileDescriptor, flags: List<FdFlag>) => {
   }
 }
 
-// Update the rights associated with a file descriptor
-// @param fd: FileDescriptor The file descriptor to update rights
-// @param rights: List<Rights> Rights to apply to the file descriptor
-// @param rightsInheriting: List<Rights> Inheriting rights to apply to the file descriptor
+/**
+ * Update the rights associated with a file descriptor.
+ *
+ * @param fd: The file descriptor to update rights
+ * @param rights: Rights to apply to the file descriptor
+ * @param rightsInheriting: Inheriting rights to apply to the file descriptor
+ * @returns `Ok(void)` if successful or `Err(exception)` otherwise
+ */
 export let fdSetRights = (fd: FileDescriptor, rights: List<Rights>, rightsInheriting: List<Rights>) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
@@ -696,9 +800,12 @@ export let fdSetRights = (fd: FileDescriptor, rights: List<Rights>, rightsInheri
   }
 }
 
-// Retrieve information about a file
-// @param fd: FileDescriptor The file descriptor of the file to retrieve information
-// @returns Filestats A record containing the information about the file
+/**
+ * Retrieve information about a file.
+ *
+ * @param fd: The file descriptor of the file to retrieve information
+ * @returns `Ok(info)` of the `Filestats` associated with the file descriptor if successful or `Err(exception)` otherwise
+ */
 export let fdFilestats = (fd: FileDescriptor) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
@@ -726,9 +833,13 @@ export let fdFilestats = (fd: FileDescriptor) => {
   }
 }
 
-// Set (truncate) the size of a file
-// @param fd: FileDescriptor The file descriptor of the file to truncate
-// @param size: Int64 The number of bytes to retain in the file
+/**
+ * Set (truncate) the size of a file.
+ *
+ * @param fd: The file descriptor of the file to truncate
+ * @param size: The number of bytes to retain in the file
+ * @returns `Ok(void)` if successful or `Err(exception)` otherwise
+ */
 export let fdSetSize = (fd: FileDescriptor, size: Int64) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
@@ -744,9 +855,13 @@ export let fdSetSize = (fd: FileDescriptor, size: Int64) => {
   }
 }
 
-// Set the access (created) time of a file
-// @param fd: FileDescriptor The file descriptor of the file to update
-// @param timestamp: Int64 The time to set
+/**
+ * Set the access (created) time of a file.
+ *
+ * @param fd: The file descriptor of the file to update
+ * @param timestamp: The time to set
+ * @returns `Ok(void)` if successful or `Err(exception)` otherwise
+ */
 export let fdSetAccessTime = (fd: FileDescriptor, timestamp: Int64) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
@@ -762,8 +877,12 @@ export let fdSetAccessTime = (fd: FileDescriptor, timestamp: Int64) => {
   }
 }
 
-// Set the access (created) time of a file to the current time
-// @param fd: FileDescriptor The file descriptor of the file to update
+/**
+ * Set the access (created) time of a file to the current time.
+ *
+ * @param fd: The file descriptor of the file to update
+ * @returns `Ok(void)` if successful or `Err(exception)` otherwise
+ */
 export let fdSetAccessTimeNow = (fd: FileDescriptor) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
@@ -777,9 +896,13 @@ export let fdSetAccessTimeNow = (fd: FileDescriptor) => {
   }
 }
 
-// Set the modified time of a file
-// @param fd: FileDescriptor The file descriptor of the file to update
-// @param timestamp: Int64 The time to set
+/**
+ * Set the modified time of a file.
+ *
+ * @param fd: The file descriptor of the file to update
+ * @param timestamp: The time to set
+ * @returns `Ok(void)` if successful or `Err(exception)` otherwise
+ */
 export let fdSetModifiedTime = (fd: FileDescriptor, timestamp: Int64) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
@@ -795,8 +918,12 @@ export let fdSetModifiedTime = (fd: FileDescriptor, timestamp: Int64) => {
   }
 }
 
-// Set the modified time of a file to the current time
-// @param fd: FileDescriptor The file descriptor of the file to update
+/**
+ * Set the modified time of a file to the current time.
+ *
+ * @param fd: The file descriptor of the file to update
+ * @returns `Ok(void)` if successful or `Err(exception)` otherwise
+ */
 export let fdSetModifiedTimeNow = (fd: FileDescriptor) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
@@ -810,9 +937,12 @@ export let fdSetModifiedTimeNow = (fd: FileDescriptor) => {
   }
 }
 
-// Read the entires of a directory
-// @param fd: FileDescriptor The directory to read
-// @returns Array<DirectoryEntry> An array of records containing information about each entry in the directory
+/**
+ * Read the entires of a directory.
+ *
+ * @param fd: The directory to read
+ * @returns `Ok(dirEntries)` of an array of `DirectoryEntry` for each entry in the directory if successful or `Err(exception)` otherwise
+ */
 export let fdReaddir = (fd: FileDescriptor) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
@@ -920,9 +1050,13 @@ export let fdReaddir = (fd: FileDescriptor) => {
   }
 }
 
-// Atomically replace a file descriptor by renumbering another file descriptor
-// @param fromFd: FileDescriptor The file descriptor to renumber
-// @param toFd: FileDescriptor The file descriptor to overwrite
+/**
+ * Atomically replace a file descriptor by renumbering another file descriptor.
+ *
+ * @param fromFd: The file descriptor to renumber
+ * @param toFd: The file descriptor to overwrite
+ * @returns `Ok(void)` if successful or `Err(exception)` otherwise
+ */
 export let fdRenumber = (fromFd: FileDescriptor, toFd: FileDescriptor) => {
   let fromFd = match (fromFd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
@@ -940,11 +1074,14 @@ export let fdRenumber = (fromFd: FileDescriptor, toFd: FileDescriptor) => {
   }
 }
 
-// Update a file descriptor's offset
-// @param fd: FileDescriptor The file descriptor to operate on
-// @param offset: Int64 The number of bytes to move the offset
-// @param whence: Whence The location from which the offset is relative
-// @returns Int64 The new offset of the file descriptor, relative to the start of the file
+/**
+ * Update a file descriptor's offset.
+ *
+ * @param fd: The file descriptor to operate on
+ * @param offset: The number of bytes to move the offset
+ * @param whence: The location from which the offset is relative
+ * @returns `Ok(offset)` of the new offset of the file descriptor, relative to the start of the file, if successful or `Err(exception)` otherwise
+ */
 export let fdSeek = (fd: FileDescriptor, offset: Int64, whence: Whence) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
@@ -970,9 +1107,12 @@ export let fdSeek = (fd: FileDescriptor, offset: Int64, whence: Whence) => {
   }
 }
 
-// Read a file descriptor's offset
-// @param fd: FileDescriptor The file descriptor to read the offset
-// @returns Int64 The offset of the file descriptor, relative to the start of the file
+/**
+ * Read a file descriptor's offset.
+ *
+ * @param fd: The file descriptor to read the offset
+ * @returns `Ok(offset)` of the offset of the file descriptor, relative to the start of the file, if successful or `Err(exception)` otherwise
+ */
 export let fdTell = (fd: FileDescriptor) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
@@ -990,10 +1130,13 @@ export let fdTell = (fd: FileDescriptor) => {
   }
 }
 
-
-// Create a directory
-// @param fd: FileDescriptor The file descriptor of the directory in which path resolution starts
-// @param path: String The path to the new directory
+/**
+ * Create a directory.
+ *
+ * @param fd: The file descriptor of the directory in which path resolution starts
+ * @param path: The path to the new directory
+ * @returns `Ok(void)` if successful or `Err(exception)` otherwise
+ */
 export let pathCreateDirectory = (fd: FileDescriptor, path: String) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
@@ -1011,11 +1154,14 @@ export let pathCreateDirectory = (fd: FileDescriptor, path: String) => {
   }
 }
 
-// Retrieve information about a file
-// @param fd: FileDescriptor The file descriptor of the directory in which path resolution starts
-// @param dirFlags: List<LookupFlag> Flags which affect path resolution
-// @param path: String The path to retrieve information about
-// @returns Filestats A record containing information about the file
+/**
+ * Retrieve information about a file.
+ *
+ * @param fd: The file descriptor of the directory in which path resolution starts
+ * @param dirFlags: Flags which affect path resolution
+ * @param path: The path to retrieve information about
+ * @returns `Ok(info)` of the `Filestats` associated with the file descriptor if successful or `Err(exception)` otherwise
+ */
 export let pathFilestats = (fd: FileDescriptor, dirFlags: List<LookupFlag>, path: String) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
@@ -1050,11 +1196,15 @@ export let pathFilestats = (fd: FileDescriptor, dirFlags: List<LookupFlag>, path
   }
 }
 
-// Set the access (created) time of a file
-// @param fd: FileDescriptor The file descriptor of the directory in which path resolution starts
-// @param dirFlags: List<LookupFlag> Flags which affect path resolution
-// @param path: String The path to set the time
-// @param timestamp: Int64 The time to set
+/**
+ * Set the access (created) time of a file.
+ *
+ * @param fd: The file descriptor of the directory in which path resolution starts
+ * @param dirFlags: Flags which affect path resolution
+ * @param path: The path to set the time
+ * @param timestamp: The time to set
+ * @returns `Ok(void)` if successful or `Err(exception)` otherwise
+ */
 export let pathSetAccessTime = (fd: FileDescriptor, dirFlags: List<LookupFlag>, path: String, timestamp: Int64) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
@@ -1076,10 +1226,14 @@ export let pathSetAccessTime = (fd: FileDescriptor, dirFlags: List<LookupFlag>, 
   }
 }
 
-// Set the access (created) time of a file to the current time
-// @param fd: FileDescriptor The file descriptor of the directory in which path resolution starts
-// @param dirFlags: List<LookupFlag> Flags which affect path resolution
-// @param path: String The path to set the time
+/**
+ * Set the access (created) time of a file to the current time.
+ *
+ * @param fd: The file descriptor of the directory in which path resolution starts
+ * @param dirFlags: Flags which affect path resolution
+ * @param path: The path to set the time
+ * @returns `Ok(void)` if successful or `Err(exception)` otherwise
+ */
 export let pathSetAccessTimeNow = (fd: FileDescriptor, dirFlags: List<LookupFlag>, path: String) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
@@ -1099,11 +1253,15 @@ export let pathSetAccessTimeNow = (fd: FileDescriptor, dirFlags: List<LookupFlag
   }
 }
 
-// Set the modified time of a file
-// @param fd: FileDescriptor The file descriptor of the directory in which path resolution starts
-// @param dirFlags: List<LookupFlag> Flags which affect path resolution
-// @param path: String The path to set the time
-// @param timestamp: Int64 The time to set
+/**
+ * Set the modified time of a file.
+ *
+ * @param fd: The file descriptor of the directory in which path resolution starts
+ * @param dirFlags: Flags which affect path resolution
+ * @param path: The path to set the time
+ * @param timestamp: The time to set
+ * @returns `Ok(void)` if successful or `Err(exception)` otherwise
+ */
 export let pathSetModifiedTime = (fd: FileDescriptor, dirFlags: List<LookupFlag>, path: String, timestamp: Int64) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
@@ -1125,10 +1283,14 @@ export let pathSetModifiedTime = (fd: FileDescriptor, dirFlags: List<LookupFlag>
   }
 }
 
-// Set the modified time of a file to the current time
-// @param fd: FileDescriptor The file descriptor of the directory in which path resolution starts
-// @param dirFlags: List<LookupFlag> Flags which affect path resolution
-// @param path: String The path to set the time
+/**
+ * Set the modified time of a file to the current time.
+ *
+ * @param fd: The file descriptor of the directory in which path resolution starts
+ * @param dirFlags: Flags which affect path resolution
+ * @param path: The path to set the time
+ * @returns `Ok(void)` if successful or `Err(exception)` otherwise
+ */
 export let pathSetModifiedTimeNow = (fd: FileDescriptor, dirFlags: List<LookupFlag>, path: String) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
@@ -1148,12 +1310,16 @@ export let pathSetModifiedTimeNow = (fd: FileDescriptor, dirFlags: List<LookupFl
   }
 }
 
-// Create a hard link
-// @param sourceFd: FileDescriptor The file descriptor of the directory in which the source path resolution starts
-// @param dirFlags: List<LookupFlag> Flags which affect path resolution
-// @param sourcePath: String The path to the source of the link
-// @param targetFd: FileDescriptor The file descriptor of the directory in which the target path resolution starts
-// @param targetPath: String The path to the target of the link
+/**
+ * Create a hard link.
+ *
+ * @param sourceFd: The file descriptor of the directory in which the source path resolution starts
+ * @param dirFlags: Flags which affect path resolution
+ * @param sourcePath: The path to the source of the link
+ * @param targetFd: The file descriptor of the directory in which the target path resolution starts
+ * @param targetPath: The path to the target of the link
+ * @returns `Ok(void)` if successful or `Err(exception)` otherwise
+ */
 export let pathLink = (sourceFd: FileDescriptor, dirFlags: List<LookupFlag>, sourcePath: String, targetFd: FileDescriptor, targetPath: String) => {
   let sourceFd = match (sourceFd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
@@ -1179,10 +1345,14 @@ export let pathLink = (sourceFd: FileDescriptor, dirFlags: List<LookupFlag>, sou
   }
 }
 
-// Create a symlink
-// @param fd: FileDescriptor The file descriptor of the directory in which path resolution starts
-// @param sourcePath: String The path to the source of the link
-// @param targetPath: String The path to the target of the link
+/**
+ * Create a symlink.
+ *
+ * @param fd: The file descriptor of the directory in which path resolution starts
+ * @param sourcePath: The path to the source of the link
+ * @param targetPath: The path to the target of the link
+ * @returns `Ok(void)` if successful or `Err(exception)` otherwise
+ */
 export let pathSymlink = (fd: FileDescriptor, sourcePath: String, targetPath: String) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
@@ -1202,9 +1372,13 @@ export let pathSymlink = (fd: FileDescriptor, sourcePath: String, targetPath: St
   }
 }
 
-// Unlink a file
-// @param fd: FileDescriptor The file descriptor of the directory in which path resolution starts
-// @param path: String The path of the file to unlink
+/**
+ * Unlink a file.
+ *
+ * @param fd: The file descriptor of the directory in which path resolution starts
+ * @param path: The path of the file to unlink
+ * @returns `Ok(void)` if successful or `Err(exception)` otherwise
+ */
 export let pathUnlink = (fd: FileDescriptor, path: String) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
@@ -1221,11 +1395,14 @@ export let pathUnlink = (fd: FileDescriptor, path: String) => {
   }
 }
 
-// Read the contents of a symbolic link
-// @param fd: FileDescriptor The file descriptor of the directory in which path resolution starts
-// @param path: String The path to the symlink
-// @param size: The number of bytes to read
-// @returns (String, Number) The bytes read and the number of bytes read
+/**
+ * Read the contents of a symbolic link.
+ *
+ * @param fd: The file descriptor of the directory in which path resolution starts
+ * @param path: The path to the symlink
+ * @param size: The number of bytes to read
+ * @returns `Ok((contents, numBytes))` of the bytes read and the number of bytes read if successful or `Err(exception)` otherwise
+ */
 export let pathReadlink = (fd: FileDescriptor, path: String, size: Number) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
@@ -1254,9 +1431,13 @@ export let pathReadlink = (fd: FileDescriptor, path: String, size: Number) => {
   }
 }
 
-// Remove a directory
-// @param fd: FileDescriptor The file descriptor of the directory in which path resolution starts
-// @param path: String The path to the directory to remove
+/**
+ * Remove a directory.
+ *
+ * @param fd: The file descriptor of the directory in which path resolution starts
+ * @param path: The path to the directory to remove
+ * @returns `Ok(void)` if successful or `Err(exception)` otherwise
+ */
 export let pathRemoveDirectory = (fd: FileDescriptor, path: String) => {
   let fd = match (fd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
@@ -1273,11 +1454,15 @@ export let pathRemoveDirectory = (fd: FileDescriptor, path: String) => {
   }
 }
 
-// Rename a file or directory
-// @param sourceFd: FileDescriptor The file descriptor of the directory in which the source path resolution starts
-// @param sourcePath: String The path of the file to rename
-// @param targetFd: FileDescriptor The file descriptor of the directory in which the target path resolution starts
-// @param targetPath: String The new path of the file
+/**
+ * Rename a file or directory.
+ *
+ * @param sourceFd: The file descriptor of the directory in which the source path resolution starts
+ * @param sourcePath: The path of the file to rename
+ * @param targetFd: The file descriptor of the directory in which the target path resolution starts
+ * @param targetPath: The new path of the file
+ * @returns `Ok(void)` if successful or `Err(exception)` otherwise
+ */
 export let pathRename = (sourceFd: FileDescriptor, sourcePath: String, targetFd: FileDescriptor, targetPath: String) => {
   let sourceFd = match (sourceFd) {
     FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n
