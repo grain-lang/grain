@@ -905,7 +905,7 @@ and print_application =
   } else if (infixop(function_name)) {
     let first = List.hd(expressions);
     let second = List.hd(List.tl(expressions)); // assumes an infix only has two expressions
-    let firstBrackets =
+    let first_brackets =
       switch (first.pexp_desc) {
       | PExpIf(_) =>
         Doc.concat([
@@ -956,7 +956,7 @@ and print_application =
         )
       };
 
-    let secondBrackets =
+    let second_brackets =
       switch (second.pexp_desc) {
       | PExpIf(_)
       | PExpApp(_) =>
@@ -981,11 +981,11 @@ and print_application =
         )
       };
     Doc.concat([
-      firstBrackets,
+      first_brackets,
       Doc.space,
       Doc.text(function_name),
       Doc.space,
-      secondBrackets,
+      second_brackets,
     ]);
   } else {
     let func_name = get_function_name(func);
@@ -1070,9 +1070,7 @@ and print_application =
 
 and get_function_name = (expr: Parsetree.expression) => {
   switch (expr.pexp_desc) {
-  | PExpConstant(x) =>
-    print_endline("PExpConstant");
-    Doc.toString(~width=1000, print_constant(x));
+  | PExpConstant(x) => Doc.toString(~width=1000, print_constant(x))
   | PExpId({txt: id}) =>
     switch (id) {
     | IdentName(name) => name
@@ -1092,7 +1090,7 @@ and print_expression =
     (
       ~expr: Parsetree.expression,
       ~parentIsArrow: bool,
-      ~endChar: option(Doc.t),
+      ~endChar: option(Doc.t), // not currently used but will be in the next iteration
       ~original_source: list(string),
       ~parent_loc: Grain_parsing__Location.t,
     ) => {
@@ -1103,7 +1101,7 @@ and print_expression =
 
   let expr_line = get_end_loc_line(expr.pexp_loc);
 
-  let leadingCommentDocs =
+  let leading_comment_docs =
     if (List.length(leading_comments) > 0) {
       Doc.concat([
         print_multi_comments_no_space(leading_comments, expr_line),
@@ -2041,10 +2039,10 @@ and print_expression =
     };
 
   if (trailing_comment_docs == Doc.nil) {
-    Doc.concat([leadingCommentDocs, expression_doc, endingDoc]);
+    Doc.concat([leading_comment_docs, expression_doc, endingDoc]);
   } else {
     Doc.concat([
-      leadingCommentDocs,
+      leading_comment_docs,
       expression_doc,
       endingDoc,
       trailing_comment_docs,
