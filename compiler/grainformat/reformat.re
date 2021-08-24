@@ -323,15 +323,23 @@ let getCommentEndLine = (comment: Parsetree.comment) => {
 };
 
 let rec resugar_list_patterns =
-        (patterns: list(Parsetree.pattern), parent_loc) => {
+        (
+          ~patterns: list(Parsetree.pattern),
+          ~parent_loc,
+          ~original_source: list(string),
+        ) => {
   let processed_list = resugar_pattern_list_inner(patterns, parent_loc);
   let items =
     List.map(
       i =>
         switch (i) {
-        | RegularPattern(e) => print_pattern(e, parent_loc)
+        | RegularPattern(e) =>
+          print_pattern(~pat=e, ~parent_loc, ~original_source)
         | SpreadPattern(e) =>
-          Doc.concat([Doc.text("..."), print_pattern(e, parent_loc)])
+          Doc.concat([
+            Doc.text("..."),
+            print_pattern(~pat=e, ~parent_loc, ~original_source),
+          ])
         },
       processed_list,
     );
@@ -414,9 +422,9 @@ and is_empty_pattern_array = (pat: Parsetree.pattern) => {
 
 and resugar_list =
     (
-      expressions: list(Parsetree.expression),
-      parent_loc: Grain_parsing.Location.t,
-      original_source: list(string),
+      ~expressions: list(Parsetree.expression),
+      ~parent_loc: Grain_parsing.Location.t,
+      ~original_source: list(string),
     ) => {
   let processed_list = resugar_list_inner(expressions, parent_loc);
 
@@ -431,7 +439,7 @@ and resugar_list =
               ~parentIsArrow=false,
               ~endChar=None,
               ~original_source,
-              parent_loc,
+              ~parent_loc,
             ),
           )
         | Spread(e) =>
@@ -443,7 +451,7 @@ and resugar_list =
                 ~parentIsArrow=false,
                 ~endChar=None,
                 ~original_source,
-                parent_loc,
+                ~parent_loc,
               ),
             ]),
           )
@@ -492,15 +500,16 @@ and resugar_list_inner =
 
 and print_record_pattern =
     (
-      patternlocs:
-        list(
-          (
-            Grain_parsing__Location.loc(Grain_parsing__Identifier.t),
-            Grain_parsing__Parsetree.pattern,
-          ),
-        ),
-      closedflag: Grain_parsing__Asttypes.closed_flag,
-      parent_loc: Grain_parsing__Location.t,
+      ~patternlocs:
+         list(
+           (
+             Grain_parsing__Location.loc(Grain_parsing__Identifier.t),
+             Grain_parsing__Parsetree.pattern,
+           ),
+         ),
+      ~closedflag: Grain_parsing__Asttypes.closed_flag,
+      ~parent_loc: Grain_parsing__Location.t,
+      ~original_source: list(string),
     ) => {
   let close =
     switch (closedflag) {
@@ -522,7 +531,8 @@ and print_record_pattern =
           let (loc, pat) = patternloc;
 
           let printed_ident: Doc.t = print_ident(loc.txt);
-          let printed_pat = print_pattern(pat, parent_loc);
+          let printed_pat =
+            print_pattern(~pat, ~parent_loc, ~original_source);
 
           let pun =
             switch (printed_ident) {
@@ -549,7 +559,11 @@ and print_record_pattern =
 }
 
 and print_pattern =
-    (pat: Parsetree.pattern, parent_loc: Grain_parsing__Location.t) => {
+    (
+      ~pat: Parsetree.pattern,
+      ~parent_loc: Grain_parsing__Location.t,
+      ~original_source: list(string),
+    ) => {
   // Debug.debug_pattern(pat);
 
   let (leadingComments, trailingComments) =
@@ -576,7 +590,14 @@ and print_pattern =
         Doc.join(
           Doc.concat([Doc.comma, Doc.line]),
           List.map(
-            p => Doc.group(print_pattern(p, pat.ppat_loc)),
+            p =>
+              Doc.group(
+                print_pattern(
+                  ~pat=p,
+                  ~parent_loc=pat.ppat_loc,
+                  ~original_source,
+                ),
+              ),
             patterns,
           ),
         ),
@@ -590,7 +611,10 @@ and print_pattern =
             Doc.space,
             Doc.join(
               Doc.concat([Doc.comma, Doc.space]),
-              List.map(p => print_pattern(p, parent_loc), patterns),
+              List.map(
+                p => print_pattern(~pat=p, ~parent_loc, ~original_source),
+                patterns,
+              ),
             ),
             Doc.rbracket,
           ]),
@@ -598,12 +622,21 @@ and print_pattern =
         false,
       )
     | PPatRecord(patternlocs, closedflag) => (
-        print_record_pattern(patternlocs, closedflag, parent_loc),
+        print_record_pattern(
+          ~patternlocs,
+          ~closedflag,
+          ~parent_loc,
+          ~original_source,
+        ),
         false,
       )
     | PPatConstraint(pattern, parsed_type) => (
         Doc.concat([
-          print_pattern(pattern, pat.ppat_loc),
+          print_pattern(
+            ~pat=pattern,
+            ~parent_loc=pat.ppat_loc,
+            ~original_source,
+          ),
           Doc.concat([Doc.text(":"), Doc.space]),
           print_type(parsed_type),
         ]),
@@ -616,7 +649,10 @@ and print_pattern =
         | _ => ""
         };
       if (func == "[...]") {
-        (resugar_list_patterns(patterns, parent_loc), false);
+        (
+          resugar_list_patterns(~patterns, ~parent_loc, ~original_source),
+          false,
+        );
       } else {
         (
           Doc.concat([
@@ -625,7 +661,10 @@ and print_pattern =
               addParens(
                 Doc.join(
                   Doc.comma,
-                  List.map(pat => print_pattern(pat, parent_loc), patterns),
+                  List.map(
+                    pat => print_pattern(~pat, ~parent_loc, ~original_source),
+                    patterns,
+                  ),
                 ),
               );
             } else {
@@ -636,8 +675,14 @@ and print_pattern =
         );
       };
 
-    | PPatOr(pattern1, pattern2) => (Doc.text("PPatOr"), false) // Need to understand where this may be used
-    | PPatAlias(pattern, loc) => (Doc.text("PPatAlias"), false) // Need to understand where this may be used
+    | PPatOr(pattern1, pattern2) => (
+        Doc.text("/* Formatter PPatOr error */"),
+        false,
+      ) // Need to understand where this may be used
+    | PPatAlias(pattern, loc) => (
+        Doc.text("/* Formatter PPatAlias error */"),
+        false,
+      ) // Need to understand where this may be used
     };
 
   let (pattern, parens) = printed_pattern;
@@ -728,15 +773,15 @@ and print_imported_ident = (ident: Identifier.t) => {
 }
 and print_record =
     (
-      fields:
-        list(
-          (
-            Grain_parsing__Location.loc(Grain_parsing__Identifier.t),
-            Grain_parsing__Parsetree.expression,
-          ),
-        ),
-      parent_loc: Grain_parsing__Location.t,
-      original_source: list(string),
+      ~fields:
+         list(
+           (
+             Grain_parsing__Location.loc(Grain_parsing__Identifier.t),
+             Grain_parsing__Parsetree.expression,
+           ),
+         ),
+      ~parent_loc: Grain_parsing__Location.t,
+      ~original_source: list(string),
     ) =>
   Doc.concat([
     //  Doc.softLine,
@@ -763,7 +808,7 @@ and print_record =
                   ~parentIsArrow=false,
                   ~endChar=None,
                   ~original_source,
-                  parent_loc,
+                  ~parent_loc,
                 );
               let punned_expr = check_for_pun(expr);
 
@@ -849,10 +894,10 @@ and print_type = (p: Grain_parsing__Parsetree.parsed_type) => {
 }
 and print_application =
     (
-      func: Parsetree.expression,
-      expressions: list(Parsetree.expression),
-      parent_loc: Location.t,
-      original_source: list(string),
+      ~func: Parsetree.expression,
+      ~expressions: list(Parsetree.expression),
+      ~parent_loc: Location.t,
+      ~original_source: list(string),
     ) => {
   let functionName = getFunctionName(func);
 
@@ -870,7 +915,7 @@ and print_application =
             ~parentIsArrow=false,
             ~endChar=None,
             ~original_source,
-            parent_loc,
+            ~parent_loc,
           ),
           Doc.rparen,
         ])
@@ -883,7 +928,7 @@ and print_application =
             ~parentIsArrow=false,
             ~endChar=None,
             ~original_source,
-            parent_loc,
+            ~parent_loc,
           ),
         ])
       };
@@ -907,7 +952,7 @@ and print_application =
             ~parentIsArrow=false,
             ~endChar=None,
             ~original_source,
-            parent_loc,
+            ~parent_loc,
           ),
           Doc.rparen,
         ])
@@ -921,7 +966,7 @@ and print_application =
               ~parentIsArrow=false,
               ~endChar=None,
               ~original_source,
-              parent_loc,
+              ~parent_loc,
             ),
             Doc.rparen,
           ]);
@@ -933,7 +978,7 @@ and print_application =
               ~parentIsArrow=false,
               ~endChar=None,
               ~original_source,
-              parent_loc,
+              ~parent_loc,
             ),
             Doc.rparen,
           ]);
@@ -944,7 +989,7 @@ and print_application =
           ~parentIsArrow=false,
           ~endChar=None,
           ~original_source,
-          parent_loc,
+          ~parent_loc,
         )
       };
 
@@ -959,7 +1004,7 @@ and print_application =
             ~parentIsArrow=false,
             ~endChar=None,
             ~original_source,
-            parent_loc,
+            ~parent_loc,
           ),
           Doc.rparen,
         ])
@@ -969,7 +1014,7 @@ and print_application =
           ~parentIsArrow=false,
           ~endChar=None,
           ~original_source,
-          parent_loc,
+          ~parent_loc,
         )
       };
     Doc.concat([
@@ -983,7 +1028,7 @@ and print_application =
     let funcName = getFunctionName(func);
 
     if (funcName == "[...]") {
-      resugar_list(expressions, parent_loc, original_source);
+      resugar_list(~expressions, ~parent_loc, ~original_source);
     } else if (funcName == "throw"
                || funcName == "assert"
                || funcName == "fail") {
@@ -993,7 +1038,7 @@ and print_application =
           ~parentIsArrow=false,
           ~endChar=None,
           ~original_source,
-          parent_loc,
+          ~parent_loc,
         ),
         Doc.space,
         print_expression(
@@ -1001,7 +1046,7 @@ and print_application =
           ~parentIsArrow=false,
           ~endChar=None,
           ~original_source,
-          parent_loc,
+          ~parent_loc,
         ),
       ]);
     } else if (funcName == "!") {
@@ -1011,14 +1056,14 @@ and print_application =
           ~parentIsArrow=false,
           ~endChar=None,
           ~original_source,
-          parent_loc,
+          ~parent_loc,
         ),
         print_expression(
           ~expr=List.hd(expressions),
           ~parentIsArrow=false,
           ~endChar=None,
           ~original_source,
-          parent_loc,
+          ~parent_loc,
         ),
       ]);
     } else {
@@ -1029,7 +1074,7 @@ and print_application =
             ~parentIsArrow=false,
             ~endChar=None,
             ~original_source,
-            func.pexp_loc,
+            ~parent_loc=func.pexp_loc,
           ),
           Doc.lparen,
           Doc.indent(
@@ -1044,7 +1089,7 @@ and print_application =
                       ~parentIsArrow=false,
                       ~endChar=None,
                       ~original_source,
-                      parent_loc,
+                      ~parent_loc,
                     ),
                   expressions,
                 ),
@@ -1086,7 +1131,7 @@ and print_expression =
       ~parentIsArrow: bool,
       ~endChar: option(Doc.t),
       ~original_source: list(string),
-      parent_loc: Grain_parsing__Location.t,
+      ~parent_loc: Grain_parsing__Location.t,
     ) => {
   // Debug.debug_expression(expr);
 
@@ -1146,7 +1191,7 @@ and print_expression =
                 ~parentIsArrow=false,
                 ~endChar=None,
                 ~original_source,
-                parent_loc,
+                ~parent_loc,
               ),
             expressions,
           ),
@@ -1170,7 +1215,7 @@ and print_expression =
                     ~parentIsArrow=false,
                     ~endChar=None,
                     ~original_source,
-                    parent_loc,
+                    ~parent_loc,
                   ),
                 expressions,
               ),
@@ -1187,7 +1232,7 @@ and print_expression =
           ~parentIsArrow=false,
           ~endChar=None,
           ~original_source,
-          parent_loc,
+          ~parent_loc,
         ),
         Doc.lbracket,
         print_expression(
@@ -1195,7 +1240,7 @@ and print_expression =
           ~parentIsArrow=false,
           ~endChar=None,
           ~original_source,
-          parent_loc,
+          ~parent_loc,
         ),
         Doc.rbracket,
       ])
@@ -1208,7 +1253,7 @@ and print_expression =
             ~parentIsArrow=false,
             ~endChar=None,
             ~original_source,
-            parent_loc,
+            ~parent_loc,
           ),
           Doc.lbracket,
           print_expression(
@@ -1216,7 +1261,7 @@ and print_expression =
             ~parentIsArrow=false,
             ~endChar=None,
             ~original_source,
-            parent_loc,
+            ~parent_loc,
           ),
           Doc.rbracket,
           Doc.text(" ="),
@@ -1228,14 +1273,15 @@ and print_expression =
                 ~parentIsArrow=false,
                 ~endChar=None,
                 ~original_source,
-                parent_loc,
+                ~parent_loc,
               ),
             ]),
           ),
         ]),
       )
 
-    | PExpRecord(record) => print_record(record, parent_loc, original_source)
+    | PExpRecord(record) =>
+      print_record(~fields=record, ~parent_loc, ~original_source)
     | PExpRecordGet(expression, {txt, _}) =>
       Doc.concat([
         print_expression(
@@ -1243,7 +1289,7 @@ and print_expression =
           ~parentIsArrow=false,
           ~endChar=None,
           ~original_source,
-          parent_loc,
+          ~parent_loc,
         ),
         Doc.dot,
         print_ident(txt),
@@ -1255,7 +1301,7 @@ and print_expression =
           ~parentIsArrow=false,
           ~endChar=None,
           ~original_source,
-          parent_loc,
+          ~parent_loc,
         ),
         Doc.dot,
         print_ident(txt),
@@ -1265,7 +1311,7 @@ and print_expression =
           ~parentIsArrow=false,
           ~endChar=None,
           ~original_source,
-          parent_loc,
+          ~parent_loc,
         ),
       ])
     | PExpMatch(expression, match_branches) =>
@@ -1279,7 +1325,7 @@ and print_expression =
               ~parentIsArrow=false,
               ~endChar=None,
               ~original_source,
-              parent_loc,
+              ~parent_loc,
             ),
           ),
           Doc.rparen,
@@ -1333,7 +1379,11 @@ and print_expression =
                           stmtLeadingCommentDocs,
                           Doc.concat([
                             Doc.group(
-                              print_pattern(branch.pmb_pat, parent_loc),
+                              print_pattern(
+                                ~pat=branch.pmb_pat,
+                                ~parent_loc,
+                                ~original_source,
+                              ),
                             ),
                             switch (branch.pmb_guard) {
                             | None => Doc.nil
@@ -1345,7 +1395,7 @@ and print_expression =
                                   ~parentIsArrow=false,
                                   ~endChar=None,
                                   ~original_source,
-                                  parent_loc,
+                                  ~parent_loc,
                                 ),
                               ])
                             },
@@ -1361,7 +1411,7 @@ and print_expression =
                                   ~parentIsArrow=true,
                                   ~endChar=None,
                                   ~original_source,
-                                  parent_loc,
+                                  ~parent_loc,
                                 ),
                               ])
                             | _ =>
@@ -1373,7 +1423,7 @@ and print_expression =
                                     ~parentIsArrow=true,
                                     ~endChar=None,
                                     ~original_source,
-                                    parent_loc,
+                                    ~parent_loc,
                                   ),
                                 ]),
                               )
@@ -1403,14 +1453,14 @@ and print_expression =
       );
 
     | PExpPrim1(prim1, expression) =>
-      print_endline("PExpPrim1");
-      Doc.text("PExpPrim1");
+      //  print_endline("PExpPrim1");
+      Doc.text("/* PExpPrim1 not handled by formatter */")
     | PExpPrim2(prim2, expression, expression1) =>
-      print_endline("PExpPrim2");
-      Doc.text("PExpPrim2");
+      // print_endline("PExpPrim2");
+      Doc.text(" /*PExpPrim2 not handled by formatter */")
     | PExpPrimN(primn, expressions) =>
-      print_endline("PExpPrimN");
-      Doc.text("PExpPrimN");
+      // print_endline("PExpPrimN");
+      Doc.text("/*b PExpPrimN not handled by formatter */")
     | PExpIf(condition, trueExpr, falseExpr) =>
       let (leadingConditionComments, _trailingComments) =
         Walktree.partitionComments(condition.pexp_loc, Some(parent_loc));
@@ -1443,7 +1493,7 @@ and print_expression =
             ~parentIsArrow=false,
             ~endChar=None,
             ~original_source,
-            parent_loc,
+            ~parent_loc,
           )
 
         | _ =>
@@ -1457,7 +1507,7 @@ and print_expression =
                   ~parentIsArrow=false,
                   ~endChar=None,
                   ~original_source,
-                  parent_loc,
+                  ~parent_loc,
                 ),
               ]),
             ),
@@ -1478,7 +1528,7 @@ and print_expression =
                 ~parentIsArrow=false,
                 ~endChar=None,
                 ~original_source,
-                parent_loc,
+                ~parent_loc,
               ),
             ]);
           } else {
@@ -1493,7 +1543,7 @@ and print_expression =
               ~parentIsArrow=false,
               ~endChar=None,
               ~original_source,
-              parent_loc,
+              ~parent_loc,
             ),
           ])
         | _ =>
@@ -1512,7 +1562,7 @@ and print_expression =
                       ~parentIsArrow=false,
                       ~endChar=None,
                       ~original_source,
-                      parent_loc,
+                      ~parent_loc,
                     ),
                   ]),
                 ),
@@ -1537,7 +1587,7 @@ and print_expression =
                   ~parentIsArrow=false,
                   ~endChar=None,
                   ~original_source,
-                  parent_loc,
+                  ~parent_loc,
                 ),
                 Doc.rparen,
                 Doc.space,
@@ -1559,7 +1609,7 @@ and print_expression =
                 ~parentIsArrow=false,
                 ~endChar=None,
                 ~original_source,
-                parent_loc,
+                ~parent_loc,
               ),
               Doc.rparen,
               Doc.space,
@@ -1581,7 +1631,7 @@ and print_expression =
               ~parentIsArrow=false,
               ~endChar=None,
               ~original_source,
-              parent_loc,
+              ~parent_loc,
             ),
             Doc.space,
             Doc.rparen,
@@ -1594,7 +1644,7 @@ and print_expression =
             ~parentIsArrow=false,
             ~endChar=None,
             ~original_source,
-            parent_loc,
+            ~parent_loc,
           ),
         ),
       ])
@@ -1616,7 +1666,7 @@ and print_expression =
                       ~parentIsArrow=false,
                       ~endChar=None,
                       ~original_source,
-                      parent_loc,
+                      ~parent_loc,
                     )
                   | None => Doc.nil
                   },
@@ -1631,7 +1681,7 @@ and print_expression =
                           ~parentIsArrow=false,
                           ~endChar=None,
                           ~original_source,
-                          parent_loc,
+                          ~parent_loc,
                         ),
                       ),
                     ])
@@ -1648,7 +1698,7 @@ and print_expression =
                           ~parentIsArrow=false,
                           ~endChar=None,
                           ~original_source,
-                          parent_loc,
+                          ~parent_loc,
                         ),
                       ),
                     ])
@@ -1667,7 +1717,7 @@ and print_expression =
           ~parentIsArrow=false,
           ~endChar=None,
           ~original_source,
-          parent_loc,
+          ~parent_loc,
         ),
       ])
     | PExpContinue => Doc.group(Doc.concat([Doc.text("continue")]))
@@ -1680,7 +1730,7 @@ and print_expression =
             ~parentIsArrow=false,
             ~endChar=None,
             ~original_source,
-            parent_loc,
+            ~parent_loc,
           ),
           Doc.text(": "),
           print_type(parsed_type),
@@ -1703,7 +1753,15 @@ and print_expression =
                     Doc.softLine,
                     Doc.join(
                       Doc.concat([Doc.text(","), Doc.line]),
-                      List.map(p => print_pattern(p, parent_loc), patterns),
+                      List.map(
+                        p =>
+                          print_pattern(
+                            ~pat=p,
+                            ~parent_loc,
+                            ~original_source,
+                          ),
+                        patterns,
+                      ),
                     ),
                     Doc.ifBreaks(Doc.text(","), Doc.nil),
                   ]),
@@ -1720,16 +1778,16 @@ and print_expression =
           | PPatConstraint(_) =>
             Doc.concat([
               Doc.lparen,
-              print_pattern(pat, parent_loc),
+              print_pattern(~pat, ~parent_loc, ~original_source),
               Doc.rparen,
             ])
           | PPatTuple(_) =>
             Doc.concat([
               Doc.lparen,
-              print_pattern(pat, parent_loc),
+              print_pattern(~pat, ~parent_loc, ~original_source),
               Doc.rparen,
             ])
-          | _ => print_pattern(pat, parent_loc)
+          | _ => print_pattern(~pat, ~parent_loc, ~original_source)
           };
         };
 
@@ -1745,7 +1803,7 @@ and print_expression =
                 ~parentIsArrow=false,
                 ~endChar=None,
                 ~original_source,
-                parent_loc,
+                ~parent_loc,
               ),
             ),
           ]
@@ -1763,7 +1821,7 @@ and print_expression =
                       ~parentIsArrow=false,
                       ~endChar=None,
                       ~original_source,
-                      parent_loc,
+                      ~parent_loc,
                     ),
                   ),
                 ]),
@@ -1777,7 +1835,7 @@ and print_expression =
     | PExpApp(func, expressions) =>
       // print_loc("PExpApp", expr.pexp_loc);
 
-      print_application(func, expressions, parent_loc, original_source)
+      print_application(~func, ~expressions, ~parent_loc, ~original_source)
     | PExpBlock(expressions) =>
       // print_loc("PExpBlock", expr.pexp_loc);
 
@@ -1837,7 +1895,7 @@ and print_expression =
                       ~parentIsArrow=false,
                       ~endChar=None,
                       ~original_source,
-                      parent_loc,
+                      ~parent_loc,
                     );
 
                   previousLine := getEndLocLine(e.pexp_loc);
@@ -1899,7 +1957,7 @@ and print_expression =
           ~parentIsArrow=false,
           ~endChar=None,
           ~original_source,
-          parent_loc,
+          ~parent_loc,
         ),
         Doc.text(" := "),
         print_expression(
@@ -1907,7 +1965,7 @@ and print_expression =
           ~parentIsArrow=false,
           ~endChar=None,
           ~original_source,
-          parent_loc,
+          ~parent_loc,
         ),
       ])
     | PExpAssign(expression, expression1) =>
@@ -1924,7 +1982,8 @@ and print_expression =
             ~expr=expression,
             ~parentIsArrow=false,
             ~endChar=None,
-            parent_loc,
+            ~parent_loc,
+            ~original_source,
           );
 
         let first =
@@ -1932,7 +1991,8 @@ and print_expression =
             ~expr=List.hd(expressions),
             ~parentIsArrow=false,
             ~endChar=None,
-            parent_loc,
+            ~parent_loc,
+            ~original_source,
           );
 
         if (left == first) {
@@ -1950,7 +2010,7 @@ and print_expression =
                 ~parentIsArrow=false,
                 ~endChar=None,
                 ~original_source,
-                parent_loc,
+                ~parent_loc,
               ),
               sugaredOp,
               if (List.length(expressions) == 1) {
@@ -1959,7 +2019,7 @@ and print_expression =
                   ~parentIsArrow=false,
                   ~endChar=None,
                   ~original_source,
-                  parent_loc,
+                  ~parent_loc,
                 );
               } else {
                 print_expression(
@@ -1967,7 +2027,7 @@ and print_expression =
                   ~parentIsArrow=false,
                   ~endChar=None,
                   ~original_source,
-                  parent_loc,
+                  ~parent_loc,
                 );
               },
             ]);
@@ -1978,7 +2038,7 @@ and print_expression =
                 ~parentIsArrow=false,
                 ~endChar=None,
                 ~original_source,
-                parent_loc,
+                ~parent_loc,
               ),
               Doc.text(" = "),
               print_expression(
@@ -1986,7 +2046,7 @@ and print_expression =
                 ~parentIsArrow=false,
                 ~endChar=None,
                 ~original_source,
-                parent_loc,
+                ~parent_loc,
               ),
             ])
           };
@@ -1997,7 +2057,7 @@ and print_expression =
               ~parentIsArrow=false,
               ~endChar=None,
               ~original_source,
-              parent_loc,
+              ~parent_loc,
             ),
             Doc.text(" = "),
             print_expression(
@@ -2005,7 +2065,7 @@ and print_expression =
               ~parentIsArrow=false,
               ~endChar=None,
               ~original_source,
-              parent_loc,
+              ~parent_loc,
             ),
           ]);
         };
@@ -2017,7 +2077,7 @@ and print_expression =
             ~parentIsArrow=false,
             ~endChar=None,
             ~original_source,
-            parent_loc,
+            ~parent_loc,
           ),
           Doc.text(" = "),
           print_expression(
@@ -2025,7 +2085,7 @@ and print_expression =
             ~parentIsArrow=false,
             ~endChar=None,
             ~original_source,
-            parent_loc,
+            ~parent_loc,
           ),
         ])
       }
@@ -2086,7 +2146,7 @@ and value_bind_print =
             ~parentIsArrow=false,
             ~endChar=None,
             ~original_source,
-            parent_loc,
+            ~parent_loc,
           );
 
         // fix needed here?, we need to work out if all arguments fit on the line or will break
@@ -2098,7 +2158,13 @@ and value_bind_print =
           };
 
         Doc.concat([
-          Doc.group(print_pattern(vb.pvb_pat, vb.pvb_loc)),
+          Doc.group(
+            print_pattern(
+              ~pat=vb.pvb_pat,
+              ~parent_loc=vb.pvb_loc,
+              ~original_source,
+            ),
+          ),
           Doc.text(" ="),
           Doc.group(expressionGrp),
         ]);
@@ -2505,9 +2571,9 @@ let print_primitive_value_description = (vd: Parsetree.value_description) => {
 
 let toplevel_print =
     (
-      data: Parsetree.toplevel_stmt,
-      original_source: list(string),
-      previousLine: int,
+      ~data: Parsetree.toplevel_stmt,
+      ~original_source: list(string),
+      ~previousLine: int,
     ) => {
   let attributes = data.ptop_attributes;
 
@@ -2614,7 +2680,7 @@ let toplevel_print =
           ~parentIsArrow=false,
           ~endChar=None,
           ~original_source,
-          data.ptop_loc,
+          ~parent_loc=data.ptop_loc,
         )
       | PTopException(export_flag, type_exception) =>
         let export =
@@ -2707,7 +2773,12 @@ let reformat_ast =
       Doc.hardLine,
       List.map(
         (stmt: Grain_parsing.Parsetree.toplevel_stmt) => {
-          let line = toplevel_print(stmt, original_source, previousLine^);
+          let line =
+            toplevel_print(
+              ~data=stmt,
+              ~original_source,
+              ~previousLine=previousLine^,
+            );
 
           previousLine := getEndLocLine(stmt.ptop_loc);
           lastStmt := Some(stmt);
