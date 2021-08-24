@@ -4,10 +4,6 @@ type node_t =
   | Code(Grain_parsing.Location.t)
   | Comment((Grain_parsing.Location.t, Grain_parsing.Parsetree.comment));
 
-type node_tree =
-  | Empty
-  | Node(node_tree, node_t, node_tree);
-
 let all_locations: ref(list(node_t)) = ref([]);
 
 let get_node_loc = (node: node_t): Grain_parsing.Location.t =>
@@ -179,7 +175,7 @@ let partition_comments =
         if (skip^) {
           acc;
         } else {
-          let (accPreceeding, accFollowing) = acc;
+          let (acc_preceeding, acc_following) = acc;
           let nodeLoc = get_node_loc(node);
 
           let inRange =
@@ -203,15 +199,15 @@ let partition_comments =
               acc;
             } else if (comparedLoc > 0) {
               switch (node) {
-              | Code(_) => ([], accFollowing)
-              | Comment((l, c)) => (accPreceeding @ [c], accFollowing)
+              | Code(_) => ([], acc_following)
+              | Comment((l, c)) => (acc_preceeding @ [c], acc_following)
               };
             } else {
               switch (node) {
               | Code(_) =>
                 skip := true;
                 acc;
-              | Comment((l, c)) => (accPreceeding, accFollowing @ [c])
+              | Comment((l, c)) => (acc_preceeding, acc_following @ [c])
               };
             };
           };
@@ -245,16 +241,16 @@ let remove_used_comments = (pre_comments, post_comments) => {
 
 let remove_nodes_before = (loc: Location.t) => {
   let skip = ref(false);
-  let cleanedList =
+  let cleaned_list =
     List.filter(
       n =>
         if (skip^) {
           true;
         } else {
-          let nodeLoc = get_node_loc(n);
-          let comparedLoc = compare_partition_locations(nodeLoc, loc);
+          let node_loc = get_node_loc(n);
+          let compared_loc = compare_partition_locations(node_loc, loc);
 
-          if (comparedLoc == 0) {
+          if (compared_loc == 0) {
             skip := true;
             true;
           } else {
@@ -264,11 +260,11 @@ let remove_nodes_before = (loc: Location.t) => {
       all_locations^,
     );
 
-  all_locations := cleanedList;
+  all_locations := cleaned_list;
 };
 
 let remove_comments_in_ignore_block = (loc: Location.t) => {
-  let cleanedList =
+  let cleaned_list =
     List.filter(
       n => {
         switch (n) {
@@ -280,5 +276,5 @@ let remove_comments_in_ignore_block = (loc: Location.t) => {
       all_locations^,
     );
 
-  all_locations := cleanedList;
+  all_locations := cleaned_list;
 };
