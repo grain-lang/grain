@@ -85,3 +85,37 @@ export let peekOk = (fn, r) => {
 export let peekErr = (fn, r) => {
     peek(identity, fn, r)
 }
+
+/**
+ * Extracts the value inside an `Ok` result, otherwise throw an
+ * exception containing the message and contents of the `Err`.
+ *
+ * @param msg: The message to prepend if the result contains an `Err`
+ * @param result: The result to extract a value from
+ * @returns The value inside an `Ok` result
+ *
+ * @example Result.expect("Unexpected error", Ok(1234))
+ *
+ * @since v0.4.0
+ */
+export let expect = (msg, result) => {
+    match (result) {
+        Ok(x) => x,
+        Err(err) => fail msg ++ ": " ++ toString(err)
+    }
+}
+
+/**
+ * Extracts the value inside an `Ok` result, otherwise throw an
+ * exception containing a default message and contents of the `Err`.
+ *
+ * @param result: The result to extract a value from
+ * @returns The value inside an `Ok` result
+ *
+ * @example Result.unwrap(Err("This will throw"))
+ *
+ * @since v0.4.0
+ */
+export let unwrap = (result) => {
+    expect("Could not unwrap Err value", result)
+}
