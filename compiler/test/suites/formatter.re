@@ -25,4 +25,5 @@ describe("formatter", ({test}) => {
   assertFormatOutput("operators", "operators");
   assertFormatOutput("enums", "enums");
   assertFormatOutput("lets", "lets");
+  assertFormatOutput("ignores", "ignores");
 });

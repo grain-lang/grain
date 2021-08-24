@@ -17,14 +17,22 @@ let getOriginalCode =
   let (_, startline, startc, _) = get_raw_pos_info(location.loc_start);
   let (_, endline, endc, _) = get_raw_pos_info(location.loc_end);
 
-  print_endline(
-    "source line length:" ++ string_of_int(List.length(source)),
-  );
-
   let text = ref("");
   if (List.length(source) > endline) {
-    for (line in startline - 1 to endline - 1) {
-      text := text^ ++ List.nth(source, line) ++ "\n"; // What about Windows?
+    if (startline == endline) {
+      text := text^ ++ List.nth(source, startline - 1);
+    } else {
+      for (line in startline - 1 to endline - 1) {
+        if (line + 1 == startline) {
+          text :=
+            text^ ++ Str.string_after(List.nth(source, line), startc) ++ "\n"; // What about Windows?
+        } else if (line + 1 == endline) {
+          text := text^ ++ List.nth(source, line);
+        } else {
+          text :=
+            text^ ++ Str.string_before(List.nth(source, line), endc) ++ "\n"; // What about Windows?
+        };
+      };
     };
     text^;
   } else {
@@ -367,17 +375,10 @@ and resugar_pattern_list_inner =
 
     if (func == "[]") {
       [RegularPattern(arg1)];
-    } else if (is_empty_pattern_array(arg2)) {
-      [RegularPattern(arg1)];
     } else {
       [RegularPattern(arg1), SpreadPattern(arg2)];
     };
-  | _ =>
-    if (is_empty_pattern_array(arg2)) {
-      [RegularPattern(arg1)];
-    } else {
-      [RegularPattern(arg1), SpreadPattern(arg2)];
-    }
+  | _ => [RegularPattern(arg1), SpreadPattern(arg2)]
   };
 }
 
@@ -397,27 +398,6 @@ and is_empty_array = (expr: Parsetree.expression) => {
     };
   | _ => false
   };
-}
-
-and is_empty_pattern_array = (pat: Parsetree.pattern) => {
-  let _ =
-    switch (pat.ppat_desc) {
-    | PPatAny => false
-    | PPatConstant(c) => false
-    | PPatVar({txt, _}) =>
-      if (txt == "[]") {
-        true;
-      } else {
-        false;
-      }
-    | PPatTuple(patterns) => false
-    | PPatArray(patterns) => false
-    | PPatConstraint(pattern, parsed_type) => false
-    | PPatConstruct(location, patterns) => false
-    | _ => false
-    };
-  // ignore all the above
-  false;
 }
 
 and resugar_list =
@@ -564,8 +544,6 @@ and print_pattern =
       ~parent_loc: Grain_parsing__Location.t,
       ~original_source: list(string),
     ) => {
-  // Debug.debug_pattern(pat);
-
   let (leadingComments, trailingComments) =
     Walktree.partitionComments(pat.ppat_loc, Some(parent_loc));
   Walktree.removeUsedComments(leadingComments, trailingComments);
@@ -678,11 +656,11 @@ and print_pattern =
     | PPatOr(pattern1, pattern2) => (
         Doc.text("/* Formatter PPatOr error */"),
         false,
-      ) // Need to understand where this may be used
+      )
     | PPatAlias(pattern, loc) => (
         Doc.text("/* Formatter PPatAlias error */"),
         false,
-      ) // Need to understand where this may be used
+      )
     };
 
   let (pattern, parens) = printed_pattern;
@@ -784,7 +762,6 @@ and print_record =
       ~original_source: list(string),
     ) =>
   Doc.concat([
-    //  Doc.softLine,
     Doc.lbrace,
     Doc.indent(
       Doc.concat([
@@ -941,7 +918,6 @@ and print_application =
   } else if (infixop(functionName)) {
     let first = List.hd(expressions);
     let second = List.hd(List.tl(expressions)); // assumes an infix only has two expressions
-    //  Debug.debug_expression(first);
     let firstBrackets =
       switch (first.pexp_desc) {
       | PExpIf(_) =>
@@ -1133,8 +1109,6 @@ and print_expression =
       ~original_source: list(string),
       ~parent_loc: Grain_parsing__Location.t,
     ) => {
-  // Debug.debug_expression(expr);
-
   let (leadingComments, trailingComments) =
     Walktree.partitionComments(expr.pexp_loc, Some(parent_loc));
 
@@ -1161,17 +1135,9 @@ and print_expression =
 
   let expression_doc =
     switch (expr.pexp_desc) {
-    | PExpConstant(x) =>
-      //   print_loc("PExpConstant", expr.pexp_loc);
-
-      print_constant(x)
-    | PExpId({txt: id}) =>
-      //  print_loc("PExpId", expr.pexp_loc);
-
-      print_ident(id)
+    | PExpConstant(x) => print_constant(x)
+    | PExpId({txt: id}) => print_ident(id)
     | PExpLet(rec_flag, mut_flag, vbs) =>
-      // print_loc("PExpLet", expr.pexp_loc);
-
       value_bind_print(
         Asttypes.Nonexported,
         rec_flag,
@@ -1245,7 +1211,6 @@ and print_expression =
         Doc.rbracket,
       ])
     | PExpArraySet(expression1, expression2, expression3) =>
-      //print_endline("PExpArraySet");
       Doc.group(
         Doc.concat([
           print_expression(
@@ -1315,7 +1280,6 @@ and print_expression =
         ),
       ])
     | PExpMatch(expression, match_branches) =>
-      // print_loc("PExpMatch", expr.pexp_loc);
       let arg =
         Doc.concat([
           Doc.lparen,
@@ -1443,6 +1407,7 @@ and print_expression =
                   match_branches,
                 ),
               ),
+              // keeping this as I think we can start to not add commas again
               //  Doc.text(","),
               //Doc.ifBreaks(Doc.text(","), Doc.nil),
             ]),
@@ -1453,13 +1418,10 @@ and print_expression =
       );
 
     | PExpPrim1(prim1, expression) =>
-      //  print_endline("PExpPrim1");
       Doc.text("/* PExpPrim1 not handled by formatter */")
     | PExpPrim2(prim2, expression, expression1) =>
-      // print_endline("PExpPrim2");
       Doc.text(" /*PExpPrim2 not handled by formatter */")
     | PExpPrimN(primn, expressions) =>
-      // print_endline("PExpPrimN");
       Doc.text("/*b PExpPrimN not handled by formatter */")
     | PExpIf(condition, trueExpr, falseExpr) =>
       let (leadingConditionComments, _trailingComments) =
@@ -1576,7 +1538,6 @@ and print_expression =
       if (parentIsArrow) {
         Doc.group(
           Doc.concat([
-            // Doc.line,
             Doc.text("if "),
             Doc.group(
               Doc.concat([
@@ -1737,8 +1698,6 @@ and print_expression =
         ]),
       )
     | PExpLambda(patterns, expression) =>
-      //print_loc("PExpLambda", expr.pexp_loc);
-
       let args =
         if (List.length(patterns) == 0) {
           Doc.concat([Doc.lparen, Doc.rparen]);
@@ -1833,12 +1792,8 @@ and print_expression =
       Doc.concat(followsArrow);
 
     | PExpApp(func, expressions) =>
-      // print_loc("PExpApp", expr.pexp_loc);
-
       print_application(~func, ~expressions, ~parent_loc, ~original_source)
     | PExpBlock(expressions) =>
-      // print_loc("PExpBlock", expr.pexp_loc);
-
       if (List.length(expressions) > 0) {
         let previousLine = ref(getLocLine(expr.pexp_loc));
         let block =
@@ -1858,8 +1813,6 @@ and print_expression =
 
                 Walktree.removeUsedComments(leadingComments, []);
 
-                // YOYO
-
                 let (stmtLeadingCommentDocs1, prevLine) =
                   print_leading_comments(leadingComments, previousLine^);
 
@@ -1878,11 +1831,12 @@ and print_expression =
                   };
 
                 if (disableFormatting) {
-                  print_endline("@!@! Disable formatting on next block node");
-                  Debug.print_loc("Skip formatting for", e.pexp_loc);
-
                   let originalCode =
                     getOriginalCode(e.pexp_loc, original_source);
+                  // need to remove any comments that were inside the disabled block
+
+                  Walktree.removeCommentsInIgnoreBlock(e.pexp_loc);
+
                   Doc.concat([
                     stmtLeadingCommentDocs,
                     blankLineAbove,
@@ -1969,8 +1923,6 @@ and print_expression =
         ),
       ])
     | PExpAssign(expression, expression1) =>
-      //print_loc("PExpAssign", expr.pexp_loc);
-
       switch (expression1.pexp_desc) {
       | PExpApp(func, expressions) =>
         let functionName = getFunctionName(func);
@@ -2138,8 +2090,6 @@ and value_bind_print =
   let value_bindings =
     List.map(
       (vb: Parsetree.value_binding) => {
-        // Debug.print_loc("value binding to fix:", vb.pvb_loc);
-
         let expression =
           print_expression(
             ~expr=vb.pvb_expr,
@@ -2149,11 +2099,10 @@ and value_bind_print =
             ~parent_loc,
           );
 
-        // fix needed here?, we need to work out if all arguments fit on the line or will break
+        // fix needed here?, we may  need to work out if all arguments fit on the line or will break
         let expressionGrp =
           switch (vb.pvb_expr.pexp_desc) {
           | PExpBlock(_) => Doc.concat([Doc.space, expression])
-          //| _ => Doc.indent(Doc.concat([Doc.space, expression]))
           | _ => Doc.concat([Doc.space, expression])
           };
 
@@ -2577,9 +2526,6 @@ let toplevel_print =
     ) => {
   let attributes = data.ptop_attributes;
 
-  // Debug.print_loc("top level:", data.ptop_loc);
-
-  // get the leading comments
   let (leadingComments, _trailingComments) =
     Walktree.partitionComments(data.ptop_loc, None); //
 
@@ -2628,10 +2574,11 @@ let toplevel_print =
     };
 
   if (disableFormatting) {
-    print_endline("@!@! Disable formatting on next node");
-    Debug.print_loc("Skip formatting for", data.ptop_loc);
-
     let originalCode = getOriginalCode(data.ptop_loc, original_source);
+    // need to remove any comments that were inside the disabled block
+
+    Walktree.removeCommentsInIgnoreBlock(data.ptop_loc);
+
     Doc.concat([
       stmtLeadingCommentDocs,
       blankLineAbove,
@@ -2820,5 +2767,3 @@ let reformat_ast =
   //   ),
   // );
 };
-
-//(3 + 4) * 7;
