@@ -93,3 +93,17 @@ testMut(() => {
     Result.peekErr((v) => a = v, Err(2))
     assert a == 2
 })
+
+// Result.expect
+
+assert Result.expect("Fails with this message if Err", Ok(1)) == 1
+assert Result.expect("Fails with this message if Err", Ok("🌾")) == "🌾"
+// TODO: Test this when we can
+// assert Result.expect("Failed with this message", Err("Boom"))
+
+// Result.unwrap
+
+assert Result.unwrap(Ok(1)) == 1
+assert Result.unwrap(Ok("🌾")) == "🌾"
+// TODO: Test this when we can
+// assert Result.unwrap(Err("Boom"))
