@@ -56,16 +56,6 @@ export let peek = (stack) => {
 }
 
 /**
- * Returns `Some(item)` where `item` is the value at the top of the stack, and `None` otherwise.
- *
- * @param stack: The stack to inspect
- * @returns The value at the top of the stack, if it exists
- *
- * @deprecated Please use `Stack.peek` instead. `Stack.head` will be removed in v0.4.0.
- */
-export let head = peek;
-
-/**
  * Adds a new item to the top of the stack.
  *
  * @param value: The item to be added

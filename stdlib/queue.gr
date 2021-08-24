@@ -20,22 +20,12 @@ export let peek = (queue) => {
     }
 }
 
-/**
-  @deprecated Please use `Queue.peek` instead. `Queue.head` will be removed in 0.4.0.
-*/
-export let head = peek;
-
 export let push = (value, queue) => {
     match (queue) {
         { forwards: [], backwards: [] } => { forwards: [value], backwards: [] },
         { forwards, backwards } => { forwards, backwards: [value, ...backwards] }
     }
 }
-
-/**
-  @deprecated Please use `Queue.push` instead. `Queue.enqueue` will be removed in v0.4.0.
-*/
-export let enqueue = push;
 
 export let pop = (queue) => {
     match (queue) {
@@ -45,11 +35,6 @@ export let pop = (queue) => {
         { forwards: [head, ...ftail], backwards } => { forwards: ftail, backwards }
     }
 }
-
-/**
-  @deprecated Please use `Queue.pop` instead. `Queue.dequeue` will be removed in v0.4.0.
-*/
-export let dequeue = pop;
 
 export let size = (queue) => {
     match (queue) {
