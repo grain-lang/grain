@@ -1,5 +1,6 @@
 /* grainc-flags --compilation-mode=runtime */
 
+import Memory from "runtime/unsafe/memory"
 import Tags from "runtime/unsafe/tags"
 import Exception from "runtime/exception"
 
@@ -36,6 +37,8 @@ let _F32_MIN = 1.401298464324817e-45W
 let _F32_MAX_SAFE_INTEGER = 16777215.w
 let _F64_MAX_SAFE_INTEGER = 9007199254740991.W
 
+let (==) = WasmI32.eq
+let (!=) = WasmI32.ne
 
 let tagSimple = (x) => {
   WasmI32.xor(WasmI32.shl(x, 1n), 1n)
@@ -1080,10 +1083,14 @@ let numberMod = (x, y) => {
  * TODO: (#305) Could probably be made more efficient
  */
 // TODO: (#305) is this safe? I think it's safe?
-export let (<) = (x: Number, y: Number) => {
+export let rec (<) = (x: Number, y: Number) => {
   let xval = coerceNumberToWasmF64(x)
   let yval = coerceNumberToWasmF64(y)
-  WasmF64.lt(xval, yval)
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(y))
+  let ret = WasmF64.lt(xval, yval)
+  Memory.decRef(WasmI32.fromGrain((<)))
+  ret
 }
 
 /**
@@ -1091,10 +1098,14 @@ export let (<) = (x: Number, y: Number) => {
 */
 export let numberLess = (<);
 
-export let (>) = (x: Number, y: Number) => {
+export let rec (>) = (x: Number, y: Number) => {
   let xval = coerceNumberToWasmF64(x)
   let yval = coerceNumberToWasmF64(y)
-  WasmF64.gt(xval, yval)
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(y))
+  let ret = WasmF64.gt(xval, yval)
+  Memory.decRef(WasmI32.fromGrain((>)))
+  ret
 }
 
 /**
@@ -1102,17 +1113,21 @@ export let (>) = (x: Number, y: Number) => {
 */
 export let numberGreater = (>);
 
-export let (<=) = (x: Number, y: Number) => {
+export let rec (<=) = (x: Number, y: Number) => {
   // Equality is finicky, so delegate
   let xval = coerceNumberToWasmF64(x)
   let yval = coerceNumberToWasmF64(y)
-  if (WasmF64.lt(xval, yval)) {
+  let ret = if (WasmF64.lt(xval, yval)) {
     true
   } else {
     let x = WasmI32.fromGrain(x)
     let y = WasmI32.fromGrain(y)
     numberEqual(x, y)
   }
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(y))
+  Memory.decRef(WasmI32.fromGrain((<=)))
+  ret
 }
 
 /**
@@ -1120,17 +1135,21 @@ export let (<=) = (x: Number, y: Number) => {
 */
 export let numberLessEqual = (<=);
 
-export let (>=) = (x: Number, y: Number) => {
+export let rec (>=) = (x: Number, y: Number) => {
   // Equality is finicky, so delegate
   let xval = coerceNumberToWasmF64(x)
   let yval = coerceNumberToWasmF64(y)
-  if (WasmF64.gt(xval, yval)) {
+  let ret = if (WasmF64.gt(xval, yval)) {
     true
   } else {
     let x = WasmI32.fromGrain(x)
     let y = WasmI32.fromGrain(y)
     numberEqual(x, y)
   }
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(y))
+  Memory.decRef(WasmI32.fromGrain((>=)))
+  ret
 }
 
 /**
@@ -1142,10 +1161,14 @@ export let numberGreaterEqual = (>=);
  * ===== EQUAL =====
  */
 
-export let numberEq = (x: Number, y: Number) => {
+export let rec numberEq = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
-  numberEqual(x, y)
+  let ret = numberEqual(x, y)
+  Memory.decRef(x)
+  Memory.decRef(y)
+  Memory.decRef(WasmI32.fromGrain(numberEq))
+  ret
 }
 
 /*
@@ -1154,9 +1177,12 @@ export let numberEq = (x: Number, y: Number) => {
  */
 // TODO: (#306) Semantics around when things should stay i32/i64
 
-export let lnot = (x: Number) => {
+export let rec lnot = (x: Number) => {
   let xval = coerceNumberToWasmI64(x)
-  WasmI32.toGrain(reducedInteger(i64not(xval))): Number
+  let ret = WasmI32.toGrain(reducedInteger(i64not(xval))): Number
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(lnot))
+  ret
 }
 
 /**
@@ -1164,10 +1190,14 @@ export let lnot = (x: Number) => {
 */
 export let numberLnot = lnot;
 
-export let (<<) = (x: Number, y: Number) => {
+export let rec (<<) = (x: Number, y: Number) => {
   let xval = coerceNumberToWasmI64(x)
   let yval = coerceNumberToWasmI64(y)
-  WasmI32.toGrain(reducedInteger(WasmI64.shl(xval, yval))): Number
+  let ret = WasmI32.toGrain(reducedInteger(WasmI64.shl(xval, yval))): Number
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(y))
+  Memory.decRef(WasmI32.fromGrain((<<)))
+  ret
 }
 
 /**
@@ -1175,10 +1205,14 @@ export let (<<) = (x: Number, y: Number) => {
 */
 export let numberLsl = (<<);
 
-export let (>>>) = (x: Number, y: Number) => {
+export let rec (>>>) = (x: Number, y: Number) => {
   let xval = coerceNumberToWasmI64(x)
   let yval = coerceNumberToWasmI64(y)
-  WasmI32.toGrain(reducedInteger(WasmI64.shrU(xval, yval))): Number
+  let ret = WasmI32.toGrain(reducedInteger(WasmI64.shrU(xval, yval))): Number
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(y))
+  Memory.decRef(WasmI32.fromGrain((>>>)))
+  ret
 }
 
 /**
@@ -1186,10 +1220,14 @@ export let (>>>) = (x: Number, y: Number) => {
 */
 export let numberLsr = (>>>);
 
-export let (&) = (x: Number, y: Number) => {
+export let rec (&) = (x: Number, y: Number) => {
   let xval = coerceNumberToWasmI64(x)
   let yval = coerceNumberToWasmI64(y)
-  WasmI32.toGrain(reducedInteger(WasmI64.and(xval, yval))): Number
+  let ret = WasmI32.toGrain(reducedInteger(WasmI64.and(xval, yval))): Number
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(y))
+  Memory.decRef(WasmI32.fromGrain((&)))
+  ret
 }
 
 /**
@@ -1197,10 +1235,14 @@ export let (&) = (x: Number, y: Number) => {
 */
 export let numberLand = (&);
 
-export let (|) = (x: Number, y: Number) => {
+export let rec (|) = (x: Number, y: Number) => {
   let xval = coerceNumberToWasmI64(x)
   let yval = coerceNumberToWasmI64(y)
-  WasmI32.toGrain(reducedInteger(WasmI64.or(xval, yval))): Number
+  let ret = WasmI32.toGrain(reducedInteger(WasmI64.or(xval, yval))): Number
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(y))
+  Memory.decRef(WasmI32.fromGrain((|)))
+  ret
 }
 
 /**
@@ -1208,10 +1250,14 @@ export let (|) = (x: Number, y: Number) => {
 */
 export let numberLor = (|);
 
-export let (^) = (x: Number, y: Number) => {
+export let rec (^) = (x: Number, y: Number) => {
   let xval = coerceNumberToWasmI64(x)
   let yval = coerceNumberToWasmI64(y)
-  WasmI32.toGrain(reducedInteger(WasmI64.xor(xval, yval))): Number
+  let ret = WasmI32.toGrain(reducedInteger(WasmI64.xor(xval, yval))): Number
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(y))
+  Memory.decRef(WasmI32.fromGrain((^)))
+  ret
 }
 
 /**
@@ -1219,10 +1265,14 @@ export let (^) = (x: Number, y: Number) => {
 */
 export let numberLxor = (^);
 
-export let (>>) = (x: Number, y: Number) => {
+export let rec (>>) = (x: Number, y: Number) => {
   let xval = coerceNumberToWasmI64(x)
   let yval = coerceNumberToWasmI64(y)
-  WasmI32.toGrain(reducedInteger(WasmI64.shrS(xval, yval))): Number
+  let ret = WasmI32.toGrain(reducedInteger(WasmI64.shrS(xval, yval))): Number
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(y))
+  Memory.decRef(WasmI32.fromGrain((>>)))
+  ret
 }
 
 /**
@@ -1236,7 +1286,7 @@ export let numberAsr = (>>);
 // [NOTE]: Coercion is a *conservative* process! For example, even if a float is 1.0,
 //         we will fail if attempting to coerce to an int!
 
-export let coerceNumberToInt32 = (x: Number) => {
+export let rec coerceNumberToInt32 = (x: Number) => {
   let x = WasmI32.fromGrain(x)
   let result = if (!isSimpleNumber(x) && WasmI32.eq(boxedNumberTag(x), Tags._GRAIN_INT32_BOXED_NUM_TAG)) {
     // avoid extra malloc
@@ -1245,10 +1295,16 @@ export let coerceNumberToInt32 = (x: Number) => {
     // can possibly fail
     newInt32(coerceNumberToWasmI32(WasmI32.toGrain(x) : Number))
   }
-  WasmI32.toGrain(result): Int32
+  let ret = WasmI32.toGrain(result): Int32
+  if (WasmI32.fromGrain(ret) != WasmI32.fromGrain(x)) {
+    Memory.decRef(WasmI32.fromGrain(x))
+    void
+  }
+  Memory.decRef(WasmI32.fromGrain(coerceNumberToInt32))
+  ret
 }
 
-export let coerceNumberToInt64 = (x: Number) => {
+export let rec coerceNumberToInt64 = (x: Number) => {
   let x = WasmI32.fromGrain(x)
   let result = if (!isSimpleNumber(x) && WasmI32.eq(boxedNumberTag(x), Tags._GRAIN_INT64_BOXED_NUM_TAG)) {
     // avoid extra malloc
@@ -1256,10 +1312,16 @@ export let coerceNumberToInt64 = (x: Number) => {
   } else {
     newInt64(coerceNumberToWasmI64(WasmI32.toGrain(x) : Number))
   }
-  WasmI32.toGrain(result): Int64
+  let ret = WasmI32.toGrain(result): Int64
+  if (WasmI32.fromGrain(ret) != WasmI32.fromGrain(x)) {
+    Memory.decRef(WasmI32.fromGrain(x))
+    void
+  }
+  Memory.decRef(WasmI32.fromGrain(coerceNumberToInt64))
+  ret
 }
 
-export let coerceNumberToRational = (x: Number) => {
+export let rec coerceNumberToRational = (x: Number) => {
   let x = WasmI32.fromGrain(x)
   let result = if (isSimpleNumber(x)) {
     newRational(untagSimple(x), 1n)
@@ -1275,10 +1337,16 @@ export let coerceNumberToRational = (x: Number) => {
       throw Exception.NumberNotRational
     }
   }
-  WasmI32.toGrain(result): Rational
+  let ret = WasmI32.toGrain(result): Rational
+  if (WasmI32.fromGrain(ret) != WasmI32.fromGrain(x)) {
+    Memory.decRef(WasmI32.fromGrain(x))
+    void
+  }
+  Memory.decRef(WasmI32.fromGrain(coerceNumberToRational))
+  ret
 }
 
-export let coerceNumberToFloat32 = (x: Number) => {
+export let rec coerceNumberToFloat32 = (x: Number) => {
   let x = WasmI32.fromGrain(x)
   let result = if (!isSimpleNumber(x) && WasmI32.eq(boxedNumberTag(x), Tags._GRAIN_FLOAT32_BOXED_NUM_TAG)) {
     // avoid extra malloc
@@ -1286,10 +1354,16 @@ export let coerceNumberToFloat32 = (x: Number) => {
   } else {
     newFloat32(coerceNumberToWasmF32(WasmI32.toGrain(x) : Number))
   }
-  WasmI32.toGrain(result): Float32
+  let ret = WasmI32.toGrain(result): Float32
+  if (WasmI32.fromGrain(ret) != WasmI32.fromGrain(x)) {
+    Memory.decRef(WasmI32.fromGrain(x))
+    void
+  }
+  Memory.decRef(WasmI32.fromGrain(coerceNumberToFloat32))
+  ret
 }
 
-export let coerceNumberToFloat64 = (x: Number) => {
+export let rec coerceNumberToFloat64 = (x: Number) => {
   let x = WasmI32.fromGrain(x)
   let result = if (!isSimpleNumber(x) && WasmI32.eq(boxedNumberTag(x), Tags._GRAIN_FLOAT64_BOXED_NUM_TAG)) {
     // avoid extra malloc
@@ -1297,36 +1371,55 @@ export let coerceNumberToFloat64 = (x: Number) => {
   } else {
     newFloat64(coerceNumberToWasmF64(WasmI32.toGrain(x) : Number))
   }
-  WasmI32.toGrain(result): Float64
+  let ret = WasmI32.toGrain(result): Float64
+  if (WasmI32.fromGrain(ret) != WasmI32.fromGrain(x)) {
+    Memory.decRef(WasmI32.fromGrain(x))
+    void
+  }
+  Memory.decRef(WasmI32.fromGrain(coerceNumberToFloat64))
+  ret
 }
 
-export let coerceInt32ToNumber = (x: Int32) => {
-  WasmI32.toGrain(WasmI32.fromGrain(x)): Number
+// These coerceXX functions don't need Memory.decRef calls since they simply return their argument
+export let rec coerceInt32ToNumber = (x: Int32) => {
+  let ret = WasmI32.toGrain(WasmI32.fromGrain(x)): Number
+  Memory.decRef(WasmI32.fromGrain(coerceInt32ToNumber))
+  ret
 }
 
-export let coerceInt64ToNumber = (x: Int64) => {
-  WasmI32.toGrain(WasmI32.fromGrain(x)): Number
+export let rec coerceInt64ToNumber = (x: Int64) => {
+  let ret = WasmI32.toGrain(WasmI32.fromGrain(x)): Number
+  Memory.decRef(WasmI32.fromGrain(coerceInt64ToNumber))
+  ret
 }
 
-export let coerceRationalToNumber = (x: Rational) => {
-  WasmI32.toGrain(WasmI32.fromGrain(x)): Number
+export let rec coerceRationalToNumber = (x: Rational) => {
+  let ret = WasmI32.toGrain(WasmI32.fromGrain(x)): Number
+  Memory.decRef(WasmI32.fromGrain(coerceRationalToNumber))
+  ret
 }
 
-export let coerceFloat32ToNumber = (x: Float32) => {
-  WasmI32.toGrain(WasmI32.fromGrain(x)): Number
+export let rec coerceFloat32ToNumber = (x: Float32) => {
+  let ret = WasmI32.toGrain(WasmI32.fromGrain(x)): Number
+  Memory.decRef(WasmI32.fromGrain(coerceFloat32ToNumber))
+  ret
 }
 
-export let coerceFloat64ToNumber = (x: Float64) => {
-  WasmI32.toGrain(WasmI32.fromGrain(x)): Number
+export let rec coerceFloat64ToNumber = (x: Float64) => {
+  let ret = WasmI32.toGrain(WasmI32.fromGrain(x)): Number
+  Memory.decRef(WasmI32.fromGrain(coerceFloat64ToNumber))
+  ret
 }
 
 /// USER-EXPOSED CONVERSION FUNCTIONS
 
-export let convertExactToInexact = (x: Number) => {
-  x
+export let rec convertExactToInexact = (x: Number) => {
+  let ret = x
+  Memory.decRef(WasmI32.fromGrain(convertExactToInexact))
+  ret
 }
 
-let convertInexactToExact = (x) => {
+let convertInexactToExactHelp = (x) => {
   if (isSimpleNumber(x)) {
     x
   } else {
@@ -1352,15 +1445,24 @@ let convertInexactToExact = (x) => {
   }
 }
 
-export let convertInexactToExact = (x: Number) => {
-  WasmI32.toGrain(convertInexactToExact(WasmI32.fromGrain(x))): Number
+export let rec convertInexactToExact = (x: Number) => {
+  let ret = WasmI32.toGrain(convertInexactToExactHelp(WasmI32.fromGrain(x))): Number
+  if (WasmI32.fromGrain(ret) != WasmI32.fromGrain(x)) {
+    Memory.decRef(WasmI32.fromGrain(x))
+    void
+  }
+  Memory.decRef(WasmI32.fromGrain(convertInexactToExact))
+  ret
 }
 
-export let (+) = (x: Number, y: Number) => {
+export let rec (+) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
-  numberAdd(x, y)
-
+  let ret = numberAdd(x, y)
+  Memory.decRef(x)
+  Memory.decRef(y)
+  Memory.decRef(WasmI32.fromGrain((+)))
+  ret
 }
 
 /**
@@ -1368,10 +1470,14 @@ export let (+) = (x: Number, y: Number) => {
 */
 export let numberPlus = (+);
 
-export let (-) = (x: Number, y: Number) => {
+export let rec (-) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
-  numberSub(x, y)
+  let ret = numberSub(x, y)
+  Memory.decRef(x)
+  Memory.decRef(y)
+  Memory.decRef(WasmI32.fromGrain((-)))
+  ret
 }
 
 /**
@@ -1379,10 +1485,14 @@ export let (-) = (x: Number, y: Number) => {
 */
 export let numberMinus = (-);
 
-export let (*) = (x: Number, y: Number) => {
+export let rec (*) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
-  numberTimes(x, y)
+  let ret = numberTimes(x, y)
+  Memory.decRef(x)
+  Memory.decRef(y)
+  Memory.decRef(WasmI32.fromGrain((*)))
+  ret
 }
 
 /**
@@ -1390,10 +1500,14 @@ export let (*) = (x: Number, y: Number) => {
 */
 export let numberTimes = (*);
 
-export let (/) = (x: Number, y: Number) => {
+export let rec (/) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
-  numberDivide(x, y)
+  let ret = numberDivide(x, y)
+  Memory.decRef(x)
+  Memory.decRef(y)
+  Memory.decRef(WasmI32.fromGrain((/)))
+  ret
 }
 
 /**
@@ -1401,10 +1515,14 @@ export let (/) = (x: Number, y: Number) => {
 */
 export let numberDivide = (/);
 
-export let (%) = (x: Number, y: Number) => {
+export let rec (%) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
-  WasmI32.toGrain(numberMod(x, y)): Number
+  let ret = WasmI32.toGrain(numberMod(x, y)): Number
+  Memory.decRef(x)
+  Memory.decRef(y)
+  Memory.decRef(WasmI32.fromGrain((%)))
+  ret
 }
 
 /**
@@ -1415,6 +1533,8 @@ export let numberMod = (%);
 // inc/dec
 
 export let incr = (x) => {
+  Memory.incRef(WasmI32.fromGrain((+)))
+  // skip incRef on x (to pass through)
   x + 1
 }
 
@@ -1424,6 +1544,8 @@ export let incr = (x) => {
 export let numberIncr = incr;
 
 export let decr = (x) => {
+  Memory.incRef(WasmI32.fromGrain((-)))
+  // skip incRef on x (to pass through)
   x - 1
 }
 

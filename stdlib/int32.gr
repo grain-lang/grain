@@ -1,4 +1,5 @@
 import WasmI32 from "runtime/unsafe/wasmi32"
+import Memory from "runtime/unsafe/memory"
 import Exception from "runtime/exception"
 
 import {
@@ -14,73 +15,107 @@ export fromNumber
 export toNumber
 
 @disableGC
-export let incr = (n: Int32) => {
+export let rec incr = (n: Int32) => {
   let n = WasmI32.fromGrain(n)
   let ptr = newInt32(WasmI32.add(WasmI32.load(n, 8n), 1n))
-  WasmI32.toGrain(ptr): Int32
+  let ret = WasmI32.toGrain(ptr): Int32
+  Memory.decRef(n)
+  Memory.decRef(WasmI32.fromGrain(incr))
+  ret
 }
 
 @disableGC
-export let decr = (n: Int32) => {
+export let rec decr = (n: Int32) => {
   let n = WasmI32.fromGrain(n)
   let ptr = newInt32(WasmI32.sub(WasmI32.load(n, 8n), 1n))
-  WasmI32.toGrain(ptr): Int32
+  let ret = WasmI32.toGrain(ptr): Int32
+  Memory.decRef(n)
+  Memory.decRef(WasmI32.fromGrain(decr))
+  ret
 }
 
 @disableGC
-export let add = (x: Int32, y: Int32) => {
-  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
-  let y = WasmI32.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newInt32(WasmI32.add(x, y))
-  WasmI32.toGrain(ptr): Int32
+export let rec add = (x: Int32, y: Int32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let ptr = newInt32(WasmI32.add(xv, yv))
+  let ret = WasmI32.toGrain(ptr): Int32
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(y))
+  Memory.decRef(WasmI32.fromGrain(add))
+  ret
 }
 
 @disableGC
-export let sub = (x: Int32, y: Int32) => {
-  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
-  let y = WasmI32.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newInt32(WasmI32.sub(x, y))
-  WasmI32.toGrain(ptr): Int32
+export let rec sub = (x: Int32, y: Int32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let ptr = newInt32(WasmI32.sub(xv, yv))
+  let ret = WasmI32.toGrain(ptr): Int32
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(y))
+  Memory.decRef(WasmI32.fromGrain(sub))
+  ret
 }
 
 @disableGC
-export let mul = (x: Int32, y: Int32) => {
-  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
-  let y = WasmI32.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newInt32(WasmI32.mul(x, y))
-  WasmI32.toGrain(ptr): Int32
+export let rec mul = (x: Int32, y: Int32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let ptr = newInt32(WasmI32.mul(xv, yv))
+  let ret = WasmI32.toGrain(ptr): Int32
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(y))
+  Memory.decRef(WasmI32.fromGrain(mul))
+  ret
 }
 
 @disableGC
-export let div = (x: Int32, y: Int32) => {
-  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
-  let y = WasmI32.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newInt32(WasmI32.divS(x, y))
-  WasmI32.toGrain(ptr): Int32
+export let rec div = (x: Int32, y: Int32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let ptr = newInt32(WasmI32.divS(xv, yv))
+  let ret = WasmI32.toGrain(ptr): Int32
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(y))
+  Memory.decRef(WasmI32.fromGrain(div))
+  ret
 }
 
 @disableGC
-export let divU = (x: Int32, y: Int32) => {
-  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
-  let y = WasmI32.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newInt32(WasmI32.divU(x, y))
-  WasmI32.toGrain(ptr): Int32
+export let rec divU = (x: Int32, y: Int32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let ptr = newInt32(WasmI32.divU(xv, yv))
+  let ret = WasmI32.toGrain(ptr): Int32
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(y))
+  Memory.decRef(WasmI32.fromGrain(divU))
+  ret
 }
 
 @disableGC
-export let rem = (x: Int32, y: Int32) => {
-  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
-  let y = WasmI32.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newInt32(WasmI32.remS(x, y))
-  WasmI32.toGrain(ptr): Int32
+export let rec rem = (x: Int32, y: Int32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let ptr = newInt32(WasmI32.remS(xv, yv))
+  let ret = WasmI32.toGrain(ptr): Int32
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(y))
+  Memory.decRef(WasmI32.fromGrain(rem))
+  ret
 }
 
 @disableGC
-export let remU = (x: Int32, y: Int32) => {
-  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
-  let y = WasmI32.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newInt32(WasmI32.remU(x, y))
-  WasmI32.toGrain(ptr): Int32
+export let rec remU = (x: Int32, y: Int32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let ptr = newInt32(WasmI32.remU(xv, yv))
+  let ret = WasmI32.toGrain(ptr): Int32
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(y))
+  Memory.decRef(WasmI32.fromGrain(remU))
+  ret
 }
 
 @disableGC
@@ -90,7 +125,7 @@ let abs = (n) => {
 }
 
 @disableGC
-export let mod = (x: Int32, y: Int32) => {
+export let rec mod = (x: Int32, y: Int32) => {
   let xval = WasmI32.load(WasmI32.fromGrain(x), 8n)
   let yval = WasmI32.load(WasmI32.fromGrain(y), 8n)
 
@@ -107,93 +142,140 @@ export let mod = (x: Int32, y: Int32) => {
   } else {
     newInt32(WasmI32.remS(xval, yval))
   }
-  WasmI32.toGrain(ptr): Int32
+  let ret = WasmI32.toGrain(ptr): Int32
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(y))
+  Memory.decRef(WasmI32.fromGrain(mod))
+  ret
 }
 
 // Int32 comparisons
 
 @disableGC
-export let lt = (x: Int32, y: Int32) => {
-  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
-  let y = WasmI32.load(WasmI32.fromGrain(y), 8n)
-  WasmI32.ltS(x, y)
+export let rec lt = (x: Int32, y: Int32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let ret = WasmI32.ltS(xv, yv)
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(y))
+  Memory.decRef(WasmI32.fromGrain(lt))
+  ret
 }
 
 @disableGC
-export let gt = (x: Int32, y: Int32) => {
-  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
-  let y = WasmI32.load(WasmI32.fromGrain(y), 8n)
-  WasmI32.gtS(x, y)
+export let rec gt = (x: Int32, y: Int32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let ret = WasmI32.gtS(xv, yv)
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(y))
+  Memory.decRef(WasmI32.fromGrain(gt))
+  ret
 }
 
 @disableGC
-export let lte = (x: Int32, y: Int32) => {
-  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
-  let y = WasmI32.load(WasmI32.fromGrain(y), 8n)
-  WasmI32.leS(x, y)
+export let rec lte = (x: Int32, y: Int32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let ret = WasmI32.leS(xv, yv)
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(y))
+  Memory.decRef(WasmI32.fromGrain(lte))
+  ret
 }
 
 @disableGC
-export let gte = (x: Int32, y: Int32) => {
-  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
-  let y = WasmI32.load(WasmI32.fromGrain(y), 8n)
-  WasmI32.geS(x, y)
+export let rec gte = (x: Int32, y: Int32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let ret = WasmI32.geS(xv, yv)
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(y))
+  Memory.decRef(WasmI32.fromGrain(gte))
+  ret
 }
 
 // Int32 bit/logical operations
 @disableGC
-export let lnot = (x: Int32) => {
-  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
-  let ptr = newInt32(WasmI32.xor(x, 0xffffffffn))
-  WasmI32.toGrain(ptr): Int32
+export let rec lnot = (x: Int32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let ptr = newInt32(WasmI32.xor(xv, 0xffffffffn))
+  let ret = WasmI32.toGrain(ptr): Int32
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(lnot))
+  ret
 }
 
 
 @disableGC
-export let land = (x: Int32, y: Int32) => {
-  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
-  let y = WasmI32.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newInt32(WasmI32.and(x, y))
-  WasmI32.toGrain(ptr): Int32
+export let rec land = (x: Int32, y: Int32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let ptr = newInt32(WasmI32.and(xv, yv))
+  let ret = WasmI32.toGrain(ptr): Int32
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(y))
+  Memory.decRef(WasmI32.fromGrain(land))
+  ret
 }
 
 @disableGC
-export let lor = (x: Int32, y: Int32) => {
-  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
-  let y = WasmI32.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newInt32(WasmI32.or(x, y))
-  WasmI32.toGrain(ptr): Int32
+export let rec lor = (x: Int32, y: Int32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let ptr = newInt32(WasmI32.or(xv, yv))
+  let ret = WasmI32.toGrain(ptr): Int32
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(y))
+  Memory.decRef(WasmI32.fromGrain(lor))
+  ret
 }
 
 @disableGC
-export let lxor = (x: Int32, y: Int32) => {
-  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
-  let y = WasmI32.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newInt32(WasmI32.xor(x, y))
-  WasmI32.toGrain(ptr): Int32
+export let rec lxor = (x: Int32, y: Int32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let ptr = newInt32(WasmI32.xor(xv, yv))
+  let ret = WasmI32.toGrain(ptr): Int32
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(y))
+  Memory.decRef(WasmI32.fromGrain(lxor))
+  ret
 }
 
 
 @disableGC
-export let shl = (x: Int32, y: Int32) => {
-  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
-  let y = WasmI32.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newInt32(WasmI32.shl(x, y))
-  WasmI32.toGrain(ptr): Int32
+export let rec shl = (x: Int32, y: Int32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let ptr = newInt32(WasmI32.shl(xv, yv))
+  let ret = WasmI32.toGrain(ptr): Int32
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(y))
+  Memory.decRef(WasmI32.fromGrain(shl))
+  ret
 }
 
 @disableGC
-export let shr = (x: Int32, y: Int32) => {
-  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
-  let y = WasmI32.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newInt32(WasmI32.shrS(x, y))
-  WasmI32.toGrain(ptr): Int32
+export let rec shr = (x: Int32, y: Int32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let ptr = newInt32(WasmI32.shrS(xv, yv))
+  let ret = WasmI32.toGrain(ptr): Int32
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(y))
+  Memory.decRef(WasmI32.fromGrain(shr))
+  ret
 }
 
 @disableGC
-export let shrU = (x: Int32, y: Int32) => {
-  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
-  let y = WasmI32.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newInt32(WasmI32.shrU(x, y))
-  WasmI32.toGrain(ptr): Int32
+export let rec shrU = (x: Int32, y: Int32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let ptr = newInt32(WasmI32.shrU(xv, yv))
+  let ret = WasmI32.toGrain(ptr): Int32
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(y))
+  Memory.decRef(WasmI32.fromGrain(shrU))
+  ret
 }

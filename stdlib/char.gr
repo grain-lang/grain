@@ -38,7 +38,7 @@ let code = (c: Char) => {
   let (<<) = WasmI32.shl
   let (&) = WasmI32.and
   let (|) = WasmI32.or
-  
+
   let mut codePoint = 0n
   let mut bytesSeen = 0n
   let mut bytesNeeded = 0n
@@ -177,11 +177,11 @@ let pred = (c) => {
 // @param char: Char - the character to convert
 // @returns String
 @disableGC
-export let toString = (c: Char) => {
+export let rec toString = (c: Char) => {
   let (+) = WasmI32.add
   let (&) = WasmI32.and
   let (==) = WasmI32.eq
-  
+
   let c = WasmI32.fromGrain(c)
   let byte = WasmI32.load8U(c, 4n)
   let n = if ((byte & 0x80n) == 0x00n) {
@@ -195,5 +195,8 @@ export let toString = (c: Char) => {
   }
   let str = allocateString(n)
   Memory.copy(str + 8n, c + 4n, n)
-  WasmI32.toGrain(str): String
+  let ret = WasmI32.toGrain(str): String
+  Memory.decRef(WasmI32.fromGrain(c))
+  Memory.decRef(WasmI32.fromGrain(toString))
+  ret
 }

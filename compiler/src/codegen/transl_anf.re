@@ -650,7 +650,7 @@ let compile_wrapper = (id, env, func_name, args, rets): Mashtree.closure_data =>
       stack_size_f32: 0,
       stack_size_f64: 0,
     },
-    attrs: [],
+    attrs: [Disable_gc],
     loc: Location.dummy_loc,
   };
   worklist_enqueue(worklist_item);

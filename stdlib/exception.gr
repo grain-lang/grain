@@ -3,7 +3,9 @@ import Memory from "runtime/unsafe/memory"
 import Exception from "runtime/exception"
 
 @disableGC
-export let registerPrinter = (f: Exception -> Option<String>) => {
-  Memory.incRef(WasmI32.fromGrain(f))
+export let rec registerPrinter = (f: Exception -> Option<String>) => {
+  // no need to increment refcount on f; we just don't decRef it at the end of the function
   Exception.printers = WasmI32.fromGrain((f, Exception.printers))
+  Memory.decRef(WasmI32.fromGrain(registerPrinter))
+  void
 }

@@ -2,7 +2,7 @@
 
 import Memory from "runtime/unsafe/memory"
 import Tags from "runtime/unsafe/tags"
-import WasmI32, { 
+import WasmI32, {
   add as (+),
   mul as (*),
   xor as (^),
@@ -11,6 +11,11 @@ import WasmI32, {
 import WasmI64 from "runtime/unsafe/wasmi64"
 import WasmF32 from "runtime/unsafe/wasmf32"
 import WasmF64 from "runtime/unsafe/wasmf64"
+
+//
+// For performance reasons, all functions in this module do not
+// decRef their arguments. Consequently, callers should not incRef them before calling.
+//
 
 /**
  * Allocates a new Grain array.

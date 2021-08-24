@@ -6,7 +6,7 @@
  * from pages 185-188 of K&R C (2nd edition).
  */
 
-import WasmI32, { 
+import WasmI32, {
   add as (+),
   sub as (-),
   mul as (*),
@@ -74,7 +74,7 @@ let logMallocHeaderSize = 3n
  */
 let mut heapSize = 0n
 
-export let _RESERVED_RUNTIME_SPACE = 16384n
+export let _RESERVED_RUNTIME_SPACE = 0x4000n
 
 /**
  * The base the heap. The block at this address will be size 0 and
@@ -148,7 +148,7 @@ let growHeap = (nbytes: WasmI32) => {
     reqSize = nbytes
     reqSize = reqSize >> 16n
     reqSize = reqSize + 1n
-    
+
     reqResult = memoryGrow(reqSize)
     if (reqResult == -1n) {
       -1n
