@@ -1,4 +1,9 @@
 /* grainc-flags --no-gc */
+/**
+ * @module Sys/Random: System access to random values.
+ *
+ * @example import Random from "sys/random"
+ */
 
 import WasmI32, {
   eq as (==),
@@ -8,8 +13,15 @@ import Memory from "runtime/unsafe/memory"
 import Wasi from "runtime/wasi"
 import { tagSimpleNumber } from "runtime/dataStructures"
 
-// Produce a random number. This function can be slow, so it's best to seed a generator if lots of random data is needed
-// @returns Number
+/**
+ * @section Values: Functions and constants included in the Sys/Random module.
+ */
+
+/**
+ * Produce a random number. This function can be slow, so it's best to seed a generator if lots of random data is needed.
+ *
+ * @returns `Ok(num)` of a random number if successful or `Err(exception)` otherwise
+ */
 export let random = () => {
   let buf = Memory.malloc(4n)
 
