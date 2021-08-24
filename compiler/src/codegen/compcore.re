@@ -1460,7 +1460,7 @@ let heap_allocate = (wasm_mod, env, num_words: int) =>
         ),
         Expression.Const.make(
           wasm_mod,
-          const_int32(round_to_even(num_words + 2) * 4),
+          const_int32(round_to_even(num_words + 4) * 4),
         ),
       );
     Expression.Tuple_extract.make(

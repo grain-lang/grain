@@ -76,7 +76,7 @@ let logMallocHeaderSize = 3n
  */
 let mut heapSize = 0n
 
-export let _RESERVED_RUNTIME_SPACE = 0x4000n
+export let _RESERVED_RUNTIME_SPACE = 0x8000n
 
 /**
  * The base the heap. The block at this address will be size 0 and
@@ -215,13 +215,17 @@ export let free = (ap: WasmI32) => {
  * @param nbytes: WasmI32 - The number of bytes to try to grow the heap by
  * @return WasmI32 - If successful, a pointer to the start of the free list. If not successful, -1.
  */
-let morecore = (nbytes: WasmI32) => {
+let morecore = (nbytes: WasmI32, allowFailure) => {
   let origSize = heapSize
   let mut cp = growHeap(nbytes)
 
   // If there was an error, fail
   if (cp == -1n) {
-    throw Exception.OutOfMemory
+    if (allowFailure) {
+      -1n
+    } else {
+      throw Exception.OutOfMemory
+    }
   } else {
     // Set the size of the new block to the amount the
     // heap was grown.
@@ -240,7 +244,7 @@ let morecore = (nbytes: WasmI32) => {
  * @param nbytes: WasmI32 - The number of bytes to allocate
  * @return WasmI32 - The pointer to the allocated region (8-byte aligned), or -1 if the allocation failed.
  */
-export let malloc = (nb: WasmI32) => {
+export let malloc = (nb: WasmI32, allowFailure) => {
   let mut nbytes = nb
   let mut prevp = freePtr
 
@@ -290,7 +294,7 @@ export let malloc = (nb: WasmI32) => {
     // We've reached the end of the free list. Time to grow the heap.
     if (p == freePtr) {
       // Attempt to grow the heap
-      p = morecore(nbytes)
+      p = morecore(nbytes, allowFailure)
       // If growing the heap failed, return -1.
       if (p == -1n) {
         ret = -1n

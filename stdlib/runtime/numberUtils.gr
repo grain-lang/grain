@@ -4,6 +4,7 @@
  * This file was inspired by AssemblyScript's std/assembly/util/number.ts
  */
 
+import Malloc from "runtime/malloc"
 import Memory from "runtime/unsafe/memory"
 import WasmI32, {
   eq as (==),
@@ -39,7 +40,7 @@ let mut _POWERS10 = -1n
 
 let get_POWERS10 = () => {
   if (_POWERS10 == -1n) {
-    _POWERS10 = Memory.malloc(40n)
+    _POWERS10 = Malloc.malloc(40n, false)
     WasmI32.store(_POWERS10, 1n, 0n)
     WasmI32.store(_POWERS10, 10n, 4n)
     WasmI32.store(_POWERS10, 100n, 8n)
@@ -71,7 +72,7 @@ let mut _DIGITS = -1n
 
 let get_DIGITS = () => {
   if (_DIGITS == -1n) {
-    _DIGITS = Memory.malloc(200n)
+    _DIGITS = Malloc.malloc(200n, false)
     WasmI32.store16(_DIGITS, 0x3030n, 0n)
     WasmI32.store16(_DIGITS, 0x3130n, 2n)
     WasmI32.store16(_DIGITS, 0x3230n, 4n)
@@ -181,7 +182,7 @@ let mut _HEX_DIGITS = -1n
 
 export let get_HEX_DIGITS = () => {
   if (_HEX_DIGITS == -1n) {
-    _HEX_DIGITS = Memory.malloc(512n)
+    _HEX_DIGITS = Malloc.malloc(512n, false)
     WasmI32.store16(_HEX_DIGITS, 0x3030n, 0n) // 00
     WasmI32.store16(_HEX_DIGITS, 0x3130n, 2n) // 01
     WasmI32.store16(_HEX_DIGITS, 0x3230n, 4n)
@@ -461,7 +462,7 @@ let mut _ANY_DIGITS = -1n
 
 let get_ANY_DIGITS = () => {
   if (_ANY_DIGITS == -1n) {
-    _ANY_DIGITS = Memory.malloc(36n)
+    _ANY_DIGITS = Malloc.malloc(36n, false)
     WasmI32.store8(_ANY_DIGITS, 0x30n, 0n) // 0
     WasmI32.store8(_ANY_DIGITS, 0x31n, 1n) // 1
     WasmI32.store8(_ANY_DIGITS, 0x32n, 2n) // 2
@@ -506,7 +507,7 @@ let mut _EXP_POWERS = -1n
 
 let get_EXP_POWERS = () => {
   if (_EXP_POWERS == -1n) {
-    _EXP_POWERS = Memory.malloc(174n)
+    _EXP_POWERS = Malloc.malloc(174n, false)
     WasmI32.store16(_EXP_POWERS, -1220n, 0n)
     WasmI32.store16(_EXP_POWERS, -1193n, 2n)
     WasmI32.store16(_EXP_POWERS, -1166n, 4n)
@@ -603,7 +604,7 @@ let mut _FRC_POWERS = -1n
 
 let get_FRC_POWERS = () => {
   if (_FRC_POWERS == -1n) {
-    _FRC_POWERS = Memory.malloc(696n)
+    _FRC_POWERS = Malloc.malloc(696n, false)
     WasmI64.store(_FRC_POWERS, 0xFA8FD5A0081C0288N, 0n)
     WasmI64.store(_FRC_POWERS, 0xBAAEE17FA23EBF76N, 8n)
     WasmI64.store(_FRC_POWERS, 0x8B16FB203055AC76N, 16n)
@@ -1379,7 +1380,7 @@ let mut _dtoa_buf = -1n
 
 let get_dtoa_buf = () => {
   if (_dtoa_buf == -1n) {
-    _dtoa_buf = Memory.malloc(_MAX_DOUBLE_LENGTH)
+    _dtoa_buf = Malloc.malloc(_MAX_DOUBLE_LENGTH, false)
   }
   _dtoa_buf
 }
@@ -1424,4 +1425,5 @@ export let dtoa = value => {
 }
 
 Memory.utoa32Buffered := utoa32Buffered
+Memory.utoa32BufSet := true
 Memory.decimalCount32 := decimalCount32

@@ -6,6 +6,7 @@ import {
   incRef,
   decRef,
   utoa32Buffered,
+  utoa32BufSet,
   decimalCount32,
 } from "runtime/gc"
 import WasmI32, {
@@ -22,6 +23,7 @@ export free
 export incRef
 export decRef
 export utoa32Buffered
+export utoa32BufSet
 export decimalCount32
 
 export let copy = (dest, src, n) => {

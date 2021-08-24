@@ -9,9 +9,18 @@
  *
  * Here is the basic idea for how this looks for an n-byte heap object:
  *
- * [ 32-bit counter ][ 32-bit padding ][ n-bit payload ]
- * ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
- * {start address}                    {pointer used by Grain runtime}
+ * [ 32-bit counter <ref_count> ][ 32-bit pointer <gc_next> ][ 32-bit pointer <gc_prev> ][ 32-bit counter <gc_count> ][ n-bit payload ]
+ * ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
+ * {start address}                                                                                        {pointer used by Grain runtime}
+ * {pointer used in the GC linked list}
+ *
+ * The two pointer values are used to form a doubly-linked list of GC-managed objects.
+ * The <gc_count> value is used to perform cyclic reference analysis (when scanning for
+ * cycles, we initialize <gc_count> to <ref_count> and decrement it as we follow pointers).
+ *
+ * This cyclic GC system is inspired by CPython. Refer to this page for more details:
+ *     https://devguide.python.org/garbage_collector/#memory-layout-and-object-structure
+ *     (Archived 23 Aug 2021: https://web.archive.org/web/20210812035557/https://devguide.python.org/garbage_collector/)
  *
  * Variable Naming Conventions:
  *   rawPtr  : The pointer returned by the call to the external malloc()
@@ -24,8 +33,13 @@ import WasmI32, {
   add as (+),
   sub as (-),
   mul as (*),
+  divS as (/),
   and as (&),
+  or as (|),
   eq as (==),
+  ne as (!=),
+  gtS as (>),
+  geS as (>=),
 } from "runtime/unsafe/wasmi32"
 
 // Using foreigns directly here to avoid cyclic dependency
@@ -36,6 +50,7 @@ import foreign wasm fd_write: (
   WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 
+primitive (!): Bool -> Bool = "@not"
 primitive (&&): (Bool, Bool) -> Bool = "@and"
 primitive (||): (Bool, Bool) -> Bool = "@or"
 primitive throw: Exception -> a = "@throw"
@@ -44,17 +59,220 @@ primitive box: a -> Box<a> = "@box"
 primitive unbox: Box<a> -> a = "@unbox"
 
 exception DecRefError
+exception CycleError
 
 export let decimalCount32 = box((n: WasmI32) => 0n)
 export let utoa32Buffered = box((a: WasmI32, b: WasmI32, c: WasmI32) => void)
+export let utoa32BufSet = box(false)
+
+// binary inverse
+let invert = n => WasmI32.xor(n, -1n)
 
 let mut _DEBUG = false
 
-let _HEADER_SIZE = 8n
+let _HEADER_SIZE = 16n
 
 /*
 //Debugging functions:
 import foreign wasm fd_sync : (WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+
+let _LOG_GC_LIST_STRING_1 = "GC List:\n\t0x"
+let _LOG_GC_LIST_STRING_2 = "\n\t0x"
+let _LOG_GC_LIST_STRING_3 = "\n"
+let _LOG_GC_LIST_STRING_4 = " ["
+let _LOG_GC_LIST_STRING_5 = "] "
+
+let _LOG_CHILDREN_STRING_1 = "--> {"
+let _LOG_CHILDREN_STRING_2 = "0x"
+let _LOG_CHILDREN_STRING_3 = ", "
+let _LOG_CHILDREN_STRING_4 = "}"
+let _LOG_CHILDREN_STRING_5 = " ["
+let _LOG_CHILDREN_STRING_6 = "]"
+let _0 = "0"
+
+let _LOG_CONSISTENT_STRING_1 = "List is consistent\n"
+let _LOG_CONSISTENT_STRING_2 = "List is NOT consistent\n"
+
+let printConstantString = (iov, written, s) => {
+  WasmI32.store(iov, WasmI32.fromGrain(s) + 8n, 0n)
+  WasmI32.store(iov, WasmI32.load(WasmI32.fromGrain(s), 4n), 4n)
+  fd_write(1n, iov, 1n, written)
+  void
+}
+
+let printConstantHex = (iov, written, n) => {
+  //if (num == 0n) {
+  //  printConstantString(iov, written, _0)
+  //} else {
+  //  let ptrDecimals = WasmI32.shrU(31n - WasmI32.clz(num), 2n) + 1n
+  //  let ptrStr = Malloc.malloc(ptrDecimals)
+  //  unbox(utoa32Buffered)(ptrStr, num, 16n)
+  //  WasmI32.store(iov, ptrStr, 0n)
+  //  WasmI32.store(iov, ptrDecimals, 4n)
+  //  fd_write(1n, iov, 1n, written)
+  //  Malloc.free(ptrStr)
+  //}
+  void
+}
+
+let logConsistent = (root) => {
+  if (WasmI32.fromGrain(inCall) == WasmI32.fromGrain(false)) {
+  let n_strings = 1n
+  let iov = Malloc.malloc((8n * n_strings) + 16n)
+  let written = iov + (8n * (n_strings + 1n))
+  if (root == 0n) {
+    printConstantString(iov, written, _LOG_CONSISTENT_STRING_1)
+  } else {
+    let mut cur = root
+    let mut next = WasmI32.load(cur, 4n) & invert(1n)
+    if ((WasmI32.load(next, 8n) & invert(1n)) != cur) {
+      printConstantString(iov, written, _LOG_CONSISTENT_STRING_2)
+    }
+    let mut consistent = true
+    cur = WasmI32.load(cur, 4n) & invert(1n)
+    next = WasmI32.load(next, 4n) & invert(1n)
+    while (cur != root) {
+      if ((WasmI32.load(next, 8n) & invert(1n)) != cur) {
+        consistent = false
+        break
+      }
+      cur = WasmI32.load(cur, 4n) & invert(1n)
+      next = WasmI32.load(next, 4n) & invert(1n)
+    }
+    if (consistent) {
+      printConstantString(iov, written, _LOG_CONSISTENT_STRING_1)
+    } else {
+      printConstantString(iov, written, _LOG_CONSISTENT_STRING_2)
+    }
+  }
+  Malloc.free(iov)
+  }
+}
+
+let logChildren = (iov, written, rawPtr) => {
+  let userPtr = rawPtr + _HEADER_SIZE
+  printConstantString(iov, written, _LOG_CHILDREN_STRING_1)
+  let mut isNotFirst = false
+  match (WasmI32.load(userPtr, 0n)) {
+    t when t == Tags._GRAIN_ADT_HEAP_TAG => {
+      let arity = WasmI32.load(userPtr, 16n)
+      let maxOffset = arity * 4n
+      for (let mut i = 0n; WasmI32.ltU(i, maxOffset); i = i + 4n) {
+        let childUserPtr = WasmI32.load(userPtr + i, 20n)
+        let childRawPtr = childUserPtr - _HEADER_SIZE
+        if (isNotFirst) {
+          printConstantString(iov, written, _LOG_CHILDREN_STRING_3)
+        }
+        printConstantString(iov, written, _LOG_CHILDREN_STRING_2)
+        printConstantString(iov, written, _LOG_CHILDREN_STRING_5)
+        if ((childUserPtr & 7n) == 0n) {
+        } else {
+        }
+        printConstantString(iov, written, _LOG_CHILDREN_STRING_6)
+        isNotFirst = true
+      }
+    },
+    t when t == Tags._GRAIN_RECORD_HEAP_TAG => {
+      let arity = WasmI32.load(userPtr, 12n)
+      let maxOffset = arity * 4n
+      for (let mut i = 0n; WasmI32.ltU(i, maxOffset); i = i + 4n) {
+        let childUserPtr = WasmI32.load(userPtr + i, 16n)
+        let childRawPtr = childUserPtr - _HEADER_SIZE
+        if (isNotFirst) {
+          printConstantString(iov, written, _LOG_CHILDREN_STRING_3)
+        }
+        printConstantString(iov, written, _LOG_CHILDREN_STRING_2)
+        printConstantString(iov, written, _LOG_CHILDREN_STRING_5)
+        if ((childUserPtr & 7n) == 0n) {
+        } else {
+        }
+        printConstantString(iov, written, _LOG_CHILDREN_STRING_6)
+        isNotFirst = true
+      }
+    },
+    t when t == Tags._GRAIN_ARRAY_HEAP_TAG || t == Tags._GRAIN_TUPLE_HEAP_TAG => {
+      let arity = WasmI32.load(userPtr, 4n)
+      let maxOffset = arity * 4n
+      for (let mut i = 0n; WasmI32.ltU(i, maxOffset); i = i + 4n) {
+        let childUserPtr = WasmI32.load(userPtr + i, 8n)
+        let childRawPtr = childUserPtr - _HEADER_SIZE
+        if (isNotFirst) {
+          printConstantString(iov, written, _LOG_CHILDREN_STRING_3)
+        }
+        printConstantString(iov, written, _LOG_CHILDREN_STRING_2)
+        printConstantString(iov, written, _LOG_CHILDREN_STRING_5)
+        if ((childUserPtr & 7n) == 0n) {
+        } else {
+        }
+        printConstantString(iov, written, _LOG_CHILDREN_STRING_6)
+        isNotFirst = true
+      }
+    },
+    t when t == Tags._GRAIN_LAMBDA_HEAP_TAG => {
+      let arity = WasmI32.load(userPtr, 12n)
+      let maxOffset = arity * 4n
+      for (let mut i = 0n; WasmI32.ltU(i, maxOffset); i = i + 4n) {
+        let childUserPtr = WasmI32.load(userPtr + i, 16n)
+        let childRawPtr = childUserPtr - _HEADER_SIZE
+        if (isNotFirst) {
+          printConstantString(iov, written, _LOG_CHILDREN_STRING_3)
+        }
+        printConstantString(iov, written, _LOG_CHILDREN_STRING_2)
+        printConstantString(iov, written, _LOG_CHILDREN_STRING_5)
+        if ((childUserPtr & 7n) == 0n) {
+        } else {
+        }
+        printConstantString(iov, written, _LOG_CHILDREN_STRING_6)
+        isNotFirst = true
+      }
+    },
+    _ => {
+      // No traversal necessary for other tags
+      void
+    }
+  }
+  printConstantString(iov, written, _LOG_CHILDREN_STRING_4)
+}
+
+let logGcList = (root: WasmI32) => {
+  if (unbox(utoa32BufSet) && WasmI32.fromGrain(inCall) == WasmI32.fromGrain(false)) {
+    inCall = true
+    let n_strings = 1n
+    let iov = Malloc.malloc((8n * n_strings) + 16n)
+    let written = iov + (8n * (n_strings + 1n))
+    printConstantString(iov, written, _LOG_GC_LIST_STRING_1)
+    if (root != 0n) {
+      printConstantString(iov, written, _LOG_GC_LIST_STRING_4)
+      printConstantString(iov, written, _LOG_GC_LIST_STRING_5)
+      //logChildren(iov, written, root)
+    }
+    let mut rawPtr = if (root == 0n) {0n} else {WasmI32.load(root, 4n) & invert(1n)}
+    while (rawPtr != root) {
+      printConstantString(iov, written, _LOG_GC_LIST_STRING_2)
+      printConstantString(iov, written, _LOG_GC_LIST_STRING_4)
+      printConstantString(iov, written, _LOG_GC_LIST_STRING_5)
+      //logChildren(iov, written, rawPtr)
+      rawPtr = WasmI32.load(rawPtr, 4n) & invert(1n)
+    }
+    printConstantString(iov, written, _LOG_GC_LIST_STRING_3)
+    fd_sync(1n)
+    Malloc.free(iov)
+    inCall = false
+  }
+}
+
+let _LOG_FREE_STRING_1 = "free(0x"
+let _LOG_FREE_STRING_2 = " ["
+let _LOG_FREE_STRING_3 = "])\n"
+
+let logFree = (value) => {
+  let n_strings = 1n
+  let iov = Malloc.malloc((8n * n_strings) + 16n)
+  let written = iov + (8n * (n_strings + 1n))
+  printConstantString(iov, written, _LOG_FREE_STRING_1)
+  printConstantString(iov, written, _LOG_FREE_STRING_2)
+  printConstantString(iov, written, _LOG_FREE_STRING_3)
+}
 
 // incRef debug messages: "decRef: 0xNNNNNN (prev count: nn)\n"
 let _INCREF_DEBUG_STR_1 = "incRef: 0x"
@@ -133,29 +351,598 @@ let logDecRef = (userPtr: WasmI32, refCount: WasmI32, ignoreZeros) => {
 
 */
 
-let getRefCount = (userPtr: WasmI32) => {
+// CYCLIC GC DEFINITIONS
+// Collection thresholds. A collection will be triggered when a generation
+// exceeds the given size. For reference, CPython uses the following values:
+//
+// _GEN0_THRESHOLD = 700n
+// _GEN1_THRESHOLD = 10n
+// _GEN2_THRESHOLD = 10n
+//
+let mut _GEN0_THRESHOLD = 700n
+let mut _GEN1_THRESHOLD = 10n
+let mut _GEN2_THRESHOLD = 10n
+let mut _N_GEN0_COLLECTIONS = 0n
+let mut _N_GEN1_COLLECTIONS = 0n
+// number of objects which have been promoted to gen2 since the last collection
+let mut _LONG_LIVED_PENDING = 0n
+// number of objects which survived the last gen2 collection
+let mut _LONG_LIVED_TOTAL = 0n
+
+// last item on the linked list for generation 0
+let mut _GEN0_ROOT = 0n
+let mut _GEN0_SIZE = 0n
+// last item on the linked list for generation 1
+let mut _GEN1_ROOT = 0n
+let mut _GEN1_SIZE = 0n
+// last item on the linked list for generation 2
+let mut _GEN2_ROOT = 0n
+let mut _GEN2_SIZE = 0n
+let mut _UNREACHABLE_ROOT = 0n // <- temp list used during collection
+
+// bitmap values (used during cyclic collection)
+let mut _PREV_COLLECTING = 1n // <- have we already visited this object? (stored in <gc_prev>)
+let mut _NEXT_TENTATIVELY_UNREACHABLE = 1n // <- is this object possibly unreachable? (stored in <gc_next>)
+// mask for bitmaps
+let mut _PREV_MASK = 1n
+let mut _NEXT_MASK = 1n
+
+let getRefCountUser = (userPtr: WasmI32) => {
   WasmI32.load(userPtr - _HEADER_SIZE, 0n)
 }
 
-let setRefCount = (userPtr: WasmI32, count: WasmI32) => {
+let setRefCountUser = (userPtr: WasmI32, count: WasmI32) => {
   WasmI32.store(userPtr - _HEADER_SIZE, count, 0n)
 }
 
+let getRefCountRaw = (rawPtr: WasmI32) => {
+  WasmI32.load(rawPtr, 0n)
+}
+
+let setRefCountRaw = (rawPtr: WasmI32, count: WasmI32) => {
+  WasmI32.store(rawPtr, count, 0n)
+}
+
+let getGcNext = (rawPtr: WasmI32) => {
+  WasmI32.load(rawPtr, 4n) & invert(_NEXT_MASK)
+}
+
+// resets flags!
+let setGcNext = (rawPtr: WasmI32, ptr: WasmI32) => {
+  WasmI32.store(rawPtr, ptr, 4n)
+}
+
+let getGcNextFlags = (rawPtr: WasmI32) => {
+  WasmI32.load(rawPtr, 4n) & _NEXT_MASK
+}
+
+let setGcNextFlags = (rawPtr: WasmI32, flags: WasmI32) => {
+  WasmI32.store(rawPtr, getGcNext(rawPtr) | flags & _NEXT_MASK, 4n)
+}
+
+let getGcPrev = (rawPtr: WasmI32) => {
+  WasmI32.load(rawPtr, 8n) & invert(_PREV_MASK)
+}
+
+// resets flags!
+let setGcPrev = (rawPtr: WasmI32, ptr: WasmI32) => {
+  WasmI32.store(rawPtr, ptr, 8n)
+}
+
+let getGcPrevFlags = (rawPtr: WasmI32) => {
+  WasmI32.load(rawPtr, 8n) & _PREV_MASK
+}
+
+let setGcPrevFlags = (rawPtr: WasmI32, flags: WasmI32) => {
+  WasmI32.store(rawPtr, getGcPrev(rawPtr) | flags & _PREV_MASK, 8n)
+}
+
+let getGcCount = (rawPtr: WasmI32) => {
+  WasmI32.load(rawPtr, 12n)
+}
+
+let setGcCount = (rawPtr: WasmI32, count: WasmI32) => {
+  WasmI32.store(rawPtr, count, 12n)
+}
+
+let decGcCount = (rawPtr: WasmI32) => {
+  let cnt = getGcCount(rawPtr)
+  if (cnt == 0n) {
+    throw CycleError
+  }
+  WasmI32.store(rawPtr, cnt - 1n, 12n)
+}
+
+let isPointer = (grainVal: WasmI32) => {
+  (Tags._GRAIN_GENERIC_TAG_MASK & grainVal) == 0n && grainVal >= 0x8000n
+}
+
+// Returns root of list (will be the same as input unless root == 0n)
+let moveToEndOfList = (root: WasmI32, itemRawPtr: WasmI32) => {
+  // edge case: item is root
+  if (itemRawPtr == _GEN0_ROOT) {
+    _GEN0_ROOT = getGcNext(itemRawPtr)
+    if (_GEN0_ROOT == itemRawPtr) {
+      // if this is still true, then it was a
+      // length-1 list; reset to null
+      _GEN0_ROOT = 0n
+    }
+  } else if (itemRawPtr == _GEN1_ROOT) {
+    _GEN1_ROOT = getGcNext(itemRawPtr)
+    if (_GEN1_ROOT == itemRawPtr) {
+      // if this is still true, then it was a
+      // length-1 list; reset to null
+      _GEN1_ROOT = 0n
+    }
+  } else if (itemRawPtr == _GEN2_ROOT) {
+    _GEN2_ROOT = getGcNext(itemRawPtr)
+    if (_GEN2_ROOT == itemRawPtr) {
+      // if this is still true, then it was a
+      // length-1 list; reset to null
+      _GEN2_ROOT = 0n
+    }
+  } else if (itemRawPtr == _UNREACHABLE_ROOT) {
+    _UNREACHABLE_ROOT = getGcNext(itemRawPtr)
+    if (_UNREACHABLE_ROOT == itemRawPtr) {
+      // if this is still true, then it was a
+      // length-1 list; reset to null
+      _UNREACHABLE_ROOT = 0n
+    }
+  }
+  // Perform the removal from the old list (no-op if length-1):
+  let nextFlags = getGcNextFlags(itemRawPtr)
+  setGcNext(getGcPrev(itemRawPtr), getGcNext(itemRawPtr))
+  setGcNextFlags(getGcPrev(itemRawPtr), nextFlags)
+  setGcPrev(getGcNext(itemRawPtr), getGcPrev(itemRawPtr))
+  // Perform the insertion:
+  // Before: <prev> -- root -- <next>
+  // After: <prev> -- itemRawPtr -- root -- <next>
+  if (root == 0n) {
+    // edge case: list being inserted into is empty
+    setGcNext(itemRawPtr, itemRawPtr)
+    setGcPrev(itemRawPtr, itemRawPtr)
+    itemRawPtr
+  } else {
+    let rootPrevRawPtr = getGcPrev(root)
+    setGcNext(rootPrevRawPtr, itemRawPtr)
+    setGcPrev(itemRawPtr, rootPrevRawPtr)
+    setGcNext(itemRawPtr, root)
+    setGcPrev(root, itemRawPtr)
+    root
+  }
+}
+export let free = (userPtr: WasmI32) => {
+  let rawPtr = userPtr - _HEADER_SIZE
+  //logFree(rawPtr)
+  if (rawPtr == _GEN0_ROOT) {
+    _GEN0_ROOT = getGcNext(rawPtr)
+    if (_GEN0_ROOT == rawPtr) {
+      // if this is still true, then it was a
+      // length-1 list; reset to null
+      _GEN0_ROOT = 0n
+    }
+  } else if (rawPtr == _GEN1_ROOT) {
+    _GEN1_ROOT = getGcNext(rawPtr)
+    if (_GEN1_ROOT == rawPtr) {
+      // if this is still true, then it was a
+      // length-1 list; reset to null
+      _GEN1_ROOT = 0n
+    }
+  } else if (rawPtr == _GEN2_ROOT) {
+    _GEN2_ROOT = getGcNext(rawPtr)
+    if (_GEN2_ROOT == rawPtr) {
+      // if this is still true, then it was a
+      // length-1 list; reset to null
+      _GEN2_ROOT = 0n
+    }
+  } else if (rawPtr == _UNREACHABLE_ROOT) {
+    _UNREACHABLE_ROOT = getGcNext(rawPtr)
+    if (_UNREACHABLE_ROOT == rawPtr) {
+      // if this is still true, then it was a
+      // length-1 list; reset to null
+      _UNREACHABLE_ROOT = 0n
+    }
+  }
+  // remove from linked list (no-op if length-1)
+  setGcNext(getGcPrev(rawPtr), getGcNext(rawPtr))
+  setGcPrev(getGcNext(rawPtr), getGcPrev(rawPtr))
+  // Free the raw pointer
+  Malloc.free(rawPtr)
+}
+
+let markUnreachable = ptr => setGcNextFlags(ptr, _NEXT_TENTATIVELY_UNREACHABLE)
+let unmarkUnreachable = ptr => setGcNextFlags(ptr, 0n)
+let isMarkedUnreachable = ptr =>
+  getGcNextFlags(ptr) ==
+  _NEXT_TENTATIVELY_UNREACHABLE
+
+let markCollecting = ptr => setGcPrevFlags(ptr, _PREV_COLLECTING)
+let unmarkCollecting = ptr => setGcPrevFlags(ptr, 0n)
+let isMarkedCollecting = ptr => getGcPrevFlags(ptr) == _PREV_COLLECTING
+
+/**
+ * Initialize all GC reference counts (<gc_count>) to the
+ * value of the actual reference counts (<ref_count>)
+ *
+ * @param root: The root of the linked list
+ */
+let initializeGcCounts = (root: WasmI32) => {
+  // PRECONDITION: root != 0n
+  let mut rawPtr = root
+  setGcCount(rawPtr, getRefCountRaw(rawPtr))
+  setGcPrevFlags(rawPtr, _PREV_COLLECTING)
+  setGcNextFlags(rawPtr, 0n) // zero out flags
+  rawPtr = getGcNext(rawPtr)
+  while (rawPtr != root) {
+    setGcCount(rawPtr, getRefCountRaw(rawPtr))
+    setGcPrevFlags(rawPtr, _PREV_COLLECTING)
+    setGcNextFlags(rawPtr, 0n) // zero out flags
+    rawPtr = getGcNext(rawPtr)
+  }
+}
+
+let tallySingleItem = (rawPtr: WasmI32) => {
+  let userPtr = rawPtr + _HEADER_SIZE
+  match (WasmI32.load(userPtr, 0n)) {
+    t when t == Tags._GRAIN_ADT_HEAP_TAG => {
+      let arity = WasmI32.load(userPtr, 16n)
+      let maxOffset = arity * 4n
+      for (let mut i = 0n; WasmI32.ltU(i, maxOffset); i += 4n) {
+        let childUserPtr = WasmI32.load(userPtr + i, 20n)
+        if (
+          isPointer(childUserPtr) &&
+          isMarkedCollecting(childUserPtr - _HEADER_SIZE)
+        ) {
+          decGcCount(childUserPtr - _HEADER_SIZE)
+        }
+      }
+    },
+    t when t == Tags._GRAIN_RECORD_HEAP_TAG => {
+      let arity = WasmI32.load(userPtr, 12n)
+      let maxOffset = arity * 4n
+      for (let mut i = 0n; WasmI32.ltU(i, maxOffset); i += 4n) {
+        let childUserPtr = WasmI32.load(userPtr + i, 16n)
+        if (
+          isPointer(childUserPtr) &&
+          isMarkedCollecting(childUserPtr - _HEADER_SIZE)
+        ) {
+          decGcCount(childUserPtr - _HEADER_SIZE)
+        }
+      }
+    },
+    t when (
+      t == Tags._GRAIN_ARRAY_HEAP_TAG || t == Tags._GRAIN_TUPLE_HEAP_TAG
+    ) => {
+      let arity = WasmI32.load(userPtr, 4n)
+      let maxOffset = arity * 4n
+      for (let mut i = 0n; WasmI32.ltU(i, maxOffset); i += 4n) {
+        let childUserPtr = WasmI32.load(userPtr + i, 8n)
+        if (
+          isPointer(childUserPtr) &&
+          isMarkedCollecting(childUserPtr - _HEADER_SIZE)
+        ) {
+          decGcCount(childUserPtr - _HEADER_SIZE)
+        }
+      }
+    },
+    t when t == Tags._GRAIN_LAMBDA_HEAP_TAG => {
+      let arity = WasmI32.load(userPtr, 12n)
+      let maxOffset = arity * 4n
+      for (let mut i = 0n; WasmI32.ltU(i, maxOffset); i += 4n) {
+        let childUserPtr = WasmI32.load(userPtr + i, 16n)
+        if (
+          isPointer(childUserPtr) &&
+          isMarkedCollecting(childUserPtr - _HEADER_SIZE)
+        ) {
+          decGcCount(childUserPtr - _HEADER_SIZE)
+        }
+      }
+    },
+    _ => {
+      // No traversal necessary for other tags
+      void
+    },
+  }
+}
+
+/**
+ * Scan the given linked list for internal references, updating
+ * the GC count. This function should be invoked after `initializeGcCounts`.
+ * Once this function is called, then objects in the given list
+ * will have GC counts > 0 iff they are directly accessible from outside of the list.
+ *
+ * Note that objects with GC counts == 0 may be still be accessible *indirectly*
+ * (i.e. they are part of a reference chain with a reference outside of the list).
+ *
+ * @param root: The root of the linked list
+ */
+let tallyGcList = (root: WasmI32) => {
+  let mut rawPtr = root
+  tallySingleItem(rawPtr)
+  rawPtr = getGcNext(rawPtr)
+  while (rawPtr != root) {
+    tallySingleItem(rawPtr)
+    rawPtr = getGcNext(rawPtr)
+  }
+}
+
+let traverseReachableSingleItem = (root: WasmI32, rawPtr: WasmI32) => {
+  let mut root = root
+  let userPtr = rawPtr + _HEADER_SIZE
+  match (WasmI32.load(userPtr, 0n)) {
+    t when t == Tags._GRAIN_ADT_HEAP_TAG => {
+      let arity = WasmI32.load(userPtr, 16n)
+      let maxOffset = arity * 4n
+      for (let mut i = 0n; WasmI32.ltU(i, maxOffset); i += 4n) {
+        let childUserPtr = WasmI32.load(userPtr + i, 20n)
+        // Check that pointer is a reference
+        if (isPointer(childUserPtr)) {
+          let childRawPtr = childUserPtr - _HEADER_SIZE
+          if (!isMarkedCollecting(childRawPtr)) {
+            void
+          } else if (isMarkedUnreachable(childRawPtr)) {
+            root = moveToEndOfList(
+              root,
+              childRawPtr
+            ) // side effect: zeros out flag
+            setGcCount(childRawPtr, 1n)
+          } else if (getGcCount(childRawPtr) == 0n) {
+            setGcCount(childRawPtr, 1n)
+          }
+        }
+      }
+    },
+    t when t == Tags._GRAIN_RECORD_HEAP_TAG => {
+      let arity = WasmI32.load(userPtr, 12n)
+      let maxOffset = arity * 4n
+      for (let mut i = 0n; WasmI32.ltU(i, maxOffset); i += 4n) {
+        let childUserPtr = WasmI32.load(userPtr + i, 16n)
+        // Check that pointer is a reference
+        if (isPointer(childUserPtr)) {
+          let childRawPtr = childUserPtr - _HEADER_SIZE
+          if (!isMarkedCollecting(childRawPtr)) {
+            void
+          } else if (isMarkedUnreachable(childRawPtr)) {
+            root = moveToEndOfList(
+              root,
+              childRawPtr
+            ) // side effect: zeros out flag
+            setGcCount(childRawPtr, 1n)
+          } else if (getGcCount(childRawPtr) == 0n) {
+            setGcCount(childRawPtr, 1n)
+          }
+        }
+      }
+    },
+    t when (
+      t == Tags._GRAIN_ARRAY_HEAP_TAG || t == Tags._GRAIN_TUPLE_HEAP_TAG
+    ) => {
+      let arity = WasmI32.load(userPtr, 4n)
+      let maxOffset = arity * 4n
+      for (let mut i = 0n; WasmI32.ltU(i, maxOffset); i += 4n) {
+        let childUserPtr = WasmI32.load(userPtr + i, 8n)
+        // Check that pointer is a reference
+        if (isPointer(childUserPtr)) {
+          let childRawPtr = childUserPtr - _HEADER_SIZE
+          if (!isMarkedCollecting(childRawPtr)) {
+            void
+          } else if (isMarkedUnreachable(childRawPtr)) {
+            root = moveToEndOfList(
+              root,
+              childRawPtr
+            ) // side effect: zeros out flag
+            setGcCount(childRawPtr, 1n)
+          } else if (getGcCount(childRawPtr) == 0n) {
+            setGcCount(childRawPtr, 1n)
+          }
+        }
+      }
+    },
+    t when t == Tags._GRAIN_LAMBDA_HEAP_TAG => {
+      let arity = WasmI32.load(userPtr, 12n)
+      let maxOffset = arity * 4n
+      for (let mut i = 0n; WasmI32.ltU(i, maxOffset); i += 4n) {
+        let childUserPtr = WasmI32.load(userPtr + i, 16n)
+        // Check that pointer is a reference
+        if (isPointer(childUserPtr)) {
+          let childRawPtr = childUserPtr - _HEADER_SIZE
+          if (!isMarkedCollecting(childRawPtr)) {
+            void
+          } else if (isMarkedUnreachable(childRawPtr)) {
+            root = moveToEndOfList(
+              root,
+              childRawPtr
+            ) // side effect: zeros out flag
+            setGcCount(childRawPtr, 1n)
+          } else if (getGcCount(childRawPtr) == 0n) {
+            setGcCount(childRawPtr, 1n)
+          }
+        }
+      }
+    },
+    _ => {
+      // No traversal necessary for other tags
+      void
+    },
+  }
+  root
+}
+
+let scanForPossiblyUnreachable = (root: WasmI32) => {
+  let mut root = root
+  while (root != 0n && getGcCount(root) == 0n) {
+    let next = getGcNext(root)
+    _UNREACHABLE_ROOT = moveToEndOfList(_UNREACHABLE_ROOT, root)
+    markUnreachable(root)
+    if (root == next) {
+      root = 0n
+    } else {
+      root = next
+    }
+  }
+  if (_UNREACHABLE_ROOT != 0n) {
+    markUnreachable(_UNREACHABLE_ROOT)
+  }
+  if (root != 0n) {
+    let mut rawPtr = root
+    let mut prev = getGcPrev(rawPtr)
+    // root is not unreachable
+    root = traverseReachableSingleItem(root, rawPtr)
+    setGcPrev(rawPtr, prev)
+    unmarkCollecting(rawPtr)
+    prev = rawPtr
+    rawPtr = getGcNext(root)
+    while (rawPtr != root) {
+      //let next = getGcNext(rawPtr)
+      if (getGcCount(rawPtr) == 0n) {
+        _UNREACHABLE_ROOT = moveToEndOfList(_UNREACHABLE_ROOT, rawPtr)
+        markUnreachable(rawPtr)
+      } else {
+        root = traverseReachableSingleItem(root, rawPtr)
+        setGcPrev(rawPtr, prev)
+        unmarkCollecting(rawPtr)
+        prev = rawPtr
+      }
+      rawPtr = getGcNext(prev)
+      if (_UNREACHABLE_ROOT != 0n) {
+        markUnreachable(_UNREACHABLE_ROOT)
+      }
+    }
+  }
+  root
+}
+
+let freeUnreachable = (root: WasmI32) => {
+  let mut root = root
+  if (root != 0n) {
+    // we know that the root is not unreachable
+    let mut rawPtr = getGcNext(root)
+    Malloc.free(root)
+    while (rawPtr != root) {
+      let next = getGcNext(rawPtr)
+      Malloc.free(rawPtr)
+      rawPtr = next
+    }
+  }
+  root
+}
+
+let gcListLength = (root: WasmI32) => {
+  if (root == 0n) {
+    0n
+  } else {
+    let mut len = 1n
+    let mut rawPtr = getGcNext(root)
+    while (rawPtr != root) {
+      len += 1n
+      rawPtr = getGcNext(rawPtr)
+    }
+    len
+  }
+}
+
+let gcListAppend = (oldGeneration: WasmI32, newGeneration: WasmI32) => {
+  if (newGeneration == 0n) {
+    oldGeneration
+  } else if (oldGeneration == 0n) {
+    newGeneration
+  } else {
+    let lastInOldList = getGcPrev(oldGeneration)
+    setGcNext(lastInOldList, newGeneration)
+    setGcPrev(newGeneration, lastInOldList)
+    oldGeneration
+  }
+}
+
+let handleCycles = (root: WasmI32) => {
+  if (root != 0n) {
+    gcListLength(root)
+    initializeGcCounts(root)
+    tallyGcList(root)
+    let root = scanForPossiblyUnreachable(root)
+    // everything left in the tentatively unreachable list is
+    // actually unreachable
+    freeUnreachable(_UNREACHABLE_ROOT)
+    _UNREACHABLE_ROOT = 0n
+    root
+  } else {
+    root
+  }
+}
+
+let performCyclicGc = insist => {
+  if (insist || _GEN0_SIZE >= _GEN0_THRESHOLD) {
+    let collected = handleCycles(_GEN0_ROOT)
+    let collectedSize = gcListLength(collected)
+    // promote survivors to next generation
+    _GEN0_ROOT = 0n
+    _GEN0_SIZE = 0n
+    _GEN1_ROOT = gcListAppend(_GEN1_ROOT, collected)
+    _GEN1_SIZE += collectedSize
+    _N_GEN0_COLLECTIONS += 1n
+  }
+  // Same GC strategy as Python
+  // https://mail.python.org/pipermail/python-dev/2008-June/080579.html
+  if (_GEN1_ROOT != 0n && _N_GEN0_COLLECTIONS >= _GEN1_THRESHOLD) {
+    //logGcList(_GEN1_ROOT)
+    let collected = handleCycles(_GEN1_ROOT)
+    let collectedSize = gcListLength(collected)
+    // promote survivors to next generation
+    _GEN1_ROOT = 0n
+    _GEN1_SIZE = 0n
+    _GEN2_ROOT = gcListAppend(_GEN2_ROOT, collected)
+    _GEN2_SIZE += collectedSize
+    _LONG_LIVED_PENDING += collectedSize
+    _N_GEN0_COLLECTIONS = 0n // reset
+    _N_GEN1_COLLECTIONS += 1n
+  }
+  // gen2 collection is affected by more than just the threshold;
+  // this is a trick from CPython (to solve this issue: https://bugs.python.org/issue4074)
+  if (_GEN2_ROOT != 0n && _N_GEN1_COLLECTIONS >= _GEN2_THRESHOLD) {
+    // note that we hardwire this ratio to 0.25
+    if (_LONG_LIVED_PENDING > _LONG_LIVED_TOTAL / 4n) {
+      //logGcList(_GEN2_ROOT)
+      let _GEN2_ROOT = handleCycles(_GEN2_ROOT)
+      let _GEN2_SIZE = gcListLength(_GEN2_ROOT)
+      _LONG_LIVED_PENDING = 0n
+      _LONG_LIVED_TOTAL = _GEN2_SIZE
+    }
+    // This *could* optionally be moved inside of the above `if` statement
+    // if memory pressure becomes an issue.
+    _N_GEN1_COLLECTIONS = 0n // reset
+  }
+}
+
+let _PERFORM_CYCLIC_GC = "performCyclicGc"
+
 export let malloc = (size: WasmI32) => {
+  // repeat condition here to avoid extra function call, since this
+  // is an extremely hot code path
+  //if (_GEN0_ROOT != 0n) {logConsistent(_GEN0_ROOT); logGcList(_GEN0_ROOT)}
+  if (_GEN0_SIZE >= _GEN0_THRESHOLD) {
+    performCyclicGc(false)
+    void
+  }
   // Add space for header
-  let rawPtr = Malloc.malloc(size + _HEADER_SIZE)
+  let mut rawPtr = Malloc.malloc(size + _HEADER_SIZE, true)
+  if (rawPtr == -1n) {
+    // If we're out of memory, attempt a cyclic GC run and then retry
+    // (this is necessary to run the GC test suite)
+    performCyclicGc(true)
+    rawPtr = Malloc.malloc(size + _HEADER_SIZE, false)
+  }
 
   // Populate GC header
-  WasmI32.store(rawPtr, 1n, 0n)
-  WasmI32.store(rawPtr, 0n, 4n)
+  WasmI32.store(rawPtr, 1n, 0n) // refcnt
+  // insert into generation 0 linked list
+  setGcNext(rawPtr, rawPtr)
+  setGcPrev(rawPtr, rawPtr)
+  _GEN0_ROOT = moveToEndOfList(_GEN0_ROOT, rawPtr)
+  _GEN0_SIZE += 1n
+  WasmI32.store(rawPtr, 0n, 12n) // gc_cnt
 
   // Return pointer past header
   rawPtr + _HEADER_SIZE
-}
-
-export let free = (userPtr: WasmI32) => {
-  // Free the raw pointer
-  Malloc.free(userPtr - _HEADER_SIZE)
 }
 
 export let incRef = (userPtr: WasmI32) => {
@@ -164,10 +951,10 @@ export let incRef = (userPtr: WasmI32) => {
     WasmI32.ne(userPtr, 0n)
   ) {
     // if (_DEBUG) {
-    //   logIncRef(userPtr, getRefCount(userPtr))
+    //   logIncRef(userPtr, getRefCountUser(userPtr))
     //   void;
     // }
-    setRefCount(userPtr, getRefCount(userPtr) + 1n)
+    setRefCountUser(userPtr, getRefCountUser(userPtr) + 1n)
   }
   userPtr
 }
@@ -177,7 +964,7 @@ let rec decRef = (userPtr: WasmI32, ignoreZeros: Bool) => {
     WasmI32.eqz(userPtr & Tags._GRAIN_GENERIC_TAG_MASK) &&
     WasmI32.ne(userPtr, 0n)
   ) {
-    let refCount = getRefCount(userPtr)
+    let refCount = getRefCountUser(userPtr)
     // if (_DEBUG) {
     //   logDecRef(userPtr, refCount, ignoreZeros)
     //   void
@@ -191,7 +978,7 @@ let rec decRef = (userPtr: WasmI32, ignoreZeros: Bool) => {
       }
     } else {
       let refCount = refCount - 1n
-      setRefCount(userPtr, refCount)
+      setRefCountUser(userPtr, refCount)
 
       if (WasmI32.eqz(refCount)) {
         decRefChildren(userPtr)
@@ -236,7 +1023,7 @@ let rec decRef = (userPtr: WasmI32, ignoreZeros: Bool) => {
       }
     },
     _ => {
-      // No travelsal necessary for other tags
+      // No traversal necessary for other tags
       void
     },
   }
@@ -249,7 +1036,7 @@ export let decRef = userPtr => decRef(userPtr, false)
 // export let getRefCount = (value) => {
 //   let userPtr = WasmI32.fromGrain(value)
 //   let ret = if (WasmI32.eqz(userPtr & Tags._GRAIN_GENERIC_TAG_MASK) && WasmI32.ne(userPtr, 0n)) {
-//     WasmI32.toGrain((getRefCount(userPtr) * 2n) + 1n) : Number
+//     WasmI32.toGrain((getRefCountUser(userPtr) * 2n) + 1n) : Number
 //   } else {
 //     0
 //   }

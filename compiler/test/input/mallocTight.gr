@@ -18,7 +18,7 @@ primitive heapBase: WasmI32 = "@heap.base"
 // This provides us with a clean slate to test malloc
 
 // allow malloc to initialize
-ignore(Malloc.malloc(8n))
+ignore(Malloc.malloc(8n, false))
 
 // The free list should be pointing at the base
 let base = Malloc.getFreePtr()
@@ -31,8 +31,8 @@ assert WasmI32.load(block, 0n) == base
 // When we allocate, an extra 8 bytes is reserved for the block header
 let remainingMemory = WasmI32.load(block, 4n) - 8n
 
-let firstPtr = Malloc.malloc(remainingMemory)
-let secondPtr = Malloc.malloc(remainingMemory)
+let firstPtr = Malloc.malloc(remainingMemory, false)
+let secondPtr = Malloc.malloc(remainingMemory, false)
 
 // These two pointers should (obviously) be different
 assert firstPtr != secondPtr
