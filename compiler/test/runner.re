@@ -83,7 +83,15 @@ let run = (~num_pages=?, file) => {
     Unix.open_process_full(command, Unix.environment());
 
   let pid = Unix.process_full_pid((stdout, stdin, stderr));
-  let (_, status) = Unix.waitpid([], pid);
+  let (_, status, timed_out) =
+    try({
+      let (x, status) = Test_utils.waitpid_timeout(15., pid);
+      (x, status, false);
+    }) {
+    | Test_utils.Timeout =>
+      Unix.kill(pid, 9);
+      ((-1), Unix.WEXITED(-1), true);
+    };
 
   let out = read_stream(Stream.of_channel(stdout));
   let err = read_stream(Stream.of_channel(stderr));
@@ -98,6 +106,12 @@ let run = (~num_pages=?, file) => {
     | _ => failwith("process did not exit properly")
     };
 
+  let out =
+    if (timed_out) {
+      "Timed out!\n" ++ out;
+    } else {
+      out;
+    };
   (out ++ err, code);
 };
 
