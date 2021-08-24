@@ -1,4 +1,11 @@
 /* grainc-flags --no-gc */
+/**
+ * @module Sys/Process: Utilities for accessing functionality and information about the Grain program's process.
+ *
+ * This includes things like accessing environment variables and sending signals.
+ *
+ * @example import Process from "sys/process"
+ */
 
 import WasmI32, {
   add as (+),
@@ -14,6 +21,13 @@ import Memory from "runtime/unsafe/memory"
 import Wasi from "runtime/wasi"
 import { tagSimpleNumber, allocateArray, allocateString } from "runtime/dataStructures"
 
+/**
+ * @section Types: Type declarations included in the Sys/Process module.
+ */
+
+/**
+ * Signals that can be sent to the host system.
+ */
 export enum Signal {
   // Hangup.
   HUP,
@@ -73,8 +87,15 @@ export enum Signal {
   SYS,
 }
 
-// Access command line arguments
-// @returns Array<String> The positional string arguments to the process
+/**
+ * @section Values: Functions and constants included in the Sys/Process module.
+ */
+
+/**
+ * Access command line arguments.
+ *
+ * @returns `Ok(args)` of an array containing positional string arguments to the process if successful or `Err(exception)` otherwise
+ */
 export let argv = () => {
   let argcPtr = Memory.malloc(8n)
   let argvBufSizePtr = argcPtr + 4n
@@ -122,8 +143,11 @@ export let argv = () => {
   }
 }
 
-// Access environment variables
-// @returns Array<String> The environment variables supplied to the process
+/**
+ * Access environment variables.
+ *
+ * @returns `Ok(vars)` of an array containing environment variables supplied to the process if successful or `Err(exception)` otherwise
+ */
 export let env = () => {
   let envcPtr = Memory.malloc(8n)
   let envvBufSizePtr = envcPtr + 4n
@@ -171,8 +195,12 @@ export let env = () => {
   }
 }
 
-// Terminate the process normally
-// @param code: Number The value to exit with. An exit code of 0 is considered normal, with other values having meaning depending on the platform
+/**
+ * Terminate the process normally.
+ *
+ * @param code: The value to exit with. An exit code of 0 is considered normal, with other values having meaning depending on the platform
+ * @returns `Err(exception)` if unsuccessful. Will not actually return a value if successful, as the process has ended
+ */
 export let exit = (code: Number) => {
   let mut code = WasmI32.fromGrain(code)
 
@@ -186,8 +214,12 @@ export let exit = (code: Number) => {
   }
 }
 
-// Send a signal to the process of the calling thread
-// @param signal: Signal The signal to send
+/**
+ * Send a signal to the process of the calling thread.
+ *
+ * @param signal: The signal to send
+ * @returns `Ok(void)` if successful or `Err(exception)` otherwise
+ */
 export let sigRaise = (signalPtr: Signal) => {
   let signal = WasmI32.fromGrain(signalPtr)
   let signal = WasmI32.load(signal, 12n) >> 1n
@@ -199,7 +231,11 @@ export let sigRaise = (signalPtr: Signal) => {
   }
 }
 
-// Yield execution to the calling thread
+/**
+ * Yield execution to the calling thread.
+ *
+ * @returns `Ok(void)` if successful or `Err(exception)` otherwise
+ */
 export let schedYield = () => {
   let err = Wasi.sched_yield()
   if (err != Wasi._ESUCCESS) {
