@@ -2,7 +2,7 @@ let x = 5
 
 // formatter-ignore
 
-let x2 = [ 1,
+let x2 = [ 1, 
  2,
  3]
 
@@ -10,8 +10,8 @@ let y = [3, 4, 5]
 
 if (true) {
   // formatter-ignore
-    let yy = [1,
-  2] // comment
+  let yy = [1,
+  2]  // comment
 
   let zz = [5, 6]
 }
