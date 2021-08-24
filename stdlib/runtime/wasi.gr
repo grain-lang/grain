@@ -29,10 +29,10 @@ import foreign wasm fd_pread : (WasmI32, WasmI32, WasmI32, WasmI64, WasmI32) -> 
 /**
  * Invokes the `fd_write` system call.
  *
- * @param file_descriptor - The file descriptor to write to
- * @param iovs - The pointer to the array of iovs to write
- * @param iovs_len - The length of the array of iovs
- * @param nwritten - Where to store the number of bytes written
+ * @param file_descriptor: The file descriptor to write to
+ * @param iovs: The pointer to the array of iovs to write
+ * @param iovs_len: The length of the array of iovs
+ * @param nwritten: Where to store the number of bytes written
  * @return The number of bytes written
  */
 import foreign wasm fd_write : (WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
