@@ -1,4 +1,9 @@
 /* grainc-flags --no-gc */
+/**
+ * @module Sys/Time: Access to system clocks.
+ *
+ * @example import Time from "sys/time"
+ */
 
 import WasmI32, {
   add as (+),
@@ -9,6 +14,10 @@ import Memory from "runtime/unsafe/memory"
 import Wasi from "runtime/wasi"
 import Errors from "runtime/unsafe/errors"
 import { allocateInt64, tagSimpleNumber } from "runtime/dataStructures"
+
+/**
+ * @section Values: Functions and constants included in the Sys/Time module.
+ */
 
 let getClockTime = (clockid, precision) => {
   let int64Ptr = allocateInt64()
@@ -22,30 +31,42 @@ let getClockTime = (clockid, precision) => {
   }
 }
 
-// Get the current time, in nanoseconds.
-// Time value 0 corresponds with 1970-01-01T00:00:00Z.
-// @returns Int64 The current time
+/**
+ * Get the current time, in nanoseconds.
+ * Time value 0 corresponds with 1970-01-01T00:00:00Z.
+ *
+ * @returns `Ok(time)` of the current time if successful or `Err(exception)` otherwise
+ */
 export let realTime = () => {
   getClockTime(Wasi._CLOCK_REALTIME, 1000N)
 }
 
-// Get the time of the system's high-resolution clock, in nanoseconds.
-// This system clock cannot be adjusted and cannot have negative time jumps.
-// The epoch of this clock is undefined, and thus time value 0 is meaningless.
-// Useful for calculation of precise time intervals.
-// @returns Int64 The current time
+/**
+ * Get the time of the system's high-resolution clock, in nanoseconds.
+ * This system clock cannot be adjusted and cannot have negative time jumps.
+ * The epoch of this clock is undefined, and thus time value 0 is meaningless.
+ * Useful for calculation of precise time intervals.
+ *
+ * @returns `Ok(time)` of the current time if successful or `Err(exception)` otherwise
+ */
 export let monotonicTime = () => {
   getClockTime(Wasi._CLOCK_MONOTONIC, 1N)
 }
 
-// Get the number of nanoseconds elapsed since the process began
-// @returns Int64
+/**
+ * Get the number of nanoseconds elapsed since the process began.
+ *
+ * @returns `Ok(elapsed)` of the elapsed nanoseconds if successful or `Err(exception)` otherwise
+ */
 export let processCpuTime = () => {
   getClockTime(Wasi._CLOCK_PROCESS_CPUTIME, 1N)
 }
 
-// Get the number of nanoseconds elapsed since the thread began
-// @returns Int64
+/**
+ * Get the number of nanoseconds elapsed since the thread began.
+ *
+ * @returns `Ok(elapsed)` of the elapsed nanoseconds if successful or `Err(exception)` otherwise
+ */
 export let threadCpuTime = () => {
   getClockTime(Wasi._CLOCK_THREAD_CPUTIME, 1N)
 }
