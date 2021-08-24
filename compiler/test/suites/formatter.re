@@ -26,4 +26,5 @@ describe("formatter", ({test}) => {
   assertFormatOutput("enums", "enums");
   assertFormatOutput("lets", "lets");
   assertFormatOutput("ignores", "ignores");
+  assertFormatOutput("list_sugar", "list_sugar");
 });
