@@ -187,6 +187,7 @@ let reset_compiler_state = () => {
   Env.clear_imports(); // TODO: (#576) reenable if necessary (makes tests super slow, but seems to be safe?)
   // Grain_utils.Fs_access.flush_all_cached_data();
   Grain_utils.Warnings.reset_warnings();
+  Grain_utils.Config.set_root_config();
 };
 
 let compile_string = (~hook=?, ~name=?, ~outfile=?, ~reset=true, str) => {

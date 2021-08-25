@@ -24,7 +24,10 @@ type cmi_infos = {
   cmi_sign: list(Types.signature_item),
   cmi_crcs: list((string, option(Digest.t))),
   cmi_flags: list(pers_flags),
+  cmi_config_sum: string,
 };
+
+let config_sum: unit => string;
 
 let build_full_cmi:
   (

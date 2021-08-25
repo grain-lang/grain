@@ -106,9 +106,20 @@ let lsp_mode: ref(bool);
 
 /*** Configuration Saving/Restoring */
 
-/** Abstract type representing a saved set of configuration options */
+/** Type representing a saved set of configuration options */
 
-type config;
+type saved_config_opt =
+  | SavedOpt((ref('a), 'a)): saved_config_opt;
+
+type config = list(saved_config_opt);
+
+/** The current configuration for all programs */
+
+let root_config: ref(config);
+
+/** Set the configuration for all programs */
+
+let set_root_config: unit => unit;
 
 /** Saves the current configuration */
 

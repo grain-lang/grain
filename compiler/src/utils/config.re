@@ -198,6 +198,12 @@ let reset_config = () => {
   List.iter(single_reset, opts^);
 };
 
+let root_config = ref([]);
+
+let set_root_config = () => {
+  root_config := save_config();
+};
+
 let with_config = (c, thunk) => {
   /* Possible optimization: Only save the delta */
   let saved = save_config();
