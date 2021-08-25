@@ -26,5 +26,5 @@ basic functionality › complex2
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 950
+ ;; custom section \"cmi\", size 1002
 )

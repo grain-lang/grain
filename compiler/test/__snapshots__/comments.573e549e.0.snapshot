@@ -15,5 +15,5 @@ comments › comment_alone
  (func $_start (; has Stack IR ;)
   (nop)
  )
- ;; custom section \"cmi\", size 955
+ ;; custom section \"cmi\", size 1007
 )

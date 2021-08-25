@@ -4,6 +4,9 @@ type config_opt =
 type saved_config_opt =
   | SavedOpt((ref('a), 'a)): saved_config_opt;
 
+type digestable_opt =
+  | DigestableOpt('a): digestable_opt;
+
 type config = list(saved_config_opt);
 
 /* Here we model the API provided by cmdliner without introducing
@@ -196,6 +199,27 @@ let reset_config = () => {
     fun
     | Opt((cur, default)) => cur := default;
   List.iter(single_reset, opts^);
+};
+
+let root_config = ref([]);
+let root_config_digest = ref(None);
+
+let set_root_config = () => {
+  root_config := save_config();
+  root_config_digest := None;
+};
+
+let get_root_config_digest = () => {
+  switch (root_config_digest^) {
+  | Some(dgst) => dgst
+  | None =>
+    let config_opts =
+      List.map((SavedOpt((_, opt))) => DigestableOpt(opt), root_config^);
+    let config = Marshal.to_bytes(config_opts, []);
+    let ret = Digest.to_hex(Digest.bytes(config));
+    root_config_digest := Some(ret);
+    ret;
+  };
 };
 
 let with_config = (c, thunk) => {

@@ -161,5 +161,5 @@ records › record_get_2
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 1206
+ ;; custom section \"cmi\", size 1258
 )

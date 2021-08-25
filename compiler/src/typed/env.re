@@ -2442,12 +2442,6 @@ let build_signature_with_imports =
     ]);
 
   try({
-    let cmi = {
-      cmi_name: modname,
-      cmi_sign: sg,
-      cmi_crcs: imports,
-      cmi_flags: flags,
-    };
     let full_cmi =
       Cmi_format.build_full_cmi(
         ~name=modname,
@@ -2455,6 +2449,13 @@ let build_signature_with_imports =
         ~crcs=imports,
         ~flags,
       );
+    let cmi = {
+      cmi_name: modname,
+      cmi_sign: sg,
+      cmi_crcs: imports,
+      cmi_flags: flags,
+      cmi_config_sum: full_cmi.cmi_config_sum,
+    };
     let crc =
       switch (full_cmi.cmi_crcs) {
       | [(_, Some(crc)), ..._] => crc

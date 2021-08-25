@@ -28,5 +28,5 @@ imports › import_same_module_unify
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 1012
+ ;; custom section \"cmi\", size 1064
 )

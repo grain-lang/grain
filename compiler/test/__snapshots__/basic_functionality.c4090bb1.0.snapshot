@@ -108,5 +108,5 @@ basic functionality › toplevel_statements
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 960
+ ;; custom section \"cmi\", size 1012
 )

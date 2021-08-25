@@ -27,5 +27,5 @@ imports › import_all_except_multiple_constructor
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 1026
+ ;; custom section \"cmi\", size 1078
 )

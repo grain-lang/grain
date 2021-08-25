@@ -400,12 +400,15 @@ module Dependency_graph =
           // WASM modules are always up-to-date
           dn.dn_up_to_date := true
         | (false, Some(GrainModule(srcpath, Some(objpath)))) =>
-          // Compiled file is up-to-date if the srcpath is older than the objpath and
-          // all dependencies have expected CRC. Otherwise, we need to recompile.
+          // Compiled file is up-to-date if the srcpath is older than the objpath,
+          // all dependencies have expected CRC, and the module was compiled with
+          // the current compiler configuration. Otherwise, we need to recompile.
+          let config_sum = Cmi_format.config_sum();
           let cmi = read_file_cmi(objpath);
           let base_dir = Filename.dirname(srcpath);
           dn.dn_up_to_date :=
-            file_older(srcpath, objpath)
+            config_sum == cmi.cmi_config_sum
+            && file_older(srcpath, objpath)
             && List.for_all(
                  ((name, crc)) => {
                    let resolved = resolve_unit(~base_dir, name);
