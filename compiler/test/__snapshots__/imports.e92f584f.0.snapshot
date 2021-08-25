@@ -29,5 +29,5 @@ imports › import_relative_path3
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 1010
+ ;; custom section \"cmi\", size 1062
 )

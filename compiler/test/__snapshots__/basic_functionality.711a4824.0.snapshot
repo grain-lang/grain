@@ -451,5 +451,5 @@ basic functionality › pattern_match_unsafe_wasm
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 964
+ ;; custom section \"cmi\", size 1016
 )

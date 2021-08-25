@@ -15,5 +15,5 @@ stdlib › stdlib_equal_5
  (func $_start (; has Stack IR ;)
   (nop)
  )
- ;; custom section \"cmi\", size 1000
+ ;; custom section \"cmi\", size 1052
 )

@@ -106,5 +106,5 @@ tuples › big_tup_access
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 956
+ ;; custom section \"cmi\", size 1008
 )
