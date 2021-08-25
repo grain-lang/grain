@@ -47,6 +47,7 @@ let () = {
   let stdlib_dir = Unix.getenv("GRAIN_STDLIB");
   let stdlib_dir = Grain_utils.Files.derelativize(stdlib_dir);
   Grain_utils.Config.stdlib_dir := Some(stdlib_dir);
+  clean_grain_output(test_input_dir);
   clean_grain_output(stdlib_dir);
   clean_grain_output(test_libs_dir);
   clean_output(test_output_dir);

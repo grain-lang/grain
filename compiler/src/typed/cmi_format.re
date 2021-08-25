@@ -66,15 +66,7 @@ type cmi_infos = {
 type config_opt =
   | Cmi_config_opt('a): config_opt;
 
-let config_sum = () => {
-  let config_opts =
-    List.map(
-      (Config.SavedOpt((_, opt))) => Cmi_config_opt(opt),
-      Config.root_config^,
-    );
-  let config = Marshal.to_bytes(config_opts, []);
-  Digest.to_hex(Digest.bytes(config));
-};
+let config_sum = Config.get_root_config_digest
 
 let build_full_cmi = (~name, ~sign, ~crcs, ~flags) => {
   let ns_sign = Marshal.to_bytes((name, sign), []);

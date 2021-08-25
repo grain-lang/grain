@@ -19,7 +19,7 @@
     "postbuild": "esy copy:exe",
     "build:js": "esy b dune build --no-buffer --profile jsoo",
     "postbuild:js": "esy copy:js",
-    "pretest": "esy && del-cli 'test/input/*.wasm' 'test/input/*.wat' 'test/input/*.modsig' 'test/output/*.wasm' 'test/output/*.wat' 'test/output/*.modsig' 'test/test-libs/*.wasm' 'test/test-libs/*.wat' 'test/test-libs/*.modsig'",
+    "pretest": "esy",
     "test": "esy test",
     "format": "esy format",
     "check-format": "esy check-format",

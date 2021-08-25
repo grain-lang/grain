@@ -121,6 +121,10 @@ let root_config: ref(config);
 
 let set_root_config: unit => unit;
 
+/** Gets a digest of the root configuration */
+
+let get_root_config_digest: unit => string;
+
 /** Saves the current configuration */
 
 let save_config: unit => config;
