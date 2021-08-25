@@ -28,7 +28,8 @@ let analyze = ({imports, body, analyses}) => {
     | JSFunction(_) => ()
     };
   };
-  if (Grain_utils.Config.no_gc^) {
+  let root_gc_disabled = Grain_utils.Config.with_config(Grain_utils.Config.root_config^, () => Grain_utils.Config.no_gc^)
+  if (root_gc_disabled) {
     List.iter(process_import, imports);
   };
 };
