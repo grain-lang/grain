@@ -34,4 +34,73 @@ describe("linking", ({test}) => {
     {|print("foo")|},
     "",
   );
+
+  let tuple_equal = ((a1, a2), (b1, b2)) => a1 == b1 && a2 == b2;
+  test("no_start_section", ({expect}) => {
+    let name = "no_start_section";
+    let outfile = wasmfile(name);
+    compile(name, {|print("Hello, world!")|});
+    let sections =
+      Grain_utils.Wasm_utils.get_wasm_sections(open_in_bin(outfile));
+    let export_sections =
+      List.find_map(
+        (sec: Grain_utils.Wasm_utils.wasm_bin_section) =>
+          switch (sec) {
+          | {sec_type: Export(exports)} => Some(exports)
+          | _ => None
+          },
+        sections,
+      );
+    let start_section =
+      List.find_opt(
+        (sec: Grain_utils.Wasm_utils.wasm_bin_section) =>
+          switch (sec) {
+          | {sec_type: Start} => true
+          | _ => false
+          },
+        sections,
+      );
+    expect.option(start_section).toBeNone();
+    expect.option(export_sections).toBeSome();
+    expect.list(Option.get(export_sections)).toContainEqual(
+      ~equals=tuple_equal,
+      (ExportedFunction, "_start"),
+    );
+  });
+
+  test("use_start_section", ({expect}) => {
+    let name = "use_start_section";
+    let outfile = wasmfile(name);
+    compile(
+      ~config_fn=() => {Grain_utils.Config.use_start_section := true},
+      name,
+      {|print("Hello, world!")|},
+    );
+    let sections =
+      Grain_utils.Wasm_utils.get_wasm_sections(open_in_bin(outfile));
+    let start_section =
+      List.find_opt(
+        (sec: Grain_utils.Wasm_utils.wasm_bin_section) =>
+          switch (sec) {
+          | {sec_type: Start} => true
+          | _ => false
+          },
+        sections,
+      );
+    let export_sections =
+      List.find_map(
+        (sec: Grain_utils.Wasm_utils.wasm_bin_section) =>
+          switch (sec) {
+          | {sec_type: Export(exports)} => Some(exports)
+          | _ => None
+          },
+        sections,
+      );
+    expect.option(start_section).toBeSome();
+    expect.option(export_sections).toBeSome();
+    expect.list(Option.get(export_sections)).not.toContainEqual(
+      ~equals=tuple_equal,
+      (ExportedFunction, "_start"),
+    );
+  });
 });

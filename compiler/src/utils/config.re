@@ -530,6 +530,13 @@ let wasi_polyfill =
     None,
   );
 
+let use_start_section =
+  toggle_flag(
+    ~names=["use-start-section"],
+    ~doc="Replace the _start export with a start section during linking.",
+    false,
+  );
+
 let elide_type_info =
   toggle_flag(
     ~names=["elide-type-info"],
