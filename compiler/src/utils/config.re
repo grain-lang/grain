@@ -206,25 +206,21 @@ let root_config_digest = ref(None);
 
 let set_root_config = () => {
   root_config := save_config();
-  root_config_digest := None
+  root_config_digest := None;
 };
 
 let get_root_config_digest = () => {
-  switch(root_config_digest^) {
-    | Some(dgst) => dgst
-    | None => {
-      let config_opts =
-        List.map(
-          (SavedOpt((_, opt))) => DigestableOpt(opt),
-          root_config^,
-        );
-      let config = Marshal.to_bytes(config_opts, []);
-      let ret = Digest.to_hex(Digest.bytes(config));
-      root_config_digest := Some(ret);
-      ret
-    }
-  }
-}
+  switch (root_config_digest^) {
+  | Some(dgst) => dgst
+  | None =>
+    let config_opts =
+      List.map((SavedOpt((_, opt))) => DigestableOpt(opt), root_config^);
+    let config = Marshal.to_bytes(config_opts, []);
+    let ret = Digest.to_hex(Digest.bytes(config));
+    root_config_digest := Some(ret);
+    ret;
+  };
+};
 
 let with_config = (c, thunk) => {
   /* Possible optimization: Only save the delta */
