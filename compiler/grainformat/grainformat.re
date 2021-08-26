@@ -29,7 +29,7 @@ let compile_parsed = (filename: option(string)) => {
     | Some(filenm) =>
       // need to read the source file in case we want to use the content
       // for formatter-ignore or decision making
-      program_str := "This is the original source";
+      program_str := "";
 
       let ic = open_in(filenm);
 
