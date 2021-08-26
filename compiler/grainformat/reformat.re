@@ -37,12 +37,11 @@ let get_original_code =
       for (line in startline - 1 to endline - 1) {
         if (line + 1 == startline) {
           text :=
-            text^ ++ Str.string_after(List.nth(source, line), startc) ++ "\n"; // What about Windows?
+            text^ ++ Str.string_after(List.nth(source, line), startc) ++ "\n";
         } else if (line + 1 == endline) {
           text := text^ ++ List.nth(source, line);
         } else {
-          text :=
-            text^ ++ Str.string_before(List.nth(source, line), endc) ++ "\n"; // What about Windows?
+          text := text^ ++ List.nth(source, line) ++ "\n";
         };
       };
     };
