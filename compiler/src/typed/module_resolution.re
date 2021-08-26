@@ -49,13 +49,6 @@ let read_file_cmi = f => {
   };
 };
 
-let () = {
-  Fs_access.register_cache_flusher((
-    Hashtbl.remove(cmi_cache),
-    () => Hashtbl.clear(cmi_cache),
-  ));
-};
-
 let get_output_name = name => {
   let name =
     try(Filename.chop_extension(name)) {
@@ -505,7 +498,21 @@ let locate_module_file = (~loc, ~disable_relpath=false, unit_name) => {
 
 let clear_dependency_graph = () => {
   Dependency_graph.clear();
-  Hashtbl.clear(cmi_cache);
+};
+
+let () = {
+  Fs_access.register_cache_flusher((
+    Hashtbl.remove(cmi_cache),
+    () => Hashtbl.clear(cmi_cache),
+  ));
+  Fs_access.register_cache_flusher((
+    Hashtbl.remove(located_module_cache),
+    () => Hashtbl.clear(located_module_cache),
+  ));
+  Fs_access.register_cache_flusher((
+    Hashtbl.remove(resolutions),
+    () => Hashtbl.clear(resolutions),
+  ));
 };
 
 let dump_dependency_graph = Dependency_graph.dump;
