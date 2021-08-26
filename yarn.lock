@@ -58,27 +58,6 @@
     "@nodelib/fs.scandir" "2.1.4"
     fastq "^1.6.0"
 
-"@phated/pkg@4.5.1-grain":
-  version "4.5.1-grain"
-  resolved "https://registry.yarnpkg.com/@phated/pkg/-/pkg-4.5.1-grain.tgz#cf9e20f687bb357785d4d6a593c2e2ef30ac44b2"
-  integrity sha512-RW3UA/6J6AMT5GS1lE9UYqj414Mw2KJZ3a//B5Ir9iorITRJzerQKJ/O2uJoPd64dlDZQfbnN6RKJd/hyFlveg==
-  dependencies:
-    "@babel/parser" "7.13.13"
-    "@babel/types" "7.13.12"
-    chalk "^4.1.0"
-    escodegen "^2.0.0"
-    fs-extra "^9.1.0"
-    globby "^11.0.3"
-    into-stream "^6.0.0"
-    minimist "^1.2.5"
-    multistream "^4.1.0"
-    pkg-fetch "3.0.1"
-    prebuild-install "6.0.1"
-    progress "^2.0.3"
-    resolve "^1.20.0"
-    stream-meter "^1.0.4"
-    tslib "2.1.0"
-
 "@types/glob@^7.1.1":
   version "7.1.3"
   resolved "https://registry.yarnpkg.com/@types/glob/-/glob-7.1.3.tgz#e6ba80f36b7daad2c685acd9266382e68985c183"
@@ -286,6 +265,13 @@ acorn@^6.4.1:
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-6.4.2.tgz#35866fd710528e92de10cf06016498e47e39e1e6"
   integrity sha512-XtGIhXwF8YM8bJhGxG5kXgjkEuNGLTkoYqVE+KMR+aspr4KGYmKYg7yUe3KghyQ9yheNwLnjmzh/7+gfDBmHCQ==
 
+agent-base@6:
+  version "6.0.2"
+  resolved "https://registry.yarnpkg.com/agent-base/-/agent-base-6.0.2.tgz#49fff58577cfee3f37176feab4c22e00f86d7f77"
+  integrity sha512-RZNwNclF7+MS/8bDg70amg32dyeZGZxiDuQmZxKLAlQjr3jGyLx+4Kkk58UO7D2QdgFIQCovuSuZESne6RG6XQ==
+  dependencies:
+    debug "4"
+
 aggregate-error@^3.0.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/aggregate-error/-/aggregate-error-3.1.0.tgz#92670ff50f5359bdb7a3e0d40d0ec30c5737687a"
@@ -449,13 +435,6 @@ atob@^2.1.2:
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/atob/-/atob-2.1.2.tgz#6d9517eb9e030d2436666651e86bd9f6f13533c9"
   integrity sha512-Wm6ukoaOGJi/73p/cl2GvLjTI5JM1k/O14isD73YML8StrH/7/lRFgmg8nICZgD3bZZvjwCGxtMOD3wWNAu8cg==
-
-axios@^0.21.1:
-  version "0.21.1"
-  resolved "https://registry.yarnpkg.com/axios/-/axios-0.21.1.tgz#22563481962f4d6bde9a76d516ef0e5d3c09b2b8"
-  integrity sha512-dKQiRHxGD9PPRIUNIWvZhPTPpl1rf/OxTYKsqKUDjBwYylTvV7SjSHJb9ratfyzM6wCdLCOYLzs73qpg5c4iGA==
-  dependencies:
-    follow-redirects "^1.10.0"
 
 babel-code-frame@^6.26.0:
   version "6.26.0"
@@ -1160,6 +1139,13 @@ cyclist@^1.0.1:
   resolved "https://registry.yarnpkg.com/cyclist/-/cyclist-1.0.1.tgz#596e9698fd0c80e12038c2b82d6eb1b35b6224d9"
   integrity sha1-WW6WmP0MgOEgOMK4LW6xs1tiJNk=
 
+debug@4:
+  version "4.3.2"
+  resolved "https://registry.yarnpkg.com/debug/-/debug-4.3.2.tgz#f0a49c18ac8779e31d4a0c6029dfb76873c7428b"
+  integrity sha512-mOp8wKcvj7XxC78zLgw/ZA+6TSgkoE2C/ienthhRD298T7UNwAg9diBpLRxC0mOezLl4B0xV7M0cCO6P/O0Xhw==
+  dependencies:
+    ms "2.1.2"
+
 debug@^2.2.0, debug@^2.3.3, debug@^2.6.8, debug@^2.6.9:
   version "2.6.9"
   resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.9.tgz#5d128515df134ff327e90a4c93f4e077a536341f"
@@ -1618,11 +1604,6 @@ flush-write-stream@^1.0.0:
     inherits "^2.0.3"
     readable-stream "^2.3.6"
 
-follow-redirects@^1.10.0:
-  version "1.13.3"
-  resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.13.3.tgz#e5598ad50174c1bc4e872301e82ac2cd97f90267"
-  integrity sha512-DUgl6+HDzB0iEptNQEXLx/KhTmDb8tZUHSeLqpnjpknR70H0nC2t9N73BK6fN4hOvJ84pKlIQVQ4k5FFlBedKA==
-
 for-in@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/for-in/-/for-in-1.0.2.tgz#81068d295a8142ec0ac726c6e2200c30fb6d5e80"
@@ -1939,6 +1920,14 @@ https-browserify@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/https-browserify/-/https-browserify-1.0.0.tgz#ec06c10e0a34c0f2faf199f7fd7fc78fffd03c73"
   integrity sha1-7AbBDgo0wPL68Zn3/X/Hj//QPHM=
+
+https-proxy-agent@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/https-proxy-agent/-/https-proxy-agent-5.0.0.tgz#e2a90542abb68a762e0a0850f6c9edadfd8506b2"
+  integrity sha512-EkYm5BcKUGiduxzSt3Eppko+PiNWNEpa4ySk9vTC6wDsQJW9rHSa+UhGNJoRYp7bz6Ht1eaRIa6QaJqO5rCFbA==
+  dependencies:
+    agent-base "6"
+    debug "4"
 
 ieee754@^1.1.13, ieee754@^1.1.4:
   version "1.2.1"
@@ -2594,6 +2583,11 @@ ms@2.0.0:
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.0.0.tgz#5608aeadfc00be6c2901df5f9861788de0d597c8"
   integrity sha1-VgiurfwAvmwpAd9fmGF4jeDVl8g=
 
+ms@2.1.2:
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.2.tgz#d09d1f357b443f493382a8eb3ccd183872ae6009"
+  integrity sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==
+
 multistream@^4.1.0:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/multistream/-/multistream-4.1.0.tgz#7bf00dfd119556fbc153cff3de4c6d477909f5a8"
@@ -2645,6 +2639,11 @@ node-abi@^2.7.0:
   integrity sha512-smhrivuPqEM3H5LmnY3KU6HfYv0u4QklgAxfFyRNujKUzbUcYZ+Jc2EhukB9SRcD2VpqhxM7n/MIcp1Ua1/JMg==
   dependencies:
     semver "^5.4.1"
+
+node-fetch@^2.6.1:
+  version "2.6.1"
+  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.1.tgz#045bd323631f76ed2e2b55573394416b639a0052"
+  integrity sha512-V4aYg89jEoVRxRb2fJdAg8FHvI7cEyYdVAh94HH0UIK8oJxUfkjlDQN9RbMx+bEjP7+ggMiFRprSti032Oipxw==
 
 node-libs-browser@^2.2.1:
   version "2.2.1"
@@ -2966,17 +2965,39 @@ pkg-dir@^3.0.0:
   dependencies:
     find-up "^3.0.0"
 
-pkg-fetch@3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/pkg-fetch/-/pkg-fetch-3.0.1.tgz#d06bcde5932412b0ef670b2c847e452c2ce8aabe"
-  integrity sha512-+zzuCVFMgBjZoDUw6JpFqgJI7bbIEanpsM6mQwGW+Qj65YZwAWxkeioOHvgZwCHm0yTd47BfA06ODUfwlpjScg==
+pkg-fetch@3.2.2:
+  version "3.2.2"
+  resolved "https://registry.yarnpkg.com/pkg-fetch/-/pkg-fetch-3.2.2.tgz#33f391eb176c1844e93189a32f2279b36a1ec949"
+  integrity sha512-bLhFNT4cNnONxzbHo1H2mCCKuQkCR4dgQtv0gUZnWtp8TDP0v0UAXKHG7DXhAoTC5IYP3slLsFJtIda9ksny8g==
   dependencies:
-    axios "^0.21.1"
     chalk "^4.1.0"
     fs-extra "^9.1.0"
+    https-proxy-agent "^5.0.0"
+    node-fetch "^2.6.1"
     progress "^2.0.3"
     semver "^7.3.5"
     yargs "^16.2.0"
+
+pkg@^5.3.1:
+  version "5.3.1"
+  resolved "https://registry.yarnpkg.com/pkg/-/pkg-5.3.1.tgz#8f81671613b9e5bb1d83c39b2eed4799e1e679fe"
+  integrity sha512-jT/sptM1ZG++FNk+jnJYNoWLDQXYd7hqpnBhd5j18SNW1jJzNYo55RahuCiD0KN0PX9mb53GWCqKM0ia/mJytA==
+  dependencies:
+    "@babel/parser" "7.13.13"
+    "@babel/types" "7.13.12"
+    chalk "^4.1.0"
+    escodegen "^2.0.0"
+    fs-extra "^9.1.0"
+    globby "^11.0.3"
+    into-stream "^6.0.0"
+    minimist "^1.2.5"
+    multistream "^4.1.0"
+    pkg-fetch "3.2.2"
+    prebuild-install "6.0.1"
+    progress "^2.0.3"
+    resolve "^1.20.0"
+    stream-meter "^1.0.4"
+    tslib "2.1.0"
 
 posix-character-classes@^0.1.0:
   version "0.1.1"
