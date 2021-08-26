@@ -189,7 +189,7 @@ let rec compile_resume = (~is_root_file=false, ~hook=?, s: compilation_state) =>
 let reset_compiler_state = () => {
   Env.clear_imports(); // TODO: (#576) reenable if necessary (makes tests super slow, but seems to be safe?)
   Module_resolution.clear_dependency_graph();
-  // Grain_utils.Fs_access.flush_all_cached_data();
+  Grain_utils.Fs_access.flush_all_cached_data();
   Grain_utils.Warnings.reset_warnings();
 };
 

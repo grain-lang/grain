@@ -177,6 +177,7 @@ module Make = (DV: Dependency_value) => {
   };
 
   let clear = () => {
+    Hashtbl.clear(filename_to_nodes);
     G.clear(graph);
   };
 };
