@@ -83,12 +83,12 @@ module Make = (DV: Dependency_value) => {
       | None => ()
       };
       // Process recursive dependencies
-      let deps = DV.get_dependencies(dependency, lookup_filename)
-      List.iter(d => Hashtbl.add(filename_to_nodes, DV.get_filename(d), d), deps);
+      let deps = DV.get_dependencies(dependency, lookup_filename);
       List.iter(
-        do_register(~parent=dependency),
+        d => Hashtbl.add(filename_to_nodes, DV.get_filename(d), d),
         deps,
       );
+      List.iter(do_register(~parent=dependency), deps);
     } else {
       switch (parent) {
       | Some(p)
