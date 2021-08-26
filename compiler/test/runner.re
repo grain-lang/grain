@@ -28,32 +28,39 @@ let read_stream = cstream => {
 
 let compile = (~num_pages=?, ~hook=?, name, prog) => {
   Config.preserve_all_configs(() => {
-    Config.with_config([], () => {
-      switch (num_pages) {
-      | Some(pages) =>
-        Config.initial_memory_pages := pages;
-        Config.maximum_memory_pages := Some(pages);
-      | None => ()
-      };
-      Config.include_dirs := [test_libs_dir, ...Config.include_dirs^];
-      let outfile = wasmfile(name);
-      ignore @@ compile_string(~is_root_file=true, ~hook?, ~name, ~outfile, prog);
-    })
+    Config.with_config(
+      [],
+      () => {
+        switch (num_pages) {
+        | Some(pages) =>
+          Config.initial_memory_pages := pages;
+          Config.maximum_memory_pages := Some(pages);
+        | None => ()
+        };
+        Config.include_dirs := [test_libs_dir, ...Config.include_dirs^];
+        let outfile = wasmfile(name);
+        ignore @@
+        compile_string(~is_root_file=true, ~hook?, ~name, ~outfile, prog);
+      },
+    )
   });
 };
 
 let compile_file = (~num_pages=?, ~hook=?, filename, outfile) => {
   Config.preserve_all_configs(() => {
-    Config.with_config([], () => {
-      switch (num_pages) {
-      | Some(pages) =>
-        Config.initial_memory_pages := pages;
-        Config.maximum_memory_pages := Some(pages);
-      | None => ()
-      };
-      Config.include_dirs := [test_libs_dir, ...Config.include_dirs^];
-      ignore @@ compile_file(~is_root_file=true, ~hook?, ~outfile, filename);
-    })
+    Config.with_config(
+      [],
+      () => {
+        switch (num_pages) {
+        | Some(pages) =>
+          Config.initial_memory_pages := pages;
+          Config.maximum_memory_pages := Some(pages);
+        | None => ()
+        };
+        Config.include_dirs := [test_libs_dir, ...Config.include_dirs^];
+        ignore @@ compile_file(~is_root_file=true, ~hook?, ~outfile, filename);
+      },
+    )
   });
 };
 

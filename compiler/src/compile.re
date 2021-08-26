@@ -128,7 +128,7 @@ let next_state = (~is_root_file=false, {cstate_desc, cstate_filename} as cs) => 
       apply_inline_flags(p);
       if (is_root_file) {
         Grain_utils.Config.set_root_config();
-      }
+      };
       Well_formedness.check_well_formedness(p);
       WellFormed(p);
     | WellFormed(p) => TypeChecked(Typemod.type_implementation(p))
@@ -193,7 +193,8 @@ let reset_compiler_state = () => {
   Grain_utils.Warnings.reset_warnings();
 };
 
-let compile_string = (~is_root_file=false, ~hook=?, ~name=?, ~outfile=?, ~reset=true, str) => {
+let compile_string =
+    (~is_root_file=false, ~hook=?, ~name=?, ~outfile=?, ~reset=true, str) => {
   if (reset) {
     reset_compiler_state();
   };
@@ -205,7 +206,8 @@ let compile_string = (~is_root_file=false, ~hook=?, ~name=?, ~outfile=?, ~reset=
   compile_resume(~is_root_file, ~hook?, cstate);
 };
 
-let compile_file = (~is_root_file=false, ~hook=?, ~outfile=?, ~reset=true, filename) => {
+let compile_file =
+    (~is_root_file=false, ~hook=?, ~outfile=?, ~reset=true, filename) => {
   if (reset) {
     reset_compiler_state();
   };

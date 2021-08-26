@@ -224,43 +224,40 @@ let get_root_config_digest = () => {
 
 let with_root_config = (c, thunk) => {
   // for test suite
-  let saved = root_config^
-  let saved_digest = root_config_digest^
+  let saved = root_config^;
+  let saved_digest = root_config_digest^;
   try(
     {
       root_config := c;
       let r = thunk();
       root_config := saved;
-      root_config_digest := saved_digest
+      root_config_digest := saved_digest;
       r;
     }
   ) {
   | exn =>
     root_config := saved;
-    root_config_digest := saved_digest
+    root_config_digest := saved_digest;
     raise(exn);
   };
-}
+};
 
-let preserve_root_config = (thunk) => {
+let preserve_root_config = thunk => {
   // for test suite
-  let saved = root_config^
-  let saved_digest = root_config_digest^
-  try(
-    {
-      let r = thunk();
-      root_config := saved;
-      root_config_digest := saved_digest
-      r;
-    }
-  ) {
+  let saved = root_config^;
+  let saved_digest = root_config_digest^;
+  try({
+    let r = thunk();
+    root_config := saved;
+    root_config_digest := saved_digest;
+    r;
+  }) {
   | exn =>
     root_config := saved;
-    root_config_digest := saved_digest
+    root_config_digest := saved_digest;
     raise(exn);
   };
-}
-
+};
 
 let with_config = (c, thunk) => {
   /* Possible optimization: Only save the delta */
@@ -292,7 +289,8 @@ let preserve_config = thunk => {
   };
 };
 
-let preserve_all_configs = (thunk) => preserve_root_config(() => preserve_config(thunk))
+let preserve_all_configs = thunk =>
+  preserve_root_config(() => preserve_config(thunk));
 
 let with_cli_options = (term: 'a): Cmdliner.Term.t('a) => {
   open Cmdliner;
