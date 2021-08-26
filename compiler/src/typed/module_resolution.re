@@ -369,6 +369,9 @@ module Dependency_graph =
                 let existing_dependency = lookup(out_file_name);
                 switch (existing_dependency) {
                 | Some(ed) =>
+                  let config_sum = Cmi_format.config_sum();
+                  let cmi = read_file_cmi(objpath);
+                  dn.dn_up_to_date := config_sum == cmi.cmi_config_sum;
                   Hashtbl.add(ed.dn_unit_name, Some(dn), name);
                   ed;
                 | None =>
