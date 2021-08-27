@@ -24,6 +24,7 @@ type codegen_env = {
   backpatches: ref(list((Expression.t, closure_data))),
   imported_funcs: Ident.tbl(Ident.tbl(int32)),
   imported_globals: Ident.tbl(Ident.tbl(string)),
+  required_imports: list(import),
 };
 
 let gensym_counter = ref(0);
@@ -32,6 +33,15 @@ let gensym_label = s => {
   Printf.sprintf("%s.%d", s, gensym_counter^);
 };
 let reset_labels = () => gensym_counter := 0;
+
+// Whether imports from the runtime/exception module should be included
+// Necessary to prevent a cirular dep for that module
+let needs_exceptions = ref(false);
+
+let reset = () => {
+  reset_labels();
+  needs_exceptions := false;
+};
 
 /* Number of swap variables to allocate */
 let swap_slots_i32 = [|Type.int32, Type.int32, Type.int32|];
@@ -323,6 +333,7 @@ let init_codegen_env = () => {
   backpatches: ref([]),
   imported_funcs: Ident.empty,
   imported_globals: Ident.empty,
+  required_imports: [],
 };
 
 let lookup_ext_global = (env, modname, itemname) =>
@@ -354,6 +365,7 @@ let get_imported_name = (mod_, name) =>
   );
 
 let call_exception_printer = (wasm_mod, env, args) => {
+  needs_exceptions := true;
   let args = [
     Expression.Global_get.make(
       wasm_mod,
@@ -1118,6 +1130,7 @@ let compile_imm = (wasm_mod, env: codegen_env, i: immediate): Expression.t =>
   };
 
 let call_error_handler = (wasm_mod, env, err, args) => {
+  needs_exceptions := true;
   let err_ident =
     switch (err) {
     | Runtime_errors.MatchFailure => match_failure_ident
@@ -3170,6 +3183,19 @@ let compile_imports = (wasm_mod, env, {imports}) => {
     };
   };
 
+  let imports =
+    if (needs_exceptions^) {
+      List.append(env.required_imports, imports);
+    } else {
+      List.append(
+        List.filter(
+          ({mimp_mod}) => mimp_mod != exception_mod,
+          env.required_imports,
+        ),
+        imports,
+      );
+    };
+
   List.iter(compile_import, imports);
   Import.add_memory_import(
     wasm_mod,
@@ -3389,7 +3415,7 @@ let validate_module = (~name=?, wasm_mod: Module.t) =>
     raise(WasmRunnerError(wasm_mod, name, "WARNING: Invalid module"))
   };
 
-let prepare = (env, {imports} as prog) => {
+let prepare = (env, {imports}) => {
   let process_import =
       (
         ~dynamic_offset=0,
@@ -3434,15 +3460,11 @@ let prepare = (env, {imports} as prog) => {
   let import_offset = List.length(runtime_imports);
   let import_global_offset = import_offset + List.length(imports);
 
-  let new_imports =
+  let required_imports =
     if (Env.is_runtime_mode()) {
-      List.concat([
-        required_global_imports,
-        required_function_imports,
-        imports,
-      ]);
+      List.concat([required_global_imports, required_function_imports]);
     } else {
-      List.append(runtime_imports, imports);
+      runtime_imports;
     };
   let new_env =
     List_utils.fold_lefti(
@@ -3463,20 +3485,23 @@ let prepare = (env, {imports} as prog) => {
       imports,
     );
   let global_offset = import_global_offset;
-  (
-    {...new_env, import_offset, import_global_offset, global_offset},
-    {...prog, imports: new_imports},
-  );
+  {
+    ...new_env,
+    import_offset,
+    import_global_offset,
+    global_offset,
+    required_imports,
+  };
 };
 
 let compile_wasm_module = (~env=?, ~name=?, prog) => {
-  reset_labels();
+  reset();
   let env =
     switch (env) {
     | None => init_codegen_env()
     | Some(e) => e
     };
-  let (env, prog) = prepare(env, prog);
+  let env = prepare(env, prog);
   let wasm_mod = Module.create();
   if (Config.source_map^) {
     ignore @@
@@ -3525,7 +3550,12 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
     Bytes.to_string(serialized_cmi),
   );
   validate_module(~name?, wasm_mod);
-  Module.optimize(wasm_mod);
+  switch (Config.optimization_level^) {
+  | Level_three => Module.optimize(wasm_mod)
+  | Level_zero
+  | Level_one
+  | Level_two => ()
+  };
   wasm_mod;
 };
 

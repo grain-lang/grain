@@ -156,9 +156,13 @@ let makeCompileErrorRunner = (test, name, prog, msg) => {
   );
 };
 
-let makeRunner = (test, ~num_pages=?, name, prog, expected) => {
+let makeRunner = (test, ~num_pages=?, ~config_fn=?, name, prog, expected) => {
   test(name, ({expect}) => {
     Config.preserve_config(() => {
+      switch (config_fn) {
+      | Some(fn) => fn()
+      | None => ()
+      };
       switch (num_pages) {
       | Some(pages) =>
         Config.initial_memory_pages := pages;
@@ -173,9 +177,21 @@ let makeRunner = (test, ~num_pages=?, name, prog, expected) => {
 };
 
 let makeErrorRunner =
-    (test, ~check_exists=true, ~num_pages=?, name, prog, expected) => {
+    (
+      test,
+      ~check_exists=true,
+      ~num_pages=?,
+      ~config_fn=?,
+      name,
+      prog,
+      expected,
+    ) => {
   test(name, ({expect}) => {
     Config.preserve_config(() => {
+      switch (config_fn) {
+      | Some(fn) => fn()
+      | None => ()
+      };
       switch (num_pages) {
       | Some(pages) =>
         Config.initial_memory_pages := pages;
@@ -193,9 +209,14 @@ let makeErrorRunner =
   });
 };
 
-let makeFileRunner = (test, ~num_pages=?, name, filename, expected) => {
+let makeFileRunner =
+    (test, ~num_pages=?, ~config_fn=?, name, filename, expected) => {
   test(name, ({expect}) => {
     Config.preserve_config(() => {
+      switch (config_fn) {
+      | Some(fn) => fn()
+      | None => ()
+      };
       switch (num_pages) {
       | Some(pages) =>
         Config.initial_memory_pages := pages;

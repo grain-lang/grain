@@ -330,8 +330,25 @@ let option_conv = ((prsr, prntr)) => (
     | Some(x) => prntr(ppf, x),
 );
 
-let optimizations_enabled =
-  toggle_flag(~doc="Disable optimizations.", ~names=["O0"], true);
+type optimization_level =
+  | Level_zero
+  | Level_one
+  | Level_two
+  | Level_three;
+
+let optimization_level =
+  opt(
+    ~doc="Set the optimization level.",
+    ~names=["O"],
+    ~conv=
+      Cmdliner.Arg.enum([
+        ("0", Level_zero),
+        ("1", Level_one),
+        ("2", Level_two),
+        ("3", Level_three),
+      ]),
+    Level_three,
+  );
 
 let include_dirs =
   opt(

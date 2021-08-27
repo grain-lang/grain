@@ -1,3 +1,9 @@
+type optimization_level =
+  | Level_zero
+  | Level_one
+  | Level_two
+  | Level_three;
+
 /** The Grain stdlib directory, based on the current configuration */
 let stdlib_directory: unit => option(string);
 
@@ -24,7 +30,7 @@ let no_gc: ref(bool);
 
 /** Whether optimizations should be run */
 
-let optimizations_enabled: ref(bool);
+let optimization_level: ref(optimization_level);
 
 /** The path to find modules on */
 
