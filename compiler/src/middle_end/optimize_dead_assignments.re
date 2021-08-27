@@ -16,13 +16,13 @@ let safe_to_remove_import = i =>
 
 let can_remove = (ident, value) =>
   switch (Ident.find_same_opt(ident, used_symbols^)) {
-  | Some () => false
+  | Some(_) => false
   | None => get_comp_purity(value)
   };
 
 let can_remove_import = import =>
   switch (Ident.find_same_opt(import.imp_use_id, used_symbols^)) {
-  | Some () => false
+  | Some(_) => false
   | None => safe_to_remove_import(import)
   };
 
