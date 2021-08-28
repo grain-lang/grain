@@ -60,13 +60,26 @@ type cmi_infos = {
   cmi_sign: Types.signature,
   cmi_crcs,
   cmi_flags: list(pers_flags),
+  cmi_config_sum: string,
 };
+
+type config_opt =
+  | Cmi_config_opt('a): config_opt;
+
+let config_sum = Config.get_root_config_digest;
 
 let build_full_cmi = (~name, ~sign, ~crcs, ~flags) => {
   let ns_sign = Marshal.to_bytes((name, sign), []);
   let crc = Digest.bytes(ns_sign);
   let crcs = [(name, Some(crc)), ...crcs];
-  {cmi_name: name, cmi_sign: sign, cmi_crcs: crcs, cmi_flags: flags};
+  let cmi_config_sum = config_sum();
+  {
+    cmi_name: name,
+    cmi_sign: sign,
+    cmi_crcs: crcs,
+    cmi_flags: flags,
+    cmi_config_sum,
+  };
 };
 
 let cmi_to_crc = ({cmi_name, cmi_sign}) => {

@@ -135,10 +135,11 @@ let next_state = ({cstate_desc, cstate_filename} as cs) => {
     | TypedWellFormed(typed_mod) =>
       Linearized(Linearize.transl_anf_module(typed_mod))
     | Linearized(anfed) =>
-      if (Grain_utils.Config.optimizations_enabled^) {
-        Optimized(Optimize.optimize_program(anfed));
-      } else {
-        Optimized(anfed);
+      switch (Grain_utils.Config.optimization_level^) {
+      | Level_one
+      | Level_two
+      | Level_three => Optimized(Optimize.optimize_program(anfed))
+      | Level_zero => Optimized(anfed)
       }
     | Optimized(optimized) =>
       Mashed(Transl_anf.transl_anf_program(optimized))
@@ -187,6 +188,7 @@ let reset_compiler_state = () => {
   Env.clear_imports(); // TODO: (#576) reenable if necessary (makes tests super slow, but seems to be safe?)
   // Grain_utils.Fs_access.flush_all_cached_data();
   Grain_utils.Warnings.reset_warnings();
+  Grain_utils.Config.set_root_config();
 };
 
 let compile_string = (~hook=?, ~name=?, ~outfile=?, ~reset=true, str) => {

@@ -11,7 +11,7 @@
     "format": "prettier --write .",
     "check-format": "prettier --check .",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build-pkg": "pkg ./package.json --no-bytecode --output ../pkg/grain"
+    "build-pkg": "pkg ./package.json --no-bytecode --compress Brotli --output ../pkg/grain"
   },
   "pkg": {
     "assets": "bin/*.js"
@@ -39,7 +39,7 @@
     "commander": "^7.2.0"
   },
   "devDependencies": {
-    "@phated/pkg": "4.5.1-grain",
+    "pkg": "^5.3.1",
     "prettier": "^2.2.1"
   }
 }

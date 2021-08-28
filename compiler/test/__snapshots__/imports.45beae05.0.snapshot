@@ -29,5 +29,5 @@ imports › annotation_across_import
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 1012
+ ;; custom section \"cmi\", size 1064
 )

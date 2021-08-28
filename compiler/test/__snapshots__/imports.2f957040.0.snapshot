@@ -50,5 +50,5 @@ imports › import_alias_multiple_constructor
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 1021
+ ;; custom section \"cmi\", size 1073
 )

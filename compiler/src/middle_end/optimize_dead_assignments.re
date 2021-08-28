@@ -1,16 +1,29 @@
 open Anftree;
 open Grain_typed;
 
-let used_symbols = ref(Ident.empty: Ident.tbl(bool));
+let used_symbols = ref(Ident.empty: Ident.tbl(unit));
 
-let mark_used = id => used_symbols := Ident.add(id, true, used_symbols^);
+let mark_used = id => used_symbols := Ident.add(id, (), used_symbols^);
 
 let get_comp_purity = c =>
   Option.value(~default=false) @@ Analyze_purity.comp_expression_purity(c);
 
+let safe_to_remove_import = i =>
+  switch (i.imp_desc) {
+  | GrainValue(_) => true
+  | _ => false
+  };
+
 let can_remove = (ident, value) =>
-  try(!Ident.find_same(ident, used_symbols^)) {
-  | Not_found => get_comp_purity(value)
+  switch (Ident.find_same_opt(ident, used_symbols^)) {
+  | Some(_) => false
+  | None => get_comp_purity(value)
+  };
+
+let can_remove_import = import =>
+  switch (Ident.find_same_opt(import.imp_use_id, used_symbols^)) {
+  | Some(_) => false
+  | None => safe_to_remove_import(import)
   };
 
 module DAEArg: Anf_mapper.MapArgument = {
@@ -68,5 +81,9 @@ module DAEMapper = Anf_mapper.MakeMap(DAEArg);
 let optimize = anfprog => {
   /* Reset state */
   used_symbols := Ident.empty;
-  DAEMapper.map_anf_program(anfprog);
+
+  let optimized = DAEMapper.map_anf_program(anfprog);
+  let imports =
+    List.filter(import => !can_remove_import(import), optimized.imports);
+  {...optimized, imports};
 };

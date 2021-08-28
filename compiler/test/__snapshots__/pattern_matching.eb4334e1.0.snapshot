@@ -671,5 +671,5 @@ pattern matching › constant_match_4
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 958
+ ;; custom section \"cmi\", size 1010
 )

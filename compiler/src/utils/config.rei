@@ -1,3 +1,9 @@
+type optimization_level =
+  | Level_zero
+  | Level_one
+  | Level_two
+  | Level_three;
+
 /** The Grain stdlib directory, based on the current configuration */
 let stdlib_directory: unit => option(string);
 
@@ -24,7 +30,7 @@ let no_gc: ref(bool);
 
 /** Whether optimizations should be run */
 
-let optimizations_enabled: ref(bool);
+let optimization_level: ref(optimization_level);
 
 /** The path to find modules on */
 
@@ -106,9 +112,24 @@ let lsp_mode: ref(bool);
 
 /*** Configuration Saving/Restoring */
 
-/** Abstract type representing a saved set of configuration options */
+/** Type representing a saved set of configuration options */
 
-type config;
+type saved_config_opt =
+  | SavedOpt((ref('a), 'a)): saved_config_opt;
+
+type config = list(saved_config_opt);
+
+/** The current configuration for all programs */
+
+let root_config: ref(config);
+
+/** Set the configuration for all programs */
+
+let set_root_config: unit => unit;
+
+/** Gets a digest of the root configuration */
+
+let get_root_config_digest: unit => string;
 
 /** Saves the current configuration */
 

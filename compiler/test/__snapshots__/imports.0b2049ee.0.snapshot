@@ -29,5 +29,5 @@ imports › import_some
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 1003
+ ;; custom section \"cmi\", size 1055
 )
