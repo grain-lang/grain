@@ -446,4 +446,150 @@ describe("optimizations", ({test}) => {
       );
     },
   );
+
+  // Bulk Memory (memory.fill & memory.copy)
+  assertAnf(
+    "test_no_bulk_memory_calls",
+    ~config_fn=() => {Grain_utils.Config.bulk_memory := false},
+    {|
+      import Memory from "runtime/unsafe/memory"
+      @disableGC
+      export let foo = () => {
+        Memory.fill(0n, 0n, 0n)
+        Memory.copy(0n, 0n, 0n)
+      }
+    |},
+    {
+      open Grain_typed;
+      let foo = Ident.create("foo");
+      let fill = Ident.create("fill");
+      let copy = Ident.create("copy");
+      AExp.let_(
+        ~global=Global,
+        Nonrecursive,
+        [
+          (
+            foo,
+            Comp.lambda(
+              ~name=Ident.name(foo),
+              ~attributes=[Grain_parsing.Asttypes.mknoloc("disableGC")],
+              [],
+              (
+                AExp.seq(
+                  Comp.app(
+                    ~allocation_type=StackAllocated(WasmI32),
+                    (
+                      Imm.id(fill),
+                      (
+                        [
+                          StackAllocated(WasmI32),
+                          StackAllocated(WasmI32),
+                          StackAllocated(WasmI32),
+                        ],
+                        StackAllocated(WasmI32),
+                      ),
+                    ),
+                    [
+                      Imm.const(Const_wasmi32(0l)),
+                      Imm.const(Const_wasmi32(0l)),
+                      Imm.const(Const_wasmi32(0l)),
+                    ],
+                  ),
+                  AExp.comp(
+                    Comp.app(
+                      ~allocation_type=StackAllocated(WasmI32),
+                      (
+                        Imm.id(copy),
+                        (
+                          [
+                            StackAllocated(WasmI32),
+                            StackAllocated(WasmI32),
+                            StackAllocated(WasmI32),
+                          ],
+                          StackAllocated(WasmI32),
+                        ),
+                      ),
+                      [
+                        Imm.const(Const_wasmi32(0l)),
+                        Imm.const(Const_wasmi32(0l)),
+                        Imm.const(Const_wasmi32(0l)),
+                      ],
+                    ),
+                  ),
+                ),
+                StackAllocated(WasmI32),
+              ),
+            ),
+          ),
+        ],
+      ) @@
+      AExp.comp(
+        Comp.imm(
+          ~allocation_type=StackAllocated(WasmI32),
+          Imm.const(Const_void),
+        ),
+      );
+    },
+  );
+  assertAnf(
+    "test_memory_fill_calls_replaced",
+    ~config_fn=() => {Grain_utils.Config.bulk_memory := true},
+    {|
+      import Memory from "runtime/unsafe/memory"
+      @disableGC
+      export let foo = () => {
+        Memory.fill(0n, 0n, 0n)
+        Memory.copy(0n, 0n, 0n)
+      }
+    |},
+    {
+      open Grain_typed;
+      let foo = Ident.create("foo");
+      AExp.let_(
+        ~global=Global,
+        Nonrecursive,
+        [
+          (
+            foo,
+            Comp.lambda(
+              ~name=Ident.name(foo),
+              ~attributes=[Grain_parsing.Asttypes.mknoloc("disableGC")],
+              [],
+              (
+                AExp.seq(
+                  Comp.primn(
+                    ~allocation_type=StackAllocated(WasmI32),
+                    WasmMemoryFill,
+                    [
+                      Imm.const(Const_wasmi32(0l)),
+                      Imm.const(Const_wasmi32(0l)),
+                      Imm.const(Const_wasmi32(0l)),
+                    ],
+                  ),
+                  AExp.comp(
+                    Comp.primn(
+                      ~allocation_type=StackAllocated(WasmI32),
+                      WasmMemoryCopy,
+                      [
+                        Imm.const(Const_wasmi32(0l)),
+                        Imm.const(Const_wasmi32(0l)),
+                        Imm.const(Const_wasmi32(0l)),
+                      ],
+                    ),
+                  ),
+                ),
+                StackAllocated(WasmI32),
+              ),
+            ),
+          ),
+        ],
+      ) @@
+      AExp.comp(
+        Comp.imm(
+          ~allocation_type=StackAllocated(WasmI32),
+          Imm.const(Const_void),
+        ),
+      );
+    },
+  );
 });
