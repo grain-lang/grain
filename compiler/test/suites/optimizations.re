@@ -23,33 +23,38 @@ describe("optimizations", ({test}) => {
       ) => {
     test(outfile, ({expect}) => {
       Grain_utils.Config.preserve_all_configs(() => {
-        switch (config_fn) {
-        | None => ()
-        | Some(fn) => fn()
-        };
-        open Grain_middle_end;
-        let final_anf =
-          Anf_utils.clear_locations @@
-          compile_string_to_final_anf(outfile, program_str);
-        let saved_disabled = Grain_typed.Ident.disable_stamps^;
-        let (result, expected) =
-          try(
-            {
-              Grain_typed.Ident.disable_stamps := true;
-              let result =
-                Sexplib.Sexp.to_string_hum @@
-                Anftree.sexp_of_anf_expression(final_anf.body);
-              let expected =
-                Sexplib.Sexp.to_string_hum @@
-                Anftree.sexp_of_anf_expression(expected);
-              (result, expected);
-            }
-          ) {
-          | e =>
-            Grain_typed.Ident.disable_stamps := saved_disabled;
-            raise(e);
-          };
-        expect.string(result).toEqual(expected);
+        Config.with_config(
+          [],
+          () => {
+            switch (config_fn) {
+            | None => ()
+            | Some(fn) => fn()
+            };
+            open Grain_middle_end;
+            let final_anf =
+              Anf_utils.clear_locations @@
+              compile_string_to_final_anf(outfile, program_str);
+            let saved_disabled = Grain_typed.Ident.disable_stamps^;
+            let (result, expected) =
+              try(
+                {
+                  Grain_typed.Ident.disable_stamps := true;
+                  let result =
+                    Sexplib.Sexp.to_string_hum @@
+                    Anftree.sexp_of_anf_expression(final_anf.body);
+                  let expected =
+                    Sexplib.Sexp.to_string_hum @@
+                    Anftree.sexp_of_anf_expression(expected);
+                  (result, expected);
+                }
+              ) {
+              | e =>
+                Grain_typed.Ident.disable_stamps := saved_disabled;
+                raise(e);
+              };
+            expect.string(result).toEqual(expected);
+          },
+        )
       })
     });
   };
