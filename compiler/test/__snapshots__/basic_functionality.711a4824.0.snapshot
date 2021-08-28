@@ -6,12 +6,12 @@ basic functionality › pattern_match_unsafe_wasm
  (type $i32_=>_i32 (func (param i32) (result i32)))
  (import \"_grainEnv\" \"mem\" (memory $0 0))
  (import \"_grainEnv\" \"tbl\" (table $tbl 0 funcref))
- (elem $elem (global.get $import__grainEnv_0_relocBase_0) $test_1141 $foo_1142)
+ (elem $elem (global.get $import__grainEnv_0_relocBase_0) $test_1145 $foo_1146)
  (import \"_grainEnv\" \"relocBase\" (global $import__grainEnv_0_relocBase_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRefIgnoreZeros\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$print\" (global $import_pervasives_1167_print_1168 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$print\" (global $import_pervasives_1171_print_1172 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $import_GRAIN$MODULE$runtime/gc_0_malloc_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $import_GRAIN$MODULE$runtime/gc_0_incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRefIgnoreZeros\" (func $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0 (param i32 i32) (result i32)))
@@ -20,7 +20,7 @@ basic functionality › pattern_match_unsafe_wasm
  (export \"_gmain\" (func $_gmain))
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $global_1))
- (func $test_1141 (; has Stack IR ;) (param $0 i32) (result i32)
+ (func $test_1145 (; has Stack IR ;) (param $0 i32) (result i32)
   (local $1 i32)
   (local $2 i32)
   (i32.store offset=16
@@ -73,35 +73,35 @@ basic functionality › pattern_match_unsafe_wasm
    )
   )
   (drop
-   (call $foo_1142
+   (call $foo_1146
     (local.get $2)
     (i32.const 0)
    )
   )
   (drop
-   (call $foo_1142
+   (call $foo_1146
     (local.get $2)
     (i32.const 1)
    )
   )
   (drop
-   (call $foo_1142
+   (call $foo_1146
     (local.get $2)
     (i32.const 5)
    )
   )
   (drop
-   (call $foo_1142
+   (call $foo_1146
     (local.get $2)
     (i32.const 8)
    )
   )
-  (call $foo_1142
+  (call $foo_1146
    (local.get $2)
    (i32.const 42)
   )
  )
- (func $foo_1142 (; has Stack IR ;) (param $0 i32) (param $1 i32) (result i32)
+ (func $foo_1146 (; has Stack IR ;) (param $0 i32) (param $1 i32) (result i32)
   (local $2 i32)
   (local $3 i32)
   (block $switch.31_outer (result i32)
@@ -459,10 +459,10 @@ basic functionality › pattern_match_unsafe_wasm
        )
        (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
         (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-        (global.get $import_pervasives_1167_print_1168)
+        (global.get $import_pervasives_1171_print_1172)
        )
       )
-      (call $test_1141
+      (call $test_1145
        (local.get $1)
       )
      )

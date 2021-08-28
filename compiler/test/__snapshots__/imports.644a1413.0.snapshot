@@ -7,8 +7,8 @@ imports › import_relative_path4
  (import \"_grainEnv\" \"tbl\" (table $tbl 0 funcref))
  (import \"_grainEnv\" \"relocBase\" (global $import__grainEnv_0_relocBase_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRefIgnoreZeros\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0 (mut i32)))
- (import \"GRAIN$MODULE$./bar/bar\" \"GRAIN$EXPORT$bar\" (global $import_./bar/bar_1148_bar_1149 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$print\" (global $import_pervasives_1150_print_1151 (mut i32)))
+ (import \"GRAIN$MODULE$./bar/bar\" \"GRAIN$EXPORT$bar\" (global $import_./bar/bar_1152_bar_1153 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$print\" (global $import_pervasives_1154_print_1155 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRefIgnoreZeros\" (func $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0 (param i32 i32) (result i32)))
  (global $global_1 i32 (i32.const 0))
  (export \"memory\" (memory $0))
@@ -26,10 +26,10 @@ imports › import_relative_path4
        (tuple.extract 0
         (tuple.make
          (call_indirect (type $i32_i32_=>_i32)
-          (global.get $import_./bar/bar_1148_bar_1149)
+          (global.get $import_./bar/bar_1152_bar_1153)
           (i32.const 5)
           (i32.load offset=8
-           (global.get $import_./bar/bar_1148_bar_1149)
+           (global.get $import_./bar/bar_1152_bar_1153)
           )
          )
          (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
@@ -40,10 +40,10 @@ imports › import_relative_path4
        )
       )
       (call_indirect (type $i32_i32_=>_i32)
-       (global.get $import_pervasives_1150_print_1151)
+       (global.get $import_pervasives_1154_print_1155)
        (local.get $0)
        (i32.load offset=8
-        (global.get $import_pervasives_1150_print_1151)
+        (global.get $import_pervasives_1154_print_1155)
        )
       )
      )

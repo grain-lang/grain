@@ -6,13 +6,13 @@ enums › enum_recursive_data_definition
  (type $none_=>_i32 (func (result i32)))
  (import \"_grainEnv\" \"mem\" (memory $0 0))
  (import \"_grainEnv\" \"tbl\" (table $tbl 0 funcref))
- (elem $elem (global.get $import__grainEnv_0_relocBase_0) $Node_1144 $Cons_1146)
+ (elem $elem (global.get $import__grainEnv_0_relocBase_0) $Node_1148 $Cons_1150)
  (import \"_grainEnv\" \"relocBase\" (global $import__grainEnv_0_relocBase_0 i32))
  (import \"_grainEnv\" \"moduleRuntimeId\" (global $import__grainEnv_0_moduleRuntimeId_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRefIgnoreZeros\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$print\" (global $import_pervasives_1168_print_1169 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$print\" (global $import_pervasives_1172_print_1173 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $import_GRAIN$MODULE$runtime/gc_0_malloc_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $import_GRAIN$MODULE$runtime/gc_0_incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRefIgnoreZeros\" (func $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0 (param i32 i32) (result i32)))
@@ -29,7 +29,7 @@ enums › enum_recursive_data_definition
  (export \"_gmain\" (func $_gmain))
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $global_5))
- (func $Node_1144 (; has Stack IR ;) (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
+ (func $Node_1148 (; has Stack IR ;) (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
   (tuple.extract 0
    (tuple.make
     (block (result i32)
@@ -56,7 +56,7 @@ enums › enum_recursive_data_definition
      )
      (i32.store offset=8
       (local.get $0)
-      (i32.const 2283)
+      (i32.const 2291)
      )
      (i32.store offset=12
       (local.get $0)
@@ -86,7 +86,7 @@ enums › enum_recursive_data_definition
    )
   )
  )
- (func $Cons_1146 (; has Stack IR ;) (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
+ (func $Cons_1150 (; has Stack IR ;) (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
   (tuple.extract 0
    (tuple.make
     (block (result i32)
@@ -113,7 +113,7 @@ enums › enum_recursive_data_definition
      )
      (i32.store offset=8
       (local.get $0)
-      (i32.const 2285)
+      (i32.const 2293)
      )
      (i32.store offset=12
       (local.get $0)
@@ -188,7 +188,7 @@ enums › enum_recursive_data_definition
            )
            (i64.store offset=24
             (local.get $0)
-            (i64.const 85899347062)
+            (i64.const 85899347066)
            )
            (i64.store offset=32
             (local.get $0)
@@ -212,7 +212,7 @@ enums › enum_recursive_data_definition
            )
            (i64.store offset=72
             (local.get $0)
-            (i64.const 85899347061)
+            (i64.const 85899347065)
            )
            (i64.store offset=80
             (local.get $0)
@@ -282,7 +282,7 @@ enums › enum_recursive_data_definition
           )
           (i32.store offset=8
            (local.get $0)
-           (i32.const 2283)
+           (i32.const 2291)
           )
           (i32.store offset=12
            (local.get $0)
@@ -375,7 +375,7 @@ enums › enum_recursive_data_definition
           )
           (i32.store offset=8
            (local.get $0)
-           (i32.const 2285)
+           (i32.const 2293)
           )
           (i32.store offset=12
            (local.get $0)
@@ -517,7 +517,7 @@ enums › enum_recursive_data_definition
       (local.set $3
        (tuple.extract 0
         (tuple.make
-         (call $Node_1144
+         (call $Node_1148
           (global.get $global_1)
           (local.get $2)
           (global.get $global_2)
@@ -532,7 +532,7 @@ enums › enum_recursive_data_definition
       (local.set $4
        (tuple.extract 0
         (tuple.make
-         (call $Cons_1146
+         (call $Cons_1150
           (global.get $global_3)
           (local.get $3)
           (global.get $global_2)
@@ -547,7 +547,7 @@ enums › enum_recursive_data_definition
       (local.set $5
        (tuple.extract 0
         (tuple.make
-         (call $Node_1144
+         (call $Node_1148
           (global.get $global_1)
           (local.get $1)
           (local.get $4)
@@ -562,7 +562,7 @@ enums › enum_recursive_data_definition
       (local.set $6
        (tuple.extract 0
         (tuple.make
-         (call $Cons_1146
+         (call $Cons_1150
           (global.get $global_3)
           (local.get $5)
           (global.get $global_2)
@@ -575,10 +575,10 @@ enums › enum_recursive_data_definition
        )
       )
       (call_indirect (type $i32_i32_=>_i32)
-       (global.get $import_pervasives_1168_print_1169)
+       (global.get $import_pervasives_1172_print_1173)
        (local.get $6)
        (i32.load offset=8
-        (global.get $import_pervasives_1168_print_1169)
+        (global.get $import_pervasives_1172_print_1173)
        )
       )
      )

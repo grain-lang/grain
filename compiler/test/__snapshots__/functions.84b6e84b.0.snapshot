@@ -5,7 +5,7 @@ functions › shorthand_3
  (type $none_=>_i32 (func (result i32)))
  (import \"_grainEnv\" \"mem\" (memory $0 0))
  (import \"_grainEnv\" \"tbl\" (table $tbl 0 funcref))
- (elem $elem (global.get $import__grainEnv_0_relocBase_0) $foo_1141)
+ (elem $elem (global.get $import__grainEnv_0_relocBase_0) $foo_1145)
  (import \"_grainEnv\" \"relocBase\" (global $import__grainEnv_0_relocBase_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0 (mut i32)))
@@ -18,7 +18,7 @@ functions › shorthand_3
  (export \"_gmain\" (func $_gmain))
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $global_1))
- (func $foo_1141 (; has Stack IR ;) (param $0 i32) (param $1 i32) (result i32)
+ (func $foo_1145 (; has Stack IR ;) (param $0 i32) (param $1 i32) (result i32)
   (tuple.extract 0
    (tuple.make
     (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
@@ -35,7 +35,7 @@ functions › shorthand_3
   (local.set $0
    (tuple.extract 0
     (tuple.make
-     (call $foo_1141
+     (call $foo_1145
       (local.tee $1
        (tuple.extract 0
         (tuple.make
