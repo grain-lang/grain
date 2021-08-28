@@ -16,13 +16,17 @@ describe("optimizations", ({test}) => {
 
   let assertAnf =
       (
+        ~config_fn=?,
         outfile,
         program_str,
         expected: Grain_middle_end.Anftree.anf_expression,
       ) => {
-    test(
-      outfile,
-      ({expect}) => {
+    test(outfile, ({expect}) => {
+      Grain_utils.Config.preserve_all_configs(() => {
+        switch (config_fn) {
+        | None => ()
+        | Some(fn) => fn()
+        };
         open Grain_middle_end;
         let final_anf =
           Anf_utils.clear_locations @@
@@ -46,8 +50,8 @@ describe("optimizations", ({test}) => {
             raise(e);
           };
         expect.string(result).toEqual(expected);
-      },
-    );
+      })
+    });
   };
 
   assertSnapshot(
@@ -357,5 +361,84 @@ describe("optimizations", ({test}) => {
     "test_binaryen_optimizations_disabled",
     "toplevelStatements",
     "1\n2\n3\n4\n5\n",
+  );
+
+  // Removal of manual memory management calls
+  assertAnf(
+    "test_manual_gc_calls_removed",
+    ~config_fn=() => {Grain_utils.Config.experimental_tail_call := true},
+    {|
+      /* grainc-flags --no-gc */
+      import Memory from "runtime/unsafe/memory"
+      import WasmI32 from "runtime/unsafe/wasmi32"
+      @disableGC
+      export let foo = (x, y, z) => {
+        Memory.incRef(WasmI32.fromGrain((+)))
+        Memory.incRef(WasmI32.fromGrain((+)))
+        // x, y, and z will get decRef'd by `+`
+        x + y + z
+      }
+    |},
+    {
+      open Grain_typed;
+      let plus = Ident.create("+");
+      let foo = Ident.create("foo");
+      let arg = Ident.create("lambda_arg");
+      let app = Ident.create("app");
+      AExp.let_(
+        ~global=Global,
+        Nonrecursive,
+        [
+          (
+            foo,
+            Comp.lambda(
+              ~name=Ident.name(foo),
+              ~attributes=[Grain_parsing.Asttypes.mknoloc("disableGC")],
+              [
+                (arg, HeapAllocated),
+                (arg, HeapAllocated),
+                (arg, HeapAllocated),
+              ],
+              (
+                AExp.let_(
+                  Nonrecursive,
+                  [
+                    (
+                      app,
+                      Comp.app(
+                        ~allocation_type=HeapAllocated,
+                        (
+                          Imm.id(plus),
+                          ([HeapAllocated, HeapAllocated], HeapAllocated),
+                        ),
+                        [Imm.id(arg), Imm.id(arg)],
+                      ),
+                    ),
+                  ],
+                  AExp.comp(
+                    Comp.app(
+                      ~allocation_type=HeapAllocated,
+                      ~tail=true,
+                      (
+                        Imm.id(plus),
+                        ([HeapAllocated, HeapAllocated], HeapAllocated),
+                      ),
+                      [Imm.id(app), Imm.id(arg)],
+                    ),
+                  ),
+                ),
+                HeapAllocated,
+              ),
+            ),
+          ),
+        ],
+      ) @@
+      AExp.comp(
+        Comp.imm(
+          ~allocation_type=StackAllocated(WasmI32),
+          Imm.const(Const_void),
+        ),
+      );
+    },
   );
 });

@@ -9,9 +9,9 @@ optimizations › test_dead_branch_elimination_5
  (import \"_grainEnv\" \"relocBase\" (global $import__grainEnv_0_relocBase_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRefIgnoreZeros\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$unbox\" (global $import_pervasives_1155_unbox_1156 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $import_pervasives_1157_+_1158 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$box\" (global $import_pervasives_1159_box_1160 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$unbox\" (global $import_pervasives_1159_unbox_1160 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $import_pervasives_1161_+_1162 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$box\" (global $import_pervasives_1163_box_1164 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $import_GRAIN$MODULE$runtime/gc_0_incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRefIgnoreZeros\" (func $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0 (param i32 i32) (result i32)))
  (global $global_1 i32 (i32.const 0))
@@ -35,10 +35,10 @@ optimizations › test_dead_branch_elimination_5
        (tuple.extract 0
         (tuple.make
          (call_indirect (type $i32_i32_=>_i32)
-          (global.get $import_pervasives_1159_box_1160)
+          (global.get $import_pervasives_1163_box_1164)
           (i32.const 3)
           (i32.load offset=8
-           (global.get $import_pervasives_1159_box_1160)
+           (global.get $import_pervasives_1163_box_1164)
           )
          )
          (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
@@ -52,10 +52,10 @@ optimizations › test_dead_branch_elimination_5
        (tuple.extract 0
         (tuple.make
          (call_indirect (type $i32_i32_=>_i32)
-          (global.get $import_pervasives_1159_box_1160)
+          (global.get $import_pervasives_1163_box_1164)
           (i32.const 5)
           (i32.load offset=8
-           (global.get $import_pervasives_1159_box_1160)
+           (global.get $import_pervasives_1163_box_1164)
           )
          )
          (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
@@ -135,10 +135,10 @@ optimizations › test_dead_branch_elimination_5
        (tuple.extract 0
         (tuple.make
          (call_indirect (type $i32_i32_=>_i32)
-          (global.get $import_pervasives_1155_unbox_1156)
+          (global.get $import_pervasives_1159_unbox_1160)
           (local.get $0)
           (i32.load offset=8
-           (global.get $import_pervasives_1155_unbox_1156)
+           (global.get $import_pervasives_1159_unbox_1160)
           )
          )
          (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
@@ -152,10 +152,10 @@ optimizations › test_dead_branch_elimination_5
        (tuple.extract 0
         (tuple.make
          (call_indirect (type $i32_i32_=>_i32)
-          (global.get $import_pervasives_1155_unbox_1156)
+          (global.get $import_pervasives_1159_unbox_1160)
           (local.get $1)
           (i32.load offset=8
-           (global.get $import_pervasives_1155_unbox_1156)
+           (global.get $import_pervasives_1159_unbox_1160)
           )
          )
          (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
@@ -166,11 +166,11 @@ optimizations › test_dead_branch_elimination_5
        )
       )
       (call_indirect (type $i32_i32_i32_=>_i32)
-       (global.get $import_pervasives_1157_+_1158)
+       (global.get $import_pervasives_1161_+_1162)
        (local.get $2)
        (local.get $3)
        (i32.load offset=8
-        (global.get $import_pervasives_1157_+_1158)
+        (global.get $import_pervasives_1161_+_1162)
        )
       )
      )

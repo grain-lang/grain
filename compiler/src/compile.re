@@ -99,7 +99,7 @@ let apply_inline_flags = (prog: Parsetree.parsed_program) => {
   };
 };
 
-let next_state = ({cstate_desc, cstate_filename} as cs) => {
+let next_state = (~is_root_file=false, {cstate_desc, cstate_filename} as cs) => {
   let cstate_desc =
     switch (cstate_desc) {
     | Initial(input) =>
@@ -126,6 +126,9 @@ let next_state = ({cstate_desc, cstate_filename} as cs) => {
       Parsed(parsed);
     | Parsed(p) =>
       apply_inline_flags(p);
+      if (is_root_file) {
+        Grain_utils.Config.set_root_config();
+      };
       Well_formedness.check_well_formedness(p);
       WellFormed(p);
     | WellFormed(p) => TypeChecked(Typemod.type_implementation(p))
@@ -167,31 +170,32 @@ let next_state = ({cstate_desc, cstate_filename} as cs) => {
   ret;
 };
 
-let rec compile_resume = (~hook=?, s: compilation_state) => {
-  let next_state = next_state(s);
+let rec compile_resume = (~is_root_file=false, ~hook=?, s: compilation_state) => {
+  let next_state = next_state(~is_root_file, s);
   switch (hook) {
   | Some(func) =>
     switch (func(next_state)) {
     | Continue({cstate_desc: Assembled} as s) => s
-    | Continue(s) => compile_resume(~hook?, s)
+    | Continue(s) => compile_resume(~is_root_file, ~hook?, s)
     | Stop => next_state
     }
   | None =>
     switch (next_state.cstate_desc) {
     | Assembled => next_state
-    | _ => compile_resume(~hook?, next_state)
+    | _ => compile_resume(~is_root_file, ~hook?, next_state)
     }
   };
 };
 
 let reset_compiler_state = () => {
-  Env.clear_imports(); // TODO: (#576) reenable if necessary (makes tests super slow, but seems to be safe?)
-  // Grain_utils.Fs_access.flush_all_cached_data();
+  Env.clear_imports();
+  Module_resolution.clear_dependency_graph();
+  Grain_utils.Fs_access.flush_all_cached_data();
   Grain_utils.Warnings.reset_warnings();
-  Grain_utils.Config.set_root_config();
 };
 
-let compile_string = (~hook=?, ~name=?, ~outfile=?, ~reset=true, str) => {
+let compile_string =
+    (~is_root_file=false, ~hook=?, ~name=?, ~outfile=?, ~reset=true, str) => {
   if (reset) {
     reset_compiler_state();
   };
@@ -200,10 +204,11 @@ let compile_string = (~hook=?, ~name=?, ~outfile=?, ~reset=true, str) => {
     cstate_filename: name,
     cstate_outfile: outfile,
   };
-  compile_resume(~hook?, cstate);
+  compile_resume(~is_root_file, ~hook?, cstate);
 };
 
-let compile_file = (~hook=?, ~outfile=?, ~reset=true, filename) => {
+let compile_file =
+    (~is_root_file=false, ~hook=?, ~outfile=?, ~reset=true, filename) => {
   if (reset) {
     reset_compiler_state();
   };
@@ -212,7 +217,7 @@ let compile_file = (~hook=?, ~outfile=?, ~reset=true, filename) => {
     cstate_filename: Some(filename),
     cstate_outfile: outfile,
   };
-  compile_resume(~hook?, cstate);
+  compile_resume(~is_root_file, ~hook?, cstate);
 };
 
 let stop_after_parse =
@@ -270,7 +275,7 @@ let stop_after_assembled =
 let anf = Linearize.transl_anf_module;
 
 let save_mashed = (f, outfile) =>
-  switch (compile_file(~hook=stop_after_mashed, f)) {
+  switch (compile_file(~is_root_file=false, ~hook=stop_after_mashed, f)) {
   | {cstate_desc: Mashed(mashed)} =>
     Grain_utils.Files.ensure_parent_directory_exists(outfile);
     let mash_string =
@@ -307,6 +312,7 @@ let () =
       (input, outfile) =>
         ignore(
           compile_file(
+            ~is_root_file=false,
             ~outfile,
             ~reset=false,
             ~hook=stop_after_object_file_emitted,
