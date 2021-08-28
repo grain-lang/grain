@@ -1819,8 +1819,6 @@ and print_expression =
                 if (disable_formatting) {
                   let originalCode =
                     get_original_code(e.pexp_loc, original_source);
-                  // need to remove any comments that were inside the disabled block
-
                   Walktree.remove_comments_in_ignore_block(e.pexp_loc);
 
                   Doc.concat([
