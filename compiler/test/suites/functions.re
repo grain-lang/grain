@@ -7,6 +7,9 @@ describe("functions", ({test}) => {
   let assertRun = makeRunner(test);
   let assertFileRun = makeFileRunner(test);
   let assertFileRunError = makeFileErrorRunner(test);
+  let tailCallConfig = () => {
+    Grain_utils.Config.experimental_tail_call := true
+  }
 
   assertFileRun("fib1", "fib", "55\n");
   assertFileRun("fib2", "fib-better", "75025\n");
@@ -14,8 +17,8 @@ describe("functions", ({test}) => {
   /* NOTE: This file also will test that we're doing tail calls
      and mutual recursion properly (should stack overflow otherwise) */
   /* Tests tail calls on only on one branch */
-  assertFileRun("one_branch_tail_call", "oneBranchTail", "[2]\n");
-  assertFileRun("forward_decl", "forward-decl", "true\n");
+  assertFileRun("one_branch_tail_call", ~config_fn=tailCallConfig, "oneBranchTail", "[2]\n");
+  assertFileRun("forward_decl", ~config_fn=tailCallConfig, "forward-decl", "true\n");
   /* This will test that we are doing tail calls for arbitrary-arity
      functions correctly */
   assertFileRun("sinister_tail_call", "sinister-tail-call", "true\n");
