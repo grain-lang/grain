@@ -35,7 +35,7 @@ export function buildGrainRunner(locator, opts) {
   return runner;
 }
 
-// TODO: Migrate API to expose runner object directly
+// TODO: Migrate API to expose runner object directly.
 
 export async function GrainNodeRunner(path) {
   let runner = buildGrainRunner();
