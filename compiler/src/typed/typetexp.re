@@ -347,7 +347,7 @@ and transl_type_aux = (env, policy, styp) => {
     let ty = newty(TTyArrow(ty1, cty2.ctyp_type, TComOk));
     ctyp(TTyArrow(cty1, cty2), ty);
   | PTyTuple(stl) =>
-    assert(List.length(stl) >= 2);
+    assert(List.length(stl) >= 1);
     let ctys = List.map(transl_type(env, policy), stl);
     let ty = newty(TTyTuple(List.map(ctyp => ctyp.ctyp_type, ctys)));
     ctyp(TTyTuple(ctys), ty);
