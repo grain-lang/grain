@@ -935,7 +935,11 @@ and print_type =
         Doc.comma,
         List.map(t => print_type(t, original_source), parsed_types),
       ),
-      Doc.ifBreaks(Doc.comma, Doc.nil),
+      if (List.length(parsed_types) == 1) {
+        Doc.comma;
+      } else {
+        Doc.ifBreaks(Doc.comma, Doc.nil);
+      },
       Doc.rparen,
     ])
 
