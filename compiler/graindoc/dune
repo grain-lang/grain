@@ -11,6 +11,9 @@
  (public_name graindoc)
  (package graindoc)
  (modules graindoc)
+ (flags
+  (:standard
+   (:include ./config/flags.sexp)))
  (libraries cmdliner grain grain_diagnostics grain_utils graindoc.docblock
    binaryen.native dune-build-info))
 
