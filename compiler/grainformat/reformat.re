@@ -783,7 +783,18 @@ and print_pattern =
     };
 
   if (parens) {
-    Doc.concat([Doc.lparen, clean_pattern, Doc.rparen]);
+    Doc.concat([
+      Doc.lparen,
+      Doc.indent(
+        Doc.concat([
+          Doc.softLine,
+          clean_pattern,
+          Doc.ifBreaks(Doc.comma, Doc.nil),
+        ]),
+      ),
+      Doc.softLine,
+      Doc.rparen,
+    ]);
   } else {
     clean_pattern;
   };
@@ -2188,7 +2199,6 @@ and value_bind_print =
             ~parent_loc,
           );
 
-        // TODO: we may  need to work out if all arguments fit on the line or will break
         let expressionGrp =
           switch (vb.pvb_expr.pexp_desc) {
           | PExpBlock(_) => Doc.concat([Doc.space, expression])
