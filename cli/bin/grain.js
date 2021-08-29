@@ -21,7 +21,6 @@ const lsp = require("./lsp.js");
 const doc = require("./doc.js");
 const format = require("./format.js");
 
-
 const stdlibPath = require("@grain/stdlib");
 
 function list(val) {
