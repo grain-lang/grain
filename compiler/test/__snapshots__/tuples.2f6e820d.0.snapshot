@@ -55,5 +55,5 @@ tuples › singleton_tup_annotation
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 1018
+ ;; custom section \"cmi\", size 256
 )
