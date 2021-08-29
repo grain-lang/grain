@@ -971,46 +971,37 @@ and print_application =
     ) => {
   let function_name = get_function_name(func);
 
-  if (prefixop(function_name)) {
-    if (List.length(expressions) == 1) {
-      let first = List.hd(expressions);
+  switch (expressions) {
+  | [first] when prefixop(function_name) =>
+    switch (first.pexp_desc) {
+    | PExpApp(fn, _) =>
+      Doc.concat([
+        Doc.text(function_name),
+        Doc.lparen,
+        print_expression(
+          ~expr=first,
+          ~parentIsArrow=false,
+          ~endChar=None,
+          ~original_source,
+          ~parent_loc,
+        ),
+        Doc.rparen,
+      ])
 
-      switch (first.pexp_desc) {
-      | PExpApp(fn, _) =>
-        Doc.concat([
-          Doc.text(function_name),
-          Doc.lparen,
-          print_expression(
-            ~expr=first,
-            ~parentIsArrow=false,
-            ~endChar=None,
-            ~original_source,
-            ~parent_loc,
-          ),
-          Doc.rparen,
-        ])
+    | _ =>
+      Doc.concat([
+        Doc.text(function_name),
+        print_expression(
+          ~expr=first,
+          ~parentIsArrow=false,
+          ~endChar=None,
+          ~original_source,
+          ~parent_loc,
+        ),
+      ])
+    }
 
-      | _ =>
-        Doc.concat([
-          Doc.text(function_name),
-          print_expression(
-            ~expr=first,
-            ~parentIsArrow=false,
-            ~endChar=None,
-            ~original_source,
-            ~parent_loc,
-          ),
-        ])
-      };
-    } else {
-      Doc.text(
-        function_name
-        ++ "/* formatter error prefix should have 1 arg exactly */",
-      );
-    };
-  } else if (infixop(function_name)) {
-    let first = List.hd(expressions);
-    let second = List.hd(List.tl(expressions)); // assumes an infix only has two expressions
+  | [first, second] when infixop(function_name) =>
     let first_brackets =
       switch (first.pexp_desc) {
       | PExpIf(_) =>
@@ -1093,14 +1084,15 @@ and print_application =
       Doc.space,
       second_brackets,
     ]);
-  } else {
-    let func_name = get_function_name(func);
 
-    if (func_name == "[...]") {
+  | _ when prefixop(function_name) || infixop(function_name) =>
+    raise(Error(Illegal_parse("Formatter error, wrong number of args ")))
+  | _ =>
+    if (function_name == "[...]") {
       resugar_list(~expressions, ~parent_loc, ~original_source);
-    } else if (func_name == "throw"
-               || func_name == "assert"
-               || func_name == "fail") {
+    } else if (function_name == "throw"
+               || function_name == "assert"
+               || function_name == "fail") {
       Doc.concat([
         print_expression(
           ~expr=func,
@@ -1110,23 +1102,6 @@ and print_application =
           ~parent_loc,
         ),
         Doc.space,
-        print_expression(
-          ~expr=List.hd(expressions),
-          ~parentIsArrow=false,
-          ~endChar=None,
-          ~original_source,
-          ~parent_loc,
-        ),
-      ]);
-    } else if (func_name == "!") {
-      Doc.concat([
-        print_expression(
-          ~expr=func,
-          ~parentIsArrow=false,
-          ~endChar=None,
-          ~original_source,
-          ~parent_loc,
-        ),
         print_expression(
           ~expr=List.hd(expressions),
           ~parentIsArrow=false,
@@ -1170,7 +1145,7 @@ and print_application =
           Doc.rparen,
         ]),
       );
-    };
+    }
   };
 }
 
