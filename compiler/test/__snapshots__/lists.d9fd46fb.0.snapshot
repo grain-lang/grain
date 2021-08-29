@@ -8,8 +8,8 @@ lists › list1_trailing_space
  (import \"_grainEnv\" \"tbl\" (table $tbl 0 funcref))
  (import \"_grainEnv\" \"relocBase\" (global $import__grainEnv_0_relocBase_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRefIgnoreZeros\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$[]\" (global $import_pervasives_1148_[]_1149 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$[...]\" (global $import_pervasives_1150_[...]_1151 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$[]\" (global $import_pervasives_1152_[]_1153 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$[...]\" (global $import_pervasives_1154_[...]_1155 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRefIgnoreZeros\" (func $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0 (param i32 i32) (result i32)))
  (global $global_1 i32 (i32.const 0))
  (export \"memory\" (memory $0))
@@ -28,11 +28,11 @@ lists › list1_trailing_space
        (tuple.extract 0
         (tuple.make
          (call_indirect (type $i32_i32_i32_=>_i32)
-          (global.get $import_pervasives_1150_[...]_1151)
+          (global.get $import_pervasives_1154_[...]_1155)
           (i32.const 7)
-          (global.get $import_pervasives_1148_[]_1149)
+          (global.get $import_pervasives_1152_[]_1153)
           (i32.load offset=8
-           (global.get $import_pervasives_1150_[...]_1151)
+           (global.get $import_pervasives_1154_[...]_1155)
           )
          )
          (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
@@ -46,11 +46,11 @@ lists › list1_trailing_space
        (tuple.extract 0
         (tuple.make
          (call_indirect (type $i32_i32_i32_=>_i32)
-          (global.get $import_pervasives_1150_[...]_1151)
+          (global.get $import_pervasives_1154_[...]_1155)
           (i32.const 5)
           (local.get $0)
           (i32.load offset=8
-           (global.get $import_pervasives_1150_[...]_1151)
+           (global.get $import_pervasives_1154_[...]_1155)
           )
          )
          (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
@@ -61,11 +61,11 @@ lists › list1_trailing_space
        )
       )
       (call_indirect (type $i32_i32_i32_=>_i32)
-       (global.get $import_pervasives_1150_[...]_1151)
+       (global.get $import_pervasives_1154_[...]_1155)
        (i32.const 3)
        (local.get $1)
        (i32.load offset=8
-        (global.get $import_pervasives_1150_[...]_1151)
+        (global.get $import_pervasives_1154_[...]_1155)
        )
       )
      )

@@ -8,7 +8,7 @@ basic functionality › modulo4
  (import \"_grainEnv\" \"tbl\" (table $tbl 0 funcref))
  (import \"_grainEnv\" \"relocBase\" (global $import__grainEnv_0_relocBase_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRefIgnoreZeros\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$%\" (global $import_pervasives_1144_%_1145 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$%\" (global $import_pervasives_1148_%_1149 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRefIgnoreZeros\" (func $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0 (param i32 i32) (result i32)))
  (global $global_1 i32 (i32.const 0))
  (export \"memory\" (memory $0))
@@ -21,11 +21,11 @@ basic functionality › modulo4
    (tuple.extract 0
     (tuple.make
      (call_indirect (type $i32_i32_i32_=>_i32)
-      (global.get $import_pervasives_1144_%_1145)
+      (global.get $import_pervasives_1148_%_1149)
       (i32.const -33)
       (i32.const 35)
       (i32.load offset=8
-       (global.get $import_pervasives_1144_%_1145)
+       (global.get $import_pervasives_1148_%_1149)
       )
      )
      (i32.const 0)

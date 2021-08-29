@@ -28,6 +28,10 @@ let no_pervasives: ref(bool);
 
 let no_gc: ref(bool);
 
+/** Whether to enable bulk memory operations */
+
+let bulk_memory: ref(bool);
+
 /** Whether optimizations should be run */
 
 let optimization_level: ref(optimization_level);

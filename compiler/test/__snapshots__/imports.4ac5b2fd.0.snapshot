@@ -7,8 +7,8 @@ imports › import_alias_multiple
  (import \"_grainEnv\" \"tbl\" (table $tbl 0 funcref))
  (import \"_grainEnv\" \"relocBase\" (global $import__grainEnv_0_relocBase_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRefIgnoreZeros\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0 (mut i32)))
- (import \"GRAIN$MODULE$exportStar\" \"GRAIN$EXPORT$x\" (global $import_exportStar_1152_x_1153 (mut i32)))
- (import \"GRAIN$MODULE$exportStar\" \"GRAIN$EXPORT$y\" (global $import_exportStar_1154_y_1155 (mut i32)))
+ (import \"GRAIN$MODULE$exportStar\" \"GRAIN$EXPORT$x\" (global $import_exportStar_1156_x_1157 (mut i32)))
+ (import \"GRAIN$MODULE$exportStar\" \"GRAIN$EXPORT$y\" (global $import_exportStar_1158_y_1159 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRefIgnoreZeros\" (func $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0 (param i32 i32) (result i32)))
  (global $global_1 i32 (i32.const 0))
  (export \"memory\" (memory $0))
@@ -21,10 +21,10 @@ imports › import_alias_multiple
    (tuple.extract 0
     (tuple.make
      (call_indirect (type $i32_i32_=>_i32)
-      (global.get $import_exportStar_1154_y_1155)
-      (global.get $import_exportStar_1152_x_1153)
+      (global.get $import_exportStar_1158_y_1159)
+      (global.get $import_exportStar_1156_x_1157)
       (i32.load offset=8
-       (global.get $import_exportStar_1154_y_1155)
+       (global.get $import_exportStar_1158_y_1159)
       )
      )
      (i32.const 0)

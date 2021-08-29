@@ -3510,18 +3510,20 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
       Filename.basename(Option.get(name)),
     );
   };
-  let _ =
-    Module.set_features(
-      wasm_mod,
-      [
-        Module.Feature.mvp,
-        Module.Feature.multivalue,
-        Module.Feature.tail_call,
-        Module.Feature.sign_ext,
-        Module.Feature.bulk_memory,
-        Module.Feature.mutable_globals,
-      ],
-    );
+  let default_features = [
+    Module.Feature.mvp,
+    Module.Feature.multivalue,
+    Module.Feature.tail_call,
+    Module.Feature.sign_ext,
+    Module.Feature.mutable_globals,
+  ];
+  let features =
+    if (Config.bulk_memory^) {
+      [Module.Feature.bulk_memory, ...default_features];
+    } else {
+      default_features;
+    };
+  let _ = Module.set_features(wasm_mod, features);
   let _ = Settings.set_low_memory_unused(true);
   let _ =
     Memory.set_memory(wasm_mod, 0, Memory.unlimited, "memory", [], false);
