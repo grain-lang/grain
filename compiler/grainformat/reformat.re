@@ -932,7 +932,9 @@ and print_type = (p: Grain_parsing__Parsetree.parsed_type) => {
           ]);
         },
       ),
-      Doc.text(" -> "),
+      Doc.space,
+      Doc.text("->"),
+      Doc.space,
       print_type(parsed_type),
     ])
 
@@ -1318,7 +1320,8 @@ and print_expression =
             ~parent_loc,
           ),
           Doc.rbracket,
-          Doc.text(" ="),
+          Doc.space,
+          Doc.text("="),
           Doc.indent(
             Doc.concat([
               Doc.line,
@@ -1359,7 +1362,9 @@ and print_expression =
         ),
         Doc.dot,
         print_ident(txt),
-        Doc.text(" = "),
+        Doc.space,
+        Doc.equal,
+        Doc.space,
         print_expression(
           ~expr=expression2,
           ~parentIsArrow=false,
@@ -1441,7 +1446,9 @@ and print_expression =
                             | None => Doc.nil
                             | Some(guard) =>
                               Doc.concat([
-                                Doc.text(" when "),
+                                Doc.space,
+                                Doc.text("when"),
+                                Doc.space,
                                 print_expression(
                                   ~expr=guard,
                                   ~parentIsArrow=false,
@@ -1451,7 +1458,8 @@ and print_expression =
                                 ),
                               ])
                             },
-                            Doc.text(" =>"),
+                            Doc.space,
+                            Doc.text("=>"),
                           ]),
                           Doc.group(
                             switch (branch.pmb_body.pexp_desc) {
@@ -1506,11 +1514,17 @@ and print_expression =
       );
 
     | PExpPrim1(prim1, expression) =>
-      Doc.text("/* PExpPrim1 not handled by formatter */")
+      let originalCode = get_original_code(expr.pexp_loc, original_source);
+      Walktree.remove_comments_in_ignore_block(expr.pexp_loc);
+      Doc.text(originalCode);
     | PExpPrim2(prim2, expression, expression1) =>
-      Doc.text(" /*PExpPrim2 not handled by formatter */")
+      let originalCode = get_original_code(expr.pexp_loc, original_source);
+      Walktree.remove_comments_in_ignore_block(expr.pexp_loc);
+      Doc.text(originalCode);
     | PExpPrimN(primn, expressions) =>
-      Doc.text("/*b PExpPrimN not handled by formatter */")
+      let originalCode = get_original_code(expr.pexp_loc, original_source);
+      Walktree.remove_comments_in_ignore_block(expr.pexp_loc);
+      Doc.text(originalCode);
     | PExpIf(condition, trueExpr, falseExpr) =>
       let (leading_condition_comments, _trailing_comments) =
         Walktree.partition_comments(condition.pexp_loc, Some(parent_loc));
@@ -2472,7 +2486,9 @@ let import_print = (imp: Parsetree.import_declaration) => {
             Doc.text("*"),
             if (List.length(identlocs) > 0) {
               Doc.concat([
-                Doc.text(" except "),
+                Doc.space,
+                Doc.text("except"),
+                Doc.space,
                 add_braces(
                   Doc.join(
                     Doc.comma,
@@ -2516,7 +2532,9 @@ let import_print = (imp: Parsetree.import_declaration) => {
                         | Some(alias) =>
                           Doc.concat([
                             print_imported_ident(loc.txt),
-                            Doc.text(" as "),
+                            Doc.space,
+                            Doc.text("as"),
+                            Doc.space,
                             print_imported_ident(alias.txt),
                           ])
                         };
@@ -2543,7 +2561,9 @@ let import_print = (imp: Parsetree.import_declaration) => {
     Doc.concat([
       Doc.text("import "),
       Doc.join(Doc.concat([Doc.comma, Doc.space]), vals),
-      Doc.text(" from "),
+      Doc.space,
+      Doc.text("from"),
+      Doc.space,
       Doc.doubleQuote,
       Doc.text(path),
       Doc.doubleQuote,
@@ -2563,7 +2583,13 @@ let print_export_desc = (desc: Parsetree.export_declaration_desc) => {
   Doc.concat([
     fixedIdent,
     switch (desc.pex_alias) {
-    | Some(alias) => Doc.concat([Doc.text(" as "), Doc.text(alias.txt)])
+    | Some(alias) =>
+      Doc.concat([
+        Doc.space,
+        Doc.text("as"),
+        Doc.space,
+        Doc.text(alias.txt),
+      ])
     | None => Doc.nil
     },
   ]);
@@ -2590,7 +2616,9 @@ let print_foreign_value_description = (vd: Parsetree.value_description) => {
     fixedIdent,
     Doc.text(" : "),
     print_type(vd.pval_type),
-    Doc.text(" from "),
+    Doc.space,
+    Doc.text("from"),
+    Doc.space,
     Doc.text("\""),
     Doc.text(vd.pval_mod.txt),
     Doc.text("\""),
@@ -2611,7 +2639,9 @@ let print_primitive_value_description = (vd: Parsetree.value_description) => {
     fixedIdent,
     Doc.text(" : "),
     print_type(vd.pval_type),
-    Doc.text(" = "),
+    Doc.space,
+    Doc.equal,
+    Doc.space,
     Doc.text("\""),
     Doc.join(Doc.text(","), List.map(p => Doc.text(p), vd.pval_prim)),
     Doc.text("\""),
