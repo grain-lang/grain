@@ -255,5 +255,5 @@ pattern matching › guarded_match_4
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 1009
+ ;; custom section \"cmi\", size 247
 )

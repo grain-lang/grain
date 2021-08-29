@@ -15,5 +15,5 @@ comments › comment_shebang
  (func $_start (; has Stack IR ;)
   (nop)
  )
- ;; custom section \"cmi\", size 1009
+ ;; custom section \"cmi\", size 247
 )

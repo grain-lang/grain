@@ -28,5 +28,5 @@ basic functionality › int32_1
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 1001
+ ;; custom section \"cmi\", size 239
 )

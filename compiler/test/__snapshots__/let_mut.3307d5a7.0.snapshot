@@ -93,5 +93,5 @@ let mut › let-mut3
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 1002
+ ;; custom section \"cmi\", size 240
 )

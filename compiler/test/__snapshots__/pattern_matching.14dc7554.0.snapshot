@@ -233,5 +233,5 @@ pattern matching › record_match_2
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 1260
+ ;; custom section \"cmi\", size 498
 )

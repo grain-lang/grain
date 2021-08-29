@@ -52,5 +52,5 @@ imports › import_same_module_unify2
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 1065
+ ;; custom section \"cmi\", size 303
 )

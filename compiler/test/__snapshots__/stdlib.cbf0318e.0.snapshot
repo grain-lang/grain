@@ -362,5 +362,5 @@ stdlib › stdlib_equal_22
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 1261
+ ;; custom section \"cmi\", size 499
 )

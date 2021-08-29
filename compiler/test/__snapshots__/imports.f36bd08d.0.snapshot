@@ -53,5 +53,5 @@ imports › import_muliple_modules
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 1112
+ ;; custom section \"cmi\", size 350
 )

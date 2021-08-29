@@ -635,5 +635,5 @@ enums › enum_recursive_data_definition
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 1634
+ ;; custom section \"cmi\", size 872
 )

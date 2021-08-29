@@ -148,5 +148,5 @@ functions › fn_trailing_comma
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 1011
+ ;; custom section \"cmi\", size 249
 )

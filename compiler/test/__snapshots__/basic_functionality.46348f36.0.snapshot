@@ -15,5 +15,5 @@ basic functionality › precedence5
  (func $_start (; has Stack IR ;)
   (nop)
  )
- ;; custom section \"cmi\", size 1005
+ ;; custom section \"cmi\", size 243
 )

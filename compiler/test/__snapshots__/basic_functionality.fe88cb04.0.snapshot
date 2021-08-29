@@ -440,5 +440,5 @@ basic functionality › func_shadow_and_indirect_call
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 1015
+ ;; custom section \"cmi\", size 253
 )

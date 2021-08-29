@@ -44,5 +44,5 @@ imports › import_module2
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 1058
+ ;; custom section \"cmi\", size 296
 )

@@ -102,5 +102,5 @@ let mut › let-mut_division1
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 1011
+ ;; custom section \"cmi\", size 249
 )

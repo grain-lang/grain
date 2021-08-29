@@ -15,5 +15,5 @@ basic functionality › orshort1
  (func $_start (; has Stack IR ;)
   (nop)
  )
- ;; custom section \"cmi\", size 1002
+ ;; custom section \"cmi\", size 240
 )

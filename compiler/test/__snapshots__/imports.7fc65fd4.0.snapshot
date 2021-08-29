@@ -52,5 +52,5 @@ imports › import_some_constructor
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 1063
+ ;; custom section \"cmi\", size 301
 )
