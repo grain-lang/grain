@@ -747,7 +747,6 @@ let check_consistency = ps =>
         switch (crco) {
         | None => ()
         | Some(crc) =>
-          add_import(name);
           let resolved_file_name =
             Module_resolution.resolve_unit(
               ~base_dir=Filename.dirname(ps.ps_filename),

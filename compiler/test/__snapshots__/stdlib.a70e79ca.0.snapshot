@@ -140,5 +140,5 @@ stdlib › stdlib_equal_9
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 1052
+ ;; custom section \"cmi\", size 290
 )

@@ -15,5 +15,5 @@ basic functionality › and2
  (func $_start (; has Stack IR ;)
   (nop)
  )
- ;; custom section \"cmi\", size 998
+ ;; custom section \"cmi\", size 236
 )

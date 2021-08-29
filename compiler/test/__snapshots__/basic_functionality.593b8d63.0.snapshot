@@ -71,5 +71,5 @@ basic functionality › if_one_sided6
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 1007
+ ;; custom section \"cmi\", size 245
 )

@@ -44,5 +44,5 @@ imports › import_some_multiple
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 1064
+ ;; custom section \"cmi\", size 302
 )

@@ -205,5 +205,5 @@ stdlib › stdlib_equal_3
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 1052
+ ;; custom section \"cmi\", size 290
 )

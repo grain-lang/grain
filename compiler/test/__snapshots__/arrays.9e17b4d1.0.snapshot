@@ -69,5 +69,5 @@ arrays › array3
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 1000
+ ;; custom section \"cmi\", size 238
 )

@@ -102,5 +102,5 @@ let mut › let-mut_multiplication1
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 1017
+ ;; custom section \"cmi\", size 255
 )

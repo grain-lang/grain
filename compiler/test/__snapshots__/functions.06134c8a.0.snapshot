@@ -87,5 +87,5 @@ functions › dup_func
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 1002
+ ;; custom section \"cmi\", size 240
 )

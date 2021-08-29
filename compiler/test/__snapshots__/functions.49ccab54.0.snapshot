@@ -222,5 +222,5 @@ functions › curried_func
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 1006
+ ;; custom section \"cmi\", size 244
 )

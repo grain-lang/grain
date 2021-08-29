@@ -937,5 +937,5 @@ pattern matching › tuple_match_deep4
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 1011
+ ;; custom section \"cmi\", size 249
 )

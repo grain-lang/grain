@@ -711,5 +711,5 @@ pattern matching › adt_match_3
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 1005
+ ;; custom section \"cmi\", size 243
 )

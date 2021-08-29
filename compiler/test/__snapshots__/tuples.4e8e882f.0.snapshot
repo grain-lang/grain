@@ -15,5 +15,5 @@ tuples › no_singleton_tup
  (func $_start (; has Stack IR ;)
   (nop)
  )
- ;; custom section \"cmi\", size 1010
+ ;; custom section \"cmi\", size 248
 )

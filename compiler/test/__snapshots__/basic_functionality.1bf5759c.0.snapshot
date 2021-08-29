@@ -82,5 +82,5 @@ basic functionality › unsafe_wasm_globals
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 1198
+ ;; custom section \"cmi\", size 377
 )
