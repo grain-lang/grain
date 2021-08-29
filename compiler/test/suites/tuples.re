@@ -18,7 +18,9 @@ describe("tuples", ({test}) => {
     "nested_tup_3",
     "let (x, y) = ((1, 2), (3, 4)); let (a, b) = y; a",
   );
-  assertSnapshot("no_singleton_tup", "(1)");
+  assertSnapshot("singleton_tup", "(1,)");
+  assertSnapshot("singleton_tup_annotation", "(1,): (Number,)");
+  assertSnapshot("no_non_trailing_comma_singleton_tup", "(1)");
   // trailing commas
   assertSnapshot("tup1_trailing", "(1, 2, 3,)");
   assertSnapshot("tup1_trailing_space", "(1, 2, 3, )");

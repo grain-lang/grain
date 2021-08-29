@@ -1,4 +1,4 @@
-tuples › no_singleton_tup
+tuples › no_non_trailing_comma_singleton_tup
 (module
  (type $none_=>_none (func))
  (type $none_=>_i32 (func (result i32)))
@@ -15,5 +15,5 @@ tuples › no_singleton_tup
  (func $_start (; has Stack IR ;)
   (nop)
  )
- ;; custom section \"cmi\", size 248
+ ;; custom section \"cmi\", size 267
 )
