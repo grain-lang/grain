@@ -1,0 +1,20 @@
+export enum Instructions {
+  // leading
+  MoveNorth(Number),  // north
+  // below north
+  MoveSouth(Number),  // south
+  MoveEast(Number),
+  MoveWest(Number),
+  // comment
+  TurnLeft(Number), /*
+  stupid block */
+  TurnRight(Number),
+  MoveForward(Number),
+  //trailing
+}
+
+
+export enum Ship {
+  // east/west, north/south, facing degrees
+  Ship(Number, Number, Number)
+}

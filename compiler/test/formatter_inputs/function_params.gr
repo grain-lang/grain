@@ -1,0 +1,5 @@
+let single_arg = (x) => x
+
+let unit_arg = () => 3
+
+let two_args = (x,y) => 4
