@@ -6,8 +6,14 @@ enum SmallAnimals { Abc, Def}
 enum CabbageColor { Red, Green }
 enum Veggie {  
   Squash,
-  Cabbage(CabbageColor),  
+  Cabbage(CabbageColor),
   Broccoli,
 }
 
 let redCabbage = Cabbage(Red)
+
+enum TrailingComment {  
+  Squash, /* trailing comment */
+  Cabbage(CabbageColor),
+  Broccoli, // We all love squash 
+}

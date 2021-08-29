@@ -7,7 +7,7 @@ open Filename;
 
 let compile_parsed = (filename: option(string)) => {
   let program_str = ref("");
-  let lines = ref([]);
+  let linesList = ref([]);
 
   let compile_state =
     switch (filename) {
@@ -18,12 +18,13 @@ let compile_parsed = (filename: option(string)) => {
       try(
         while (true) {
           let line = read_line();
-          program_str := program_str^ ++ line ++ "\n";
-          lines := lines^ @ [line];
+          linesList := linesList^ @ [line];
         }
       ) {
       | exn => ()
       };
+
+      program_str := String.concat("\n", linesList^);
 
       Compile.compile_string(~hook=stop_after_parse, ~name="", program_str^);
     | Some(filenm) =>
@@ -37,18 +38,18 @@ let compile_parsed = (filename: option(string)) => {
         while (true) {
           let line = input_line(ic);
 
-          program_str := program_str^ ++ line ++ "\n";
-          lines := lines^ @ [line];
+          linesList := linesList^ @ [line];
         }
       ) {
       | exn => ()
       };
 
+      program_str := String.concat("\n", linesList^);
+
       Grain_utils.Config.base_path := dirname(filenm);
       Compile.compile_file(~hook=stop_after_parse, filenm);
     };
 
-  // switch (compile_state) {
   switch (compile_state) {
   | exception exn =>
     let bt =
@@ -68,18 +69,19 @@ let compile_parsed = (filename: option(string)) => {
       bt,
     );
     exit(2);
-  | {cstate_desc: Parsed(parsed_program)} => `Ok((parsed_program, lines^))
+  | {cstate_desc: Parsed(parsed_program)} =>
+    `Ok((parsed_program, Array.of_list(linesList^)))
   | _ => `Error((false, "Invalid compilation state"))
   };
 };
 
 let format_code =
-    (program: Parsetree.parsed_program, original_source: list(string)) => {
+    (program: Parsetree.parsed_program, original_source: array(string)) => {
   Reformat.reformat_ast(program, original_source);
   `Ok();
 };
 
-let grainformat = ((program, source: list(string))) =>
+let grainformat = ((program, source: array(string))) =>
   try(format_code(program, source)) {
   | e => `Error((false, Printexc.to_string(e)))
   };
