@@ -5,6 +5,9 @@ open Grain_utils;
 
 module Doc = Res_doc;
 
+let exception_primitives = [|"throw", "fail", "assert"|];
+let list_cons = "[...]";
+
 type error =
   | Illegal_parse(string)
   | Unsupported_syntax(string);
@@ -161,24 +164,27 @@ let is_disable_formatting_comment = (comment: Parsetree.comment) => {
   };
 };
 
+// split the comments into the ones one this line and the ones that come after
 let split_comments =
     (comments: list(Grain_parsing__Parsetree.comment), line: int)
     : (
         list(Grain_parsing__Parsetree.comment),
         list(Grain_parsing__Parsetree.comment),
       ) => {
-  List.fold_left(
-    (acc, c) =>
-      if (get_loc_line(get_comment_loc(c)) == line) {
-        let (thisline, below) = acc;
-        (thisline @ [c], below);
-      } else {
-        let (thisline, below) = acc;
-        (thisline, below @ [c]);
-      },
-    ([], []),
-    comments,
-  );
+  let (thisline, below) =
+    List.fold_left(
+      (acc, c) =>
+        if (get_loc_line(get_comment_loc(c)) == line) {
+          let (thisline, below) = acc;
+          ([c, ...thisline], below);
+        } else {
+          let (thisline, below) = acc;
+          (thisline, [c, ...below]);
+        },
+      ([], []),
+      comments,
+    );
+  (List.rev(thisline), List.rev(below));
 };
 
 let print_leading_comments = (comments: list(Parsetree.comment), line: int) => {
@@ -549,7 +555,7 @@ and resugar_list_inner =
     | PExpApp(innerfunc, innerexpressions) =>
       let func_name = get_function_name(innerfunc);
 
-      if (func_name == "[...]") {
+      if (func_name == list_cons) {
         let inner = resugar_list_inner(innerexpressions, parent_loc);
         List.append([Regular(arg1)], inner);
       } else {
@@ -703,7 +709,7 @@ and print_pattern =
             ~original_source,
           ),
           Doc.concat([Doc.text(":"), Doc.space]),
-          print_type(parsed_type),
+          print_type(parsed_type, original_source),
         ]),
         false,
       )
@@ -713,7 +719,7 @@ and print_pattern =
         | IdentName(name) => name
         | _ => ""
         };
-      if (func == "[...]") {
+      if (func == list_cons) {
         (
           resugar_list_patterns(~patterns, ~parent_loc, ~original_source),
           false,
@@ -823,23 +829,6 @@ and print_ident = (ident: Identifier.t) => {
   };
 }
 
-and print_imported_ident = (ident: Identifier.t) => {
-  switch (ident) {
-  | IdentName(name) =>
-    if (infixop(name) || prefixop(name)) {
-      Doc.concat([Doc.lparen, Doc.text(name), Doc.rparen]);
-    } else {
-      Doc.text(name);
-    }
-
-  | IdentExternal(externalIdent, second) =>
-    Doc.concat([
-      print_ident(externalIdent),
-      Doc.text("."),
-      Doc.text(second),
-    ])
-  };
-}
 and print_record =
     (
       ~fields:
@@ -912,7 +901,8 @@ and print_record =
     Doc.rbrace,
   ])
 
-and print_type = (p: Grain_parsing__Parsetree.parsed_type) => {
+and print_type =
+    (p: Grain_parsing__Parsetree.parsed_type, original_source: array(string)) => {
   switch (p.ptyp_desc) {
   | PTyAny => Doc.text("AnyType")
   | PTyVar(name) => Doc.text(name)
@@ -920,13 +910,13 @@ and print_type = (p: Grain_parsing__Parsetree.parsed_type) => {
     Doc.concat([
       Doc.group(
         if (List.length(types) == 1) {
-          print_type(List.hd(types));
+          print_type(List.hd(types), original_source);
         } else {
           Doc.concat([
             Doc.lparen,
             Doc.join(
               Doc.concat([Doc.comma, Doc.space]),
-              List.map(t => print_type(t), types),
+              List.map(t => print_type(t, original_source), types),
             ),
             Doc.rparen,
           ]);
@@ -935,13 +925,19 @@ and print_type = (p: Grain_parsing__Parsetree.parsed_type) => {
       Doc.space,
       Doc.text("->"),
       Doc.space,
-      print_type(parsed_type),
+      print_type(parsed_type, original_source),
     ])
 
   | PTyTuple(parsed_types) =>
-    add_parens(
-      Doc.join(Doc.comma, List.map(t => print_type(t), parsed_types)),
-    )
+    Doc.concat([
+      Doc.lparen,
+      Doc.join(
+        Doc.comma,
+        List.map(t => print_type(t, original_source), parsed_types),
+      ),
+      Doc.ifBreaks(Doc.comma, Doc.nil),
+      Doc.rparen,
+    ])
 
   | PTyConstr(locidentifier, parsedtypes) =>
     let ident = locidentifier.txt;
@@ -953,13 +949,15 @@ and print_type = (p: Grain_parsing__Parsetree.parsed_type) => {
         Doc.text("<"),
         Doc.join(
           Doc.concat([Doc.comma, Doc.space]),
-          List.map(typ => {print_type(typ)}, parsedtypes),
+          List.map(typ => {print_type(typ, original_source)}, parsedtypes),
         ),
         Doc.text(">"),
       ]);
     };
   | PTyPoly(locationstrings, parsed_type) =>
-    Doc.text("/* Formatter error PTyPoly*/")
+    let originalCode = get_original_code(p.ptyp_loc, original_source);
+    Walktree.remove_comments_in_ignore_block(p.ptyp_loc);
+    Doc.text(originalCode);
   };
 }
 and print_application =
@@ -1088,11 +1086,9 @@ and print_application =
   | _ when prefixop(function_name) || infixop(function_name) =>
     raise(Error(Illegal_parse("Formatter error, wrong number of args ")))
   | _ =>
-    if (function_name == "[...]") {
+    if (function_name == list_cons) {
       resugar_list(~expressions, ~parent_loc, ~original_source);
-    } else if (function_name == "throw"
-               || function_name == "assert"
-               || function_name == "fail") {
+    } else if (Array.exists(fn => function_name == fn, exception_primitives)) {
       Doc.concat([
         print_expression(
           ~expr=func,
@@ -1778,7 +1774,7 @@ and print_expression =
             ~parent_loc,
           ),
           Doc.text(": "),
-          print_type(parsed_type),
+          print_type(parsed_type, original_source),
         ]),
       )
     | PExpLambda(patterns, expression) =>
@@ -2228,7 +2224,11 @@ and value_bind_print =
   ]);
 };
 
-let rec print_data = (data: Grain_parsing__Parsetree.data_declaration) => {
+let rec print_data =
+        (
+          data: Grain_parsing__Parsetree.data_declaration,
+          original_source: array(string),
+        ) => {
   let nameloc = data.pdata_name;
   switch (data.pdata_kind) {
   | PDataVariant(constr_declarations) =>
@@ -2267,7 +2267,10 @@ let rec print_data = (data: Grain_parsing__Parsetree.data_declaration) => {
                           Doc.text("("),
                           Doc.join(
                             Doc.concat([Doc.comma, Doc.line]),
-                            List.map(t => print_type(t), parsed_types),
+                            List.map(
+                              t => print_type(t, original_source),
+                              parsed_types,
+                            ),
                           ),
                           Doc.text(")"),
                         ]),
@@ -2299,7 +2302,10 @@ let rec print_data = (data: Grain_parsing__Parsetree.data_declaration) => {
             Doc.text("<"),
             Doc.join(
               Doc.text(", "),
-              List.map(t => print_type(t), data.pdata_params),
+              List.map(
+                t => print_type(t, original_source),
+                data.pdata_params,
+              ),
             ),
             Doc.text(">"),
             Doc.space,
@@ -2357,7 +2363,7 @@ let rec print_data = (data: Grain_parsing__Parsetree.data_declaration) => {
                   print_ident(decl.pld_name.txt),
                   Doc.text(":"),
                   Doc.space,
-                  print_type(decl.pld_type),
+                  print_type(decl.pld_type, original_source),
                 ]),
               ),
             ]),
@@ -2380,7 +2386,10 @@ let rec print_data = (data: Grain_parsing__Parsetree.data_declaration) => {
             Doc.text("<"),
             Doc.join(
               Doc.concat([Doc.text(","), Doc.space]),
-              List.map(t => print_type(t), data.pdata_params),
+              List.map(
+                t => print_type(t, original_source),
+                data.pdata_params,
+              ),
             ),
             Doc.text(">"),
             Doc.space,
@@ -2412,6 +2421,7 @@ let data_print =
             Grain_parsing__Parsetree.data_declaration,
           ),
         ),
+      original_source: array(string),
     ) => {
   Doc.join(
     Doc.comma,
@@ -2423,7 +2433,7 @@ let data_print =
           | Nonexported => Doc.nil
           | Exported => Doc.text("export ")
           },
-          print_data(decl),
+          print_data(decl, original_source),
         ]);
       },
       datas,
@@ -2483,14 +2493,14 @@ let import_print = (imp: Parsetree.import_declaration) => {
                       ) => {
                         let (loc, optloc) = identlocopt;
                         switch (optloc) {
-                        | None => print_imported_ident(loc.txt)
+                        | None => print_ident(loc.txt)
                         | Some(alias) =>
                           Doc.concat([
-                            print_imported_ident(loc.txt),
+                            print_ident(loc.txt),
                             Doc.space,
                             Doc.text("as"),
                             Doc.space,
-                            print_imported_ident(alias.txt),
+                            print_ident(alias.txt),
                           ])
                         };
                       },
@@ -2557,7 +2567,8 @@ let print_export_declaration = (decl: Parsetree.export_declaration) => {
   };
 };
 
-let print_foreign_value_description = (vd: Parsetree.value_description) => {
+let print_foreign_value_description =
+    (vd: Parsetree.value_description, original_source: array(string)) => {
   let ident = vd.pval_name.txt;
 
   let fixedIdent =
@@ -2570,7 +2581,7 @@ let print_foreign_value_description = (vd: Parsetree.value_description) => {
   Doc.concat([
     fixedIdent,
     Doc.text(" : "),
-    print_type(vd.pval_type),
+    print_type(vd.pval_type, original_source),
     Doc.space,
     Doc.text("from"),
     Doc.space,
@@ -2580,7 +2591,8 @@ let print_foreign_value_description = (vd: Parsetree.value_description) => {
   ]);
 };
 
-let print_primitive_value_description = (vd: Parsetree.value_description) => {
+let print_primitive_value_description =
+    (vd: Parsetree.value_description, original_source: array(string)) => {
   let ident = vd.pval_name.txt;
 
   let fixedIdent =
@@ -2593,7 +2605,7 @@ let print_primitive_value_description = (vd: Parsetree.value_description) => {
   Doc.concat([
     fixedIdent,
     Doc.text(" : "),
-    print_type(vd.pval_type),
+    print_type(vd.pval_type, original_source),
     Doc.space,
     Doc.equal,
     Doc.space,
@@ -2683,7 +2695,7 @@ let toplevel_print =
         Doc.concat([
           export,
           Doc.text("foreign wasm "),
-          print_foreign_value_description(value_description),
+          print_foreign_value_description(value_description, original_source),
         ]);
       | PTopPrimitive(export_flag, value_description) =>
         let export =
@@ -2694,9 +2706,13 @@ let toplevel_print =
         Doc.concat([
           export,
           Doc.text("primitive "),
-          print_primitive_value_description(value_description),
+          print_primitive_value_description(
+            value_description,
+            original_source,
+          ),
         ]);
-      | PTopData(data_declarations) => data_print(data_declarations)
+      | PTopData(data_declarations) =>
+        data_print(data_declarations, original_source)
       | PTopLet(export_flag, rec_flag, mut_flag, value_bindings) =>
         value_bind_print(
           export_flag,
@@ -2733,7 +2749,10 @@ let toplevel_print =
                   Doc.text("("),
                   Doc.join(
                     Doc.comma,
-                    List.map(t => print_type(t), parsed_types),
+                    List.map(
+                      t => print_type(t, original_source),
+                      parsed_types,
+                    ),
                   ),
                   Doc.text(")"),
                 ]);
