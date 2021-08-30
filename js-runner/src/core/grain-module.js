@@ -16,7 +16,7 @@ if (__RUNNER_BROWSER) {
     }
     if (fd === 2) {
       console.error(decoder.decode(buf));
-      return
+      return;
     }
 
     originalWriteSync(fd, buf, offset, length, position);
