@@ -1,5 +1,5 @@
 export class ManagedMemory {
-  constructor({ initialMemoryPages, maximumMemoryPages }) {
+  constructor({ initialMemoryPages, maximumMemoryPages } = {}) {
     this._memory = new WebAssembly.Memory({
       initial: initialMemoryPages || 64,
       maximum: maximumMemoryPages,
