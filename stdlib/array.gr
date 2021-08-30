@@ -891,4 +891,19 @@ export let sort = (comp, array) => {
   }
   let len = length(array)
   quicksort(0, len - 1)
+
+export let rotate = (arr, n) => {
+    let rec rotateArr = (arr, n, sourceIndex) => {
+        if (sourceIndex <= 0) {
+            arr
+        } else {
+            let arrLen = length(arr)
+            let curVal = get(sourceIndex - 1, arr)
+            let targetIndex = (arrLen + n - 1) % arrLen
+            rotateArr(arr, targetIndex, sourceIndex - 1)
+            set(targetIndex, curVal, arr)
+            arr
+        }
+    }
+    rotateArr(arr, n, length(arr))
 }
