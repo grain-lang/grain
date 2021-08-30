@@ -32,7 +32,7 @@
   },
   "homepage": "https://grain-lang.org",
   "devDependencies": {
-    "del-cli": "^3.0.1"
+    "del-cli": "^4.0.1"
   },
   "dependencies": {},
   "scripts": {

@@ -85,8 +85,8 @@ export class ManagedMemory {
   }
 
   free(userPtr) {
-    let closure = this._runner.memoryManager.requiredExport("GRAIN$EXPORT$free")
-      .value;
+    let closure =
+      this._runner.memoryManager.requiredExport("GRAIN$EXPORT$free").value;
     this._runner.memoryManager.requiredExport("free")(closure, userPtr);
   }
 }
