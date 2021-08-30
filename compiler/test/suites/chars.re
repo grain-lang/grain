@@ -13,6 +13,7 @@ describe("chars", ({test}) => {
   assertSnapshot("char5", "'\\u{41}'");
   assertSnapshot("char6", "'💯'");
   assertSnapshot("char7", "'\\u{1F33E}'");
+  assertSnapshot("char8", "'\\u2728'");
   assertRun("char_eq1", "print('🌾' == '🌾')", "true\n");
   assertRun("char_eq2", "print('🌾' == '💯')", "false\n");
   assertRun(
