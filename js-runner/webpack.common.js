@@ -1,5 +1,5 @@
 const webpack = require("webpack");
-const merge = require("webpack-merge");
+const { merge } = require("webpack-merge");
 
 const common = {
   module: {
@@ -11,33 +11,37 @@ const common = {
           loader: "babel-loader",
           options: {
             presets: [],
-            plugins: ["transform-object-rest-spread"],
+            plugins: ["@babel/plugin-proposal-object-rest-spread"],
           },
         },
       },
     ],
   },
-  plugins: [
-    new webpack.DefinePlugin({
-      __DEBUG: JSON.stringify(false),
-    }),
-  ],
 };
 
 const browserConfig = merge(common, {
   entry: "./src/index.js",
   output: {
     filename: "grain-runner-browser.js",
-    path: __dirname + "/dist",
     library: "Grain",
     libraryTarget: "var",
   },
-  node: {
-    fs: "empty",
+  resolve: {
+    fallback: {
+      crypto: require.resolve("crypto-browserify"),
+      fs: false,
+      path: require.resolve("path-browserify"),
+      stream: require.resolve("stream-browserify"),
+      tty: require.resolve("tty-browserify"),
+      url: require.resolve("url/"),
+      util: require.resolve("util/"),
+    },
   },
   plugins: [
     new webpack.ProvidePlugin({
       wasiBindings: "@wasmer/wasi/lib/bindings/browser",
+      process: [require.resolve("process/browser")],
+      Buffer: [require.resolve("buffer/"), "Buffer"],
     }),
     new webpack.DefinePlugin({
       __RUNNER_BROWSER: JSON.stringify(true),
@@ -49,10 +53,11 @@ const nodeConfig = merge(common, {
   entry: "./src/runner.js",
   output: {
     filename: "grain-runner.js",
-    path: __dirname + "/dist",
     libraryTarget: "commonjs2",
   },
-  externals: ["fs", "crypto", "path", "tty"],
+  externalsPresets: {
+    node: true,
+  },
   node: false,
   plugins: [
     new webpack.ProvidePlugin({
