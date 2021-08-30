@@ -34,14 +34,14 @@ const browserConfig = merge(common, {
       stream: require.resolve("stream-browserify"),
       tty: require.resolve("tty-browserify"),
       url: require.resolve("url/"),
-      util: require.resolve('util/'),
-    }
+      util: require.resolve("util/"),
+    },
   },
   plugins: [
     new webpack.ProvidePlugin({
       wasiBindings: "@wasmer/wasi/lib/bindings/browser",
-      process: [require.resolve('process/browser')],
-      Buffer: [require.resolve('buffer/'), 'Buffer'],
+      process: [require.resolve("process/browser")],
+      Buffer: [require.resolve("buffer/"), "Buffer"],
     }),
     new webpack.DefinePlugin({
       __RUNNER_BROWSER: JSON.stringify(true),
