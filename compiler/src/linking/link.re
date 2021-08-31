@@ -22,6 +22,7 @@ let modules: Hashtbl.t(string, Module.t) = Hashtbl.create(10);
 
 let main_module = "main";
 
+let grain_init = "_ginit";
 let grain_main = "_gmain";
 let grain_start = "_start";
 let function_table = "tbl";
@@ -627,21 +628,59 @@ let link_all = (linked_mod, dependencies, signature) => {
     false,
   );
 
-  let starts =
-    List.map(
-      dep => {
-        Expression.Drop.make(
-          linked_mod,
-          Expression.Call.make(
-            linked_mod,
-            Hashtbl.find(Hashtbl.find(exported_names, dep), grain_main),
-            [],
-            Type.int32,
-          ),
-        )
-      },
+  let inits =
+    List.filter_map(
+      dep =>
+        if (dep === main_module) {
+          None;
+        } else {
+          let expr =
+            Expression.Drop.make(
+              linked_mod,
+              Expression.Call.make(
+                linked_mod,
+                Hashtbl.find(Hashtbl.find(exported_names, dep), grain_main),
+                [],
+                Type.int32,
+              ),
+            );
+          Some(expr);
+        },
       dependencies,
     );
+
+  let starts =
+    List.filter_map(
+      dep =>
+        if (dep !== main_module) {
+          None;
+        } else {
+          let expr =
+            Expression.Drop.make(
+              linked_mod,
+              Expression.Call.make(
+                linked_mod,
+                Hashtbl.find(Hashtbl.find(exported_names, dep), grain_main),
+                [],
+                Type.int32,
+              ),
+            );
+          Some(expr);
+        },
+      dependencies,
+    );
+
+  let init_name = gensym(grain_init);
+  let init =
+    Function.add_function(
+      linked_mod,
+      init_name,
+      Type.none,
+      Type.none,
+      [||],
+      Expression.Block.make(linked_mod, gensym("init"), inits),
+    );
+  Function.set_start(linked_mod, init);
 
   let start_name = gensym(grain_start);
   ignore @@
