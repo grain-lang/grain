@@ -39,4 +39,6 @@ describe("exports", ({test}) => {
     "import * from \"exportStar\"; y(secret)",
     "Unbound value secret",
   );
+
+  assertSnapshot("let_rec_export", "export let rec foo = () => 5");
 });
