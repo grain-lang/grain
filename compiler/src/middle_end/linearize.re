@@ -1323,15 +1323,25 @@ let rec transl_anf_statement =
       };
     (Some(exp_setup @ setup @ rest_setup), rest_imp);
   | TTopLet(export_flag, Recursive, mut_flag, binds) =>
+    let exported = export_flag == Exported;
     let (binds, new_binds_setup) =
       List.split(
         List.map(
           ({vb_pat, vb_expr}) => {
+            let name =
+              if (exported) {
+                switch (vb_pat.pat_desc) {
+                | TPatVar(bind, _) => Some(Ident.name(bind))
+                | _ => None
+                };
+              } else {
+                None;
+              };
             let vb_expr = {
               ...vb_expr,
               exp_attributes: attributes @ vb_expr.exp_attributes,
             };
-            (vb_pat, transl_comp_expression(vb_expr));
+            (vb_pat, transl_comp_expression(~name?, vb_expr));
           },
           binds,
         ),
