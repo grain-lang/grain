@@ -886,6 +886,25 @@ let utoa64_any_core = (buffer, num, offset, radix) => {
   }
 }
 
+export let utoa32Buffered = (buf, value, radix) => {
+  if (WasmI32.ltS(radix, 2n) || WasmI32.gtS(radix, 36n)) {
+    throw Exception.InvalidArgument("toString() radix argument must be between 2 and 36")
+  }
+  let str = if (WasmI32.eqz(value)) {
+    WasmI32.store8(buf, _CHAR_CODE_0, 0n)
+  } else if (radix == 10n) {
+    let decimals = decimalCount32(value)
+    utoa32_dec_core(buf, value, decimals)
+  } else if (radix == 16n) {
+    let decimals = WasmI32.shrU(31n - WasmI32.clz(value), 2n) + 1n
+    utoa32_hex_core(buf, value, decimals)
+  } else {
+    let decimals = ulog_base(WasmI64.extendI32U(value), radix)
+    let out = allocateString(decimals)
+    utoa64_any_core(buf, WasmI64.extendI32U(value), decimals, radix)
+  }
+}
+
 export let utoa32 = (value, radix) => {
   if (WasmI32.ltS(radix, 2n) || WasmI32.gtS(radix, 36n)) {
     throw Exception.InvalidArgument("toString() radix argument must be between 2 and 36")
@@ -895,17 +914,17 @@ export let utoa32 = (value, radix) => {
   } else if (radix == 10n) {
     let decimals = decimalCount32(value)
     let out = allocateString(decimals)
-    utoa32_dec_core(out + 8n, value, decimals)
+    utoa32_dec_core(out, value, decimals)
     out
   } else if (radix == 16n) {
     let decimals = WasmI32.shrU(31n - WasmI32.clz(value), 2n) + 1n
     let out = allocateString(decimals)
-    utoa32_hex_core(out + 8n, value, decimals)
+    utoa32_hex_core(out, value, decimals)
     out
   } else {
     let decimals = ulog_base(WasmI64.extendI32U(value), radix)
     let out = allocateString(decimals)
-    utoa64_any_core(out + 8n, WasmI64.extendI32U(value), decimals, radix)
+    utoa64_any_core(out, WasmI64.extendI32U(value), decimals, radix)
     out
   }
   WasmI32.toGrain(str): String
@@ -1047,7 +1066,7 @@ let grisuRound = (buffer, len, delta, rest, ten_kappa, wp_w) => {
       WasmI64.gtU(WasmI64.sub(wp_w, rest), WasmI64.sub(WasmI64.add(rest, ten_kappa), wp_w))
     )
   ) {
-    digit -= 1n 
+    digit -= 1n
     rest = WasmI64.add(rest, ten_kappa)
   }
   WasmI32.store8(lastp, digit, 0n)
@@ -1153,7 +1172,7 @@ let grisu2 = (value, buffer, sign) => {
   let _frc_plus  = frc_norm
   let _frc_minus = WasmI64.shl(WasmI64.sub(WasmI64.shl(frc, WasmI64.extendI32U(m_norm)), 1N), WasmI64.extendI32U(exp - m_norm - exp_norm))
   let _exp = exp_norm
-  
+
   // get cached power
   let c = WasmF64.reinterpretI64(0x3FD34413509F79FEN) // 1 / lg(10) = 0.30102999566398114
   let dk = WasmF64.add(WasmF64.mul(WasmF64.convertI32S(-61n - _exp), c), 347.0W) // dk must be positive, so can do ceiling in positive
@@ -1300,3 +1319,6 @@ export let dtoa = (value) => {
   }
   WasmI32.toGrain(str): String
 }
+
+Memory.utoa32Buffered := utoa32Buffered
+Memory.decimalCount32 := decimalCount32

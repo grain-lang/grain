@@ -13,7 +13,7 @@ export let concat = (++)
 // @param input: String - The string to check
 // @returns Number
 @disableGC
-export let length = (s: String) => {
+export let rec length = (s: String) => {
   let s = WasmI32.fromGrain(s)
   let size = WasmI32.load(s, 4n)
 
@@ -29,16 +29,39 @@ export let length = (s: String) => {
     ptr = WasmI32.add(ptr, 1n)
   }
 
-  tagSimpleNumber(len)
+  let ret = tagSimpleNumber(len)
+  Memory.decRef(WasmI32.fromGrain(length))
+  Memory.decRef(WasmI32.fromGrain(s))
+  ret
+}
+
+// @disableGC-safe wrapper
+@disableGC
+let wasmSafeLength = (s: String) => {
+  Memory.incRef(WasmI32.fromGrain(length))
+  Memory.incRef(WasmI32.fromGrain(s))
+  length(s)
 }
 
 // Get the byte length of a string.
 // @param input: String - The string to check
 // @returns Number
 @disableGC
-export let byteLength = (s: String) => {
+export let rec byteLength = (s: String) => {
   let s = WasmI32.fromGrain(s)
-  tagSimpleNumber(WasmI32.load(s, 4n))
+  let ret = tagSimpleNumber(WasmI32.load(s, 4n))
+  Memory.decRef(WasmI32.fromGrain(byteLength))
+  Memory.decRef(WasmI32.fromGrain(s))
+  ret
+}
+
+
+// @disableGC-safe wrapper
+@disableGC
+let wasmSafeByteLength = (s: String) => {
+  Memory.incRef(WasmI32.fromGrain(byteLength))
+  Memory.incRef(WasmI32.fromGrain(s))
+  byteLength(s)
 }
 
 // Find the start index of a substring.
@@ -46,7 +69,7 @@ export let byteLength = (s: String) => {
 // @param input: String - The string to check
 // @returns Option<Number>
 @disableGC
-export let indexOf = (p: String, s: String) => {
+export let rec indexOf = (p: String, s: String) => {
   let p = WasmI32.fromGrain(p)
   let s = WasmI32.fromGrain(s)
 
@@ -60,7 +83,7 @@ export let indexOf = (p: String, s: String) => {
   let (-) = WasmI32.sub
   let (&) = WasmI32.and
 
-  if (psize > size) {
+  let ret = if (psize > size) {
     let none = None
     Memory.incRef(WasmI32.fromGrain(none))
     none
@@ -95,14 +118,22 @@ export let indexOf = (p: String, s: String) => {
       Memory.incRef(WasmI32.fromGrain(none))
       none
     } else {
+      Memory.incRef(WasmI32.fromGrain(Some))
       Some(tagSimpleNumber(result))
     }
   }
+  Memory.decRef(WasmI32.fromGrain(p))
+  Memory.decRef(WasmI32.fromGrain(s))
+  Memory.decRef(WasmI32.fromGrain(indexOf))
+  ret
 }
 
 @disableGC
-export let charAt = (idx, s: String) => {
-  if (length(s) <= idx || idx < 0) {
+export let rec charAt = (idx, s: String) => {
+  Memory.incRef(WasmI32.fromGrain((<=)))
+  if (wasmSafeLength(s) <= idx || {Memory.incRef(WasmI32.fromGrain((<))); idx < 0}) {
+    Memory.incRef(WasmI32.fromGrain((++)))
+    Memory.incRef(WasmI32.fromGrain(toString))
     fail ("Invalid offset: " ++ toString(idx))
   }
   // Implementation is similar to explodeHelp, but doesn't perform unneeded memory allocations
@@ -111,8 +142,8 @@ export let charAt = (idx, s: String) => {
   let (&) = WasmI32.and
   let (<) = WasmI32.ltU
   let (==) = WasmI32.eq
-  let size = WasmI32.fromGrain(byteLength(s)) >>> 1n
-  let len = WasmI32.fromGrain(length(s)) >>> 1n
+  let size = WasmI32.fromGrain(wasmSafeByteLength(s)) >>> 1n
+  let len = WasmI32.fromGrain(wasmSafeLength(s)) >>> 1n
   let idx = WasmI32.fromGrain(idx) >>> 1n
   let s = WasmI32.fromGrain(s)
   let mut ptr = s + 8n;
@@ -142,7 +173,10 @@ export let charAt = (idx, s: String) => {
   if (result == 0n) {
     fail "charAt: should be impossible (please report)"
   }
-  WasmI32.toGrain(result): Char
+  let ret = WasmI32.toGrain(result): Char
+  Memory.decRef(WasmI32.fromGrain(s))
+  Memory.decRef(WasmI32.fromGrain(charAt))
+  ret
 }
 
 @disableGC
@@ -153,8 +187,8 @@ let explodeHelp = (s: String, chars) => {
   let (<) = WasmI32.ltU
   let (==) = WasmI32.eq
 
-  let size = WasmI32.fromGrain(byteLength(s)) >>> 1n
-  let len = WasmI32.fromGrain(length(s)) >>> 1n
+  let size = WasmI32.fromGrain(wasmSafeByteLength(s)) >>> 1n
+  let len = WasmI32.fromGrain(wasmSafeLength(s)) >>> 1n
 
   let s = WasmI32.fromGrain(s)
 
@@ -206,7 +240,7 @@ export let explode = (str) => {
 // @param input: Array<Char> - The array to implode
 // @returns String
 @disableGC
-export let implode = (arr: Array<Char>) => {
+export let rec implode = (arr: Array<Char>) => {
   let (+) = WasmI32.add
   let (==) = WasmI32.eq
   let (<) = WasmI32.ltU
@@ -257,7 +291,10 @@ export let implode = (arr: Array<Char>) => {
     offset += n
   }
 
-  WasmI32.toGrain(str): String
+  let ret = WasmI32.toGrain(str): String
+  Memory.decRef(WasmI32.fromGrain(arr))
+  Memory.decRef(WasmI32.fromGrain(implode))
+  ret
 }
 
 // Split a string by the given sequence
@@ -265,7 +302,7 @@ export let implode = (arr: Array<Char>) => {
 // @param input: String - The string to split
 // @returns Array<String>
 @disableGC
-export let split = (p: String, s: String) => {
+export let rec split = (p: String, s: String) => {
   let (+) = WasmI32.add
   let (-) = WasmI32.sub
   let (==) = WasmI32.eq
@@ -275,10 +312,10 @@ export let split = (p: String, s: String) => {
   let (>>) = WasmI32.shrS
   let (&) = WasmI32.and
 
-  let size = WasmI32.fromGrain(byteLength(s)) >> 1n
-  let psize = WasmI32.fromGrain(byteLength(p)) >> 1n
+  let size = WasmI32.fromGrain(wasmSafeByteLength(s)) >> 1n
+  let psize = WasmI32.fromGrain(wasmSafeByteLength(p)) >> 1n
 
-  if (psize == 0n) {
+  let ret = if (psize == 0n) {
     WasmI32.toGrain(explodeHelp(s, false)): Array<String>
   } else if (psize > size) {
     let s = WasmI32.fromGrain(s)
@@ -347,6 +384,10 @@ export let split = (p: String, s: String) => {
 
     WasmI32.toGrain(arr): Array<String>
   }
+  Memory.decRef(WasmI32.fromGrain(p))
+  Memory.decRef(WasmI32.fromGrain(s))
+  Memory.decRef(WasmI32.fromGrain(split))
+  ret
 }
 
 // Get a portion of a string.
@@ -355,7 +396,7 @@ export let split = (p: String, s: String) => {
 // @param input: String - The input string
 // @returns String
 @disableGC
-export let slice = (start: Number, to: Number, s: String) => {
+export let rec slice = (start: Number, to: Number, s: String) => {
   let (+) = WasmI32.add
   let (-) = WasmI32.sub
   let (==) = WasmI32.eq
@@ -365,9 +406,11 @@ export let slice = (start: Number, to: Number, s: String) => {
   let (<<) = WasmI32.shl
   let (>>) = WasmI32.shrS
   let (&) = WasmI32.and
+  let startOrig = start
+  let toOrig = to
 
-  let len = WasmI32.fromGrain(length(s)) >> 1n
-  let size = WasmI32.fromGrain(byteLength(s)) >> 1n
+  let len = WasmI32.fromGrain(wasmSafeLength(s)) >> 1n
+  let size = WasmI32.fromGrain(wasmSafeByteLength(s)) >> 1n
 
   let s = WasmI32.fromGrain(s)
 
@@ -430,7 +473,12 @@ export let slice = (start: Number, to: Number, s: String) => {
 
   Memory.copy(newString + 8n, begin, newSize)
 
-  WasmI32.toGrain(newString): String
+  let ret = WasmI32.toGrain(newString): String
+  Memory.decRef(WasmI32.fromGrain(startOrig))
+  Memory.decRef(WasmI32.fromGrain(toOrig))
+  Memory.decRef(WasmI32.fromGrain(s))
+  Memory.decRef(WasmI32.fromGrain(slice))
+  ret
 }
 
 // Check if a string contains a substring.
@@ -438,7 +486,7 @@ export let slice = (start: Number, to: Number, s: String) => {
 // @param input: String - The input string
 // @returns Bool
 @disableGC
-export let contains = (p: String, s: String) => {
+export let rec contains = (p: String, s: String) => {
   // "Not So Naive" string search algorithm
   // searching phase in O(nm) time complexity
   // slightly (by coefficient) sub-linear in the average case
@@ -452,9 +500,11 @@ export let contains = (p: String, s: String) => {
   let (<=) = WasmI32.leU
   let (>) = WasmI32.gtU
   let (>>) = WasmI32.shrS
+  let pOrig = p
+  let sOrig = s
 
-  let n = WasmI32.fromGrain(byteLength(s)) >> 1n
-  let m = WasmI32.fromGrain(byteLength(p)) >> 1n
+  let n = WasmI32.fromGrain(wasmSafeByteLength(s)) >> 1n
+  let m = WasmI32.fromGrain(wasmSafeByteLength(p)) >> 1n
 
   let mut s = WasmI32.fromGrain(s)
   let mut p = WasmI32.fromGrain(p)
@@ -464,7 +514,7 @@ export let contains = (p: String, s: String) => {
 
   let mut j = 0n, k = 0n, ell = 0n
 
-  if (m > n) {
+  let ret = if (m > n) {
     // Bail if pattern length is longer than input length
     false
   } else if (m < 2n) {
@@ -509,6 +559,10 @@ export let contains = (p: String, s: String) => {
     }
     result
   }
+  Memory.decRef(WasmI32.fromGrain(pOrig))
+  Memory.decRef(WasmI32.fromGrain(sOrig))
+  Memory.decRef(WasmI32.fromGrain(contains))
+  ret
 }
 
 // Check if a string begins with another string.
@@ -516,10 +570,12 @@ export let contains = (p: String, s: String) => {
 // @param input: String - The input string
 // @returns Bool
 @disableGC
-export let startsWith = (p: String, s: String) => {
+export let rec startsWith = (p: String, s: String) => {
   let (+) = WasmI32.add
   let (>) = WasmI32.gtU
   let (==) = WasmI32.eq
+  let pOrig = p
+  let sOrig = s
 
   let mut p = WasmI32.fromGrain(p)
   let mut s = WasmI32.fromGrain(s)
@@ -531,11 +587,15 @@ export let startsWith = (p: String, s: String) => {
   p += 8n
 
   // Bail if pattern length is longer than input length
-  if (m > n) {
+  let ret = if (m > n) {
     false
   } else {
     Memory.compare(p, s, m) == 0n
   }
+  Memory.decRef(WasmI32.fromGrain(pOrig))
+  Memory.decRef(WasmI32.fromGrain(sOrig))
+  Memory.decRef(WasmI32.fromGrain(startsWith))
+  ret
 }
 
 // Check if a string ends with another string.
@@ -543,11 +603,13 @@ export let startsWith = (p: String, s: String) => {
 // @param input: String - The input string
 // @returns Bool
 @disableGC
-export let endsWith = (p: String, s: String) => {
+export let rec endsWith = (p: String, s: String) => {
   let (+) = WasmI32.add
   let (-) = WasmI32.sub
   let (>) = WasmI32.gtU
   let (==) = WasmI32.eq
+  let pOrig = p
+  let sOrig = s
 
   let mut p = WasmI32.fromGrain(p)
   let mut s = WasmI32.fromGrain(s)
@@ -559,11 +621,15 @@ export let endsWith = (p: String, s: String) => {
   p += 8n
 
   // Bail if pattern length is longer than input length
-  if (m > n) {
+  let ret = if (m > n) {
     false
   } else {
     Memory.compare(p, s + n - m, m) == 0n
   }
+  Memory.decRef(WasmI32.fromGrain(pOrig))
+  Memory.decRef(WasmI32.fromGrain(sOrig))
+  Memory.decRef(WasmI32.fromGrain(endsWith))
+  ret
 }
 
 export enum Encoding {
@@ -585,11 +651,21 @@ let _OFFSET_NAME = "offset"
 let grainToWasmNumber = (num, name) => {
   let num = WasmI32.fromGrain(num)
   if (WasmI32.eqz(WasmI32.and(num, 1n))) {
-    throw Exception.InvalidArgument(name ++ " argument must be an integer")
+    Memory.incRef(WasmI32.fromGrain(name))
+    Memory.incRef(WasmI32.fromGrain((++)))
+    let str = " argument must be an integer"
+    Memory.incRef(WasmI32.fromGrain(str))
+    Memory.incRef(WasmI32.fromGrain(Exception.InvalidArgument))
+    throw Exception.InvalidArgument(name ++ str)
   }
   let num = WasmI32.shrS(num, 1n)
   if (WasmI32.ltS(num, 0n)) {
-    throw Exception.InvalidArgument(name ++ " argument must be non-negative")
+    Memory.incRef(WasmI32.fromGrain(name))
+    Memory.incRef(WasmI32.fromGrain((++)))
+    let str = " argument must be non-negative"
+    Memory.incRef(WasmI32.fromGrain(str))
+    Memory.incRef(WasmI32.fromGrain(Exception.InvalidArgument))
+    throw Exception.InvalidArgument(name ++ str)
   }
   num
 }
@@ -603,8 +679,8 @@ let utf16Length = (s: String) => {
   let (<) = WasmI32.ltU
   let (==) = WasmI32.eq
 
-  let size = WasmI32.fromGrain(byteLength(s)) >>> 1n
-  let len = WasmI32.fromGrain(length(s)) >>> 1n
+  let size = WasmI32.fromGrain(wasmSafeByteLength(s)) >>> 1n
+  let len = WasmI32.fromGrain(wasmSafeLength(s)) >>> 1n
 
   let s = WasmI32.fromGrain(s)
 
@@ -634,13 +710,20 @@ let utf16Length = (s: String) => {
   tagSimpleNumber(size << 1n)
 }
 
+@disableGC
 let encodedLength = (s: String, encoding) => {
   match(encoding) {
-    UTF32_BE => length(s) * 4,
-    UTF32_LE => length(s) * 4,
+    UTF32_BE => {
+      Memory.incRef(WasmI32.fromGrain((*)))
+      wasmSafeLength(s) * 4
+    },
+    UTF32_LE => {
+      Memory.incRef(WasmI32.fromGrain((*)))
+      wasmSafeLength(s) * 4
+    },
     UTF16_BE => utf16Length(s),
     UTF16_LE => utf16Length(s),
-    UTF8 => byteLength(s),
+    UTF8 => wasmSafeByteLength(s),
   }
 }
 
@@ -692,6 +775,7 @@ let getCodePoint = (ptr: WasmI32) => {
       }
       continue
     }
+    Memory.incRef(WasmI32.fromGrain((!)))
     if (!(lowerBoundary <= byte && byte <= upperBoundary)) {
       throw MalformedUnicode
     }
@@ -718,7 +802,7 @@ let _BYTES_OFFSET = 8n;
 // @param destPos: Number - The location in the byte array to write the output
 // @returns Bytes - Returns `dest`
 @disableGC
-let encodeAtHelp = (s: String, encoding: Encoding, includeBom: Bool, dest: Bytes, destPos: Number) => {
+let rec encodeAtHelp = (s: String, encoding: Encoding, includeBom: Bool, dest: Bytes, destPos: Number) => {
   let (>>>) = WasmI32.shrU
   let (-) = WasmI32.sub
   let (&) = WasmI32.and
@@ -727,8 +811,8 @@ let encodeAtHelp = (s: String, encoding: Encoding, includeBom: Bool, dest: Bytes
   let (<=) = WasmI32.leU
   let (==) = WasmI32.eq
   let (+) = WasmI32.add
-  let byteSize = WasmI32.fromGrain(byteLength(s)) >>> 1n
-  let len = WasmI32.fromGrain(length(s)) >>> 1n
+  let byteSize = WasmI32.fromGrain(wasmSafeByteLength(s)) >>> 1n
+  let len = WasmI32.fromGrain(wasmSafeLength(s)) >>> 1n
 
   let s = WasmI32.fromGrain(s)
 
@@ -737,7 +821,7 @@ let encodeAtHelp = (s: String, encoding: Encoding, includeBom: Bool, dest: Bytes
 
   let bytes = WasmI32.fromGrain(dest)
   let mut bytesIdx = grainToWasmNumber(destPos, _OFFSET_NAME)
-  
+
   let destSize = WasmI32.load(bytes, _BYTES_SIZE_OFFSET)
 
   if (includeBom) {
@@ -901,7 +985,14 @@ let encodeAtHelp = (s: String, encoding: Encoding, includeBom: Bool, dest: Bytes
     }
   }
 
-  WasmI32.toGrain(bytes): Bytes
+  let ret = WasmI32.toGrain(bytes): Bytes
+  Memory.decRef(WasmI32.fromGrain(s))
+  Memory.decRef(WasmI32.fromGrain(encoding))
+  Memory.decRef(WasmI32.fromGrain(includeBom))
+  Memory.decRef(WasmI32.fromGrain(dest))
+  Memory.decRef(WasmI32.fromGrain(destPos))
+  Memory.decRef(WasmI32.fromGrain(encodeAtHelp))
+  ret
 }
 
 // Encodes the given string using the given encoding scheme
@@ -930,7 +1021,8 @@ export let encodeAtWithBom = (s, encoding, dest, destPos) => {
 // @param includeBom: Bool - Whether to include the byte-order marker in the encoded output
 // @returns Bytes
 @disableGC
-let encodeHelp = (s: String, encoding: Encoding, includeBom: Bool) => {
+let rec encodeHelp = (s: String, encoding: Encoding, includeBom: Bool) => {
+  Memory.incRef(WasmI32.fromGrain((+)))
   let size = encodedLength(s, encoding) + if (includeBom) {
     match(encoding) {
       UTF8 => 3,
@@ -942,7 +1034,17 @@ let encodeHelp = (s: String, encoding: Encoding, includeBom: Bool) => {
   } else 0
   let (>>>) = WasmI32.shrU
   let bytes = WasmI32.toGrain(allocateBytes(WasmI32.fromGrain(size) >>> 1n))
-  encodeAtHelp(s, encoding, includeBom, bytes, 0)
+  Memory.incRef(WasmI32.fromGrain(encodeAtHelp))
+  Memory.incRef(WasmI32.fromGrain(s))
+  Memory.incRef(WasmI32.fromGrain(encoding))
+  Memory.incRef(WasmI32.fromGrain(includeBom))
+  Memory.incRef(WasmI32.fromGrain(bytes))
+  let ret = encodeAtHelp(s, encoding, includeBom, bytes, 0)
+  Memory.decRef(WasmI32.fromGrain(s))
+  Memory.decRef(WasmI32.fromGrain(encoding))
+  Memory.decRef(WasmI32.fromGrain(includeBom))
+  Memory.decRef(WasmI32.fromGrain(encodeHelp))
+  ret
 }
 
 // Encodes the given string using the given encoding scheme. A byte-order marker
@@ -1194,7 +1296,7 @@ let decodedLength = (bytes: Bytes, encoding: Encoding, start: WasmI32, size: Was
 // @param size: Number - The maximum number of bytes to decode
 // @returns String
 @disableGC
-let decodeRangeHelp = (bytes: Bytes, encoding: Encoding, skipBom: Bool, start: Number, size: Number) => {
+let rec decodeRangeHelp = (bytes: Bytes, encoding: Encoding, skipBom: Bool, start: Number, size: Number) => {
   let (+) = WasmI32.add
   let (-) = WasmI32.sub
   let (<) = WasmI32.ltU
@@ -1232,7 +1334,7 @@ let decodeRangeHelp = (bytes: Bytes, encoding: Encoding, skipBom: Bool, start: N
       UTF32_BE => 4n,
     }
   }
-  if (stringSize == 0n) {
+  let ret = if (stringSize == 0n) {
     WasmI32.toGrain(str) : String
   } else {
     match(encoding) {
@@ -1301,6 +1403,12 @@ let decodeRangeHelp = (bytes: Bytes, encoding: Encoding, skipBom: Bool, start: N
     }
     WasmI32.toGrain(str) : String
   }
+  // bytes: Bytes, encoding: Encoding, skipBom: Bool, start: Number, size: Number
+  Memory.decRef(WasmI32.fromGrain(bytes))
+  Memory.decRef(WasmI32.fromGrain(encoding))
+  Memory.decRef(WasmI32.fromGrain(skipBom))
+  Memory.decRef(WasmI32.fromGrain(decodeRangeHelp))
+  ret
 }
 
 // Decodes the given byte sequence into a string using the given encoding scheme, skipping
@@ -1331,10 +1439,17 @@ export let decodeRangeKeepBom = (bytes: Bytes, encoding: Encoding, start: Number
 // @param skipBom: Bool - Whether to include the byte-order marker (if present) in the decoded output
 // @returns String
 @disableGC
-let decodeHelp = (bytes: Bytes, encoding: Encoding, skipBom: Bool) => {
+let rec decodeHelp = (bytes: Bytes, encoding: Encoding, skipBom: Bool) => {
   let bytesPtr = WasmI32.fromGrain(bytes)
   let bytesSize = WasmI32.load(bytesPtr, 4n)
-  decodeRangeHelp(bytes, encoding, skipBom, 0, tagSimpleNumber(bytesSize))
+  Memory.incRef(WasmI32.fromGrain(decodeRangeHelp))
+  Memory.incRef(WasmI32.fromGrain(bytes))
+  Memory.incRef(WasmI32.fromGrain(encoding))
+  let ret = decodeRangeHelp(bytes, encoding, skipBom, 0, tagSimpleNumber(bytesSize))
+  Memory.incRef(WasmI32.fromGrain(bytes))
+  Memory.incRef(WasmI32.fromGrain(encoding))
+  Memory.incRef(WasmI32.fromGrain(decodeHelp))
+  ret
 }
 
 // Decodes the given byte sequence into a string using the given encoding scheme,
@@ -1357,12 +1472,12 @@ export let decodeKeepBom = (bytes: Bytes, encoding: Encoding) => {
 
 /**
  * Iterates over Unicode code points in a string.
- * 
+ *
  * @param fn: The iterator function
  * @param str: The string to iterate
  */
 @disableGC
-export let forEachCodePoint = (fn: (Number) -> Void, str: String) => {
+export let rec forEachCodePoint = (fn: (Number) -> Void, str: String) => {
   let (>>>) = WasmI32.shrU
   let (-) = WasmI32.sub
   let (&) = WasmI32.and
@@ -1377,7 +1492,7 @@ export let forEachCodePoint = (fn: (Number) -> Void, str: String) => {
 
   let mut ptr = strPtr + 8n
   let end = ptr + byteSize
-  
+
   let mut idx = 0n
   while (ptr < end) {
     let byte = WasmI32.load8U(ptr, 0n)
@@ -1399,23 +1514,28 @@ export let forEachCodePoint = (fn: (Number) -> Void, str: String) => {
     // avoid heap allocations. `getCodePoint` will throw
     // MalformedUnicode exception for values exceeding this limit.
     let codePoint = getCodePoint(ptr)
+    Memory.incRef(WasmI32.fromGrain(fn))
     fn(tagSimpleNumber(codePoint))
 
     ptr += codePointByteCount
     idx += 1n
   }
+  Memory.decRef(WasmI32.fromGrain(fn))
+  Memory.decRef(WasmI32.fromGrain(str))
+  Memory.decRef(WasmI32.fromGrain(forEachCodePoint))
+  void
 }
 
 /**
  * Iterates over Unicode code points in a string. This is the same as
  * `forEachCodePoint`, but provides the code point's index in the string
  * as the second argument to the iterator function.
- * 
+ *
  * @param fn: The iterator function
  * @param str: The string to iterate
  */
 @disableGC
-export let forEachCodePointi = (fn: (Number, Number) -> Void, str: String) => {
+export let rec forEachCodePointi = (fn: (Number, Number) -> Void, str: String) => {
   let (>>>) = WasmI32.shrU
   let (-) = WasmI32.sub
   let (&) = WasmI32.and
@@ -1430,7 +1550,7 @@ export let forEachCodePointi = (fn: (Number, Number) -> Void, str: String) => {
 
   let mut ptr = strPtr + 8n
   let end = ptr + byteSize
-  
+
   let mut idx = 0n
   while (ptr < end) {
     let byte = WasmI32.load8U(ptr, 0n)
@@ -1452,9 +1572,14 @@ export let forEachCodePointi = (fn: (Number, Number) -> Void, str: String) => {
     // avoid heap allocations. `getCodePoint` will throw
     // MalformedUnicode exception for values exceeding this limit.
     let codePoint = getCodePoint(ptr)
+    Memory.incRef(WasmI32.fromGrain(fn))
     fn(tagSimpleNumber(codePoint), tagSimpleNumber(idx))
 
     ptr += codePointByteCount
     idx += 1n
   }
+  Memory.decRef(WasmI32.fromGrain(fn))
+  Memory.decRef(WasmI32.fromGrain(str))
+  Memory.decRef(WasmI32.fromGrain(forEachCodePointi))
+  void
 }

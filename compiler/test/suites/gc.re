@@ -18,6 +18,7 @@ let makeGcProgram = (program, heap_size) => {
       // Memory is not reclaimed due to no gc context
       // This will actually leak 16 extra bytes because of the headers
       Memory.malloc(WasmI32.sub(toLeak, 16n));
+      void
     }
     leak();
     %s
@@ -77,6 +78,12 @@ describe("garbage collection", ({test}) => {
     "gc2",
     256,
     "enum Opt<x> { None, Some(x) };\n     let f = (() => {\n      let x = (box(None), 2);\n      let (fst, _) = x\n      fst := Some(x)\n      });\n      {\n        f();\n        let x = (1, 2);\n        x\n      }",
+  );
+  /* https://github.com/grain-lang/grain/issues/774 */
+  assertRunGC(
+    "gc3",
+    1024,
+    "let foo = (s: String) => void\nlet printBool = (b: Bool) => foo(if (b) \"true\" else \"false\")\n\nlet b = true\nfor (let mut i=0; i<100000; i += 1) {\n  printBool(true)\n}",
   );
   assertFileRunGC(
     "fib_gc_err",

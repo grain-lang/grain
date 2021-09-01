@@ -585,45 +585,20 @@ export let fdSync = (fd: FileDescriptor) => {
   }
 }
 
-let orderedFdflags = [
-  Append,
-  Dsync,
-  Nonblock,
-  Rsync,
-  Sync
-]
 
-let orderedRights = [
-  FdDatasync,
-  FdRead,
-  FdSeek,
-  FdSetFlags,
-  FdSync,
-  FdTell,
-  FdWrite,
-  FdAdvise,
-  FdAllocate,
-  PathCreateDirectory,
-  PathCreateFile,
-  PathLinkSource,
-  PathLinkTarget,
-  PathOpen,
-  FdReaddir,
-  PathReadlink,
-  PathRenameSource,
-  PathRenameTarget,
-  PathFilestats,
-  PathSetSize,
-  PathSetTimes,
-  FdFilestats,
-  FdSetSize,
-  FdSetTimes,
-  PathSymlink,
-  PathRemoveDirectory,
-  PathUnlinkFile,
-  PollFdReadwrite,
-  SockShutdown
-]
+let wasmSafeCons = (a, b) => {
+  // [TODO] Once grain-lang/grain#802 is fixed:
+  // Memory.incRef(WasmI32.fromGrain([...]))
+  Memory.incRef(WasmI32.fromGrain(cons))
+  Memory.incRef(WasmI32.fromGrain(a))
+  Memory.incRef(WasmI32.fromGrain(b))
+  cons(a, b)
+  // [TODO] Once grain-lang/grain#802 is fixed:
+  // [a, ...b]
+}
+
+let orderedFdflags = wasmSafeCons(Append, wasmSafeCons(Dsync, wasmSafeCons(Nonblock, wasmSafeCons(Rsync, wasmSafeCons(Sync, [])))))
+let orderedRights = wasmSafeCons(FdDatasync, wasmSafeCons(FdRead, wasmSafeCons(FdSeek, wasmSafeCons(FdSetFlags, wasmSafeCons(FdSync, wasmSafeCons(FdTell, wasmSafeCons(FdWrite, wasmSafeCons(FdAdvise, wasmSafeCons(FdAllocate, wasmSafeCons(PathCreateDirectory, wasmSafeCons(PathCreateFile, wasmSafeCons(PathLinkSource, wasmSafeCons(PathLinkTarget, wasmSafeCons(PathOpen, wasmSafeCons(FdReaddir, wasmSafeCons(PathReadlink, wasmSafeCons(PathRenameSource, wasmSafeCons(PathRenameTarget, wasmSafeCons(PathFilestats, wasmSafeCons(PathSetSize, wasmSafeCons(PathSetTimes, wasmSafeCons(FdFilestats, wasmSafeCons(FdSetSize, wasmSafeCons(FdSetTimes, wasmSafeCons(PathSymlink, wasmSafeCons(PathRemoveDirectory, wasmSafeCons(PathUnlinkFile, wasmSafeCons(PollFdReadwrite, wasmSafeCons(SockShutdown, [])))))))))))))))))))))))))))))
 
 // Retrieve information about a file descriptor
 // @param fd: FileDescriptor The file descriptor of which to retrieve information

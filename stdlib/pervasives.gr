@@ -1,6 +1,8 @@
 export *
 
 import Exception from "runtime/exception"
+import Memory from "runtime/unsafe/memory"
+import WasmI32 from "runtime/unsafe/wasmi32"
 
 import { equal as (==) } from "runtime/equal"
 
@@ -97,6 +99,12 @@ let (isnt) : (a, a) -> Bool = (x, y) => !(x is y)
 
 export enum List<a> { [], [...](a, List<a>) }
 
+/**
+ * @deprecated This will be removed in a future release of Grain.
+ */
+let cons = (a, b) => [a, ...b] // <- workaround for (grain-lang/grain#802) [TODO] fix #802 and delete
+let empty = [] // <- for parity with `cons`, but should be deleted as well
+
 // Maybe some data, maybe not!
 enum Option<a> { Some(a), None }
 
@@ -108,7 +116,7 @@ let identity = (x) => x
 
 // Setup exception printing
 @disableGC
-let setupExceptions = () => {
+let rec setupExceptions = () => {
   Exception.dangerouslyRegisterPrinter(e => {
     match (e) {
       Failure(msg) => Some("Failure: " ++ msg),
@@ -118,6 +126,8 @@ let setupExceptions = () => {
   })
 
   Exception.dangerouslyRegisterBasePrinter(e => Some(toString(e)))
+  Memory.decRef(WasmI32.fromGrain(setupExceptions))
+  void
 }
 
 setupExceptions()

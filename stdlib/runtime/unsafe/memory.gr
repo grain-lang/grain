@@ -1,6 +1,6 @@
 /* grainc-flags --compilation-mode=runtime */
 
-import { malloc, free, incRef, decRef } from "runtime/gc"
+import { malloc, free, incRef, decRef, utoa32Buffered, decimalCount32 } from "runtime/gc"
 import WasmI32, {
   add as (+),
   sub as (-),
@@ -14,6 +14,8 @@ export malloc
 export free
 export incRef
 export decRef
+export utoa32Buffered
+export decimalCount32
 
 export let copy = (dest, src, n) => {
   let mut dest = dest

@@ -86,10 +86,7 @@ pattern matching › tuple_match_3
           )
           (i32.store offset=8
            (local.get $0)
-           (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-            (i32.const 3)
-           )
+           (i32.const 3)
           )
           (i32.store offset=12
            (local.get $0)
@@ -100,10 +97,7 @@ pattern matching › tuple_match_3
           )
           (i32.store offset=16
            (local.get $0)
-           (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-            (i32.const 2147483646)
-           )
+           (i32.const 2147483646)
           )
           (local.get $0)
          )
@@ -120,7 +114,10 @@ pattern matching › tuple_match_3
          (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
           (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
           (i32.load offset=16
-           (local.get $1)
+           (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+            (local.get $1)
+           )
           )
          )
          (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
@@ -136,7 +133,10 @@ pattern matching › tuple_match_3
          (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
           (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
           (i32.load offset=12
-           (local.get $1)
+           (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+            (local.get $1)
+           )
           )
          )
          (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
@@ -152,7 +152,10 @@ pattern matching › tuple_match_3
          (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
           (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
           (i32.load offset=8
-           (local.get $1)
+           (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+            (local.get $1)
+           )
           )
          )
          (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0

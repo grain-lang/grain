@@ -279,23 +279,30 @@ export let fromList = (list) => {
 
 let setInArray = (array) => {
   @disableGC
-  let iter = (i, key, value) => {
-    Memory.incRef(WasmI32.fromGrain(key))
-    Memory.incRef(WasmI32.fromGrain(value))
+  let rec iter = (i, key, value) => {
     array[i] = (key, value)
+    // no decRef on key and value, since they are stored in array
+    Memory.decRef(WasmI32.fromGrain(iter))
     i + 1
   }
   iter
 }
 
 @disableGC
-export let toArray = (map) => {
+export let rec toArray = (map) => {
   let length = WasmI32.shrS(WasmI32.fromGrain(map.size), 1n)
   // TODO(#783): Removing parens around Array<a> causes a parse error
   let array = WasmI32.toGrain(allocateArray(length)): (Array<a>)
+  Memory.incRef(WasmI32.fromGrain(setInArray))
+  Memory.incRef(WasmI32.fromGrain(array))
   let setInArray = setInArray(array)
+  Memory.incRef(WasmI32.fromGrain(reduce))
+  Memory.incRef(WasmI32.fromGrain(setInArray))
+  Memory.incRef(WasmI32.fromGrain(map))
   reduce(setInArray, 0, map)
   Memory.decRef(WasmI32.fromGrain(setInArray))
+  Memory.decRef(WasmI32.fromGrain(map))
+  Memory.decRef(WasmI32.fromGrain(toArray))
   array
 }
 

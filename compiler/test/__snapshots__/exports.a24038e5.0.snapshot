@@ -6,7 +6,7 @@ exports › export4
  (import \"_grainEnv\" \"mem\" (memory $0 0))
  (import \"_grainEnv\" \"relocBase\" (global $import__grainEnv_0_relocBase_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0 (mut i32)))
- (import \"GRAIN$MODULE$onlyXExported\" \"GRAIN$EXPORT$x\" (global $import_onlyXExported_1149_x_1150 (mut i32)))
+ (import \"GRAIN$MODULE$onlyXExported\" \"GRAIN$EXPORT$x\" (global $import_onlyXExported_1159_x_1160 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $import_GRAIN$MODULE$runtime/gc_0_incRef_0 (param i32 i32) (result i32)))
  (global $global_1 i32 (i32.const 0))
  (export \"memory\" (memory $0))
@@ -18,7 +18,7 @@ exports › export4
    (tuple.make
     (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
      (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-     (global.get $import_onlyXExported_1149_x_1150)
+     (global.get $import_onlyXExported_1159_x_1160)
     )
     (i32.const 0)
    )

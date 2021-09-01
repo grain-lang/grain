@@ -18,7 +18,8 @@ function buildImportObj(runner) {
     console: {
       debug: debugPrint,
       printClosure: printClosure,
-      tracepoint: (n) => console.log(`tracepoint ${n} reached`),
+      // [TODO] Might need to be `process.stdout.write`?
+      tracepoint: (n) => console.log(`tracepoint ${n} reached\n`),
     },
     _grainEnv: {
       mem: runner.managedMemory._memory,

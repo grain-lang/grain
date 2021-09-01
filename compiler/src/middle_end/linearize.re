@@ -475,7 +475,7 @@ let rec transl_imm =
     if (mut_flag == Mutable) {
       failwith("mutable let rec");
     };
-    let tmp = gensym("lam");
+    let tmp = gensym("lam_letrec");
     let (binds, new_binds_setup) =
       List.split(
         List.map(
@@ -501,7 +501,7 @@ let rec transl_imm =
       ],
     );
   | TExpLambda([{mb_pat, mb_body: body}], _) =>
-    let tmp = gensym("lam");
+    let tmp = gensym("lam_lambda");
     let (lam, _) = transl_comp_expression(e);
     (Imm.id(~loc, ~env, tmp), [BLet(tmp, lam)]);
   | TExpLambda([], _) => failwith("Impossible: transl_imm: Empty lambda")

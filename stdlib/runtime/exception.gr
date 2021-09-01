@@ -29,10 +29,16 @@ export let dangerouslyRegisterBasePrinter = (f) => {
     }
     current = next
   }
+  // We don't decRef the closure or arguments here to avoid a cyclic dep. on Memory.
+  // This is fine, as this function should only be called once.
+  void
 }
 
 export let dangerouslyRegisterPrinter = (f) => {
   printers = WasmI32.fromGrain((f, printers))
+  // We don't decRef the closure or arguments here to avoid a cyclic dep. on Memory.
+  // This is fine, as this function is only called seldomly.
+  void
 }
 
 let _GENERIC_EXCEPTION_NAME = "GrainException"

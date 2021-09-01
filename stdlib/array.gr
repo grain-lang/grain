@@ -42,11 +42,15 @@ let initLength = (length) => {
  * @since v0.1.0
  */
 @disableGC
-export let length = (array) => {
+export let rec length = (array) => {
   let ptr = WasmI32.fromGrain(array: Array<a>)
-  tagSimpleNumber(WasmI32.load(ptr, _ARRAY_LENGTH_OFFSET))
+  let ret = tagSimpleNumber(WasmI32.load(ptr, _ARRAY_LENGTH_OFFSET))
+  Memory.decRef(ptr)
+  Memory.decRef(WasmI32.fromGrain(length))
+  ret
 }
 
+// [FIXME] (#793) Type annotation breaks compiler
 /**
  * Creates a new array of the specified length with each element being
  * initialized with the given value.
@@ -60,14 +64,19 @@ export let length = (array) => {
  * @since v0.1.0
  */
 @disableGC
-export let make : (Number, a) -> Array<a>  = (length, item) => {
+export let rec make /*: (Number, a) -> Array<a>*/  = (length: Number, item: a) => {
+  let lengthArg = length
   let length = initLength(length)
   let byteLength = WasmI32.mul(length, 4n)
   let array = allocateArray(length)
   for (let mut i = 0n; WasmI32.ltS(i, byteLength); i = WasmI32.add(i, 4n)) {
     WasmI32.store(WasmI32.add(array, i), Memory.incRef(WasmI32.fromGrain(item)), _ARRAY_START_OFFSET)
   }
-  WasmI32.toGrain(array)
+  let ret = WasmI32.toGrain(array): (Array<a>)
+  Memory.decRef(WasmI32.fromGrain(lengthArg))
+  Memory.decRef(WasmI32.fromGrain(item))
+  Memory.decRef(WasmI32.fromGrain(make))
+  ret
 }
 
 /**
@@ -84,16 +93,22 @@ export let make : (Number, a) -> Array<a>  = (length, item) => {
  * @since v0.1.0
  */
 @disableGC
-export let init : (Number, Number -> a) -> Array<a> = (length, fn) => {
+export let rec init /*: (Number, Number -> a) -> Array<a>*/ = (length: Number, fn: Number -> a) => {
   let length = initLength(length)
   let byteLength = WasmI32.mul(length, 4n)
   let array = allocateArray(length)
-  let mut index = 0
+  let mut index = 0n
   for (let mut i = 0n; WasmI32.ltS(i, byteLength); i = WasmI32.add(i, 4n)) {
-    WasmI32.store(WasmI32.add(array, i), WasmI32.fromGrain(fn(index)), _ARRAY_START_OFFSET)
-    index += 1
+    Memory.incRef(WasmI32.fromGrain(fn));
+    // [FIXME] This line fails the array/map test suite (#815)
+    //assert !WasmI32.eqz(WasmI32.and(WasmI32.fromGrain(index), 1n)) // must be a simple int for next line to be correct
+    WasmI32.store(WasmI32.add(array, i), WasmI32.fromGrain(fn(tagSimpleNumber(index))), _ARRAY_START_OFFSET)
+    //WasmI32.store(WasmI32.add(array, i), WasmI32.fromGrain(4), _ARRAY_START_OFFSET)
+    index = WasmI32.add(index, 1n)
   }
-  WasmI32.toGrain(array)
+  Memory.decRef(WasmI32.fromGrain(fn))
+  Memory.decRef(WasmI32.fromGrain(init))
+  WasmI32.toGrain(array): (Array<a>)
 }
 
 /**

@@ -9,7 +9,7 @@ let mut › let-mut_addition1
  (import \"_grainEnv\" \"relocBase\" (global $import__grainEnv_0_relocBase_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRefIgnoreZeros\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $import_pervasives_1153_+_1154 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $import_pervasives_1163_+_1164 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $import_GRAIN$MODULE$runtime/gc_0_incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRefIgnoreZeros\" (func $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0 (param i32 i32) (result i32)))
  (global $global_1 i32 (i32.const 0))
@@ -21,17 +21,14 @@ let mut › let-mut_addition1
   (local $0 i32)
   (local $1 i32)
   (local $2 i32)
-  (local.set $2
+  (local.set $1
    (tuple.extract 0
     (tuple.make
      (block (result i32)
       (local.set $0
        (tuple.extract 0
         (tuple.make
-         (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-          (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-          (i32.const 9)
-         )
+         (i32.const 9)
          (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
           (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
           (i32.const 0)
@@ -39,15 +36,28 @@ let mut › let-mut_addition1
         )
        )
       )
-      (local.set $1
+      (local.set $2
        (tuple.extract 0
         (tuple.make
          (call_indirect (type $i32_i32_i32_=>_i32)
-          (global.get $import_pervasives_1153_+_1154)
-          (local.get $0)
+          (local.tee $1
+           (tuple.extract 0
+            (tuple.make
+             (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+              (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+              (global.get $import_pervasives_1163_+_1164)
+             )
+             (i32.const 0)
+            )
+           )
+          )
+          (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+           (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+           (local.get $0)
+          )
           (i32.const 39)
           (i32.load offset=8
-           (global.get $import_pervasives_1153_+_1154)
+           (local.get $1)
           )
          )
          (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
@@ -62,7 +72,7 @@ let mut › let-mut_addition1
         (tuple.make
          (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
           (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-          (local.get $1)
+          (local.get $2)
          )
          (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
           (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
@@ -73,7 +83,7 @@ let mut › let-mut_addition1
       )
       (i32.const 1879048190)
      )
-     (i32.const 0)
+     (local.get $1)
     )
    )
   )
@@ -86,7 +96,7 @@ let mut › let-mut_addition1
   (drop
    (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
     (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
-    (local.get $1)
+    (local.get $2)
    )
   )
   (drop
@@ -95,7 +105,7 @@ let mut › let-mut_addition1
     (i32.const 0)
    )
   )
-  (local.get $2)
+  (local.get $1)
  )
  (func $_start (; has Stack IR ;)
   (drop
