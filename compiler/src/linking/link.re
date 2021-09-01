@@ -56,43 +56,49 @@ let new_base_dir = (cur_base_dir, imported_module) => {
 
 let is_main_module = mod_name => mod_name == main_module;
 
-let rec build_dependency_graph = (~base_dir, mod_name) => {
+let rec build_dependency_graph = (~save=true, ~base_dir, mod_name) => {
   let wasm_mod = Hashtbl.find(modules, mod_name);
   let num_globals = Global.get_num_globals(wasm_mod);
   for (i in 0 to num_globals - 1) {
     let global = Global.get_global_by_index(wasm_mod, i);
     let imported_module = Import.global_import_get_module(global);
-    if (!Hashtbl.mem(modules, imported_module)
-        && is_grain_module(imported_module)) {
-      Hashtbl.add(
-        modules,
-        imported_module,
-        resolve(~base_dir, imported_module),
-      );
-      build_dependency_graph(
-        ~base_dir=new_base_dir(base_dir, imported_module),
-        imported_module,
-      );
+    if (is_grain_module(imported_module)) {
+      if (save) {
+        G.add_edge(dependency_graph, mod_name, imported_module);
+      };
+      if (!Hashtbl.mem(modules, imported_module)) {
+        Hashtbl.add(
+          modules,
+          imported_module,
+          resolve(~base_dir, imported_module),
+        );
+        build_dependency_graph(
+          ~base_dir=new_base_dir(base_dir, imported_module),
+          imported_module,
+        );
+      };
     };
-    G.add_edge(dependency_graph, mod_name, imported_module);
   };
   let num_funcs = Function.get_num_functions(wasm_mod);
   for (i in 0 to num_funcs - 1) {
     let func = Function.get_function_by_index(wasm_mod, i);
     let imported_module = Import.function_import_get_module(func);
-    if (!Hashtbl.mem(modules, imported_module)
-        && is_grain_module(imported_module)) {
-      Hashtbl.add(
-        modules,
-        imported_module,
-        resolve(~base_dir, imported_module),
-      );
-      build_dependency_graph(
-        new_base_dir(base_dir, imported_module),
-        imported_module,
-      );
+    if (is_grain_module(imported_module)) {
+      if (save) {
+        G.add_edge(dependency_graph, mod_name, imported_module);
+      };
+      if (!Hashtbl.mem(modules, imported_module)) {
+        Hashtbl.add(
+          modules,
+          imported_module,
+          resolve(~base_dir, imported_module),
+        );
+        build_dependency_graph(
+          new_base_dir(base_dir, imported_module),
+          imported_module,
+        );
+      };
     };
-    G.add_edge(dependency_graph, mod_name, imported_module);
   };
 };
 
@@ -101,9 +107,6 @@ let gensym = name => {
   incr(gensym_counter);
   Printf.sprintf("%s.linked.%d", name, gensym_counter^);
 };
-
-let exported_names: Hashtbl.t(string, Hashtbl.t(string, string)) =
-  Hashtbl.create(10);
 
 let is_global_imported = global =>
   Import.global_import_get_base(global) != "";
@@ -319,8 +322,87 @@ let rec globalize_names = (local_names, expr) => {
 let table_offset = ref(0);
 let module_id = ref(0);
 
+type wasm_export =
+  | ExportFound(string)
+  | ExportForward(string, string);
+
+let exported_names: Hashtbl.t(string, Hashtbl.t(string, wasm_export)) =
+  Hashtbl.create(10);
+
+let rec lookup_import = (module_, name) => {
+  let exports = Hashtbl.find(exported_names, module_);
+  switch (Hashtbl.find(exports, name)) {
+  | ExportFound(name) => name
+  | ExportForward(module_, name) => lookup_import(module_, name)
+  };
+};
+
+let rec lookup_import_opt = (module_, name) => {
+  let exports = Hashtbl.find(exported_names, module_);
+  switch (Hashtbl.find_opt(exports, name)) {
+  | Some(ExportFound(name)) => Some(name)
+  | Some(ExportForward(module_, name)) =>
+    Some(lookup_import(module_, name))
+  | None => None
+  };
+};
+
 let link_all = (linked_mod, dependencies, signature) => {
   table_offset := 0;
+
+  List.iter(
+    dep => {
+      let wasm_mod = Hashtbl.find(modules, dep);
+      // let local_exported_names = Comp_utils.get_exported_names(wasm_mod);x
+      let num_exports = Export.get_num_exports(wasm_mod);
+      let local_exported_names: Hashtbl.t(string, wasm_export) =
+        Hashtbl.create(10);
+      for (i in 0 to num_exports - 1) {
+        let export = Export.get_export_by_index(wasm_mod, i);
+        let export_kind = Export.export_get_kind(export);
+        if (export_kind == Export.external_global) {
+          let exported_name = Export.get_name(export);
+          let global = Global.get_global(wasm_mod, Export.get_value(export));
+          if (is_global_imported(global)) {
+            let import_mod = Import.global_import_get_module(global);
+            let import_base = Import.global_import_get_base(global);
+            Hashtbl.add(
+              local_exported_names,
+              exported_name,
+              ExportForward(import_mod, import_base),
+            );
+          } else {
+            Hashtbl.add(
+              local_exported_names,
+              exported_name,
+              ExportFound(gensym(exported_name)),
+            );
+          };
+        } else if (export_kind == Export.external_function) {
+          let exported_name = Export.get_name(export);
+          let func =
+            Function.get_function(wasm_mod, Export.get_value(export));
+          if (is_function_imported(func)) {
+            let import_mod = Import.function_import_get_module(func);
+            let import_base = Import.function_import_get_base(func);
+            Hashtbl.add(
+              local_exported_names,
+              exported_name,
+              ExportForward(import_mod, import_base),
+            );
+          } else {
+            Hashtbl.add(
+              local_exported_names,
+              exported_name,
+              ExportFound(gensym(exported_name)),
+            );
+          };
+        };
+      };
+      Hashtbl.add(exported_names, dep, local_exported_names);
+    },
+    dependencies,
+  );
 
   let link_one = dep => {
     Printf.eprintf("linking one %s\n", dep);
@@ -336,11 +418,7 @@ let link_all = (linked_mod, dependencies, signature) => {
         if (Hashtbl.mem(modules, imported_module) && imported_module != dep) {
           let imported_name = Import.global_import_get_base(global);
           let internal_name = Global.get_name(global);
-          let new_name =
-            Hashtbl.find(
-              Hashtbl.find(exported_names, imported_module),
-              imported_name,
-            );
+          let new_name = lookup_import(imported_module, imported_name);
           Hashtbl.add(local_names, internal_name, new_name);
         } else {
           let imported_name = Import.global_import_get_base(global);
@@ -384,7 +462,11 @@ let link_all = (linked_mod, dependencies, signature) => {
         };
       } else {
         let internal_name = Global.get_name(global);
-        let new_name = gensym(internal_name);
+        let new_name =
+          switch (lookup_import_opt(dep, internal_name)) {
+          | Some(name) => name
+          | None => gensym(internal_name)
+          };
         Hashtbl.add(local_names, internal_name, new_name);
 
         let ty = Global.get_type(global);
@@ -408,16 +490,16 @@ let link_all = (linked_mod, dependencies, signature) => {
         if (Hashtbl.mem(modules, imported_module) && imported_module != dep) {
           let imported_name = Import.function_import_get_base(func);
           let internal_name = Function.get_name(func);
-          let new_name =
-            Hashtbl.find(
-              Hashtbl.find(exported_names, imported_module),
-              imported_name,
-            );
+          let new_name = lookup_import(imported_module, imported_name);
           Hashtbl.add(local_names, internal_name, new_name);
         } else {
           let imported_name = Import.function_import_get_base(func);
           let internal_name = Function.get_name(func);
-          let new_name = gensym(internal_name);
+          let new_name =
+            switch (lookup_import_opt(dep, internal_name)) {
+            | Some(name) => name
+            | None => gensym(internal_name)
+            };
           Hashtbl.add(local_names, internal_name, new_name);
 
           let params = Function.get_params(func);
@@ -469,10 +551,18 @@ let link_all = (linked_mod, dependencies, signature) => {
       funcs,
     );
 
-    let local_exported_names =
-      Comp_utils.get_exported_names(~local_names, wasm_mod);
-    Hashtbl.add(exported_names, dep, local_exported_names);
+    // let local_exported_names =
+    //   Comp_utils.get_exported_names(~local_names, wasm_mod);
+    // Hashtbl.add(exported_names, dep, local_exported_names);
     if (is_main_module(dep)) {
+      let local_exported_names: Hashtbl.t(string, string) =
+        Hashtbl.create(10);
+      Hashtbl.iter(
+        (name, _) => {
+          Hashtbl.add(local_exported_names, name, lookup_import(dep, name))
+        },
+        Hashtbl.find(exported_names, dep),
+      );
       Comp_utils.write_universal_exports(
         linked_mod,
         signature,
@@ -544,7 +634,8 @@ let link_all = (linked_mod, dependencies, signature) => {
               linked_mod,
               Expression.Call.make(
                 linked_mod,
-                Hashtbl.find(Hashtbl.find(exported_names, dep), grain_main),
+                // Hashtbl.find(Hashtbl.find(exported_names, dep), grain_main),
+                lookup_import(dep, grain_main),
                 [],
                 Type.int32,
               ),
@@ -580,20 +671,27 @@ let apply_wasi_polyfill = () => {
   Hashtbl.add(modules, wasi_module, resolve(wasi_polyfill));
   prerr_endline("resolved the polyfill");
   build_dependency_graph(
+    ~save=false,
     ~base_dir=new_base_dir(base_dir, wasi_polyfill),
     wasi_module,
   );
+  Topo.fold((dep, _) => Some(dep), dependency_graph, None);
 };
 
 let link_modules = ({asm: wasm_mod, signature}) => {
   G.clear(dependency_graph);
+  Hashtbl.clear(exported_names);
   Hashtbl.clear(modules);
   Hashtbl.add(modules, main_module, wasm_mod);
-  if (Option.is_some(Config.wasi_polyfill^)) {
-    apply_wasi_polyfill();
-  };
+  let (wasi_polyfill, wasi_polyfill_insertion_point) =
+    if (Option.is_some(Config.wasi_polyfill^)) {
+      (true, apply_wasi_polyfill());
+    } else {
+      (false, None);
+    };
   let dependencies =
     Topo.fold((dep, acc) => [dep, ...acc], dependency_graph, []);
+  prerr_endline("POLYFILL_GRAPH");
   List.iter(prerr_endline, dependencies);
   build_dependency_graph(
     ~base_dir=Filename.dirname(Module_resolution.current_filename^()),
@@ -601,7 +699,35 @@ let link_modules = ({asm: wasm_mod, signature}) => {
   );
   let dependencies =
     Topo.fold((dep, acc) => [dep, ...acc], dependency_graph, []);
+  let dependencies =
+    if (wasi_polyfill) {
+      switch (wasi_polyfill_insertion_point) {
+      | None => ["wasi_snapshot_preview1"]
+      | Some(point) =>
+        let rec insert_polyfill = deps => {
+          switch (deps) {
+          | [] =>
+            failwith("Impossible: wasi polyfill insertion point not found")
+          | [dep, ...deps] when dep == point => [
+              dep,
+              "wasi_snapshot_preview1",
+              ...deps,
+            ]
+          | [dep, ...deps] => [dep, ...insert_polyfill(deps)]
+          };
+        };
+        insert_polyfill(dependencies);
+      };
+    } else {
+      dependencies;
+    };
+  prerr_endline("FULL_GRAPH");
   List.iter(prerr_endline, dependencies);
+  prerr_endline("FULL_GRAPH!");
+  G.iter_edges(
+    (from_, to_) => Printf.eprintf("%s ---> %s\n", from_, to_),
+    dependency_graph,
+  );
   let linked_mod = Module.create();
   link_all(linked_mod, dependencies, signature);
 
