@@ -102,7 +102,7 @@ let malformed_characters = (errs, super) => {
   let iter_expr = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
     | PExpConstant(PConstChar(c)) =>
-      if (Utf8.countInString(c) != 1) {
+      if (List.length(Utf8.decodeUtf8String(c)) != 1) {
         errs := [IllegalCharacterLiteral(c, loc), ...errs^];
       }
     | _ => ()
