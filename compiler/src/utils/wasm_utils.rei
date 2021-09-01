@@ -1,6 +1,13 @@
 /** Utilities for interfacing with WebAssembly */;
 
 [@deriving sexp]
+type wasm_bin_export_type =
+  | ExportedFunction
+  | ExportedTable
+  | ExportedMemory
+  | ExportedGlobal;
+
+[@deriving sexp]
 type wasm_bin_section_type =
   | Custom(string)
   | Type
@@ -9,7 +16,7 @@ type wasm_bin_section_type =
   | Table
   | Memory
   | Global
-  | Export
+  | Export(list((wasm_bin_export_type, string)))
   | Start
   | Element
   | Code

@@ -2,6 +2,13 @@
 open Sexplib.Conv;
 
 [@deriving sexp]
+type wasm_bin_export_type =
+  | ExportedFunction
+  | ExportedTable
+  | ExportedMemory
+  | ExportedGlobal;
+
+[@deriving sexp]
 type wasm_bin_section_type =
   | Custom(string)
   | Type
@@ -10,7 +17,7 @@ type wasm_bin_section_type =
   | Table
   | Memory
   | Global
-  | Export
+  | Export(list((wasm_bin_export_type, string)))
   | Start
   | Element
   | Code
@@ -208,7 +215,7 @@ let section_type_of_int = (~pos=?, ~name=?) =>
   | 4 => Table
   | 5 => Memory
   | 6 => Global
-  | 7 => Export
+  | 7 => Export([])
   | 8 => Start
   | 9 => Element
   | 10 => Code
@@ -224,7 +231,7 @@ let int_of_section_type =
   | Table => 4
   | Memory => 5
   | Global => 6
-  | Export => 7
+  | Export(_) => 7
   | Start => 8
   | Element => 9
   | Code => 10
@@ -279,6 +286,28 @@ let get_wasm_sections = (~reset=false, inchan) => {
             );
           let true_offset = pos_in(inchan);
           (Custom(name), true_offset, size - (true_offset - offset));
+        | Export(_) =>
+          let num_exports = Int32.to_int(read_leb128_u32_input(inchan));
+          let rec read_export = () => {
+            let name_len = Int32.to_int(read_leb128_u32_input(inchan));
+            let name = really_input_string(inchan, name_len);
+            let export_type =
+              switch (input_byte(inchan)) {
+              | 0 => ExportedFunction
+              | 1 => ExportedTable
+              | 2 => ExportedMemory
+              | 3 => ExportedGlobal
+              | _ => failwith("Unknown export type")
+              };
+            let _export_id = read_leb128_u32_input(inchan);
+            (export_type, name);
+          };
+          let true_offset = pos_in(inchan);
+          (
+            Export(List.init(num_exports, _ => read_export())),
+            true_offset,
+            size - (true_offset - offset),
+          );
         | s => (s, offset, size)
         };
 
