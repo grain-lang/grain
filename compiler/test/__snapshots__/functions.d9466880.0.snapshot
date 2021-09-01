@@ -6,13 +6,13 @@ functions › func_record_associativity2
  (type $none_=>_i32 (func (result i32)))
  (import \"_grainEnv\" \"mem\" (memory $0 0))
  (import \"_grainEnv\" \"tbl\" (table $tbl 0 funcref))
- (elem $elem (global.get $import__grainEnv_0_relocBase_0) $lam_1155)
+ (elem $elem (global.get $import__grainEnv_0_relocBase_0) $lam_lambda_1165)
  (import \"_grainEnv\" \"relocBase\" (global $import__grainEnv_0_relocBase_0 i32))
  (import \"_grainEnv\" \"moduleRuntimeId\" (global $import__grainEnv_0_moduleRuntimeId_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRefIgnoreZeros\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$!\" (global $import_pervasives_1160_!_1161 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$!\" (global $import_pervasives_1170_!_1171 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $import_GRAIN$MODULE$runtime/gc_0_malloc_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $import_GRAIN$MODULE$runtime/gc_0_incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRefIgnoreZeros\" (func $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0 (param i32 i32) (result i32)))
@@ -21,7 +21,13 @@ functions › func_record_associativity2
  (export \"_gmain\" (func $_gmain))
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $global_1))
- (func $lam_1155 (; has Stack IR ;) (param $0 i32) (result i32)
+ (func $lam_lambda_1165 (; has Stack IR ;) (param $0 i32) (result i32)
+  (drop
+   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+    (local.get $0)
+   )
+  )
   (i32.const 2147483646)
  )
  (func $_gmain (; has Stack IR ;) (result i32)
@@ -69,7 +75,7 @@ functions › func_record_associativity2
            )
            (i64.store offset=24
             (local.get $0)
-            (i64.const 68719477881)
+            (i64.const 68719477891)
            )
            (i64.store offset=32
             (local.get $0)
@@ -81,7 +87,7 @@ functions › func_record_associativity2
            )
            (i64.store offset=48
             (local.get $0)
-            (i64.const 68719477882)
+            (i64.const 68719477892)
            )
            (i64.store offset=56
             (local.get $0)
@@ -151,6 +157,17 @@ functions › func_record_associativity2
         )
        )
       )
+      (local.set $0
+       (tuple.extract 0
+        (tuple.make
+         (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+          (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+          (local.get $1)
+         )
+         (local.get $0)
+        )
+       )
+      )
       (local.set $2
        (tuple.extract 0
         (tuple.make
@@ -163,12 +180,7 @@ functions › func_record_associativity2
                (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0)
                (i32.const 20)
               )
-              (tuple.extract 0
-               (tuple.make
-                (local.get $1)
-                (local.get $0)
-               )
-              )
+              (local.get $0)
              )
             )
            )
@@ -183,7 +195,7 @@ functions › func_record_associativity2
           )
           (i32.store offset=8
            (local.get $0)
-           (i32.const 2291)
+           (i32.const 2311)
           )
           (i32.store offset=12
            (local.get $0)
@@ -232,7 +244,7 @@ functions › func_record_associativity2
           )
           (i32.store offset=8
            (local.get $0)
-           (i32.const 2293)
+           (i32.const 2313)
           )
           (i32.store offset=12
            (local.get $0)
@@ -260,7 +272,29 @@ functions › func_record_associativity2
          (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
           (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
           (i32.load offset=16
-           (local.get $3)
+           (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+            (local.get $3)
+           )
+          )
+         )
+         (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+          (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+          (i32.const 0)
+         )
+        )
+       )
+      )
+      (local.set $5
+       (tuple.extract 0
+        (tuple.make
+         (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+          (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+          (i32.load offset=16
+           (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+            (local.get $4)
+           )
           )
          )
          (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
@@ -274,24 +308,19 @@ functions › func_record_associativity2
        (tuple.extract 0
         (tuple.make
          (call_indirect (type $i32_=>_i32)
-          (local.tee $5
+          (local.tee $0
            (tuple.extract 0
             (tuple.make
              (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-              (i32.load offset=16
-               (local.get $4)
-              )
+              (local.get $5)
              )
-             (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-              (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
-              (i32.const 0)
-             )
+             (local.get $0)
             )
            )
           )
           (i32.load offset=8
-           (local.get $5)
+           (local.get $0)
           )
          )
          (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
@@ -302,10 +331,23 @@ functions › func_record_associativity2
        )
       )
       (call_indirect (type $i32_i32_=>_i32)
-       (global.get $import_pervasives_1160_!_1161)
-       (local.get $6)
+       (local.tee $0
+        (tuple.extract 0
+         (tuple.make
+          (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+           (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+           (global.get $import_pervasives_1170_!_1171)
+          )
+          (local.get $0)
+         )
+        )
+       )
+       (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+        (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+        (local.get $6)
+       )
        (i32.load offset=8
-        (global.get $import_pervasives_1160_!_1161)
+        (local.get $0)
        )
       )
      )

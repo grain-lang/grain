@@ -24,10 +24,7 @@ basic functionality › if_one_sided6
       (local.set $0
        (tuple.extract 0
         (tuple.make
-         (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-          (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-          (i32.const 3)
-         )
+         (i32.const 3)
          (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
           (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
           (i32.const 0)
@@ -35,17 +32,22 @@ basic functionality › if_one_sided6
         )
        )
       )
-      (local.set $0
-       (tuple.extract 0
-        (tuple.make
-         (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-          (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-          (i32.const 11)
+      (drop
+       (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+        (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+        (block (result i32)
+         (local.set $0
+          (tuple.extract 0
+           (tuple.make
+            (i32.const 11)
+            (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+             (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+             (local.get $0)
+            )
+           )
+          )
          )
-         (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-          (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
-          (local.get $0)
-         )
+         (i32.const 1879048190)
         )
        )
       )

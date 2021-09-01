@@ -49,17 +49,11 @@ tuples › nested_tup_1
           )
           (i32.store offset=8
            (local.get $0)
-           (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-            (i32.const 3)
-           )
+           (i32.const 3)
           )
           (i32.store offset=12
            (local.get $0)
-           (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-            (i32.const 5)
-           )
+           (i32.const 5)
           )
           (local.get $0)
          )
@@ -94,17 +88,11 @@ tuples › nested_tup_1
           )
           (i32.store offset=8
            (local.get $0)
-           (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-            (i32.const 7)
-           )
+           (i32.const 7)
           )
           (i32.store offset=12
            (local.get $0)
-           (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-            (i32.const 9)
-           )
+           (i32.const 9)
           )
           (local.get $0)
          )
@@ -163,7 +151,10 @@ tuples › nested_tup_1
       (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
        (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
        (i32.load offset=8
-        (local.get $3)
+        (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+         (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+         (local.get $3)
+        )
        )
       )
      )

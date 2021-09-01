@@ -5,18 +5,32 @@ functions › lambda_pat_any
  (type $none_=>_i32 (func (result i32)))
  (import \"_grainEnv\" \"mem\" (memory $0 0))
  (import \"_grainEnv\" \"tbl\" (table $tbl 0 funcref))
- (elem $elem (global.get $import__grainEnv_0_relocBase_0) $x_1145)
+ (elem $elem (global.get $import__grainEnv_0_relocBase_0) $x_1155)
  (import \"_grainEnv\" \"relocBase\" (global $import__grainEnv_0_relocBase_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0 (mut i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRefIgnoreZeros\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $import_GRAIN$MODULE$runtime/gc_0_malloc_0 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $import_GRAIN$MODULE$runtime/gc_0_incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRefIgnoreZeros\" (func $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0 (param i32 i32) (result i32)))
  (global $global_1 i32 (i32.const 1))
  (export \"memory\" (memory $0))
  (export \"_gmain\" (func $_gmain))
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $global_1))
- (func $x_1145 (; has Stack IR ;) (param $0 i32) (param $1 i32) (result i32)
+ (func $x_1155 (; has Stack IR ;) (param $0 i32) (param $1 i32) (result i32)
+  (drop
+   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+    (local.get $0)
+   )
+  )
+  (drop
+   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+    (local.get $1)
+   )
+  )
   (i32.const 11)
  )
  (func $_gmain (; has Stack IR ;) (result i32)
@@ -66,6 +80,17 @@ functions › lambda_pat_any
         )
        )
       )
+      (local.set $0
+       (tuple.extract 0
+        (tuple.make
+         (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+          (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+          (local.get $1)
+         )
+         (local.get $0)
+        )
+       )
+      )
       (local.set $2
        (tuple.extract 0
         (tuple.make
@@ -78,12 +103,7 @@ functions › lambda_pat_any
                (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0)
                (i32.const 16)
               )
-              (tuple.extract 0
-               (tuple.make
-                (local.get $1)
-                (local.get $0)
-               )
-              )
+              (local.get $0)
              )
             )
            )
@@ -106,7 +126,16 @@ functions › lambda_pat_any
         )
        )
       )
-      (i32.const 11)
+      (call $x_1155
+       (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+        (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+        (local.get $1)
+       )
+       (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+        (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+        (local.get $2)
+       )
+      )
      )
      (local.get $0)
     )

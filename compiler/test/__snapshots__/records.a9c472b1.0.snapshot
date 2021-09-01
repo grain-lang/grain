@@ -57,7 +57,7 @@ records › record_multiple_fields_definition_trailing
            )
            (i64.store offset=24
             (local.get $0)
-            (i64.const 68719477881)
+            (i64.const 68719477891)
            )
            (i64.store offset=32
             (local.get $0)
@@ -162,7 +162,7 @@ records › record_multiple_fields_definition_trailing
       )
       (i32.store offset=8
        (local.get $0)
-       (i32.const 2291)
+       (i32.const 2311)
       )
       (i32.store offset=12
        (local.get $0)
@@ -170,10 +170,7 @@ records › record_multiple_fields_definition_trailing
       )
       (i32.store offset=16
        (local.get $0)
-       (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-        (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-        (i32.const 9)
-       )
+       (i32.const 9)
       )
       (i32.store offset=20
        (local.get $0)
@@ -184,10 +181,7 @@ records › record_multiple_fields_definition_trailing
       )
       (i32.store offset=24
        (local.get $0)
-       (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-        (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-        (i32.const -2)
-       )
+       (i32.const -2)
       )
       (local.get $0)
      )
