@@ -1,3 +1,22 @@
+import Array from "array"
 import Process from "sys/process"
+
+// Just a smoke test
+match (Process.argv()) {
+  Ok(arr) => assert Array.length(arr) > 0,
+  Err(err) => throw err
+}
+
+// Just a smoke test
+match (Process.env()) {
+  Ok(arr) => assert Array.length(arr) > 0,
+  Err(err) => throw err
+}
+
+// Just a smoke test
+match (Process.sigRaise(Process.VTALRM)) {
+  Ok(a) => assert a == void,
+  Err(err) => throw err
+}
 
 Process.exit(5)
