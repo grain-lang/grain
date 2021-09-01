@@ -19,15 +19,27 @@ import { allocateInt64, tagSimpleNumber } from "runtime/dataStructures"
  * @section Values: Functions and constants included in the Sys/Time module.
  */
 
+let wasmSafeOk = (val) => {
+  Memory.incRef(WasmI32.fromGrain(Ok))
+  Memory.incRef(WasmI32.fromGrain(val))
+  Ok(val)
+}
+
+let wasmSafeErr = (err) => {
+  Memory.incRef(WasmI32.fromGrain(Err))
+  Memory.incRef(WasmI32.fromGrain(err))
+  Err(err)
+}
+
 let getClockTime = (clockid, precision) => {
   let int64Ptr = allocateInt64()
   let timePtr = int64Ptr + 8n
   let err = Wasi.clock_time_get(clockid, precision, timePtr)
   if (err != Wasi._ESUCCESS) {
     Memory.free(int64Ptr)
-    Err(Wasi.SystemError(tagSimpleNumber(err)))
+    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
-    Ok(WasmI32.toGrain(int64Ptr): Int64)
+    wasmSafeOk(WasmI32.toGrain(int64Ptr): Int64)
   }
 }
 

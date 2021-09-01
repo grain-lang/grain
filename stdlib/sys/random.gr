@@ -17,6 +17,18 @@ import { tagSimpleNumber } from "runtime/dataStructures"
  * @section Values: Functions and constants included in the Sys/Random module.
  */
 
+let wasmSafeOk = (val) => {
+  Memory.incRef(WasmI32.fromGrain(Ok))
+  Memory.incRef(WasmI32.fromGrain(val))
+  Ok(val)
+}
+
+let wasmSafeErr = (err) => {
+  Memory.incRef(WasmI32.fromGrain(Err))
+  Memory.incRef(WasmI32.fromGrain(err))
+  Err(err)
+}
+
 /**
  * Produce a random number. This function can be slow, so it's best to seed a generator if lots of random data is needed.
  *
@@ -28,10 +40,10 @@ export let random = () => {
   let err = Wasi.random_get(buf, 4n)
   if (err != Wasi._ESUCCESS) {
     Memory.free(buf)
-    Err(Wasi.SystemError(tagSimpleNumber(err)))
+    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
     let rand = WasmI32.load(buf, 0n)
     Memory.free(buf)
-    Ok(tagSimpleNumber(rand))
+    wasmSafeOk(tagSimpleNumber(rand))
   }
 }
