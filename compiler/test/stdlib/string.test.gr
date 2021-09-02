@@ -235,6 +235,12 @@ assert String.decodeRange(String.encodeAtWithBom(emojis, String.UTF32_LE, Bytes.
 assert String.decode(String.encode(emojis, String.UTF32_LE), String.UTF32_LE) == emojis
 assert String.decode(String.encode(emojis, String.UTF32_BE), String.UTF32_BE) == emojis
 
+// Tests for (#786)
+let bytes = Bytes.make(2)
+Bytes.setInt8(0, 0x00l, bytes)
+Bytes.setInt8(0, 0xa2l, bytes)
+assert String.decode(bytes, String.UTF16_LE) == "¢"
+
 // codepoint iteration tests
 // conveniently reusing data from `explode` tests
 {

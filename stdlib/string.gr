@@ -1077,27 +1077,44 @@ let writeUtf8CodePoint = (ptr, codePoint) => {
   let (<=) = WasmI32.leU
   let (==) = WasmI32.eq
   if (codePoint <= 0x007Fn) {
+    // Code points in the ASCII range are written as just one byte with the
+    // leading bit equal to zero (0xxxxxxx). Just store the value as one byte
+    // directly. Note that the value is already guaranteed to start with most
+    // significant bit equal to zero because of the check in the if statement
+    // above, so there's no need to bit-mask it.
     WasmI32.store8(ptr, codePoint, 0n)
     1n
   } else if (codePoint <= 0x07FFn) {
-    let high = ((codePoint >>> 6n) & 0x1Fn) | 0xC0n
-    let low = (codePoint & 0x3Fn) | 0x08n
+    // Code points in the range 0x0080..0x07FF are written as two bytes.
+    // The first byte has a three bit prefix of 110, followed by 5 bits of the
+    // codepoint. The second byte has a two bit prefix of 10, followed by 6 bits
+    // of the codepoint.
+    let high = ((codePoint >>> 6n) & 0b000_11111n) | 0b110_00000n
+    let low =  ( codePoint         & 0b00_111111n) | 0b10_000000n
     WasmI32.store8(ptr, high, 0n)
     WasmI32.store8(ptr + 1n, low, 0n)
     2n
   } else if (codePoint <= 0xFFFFn) {
-    let high = ((codePoint >>> 12n) & 0x0Fn) | 0xE0n
-    let mid = ((codePoint >>> 6n) & 0x3Fn) | 0x80n
-    let low = (codePoint & 0x3Fn) | 0x80n
+    // Code points in the range 0x0800..0xFFFF are written as three bytes.
+    // The first byte has a four bit prefix of 1110, followed by 4 bits of the
+    // codepoint. Remaining bytes each have a two bit prefix of 10, followed by
+    // 6 bits of the codepoint.
+    let high = ((codePoint >>> 12n) & 0b0000_1111n) | 0b1110_0000n
+    let mid =  ((codePoint >>> 6n)  & 0b00_111111n) | 0b10_000000n
+    let low =  ( codePoint          & 0b00_111111n) | 0b10_000000n
     WasmI32.store8(ptr, high, 0n)
     WasmI32.store8(ptr + 1n, mid, 0n)
     WasmI32.store8(ptr + 2n, low, 0n)
     3n
   } else {
-    let high = ((codePoint >>> 18n) & 0x07n) | 0xF0n
-    let mid1 = ((codePoint >>> 12n) & 0x3Fn) | 0x80n
-    let mid2 = ((codePoint >>> 6n) & 0x3Fn) | 0x80n
-    let low = (codePoint & 0x3Fn) | 0x80n
+    // Code points in the range 0x10000..0x10FFFF are written as four bytes.
+    // The first byte has a five bit prefix of 11110, followed by 3 bits of the
+    // codepoint. Remaining bytes each have a two bit prefix of 10, followed by
+    // 6 bits of the codepoint.
+    let high = ((codePoint >>> 18n) & 0b00000_111n) | 0b11110_000n
+    let mid1 = ((codePoint >>> 12n) & 0b00_111111n) | 0b10_000000n
+    let mid2 = ((codePoint >>> 6n)  & 0b00_111111n) | 0b10_000000n
+    let low =  ( codePoint          & 0b00_111111n) | 0b10_000000n
     WasmI32.store8(ptr, high, 0n)
     WasmI32.store8(ptr + 1n, mid1, 0n)
     WasmI32.store8(ptr + 2n, mid2, 0n)
