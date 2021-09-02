@@ -34,11 +34,11 @@ let wasmSafeErr = (err) => {
  *
  * @returns `Ok(num)` of a random number if successful or `Err(exception)` otherwise
  */
-export let random = () => {
+export let rec random = () => {
   let buf = Memory.malloc(4n)
 
   let err = Wasi.random_get(buf, 4n)
-  if (err != Wasi._ESUCCESS) {
+  let ret = if (err != Wasi._ESUCCESS) {
     Memory.free(buf)
     wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
@@ -46,4 +46,6 @@ export let random = () => {
     Memory.free(buf)
     wasmSafeOk(tagSimpleNumber(rand))
   }
+  Memory.decRef(WasmI32.fromGrain(random))
+  ret
 }
