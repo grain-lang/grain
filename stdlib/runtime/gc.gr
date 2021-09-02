@@ -30,7 +30,6 @@ import WasmI32, {
 
 // Using foreigns directly here to avoid cyclic dependency
 import foreign wasm fd_write : (WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
-import foreign wasm fd_sync : (WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
 
 primitive (&&) : (Bool, Bool) -> Bool = "@and"
 primitive (||) : (Bool, Bool) -> Bool = "@or"
@@ -49,7 +48,8 @@ let mut _DEBUG = false
 let _HEADER_SIZE = 8n
 
 /*
-Debugging functions:
+//Debugging functions:
+import foreign wasm fd_sync : (WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
 
 // incRef debug messages: "decRef: 0xNNNNNN (prev count: nn)\n"
 let _INCREF_DEBUG_STR_1 = "incRef: 0x"
