@@ -26,7 +26,6 @@ import NumberUtils from "runtime/numberUtils"
 import { allocateString, allocateArray } from "runtime/dataStructures"
 
 import foreign wasm fd_write: (WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
-import foreign wasm fd_sync : (WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
 
 primitive (!) : Bool -> Bool = "@not"
 primitive (&&) : (Bool, Bool) -> Bool = "@and"
