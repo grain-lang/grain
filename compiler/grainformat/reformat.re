@@ -658,20 +658,27 @@ and print_pattern =
         (Doc.text(txt), false);
       }
     | PPatTuple(patterns) => (
-        Doc.join(
-          Doc.concat([Doc.comma, Doc.line]),
-          List.map(
-            p =>
-              Doc.group(
-                print_pattern(
-                  ~pat=p,
-                  ~parent_loc=pat.ppat_loc,
-                  ~original_source,
+        Doc.concat([
+          Doc.join(
+            Doc.concat([Doc.comma, Doc.line]),
+            List.map(
+              p =>
+                Doc.group(
+                  print_pattern(
+                    ~pat=p,
+                    ~parent_loc=pat.ppat_loc,
+                    ~original_source,
+                  ),
                 ),
-              ),
-            patterns,
+              patterns,
+            ),
           ),
-        ),
+          if (List.length(patterns) == 1) {
+            Doc.comma;
+          } else {
+            Doc.nil;
+          },
+        ]),
         true,
       )
     | PPatArray(patterns) => (
@@ -947,9 +954,10 @@ and print_type =
         List.map(t => print_type(t, original_source), parsed_types),
       ),
       if (List.length(parsed_types) == 1) {
+        // single arg tuple
         Doc.comma;
       } else {
-        Doc.ifBreaks(Doc.comma, Doc.nil);
+        Doc.nil;
       },
       Doc.rparen,
     ])
@@ -1224,7 +1232,8 @@ and print_expression =
         original_source,
       )
     | PExpTuple(expressions) =>
-      add_parens(
+      Doc.concat([
+        Doc.lparen,
         Doc.join(
           Doc.concat([Doc.comma, Doc.space]),
           List.map(
@@ -1239,7 +1248,14 @@ and print_expression =
             expressions,
           ),
         ),
-      )
+        if (List.length(expressions) == 1) {
+          // single arg tuple
+          Doc.comma;
+        } else {
+          Doc.nil;
+        },
+        Doc.rparen,
+      ])
 
     | PExpArray(expressions) =>
       Doc.group(
@@ -2278,7 +2294,7 @@ let rec print_data =
                     if (List.length(parsed_types) > 0) {
                       Doc.group(
                         Doc.concat([
-                          Doc.text("("),
+                          Doc.lparen,
                           Doc.join(
                             Doc.concat([Doc.comma, Doc.line]),
                             List.map(
@@ -2286,7 +2302,7 @@ let rec print_data =
                               parsed_types,
                             ),
                           ),
-                          Doc.text(")"),
+                          Doc.rparen,
                         ]),
                       );
                     } else {
@@ -2760,7 +2776,7 @@ let toplevel_print =
             | PConstrTuple(parsed_types) =>
               if (List.length(parsed_types) > 0) {
                 Doc.concat([
-                  Doc.text("("),
+                  Doc.lparen,
                   Doc.join(
                     Doc.comma,
                     List.map(
@@ -2768,7 +2784,7 @@ let toplevel_print =
                       parsed_types,
                     ),
                   ),
-                  Doc.text(")"),
+                  Doc.rparen,
                 ]);
               } else {
                 Doc.nil;
