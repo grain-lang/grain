@@ -15,6 +15,7 @@ let memory_debugging_enabled = false;
 /** Environment */
 
 type codegen_env = {
+  name: option(string),
   num_args: int,
   global_offset: int,
   stack_size,
@@ -319,7 +320,8 @@ let runtime_function_imports =
 let runtime_imports =
   List.append(runtime_global_imports, runtime_function_imports);
 
-let init_codegen_env = () => {
+let init_codegen_env = name => {
+  name,
   num_args: 0,
   global_offset: 2,
   stack_size: {
@@ -354,8 +356,6 @@ let runtime_heap_ptr = 0x400;
 let runtime_heap_start = 0x410;
 // Static pointer to runtime type information
 let runtime_type_metadata_ptr = 0x408;
-
-let global_function_table = "tbl";
 
 let get_imported_name = (mod_, name) =>
   Printf.sprintf(
@@ -3481,7 +3481,7 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
   reset();
   let env =
     switch (env) {
-    | None => init_codegen_env()
+    | None => init_codegen_env(name)
     | Some(e) => e
     };
   let env = prepare(env, prog);
@@ -3526,6 +3526,14 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
     });
   } else {
     compile_all();
+  };
+
+  if (compiling_wasi_polyfill(name)) {
+    write_universal_exports(
+      wasm_mod,
+      prog.signature,
+      get_exported_names(wasm_mod),
+    );
   };
 
   let serialized_cmi = Cmi_format.serialize_cmi(prog.signature);

@@ -522,6 +522,14 @@ let bulk_memory =
     true,
   );
 
+let wasi_polyfill =
+  opt(
+    ~names=["wasi-polyfill"],
+    ~conv=option_conv(Cmdliner.Arg.string),
+    ~doc="Custom WASI implementation",
+    None,
+  );
+
 let elide_type_info =
   toggle_flag(
     ~names=["elide-type-info"],

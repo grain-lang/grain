@@ -24,7 +24,6 @@ let main_module = "main";
 
 let grain_main = "_gmain";
 let grain_start = "_start";
-let function_table = "tbl";
 
 let grain_module_name = mod_name => {
   // Remove GRAIN$MODULE$
@@ -45,6 +44,17 @@ let resolve = (~base_dir=?, mod_name) => {
 let is_grain_module = mod_name => {
   Str.string_match(Str.regexp_string("GRAIN$MODULE$"), mod_name, 0);
 };
+
+let wasi_polyfill_module = () => {
+  "GRAIN$MODULE$./"
+  ++ Filename.remove_extension(Option.get(Config.wasi_polyfill^));
+};
+
+let is_wasi_module = mod_name => {
+  mod_name == "wasi_snapshot_preview1";
+};
+
+let is_wasi_polyfill_module = mod_name => mod_name == wasi_polyfill_module();
 
 let new_base_dir = (cur_base_dir, imported_module) => {
   let mod_name = grain_module_name(imported_module);
@@ -79,6 +89,7 @@ let rec build_dependency_graph = (~base_dir, mod_name) => {
     };
   };
   let num_funcs = Function.get_num_functions(wasm_mod);
+  let has_wasi_polyfill = Option.is_some(Config.wasi_polyfill^);
   for (i in 0 to num_funcs - 1) {
     let func = Function.get_function_by_index(wasm_mod, i);
     let imported_module = Import.function_import_get_module(func);
@@ -91,6 +102,20 @@ let rec build_dependency_graph = (~base_dir, mod_name) => {
         );
         build_dependency_graph(
           new_base_dir(base_dir, imported_module),
+          imported_module,
+        );
+      };
+      G.add_edge(dependency_graph, mod_name, imported_module);
+    } else if (has_wasi_polyfill
+               && is_wasi_module(imported_module)
+               && !is_wasi_polyfill_module(mod_name)) {
+      // Perform any WASI polyfilling. Note that we skip this step if we are compiling the polyfill module itself.
+      // If we are importing a foreign from WASI, then add a dependency to the polyfill instead.
+      let imported_module = wasi_polyfill_module();
+      if (!Hashtbl.mem(modules, imported_module)) {
+        Hashtbl.add(modules, imported_module, resolve(imported_module));
+        build_dependency_graph(
+          new_base_dir(Config.base_path^, imported_module),
           imported_module,
         );
       };
@@ -213,7 +238,10 @@ let rec globalize_names = (local_names, expr) => {
   | CallIndirect =>
     globalize_names(local_names, Expression.Call_indirect.get_target(expr));
 
-    Expression.Call_indirect.set_table(expr, function_table);
+    Expression.Call_indirect.set_table(
+      expr,
+      Comp_utils.global_function_table,
+    );
 
     let num_operands = Expression.Call_indirect.get_num_operands(expr);
     for (i in 0 to num_operands - 1) {
@@ -316,104 +344,6 @@ let rec globalize_names = (local_names, expr) => {
   };
 };
 
-let type_of_repr = repr => {
-  Types.(
-    switch (repr) {
-    | WasmI32 => Type.int32
-    | WasmI64 => Type.int64
-    | WasmF32 => Type.float32
-    | WasmF64 => Type.float64
-    }
-  );
-};
-
-let write_exports = (linked_mod, {cmi_sign}, exported_names) => {
-  Types.(
-    Type_utils.(
-      List.iter(
-        item => {
-          switch (item) {
-          | TSigValue(id, {val_repr: ReprFunction(args, rets)}) =>
-            let name = Ident.name(id);
-            let exported_name = "GRAIN$EXPORT$" ++ name;
-            let internal_name = Hashtbl.find(exported_names, exported_name);
-            let get_closure = () =>
-              Expression.Global_get.make(
-                linked_mod,
-                internal_name,
-                Type.int32,
-              );
-            let arguments =
-              List.mapi(
-                (i, arg) =>
-                  Expression.Local_get.make(
-                    linked_mod,
-                    i,
-                    type_of_repr(arg),
-                  ),
-                args,
-              );
-            let arguments = [get_closure(), ...arguments];
-            let call_arg_types =
-              Type.create(
-                Array.of_list(List.map(type_of_repr, [WasmI32, ...args])),
-              );
-            let call_result_types =
-              Type.create(
-                Array.of_list(
-                  List.map(type_of_repr, rets == [] ? [WasmI32] : rets),
-                ),
-              );
-            let func_ptr =
-              Expression.Load.make(
-                linked_mod,
-                4,
-                8,
-                2,
-                Type.int32,
-                get_closure(),
-              );
-            let function_call =
-              Expression.Call_indirect.make(
-                linked_mod,
-                function_table,
-                func_ptr,
-                arguments,
-                call_arg_types,
-                call_result_types,
-              );
-            let function_body =
-              switch (rets) {
-              | [] => Expression.Drop.make(linked_mod, function_call)
-              | _ => function_call
-              };
-            let arg_types =
-              Type.create(Array.of_list(List.map(type_of_repr, args)));
-            let result_types =
-              Type.create(Array.of_list(List.map(type_of_repr, rets)));
-            ignore @@
-            Function.add_function(
-              linked_mod,
-              name,
-              arg_types,
-              result_types,
-              [||],
-              function_body,
-            );
-            ignore @@ Export.add_function_export(linked_mod, name, name);
-          | TSigValue(_)
-          | TSigType(_)
-          | TSigTypeExt(_)
-          | TSigModule(_)
-          | TSigModType(_) => ()
-          }
-        },
-        cmi_sign,
-      )
-    )
-  );
-};
-
 let table_offset = ref(0);
 let module_id = ref(0);
 
@@ -499,6 +429,7 @@ let link_all = (linked_mod, dependencies, signature) => {
     let (imported_funcs, funcs) =
       List.partition(is_function_imported, funcs);
 
+    let has_wasi_polyfill = Option.is_some(Config.wasi_polyfill^);
     List.iter(
       func => {
         let imported_module = Import.function_import_get_module(func);
@@ -508,6 +439,20 @@ let link_all = (linked_mod, dependencies, signature) => {
           let new_name =
             Hashtbl.find(
               Hashtbl.find(exported_names, imported_module),
+              imported_name,
+            );
+          Hashtbl.add(local_names, internal_name, new_name);
+        } else if (has_wasi_polyfill
+                   && is_wasi_module(imported_module)
+                   && !is_wasi_polyfill_module(dep)) {
+          // Perform any WASI polyfilling. Note that we skip this step if we are compiling the polyfill module itself.
+          // If we are importing a foreign from WASI, then we swap it out for the foreign from the polyfill.
+          let imported_name = Import.function_import_get_base(func);
+          let internal_name = Function.get_name(func);
+          let wasi_polyfill = wasi_polyfill_module();
+          let new_name =
+            Hashtbl.find(
+              Hashtbl.find(exported_names, wasi_polyfill),
               imported_name,
             );
           Hashtbl.add(local_names, internal_name, new_name);
@@ -566,22 +511,15 @@ let link_all = (linked_mod, dependencies, signature) => {
       funcs,
     );
 
-    let num_exports = Export.get_num_exports(wasm_mod);
-    let local_exported_names: Hashtbl.t(string, string) = Hashtbl.create(10);
-    for (i in 0 to num_exports - 1) {
-      let export = Export.get_export_by_index(wasm_mod, i);
-      let export_kind = Export.export_get_kind(export);
-      if (export_kind == Export.external_function
-          || export_kind == Export.external_global) {
-        let exported_name = Export.get_name(export);
-        let internal_name = Export.get_value(export);
-        let new_internal_name = Hashtbl.find(local_names, internal_name);
-        Hashtbl.add(local_exported_names, exported_name, new_internal_name);
-      };
-    };
+    let local_exported_names =
+      Comp_utils.get_exported_names(~local_names, wasm_mod);
     Hashtbl.add(exported_names, dep, local_exported_names);
     if (is_main_module(dep)) {
-      write_exports(linked_mod, signature, local_exported_names);
+      Comp_utils.write_universal_exports(
+        linked_mod,
+        signature,
+        local_exported_names,
+      );
     };
 
     let num_element_segments = Table.get_num_element_segments(wasm_mod);
@@ -597,7 +535,7 @@ let link_all = (linked_mod, dependencies, signature) => {
       ignore @@
       Table.add_active_element_segment(
         linked_mod,
-        function_table,
+        Comp_utils.global_function_table,
         new_name,
         elems,
         Expression.Const.make(
@@ -609,7 +547,13 @@ let link_all = (linked_mod, dependencies, signature) => {
     };
   };
   List.iter(link_one, dependencies);
-  ignore @@ Table.add_table(linked_mod, function_table, table_offset^, -1);
+  ignore @@
+  Table.add_table(
+    linked_mod,
+    Comp_utils.global_function_table,
+    table_offset^,
+    -1,
+  );
   let (initial_memory, maximum_memory) =
     switch (Config.initial_memory_pages^, Config.maximum_memory_pages^) {
     | (initial_memory, Some(maximum_memory)) => (
