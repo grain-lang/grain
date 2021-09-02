@@ -3,11 +3,12 @@ import {
 } from "int64"
 import Time from "sys/time"
 
-let t1 = Time.realTime()
-let t2 = Time.realTime()
+
+let t1 = Time.monotonicTime()
+let t2 = Time.monotonicTime()
 
 match ((t1, t2)) {
-  (Ok(x), Ok(y)) => assert x < y,
+  (Ok(x), Ok(y)) => x < y,
   (Err(err), _) => throw err,
   (_, Err(err)) => throw err
 }
