@@ -451,10 +451,22 @@ let link_all = (linked_mod, dependencies, signature) => {
           let internal_name = Function.get_name(func);
           let wasi_polyfill = wasi_polyfill_module();
           let new_name =
-            Hashtbl.find(
+            Hashtbl.find_opt(
               Hashtbl.find(exported_names, wasi_polyfill),
               imported_name,
             );
+          let new_name =
+            switch (new_name) {
+            | Some(new_name) => new_name
+            | None =>
+              failwith(
+                Printf.sprintf(
+                  "Unable to locate `%s` in your polyfill. Required by `%s`",
+                  imported_name,
+                  dep,
+                ),
+              )
+            };
           Hashtbl.add(local_names, internal_name, new_name);
         } else {
           let imported_name = Import.function_import_get_base(func);
