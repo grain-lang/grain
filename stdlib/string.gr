@@ -987,8 +987,8 @@ let writeUtf8CodePoint = (ptr, codePoint) => {
     // The first byte has a three bit prefix of 110, followed by 5 bits of the
     // codepoint. The second byte has a two bit prefix of 10, followed by 6 bits
     // of the codepoint.
-		let high = ((codePoint >>> 6n) & 0b000_11111n) | 0b110_00000n
-		let low =  ( codePoint         & 0b00_111111n) | 0b10_000000n
+    let high = ((codePoint >>> 6n) & 0b000_11111n) | 0b110_00000n
+    let low =  ( codePoint         & 0b00_111111n) | 0b10_000000n
     WasmI32.store8(ptr, high, 0n)
     WasmI32.store8(ptr + 1n, low, 0n)
     2n
@@ -998,8 +998,8 @@ let writeUtf8CodePoint = (ptr, codePoint) => {
     // codepoint. Remaining bytes each have a two bit prefix of 10, followed by
     // 6 bits of the codepoint.
     let high = ((codePoint >>> 12n) & 0b0000_1111n) | 0b1110_0000n
-		let mid =  ((codePoint >>> 6n)  & 0b00_111111n) | 0b10_000000n
-		let low =  ( codePoint          & 0b00_111111n) | 0b10_000000n
+    let mid =  ((codePoint >>> 6n)  & 0b00_111111n) | 0b10_000000n
+    let low =  ( codePoint          & 0b00_111111n) | 0b10_000000n
     WasmI32.store8(ptr, high, 0n)
     WasmI32.store8(ptr + 1n, mid, 0n)
     WasmI32.store8(ptr + 2n, low, 0n)
@@ -1010,9 +1010,9 @@ let writeUtf8CodePoint = (ptr, codePoint) => {
     // codepoint. Remaining bytes each have a two bit prefix of 10, followed by
     // 6 bits of the codepoint.
     let high = ((codePoint >>> 18n) & 0b00000_111n) | 0b11110_000n
-		let mid1 = ((codePoint >>> 12n) & 0b00_111111n) | 0b10_000000n
-		let mid2 = ((codePoint >>> 6n)  & 0b00_111111n) | 0b10_000000n
-		let low =  ( codePoint          & 0b00_111111n) | 0b10_000000n
+    let mid1 = ((codePoint >>> 12n) & 0b00_111111n) | 0b10_000000n
+    let mid2 = ((codePoint >>> 6n)  & 0b00_111111n) | 0b10_000000n
+    let low =  ( codePoint          & 0b00_111111n) | 0b10_000000n
     WasmI32.store8(ptr, high, 0n)
     WasmI32.store8(ptr + 1n, mid1, 0n)
     WasmI32.store8(ptr + 2n, mid2, 0n)
