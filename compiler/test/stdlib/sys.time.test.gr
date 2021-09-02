@@ -3,12 +3,41 @@ import {
 } from "int64"
 import Time from "sys/time"
 
+let mt1 = Time.monotonicTime()
+let mt2 = Time.monotonicTime()
 
-let t1 = Time.monotonicTime()
-let t2 = Time.monotonicTime()
-
-match ((t1, t2)) {
-  (Ok(x), Ok(y)) => x < y,
+// Just a smoke test, there's a chance this could fail
+match ((mt1, mt2)) {
+  (Ok(x), Ok(y)) => assert x < y,
   (Err(err), _) => throw err,
   (_, Err(err)) => throw err
+}
+
+let pct1 = Time.processCpuTime()
+let pct2 = Time.processCpuTime()
+
+// Just a smoke test, there's a chance this could fail
+match ((pct1, pct2)) {
+  (Ok(x), Ok(y)) => assert x < y,
+  (Err(err), _) => throw err,
+  (_, Err(err)) => throw err
+}
+
+let tct1 = Time.threadCpuTime()
+let tct2 = Time.threadCpuTime()
+
+// Just a smoke test, there's a chance this could fail
+match ((tct1, tct2)) {
+  (Ok(x), Ok(y)) => assert x < y,
+  (Err(err), _) => throw err,
+  (_, Err(err)) => throw err
+}
+
+let epoch = 0L
+let rt = Time.realTime()
+
+// Just a smoke test, there's a chance this could fail if system dates are bad
+match (rt) {
+  Ok(now) => assert epoch < now,
+  Err(err) => throw err,
 }
