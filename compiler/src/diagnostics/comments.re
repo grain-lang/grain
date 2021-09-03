@@ -412,3 +412,11 @@ let print_comment = (comment: Parsetree.comment) => {
   | Shebang(cmt) => print_endline(cmt.cmt_source)
   };
 };
+
+let cmt_text = (comment: Parsetree.comment) =>
+  switch (comment) {
+  | Line(cmt)
+  | Block(cmt)
+  | Doc(cmt)
+  | Shebang(cmt) => cmt.cmt_source
+  };
