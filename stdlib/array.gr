@@ -17,7 +17,9 @@ import Exception from "runtime/exception"
  * @section Values: Functions for working with the Array data type.
  */
 
+@disableGC
 let _ARRAY_LENGTH_OFFSET = 4n
+@disableGC
 let _ARRAY_START_OFFSET = 8n
 
 @disableGC

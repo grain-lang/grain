@@ -205,6 +205,7 @@ export let rec rotr = (x: Int32, y: Int32) => {
 
 // Int32 comparisons
 
+@disableGC
 export let rec eq = (x: Int32, y: Int32) => {
   let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)

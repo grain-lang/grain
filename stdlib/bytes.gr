@@ -9,13 +9,21 @@ import Exception from "runtime/exception"
 import Int32 from "int32"
 import { coerceNumberToWasmI32 } from "runtime/numbers"
 
+@disableGC
 let _SIZE_OFFSET = 4n;
+@disableGC
 let _VALUE_OFFSET = 8n;
+@disableGC
 let _INT8_BYTE_SIZE = 1n;
+@disableGC
 let _INT16_BYTE_SIZE = 2n;
+@disableGC
 let _INT32_BYTE_SIZE = 4n;
+@disableGC
 let _FLOAT32_BYTE_SIZE = 4n;
+@disableGC
 let _INT64_BYTE_SIZE = 8n;
+@disableGC
 let _FLOAT64_BYTE_SIZE = 8n;
 
 /** Throws an exception if the index specified is out-of-bounds */

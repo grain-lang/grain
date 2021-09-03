@@ -791,7 +791,9 @@ let getCodePoint = (ptr: WasmI32) => {
   result: WasmI32
 }
 
+@disableGC
 let _BYTES_SIZE_OFFSET = 4n;
+@disableGC
 let _BYTES_OFFSET = 8n;
 
 // Encodes the given string using the given encoding scheme

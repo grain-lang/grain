@@ -87,6 +87,7 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
     ({exp_desc, exp_loc, exp_attributes} as exp) => {
       // Check #1: Avoid using Pervasives equality ops with WasmXX types
       switch (exp_desc) {
+      | TExpLet(_) when is_marked_disable_gc(exp_attributes) => push_disable_gc(true)
       | TExpApp(
           {
             exp_desc:
@@ -133,8 +134,9 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
     };
   };
 
-  let leave_expression = ({exp_desc}) => {
+  let leave_expression = ({exp_desc, exp_attributes}) => {
     switch (exp_desc) {
+    | TExpLet(_) when is_marked_disable_gc(exp_attributes) => pop_disable_gc()
     | TExpLambda(_) => pop_in_lambda()
     | _ => ()
     };
