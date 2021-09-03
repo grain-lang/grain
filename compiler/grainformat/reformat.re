@@ -893,7 +893,8 @@ and print_record =
           ),
         ),
         if (List.length(fields) == 1) {
-          Doc.comma; // always append a comma as single argument record look like block {data:val}
+          // TODO: not needed once we annotate with ::
+          Doc.comma; //  append a comma as single argument record look like block {data:val}
         } else {
           Doc.ifBreaks(Doc.text(","), Doc.nil);
         },
@@ -906,7 +907,7 @@ and print_record =
 and print_type =
     (p: Grain_parsing__Parsetree.parsed_type, original_source: array(string)) => {
   switch (p.ptyp_desc) {
-  | PTyAny => Doc.text("AnyType")
+  | PTyAny => Doc.text("_")
   | PTyVar(name) => Doc.text(name)
   | PTyArrow(types, parsed_type) =>
     Doc.concat([
@@ -1154,7 +1155,12 @@ and print_application =
 
 and get_function_name = (expr: Parsetree.expression) => {
   switch (expr.pexp_desc) {
-  | PExpConstant(x) => Doc.toString(~width=1000, print_constant(x))
+  | PExpConstant(x) =>
+    switch (x) {
+    | PConstString(str) => str
+    | _ => ""
+    }
+
   | PExpId({txt: id}) =>
     switch (id) {
     | IdentName(name) => name
