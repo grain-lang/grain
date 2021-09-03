@@ -64,17 +64,19 @@ let _autogrow = (len, buf) => {
 
 /** Gets the pointer for a char's bytes following the char's tag */
 @disableGC
-let _getCharAsWasmI32 = (char) => {
+let rec _getCharAsWasmI32 = (char) => {
   let c = WasmI32.fromGrain(char)
   WasmI32.load(c, 4n)
+  Memory.decRef(WasmI32.fromGrain(_getCharAsWasmI32))
 }
 
 /** Gets the UTF-8 byte length of a char */
 @disableGC
-let _getCharByteLength = (byte) => {
+let rec _getCharByteLength = (byte) => {
   let (+) = WasmI32.add
   let (&) = WasmI32.and
   let (==) = WasmI32.eq
+  Memory.decRef(WasmI32.fromGrain(_getCharByteLength))
   if ((byte & 0x80n) == 0x00n) {
     1n
   } else if ((byte & 0xF0n) == 0xF0n) {
@@ -88,9 +90,10 @@ let _getCharByteLength = (byte) => {
 
 /** Memcopies bytes from a source byte sequence to a destination byte sequence via pointers */
 @disableGC
-let _appendBytes = (srcOff, dstOff, len, src, dst) => {
+let rec _appendBytes = (srcOff, dstOff, len, src, dst) => {
   let (+) = WasmI32.add
   Memory.copy(dst + _VALUE_OFFSET + dstOff, src + _VALUE_OFFSET + srcOff, len)
+  Memory.decRef(WasmI32.fromGrain(_appendBytes))
 }
 
 /**
@@ -385,8 +388,6 @@ export let addFloat64 = (v, b) => {
  * The `initialSize` parameter is the initial size of the internal byte sequence that holds the buffer contents.
  * That byte sequence is automatically reallocated when more than `initialSize` bytes are stored in the buffer, but shrinks back to `initialSize` characters when reset is called.
  * 
- * @throws InvalidArgument: if initial size is < 0
- * 
  * @param initialSize: The initial size of the buffer
  * @returns A buffer
  * 
@@ -444,9 +445,6 @@ export let reset = (buf) => {
  * 
  * This operation does not resize the underlying byte sequence.
  * 
- * @throws IndexOutOfBounds: if `length` < 0
- * @throws IndexOutOfBounds: `length` > the buffer's length
- * 
  * @param length: The number of bytes to truncate the buffer to
  * @param buffer: The buffer to mutate
  * 
@@ -477,11 +475,6 @@ export let toBytes = (buf) => {
 /**
  * Returns a slice of the current contents of the buffer as a byte sequence.
  * 
- * @throws IndexOutOfBounds: if `start` < 0
- * @throws IndexOutOfBounds: `start` >= the buffer's length
- * @throws IndexOutOfBounds: `length` < 0
- * @throws IndexOutOfBounds: `start` + `length` > the buffer's length
- * 
  * @param start: The start index
  * @param length: The number of bytes to include after the starting index
  * @param buffer: The buffer to copy from
@@ -509,11 +502,6 @@ export let toString = (buf) => {
 /**
  * Returns a copy of a subset of the current contents of the buffer as a string.
  * 
- * @throws IndexOutOfBounds: if `start` < 0
- * @throws IndexOutOfBounds: `start` >= the buffer's length
- * @throws IndexOutOfBounds: `length` < 0
- * @throws IndexOutOfBounds: `start` + `length` > the buffer's length
- * 
  * @param start: The start index
  * @param length: The number of bytes to include after the starting index
  * @param buffer: The buffer to copy from
@@ -534,7 +522,7 @@ export let toSubString = (i, len, buf) => {
  * @since v0.4.0
  */
 @disableGC
-export let addChar = (char, buf) => {
+export let rec addChar = (char, buf) => {
   let n = _getCharAsWasmI32(char)
   let bytelen = _getCharByteLength(n)
   match (bytelen) {
@@ -570,6 +558,7 @@ export let addChar = (char, buf) => {
       void
     },
   }
+  Memory.decRef(WasmI32.fromGrain(addChar))
 }
 
 /**
