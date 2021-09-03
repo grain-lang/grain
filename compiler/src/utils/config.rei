@@ -36,6 +36,10 @@ let bulk_memory: ref(bool);
 
 let wasi_polyfill: ref(option(string));
 
+/** Whether to replace the _start export with a start section during linking */
+
+let use_start_section: ref(bool);
+
 /** Whether optimizations should be run */
 
 let optimization_level: ref(optimization_level);
