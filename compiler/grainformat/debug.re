@@ -32,26 +32,15 @@ let print_loc = (msg: string, loc: Grain_parsing.Location.t) => {
 
   if (startchar >= 0) {
     if (line == endline) {
-      print_endline(
-        msg
-        ++ " "
-        ++ string_of_int(line)
-        ++ ":"
-        ++ string_of_int(startchar)
-        ++ ","
-        ++ string_of_int(endchar),
-      );
+      Printf.printf("%s %d:%d,%d", msg, line, startchar, endchar);
     } else {
-      print_endline(
-        msg
-        ++ " "
-        ++ string_of_int(line)
-        ++ ":"
-        ++ string_of_int(startchar)
-        ++ " - "
-        ++ string_of_int(endline)
-        ++ ":"
-        ++ string_of_int(endchar),
+      Printf.printf(
+        "%s %d:%d - %d:%d",
+        msg,
+        line,
+        startchar,
+        endline,
+        endchar,
       );
     };
   };
