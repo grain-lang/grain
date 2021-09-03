@@ -1,4 +1,5 @@
 open Grain_parsing;
+open Grain_diagnostics;
 
 type node_t =
   | Code(Grain_parsing.Location.t)
@@ -11,21 +12,6 @@ let get_node_loc = (node: node_t): Grain_parsing.Location.t =>
   | Code(loc) => loc
   | Comment((loc, _)) => loc
   };
-
-let get_comment_loc = (comment: Parsetree.comment) =>
-  switch (comment) {
-  | Line(cmt) => cmt.cmt_loc
-  | Block(cmt) => cmt.cmt_loc
-  | Doc(cmt) => cmt.cmt_loc
-  | Shebang(cmt) => cmt.cmt_loc
-  };
-
-let get_raw_pos_info = (pos: Lexing.position) => (
-  pos.pos_fname,
-  pos.pos_lnum,
-  pos.pos_cnum - pos.pos_bol,
-  pos.pos_bol,
-);
 
 let compare_points = (line1, char1, line2, char2) =>
   if (line1 == line2 && char1 == char2) {
@@ -46,11 +32,11 @@ let compare_points = (line1, char1, line2, char2) =>
 
 let compare_locations =
     (loc1: Grain_parsing.Location.t, loc2: Grain_parsing.Location.t) => {
-  let (_, raw1l, raw1c, _) = get_raw_pos_info(loc1.loc_start);
-  let (_, raw2l, raw2c, _) = get_raw_pos_info(loc2.loc_start);
+  let (_, raw1l, raw1c, _) = Locations.get_raw_pos_info(loc1.loc_start);
+  let (_, raw2l, raw2c, _) = Locations.get_raw_pos_info(loc2.loc_start);
 
-  let (_, raw1le, raw1ce, _) = get_raw_pos_info(loc1.loc_end);
-  let (_, raw2le, raw2ce, _) = get_raw_pos_info(loc2.loc_end);
+  let (_, raw1le, raw1ce, _) = Locations.get_raw_pos_info(loc1.loc_end);
+  let (_, raw2le, raw2ce, _) = Locations.get_raw_pos_info(loc2.loc_end);
 
   // compare the leading points
 
@@ -69,11 +55,11 @@ let compare_locations =
 // assumes loc2 ends at the end of the line,
 let is_first_inside_second =
     (loc1: Grain_parsing.Location.t, loc2: Grain_parsing.Location.t) => {
-  let (_, raw1l, raw1c, _) = get_raw_pos_info(loc1.loc_start);
-  let (_, raw2l, raw2c, _) = get_raw_pos_info(loc2.loc_start);
+  let (_, raw1l, raw1c, _) = Locations.get_raw_pos_info(loc1.loc_start);
+  let (_, raw2l, raw2c, _) = Locations.get_raw_pos_info(loc2.loc_start);
 
-  let (_, raw1le, raw1ce, _) = get_raw_pos_info(loc1.loc_end);
-  let (_, raw2le, raw2ce, _) = get_raw_pos_info(loc2.loc_end);
+  let (_, raw1le, raw1ce, _) = Locations.get_raw_pos_info(loc1.loc_end);
+  let (_, raw2le, raw2ce, _) = Locations.get_raw_pos_info(loc2.loc_end);
 
   if (raw1l < raw2l) {
     false;
@@ -101,11 +87,11 @@ let is_first_inside_second =
 
 let compare_partition_locations =
     (loc1: Grain_parsing.Location.t, loc2: Grain_parsing.Location.t) => {
-  let (_, raw1l, raw1c, _) = get_raw_pos_info(loc1.loc_start);
-  let (_, raw2l, raw2c, _) = get_raw_pos_info(loc2.loc_start);
+  let (_, raw1l, raw1c, _) = Locations.get_raw_pos_info(loc1.loc_start);
+  let (_, raw2l, raw2c, _) = Locations.get_raw_pos_info(loc2.loc_start);
 
-  let (_, raw1le, raw1ce, _) = get_raw_pos_info(loc1.loc_end);
-  let (_, raw2le, raw2ce, _) = get_raw_pos_info(loc2.loc_end);
+  let (_, raw1le, raw1ce, _) = Locations.get_raw_pos_info(loc1.loc_end);
+  let (_, raw2le, raw2ce, _) = Locations.get_raw_pos_info(loc2.loc_end);
 
   // compare the leading points
 
@@ -128,7 +114,7 @@ let walktree =
       comments: list(Grain_parsing.Parsetree.comment),
     ) => {
   let comment_locations =
-    List.map(c => Comment((get_comment_loc(c), c)), comments);
+    List.map(c => Comment((Locations.get_comment_loc(c), c)), comments);
 
   all_locations := comment_locations;
 

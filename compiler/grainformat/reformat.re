@@ -2,6 +2,7 @@ open Grain;
 open Compile;
 open Grain_parsing;
 open Grain_utils;
+open Grain_diagnostics;
 
 module Doc = Res_doc;
 
@@ -22,17 +23,11 @@ type sugared_pattern_item =
   | RegularPattern(Grain_parsing.Parsetree.pattern)
   | SpreadPattern(Grain_parsing.Parsetree.pattern);
 
-let get_raw_pos_info = (pos: Lexing.position) => (
-  pos.pos_fname,
-  pos.pos_lnum,
-  pos.pos_cnum - pos.pos_bol,
-  pos.pos_bol,
-);
-
 let get_original_code =
     (location: Grain_parsing.Location.t, source: array(string)) => {
-  let (_, startline, startc, _) = get_raw_pos_info(location.loc_start);
-  let (_, endline, endc, _) = get_raw_pos_info(location.loc_end);
+  let (_, startline, startc, _) =
+    Locations.get_raw_pos_info(location.loc_start);
+  let (_, endline, endc, _) = Locations.get_raw_pos_info(location.loc_end);
 
   let text = ref("");
   if (Array.length(source) > endline - 1) {
@@ -118,12 +113,12 @@ let make_end_loc = (loc: Grain_parsing.Location.t) => {
 };
 
 let get_loc_line = (loc: Grain_parsing.Location.t) => {
-  let (_, line, _, _) = get_raw_pos_info(loc.loc_start);
+  let (_, line, _, _) = Locations.get_raw_pos_info(loc.loc_start);
   line;
 };
 
 let get_end_loc_line = (loc: Grain_parsing.Location.t) => {
-  let (_, line, _, _) = get_raw_pos_info(loc.loc_end);
+  let (_, line, _, _) = Locations.get_raw_pos_info(loc.loc_end);
   line;
 };
 
@@ -1223,7 +1218,7 @@ and print_expression =
     | PExpConstant(x) => print_constant(x)
     | PExpId({txt: id}) => print_ident(id)
     | PExpLet(rec_flag, mut_flag, vbs) =>
-      value_bind_print(
+      print_value_bind(
         Asttypes.Nonexported,
         rec_flag,
         mut_flag,
@@ -1918,7 +1913,7 @@ and print_expression =
 
                 let disable_formatting =
                   List.exists(
-                    c => is_disable_formatting_comment(c),
+                    is_disable_formatting_comment,
                     leading_comments,
                   );
 
@@ -2075,22 +2070,29 @@ and print_expression =
                 ~parent_loc,
               ),
               sugaredOp,
-              if (List.length(expressions) == 1) {
+              switch (expressions) {
+              | [] =>
+                raise(
+                  Error(
+                    Illegal_parse("Sugared op needs at least one expression"),
+                  ),
+                )
+              | [expression] =>
                 print_expression(
-                  ~expr=List.hd(expressions),
+                  ~expr=expression,
                   ~parentIsArrow=false,
                   ~endChar=None,
                   ~original_source,
                   ~parent_loc,
-                );
-              } else {
+                )
+              | [expression1, expression2, ...rest] =>
                 print_expression(
-                  ~expr=List.hd(List.tl(expressions)),
+                  ~expr=expression2,
                   ~parentIsArrow=false,
                   ~endChar=None,
                   ~original_source,
                   ~parent_loc,
-                );
+                )
               },
             ]);
           | _ =>
@@ -2178,7 +2180,7 @@ and print_expression =
     ]);
   };
 }
-and value_bind_print =
+and print_value_bind =
     (
       export_flag: Asttypes.export_flag,
       rec_flag,
@@ -2744,7 +2746,7 @@ let toplevel_print =
       | PTopData(data_declarations) =>
         data_print(data_declarations, original_source)
       | PTopLet(export_flag, rec_flag, mut_flag, value_bindings) =>
-        value_bind_print(
+        print_value_bind(
           export_flag,
           rec_flag,
           mut_flag,

@@ -2,37 +2,24 @@ open Grain;
 open Compile;
 open Grain_parsing;
 open Grain_utils;
-
-let get_raw_pos_info = (pos: Lexing.position) => (
-  pos.pos_fname,
-  pos.pos_lnum,
-  pos.pos_cnum - pos.pos_bol,
-  pos.pos_bol,
-);
+open Grain_diagnostics;
 
 let print_loc_string = (msg: string, loc: Grain_parsing.Location.t) => {
-  let (file, line, startchar, _) = get_raw_pos_info(loc.loc_start);
-  let (_, endline, endchar, _) = get_raw_pos_info(loc.loc_end);
+  let (file, line, startchar, _) = Locations.get_raw_pos_info(loc.loc_start);
+  let (_, endline, endchar, _) = Locations.get_raw_pos_info(loc.loc_end);
 
   if (startchar >= 0) {
     if (line == endline) {
-      msg
-      ++ " "
-      ++ string_of_int(line)
-      ++ ":"
-      ++ string_of_int(startchar)
-      ++ ","
-      ++ string_of_int(endchar);
+      Printf.sprintf("%s %d:%d,%d", msg, line, startchar, endchar);
     } else {
-      msg
-      ++ " "
-      ++ string_of_int(line)
-      ++ ":"
-      ++ string_of_int(startchar)
-      ++ " - "
-      ++ string_of_int(endline)
-      ++ ":"
-      ++ string_of_int(endchar);
+      Printf.sprintf(
+        "%s %d:%d - %d:%d",
+        msg,
+        line,
+        startchar,
+        endline,
+        endchar,
+      );
     };
   } else {
     "";
@@ -40,8 +27,8 @@ let print_loc_string = (msg: string, loc: Grain_parsing.Location.t) => {
 };
 
 let print_loc = (msg: string, loc: Grain_parsing.Location.t) => {
-  let (file, line, startchar, _) = get_raw_pos_info(loc.loc_start);
-  let (_, endline, endchar, _) = get_raw_pos_info(loc.loc_end);
+  let (file, line, startchar, _) = Locations.get_raw_pos_info(loc.loc_start);
+  let (_, endline, endchar, _) = Locations.get_raw_pos_info(loc.loc_end);
 
   if (startchar >= 0) {
     if (line == endline) {
@@ -145,8 +132,10 @@ let print_comment = (comment: Parsetree.comment) => {
     | Shebang(cmt) => cmt.cmt_loc.loc_start
     };
 
-  let (_file, stmtstartline, startchar, _sbol) = get_raw_pos_info(startloc);
-  let (_file, stmtendline, endchar, _sbol) = get_raw_pos_info(endloc);
+  let (_file, stmtstartline, startchar, _sbol) =
+    Locations.get_raw_pos_info(startloc);
+  let (_file, stmtendline, endchar, _sbol) =
+    Locations.get_raw_pos_info(endloc);
 
   print_int(stmtstartline);
   print_string(":");
