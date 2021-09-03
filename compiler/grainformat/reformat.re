@@ -122,40 +122,36 @@ let get_end_loc_line = (loc: Grain_parsing.Location.t) => {
   line;
 };
 
-let comment_to_doc = (comment: Parsetree.comment) => {
-  let cmt_text =
-    switch (comment) {
-    | Line(cmt) => cmt.cmt_source
-    | Block(cmt) => cmt.cmt_source
-    | Doc(cmt) => cmt.cmt_source
-    | Shebang(cmt) => cmt.cmt_source
-    };
+let cmt_text = (comment: Parsetree.comment) =>
+  switch (comment) {
+  | Line(cmt)
+  | Block(cmt)
+  | Doc(cmt)
+  | Shebang(cmt) => cmt.cmt_source
+  };
 
-  Doc.text(String.trim(cmt_text));
+let comment_to_doc = (comment: Parsetree.comment) => {
+  Doc.text(String.trim(cmt_text(comment)));
 };
 
 let comment_hardline = (comment: Parsetree.comment) => {
   switch (comment) {
-  | Line(cmt) => Doc.hardLine
-  | Block(cmt) => Doc.line
-  | Doc(cmt) => Doc.line
+  | Line(cmt)
   | Shebang(cmt) => Doc.hardLine
+  | Block(cmt)
+  | Doc(cmt) => Doc.line
   };
 };
 
 let is_disable_formatting_comment = (comment: Parsetree.comment) => {
-  let cmt_text =
-    switch (comment) {
-    | Line(cmt) => cmt.cmt_source
-    | Block(cmt) => cmt.cmt_source
-    | Doc(cmt) => cmt.cmt_source
-    | Shebang(cmt) => cmt.cmt_source
-    };
-
-  if (String.trim(cmt_text) == "// formatter-ignore") {
-    true;
-  } else {
-    false;
+  switch (comment) {
+  | Line(cmt) =>
+    if (String.trim(cmt_text(comment)) == "// formatter-ignore") {
+      true;
+    } else {
+      false;
+    }
+  | _ => false
   };
 };
 
@@ -244,14 +240,7 @@ let print_multi_comments_raw =
       ),
     );
 
-  Doc.concat([
-    leadSpace,
-    lines_of_comment,
-    switch (prev_comment^) {
-    | Some(Line(_)) => Doc.nil
-    | _ => Doc.nil
-    },
-  ]);
+  Doc.concat([leadSpace, lines_of_comment]);
 };
 
 let print_multi_comments = (comments: list(Parsetree.comment), line: int) =>
