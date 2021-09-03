@@ -40,3 +40,16 @@ assert !gt(5L, 5L)
 assert !gte(5L, 22L)
 assert !lt(5L, -17L)
 assert !lte(5L, 4L)
+
+assert clz(0b11L) == 62L
+assert ctz(0b11000L) == 3L
+assert popcnt(0b1100110011L) == 6L
+assert rotl(0b11L, 3L) == 0b11000L
+assert rotr(0b110000L, 3L) == 0b110L
+
+assert eq(5L, 5L)
+assert !eq(5L, 55L)
+assert ne(5L, 55L)
+assert !ne(5L, 5L)
+assert eqz(0L)
+assert !eqz(-42L)

@@ -150,7 +150,91 @@ export let rec mod = (x: Int64, y: Int64) => {
   ret
 }
 
+@disableGC
+export let rec clz = (n: Int64) => {
+  let nv = WasmI64.load(WasmI32.fromGrain(n), 8n)
+  let ptr = newInt64(WasmI64.clz(nv))
+  let ret = WasmI32.toGrain(ptr): Int64
+  Memory.decRef(WasmI32.fromGrain(n))
+  Memory.decRef(WasmI32.fromGrain(clz))
+  ret
+}
+
+@disableGC
+export let rec ctz = (n: Int64) => {
+  let nv = WasmI64.load(WasmI32.fromGrain(n), 8n)
+  let ptr = newInt64(WasmI64.ctz(nv))
+  let ret = WasmI32.toGrain(ptr): Int64
+  Memory.decRef(WasmI32.fromGrain(n))
+  Memory.decRef(WasmI32.fromGrain(ctz))
+  ret
+}
+
+@disableGC
+export let rec popcnt = (n: Int64) => {
+  let nv = WasmI64.load(WasmI32.fromGrain(n), 8n)
+  let ptr = newInt64(WasmI64.popcnt(nv))
+  let ret = WasmI32.toGrain(ptr): Int64
+  Memory.decRef(WasmI32.fromGrain(n))
+  Memory.decRef(WasmI32.fromGrain(popcnt))
+  ret
+}
+
+@disableGC
+export let rec rotl = (x: Int64, y: Int64) => {
+  let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
+  let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
+  let ptr = newInt64(WasmI64.rotl(xv, yv))
+  let ret = WasmI32.toGrain(ptr): Int64
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(y))
+  Memory.decRef(WasmI32.fromGrain(rotl))
+  ret
+}
+
+@disableGC
+export let rec rotr = (x: Int64, y: Int64) => {
+  let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
+  let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
+  let ptr = newInt64(WasmI64.rotr(xv, yv))
+  let ret = WasmI32.toGrain(ptr): Int64
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(y))
+  Memory.decRef(WasmI32.fromGrain(rotr))
+  ret
+}
+
 // Int64 comparisons
+
+export let rec eq = (x: Int64, y: Int64) => {
+  let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
+  let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
+  let ret = WasmI64.eq(xv, yv)
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(y))
+  Memory.decRef(WasmI32.fromGrain(eq))
+  ret
+}
+
+@disableGC
+export let rec ne = (x: Int64, y: Int64) => {
+  let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
+  let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
+  let ret = WasmI64.ne(xv, yv)
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(y))
+  Memory.decRef(WasmI32.fromGrain(ne))
+  ret
+}
+
+@disableGC
+export let rec eqz = (n: Int64) => {
+  let xv = WasmI64.load(WasmI32.fromGrain(n), 8n)
+  let ret = WasmI64.eqz(xv)
+  Memory.decRef(WasmI32.fromGrain(n))
+  Memory.decRef(WasmI32.fromGrain(eqz))
+  ret
+}
 
 @disableGC
 export let rec lt = (x: Int64, y: Int64) => {
