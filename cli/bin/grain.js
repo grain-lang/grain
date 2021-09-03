@@ -121,6 +121,10 @@ program
     "--wasi-polyfill <filename>",
     "path to custom WASI implementation"
   )
+  .graincOption(
+    "--use-start-section",
+    "replaces the _start export with a start section during linking"
+  )
   .graincOption("--no-link", "disable static linking")
   .graincOption(
     "--no-pervasives",
