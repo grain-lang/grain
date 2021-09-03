@@ -571,7 +571,7 @@ and print_record_pattern =
   let close =
     switch (closedflag) {
     | Open => Doc.concat([Doc.text(","), Doc.space, Doc.text("_")])
-    | Closed => raise(Error(Illegal_parse("Closed flag not supported")))
+    | Closed => Doc.nil
     };
   Doc.concat([
     Doc.lbrace,
@@ -592,12 +592,8 @@ and print_record_pattern =
             print_pattern(~pat, ~parent_loc, ~original_source);
 
           let pun =
-            switch (printed_ident) {
-            | Text(i) =>
-              switch ((printed_pat: Doc.t)) {
-              | Text(e) => i == e
-              | _ => false
-              }
+            switch (printed_ident, printed_pat: Doc.t) {
+            | (Text(i), Text(e)) => i == e
             | _ => false
             };
           if (pun) {
@@ -873,12 +869,8 @@ and print_record =
               let punned_expr = check_for_pun(expr);
 
               let pun =
-                switch (printed_ident) {
-                | Text(i) =>
-                  switch ((punned_expr: Doc.t)) {
-                  | Text(e) => i == e
-                  | _ => false
-                  }
+                switch (printed_ident, punned_expr: Doc.t) {
+                | (Text(i), Text(e)) => i == e
                 | _ => false
                 };
 

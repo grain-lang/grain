@@ -47,7 +47,11 @@ let compile_parsed = (filename: option(string)) => {
       program_str := String.concat("\n", linesList^);
 
       Grain_utils.Config.base_path := dirname(filenm);
-      Compile.compile_file(~hook=stop_after_parse, filenm);
+      Compile.compile_string(
+        ~hook=stop_after_parse,
+        ~name=filenm,
+        program_str^,
+      );
     }
   ) {
   | exception exn =>
