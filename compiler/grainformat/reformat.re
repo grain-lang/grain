@@ -66,7 +66,7 @@ let last_file_loc = (): Grain_parsing.Location.t => {
   let end_loc: Grain_parsing.Location.t = {
     loc_start: endpos,
     loc_end: endpos,
-    loc_ghost: false,
+    loc_ghost: true,
   };
   end_loc;
 };
