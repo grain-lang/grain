@@ -6,6 +6,21 @@ let bindings;
 
 if (__RUNNER_BROWSER) {
   const wasmFs = new WasmFs();
+  const decoder = new TextDecoder("utf-8");
+  // Monkeypatching the writeSync for stdout/stderr printing
+  const originalWriteSync = wasmFs.fs.writeSync;
+  wasmFs.fs.writeSync = (fd, buf, offset, length, position) => {
+    if (fd === 1) {
+      console.log(decoder.decode(buf));
+      return;
+    }
+    if (fd === 2) {
+      console.error(decoder.decode(buf));
+      return;
+    }
+
+    originalWriteSync(fd, buf, offset, length, position);
+  };
   bindings = {
     ...wasiBindings.default,
     fs: wasmFs.fs,
