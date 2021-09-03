@@ -55,7 +55,34 @@ describe("aux/wasm_utils", ({describe}) => {
           ],
           sections,
         );
-      })
+      });
+      test("test_get_wasm_sections2", ({expect}) => {
+        let inchan = open_in_bin("test/test-data/testmod_multi_exports.wasm");
+        let sections = get_wasm_sections(inchan);
+        close_in(inchan);
+        expect.equal(
+          [
+            {sec_type: Type, offset: 10, size: 8},
+            {sec_type: Import, offset: 20, size: 40},
+            {sec_type: Function, offset: 62, size: 3},
+            {sec_type: Global, offset: 67, size: 11},
+            {
+              sec_type:
+                Export([
+                  (ExportedFunction, "exported_func"),
+                  (ExportedFunction, "exported_func2"),
+                  (ExportedGlobal, "exported_glob"),
+                  (ExportedGlobal, "exported_glob2"),
+                  (ExportedMemory, "memory"),
+                ]),
+              offset: 81,
+              size: 75,
+            },
+            {sec_type: Code, offset: 158, size: 15},
+          ],
+          sections,
+        );
+      });
     })
   });
 });
