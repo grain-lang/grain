@@ -41,17 +41,48 @@ describe("aux/wasm_utils", ({describe}) => {
         let sections = get_wasm_sections(inchan);
         close_in(inchan);
         expect.equal(
-          sections,
           [
             {sec_type: Type, offset: 10, size: 8},
             {sec_type: Import, offset: 20, size: 25},
             {sec_type: Function, offset: 47, size: 2},
-            {sec_type: Export, offset: 51, size: 17},
+            {
+              sec_type: Export([(ExportedFunction, "exported_func")]),
+              offset: 52,
+              size: 16,
+            },
             {sec_type: Code, offset: 70, size: 8},
             {sec_type: Custom("name"), offset: 85, size: 28},
           ],
+          sections,
         );
-      })
+      });
+      test("test_get_wasm_sections2", ({expect}) => {
+        let inchan = open_in_bin("test/test-data/testmod_multi_exports.wasm");
+        let sections = get_wasm_sections(inchan);
+        close_in(inchan);
+        expect.equal(
+          [
+            {sec_type: Type, offset: 10, size: 8},
+            {sec_type: Import, offset: 20, size: 40},
+            {sec_type: Function, offset: 62, size: 3},
+            {sec_type: Global, offset: 67, size: 11},
+            {
+              sec_type:
+                Export([
+                  (ExportedFunction, "exported_func"),
+                  (ExportedFunction, "exported_func2"),
+                  (ExportedGlobal, "exported_glob"),
+                  (ExportedGlobal, "exported_glob2"),
+                  (ExportedMemory, "memory"),
+                ]),
+              offset: 81,
+              size: 75,
+            },
+            {sec_type: Code, offset: 158, size: 15},
+          ],
+          sections,
+        );
+      });
     })
   });
 });
