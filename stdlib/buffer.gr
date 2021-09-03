@@ -80,10 +80,14 @@ let rec appendBytes = (srcOff, dstOff, len, src, dst) => {
   Memory.copy(dst + _VALUE_OFFSET + dstOff, src + _VALUE_OFFSET + srcOff, len)
 }
 
-/* Throws if a given index + len is not within the bounds of a buffer's current length */
-let checkIndexIsInBounds = (i, len, buf) => {
-  if (i < 0) throw Exception.IndexOutOfBounds
+/*
+ * If given index is negative, returns a positive index.
+ * Throws if a given index + len is not within the bounds of a buffer's current length
+ */
+let getSafeIndex = (index, len, buf) => {
+  let i = index % buf.len
   if (i >= buf.len || i + len > buf.len) throw Exception.IndexOutOfBounds
+  i
 }
 
 /**
@@ -100,8 +104,8 @@ let checkIndexIsInBounds = (i, len, buf) => {
  * @since v0.4.0
  */
 export let getInt8S = (index, buffer) => {
-  checkIndexIsInBounds(index, _8BIT_LEN, buffer)
-  Bytes.getInt8S(index, buffer.data)
+  let i = getSafeIndex(index, _8BIT_LEN, buffer)
+  Bytes.getInt8S(i, buffer.data)
 }
 
 /**
@@ -114,8 +118,8 @@ export let getInt8S = (index, buffer) => {
  * @since v0.4.0
  */
 export let getInt8U = (index, buffer) => {
-  checkIndexIsInBounds(index, _8BIT_LEN, buffer)
-  Bytes.getInt8U(index, buffer.data)
+  let i = getSafeIndex(index, _8BIT_LEN, buffer)
+  Bytes.getInt8U(i, buffer.data)
 }
 
 /**
@@ -128,8 +132,8 @@ export let getInt8U = (index, buffer) => {
  * @since v0.4.0
  */
 export let setInt8 = (index, value, buffer) => {
-  checkIndexIsInBounds(index, _8BIT_LEN, buffer)
-  Bytes.setInt8(index, value, buffer.data)
+  let i = getSafeIndex(index, _8BIT_LEN, buffer)
+  Bytes.setInt8(i, value, buffer.data)
 }
 
 /**
@@ -157,8 +161,8 @@ export let addInt8 = (value, buffer) => {
  * @since v0.4.0
  */
 export let getInt16S = (index, buffer) => {
-  checkIndexIsInBounds(index, _16BIT_LEN, buffer)
-  Bytes.getInt16S(index, buffer.data)
+  let i = getSafeIndex(index, _16BIT_LEN, buffer)
+  Bytes.getInt16S(i, buffer.data)
 }
 
 /**
@@ -171,8 +175,8 @@ export let getInt16S = (index, buffer) => {
  * @since v0.4.0
  */
 export let getInt16U = (index, buffer) => {
-  checkIndexIsInBounds(index, _16BIT_LEN, buffer)
-  Bytes.getInt16U(index, buffer.data)
+  let i = getSafeIndex(index, _16BIT_LEN, buffer)
+  Bytes.getInt16U(i, buffer.data)
 }
 
 /**
@@ -185,8 +189,8 @@ export let getInt16U = (index, buffer) => {
  * @since v0.4.0
  */
 export let setInt16 = (index, value, buffer) => {
-  checkIndexIsInBounds(index, _16BIT_LEN, buffer)
-  Bytes.setInt16(index, value, buffer.data)
+  let i = getSafeIndex(index, _16BIT_LEN, buffer)
+  Bytes.setInt16(i, value, buffer.data)
 }
 
 /**
@@ -214,8 +218,8 @@ export let addInt16 = (value, buffer) => {
  * @since v0.4.0
  */
 export let getInt32 = (index, buffer) => {
-  checkIndexIsInBounds(index, _32BIT_LEN, buffer)
-  Bytes.getInt32(index, buffer.data)
+  let i = getSafeIndex(index, _32BIT_LEN, buffer)
+  Bytes.getInt32(i, buffer.data)
 }
 
 /**
@@ -228,8 +232,8 @@ export let getInt32 = (index, buffer) => {
  * @since v0.4.0
  */
 export let setInt32 = (index, value, buffer) => {
-  checkIndexIsInBounds(index, _32BIT_LEN, buffer)
-  Bytes.setInt32(index, value, buffer.data)
+  let i = getSafeIndex(index, _32BIT_LEN, buffer)
+  Bytes.setInt32(i, value, buffer.data)
 }
 
 /**
@@ -257,8 +261,8 @@ export let addInt32 = (value, buffer) => {
  * @since v0.4.0
  */
 export let getFloat32 = (index, buffer) => {
-  checkIndexIsInBounds(index, _32BIT_LEN, buffer)
-  Bytes.getFloat32(index, buffer.data)
+  let i = getSafeIndex(index, _32BIT_LEN, buffer)
+  Bytes.getFloat32(i, buffer.data)
 }
 
 /**
@@ -271,8 +275,8 @@ export let getFloat32 = (index, buffer) => {
  * @since v0.4.0
  */
 export let setFloat32 = (index, value, buffer) => {
-  checkIndexIsInBounds(index, _32BIT_LEN, buffer)
-  Bytes.setFloat32(index, value, buffer.data)
+  let i = getSafeIndex(index, _32BIT_LEN, buffer)
+  Bytes.setFloat32(i, value, buffer.data)
 }
 
 /**
@@ -300,8 +304,8 @@ export let addFloat32 = (value, buffer) => {
  * @since v0.4.0
  */
 export let getInt64 = (index, buffer) => {
-  checkIndexIsInBounds(index, _64BIT_LEN, buffer)
-  Bytes.getInt64(index, buffer.data)
+  let i = getSafeIndex(index, _64BIT_LEN, buffer)
+  Bytes.getInt64(i, buffer.data)
 }
 
 /**
@@ -314,8 +318,8 @@ export let getInt64 = (index, buffer) => {
  * @since v0.4.0
  */
 export let setInt64 = (index, value, buffer) => {
-  checkIndexIsInBounds(index, _64BIT_LEN, buffer)
-  Bytes.setInt64(index, value, buffer.data)
+  let i = getSafeIndex(index, _64BIT_LEN, buffer)
+  Bytes.setInt64(i, value, buffer.data)
 }
 
 /**
@@ -343,8 +347,8 @@ export let addInt64 = (value, buffer) => {
  * @since v0.4.0
  */
 export let getFloat64 = (index, buffer) => {
-  checkIndexIsInBounds(index, _64BIT_LEN, buffer)
-  Bytes.getFloat64(index, buffer.data)
+  let i = getSafeIndex(index, _64BIT_LEN, buffer)
+  Bytes.getFloat64(i, buffer.data)
 }
 
 /**
@@ -357,8 +361,8 @@ export let getFloat64 = (index, buffer) => {
  * @since v0.4.0
  */
 export let setFloat64 = (index, value, buffer) => {
-  checkIndexIsInBounds(index, _64BIT_LEN, buffer)
-  Bytes.setFloat64(index, value, buffer.data)
+  let i = getSafeIndex(index, _64BIT_LEN, buffer)
+  Bytes.setFloat64(i, value, buffer.data)
 }
 
 /**
@@ -477,7 +481,8 @@ export let toBytes = (buffer) => {
  * @since v0.4.0
  */
 export let toBytesSlice = (start, length, buffer) => {
-  checkIndexIsInBounds(start, length, buffer)
+  if (start < 0) throw Exception.IndexOutOfBounds
+  if (start >= buffer.len || start + length > buffer.len) throw Exception.IndexOutOfBounds
   Bytes.slice(start, length, buffer.data)
 }
 
