@@ -571,7 +571,7 @@ and print_record_pattern =
   let close =
     switch (closedflag) {
     | Open => Doc.concat([Doc.text(","), Doc.space, Doc.text("_")])
-    | Closed => Doc.nil
+    | Closed => raise(Error(Illegal_parse("Closed flag not supported")))
     };
   Doc.concat([
     Doc.lbrace,
