@@ -36,11 +36,11 @@ let _32BIT_LEN = 4
 
 let _64BIT_LEN = 8
 
-/** Gets the size of a Bytes via its ptr */
+/* Gets the size of a Bytes via its ptr */
 @disableGC
 let getSize = (ptr) => WasmI32.load(ptr, _SIZE_OFFSET)
 
-/** Doubles the size of buffer's underlying byte sequence, if the given size is larger than the size of a buffer's underlying byte sequence */
+/* Doubles the size of buffer's underlying byte sequence, if the given size is larger than the size of a buffer's underlying byte sequence */
 let autogrow = (len, buf) => {
   while (buf.len + len > Bytes.length(buf.data)) {
     let mut n = Bytes.length(buf.data)
@@ -49,14 +49,14 @@ let autogrow = (len, buf) => {
   }
 }
 
-/** Gets the pointer for a char's bytes following the char's tag */
+/* Gets the pointer for a char's bytes following the char's tag */
 @disableGC
 let rec getCharAsWasmI32 = (char) => {
   let c = WasmI32.fromGrain(char)
   WasmI32.load(c, 4n)
 }
 
-/** Gets the UTF-8 byte length of a char */
+/* Gets the UTF-8 byte length of a char */
 @disableGC
 let rec getCharByteLength = (byte) => {
   let (+) = WasmI32.add
@@ -73,14 +73,14 @@ let rec getCharByteLength = (byte) => {
   }
 }
 
-/** Memcopies bytes from a source byte sequence to a destination byte sequence via pointers */
+/* Memcopies bytes from a source byte sequence to a destination byte sequence via pointers */
 @disableGC
 let rec appendBytes = (srcOff, dstOff, len, src, dst) => {
   let (+) = WasmI32.add
   Memory.copy(dst + _VALUE_OFFSET + dstOff, src + _VALUE_OFFSET + srcOff, len)
 }
 
-/** Throws if a given index + len is not within the bounds of a buffer's current length */
+/* Throws if a given index + len is not within the bounds of a buffer's current length */
 let checkIndexIsInBounds = (i, len, buf) => {
   if (i < 0) throw Exception.IndexOutOfBounds
   if (i >= buf.len || i + len > buf.len) throw Exception.IndexOutOfBounds
