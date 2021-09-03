@@ -71,14 +71,6 @@ let last_file_loc = (): Grain_parsing.Location.t => {
   end_loc;
 };
 
-let get_comment_loc = (comment: Parsetree.comment) =>
-  switch (comment) {
-  | Line(cmt) => cmt.cmt_loc
-  | Block(cmt) => cmt.cmt_loc
-  | Doc(cmt) => cmt.cmt_loc
-  | Shebang(cmt) => cmt.cmt_loc
-  };
-
 let make_line_start = (loc: Grain_parsing.Location.t) => {
   let startpos: Stdlib__lexing.position = {
     pos_fname: "",
@@ -166,7 +158,7 @@ let split_comments =
   let (thisline, below) =
     List.fold_left(
       (acc, c) =>
-        if (get_loc_line(get_comment_loc(c)) == line) {
+        if (get_loc_line(Locations.get_comment_loc(c)) == line) {
           let (thisline, below) = acc;
           ([c, ...thisline], below);
         } else {
@@ -188,7 +180,7 @@ let print_leading_comments = (comments: list(Parsetree.comment), line: int) => {
       Doc.hardLine,
       List.map(
         c => {
-          let next_line = get_loc_line(get_comment_loc(c));
+          let next_line = get_loc_line(Locations.get_comment_loc(c));
           let ret =
             if (next_line > prev_line^ + 1) {
               Doc.concat([Doc.hardLine, comment_to_doc(c)]);
@@ -196,7 +188,7 @@ let print_leading_comments = (comments: list(Parsetree.comment), line: int) => {
               comment_to_doc(c);
             };
 
-          prev_line := get_end_loc_line(get_comment_loc(c));
+          prev_line := get_end_loc_line(Locations.get_comment_loc(c));
           prev_comment := Some(c);
           ret;
         },
@@ -207,7 +199,7 @@ let print_leading_comments = (comments: list(Parsetree.comment), line: int) => {
   let last_comment_line =
     switch (prev_comment^) {
     | None => line
-    | Some(c) => get_end_loc_line(get_comment_loc(c))
+    | Some(c) => get_end_loc_line(Locations.get_comment_loc(c))
     };
   (Doc.concat([lines_of_comments, Doc.hardLine]), last_comment_line);
 };
@@ -222,7 +214,7 @@ let print_multi_comments_raw =
       Doc.space,
       List.map(
         c => {
-          let nextLine = get_loc_line(get_comment_loc(c));
+          let nextLine = get_loc_line(Locations.get_comment_loc(c));
           let ret =
             if (nextLine > prev_line^) {
               if (nextLine > prev_line^ + 1) {
@@ -233,7 +225,7 @@ let print_multi_comments_raw =
             } else {
               comment_to_doc(c);
             };
-          prev_line := get_end_loc_line(get_comment_loc(c));
+          prev_line := get_end_loc_line(Locations.get_comment_loc(c));
           prev_comment := Some(c);
           ret;
         },
@@ -247,7 +239,8 @@ let print_multi_comments_raw =
 let print_multi_comments = (comments: list(Parsetree.comment), line: int) =>
   if (List.length(comments) > 0) {
     let first_comment = List.hd(comments);
-    let first_comment_line = get_loc_line(get_comment_loc(first_comment));
+    let first_comment_line =
+      get_loc_line(Locations.get_comment_loc(first_comment));
 
     let lead_space =
       if (first_comment_line > line) {
