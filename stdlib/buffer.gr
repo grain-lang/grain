@@ -1,0 +1,680 @@
+/**
+ * @module Buffer: Utilities for working with buffers.
+ *
+ * @example import Buffer from "buffer"
+ *
+ * @since v0.4.0
+ */
+
+import Memory from "runtime/unsafe/memory"
+import WasmI32 from "runtime/unsafe/wasmi32"
+import Conv from "runtime/unsafe/conv"
+import Exception from "runtime/exception"
+import Int32 from "int32"
+import Bytes from "bytes"
+import String from "string"
+import { coerceNumberToWasmI32 } from "runtime/numbers"
+
+/**
+ * @section Types: Type declarations included in the Buffer module.
+ */
+
+/**
+ * Buffers are an automatically growing data structure useful for storing and operating on a unknown number of bytes.
+ */
+record Buffer {
+  mut len: Number,
+  initialSize: Number,
+  mut data: Bytes,
+}
+
+/**
+ * @section Values: Functions for working with the Buffer data type.
+ */
+
+let _SIZE_OFFSET = 4n;
+
+let _VALUE_OFFSET = 8n;
+
+let _8BIT_LEN = 1
+
+let _16BIT_LEN = 2
+
+let _32BIT_LEN = 4
+
+let _64BIT_LEN = 8
+
+/** Gets the size of a Bytes via its ptr */
+let _getSize = (ptr) => WasmI32.load(ptr, _SIZE_OFFSET)
+
+/** Throws if a given index + len is not within the bounds of a buffer's current length */
+let _checkIndexIsInBounds = (i, len, buf) => {
+  if (i < 0) throw Exception.IndexOutOfBounds
+  if (i >= buf.len || i + len > buf.len) throw Exception.IndexOutOfBounds
+}
+
+/** Doubles the size of buffer's underlying byte sequence, if the given size is larger than the size of a buffer's underlying byte sequence */
+let _autogrow = (len, buf) => {
+  while (buf.len + len > Bytes.length(buf.data)) {
+    let mut n = Bytes.length(buf.data)
+    if (n == 0) n = 4 // Make sure bytes of 0 length grow too
+    buf.data = Bytes.resize(0, n, buf.data)
+  }
+}
+
+/** Gets the pointer for a char's bytes following the char's tag */
+@disableGC
+let _getCharAsWasmI32 = (char) => {
+  let c = WasmI32.fromGrain(char)
+  WasmI32.load(c, 4n)
+}
+
+/** Gets the UTF-8 byte length of a char */
+@disableGC
+let _getCharByteLength = (byte) => {
+  let (+) = WasmI32.add
+  let (&) = WasmI32.and
+  let (==) = WasmI32.eq
+  if ((byte & 0x80n) == 0x00n) {
+    1n
+  } else if ((byte & 0xF0n) == 0xF0n) {
+    4n
+  } else if ((byte & 0xE0n) == 0xE0n) {
+    3n
+  } else {
+    2n
+  }
+}
+
+/** Memcopies bytes from a source byte sequence to a destination byte sequence via pointers */
+@disableGC
+let _appendBytes = (srcOff, dstOff, len, src, dst) => {
+  let (+) = WasmI32.add
+  Memory.copy(dst + _VALUE_OFFSET + dstOff, src + _VALUE_OFFSET + srcOff, len)
+}
+
+/**
+ * Gets a signed 8-bit integer starting at the given byte index.
+ * 
+ * @param index: The byte index to access
+ * @param buffer: The buffer to access
+ * @returns A 32-bit integer representing a signed 8-bit integer that starts at the given index
+ * 
+ * @since v0.4.0
+ */
+export let getInt8S = (i, b) => {
+  _checkIndexIsInBounds(i, _8BIT_LEN, b)
+  Bytes.getInt8S(i, b.data)
+}
+
+/**
+ * Gets an unsigned 8-bit integer starting at the given byte index.
+ * 
+ * @param index: The byte index to access
+ * @param buffer: The buffer to access
+ * @returns A 32-bit integer representing an unsigned 8-bit integer that starts at the given index
+ * 
+ * @since v0.4.0
+ */
+export let getInt8U = (i, b) => {
+  _checkIndexIsInBounds(i, _8BIT_LEN, b)
+  Bytes.getInt8U(i, b.data)
+}
+
+/**
+ * Sets a signed 8-bit integer starting at the given byte index.
+ * 
+ * @param index: The byte index to access
+ * @param value: The value to set
+ * @param buffer: The buffer to mutate
+ * 
+ * @since v0.4.0
+ */
+export let setInt8 = (i, v, b) => {
+  _checkIndexIsInBounds(i, _8BIT_LEN, b)
+  Bytes.setInt8(i, v, b.data)
+}
+
+/**
+ * Appends a signed 8-bit integer to a buffer.
+ * 
+ * @param value: The value to append
+ * @param buffer: The buffer to mutate
+ * 
+ * @since v0.4.0
+ */
+export let addInt8 = (v, b) => {
+  _autogrow(_8BIT_LEN, b)
+  let i = b.len
+  b.len = b.len + _8BIT_LEN
+  setInt8(i, v, b)
+}
+
+/**
+ * Gets a signed 16-bit integer starting at the given byte index.
+ * 
+ * @param index: The byte index to access
+ * @param buffer: The buffer to access
+ * @returns A 32-bit integer representing a signed 16-bit integer that starts at the given index
+ * 
+ * @since v0.4.0
+ */
+export let getInt16S = (i, b) => {
+  _checkIndexIsInBounds(i, _16BIT_LEN, b)
+  Bytes.getInt16S(i, b.data)
+}
+
+/**
+ * Gets an unsigned 16-bit integer starting at the given byte index.
+ * 
+ * @param index: The byte index to access
+ * @param buffer: The buffer to access
+ * @returns A 32-bit integer representing an unsigned 16-bit integer that starts at the given index
+ * 
+ * @since v0.4.0
+ */
+export let getInt16U = (i, b) => {
+  _checkIndexIsInBounds(i, _16BIT_LEN, b)
+  Bytes.getInt16U(i, b.data)
+}
+
+/**
+ * Sets a signed 16-bit integer starting at the given byte index.
+ * 
+ * @param index: The byte index to access
+ * @param value: The value to set
+ * @param buffer: The buffer to mutate
+ * 
+ * @since v0.4.0
+ */
+export let setInt16 = (i, v, b) => {
+  _checkIndexIsInBounds(i, _16BIT_LEN, b)
+  Bytes.setInt16(i, v, b.data)
+}
+
+/**
+ * Appends a signed 16-bit integer to a buffer.
+ * 
+ * @param value: The value to append
+ * @param buffer: The buffer to mutate
+ * 
+ * @since v0.4.0
+ */
+export let addInt16 = (v, b) => {
+  _autogrow(_16BIT_LEN, b)
+  let i = b.len
+  b.len = b.len + _16BIT_LEN
+  setInt16(i, v, b)
+}
+
+/**
+ * Gets a signed 32-bit integer starting at the given byte index.
+ * 
+ * @param index: The byte index to access
+ * @param buffer: The buffer to access
+ * @returns A signed 32-bit integer that starts at the given index
+ * 
+ * @since v0.4.0
+ */
+export let getInt32 = (i, b) => {
+  _checkIndexIsInBounds(i, _32BIT_LEN, b)
+  Bytes.getInt32(i, b.data)
+}
+
+/**
+ * Sets a signed 32-bit integer starting at the given byte index.
+ * 
+ * @param index: The byte index to access
+ * @param value: The value to set
+ * @param buffer: The buffer to mutate
+ * 
+ * @since v0.4.0
+ */
+export let setInt32 = (i, v, b) => {
+  _checkIndexIsInBounds(i, _32BIT_LEN, b)
+  Bytes.setInt32(i, v, b.data)
+}
+
+/**
+ * Appends a signed 32-bit integer to a buffer.
+ * 
+ * @param value: The value to append
+ * @param buffer: The buffer to mutate
+ * 
+ * @since v0.4.0
+ */
+export let addInt32 = (v, b) => {
+  _autogrow(_32BIT_LEN, b)
+  let i = b.len
+  b.len = b.len + _32BIT_LEN
+  setInt32(i, v, b)
+}
+
+/**
+ * Gets a 32-bit float starting at the given byte index.
+ * 
+ * @param index: The byte index to access
+ * @param buffer: The buffer to access
+ * @returns A 32-bit float that starts at the given index
+ * 
+ * @since v0.4.0
+ */
+export let getFloat32 = (i, b) => {
+  _checkIndexIsInBounds(i, _32BIT_LEN, b)
+  Bytes.getFloat32(i, b.data)
+}
+
+/**
+ * Sets a 32-bit float starting at the given byte index.
+ * 
+ * @param index: The byte index to access
+ * @param value: The value to set
+ * @param buffer: The buffer to mutate
+ * 
+ * @since v0.4.0
+ */
+export let setFloat32 = (i, v, b) => {
+  _checkIndexIsInBounds(i, _32BIT_LEN, b)
+  Bytes.setFloat32(i, v, b.data)
+}
+
+/**
+ * Appends a 32-bit float to a buffer.
+ * 
+ * @param value: The value to append
+ * @param buffer: The buffer to mutate
+ * 
+ * @since v0.4.0
+ */
+export let addFloat32 = (v, b) => {
+  _autogrow(_32BIT_LEN, b)
+  let i = b.len
+  b.len = b.len + _32BIT_LEN
+  setFloat32(i, v, b)
+}
+
+/**
+ * Gets a signed 64-bit integer starting at the given byte index.
+ * 
+ * @param index: The byte index to access
+ * @param buffer: The buffer to access
+ * @returns A signed 64-bit integer that starts at the given index
+ * 
+ * @since v0.4.0
+ */
+export let getInt64 = (i, b) => {
+  _checkIndexIsInBounds(i, _64BIT_LEN, b)
+  Bytes.getInt64(i, b.data)
+}
+
+/**
+ * Sets a signed 64-bit integer starting at the given byte index.
+ * 
+ * @param index: The byte index to access
+ * @param value: The value to set
+ * @param buffer: The buffer to mutate
+ * 
+ * @since v0.4.0
+ */
+export let setInt64 = (i, v, b) => {
+  _checkIndexIsInBounds(i, _64BIT_LEN, b)
+  Bytes.setInt64(i, v, b.data)
+}
+
+/**
+ * Appends a signed 64-bit integer to a buffer.
+ * 
+ * @param value: The value to set
+ * @param buffer: The buffer to mutate
+ * 
+ * @since v0.4.0
+ */
+export let addInt64 = (v, b) => {
+  _autogrow(_64BIT_LEN, b)
+  let i = b.len
+  b.len = b.len + _64BIT_LEN
+  setInt64(i, v, b)
+}
+
+/**
+ * Gets a 64-bit float starting at the given byte index.
+ * 
+ * @param index: The byte index to access
+ * @param buffer: The buffer to access
+ * @returns A 64-bit float that starts at the given index
+ * 
+ * @since v0.4.0
+ */
+export let getFloat64 = (i, b) => {
+  _checkIndexIsInBounds(i, _64BIT_LEN, b)
+  Bytes.getFloat64(i, b.data)
+}
+
+/**
+ * Sets a 64-bit float starting at the given byte index.
+ * 
+ * @param index: The byte index to access
+ * @param value: The value to set
+ * @param buffer: The buffer to mutate
+ * 
+ * @since v0.4.0
+ */
+export let setFloat64 = (i, v, b) => {
+  _checkIndexIsInBounds(i, _64BIT_LEN, b)
+  Bytes.setFloat64(i, v, b.data)
+}
+
+/**
+ * Appends a 64-bit float to a buffer.
+ * 
+ * @param value: The value to append
+ * @param buffer: The buffer to mutate
+ * 
+ * @since v0.4.0
+ */
+export let addFloat64 = (v, b) => {
+  _autogrow(_64BIT_LEN, b)
+  let i = b.len
+  b.len = b.len + _64BIT_LEN
+  setFloat64(i, v, b)
+}
+
+/**
+ * Returns a fresh buffer, initially empty.
+ * 
+ * The `initialSize` parameter is the initial size of the internal byte sequence that holds the buffer contents.
+ * That byte sequence is automatically reallocated when more than `initialSize` bytes are stored in the buffer, but shrinks back to `initialSize` characters when reset is called.
+ * 
+ * @throws InvalidArgument: if initial size is < 0
+ * 
+ * @param initialSize: The initial size of the buffer
+ * @returns A buffer
+ * 
+ * @since v0.4.0
+ */
+export let make = (n: Number) => {
+  if (n < 0) throw Exception.InvalidArgument("Buffers size must be >= 0")
+  {
+    len: 0,
+    initialSize: n,
+    data: Bytes.make(n),
+  }
+}
+
+/**
+ * Gets the number of bytes currently contained in a buffer.
+ * 
+ * @param buffer: The buffer to access
+ * @returns The length of the buffer in bytes
+ * 
+ * @since v0.4.0
+ */
+export let length = (buf) => buf.len
+
+/**
+ * Clears data in the buffer and sets its length to zero.
+ * 
+ * This operation does not resize the underlying byte sequence.
+ * 
+ * @param buffer: The buffer to mutate
+ * 
+ * @since v0.4.0
+ */
+export let clear = (buf) => {
+  Bytes.fill(0x0l, buf.data)
+  buf.len = 0
+}
+
+/**
+ * Empty a buffer and deallocate the internal byte sequence holding the buffer contents.
+ * 
+ * This operation resizes the underlying byte sequence to the initial size of the buffer.
+ * 
+ * @param buffer: The buffer to mutate
+ * 
+ * @since v0.4.0
+ */
+export let reset = (buf) => {
+  buf.data = Bytes.make(buf.initialSize)
+  buf.len = 0
+}
+
+/**
+ * Shortens a buffer to the given length.
+ * 
+ * This operation does not resize the underlying byte sequence.
+ * 
+ * @throws IndexOutOfBounds: if `length` < 0
+ * @throws IndexOutOfBounds: `length` > the buffer's length
+ * 
+ * @param length: The number of bytes to truncate the buffer to
+ * @param buffer: The buffer to mutate
+ * 
+ * @since v0.4.0
+ */
+export let truncate = (len, b) => {
+  if (len < 0 || len > b.len) throw Exception.IndexOutOfBounds
+  b.len = len
+}
+
+/**
+ * Returns a copy of the current contents of the buffer as a byte sequence.
+ * 
+ * @param buffer: The buffer to stringify
+ * @returns A string made from copied buffer data
+ * 
+ * @since v0.4.0
+ */
+export let toBytes = (buf) => {
+  let len = Bytes.length(buf.data)
+  if (buf.len == len) {
+    buf.data
+  } else {
+    Bytes.slice(0, buf.len, buf.data)
+  }
+}
+
+/**
+ * Returns a slice of the current contents of the buffer as a byte sequence.
+ * 
+ * @throws IndexOutOfBounds: if `start` < 0
+ * @throws IndexOutOfBounds: `start` >= the buffer's length
+ * @throws IndexOutOfBounds: `length` < 0
+ * @throws IndexOutOfBounds: `start` + `length` > the buffer's length
+ * 
+ * @param start: The start index
+ * @param length: The number of bytes to include after the starting index
+ * @param buffer: The buffer to copy from
+ * @returns A byte sequence with bytes copied from the buffer
+ * 
+ * @since v0.4.0
+ */
+export let toBytesSlice = (i, len, buf) => {
+  _checkIndexIsInBounds(i, len, buf)
+  Bytes.slice(i, len, buf.data)
+}
+
+/**
+ * Returns a copy of the current contents of the buffer as a string.
+ * 
+ * @param buffer: The buffer to stringify
+ * @returns A string made with data copied from the buffer
+ * 
+ * @since v0.4.0
+ */
+export let toString = (buf) => {
+  Bytes.toString(toBytes(buf))
+}
+
+/**
+ * Returns a copy of a subset of the current contents of the buffer as a string.
+ * 
+ * @throws IndexOutOfBounds: if `start` < 0
+ * @throws IndexOutOfBounds: `start` >= the buffer's length
+ * @throws IndexOutOfBounds: `length` < 0
+ * @throws IndexOutOfBounds: `start` + `length` > the buffer's length
+ * 
+ * @param start: The start index
+ * @param length: The number of bytes to include after the starting index
+ * @param buffer: The buffer to copy from
+ * @returns A string made with a subset of data copied from the buffer
+ * 
+ * @since v0.4.0
+ */
+export let toSubString = (i, len, buf) => {
+  Bytes.toString(toBytesSlice(i, len, buf))
+}
+
+/**
+ * Appends the bytes of a char to a buffer.
+ * 
+ * @param char: The char to append to the buffer
+ * @param buffer: The buffer to mutate
+ * 
+ * @since v0.4.0
+ */
+@disableGC
+export let addChar = (char, buf) => {
+  let n = _getCharAsWasmI32(char)
+  let bytelen = _getCharByteLength(n)
+  match (bytelen) {
+    1n => {
+      let c = Conv.toInt32(n)
+      addInt8(c, buf)
+      Memory.decRef(WasmI32.fromGrain(c))
+      void
+    },
+    2n => {
+      let c = Conv.toInt32(n)
+      addInt16(c, buf)
+      Memory.decRef(WasmI32.fromGrain(c))
+      void
+    },
+    3n => {
+      let (<) = WasmI32.ltU
+      let (+) = WasmI32.add
+      let (*) = WasmI32.mul
+      let (&) = WasmI32.and
+      let (>>) = WasmI32.shrU
+      for (let mut i = 0n; i < 3n; i = i + 1n) {
+        let c = Conv.toInt32(n >> (i * 8n) & 0xffn)
+        addInt8(c, buf)
+        Memory.decRef(WasmI32.fromGrain(c))
+        void
+      }
+    },
+    _ => {
+      let c = Conv.toInt32(n)
+      addInt32(c, buf)
+      Memory.decRef(WasmI32.fromGrain(c))
+      void
+    },
+  }
+}
+
+/**
+ * Appends a byte sequence to a buffer.
+ * 
+ * @param bytes: The byte sequence to append
+ * @param buffer: The buffer to mutate
+ * 
+ * @since v0.4.0
+ */
+export let addBytes = (byt, buf) => {
+  let bytelen = Bytes.length(byt)
+  _autogrow(bytelen, buf)
+  let off = coerceNumberToWasmI32(buf.len)
+  let len = _getSize(WasmI32.fromGrain(byt))
+  let src = WasmI32.fromGrain(byt)
+  let dst = WasmI32.fromGrain(buf.data)
+  _appendBytes(0n, off, len, src, dst)
+  buf.len = buf.len + bytelen
+}
+
+/**
+ * Appends the bytes of a string to a buffer.
+ * 
+ * @param string: The string to append
+ * @param buffer: The buffer to mutate
+ * 
+ * @since v0.4.0
+ */
+export let addString = (str, buf) => {
+  let bytelen = String.byteLength(str)
+  _autogrow(bytelen, buf)
+  let off = coerceNumberToWasmI32(buf.len)
+  let len = _getSize(WasmI32.fromGrain(str))
+  let src = WasmI32.fromGrain(str)
+  let dst = WasmI32.fromGrain(buf.data)
+  _appendBytes(0n, off, len, src, dst)
+  buf.len = buf.len + bytelen
+}
+
+/**
+ * Appends the bytes of a subset of a string to a buffer.
+ * 
+ * @param start: The char offset into the string
+ * @param length: The number of bytes to append
+ * @param string: The string to append
+ * @param buffer: The buffer to mutate
+ * 
+ * @since v0.4.0
+ */
+export let addSubString = (start, len, str, buf) => {
+  let bytelen = String.byteLength(String.slice(start, len, str))
+  _autogrow(bytelen, buf)
+  let srcOff = coerceNumberToWasmI32(start)
+  let dstOff = coerceNumberToWasmI32(buf.len)
+  let src = WasmI32.fromGrain(str)
+  let dst = WasmI32.fromGrain(buf.data)
+  _appendBytes(srcOff, dstOff, coerceNumberToWasmI32(bytelen), src, dst)
+  buf.len = buf.len + bytelen
+}
+
+/**
+ * Appends the bytes of a subset of a byte seuqnece to a buffer.
+ * 
+ * @param start: The byte offset into the byte sequence
+ * @param length: The number of bytes to append
+ * @param bytes: The byte sequence to append
+ * @param buffer: The buffer to mutate
+ * 
+ * @since v0.4.0
+ */
+export let addSubBytes = (start, len, byt, buf) => {
+  _autogrow(len, buf)
+  let srcOff = coerceNumberToWasmI32(start)
+  let dstOff = coerceNumberToWasmI32(buf.len)
+  let src = WasmI32.fromGrain(byt)
+  let dst = WasmI32.fromGrain(buf.data)
+  _appendBytes(srcOff, dstOff, coerceNumberToWasmI32(len), src, dst)
+  buf.len = buf.len + len
+}
+
+/**
+ * Appends the bytes of a source buffer to destination buffer.
+ * 
+ * The source buffer is not mutated by this operation. The destination buffer, however, is mutated.
+ * 
+ * @param srcBuffer: The buffer to append
+ * @param dstBuffer: The buffer to append to
+ * 
+ * @since v0.4.0
+ */
+export let addBuffer = (src, dst) => {
+  addSubBytes(0, src.len, src.data, dst)
+}
+
+/**
+ * Appends the bytes of a part of a buffer to the end of the buffer
+ * 
+ * @param start: The byte offset into the buffer
+ * @param length: The number of bytes to append
+ * @param srcBuffer: The buffer to append
+ * @param dstBuffer: The buffer to append to
+ * 
+ * @since v0.4.0
+ */
+export let addSubBuffer = (start, len, src, dst) => {
+  addSubBytes(start, len, src.data, dst)
+}
