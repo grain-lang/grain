@@ -99,9 +99,9 @@ let checkIndexIsInBounds = (i, len, buf) => {
  * 
  * @since v0.4.0
  */
-export let getInt8S = (i, b) => {
-  checkIndexIsInBounds(i, _8BIT_LEN, b)
-  Bytes.getInt8S(i, b.data)
+export let getInt8S = (index, buffer) => {
+  checkIndexIsInBounds(index, _8BIT_LEN, buffer)
+  Bytes.getInt8S(index, buffer.data)
 }
 
 /**
@@ -113,9 +113,9 @@ export let getInt8S = (i, b) => {
  * 
  * @since v0.4.0
  */
-export let getInt8U = (i, b) => {
-  checkIndexIsInBounds(i, _8BIT_LEN, b)
-  Bytes.getInt8U(i, b.data)
+export let getInt8U = (index, buffer) => {
+  checkIndexIsInBounds(index, _8BIT_LEN, buffer)
+  Bytes.getInt8U(index, buffer.data)
 }
 
 /**
@@ -127,9 +127,9 @@ export let getInt8U = (i, b) => {
  * 
  * @since v0.4.0
  */
-export let setInt8 = (i, v, b) => {
-  checkIndexIsInBounds(i, _8BIT_LEN, b)
-  Bytes.setInt8(i, v, b.data)
+export let setInt8 = (index, value, buffer) => {
+  checkIndexIsInBounds(index, _8BIT_LEN, buffer)
+  Bytes.setInt8(index, value, buffer.data)
 }
 
 /**
@@ -140,11 +140,11 @@ export let setInt8 = (i, v, b) => {
  * 
  * @since v0.4.0
  */
-export let addInt8 = (v, b) => {
-  autogrow(_8BIT_LEN, b)
-  let i = b.len
-  b.len = b.len + _8BIT_LEN
-  setInt8(i, v, b)
+export let addInt8 = (value, buffer) => {
+  autogrow(_8BIT_LEN, buffer)
+  let index = buffer.len
+  buffer.len = buffer.len + _8BIT_LEN
+  setInt8(index, value, buffer)
 }
 
 /**
@@ -156,9 +156,9 @@ export let addInt8 = (v, b) => {
  * 
  * @since v0.4.0
  */
-export let getInt16S = (i, b) => {
-  checkIndexIsInBounds(i, _16BIT_LEN, b)
-  Bytes.getInt16S(i, b.data)
+export let getInt16S = (index, buffer) => {
+  checkIndexIsInBounds(index, _16BIT_LEN, buffer)
+  Bytes.getInt16S(index, buffer.data)
 }
 
 /**
@@ -170,9 +170,9 @@ export let getInt16S = (i, b) => {
  * 
  * @since v0.4.0
  */
-export let getInt16U = (i, b) => {
-  checkIndexIsInBounds(i, _16BIT_LEN, b)
-  Bytes.getInt16U(i, b.data)
+export let getInt16U = (index, buffer) => {
+  checkIndexIsInBounds(index, _16BIT_LEN, buffer)
+  Bytes.getInt16U(index, buffer.data)
 }
 
 /**
@@ -184,9 +184,9 @@ export let getInt16U = (i, b) => {
  * 
  * @since v0.4.0
  */
-export let setInt16 = (i, v, b) => {
-  checkIndexIsInBounds(i, _16BIT_LEN, b)
-  Bytes.setInt16(i, v, b.data)
+export let setInt16 = (index, value, buffer) => {
+  checkIndexIsInBounds(index, _16BIT_LEN, buffer)
+  Bytes.setInt16(index, value, buffer.data)
 }
 
 /**
@@ -197,11 +197,11 @@ export let setInt16 = (i, v, b) => {
  * 
  * @since v0.4.0
  */
-export let addInt16 = (v, b) => {
-  autogrow(_16BIT_LEN, b)
-  let i = b.len
-  b.len = b.len + _16BIT_LEN
-  setInt16(i, v, b)
+export let addInt16 = (value, buffer) => {
+  autogrow(_16BIT_LEN, buffer)
+  let index = buffer.len
+  buffer.len = buffer.len + _16BIT_LEN
+  setInt16(index, value, buffer)
 }
 
 /**
@@ -213,9 +213,9 @@ export let addInt16 = (v, b) => {
  * 
  * @since v0.4.0
  */
-export let getInt32 = (i, b) => {
-  checkIndexIsInBounds(i, _32BIT_LEN, b)
-  Bytes.getInt32(i, b.data)
+export let getInt32 = (index, buffer) => {
+  checkIndexIsInBounds(index, _32BIT_LEN, buffer)
+  Bytes.getInt32(index, buffer.data)
 }
 
 /**
@@ -227,9 +227,9 @@ export let getInt32 = (i, b) => {
  * 
  * @since v0.4.0
  */
-export let setInt32 = (i, v, b) => {
-  checkIndexIsInBounds(i, _32BIT_LEN, b)
-  Bytes.setInt32(i, v, b.data)
+export let setInt32 = (index, value, buffer) => {
+  checkIndexIsInBounds(index, _32BIT_LEN, buffer)
+  Bytes.setInt32(index, value, buffer.data)
 }
 
 /**
@@ -240,11 +240,11 @@ export let setInt32 = (i, v, b) => {
  * 
  * @since v0.4.0
  */
-export let addInt32 = (v, b) => {
-  autogrow(_32BIT_LEN, b)
-  let i = b.len
-  b.len = b.len + _32BIT_LEN
-  setInt32(i, v, b)
+export let addInt32 = (value, buffer) => {
+  autogrow(_32BIT_LEN, buffer)
+  let index = buffer.len
+  buffer.len = buffer.len + _32BIT_LEN
+  setInt32(index, value, buffer)
 }
 
 /**
@@ -256,9 +256,9 @@ export let addInt32 = (v, b) => {
  * 
  * @since v0.4.0
  */
-export let getFloat32 = (i, b) => {
-  checkIndexIsInBounds(i, _32BIT_LEN, b)
-  Bytes.getFloat32(i, b.data)
+export let getFloat32 = (index, buffer) => {
+  checkIndexIsInBounds(index, _32BIT_LEN, buffer)
+  Bytes.getFloat32(index, buffer.data)
 }
 
 /**
@@ -270,9 +270,9 @@ export let getFloat32 = (i, b) => {
  * 
  * @since v0.4.0
  */
-export let setFloat32 = (i, v, b) => {
-  checkIndexIsInBounds(i, _32BIT_LEN, b)
-  Bytes.setFloat32(i, v, b.data)
+export let setFloat32 = (index, value, buffer) => {
+  checkIndexIsInBounds(index, _32BIT_LEN, buffer)
+  Bytes.setFloat32(index, value, buffer.data)
 }
 
 /**
@@ -283,11 +283,11 @@ export let setFloat32 = (i, v, b) => {
  * 
  * @since v0.4.0
  */
-export let addFloat32 = (v, b) => {
-  autogrow(_32BIT_LEN, b)
-  let i = b.len
-  b.len = b.len + _32BIT_LEN
-  setFloat32(i, v, b)
+export let addFloat32 = (value, buffer) => {
+  autogrow(_32BIT_LEN, buffer)
+  let index = buffer.len
+  buffer.len = buffer.len + _32BIT_LEN
+  setFloat32(index, value, buffer)
 }
 
 /**
@@ -299,9 +299,9 @@ export let addFloat32 = (v, b) => {
  * 
  * @since v0.4.0
  */
-export let getInt64 = (i, b) => {
-  checkIndexIsInBounds(i, _64BIT_LEN, b)
-  Bytes.getInt64(i, b.data)
+export let getInt64 = (index, buffer) => {
+  checkIndexIsInBounds(index, _64BIT_LEN, buffer)
+  Bytes.getInt64(index, buffer.data)
 }
 
 /**
@@ -313,9 +313,9 @@ export let getInt64 = (i, b) => {
  * 
  * @since v0.4.0
  */
-export let setInt64 = (i, v, b) => {
-  checkIndexIsInBounds(i, _64BIT_LEN, b)
-  Bytes.setInt64(i, v, b.data)
+export let setInt64 = (index, value, buffer) => {
+  checkIndexIsInBounds(index, _64BIT_LEN, buffer)
+  Bytes.setInt64(index, value, buffer.data)
 }
 
 /**
@@ -326,11 +326,11 @@ export let setInt64 = (i, v, b) => {
  * 
  * @since v0.4.0
  */
-export let addInt64 = (v, b) => {
-  autogrow(_64BIT_LEN, b)
-  let i = b.len
-  b.len = b.len + _64BIT_LEN
-  setInt64(i, v, b)
+export let addInt64 = (value, buffer) => {
+  autogrow(_64BIT_LEN, buffer)
+  let index = buffer.len
+  buffer.len = buffer.len + _64BIT_LEN
+  setInt64(index, value, buffer)
 }
 
 /**
@@ -342,9 +342,9 @@ export let addInt64 = (v, b) => {
  * 
  * @since v0.4.0
  */
-export let getFloat64 = (i, b) => {
-  checkIndexIsInBounds(i, _64BIT_LEN, b)
-  Bytes.getFloat64(i, b.data)
+export let getFloat64 = (index, buffer) => {
+  checkIndexIsInBounds(index, _64BIT_LEN, buffer)
+  Bytes.getFloat64(index, buffer.data)
 }
 
 /**
@@ -356,9 +356,9 @@ export let getFloat64 = (i, b) => {
  * 
  * @since v0.4.0
  */
-export let setFloat64 = (i, v, b) => {
-  checkIndexIsInBounds(i, _64BIT_LEN, b)
-  Bytes.setFloat64(i, v, b.data)
+export let setFloat64 = (index, value, buffer) => {
+  checkIndexIsInBounds(index, _64BIT_LEN, buffer)
+  Bytes.setFloat64(index, value, buffer.data)
 }
 
 /**
@@ -369,11 +369,11 @@ export let setFloat64 = (i, v, b) => {
  * 
  * @since v0.4.0
  */
-export let addFloat64 = (v, b) => {
-  autogrow(_64BIT_LEN, b)
-  let i = b.len
-  b.len = b.len + _64BIT_LEN
-  setFloat64(i, v, b)
+export let addFloat64 = (value, buffer) => {
+  autogrow(_64BIT_LEN, buffer)
+  let index = buffer.len
+  buffer.len = buffer.len + _64BIT_LEN
+  setFloat64(index, value, buffer)
 }
 
 /**
@@ -387,12 +387,12 @@ export let addFloat64 = (v, b) => {
  * 
  * @since v0.4.0
  */
-export let make = (n: Number) => {
-  if (n < 0) throw Exception.InvalidArgument("Buffers size must be >= 0")
+export let make = (initialSize) => {
+  if (initialSize < 0) throw Exception.InvalidArgument("Buffers size must be >= 0")
   {
     len: 0,
-    initialSize: n,
-    data: Bytes.make(n),
+    initialSize,
+    data: Bytes.make(initialSize),
   }
 }
 
@@ -404,7 +404,7 @@ export let make = (n: Number) => {
  * 
  * @since v0.4.0
  */
-export let length = (buf) => buf.len
+export let length = (buffer) => buffer.len
 
 /**
  * Clears data in the buffer and sets its length to zero.
@@ -415,9 +415,9 @@ export let length = (buf) => buf.len
  * 
  * @since v0.4.0
  */
-export let clear = (buf) => {
-  Bytes.fill(0x0l, buf.data)
-  buf.len = 0
+export let clear = (buffer) => {
+  Bytes.fill(0x0l, buffer.data)
+  buffer.len = 0
 }
 
 /**
@@ -429,9 +429,9 @@ export let clear = (buf) => {
  * 
  * @since v0.4.0
  */
-export let reset = (buf) => {
-  buf.data = Bytes.make(buf.initialSize)
-  buf.len = 0
+export let reset = (buffer) => {
+  buffer.data = Bytes.make(buffer.initialSize)
+  buffer.len = 0
 }
 
 /**
@@ -444,9 +444,9 @@ export let reset = (buf) => {
  * 
  * @since v0.4.0
  */
-export let truncate = (len, b) => {
-  if (len < 0 || len > b.len) throw Exception.IndexOutOfBounds
-  b.len = len
+export let truncate = (length, buffer) => {
+  if (length < 0 || length > buffer.len) throw Exception.IndexOutOfBounds
+  buffer.len = length
 }
 
 /**
@@ -457,12 +457,12 @@ export let truncate = (len, b) => {
  * 
  * @since v0.4.0
  */
-export let toBytes = (buf) => {
-  let len = Bytes.length(buf.data)
-  if (buf.len == len) {
-    buf.data
+export let toBytes = (buffer) => {
+  let len = Bytes.length(buffer.data)
+  if (buffer.len == len) {
+    buffer.data
   } else {
-    Bytes.slice(0, buf.len, buf.data)
+    Bytes.slice(0, buffer.len, buffer.data)
   }
 }
 
@@ -476,9 +476,9 @@ export let toBytes = (buf) => {
  * 
  * @since v0.4.0
  */
-export let toBytesSlice = (i, len, buf) => {
-  checkIndexIsInBounds(i, len, buf)
-  Bytes.slice(i, len, buf.data)
+export let toBytesSlice = (start, length, buffer) => {
+  checkIndexIsInBounds(start, length, buffer)
+  Bytes.slice(start, length, buffer.data)
 }
 
 /**
@@ -489,8 +489,8 @@ export let toBytesSlice = (i, len, buf) => {
  * 
  * @since v0.4.0
  */
-export let toString = (buf) => {
-  Bytes.toString(toBytes(buf))
+export let toString = (buffer) => {
+  Bytes.toString(toBytes(buffer))
 }
 
 /**
@@ -503,20 +503,20 @@ export let toString = (buf) => {
  * 
  * @since v0.4.0
  */
-export let toSubString = (i, len, buf) => {
-  Bytes.toString(toBytesSlice(i, len, buf))
+export let toSubString = (start, length, buffer) => {
+  Bytes.toString(toBytesSlice(start, length, buffer))
 }
 
 /**
  * Appends the bytes of a char to a buffer.
  * 
- * @param char: The char to append to the buffer
+ * @param char: The character to append to the buffer
  * @param buffer: The buffer to mutate
  * 
  * @since v0.4.0
  */
 @disableGC
-export let rec addChar = (char, buf) => {
+export let rec addChar = (char, buffer) => {
   let n = getCharAsWasmI32(char)
   let bytelen = getCharByteLength(n)
   match (bytelen) {
@@ -524,15 +524,15 @@ export let rec addChar = (char, buf) => {
       let c = Conv.toInt32(n)
       Memory.incRef(WasmI32.fromGrain(addInt8))
       Memory.incRef(WasmI32.fromGrain(c))
-      Memory.incRef(WasmI32.fromGrain(buf))
-      addInt8(c, buf)
+      Memory.incRef(WasmI32.fromGrain(buffer))
+      addInt8(c, buffer)
     },
     2n => {
       let c = Conv.toInt32(n)
       Memory.incRef(WasmI32.fromGrain(addInt16))
       Memory.incRef(WasmI32.fromGrain(c))
-      Memory.incRef(WasmI32.fromGrain(buf))
-      addInt16(c, buf)
+      Memory.incRef(WasmI32.fromGrain(buffer))
+      addInt16(c, buffer)
     },
     3n => {
       let (<) = WasmI32.ltU
@@ -544,21 +544,21 @@ export let rec addChar = (char, buf) => {
         let c = Conv.toInt32(n >> (i * 8n) & 0xffn)
         Memory.incRef(WasmI32.fromGrain(addInt8))
         Memory.incRef(WasmI32.fromGrain(c))
-        Memory.incRef(WasmI32.fromGrain(buf))
-        addInt8(c, buf)
+        Memory.incRef(WasmI32.fromGrain(buffer))
+        addInt8(c, buffer)
       }
     },
     _ => {
       let c = Conv.toInt32(n)
       Memory.incRef(WasmI32.fromGrain(addInt32))
       Memory.incRef(WasmI32.fromGrain(c))
-      Memory.incRef(WasmI32.fromGrain(buf))
-      addInt32(c, buf)
+      Memory.incRef(WasmI32.fromGrain(buffer))
+      addInt32(c, buffer)
     },
   }
 
   Memory.decRef(WasmI32.fromGrain(char))
-  Memory.decRef(WasmI32.fromGrain(buf))
+  Memory.decRef(WasmI32.fromGrain(buffer))
   Memory.decRef(WasmI32.fromGrain(addChar))
   void
 }
@@ -572,29 +572,29 @@ export let rec addChar = (char, buf) => {
  * @since v0.4.0
  */
 @disableGC
-export let rec addBytes = (byt, buf) => {
+export let rec addBytes = (bytes, buffer) => {
   Memory.incRef(WasmI32.fromGrain(Bytes.length))
-  Memory.incRef(WasmI32.fromGrain(byt))
-  let bytelen = Bytes.length(byt)
+  Memory.incRef(WasmI32.fromGrain(bytes))
+  let bytelen = Bytes.length(bytes)
   
   Memory.incRef(WasmI32.fromGrain(autogrow))
   Memory.incRef(WasmI32.fromGrain(bytelen))
-  Memory.incRef(WasmI32.fromGrain(buf))
-  autogrow(bytelen, buf)
+  Memory.incRef(WasmI32.fromGrain(buffer))
+  autogrow(bytelen, buffer)
   
-  let off = coerceNumberToWasmI32(buf.len)
-  let len = getSize(WasmI32.fromGrain(byt))
-  let src = WasmI32.fromGrain(byt)
-  let dst = WasmI32.fromGrain(buf.data)
+  let off = coerceNumberToWasmI32(buffer.len)
+  let len = getSize(WasmI32.fromGrain(bytes))
+  let src = WasmI32.fromGrain(bytes)
+  let dst = WasmI32.fromGrain(buffer.data)
   appendBytes(0n, off, len, src, dst)
   
   Memory.incRef(WasmI32.fromGrain((+)))
-  Memory.incRef(WasmI32.fromGrain(buf.len))
+  Memory.incRef(WasmI32.fromGrain(buffer.len))
   Memory.incRef(WasmI32.fromGrain(bytelen))
-  buf.len = buf.len + bytelen
+  buffer.len = buffer.len + bytelen
 
-  Memory.decRef(WasmI32.fromGrain(byt))
-  Memory.decRef(WasmI32.fromGrain(buf))
+  Memory.decRef(WasmI32.fromGrain(bytes))
+  Memory.decRef(WasmI32.fromGrain(buffer))
   Memory.decRef(WasmI32.fromGrain(addBytes))
   void
 }
@@ -608,29 +608,29 @@ export let rec addBytes = (byt, buf) => {
  * @since v0.4.0
  */
 @disableGC
-export let rec addString = (str, buf) => {
+export let rec addString = (string, buffer) => {
   Memory.incRef(WasmI32.fromGrain(String.byteLength))
-  Memory.incRef(WasmI32.fromGrain(str))
-  let bytelen = String.byteLength(str)
+  Memory.incRef(WasmI32.fromGrain(string))
+  let bytelen = String.byteLength(string)
 
   Memory.incRef(WasmI32.fromGrain(autogrow))
   Memory.incRef(WasmI32.fromGrain(bytelen))
-  Memory.incRef(WasmI32.fromGrain(buf))
-  autogrow(bytelen, buf)
+  Memory.incRef(WasmI32.fromGrain(buffer))
+  autogrow(bytelen, buffer)
 
-  let off = coerceNumberToWasmI32(buf.len)
-  let len = getSize(WasmI32.fromGrain(str))
-  let src = WasmI32.fromGrain(str)
-  let dst = WasmI32.fromGrain(buf.data)
+  let off = coerceNumberToWasmI32(buffer.len)
+  let len = getSize(WasmI32.fromGrain(string))
+  let src = WasmI32.fromGrain(string)
+  let dst = WasmI32.fromGrain(buffer.data)
   appendBytes(0n, off, len, src, dst)
 
   Memory.incRef(WasmI32.fromGrain((+)))
-  Memory.incRef(WasmI32.fromGrain(buf.len))
+  Memory.incRef(WasmI32.fromGrain(buffer.len))
   Memory.incRef(WasmI32.fromGrain(bytelen))
-  buf.len = buf.len + bytelen
+  buffer.len = buffer.len + bytelen
 
-  Memory.decRef(WasmI32.fromGrain(str))
-  Memory.decRef(WasmI32.fromGrain(buf))
+  Memory.decRef(WasmI32.fromGrain(string))
+  Memory.decRef(WasmI32.fromGrain(buffer))
   Memory.decRef(WasmI32.fromGrain(addString))
   void
 }
@@ -646,33 +646,33 @@ export let rec addString = (str, buf) => {
  * @since v0.4.0
  */
 @disableGC
-export let rec addSubString = (start, len, str, buf) => {
+export let rec addSubString = (start, length, string, buffer) => {
   Memory.incRef(WasmI32.fromGrain(String.byteLength))
   Memory.incRef(WasmI32.fromGrain(start))
-  Memory.incRef(WasmI32.fromGrain(len))
-  Memory.incRef(WasmI32.fromGrain(str))
-  let bytelen = String.byteLength(String.slice(start, len, str))
+  Memory.incRef(WasmI32.fromGrain(length))
+  Memory.incRef(WasmI32.fromGrain(string))
+  let bytelen = String.byteLength(String.slice(start, length, string))
   
   Memory.incRef(WasmI32.fromGrain(autogrow))
   Memory.incRef(WasmI32.fromGrain(bytelen))
-  Memory.incRef(WasmI32.fromGrain(buf))
-  autogrow(bytelen, buf)
+  Memory.incRef(WasmI32.fromGrain(buffer))
+  autogrow(bytelen, buffer)
   
   let srcOff = coerceNumberToWasmI32(start)
-  let dstOff = coerceNumberToWasmI32(buf.len)
-  let src = WasmI32.fromGrain(str)
-  let dst = WasmI32.fromGrain(buf.data)
+  let dstOff = coerceNumberToWasmI32(buffer.len)
+  let src = WasmI32.fromGrain(string)
+  let dst = WasmI32.fromGrain(buffer.data)
   appendBytes(srcOff, dstOff, coerceNumberToWasmI32(bytelen), src, dst)
   
   Memory.incRef(WasmI32.fromGrain((+)))
-  Memory.incRef(WasmI32.fromGrain(buf.len))
+  Memory.incRef(WasmI32.fromGrain(buffer.len))
   Memory.incRef(WasmI32.fromGrain(bytelen))
-  buf.len = buf.len + bytelen
+  buffer.len = buffer.len + bytelen
   
   Memory.decRef(WasmI32.fromGrain(start))
-  Memory.decRef(WasmI32.fromGrain(len))
-  Memory.decRef(WasmI32.fromGrain(str))
-  Memory.decRef(WasmI32.fromGrain(buf))
+  Memory.decRef(WasmI32.fromGrain(length))
+  Memory.decRef(WasmI32.fromGrain(string))
+  Memory.decRef(WasmI32.fromGrain(buffer))
   Memory.decRef(WasmI32.fromGrain(addSubString))
   void
 }
@@ -688,27 +688,27 @@ export let rec addSubString = (start, len, str, buf) => {
  * @since v0.4.0
  */
 @disableGC
-export let rec addSubBytes = (start, len, byt, buf) => {
+export let rec addSubBytes = (start, length, bytes, buffer) => {
   Memory.incRef(WasmI32.fromGrain(autogrow))
-  Memory.incRef(WasmI32.fromGrain(len))
-  Memory.incRef(WasmI32.fromGrain(buf))
-  autogrow(len, buf)
+  Memory.incRef(WasmI32.fromGrain(length))
+  Memory.incRef(WasmI32.fromGrain(buffer))
+  autogrow(length, buffer)
 
   let srcOff = coerceNumberToWasmI32(start)
-  let dstOff = coerceNumberToWasmI32(buf.len)
-  let src = WasmI32.fromGrain(byt)
-  let dst = WasmI32.fromGrain(buf.data)
-  appendBytes(srcOff, dstOff, coerceNumberToWasmI32(len), src, dst)
+  let dstOff = coerceNumberToWasmI32(buffer.len)
+  let src = WasmI32.fromGrain(bytes)
+  let dst = WasmI32.fromGrain(buffer.data)
+  appendBytes(srcOff, dstOff, coerceNumberToWasmI32(length), src, dst)
 
   Memory.incRef(WasmI32.fromGrain((+)))
-  Memory.incRef(WasmI32.fromGrain(buf.len))
-  Memory.incRef(WasmI32.fromGrain(len))
-  buf.len = buf.len + len
+  Memory.incRef(WasmI32.fromGrain(buffer.len))
+  Memory.incRef(WasmI32.fromGrain(length))
+  buffer.len = buffer.len + length
 
   Memory.decRef(WasmI32.fromGrain(start))
-  Memory.decRef(WasmI32.fromGrain(len))
-  Memory.decRef(WasmI32.fromGrain(byt))
-  Memory.decRef(WasmI32.fromGrain(buf))
+  Memory.decRef(WasmI32.fromGrain(length))
+  Memory.decRef(WasmI32.fromGrain(bytes))
+  Memory.decRef(WasmI32.fromGrain(buffer))
   Memory.decRef(WasmI32.fromGrain(addSubBytes))
   void
 }
@@ -723,12 +723,14 @@ export let rec addSubBytes = (start, len, byt, buf) => {
  * 
  * @since v0.4.0
  */
-export let addBuffer = (src, dst) => {
-  addSubBytes(0, src.len, src.data, dst)
+export let addBuffer = (srcBuffer, dstBuffer) => {
+  addSubBytes(0, srcBuffer.len, srcBuffer.data, dstBuffer)
 }
 
 /**
  * Appends the bytes of a part of a buffer to the end of the buffer
+ * 
+ * The source buffer is not mutated by this operation. The destination buffer, however, is mutated.
  * 
  * @param start: The byte offset into the buffer
  * @param length: The number of bytes to append
@@ -737,6 +739,6 @@ export let addBuffer = (src, dst) => {
  * 
  * @since v0.4.0
  */
-export let addSubBuffer = (start, len, src, dst) => {
-  addSubBytes(start, len, src.data, dst)
+export let addSubBuffer = (start, length, srcBuffer, dstBuffer) => {
+  addSubBytes(start, length, srcBuffer.data, dstBuffer)
 }
