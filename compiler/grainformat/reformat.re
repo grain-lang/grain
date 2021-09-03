@@ -2032,16 +2032,21 @@ and print_expression =
             ~original_source,
           );
 
-        let first =
-          print_expression(
-            ~expr=List.hd(expressions),
-            ~parentIsArrow=false,
-            ~endChar=None,
-            ~parent_loc,
-            ~original_source,
-          );
+        let leftMatchesFirst =
+          switch (expressions) {
+          | [expr, ...remainder] =>
+            print_expression(
+              ~expr,
+              ~parentIsArrow=false,
+              ~endChar=None,
+              ~parent_loc,
+              ~original_source,
+            )
+            == left
+          | _ => false
+          };
 
-        if (left == first) {
+        if (leftMatchesFirst) {
           // +=, -=, *=, /=, and %=
           switch (trimmed_operator) {
           | "+"
@@ -2650,7 +2655,7 @@ let toplevel_print =
   // check to see if we have a comment to disable formatting
 
   let disable_formatting =
-    List.exists(c => is_disable_formatting_comment(c), leading_comments);
+    List.exists(is_disable_formatting_comment, leading_comments);
 
   Walktree.remove_used_comments(leading_comments, []);
 
