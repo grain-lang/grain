@@ -1,4 +1,11 @@
 /* grainc-flags --no-gc */
+/**
+ * @module Sys/Process: Utilities for accessing functionality and information about the Grain program's process.
+ *
+ * This includes things like accessing environment variables and sending signals.
+ *
+ * @example import Process from "sys/process"
+ */
 
 import WasmI32, {
   add as (+),
@@ -14,6 +21,13 @@ import Memory from "runtime/unsafe/memory"
 import Wasi from "runtime/wasi"
 import { tagSimpleNumber, allocateArray, allocateString } from "runtime/dataStructures"
 
+/**
+ * @section Types: Type declarations included in the Sys/Process module.
+ */
+
+/**
+ * Signals that can be sent to the host system.
+ */
 export enum Signal {
   // Hangup.
   HUP,
@@ -73,132 +87,182 @@ export enum Signal {
   SYS,
 }
 
-// Access command line arguments
-// @returns Array<String> The positional string arguments to the process
-export let argv = () => {
+/**
+ * @section Values: Functions and constants included in the Sys/Process module.
+ */
+
+let wasmSafeOk = (val) => {
+  Memory.incRef(WasmI32.fromGrain(Ok))
+  Memory.incRef(WasmI32.fromGrain(val))
+  Ok(val)
+}
+
+let wasmSafeErr = (err) => {
+  Memory.incRef(WasmI32.fromGrain(Err))
+  Memory.incRef(WasmI32.fromGrain(err))
+  Err(err)
+}
+
+/**
+ * Access command line arguments.
+ *
+ * @returns `Ok(args)` of an array containing positional string arguments to the process if successful or `Err(exception)` otherwise
+ */
+export let rec argv = () => {
   let argcPtr = Memory.malloc(8n)
   let argvBufSizePtr = argcPtr + 4n
 
   let mut err = Wasi.args_sizes_get(argcPtr, argvBufSizePtr)
-  if (err != Wasi._ESUCCESS) {
+  let ret = if (err != Wasi._ESUCCESS) {
     Memory.free(argcPtr)
-    throw Wasi.SystemError(tagSimpleNumber(err))
-  }
+    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    let argc = WasmI32.load(argcPtr, 0n)
+    let argvBufSize = WasmI32.load(argvBufSizePtr, 0n)
 
-  let argc = WasmI32.load(argcPtr, 0n)
-  let argvBufSize = WasmI32.load(argvBufSizePtr, 0n)
+    let argvPtr = Memory.malloc(argc * 4n)
+    let argvBufPtr = Memory.malloc(argvBufSize)
 
-  let argvPtr = Memory.malloc(argc * 4n)
-  let argvBufPtr = Memory.malloc(argvBufSize)
+    err = Wasi.args_get(argvPtr, argvBufPtr)
+    if (err != Wasi._ESUCCESS) {
+      Memory.free(argcPtr)
+      Memory.free(argvPtr)
+      Memory.free(argvBufPtr)
+      wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+    } else {
+      let arr = allocateArray(argc)
 
-  err = Wasi.args_get(argvPtr, argvBufPtr)
-  if (err != Wasi._ESUCCESS) {
-    Memory.free(argcPtr)
-    Memory.free(argvPtr)
-    Memory.free(argvBufPtr)
-    throw Wasi.SystemError(tagSimpleNumber(err))
-  }
+      let argsLength = argc * 4n
+      for (let mut i = 0n; i < argsLength; i += 4n) {
+        let strPtr = WasmI32.load(argvPtr + i, 0n)
+        let mut strLength = 0n
+        while (WasmI32.load8U(strPtr + strLength, 0n) != 0n) {
+          strLength += 1n
+        }
 
-  let arr = allocateArray(argc)
+        let grainStrPtr = allocateString(strLength)
+        Memory.copy(grainStrPtr + 8n, strPtr, strLength)
 
-  let argsLength = argc * 4n
-  for (let mut i = 0n; i < argsLength; i += 4n) {
-    let strPtr = WasmI32.load(argvPtr + i, 0n)
-    let mut strLength = 0n
-    while (WasmI32.load8U(strPtr + strLength, 0n) != 0n) {
-      strLength += 1n
+        WasmI32.store(arr + i, grainStrPtr, 8n)
+      }
+
+      Memory.free(argcPtr)
+      Memory.free(argvPtr)
+      Memory.free(argvBufPtr)
+
+      wasmSafeOk(WasmI32.toGrain(arr): Array<String>)
     }
-
-    let grainStrPtr = allocateString(strLength)
-    Memory.copy(grainStrPtr + 8n, strPtr, strLength)
-
-    WasmI32.store(arr + i, grainStrPtr, 8n)
   }
-
-  Memory.free(argcPtr)
-  Memory.free(argvPtr)
-  Memory.free(argvBufPtr)
-
-  WasmI32.toGrain(arr): Array<String>
+  Memory.decRef(WasmI32.fromGrain(argv))
+  ret
 }
 
-// Access environment variables
-// @returns Array<String> The environment variables supplied to the process
-export let env = () => {
+/**
+ * Access environment variables.
+ *
+ * @returns `Ok(vars)` of an array containing environment variables supplied to the process if successful or `Err(exception)` otherwise
+ */
+export let rec env = () => {
   let envcPtr = Memory.malloc(8n)
   let envvBufSizePtr = envcPtr + 4n
 
   let mut err = Wasi.environ_sizes_get(envcPtr, envvBufSizePtr)
-  if (err != Wasi._ESUCCESS) {
+  let ret = if (err != Wasi._ESUCCESS) {
     Memory.free(envcPtr)
-    throw Wasi.SystemError(tagSimpleNumber(err))
-  }
+    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    let envc = WasmI32.load(envcPtr, 0n)
+    let envvBufSize = WasmI32.load(envvBufSizePtr, 0n)
 
-  let envc = WasmI32.load(envcPtr, 0n)
-  let envvBufSize = WasmI32.load(envvBufSizePtr, 0n)
+    let envvPtr = Memory.malloc(envc * 4n)
+    let envvBufPtr = Memory.malloc(envvBufSize)
 
-  let envvPtr = Memory.malloc(envc * 4n)
-  let envvBufPtr = Memory.malloc(envvBufSize)
+    err = Wasi.environ_get(envvPtr, envvBufPtr)
+    if (err != Wasi._ESUCCESS) {
+      Memory.free(envcPtr)
+      Memory.free(envvPtr)
+      Memory.free(envvBufPtr)
+      wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+    } else {
+      let arr = allocateArray(envc)
 
-  err = Wasi.environ_get(envvPtr, envvBufPtr)
-  if (err != Wasi._ESUCCESS) {
-    Memory.free(envcPtr)
-    Memory.free(envvPtr)
-    Memory.free(envvBufPtr)
-    throw Wasi.SystemError(tagSimpleNumber(err))
-  }
+      let envsLength = envc * 4n
+      for (let mut i = 0n; i < envsLength; i += 4n) {
+        let strPtr = WasmI32.load(envvPtr + i, 0n)
+        let mut strLength = 0n
+        while (WasmI32.load8U(strPtr + strLength, 0n) != 0n) {
+          strLength += 1n
+        }
 
-  let arr = allocateArray(envc)
+        let grainStrPtr = allocateString(strLength)
+        Memory.copy(grainStrPtr + 8n, strPtr, strLength)
 
-  let envsLength = envc * 4n
-  for (let mut i = 0n; i < envsLength; i += 4n) {
-    let strPtr = WasmI32.load(envvPtr + i, 0n)
-    let mut strLength = 0n
-    while (WasmI32.load8U(strPtr + strLength, 0n) != 0n) {
-      strLength += 1n
+        WasmI32.store(arr + i, grainStrPtr, 8n)
+      }
+
+      Memory.free(envcPtr)
+      Memory.free(envvPtr)
+      Memory.free(envvBufPtr)
+
+      wasmSafeOk(WasmI32.toGrain(arr): Array<String>)
     }
-
-    let grainStrPtr = allocateString(strLength)
-    Memory.copy(grainStrPtr + 8n, strPtr, strLength)
-
-    WasmI32.store(arr + i, grainStrPtr, 8n)
   }
-
-  Memory.free(envcPtr)
-  Memory.free(envvPtr)
-  Memory.free(envvBufPtr)
-
-  WasmI32.toGrain(arr): Array<String>
+  Memory.decRef(WasmI32.fromGrain(env))
+  ret
 }
 
-// Terminate the process normally
-// @param code: Number The value to exit with. An exit code of 0 is considered normal, with other values having meaning depending on the platform
-export let exit = (code: Number) => {
+/**
+ * Terminate the process normally.
+ *
+ * @param code: The value to exit with. An exit code of 0 is considered normal, with other values having meaning depending on the platform
+ * @returns `Err(exception)` if unsuccessful. Will not actually return a value if successful, as the process has ended
+ */
+export let rec exit = (code: Number) => {
   let mut code = WasmI32.fromGrain(code)
 
-  if ((code & 1n) == 0n) {
-    throw InvalidArgument("Invalid exit code")
+  let ret = if ((code & 1n) == 0n) {
+    wasmSafeErr(InvalidArgument("Invalid exit code"))
+  } else {
+    code = code >> 1n
+    Wasi.proc_exit(code)
+    // Never actually hit because it exited
+    wasmSafeOk(void)
   }
-
-  code = code >> 1n
-  Wasi.proc_exit(code)
+  Memory.decRef(WasmI32.fromGrain(exit))
+  ret
 }
 
-// Send a signal to the process of the calling thread
-// @param signal: Signal The signal to send
-export let sigRaise = (signalPtr: Signal) => {
+/**
+ * Send a signal to the process of the calling thread.
+ *
+ * @param signal: The signal to send
+ * @returns `Ok(void)` if successful or `Err(exception)` otherwise
+ */
+export let rec sigRaise = (signalPtr: Signal) => {
   let signal = WasmI32.fromGrain(signalPtr)
   let signal = WasmI32.load(signal, 12n) >> 1n
   let err = Wasi.proc_raise(signal)
-  if (err != Wasi._ESUCCESS) {
-    throw Wasi.SystemError(tagSimpleNumber(err))
+  let ret = if (err != Wasi._ESUCCESS) {
+    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    wasmSafeOk(void)
   }
+  Memory.decRef(WasmI32.fromGrain(sigRaise))
+  ret
 }
 
-// Yield execution to the calling thread
-export let schedYield = () => {
+/**
+ * Yield execution to the calling thread.
+ *
+ * @returns `Ok(void)` if successful or `Err(exception)` otherwise
+ */
+export let rec schedYield = () => {
   let err = Wasi.sched_yield()
-  if (err != Wasi._ESUCCESS) {
-    throw Wasi.SystemError(tagSimpleNumber(err))
+  let ret = if (err != Wasi._ESUCCESS) {
+    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+  } else {
+    wasmSafeOk(void)
   }
+  Memory.decRef(WasmI32.fromGrain(schedYield))
+  ret
 }

@@ -1,0 +1,11 @@
+import Random from "sys/random"
+
+let r1 = Random.random()
+let r2 = Random.random()
+
+// Just a smoke test, there's a miniscule chance this could fail
+match ((r1, r2)) {
+  (Ok(x), Ok(y)) => assert x != y,
+  (Err(err), _) => throw err,
+  (_, Err(err)) => throw err
+}
