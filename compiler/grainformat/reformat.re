@@ -11,7 +11,8 @@ let list_cons = "[...]";
 
 type error =
   | Illegal_parse(string)
-  | Unsupported_syntax(string);
+  | Unsupported_syntax(string)
+  | FormatterError(string);
 
 exception Error(error);
 
@@ -50,7 +51,7 @@ let get_original_code =
     };
     text^;
   } else {
-    "/* Formatter error*/";
+    raise(Error(FormatterError("Requested beyond end of original source")));
   };
 };
 

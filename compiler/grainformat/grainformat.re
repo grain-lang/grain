@@ -9,7 +9,7 @@ let compile_parsed = (filename: option(string)) => {
   let program_str = ref("");
   let linesList = ref([]);
 
-  let compile_state =
+  switch (
     switch (filename) {
     | None =>
       // force from stdin for now
@@ -48,9 +48,8 @@ let compile_parsed = (filename: option(string)) => {
 
       Grain_utils.Config.base_path := dirname(filenm);
       Compile.compile_file(~hook=stop_after_parse, filenm);
-    };
-
-  switch (compile_state) {
+    }
+  ) {
   | exception exn =>
     let bt =
       if (Printexc.backtrace_status()) {
