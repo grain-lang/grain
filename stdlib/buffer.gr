@@ -16,9 +16,6 @@ import Bytes from "bytes"
 import String from "string"
 import { coerceNumberToWasmI32 } from "runtime/numbers"
 
-/**
- * Buffers are an automatically growing data structure useful for storing and operating on a unknown number of bytes.
- */
 record Buffer {
   mut len: Number,
   initialSize: Number,
