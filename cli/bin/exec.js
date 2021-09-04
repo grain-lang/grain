@@ -9,7 +9,7 @@ function getGrainc() {
   if (process.pkg || !fs.existsSync(grainc)) {
     const node = process.execPath;
     const grainc_js = path.join(__dirname, "grainc.js");
-    return `${node} ${grainc_js}`;
+    return `"${node}" ${grainc_js}`;
   }
 
   return `${grainc}`;
@@ -35,7 +35,7 @@ function getGraindoc() {
   if (process.pkg || !fs.existsSync(graindoc)) {
     const node = process.execPath;
     const graindoc_js = path.join(__dirname, "graindoc.js");
-    return `${node} ${graindoc_js}`;
+    return `"${node}" ${graindoc_js}`;
   }
 
   return `${graindoc}`;
