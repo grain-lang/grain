@@ -381,7 +381,7 @@ export let addFloat64 = (value, buffer) => {
 }
 
 /**
- * Returns a fresh buffer, initially empty.
+ * Creates a fresh buffer, initially empty.
  * 
  * The `initialSize` parameter is the initial size of the internal byte sequence that holds the buffer contents.
  * That byte sequence is automatically reallocated when more than `initialSize` bytes are stored in the buffer, but shrinks back to `initialSize` characters when reset is called.
