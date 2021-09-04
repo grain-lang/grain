@@ -66,7 +66,7 @@ function getGrainformat() {
   if (process.pkg || !fs.existsSync(grainformat)) {
     const node = process.execPath;
     const grainformat_js = path.join(__dirname, "grainformat.js");
-    return `${node} ${grainformat_js}`;
+    return `"${node}" ${grainformat_js}`;
   }
 
   return `${grainformat}`;
