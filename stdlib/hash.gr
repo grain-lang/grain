@@ -21,10 +21,21 @@ import WasmI32, {
   ltU as (<)
 } from "runtime/unsafe/wasmi32"
 import Tags from "runtime/unsafe/tags"
+import Memory from "runtime/unsafe/memory"
 
 import { tagSimpleNumber } from "runtime/dataStructures"
+import { coerceNumberToWasmI32 } from "runtime/numbers"
 
-let seed = 0xe444n
+import Random from "sys/random"
+import Result from "result"
+
+let seed = {
+  Memory.incRef(WasmI32.fromGrain(Random.random))
+  Memory.incRef(WasmI32.fromGrain(Result.unwrap))
+  let random = Random.random()
+  Memory.incRef(WasmI32.fromGrain(random))
+  coerceNumberToWasmI32(Result.unwrap(random))
+}
 
 let _MAX_HASH_DEPTH = 31n
 
