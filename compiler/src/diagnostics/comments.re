@@ -413,7 +413,7 @@ let print_comment = (comment: Parsetree.comment) => {
   };
 };
 
-let cmt_text = (comment: Parsetree.comment) =>
+let get_comment_source = (comment: Parsetree.comment) =>
   switch (comment) {
   | Line(cmt)
   | Block(cmt)

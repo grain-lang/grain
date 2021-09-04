@@ -116,7 +116,7 @@ let get_end_loc_line = (loc: Grain_parsing.Location.t) => {
 };
 
 let comment_to_doc = (comment: Parsetree.comment) => {
-  Doc.text(String.trim(Comments.cmt_text(comment)));
+  Doc.text(String.trim(Comments.get_comment_source(comment)));
 };
 
 let comment_hardline = (comment: Parsetree.comment) => {
@@ -131,7 +131,8 @@ let comment_hardline = (comment: Parsetree.comment) => {
 let is_disable_formatting_comment = (comment: Parsetree.comment) => {
   switch (comment) {
   | Line(cmt) =>
-    if (String.trim(Comments.cmt_text(comment)) == "// formatter-ignore") {
+    if (String.trim(Comments.get_comment_source(comment))
+        == "// formatter-ignore") {
       true;
     } else {
       false;
