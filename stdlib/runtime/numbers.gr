@@ -1093,11 +1093,6 @@ export let rec (<) = (x: Number, y: Number) => {
   ret
 }
 
-/**
-  @deprecated Please use `Numbers.(<)` instead. `Numbers.numberLess` will be removed in 0.4.0.
-*/
-export let numberLess = (<);
-
 export let rec (>) = (x: Number, y: Number) => {
   let xval = coerceNumberToWasmF64(x)
   let yval = coerceNumberToWasmF64(y)
@@ -1107,11 +1102,6 @@ export let rec (>) = (x: Number, y: Number) => {
   Memory.decRef(WasmI32.fromGrain((>)))
   ret
 }
-
-/**
-  @deprecated Please use `Numbers.(>)` instead. `Numbers.numberGreater` will be removed in 0.4.0.
-*/
-export let numberGreater = (>);
 
 export let rec (<=) = (x: Number, y: Number) => {
   // Equality is finicky, so delegate
@@ -1130,11 +1120,6 @@ export let rec (<=) = (x: Number, y: Number) => {
   ret
 }
 
-/**
-  @deprecated Please use `Numbers.(<=)` instead. `Numbers.numberLessEqual` will be removed in 0.4.0.
-*/
-export let numberLessEqual = (<=);
-
 export let rec (>=) = (x: Number, y: Number) => {
   // Equality is finicky, so delegate
   let xval = coerceNumberToWasmF64(x)
@@ -1151,11 +1136,6 @@ export let rec (>=) = (x: Number, y: Number) => {
   Memory.decRef(WasmI32.fromGrain((>=)))
   ret
 }
-
-/**
-  @deprecated Please use `Numbers.(>=)` instead. `Numbers.numberGreaterEqual` will be removed in 0.4.0.
-*/
-export let numberGreaterEqual = (>=);
 
 /*
  * ===== EQUAL =====
@@ -1185,11 +1165,6 @@ export let rec lnot = (x: Number) => {
   ret
 }
 
-/**
-  @deprecated Please use `Numbers.lnot` instead. `Numbers.numberLnot` will be removed in 0.4.0.
-*/
-export let numberLnot = lnot;
-
 export let rec (<<) = (x: Number, y: Number) => {
   let xval = coerceNumberToWasmI64(x)
   let yval = coerceNumberToWasmI64(y)
@@ -1199,11 +1174,6 @@ export let rec (<<) = (x: Number, y: Number) => {
   Memory.decRef(WasmI32.fromGrain((<<)))
   ret
 }
-
-/**
-  @deprecated Please use `Numbers.(<<)` instead. `Numbers.numberLsl` will be removed in 0.4.0.
-*/
-export let numberLsl = (<<);
 
 export let rec (>>>) = (x: Number, y: Number) => {
   let xval = coerceNumberToWasmI64(x)
@@ -1215,11 +1185,6 @@ export let rec (>>>) = (x: Number, y: Number) => {
   ret
 }
 
-/**
-  @deprecated Please use `Numbers.(>>>)` instead. `Numbers.numberLsr` will be removed in 0.4.0.
-*/
-export let numberLsr = (>>>);
-
 export let rec (&) = (x: Number, y: Number) => {
   let xval = coerceNumberToWasmI64(x)
   let yval = coerceNumberToWasmI64(y)
@@ -1229,11 +1194,6 @@ export let rec (&) = (x: Number, y: Number) => {
   Memory.decRef(WasmI32.fromGrain((&)))
   ret
 }
-
-/**
-  @deprecated Please use `Numbers.(&)` instead. `Numbers.numberLand` will be removed in 0.4.0.
-*/
-export let numberLand = (&);
 
 export let rec (|) = (x: Number, y: Number) => {
   let xval = coerceNumberToWasmI64(x)
@@ -1245,11 +1205,6 @@ export let rec (|) = (x: Number, y: Number) => {
   ret
 }
 
-/**
-  @deprecated Please use `Numbers.(|)` instead. `Numbers.numberLor` will be removed in 0.4.0.
-*/
-export let numberLor = (|);
-
 export let rec (^) = (x: Number, y: Number) => {
   let xval = coerceNumberToWasmI64(x)
   let yval = coerceNumberToWasmI64(y)
@@ -1260,11 +1215,6 @@ export let rec (^) = (x: Number, y: Number) => {
   ret
 }
 
-/**
-  @deprecated Please use `Numbers.(^)` instead. `Numbers.numberLxor` will be removed in 0.4.0.
-*/
-export let numberLxor = (^);
-
 export let rec (>>) = (x: Number, y: Number) => {
   let xval = coerceNumberToWasmI64(x)
   let yval = coerceNumberToWasmI64(y)
@@ -1274,11 +1224,6 @@ export let rec (>>) = (x: Number, y: Number) => {
   Memory.decRef(WasmI32.fromGrain((>>)))
   ret
 }
-
-/**
-  @deprecated Please use `Numbers.(>>)` instead. `Numbers.numberAsr` will be removed in 0.4.0.
-*/
-export let numberAsr = (>>);
 
 
 /// USER-EXPOSED COERCION FUNCTIONS
@@ -1465,11 +1410,6 @@ export let rec (+) = (x: Number, y: Number) => {
   ret
 }
 
-/**
-  @deprecated Please use `Numbers.(+)` instead. `Numbers.numberPlus` will be removed in 0.4.0.
-*/
-export let numberPlus = (+);
-
 export let rec (-) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
@@ -1479,11 +1419,6 @@ export let rec (-) = (x: Number, y: Number) => {
   Memory.decRef(WasmI32.fromGrain((-)))
   ret
 }
-
-/**
-  @deprecated Please use `Numbers.(-)` instead. `Numbers.numberMinus` will be removed in 0.4.0.
-*/
-export let numberMinus = (-);
 
 export let rec (*) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
@@ -1495,11 +1430,6 @@ export let rec (*) = (x: Number, y: Number) => {
   ret
 }
 
-/**
-  @deprecated Please use `Numbers.(*)` instead. `Numbers.numberTimes` will be removed in 0.4.0.
-*/
-export let numberTimes = (*);
-
 export let rec (/) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
@@ -1509,11 +1439,6 @@ export let rec (/) = (x: Number, y: Number) => {
   Memory.decRef(WasmI32.fromGrain((/)))
   ret
 }
-
-/**
-  @deprecated Please use `Numbers.(/)` instead. `Numbers.numberDivide` will be removed in 0.4.0.
-*/
-export let numberDivide = (/);
 
 export let rec (%) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
@@ -1525,11 +1450,6 @@ export let rec (%) = (x: Number, y: Number) => {
   ret
 }
 
-/**
-  @deprecated Please use `Numbers.(%)` instead. `Numbers.numberMod` will be removed in 0.4.0.
-*/
-export let numberMod = (%);
-
 // inc/dec
 
 export let incr = (x) => {
@@ -1538,18 +1458,8 @@ export let incr = (x) => {
   x + 1
 }
 
-/**
-  @deprecated Please use `Numbers.incr` instead. `Numbers.numberIncr` will be removed in 0.4.0.
-*/
-export let numberIncr = incr;
-
 export let decr = (x) => {
   Memory.incRef(WasmI32.fromGrain((-)))
   // skip incRef on x (to pass through)
   x - 1
 }
-
-/**
-  @deprecated Please use `Numbers.decr` instead. `Numbers.numberDecr` will be removed in 0.4.0.
-*/
-export let numberDecr = decr;
