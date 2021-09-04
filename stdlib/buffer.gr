@@ -519,7 +519,7 @@ export let toString = (buffer) => {
  * 
  * @since v0.4.0
  */
-export let toSubString = (start, length, buffer) => {
+export let toStringSlice = (start, length, buffer) => {
   Bytes.toString(toBytesSlice(start, length, buffer))
 }
 
@@ -662,7 +662,7 @@ export let rec addString = (string, buffer) => {
  * @since v0.4.0
  */
 @disableGC
-export let rec addSubString = (start, length, string, buffer) => {
+export let rec addStringSlice = (start, length, string, buffer) => {
   Memory.incRef(WasmI32.fromGrain(String.byteLength))
   Memory.incRef(WasmI32.fromGrain(start))
   Memory.incRef(WasmI32.fromGrain(length))
@@ -689,7 +689,7 @@ export let rec addSubString = (start, length, string, buffer) => {
   Memory.decRef(WasmI32.fromGrain(length))
   Memory.decRef(WasmI32.fromGrain(string))
   Memory.decRef(WasmI32.fromGrain(buffer))
-  Memory.decRef(WasmI32.fromGrain(addSubString))
+  Memory.decRef(WasmI32.fromGrain(addStringSlice))
   void
 }
 
@@ -704,7 +704,7 @@ export let rec addSubString = (start, length, string, buffer) => {
  * @since v0.4.0
  */
 @disableGC
-export let rec addSubBytes = (start, length, bytes, buffer) => {
+export let rec addBytesSlice = (start, length, bytes, buffer) => {
   Memory.incRef(WasmI32.fromGrain(autogrow))
   Memory.incRef(WasmI32.fromGrain(length))
   Memory.incRef(WasmI32.fromGrain(buffer))
@@ -725,7 +725,7 @@ export let rec addSubBytes = (start, length, bytes, buffer) => {
   Memory.decRef(WasmI32.fromGrain(length))
   Memory.decRef(WasmI32.fromGrain(bytes))
   Memory.decRef(WasmI32.fromGrain(buffer))
-  Memory.decRef(WasmI32.fromGrain(addSubBytes))
+  Memory.decRef(WasmI32.fromGrain(addBytesSlice))
   void
 }
 
@@ -740,7 +740,7 @@ export let rec addSubBytes = (start, length, bytes, buffer) => {
  * @since v0.4.0
  */
 export let addBuffer = (srcBuffer, dstBuffer) => {
-  addSubBytes(0, srcBuffer.len, srcBuffer.data, dstBuffer)
+  addBytesSlice(0, srcBuffer.len, srcBuffer.data, dstBuffer)
 }
 
 /**
@@ -755,6 +755,6 @@ export let addBuffer = (srcBuffer, dstBuffer) => {
  * 
  * @since v0.4.0
  */
-export let addSubBuffer = (start, length, srcBuffer, dstBuffer) => {
-  addSubBytes(start, length, srcBuffer.data, dstBuffer)
+export let addBufferSlice = (start, length, srcBuffer, dstBuffer) => {
+  addBytesSlice(start, length, srcBuffer.data, dstBuffer)
 }

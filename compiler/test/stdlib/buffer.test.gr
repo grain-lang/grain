@@ -180,13 +180,13 @@ let buf = Buffer.make(0)
 Buffer.addBytes(bytes, buf)
 assert Buffer.toBytes(buf) == bytes
 
-// addSubBytes
+// addBytesSlice
 let str = "Let's get this 🍞"
 let bytes = Bytes.fromString(str)
 let buf = Buffer.make(0)
-Buffer.addSubBytes(0, 0, bytes, buf)
+Buffer.addBytesSlice(0, 0, bytes, buf)
 assert Buffer.toBytes(buf) == Bytes.empty
-Buffer.addSubBytes(0, Bytes.length(bytes), bytes, buf)
+Buffer.addBytesSlice(0, Bytes.length(bytes), bytes, buf)
 assert Buffer.toBytes(buf) == bytes
 
 // addString / toString
@@ -195,22 +195,22 @@ let buf = Buffer.make(0)
 Buffer.addString(str, buf)
 assert Buffer.toString(buf) == str
 
-// addSubString
+// addStringSlice
 let str = "Let's get this 🍞"
 let buf = Buffer.make(0)
-Buffer.addSubString(0, 0, str, buf)
+Buffer.addStringSlice(0, 0, str, buf)
 assert Buffer.toString(buf) == ""
-Buffer.addSubString(0, String.length(str), str, buf)
+Buffer.addStringSlice(0, String.length(str), str, buf)
 assert Buffer.toString(buf) == str
 
-// toSubString
+// toStringSlice
 let str = "Let's get this 🍞"
 let buf = Buffer.make(0)
 Buffer.addString(str, buf)
-assert Buffer.toSubString(0, 0, buf) == ""
-assert Buffer.toSubString(0, 1, buf) == "L"
-assert Buffer.toSubString(6, 3, buf) == "get"
-assert Buffer.toSubString(Bytes.length(bytes) - 4, 4, buf) == "🍞"
+assert Buffer.toStringSlice(0, 0, buf) == ""
+assert Buffer.toStringSlice(0, 1, buf) == "L"
+assert Buffer.toStringSlice(6, 3, buf) == "get"
+assert Buffer.toStringSlice(Bytes.length(bytes) - 4, 4, buf) == "🍞"
 let a = buf
 let b = Buffer.make(0)
 Buffer.addString(str, b)
@@ -245,9 +245,9 @@ Buffer.addBuffer(buf1, buf0)
 Buffer.addBuffer(buf2, buf0)
 assert Buffer.toString(buf0) == "✨🍩✨"
 
-// addSubBuffer
+// addBufferSlice
 let buf0 = Buffer.make(0)
 let buf1 = Buffer.make(0)
 Buffer.addString("0123456789", buf1)
-Buffer.addSubBuffer(1, 4, buf1, buf0)
+Buffer.addBufferSlice(1, 4, buf1, buf0)
 assert Buffer.toString(buf0) == "1234"
