@@ -415,7 +415,7 @@ export let length = (buffer) => buffer.len
  * 
  * This operation does not resize the underlying byte sequence.
  * 
- * @param buffer: The buffer to mutate
+ * @param buffer: The buffer to clear
  * 
  * @since v0.4.0
  */
