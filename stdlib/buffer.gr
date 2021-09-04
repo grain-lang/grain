@@ -182,7 +182,7 @@ export let getInt16U = (index, buffer) => {
 /**
  * Sets a signed 16-bit integer starting at the given byte index.
  * 
- * @param index: The byte index to access
+ * @param index: The byte index to update
  * @param value: The value to set
  * @param buffer: The buffer to mutate
  * 
