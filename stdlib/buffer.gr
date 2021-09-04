@@ -722,7 +722,7 @@ export let rec addSubBytes = (start, length, bytes, buffer) => {
  * The source buffer is not mutated by this operation. The destination buffer, however, is mutated.
  * 
  * @param srcBuffer: The buffer to append
- * @param dstBuffer: The buffer to append to
+ * @param dstBuffer: The buffer to mutate
  * 
  * @since v0.4.0
  */
