@@ -462,7 +462,7 @@ export let rec truncate = (length, buffer) => {
   Memory.decRef(WasmI32.fromGrain(length))
   Memory.decRef(WasmI32.fromGrain(buffer))
   Memory.decRef(WasmI32.fromGrain(truncate))
-  void  
+  void
 }
 
 /**
