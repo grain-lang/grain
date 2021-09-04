@@ -1,0 +1,29 @@
+import WasmI32, {
+  add as (+),
+  sub as (-),
+  mul as (*),
+  divS as (/),
+  shl as (<<),
+  shrS as (>>),
+  and as (&),
+  or as (|),
+  eq as (==),
+  ne as (!=),
+  geS as (>=),
+  gtS as (>),
+  leS as (<=),
+  ltS as (<)
+} from "runtime/unsafe/wasmi32"
+
+let size = 2n
+
+  for (let mut i = 0n; i < size; i += 1n) {
+    let  strLength = 0n
+  }
+
+let verylongvariablenameforcingalinebreakhereplease = 2n
+
+  for (let mut i = 0n; i < verylongvariablenameforcingalinebreakhereplease; i += 1n) {
+    let  strLength = 0n
+    print("Loop")
+  }

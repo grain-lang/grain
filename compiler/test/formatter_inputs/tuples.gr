@@ -1,0 +1,16 @@
+let user = ("Klaus Teuber", 67, "yellow")
+
+let (name, age, color) = user
+
+
+let (x, y) = ((1, 2), (3, 4))
+let (a, b) = y
+
+let a = (1)
+let b = (1,)
+let c: (Number,) = (1,)
+
+let d = (1, 2, 3)
+
+let e = (1, 2, 3, )
+

@@ -19,6 +19,7 @@ const compile = require("./compile.js");
 const run = require("./run.js");
 const lsp = require("./lsp.js");
 const doc = require("./doc.js");
+const format = require("./format.js");
 
 const stdlibPath = require("@grain/stdlib");
 
@@ -176,4 +177,10 @@ program
     doc(file, program);
   });
 
+program
+  .command("format [file]")
+  .description("format a grain file")
+  .action(function (file) {
+    format(file, program);
+  });
 program.parse(process.argv);

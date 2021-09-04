@@ -1,0 +1,79 @@
+/* Let's start with a block 
+ followed by a blank line
+*/
+
+let myfun = (/* a */ x /*post*/, y) => 10
+
+let myfun1 = (/* a */ x, y) => 10
+
+let myfun2 = (x /*post*/, y) => 10
+
+/**
+ * Slices an array given zero-based start and end indexes. The value
+ * at the end index will not be included in the result.
+ *
+ * If either index is a negative number, it will be treated as a reverse index from
+ * the end of the array. e.g. `slice(1, -1, [> 'a', 'b', 'c']) == [> 'b']`.
+ *
+ * @param startIndex: The index of the array where the slice will begin (inclusive)
+ * @param endIndex: The index of the array where the slice will end (exclusive)
+ * @param array: The array to be sliced
+ * @returns The subset of the array that was sliced
+ */
+export let slice = (startIndex, endIndex, array) => {
+  "no code"
+}
+
+// leading
+
+if (/*before*/ true) /*whyt*/ {
+  // 1
+  //a
+
+  true // b
+
+  true
+  // c
+  // d
+
+  6
+  // trail
+} else {
+  /* before */
+  7 /* arf*/
+  /* after*/
+}
+// trailing
+
+// starting comment
+
+let x = 7 // another comment 1
+let y = 9 // another comment 2
+
+/* stand alone block */
+
+// trailing comment
+
+let a = false
+
+let zee = "zer"
+
+if (a) /*why*/ {
+  /* block
+   in here */
+  // inner comment
+  5 // trail 5
+
+  6 /* block 6a */ /* block 6 b */
+  // ending comment
+} else {
+  7 // on time
+  let x = 55 /* ppost*/
+  9
+  // end block
+}
+
+let myfun = /*special*/ (/*lead*/ x /*follow*/, y) => x + 5
+
+/* ending block 2 */
+// trailing comment 2

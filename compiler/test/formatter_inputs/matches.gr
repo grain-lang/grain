@@ -1,0 +1,20 @@
+import List from "list"
+
+record Queue<a>  { forwards: List<a>, backwards: List<a> }
+
+export let push = (value, queue) => {
+    match (queue) {
+        { forwards: [], backwards: [] } => { forwards: [value], backwards: [] },
+        // comment
+        { forwards, backwards } => { forwards, backwards: [value, ...backwards] }
+    }
+}
+
+export let pop = (queue) => {
+    match (queue) {
+        { forwards: [], backwards: [] } => queue,
+        { forwards: [head], backwards: [] } => { forwards: [], backwards: [] },
+        { forwards: [head], backwards } => { forwards: List.reverse(backwards), backwards: [] },
+        { forwards: [head, ...ftail], backwards } => { forwards: ftail, backwards }
+    }
+}

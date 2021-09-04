@@ -1,0 +1,23 @@
+import Array from "array"
+
+let empty = [>]
+
+let mut someNums = Array.init(5, n => n + 3)
+
+let second = someNums[1]
+
+someNums[2] = 3
+
+Array.set(1, 3, someNums)
+
+let instructions = Array.map(
+  instruct => {
+    match (String.split(" ", instruct)) {
+      [> "acc", arg] => Acc(parseIntWithSign(arg)),
+      [> "jmp", arg] => Jmp(parseIntWithSign(arg)),
+      [> "nop", _] => Nop,
+      x => fail "Can't handle: " ++ (toString(x)),
+    }
+  },
+  String.split("\n", data),
+)

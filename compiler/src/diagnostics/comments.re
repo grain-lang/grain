@@ -374,3 +374,49 @@ module Doc = {
     List.rev(section_comments^);
   };
 };
+
+let print_comment = (comment: Parsetree.comment) => {
+  let endloc =
+    switch (comment) {
+    | Line(cmt)
+    | Block(cmt)
+    | Doc(cmt)
+    | Shebang(cmt) => cmt.cmt_loc.loc_end
+    };
+
+  let startloc =
+    switch (comment) {
+    | Line(cmt)
+    | Block(cmt)
+    | Doc(cmt)
+    | Shebang(cmt) => cmt.cmt_loc.loc_start
+    };
+
+  let (_file, stmtstartline, startchar, _sbol) =
+    Locations.get_raw_pos_info(startloc);
+  let (_file, stmtendline, endchar, _sbol) =
+    Locations.get_raw_pos_info(endloc);
+
+  Printf.printf(
+    "%d:%d,%d:%d -",
+    stmtstartline,
+    startchar,
+    stmtendline,
+    endchar,
+  );
+
+  switch (comment) {
+  | Line(cmt)
+  | Block(cmt)
+  | Doc(cmt)
+  | Shebang(cmt) => print_endline(cmt.cmt_source)
+  };
+};
+
+let get_comment_source = (comment: Parsetree.comment) =>
+  switch (comment) {
+  | Line(cmt)
+  | Block(cmt)
+  | Doc(cmt)
+  | Shebang(cmt) => cmt.cmt_source
+  };

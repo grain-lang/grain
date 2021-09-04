@@ -36,7 +36,11 @@ cli/bin/grainc.exe
 cli/bin/grainc_js.bc.js
 cli/bin/graindoc.exe
 cli/bin/graindoc_js.bc.js
+cli/bin/grainformat.exe
+cli/bin/grainformat_js.bc.js
 
 # Local settings.json for vscode should not be checked in
 # But the directory contains a build script for setting up OCaml LSP
 .vscode/settings.json
+
+.DS_Store

@@ -9,6 +9,12 @@ let stdlibfile = name => Filename.concat(test_stdlib_dir, name ++ ".gr");
 let wasmfile = name => Filename.concat(test_output_dir, name ++ ".gr.wasm");
 let watfile = name => Filename.concat(test_output_dir, name ++ ".gr.wat");
 
+let formatter_out_file = name =>
+  Filename.concat(test_formatter_out_dir, name ++ ".gr");
+
+let formatter_in_file = name =>
+  Filename.concat(test_formatter_in_dir, name ++ ".gr");
+
 let read_stream = cstream => {
   let buf = Bytes.create(2048);
   let i = ref(0);
@@ -143,6 +149,32 @@ let run = (~num_pages=?, file) => {
     } else {
       out;
     };
+  (out ++ err, code);
+};
+
+let format = file => {
+  let args = ["grain", "format", file];
+  let command = String.concat(" ", args);
+
+  let (stdout, stdin, stderr) =
+    Unix.open_process_full(command, Unix.environment());
+
+  let pid = Unix.process_full_pid((stdout, stdin, stderr));
+  let (_, status) = Unix.waitpid([], pid);
+
+  let out = read_stream(Stream.of_channel(stdout));
+  let err = read_stream(Stream.of_channel(stderr));
+
+  close_in(stdout);
+  close_in(stderr);
+  close_out(stdin);
+
+  let code =
+    switch (status) {
+    | Unix.WEXITED(code) => code
+    | _ => failwith("process did not exit properly")
+    };
+
   (out ++ err, code);
 };
 
@@ -323,6 +355,23 @@ let makeParseRunner =
         Sexplib.Sexp.to_string_hum @@
         Grain_parsing.Parsetree.sexp_of_parsed_program(p);
       expect.string(conv(parsed)).toEqual(conv(expected));
+    },
+  );
+};
+
+let makeFormatterRunner = (test, name, filename) => {
+  test(
+    name,
+    ({expect}) => {
+      let infile = formatter_in_file(filename);
+      let (result, _) = format(infile);
+
+      // toEqualFile reads a file and misses the final newline,
+      // so we will trim our final newline
+
+      expect.string(String.trim(result)).toEqualFile(
+        formatter_out_file(name),
+      );
     },
   );
 };

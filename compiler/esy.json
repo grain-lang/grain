@@ -12,13 +12,15 @@
       "GRAINC_JS_PATH": "#{self.target_dir / 'default' / 'grainc' / 'grainc_js.bc.js'}",
       "GRAINDOC_BIN_PATH": "#{self.target_dir / 'default' / 'graindoc' / 'graindoc.exe'}",
       "GRAINDOC_JS_PATH": "#{self.target_dir / 'default' / 'graindoc' / 'graindoc_js.bc.js'}",
+      "GRAINFORMAT_BIN_PATH": "#{self.target_dir / 'default' / 'grainformat' / 'grainformat.exe'}",
+      "GRAINFORMAT_JS_PATH": "#{self.target_dir / 'default' / 'grainformat' / 'grainformat_js.bc.js'}",
       "CLI_BIN_DIR": "#{self.root / '..' / 'cli' / 'bin'}",
       "TEST_EXEC_PATH": "#{self.target_dir / 'default' / 'test' / 'test.exe'}"
     }
   },
   "scripts": {
-    "copy:exe": "cp #{$GRAINC_BIN_PATH} #{$GRAINDOC_BIN_PATH} #{$CLI_BIN_DIR}",
-    "copy:js": "cp #{$GRAINC_JS_PATH} #{$GRAINDOC_JS_PATH} #{$CLI_BIN_DIR}",
+    "copy:exe": "cp #{$GRAINC_BIN_PATH} #{$GRAINDOC_BIN_PATH} #{$GRAINFORMAT_BIN_PATH} #{$CLI_BIN_DIR}",
+    "copy:js": "cp #{$GRAINC_JS_PATH} #{$GRAINDOC_JS_PATH} #{$GRAINFORMAT_JS_PATH} #{$CLI_BIN_DIR}",
     "clean": "rm -rf #{self.root}/_esy",
     "test": "#{$TEST_EXEC_PATH}",
     "format": "dune build @fmt --auto-promote",
