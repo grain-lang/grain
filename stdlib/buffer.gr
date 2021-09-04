@@ -429,7 +429,7 @@ export let clear = (buffer) => {
  * 
  * This operation resizes the underlying byte sequence to the initial size of the buffer.
  * 
- * @param buffer: The buffer to mutate
+ * @param buffer: The buffer to reset
  * 
  * @since v0.4.0
  */
