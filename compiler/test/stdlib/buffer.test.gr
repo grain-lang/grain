@@ -25,8 +25,6 @@ for (let mut i = 0; i < size / byteSize; i += 1) {
   Buffer.addInt8(n, buf)
   // it should have value n at position i
   assert Buffer.getInt8S(i * byteSize, buf) == n
-  // it should have value n at position -1
-  assert Buffer.getInt8S(-1 * byteSize, buf) == n
   // it should have length equal to i + 1
   assert Buffer.length(buf) == (i + 1) * byteSize
 }
@@ -41,8 +39,6 @@ for (let mut i = 0; i < size / byteSize; i += 1) {
   Buffer.addInt16(n, buf)
   // it should have value n at position i
   assert Buffer.getInt16S(i * byteSize, buf) == n
-  // it should have value n at position -1
-  assert Buffer.getInt16S(-1 * byteSize, buf) == n
   // it should have length equal to i + 1
   assert Buffer.length(buf) == (i + 1) * byteSize
 }
@@ -57,8 +53,6 @@ for (let mut i = 0; i < size / byteSize; i += 1) {
   Buffer.addInt32(n, buf)
   // it should have value n at position i
   assert Buffer.getInt32(i * byteSize, buf) == n
-  // it should have value n at position -1
-  assert Buffer.getInt32(-1 * byteSize, buf) == n
   // it should have length equal to i + 1
   assert Buffer.length(buf) == (i + 1) * byteSize
 }
@@ -73,8 +67,6 @@ for (let mut i = 0; i < size / byteSize; i += 1) {
   Buffer.addFloat32(n, buf)
   // it should have value n at position i
   assert Buffer.getFloat32(i * byteSize, buf) == n
-  // it should have value n at position -1
-  assert Buffer.getFloat32(-1 * byteSize, buf) == n
   // it should have length equal to i + 1
   assert Buffer.length(buf) == (i + 1) * byteSize
 }
@@ -89,8 +81,6 @@ for (let mut i = 0; i < size / byteSize; i += 1) {
   Buffer.addInt64(n, buf)
   // it should have value n at position i
   assert Buffer.getInt64(i * byteSize, buf) == n
-  // it should have value n at position -1
-  assert Buffer.getInt64(-1 * byteSize, buf) == n
   // it should have length equal to i + 1
   assert Buffer.length(buf) == (i + 1) * byteSize
 }
@@ -105,8 +95,6 @@ for (let mut i = 0; i < size / byteSize; i += 1) {
   Buffer.addFloat64(n, buf)
   // it should have value n at position i
   assert Buffer.getFloat64(i * byteSize, buf) == n
-  // it should have value n at position -1
-  assert Buffer.getFloat64(-1 * byteSize, buf) == n
   // it should have length equal to i + 1
   assert Buffer.length(buf) == (i + 1) * byteSize
 }
@@ -127,12 +115,15 @@ assert Buffer.length(buf) == 0
 
 // it should truncate the buffer
 let buf = Buffer.make(0)
-Buffer.addInt8(0l, buf)
-Buffer.addInt8(0l, buf)
-Buffer.addInt8(0l, buf)
+Buffer.addInt8(1l, buf)
+Buffer.addInt8(2l, buf)
+Buffer.addInt8(3l, buf)
 assert Buffer.length(buf) == 3
 Buffer.truncate(1, buf)
 assert Buffer.length(buf) == 1
+assert Buffer.getInt8S(0, buf) == 1l
+let bytes = Buffer.toBytes(buf)
+assert Bytes.length(bytes) == 1
 
 // it should convert a buffer to bytes
 let buf = Buffer.make(0)
