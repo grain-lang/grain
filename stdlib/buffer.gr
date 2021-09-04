@@ -738,7 +738,7 @@ export let addBuffer = (srcBuffer, dstBuffer) => {
  * @param start: The byte offset into the buffer
  * @param length: The number of bytes to append
  * @param srcBuffer: The buffer to append
- * @param dstBuffer: The buffer to append to
+ * @param dstBuffer: The buffer to mutate
  * 
  * @since v0.4.0
  */
