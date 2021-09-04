@@ -75,7 +75,7 @@ let rec hashOne = (val, depth) => {
   } else if ((val & Tags._GRAIN_GENERIC_TAG_MASK) == Tags._GRAIN_GENERIC_HEAP_TAG_TYPE) {
     let heapPtr = val
     match (WasmI32.load(heapPtr, 0n)) {
-      t when t == Tags._GRAIN_STRING_HEAP_TAG => {
+      t when t == Tags._GRAIN_STRING_HEAP_TAG || t == Tags._GRAIN_BYTES_HEAP_TAG => {
         let length = WasmI32.load(heapPtr, 4n)
         let extra = length % 4n
         let l = length - extra
