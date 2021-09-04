@@ -444,7 +444,7 @@ export let reset = (buffer) => {
  * This operation does not resize the underlying byte sequence.
  * 
  * @param length: The number of bytes to truncate the buffer to
- * @param buffer: The buffer to mutate
+ * @param buffer: The buffer to truncate
  * 
  * @since v0.4.0
  */
