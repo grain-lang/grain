@@ -571,7 +571,7 @@ toplevel_stmt :
   | attributes LET MUT value_binds { Top.let_ ~loc:(symbol_rloc dyp) ~attributes:$1 Nonexported Nonrecursive Mutable $4 }
   | expr { Top.expr ~loc:(symbol_rloc dyp) $1 }
   | import_stmt { Top.import ~loc:(symbol_rloc dyp) $1 }
-  | IMPORT foreign_stmt { Top.foreign ~loc:(symbol_rloc dyp) Nonexported $2 }
+  | foreign_stmt { Top.foreign ~loc:(symbol_rloc dyp) Nonexported $1 }
   | data_declaration_stmts { Top.data ~loc:(symbol_rloc dyp) $1 }
   | export_stmt { $1 }
   | primitive_stmt { Top.primitive ~loc:(symbol_rloc dyp) Nonexported $1 }
