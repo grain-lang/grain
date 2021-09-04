@@ -454,7 +454,7 @@ export let truncate = (length, buffer) => {
 /**
  * Returns a copy of the current contents of the buffer as a byte sequence.
  * 
- * @param buffer: The buffer to stringify
+ * @param buffer: The buffer to copy into a byte sequence
  * @returns A string made from copied buffer data
  * 
  * @since v0.4.0
