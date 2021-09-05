@@ -519,6 +519,7 @@ type toplevel_stmt = {
 type comment_desc = {
   cmt_content: string,
   cmt_source: string,
+  [@sexp_drop_if sexp_locs_disabled]
   cmt_loc: Location.t,
 };
 
