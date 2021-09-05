@@ -8,3 +8,9 @@ import WasmI32, {
   xor as (^),
   shl as (<<)
 } from "runtime/unsafe/wasmi32"
+
+export foreign wasm storage_read: (
+  WasmI64,
+  WasmI64,
+  WasmI64
+) -> WasmI64 as storageRead from "env"
