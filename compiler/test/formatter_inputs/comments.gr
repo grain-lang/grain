@@ -1,4 +1,5 @@
 /* Let's start with a block 
+ the line above ends with a space that we preserve
  followed by a blank line
 */
 
@@ -88,6 +89,13 @@ if (true) {
 
   let _KEY_LEN23 = 64
 }
+
+let noval = 5
+
+// Tell the host where the key and value are located and their lengths.
+// No empty line beneath this please
+let _KEY_LEN = 32
+let _KEY_LEN2 = 64
 
 /* ending block 2 */
 // trailing comment 2
