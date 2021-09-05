@@ -2889,10 +2889,7 @@ let reformat_ast =
 
   let trailing_comment_docs =
     if (List.length(trailing_comments) > 0) {
-      Doc.concat([
-        print_multi_comments(trailing_comments, previous_line^),
-        Doc.hardLine,
-      ]);
+      Doc.concat([print_multi_comments(trailing_comments, previous_line^)]);
     } else {
       Doc.nil;
     };
