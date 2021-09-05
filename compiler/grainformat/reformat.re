@@ -1179,11 +1179,18 @@ and print_expression =
       expr: Parsetree.expression,
     ) => {
   let (leading_comments, trailing_comments) =
-    Walktree.partition_comments(expr.pexp_loc, Some(parent_loc));
-
-  Walktree.remove_used_comments(leading_comments, trailing_comments);
+    Walktree.partition_comments(expr.pexp_loc, Some(expr.pexp_loc));
 
   let expr_line = get_end_loc_line(expr.pexp_loc);
+
+  let trailing_comment_docs =
+    if (List.length(trailing_comments) > 0) {
+      Doc.concat([print_multi_comments(trailing_comments, expr_line)]);
+    } else {
+      Doc.nil;
+    };
+
+  Walktree.remove_used_comments(leading_comments, trailing_comments);
 
   let leading_comment_docs =
     if (List.length(leading_comments) > 0) {
@@ -1191,13 +1198,6 @@ and print_expression =
         print_multi_comments_no_space(leading_comments, expr_line),
         Doc.space,
       ]);
-    } else {
-      Doc.nil;
-    };
-
-  let trailing_comment_docs =
-    if (List.length(trailing_comments) > 0) {
-      Doc.concat([print_multi_comments(trailing_comments, expr_line)]);
     } else {
       Doc.nil;
     };
@@ -1960,11 +1960,24 @@ and print_expression =
             ),
           );
 
+        // we handle the  comments after the last expression in a block
+        // specially here
+
+        let remaining_comments_in_block =
+          Walktree.get_comments_inside_location(expr.pexp_loc);
+        Walktree.remove_used_comments([], remaining_comments_in_block);
+        let blockEndCommentDocs =
+          if (List.length(remaining_comments_in_block) > 0) {
+            print_multi_comments(remaining_comments_in_block, previous_line^);
+          } else {
+            Doc.nil;
+          };
+
         Doc.breakableGroup(
           ~forceBreak=true,
           Doc.concat([
             Doc.lbrace,
-            Doc.indent(Doc.concat([Doc.line, block])),
+            Doc.indent(Doc.concat([Doc.line, block, blockEndCommentDocs])),
             Doc.line,
             Doc.rbrace,
           ]),

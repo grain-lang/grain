@@ -77,7 +77,17 @@ if (a /*why*/) {
 
 let myfun /*special*/ = (/*lead*/ x /*follow*/,y ) => x + 5 
 
+if (true) {
 
+  let noval = 5
+
+  // Tell the host where the key and value are located and their lengths.
+  // No empty line beneath this please
+  let _KEY_LEN = 32
+  let _KEY_LEN2 = 64
+
+  let _KEY_LEN23 = 64
+}
 
 /* ending block 2 */
 // trailing comment 2

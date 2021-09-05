@@ -264,3 +264,26 @@ let remove_comments_in_ignore_block = (loc: Location.t) => {
 
   all_locations := cleaned_list;
 };
+
+let get_comments_inside_location = (loc: Grain_parsing.Location.t) => {
+  let nodes =
+    List.filter(
+      n => {
+        switch (n) {
+        | Code(_) => false
+        | Comment((commentloc, _)) => is_first_inside_second(commentloc, loc)
+        }
+      },
+      all_locations^,
+    );
+
+  List.fold_left(
+    (acc, n) =>
+      switch (n) {
+      | Code(_) => acc
+      | Comment((_commentloc, c)) => acc @ [c]
+      },
+    [],
+    nodes,
+  );
+};
