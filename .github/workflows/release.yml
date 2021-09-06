@@ -11,7 +11,7 @@ jobs:
       release_created: ${{ steps.release.outputs.release_created }}
       upload_url: ${{ steps.release.outputs.upload_url }}
     steps:
-      - uses: GoogleCloudPlatform/release-please-action@v2
+      - uses: GoogleCloudPlatform/release-please-action@v2.29.2
         id: release
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
