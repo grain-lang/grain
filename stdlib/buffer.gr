@@ -1,7 +1,7 @@
 /**
  * @module Buffer: Utilities for working with buffers.
  *
- * Buffers are an automatically growing data structure useful for storing and operating on an unknown number of bytes. When working with buffers, all set or append operations will be mutating.
+ * Buffers are data structures that automatically expand as more data is appended. They are useful for storing and operating on an unknown number of bytes. All set or append operations mutate the buffer.
  * @example import Buffer from "buffer"
  *
  * @since v0.4.0
