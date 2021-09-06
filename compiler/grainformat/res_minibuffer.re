@@ -90,10 +90,12 @@ let add_string = (b, s) => {
 
 /* adds newline and trims all preceding whitespace */
 let flush_newline = b => {
-  let position = ref(b.position);
-  while (Bytes.unsafe_get(b.buffer, position^ - 1) == ' ' && position^ >= 0) {
-    position := position^ - 1;
+  if (! Grain_utils.Config.formatter_maintain_ast^) {
+    let position = ref(b.position);
+    while (Bytes.unsafe_get(b.buffer, position^ - 1) == ' ' && position^ >= 0) {
+      position := position^ - 1;
+    };
+    b.position = position^;
   };
-  b.position = position^;
   add_char(b, '\n');
 };

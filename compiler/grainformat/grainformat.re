@@ -83,7 +83,7 @@ let format_code =
   // HELP NEEDED
   // I need to get this value from the command line and
 
-  let check_format = true;
+  let check_format = false;
 
   if (check_format) {
     Grain_utils.Config.formatter_maintain_ast := true;
@@ -124,7 +124,7 @@ let format_code =
 
 let grainformat = ((program, source: array(string))) => {
   // FIX needed here too
-  let check_format = true;
+  let check_format = false;
   if (check_format) {
     Grain_utils.Config.formatter_maintain_ast := true;
   };

@@ -116,7 +116,7 @@ let get_end_loc_line = (loc: Grain_parsing.Location.t) => {
 };
 
 let comment_to_doc = (comment: Parsetree.comment) => {
-  Doc.text(String.trim(Comments.get_comment_source(comment)));
+  Doc.text(Comments.get_comment_source(comment));
 };
 
 let comment_hardline = (comment: Parsetree.comment) => {
@@ -2982,11 +2982,6 @@ let validate_reformat =
     Sexplib.Sexp.to_string_hum(
       Grain_parsing.Parsetree.sexp_of_parsed_program(reformatted),
     );
-
-  // print_endline(original_s);
-
-  // print_endline(formatted_s);
-
   // reset the mode just in case
   Grain_utils.Config.sexp_locs_enabled := orig_mode;
 

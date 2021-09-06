@@ -415,8 +415,13 @@ let print_comment = (comment: Parsetree.comment) => {
 
 let get_comment_source = (comment: Parsetree.comment) =>
   switch (comment) {
-  | Line(cmt)
   | Block(cmt)
-  | Doc(cmt)
-  | Shebang(cmt) => cmt.cmt_source
+  | Doc(cmt) => cmt.cmt_source
+  | Line(cmt)
+  | Shebang(cmt) =>
+    if (Grain_utils.Config.formatter_maintain_ast^) {
+      Str.global_replace(Str.regexp("[\n\r]+"), "", cmt.cmt_source);
+    } else {
+      String.trim(cmt.cmt_source);
+    }
   };
