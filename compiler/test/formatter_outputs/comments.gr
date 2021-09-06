@@ -1,4 +1,5 @@
 /* Let's start with a block 
+ the line above ends with a space that we preserve
  followed by a blank line
 */
 
@@ -26,7 +27,7 @@ export let slice = (startIndex, endIndex, array) => {
 
 // leading
 
-if (/*before*/ true) /*whyt*/ {
+if (/*before*/ true /*whyt*/) {
   // 1
   //a
 
@@ -35,7 +36,6 @@ if (/*before*/ true) /*whyt*/ {
   true
   // c
   // d
-
   6
   // trail
 } else {
@@ -58,7 +58,7 @@ let a = false
 
 let zee = "zer"
 
-if (a) /*why*/ {
+if (a /*why*/) {
   /* block
    in here */
   // inner comment
@@ -73,7 +73,26 @@ if (a) /*why*/ {
   // end block
 }
 
-let myfun = /*special*/ (/*lead*/ x /*follow*/, y) => x + 5
+let myfun /*special*/ = (/*lead*/ x /*follow*/, y) => x + 5
+
+if (true) {
+
+  let noval = 5
+
+  // Tell the host where the key and value are located and their lengths.
+  // No empty line beneath this please
+  let _KEY_LEN = 32
+  let _KEY_LEN2 = 64
+
+  let _KEY_LEN23 = 64
+}
+
+let noval = 5
+
+// Tell the host where the key and value are located and their lengths.
+// No empty line beneath this please
+let _KEY_LEN = 32
+let _KEY_LEN2 = 64
 
 /* ending block 2 */
 // trailing comment 2

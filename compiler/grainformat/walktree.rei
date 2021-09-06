@@ -72,3 +72,8 @@ let walktree:
 
  */
 let remove_comments_in_ignore_block: Grain_utils__Warnings.loc => unit;
+
+/* return the comments inside a location */
+
+let get_comments_inside_location:
+  Grain_parsing.Location.t => list(Grain_parsing.Parsetree.comment);
