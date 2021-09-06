@@ -24,4 +24,9 @@ describe("print", ({test}) => {
     "record Foo { foo: Number }; record Bar { bar: Foo }; print({ bar: { foo: 1 } })",
     "{\n  bar: {\n    foo: 1\n  }\n}\n",
   );
+  assertRun(
+    "print_nested_records_multiple",
+    "record Foo { foo: Number }; record Bar { bar: Foo }; print({ bar: { foo: 1 } }); print({ bar: { foo: 1 } }); print({ bar: { foo: 1 } })",
+    "{\n  bar: {\n    foo: 1\n  }\n}\n{\n  bar: {\n    foo: 1\n  }\n}\n{\n  bar: {\n    foo: 1\n  }\n}\n",
+  );
 });

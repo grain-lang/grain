@@ -380,6 +380,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
             variantName
           } else {
             let comspace = ", "
+            Memory.incRef(WasmI32.fromGrain(SLEmpty))
             let mut strings = slConsDisableGc(")", SLEmpty)
             for (let mut i = variantArity * 4n - 4n; i >= 0n; i -= 4n) {
               let tmp = toStringHelp(WasmI32.load(ptr + i, 20n), extraIndents, false)
@@ -415,6 +416,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
         let spacePadding = allocateString(padAmount)
         Memory.fill(spacePadding + 8n, 0x20n, padAmount) // create indentation
         let spacePadding = WasmI32.toGrain(spacePadding): String
+        Memory.incRef(WasmI32.fromGrain(SLEmpty))
         let mut strings = slConsDisableGc("\n", slConsDisableGc(prevSpacePadding, slConsDisableGc("}", SLEmpty)))
         let colspace = ": "
         let comlf = ",\n"
@@ -445,6 +447,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
     },
     t when t == Tags._GRAIN_ARRAY_HEAP_TAG => {
       let arity = WasmI32.load(ptr, 4n)
+      Memory.incRef(WasmI32.fromGrain(SLEmpty))
       let mut strings = slConsDisableGc("]", SLEmpty)
       let comspace = ", "
       for (let mut i = arity * 4n - 4n; i >= 0n; i -= 4n) {
@@ -474,6 +477,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
         t when t == Tags._GRAIN_RATIONAL_BOXED_NUM_TAG => {
           let numerator = NumberUtils.itoa32(WasmI32.load(ptr, 8n), 10n)
           let denominator = NumberUtils.itoa32(WasmI32.load(ptr, 12n), 10n)
+          Memory.incRef(WasmI32.fromGrain(SLEmpty))
           let strings = slConsDisableGc(numerator, slConsDisableGc("/", slConsDisableGc(denominator, SLEmpty)))
           let string = join(strings)
           Memory.decRef(WasmI32.fromGrain(strings))
@@ -497,6 +501,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
       } else {
         WasmI32.store(ptr, 0x80000000n | tupleLength, 4n)
         let comspace = ", "
+        Memory.incRef(WasmI32.fromGrain(SLEmpty))
         let mut strings = slConsDisableGc(")", SLEmpty)
         if (tupleLength <= 1n) {
           // Special case: unary tuple
@@ -529,6 +534,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
       "<lambda>"
     },
     _ => {
+      Memory.incRef(WasmI32.fromGrain(SLEmpty))
       let strings = slConsDisableGc(
         "<unknown heap tag type: 0x",
         slConsDisableGc(NumberUtils.itoa32(tag, 16n),
@@ -559,6 +565,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
   let mut cur = ptr
   let mut isFirst = true
 
+  Memory.incRef(WasmI32.fromGrain(SLEmpty))
   let mut strings = slConsDisableGc("[", SLEmpty)
 
   while (true) {
