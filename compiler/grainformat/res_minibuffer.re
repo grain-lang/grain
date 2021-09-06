@@ -89,6 +89,8 @@ let add_string = (b, s) => {
 };
 
 /* adds newline and trims all preceding whitespace */
+/* keeps the whitespace when we are running in formatter checker mode
+   where we want to preserver the AST  */
 let flush_newline = b => {
   if (! Grain_utils.Config.formatter_maintain_ast^) {
     let position = ref(b.position);
