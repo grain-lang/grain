@@ -720,7 +720,7 @@ and print_pattern =
             if (List.length(patterns) > 0) {
               add_parens(
                 Doc.join(
-                  Doc.comma,
+                  Doc.concat([Doc.comma, Doc.space]),
                   List.map(
                     pat => print_pattern(~pat, ~parent_loc, ~original_source),
                     patterns,
