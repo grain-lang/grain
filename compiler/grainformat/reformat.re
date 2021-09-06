@@ -735,12 +735,19 @@ and print_pattern =
         );
       };
 
-    | PPatOr(pattern1, pattern2) =>
-      /* currently unsupported so just replace with the original source */
-      let originalCode = get_original_code(pat.ppat_loc, original_source);
-      Walktree.remove_comments_in_ignore_block(pat.ppat_loc);
-
-      (Doc.text(originalCode), false);
+    | PPatOr(pattern1, pattern2) => (
+        Doc.group(
+          Doc.concat([
+            print_pattern(~pat=pattern1, ~parent_loc, ~original_source),
+            Doc.softLine,
+            Doc.ifBreaks(Doc.nil, Doc.space),
+            Doc.text("|"),
+            Doc.space,
+            print_pattern(~pat=pattern2, ~parent_loc, ~original_source),
+          ]),
+        ),
+        false,
+      )
     | PPatAlias(pattern, loc) =>
       /* currently unsupported so just replace with the original source */
       let originalCode = get_original_code(pat.ppat_loc, original_source);
