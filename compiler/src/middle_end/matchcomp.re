@@ -317,7 +317,17 @@ module MatchTreeCompiler = {
       };
     };
     let res = extract_bindings(patt, expr);
-    /*Printf.eprintf "Bindings:\n%s\n" (Sexplib.Sexp.to_string_hum (sexp_of_list (sexp_of_pair sexp_of_string (fun x -> (sexp_of_string (Pretty.string_of_cexpr x)))) res));*/
+    /*
+       Printf.eprintf(
+         "Bindings:\n%s\n",
+         Sexplib.Sexp.to_string_hum(
+           sexp_of_list(
+             sexp_of_pair(Ident.sexp_of_t, sexp_of_comp_expression),
+             res,
+           ),
+         ),
+       );
+     */
     res;
   };
 
