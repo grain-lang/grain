@@ -911,10 +911,16 @@ and print_type =
         } else {
           Doc.concat([
             Doc.lparen,
-            Doc.join(
-              Doc.concat([Doc.comma, Doc.space]),
-              List.map(t => print_type(t, original_source), types),
+            Doc.indent(
+              Doc.concat([
+                Doc.line,
+                Doc.join(
+                  Doc.concat([Doc.comma, Doc.line]),
+                  List.map(t => print_type(t, original_source), types),
+                ),
+              ]),
             ),
+            Doc.line,
             Doc.rparen,
           ]);
         },
@@ -2606,9 +2612,20 @@ let print_foreign_value_description =
 
   Doc.concat([
     fixedIdent,
-    Doc.text(" : "),
-    print_type(vd.pval_type, original_source),
+    Doc.text(":"),
     Doc.space,
+    print_type(vd.pval_type, original_source),
+    switch (vd.pval_name_alias) {
+    | None => Doc.space
+    | Some(alias) =>
+      Doc.concat([
+        Doc.space,
+        Doc.text("as"),
+        Doc.space,
+        Doc.text(alias.txt),
+        Doc.space,
+      ])
+    },
     Doc.text("from"),
     Doc.space,
     Doc.text("\""),
