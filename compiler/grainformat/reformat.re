@@ -1806,7 +1806,7 @@ and print_expression =
           ),
           Doc.text(":"),
           Doc.space,
-          Doc.lparen, // needed to fix compiler bug (trailing type annotation needs paren)
+          Doc.lparen, // needed to fix compiler bug (trailing type annotation needs paren, #866)
           print_type(parsed_type, original_source),
           Doc.rparen,
         ]),
