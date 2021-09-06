@@ -33,6 +33,7 @@ let initOffsets = () => {
   _SIZE_OFFSET = 4n;
   _VALUE_OFFSET = 8n;
 }
+initOffsets();
 
 let _8BIT_LEN = 1
 
