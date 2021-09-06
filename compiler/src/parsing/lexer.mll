@@ -117,8 +117,8 @@ let num_esc = (unicode_esc | unicode4_esc | hex_esc | oct_esc)
 let newline_char = ("\r\n"|'\n')
 let newline_chars = (newline_char | blank)* newline_char
 
-let line_comment = "//" (([^ '\r' '\n']*(newline_chars | eof)) | (newline_chars | eof))
-let shebang_comment = "#!" (([^ '\r' '\n']*(newline_chars | eof)) | (newline_chars | eof))
+let line_comment = "//" (([^ '\r' '\n']*(newline_char | eof)) | (newline_char | eof))
+let shebang_comment = "#!" (([^ '\r' '\n']*(newline_char | eof)) | (newline_char | eof))
 
 rule token = parse
   | line_comment { parse_line_comment make_line_comment lexbuf; process_newlines lexbuf; EOL }
