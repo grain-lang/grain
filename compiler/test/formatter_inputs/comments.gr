@@ -44,7 +44,7 @@ if (/*before*/true /*whyt*/) {
   /* after*/
 }
 // trailing
- 
+
 
 // starting comment
 
@@ -99,5 +99,3 @@ let _KEY_LEN2 = 64
 
 /* ending block 2 */
 // trailing comment 2
-
-

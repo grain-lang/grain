@@ -83,7 +83,7 @@ let format_code =
   // HELP NEEDED
   // I need to get this value from the command line and
 
-  let check_format = false;
+  let check_format = true;
 
   if (check_format) {
     Grain_utils.Config.formatter_maintain_ast := true;
@@ -122,10 +122,16 @@ let format_code =
   };
 };
 
-let grainformat = ((program, source: array(string))) =>
+let grainformat = ((program, source: array(string))) => {
+  // FIX here too
+  let check_format = true;
+  if (check_format) {
+    Grain_utils.Config.formatter_maintain_ast := true;
+  };
   try(format_code(program, source)) {
   | e => `Error((false, Printexc.to_string(e)))
   };
+};
 
 let input_file_conv = {
   open Arg;

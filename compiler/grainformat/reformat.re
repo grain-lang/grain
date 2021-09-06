@@ -2983,6 +2983,10 @@ let validate_reformat =
       Grain_parsing.Parsetree.sexp_of_parsed_program(reformatted),
     );
 
+  // print_endline(original_s);
+
+  // print_endline(formatted_s);
+
   // reset the mode just in case
   Grain_utils.Config.sexp_locs_enabled := orig_mode;
 

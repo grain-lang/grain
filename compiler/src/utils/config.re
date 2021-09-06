@@ -628,6 +628,6 @@ let get_implicit_opens = () => {
 let formatter_maintain_ast =
   toggle_flag(
     ~names=["check-formatter"],
-    ~doc="Keep AST unchanged when reformatting",
+    ~doc="Keep AST unchanged when reformatting for tests",
     false,
   );
