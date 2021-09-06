@@ -197,4 +197,56 @@ describe("pattern matching", ({test}) => {
     "match ((\"foo\", 5)) { (\"foo\", n) when n == 7 => false, (\"foo\", 9) when true => false, (\"foo\", n) when n == 5 => true, _ => false }",
   );
   assertFileRun("mixed_matching", "mixedPatternMatching", "true\n");
+  /* Or patterns */
+  assertSnapshot(
+    "or_match_1",
+    {|
+    enum ADT { A(Number), B(Number) }
+    match (A(1)) {
+      A(x) | B(x) => true
+    }
+    |},
+  );
+  assertSnapshot(
+    "or_match_deep",
+    {|
+    enum ADT { A((List<Number>, Bool)), B((List<Number>, Bool)) }
+    match (A(([1], true))) {
+      A(([x], y)) | B(([x], y)) => y,
+      _ => false
+    }
+    |},
+  );
+  assertSnapshot(
+    "or_match_inside",
+    {|
+    enum ADT { A(Number), B(Number) }
+    enum Wrapper { Wrap(ADT)}
+    match (Wrap(A(2))) {
+      Wrap(A(x) | B(x)) => x
+    }
+    |},
+  );
+  assertCompileError(
+    "or_match_binding_mismatch",
+    {|
+    enum ADT { A(Number), B }
+    match (A(1)) {
+      A(x) | B => true
+    }
+    |},
+    "Variable x must occur on both sides of this | pattern",
+  );
+  assertRun(
+    "or_match_guarded",
+    {|
+    enum ADT { A(Number), B(Number) }
+    let res = match (A(1)) {
+      A(x) | B(x) when x == 1  => true,
+      _ => false
+    }
+    print(res)
+    |},
+    "true\n",
+  );
 });
