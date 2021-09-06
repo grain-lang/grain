@@ -80,8 +80,28 @@ let compile_parsed = (filename: option(string)) => {
 
 let format_code =
     (program: Parsetree.parsed_program, original_source: array(string)) => {
-  Reformat.reformat_ast(program, original_source);
-  `Ok();
+  let reformatted_code = Reformat.reformat_ast(program, original_source);
+
+  switch (
+    Compile.compile_string(~hook=stop_after_parse, ~name="", reformatted_code)
+  ) {
+  | exception exn =>
+    Grain_parsing.Location.report_exception(Format.err_formatter, exn);
+    `Error((false, "Compilation exception from formatted code"));
+  | {cstate_desc: Parsed(parsed_formatted_program)} =>
+    // validate it against the original
+    let valid_reformat =
+      Reformat.validate_reformat(program, parsed_formatted_program);
+
+    if (valid_reformat) {
+      reformatted_code |> print_endline;
+      `Ok();
+    } else {
+      `Error((false, "Reformatted code had a different AST"));
+    };
+
+  | _ => `Error((false, "Invalid compilation state from formatted code"))
+  };
 };
 
 let grainformat = ((program, source: array(string))) =>
