@@ -27,6 +27,7 @@ let initPtr = () => {
   _ARRAY_LENGTH_OFFSET = 4n
   _ARRAY_START_OFFSET = 8n
 }
+initPtr()
 
 @disableGC
 let initLength = (length) => {
