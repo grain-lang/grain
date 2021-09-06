@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.4.0](https://www.github.com/grain-lang/grain/compare/js-runner-v0.3.0...js-runner-v0.4.0) (2021-09-06)
+
+
+### ⚠ BREAKING CHANGES
+
+* **compiler:** Callee-owned values (#803)
+* Rename JS "runtime" to "js-runner"/"runner" throughout project
+* **compiler:** Rename `grainRuntime` to `_grainEnv`
+* Refactor out references to "runtime" that aren't related to `stdlib/runtime` (#755)
+
+### Features
+
+* **compiler:** Callee-owned values ([#803](https://www.github.com/grain-lang/grain/issues/803)) ([c242e89](https://www.github.com/grain-lang/grain/commit/c242e89767788e590f053c3d3ddfa7208387c247))
+
+
+### Bug Fixes
+
+* **js-runner:** Add default object for destructuring ([#833](https://www.github.com/grain-lang/grain/issues/833)) ([ab96fd6](https://www.github.com/grain-lang/grain/commit/ab96fd6c29f297f0e5423f3a6011fe07cf488df8))
+* **js-runner:** Monkeypatch fs_write in browser environment ([#832](https://www.github.com/grain-lang/grain/issues/832)) ([330b56f](https://www.github.com/grain-lang/grain/commit/330b56f3bdda17bf993e88bb35532831f95c63b3))
+
+
+### Miscellaneous Chores
+
+* **compiler:** Rename `grainRuntime` to `_grainEnv` ([2d99c5a](https://www.github.com/grain-lang/grain/commit/2d99c5ab8fa527328f18d471e8a9128561af7056))
+* Refactor out references to "runtime" that aren't related to `stdlib/runtime` ([#755](https://www.github.com/grain-lang/grain/issues/755)) ([2d99c5a](https://www.github.com/grain-lang/grain/commit/2d99c5ab8fa527328f18d471e8a9128561af7056))
+* Rename JS "runtime" to "js-runner"/"runner" throughout project ([2d99c5a](https://www.github.com/grain-lang/grain/commit/2d99c5ab8fa527328f18d471e8a9128561af7056))
+
 ## [0.3.0](https://www.github.com/grain-lang/grain/compare/runtime-v0.2.0...runtime-v0.3.0) (2021-04-21)
 
 
