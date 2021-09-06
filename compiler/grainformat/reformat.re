@@ -2506,6 +2506,8 @@ let import_print = (imp: Parsetree.import_declaration) => {
         switch (v) {
         | PImportModule(identloc) => print_ident(identloc.txt)
         | PImportAllExcept(identlocs) =>
+          let numVals = List.length(identlocs);
+
           Doc.concat([
             Doc.text("*"),
             if (List.length(identlocs) > 0) {
@@ -2513,22 +2515,62 @@ let import_print = (imp: Parsetree.import_declaration) => {
                 Doc.space,
                 Doc.text("except"),
                 Doc.space,
-                add_braces(
-                  Doc.join(
-                    Doc.comma,
-                    List.map(
-                      (identloc: Location.loc(Grain_parsing__Identifier.t)) =>
-                        print_ident(identloc.txt),
-                      identlocs,
+                Doc.lbrace,
+                Doc.indent(
+                  Doc.concat([
+                    Doc.line,
+                    Doc.join(
+                      Doc.line,
+                      List.mapi(
+                        (
+                          index,
+                          identloc: Location.loc(Grain_parsing__Identifier.t),
+                        ) => {
+                          let trailing_comma =
+                            if (index < numVals - 1) {
+                              Doc.comma;
+                            } else {
+                              Doc.nil;
+                            };
+                          let (_leading_comments, trailing_comments) =
+                            Walktree.partition_comments(identloc.loc, None);
+
+                          Walktree.remove_used_comments(
+                            [],
+                            trailing_comments,
+                          );
+
+                          let trailing_comment_docs =
+                            if (List.length(trailing_comments) > 0) {
+                              Doc.concat([
+                                print_multi_comments(
+                                  trailing_comments,
+                                  get_end_loc_line(identloc.loc),
+                                ),
+                              ]);
+                            } else {
+                              Doc.nil;
+                            };
+                          Doc.concat([
+                            print_ident(identloc.txt),
+                            trailing_comma,
+                            trailing_comment_docs,
+                          ]);
+                        },
+                        identlocs,
+                      ),
                     ),
-                  ),
+                  ]),
                 ),
+                Doc.line,
+                Doc.rbrace,
               ]);
             } else {
               Doc.nil;
             },
-          ])
+          ]);
         | PImportValues(identlocsopts) =>
+          let numVals = List.length(identlocsopts);
           Doc.concat([
             Doc.lbrace,
             Doc.indent(
@@ -2536,9 +2578,10 @@ let import_print = (imp: Parsetree.import_declaration) => {
                 Doc.line,
                 if (List.length(identlocsopts) > 0) {
                   Doc.join(
-                    Doc.concat([Doc.comma, Doc.line]),
-                    List.map(
+                    Doc.line,
+                    List.mapi(
                       (
+                        index,
                         identlocopt: (
                           Grain_parsing.Parsetree.loc(
                             Grain_parsing.Identifier.t,
@@ -2551,8 +2594,45 @@ let import_print = (imp: Parsetree.import_declaration) => {
                         ),
                       ) => {
                         let (loc, optloc) = identlocopt;
+                        let trailing_comma =
+                          if (index < numVals - 1) {
+                            Doc.comma;
+                          } else {
+                            Doc.nil;
+                          };
+
+                        let (_leading_comments, trailing_comments) =
+                          switch (optloc) {
+                          | None => Walktree.partition_comments(loc.loc, None)
+                          | Some(alias) =>
+                            Walktree.partition_comments(alias.loc, None)
+                          };
+                        Walktree.remove_used_comments([], trailing_comments);
+
+                        let trailing_comment_docs =
+                          if (List.length(trailing_comments) > 0) {
+                            Doc.concat([
+                              print_multi_comments(
+                                trailing_comments,
+                                get_end_loc_line(
+                                  switch (optloc) {
+                                  | None => loc.loc
+                                  | Some(alias) => alias.loc
+                                  },
+                                ),
+                              ),
+                            ]);
+                          } else {
+                            Doc.nil;
+                          };
+
                         switch (optloc) {
-                        | None => print_ident(loc.txt)
+                        | None =>
+                          Doc.concat([
+                            print_ident(loc.txt),
+                            trailing_comma,
+                            trailing_comment_docs,
+                          ])
                         | Some(alias) =>
                           Doc.concat([
                             print_ident(loc.txt),
@@ -2560,6 +2640,8 @@ let import_print = (imp: Parsetree.import_declaration) => {
                             Doc.text("as"),
                             Doc.space,
                             print_ident(alias.txt),
+                            trailing_comma,
+                            trailing_comment_docs,
                           ])
                         };
                       },
@@ -2573,7 +2655,7 @@ let import_print = (imp: Parsetree.import_declaration) => {
             ),
             Doc.line,
             Doc.rbrace,
-          ])
+          ]);
         }
       },
       imp.pimp_val,
