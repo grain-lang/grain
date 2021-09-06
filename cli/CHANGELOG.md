@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.4.1](https://www.github.com/grain-lang/grain/compare/cli-v0.4.0...cli-v0.4.1) (2021-09-06)
+
+
+### Bug Fixes
+
+* **cli:** Manually bump CLI dependencies ([#871](https://www.github.com/grain-lang/grain/issues/871)) ([1e4a7a1](https://www.github.com/grain-lang/grain/commit/1e4a7a171c8dd41caf54e6218d59dffafef8f226))
+
 ## [0.4.0](https://www.github.com/grain-lang/grain/compare/cli-v0.3.2...cli-v0.4.0) (2021-09-06)
 
 
