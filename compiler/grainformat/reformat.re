@@ -2927,3 +2927,37 @@ let reformat_ast =
   //   ),
   // );
 };
+
+let validate_reformat =
+    (
+      original: Parsetree.parsed_program,
+      reformatted: Parsetree.parsed_program,
+    ) => {
+  let orig_mode = Grain_utils.Config.sexp_locs_enabled^;
+  Grain_utils.Config.sexp_locs_enabled := false;
+
+  let original_s =
+    Sexplib.Sexp.to_string_hum(
+      Grain_parsing.Parsetree.sexp_of_parsed_program(original),
+    );
+
+  let formatted_s =
+    Sexplib.Sexp.to_string_hum(
+      Grain_parsing.Parsetree.sexp_of_parsed_program(reformatted),
+    );
+
+  // reset the mode just in case
+  Grain_utils.Config.sexp_locs_enabled := orig_mode;
+
+  // print_endline(original_s);
+
+  // print_endline("");
+
+  // print_endline(formatted_s);
+
+  if (original_s == formatted_s) {
+    true;
+  } else {
+    false;
+  };
+};
