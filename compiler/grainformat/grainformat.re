@@ -83,7 +83,7 @@ let format_code =
   // HELP NEEDED
   // I need to get this value from the command line and
 
-  let check_format = true;
+  let check_format = false;
 
   if (check_format) {
     Grain_utils.Config.formatter_maintain_ast := true;
@@ -114,7 +114,7 @@ let format_code =
     | _ => `Error((false, "Invalid compilation state from formatted code"))
     };
   } else {
-    Grain_utils.Config.formatter_maintain_ast := true;
+    Grain_utils.Config.formatter_maintain_ast := false;
     let reformatted_code = Reformat.reformat_ast(program, original_source);
 
     print_endline(reformatted_code);
