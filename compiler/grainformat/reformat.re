@@ -600,7 +600,12 @@ and print_record_pattern =
           if (pun) {
             printed_ident;
           } else {
-            Doc.concat([printed_ident, Doc.text(": "), printed_pat]);
+            Doc.concat([
+              printed_ident,
+              Doc.text(":"),
+              Doc.space,
+              printed_pat,
+            ]);
           };
         },
         patternlocs,
@@ -877,7 +882,12 @@ and print_record =
 
               if (!pun) {
                 Doc.group(
-                  Doc.concat([printed_ident, Doc.text(": "), printed_expr]),
+                  Doc.concat([
+                    printed_ident,
+                    Doc.text(":"),
+                    Doc.space,
+                    printed_expr,
+                  ]),
                 );
               } else {
                 Doc.group(printed_ident);
@@ -1794,8 +1804,11 @@ and print_expression =
             ~parent_loc,
             expression,
           ),
-          Doc.text(": "),
+          Doc.text(":"),
+          Doc.space,
+          Doc.lparen, // needed to fix compiler bug (trailing type annotation needs paren, #866)
           print_type(parsed_type, original_source),
+          Doc.rparen,
         ]),
       )
     | PExpLambda(patterns, expression) =>
@@ -2026,7 +2039,8 @@ and print_expression =
           expression,
         ),
         Doc.space,
-        Doc.text(":= "),
+        Doc.text(":="),
+        Doc.space,
         print_expression(
           ~parentIsArrow=false,
           ~endChar=None,
