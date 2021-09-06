@@ -1537,12 +1537,19 @@ and print_expression =
           Doc.nil;
         };
 
-      let true_false_space = Doc.space;
-      // keep this - we need this if we don't force single lines into block expressions
-      // switch (trueExpr.pexp_desc) {
-      // | PExpBlock(expressions) => Doc.space
-      // | _ => Doc.line
-      // };
+      // this changes the AST so we disable whilst checking thr formatted output
+      let force_expressions_to_blocks =
+        ! Grain_utils.Config.formatter_maintain_ast^;
+
+      let true_false_space =
+        if (force_expressions_to_blocks) {
+          Doc.space;
+        } else {
+          switch (trueExpr.pexp_desc) {
+          | PExpBlock(expressions) => Doc.space
+          | _ => Doc.line
+          };
+        };
 
       let true_clause =
         switch (trueExpr.pexp_desc) {
@@ -1556,23 +1563,33 @@ and print_expression =
           )
 
         | _ =>
-          Doc.concat([
-            Doc.lbrace,
-            Doc.indent(
-              Doc.concat([
-                Doc.hardLine,
-                print_expression(
-                  ~parentIsArrow=false,
-                  ~endChar=None,
-                  ~original_source,
-                  ~parent_loc,
-                  trueExpr,
-                ),
-              ]),
-            ),
-            Doc.hardLine,
-            Doc.rbrace,
-          ])
+          if (force_expressions_to_blocks) {
+            Doc.concat([
+              Doc.lbrace,
+              Doc.indent(
+                Doc.concat([
+                  Doc.hardLine,
+                  print_expression(
+                    ~parentIsArrow=false,
+                    ~endChar=None,
+                    ~original_source,
+                    ~parent_loc,
+                    trueExpr,
+                  ),
+                ]),
+              ),
+              Doc.hardLine,
+              Doc.rbrace,
+            ]);
+          } else {
+            print_expression(
+              ~parentIsArrow=false,
+              ~endChar=None,
+              ~original_source,
+              ~parent_loc,
+              trueExpr,
+            );
+          }
         };
 
       let false_clause =
@@ -1606,30 +1623,49 @@ and print_expression =
             ),
           ])
         | _ =>
-          Doc.concat([
-            true_false_space,
-            Doc.text("else"),
-            Doc.group(
-              Doc.concat([
-                Doc.space,
-                Doc.lbrace,
-                Doc.indent(
-                  Doc.concat([
-                    Doc.hardLine,
-                    print_expression(
-                      ~parentIsArrow=false,
-                      ~endChar=None,
-                      ~original_source,
-                      ~parent_loc,
-                      falseExpr,
-                    ),
-                  ]),
-                ),
-                Doc.hardLine,
-                Doc.rbrace,
-              ]),
-            ),
-          ])
+          if (force_expressions_to_blocks) {
+            Doc.concat([
+              true_false_space,
+              Doc.text("else"),
+              Doc.group(
+                Doc.concat([
+                  Doc.space,
+                  Doc.lbrace,
+                  Doc.indent(
+                    Doc.concat([
+                      Doc.hardLine,
+                      print_expression(
+                        ~parentIsArrow=false,
+                        ~endChar=None,
+                        ~original_source,
+                        ~parent_loc,
+                        falseExpr,
+                      ),
+                    ]),
+                  ),
+                  Doc.hardLine,
+                  Doc.rbrace,
+                ]),
+              ),
+            ]);
+          } else {
+            Doc.concat([
+              true_false_space,
+              Doc.text("else"),
+              Doc.group(
+                Doc.concat([
+                  Doc.space,
+                  print_expression(
+                    ~parentIsArrow=false,
+                    ~endChar=None,
+                    ~original_source,
+                    ~parent_loc,
+                    falseExpr,
+                  ),
+                ]),
+              ),
+            ]);
+          }
         };
 
       if (parentIsArrow) {
@@ -2949,12 +2985,6 @@ let validate_reformat =
 
   // reset the mode just in case
   Grain_utils.Config.sexp_locs_enabled := orig_mode;
-
-  // print_endline(original_s);
-
-  // print_endline("");
-
-  // print_endline(formatted_s);
 
   if (original_s == formatted_s) {
     true;

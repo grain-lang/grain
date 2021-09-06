@@ -193,3 +193,6 @@ type implicit_opens =
   | Gc_mod;
 
 let get_implicit_opens: unit => list(implicit_opens);
+
+/** don't make any changes to the AST when reformatting */
+let formatter_maintain_ast: ref(bool);

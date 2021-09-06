@@ -180,6 +180,10 @@ program
 program
   .command("format [file]")
   .description("format a grain file")
+  .option(
+    "--check-formatter",
+    "compares formatted AST and so disables any AST changes"
+  )
   .action(function (file) {
     format(file, program);
   });

@@ -80,27 +80,45 @@ let compile_parsed = (filename: option(string)) => {
 
 let format_code =
     (program: Parsetree.parsed_program, original_source: array(string)) => {
-  let reformatted_code = Reformat.reformat_ast(program, original_source);
+  // HELP NEEDED
+  // I need to get this value from the command line and
 
-  switch (
-    Compile.compile_string(~hook=stop_after_parse, ~name="", reformatted_code)
-  ) {
-  | exception exn =>
-    Grain_parsing.Location.report_exception(Format.err_formatter, exn);
-    `Error((false, "Compilation exception from formatted code"));
-  | {cstate_desc: Parsed(parsed_formatted_program)} =>
-    // validate it against the original
-    let valid_reformat =
-      Reformat.validate_reformat(program, parsed_formatted_program);
+  let check_format = true;
 
-    if (valid_reformat) {
-      reformatted_code |> print_endline;
-      `Ok();
-    } else {
-      `Error((false, "Reformatted code had a different AST"));
+  if (check_format) {
+    Grain_utils.Config.formatter_maintain_ast := true;
+    let reformatted_code = Reformat.reformat_ast(program, original_source);
+
+    switch (
+      Compile.compile_string(
+        ~hook=stop_after_parse,
+        ~name="",
+        reformatted_code,
+      )
+    ) {
+    | exception exn =>
+      Grain_parsing.Location.report_exception(Format.err_formatter, exn);
+      `Error((false, "Compilation exception from formatted code"));
+    | {cstate_desc: Parsed(parsed_formatted_program)} =>
+      // validate it against the original
+      let valid_reformat =
+        Reformat.validate_reformat(program, parsed_formatted_program);
+
+      if (valid_reformat) {
+        reformatted_code |> print_endline;
+        `Ok();
+      } else {
+        `Error((false, "Reformatted code had a different AST"));
+      };
+
+    | _ => `Error((false, "Invalid compilation state from formatted code"))
     };
+  } else {
+    Grain_utils.Config.formatter_maintain_ast := true;
+    let reformatted_code = Reformat.reformat_ast(program, original_source);
 
-  | _ => `Error((false, "Invalid compilation state from formatted code"))
+    print_endline(reformatted_code);
+    `Ok();
   };
 };
 
