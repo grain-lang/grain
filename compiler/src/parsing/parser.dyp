@@ -157,7 +157,7 @@ binop_expr :
   | one_sided_if_expr { $1 } p10
   | assign_expr { $1 } p10
 
-pattern :
+single_pattern :
   | pattern colon typ { Pat.constraint_ ~loc:(symbol_rloc dyp) $1 $3 }
   | UNDERSCORE { Pat.any ~loc:(symbol_rloc dyp) () }
   | const { Pat.constant ~loc:(symbol_rloc dyp) $1 }
@@ -173,6 +173,10 @@ pattern :
   | type_id { Pat.construct ~loc:(symbol_rloc dyp) $1 [] }
   | lbrack patterns [comma ELLIPSIS any_or_var_pat {$3}]? rbrack { Pat.list ~loc:(symbol_rloc dyp) $2 $3 }
   | lbrack [ELLIPSIS any_or_var_pat {$2}]? rbrack { Pat.list ~loc:(symbol_rloc dyp) [] $2 }
+
+pattern :
+  | single_pattern
+  | single_pattern [eols? PIPE eols? single_pattern {$4}]+ { Pat.multiple_or ~loc:(symbol_rloc dyp) $1 $2  }
 
 any_or_var_pat :
   | UNDERSCORE { Pat.any ~loc:(symbol_rloc dyp) () }

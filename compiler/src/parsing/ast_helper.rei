@@ -100,6 +100,7 @@ module Pat: {
   let constraint_: (~loc: loc=?, pattern, parsed_type) => pattern;
   let construct: (~loc: loc=?, id, list(pattern)) => pattern;
   let or_: (~loc: loc=?, pattern, pattern) => pattern;
+  let multiple_or: (~loc: loc=?, pattern, list(pattern)) => pattern;
   let alias: (~loc: loc=?, pattern, str) => pattern;
 };
 

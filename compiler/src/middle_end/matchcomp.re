@@ -305,7 +305,15 @@ module MatchTreeCompiler = {
         | [] => []
         | _ => [(data_name, expr), ...binds]
         };
-      | TPatOr(_) => failwith("NYI: extract_bindings > TPatOr")
+      | TPatOr(left, right) =>
+        let left_binds = extract_bindings(left, expr);
+        let right_binds = extract_bindings(right, expr);
+        switch (left_binds, right_binds) {
+        | ([], []) => []
+        | (left_binds, []) => left_binds
+        | ([], right_binds) => right_binds
+        | (left_binds, right_binds) => List.concat([left_binds, right_binds])
+        };
       };
     };
     let res = extract_bindings(patt, expr);

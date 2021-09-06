@@ -154,6 +154,11 @@ module Pat = {
     );
   };
   let or_ = (~loc=?, a, b) => mk(~loc?, PPatOr(a, b));
+  let multiple_or = (~loc=?, a, b) => {
+    let hd = List.hd(b);
+    let tl = List.tl(b);
+    List.fold_left((a, b) => or_(~loc?, a, b), or_(~loc?, a, hd), tl);
+  };
   let alias = (~loc=?, a, b) => mk(~loc?, PPatAlias(a, b));
 };
 
