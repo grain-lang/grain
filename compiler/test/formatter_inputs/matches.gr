@@ -18,3 +18,13 @@ export let pop = (queue) => {
         { forwards: [head, ...ftail], backwards } => { forwards: ftail, backwards }
     }
 }
+
+enum Foo<a, b, c> { A(a, b), B(b, c) }
+
+match (A(1, 2)) {
+    A(a,b) => true,
+    B(
+        b,
+        c
+    ) => false
+}
