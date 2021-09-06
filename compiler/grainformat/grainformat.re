@@ -123,7 +123,7 @@ let format_code =
 };
 
 let grainformat = ((program, source: array(string))) => {
-  // FIX here too
+  // FIX needed here too
   let check_format = true;
   if (check_format) {
     Grain_utils.Config.formatter_maintain_ast := true;
