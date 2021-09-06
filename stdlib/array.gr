@@ -17,8 +17,17 @@ import Exception from "runtime/exception"
  * @section Values: Functions for working with the Array data type.
  */
 
-let _ARRAY_LENGTH_OFFSET = 4n
-let _ARRAY_START_OFFSET = 8n
+@disableGC
+let mut _ARRAY_LENGTH_OFFSET = 1n
+@disableGC
+let mut _ARRAY_START_OFFSET = 1n
+
+@disableGC
+let initPtr = () => {
+  _ARRAY_LENGTH_OFFSET = 4n
+  _ARRAY_START_OFFSET = 8n
+}
+initPtr()
 
 @disableGC
 let initLength = (length) => {

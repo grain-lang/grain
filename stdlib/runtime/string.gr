@@ -39,6 +39,7 @@ let slConsDisableGc = (a, b) => {
   SLCons(a, b)
 }
 
+@disableGC
 let mut _RUNTIME_TYPE_METADATA_PTR = 0x01n;
 
 @disableGC

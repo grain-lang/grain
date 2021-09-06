@@ -1,3 +1,4 @@
+/* grainc-flags --no-gc */
 import PrintWasm from "runtime/unsafe/printWasm"
 
 import { _I32_VAL, _I64_VAL, _F32_VAL, _F64_VAL } from "unsafeWasmGlobalsExports"

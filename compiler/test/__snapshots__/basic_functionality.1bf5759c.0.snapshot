@@ -1,16 +1,14 @@
 basic functionality › unsafe_wasm_globals
 (module
- (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
  (type $none_=>_none (func))
  (type $none_=>_i32 (func (result i32)))
+ (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
  (type $i32_i64_=>_i32 (func (param i32 i64) (result i32)))
  (type $i32_f32_=>_i32 (func (param i32 f32) (result i32)))
  (type $i32_f64_=>_i32 (func (param i32 f64) (result i32)))
  (import \"_grainEnv\" \"mem\" (memory $0 0))
  (import \"_grainEnv\" \"tbl\" (table $tbl 0 funcref))
  (import \"_grainEnv\" \"relocBase\" (global $import__grainEnv_0_relocBase_0 i32))
- (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0 (mut i32)))
- (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRefIgnoreZeros\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0 (mut i32)))
  (import \"GRAIN$MODULE$unsafeWasmGlobalsExports\" \"GRAIN$EXPORT$_F64_VAL\" (global $import_unsafeWasmGlobalsExports_1187__F64_VAL_1188 (mut f64)))
  (import \"GRAIN$MODULE$runtime/unsafe/printWasm\" \"GRAIN$EXPORT$printF64\" (global $import_runtime/unsafe/printWasm_1189_printF64_1190 (mut i32)))
  (import \"GRAIN$MODULE$unsafeWasmGlobalsExports\" \"GRAIN$EXPORT$_F32_VAL\" (global $import_unsafeWasmGlobalsExports_1191__F32_VAL_1192 (mut f32)))
@@ -19,8 +17,6 @@ basic functionality › unsafe_wasm_globals
  (import \"GRAIN$MODULE$runtime/unsafe/printWasm\" \"GRAIN$EXPORT$printI64\" (global $import_runtime/unsafe/printWasm_1197_printI64_1198 (mut i32)))
  (import \"GRAIN$MODULE$unsafeWasmGlobalsExports\" \"GRAIN$EXPORT$_I32_VAL\" (global $import_unsafeWasmGlobalsExports_1199__I32_VAL_1200 (mut i32)))
  (import \"GRAIN$MODULE$runtime/unsafe/printWasm\" \"GRAIN$EXPORT$printI32\" (global $import_runtime/unsafe/printWasm_1201_printI32_1202 (mut i32)))
- (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $import_GRAIN$MODULE$runtime/gc_0_incRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$runtime/gc\" \"decRefIgnoreZeros\" (func $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0 (param i32 i32) (result i32)))
  (global $global_1 i32 (i32.const 0))
  (export \"memory\" (memory $0))
  (export \"_gmain\" (func $_gmain))
@@ -28,105 +24,68 @@ basic functionality › unsafe_wasm_globals
  (export \"GRAIN$TABLE_SIZE\" (global $global_1))
  (func $_gmain (; has Stack IR ;) (result i32)
   (local $0 i32)
-  (local.set $0
-   (tuple.extract 0
-    (tuple.make
-     (block (result i32)
-      (drop
-       (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-        (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
-        (call_indirect (type $i32_i32_=>_i32)
-         (local.tee $0
-          (tuple.extract 0
-           (tuple.make
-            (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-             (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-             (global.get $import_runtime/unsafe/printWasm_1201_printI32_1202)
-            )
-            (i32.const 0)
-           )
-          )
-         )
-         (global.get $import_unsafeWasmGlobalsExports_1199__I32_VAL_1200)
-         (i32.load offset=8
-          (local.get $0)
-         )
-        )
-       )
-      )
-      (drop
-       (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-        (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
-        (call_indirect (type $i32_i64_=>_i32)
-         (local.tee $0
-          (tuple.extract 0
-           (tuple.make
-            (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-             (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-             (global.get $import_runtime/unsafe/printWasm_1197_printI64_1198)
-            )
-            (local.get $0)
-           )
-          )
-         )
-         (global.get $import_unsafeWasmGlobalsExports_1195__I64_VAL_1196)
-         (i32.load offset=8
-          (local.get $0)
-         )
-        )
-       )
-      )
-      (drop
-       (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-        (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
-        (call_indirect (type $i32_f32_=>_i32)
-         (local.tee $0
-          (tuple.extract 0
-           (tuple.make
-            (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-             (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-             (global.get $import_runtime/unsafe/printWasm_1193_printF32_1194)
-            )
-            (local.get $0)
-           )
-          )
-         )
-         (global.get $import_unsafeWasmGlobalsExports_1191__F32_VAL_1192)
-         (i32.load offset=8
-          (local.get $0)
-         )
-        )
-       )
-      )
-      (call_indirect (type $i32_f64_=>_i32)
-       (local.tee $0
-        (tuple.extract 0
-         (tuple.make
-          (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-           (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-           (global.get $import_runtime/unsafe/printWasm_1189_printF64_1190)
-          )
-          (local.get $0)
-         )
-        )
-       )
-       (global.get $import_unsafeWasmGlobalsExports_1187__F64_VAL_1188)
-       (i32.load offset=8
-        (local.get $0)
-       )
+  (drop
+   (call_indirect (type $i32_i32_=>_i32)
+    (local.tee $0
+     (tuple.extract 0
+      (tuple.make
+       (global.get $import_runtime/unsafe/printWasm_1201_printI32_1202)
+       (i32.const 0)
       )
      )
+    )
+    (global.get $import_unsafeWasmGlobalsExports_1199__I32_VAL_1200)
+    (i32.load offset=8
      (local.get $0)
     )
    )
   )
   (drop
-   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
-    (i32.const 0)
+   (call_indirect (type $i32_i64_=>_i32)
+    (local.tee $0
+     (tuple.extract 0
+      (tuple.make
+       (global.get $import_runtime/unsafe/printWasm_1197_printI64_1198)
+       (local.get $0)
+      )
+     )
+    )
+    (global.get $import_unsafeWasmGlobalsExports_1195__I64_VAL_1196)
+    (i32.load offset=8
+     (local.get $0)
+    )
    )
   )
-  (local.get $0)
+  (drop
+   (call_indirect (type $i32_f32_=>_i32)
+    (local.tee $0
+     (tuple.extract 0
+      (tuple.make
+       (global.get $import_runtime/unsafe/printWasm_1193_printF32_1194)
+       (local.get $0)
+      )
+     )
+    )
+    (global.get $import_unsafeWasmGlobalsExports_1191__F32_VAL_1192)
+    (i32.load offset=8
+     (local.get $0)
+    )
+   )
+  )
+  (call_indirect (type $i32_f64_=>_i32)
+   (local.tee $0
+    (tuple.extract 0
+     (tuple.make
+      (global.get $import_runtime/unsafe/printWasm_1189_printF64_1190)
+      (local.get $0)
+     )
+    )
+   )
+   (global.get $import_unsafeWasmGlobalsExports_1187__F64_VAL_1188)
+   (i32.load offset=8
+    (local.get $0)
+   )
+  )
  )
  (func $_start (; has Stack IR ;)
   (drop

@@ -791,8 +791,18 @@ let getCodePoint = (ptr: WasmI32) => {
   result: WasmI32
 }
 
-let _BYTES_SIZE_OFFSET = 4n;
-let _BYTES_OFFSET = 8n;
+// hack to avoid incRef on this pointer
+@disableGC
+let mut _BYTES_SIZE_OFFSET = 1n;
+@disableGC
+let mut _BYTES_OFFSET = 1n;
+
+@disableGC
+let initPtr = () => {
+  _BYTES_SIZE_OFFSET = 4n
+  _BYTES_OFFSET = 8n
+}
+initPtr();
 
 // Encodes the given string using the given encoding scheme
 // @param s: String - The input string

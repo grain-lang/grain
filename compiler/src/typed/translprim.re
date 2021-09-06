@@ -1413,7 +1413,9 @@ let transl_prim = (env, desc) => {
     | Primitive1(
         (
           WasmUnaryI32(_) | WasmUnaryI64(_) | WasmUnaryF32(_) | WasmUnaryF64(_) |
-          WasmMemoryGrow
+          WasmMemoryGrow |
+          WasmFromGrain |
+          WasmToGrain
         ) as p,
       ) =>
       Exp.lambda(

@@ -9,14 +9,36 @@ import Exception from "runtime/exception"
 import Int32 from "int32"
 import { coerceNumberToWasmI32 } from "runtime/numbers"
 
-let _SIZE_OFFSET = 4n;
-let _VALUE_OFFSET = 8n;
-let _INT8_BYTE_SIZE = 1n;
-let _INT16_BYTE_SIZE = 2n;
-let _INT32_BYTE_SIZE = 4n;
-let _FLOAT32_BYTE_SIZE = 4n;
-let _INT64_BYTE_SIZE = 8n;
-let _FLOAT64_BYTE_SIZE = 8n;
+// hack to avoid incRef on these variables
+@disableGC
+let mut _SIZE_OFFSET = 1n;
+@disableGC
+let mut _VALUE_OFFSET = 1n;
+@disableGC
+let mut _INT8_BYTE_SIZE = 1n;
+@disableGC
+let mut _INT16_BYTE_SIZE = 1n;
+@disableGC
+let mut _INT32_BYTE_SIZE = 1n;
+@disableGC
+let mut _FLOAT32_BYTE_SIZE = 1n;
+@disableGC
+let mut _INT64_BYTE_SIZE = 1n;
+@disableGC
+let mut _FLOAT64_BYTE_SIZE = 1n;
+
+@disableGC
+let initVals = () => {
+  _SIZE_OFFSET = 4n;
+  _VALUE_OFFSET = 8n;
+  _INT8_BYTE_SIZE = 1n;
+  _INT16_BYTE_SIZE = 2n;
+  _INT32_BYTE_SIZE = 4n;
+  _FLOAT32_BYTE_SIZE = 4n;
+  _INT64_BYTE_SIZE = 8n;
+  _FLOAT64_BYTE_SIZE = 8n;
+}
+initVals();
 
 /** Throws an exception if the index specified is out-of-bounds */
 @disableGC
