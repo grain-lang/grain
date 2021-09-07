@@ -48,7 +48,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Number`|The amount of elements in the array|
+|`Number`|The number of elements in the array|
 
 ### Array.**make**
 
@@ -581,7 +581,7 @@ Parameters:
 ### Array.**reverse**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
 No other changes yet.
 </details>
 
@@ -897,7 +897,7 @@ Returns:
 ### Array.**zip**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
 No other changes yet.
 </details>
 
@@ -927,7 +927,7 @@ Returns:
 ### Array.**unzip**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
 No other changes yet.
 </details>
 
@@ -952,7 +952,7 @@ Returns:
 ### Array.**join**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
 No other changes yet.
 </details>
 
@@ -978,7 +978,7 @@ Returns:
 ### Array.**slice**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
 No other changes yet.
 </details>
 
