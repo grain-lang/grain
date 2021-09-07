@@ -923,14 +923,14 @@ and print_type =
             Doc.lparen,
             Doc.indent(
               Doc.concat([
-                Doc.line,
+                Doc.softLine,
                 Doc.join(
                   Doc.concat([Doc.comma, Doc.line]),
                   List.map(t => print_type(t, original_source), types),
                 ),
               ]),
             ),
-            Doc.line,
+            Doc.softLine,
             Doc.rparen,
           ]);
         },
