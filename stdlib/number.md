@@ -5,7 +5,7 @@ title: Number
 Utilities for working with numbers.
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
 No other changes yet.
 </details>
 
@@ -16,7 +16,7 @@ import Number from "number"
 ### Number.**add**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
 No other changes yet.
 </details>
 
@@ -42,7 +42,7 @@ Returns:
 ### Number.**sub**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
 No other changes yet.
 </details>
 
@@ -68,7 +68,7 @@ Returns:
 ### Number.**mul**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
 No other changes yet.
 </details>
 
@@ -94,7 +94,7 @@ Returns:
 ### Number.**div**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
 No other changes yet.
 </details>
 
@@ -120,7 +120,7 @@ Returns:
 ### Number.**sqrt**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
 No other changes yet.
 </details>
 
@@ -145,7 +145,7 @@ Returns:
 ### Number.**min**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
 No other changes yet.
 </details>
 
@@ -171,7 +171,7 @@ Returns:
 ### Number.**max**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
 No other changes yet.
 </details>
 
@@ -197,7 +197,7 @@ Returns:
 ### Number.**ceil**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
 No other changes yet.
 </details>
 
@@ -222,7 +222,7 @@ Returns:
 ### Number.**floor**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
 No other changes yet.
 </details>
 
@@ -247,7 +247,7 @@ Returns:
 ### Number.**trunc**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
 No other changes yet.
 </details>
 
@@ -272,7 +272,7 @@ Returns:
 ### Number.**round**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
 No other changes yet.
 </details>
 
@@ -297,7 +297,7 @@ Returns:
 ### Number.**abs**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
 No other changes yet.
 </details>
 
@@ -322,7 +322,7 @@ Returns:
 ### Number.**neg**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
 No other changes yet.
 </details>
 
@@ -347,7 +347,7 @@ Returns:
 ### Number.**isFinite**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
 No other changes yet.
 </details>
 
@@ -373,7 +373,7 @@ Returns:
 ### Number.**isNaN**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
 No other changes yet.
 </details>
 
@@ -399,7 +399,7 @@ Returns:
 ### Number.**isInfinite**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
 No other changes yet.
 </details>
 
