@@ -278,7 +278,7 @@ Returns:
 </details>
 
 ```grain
-forEach : ((a -> b), Array<a>) -> Void
+forEach : ((a -> Void), Array<a>) -> Void
 ```
 
 Iterates an array, calling an iterator function on each element.
@@ -287,7 +287,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> b`|The iterator function to call with each element|
+|`fn`|`a -> Void`|The iterator function to call with each element|
 |`array`|`Array<a>`|The array to iterate|
 
 ### Array.**forEachi**
@@ -305,7 +305,7 @@ Parameters:
 </details>
 
 ```grain
-forEachi : (((a, Number) -> b), Array<a>) -> Void
+forEachi : (((a, Number) -> Void), Array<a>) -> Void
 ```
 
 Iterates an array, calling an iterator function with each element.
@@ -315,7 +315,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`(a, Number) -> b`|The iterator function to call with each element|
+|`fn`|`(a, Number) -> Void`|The iterator function to call with each element|
 |`array`|`Array<a>`|The array to iterate|
 
 ### Array.**map**
@@ -740,7 +740,7 @@ No other changes yet.
 </details>
 
 ```grain
-product : (Array<a>, Array<a0>) -> Array<(a, a0)>
+product : (Array<a>, Array<b>) -> Array<(a, b)>
 ```
 
 Combines two arrays into a Cartesian product of tuples containing
@@ -751,13 +751,13 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`array1`|`Array<a>`|The array to provide values for the first tuple element|
-|`array2`|`Array<a>`|The array to provide values for the second tuple element|
+|`array2`|`Array<b>`|The array to provide values for the second tuple element|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Array<(a, a0)>`|The new array containing all pairs of `(a, b)`|
+|`Array<(a, b)>`|The new array containing all pairs of `(a, b)`|
 
 ### Array.**count**
 
@@ -902,7 +902,7 @@ No other changes yet.
 </details>
 
 ```grain
-zip : (Array<a>, Array<a0>) -> Array<(a, a0)>
+zip : (Array<a>, Array<b>) -> Array<(a, b)>
 ```
 
 Produces a new array filled with tuples of elements from both given arrays.
@@ -916,13 +916,13 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`array1`|`Array<a>`|The array to provide values for the first tuple element|
-|`array2`|`Array<a>`|The array to provide values for the second tuple element|
+|`array2`|`Array<b>`|The array to provide values for the second tuple element|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Array<(a, a0)>`|The new array containing indexed pairs of `(a, b)`|
+|`Array<(a, b)>`|The new array containing indexed pairs of `(a, b)`|
 
 ### Array.**unzip**
 
