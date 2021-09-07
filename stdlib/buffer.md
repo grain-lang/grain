@@ -702,7 +702,7 @@ No other changes yet.
 </details>
 
 ```grain
-addChar : (a, Buffer) -> Void
+addChar : (Char, Buffer) -> Void
 ```
 
 Appends the bytes of a char to a buffer.
@@ -711,7 +711,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`char`|`a`|The character to append to the buffer|
+|`char`|`Char`|The character to append to the buffer|
 |`buffer`|`Buffer`|The buffer to mutate|
 
 ### Buffer.**addBytes**
@@ -784,7 +784,7 @@ No other changes yet.
 </details>
 
 ```grain
-addBytesSlice : (Number, Number, a, Buffer) -> Void
+addBytesSlice : (Number, Number, Bytes, Buffer) -> Void
 ```
 
 Appends the bytes of a subset of a byte seuqnece to a buffer.
@@ -795,7 +795,7 @@ Parameters:
 |-----|----|-----------|
 |`start`|`Number`|The byte offset into the byte sequence|
 |`length`|`Number`|The number of bytes to append|
-|`bytes`|`a`|The byte sequence to append|
+|`bytes`|`Bytes`|The byte sequence to append|
 |`buffer`|`Buffer`|The buffer to mutate|
 
 ### Buffer.**addBuffer**
