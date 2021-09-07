@@ -245,7 +245,7 @@ export let forEach = (fn, array) => {
   let length = length(array)
   let mut count = 0
   while (count < length) {
-    fn(array[count])
+    fn(array[count]): Void
     count = incr(count)
   }
 }
@@ -264,7 +264,7 @@ export let forEachi = (fn, array) => {
   let length = length(array)
   let mut count = 0
   while (count < length) {
-    fn(array[count], count)
+    fn(array[count], count): (Void)
     count = incr(count)
   }
 }
@@ -607,7 +607,7 @@ export let findIndex = (fn, array) => {
  *
  * @since v0.2.0
  */
-export let product = (array1, array2) => {
+export let product = (array1: Array<a>, array2: Array<b>) => {
   let lenA = length(array1)
   let lenB = length(array2)
   let mut indexA = -1
@@ -750,7 +750,7 @@ export let unique = (array) => {
  *
  * @since v0.4.0
  */
-export let zip = (array1, array2) => {
+export let zip = (array1: Array<a>, array2: Array<b>) => {
   let len = length(array1)
   if (len != length(array2)) {
     fail "arguments to zip must be same length"
