@@ -541,7 +541,7 @@ export let toStringSlice = (start, length, buffer) => {
  * @since v0.4.0
  */
 @disableGC
-export let rec addChar = (char, buffer) => {
+export let rec addChar = (char: Char, buffer: Buffer) => {
   let n = getCharAsWasmI32(char)
   let bytelen = getCharByteLength(n)
   match (bytelen) {
@@ -713,7 +713,7 @@ export let rec addStringSlice = (start, length, string, buffer) => {
  * @since v0.4.0
  */
 @disableGC
-export let rec addBytesSlice = (start, length, bytes, buffer) => {
+export let rec addBytesSlice = (start: Number, length: Number, bytes: Bytes, buffer: Buffer) => {
   Memory.incRef(WasmI32.fromGrain(autogrow))
   Memory.incRef(WasmI32.fromGrain(length))
   Memory.incRef(WasmI32.fromGrain(buffer))
