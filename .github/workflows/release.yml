@@ -8,11 +8,10 @@ jobs:
     name: Create Release
     runs-on: ubuntu-latest
     outputs:
-      # Remap these names because they are quite confusing
-      release_created: ${{ steps.release.outputs.releases_created }}
-      upload_url: ${{ steps.release.outputs['.--upload_url'] }}
+      release_created: ${{ steps.release.outputs.release_created }}
+      upload_url: ${{ steps.release.outputs.upload_url }}
     steps:
-      - uses: GoogleCloudPlatform/release-please-action@v2
+      - uses: GoogleCloudPlatform/release-please-action@v2.29.2
         id: release
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -28,7 +27,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2.1.2
         with:
-          node-version: '14'
+          node-version: "14"
           check-latest: true
 
       - name: Setup environment
@@ -52,7 +51,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: compiler/_export
-          key:  ${{ runner.os }}-esy-${{ hashFiles('compiler/esy.lock/index.json') }}
+          key: ${{ runner.os }}-esy-${{ hashFiles('compiler/esy.lock/index.json') }}
 
       - name: Import esy cache
         if: steps.esy-cache.outputs.cache-hit == 'true'
