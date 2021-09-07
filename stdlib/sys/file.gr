@@ -635,7 +635,7 @@ export let rec fdPwrite = (fd: FileDescriptor, data: String, offset: Int64) => {
   let mut nwritten = iovs + (3n * 4n)
 
   let err = Wasi.fd_pwrite(fd, iovs, 1n, offset, nwritten)
-  if (err != Wasi._ESUCCESS) {
+  let ret = if (err != Wasi._ESUCCESS) {
     Memory.free(iovs)
     wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
@@ -649,6 +649,7 @@ export let rec fdPwrite = (fd: FileDescriptor, data: String, offset: Int64) => {
   Memory.decRef(WasmI32.fromGrain(data))
   Memory.decRef(WasmI32.fromGrain(offsetArg))
   Memory.decRef(WasmI32.fromGrain(fdPwrite))
+  ret
 }
 
 /**
