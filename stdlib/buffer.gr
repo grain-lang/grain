@@ -613,7 +613,7 @@ export let setInt16 = (index, value, buffer) => {
  * @since v0.4.0
  */
 export let addInt16 = (value, buffer) => {
-  addInt32help(value, buffer)
+  addInt16help(value, buffer)
 }
 
 /**
