@@ -529,7 +529,7 @@ export let rec fdRead = (fd: FileDescriptor, size: Number) => {
  * @param fd: The file descriptor to read from
  * @param offset: The position within the file to begin reading
  * @param size: The maximum number of bytes to read from the file descriptor
- * @returns `Ok((contents, numBytes)) of bytes read and the number of bytes read if successful or `Err(exception)` otherwise
+ * @returns `Ok((contents, numBytes))` of bytes read and the number of bytes read if successful or `Err(exception)` otherwise
  */
 export let rec fdPread = (fd: FileDescriptor, offset: Int64, size: Number) => {
   let fdArg = fd

@@ -277,7 +277,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Result<(String, Number), Exception>`|`Ok((contents, numBytes)) of bytes read and the number of bytes read if successful or `Err(exception)` otherwise|
+|`Result<(String, Number), Exception>`|`Ok((contents, numBytes))` of bytes read and the number of bytes read if successful or `Err(exception)` otherwise|
 
 ### File.**fdWrite**
 
