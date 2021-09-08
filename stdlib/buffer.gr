@@ -96,295 +96,30 @@ let checkIsIndexInBounds = (i, len, buf) => {
   if (i >= buf.len || i + len > buf.len) throw Exception.IndexOutOfBounds
 }
 
-/**
- * @section Values: Functions for working with the Buffer data type.
- */
-
-/**
- * Gets a signed 8-bit integer starting at the given byte index.
- *
- * @param index: The byte index to access
- * @param buffer: The buffer to access
- * @returns A 32-bit integer representing a signed 8-bit integer that starts at the given index
- *
- * @since v0.4.0
- */
-export let getInt8S = (index, buffer) => {
-  checkIsIndexInBounds(index, _8BIT_LEN, buffer)
-  Bytes.getInt8S(index, buffer.data)
-}
-
-/**
- * Gets an unsigned 8-bit integer starting at the given byte index.
- *
- * @param index: The byte index to access
- * @param buffer: The buffer to access
- * @returns A 32-bit integer representing an unsigned 8-bit integer that starts at the given index
- *
- * @since v0.4.0
- */
-export let getInt8U = (index, buffer) => {
-  checkIsIndexInBounds(index, _8BIT_LEN, buffer)
-  Bytes.getInt8U(index, buffer.data)
-}
-
-/**
- * Sets a signed 8-bit integer starting at the given byte index.
- *
- * @param index: The byte index to update
- * @param value: The value to set
- * @param buffer: The buffer to mutate
- *
- * @since v0.4.0
- */
-export let setInt8 = (index, value, buffer) => {
-  checkIsIndexInBounds(index, _8BIT_LEN, buffer)
-  Bytes.setInt8(index, value, buffer.data)
-}
-
-/**
- * Appends a signed 8-bit integer to a buffer.
- *
- * @param value: The value to append
- * @param buffer: The buffer to mutate
- *
- * @since v0.4.0
- */
-export let addInt8 = (value, buffer) => {
+let addInt8help = (value, buffer) => {
   autogrow(_8BIT_LEN, buffer)
   let index = buffer.len
   buffer.len = buffer.len + _8BIT_LEN
-  setInt8(index, value, buffer)
+  Bytes.setInt8(index, value, buffer.data)
 }
 
-/**
- * Gets a signed 16-bit integer starting at the given byte index.
- *
- * @param index: The byte index to access
- * @param buffer: The buffer to access
- * @returns A 32-bit integer representing a signed 16-bit integer that starts at the given index
- *
- * @since v0.4.0
- */
-export let getInt16S = (index, buffer) => {
-  checkIsIndexInBounds(index, _16BIT_LEN, buffer)
-  Bytes.getInt16S(index, buffer.data)
-}
-
-/**
- * Gets an unsigned 16-bit integer starting at the given byte index.
- *
- * @param index: The byte index to access
- * @param buffer: The buffer to access
- * @returns A 32-bit integer representing an unsigned 16-bit integer that starts at the given index
- *
- * @since v0.4.0
- */
-export let getInt16U = (index, buffer) => {
-  checkIsIndexInBounds(index, _16BIT_LEN, buffer)
-  Bytes.getInt16U(index, buffer.data)
-}
-
-/**
- * Sets a signed 16-bit integer starting at the given byte index.
- *
- * @param index: The byte index to update
- * @param value: The value to set
- * @param buffer: The buffer to mutate
- *
- * @since v0.4.0
- */
-export let setInt16 = (index, value, buffer) => {
-  checkIsIndexInBounds(index, _16BIT_LEN, buffer)
-  Bytes.setInt16(index, value, buffer.data)
-}
-
-/**
- * Appends a signed 16-bit integer to a buffer.
- *
- * @param value: The value to append
- * @param buffer: The buffer to mutate
- *
- * @since v0.4.0
- */
-export let addInt16 = (value, buffer) => {
+let addInt16help = (value, buffer) => {
   autogrow(_16BIT_LEN, buffer)
   let index = buffer.len
   buffer.len = buffer.len + _16BIT_LEN
-  setInt16(index, value, buffer)
+  Bytes.setInt16(index, value, buffer.data)
 }
 
-/**
- * Gets a signed 32-bit integer starting at the given byte index.
- *
- * @param index: The byte index to access
- * @param buffer: The buffer to access
- * @returns A signed 32-bit integer that starts at the given index
- *
- * @since v0.4.0
- */
-export let getInt32 = (index, buffer) => {
-  checkIsIndexInBounds(index, _32BIT_LEN, buffer)
-  Bytes.getInt32(index, buffer.data)
-}
-
-/**
- * Sets a signed 32-bit integer starting at the given byte index.
- *
- * @param index: The byte index to update
- * @param value: The value to set
- * @param buffer: The buffer to mutate
- *
- * @since v0.4.0
- */
-export let setInt32 = (index, value, buffer) => {
-  checkIsIndexInBounds(index, _32BIT_LEN, buffer)
+let addInt32help = (value, buffer) => {
+  autogrow(_32BIT_LEN, buffer)
+  let index = buffer.len
+  buffer.len = buffer.len + _32BIT_LEN
   Bytes.setInt32(index, value, buffer.data)
 }
 
 /**
- * Appends a signed 32-bit integer to a buffer.
- *
- * @param value: The value to append
- * @param buffer: The buffer to mutate
- *
- * @since v0.4.0
+ * @section Values: Functions for working with the Buffer data type.
  */
-export let addInt32 = (value, buffer) => {
-  autogrow(_32BIT_LEN, buffer)
-  let index = buffer.len
-  buffer.len = buffer.len + _32BIT_LEN
-  setInt32(index, value, buffer)
-}
-
-/**
- * Gets a 32-bit float starting at the given byte index.
- *
- * @param index: The byte index to access
- * @param buffer: The buffer to access
- * @returns A 32-bit float that starts at the given index
- *
- * @since v0.4.0
- */
-export let getFloat32 = (index, buffer) => {
-  checkIsIndexInBounds(index, _32BIT_LEN, buffer)
-  Bytes.getFloat32(index, buffer.data)
-}
-
-/**
- * Sets a 32-bit float starting at the given byte index.
- *
- * @param index: The byte index to update
- * @param value: The value to set
- * @param buffer: The buffer to mutate
- *
- * @since v0.4.0
- */
-export let setFloat32 = (index, value, buffer) => {
-  checkIsIndexInBounds(index, _32BIT_LEN, buffer)
-  Bytes.setFloat32(index, value, buffer.data)
-}
-
-/**
- * Appends a 32-bit float to a buffer.
- *
- * @param value: The value to append
- * @param buffer: The buffer to mutate
- *
- * @since v0.4.0
- */
-export let addFloat32 = (value, buffer) => {
-  autogrow(_32BIT_LEN, buffer)
-  let index = buffer.len
-  buffer.len = buffer.len + _32BIT_LEN
-  setFloat32(index, value, buffer)
-}
-
-/**
- * Gets a signed 64-bit integer starting at the given byte index.
- *
- * @param index: The byte index to access
- * @param buffer: The buffer to access
- * @returns A signed 64-bit integer that starts at the given index
- *
- * @since v0.4.0
- */
-export let getInt64 = (index, buffer) => {
-  checkIsIndexInBounds(index, _64BIT_LEN, buffer)
-  Bytes.getInt64(index, buffer.data)
-}
-
-/**
- * Sets a signed 64-bit integer starting at the given byte index.
- *
- * @param index: The byte index to update
- * @param value: The value to set
- * @param buffer: The buffer to mutate
- *
- * @since v0.4.0
- */
-export let setInt64 = (index, value, buffer) => {
-  checkIsIndexInBounds(index, _64BIT_LEN, buffer)
-  Bytes.setInt64(index, value, buffer.data)
-}
-
-/**
- * Appends a signed 64-bit integer to a buffer.
- *
- * @param value: The value to set
- * @param buffer: The buffer to mutate
- *
- * @since v0.4.0
- */
-export let addInt64 = (value, buffer) => {
-  autogrow(_64BIT_LEN, buffer)
-  let index = buffer.len
-  buffer.len = buffer.len + _64BIT_LEN
-  setInt64(index, value, buffer)
-}
-
-/**
- * Gets a 64-bit float starting at the given byte index.
- *
- * @param index: The byte index to access
- * @param buffer: The buffer to access
- * @returns A 64-bit float that starts at the given index
- *
- * @since v0.4.0
- */
-export let getFloat64 = (index, buffer) => {
-  checkIsIndexInBounds(index, _64BIT_LEN, buffer)
-  Bytes.getFloat64(index, buffer.data)
-}
-
-/**
- * Sets a 64-bit float starting at the given byte index.
- *
- * @param index: The byte index to update
- * @param value: The value to set
- * @param buffer: The buffer to mutate
- *
- * @since v0.4.0
- */
-export let setFloat64 = (index, value, buffer) => {
-  checkIsIndexInBounds(index, _64BIT_LEN, buffer)
-  Bytes.setFloat64(index, value, buffer.data)
-}
-
-/**
- * Appends a 64-bit float to a buffer.
- *
- * @param value: The value to append
- * @param buffer: The buffer to mutate
- *
- * @since v0.4.0
- */
-export let addFloat64 = (value, buffer) => {
-  autogrow(_64BIT_LEN, buffer)
-  let index = buffer.len
-  buffer.len = buffer.len + _64BIT_LEN
-  setFloat64(index, value, buffer)
-}
 
 /**
  * Creates a fresh buffer, initially empty.
@@ -547,17 +282,17 @@ export let rec addChar = (char: Char, buffer: Buffer) => {
   match (bytelen) {
     1n => {
       let c = Conv.toInt32(n)
-      Memory.incRef(WasmI32.fromGrain(addInt8))
+      Memory.incRef(WasmI32.fromGrain(addInt8help))
       Memory.incRef(WasmI32.fromGrain(c))
       Memory.incRef(WasmI32.fromGrain(buffer))
-      addInt8(c, buffer)
+      addInt8help(c, buffer)
     },
     2n => {
       let c = Conv.toInt32(n)
-      Memory.incRef(WasmI32.fromGrain(addInt16))
+      Memory.incRef(WasmI32.fromGrain(addInt16help))
       Memory.incRef(WasmI32.fromGrain(c))
       Memory.incRef(WasmI32.fromGrain(buffer))
-      addInt16(c, buffer)
+      addInt16help(c, buffer)
     },
     3n => {
       let (<) = WasmI32.ltU
@@ -567,18 +302,18 @@ export let rec addChar = (char: Char, buffer: Buffer) => {
       let (>>) = WasmI32.shrU
       for (let mut i = 0n; i < 3n; i = i + 1n) {
         let c = Conv.toInt32(n >> (i * 8n) & 0xffn)
-        Memory.incRef(WasmI32.fromGrain(addInt8))
+        Memory.incRef(WasmI32.fromGrain(addInt8help))
         Memory.incRef(WasmI32.fromGrain(c))
         Memory.incRef(WasmI32.fromGrain(buffer))
-        addInt8(c, buffer)
+        addInt8help(c, buffer)
       }
     },
     _ => {
       let c = Conv.toInt32(n)
-      Memory.incRef(WasmI32.fromGrain(addInt32))
+      Memory.incRef(WasmI32.fromGrain(addInt32help))
       Memory.incRef(WasmI32.fromGrain(c))
       Memory.incRef(WasmI32.fromGrain(buffer))
-      addInt32(c, buffer)
+      addInt32help(c, buffer)
     },
   }
 
@@ -766,4 +501,286 @@ export let addBuffer = (srcBuffer, dstBuffer) => {
  */
 export let addBufferSlice = (start, length, srcBuffer, dstBuffer) => {
   addBytesSlice(start, length, srcBuffer.data, dstBuffer)
+}
+
+/**
+ * @section Binary operations on integers: Functions for encoding and decoding integers stored in a buffer.
+ */
+
+
+/**
+ * Gets a signed 8-bit integer starting at the given byte index.
+ *
+ * @param index: The byte index to access
+ * @param buffer: The buffer to access
+ * @returns A 32-bit integer representing a signed 8-bit integer that starts at the given index
+ *
+ * @since v0.4.0
+ */
+export let getInt8S = (index, buffer) => {
+  checkIsIndexInBounds(index, _8BIT_LEN, buffer)
+  Bytes.getInt8S(index, buffer.data)
+}
+
+/**
+ * Gets an unsigned 8-bit integer starting at the given byte index.
+ *
+ * @param index: The byte index to access
+ * @param buffer: The buffer to access
+ * @returns A 32-bit integer representing an unsigned 8-bit integer that starts at the given index
+ *
+ * @since v0.4.0
+ */
+export let getInt8U = (index, buffer) => {
+  checkIsIndexInBounds(index, _8BIT_LEN, buffer)
+  Bytes.getInt8U(index, buffer.data)
+}
+
+/**
+ * Sets a signed 8-bit integer starting at the given byte index.
+ *
+ * @param index: The byte index to update
+ * @param value: The value to set
+ * @param buffer: The buffer to mutate
+ *
+ * @since v0.4.0
+ */
+export let setInt8 = (index, value, buffer) => {
+  checkIsIndexInBounds(index, _8BIT_LEN, buffer)
+  Bytes.setInt8(index, value, buffer.data)
+}
+
+/**
+ * Appends a signed 8-bit integer to a buffer.
+ *
+ * @param value: The value to append
+ * @param buffer: The buffer to mutate
+ *
+ * @since v0.4.0
+ */
+export let addInt8 = (value, buffer) => {
+  addInt8help(value, buffer)
+}
+
+/**
+ * Gets a signed 16-bit integer starting at the given byte index.
+ *
+ * @param index: The byte index to access
+ * @param buffer: The buffer to access
+ * @returns A 32-bit integer representing a signed 16-bit integer that starts at the given index
+ *
+ * @since v0.4.0
+ */
+export let getInt16S = (index, buffer) => {
+  checkIsIndexInBounds(index, _16BIT_LEN, buffer)
+  Bytes.getInt16S(index, buffer.data)
+}
+
+/**
+ * Gets an unsigned 16-bit integer starting at the given byte index.
+ *
+ * @param index: The byte index to access
+ * @param buffer: The buffer to access
+ * @returns A 32-bit integer representing an unsigned 16-bit integer that starts at the given index
+ *
+ * @since v0.4.0
+ */
+export let getInt16U = (index, buffer) => {
+  checkIsIndexInBounds(index, _16BIT_LEN, buffer)
+  Bytes.getInt16U(index, buffer.data)
+}
+
+/**
+ * Sets a signed 16-bit integer starting at the given byte index.
+ *
+ * @param index: The byte index to update
+ * @param value: The value to set
+ * @param buffer: The buffer to mutate
+ *
+ * @since v0.4.0
+ */
+export let setInt16 = (index, value, buffer) => {
+  checkIsIndexInBounds(index, _16BIT_LEN, buffer)
+  Bytes.setInt16(index, value, buffer.data)
+}
+
+/**
+ * Appends a signed 16-bit integer to a buffer.
+ *
+ * @param value: The value to append
+ * @param buffer: The buffer to mutate
+ *
+ * @since v0.4.0
+ */
+export let addInt16 = (value, buffer) => {
+  addInt16help(value, buffer)
+}
+
+/**
+ * Gets a signed 32-bit integer starting at the given byte index.
+ *
+ * @param index: The byte index to access
+ * @param buffer: The buffer to access
+ * @returns A signed 32-bit integer that starts at the given index
+ *
+ * @since v0.4.0
+ */
+export let getInt32 = (index, buffer) => {
+  checkIsIndexInBounds(index, _32BIT_LEN, buffer)
+  Bytes.getInt32(index, buffer.data)
+}
+
+/**
+ * Sets a signed 32-bit integer starting at the given byte index.
+ *
+ * @param index: The byte index to update
+ * @param value: The value to set
+ * @param buffer: The buffer to mutate
+ *
+ * @since v0.4.0
+ */
+export let setInt32 = (index, value, buffer) => {
+  checkIsIndexInBounds(index, _32BIT_LEN, buffer)
+  Bytes.setInt32(index, value, buffer.data)
+}
+
+/**
+ * Appends a signed 32-bit integer to a buffer.
+ *
+ * @param value: The value to append
+ * @param buffer: The buffer to mutate
+ *
+ * @since v0.4.0
+ */
+export let addInt32 = (value, buffer) => {
+  addInt32help(value, buffer)
+}
+
+/**
+ * Gets a 32-bit float starting at the given byte index.
+ *
+ * @param index: The byte index to access
+ * @param buffer: The buffer to access
+ * @returns A 32-bit float that starts at the given index
+ *
+ * @since v0.4.0
+ */
+export let getFloat32 = (index, buffer) => {
+  checkIsIndexInBounds(index, _32BIT_LEN, buffer)
+  Bytes.getFloat32(index, buffer.data)
+}
+
+/**
+ * Sets a 32-bit float starting at the given byte index.
+ *
+ * @param index: The byte index to update
+ * @param value: The value to set
+ * @param buffer: The buffer to mutate
+ *
+ * @since v0.4.0
+ */
+export let setFloat32 = (index, value, buffer) => {
+  checkIsIndexInBounds(index, _32BIT_LEN, buffer)
+  Bytes.setFloat32(index, value, buffer.data)
+}
+
+/**
+ * Appends a 32-bit float to a buffer.
+ *
+ * @param value: The value to append
+ * @param buffer: The buffer to mutate
+ *
+ * @since v0.4.0
+ */
+export let addFloat32 = (value, buffer) => {
+  autogrow(_32BIT_LEN, buffer)
+  let index = buffer.len
+  buffer.len = buffer.len + _32BIT_LEN
+  setFloat32(index, value, buffer)
+}
+
+/**
+ * Gets a signed 64-bit integer starting at the given byte index.
+ *
+ * @param index: The byte index to access
+ * @param buffer: The buffer to access
+ * @returns A signed 64-bit integer that starts at the given index
+ *
+ * @since v0.4.0
+ */
+export let getInt64 = (index, buffer) => {
+  checkIsIndexInBounds(index, _64BIT_LEN, buffer)
+  Bytes.getInt64(index, buffer.data)
+}
+
+/**
+ * Sets a signed 64-bit integer starting at the given byte index.
+ *
+ * @param index: The byte index to update
+ * @param value: The value to set
+ * @param buffer: The buffer to mutate
+ *
+ * @since v0.4.0
+ */
+export let setInt64 = (index, value, buffer) => {
+  checkIsIndexInBounds(index, _64BIT_LEN, buffer)
+  Bytes.setInt64(index, value, buffer.data)
+}
+
+/**
+ * Appends a signed 64-bit integer to a buffer.
+ *
+ * @param value: The value to set
+ * @param buffer: The buffer to mutate
+ *
+ * @since v0.4.0
+ */
+export let addInt64 = (value, buffer) => {
+  autogrow(_64BIT_LEN, buffer)
+  let index = buffer.len
+  buffer.len = buffer.len + _64BIT_LEN
+  setInt64(index, value, buffer)
+}
+
+/**
+ * Gets a 64-bit float starting at the given byte index.
+ *
+ * @param index: The byte index to access
+ * @param buffer: The buffer to access
+ * @returns A 64-bit float that starts at the given index
+ *
+ * @since v0.4.0
+ */
+export let getFloat64 = (index, buffer) => {
+  checkIsIndexInBounds(index, _64BIT_LEN, buffer)
+  Bytes.getFloat64(index, buffer.data)
+}
+
+/**
+ * Sets a 64-bit float starting at the given byte index.
+ *
+ * @param index: The byte index to update
+ * @param value: The value to set
+ * @param buffer: The buffer to mutate
+ *
+ * @since v0.4.0
+ */
+export let setFloat64 = (index, value, buffer) => {
+  checkIsIndexInBounds(index, _64BIT_LEN, buffer)
+  Bytes.setFloat64(index, value, buffer.data)
+}
+
+/**
+ * Appends a 64-bit float to a buffer.
+ *
+ * @param value: The value to append
+ * @param buffer: The buffer to mutate
+ *
+ * @since v0.4.0
+ */
+export let addFloat64 = (value, buffer) => {
+  autogrow(_64BIT_LEN, buffer)
+  let index = buffer.len
+  buffer.len = buffer.len + _64BIT_LEN
+  setFloat64(index, value, buffer)
 }
