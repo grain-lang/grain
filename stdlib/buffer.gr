@@ -504,7 +504,7 @@ export let addBufferSlice = (start, length, srcBuffer, dstBuffer) => {
 }
 
 /**
- * @section Raw bytes: Functions for working with the raw bytes in a buffer.
+ * @section Binary operations on integers: Functions for encoding and decoding integers stored in a buffer.
  */
 
 
