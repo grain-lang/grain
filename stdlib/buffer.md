@@ -390,9 +390,9 @@ Parameters:
 |`srcBuffer`|`Buffer`|The buffer to append|
 |`dstBuffer`|`Buffer`|The buffer to mutate|
 
-## Raw bytes
+## Binary operations on integers
 
-Functions for working with the raw bytes in a buffer.
+Functions for encoding and decoding integers stored in a buffer.
 
 ### Buffer.**getInt8S**
 
