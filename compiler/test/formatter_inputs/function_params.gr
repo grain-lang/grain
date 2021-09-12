@@ -1,13 +1,16 @@
-let single_arg = (x) => x
+let single_arg = x => x
 
 let unit_arg = () => 3
 
-let two_args = (x,y) => 4
+let two_args = (x, y) => 4
 
+@disableGC
 export let fd_write: (WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32 =
-  (fd,
+  (
+    fd,
     iovs,
     iovs_len,
-    nwritten) => {
+    nwritten,
+  ) => {
   0n
 }

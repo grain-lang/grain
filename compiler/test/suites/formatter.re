@@ -28,4 +28,5 @@ describe("formatter", ({test}) => {
   assertFormatOutput("ignores", "ignores");
   assertFormatOutput("list_sugar", "list_sugar");
   assertFormatOutput("values", "values");
+  assertFormatOutput("brace_comments", "brace_comments");
 });

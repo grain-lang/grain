@@ -1,4 +1,4 @@
-export enum Instructions {
+export enum Instructions { // brace trailer
   // leading
   MoveNorth(Number),  // north
   // below north
