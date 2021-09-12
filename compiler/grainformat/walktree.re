@@ -84,8 +84,7 @@ let is_first_inside_second =
           false;
         };
       } else {
-        false; // true;
-             // ignore the end of line so we catch trailing comments
+        false;
       };
 
     begins_inside && ends_inside;

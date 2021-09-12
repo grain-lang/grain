@@ -1,5 +1,5 @@
-record Rec { foo: Number, bar: Number }
-let x = { foo: 4, bar: 9 }
+record Rec {foo: Number, bar: Number}
+let x = {foo: 4, bar: 9}
 
 x.foo + x.bar
 
@@ -12,10 +12,7 @@ record Rec3 { foo3: Number, bar3: String, baz3: Bool }
 let { foo3, _ } = { foo3: 4, bar3: "boo", baz3: true }
 foo3
 
-record Long {
-  longField1: Number,
-  longField2: Number,
-  longField3: String,
+record Long {longField1: Number,longField2: Number,longField3: String,
   longField4: String,
   longField5: String,
 }
@@ -26,7 +23,7 @@ record Commented { // brace comment
   // under 1
   address: String, /*
   stupid block */
-  age: Number,
+  age: Number
   // trailing
 }
 
