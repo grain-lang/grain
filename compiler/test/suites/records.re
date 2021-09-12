@@ -91,6 +91,10 @@ describe("records", ({test}) => {
     "record Rec {foo: Number, bar: Number, baz: Number}; let { foo, bar, baz } = {foo: 4, bar: 5, baz: 6}; foo + bar + baz",
   );
   assertSnapshot(
+    "record_destruct_trailing",
+    "record Rec {foo: Number, bar: Number, baz: Number}; let { foo, bar, baz, } = {foo: 4, bar: 5, baz: 6}; foo + bar + baz",
+  );
+  assertSnapshot(
     "record_destruct_deep",
     "record Rec {foo: Number}; record Rec2 {bar: Rec}; let { bar: { foo } } = {bar: {foo: 4}}; foo",
   );

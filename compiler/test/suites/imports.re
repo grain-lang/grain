@@ -77,6 +77,17 @@ describe("imports", ({test}) => {
     "import {x, y} from \"exportStar\"; y(x)",
   );
   assertSnapshot(
+    "import_some_multiple_trailing",
+    "import {x, y,} from \"exportStar\"; y(x)",
+  );
+  assertSnapshot(
+    "import_some_multiple_trailing2",
+    "import {
+      x,
+      y,
+    } from \"exportStar\"; y(x)",
+  );
+  assertSnapshot(
     "import_some_constructor",
     "import {Cons, Empty} from \"tlists\"; Cons(5, Empty)",
   );

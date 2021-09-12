@@ -23,6 +23,7 @@ describe("tuples", ({test}) => {
   assertSnapshot("no_non_trailing_comma_singleton_tup", "(1)");
   // trailing commas
   assertSnapshot("tup1_trailing", "(1, 2, 3,)");
+  assertSnapshot("tup1_destruct_trailing", "let (a, b, c,) =(1, 2, 3,)");
   assertSnapshot("tup1_trailing_space", "(1, 2, 3, )");
   assertCompileError("invalid_empty_trailing", "(,)", "Error: Syntax error");
 });
