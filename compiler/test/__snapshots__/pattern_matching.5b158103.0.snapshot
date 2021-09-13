@@ -217,7 +217,10 @@ pattern matching › constant_match_2
             (tuple.extract 0
              (tuple.make
               (call $import_GRAIN$MODULE$runtime/equal_0_equal_0
-               (global.get $import_GRAIN$MODULE$runtime/equal_0_GRAIN$EXPORT$equal_0)
+               (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+                (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+                (global.get $import_GRAIN$MODULE$runtime/equal_0_GRAIN$EXPORT$equal_0)
+               )
                (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
                 (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
                 (local.get $11)
@@ -276,7 +279,10 @@ pattern matching › constant_match_2
               )
              )
              (call $import_GRAIN$MODULE$runtime/equal_0_equal_0
-              (global.get $import_GRAIN$MODULE$runtime/equal_0_GRAIN$EXPORT$equal_0)
+              (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+               (global.get $import_GRAIN$MODULE$runtime/equal_0_GRAIN$EXPORT$equal_0)
+              )
               (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
                (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
                (local.get $12)
@@ -427,7 +433,10 @@ pattern matching › constant_match_2
                  )
                 )
                 (call $import_GRAIN$MODULE$runtime/equal_0_equal_0
-                 (global.get $import_GRAIN$MODULE$runtime/equal_0_GRAIN$EXPORT$equal_0)
+                 (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+                  (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+                  (global.get $import_GRAIN$MODULE$runtime/equal_0_GRAIN$EXPORT$equal_0)
+                 )
                  (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
                   (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
                   (local.get $13)
@@ -569,7 +578,10 @@ pattern matching › constant_match_2
                    )
                   )
                   (call $import_GRAIN$MODULE$runtime/equal_0_equal_0
-                   (global.get $import_GRAIN$MODULE$runtime/equal_0_GRAIN$EXPORT$equal_0)
+                   (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+                    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+                    (global.get $import_GRAIN$MODULE$runtime/equal_0_GRAIN$EXPORT$equal_0)
+                   )
                    (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
                     (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
                     (local.get $15)
