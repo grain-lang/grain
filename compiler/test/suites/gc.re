@@ -36,6 +36,7 @@ let readWholeFile = filename => {
 };
 
 describe("garbage collection", ({test}) => {
+  let assertRun = makeRunner(test);
   let assertFileRun = makeFileRunner(test);
   let assertMemoryLimitedFileRun = makeFileRunner(~num_pages=1, test);
   let assertRunGC = (name, heapSize, prog) =>
@@ -103,5 +104,24 @@ describe("garbage collection", ({test}) => {
     "loop_memory_reclaim",
     "loopMemoryReclaim",
     "OK\n",
+  );
+  assertRun(
+    "match_issue893_internal_equals",
+    {|let f = (n: Number) => {
+      match (n) {
+        0 => {
+          void
+        },
+        _ => {
+          void
+        },
+      }
+    }
+
+    f(1)
+    f(2)
+    f(3)
+    print("4")|},
+    "4\n",
   );
 });

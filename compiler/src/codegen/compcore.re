@@ -536,6 +536,7 @@ let call_equal = (wasm_mod, env, args) =>
     wasm_mod,
     get_imported_name(equal_mod, equal_ident),
     [
+      call_incref(wasm_mod, env) @@
       Expression.Global_get.make(
         wasm_mod,
         get_imported_name(equal_mod, equal_closure_ident),
