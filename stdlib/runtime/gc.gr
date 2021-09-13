@@ -459,7 +459,7 @@ let isPointer = (grainVal: WasmI32) => {
 
 // Returns root of list (will be the same as input unless root == 0n)
 let moveToEndOfList = (root: WasmI32, itemRawPtr: WasmI32) => {
-  // edge case: item is root
+  // edge case: item is root (we need to update the global variable to point to the new head)
   if (itemRawPtr == _GEN0_ROOT) {
     _GEN0_ROOT = getGcNext(itemRawPtr)
     if (_GEN0_ROOT == itemRawPtr) {
@@ -570,13 +570,13 @@ let initializeGcCounts = (root: WasmI32) => {
   // PRECONDITION: root != 0n
   let mut rawPtr = root
   setGcCount(rawPtr, getRefCountRaw(rawPtr))
-  setGcPrevFlags(rawPtr, _PREV_COLLECTING)
-  setGcNextFlags(rawPtr, 0n) // zero out flags
+  markCollecting(rawPtr)
+  unmarkUnreachable(rawPtr) // zero out flags
   rawPtr = getGcNext(rawPtr)
   while (rawPtr != root) {
     setGcCount(rawPtr, getRefCountRaw(rawPtr))
-    setGcPrevFlags(rawPtr, _PREV_COLLECTING)
-    setGcNextFlags(rawPtr, 0n) // zero out flags
+    markCollecting(rawPtr)
+    unmarkUnreachable(rawPtr) // zero out flags
     rawPtr = getGcNext(rawPtr)
   }
 }
@@ -813,7 +813,6 @@ let scanForPossiblyUnreachable = (root: WasmI32) => {
 }
 
 let freeUnreachable = (root: WasmI32) => {
-  let mut root = root
   if (root != 0n) {
     // we know that the root is not unreachable
     let mut rawPtr = getGcNext(root)
@@ -847,9 +846,25 @@ let gcListAppend = (oldGeneration: WasmI32, newGeneration: WasmI32) => {
   } else if (oldGeneration == 0n) {
     newGeneration
   } else {
+    // Before:
+    // [elt_n]  <--->  [elt_0]  <--->  [elt_1] <--...>
+    // ^ lastInOldList ^ oldGeneration
+    //
+    // After:
+    // [elt_n]  <--->  [new_0] <---> [new_1] <---..> [new_m] <--> [elt_0] <--> [elt_1] <--...>
+    //                               ^ newGeneration ^ lastInNewList
+    //
+    // Steps:
+    // set [elt_n].next := [new_0]
+    // set [new_0].prev := [elt_n]
+    // set [elt_0].prev := [new_m]
+    // set [new_m].next := [elt_0]
     let lastInOldList = getGcPrev(oldGeneration)
+    let lastInNewList = getGcPrev(newGeneration)
     setGcNext(lastInOldList, newGeneration)
     setGcPrev(newGeneration, lastInOldList)
+    setGcPrev(oldGeneration, lastInNewList)
+    setGcNext(lastInNewList, oldGeneration)
     oldGeneration
   }
 }
