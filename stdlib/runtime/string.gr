@@ -386,8 +386,9 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
             variantName
           } else {
             let comspace = ", "
-            let lparen = ")"
-            let mut strings = slConsDisableGc(lparen, SLEmpty)
+            let rparen = ")"
+            Memory.incRef(WasmI32.fromGrain(SLEmpty))
+            let mut strings = slConsDisableGc(rparen, SLEmpty)
             for (let mut i = variantArity * 4n - 4n; i >= 0n; i -= 4n) {
               let tmp = toStringHelp(WasmI32.load(ptr + i, 20n), extraIndents, false)
               strings = slConsDisableGc(tmp, strings)
@@ -397,8 +398,8 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
               }
             }
             Memory.incRef(WasmI32.fromGrain(variantName))
-            let rparen = "("
-            strings = slConsDisableGc(variantName, slConsDisableGc(rparen, strings))
+            let lparen = "("
+            strings = slConsDisableGc(variantName, slConsDisableGc(lparen, strings))
             let string = join(strings)
             Memory.decRef(WasmI32.fromGrain(variantName))
             Memory.decRef(WasmI32.fromGrain(lparen))
