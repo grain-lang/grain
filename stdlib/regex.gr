@@ -2830,7 +2830,7 @@ let fastDriveRegexMatch = (rx, string, startOffset, endOffset) => {
  * @param string: The string to search within
  * @returns `true` if the RegExp matches the string, otherwise `false`
  *
- * @example assert Regex.isMatch(Regex.make("ca+[at]"), "caaat") == true
+ * @example assert Regex.isMatch(Result.unwrap(Regex.make("ca+[at]")), "caaat") == true
  *
  * @since 0.4.3
  */
@@ -2846,8 +2846,8 @@ export let isMatch = (rx: RegularExpression, string: String) => {
  * @param end: The end offset to search between
  * @returns `true` if the RegExp matches the string in the given range, otherwise `false`
  *
- * @example assert Regex.isMatchRange(Regex.make("ca+[at]"), "caaat", 0, 5) == true
- * @example assert Regex.isMatchRange(Regex.make("ca+[at]"), "caaat", 1, 5) == false
+ * @example assert Regex.isMatchRange(Result.unwrap(Regex.make("ca+[at]")), "caaat", 0, 5) == true
+ * @example assert Regex.isMatchRange(Result.unwrap(Regex.make("ca+[at]")), "caaat", 1, 5) == false
  *
  * @since 0.4.3
  */
@@ -2861,7 +2861,7 @@ export let isMatchRange = (rx: RegularExpression, string: String, start: Number,
  * @param string: The string to search
  * @returns The match result, if any
  *
- * @example Regex.find(Regex.make("ca+[at]"), "caaat")
+ * @example Regex.find(Result.unwrap(Regex.make("ca+[at]")), "caaat")
  *
  * @since 0.4.3
  */
@@ -2878,7 +2878,7 @@ export let find = (rx: RegularExpression, string: String) => {
  * @param end: The end offset to search between
  * @returns The match result, if any
  *
- * @example Regex.findRange(Regex.make("ca+[at]"), "caaat", 0, 5)
+ * @example Regex.findRange(Result.unwrap(Regex.make("ca+[at]")), "caaat", 0, 5)
  *
  * @since 0.4.3
  */
@@ -2905,7 +2905,7 @@ export let findAll = (rx: RegularExpression, string: String) => {
  * @param end: The end offset to search between
  * @returns The list of matches
  *
- * @example Regex.findAllRange(Regex.make("ca+[at]"), "caaat", 0, 5)
+ * @example Regex.findAllRange(Result.unwrap(Regex.make("ca+[at]")), "caaat", 0, 5)
  *
  * @since 0.4.3
  */
@@ -3022,7 +3022,7 @@ let regexReplaceHelp = (rx: RegularExpression, toSearch: String, replacement: St
  * @param replacement: The string that replaces matches
  * @returns The given string with the appropriate replacements, if any
  *
- * @example assert Regex.replace(Regex.make("o"), "foo", "a") == "fao"
+ * @example assert Regex.replace(Result.unwrap(Regex.make("o")), "foo", "a") == "fao"
  *
  * @since 0.4.3
  */
@@ -3039,7 +3039,7 @@ export let replace = (rx: RegularExpression, toSearch: String, replacement: Stri
  * @param replacement: The string that replaces matches
  * @returns The input string with the appropriate replacements, if any
  *
- * @example assert Regex.replaceAll(Regex.make("a"), "skaat", "r") == "skrrt"
+ * @example assert Regex.replaceAll(Result.unwrap(Regex.make("a")), "skaat", "r") == "skrrt"
  *
  * @since 0.4.3
  */

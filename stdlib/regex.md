@@ -255,7 +255,7 @@ Returns:
 Examples:
 
 ```grain
-assert Regex.isMatch(Regex.make("ca+[at]"), "caaat") == true
+assert Regex.isMatch(Result.unwrap(Regex.make("ca+[at]")), "caaat") == true
 ```
 
 ### Regex.**isMatchRange**
@@ -289,11 +289,11 @@ Returns:
 Examples:
 
 ```grain
-assert Regex.isMatchRange(Regex.make("ca+[at]"), "caaat", 0, 5) == true
+assert Regex.isMatchRange(Result.unwrap(Regex.make("ca+[at]")), "caaat", 0, 5) == true
 ```
 
 ```grain
-assert Regex.isMatchRange(Regex.make("ca+[at]"), "caaat", 1, 5) == false
+assert Regex.isMatchRange(Result.unwrap(Regex.make("ca+[at]")), "caaat", 1, 5) == false
 ```
 
 ### Regex.**find**
@@ -325,7 +325,7 @@ Returns:
 Examples:
 
 ```grain
-Regex.find(Regex.make("ca+[at]"), "caaat")
+Regex.find(Result.unwrap(Regex.make("ca+[at]")), "caaat")
 ```
 
 ### Regex.**findRange**
@@ -361,7 +361,7 @@ Returns:
 Examples:
 
 ```grain
-Regex.findRange(Regex.make("ca+[at]"), "caaat", 0, 5)
+Regex.findRange(Result.unwrap(Regex.make("ca+[at]")), "caaat", 0, 5)
 ```
 
 ### Regex.**findAll**
@@ -418,7 +418,7 @@ Returns:
 Examples:
 
 ```grain
-Regex.findAllRange(Regex.make("ca+[at]"), "caaat", 0, 5)
+Regex.findAllRange(Result.unwrap(Regex.make("ca+[at]")), "caaat", 0, 5)
 ```
 
 ### Regex.**replace**
@@ -459,7 +459,7 @@ Returns:
 Examples:
 
 ```grain
-assert Regex.replace(Regex.make("o"), "foo", "a") == "fao"
+assert Regex.replace(Result.unwrap(Regex.make("o")), "foo", "a") == "fao"
 ```
 
 ### Regex.**replaceAll**
@@ -493,6 +493,6 @@ Returns:
 Examples:
 
 ```grain
-assert Regex.replaceAll(Regex.make("a"), "skaat", "r") == "skrrt"
+assert Regex.replaceAll(Result.unwrap(Regex.make("a")), "skaat", "r") == "skrrt"
 ```
 
