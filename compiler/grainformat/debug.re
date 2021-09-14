@@ -10,10 +10,10 @@ let print_loc_string = (msg: string, loc: Grain_parsing.Location.t) => {
 
   if (startchar >= 0) {
     if (line == endline) {
-      Printf.sprintf("%s %d:%d,%d", msg, line, startchar, endchar);
+      Printf.sprintf("%s %d:%d,%d\n", msg, line, startchar, endchar);
     } else {
       Printf.sprintf(
-        "%s %d:%d - %d:%d",
+        "%s %d:%d - %d:%d\n",
         msg,
         line,
         startchar,
@@ -32,10 +32,10 @@ let print_loc = (msg: string, loc: Grain_parsing.Location.t) => {
 
   if (startchar >= 0) {
     if (line == endline) {
-      Printf.printf("%s %d:%d,%d", msg, line, startchar, endchar);
+      Printf.printf("%s %d:%d,%d\n", msg, line, startchar, endchar);
     } else {
       Printf.printf(
-        "%s %d:%d - %d:%d",
+        "%s %d:%d - %d:%d\n",
         msg,
         line,
         startchar,

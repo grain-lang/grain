@@ -4,12 +4,12 @@ let unit_arg = () => 3
 
 let two_args = (x, y) => 4
 
-export let fd_write: (WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32 =
+export let fake_write: (int, int, int, string) -> string =
   (
     fd,
     iovs,
     iovs_len,
     nwritten,
   ) => {
-  0n
+  "ok"
 }

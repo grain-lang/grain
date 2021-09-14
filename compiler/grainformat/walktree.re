@@ -69,7 +69,7 @@ let is_first_inside_second =
     let begins_inside =
       if (raw1l > raw2l) {
         true;
-      } else if (raw1c >= raw2c) {
+      } else if (raw1c >= raw2c && raw1c <= raw2ce) {
         true;
       } else {
         false;
@@ -77,9 +77,15 @@ let is_first_inside_second =
     let ends_inside =
       if (raw1le < raw2le) {
         true;
+      } else if (raw1le == raw2le) {
+        if (raw1ce <= raw2ce) {
+          true;
+        } else {
+          false;
+        };
       } else {
-        true;
-      }; // ignore the end of line so we catch trailing comments
+        false;
+      };
 
     begins_inside && ends_inside;
   };
@@ -201,7 +207,6 @@ let partition_comments =
       ([], []),
       all_locations^,
     );
-
   (preceeding, following);
 };
 
