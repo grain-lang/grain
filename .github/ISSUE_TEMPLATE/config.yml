@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Grain documentation.
+    url: https://github.com/grain-lang/grain-lang.org
+    about: If your issue happens to be with the official Grain documentaion, please head over to the that repo & consider filing an issue/enhancement request over there !
+  - name: Grain VS Code extension/language server.
+    url: https://github.com/grain-lang/grain-language-server
+    about: If your issue happens to be with the official VS Code extension/language server of Grain, please head over to the that repo & consider filing an issue/enhancement request over there !
