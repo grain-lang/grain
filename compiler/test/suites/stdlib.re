@@ -102,6 +102,7 @@ describe("stdlib", ({test}) => {
   assertStdlib("range.test");
   assertStdlib("result.test");
   assertStdlib("set.test");
+  assertStdlib("regex.test");
   assertStdlib("stack.test");
   assertStdlib("string.test");
   assertStdlib("sys.file.test");
