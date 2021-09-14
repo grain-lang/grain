@@ -444,6 +444,6 @@ Returns:
 Examples:
 
 ```grain
-assert Regex.replaceAll(Result.unwrap(Regex.make("a")), "skaat", "r") == "skrrt"
+assert Regex.replaceAll(Result.unwrap(Regex.make("o")), "skoot", "r") == "skrrt"
 ```
 

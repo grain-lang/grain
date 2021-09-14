@@ -3046,7 +3046,7 @@ export let replace = (rx: RegularExpression, toSearch: String, replacement: Stri
  * @param replacement: The string that replaces matches
  * @returns The input string with the appropriate replacements, if any
  *
- * @example assert Regex.replaceAll(Result.unwrap(Regex.make("a")), "skaat", "r") == "skrrt"
+ * @example assert Regex.replaceAll(Result.unwrap(Regex.make("o")), "skoot", "r") == "skrrt"
  *
  * @since 0.4.3
  */
