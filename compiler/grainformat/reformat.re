@@ -1809,15 +1809,19 @@ and print_expression =
         Doc.group(
           Doc.concat([
             Doc.lparen,
-            Doc.space,
-            print_expression(
-              ~parentIsArrow=false,
-              ~endChar=None,
-              ~original_source,
-              ~parent_loc,
-              expression,
+            Doc.indent(
+              Doc.concat([
+                Doc.softLine,
+                print_expression(
+                  ~parentIsArrow=false,
+                  ~endChar=None,
+                  ~original_source,
+                  ~parent_loc,
+                  expression,
+                ),
+              ]),
             ),
-            Doc.space,
+            Doc.softLine,
             Doc.rparen,
           ]),
         ),
@@ -1842,7 +1846,7 @@ and print_expression =
             Doc.lparen,
             Doc.indent(
               Doc.concat([
-                Doc.line,
+                Doc.softLine,
                 Doc.concat([
                   switch (optexpression1) {
                   | Some(expr) =>
@@ -1892,7 +1896,7 @@ and print_expression =
                 ]),
               ]),
             ),
-            Doc.line,
+            Doc.softLine,
             Doc.rparen,
           ]),
         ),
