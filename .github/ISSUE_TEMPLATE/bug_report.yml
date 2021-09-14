@@ -1,0 +1,68 @@
+---
+name: Bug report.
+description: Create a bug report to help fix a problem with the core Grain language.
+body:
+- type: textarea
+  attributes:
+    label: Description of the bug
+    description: |
+      A description of what the bug is.
+      1. Make sure that you first check if your bug hasn't already been reported. It saves a bit of work on our end.
+      2. Please attach screenshots if they help in understanding the problem better. Don't host your images/videos/GIFs somewhere (e.g. Imgur) and share a link. Directly drag & drop here to avoid navigating to an external link.
+      3. Make sure to format any code samples using triple backticks. If the code sample happens to be large, share a gist/pastebin link instead.
+  validations:
+    required: true
+- type: dropdown
+  attributes:
+    label: In which area of the language did you find a bug ?
+    description: "If you are not sure about this, you can leave it blank."
+    options:
+    - stdlib (Grain standard library)
+    - compiler (Grain core compiler)
+    - runtime (Grain JS runtime)
+    - cli (Grain command line interface)
+- type: textarea
+  attributes:
+    label: Steps to reproduce
+    description: "Please provide detailed steps on how the bug can be reproduced."
+    placeholder: |
+      1. First step.
+      2. Second step.
+      3. Third step.
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Expected behavior
+    description: "A description of what you expected to happen."
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Actual behavior
+    description: "A description of what actually happened."
+  validations:
+    required: true
+- type: input
+  attributes:
+    label: Grain version
+    description: "Run `grain --version` from your shell to find what version of Grain you are running."
+    placeholder: "e.g. 0.4"
+  validations:
+    required: true
+- type: input
+  attributes:
+    label: Operating system & version
+    placeholder: "e.g. macOS 10.14, Windows 10, Ubuntu 18.04"
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Additional information
+    description: "You can jot down any additional information you consider relevant to the bug report (This is purely optional)."
+    placeholder: |
+     Examples may include.
+     1. What version of Grain cli are you running ?
+     2. What version of node/yarn are you running ?
+
+     You get the point.
