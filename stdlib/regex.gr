@@ -2508,8 +2508,8 @@ record RegularExpression {
 /**
  * Compiles the given pattern string into a regular expression object.
  *
- * For an overview of the theory of regular expressions in general, readers are referred
- * to ["Mastering Regular Expressions"](http://regex.info/book.html) by Friedl, or numerous alternative resources online.
+ * For a general overview of regular expressions, refer to
+ * ["Mastering Regular Expressions"](http://regex.info/book.html) by Friedl, or other online resources.
  *
  * Regular expressions are a combination of normal and special characters. A normal
  * character in a pattern will match a one-character string containing that character.
