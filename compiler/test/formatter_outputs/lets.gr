@@ -13,3 +13,13 @@ myFunction3 = y => {
   let myVal = 5
   "some string"
 }
+
+// Attributes
+
+@attribute
+let myToplevelAttributeFunction = x => x
+
+let myFunction4 = () => {
+  @attribute
+  let myAttributeFunction = () => 5
+}

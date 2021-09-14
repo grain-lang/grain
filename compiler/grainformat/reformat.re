@@ -1270,6 +1270,23 @@ and get_trailing_top_level_comments =
   Walktree.remove_used_comments([], trailing_comments);
   trailing_comment_docs;
 }
+and print_attributes = attributes =>
+  if (List.length(attributes) > 0) {
+    Doc.concat([
+      Doc.join(
+        Doc.space,
+        List.map(
+          (a: Location.loc(string)) =>
+            Doc.concat([Doc.text("@"), Doc.text(a.txt)]),
+          attributes,
+        ),
+      ),
+      Doc.hardLine,
+    ]);
+  } else {
+    Doc.nil;
+  }
+
 and print_expression =
     (
       ~parentIsArrow: bool,
@@ -1301,6 +1318,8 @@ and print_expression =
     } else {
       Doc.nil;
     };
+
+  let attribute_text = print_attributes(expr.pexp_attributes);
 
   let expression_doc =
     switch (expr.pexp_desc) {
@@ -2305,10 +2324,16 @@ and print_expression =
     };
 
   if (trailing_comment_docs == Doc.nil) {
-    Doc.concat([leading_comment_docs, expression_doc, endingDoc]);
+    Doc.concat([
+      leading_comment_docs,
+      attribute_text,
+      expression_doc,
+      endingDoc,
+    ]);
   } else {
     Doc.concat([
       leading_comment_docs,
+      attribute_text,
       expression_doc,
       endingDoc,
       trailing_comment_docs,
@@ -2919,22 +2944,7 @@ let toplevel_print =
     } else {
       Doc.nil;
     };
-  let attribute_text =
-    if (List.length(attributes) > 0) {
-      Doc.concat([
-        Doc.join(
-          Doc.space,
-          List.map(
-            (a: Location.loc(string)) =>
-              Doc.concat([Doc.text("@"), Doc.text(a.txt)]),
-            attributes,
-          ),
-        ),
-        Doc.hardLine,
-      ]);
-    } else {
-      Doc.nil;
-    };
+  let attribute_text = print_attributes(attributes);
 
   if (disable_formatting) {
     let originalCode = get_original_code(data.ptop_loc, original_source);
