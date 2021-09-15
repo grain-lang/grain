@@ -28,30 +28,7 @@ There are tons of ways to contribute to Grain. Check out our [contributing guide
 
 ## Building
 
-Grain currently only works on Mac and Linux. We are hard at work trying to integrate Binaryen and OCaml on Windows, but this is uncharted territory! Please let us know if you have this low-level expertise. :bow:
-
-To build Grain, you'll need [Node.js](https://nodejs.org/en/download/current/) v14 and [Yarn](https://yarnpkg.com/getting-started/install). To get everything set up, run:
-
-```bash
-yarn
-yarn compiler build
-```
-
-This will set up the Grain JS runner, standard library, and CLI.
-
-If running tests is your kind of thing, run
-
-```bash
-yarn compiler test
-```
-
-If you are using `vscode` as your editor, we recommend you run:
-
-```bash
-yarn vscode
-```
-
-This will create local settings that point OCaml LSP to our `compiler` directory. Then, you should be able to use the [OCaml Platform](https://github.com/ocamllabs/vscode-ocaml-platform) extension!
+For instructions on how to build Grain from source, please consult the [official documentation](https://grain-lang.org/docs/getting_grain#Building-Grain-from-Source).
 
 ### Other Commands
 
@@ -87,25 +64,4 @@ yarn run
 
 This will display an interactive session where you can select the project and command you want.
 
-## Running Grain Programs
-
-You can run programs using the Grain CLI:
-
-```bash
-echo "print('Hello world')" > hello.gr
-grain hello.gr
-```
-
-Alternatively, you can invoke the compiler directly:
-
-```bash
-grain compile hello.gr
-```
-
-and then to run the compiled program:
-
-```bash
-grain run hello.gr.wasm
-```
-
-Copyright ©️ 2017-2020 Philip Blair, Oscar Spencer, & contributors.
+Copyright ©️ 2017-2021 Philip Blair, Oscar Spencer, & contributors.
