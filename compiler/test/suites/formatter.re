@@ -29,4 +29,5 @@ describe("formatter", ({test}) => {
   assertFormatOutput("list_sugar", "list_sugar");
   assertFormatOutput("values", "values");
   assertFormatOutput("brace_comments", "brace_comments");
+  assertFormatOutput("while_loops", "while_loops");
 });
