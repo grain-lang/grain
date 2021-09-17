@@ -6,6 +6,7 @@ open Types;
 type str = loc(string);
 type loc = Location.t;
 type env = Env.t;
+type type_ = Types.type_expr;
 type ident = Ident.t;
 type attributes = Asttypes.attributes;
 
@@ -21,15 +22,19 @@ let or_default_allocation_type =
   Option.value(~default=default_allocation_type);
 
 module Imm = {
-  let mk = (~loc=?, ~env=?, d) => {
+  let mk = (~loc=?, ~env=?, ~type_=?, d) => {
     imm_desc: d,
     imm_loc: or_default_loc(loc),
     imm_env: or_default_env(env),
+    imm_type: type_,
     imm_analyses: ref([]),
   };
-  let id = (~loc=?, ~env=?, id) => mk(~loc?, ~env?, ImmId(id));
-  let const = (~loc=?, ~env=?, const) => mk(~loc?, ~env?, ImmConst(const));
-  let trap = (~loc=?, ~env=?, ()) => mk(~loc?, ~env?, ImmTrap);
+  let id = (~loc=?, ~env=?, ~type_=?, id) =>
+    mk(~loc?, ~env?, ~type_?, ImmId(id));
+  let const = (~loc=?, ~env=?, ~type_=?, const) =>
+    mk(~loc?, ~env?, ~type_?, ImmConst(const));
+  let trap = (~loc=?, ~env=?, ~type_=?, ()) =>
+    mk(~loc?, ~env?, ~type_?, ImmTrap);
 };
 
 module Comp = {

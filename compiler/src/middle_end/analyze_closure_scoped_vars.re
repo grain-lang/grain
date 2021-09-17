@@ -37,4 +37,8 @@ module CSVIterator = Anf_iterator.MakeIter(CSVArg);
 let analyze = anfprog => {
   closure_scoped_vars := Ident.Set.empty;
   CSVIterator.iter_anf_program(anfprog);
+  Printf.eprintf(
+    "closure_scoped_vars: %s\n",
+    Ident.Set.to_string(closure_scoped_vars^),
+  );
 };

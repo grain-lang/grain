@@ -247,6 +247,7 @@ type imm_expression = {
   imm_desc: imm_expression_desc,
   imm_loc: Location.t,
   imm_env: Env.t,
+  imm_type: option(Types.type_expr),
   imm_analyses: ref(list(analysis)),
 }
 

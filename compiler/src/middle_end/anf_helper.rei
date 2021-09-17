@@ -6,14 +6,19 @@ open Anftree;
 type str = loc(string);
 type loc = Location.t;
 type env = Env.t;
+type type_ = Types.type_expr;
 type ident = Ident.t;
 type attributes = Asttypes.attributes;
 
 module Imm: {
-  let mk: (~loc: loc=?, ~env: env=?, imm_expression_desc) => imm_expression;
-  let id: (~loc: loc=?, ~env: env=?, ident) => imm_expression;
-  let const: (~loc: loc=?, ~env: env=?, constant) => imm_expression;
-  let trap: (~loc: loc=?, ~env: env=?, unit) => imm_expression;
+  let mk:
+    (~loc: loc=?, ~env: env=?, ~type_: type_=?, imm_expression_desc) =>
+    imm_expression;
+  let id: (~loc: loc=?, ~env: env=?, ~type_: type_=?, ident) => imm_expression;
+  let const:
+    (~loc: loc=?, ~env: env=?, ~type_: type_=?, constant) => imm_expression;
+  let trap:
+    (~loc: loc=?, ~env: env=?, ~type_: type_=?, unit) => imm_expression;
 };
 
 module Comp: {

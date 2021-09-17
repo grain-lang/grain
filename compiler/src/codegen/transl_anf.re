@@ -108,7 +108,11 @@ let next_global = (exported, id, ty) =>
     ret;
   };
 
-let find_id = (id, env) => Ident.find_same(id, env.ce_binds);
+let find_id = (id, env) =>
+  try(Ident.find_same(id, env.ce_binds)) {
+  | Not_found =>
+    failwith(Printf.sprintf("Not_found: %s<%d>", id.name, id.stamp))
+  };
 let find_global = (id, env) => Ident.find_same(id, env.ce_exported_globals);
 
 let worklist_reset = () => Queue.clear(compilation_worklist);

@@ -261,6 +261,7 @@ type imm_expression = {
   [@sexp_drop_if sexp_locs_disabled]
   imm_loc: Location.t,
   imm_env: [@sexp.opaque] Env.t,
+  imm_type: option(Types.type_expr),
   imm_analyses: [@sexp.opaque] ref(list(analysis)),
 }
 

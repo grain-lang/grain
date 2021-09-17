@@ -6,18 +6,19 @@ let analysis_passes = [
   Analyze_tail_calls.analyze,
   Analyze_inline_wasm.analyze,
   Analyze_closure_scoped_vars.analyze,
+  Analyze_escapes.analyze,
 ];
 
 let optimization_passes = [
   Optimize_manual_memory_management.optimize,
   Optimize_tail_calls.optimize,
+  Optimize_local_mutations.optimize,
   Optimize_constants.optimize,
   Optimize_simple_binops.optimize,
   Optimize_dead_assignments.optimize,
   Optimize_dead_branches.optimize,
   Optimize_dead_statements.optimize,
   Optimize_inline_wasm.optimize,
-  Optimize_local_mutations.optimize,
 ];
 
 module ClearAnalysesArg: Anf_iterator.IterArgument = {
@@ -55,5 +56,6 @@ let optimize_program = (prog: Anftree.anf_program): Anftree.anf_program => {
     };
 
   /* TODO: Make 4 a config value */
+  Optimize_local_mutations.clear_mutable_variables();
   pass(4, prog);
 };

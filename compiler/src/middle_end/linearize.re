@@ -151,102 +151,67 @@ let rec transl_imm =
         )
         : (imm_expression, list(anf_bind)) => {
   let allocation_type = get_allocation_type(env, typ);
+  let type_ = typ;
   switch (exp_desc) {
   | TExpIdent(_, _, {val_kind: TValUnbound(_)}) =>
     failwith("Impossible: val_kind was unbound")
   | TExpIdent(
       Path.PExternal(Path.PIdent(mod_) as p, ident, _),
       _,
-      {val_fullpath: Path.PExternal(_, original_name, _), val_mutable},
+      {val_fullpath: Path.PExternal(_, original_name, _)},
     ) =>
     let mod_decl = Env.find_module(p, None, env);
     let id =
       Imm.id(
         ~loc,
         ~env,
+        ~type_,
         lookup_symbol(~allocation_type, mod_, mod_decl, ident, original_name),
       );
-    if (val_mutable && !boxed) {
-      let tmp = gensym("unbox_mut");
-      let setup = [
-        BLet(tmp, Comp.prim1(~loc, ~env, ~allocation_type, UnboxBind, id)),
-      ];
-      (Imm.id(~loc, ~env, tmp), setup);
-    } else {
-      (id, []);
-    };
-  | TExpIdent(
-      Path.PExternal(Path.PIdent(mod_) as p, ident, _),
-      _,
-      {val_mutable},
-    ) =>
+    (id, []);
+  | TExpIdent(Path.PExternal(Path.PIdent(mod_) as p, ident, _), _, _) =>
     let mod_decl = Env.find_module(p, None, env);
     let id =
       Imm.id(
         ~loc,
         ~env,
+        ~type_,
         lookup_symbol(~allocation_type, mod_, mod_decl, ident, ident),
       );
-    if (val_mutable && !boxed) {
-      let tmp = gensym("unbox_mut");
-      let setup = [
-        BLet(tmp, Comp.prim1(~loc, ~env, ~allocation_type, UnboxBind, id)),
-      ];
-      (Imm.id(~loc, ~env, tmp), setup);
-    } else {
-      (id, []);
-    };
+    (id, []);
   | TExpIdent(Path.PExternal(_), _, _) =>
     failwith("NYI: transl_imm: TExpIdent with multiple PExternal")
   | TExpIdent(Path.PIdent(ident) as path, _, _) =>
     switch (Env.find_value(path, env)) {
-    | {val_fullpath: Path.PIdent(_), val_mutable} =>
-      let id = Imm.id(~loc, ~env, ident);
-      if (val_mutable && !boxed) {
-        let tmp = gensym("unbox_mut");
-        let setup = [
-          BLet(tmp, Comp.prim1(~loc, ~env, ~allocation_type, UnboxBind, id)),
-        ];
-        (Imm.id(~loc, ~env, tmp), setup);
-      } else {
-        (id, []);
-      };
-    | {
-        val_fullpath: Path.PExternal(Path.PIdent(mod_) as p, ident, _),
-        val_mutable,
-      } =>
+    | {val_fullpath: Path.PIdent(_)} =>
+      let id = Imm.id(~loc, ~env, ~type_, ident);
+      (id, []);
+    | {val_fullpath: Path.PExternal(Path.PIdent(mod_) as p, ident, _)} =>
       let mod_decl = Env.find_module(p, None, env);
       let id =
         Imm.id(
           ~loc,
           ~env,
+          ~type_,
           lookup_symbol(~allocation_type, mod_, mod_decl, ident, ident),
         );
-      if (val_mutable && !boxed) {
-        let tmp = gensym("unbox_mut");
-        let setup = [
-          BLet(tmp, Comp.prim1(~loc, ~env, ~allocation_type, UnboxBind, id)),
-        ];
-        (Imm.id(~loc, ~env, tmp), setup);
-      } else {
-        (id, []);
-      };
+      (id, []);
     | {val_fullpath: Path.PExternal(_)} =>
       failwith("NYI: transl_imm: TExpIdent with multiple PExternal")
     }
   | TExpConstant(c) =>
     switch (transl_const(c)) {
-    | Left(imm) => (imm, [])
+    | Left(imm) => ({...imm, imm_type: Some(type_)}, [])
     | Right((name, cexpr)) =>
       let tmp = gensym(name);
-      (Imm.id(~loc, ~env, tmp), [BLet(tmp, cexpr)]);
+      (Imm.id(~loc, ~env, ~type_, tmp), [BLet(tmp, cexpr)]);
     }
   | TExpNull => (Imm.const(~loc, ~env, Const_bool(false)), [])
   | TExpPrim1(op, arg) =>
     let tmp = gensym("unary");
     let (arg_imm, arg_setup) = transl_imm(arg);
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~type_, tmp),
       arg_setup
       @ [BLet(tmp, Comp.prim1(~loc, ~env, ~allocation_type, op, arg_imm))],
     );
@@ -254,7 +219,7 @@ let rec transl_imm =
     let tmp = gensym("boolBinop");
     let (left_imm, left_setup) = transl_imm(left);
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~type_, tmp),
       left_setup
       @ [
         BLet(
@@ -278,7 +243,7 @@ let rec transl_imm =
     let tmp = gensym("boolBinop");
     let (left_imm, left_setup) = transl_imm(left);
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~type_, tmp),
       left_setup
       @ [
         BLet(
@@ -303,7 +268,7 @@ let rec transl_imm =
     let (left_imm, left_setup) = transl_imm(left);
     let (right_imm, right_setup) = transl_imm(right);
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~type_, tmp),
       left_setup
       @ right_setup
       @ [
@@ -317,7 +282,7 @@ let rec transl_imm =
     let tmp = gensym("primn");
     let (new_args, new_setup) = List.split(List.map(transl_imm, args));
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~type_, tmp),
       List.concat(new_setup)
       @ [BLet(tmp, Comp.primn(~loc, ~env, ~allocation_type, op, new_args))],
     );
@@ -326,7 +291,7 @@ let rec transl_imm =
     let (left_imm, left_setup) = transl_imm(left);
     let (right_imm, right_setup) = transl_imm(right);
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~type_, tmp),
       left_setup
       @ right_setup
       @ [
@@ -336,26 +301,12 @@ let rec transl_imm =
         ),
       ],
     );
-  | TExpAssign(left, right) =>
-    let tmp = gensym("assign");
-    let (left_imm, left_setup) = transl_imm(~boxed=true, left);
-    let (right_imm, right_setup) = transl_imm(right);
-    (
-      Imm.id(~loc, ~env, tmp),
-      left_setup
-      @ right_setup
-      @ [
-        BLet(
-          tmp,
-          Comp.assign(~loc, ~env, ~allocation_type, left_imm, right_imm),
-        ),
-      ],
-    );
+  | TExpAssign(_) => failwith("Should be impossible: TExpAssign in linearize")
   | TExpIf(cond, _then, _else) =>
     let tmp = gensym("if");
     let (cond_imm, cond_setup) = transl_imm(cond);
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~type_, tmp),
       cond_setup
       @ [
         BLet(
@@ -374,7 +325,7 @@ let rec transl_imm =
   | TExpWhile(cond, body) =>
     let tmp = gensym("while");
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~type_, tmp),
       [
         BLet(
           tmp,
@@ -397,7 +348,7 @@ let rec transl_imm =
         init,
       );
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~type_, tmp),
       init_setup
       @ [
         BLet(
@@ -441,7 +392,7 @@ let rec transl_imm =
     let (new_func, func_setup) = transl_imm(func);
     let (new_args, new_setup) = List.split(List.map(transl_imm, args));
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~type_, tmp),
       (func_setup @ List.concat(new_setup))
       @ [
         BLet(
@@ -493,7 +444,7 @@ let rec transl_imm =
         binds,
       );
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~type_, tmp),
       List.concat(new_setup)
       @ [
         BLetRec(List.combine(names, new_binds)),
@@ -503,14 +454,14 @@ let rec transl_imm =
   | TExpLambda([{mb_pat, mb_body: body}], _) =>
     let tmp = gensym("lam_lambda");
     let (lam, _) = transl_comp_expression(e);
-    (Imm.id(~loc, ~env, tmp), [BLet(tmp, lam)]);
+    (Imm.id(~loc, ~env, ~type_, tmp), [BLet(tmp, lam)]);
   | TExpLambda([], _) => failwith("Impossible: transl_imm: Empty lambda")
   | TExpLambda(_, _) => failwith("NYI: transl_imm: Multi-branch lambda")
   | TExpTuple(args) =>
     let tmp = gensym("tup");
     let (new_args, new_setup) = List.split(List.map(transl_imm, args));
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~type_, tmp),
       List.concat(new_setup)
       @ [BLet(tmp, Comp.tuple(~loc, ~env, new_args))],
     );
@@ -518,7 +469,7 @@ let rec transl_imm =
     let tmp = gensym("tup");
     let (new_args, new_setup) = List.split(List.map(transl_imm, args));
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~type_, tmp),
       List.concat(new_setup)
       @ [BLet(tmp, Comp.array(~loc, ~env, new_args))],
     );
@@ -527,7 +478,7 @@ let rec transl_imm =
     let (arr_var, arr_setup) = transl_imm(arr);
     let (idx_var, idx_setup) = transl_imm(idx);
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~type_, tmp),
       arr_setup
       @ idx_setup
       @ [
@@ -543,7 +494,7 @@ let rec transl_imm =
     let (idx_var, idx_setup) = transl_imm(idx);
     let (arg_var, arg_setup) = transl_imm(arg);
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~type_, tmp),
       arr_setup
       @ idx_setup
       @ arg_setup
@@ -588,7 +539,7 @@ let rec transl_imm =
     let (typath, _, _) = Typepat.extract_concrete_record(env, typ);
     let ty_id = get_type_id(typath);
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~type_, tmp),
       List.concat(new_setup)
       @ [
         BLet(
@@ -610,7 +561,7 @@ let rec transl_imm =
     let tmp = gensym("field");
     let (var, setup) = transl_imm(expr);
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~type_, tmp),
       setup
       @ [
         BLet(
@@ -630,7 +581,7 @@ let rec transl_imm =
     let (record, rec_setup) = transl_imm(expr);
     let (arg, arg_setup) = transl_imm(arg);
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~type_, tmp),
       rec_setup
       @ arg_setup
       @ [
@@ -659,7 +610,10 @@ let rec transl_imm =
         transl_imm,
         exp_ans,
       );
-    (Imm.id(~loc, ~env, tmp), (exp_setup @ setup) @ [BLet(tmp, ans)]);
+    (
+      Imm.id(~loc, ~env, ~type_, tmp),
+      (exp_setup @ setup) @ [BLet(tmp, ans)],
+    );
   | TExpConstruct(_) => failwith("NYI: transl_imm: Construct")
   };
 }
@@ -694,6 +648,7 @@ and bind_patts =
       let binds =
         switch (mut_flag) {
         | Mutable =>
+          failwith("Should be impossible");
           let tmp = gensym("mut_bind_destructure");
           let boxed =
             Comp.prim1(
@@ -891,6 +846,7 @@ and transl_comp_expression =
     };
     let (exp_ans, exp_setup) =
       if (mut_flag == Mutable) {
+        failwith("Should be impossible");
         let (imm, imm_setup) = transl_imm(vb_expr);
         (
           Comp.prim1(
@@ -1259,6 +1215,7 @@ let rec transl_anf_statement =
       | TPatAlias({pat_desc: TPatAny}, bind, _) =>
         switch (mut_flag) {
         | Mutable =>
+          failwith("Should be impossible");
           let tmp = gensym("mut_bind_destructure");
           let boxed =
             Comp.prim1(
@@ -1290,6 +1247,7 @@ let rec transl_anf_statement =
         let binds =
           switch (mut_flag) {
           | Mutable =>
+            failwith("Should be impossible");
             let tmp = gensym("mut_bind_destructure");
             let boxed =
               Comp.prim1(
