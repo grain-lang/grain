@@ -997,10 +997,11 @@ and print_type =
 }
 and print_application =
     (
-      ~func: Parsetree.expression,
       ~expressions: list(Parsetree.expression),
       ~parent_loc: Location.t,
       ~original_source: array(string),
+      ~level: int,
+      func: Parsetree.expression,
     ) => {
   let function_name = get_function_name(func);
 
@@ -1016,6 +1017,7 @@ and print_application =
           ~endChar=None,
           ~original_source,
           ~parent_loc,
+          ~level=level + 1,
           first,
         ),
         Doc.rparen,
@@ -1029,6 +1031,7 @@ and print_application =
           ~endChar=None,
           ~original_source,
           ~parent_loc,
+          ~level=level + 1,
           first,
         ),
       ])
@@ -1045,51 +1048,25 @@ and print_application =
             ~endChar=None,
             ~original_source,
             ~parent_loc,
+            ~level=level + 1,
             first,
           ),
           Doc.rparen,
         ])
-      | PExpApp(fn, _) =>
-        let leftfn = get_function_name(fn);
-        if (infixop(leftfn)) {
-          Doc.concat([
-            Doc.lparen,
-            print_expression(
-              ~parentIsArrow=false,
-              ~endChar=None,
-              ~original_source,
-              ~parent_loc,
-              first,
-            ),
-            Doc.rparen,
-          ]);
-        } else {
-          Doc.concat([
-            Doc.lparen,
-            print_expression(
-              ~parentIsArrow=false,
-              ~endChar=None,
-              ~original_source,
-              ~parent_loc,
-              first,
-            ),
-            Doc.rparen,
-          ]);
-        };
       | _ =>
         print_expression(
           ~parentIsArrow=false,
           ~endChar=None,
           ~original_source,
           ~parent_loc,
+          ~level=level + 1,
           first,
         )
       };
 
     let second_brackets =
       switch (second.pexp_desc) {
-      | PExpIf(_)
-      | PExpApp(_) =>
+      | PExpIf(_) =>
         Doc.concat([
           Doc.lparen,
           print_expression(
@@ -1097,6 +1074,7 @@ and print_application =
             ~endChar=None,
             ~original_source,
             ~parent_loc,
+            ~level=level + 1,
             second,
           ),
           Doc.rparen,
@@ -1107,16 +1085,30 @@ and print_application =
           ~endChar=None,
           ~original_source,
           ~parent_loc,
+          ~level=level + 1,
           second,
         )
       };
-    Doc.concat([
-      first_brackets,
-      Doc.space,
-      Doc.text(function_name),
-      Doc.space,
-      second_brackets,
-    ]);
+
+    if (level > 1) {
+      Doc.concat([
+        Doc.lparen,
+        first_brackets,
+        Doc.space,
+        Doc.text(function_name),
+        Doc.space,
+        second_brackets,
+        Doc.rparen,
+      ]);
+    } else {
+      Doc.concat([
+        first_brackets,
+        Doc.space,
+        Doc.text(function_name),
+        Doc.space,
+        second_brackets,
+      ]);
+    };
 
   | _ when prefixop(function_name) || infixop(function_name) =>
     raise(Error(Illegal_parse("Formatter error, wrong number of args ")))
@@ -1149,6 +1141,7 @@ and print_application =
             ~endChar=None,
             ~original_source,
             ~parent_loc=func.pexp_loc,
+            ~level=level + 1,
             func,
           ),
           Doc.lparen,
@@ -1164,6 +1157,7 @@ and print_application =
                       ~endChar=None,
                       ~original_source,
                       ~parent_loc,
+                      ~level=level + 1,
                       e,
                     ),
                   expressions,
@@ -1276,6 +1270,7 @@ and print_expression =
       ~endChar: option(Doc.t), // not currently used but will be in the next iteration
       ~original_source: array(string),
       ~parent_loc: Grain_parsing__Location.t,
+      ~level=0,
       expr: Parsetree.expression,
     ) => {
   let (leading_comments, trailing_comments) =
@@ -1790,15 +1785,19 @@ and print_expression =
         Doc.group(
           Doc.concat([
             Doc.lparen,
-            Doc.space,
-            print_expression(
-              ~parentIsArrow=false,
-              ~endChar=None,
-              ~original_source,
-              ~parent_loc,
-              expression,
+            Doc.indent(
+              Doc.concat([
+                Doc.softLine,
+                print_expression(
+                  ~parentIsArrow=false,
+                  ~endChar=None,
+                  ~original_source,
+                  ~parent_loc,
+                  expression,
+                ),
+              ]),
             ),
-            Doc.space,
+            Doc.softLine,
             Doc.rparen,
           ]),
         ),
@@ -1823,7 +1822,7 @@ and print_expression =
             Doc.lparen,
             Doc.indent(
               Doc.concat([
-                Doc.line,
+                Doc.softLine,
                 Doc.concat([
                   switch (optexpression1) {
                   | Some(expr) =>
@@ -1873,7 +1872,7 @@ and print_expression =
                 ]),
               ]),
             ),
-            Doc.line,
+            Doc.softLine,
             Doc.rparen,
           ]),
         ),
@@ -2000,7 +1999,13 @@ and print_expression =
       Doc.concat(followsArrow);
 
     | PExpApp(func, expressions) =>
-      print_application(~func, ~expressions, ~parent_loc, ~original_source)
+      print_application(
+        ~expressions,
+        ~parent_loc,
+        ~original_source,
+        ~level,
+        func,
+      )
     | PExpBlock(expressions) =>
       if (List.length(expressions) > 0) {
         let previous_line = ref(get_loc_line(expr.pexp_loc));
