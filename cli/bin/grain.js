@@ -143,6 +143,7 @@ program
     "--verbose",
     "print critical information at various stages of compilation"
   )
+  .graincOption('--format-in-place', 'reformat in place')
   // The root command that compiles & runs
   .arguments("<file>")
   .action(function (file) {

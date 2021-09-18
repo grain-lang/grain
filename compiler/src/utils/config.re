@@ -624,3 +624,6 @@ let get_implicit_opens = () => {
     ]);
   };
 };
+
+let format_in_place =
+  toggle_flag(~names=["format-in-place"], ~doc="Format in place", false);
