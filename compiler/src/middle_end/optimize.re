@@ -6,6 +6,7 @@ let analysis_passes = [
   Analyze_tail_calls.analyze,
   Analyze_inline_wasm.analyze,
   Analyze_closure_scoped_vars.analyze,
+  Analyze_mutable_vars.analyze,
 ];
 
 let optimization_passes = [
