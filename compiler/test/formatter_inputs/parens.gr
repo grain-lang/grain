@@ -1,0 +1,23 @@
+let x = y => y + 0
+
+x(3) + 4
+
+let a = true
+let b = false
+let c = false
+
+if ((a && b) || c) {
+  print("who knows")
+}
+
+if (a && (b || c)) {
+  print("who knows")
+}
+
+3 + (4 * 5)
+
+(3 + 4) * 5
+
+"a" ++ "b" ++ "c"
+
+

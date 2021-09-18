@@ -375,6 +375,13 @@ let add_parens = doc =>
     Doc.rparen,
   ]);
 
+let has_standard_precedence = (op: string) => {
+  switch (op) {
+  | "++" => true
+  | _ => false
+  };
+};
+
 let infixop = (op: string) => {
   switch (op) {
   | "+"
@@ -1017,7 +1024,7 @@ and print_application =
           ~endChar=None,
           ~original_source,
           ~parent_loc,
-          ~level=level + 1,
+          ~level=0,
           first,
         ),
         Doc.rparen,
@@ -1031,7 +1038,7 @@ and print_application =
           ~endChar=None,
           ~original_source,
           ~parent_loc,
-          ~level=level + 1,
+          ~level=0,
           first,
         ),
       ])
@@ -1048,18 +1055,28 @@ and print_application =
             ~endChar=None,
             ~original_source,
             ~parent_loc,
-            ~level=level + 1,
+            ~level=0,
             first,
           ),
           Doc.rparen,
         ])
+      | PExpApp(_) =>
+        print_expression(
+          ~parentIsArrow=false,
+          ~endChar=None,
+          ~original_source,
+          ~parent_loc,
+          ~level=1,
+          first,
+        )
+
       | _ =>
         print_expression(
           ~parentIsArrow=false,
           ~endChar=None,
           ~original_source,
           ~parent_loc,
-          ~level=level + 1,
+          ~level=0,
           first,
         )
       };
@@ -1074,23 +1091,33 @@ and print_application =
             ~endChar=None,
             ~original_source,
             ~parent_loc,
-            ~level=level + 1,
+            ~level=0,
             second,
           ),
           Doc.rparen,
         ])
+      | PExpApp(_) =>
+        print_expression(
+          ~parentIsArrow=false,
+          ~endChar=None,
+          ~original_source,
+          ~parent_loc,
+          ~level=1,
+          second,
+        )
       | _ =>
         print_expression(
           ~parentIsArrow=false,
           ~endChar=None,
           ~original_source,
           ~parent_loc,
-          ~level=level + 1,
+          ~level=0,
           second,
         )
       };
 
-    if (level > 1) {
+    if (level > 0 && !has_standard_precedence(function_name)) {
+      // only wrap maths functions (where there's a precedence)
       Doc.concat([
         Doc.lparen,
         first_brackets,
@@ -1141,7 +1168,7 @@ and print_application =
             ~endChar=None,
             ~original_source,
             ~parent_loc=func.pexp_loc,
-            ~level=level + 1,
+            ~level,
             func,
           ),
           Doc.lparen,
@@ -1157,7 +1184,7 @@ and print_application =
                       ~endChar=None,
                       ~original_source,
                       ~parent_loc,
-                      ~level=level + 1,
+                      ~level,
                       e,
                     ),
                   expressions,
@@ -3153,3 +3180,9 @@ let reformat_ast =
   //   ),
   // );
 };
+
+let a = true;
+let b = false;
+let c = true;
+
+let _ = a && (b || c);
