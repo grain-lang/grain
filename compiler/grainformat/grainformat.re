@@ -103,7 +103,6 @@ let format_code =
       output_bytes(oc, contents);
       close_out(oc);
     | _ => print_bytes(contents)
-    // reformatted_code |> print_endline;
     }
   };
 
