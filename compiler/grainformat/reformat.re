@@ -3180,9 +3180,3 @@ let reformat_ast =
   //   ),
   // );
 };
-
-let a = true;
-let b = false;
-let c = true;
-
-let _ = a && (b || c);
