@@ -933,7 +933,10 @@ and print_type =
   | PTyArrow(types, parsed_type) =>
     Doc.concat([
       Doc.group(
-        if (List.length(types) == 1) {
+        if (List.length(types) == 0) {
+          Doc.concat([Doc.lparen,Doc.rparen])
+        } else 
+         if (List.length(types) == 1) {
           print_type(List.hd(types), original_source);
         } else {
           Doc.concat([
