@@ -592,4 +592,14 @@ describe("optimizations", ({test}) => {
       );
     },
   );
+  assertRun(
+    "test_mut_inlining",
+    {|
+      let mut foo = 5
+      let bar = foo
+      foo = 6
+      print(bar)
+    |},
+    "5\n",
+  );
 });
