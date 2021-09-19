@@ -39,4 +39,9 @@ describe("print", ({test}) => {
     "let a = [1, 2]\nprint(a)\nprint(a)\nprint(a)\nprint(a)\n",
     "[1, 2]\n[1, 2]\n[1, 2]\n[1, 2]\n",
   );
+  assertRun(
+    "print_issue905_long_lists",
+    "print([1, 2, 3, 4, 5, 6, 7, 8, 9])",
+    "[1, 2, 3, 4, 5, 6, 7, 8, 9]\n",
+  );
 });
