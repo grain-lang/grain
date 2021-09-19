@@ -28,3 +28,5 @@ import * except {
   and
   // just because
 } from "runtime/unsafe/wasmi32"
+
+export foreign wasm promise_results_count: () -> WasmI64 as promiseResultsCount from "env"
