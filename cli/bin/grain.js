@@ -40,11 +40,27 @@ function graincVersion() {
   return exec.grainc("--version", program).toString().trim();
 }
 
-class GraincOption extends program.Option {
-  grainc = true;
+function wrapAction(action, logError = false) {
+  return (...args) => {
+    try {
+      return action(...args);
+    } catch (e) {
+      if (logError) console.error(e);
+      if (program.opts().graceful) {
+        process.exit();
+      } else {
+        process.exit(1);
+      }
+    }
+  };
+}
 
-  toFlag() {
-    const value = program.opts()[this.attributeName()];
+class ForwardOption extends program.Option {
+  // A ForwardOption is forwarded to the underlying program
+  forward = true;
+
+  toFlag(opts) {
+    const value = opts[this.attributeName()];
 
     if (value instanceof Array && value.length > 0) {
       return `${this.long || this.short} ${value.join(",")}`;
@@ -59,8 +75,8 @@ class GraincOption extends program.Option {
   }
 }
 
-program.graincOption = function (flags, description, parser, defaultValue) {
-  const option = new GraincOption(flags, description);
+program.forwardOption = function (flags, description, parser, defaultValue) {
+  const option = new ForwardOption(flags, description);
   if (parser) option.argParser(parser);
   if (typeof defaultValue !== "undefined") option.default(defaultValue);
   return program.addOption(option);
@@ -76,116 +92,128 @@ program
   .description("Compile and run Grain programs. 🌾")
   .addOption(new program.Option("-p, --print-output").hideHelp())
   .option("-g, --graceful", "return a 0 exit code if the program errors")
-  .graincOption(
+  .forwardOption(
     "-I, --include-dirs <dirs>",
     "add additional dependency include directories",
     list,
     []
   )
-  .graincOption(
+  .forwardOption(
     "-S, --stdlib <path>",
     "override the standard libary with your own",
     null,
     stdlibPath
   )
-  .graincOption(
+  .forwardOption(
     "--initial-memory-pages <size>",
     "initial number of WebAssembly memory pages",
     num
   )
-  .graincOption(
+  .forwardOption(
     "--maximum-memory-pages <size>",
     "maximum number of WebAssembly memory pages",
     num
   )
-  .graincOption(
+  .forwardOption(
     "--compilation-mode <mode>",
     "compilation mode (advanced use only)"
   )
-  .graincOption(
+  .forwardOption(
     "--elide-type-info",
     "don't include runtime type information used by toString/print"
   )
-  .graincOption(
+  .forwardOption(
     "--experimental-wasm-tail-call",
     "enables tail-call optimization"
   )
-  .graincOption("--debug", "compile with debugging information")
-  .graincOption("--wat", "additionally produce a WebAssembly Text (.wat) file")
-  .graincOption(
+  .forwardOption("--debug", "compile with debugging information")
+  .forwardOption("--wat", "additionally produce a WebAssembly Text (.wat) file")
+  .forwardOption(
     "--hide-locs",
     "hide locations from intermediate trees. Only has an effect with `--verbose`"
   )
-  .graincOption("--lsp", "generate lsp errors and warnings only")
-  .graincOption("--no-color", "disable colored output")
-  .graincOption("--no-gc", "turn off reference counting garbage collection")
-  .graincOption(
+  .forwardOption("--lsp", "generate lsp errors and warnings only")
+  .forwardOption("--no-color", "disable colored output")
+  .forwardOption("--no-gc", "turn off reference counting garbage collection")
+  .forwardOption(
     "--no-bulk-memory",
     "polyfill WebAssembly bulk memory instructions"
   )
-  .graincOption(
+  .forwardOption(
     "--wasi-polyfill <filename>",
     "path to custom WASI implementation"
   )
-  .graincOption(
+  .forwardOption(
     "--use-start-section",
     "replaces the _start export with a start section during linking"
   )
-  .graincOption("--no-link", "disable static linking")
-  .graincOption(
+  .forwardOption("--no-link", "disable static linking")
+  .forwardOption(
     "--no-pervasives",
     "don't automatically import the Grain Pervasives module"
   )
-  .graincOption("-o <filename>", "output filename")
-  .graincOption("-O <level>", "set the optimization level")
-  .graincOption(
+  .forwardOption("-o <filename>", "output filename")
+  .forwardOption("-O <level>", "set the optimization level")
+  .forwardOption(
     "--parser-debug-level <level>",
     "debugging level for parser output"
   )
-  .graincOption("--source-map", "generate source maps")
-  .graincOption("--strict-sequence", "enable strict sequencing")
-  .graincOption(
+  .forwardOption("--source-map", "generate source maps")
+  .forwardOption("--strict-sequence", "enable strict sequencing")
+  .forwardOption(
     "--verbose",
     "print critical information at various stages of compilation"
   )
   // The root command that compiles & runs
   .arguments("<file>")
-  .action(function (file) {
-    run(compile(file, program), program.opts());
+  .action(function (file, options, program) {
+    run(compile(file, program), options);
   });
 
 program
   .command("compile <file>")
   .description("compile a grain program into wasm")
-  .action(function (file) {
-    compile(file, program);
-  });
-
-program
-  .command("lsp <file>")
-  .description("check a grain file for LSP")
-  .action(function (file) {
-    lsp(file, program);
-  });
+  .action(
+    wrapAction(function (file) {
+      // The compile subcommand inherits all behaviors/options of the
+      // top level grain command
+      compile(file, program);
+    })
+  );
 
 program
   .command("run <file>")
   .description("run a wasm file with grain's javascript runner")
   .action(function (wasmFile) {
+    // The run subcommand inherits all options of the
+    // top level grain command
     run(wasmFile, program.opts());
   });
 
 program
+  .command("lsp <file>")
+  .description("check a grain file for LSP")
+  .action(
+    wrapAction(function (file, options, program) {
+      lsp(file, program);
+    })
+  );
+
+program
   .command("doc <file>")
   .description("generate documentation for a grain file")
-  .action(function (file) {
-    doc(file, program);
-  });
+  .action(
+    wrapAction(function (file, options, program) {
+      doc(file, program);
+    })
+  );
 
 program
   .command("format [file]")
   .description("format a grain file")
-  .action(function (file) {
-    format(file, program);
-  });
+  .action(
+    wrapAction(function (file, options, program) {
+      format(file, program);
+    })
+  );
 program.parse(process.argv);

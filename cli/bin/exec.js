@@ -19,9 +19,10 @@ const grainc = getGrainc();
 
 function execGrainc(commandOrFile = "", program, execOpts = { stdio: "pipe" }) {
   const flags = [];
+  const options = program.opts();
   program.options.forEach((option) => {
-    if (!option.grainc) return;
-    const flag = option.toFlag();
+    if (!option.forward) return;
+    const flag = option.toFlag(options);
     if (flag) flags.push(flag);
   });
 
@@ -49,10 +50,10 @@ function execGraindoc(
   execOpts = { stdio: "pipe" }
 ) {
   const flags = [];
+  const options = program.opts();
   program.options.forEach((option) => {
-    // This is checking for `option.grainc` on purpose since graindoc inherits `grainc` args
-    if (!option.grainc) return;
-    const flag = option.toFlag();
+    if (!option.forward) return;
+    const flag = option.toFlag(options);
     if (flag) flags.push(flag);
   });
 
@@ -80,10 +81,10 @@ function execGrainformat(
   execOpts = { stdio: "pipe" }
 ) {
   const flags = [];
+  const options = program.opts();
   program.options.forEach((option) => {
-    // This is checking for `option.grainc` on purpose since grainformat inherits `grainc` args
-    if (!option.grainc) return;
-    const flag = option.toFlag();
+    if (!option.forward) return;
+    const flag = option.toFlag(options);
     if (flag) flags.push(flag);
   });
 
