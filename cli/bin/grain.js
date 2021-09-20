@@ -164,7 +164,6 @@ program
     "--verbose",
     "print critical information at various stages of compilation"
   )
-  .graincOption("--format-in-place", "reformat in place")
   // The root command that compiles & runs
   .arguments("<file>")
   .action(function (file, options, program) {
@@ -212,9 +211,12 @@ program
 program
   .command("format [file]")
   .description("format a grain file")
+  .addOption(new ForwardOption("--in-place", "reformat in place"))
   .action(
     wrapAction(function (file, options, program) {
       format(file, program);
     })
   );
 program.parse(process.argv);
+
+
