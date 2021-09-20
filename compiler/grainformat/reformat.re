@@ -1141,11 +1141,7 @@ and print_application =
       let left_prec = op_precedence(fn1);
       let right_prec = op_precedence(fn2);
 
-      if (left_prec < right_prec) {
-        true;
-      } else {
-        false;
-      };
+      left_prec < right_prec
     };
 
     switch (infixFunction, function_name) {
