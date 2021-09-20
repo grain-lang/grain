@@ -39,3 +39,7 @@ export let unique = array => {
     array,
   )
 }
+
+export let batchActionCreateAccount = ({ index }) => {
+  Native.promiseBatchActionCreateAccount(Conv.fromInt64(index))
+}

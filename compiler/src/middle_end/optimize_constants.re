@@ -22,7 +22,13 @@ module ConstantPropagationArg: Anf_mapper.MapArgument = {
                 Int64.compare(n, Literals.simple_number_max) < 0
                 && Int64.compare(n, Literals.simple_number_min) > 0 =>
             add_constant(id, ImmConst(Const_number(c')))
-          | {comp_desc: CImmExpr({imm_desc})} => add_constant(id, imm_desc)
+          | {comp_desc: CImmExpr({imm_desc})} =>
+            switch (imm_desc) {
+            // We don't substitute mutable variables, since we do pass-by-value, not pass-by-reference
+            | ImmId(rhs_id) when Analyze_mutable_vars.is_mutable(rhs_id) =>
+              ()
+            | _ => add_constant(id, imm_desc)
+            }
           | _ => ()
           },
         binds,

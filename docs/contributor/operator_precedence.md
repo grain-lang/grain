@@ -7,7 +7,7 @@ This table shows which operators take precedence over other operators, and can b
 | 180 | Grouping | n/a | `( … )` |
 | 170 | Member Access<br>Computed Member Access<br>Function Call | left-to-right<br>left-to-right<br>left-to-right | `… . …`<br>`… [ … ]`<br>`… ( … )` |
 | 160 | Postfix Increment<br>Postfix Decrement | n/a | NYI |
-| 150 | Logical NOT<br>Bitwise NOT<br>Unary Negation<br>Unbox<br>Prefix Increment<br>Postfix Increment | right-to-left | `! …`<br>NYI<br>`- …`<br>`^ …`<br>NYI<br>NYI |
+| 150 | Logical NOT<br>Bitwise NOT<br>Unary Negation<br>Unbox<br>Prefix Increment<br>Prefix Decrement | right-to-left | `! …`<br>NYI<br>`- …`<br>`^ …`<br>NYI<br>NYI |
 | 140 | Annotation | left-to-right | `… : …` |
 | 130 | Exponentiation | right-to-left | NYI |
 | 120 | Multiplication<br>Division<br>Modulus | left-to-right | `… * …`<br>`… / …`<br>`… % …` |

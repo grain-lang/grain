@@ -601,6 +601,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
     if (variantId == 0n) {
       break
     } else {
+      Memory.incRef(WasmI32.fromGrain((!)))
       if (!isFirst) {
         strings = slConsDisableGc(commaspace, strings)
       }
