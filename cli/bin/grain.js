@@ -211,7 +211,7 @@ program
 program
   .command("format [file]")
   .description("format a grain file")
-  .addOption(new ForwardOption("--in-place", "reformat in place"))
+  .addOption(new ForwardOption("--in-place", "format in place"))
   .action(
     wrapAction(function (file, options, program) {
       format(file, program);
