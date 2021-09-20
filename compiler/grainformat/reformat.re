@@ -1007,7 +1007,7 @@ and print_application =
       ~expressions: list(Parsetree.expression),
       ~parent_loc: Location.t,
       ~original_source: array(string),
-      ~level: int,
+      ~infixFunction: option(string),
       func: Parsetree.expression,
     ) => {
   let function_name = get_function_name(func);
@@ -1024,7 +1024,7 @@ and print_application =
           ~endChar=None,
           ~original_source,
           ~parent_loc,
-          ~level=0,
+          ~infixFunction=None,
           first,
         ),
         Doc.rparen,
@@ -1038,7 +1038,7 @@ and print_application =
           ~endChar=None,
           ~original_source,
           ~parent_loc,
-          ~level=0,
+          ~infixFunction=None,
           first,
         ),
       ])
@@ -1055,7 +1055,7 @@ and print_application =
             ~endChar=None,
             ~original_source,
             ~parent_loc,
-            ~level=0,
+            ~infixFunction=None,
             first,
           ),
           Doc.rparen,
@@ -1066,7 +1066,7 @@ and print_application =
           ~endChar=None,
           ~original_source,
           ~parent_loc,
-          ~level=1,
+          ~infixFunction=Some(function_name),
           first,
         )
 
@@ -1076,7 +1076,7 @@ and print_application =
           ~endChar=None,
           ~original_source,
           ~parent_loc,
-          ~level=0,
+          ~infixFunction=None,
           first,
         )
       };
@@ -1091,7 +1091,7 @@ and print_application =
             ~endChar=None,
             ~original_source,
             ~parent_loc,
-            ~level=0,
+            ~infixFunction=None,
             second,
           ),
           Doc.rparen,
@@ -1102,7 +1102,7 @@ and print_application =
           ~endChar=None,
           ~original_source,
           ~parent_loc,
-          ~level=1,
+          ~infixFunction=Some(function_name),
           second,
         )
       | _ =>
@@ -1111,30 +1111,79 @@ and print_application =
           ~endChar=None,
           ~original_source,
           ~parent_loc,
-          ~level=0,
+          ~infixFunction=None,
           second,
         )
       };
 
-    if (level > 0 && !has_standard_precedence(function_name)) {
-      // only wrap maths functions (where there's a precedence)
+    let op_precedence = fn =>
+      switch (fn) {
+      | "*"
+      | "/"
+      | "%" => 120
+      | "+"
+      | "-"
+      | "++" => 110
+      | "<<"
+      | ">>"
+      | ">>>" => 100
+      | "<"
+      | "<="
+      | ">"
+      | ">=" => 90
+      | "=="
+      | "!="
+      | "is"
+      | "isnt" => 80
+      | "&" => 70
+      | "^" => 60
+      | "|" => 50
+      | "&&" => 40
+      | "||" => 30
+      | "_" => 10
+      | _ => 0
+      };
+
+    let override_precedence = (fn2, fn1) => {
+      let left_prec = op_precedence(fn1);
+      let right_prec = op_precedence(fn2);
+
+      if (left_prec < right_prec) {
+        true;
+      } else {
+        false;
+      };
+    };
+
+    switch (infixFunction, function_name) {
+    | (None, _) =>
       Doc.concat([
-        Doc.lparen,
         first_brackets,
         Doc.space,
         Doc.text(function_name),
         Doc.space,
         second_brackets,
-        Doc.rparen,
-      ]);
-    } else {
-      Doc.concat([
-        first_brackets,
-        Doc.space,
-        Doc.text(function_name),
-        Doc.space,
-        second_brackets,
-      ]);
+      ])
+    | (Some(fn1), fn2) =>
+      if (override_precedence(fn1, fn2)) {
+        Doc.concat([
+          Doc.lparen,
+          first_brackets,
+          Doc.space,
+          Doc.text(function_name),
+          Doc.space,
+          second_brackets,
+          Doc.rparen,
+        ]);
+      } else {
+        Doc.concat([
+          first_brackets,
+          Doc.space,
+          Doc.text(function_name),
+          Doc.space,
+          second_brackets,
+        ]);
+      }
     };
 
   | _ when prefixop(function_name) || infixop(function_name) =>
@@ -1168,7 +1217,7 @@ and print_application =
             ~endChar=None,
             ~original_source,
             ~parent_loc=func.pexp_loc,
-            ~level,
+            ~infixFunction,
             func,
           ),
           Doc.lparen,
@@ -1184,7 +1233,7 @@ and print_application =
                       ~endChar=None,
                       ~original_source,
                       ~parent_loc,
-                      ~level,
+                      ~infixFunction,
                       e,
                     ),
                   expressions,
@@ -1314,7 +1363,7 @@ and print_expression =
       ~endChar: option(Doc.t), // not currently used but will be in the next iteration
       ~original_source: array(string),
       ~parent_loc: Grain_parsing__Location.t,
-      ~level=0,
+      ~infixFunction=None,
       expr: Parsetree.expression,
     ) => {
   let (leading_comments, trailing_comments) =
@@ -2049,7 +2098,7 @@ and print_expression =
         ~expressions,
         ~parent_loc,
         ~original_source,
-        ~level,
+        ~infixFunction,
         func,
       )
     | PExpBlock(expressions) =>
