@@ -248,4 +248,14 @@ describe("pattern matching", ({test}) => {
        None => print(5),
      }",
   );
+  assertWarning(
+    "bool_exhaustiveness7",
+    "match (true) {
+       true when true => print(5),
+       false => print(5),
+     }",
+    Warnings.PartialMatch(
+      "true\n(However, some guarded clause may match this value.)",
+    ),
+  );
 });
