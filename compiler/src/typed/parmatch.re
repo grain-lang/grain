@@ -699,6 +699,8 @@ let full_match = (closing, env) =>
       /* extensions */
       List.length(env) == c.cstr_consts + c.cstr_nonconsts;
     }
+  | [({pat_desc: TPatConstant(Const_bool(_))}, _), ..._] =>
+    List.length(env) == 2
   | [({pat_desc: TPatArray(_)}, _), ..._]
   | [({pat_desc: TPatConstant(_)}, _), ..._] => false
   | [({pat_desc: TPatTuple(_)}, _), ..._]
@@ -967,11 +969,18 @@ let build_other = (ext, env) =>
       p,
       env,
     )
-  /*| ({pat_desc=(TPatConstant (Const_bool _))} as p,_) :: _ ->
-    build_other_constant
-      (function TPatConstant(Const_bool i) -> i | _ -> assert false)
-      (function i -> TPatConstant(Const_bool i))
-      ??? p env*/
+  | [({pat_desc: TPatConstant(Const_bool(_))} as p, _), ..._] =>
+    build_other_constant(
+      fun
+      | TPatConstant(Const_bool(b)) => b
+      | _ => assert(false),
+      fun
+      | b => TPatConstant(Const_bool(b)),
+      false,
+      (!),
+      p,
+      env,
+    )
   | [({pat_desc: TPatConstant(Const_string(_))} as p, _), ..._] =>
     build_other_constant(
       fun
