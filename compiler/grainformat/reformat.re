@@ -1966,19 +1966,13 @@ and print_expression =
           let pat = List.hd(patterns);
 
           switch (pat.ppat_desc) {
-          | PPatConstraint(_) =>
+          | PPatVar(_) => print_pattern(~pat, ~parent_loc, ~original_source)
+          | _ =>
             Doc.concat([
               Doc.lparen,
               print_pattern(~pat, ~parent_loc, ~original_source),
               Doc.rparen,
             ])
-          | PPatTuple(_) =>
-            Doc.concat([
-              Doc.lparen,
-              print_pattern(~pat, ~parent_loc, ~original_source),
-              Doc.rparen,
-            ])
-          | _ => print_pattern(~pat, ~parent_loc, ~original_source)
           };
         };
 
