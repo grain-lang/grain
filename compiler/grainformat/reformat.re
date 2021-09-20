@@ -375,13 +375,6 @@ let add_parens = doc =>
     Doc.rparen,
   ]);
 
-let has_standard_precedence = (op: string) => {
-  switch (op) {
-  | "++" => true
-  | _ => false
-  };
-};
-
 let infixop = (op: string) => {
   switch (op) {
   | "+"
