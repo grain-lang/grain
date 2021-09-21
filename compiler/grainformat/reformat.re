@@ -611,9 +611,12 @@ and print_record_pattern =
     | Open => Doc.concat([Doc.text(","), Doc.space, Doc.text("_")])
     | Closed => Doc.nil
     };
+
+  let brace_trailing_comments = get_trailing_comments_to_end_of_line(patloc);
+
   Doc.concat([
     Doc.lbrace,
-    get_trailing_comments_to_end_of_line(patloc),
+    brace_trailing_comments,
     Doc.indent(
       Doc.concat([
         Doc.line,
@@ -889,10 +892,11 @@ and print_record =
       ~parent_loc: Grain_parsing__Location.t,
       ~original_source: array(string),
       recloc: Grain_parsing__Location.t,
-    ) =>
+    ) => {
+  let comments_after_brace = get_trailing_comments_to_end_of_line(recloc);
   Doc.concat([
     Doc.lbrace,
-    get_trailing_comments_to_end_of_line(recloc),
+    comments_after_brace,
     Doc.indent(
       Doc.concat([
         Doc.line,
@@ -951,7 +955,8 @@ and print_record =
     ),
     Doc.line,
     Doc.rbrace,
-  ])
+  ]);
+}
 
 and print_type =
     (p: Grain_parsing__Parsetree.parsed_type, original_source: array(string)) => {
@@ -1522,6 +1527,10 @@ and print_expression =
         ),
       ])
     | PExpMatch(expression, match_branches) =>
+      // need to get comments after { before we process anything else
+      let after_brace_comments =
+        get_trailing_comments_to_end_of_line(expression.pexp_loc);
+
       let arg =
         Doc.concat([
           Doc.lparen,
@@ -1542,7 +1551,7 @@ and print_expression =
         Doc.concat([
           Doc.concat([Doc.text("match "), arg, Doc.space]),
           Doc.lbrace,
-          get_trailing_comments_to_end_of_line(expression.pexp_loc),
+          after_brace_comments,
           Doc.indent(
             Doc.concat([
               Doc.hardLine,
@@ -2419,6 +2428,8 @@ and print_value_bind =
           | _ => Doc.concat([Doc.space, expression])
           };
 
+        let comments_after_brace =
+          get_trailing_comments_to_end_of_line(vb.pvb_expr.pexp_loc);
         Doc.concat([
           Doc.group(
             print_pattern(
@@ -2430,7 +2441,7 @@ and print_value_bind =
           Doc.space,
           Doc.equal,
           Doc.group(expressionGrp),
-          get_trailing_comments_to_end_of_line(vb.pvb_expr.pexp_loc),
+          comments_after_brace,
         ]);
       },
       vbs,
@@ -2461,6 +2472,9 @@ let rec print_data =
   let nameloc = data.pdata_name;
   switch (data.pdata_kind) {
   | PDataVariant(constr_declarations) =>
+    let after_name_comments =
+      get_trailing_comments_to_end_of_line(data.pdata_name.loc);
+
     let decls =
       List.map(
         (d: Grain_parsing__Parsetree.constructor_declaration) => {
@@ -2543,7 +2557,7 @@ let rec print_data =
           Doc.space;
         },
         Doc.lbrace,
-        get_trailing_comments_to_end_of_line(data.pdata_name.loc),
+        after_name_comments,
         Doc.indent(Doc.concat([Doc.line, joinedDecls])),
         if (!commaTerminated) {
           Doc.ifBreaks(Doc.comma, Doc.nil);
@@ -2556,6 +2570,9 @@ let rec print_data =
     );
 
   | PDataRecord(label_declarations) =>
+    let after_name_comments =
+      get_trailing_comments_to_end_of_line(data.pdata_name.loc);
+
     let decls =
       List.map(
         (decl: Grain_parsing__Parsetree.label_declaration) => {
@@ -2629,7 +2646,7 @@ let rec print_data =
         },
         Doc.concat([
           Doc.lbrace,
-          get_trailing_comments_to_end_of_line(data.pdata_name.loc),
+          after_name_comments,
           Doc.indent(Doc.concat([Doc.line, joinedDecls])),
           if (!commaTerminated) {
             Doc.ifBreaks(Doc.comma, Doc.nil);
@@ -2745,7 +2762,6 @@ let import_print = (imp: Parsetree.import_declaration) => {
           let numVals = List.length(identlocsopts);
           Doc.concat([
             Doc.lbrace,
-            // get_trailing_comments_to_end_of_line(imp.pimp_loc),
             Doc.indent(
               Doc.concat([
                 Doc.line,
