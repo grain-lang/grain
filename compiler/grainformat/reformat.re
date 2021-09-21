@@ -1491,7 +1491,7 @@ and print_expression =
       ])
     | PExpMatch(expression, match_branches) =>
       // need to get comments after { before we process anything else
-      let afterBraceComments =
+      let after_brace_comments =
         get_trailing_comments_to_end_of_line(expression.pexp_loc);
 
       let arg =
@@ -1514,7 +1514,7 @@ and print_expression =
         Doc.concat([
           Doc.concat([Doc.text("match "), arg, Doc.space]),
           Doc.lbrace,
-          afterBraceComments,
+          after_brace_comments,
           Doc.indent(
             Doc.concat([
               Doc.hardLine,
@@ -2391,7 +2391,7 @@ and print_value_bind =
           | _ => Doc.concat([Doc.space, expression])
           };
 
-        let commentsAfterBrace =
+        let comments_after_brace =
           get_trailing_comments_to_end_of_line(vb.pvb_expr.pexp_loc);
         Doc.concat([
           Doc.group(
@@ -2404,7 +2404,7 @@ and print_value_bind =
           Doc.space,
           Doc.equal,
           Doc.group(expressionGrp),
-          commentsAfterBrace,
+          comments_after_brace,
         ]);
       },
       vbs,
@@ -2435,7 +2435,7 @@ let rec print_data =
   let nameloc = data.pdata_name;
   switch (data.pdata_kind) {
   | PDataVariant(constr_declarations) =>
-    let afterNameComments =
+    let after_name_comments =
       get_trailing_comments_to_end_of_line(data.pdata_name.loc);
 
     let decls =
@@ -2520,7 +2520,7 @@ let rec print_data =
           Doc.space;
         },
         Doc.lbrace,
-        afterNameComments,
+        after_name_comments,
         Doc.indent(Doc.concat([Doc.line, joinedDecls])),
         if (!commaTerminated) {
           Doc.ifBreaks(Doc.comma, Doc.nil);
@@ -2533,7 +2533,7 @@ let rec print_data =
     );
 
   | PDataRecord(label_declarations) =>
-    let afterNameComments =
+    let after_name_comments =
       get_trailing_comments_to_end_of_line(data.pdata_name.loc);
 
     let decls =
@@ -2609,7 +2609,7 @@ let rec print_data =
         },
         Doc.concat([
           Doc.lbrace,
-          afterNameComments,
+          after_name_comments,
           Doc.indent(Doc.concat([Doc.line, joinedDecls])),
           if (!commaTerminated) {
             Doc.ifBreaks(Doc.comma, Doc.nil);
