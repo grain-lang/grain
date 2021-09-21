@@ -584,11 +584,11 @@ and print_record_pattern =
     | Closed => Doc.nil
     };
 
-  let braceTrailing = get_trailing_comments_to_end_of_line(patloc);
+  let brace_trailing_comments = get_trailing_comments_to_end_of_line(patloc);
 
   Doc.concat([
     Doc.lbrace,
-    braceTrailing,
+    brace_trailing_comments,
     Doc.indent(
       Doc.concat([
         Doc.line,
@@ -865,10 +865,10 @@ and print_record =
       ~original_source: array(string),
       recloc: Grain_parsing__Location.t,
     ) => {
-  let commentAfterBrace = get_trailing_comments_to_end_of_line(recloc);
+  let comments_after_brace = get_trailing_comments_to_end_of_line(recloc);
   Doc.concat([
     Doc.lbrace,
-    commentAfterBrace,
+    comments_after_brace,
     Doc.indent(
       Doc.concat([
         Doc.line,
