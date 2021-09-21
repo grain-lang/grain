@@ -1095,7 +1095,7 @@ and print_application =
       | _ => false
       };
 
-    let (leftparen, rightparen) =
+    let (left_grouping_required, right_grouping_required) =
       switch (first.pexp_desc, second.pexp_desc) {
       | (PExpApp(fn1, _), PExpApp(fn2, _)) =>
         let left_prec = op_precedence(get_function_name(fn1));
@@ -1130,24 +1130,30 @@ and print_application =
       | _ => (false, false)
       };
 
-    let left_needs_parens = false || left_is_if || leftparen;
-    let right_needs_parens = false || right_is_if || rightparen;
+    let left_needs_parens = false || left_is_if || left_grouping_required;
+    let right_needs_parens = false || right_is_if || right_grouping_required;
 
-    let left =
+    let wrapped_left =
       if (left_needs_parens) {
         Doc.concat([Doc.lparen, left_expr, Doc.rparen]);
       } else {
         left_expr;
       };
 
-    let right =
+    let wrapped_right =
       if (right_needs_parens) {
         Doc.concat([Doc.lparen, right_expr, Doc.rparen]);
       } else {
         right_expr;
       };
 
-    Doc.concat([left, Doc.space, Doc.text(function_name), Doc.space, right]);
+    Doc.concat([
+      wrapped_left,
+      Doc.space,
+      Doc.text(function_name),
+      Doc.space,
+      wrapped_right,
+    ]);
 
   | _ when prefixop(function_name) || infixop(function_name) =>
     raise(Error(Illegal_parse("Formatter error, wrong number of args ")))
