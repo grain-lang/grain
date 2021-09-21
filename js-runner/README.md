@@ -44,7 +44,7 @@ let GrainRunner = Grain.buildGrainRunner(locator);
 GrainRunner.runFile("hello.gr.wasm");
 ```
 
-You can also just use the Grain CLI to run your files, like `grain run hello.gr.wasm`.s
+You can also just use the Grain CLI to run your files, like `grain run hello.gr.wasm`.
 
 ## License
 
