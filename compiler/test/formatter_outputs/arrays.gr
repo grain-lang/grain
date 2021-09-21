@@ -16,7 +16,7 @@ let instructions = Array.map(
       [> "acc", arg] => Acc(parseIntWithSign(arg)),
       [> "jmp", arg] => Jmp(parseIntWithSign(arg)),
       [> "nop", _] => Nop,
-      x => fail "Can't handle: " ++ (toString(x)),
+      x => fail "Can't handle: " ++ toString(x),
     }
   },
   String.split("\n", data),

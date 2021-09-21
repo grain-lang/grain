@@ -7,6 +7,34 @@ open Grain_diagnostics;
 module Doc = Res_doc;
 
 let exception_primitives = [|"throw", "fail", "assert"|];
+
+let op_precedence = fn =>
+  switch (fn) {
+  | "*"
+  | "/"
+  | "%" => 120
+  | "+"
+  | "-"
+  | "++" => 110
+  | "<<"
+  | ">>"
+  | ">>>" => 100
+  | "<"
+  | "<="
+  | ">"
+  | ">=" => 90
+  | "=="
+  | "!="
+  | "is"
+  | "isnt" => 80
+  | "&" => 70
+  | "^" => 60
+  | "|" => 50
+  | "&&" => 40
+  | "||" => 30
+  | "_" => 10
+  | _ => 9999
+  };
 let list_cons = "[...]";
 
 type error =
@@ -998,10 +1026,10 @@ and print_type =
 }
 and print_application =
     (
-      ~func: Parsetree.expression,
       ~expressions: list(Parsetree.expression),
       ~parent_loc: Location.t,
       ~original_source: array(string),
+      func: Parsetree.expression,
     ) => {
   let function_name = get_function_name(func);
 
@@ -1036,87 +1064,96 @@ and print_application =
     }
 
   | [first, second] when infixop(function_name) =>
-    let first_brackets =
+    let left_expr =
+      print_expression(
+        ~parentIsArrow=false,
+        ~endChar=None,
+        ~original_source,
+        ~parent_loc,
+        first,
+      );
+
+    let right_expr =
+      print_expression(
+        ~parentIsArrow=false,
+        ~endChar=None,
+        ~original_source,
+        ~parent_loc,
+        second,
+      );
+
+    // wrap if in parens
+
+    let left_is_if =
       switch (first.pexp_desc) {
-      | PExpIf(_) =>
-        Doc.concat([
-          Doc.lparen,
-          print_expression(
-            ~parentIsArrow=false,
-            ~endChar=None,
-            ~original_source,
-            ~parent_loc,
-            first,
-          ),
-          Doc.rparen,
-        ])
-      | PExpApp(fn, _) =>
-        let leftfn = get_function_name(fn);
-        if (infixop(leftfn)) {
-          Doc.concat([
-            Doc.lparen,
-            print_expression(
-              ~parentIsArrow=false,
-              ~endChar=None,
-              ~original_source,
-              ~parent_loc,
-              first,
-            ),
-            Doc.rparen,
-          ]);
-        } else {
-          Doc.concat([
-            Doc.lparen,
-            print_expression(
-              ~parentIsArrow=false,
-              ~endChar=None,
-              ~original_source,
-              ~parent_loc,
-              first,
-            ),
-            Doc.rparen,
-          ]);
-        };
-      | _ =>
-        print_expression(
-          ~parentIsArrow=false,
-          ~endChar=None,
-          ~original_source,
-          ~parent_loc,
-          first,
-        )
+      | PExpIf(_) => true
+      | _ => false
       };
 
-    let second_brackets =
+    let right_is_if =
       switch (second.pexp_desc) {
-      | PExpIf(_)
-      | PExpApp(_) =>
-        Doc.concat([
-          Doc.lparen,
-          print_expression(
-            ~parentIsArrow=false,
-            ~endChar=None,
-            ~original_source,
-            ~parent_loc,
-            second,
-          ),
-          Doc.rparen,
-        ])
-      | _ =>
-        print_expression(
-          ~parentIsArrow=false,
-          ~endChar=None,
-          ~original_source,
-          ~parent_loc,
-          second,
-        )
+      | PExpIf(_) => true
+      | _ => false
       };
+
+    let (left_grouping_required, right_grouping_required) =
+      switch (first.pexp_desc, second.pexp_desc) {
+      | (PExpApp(fn1, _), PExpApp(fn2, _)) =>
+        let left_prec = op_precedence(get_function_name(fn1));
+        let right_prec = op_precedence(get_function_name(fn2));
+        let parent_prec = op_precedence(function_name);
+
+        // the equality check is needed for the function on the right
+        // as we process from the left by default when the same prededence
+
+        let neededLeft = left_prec < parent_prec;
+        let neededRight = right_prec <= parent_prec;
+
+        (neededLeft, neededRight);
+
+      | (PExpApp(fn1, _), _) =>
+        let left_prec = op_precedence(get_function_name(fn1));
+        let parent_prec = op_precedence(function_name);
+        if (left_prec < parent_prec) {
+          (true, false);
+        } else {
+          (false, false);
+        };
+      | (_, PExpApp(fn2, _)) =>
+        let parent_prec = op_precedence(function_name);
+        let right_prec = op_precedence(get_function_name(fn2));
+        if (right_prec <= parent_prec) {
+          (false, true);
+        } else {
+          (false, false);
+        };
+
+      | _ => (false, false)
+      };
+
+    let left_needs_parens = false || left_is_if || left_grouping_required;
+    let right_needs_parens = false || right_is_if || right_grouping_required;
+
+    let wrapped_left =
+      if (left_needs_parens) {
+        Doc.concat([Doc.lparen, left_expr, Doc.rparen]);
+      } else {
+        left_expr;
+      };
+
+    let wrapped_right =
+      if (right_needs_parens) {
+        Doc.concat([Doc.lparen, right_expr, Doc.rparen]);
+      } else {
+        right_expr;
+      };
+
     Doc.concat([
-      first_brackets,
+      wrapped_left,
       Doc.space,
       Doc.text(function_name),
       Doc.space,
-      second_brackets,
+      wrapped_right,
     ]);
 
   | _ when prefixop(function_name) || infixop(function_name) =>
@@ -2018,7 +2055,7 @@ and print_expression =
       Doc.concat(followsArrow);
 
     | PExpApp(func, expressions) =>
-      print_application(~func, ~expressions, ~parent_loc, ~original_source)
+      print_application(~expressions, ~parent_loc, ~original_source, func)
     | PExpBlock(expressions) =>
       if (List.length(expressions) > 0) {
         let previous_line = ref(get_loc_line(expr.pexp_loc));

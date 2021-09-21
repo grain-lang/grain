@@ -18,6 +18,6 @@ if (a && b) {
   print("true")
 }
 
-if ((a && b) || c) {
+if (a && (b || c)) {
   print("who knows")
 }

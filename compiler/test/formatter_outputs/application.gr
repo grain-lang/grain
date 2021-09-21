@@ -25,6 +25,9 @@ sillyFunction(
   123456789,
 )
 
+let filteri = (x, y) => []
+let findIndex = (x, y) => None
+
 /**
  * Produces a new array with any duplicates removed.
  * Uses the generic `==` structural equality operator.
@@ -35,7 +38,7 @@ sillyFunction(
 export let unique = array => {
   filteri(
     (el, index) =>
-      (findIndex(value => value == el, array)) == (Some(index)),
+      findIndex(value => value == el, array) == Some(index),
     array,
   )
 }
