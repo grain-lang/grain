@@ -15,3 +15,8 @@ if (true) { // block 1
 }
 
 let space = ""
+
+export let setCounter = val => {
+  // Write the value to memory.
+  Storage.setInt32(key, val)
+}

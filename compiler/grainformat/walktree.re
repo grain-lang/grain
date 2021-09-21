@@ -69,8 +69,14 @@ let is_first_inside_second =
     let begins_inside =
       if (raw1l > raw2l) {
         true;
-      } else if (raw1c >= raw2c && raw1c <= raw2ce) {
-        true;
+      } else if (raw1c >= raw2c) {
+        if (raw2le > raw1le) {
+          true;
+        } else if (raw1ce <= raw2ce) {
+          true;
+        } else {
+          false;
+        };
       } else {
         false;
       };
