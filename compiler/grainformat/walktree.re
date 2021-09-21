@@ -80,18 +80,7 @@ let is_first_inside_second =
       } else {
         false;
       };
-    let ends_inside =
-      if (raw1le < raw2le) {
-        true;
-      } else if (raw1le == raw2le) {
-        if (raw1ce <= raw2ce) {
-          true;
-        } else {
-          false;
-        };
-      } else {
-        false;
-      };
+    let ends_inside = raw2le > raw1le || raw1ce <= raw2ce;
 
     begins_inside && ends_inside;
   };
