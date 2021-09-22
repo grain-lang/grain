@@ -4,7 +4,7 @@ The JavaScript runner for the Grain language.
 
 ## Why
 
-Grain programs need to be instantiated in a specific way within JavaScript environments. By using `@grain/js-runner`, you can bootstrap the environment to run your Grain programs.
+This project makes it easier to get your Grain programs running in a JavaScript environment—either Node.js or the browser. If your Grain code is compiled in unlinked mode (`--no-link`), `@grain/js-runner` will perform module resolution and load all necessary modules.
 
 ## Installation
 
