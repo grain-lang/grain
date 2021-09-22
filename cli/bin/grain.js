@@ -201,7 +201,9 @@ program
   .command("lsp <file>")
   .description("check a grain file for LSP")
   .action(
-    wrapAction(function (file, options, program) {
+    wrapAction(function (file) {
+      // The lsp subcommand inherits all options of the
+      // top level grain command
       lsp(file, program);
     })
   );
