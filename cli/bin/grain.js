@@ -200,12 +200,6 @@ program
 program
   .command("lsp <file>")
   .description("check a grain file for LSP")
-  .forwardOption(
-    "-S, --stdlib <path>",
-    "override the standard libary with your own",
-    null,
-    stdlibPath
-  )
   .action(
     wrapAction(function (file, options, program) {
       lsp(file, program);
@@ -215,12 +209,6 @@ program
 program
   .command("doc <file>")
   .description("generate documentation for a grain file")
-  .forwardOption(
-    "-S, --stdlib <path>",
-    "override the standard libary with your own",
-    null,
-    stdlibPath
-  )
   .action(
     wrapAction(function (file, options, program) {
       doc(file, program);
