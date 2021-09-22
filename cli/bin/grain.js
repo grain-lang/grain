@@ -75,11 +75,16 @@ class ForwardOption extends program.Option {
   }
 }
 
-program.forwardOption = function (flags, description, parser, defaultValue) {
+program.Command.prototype.forwardOption = function (
+  flags,
+  description,
+  parser,
+  defaultValue
+) {
   const option = new ForwardOption(flags, description);
   if (parser) option.argParser(parser);
   if (typeof defaultValue !== "undefined") option.default(defaultValue);
-  return program.addOption(option);
+  return this.addOption(option);
 };
 
 program
@@ -193,11 +198,11 @@ program
 program
   .command("lsp <file>")
   .description("check a grain file for LSP")
-  .addOption(
-    new ForwardOption(
-      "-S, --stdlib <path>",
-      "override the standard libary with your own"
-    ).default(stdlibPath)
+  .forwardOption(
+    "-S, --stdlib <path>",
+    "override the standard libary with your own",
+    null,
+    stdlibPath
   )
   .action(
     wrapAction(function (file, options, program) {
@@ -208,11 +213,11 @@ program
 program
   .command("doc <file>")
   .description("generate documentation for a grain file")
-  .addOption(
-    new ForwardOption(
-      "-S, --stdlib <path>",
-      "override the standard libary with your own"
-    ).default(stdlibPath)
+  .forwardOption(
+    "-S, --stdlib <path>",
+    "override the standard libary with your own",
+    null,
+    stdlibPath
   )
   .action(
     wrapAction(function (file, options, program) {
