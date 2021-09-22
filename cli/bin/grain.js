@@ -75,6 +75,8 @@ class ForwardOption extends program.Option {
   }
 }
 
+// Adds .forwardOption to commands. Similar to Commander's native .option,
+// but will forward the flag to the underlying program.
 program.Command.prototype.forwardOption = function (
   flags,
   description,
