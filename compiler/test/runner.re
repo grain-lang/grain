@@ -1,8 +1,15 @@
 open TestFramework;
+open WarningExtensions;
 open Grain.Compile;
 open Grain_utils;
 open Grain_middle_end.Anftree;
 open Grain_middle_end.Anf_helper;
+
+type customMatchers = {warning: warningExtensions};
+
+let customMatchers = createMatcher => {
+  warning: warningExtensions(createMatcher),
+};
 
 let grainfile = name => Filename.concat(test_input_dir, name ++ ".gr");
 let stdlibfile = name => Filename.concat(test_stdlib_dir, name ++ ".gr");
@@ -217,6 +224,26 @@ let makeCompileErrorRunner = (test, name, prog, msg) => {
       expect.string(error).toMatch(msg);
     },
   );
+};
+
+let makeWarningRunner = (test, name, prog, warning) => {
+  test(name, ({expect}) => {
+    Config.preserve_all_configs(() => {
+      Config.print_warnings := false;
+      compile(name, prog);
+      expect.ext.warning.toHaveTriggered(warning);
+    })
+  });
+};
+
+let makeNoWarningRunner = (test, name, prog) => {
+  test(name, ({expect}) => {
+    Config.preserve_all_configs(() => {
+      Config.print_warnings := false;
+      compile(name, prog);
+      expect.ext.warning.toHaveTriggeredNoWarnings();
+    })
+  });
 };
 
 let makeRunner = (test, ~num_pages=?, ~config_fn=?, name, prog, expected) => {

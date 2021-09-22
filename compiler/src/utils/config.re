@@ -554,6 +554,8 @@ let lsp_mode =
     false,
   );
 
+let print_warnings = internal_opt(true);
+
 /* To be filled in by grainc */
 let base_path = internal_opt("");
 

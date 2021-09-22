@@ -1,11 +1,17 @@
 open Grain_tests.TestFramework;
 open Grain_tests.Runner;
+open Grain_utils;
+
+let {describe} =
+  describeConfig |> withCustomMatchers(customMatchers) |> build;
 
 describe("pattern matching", ({test}) => {
   let assertSnapshot = makeSnapshotRunner(test);
   let assertCompileError = makeCompileErrorRunner(test);
   let assertRun = makeRunner(test);
   let assertFileRun = makeFileRunner(test);
+  let assertWarning = makeWarningRunner(test);
+  let assertNoWarning = makeNoWarningRunner(test);
 
   /* Pattern matching on tuples */
   assertRun("tuple_match_1", "print(match ((1,)) { (a,) => a })", "1\n");
@@ -197,4 +203,59 @@ describe("pattern matching", ({test}) => {
     "match ((\"foo\", 5)) { (\"foo\", n) when n == 7 => false, (\"foo\", 9) when true => false, (\"foo\", n) when n == 5 => true, _ => false }",
   );
   assertFileRun("mixed_matching", "mixedPatternMatching", "true\n");
+  assertWarning(
+    "bool_exhaustiveness1",
+    "match (true) {
+       true => print(5),
+     }",
+    Warnings.PartialMatch("false"),
+  );
+  assertWarning(
+    "bool_exhaustiveness2",
+    "match (true) {
+       false => print(5),
+     }",
+    Warnings.PartialMatch("true"),
+  );
+  assertWarning(
+    "bool_exhaustiveness3",
+    "match (true) {
+       true => print(5),
+       true => print(5),
+     }",
+    Warnings.PartialMatch("false"),
+  );
+  assertNoWarning(
+    "bool_exhaustiveness4",
+    "match (true) {
+       false => print(5),
+       true => print(5),
+     }",
+  );
+  assertWarning(
+    "bool_exhaustiveness5",
+    "match (Some(true)) {
+       Some(false) => print(5),
+       None => print(5),
+     }",
+    Warnings.PartialMatch("Some(true)"),
+  );
+  assertNoWarning(
+    "bool_exhaustiveness6",
+    "match (Some(true)) {
+       Some(false) => print(5),
+       Some(true) => print(5),
+       None => print(5),
+     }",
+  );
+  assertWarning(
+    "bool_exhaustiveness7",
+    "match (true) {
+       true when true => print(5),
+       false => print(5),
+     }",
+    Warnings.PartialMatch(
+      "true\n(However, some guarded clause may match this value.)",
+    ),
+  );
 });

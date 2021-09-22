@@ -122,6 +122,10 @@ let safe_string: ref(bool);
 
 let lsp_mode: ref(bool);
 
+/** Internal option to disable printing of warnings. */
+
+let print_warnings: ref(bool);
+
 /*** Configuration Saving/Restoring */
 
 /** Type representing a saved set of configuration options */
