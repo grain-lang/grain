@@ -3190,7 +3190,7 @@ let reformat_ast =
   //Doc.debug(final_doc);
   //
 
-  Doc.toString(~width=80, final_doc) |> print_endline;
+  Doc.toString(~width=80, final_doc);
   //use this to see the AST in JSON
   // print_endline(
   //   Yojson.Basic.pretty_to_string(

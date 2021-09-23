@@ -79,13 +79,45 @@ let compile_parsed = (filename: option(string)) => {
 };
 
 let format_code =
-    (program: Parsetree.parsed_program, original_source: array(string)) => {
-  Reformat.reformat_ast(program, original_source);
+    (
+      srcfile: option(string),
+      program: Parsetree.parsed_program,
+      outfile,
+      original_source: array(string),
+      format_in_place: bool,
+    ) => {
+  let reformatted_code = Reformat.reformat_ast(program, original_source);
+
+  let buf = Buffer.create(0);
+  Buffer.add_string(buf, reformatted_code);
+
+  let contents = Buffer.to_bytes(buf);
+  switch (outfile) {
+  | Some(outfile) =>
+    let oc = Fs_access.open_file_for_writing(outfile);
+    output_bytes(oc, contents);
+    close_out(oc);
+  | None =>
+    switch (srcfile, format_in_place) {
+    | (Some(src), true) =>
+      let oc = Fs_access.open_file_for_writing(src);
+      output_bytes(oc, contents);
+      close_out(oc);
+    | _ => print_bytes(contents)
+    }
+  };
+
   `Ok();
 };
 
-let grainformat = ((program, source: array(string))) =>
-  try(format_code(program, source)) {
+let grainformat =
+    (
+      srcfile: option(string),
+      outfile,
+      format_in_place: bool,
+      (program, source: array(string)),
+    ) =>
+  try(format_code(srcfile, program, outfile, source, format_in_place)) {
   | e => `Error((false, Printexc.to_string(e)))
   };
 
@@ -96,6 +128,35 @@ let input_file_conv = {
     filename => prsr(Grain_utils.Files.normalize_separators(filename)),
     prntr,
   );
+};
+
+/** Converter which checks that the given output filename is valid */
+let output_file_conv = {
+  let parse = s => {
+    let s_dir = dirname(s);
+    Sys.file_exists(s_dir)
+      ? if (Sys.is_directory(s_dir)) {
+          `Ok(s);
+        } else {
+          `Error(Format.sprintf("`%s' is not a directory", s_dir));
+        }
+      : `Error(Format.sprintf("no `%s' directory", s_dir));
+  };
+  (parse, Format.pp_print_string);
+};
+
+let output_filename = {
+  let doc = "Output filename";
+  let docv = "FILE";
+  Arg.(
+    value & opt(some(output_file_conv), None) & info(["o"], ~docv, ~doc)
+  );
+};
+
+let format_in_place = {
+  let doc = "Format in place";
+  let docv = "";
+  Arg.(value & flag & info(["in-place"], ~docv, ~doc));
 };
 
 let input_filename = {
@@ -122,6 +183,9 @@ let cmd = {
     Term.(
       ret(
         const(grainformat)
+        $ input_filename
+        $ output_filename
+        $ format_in_place
         $ ret(
             Grain_utils.Config.with_cli_options(compile_parsed)
             $ input_filename,
