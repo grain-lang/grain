@@ -193,7 +193,3 @@ type implicit_opens =
   | Gc_mod;
 
 let get_implicit_opens: unit => list(implicit_opens);
-
-/** Formatter rewrites file in place */
-
-let format_in_place: ref(bool);

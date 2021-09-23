@@ -84,6 +84,7 @@ let format_code =
       program: Parsetree.parsed_program,
       outfile,
       original_source: array(string),
+      format_in_place: bool,
     ) => {
   let reformatted_code = Reformat.reformat_ast(program, original_source);
 
@@ -97,7 +98,7 @@ let format_code =
     output_bytes(oc, contents);
     close_out(oc);
   | None =>
-    switch (srcfile, Grain_utils.Config.format_in_place^) {
+    switch (srcfile, format_in_place) {
     | (Some(src), true) =>
       let oc = Fs_access.open_file_for_writing(src);
       output_bytes(oc, contents);
@@ -110,8 +111,13 @@ let format_code =
 };
 
 let grainformat =
-    (srcfile: option(string), outfile, (program, source: array(string))) =>
-  try(format_code(srcfile, program, outfile, source)) {
+    (
+      srcfile: option(string),
+      outfile,
+      format_in_place: bool,
+      (program, source: array(string)),
+    ) =>
+  try(format_code(srcfile, program, outfile, source, format_in_place)) {
   | e => `Error((false, Printexc.to_string(e)))
   };
 
@@ -173,6 +179,7 @@ let cmd = {
         const(grainformat)
         $ input_filename
         $ output_filename
+        $ format_in_place
         $ ret(
             Grain_utils.Config.with_cli_options(compile_parsed)
             $ input_filename,
