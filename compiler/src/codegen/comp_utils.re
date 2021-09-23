@@ -191,6 +191,8 @@ let write_universal_exports =
               [||],
               function_body,
             );
+            // Remove existing Grain export (if any)
+            Export.remove_export(wasm_mod, name);
             ignore @@ Export.add_function_export(wasm_mod, name, name);
           | TSigValue(_)
           | TSigType(_)
