@@ -50,10 +50,12 @@ function execGraindoc(
   execOpts = { stdio: "pipe" }
 ) {
   const flags = [];
-  const options = program.opts();
-  program.options.forEach((option) => {
+  // Inherit compiler flags passed to the parent
+  const options = program.parent.options.concat(program.options);
+  const opts = { ...program.parent.opts(), ...program.opts() };
+  options.forEach((option) => {
     if (!option.forward) return;
-    const flag = option.toFlag(options);
+    const flag = option.toFlag(opts);
     if (flag) flags.push(flag);
   });
 

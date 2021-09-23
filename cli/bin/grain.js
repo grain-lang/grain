@@ -75,11 +75,18 @@ class ForwardOption extends program.Option {
   }
 }
 
-program.forwardOption = function (flags, description, parser, defaultValue) {
+// Adds .forwardOption to commands. Similar to Commander's native .option,
+// but will forward the flag to the underlying program.
+program.Command.prototype.forwardOption = function (
+  flags,
+  description,
+  parser,
+  defaultValue
+) {
   const option = new ForwardOption(flags, description);
   if (parser) option.argParser(parser);
   if (typeof defaultValue !== "undefined") option.default(defaultValue);
-  return program.addOption(option);
+  return this.addOption(option);
 };
 
 program
@@ -194,7 +201,9 @@ program
   .command("lsp <file>")
   .description("check a grain file for LSP")
   .action(
-    wrapAction(function (file, options, program) {
+    wrapAction(function (file) {
+      // The lsp subcommand inherits all options of the
+      // top level grain command
       lsp(file, program);
     })
   );
