@@ -56,7 +56,6 @@ let compile = (~num_pages=?, ~config_fn=?, ~hook=?, name, prog) => {
         };
         Config.include_dirs := [test_libs_dir, ...Config.include_dirs^];
         let outfile = wasmfile(name);
-        ignore @@
         compile_string(~is_root_file=true, ~hook?, ~name, ~outfile, prog);
       },
     )
@@ -79,7 +78,7 @@ let compile_file = (~num_pages=?, ~config_fn=?, ~hook=?, filename, outfile) => {
         | None => ()
         };
         Config.include_dirs := [test_libs_dir, ...Config.include_dirs^];
-        ignore @@ compile_file(~is_root_file=true, ~hook?, ~outfile, filename);
+        compile_file(~is_root_file=true, ~hook?, ~outfile, filename);
       },
     )
   });
@@ -189,7 +188,7 @@ let makeSnapshotRunner = (test, name, prog) => {
   test(
     name,
     ({expect}) => {
-      compile(~hook=stop_after_object_file_emitted, name, prog);
+      ignore @@ compile(~hook=stop_after_object_file_emitted, name, prog);
       expect.file(watfile(name)).toMatchSnapshot();
     },
   );
@@ -201,6 +200,7 @@ let makeSnapshotFileRunner = (test, name, filename) => {
     ({expect}) => {
       let infile = grainfile(filename);
       let outfile = wasmfile(name);
+      ignore @@
       compile_file(~hook=stop_after_object_file_emitted, infile, outfile);
       let file = watfile(name);
       expect.file(file).toMatchSnapshot();
@@ -215,7 +215,7 @@ let makeCompileErrorRunner = (test, name, prog, msg) => {
       let error =
         try(
           {
-            compile(name, prog);
+            ignore @@ compile(name, prog);
             "";
           }
         ) {
@@ -230,7 +230,7 @@ let makeWarningRunner = (test, name, prog, warning) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
       Config.print_warnings := false;
-      compile(name, prog);
+      ignore @@ compile(name, prog);
       expect.ext.warning.toHaveTriggered(warning);
     })
   });
@@ -240,7 +240,7 @@ let makeNoWarningRunner = (test, name, prog) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
       Config.print_warnings := false;
-      compile(name, prog);
+      ignore @@ compile(name, prog);
       expect.ext.warning.toHaveTriggeredNoWarnings();
     })
   });
@@ -249,7 +249,7 @@ let makeNoWarningRunner = (test, name, prog) => {
 let makeRunner = (test, ~num_pages=?, ~config_fn=?, name, prog, expected) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
-      compile(~num_pages?, ~config_fn?, name, prog);
+      ignore @@ compile(~num_pages?, ~config_fn?, name, prog);
       let (result, _) = run(~num_pages?, wasmfile(name));
       expect.string(result).toEqual(expected);
     })
@@ -268,7 +268,7 @@ let makeErrorRunner =
     ) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
-      compile(~num_pages?, ~config_fn?, name, prog);
+      ignore @@ compile(~num_pages?, ~config_fn?, name, prog);
       let (result, _) = run(~num_pages?, wasmfile(name));
       if (check_exists) {
         expect.string(result).toMatch(expected);
@@ -285,7 +285,7 @@ let makeFileRunner =
     Config.preserve_all_configs(() => {
       let infile = grainfile(filename);
       let outfile = wasmfile(name);
-      compile_file(~num_pages?, ~config_fn?, infile, outfile);
+      ignore @@ compile_file(~num_pages?, ~config_fn?, infile, outfile);
       let (result, _) = run(outfile);
       expect.string(result).toEqual(expected);
     })
@@ -298,7 +298,7 @@ let makeFileErrorRunner = (test, name, filename, expected) => {
     ({expect}) => {
       let infile = grainfile(filename);
       let outfile = wasmfile(name);
-      compile_file(infile, outfile);
+      ignore @@ compile_file(infile, outfile);
       let (result, _) = run(outfile);
       expect.string(result).toMatch(expected);
     },
@@ -311,7 +311,7 @@ let makeStdlibRunner = (test, ~code=0, name) => {
     ({expect}) => {
       let infile = stdlibfile(name);
       let outfile = wasmfile(name);
-      compile_file(infile, outfile);
+      ignore @@ compile_file(infile, outfile);
       let (result, exit_code) = run(outfile);
       expect.int(exit_code).toBe(code);
       expect.string(result).toEqual("");
