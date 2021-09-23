@@ -1,0 +1,176 @@
+import WasiRandom from "sys/random"
+import Result from "result"
+import Int32 from "int32"
+import Int64 from "int64"
+import WasmI32 from "runtime/unsafe/wasmi32"
+import WasmI64 from "runtime/unsafe/wasmi64"
+import Memory from "runtime/unsafe/memory"
+import DS from "runtime/dataStructures"
+
+record Random {
+  seed: Int64,
+  mut counter: Int64,
+  mut initialized: Bool,
+}
+
+let incCounter = random => {
+  random.counter = Int64.incr(random.counter)
+}
+
+// https://arxiv.org/pdf/2004.06278v3.pdf
+@disableGC
+let rec squares = (ctr: Int64, key: Int64) => {
+  // Need to implement with @disableGC because
+  // overflows are part of this algorithm
+  let ctrArg = ctr
+  let keyArg = key
+  let ctr = DS.loadInt64(WasmI32.fromGrain(ctr))
+  let key = DS.loadInt64(WasmI32.fromGrain(key))
+  let mut x = WasmI64.mul(ctr, key)
+  let mut y = x
+  let mut z = WasmI64.add(y, key)
+  // round 1
+  x = WasmI64.add(WasmI64.mul(x, x), y)
+  x = WasmI64.or(WasmI64.shrU(x, 32N), WasmI64.shl(x, 32N))
+  // round 2
+  x = WasmI64.add(WasmI64.mul(x, x), z)
+  x = WasmI64.or(WasmI64.shrU(x, 32N), WasmI64.shl(x, 32N))
+  // round 3
+  x = WasmI64.add(WasmI64.mul(x, x), y)
+  x = WasmI64.or(WasmI64.shrU(x, 32N), WasmI64.shl(x, 32N))
+  let ret = WasmI32.wrapI64(
+    WasmI64.shrU(WasmI64.add(WasmI64.mul(x, x), z), 32N)
+  )
+  let ret = WasmI32.toGrain(DS.newInt32(ret)): Int32
+  Memory.decRef(WasmI32.fromGrain(ctrArg))
+  Memory.decRef(WasmI32.fromGrain(keyArg))
+  Memory.decRef(WasmI32.fromGrain(squares))
+  ret
+}
+
+// [NOTE] The PRNG algorithm seems to not work as well with small seeds, but
+// users are more likely to use small numbers for their seeds. Consequently,
+// we produce an actual seed xoring feeding the given seed with a
+// constant (large) number.
+
+/**
+ * Creates a new random number generator with the given seed.
+ *
+ * @param seed: The seed for the random number generator
+ * @returns The random number generator
+ */
+export let make = seed => {
+  { seed, counter: 0L, initialized: false }
+}
+
+/**
+ * Creates a new random number generator with a random seed.
+ *
+ * @param seed: The seed for the random number generator
+ * @returns The random number generator
+ */
+export let makeUnseeded = () => {
+  // TODO: Should we just .expect this result for UX's sake?
+  Result.map(seed => {
+    { seed, counter: 0L, initialized: false }
+  }, WasiRandom.randomInt64())
+}
+
+/**
+ * [Internal note]
+ * For low seed numbers, we sometimes need to churn through
+ * some iterations to start getting interesting numbers. Taking
+ * a cue from the API in https://pypi.org/project/squares-rng/ ,
+ * we churn through until we generate an int with a MSB of 1.
+ * Then, to avoid making all of the first generated numbers negative,
+ * we do another increment at the end.
+ */
+let checkInitialized = (random: Random) => {
+  if (!random.initialized) {
+    while (Int32.gt(Int32.clz(squares(random.counter, random.seed)), 0l)) {
+      incCounter(random)
+    }
+    // now that it's initialized, increment it again to make it a little more random
+    incCounter(random)
+    random.initialized = true
+  }
+}
+
+/**
+ * Generates a random 32-bit integer from the given random number generator.
+ *
+ * @param random: The random number generator to use
+ * @returns The randomly generated number
+ */
+export let nextInt32 = (random: Random) => {
+  checkInitialized(random)
+  let ret = squares(random.counter, random.seed)
+  incCounter(random)
+  ret
+}
+
+/**
+ * Generates a random 64-bit integer from the given random number generator.
+ *
+ * @param random: The random number generator to use
+ * @returns The randomly generated number
+ */
+export let nextInt64 = (random: Random) => {
+  checkInitialized(random)
+  let ret1 = Int64.fromNumber(
+    Int32.toNumber(squares(random.counter, random.seed))
+  )
+  incCounter(random)
+  let ret2 = Int64.fromNumber(
+    Int32.toNumber(squares(random.counter, random.seed))
+  )
+  incCounter(random)
+  Int64.lor(Int64.shl(ret1, 32L), ret2)
+}
+
+@disableGC
+export let rec gtU = (x: Int32, y: Int32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let ret = WasmI32.gtU(xv, yv)
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(y))
+  Memory.decRef(WasmI32.fromGrain(gtU))
+  ret
+}
+
+export let nextInt32InRange = (random: Random, low: Int32, high: Int32) => {
+  // Algorithm source: https://www.pcg-random.org/posts/bounded-rands.html#bitmask-with-rejection-unbiased-apples-method
+  let (+) = Int32.add
+  let (-) = Int32.sub
+  let (*) = Int32.mul
+  let (/) = Int32.divU
+  let (&) = Int32.land
+  let (>) = Int32.gtU
+  let range = high - low - 1l
+  let mask = Int32.shrU(Int32.lnot(0l), Int32.clz(Int32.lor(range, 1l)))
+  let mut x = nextInt32(random) & mask
+  let mut iters = 0l
+  while (x > range) {
+    x = nextInt32(random) & mask
+    iters += 1l
+  }
+  x + low
+}
+
+export let nextInt64InRange = (random: Random, low: Int64, high: Int64) => {
+  // Algorithm source: https://www.pcg-random.org/posts/bounded-rands.html#bitmask-with-rejection-unbiased-apples-method
+  let (+) = Int64.add
+  let (-) = Int64.sub
+  let (*) = Int64.mul
+  let (/) = Int64.divU
+  let (&) = Int64.land
+  let (>) = Int64.gtU
+  let range = high - low - 1L
+  let mask = Int64.shrU(Int64.lnot(0L), Int64.clz(Int64.lor(range, 1L)))
+  let mut x = nextInt64(random) & mask
+  while (x > range) {
+    x = nextInt64(random) & mask
+  }
+  x + low
+}
