@@ -30,4 +30,5 @@ describe("formatter", ({test}) => {
   assertFormatOutput("values", "values");
   assertFormatOutput("brace_comments", "brace_comments");
   assertFormatOutput("while_loops", "while_loops");
+  assertFormatOutput("parens", "parens");
 });

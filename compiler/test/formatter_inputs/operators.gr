@@ -15,4 +15,4 @@ if (!b) print("false")
 
 if (a && b) print("true")
 
-if (a && b || c) print("who knows")
+if (a && (b || c)) print("who knows")

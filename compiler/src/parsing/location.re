@@ -410,7 +410,9 @@ let formatter_for_warnings = ref(err_formatter);
 let prerr_warning = (loc, w) =>
   if (Grain_utils.Warnings.is_active(w)) {
     Grain_utils.Warnings.add_warning(loc, w);
-    print_warning(loc, formatter_for_warnings^, w);
+    if (Grain_utils.Config.print_warnings^) {
+      print_warning(loc, formatter_for_warnings^, w);
+    };
   };
 
 let echo_eof = () => {
