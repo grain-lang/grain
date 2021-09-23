@@ -17,6 +17,6 @@ export let fd_write: (WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32 =
   fd_write(fd, iovs, iovs_len, nwritten)
 }
 
-export let args_get: (WasmI32, WasmI32) -> WasmI32 = (a, b) => {
+export let args_get = (a, b) => {
   76n
 }
