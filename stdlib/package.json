@@ -2,43 +2,47 @@
   "name": "@grain/stdlib",
   "version": "0.4.1",
   "description": "The standard library for the Grain language.",
-  "main": "index.js",
+  "license": "MIT",
+  "homepage": "https://grain-lang.org",
+  "funding": "https://github.com/sponsors/grain-lang",
+  "author": "Grain Core Team <team@grain-lang.org> (https://grain-lang.org)",
+  "contributors": [
+    "Oscar Spencer <oscar@grain-lang.org> (https://github.com/ospencer)",
+    "Philip Blair <philip@grain-lang.org> (https://github.com/peblair)",
+    "Blaine Bublitz <blaine@grain-lang.org> (https://github.com/phated)",
+    "Josiah Savary <josiah@grain-lang.org> (https://github.com/jozanza)"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/grain-lang/grain.git",
+    "directory": "stdlib"
+  },
   "engines": {
     "node": ">=14"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/grain-lang/grain.git"
-  },
-  "keywords": [
-    "grain",
-    "stdlib"
+  "main": "index.js",
+  "files": [
+    "**/*.gr",
+    "**/*.md",
+    "index.js"
   ],
-  "contributors": [
-    {
-      "name": "Oscar Spencer",
-      "email": "oscar@grain-lang.org",
-      "url": "https://github.com/ospencer"
-    },
-    {
-      "name": "Philip Blair",
-      "email": "philip@grain-lang.org",
-      "url": "https://github.com/belph"
-    }
-  ],
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/grain-lang/grain/issues"
-  },
-  "homepage": "https://grain-lang.org",
-  "devDependencies": {
-    "del-cli": "^4.0.1"
-  },
-  "dependencies": {},
   "scripts": {
     "clean": "del-cli '**/*.wasm' '**/*.wat' '**/*.modsig'"
   },
+  "dependencies": {},
+  "devDependencies": {
+    "del-cli": "^4.0.1"
+  },
   "pkg": {
     "assets": "**/*.gr"
+  },
+  "keywords": [
+    "grain",
+    "stdlib",
+    "webassembly",
+    "wasm"
+  ],
+  "publishConfig": {
+    "access": "public"
   }
 }

@@ -2,41 +2,32 @@
   "name": "@grain/js-runner",
   "version": "0.4.0",
   "description": "The JavaScript runner for the Grain language.",
+  "license": "MIT",
+  "homepage": "https://grain-lang.org",
+  "funding": "https://github.com/sponsors/grain-lang",
+  "author": "Grain Core Team <team@grain-lang.org> (https://grain-lang.org)",
+  "contributors": [
+    "Oscar Spencer <oscar@grain-lang.org> (https://github.com/ospencer)",
+    "Philip Blair <philip@grain-lang.org> (https://github.com/peblair)",
+    "Blaine Bublitz <blaine@grain-lang.org> (https://github.com/phated)"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/grain-lang/grain.git",
+    "directory": "js-runner"
+  },
   "main": "dist/grain-runner.js",
   "browser": "dist/grain-runner-browser.js",
+  "files": [
+    "dist/"
+  ],
   "scripts": {
     "build": "webpack --config webpack.prod.js",
     "build:dev": "webpack --config webpack.dev.js",
     "watch": "webpack --config webpack.dev.js --watch",
     "format": "prettier --write .",
-    "check-format": "prettier --check .",
-    "test": "jest"
+    "check-format": "prettier --check ."
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/grain-lang/grain.git"
-  },
-  "keywords": [
-    "grain",
-    "runner"
-  ],
-  "contributors": [
-    {
-      "name": "Oscar Spencer",
-      "email": "oscar.spen@gmail.com",
-      "url": "https://github.com/ospencer"
-    },
-    {
-      "name": "Philip Blair",
-      "email": "philip@pblair.org",
-      "url": "https://github.com/belph"
-    }
-  ],
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/grain-lang/grain/issues"
-  },
-  "homepage": "https://grain-lang.org",
   "dependencies": {},
   "devDependencies": {
     "@babel/core": "^7.15.0",
@@ -58,5 +49,14 @@
     "webpack": "^5.51.1",
     "webpack-cli": "^4.8.0",
     "webpack-merge": "^5.8.0"
+  },
+  "keywords": [
+    "grain",
+    "runner",
+    "webassembly",
+    "wasm"
+  ],
+  "publishConfig": {
+    "access": "public"
   }
 }
