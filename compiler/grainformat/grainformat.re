@@ -153,6 +153,12 @@ let output_filename = {
   );
 };
 
+let format_in_place = {
+  let doc = "Format in place";
+  let docv = "";
+  Arg.(value & flag & info(["in-place"], ~docv, ~doc));
+};
+
 let input_filename = {
   let doc = "Grain source file to format";
   let docv = "FILE";
