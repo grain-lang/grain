@@ -41,4 +41,12 @@ describe("exports", ({test}) => {
   );
 
   assertSnapshot("let_rec_export", "export let rec foo = () => 5");
+  assertSnapshot(
+    "issue_918_annotated_func_export",
+    "export let foo: () -> Number = () => 5",
+  );
+  assertSnapshot(
+    "issue_918_annotated_func_export2",
+    "export let rec foo: () -> Number = () => 5",
+  );
 });
