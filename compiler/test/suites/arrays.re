@@ -6,6 +6,7 @@ describe("arrays", ({test}) => {
   let assertCompileError = makeCompileErrorRunner(test);
   let assertRun = makeRunner(test);
   let assertRunError = makeErrorRunner(test);
+  let assertParse = makeParseRunner(test);
 
   assertRun("array1", "print([> 1, 2, 3])", "[> 1, 2, 3]\n");
   assertRun("array2", "print([>])", "[> ]\n");
@@ -78,5 +79,28 @@ describe("arrays", ({test}) => {
     "invalid_empty_trailing",
     "[> ,]",
     "Error: Syntax error",
+  );
+  // parsing
+  Grain_parsing.(
+    Ast_helper.(
+      assertParse(
+        "issue_925_parse_array_set_newline",
+        "state[0] =
+           5",
+        {
+          statements: [
+            Top.expr(
+              Exp.array_set(
+                Exp.ident(Location.mknoloc(Identifier.IdentName("state"))),
+                Exp.constant(Const.number(PConstNumberInt("0"))),
+                Exp.constant(Const.number(PConstNumberInt("5"))),
+              ),
+            ),
+          ],
+          comments: [],
+          prog_loc: Location.dummy_loc,
+        },
+      )
+    )
   );
 });
