@@ -514,8 +514,6 @@ and resugar_list =
 
   let last_item_was_spread = ref(false);
 
-
-
   let items =
     List.map(
       i =>
@@ -531,7 +529,7 @@ and resugar_list =
               ~parent_loc,
               e,
             ),
-          )
+          );
         | Spread(e) =>
           last_item_was_spread := true;
           Doc.group(
@@ -545,7 +543,7 @@ and resugar_list =
                 e,
               ),
             ]),
-          )
+          );
         },
       processed_list,
     );
@@ -559,8 +557,11 @@ and resugar_list =
             Doc.softLine,
             Doc.join(Doc.concat([Doc.comma, Doc.line]), items),
           ]),
-          if (last_item_was_spread^) Doc.nil else
-             Doc.ifBreaks(Doc.comma, Doc.nil),
+          if (last_item_was_spread^) {
+            Doc.nil;
+          } else {
+            Doc.ifBreaks(Doc.comma, Doc.nil);
+          },
         ]),
       ),
       Doc.softLine,
@@ -1487,7 +1488,7 @@ and print_expression =
           Doc.text("="),
           Doc.indent(
             Doc.concat([
-              Doc.line,
+              Doc.space,
               print_expression(
                 ~parentIsArrow=false,
                 ~endChar=None,
