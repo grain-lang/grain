@@ -1,7 +1,7 @@
 /* grainc-flags --compilation-mode=runtime */
 
-export let _GRAIN_NUMBER_TAG_TYPE       = 0b0001n
-export let _GRAIN_CONST_TAG_TYPE        = 0b0110n
+export let _GRAIN_NUMBER_TAG_TYPE = 0b0001n
+export let _GRAIN_CONST_TAG_TYPE = 0b0110n
 export let _GRAIN_GENERIC_HEAP_TAG_TYPE = 0b0000n
 
 export let _GRAIN_NUMBER_TAG_MASK = 0b0001n

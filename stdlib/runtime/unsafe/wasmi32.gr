@@ -4,11 +4,29 @@
 export primitive load : (WasmI32, WasmI32) -> WasmI32 = "@wasm.load_int32"
 export primitive load8S : (WasmI32, WasmI32) -> WasmI32 = "@wasm.load_8_s_int32"
 export primitive load8U : (WasmI32, WasmI32) -> WasmI32 = "@wasm.load_8_u_int32"
-export primitive load16S : (WasmI32, WasmI32) -> WasmI32 = "@wasm.load_16_s_int32"
-export primitive load16U : (WasmI32, WasmI32) -> WasmI32 = "@wasm.load_16_u_int32"
-export primitive store : (WasmI32, WasmI32, WasmI32) -> Void = "@wasm.store_int32"
-export primitive store8 : (WasmI32, WasmI32, WasmI32) -> Void = "@wasm.store_8_int32"
-export primitive store16 : (WasmI32, WasmI32, WasmI32) -> Void = "@wasm.store_16_int32"
+export primitive load16S : (
+  WasmI32,
+  WasmI32
+) -> WasmI32 = "@wasm.load_16_s_int32"
+export primitive load16U : (
+  WasmI32,
+  WasmI32
+) -> WasmI32 = "@wasm.load_16_u_int32"
+export primitive store : (
+  WasmI32,
+  WasmI32,
+  WasmI32
+) -> Void = "@wasm.store_int32"
+export primitive store8 : (
+  WasmI32,
+  WasmI32,
+  WasmI32
+) -> Void = "@wasm.store_8_int32"
+export primitive store16 : (
+  WasmI32,
+  WasmI32,
+  WasmI32
+) -> Void = "@wasm.store_16_int32"
 
 // WebAssembly Unary Instructions
 export primitive clz : WasmI32 -> WasmI32 = "@wasm.clz_int32"

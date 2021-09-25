@@ -1,89 +1,89 @@
-export let isOk = (v) => {
-    match (v) {
-        Ok(_)  => true,
-        _      => false
-    }
+export let isOk = v => {
+  match (v) {
+    Ok(_) => true,
+    _ => false,
+  }
 }
 
-export let isErr = (v) => !isOk(v)
+export let isErr = v => !(isOk(v))
 
-export let toOption = (v) => {
-    match (v) {
-        Ok(x)  => Some(x),
-        _      => None
-    }
+export let toOption = v => {
+  match (v) {
+    Ok(x) => Some(x),
+    _ => None,
+  }
 }
 
 export let flatMap = (fn, v) => {
-    match (v) {
-        Ok(x)  => fn(x),
-        Err(e) => Err(e)
-    }
+  match (v) {
+    Ok(x) => fn(x),
+    Err(e) => Err(e),
+  }
 }
 
 export let flatMapErr = (fn, v) => {
-    match (v) {
-        Err(e) => fn(e),
-        Ok(x)  => Ok(x)
-    }
+  match (v) {
+    Err(e) => fn(e),
+    Ok(x) => Ok(x),
+  }
 }
 
 export let map = (fn, v) => {
-    match (v) {
-        Ok(x)  => Ok(fn(x)),
-        Err(e) => Err(e)
-    }
+  match (v) {
+    Ok(x) => Ok(fn(x)),
+    Err(e) => Err(e),
+  }
 }
 
 export let mapErr = (fn, v) => {
-    match (v) {
-        Err(e) => Err(fn(e)),
-        Ok(x)  => Ok(x)
-    }
+  match (v) {
+    Err(e) => Err(fn(e)),
+    Ok(x) => Ok(x),
+  }
 }
 
 export let mapWithDefault = (fn, def, v) => {
-    match (v) {
-        Ok(a) => fn(a),
-        _     => def
-    }
+  match (v) {
+    Ok(a) => fn(a),
+    _ => def,
+  }
 }
 
 export let mapWithDefaultFn = (fnOk, fnErr, v) => {
-    match (v) {
-        Ok(a)  => fnOk(a),
-        Err(a) => fnErr(a)
-    }
+  match (v) {
+    Ok(a) => fnOk(a),
+    Err(a) => fnErr(a),
+  }
 }
 
 export let or = (r1, r2) => {
-    match (r1) {
-        Ok(x) => r1,
-        _     => r2
-    }
+  match (r1) {
+    Ok(x) => r1,
+    _ => r2,
+  }
 }
 
 export let and = (r1, r2) => {
-    match (r1) {
-        Ok(_) => r2,
-        Err(_) => r1
-    }
+  match (r1) {
+    Ok(_) => r2,
+    Err(_) => r1,
+  }
 }
 
 export let peek = (fnOk, fnErr, r) => {
-    match (r) {
-        Ok(x) => ignore(fnOk(x)),
-        Err(x) => ignore(fnErr(x))
-    }
-    r
+  match (r) {
+    Ok(x) => ignore(fnOk(x)),
+    Err(x) => ignore(fnErr(x)),
+  }
+  r
 }
 
 export let peekOk = (fn, r) => {
-    peek(fn, identity, r)
+  peek(fn, identity, r)
 }
 
 export let peekErr = (fn, r) => {
-    peek(identity, fn, r)
+  peek(identity, fn, r)
 }
 
 /**
@@ -99,10 +99,10 @@ export let peekErr = (fn, r) => {
  * @since v0.4.0
  */
 export let expect = (msg, result) => {
-    match (result) {
-        Ok(x) => x,
-        Err(err) => fail msg ++ ": " ++ toString(err)
-    }
+  match (result) {
+    Ok(x) => x,
+    Err(err) => fail msg ++ ": " ++ toString(err),
+  }
 }
 
 /**
@@ -116,6 +116,6 @@ export let expect = (msg, result) => {
  *
  * @since v0.4.0
  */
-export let unwrap = (result) => {
-    expect("Could not unwrap Err value", result)
+export let unwrap = result => {
+  expect("Could not unwrap Err value", result)
 }
