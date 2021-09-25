@@ -512,11 +512,17 @@ and resugar_list =
     ) => {
   let processed_list = resugar_list_inner(expressions, parent_loc);
 
+  let last_item_was_spread = ref(false);
+
+
+
   let items =
     List.map(
       i =>
         switch (i) {
         | Regular(e) =>
+          last_item_was_spread := false;
+
           Doc.group(
             print_expression(
               ~parentIsArrow=false,
@@ -527,6 +533,7 @@ and resugar_list =
             ),
           )
         | Spread(e) =>
+          last_item_was_spread := true;
           Doc.group(
             Doc.concat([
               Doc.text("..."),
@@ -552,7 +559,8 @@ and resugar_list =
             Doc.softLine,
             Doc.join(Doc.concat([Doc.comma, Doc.line]), items),
           ]),
-          Doc.ifBreaks(Doc.comma, Doc.nil),
+          if (last_item_was_spread^) Doc.nil else
+             Doc.ifBreaks(Doc.comma, Doc.nil),
         ]),
       ),
       Doc.softLine,
@@ -847,7 +855,14 @@ and print_constant = (c: Parsetree.constant) => {
     | PConstNumber(PConstNumberRational(n, d)) =>
       Printf.sprintf("%s/%s", n, d)
     | PConstBytes(b) => Printf.sprintf("%s", b)
-    | PConstChar(c) => Printf.sprintf("'%s'", String.escaped(c))
+    | PConstChar(c) =>
+      // String.escaped doesn't escape the single quote but we need it to
+      if (c == "'") {
+        Printf.sprintf("'\\''");
+      } else {
+        Printf.sprintf("'%s'", String.escaped(c));
+      }
+
     | PConstFloat64(f) => Printf.sprintf("%sd", f)
     | PConstFloat32(f) => Printf.sprintf("%sf", f)
     | PConstInt32(i) => Printf.sprintf("%sl", i)
