@@ -857,7 +857,7 @@ and print_constant = (c: Parsetree.constant) => {
       Printf.sprintf("%s/%s", n, d)
     | PConstBytes(b) => Printf.sprintf("%s", b)
     | PConstChar(c) =>
-      // String.escaped doesn't escape the single quote but we need it to
+      // Special case as a single quote isn't escaped in a string
       if (c == "'") {
         Printf.sprintf("'\\''");
       } else {
