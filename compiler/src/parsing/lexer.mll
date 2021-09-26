@@ -74,9 +74,9 @@
     let loc = { start_loc with Location.loc_end = end_loc.Location.loc_end } in
     comments := comment_type s loc :: !comments
 
-  let wrap_string_lexer read_string lexbuf =
+  let wrap_strlike_lexer read_strlike lexbuf =
     let start_loc = lexbuf.lex_start_p  in
-    let token = read_string lexbuf in
+    let token = read_strlike lexbuf in
     let () = lexbuf.lex_start_p <- start_loc in
     token
 
@@ -204,8 +204,8 @@ rule token = parse
   | "||" { PIPEPIPE }
   | "!" { NOT }
   | "@" { AT }
-  | '"'   { wrap_string_lexer (read_str (Buffer.create 16)) lexbuf }
-  | '\'' { read_char (Buffer.create 4) lexbuf }
+  | '"'   { wrap_strlike_lexer (read_str (Buffer.create 16)) lexbuf }
+  | '\'' { wrap_strlike_lexer (read_char (Buffer.create 4)) lexbuf }
   | "_" { UNDERSCORE }
   | ident as x { ID x }
   | ident_cap as x { TYPEID x }
