@@ -3,44 +3,48 @@ import List from "list"
 record Queue<a> { forwards: List<a>, backwards: List<a> }
 
 export let make = () => {
-    { forwards: [], backwards: [] }
+  { forwards: [], backwards: [] }
 }
 
-export let isEmpty = (queue) => {
-    match (queue) {
-        { forwards: [], backwards: [] } => true,
-        _ => false
-    }
+export let isEmpty = queue => {
+  match (queue) {
+    { forwards: [], backwards: [] } => true,
+    _ => false,
+  }
 }
 
-export let peek = (queue) => {
-    match (queue) {
-        { forwards: [], backwards: [] } => None,
-        { forwards, backwards } => List.head(forwards)
-    }
+export let peek = queue => {
+  match (queue) {
+    { forwards: [], backwards: [] } => None,
+    { forwards, backwards } => List.head(forwards),
+  }
 }
 
 export let push = (value, queue) => {
-    match (queue) {
-        { forwards: [], backwards: [] } => { forwards: [value], backwards: [] },
-        { forwards, backwards } => { forwards, backwards: [value, ...backwards] }
-    }
+  match (queue) {
+    { forwards: [], backwards: [] } => { forwards: [value], backwards: [] },
+    { forwards, backwards } => { forwards, backwards: [value, ...backwards] },
+  }
 }
 
-export let pop = (queue) => {
-    match (queue) {
-        { forwards: [], backwards: [] } => queue,
-        { forwards: [head], backwards: [] } => { forwards: [], backwards: [] },
-        { forwards: [head], backwards } => { forwards: List.reverse(backwards), backwards: [] },
-        { forwards: [head, ...ftail], backwards } => { forwards: ftail, backwards }
-    }
+export let pop = queue => {
+  match (queue) {
+    { forwards: [], backwards: [] } => queue,
+    { forwards: [head], backwards: [] } => { forwards: [], backwards: [] },
+    { forwards: [head], backwards } =>
+      {
+        forwards: List.reverse(backwards),
+        backwards: [],
+      },
+    { forwards: [head, ...ftail], backwards } => { forwards: ftail, backwards },
+  }
 }
 
-export let size = (queue) => {
-    match (queue) {
-        { forwards: [], backwards: [] } => 0,
-        { forwards, backwards: [] } => List.length(forwards),
-        { forwards: [], backwards } => List.length(backwards),
-        { forwards, backwards } => List.length(forwards) + List.length(backwards),
-    }
+export let size = queue => {
+  match (queue) {
+    { forwards: [], backwards: [] } => 0,
+    { forwards, backwards: [] } => List.length(forwards),
+    { forwards: [], backwards } => List.length(backwards),
+    { forwards, backwards } => List.length(forwards) + List.length(backwards),
+  }
 }
