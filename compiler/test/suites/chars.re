@@ -1,10 +1,37 @@
 open Grain_tests.TestFramework;
 open Grain_tests.Runner;
+open Grain_parsing.Location;
+open Grain_middle_end.Anf_helper;
 
 describe("chars", ({test}) => {
   let assertSnapshot = makeSnapshotRunner(test);
   let assertCompileError = makeCompileErrorRunner(test);
   let assertRun = makeRunner(test);
+  let assertParseWithLocs = makeParseRunner(~keep_locs=true, test);
+  open Grain_parsing;
+  open Ast_helper;
+  let mk_loc =
+      (
+        file,
+        (start_line, start_col, start_bol),
+        (end_line, end_col, end_bol),
+      ) => {
+    loc_start: {
+      pos_fname: file,
+      pos_lnum: start_line,
+      pos_bol: start_bol,
+      pos_cnum: start_col,
+    },
+    loc_end: {
+      pos_fname: file,
+      pos_lnum: end_line,
+      pos_bol: end_bol,
+      pos_cnum: end_col,
+    },
+    loc_ghost: false,
+  };
+  let char = (~loc=?, s) =>
+    Top.expr(~loc?) @@ Exp.constant(~loc?, Const.char(s));
 
   assertRun("char1", "print('A')", "A\n");
   assertSnapshot("char2", "'\\x41'");
@@ -55,5 +82,40 @@ describe("chars", ({test}) => {
     "unicode_err3",
     "let x = '\\u{110000}'",
     "Illegal unicode code point",
+  );
+  // parse locations
+  assertParseWithLocs(
+    "char_loc_simple",
+    "'a'",
+    {
+      statements: [
+        char(~loc=mk_loc("char_loc_simple", (1, 0, 0), (1, 3, 0)), "a"),
+      ],
+      comments: [],
+      prog_loc: mk_loc("char_loc_simple", (1, 0, 0), (1, 3, 0)),
+    },
+  );
+  assertParseWithLocs(
+    "char_loc_code",
+    "'\\u{1F3F4}'",
+    {
+      statements: [
+        char(~loc=mk_loc("char_loc_code", (1, 0, 0), (1, 11, 0)), "🏴"),
+      ],
+      comments: [],
+      prog_loc: mk_loc("char_loc_code", (1, 0, 0), (1, 11, 0)),
+    },
+  );
+  // note that the char length is calculated as having 4 bytes, not 1 codepoint
+  assertParseWithLocs(
+    "char_loc_emoji",
+    "'💯'",
+    {
+      statements: [
+        char(~loc=mk_loc("char_loc_emoji", (1, 0, 0), (1, 6, 0)), "💯"),
+      ],
+      comments: [],
+      prog_loc: mk_loc("char_loc_emoji", (1, 0, 0), (1, 6, 0)),
+    },
   );
 });
