@@ -52,6 +52,33 @@ type sugared_pattern_item =
   | RegularPattern(Grain_parsing.Parsetree.pattern)
   | SpreadPattern(Grain_parsing.Parsetree.pattern);
 
+let get_original_code_snippet =
+    (location: Grain_parsing.Location.t, source: array(string)) => {
+  let (_, startline, startc, _) =
+    Locations.get_raw_pos_info(location.loc_start);
+  let (_, endline, endc, _) = Locations.get_raw_pos_info(location.loc_end);
+
+  if (Array.length(source) > endline - 1) {
+    if (startline == endline) {
+      String.sub(source[startline - 1], startc, endc - startc);
+    } else {
+      let text = ref("");
+      for (line in startline - 1 to endline - 1) {
+        if (line + 1 == startline) {
+          text := text^ ++ Str.string_after(source[line], startc) ++ "\n";
+        } else if (line + 1 == endline) {
+          text := text^ ++ String.sub(source[line], 0, endc);
+        } else {
+          text := text^ ++ source[line] ++ "\n";
+        };
+      };
+      text^;
+    };
+  } else {
+    raise(Error(FormatterError("Requested beyond end of original source")));
+  };
+};
+
 let get_original_code =
     (location: Grain_parsing.Location.t, source: array(string)) => {
   let (_, startline, startc, _) =
@@ -691,7 +718,10 @@ and print_pattern =
   let printed_pattern: (Doc.t, bool) =
     switch (pat.ppat_desc) {
     | PPatAny => (Doc.text("_"), false)
-    | PPatConstant(c) => (print_constant(c), false)
+    | PPatConstant(c) => (
+        print_constant(~original_source, ~loc=pat.ppat_loc, c),
+        false,
+      )
     | PPatVar({txt, _}) =>
       if (infixop(txt) || prefixop(txt)) {
         (Doc.concat([Doc.lparen, Doc.text(txt), Doc.rparen]), false);
@@ -848,35 +878,16 @@ and print_pattern =
     clean_pattern;
   };
 }
-and print_constant = (c: Parsetree.constant) => {
-  let print_c =
-    switch (c) {
-    | PConstNumber(PConstNumberInt(i)) => Printf.sprintf("%s", i)
-    | PConstNumber(PConstNumberFloat(f)) => Printf.sprintf("%s", f)
-    | PConstNumber(PConstNumberRational(n, d)) =>
-      Printf.sprintf("%s/%s", n, d)
-    | PConstBytes(b) => Printf.sprintf("%s", b)
-    | PConstChar(c) =>
-      if (String.length(c) > 0) {
-        Printf.sprintf("\'%s\'", Char.escaped(c.[0]));
-      } else {
-        "";
-      }
-    | PConstFloat64(f) => Printf.sprintf("%sd", f)
-    | PConstFloat32(f) => Printf.sprintf("%sf", f)
-    | PConstInt32(i) => Printf.sprintf("%sl", i)
-    | PConstInt64(i) => Printf.sprintf("%sL", i)
-    | PConstWasmI32(i) => Printf.sprintf("%sn", i)
-    | PConstWasmI64(i) => Printf.sprintf("%sN", i)
-    | PConstWasmF32(f) => Printf.sprintf("%sw", f)
-    | PConstWasmF64(f) => Printf.sprintf("%sW", f)
-    | PConstBool(true) => "true"
-    | PConstBool(false) => "false"
-    | PConstVoid => "void"
-    | PConstString(s) => Printf.sprintf("\"%s\"", String.escaped(s))
-    };
-  Doc.text(print_c);
+
+and print_constant =
+    (
+      ~original_source: array(string),
+      ~loc: Grain_parsing__Location.t,
+      c: Parsetree.constant,
+    ) => {
+  Doc.text(get_original_code_snippet(loc, original_source));
 }
+
 and print_ident = (ident: Identifier.t) => {
   switch (ident) {
   | IdentName(name) =>
@@ -1380,7 +1391,8 @@ and print_expression =
 
   let expression_doc =
     switch (expr.pexp_desc) {
-    | PExpConstant(x) => print_constant(x)
+    | PExpConstant(x) =>
+      print_constant(~original_source, ~loc=expr.pexp_loc, x)
     | PExpId({txt: id}) => print_ident(id)
     | PExpLet(rec_flag, mut_flag, vbs) =>
       print_value_bind(
