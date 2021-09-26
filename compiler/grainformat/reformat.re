@@ -885,7 +885,11 @@ and print_constant =
       ~loc: Grain_parsing__Location.t,
       c: Parsetree.constant,
     ) => {
-  Doc.text(get_original_code_snippet(loc, original_source));
+  // we get the original code here to ensure it's well formatted and retains the
+  // approach of the original code, e.g. char format, number format
+  Doc.text(
+    get_original_code_snippet(loc, original_source),
+  );
 }
 
 and print_ident = (ident: Identifier.t) => {
