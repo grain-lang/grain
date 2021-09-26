@@ -95,6 +95,17 @@ describe("chars", ({test}) => {
       prog_loc: mk_loc("char_loc_simple", (1, 0, 0), (1, 3, 0)),
     },
   );
+  assertParseWithLocs(
+    "char_loc_code",
+    "'\\u{1F3F4}'",
+    {
+      statements: [
+        char(~loc=mk_loc("char_loc_code", (1, 0, 0), (1, 11, 0)), "🏴"),
+      ],
+      comments: [],
+      prog_loc: mk_loc("char_loc_code", (1, 0, 0), (1, 11, 0)),
+    },
+  );
   // note that the char length is calculated as having 4 bytes, not 1 codepoint
   assertParseWithLocs(
     "char_loc_emoji",
