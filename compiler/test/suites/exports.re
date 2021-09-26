@@ -4,6 +4,37 @@ open Grain_tests.Runner;
 describe("exports", ({test}) => {
   let assertSnapshot = makeSnapshotRunner(test);
   let assertCompileError = makeCompileErrorRunner(test);
+  let assertHasExport = (name, prog, export) => {
+    test(
+      name,
+      ({expect}) => {
+        let state =
+          compile(
+            ~hook=Grain.Compile.stop_after_object_file_emitted,
+            name,
+            prog,
+          );
+        ();
+        switch (state.Grain.Compile.cstate_desc) {
+        | ObjectFileEmitted({asm}) =>
+          let num_exports = Binaryen.Export.get_num_exports(asm);
+          let exports =
+            List.init(
+              num_exports,
+              i => {
+                let export = Binaryen.Export.get_export_by_index(asm, i);
+                (
+                  Binaryen.Export.get_name(export),
+                  Binaryen.Export.export_get_kind(export),
+                );
+              },
+            );
+          expect.list(exports).toContainEqual(export);
+        | _ => assert(false)
+        };
+      },
+    );
+  };
 
   assertCompileError(
     "export1",
@@ -41,4 +72,14 @@ describe("exports", ({test}) => {
   );
 
   assertSnapshot("let_rec_export", "export let rec foo = () => 5");
+  assertHasExport(
+    "issue_918_annotated_func_export",
+    "export let foo: () -> Number = () => 5",
+    ("foo", Binaryen.Export.external_function),
+  );
+  assertHasExport(
+    "issue_918_annotated_func_export2",
+    "export let rec foo: () -> Number = () => 5",
+    ("foo", Binaryen.Export.external_function),
+  );
 });
