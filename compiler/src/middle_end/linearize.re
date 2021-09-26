@@ -488,7 +488,9 @@ let rec transl_imm =
     let names =
       List.map(
         fun
-        | {pat_desc: TPatVar(id, _)} => id
+        | {
+            pat_desc: TPatVar(id, _) | TPatAlias({pat_desc: TPatAny}, id, _),
+          } => id
         | _ => failwith("Non-name not allowed on LHS of let rec."),
         binds,
       );
@@ -959,7 +961,9 @@ and transl_comp_expression =
     let names =
       List.map(
         fun
-        | {pat_desc: TPatVar(id, _)} => id
+        | {
+            pat_desc: TPatVar(id, _) | TPatAlias({pat_desc: TPatAny}, id, _),
+          } => id
         | _ => failwith("Non-name not allowed on LHS of let rec."),
         binds,
       );
@@ -1240,7 +1244,8 @@ let rec transl_anf_statement =
     let name =
       if (exported) {
         switch (vb_pat.pat_desc) {
-        | TPatVar(bind, _) => Some(Ident.name(bind))
+        | TPatVar(bind, _)
+        | TPatAlias(_, bind, _) => Some(Ident.name(bind))
         | _ => None
         };
       } else {
@@ -1331,7 +1336,8 @@ let rec transl_anf_statement =
             let name =
               if (exported) {
                 switch (vb_pat.pat_desc) {
-                | TPatVar(bind, _) => Some(Ident.name(bind))
+                | TPatVar(bind, _)
+                | TPatAlias(_, bind, _) => Some(Ident.name(bind))
                 | _ => None
                 };
               } else {
@@ -1351,7 +1357,9 @@ let rec transl_anf_statement =
     let names =
       List.map(
         fun
-        | {pat_desc: TPatVar(id, _)} => id
+        | {
+            pat_desc: TPatVar(id, _) | TPatAlias({pat_desc: TPatAny}, id, _),
+          } => id
         | _ => failwith("Non-name not allowed on LHS of let rec."),
         binds,
       );

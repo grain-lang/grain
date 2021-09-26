@@ -37,3 +37,19 @@ assert Char.code(Char.pred(Char.fromCode(0xE000))) == 0xD7FF
 // toString
 assert Char.toString('f') == "f"
 assert Char.toString('💯') == "💯"
+
+
+// issue #927
+let chars = [> '\u{1F3F4}', '\u{E0067}' ]
+let mut charPosition = 0
+let len = 2
+let mut done = false
+
+while (!done) {
+	if (charPosition >= len) {
+		break
+	}
+	
+	Char.code(chars[charPosition])
+	charPosition = charPosition + 1
+}
