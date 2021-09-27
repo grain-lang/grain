@@ -26,7 +26,7 @@ let isValid = (n) => {
 // @param char: Char - the input character
 // @returns Number
 @disableGC
-let code = (c: Char) => {
+let rec code = (c: Char) => {
   // Algorithm from https://encoding.spec.whatwg.org/#utf-8-decoder
 
   let c = WasmI32.fromGrain(c)
@@ -87,6 +87,9 @@ let code = (c: Char) => {
       break
     }
   }
+
+  Memory.decRef(c)
+  Memory.decRef(WasmI32.fromGrain(code))
   tagSimpleNumber(result)
 }
 
@@ -94,7 +97,7 @@ let code = (c: Char) => {
 // @param codePoint: Number - the Unicode code point
 // @returns Char
 @disableGC
-let fromCode = (code: Number) => {
+let rec fromCode = (code: Number) => {
   // Algorithm from https://encoding.spec.whatwg.org/#utf-8-encoder
 
   let (+) = WasmI32.add
@@ -114,7 +117,7 @@ let fromCode = (code: Number) => {
   }
 
   let code = code >>> 1n
-  if (code < 0x80n) {
+  let result = if (code < 0x80n) {
     let char = allocateChar()
     WasmI32.store8(char, code, 4n)
     WasmI32.toGrain(char): Char
@@ -144,6 +147,11 @@ let fromCode = (code: Number) => {
 
     WasmI32.toGrain(char): Char
   }
+
+  // We've asserted that the original `code` was a stack allocated number so
+  // no need to decRef it
+  Memory.decRef(WasmI32.fromGrain(fromCode))
+  result
 }
 
 // Returns the next valid Unicode character by code point. Fails if the input character is U+10FFFF.
