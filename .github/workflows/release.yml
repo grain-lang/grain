@@ -112,7 +112,7 @@ jobs:
           workflow: Grain Release
           token: ${{ secrets.WORKFLOW_TOKEN }}
           ref: master
-          repo: phated/grain-lang.org
+          repo: grain-lang/grain-lang.org
           tag_input: ${{ needs.release-please.outputs.tag_name }}
 
   dispatch-homebrew:
@@ -126,5 +126,5 @@ jobs:
           workflow: Grain Release
           token: ${{ secrets.WORKFLOW_TOKEN }}
           ref: main
-          repo: phated/homebrew-tap
+          repo: grain-lang/homebrew-tap
           tag_input: ${{ needs.release-please.outputs.tag_name }}
