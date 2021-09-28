@@ -47,7 +47,7 @@ let mut _RUNTIME_TYPE_METADATA_PTR = 0x01n;
 @disableGC
 let initPtr = () => {
   // hack to avoid incRef on this pointer
-  _RUNTIME_TYPE_METADATA_PTR = 0x408n
+  _RUNTIME_TYPE_METADATA_PTR = 0x808n
 }
 initPtr();
 

@@ -350,12 +350,14 @@ let lookup_ext_func = (env, modname, itemname) =>
 /** Static runtime values */
 
 // Static pointer to the runtime heap
-// Leaves low 1000 memory unused for Binaryen optimizations
-let runtime_heap_ptr = 0x400;
+// Leaves low 1000 memory unused for Binaryen optimizations,
+// and 0x400-0x800 is reserved for WASI polyfills (which cannot
+// allocate memory)
+let runtime_heap_ptr = 0x800;
 // Start pointer for the runtime heap
-let runtime_heap_start = 0x410;
+let runtime_heap_start = 0x810;
 // Static pointer to runtime type information
-let runtime_type_metadata_ptr = 0x408;
+let runtime_type_metadata_ptr = 0x808;
 
 let get_imported_name = (mod_, name) =>
   Printf.sprintf(
