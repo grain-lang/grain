@@ -221,11 +221,7 @@ let escape = (ptr, isString) => {
   let _SEQ_DQUOTE = 0x22n
   let _SEQ_SQUOTE = 0x27n
 
-  let _SEQ_QUOTE = if (isString) {
-    _SEQ_DQUOTE
-  } else {
-    _SEQ_SQUOTE
-  }
+  let _SEQ_QUOTE = if (isString) _SEQ_DQUOTE else _SEQ_SQUOTE
 
   let size = if (isString) {
     WasmI32.load(ptr, 4n)
@@ -244,11 +240,7 @@ let escape = (ptr, isString) => {
     }
   }
 
-  let startOffset = if (isString) {
-    8n
-  } else {
-    4n
-  }
+  let startOffset = if (isString) 8n else 4n
   let stringOffset = 8n
 
   let mut newSize = 2n // extra space for quote characters

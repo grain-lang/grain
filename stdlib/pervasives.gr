@@ -90,11 +90,11 @@ export (++)
 
 // Checks the given items for structural equality.
 export (==)
-let (!=): (a, a) -> Bool = (x, y) => !(x == y)
+let (!=): (a, a) -> Bool = (x, y) => !x == y
 // Checks the given items for physical equality.
 primitive (is) : (a, a) -> Bool = "@is"
 // The opposite of is operator
-let (isnt): (a, a) -> Bool = (x, y) => !(x is y)
+let (isnt): (a, a) -> Bool = (x, y) => !x is y
 
 export enum List<a> { [], [...](a, List<a>) }
 

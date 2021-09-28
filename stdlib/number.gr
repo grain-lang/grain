@@ -75,7 +75,7 @@ export let rec sqrt = (x: Number) => {
   let xval = coerceNumberToWasmF64(x)
   let x = WasmI32.fromGrain(x)
   let sqrtd = WasmF64.sqrt(xval)
-  let ret = if (!(isFloat(x)) && WasmF64.eq(sqrtd, WasmF64.trunc(sqrtd))) {
+  let ret = if (!isFloat(x) && WasmF64.eq(sqrtd, WasmF64.trunc(sqrtd))) {
     WasmI32.toGrain(reducedInteger(WasmI64.truncF64S(sqrtd))): (Number)
   } else {
     WasmI32.toGrain(newFloat64(sqrtd)): (Number)
@@ -94,12 +94,7 @@ export let rec sqrt = (x: Number) => {
  *
  * @since v0.4.0
  */
-export let min = (x: Number, y: Number) =>
-  if (y > x) {
-    x
-  } else {
-    y
-  }
+export let min = (x: Number, y: Number) => if (y > x) x else y
 
 /**
  * Returns the larger of its operands.
@@ -110,12 +105,7 @@ export let min = (x: Number, y: Number) =>
  *
  * @since v0.4.0
  */
-export let max = (x: Number, y: Number) =>
-  if (x > y) {
-    x
-  } else {
-    y
-  }
+export let max = (x: Number, y: Number) => if (x > y) x else y
 
 /**
  * Rounds its operand up to the next largest integer.
@@ -197,12 +187,7 @@ export let rec round = (x: Number) => {
  *
  * @since v0.4.0
  */
-export let abs = (x: Number) =>
-  if (0 > x) {
-    x * -1
-  } else {
-    x
-  }
+export let abs = (x: Number) => if (0 > x) x * -1 else x
 
 /**
  * Returns the negation of its operand.
@@ -212,12 +197,7 @@ export let abs = (x: Number) =>
  *
  * @since v0.4.0
  */
-export let neg = (x: Number) =>
-  if (x > 0) {
-    x * -1
-  } else {
-    x
-  }
+export let neg = (x: Number) => if (x > 0) x * -1 else x
 
 /**
  * Checks if a number is finite.

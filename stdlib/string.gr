@@ -768,21 +768,13 @@ let getCodePoint = (ptr: WasmI32) => {
         bytesNeeded = 1n
         codePoint = byte & 0x1Fn
       } else if (byte >= 0xE0n && byte <= 0xEFn) {
-        if (byte == 0xE0n) {
-          lowerBoundary = 0xA0n
-        }
-        if (byte == 0xEDn) {
-          upperBoundary = 0x9Fn
-        }
+        if (byte == 0xE0n) lowerBoundary = 0xA0n
+        if (byte == 0xEDn) upperBoundary = 0x9Fn
         bytesNeeded = 2n
         codePoint = byte & 0xFn
       } else if (byte >= 0xF0n && byte <= 0xF4n) {
-        if (byte == 0xF0n) {
-          lowerBoundary = 0x90n
-        }
-        if (byte == 0xF4n) {
-          upperBoundary = 0x8Fn
-        }
+        if (byte == 0xF0n) lowerBoundary = 0x90n
+        if (byte == 0xF4n) upperBoundary = 0x8Fn
         bytesNeeded = 3n
         codePoint = byte & 0x7n
       } else {
@@ -791,7 +783,7 @@ let getCodePoint = (ptr: WasmI32) => {
       continue
     }
     Memory.incRef(WasmI32.fromGrain((!)))
-    if (!(lowerBoundary <= byte && byte <= upperBoundary)) {
+    if (!lowerBoundary <= byte && byte <= upperBoundary) {
       throw MalformedUnicode
     }
     lowerBoundary = 0x80n
@@ -1123,7 +1115,7 @@ let rec encodeHelp = (s: String, encoding: Encoding, includeBom: Bool) => {
       UTF32_LE => 4,
       UTF32_BE => 4,
     }
-  } else {
+  } else  {
     0
   })
   let (>>>) = WasmI32.shrU
@@ -1477,11 +1469,7 @@ let rec decodeRangeHelp =
   let size = grainToWasmNumber(size, _SIZE_NAME)
   let hasBom = bytesHaveBom(bytes, encoding, start)
   let stringSize = decodedLength(bytes, encoding, start, size)
-  let stringSize = if (skipBom && hasBom) {
-    stringSize - 3n
-  } else {
-    stringSize
-  }
+  let stringSize = if (skipBom && hasBom) stringSize - 3n else stringSize
   let str = allocateString(stringSize)
   let mut bytesPtr = WasmI32.fromGrain(bytes)
   let bytesSize = {

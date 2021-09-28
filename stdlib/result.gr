@@ -5,7 +5,7 @@ export let isOk = v => {
   }
 }
 
-export let isErr = v => !(isOk(v))
+export let isErr = v => !isOk(v)
 
 export let toOption = v => {
   match (v) {

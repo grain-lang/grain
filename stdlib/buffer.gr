@@ -47,10 +47,7 @@ let getSize = ptr => WasmI32.load(ptr, _SIZE_OFFSET)
 let autogrow = (len, buf) => {
   while (buf.len + len > Bytes.length(buf.data)) {
     let mut n = Bytes.length(buf.data)
-    if (n == 0) {
-      n = 4
-    }
-    // Make sure bytes of 0 length grow too
+    if (n == 0) n = 4 // Make sure bytes of 0 length grow too
     buf.data = Bytes.resize(0, n, buf.data)
   }
 }
@@ -91,12 +88,8 @@ let rec appendBytes = (srcOff, dstOff, len, src, dst) => {
  * Throws if a given index + len is not within the bounds of a buffer's current length
  */
 let checkIsIndexInBounds = (i, len, buf) => {
-  if (i < 0) {
-    throw Exception.IndexOutOfBounds
-  }
-  if (i >= buf.len || i + len > buf.len) {
-    throw Exception.IndexOutOfBounds
-  }
+  if (i < 0) throw Exception.IndexOutOfBounds
+  if (i >= buf.len || i + len > buf.len) throw Exception.IndexOutOfBounds
 }
 
 let addInt8help = (value, buffer) => {
@@ -136,9 +129,9 @@ let addInt32help = (value, buffer) => {
  * @since v0.4.0
  */
 export let make = initialSize => {
-  if (initialSize < 0) {
-    throw Exception.InvalidArgument("Buffers size must be >= 0")
-  }
+  if (initialSize < 0) throw Exception.InvalidArgument(
+    "Buffers size must be >= 0",
+  )
   { len: 0, initialSize, data: Bytes.make(initialSize) }
 }
 
@@ -195,9 +188,7 @@ export let rec truncate = (length, buffer) => {
   Memory.incRef(WasmI32.fromGrain((<)))
   Memory.incRef(WasmI32.fromGrain((||)))
   Memory.incRef(WasmI32.fromGrain((>)))
-  if (length < 0 || length > buffer.len) {
-    throw Exception.IndexOutOfBounds
-  }
+  if (length < 0 || length > buffer.len) throw Exception.IndexOutOfBounds
 
   let (+) = WasmI32.add
   let src = WasmI32.fromGrain(buffer.data)

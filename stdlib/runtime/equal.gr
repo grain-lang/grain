@@ -45,10 +45,10 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
 
           let bytes = xarity * 4n
           for (let mut i = 0n; i < bytes; i += 4n) {
-            if (!(equalHelp(
+            if (!equalHelp(
               WasmI32.load(xptr + i, 20n),
               WasmI32.load(yptr + i, 20n),
-            ))) {
+            )) {
               result = false
               break
             }
@@ -75,10 +75,10 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
 
         let bytes = xlength * 4n
         for (let mut i = 0n; i < bytes; i += 4n) {
-          if (!(equalHelp(
+          if (!equalHelp(
             WasmI32.load(xptr + i, 16n),
             WasmI32.load(yptr + i, 16n),
-          ))) {
+          )) {
             result = false
             break
           }
@@ -106,10 +106,10 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
         let mut result = true
         let bytes = xlength * 4n
         for (let mut i = 0n; i < bytes; i += 4n) {
-          if (!(equalHelp(
+          if (!equalHelp(
             WasmI32.load(xptr + i, 8n),
             WasmI32.load(yptr + i, 8n),
-          ))) {
+          )) {
             result = false
             break
           }
@@ -185,10 +185,10 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
         let mut result = true
         let bytes = xsize * 4n
         for (let mut i = 0n; i < bytes; i += 4n) {
-          if (!(equalHelp(
+          if (!equalHelp(
             WasmI32.load(xptr + i, 8n),
             WasmI32.load(yptr + i, 8n),
-          ))) {
+          )) {
             result = false
             break
           }

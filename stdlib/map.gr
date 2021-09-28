@@ -329,7 +329,7 @@ export let fromArray = array => {
 export let filter = (predicate, map) => {
   let keysToRemove = reduce(
     (list, key, value) =>
-      if (!(predicate(key, value))) {
+      if (!predicate(key, value)) {
         [key, ...list]
       } else {
         list
@@ -346,7 +346,7 @@ export let filter = (predicate, map) => {
 }
 
 export let reject = (predicate, map) => {
-  filter((key, value) => !(predicate(key, value)), map)
+  filter((key, value) => !predicate(key, value), map)
 }
 
 // TODO: Should return a Record type instead of a Tuple

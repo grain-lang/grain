@@ -99,7 +99,7 @@ export let add = (key, set) => {
       set.size = incr(set.size)
     },
     Some(node) => {
-      if (!(nodeInBucket(key, node))) {
+      if (!nodeInBucket(key, node)) {
         buckets[idx] = Some({ key, next: bucket })
         set.size = incr(set.size)
       }
@@ -218,7 +218,7 @@ export let reduce = (fn, init, set) => {
 export let filter = (predicate, set) => {
   let keysToRemove = reduce(
     (list, key) =>
-      if (!(predicate(key))) {
+      if (!predicate(key)) {
         [key, ...list]
       } else {
         list
@@ -235,7 +235,7 @@ export let filter = (predicate, set) => {
 }
 
 export let reject = (predicate, set) => {
-  filter(key => !(predicate(key)), set)
+  filter(key => !predicate(key), set)
 }
 
 export let toList = set => {
@@ -289,7 +289,7 @@ export let diff = (set1, set2) => {
   let set = make()
   forEach(
     key => {
-      if (!(contains(key, set2))) {
+      if (!contains(key, set2)) {
         add(key, set)
       }
     },
@@ -297,7 +297,7 @@ export let diff = (set1, set2) => {
   )
   forEach(
     key => {
-      if (!(contains(key, set1))) {
+      if (!contains(key, set1)) {
         add(key, set)
       }
     },
