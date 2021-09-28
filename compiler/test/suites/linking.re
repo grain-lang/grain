@@ -39,7 +39,7 @@ describe("linking", ({test}) => {
   test("no_start_section", ({expect}) => {
     let name = "no_start_section";
     let outfile = wasmfile(name);
-    compile(name, {|print("Hello, world!")|});
+    ignore @@ compile(name, {|print("Hello, world!")|});
     let sections =
       Grain_utils.Wasm_utils.get_wasm_sections(open_in_bin(outfile));
     let export_sections =
@@ -71,6 +71,7 @@ describe("linking", ({test}) => {
   test("use_start_section", ({expect}) => {
     let name = "use_start_section";
     let outfile = wasmfile(name);
+    ignore @@
     compile(
       ~config_fn=() => {Grain_utils.Config.use_start_section := true},
       name,
