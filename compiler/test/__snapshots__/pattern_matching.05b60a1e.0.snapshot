@@ -86,7 +86,7 @@ pattern matching › adt_match_deep
         )
        )
        (i32.load
-        (i32.const 1032)
+        (i32.const 2056)
        )
       )
       (i32.store offset=4
@@ -94,7 +94,7 @@ pattern matching › adt_match_deep
        (global.get $import__grainEnv_0_moduleRuntimeId_0)
       )
       (i32.store
-       (i32.const 1032)
+       (i32.const 2056)
        (local.get $0)
       )
       (local.set $4

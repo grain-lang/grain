@@ -71,7 +71,7 @@ records › record_value_trailing
        )
       )
       (i32.load
-       (i32.const 1032)
+       (i32.const 2056)
       )
      )
      (i32.store offset=4
@@ -79,7 +79,7 @@ records › record_value_trailing
       (global.get $import__grainEnv_0_moduleRuntimeId_0)
      )
      (i32.store
-      (i32.const 1032)
+      (i32.const 2056)
       (local.get $0)
      )
      (i32.store
