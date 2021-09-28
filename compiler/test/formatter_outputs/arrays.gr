@@ -27,11 +27,7 @@ let addRepeatedGroup = (groupN, state, pos, n, backAmt, callback) => {
   match (groupN) {
     Some(groupN) when Array.length(state) > 0 => {
       let oldSpan = state[groupN]
-      state[groupN] = if (n == 0) {
-          None
-        } else {
-          Some((pos - backAmt, pos))
-        }
+      state[groupN] = if (n == 0) None else Some((pos - backAmt, pos))
       let groupRevert = () => {
         state[groupN] = oldSpan
       }
