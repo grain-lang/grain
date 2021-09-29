@@ -74,7 +74,6 @@ let rec code = (c: Char) => {
       }
       continue
     }
-    Memory.incRef(WasmI32.fromGrain((!)))
     if (!(lowerBoundary <= byte && byte <= upperBoundary)) {
       throw MalformedUtf8
     }
