@@ -52,6 +52,33 @@ type sugared_pattern_item =
   | RegularPattern(Grain_parsing.Parsetree.pattern)
   | SpreadPattern(Grain_parsing.Parsetree.pattern);
 
+let get_original_code_snippet =
+    (location: Grain_parsing.Location.t, source: array(string)) => {
+  let (_, startline, startc, _) =
+    Locations.get_raw_pos_info(location.loc_start);
+  let (_, endline, endc, _) = Locations.get_raw_pos_info(location.loc_end);
+
+  if (Array.length(source) > endline - 1) {
+    if (startline == endline) {
+      String.sub(source[startline - 1], startc, endc - startc);
+    } else {
+      let text = ref("");
+      for (line in startline - 1 to endline - 1) {
+        if (line + 1 == startline) {
+          text := text^ ++ Str.string_after(source[line], startc) ++ "\n";
+        } else if (line + 1 == endline) {
+          text := text^ ++ String.sub(source[line], 0, endc);
+        } else {
+          text := text^ ++ source[line] ++ "\n";
+        };
+      };
+      text^;
+    };
+  } else {
+    raise(Error(FormatterError("Requested beyond end of original source")));
+  };
+};
+
 let get_original_code =
     (location: Grain_parsing.Location.t, source: array(string)) => {
   let (_, startline, startc, _) =
@@ -512,11 +539,15 @@ and resugar_list =
     ) => {
   let processed_list = resugar_list_inner(expressions, parent_loc);
 
+  let last_item_was_spread = ref(false);
+
   let items =
     List.map(
       i =>
         switch (i) {
         | Regular(e) =>
+          last_item_was_spread := false;
+
           Doc.group(
             print_expression(
               ~parentIsArrow=false,
@@ -525,8 +556,9 @@ and resugar_list =
               ~parent_loc,
               e,
             ),
-          )
+          );
         | Spread(e) =>
+          last_item_was_spread := true;
           Doc.group(
             Doc.concat([
               Doc.text("..."),
@@ -538,7 +570,7 @@ and resugar_list =
                 e,
               ),
             ]),
-          )
+          );
         },
       processed_list,
     );
@@ -552,7 +584,11 @@ and resugar_list =
             Doc.softLine,
             Doc.join(Doc.concat([Doc.comma, Doc.line]), items),
           ]),
-          Doc.ifBreaks(Doc.comma, Doc.nil),
+          if (last_item_was_spread^) {
+            Doc.nil;
+          } else {
+            Doc.ifBreaks(Doc.comma, Doc.nil);
+          },
         ]),
       ),
       Doc.softLine,
@@ -682,7 +718,10 @@ and print_pattern =
   let printed_pattern: (Doc.t, bool) =
     switch (pat.ppat_desc) {
     | PPatAny => (Doc.text("_"), false)
-    | PPatConstant(c) => (print_constant(c), false)
+    | PPatConstant(c) => (
+        print_constant(~original_source, ~loc=pat.ppat_loc, c),
+        false,
+      )
     | PPatVar({txt, _}) =>
       if (infixop(txt) || prefixop(txt)) {
         (Doc.concat([Doc.lparen, Doc.text(txt), Doc.rparen]), false);
@@ -839,30 +878,20 @@ and print_pattern =
     clean_pattern;
   };
 }
-and print_constant = (c: Parsetree.constant) => {
-  let print_c =
-    switch (c) {
-    | PConstNumber(PConstNumberInt(i)) => Printf.sprintf("%s", i)
-    | PConstNumber(PConstNumberFloat(f)) => Printf.sprintf("%s", f)
-    | PConstNumber(PConstNumberRational(n, d)) =>
-      Printf.sprintf("%s/%s", n, d)
-    | PConstBytes(b) => Printf.sprintf("%s", b)
-    | PConstChar(c) => Printf.sprintf("'%s'", String.escaped(c))
-    | PConstFloat64(f) => Printf.sprintf("%sd", f)
-    | PConstFloat32(f) => Printf.sprintf("%sf", f)
-    | PConstInt32(i) => Printf.sprintf("%sl", i)
-    | PConstInt64(i) => Printf.sprintf("%sL", i)
-    | PConstWasmI32(i) => Printf.sprintf("%sn", i)
-    | PConstWasmI64(i) => Printf.sprintf("%sN", i)
-    | PConstWasmF32(f) => Printf.sprintf("%sw", f)
-    | PConstWasmF64(f) => Printf.sprintf("%sW", f)
-    | PConstBool(true) => "true"
-    | PConstBool(false) => "false"
-    | PConstVoid => "void"
-    | PConstString(s) => Printf.sprintf("\"%s\"", String.escaped(s))
-    };
-  Doc.text(print_c);
+
+and print_constant =
+    (
+      ~original_source: array(string),
+      ~loc: Grain_parsing__Location.t,
+      c: Parsetree.constant,
+    ) => {
+  // we get the original code here to ensure it's well formatted and retains the
+  // approach of the original code, e.g. char format, number format
+  Doc.text(
+    get_original_code_snippet(loc, original_source),
+  );
 }
+
 and print_ident = (ident: Identifier.t) => {
   switch (ident) {
   | IdentName(name) =>
@@ -1042,18 +1071,32 @@ and print_application =
   | [first] when prefixop(function_name) =>
     switch (first.pexp_desc) {
     | PExpApp(fn, _) =>
-      Doc.concat([
-        Doc.text(function_name),
-        Doc.lparen,
-        print_expression(
-          ~parentIsArrow=false,
-          ~endChar=None,
-          ~original_source,
-          ~parent_loc,
-          first,
-        ),
-        Doc.rparen,
-      ])
+      let inner_fn = get_function_name(fn);
+      if (infixop(inner_fn)) {
+        Doc.concat([
+          Doc.text(function_name),
+          Doc.lparen,
+          print_expression(
+            ~parentIsArrow=false,
+            ~endChar=None,
+            ~original_source,
+            ~parent_loc,
+            first,
+          ),
+          Doc.rparen,
+        ]);
+      } else {
+        Doc.concat([
+          Doc.text(function_name),
+          print_expression(
+            ~parentIsArrow=false,
+            ~endChar=None,
+            ~original_source,
+            ~parent_loc,
+            first,
+          ),
+        ]);
+      };
 
     | _ =>
       Doc.concat([
@@ -1269,6 +1312,30 @@ and get_trailing_comments_to_next_code = (loc: Grain_parsing__Location.t) => {
   trailing_comment_docs;
 }
 
+and get_trailing_comments_to_end_of_block =
+    (block_location: Grain_parsing__Location.t) => {
+  let loc = make_start_loc(block_location); // partition from the start location of the expression
+  let range = make_to_line_end(block_location);
+
+  let (_leading_comments, trailing_comments) =
+    Walktree.partition_comments(loc, Some(range));
+
+  let expr_line = get_end_loc_line(range);
+
+  let trailing_comment_docs =
+    if (List.length(trailing_comments) > 0) {
+      Doc.concat([
+        print_multi_comments(trailing_comments, expr_line),
+        Doc.ifBreaks(Doc.nil, Doc.hardLine),
+      ]);
+    } else {
+      Doc.nil;
+    };
+
+  Walktree.remove_used_comments([], trailing_comments);
+  trailing_comment_docs;
+}
+
 and get_trailing_comments_to_end_of_line =
     (block_location: Grain_parsing__Location.t) => {
   let loc = make_start_loc(block_location); // partition from the start location of the expression
@@ -1366,7 +1433,8 @@ and print_expression =
 
   let expression_doc =
     switch (expr.pexp_desc) {
-    | PExpConstant(x) => print_constant(x)
+    | PExpConstant(x) =>
+      print_constant(~original_source, ~loc=expr.pexp_loc, x)
     | PExpId({txt: id}) => print_ident(id)
     | PExpLet(rec_flag, mut_flag, vbs) =>
       print_value_bind(
@@ -1472,7 +1540,7 @@ and print_expression =
           Doc.text("="),
           Doc.indent(
             Doc.concat([
-              Doc.line,
+              Doc.space,
               print_expression(
                 ~parentIsArrow=false,
                 ~endChar=None,
@@ -1703,12 +1771,25 @@ and print_expression =
           Doc.nil;
         };
 
-      let true_false_space = Doc.space;
-      // keep this - we need this if we don't force single lines into block expressions
-      // switch (trueExpr.pexp_desc) {
-      // | PExpBlock(expressions) => Doc.space
-      // | _ => Doc.line
-      // };
+      let true_is_block =
+        switch (trueExpr.pexp_desc) {
+        | PExpBlock(_) => true
+        | _ => false
+        };
+
+      let false_is_block =
+        switch (falseExpr.pexp_desc) {
+        | PExpBlock(expressions) => List.length(expressions) > 0
+        | _ => false
+        };
+
+      //  let true_false_space = Doc.space;
+      //  keep this - we need this if we force single lines into block expressions
+      let true_false_space =
+        switch (trueExpr.pexp_desc) {
+        | PExpBlock(expressions) => Doc.space
+        | _ => if (false_is_block) {Doc.space} else {Doc.line}
+        };
 
       let true_clause =
         switch (trueExpr.pexp_desc) {
@@ -1722,24 +1803,41 @@ and print_expression =
           )
 
         | _ =>
-          Doc.concat([
-            Doc.lbrace,
-            // no comment to add here as this was a single line expression
-            Doc.indent(
-              Doc.concat([
-                Doc.hardLine,
-                print_expression(
-                  ~parentIsArrow=false,
-                  ~endChar=None,
-                  ~original_source,
-                  ~parent_loc,
-                  trueExpr,
-                ),
-              ]),
-            ),
-            Doc.hardLine,
-            Doc.rbrace,
-          ])
+          if (false_is_block) {
+            Doc.concat([
+              Doc.lbrace,
+              // no comment to add here as this was a single line expression
+              Doc.indent(
+                Doc.concat([
+                  Doc.hardLine,
+                  print_expression(
+                    ~parentIsArrow=false,
+                    ~endChar=None,
+                    ~original_source,
+                    ~parent_loc,
+                    trueExpr,
+                  ),
+                ]),
+              ),
+              Doc.hardLine,
+              Doc.rbrace,
+            ]);
+          } else {
+            print_expression(
+              ~parentIsArrow=false,
+              ~endChar=None,
+              ~original_source,
+              ~parent_loc,
+              trueExpr,
+            );
+          }
+        };
+
+      let true_comments =
+        if (false_is_block) {
+          Doc.nil;
+        } else {
+          get_trailing_comments_to_end_of_block(trueExpr.pexp_loc);
         };
 
       let false_clause =
@@ -1776,27 +1874,38 @@ and print_expression =
           Doc.concat([
             true_false_space,
             Doc.text("else"),
-            Doc.group(
-              Doc.concat([
-                Doc.space,
-                Doc.lbrace,
-                // no comments to add here as original was single line
-                Doc.indent(
-                  Doc.concat([
-                    Doc.hardLine,
-                    print_expression(
-                      ~parentIsArrow=false,
-                      ~endChar=None,
-                      ~original_source,
-                      ~parent_loc,
-                      falseExpr,
-                    ),
-                  ]),
-                ),
-                Doc.hardLine,
-                Doc.rbrace,
-              ]),
-            ),
+            Doc.space,
+            if (true_is_block) {
+              Doc.group(
+                Doc.concat([
+                  Doc.space,
+                  Doc.lbrace,
+                  // no comments to add here as original was single line
+                  Doc.indent(
+                    Doc.concat([
+                      Doc.hardLine,
+                      print_expression(
+                        ~parentIsArrow=false,
+                        ~endChar=None,
+                        ~original_source,
+                        ~parent_loc,
+                        falseExpr,
+                      ),
+                    ]),
+                  ),
+                  Doc.hardLine,
+                  Doc.rbrace,
+                ]),
+              );
+            } else {
+              print_expression(
+                ~parentIsArrow=false,
+                ~endChar=None,
+                ~original_source,
+                ~parent_loc,
+                falseExpr,
+              );
+            },
           ])
         };
 
@@ -1822,6 +1931,7 @@ and print_expression =
               ]),
             ),
             true_clause,
+            true_comments,
             false_clause,
           ]),
         );
@@ -1846,6 +1956,7 @@ and print_expression =
             ]),
           ),
           true_clause,
+          true_comments,
           false_clause,
         ]);
       };
@@ -3152,24 +3263,26 @@ let reformat_ast =
   let last_stmt = ref(None);
   let previous_line = ref(0);
   let printed_doc =
-    Doc.join(
-      Doc.hardLine,
-      List.map(
-        (stmt: Grain_parsing.Parsetree.toplevel_stmt) => {
-          let line =
-            toplevel_print(
-              ~data=stmt,
-              ~original_source,
-              ~previous_line=previous_line^,
-            );
+    Doc.concat([
+      Doc.join(
+        Doc.hardLine,
+        List.map(
+          (stmt: Grain_parsing.Parsetree.toplevel_stmt) => {
+            let line =
+              toplevel_print(
+                ~data=stmt,
+                ~original_source,
+                ~previous_line=previous_line^,
+              );
 
-          previous_line := get_end_loc_line(stmt.ptop_loc);
-          last_stmt := Some(stmt);
-          line;
-        },
-        parsed_program.statements,
+            previous_line := get_end_loc_line(stmt.ptop_loc);
+            last_stmt := Some(stmt);
+            line;
+          },
+          parsed_program.statements,
+        ),
       ),
-    );
+    ]);
 
   let (_leading_comments, trailing_comments) =
     switch (last_stmt^) {
@@ -3184,7 +3297,8 @@ let reformat_ast =
       Doc.nil;
     };
 
-  let final_doc = Doc.concat([printed_doc, trailing_comment_docs]);
+  let final_doc =
+    Doc.concat([printed_doc, trailing_comment_docs, Doc.hardLine]);
 
   // Use this to check the generated output
   //Doc.debug(final_doc);

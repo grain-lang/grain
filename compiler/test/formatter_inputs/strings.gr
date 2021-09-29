@@ -3,3 +3,7 @@ import String from "string"
 let newline = "\n"
 
 let data = String.split("\n", "a long string")
+
+let c = Some('\'')
+
+let d = '\''
