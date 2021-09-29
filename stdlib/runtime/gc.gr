@@ -1,0 +1,264 @@
+/* grainc-flags --compilation-mode=runtime */
+
+/* Notes:
+ *
+ * Grain's memory system uses a reference-counted garbage collector.
+ * It is incumbent upon the compiler (and any external modules which interact
+ * with Grain's memory) to make sure that reference counting functionality
+ * exists at appropriate places in code.
+ *
+ * Here is the basic idea for how this looks for an n-byte heap object:
+ *
+ * [ 32-bit counter ][ 32-bit padding ][ n-bit payload ]
+ * ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
+ * {start address}                    {pointer used by Grain runtime}
+ *
+ * Variable Naming Conventions:
+ *   rawPtr  : The pointer returned by the call to the external malloc()
+ *   userPtr : The pointer returned (and referenced by) to the Grain runtime
+ */
+
+import Malloc from "runtime/malloc"
+import Tags from "runtime/unsafe/tags"
+import WasmI32, {
+  add as (+),
+  sub as (-),
+  mul as (*),
+  and as (&),
+  eq as (==)
+} from "runtime/unsafe/wasmi32"
+
+// Using foreigns directly here to avoid cyclic dependency
+import foreign wasm fd_write: (
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32
+) -> WasmI32 from "wasi_snapshot_preview1"
+
+primitive (&&) : (Bool, Bool) -> Bool = "@and"
+primitive (||) : (Bool, Bool) -> Bool = "@or"
+primitive throw : Exception -> a = "@throw"
+primitive ignore : a -> Void = "@ignore"
+primitive box : a -> Box<a> = "@box"
+primitive unbox : Box<a> -> a = "@unbox"
+
+exception DecRefError
+
+export let decimalCount32 = box(n => 0n)
+export let utoa32Buffered = box((a, b, c) => void)
+
+let mut _DEBUG = false
+
+let _HEADER_SIZE = 8n
+
+/*
+//Debugging functions:
+import foreign wasm fd_sync : (WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+
+// incRef debug messages: "decRef: 0xNNNNNN (prev count: nn)\n"
+let _INCREF_DEBUG_STR_1 = "incRef: 0x"
+let _INCREF_DEBUG_STR_2 = " (prev count: "
+let _INCREF_DEBUG_STR_3 = "; tag: "
+let _INCREF_DEBUG_STR_4 = ")\n"
+
+// decRef debug messages: "decRef: 0xNNNNNN (prev count: nn)\n"
+let _DECREF_DEBUG_STR_1 = "decRef: 0x"
+let _DECREF_DEBUG_STR_2 = " (prev count: "
+let _DECREF_DEBUG_STR_3 = "; ignoreZeros: true)\n"
+let _DECREF_DEBUG_STR_4 = "; ignoreZeros: false)\n"
+
+let logIncRef = (userPtr: WasmI32, refCount: WasmI32) => {
+  let ptrDecimals = WasmI32.shrU(31n - WasmI32.clz(userPtr), 2n) + 1n
+  let ptrStr = Malloc.malloc(ptrDecimals)
+  unbox(utoa32Buffered)(ptrStr, userPtr, 16n)
+  let refCountDecimals = unbox(decimalCount32)(refCount)
+  let refCountStr = Malloc.malloc(refCountDecimals)
+  unbox(utoa32Buffered)(refCountStr, refCount, 10n)
+  let tag = WasmI32.load(userPtr, 0n)
+  let tagDecimals = unbox(decimalCount32)(tag)
+  let tagStr = Malloc.malloc(tagDecimals)
+  unbox(utoa32Buffered)(tagStr, tag, 10n)
+  let iov = Malloc.malloc((8n * 5n) + 4n)
+  let written = iov + (8n * 7n)
+  WasmI32.store(iov, WasmI32.fromGrain(_INCREF_DEBUG_STR_1) + 8n, 0n)
+  WasmI32.store(iov, WasmI32.load(WasmI32.fromGrain(_INCREF_DEBUG_STR_1), 4n), 4n)
+  WasmI32.store(iov, ptrStr, 8n)
+  WasmI32.store(iov, ptrDecimals, 12n)
+  WasmI32.store(iov, WasmI32.fromGrain(_INCREF_DEBUG_STR_2) + 8n, 16n)
+  WasmI32.store(iov, WasmI32.load(WasmI32.fromGrain(_INCREF_DEBUG_STR_2), 4n), 20n)
+  WasmI32.store(iov, refCountStr, 24n)
+  WasmI32.store(iov, refCountDecimals, 28n)
+  WasmI32.store(iov, WasmI32.fromGrain(_INCREF_DEBUG_STR_3) + 8n, 32n)
+  WasmI32.store(iov, WasmI32.load(WasmI32.fromGrain(_INCREF_DEBUG_STR_3), 4n), 36n)
+  WasmI32.store(iov, tagStr, 40n)
+  WasmI32.store(iov, tagDecimals, 44n)
+  WasmI32.store(iov, WasmI32.fromGrain(_INCREF_DEBUG_STR_4) + 8n, 48n)
+  WasmI32.store(iov, WasmI32.load(WasmI32.fromGrain(_INCREF_DEBUG_STR_4), 4n), 52n)
+  fd_write(1n, iov, 7n, written)
+  fd_sync(1n)
+  Malloc.free(ptrStr)
+  Malloc.free(refCountStr)
+}
+
+let logDecRef = (userPtr: WasmI32, refCount: WasmI32, ignoreZeros) => {
+  let ptrDecimals = WasmI32.shrU(31n - WasmI32.clz(userPtr), 2n) + 1n
+  let ptrStr = Malloc.malloc(ptrDecimals)
+  unbox(utoa32Buffered)(ptrStr, userPtr, 16n)
+  let refCountDecimals = unbox(decimalCount32)(refCount)
+  let refCountStr = Malloc.malloc(refCountDecimals)
+  unbox(utoa32Buffered)(refCountStr, refCount, 10n)
+  let iov = Malloc.malloc((8n * 5n) + 4n)
+  let written = iov + (8n * 5n)
+  WasmI32.store(iov, WasmI32.fromGrain(_DECREF_DEBUG_STR_1) + 8n, 0n)
+  WasmI32.store(iov, WasmI32.load(WasmI32.fromGrain(_DECREF_DEBUG_STR_1), 4n), 4n)
+  WasmI32.store(iov, ptrStr, 8n)
+  WasmI32.store(iov, ptrDecimals, 12n)
+  WasmI32.store(iov, WasmI32.fromGrain(_DECREF_DEBUG_STR_2) + 8n, 16n)
+  WasmI32.store(iov, WasmI32.load(WasmI32.fromGrain(_DECREF_DEBUG_STR_2), 4n), 20n)
+  WasmI32.store(iov, refCountStr, 24n)
+  WasmI32.store(iov, refCountDecimals, 28n)
+  if (ignoreZeros) {
+    WasmI32.store(iov, WasmI32.fromGrain(_DECREF_DEBUG_STR_3) + 8n, 32n)
+    WasmI32.store(iov, WasmI32.load(WasmI32.fromGrain(_DECREF_DEBUG_STR_3), 4n), 36n)
+  } else {
+    WasmI32.store(iov, WasmI32.fromGrain(_DECREF_DEBUG_STR_4) + 8n, 32n)
+    WasmI32.store(iov, WasmI32.load(WasmI32.fromGrain(_DECREF_DEBUG_STR_4), 4n), 36n)
+  }
+  fd_write(1n, iov, 5n, written)
+  fd_sync(1n)
+  Malloc.free(ptrStr)
+  Malloc.free(refCountStr)
+}
+
+*/
+
+let getRefCount = (userPtr: WasmI32) => {
+  WasmI32.load(userPtr - _HEADER_SIZE, 0n)
+}
+
+let setRefCount = (userPtr: WasmI32, count: WasmI32) => {
+  WasmI32.store(userPtr - _HEADER_SIZE, count, 0n)
+}
+
+export let malloc = (size: WasmI32) => {
+  // Add space for header
+  let rawPtr = Malloc.malloc(size + _HEADER_SIZE)
+
+  // Populate GC header
+  WasmI32.store(rawPtr, 1n, 0n)
+  WasmI32.store(rawPtr, 0n, 4n)
+
+  // Return pointer past header
+  rawPtr + _HEADER_SIZE
+}
+
+export let free = (userPtr: WasmI32) => {
+  // Free the raw pointer
+  Malloc.free(userPtr - _HEADER_SIZE)
+}
+
+export let incRef = (userPtr: WasmI32) => {
+  if (WasmI32.eqz(userPtr & Tags._GRAIN_GENERIC_TAG_MASK) && WasmI32.ne(
+    userPtr,
+    0n,
+  )) {
+    // if (_DEBUG) {
+    //   logIncRef(userPtr, getRefCount(userPtr))
+    //   void;
+    // }
+    setRefCount(userPtr, getRefCount(userPtr) + 1n)
+  }
+  userPtr
+}
+
+let rec decRef = (userPtr: WasmI32, ignoreZeros: Bool) => {
+  if (WasmI32.eqz(userPtr & Tags._GRAIN_GENERIC_TAG_MASK) && WasmI32.ne(
+    userPtr,
+    0n,
+  )) {
+    let refCount = getRefCount(userPtr)
+    // if (_DEBUG) {
+    //   logDecRef(userPtr, refCount, ignoreZeros)
+    //   void
+    // }
+
+    if (WasmI32.eqz(refCount)) {
+      if (ignoreZeros) {
+        userPtr
+      } else {
+        throw DecRefError
+      }
+    } else {
+      let refCount = refCount - 1n
+      setRefCount(userPtr, refCount)
+
+      if (WasmI32.eqz(refCount)) {
+        decRefChildren(userPtr)
+        free(userPtr)
+      }
+
+      userPtr
+    }
+  } else {
+    userPtr
+  }
+},
+decRefChildren = (userPtr: WasmI32) => {
+  match (WasmI32.load(userPtr, 0n)) {
+    t when t == Tags._GRAIN_ADT_HEAP_TAG => {
+      let arity = WasmI32.load(userPtr, 16n)
+      let maxOffset = arity * 4n
+      for (let mut i = 0n; WasmI32.ltU(i, maxOffset); i += 4n) {
+        ignore(decRef(WasmI32.load(userPtr + i, 20n), false))
+      }
+    },
+    t when t == Tags._GRAIN_RECORD_HEAP_TAG => {
+      let arity = WasmI32.load(userPtr, 12n)
+      let maxOffset = arity * 4n
+      for (let mut i = 0n; WasmI32.ltU(i, maxOffset); i += 4n) {
+        ignore(decRef(WasmI32.load(userPtr + i, 16n), false))
+      }
+    },
+    t when t == Tags._GRAIN_ARRAY_HEAP_TAG || t == Tags._GRAIN_TUPLE_HEAP_TAG => {
+      let arity = WasmI32.load(userPtr, 4n)
+      let maxOffset = arity * 4n
+      for (let mut i = 0n; WasmI32.ltU(i, maxOffset); i += 4n) {
+        ignore(decRef(WasmI32.load(userPtr + i, 8n), false))
+      }
+    },
+    t when t == Tags._GRAIN_LAMBDA_HEAP_TAG => {
+      let arity = WasmI32.load(userPtr, 12n)
+      let maxOffset = arity * 4n
+      for (let mut i = 0n; WasmI32.ltU(i, maxOffset); i += 4n) {
+        ignore(decRef(WasmI32.load(userPtr + i, 16n), false))
+      }
+    },
+    _ => {
+      // No travelsal necessary for other tags
+      void
+    },
+  }
+}
+
+export let decRefIgnoreZeros = userPtr => decRef(userPtr, true)
+export let decRef = userPtr => decRef(userPtr, false)
+
+// For debugging:
+
+// export let getRefCount = (value) => {
+//   let userPtr = WasmI32.fromGrain(value)
+//   let ret = if (WasmI32.eqz(userPtr & Tags._GRAIN_GENERIC_TAG_MASK) && WasmI32.ne(userPtr, 0n)) {
+//     WasmI32.toGrain((getRefCount(userPtr) * 2n) + 1n) : Number
+//   } else {
+//     0
+//   }
+//   decRef(userPtr)
+//   ret
+// }
+
+// export let rec setDebug = (enabled: Bool) => {
+//   _DEBUG = enabled
+//   decRef(WasmI32.fromGrain(setDebug))
+//   void
+// }
