@@ -1071,18 +1071,33 @@ and print_application =
   | [first] when prefixop(function_name) =>
     switch (first.pexp_desc) {
     | PExpApp(fn, _) =>
-      Doc.concat([
-        Doc.text(function_name),
-        // Doc.lparen,
-        print_expression(
-          ~parentIsArrow=false,
-          ~endChar=None,
-          ~original_source,
-          ~parent_loc,
-          first,
-        ),
-        //  Doc.rparen,
-      ])
+      let first_function_name = get_function_name(first);
+
+      if (infixop(first_function_name)) {
+        Doc.concat([
+          Doc.text(function_name),
+          Doc.lparen,
+          print_expression(
+            ~parentIsArrow=false,
+            ~endChar=None,
+            ~original_source,
+            ~parent_loc,
+            first,
+          ),
+          Doc.rparen,
+        ]);
+      } else {
+        Doc.concat([
+          Doc.text(function_name),
+          print_expression(
+            ~parentIsArrow=false,
+            ~endChar=None,
+            ~original_source,
+            ~parent_loc,
+            first,
+          ),
+        ]);
+      };
 
     | _ =>
       Doc.concat([
