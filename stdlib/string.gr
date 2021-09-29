@@ -783,7 +783,7 @@ let getCodePoint = (ptr: WasmI32) => {
       continue
     }
     Memory.incRef(WasmI32.fromGrain((!)))
-    if (!lowerBoundary <= byte && byte <= upperBoundary) {
+    if (!(lowerBoundary <= byte && byte <= upperBoundary)) {
       throw MalformedUnicode
     }
     lowerBoundary = 0x80n

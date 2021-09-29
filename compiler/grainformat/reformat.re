@@ -1071,9 +1071,8 @@ and print_application =
   | [first] when prefixop(function_name) =>
     switch (first.pexp_desc) {
     | PExpApp(fn, _) =>
-      let first_function_name = get_function_name(first);
-
-      if (infixop(first_function_name)) {
+      let inner_fn = get_function_name(fn);
+      if (infixop(inner_fn)) {
         Doc.concat([
           Doc.text(function_name),
           Doc.lparen,

@@ -2662,9 +2662,9 @@ let isWordChar = c => {
 }
 
 let isWordBoundary = (buf, pos, start, limit, end) => {
-  !(pos == start || !isWordChar(
+  !((pos == start || !isWordChar(
     matchBufChar(buf, pos - 1),
-  )) == (pos == end || !isWordChar(matchBufChar(buf, pos)))
+  )) == (pos == end || !isWordChar(matchBufChar(buf, pos))))
 }
 
 let wordBoundaryMatcher = next_m =>
