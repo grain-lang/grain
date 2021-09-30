@@ -436,6 +436,11 @@ let rec transl_imm =
       [arg1, arg2],
     ) =>
     transl_imm({...e, exp_desc: TExpPrim2(Or, arg1, arg2)})
+  | TExpApp(
+      {exp_desc: TExpIdent(_, _, {val_kind: TValPrim("@not")})},
+      [arg],
+    ) =>
+    transl_imm({...e, exp_desc: TExpPrim1(Not, arg)})
   | TExpApp(func, args) =>
     let tmp = gensym("app");
     let (new_func, func_setup) = transl_imm(func);
@@ -1082,6 +1087,11 @@ and transl_comp_expression =
       [arg1, arg2],
     ) =>
     transl_comp_expression({...e, exp_desc: TExpPrim2(Or, arg1, arg2)})
+  | TExpApp(
+      {exp_desc: TExpIdent(_, _, {val_kind: TValPrim("@not")})},
+      [arg],
+    ) =>
+    transl_comp_expression({...e, exp_desc: TExpPrim1(Not, arg)})
   | TExpApp(func, args) =>
     let (new_func, func_setup) = transl_imm(func);
     let (new_args, new_setup) = List.split(List.map(transl_imm, args));
