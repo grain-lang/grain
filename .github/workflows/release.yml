@@ -11,6 +11,8 @@ jobs:
       release_created: ${{ steps.release.outputs.release_created }}
       upload_url: ${{ steps.release.outputs.upload_url }}
       tag_name: ${{ steps.release.outputs.tag_name }}
+      stdlib_release_created: ${{ steps.release.outputs.stdlib.release_created }}
+      js-runner_release_created: ${{ steps.release.outputs.js-runner.release_created }}
     steps:
       - uses: GoogleCloudPlatform/release-please-action@v2.33.1
         id: release
@@ -128,3 +130,39 @@ jobs:
           ref: main
           repo: grain-lang/homebrew-tap
           tag_input: ${{ needs.release-please.outputs.tag_name }}
+
+  npm-release-stdlib:
+    needs: [release-please, build-pkg]
+    if: ${{ needs.release-please.outputs.stdlib_release_created }}
+    name: Publish stdlib to npm registry
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup NodeJS
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: "14"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Publish to npm
+        run: npm publish
+        working-directory: ./stdlib
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_RELEASE }}
+
+  npm-release-js-runner:
+    needs: [release-please, build-pkg]
+    if: ${{ needs.release-please.outputs.js-runner_release_created }}
+    name: Publish js-runner to npm registry
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup NodeJS
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: "14"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Publish to npm
+        run: npm publish
+        working-directory: ./js-runner
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_RELEASE }}
