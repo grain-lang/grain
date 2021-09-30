@@ -15,14 +15,3 @@ Here are some guidelines for making additions to the standard library while also
     * `Option` should be preferred if you might or might not be able to get some value. Typically, these would be functions that could return `null` in other languages when they didn't produce a value. For example, `List.find` returns `None` when no item in the list matches the condition.
     * `Result` is useful if you have multiple failures, or if the consumer might need additional context around the failure. Typically, these functions would throw exceptions in other languages. For example, `Number.parseInt` returns `Err(reason)` when it fails to parse a string into an integer.
 1. If possible, keep dependencies on other standard library modules to a minimum. For example, `Array` re-implements some simple `List` operations to avoid depending on the entire `List` module.
-
-## AssemblyScript
-
-You maybe notice `.ts` files inside the `stdlib-external` directory. These are actually [AssemblyScript](https://www.assemblyscript.org/) files that we compile to WebAssembly and consume as externals.
-
-The primary reason for this is that AssemblyScript provides a nicer interface for writing WebAssembly than handcrafting it. It also gives us access to things Grain itself disallows, such as direct access into memory representations.
-
-However, our usage comes with some restrictions:
-
-* We compile it with their runtime disabled, which means we don't have access to a lot of the niceties they provide.
-* Anything that pre-populates or allocates memory cannot be used. This includes strings, even static ones.
