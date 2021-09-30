@@ -38,7 +38,8 @@ let compile_parsed = (filename: option(string)) => {
         while (true) {
           let line = input_line(ic);
 
-          linesList := linesList^ @ [line];
+          // TODO temporarily trim off the CRLF, but need to output in original format issue #940
+          linesList := linesList^ @ [String.trim(line)];
         }
       ) {
       | exn => ()
