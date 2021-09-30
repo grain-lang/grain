@@ -32,12 +32,6 @@ For instructions on how to build Grain from source, please consult the [official
 
 ### Other Commands
 
-To build the standard library:
-
-```bash
-yarn stdlib build
-```
-
 To build the JS runner:
 
 ```bash
