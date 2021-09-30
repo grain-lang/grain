@@ -38,14 +38,16 @@ let compile_parsed = (filename: option(string)) => {
         while (true) {
           let line = input_line(ic);
 
-          // TODO temporarily trim off the CRLF, but need to output in original format issue #940
-          linesList := linesList^ @ [String.trim(line)];
+          linesList := linesList^ @ [line];
         }
       ) {
       | exn => ()
       };
 
       program_str := String.concat("\n", linesList^);
+
+      // TODO add a new line to the end for where it's in CRLF more
+      program_str := program_str^ ++ "\n";
 
       Grain_utils.Config.base_path := dirname(filenm);
       Compile.compile_string(
