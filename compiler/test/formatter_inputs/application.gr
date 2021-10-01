@@ -3,15 +3,30 @@ import Option from "option"
 
 let data = [>]
 
-let busNumbers = Array.map(((num, idx)) => { (Option.expect("Expected a number", None), idx) }, data)
+let busNumbers = Array.map(
+  ((num, idx)) => {
+    (Option.expect("Expected a number", None), idx)
+  },
+  data,
+)
 
+let sillyFunction = (a, b, c, d, e, f, g, h, j, k) => 10
 
-let sillyFunction = (a,b,c,d,e,f,g,h,j,k) => 10
+sillyFunction(
+  123456789,
+  123456789,
+  123456789,
+  123456789,
+  123456789,
+  123456789,
+  123456789,
+  123456789,
+  123456789,
+  123456789,
+)
 
-sillyFunction(123456789,123456789,123456789,123456789,123456789,123456789,123456789,123456789,123456789,123456789)
-
-let filteri = (x,y) => []
-let findIndex =  (x,y) => None
+let filteri = (x, y) => []
+let findIndex = (x, y) => None
 
 /**
  * Produces a new array with any duplicates removed.
@@ -22,13 +37,12 @@ let findIndex =  (x,y) => None
  */
 export let unique = array => {
   filteri(
-      (el, index
-      ) =>
-      (findIndex(value => value == el, array)) == (Some(index)),
+    (el, index) =>
+      findIndex(value => value == el, array) == Some(index),
     array,
   )
 }
 
-export let batchActionCreateAccount = ({index}) => {
+export let batchActionCreateAccount = ({ index }) => {
   Native.promiseBatchActionCreateAccount(Conv.fromInt64(index))
 }

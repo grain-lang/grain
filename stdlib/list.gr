@@ -360,3 +360,11 @@ let join = (separator: String, items: List<String>) => {
     Some(s) => s,
   }
 }
+
+let product = (a, b) => {
+  let mut list = []
+  forEach((aItem) => {
+    forEach((bItem) => {
+     list = [(aItem, bItem), ...list]
+    },b)
+  }, a)
