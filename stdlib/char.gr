@@ -1,3 +1,8 @@
+/**
+ * @module Char: Utilities for working with chars.
+ * @example import Char from "char"
+ */
+
 import WasmI32 from "runtime/unsafe/wasmi32"
 import Memory from "runtime/unsafe/memory"
 import Errors from "runtime/unsafe/errors"
@@ -7,24 +12,30 @@ export *
 
 exception MalformedUtf8
 
-// The minimum value of Unicode characters
-// Number
+/**
+ * The minimum value of Unicode characters.
+ */
 let min = 0x0000
-
-// The maximum value of Unicode characters
-// Number
+/**
+ * The maximum value of Unicode characters.
+ */
 let max = 0x10FFFF
 
-// Returns true if the given number is a valid Unicode scalar value.
-// @param n: Number - the value to check
-// @returns Bool
+/**
+ * Returns true if the given number is a valid Unicode scalar value.
+ * 
+ * @param n: The value to check.
+ * @returns A boolean indicating if the number refers to a valid character.
+ */
 let isValid = (n) => {
   n >= min && (n <= 0xD7FF || n >= 0xE000) && n <= max
 }
-
-// Returns the Unicode code point for the character
-// @param char: Char - the input character
-// @returns Number
+/**
+ * Returns the Unicode code point for the character.
+ * 
+ * @param char: The input character.
+ * @returns The characterCode.
+ */
 @disableGC
 let rec code = (c: Char) => {
   // Algorithm from https://encoding.spec.whatwg.org/#utf-8-decoder
@@ -92,9 +103,12 @@ let rec code = (c: Char) => {
   tagSimpleNumber(result)
 }
 
-// Returns the Char for the given code point. Fails if the code point is invalid.
-// @param codePoint: Number - the Unicode code point
-// @returns Char
+/**
+ * Returns the Char for the given code point. Fails if the code point is invalid.
+ * 
+ * @param codePoint: The Unicode code point.
+ * @returns The character that the charCode represents.
+ */
 @disableGC
 let rec fromCode = (code: Number) => {
   // Algorithm from https://encoding.spec.whatwg.org/#utf-8-encoder
@@ -153,9 +167,12 @@ let rec fromCode = (code: Number) => {
   result
 }
 
-// Returns the next valid Unicode character by code point. Fails if the input character is U+10FFFF.
-// @param char: Char - the input character
-// @returns Char
+/**
+ * Returns the next valid Unicode character by code point. Fails if the input character is U+10FFFF.
+ * 
+ * @param char: the input character.
+ * @returns The next valid Unicode character by code point.
+ */
 let succ = (c) => {
   let codePoint = code(c)
   if (codePoint == max) {
@@ -168,7 +185,7 @@ let succ = (c) => {
 }
 
 // Returns the previous valid Unicode character by code point. Fails if the input character is U+0000.
-// @param char: Char - the input character
+// @param char: Char - The input character
 // @returns Char
 let pred = (c) => {
   let codePoint = code(c)
@@ -181,9 +198,12 @@ let pred = (c) => {
   }
 }
 
-// Creates a new string containing the character.
-// @param char: Char - the character to convert
-// @returns String
+/**
+ * Creates a new string containing the character.
+ * 
+ * @param char: The character to convert.
+ * @returns The character as a string.
+ */
 @disableGC
 export let rec toString = (c: Char) => {
   let (+) = WasmI32.add
