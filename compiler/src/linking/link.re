@@ -32,8 +32,10 @@ let grain_module_name = mod_name => {
 
 let resolve = (~base_dir=?, mod_name) => {
   let mod_name = grain_module_name(mod_name);
-  let fullpath =
-    Module_resolution.locate_unit_object_file(~base_dir?, mod_name);
+  Module_resolution.locate_unit_object_file(~base_dir?, mod_name);
+};
+
+let load_module = fullpath => {
   let ic = open_in_bin(fullpath);
   let length = in_channel_length(ic);
   let module_bytes = Bytes.create(length);
@@ -54,38 +56,29 @@ let is_wasi_module = mod_name => {
   mod_name == "wasi_snapshot_preview1";
 };
 
-let is_wasi_polyfill_module = mod_name => mod_name == wasi_polyfill_module();
+let is_wasi_polyfill_module = mod_path =>
+  mod_path == resolve(wasi_polyfill_module());
 
-let new_base_dir = (cur_base_dir, imported_module) => {
-  let mod_name = grain_module_name(imported_module);
-  if (Module_resolution.is_relpath(mod_name)) {
-    Filename.concat(cur_base_dir, Filename.dirname(mod_name));
-  } else {
-    cur_base_dir;
-  };
-};
+let new_base_dir = Filename.dirname;
 
 let is_main_module = mod_name => mod_name == main_module;
 
-let rec build_dependency_graph = (~base_dir, mod_name) => {
-  let wasm_mod = Hashtbl.find(modules, mod_name);
+let rec build_dependency_graph = (~base_dir, mod_path) => {
+  let wasm_mod = Hashtbl.find(modules, mod_path);
   let num_globals = Global.get_num_globals(wasm_mod);
   for (i in 0 to num_globals - 1) {
     let global = Global.get_global_by_index(wasm_mod, i);
     let imported_module = Import.global_import_get_module(global);
     if (is_grain_module(imported_module)) {
-      if (!Hashtbl.mem(modules, imported_module)) {
-        Hashtbl.add(
-          modules,
-          imported_module,
-          resolve(~base_dir, imported_module),
-        );
+      let resolved_import = resolve(~base_dir, imported_module);
+      if (!Hashtbl.mem(modules, resolved_import)) {
+        Hashtbl.add(modules, resolved_import, load_module(resolved_import));
         build_dependency_graph(
-          ~base_dir=new_base_dir(base_dir, imported_module),
-          imported_module,
+          ~base_dir=new_base_dir(resolved_import),
+          resolved_import,
         );
       };
-      G.add_edge(dependency_graph, mod_name, imported_module);
+      G.add_edge(dependency_graph, mod_path, resolved_import);
     };
   };
   let num_funcs = Function.get_num_functions(wasm_mod);
@@ -94,32 +87,30 @@ let rec build_dependency_graph = (~base_dir, mod_name) => {
     let func = Function.get_function_by_index(wasm_mod, i);
     let imported_module = Import.function_import_get_module(func);
     if (is_grain_module(imported_module)) {
-      if (!Hashtbl.mem(modules, imported_module)) {
-        Hashtbl.add(
-          modules,
-          imported_module,
-          resolve(~base_dir, imported_module),
-        );
+      let resolved_import = resolve(~base_dir, imported_module);
+      if (!Hashtbl.mem(modules, resolved_import)) {
+        Hashtbl.add(modules, resolved_import, load_module(resolved_import));
         build_dependency_graph(
-          new_base_dir(base_dir, imported_module),
-          imported_module,
+          new_base_dir(resolved_import),
+          resolved_import,
         );
       };
-      G.add_edge(dependency_graph, mod_name, imported_module);
+      G.add_edge(dependency_graph, mod_path, resolved_import);
     } else if (has_wasi_polyfill
                && is_wasi_module(imported_module)
-               && !is_wasi_polyfill_module(mod_name)) {
+               && !is_wasi_polyfill_module(mod_path)) {
       // Perform any WASI polyfilling. Note that we skip this step if we are compiling the polyfill module itself.
       // If we are importing a foreign from WASI, then add a dependency to the polyfill instead.
       let imported_module = wasi_polyfill_module();
-      if (!Hashtbl.mem(modules, imported_module)) {
-        Hashtbl.add(modules, imported_module, resolve(imported_module));
+      let resolved_import = resolve(imported_module);
+      if (!Hashtbl.mem(modules, resolved_import)) {
+        Hashtbl.add(modules, resolved_import, load_module(resolved_import));
         build_dependency_graph(
-          new_base_dir(Config.base_path^, imported_module),
-          imported_module,
+          new_base_dir(resolved_import),
+          resolved_import,
         );
       };
-      G.add_edge(dependency_graph, mod_name, imported_module);
+      G.add_edge(dependency_graph, mod_path, resolved_import);
     };
   };
 };
@@ -365,7 +356,10 @@ let link_all = (linked_mod, dependencies, signature) => {
           let internal_name = Global.get_name(global);
           let new_name =
             Hashtbl.find(
-              Hashtbl.find(exported_names, imported_module),
+              Hashtbl.find(
+                exported_names,
+                resolve(~base_dir=new_base_dir(dep), imported_module),
+              ),
               imported_name,
             );
           Hashtbl.add(local_names, internal_name, new_name);
@@ -438,7 +432,10 @@ let link_all = (linked_mod, dependencies, signature) => {
           let internal_name = Function.get_name(func);
           let new_name =
             Hashtbl.find(
-              Hashtbl.find(exported_names, imported_module),
+              Hashtbl.find(
+                exported_names,
+                resolve(~base_dir=new_base_dir(dep), imported_module),
+              ),
               imported_name,
             );
           Hashtbl.add(local_names, internal_name, new_name);
@@ -452,7 +449,7 @@ let link_all = (linked_mod, dependencies, signature) => {
           let wasi_polyfill = wasi_polyfill_module();
           let new_name =
             Hashtbl.find_opt(
-              Hashtbl.find(exported_names, wasi_polyfill),
+              Hashtbl.find(exported_names, resolve(wasi_polyfill)),
               imported_name,
             );
           let new_name =
