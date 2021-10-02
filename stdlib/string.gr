@@ -154,9 +154,9 @@ export let rec indexOf = (p: String, s: String) => {
 /**
  * Find the Char at a specific index.
  * 
- * @param idx: The Index to Check
+ * @param idx: The index to check
  * @param s: The string to search
- * @returns The char a the index of the string
+ * @returns The char at the provided index
  * 
  * @example String.charAt(5, "Hello world")
  */
@@ -277,7 +277,7 @@ export let explode = (str) => {
  * Create a string from an array of characters.
  * 
  * @param input: The array to implode
- * @returns A string based on the inputted array of characters
+ * @returns A string representation of the array of characters
  * 
  * @example String.implode([> 'H', 'e', 'l', 'l', 'o' ])
  */
@@ -344,7 +344,7 @@ export let rec implode = (arr: Array<Char>) => {
  * 
  * @param sequence: The sequence to split on
  * @param input: The string to split
- * @returns An array made of the initial string split at the sequence
+ * @returns An array of substrings from the initial string
  * 
  * @example String.split(" ", "Hello world")
  */
