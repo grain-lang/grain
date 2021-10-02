@@ -36,4 +36,4 @@ let stringTailMatcher = (toMatch, len) =>
     stack,
   ) => {
   true
-}
+ }

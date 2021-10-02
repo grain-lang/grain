@@ -19,7 +19,7 @@ let () =
     }
   );
 
-let test_dir = Filename.concat(Sys.getcwd(), "test");
+let test_dir = Filename.concat(Grain_utils.Files.get_cwd(), "test");
 let test_libs_dir = Filename.concat(test_dir, "test-libs");
 let test_input_dir = Filename.concat(test_dir, "input");
 let test_output_dir = Filename.concat(test_dir, "output");
