@@ -102,7 +102,9 @@ let realpath = path => {
   | None => None
   | Some(Fp.Absolute(abspath)) => Some(Fp.toString(abspath))
   | Some(Fp.Relative(relpath)) =>
-    Some(Fp.toString(Fp.join(Fp.absoluteExn(Sys.getcwd()), relpath)))
+    let base = Fp.absoluteExn(Grain_utils.Files.get_cwd());
+    let full_path = Fp.join(base, relpath);
+    Some(Fp.toString(full_path));
   };
 };
 
