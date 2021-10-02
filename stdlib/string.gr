@@ -1662,7 +1662,7 @@ export let trimStart = (str: String) => trimString(str, false)
  */
 export let trimEnd = (str: String) => trimString(str, true)
 /**
- * Trims a string removing any leading or following white spaces.
+ * Trims a string removing leading and following white spaces.
  *
  * @param str: The string to be trimmed.
  * @returns The trimmed string.
