@@ -126,14 +126,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`idx`|`Number`|The Index to Check|
+|`idx`|`Number`|The index to check|
 |`s`|`String`|The string to search|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Char`|The char a the index of the string|
+|`Char`|The char at the provided index|
 
 Examples:
 
@@ -185,7 +185,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`String`|A string based on the inputted array of characters|
+|`String`|A string representation of the array of characters|
 
 Examples:
 
@@ -212,7 +212,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Array<String>`|An array made of the initial string split at the sequence|
+|`Array<String>`|An array of substrings from the initial string|
 
 Examples:
 
