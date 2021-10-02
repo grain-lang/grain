@@ -1,3 +1,7 @@
+/**
+ * @module Float32: Operations on the Float32 type.
+ * @example import Float32 from "float32"
+ */
 import WasmI32 from "runtime/unsafe/wasmi32"
 import WasmF32 from "runtime/unsafe/wasmf32"
 import Memory from "runtime/unsafe/memory"
@@ -10,10 +14,33 @@ import {
   coerceFloat32ToNumber as toNumber
 } from "runtime/numbers"
 
+/**
+ * @section Values: Functions for working with the `Float32` data type.
+ */
+
+/**
+ * Coverts the argument from a `Number` to a `Float32`.
+ *
+ * @param x: The `Number` to convert.
+ * @returns The converted `Number`.
+ */
 export fromNumber
+
+/**
+ * Coverts the argument from a `Float32` to a `Number`.
+ *
+ * @param x: The `Float32` to convert.
+ * @returns The converted `Float32`.
+ */
 export toNumber
 
-
+/**
+ * Floating-point addition.
+ *
+ * @param x: The first operand.
+ * @param y: The second operand.
+ * @returns The sum of the two operands.
+ */
 @disableGC
 export let rec add = (x: Float32, y: Float32) => {
   let xv = WasmF32.load(WasmI32.fromGrain(x), 8n)
@@ -26,6 +53,13 @@ export let rec add = (x: Float32, y: Float32) => {
   ret
 }
 
+/**
+ * Floating-point subtraction.
+ *
+ * @param x: The first operand.
+ * @param y: The second operand.
+ * @returns The difference of the two operands.
+ */
 @disableGC
 export let rec sub = (x: Float32, y: Float32) => {
   let xv = WasmF32.load(WasmI32.fromGrain(x), 8n)
@@ -38,6 +72,13 @@ export let rec sub = (x: Float32, y: Float32) => {
   ret
 }
 
+/**
+ * Floating-point multiplication.
+ *
+ * @param x: The first operand.
+ * @param y: The second operand.
+ * @returns The product of the two operands.
+ */
 @disableGC
 export let rec mul = (x: Float32, y: Float32) => {
   let xv = WasmF32.load(WasmI32.fromGrain(x), 8n)
@@ -50,6 +91,13 @@ export let rec mul = (x: Float32, y: Float32) => {
   ret
 }
 
+/**
+ * Floating-point division.
+ *
+ * @param x: The first operand.
+ * @param y: The second operand.
+ * @returns The quotient of the two operands.
+ */
 @disableGC
 export let rec div = (x: Float32, y: Float32) => {
   let xv = WasmF32.load(WasmI32.fromGrain(x), 8n)
@@ -62,8 +110,17 @@ export let rec div = (x: Float32, y: Float32) => {
   ret
 }
 
+/**
+ * @section Comparisons: Comparison functions for working with floating points.
+ */
 
-// Float32 comparisons
+/**
+ * Checks if the first argument is strictly less than the second argument.
+ *
+ * @param x: The first argument.
+ * @param y: The second argument.
+ * @returns A boolean representing if the first argument is less then the second argument.
+ */
 @disableGC
 export let rec lt = (x: Float32, y: Float32) => {
   let xv = WasmF32.load(WasmI32.fromGrain(x), 8n)
@@ -75,6 +132,13 @@ export let rec lt = (x: Float32, y: Float32) => {
   ret
 }
 
+/**
+ * Checks if the first argument is strictly greater than the second argument.
+ *
+ * @param x: The first argument.
+ * @param y: The second argument.
+ * @returns A boolean representing if the first argument is greater then the second argument.
+ */
 @disableGC
 export let rec gt = (x: Float32, y: Float32) => {
   let xv = WasmF32.load(WasmI32.fromGrain(x), 8n)
@@ -86,6 +150,13 @@ export let rec gt = (x: Float32, y: Float32) => {
   ret
 }
 
+/**
+ * Checks if the first argument is less than or equal to the second argument.
+ *
+ * @param x: The first argument.
+ * @param y: The second argument.
+ * @returns A boolean representing if the first argument is less then or equal to the second argument.
+ */
 @disableGC
 export let rec lte = (x: Float32, y: Float32) => {
   let xv = WasmF32.load(WasmI32.fromGrain(x), 8n)
@@ -97,6 +168,13 @@ export let rec lte = (x: Float32, y: Float32) => {
   ret
 }
 
+/**
+ * Checks if the first argument is greater than or equal to the second argument.
+ *
+ * @param x: The first argument.
+ * @param y: The second argument.
+ * @returns A boolean representing if the first argument is greater then or equal to the second argument.
+ */
 @disableGC
 export let rec gte = (x: Float32, y: Float32) => {
   let xv = WasmF32.load(WasmI32.fromGrain(x), 8n)
@@ -108,8 +186,15 @@ export let rec gte = (x: Float32, y: Float32) => {
   ret
 }
 
-// floating-point constants:
+/**
+ * @section Constants: Constants related to floating points.
+ */
 
+/**
+ * Generate infinity as a `Float32`.
+ *
+ * @returns infinity as a `Float32`.
+ */
 @disableGC
 let rec makeInfinity = () => {
   let ptr = newFloat32(WasmF32.reinterpretI32(0b01111111100000000000000000000000n))
@@ -118,8 +203,16 @@ let rec makeInfinity = () => {
   ret
 }
 
+/**
+ * Infinity as a `Float32`.
+ */
 export let infinity = makeInfinity()
 
+/**
+ * Generate Nan as a `Float32`.
+ *
+ * @returns nan as a `Float32`.
+ */
 @disableGC
 let rec makeNaN = () => {
   let ptr = newFloat32(WasmF32.reinterpretI32(0b01111111100000000000000000000001n))
@@ -128,4 +221,7 @@ let rec makeNaN = () => {
   ret
 }
 
+/**
+ * Nan as a `Float32`.
+ */
 export let nan = makeNaN()
