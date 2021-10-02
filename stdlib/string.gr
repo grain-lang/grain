@@ -49,6 +49,7 @@ export let rec length = (s: String) => {
   ret
 }
 
+// disableGC-safe wrapper
 @disableGC
 let wasmSafeLength = (s: String) => {
   Memory.incRef(WasmI32.fromGrain(length))
@@ -73,6 +74,7 @@ export let rec byteLength = (s: String) => {
   ret
 }
 
+// disableGC-safe wrapper
 @disableGC
 let wasmSafeByteLength = (s: String) => {
   Memory.incRef(WasmI32.fromGrain(byteLength))
@@ -1138,7 +1140,7 @@ let rec encodeHelp = (s: String, encoding: Encoding, includeBom: Bool) => {
 }
 
 /**
- * Encodes the given string using the given encoding scheme. A byte-order marker
+ * Encodes the given string using the given encoding scheme. including a byte-order marker.
  * will not be included in the output.
  * 
  * @param s: The input string

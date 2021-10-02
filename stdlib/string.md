@@ -397,7 +397,7 @@ Returns:
 encode : (String, Encoding) -> Bytes
 ```
 
-Encodes the given string using the given encoding scheme. A byte-order marker
+Encodes the given string using the given encoding scheme. including a byte-order marker.
 will not be included in the output.
 
 Parameters:
