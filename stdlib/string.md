@@ -32,7 +32,7 @@ Returns:
 Examples:
 
 ```grain
-String.concat("Hello", " World")
+String.concat("Hello", " world")
 ```
 
 ### String.**length**
@@ -58,7 +58,7 @@ Returns:
 Examples:
 
 ```grain
-String.length("Hello World")
+String.length("Hello world")
 ```
 
 ### String.**byteLength**
@@ -84,7 +84,7 @@ Returns:
 Examples:
 
 ```grain
-String.byteLength("Hello World")
+String.byteLength("Hello world")
 ```
 
 ### String.**indexOf**
@@ -111,7 +111,7 @@ Returns:
 Examples:
 
 ```grain
-String.indexOf("Hello World", "World")
+String.indexOf("world", "Hello world")
 ```
 
 ### String.**charAt**
@@ -138,7 +138,7 @@ Returns:
 Examples:
 
 ```grain
-String.charAt(5, "Hello World")
+String.charAt(5, "Hello world")
 ```
 
 ### String.**explode**
@@ -147,7 +147,7 @@ String.charAt(5, "Hello World")
 explode : String -> Array<Char>
 ```
 
-Split a string into its UTF-8 characters.
+Split a string into its Unicode characters.
 
 Parameters:
 
@@ -164,7 +164,7 @@ Returns:
 Examples:
 
 ```grain
-String.explode("Hello World")
+String.explode("Hello world")
 ```
 
 ### String.**implode**
@@ -190,7 +190,7 @@ Returns:
 Examples:
 
 ```grain
-String.implode([> 'H', 'e', 'l', 'l', 'o', ' ', 'W', 'o', 'r', 'l', 'd' ])
+String.implode([> 'H', 'e', 'l', 'l', 'o' ])
 ```
 
 ### String.**split**
@@ -217,7 +217,7 @@ Returns:
 Examples:
 
 ```grain
-String.split("Hello World", " ")
+String.split(" ", "Hello world")
 ```
 
 ### String.**slice**
@@ -245,7 +245,7 @@ Returns:
 Examples:
 
 ```grain
-String.slice(0, 5, "Hello World")
+String.slice(0, 5, "Hello world")
 ```
 
 ### String.**contains**
@@ -272,7 +272,7 @@ Returns:
 Examples:
 
 ```grain
-String.contains("Hello World", "World")
+String.contains("world", "Hello world")
 ```
 
 ### String.**startsWith**
@@ -299,7 +299,7 @@ Returns:
 Examples:
 
 ```grain
-String.startsWith("Hello World", "Hello")
+String.startsWith("world", "Hello world")
 ```
 
 ### String.**endsWith**
@@ -326,7 +326,7 @@ Returns:
 Examples:
 
 ```grain
-String.endsWith("Hello World", "World")
+String.endsWith("world", "Hello world")
 ```
 
 ### String.**Encoding**
@@ -341,7 +341,7 @@ enum Encoding {
 }
 ```
 
-Byte Encoding's
+Byte Encodings
 
 ### String.**encodeAt**
 
@@ -349,7 +349,7 @@ Byte Encoding's
 encodeAt : (String, Encoding, Bytes, Number) -> Bytes
 ```
 
-Encodes the given string using the given encoding scheme.
+Encodes the given string using the given encoding scheme at a supplied offset in a Bytes instance, including byte-order marker.
 
 Parameters:
 
@@ -544,7 +544,7 @@ Parameters:
 Examples:
 
 ```grain
-String.forEachCodePoint((i: Number) => { print(i) }, "World World")
+String.forEachCodePoint(i => print(i), "Hello world")
 ```
 
 ### String.**forEachCodePointi**
@@ -567,6 +567,6 @@ Parameters:
 Examples:
 
 ```grain
-String.forEachCodePointi((codepoint:number, i: Number) => { print(i) }, "World World")
+String.forEachCodePointi((codepoint, index) => print((codepoint, index)), "Hello world")
 ```
 

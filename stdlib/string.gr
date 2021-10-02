@@ -14,7 +14,7 @@ import { tagSimpleNumber, allocateArray, allocateChar, allocateString, allocateB
  * @param str2: The second string
  * @returns The result of the joined strings
  * 
- * @example String.concat("Hello", " World")
+ * @example String.concat("Hello", " world")
  */
 export let concat = (++)
 
@@ -24,7 +24,7 @@ export let concat = (++)
  * @param input: The string to check
  * @returns The length of the provided string
  * 
- * @example String.length("Hello World")
+ * @example String.length("Hello world")
  */
 @disableGC
 export let rec length = (s: String) => {
@@ -62,7 +62,7 @@ let wasmSafeLength = (s: String) => {
  * @param input: The string to check
  * @returns The byte length of the string
  * 
- * @example String.byteLength("Hello World")
+ * @example String.byteLength("Hello world")
  */
 @disableGC
 export let rec byteLength = (s: String) => {
@@ -87,7 +87,7 @@ let wasmSafeByteLength = (s: String) => {
  * @param input: The string to check
  * @returns The starting index of he substring
  * 
- * @example String.indexOf("Hello World", "World")
+ * @example String.indexOf("world", "Hello world")
  */
 @disableGC
 export let rec indexOf = (p: String, s: String) => {
@@ -156,7 +156,7 @@ export let rec indexOf = (p: String, s: String) => {
  * @param s: The string to search
  * @returns The char a the index of the string
  * 
- * @example String.charAt(5, "Hello World")
+ * @example String.charAt(5, "Hello world")
  */
 @disableGC
 export let rec charAt = (idx: Number, s: String) => {
@@ -259,12 +259,12 @@ let explodeHelp = (s: String, chars) => {
 }
 
 /**
- * Split a string into its UTF-8 characters.
+ * Split a string into its Unicode characters.
  * 
  * @param input: The string to split
  * @returns The string split into an array of characters
  * 
- * @example String.explode("Hello World")
+ * @example String.explode("Hello world")
  */
 @disableGC
 export let explode = (str) => {
@@ -277,7 +277,7 @@ export let explode = (str) => {
  * @param input: The array to implode
  * @returns A string based on the inputted array of characters
  * 
- * @example String.implode([> 'H', 'e', 'l', 'l', 'o', ' ', 'W', 'o', 'r', 'l', 'd' ])
+ * @example String.implode([> 'H', 'e', 'l', 'l', 'o' ])
  */
 @disableGC
 export let rec implode = (arr: Array<Char>) => {
@@ -344,7 +344,7 @@ export let rec implode = (arr: Array<Char>) => {
  * @param input: The string to split
  * @returns An array made of the initial string split at the sequence
  * 
- * @example String.split("Hello World", " ")
+ * @example String.split(" ", "Hello world")
  */
 @disableGC
 export let rec split = (p: String, s: String) => {
@@ -443,7 +443,7 @@ export let rec split = (p: String, s: String) => {
  * @param input: The input string
  * @returns The substring from the initial string
  * 
- * @example String.slice(0, 5, "Hello World")
+ * @example String.slice(0, 5, "Hello world")
  */
 @disableGC
 export let rec slice = (start: Number, to: Number, s: String) => {
@@ -538,7 +538,7 @@ export let rec slice = (start: Number, to: Number, s: String) => {
  * @param input: The input string
  * @returns A boolean indicating if the string contains the substring
  * 
- * @example String.contains("Hello World", "World")
+ * @example String.contains("world", "Hello world")
  */
 @disableGC
 export let rec contains = (p: String, s: String) => {
@@ -627,7 +627,7 @@ export let rec contains = (p: String, s: String) => {
  * @param input: The input string
  * @returns A boolean indicating if the string starts with the substring
  * 
- * @example String.startsWith("Hello World", "Hello")
+ * @example String.startsWith("world", "Hello world")
  */
 @disableGC
 export let rec startsWith = (p: String, s: String) => {
@@ -665,7 +665,7 @@ export let rec startsWith = (p: String, s: String) => {
  * @param input: The input string
  * @returns A boolean indicating if the ends starts with the substring
  * 
- * @example String.endsWith("Hello World", "World")
+ * @example String.endsWith("world", "Hello world")
  */
 @disableGC
 export let rec endsWith = (p: String, s: String) => {
@@ -697,7 +697,7 @@ export let rec endsWith = (p: String, s: String) => {
   ret
 }
 /**
- * Byte Encoding's
+ * Byte Encodings
  */
 export enum Encoding {
   UTF8,
@@ -871,7 +871,7 @@ let initPtr = () => {
 initPtr();
 
 /**
- * Encodes the given string using the given encoding scheme.
+ * Encodes the given string using the given encoding scheme at a supplied offset in a Bytes instance.
  * 
  * @param s: The input string
  * @param encoding: The encoding to use
@@ -1075,7 +1075,7 @@ let rec encodeAtHelp = (s: String, encoding: Encoding, includeBom: Bool, dest: B
 }
 
 /**
- * Encodes the given string using the given encoding scheme.
+ * Encodes the given string using the given encoding scheme at a supplied offset in a Bytes instance, including byte-order marker.
  * 
  * @param s: The input string
  * @param encoding: The encoding to use
@@ -1607,7 +1607,7 @@ export let decodeKeepBom = (bytes: Bytes, encoding: Encoding) => {
  * @param fn: The iterator function
  * @param str: The string to iterate
  * 
- * @example String.forEachCodePoint((i: Number) => { print(i) }, "World World")
+ * @example String.forEachCodePoint(i => print(i), "Hello world")
  */
 @disableGC
 export let rec forEachCodePoint = (fn: (Number) -> Void, str: String) => {
@@ -1667,7 +1667,7 @@ export let rec forEachCodePoint = (fn: (Number) -> Void, str: String) => {
  * @param fn: The iterator function
  * @param str: The string to iterate
  * 
- * @example String.forEachCodePointi((codepoint:number, i: Number) => { print(i) }, "World World")
+ * @example String.forEachCodePointi((codepoint, index) => print((codepoint, index)), "Hello world")
  */
 @disableGC
 export let rec forEachCodePointi = (fn: (Number, Number) -> Void, str: String) => {
