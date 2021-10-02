@@ -121,8 +121,12 @@ let walktree =
 
   let iter_location = (self, location) =>
     if (!List.mem(Code(location), all_locations^)) {
-      all_locations := List.append(all_locations^, [Code(location)]);
+      //all_locations := List.append(all_locations^, [Code(location)]);
+      all_locations := List.cons(Code(location), all_locations^);
     };
+
+  // put it in the right order ready for the final sort
+  all_locations := List.rev(all_locations^);
 
   let iterator = {...Ast_iterator.default_iterator, location: iter_location};
 
@@ -148,7 +152,79 @@ let walktree =
   // );
 };
 
+let rec partition_comments_internal =
+        (
+          loc: Grain_parsing.Location.t,
+          range: option(Grain_parsing.Location.t),
+          locations: list(node_t),
+          preComments:list(Grain_parsing.Parsetree.comment)
+        ) => {
+  //Debug.print_loc("partition_comments_internal", loc);
+ 
+  switch (locations) {
+  | [] => ([], [])
+  | [first, ...second] =>
+    let nodeLoc = get_node_loc(first);
+
+    let inRange =
+      switch (range) {
+      | None => true
+      | Some(rangeloc) =>
+        if (is_first_inside_second(nodeLoc, rangeloc)) {
+          true;
+        } else {
+          false;
+        }
+      };
+
+
+    let comparedLoc = compare_partition_locations(loc, nodeLoc);
+
+    let res =
+      if (comparedLoc == 0) {
+        partition_comments_internal(loc, range, second,preComments);
+      } else if (comparedLoc > 0) {
+        if (!inRange) {
+          partition_comments_internal(loc, range, second,preComments);
+        } else {
+          let newPre = switch (first) {
+          | Code(_) =>
+           []
+          | Comment((l, c)) =>
+          print_endline("Adding pre comment");
+          Comments.print_comment(c);
+             preComments @ [c]
+          };
+          partition_comments_internal(loc, range, second,newPre);
+        };
+      } else {
+        switch (first) {
+        | Code(_) => (preComments, [])
+        | Comment((l, c)) =>
+          let (pre, post) = partition_comments_internal(loc, range, second,preComments);
+            print_endline("Adding post comment");
+          Comments.print_comment(c);
+          (pre,  [c] @ post);
+        };
+      };
+
+    res;
+  };
+};
+
 let partition_comments =
+    (loc: Grain_parsing.Location.t, range: option(Grain_parsing.Location.t))
+    : (
+        list(Grain_parsing.Parsetree.comment),
+        list(Grain_parsing.Parsetree.comment),
+      ) => {
+  //print_endline("");
+  // Debug.print_loc("*** partition_comments", loc);
+  let (pre, post) = partition_comments_internal(loc, range, all_locations^,[]);
+  (pre, post);
+};
+
+let partition_comments_old =
     (loc: Grain_parsing.Location.t, range: option(Grain_parsing.Location.t))
     : (
         list(Grain_parsing.Parsetree.comment),
