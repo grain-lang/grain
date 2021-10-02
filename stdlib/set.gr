@@ -20,8 +20,8 @@ record Set<k> {
 /**
  * Creates a new, empty set with an initial storage size for the given number of elements.
  *
- * @param size: The size of the set.
- * @returns An empty set of the entered size.
+ * @param size: The size of the set
+ * @returns An empty set of the entered size
  */
 export let makeSized = (size) => {
   let buckets = Array.make(size, None);
@@ -33,7 +33,7 @@ export let makeSized = (size) => {
 /**
  * Creates a new, empty set.
  *
- * @returns An empty set.
+ * @returns An empty set
  */
 export let make = () => {
   makeSized(16)
@@ -107,8 +107,8 @@ let rec nodeInBucket = (key, node) => {
 /**
  * Adds a new value to the set. If the value already exists, nothing happens.
  *
- * @param key: The value to add to the set.
- * @param set: The set to append too.
+ * @param key: The value to add to the set
+ * @param set: The set to append too
  */
 export let add = (key, set) => {
   let buckets = set.buckets;
@@ -137,9 +137,9 @@ export let add = (key, set) => {
 /**
  * Returns `true` if the set contains the given value.
  *
- * @param key: The key to search for.
- * @param set: The set to be searched.
- * @returns `true` if the set contains the given value.
+ * @param key: The key to search for
+ * @param set: The set to be searched
+ * @returns `true` if the set contains the given value
  */
 export let contains = (key, set) => {
   let buckets = set.buckets;
@@ -168,8 +168,8 @@ let rec removeInBucket = (key, node) => {
 /**
  * Removes the given value from the set.
  *
- * @param key: The value to remove from the set.
- * @param set: The set to remove from.
+ * @param key: The value to remove from the set
+ * @param set: The set to remove from
  */
 export let remove = (key, set) => {
   let buckets = set.buckets;
@@ -194,8 +194,8 @@ export let remove = (key, set) => {
 /**
  * Returns the number of values within the set.
  *
- * @param set: The set to determine the length from.
- * @returns The length of the set.
+ * @param set: The set to determine the length from
+ * @returns The length of the set
  */
 export let size = (set) => {
   set.size
@@ -204,8 +204,8 @@ export let size = (set) => {
 /**
  * Returns a boolean indicating weather or not the set is empty.
  *
- * @param set: The set to check.
- * @returns `true` if the set contains no values.
+ * @param set: The set to check
+ * @returns `true` if the set contains no values
  */
 export let isEmpty = (set) => {
   size(set) == 0
@@ -214,7 +214,7 @@ export let isEmpty = (set) => {
 /**
  * Removes all values from the given set.
  *
- * @param set: The set to clear.
+ * @param set: The set to clear
  */
 export let clear = (set) => {
   set.size = 0;
@@ -237,8 +237,8 @@ let rec forEachBucket = (fn, node) => {
 /**
  * Iterates the given function over each value in the set.
  *
- * @param fn: The function to call on each element in the set.
- * @param set: The set to iterate.
+ * @param fn: The function to call on each element in the set
+ * @param set: The set to iterate
  */
 export let forEach = (fn, set) => {
   let buckets = set.buckets;
@@ -258,10 +258,10 @@ let rec reduceEachBucket = (fn, node, acc) => {
 /**
  * Reduces all values within a set to a single value. The reducer function is called with the accumulator and the current value.
  *
- * @param fn: The function to call on each element in the set.
- * @param init: A value to which the previousValue is initialized with.
- * @param set: The set to reduce.
- * @returns The reduced set.
+ * @param fn: The function to call on each element in the set
+ * @param init: A value to which the previousValue is initialized with
+ * @param set: The set to reduce
+ * @returns The reduced set
  */
 export let reduce = (fn, init, set) => {
   let buckets = set.buckets;
@@ -275,8 +275,8 @@ export let reduce = (fn, init, set) => {
 /**
  * Keeps all values that the predicate returned `true` for from the set.
  *
- * @param fn: The function used to filter the set returning `true` indicates to keep the value.
- * @param set: The set to filter.
+ * @param fn: The function used to filter the set returning `true` indicates to keep the value
+ * @param set: The set to filter
  */
 export let filter = (predicate, set) => {
   let keysToRemove = reduce((list, key) =>
@@ -293,8 +293,8 @@ export let filter = (predicate, set) => {
 /**
  * Removes all values that the predicate returned true for from the set.
  *
- * @param fn: The function used to filter the set returning `true` indicates to remove the value.
- * @param set: The set to filter.
+ * @param fn: The function used to filter the set returning `true` indicates to remove the value
+ * @param set: The set to filter
  */
 export let reject = (predicate, set) => {
   filter((key) => !predicate(key), set)
@@ -303,8 +303,8 @@ export let reject = (predicate, set) => {
 /**
  * Returns a list from the values of a set.
  *
- * @param set: The set to convert.
- * @returns The generated List.
+ * @param set: The set to convert
+ * @returns The generated List
  */
 export let toList = (set) => {
   reduce((list, key) => [key, ...list], [], set)
@@ -313,8 +313,8 @@ export let toList = (set) => {
 /**
  * Creates a set from a list.
  *
- * @param list: The list to convert.
- * @returns The generated set.
+ * @param list: The list to convert
+ * @returns The generated set
  */
 export let fromList = (list) => {
   let set = make();
@@ -327,8 +327,8 @@ export let fromList = (list) => {
 /**
  * Returns an array from the values of a set.
  *
- * @param set: The set to convert.
- * @returns The generated array.
+ * @param set: The set to convert
+ * @returns The generated array
  */
 export let toArray = (set) => {
   Array.fromList(toList(set))
@@ -337,8 +337,8 @@ export let toArray = (set) => {
 /**
  * Creates a set from an array.
  *
- * @param array: The array to convert.
- * @returns The generated set.
+ * @param array: The array to convert
+ * @returns The generated set
  */
 export let fromArray = (array) => {
   let set = make();
@@ -351,9 +351,9 @@ export let fromArray = (array) => {
 /**
  * Creates a single set from the union of the given sets.
  *
- * @param set1: The first set to union.
- * @param set2: The second set to union.
- * @returns The generated set.
+ * @param set1: The first set to union
+ * @param set2: The second set to union
+ * @returns The generated set
  */
 export let union = (set1, set2) => {
   let set = make();
@@ -369,9 +369,9 @@ export let union = (set1, set2) => {
 /**
  * Creates a set from the difference of the given sets.
  *
- * @param set1: The first set to merge.
- * @param set2: The second set to merge.
- * @returns The generated set.
+ * @param set1: The first set to merge
+ * @param set2: The second set to merge
+ * @returns The generated set
  */
 export let diff = (set1, set2) => {
   let set = make();
@@ -391,9 +391,9 @@ export let diff = (set1, set2) => {
 /**
  * Creates a set from the intersection of the given sets.
  *
- * @param set1: The first set to merge.
- * @param set2: The second set to merge.
- * @returns The generated set.
+ * @param set1: The first set to merge
+ * @param set2: The second set to merge
+ * @returns The generated set
  */
 export let intersect = (set1, set2) => {
   let set = make();
@@ -415,8 +415,8 @@ export let intersect = (set1, set2) => {
 /**
  * Returns a tuple representing the internal state state of the set.
  *
- * @param set: The set to operate on.
- * @returns The tuple representation of the internal state of the set.
+ * @param set: The set to operate on
+ * @returns The tuple representation of the internal state of the set
  */
 export let getInternalStats = (set) => {
   (set.size, Array.length(set.buckets))

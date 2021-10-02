@@ -38,13 +38,13 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`size`|`Number`|The size of the set.|
+|`size`|`Number`|The size of the set|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Set<a>`|An empty set of the entered size.|
+|`Set<a>`|An empty set of the entered size|
 
 ### Set.**make**
 
@@ -58,7 +58,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Set<a>`|An empty set.|
+|`Set<a>`|An empty set|
 
 ### Set.**add**
 
@@ -72,8 +72,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`key`|`a`|The value to add to the set.|
-|`set`|`Set<a>`|The set to append too.|
+|`key`|`a`|The value to add to the set|
+|`set`|`Set<a>`|The set to append too|
 
 ### Set.**contains**
 
@@ -87,14 +87,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`key`|`a`|The key to search for.|
-|`set`|`Set<a>`|The set to be searched.|
+|`key`|`a`|The key to search for|
+|`set`|`Set<a>`|The set to be searched|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if the set contains the given value.|
+|`Bool`|`true` if the set contains the given value|
 
 ### Set.**remove**
 
@@ -108,8 +108,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`key`|`a`|The value to remove from the set.|
-|`set`|`Set<a>`|The set to remove from.|
+|`key`|`a`|The value to remove from the set|
+|`set`|`Set<a>`|The set to remove from|
 
 ### Set.**size**
 
@@ -123,13 +123,13 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`set`|`Set<a>`|The set to determine the length from.|
+|`set`|`Set<a>`|The set to determine the length from|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Number`|The length of the set.|
+|`Number`|The length of the set|
 
 ### Set.**isEmpty**
 
@@ -143,13 +143,13 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`set`|`Set<a>`|The set to check.|
+|`set`|`Set<a>`|The set to check|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if the set contains no values.|
+|`Bool`|`true` if the set contains no values|
 
 ### Set.**clear**
 
@@ -163,7 +163,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`set`|`Set<a>`|The set to clear.|
+|`set`|`Set<a>`|The set to clear|
 
 ### Set.**forEach**
 
@@ -177,8 +177,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> b`|The function to call on each element in the set.|
-|`set`|`Set<a>`|The set to iterate.|
+|`fn`|`a -> b`|The function to call on each element in the set|
+|`set`|`Set<a>`|The set to iterate|
 
 ### Set.**reduce**
 
@@ -192,15 +192,15 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`(a, b) -> a`|The function to call on each element in the set.|
-|`init`|`a`|A value to which the previousValue is initialized with.|
-|`set`|`Set<a>`|The set to reduce.|
+|`fn`|`(a, b) -> a`|The function to call on each element in the set|
+|`init`|`a`|A value to which the previousValue is initialized with|
+|`set`|`Set<a>`|The set to reduce|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`a`|The reduced set.|
+|`a`|The reduced set|
 
 ### Set.**filter**
 
@@ -214,8 +214,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Bool`|The function used to filter the set returning `true` indicates to keep the value.|
-|`set`|`Set<a>`|The set to filter.|
+|`fn`|`a -> Bool`|The function used to filter the set returning `true` indicates to keep the value|
+|`set`|`Set<a>`|The set to filter|
 
 ### Set.**reject**
 
@@ -229,8 +229,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Bool`|The function used to filter the set returning `true` indicates to remove the value.|
-|`set`|`Set<a>`|The set to filter.|
+|`fn`|`a -> Bool`|The function used to filter the set returning `true` indicates to remove the value|
+|`set`|`Set<a>`|The set to filter|
 
 ### Set.**toList**
 
@@ -244,13 +244,13 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`set`|`Set<a>`|The set to convert.|
+|`set`|`Set<a>`|The set to convert|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`List<a>`|The generated List.|
+|`List<a>`|The generated List|
 
 ### Set.**fromList**
 
@@ -264,13 +264,13 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`list`|`List<a>`|The list to convert.|
+|`list`|`List<a>`|The list to convert|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Set<a>`|The generated set.|
+|`Set<a>`|The generated set|
 
 ### Set.**toArray**
 
@@ -284,13 +284,13 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`set`|`Set<a>`|The set to convert.|
+|`set`|`Set<a>`|The set to convert|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Array<a>`|The generated array.|
+|`Array<a>`|The generated array|
 
 ### Set.**fromArray**
 
@@ -304,13 +304,13 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`array`|`Array<a>`|The array to convert.|
+|`array`|`Array<a>`|The array to convert|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Set<a>`|The generated set.|
+|`Set<a>`|The generated set|
 
 ### Set.**union**
 
@@ -324,14 +324,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`set1`|`Set<a>`|The first set to union.|
-|`set2`|`Set<a>`|The second set to union.|
+|`set1`|`Set<a>`|The first set to union|
+|`set2`|`Set<a>`|The second set to union|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Set<a>`|The generated set.|
+|`Set<a>`|The generated set|
 
 ### Set.**diff**
 
@@ -345,14 +345,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`set1`|`Set<a>`|The first set to merge.|
-|`set2`|`Set<a>`|The second set to merge.|
+|`set1`|`Set<a>`|The first set to merge|
+|`set2`|`Set<a>`|The second set to merge|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Set<a>`|The generated set.|
+|`Set<a>`|The generated set|
 
 ### Set.**intersect**
 
@@ -366,14 +366,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`set1`|`Set<a>`|The first set to merge.|
-|`set2`|`Set<a>`|The second set to merge.|
+|`set1`|`Set<a>`|The first set to merge|
+|`set2`|`Set<a>`|The second set to merge|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Set<a>`|The generated set.|
+|`Set<a>`|The generated set|
 
 ### Set.**getInternalStats**
 
@@ -387,11 +387,11 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`set`|`Set<a>`|The set to operate on.|
+|`set`|`Set<a>`|The set to operate on|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`(Number, Number)`|The tuple representation of the internal state of the set.|
+|`(Number, Number)`|The tuple representation of the internal state of the set|
 
