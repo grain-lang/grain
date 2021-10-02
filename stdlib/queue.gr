@@ -1,46 +1,94 @@
+/**
+ * @module Queue: An immutable queue implementation. A queue is a FIFO (first-in-first-out) data structure where new values are added to the end and retrieved or removed from the beginning.
+ * @example import Queue from "queue"
+ */
 import List from "list"
 
 record Queue<a> { forwards: List<a>, backwards: List<a> }
 
+/**
+ * @section Values: Functions for working with queues.
+ */
+
+/**
+ * Creates a new queue.
+ * 
+ * @returns A new empty queue.
+ */
 export let make = () => {
-    { forwards: [], backwards: [] }
+  { forwards: [], backwards: [] }
 }
 
-export let isEmpty = (queue) => {
-    match (queue) {
-        { forwards: [], backwards: [] } => true,
-        _ => false
-    }
+/**
+ * Checks if the given queue contains no elements.
+ * 
+ * @param queue: The queue to check.
+ * @returns A boolean representing weather or not the queue is empty.
+ */
+export let isEmpty = queue => {
+  match (queue) {
+    { forwards: [], backwards: [] } => true,
+    _ => false,
+  }
 }
 
-export let peek = (queue) => {
-    match (queue) {
-        { forwards: [], backwards: [] } => None,
-        { forwards, backwards } => List.head(forwards)
-    }
+/**
+ * Returns the element on the top of the queue.
+ * 
+ * @param queue: The queue to peek into.
+ * @returns The element on the top of the queue, if the queue is empty it returns `None`.
+ */
+export let peek = queue => {
+  match (queue) {
+    { forwards: [], backwards: [] } => None,
+    { forwards, backwards } => List.head(forwards),
+  }
 }
 
+/**
+ * Pushes a new element into the queue.
+ * 
+ * @param value: The value to push.
+ * @param queue: The queue to push to.
+ * @returns The queue with the addition of the new element.
+ */
 export let push = (value, queue) => {
-    match (queue) {
-        { forwards: [], backwards: [] } => { forwards: [value], backwards: [] },
-        { forwards, backwards } => { forwards, backwards: [value, ...backwards] }
-    }
+  match (queue) {
+    { forwards: [], backwards: [] } => { forwards: [value], backwards: [] },
+    { forwards, backwards } => { forwards, backwards: [value, ...backwards] },
+  }
 }
 
-export let pop = (queue) => {
-    match (queue) {
-        { forwards: [], backwards: [] } => queue,
-        { forwards: [head], backwards: [] } => { forwards: [], backwards: [] },
-        { forwards: [head], backwards } => { forwards: List.reverse(backwards), backwards: [] },
-        { forwards: [head, ...ftail], backwards } => { forwards: ftail, backwards }
-    }
+/**
+ * Pops an element off the queue.
+ * 
+ * @param queue: The queue to pop from.
+ * @returns The queue with the item removed.
+ */
+export let pop = queue => {
+  match (queue) {
+    { forwards: [], backwards: [] } => queue,
+    { forwards: [head], backwards: [] } => { forwards: [], backwards: [] },
+    { forwards: [head], backwards } =>
+      {
+        forwards: List.reverse(backwards),
+        backwards: [],
+      },
+    { forwards: [head, ...ftail], backwards } => { forwards: ftail, backwards },
+  }
 }
 
-export let size = (queue) => {
-    match (queue) {
-        { forwards: [], backwards: [] } => 0,
-        { forwards, backwards: [] } => List.length(forwards),
-        { forwards: [], backwards } => List.length(backwards),
-        { forwards, backwards } => List.length(forwards) + List.length(backwards),
-    }
+/**
+ * Get the length of the provided queue.
+ * 
+ * @param queue: The queue to get the length from.
+ * @returns The size of the queue.
+ */
+export let size = queue => {
+  match (queue) {
+    { forwards: [], backwards: [] } => 0,
+    { forwards, backwards: [] } => List.length(forwards),
+    { forwards: [], backwards } => List.length(backwards),
+    { forwards, backwards } => List.length(forwards) + List.length(backwards),
+  }
 }
