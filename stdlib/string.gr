@@ -1609,3 +1609,64 @@ export let rec forEachCodePointi = (fn: (Number, Number) -> Void, str: String) =
   Memory.decRef(WasmI32.fromGrain(forEachCodePointi))
   void
 }
+
+/**
+ * Trims a string removing any leading or following white spaces based on the end param.
+ *
+ * @param str: The string to be trimmed.
+ * @param end: If true we are trimming the following spaces, otherwise trim leading spaces.
+ * @returns The trimmed string.
+ * 
+ * @example String.trimString("   Hello World   ", false)
+ */
+let trimString = (str: String, end: Bool) => {
+  let chars = explode(str), charsLength = length(str)
+  let mut i = 0, offset = 1
+  if (end) {
+    i = charsLength-1
+    offset = -1
+  }
+  for (; i < charsLength && i > -1; i += offset) {
+    if (
+      // Spacing
+      chars[i] != '	'  && // Tab
+      chars[i] != ''  && // LINE TABULATION
+      chars[i] != ''  && // FORM FEED (FF)
+      chars[i] != ' '  && // Space
+      chars[i] != ' '  && // No Break Space
+      chars[i] != '﻿' && // 	ZERO WIDTH NO-BREAK SPACE
+      // Line Terminator
+      chars[i] != '\n' && // LF
+      chars[i] != '\r' // CR
+    ) break
+  }
+  if (end) slice(0, i+1, str)
+  else slice(i, charsLength, str)
+}
+/**
+ * Trims the `start` of a string removing any leading white spaces.
+ *
+ * @param str: The string to be trimmed.
+ * @returns The trimmed string.
+ * 
+ * @example String.trimStart("   Hello World")
+ */
+export let trimStart = (str: String) => trimString(str, false)
+/**
+ * Trims the `end` of a string removing any following white spaces.
+ *
+ * @param str: The string to be trimmed.
+ * @returns The trimmed string.
+ * 
+ * @example String.trimEnd("Hello World   ")
+ */
+export let trimEnd = (str: String) => trimString(str, true)
+/**
+ * Trims a string removing any leading or following white spaces.
+ *
+ * @param str: The string to be trimmed.
+ * @returns The trimmed string.
+ * 
+ * @example String.trim("   Hello World   ")
+ */
+export let trim = (str: String) => trimEnd(trimStart(str))
