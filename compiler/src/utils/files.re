@@ -51,7 +51,7 @@ let filename_to_module_name = fname => {
 
 let ensure_parent_directory_exists = fname => {
   // TODO: Use `derelativize` once Fp.t is used everywhere
-  let fullPath =
+  let full_path =
     switch (to_fp(fname)) {
     | Some(Absolute(path)) => path
     | Some(Relative(path)) =>
@@ -67,7 +67,7 @@ let ensure_parent_directory_exists = fname => {
   // No longer swallowing the error because we can handle the CWD case
   // thus we should raise if something is actually wrong
   // TODO: Switch this to return the Result type
-  Fs.mkDirPExn(Fp.dirName(fullPath));
+  Fs.mkDirPExn(Fp.dirName(full_path));
 };
 
 /**
@@ -76,7 +76,7 @@ let ensure_parent_directory_exists = fname => {
   assumed to be relative to the current working directory.
 */
 let derelativize = (~base=?, fname) => {
-  let fullPath =
+  let full_path =
     switch (to_fp(fname)) {
     | Some(Absolute(path)) => path
     | Some(Relative(path)) =>
@@ -105,7 +105,7 @@ let derelativize = (~base=?, fname) => {
       )
     };
 
-  Fp.toString(fullPath);
+  Fp.toString(full_path);
 };
 
 // Recursive readdir
