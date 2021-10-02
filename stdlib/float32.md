@@ -24,13 +24,13 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Number`|The `Number` to convert.|
+|`x`|`Number`|The `Number` to convert|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Float32`|The converted `Number`.|
+|`Float32`|The converted `Number`|
 
 ### Float32.**toNumber**
 
@@ -44,13 +44,13 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Float32`|The `Float32` to convert.|
+|`x`|`Float32`|The `Float32` to convert|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Number`|The converted `Float32`.|
+|`Number`|The converted `Float32`|
 
 ### Float32.**add**
 
@@ -64,14 +64,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Float32`|The first operand.|
-|`y`|`Float32`|The second operand.|
+|`x`|`Float32`|The first operand|
+|`y`|`Float32`|The second operand|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Float32`|The sum of the two operands.|
+|`Float32`|The sum of the two operands|
 
 ### Float32.**sub**
 
@@ -85,14 +85,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Float32`|The first operand.|
-|`y`|`Float32`|The second operand.|
+|`x`|`Float32`|The first operand|
+|`y`|`Float32`|The second operand|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Float32`|The difference of the two operands.|
+|`Float32`|The difference of the two operands|
 
 ### Float32.**mul**
 
@@ -106,14 +106,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Float32`|The first operand.|
-|`y`|`Float32`|The second operand.|
+|`x`|`Float32`|The first operand|
+|`y`|`Float32`|The second operand|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Float32`|The product of the two operands.|
+|`Float32`|The product of the two operands|
 
 ### Float32.**div**
 
@@ -127,14 +127,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Float32`|The first operand.|
-|`y`|`Float32`|The second operand.|
+|`x`|`Float32`|The first operand|
+|`y`|`Float32`|The second operand|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Float32`|The quotient of the two operands.|
+|`Float32`|The quotient of the two operands|
 
 ## Comparisons
 
@@ -152,14 +152,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Float32`|The first argument.|
-|`y`|`Float32`|The second argument.|
+|`x`|`Float32`|The first argument|
+|`y`|`Float32`|The second argument|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|A boolean representing if the first argument is less then the second argument.|
+|`Bool`|A boolean representing if the first argument is less then the second argument|
 
 ### Float32.**gt**
 
@@ -173,14 +173,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Float32`|The first argument.|
-|`y`|`Float32`|The second argument.|
+|`x`|`Float32`|The first argument|
+|`y`|`Float32`|The second argument|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|A boolean representing if the first argument is greater then the second argument.|
+|`Bool`|A boolean representing if the first argument is greater then the second argument|
 
 ### Float32.**lte**
 
@@ -194,14 +194,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Float32`|The first argument.|
-|`y`|`Float32`|The second argument.|
+|`x`|`Float32`|The first argument|
+|`y`|`Float32`|The second argument|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|A boolean representing if the first argument is less then or equal to the second argument.|
+|`Bool`|A boolean representing if the first argument is less then or equal to the second argument|
 
 ### Float32.**gte**
 
@@ -215,14 +215,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Float32`|The first argument.|
-|`y`|`Float32`|The second argument.|
+|`x`|`Float32`|The first argument|
+|`y`|`Float32`|The second argument|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|A boolean representing if the first argument is greater then or equal to the second argument.|
+|`Bool`|A boolean representing if the first argument is greater then or equal to the second argument|
 
 ## Constants
 
