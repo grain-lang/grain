@@ -36,13 +36,13 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`n`|`Number`|The value to check.|
+|`n`|`Number`|The value to check|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|A boolean indicating if the number refers to a valid character.|
+|`Bool`|A boolean indicating if the number refers to a valid character|
 
 ### Char.**code**
 
@@ -56,13 +56,13 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`char`|`Char`|The input character.|
+|`char`|`Char`|The input character|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Number`|The characterCode.|
+|`Number`|The characterCode|
 
 ### Char.**fromCode**
 
@@ -76,13 +76,13 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`codePoint`|`Number`|The Unicode code point.|
+|`codePoint`|`Number`|The Unicode code point|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Char`|The character that the charCode represents.|
+|`Char`|The character that the charCode represents|
 
 ### Char.**succ**
 
@@ -96,13 +96,13 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`char`|`Char`|the input character.|
+|`char`|`Char`|the input character|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Char`|The next valid Unicode character by code point.|
+|`Char`|The next valid Unicode character by code point|
 
 ### Char.**pred**
 
@@ -122,11 +122,11 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`char`|`Char`|The character to convert.|
+|`char`|`Char`|The character to convert|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`String`|The character as a string.|
+|`String`|The character as a string|
 

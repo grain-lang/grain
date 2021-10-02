@@ -24,8 +24,8 @@ let max = 0x10FFFF
 /**
  * Returns true if the given number is a valid Unicode scalar value.
  * 
- * @param n: The value to check.
- * @returns A boolean indicating if the number refers to a valid character.
+ * @param n: The value to check
+ * @returns A boolean indicating if the number refers to a valid character
  */
 let isValid = (n) => {
   n >= min && (n <= 0xD7FF || n >= 0xE000) && n <= max
@@ -33,8 +33,8 @@ let isValid = (n) => {
 /**
  * Returns the Unicode code point for the character.
  * 
- * @param char: The input character.
- * @returns The characterCode.
+ * @param char: The input character
+ * @returns The characterCode
  */
 @disableGC
 let rec code = (c: Char) => {
@@ -106,8 +106,8 @@ let rec code = (c: Char) => {
 /**
  * Returns the Char for the given code point. Fails if the code point is invalid.
  * 
- * @param codePoint: The Unicode code point.
- * @returns The character that the charCode represents.
+ * @param codePoint: The Unicode code point
+ * @returns The character that the charCode represents
  */
 @disableGC
 let rec fromCode = (code: Number) => {
@@ -170,8 +170,8 @@ let rec fromCode = (code: Number) => {
 /**
  * Returns the next valid Unicode character by code point. Fails if the input character is U+10FFFF.
  * 
- * @param char: the input character.
- * @returns The next valid Unicode character by code point.
+ * @param char: the input character
+ * @returns The next valid Unicode character by code point
  */
 let succ = (c) => {
   let codePoint = code(c)
@@ -201,8 +201,8 @@ let pred = (c) => {
 /**
  * Creates a new string containing the character.
  * 
- * @param char: The character to convert.
- * @returns The character as a string.
+ * @param char: The character to convert
+ * @returns The character as a string
  */
 @disableGC
 export let rec toString = (c: Char) => {
