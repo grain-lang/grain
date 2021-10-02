@@ -13,3 +13,20 @@ export let fake_write: (int, int, int, string) -> string =
   ) => {
   "ok"
 }
+
+let lots_of_args = (verylonglong1,verylonglong2,verylonglong3,verylonglong4,verylonglong1) => {
+  print("lots of args")
+}
+
+let stringTailMatcher =  (toMatch, len) =>
+  (
+    buf: Number,
+    pos: Number,
+    start: Number,
+    limit: Number,
+    end: Number,
+    state,
+    stack,
+  ) => {
+    true
+  }

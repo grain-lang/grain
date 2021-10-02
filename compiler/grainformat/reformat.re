@@ -2135,7 +2135,8 @@ and print_expression =
 
       let followsArrow =
         switch (expression.pexp_desc) {
-        | PExpBlock(_) => [
+        | PExpBlock(_)
+        | PExpLambda(_) => [
             Doc.group(
               Doc.concat([args, Doc.space, Doc.text("=>"), Doc.space]),
             ),

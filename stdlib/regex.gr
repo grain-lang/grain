@@ -2258,72 +2258,69 @@ let limit_m =
   if (pos == limit) Some(pos) else None
 
 let iterateMatcher = (m, size, max) =>
-
-    (
-      buf: MatchBuf,
-      pos: Number,
-      start: Number,
-      limit: Number,
-      end: Number,
-      state,
-      stack,
-    ) => {
-    let limit = match (max) {
-      Some(max) => min(limit, pos + max * size),
-      None => limit,
-    }
-    let rec loop = (pos2, n) => {
-      let pos3 = pos2 + size
-      if (pos3 > limit || !m(buf, pos2, start, limit, end, state, stack)) {
-        (pos2, n, size)
-      } else {
-        loop(pos3, n + 1)
-      }
-    }
-    loop(pos, 0)
+  (
+    buf: MatchBuf,
+    pos: Number,
+    start: Number,
+    limit: Number,
+    end: Number,
+    state,
+    stack,
+  ) => {
+  let limit = match (max) {
+    Some(max) => min(limit, pos + max * size),
+    None => limit,
   }
+  let rec loop = (pos2, n) => {
+    let pos3 = pos2 + size
+    if (pos3 > limit || !m(buf, pos2, start, limit, end, state, stack)) {
+      (pos2, n, size)
+    } else {
+      loop(pos3, n + 1)
+    }
+  }
+  loop(pos, 0)
+}
 
 // single-char matching
 
 let charMatcher = (toMatch, next_m) =>
-
-    (
-      buf: MatchBuf,
-      pos: Number,
-      start: Number,
-      limit: Number,
-      end: Number,
-      state,
-      stack,
-    ) => {
-    if ({
-      pos < limit && match (matchBufChar(buf, pos)) {
-        Err(_) => false,
-        Ok(c) => toMatch == c,
-      }
-    }) next_m(buf, pos + 1, start, limit, end, state, stack)
-    else None
-  }
+  (
+    buf: MatchBuf,
+    pos: Number,
+    start: Number,
+    limit: Number,
+    end: Number,
+    state,
+    stack,
+  ) => {
+  if ({
+    pos < limit && match (matchBufChar(buf, pos)) {
+      Err(_) => false,
+      Ok(c) => toMatch == c,
+    }
+  }) next_m(buf, pos + 1, start, limit, end, state, stack)
+  else None
+}
 
 let charTailMatcher = toMatch =>
-
-    (
-      buf: MatchBuf,
-      pos: Number,
-      start: Number,
-      limit: Number,
-      end: Number,
-      state,
-      stack,
-    ) => {
-    if ({
-      pos < limit && match (matchBufChar(buf, pos)) {
-        Err(_) => false,
-        Ok(c) => toMatch == c,
-      }
-    }) Some(pos + 1)
-    else None
-  }
+  (
+    buf: MatchBuf,
+    pos: Number,
+    start: Number,
+    limit: Number,
+    end: Number,
+    state,
+    stack,
+  ) => {
+  if ({
+    pos < limit && match (matchBufChar(buf, pos)) {
+      Err(_) => false,
+      Ok(c) => toMatch == c,
+    }
+  }) Some(pos + 1)
+  else None
+}
 
 let charMatcherIterated = (toMatch, max) =>
   iterateMatcher(
@@ -2366,50 +2363,48 @@ let subArraysEqual = (arr1, start1, arr2, start2, length) => {
 }
 
 let stringMatcher = (toMatch, len, next_m) =>
-
-    (
-      buf: MatchBuf,
-      pos: Number,
-      start: Number,
-      limit: Number,
-      end: Number,
-      state,
-      stack,
-    ) => {
-    if ({
-      pos + len <= limit && subArraysEqual(
-        buf.matchInputExploded,
-        pos,
-        String.explode(toMatch),
-        0,
-        len,
-      )
-    }) next_m(buf, pos + len, start, limit, end, state, stack)
-    else None
-  }
+  (
+    buf: MatchBuf,
+    pos: Number,
+    start: Number,
+    limit: Number,
+    end: Number,
+    state,
+    stack,
+  ) => {
+  if ({
+    pos + len <= limit && subArraysEqual(
+      buf.matchInputExploded,
+      pos,
+      String.explode(toMatch),
+      0,
+      len,
+    )
+  }) next_m(buf, pos + len, start, limit, end, state, stack)
+  else None
+}
 
 let stringTailMatcher = (toMatch, len) =>
-
-    (
-      buf: MatchBuf,
-      pos: Number,
-      start: Number,
-      limit: Number,
-      end: Number,
-      state,
-      stack,
-    ) => {
-    if ({
-      pos + len <= limit && subArraysEqual(
-        buf.matchInputExploded,
-        pos,
-        String.explode(toMatch),
-        0,
-        len,
-      )
-    }) Some(pos + len)
-    else None
-  }
+  (
+    buf: MatchBuf,
+    pos: Number,
+    start: Number,
+    limit: Number,
+    end: Number,
+    state,
+    stack,
+  ) => {
+  if ({
+    pos + len <= limit && subArraysEqual(
+      buf.matchInputExploded,
+      pos,
+      String.explode(toMatch),
+      0,
+      len,
+    )
+  }) Some(pos + len)
+  else None
+}
 
 let stringMatcherIterated = (toMatch, len, max) =>
   iterateMatcher(
@@ -2453,98 +2448,93 @@ let neverMatcher =
 // match any byte
 
 let anyMatcher = next_m =>
-
-    (
-      buf: MatchBuf,
-      pos: Number,
-      start: Number,
-      limit: Number,
-      end: Number,
-      state,
-      stack,
-    ) => {
-    if ({
-      pos < limit
-    }) next_m(buf, pos + 1, start, limit, end, state, stack)
-    else None
-  }
+  (
+    buf: MatchBuf,
+    pos: Number,
+    start: Number,
+    limit: Number,
+    end: Number,
+    state,
+    stack,
+  ) => {
+  if ({
+    pos < limit
+  }) next_m(buf, pos + 1, start, limit, end, state, stack)
+  else None
+}
 
 let anyTailMatcher = () =>
-
-    (
-      buf: MatchBuf,
-      pos: Number,
-      start: Number,
-      limit: Number,
-      end: Number,
-      state,
-      stack,
-    ) => {
-    if ({
-      pos < limit
-    }) Some(pos + 1)
-    else None
-  }
+  (
+    buf: MatchBuf,
+    pos: Number,
+    start: Number,
+    limit: Number,
+    end: Number,
+    state,
+    stack,
+  ) => {
+  if ({
+    pos < limit
+  }) Some(pos + 1)
+  else None
+}
 
 let anyMatcherIterated = max =>
-
-    (
-      buf: MatchBuf,
-      pos: Number,
-      start: Number,
-      limit: Number,
-      end: Number,
-      state,
-      stack,
-    ) => {
-    let n = match (max) {
-      None => limit - pos,
-      Some(max) => min(max, limit - pos),
-    }
-    (pos + n, n, 1)
+  (
+    buf: MatchBuf,
+    pos: Number,
+    start: Number,
+    limit: Number,
+    end: Number,
+    state,
+    stack,
+  ) => {
+  let n = match (max) {
+    None => limit - pos,
+    Some(max) => min(max, limit - pos),
   }
+  (pos + n, n, 1)
+}
 
 // match byte in set (range)
 
 let rangeMatcher = (rng, next_m) =>
-
-    (
-      buf: MatchBuf,
-      pos: Number,
-      start: Number,
-      limit: Number,
-      end: Number,
-      state,
-      stack,
-    ) => {
-    if ({
-      pos < limit && match (matchBufChar(buf, pos)) {
-        Err(_) => false,
-        Ok(c) => rangeContains(rng, Char.code(c)),
-      }
-    }) next_m(buf, pos + 1, start, limit, end, state, stack)
-    else None
-  }
+  (
+    buf: MatchBuf,
+    pos: Number,
+    start: Number,
+    limit: Number,
+    end: Number,
+    state,
+    stack,
+  ) => {
+  if ({
+    pos < limit && match (matchBufChar(buf, pos)) {
+      Err(_) => false,
+      Ok(c) => rangeContains(rng, Char.code(c)),
+    }
+  }) next_m(buf, pos + 1, start, limit, end, state, stack)
+  else None
+}
 
 let rangeTailMatcher = rng =>
-
-    (
-      buf: MatchBuf,
-      pos: Number,
-      start: Number,
-      limit: Number,
-      end: Number,
-      state,
-      stack,
-    ) => {
-    if ({
-      pos < limit && match (matchBufChar(buf, pos)) {
-        Err(_) => false,
-        Ok(c) => rangeContains(rng, Char.code(c)),
-      }
-    }) Some(pos + 1)
-    else None
-  }
+  (
+    buf: MatchBuf,
+    pos: Number,
+    start: Number,
+    limit: Number,
+    end: Number,
+    state,
+    stack,
+  ) => {
+  if ({
+    pos < limit && match (matchBufChar(buf, pos)) {
+      Err(_) => false,
+      Ok(c) => rangeContains(rng, Char.code(c)),
+    }
+  }) Some(pos + 1)
+  else None
+}
 
 let rangeMatcherIterated = (rng, max) =>
   iterateMatcher(
@@ -2570,79 +2560,74 @@ let rangeMatcherIterated = (rng, max) =>
 // zero-width matchers
 
 let startMatcher = next_m =>
-
-    (
-      buf: MatchBuf,
-      pos: Number,
-      start: Number,
-      limit: Number,
-      end: Number,
-      state,
-      stack,
-    ) => {
-    if (pos == start) next_m(buf, pos, start, limit, end, state, stack)
-    else None
-  }
+  (
+    buf: MatchBuf,
+    pos: Number,
+    start: Number,
+    limit: Number,
+    end: Number,
+    state,
+    stack,
+  ) => {
+  if (pos == start) next_m(buf, pos, start, limit, end, state, stack) else None
+}
 
 let endMatcher = next_m =>
-
-    (
-      buf: MatchBuf,
-      pos: Number,
-      start: Number,
-      limit: Number,
-      end: Number,
-      state,
-      stack,
-    ) => {
-    if (pos == end) next_m(buf, pos, start, limit, end, state, stack) else None
-  }
+  (
+    buf: MatchBuf,
+    pos: Number,
+    start: Number,
+    limit: Number,
+    end: Number,
+    state,
+    stack,
+  ) => {
+  if (pos == end) next_m(buf, pos, start, limit, end, state, stack) else None
+}
 
 let lineStartMatcher = next_m =>
-
-    (
-      buf: MatchBuf,
-      pos: Number,
-      start: Number,
-      limit: Number,
-      end: Number,
-      state,
-      stack,
-    ) => {
-    if (pos == start || matchBufChar(buf, pos - 1) == Ok('\n')) next_m(
-      buf,
-      pos,
-      start,
-      limit,
-      end,
-      state,
-      stack,
-    )
-    else None
-  }
+  (
+    buf: MatchBuf,
+    pos: Number,
+    start: Number,
+    limit: Number,
+    end: Number,
+    state,
+    stack,
+  ) => {
+  if (pos == start || matchBufChar(buf, pos - 1) == Ok('\n')) next_m(
+    buf,
+    pos,
+    start,
+    limit,
+    end,
+    state,
+    stack,
+  )
+  else None
+}
 
 let lineEndMatcher = next_m =>
-
-    (
-      buf: MatchBuf,
-      pos: Number,
-      start: Number,
-      limit: Number,
-      end: Number,
-      state,
-      stack,
-    ) => {
-    if (pos == end || matchBufChar(buf, pos) == Ok('\n')) next_m(
-      buf,
-      pos,
-      start,
-      limit,
-      end,
-      state,
-      stack,
-    )
-    else None
-  }
+  (
+    buf: MatchBuf,
+    pos: Number,
+    start: Number,
+    limit: Number,
+    end: Number,
+    state,
+    stack,
+  ) => {
+  if (pos == end || matchBufChar(buf, pos) == Ok('\n')) next_m(
+    buf,
+    pos,
+    start,
+    limit,
+    end,
+    state,
+    stack,
+  )
+  else None
+}
 
 let isWordChar = c => {
   match (c) {
@@ -2668,102 +2653,98 @@ let isWordBoundary = (buf, pos, start, limit, end) => {
 }
 
 let wordBoundaryMatcher = next_m =>
-
-    (
-      buf: MatchBuf,
-      pos: Number,
-      start: Number,
-      limit: Number,
-      end: Number,
-      state,
-      stack,
-    ) => {
-    if (isWordBoundary(buf, pos, start, limit, end)) next_m(
-      buf,
-      pos,
-      start,
-      limit,
-      end,
-      state,
-      stack,
-    )
-    else None
-  }
+  (
+    buf: MatchBuf,
+    pos: Number,
+    start: Number,
+    limit: Number,
+    end: Number,
+    state,
+    stack,
+  ) => {
+  if (isWordBoundary(buf, pos, start, limit, end)) next_m(
+    buf,
+    pos,
+    start,
+    limit,
+    end,
+    state,
+    stack,
+  )
+  else None
+}
 
 let notWordBoundaryMatcher = next_m =>
-
-    (
-      buf: MatchBuf,
-      pos: Number,
-      start: Number,
-      limit: Number,
-      end: Number,
-      state,
-      stack,
-    ) => {
-    if (!isWordBoundary(buf, pos, start, limit, end)) next_m(
-      buf,
-      pos,
-      start,
-      limit,
-      end,
-      state,
-      stack,
-    )
-    else None
-  }
+  (
+    buf: MatchBuf,
+    pos: Number,
+    start: Number,
+    limit: Number,
+    end: Number,
+    state,
+    stack,
+  ) => {
+  if (!isWordBoundary(buf, pos, start, limit, end)) next_m(
+    buf,
+    pos,
+    start,
+    limit,
+    end,
+    state,
+    stack,
+  )
+  else None
+}
 
 // Alternatives
 
 let altsMatcher = (m1, m2) =>
-
-    (
-      buf: MatchBuf,
-      pos: Number,
-      start: Number,
-      limit: Number,
-      end: Number,
-      state,
-      stack,
-    ) => {
-    match (m1(buf, pos, start, limit, end, state, stack)) {
-      None => m2(buf, pos, start, limit, end, state, stack),
-      Some(v) => Some(v),
-    }
+  (
+    buf: MatchBuf,
+    pos: Number,
+    start: Number,
+    limit: Number,
+    end: Number,
+    state,
+    stack,
+  ) => {
+  match (m1(buf, pos, start, limit, end, state, stack)) {
+    None => m2(buf, pos, start, limit, end, state, stack),
+    Some(v) => Some(v),
   }
+}
 
 // repeats, greedy (default) and non-greedy
 
 let repeatMatcher = (r_m, min, max, next_m) =>
-
-    (
-      buf: MatchBuf,
-      pos: Number,
-      start: Number,
-      limit: Number,
-      end: Number,
-      state,
-      stack,
-    ) => {
-    let rec rloop = (pos, n) => {
-      if (n < min) {
-        let newStack = [SEPositionProducer(pos => rloop(pos, n + 1)), ...stack]
-        r_m(buf, pos, start, limit, end, state, newStack)
-      } else if (match (max) {
-        None => false,
-        Some(max) => max == n,
-      }) {
-        next_m(buf, pos, start, limit, end, state, stack)
-      } else {
-        let newStack = [SEPositionProducer(pos => rloop(pos, n + 1)), ...stack]
-        match (r_m(buf, pos, start, limit, end, state, newStack)) {
-          Some(v) => Some(v),
-          None => next_m(buf, pos, start, limit, end, state, stack),
-        }
+  (
+    buf: MatchBuf,
+    pos: Number,
+    start: Number,
+    limit: Number,
+    end: Number,
+    state,
+    stack,
+  ) => {
+  let rec rloop = (pos, n) => {
+    if (n < min) {
+      let newStack = [SEPositionProducer(pos => rloop(pos, n + 1)), ...stack]
+      r_m(buf, pos, start, limit, end, state, newStack)
+    } else if (match (max) {
+      None => false,
+      Some(max) => max == n,
+    }) {
+      next_m(buf, pos, start, limit, end, state, stack)
+    } else {
+      let newStack = [SEPositionProducer(pos => rloop(pos, n + 1)), ...stack]
+      match (r_m(buf, pos, start, limit, end, state, newStack)) {
+        Some(v) => Some(v),
+        None => next_m(buf, pos, start, limit, end, state, stack),
       }
     }
-    rloop(pos, 0)
   }
+  rloop(pos, 0)
+}
 
 let rStack = [SEPositionProducer(pos => Some(pos))]
 
@@ -2811,238 +2792,229 @@ let addRepeatedGroup = (groupN, state, pos, n, backAmt, callback) => {
 }
 
 let repeatSimpleMatcher = (r_m, min, max, groupN, next_m) =>
-
-    (
-      buf: MatchBuf,
-      pos: Number,
-      start: Number,
-      limit: Number,
-      end: Number,
-      state,
-      stack,
-    ) => {
-    let rec rloop = (pos, n, backAmt) => {
-      let pos2 = match (max) {
-        Some(max) when n < max =>
-          r_m(buf, pos, start, limit, end, state, rStack),
-        Some(_) => None,
-        _ => r_m(buf, pos, start, limit, end, state, rStack),
-      }
-      match (pos2) {
-        Some(pos2) => rloop(pos2, n + 1, pos2 - pos),
-        None => {
-          // Perform backtracking
-          let rec bloop = (pos, n) => {
-            if (n < min) {
-              None
-            } else {
-              addRepeatedGroup(
-                groupN,
-                state,
-                pos,
-                n,
-                backAmt,
-                groupRevert => {
-                  match (next_m(buf, pos, start, limit, end, state, stack)) {
-                    Some(v) => Some(v),
-                    None => {
-                      groupRevert()
-                      bloop(pos - backAmt, n - 1)
-                    },
-                  }
-                },
-              )
-            }
-          }
-          bloop(pos, n)
-        },
-      }
+  (
+    buf: MatchBuf,
+    pos: Number,
+    start: Number,
+    limit: Number,
+    end: Number,
+    state,
+    stack,
+  ) => {
+  let rec rloop = (pos, n, backAmt) => {
+    let pos2 = match (max) {
+      Some(max) when n < max => r_m(buf, pos, start, limit, end, state, rStack),
+      Some(_) => None,
+      _ => r_m(buf, pos, start, limit, end, state, rStack),
     }
-    rloop(pos, 0, 0)
+    match (pos2) {
+      Some(pos2) => rloop(pos2, n + 1, pos2 - pos),
+      None => {
+        // Perform backtracking
+        let rec bloop = (pos, n) => {
+          if (n < min) {
+            None
+          } else {
+            addRepeatedGroup(
+              groupN,
+              state,
+              pos,
+              n,
+              backAmt,
+              groupRevert => {
+                match (next_m(buf, pos, start, limit, end, state, stack)) {
+                  Some(v) => Some(v),
+                  None => {
+                    groupRevert()
+                    bloop(pos - backAmt, n - 1)
+                  },
+                }
+              },
+            )
+          }
+        }
+        bloop(pos, n)
+      },
+    }
   }
+  rloop(pos, 0, 0)
+}
 
 let repeatSimpleManyMatcher = (r_m, min, max, groupN, next_m) =>
-
-    (
-      buf: MatchBuf,
-      pos: Number,
-      start: Number,
-      limit: Number,
-      end: Number,
-      state,
-      stack,
-    ) => {
-    let (pos2, n, backAmt) = r_m(buf, pos, start, limit, end, state, stack)
-    let rec bloop = (pos, n) => {
-      if (n < min) {
-        None
-      } else {
-        addRepeatedGroup(
-          groupN,
-          state,
-          pos,
-          n,
-          backAmt,
-          groupRevert => {
-            match (next_m(buf, pos, start, limit, end, state, stack)) {
-              Some(v) => Some(v),
-              None => {
-                groupRevert()
-                bloop(pos - backAmt, n - 1)
-              },
-            }
-          },
-        )
-      }
+  (
+    buf: MatchBuf,
+    pos: Number,
+    start: Number,
+    limit: Number,
+    end: Number,
+    state,
+    stack,
+  ) => {
+  let (pos2, n, backAmt) = r_m(buf, pos, start, limit, end, state, stack)
+  let rec bloop = (pos, n) => {
+    if (n < min) {
+      None
+    } else {
+      addRepeatedGroup(
+        groupN,
+        state,
+        pos,
+        n,
+        backAmt,
+        groupRevert => {
+          match (next_m(buf, pos, start, limit, end, state, stack)) {
+            Some(v) => Some(v),
+            None => {
+              groupRevert()
+              bloop(pos - backAmt, n - 1)
+            },
+          }
+        },
+      )
     }
-    bloop(pos2, n)
   }
+  bloop(pos2, n)
+}
 
 let lazyRepeatMatcher = (r_m, min, max, next_m) =>
-
-    (
-      buf: MatchBuf,
-      pos: Number,
-      start: Number,
-      limit: Number,
-      end: Number,
-      state,
-      stack,
-    ) => {
-    let rec rloop = (pos, n, min) => {
-      if (n < min) {
-        let newStack = [
-          SEPositionProducer(pos => rloop(pos, n + 1, min)),
-          ...stack
-        ]
-        r_m(buf, pos, start, limit, end, state, newStack)
-      } else if (match (max) {
-        None => false,
-        Some(max) => max == n,
-      }) {
-        next_m(buf, pos, start, limit, end, state, stack)
-      } else  {
-        match (next_m(buf, pos, start, limit, end, state, stack)) {
-          Some(p) => Some(p),
-          None => rloop(pos, n, min + 1),
-        }
+  (
+    buf: MatchBuf,
+    pos: Number,
+    start: Number,
+    limit: Number,
+    end: Number,
+    state,
+    stack,
+  ) => {
+  let rec rloop = (pos, n, min) => {
+    if (n < min) {
+      let newStack = [
+        SEPositionProducer(pos => rloop(pos, n + 1, min)),
+        ...stack
+      ]
+      r_m(buf, pos, start, limit, end, state, newStack)
+    } else if (match (max) {
+      None => false,
+      Some(max) => max == n,
+    }) {
+      next_m(buf, pos, start, limit, end, state, stack)
+    } else  {
+      match (next_m(buf, pos, start, limit, end, state, stack)) {
+        Some(p) => Some(p),
+        None => rloop(pos, n, min + 1),
       }
     }
-    rloop(pos, 0, min)
   }
+  rloop(pos, 0, min)
+}
 
 let lazyRepeatSimpleMatcher = (r_m, min, max, next_m) =>
-
-    (
-      buf: MatchBuf,
-      pos: Number,
-      start: Number,
-      limit: Number,
-      end: Number,
-      state,
-      stack,
-    ) => {
-    let rec rloop = (pos, n, min) => {
-      if (n < min) {
-        match (r_m(buf, pos, start, limit, end, state, stack)) {
-          Some(p) => rloop(p, n + 1, min),
-          None => None,
-        }
-      } else if (match (max) {
-        None => false,
-        Some(max) => max == n,
-      }) {
-        next_m(buf, pos, start, limit, end, state, stack)
-      } else  {
-        match (next_m(buf, pos, start, limit, end, state, stack)) {
-          Some(p) => Some(p),
-          None => rloop(pos, n, min + 1),
-        }
+  (
+    buf: MatchBuf,
+    pos: Number,
+    start: Number,
+    limit: Number,
+    end: Number,
+    state,
+    stack,
+  ) => {
+  let rec rloop = (pos, n, min) => {
+    if (n < min) {
+      match (r_m(buf, pos, start, limit, end, state, stack)) {
+        Some(p) => rloop(p, n + 1, min),
+        None => None,
+      }
+    } else if (match (max) {
+      None => false,
+      Some(max) => max == n,
+    }) {
+      next_m(buf, pos, start, limit, end, state, stack)
+    } else  {
+      match (next_m(buf, pos, start, limit, end, state, stack)) {
+        Some(p) => Some(p),
+        None => rloop(pos, n, min + 1),
       }
     }
-    rloop(pos, 0, min)
   }
+  rloop(pos, 0, min)
+}
 
 // Recording and referencing group matches
 
 let groupPushMatcher = (n, next_m) =>
-
-    (
-      buf: MatchBuf,
-      pos: Number,
-      start: Number,
-      limit: Number,
-      end: Number,
-      state,
-      stack,
-    ) => {
-    let newStack = [
-      SESavedGroup(pos, if (Array.length(state) > 0) state[n] else None),
-      ...stack
-    ]
-    next_m(buf, pos, start, limit, end, state, newStack)
-  }
+  (
+    buf: MatchBuf,
+    pos: Number,
+    start: Number,
+    limit: Number,
+    end: Number,
+    state,
+    stack,
+  ) => {
+  let newStack = [
+    SESavedGroup(pos, if (Array.length(state) > 0) state[n] else None),
+    ...stack
+  ]
+  next_m(buf, pos, start, limit, end, state, newStack)
+}
 
 let groupSetMatcher = (n, next_m) =>
-
-    (
-      buf: MatchBuf,
-      pos: Number,
-      start: Number,
-      limit: Number,
-      end: Number,
-      state,
-      stack,
-    ) => {
-    match (stack) {
-      [SESavedGroup(oldPos, oldSpan), ...stackTl] => {
-        if (Array.length(state) > 0) {
-          state[n] = Some((oldPos, pos))
-        }
-        match (next_m(buf, pos, start, limit, end, state, stackTl)) {
-          Some(v) => Some(v),
-          None => {
-            if (Array.length(state) > 0) {
-              state[n] = oldSpan
-            }
-            None
-          },
-        }
-      },
-      _ => fail "Impossible: groupSetMatcher",
-    }
-  }
-
-let makeReferenceMatcher = eq =>
-  (n, next_m) =>
-
-      (
-        buf: MatchBuf,
-        pos: Number,
-        start: Number,
-        limit: Number,
-        end: Number,
-        state,
-        stack,
-      ) => {
-      match (state[n]) {
-        None => None,
-        Some((refStart, refEnd)) => {
-          let len = refEnd - refStart
-          if (pos + len <= limit && subArraysEqual(
-            buf.matchInputExploded,
-            refStart,
-            buf.matchInputExploded,
-            pos,
-            len,
-          )) {
-            next_m(buf, pos + len, start, limit, end, state, stack)
-          } else  {
-            None
+  (
+    buf: MatchBuf,
+    pos: Number,
+    start: Number,
+    limit: Number,
+    end: Number,
+    state,
+    stack,
+  ) => {
+  match (stack) {
+    [SESavedGroup(oldPos, oldSpan), ...stackTl] => {
+      if (Array.length(state) > 0) {
+        state[n] = Some((oldPos, pos))
+      }
+      match (next_m(buf, pos, start, limit, end, state, stackTl)) {
+        Some(v) => Some(v),
+        None => {
+          if (Array.length(state) > 0) {
+            state[n] = oldSpan
           }
+          None
         },
       }
-    }
+    },
+    _ => fail "Impossible: groupSetMatcher",
+  }
+}
+
+let makeReferenceMatcher = eq => (n, next_m) =>
+  (
+    buf: MatchBuf,
+    pos: Number,
+    start: Number,
+    limit: Number,
+    end: Number,
+    state,
+    stack,
+  ) => {
+  match (state[n]) {
+    None => None,
+    Some((refStart, refEnd)) => {
+      let len = refEnd - refStart
+      if (pos + len <= limit && subArraysEqual(
+        buf.matchInputExploded,
+        refStart,
+        buf.matchInputExploded,
+        pos,
+        len,
+      )) {
+        next_m(buf, pos + len, start, limit, end, state, stack)
+      } else  {
+        None
+      }
+    },
+  }
+}
 
 let referenceMatcher = makeReferenceMatcher(((a, b)) => a == b)
 
@@ -3065,169 +3037,163 @@ let referenceMatcherCaseInsensitive = makeReferenceMatcher(
 // Lookahead, Lookbehind, Conditionals, and Cut
 
 let lookaheadMatcher = (isMatch, sub_m, nStart, numN, next_m) =>
-
-    (
-      buf: MatchBuf,
-      pos: Number,
-      start: Number,
-      limit: Number,
-      end: Number,
-      state,
-      stack,
-    ) => {
-    let oldState = saveGroups(state, nStart, numN)
-    let ret = match (sub_m(buf, pos, start, limit, end, state, stack)) {
-      Some(_) when isMatch => {
-        match (next_m(buf, pos, start, limit, end, state, stack)) {
-          Some(p) => Some(p),
-          None => {
-            restoreGroups(state, oldState, nStart, numN)
-            None
-          },
-        }
-      },
-      Some(_) => {
-        restoreGroups(state, oldState, nStart, numN)
-        None
-      },
-      None when isMatch => {
-        restoreGroups(state, oldState, nStart, numN)
-        None
-      },
-      _ => next_m(buf, pos, start, limit, end, state, stack),
-    }
-    ret
+  (
+    buf: MatchBuf,
+    pos: Number,
+    start: Number,
+    limit: Number,
+    end: Number,
+    state,
+    stack,
+  ) => {
+  let oldState = saveGroups(state, nStart, numN)
+  let ret = match (sub_m(buf, pos, start, limit, end, state, stack)) {
+    Some(_) when isMatch => {
+      match (next_m(buf, pos, start, limit, end, state, stack)) {
+        Some(p) => Some(p),
+        None => {
+          restoreGroups(state, oldState, nStart, numN)
+          None
+        },
+      }
+    },
+    Some(_) => {
+      restoreGroups(state, oldState, nStart, numN)
+      None
+    },
+    None when isMatch => {
+      restoreGroups(state, oldState, nStart, numN)
+      None
+    },
+    _ => next_m(buf, pos, start, limit, end, state, stack),
   }
+  ret
+}
 
 let lookbehindMatcher = (isMatch, lbMin, lbMax, sub_m, nStart, numN, next_m) =>
-
-    (
-      buf: MatchBuf,
-      pos: Number,
-      start: Number,
-      limit: Number,
-      end: Number,
-      state,
-      stack,
-    ) => {
-    let lbMinPos = max(start, pos - lbMax)
-    let rec loop = lbPos => {
-      if (lbPos < lbMinPos) {
-        if (isMatch) {
-          None
-        } else {
-          next_m(buf, pos, start, limit, end, state, stack)
-        }
+  (
+    buf: MatchBuf,
+    pos: Number,
+    start: Number,
+    limit: Number,
+    end: Number,
+    state,
+    stack,
+  ) => {
+  let lbMinPos = max(start, pos - lbMax)
+  let rec loop = lbPos => {
+    if (lbPos < lbMinPos) {
+      if (isMatch) {
+        None
       } else {
-        let oldState = saveGroups(state, nStart, numN)
-        match (sub_m(buf, lbPos, start, pos, end, state, stack)) {
-          Some(_) when isMatch => {
-            match (next_m(buf, pos, start, limit, end, state, stack)) {
-              Some(p) => Some(p),
-              None => {
-                restoreGroups(state, oldState, nStart, numN)
-                None
-              },
-            }
-          },
-          _ when isMatch => {
-            loop(lbPos - 1)
-          },
-          Some(_) => {
-            restoreGroups(state, oldState, nStart, numN)
-            None
-          },
-          _ => next_m(buf, pos, start, limit, end, state, stack),
-        }
+        next_m(buf, pos, start, limit, end, state, stack)
+      }
+    } else {
+      let oldState = saveGroups(state, nStart, numN)
+      match (sub_m(buf, lbPos, start, pos, end, state, stack)) {
+        Some(_) when isMatch => {
+          match (next_m(buf, pos, start, limit, end, state, stack)) {
+            Some(p) => Some(p),
+            None => {
+              restoreGroups(state, oldState, nStart, numN)
+              None
+            },
+          }
+        },
+        _ when isMatch => {
+          loop(lbPos - 1)
+        },
+        Some(_) => {
+          restoreGroups(state, oldState, nStart, numN)
+          None
+        },
+        _ => next_m(buf, pos, start, limit, end, state, stack),
       }
     }
-    loop(pos - lbMin)
   }
+  loop(pos - lbMin)
+}
 
 let conditionalReferenceMatcher = (n, m1, m2) =>
-
-    (
-      buf: MatchBuf,
-      pos: Number,
-      start: Number,
-      limit: Number,
-      end: Number,
-      state,
-      stack,
-    ) => {
-    if (Option.isSome(state[n])) {
-      m1(buf, pos, start, limit, end, state, stack)
-    } else {
-      m2(buf, pos, start, limit, end, state, stack)
-    }
+  (
+    buf: MatchBuf,
+    pos: Number,
+    start: Number,
+    limit: Number,
+    end: Number,
+    state,
+    stack,
+  ) => {
+  if (Option.isSome(state[n])) {
+    m1(buf, pos, start, limit, end, state, stack)
+  } else {
+    m2(buf, pos, start, limit, end, state, stack)
   }
+}
 
 let conditionalLookMatcher = (tst_m, m1, m2, nStart, numN) =>
-
-    (
-      buf: MatchBuf,
-      pos: Number,
-      start: Number,
-      limit: Number,
-      end: Number,
-      state,
-      stack,
-    ) => {
-    let oldState = saveGroups(state, nStart, numN)
-    let res = match (tst_m(buf, pos, start, limit, end, state, [])) {
-      Some(_) => m1(buf, pos, start, limit, end, state, stack),
-      None => m2(buf, pos, start, limit, end, state, stack),
-    }
-    match (res) {
-      Some(p) => Some(p),
-      None => {
-        restoreGroups(state, oldState, nStart, numN)
-        None
-      },
-    }
+  (
+    buf: MatchBuf,
+    pos: Number,
+    start: Number,
+    limit: Number,
+    end: Number,
+    state,
+    stack,
+  ) => {
+  let oldState = saveGroups(state, nStart, numN)
+  let res = match (tst_m(buf, pos, start, limit, end, state, [])) {
+    Some(_) => m1(buf, pos, start, limit, end, state, stack),
+    None => m2(buf, pos, start, limit, end, state, stack),
   }
+  match (res) {
+    Some(p) => Some(p),
+    None => {
+      restoreGroups(state, oldState, nStart, numN)
+      None
+    },
+  }
+}
 
 let cutMatcher = (sub_m, nStart, numN, next_m) =>
-
-    (
-      buf: MatchBuf,
-      pos: Number,
-      start: Number,
-      limit: Number,
-      end: Number,
-      state,
-      stack,
-    ) => {
-    let oldState = saveGroups(state, nStart, numN)
-    match (sub_m(buf, pos, start, limit, end, state, [])) {
-      None => None,
-      Some(_) => {
-        match (next_m(buf, pos, start, limit, end, state, stack)) {
-          None => {
-            restoreGroups(state, oldState, nStart, numN)
-            None
-          },
-          Some(p) => Some(p),
-        }
-      },
-    }
+  (
+    buf: MatchBuf,
+    pos: Number,
+    start: Number,
+    limit: Number,
+    end: Number,
+    state,
+    stack,
+  ) => {
+  let oldState = saveGroups(state, nStart, numN)
+  match (sub_m(buf, pos, start, limit, end, state, [])) {
+    None => None,
+    Some(_) => {
+      match (next_m(buf, pos, start, limit, end, state, stack)) {
+        None => {
+          restoreGroups(state, oldState, nStart, numN)
+          None
+        },
+        Some(p) => Some(p),
+      }
+    },
   }
+}
 
 // Unicode characters in UTF-8 encoding
 
 let unicodeCategoriesMatcher = (cats, isMatch, next_m) =>
-
-    (
-      buf: MatchBuf,
-      pos: Number,
-      start: Number,
-      limit: Number,
-      end: Number,
-      state,
-      stack,
-    ) => {
-    fail "NYI: unicodeCategoriesMatcher is not supported until grain-lang/grain#661 is resolved."
-  }
+  (
+    buf: MatchBuf,
+    pos: Number,
+    start: Number,
+    limit: Number,
+    end: Number,
+    state,
+    stack,
+  ) => {
+  fail "NYI: unicodeCategoriesMatcher is not supported until grain-lang/grain#661 is resolved."
+}
 
 // -------
 // Regex matcher compilation
