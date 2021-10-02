@@ -21,25 +21,25 @@ import {
 /**
  * Coverts the argument from a `Number` to a `Float64`.
  *
- * @param x: The `Number` to convert.
- * @returns The converted `Number`.
+ * @param x: The `Number` to convert
+ * @returns The converted `Number`
  */
 export fromNumber
 
 /**
  * Coverts the argument from a `Float64` to a `Number`.
  *
- * @param x: The `Float64` to convert.
- * @returns The converted `Float64`.
+ * @param x: The `Float64` to convert
+ * @returns The converted `Float64`
  */
 export toNumber
 
 /**
  * Floating-point addition.
  *
- * @param x: The first operand.
- * @param y: The second operand.
- * @returns The sum of the two operands.
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns The sum of the two operands
  */
 @disableGC
 export let rec add = (x: Float64, y: Float64) => {
@@ -56,9 +56,9 @@ export let rec add = (x: Float64, y: Float64) => {
 /**
  * Floating-point subtraction.
  *
- * @param x: The first operand.
- * @param y: The second operand.
- * @returns The difference of the two operands.
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns The difference of the two operands
  */
 @disableGC
 export let rec sub = (x: Float64, y: Float64) => {
@@ -75,9 +75,9 @@ export let rec sub = (x: Float64, y: Float64) => {
 /**
  * Floating-point multiplication.
  *
- * @param x: The first operand.
- * @param y: The second operand.
- * @returns The product of the two operands.
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns The product of the two operands
  */
 @disableGC
 export let rec mul = (x: Float64, y: Float64) => {
@@ -94,9 +94,9 @@ export let rec mul = (x: Float64, y: Float64) => {
 /**
  * Floating-point division.
  *
- * @param x: The first operand.
- * @param y: The second operand.
- * @returns The quotient of the two operands.
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns The quotient of the two operands
  */
 @disableGC
 export let rec div = (x: Float64, y: Float64) => {
@@ -117,9 +117,9 @@ export let rec div = (x: Float64, y: Float64) => {
 /**
  * Checks if the first argument is strictly less than the second argument.
  *
- * @param x: The first argument.
- * @param y: The second argument.
- * @returns A boolean representing if the first argument is less then the second argument.
+ * @param x: The first argument
+ * @param y: The second argument
+ * @returns A boolean representing if the first argument is less then the second argument
  */
 @disableGC
 export let rec lt = (x: Float64, y: Float64) => {
@@ -135,9 +135,9 @@ export let rec lt = (x: Float64, y: Float64) => {
 /**
  * Checks if the first argument is strictly greater than the second argument.
  *
- * @param x: The first argument.
- * @param y: The second argument.
- * @returns A boolean representing if the first argument is greater then the second argument.
+ * @param x: The first argument
+ * @param y: The second argument
+ * @returns A boolean representing if the first argument is greater then the second argument
  */
 @disableGC
 export let rec gt = (x: Float64, y: Float64) => {
@@ -153,9 +153,9 @@ export let rec gt = (x: Float64, y: Float64) => {
 /**
  * Checks if the first argument is less than or equal to the second argument.
  *
- * @param x: The first argument.
- * @param y: The second argument.
- * @returns A boolean representing if the first argument is less then or equal to the second argument.
+ * @param x: The first argument
+ * @param y: The second argument
+ * @returns A boolean representing if the first argument is less then or equal to the second argument
  */
 @disableGC
 export let rec lte = (x: Float64, y: Float64) => {
@@ -171,9 +171,9 @@ export let rec lte = (x: Float64, y: Float64) => {
 /**
  * Checks if the first argument is greater than or equal to the second argument.
  *
- * @param x: The first argument.
- * @param y: The second argument.
- * @returns A boolean representing if the first argument is greater then or equal to the second argument.
+ * @param x: The first argument
+ * @param y: The second argument
+ * @returns A boolean representing if the first argument is greater then or equal to the second argument
  */
 @disableGC
 export let rec gte = (x: Float64, y: Float64) => {
@@ -193,7 +193,7 @@ export let rec gte = (x: Float64, y: Float64) => {
 /**
  * Generate infinity as a `Float64`.
  *
- * @returns Infinity as a `Float64`.
+ * @returns Infinity as a `Float64`
  */
 @disableGC
 let rec makeInfinity = () => {
@@ -211,7 +211,7 @@ export let infinity = makeInfinity()
 /**
  * Generate Nan as a `Float64`.
  *
- * @returns Nan as a `Float64`.
+ * @returns Nan as a `Float64`
  */
 @disableGC
 let rec makeNaN = () => {
