@@ -193,7 +193,7 @@ export let rec gte = (x: Float64, y: Float64) => {
 /**
  * Generate infinity as a `Float64`.
  *
- * @returns infinity as a `Float64`.
+ * @returns Infinity as a `Float64`.
  */
 @disableGC
 let rec makeInfinity = () => {
