@@ -462,8 +462,10 @@ export let rec resize = (left: Number, right: Number, b: Bytes) => {
   }
   if (len > 0n) {
     Memory.copy(
-      dst + _VALUE_OFFSET + dstOffset,
-      src + _VALUE_OFFSET + srcOffset,
+      dst + _VALUE_OFFSET +
+      dstOffset,
+      src + _VALUE_OFFSET +
+      srcOffset,
       len,
     )
   }
@@ -513,8 +515,10 @@ export let rec move =
   }
   let end = srcPos + len
   let ret = Memory.copy(
-    dst + _VALUE_OFFSET + dstPos,
-    src + _VALUE_OFFSET + srcPos,
+    dst + _VALUE_OFFSET +
+    dstPos,
+    src + _VALUE_OFFSET +
+    srcPos,
     len,
   )
   Memory.decRef(WasmI32.fromGrain(srcPosOrig))

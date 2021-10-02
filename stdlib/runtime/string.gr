@@ -246,7 +246,9 @@ let escape = (ptr, isString) => {
   let mut newSize = 2n // extra space for quote characters
   for (let mut i = 0n; i < size; i += 1n) {
     let byte = WasmI32.load8U(ptr + i, startOffset)
-    if (byte >= _SEQ_B && byte <= _SEQ_R || byte == _SEQ_V || byte == _SEQ_SLASH || byte == _SEQ_QUOTE) {
+    if (byte >= _SEQ_B && byte <= _SEQ_R || byte == _SEQ_V ||
+    byte == _SEQ_SLASH ||
+    byte == _SEQ_QUOTE) {
       newSize += 2n
     } else {
       newSize += 1n
@@ -260,7 +262,9 @@ let escape = (ptr, isString) => {
 
   for (let mut i = 0n; i < size; i += 1n) {
     let byte = WasmI32.load8U(ptr + i, startOffset)
-    if (byte >= _SEQ_B && byte <= _SEQ_R || byte == _SEQ_V || byte == _SEQ_SLASH || byte == _SEQ_QUOTE) {
+    if (byte >= _SEQ_B && byte <= _SEQ_R || byte == _SEQ_V ||
+    byte == _SEQ_SLASH ||
+    byte == _SEQ_QUOTE) {
       WasmI32.store8(escapedString + j, _SEQ_SLASH, stringOffset)
       j += 1n
       let seq = match (byte) {
@@ -460,7 +464,8 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
           ): (String)
           let fieldValue = toStringHelp(
             WasmI32.load(ptr + i, 16n),
-            extraIndents + 1n,
+            extraIndents +
+            1n,
             false,
           )
           strings = slConsDisableGc(

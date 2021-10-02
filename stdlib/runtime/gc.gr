@@ -159,10 +159,8 @@ export let free = (userPtr: WasmI32) => {
 }
 
 export let incRef = (userPtr: WasmI32) => {
-  if (WasmI32.eqz(userPtr & Tags._GRAIN_GENERIC_TAG_MASK) && WasmI32.ne(
-    userPtr,
-    0n,
-  )) {
+  if (WasmI32.eqz(userPtr & Tags._GRAIN_GENERIC_TAG_MASK) &&
+  WasmI32.ne(userPtr, 0n)) {
     // if (_DEBUG) {
     //   logIncRef(userPtr, getRefCount(userPtr))
     //   void;
@@ -173,10 +171,8 @@ export let incRef = (userPtr: WasmI32) => {
 }
 
 let rec decRef = (userPtr: WasmI32, ignoreZeros: Bool) => {
-  if (WasmI32.eqz(userPtr & Tags._GRAIN_GENERIC_TAG_MASK) && WasmI32.ne(
-    userPtr,
-    0n,
-  )) {
+  if (WasmI32.eqz(userPtr & Tags._GRAIN_GENERIC_TAG_MASK) &&
+  WasmI32.ne(userPtr, 0n)) {
     let refCount = getRefCount(userPtr)
     // if (_DEBUG) {
     //   logDecRef(userPtr, refCount, ignoreZeros)
@@ -220,7 +216,8 @@ decRefChildren = (userPtr: WasmI32) => {
         ignore(decRef(WasmI32.load(userPtr + i, 16n), false))
       }
     },
-    t when t == Tags._GRAIN_ARRAY_HEAP_TAG || t == Tags._GRAIN_TUPLE_HEAP_TAG => {
+    t when t == Tags._GRAIN_ARRAY_HEAP_TAG ||
+    t == Tags._GRAIN_TUPLE_HEAP_TAG => {
       let arity = WasmI32.load(userPtr, 4n)
       let maxOffset = arity * 4n
       for (let mut i = 0n; WasmI32.ltU(i, maxOffset); i += 4n) {

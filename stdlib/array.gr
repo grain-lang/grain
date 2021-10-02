@@ -185,7 +185,8 @@ export let append = (array1, array2) => {
   let len2 = length(array2)
 
   init(
-    len1 + len2,
+    len1 +
+    len2,
     n => {
       if (n < len1) {
         array1[n]
@@ -656,7 +657,8 @@ export let product = (array1: Array<a>, array2: Array<b>) => {
   let mut indexA = -1
 
   init(
-    lenA * lenB,
+    lenA *
+    lenB,
     n => {
       if (n % lenB == 0) {
         indexA = incr(indexA)
