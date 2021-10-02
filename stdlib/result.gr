@@ -18,8 +18,8 @@
 /**
  * Checks if the Result is the `Ok` variant.
  *
- * @param v: The result to check.
- * @returns A boolean representing if the result isOk.
+ * @param v: The result to check
+ * @returns A boolean representing if the result isOk
  */
 export let isOk = v => {
   match (v) {
@@ -31,16 +31,16 @@ export let isOk = v => {
 /**
  * Checks if the Result is the `Err` variant.
  *
- * @param v: The result to check.
- * @returns A boolean representing if the result isErr.
+ * @param v: The result to check
+ * @returns A boolean representing if the result isErr
  */
 export let isErr = v => !isOk(v)
 
 /**
  * Converts the Result to an Option. The error is discarded and replaced with `None`.
  *
- * @param v: The result to convert.
- * @returns The result as an option.
+ * @param v: The result to convert
+ * @returns The result as an option
  */
 export let toOption = v => {
   match (v) {
@@ -52,9 +52,9 @@ export let toOption = v => {
 /**
  * If the Result is `Ok`, applies the given function to the `Ok` value and returns the result. Returns the unmodified `Err` otherwise.
  *
- * @param fn: The function to apply.
- * @param v: The result to map.
- * @returns The result of the applied function.
+ * @param fn: The function to apply
+ * @param v: The result to map
+ * @returns The result of the applied function
  */
 export let flatMap = (fn, v) => {
   match (v) {
@@ -66,9 +66,9 @@ export let flatMap = (fn, v) => {
 /**
  * If the Result is an `Err`, applies the given function to the `Err` value and returns the result. Returns the unmodified `Ok` value otherwise.
  *
- * @param fn: The function to apply.
- * @param v: The result to map.
- * @returns The result of the applied function.
+ * @param fn: The function to apply
+ * @param v: The result to map
+ * @returns The result of the applied function
  */
 export let flatMapErr = (fn, v) => {
   match (v) {
@@ -80,9 +80,9 @@ export let flatMapErr = (fn, v) => {
 /**
  * If the Result is `Ok(x)`, returns `Ok(fn(x))`. Returns the unmodified `Err` otherwise.
  *
- * @param fn: The function to map.
- * @param v: The result to map on.
- * @returns The result with the functions mapped.
+ * @param fn: The function to map
+ * @param v: The result to map on
+ * @returns The result with the functions mapped
  */
 export let map = (fn, v) => {
   match (v) {
@@ -94,9 +94,9 @@ export let map = (fn, v) => {
 /**
  * If the Result is `Err(x)`, returns `Err(fn(x))`. Returns the unmodified `Ok` otherwise.
  *
- * @param fn: The function to map.
- * @param v: The result to map on.
- * @returns The result with the functions mapped.
+ * @param fn: The function to map
+ * @param v: The result to map on
+ * @returns The result with the functions mapped
  */
 export let mapErr = (fn, v) => {
   match (v) {
@@ -108,9 +108,9 @@ export let mapErr = (fn, v) => {
 /**
  * If the Result is `Ok(x)`, returns `fnOk(fn(x))`. If the Result is `Err(y)`, returns `fnErr(y)`.
  *
- * @param fn: The function to map.
- * @param v: The result to map on.
- * @returns The result with the functions mapped.
+ * @param fn: The function to map
+ * @param v: The result to map on
+ * @returns The result with the functions mapped
  */
 export let mapWithDefault = (fn, def, v) => {
   match (v) {
@@ -122,9 +122,9 @@ export let mapWithDefault = (fn, def, v) => {
 /**
  * If the Result is `Ok(x)`, returns `fnOk(x)`. If the Result is `Err(y)`, returns `fnErr(y)`.
  *
- * @param fn: The function to map.
- * @param v: The result to map on.
- * @returns The result with the functions mapped.
+ * @param fn: The function to map
+ * @param v: The result to map on
+ * @returns The result with the functions mapped
  */
 export let mapWithDefaultFn = (fnOk, fnErr, v) => {
   match (v) {
@@ -136,9 +136,9 @@ export let mapWithDefaultFn = (fnOk, fnErr, v) => {
 /**
  * If the first Result is `Ok`, returns the first Result. Returns the second Result otherwise.
  *
- * @param r1: The first result.
- * @param r2: The second result.
- * @returns The result that is Ok.
+ * @param r1: The first result
+ * @param r2: The second result
+ * @returns The result that is Ok
  */
 export let or = (r1, r2) => {
   match (r1) {
@@ -150,9 +150,9 @@ export let or = (r1, r2) => {
 /**
  * If the first Result is `Err`, returns the first Result. Returns the second Result otherwise.
  *
- * @param r1: The first result.
- * @param r2: The second result.
- * @returns The result that is Err.
+ * @param r1: The first result
+ * @param r2: The second result
+ * @returns The result that is Err
  */
 export let and = (r1, r2) => {
   match (r1) {
@@ -164,10 +164,10 @@ export let and = (r1, r2) => {
 /**
  * If the Result is `Ok(x)`, applies the first function to `x`. If the Result is `Err(y)`, applies the second function to `y`.
  *
- * @param fnOk: The function to apply on the result if it is an `Err`.
- * @param fnErr: The function to apply on the result if it is an `Err`.
- * @param r: The result to apply the function on.
- * @returns The result with the appropriate function applied.
+ * @param fnOk: The function to apply on the result if it is an `Err`
+ * @param fnErr: The function to apply on the result if it is an `Err`
+ * @param r: The result to apply the function on
+ * @returns The result with the appropriate function applied
  */
 export let peek = (fnOk, fnErr, r) => {
   match (r) {
@@ -180,9 +180,9 @@ export let peek = (fnOk, fnErr, r) => {
 /**
  * If the Result is `Ok(x)`, applies the function to `x`.
  *
- * @param fn: The function to apply.
- * @param r: The result to apply the function on.
- * @returns The result with the function applied if it is `Ok`.
+ * @param fn: The function to apply
+ * @param r: The result to apply the function on
+ * @returns The result with the function applied if it is `Ok`
  */
 export let peekOk = (fn, r) => {
   peek(fn, identity, r)
@@ -191,9 +191,9 @@ export let peekOk = (fn, r) => {
 /**
  * If the Result is `Err(x)`, applies the function to `x`.
  *
- * @param fn: The function to apply.
- * @param r: The result to apply the function on.
- * @returns The result with the function applied if it is `Err`.
+ * @param fn: The function to apply
+ * @param r: The result to apply the function on
+ * @returns The result with the function applied if it is `Err`
  */
 export let peekErr = (fn, r) => {
   peek(identity, fn, r)

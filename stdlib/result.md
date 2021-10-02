@@ -38,13 +38,13 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`v`|`Result<a, b>`|The result to check.|
+|`v`|`Result<a, b>`|The result to check|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|A boolean representing if the result isOk.|
+|`Bool`|A boolean representing if the result isOk|
 
 ### Result.**isErr**
 
@@ -58,13 +58,13 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`v`|`Result<a, b>`|The result to check.|
+|`v`|`Result<a, b>`|The result to check|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|A boolean representing if the result isErr.|
+|`Bool`|A boolean representing if the result isErr|
 
 ### Result.**toOption**
 
@@ -78,13 +78,13 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`v`|`Result<a, b>`|The result to convert.|
+|`v`|`Result<a, b>`|The result to convert|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Option<a>`|The result as an option.|
+|`Option<a>`|The result as an option|
 
 ### Result.**flatMap**
 
@@ -98,14 +98,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Result<b, c>`|The function to apply.|
-|`v`|`Result<a, b>`|The result to map.|
+|`fn`|`a -> Result<b, c>`|The function to apply|
+|`v`|`Result<a, b>`|The result to map|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Result<a, b>`|The result of the applied function.|
+|`Result<a, b>`|The result of the applied function|
 
 ### Result.**flatMapErr**
 
@@ -119,14 +119,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Result<b, c>`|The function to apply.|
-|`v`|`Result<a, b>`|The result to map.|
+|`fn`|`a -> Result<b, c>`|The function to apply|
+|`v`|`Result<a, b>`|The result to map|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Result<a, b>`|The result of the applied function.|
+|`Result<a, b>`|The result of the applied function|
 
 ### Result.**map**
 
@@ -140,14 +140,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> b`|The function to map.|
-|`v`|`Result<a, b>`|The result to map on.|
+|`fn`|`a -> b`|The function to map|
+|`v`|`Result<a, b>`|The result to map on|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Result<a, b>`|The result with the functions mapped.|
+|`Result<a, b>`|The result with the functions mapped|
 
 ### Result.**mapErr**
 
@@ -161,14 +161,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> b`|The function to map.|
-|`v`|`Result<a, b>`|The result to map on.|
+|`fn`|`a -> b`|The function to map|
+|`v`|`Result<a, b>`|The result to map on|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Result<a, b>`|The result with the functions mapped.|
+|`Result<a, b>`|The result with the functions mapped|
 
 ### Result.**mapWithDefault**
 
@@ -182,14 +182,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> b`|The function to map.|
-|`v`|`a`|The result to map on.|
+|`fn`|`a -> b`|The function to map|
+|`v`|`a`|The result to map on|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`a`|The result with the functions mapped.|
+|`a`|The result with the functions mapped|
 
 ### Result.**mapWithDefaultFn**
 
@@ -203,14 +203,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> b`|The function to map.|
-|`v`|`a -> b`|The result to map on.|
+|`fn`|`a -> b`|The function to map|
+|`v`|`a -> b`|The result to map on|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`a`|The result with the functions mapped.|
+|`a`|The result with the functions mapped|
 
 ### Result.**or**
 
@@ -224,14 +224,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`r1`|`Result<a, b>`|The first result.|
-|`r2`|`Result<a, b>`|The second result.|
+|`r1`|`Result<a, b>`|The first result|
+|`r2`|`Result<a, b>`|The second result|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Result<a, b>`|The result that is Ok.|
+|`Result<a, b>`|The result that is Ok|
 
 ### Result.**and**
 
@@ -245,14 +245,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`r1`|`Result<a, b>`|The first result.|
-|`r2`|`Result<a, b>`|The second result.|
+|`r1`|`Result<a, b>`|The first result|
+|`r2`|`Result<a, b>`|The second result|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Result<a, b>`|The result that is Err.|
+|`Result<a, b>`|The result that is Err|
 
 ### Result.**peek**
 
@@ -266,15 +266,15 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fnOk`|`a -> b`|The function to apply on the result if it is an `Err`.|
-|`fnErr`|`a -> b`|The function to apply on the result if it is an `Err`.|
-|`r`|`Result<a, b>`|The result to apply the function on.|
+|`fnOk`|`a -> b`|The function to apply on the result if it is an `Err`|
+|`fnErr`|`a -> b`|The function to apply on the result if it is an `Err`|
+|`r`|`Result<a, b>`|The result to apply the function on|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Result<a, b>`|The result with the appropriate function applied.|
+|`Result<a, b>`|The result with the appropriate function applied|
 
 ### Result.**peekOk**
 
@@ -288,14 +288,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> b`|The function to apply.|
-|`r`|`Result<a, b>`|The result to apply the function on.|
+|`fn`|`a -> b`|The function to apply|
+|`r`|`Result<a, b>`|The result to apply the function on|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Result<a, b>`|The result with the function applied if it is `Ok`.|
+|`Result<a, b>`|The result with the function applied if it is `Ok`|
 
 ### Result.**peekErr**
 
@@ -309,14 +309,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> b`|The function to apply.|
-|`r`|`Result<a, b>`|The result to apply the function on.|
+|`fn`|`a -> b`|The function to apply|
+|`r`|`Result<a, b>`|The result to apply the function on|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Result<a, b>`|The result with the function applied if it is `Err`.|
+|`Result<a, b>`|The result with the function applied if it is `Err`|
 
 ### Result.**expect**
 
