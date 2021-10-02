@@ -1197,11 +1197,11 @@ and print_application =
       };
 
     Doc.concat([
-      wrapped_left,
+      Doc.group(wrapped_left),
       Doc.space,
       Doc.text(function_name),
-      Doc.space,
-      wrapped_right,
+      Doc.line,
+      Doc.group(wrapped_right),
     ]);
 
   | _ when prefixop(function_name) || infixop(function_name) =>
@@ -1675,12 +1675,14 @@ and print_expression =
                                 Doc.space,
                                 Doc.text("when"),
                                 Doc.space,
-                                print_expression(
-                                  ~parentIsArrow=false,
-                                  ~endChar=None,
-                                  ~original_source,
-                                  ~parent_loc,
-                                  guard,
+                                Doc.group(
+                                  print_expression(
+                                    ~parentIsArrow=false,
+                                    ~endChar=None,
+                                    ~original_source,
+                                    ~parent_loc,
+                                    guard,
+                                  ),
                                 ),
                               ])
                             },
@@ -2135,7 +2137,8 @@ and print_expression =
 
       let followsArrow =
         switch (expression.pexp_desc) {
-        | PExpBlock(_) => [
+        | PExpBlock(_)
+        | PExpLambda(_) => [
             Doc.group(
               Doc.concat([args, Doc.space, Doc.text("=>"), Doc.space]),
             ),
@@ -2619,13 +2622,19 @@ let rec print_data =
                       Doc.group(
                         Doc.concat([
                           Doc.lparen,
-                          Doc.join(
-                            Doc.concat([Doc.comma, Doc.line]),
-                            List.map(
-                              t => print_type(t, original_source),
-                              parsed_types,
-                            ),
+                          Doc.indent(
+                            Doc.concat([
+                              Doc.softLine,
+                              Doc.join(
+                                Doc.concat([Doc.comma, Doc.line]),
+                                List.map(
+                                  t => print_type(t, original_source),
+                                  parsed_types,
+                                ),
+                              ),
+                            ]),
                           ),
+                          Doc.softLine,
                           Doc.rparen,
                         ]),
                       );
