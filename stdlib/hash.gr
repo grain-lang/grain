@@ -1,6 +1,11 @@
 /* grainc-flags --no-gc */
 
 /**
+ * @module Hash: Utilities for hashing.
+ * @example import Hash from "hash"
+ */
+
+/**
   This module implements MurmurHash3 for Grain data types.
   https://en.wikipedia.org/wiki/MurmurHash
 */
@@ -208,7 +213,17 @@ let rec hashOne = (val, depth) => {
     hash32(val)
   }
 }
+/**
+ * @section Values: Functions for hashing.
+ */
 
+/**
+ * Generic hashing.
+ * Takes any value and produces an integer. If `a == b` then `Hash.hash(a) == Hash.hash(b)`.
+ *
+ * @param a: The value to hash
+ * @returns The generated hash
+ */
 export let hash = (a) => {
   h = seed
 
