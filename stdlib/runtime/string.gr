@@ -652,7 +652,6 @@ listToString = (ptr, extraIndents) => {
     if (variantId == 0n) {
       break
     } else {
-      Memory.incRef(WasmI32.fromGrain((!)))
       if (!isFirst) {
         strings = slConsDisableGc(commaspace, strings)
       }
