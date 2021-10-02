@@ -193,7 +193,7 @@ export let rec gte = (x: Float32, y: Float32) => {
 /**
  * Generate infinity as a `Float32`.
  *
- * @returns infinity as a `Float32`.
+ * @returns Infinity as a `Float32`.
  */
 @disableGC
 let rec makeInfinity = () => {
@@ -211,7 +211,7 @@ export let infinity = makeInfinity()
 /**
  * Generate Nan as a `Float32`.
  *
- * @returns nan as a `Float32`.
+ * @returns Nan as a `Float32`.
  */
 @disableGC
 let rec makeNaN = () => {
