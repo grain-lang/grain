@@ -125,3 +125,48 @@ let rec readdir = (dir, excludes) => {
        [||],
      );
 };
+
+let realpath = path => {
+  switch (Fp.testForPath(path)) {
+  | None => None
+  | Some(Fp.Absolute(abspath)) => Some(Fp.toString(abspath))
+  | Some(Fp.Relative(relpath)) =>
+    let base = Fp.absoluteExn(get_cwd());
+    let full_path = Fp.join(base, relpath);
+    Some(Fp.toString(full_path));
+  };
+};
+
+let realpath_quick = path => {
+  switch (realpath(path)) {
+  | None => path
+  | Some(rp) => rp
+  };
+};
+
+let smart_cat = (dir, file) => {
+  switch (Fp.absolute(dir)) {
+  | None => Filename.concat(dir, file)
+  | Some(abspath) =>
+    switch (Fp.relative(file)) {
+    | None => Filename.concat(Fp.toString(abspath), file)
+    | Some(relpath) => Fp.toString(Fp.join(abspath, relpath))
+    }
+  };
+};
+
+let canonicalize_relpath = (base_path, unit_name) => {
+  // PRECONDITION: is_relpath(unit_name) == true
+  let abs_base_path =
+    switch (realpath(base_path)) {
+    | None =>
+      failwith(
+        Printf.sprintf(
+          "Internal Grain error; please report! testForPath failed: %s",
+          base_path,
+        ),
+      )
+    | Some(abspath) => abspath
+    };
+  smart_cat(abs_base_path, unit_name);
+};
