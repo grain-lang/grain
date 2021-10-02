@@ -10,9 +10,9 @@ import { tagSimpleNumber, allocateArray, allocateChar, allocateString, allocateB
 /**
  * Concatenate two strings.
  * 
- * @param str1: The first string.
- * @param str2: The second string.
- * @returns The result of the joined strings.
+ * @param str1: The first string
+ * @param str2: The second string
+ * @returns The result of the joined strings
  * 
  * @example String.concat("Hello", " World")
  */
@@ -21,8 +21,8 @@ export let concat = (++)
 /**
  * Get the character length of a string.
  * 
- * @param input: The string to check.
- * @returns The length of the provided string.
+ * @param input: The string to check
+ * @returns The length of the provided string
  * 
  * @example String.length("Hello World")
  */
@@ -59,8 +59,8 @@ let wasmSafeLength = (s: String) => {
 /**
  * Get the byte length of a string.
  * 
- * @param input: The string to check.
- * @returns The byte length of the string.
+ * @param input: The string to check
+ * @returns The byte length of the string
  * 
  * @example String.byteLength("Hello World")
  */
@@ -83,9 +83,9 @@ let wasmSafeByteLength = (s: String) => {
 /**
  * Find the start index of a substring.
  * 
- * @param sub: The substring to find.
- * @param input: The string to check.
- * @returns The starting index of he substring.
+ * @param sub: The substring to find
+ * @param input: The string to check
+ * @returns The starting index of he substring
  * 
  * @example String.indexOf("Hello World", "World")
  */
@@ -152,9 +152,9 @@ export let rec indexOf = (p: String, s: String) => {
 /**
  * Find the Char at a specific index.
  * 
- * @param idx: The Index to Check.
- * @param s: The string to search.
- * @returns The char a the index of the string.
+ * @param idx: The Index to Check
+ * @param s: The string to search
+ * @returns The char a the index of the string
  * 
  * @example String.charAt(5, "Hello World")
  */
@@ -261,8 +261,8 @@ let explodeHelp = (s: String, chars) => {
 /**
  * Split a string into its UTF-8 characters.
  * 
- * @param input: The string to split.
- * @returns The string split into an array of characters.
+ * @param input: The string to split
+ * @returns The string split into an array of characters
  * 
  * @example String.explode("Hello World")
  */
@@ -274,8 +274,8 @@ export let explode = (str) => {
 /**
  * Create a string from an array of characters.
  * 
- * @param input: The array to implode.
- * @returns A string based on the inputted array of characters.
+ * @param input: The array to implode
+ * @returns A string based on the inputted array of characters
  * 
  * @example String.implode([> 'H', 'e', 'l', 'l', 'o', ' ', 'W', 'o', 'r', 'l', 'd' ])
  */
@@ -340,9 +340,9 @@ export let rec implode = (arr: Array<Char>) => {
 /**
  * Split a string by the given sequence.
  * 
- * @param sequence: The sequence to split on.
- * @param input: The string to split.
- * @returns An array made of the initial string split at the sequence.
+ * @param sequence: The sequence to split on
+ * @param input: The string to split
+ * @returns An array made of the initial string split at the sequence
  * 
  * @example String.split("Hello World", " ")
  */
@@ -438,10 +438,10 @@ export let rec split = (p: String, s: String) => {
 /**
  * Get a portion of a string.
  * 
- * @param from: The start index of the substring.
- * @param to: The end index of the substring.
- * @param input: The input string.
- * @returns The substring from the initial string.
+ * @param from: The start index of the substring
+ * @param to: The end index of the substring
+ * @param input: The input string
+ * @returns The substring from the initial string
  * 
  * @example String.slice(0, 5, "Hello World")
  */
@@ -534,9 +534,9 @@ export let rec slice = (start: Number, to: Number, s: String) => {
 /**
  * Check if a string contains a substring.
  * 
- * @param pattern: The substring to check.
- * @param input: The input string.
- * @returns A boolean indicating if the string contains the substring.
+ * @param pattern: The substring to check
+ * @param input: The input string
+ * @returns A boolean indicating if the string contains the substring
  * 
  * @example String.contains("Hello World", "World")
  */
@@ -623,9 +623,9 @@ export let rec contains = (p: String, s: String) => {
 /**
  * Check if a string begins with another string.
  * 
- * @param pattern: The substring to check.
- * @param input: The input string.
- * @returns A boolean indicating if the string starts with the substring.
+ * @param pattern: The substring to check
+ * @param input: The input string
+ * @returns A boolean indicating if the string starts with the substring
  * 
  * @example String.startsWith("Hello World", "Hello")
  */
@@ -661,9 +661,9 @@ export let rec startsWith = (p: String, s: String) => {
 /**
  * Check if a string ends with another string.
  * 
- * @param pattern: The substring to check.
- * @param input: The input string.
- * @returns A boolean indicating if the ends starts with the substring.
+ * @param pattern: The substring to check
+ * @param input: The input string
+ * @returns A boolean indicating if the ends starts with the substring
  * 
  * @example String.endsWith("Hello World", "World")
  */
@@ -873,11 +873,11 @@ initPtr();
 /**
  * Encodes the given string using the given encoding scheme.
  * 
- * @param s: The input string.
- * @param encoding: The encoding to use.
- * @param includeBom: Whether to include the byte-order marker in the encoded output.
- * @param dest: The bytes object to write the encoded output into.
- * @param destPos: The location in the byte array to write the output.
+ * @param s: The input string
+ * @param encoding: The encoding to use
+ * @param includeBom: Whether to include the byte-order marker in the encoded output
+ * @param dest: The bytes object to write the encoded output into
+ * @param destPos: The location in the byte array to write the output
  * @returns The encoded string
  */
 @disableGC
@@ -1077,12 +1077,12 @@ let rec encodeAtHelp = (s: String, encoding: Encoding, includeBom: Bool, dest: B
 /**
  * Encodes the given string using the given encoding scheme.
  * 
- * @param s: The input string.
- * @param encoding: The encoding to use.
- * @param includeBom: Whether to include the byte-order marker in the encoded output.
- * @param dest: The bytes object to write the encoded output into.
- * @param destPos: The location in the byte array to write the output.
- * @returns The encoded string.
+ * @param s: The input string
+ * @param encoding: The encoding to use
+ * @param includeBom: Whether to include the byte-order marker in the encoded output
+ * @param dest: The bytes object to write the encoded output into
+ * @param destPos: The location in the byte array to write the output
+ * @returns The encoded string
  */
 export let encodeAt = (s, encoding, dest, destPos) => {
   encodeAtHelp(s, encoding, false, dest, destPos)
@@ -1091,12 +1091,12 @@ export let encodeAt = (s, encoding, dest, destPos) => {
 /**
  * Encodes the given string using the given encoding scheme.
  * 
- * @param s: The input string.
- * @param encoding: The encoding to use.
- * @param includeBom: Whether to include the byte-order marker in the encoded output.
- * @param dest: The bytes object to write the encoded output into.
- * @param destPos: The location in the byte array to write the output.
- * @returns The encoded string.
+ * @param s: The input string
+ * @param encoding: The encoding to use
+ * @param includeBom: Whether to include the byte-order marker in the encoded output
+ * @param dest: The bytes object to write the encoded output into
+ * @param destPos: The location in the byte array to write the output
+ * @returns The encoded string
  */
 export let encodeAtWithBom = (s, encoding, dest, destPos) => {
   encodeAtHelp(s, encoding, true, dest, destPos)
@@ -1105,10 +1105,10 @@ export let encodeAtWithBom = (s, encoding, dest, destPos) => {
 /**
  * Encodes the given string using the given encoding scheme.
  * 
- * @param s: The input string.
- * @param encoding: The encoding to use.
- * @param includeBom: Whether to include the byte-order marker in the encoded output.
- * @returns The string encoded into bytes.
+ * @param s: The input string
+ * @param encoding: The encoding to use
+ * @param includeBom: Whether to include the byte-order marker in the encoded output
+ * @returns The string encoded into bytes
  */
 @disableGC
 let rec encodeHelp = (s: String, encoding: Encoding, includeBom: Bool) => {
@@ -1141,9 +1141,9 @@ let rec encodeHelp = (s: String, encoding: Encoding, includeBom: Bool) => {
  * Encodes the given string using the given encoding scheme. A byte-order marker
  * will not be included in the output.
  * 
- * @param s: The input string.
- * @param encoding: The encoding to use.
- * @returns The string encoded into bytes.
+ * @param s: The input string
+ * @param encoding: The encoding to use
+ * @returns The string encoded into bytes
  */
 export let encode = (s: String, encoding: Encoding) => {
   encodeHelp(s, encoding, false)
@@ -1152,9 +1152,9 @@ export let encode = (s: String, encoding: Encoding) => {
 /**
  * Encodes the given string using the given encoding scheme. A byte-order marker.
  * 
- * @param s: The input string.
- * @param encoding: The encoding to use.
- * @returns The string encoded into bytes.
+ * @param s: The input string
+ * @param encoding: The encoding to use
+ * @returns The string encoded into bytes
  */
 export let encodeWithBom = (s: String, encoding: Encoding) => {
   encodeHelp(s, encoding, true)
@@ -1404,12 +1404,12 @@ let decodedLength = (bytes: Bytes, encoding: Encoding, start: WasmI32, size: Was
 /**
  * Decodes the given byte sequence into a string using the given encoding scheme.
  * 
- * @param bytes: The input bytes.
- * @param encoding: The encoding to use.
- * @param skipBom: Whether to include the byte-order marker (if present) in the decoded output.
- * @param start: The byte offset to begin decoding from.
- * @param size: The maximum number of bytes to decode.
- * @returns The decoded string.
+ * @param bytes: The input bytes
+ * @param encoding: The encoding to use
+ * @param skipBom: Whether to include the byte-order marker (if present) in the decoded output
+ * @param start: The byte offset to begin decoding from
+ * @param size: The maximum number of bytes to decode
+ * @returns The decoded string
  */
 @disableGC
 let rec decodeRangeHelp = (bytes: Bytes, encoding: Encoding, skipBom: Bool, start: Number, size: Number) => {
@@ -1531,11 +1531,11 @@ let rec decodeRangeHelp = (bytes: Bytes, encoding: Encoding, skipBom: Bool, star
  * Decodes the given byte sequence into a string using the given encoding scheme, skipping
  * the byte-order marker, if it's present.
  * 
- * @param bytes: The input bytes.
- * @param encoding: The encoding to use.
- * @param start: The byte offset to begin decoding from.
- * @param size: The maximum number of bytes to decode.
- * @returns The decoded string.
+ * @param bytes: The input bytes
+ * @param encoding: The encoding to use
+ * @param start: The byte offset to begin decoding from
+ * @param size: The maximum number of bytes to decode
+ * @returns The decoded string
  */
 export let decodeRange = (bytes: Bytes, encoding: Encoding, start: Number, size: Number) => {
   decodeRangeHelp(bytes, encoding, true, start, size)
@@ -1545,11 +1545,11 @@ export let decodeRange = (bytes: Bytes, encoding: Encoding, start: Number, size:
  * Decodes the given byte sequence into a string using the given encoding scheme, including
  * the byte-order marker, if it's present.
  * 
- * @param bytes: The input bytes.
- * @param encoding: The encoding to use.
- * @param start: The byte offset to begin decoding from.
- * @param size: The maximum number of bytes to decode.
- * @returns The decoded string.
+ * @param bytes: The input bytes
+ * @param encoding: The encoding to use
+ * @param start: The byte offset to begin decoding from
+ * @param size: The maximum number of bytes to decode
+ * @returns The decoded string
  */
 export let decodeRangeKeepBom = (bytes: Bytes, encoding: Encoding, start: Number, size: Number) => {
   decodeRangeHelp(bytes, encoding, false, start, size)
@@ -1558,10 +1558,10 @@ export let decodeRangeKeepBom = (bytes: Bytes, encoding: Encoding, start: Number
 /**
  * Decodes the given byte sequence into a string using the given encoding scheme.
  * 
- * @param bytes: The input bytes.
- * @param encoding: The encoding to use.
- * @param skipBom: Whether to include the byte-order marker (if present) in the decoded output.
- * @returns The decoded string.
+ * @param bytes: The input bytes
+ * @param encoding: The encoding to use
+ * @param skipBom: Whether to include the byte-order marker (if present) in the decoded output
+ * @returns The decoded string
  */
 @disableGC
 let rec decodeHelp = (bytes: Bytes, encoding: Encoding, skipBom: Bool) => {
@@ -1581,9 +1581,9 @@ let rec decodeHelp = (bytes: Bytes, encoding: Encoding, skipBom: Bool) => {
  * Decodes the given byte sequence into a string using the given encoding scheme,
  * skipping the byte-order marker, if it's present.
  * 
- * @param bytes: The input bytes.
- * @param encoding: The encoding to use.
- * @returns The decoded string.
+ * @param bytes: The input bytes
+ * @param encoding: The encoding to use
+ * @returns The decoded string
  */
 export let decode = (bytes: Bytes, encoding: Encoding) => {
   decodeHelp(bytes, encoding, true)
@@ -1593,9 +1593,9 @@ export let decode = (bytes: Bytes, encoding: Encoding) => {
  * Decodes the given byte sequence into a string using the given encoding scheme,
  * including the byte-order marker, if it's present.
  * 
- * @param bytes: The input bytes.
- * @param encoding: The encoding to use.
- * @returns The decoded string.
+ * @param bytes: The input bytes
+ * @param encoding: The encoding to use
+ * @returns The decoded string
  */
 export let decodeKeepBom = (bytes: Bytes, encoding: Encoding) => {
   decodeHelp(bytes, encoding, false)
@@ -1604,8 +1604,8 @@ export let decodeKeepBom = (bytes: Bytes, encoding: Encoding) => {
 /**
  * Iterates over Unicode code points in a string.
  * 
- * @param fn: The iterator function.
- * @param str: The string to iterate.
+ * @param fn: The iterator function
+ * @param str: The string to iterate
  * 
  * @example String.forEachCodePoint((i: Number) => { print(i) }, "World World")
  */
@@ -1664,8 +1664,8 @@ export let rec forEachCodePoint = (fn: (Number) -> Void, str: String) => {
  * `forEachCodePoint`, but provides the code point's index in the string
  * as the second argument to the iterator function.
  * 
- * @param fn: The iterator function.
- * @param str: The string to iterate.
+ * @param fn: The iterator function
+ * @param str: The string to iterate
  * 
  * @example String.forEachCodePointi((codepoint:number, i: Number) => { print(i) }, "World World")
  */

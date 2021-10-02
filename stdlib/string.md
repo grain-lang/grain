@@ -20,14 +20,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`str1`|`String`|The first string.|
-|`str2`|`String`|The second string.|
+|`str1`|`String`|The first string|
+|`str2`|`String`|The second string|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`String`|The result of the joined strings.|
+|`String`|The result of the joined strings|
 
 Examples:
 
@@ -47,13 +47,13 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`input`|`String`|The string to check.|
+|`input`|`String`|The string to check|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Number`|The length of the provided string.|
+|`Number`|The length of the provided string|
 
 Examples:
 
@@ -73,13 +73,13 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`input`|`String`|The string to check.|
+|`input`|`String`|The string to check|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Number`|The byte length of the string.|
+|`Number`|The byte length of the string|
 
 Examples:
 
@@ -99,14 +99,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`sub`|`String`|The substring to find.|
-|`input`|`String`|The string to check.|
+|`sub`|`String`|The substring to find|
+|`input`|`String`|The string to check|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Option<Number>`|The starting index of he substring.|
+|`Option<Number>`|The starting index of he substring|
 
 Examples:
 
@@ -126,14 +126,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`idx`|`Number`|The Index to Check.|
-|`s`|`String`|The string to search.|
+|`idx`|`Number`|The Index to Check|
+|`s`|`String`|The string to search|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Char`|The char a the index of the string.|
+|`Char`|The char a the index of the string|
 
 Examples:
 
@@ -153,13 +153,13 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`input`|`String`|The string to split.|
+|`input`|`String`|The string to split|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Array<Char>`|The string split into an array of characters.|
+|`Array<Char>`|The string split into an array of characters|
 
 Examples:
 
@@ -179,13 +179,13 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`input`|`Array<Char>`|The array to implode.|
+|`input`|`Array<Char>`|The array to implode|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`String`|A string based on the inputted array of characters.|
+|`String`|A string based on the inputted array of characters|
 
 Examples:
 
@@ -205,14 +205,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`sequence`|`String`|The sequence to split on.|
-|`input`|`String`|The string to split.|
+|`sequence`|`String`|The sequence to split on|
+|`input`|`String`|The string to split|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Array<String>`|An array made of the initial string split at the sequence.|
+|`Array<String>`|An array made of the initial string split at the sequence|
 
 Examples:
 
@@ -232,15 +232,15 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`from`|`Number`|The start index of the substring.|
-|`to`|`Number`|The end index of the substring.|
-|`input`|`String`|The input string.|
+|`from`|`Number`|The start index of the substring|
+|`to`|`Number`|The end index of the substring|
+|`input`|`String`|The input string|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`String`|The substring from the initial string.|
+|`String`|The substring from the initial string|
 
 Examples:
 
@@ -260,14 +260,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`pattern`|`String`|The substring to check.|
-|`input`|`String`|The input string.|
+|`pattern`|`String`|The substring to check|
+|`input`|`String`|The input string|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|A boolean indicating if the string contains the substring.|
+|`Bool`|A boolean indicating if the string contains the substring|
 
 Examples:
 
@@ -287,14 +287,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`pattern`|`String`|The substring to check.|
-|`input`|`String`|The input string.|
+|`pattern`|`String`|The substring to check|
+|`input`|`String`|The input string|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|A boolean indicating if the string starts with the substring.|
+|`Bool`|A boolean indicating if the string starts with the substring|
 
 Examples:
 
@@ -314,14 +314,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`pattern`|`String`|The substring to check.|
-|`input`|`String`|The input string.|
+|`pattern`|`String`|The substring to check|
+|`input`|`String`|The input string|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|A boolean indicating if the ends starts with the substring.|
+|`Bool`|A boolean indicating if the ends starts with the substring|
 
 Examples:
 
@@ -355,17 +355,17 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`s`|`String`|The input string.|
-|`encoding`|`Encoding`|The encoding to use.|
-|`includeBom`|`Bytes`|Whether to include the byte-order marker in the encoded output.|
-|`dest`|`Number`|The bytes object to write the encoded output into.|
-|`destPos`||The location in the byte array to write the output.|
+|`s`|`String`|The input string|
+|`encoding`|`Encoding`|The encoding to use|
+|`includeBom`|`Bytes`|Whether to include the byte-order marker in the encoded output|
+|`dest`|`Number`|The bytes object to write the encoded output into|
+|`destPos`||The location in the byte array to write the output|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Bytes`|The encoded string.|
+|`Bytes`|The encoded string|
 
 ### String.**encodeAtWithBom**
 
@@ -379,17 +379,17 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`s`|`String`|The input string.|
-|`encoding`|`Encoding`|The encoding to use.|
-|`includeBom`|`Bytes`|Whether to include the byte-order marker in the encoded output.|
-|`dest`|`Number`|The bytes object to write the encoded output into.|
-|`destPos`||The location in the byte array to write the output.|
+|`s`|`String`|The input string|
+|`encoding`|`Encoding`|The encoding to use|
+|`includeBom`|`Bytes`|Whether to include the byte-order marker in the encoded output|
+|`dest`|`Number`|The bytes object to write the encoded output into|
+|`destPos`||The location in the byte array to write the output|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Bytes`|The encoded string.|
+|`Bytes`|The encoded string|
 
 ### String.**encode**
 
@@ -404,14 +404,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`s`|`String`|The input string.|
-|`encoding`|`Encoding`|The encoding to use.|
+|`s`|`String`|The input string|
+|`encoding`|`Encoding`|The encoding to use|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Bytes`|The string encoded into bytes.|
+|`Bytes`|The string encoded into bytes|
 
 ### String.**encodeWithBom**
 
@@ -425,14 +425,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`s`|`String`|The input string.|
-|`encoding`|`Encoding`|The encoding to use.|
+|`s`|`String`|The input string|
+|`encoding`|`Encoding`|The encoding to use|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Bytes`|The string encoded into bytes.|
+|`Bytes`|The string encoded into bytes|
 
 ### String.**decodeRange**
 
@@ -447,16 +447,16 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`bytes`|`Bytes`|The input bytes.|
-|`encoding`|`Encoding`|The encoding to use.|
-|`start`|`Number`|The byte offset to begin decoding from.|
-|`size`|`Number`|The maximum number of bytes to decode.|
+|`bytes`|`Bytes`|The input bytes|
+|`encoding`|`Encoding`|The encoding to use|
+|`start`|`Number`|The byte offset to begin decoding from|
+|`size`|`Number`|The maximum number of bytes to decode|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`String`|The decoded string.|
+|`String`|The decoded string|
 
 ### String.**decodeRangeKeepBom**
 
@@ -471,16 +471,16 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`bytes`|`Bytes`|The input bytes.|
-|`encoding`|`Encoding`|The encoding to use.|
-|`start`|`Number`|The byte offset to begin decoding from.|
-|`size`|`Number`|The maximum number of bytes to decode.|
+|`bytes`|`Bytes`|The input bytes|
+|`encoding`|`Encoding`|The encoding to use|
+|`start`|`Number`|The byte offset to begin decoding from|
+|`size`|`Number`|The maximum number of bytes to decode|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`String`|The decoded string.|
+|`String`|The decoded string|
 
 ### String.**decode**
 
@@ -495,14 +495,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`bytes`|`Bytes`|The input bytes.|
-|`encoding`|`Encoding`|The encoding to use.|
+|`bytes`|`Bytes`|The input bytes|
+|`encoding`|`Encoding`|The encoding to use|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`String`|The decoded string.|
+|`String`|The decoded string|
 
 ### String.**decodeKeepBom**
 
@@ -517,14 +517,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`bytes`|`Bytes`|The input bytes.|
-|`encoding`|`Encoding`|The encoding to use.|
+|`bytes`|`Bytes`|The input bytes|
+|`encoding`|`Encoding`|The encoding to use|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`String`|The decoded string.|
+|`String`|The decoded string|
 
 ### String.**forEachCodePoint**
 
@@ -538,8 +538,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`Number -> Void`|The iterator function.|
-|`str`|`String`|The string to iterate.|
+|`fn`|`Number -> Void`|The iterator function|
+|`str`|`String`|The string to iterate|
 
 Examples:
 
@@ -561,8 +561,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`(Number, Number) -> Void`|The iterator function.|
-|`str`|`String`|The string to iterate.|
+|`fn`|`(Number, Number) -> Void`|The iterator function|
+|`str`|`String`|The string to iterate|
 
 Examples:
 
