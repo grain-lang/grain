@@ -121,11 +121,11 @@ let walktree =
 
   let iter_location = (self, location) =>
     if (!List.mem(Code(location), all_locations^)) {
-      //all_locations := List.append(all_locations^, [Code(location)]);
       all_locations := List.cons(Code(location), all_locations^);
     };
 
-  // put it in the right order ready for the final sort
+  // put it in the right order ready for the final sort as hopefully
+  // almost the right order is faster to sort
   all_locations := List.rev(all_locations^);
 
   let iterator = {...Ast_iterator.default_iterator, location: iter_location};
@@ -157,12 +157,11 @@ let rec partition_comments_internal =
           loc: Grain_parsing.Location.t,
           range: option(Grain_parsing.Location.t),
           locations: list(node_t),
-          preComments:list(Grain_parsing.Parsetree.comment)
+          preComments: list(Grain_parsing.Parsetree.comment),
+          leadingOnly: bool,
         ) => {
-  //Debug.print_loc("partition_comments_internal", loc);
- 
   switch (locations) {
-  | [] => ([], [])
+  | [] => (preComments, [])
   | [first, ...second] =>
     let nodeLoc = get_node_loc(first);
 
@@ -177,34 +176,57 @@ let rec partition_comments_internal =
         }
       };
 
-
     let comparedLoc = compare_partition_locations(loc, nodeLoc);
 
     let res =
       if (comparedLoc == 0) {
-        partition_comments_internal(loc, range, second,preComments);
+        partition_comments_internal(
+          loc,
+          range,
+          second,
+          preComments,
+          leadingOnly,
+        );
       } else if (comparedLoc > 0) {
         if (!inRange) {
-          partition_comments_internal(loc, range, second,preComments);
+          partition_comments_internal(
+            loc,
+            range,
+            second,
+            preComments,
+            leadingOnly,
+          );
         } else {
-          let newPre = switch (first) {
-          | Code(_) =>
-           []
-          | Comment((l, c)) =>
-          print_endline("Adding pre comment");
-          Comments.print_comment(c);
-             preComments @ [c]
-          };
-          partition_comments_internal(loc, range, second,newPre);
+          let newPre =
+            switch (first) {
+            | Code(_) => []
+            | Comment((l, c)) => preComments @ [c]
+            };
+          partition_comments_internal(
+            loc,
+            range,
+            second,
+            newPre,
+            leadingOnly,
+          );
         };
+      } else if (leadingOnly) {
+        (preComments, []);
+      } else if (!inRange) {
+        (preComments, []);
       } else {
         switch (first) {
         | Code(_) => (preComments, [])
         | Comment((l, c)) =>
-          let (pre, post) = partition_comments_internal(loc, range, second,preComments);
-            print_endline("Adding post comment");
-          Comments.print_comment(c);
-          (pre,  [c] @ post);
+          let (pre, post) =
+            partition_comments_internal(
+              loc,
+              range,
+              second,
+              preComments,
+              leadingOnly,
+            );
+          (pre, [c] @ post);
         };
       };
 
@@ -213,72 +235,16 @@ let rec partition_comments_internal =
 };
 
 let partition_comments =
-    (loc: Grain_parsing.Location.t, range: option(Grain_parsing.Location.t))
+    (
+      loc: Grain_parsing.Location.t,
+      range: option(Grain_parsing.Location.t),
+      leadingOnly: bool,
+    )
     : (
         list(Grain_parsing.Parsetree.comment),
         list(Grain_parsing.Parsetree.comment),
       ) => {
-  //print_endline("");
-  // Debug.print_loc("*** partition_comments", loc);
-  let (pre, post) = partition_comments_internal(loc, range, all_locations^,[]);
-  (pre, post);
-};
-
-let partition_comments_old =
-    (loc: Grain_parsing.Location.t, range: option(Grain_parsing.Location.t))
-    : (
-        list(Grain_parsing.Parsetree.comment),
-        list(Grain_parsing.Parsetree.comment),
-      ) => {
-  let skip = ref(false);
-
-  let (preceeding, following) =
-    List.fold_left(
-      (acc, node) =>
-        if (skip^) {
-          acc;
-        } else {
-          let (acc_preceeding, acc_following) = acc;
-          let nodeLoc = get_node_loc(node);
-
-          let inRange =
-            switch (range) {
-            | None => true
-            | Some(rangeloc) =>
-              if (is_first_inside_second(nodeLoc, rangeloc)) {
-                true;
-              } else {
-                false;
-              }
-            };
-
-          if (!inRange) {
-            acc;
-          } else {
-            let comparedLoc = compare_partition_locations(loc, nodeLoc);
-
-            if (comparedLoc == 0) {
-              // hit the node we are looking for
-              acc;
-            } else if (comparedLoc > 0) {
-              switch (node) {
-              | Code(_) => ([], acc_following)
-              | Comment((l, c)) => (acc_preceeding @ [c], acc_following)
-              };
-            } else {
-              switch (node) {
-              | Code(_) =>
-                skip := true;
-                acc;
-              | Comment((l, c)) => (acc_preceeding, acc_following @ [c])
-              };
-            };
-          };
-        },
-      ([], []),
-      all_locations^,
-    );
-  (preceeding, following);
+  partition_comments_internal(loc, range, all_locations^, [], leadingOnly);
 };
 
 let remove_used_comments = (pre_comments, post_comments) => {
