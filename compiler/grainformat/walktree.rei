@@ -27,7 +27,7 @@
 
  */
 let partition_comments:
-  (Grain_parsing.Location.t, option(Grain_parsing.Location.t),bool) =>
+  (Grain_parsing.Location.t, option(Grain_parsing.Location.t), bool) =>
   (
     list(Grain_parsing.Parsetree.comment),
     list(Grain_parsing.Parsetree.comment),
