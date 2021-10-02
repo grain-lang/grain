@@ -13,7 +13,7 @@ record Queue<a> { forwards: List<a>, backwards: List<a> }
 /**
  * Creates a new queue.
  * 
- * @returns A new empty queue.
+ * @returns A new empty queue
  */
 export let make = () => {
   { forwards: [], backwards: [] }
@@ -22,8 +22,8 @@ export let make = () => {
 /**
  * Checks if the given queue contains no elements.
  * 
- * @param queue: The queue to check.
- * @returns A boolean representing weather or not the queue is empty.
+ * @param queue: The queue to check
+ * @returns A boolean representing weather or not the queue is empty
  */
 export let isEmpty = queue => {
   match (queue) {
@@ -35,8 +35,8 @@ export let isEmpty = queue => {
 /**
  * Returns the element on the top of the queue.
  * 
- * @param queue: The queue to peek into.
- * @returns The element on the top of the queue, if the queue is empty it returns `None`.
+ * @param queue: The queue to peek into
+ * @returns The element on the top of the queue, if the queue is empty it returns `None`
  */
 export let peek = queue => {
   match (queue) {
@@ -48,9 +48,9 @@ export let peek = queue => {
 /**
  * Pushes a new element into the queue.
  * 
- * @param value: The value to push.
- * @param queue: The queue to push to.
- * @returns The queue with the addition of the new element.
+ * @param value: The value to push
+ * @param queue: The queue to push to
+ * @returns The queue with the addition of the new element
  */
 export let push = (value, queue) => {
   match (queue) {
@@ -62,8 +62,8 @@ export let push = (value, queue) => {
 /**
  * Pops an element off the queue.
  * 
- * @param queue: The queue to pop from.
- * @returns The queue with the item removed.
+ * @param queue: The queue to pop from
+ * @returns The queue with the item removed
  */
 export let pop = queue => {
   match (queue) {
@@ -81,8 +81,8 @@ export let pop = queue => {
 /**
  * Get the length of the provided queue.
  * 
- * @param queue: The queue to get the length from.
- * @returns The size of the queue.
+ * @param queue: The queue to get the length from
+ * @returns The size of the queue
  */
 export let size = queue => {
   match (queue) {

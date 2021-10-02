@@ -24,7 +24,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Queue<a>`|A new empty queue.|
+|`Queue<a>`|A new empty queue|
 
 ### Queue.**isEmpty**
 
@@ -38,13 +38,13 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`queue`|`Queue<a>`|The queue to check.|
+|`queue`|`Queue<a>`|The queue to check|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|A boolean representing weather or not the queue is empty.|
+|`Bool`|A boolean representing weather or not the queue is empty|
 
 ### Queue.**peek**
 
@@ -58,13 +58,13 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`queue`|`Queue<a>`|The queue to peek into.|
+|`queue`|`Queue<a>`|The queue to peek into|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Option<a>`|The element on the top of the queue, if the queue is empty it returns `None`.|
+|`Option<a>`|The element on the top of the queue, if the queue is empty it returns `None`|
 
 ### Queue.**push**
 
@@ -78,14 +78,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value`|`a`|The value to push.|
-|`queue`|`Queue<a>`|The queue to push to.|
+|`value`|`a`|The value to push|
+|`queue`|`Queue<a>`|The queue to push to|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Queue<a>`|The queue with the addition of the new element.|
+|`Queue<a>`|The queue with the addition of the new element|
 
 ### Queue.**pop**
 
@@ -99,13 +99,13 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`queue`|`Queue<a>`|The queue to pop from.|
+|`queue`|`Queue<a>`|The queue to pop from|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Queue<a>`|The queue with the item removed.|
+|`Queue<a>`|The queue with the item removed|
 
 ### Queue.**size**
 
@@ -119,11 +119,11 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`queue`|`Queue<a>`|The queue to get the length from.|
+|`queue`|`Queue<a>`|The queue to get the length from|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Number`|The size of the queue.|
+|`Number`|The size of the queue|
 
