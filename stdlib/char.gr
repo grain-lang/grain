@@ -107,7 +107,7 @@ let rec code = (c: Char) => {
  * Returns the Char for the given code point. Fails if the code point is invalid.
  * 
  * @param codePoint: The Unicode code point
- * @returns The character that the charCode represents
+ * @returns The character that the code represents
  */
 @disableGC
 let rec fromCode = (code: Number) => {
