@@ -1091,7 +1091,7 @@ export let encodeAt = (s, encoding, dest, destPos) => {
 }
 
 /**
- * Encodes the given string using the given encoding scheme.
+ * Encodes the given string using the given encoding scheme at a supplied offset in a Bytes instance, including a byte-order marker.
  * 
  * @param s: The input string
  * @param encoding: The encoding to use
