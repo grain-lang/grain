@@ -1152,7 +1152,7 @@ export let encode = (s: String, encoding: Encoding) => {
 }
 
 /**
- * Encodes the given string using the given encoding scheme. A byte-order marker.
+ * Encodes the given string using the given encoding scheme, including a byte-order marker.
  * 
  * @param s: The input string
  * @param encoding: The encoding to use
