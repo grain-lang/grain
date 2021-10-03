@@ -34,7 +34,7 @@ let isValid = (n) => {
  * Returns the Unicode code point for the character.
  * 
  * @param char: The input character
- * @returns The characterCode
+ * @returns The character code
  */
 @disableGC
 let rec code = (c: Char) => {
