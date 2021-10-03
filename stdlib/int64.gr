@@ -1,3 +1,7 @@
+/**
+ * @module Int64: Operations on the Int64 type.
+ * @example import Int64 from "int64"
+ */
 import WasmI32 from "runtime/unsafe/wasmi32"
 import WasmI64 from "runtime/unsafe/wasmi64"
 import Exception from "runtime/exception"
@@ -12,9 +16,32 @@ import {
   coerceInt64ToNumber as toNumber
 } from "runtime/numbers"
 
+/**
+ * @section Values: Functions for working with the `Int64` data type.
+ */
+
+/**
+ * Coverts the argument from a `Number` to a `Int64`.
+ *
+ * @param x: The `Number` to convert
+ * @returns The converted `Number`
+ */
 export fromNumber
+
+/**
+ * Coverts the argument from a `Int64` to a `Number`.
+ *
+ * @param x: The `Int64` to convert
+ * @returns The converted `Int64`
+ */
 export toNumber
 
+/**
+ * Increments the number by 1.
+ *
+ * @param x: The `Int64` to increment
+ * @returns The incremented `Int64`
+ */
 @disableGC
 export let rec incr = (n: Int64) => {
   let n = WasmI32.fromGrain(n)
@@ -25,6 +52,12 @@ export let rec incr = (n: Int64) => {
   ret
 }
 
+/**
+ * Decrements the number by 1.
+ *
+ * @param x: The `Int64` to decrement
+ * @returns The decremented `Int64`
+ */
 @disableGC
 export let decr = (n: Int64) => {
   let n = WasmI32.fromGrain(n)
@@ -35,6 +68,13 @@ export let decr = (n: Int64) => {
   ret
 }
 
+/**
+ * Integer addition.
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns The sum of the two operands
+ */
 @disableGC
 export let rec add = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
@@ -47,6 +87,13 @@ export let rec add = (x: Int64, y: Int64) => {
   ret
 }
 
+/**
+ * Integer subtraction.
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns The difference of the two operands
+ */
 @disableGC
 export let rec sub = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
@@ -59,6 +106,13 @@ export let rec sub = (x: Int64, y: Int64) => {
   ret
 }
 
+/**
+ * Integer multiplication.
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns The product of the two operands
+ */
 @disableGC
 export let rec mul = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
@@ -71,6 +125,13 @@ export let rec mul = (x: Int64, y: Int64) => {
   ret
 }
 
+/**
+ * Integer division.
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns The quotient of the two operands
+ */
 @disableGC
 export let rec div = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
@@ -83,6 +144,13 @@ export let rec div = (x: Int64, y: Int64) => {
   ret
 }
 
+/**
+ * Unsigned integer division.
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns The quotient of the two operands
+ */
 @disableGC
 export let rec divU = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
@@ -95,6 +163,13 @@ export let rec divU = (x: Int64, y: Int64) => {
   ret
 }
 
+/**
+ * Integer remainder.
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns The signed remainder from a division of its two operands
+ */
 @disableGC
 export let rec rem = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
@@ -107,6 +182,13 @@ export let rec rem = (x: Int64, y: Int64) => {
   ret
 }
 
+/**
+ * Unsigned integer remainder.
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns The unsigned remainder from a division of its two operands
+ */
 @disableGC
 export let rec remU = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
@@ -125,6 +207,13 @@ let abs = (n) => {
   WasmI64.sub(WasmI64.xor(n, mask), mask)
 }
 
+/**
+ * Integer modulo.
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns The remainder from a division of its two operands
+ */
 @disableGC
 export let rec mod = (x: Int64, y: Int64) => {
   let xval = WasmI64.load(WasmI32.fromGrain(x), 8n)
@@ -150,6 +239,12 @@ export let rec mod = (x: Int64, y: Int64) => {
   ret
 }
 
+/**
+ * Integer count leading zeros.
+ *
+ * @param x: The operand
+ * @returns The number of leading zeros in its operand
+ */
 @disableGC
 export let rec clz = (n: Int64) => {
   let nv = WasmI64.load(WasmI32.fromGrain(n), 8n)
@@ -160,6 +255,12 @@ export let rec clz = (n: Int64) => {
   ret
 }
 
+/**
+ * Integer count trailing zeros.
+ *
+ * @param x: The operand
+ * @returns The number of trailing zeros in its operand
+ */
 @disableGC
 export let rec ctz = (n: Int64) => {
   let nv = WasmI64.load(WasmI32.fromGrain(n), 8n)
@@ -170,6 +271,12 @@ export let rec ctz = (n: Int64) => {
   ret
 }
 
+/**
+ * Integer population count.
+ *
+ * @param x: The operand
+ * @returns The number of `1-bits` in its operand
+ */
 @disableGC
 export let rec popcnt = (n: Int64) => {
   let nv = WasmI64.load(WasmI32.fromGrain(n), 8n)
@@ -180,6 +287,13 @@ export let rec popcnt = (n: Int64) => {
   ret
 }
 
+/**
+ * Integer rotate left.
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns The value of the first operand rotated to the left by the shift count
+ */
 @disableGC
 export let rec rotl = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
@@ -192,6 +306,13 @@ export let rec rotl = (x: Int64, y: Int64) => {
   ret
 }
 
+/**
+ * Integer rotate right.
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns The value of the first operand rotated to the right by the shift count
+ */
 @disableGC
 export let rec rotr = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
@@ -204,8 +325,18 @@ export let rec rotr = (x: Int64, y: Int64) => {
   ret
 }
 
-// Int64 comparisons
 
+/**
+ * @section Comparisons: Comparison functions for working with integers.
+ */
+
+/**
+ * Integer equal.
+ *
+ * @param x: The first argument
+ * @param y: The second argument
+ * @returns A boolean representing if the arguments are equal
+ */
 @disableGC
 export let rec eq = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
@@ -217,6 +348,13 @@ export let rec eq = (x: Int64, y: Int64) => {
   ret
 }
 
+/**
+ * Integer inequality.
+ *
+ * @param x: The first argument
+ * @param y: The second argument
+ * @returns A boolean representing if the arguments are not equal
+ */
 @disableGC
 export let rec ne = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
@@ -228,6 +366,12 @@ export let rec ne = (x: Int64, y: Int64) => {
   ret
 }
 
+/**
+ * Integer equal to zero.
+ *
+ * @param x: The argument
+ * @returns A boolean indicating if the argument is equal to zero
+ */
 @disableGC
 export let rec eqz = (n: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(n), 8n)
@@ -237,6 +381,13 @@ export let rec eqz = (n: Int64) => {
   ret
 }
 
+/**
+ * Checks if the first argument is strictly less than the second argument.
+ *
+ * @param x: The first argument
+ * @param y: The second argument
+ * @returns A boolean representing if the first argument is less then the second argument
+ */
 @disableGC
 export let rec lt = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
@@ -248,6 +399,13 @@ export let rec lt = (x: Int64, y: Int64) => {
   ret
 }
 
+/**
+ * Checks if the first argument is strictly greater than the second argument.
+ *
+ * @param x: The first argument
+ * @param y: The second argument
+ * @returns A boolean representing if the first argument is greater then the second argument
+ */
 @disableGC
 export let rec gt = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
@@ -259,6 +417,13 @@ export let rec gt = (x: Int64, y: Int64) => {
   ret
 }
 
+/**
+ * Checks if the first argument is strictly less then or equal to the second argument.
+ *
+ * @param x: The first argument
+ * @param y: The second argument
+ * @returns A boolean representing if the first argument is less then or equal to the second argument
+ */
 @disableGC
 export let rec lte = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
@@ -270,6 +435,13 @@ export let rec lte = (x: Int64, y: Int64) => {
   ret
 }
 
+/**
+ * Checks if the first argument is strictly greater then or equal to the second argument.
+ *
+ * @param x: The first argument
+ * @param y: The second argument
+ * @returns A boolean representing if the first argument is greater then or equal to the second argument
+ */
 @disableGC
 export let rec gte = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
@@ -282,6 +454,16 @@ export let rec gte = (x: Int64, y: Int64) => {
 }
 
 // Int64 bit/logical operations
+/**
+ * @section Logical operations: logical operations for working with Integers.
+ */
+
+/**
+ * Computes the bitwise logical "not" of the argument.
+ *
+ * @param x: The first argument
+ * @returns The bitwise logical "not" of the argument
+ */
 @disableGC
 export let rec lnot = (x: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
@@ -292,7 +474,12 @@ export let rec lnot = (x: Int64) => {
   ret
 }
 
-
+/**
+ * Computes the bitwise logical "and" of the argument.
+ *
+ * @param x: The first argument
+ * @returns The bitwise logical "and" of the argument
+ */
 @disableGC
 export let rec land = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
@@ -305,6 +492,12 @@ export let rec land = (x: Int64, y: Int64) => {
   ret
 }
 
+/**
+ * Computes the bitwise logical "or" of the argument.
+ *
+ * @param x: The first argument
+ * @returns The bitwise logical "or" of the argument
+ */
 @disableGC
 export let rec lor = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
@@ -317,6 +510,13 @@ export let rec lor = (x: Int64, y: Int64) => {
   ret
 }
 
+/**
+ * Computes the bitwise logical "xor" of the argument.
+ *
+ * @param x: The first argument
+ * @param x: The second argument
+ * @returns The bitwise logical "xor" of the argument
+ */
 @disableGC
 export let rec lxor = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
@@ -329,7 +529,13 @@ export let rec lxor = (x: Int64, y: Int64) => {
   ret
 }
 
-
+/**
+ * Computes the bitwise arithmetic (signed) shift right of the first argument by the second argument.
+ *
+ * @param x: The first argument
+ * @param x: The second argument
+ * @returns The bitwise logical shift left of the first argument by the second argument
+ */
 @disableGC
 export let rec shl = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
@@ -342,6 +548,13 @@ export let rec shl = (x: Int64, y: Int64) => {
   ret
 }
 
+/**
+ * Computes the bitwise logical shift right of the first argument by the second argument.
+ *
+ * @param x: The first argument
+ * @param x: The second argument
+ * @returns The bitwise arithmetic (signed) shift right of the first argument by the second argument
+ */
 @disableGC
 export let rec shr = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
@@ -354,6 +567,13 @@ export let rec shr = (x: Int64, y: Int64) => {
   ret
 }
 
+/**
+ * Computes the unsigned bitwise logical shift right of the first argument by the second argument.
+ *
+ * @param x: The first argument
+ * @param x: The second argument
+ * @returns The bitwise arithmetic (unsigned) shift right of the first argument by the second argument
+ */
 @disableGC
 export let rec shrU = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
