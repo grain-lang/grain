@@ -16,7 +16,7 @@ import {
 } from "runtime/numbers"
 
 /**
- * @section Values: Functions for working with the `Innt32` data type.
+ * @section Values: Functions for working with the `Int32` data type.
  */
 
 /**
