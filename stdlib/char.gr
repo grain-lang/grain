@@ -25,7 +25,7 @@ let max = 0x10FFFF
  * Returns true if the given number is a valid Unicode scalar value.
  * 
  * @param n: The value to check
- * @returns A boolean indicating if the number refers to a valid character
+ * @returns A boolean indicating if the number refers to a valid Unicode character
  */
 let isValid = (n) => {
   n >= min && (n <= 0xD7FF || n >= 0xE000) && n <= max
