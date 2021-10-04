@@ -119,14 +119,22 @@ let walktree =
 
   all_locations := comment_locations;
 
-  let iter_location = (self, location) =>
-    if (!List.mem(Code(location), all_locations^)) {
+  // use a hash table to de-deupe adding locations to the list
+  // because the iterator returns the same location multiple times
+
+  // best guess of size, 20 nodes per top level stmt
+
+  let num_nodes = List.length(statements) * 20;
+
+  let locs = Hashtbl.create(num_nodes);
+
+  let iter_location = (self, location) => {
+    let loc_string = Debug.print_loc_string("", location);
+    if (!Hashtbl.mem(locs, loc_string)) {
+      Hashtbl.add(locs, loc_string, true);
       all_locations := [Code(location), ...all_locations^];
     };
-
-  // put it in the right order ready for the final sort as hopefully
-  // almost the right order is faster to sort
-  all_locations := List.rev(all_locations^);
+  };
 
   let iterator = {...Ast_iterator.default_iterator, location: iter_location};
 
