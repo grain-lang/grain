@@ -162,14 +162,14 @@ let walktree =
 
 let rec partition_comments_internal =
         (
+          ~range: option(Grain_parsing.Location.t),
+          ~locations: list(node_t),
+          ~pre_comments: list(Grain_parsing.Parsetree.comment),
+          ~leading_only: bool,
           loc: Grain_parsing.Location.t,
-          range: option(Grain_parsing.Location.t),
-          locations: list(node_t),
-          preComments: list(Grain_parsing.Parsetree.comment),
-          leadingOnly: bool,
         ) => {
   switch (locations) {
-  | [] => (preComments, [])
+  | [] => (pre_comments, [])
   | [first, ...second] =>
     let nodeLoc = get_node_loc(first);
 
@@ -189,50 +189,50 @@ let rec partition_comments_internal =
     let res =
       if (comparedLoc == 0) {
         partition_comments_internal(
+          ~range,
+          ~locations=second,
+          ~pre_comments,
+          ~leading_only,
           loc,
-          range,
-          second,
-          preComments,
-          leadingOnly,
         );
       } else if (comparedLoc > 0) {
         if (!inRange) {
           partition_comments_internal(
+            ~range,
+            ~locations=second,
+            ~pre_comments,
+            ~leading_only,
             loc,
-            range,
-            second,
-            preComments,
-            leadingOnly,
           );
         } else {
           let newPre =
             switch (first) {
             | Code(_) => []
-            | Comment((l, c)) => preComments @ [c]
+            | Comment((l, c)) => pre_comments @ [c]
             };
           partition_comments_internal(
+            ~range,
+            ~locations=second,
+            ~pre_comments=newPre,
+            ~leading_only,
             loc,
-            range,
-            second,
-            newPre,
-            leadingOnly,
           );
         };
-      } else if (leadingOnly) {
-        (preComments, []);
+      } else if (leading_only) {
+        (pre_comments, []);
       } else if (!inRange) {
-        (preComments, []);
+        (pre_comments, []);
       } else {
         switch (first) {
-        | Code(_) => (preComments, [])
+        | Code(_) => (pre_comments, [])
         | Comment((l, c)) =>
           let (pre, post) =
             partition_comments_internal(
+              ~range,
+              ~locations=second,
+              ~pre_comments,
+              ~leading_only,
               loc,
-              range,
-              second,
-              preComments,
-              leadingOnly,
             );
           (pre, [c] @ post);
         };
@@ -244,15 +244,21 @@ let rec partition_comments_internal =
 
 let partition_comments =
     (
+      ~range: option(Grain_parsing.Location.t),
+      ~leading_only: bool,
       loc: Grain_parsing.Location.t,
-      range: option(Grain_parsing.Location.t),
-      leadingOnly: bool,
     )
     : (
         list(Grain_parsing.Parsetree.comment),
         list(Grain_parsing.Parsetree.comment),
       ) => {
-  partition_comments_internal(loc, range, all_locations^, [], leadingOnly);
+  partition_comments_internal(
+    ~range,
+    ~locations=all_locations^,
+    ~pre_comments=[],
+    ~leading_only,
+    loc,
+  );
 };
 
 let remove_used_comments = (pre_comments, post_comments) => {
