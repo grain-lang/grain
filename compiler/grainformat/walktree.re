@@ -234,7 +234,7 @@ let rec partition_comments_internal =
               ~leading_only,
               loc,
             );
-          (pre, [c] @ post);
+          (pre, [c, ...post]);
         };
       };
 
