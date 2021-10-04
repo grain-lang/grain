@@ -121,7 +121,7 @@ let walktree =
 
   let iter_location = (self, location) =>
     if (!List.mem(Code(location), all_locations^)) {
-      all_locations := List.cons(Code(location), all_locations^);
+      all_locations := [Code(location), ...all_locations^];
     };
 
   // put it in the right order ready for the final sort as hopefully
