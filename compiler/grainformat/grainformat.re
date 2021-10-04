@@ -46,7 +46,9 @@ let compile_parsed = (filename: option(string)) => {
 
       program_str := String.concat("\n", linesList^);
 
-      // TODO add a new line to the end for where it's in CRLF more
+      // add a new line to the end for where it's in CRLF more
+      // TODO Issue 940 handle CRLF properly
+
       program_str := program_str^ ++ "\n";
 
       Grain_utils.Config.base_path := dirname(filenm);
