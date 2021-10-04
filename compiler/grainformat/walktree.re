@@ -122,11 +122,7 @@ let walktree =
   // use a hash table to de-deupe adding locations to the list
   // because the iterator returns the same location multiple times
 
-  // best guess of size, 20 nodes per top level stmt
-
-  let num_nodes = List.length(statements) * 20;
-
-  let locs = Hashtbl.create(num_nodes);
+  let locs = Hashtbl.create(4096); // a reasonable guess
 
   let iter_location = (self, location) => {
     let loc_string = Debug.print_loc_string("", location);
