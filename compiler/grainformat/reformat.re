@@ -1203,12 +1203,13 @@ and print_application =
 
     Doc.group(
       Doc.concat([
-      Doc.group(wrapped_left),
-      Doc.space,
-      Doc.text(function_name),
-      Doc.line,
-      Doc.group(wrapped_right),
-    ]));
+        Doc.group(wrapped_left),
+        Doc.space,
+        Doc.text(function_name),
+        Doc.line,
+        Doc.group(wrapped_right),
+      ]),
+    );
 
   | _ when prefixop(function_name) || infixop(function_name) =>
     raise(Error(Illegal_parse("Formatter error, wrong number of args ")))
