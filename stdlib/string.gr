@@ -1609,16 +1609,6 @@ export let rec forEachCodePointi = (fn: (Number, Number) -> Void, str: String) =
   Memory.decRef(WasmI32.fromGrain(forEachCodePointi))
   void
 }
-
-/**
- * Trims a string removing any leading or following white spaces based on the end param.
- *
- * @param str: The string to be trimmed.
- * @param end: If true we are trimming the following spaces, otherwise trim leading spaces.
- * @returns The trimmed string.
- * 
- * @example String.trimString("   Hello World   ", false)
- */
 let trimString = (str: String, end: Bool) => {
   let chars = explode(str), charsLength = length(str)
   let mut i = 0, offset = 1
