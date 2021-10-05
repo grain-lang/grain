@@ -20,8 +20,6 @@ module Topo = Topological.Make(G);
 let dependency_graph = G.create(~size=10, ());
 let modules: Hashtbl.t(string, Module.t) = Hashtbl.create(10);
 
-let main_module = "main";
-
 let grain_main = "_gmain";
 let grain_start = "_start";
 
@@ -60,8 +58,6 @@ let is_wasi_polyfill_module = mod_path =>
   mod_path == resolve(wasi_polyfill_module());
 
 let new_base_dir = Filename.dirname;
-
-let is_main_module = mod_name => mod_name == main_module;
 
 let rec build_dependency_graph = (~base_dir, mod_path) => {
   let wasm_mod = Hashtbl.find(modules, mod_path);
@@ -523,13 +519,6 @@ let link_all = (linked_mod, dependencies, signature) => {
     let local_exported_names =
       Comp_utils.get_exported_names(~local_names, wasm_mod);
     Hashtbl.add(exported_names, dep, local_exported_names);
-    if (is_main_module(dep)) {
-      Comp_utils.write_universal_exports(
-        linked_mod,
-        signature,
-        local_exported_names,
-      );
-    };
 
     let num_element_segments = Table.get_num_element_segments(wasm_mod);
     for (i in 0 to num_element_segments - 1) {
@@ -556,6 +545,13 @@ let link_all = (linked_mod, dependencies, signature) => {
     };
   };
   List.iter(link_one, dependencies);
+
+  Comp_utils.write_universal_exports(
+    linked_mod,
+    signature,
+    Hashtbl.find(exported_names, Module_resolution.current_filename^()),
+  );
+
   ignore @@
   Table.add_table(
     linked_mod,
@@ -617,9 +613,11 @@ let link_all = (linked_mod, dependencies, signature) => {
 let link_modules = ({asm: wasm_mod, signature}) => {
   G.clear(dependency_graph);
   Hashtbl.clear(modules);
+
+  let main_module = Module_resolution.current_filename^();
   Hashtbl.add(modules, main_module, wasm_mod);
   build_dependency_graph(
-    ~base_dir=Filename.dirname(Module_resolution.current_filename^()),
+    ~base_dir=Filename.dirname(main_module),
     main_module,
   );
   let dependencies =
