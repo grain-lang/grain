@@ -275,7 +275,7 @@ assert String.trimEnd("   test") == "   test"
 assert String.trimEnd("test") == "test"
 assert String.trimEnd("") == ""
 assert String.trimEnd("  ") == ""
-// Trim Tests
+// String.trim
 assert String.trim("t   test   t") == "t   test   t"
 assert String.trim("test   ") == "test"
 assert String.trim("   test   ") == "test"
