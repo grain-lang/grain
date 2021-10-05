@@ -1636,14 +1636,14 @@ let trimString = (str: String, end: Bool) => {
   else slice(i, charsLength, str)
 }
 /**
- * Trims the `start` of a string removing any leading white spaces.
+ * Trims the beginning of a string—removing any leading whitespace characters.
  *
- * @param str: The string to be trimmed.
- * @returns The trimmed string.
+ * @param string: The string to be trimmed
+ * @returns The trimmed string
  * 
- * @example String.trimStart("   Hello World")
+ * @example String.trimStart("   Hello World") == "Hello World"
  */
-export let trimStart = (str: String) => trimString(str, false)
+export let trimStart = (string: String) => trimString(string, false)
 /**
  * Trims the `end` of a string removing any following white spaces.
  *
