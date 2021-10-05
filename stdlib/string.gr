@@ -10,29 +10,29 @@ import { tagSimpleNumber, allocateArray, allocateChar, allocateString, allocateB
 /**
  * Concatenate two strings.
  * 
- * @param str1: The first string
- * @param str2: The second string
- * @returns The result of the joined strings
+ * @param str1: The beginning string
+ * @param str2: The ending string
+ * @returns The combined
  * 
- * @example String.concat("Hello", " world")
+ * @example String.concat("Foo", " Bar") == "FooBar"
  */
 export let concat = (++)
 
 /**
- * Get the character length of a string.
+ * Returns the character length of the input string.
  * 
- * @param input: The string to check
- * @returns The length of the provided string
+ * @param string: The string to inspect
+ * @returns The number of characters in the string
  * 
- * @example String.length("Hello world")
+ * @example String.length("Hello world") == 11
  */
 @disableGC
-export let rec length = (s: String) => {
-  let s = WasmI32.fromGrain(s)
-  let size = WasmI32.load(s, 4n)
+export let rec length = (string: String) => {
+  let string = WasmI32.fromGrain(string)
+  let size = WasmI32.load(string, 4n)
 
   let mut len = 0n
-  let mut ptr = WasmI32.add(s, 8n)
+  let mut ptr = WasmI32.add(string, 8n)
   let end = WasmI32.add(ptr, size)
 
   while (WasmI32.ltU(ptr, end)) {
@@ -45,7 +45,7 @@ export let rec length = (s: String) => {
 
   let ret = tagSimpleNumber(len)
   Memory.decRef(WasmI32.fromGrain(length))
-  Memory.decRef(WasmI32.fromGrain(s))
+  Memory.decRef(WasmI32.fromGrain(string))
   ret
 }
 
@@ -58,46 +58,46 @@ let wasmSafeLength = (s: String) => {
 }
 
 /**
- * Get the byte length of a string.
+ * Returns the byte length of the input string.
  * 
- * @param input: The string to check
- * @returns The byte length of the string
+ * @param string: The string to inspect
+ * @returns The number of bytes in the string
  * 
- * @example String.byteLength("Hello world")
+ * @example String.byteLength("🌾") == 4
  */
 @disableGC
-export let rec byteLength = (s: String) => {
-  let s = WasmI32.fromGrain(s)
-  let ret = tagSimpleNumber(WasmI32.load(s, 4n))
+export let rec byteLength = (string: String) => {
+  let string = WasmI32.fromGrain(string)
+  let ret = tagSimpleNumber(WasmI32.load(string, 4n))
   Memory.decRef(WasmI32.fromGrain(byteLength))
-  Memory.decRef(WasmI32.fromGrain(s))
+  Memory.decRef(WasmI32.fromGrain(string))
   ret
 }
 
 // disableGC-safe wrapper
 @disableGC
-let wasmSafeByteLength = (s: String) => {
+let wasmSafeByteLength = (string: String) => {
   Memory.incRef(WasmI32.fromGrain(byteLength))
-  Memory.incRef(WasmI32.fromGrain(s))
-  byteLength(s)
+  Memory.incRef(WasmI32.fromGrain(string))
+  byteLength(string)
 }
 
 /**
  * Find the start index of a substring.
  * 
- * @param sub: The substring to find
- * @param input: The string to check
+ * @param subString: The substring to find
+ * @param string: The string to check
  * @returns The starting index of he substring
  * 
  * @example String.indexOf("world", "Hello world")
  */
 @disableGC
-export let rec indexOf = (p: String, s: String) => {
-  let p = WasmI32.fromGrain(p)
-  let s = WasmI32.fromGrain(s)
+export let rec indexOf = (subString: String, string: String) => {
+  let subString = WasmI32.fromGrain(subString)
+  let string = WasmI32.fromGrain(string)
 
-  let size = WasmI32.load(s, 4n)
-  let psize = WasmI32.load(p, 4n)
+  let size = WasmI32.load(string, 4n)
+  let psize = WasmI32.load(subString, 4n)
 
   let (>) = WasmI32.gtU
   let (<) = WasmI32.ltU
@@ -112,8 +112,8 @@ export let rec indexOf = (p: String, s: String) => {
     none
   } else {
     let mut idx = 0n
-    let mut ptr = s + 8n
-    let mut pptr = p + 8n
+    let mut ptr = string + 8n
+    let mut pptr = subString + 8n
     let end = ptr + size - psize + 1n
 
     let mut result = -1n
@@ -145,8 +145,8 @@ export let rec indexOf = (p: String, s: String) => {
       Some(tagSimpleNumber(result))
     }
   }
-  Memory.decRef(WasmI32.fromGrain(p))
-  Memory.decRef(WasmI32.fromGrain(s))
+  Memory.decRef(WasmI32.fromGrain(subString))
+  Memory.decRef(WasmI32.fromGrain(string))
   Memory.decRef(WasmI32.fromGrain(indexOf))
   ret
 }
@@ -155,15 +155,15 @@ export let rec indexOf = (p: String, s: String) => {
  * Find the Char at a specific index.
  * 
  * @param idx: The index to check
- * @param s: The string to search
+ * @param string: The string to search
  * @returns The char at the provided index
  * 
  * @example String.charAt(5, "Hello world")
  */
 @disableGC
-export let rec charAt = (idx: Number, s: String) => {
+export let rec charAt = (idx: Number, string: String) => {
   Memory.incRef(WasmI32.fromGrain((<=)))
-  if (wasmSafeLength(s) <= idx || {Memory.incRef(WasmI32.fromGrain((<))); idx < 0}) {
+  if (wasmSafeLength(string) <= idx || {Memory.incRef(WasmI32.fromGrain((<))); idx < 0}) {
     Memory.incRef(WasmI32.fromGrain((++)))
     Memory.incRef(WasmI32.fromGrain(toString))
     fail ("Invalid offset: " ++ toString(idx))
@@ -174,11 +174,11 @@ export let rec charAt = (idx: Number, s: String) => {
   let (&) = WasmI32.and
   let (<) = WasmI32.ltU
   let (==) = WasmI32.eq
-  let size = WasmI32.fromGrain(wasmSafeByteLength(s)) >>> 1n
-  let len = WasmI32.fromGrain(wasmSafeLength(s)) >>> 1n
+  let size = WasmI32.fromGrain(wasmSafeByteLength(string)) >>> 1n
+  let len = WasmI32.fromGrain(wasmSafeLength(string)) >>> 1n
   let idx = WasmI32.fromGrain(idx) >>> 1n
-  let s = WasmI32.fromGrain(s)
-  let mut ptr = s + 8n;
+  let string = WasmI32.fromGrain(string)
+  let mut ptr = string + 8n;
   let end = ptr + size;
   let mut counter = 0n;
   let mut result = 0n
@@ -206,7 +206,7 @@ export let rec charAt = (idx: Number, s: String) => {
     fail "charAt: should be impossible (please report)"
   }
   let ret = WasmI32.toGrain(result): Char
-  Memory.decRef(WasmI32.fromGrain(s))
+  Memory.decRef(WasmI32.fromGrain(string))
   Memory.decRef(WasmI32.fromGrain(charAt))
   ret
 }
@@ -263,23 +263,23 @@ let explodeHelp = (s: String, chars) => {
 /**
  * Split a string into its Unicode characters.
  * 
- * @param input: The string to split
+ * @param string: The string to split
  * @returns The string split into an array of characters
  * 
- * @example String.explode("Hello world")
+ * @example String.explode("Hello world") == "Hello World"
  */
 @disableGC
-export let explode = (str) => {
-  WasmI32.toGrain(explodeHelp(str, true)): Array<Char>
+export let explode = (string) => {
+  WasmI32.toGrain(explodeHelp(string, true)): Array<Char>
 }
 
 /**
  * Create a string from an array of characters.
  * 
- * @param input: The array to implode
+ * @param arr: The array to implode
  * @returns A string representation of the array of characters
  * 
- * @example String.implode([> 'H', 'e', 'l', 'l', 'o' ])
+ * @example String.implode([> 'H', 'e', 'l', 'l', 'o' ]) == "Hello"
  */
 @disableGC
 export let rec implode = (arr: Array<Char>) => {
@@ -343,13 +343,13 @@ export let rec implode = (arr: Array<Char>) => {
  * Split a string by the given sequence.
  * 
  * @param sequence: The sequence to split on
- * @param input: The string to split
+ * @param string: The string to split
  * @returns An array of substrings from the initial string
  * 
- * @example String.split(" ", "Hello world")
+ * @example String.split(" ", "Hello world") == [> "Hello", "world" ]
  */
 @disableGC
-export let rec split = (p: String, s: String) => {
+export let rec split = (sequence: String, string: String) => {
   let (+) = WasmI32.add
   let (-) = WasmI32.sub
   let (==) = WasmI32.eq
@@ -359,22 +359,22 @@ export let rec split = (p: String, s: String) => {
   let (>>) = WasmI32.shrS
   let (&) = WasmI32.and
 
-  let size = WasmI32.fromGrain(wasmSafeByteLength(s)) >> 1n
-  let psize = WasmI32.fromGrain(wasmSafeByteLength(p)) >> 1n
+  let size = WasmI32.fromGrain(wasmSafeByteLength(string)) >> 1n
+  let psize = WasmI32.fromGrain(wasmSafeByteLength(sequence)) >> 1n
 
   let ret = if (psize == 0n) {
-    WasmI32.toGrain(explodeHelp(s, false)): Array<String>
+    WasmI32.toGrain(explodeHelp(string, false)): Array<String>
   } else if (psize > size) {
-    let s = WasmI32.fromGrain(s)
+    let string = WasmI32.fromGrain(string)
     let ptr = allocateArray(1n)
-    WasmI32.store(ptr, Memory.incRef(s), 8n)
+    WasmI32.store(ptr, Memory.incRef(string), 8n)
     WasmI32.toGrain(ptr): Array<String>
   } else {
-    let s = WasmI32.fromGrain(s)
-    let p = WasmI32.fromGrain(p)
+    let string = WasmI32.fromGrain(string)
+    let sequence = WasmI32.fromGrain(sequence)
 
-    let mut ptr = s + 8n
-    let mut pptr = p + 8n
+    let mut ptr = string + 8n
+    let mut pptr = sequence + 8n
     let end = ptr + size - psize + 1n
 
     let mut numStrings = 1n
@@ -395,7 +395,7 @@ export let rec split = (p: String, s: String) => {
       }
     }
 
-    ptr = s + 8n
+    ptr = string + 8n
     let mut last = ptr
     let arr = allocateArray(numStrings)
     let mut arrIdx = 0n
@@ -424,15 +424,15 @@ export let rec split = (p: String, s: String) => {
     }
 
     // Grab last string
-    let strSize = s + 8n + size - last
+    let strSize = string + 8n + size - last
     let lastStr = allocateString(strSize)
     Memory.copy(lastStr + 8n, last, strSize)
     WasmI32.store(arr + arrIdx, lastStr, 8n)
 
     WasmI32.toGrain(arr): Array<String>
   }
-  Memory.decRef(WasmI32.fromGrain(p))
-  Memory.decRef(WasmI32.fromGrain(s))
+  Memory.decRef(WasmI32.fromGrain(sequence))
+  Memory.decRef(WasmI32.fromGrain(string))
   Memory.decRef(WasmI32.fromGrain(split))
   ret
 }
@@ -440,15 +440,15 @@ export let rec split = (p: String, s: String) => {
 /**
  * Get a portion of a string.
  * 
- * @param from: The start index of the substring
+ * @param start: The start index of the substring
  * @param to: The end index of the substring
- * @param input: The input string
+ * @param string: The input string
  * @returns The substring from the initial string
  * 
  * @example String.slice(0, 5, "Hello world")
  */
 @disableGC
-export let rec slice = (start: Number, to: Number, s: String) => {
+export let rec slice = (start: Number, to: Number, string: String) => {
   let (+) = WasmI32.add
   let (-) = WasmI32.sub
   let (==) = WasmI32.eq
@@ -461,10 +461,10 @@ export let rec slice = (start: Number, to: Number, s: String) => {
   let startOrig = start
   let toOrig = to
 
-  let len = WasmI32.fromGrain(wasmSafeLength(s)) >> 1n
-  let size = WasmI32.fromGrain(wasmSafeByteLength(s)) >> 1n
+  let len = WasmI32.fromGrain(wasmSafeLength(string)) >> 1n
+  let size = WasmI32.fromGrain(wasmSafeByteLength(string)) >> 1n
 
-  let s = WasmI32.fromGrain(s)
+  let string = WasmI32.fromGrain(string)
 
   let mut start = WasmI32.fromGrain(start)
   if ((start & 1n) != 1n) {
@@ -493,7 +493,7 @@ export let rec slice = (start: Number, to: Number, s: String) => {
     throw InvalidArgument("Start index exceeds end index")
   }
 
-  let mut ptr = s + 8n
+  let mut ptr = string + 8n
   let mut begin = ptr
   let mut end = ptr
   let stop = ptr + size
@@ -514,7 +514,7 @@ export let rec slice = (start: Number, to: Number, s: String) => {
     ptr += 1n
   }
   if (to == len) {
-    end = s + 8n + size
+    end = string + 8n + size
   }
   if (start == to) {
     begin = end
@@ -528,7 +528,7 @@ export let rec slice = (start: Number, to: Number, s: String) => {
   let ret = WasmI32.toGrain(newString): String
   Memory.decRef(WasmI32.fromGrain(startOrig))
   Memory.decRef(WasmI32.fromGrain(toOrig))
-  Memory.decRef(WasmI32.fromGrain(s))
+  Memory.decRef(WasmI32.fromGrain(string))
   Memory.decRef(WasmI32.fromGrain(slice))
   ret
 }
@@ -536,14 +536,14 @@ export let rec slice = (start: Number, to: Number, s: String) => {
 /**
  * Check if a string contains a substring.
  * 
- * @param pattern: The substring to check
- * @param input: The input string
+ * @param subString: The substring to check
+ * @param string: The input string
  * @returns A boolean indicating if the string contains the substring
  * 
  * @example String.contains("world", "Hello world")
  */
 @disableGC
-export let rec contains = (p: String, s: String) => {
+export let rec contains = (subString: String, s: String) => {
   // "Not So Naive" string search algorithm
   // searching phase in O(nm) time complexity
   // slightly (by coefficient) sub-linear in the average case
@@ -557,17 +557,17 @@ export let rec contains = (p: String, s: String) => {
   let (<=) = WasmI32.leU
   let (>) = WasmI32.gtU
   let (>>) = WasmI32.shrS
-  let pOrig = p
+  let pOrig = subString
   let sOrig = s
 
   let n = WasmI32.fromGrain(wasmSafeByteLength(s)) >> 1n
-  let m = WasmI32.fromGrain(wasmSafeByteLength(p)) >> 1n
+  let m = WasmI32.fromGrain(wasmSafeByteLength(subString)) >> 1n
 
   let mut s = WasmI32.fromGrain(s)
-  let mut p = WasmI32.fromGrain(p)
+  let mut subString = WasmI32.fromGrain(subString)
 
   s += 8n
-  p += 8n
+  subString += 8n
 
   let mut j = 0n, k = 0n, ell = 0n
 
@@ -579,7 +579,7 @@ export let rec contains = (p: String, s: String) => {
     if (m == 0n) {
       true
     } else {
-      let pat = WasmI32.load8U(p, 0n)
+      let pat = WasmI32.load8U(subString, 0n)
       let mut result = false
       while (j < n) {
         if (pat == WasmI32.load8U(s + j, 0n)) {
@@ -593,7 +593,7 @@ export let rec contains = (p: String, s: String) => {
     }
   } else {
     // NSM preprocessing
-    if (WasmI32.load8U(p, 0n) == WasmI32.load8U(p, 1n)) {
+    if (WasmI32.load8U(subString, 0n) == WasmI32.load8U(subString, 1n)) {
       k = 2n
       ell = 1n
     } else {
@@ -604,10 +604,10 @@ export let rec contains = (p: String, s: String) => {
     let mut result = false
     // NSM searching
     while (j <= n - m) {
-      if (WasmI32.load8U(p, 1n) != WasmI32.load8U(s + j, 1n)) {
+      if (WasmI32.load8U(subString, 1n) != WasmI32.load8U(s + j, 1n)) {
         j += k
       } else {
-        if (Memory.compare(p + 2n, s + j + 2n, m - 2n) == 0n && WasmI32.load8U(p, 0n) == WasmI32.load8U(s + j, 0n)) {
+        if (Memory.compare(subString + 2n, s + j + 2n, m - 2n) == 0n && WasmI32.load8U(subString, 0n) == WasmI32.load8U(s + j, 0n)) {
           result = true
           break
         }
@@ -626,7 +626,7 @@ export let rec contains = (p: String, s: String) => {
  * Check if a string begins with another string.
  * 
  * @param pattern: The substring to check
- * @param input: The input string
+ * @param string: The input string
  * @returns A boolean indicating if the string starts with the substring
  * 
  * @example String.startsWith("world", "Hello world")
@@ -664,7 +664,7 @@ export let rec startsWith = (p: String, s: String) => {
  * Check if a string ends with another string.
  * 
  * @param pattern: The substring to check
- * @param input: The input string
+ * @param string: The input string
  * @returns A boolean indicating if the ends starts with the substring
  * 
  * @example String.endsWith("world", "Hello world")
