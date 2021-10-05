@@ -259,7 +259,7 @@ assert String.decode(bytes, String.UTF16_LE) == "¢"
   assert Array.reverse(Array.fromList(tmp)) == Array.mapi((c,i) => (c,i), codes)
 }
 
-// TrimStart Tests
+// String.trimStart
 assert String.trimStart("t   test") == "t   test"
 assert String.trimStart("   test") == "test"
 assert String.trimStart("   test   ") == "test   "
