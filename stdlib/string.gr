@@ -1654,11 +1654,11 @@ export let trimStart = (string: String) => trimString(string, false)
  */
 export let trimEnd = (string: String) => trimString(string, true)
 /**
- * Trims a string removing leading and following white spaces.
+ * Trims a string—removing all leading and trailing whitespace characters.
  *
- * @param str: The string to be trimmed.
- * @returns The trimmed string.
+ * @param string: The string to be trimmed
+ * @returns The trimmed string
  * 
- * @example String.trim("   Hello World   ")
+ * @example String.trim("   Hello World   ") == "Hello World"
  */
-export let trim = (str: String) => trimEnd(trimStart(str))
+export let trim = (string: String) => trimEnd(trimStart(string))
