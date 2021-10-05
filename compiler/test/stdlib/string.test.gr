@@ -267,7 +267,7 @@ assert String.trimStart("test   ") == "test   "
 assert String.trimStart("test") == "test"
 assert String.trimStart("") == ""
 assert String.trimStart("  ") == ""
-// TrimEnd Tests
+// Sting.trimEnd
 assert String.trimEnd("test   t") == "test   t"
 assert String.trimEnd("test   ") == "test"
 assert String.trimEnd("   test   ") == "   test"
