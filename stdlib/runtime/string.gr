@@ -464,8 +464,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
           ): (String)
           let fieldValue = toStringHelp(
             WasmI32.load(ptr + i, 16n),
-            extraIndents +
-            1n,
+            extraIndents + 1n,
             false,
           )
           strings = slConsDisableGc(

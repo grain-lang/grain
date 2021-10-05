@@ -937,17 +937,13 @@ let rec encodeAtHelp =
                 throw Exception.IndexOutOfBounds
               }
               WasmI32.store8(
-                bytes +
-                bytesIdx,
-                (codePoint & 0xff00n) >>>
-                8n,
+                bytes + bytesIdx,
+                (codePoint & 0xff00n) >>> 8n,
                 _BYTES_OFFSET,
               )
               WasmI32.store8(
-                bytes + bytesIdx +
-                1n,
-                codePoint &
-                0xffn,
+                bytes + bytesIdx + 1n,
+                codePoint & 0xffn,
                 _BYTES_OFFSET,
               )
               bytesIdx += 2n
@@ -962,18 +958,14 @@ let rec encodeAtHelp =
               let w2 = (uPrime & 0b00000000001111111111n) + 0xDC00n
               // Low surrogate
               WasmI32.store8(
-                bytes +
-                bytesIdx,
-                (w1 & 0xff00n) >>>
-                8n,
+                bytes + bytesIdx,
+                (w1 & 0xff00n) >>> 8n,
                 _BYTES_OFFSET,
               )
               WasmI32.store8(bytes + bytesIdx + 1n, w1 & 0xffn, _BYTES_OFFSET)
               WasmI32.store8(
-                bytes + bytesIdx +
-                2n,
-                (w2 & 0xff00n) >>>
-                8n,
+                bytes + bytesIdx + 2n,
+                (w2 & 0xff00n) >>> 8n,
                 _BYTES_OFFSET,
               )
               WasmI32.store8(bytes + bytesIdx + 3n, w2 & 0xffn, _BYTES_OFFSET)
@@ -989,10 +981,8 @@ let rec encodeAtHelp =
               // <lo><hi>
               WasmI32.store8(bytes + bytesIdx, codePoint & 0xffn, _BYTES_OFFSET)
               WasmI32.store8(
-                bytes + bytesIdx +
-                1n,
-                (codePoint & 0xff00n) >>>
-                8n,
+                bytes + bytesIdx + 1n,
+                (codePoint & 0xff00n) >>> 8n,
                 _BYTES_OFFSET,
               )
               bytesIdx += 2n
@@ -1008,18 +998,14 @@ let rec encodeAtHelp =
               // Low surrogate
               WasmI32.store8(bytes + bytesIdx, w1 & 0xffn, _BYTES_OFFSET)
               WasmI32.store8(
-                bytes + bytesIdx +
-                1n,
-                (w1 & 0xff00n) >>>
-                8n,
+                bytes + bytesIdx + 1n,
+                (w1 & 0xff00n) >>> 8n,
                 _BYTES_OFFSET,
               )
               WasmI32.store8(bytes + bytesIdx + 2n, w2 & 0xffn, _BYTES_OFFSET)
               WasmI32.store8(
-                bytes + bytesIdx +
-                3n,
-                (w2 & 0xff00n) >>>
-                8n,
+                bytes + bytesIdx + 3n,
+                (w2 & 0xff00n) >>> 8n,
                 _BYTES_OFFSET,
               )
               bytesIdx += 4n
@@ -1031,31 +1017,23 @@ let rec encodeAtHelp =
             }
             let codePoint = getCodePoint(ptr)
             WasmI32.store8(
-              bytes +
-              bytesIdx,
-              (codePoint & 0xff000000n) >>>
-              24n,
+              bytes + bytesIdx,
+              (codePoint & 0xff000000n) >>> 24n,
               _BYTES_OFFSET,
             )
             WasmI32.store8(
-              bytes + bytesIdx +
-              1n,
-              (codePoint & 0xff0000n) >>>
-              16n,
+              bytes + bytesIdx + 1n,
+              (codePoint & 0xff0000n) >>> 16n,
               _BYTES_OFFSET,
             )
             WasmI32.store8(
-              bytes + bytesIdx +
-              2n,
-              (codePoint & 0xff00n) >>>
-              8n,
+              bytes + bytesIdx + 2n,
+              (codePoint & 0xff00n) >>> 8n,
               _BYTES_OFFSET,
             )
             WasmI32.store8(
-              bytes + bytesIdx +
-              3n,
-              codePoint &
-              0xffn,
+              bytes + bytesIdx + 3n,
+              codePoint & 0xffn,
               _BYTES_OFFSET,
             )
             bytesIdx += 4n
@@ -1067,24 +1045,18 @@ let rec encodeAtHelp =
             let codePoint = getCodePoint(ptr)
             WasmI32.store8(bytes + bytesIdx, codePoint & 0xffn, _BYTES_OFFSET)
             WasmI32.store8(
-              bytes + bytesIdx +
-              1n,
-              (codePoint & 0xff00n) >>>
-              8n,
+              bytes + bytesIdx + 1n,
+              (codePoint & 0xff00n) >>> 8n,
               _BYTES_OFFSET,
             )
             WasmI32.store8(
-              bytes + bytesIdx +
-              2n,
-              (codePoint & 0xff0000n) >>>
-              16n,
+              bytes + bytesIdx + 2n,
+              (codePoint & 0xff0000n) >>> 16n,
               _BYTES_OFFSET,
             )
             WasmI32.store8(
-              bytes + bytesIdx +
-              3n,
-              (codePoint & 0xff000000n) >>>
-              24n,
+              bytes + bytesIdx + 3n,
+              (codePoint & 0xff000000n) >>> 24n,
               _BYTES_OFFSET,
             )
             bytesIdx += 4n

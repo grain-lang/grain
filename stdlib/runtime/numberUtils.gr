@@ -812,10 +812,8 @@ let decimalCount64High = value => {
 let ulog_base = (num, base) => {
   if (isPowerOf2(base)) {
     WasmI32.divU(
-      63n -
-      WasmI32.wrapI64(WasmI64.clz(num)),
-      31n -
-      WasmI32.clz(base),
+      63n - WasmI32.wrapI64(WasmI64.clz(num)),
+      31n - WasmI32.clz(base),
     ) +
     1n
   } else {
@@ -914,8 +912,7 @@ let utoa_hex_lut = (buffer, num, offset) => {
   while (WasmI32.geU(offset, 2n)) {
     offset -= 2n
     WasmI32.store16(
-      buffer +
-      offset,
+      buffer + offset,
       WasmI32.load16U(lut + ((WasmI32.wrapI64(num) & 0xFFn) << 1n), 0n),
       0n,
     )
@@ -957,8 +954,7 @@ let utoa64_any_core = (buffer, num, offset, radix) => {
     for (;;) {
       offset -= 1n
       WasmI32.store8(
-        buffer +
-        offset,
+        buffer + offset,
         WasmI32.load8U(lut + WasmI32.wrapI64(WasmI64.and(num, mask)), 0n),
         0n,
       )
@@ -970,11 +966,9 @@ let utoa64_any_core = (buffer, num, offset, radix) => {
       offset -= 1n
       let q = WasmI64.divU(num, base)
       WasmI32.store8(
-        buffer +
-        offset,
+        buffer + offset,
         WasmI32.load8U(
-          lut +
-          WasmI32.wrapI64(WasmI64.sub(num, WasmI64.mul(q, base))),
+          lut + WasmI32.wrapI64(WasmI64.sub(num, WasmI64.mul(q, base))),
           0n,
         ),
         0n,
@@ -1288,10 +1282,8 @@ let genDigits = (buffer, w_frc, w_exp, mp_frc, mp_exp, delta, sign) => {
     let d = WasmI64.shrU(p2, WasmI64.extendI32U(one_exp))
     if (WasmI64.ne(WasmI64.or(d, WasmI64.extendI32U(len)), 0N)) {
       WasmI32.store8(
-        buffer +
-        len,
-        _CHAR_CODE_0 +
-        (WasmI32.wrapI64(d) & 0xffn),
+        buffer + len,
+        _CHAR_CODE_0 + (WasmI32.wrapI64(d) & 0xffn),
         0n,
       )
       len += 1n

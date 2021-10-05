@@ -788,8 +788,7 @@ parsePosixCharClass = (buf: RegExBuf) => {
         Err(
           parseErr(
             buf,
-            "Expected `:` after `[`. Found: `" ++ Char.toString(c) ++
-            "`",
+            "Expected `:` after `[`. Found: `" ++ Char.toString(c) ++ "`",
             0,
           ),
         ),
@@ -1010,8 +1009,7 @@ let rec parseAtom = (buf: RegExBuf) => {
                             makeRECut(
                               rx,
                               preNumGroups,
-                              postNumGroups -
-                              preNumGroups,
+                              postNumGroups - preNumGroups,
                             ),
                           ),
                       }
@@ -1913,8 +1911,7 @@ let rec isAnchored = (re: ParsedRegularExpression) => {
     },
     REAlts(a, b) => isAnchored(a) && isAnchored(b),
     REConditional(_, rx1, rx2, _, _, _) =>
-      isAnchored(rx1) &&
-      Option.mapWithDefault(isAnchored, false, rx2),
+      isAnchored(rx1) && Option.mapWithDefault(isAnchored, false, rx2),
     REGroup(rx, _) => isAnchored(rx),
     RECut(rx, _, _, _) => isAnchored(rx),
     _ => false,
@@ -3732,10 +3729,8 @@ let rec fastDriveRegexMatchAll = (rx, string, startOffset, endOffset) => {
         [
           makeMatchResult(
             string,
-            startPos +
-            startOffset,
-            endPos +
-            startOffset,
+            startPos + startOffset,
+            endPos + startOffset,
             Array.map(
               elt => {
                 match (elt) {
@@ -3750,8 +3745,7 @@ let rec fastDriveRegexMatchAll = (rx, string, startOffset, endOffset) => {
           ...fastDriveRegexMatchAll(
             rx,
             string,
-            startPos + startOffset +
-            1,
+            startPos + startOffset + 1,
             endOffset,
           )
         ],
@@ -3778,10 +3772,8 @@ let fastDriveRegexMatch = (rx, string, startOffset, endOffset) => {
       Some(
         makeMatchResult(
           string,
-          startPos +
-          startOffset,
-          endPos +
-          startOffset,
+          startPos + startOffset,
+          endPos + startOffset,
           Array.map(
             elt => {
               match (elt) {

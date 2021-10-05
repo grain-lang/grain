@@ -47,7 +47,8 @@ let getSize = ptr => WasmI32.load(ptr, _SIZE_OFFSET)
 let autogrow = (len, buf) => {
   while (buf.len + len > Bytes.length(buf.data)) {
     let mut n = Bytes.length(buf.data)
-    if (n == 0) n = 4 // Make sure bytes of 0 length grow too
+    if (n == 0) n = 4
+    // Make sure bytes of 0 length grow too
     buf.data = Bytes.resize(0, n, buf.data)
   }
 }
