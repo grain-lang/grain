@@ -190,7 +190,7 @@ module Attribute = {
 
     let desc = String.trim(out);
     let desc_opt =
-      if (String.length(desc) != 0) {
+      if (desc != "") {
         Some(desc);
       } else {
         None;
