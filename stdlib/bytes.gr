@@ -260,7 +260,6 @@ export let rec resize = (left: Number, right: Number, bytes: Bytes) => {
     size - srcOffset
   }
   if (len > 0n) {
-    // formatter-ignore
     Memory.copy(
       dst + _VALUE_OFFSET + dstOffset,
       src + _VALUE_OFFSET + srcOffset,
@@ -315,7 +314,6 @@ export let rec move =
     throw Exception.InvalidArgument("Invalid destination bytes range")
   }
   let end = srcIndex + length
-  // formatter-ignore
   let ret = Memory.copy(
     dst + _VALUE_OFFSET + dstIndex,
     src + _VALUE_OFFSET + srcIndex,
