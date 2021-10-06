@@ -119,10 +119,18 @@ let walktree =
 
   all_locations := comment_locations;
 
-  let iter_location = (self, location) =>
-    if (!List.mem(Code(location), all_locations^)) {
-      all_locations := List.append(all_locations^, [Code(location)]);
+  // use a hash table to de-deupe adding locations to the list
+  // because the iterator returns the same location multiple times
+
+  let locs = Hashtbl.create(4096); // a reasonable guess
+
+  let iter_location = (self, location) => {
+    let loc_string = Debug.print_loc_string("", location);
+    if (!Hashtbl.mem(locs, loc_string)) {
+      Hashtbl.add(locs, loc_string, true);
+      all_locations := [Code(location), ...all_locations^];
     };
+  };
 
   let iterator = {...Ast_iterator.default_iterator, location: iter_location};
 
@@ -148,61 +156,118 @@ let walktree =
   // );
 };
 
+let rec partition_comments_internal =
+        (
+          ~range: option(Grain_parsing.Location.t),
+          ~locations: list(node_t),
+          ~pre_comments: list(Grain_parsing.Parsetree.comment),
+          ~leading_only: bool,
+          loc: Grain_parsing.Location.t,
+        ) => {
+  switch (locations) {
+  | [] => (pre_comments, [])
+  | [first, ...second] =>
+    let nodeLoc = get_node_loc(first);
+
+    let inRange =
+      switch (range) {
+      | None => true
+      | Some(rangeloc) =>
+        if (is_first_inside_second(nodeLoc, rangeloc)) {
+          true;
+        } else {
+          false;
+        }
+      };
+
+    let comparedLoc = compare_partition_locations(loc, nodeLoc);
+
+    let res =
+      if (comparedLoc == 0) {
+        partition_comments_internal(
+          ~range,
+          ~locations=second,
+          ~pre_comments,
+          ~leading_only,
+          loc,
+        );
+      } else if (comparedLoc > 0) {
+        if (!inRange) {
+          partition_comments_internal(
+            ~range,
+            ~locations=second,
+            ~pre_comments,
+            ~leading_only,
+            loc,
+          );
+        } else {
+          let newPre =
+            switch (first) {
+            | Code(_) => []
+            | Comment((l, c)) => pre_comments @ [c]
+            };
+          partition_comments_internal(
+            ~range,
+            ~locations=second,
+            ~pre_comments=newPre,
+            ~leading_only,
+            loc,
+          );
+        };
+      } else if (leading_only) {
+        (pre_comments, []);
+      } else if (!inRange) {
+        (pre_comments, []);
+      } else {
+        switch (first) {
+        | Code(_) => (pre_comments, [])
+        | Comment((l, c)) =>
+          let (pre, post) =
+            partition_comments_internal(
+              ~range,
+              ~locations=second,
+              ~pre_comments,
+              ~leading_only,
+              loc,
+            );
+          (pre, [c, ...post]);
+        };
+      };
+
+    res;
+  };
+};
+
+/*
+   When given a location loc, return the comments before and after that location
+   bounded by the previous and next nodes in the AST
+
+   range limits that seach to within a particular location in the AST
+   (useful for finding comments after braces on the same line)
+
+   leading_only is a performance hint.  We iterate through the list to find the node
+   so always do this work anyway.  Sometimes we only need the leading comments
+   so this hints not to do the work to find the trailing ones.
+
+ */
+
 let partition_comments =
-    (loc: Grain_parsing.Location.t, range: option(Grain_parsing.Location.t))
+    (
+      ~range: option(Grain_parsing.Location.t),
+      ~leading_only: bool,
+      loc: Grain_parsing.Location.t,
+    )
     : (
         list(Grain_parsing.Parsetree.comment),
         list(Grain_parsing.Parsetree.comment),
       ) => {
-  let skip = ref(false);
-
-  let (preceeding, following) =
-    List.fold_left(
-      (acc, node) =>
-        if (skip^) {
-          acc;
-        } else {
-          let (acc_preceeding, acc_following) = acc;
-          let nodeLoc = get_node_loc(node);
-
-          let inRange =
-            switch (range) {
-            | None => true
-            | Some(rangeloc) =>
-              if (is_first_inside_second(nodeLoc, rangeloc)) {
-                true;
-              } else {
-                false;
-              }
-            };
-
-          if (!inRange) {
-            acc;
-          } else {
-            let comparedLoc = compare_partition_locations(loc, nodeLoc);
-
-            if (comparedLoc == 0) {
-              // hit the node we are looking for
-              acc;
-            } else if (comparedLoc > 0) {
-              switch (node) {
-              | Code(_) => ([], acc_following)
-              | Comment((l, c)) => (acc_preceeding @ [c], acc_following)
-              };
-            } else {
-              switch (node) {
-              | Code(_) =>
-                skip := true;
-                acc;
-              | Comment((l, c)) => (acc_preceeding, acc_following @ [c])
-              };
-            };
-          };
-        },
-      ([], []),
-      all_locations^,
-    );
-  (preceeding, following);
+  partition_comments_internal(
+    ~range,
+    ~locations=all_locations^,
+    ~pre_comments=[],
+    ~leading_only,
+    loc,
+  );
 };
 
 let remove_used_comments = (pre_comments, post_comments) => {
