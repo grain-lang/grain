@@ -238,6 +238,19 @@ let rec partition_comments_internal =
   };
 };
 
+/*
+  When given a location loc, return the comments before and after that location 
+  bounded by the previous and next nodes in the AST
+
+  range limits that seach to within a particular location in the AST 
+  (useful for finding comments after braces on the same line)
+
+  leading_only is a performance hint.  We iterate through the list to find the node
+  so always do this work anyway.  Sometimes we only need the leading comments
+  so this hints not to do the work to find the trailing ones.
+
+*/
+
 let partition_comments =
     (
       ~range: option(Grain_parsing.Location.t),
