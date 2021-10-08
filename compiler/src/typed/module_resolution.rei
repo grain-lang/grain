@@ -30,3 +30,8 @@ let current_filename: ref(unit => string);
 let dump_dependency_graph: unit => unit;
 
 let is_relpath: string => bool;
+
+let get_output_name: string => string;
+
+let get_compilation_worklist:
+  Grain_parsing.Parsetree.parsed_program => list(string);

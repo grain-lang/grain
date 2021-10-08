@@ -56,7 +56,7 @@ let compile = (~num_pages=?, ~config_fn=?, ~hook=?, name, prog) => {
         };
         Config.include_dirs := [test_libs_dir, ...Config.include_dirs^];
         let outfile = wasmfile(name);
-        compile_string(~is_root_file=true, ~hook?, ~name, ~outfile, prog);
+        compile_string(~hook?, ~name, ~outfile, prog);
       },
     )
   });
@@ -78,7 +78,7 @@ let compile_file = (~num_pages=?, ~config_fn=?, ~hook=?, filename, outfile) => {
         | None => ()
         };
         Config.include_dirs := [test_libs_dir, ...Config.include_dirs^];
-        compile_file(~is_root_file=true, ~hook?, ~outfile, filename);
+        compile_file(~hook?, ~outfile, filename);
       },
     )
   });

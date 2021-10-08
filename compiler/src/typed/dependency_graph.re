@@ -5,7 +5,13 @@ open Graph;
 
 module type Dependency_value = {
   type t;
-  let get_dependencies: (t, string => option(t)) => list(t);
+  let get_dependencies:
+    (
+      ~root: Grain_parsing.Parsetree.parsed_program=?,
+      t,
+      string => option(t)
+    ) =>
+    list(t);
   let get_filename: t => string;
   let is_up_to_date: t => bool;
   let check_up_to_date: t => unit;
@@ -67,7 +73,7 @@ module Make = (DV: Dependency_value) => {
 
   let lookup_filename = Hashtbl.find_opt(filename_to_nodes);
 
-  let rec do_register = (~parent=?, dependency) => {
+  let rec do_register = (~root=?, ~parent=?, dependency) => {
     let as_vertex = (dependency, ref(Needs_processing));
     if (!G.mem_vertex(graph, as_vertex)) {
       // We have this guard in order to avoid traversing into recursive dependencies unnecessarily.
@@ -83,7 +89,7 @@ module Make = (DV: Dependency_value) => {
       | None => ()
       };
       // Process recursive dependencies
-      let deps = DV.get_dependencies(dependency, lookup_filename);
+      let deps = DV.get_dependencies(~root?, dependency, lookup_filename);
       List.iter(
         d => Hashtbl.add(filename_to_nodes, DV.get_filename(d), d),
         deps,
@@ -101,9 +107,9 @@ module Make = (DV: Dependency_value) => {
     };
   };
 
-  let register = dependency => {
+  let register = (~root=?, dependency) => {
     Hashtbl.add(filename_to_nodes, DV.get_filename(dependency), dependency);
-    do_register(dependency);
+    do_register(~root?, dependency);
   };
 
   let solve_next_out_of_date = (~stop: option(DV.t)) => {
@@ -131,6 +137,30 @@ module Make = (DV: Dependency_value) => {
         (false, None),
       );
     ret;
+  };
+
+  let get_out_of_date_list = () => {
+    // FIXME
+    // This function is dumb and can be much smarter.
+    // Only the parents of dependencies that are out of date need to be recompiled,
+    // not everything
+    let force_out_of_date = ref(false);
+    let deps =
+      G_topological.fold(
+        ((dep, state), acc) => {
+          DV.check_up_to_date(dep);
+          if (force_out_of_date^ || !DV.is_up_to_date(dep)) {
+            force_out_of_date := true;
+            [dep, ...acc];
+          } else {
+            acc;
+          };
+        },
+        graph,
+        [],
+      );
+    // Leave off root module
+    List.rev(List.tl(deps));
   };
 
   let compile_dependencies = (~loc=?, filename) => {
@@ -172,7 +202,7 @@ module Make = (DV: Dependency_value) => {
     );
     Printf.eprintf("-=-=-=- Topological Sort -=-=-=-\n");
     G_topological.iter(
-      ((v1, _)) => Printf.eprintf("%s, ", DV.get_filename(v1)),
+      ((v1, _)) => Printf.eprintf("%s\n", DV.get_filename(v1)),
       graph,
     );
     Printf.eprintf("\n");

@@ -1,6 +1,12 @@
 module type Dependency_value = {
   type t;
-  let get_dependencies: (t, string => option(t)) => list(t);
+  let get_dependencies:
+    (
+      ~root: Grain_parsing.Parsetree.parsed_program=?,
+      t,
+      string => option(t)
+    ) =>
+    list(t);
   let get_filename: t => string;
   let is_up_to_date: t => bool;
   let check_up_to_date: t => unit;
@@ -18,12 +24,15 @@ module Make:
    Loads the given module in the dependency graph, along
    with its dependencies.
    */
-    let register: DV.t => unit;
+    let register:
+      (~root: Grain_parsing.Parsetree.parsed_program=?, DV.t) => unit;
 
     /**
    Returns the dependency graph node corresponding to the given filename.
    */
     let lookup_filename: string => option(DV.t);
+
+    let get_out_of_date_list: unit => list(DV.t);
 
     /**
    Compiles the dependencies of the given filename.

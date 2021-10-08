@@ -2,4 +2,5 @@
 
 let parse: (~name: string=?, Lexing.lexbuf) => Parsetree.parsed_program;
 
-let scan_for_imports: (~defer_errors: bool=?, string) => list(string);
+let scan_for_imports: Parsetree.parsed_program => list(string);
+let scan_file_for_imports: (~defer_errors: bool=?, string) => list(string);

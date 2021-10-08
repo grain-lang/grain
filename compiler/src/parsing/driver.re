@@ -70,39 +70,44 @@ let parse = (~name=?, lexbuf): Parsetree.parsed_program => {
   };
 };
 
-let scan_for_imports = (~defer_errors=true, filename: string): list(string) => {
+let scan_for_imports = (program): list(string) => {
+  let {Parsetree.comments, Parsetree.statements} = program;
+  let implicit_opens =
+    List.map(
+      o => {
+        switch (o) {
+        | Grain_utils.Config.Pervasives_mod => "pervasives"
+        | Grain_utils.Config.Gc_mod => "runtime/gc"
+        }
+      },
+      switch (comments) {
+      | [Block({cmt_content}), ..._] =>
+        Grain_utils.Config.with_inline_flags(
+          ~on_error=_ => (),
+          cmt_content,
+          Grain_utils.Config.get_implicit_opens,
+        )
+      | _ => Grain_utils.Config.get_implicit_opens()
+      },
+    );
+  let found_imports = ref([]);
+  let iter_mod = (self, import) =>
+    found_imports := [import.Parsetree.pimp_path.txt, ...found_imports^];
+  let iterator = {...Ast_iterator.default_iterator, import: iter_mod};
+  List.iter(iterator.toplevel(iterator), statements);
+  List.sort_uniq(
+    String.compare,
+    List.append(implicit_opens, found_imports^),
+  );
+};
+
+let scan_file_for_imports = (~defer_errors=true, filename) => {
   let ic = open_in(filename);
   let lexbuf = Lexing.from_channel(ic);
   try({
-    let {Parsetree.comments, Parsetree.statements} = parse(lexbuf);
-    let implicit_opens =
-      List.map(
-        o => {
-          switch (o) {
-          | Grain_utils.Config.Pervasives_mod => "pervasives"
-          | Grain_utils.Config.Gc_mod => "runtime/gc"
-          }
-        },
-        switch (comments) {
-        | [Block({cmt_content}), ..._] =>
-          Grain_utils.Config.with_inline_flags(
-            ~on_error=_ => (),
-            cmt_content,
-            Grain_utils.Config.get_implicit_opens,
-          )
-        | _ => Grain_utils.Config.get_implicit_opens()
-        },
-      );
-    let found_imports = ref([]);
-    let iter_mod = (self, import) =>
-      found_imports := [import.Parsetree.pimp_path.txt, ...found_imports^];
-    let iterator = {...Ast_iterator.default_iterator, import: iter_mod};
-    List.iter(iterator.toplevel(iterator), statements);
+    let imports = scan_for_imports(parse(lexbuf));
     close_in(ic);
-    List.sort_uniq(
-      String.compare,
-      List.append(implicit_opens, found_imports^),
-    );
+    imports;
   }) {
   | e =>
     close_in(ic);

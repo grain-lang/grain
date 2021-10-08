@@ -276,8 +276,9 @@ module Dependency_graph =
 
     let get_filename = dn => dn.dn_file_name;
 
-    let get_dependencies: (t, string => option(t)) => list(t) =
-      (dn, lookup) => {
+    let get_dependencies:
+      (~root: Parsetree.parsed_program=?, t, string => option(t)) => list(t) =
+      (~root=?, dn, lookup) => {
         let base_dir = Filename.dirname(dn.dn_file_name);
         let active_search_path = Config.module_search_path();
         let located = dn.dn_latest_resolution^;
@@ -287,7 +288,12 @@ module Dependency_graph =
         switch (located) {
         | None => failwith("get_dependencies: Should be impossible")
         | Some(WasmModule(_)) => []
-        | Some(GrainModule(srcpath, None)) =>
+        | Some(GrainModule(srcpath, _)) =>
+          let deps =
+            switch (root) {
+            | Some(p) => Grain_parsing.Driver.scan_for_imports(p)
+            | None => Grain_parsing.Driver.scan_file_for_imports(srcpath)
+            };
           let ret =
             List.map(
               name => {
@@ -310,36 +316,36 @@ module Dependency_graph =
                   };
                 };
               },
-              Grain_parsing.Driver.scan_for_imports(srcpath),
+              deps,
             );
           ret;
-        | Some(GrainModule(srcpath, Some(objpath))) =>
-          let cmi = read_file_cmi(objpath);
-          let ret =
-            List.map(
-              ((name, _)) => {
-                let located =
-                  locate_module(base_dir, active_search_path, name);
-                let out_file_name = located_to_out_file_name(located);
-                let existing_dependency = lookup(out_file_name);
-                switch (existing_dependency) {
-                | Some(ed) =>
-                  Hashtbl.add(ed.dn_unit_name, Some(dn), name);
-                  ed;
-                | None =>
-                  let tbl = Hashtbl.create(8);
-                  Hashtbl.add(tbl, Some(dn), name);
-                  {
-                    dn_unit_name: tbl,
-                    dn_file_name: out_file_name,
-                    dn_up_to_date: ref(false), // <- needs to be checked
-                    dn_latest_resolution: ref(Some(located)),
-                  };
-                };
-              },
-              cmi.cmi_crcs,
-            );
-          ret;
+        // | Some(GrainModule(srcpath, Some(objpath))) =>
+        //   let cmi = read_file_cmi(objpath);
+        //   let ret =
+        //     List.map(
+        //       ((name, _)) => {
+        //         let located =
+        //           locate_module(base_dir, active_search_path, name);
+        //         let out_file_name = located_to_out_file_name(located);
+        //         let existing_dependency = lookup(out_file_name);
+        //         switch (existing_dependency) {
+        //         | Some(ed) =>
+        //           Hashtbl.add(ed.dn_unit_name, Some(dn), name);
+        //           ed;
+        //         | None =>
+        //           let tbl = Hashtbl.create(8);
+        //           Hashtbl.add(tbl, Some(dn), name);
+        //           {
+        //             dn_unit_name: tbl,
+        //             dn_file_name: out_file_name,
+        //             dn_up_to_date: ref(false), // <- needs to be checked
+        //             dn_latest_resolution: ref(Some(located)),
+        //           };
+        //         };
+        //       },
+        //       cmi.cmi_crcs,
+        //     );
+        //   ret;
         };
       };
 
@@ -433,29 +439,59 @@ let locate_module_file = (~loc, ~disable_relpath=false, unit_name) => {
     try(locate_module(~disable_relpath, base_dir, path, unit_name)) {
     | Not_found => error(No_module_file(unit_name, None))
     };
-  let out_file = located_to_out_file_name(located);
-  let current_dep_node =
-    Dependency_graph.lookup_filename(current_filename^());
-  let existing_dependency = Dependency_graph.lookup_filename(out_file);
-  let dn =
-    switch (existing_dependency) {
-    | Some(ed) =>
-      Hashtbl.add(ed.dn_unit_name, current_dep_node, unit_name);
-      ed;
-    | None =>
-      let tbl = Hashtbl.create(8);
-      Hashtbl.add(tbl, current_dep_node, unit_name);
-      {
-        dn_unit_name: tbl,
-        dn_file_name: out_file,
-        dn_up_to_date: ref(false), // <- needs to be checked
-        dn_latest_resolution: ref(Some(located)),
-      };
-    };
-  Dependency_graph.register(dn);
-  Dependency_graph.compile_dependencies(~loc, out_file);
+  // let out_file = located_to_out_file_name(located);
+  // let current_dep_node =
+  //   Dependency_graph.lookup_filename(current_filename^());
+  // let existing_dependency = Dependency_graph.lookup_filename(out_file);
+  // let dn =
+  //   switch (existing_dependency) {
+  //   | Some(ed) =>
+  //     Hashtbl.add(ed.dn_unit_name, current_dep_node, unit_name);
+  //     ed;
+  //   | None =>
+  //     let tbl = Hashtbl.create(8);
+  //     Hashtbl.add(tbl, current_dep_node, unit_name);
+  //     {
+  //       dn_unit_name: tbl,
+  //       dn_file_name: out_file,
+  //       dn_up_to_date: ref(false), // <- needs to be checked
+  //       dn_latest_resolution: ref(Some(located)),
+  //     };
+  //   };
+  // Dependency_graph.register(dn);
+  // Dependency_graph.compile_dependencies(~loc, out_file);
   let ret = located_to_out_file_name(located);
   ret;
+};
+
+let build_dependency_graph = program => {
+  let dn = {
+    {
+      dn_unit_name: Hashtbl.create(0),
+      dn_file_name: get_output_name(current_filename^()),
+      dn_up_to_date: ref(false), // <- needs to be checked
+      dn_latest_resolution:
+        ref(Some(GrainModule(current_filename^(), None))),
+    };
+  };
+  Dependency_graph.register(~root=program, dn);
+};
+
+let get_compilation_worklist = program => {
+  build_dependency_graph(program);
+  let worklist = Dependency_graph.get_out_of_date_list();
+  List.map(
+    dn => {
+      switch (dn.dn_latest_resolution^) {
+      | None => failwith("impossible: compile_module > None")
+      | Some(WasmModule(_)) =>
+        failwith("impossible: compile_module > WasmModule")
+      | Some(GrainModule(srcpath, _)) =>
+        Grain_utils.Files.derelativize(srcpath)
+      }
+    },
+    worklist,
+  );
 };
 
 let clear_dependency_graph = () => {
