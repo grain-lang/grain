@@ -14,7 +14,7 @@ Typically, tags span 3 bits. That's usually fine, but if we limited numbers to 2
 
 This means that every Grain simple number is stored as `2n + 1`. Untagging and re-tagging can be costly, but thankfully, math is our friend. Addition on two Grain simple numbers `x` and `y` could be done by computing `2((x - 1)/2 + (y - 1)/2) + 1`, but some quick simplification shows we only need to compute `x + y - 1`, which makes basic addition only two WebAssembly instructions. There are other tricks like this for the other operations that allow us to avoid unnecessary untagging. (Additionally, since the tag information is held in the final bit, untagging can be done with a single instruction, `shr_s` by 1, if necessary.)
 
-31 bits allow us to represent more than 2 billion numbers, which is a few more than the 500 million we'd get from 29 bits. If larger numbers (or non-integer numbers) are needed, then Grain will fall back onto one of the other (heap-allocated) number types. The heap-allocated numbers are described in detail later.
+31 bits allow us to represent more than 2 billion numbers (from -1073741824 to 1073741823), which is a few more than the 500 million we'd get from 29 bits. If larger numbers (or non-integer numbers) are needed, then Grain will fall back onto one of the other (heap-allocated) number types. The heap-allocated numbers are described in detail later.
 
 ### Other values
 
