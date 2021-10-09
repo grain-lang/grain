@@ -14,12 +14,7 @@
 (rule
  (target grainc_js.re)
  (action
-  ; This cats the jsoo_header.re to the top of grainc.re to build grainc_js.re
-  (with-stdout-to
-   %{target}
-   (progn
-    (cat %{dep:jsoo_header.re})
-    (cat %{dep:grainc.re})))))
+  (copy %{dep:grainc.re} %{target})))
 
 (executable
  (enabled_if
@@ -30,7 +25,6 @@
  (modules grainc_js)
  ; exe is only here so dune-build-info works
  (modes exe js)
- (libraries grain grain_diagnostics binaryen.js dune-build-info js_of_ocaml)
+ (libraries grain grain_diagnostics binaryen.js dune-build-info)
  (js_of_ocaml
-  (flags --no-sourcemap --no-extern-fs --quiet)
-  (javascript_files runtime.js jsoo_hacks.js)))
+  (flags --no-sourcemap --no-extern-fs --quiet)))
