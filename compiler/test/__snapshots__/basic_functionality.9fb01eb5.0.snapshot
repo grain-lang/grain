@@ -1,4 +1,4 @@
-basic functionality › neg
+basic functionality › simple_max
 (module
  (type $none_=>_none (func))
  (type $none_=>_i32 (func (result i32)))
@@ -10,10 +10,10 @@ basic functionality › neg
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $global_1))
  (func $_gmain (; has Stack IR ;) (result i32)
-  (i32.const -79)
+  (i32.const 2147483647)
  )
  (func $_start (; has Stack IR ;)
   (nop)
  )
- ;; custom section \"cmi\", size 235
+ ;; custom section \"cmi\", size 242
 )
