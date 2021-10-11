@@ -76,8 +76,7 @@ export let fromFloat64 = (n: Float64) => {
  * need to call incRef on the function.
  * 
  * @param n: The WasmI32 to convert
- * @returns The value converted to either a simple or a 32 bit heap allocated
- * number.
+ * @returns The value converted to either a simple or a 32 bit heap allocated number.
  */
 @disableGC
 export let wasmI32ToNumber = (n: WasmI32) => {
