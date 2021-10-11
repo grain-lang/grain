@@ -22,6 +22,7 @@ type AReallyReallyReallyReallyReallyReallyReallyReallyReallyLongLineBreakingType
   a, // Test comment
   b
 > = String
+<<<<<<< HEAD
 
 type Foo<
   a, // Test comment
@@ -34,11 +35,21 @@ type Foo<
   a, // Test comment
   b
 > = String
+=======
+
+type Foo<a, b> = String
+
+type Foo<a, b> = String
+>>>>>>> 3255495b (feat(compiler)!: Re-implement Grain parser)
 
 // Test comment
 type Foo = String
 
+<<<<<<< HEAD
 /* Test comment */ type Foo = String
+=======
+type Foo = String
+>>>>>>> 3255495b (feat(compiler)!: Re-implement Grain parser)
 
 type Foo = String // Test comment
 

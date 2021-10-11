@@ -1,6 +1,7 @@
 {
   open Lexing
   open Parser
+  open Parser_header
   open Printf
 
   let lexbuf_loc {lex_start_p=loc_start; lex_curr_p=loc_end; _} =
@@ -186,9 +187,13 @@ rule token = parse
   | "{" { LBRACE }
   | "}" { RBRACE }
   | "[" { LBRACK }
+  | "[>" { LBRACKRCARET }
   | "]" { RBRACK }
   | "^" { CARET }
   | "<" { LCARET }
+  | "<<" { LCARETLCARET }
+  (* We do not lex >> or >>> as a single token as type vectors can contain
+     these, e.g. List<Option<a>> *)
   | ">" { RCARET }
   | "^" { CARET }
   | "++" { PLUSPLUS }
@@ -197,6 +202,11 @@ rule token = parse
   | "*" { STAR }
   | "/" { SLASH }
   | "%" { PERCENT }
+  | "+=" { PLUSEQ }
+  | "-=" { DASHEQ }
+  | "*=" { STAREQ }
+  | "/=" { SLASHEQ }
+  | "%=" { PERCENTEQ }
   | "<=" { LESSEQ }
   | ">=" { GREATEREQ }
   | "&" { AMP }
@@ -204,6 +214,7 @@ rule token = parse
   | "|" { PIPE }
   | "||" { PIPEPIPE }
   | "!" { NOT }
+  | "!=" { NOTEQ }
   | "@" { AT }
   | '"'   { wrap_strlike_lexer (read_str (Buffer.create 16)) lexbuf }
   | '\'' { wrap_strlike_lexer (read_char (Buffer.create 4)) lexbuf }

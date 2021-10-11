@@ -23,7 +23,7 @@ describe("records", ({test}) => {
   );
   assertSnapshot(
     "record_pun",
-    "export record Rec {foo: Number}; let foo = 4; {foo}",
+    "export record Rec {foo: Number}; let foo = 4; {foo,}",
   );
   assertSnapshot(
     "record_pun_multiple",
