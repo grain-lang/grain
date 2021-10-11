@@ -3,7 +3,7 @@ synopsis:
   "The legacy Num library for arbitrary-precision integer and rational arithmetic"
 maintainer: "Xavier Leroy <xavier.leroy@inria.fr>"
 authors: ["Valérie Ménissier-Morain" "Pierre Weis" "Xavier Leroy"]
-license: "LGPL-2.1-only with OCaml-LGPL-linking-exception"
+license: "LGPL-2.1-only WITH OCaml-LGPL-linking-exception"
 homepage: "https://github.com/ocaml/num/"
 bug-reports: "https://github.com/ocaml/num/issues"
 depends: [

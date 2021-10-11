@@ -35,7 +35,6 @@
     "@opam/fp": "0.0.1",
     "@opam/fs": "0.0.2",
     "@opam/grain_dypgen": "0.2",
-    "@opam/js_of_ocaml": ">= 3.6.0",
     "@opam/ocamlgraph": ">= 2.0.0",
     "@opam/ppx_deriving_yojson": ">= 3.5.2",
     "@opam/ppx_sexp_conv": ">= 0.14.0",
@@ -46,7 +45,7 @@
     "ocaml": "4.11.0"
   },
   "devDependencies": {
-    "@opam/js_of_ocaml-compiler": ">= 3.6.0",
+    "@opam/js_of_ocaml-compiler": ">= 3.11.0",
     "@opam/ocaml-lsp-server": "1.4.1",
     "@reason-native/rely": "^3.2.1"
   },
