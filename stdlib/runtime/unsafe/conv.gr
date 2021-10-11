@@ -84,9 +84,9 @@ export let wasmI32ToNumber = (n: WasmI32) => {
   // Follows a little optimization. Instead of testing if n is range of allowed
   // non heap allocated simple numbers (-1073741824n..1073741823n), actually
   // make a simple number, convert it back to WasmI32, and test if it stayed
-  // the same. This may sound counter intuitive, but for numbers thar fit into
-  // the range is faster than performing the check with WasmI32.geS and
-  // WasmI32.leS by about 20%. About additional 33% is gained by avoiding a
+  // the same. This may sound counter intuitive, but for numbers that fit into
+  // the range it is faster than performing the check with WasmI32.geS and
+  // WasmI32.leS by about 20%. An additional ~33% is gained by avoiding a
   // call to tagSimpleNumber and instead doing it inline. For the case of
   // numbers not fitting into the range, the cost of these simple ALU
   // instructions are negligible compared to heap allocations.
