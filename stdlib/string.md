@@ -106,7 +106,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Option<Number>`|`Some(Index)` containing the starting index of the substring if found (for Option) /successful (for Result) or `None` otherwise|
+|`Option<Number>`|`Some(Index)` containing the starting index of the substring if found (for Option) or `None` otherwise|
 
 Examples:
 
@@ -568,5 +568,83 @@ Examples:
 
 ```grain
 String.forEachCodePointi((codepoint, index) => print((codepoint, index)), "Hello world")
+```
+
+### String.**trimStart**
+
+```grain
+trimStart : String -> String
+```
+
+Trims the beginning of a string—removing any leading whitespace characters.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`string`|`String`|The string to be trimmed|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`String`|The trimmed string|
+
+Examples:
+
+```grain
+String.trimStart("   Hello World") == "Hello World"
+```
+
+### String.**trimEnd**
+
+```grain
+trimEnd : String -> String
+```
+
+Trims the end of a string—removing any trailing whitespace characters.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`string`|`String`|The string to be trimmed|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`String`|The trimmed string|
+
+Examples:
+
+```grain
+String.trimEnd("Hello World   ") == "Hello World"
+```
+
+### String.**trim**
+
+```grain
+trim : String -> String
+```
+
+Trims a string—removing all leading and trailing whitespace characters.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`string`|`String`|The string to be trimmed|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`String`|The trimmed string|
+
+Examples:
+
+```grain
+String.trim("   Hello World   ") == "Hello World"
 ```
 

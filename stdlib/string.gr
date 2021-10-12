@@ -49,7 +49,7 @@ export let rec length = (string: String) => {
   ret
 }
 
-// disableGC-safe wrapper
+// @disableGC-safe wrapper
 @disableGC
 let wasmSafeLength = (s: String) => {
   Memory.incRef(WasmI32.fromGrain(length))
@@ -74,7 +74,7 @@ export let rec byteLength = (string: String) => {
   ret
 }
 
-// disableGC-safe wrapper
+// @disableGC-safe wrapper
 @disableGC
 let wasmSafeByteLength = (string: String) => {
   Memory.incRef(WasmI32.fromGrain(byteLength))
