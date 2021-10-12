@@ -97,57 +97,14 @@ let find_in_path_uncap = (~exts=[], base_dir, path, name) => {
   };
 };
 
-let realpath = path => {
-  switch (Fp.testForPath(path)) {
-  | None => None
-  | Some(Fp.Absolute(abspath)) => Some(Fp.toString(abspath))
-  | Some(Fp.Relative(relpath)) =>
-    Some(Fp.toString(Fp.join(Fp.absoluteExn(Sys.getcwd()), relpath)))
-  };
-};
-
-let realpath_quick = path => {
-  switch (realpath(path)) {
-  | None => path
-  | Some(rp) => rp
-  };
-};
-
-let smart_cat = (dir, file) => {
-  switch (Fp.absolute(dir)) {
-  | None => Filename.concat(dir, file)
-  | Some(abspath) =>
-    switch (Fp.relative(file)) {
-    | None => Filename.concat(Fp.toString(abspath), file)
-    | Some(relpath) => Fp.toString(Fp.join(abspath, relpath))
-    }
-  };
-};
-
-let canonicalize_relpath = (base_path, unit_name) => {
-  // PRECONDITION: is_relpath(unit_name) == true
-  let abs_base_path =
-    switch (realpath(base_path)) {
-    | None =>
-      failwith(
-        Printf.sprintf(
-          "Internal Grain error; please report! testForPath failed: %s",
-          base_path,
-        ),
-      )
-    | Some(abspath) => abspath
-    };
-  smart_cat(abs_base_path, unit_name);
-};
-
 module PathTbl = {
   type t('a) = Hashtbl.t(string, 'a);
   let create: int => t('a) = Hashtbl.create;
 
   let add: (t('a), (string, string), 'a) => unit =
     (tbl, (dir, unit_name), v) => {
-      let dir = realpath_quick(dir);
-      Hashtbl.add(tbl, smart_cat(dir, unit_name), v);
+      let dir = Grain_utils.Files.realpath_quick(dir);
+      Hashtbl.add(tbl, Grain_utils.Files.smart_cat(dir, unit_name), v);
     };
 
   let find_opt:
@@ -155,7 +112,10 @@ module PathTbl = {
     option('a) =
     (~disable_relpath=false, tbl, base_path, path, unit_name) =>
       if (!disable_relpath && is_relpath(unit_name)) {
-        Hashtbl.find_opt(tbl, canonicalize_relpath(base_path, unit_name));
+        Hashtbl.find_opt(
+          tbl,
+          Grain_utils.Files.canonicalize_relpath(base_path, unit_name),
+        );
       } else {
         List.fold_left(
           (acc, elt) => {
@@ -164,7 +124,9 @@ module PathTbl = {
             | None =>
               Hashtbl.find_opt(
                 tbl,
-                smart_cat(realpath_quick(elt), unit_name),
+                Grain_utils.Files.(
+                  smart_cat(realpath_quick(elt), unit_name)
+                ),
               )
             }
           },
