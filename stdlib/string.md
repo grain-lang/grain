@@ -20,19 +20,19 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`str1`|`String`|The first string|
-|`str2`|`String`|The second string|
+|`str1`|`String`|The beginning string|
+|`str2`|`String`|The ending string|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`String`|The result of the joined strings|
+|`String`|The combined string|
 
 Examples:
 
 ```grain
-String.concat("Hello", " world")
+String.concat("Foo", " Bar") == "FooBar"
 ```
 
 ### String.**length**
@@ -41,24 +41,24 @@ String.concat("Hello", " world")
 length : String -> Number
 ```
 
-Get the character length of a string.
+Returns the character length of the input string.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`input`|`String`|The string to check|
+|`string`|`String`|The string to inspect|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Number`|The length of the provided string|
+|`Number`|The number of characters in the string|
 
 Examples:
 
 ```grain
-String.length("Hello world")
+String.length("Hello world") == 11
 ```
 
 ### String.**byteLength**
@@ -67,24 +67,24 @@ String.length("Hello world")
 byteLength : String -> Number
 ```
 
-Get the byte length of a string.
+Returns the byte length of the input string.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`input`|`String`|The string to check|
+|`string`|`String`|The string to inspect|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Number`|The byte length of the string|
+|`Number`|The number of bytes in the string|
 
 Examples:
 
 ```grain
-String.byteLength("Hello world")
+String.byteLength("🌾") == 4
 ```
 
 ### String.**indexOf**
@@ -93,25 +93,25 @@ String.byteLength("Hello world")
 indexOf : (String, String) -> Option<Number>
 ```
 
-Find the start index of a substring.
+Finds the start index of a substring in the input string.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`sub`|`String`|The substring to find|
-|`input`|`String`|The string to check|
+|`search`|`String`|The substring to find|
+|`string`|`String`|The string to inspect|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Option<Number>`|The starting index of he substring|
+|`Option<Number>`|`Some(Index)` containing the starting index of the substring if found (for Option) /successful (for Result) or `None` otherwise|
 
 Examples:
 
 ```grain
-String.indexOf("world", "Hello world")
+String.indexOf("world", "Hello world") == Some(6)
 ```
 
 ### String.**charAt**
@@ -127,7 +127,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`idx`|`Number`|The index to check|
-|`s`|`String`|The string to search|
+|`string`|`String`|The string to search|
 
 Returns:
 
@@ -138,7 +138,7 @@ Returns:
 Examples:
 
 ```grain
-String.charAt(5, "Hello world")
+String.charAt(5, "Hello world") == ' '
 ```
 
 ### String.**explode**
@@ -153,7 +153,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`input`|`String`|The string to split|
+|`string`|`String`|The string to split|
 
 Returns:
 
@@ -164,7 +164,7 @@ Returns:
 Examples:
 
 ```grain
-String.explode("Hello world")
+String.explode("Hello") == [> 'H', 'e', 'l', 'l', 'o' ]
 ```
 
 ### String.**implode**
@@ -179,7 +179,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`input`|`Array<Char>`|The array to implode|
+|`arr`|`Array<Char>`|The array to implode|
 
 Returns:
 
@@ -190,7 +190,7 @@ Returns:
 Examples:
 
 ```grain
-String.implode([> 'H', 'e', 'l', 'l', 'o' ])
+String.implode([> 'H', 'e', 'l', 'l', 'o' ]) == "Hello"
 ```
 
 ### String.**split**
@@ -206,7 +206,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`sequence`|`String`|The sequence to split on|
-|`input`|`String`|The string to split|
+|`string`|`String`|The string to split|
 
 Returns:
 
@@ -217,7 +217,7 @@ Returns:
 Examples:
 
 ```grain
-String.split(" ", "Hello world")
+String.split(" ", "Hello world") == [> "Hello", "world" ]
 ```
 
 ### String.**slice**
@@ -232,9 +232,9 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`from`|`Number`|The start index of the substring|
+|`start`|`Number`|The start index of the substring|
 |`to`|`Number`|The end index of the substring|
-|`input`|`String`|The input string|
+|`string`|`String`|The input string|
 
 Returns:
 
@@ -245,7 +245,7 @@ Returns:
 Examples:
 
 ```grain
-String.slice(0, 5, "Hello world")
+String.slice(0, 5, "Hello world") == "Hello"
 ```
 
 ### String.**contains**
@@ -260,8 +260,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`pattern`|`String`|The substring to check|
-|`input`|`String`|The input string|
+|`subString`|`String`|The substring to check|
+|`string`|`String`|The input string|
 
 Returns:
 
@@ -272,7 +272,7 @@ Returns:
 Examples:
 
 ```grain
-String.contains("world", "Hello world")
+String.contains("world", "Hello world") == true
 ```
 
 ### String.**startsWith**
@@ -287,8 +287,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`pattern`|`String`|The substring to check|
-|`input`|`String`|The input string|
+|`subString`|`String`|The substring to check|
+|`string`|`String`|The input string|
 
 Returns:
 
@@ -299,7 +299,7 @@ Returns:
 Examples:
 
 ```grain
-String.startsWith("world", "Hello world")
+String.startsWith("Hello", "Hello world") == true
 ```
 
 ### String.**endsWith**
@@ -314,8 +314,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`pattern`|`String`|The substring to check|
-|`input`|`String`|The input string|
+|`subString`|`String`|The substring to check|
+|`string`|`String`|The input string|
 
 Returns:
 
@@ -326,7 +326,7 @@ Returns:
 Examples:
 
 ```grain
-String.endsWith("world", "Hello world")
+String.endsWith("world", "Hello world") == true
 ```
 
 ### String.**Encoding**
@@ -355,7 +355,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`s`|`String`|The input string|
+|`string`|`String`|The input string|
 |`encoding`|`Encoding`|The encoding to use|
 |`includeBom`|`Bytes`|Whether to include the byte-order marker in the encoded output|
 |`dest`|`Number`|The bytes object to write the encoded output into|
@@ -373,13 +373,13 @@ Returns:
 encodeAtWithBom : (String, Encoding, Bytes, Number) -> Bytes
 ```
 
-Encodes the given string using the given encoding scheme.
+Encodes the given string using the given encoding scheme at a supplied offset in a Bytes instance, including a byte-order marker.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`s`|`String`|The input string|
+|`string`|`String`|The input string|
 |`encoding`|`Encoding`|The encoding to use|
 |`includeBom`|`Bytes`|Whether to include the byte-order marker in the encoded output|
 |`dest`|`Number`|The bytes object to write the encoded output into|
@@ -404,7 +404,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`s`|`String`|The input string|
+|`string`|`String`|The input string|
 |`encoding`|`Encoding`|The encoding to use|
 
 Returns:
@@ -419,13 +419,13 @@ Returns:
 encodeWithBom : (String, Encoding) -> Bytes
 ```
 
-Encodes the given string using the given encoding scheme. A byte-order marker.
+Encodes the given string using the given encoding scheme, including a byte-order marker.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`s`|`String`|The input string|
+|`string`|`String`|The input string|
 |`encoding`|`Encoding`|The encoding to use|
 
 Returns:

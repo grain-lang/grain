@@ -83,21 +83,21 @@ let wasmSafeByteLength = (string: String) => {
 }
 
 /**
- * Find the start index of a substring.
+ * Finds the start index of a substring in the input string.
  * 
- * @param subString: The substring to find
- * @param string: The string to check
- * @returns The starting index of the substring
+ * @param search: The substring to find
+ * @param string: The string to inspect
+ * @returns `Some(Index)` containing the starting index of the substring if found (for Option) /successful (for Result) or `None` otherwise
  * 
- * @example String.indexOf("world", "Hello world") == 6
+ * @example String.indexOf("world", "Hello world") == Some(6)
  */
 @disableGC
-export let rec indexOf = (subString: String, string: String) => {
-  let subString = WasmI32.fromGrain(subString)
+export let rec indexOf = (search: String, string: String) => {
+  let search = WasmI32.fromGrain(search)
   let string = WasmI32.fromGrain(string)
 
   let size = WasmI32.load(string, 4n)
-  let psize = WasmI32.load(subString, 4n)
+  let psize = WasmI32.load(search, 4n)
 
   let (>) = WasmI32.gtU
   let (<) = WasmI32.ltU
@@ -113,7 +113,7 @@ export let rec indexOf = (subString: String, string: String) => {
   } else {
     let mut idx = 0n
     let mut ptr = string + 8n
-    let mut pptr = subString + 8n
+    let mut pptr = search + 8n
     let end = ptr + size - psize + 1n
 
     let mut result = -1n
@@ -145,7 +145,7 @@ export let rec indexOf = (subString: String, string: String) => {
       Some(tagSimpleNumber(result))
     }
   }
-  Memory.decRef(WasmI32.fromGrain(subString))
+  Memory.decRef(WasmI32.fromGrain(search))
   Memory.decRef(WasmI32.fromGrain(string))
   Memory.decRef(WasmI32.fromGrain(indexOf))
   ret
