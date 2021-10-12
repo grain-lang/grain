@@ -1,0 +1,538 @@
+import WasmI32 from "runtime/unsafe/wasmi32"
+import Conv from "runtime/unsafe/conv"
+import Memory from "runtime/unsafe/memory"
+import GC from "runtime/gc"
+import { coerceNumberToWasmI32 } from "runtime/numbers"
+import NumberUtils from "runtime/numberUtils"
+import Map from "map"
+import Set from "set"
+import Option from "option"
+
+@disableGC
+let rec toHex = (n: Number) => {
+  let x = coerceNumberToWasmI32(n)
+  let result = NumberUtils.itoa32(x, 16n)
+
+  Memory.decRef(WasmI32.fromGrain(n))
+  Memory.decRef(WasmI32.fromGrain(toHex))
+
+  result
+}
+
+export enum LeakDebugSummaryMode {
+  AlwaysPrintSummary,
+  PrintSummaryIfLeaksAreFound,
+}
+
+export record LeakDebugBlockOptions {
+  printIncrefsAndDecRefs: Bool,
+  printMallocAndFree: Bool,
+  printObjectContents: Bool,
+  summary: LeakDebugSummaryMode,
+}
+
+let incrementCountInMap = (key: k, map: Map.Map<k, Number>) => {
+  match (Map.get(key, map)) {
+    Some(cnt) => Map.set(key, cnt + 1, map),
+    None => Map.set(key, 1, map),
+  }
+}
+
+let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
+  // The main objective is to find and print objects allocated
+  // in the function, but not deallocated at the end.
+  // let allocated = Map.make() : Map.Map<Number,Number>
+
+  let allocations = Set.make(): (Set.Set<Number>)
+
+  let tagToTypeName = (tag: Number) => {
+    match (tag) {
+      1 => "string",
+      2 => "char",
+      3 => "enum",
+      4 => "record",
+      5 => "array",
+      6 => "number",
+      7 => "lambda",
+      8 => "tuple",
+      9 => "bytes",
+      _ => "unknown",
+    }
+  }
+
+  let mut totalMallocs = 0
+  let mut totalFrees = 0
+  let mut totalIncRefs = 0
+  let mut totalDecRefs = 0
+
+  let incRefsByTag = Map.make(): (Map.Map<Number, Number>)
+  let decRefsByTag = Map.make(): (Map.Map<Number, Number>)
+
+  // Since objects created by GC.malloc have a starting refcount of 1,
+  // the total incRefsByTag would not match decRefsByTag. I'm compensating it
+  // by keeping track of number of objects that have gone malloc+free cycle.
+  // This isn't perfect because in case of leaks free isn't called and the
+  // totals can create confusion. The simplest solution would be to get the tag
+  // of mallocated objects, but they don't yet have a tag associated. So I
+  // have to compensate again by adding up the objects that have been
+  // mallocated but never freed. Which simply means the ones in "allocations"
+  // Map.
+  let mallocPlusFreeByTag = Map.make(): (Map.Map<Number, Number>)
+
+  @disableGC
+  let rec readTag = (userPtrAsNumber: Number) => {
+    Memory.incRef(WasmI32.fromGrain(coerceNumberToWasmI32))
+    Memory.incRef(WasmI32.fromGrain(userPtrAsNumber))
+    let userPtr = coerceNumberToWasmI32(userPtrAsNumber)
+
+    let tag = WasmI32.load(userPtr, 0n)
+    Memory.incRef(WasmI32.fromGrain(Conv.wasmI32ToNumber))
+    let tagAsNumber = Conv.wasmI32ToNumber(tag)
+
+    Memory.decRef(WasmI32.fromGrain(userPtrAsNumber))
+    Memory.decRef(WasmI32.fromGrain(readTag))
+
+    tagAsNumber
+  }
+
+  @disableGC
+  let rec readRefCount = (userPtrAsNumber: Number) => {
+    Memory.incRef(WasmI32.fromGrain(coerceNumberToWasmI32))
+    Memory.incRef(WasmI32.fromGrain(userPtrAsNumber))
+    let userPtr = coerceNumberToWasmI32(userPtrAsNumber)
+
+    let _HEADER_SIZE = 8n
+    let refCnt = WasmI32.load(WasmI32.sub(userPtr, _HEADER_SIZE), 0n)
+    Memory.incRef(WasmI32.fromGrain(Conv.wasmI32ToNumber))
+    let refCntAsNumber = Conv.wasmI32ToNumber(refCnt)
+
+    Memory.decRef(WasmI32.fromGrain(userPtrAsNumber))
+    Memory.decRef(WasmI32.fromGrain(readRefCount))
+
+    refCntAsNumber
+  }
+
+  @disableGC
+  let rec readContentAsString = (userPtrAsNumber: Number) => {
+    Memory.incRef(WasmI32.fromGrain(coerceNumberToWasmI32))
+    Memory.incRef(WasmI32.fromGrain(userPtrAsNumber))
+    let userPtr = coerceNumberToWasmI32(userPtrAsNumber)
+
+    let _HEADER_SIZE = 8n
+    let refCnt = WasmI32.load(WasmI32.sub(userPtr, _HEADER_SIZE), 0n)
+
+    let contentAsString = if (WasmI32.eq(refCnt, 0n)) {
+      // Special case when printing an object that has is to be deallocated.
+      // The ref count has already been decremented to zero, but is still in
+      // memory so we can print it. For this to work, the refcount needs to be
+      // incremented to 2 to avoid deallocating by decRef inside toString.
+      Memory.incRef(WasmI32.fromGrain(userPtr))
+      Memory.incRef(WasmI32.fromGrain(userPtr))
+      Memory.incRef(WasmI32.fromGrain(toString))
+      let s = toString(userPtr)
+      // And then we can reset it to zero to avoid introducing issues.
+      WasmI32.store(WasmI32.sub(userPtr, _HEADER_SIZE), 0n, 0n)
+      s
+    } else {
+      // Otherwise just call toString with usual calling conventions.
+      Memory.incRef(WasmI32.fromGrain(userPtr))
+      Memory.incRef(WasmI32.fromGrain(toString))
+      toString(userPtr)
+    }
+
+    Memory.incRef(WasmI32.fromGrain(contentAsString))
+
+    Memory.decRef(WasmI32.fromGrain(userPtrAsNumber))
+    Memory.decRef(WasmI32.fromGrain(readContentAsString))
+
+    contentAsString
+  }
+
+  let maybeObjectContentsAppendix = if (options.printObjectContents) {
+    (userPtrAsNumber: Number) => {
+      ": " ++ readContentAsString(userPtrAsNumber)
+    }
+  } else {
+    (userPtrAsNumber: Number) => {
+      ""
+    }
+  }
+
+  let onIncRef = (userPtr: Number) => {
+    totalIncRefs += 1
+
+    let refCount = readRefCount(userPtr)
+    let tag = readTag(userPtr)
+
+    incrementCountInMap(tag, incRefsByTag)
+
+    if (options.printIncrefsAndDecRefs) {
+
+      if (Set.contains(userPtr, allocations)) {
+        print(
+          "incref for object at 0x" ++ toHex(userPtr) ++ " (prev count: " ++
+          toString(refCount) ++
+          "; tag: " ++
+          toString(tag) ++
+          " " ++
+          tagToTypeName(tag) ++
+          ") " ++
+          maybeObjectContentsAppendix(userPtr),
+        )
+      } else {
+        print(
+          "incref for pre-existing object at 0x" ++ toHex(userPtr) ++
+          " (prev count: " ++
+          toString(refCount) ++
+          "; tag: " ++
+          toString(tag) ++
+          " " ++
+          tagToTypeName(tag) ++
+          ") " ++
+          maybeObjectContentsAppendix(userPtr),
+        )
+      }
+    }
+  }
+
+  let onDecRef = (userPtr: Number, ignoreZeros: Bool) => {
+    totalDecRefs += 1
+
+    let refCount = readRefCount(userPtr)
+    let tag = readTag(userPtr)
+
+    incrementCountInMap(tag, decRefsByTag)
+
+    if (options.printIncrefsAndDecRefs) {
+      if (refCount < 1 && !ignoreZeros) {
+        print(
+          "⚠ PROBLEM DETECTED: unexpected decRef at address 0x" ++
+          " (tag: " ++
+          toString(tag) ++
+          " " ++
+          tagToTypeName(tag) ++
+          ")" ++
+          maybeObjectContentsAppendix(userPtr),
+        )
+
+        if (tag == 7
+        /* or Tags._GRAIN_LAMBDA_HEAP_TAG*/) {
+          print(
+            "The object is a function or lambda. You have to incRef a function before calling it from a @disableGC context.",
+          )
+        }
+      } else {
+        if (Set.contains(userPtr, allocations)) {
+          print(
+            "decref for object at 0x" ++ toHex(userPtr) ++ " (prev count: " ++
+            toString(refCount) ++
+            "; tag: " ++
+            toString(tag) ++
+            " " ++
+            tagToTypeName(tag) ++
+            ")" ++
+            maybeObjectContentsAppendix(userPtr),
+          )
+        } else {
+          print(
+            "decref for pre-existing object at 0x" ++ toHex(userPtr) ++
+            " (prev count: " ++
+            toString(refCount) ++
+            "; tag: " ++
+            toString(tag) ++
+            " " ++
+            tagToTypeName(tag) ++
+            ")" ++
+            maybeObjectContentsAppendix(userPtr),
+          )
+        }
+      }
+    }
+  }
+
+  let onMalloc = (userPtr: Number) => {
+    totalMallocs += 1
+
+    // Tracking objects allocated in the debug block.
+    if (Set.contains(userPtr, allocations)) {
+      // A new allocation, but for an object already allocated inside the debug block, but never removed.
+      print(
+        "⚠ PROBLEM DETECTED: unexpected malloc at address 0x" ++
+        toHex(userPtr) ++
+        " that hasn't been freed. This may be caused by direct calls to Malloc.free for objects created with GC.malloc.",
+      )
+    } else {
+      // A new allocation made in the debug block.
+      if (options.printMallocAndFree) {
+        print("new object at 0x" ++ toHex(userPtr))
+      }
+
+      // Add the pointer to the new object to start tracking it until it's deallocated.
+      Set.add(userPtr, allocations)
+    }
+  }
+
+  let onFree = (userPtr: Number) => {
+    totalFrees += 1
+
+    let refCount = readRefCount(userPtr)
+    let tag = readTag(userPtr)
+
+    if (Set.contains(userPtr, allocations)) {
+      if (options.printMallocAndFree) {
+        print(
+          "deallocating object at 0x" ++ toHex(userPtr) ++ " (ref. count: " ++
+          toString(refCount) ++
+          "; tag: " ++
+          toString(tag) ++
+          " " ++
+          tagToTypeName(tag) ++
+          ")" ++
+          maybeObjectContentsAppendix(userPtr),
+        )
+      }
+
+      Set.remove(userPtr, allocations)
+
+      incrementCountInMap(tag, mallocPlusFreeByTag)
+    } else {
+      if (options.printMallocAndFree) {
+        print(
+          "deallocating pre-existing object at 0x" ++ toHex(userPtr) ++
+          " (ref. count: " ++
+          toString(refCount) ++
+          "; tag: " ++
+          toString(tag) ++
+          " " ++
+          tagToTypeName(tag) ++
+          ")" ++
+          maybeObjectContentsAppendix(userPtr),
+        )
+      }
+    }
+  }
+
+  @disableGC
+  let incRefHook = (userPtr: WasmI32) => {
+    Memory.incRef(WasmI32.fromGrain(Conv.wasmI32ToNumber))
+    let ptrAsNumber = Conv.wasmI32ToNumber(userPtr)
+
+    Memory.incRef(WasmI32.fromGrain(onIncRef))
+    onIncRef(ptrAsNumber)
+  }
+
+  @disableGC
+  let decRefHook = (userPtr: WasmI32, ignoreZeros: Bool) => {
+    Memory.incRef(WasmI32.fromGrain(Conv.wasmI32ToNumber))
+    let ptrAsNumber = Conv.wasmI32ToNumber(userPtr)
+
+    Memory.incRef(WasmI32.fromGrain(onDecRef))
+    onDecRef(ptrAsNumber, ignoreZeros)
+  }
+
+  @disableGC
+  let mallocHook = (userPtr: WasmI32) => {
+    Memory.incRef(WasmI32.fromGrain(Conv.wasmI32ToNumber))
+    let ptrAsNumber = Conv.wasmI32ToNumber(userPtr)
+
+    Memory.incRef(WasmI32.fromGrain(onMalloc))
+    onMalloc(ptrAsNumber)
+  }
+
+  @disableGC
+  let freeHook = (userPtr: WasmI32) => {
+    Memory.incRef(WasmI32.fromGrain(Conv.wasmI32ToNumber))
+    let ptrAsNumber = Conv.wasmI32ToNumber(userPtr)
+
+    Memory.incRef(WasmI32.fromGrain(onFree))
+    onFree(ptrAsNumber)
+  }
+
+  GC.setDebugHooks(incRefHook, decRefHook, mallocHook, freeHook)
+
+  f()
+
+  GC.removeDebugHooks()
+
+  let numLeaks = Set.size(allocations)
+
+  let leaksFound = numLeaks != 0
+
+  let printSummary = () => {
+    let leakedByTag = Map.make(): (Map.Map<Number, Number>)
+
+    if (leaksFound) {
+      print("✔ no malloc/free leaks detected")
+    } else {
+      print("")
+      print("⚠ " ++ toString(numLeaks) ++ " malloc/free leaks detected:")
+      Set.forEach(
+        userPtr => {
+          let refCount = readRefCount(userPtr)
+          let tag = readTag(userPtr)
+          print(
+            "- 0x" ++ toHex(userPtr) ++ " (ref. count: " ++
+            toString(refCount) ++
+            "; tag " ++
+            toString(tag) ++
+            " " ++
+            tagToTypeName(tag) ++
+            ")" ++
+            maybeObjectContentsAppendix(userPtr),
+          )
+
+          incrementCountInMap(tag, leakedByTag)
+        },
+        allocations,
+      )
+    }
+
+    print("")
+    print("totalMallocs: " ++ toString(totalMallocs))
+    print("totalFrees: " ++ toString(totalFrees))
+    print("totalIncRefs: " ++ toString(totalIncRefs))
+    print("totalDecRefs: " ++ toString(totalDecRefs))
+    print("")
+    print("incRef/decRefs by tag:")
+
+    let allTags = Set.make(): (Set.Set<Number>)
+
+    Map.forEach(
+      (tag, incRefs) => {
+        Set.add(tag, allTags)
+      },
+      incRefsByTag,
+    )
+
+    Map.forEach(
+      (tag, decRefs) => {
+        Set.add(tag, allTags)
+      },
+      decRefsByTag,
+    )
+
+    // TODO sort the tags once we have sorting in stdlib
+    //let allTagsSorted = Array.sort((...) => {...}, Set.toArray(allTags))
+
+    Set.forEach(
+      tag => {
+        let incRefCount = Option.unwrapWithDefault(
+          0,
+          Map.get(tag, incRefsByTag),
+        )
+        let decRefCount = Option.unwrapWithDefault(
+          0,
+          Map.get(tag, decRefsByTag),
+        )
+        let mallocPlusFreeCount = Option.unwrapWithDefault(
+          0,
+          Map.get(tag, mallocPlusFreeByTag),
+        )
+
+        // This may sound counter intuitive, but leaked objects need to be counted
+        // as proper incRefs because GC.malloc creates them with ref count of 1.
+        // Not doing so would actually conceal problems in total incRef/decRef
+        // deltas.
+        let mallocButNotFreedCount = Option.unwrapWithDefault(
+          0,
+          Map.get(tag, leakedByTag),
+        )
+
+        let delta = incRefCount - decRefCount + mallocPlusFreeCount +
+        mallocButNotFreedCount
+
+        let icon = if (delta == 0) {
+          "✔️"
+        } else {
+          "⚠"
+        }
+        print(
+          icon ++ " " ++ toString(tag) ++ " " ++ tagToTypeName(tag) ++ ": \t" ++
+          toString(incRefCount) ++
+          " incRefs, \t" ++
+          toString(decRefCount) ++
+          " decrefs, \t" ++
+          toString(mallocPlusFreeCount) ++
+          " malloc+free, \t" ++
+          toString(mallocButNotFreedCount) ++
+          " mallocs without free",
+        )
+      },
+      allTags,
+    )
+  }
+
+  match (options.summary) {
+    AlwaysPrintSummary => {
+      printSummary()
+    },
+    PrintSummaryIfLeaksAreFound => {
+      if (leaksFound) {
+        printSummary()
+      }
+    },
+  }
+
+  leaksFound == false
+}
+
+/**
+ * Executes the provided function and tries to detect memory leaks and
+ * reference counting issues. It's assumed that the function is meant to have
+ * no side effects on memory referenced by global or captured variables.
+ *
+ * @param name: Arbitrary name printed in the output to distingish this block
+ * @param options: The options controlling logging detail
+ * @param f: The function to execute and check
+ * @return True if no leaks where detected.
+ */
+export let leakDebugBlock =
+  (
+    name: String,
+    options: Option<LeakDebugBlockOptions>,
+    f: () -> Void,
+  ) => {
+  print("start of GC debug block \"" ++ name ++ "\"")
+  print("")
+
+  let options = match (options) {
+    Some(opts) => opts,
+    None =>
+      {
+        printIncrefsAndDecRefs: true,
+        printMallocAndFree: true,
+        printObjectContents: false,
+        summary: AlwaysPrintSummary,
+      },
+  }
+
+  let noLeaks = leakDebugBlockImpl(options, f)
+
+  print("end of GC debug block \"" ++ name ++ "\"")
+  print("")
+
+  noLeaks
+}
+
+/**
+ * Executes the provided function and tries to detect memory leaks and
+ * reference counting issues. It's assumed that the function is meant to have
+ * no side effects on memory referenced by global variables or captured
+ * variables.
+ *
+ * @param name: Arbitrary name printed in the output
+ * @param options: The options controlling logging detail
+ * @param f: The function to execute and check
+ * @return True if no leaks where detected.
+ */
+export let ensureNoLeaks = (f: () -> Void) => {
+  leakDebugBlockImpl(
+    {
+      printIncrefsAndDecRefs: false,
+      printMallocAndFree: false,
+      printObjectContents: true,
+      summary: PrintSummaryIfLeaksAreFound,
+    },
+    f,
+  )
+}

@@ -2,6 +2,7 @@ import String from "string"
 import Buffer from "buffer"
 import Bytes from "bytes"
 import Int32 from "int32"
+import { ensureNoLeaks } from "runtime/runtimeDebug"
 
 // it should have 0 length when buffer is created
 assert Buffer.length(Buffer.make(0)) == 0
@@ -251,3 +252,16 @@ let buf1 = Buffer.make(0)
 Buffer.addString("0123456789", buf1)
 Buffer.addBufferSlice(1, 4, buf1, buf0)
 assert Buffer.toString(buf0) == "1234"
+
+assert ensureNoLeaks(() => {
+  ignore(Buffer.make(0))
+})
+
+// This currently fails because of issue #962. I left it here on purpose
+// to see how a leak test failing looks on GitHub CI. Will probably be
+// removed if we want this merged befor that issue is fixed.
+assert ensureNoLeaks(() => {
+  // Just make the buffer intentionally smaller and grow it.
+  let buf = Buffer.make(1)
+  Buffer.addInt32(Int32.fromNumber(1), buf)
+})
