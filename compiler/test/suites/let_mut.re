@@ -76,8 +76,8 @@ describe("let mut", ({test}) => {
   /* Exported let mut */
   assertRun(
     "let-mut_export1",
-    "import { x } from \"letMutExport\"; x = 5; x = 6; print(x)",
-    "6\n",
+    "import { x } from \"letMutExport\"; print(x); x = 5; x = 6; print(x)",
+    "3\n6\n",
   );
   /* unsafe let mut in a loop */
   assertFileRun("let-mut_loop", "letMutForLoop", "0N\n1N\n2N\n3N\n4N\n");

@@ -11,6 +11,10 @@ jobs:
       release_created: ${{ steps.release.outputs.release_created }}
       upload_url: ${{ steps.release.outputs.upload_url }}
       tag_name: ${{ steps.release.outputs.tag_name }}
+      stdlib_upload_url: ${{ steps.release.outputs.stdlib--upload_url }}
+      stdlib_release_created: ${{ steps.release.outputs.stdlib--release_created }}
+      js-runner_upload_url: ${{ steps.release.outputs.js-runner--upload_url }}
+      js-runner_release_created: ${{ steps.release.outputs.js-runner--release_created }}
     steps:
       - uses: GoogleCloudPlatform/release-please-action@v2.33.1
         id: release
@@ -18,11 +22,14 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           command: manifest
 
-  build-pkg:
+  prepare-artifacts:
     needs: [release-please]
     if: ${{ needs.release-please.outputs.release_created }}
-    name: Build Packaged Grain
+    name: Prepare artifacts
     runs-on: ubuntu-latest
+    outputs:
+      stdlib_download_url: ${{ steps.stdlib-upload.outputs.browser_download_url }}
+      js-runner_download_url: ${{ steps.js-runner-upload.outputs.browser_download_url }}
     steps:
       # Many of these steps are the same as building the compiler for tests
       - name: Setup Node.js
@@ -101,8 +108,46 @@ jobs:
           asset_name: grain-linux-x64
           asset_content_type: application/octet-stream
 
+      - name: Pack stdlib
+        if: ${{ needs.release-please.outputs.stdlib_release_created }}
+        working-directory: ./stdlib
+        # Runs `npm pack` and assigns the filename to an env var we can use later
+        run: |
+          echo "STDLIB_TAR=$(npm pack --json | jq -r '.[0].filename')" >> $GITHUB_ENV
+
+      - name: Upload stdlib
+        id: stdlib-upload
+        if: ${{ needs.release-please.outputs.stdlib_release_created }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.release-please.outputs.stdlib_upload_url }}
+          asset_path: ./stdlib/${{ env.STDLIB_TAR }}
+          asset_name: stdlib.tgz
+          asset_content_type: application/octet-stream
+
+      - name: Pack js-runner
+        if: ${{ needs.release-please.outputs.js-runner_release_created }}
+        working-directory: ./js-runner
+        # Runs `npm pack` and assigns the filename to an env var we can use later
+        run: |
+          echo "RUNNER_TAR=$(npm pack --json | jq -r '.[0].filename')" >> $GITHUB_ENV
+
+      - name: Upload js-runner
+        id: js-runner-upload
+        if: ${{ needs.release-please.outputs.js-runner_release_created }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.release-please.outputs.js-runner_upload_url }}
+          asset_path: ./js-runner/${{ env.RUNNER_TAR }}
+          asset_name: js-runner.tgz
+          asset_content_type: application/octet-stream
+
   dispatch-website:
-    needs: [release-please, build-pkg]
+    needs: [release-please, prepare-artifacts]
     if: ${{ needs.release-please.outputs.release_created }}
     name: Dispatch website release
     runs-on: ubuntu-latest
@@ -116,7 +161,7 @@ jobs:
           tag_input: ${{ needs.release-please.outputs.tag_name }}
 
   dispatch-homebrew:
-    needs: [release-please, build-pkg]
+    needs: [release-please, prepare-artifacts]
     if: ${{ needs.release-please.outputs.release_created }}
     name: Dispatch homebrew release
     runs-on: ubuntu-latest
@@ -128,3 +173,39 @@ jobs:
           ref: main
           repo: grain-lang/homebrew-tap
           tag_input: ${{ needs.release-please.outputs.tag_name }}
+
+  npm-release-stdlib:
+    needs: [release-please, prepare-artifacts]
+    if: ${{ needs.release-please.outputs.stdlib_release_created }}
+    name: Publish stdlib to npm registry
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup NodeJS
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: "14"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Publish to npm
+        run: |
+          npm publish ${{ needs.prepare-artifacts.outputs.stdlib_download_url }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_RELEASE }}
+
+  npm-release-js-runner:
+    needs: [release-please, prepare-artifacts]
+    if: ${{ needs.release-please.outputs.js-runner_release_created }}
+    name: Publish js-runner to npm registry
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup NodeJS
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: "14"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Publish to npm
+        run: |
+          npm publish ${{ needs.prepare-artifacts.outputs.js-runner_download_url }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_RELEASE }}

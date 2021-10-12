@@ -32,3 +32,10 @@ export let unique = array => {
 export let batchActionCreateAccount = ({index}) => {
   Native.promiseBatchActionCreateAccount(Conv.fromInt64(index))
 }
+
+
+let ret = filteri(
+  dst + _VALUE_OFFSET + dstIndex,
+  src + _VALUE_OFFSET + srcIndex,
+  length,
+)

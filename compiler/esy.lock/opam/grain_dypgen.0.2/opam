@@ -2,6 +2,7 @@ opam-version: "2.0"
 maintainer: "https://github.com/ocaml/opam-repository/issues"
 authors: ["Emmanuel Onzo" "Philip Blair"]
 homepage: "https://github.com/grain-lang/dypgen"
+dev-repo: "git+https://github.com/grain-lang/dypgen.git"
 license: "CeCILL-B"
 build: make
 depends: [
