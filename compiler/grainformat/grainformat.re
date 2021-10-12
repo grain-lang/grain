@@ -46,6 +46,10 @@ let compile_parsed = (filename: option(string)) => {
 
       program_str := String.concat("\n", linesList^);
 
+      // add a new line to the end for where it's in CRLF more
+      // TODO(#940): Handle CRLF properly
+      program_str := program_str^ ++ "\n";
+
       Grain_utils.Config.base_path := dirname(filenm);
       Compile.compile_string(
         ~hook=stop_after_parse,

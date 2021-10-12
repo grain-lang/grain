@@ -258,3 +258,28 @@ assert String.decode(bytes, String.UTF16_LE) == "¢"
   }, emojis)
   assert Array.reverse(Array.fromList(tmp)) == Array.mapi((c,i) => (c,i), codes)
 }
+
+// String.trimStart
+assert String.trimStart("t   test") == "t   test"
+assert String.trimStart("   test") == "test"
+assert String.trimStart("   test   ") == "test   "
+assert String.trimStart("test   ") == "test   "
+assert String.trimStart("test") == "test"
+assert String.trimStart("") == ""
+assert String.trimStart("  ") == ""
+// Sting.trimEnd
+assert String.trimEnd("test   t") == "test   t"
+assert String.trimEnd("test   ") == "test"
+assert String.trimEnd("   test   ") == "   test"
+assert String.trimEnd("   test") == "   test"
+assert String.trimEnd("test") == "test"
+assert String.trimEnd("") == ""
+assert String.trimEnd("  ") == ""
+// String.trim
+assert String.trim("t   test   t") == "t   test   t"
+assert String.trim("test   ") == "test"
+assert String.trim("   test   ") == "test"
+assert String.trim("   test") == "test"
+assert String.trim("test") == "test"
+assert String.trim("") == ""
+assert String.trim("  ") == ""

@@ -71,8 +71,10 @@ let generate_docs =
     | Module({attr_name, attr_desc}) =>
       Buffer.add_string(buf, Markdown.frontmatter([("title", attr_name)]));
       Buffer.add_string(buf, Markdown.paragraph(attr_desc));
-      if (desc != "") {
-        Buffer.add_string(buf, Markdown.paragraph(desc));
+      switch (desc) {
+      // Guard isn't be needed because we turn an empty string into None during extraction
+      | Some(desc) => Buffer.add_string(buf, Markdown.paragraph(desc))
+      | None => ()
       };
     | _ => failwith("Unreachable: Non-`module` attribute can't exist here.")
     };

@@ -1,5 +1,26 @@
 # Changelog
 
+### [0.4.3](https://www.github.com/grain-lang/grain/compare/cli-v0.4.2...cli-v0.4.3) (2021-10-11)
+
+
+### Features
+
+* **cli:** Refactor forwardable options ([#908](https://www.github.com/grain-lang/grain/issues/908)) ([9ecb49b](https://www.github.com/grain-lang/grain/commit/9ecb49b7fc29ab8cb09baefe512471c07b9dbdc6))
+* **grainfmt:** Add format in place or output to a new file ([#904](https://www.github.com/grain-lang/grain/issues/904)) ([0d18935](https://www.github.com/grain-lang/grain/commit/0d1893576bf3ad9e4d5c3aca5bfa963966b84b66))
+
+
+### Bug Fixes
+
+* **cli:** Forward stdlib option to lsp and graindoc ([#916](https://www.github.com/grain-lang/grain/issues/916)) ([07c5237](https://www.github.com/grain-lang/grain/commit/07c5237795c9717cf925c6889e165f4eb8a04f8d))
+* **cli:** Only add --experimental-wasm-bigint flag on node 14 or 15 ([#899](https://www.github.com/grain-lang/grain/issues/899)) ([1cc0c5c](https://www.github.com/grain-lang/grain/commit/1cc0c5c03d38957c90f71e99a188c448923a481c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @grain/stdlib bumped from ^0.4.1 to ^0.4.2
+
 ### [0.4.2](https://www.github.com/grain-lang/grain/compare/cli-v0.4.1...cli-v0.4.2) (2021-09-07)
 
 

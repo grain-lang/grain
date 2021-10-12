@@ -8,7 +8,12 @@ describe("basic functionality", ({test}) => {
   let assertRunError = makeErrorRunner(test);
 
   assertSnapshot("forty", "let x = 40; x");
-  assertSnapshot("neg", "-1073741824");
+  assertSnapshot("neg", "-40");
+  assertSnapshot("simple_min", "-1073741824");
+  assertSnapshot("simple_max", "1073741823");
+  assertSnapshot("heap_number_i32_wrapper", "1073741824");
+  assertSnapshot("heap_number_i32_wrapper_max", "2147483647");
+  assertSnapshot("heap_number_i64_wrapper", "2147483648");
   assertSnapshot("hex", "0xff");
   assertSnapshot("hex_neg", "-0xff");
   assertSnapshot("bin", "0b1010");

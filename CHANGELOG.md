@@ -1,5 +1,52 @@
 # Changelog
 
+### [0.4.3](https://www.github.com/grain-lang/grain/compare/grain-v0.4.2...grain-v0.4.3) (2021-10-11)
+
+
+### Features
+
+* Add npm releases to workflow ([#948](https://www.github.com/grain-lang/grain/issues/948)) ([d55bbc0](https://www.github.com/grain-lang/grain/commit/d55bbc081c5dffb4532b0abca838716d969a919b))
+* **cli:** Refactor forwardable options ([#908](https://www.github.com/grain-lang/grain/issues/908)) ([9ecb49b](https://www.github.com/grain-lang/grain/commit/9ecb49b7fc29ab8cb09baefe512471c07b9dbdc6))
+* **compiler:** Inline not `(!)` operator ([#937](https://www.github.com/grain-lang/grain/issues/937)) ([3f5e9a9](https://www.github.com/grain-lang/grain/commit/3f5e9a962ec8565f4fb79a1ee36d7b492da5cf11))
+* **grainfmt:** Add format in place or output to a new file ([#904](https://www.github.com/grain-lang/grain/issues/904)) ([0d18935](https://www.github.com/grain-lang/grain/commit/0d1893576bf3ad9e4d5c3aca5bfa963966b84b66))
+* **stdlib:** Add Conv.wasmI32ToNumber function ([#978](https://www.github.com/grain-lang/grain/issues/978)) ([c93ade8](https://www.github.com/grain-lang/grain/commit/c93ade873b51acca556e19a7483a5f29b4b6caa9))
+* **stdlib:** Add string trim functions to String module ([#951](https://www.github.com/grain-lang/grain/issues/951)) ([e55de8f](https://www.github.com/grain-lang/grain/commit/e55de8fc0335b45252da9741a80b46a702cdb5b6))
+* **stdlib:** Regular Expressions ([#680](https://www.github.com/grain-lang/grain/issues/680)) ([9601e16](https://www.github.com/grain-lang/grain/commit/9601e1655f1ffc76b700efef317366457c5614ef))
+
+
+### Bug Fixes
+
+* **cli:** Forward stdlib option to lsp and graindoc ([#916](https://www.github.com/grain-lang/grain/issues/916)) ([07c5237](https://www.github.com/grain-lang/grain/commit/07c5237795c9717cf925c6889e165f4eb8a04f8d))
+* **cli:** Only add --experimental-wasm-bigint flag on node 14 or 15 ([#899](https://www.github.com/grain-lang/grain/issues/899)) ([1cc0c5c](https://www.github.com/grain-lang/grain/commit/1cc0c5c03d38957c90f71e99a188c448923a481c))
+* **compiler:** Allow trailing commas in imports and destructuring ([#890](https://www.github.com/grain-lang/grain/issues/890)) ([f5c24c9](https://www.github.com/grain-lang/grain/commit/f5c24c946b3356090b9aca6123bc14a19b4e06fb))
+* **compiler:** Do not inline aliased mutables ([#909](https://www.github.com/grain-lang/grain/issues/909)) ([a50430a](https://www.github.com/grain-lang/grain/commit/a50430a2cff5f50dd666f1ec14bd485bfda77e86))
+* **compiler:** Don't over-optimize mutable imports ([#967](https://www.github.com/grain-lang/grain/issues/967)) ([c3066f6](https://www.github.com/grain-lang/grain/commit/c3066f6e32bbbe3bd51b9a7b498567b8deb8d9ba))
+* **compiler:** Don't warn on exhaustive boolean matches ([#913](https://www.github.com/grain-lang/grain/issues/913)) ([4189745](https://www.github.com/grain-lang/grain/commit/4189745d09c3fc6971f95dc1c8428dc73761aed3))
+* **compiler:** Ensure cwd directory is normalized on Windows ([#952](https://www.github.com/grain-lang/grain/issues/952)) ([a3ab9c3](https://www.github.com/grain-lang/grain/commit/a3ab9c3cd2359866a61a1dd4b63f40b0f964e2a4))
+* **compiler:** Export functions with aliased names as wasm functions ([#920](https://www.github.com/grain-lang/grain/issues/920)) ([afba142](https://www.github.com/grain-lang/grain/commit/afba142ef90d0d95ae0085debe50e1b34588b267))
+* **compiler:** Fix parsing of block with lone 0-arg enum ([#885](https://www.github.com/grain-lang/grain/issues/885)) ([edfc21e](https://www.github.com/grain-lang/grain/commit/edfc21e0ca8f76f00b53d0fd07075ccf6299358e))
+* **compiler:** Fix stack/heap number allocation boundary ([#974](https://www.github.com/grain-lang/grain/issues/974)) ([47b0f56](https://www.github.com/grain-lang/grain/commit/47b0f56c00e88ddc6054b8f8f8eea4b21da0c7f7))
+* **compiler:** Follow proper calling convention when callling stdlib equals in match ([#895](https://www.github.com/grain-lang/grain/issues/895)) ([73fe7d4](https://www.github.com/grain-lang/grain/commit/73fe7d47783a76454496c8bba55ff051561ef975))
+* **compiler:** Parse array set with newline correctly ([#926](https://www.github.com/grain-lang/grain/issues/926)) ([14e1822](https://www.github.com/grain-lang/grain/commit/14e18229f82637870c651b948fb15c3e5a7b082c))
+* **compiler:** Remove existing exports when writing universal exports ([#919](https://www.github.com/grain-lang/grain/issues/919)) ([e80de43](https://www.github.com/grain-lang/grain/commit/e80de439e79ed1dab1c1adcbd5b9cca7a79be023))
+* **compiler:** Resolve all modules fully during linking ([#950](https://www.github.com/grain-lang/grain/issues/950)) ([33b33a3](https://www.github.com/grain-lang/grain/commit/33b33a3926cc059a0a759c4ec894fb9f6f03d904))
+* Correctly preserve start position for character literals ([#931](https://www.github.com/grain-lang/grain/issues/931)) ([8fcc575](https://www.github.com/grain-lang/grain/commit/8fcc575a3afde79ac6455b35839b1bcdd6ded41f))
+* **graindoc:** Only extract attributes from Doc comments ([#970](https://www.github.com/grain-lang/grain/issues/970)) ([7b6ee5f](https://www.github.com/grain-lang/grain/commit/7b6ee5f085af89f3db181c8d6c2718ca161f2ead))
+* **grainfmt:** fix some spacing issues with the formatter ([#955](https://www.github.com/grain-lang/grain/issues/955)) ([9c4be85](https://www.github.com/grain-lang/grain/commit/9c4be85011d6c030fd54954bd86b0a3ee0f80660))
+* **grainfmt:** Format CRLF files without error ([#941](https://www.github.com/grain-lang/grain/issues/941)) ([ece7536](https://www.github.com/grain-lang/grain/commit/ece7536b6d20694360257515a6f963f115ed21b3))
+* **grainfmt:** Group infix functions when passed as params ([bb9666d](https://www.github.com/grain-lang/grain/commit/bb9666d24991df94c82d4f50c1d25d7669cec3c9))
+* **grainfmt:** handle empty type for foreign exports ([#907](https://www.github.com/grain-lang/grain/issues/907)) ([d3b60a4](https://www.github.com/grain-lang/grain/commit/d3b60a422568941185c2446464ba2eeb4a776ed2))
+* **grainfmt:** Improve formatter performance ([#959](https://www.github.com/grain-lang/grain/issues/959)) ([4e739f1](https://www.github.com/grain-lang/grain/commit/4e739f1d12a1493207a81549f1c0145f296b50be))
+* **grainfmt:** Print attributes for non-toplevel expressions ([#887](https://www.github.com/grain-lang/grain/issues/887)) ([72292fe](https://www.github.com/grain-lang/grain/commit/72292fe67cb21905dd976933d278810ac49bd35b))
+* **grainfmt:** remove extra spaces around for/while loop conditions ([#897](https://www.github.com/grain-lang/grain/issues/897)) ([2054a83](https://www.github.com/grain-lang/grain/commit/2054a832d713cd335417fe6e04e537453045c43f))
+* **grainfmt:** Remove extraneous parens around infix function application ([#902](https://www.github.com/grain-lang/grain/issues/902)) ([5c1906a](https://www.github.com/grain-lang/grain/commit/5c1906a98664f1b14f969fff5c0e48ddd08988c4))
+* **grainfmt:** Removed a trailing comma after a spread in a list, and fixed escaped single quote ([#923](https://www.github.com/grain-lang/grain/issues/923)) ([3a138d6](https://www.github.com/grain-lang/grain/commit/3a138d6002fdb2a84df89355e10a143ff792b122))
+* **grainfmt:** Resolve issues with comments within braces ([#888](https://www.github.com/grain-lang/grain/issues/888)) ([9c88b89](https://www.github.com/grain-lang/grain/commit/9c88b89db4ce1d7a256cbde51d74225513b76a3e))
+* **stdlib:** Fix Char.code memory issue ([#928](https://www.github.com/grain-lang/grain/issues/928)) ([dfa31d8](https://www.github.com/grain-lang/grain/commit/dfa31d8aa60a41d08494f3817bdb628a30d83f41))
+* **stdlib:** Fix issue with list printing ([#894](https://www.github.com/grain-lang/grain/issues/894)) ([e2a33a9](https://www.github.com/grain-lang/grain/commit/e2a33a9607bd076abbf6375389f1a7896775e6bc))
+* **stdlib:** Fix memory issue in list printing ([#912](https://www.github.com/grain-lang/grain/issues/912)) ([3e0a805](https://www.github.com/grain-lang/grain/commit/3e0a8059a36d1042fa06d6aed54565ced116fd87))
+* **stdlib:** Fix memory leaks in Char stdlib ([#929](https://www.github.com/grain-lang/grain/issues/929)) ([99cc94b](https://www.github.com/grain-lang/grain/commit/99cc94b3e2010c7fa6b2c244758dbbe13e43f903))
+
 ### [0.4.2](https://www.github.com/grain-lang/grain/compare/grain-v0.4.1...grain-v0.4.2) (2021-09-07)
 
 
