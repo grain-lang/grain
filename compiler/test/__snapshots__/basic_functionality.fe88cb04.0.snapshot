@@ -6,12 +6,12 @@ basic functionality › func_shadow_and_indirect_call
  (type $none_=>_i32 (func (result i32)))
  (import \"_grainEnv\" \"mem\" (memory $0 0))
  (import \"_grainEnv\" \"tbl\" (table $tbl 0 funcref))
- (elem $elem (global.get $import__grainEnv_0_relocBase_0) $foo_1155 $foo_1157 $foo_1159 $func_1174)
+ (elem $elem (global.get $import__grainEnv_0_relocBase_0) $foo_1159 $foo_1161 $foo_1163 $func_1178)
  (import \"_grainEnv\" \"relocBase\" (global $import__grainEnv_0_relocBase_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRefIgnoreZeros\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$print\" (global $import_pervasives_1169_print_1170 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$print\" (global $import_pervasives_1173_print_1174 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $import_GRAIN$MODULE$runtime/gc_0_malloc_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $import_GRAIN$MODULE$runtime/gc_0_incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRefIgnoreZeros\" (func $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0 (param i32 i32) (result i32)))
@@ -20,7 +20,7 @@ basic functionality › func_shadow_and_indirect_call
  (export \"_gmain\" (func $_gmain))
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $global_1))
- (func $foo_1155 (; has Stack IR ;) (param $0 i32) (result i32)
+ (func $foo_1159 (; has Stack IR ;) (param $0 i32) (result i32)
   (local $1 i32)
   (local.set $1
    (tuple.extract 0
@@ -62,7 +62,7 @@ basic functionality › func_shadow_and_indirect_call
   )
   (local.get $1)
  )
- (func $foo_1157 (; has Stack IR ;) (param $0 i32) (result i32)
+ (func $foo_1161 (; has Stack IR ;) (param $0 i32) (result i32)
   (local $1 i32)
   (local.set $1
    (tuple.extract 0
@@ -104,7 +104,7 @@ basic functionality › func_shadow_and_indirect_call
   )
   (local.get $1)
  )
- (func $foo_1159 (; has Stack IR ;) (param $0 i32) (result i32)
+ (func $foo_1163 (; has Stack IR ;) (param $0 i32) (result i32)
   (local $1 i32)
   (local.set $1
    (tuple.extract 0
@@ -153,7 +153,7 @@ basic functionality › func_shadow_and_indirect_call
   )
   (local.get $1)
  )
- (func $func_1174 (; has Stack IR ;) (param $0 i32) (result i32)
+ (func $func_1178 (; has Stack IR ;) (param $0 i32) (result i32)
   (local $1 i32)
   (local.set $1
    (tuple.extract 0
@@ -261,7 +261,7 @@ basic functionality › func_shadow_and_indirect_call
       (local.set $5
        (tuple.extract 0
         (tuple.make
-         (call $foo_1155
+         (call $foo_1159
           (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
            (local.get $2)
@@ -283,7 +283,7 @@ basic functionality › func_shadow_and_indirect_call
            (tuple.make
             (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
              (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-             (global.get $import_pervasives_1169_print_1170)
+             (global.get $import_pervasives_1173_print_1174)
             )
             (local.get $0)
            )
@@ -355,7 +355,7 @@ basic functionality › func_shadow_and_indirect_call
       (local.set $6
        (tuple.extract 0
         (tuple.make
-         (call $foo_1157
+         (call $foo_1161
           (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
            (local.get $3)
@@ -377,7 +377,7 @@ basic functionality › func_shadow_and_indirect_call
            (tuple.make
             (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
              (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-             (global.get $import_pervasives_1169_print_1170)
+             (global.get $import_pervasives_1173_print_1174)
             )
             (local.get $0)
            )
@@ -449,7 +449,7 @@ basic functionality › func_shadow_and_indirect_call
       (local.set $0
        (tuple.extract 0
         (tuple.make
-         (call $foo_1159
+         (call $foo_1163
           (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
            (local.get $4)
@@ -494,7 +494,7 @@ basic functionality › func_shadow_and_indirect_call
          (tuple.make
           (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-           (global.get $import_pervasives_1169_print_1170)
+           (global.get $import_pervasives_1173_print_1174)
           )
           (local.get $1)
          )
