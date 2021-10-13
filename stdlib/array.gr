@@ -813,6 +813,16 @@ export let join = (separator: String, items: Array<String>) => {
   }
 }
 
+/**
+ * A simple helper function to convert a negative array index
+ * number to its positive positional equivalent.
+ *
+ * @param arrLen: The array length
+ * @param idx: The index number
+ * @returns The positive positional equivalent index number
+ *
+ * @since v0.4.0
+ */
 let wrapNegativeIndex = (arrLen, idx) => {
   if (idx >= 0) {
     idx
@@ -890,7 +900,21 @@ export let sort = (comp, array) => {
   }
   let len = length(array)
   quicksort(0, len - 1)
+}
 
+/**
+ * Rotates an array by n elements to the right, in place. For
+ * example: 'rotate([> 1, 2, 3, 4, 5], 2) == [> 4, 5, 1, 2, 3]'
+ *
+ * If n is negative, the array will be rotated by n elements
+ * to the left. e.g. 'rotate([> 1, 2, 3, 4, 5], -1) == [> 2, 3, 4, 5, 1]'
+ *
+ * @param arr: The array to be rotated
+ * @param n: The number of elements to rotate by
+ * @returns The rotated array
+ *
+ * @since v0.4.0
+ */
 export let rotate = (arr, n) => {
   let rec gcd = (a, b) => {
     if (b == 0) {
