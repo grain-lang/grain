@@ -27,10 +27,52 @@ let () =
     }
   );
 
-let compile_typed = filename => {
-  Grain_utils.Config.base_path := dirname(filename);
+module Input = {
+  type t = string;
 
-  switch (Compile.compile_file(~hook=stop_after_typed, filename)) {
+  let (prsr, prntr) = Arg.non_dir_file;
+
+  let cmdliner_converter = (
+    filename => prsr(Grain_utils.Files.normalize_separators(filename)),
+    prntr,
+  );
+};
+
+module Output = {
+  type t = string;
+
+  /** Checks that the given output filename is valid */
+  let prsr = s => {
+    let s_dir = dirname(s);
+    Sys.file_exists(s_dir)
+      ? if (Sys.is_directory(s_dir)) {
+          `Ok(s);
+        } else {
+          `Error(Format.sprintf("`%s' is not a directory", s_dir));
+        }
+      : `Error(Format.sprintf("no `%s' directory", s_dir));
+  };
+
+  let cmdliner_converter = (
+    filename => prsr(Grain_utils.Files.normalize_separators(filename)),
+    Format.pp_print_string,
+  );
+};
+
+[@deriving cmdliner]
+type params = {
+  /** Grain source file for which to extract documentation */
+  [@pos 0] [@docv "FILE"]
+  input: Input.t,
+  /** Output filename */
+  [@name "o"] [@docv "FILE"]
+  output: option(Output.t),
+};
+
+let compile_typed = (opts: params) => {
+  Grain_utils.Config.base_path := dirname(opts.input);
+
+  switch (Compile.compile_file(~hook=stop_after_typed, opts.input)) {
   | exception exn =>
     let bt =
       if (Printexc.backtrace_status()) {
@@ -49,13 +91,17 @@ let compile_typed = filename => {
       bt,
     );
     exit(2);
-  | {cstate_desc: TypeChecked(typed_program)} => `Ok(typed_program)
-  | _ => `Error((false, "Invalid compilation state"))
+  | {cstate_desc: TypeChecked(typed_program)} => typed_program
+  | _ => failwith("Invalid compilation state")
   };
 };
 
 let generate_docs =
-    (~version as current_version, outfile, program: Typedtree.typed_program) => {
+    (
+      ~version as current_version,
+      opts: params,
+      program: Typedtree.typed_program,
+    ) => {
   Comments.setup_comments(program.comments);
 
   let env = program.env;
@@ -194,7 +240,7 @@ let generate_docs =
   };
 
   let contents = Buffer.to_bytes(buf);
-  switch (outfile) {
+  switch (opts.output) {
   | Some(outfile) =>
     let oc = Fs_access.open_file_for_writing(outfile);
     output_bytes(oc, contents);
@@ -205,53 +251,13 @@ let generate_docs =
   `Ok();
 };
 
-let graindoc = (~version, outfile, program) =>
-  try(generate_docs(~version, outfile, program)) {
+let graindoc = (~version, opts) =>
+  try({
+    let program = compile_typed(opts);
+    generate_docs(~version, opts, program);
+  }) {
   | e => `Error((false, Printexc.to_string(e)))
   };
-
-let input_file_conv = {
-  open Arg;
-  let (prsr, prntr) = non_dir_file;
-
-  (
-    filename => prsr(Grain_utils.Files.normalize_separators(filename)),
-    prntr,
-  );
-};
-
-let input_filename = {
-  let doc = "Grain source file for which to extract documentation";
-  let docv = "FILE";
-  Arg.(
-    required
-    & pos(~rev=true, 0, some(input_file_conv), None)
-    & info([], ~docv, ~doc)
-  );
-};
-
-/** Converter which checks that the given output filename is valid */
-let output_file_conv = {
-  let parse = s => {
-    let s_dir = dirname(s);
-    Sys.file_exists(s_dir)
-      ? if (Sys.is_directory(s_dir)) {
-          `Ok(s);
-        } else {
-          `Error(Format.sprintf("`%s' is not a directory", s_dir));
-        }
-      : `Error(Format.sprintf("no `%s' directory", s_dir));
-  };
-  (parse, Format.pp_print_string);
-};
-
-let output_filename = {
-  let doc = "Output filename";
-  let docv = "FILE";
-  Arg.(
-    value & opt(some(output_file_conv), None) & info(["o"], ~docv, ~doc)
-  );
-};
 
 let cmd = {
   open Term;
@@ -264,16 +270,8 @@ let cmd = {
     };
 
   (
-    Term.(
-      ret(
-        const(graindoc(~version))
-        $ output_filename
-        $ ret(
-            Grain_utils.Config.with_cli_options(compile_typed)
-            $ input_filename,
-          ),
-      )
-    ),
+    Grain_utils.Config.with_cli_options(graindoc(~version))
+    $ params_cmdliner_term(),
     Term.info(Sys.argv[0], ~version, ~doc),
   );
 };
