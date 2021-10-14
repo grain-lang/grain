@@ -40,8 +40,9 @@ describe("linking", ({test}) => {
     let name = "no_start_section";
     let outfile = wasmfile(name);
     ignore @@ compile(name, {|print("Hello, world!")|});
-    let sections =
-      Grain_utils.Wasm_utils.get_wasm_sections(open_in_bin(outfile));
+    let ic = open_in_bin(outfile);
+    let sections = Grain_utils.Wasm_utils.get_wasm_sections(ic);
+    close_in(ic);
     let export_sections =
       List.find_map(
         (sec: Grain_utils.Wasm_utils.wasm_bin_section) =>
@@ -77,8 +78,9 @@ describe("linking", ({test}) => {
       name,
       {|print("Hello, world!")|},
     );
-    let sections =
-      Grain_utils.Wasm_utils.get_wasm_sections(open_in_bin(outfile));
+    let ic = open_in_bin(outfile);
+    let sections = Grain_utils.Wasm_utils.get_wasm_sections(ic);
+    close_in(ic);
     let start_section =
       List.find_opt(
         (sec: Grain_utils.Wasm_utils.wasm_bin_section) =>
