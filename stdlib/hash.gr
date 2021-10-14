@@ -218,8 +218,7 @@ let rec hashOne = (val, depth) => {
  */
 
 /**
- * Generic hashing.
- * Takes any value and produces an integer. If `a == b` then `Hash.hash(a) == Hash.hash(b)`.
+ * A generic hash function that turns any value into an integer. If `a == b` then `Hash.hash(a) == Hash.hash(b)`.
  *
  * @param a: The value to hash
  * @returns The generated hash
