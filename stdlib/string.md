@@ -416,7 +416,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bytes`|The string encoded into bytes|
+|`Bytes`|The byte representation of the string in the given encoding|
 
 ### String.**encodeWithBom**
 
@@ -437,7 +437,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bytes`|The string encoded into bytes|
+|`Bytes`|The byte representation of the string in the given encoding|
 
 ### String.**decodeRange**
 

@@ -1134,7 +1134,7 @@ let rec encodeHelp = (string: String, encoding: Encoding, includeBom: Bool) => {
  * 
  * @param string: The input string
  * @param encoding: The encoding to use
- * @returns The string encoded into bytes
+ * @returns The byte representation of the string in the given encoding
  */
 export let encode = (string: String, encoding: Encoding) => {
   encodeHelp(string, encoding, false)
@@ -1145,7 +1145,7 @@ export let encode = (string: String, encoding: Encoding) => {
  * 
  * @param string: The input string
  * @param encoding: The encoding to use
- * @returns The string encoded into bytes
+ * @returns The byte representation of the string in the given encoding
  */
 export let encodeWithBom = (string: String, encoding: Encoding) => {
   encodeHelp(string, encoding, true)
