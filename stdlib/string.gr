@@ -1561,8 +1561,7 @@ let rec decodeHelp = (bytes: Bytes, encoding: Encoding, skipBom: Bool) => {
 }
 
 /**
- * Decodes the given byte sequence into a string using the given encoding scheme,
- * skipping the byte-order marker, if it's present.
+ * Decodes the given byte sequence into a string using the given encoding scheme, excluding any byte-order marker.
  * 
  * @param bytes: The input bytes
  * @param encoding: The encoding to use
