@@ -1533,8 +1533,7 @@ export let decodeRange = (bytes: Bytes, encoding: Encoding, start: Number, size:
 }
 
 /**
- * Decodes the given byte sequence into a string using the given encoding scheme, including
- * the byte-order marker, if it's present.
+ * Decodes the given byte sequence of the specified range into a string, including any byte-order marker, using encoding scheme provided.
  * 
  * @param bytes: The input bytes
  * @param encoding: The encoding to use
