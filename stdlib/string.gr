@@ -152,11 +152,11 @@ export let rec indexOf = (search: String, string: String) => {
 }
 
 /**
- * Find the Char at a specific index.
+ * Find the character at a specific index.
  * 
  * @param idx: The index to check
  * @param string: The string to search
- * @returns The char at the provided index
+ * @returns The character at the provided index
  * 
  * @example String.charAt(5, "Hello world") == ' '
  */
