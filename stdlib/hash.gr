@@ -1,7 +1,7 @@
 /* grainc-flags --no-gc */
 
 /**
- * @module Hash: Utilities for hashing Grain types.
+ * @module Hash: Utilities for hashing any values.
  * @example import Hash from "hash"
  */
 
