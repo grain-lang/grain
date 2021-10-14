@@ -1586,7 +1586,7 @@ export let decodeKeepBom = (bytes: Bytes, encoding: Encoding) => {
 
 /**
  * Iterates over Unicode code points in a string.
- * 
+ *
  * @param fn: The iterator function
  * @param str: The string to iterate
  * 
