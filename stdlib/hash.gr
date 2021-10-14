@@ -220,7 +220,7 @@ let rec hashOne = (val, depth) => {
 /**
  * A generic hash function that turns any value into an integer. If `a == b` then `Hash.hash(a) == Hash.hash(b)`.
  *
- * @param a: The value to hash
+ * @param anything: The value to hash
  * @returns The generated hash
  */
 export let hash = (a) => {
