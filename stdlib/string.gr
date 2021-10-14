@@ -1573,8 +1573,7 @@ export let decode = (bytes: Bytes, encoding: Encoding) => {
 }
 
 /**
- * Decodes the given byte sequence into a string using the given encoding scheme,
- * including the byte-order marker, if it's present.
+ * Decodes the given byte sequence into a string using the given encoding scheme, including any byte-order marker.
  * 
  * @param bytes: The input bytes
  * @param encoding: The encoding to use
