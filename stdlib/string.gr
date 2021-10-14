@@ -161,7 +161,7 @@ export let rec indexOf = (search: String, string: String) => {
  * @example String.charAt(5, "Hello world") == ' '
  */
 @disableGC
-export let rec charAt = (idx: Number, string: String) => {
+export let rec charAt = (idx, string: String) => {
   Memory.incRef(WasmI32.fromGrain((<=)))
   if (wasmSafeLength(string) <= idx || {Memory.incRef(WasmI32.fromGrain((<))); idx < 0}) {
     Memory.incRef(WasmI32.fromGrain((++)))
@@ -536,14 +536,14 @@ export let rec slice = (start: Number, to: Number, string: String) => {
 /**
  * Check if a string contains a substring.
  * 
- * @param subString: The substring to check
+ * @param search: The substring to check
  * @param string: The input string
- * @returns A boolean indicating if the string contains the substring
+ * @returns `true` if the input string contains the search value or `false` otherwise
  * 
  * @example String.contains("world", "Hello world") == true
  */
 @disableGC
-export let rec contains = (subString: String, string: String) => {
+export let rec contains = (search: String, string: String) => {
   // "Not So Naive" string search algorithm
   // searching phase in O(nm) time complexity
   // slightly (by coefficient) sub-linear in the average case
@@ -557,17 +557,17 @@ export let rec contains = (subString: String, string: String) => {
   let (<=) = WasmI32.leU
   let (>) = WasmI32.gtU
   let (>>) = WasmI32.shrS
-  let pOrig = subString
+  let pOrig = search
   let sOrig = string
 
   let n = WasmI32.fromGrain(wasmSafeByteLength(string)) >> 1n
-  let m = WasmI32.fromGrain(wasmSafeByteLength(subString)) >> 1n
+  let m = WasmI32.fromGrain(wasmSafeByteLength(search)) >> 1n
 
   let mut string = WasmI32.fromGrain(string)
-  let mut subString = WasmI32.fromGrain(subString)
+  let mut search = WasmI32.fromGrain(search)
 
   string += 8n
-  subString += 8n
+  search += 8n
 
   let mut j = 0n, k = 0n, ell = 0n
 
@@ -579,7 +579,7 @@ export let rec contains = (subString: String, string: String) => {
     if (m == 0n) {
       true
     } else {
-      let pat = WasmI32.load8U(subString, 0n)
+      let pat = WasmI32.load8U(search, 0n)
       let mut result = false
       while (j < n) {
         if (pat == WasmI32.load8U(string + j, 0n)) {
@@ -593,7 +593,7 @@ export let rec contains = (subString: String, string: String) => {
     }
   } else {
     // NSM preprocessing
-    if (WasmI32.load8U(subString, 0n) == WasmI32.load8U(subString, 1n)) {
+    if (WasmI32.load8U(search, 0n) == WasmI32.load8U(search, 1n)) {
       k = 2n
       ell = 1n
     } else {
@@ -604,10 +604,10 @@ export let rec contains = (subString: String, string: String) => {
     let mut result = false
     // NSM searching
     while (j <= n - m) {
-      if (WasmI32.load8U(subString, 1n) != WasmI32.load8U(string + j, 1n)) {
+      if (WasmI32.load8U(search, 1n) != WasmI32.load8U(string + j, 1n)) {
         j += k
       } else {
-        if (Memory.compare(subString + 2n, string + j + 2n, m - 2n) == 0n && WasmI32.load8U(subString, 0n) == WasmI32.load8U(string + j, 0n)) {
+        if (Memory.compare(search + 2n, string + j + 2n, m - 2n) == 0n && WasmI32.load8U(search, 0n) == WasmI32.load8U(string + j, 0n)) {
           result = true
           break
         }
@@ -627,7 +627,7 @@ export let rec contains = (subString: String, string: String) => {
  * 
  * @param subString: The substring to check
  * @param string: The input string
- * @returns A boolean indicating if the string starts with the substring
+ * @returns `true` if the input string starts with the search value 
  * 
  * @example String.startsWith("Hello", "Hello world") == true
  */
@@ -665,7 +665,7 @@ export let rec startsWith = (subString: String, string: String) => {
  * 
  * @param subString: The substring to check
  * @param string: The input string
- * @returns A boolean indicating if the ends starts with the substring
+ * @returns `true` if the input string ends with the search value 
  * 
  * @example String.endsWith("world", "Hello world") == true
  */
@@ -872,16 +872,6 @@ let initPtr = () => {
 }
 initPtr();
 
-/**
- * Encodes the given string using the given encoding scheme at a supplied offset in a Bytes instance.
- * 
- * @param string: The input string
- * @param encoding: The encoding to use
- * @param includeBom: Whether to include the byte-order marker in the encoded output
- * @param dest: The bytes object to write the encoded output into
- * @param destPos: The location in the byte array to write the output
- * @returns The encoded string
- */
 @disableGC
 let rec encodeAtHelp = (string: String, encoding: Encoding, includeBom: Bool, dest: Bytes, destPos: Number) => {
   let (>>>) = WasmI32.shrU
@@ -1081,7 +1071,6 @@ let rec encodeAtHelp = (string: String, encoding: Encoding, includeBom: Bool, de
  * 
  * @param string: The input string
  * @param encoding: The encoding to use
- * @param includeBom: Whether to include the byte-order marker in the encoded output
  * @param dest: The bytes object to write the encoded output into
  * @param destPos: The location in the byte array to write the output
  * @returns The encoded string
@@ -1095,7 +1084,6 @@ export let encodeAt = (string, encoding, dest, destPos) => {
  * 
  * @param string: The input string
  * @param encoding: The encoding to use
- * @param includeBom: Whether to include the byte-order marker in the encoded output
  * @param dest: The bytes object to write the encoded output into
  * @param destPos: The location in the byte array to write the output
  * @returns The encoded string
@@ -1104,14 +1092,6 @@ export let encodeAtWithBom = (string, encoding, dest, destPos) => {
   encodeAtHelp(string, encoding, true, dest, destPos)
 }
 
-/**
- * Encodes the given string using the given encoding scheme.
- * 
- * @param string: The input string
- * @param encoding: The encoding to use
- * @param includeBom: Whether to include the byte-order marker in the encoded output
- * @returns The string encoded into bytes
- */
 @disableGC
 let rec encodeHelp = (string: String, encoding: Encoding, includeBom: Bool) => {
   Memory.incRef(WasmI32.fromGrain((+)))

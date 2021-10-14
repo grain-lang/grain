@@ -106,7 +106,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Option<Number>`|`Some(Index)` containing the starting index of the substring if found (for Option) or `None` otherwise|
+|`Option<Number>`|`Some(index)` containing the starting index of the substring if found or `None` otherwise|
 
 Examples:
 
@@ -120,7 +120,7 @@ String.indexOf("world", "Hello world") == Some(6)
 charAt : (Number, String) -> Char
 ```
 
-Find the Char at a specific index.
+Find the character at a specific index.
 
 Parameters:
 
@@ -133,7 +133,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Char`|The char at the provided index|
+|`Char`|The character at the provided index|
 
 Examples:
 
@@ -159,7 +159,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Array<Char>`|The string split into an array of characters|
+|`Array<Char>`|An array containing all characters in the string|
 
 Examples:
 
@@ -179,7 +179,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`arr`|`Array<Char>`|The array to implode|
+|`arr`|`Array<Char>`|The array to combine|
 
 Returns:
 
@@ -260,14 +260,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`subString`|`String`|The substring to check|
+|`search`|`String`|The substring to check|
 |`string`|`String`|The input string|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|A boolean indicating if the string contains the substring|
+|`Bool`|`true` if the input string contains the search value or `false` otherwise|
 
 Examples:
 
@@ -294,7 +294,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|A boolean indicating if the string starts with the substring|
+|`Bool`|`true` if the input string starts with the search value|
 
 Examples:
 
@@ -321,7 +321,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|A boolean indicating if the ends starts with the substring|
+|`Bool`|`true` if the input string ends with the search value|
 
 Examples:
 
@@ -357,9 +357,8 @@ Parameters:
 |-----|----|-----------|
 |`string`|`String`|The input string|
 |`encoding`|`Encoding`|The encoding to use|
-|`includeBom`|`Bytes`|Whether to include the byte-order marker in the encoded output|
-|`dest`|`Number`|The bytes object to write the encoded output into|
-|`destPos`||The location in the byte array to write the output|
+|`dest`|`Bytes`|The bytes object to write the encoded output into|
+|`destPos`|`Number`|The location in the byte array to write the output|
 
 Returns:
 
@@ -381,9 +380,8 @@ Parameters:
 |-----|----|-----------|
 |`string`|`String`|The input string|
 |`encoding`|`Encoding`|The encoding to use|
-|`includeBom`|`Bytes`|Whether to include the byte-order marker in the encoded output|
-|`dest`|`Number`|The bytes object to write the encoded output into|
-|`destPos`||The location in the byte array to write the output|
+|`dest`|`Bytes`|The bytes object to write the encoded output into|
+|`destPos`|`Number`|The location in the byte array to write the output|
 
 Returns:
 
@@ -544,7 +542,7 @@ Parameters:
 Examples:
 
 ```grain
-String.forEachCodePoint(i => print(i), "Hello world")
+String.forEachCodePoint(print, "Hello world")
 ```
 
 ### String.**forEachCodePointi**
