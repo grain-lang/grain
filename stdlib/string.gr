@@ -1077,7 +1077,7 @@ let rec encodeAtHelp = (string: String, encoding: Encoding, includeBom: Bool, de
 }
 
 /**
- * Encodes the given string using the given encoding scheme at a supplied offset in a Bytes instance, including byte-order marker.
+ * Encodes the given string using the given encoding scheme at a supplied offset in a Bytes instance, including a byte-order marker.
  * 
  * @param string: The input string
  * @param encoding: The encoding to use

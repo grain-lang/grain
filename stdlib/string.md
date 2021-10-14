@@ -357,7 +357,7 @@ String.endsWith("world", "Hello world") == true
 encodeAt : (String, Encoding, Bytes, Number) -> Bytes
 ```
 
-Encodes the given string using the given encoding scheme at a supplied offset in a Bytes instance, including byte-order marker.
+Encodes the given string using the given encoding scheme at a supplied offset in a Bytes instance, including a byte-order marker.
 
 Parameters:
 
