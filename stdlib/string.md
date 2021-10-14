@@ -309,7 +309,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`subString`|`String`|The substring to check|
+|`search`|`String`|The value to search for at the start of the string|
 |`string`|`String`|The input string|
 
 Returns:
@@ -336,7 +336,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`subString`|`String`|The substring to check|
+|`search`|`String`|The value to search for at the end of the string|
 |`string`|`String`|The input string|
 
 Returns:

@@ -645,34 +645,34 @@ export let rec contains = (search: String, string: String) => {
 /**
  * Check if a string begins with another string.
  * 
- * @param subString: The substring to check
+ * @param search: The value to search for at the start of the string
  * @param string: The input string
  * @returns `true` if the input string starts with the search value 
  * 
  * @example String.startsWith("Hello", "Hello world") == true
  */
 @disableGC
-export let rec startsWith = (subString: String, string: String) => {
+export let rec startsWith = (search: String, string: String) => {
   let (+) = WasmI32.add
   let (>) = WasmI32.gtU
   let (==) = WasmI32.eq
-  let pOrig = subString
+  let pOrig = search
   let sOrig = string
 
-  let mut subString = WasmI32.fromGrain(subString)
+  let mut search = WasmI32.fromGrain(search)
   let mut string = WasmI32.fromGrain(string)
 
   let n = WasmI32.load(string, 4n)
-  let m = WasmI32.load(subString, 4n)
+  let m = WasmI32.load(search, 4n)
 
   string += 8n
-  subString += 8n
+  search += 8n
 
   // Bail if pattern length is longer than input length
   let ret = if (m > n) {
     false
   } else {
-    Memory.compare(subString, string, m) == 0n
+    Memory.compare(search, string, m) == 0n
   }
   Memory.decRef(WasmI32.fromGrain(pOrig))
   Memory.decRef(WasmI32.fromGrain(sOrig))
@@ -683,35 +683,35 @@ export let rec startsWith = (subString: String, string: String) => {
 /**
  * Check if a string ends with another string.
  * 
- * @param subString: The substring to check
+ * @param search: The value to search for at the end of the string
  * @param string: The input string
  * @returns `true` if the input string ends with the search value 
  * 
  * @example String.endsWith("world", "Hello world") == true
  */
 @disableGC
-export let rec endsWith = (subString: String, string: String) => {
+export let rec endsWith = (search: String, string: String) => {
   let (+) = WasmI32.add
   let (-) = WasmI32.sub
   let (>) = WasmI32.gtU
   let (==) = WasmI32.eq
-  let pOrig = subString
+  let pOrig = search
   let sOrig = string
 
-  let mut subString = WasmI32.fromGrain(subString)
+  let mut search = WasmI32.fromGrain(search)
   let mut string = WasmI32.fromGrain(string)
 
   let n = WasmI32.load(string, 4n)
-  let m = WasmI32.load(subString, 4n)
+  let m = WasmI32.load(search, 4n)
 
   string += 8n
-  subString += 8n
+  search += 8n
 
   // Bail if pattern length is longer than input length
   let ret = if (m > n) {
     false
   } else {
-    Memory.compare(subString, string + n - m, m) == 0n
+    Memory.compare(search, string + n - m, m) == 0n
   }
   Memory.decRef(WasmI32.fromGrain(pOrig))
   Memory.decRef(WasmI32.fromGrain(sOrig))
