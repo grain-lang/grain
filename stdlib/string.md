@@ -169,7 +169,7 @@ String.charAt(5, "Hello world") == ' '
 explode : String -> Array<Char>
 ```
 
-Split a string into its Unicode characters.
+Split a string into its UTF-8 characters.
 
 Parameters:
 
@@ -403,8 +403,7 @@ Returns:
 encode : (String, Encoding) -> Bytes
 ```
 
-Encodes the given string using the given encoding scheme. including a byte-order marker.
-will not be included in the output.
+Encodes the given string using the given encoding scheme, skipping the byte-order marker, if it's present.
 
 Parameters:
 

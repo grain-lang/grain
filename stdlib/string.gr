@@ -1130,8 +1130,7 @@ let rec encodeHelp = (string: String, encoding: Encoding, includeBom: Bool) => {
 }
 
 /**
- * Encodes the given string using the given encoding scheme. including a byte-order marker.
- * will not be included in the output.
+ * Encodes the given string using the given encoding scheme, skipping the byte-order marker, if it's present.
  * 
  * @param string: The input string
  * @param encoding: The encoding to use
