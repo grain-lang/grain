@@ -647,7 +647,7 @@ export let rec contains = (search: String, string: String) => {
  * 
  * @param search: The value to search for at the start of the string
  * @param string: The input string
- * @returns `true` if the input string starts with the search value 
+ * @returns `true` if the input string starts with the search value or `false` otherwise
  * 
  * @example String.startsWith("Hello", "Hello world") == true
  */
