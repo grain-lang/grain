@@ -8,6 +8,28 @@ Utilities for working with strings.
 import String from "string"
 ```
 
+## Types
+
+Type declarations included in the String module.
+
+### String.**Encoding**
+
+```grain
+enum Encoding {
+  UTF8,
+  UTF16_BE,
+  UTF16_LE,
+  UTF32_BE,
+  UTF32_LE,
+}
+```
+
+Byte Encodings
+
+## Values
+
+Functions for working with the String data type.
+
 ### String.**concat**
 
 ```grain
@@ -328,20 +350,6 @@ Examples:
 ```grain
 String.endsWith("world", "Hello world") == true
 ```
-
-### String.**Encoding**
-
-```grain
-enum Encoding {
-  UTF8,
-  UTF16_BE,
-  UTF16_LE,
-  UTF32_BE,
-  UTF32_LE,
-}
-```
-
-Byte Encodings
 
 ### String.**encodeAt**
 

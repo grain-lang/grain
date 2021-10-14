@@ -8,6 +8,26 @@ import Exception from "runtime/exception"
 import { tagSimpleNumber, allocateArray, allocateChar, allocateString, allocateBytes } from "runtime/dataStructures"
 
 /**
+ * @section Types: Type declarations included in the String module.
+ */
+
+/**
+ * Byte Encodings
+ */
+export enum Encoding {
+  UTF8,
+  UTF16_BE,
+  UTF16_LE,
+  UTF32_BE,
+  UTF32_LE,
+}
+
+/**
+ * @section Values: Functions for working with the String data type.
+ */
+
+
+/**
  * Concatenate two strings.
  * 
  * @param str1: The beginning string
@@ -697,16 +717,6 @@ export let rec endsWith = (subString: String, string: String) => {
   Memory.decRef(WasmI32.fromGrain(sOrig))
   Memory.decRef(WasmI32.fromGrain(endsWith))
   ret
-}
-/**
- * Byte Encodings
- */
-export enum Encoding {
-  UTF8,
-  UTF16_BE,
-  UTF16_LE,
-  UTF32_BE,
-  UTF32_LE,
 }
 
 // String->Byte encoding and helper functions:
