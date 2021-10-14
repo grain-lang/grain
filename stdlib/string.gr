@@ -685,7 +685,7 @@ export let rec startsWith = (search: String, string: String) => {
  * 
  * @param search: The value to search for at the end of the string
  * @param string: The input string
- * @returns `true` if the input string ends with the search value 
+ * @returns `true` if the input string ends with the search value or `false` otherwise
  * 
  * @example String.endsWith("world", "Hello world") == true
  */
