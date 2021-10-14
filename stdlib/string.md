@@ -221,13 +221,13 @@ String.implode([> 'H', 'e', 'l', 'l', 'o' ]) == "Hello"
 split : (String, String) -> Array<String>
 ```
 
-Split a string by the given sequence.
+Split a string by the given separator.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`sequence`|`String`|The sequence to split on|
+|`separator`|`String`|The separator to split on|
 |`string`|`String`|The string to split|
 
 Returns:

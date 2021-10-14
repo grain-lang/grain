@@ -360,16 +360,16 @@ export let rec implode = (arr: Array<Char>) => {
 }
 
 /**
- * Split a string by the given sequence.
+ * Split a string by the given separator.
  * 
- * @param sequence: The sequence to split on
+ * @param separator: The separator to split on
  * @param string: The string to split
  * @returns An array of substrings from the initial string
  * 
  * @example String.split(" ", "Hello world") == [> "Hello", "world" ]
  */
 @disableGC
-export let rec split = (sequence: String, string: String) => {
+export let rec split = (separator: String, string: String) => {
   let (+) = WasmI32.add
   let (-) = WasmI32.sub
   let (==) = WasmI32.eq
@@ -380,7 +380,7 @@ export let rec split = (sequence: String, string: String) => {
   let (&) = WasmI32.and
 
   let size = WasmI32.fromGrain(wasmSafeByteLength(string)) >> 1n
-  let psize = WasmI32.fromGrain(wasmSafeByteLength(sequence)) >> 1n
+  let psize = WasmI32.fromGrain(wasmSafeByteLength(separator)) >> 1n
 
   let ret = if (psize == 0n) {
     WasmI32.toGrain(explodeHelp(string, false)): Array<String>
@@ -391,10 +391,10 @@ export let rec split = (sequence: String, string: String) => {
     WasmI32.toGrain(ptr): Array<String>
   } else {
     let string = WasmI32.fromGrain(string)
-    let sequence = WasmI32.fromGrain(sequence)
+    let separator = WasmI32.fromGrain(separator)
 
     let mut ptr = string + 8n
-    let mut pptr = sequence + 8n
+    let mut pptr = separator + 8n
     let end = ptr + size - psize + 1n
 
     let mut numStrings = 1n
@@ -451,7 +451,7 @@ export let rec split = (sequence: String, string: String) => {
 
     WasmI32.toGrain(arr): Array<String>
   }
-  Memory.decRef(WasmI32.fromGrain(sequence))
+  Memory.decRef(WasmI32.fromGrain(separator))
   Memory.decRef(WasmI32.fromGrain(string))
   Memory.decRef(WasmI32.fromGrain(split))
   ret
