@@ -1646,7 +1646,7 @@ export let rec forEachCodePoint = (fn: (Number) -> Void, str: String) => {
  * Iterates over Unicode code points in a string. This is the same as
  * `forEachCodePoint`, but provides the code point's index in the string
  * as the second argument to the iterator function.
- * 
+ *
  * @param fn: The iterator function
  * @param str: The string to iterate
  * 
