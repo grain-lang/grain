@@ -12,7 +12,7 @@ import { tagSimpleNumber, allocateArray, allocateChar, allocateString, allocateB
  */
 
 /**
- * Byte Encodings
+ * Byte encodings
  */
 export enum Encoding {
   UTF8,
@@ -172,21 +172,21 @@ export let rec indexOf = (search: String, string: String) => {
 }
 
 /**
- * Find the character at a specific index.
+ * Get the character at the position in the input string.
  * 
- * @param idx: The index to check
+ * @param position: The position to check
  * @param string: The string to search
- * @returns The character at the provided index
+ * @returns The character at the provided position
  * 
  * @example String.charAt(5, "Hello world") == ' '
  */
 @disableGC
-export let rec charAt = (idx, string: String) => {
+export let rec charAt = (position, string: String) => {
   Memory.incRef(WasmI32.fromGrain((<=)))
-  if (wasmSafeLength(string) <= idx || {Memory.incRef(WasmI32.fromGrain((<))); idx < 0}) {
+  if (wasmSafeLength(string) <= position || {Memory.incRef(WasmI32.fromGrain((<))); position < 0}) {
     Memory.incRef(WasmI32.fromGrain((++)))
     Memory.incRef(WasmI32.fromGrain(toString))
-    fail ("Invalid offset: " ++ toString(idx))
+    fail ("Invalid offset: " ++ toString(position))
   }
   // Implementation is similar to explodeHelp, but doesn't perform unneeded memory allocations
   let (>>>) = WasmI32.shrU
@@ -196,7 +196,7 @@ export let rec charAt = (idx, string: String) => {
   let (==) = WasmI32.eq
   let size = WasmI32.fromGrain(wasmSafeByteLength(string)) >>> 1n
   let len = WasmI32.fromGrain(wasmSafeLength(string)) >>> 1n
-  let idx = WasmI32.fromGrain(idx) >>> 1n
+  let position = WasmI32.fromGrain(position) >>> 1n
   let string = WasmI32.fromGrain(string)
   let mut ptr = string + 8n;
   let end = ptr + size;
@@ -213,7 +213,7 @@ export let rec charAt = (idx, string: String) => {
     } else {
       2n
     }
-    if (counter == idx) {
+    if (counter == position) {
       let c = allocateChar()
       Memory.copy(c + 4n, ptr, n)
       result = c
@@ -1392,16 +1392,6 @@ let decodedLength = (bytes: Bytes, encoding: Encoding, start: WasmI32, size: Was
   }
 }
 
-/**
- * Decodes the given byte sequence into a string using the given encoding scheme.
- * 
- * @param bytes: The input bytes
- * @param encoding: The encoding to use
- * @param skipBom: Whether to include the byte-order marker (if present) in the decoded output
- * @param start: The byte offset to begin decoding from
- * @param size: The maximum number of bytes to decode
- * @returns The decoded string
- */
 @disableGC
 let rec decodeRangeHelp = (bytes: Bytes, encoding: Encoding, skipBom: Bool, start: Number, size: Number) => {
   let (+) = WasmI32.add

@@ -24,7 +24,7 @@ enum Encoding {
 }
 ```
 
-Byte Encodings
+Byte encodings
 
 ## Values
 
@@ -142,20 +142,20 @@ String.indexOf("world", "Hello world") == Some(6)
 charAt : (Number, String) -> Char
 ```
 
-Find the character at a specific index.
+Get the character at the position in the input string.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`idx`|`Number`|The index to check|
+|`position`|`Number`|The position to check|
 |`string`|`String`|The string to search|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Char`|The character at the provided index|
+|`Char`|The character at the provided position|
 
 Examples:
 
@@ -316,7 +316,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if the input string starts with the search value|
+|`Bool`|`true` if the input string starts with the search value or `false` otherwise|
 
 Examples:
 
@@ -343,7 +343,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if the input string ends with the search value|
+|`Bool`|`true` if the input string ends with the search value or `false` otherwise|
 
 Examples:
 
@@ -424,7 +424,7 @@ Returns:
 encodeWithBom : (String, Encoding) -> Bytes
 ```
 
-Encodes the given string using the given encoding scheme, including a byte-order marker.
+Encodes the given string using the given encoding scheme, including any byte-order marker.
 
 Parameters:
 
@@ -445,8 +445,7 @@ Returns:
 decodeRange : (Bytes, Encoding, Number, Number) -> String
 ```
 
-Decodes the given byte sequence into a string using the given encoding scheme, skipping
-the byte-order marker, if it's present.
+Decodes the given byte sequence of the specified range into a string, excluding any byte-order marker, using encoding scheme provided.
 
 Parameters:
 
@@ -469,8 +468,7 @@ Returns:
 decodeRangeKeepBom : (Bytes, Encoding, Number, Number) -> String
 ```
 
-Decodes the given byte sequence into a string using the given encoding scheme, including
-the byte-order marker, if it's present.
+Decodes the given byte sequence of the specified range into a string, including any byte-order marker, using encoding scheme provided.
 
 Parameters:
 
@@ -493,8 +491,7 @@ Returns:
 decode : (Bytes, Encoding) -> String
 ```
 
-Decodes the given byte sequence into a string using the given encoding scheme,
-skipping the byte-order marker, if it's present.
+Decodes the given byte sequence into a string using the given encoding scheme, excluding any byte-order marker.
 
 Parameters:
 
@@ -515,8 +512,7 @@ Returns:
 decodeKeepBom : (Bytes, Encoding) -> String
 ```
 
-Decodes the given byte sequence into a string using the given encoding scheme,
-including the byte-order marker, if it's present.
+Decodes the given byte sequence into a string using the given encoding scheme, including any byte-order marker.
 
 Parameters:
 
