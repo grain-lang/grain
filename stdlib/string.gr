@@ -276,7 +276,7 @@ export let explode = (string) => {
 /**
  * Create a string from an array of characters.
  * 
- * @param arr: The array to implode
+ * @param arr: The array to combine
  * @returns A string representation of the array of characters
  * 
  * @example String.implode([> 'H', 'e', 'l', 'l', 'o' ]) == "Hello"
