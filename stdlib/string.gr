@@ -264,7 +264,7 @@ let explodeHelp = (s: String, chars) => {
  * Split a string into its Unicode characters.
  * 
  * @param string: The string to split
- * @returns The string split into an array of characters
+ * @returns An array containing all characters in the string
  * 
  * @example String.explode("Hello") == [> 'H', 'e', 'l', 'l', 'o' ]
  */
