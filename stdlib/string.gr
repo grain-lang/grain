@@ -1609,7 +1609,7 @@ export let decodeKeepBom = (bytes: Bytes, encoding: Encoding) => {
  * @param fn: The iterator function
  * @param str: The string to iterate
  * 
- * @example String.forEachCodePoint(i => print(i), "Hello world")
+ * @example String.forEachCodePoint(print, "Hello world")
  */
 @disableGC
 export let rec forEachCodePoint = (fn: (Number) -> Void, str: String) => {
