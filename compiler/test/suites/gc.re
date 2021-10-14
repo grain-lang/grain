@@ -29,7 +29,7 @@ let makeGcProgram = (program, heap_size) => {
 };
 
 let readWholeFile = filename => {
-  let ch = open_in(filename);
+  let ch = open_in_bin(filename);
   let s = really_input_string(ch, in_channel_length(ch));
   close_in(ch);
   s;
