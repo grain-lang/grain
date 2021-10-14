@@ -87,7 +87,7 @@ let wasmSafeByteLength = (string: String) => {
  * 
  * @param search: The substring to find
  * @param string: The string to inspect
- * @returns `Some(Index)` containing the starting index of the substring if found (for Option) or `None` otherwise
+ * @returns `Some(index)` containing the starting index of the substring if found or `None` otherwise
  * 
  * @example String.indexOf("world", "Hello world") == Some(6)
  */
