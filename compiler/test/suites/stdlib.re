@@ -68,7 +68,6 @@ describe("stdlib", ({test}) => {
     "record Rec {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: \"boo\", baz: true} == {foo: 4, bar: \"boo\", baz: false}",
   );
   assertFileRun("recursive_equal_box", "recursive-equal-box", "OK\n");
-  assertFileRun("recursive_equal_mut", "recursive-equal-mut", "OK\n");
   assertCompileError(
     "stdlib_length_err",
     "import * from \"list\"; length(true)",

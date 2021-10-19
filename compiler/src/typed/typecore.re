@@ -1935,9 +1935,11 @@ and type_let =
       pat_list
       (List.map2 (fun (attrs, _) e -> attrs, e) spatl exp_list);*/
   end_def();
+  let mutable_let = mut_flag == Mutable;
   List.iter2(
     (pat, exp) =>
-      if (!is_nonexpansive(exp)) {
+      // All mutable bindings should be treated as expansive
+      if (mutable_let || !is_nonexpansive(exp)) {
         iter_pattern(pat => generalize_expansive(env, pat.pat_type), pat);
       },
     pat_list,
