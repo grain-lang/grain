@@ -360,8 +360,6 @@ let rec is_nonexpansive = exp =>
   | TExpIf(c, t, f) => is_nonexpansive(t) && is_nonexpansive(f)
   | TExpWhile(c, b) => is_nonexpansive(b)
   | TExpBlock([_, ..._] as es) => is_nonexpansive(last(es))
-  | TExpApp(e, args) =>
-    is_nonexpansive(e) && List.for_all(is_nonexpansive, args)
   | TExpConstruct(_, _, el) => List.for_all(is_nonexpansive, el)
   | _ => false
   };
