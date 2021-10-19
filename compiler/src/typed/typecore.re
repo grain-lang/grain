@@ -350,7 +350,7 @@ let rec is_nonexpansive = exp =>
   | TExpLambda(_)
   | TExpNull => true
   | TExpTuple(es) => List.for_all(is_nonexpansive, es)
-  | TExpLet(rec_flag, mut_flag, binds) =>
+  | TExpLet(rec_flag, Immutable, binds) =>
     List.for_all(vb => is_nonexpansive(vb.vb_expr), binds)
   | TExpMatch(e, cases, _) =>
     is_nonexpansive(e)
