@@ -40,8 +40,8 @@ primitive unbox : Box<a> -> a = "@unbox"
 
 exception DecRefError
 
-export let decimalCount32 = box((n) => 0n)
-export let utoa32Buffered = box((a, b, c) => void)
+export let decimalCount32 = box((n: WasmI32) => 0n)
+export let utoa32Buffered = box((a: WasmI32, b: WasmI32, c: WasmI32) => void)
 
 let mut _DEBUG = false
 

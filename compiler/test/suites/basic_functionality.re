@@ -152,6 +152,16 @@ describe("basic functionality", ({test}) => {
     "let foo = (if (false) { ignore(5) }); let bar = foo + 5; bar",
     "has type Void but",
   );
+  assertCompileError(
+    "value_restriction",
+    {|let f = () => x => x; let id = f(); let a = id(1); let b = id("a")|},
+    "has type String but",
+  );
+  assertCompileError(
+    "exports_weak_types",
+    {|export let f = box(x => 0)|},
+    "type variables that cannot be generalized",
+  );
   assertSnapshot("int32_1", "42l");
   assertSnapshot("int64_1", "99999999999999999L");
   assertSnapshot("int64_pun_1", "9999999 * 99999999");
