@@ -70,38 +70,42 @@ exception Error(Location.t, error);
 /* Enter all declared types in the environment as abstract types */
 
 let enter_type = (rec_flag, env, sdecl, id) => {
-  let needed =
-    switch (rec_flag) {
-    | Asttypes.Nonrecursive => false
-    /*begin match sdecl.pdata_kind with
-      | PDataVariant scds ->
-          List.iter (fun cd ->
-            if cd.pcd_res <> None then raise (Error(cd.pcd_loc, Nonrec_gadt)))
-            scds
-      | _ -> ()
-      end;
-      Btype.is_row_name (Ident.name id)*/
-    | Asttypes.Recursive => true
-    };
+  // let needed =
+  //   switch (rec_flag) {
+  //   | Asttypes.Nonrecursive => false
+  //   /*begin match sdecl.pdata_kind with
+  //     | PDataVariant scds ->
+  //         List.iter (fun cd ->
+  //           if cd.pcd_res <> None then raise (Error(cd.pcd_loc, Nonrec_gadt)))
+  //           scds
+  //     | _ -> ()
+  //     end;
+  //     Btype.is_row_name (Ident.name id)*/
+  //   | Asttypes.Recursive => true
+  //   };
 
-  if (!needed) {
-    env;
-  } else {
-    let decl = {
-      type_params: List.map(_ => Btype.newgenvar(), sdecl.pdata_params),
-      type_arity: List.length(sdecl.pdata_params),
-      type_kind: TDataAbstract,
-      type_manifest: None,
-      /*begin match sdecl.pdata_manifest with None -> None
-        | Some _ -> Some(Ctype.newvar ()) end;*/
-      type_newtype_level: None,
-      type_loc: sdecl.pdata_loc,
-      type_path: PIdent(id),
-      type_allocation: HeapAllocated,
-    };
-
-    Env.add_type(~check=true, id, decl, env);
+  // if (!needed) {
+  //   prerr_endline("not needed");
+  //   env;
+  // } else {
+  prerr_endline("needed");
+  let decl = {
+    type_params: List.map(_ => Btype.newgenvar(), sdecl.pdata_params),
+    type_arity: List.length(sdecl.pdata_params),
+    type_kind: TDataAbstract,
+    type_manifest:
+      switch (sdecl.pdata_manifest) {
+      | None => None
+      | Some(_) => Some(Ctype.newvar())
+      },
+    type_newtype_level: None,
+    type_loc: sdecl.pdata_loc,
+    type_path: PIdent(id),
+    type_allocation: HeapAllocated,
   };
+
+  Env.add_type(~check=true, id, decl, env);
+  // };
 };
 
 let update_type = (temp_env, env, id, loc) => {
@@ -212,13 +216,18 @@ let transl_declaration = (env, sdecl, id) => {
   Ctype.begin_def();
   let tparams = make_params(env, sdecl.pdata_params);
   let params = List.map(cty => cty.ctyp_type, tparams);
-  /* [constraints]
-        let cstrs = List.map
-       (fun (sty, sty', loc) ->
-         transl_simple_type env false sty,
-         transl_simple_type env false sty', loc)
-       sdecl.ptype_cstrs
-     in*/
+
+  // let cstrs =
+  //   List.map(
+  //     fun (sty, sty') => {
+  //       (
+  //         transl_simple_type(env, false, sty),
+  //         transl_simple_type(env, false, sty'),
+  //         // loc,
+  //       )
+  //     },
+  //     sdecl.pdata_params,
+  //   );
   /*let raw_status = get_unboxed_from_attributes sdecl in
     if raw_status.unboxed && not raw_status.default then begin
       match sdecl.pdata_kind with
@@ -316,7 +325,12 @@ let transl_declaration = (env, sdecl, id) => {
     switch (sdecl.pdata_manifest) {
     | None => (None, None)
     | Some(sty) =>
-      let cty = transl_simple_type(env, true, sty);
+      prerr_endline("here");
+      let fixed = true;
+      // sdecl.pdata_kind == PDataAbstract
+      // && sdecl.pdata_private == Private
+      // && true;
+      let cty = transl_simple_type(env, fixed, sty);
       (Some(cty), Some(cty.ctyp_type));
     };
 
@@ -332,13 +346,20 @@ let transl_declaration = (env, sdecl, id) => {
   };
 
   /* Check constraints */
-  /*List.iter
-    (fun (cty, cty', loc) ->
-      let ty = cty.ctyp_type in
-      let ty' = cty'.ctyp_type in
-      try Ctype.unify env ty ty' with Ctype.Unify tr ->
-        raise(Error(loc, Inconsistent_constraint (env, tr))))
-    cstrs;*/
+  // List.iter(
+  //   ((cty, cty')) => {
+  //     let ty = cty.ctyp_type;
+  //     let ty' = cty'.ctyp_type;
+  //     try(Ctype.unify(env, ty, ty')) {
+  //     | Ctype.Unify(tr) => failwith("FUU")
+  //     // raise(
+  //     //   [@implicit_arity]
+  //     //   Error([@implicit_arity] Inconsistent_constraint(env, tr)),
+  //     // )
+  //     };
+  //   },
+  //   cstrs,
+  // );
   Ctype.end_def();
   /* Add abstract row */
   /*if is_fixed_type sdecl then begin

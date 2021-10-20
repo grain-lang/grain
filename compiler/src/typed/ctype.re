@@ -482,8 +482,10 @@ let is_newtype = (env, p) =>
   | Not_found => false
   };
 
-let rec update_level = (env, level, expand, ty) => {
+let rec update_level = (env, level, ty) => {
+  // let expand = level < get_level(e)
   let ty = repr(ty);
+  // prerr_endline("update_level, expand: " ++ string_of_bool(expand));
   if (ty.level > level) {
     switch (ty.desc) {
     /* | TTyConstr(p, _tl, _abbrev) when level < get_level env p ->
@@ -497,38 +499,43 @@ let rec update_level = (env, level, expand, ty) => {
            if level < get_level env p then raise (Unify [(ty, newvar2 level)]);
            iter_type_expr (update_level env level expand) ty
        end */
-    | TTyConstr(_, [_, ..._], _) when expand =>
+    | TTyConstr(p, _, _) when level < get_level(env, p) =>
       try(
         {
           link_type(ty, forward_try_expand_once^(env, ty));
-          update_level(env, level, expand, ty);
+          update_level(env, level, ty);
         }
       ) {
       | Cannot_expand =>
-        set_level(ty, level);
-        iter_type_expr(update_level(env, level, expand), ty);
+        prerr_endline("Cannot expand");
+        // set_level(ty, level);
+        if (level < get_level(env, p)) {
+          raise(Unify([(ty, newvar2(level))]));
+        };
+        prerr_endline("After the level check");
+        iter_type_expr(update_level(env, level), ty);
       }
     | _ =>
       set_level(ty, level);
       /* XXX what about abbreviations in TTyConstr ? */
-      iter_type_expr(update_level(env, level, expand), ty);
+      iter_type_expr(update_level(env, level), ty);
     };
   };
 };
 
 /* First try without expanding, then expand everything,
-   to avoid combinatorial blow-up */
-let update_level = (env, level, ty) => {
-  let ty = repr(ty);
-  if (ty.level > level) {
-    let snap = snapshot();
-    try(update_level(env, level, false, ty)) {
-    | Unify(_) =>
-      backtrack(snap);
-      update_level(env, level, true, ty);
-    };
-  };
-};
+   //    to avoid combinatorial blow-up */
+// let update_level = (env, level, ty) => {
+//   let ty = repr(ty);
+//   if (ty.level > level) {
+//     let snap = snapshot();
+//     try(update_level(env, level, false, ty)) {
+//     | Unify(_) =>
+//       backtrack(snap);
+//       update_level(env, level, true, ty);
+//     };
+//   };
+// };
 
 /* Generalize and lower levels of contravariant branches simultaneously */
 
