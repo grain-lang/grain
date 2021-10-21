@@ -557,7 +557,7 @@ export let rec slice = (start: Number, to: Number, string: String) => {
  * Check if a string contains a substring.
  * 
  * @param search: The substring to check
- * @param string: The input string
+ * @param string: The string to search
  * @returns `true` if the input string contains the search value or `false` otherwise
  * 
  * @example String.contains("world", "Hello world") == true
