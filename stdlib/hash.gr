@@ -1,7 +1,7 @@
 /* grainc-flags --no-gc */
 
 /**
- * @module Hash: Utilities for hashing any values.
+ * @module Hash: Utilities for hashing any value.
  * @example import Hash from "hash"
  */
 
@@ -218,7 +218,7 @@ let rec hashOne = (val, depth) => {
  */
 
 /**
- * A generic hash function that turns any value into an integer. If `a == b` then `Hash.hash(a) == Hash.hash(b)`.
+ * A generic hash function that produces an integer from any value. If `a == b` then `Hash.hash(a) == Hash.hash(b)`.
  *
  * @param anything: The value to hash
  * @returns A hash for the given value
