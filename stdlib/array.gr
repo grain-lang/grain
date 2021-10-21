@@ -259,7 +259,12 @@ export let cycle = (fn, n, array) => {
  * @history v0.2.0: Argument order changed to data-last
  */
 export let forEach = (fn, array) => {
-  cycle(fn, length(array), array)
+  let length = length(array)
+  let mut count = 0
+  while (count < length) {
+    fn(array[count]): Void
+    count = incr(count)
+  }
 }
 
 /**
