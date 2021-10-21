@@ -1081,8 +1081,8 @@ let rec encodeAtHelp = (string: String, encoding: Encoding, includeBom: Bool, de
  * 
  * @param string: The input string
  * @param encoding: The encoding to use
- * @param dest: The bytes object to write the encoded output into
- * @param destPos: The location in the byte array to write the output
+ * @param dest: The byte sequence that will be copied
+ * @param destPos: The location in the byte sequence to write the output
  * @returns A copy of the input bytes with the encoded string replaced at the given position
  */
 export let encodeAt = (string, encoding, dest, destPos) => {
