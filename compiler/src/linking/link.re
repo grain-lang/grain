@@ -38,6 +38,7 @@ let load_module = fullpath => {
   let length = in_channel_length(ic);
   let module_bytes = Bytes.create(length);
   really_input(ic, module_bytes, 0, length);
+  close_in(ic);
   Module.read(module_bytes);
 };
 
