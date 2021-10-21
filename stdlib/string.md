@@ -115,7 +115,7 @@ String.byteLength("🌾") == 4
 indexOf : (String, String) -> Option<Number>
 ```
 
-Finds the position index of a substring in the input string.
+Finds the position of a substring in the input string.
 
 Parameters:
 
@@ -128,7 +128,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Option<Number>`|`Some(index)` containing the starting index of the substring if found or `None` otherwise|
+|`Option<Number>`|`Some(position)` containing the starting position of the substring if found or `None` otherwise|
 
 Examples:
 
@@ -255,7 +255,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`start`|`Number`|The start position of the substring|
-|`to`|`Number`|The end position of the substring|
+|`to`|`Number`|The end position of the substring, exclusive|
 |`string`|`String`|The input string|
 
 Returns:
@@ -283,7 +283,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`search`|`String`|The substring to check|
-|`string`|`String`|The input string|
+|`string`|`String`|The string to search|
 
 Returns:
 
@@ -309,8 +309,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`search`|`String`|The value to search for at the start of the string|
-|`string`|`String`|The input string|
+|`search`|`String`|The string to compare to the start|
+|`string`|`String`|The string to search|
 
 Returns:
 
@@ -336,8 +336,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`search`|`String`|The value to search for at the end of the string|
-|`string`|`String`|The input string|
+|`search`|`String`|The string to compare to the end|
+|`string`|`String`|The string to search|
 
 Returns:
 
@@ -365,8 +365,8 @@ Parameters:
 |-----|----|-----------|
 |`string`|`String`|The input string|
 |`encoding`|`Encoding`|The encoding to use|
-|`dest`|`Bytes`|The bytes object to write the encoded output into|
-|`destPos`|`Number`|The location in the byte array to write the output|
+|`dest`|`Bytes`|The byte sequence that will be copied|
+|`destPos`|`Number`|The location in the byte sequence to write the output|
 
 Returns:
 
@@ -388,8 +388,8 @@ Parameters:
 |-----|----|-----------|
 |`string`|`String`|The input string|
 |`encoding`|`Encoding`|The encoding to use|
-|`dest`|`Bytes`|The bytes object to write the encoded output into|
-|`destPos`|`Number`|The location in the byte array to write the output|
+|`dest`|`Bytes`|The byte sequence that will be copied|
+|`destPos`|`Number`|The location in the byte sequence to write the output|
 
 Returns:
 

@@ -461,7 +461,7 @@ export let rec split = (separator: String, string: String) => {
  * Get a portion of a string.
  * 
  * @param start: The start position of the substring
- * @param to: The end position of the substring
+ * @param to: The end position of the substring, exclusive
  * @param string: The input string
  * @returns The substring from the initial string
  * 
