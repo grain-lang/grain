@@ -241,7 +241,7 @@ export let copy = (array) => {
  *
  */
 export let cycle = (fn, n, array) => {
-  let length = if (n <= length(array)) n else length(array)
+  let length = length(array)
   let mut iteration = 0
   let mut count = 0
   while (iteration < n) {
