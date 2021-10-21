@@ -233,19 +233,24 @@ export let copy = (array) => {
 }
 
 /**
- * Iterates an array up to the given position, calling an iterator function on each element.
+ * Iterates an array a given number of times, calling an iterator function on each element.
  *
  * @param fn: The iterator function to call with each element
- * @param n: The number of elements to iterate through
+ * @param n: The number of times to iterate the given array
  * @param array: The array to iterate
  *
  */
 export let cycle = (fn, n, array) => {
   let length = if (n <= length(array)) n else length(array)
+  let mut iteration = 0
   let mut count = 0
-  while (count < length) {
-    fn(array[count]): Void
-    count = incr(count)
+  while (iteration < n) {
+    while (count < length) {
+      fn(array[count]): Void
+      count = incr(count)
+    }
+    iteration = incr(iteration)
+    count = 0
   }
 }
 

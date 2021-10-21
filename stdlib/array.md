@@ -269,14 +269,14 @@ Returns:
 cycle : ((a -> Void), Number, Array<a>) -> Void
 ```
 
-Iterates an array up to the given position, calling an iterator function on each element.
+Iterates an array a given number of times, calling an iterator function on each element.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
 |`fn`|`a -> Void`|The iterator function to call with each element|
-|`n`|`Number`|The number of elements to iterate through|
+|`n`|`Number`|The number of times to iterate the given array|
 |`array`|`Array<a>`|The array to iterate|
 
 ### Array.**forEach**

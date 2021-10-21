@@ -69,9 +69,9 @@ let addToSum = (n) => {
   sum = sum + n
 }
 
-Array.cycle(addToSum, 1, arr1)
+Array.cycle(addToSum, 2, arr1)
 
-assert sum == 1
+assert sum == 12
 
 // Array.forEach
 
