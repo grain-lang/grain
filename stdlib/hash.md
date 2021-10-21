@@ -4,6 +4,11 @@ title: Hash
 
 Utilities for hashing any value.
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.1.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 import Hash from "hash"
 ```
@@ -13,6 +18,11 @@ import Hash from "hash"
 Functions for hashing.
 
 ### Hash.**hash**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.1.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 hash : a -> Number

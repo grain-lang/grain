@@ -3,6 +3,8 @@
 /**
  * @module Hash: Utilities for hashing any value.
  * @example import Hash from "hash"
+ *
+ * @since v0.1.0
  */
 
 /**
@@ -222,6 +224,8 @@ let rec hashOne = (val, depth) => {
  *
  * @param anything: The value to hash
  * @returns A hash for the given value
+ *
+ * @since v0.1.0
  */
 export let hash = (anything) => {
   h = seed
