@@ -233,6 +233,23 @@ export let copy = (array) => {
 }
 
 /**
+ * Iterates an array up to the given position, calling an iterator function on each element.
+ *
+ * @param fn: The iterator function to call with each element
+ * @param n: The number of elements to iterate through
+ * @param array: The array to iterate
+ *
+ */
+export let cycle = (fn, n, array) => {
+  let length = if (n <= length(array)) n else length(array)
+  let mut count = 0
+  while (count < n) {
+    fn(array[count]): Void
+    count = incr(count)
+  }
+}
+
+/**
  * Iterates an array, calling an iterator function on each element.
  *
  * @param fn: The iterator function to call with each element
@@ -242,12 +259,7 @@ export let copy = (array) => {
  * @history v0.2.0: Argument order changed to data-last
  */
 export let forEach = (fn, array) => {
-  let length = length(array)
-  let mut count = 0
-  while (count < length) {
-    fn(array[count]): Void
-    count = incr(count)
-  }
+  cycle(fn, length(array), array)
 }
 
 /**

@@ -263,6 +263,22 @@ Returns:
 |----|-----------|
 |`Array<a>`|The new array containing the elements from the input|
 
+### Array.**cycle**
+
+```grain
+cycle : ((a -> Void), Number, Array<a>) -> Void
+```
+
+Iterates an array up to the given position, calling an iterator function on each element.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`fn`|`a -> Void`|The iterator function to call with each element|
+|`n`|`Number`|The number of elements to iterate through|
+|`array`|`Array<a>`|The array to iterate|
+
 ### Array.**forEach**
 
 <details>
