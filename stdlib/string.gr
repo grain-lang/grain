@@ -103,7 +103,7 @@ let wasmSafeByteLength = (string: String) => {
 }
 
 /**
- * Finds the position index of a substring in the input string.
+ * Finds the position of a substring in the input string.
  * 
  * @param search: The substring to find
  * @param string: The string to inspect
