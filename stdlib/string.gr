@@ -645,8 +645,8 @@ export let rec contains = (search: String, string: String) => {
 /**
  * Check if a string begins with another string.
  * 
- * @param search: The value to search for at the start of the string
- * @param string: The input string
+ * @param search: The string to compare to the start
+ * @param string: The string to search
  * @returns `true` if the input string starts with the search value or `false` otherwise
  * 
  * @example String.startsWith("Hello", "Hello world") == true
