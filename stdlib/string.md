@@ -115,7 +115,7 @@ String.byteLength("🌾") == 4
 indexOf : (String, String) -> Option<Number>
 ```
 
-Finds the start index of a substring in the input string.
+Finds the position index of a substring in the input string.
 
 Parameters:
 
@@ -169,7 +169,7 @@ String.charAt(5, "Hello world") == ' '
 explode : String -> Array<Char>
 ```
 
-Split a string into its UTF-8 characters.
+Split a string into its Unicode characters.
 
 Parameters:
 
@@ -254,8 +254,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`start`|`Number`|The start index of the substring|
-|`to`|`Number`|The end index of the substring|
+|`start`|`Number`|The start position of the substring|
+|`to`|`Number`|The end position of the substring|
 |`string`|`String`|The input string|
 
 Returns:
@@ -357,7 +357,7 @@ String.endsWith("world", "Hello world") == true
 encodeAt : (String, Encoding, Bytes, Number) -> Bytes
 ```
 
-Encodes the given string using the given encoding scheme at a supplied offset in a Bytes instance, including a byte-order marker.
+Encodes the given string into a byte sequence at the supplied position, excluding any byte-order marker, using the encoding scheme provided.
 
 Parameters:
 
@@ -372,7 +372,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bytes`|The encoded string|
+|`Bytes`|A copy of the input bytes with the encoded string replaced at the given position|
 
 ### String.**encodeAtWithBom**
 
@@ -380,7 +380,7 @@ Returns:
 encodeAtWithBom : (String, Encoding, Bytes, Number) -> Bytes
 ```
 
-Encodes the given string using the given encoding scheme at a supplied offset in a Bytes instance, including a byte-order marker.
+Encodes the given string into a byte sequence at the supplied position, including any byte-order marker, using the encoding scheme provided.
 
 Parameters:
 
@@ -395,7 +395,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bytes`|The encoded string|
+|`Bytes`|A copy of the input bytes with the encoded string replaced at the given position|
 
 ### String.**encode**
 
@@ -403,7 +403,7 @@ Returns:
 encode : (String, Encoding) -> Bytes
 ```
 
-Encodes the given string using the given encoding scheme, skipping the byte-order marker, if it's present.
+Encodes the given string using the given encoding scheme, excluding any byte-order marker.
 
 Parameters:
 
