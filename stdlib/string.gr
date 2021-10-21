@@ -683,8 +683,8 @@ export let rec startsWith = (search: String, string: String) => {
 /**
  * Check if a string ends with another string.
  * 
- * @param search: The value to search for at the end of the string
- * @param string: The input string
+ * @param search: The string to compare to the end
+ * @param string: The string to search
  * @returns `true` if the input string ends with the search value or `false` otherwise
  * 
  * @example String.endsWith("world", "Hello world") == true
