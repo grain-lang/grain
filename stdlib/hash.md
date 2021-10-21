@@ -2,7 +2,7 @@
 title: Hash
 ---
 
-Utilities for hashing any values.
+Utilities for hashing any value.
 
 ```grain
 import Hash from "hash"
@@ -18,7 +18,7 @@ Functions for hashing.
 hash : a -> Number
 ```
 
-A generic hash function that turns any value into an integer. If `a == b` then `Hash.hash(a) == Hash.hash(b)`.
+A generic hash function that produces an integer from any value. If `a == b` then `Hash.hash(a) == Hash.hash(b)`.
 
 Parameters:
 
