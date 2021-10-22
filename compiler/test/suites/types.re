@@ -109,15 +109,15 @@ describe("aliased_types", ({test}) => {
     |},
     "Type String is not compatible with type Number",
   );
-  // TODO(#994): Can't import the types from this
-  // assertRun(
-  //   "import_type_alias_1",
-  //   {|
-  //     import * from "aliases"
-  //     let foo = 123 : Foo
-  //   |},
-  //   "123\n",
-  // );
+  assertRun(
+    "import_type_alias_1",
+    {|
+      import * from "aliases"
+      let foo = 123 : Foo
+      print(foo)
+    |},
+    "123\n",
+  );
 });
 
 describe("abstract_types", ({test}) => {
