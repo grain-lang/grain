@@ -1630,7 +1630,7 @@ let trimString = (str: String, end: Bool) => {
     i = charsLength-1
     offset = -1
   }
-  if (isWhiteSpace(charAt(i, str))) {
+  if (charsLength > 0 && isWhiteSpace(charAt(i, str))) {
     if (charsLength < 100) {
       let chars = explode(str)
       for (; i < charsLength && i > -1; i += offset) {
