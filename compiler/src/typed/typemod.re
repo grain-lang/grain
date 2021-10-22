@@ -505,7 +505,13 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
           | Nonexported =>
             TSigType(
               info.data_id,
-              {...info.data_type, type_kind: TDataAbstract},
+              {
+                ...info.data_type,
+                type_kind: TDataAbstract,
+                // Removing the manifest makes this type unable to be
+                // used as the aliased type.
+                type_manifest: None,
+              },
               rs,
             )
           };
