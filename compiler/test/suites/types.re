@@ -195,7 +195,9 @@ describe("abstract_types", ({test}) => {
       type Foo
       3 : Foo
     |},
-    "expected of type
-         Foo",
+    "Syntax error",
+    // TODO: This will be a type error when we support fully abstract types
+    // "expected of type
+    //      Foo",
   );
 });
