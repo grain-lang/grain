@@ -1610,16 +1610,9 @@ export let rec forEachCodePointi = (fn: (Number, Number) -> Void, str: String) =
   void
 }
 let trimString = (str: String, end: Bool) => {
-  let chars = explode(str), charsLength = length(str)
-  let mut i = 0, offset = 1
-  if (end) {
-    i = charsLength-1
-    offset = -1
-  }
-  for (; i < charsLength && i > -1; i += offset) {
-    let currentChar = chars[i];
+  let isWhiteSpace = (currentChar: Char) => {
     // TODO: Use unicode whitespace property and unicode line terminator once github issue #661 is completed
-    if (
+    (
       // Spacing
       currentChar != '\u{0009}'  && // Tab
       currentChar != '\u{000B}'  && // LINE TABULATION
@@ -1630,10 +1623,29 @@ let trimString = (str: String, end: Bool) => {
       // Line Terminators
       currentChar != '\n' && // LF
       currentChar != '\r' // CR
-    ) break
+    )
   }
-  if (end) slice(0, i+1, str)
-  else slice(i, charsLength, str)
+  // Actual Logic
+  let charsLength = length(str)
+  let mut i = 0, offset = 1
+  if (end) {
+    i = charsLength-1
+    offset = -1
+  }
+  if (isWhiteSpace(str.charAt(i))) {
+    if (charsLength < 100) {
+      let chars = explode(str)
+      for (; i < charsLength && i > -1; i += offset) {
+        if (isWhiteSpace(chars[i])) break
+      }
+    } else {
+      for (; i < charsLength && i > -1; i += offset) {
+        if (isWhiteSpace(str.charAt(i))) break
+      }
+    }
+    if (end) slice(0, i+1, str)
+    else slice(i, charsLength, str)
+  } else str
 }
 /**
  * Trims the beginning of a string—removing any leading whitespace characters.
