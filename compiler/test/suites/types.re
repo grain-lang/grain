@@ -113,10 +113,75 @@ describe("aliased_types", ({test}) => {
     "import_type_alias_1",
     {|
       import * from "aliases"
-      let foo = 123 : Foo
+      let foo1 = 123 : Foo
+      let foo2: Foo = 234
+      print(foo1)
+      print(foo2)
+    |},
+    "123\n234\n",
+  );
+  assertRun(
+    "import_type_alias_2",
+    {|
+      import * from "aliases"
+      let foo1 = [234] : (Bar<Foo>)
+      let foo2: Bar<Number> = [123, ...foo1]
+      print(foo2)
+    |},
+    "[123, 234]\n",
+  );
+  assertRun(
+    "import_type_alias_3",
+    {|
+      import * from "aliases"
+      let foo: Baz = baz
+      print(foo: Baz)
+    |},
+    "5\n",
+  );
+  assertRun(
+    "import_type_alias_4",
+    {|
+      import { Foo } from "aliases"
+      let foo: Foo = 5
       print(foo)
     |},
-    "123\n",
+    "5\n",
+  );
+  assertRun(
+    "import_type_alias_5",
+    {|
+      import * from "aliases"
+      let foo: Qux<Number> = qux
+      print(foo: Qux<Foo>)
+    |},
+    "7\n",
+  );
+  assertCompileError(
+    "err_import_type_alias_1",
+    {|
+      import * from "aliases"
+      let bar = 5: Baz
+    |},
+    "expected of type
+         %Aliases.Baz",
+  );
+  assertCompileError(
+    "err_import_type_alias_2",
+    {|
+      import * from "aliases"
+      let bar: Qux<Number> = 5
+    |},
+    "expected of type
+         %Aliases.Qux<Number>",
+  );
+  assertCompileError(
+    "err_import_type_alias_3",
+    {|
+      import { Foo, baz } from "aliases"
+      let foo: Foo = baz
+    |},
+    "expression was expected of type %Aliases.Foo = Number",
   );
 });
 
