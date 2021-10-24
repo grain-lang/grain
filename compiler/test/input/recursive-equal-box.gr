@@ -1,15 +1,5 @@
 export enum Opt<a> { None, Some(a) }
 
-let z = box(None)
-z := Some(z)
-
-let y = box(None)
-
-assert !(z == y)
-
-y := Some(y)
-assert z == y
-
 export enum R { Atom, Recursive(Box<Opt<R>>) }
 
 let t = box(None)

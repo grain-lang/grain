@@ -15,7 +15,9 @@
   (:standard
    (:include ./config/flags.sexp)))
  (libraries cmdliner grain grain_diagnostics grain_utils graindoc.docblock
-   binaryen.native dune-build-info))
+   binaryen.native dune-build-info)
+ (preprocess
+  (pps ppx_deriving_cmdliner)))
 
 (rule
  (target graindoc_js.re)
@@ -34,4 +36,6 @@
  (libraries cmdliner grain grain_diagnostics grain_utils graindoc.docblock
    binaryen.js dune-build-info)
  (js_of_ocaml
-  (flags --no-sourcemap --no-extern-fs --quiet)))
+  (flags --no-sourcemap --no-extern-fs --quiet))
+ (preprocess
+  (pps ppx_deriving_cmdliner)))

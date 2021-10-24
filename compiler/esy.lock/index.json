@@ -1,5 +1,5 @@
 {
-  "checksum": "2086803ae6beb978f889a207fb067125",
+  "checksum": "a726c3ad97a063d1a3b1159d660522a5",
   "root": "@grain/compiler@link-dev:./esy.json",
   "node": {
     "ocaml@4.11.0@d41d8cd9": {
@@ -589,6 +589,39 @@
         "@opam/ppxlib@opam:0.23.0@b29cda02",
         "@opam/ppx_deriving@opam:5.2.1@089e5dd3",
         "@opam/dune@opam:2.9.1@1e504822"
+      ]
+    },
+    "@opam/ppx_deriving_cmdliner@opam:0.6.0@0ca5b723": {
+      "id": "@opam/ppx_deriving_cmdliner@opam:0.6.0@0ca5b723",
+      "name": "@opam/ppx_deriving_cmdliner",
+      "version": "opam:0.6.0",
+      "source": {
+        "type": "install",
+        "source": [
+          "archive:https://opam.ocaml.org/cache/md5/5a/5a1050704c477f0ee46001cc2f4fe697#md5:5a1050704c477f0ee46001cc2f4fe697",
+          "archive:https://github.com/hammerlab/ppx_deriving_cmdliner/archive/refs/tags/v0.6.0.tar.gz#md5:5a1050704c477f0ee46001cc2f4fe697"
+        ],
+        "opam": {
+          "name": "ppx_deriving_cmdliner",
+          "version": "0.6.0",
+          "path": "esy.lock/opam/ppx_deriving_cmdliner.0.6.0"
+        }
+      },
+      "overrides": [],
+      "dependencies": [
+        "ocaml@4.11.0@d41d8cd9", "@opam/result@opam:1.5@1c6a6533",
+        "@opam/ppxlib@opam:0.23.0@b29cda02",
+        "@opam/ppx_deriving@opam:5.2.1@089e5dd3",
+        "@opam/dune@opam:2.9.1@1e504822",
+        "@opam/cmdliner@opam:1.0.4@93208aac",
+        "@esy-ocaml/substs@0.0.1@d41d8cd9"
+      ],
+      "devDependencies": [
+        "ocaml@4.11.0@d41d8cd9", "@opam/result@opam:1.5@1c6a6533",
+        "@opam/ppxlib@opam:0.23.0@b29cda02",
+        "@opam/ppx_deriving@opam:5.2.1@089e5dd3",
+        "@opam/dune@opam:2.9.1@1e504822",
+        "@opam/cmdliner@opam:1.0.4@93208aac"
       ]
     },
     "@opam/ppx_deriving@opam:5.2.1@089e5dd3": {
@@ -1502,6 +1535,7 @@
         "@opam/reason@opam:3.7.0@494dd52d",
         "@opam/ppx_sexp_conv@opam:v0.14.3@8f42b1ac",
         "@opam/ppx_deriving_yojson@opam:3.6.1@faf11a7c",
+        "@opam/ppx_deriving_cmdliner@opam:0.6.0@0ca5b723",
         "@opam/ocamlgraph@opam:2.0.0@929b9eba",
         "@opam/grain_dypgen@opam:0.2@4b32567c",
         "@opam/fs@github:facebookexperimental/reason-native:fs.opam#a33f1528a6dd86c67f365e226c81312733181c87@d41d8cd9",

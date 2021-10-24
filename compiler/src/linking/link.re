@@ -38,6 +38,7 @@ let load_module = fullpath => {
   let length = in_channel_length(ic);
   let module_bytes = Bytes.create(length);
   really_input(ic, module_bytes, 0, length);
+  close_in(ic);
   Module.read(module_bytes);
 };
 
@@ -616,6 +617,8 @@ let link_modules = ({asm: wasm_mod, signature}) => {
 
   let main_module = Module_resolution.current_filename^();
   Hashtbl.add(modules, main_module, wasm_mod);
+
+  G.add_vertex(dependency_graph, main_module);
   build_dependency_graph(
     ~base_dir=Filename.dirname(main_module),
     main_module,
