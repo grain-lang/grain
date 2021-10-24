@@ -40,8 +40,8 @@ primitive unbox : Box<a> -> a = "@unbox"
 
 exception DecRefError
 
-export let decimalCount32 = box((n) => 0n)
-export let utoa32Buffered = box((a, b, c) => void)
+export let decimalCount32 = box((n: WasmI32) => 0n)
+export let utoa32Buffered = box((a: WasmI32, b: WasmI32, c: WasmI32) => void)
 
 let mut _DEBUG = false
 
@@ -295,7 +295,7 @@ let rec decRef = (userPtr: WasmI32, ignoreZeros: Bool) => {
         // Throwing causes last logged print statements to not be printed,
         // so it becomes very difficult to debug memory problems. Maybe a
         // buffer is not being flushed? If the debugging hooks are active then
-        // behave as if ignoreZeros was true to continue executing and give the
+        // behave ad if ignoreZeros was true to continue executing and give the
         // debugging hooks an opportunity to report the issue.
         if (WasmI32.ne(_DEBUG_HOOK_DECREF, 0n)) {
           userPtr
@@ -383,20 +383,19 @@ export let rec setDebugHooks = (
   onFree: (WasmI32 -> Void)
 ) => {
   incRefNoDebug(WasmI32.fromGrain(onIncRef))
-  _DEBUG_HOOK_INCREF = WasmI32.fromGrain(onIncRef)
-
   incRefNoDebug(WasmI32.fromGrain(onDecRef))
-  _DEBUG_HOOK_DECREF = WasmI32.fromGrain(onDecRef)
-
   incRefNoDebug(WasmI32.fromGrain(onMalloc))
-  _DEBUG_HOOK_MALLOC = WasmI32.fromGrain(onMalloc)
-
   incRefNoDebug(WasmI32.fromGrain(onFree))
-  _DEBUG_HOOK_FREE = WasmI32.fromGrain(onFree)
 
   // decRef(WasmI32.fromGrain(f))
 
   decRef(WasmI32.fromGrain(setDebugHooks))
+
+  _DEBUG_HOOK_INCREF = WasmI32.fromGrain(onIncRef)
+  _DEBUG_HOOK_DECREF = WasmI32.fromGrain(onDecRef)
+  _DEBUG_HOOK_MALLOC = WasmI32.fromGrain(onMalloc)
+  _DEBUG_HOOK_FREE = WasmI32.fromGrain(onFree)
+
   void
 }
 

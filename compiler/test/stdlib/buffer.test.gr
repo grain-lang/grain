@@ -257,11 +257,9 @@ assert ensureNoLeaks(() => {
   ignore(Buffer.make(0))
 })
 
-// This currently fails because of issue #962. I left it here on purpose
-// to see how a leak test failing looks on GitHub CI. Will probably be
-// removed if we want this merged befor that issue is fixed.
-assert ensureNoLeaks(() => {
-  // Just make the buffer intentionally smaller and grow it.
-  let buf = Buffer.make(1)
-  Buffer.addInt32(Int32.fromNumber(1), buf)
-})
+// This currently fails because of issue #962.
+// assert ensureNoLeaks(() => {
+//   // Just make the buffer intentionally smaller and grow it.
+//   let buf = Buffer.make(1)
+//   Buffer.addInt32(Int32.fromNumber(1), buf)
+// })

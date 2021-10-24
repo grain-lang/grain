@@ -3,10 +3,12 @@ import Conv from "runtime/unsafe/conv"
 import Memory from "runtime/unsafe/memory"
 import GC from "runtime/gc"
 import { coerceNumberToWasmI32 } from "runtime/numbers"
+import { allocateString } from "runtime/dataStructures"
 import NumberUtils from "runtime/numberUtils"
 import Map from "map"
 import Set from "set"
 import Option from "option"
+import Tags from "runtime/unsafe/tags"
 
 @disableGC
 let rec toHex = (n: Number) => {
@@ -38,10 +40,29 @@ let incrementCountInMap = (key: k, map: Map.Map<k, Number>) => {
   }
 }
 
+let keyUnionOfTwoMaps = (map1: Map.Map<k, v1>, map2: Map.Map<k, v2>) => {
+  let keyUnion = Set.make(): (Set.Set<k>)
+
+  Map.forEach(
+    (k, v) => {
+      Set.add(k, keyUnion)
+    },
+    map1,
+  )
+
+  Map.forEach(
+    (k, v) => {
+      Set.add(k, keyUnion)
+    },
+    map2,
+  )
+
+  keyUnion
+}
+
 let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
   // The main objective is to find and print objects allocated
   // in the function, but not deallocated at the end.
-  // let allocated = Map.make() : Map.Map<Number,Number>
 
   let allocations = Set.make(): (Set.Set<Number>)
 
@@ -65,8 +86,14 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
   let mut totalIncRefs = 0
   let mut totalDecRefs = 0
 
+  let mut totalPreexistingObjectsDeallocated = 0
+
   let incRefsByTag = Map.make(): (Map.Map<Number, Number>)
   let decRefsByTag = Map.make(): (Map.Map<Number, Number>)
+
+  let inintialRefCountsOnPreExistingObjects = Map.make(): (Map.Map<Number, Number>)
+  let incRefsOnPreExistingObjects = Map.make(): (Map.Map<Number, Number>)
+  let decRefsOnPreExistingObjects = Map.make(): (Map.Map<Number, Number>)
 
   // Since objects created by GC.malloc have a starting refcount of 1,
   // the total incRefsByTag would not match decRefsByTag. I'm compensating it
@@ -121,8 +148,32 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
     let _HEADER_SIZE = 8n
     let refCnt = WasmI32.load(WasmI32.sub(userPtr, _HEADER_SIZE), 0n)
 
-    let contentAsString = if (WasmI32.eq(refCnt, 0n)) {
-      // Special case when printing an object that has is to be deallocated.
+    let tag = WasmI32.load(userPtr, 0n)
+
+    let contentAsString = if (WasmI32.eq(tag, Tags._GRAIN_STRING_HEAP_TAG)) {
+      // Special case for strings. We don't want to call toString because
+      // it returns the same object. We want to keep the string contents
+      // for printing without altering the refcount of the original string.
+      // Se lets copy just it and while we're at it, add quotes to better
+      // illustrate that the value is for a string.
+      let originalSize = WasmI32.load(userPtr, 4n)
+      let newSize = WasmI32.add(originalSize, 2n)
+      let newString = allocateString(newSize)
+      WasmI32.store8(newString, 0x22n, 8n)
+      Memory.copy(
+        WasmI32.add(newString, 9n),
+        WasmI32.add(userPtr, 8n),
+        originalSize,
+      )
+      WasmI32.store8(
+        WasmI32.add(newString, WasmI32.add(originalSize, 1n)),
+        0x22n,
+        8n,
+      )
+      WasmI32.toGrain(newString): (String)
+    } else if (WasmI32.eq(refCnt, 0n)) {
+      // Special case when printing an object that has refCount of zero and
+      // is going to be deallocated.
       // The ref count has already been decremented to zero, but is still in
       // memory so we can print it. For this to work, the refcount needs to be
       // incremented to 2 to avoid deallocating by decRef inside toString.
@@ -139,8 +190,6 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
       Memory.incRef(WasmI32.fromGrain(toString))
       toString(userPtr)
     }
-
-    Memory.incRef(WasmI32.fromGrain(contentAsString))
 
     Memory.decRef(WasmI32.fromGrain(userPtrAsNumber))
     Memory.decRef(WasmI32.fromGrain(readContentAsString))
@@ -161,7 +210,8 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
   let onIncRef = (userPtr: Number) => {
     totalIncRefs += 1
 
-    let refCount = readRefCount(userPtr)
+    let oldRefCount = readRefCount(userPtr)
+    let newRefCount = oldRefCount + 1
     let tag = readTag(userPtr)
 
     incrementCountInMap(tag, incRefsByTag)
@@ -171,7 +221,9 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
       if (Set.contains(userPtr, allocations)) {
         print(
           "incref for object at 0x" ++ toHex(userPtr) ++ " (prev count: " ++
-          toString(refCount) ++
+          toString(oldRefCount) ++
+          "; new count: " ++
+          toString(newRefCount) ++
           "; tag: " ++
           toString(tag) ++
           " " ++
@@ -180,10 +232,18 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
           maybeObjectContentsAppendix(userPtr),
         )
       } else {
+        if (!Map.contains(userPtr, inintialRefCountsOnPreExistingObjects)) {
+          Map.set(userPtr, oldRefCount, inintialRefCountsOnPreExistingObjects)
+        }
+
+        incrementCountInMap(userPtr, incRefsOnPreExistingObjects)
+
         print(
           "incref for pre-existing object at 0x" ++ toHex(userPtr) ++
           " (prev count: " ++
-          toString(refCount) ++
+          toString(oldRefCount) ++
+          "; new count: " ++
+          toString(newRefCount) ++
           "; tag: " ++
           toString(tag) ++
           " " ++
@@ -198,13 +258,22 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
   let onDecRef = (userPtr: Number, ignoreZeros: Bool) => {
     totalDecRefs += 1
 
-    let refCount = readRefCount(userPtr)
+    let oldRefCount = readRefCount(userPtr)
+    // It would be more accurate to actually receive the new ref count,
+    // but it would complicate things unnecessarily. Instead I'm replicating
+    // a piece of logic from GC.decRef regarding decrementing objects with
+    // refcount of 0.
+    let newRefCount = if (oldRefCount == 0 && ignoreZeros) {
+      0
+    } else {
+      oldRefCount - 1
+    }
     let tag = readTag(userPtr)
 
     incrementCountInMap(tag, decRefsByTag)
 
     if (options.printIncrefsAndDecRefs) {
-      if (refCount < 1 && !ignoreZeros) {
+      if (oldRefCount < 1 && !ignoreZeros) {
         print(
           "⚠ PROBLEM DETECTED: unexpected decRef at address 0x" ++
           " (tag: " ++
@@ -225,7 +294,9 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
         if (Set.contains(userPtr, allocations)) {
           print(
             "decref for object at 0x" ++ toHex(userPtr) ++ " (prev count: " ++
-            toString(refCount) ++
+            toString(oldRefCount) ++
+            "; new count: " ++
+            toString(newRefCount) ++
             "; tag: " ++
             toString(tag) ++
             " " ++
@@ -234,10 +305,18 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
             maybeObjectContentsAppendix(userPtr),
           )
         } else {
+          if (!Map.contains(userPtr, inintialRefCountsOnPreExistingObjects)) {
+            Map.set(userPtr, oldRefCount, inintialRefCountsOnPreExistingObjects)
+          }
+
+          incrementCountInMap(userPtr, decRefsOnPreExistingObjects)
+
           print(
             "decref for pre-existing object at 0x" ++ toHex(userPtr) ++
             " (prev count: " ++
-            toString(refCount) ++
+            toString(oldRefCount) ++
+            "; new count: " ++
+            toString(newRefCount) ++
             "; tag: " ++
             toString(tag) ++
             " " ++
@@ -310,6 +389,36 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
         )
       }
     }
+
+    if (Map.contains(userPtr, incRefsOnPreExistingObjects) ||
+    Map.contains(userPtr, decRefsOnPreExistingObjects)) {
+      // While this isn't guaranteed to be a real problem, it likely is.
+      // So let's keep count of these cases in order to report it in
+      // the summary and return failed result for test assertions.
+      totalPreexistingObjectsDeallocated += 1
+
+      // Must remove this pointer from the two maps, otherwise it would
+      // lead to problems when trying to print the object info at the end.
+      // Also once freed, this address can be reused, which would then
+      // lead to wrong information being reported.
+      Map.remove(userPtr, incRefsOnPreExistingObjects)
+      Map.remove(userPtr, decRefsOnPreExistingObjects)
+      Map.remove(userPtr, inintialRefCountsOnPreExistingObjects)
+
+      print(
+        "⚠ POSSIBLE PROBLEM DETECTED: pre-existing object at 0x" ++
+        toHex(userPtr) ++
+        " has been deallocated" ++
+        " (ref. count: " ++
+        toString(refCount) ++
+        "; tag: " ++
+        toString(tag) ++
+        " " ++
+        tagToTypeName(tag) ++
+        "). Information about incRefs/decRefs won't be printed for this object." ++
+        maybeObjectContentsAppendix(userPtr),
+      )
+    }
   }
 
   @disableGC
@@ -317,8 +426,12 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
     Memory.incRef(WasmI32.fromGrain(Conv.wasmI32ToNumber))
     let ptrAsNumber = Conv.wasmI32ToNumber(userPtr)
 
-    Memory.incRef(WasmI32.fromGrain(onIncRef))
-    onIncRef(ptrAsNumber)
+    // Skip the incRef made when calling the actual function to test.
+    if (WasmI32.ne(userPtr, WasmI32.fromGrain(f)) &&
+    WasmI32.ne(userPtr, WasmI32.fromGrain(GC.removeDebugHooks))) {
+      Memory.incRef(WasmI32.fromGrain(onIncRef))
+      onIncRef(ptrAsNumber)
+    }
   }
 
   @disableGC
@@ -326,8 +439,11 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
     Memory.incRef(WasmI32.fromGrain(Conv.wasmI32ToNumber))
     let ptrAsNumber = Conv.wasmI32ToNumber(userPtr)
 
-    Memory.incRef(WasmI32.fromGrain(onDecRef))
-    onDecRef(ptrAsNumber, ignoreZeros)
+    // Skip the incRef made when calling the actual function to test.
+    if (WasmI32.ne(userPtr, WasmI32.fromGrain(f))) {
+      Memory.incRef(WasmI32.fromGrain(onDecRef))
+      onDecRef(ptrAsNumber, ignoreZeros)
+    }
   }
 
   @disableGC
@@ -354,25 +470,112 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
 
   GC.removeDebugHooks()
 
-  let numLeaks = Set.size(allocations)
+  // Determine objects that existed before executing the function that have been
+  // messed up with unmaching incRefs/decRefs.
+  // Note that the inintialRefCountsOnPreExistingObjects map is guaranteed to
+  // have entries for keys of both incRefsOnPreExistingObjects and decRefsOnPreExistingObjects.
+  let preExistingObjectsWithRefCountMismatch = Map.make(): (Map.Map<Number, (Number,Number,Number,Number)>)
 
-  let leaksFound = numLeaks != 0
+  Map.forEach(
+    (userPtr, initialRefCount) => {
+      let incRefCount = Option.unwrapWithDefault(
+        0,
+        Map.get(userPtr, incRefsOnPreExistingObjects),
+      )
 
-  let printSummary = () => {
+      let decRefCount = Option.unwrapWithDefault(
+        0,
+        Map.get(userPtr, decRefsOnPreExistingObjects),
+      )
+
+      let finalRefCount = readRefCount(userPtr)
+
+      if (incRefCount != decRefCount) {
+        Map.set(
+          userPtr,
+          (incRefCount, decRefCount, initialRefCount, finalRefCount),
+          preExistingObjectsWithRefCountMismatch,
+        )
+      }
+    },
+    inintialRefCountsOnPreExistingObjects,
+  )
+
+  let preExistingObjectsWithRefCountMismatches = Map.size(
+    preExistingObjectsWithRefCountMismatch,
+  )
+
+  let numAllocLeaks = Set.size(allocations)
+
+  let noLeaksFound = numAllocLeaks == 0 && totalPreexistingObjectsDeallocated == 0 &&
+  preExistingObjectsWithRefCountMismatches == 0
+
+  let printSummary = match (options.summary) {
+    PrintSummaryIfLeaksAreFound => !noLeaksFound,
+    AlwaysPrintSummary => true
+  }
+
+  if (printSummary) {
+    if (noLeaksFound) {
+      print("")
+      print("no leaks found")
+    }
+
+    if (preExistingObjectsWithRefCountMismatches == 0) {
+      print("")
+      print("✔ no ref. count issues caused on pre-existing objects")
+    } else {
+      print("")
+      print(
+        "⚠ " ++ toString(preExistingObjectsWithRefCountMismatches) ++
+        " ref. count issues caused on pre-existing objects: ",
+      )
+      Map.forEach(
+        (userPtr, (incRefs, decRefs, initialRefCount, finalRefCount)) => {
+          let tag = readTag(userPtr)
+          print(
+            "- 0x" ++ toHex(userPtr) ++ " (incRefs: " ++ toString(incRefs) ++
+            "; decRefs: " ++
+            toString(decRefs) ++
+            "; initial ref. count: " ++
+            toString(initialRefCount) ++
+            "; final ref. count: " ++
+            toString(finalRefCount) ++
+            "; tag " ++
+            toString(tag) ++
+            " " ++
+            tagToTypeName(tag) ++
+            ")" ++
+            maybeObjectContentsAppendix(userPtr),
+          )
+        },
+        preExistingObjectsWithRefCountMismatch,
+      )
+    }
+    
+    if (totalPreexistingObjectsDeallocated > 0) {
+      print("")
+      print(
+        "⚠ " ++ toString(totalPreexistingObjectsDeallocated) ++
+        " pre-existing objects has been deallocated",
+      )
+    }
+
     let leakedByTag = Map.make(): (Map.Map<Number, Number>)
 
-    if (leaksFound) {
+    if (numAllocLeaks == 0) {
+      print("")
       print("✔ no malloc/free leaks detected")
     } else {
       print("")
-      print("⚠ " ++ toString(numLeaks) ++ " malloc/free leaks detected:")
+      print("⚠ " ++ toString(numAllocLeaks) ++ " malloc/free leaks detected:")
+
       Set.forEach(
         userPtr => {
           let refCount = readRefCount(userPtr)
           let tag = readTag(userPtr)
           print(
-            "- 0x" ++ toHex(userPtr) ++ " (ref. count: " ++
-            toString(refCount) ++
+            "- 0x" ++ toHex(userPtr) ++ " (ref. count: " ++ toString(refCount) ++
             "; tag " ++
             toString(tag) ++
             " " ++
@@ -386,7 +589,7 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
         allocations,
       )
     }
-
+    
     print("")
     print("totalMallocs: " ++ toString(totalMallocs))
     print("totalFrees: " ++ toString(totalFrees))
@@ -395,35 +598,15 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
     print("")
     print("incRef/decRefs by tag:")
 
-    let allTags = Set.make(): (Set.Set<Number>)
-
-    Map.forEach(
-      (tag, incRefs) => {
-        Set.add(tag, allTags)
-      },
-      incRefsByTag,
-    )
-
-    Map.forEach(
-      (tag, decRefs) => {
-        Set.add(tag, allTags)
-      },
-      decRefsByTag,
-    )
+    let allTags = keyUnionOfTwoMaps(incRefsByTag, decRefsByTag)
 
     // TODO sort the tags once we have sorting in stdlib
     //let allTagsSorted = Array.sort((...) => {...}, Set.toArray(allTags))
 
     Set.forEach(
       tag => {
-        let incRefCount = Option.unwrapWithDefault(
-          0,
-          Map.get(tag, incRefsByTag),
-        )
-        let decRefCount = Option.unwrapWithDefault(
-          0,
-          Map.get(tag, decRefsByTag),
-        )
+        let incRefCount = Option.unwrapWithDefault(0, Map.get(tag, incRefsByTag))
+        let decRefCount = Option.unwrapWithDefault(0, Map.get(tag, decRefsByTag))
         let mallocPlusFreeCount = Option.unwrapWithDefault(
           0,
           Map.get(tag, mallocPlusFreeByTag),
@@ -455,33 +638,23 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
           toString(mallocPlusFreeCount) ++
           " malloc+free, \t" ++
           toString(mallocButNotFreedCount) ++
-          " mallocs without free",
+          " malloc without free",
         )
       },
       allTags,
     )
   }
 
-  match (options.summary) {
-    AlwaysPrintSummary => {
-      printSummary()
-    },
-    PrintSummaryIfLeaksAreFound => {
-      if (leaksFound) {
-        printSummary()
-      }
-    },
-  }
-
-  leaksFound == false
+  noLeaksFound
 }
 
 /**
  * Executes the provided function and tries to detect memory leaks and
  * reference counting issues. It's assumed that the function is meant to have
- * no side effects on memory referenced by global or captured variables.
+ * no side effects on memory referenced by global variables or captured
+ * variables.
  *
- * @param name: Arbitrary name printed in the output to distingish this block
+ * @param name: Arbitrary name printed in the output
  * @param options: The options controlling logging detail
  * @param f: The function to execute and check
  * @return True if no leaks where detected.
@@ -508,6 +681,7 @@ export let leakDebugBlock =
 
   let noLeaks = leakDebugBlockImpl(options, f)
 
+  print("")
   print("end of GC debug block \"" ++ name ++ "\"")
   print("")
 
