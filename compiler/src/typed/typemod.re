@@ -508,8 +508,8 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
               {
                 ...info.data_type,
                 type_kind: TDataAbstract,
-                // Removing the manifest makes this type unable to be
-                // used as the aliased type.
+                // Removing the manifest hides the type implementation
+                // of this alias from any consuming module
                 type_manifest: None,
               },
               rs,
