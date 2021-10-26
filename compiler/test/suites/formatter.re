@@ -3,6 +3,7 @@ open Grain_tests.Runner;
 
 describe("formatter", ({test}) => {
   let assertFormatOutput = makeFormatterRunner(test);
+  assertFormatOutput("aliases", "aliases");
   assertFormatOutput("application", "application");
   assertFormatOutput("function_params", "function_params");
   assertFormatOutput("variants", "variants");
@@ -24,6 +25,7 @@ describe("formatter", ({test}) => {
   assertFormatOutput("lambda", "lambda");
   assertFormatOutput("operators", "operators");
   assertFormatOutput("enums", "enums");
+  assertFormatOutput("enum_long", "enum_long");
   assertFormatOutput("lets", "lets");
   assertFormatOutput("ignores", "ignores");
   assertFormatOutput("list_sugar", "list_sugar");
