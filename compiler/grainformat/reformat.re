@@ -1280,7 +1280,7 @@ and print_application =
               Doc.concat([
                 Doc.softLine,
                 Doc.join(
-                  Doc.concat([Doc.text(","), Doc.line]),
+                  Doc.concat([Doc.comma, Doc.line]),
                   List.map(
                     e =>
                       print_expression(
