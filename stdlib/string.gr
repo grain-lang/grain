@@ -1,6 +1,10 @@
 /**
  * @module String: Utilities for working with strings.
  * @example import String from "string"
+ *
+ * @since v0.2.0
+ * @history v0.1.0: Originally named `strings`
+ * @history v0.2.0: Renamed to `string`
  */
 import WasmI32 from "runtime/unsafe/wasmi32"
 import Memory from "runtime/unsafe/memory"
@@ -26,25 +30,28 @@ export enum Encoding {
  * @section Values: Functions for working with the String data type.
  */
 
-
 /**
  * Concatenate two strings.
- * 
+ *
  * @param str1: The beginning string
  * @param str2: The ending string
  * @returns The combined string
- * 
+ *
  * @example String.concat("Foo", " Bar") == "FooBar"
+ *
+ * @since v0.1.0
  */
 export let concat = (++)
 
 /**
  * Returns the character length of the input string.
- * 
+ *
  * @param string: The string to inspect
  * @returns The number of characters in the string
- * 
+ *
  * @example String.length("Hello world") == 11
+ *
+ * @since v0.1.0
  */
 @disableGC
 export let rec length = (string: String) => {
@@ -79,11 +86,13 @@ let wasmSafeLength = (s: String) => {
 
 /**
  * Returns the byte length of the input string.
- * 
+ *
  * @param string: The string to inspect
  * @returns The number of bytes in the string
- * 
+ *
  * @example String.byteLength("🌾") == 4
+ *
+ * @since v0.1.0
  */
 @disableGC
 export let rec byteLength = (string: String) => {
@@ -104,12 +113,14 @@ let wasmSafeByteLength = (string: String) => {
 
 /**
  * Finds the position of a substring in the input string.
- * 
+ *
  * @param search: The substring to find
  * @param string: The string to inspect
  * @returns `Some(position)` containing the starting position of the substring if found or `None` otherwise
- * 
+ *
  * @example String.indexOf("world", "Hello world") == Some(6)
+ *
+ * @since v0.3.0
  */
 @disableGC
 export let rec indexOf = (search: String, string: String) => {
@@ -173,12 +184,14 @@ export let rec indexOf = (search: String, string: String) => {
 
 /**
  * Get the character at the position in the input string.
- * 
+ *
  * @param position: The position to check
  * @param string: The string to search
  * @returns The character at the provided position
- * 
+ *
  * @example String.charAt(5, "Hello world") == ' '
+ *
+ * @since v0.4.0
  */
 @disableGC
 export let rec charAt = (position, string: String) => {
@@ -282,11 +295,13 @@ let explodeHelp = (s: String, chars) => {
 
 /**
  * Split a string into its Unicode characters.
- * 
+ *
  * @param string: The string to split
  * @returns An array containing all characters in the string
- * 
- * @example String.explode("Hello") == [> 'H', 'e', 'l', 'l', 'o' ]
+ *
+ * @example String.explode("Hello") == [> 'H', 'e', 'l', 'l', 'o']
+ *
+ * @since v0.3.0
  */
 @disableGC
 export let rec explode = (string) => {
@@ -301,11 +316,13 @@ export let rec explode = (string) => {
 
 /**
  * Create a string from an array of characters.
- * 
+ *
  * @param arr: The array to combine
  * @returns A string representation of the array of characters
- * 
- * @example String.implode([> 'H', 'e', 'l', 'l', 'o' ]) == "Hello"
+ *
+ * @example String.implode([> 'H', 'e', 'l', 'l', 'o']) == "Hello"
+ *
+ * @since v0.3.0
  */
 @disableGC
 export let rec implode = (arr: Array<Char>) => {
@@ -367,12 +384,12 @@ export let rec implode = (arr: Array<Char>) => {
 
 /**
  * Split a string by the given separator.
- * 
+ *
  * @param separator: The separator to split on
  * @param string: The string to split
  * @returns An array of substrings from the initial string
- * 
- * @example String.split(" ", "Hello world") == [> "Hello", "world" ]
+ *
+ * @example String.split(" ", "Hello world") == [> "Hello", "world"]
  */
 @disableGC
 export let rec split = (separator: String, string: String) => {
@@ -465,13 +482,15 @@ export let rec split = (separator: String, string: String) => {
 
 /**
  * Get a portion of a string.
- * 
+ *
  * @param start: The start position of the substring
  * @param to: The end position of the substring, exclusive
  * @param string: The input string
  * @returns The substring from the initial string
- * 
+ *
  * @example String.slice(0, 5, "Hello world") == "Hello"
+ *
+ * @since v0.1.0
  */
 @disableGC
 export let rec slice = (start: Number, to: Number, string: String) => {
@@ -561,12 +580,14 @@ export let rec slice = (start: Number, to: Number, string: String) => {
 
 /**
  * Check if a string contains a substring.
- * 
+ *
  * @param search: The substring to check
  * @param string: The string to search
  * @returns `true` if the input string contains the search value or `false` otherwise
- * 
+ *
  * @example String.contains("world", "Hello world") == true
+ *
+ * @since v0.1.0
  */
 @disableGC
 export let rec contains = (search: String, string: String) => {
@@ -650,12 +671,14 @@ export let rec contains = (search: String, string: String) => {
 
 /**
  * Check if a string begins with another string.
- * 
+ *
  * @param search: The string to compare to the start
  * @param string: The string to search
  * @returns `true` if the input string starts with the search value or `false` otherwise
- * 
+ *
  * @example String.startsWith("Hello", "Hello world") == true
+ *
+ * @since v0.1.0
  */
 @disableGC
 export let rec startsWith = (search: String, string: String) => {
@@ -688,12 +711,14 @@ export let rec startsWith = (search: String, string: String) => {
 
 /**
  * Check if a string ends with another string.
- * 
+ *
  * @param search: The string to compare to the end
  * @param string: The string to search
  * @returns `true` if the input string ends with the search value or `false` otherwise
- * 
+ *
  * @example String.endsWith("world", "Hello world") == true
+ *
+ * @since v0.1.0
  */
 @disableGC
 export let rec endsWith = (search: String, string: String) => {
@@ -1084,12 +1109,14 @@ let rec encodeAtHelp = (string: String, encoding: Encoding, includeBom: Bool, de
 
 /**
  * Encodes the given string into a byte sequence at the supplied position, excluding any byte-order marker, using the encoding scheme provided.
- * 
+ *
  * @param string: The input string
  * @param encoding: The encoding to use
  * @param dest: The byte sequence that will be copied
  * @param destPos: The location in the byte sequence to write the output
  * @returns A copy of the input bytes with the encoded string replaced at the given position
+ *
+ * @since v0.4.0
  */
 export let encodeAt = (string, encoding, dest, destPos) => {
   encodeAtHelp(string, encoding, false, dest, destPos)
@@ -1097,12 +1124,14 @@ export let encodeAt = (string, encoding, dest, destPos) => {
 
 /**
  * Encodes the given string into a byte sequence at the supplied position, including any byte-order marker, using the encoding scheme provided.
- * 
+ *
  * @param string: The input string
  * @param encoding: The encoding to use
  * @param dest: The byte sequence that will be copied
  * @param destPos: The location in the byte sequence to write the output
  * @returns A copy of the input bytes with the encoded string replaced at the given position
+ *
+ * @since v0.4.0
  */
 export let encodeAtWithBom = (string, encoding, dest, destPos) => {
   encodeAtHelp(string, encoding, true, dest, destPos)
@@ -1137,10 +1166,12 @@ let rec encodeHelp = (string: String, encoding: Encoding, includeBom: Bool) => {
 
 /**
  * Encodes the given string using the given encoding scheme, excluding any byte-order marker.
- * 
+ *
  * @param string: The input string
  * @param encoding: The encoding to use
  * @returns The byte representation of the string in the given encoding
+ *
+ * @since v0.4.0
  */
 export let encode = (string: String, encoding: Encoding) => {
   encodeHelp(string, encoding, false)
@@ -1148,10 +1179,12 @@ export let encode = (string: String, encoding: Encoding) => {
 
 /**
  * Encodes the given string using the given encoding scheme, including any byte-order marker.
- * 
+ *
  * @param string: The input string
  * @param encoding: The encoding to use
  * @returns The byte representation of the string in the given encoding
+ *
+ * @since v0.4.0
  */
 export let encodeWithBom = (string: String, encoding: Encoding) => {
   encodeHelp(string, encoding, true)
@@ -1516,12 +1549,14 @@ let rec decodeRangeHelp = (bytes: Bytes, encoding: Encoding, skipBom: Bool, star
 
 /**
  * Decodes the given byte sequence of the specified range into a string, excluding any byte-order marker, using encoding scheme provided.
- * 
+ *
  * @param bytes: The input bytes
  * @param encoding: The encoding to use
  * @param start: The byte offset to begin decoding from
  * @param size: The maximum number of bytes to decode
  * @returns The decoded string
+ *
+ * @since v0.4.0
  */
 export let decodeRange = (bytes: Bytes, encoding: Encoding, start: Number, size: Number) => {
   decodeRangeHelp(bytes, encoding, true, start, size)
@@ -1529,12 +1564,14 @@ export let decodeRange = (bytes: Bytes, encoding: Encoding, start: Number, size:
 
 /**
  * Decodes the given byte sequence of the specified range into a string, including any byte-order marker, using encoding scheme provided.
- * 
+ *
  * @param bytes: The input bytes
  * @param encoding: The encoding to use
  * @param start: The byte offset to begin decoding from
  * @param size: The maximum number of bytes to decode
  * @returns The decoded string
+ *
+ * @since v0.4.0
  */
 export let decodeRangeKeepBom = (bytes: Bytes, encoding: Encoding, start: Number, size: Number) => {
   decodeRangeHelp(bytes, encoding, false, start, size)
@@ -1556,10 +1593,12 @@ let rec decodeHelp = (bytes: Bytes, encoding: Encoding, skipBom: Bool) => {
 
 /**
  * Decodes the given byte sequence into a string using the given encoding scheme, excluding any byte-order marker.
- * 
+ *
  * @param bytes: The input bytes
  * @param encoding: The encoding to use
  * @returns The decoded string
+ *
+ * @since v0.4.0
  */
 export let decode = (bytes: Bytes, encoding: Encoding) => {
   decodeHelp(bytes, encoding, true)
@@ -1567,10 +1606,12 @@ export let decode = (bytes: Bytes, encoding: Encoding) => {
 
 /**
  * Decodes the given byte sequence into a string using the given encoding scheme, including any byte-order marker.
- * 
+ *
  * @param bytes: The input bytes
  * @param encoding: The encoding to use
  * @returns The decoded string
+ *
+ * @since v0.4.0
  */
 export let decodeKeepBom = (bytes: Bytes, encoding: Encoding) => {
   decodeHelp(bytes, encoding, false)
@@ -1581,8 +1622,10 @@ export let decodeKeepBom = (bytes: Bytes, encoding: Encoding) => {
  *
  * @param fn: The iterator function
  * @param str: The string to iterate
- * 
+ *
  * @example String.forEachCodePoint(print, "Hello world")
+ *
+ * @since v0.4.0
  */
 @disableGC
 export let rec forEachCodePoint = (fn: (Number) -> Void, str: String) => {
@@ -1641,8 +1684,10 @@ export let rec forEachCodePoint = (fn: (Number) -> Void, str: String) => {
  *
  * @param fn: The iterator function
  * @param str: The string to iterate
- * 
+ *
  * @example String.forEachCodePointi((codepoint, index) => print((codepoint, index)), "Hello world")
+ *
+ * @since v0.4.0
  */
 @disableGC
 export let rec forEachCodePointi = (fn: (Number, Number) -> Void, str: String) => {
@@ -1724,8 +1769,10 @@ let trimString = (str: String, end: Bool) => {
  *
  * @param string: The string to be trimmed
  * @returns The trimmed string
- * 
+ *
  * @example String.trimStart("   Hello World") == "Hello World"
+ *
+ * @since v0.4.2
  */
 export let trimStart = (string: String) => trimString(string, false)
 /**
@@ -1733,8 +1780,10 @@ export let trimStart = (string: String) => trimString(string, false)
  *
  * @param string: The string to be trimmed
  * @returns The trimmed string
- * 
+ *
  * @example String.trimEnd("Hello World   ") == "Hello World"
+ *
+ * @since v0.4.2
  */
 export let trimEnd = (string: String) => trimString(string, true)
 /**
@@ -1742,7 +1791,9 @@ export let trimEnd = (string: String) => trimString(string, true)
  *
  * @param string: The string to be trimmed
  * @returns The trimmed string
- * 
+ *
  * @example String.trim("   Hello World   ") == "Hello World"
+ *
+ * @since v0.4.2
  */
 export let trim = (string: String) => trimEnd(trimStart(string))
