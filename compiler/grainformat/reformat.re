@@ -1030,7 +1030,7 @@ and print_type =
     Doc.concat([
       Doc.lparen,
       Doc.join(
-        Doc.comma,
+        Doc.concat([Doc.comma, Doc.line]),
         List.map(t => print_type(t, original_source), parsed_types),
       ),
       if (List.length(parsed_types) == 1) {
@@ -1051,8 +1051,8 @@ and print_type =
         print_ident(ident),
         Doc.text("<"),
         Doc.join(
-          Doc.concat([Doc.comma, Doc.space]),
-          List.map(typ => {print_type(typ, original_source)}, parsedtypes),
+          Doc.concat([Doc.comma, Doc.line]),
+          List.map(typ => {Doc.group(print_type(typ, original_source))}, parsedtypes),
         ),
         Doc.text(">"),
       ]);
