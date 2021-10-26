@@ -2142,6 +2142,7 @@ and print_expression =
             expression,
           ),
           Doc.text(":"),
+          Doc.space,
           Doc.indent(
             Doc.concat([
               Doc.softLine,
