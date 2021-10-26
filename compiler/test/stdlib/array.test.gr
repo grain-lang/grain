@@ -81,7 +81,7 @@ let addToWord = (n) => {
 
 Array.cycle(addToWord, 2, arr2)
 
-asert word == "abcabc"
+assert word == "abcabc"
 
 // Array.forEach
 
