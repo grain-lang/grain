@@ -71,7 +71,7 @@ enum ParsedRegularExpression {
     Bool
   ), // regex, n-start, num-n, needs-backtrack
   REReference(Number, Bool), // n, case-sensitive
-  RERange(List<(Number,Number)>),
+  RERange(List<(Number, Number)>),
   REUnicodeCategories(
     List<UnicodeCategory>,
     Bool

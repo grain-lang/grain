@@ -21,6 +21,17 @@ describe("linking", ({test}) => {
     {|import List from "list"; print(List.map(n => n + 1, [1, 2, 3]))|},
     "[2, 3, 4]\n",
   );
+  assertRun("link_issue_994_no_generated_code", {|0|}, "");
+  assertRun(
+    "link_issue_994_unexported_type",
+    {|record Foo { foo: String }|},
+    "",
+  );
+  assertRun(
+    "link_issue_994_exported_type",
+    {|export record Foo { foo: String }|},
+    "",
+  );
   // --wasi-polyfill
   assertWasiPolyfillRun(
     "test/input/wasiPolyfill.gr",

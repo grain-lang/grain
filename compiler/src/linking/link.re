@@ -617,6 +617,8 @@ let link_modules = ({asm: wasm_mod, signature}) => {
 
   let main_module = Module_resolution.current_filename^();
   Hashtbl.add(modules, main_module, wasm_mod);
+
+  G.add_vertex(dependency_graph, main_module);
   build_dependency_graph(
     ~base_dir=Filename.dirname(main_module),
     main_module,
