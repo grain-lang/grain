@@ -4,6 +4,19 @@ title: String
 
 Utilities for working with strings.
 
+<details>
+<summary>Added in <code>0.2.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.1.0</code></td><td>Originally named `strings`</td></tr>
+<tr><td><code>0.2.0</code></td><td>Renamed to `string`</td></tr>
+</tbody>
+</table>
+</details>
+
 ```grain
 import String from "string"
 ```
@@ -32,6 +45,11 @@ Functions for working with the String data type.
 
 ### String.**concat**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.1.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 concat : (String, String) -> String
 ```
@@ -59,6 +77,11 @@ String.concat("Foo", " Bar") == "FooBar"
 
 ### String.**length**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.1.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 length : String -> Number
 ```
@@ -85,6 +108,11 @@ String.length("Hello world") == 11
 
 ### String.**byteLength**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.1.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 byteLength : String -> Number
 ```
@@ -110,6 +138,11 @@ String.byteLength("🌾") == 4
 ```
 
 ### String.**indexOf**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 indexOf : (String, String) -> Option<Number>
@@ -138,6 +171,11 @@ String.indexOf("world", "Hello world") == Some(6)
 
 ### String.**charAt**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 charAt : (Number, String) -> Char
 ```
@@ -165,6 +203,11 @@ String.charAt(5, "Hello world") == ' '
 
 ### String.**explode**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 explode : String -> Array<Char>
 ```
@@ -186,10 +229,15 @@ Returns:
 Examples:
 
 ```grain
-String.explode("Hello") == [> 'H', 'e', 'l', 'l', 'o' ]
+String.explode("Hello") == [> 'H', 'e', 'l', 'l', 'o']
 ```
 
 ### String.**implode**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 implode : Array<Char> -> String
@@ -212,7 +260,7 @@ Returns:
 Examples:
 
 ```grain
-String.implode([> 'H', 'e', 'l', 'l', 'o' ]) == "Hello"
+String.implode([> 'H', 'e', 'l', 'l', 'o']) == "Hello"
 ```
 
 ### String.**split**
@@ -239,10 +287,15 @@ Returns:
 Examples:
 
 ```grain
-String.split(" ", "Hello world") == [> "Hello", "world" ]
+String.split(" ", "Hello world") == [> "Hello", "world"]
 ```
 
 ### String.**slice**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.1.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 slice : (Number, Number, String) -> String
@@ -272,6 +325,11 @@ String.slice(0, 5, "Hello world") == "Hello"
 
 ### String.**contains**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.1.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 contains : (String, String) -> Bool
 ```
@@ -298,6 +356,11 @@ String.contains("world", "Hello world") == true
 ```
 
 ### String.**startsWith**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.1.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 startsWith : (String, String) -> Bool
@@ -326,6 +389,11 @@ String.startsWith("Hello", "Hello world") == true
 
 ### String.**endsWith**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.1.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 endsWith : (String, String) -> Bool
 ```
@@ -353,6 +421,11 @@ String.endsWith("world", "Hello world") == true
 
 ### String.**encodeAt**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 encodeAt : (String, Encoding, Bytes, Number) -> Bytes
 ```
@@ -375,6 +448,11 @@ Returns:
 |`Bytes`|A copy of the input bytes with the encoded string replaced at the given position|
 
 ### String.**encodeAtWithBom**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 encodeAtWithBom : (String, Encoding, Bytes, Number) -> Bytes
@@ -399,6 +477,11 @@ Returns:
 
 ### String.**encode**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 encode : (String, Encoding) -> Bytes
 ```
@@ -420,6 +503,11 @@ Returns:
 
 ### String.**encodeWithBom**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 encodeWithBom : (String, Encoding) -> Bytes
 ```
@@ -440,6 +528,11 @@ Returns:
 |`Bytes`|The byte representation of the string in the given encoding|
 
 ### String.**decodeRange**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 decodeRange : (Bytes, Encoding, Number, Number) -> String
@@ -464,6 +557,11 @@ Returns:
 
 ### String.**decodeRangeKeepBom**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 decodeRangeKeepBom : (Bytes, Encoding, Number, Number) -> String
 ```
@@ -487,6 +585,11 @@ Returns:
 
 ### String.**decode**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 decode : (Bytes, Encoding) -> String
 ```
@@ -507,6 +610,11 @@ Returns:
 |`String`|The decoded string|
 
 ### String.**decodeKeepBom**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 decodeKeepBom : (Bytes, Encoding) -> String
@@ -529,6 +637,11 @@ Returns:
 
 ### String.**forEachCodePoint**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 forEachCodePoint : ((Number -> Void), String) -> Void
 ```
@@ -549,6 +662,11 @@ String.forEachCodePoint(print, "Hello world")
 ```
 
 ### String.**forEachCodePointi**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 forEachCodePointi : (((Number, Number) -> Void), String) -> Void
@@ -572,6 +690,11 @@ String.forEachCodePointi((codepoint, index) => print((codepoint, index)), "Hello
 ```
 
 ### String.**trimStart**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.4.2</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 trimStart : String -> String
@@ -599,6 +722,11 @@ String.trimStart("   Hello World") == "Hello World"
 
 ### String.**trimEnd**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.4.2</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 trimEnd : String -> String
 ```
@@ -624,6 +752,11 @@ String.trimEnd("Hello World   ") == "Hello World"
 ```
 
 ### String.**trim**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.4.2</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 trim : String -> String
