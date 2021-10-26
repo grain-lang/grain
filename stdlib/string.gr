@@ -289,8 +289,14 @@ let explodeHelp = (s: String, chars) => {
  * @example String.explode("Hello") == [> 'H', 'e', 'l', 'l', 'o' ]
  */
 @disableGC
-export let explode = (string) => {
-  WasmI32.toGrain(explodeHelp(string, true)): Array<Char>
+export let rec explode = (string) => {
+  // `explodeHelp` and `string` do not need to be incRef'd as they are not
+  // decRef'd in `explodeHelp`
+  let ret = WasmI32.toGrain(explodeHelp(string, true)) : (Array<Char>)
+
+  Memory.decRef(WasmI32.fromGrain(string))
+  Memory.decRef(WasmI32.fromGrain(explode))
+  ret
 }
 
 /**
