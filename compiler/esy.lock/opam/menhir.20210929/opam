@@ -1,0 +1,28 @@
+opam-version: "2.0"
+maintainer: "francois.pottier@inria.fr"
+authors: [
+  "François Pottier <francois.pottier@inria.fr>"
+  "Yann Régis-Gianas <yrg@pps.univ-paris-diderot.fr>"
+]
+homepage: "http://gitlab.inria.fr/fpottier/menhir"
+dev-repo: "git+https://gitlab.inria.fr/fpottier/menhir.git"
+bug-reports: "https://gitlab.inria.fr/fpottier/menhir/-/issues"
+license: "LGPL-2.0-only with OCaml-LGPL-linking-exception"
+build: [
+  ["dune" "build" "-p" name "-j" jobs]
+]
+depends: [
+  "ocaml" {>= "4.02.3"}
+  "dune" {>= "2.2.0"}
+  "menhirLib" {= version}
+  "menhirSdk" {= version}
+]
+synopsis: "An LR(1) parser generator"
+url {
+  src:
+    "https://gitlab.inria.fr/fpottier/menhir/-/archive/20210929/archive.tar.gz"
+  checksum: [
+    "md5=437b8a568c9bb0df35b4482439c2520b"
+    "sha512=6a3cb084d1b2868022b4cb94484801aa7eaea13cfe2788b0da4407693229a6ce699cb282d9fd972476cf29551c259daa40f355dcdc1e545e47573a458a84c9dd"
+  ]
+}

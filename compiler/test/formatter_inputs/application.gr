@@ -1,5 +1,6 @@
 import Array from "array"
 import Option from "option"
+import Map from "map"
 
 let data = [>]
 
@@ -32,3 +33,19 @@ export let unique = array => {
 export let batchActionCreateAccount = ({index}) => {
   Native.promiseBatchActionCreateAccount(Conv.fromInt64(index))
 }
+
+
+let ret = filteri(
+  dst + _VALUE_OFFSET + dstIndex,
+  src + _VALUE_OFFSET + srcIndex,
+  length,
+)
+
+
+let preExistingObjectsWithRefCountMismatch = Map.make(): (Map.Map<Number, (Number,Number,Number,Number)>)
+
+let preEmatch = Map.make(): (Map.Map<Number, (Number,Number,Number,Number)>)
+
+let preExistingObjectsch2 = Map.make(): (Map.Map<Number, (Number,Number)>)
+
+let preExistingObjectsWithRefCountMismatch2 = Map.make(): (Map.Map<Number, (Number,Number,Number,Number,Number,Number,Number,Number,Number,Number,Number)>)
