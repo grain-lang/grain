@@ -1029,16 +1029,22 @@ and print_type =
   | PTyTuple(parsed_types) =>
     Doc.concat([
       Doc.lparen,
-      Doc.join(
-        Doc.comma,
-        List.map(t => print_type(t, original_source), parsed_types),
+      Doc.indent(
+        Doc.concat([
+          Doc.softLine,
+          Doc.join(
+            Doc.concat([Doc.comma, Doc.line]),
+            List.map(t => print_type(t, original_source), parsed_types),
+          ),
+          if (List.length(parsed_types) == 1) {
+            // single arg tuple
+            Doc.comma;
+          } else {
+            Doc.nil;
+          },
+        ]),
       ),
-      if (List.length(parsed_types) == 1) {
-        // single arg tuple
-        Doc.comma;
-      } else {
-        Doc.nil;
-      },
+      Doc.softLine,
       Doc.rparen,
     ])
 
