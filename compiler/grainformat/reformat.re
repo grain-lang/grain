@@ -1235,38 +1235,52 @@ and print_application =
       ]);
     } else {
       Doc.group(
-        Doc.concat([
-          print_expression(
-            ~parentIsArrow=false,
-            ~endChar=None,
-            ~original_source,
-            ~parent_loc=func.pexp_loc,
-            func,
-          ),
-          Doc.lparen,
-          Doc.indent(
-            Doc.concat([
-              Doc.softLine,
-              Doc.join(
-                Doc.concat([Doc.text(","), Doc.line]),
-                List.map(
-                  e =>
-                    print_expression(
-                      ~parentIsArrow=false,
-                      ~endChar=None,
-                      ~original_source,
-                      ~parent_loc,
-                      e,
-                    ),
-                  expressions,
+        if (List.length(expressions) == 0) {
+          Doc.concat([
+            print_expression(
+              ~parentIsArrow=false,
+              ~endChar=None,
+              ~original_source,
+              ~parent_loc=func.pexp_loc,
+              func,
+            ),
+            Doc.lparen,
+            Doc.rparen,
+          ]);
+        } else {
+          Doc.concat([
+            print_expression(
+              ~parentIsArrow=false,
+              ~endChar=None,
+              ~original_source,
+              ~parent_loc=func.pexp_loc,
+              func,
+            ),
+            Doc.lparen,
+            Doc.indent(
+              Doc.concat([
+                Doc.softLine,
+                Doc.join(
+                  Doc.concat([Doc.text(","), Doc.line]),
+                  List.map(
+                    e =>
+                      print_expression(
+                        ~parentIsArrow=false,
+                        ~endChar=None,
+                        ~original_source,
+                        ~parent_loc,
+                        e,
+                      ),
+                    expressions,
+                  ),
                 ),
-              ),
-              Doc.ifBreaks(Doc.comma, Doc.nil),
-            ]),
-          ),
-          Doc.softLine,
-          Doc.rparen,
-        ]),
+                Doc.ifBreaks(Doc.comma, Doc.nil),
+              ]),
+            ),
+            Doc.softLine,
+            Doc.rparen,
+          ]);
+        },
       );
     }
   };
@@ -2109,10 +2123,14 @@ and print_expression =
             expression,
           ),
           Doc.text(":"),
-          Doc.space,
-          Doc.lparen, // needed to fix compiler bug (trailing type annotation needs paren, #866)
-          print_type(parsed_type, original_source),
-          Doc.rparen,
+          Doc.indent(
+            Doc.concat([
+              Doc.softLine,
+              Doc.lparen, // TODO needed to fix compiler bug (trailing type annotation needs paren, #866)
+              print_type(parsed_type, original_source),
+              Doc.rparen,
+            ]),
+          ),
         ]),
       )
     | PExpLambda(patterns, expression) =>
