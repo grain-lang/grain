@@ -290,6 +290,8 @@ let explodeHelp = (s: String, chars) => {
  */
 @disableGC
 export let rec explode = (string) => {
+  // `explodeHelp` and `string` do not need to be incRef'd as they are not
+  // decRef'd in `explodeHelp`
   let ret = WasmI32.toGrain(explodeHelp(string, true)) : (Array<Char>)
 
   Memory.decRef(WasmI32.fromGrain(string))
