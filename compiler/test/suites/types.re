@@ -1,7 +1,7 @@
 open Grain_tests.TestFramework;
 open Grain_tests.Runner;
 
-describe("aliased_types", ({test}) => {
+describe("aliased types", ({test}) => {
   let assertCompileError = makeCompileErrorRunner(test);
   let assertRun = makeRunner(test);
 
@@ -183,7 +183,7 @@ describe("aliased_types", ({test}) => {
   );
 });
 
-describe("abstract_types", ({test}) => {
+describe("abstract types", ({test}) => {
   let assertCompileError = makeCompileErrorRunner(test);
 
   assertCompileError(
