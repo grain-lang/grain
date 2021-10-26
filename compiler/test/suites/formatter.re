@@ -3,6 +3,7 @@ open Grain_tests.Runner;
 
 describe("formatter", ({test}) => {
   let assertFormatOutput = makeFormatterRunner(test);
+  assertFormatOutput("aliases", "aliases");
   assertFormatOutput("application", "application");
   assertFormatOutput("function_params", "function_params");
   assertFormatOutput("variants", "variants");

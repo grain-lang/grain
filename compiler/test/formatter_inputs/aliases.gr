@@ -1,0 +1,43 @@
+type Foo = String
+
+type Foo = // Test comment
+  String
+
+type Foo<
+a
+> = String
+
+type Foo<a,
+  b> = String
+
+type Foo<a,
+  b> = String // Test comment
+
+type Foo< // Test comment
+a, b
+> = String
+
+type AReallyReallyReallyReallyReallyReallyReallyReallyReallyLongLineBreakingType<a,
+  b> = String
+
+type AReallyReallyReallyReallyReallyReallyReallyReallyReallyLongLineBreakingType<a, // Test comment
+  b> = String
+
+type Foo<a, // Test comment
+  b> = String
+
+type Foo<a, /* Test comment */ b> = String
+
+type Foo<a // Test comment
+, b> = String
+
+// Test comment
+type Foo = String
+
+/* Test comment */ type Foo = String
+
+type Foo = String // Test comment
+
+type Foo<a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,x,y,z,aa,ab,ac,ad,ae,af,ag,ah,ai> = String
+
+type Bar<a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,x,y,z,aa,ab,ac,ad,ae,af,ag,ah,ai> = Foo<a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,x,y,z,aa,ab,ac,ad,ae,af,ag,ah,ai>
