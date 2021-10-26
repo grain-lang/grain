@@ -11,19 +11,19 @@ record Queue<a> { forwards: List<a>, backwards: List<a> }
  */
 
 /**
- * Creates a new queue.
+ * Creates an empty queue.
  * 
- * @returns A new empty queue
+ * @returns An empty queue
  */
 export let make = () => {
   { forwards: [], backwards: [] }
 }
 
 /**
- * Checks if the given queue contains no elements.
+ * Checks if the given queue contains any elements.
  * 
  * @param queue: The queue to check
- * @returns A boolean representing weather or not the queue is empty
+ * @returns `true` if the given queue is empty or `false` otherwise
  */
 export let isEmpty = queue => {
   match (queue) {
@@ -37,6 +37,7 @@ export let isEmpty = queue => {
  * 
  * @param queue: The queue to peek into
  * @returns The element on the top of the queue, if the queue is empty it returns `None`
+ * @returns `Some(item)` containing the element on the top of the queue, if the queue is empty returns `None`
  */
 export let peek = queue => {
   match (queue) {
@@ -46,11 +47,11 @@ export let peek = queue => {
 }
 
 /**
- * Pushes a new element into the queue.
+ * Pushes a value to the end of the queue.
  * 
- * @param value: The value to push
- * @param queue: The queue to push to
- * @returns The queue with the addition of the new element
+ * @param value: The value to queue
+ * @param queue: The queue to append the value too
+ * @returns The new queue
  */
 export let push = (value, queue) => {
   match (queue) {
@@ -60,10 +61,10 @@ export let push = (value, queue) => {
 }
 
 /**
- * Pops an element off the queue.
+ * Pops a value off the front of the queue.
  * 
  * @param queue: The queue to pop from
- * @returns The queue with the item removed
+ * @returns The new queue
  */
 export let pop = queue => {
   match (queue) {
@@ -81,7 +82,7 @@ export let pop = queue => {
 /**
  * Get the length of the provided queue.
  * 
- * @param queue: The queue to get the length from
+ * @param queue: The queue to determine the size of.
  * @returns The size of the queue
  */
 export let size = queue => {

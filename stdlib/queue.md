@@ -18,13 +18,13 @@ Functions for working with queues.
 make : () -> Queue<a>
 ```
 
-Creates a new queue.
+Creates an empty queue.
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Queue<a>`|A new empty queue|
+|`Queue<a>`|An empty queue|
 
 ### Queue.**isEmpty**
 
@@ -32,7 +32,7 @@ Returns:
 isEmpty : Queue<a> -> Bool
 ```
 
-Checks if the given queue contains no elements.
+Checks if the given queue contains any elements.
 
 Parameters:
 
@@ -44,7 +44,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|A boolean representing weather or not the queue is empty|
+|`Bool`|`true` if the given queue is empty or `false` otherwise|
 
 ### Queue.**peek**
 
@@ -65,6 +65,7 @@ Returns:
 |type|description|
 |----|-----------|
 |`Option<a>`|The element on the top of the queue, if the queue is empty it returns `None`|
+|`Option<a>`|`Some(item)` containing the element on the top of the queue, if the queue is empty returns `None`|
 
 ### Queue.**push**
 
@@ -72,20 +73,20 @@ Returns:
 push : (a, Queue<a>) -> Queue<a>
 ```
 
-Pushes a new element into the queue.
+Pushes a value to the end of the queue.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value`|`a`|The value to push|
-|`queue`|`Queue<a>`|The queue to push to|
+|`value`|`a`|The value to queue|
+|`queue`|`Queue<a>`|The queue to append the value too|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Queue<a>`|The queue with the addition of the new element|
+|`Queue<a>`|The new queue|
 
 ### Queue.**pop**
 
@@ -93,7 +94,7 @@ Returns:
 pop : Queue<a> -> Queue<a>
 ```
 
-Pops an element off the queue.
+Pops a value off the front of the queue.
 
 Parameters:
 
@@ -105,7 +106,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Queue<a>`|The queue with the item removed|
+|`Queue<a>`|The new queue|
 
 ### Queue.**size**
 
@@ -119,7 +120,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`queue`|`Queue<a>`|The queue to get the length from|
+|`queue`|`Queue<a>`|The queue to determine the size of.|
 
 Returns:
 
