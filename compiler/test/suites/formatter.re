@@ -25,6 +25,7 @@ describe("formatter", ({test}) => {
   assertFormatOutput("lambda", "lambda");
   assertFormatOutput("operators", "operators");
   assertFormatOutput("enums", "enums");
+  assertFormatOutput("enum_long", "enum_long");
   assertFormatOutput("lets", "lets");
   assertFormatOutput("ignores", "ignores");
   assertFormatOutput("list_sugar", "list_sugar");

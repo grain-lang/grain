@@ -19,7 +19,6 @@ export enum Ship {
   Ship(Number, Number, Number)
 }
 
-
 enum ParsedRegularExpression {
   RENever,
   REEmpty,
