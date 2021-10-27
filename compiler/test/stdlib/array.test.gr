@@ -52,6 +52,46 @@ assert !(Array.copy(arr1) is arr1)
 assert Array.copy(arr2) == arr2
 assert !(Array.copy(arr2) is arr2)
 
+// Array.cycle
+
+let arr1 = [> 1, 2, 3]
+let mut sum = 0
+
+let sentinel = (_n) => {
+  sum = 42
+}
+
+Array.cycle(sentinel, 3, [>])
+
+assert sum == 0
+
+let addToSum = (n) => {
+  sum = sum + n
+}
+
+Array.cycle(addToSum, 2, arr1)
+
+assert sum == 12
+
+let arr2 = [> "a", "b", "c"]
+let mut word = ""
+let addToWord = (n) => {
+  word = word ++ n
+}
+
+Array.cycle(addToWord, 2, arr2)
+
+assert word == "abcabc"
+
+sum = 0
+
+Array.cycle(sentinel, 0, arr1)
+
+assert sum == 0
+
+Array.cycle(sentinel, -42, arr1)
+
+assert sum == 0
 // Array.forEach
 
 let arr1 = [> 1, 2, 3]

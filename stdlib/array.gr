@@ -233,6 +233,29 @@ export let copy = (array) => {
 }
 
 /**
+ * Iterates an array a given number of times, calling an iterator function on each element.
+ *
+ * @param fn: The iterator function to call with each element
+ * @param n: The number of times to iterate the given array
+ * @param array: The array to iterate
+ *
+ * @since v0.4.4
+ */
+export let cycle = (fn, n, array) => {
+  let length = length(array)
+  let mut iteration = 0
+  let mut count = 0
+  while (iteration < n) {
+    while (count < length) {
+      fn(array[count]): Void
+      count = incr(count)
+    }
+    iteration = incr(iteration)
+    count = 0
+  }
+}
+
+/**
  * Iterates an array, calling an iterator function on each element.
  *
  * @param fn: The iterator function to call with each element
