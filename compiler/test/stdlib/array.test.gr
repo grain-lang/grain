@@ -83,6 +83,15 @@ Array.cycle(addToWord, 2, arr2)
 
 assert word == "abcabc"
 
+sum = 0
+
+Array.cycle(sentinel, 0, arr1)
+
+assert sum == 0
+
+Array.cycle(sentinel, -42, arr1)
+
+assert sum == 0
 // Array.forEach
 
 let arr1 = [> 1, 2, 3]
