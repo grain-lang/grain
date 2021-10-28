@@ -15,6 +15,7 @@ record Queue<a> { forwards: List<a>, backwards: List<a> }
  * Creates an empty queue.
  * 
  * @returns An empty queue
+ * @since v0.0.0
  */
 export let make = () => {
   { forwards: [], backwards: [] }
@@ -39,7 +40,7 @@ export let isEmpty = queue => {
  * Returns the value at the beginning of the queue.
  * 
  * @param queue: The queue to inspect
- * @returns `Some(item)` containing the value at the beginning of the queue, or `None` if the queue is empty
+ * @returns `Some(value)` containing the value at the beginning of the queue, or `None` if the queue is empty
  *
  * @since v0.3.2
  * @history v0.2.0: Originally named `head`

@@ -4,6 +4,11 @@ title: Queue
 
 An immutable queue implementation. A queue is a FIFO (first-in-first-out) data structure where new values are added to the end and retrieved or removed from the beginning.
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 import Queue from "queue"
 ```
@@ -13,6 +18,11 @@ import Queue from "queue"
 Functions for working with queues.
 
 ### Queue.**make**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.0.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 make : () -> Queue<a>
@@ -28,11 +38,16 @@ Returns:
 
 ### Queue.**isEmpty**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 isEmpty : Queue<a> -> Bool
 ```
 
-Checks if the given queue contains any elements.
+Checks if the given queue contains any values.
 
 Parameters:
 
@@ -48,83 +63,129 @@ Returns:
 
 ### Queue.**peek**
 
+<details>
+<summary>Added in <code>0.3.2</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `head`</td></tr>
+<tr><td><code>0.3.2</code></td><td>Deprecated `head` function</td></tr>
+<tr><td><code>0.4.0</code></td><td>Removed `head` function</td></tr>
+</tbody>
+</table>
+</details>
+
 ```grain
 peek : Queue<a> -> Option<a>
 ```
 
-Returns the element on the top of the queue.
+Returns the value at the beginning of the queue.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`queue`|`Queue<a>`|The queue to peek into|
+|`queue`|`Queue<a>`|The queue to inspect|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Option<a>`|The element on the top of the queue, if the queue is empty it returns `None`|
-|`Option<a>`|`Some(item)` containing the element on the top of the queue, if the queue is empty returns `None`|
+|`Option<a>`|`Some(value)` containing the value at the beginning of the queue, or `None` if the queue is empty|
 
 ### Queue.**push**
+
+<details>
+<summary>Added in <code>0.3.2</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `enqueue`</td></tr>
+<tr><td><code>0.3.2</code></td><td>Deprecated `enqueue` function</td></tr>
+<tr><td><code>0.4.0</code></td><td>Removed `enqueue` function</td></tr>
+</tbody>
+</table>
+</details>
 
 ```grain
 push : (a, Queue<a>) -> Queue<a>
 ```
 
-Pushes a value to the end of the queue.
+Adds a value to the end of the queue.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value`|`a`|The value to queue|
-|`queue`|`Queue<a>`|The queue to append the value too|
+|`value`|`a`|The value to append|
+|`queue`|`Queue<a>`|The queue to update|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Queue<a>`|The new queue|
+|`Queue<a>`|An updated queue|
 
 ### Queue.**pop**
+
+<details>
+<summary>Added in <code>0.3.2</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `dequeue`</td></tr>
+<tr><td><code>0.3.2</code></td><td>Deprecated `dequeue` function</td></tr>
+<tr><td><code>0.4.0</code></td><td>Removed `dequeue` function</td></tr>
+</tbody>
+</table>
+</details>
 
 ```grain
 pop : Queue<a> -> Queue<a>
 ```
 
-Pops a value off the front of the queue.
+Removes the value at the beginning of the queue.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`queue`|`Queue<a>`|The queue to pop from|
+|`queue`|`Queue<a>`|The queue to change|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Queue<a>`|The new queue|
+|`Queue<a>`|An updated queue|
 
 ### Queue.**size**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.2</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 size : Queue<a> -> Number
 ```
 
-Get the length of the provided queue.
+Get the number of values in a queue.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`queue`|`Queue<a>`|The queue to determine the size of.|
+|`queue`|`Queue<a>`|The queue to inspect|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Number`|The size of the queue|
+|`Number`|The number of values in the queue|
 
