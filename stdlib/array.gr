@@ -816,12 +816,6 @@ export let join = (separator: String, items: Array<String>) => {
 /**
  * A simple helper function to convert a negative array index
  * number to its positive positional equivalent.
- *
- * @param arrLen: The array length
- * @param idx: The index number
- * @returns The positive positional equivalent index number
- *
- * @since v0.4.0
  */
 let wrapNegativeIndex = (arrLen, idx) => {
   if (idx >= 0) {
@@ -903,17 +897,18 @@ export let sort = (comp, array) => {
 }
 
 /**
- * Rotates an array by n elements to the right, in place. For
- * example: 'rotate([> 1, 2, 3, 4, 5], 2) == [> 4, 5, 1, 2, 3]'
+ * Rotates an array by n elements to the right, in place.
  *
  * If n is negative, the array will be rotated by n elements
- * to the left. e.g. 'rotate([> 1, 2, 3, 4, 5], -1) == [> 2, 3, 4, 5, 1]'
+ * to the left. See examples.
  *
  * @param arr: The array to be rotated
  * @param n: The number of elements to rotate by
  * @returns The rotated array
  *
- * @since v0.4.0
+ * @example: 'rotate([> 1, 2, 3, 4, 5], 2) == [> 4, 5, 1, 2, 3]'
+ * @example: 'rotate([> 1, 2, 3, 4, 5], -1) == [> 2, 3, 4, 5, 1]'
+ * @since v0.4.4
  */
 export let rotate = (arr, n) => {
   let rec gcd = (a, b) => {
@@ -939,10 +934,10 @@ export let rotate = (arr, n) => {
         break
       }
       let newVal = get(d, arr)
-      set(j, newVal, arr)
+      arr[j] = newVal
       j = d
     }
-    set(j, temp, arr)
+    arr[j] = temp
   }
   arr
 }
