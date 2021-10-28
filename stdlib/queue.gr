@@ -1,6 +1,7 @@
 /**
  * @module Queue: An immutable queue implementation. A queue is a FIFO (first-in-first-out) data structure where new values are added to the end and retrieved or removed from the beginning.
  * @example import Queue from "queue"
+ * @since v0.2.0
  */
 import List from "list"
 
