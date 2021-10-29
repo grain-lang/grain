@@ -326,3 +326,11 @@ assert Array.slice(2, 1, testChars) == [>]
 assert Array.slice(-1, -2, testChars) == [>]
 // Empty
 assert Array.slice(1, 4, [>]) == [>]
+
+let arr = [> 5, 3, 8, 14, 2, 1]
+Array.sort((<), arr)
+assert arr == [> 1, 2, 3, 5, 8, 14]
+
+let arr = [> 5, 3, 8, 14, 2, 1]
+Array.sort((>), arr)
+assert arr == [> 14, 8, 5, 3, 2, 1]
