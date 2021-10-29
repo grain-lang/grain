@@ -243,15 +243,10 @@ export let copy = (array) => {
  */
 export let cycle = (fn, n, array) => {
   let length = length(array)
-  let mut iteration = 0
-  let mut count = 0
-  while (iteration < n) {
-    while (count < length) {
-      fn(array[count]): Void
-      count = incr(count)
+  for (let mut iteration = 0; iteration < n; iteration = incr(iteration)) {
+    for (let mut count = 0; count < length; count = incr(count)) {
+      fn(array[count]): (Void)
     }
-    iteration = incr(iteration)
-    count = 0
   }
 }
 
@@ -266,10 +261,8 @@ export let cycle = (fn, n, array) => {
  */
 export let forEach = (fn, array) => {
   let length = length(array)
-  let mut count = 0
-  while (count < length) {
-    fn(array[count]): Void
-    count = incr(count)
+  for (let mut count = 0; count < length; count = incr(count)) {
+    fn(array[count]): (Void)
   }
 }
 
@@ -285,10 +278,8 @@ export let forEach = (fn, array) => {
  */
 export let forEachi = (fn, array) => {
   let length = length(array)
-  let mut count = 0
-  while (count < length) {
+  for (let mut count = 0; count < length; count = incr(count)) {
     fn(array[count], count): (Void)
-    count = incr(count)
   }
 }
 
@@ -458,9 +449,12 @@ export let fillRange = (value, start, stop, array) => {
   }
 
   let mut index = startIndex
-  while (index < stopIndex && index < length) {
-    array[index] = value
+  for (
+    let mut index = startIndex;
+    index < stopIndex && index < length;
     index += 1
+  ) {
+    array[index] = value
   }
   void
 }
@@ -543,11 +537,9 @@ export let fromList = (list) => {
 export let contains = (search, array) => {
   // TODO: This should use recursion when we can pattern match arrays
   let len = length(array)
-  let mut index = 0
   let mut found = false
-  while ((!found) && (index < len)) {
-    found = (array[index] == search)
-    index += 1
+  for (let mut index = 0; !found && index < len; index += 1) {
+    found = array[index] == search
   }
   found
 }
@@ -681,14 +673,10 @@ export let count = (fn, array) => {
  */
 export let counti = (fn, array) => {
   let length = length(array)
-  let mut position = 0
   let mut count = 0
-  while (position < length) {
-    if(fn(array[position], position)) {
+  for (let mut position = 0; position < length; position = incr(position)) {
+    if (fn(array[position], position)) {
       count = incr(count)
-      position = incr(position)
-    } else {
-      position = incr(position)
     }
   }
   count
