@@ -15,7 +15,7 @@ record Queue<a> { forwards: List<a>, backwards: List<a> }
  * Creates an empty queue.
  * 
  * @returns An empty queue
- * @since v0.0.0
+ * @since v0.2.0
  */
 export let make = () => {
   { forwards: [], backwards: [] }
