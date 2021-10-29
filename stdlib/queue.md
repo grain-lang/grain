@@ -20,7 +20,7 @@ Functions for working with queues.
 ### Queue.**make**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.0.0</code></summary>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
 No other changes yet.
 </details>
 
@@ -81,7 +81,7 @@ Returns:
 peek : Queue<a> -> Option<a>
 ```
 
-Returns the value at the beginning of the queue.
+Returns the value at the beginning of the queue, without removing the value from the queue.
 
 Parameters:
 

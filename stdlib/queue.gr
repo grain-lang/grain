@@ -37,7 +37,7 @@ export let isEmpty = queue => {
 }
 
 /**
- * Returns the value at the beginning of the queue.
+ * Returns the value at the beginning of the queue, without removing the value from the queue.
  * 
  * @param queue: The queue to inspect
  * @returns `Some(value)` containing the value at the beginning of the queue, or `None` if the queue is empty
