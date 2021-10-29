@@ -857,6 +857,14 @@ export let slice = (startIndex, endIndex, array) => {
   }
 }
 
+/**
+ * Sorts an array in-place based on the quicksort algorithm.
+ * 
+ * @param comp: The comparative function that we are using to sort
+ * @param array: The array to be sorted
+ * @returns Void
+ */
+
 export let sort = (comp, array) => {
   let partition = (low, high) => {
     let pivot = array[high]
