@@ -283,7 +283,7 @@ let rec decRef = (userPtr: WasmI32, ignoreZeros: Bool) => {
         // Throwing causes last logged print statements to not be printed,
         // so it becomes very difficult to debug memory problems. Maybe a
         // buffer is not being flushed? If the debugging hooks are active then
-        // behave ad if ignoreZeros was true to continue executing and give the
+        // behave as if ignoreZeros was true to continue executing and give the
         // debugging hooks an opportunity to report the issue.
         if (WasmI32.ne(_DEBUG_HOOK_DECREF, 0n)) {
           userPtr
