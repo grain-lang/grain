@@ -387,8 +387,6 @@ export let rec setDebugHooks = (
   incRefNoDebug(WasmI32.fromGrain(onMalloc))
   incRefNoDebug(WasmI32.fromGrain(onFree))
 
-  // decRef(WasmI32.fromGrain(f))
-
   decRef(WasmI32.fromGrain(setDebugHooks))
 
   _DEBUG_HOOK_INCREF = WasmI32.fromGrain(onIncRef)
