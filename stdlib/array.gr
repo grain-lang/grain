@@ -858,13 +858,12 @@ export let slice = (startIndex, endIndex, array) => {
 }
 
 /**
- * Sorts an array in-place based on the quicksort algorithm.
+ * Sorts an array in-place using the quicksort algorithm.
  * 
- * @param comp: The comparative function that we are using to sort
+ * @param comp: The function that takes two arguments and returns true if the first argument preceeds the second
  * @param array: The array to be sorted
- * @returns Void
+ * @returns void
  */
-
 export let sort = (comp, array) => {
   let partition = (low, high) => {
     let pivot = array[high]
@@ -877,8 +876,8 @@ export let sort = (comp, array) => {
         set(j, temp, array)
       }
     }
-    let temp = array[i+1]
-    set(i+1, array[high], array)
+    let temp = array[i + 1]
+    set(i + 1, array[high], array)
     set(high, temp, array)
     i + 1
   }
