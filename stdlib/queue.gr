@@ -74,7 +74,7 @@ export let push = (value, queue) => {
 }
 
 /**
- * Removes the value at the beginning of the queue.
+ * Dequeues the next value in the queue.
  * 
  * @param queue: The queue to change
  * @returns An updated queue

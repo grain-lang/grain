@@ -81,7 +81,7 @@ Returns:
 peek : Queue<a> -> Option<a>
 ```
 
-Returns the value at the beginning of the queue, without removing the value from the queue.
+Returns the value at the beginning of the queue. It is not removed from the queue.
 
 Parameters:
 
@@ -150,7 +150,7 @@ Returns:
 pop : Queue<a> -> Queue<a>
 ```
 
-Removes the value at the beginning of the queue.
+Dequeues the next value in the queue.
 
 Parameters:
 
