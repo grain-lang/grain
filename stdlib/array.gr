@@ -860,8 +860,8 @@ export let slice = (startIndex, endIndex, array) => {
 /**
  * Sorts an array in-place using the quicksort algorithm.
  * 
- * @param comp: The function that takes two arguments and returns true if the first argument preceeds the second
- * @param array: The array to be sorted
+ * @param comp: (a, a) -> Number - A function that takes two arguments. It must return 0 if its arguments compare as equal, a positive number if the first is greater, and a negative number if the first is smaller
+ * @param array: Array<a> - The array to be sorted
  * @returns void
  */
 export let sort = (comp, array) => {
@@ -869,7 +869,7 @@ export let sort = (comp, array) => {
     let pivot = array[high]
     let mut i = low - 1
     for(let mut j = low; j < high; j += 1) {
-      if(comp(array[j], pivot)){
+      if(comp(array[j], pivot) < 0){
         i += 1
         let temp = array[i]
         set(i, array[j], array)

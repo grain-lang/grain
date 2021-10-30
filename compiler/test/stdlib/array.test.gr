@@ -330,22 +330,30 @@ assert Array.slice(1, 4, [>]) == [>]
 
 // Array.sort
 // Numbers
+let comp = (left, right) => {
+    match((left, right)) {
+        (left, right) when left > right => 1,
+        (left, right) when left == right => 0,
+        _ => -1
+    }
+}
 let arr = [> 5, 3, 4, 6, 2, 1]
-Array.sort((<), arr)
+Array.sort(comp, arr)
 assert arr == [> 1, 2, 3, 4, 5, 6]
-let arr = [> 5, 3, 4, 6, 2, 1]
-Array.sort((>), arr)
-assert arr == [> 6, 5, 4, 3, 2, 1]
 // Empty
 let arr = [>]
-Array.sort((>), arr)
+Array.sort(comp, arr)
 assert arr == [>]
 // Strings
+let comp = (left, right) => {
+    match((String.length(left), String.length(right))) {
+        (left, right) when left > right => 1,
+        (left, right) when left == right => 0,
+        _ => -1
+    }
+}
 let arr = [> "a", "abcde", "abc", "ab", "abcd", "a"]
-let comp = (a, b) => String.length(a) > String.length(b) 
-Array.sort(comp, arr)
-assert arr == [> "abcde", "abcd", "abc", "ab", "a", "a"]
+let result = Array.sort(comp, arr)
+assert arr == [> "a", "a", "ab", "abc", "abcd", "abcde"]
 // Returns void
-let arr = [> 5, 3, 4, 6, 2, 1]
-let result = Array.sort((<), arr)
 assert result == void
