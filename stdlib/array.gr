@@ -652,7 +652,7 @@ export let count = (fn, array) => {
   let mut count = 0
   for (let mut position = 0; position < length; position += 1) {
     if(fn(array[position])) {
-      count = incr(count)
+      count += 1
     }
   }
   count
@@ -671,9 +671,9 @@ export let count = (fn, array) => {
 export let counti = (fn, array) => {
   let length = length(array)
   let mut count = 0
-  for (let mut position = 0; position < length; position = incr(position)) {
+  for (let mut position = 0; position < length; position += 1) {
     if (fn(array[position], position)) {
-      count = incr(count)
+      count += 1
     }
   }
   count
@@ -696,7 +696,7 @@ export let filter = (fn, array) => {
   forEach((el) => {
     if (fn(el)) {
       filtered[position] = el
-      position = incr(position)
+      position += 1
     }
   }, array)
   init(position, (index) => {
