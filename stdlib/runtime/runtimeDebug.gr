@@ -96,7 +96,7 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
   let decRefsOnPreExistingObjects = Map.make(): (Map.Map<Number, Number>)
 
   // Since objects created by GC.malloc have a starting refcount of 1,
-  // the total incRefsByTag would not match decRefsByTag. I'm compensating it
+  // the total incRefsByTag would not match decRefsByTag. We compensate for this
   // by keeping track of number of objects that have gone malloc+free cycle.
   // This isn't perfect because in case of leaks free isn't called and the
   // totals can create confusion. The simplest solution would be to get the tag
