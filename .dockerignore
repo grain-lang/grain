@@ -21,6 +21,7 @@ script/node_modules
 **/*.log
 _build/
 */_build/
+cli/bin/*.exe
 .installed-pkgs
 notes.org
 node_modules/
