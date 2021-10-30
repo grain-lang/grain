@@ -158,11 +158,8 @@ let callDebugHookMalloc = (userPtr: WasmI32) => {
 
     let fPtr = _DEBUG_HOOK_MALLOC
 
-    incRefNoDebug(fPtr)
-
     let onMalloc = WasmI32.toGrain(fPtr) : (WasmI32 -> Void)
 
-    incRefNoDebug(fPtr)
     onMalloc(userPtr)
 
     _DEBUG_HOOK_RUNNING = false
@@ -178,11 +175,8 @@ let callDebugHookFree = (userPtr: WasmI32) => {
 
     let fPtr = _DEBUG_HOOK_FREE
 
-    incRefNoDebug(fPtr)
-
     let onFree = WasmI32.toGrain(fPtr) : (WasmI32 -> Void)
 
-    incRefNoDebug(fPtr)
     onFree(userPtr)
 
     _DEBUG_HOOK_RUNNING = false
@@ -198,11 +192,8 @@ let callDebugHookIncRef = (userPtr: WasmI32) => {
 
     let fPtr = _DEBUG_HOOK_INCREF
 
-    incRefNoDebug(fPtr)
-
     let onIncRef = WasmI32.toGrain(fPtr) : (WasmI32 -> Void)
 
-    incRefNoDebug(fPtr)
     onIncRef(userPtr)
 
     _DEBUG_HOOK_RUNNING = false
@@ -218,11 +209,8 @@ let callDebugHookDecRef = (userPtr: WasmI32, ignoreZeros: Bool) => {
 
     let fPtr = _DEBUG_HOOK_DECREF
 
-    incRefNoDebug(fPtr)
-
     let onDecRef = WasmI32.toGrain(fPtr) : ((WasmI32,Bool) -> Void)
 
-    incRefNoDebug(fPtr)
     onDecRef(userPtr, ignoreZeros)
 
     _DEBUG_HOOK_RUNNING = false
