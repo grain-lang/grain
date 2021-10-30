@@ -1,5 +1,4 @@
 // Standard library for list functionality
-
 export *
 
 let init = (length, fn) => {
@@ -328,4 +327,43 @@ let join = (separator: String, items: List<String>) => {
     None => "",
     Some(s) => s,
   }
+}
+
+/**
+ * Sorts the given list based on a given comparator function via a mergesort algorithm. The resulting list is sorted in increasing order.
+ * 
+ * @param comp: (a, a) -> Number - A function that takes two arguments. It must return 0 if its arguments compare as equal, a positive integer if the first is greater, and a negative integer if the first is smaller
+ * @param list: List<a> - The list to be sorted
+ * @returns List<a>
+ */
+let sort = (comp, list) => { 
+  let rec merge = (left, right, list) => {
+    match((left, right)){
+      (_, []) => {
+        append(reverse(list), left)
+      },
+      ([], _) => {
+        append(reverse(list), right)
+      },
+      ([lhd, ...ltl], [rhd, ...rtl]) => {
+        if(comp(lhd, rhd) < 0){
+          merge(ltl, right, append([lhd],list))
+        }else{
+          merge(left, rtl, append([rhd], list))
+        }
+      }
+    }
+  }
+
+  let rec mergesort = (list) => {
+    if(length(list) <= 1){
+      list
+    }else{
+      let middle = length(list) / 2
+      let (left, right) = part(middle, list)
+      merge(mergesort(left), mergesort(right), [])
+    }
+  }
+
+  mergesort(list)
 }
