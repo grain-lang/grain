@@ -386,10 +386,24 @@ export let rec setDebugHooks = (
 }
 
 export let rec removeDebugHooks = () => {
+  // We need to decRef the hook functions, but without triggering
+  // the the decRef hook while doing so. So just clean the global
+  // variables first and then do the decRefs.
+  let tmp1 = _DEBUG_HOOK_INCREF
+  let tmp2 = _DEBUG_HOOK_DECREF
+  let tmp3 = _DEBUG_HOOK_MALLOC
+  let tmp4 = _DEBUG_HOOK_FREE
+
   _DEBUG_HOOK_INCREF = 0n
   _DEBUG_HOOK_DECREF = 0n
   _DEBUG_HOOK_MALLOC = 0n
   _DEBUG_HOOK_FREE = 0n
+
+  decRef(tmp1)
+  decRef(tmp2)
+  decRef(tmp3)
+  decRef(tmp4)
+
   decRef(WasmI32.fromGrain(removeDebugHooks))
   void
 }
