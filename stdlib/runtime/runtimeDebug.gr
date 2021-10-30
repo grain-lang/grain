@@ -95,15 +95,19 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
   let incRefsOnPreExistingObjects = Map.make(): (Map.Map<Number, Number>)
   let decRefsOnPreExistingObjects = Map.make(): (Map.Map<Number, Number>)
 
-  // Since objects created by GC.malloc have a starting refcount of 1,
-  // the total incRefsByTag would not match decRefsByTag. We compensate for this
-  // by keeping track of number of objects that have gone through the malloc+free cycle.
-  // This isn't perfect because in case of leaks free isn't called and the
-  // totals can create confusion. The simplest solution would be to get the tag
-  // of mallocated objects, but they don't yet have a tag associated. So I
-  // have to compensate again by adding up the objects that have been
-  // mallocated but never freed. Which simply means the ones in "allocations"
-  // Map.
+  // In order to correctly present the summary of incRefs/decRefs by tag, it's
+  // not enough to just track incRefs/decRefs themselves because incRef doesn't
+  // get called for newly allocated objects. They start with ref. count of 1
+  // set directly by GC.malloc. So we want to include the allocated objects in
+  // the summary, but it isn't as simple as adding some code in the hook for
+  // GC.malloc because freshly allocated objects don't have a tag yet. The tag
+  // is normally set later like in dataStructures.allocateString and similar
+  // functions. So what we actually do is track the lifetime of individual
+  // objects in the "allocations" map. Only when an object is freed we read its
+  // tag and increment the corresponding count in the mallocPlusFreeByTag map.
+  // If an object is not freed then it's left in the allocations map. So we
+  // group these leaked objects by tag as well and present the totals in the
+  // summary as "malloc without free".
   let mallocPlusFreeByTag = Map.make(): (Map.Map<Number, Number>)
 
   @disableGC
