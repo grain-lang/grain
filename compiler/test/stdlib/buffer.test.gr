@@ -2,7 +2,7 @@ import String from "string"
 import Buffer from "buffer"
 import Bytes from "bytes"
 import Int32 from "int32"
-import { ensureNoLeaks } from "runtime/runtimeDebug"
+import { ensureNoLeaks } from "runtime/memoryDebug"
 
 // it should have 0 length when buffer is created
 assert Buffer.length(Buffer.make(0)) == 0
