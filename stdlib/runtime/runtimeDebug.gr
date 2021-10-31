@@ -192,7 +192,8 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
   let incRefsByTag = Map.make(): (Map.Map<Number, Number>)
   let decRefsByTag = Map.make(): (Map.Map<Number, Number>)
 
-  let inintialRefCountsOnPreExistingObjects = Map.make(): (Map.Map<Number, Number>)
+  let inintialRefCountsOnPreExistingObjects = Map.make():
+    (Map.Map<Number, Number>)
   let incRefsOnPreExistingObjects = Map.make(): (Map.Map<Number, Number>)
   let decRefsOnPreExistingObjects = Map.make(): (Map.Map<Number, Number>)
 
@@ -488,7 +489,8 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
   // messed up with unmaching incRefs/decRefs.
   // Note that the inintialRefCountsOnPreExistingObjects map is guaranteed to
   // have entries for keys of both incRefsOnPreExistingObjects and decRefsOnPreExistingObjects.
-  let preExistingObjectsWithRefCountMismatch = Map.make(): (Map.Map<Number, (Number,Number,Number,Number)>)
+  let preExistingObjectsWithRefCountMismatch = Map.make():
+    (Map.Map<Number, (Number, Number, Number, Number)>)
 
   Map.forEach(
     (userPtr, initialRefCount) => {
@@ -521,12 +523,13 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
 
   let numAllocLeaks = Set.size(allocations)
 
-  let noLeaksFound = numAllocLeaks == 0 && totalPreexistingObjectsDeallocated == 0 &&
+  let noLeaksFound = numAllocLeaks == 0 &&
+  totalPreexistingObjectsDeallocated == 0 &&
   preExistingObjectsWithRefCountMismatches == 0
 
   let printSummary = match (options.summary) {
     PrintSummaryIfLeaksAreFound => !noLeaksFound,
-    AlwaysPrintSummary => true
+    AlwaysPrintSummary => true,
   }
 
   if (printSummary) {
@@ -566,7 +569,7 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
         preExistingObjectsWithRefCountMismatch,
       )
     }
-    
+
     if (totalPreexistingObjectsDeallocated > 0) {
       print("")
       print(
@@ -589,7 +592,8 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
           let refCount = readRefCount(userPtr)
           let tag = readTag(userPtr)
           print(
-            "- 0x" ++ toHex(userPtr) ++ " (ref. count: " ++ toString(refCount) ++
+            "- 0x" ++ toHex(userPtr) ++ " (ref. count: " ++
+            toString(refCount) ++
             "; tag " ++
             toString(tag) ++
             " " ++
@@ -603,7 +607,7 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
         allocations,
       )
     }
-    
+
     print("")
     print("totalMallocs: " ++ toString(totalMallocs))
     print("totalFrees: " ++ toString(totalFrees))
@@ -619,8 +623,14 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
 
     Set.forEach(
       tag => {
-        let incRefCount = Option.unwrapWithDefault(0, Map.get(tag, incRefsByTag))
-        let decRefCount = Option.unwrapWithDefault(0, Map.get(tag, decRefsByTag))
+        let incRefCount = Option.unwrapWithDefault(
+          0,
+          Map.get(tag, incRefsByTag),
+        )
+        let decRefCount = Option.unwrapWithDefault(
+          0,
+          Map.get(tag, decRefsByTag),
+        )
         let mallocPlusFreeCount = Option.unwrapWithDefault(
           0,
           Map.get(tag, mallocPlusFreeByTag),
