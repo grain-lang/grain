@@ -177,25 +177,64 @@ let rec tagToTypeName = (tag: Number) => {
 }
 
 let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
-  // The main objective is to find and print objects allocated
-  // in the function, but not deallocated at the end.
+  // The objective of this function is to find and report any memory leaks in
+  // the function f to be examined.
+  //
+  // What it can detect:
+  // 1. Objects allocated by the function, but not deallocated.
+  // 2. Reference counting issues caused by the function on objects that
+  //    already existed, but were accessed for example from global variables.
+  //
+  // Depending on options it can print in detail all the memory operations like
+  // malloc, free, incRef and decRef during execution or only print the actual
+  // leaks detected. It tries to provide as much useful information as possible
+  // to quickly find causes of leaks, but it's recommended to be used on chunks
+  // of code at a time.
+  //
+  // How it works:
+  // The gc module in the runtime allows setting up hooks to be executed on
+  // each call to malloc, free, incRef or decRef. Before running the function
+  // to be examined, the hookes are set and removed immediately after. During
+  // execution of these hooks, they get inhibited in order to allow use normal
+  // garbage collected memory management. The hooks just receive the pointer of
+  // an object as WasmI32 value. Since WasmI32 values cannot be used in garbage
+  // collected code or added into heap allocated data structures like Set or
+  // Map, they get converted into Number values and back again to WasmI32 where
+  // needed. While using Int32 type for this purpose would be a more natural
+  // choice, Number was chosen instead to reduce heap allocations. If the whole
+  // program doesn't use too much memory, then the pointers can fit into the
+  // range of simple numbers. Performance of this function shouldn't be
+  // disregarded as we may end up running it extensively in tests of the
+  // standard library.
 
+  // The allocations Set contans pointers of objects that have been allocated
+  // using with malloc during execution of the function. When free is called
+  // for an object, its removed. This way at the end of the function it
+  // contains pointers of all allocated objects that become memory leaks.
   let allocations = Set.make(): (Set.Set<Number>)
 
+  // We collect some overall counts of memory operations to report in the
+  // summary. Other than for memory leaks, it's useful to give an idea about
+  // cost of the function in terms of memory management overhead.
   let mut totalMallocs = 0
   let mut totalFrees = 0
   let mut totalIncRefs = 0
   let mut totalDecRefs = 0
 
+  // We're assuming the function to examine is pure, in the sense that it
+  // shoudn't mess with any global variables, so we can consider it a potential
+  // problem if any object not allocated by the function gets deallocated.
   let mut totalPreexistingObjectsDeallocated = 0
-
-  let incRefsByTag = Map.make(): (Map.Map<Number, Number>)
-  let decRefsByTag = Map.make(): (Map.Map<Number, Number>)
 
   let inintialRefCountsOnPreExistingObjects = Map.make():
     (Map.Map<Number, Number>)
   let incRefsOnPreExistingObjects = Map.make(): (Map.Map<Number, Number>)
   let decRefsOnPreExistingObjects = Map.make(): (Map.Map<Number, Number>)
+
+  // In the summary we want to present at a glance memory activity by object
+  // type.
+  let incRefsByTag = Map.make(): (Map.Map<Number, Number>)
+  let decRefsByTag = Map.make(): (Map.Map<Number, Number>)
 
   // In order to correctly present the summary of incRefs/decRefs by tag, it's
   // not enough to just track incRefs/decRefs themselves because incRef doesn't
@@ -435,6 +474,13 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
       )
     }
   }
+
+  // The following are the actual hook functions that will be set in the GC
+  // module. We want them to be minimal mostly just call the above function
+  // implemented in high level grain without @disableGC. One thing of note is
+  // that they are actually closures capturing the pointers to the above
+  // functions, and so indirectly all the supporting data structures allocated
+  // locally above.
 
   @disableGC
   let incRefHook = (userPtr: WasmI32) => {
