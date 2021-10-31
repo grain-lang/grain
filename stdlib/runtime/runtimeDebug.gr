@@ -151,19 +151,29 @@ let rec readContentAsString = (userPtrAsNumber: Number) => {
   contentAsString
 }
 
-let tagToTypeName = (tag: Number) => {
-  match (tag) {
-    1 => "string",
-    2 => "char",
-    3 => "enum",
-    4 => "record",
-    5 => "array",
-    6 => "number",
-    7 => "lambda",
-    8 => "tuple",
-    9 => "bytes",
+@disableGC
+let rec tagToTypeName = (tag: Number) => {
+  let tagAsWasmI32 = coerceNumberToWasmI32(tag)
+
+  let (==) = WasmI32.eq
+
+  let result = match (tagAsWasmI32) {
+    x when x == Tags._GRAIN_STRING_HEAP_TAG => "string",
+    x when x == Tags._GRAIN_CHAR_HEAP_TAG => "char",
+    x when x == Tags._GRAIN_ADT_HEAP_TAG => "enum",
+    x when x == Tags._GRAIN_RECORD_HEAP_TAG => "record",
+    x when x == Tags._GRAIN_ARRAY_HEAP_TAG => "array",
+    x when x == Tags._GRAIN_BOXED_NUM_HEAP_TAG => "number",
+    x when x == Tags._GRAIN_LAMBDA_HEAP_TAG => "lambda",
+    x when x == Tags._GRAIN_TUPLE_HEAP_TAG => "tuple",
+    x when x == Tags._GRAIN_BYTES_HEAP_TAG => "bytes",
     _ => "unknown",
   }
+
+  Memory.decRef(WasmI32.fromGrain(tag))
+  Memory.decRef(WasmI32.fromGrain(tagToTypeName))
+
+  result
 }
 
 let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
