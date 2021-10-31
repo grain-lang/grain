@@ -60,26 +60,117 @@ let keyUnionOfTwoMaps = (map1: Map.Map<k, v1>, map2: Map.Map<k, v2>) => {
   keyUnion
 }
 
+@disableGC
+let rec readTag = (userPtrAsNumber: Number) => {
+  Memory.incRef(WasmI32.fromGrain(coerceNumberToWasmI32))
+  Memory.incRef(WasmI32.fromGrain(userPtrAsNumber))
+  let userPtr = coerceNumberToWasmI32(userPtrAsNumber)
+
+  let tag = WasmI32.load(userPtr, 0n)
+  Memory.incRef(WasmI32.fromGrain(Conv.wasmI32ToNumber))
+  let tagAsNumber = Conv.wasmI32ToNumber(tag)
+
+  Memory.decRef(WasmI32.fromGrain(userPtrAsNumber))
+  Memory.decRef(WasmI32.fromGrain(readTag))
+
+  tagAsNumber
+}
+
+@disableGC
+let rec readRefCount = (userPtrAsNumber: Number) => {
+  Memory.incRef(WasmI32.fromGrain(coerceNumberToWasmI32))
+  Memory.incRef(WasmI32.fromGrain(userPtrAsNumber))
+  let userPtr = coerceNumberToWasmI32(userPtrAsNumber)
+
+  let _HEADER_SIZE = 8n
+  let refCnt = WasmI32.load(WasmI32.sub(userPtr, _HEADER_SIZE), 0n)
+  Memory.incRef(WasmI32.fromGrain(Conv.wasmI32ToNumber))
+  let refCntAsNumber = Conv.wasmI32ToNumber(refCnt)
+
+  Memory.decRef(WasmI32.fromGrain(userPtrAsNumber))
+  Memory.decRef(WasmI32.fromGrain(readRefCount))
+
+  refCntAsNumber
+}
+
+@disableGC
+let rec readContentAsString = (userPtrAsNumber: Number) => {
+  Memory.incRef(WasmI32.fromGrain(coerceNumberToWasmI32))
+  Memory.incRef(WasmI32.fromGrain(userPtrAsNumber))
+  let userPtr = coerceNumberToWasmI32(userPtrAsNumber)
+
+  let _HEADER_SIZE = 8n
+  let refCnt = WasmI32.load(WasmI32.sub(userPtr, _HEADER_SIZE), 0n)
+
+  let tag = WasmI32.load(userPtr, 0n)
+
+  let contentAsString = if (WasmI32.eq(tag, Tags._GRAIN_STRING_HEAP_TAG)) {
+    // Special case for strings. We don't want to call toString because
+    // it returns the same object. We want to keep the string contents
+    // for printing without altering the refcount of the original string.
+    // Se lets copy just it and while we're at it, add quotes to better
+    // illustrate that the value is for a string.
+    let originalSize = WasmI32.load(userPtr, 4n)
+    let newSize = WasmI32.add(originalSize, 2n)
+    let newString = allocateString(newSize)
+    WasmI32.store8(newString, 0x22n, 8n)
+    Memory.copy(
+      WasmI32.add(newString, 9n),
+      WasmI32.add(userPtr, 8n),
+      originalSize,
+    )
+    WasmI32.store8(
+      WasmI32.add(newString, WasmI32.add(originalSize, 1n)),
+      0x22n,
+      8n,
+    )
+    WasmI32.toGrain(newString): (String)
+  } else if (WasmI32.eq(refCnt, 0n)) {
+    // Special case when printing an object that has refCount of zero and
+    // is going to be deallocated.
+    // The ref count has already been decremented to zero, but is still in
+    // memory so we can print it. For this to work, the refcount needs to be
+    // incremented to 2 to avoid deallocating by decRef inside toString.
+    Memory.incRef(WasmI32.fromGrain(userPtr))
+    Memory.incRef(WasmI32.fromGrain(userPtr))
+    Memory.incRef(WasmI32.fromGrain(toString))
+    let s = toString(userPtr)
+    // And then we can reset it to zero to avoid introducing issues.
+    WasmI32.store(WasmI32.sub(userPtr, _HEADER_SIZE), 0n, 0n)
+    s
+  } else {
+    // Otherwise just call toString with usual calling conventions.
+    Memory.incRef(WasmI32.fromGrain(userPtr))
+    Memory.incRef(WasmI32.fromGrain(toString))
+    toString(userPtr)
+  }
+
+  Memory.decRef(WasmI32.fromGrain(userPtrAsNumber))
+  Memory.decRef(WasmI32.fromGrain(readContentAsString))
+
+  contentAsString
+}
+
+let tagToTypeName = (tag: Number) => {
+  match (tag) {
+    1 => "string",
+    2 => "char",
+    3 => "enum",
+    4 => "record",
+    5 => "array",
+    6 => "number",
+    7 => "lambda",
+    8 => "tuple",
+    9 => "bytes",
+    _ => "unknown",
+  }
+}
+
 let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
   // The main objective is to find and print objects allocated
   // in the function, but not deallocated at the end.
 
   let allocations = Set.make(): (Set.Set<Number>)
-
-  let tagToTypeName = (tag: Number) => {
-    match (tag) {
-      1 => "string",
-      2 => "char",
-      3 => "enum",
-      4 => "record",
-      5 => "array",
-      6 => "number",
-      7 => "lambda",
-      8 => "tuple",
-      9 => "bytes",
-      _ => "unknown",
-    }
-  }
 
   let mut totalMallocs = 0
   let mut totalFrees = 0
@@ -109,97 +200,6 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
   // group these leaked objects by tag as well and present the totals in the
   // summary as "malloc without free".
   let mallocPlusFreeByTag = Map.make(): (Map.Map<Number, Number>)
-
-  @disableGC
-  let rec readTag = (userPtrAsNumber: Number) => {
-    Memory.incRef(WasmI32.fromGrain(coerceNumberToWasmI32))
-    Memory.incRef(WasmI32.fromGrain(userPtrAsNumber))
-    let userPtr = coerceNumberToWasmI32(userPtrAsNumber)
-
-    let tag = WasmI32.load(userPtr, 0n)
-    Memory.incRef(WasmI32.fromGrain(Conv.wasmI32ToNumber))
-    let tagAsNumber = Conv.wasmI32ToNumber(tag)
-
-    Memory.decRef(WasmI32.fromGrain(userPtrAsNumber))
-    Memory.decRef(WasmI32.fromGrain(readTag))
-
-    tagAsNumber
-  }
-
-  @disableGC
-  let rec readRefCount = (userPtrAsNumber: Number) => {
-    Memory.incRef(WasmI32.fromGrain(coerceNumberToWasmI32))
-    Memory.incRef(WasmI32.fromGrain(userPtrAsNumber))
-    let userPtr = coerceNumberToWasmI32(userPtrAsNumber)
-
-    let _HEADER_SIZE = 8n
-    let refCnt = WasmI32.load(WasmI32.sub(userPtr, _HEADER_SIZE), 0n)
-    Memory.incRef(WasmI32.fromGrain(Conv.wasmI32ToNumber))
-    let refCntAsNumber = Conv.wasmI32ToNumber(refCnt)
-
-    Memory.decRef(WasmI32.fromGrain(userPtrAsNumber))
-    Memory.decRef(WasmI32.fromGrain(readRefCount))
-
-    refCntAsNumber
-  }
-
-  @disableGC
-  let rec readContentAsString = (userPtrAsNumber: Number) => {
-    Memory.incRef(WasmI32.fromGrain(coerceNumberToWasmI32))
-    Memory.incRef(WasmI32.fromGrain(userPtrAsNumber))
-    let userPtr = coerceNumberToWasmI32(userPtrAsNumber)
-
-    let _HEADER_SIZE = 8n
-    let refCnt = WasmI32.load(WasmI32.sub(userPtr, _HEADER_SIZE), 0n)
-
-    let tag = WasmI32.load(userPtr, 0n)
-
-    let contentAsString = if (WasmI32.eq(tag, Tags._GRAIN_STRING_HEAP_TAG)) {
-      // Special case for strings. We don't want to call toString because
-      // it returns the same object. We want to keep the string contents
-      // for printing without altering the refcount of the original string.
-      // Se lets copy just it and while we're at it, add quotes to better
-      // illustrate that the value is for a string.
-      let originalSize = WasmI32.load(userPtr, 4n)
-      let newSize = WasmI32.add(originalSize, 2n)
-      let newString = allocateString(newSize)
-      WasmI32.store8(newString, 0x22n, 8n)
-      Memory.copy(
-        WasmI32.add(newString, 9n),
-        WasmI32.add(userPtr, 8n),
-        originalSize,
-      )
-      WasmI32.store8(
-        WasmI32.add(newString, WasmI32.add(originalSize, 1n)),
-        0x22n,
-        8n,
-      )
-      WasmI32.toGrain(newString): (String)
-    } else if (WasmI32.eq(refCnt, 0n)) {
-      // Special case when printing an object that has refCount of zero and
-      // is going to be deallocated.
-      // The ref count has already been decremented to zero, but is still in
-      // memory so we can print it. For this to work, the refcount needs to be
-      // incremented to 2 to avoid deallocating by decRef inside toString.
-      Memory.incRef(WasmI32.fromGrain(userPtr))
-      Memory.incRef(WasmI32.fromGrain(userPtr))
-      Memory.incRef(WasmI32.fromGrain(toString))
-      let s = toString(userPtr)
-      // And then we can reset it to zero to avoid introducing issues.
-      WasmI32.store(WasmI32.sub(userPtr, _HEADER_SIZE), 0n, 0n)
-      s
-    } else {
-      // Otherwise just call toString with usual calling conventions.
-      Memory.incRef(WasmI32.fromGrain(userPtr))
-      Memory.incRef(WasmI32.fromGrain(toString))
-      toString(userPtr)
-    }
-
-    Memory.decRef(WasmI32.fromGrain(userPtrAsNumber))
-    Memory.decRef(WasmI32.fromGrain(readContentAsString))
-
-    contentAsString
-  }
 
   let maybeObjectContentsAppendix = if (options.printObjectContents) {
     (userPtrAsNumber: Number) => {
