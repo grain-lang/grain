@@ -858,9 +858,9 @@ export let slice = (startIndex, endIndex, array) => {
 }
 
 /**
- * Sorts an array in-place using the quicksort algorithm.
+ * Sorts an array in-place.
  *
- * Ordering is calculated using a comparator function—a function which takes two array elements and must return 0 if both are equal, a positive number if the first is greater, and a negative number if the first is smaller.
+ * Ordering is calculated using a comparator function which takes two array elements and must return 0 if both are equal, a positive number if the first is greater, and a negative number if the first is smaller.
  * @param comp: The comparator function used to indicate sort order
  * @param array: The array to be sorted
  * @since v0.4.5
