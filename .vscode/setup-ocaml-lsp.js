@@ -21,7 +21,7 @@ if (process.platform === 'win32') {
   console.log("NOTE: It looks like you are using Windows. You'll need to install esy globally using `npm i -g esy`");
 
   output[ocamlsandbox] = {
-    "root": "${compilerPath}",
+    "root": `${compilerPath}`,
     "kind": "esy"
   };
 } else {
