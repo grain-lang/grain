@@ -203,7 +203,7 @@ export let peekErr = (fn, result) => {
  *
  * @param msg: The message to prepend if the result contains an `Err`
  * @param result: The result to extract a value from
- * @returns The unwrapped `ok` value if the result is of the `Ok` variant, otherwise returns `msg: err`
+ * @returns The unwrapped `ok` value if the result is of the `Ok` variant, otherwise throws `msg: err`
  *
  * @example Result.expect("Unexpected error", Ok(1234)) == 1234
  *

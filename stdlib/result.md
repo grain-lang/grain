@@ -327,7 +327,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`a`|The unwrapped `ok` value if the result is of the `Ok` variant, otherwise returns `msg: err`|
+|`a`|The unwrapped `ok` value if the result is of the `Ok` variant, otherwise throws `msg: err`|
 
 Examples:
 
