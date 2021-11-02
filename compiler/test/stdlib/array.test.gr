@@ -363,3 +363,6 @@ assert result == void
 assert Array.rotate([> 1, 2, 3, 4, 5], 0) == [> 1, 2, 3, 4, 5]
 assert Array.rotate([> 1, 2, 3, 4, 5], 3) == [> 3, 4, 5, 1, 2]
 assert Array.rotate([> 1, 2, 3, 4, 5], -4) == [> 5, 1, 2, 3, 4]
+assert Array.rotate([> 1, 2, 3, 4, 5], 5) == [> 1, 2, 3, 4, 5]
+assert Array.rotate([> 1, 2, 3, 4, 5], 48) == [> 3, 4, 5, 1, 2]
+assert Array.rotate([> 1, 2, 3, 4, 5], -54) == [> 5, 1, 2, 3, 4]
