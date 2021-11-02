@@ -906,9 +906,9 @@ export let sort = (comp, array) => {
  * @param n: The number of elements to rotate by
  * @returns The rotated array
  *
- * @example: 'rotate([> 1, 2, 3, 4, 5], 2) == [> 4, 5, 1, 2, 3]'
- * @example: 'rotate([> 1, 2, 3, 4, 5], -1) == [> 2, 3, 4, 5, 1]'
- * @since v0.4.4
+ * @example: rotate([> 1, 2, 3, 4, 5], 2) == [> 4, 5, 1, 2, 3]
+ * @example: rotate([> 1, 2, 3, 4, 5], -1) == [> 2, 3, 4, 5, 1]
+ * @since v0.4.5
  */
 export let rotate = (arr, n) => {
   let rec gcd = (a, b) => {
@@ -927,13 +927,13 @@ export let rotate = (arr, n) => {
   let mut j  = 0
   for (let mut i = 0; i < gcd(arrLen, k); i += 1) {
     j = i
-    temp = get(i, arr)
+    temp = arr[i]
     while (true) {
       d = (j - k) % arrLen
       if (d == i) {
         break
       }
-      let newVal = get(d, arr)
+      let newVal = arr[d]
       arr[j] = newVal
       j = d
     }
