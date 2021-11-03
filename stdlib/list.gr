@@ -331,11 +331,12 @@ let join = (separator: String, items: List<String>) => {
 }
 
 /**
- * Sorts the given list based on a given comparator function via a mergesort algorithm. The resulting list is sorted in increasing order.
+ * Sorts the given list based on a given comparator function. The resulting list is sorted in increasing order.
  * 
- * @param comp: (a, a) -> Number - A function that takes two arguments. It must return 0 if its arguments compare as equal, a positive Number if the first is greater, and a negative Number if the first is smaller
- * @param list: List<a> - The list to be sorted
- * @returns List<a>
+ * Ordering is calculated using a comparator function which takes two list elements and must return 0 if both are equal, a positive number if the first is greater, and a negative number if the first is smaller.
+ * @param comp: The comparator function used to indicate sort order
+ * @param list: The list to be sorted
+ * @since v0.4.5
  */
 let sort = (comp, list) => { 
   let rec merge = (left, right, list) => {
