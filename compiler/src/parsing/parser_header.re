@@ -179,8 +179,10 @@ let mkid = ns => {
   mkloc @@ help(ns);
 };
 
-let mkid_expr = (dyp, ns) =>
-  Exp.ident(~loc=symbol_rloc(dyp), mkid(ns, symbol_rloc(dyp)));
+let mkid_expr = (~loc=?, dyp, ns) => {
+  let loc = Option.value(~default=symbol_rloc(dyp), loc);
+  Exp.ident(~loc, mkid(ns, loc));
+};
 
 let mkstr = (dyp, s) => mkloc(s, symbol_rloc(dyp));
 
