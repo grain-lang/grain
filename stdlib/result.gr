@@ -37,7 +37,7 @@ export let isOk = result => {
 export let isErr = result => !isOk(result)
 
 /**
- * Converts the Result to an Option. The error is discarded and replaced with `None`.
+ * Converts the Result to an Option. An error value is discarded and replaced with `None`.
  *
  * @param result: The result to convert
  * @returns `Some(value)` if the Result is `Ok(value)` or `None` if the Result is an `Err`
@@ -106,7 +106,8 @@ export let mapErr = (fn, result) => {
 }
 
 /**
- * If the Result is `Ok(value)`, applies the given function to the `value` to produce a new value, otherwise uses the default value. Useful for unwrapping a successful Result while providing a fallback for any errors that can occur.
+ * If the Result is `Ok(value)`, applies the given function to the `value` to produce a new value, otherwise uses the default value.
+ * Useful for unwrapping a successful Result while providing a fallback for any errors that can occur.
  *
  * @param fn: The function to call on the value of an `Ok` variant
  * @param def: A fallback value for an `Err` variant
@@ -121,7 +122,8 @@ export let mapWithDefault = (fn, def, result) => {
 }
 
 /**
- * If the Result is `Ok(value)`, applies the `fnOk` function to the `value` to produce a new value. If the Result is `Err(value)`, applies the `fnErr` function to the `value` to produce a new value. Useful for unwrapping a Result into a value, whether it is successful or unsuccessful.
+ * If the Result is `Ok(value)`, applies the `fnOk` function to the `value` to produce a new value. If the Result is `Err(value)`, applies the `fnErr` function to the `value` to produce a new value.
+ * Useful for unwrapping a Result into a value, whether it is successful or unsuccessful.
  *
  * @param fnOk: The function to call on the value of an `Ok` variant
  * @param fnErr: The function to call on the value of an `Err` variant
@@ -136,7 +138,7 @@ export let mapWithDefaultFn = (fnOk, fnErr, result) => {
 }
 
 /**
- * If the first Result is `Ok`, returns the first Result. Returns the second Result otherwise.
+ * Behaves like a logical OR (`||`) where the first Result is only returned if it is the `Ok` variant and falling back to the second Result in all other cases.
  *
  * @param result1: The first result
  * @param result2: The second result
@@ -164,7 +166,8 @@ export let and = (result1, result2) => {
 }
 
 /**
- * If the Result is `Ok(value)`, applies the `fnOk` function to the `value` without producing a new value. If the Result is `Err(value)`, applies the `fnErr` function to the `value` without producing a new value. Useful for inspecting Results without changing anything.
+ * If the Result is `Ok(value)`, applies the `fnOk` function to the `value` without producing a new value. If the Result is `Err(value)`, applies the `fnErr` function to the `value` without producing a new value.
+ * Useful for inspecting Results without changing anything.
  *
  * @param fnOk: The function to call on the value of an `Ok` variant
  * @param fnErr: The function to call on the value of an `Err` variant
