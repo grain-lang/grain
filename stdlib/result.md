@@ -69,7 +69,7 @@ Returns:
 toOption : Result<a, b> -> Option<a>
 ```
 
-Converts the Result to an Option. The error is discarded and replaced with `None`.
+Converts the Result to an Option. An error value is discarded and replaced with `None`.
 
 Parameters:
 
@@ -173,7 +173,8 @@ Returns:
 mapWithDefault : ((a -> b), b, Result<a, c>) -> b
 ```
 
-If the Result is `Ok(value)`, applies the given function to the `value` to produce a new value, otherwise uses the default value. Useful for unwrapping a successful Result while providing a fallback for any errors that can occur.
+If the Result is `Ok(value)`, applies the given function to the `value` to produce a new value, otherwise uses the default value.
+Useful for unwrapping a successful Result while providing a fallback for any errors that can occur.
 
 Parameters:
 
@@ -195,7 +196,8 @@ Returns:
 mapWithDefaultFn : ((a -> b), (c -> b), Result<a, c>) -> b
 ```
 
-If the Result is `Ok(value)`, applies the `fnOk` function to the `value` to produce a new value. If the Result is `Err(value)`, applies the `fnErr` function to the `value` to produce a new value. Useful for unwrapping a Result into a value, whether it is successful or unsuccessful.
+If the Result is `Ok(value)`, applies the `fnOk` function to the `value` to produce a new value. If the Result is `Err(value)`, applies the `fnErr` function to the `value` to produce a new value.
+Useful for unwrapping a Result into a value, whether it is successful or unsuccessful.
 
 Parameters:
 
@@ -217,7 +219,7 @@ Returns:
 ( or ) : (Result<a, b>, Result<a, b>) -> Result<a, b>
 ```
 
-If the first Result is `Ok`, returns the first Result. Returns the second Result otherwise.
+Behaves like a logical OR (`||`) where the first Result is only returned if it is the `Ok` variant and falling back to the second Result in all other cases.
 
 Parameters:
 
@@ -259,7 +261,8 @@ Returns:
 peek : ((a -> b), (c -> d), Result<a, c>) -> Void
 ```
 
-If the Result is `Ok(value)`, applies the `fnOk` function to the `value` without producing a new value. If the Result is `Err(value)`, applies the `fnErr` function to the `value` without producing a new value. Useful for inspecting Results without changing anything.
+If the Result is `Ok(value)`, applies the `fnOk` function to the `value` without producing a new value. If the Result is `Err(value)`, applies the `fnErr` function to the `value` without producing a new value.
+Useful for inspecting Results without changing anything.
 
 Parameters:
 
