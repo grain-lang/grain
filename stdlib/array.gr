@@ -856,3 +856,39 @@ export let slice = (startIndex, endIndex, array) => {
     init(newLength, n => array[startIndex + n])
   }
 }
+
+/**
+ * Sorts an array in-place.
+ *
+ * Ordering is calculated using a comparator function which takes two array elements and must return 0 if both are equal, a positive number if the first is greater, and a negative number if the first is smaller.
+ * @param comp: The comparator function used to indicate sort order
+ * @param array: The array to be sorted
+ * @since v0.4.5
+ */
+export let sort = (comp, array) => {
+  let partition = (low, high) => {
+    let pivot = array[high]
+    let mut i = low - 1
+    for(let mut j = low; j < high; j += 1) {
+      if(comp(array[j], pivot) < 0){
+        i += 1
+        let temp = array[i]
+        array[i] = array[j]
+        array[j] = temp
+      }
+    }
+    let temp = array[i + 1]
+    array[i + 1] = array[high]
+    array[high] = temp
+    i + 1
+  }
+  let rec quicksort = (low, high) => {
+    if(low < high){
+      let partitionIndex = partition(low, high)
+      quicksort(partitionIndex + 1, high)
+      quicksort(low, partitionIndex - 1)
+    }
+  }
+  let len = length(array)
+  quicksort(0, len - 1)
+}
