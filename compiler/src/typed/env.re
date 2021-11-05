@@ -1019,12 +1019,12 @@ let find_module = (~alias, path, filename, env) =>
     }) {
     | Not_found =>
       let (_, unit_source, _) = get_unit();
-      let filename = Option.value(~default=Ident.name(id), filename);
-      if (Ident.persistent(id) && !(filename == unit_source)) {
+      switch (filename) {
+      | Some(filename)
+          when Ident.persistent(id) && !(filename == unit_source) =>
         let ps = find_pers_struct(~loc=Location.dummy_loc, filename);
         md(TModSignature(Lazy.force(ps.ps_sig)), Some(filename));
-      } else {
-        raise(Not_found);
+      | _ => raise(Not_found)
       };
     }
   | PExternal(m, n, _pos) =>
