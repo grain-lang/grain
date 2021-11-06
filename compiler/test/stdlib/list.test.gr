@@ -241,3 +241,4 @@ let comp = (left, right) => {
 }
 let list = ["a", "abcde", "abc", "ab", "abcd", "a"]
 assert sort(comp, list) == ["a", "a", "ab", "abc", "abcd", "abcde"]
+assert sort(comp, ["a", "a", "a", "a"]) == ["a", "a", "a", "a"]
