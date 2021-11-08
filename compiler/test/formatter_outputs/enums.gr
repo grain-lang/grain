@@ -77,3 +77,7 @@ enum ParsedRegularExpression {
     Bool
   ), // symlist, true=match/false=does-not-match
 }
+
+record Node { node: AstValue },
+
+enum AstValue { NodeValue(Node), StringValue(String) }
