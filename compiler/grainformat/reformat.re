@@ -515,27 +515,6 @@ let rec resugar_list_patterns =
       Doc.rbracket,
     ]),
   );
-  // let items =
-  //   List.map(
-  //     i =>
-  //       switch (i) {
-  //       | RegularPattern(e) =>
-  //         print_pattern(~pat=e, ~parent_loc, ~original_source)
-  //       | SpreadPattern(e) =>
-  //         Doc.concat([
-  //           Doc.text("..."),
-  //           print_pattern(~pat=e, ~parent_loc, ~original_source),
-  //         ])
-  //       },
-  //     processed_list,
-  //   );
-  // Doc.group(
-  //   Doc.concat([
-  //     Doc.lbracket,
-  //     Doc.join(Doc.concat([Doc.comma, Doc.line]), items),
-  //     Doc.rbracket,
-  //   ]),
-  // );
 }
 
 and resugar_pattern_list_inner =
