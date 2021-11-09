@@ -383,6 +383,32 @@ export let rec implode = (arr: Array<Char>) => {
 }
 
 /**
+ * Create a string that is the given string reversed.
+ *
+ * @param string: The string to reverse
+ * @returns A string whose characters are in the reverse order of the given string
+ *
+ * @example String.reverse("olleH") == "Hello"
+ *
+ * @since v0.5.0
+ */
+export let reverse = (string) => {
+  let len = wasmSafeLength(string)
+  let halfLen = len / 2
+  let mut arr = explode(string)
+  let mut i = 0
+  while (i < halfLen) {
+    let lastIdx = len - i - 1
+    let last = arr[lastIdx]
+    let first = arr[i]
+    arr[i] = last
+    arr[lastIdx] = first
+    i = i + 1
+  }
+  implode(arr)
+}
+
+/**
  * Split a string by the given separator.
  *
  * @param separator: The separator to split on
