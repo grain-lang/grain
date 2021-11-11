@@ -7,10 +7,8 @@
  * @example import Result from "result"
  * 
  * 
- * @example let success = Ok("Yay!") // Creates a successful Result containing "Yay!"
  * @example let success = Ok((x) => 1 + x) // Creates a successful Result containing (x) => 1 + x
  * @example let failure = Err("Something bad happened") // Creates an unsuccessful Result containing "Something bad happened"
- * @example let failure = Err((x) => 1 - x) // Creates an unsuccessful Result containing (x) => 1 - x
  */
 
 /**
