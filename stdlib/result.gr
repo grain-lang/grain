@@ -208,7 +208,7 @@ export let peekErr = (fn, result) => {
  * @param result: The result to extract a value from
  * @returns The unwrapped value if the Result is the `Ok` variant
  *
- * @example Result.expect("Unexpected error", Ok(1234)) == 1234
+ * @example Result.expect("Unexpected error", Ok(1234)) + 42
  *
  * @since v0.4.0
  */

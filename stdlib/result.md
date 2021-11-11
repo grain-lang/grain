@@ -332,7 +332,7 @@ Returns:
 Examples:
 
 ```grain
-Result.expect("Unexpected error", Ok(1234)) == 1234
+Result.expect("Unexpected error", Ok(1234)) + 42
 ```
 
 ### Result.**unwrap**
