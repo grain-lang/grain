@@ -8,7 +8,9 @@
  * 
  * 
  * @example let success = Ok("Yay!") // Creates a successful Result containing "Yay!"
+ * @example let success = Ok((x) => 1 + x) // Creates a successful Result containing (x) => 1 + x
  * @example let failure = Err("Something bad happened") // Creates an unsuccessful Result containing "Something bad happened"
+ * @example let failure = Err((x) => 1 - x) // Creates an unsuccessful Result containing (x) => 1 - x
  */
 
 /**
@@ -152,7 +154,7 @@ export let or = (result1, result2) => {
 }
 
 /**
- * If the first Result is `Err`, returns the first Result. Returns the second Result otherwise.
+ * Behaves like a logical AND (`&&`) where the first Result is only returned if it is the `Err` variant and falling back to the second Result in all other cases.
  *
  * @param result1: The first result
  * @param result2: The second result
