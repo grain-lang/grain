@@ -921,7 +921,7 @@ export let rotate = (arr, n) => {
   }
 
   let arrLen = length(arr)
-  let k = wrapNegativeIndex(arrLen, n % arrLen)
+  let k = n % arrLen
   let mut d = -1
   let mut temp = 0
   let mut j  = 0
