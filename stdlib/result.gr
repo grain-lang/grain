@@ -122,7 +122,8 @@ export let mapWithDefault = (fn, def, result) => {
 }
 
 /**
- * If the Result is `Ok(value)`, applies the `fnOk` function to the `value` to produce a new value. If the Result is `Err(value)`, applies the `fnErr` function to the `value` to produce a new value.
+ * If the Result is `Ok(value)`, applies the `fnOk` function to the `value` to produce a new value.
+ * If the Result is `Err(value)`, applies the `fnErr` function to the `value` to produce a new value.
  * Useful for unwrapping a Result into a value, whether it is successful or unsuccessful.
  *
  * @param fnOk: The function to call on the value of an `Ok` variant
@@ -166,7 +167,8 @@ export let and = (result1, result2) => {
 }
 
 /**
- * If the Result is `Ok(value)`, applies the `fnOk` function to the `value` without producing a new value. If the Result is `Err(value)`, applies the `fnErr` function to the `value` without producing a new value.
+ * If the Result is `Ok(value)`, applies the `fnOk` function to the `value` without producing a new value.
+ * If the Result is `Err(value)`, applies the `fnErr` function to the `value` without producing a new value.
  * Useful for inspecting Results without changing anything.
  *
  * @param fnOk: The function to call on the value of an `Ok` variant
