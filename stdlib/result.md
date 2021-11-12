@@ -196,7 +196,8 @@ Returns:
 mapWithDefaultFn : ((a -> b), (c -> b), Result<a, c>) -> b
 ```
 
-If the Result is `Ok(value)`, applies the `fnOk` function to the `value` to produce a new value. If the Result is `Err(value)`, applies the `fnErr` function to the `value` to produce a new value.
+If the Result is `Ok(value)`, applies the `fnOk` function to the `value` to produce a new value.
+If the Result is `Err(value)`, applies the `fnErr` function to the `value` to produce a new value.
 Useful for unwrapping a Result into a value, whether it is successful or unsuccessful.
 
 Parameters:
@@ -261,7 +262,8 @@ Returns:
 peek : ((a -> b), (c -> d), Result<a, c>) -> Void
 ```
 
-If the Result is `Ok(value)`, applies the `fnOk` function to the `value` without producing a new value. If the Result is `Err(value)`, applies the `fnErr` function to the `value` without producing a new value.
+If the Result is `Ok(value)`, applies the `fnOk` function to the `value` without producing a new value.
+If the Result is `Err(value)`, applies the `fnErr` function to the `value` without producing a new value.
 Useful for inspecting Results without changing anything.
 
 Parameters:
