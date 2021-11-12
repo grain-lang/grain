@@ -34,7 +34,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`option`|`Option<a>`|The option to check|
+|`option`|`Option<a>`|The Option to check|
 
 Returns:
 
@@ -54,7 +54,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`option`|`Option<a>`|The option to check|
+|`option`|`Option<a>`|The Option to check|
 
 Returns:
 
@@ -75,7 +75,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`value`|`a`|The value to expect|
-|`option`|`Option<a>`|The option to check|
+|`option`|`Option<a>`|The Option to check|
 
 Returns:
 
@@ -98,7 +98,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`msg`|`String`|The failure message|
-|`option`|`Option<a>`|The option to unwrap|
+|`option`|`Option<a>`|The Option to unwrap|
 
 Returns:
 
@@ -141,7 +141,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`default`|`a`|The default value to return|
-|`option`|`Option<a>`|The option to unwrap|
+|`option`|`Option<a>`|The Option to unwrap|
 
 Returns:
 
@@ -252,7 +252,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`fn`|`a -> Bool`|The function to filter with|
-|`option`|`Option<a>`|The option to filter|
+|`option`|`Option<a>`|The Option to filter|
 
 Returns:
 
@@ -315,7 +315,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`option`|`Option<Option<a>>`|The option to flatten|
+|`option`|`Option<Option<a>>`|The Option to flatten|
 
 Returns:
 
@@ -335,7 +335,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`option`|`Option<a>`|The option to convert|
+|`option`|`Option<a>`|The Option to convert|
 
 Returns:
 
@@ -349,19 +349,19 @@ Returns:
 toArray : Option<a> -> Array<a>
 ```
 
-If the Option is the `Some` variant, returns a `Array` containing the inner value as the only item. If it is `None`, returns an empty `Array`.
+If the Option is `Some(value)` returns `[> value ]`, Otherwise returns `[> ]`.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`option`|`Option<a>`|The option to convert|
+|`option`|`Option<a>`|The Option to convert|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Array<a>`|The option represented as a array|
+|`Array<a>`|`Some(value)` returns `[> value ]`, Otherwise returns `[> ]`|
 
 ### Option.**toResult**
 
@@ -369,19 +369,22 @@ Returns:
 toResult : (a, Option<b>) -> Result<b, a>
 ```
 
-If the Option is the `Some(a)`, returns `Ok(a)`. If it is `None`, returns an `Err` of the provided error value.
+If the Option is the `Some(value)`, returns `Ok(value)`.
+If it is `None`, returns an `Err(err)` where `err` is the provided error message.
+Converts the Option to a Result. .
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`option`|`a`|The option to convert|
+|`err`|`a`|The error to use if the Option is `None`|
+|`option`|`Option<a>`|The Option to convert|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Result<a, b>`|The option represented as a result|
+|`Result<a, b>`|`Ok(value)` if the Option is `Some(value)` or `Err(err)` if the Option is `None`|
 
 ### Option.**sideEffect**
 
@@ -389,14 +392,15 @@ Returns:
 sideEffect : ((a -> Void), Option<a>) -> Void
 ```
 
-If the Option is the `Some` variant, call `fn` with the inner value. Always returns `void`.
+If the Option is `Some(value)`, applies the `fn` function to the `value` without producing a new value.
+Useful for inspecting Options without changing anything.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Void`|The function to call with|
-|`option`|`Option<a>`|The option to call on|
+|`fn`|`a -> Void`|The function to call on the value of a `Some` variant|
+|`option`|`Option<a>`|The Option to inspect|
 
 ### Option.**peek**
 
@@ -404,20 +408,21 @@ Parameters:
 peek : ((a -> Void), Option<a>) -> Option<a>
 ```
 
-If the Option is the `Some` variant, call `fn` with the inner value. Always returns the Option it is called with; this method is a “chainable” `Option.sideEffect`.
+If the Option is `Some(value)`, applies the `fn` function to the `value` without producing a new value.
+Useful for inspecting Options without changing anything.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Void`|The function to call with|
-|`option`|`Option<a>`|The option to call on|
+|`fn`|`a -> Void`|The function to call on the value of a `Some` variant|
+|`option`|`Option<a>`|The Option to inspect|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Option<a>`|The option|
+|`Option<a>`|The modified Option|
 
 ### Option.**or**
 
@@ -425,20 +430,20 @@ Returns:
 ( or ) : (Option<a>, Option<a>) -> Option<a>
 ```
 
-If the first Option is the `Some` variant, returns the second Option. Returns `None` otherwise.
+Behaves like a logical OR (`||`) where the first Option is only returned if it is the `Some` variant and falling back to the second Option in all other cases.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`optionA`|`Option<a>`|The first option|
-|`optionB`|`Option<a>`|The first option|
+|`optionA`|`Option<a>`|The first Option|
+|`optionB`|`Option<a>`|The first Option|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Option<a>`|The second option or none depending on the first option|
+|`Option<a>`|The first Option if it is the `Some` variant or the second Option otherwise|
 
 ### Option.**and**
 
@@ -446,18 +451,18 @@ Returns:
 and : (Option<a>, Option<a>) -> Option<a>
 ```
 
-Returns the first Option if it is the `Some` variant. Returns the second Option otherwise.
+Behaves like a logical AND (`&&`) where the first Option is only returned if it is the `None` variant and falling back to the second Option Result in all other cases.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`optionA`|`Option<a>`|The first option|
-|`optionB`|`Option<a>`|The first option|
+|`optionA`|`Option<a>`|The first Option|
+|`optionB`|`Option<a>`|The first Option|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Option<a>`|The option meeting the conditions|
+|`Option<a>`|The second Option if both are the `Some` variant or the first Option otherwise|
 

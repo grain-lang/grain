@@ -17,7 +17,7 @@
 /**
  * Checks if the Option is the `Some` variant.
  *
- * @param option: The option to check
+ * @param option: The Option to check
  * @returns `true` if the Option is the `Some` variant or `false` otherwise
  */
 export let isSome = (option) => {
@@ -30,7 +30,7 @@ export let isSome = (option) => {
 /**
  * Checks if the Option is the `None` variant.
  *
- * @param option: The option to check
+ * @param option: The Option to check
  * @returns `true` if the Option is the `None` variant or `false` otherwise
  */
 export let isNone = (option) => {
@@ -44,7 +44,7 @@ export let isNone = (option) => {
  * Checks if the Option is the `Some` variant and contains the given value. Uses the generic `==` equality operator.
  *
  * @param value: The value to expect
- * @param option: The option to check
+ * @param option: The Option to check
  * @returns `true` if the Option is the `Some` variant and contains the given value, `false` otherwise
  */
 export let contains = (value, option) => {
@@ -60,7 +60,7 @@ export let contains = (value, option) => {
  * If it is `None`, throws the provided failure message.
  *
  * @param msg: The failure message
- * @param option: The option to unwrap
+ * @param option: The Option to unwrap
  * @returns The unwrapped value if the Option is the `Some` variant
  */
 export let expect = (msg, option) => {
@@ -86,7 +86,7 @@ export let unwrap = (option) => {
  * return the provided default value.
  *
  * @param default: The default value to return
- * @param option: The option to unwrap
+ * @param option: The Option to unwrap
  * @returns The unwrapped value if the Option is the `Some` variant, otherwise the default value provided
  */
 export let unwrapWithDefault = (default, option) => {
@@ -162,7 +162,7 @@ export let flatMap = (fn, option) => {
  * if the `fn` return `true` returns `Some(value)`, otherwise returns `None`.
  *
  * @param fn: The function to filter with
- * @param option: The option to filter
+ * @param option: The Option to filter
  * @returns `Some(value)` if the filter function returns `true`, `None` otherwise
  */
 export let filter = (fn, option) => {
@@ -209,7 +209,7 @@ export let zipWith = (fn, optionA, optionB) => {
 /**
  * Flattens nested Options, like `Some(Some(1))` to `Some(1)`. If any of the Options are `None`, returns `None`.
  *
- * @param option: The option to flatten
+ * @param option: The Option to flatten
  * @returns `Some(Some(1))` to `Some(1)`. If any of the Options are `None`, returns `None`
  */
 export let flatten = (option) => {
@@ -222,7 +222,7 @@ export let flatten = (option) => {
 /**
  * If the Option is `Some(value)` returns `[ value ]`, Otherwise returns `[ ]`.
  *
- * @param option: The option to convert
+ * @param option: The Option to convert
  * @returns `Some(value)` returns `[ value ]`, Otherwise returns `[ ]`
  */
 export let toList = (option) => {
@@ -233,10 +233,10 @@ export let toList = (option) => {
 }
 
 /**
- * If the Option is the `Some` variant, returns a `Array` containing the inner value as the only item. If it is `None`, returns an empty `Array`.
+ * If the Option is `Some(value)` returns `[> value ]`, Otherwise returns `[> ]`.
  *
- * @param option: The option to convert
- * @returns The option represented as a array
+ * @param option: The Option to convert
+ * @returns `Some(value)` returns `[> value ]`, Otherwise returns `[> ]`
  */
 export let toArray = (option) => {
   match (option) {
@@ -246,10 +246,13 @@ export let toArray = (option) => {
 }
 
 /**
- * If the Option is the `Some(a)`, returns `Ok(a)`. If it is `None`, returns an `Err` of the provided error value.
+ * If the Option is the `Some(value)`, returns `Ok(value)`. 
+ * If it is `None`, returns an `Err(err)` where `err` is the provided error message.
+ * Converts the Option to a Result. .
  *
- * @param option: The option to convert
- * @returns The option represented as a result
+ * @param err: The error to use if the Option is `None`
+ * @param option: The Option to convert
+ * @returns `Ok(value)` if the Option is `Some(value)` or `Err(err)` if the Option is `None`
  */
 export let toResult = (err, option) => {
   match (option) {
@@ -259,10 +262,11 @@ export let toResult = (err, option) => {
 }
 
 /**
- * If the Option is the `Some` variant, call `fn` with the inner value. Always returns `void`.
+ * If the Option is `Some(value)`, applies the `fn` function to the `value` without producing a new value.
+ * Useful for inspecting Options without changing anything.
  *
- * @param fn: The function to call with
- * @param option: The option to call on
+ * @param fn: The function to call on the value of a `Some` variant
+ * @param option: The Option to inspect
  */
 export let sideEffect = (fn, option) => {
   match (option) {
@@ -272,11 +276,12 @@ export let sideEffect = (fn, option) => {
 }
 
 /**
- * If the Option is the `Some` variant, call `fn` with the inner value. Always returns the Option it is called with; this method is a “chainable” `Option.sideEffect`.
+ * If the Option is `Some(value)`, applies the `fn` function to the `value` without producing a new value.
+ * Useful for inspecting Options without changing anything.
  *
- * @param fn: The function to call with
- * @param option: The option to call on
- * @returns The option
+ * @param fn: The function to call on the value of a `Some` variant
+ * @param option: The Option to inspect
+ * @returns The modified Option
  */
 export let peek = (fn, option) => {
   sideEffect(fn, option)
@@ -284,29 +289,29 @@ export let peek = (fn, option) => {
 }
 
 /**
- * If the first Option is the `Some` variant, returns the second Option. Returns `None` otherwise.
+ * Behaves like a logical OR (`||`) where the first Option is only returned if it is the `Some` variant and falling back to the second Option in all other cases.
  *
- * @param optionA: The first option
- * @param optionB: The first option
- * @returns The second option or none depending on the first option
+ * @param optionA: The first Option
+ * @param optionB: The first Option
+ * @returns The first Option if it is the `Some` variant or the second Option otherwise
  */
-export let or = (r1, r2) => {
-  match (r1) {
-    Some(x) => r1,
-    None => r2
+export let or = (optionA, optionB) => {
+  match (optionA) {
+    Some(x) => optionA,
+    None => optionB
   }
 }
 
 /**
- * Returns the first Option if it is the `Some` variant. Returns the second Option otherwise.
+ * Behaves like a logical AND (`&&`) where the first Option is only returned if it is the `None` variant and falling back to the second Option Result in all other cases.
  *
- * @param optionA: The first option
- * @param optionB: The first option
- * @returns The option meeting the conditions
+ * @param optionA: The first Option
+ * @param optionB: The first Option
+ * @returns The second Option if both are the `Some` variant or the first Option otherwise
  */
-export let and = (r1, r2) => {
-  match (r1) {
-    Some(_) => r2,
-    None => r1
+export let and = (optionA, optionB) => {
+  match (optionA) {
+    Some(_) => optionB,
+    None => optionA
   }
 }
