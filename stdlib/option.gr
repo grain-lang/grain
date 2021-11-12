@@ -1,7 +1,7 @@
 /**
  * @module Option: Utilities for working with the Option data type.
  * 
- * The `Option` type is a special type of enum that exists to represent the possibility of something being present (with the `Some` variant), or not (with the `None` variant). There’s no standalone `null` or `none` type in Grain; use an Option where you would normally reach for `null` or `none`
+ * The Option type is an enum that represents the possibility of something being present (with the `Some` variant), or not (with the `None` variant). There’s no standalone `null` or `none` type in Grain; use an Option where you would normally reach for `null` or `none`
  * 
  * @example import Option from "option"
  * 
@@ -17,8 +17,8 @@
 /**
  * Checks if the Option is the `Some` variant.
  *
- * @param option: The option
- * @returns A boolean indicating if the argument is of the `Some` variant
+ * @param option: The option to check
+ * @returns `true` if the Option is the `Some` variant or `false` otherwise
  */
 export let isSome = (option) => {
   match (option) {
@@ -30,8 +30,8 @@ export let isSome = (option) => {
 /**
  * Checks if the Option is the `None` variant.
  *
- * @param option: The option
- * @returns A boolean indicating if the argument is of the `None` variant
+ * @param option: The option to check
+ * @returns `true` if the Option is the `None` variant or `false` otherwise
  */
 export let isNone = (option) => {
   match (option) {
@@ -43,23 +43,25 @@ export let isNone = (option) => {
 /**
  * Checks if the Option is the `Some` variant and contains the given value. Uses the generic `==` equality operator.
  *
- * @param val: The value to look for
- * @param option: The option
- * @returns A boolean indicating if the option contains the given value
+ * @param value: The value to expect
+ * @param option: The option to check
+ * @returns `true` if the Option is the `Some` variant and contains the given value, `false` otherwise
  */
-export let contains = (val, option) => {
+export let contains = (value, option) => {
   match (option) {
-    Some(x) => x == val,
+    Some(x) => x == value,
     None => false
   }
 }
 
 /**
- * Attempts to unwrap the inner value from the `Some` variant. If it is `None`, raises `Failure` with the provided message.
+ * Extracts the value inside a `Some` result, otherwise throw an
+ * exception containing the message provided. 
+ * If it is `None`, throws the provided failure message.
  *
  * @param msg: The failure message
  * @param option: The option to unwrap
- * @returns The unwrapped value
+ * @returns The unwrapped value if the Option is the `Some` variant
  */
 export let expect = (msg, option) => {
   match (option) {
@@ -69,21 +71,23 @@ export let expect = (msg, option) => {
 }
 
 /**
- * Attempts to unwrap the inner value from the `Some` variant. If it is `None`, raises `Failure` with a generic message.
+ * Extracts the value inside a `Some` Option, otherwise 
+ * throw an exception containing a default message.
  *
- * @param option: The option to unwrap
- * @returns The unwrapped value
+ * @param option: The Option to extract the value from
+ * @returns The unwrapped value if the Option is the `Some` variant
  */
 export let unwrap = (option) => {
   expect("Could not unwrap None value", option)
 }
 
 /**
- * Unwraps the inner value from the `Some` variant. If it is `None`, returns the default value provided.
+ * Extracts the value inside a `Some` Option, otherwise 
+ * return the provided default value.
  *
- * @param default: The default value
+ * @param default: The default value to return
  * @param option: The option to unwrap
- * @returns The unwrapped value or the default value
+ * @returns The unwrapped value if the Option is the `Some` variant, otherwise the default value provided
  */
 export let unwrapWithDefault = (default, option) => {
   match (option) {
@@ -93,11 +97,11 @@ export let unwrapWithDefault = (default, option) => {
 }
 
 /**
- * If the Option is the `Some` variant, call `fn` with the inner value and returns a new `Some` variant with the produced value.
+ * If the Option is `Some(value)`, applies the given function to the `value` to produce a new Option.
  *
- * @param fn: The function to map with
- * @param option: The option to map
- * @returns The mapped option
+ * @param fn: The function to call on the value of an `Some` variant
+ * @param option: The Option to map
+ * @returns A new Option produced by the mapping function if the variant was `Some` or the unmodified `None` otherwise
  */
 export let map = (fn, option) => {
   match (option) {
@@ -107,12 +111,13 @@ export let map = (fn, option) => {
 }
 
 /**
- * If the Option is the `Some` variant, call `fn` with the inner value and returns the result. If it is `None`, returns the default value provided.
+ * If the Option is `Some(value)`, applies the given function to the `value` to produce a new value, otherwise uses the default value.
+ * Useful for unwrapping a `Some` Option while providing a fallback for any None values.
  *
- * @param fn: The function to map with
- * @param default: The default value
- * @param option: The option to map
- * @returns The mapped option
+ * @param fn: The function to call on the value of a `Some` variant
+ * @param default: A fallback value for a `None` variant
+ * @param option: The Option to map
+ * @returns The value produced by the mapping function if the Option is of the `Some` variant or the default value otherwise
  */
 export let mapWithDefault = (fn, default, option) => {
   match (option) {
@@ -122,12 +127,14 @@ export let mapWithDefault = (fn, default, option) => {
 }
 
 /**
- * If the Option is the `Some` variant, call `fn` with the inner value and returns the result. If it is `None`, returns the result of the default function provided.
+ * If the Option is `Some(value)`, applies the `fn` function to the `value` to produce a new value.
+ * If the Option is `None`, applies the `defaultFn` function to produce a new value.
+ * Useful for unwrapping an Option into a value, whether it is `Some` or `None`.
  *
- * @param fn: The function to map with
+ * @param fn: The function to call on the value of a `Some` variant
  * @param defaultFn: The default function to map with
- * @param option: The option to map
- * @returns The mapped option
+ * @param option: The Option to map
+ * @returns The value produced by one of the mapping functions
  */
 export let mapWithDefaultFn = (fn, defaultFn, option) => {
   match (option) {
@@ -137,11 +144,11 @@ export let mapWithDefaultFn = (fn, defaultFn, option) => {
 }
 
 /**
- * If the Option is the `Some` variant, call `fn` with the inner value. The `fn` must produce its own Option to be returned.
+ * If the Option is `Some(value)`, applies the given function to the `value` to produce a new Option.
  *
- * @param fn: The function to map with
- * @param option: The option to map
- * @returns The mapped option
+ * @param fn: The function to call on the value of a `Some` variant
+ * @param option: The result to map
+ * @returns A new Option produced by the mapping function if the variant was `Some` or the unmodified `None` otherwise
  */
 export let flatMap = (fn, option) => {
   match (option) {
@@ -151,16 +158,17 @@ export let flatMap = (fn, option) => {
 }
 
 /**
- * If the Option is the `Some` variant, call `fn` with the inner value. If the `fn` returns `false`, returns a `None` variant type.
+ * If the Option is `Some(value)` call `fn` with the `value`, 
+ * if the `fn` return `true` returns `Some(value)`, otherwise returns `None`.
  *
- * @param filter: The function to filter with
+ * @param fn: The function to filter with
  * @param option: The option to filter
- * @returns The filtered option
+ * @returns `Some(value)` if the filter function returns `true`, `None` otherwise
  */
-export let filter = (pred, option) => {
+export let filter = (fn, option) => {
   match (option) {
     Some(x) =>
-      if (pred(x)) {
+      if (fn(x)) {
         Some(x)
       } else {
         None
@@ -170,11 +178,11 @@ export let filter = (pred, option) => {
 }
 
 /**
- * If both Options are the `Some` variant, returns a new `Some` variant that contains a tuple of both values. If any of the Options are `None`, returns `None`.
+ * If both `optionA` and `optionB` are `Some(value)` return `Some((valueA, valueB))`, otherwise return `None`.
  *
- * @param optionA: The first option
- * @param optionB: The second option
- * @returns The zipped option
+ * @param optionA: The first Option to zip
+ * @param optionB: The second Option to zip
+ * @returns `Some((valueA, valueB))` if both Options are `Some` variants, otherwise `None`
  */
 export let zip = (optionA, optionB) => {
   match ((optionA, optionB)) {
@@ -184,12 +192,12 @@ export let zip = (optionA, optionB) => {
 }
 
 /**
- * If both Options are the `Some` variant, call `fn` with both inner values and returns a new `Some` variant with the produced value. If any of the Options are `None`, returns `None`.
+ * If both `optionA` and `optionB` are `Some(value)` return `Some((fn(valueA), fn(valueB)))`, otherwise return `None`.
  *
  * @param fn: The function to zip with
- * @param optionA: The first option
- * @param optionB: The second option
- * @returns The zipped option
+ * @param optionA: The first Option to zip
+ * @param optionB: The second Option to zip
+ * @returns `Some((fn(valueA), fn(valueB)))` if both Options are `Some` variants, otherwise `None`
  */
 export let zipWith = (fn, optionA, optionB) => {
   match ((optionA, optionB)) {
@@ -202,7 +210,7 @@ export let zipWith = (fn, optionA, optionB) => {
  * Flattens nested Options, like `Some(Some(1))` to `Some(1)`. If any of the Options are `None`, returns `None`.
  *
  * @param option: The option to flatten
- * @returns The flattened option
+ * @returns `Some(Some(1))` to `Some(1)`. If any of the Options are `None`, returns `None`
  */
 export let flatten = (option) => {
   match (option) {
@@ -212,10 +220,10 @@ export let flatten = (option) => {
 }
 
 /**
- * If the Option is the `Some` variant, returns a `List` containing the inner value as the only item. If it is `None`, returns an empty `List`.
+ * If the Option is `Some(value)` returns `[ value ]`, Otherwise returns `[ ]`.
  *
  * @param option: The option to convert
- * @returns The option represented as a list
+ * @returns `Some(value)` returns `[ value ]`, Otherwise returns `[ ]`
  */
 export let toList = (option) => {
   match (option) {
