@@ -1029,16 +1029,22 @@ and print_type =
   | PTyTuple(parsed_types) =>
     Doc.concat([
       Doc.lparen,
-      Doc.join(
-        Doc.comma,
-        List.map(t => print_type(t, original_source), parsed_types),
+      Doc.indent(
+        Doc.concat([
+          Doc.softLine,
+          Doc.join(
+            Doc.concat([Doc.comma, Doc.line]),
+            List.map(t => print_type(t, original_source), parsed_types),
+          ),
+          if (List.length(parsed_types) == 1) {
+            // single arg tuple
+            Doc.comma;
+          } else {
+            Doc.nil;
+          },
+        ]),
       ),
-      if (List.length(parsed_types) == 1) {
-        // single arg tuple
-        Doc.comma;
-      } else {
-        Doc.nil;
-      },
+      Doc.softLine,
       Doc.rparen,
     ])
 
@@ -1047,15 +1053,28 @@ and print_type =
     if (List.length(parsedtypes) == 0) {
       print_ident(ident);
     } else {
-      Doc.concat([
-        print_ident(ident),
-        Doc.text("<"),
-        Doc.join(
-          Doc.concat([Doc.comma, Doc.space]),
-          List.map(typ => {print_type(typ, original_source)}, parsedtypes),
-        ),
-        Doc.text(">"),
-      ]);
+      Doc.group(
+        Doc.concat([
+          print_ident(ident),
+          Doc.text("<"),
+          Doc.indent(
+            Doc.group(
+              Doc.concat([
+                Doc.softLine,
+                Doc.join(
+                  Doc.concat([Doc.comma, Doc.line]),
+                  List.map(
+                    typ => print_type(typ, original_source),
+                    parsedtypes,
+                  ),
+                ),
+              ]),
+            ),
+          ),
+          Doc.softLine,
+          Doc.text(">"),
+        ]),
+      );
     };
   | PTyPoly(locationstrings, parsed_type) =>
     let originalCode = get_original_code(p.ptyp_loc, original_source);
@@ -1235,38 +1254,52 @@ and print_application =
       ]);
     } else {
       Doc.group(
-        Doc.concat([
-          print_expression(
-            ~parentIsArrow=false,
-            ~endChar=None,
-            ~original_source,
-            ~parent_loc=func.pexp_loc,
-            func,
-          ),
-          Doc.lparen,
-          Doc.indent(
-            Doc.concat([
-              Doc.softLine,
-              Doc.join(
-                Doc.concat([Doc.text(","), Doc.line]),
-                List.map(
-                  e =>
-                    print_expression(
-                      ~parentIsArrow=false,
-                      ~endChar=None,
-                      ~original_source,
-                      ~parent_loc,
-                      e,
-                    ),
-                  expressions,
+        if (List.length(expressions) == 0) {
+          Doc.concat([
+            print_expression(
+              ~parentIsArrow=false,
+              ~endChar=None,
+              ~original_source,
+              ~parent_loc=func.pexp_loc,
+              func,
+            ),
+            Doc.lparen,
+            Doc.rparen,
+          ]);
+        } else {
+          Doc.concat([
+            print_expression(
+              ~parentIsArrow=false,
+              ~endChar=None,
+              ~original_source,
+              ~parent_loc=func.pexp_loc,
+              func,
+            ),
+            Doc.lparen,
+            Doc.indent(
+              Doc.concat([
+                Doc.softLine,
+                Doc.join(
+                  Doc.concat([Doc.comma, Doc.line]),
+                  List.map(
+                    e =>
+                      print_expression(
+                        ~parentIsArrow=false,
+                        ~endChar=None,
+                        ~original_source,
+                        ~parent_loc,
+                        e,
+                      ),
+                    expressions,
+                  ),
                 ),
-              ),
-              Doc.ifBreaks(Doc.comma, Doc.nil),
-            ]),
-          ),
-          Doc.softLine,
-          Doc.rparen,
-        ]),
+                Doc.ifBreaks(Doc.comma, Doc.nil),
+              ]),
+            ),
+            Doc.softLine,
+            Doc.rparen,
+          ]);
+        },
       );
     }
   };
@@ -2110,9 +2143,14 @@ and print_expression =
           ),
           Doc.text(":"),
           Doc.space,
-          Doc.lparen, // needed to fix compiler bug (trailing type annotation needs paren, #866)
-          print_type(parsed_type, original_source),
-          Doc.rparen,
+          Doc.indent(
+            Doc.concat([
+              Doc.softLine,
+              Doc.lparen, // TODO needed to fix compiler bug (trailing type annotation needs paren, #866)
+              print_type(parsed_type, original_source),
+              Doc.rparen,
+            ]),
+          ),
         ]),
       )
     | PExpLambda(patterns, expression) =>
@@ -2621,6 +2659,86 @@ let rec print_data =
         ) => {
   let nameloc = data.pdata_name;
   switch (data.pdata_kind) {
+  | PDataAbstract =>
+    let after_name_comments =
+      get_trailing_comments_to_end_of_line(data.pdata_name.loc);
+
+    let (leading_comments, trailing_comments) =
+      Walktree.partition_comments(
+        ~range=Some(data.pdata_loc),
+        ~leading_only=false,
+        data.pdata_loc,
+      );
+
+    let this_line = get_end_loc_line(data.pdata_loc);
+
+    let (this_line_comments, below_line_comments) =
+      split_comments(trailing_comments, this_line);
+
+    Walktree.remove_used_comments(leading_comments, trailing_comments);
+
+    let (stmt_leading_comment_docs_1, prevLine) =
+      print_leading_comments(leading_comments, this_line);
+    let stmt_leading_comment_docs =
+      if (List.length(leading_comments) > 0) {
+        stmt_leading_comment_docs_1;
+      } else {
+        Doc.nil;
+      };
+
+    let params =
+      if (List.length(data.pdata_params) == 0) {
+        [];
+      } else {
+        [
+          Doc.text("<"),
+          Doc.indent(
+            Doc.group(
+              Doc.concat([
+                Doc.softLine,
+                Doc.join(
+                  Doc.concat([Doc.comma, Doc.line]),
+                  List.map(
+                    t => print_type(t, original_source),
+                    data.pdata_params,
+                  ),
+                ),
+              ]),
+            ),
+          ),
+          Doc.softLine,
+          Doc.text(">"),
+        ];
+      };
+
+    Doc.concat([
+      Doc.text("type"),
+      Doc.space,
+      Doc.group(
+        Doc.concat([
+          stmt_leading_comment_docs,
+          Doc.text(data.pdata_name.txt),
+          ...params,
+        ]),
+      ),
+      Doc.group(
+        Doc.concat([
+          switch (data.pdata_manifest) {
+          | Some(manifest) =>
+            Doc.concat([
+              Doc.space,
+              Doc.equal,
+              Doc.space,
+              print_type(manifest, original_source),
+              after_name_comments,
+            ])
+          | None => after_name_comments
+          },
+          print_multi_comments(this_line_comments, this_line),
+        ]),
+      ),
+      print_multi_comments(below_line_comments, this_line + 1),
+    ]);
   | PDataVariant(constr_declarations) =>
     let after_name_comments =
       get_trailing_comments_to_end_of_line(data.pdata_name.loc);
@@ -2703,13 +2821,21 @@ let rec print_data =
         if (List.length(data.pdata_params) > 0) {
           Doc.concat([
             Doc.text("<"),
-            Doc.join(
-              Doc.text(", "),
-              List.map(
-                t => print_type(t, original_source),
-                data.pdata_params,
+            Doc.indent(
+              Doc.group(
+                Doc.concat([
+                  Doc.softLine,
+                  Doc.join(
+                    Doc.concat([Doc.comma, Doc.line]),
+                    List.map(
+                      t => print_type(t, original_source),
+                      data.pdata_params,
+                    ),
+                  ),
+                ]),
               ),
             ),
+            Doc.softLine,
             Doc.text(">"),
             Doc.space,
           ]);
