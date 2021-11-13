@@ -177,6 +177,31 @@ let rec tagToTypeName = (tag: Number) => {
   result
 }
 
+@disableGC
+let rec isSimpleObjectType = (tag: Number) => {
+  let tagAsWasmI32 = coerceNumberToWasmI32(tag)
+
+  let (==) = WasmI32.eq
+
+  let result = match (tagAsWasmI32) {
+    x when x == Tags._GRAIN_STRING_HEAP_TAG => true,
+    x when x == Tags._GRAIN_CHAR_HEAP_TAG => true,
+    x when x == Tags._GRAIN_ADT_HEAP_TAG => false,
+    x when x == Tags._GRAIN_RECORD_HEAP_TAG => false,
+    x when x == Tags._GRAIN_ARRAY_HEAP_TAG => false,
+    x when x == Tags._GRAIN_BOXED_NUM_HEAP_TAG => true,
+    x when x == Tags._GRAIN_LAMBDA_HEAP_TAG => false,
+    x when x == Tags._GRAIN_BYTES_HEAP_TAG => true,
+    x when x == Tags._GRAIN_TUPLE_HEAP_TAG => false,
+    _ => false,
+  }
+
+  Memory.decRef(WasmI32.fromGrain(tag))
+  Memory.decRef(WasmI32.fromGrain(isSimpleObjectType))
+
+  result
+}
+
 let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
   // The objective of this function is to find and report any memory leaks in
   // the function f to be examined.
@@ -334,8 +359,7 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
         toString(tag) ++
         " " ++
         tagToTypeName(tag) ++
-        ")" ++
-        maybeObjectContentsAppendix(userPtr),
+        ")",
       )
 
       if (tag == 7
@@ -414,6 +438,16 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
     let refCount = readRefCount(userPtr)
     let tag = readTag(userPtr)
 
+    // Note that iit is unsafe to read content of the object to be freed if it
+    // contains references to other objects because the can already have been
+    // freed. This can happen because free is called from decRef only after
+    // recursively having decremented references of the object, which can
+    // result in them being freed. Printing such the object in this case can
+    // result in garbage output in best case, crashes or other memory issues in
+    // worst case. But we can still print contents of objects of some specific
+    // types that like String, Char or Number.
+    let printContents = isSimpleObjectType(tag)
+
     if (Set.contains(userPtr, allocations)) {
       if (options.printMallocAndFree) {
         print(
@@ -424,7 +458,11 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
           " " ++
           tagToTypeName(tag) ++
           ")" ++
-          maybeObjectContentsAppendix(userPtr),
+          (if (printContents) {
+            maybeObjectContentsAppendix(userPtr)
+          } else {
+            ""
+          }),
         )
       }
 
@@ -442,7 +480,11 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
           " " ++
           tagToTypeName(tag) ++
           ")" ++
-          maybeObjectContentsAppendix(userPtr),
+          (if (printContents) {
+            maybeObjectContentsAppendix(userPtr)
+          } else {
+            ""
+          }),
         )
       }
     }
@@ -473,7 +515,11 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
         " " ++
         tagToTypeName(tag) ++
         "). Information about incRefs/decRefs won't be printed for this object." ++
-        maybeObjectContentsAppendix(userPtr),
+        (if (printContents) {
+          maybeObjectContentsAppendix(userPtr)
+        } else {
+          ""
+        }),
       )
     }
   }
