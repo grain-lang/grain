@@ -271,9 +271,8 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
 
     incrementCountInMap(tag, incRefsByTag)
 
-    if (options.printIncrefsAndDecRefs) {
-
-      if (Set.contains(userPtr, allocations)) {
+    if (Set.contains(userPtr, allocations)) {
+      if (options.printIncrefsAndDecRefs) {
         print(
           "incref for object at 0x" ++ toHex(userPtr) ++ " (prev count: " ++
           toString(oldRefCount) ++
@@ -286,13 +285,15 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
           ") " ++
           maybeObjectContentsAppendix(userPtr),
         )
-      } else {
-        if (!Map.contains(userPtr, inintialRefCountsOnPreExistingObjects)) {
-          Map.set(userPtr, oldRefCount, inintialRefCountsOnPreExistingObjects)
-        }
+      }
+    } else {
+      if (!Map.contains(userPtr, inintialRefCountsOnPreExistingObjects)) {
+        Map.set(userPtr, oldRefCount, inintialRefCountsOnPreExistingObjects)
+      }
 
-        incrementCountInMap(userPtr, incRefsOnPreExistingObjects)
+      incrementCountInMap(userPtr, incRefsOnPreExistingObjects)
 
+      if (options.printIncrefsAndDecRefs) {
         print(
           "incref for pre-existing object at 0x" ++ toHex(userPtr) ++
           " (prev count: " ++
@@ -327,26 +328,25 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
 
     incrementCountInMap(tag, decRefsByTag)
 
-    if (options.printIncrefsAndDecRefs) {
-      if (oldRefCount < 1 && !ignoreZeros) {
-        print(
-          "⚠ PROBLEM DETECTED: unexpected decRef at address 0x" ++
-          " (tag: " ++
-          toString(tag) ++
-          " " ++
-          tagToTypeName(tag) ++
-          ")" ++
-          maybeObjectContentsAppendix(userPtr),
-        )
+    if (oldRefCount < 1 && !ignoreZeros) {
+      print(
+        "⚠ PROBLEM DETECTED: unexpected decRef at address 0x" ++ " (tag: " ++
+        toString(tag) ++
+        " " ++
+        tagToTypeName(tag) ++
+        ")" ++
+        maybeObjectContentsAppendix(userPtr),
+      )
 
-        if (tag == 7
-        /* or Tags._GRAIN_LAMBDA_HEAP_TAG*/) {
-          print(
-            "The object is a function or lambda. You have to incRef a function before calling it from a @disableGC context.",
-          )
-        }
-      } else {
-        if (Set.contains(userPtr, allocations)) {
+      if (tag == 7
+      /* or Tags._GRAIN_LAMBDA_HEAP_TAG*/) {
+        print(
+          "The object is a function or lambda. You have to incRef a function before calling it from a @disableGC context.",
+        )
+      }
+    } else {
+      if (Set.contains(userPtr, allocations)) {
+        if (options.printIncrefsAndDecRefs) {
           print(
             "decref for object at 0x" ++ toHex(userPtr) ++ " (prev count: " ++
             toString(oldRefCount) ++
@@ -359,13 +359,15 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
             ")" ++
             maybeObjectContentsAppendix(userPtr),
           )
-        } else {
-          if (!Map.contains(userPtr, inintialRefCountsOnPreExistingObjects)) {
-            Map.set(userPtr, oldRefCount, inintialRefCountsOnPreExistingObjects)
-          }
+        }
+      } else {
+        if (!Map.contains(userPtr, inintialRefCountsOnPreExistingObjects)) {
+          Map.set(userPtr, oldRefCount, inintialRefCountsOnPreExistingObjects)
+        }
 
-          incrementCountInMap(userPtr, decRefsOnPreExistingObjects)
+        incrementCountInMap(userPtr, decRefsOnPreExistingObjects)
 
+        if (options.printIncrefsAndDecRefs) {
           print(
             "decref for pre-existing object at 0x" ++ toHex(userPtr) ++
             " (prev count: " ++
@@ -665,15 +667,18 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
 
     let allTags = Set.toArray(keyUnionOfTwoMaps(incRefsByTag, decRefsByTag))
 
-    Array.sort((a,b) => {
-      if (a < b) {
-        -1
-      } else if (a > b) {
-        1
-      } else {
-        0
-      }
-    }, allTags)
+    Array.sort(
+      (a, b) => {
+        if (a < b) {
+          -1
+        } else if (a > b) {
+          1
+        } else {
+          0
+        }
+      },
+      allTags,
+    )
 
     Array.forEach(
       tag => {
