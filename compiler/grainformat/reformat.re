@@ -2987,7 +2987,7 @@ let data_print =
       original_source: array(string),
     ) => {
   Doc.join(
-    Doc.concat([Doc.comma, Doc.hardLine, Doc.hardLine]),
+    Doc.concat([Doc.comma, Doc.hardLine]),
     List.map(
       data => {
         let (expt, decl) = data;
