@@ -40,15 +40,15 @@ Returns the length of the input array.
 
 Parameters:
 
-| param   | type       | description          |
-| ------- | ---------- | -------------------- |
-| `array` | `Array<a>` | The array to inspect |
+|param|type|description|
+|-----|----|-----------|
+|`array`|`Array<a>`|The array to inspect|
 
 Returns:
 
-| type     | description                         |
-| -------- | ----------------------------------- |
-| `Number` | The number of elements in the array |
+|type|description|
+|----|-----------|
+|`Number`|The number of elements in the array|
 
 ### Array.**make**
 
@@ -66,16 +66,16 @@ initialized with the given value.
 
 Parameters:
 
-| param    | type     | description                      |
-| -------- | -------- | -------------------------------- |
-| `length` | `Number` | The length of the new array      |
-| `item`   | `a`      | The value to store at each index |
+|param|type|description|
+|-----|----|-----------|
+|`length`|`Number`|The length of the new array|
+|`item`|`a`|The value to store at each index|
 
 Returns:
 
-| type       | description   |
-| ---------- | ------------- |
-| `Array<a>` | The new array |
+|type|description|
+|----|-----------|
+|`Array<a>`|The new array|
 
 Examples:
 
@@ -100,16 +100,16 @@ is called with the index of each array element.
 
 Parameters:
 
-| param    | type          | description                                                                                                       |
-| -------- | ------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `length` | `Number`      | The length of the new array                                                                                       |
-| `fn`     | `Number -> a` | The initializer function to call with each index, where the value returned will be used to initialize the element |
+|param|type|description|
+|-----|----|-----------|
+|`length`|`Number`|The length of the new array|
+|`fn`|`Number -> a`|The initializer function to call with each index, where the value returned will be used to initialize the element|
 
 Returns:
 
-| type       | description   |
-| ---------- | ------------- |
-| `Array<a>` | The new array |
+|type|description|
+|----|-----------|
+|`Array<a>`|The new array|
 
 Examples:
 
@@ -142,16 +142,16 @@ A negative index is treated as an offset from the end of the array.
 
 Parameters:
 
-| param   | type       | description         |
-| ------- | ---------- | ------------------- |
-| `index` | `Number`   | The index to access |
-| `array` | `Array<a>` | The array to access |
+|param|type|description|
+|-----|----|-----------|
+|`index`|`Number`|The index to access|
+|`array`|`Array<a>`|The array to access|
 
 Returns:
 
-| type | description                |
-| ---- | -------------------------- |
-| `a`  | The element from the array |
+|type|description|
+|----|-----------|
+|`a`|The element from the array|
 
 ### Array.**set**
 
@@ -178,11 +178,11 @@ A negative index is treated as an offset from the end of the array.
 
 Parameters:
 
-| param   | type       | description         |
-| ------- | ---------- | ------------------- |
-| `index` | `Number`   | The index to update |
-| `value` | `a`        | The value to store  |
-| `array` | `Array<a>` | The array to update |
+|param|type|description|
+|-----|----|-----------|
+|`index`|`Number`|The index to update|
+|`value`|`a`|The value to store|
+|`array`|`Array<a>`|The array to update|
 
 ### Array.**append**
 
@@ -200,16 +200,16 @@ the items of the second array. This does not modify the arguments.
 
 Parameters:
 
-| param    | type       | description                                    |
-| -------- | ---------- | ---------------------------------------------- |
-| `array1` | `Array<a>` | The array containing elements to appear first  |
-| `array2` | `Array<a>` | The array containing elements to appear second |
+|param|type|description|
+|-----|----|-----------|
+|`array1`|`Array<a>`|The array containing elements to appear first|
+|`array2`|`Array<a>`|The array containing elements to appear second|
 
 Returns:
 
-| type       | description                                                                        |
-| ---------- | ---------------------------------------------------------------------------------- |
-| `Array<a>` | The new array containing elements from `array1` followed by elements from `array2` |
+|type|description|
+|----|-----------|
+|`Array<a>`|The new array containing elements from `array1` followed by elements from `array2`|
 
 ### Array.**concat**
 
@@ -227,15 +227,15 @@ provided list. Does not modify any of the input arguments.
 
 Parameters:
 
-| param    | type             | description                             |
-| -------- | ---------------- | --------------------------------------- |
-| `arrays` | `List<Array<a>>` | A list containing all arrays to combine |
+|param|type|description|
+|-----|----|-----------|
+|`arrays`|`List<Array<a>>`|A list containing all arrays to combine|
 
 Returns:
 
-| type       | description   |
-| ---------- | ------------- |
-| `Array<a>` | The new array |
+|type|description|
+|----|-----------|
+|`Array<a>`|The new array|
 
 ### Array.**copy**
 
@@ -253,15 +253,15 @@ same elements as the original.
 
 Parameters:
 
-| param   | type       | description       |
-| ------- | ---------- | ----------------- |
-| `array` | `Array<a>` | The array to copy |
+|param|type|description|
+|-----|----|-----------|
+|`array`|`Array<a>`|The array to copy|
 
 Returns:
 
-| type       | description                                          |
-| ---------- | ---------------------------------------------------- |
-| `Array<a>` | The new array containing the elements from the input |
+|type|description|
+|----|-----------|
+|`Array<a>`|The new array containing the elements from the input|
 
 ### Array.**cycle**
 
@@ -278,11 +278,11 @@ Iterates an array a given number of times, calling an iterator function on each 
 
 Parameters:
 
-| param   | type        | description                                     |
-| ------- | ----------- | ----------------------------------------------- |
-| `fn`    | `a -> Void` | The iterator function to call with each element |
-| `n`     | `Number`    | The number of times to iterate the given array  |
-| `array` | `Array<a>`  | The array to iterate                            |
+|param|type|description|
+|-----|----|-----------|
+|`fn`|`a -> Void`|The iterator function to call with each element|
+|`n`|`Number`|The number of times to iterate the given array|
+|`array`|`Array<a>`|The array to iterate|
 
 ### Array.**forEach**
 
@@ -306,10 +306,10 @@ Iterates an array, calling an iterator function on each element.
 
 Parameters:
 
-| param   | type        | description                                     |
-| ------- | ----------- | ----------------------------------------------- |
-| `fn`    | `a -> Void` | The iterator function to call with each element |
-| `array` | `Array<a>`  | The array to iterate                            |
+|param|type|description|
+|-----|----|-----------|
+|`fn`|`a -> Void`|The iterator function to call with each element|
+|`array`|`Array<a>`|The array to iterate|
 
 ### Array.**forEachi**
 
@@ -334,10 +334,10 @@ Also passes the index as the second argument to the function.
 
 Parameters:
 
-| param   | type                  | description                                     |
-| ------- | --------------------- | ----------------------------------------------- |
-| `fn`    | `(a, Number) -> Void` | The iterator function to call with each element |
-| `array` | `Array<a>`            | The array to iterate                            |
+|param|type|description|
+|-----|----|-----------|
+|`fn`|`(a, Number) -> Void`|The iterator function to call with each element|
+|`array`|`Array<a>`|The array to iterate|
 
 ### Array.**map**
 
@@ -362,16 +362,16 @@ called on each element of the input array.
 
 Parameters:
 
-| param   | type       | description                                                                                                                   |
-| ------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `fn`    | `a -> b`   | The mapper function to call on each element, where the value returned will be used to initialize the element in the new array |
-| `array` | `Array<a>` | The array to iterate                                                                                                          |
+|param|type|description|
+|-----|----|-----------|
+|`fn`|`a -> b`|The mapper function to call on each element, where the value returned will be used to initialize the element in the new array|
+|`array`|`Array<a>`|The array to iterate|
 
 Returns:
 
-| type       | description                      |
-| ---------- | -------------------------------- |
-| `Array<a>` | The new array with mapped values |
+|type|description|
+|----|-----------|
+|`Array<a>`|The new array with mapped values|
 
 ### Array.**mapi**
 
@@ -389,16 +389,16 @@ called on each element of the input array and its index.
 
 Parameters:
 
-| param   | type               | description                                                                                                                   |
-| ------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| `fn`    | `(a, Number) -> b` | The mapper function to call on each element, where the value returned will be used to initialize the element in the new array |
-| `array` | `Array<a>`         | The array to iterate                                                                                                          |
+|param|type|description|
+|-----|----|-----------|
+|`fn`|`(a, Number) -> b`|The mapper function to call on each element, where the value returned will be used to initialize the element in the new array|
+|`array`|`Array<a>`|The array to iterate|
 
 Returns:
 
-| type       | description                      |
-| ---------- | -------------------------------- |
-| `Array<a>` | The new array with mapped values |
+|type|description|
+|----|-----------|
+|`Array<a>`|The new array with mapped values|
 
 ### Array.**reduce**
 
@@ -421,17 +421,17 @@ returned. The accumulator starts with value `initial`.
 
 Parameters:
 
-| param     | type          | description                                                                                               |
-| --------- | ------------- | --------------------------------------------------------------------------------------------------------- |
-| `fn`      | `(a, b) -> a` | The reducer function to call on each element, where the value returned will be the next accumulator value |
-| `initial` | `a`           | The initial value to use for the accumulator on the first iteration                                       |
-| `array`   | `Array<a>`    | The array to iterate                                                                                      |
+|param|type|description|
+|-----|----|-----------|
+|`fn`|`(a, b) -> a`|The reducer function to call on each element, where the value returned will be the next accumulator value|
+|`initial`|`a`|The initial value to use for the accumulator on the first iteration|
+|`array`|`Array<a>`|The array to iterate|
 
 Returns:
 
-| type | description                              |
-| ---- | ---------------------------------------- |
-| `a`  | The final accumulator returned from `fn` |
+|type|description|
+|----|-----------|
+|`a`|The final accumulator returned from `fn`|
 
 Examples:
 
@@ -461,17 +461,17 @@ starts with value `initial`.
 
 Parameters:
 
-| param     | type                  | description                                                                                               |
-| --------- | --------------------- | --------------------------------------------------------------------------------------------------------- |
-| `fn`      | `(a, b, Number) -> a` | The reducer function to call on each element, where the value returned will be the next accumulator value |
-| `initial` | `a`                   | The initial value to use for the accumulator on the first iteration                                       |
-| `array`   | `Array<a>`            | The array to iterate                                                                                      |
+|param|type|description|
+|-----|----|-----------|
+|`fn`|`(a, b, Number) -> a`|The reducer function to call on each element, where the value returned will be the next accumulator value|
+|`initial`|`a`|The initial value to use for the accumulator on the first iteration|
+|`array`|`Array<a>`|The array to iterate|
 
 Returns:
 
-| type | description                              |
-| ---- | ---------------------------------------- |
-| `a`  | The final accumulator returned from `fn` |
+|type|description|
+|----|-----------|
+|`a`|The final accumulator returned from `fn`|
 
 ### Array.**flatMap**
 
@@ -491,16 +491,16 @@ of all results.
 
 Parameters:
 
-| param   | type            | description                                                                                                              |
-| ------- | --------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `fn`    | `a -> Array<b>` | The function to be called on each element, where the value returned will be an array that gets appended to the new array |
-| `array` | `Array<a>`      | The array to iterate                                                                                                     |
+|param|type|description|
+|-----|----|-----------|
+|`fn`|`a -> Array<b>`|The function to be called on each element, where the value returned will be an array that gets appended to the new array|
+|`array`|`Array<a>`|The array to iterate|
 
 Returns:
 
-| type       | description   |
-| ---------- | ------------- |
-| `Array<a>` | The new array |
+|type|description|
+|----|-----------|
+|`Array<a>`|The new array|
 
 ### Array.**every**
 
@@ -518,16 +518,16 @@ elements in the input array.
 
 Parameters:
 
-| param   | type        | description                                                                                                     |
-| ------- | ----------- | --------------------------------------------------------------------------------------------------------------- |
-| `fn`    | `a -> Bool` | The function to call on each element, where the returned value indicates if the element satisfies the condition |
-| `array` | `Array<a>`  | The array to check                                                                                              |
+|param|type|description|
+|-----|----|-----------|
+|`fn`|`a -> Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
+|`array`|`Array<a>`|The array to check|
 
 Returns:
 
-| type   | description                                                    |
-| ------ | -------------------------------------------------------------- |
-| `Bool` | `true` if all elements satify the condition, otherwise `false` |
+|type|description|
+|----|-----------|
+|`Bool`|`true` if all elements satify the condition, otherwise `false`|
 
 ### Array.**some**
 
@@ -545,16 +545,16 @@ once** by an item in the input array.
 
 Parameters:
 
-| param   | type        | description                                                                                                     |
-| ------- | ----------- | --------------------------------------------------------------------------------------------------------------- |
-| `fn`    | `a -> Bool` | The function to call on each element, where the returned value indicates if the element satisfies the condition |
-| `array` | `Array<a>`  | The array to iterate                                                                                            |
+|param|type|description|
+|-----|----|-----------|
+|`fn`|`a -> Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
+|`array`|`Array<a>`|The array to iterate|
 
 Returns:
 
-| type   | description                                                            |
-| ------ | ---------------------------------------------------------------------- |
-| `Bool` | `true` if one or more elements satify the condition, otherwise `false` |
+|type|description|
+|----|-----------|
+|`Bool`|`true` if one or more elements satify the condition, otherwise `false`|
 
 ### Array.**fill**
 
@@ -571,10 +571,10 @@ Replaces all elements in an array with the new value provided.
 
 Parameters:
 
-| param   | type       | description                      |
-| ------- | ---------- | -------------------------------- |
-| `value` | `a`        | The value replacing each element |
-| `array` | `Array<a>` | The array to update              |
+|param|type|description|
+|-----|----|-----------|
+|`value`|`a`|The value replacing each element|
+|`array`|`Array<a>`|The array to update|
 
 ### Array.**fillRange**
 
@@ -592,12 +592,12 @@ with the new value provided. Fails if the index is out-of-bounds.
 
 Parameters:
 
-| param   | type       | description                                          |
-| ------- | ---------- | ---------------------------------------------------- |
-| `value` | `a`        | The value replacing each element between the indexes |
-| `start` | `Number`   | The index to begin replacement                       |
-| `stop`  | `Number`   | The (exclusive) index to end replacement             |
-| `array` | `Array<a>` | The array to update                                  |
+|param|type|description|
+|-----|----|-----------|
+|`value`|`a`|The value replacing each element between the indexes|
+|`start`|`Number`|The index to begin replacement|
+|`stop`|`Number`|The (exclusive) index to end replacement|
+|`array`|`Array<a>`|The array to update|
 
 ### Array.**reverse**
 
@@ -614,15 +614,15 @@ Creates a new array with all elements in reverse order.
 
 Parameters:
 
-| param   | type       | description          |
-| ------- | ---------- | -------------------- |
-| `array` | `Array<a>` | The array to reverse |
+|param|type|description|
+|-----|----|-----------|
+|`array`|`Array<a>`|The array to reverse|
 
 Returns:
 
-| type       | description   |
-| ---------- | ------------- |
-| `Array<a>` | The new array |
+|type|description|
+|----|-----------|
+|`Array<a>`|The new array|
 
 ### Array.**toList**
 
@@ -639,15 +639,15 @@ Converts the input array to a list.
 
 Parameters:
 
-| param   | type       | description          |
-| ------- | ---------- | -------------------- |
-| `array` | `Array<a>` | The array to convert |
+|param|type|description|
+|-----|----|-----------|
+|`array`|`Array<a>`|The array to convert|
 
 Returns:
 
-| type      | description                                     |
-| --------- | ----------------------------------------------- |
-| `List<a>` | The list containing all elements from the array |
+|type|description|
+|----|-----------|
+|`List<a>`|The list containing all elements from the array|
 
 ### Array.**fromList**
 
@@ -664,15 +664,15 @@ Converts the input list to an array.
 
 Parameters:
 
-| param  | type      | description         |
-| ------ | --------- | ------------------- |
-| `list` | `List<a>` | The list to convert |
+|param|type|description|
+|-----|----|-----------|
+|`list`|`List<a>`|The list to convert|
 
 Returns:
 
-| type       | description                                     |
-| ---------- | ----------------------------------------------- |
-| `Array<a>` | The array containing all elements from the list |
+|type|description|
+|----|-----------|
+|`Array<a>`|The array containing all elements from the list|
 
 ### Array.**contains**
 
@@ -690,16 +690,16 @@ Uses the generic `==` structural equality operator.
 
 Parameters:
 
-| param    | type       | description          |
-| -------- | ---------- | -------------------- |
-| `search` | `a`        | The value to compare |
-| `array`  | `Array<a>` | The array to iterate |
+|param|type|description|
+|-----|----|-----------|
+|`search`|`a`|The value to compare|
+|`array`|`Array<a>`|The array to iterate|
 
 Returns:
 
-| type   | description                                                |
-| ------ | ---------------------------------------------------------- |
-| `Bool` | `true` if the value exists in the array, otherwise `false` |
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the value exists in the array, otherwise `false`|
 
 ### Array.**find**
 
@@ -716,16 +716,16 @@ Finds the first element in an array that satifies the given condition.
 
 Parameters:
 
-| param   | type        | description                                                                                                     |
-| ------- | ----------- | --------------------------------------------------------------------------------------------------------------- |
-| `fn`    | `a -> Bool` | The function to call on each element, where the returned value indicates if the element satisfies the condition |
-| `array` | `Array<a>`  | The array to search                                                                                             |
+|param|type|description|
+|-----|----|-----------|
+|`fn`|`a -> Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
+|`array`|`Array<a>`|The array to search|
 
 Returns:
 
-| type        | description                                                           |
-| ----------- | --------------------------------------------------------------------- |
-| `Option<a>` | `Some(element)` containing the first value found and `None` otherwise |
+|type|description|
+|----|-----------|
+|`Option<a>`|`Some(element)` containing the first value found and `None` otherwise|
 
 ### Array.**findIndex**
 
@@ -742,16 +742,16 @@ Finds the first index in an array where the element satifies the given condition
 
 Parameters:
 
-| param   | type        | description                                                                                                     |
-| ------- | ----------- | --------------------------------------------------------------------------------------------------------------- |
-| `fn`    | `a -> Bool` | The function to call on each element, where the returned value indicates if the element satisfies the condition |
-| `array` | `Array<a>`  | The array to search                                                                                             |
+|param|type|description|
+|-----|----|-----------|
+|`fn`|`a -> Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
+|`array`|`Array<a>`|The array to search|
 
 Returns:
 
-| type             | description                                                                        |
-| ---------------- | ---------------------------------------------------------------------------------- |
-| `Option<Number>` | `Some(index)` containing the index of the first element found and `None` otherwise |
+|type|description|
+|----|-----------|
+|`Option<Number>`|`Some(index)` containing the index of the first element found and `None` otherwise|
 
 ### Array.**product**
 
@@ -769,16 +769,16 @@ all ordered pairs `(a, b)`.
 
 Parameters:
 
-| param    | type       | description                                              |
-| -------- | ---------- | -------------------------------------------------------- |
-| `array1` | `Array<a>` | The array to provide values for the first tuple element  |
-| `array2` | `Array<b>` | The array to provide values for the second tuple element |
+|param|type|description|
+|-----|----|-----------|
+|`array1`|`Array<a>`|The array to provide values for the first tuple element|
+|`array2`|`Array<b>`|The array to provide values for the second tuple element|
 
 Returns:
 
-| type            | description                                    |
-| --------------- | ---------------------------------------------- |
-| `Array<(a, b)>` | The new array containing all pairs of `(a, b)` |
+|type|description|
+|----|-----------|
+|`Array<(a, b)>`|The new array containing all pairs of `(a, b)`|
 
 ### Array.**count**
 
@@ -795,16 +795,16 @@ Counts the number of elements in an array that satisfy the given condition.
 
 Parameters:
 
-| param   | type        | description                                                                                                     |
-| ------- | ----------- | --------------------------------------------------------------------------------------------------------------- |
-| `fn`    | `a -> Bool` | The function to call on each element, where the returned value indicates if the element satisfies the condition |
-| `array` | `Array<a>`  | The array to iterate                                                                                            |
+|param|type|description|
+|-----|----|-----------|
+|`fn`|`a -> Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
+|`array`|`Array<a>`|The array to iterate|
 
 Returns:
 
-| type     | description                                             |
-| -------- | ------------------------------------------------------- |
-| `Number` | The total number of elements that satisfy the condition |
+|type|description|
+|----|-----------|
+|`Number`|The total number of elements that satisfy the condition|
 
 ### Array.**counti**
 
@@ -822,16 +822,16 @@ given condition. Also passes the index to the function.
 
 Parameters:
 
-| param   | type                  | description                                                                                                     |
-| ------- | --------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `fn`    | `(a, Number) -> Bool` | The function to call on each element, where the returned value indicates if the element satisfies the condition |
-| `array` | `Array<a>`            | The array to iterate                                                                                            |
+|param|type|description|
+|-----|----|-----------|
+|`fn`|`(a, Number) -> Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
+|`array`|`Array<a>`|The array to iterate|
 
 Returns:
 
-| type     | description                                             |
-| -------- | ------------------------------------------------------- |
-| `Number` | The total number of elements that satisfy the condition |
+|type|description|
+|----|-----------|
+|`Number`|The total number of elements that satisfy the condition|
 
 ### Array.**filter**
 
@@ -850,16 +850,16 @@ the condition.
 
 Parameters:
 
-| param   | type        | description                                                                                                     |
-| ------- | ----------- | --------------------------------------------------------------------------------------------------------------- |
-| `fn`    | `a -> Bool` | The function to call on each element, where the returned value indicates if the element satisfies the condition |
-| `array` | `Array<a>`  | The array to iterate                                                                                            |
+|param|type|description|
+|-----|----|-----------|
+|`fn`|`a -> Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
+|`array`|`Array<a>`|The array to iterate|
 
 Returns:
 
-| type       | description                                                  |
-| ---------- | ------------------------------------------------------------ |
-| `Array<a>` | The new array containing elements where `fn` returned `true` |
+|type|description|
+|----|-----------|
+|`Array<a>`|The new array containing elements where `fn` returned `true`|
 
 ### Array.**filteri**
 
@@ -878,16 +878,16 @@ the condition. Also passes the index to the function.
 
 Parameters:
 
-| param   | type                  | description                                                                                                     |
-| ------- | --------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `fn`    | `(a, Number) -> Bool` | The function to call on each element, where the returned value indicates if the element satisfies the condition |
-| `array` | `Array<a>`            | The array to iterate                                                                                            |
+|param|type|description|
+|-----|----|-----------|
+|`fn`|`(a, Number) -> Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
+|`array`|`Array<a>`|The array to iterate|
 
 Returns:
 
-| type       | description                                                  |
-| ---------- | ------------------------------------------------------------ |
-| `Array<a>` | The new array containing elements where `fn` returned `true` |
+|type|description|
+|----|-----------|
+|`Array<a>`|The new array containing elements where `fn` returned `true`|
 
 ### Array.**unique**
 
@@ -905,15 +905,15 @@ Uses the generic `==` structural equality operator.
 
 Parameters:
 
-| param   | type       | description         |
-| ------- | ---------- | ------------------- |
-| `array` | `Array<a>` | The array to filter |
+|param|type|description|
+|-----|----|-----------|
+|`array`|`Array<a>`|The array to filter|
 
 Returns:
 
-| type       | description                           |
-| ---------- | ------------------------------------- |
-| `Array<a>` | The new array with only unique values |
+|type|description|
+|----|-----------|
+|`Array<a>`|The new array with only unique values|
 
 ### Array.**zip**
 
@@ -934,16 +934,16 @@ Calling this function with arrays of different sizes will throw an error.
 
 Parameters:
 
-| param    | type       | description                                              |
-| -------- | ---------- | -------------------------------------------------------- |
-| `array1` | `Array<a>` | The array to provide values for the first tuple element  |
-| `array2` | `Array<b>` | The array to provide values for the second tuple element |
+|param|type|description|
+|-----|----|-----------|
+|`array1`|`Array<a>`|The array to provide values for the first tuple element|
+|`array2`|`Array<b>`|The array to provide values for the second tuple element|
 
 Returns:
 
-| type            | description                                        |
-| --------------- | -------------------------------------------------- |
-| `Array<(a, b)>` | The new array containing indexed pairs of `(a, b)` |
+|type|description|
+|----|-----------|
+|`Array<(a, b)>`|The new array containing indexed pairs of `(a, b)`|
 
 ### Array.**unzip**
 
@@ -960,15 +960,15 @@ Produces two arrays by splitting apart an array of tuples.
 
 Parameters:
 
-| param   | type            | description                  |
-| ------- | --------------- | ---------------------------- |
-| `array` | `Array<(a, b)>` | The array of tuples to split |
+|param|type|description|
+|-----|----|-----------|
+|`array`|`Array<(a, b)>`|The array of tuples to split|
 
 Returns:
 
-| type                   | description                                                                                                                       |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `(Array<a>, Array<b>)` | An array containing all elements from the first tuple element, and an array containing all elements from the second tuple element |
+|type|description|
+|----|-----------|
+|`(Array<a>, Array<b>)`|An array containing all elements from the first tuple element, and an array containing all elements from the second tuple element|
 
 ### Array.**join**
 
@@ -985,16 +985,16 @@ Concatenates an array of strings into a single string, separated by a separator 
 
 Parameters:
 
-| param       | type            | description                                         |
-| ----------- | --------------- | --------------------------------------------------- |
-| `separator` | `String`        | The separator to insert between items in the string |
-| `items`     | `Array<String>` | The input strings                                   |
+|param|type|description|
+|-----|----|-----------|
+|`separator`|`String`|The separator to insert between items in the string|
+|`items`|`Array<String>`|The input strings|
 
 Returns:
 
-| type     | description             |
-| -------- | ----------------------- |
-| `String` | The concatenated string |
+|type|description|
+|----|-----------|
+|`String`|The concatenated string|
 
 ### Array.**slice**
 
@@ -1015,17 +1015,17 @@ the end of the array. e.g. `slice(1, -1, [> 'a', 'b', 'c']) == [> 'b']`.
 
 Parameters:
 
-| param        | type       | description                                                   |
-| ------------ | ---------- | ------------------------------------------------------------- |
-| `startIndex` | `Number`   | The index of the array where the slice will begin (inclusive) |
-| `endIndex`   | `Number`   | The index of the array where the slice will end (exclusive)   |
-| `array`      | `Array<a>` | The array to be sliced                                        |
+|param|type|description|
+|-----|----|-----------|
+|`startIndex`|`Number`|The index of the array where the slice will begin (inclusive)|
+|`endIndex`|`Number`|The index of the array where the slice will end (exclusive)|
+|`array`|`Array<a>`|The array to be sliced|
 
 Returns:
 
-| type       | description                             |
-| ---------- | --------------------------------------- |
-| `Array<a>` | The subset of the array that was sliced |
+|type|description|
+|----|-----------|
+|`Array<a>`|The subset of the array that was sliced|
 
 ### Array.**sort**
 
@@ -1044,15 +1044,15 @@ Ordering is calculated using a comparator function which takes two array element
 
 Parameters:
 
-| param   | type               | description                                         |
-| ------- | ------------------ | --------------------------------------------------- |
-| `comp`  | `(a, a) -> Number` | The comparator function used to indicate sort order |
-| `array` | `Array<a>`         | The array to be sorted                              |
+|param|type|description|
+|-----|----|-----------|
+|`comp`|`(a, a) -> Number`|The comparator function used to indicate sort order|
+|`array`|`Array<a>`|The array to be sorted|
 
 ### Array.**rotate**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -1060,21 +1060,31 @@ No other changes yet.
 rotate : (Array<Number>, Number) -> Array<Number>
 ```
 
-Rotates an array by n elements to the right, in place. For
-example: 'rotate([> 1, 2, 3, 4, 5], 2) == [> 4, 5, 1, 2, 3]'
+Rotates an array by n elements to the right, in place.
 
 If n is negative, the array will be rotated by n elements
-to the left. e.g. 'rotate([> 1, 2, 3, 4, 5], -1) == [> 2, 3, 4, 5, 1]'
+to the left. See examples.
 
 Parameters:
 
-| param | type            | description                         |
-| ----- | --------------- | ----------------------------------- |
-| `arr` | `Array<Number>` | The array to be rotated             |
-| `n`   | `Number`        | The number of elements to rotate by |
+|param|type|description|
+|-----|----|-----------|
+|`arr`|`Array<Number>`|The array to be rotated|
+|`n`|`Number`|The number of elements to rotate by|
 
 Returns:
 
-| type            | description       |
-| --------------- | ----------------- |
-| `Array<Number>` | The rotated array |
+|type|description|
+|----|-----------|
+|`Array<Number>`|The rotated array|
+
+Examples:
+
+```grain
+: rotate([> 1, 2, 3, 4, 5], 2) == [> 4, 5, 1, 2, 3]
+```
+
+```grain
+: rotate([> 1, 2, 3, 4, 5], -1) == [> 2, 3, 4, 5, 1]
+```
+
