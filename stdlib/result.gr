@@ -1,89 +1,205 @@
-export let isOk = (v) => {
-    match (v) {
-        Ok(_)  => true,
-        _      => false
-    }
+/**
+ * @module Result: Utilities for working with the Result data type.
+ * 
+ * The Result type is an enum that represents the possibility of a success case (with the `Ok` variant),
+ * or an error case (with the `Err` variant). Use a Result as the return type of a function that may return an error.
+ * 
+ * @example import Result from "result"
+ * 
+ * 
+ * @example let success = Ok((x) => 1 + x) // Creates a successful Result containing (x) => 1 + x
+ * @example let failure = Err("Something bad happened") // Creates an unsuccessful Result containing "Something bad happened"
+ */
+
+/**
+ * @section Values: Functions for working with the Result data type.
+ */
+
+/**
+ * Checks if the Result is the `Ok` variant.
+ *
+ * @param result: The result to check
+ * @returns `true` if the Result is the `Ok` variant or `false` otherwise
+ */
+export let isOk = result => {
+  match (result) {
+    Ok(_) => true,
+    _ => false,
+  }
 }
 
-export let isErr = (v) => !isOk(v)
+/**
+ * Checks if the Result is the `Err` variant.
+ *
+ * @param result: The result to check
+ * @returns `true` if the Result is the `Err` variant or `false` otherwise
+ */
+export let isErr = result => !isOk(result)
 
-export let toOption = (v) => {
-    match (v) {
-        Ok(x)  => Some(x),
-        _      => None
-    }
+/**
+ * Converts the Result to an Option. An error value is discarded and replaced with `None`.
+ *
+ * @param result: The result to convert
+ * @returns `Some(value)` if the Result is `Ok(value)` or `None` if the Result is an `Err`
+ */
+export let toOption = result => {
+  match (result) {
+    Ok(x) => Some(x),
+    _ => None,
+  }
 }
 
-export let flatMap = (fn, v) => {
-    match (v) {
-        Ok(x)  => fn(x),
-        Err(e) => Err(e)
-    }
+/**
+ * If the Result is `Ok(value)`, applies the given function to the `value` to produce a new Result.
+ *
+ * @param fn: The function to call on the value of an `Ok` variant
+ * @param result: The result to map
+ * @returns A new Result produced by the mapping function if the variant was `Ok` or the unmodified `Err` otherwise
+ */
+export let flatMap = (fn, result) => {
+  match (result) {
+    Ok(x) => fn(x),
+    Err(e) => Err(e),
+  }
 }
 
-export let flatMapErr = (fn, v) => {
-    match (v) {
-        Err(e) => fn(e),
-        Ok(x)  => Ok(x)
-    }
+/**
+ * If the Result is an `Err(value)`, applies the given function to the `value` to produce a new Result.
+ *
+ * @param fn: The function to call on the value of an `Err` variant
+ * @param result: The result to map
+ * @returns A new Result produced by the mapping function if the variant was `Err` or the unmodified `Ok` otherwise
+ */
+export let flatMapErr = (fn, result) => {
+  match (result) {
+    Err(e) => fn(e),
+    Ok(x) => Ok(x),
+  }
 }
 
-export let map = (fn, v) => {
-    match (v) {
-        Ok(x)  => Ok(fn(x)),
-        Err(e) => Err(e)
-    }
+/**
+ * If the Result is `Ok(value)`, applies the given function to the `value` and wraps the new value in an `Ok` variant.
+ *
+ * @param fn: The function to call on the value of an `Ok` variant
+ * @param result: The result to map
+ * @returns A new `Ok` variant produced by the mapping function if the variant was `Ok` or the unmodified `Err` otherwise
+ */
+export let map = (fn, result) => {
+  match (result) {
+    Ok(x) => Ok(fn(x)),
+    Err(e) => Err(e),
+  }
 }
 
-export let mapErr = (fn, v) => {
-    match (v) {
-        Err(e) => Err(fn(e)),
-        Ok(x)  => Ok(x)
-    }
+/**
+ * If the Result is `Err(value)`, applies the given function to the `value` and wraps the new value in an `Err` variant.
+ *
+ * @param fn: The function to call on the value of an `Err` variant
+ * @param result: The result to map
+ * @returns A new `Err` variant produced by the mapping function if the variant was `Err` or the unmodified `Ok` otherwise
+ */
+export let mapErr = (fn, result) => {
+  match (result) {
+    Err(e) => Err(fn(e)),
+    Ok(x) => Ok(x),
+  }
 }
 
-export let mapWithDefault = (fn, def, v) => {
-    match (v) {
-        Ok(a) => fn(a),
-        _     => def
-    }
+/**
+ * If the Result is `Ok(value)`, applies the given function to the `value` to produce a new value, otherwise uses the default value.
+ * Useful for unwrapping a successful Result while providing a fallback for any errors that can occur.
+ *
+ * @param fn: The function to call on the value of an `Ok` variant
+ * @param def: A fallback value for an `Err` variant
+ * @param result: The result to map
+ * @returns The value produced by the mapping function if the result is of the `Ok` variant or the default value otherwise 
+ */
+export let mapWithDefault = (fn, def, result) => {
+  match (result) {
+    Ok(a) => fn(a),
+    _ => def,
+  }
 }
 
-export let mapWithDefaultFn = (fnOk, fnErr, v) => {
-    match (v) {
-        Ok(a)  => fnOk(a),
-        Err(a) => fnErr(a)
-    }
+/**
+ * If the Result is `Ok(value)`, applies the `fnOk` function to the `value` to produce a new value.
+ * If the Result is `Err(value)`, applies the `fnErr` function to the `value` to produce a new value.
+ * Useful for unwrapping a Result into a value, whether it is successful or unsuccessful.
+ *
+ * @param fnOk: The function to call on the value of an `Ok` variant
+ * @param fnErr: The function to call on the value of an `Err` variant
+ * @param result: The result to map
+ * @returns The value produced by one of the mapping functions
+ */
+export let mapWithDefaultFn = (fnOk, fnErr, result) => {
+  match (result) {
+    Ok(a) => fnOk(a),
+    Err(a) => fnErr(a),
+  }
 }
 
-export let or = (r1, r2) => {
-    match (r1) {
-        Ok(x) => r1,
-        _     => r2
-    }
+/**
+ * Behaves like a logical OR (`||`) where the first Result is only returned if it is the `Ok` variant and falling back to the second Result in all other cases.
+ *
+ * @param result1: The first result
+ * @param result2: The second result
+ * @returns The first Result if it is the `Ok` variant or the second Result otherwise
+ */
+export let or = (result1, result2) => {
+  match (result1) {
+    Ok(x) => result1,
+    _ => result2,
+  }
 }
 
-export let and = (r1, r2) => {
-    match (r1) {
-        Ok(_) => r2,
-        Err(_) => r1
-    }
+/**
+ * Behaves like a logical AND (`&&`) where the first Result is only returned if it is the `Err` variant and falling back to the second Result in all other cases.
+ *
+ * @param result1: The first result
+ * @param result2: The second result
+ * @returns The second Result if both are the `Ok` variant or the first Result otherwise
+ */
+export let and = (result1, result2) => {
+  match (result1) {
+    Ok(_) => result2,
+    Err(_) => result1,
+  }
 }
 
-export let peek = (fnOk, fnErr, r) => {
-    match (r) {
-        Ok(x) => ignore(fnOk(x)),
-        Err(x) => ignore(fnErr(x))
-    }
-    r
+/**
+ * If the Result is `Ok(value)`, applies the `fnOk` function to the `value` without producing a new value.
+ * If the Result is `Err(value)`, applies the `fnErr` function to the `value` without producing a new value.
+ * Useful for inspecting Results without changing anything.
+ *
+ * @param fnOk: The function to call on the value of an `Ok` variant
+ * @param fnErr: The function to call on the value of an `Err` variant
+ * @param result: The result to inspect
+ */
+export let peek = (fnOk, fnErr, result) => {
+  match (result) {
+    Ok(x) => ignore(fnOk(x)),
+    Err(x) => ignore(fnErr(x)),
+  }
 }
 
-export let peekOk = (fn, r) => {
-    peek(fn, identity, r)
+/**
+ * If the Result is `Ok(value)`, applies the given function to the `value` without producing a new value.
+ *
+ * @param fn: The function to call on the value of an `Ok` variant
+ * @param result: The result to inspect
+ */
+export let peekOk = (fn, result) => {
+  peek(fn, identity, result)
 }
 
-export let peekErr = (fn, r) => {
-    peek(identity, fn, r)
+/**
+ * If the Result is `Err(value)`, applies the given function to the `value` without producing a new value.
+ *
+ * @param fn: The function to call on the value of an `Err` variant
+ * @param result: The result to inspect
+ */
+export let peekErr = (fn, result) => {
+  peek(identity, fn, result)
 }
 
 /**
@@ -92,17 +208,17 @@ export let peekErr = (fn, r) => {
  *
  * @param msg: The message to prepend if the result contains an `Err`
  * @param result: The result to extract a value from
- * @returns The value inside an `Ok` result
+ * @returns The unwrapped value if the Result is the `Ok` variant
  *
- * @example Result.expect("Unexpected error", Ok(1234))
+ * @example Result.expect("Unexpected error", Ok(1234)) + 42
  *
  * @since v0.4.0
  */
 export let expect = (msg, result) => {
-    match (result) {
-        Ok(x) => x,
-        Err(err) => fail msg ++ ": " ++ toString(err)
-    }
+  match (result) {
+    Ok(x) => x,
+    Err(err) => fail msg ++ ": " ++ toString(err),
+  }
 }
 
 /**
@@ -110,12 +226,12 @@ export let expect = (msg, result) => {
  * exception containing a default message and contents of the `Err`.
  *
  * @param result: The result to extract a value from
- * @returns The value inside an `Ok` result
+ * @returns The unwrapped value if the result is the `Ok` variant
  *
  * @example Result.unwrap(Err("This will throw"))
  *
  * @since v0.4.0
  */
-export let unwrap = (result) => {
-    expect("Could not unwrap Err value", result)
+export let unwrap = result => {
+  expect("Could not unwrap Err value", result)
 }
