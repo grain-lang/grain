@@ -18,7 +18,7 @@
  * Checks if the Option is the `Some` variant.
  *
  * @param option: The Option to check
- * @returns `true` if the Option is the `Some` variant or `false` otherwise
+ * @returns `true` if the Option is the `Some` variant, `false` otherwise
  * 
  * @since v0.2.0
  */
@@ -33,7 +33,7 @@ export let isSome = (option) => {
  * Checks if the Option is the `None` variant.
  *
  * @param option: The Option to check
- * @returns `true` if the Option is the `None` variant or `false` otherwise
+ * @returns `true` if the Option is the `None` variant, `false` otherwise
  * 
  * @since v0.2.0
  */

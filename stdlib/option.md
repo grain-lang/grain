@@ -24,6 +24,11 @@ Functions for working with the Option data type.
 
 ### Option.**isSome**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 isSome : Option<a> -> Bool
 ```
@@ -40,9 +45,14 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if the Option is the `Some` variant or `false` otherwise|
+|`Bool`|`true` if the Option is the `Some` variant, `false` otherwise|
 
 ### Option.**isNone**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 isNone : Option<a> -> Bool
@@ -60,9 +70,14 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if the Option is the `None` variant or `false` otherwise|
+|`Bool`|`true` if the Option is the `None` variant, `false` otherwise|
 
 ### Option.**contains**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 contains : (a, Option<a>) -> Bool
@@ -84,6 +99,11 @@ Returns:
 |`Bool`|`true` if the Option is the `Some` variant and contains the given value, `false` otherwise|
 
 ### Option.**expect**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 expect : (String, Option<a>) -> a
@@ -108,6 +128,11 @@ Returns:
 
 ### Option.**unwrap**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 unwrap : Option<a> -> a
 ```
@@ -128,6 +153,11 @@ Returns:
 |`a`|The unwrapped value if the Option is the `Some` variant|
 
 ### Option.**unwrapWithDefault**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 unwrapWithDefault : (a, Option<a>) -> a
@@ -151,6 +181,11 @@ Returns:
 
 ### Option.**map**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 map : ((a -> b), Option<a>) -> Option<b>
 ```
@@ -171,6 +206,11 @@ Returns:
 |`Option<a>`|A new Option produced by the mapping function if the variant was `Some` or the unmodified `None` otherwise|
 
 ### Option.**mapWithDefault**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 mapWithDefault : ((a -> b), b, Option<a>) -> b
@@ -194,6 +234,11 @@ Returns:
 |`a`|The value produced by the mapping function if the Option is of the `Some` variant or the default value otherwise|
 
 ### Option.**mapWithDefaultFn**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 mapWithDefaultFn : ((a -> b), (() -> b), Option<a>) -> b
@@ -219,6 +264,11 @@ Returns:
 
 ### Option.**flatMap**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 flatMap : ((a -> Option<b>), Option<a>) -> Option<b>
 ```
@@ -239,6 +289,11 @@ Returns:
 |`Option<a>`|A new Option produced by the mapping function if the variant was `Some` or the unmodified `None` otherwise|
 
 ### Option.**filter**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 filter : ((a -> Bool), Option<a>) -> Option<a>
@@ -262,6 +317,11 @@ Returns:
 
 ### Option.**zip**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 zip : (Option<a>, Option<b>) -> Option<(a, b)>
 ```
@@ -282,6 +342,11 @@ Returns:
 |`Option<(a, b)>`|`Some((valueA, valueB))` if both Options are `Some` variants, otherwise `None`|
 
 ### Option.**zipWith**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 zipWith : (((a, b) -> c), Option<a>, Option<b>) -> Option<c>
@@ -305,6 +370,11 @@ Returns:
 
 ### Option.**flatten**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 flatten : Option<Option<a>> -> Option<a>
 ```
@@ -324,6 +394,11 @@ Returns:
 |`Option<a>`|`Some(Some(1))` to `Some(1)`. If any of the Options are `None`, returns `None`|
 
 ### Option.**toList**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 toList : Option<a> -> List<a>
@@ -345,6 +420,11 @@ Returns:
 
 ### Option.**toArray**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 toArray : Option<a> -> Array<a>
 ```
@@ -364,6 +444,11 @@ Returns:
 |`Array<a>`|`Some(value)` returns `[> value ]`, Otherwise returns `[> ]`|
 
 ### Option.**toResult**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 toResult : (a, Option<b>) -> Result<b, a>
@@ -388,6 +473,11 @@ Returns:
 
 ### Option.**sideEffect**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 sideEffect : ((a -> Void), Option<a>) -> Void
 ```
@@ -403,6 +493,11 @@ Parameters:
 |`option`|`Option<a>`|The Option to inspect|
 
 ### Option.**peek**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 peek : ((a -> Void), Option<a>) -> Option<a>
@@ -426,6 +521,11 @@ Returns:
 
 ### Option.**or**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 ( or ) : (Option<a>, Option<a>) -> Option<a>
 ```
@@ -446,6 +546,11 @@ Returns:
 |`Option<a>`|The first Option if it is the `Some` variant or the second Option otherwise|
 
 ### Option.**and**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 and : (Option<a>, Option<a>) -> Option<a>
