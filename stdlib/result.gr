@@ -20,6 +20,8 @@
  *
  * @param result: The result to check
  * @returns `true` if the Result is the `Ok` variant or `false` otherwise
+ * 
+ * @since v0.2.0
  */
 export let isOk = result => {
   match (result) {
@@ -33,6 +35,8 @@ export let isOk = result => {
  *
  * @param result: The result to check
  * @returns `true` if the Result is the `Err` variant or `false` otherwise
+ * 
+ * @since v0.2.0
  */
 export let isErr = result => !isOk(result)
 
@@ -41,6 +45,8 @@ export let isErr = result => !isOk(result)
  *
  * @param result: The result to convert
  * @returns `Some(value)` if the Result is `Ok(value)` or `None` if the Result is an `Err`
+ * 
+ * @since v0.2.0
  */
 export let toOption = result => {
   match (result) {
@@ -55,6 +61,8 @@ export let toOption = result => {
  * @param fn: The function to call on the value of an `Ok` variant
  * @param result: The result to map
  * @returns A new Result produced by the mapping function if the variant was `Ok` or the unmodified `Err` otherwise
+ * 
+ * @since v0.2.0
  */
 export let flatMap = (fn, result) => {
   match (result) {
@@ -69,6 +77,8 @@ export let flatMap = (fn, result) => {
  * @param fn: The function to call on the value of an `Err` variant
  * @param result: The result to map
  * @returns A new Result produced by the mapping function if the variant was `Err` or the unmodified `Ok` otherwise
+ * 
+ * @since v0.2.0
  */
 export let flatMapErr = (fn, result) => {
   match (result) {
@@ -83,6 +93,8 @@ export let flatMapErr = (fn, result) => {
  * @param fn: The function to call on the value of an `Ok` variant
  * @param result: The result to map
  * @returns A new `Ok` variant produced by the mapping function if the variant was `Ok` or the unmodified `Err` otherwise
+ * 
+ * @since v0.2.0
  */
 export let map = (fn, result) => {
   match (result) {
@@ -97,6 +109,8 @@ export let map = (fn, result) => {
  * @param fn: The function to call on the value of an `Err` variant
  * @param result: The result to map
  * @returns A new `Err` variant produced by the mapping function if the variant was `Err` or the unmodified `Ok` otherwise
+ * 
+ * @since v0.2.0
  */
 export let mapErr = (fn, result) => {
   match (result) {
@@ -112,7 +126,9 @@ export let mapErr = (fn, result) => {
  * @param fn: The function to call on the value of an `Ok` variant
  * @param def: A fallback value for an `Err` variant
  * @param result: The result to map
- * @returns The value produced by the mapping function if the result is of the `Ok` variant or the default value otherwise 
+ * @returns The value produced by the mapping function if the result is of the `Ok` variant or the default value otherwise
+ * 
+ * @since v0.2.0 
  */
 export let mapWithDefault = (fn, def, result) => {
   match (result) {
@@ -130,6 +146,8 @@ export let mapWithDefault = (fn, def, result) => {
  * @param fnErr: The function to call on the value of an `Err` variant
  * @param result: The result to map
  * @returns The value produced by one of the mapping functions
+ * 
+ * @since v0.2.0
  */
 export let mapWithDefaultFn = (fnOk, fnErr, result) => {
   match (result) {
@@ -144,6 +162,8 @@ export let mapWithDefaultFn = (fnOk, fnErr, result) => {
  * @param result1: The first result
  * @param result2: The second result
  * @returns The first Result if it is the `Ok` variant or the second Result otherwise
+ * 
+ * @since v0.2.0
  */
 export let or = (result1, result2) => {
   match (result1) {
@@ -158,6 +178,8 @@ export let or = (result1, result2) => {
  * @param result1: The first result
  * @param result2: The second result
  * @returns The second Result if both are the `Ok` variant or the first Result otherwise
+ * 
+ * @since v0.2.0
  */
 export let and = (result1, result2) => {
   match (result1) {
@@ -174,6 +196,8 @@ export let and = (result1, result2) => {
  * @param fnOk: The function to call on the value of an `Ok` variant
  * @param fnErr: The function to call on the value of an `Err` variant
  * @param result: The result to inspect
+ * 
+ * @since v0.2.0
  */
 export let peek = (fnOk, fnErr, result) => {
   match (result) {
@@ -187,6 +211,8 @@ export let peek = (fnOk, fnErr, result) => {
  *
  * @param fn: The function to call on the value of an `Ok` variant
  * @param result: The result to inspect
+ * 
+ * @since v0.2.0
  */
 export let peekOk = (fn, result) => {
   peek(fn, identity, result)
@@ -197,6 +223,8 @@ export let peekOk = (fn, result) => {
  *
  * @param fn: The function to call on the value of an `Err` variant
  * @param result: The result to inspect
+ * 
+ * @since v0.2.0
  */
 export let peekErr = (fn, result) => {
   peek(identity, fn, result)
