@@ -19,6 +19,8 @@
  *
  * @param option: The Option to check
  * @returns `true` if the Option is the `Some` variant or `false` otherwise
+ * 
+ * @since v0.2.0
  */
 export let isSome = (option) => {
   match (option) {
@@ -32,6 +34,8 @@ export let isSome = (option) => {
  *
  * @param option: The Option to check
  * @returns `true` if the Option is the `None` variant or `false` otherwise
+ * 
+ * @since v0.2.0
  */
 export let isNone = (option) => {
   match (option) {
@@ -46,6 +50,8 @@ export let isNone = (option) => {
  * @param value: The value to expect
  * @param option: The Option to check
  * @returns `true` if the Option is the `Some` variant and contains the given value, `false` otherwise
+ * 
+ * @since v0.2.0
  */
 export let contains = (value, option) => {
   match (option) {
@@ -62,6 +68,8 @@ export let contains = (value, option) => {
  * @param msg: The failure message
  * @param option: The Option to unwrap
  * @returns The unwrapped value if the Option is the `Some` variant
+ * 
+ * @since v0.2.0
  */
 export let expect = (msg, option) => {
   match (option) {
@@ -76,6 +84,8 @@ export let expect = (msg, option) => {
  *
  * @param option: The Option to extract the value from
  * @returns The unwrapped value if the Option is the `Some` variant
+ * 
+ * @since v0.2.0
  */
 export let unwrap = (option) => {
   expect("Could not unwrap None value", option)
@@ -88,6 +98,8 @@ export let unwrap = (option) => {
  * @param default: The default value to return
  * @param option: The Option to unwrap
  * @returns The unwrapped value if the Option is the `Some` variant, otherwise the default value provided
+ * 
+ * @since v0.2.0
  */
 export let unwrapWithDefault = (default, option) => {
   match (option) {
@@ -102,6 +114,8 @@ export let unwrapWithDefault = (default, option) => {
  * @param fn: The function to call on the value of an `Some` variant
  * @param option: The Option to map
  * @returns A new Option produced by the mapping function if the variant was `Some` or the unmodified `None` otherwise
+ * 
+ * @since v0.2.0
  */
 export let map = (fn, option) => {
   match (option) {
@@ -118,6 +132,8 @@ export let map = (fn, option) => {
  * @param default: A fallback value for a `None` variant
  * @param option: The Option to map
  * @returns The value produced by the mapping function if the Option is of the `Some` variant or the default value otherwise
+ * 
+ * @since v0.2.0
  */
 export let mapWithDefault = (fn, default, option) => {
   match (option) {
@@ -135,6 +151,8 @@ export let mapWithDefault = (fn, default, option) => {
  * @param defaultFn: The default function to map with
  * @param option: The Option to map
  * @returns The value produced by one of the mapping functions
+ * 
+ * @since v0.2.0
  */
 export let mapWithDefaultFn = (fn, defaultFn, option) => {
   match (option) {
@@ -149,6 +167,8 @@ export let mapWithDefaultFn = (fn, defaultFn, option) => {
  * @param fn: The function to call on the value of a `Some` variant
  * @param option: The result to map
  * @returns A new Option produced by the mapping function if the variant was `Some` or the unmodified `None` otherwise
+ * 
+ * @since v0.2.0
  */
 export let flatMap = (fn, option) => {
   match (option) {
@@ -164,6 +184,8 @@ export let flatMap = (fn, option) => {
  * @param fn: The function to filter with
  * @param option: The Option to filter
  * @returns `Some(value)` if the filter function returns `true`, `None` otherwise
+ * 
+ * @since v0.2.0
  */
 export let filter = (fn, option) => {
   match (option) {
@@ -183,6 +205,8 @@ export let filter = (fn, option) => {
  * @param optionA: The first Option to zip
  * @param optionB: The second Option to zip
  * @returns `Some((valueA, valueB))` if both Options are `Some` variants, otherwise `None`
+ * 
+ * @since v0.2.0
  */
 export let zip = (optionA, optionB) => {
   match ((optionA, optionB)) {
@@ -198,6 +222,8 @@ export let zip = (optionA, optionB) => {
  * @param optionA: The first Option to zip
  * @param optionB: The second Option to zip
  * @returns `Some((fn(valueA), fn(valueB)))` if both Options are `Some` variants, otherwise `None`
+ * 
+ * @since v0.2.0
  */
 export let zipWith = (fn, optionA, optionB) => {
   match ((optionA, optionB)) {
@@ -211,6 +237,8 @@ export let zipWith = (fn, optionA, optionB) => {
  *
  * @param option: The Option to flatten
  * @returns `Some(Some(1))` to `Some(1)`. If any of the Options are `None`, returns `None`
+ * 
+ * @since v0.2.0
  */
 export let flatten = (option) => {
   match (option) {
@@ -224,6 +252,8 @@ export let flatten = (option) => {
  *
  * @param option: The Option to convert
  * @returns `Some(value)` returns `[ value ]`, Otherwise returns `[ ]`
+ * 
+ * @since v0.2.0
  */
 export let toList = (option) => {
   match (option) {
@@ -237,6 +267,8 @@ export let toList = (option) => {
  *
  * @param option: The Option to convert
  * @returns `Some(value)` returns `[> value ]`, Otherwise returns `[> ]`
+ * 
+ * @since v0.2.0
  */
 export let toArray = (option) => {
   match (option) {
@@ -253,6 +285,8 @@ export let toArray = (option) => {
  * @param err: The error to use if the Option is `None`
  * @param option: The Option to convert
  * @returns `Ok(value)` if the Option is `Some(value)` or `Err(err)` if the Option is `None`
+ * 
+ * @since v0.2.0
  */
 export let toResult = (err, option) => {
   match (option) {
@@ -267,6 +301,8 @@ export let toResult = (err, option) => {
  *
  * @param fn: The function to call on the value of a `Some` variant
  * @param option: The Option to inspect
+ * 
+ * @since v0.2.0
  */
 export let sideEffect = (fn, option) => {
   match (option) {
@@ -282,6 +318,8 @@ export let sideEffect = (fn, option) => {
  * @param fn: The function to call on the value of a `Some` variant
  * @param option: The Option to inspect
  * @returns The modified Option
+ * 
+ * @since v0.2.0
  */
 export let peek = (fn, option) => {
   sideEffect(fn, option)
@@ -294,6 +332,8 @@ export let peek = (fn, option) => {
  * @param optionA: The first Option
  * @param optionB: The first Option
  * @returns The first Option if it is the `Some` variant or the second Option otherwise
+ * 
+ * @since v0.2.0
  */
 export let or = (optionA, optionB) => {
   match (optionA) {
@@ -308,6 +348,8 @@ export let or = (optionA, optionB) => {
  * @param optionA: The first Option
  * @param optionB: The first Option
  * @returns The second Option if both are the `Some` variant or the first Option otherwise
+ * 
+ * @since v0.2.0
  */
 export let and = (optionA, optionB) => {
   match (optionA) {
