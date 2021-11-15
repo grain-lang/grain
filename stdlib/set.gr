@@ -18,10 +18,10 @@ record Set<k> {
 
 // TODO: This could take an `eq` function to custom comparisons
 /**
- * Creates a new, empty set with an initial storage size for the given number of elements.
+ * Creates a mew empty Set with an initial size of the given `size`, the size is mutable.
  *
- * @param size: The size of the set
- * @returns An empty set of the entered size
+ * @param size: The initial size of the set
+ * @returns An empty set with the given initial size
  */
 export let makeSized = (size) => {
   let buckets = Array.make(size, None);
@@ -33,7 +33,7 @@ export let makeSized = (size) => {
 /**
  * Creates a new, empty set.
  *
- * @returns An empty set
+ * @returns An empty Set.
  */
 export let make = () => {
   makeSized(16)
@@ -166,7 +166,7 @@ let rec removeInBucket = (key, node) => {
 }
 
 /**
- * Removes the given value from the set.
+ * Removes the given value from the set, if the value does not exist it does not modify the Set.
  *
  * @param key: The value to remove from the set
  * @param set: The set to remove from
@@ -202,10 +202,10 @@ export let size = (set) => {
 }
 
 /**
- * Returns a boolean indicating weather or not the set is empty.
+ * Returns a boolean indicating if the provided Set is empty.
  *
- * @param set: The set to check
- * @returns `true` if the set contains no values
+ * @param set: The set to inspect
+ * @returns `true` if the given Set is empty, `false` otherwise
  */
 export let isEmpty = (set) => {
   size(set) == 0
@@ -389,11 +389,11 @@ export let diff = (set1, set2) => {
 }
 
 /**
- * Creates a set from the intersection of the given sets.
+ * Creates a new set from the values that are in both set1 and set2.
  *
- * @param set1: The first set to merge
- * @param set2: The second set to merge
- * @returns The generated set
+ * @param set1: The first set to intersect
+ * @param set2: The second set to intersect
+ * @returns A set containing the values that are in both sets
  */
 export let intersect = (set1, set2) => {
   let set = make();
@@ -416,7 +416,7 @@ export let intersect = (set1, set2) => {
  * Returns a tuple representing the internal state state of the set.
  *
  * @param set: The set to operate on
- * @returns The tuple representation of the internal state of the set
+ * @returns The internal state of the set represented as a tuple
  */
 export let getInternalStats = (set) => {
   (set.size, Array.length(set.buckets))

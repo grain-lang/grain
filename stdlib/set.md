@@ -32,19 +32,19 @@ record Set<k> {
 makeSized : Number -> Set<a>
 ```
 
-Creates a new, empty set with an initial storage size for the given number of elements.
+Creates a mew empty Set with an initial size of the given `size`, the size is mutable.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`size`|`Number`|The size of the set|
+|`size`|`Number`|The initial size of the set|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Set<a>`|An empty set of the entered size|
+|`Set<a>`|An empty set with the given initial size|
 
 ### Set.**make**
 
@@ -58,7 +58,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Set<a>`|An empty set|
+|`Set<a>`|An empty Set.|
 
 ### Set.**add**
 
@@ -102,7 +102,7 @@ Returns:
 remove : (a, Set<a>) -> Void
 ```
 
-Removes the given value from the set.
+Removes the given value from the set, if the value does not exist it does not modify the Set.
 
 Parameters:
 
@@ -137,19 +137,19 @@ Returns:
 isEmpty : Set<a> -> Bool
 ```
 
-Returns a boolean indicating weather or not the set is empty.
+Returns a boolean indicating if the provided Set is empty.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`set`|`Set<a>`|The set to check|
+|`set`|`Set<a>`|The set to inspect|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if the set contains no values|
+|`Bool`|`true` if the given Set is empty, `false` otherwise|
 
 ### Set.**clear**
 
@@ -255,7 +255,7 @@ Returns:
 ### Set.**fromList**
 
 ```grain
-fromList : List<a> -> Set<b>
+fromList : List<a> -> Set<a>
 ```
 
 Creates a set from a list.
@@ -295,7 +295,7 @@ Returns:
 ### Set.**fromArray**
 
 ```grain
-fromArray : Array<a> -> Set<b>
+fromArray : Array<a> -> Set<a>
 ```
 
 Creates a set from an array.
@@ -315,7 +315,7 @@ Returns:
 ### Set.**union**
 
 ```grain
-union : (Set<a>, Set<b>) -> Set<c>
+union : (Set<a>, Set<a>) -> Set<a>
 ```
 
 Creates a single set from the union of the given sets.
@@ -336,7 +336,7 @@ Returns:
 ### Set.**diff**
 
 ```grain
-diff : (Set<a>, Set<a>) -> Set<b>
+diff : (Set<a>, Set<a>) -> Set<a>
 ```
 
 Creates a set from the difference of the given sets.
@@ -357,23 +357,23 @@ Returns:
 ### Set.**intersect**
 
 ```grain
-intersect : (Set<a>, Set<a>) -> Set<b>
+intersect : (Set<a>, Set<a>) -> Set<a>
 ```
 
-Creates a set from the intersection of the given sets.
+Creates a new set from the values that are in both set1 and set2.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`set1`|`Set<a>`|The first set to merge|
-|`set2`|`Set<a>`|The second set to merge|
+|`set1`|`Set<a>`|The first set to intersect|
+|`set2`|`Set<a>`|The second set to intersect|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Set<a>`|The generated set|
+|`Set<a>`|A set containing the values that are in both sets|
 
 ### Set.**getInternalStats**
 
@@ -393,5 +393,5 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`(Number, Number)`|The tuple representation of the internal state of the set|
+|`(Number, Number)`|The internal state of the set represented as a tuple|
 
