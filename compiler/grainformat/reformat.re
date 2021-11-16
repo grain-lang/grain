@@ -473,24 +473,45 @@ let rec resugar_list_patterns =
           ~original_source: array(string),
         ) => {
   let processed_list = resugar_pattern_list_inner(patterns, parent_loc);
+  let last_item_was_spread = ref(false);
+
   let items =
     List.map(
       i =>
         switch (i) {
         | RegularPattern(e) =>
-          print_pattern(~pat=e, ~parent_loc, ~original_source)
+          last_item_was_spread := false;
+
+          Doc.group(print_pattern(~pat=e, ~parent_loc, ~original_source));
         | SpreadPattern(e) =>
-          Doc.concat([
-            Doc.text("..."),
-            print_pattern(~pat=e, ~parent_loc, ~original_source),
-          ])
+          last_item_was_spread := true;
+          Doc.group(
+            Doc.concat([
+              Doc.text("..."),
+              print_pattern(~pat=e, ~parent_loc, ~original_source),
+            ]),
+          );
         },
       processed_list,
     );
+
   Doc.group(
     Doc.concat([
-      Doc.lbracket,
-      Doc.join(Doc.concat([Doc.comma, Doc.line]), items),
+      Doc.indent(
+        Doc.concat([
+          Doc.lbracket,
+          Doc.concat([
+            Doc.softLine,
+            Doc.join(Doc.concat([Doc.comma, Doc.line]), items),
+          ]),
+          if (last_item_was_spread^) {
+            Doc.nil;
+          } else {
+            Doc.ifBreaks(Doc.comma, Doc.nil);
+          },
+        ]),
+      ),
+      Doc.softLine,
       Doc.rbracket,
     ]),
   );
@@ -511,9 +532,13 @@ and resugar_pattern_list_inner =
 
     if (func == "[]") {
       [RegularPattern(arg1)];
+    } else if (func == list_cons) {
+      let inner = resugar_pattern_list_inner(innerpatterns, parent_loc);
+      List.append([RegularPattern(arg1)], inner);
     } else {
       [RegularPattern(arg1), SpreadPattern(arg2)];
     };
+
   | _ => [RegularPattern(arg1), SpreadPattern(arg2)]
   };
 }
@@ -2962,7 +2987,7 @@ let data_print =
       original_source: array(string),
     ) => {
   Doc.join(
-    Doc.comma,
+    Doc.concat([Doc.comma, Doc.hardLine]),
     List.map(
       data => {
         let (expt, decl) = data;
@@ -3505,7 +3530,6 @@ let reformat_ast =
   //Doc.debug(final_doc);
   //
 
-  Doc.toString(~width=80, final_doc);
   //use this to see the AST in JSON
   // print_endline(
   //   Yojson.Basic.pretty_to_string(
@@ -3514,4 +3538,6 @@ let reformat_ast =
   //     ),
   //   ),
   // );
+
+  Doc.toString(~width=80, final_doc);
 };
