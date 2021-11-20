@@ -331,6 +331,17 @@ let join = (separator: String, items: List<String>) => {
 }
 
 /**
+ * Reverses the list and appends items to the end
+ * 
+ * @param items: Items to be appended to the reversed list
+ * @param list: The list that is being reversed and appended to
+ * @since v0.4.5
+ */
+let revAppend = (items, list) => { 
+  append(reverse(list), items)
+}
+
+/**
  * Sorts the given list based on a given comparator function. The resulting list is sorted in increasing order.
  * 
  * Ordering is calculated using a comparator function which takes two list elements and must return 0 if both are equal, a positive number if the first is greater, and a negative number if the first is smaller.
@@ -342,10 +353,10 @@ let sort = (comp, list) => {
   let rec merge = (left, right, list) => {
     match((left, right)){
       (_, []) => {
-        append(reverse(list), left)
+        revAppend(left, list)
       },
       ([], _) => {
-        append(reverse(list), right)
+        revAppend(right, list)
       },
       ([lhd, ...ltl], [rhd, ...rtl]) => {
         if(comp(lhd, rhd) < 0){
