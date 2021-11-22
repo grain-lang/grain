@@ -1057,7 +1057,7 @@ No other changes yet.
 </details>
 
 ```grain
-rotate : (Array<Number>, Number) -> Array<Number>
+rotate : (Number, Array<Number>) -> Void
 ```
 
 Rotates an array by n elements to the right, in place.
@@ -1069,22 +1069,16 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`arr`|`Array<Number>`|The array to be rotated|
 |`n`|`Number`|The number of elements to rotate by|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Array<Number>`|The rotated array|
+|`arr`|`Array<Number>`|The array to be rotated|
 
 Examples:
 
 ```grain
-: rotate([> 1, 2, 3, 4, 5], 2) == [> 4, 5, 1, 2, 3]
+let array = [> 1, 2, 3, 4, 5]; rotate(2, arr); arr == [> 4, 5, 1, 2, 3]
 ```
 
 ```grain
-: rotate([> 1, 2, 3, 4, 5], -1) == [> 2, 3, 4, 5, 1]
+let array = [> 1, 2, 3, 4, 5]; rotate(-1, arr); arr == [> 2, 3, 4, 5, 1]
 ```
 
