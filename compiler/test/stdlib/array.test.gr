@@ -360,9 +360,26 @@ assert result == void
 
 
 // Array.rotate
-assert Array.rotate([> 1, 2, 3, 4, 5], 0) == [> 1, 2, 3, 4, 5]
-assert Array.rotate([> 1, 2, 3, 4, 5], 3) == [> 3, 4, 5, 1, 2]
-assert Array.rotate([> 1, 2, 3, 4, 5], -4) == [> 5, 1, 2, 3, 4]
-assert Array.rotate([> 1, 2, 3, 4, 5], 5) == [> 1, 2, 3, 4, 5]
-assert Array.rotate([> 1, 2, 3, 4, 5], 48) == [> 3, 4, 5, 1, 2]
-assert Array.rotate([> 1, 2, 3, 4, 5], -54) == [> 5, 1, 2, 3, 4]
+let arr1 = [> 1, 2, 3, 4, 5]
+Array.rotate(0, arr1) 
+assert arr1 == [> 1, 2, 3, 4, 5]
+
+let arr2 = [> 1, 2, 3, 4, 5]
+Array.rotate(3, arr2)
+assert arr2 == [> 3, 4, 5, 1, 2]
+
+let arr3 = [> 1, 2, 3, 4, 5]
+Array.rotate(-4, arr3)
+assert arr3 == [> 5, 1, 2, 3, 4]
+
+let arr4 = [> 1, 2, 3, 4, 5]
+Array.rotate(5, arr4)
+assert arr4 == [> 1, 2, 3, 4, 5]
+
+let arr5 = [> 1, 2, 3, 4, 5]
+Array.rotate(48, arr5) 
+assert arr5 == [> 3, 4, 5, 1, 2]
+
+let arr6 = [> 1, 2, 3, 4, 5]
+Array.rotate(-54, arr6) 
+assert arr6 == [> 5, 1, 2, 3, 4]
