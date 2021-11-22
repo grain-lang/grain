@@ -233,6 +233,24 @@ export let copy = (array) => {
 }
 
 /**
+ * Iterates an array a given number of times, calling an iterator function on each element.
+ *
+ * @param fn: The iterator function to call with each element
+ * @param n: The number of times to iterate the given array
+ * @param array: The array to iterate
+ *
+ * @since v0.4.4
+ */
+export let cycle = (fn, n, array) => {
+  let length = length(array)
+  for (let mut iteration = 0; iteration < n; iteration += 1) {
+    for (let mut count = 0; count < length; count += 1) {
+      fn(array[count]): (Void)
+    }
+  }
+}
+
+/**
  * Iterates an array, calling an iterator function on each element.
  *
  * @param fn: The iterator function to call with each element
@@ -243,10 +261,8 @@ export let copy = (array) => {
  */
 export let forEach = (fn, array) => {
   let length = length(array)
-  let mut count = 0
-  while (count < length) {
-    fn(array[count]): Void
-    count = incr(count)
+  for (let mut count = 0; count < length; count += 1) {
+    fn(array[count]): (Void)
   }
 }
 
@@ -262,10 +278,8 @@ export let forEach = (fn, array) => {
  */
 export let forEachi = (fn, array) => {
   let length = length(array)
-  let mut count = 0
-  while (count < length) {
+  for (let mut count = 0; count < length; count += 1) {
     fn(array[count], count): (Void)
-    count = incr(count)
   }
 }
 
@@ -435,9 +449,12 @@ export let fillRange = (value, start, stop, array) => {
   }
 
   let mut index = startIndex
-  while (index < stopIndex && index < length) {
-    array[index] = value
+  for (
+    let mut index = startIndex;
+    index < stopIndex && index < length;
     index += 1
+  ) {
+    array[index] = value
   }
   void
 }
@@ -520,11 +537,9 @@ export let fromList = (list) => {
 export let contains = (search, array) => {
   // TODO: This should use recursion when we can pattern match arrays
   let len = length(array)
-  let mut index = 0
   let mut found = false
-  while ((!found) && (index < len)) {
-    found = (array[index] == search)
-    index += 1
+  for (let mut index = 0; !found && index < len; index += 1) {
+    found = array[index] == search
   }
   found
 }
@@ -552,7 +567,7 @@ export let find = (fn, array) => {
         matchedItem = array[count]
         count = length
       } else {
-        count = incr(count)
+        count += 1
       }
     }
     if(!matching) {
@@ -586,7 +601,7 @@ export let findIndex = (fn, array) => {
         matchedIndex = count
         count = length
       } else {
-        count = incr(count)
+        count += 1
       }
     }
     if(!matching) {
@@ -614,7 +629,7 @@ export let product = (array1: Array<a>, array2: Array<b>) => {
 
   init(lenA * lenB, n => {
     if(n % lenB == 0){
-      indexA = incr(indexA)
+      indexA += 1
     } else {
       indexA = indexA
     }
@@ -635,12 +650,9 @@ export let count = (fn, array) => {
   let length = length(array)
   let mut position = 0
   let mut count = 0
-  while (position < length) {
+  for (let mut position = 0; position < length; position += 1) {
     if(fn(array[position])) {
-      count = incr(count)
-      position = incr(position)
-    } else {
-      position = incr(position)
+      count += 1
     }
   }
   count
@@ -658,14 +670,10 @@ export let count = (fn, array) => {
  */
 export let counti = (fn, array) => {
   let length = length(array)
-  let mut position = 0
   let mut count = 0
-  while (position < length) {
-    if(fn(array[position], position)) {
-      count = incr(count)
-      position = incr(position)
-    } else {
-      position = incr(position)
+  for (let mut position = 0; position < length; position += 1) {
+    if (fn(array[position], position)) {
+      count += 1
     }
   }
   count
@@ -688,7 +696,7 @@ export let filter = (fn, array) => {
   forEach((el) => {
     if (fn(el)) {
       filtered[position] = el
-      position = incr(position)
+      position += 1
     }
   }, array)
   init(position, (index) => {
@@ -713,7 +721,7 @@ export let filteri = (fn, array) => {
   forEachi((el, index) => {
     if (fn(el, index)) {
       filtered[position] = el
-      position = incr(position)
+      position += 1
     }
   }, array)
   init(position, (index) => {
@@ -847,4 +855,40 @@ export let slice = (startIndex, endIndex, array) => {
   } else {
     init(newLength, n => array[startIndex + n])
   }
+}
+
+/**
+ * Sorts an array in-place.
+ *
+ * Ordering is calculated using a comparator function which takes two array elements and must return 0 if both are equal, a positive number if the first is greater, and a negative number if the first is smaller.
+ * @param comp: The comparator function used to indicate sort order
+ * @param array: The array to be sorted
+ * @since v0.4.5
+ */
+export let sort = (comp, array) => {
+  let partition = (low, high) => {
+    let pivot = array[high]
+    let mut i = low - 1
+    for(let mut j = low; j < high; j += 1) {
+      if(comp(array[j], pivot) < 0){
+        i += 1
+        let temp = array[i]
+        array[i] = array[j]
+        array[j] = temp
+      }
+    }
+    let temp = array[i + 1]
+    array[i + 1] = array[high]
+    array[high] = temp
+    i + 1
+  }
+  let rec quicksort = (low, high) => {
+    if(low < high){
+      let partitionIndex = partition(low, high)
+      quicksort(partitionIndex + 1, high)
+      quicksort(low, partitionIndex - 1)
+    }
+  }
+  let len = length(array)
+  quicksort(0, len - 1)
 }

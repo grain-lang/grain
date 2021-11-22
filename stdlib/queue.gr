@@ -1,46 +1,115 @@
+/**
+ * @module Queue: An immutable queue implementation. A queue is a FIFO (first-in-first-out) data structure where new values are added to the end and retrieved or removed from the beginning.
+ * @example import Queue from "queue"
+ * @since v0.2.0
+ */
 import List from "list"
 
 record Queue<a> { forwards: List<a>, backwards: List<a> }
 
+/**
+ * @section Values: Functions for working with queues.
+ */
+
+/**
+ * Creates an empty queue.
+ * 
+ * @returns An empty queue
+ * @since v0.2.0
+ */
 export let make = () => {
-    { forwards: [], backwards: [] }
+  { forwards: [], backwards: [] }
 }
 
-export let isEmpty = (queue) => {
-    match (queue) {
-        { forwards: [], backwards: [] } => true,
-        _ => false
-    }
+/**
+ * Checks if the given queue contains any values.
+ * 
+ * @param queue: The queue to check
+ * @returns `true` if the given queue is empty or `false` otherwise
+ *
+ * @since v0.2.0
+ */
+export let isEmpty = queue => {
+  match (queue) {
+    { forwards: [], backwards: [] } => true,
+    _ => false,
+  }
 }
 
-export let peek = (queue) => {
-    match (queue) {
-        { forwards: [], backwards: [] } => None,
-        { forwards, backwards } => List.head(forwards)
-    }
+/**
+ * Returns the value at the beginning of the queue. It is not removed from the queue.
+ * 
+ * @param queue: The queue to inspect
+ * @returns `Some(value)` containing the value at the beginning of the queue, or `None` if the queue is empty
+ *
+ * @since v0.3.2
+ * @history v0.2.0: Originally named `head`
+ * @history v0.3.2: Deprecated `head` function
+ * @history v0.4.0: Removed `head` function
+ */
+export let peek = queue => {
+  match (queue) {
+    { forwards: [], backwards: [] } => None,
+    { forwards, backwards } => List.head(forwards),
+  }
 }
 
+/**
+ * Adds a value to the end of the queue.
+ * 
+ * @param value: The value to append
+ * @param queue: The queue to update
+ * @returns An updated queue
+ *
+ * @since v0.3.2
+ * @history v0.2.0: Originally named `enqueue`
+ * @history v0.3.2: Deprecated `enqueue` function
+ * @history v0.4.0: Removed `enqueue` function
+ */
 export let push = (value, queue) => {
-    match (queue) {
-        { forwards: [], backwards: [] } => { forwards: [value], backwards: [] },
-        { forwards, backwards } => { forwards, backwards: [value, ...backwards] }
-    }
+  match (queue) {
+    { forwards: [], backwards: [] } => { forwards: [value], backwards: [] },
+    { forwards, backwards } => { forwards, backwards: [value, ...backwards] },
+  }
 }
 
-export let pop = (queue) => {
-    match (queue) {
-        { forwards: [], backwards: [] } => queue,
-        { forwards: [head], backwards: [] } => { forwards: [], backwards: [] },
-        { forwards: [head], backwards } => { forwards: List.reverse(backwards), backwards: [] },
-        { forwards: [head, ...ftail], backwards } => { forwards: ftail, backwards }
-    }
+/**
+ * Dequeues the next value in the queue.
+ * 
+ * @param queue: The queue to change
+ * @returns An updated queue
+ *
+ * @since v0.3.2
+ * @history v0.2.0: Originally named `dequeue`
+ * @history v0.3.2: Deprecated `dequeue` function
+ * @history v0.4.0: Removed `dequeue` function
+ */
+export let pop = queue => {
+  match (queue) {
+    { forwards: [], backwards: [] } => queue,
+    { forwards: [head], backwards: [] } => { forwards: [], backwards: [] },
+    { forwards: [head], backwards } =>
+      {
+        forwards: List.reverse(backwards),
+        backwards: [],
+      },
+    { forwards: [head, ...ftail], backwards } => { forwards: ftail, backwards },
+  }
 }
 
-export let size = (queue) => {
-    match (queue) {
-        { forwards: [], backwards: [] } => 0,
-        { forwards, backwards: [] } => List.length(forwards),
-        { forwards: [], backwards } => List.length(backwards),
-        { forwards, backwards } => List.length(forwards) + List.length(backwards),
-    }
+/**
+ * Get the number of values in a queue.
+ * 
+ * @param queue: The queue to inspect
+ * @returns The number of values in the queue
+ *
+ * @since v0.3.2
+ */
+export let size = queue => {
+  match (queue) {
+    { forwards: [], backwards: [] } => 0,
+    { forwards, backwards: [] } => List.length(forwards),
+    { forwards: [], backwards } => List.length(backwards),
+    { forwards, backwards } => List.length(forwards) + List.length(backwards),
+  }
 }

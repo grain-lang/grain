@@ -68,3 +68,46 @@ export let fromFloat64 = (n: Float64) => {
   let ptr = WasmI32.fromGrain(n)
   WasmF64.load(ptr, 8n)
 }
+
+/**
+ * Converts a WasmI32 value to Number.
+ * 
+ * This function is meant to be called from a `@disableGC` context without
+ * need to call incRef on the function.
+ * 
+ * @param n: The WasmI32 to convert
+ * @returns The value converted to either a simple or a 32 bit heap allocated number.
+ */
+@disableGC
+export let wasmI32ToNumber = (n: WasmI32) => {
+  // Follows a little optimization. Instead of testing if n is range of allowed
+  // non heap allocated simple numbers (-1073741824n..1073741823n), actually
+  // make a simple number, convert it back to WasmI32, and test if it stayed
+  // the same. This may sound counter intuitive, but for numbers that fit into
+  // the range it is faster than performing the check with WasmI32.geS and
+  // WasmI32.leS by about 20%. An additional ~33% is gained by avoiding a
+  // call to tagSimpleNumber and instead doing it inline. For the case of
+  // numbers not fitting into the range, the cost of these simple ALU
+  // instructions are negligible compared to heap allocations.
+
+  // First step: naively convert to simple number, just like tagSimpleNumber.
+  // This will overflow for values not in the range, but it's fine.
+  let simple = WasmI32.xor(WasmI32.shl(n, 1n), 1n)
+
+  // Untag it, just like numbers.untagSimple.
+  let untagged = WasmI32.shrS(simple, 1n)
+
+  let result = if (WasmI32.eq(untagged, n)) {
+    // Just test if the untagged number is the same. If it didn't overflow, then
+    // we're good. We just need to cast the raw value into a Number at the type
+    // system level.
+    WasmI32.toGrain(simple): (Number)
+  } else {
+    // If it did overflow, then the value differs and we need to discard it and
+    // allocate the number on the heap. A boxed 32 bit number actually is the
+    // same thing as an Int32. It only needs to be cast into Number.
+    let asInt32 = toInt32(n)
+    WasmI32.toGrain(WasmI32.fromGrain(asInt32)): (Number)
+  }
+  result
+}

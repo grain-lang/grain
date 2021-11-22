@@ -13,14 +13,17 @@ let replace_extension = (baseName, newExt) => {
   Printf.sprintf("%s.%s", remove_extension(baseName), newExt);
 };
 
-// These utilities are needed until https://github.com/facebookexperimental/reason-native/pull/251
-// is merged into the reason-native/fp library to support Windows-style separators
-let normalize_separators = path => {
-  // We hardcode Windows separator because JSOO always acts as unix
-  let windows_sep = Str.regexp("\\");
-  let normal_sep = "/";
-  Str.global_replace(windows_sep, normal_sep, path);
-};
+let normalize_separators = path =>
+  if (Sys.unix) {
+    path;
+  } else {
+    // If we aren't on a Unix-style system, convert `\\` separators to `/`
+    // This is needed until https://github.com/reasonml/reason-native/issues/267
+    // is fixed and we can update the `Fp` library
+    let windows_sep = Str.regexp("\\");
+    let normal_sep = "/";
+    Str.global_replace(windows_sep, normal_sep, path);
+  };
 
 let to_fp = fname => {
   Fp.testForPath(normalize_separators(fname));
@@ -51,7 +54,7 @@ let filename_to_module_name = fname => {
 
 let ensure_parent_directory_exists = fname => {
   // TODO: Use `derelativize` once Fp.t is used everywhere
-  let fullPath =
+  let full_path =
     switch (to_fp(fname)) {
     | Some(Absolute(path)) => path
     | Some(Relative(path)) =>
@@ -67,7 +70,7 @@ let ensure_parent_directory_exists = fname => {
   // No longer swallowing the error because we can handle the CWD case
   // thus we should raise if something is actually wrong
   // TODO: Switch this to return the Result type
-  Fs.mkDirPExn(Fp.dirName(fullPath));
+  Fs.mkDirPExn(Fp.dirName(full_path));
 };
 
 /**
@@ -76,7 +79,7 @@ let ensure_parent_directory_exists = fname => {
   assumed to be relative to the current working directory.
 */
 let derelativize = (~base=?, fname) => {
-  let fullPath =
+  let full_path =
     switch (to_fp(fname)) {
     | Some(Absolute(path)) => path
     | Some(Relative(path)) =>
@@ -105,7 +108,7 @@ let derelativize = (~base=?, fname) => {
       )
     };
 
-  Fp.toString(fullPath);
+  Fp.toString(full_path);
 };
 
 // Recursive readdir
@@ -124,4 +127,49 @@ let rec readdir = (dir, excludes) => {
        },
        [||],
      );
+};
+
+let realpath = path => {
+  switch (Fp.testForPath(path)) {
+  | None => None
+  | Some(Fp.Absolute(abspath)) => Some(Fp.toString(abspath))
+  | Some(Fp.Relative(relpath)) =>
+    let base = Fp.absoluteExn(get_cwd());
+    let full_path = Fp.join(base, relpath);
+    Some(Fp.toString(full_path));
+  };
+};
+
+let realpath_quick = path => {
+  switch (realpath(path)) {
+  | None => path
+  | Some(rp) => rp
+  };
+};
+
+let smart_cat = (dir, file) => {
+  switch (Fp.absolute(dir)) {
+  | None => Filename.concat(dir, file)
+  | Some(abspath) =>
+    switch (Fp.relative(file)) {
+    | None => Filename.concat(Fp.toString(abspath), file)
+    | Some(relpath) => Fp.toString(Fp.join(abspath, relpath))
+    }
+  };
+};
+
+let canonicalize_relpath = (base_path, unit_name) => {
+  // PRECONDITION: is_relpath(unit_name) == true
+  let abs_base_path =
+    switch (realpath(base_path)) {
+    | None =>
+      failwith(
+        Printf.sprintf(
+          "Internal Grain error; please report! testForPath failed: %s",
+          base_path,
+        ),
+      )
+    | Some(abspath) => abspath
+    };
+  smart_cat(abs_base_path, unit_name);
 };

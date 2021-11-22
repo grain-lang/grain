@@ -263,6 +263,27 @@ Returns:
 |----|-----------|
 |`Array<a>`|The new array containing the elements from the input|
 
+### Array.**cycle**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+cycle : ((a -> Void), Number, Array<a>) -> Void
+```
+
+Iterates an array a given number of times, calling an iterator function on each element.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`fn`|`a -> Void`|The iterator function to call with each element|
+|`n`|`Number`|The number of times to iterate the given array|
+|`array`|`Array<a>`|The array to iterate|
+
 ### Array.**forEach**
 
 <details>
@@ -1005,4 +1026,26 @@ Returns:
 |type|description|
 |----|-----------|
 |`Array<a>`|The subset of the array that was sliced|
+
+### Array.**sort**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+sort : (((a, a) -> Number), Array<a>) -> Void
+```
+
+Sorts an array in-place.
+
+Ordering is calculated using a comparator function which takes two array elements and must return 0 if both are equal, a positive number if the first is greater, and a negative number if the first is smaller.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`comp`|`(a, a) -> Number`|The comparator function used to indicate sort order|
+|`array`|`Array<a>`|The array to be sorted|
 

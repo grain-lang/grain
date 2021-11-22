@@ -188,7 +188,14 @@ module Attribute = {
         comment,
       );
 
-    (String.trim(out), List.rev(attrs^));
+    let desc = String.trim(out);
+    let desc_opt =
+      if (desc != "") {
+        Some(desc);
+      } else {
+        None;
+      };
+    (desc_opt, List.rev(attrs^));
   };
 
   let is_param = (attr: t) => {
@@ -270,13 +277,16 @@ module Attribute = {
     );
 };
 
+type description = option(string);
 type attributes = list(Attribute.t);
 
 module IntMap = Map.Make(Int);
 
 type comments = {
-  mutable by_start_lnum: IntMap.t((Typedtree.comment, string, attributes)),
-  mutable by_end_lnum: IntMap.t((Typedtree.comment, string, attributes)),
+  mutable by_start_lnum:
+    IntMap.t((Typedtree.comment, description, attributes)),
+  mutable by_end_lnum:
+    IntMap.t((Typedtree.comment, description, attributes)),
 };
 
 let comments = {by_start_lnum: IntMap.empty, by_end_lnum: IntMap.empty};
@@ -284,23 +294,21 @@ let comments = {by_start_lnum: IntMap.empty, by_end_lnum: IntMap.empty};
 let setup_comments = (raw_comments: list(Typedtree.comment)) => {
   List.iter(
     (comment: Typedtree.comment) => {
-      switch (comment) {
-      | Line({cmt_loc, cmt_content})
-      | Shebang({cmt_loc, cmt_content})
-      | Block({cmt_loc, cmt_content})
-      | Doc({cmt_loc, cmt_content}) =>
-        let (description, attributes) = Attribute.extract(cmt_content);
-        let data = (comment, description, attributes);
-
-        comments.by_start_lnum =
-          IntMap.add(
-            cmt_loc.loc_start.pos_lnum,
-            data,
-            comments.by_start_lnum,
-          );
-        comments.by_end_lnum =
-          IntMap.add(cmt_loc.loc_end.pos_lnum, data, comments.by_end_lnum);
-      }
+      let (start_lnum, end_lnum, data) =
+        switch (comment) {
+        | Line({cmt_loc, _})
+        | Shebang({cmt_loc, _})
+        | Block({cmt_loc, _}) =>
+          let data = (comment, None, []);
+          (cmt_loc.loc_start.pos_lnum, cmt_loc.loc_end.pos_lnum, data);
+        | Doc({cmt_loc, cmt_content}) =>
+          let (description, attributes) = Attribute.extract(cmt_content);
+          let data = (comment, description, attributes);
+          (cmt_loc.loc_start.pos_lnum, cmt_loc.loc_end.pos_lnum, data);
+        };
+      comments.by_start_lnum =
+        IntMap.add(start_lnum, data, comments.by_start_lnum);
+      comments.by_end_lnum = IntMap.add(end_lnum, data, comments.by_end_lnum);
     },
     raw_comments,
   );

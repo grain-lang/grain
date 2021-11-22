@@ -7,7 +7,7 @@ type t = {
   module_name: string,
   name: string,
   type_sig: string,
-  description: string,
+  description: option(string),
   attributes: list(Comments.Attribute.t),
 };
 
@@ -55,7 +55,7 @@ let for_value_description = (~ident: Ident.t, vd: Types.value_description) => {
   let (description, attributes) =
     switch (comment) {
     | Some((_, description, attributes)) => (description, attributes)
-    | None => ("", [])
+    | None => (None, [])
     };
 
   let (args, returns) = types_for_function(vd);
@@ -87,7 +87,7 @@ let for_type_declaration = (~ident: Ident.t, td: Types.type_declaration) => {
   let (description, attributes) =
     switch (comment) {
     | Some((_, description, _)) => (description, [])
-    | None => ("", [])
+    | None => (None, [])
     };
 
   {module_name, name, type_sig, description, attributes};
@@ -190,8 +190,11 @@ let to_markdown = (~current_version, docblock) => {
     Buffer.add_string(buf, Html.details(~disabled, ~summary, details));
   };
   Buffer.add_string(buf, Markdown.code_block(docblock.type_sig));
-  if (String.length(docblock.description) > 0) {
-    Buffer.add_string(buf, Markdown.paragraph(docblock.description));
+  switch (docblock.description) {
+  // Guard isn't be needed because we turn an empty string into None during extraction
+  | Some(description) =>
+    Buffer.add_string(buf, Markdown.paragraph(description))
+  | None => ()
   };
   let params =
     docblock.attributes
