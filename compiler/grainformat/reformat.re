@@ -1889,28 +1889,26 @@ and print_expression =
       //  Walktree.remove_comments_in_ignore_block(expr.pexp_loc);
       Doc.text(originalCode);
     | PExpIf(condition, trueExpr, falseExpr) =>
-      // let (leading_condition_comments, _trailing_comments) =
-      //   Walktree.partition_comments(
-      //     ~range=None,
-      //     ~leading_only=true,
-      //     condition.pexp_loc,
-      //   );
-      // Walktree.remove_used_comments(leading_condition_comments, []);
+      let condLeadingCmt =
+        Comment_utils.get_comments_from_start_of_enclosing_location(
+          ~wrapper=expr.pexp_loc,
+          ~location=condition.pexp_loc,
+          comments,
+        );
 
-      // let expr_line = get_end_loc_line(condition.pexp_loc);
+      let condTrailingCmt =
+        Comment_utils.get_comments_between_locs(
+          ~loc1=condition.pexp_loc,
+          ~loc2=trueExpr.pexp_loc,
+          comments,
+        );
 
-      // let leading_condition_comment_docs =
-      //   if (List.length(leading_condition_comments) > 0) {
-      //     Doc.concat([
-      //       print_multi_comments_no_space(
-      //         leading_condition_comments,
-      //         expr_line,
-      //       ),
-      //       Doc.space,
-      //     ]);
-      //   } else {
-      //     Doc.nil;
-      //   };
+      let trueTrailingCmt =
+        Comment_utils.get_comments_between_locs(
+          ~loc1=trueExpr.pexp_loc,
+          ~loc2=falseExpr.pexp_loc,
+          comments,
+        );
 
       let true_is_block =
         switch (trueExpr.pexp_desc) {
@@ -1989,12 +1987,6 @@ and print_expression =
           }
         };
 
-      // let true_comments =
-      //   if (false_is_block) {
-      //     Doc.nil;
-      //   } else {
-      //     get_trailing_comments_to_end_of_block(trueExpr.pexp_loc);
-      //   };
       let commentsInFalseStatement =
         Comment_utils.get_comments_inside_location(
           ~location=falseExpr.pexp_loc,
@@ -2082,7 +2074,7 @@ and print_expression =
             Doc.group(
               Doc.concat([
                 Doc.lparen,
-                //leading_condition_comment_docs,
+                Comment_utils.comments_to_docs(~offset=true, condLeadingCmt),
                 print_expression(
                   ~parentIsArrow=false,
                   ~endChar=None,
@@ -2091,13 +2083,13 @@ and print_expression =
                   ~comments=commentsInCondition,
                   condition,
                 ),
-                // get_trailing_comments_to_next_code(condition.pexp_loc),
+                Comment_utils.comments_to_docs(~offset=true, condTrailingCmt),
                 Doc.rparen,
                 Doc.space,
               ]),
             ),
             true_clause,
-            //  true_comments,
+            Comment_utils.comments_to_docs(~offset=true, trueTrailingCmt),
             false_clause,
           ]),
         );
@@ -2108,7 +2100,7 @@ and print_expression =
               Doc.text("if"),
               Doc.space,
               Doc.lparen,
-              // leading_condition_comment_docs,
+              Comment_utils.comments_to_docs(~offset=true, condLeadingCmt),
               print_expression(
                 ~parentIsArrow=false,
                 ~endChar=None,
@@ -2117,13 +2109,13 @@ and print_expression =
                 ~comments=commentsInCondition,
                 condition,
               ),
-              // get_trailing_comments_to_next_code(condition.pexp_loc),
+              Comment_utils.comments_to_docs(~offset=true, condTrailingCmt),
               Doc.rparen,
               Doc.space,
             ]),
           ),
           true_clause,
-          //true_comments,
+          Comment_utils.comments_to_docs(~offset=true, trueTrailingCmt),
           false_clause,
         ]);
       };
@@ -2403,7 +2395,7 @@ and print_expression =
                   expressions: list(Grain_parsing__Parsetree.expression),
                   previous: option(Grain_parsing__Parsetree.expression),
                 ) => {
-          let stmt1 =
+          let loc1 =
             switch (previous) {
             | None => None
             | Some(s) => Some(s.pexp_loc)
@@ -2417,11 +2409,11 @@ and print_expression =
                 ~location=exp.pexp_loc,
                 remainingComments,
               );
-            let stmt2 = Some(exp.pexp_loc);
+            let loc2 = Some(exp.pexp_loc);
             let leading_comments =
-              Comment_utils.get_comments_between_statements(
-                ~stmt1,
-                ~stmt2,
+              Comment_utils.get_comments_between_locations(
+                ~loc1,
+                ~loc2,
                 remainingComments,
               );
             let printed_expression =
@@ -2435,7 +2427,10 @@ and print_expression =
               );
             let this_stmt =
               Doc.concat([
-                Comment_utils.comments_to_docs(leading_comments),
+                Comment_utils.comments_to_docs(
+                  ~offset=true,
+                  leading_comments,
+                ),
                 printed_expression,
               ]);
             [this_stmt] @ loop(List.tl(expressions), Some(expr));
@@ -2448,11 +2443,11 @@ and print_expression =
                 remainingComments,
               );
 
-            let stmt2 = Some(exp.pexp_loc);
+            let loc2 = Some(exp.pexp_loc);
             let leading_comments =
-              Comment_utils.get_comments_between_statements(
-                ~stmt1,
-                ~stmt2,
+              Comment_utils.get_comments_between_locations(
+                ~loc1,
+                ~loc2,
                 remainingComments,
               );
             let printed_expression =
@@ -2465,17 +2460,23 @@ and print_expression =
                 exp,
               );
             let trailing_comments =
-              Comment_utils.get_comments_between_statements(
-                ~stmt1=stmt2,
-                ~stmt2=None,
+              Comment_utils.get_comments_between_locations(
+                ~loc1=loc2,
+                ~loc2=None,
                 remainingComments,
               );
             let this_stmt =
               Doc.concat([
-                Comment_utils.comments_to_docs(leading_comments),
+                Comment_utils.comments_to_docs(
+                  ~offset=true,
+                  leading_comments,
+                ),
                 printed_expression,
                 Doc.hardLine,
-                Comment_utils.comments_to_docs(trailing_comments),
+                Comment_utils.comments_to_docs(
+                  ~offset=true,
+                  trailing_comments,
+                ),
               ]);
             [this_stmt];
           };
@@ -3414,18 +3415,50 @@ let print_primitive_value_description =
   ]);
 };
 
+let line_ending_comments =
+    (~offset: bool, comments: list(Grain_parsing__Parsetree.comment)) => {
+  let num_trailing_comments = List.length(comments);
+
+  switch (num_trailing_comments) {
+  | 0 => Doc.hardLine
+  | _ =>
+    let num_trailing_comments = List.length(comments);
+    let last = List.nth(comments, num_trailing_comments - 1);
+    switch (last) {
+    | Block(_) =>
+      Doc.concat([
+        Comment_utils.comments_to_docs(~offset, comments),
+        Doc.hardLine,
+      ])
+    | _ => Comment_utils.comments_to_docs(~offset, comments)
+    };
+  };
+};
+
 let toplevel_print =
     (
       data: Parsetree.toplevel_stmt,
       ~original_source: array(string),
       ~previous_line: int,
-      ~comments,
+      ~allComments,
     ) => {
   let attributes = data.ptop_attributes;
+
+  let comments =
+    Comment_utils.get_comments_inside_location(
+      ~location=data.ptop_loc,
+      allComments,
+    );
 
   let _ = Comment_utils.print_comments(comments);
 
   let attribute_text = print_attributes(attributes);
+
+  let line_trailing_comments =
+    Comment_utils.get_comments_to_end_of_line(
+      ~location=data.ptop_loc,
+      allComments,
+    );
 
   if (false) {
     //if (disable_formatting) {
@@ -3562,12 +3595,9 @@ let toplevel_print =
         ])
       };
 
-    Doc.concat([
-      //  stmt_leading_comment_docs,
-      attribute_text,
-      Doc.group(without_comments),
-      // line_end_comments,
-    ]);
+    let line_end = line_ending_comments(~offset=true, line_trailing_comments);
+
+    Doc.concat([attribute_text, Doc.group(without_comments), line_end]);
   };
 };
 
@@ -3577,42 +3607,41 @@ let rec format_top_stmts =
           comments: list(Grain_parsing.Parsetree.comment),
           previous: option(Grain_parsing.Parsetree.toplevel_stmt),
           original_source: array(string),
-        ) => {
-  let stmt1 =
-    switch (previous) {
-    | None => None
-    | Some(s) => Some(s.ptop_loc)
-    };
-
-  if (List.length(statements) > 1) {
-    let this_stmt = List.hd(statements);
-    let commentsInStatement =
-      Comment_utils.get_comments_inside_location(
-        ~location=this_stmt.ptop_loc,
-        comments,
-      );
-
-    // can do better, look at prev line or last comment
-    let line_sep =
-      switch (stmt1) {
-      | None => Doc.nil
-      | Some(_) => Doc.hardLine
+        ) =>
+  if (List.length(statements) < 1) {
+    Doc.nil;
+  } else {
+    let lineAbove =
+      switch (previous) {
+      | None => 0
+      | Some(s) =>
+        let (_, cmtsline, _, _) =
+          Locations.get_raw_pos_info(s.ptop_loc.loc_end);
+        cmtsline;
       };
 
-    let stmt2 = Some(this_stmt.ptop_loc);
+    let this_stmt = List.hd(statements);
+    let (_, thisLine, _, _) =
+      Locations.get_raw_pos_info(this_stmt.ptop_loc.loc_end);
+
+    // can do better, look at prev line or last comment line to calculate if gap needed
+    let line_sep = Doc.nil;
+
     let leading_comments =
-      Comment_utils.get_comments_between_statements(~stmt1, ~stmt2, comments);
+      Comment_utils.get_comments_between_lines(lineAbove, thisLine, comments);
+
+    let line_end_comments =
+      line_ending_comments(~offset=false, leading_comments);
 
     Doc.concat([
       line_sep,
-      Comment_utils.comments_to_docs(leading_comments),
+      line_end_comments,
       toplevel_print(
         ~original_source,
         ~previous_line=0,
-        ~comments=commentsInStatement,
+        ~allComments=comments,
         this_stmt,
       ),
-      Doc.hardLine,
       format_top_stmts(
         List.tl(statements),
         comments,
@@ -3620,46 +3649,7 @@ let rec format_top_stmts =
         original_source,
       ),
     ]);
-  } else {
-    let this_stmt = List.hd(statements);
-    let commentsInStatement =
-      Comment_utils.get_comments_inside_location(
-        ~location=this_stmt.ptop_loc,
-        comments,
-      );
-
-    let stmt2 = Some(this_stmt.ptop_loc);
-    let leading_comments =
-      Comment_utils.get_comments_between_statements(~stmt1, ~stmt2, comments);
-
-    // can do better, look at prev line or last comment
-    let line_sep =
-      switch (stmt1) {
-      | None => Doc.nil
-      | Some(_) => Doc.hardLine
-      };
-
-    let trailing_comments =
-      Comment_utils.get_comments_between_statements(
-        ~stmt1=stmt2,
-        ~stmt2=None,
-        comments,
-      );
-    let this_stmt = List.hd(statements);
-    Doc.concat([
-      line_sep,
-      Comment_utils.comments_to_docs(leading_comments),
-      toplevel_print(
-        ~original_source,
-        ~previous_line=0,
-        ~comments=commentsInStatement,
-        this_stmt,
-      ),
-      Doc.hardLine,
-      Comment_utils.comments_to_docs(trailing_comments),
-    ]);
   };
-};
 
 let reformat_ast =
     (
@@ -3673,7 +3663,25 @@ let reformat_ast =
       None,
       original_source,
     );
-  let final_doc = Doc.concat([res, Doc.hardLine]);
+
+  // we get any trailing comments
+
+  let num_stmts = List.length(parsed_program.statements);
+  let src_trailing_comments =
+    if (num_stmts > 0) {
+      let lastStmt = List.nth(parsed_program.statements, num_stmts - 1);
+      Comment_utils.get_comments_to_end_of_src(
+        ~location=lastStmt.ptop_loc,
+        parsed_program.comments,
+      );
+    } else {
+      parsed_program.comments;
+    };
+
+  let src_end_comments =
+    line_ending_comments(~offset=false, src_trailing_comments);
+
+  let final_doc = Doc.concat([res, src_end_comments, Doc.hardLine]);
   Doc.toString(~width=80, final_doc);
 };
 

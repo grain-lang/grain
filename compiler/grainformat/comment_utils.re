@@ -83,37 +83,6 @@ let rec get_comments_between_lines = (line1: int, line2: int, comments) =>
     };
   };
 
-let get_comments_between_statements =
-    (
-      ~stmt1: option(Grain_parsing.Location.t),
-      ~stmt2: option(Grain_parsing.Location.t),
-      comments: list(Grain_parsing.Parsetree.comment),
-    ) => {
-  // if stmt1 is None get all comments before
-  // if stmt2 is None get all comments after
-  switch (stmt1, stmt2) {
-  | (None, Some(stmt)) =>
-    let (_, stmtStartLine, stmsStartChar, _) =
-      Locations.get_raw_pos_info(stmt.loc_start);
-    get_comments_before_line(stmtStartLine, comments);
-
-  | (Some(stmt), None) =>
-    let (_, stmtEndine, stmsEndtChar, _) =
-      Locations.get_raw_pos_info(stmt.loc_end);
-
-    get_comments_after_line(stmtEndine, comments);
-
-  | (Some(s1), Some(s2)) =>
-    let (_, stmtEndine, stmsEndtChar, _) =
-      Locations.get_raw_pos_info(s1.loc_end);
-    let (_, stmtStartLine, stmsStartChar, _) =
-      Locations.get_raw_pos_info(s2.loc_start);
-
-    get_comments_between_lines(stmtEndine, stmtStartLine, comments);
-  | (None, None) => []
-  };
-};
-
 let rec get_comments_inside_location =
         (
           ~location: Grain_parsing.Location.t,
@@ -158,16 +127,260 @@ let rec get_comments_inside_location =
   };
 };
 
-let comment_to_doc = (comment: Grain_parsing.Parsetree.comment) => {
-  let comment_string = Comments.get_comment_source(comment);
-  Doc.text(String.trim(comment_string));
+let get_comments_between_locations =
+    (
+      ~loc1: option(Grain_parsing.Location.t),
+      ~loc2: option(Grain_parsing.Location.t),
+      comments: list(Grain_parsing.Parsetree.comment),
+    ) => {
+  // if loc1 is None get all comments before
+  // if loc2 is None get all comments after
+  switch (loc1, loc2) {
+  | (None, Some(stmt)) =>
+    let (_, stmtStartLine, stmsStartChar, _) =
+      Locations.get_raw_pos_info(stmt.loc_start);
+    get_comments_before_line(stmtStartLine, comments);
+
+  | (Some(stmt), None) =>
+    let (_, stmtEndine, stmsEndtChar, _) =
+      Locations.get_raw_pos_info(stmt.loc_end);
+
+    get_comments_after_line(stmtEndine, comments);
+
+  | (Some(s1), Some(s2)) =>
+    Debug.print_loc("@@get_comments_between_location start:", s1);
+    Debug.print_loc("get_comments_between_location end:", s2);
+
+    let (_, stmtEndine, stmsEndtChar, _) =
+      Locations.get_raw_pos_info(s1.loc_end);
+    let (_, stmtStartLine, stmsStartChar, _) =
+      Locations.get_raw_pos_info(s2.loc_start);
+
+    // invert the request to look inside the location in the gap
+
+    let start_loc: Lexing.position = {
+      pos_fname: "",
+      pos_lnum: stmtEndine,
+      pos_bol: 0,
+      pos_cnum: stmsEndtChar,
+    };
+    let end_loc: Lexing.position = {
+      pos_fname: "",
+      pos_lnum: stmtStartLine,
+      pos_bol: 0,
+      pos_cnum: stmsStartChar,
+    };
+
+    let location: Grain_parsing.Location.t = {
+      loc_start: start_loc,
+      loc_end: end_loc,
+      loc_ghost: true,
+    };
+    let cmts = get_comments_inside_location(~location, comments);
+
+    print_endline("Found " ++ string_of_int(List.length(cmts)));
+
+    cmts;
+
+  //  get_comments_between_lines(stmtEndine, stmtStartLine, comments);
+  | (None, None) => []
+  };
 };
 
-let comments_to_docs = (comments: list(Grain_parsing.Parsetree.comment)) => {
-  Doc.concat([
-    Doc.join(Doc.hardLine, List.map(c => comment_to_doc(c), comments)),
-    Doc.hardLine,
-  ]);
+let get_comments_to_end_of_enclosing_location =
+    (
+      ~wrapper: Grain_parsing.Location.t,
+      ~location: Grain_parsing.Location.t,
+      comments: list(Grain_parsing.Parsetree.comment),
+    ) => {
+  Debug.print_loc("@@get_comments_to_end_of_enclosing_location:", wrapper);
+  Debug.print_loc("get_comments_from_location end:", location);
+
+  let (_, wrapEndLine, wrapEndChar, _) =
+    Locations.get_raw_pos_info(wrapper.loc_end);
+  let (_, locEndLine, locEndChar, _) =
+    Locations.get_raw_pos_info(location.loc_end);
+
+  let start_loc: Lexing.position = {
+    pos_fname: "",
+    pos_lnum: locEndLine,
+    pos_bol: 0,
+    pos_cnum: locEndChar,
+  };
+  let end_loc: Lexing.position = {
+    pos_fname: "",
+    pos_lnum: wrapEndLine,
+    pos_bol: 0,
+    pos_cnum: wrapEndChar,
+  };
+
+  let location: Grain_parsing.Location.t = {
+    loc_start: start_loc,
+    loc_end: end_loc,
+    loc_ghost: true,
+  };
+  let cmts = get_comments_inside_location(~location, comments);
+
+  print_endline("Found " ++ string_of_int(List.length(cmts)));
+
+  cmts;
+};
+
+let get_comments_from_start_of_enclosing_location =
+    (
+      ~wrapper: Grain_parsing.Location.t,
+      ~location: Grain_parsing.Location.t,
+      comments: list(Grain_parsing.Parsetree.comment),
+    ) => {
+  Debug.print_loc(
+    "@@get_comments_from_start_of_enclosing_location:",
+    wrapper,
+  );
+  Debug.print_loc("get_comments_to_location start:", location);
+
+  let (_, wrapStartLine, wrapStartChar, _) =
+    Locations.get_raw_pos_info(wrapper.loc_start);
+  let (_, locStartLine, locStartChar, _) =
+    Locations.get_raw_pos_info(location.loc_start);
+
+  let start_loc: Lexing.position = {
+    pos_fname: "",
+    pos_lnum: wrapStartLine,
+    pos_bol: 0,
+    pos_cnum: wrapStartChar,
+  };
+  let end_loc: Lexing.position = {
+    pos_fname: "",
+    pos_lnum: locStartLine,
+    pos_bol: 0,
+    pos_cnum: locStartChar,
+  };
+
+  let location: Grain_parsing.Location.t = {
+    loc_start: start_loc,
+    loc_end: end_loc,
+    loc_ghost: true,
+  };
+  let cmts = get_comments_inside_location(~location, comments);
+
+  print_endline("Found " ++ string_of_int(List.length(cmts)));
+
+  cmts;
+};
+
+let get_comments_between_locs =
+    (
+      ~loc1: Grain_parsing.Location.t,
+      ~loc2: Grain_parsing.Location.t,
+      comments: list(Grain_parsing.Parsetree.comment),
+    ) => {
+  Debug.print_loc("@@get_comments_between_locs end:", loc1);
+  Debug.print_loc("get_comments_between_locs start:", loc2);
+
+  let (_, stmtEndine, stmsEndtChar, _) =
+    Locations.get_raw_pos_info(loc1.loc_end);
+  let (_, stmtStartLine, stmsStartChar, _) =
+    Locations.get_raw_pos_info(loc2.loc_start);
+
+  // invert the request to look inside the location in the gap
+
+  let start_loc: Lexing.position = {
+    pos_fname: "",
+    pos_lnum: stmtEndine,
+    pos_bol: 0,
+    pos_cnum: stmsEndtChar,
+  };
+  let end_loc: Lexing.position = {
+    pos_fname: "",
+    pos_lnum: stmtStartLine,
+    pos_bol: 0,
+    pos_cnum: stmsStartChar,
+  };
+
+  let location: Grain_parsing.Location.t = {
+    loc_start: start_loc,
+    loc_end: end_loc,
+    loc_ghost: true,
+  };
+  let cmts = get_comments_inside_location(~location, comments);
+
+  print_endline("Found " ++ string_of_int(List.length(cmts)));
+
+  cmts;
+};
+
+let get_comments_to_end_of_line =
+    (
+      ~location: Grain_parsing.Location.t,
+      comments: list(Grain_parsing.Parsetree.comment),
+    ) => {
+  Debug.print_loc("@@get_comments_to end of line of:", location);
+
+  let (_, stmtEndine, stmsEndtChar, _) =
+    Locations.get_raw_pos_info(location.loc_end);
+
+  let start_loc: Lexing.position = {
+    pos_fname: "",
+    pos_lnum: stmtEndine,
+    pos_bol: 0,
+    pos_cnum: stmsEndtChar,
+  };
+  let end_loc: Lexing.position = {
+    pos_fname: "",
+    pos_lnum: stmtEndine,
+    pos_bol: 0,
+    pos_cnum: max_int,
+  };
+
+  let location: Grain_parsing.Location.t = {
+    loc_start: start_loc,
+    loc_end: end_loc,
+    loc_ghost: true,
+  };
+  let cmts = get_comments_inside_location(~location, comments);
+
+  print_endline("Found " ++ string_of_int(List.length(cmts)));
+
+  cmts;
+};
+
+let get_comments_to_end_of_src =
+    (
+      ~location: Grain_parsing.Location.t,
+      comments: list(Grain_parsing.Parsetree.comment),
+    ) => {
+  Debug.print_loc("@@get_comments_to end of src of:", location);
+
+  let (_, stmtEndine, _, _) = Locations.get_raw_pos_info(location.loc_end);
+
+  get_comments_after_line(stmtEndine, comments);
+};
+let comment_to_doc = (comment: Grain_parsing.Parsetree.comment) => {
+  let comment_string = Comments.get_comment_source(comment);
+  let newline =
+    switch (comment) {
+    | Line(_)
+    | Shebang(_) => Doc.hardLine
+    | _ => Doc.nil
+    };
+  Doc.concat([Doc.text(String.trim(comment_string)), newline]);
+};
+
+let comments_to_docs =
+    (~offset: bool, comments: list(Grain_parsing.Parsetree.comment)) => {
+  let listLength = List.length(comments);
+  if (listLength > 0) {
+    if (offset) {
+      Doc.concat([
+        Doc.space,
+        Doc.concat(List.map(c => comment_to_doc(c), comments)),
+      ]);
+    } else {
+      Doc.concat(List.map(c => comment_to_doc(c), comments));
+    };
+  } else {
+    Doc.nil;
+  };
 };
 
 let print_comments = (comments: list(Grain_parsing.Parsetree.comment)) => {
