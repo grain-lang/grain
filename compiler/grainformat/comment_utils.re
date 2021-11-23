@@ -405,3 +405,73 @@ let line_of_comments_to_doc =
   } else {
     Doc.nil;
   };
+
+let line_ending_comments =
+    (~offset: bool, comments: list(Grain_parsing__Parsetree.comment)) => {
+  let num_trailing_comments = List.length(comments);
+
+  switch (num_trailing_comments) {
+  | 0 => Doc.nil
+  | _ =>
+    let num_trailing_comments = List.length(comments);
+    let last = List.nth(comments, num_trailing_comments - 1);
+    switch (last) {
+    | Block(_) =>
+      Doc.concat([comments_to_docs(~offset, comments), Doc.hardLine])
+    | _ => comments_to_docs(~offset, comments)
+    };
+  };
+};
+
+let block_ending_comments =
+    (~offset: bool, comments: list(Grain_parsing__Parsetree.comment)) => {
+  let num_trailing_comments = List.length(comments);
+
+  switch (num_trailing_comments) {
+  | 0 => Doc.nil
+  | _ =>
+    let num_trailing_comments = List.length(comments);
+    let last = List.nth(comments, num_trailing_comments - 1);
+    switch (last) {
+    | Block(_) =>
+      Doc.concat([comments_to_docs(~offset, comments), Doc.hardLine])
+    | _ => comments_to_docs(~offset, comments)
+    };
+  };
+};
+
+// let brace_ending_comments =
+//     (~offset: bool, comments: list(Grain_parsing__Parsetree.comment)) => {
+//   let num_trailing_comments = List.length(comments);
+
+//   switch (num_trailing_comments) {
+//   | 0 => Doc.nil
+//   | _ =>
+//     let num_trailing_comments = List.length(comments);
+//     let last = List.nth(comments, num_trailing_comments - 1);
+//     switch (last) {
+//     | Block(_) =>
+//       Doc.concat([comments_to_docs(~offset, comments), Doc.hardLine])
+//     | _ => comments_to_docs(~offset, comments)
+//     };
+//   };
+// };
+
+let no_breakcomment_to_doc = (comment: Grain_parsing.Parsetree.comment) => {
+  let comment_string = Comments.get_comment_source(comment);
+
+  Doc.text(String.trim(comment_string));
+};
+
+let line_of_comments_to_doc_no_break =
+    (~offset: bool, comments: list(Grain_parsing.Parsetree.comment)) =>
+  if (List.length(comments) > 0) {
+    let cmts = List.map(c => no_breakcomment_to_doc(c), comments);
+    if (offset) {
+      Doc.concat([Doc.space, Doc.join(Doc.space, cmts)]);
+    } else {
+      Doc.join(Doc.space, cmts);
+    };
+  } else {
+    Doc.nil;
+  };
