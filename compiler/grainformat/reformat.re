@@ -2892,9 +2892,6 @@ let rec print_data =
 
     Doc.nil
   | PDataVariant(constr_declarations) =>
-    // // let after_name_comments =
-    // //   get_trailing_comments_to_end_of_line(data.pdata_name.loc);
-
     let rec decl_loop =
             (
               bracketLine: int,
@@ -3002,7 +2999,6 @@ let rec print_data =
               line_end,
               Doc.hardLine,
               block_trailing_comment_docs,
-             
             ]);
           } else {
             Doc.concat([declDoc, Doc.comma, line_end]);
@@ -3066,99 +3062,145 @@ let rec print_data =
     );
 
   | PDataRecord(label_declarations) =>
-    // let after_name_comments =
-    //   get_trailing_comments_to_end_of_line(data.pdata_name.loc);
+    let rec decl_loop =
+            (
+              bracketLine: int,
+              decls: list(Grain_parsing.Parsetree.label_declaration),
+              previous: option(Grain_parsing.Parsetree.label_declaration),
+              comments,
+            ) =>
+      if (List.length(decls) == 0) {
+        Doc.nil;
+      } else {
+        let lbl = List.hd(decls);
+        let isMutable =
+          switch (lbl.pld_mutable) {
+          | Mutable => Doc.text("mut ")
+          | Immutable => Doc.nil
+          };
 
-    // let decls =
-    //   List.map(
-    //     (decl: Grain_parsing__Parsetree.label_declaration) => {
-    //       let isMutable =
-    //         switch (decl.pld_mutable) {
-    //         | Mutable => Doc.text("mut ")
-    //         | Immutable => Doc.nil
-    //         };
+        let lineAbove =
+          switch (previous) {
+          | None => bracketLine
+          | Some(e) =>
+            let (_, cmtsline, _, _) =
+              Locations.get_raw_pos_info(e.pld_loc.loc_end);
+            cmtsline;
+          };
 
-    //       let (leading_comments, trailing_comments) =
-    //         Walktree.partition_comments(
-    //           ~range=Some(data.pdata_loc),
-    //           ~leading_only=false,
-    //           decl.pld_loc,
-    //         );
+        let (_, thisLine, _, _) =
+          Locations.get_raw_pos_info(lbl.pld_loc.loc_start);
 
-    //       let this_line = get_end_loc_line(decl.pld_loc);
+        let leading_comments =
+          Comment_utils.get_comments_between_lines(
+            lineAbove,
+            thisLine,
+            comments,
+          );
 
-    //       let (this_line_comments, below_line_comments) =
-    //         split_comments(trailing_comments, this_line);
+        let line_sep = line_separator(thisLine, lineAbove, leading_comments);
 
-    //       Walktree.remove_used_comments(leading_comments, trailing_comments);
+        let leading_comment_docs =
+          Comment_utils.line_ending_comments(~offset=false, leading_comments);
 
-    //       let (stmt_leading_comment_docs_1, prevLine) =
-    //         print_leading_comments(leading_comments, this_line);
-    //       let stmt_leading_comment_docs =
-    //         if (List.length(leading_comments) > 0) {
-    //           stmt_leading_comment_docs_1;
-    //         } else {
-    //           Doc.nil;
-    //         };
+        let line_trailing_comments =
+          Comment_utils.get_comments_to_end_of_line(
+            ~location=lbl.pld_loc,
+            comments,
+          );
+        let line_end =
+          Comment_utils.line_of_comments_to_doc_no_break(
+            ~offset=true,
+            line_trailing_comments,
+          );
 
-    //       (
-    //         Doc.concat([
-    //           Doc.group(
-    //             Doc.concat([
-    //               stmt_leading_comment_docs,
-    //               isMutable,
-    //               print_ident(decl.pld_name.txt),
-    //               Doc.text(":"),
-    //               Doc.space,
-    //               print_type(decl.pld_type, original_source),
-    //             ]),
-    //           ),
-    //         ]),
-    //         this_line_comments,
-    //         below_line_comments,
-    //       );
-    //     },
-    //     label_declarations,
-    //   );
+        let declDoc =
+          Doc.concat([
+            line_sep,
+            leading_comment_docs,
+            isMutable,
+            print_ident(lbl.pld_name.txt),
+            Doc.text(":"),
+            Doc.space,
+            print_type(lbl.pld_type, original_source),
+          ]);
 
-    // let (joinedDecls, commaTerminated) = special_join(decls);
+        if (List.length(decls) == 1) {
+          let block_trailing_comments =
+            Comment_utils.get_comments_between_locations(
+              ~loc1=Some(lbl.pld_loc),
+              ~loc2=None,
+              comments,
+            );
 
-    // Doc.group(
-    //   Doc.concat([
-    //     Doc.text("record"),
-    //     Doc.space,
-    //     Doc.text(nameloc.txt),
-    //     if (List.length(data.pdata_params) > 0) {
-    //       Doc.concat([
-    //         Doc.text("<"),
-    //         Doc.join(
-    //           Doc.concat([Doc.text(","), Doc.space]),
-    //           List.map(
-    //             t => print_type(t, original_source),
-    //             data.pdata_params,
-    //           ),
-    //         ),
-    //         Doc.text(">"),
-    //         Doc.space,
-    //       ]);
-    //     } else {
-    //       Doc.space;
-    //     },
-    //     Doc.concat([
-    //       Doc.lbrace,
-    //       after_name_comments,
-    //       Doc.indent(Doc.concat([Doc.line, joinedDecls])),
-    //       if (!commaTerminated) {
-    //         Doc.ifBreaks(Doc.comma, Doc.nil);
-    //       } else {
-    //         Doc.nil;
-    //       },
-    //       Doc.line,
-    //       Doc.rbrace,
-    //     ]),
-    //   ]),
-    // );
-    Doc.nil
+          if (List.length(block_trailing_comments) > 0) {
+            let block_trailing_comment_docs =
+              Comment_utils.line_of_comments_to_doc_no_break(
+                ~offset=false,
+                block_trailing_comments,
+              );
+
+            Doc.concat([
+              declDoc,
+              Doc.comma,
+              line_end,
+              Doc.hardLine,
+              block_trailing_comment_docs,
+            ]);
+          } else {
+            Doc.concat([declDoc, Doc.comma, line_end]);
+          };
+        } else {
+          Doc.concat([
+            declDoc,
+            Doc.comma,
+            line_end,
+            Doc.line,
+            decl_loop(bracketLine, List.tl(decls), Some(lbl), comments),
+          ]);
+        };
+      };
+
+    let (_, bracketLine, _, _) =
+      Locations.get_raw_pos_info(data.pdata_loc.loc_start);
+    let decls = decl_loop(bracketLine, label_declarations, None, comments);
+
+    let after_brace_comments =
+      Comment_utils.get_after_brace_comments(data.pdata_loc, comments);
+
+    Doc.group(
+      Doc.concat([
+        Doc.text("record"),
+        Doc.space,
+        Doc.text(nameloc.txt),
+        if (List.length(data.pdata_params) > 0) {
+          Doc.concat([
+            Doc.text("<"),
+            Doc.join(
+              Doc.concat([Doc.text(","), Doc.space]),
+              List.map(
+                t => print_type(t, original_source),
+                data.pdata_params,
+              ),
+            ),
+            Doc.text(">"),
+            Doc.space,
+          ]);
+        } else {
+          Doc.space;
+        },
+        Doc.concat([
+          Doc.lbrace,
+          Comment_utils.line_of_comments_to_doc_no_break(
+            ~offset=true,
+            after_brace_comments,
+          ),
+          Doc.indent(Doc.concat([Doc.line, decls])),
+          Doc.line,
+          Doc.rbrace,
+        ]),
+      ]),
+    );
   };
 };
 let data_print =
