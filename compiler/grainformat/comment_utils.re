@@ -2,7 +2,6 @@ open Grain_diagnostics;
 module Doc = Res_doc;
 
 let rec get_comments_on_line = (line: int, comments) =>
-  // print_endline("get_comments_before_line:" ++ string_of_int(line));
   if (List.length(comments) == 0) {
     [];
   } else {
@@ -17,7 +16,6 @@ let rec get_comments_on_line = (line: int, comments) =>
   };
 
 let rec get_comments_before_line = (line: int, comments) =>
-  // print_endline("get_comments_before_line:" ++ string_of_int(line));
   if (List.length(comments) == 0) {
     [];
   } else {
@@ -32,7 +30,6 @@ let rec get_comments_before_line = (line: int, comments) =>
   };
 
 let rec get_comments_after_line = (line: int, comments) =>
-  // print_endline("get_comments_after_line:" ++ string_of_int(line));
   if (List.length(comments) == 0) {
     [];
   } else {
@@ -50,12 +47,6 @@ let rec get_comments_after_line = (line: int, comments) =>
   };
 
 let rec get_comments_between_lines = (line1: int, line2: int, comments) =>
-  // print_endline(
-  //   "get_comments_between_lines:"
-  //   ++ string_of_int(line1)
-  //   ++ "-"
-  //   ++ string_of_int(line2),
-  // );
   if (List.length(comments) == 0) {
     [];
   } else {
@@ -88,7 +79,6 @@ let rec get_comments_inside_location =
           ~location: Grain_parsing.Location.t,
           comments: list(Grain_parsing.Parsetree.comment),
         ) => {
-  Debug.print_loc("get_comments_inside_location", location);
   let (_, stmtStartLine, stmsStartChar, _) =
     Locations.get_raw_pos_info(location.loc_start);
   let (_, stmtEndLine, stmsEndChar, _) =
@@ -148,9 +138,6 @@ let get_comments_between_locations =
     get_comments_after_line(stmtEndine, comments);
 
   | (Some(s1), Some(s2)) =>
-    Debug.print_loc("@@get_comments_between_location start:", s1);
-    Debug.print_loc("get_comments_between_location end:", s2);
-
     let (_, stmtEndine, stmsEndtChar, _) =
       Locations.get_raw_pos_info(s1.loc_end);
     let (_, stmtStartLine, stmsStartChar, _) =
@@ -178,11 +165,8 @@ let get_comments_between_locations =
     };
     let cmts = get_comments_inside_location(~location, comments);
 
-    print_endline("Found " ++ string_of_int(List.length(cmts)));
-
     cmts;
 
-  //  get_comments_between_lines(stmtEndine, stmtStartLine, comments);
   | (None, None) => []
   };
 };
@@ -193,9 +177,6 @@ let get_comments_to_end_of_enclosing_location =
       ~location: Grain_parsing.Location.t,
       comments: list(Grain_parsing.Parsetree.comment),
     ) => {
-  Debug.print_loc("@@get_comments_to_end_of_enclosing_location:", wrapper);
-  Debug.print_loc("get_comments_from_location end:", location);
-
   let (_, wrapEndLine, wrapEndChar, _) =
     Locations.get_raw_pos_info(wrapper.loc_end);
   let (_, locEndLine, locEndChar, _) =
@@ -221,8 +202,6 @@ let get_comments_to_end_of_enclosing_location =
   };
   let cmts = get_comments_inside_location(~location, comments);
 
-  print_endline("Found " ++ string_of_int(List.length(cmts)));
-
   cmts;
 };
 
@@ -232,12 +211,6 @@ let get_comments_from_start_of_enclosing_location =
       ~location: Grain_parsing.Location.t,
       comments: list(Grain_parsing.Parsetree.comment),
     ) => {
-  Debug.print_loc(
-    "@@get_comments_from_start_of_enclosing_location:",
-    wrapper,
-  );
-  Debug.print_loc("get_comments_to_location start:", location);
-
   let (_, wrapStartLine, wrapStartChar, _) =
     Locations.get_raw_pos_info(wrapper.loc_start);
   let (_, locStartLine, locStartChar, _) =
@@ -263,8 +236,6 @@ let get_comments_from_start_of_enclosing_location =
   };
   let cmts = get_comments_inside_location(~location, comments);
 
-  print_endline("Found " ++ string_of_int(List.length(cmts)));
-
   cmts;
 };
 
@@ -274,9 +245,6 @@ let get_comments_between_locs =
       ~loc2: Grain_parsing.Location.t,
       comments: list(Grain_parsing.Parsetree.comment),
     ) => {
-  Debug.print_loc("@@get_comments_between_locs end:", loc1);
-  Debug.print_loc("get_comments_between_locs start:", loc2);
-
   let (_, stmtEndine, stmsEndtChar, _) =
     Locations.get_raw_pos_info(loc1.loc_end);
   let (_, stmtStartLine, stmsStartChar, _) =
@@ -304,8 +272,6 @@ let get_comments_between_locs =
   };
   let cmts = get_comments_inside_location(~location, comments);
 
-  print_endline("Found " ++ string_of_int(List.length(cmts)));
-
   cmts;
 };
 
@@ -314,8 +280,6 @@ let get_comments_to_end_of_line =
       ~location: Grain_parsing.Location.t,
       comments: list(Grain_parsing.Parsetree.comment),
     ) => {
-  Debug.print_loc("@@get_comments_to end of line of:", location);
-
   let (_, stmtEndine, stmsEndtChar, _) =
     Locations.get_raw_pos_info(location.loc_end);
 
@@ -339,8 +303,6 @@ let get_comments_to_end_of_line =
   };
   let cmts = get_comments_inside_location(~location, comments);
 
-  print_endline("Found " ++ string_of_int(List.length(cmts)));
-
   cmts;
 };
 
@@ -349,8 +311,6 @@ let get_comments_to_end_of_src =
       ~location: Grain_parsing.Location.t,
       comments: list(Grain_parsing.Parsetree.comment),
     ) => {
-  Debug.print_loc("@@get_comments_to end of src of:", location);
-
   let (_, stmtEndine, _, _) = Locations.get_raw_pos_info(location.loc_end);
 
   get_comments_after_line(stmtEndine, comments);
@@ -440,22 +400,19 @@ let block_ending_comments =
   };
 };
 
-// let brace_ending_comments =
-//     (~offset: bool, comments: list(Grain_parsing__Parsetree.comment)) => {
-//   let num_trailing_comments = List.length(comments);
+let hard_line_needed = (comments: list(Grain_parsing__Parsetree.comment)) => {
+  let num_comments = List.length(comments);
 
-//   switch (num_trailing_comments) {
-//   | 0 => Doc.nil
-//   | _ =>
-//     let num_trailing_comments = List.length(comments);
-//     let last = List.nth(comments, num_trailing_comments - 1);
-//     switch (last) {
-//     | Block(_) =>
-//       Doc.concat([comments_to_docs(~offset, comments), Doc.hardLine])
-//     | _ => comments_to_docs(~offset, comments)
-//     };
-//   };
-// };
+  switch (num_comments) {
+  | 0 => Doc.line
+  | _ =>
+    let last = List.nth(comments, num_comments - 1);
+    switch (last) {
+    | Line(_) => Doc.hardLine
+    | _ => Doc.hardLine
+    };
+  };
+};
 
 let no_breakcomment_to_doc = (comment: Grain_parsing.Parsetree.comment) => {
   let comment_string = Comments.get_comment_source(comment);
@@ -467,6 +424,7 @@ let line_of_comments_to_doc_no_break =
     (~offset: bool, comments: list(Grain_parsing.Parsetree.comment)) =>
   if (List.length(comments) > 0) {
     let cmts = List.map(c => no_breakcomment_to_doc(c), comments);
+
     if (offset) {
       Doc.concat([Doc.space, Doc.join(Doc.space, cmts)]);
     } else {
