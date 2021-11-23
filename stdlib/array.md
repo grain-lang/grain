@@ -1049,3 +1049,36 @@ Parameters:
 |`comp`|`(a, a) -> Number`|The comparator function used to indicate sort order|
 |`array`|`Array<a>`|The array to be sorted|
 
+### Array.**rotate**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+rotate : (Number, Array<Number>) -> Void
+```
+
+Rotates an array by n elements to the right, in place.
+
+If n is negative, the array will be rotated by n elements
+to the left. See examples.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`n`|`Number`|The number of elements to rotate by|
+|`arr`|`Array<Number>`|The array to be rotated|
+
+Examples:
+
+```grain
+let array = [> 1, 2, 3, 4, 5]; rotate(2, arr); arr == [> 4, 5, 1, 2, 3]
+```
+
+```grain
+let array = [> 1, 2, 3, 4, 5]; rotate(-1, arr); arr == [> 2, 3, 4, 5, 1]
+```
+
