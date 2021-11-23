@@ -321,6 +321,7 @@ let comment_to_doc = (comment: Grain_parsing.Parsetree.comment) => {
     switch (comment) {
     | Line(_)
     | Shebang(_) => Doc.hardLine
+    | Doc(_) => Doc.hardLine
     | _ => Doc.nil
     };
   Doc.concat([Doc.text(String.trim(comment_string)), newline]);

@@ -125,101 +125,10 @@ let line_separator =
       lineAbove;
     };
 
-  // can do better, look at prev line or last comment line to calculate if gap needed
   if (thisLine - actualLineAbove > 1) {
     Doc.hardLine;
   } else {
     Doc.nil;
-  };
-};
-
-let last_file_loc = (): Grain_parsing.Location.t => {
-  let endpos: Stdlib__lexing.position = {
-    pos_fname: "",
-    pos_lnum: max_int,
-    pos_cnum: max_int,
-    pos_bol: 0,
-  };
-
-  let end_loc: Grain_parsing.Location.t = {
-    loc_start: endpos,
-    loc_end: endpos,
-    loc_ghost: true,
-  };
-  end_loc;
-};
-
-let make_line_start = (loc: Grain_parsing.Location.t) => {
-  let startpos: Stdlib__lexing.position = {
-    pos_fname: "",
-    pos_lnum: loc.loc_start.pos_lnum,
-    pos_cnum: 0,
-    pos_bol: 0,
-  };
-
-  let merged_loc: Grain_parsing.Location.t = {
-    loc_start: startpos,
-    loc_end: loc.loc_start,
-    loc_ghost: true,
-  };
-  merged_loc;
-};
-
-let make_to_line_end = (loc: Grain_parsing.Location.t) => {
-  let endpos: Stdlib__lexing.position = {
-    pos_fname: "",
-    pos_lnum: loc.loc_end.pos_lnum,
-    pos_cnum: max_int,
-    pos_bol: 0,
-  };
-
-  let merged_loc: Grain_parsing.Location.t = {
-    loc_start: loc.loc_end,
-    loc_end: endpos,
-    loc_ghost: true,
-  };
-  merged_loc;
-};
-
-let make_start_loc = (loc: Grain_parsing.Location.t) => {
-  let merged_loc: Grain_parsing.Location.t = {
-    loc_start: loc.loc_start,
-    loc_end: loc.loc_start,
-    loc_ghost: loc.loc_ghost,
-  };
-  merged_loc;
-};
-
-let make_end_loc = (loc: Grain_parsing.Location.t) => {
-  let merged_loc: Grain_parsing.Location.t = {
-    loc_start: loc.loc_end,
-    loc_end: loc.loc_end,
-    loc_ghost: loc.loc_ghost,
-  };
-  merged_loc;
-};
-
-let get_loc_line = (loc: Grain_parsing.Location.t) => {
-  let (_, line, _, _) = Locations.get_raw_pos_info(loc.loc_start);
-  line;
-};
-
-let get_end_loc_line = (loc: Grain_parsing.Location.t) => {
-  let (_, line, _, _) = Locations.get_raw_pos_info(loc.loc_end);
-  line;
-};
-
-let comment_to_doc = (comment: Parsetree.comment) => {
-  let comment_string = Comments.get_comment_source(comment);
-  Doc.text(String.trim(comment_string));
-};
-
-let comment_hardline = (comment: Parsetree.comment) => {
-  switch (comment) {
-  | Line(cmt)
-  | Shebang(cmt) => Doc.hardLine
-  | Block(cmt)
-  | Doc(cmt) => Doc.line
   };
 };
 
@@ -777,13 +686,20 @@ and print_record =
       ~comments: list(Parsetree.comment),
       recloc: Grain_parsing__Location.t,
     ) => {
-  // let comments_after_brace = get_trailing_comments_to_end_of_line(recloc);
+  let after_brace_comments =
+    Comment_utils.get_after_brace_comments(recloc, comments);
+  let remainingComments =
+    List.filter(c => !List.mem(c, after_brace_comments), comments);
+
   Doc.concat([
     Doc.lbrace,
-    // comments_after_brace,
+    Comment_utils.line_of_comments_to_doc_no_break(
+      ~offset=true,
+      after_brace_comments,
+    ),
     Doc.indent(
       Doc.concat([
-        Doc.line,
+        Comment_utils.hard_line_needed(after_brace_comments),
         Doc.join(
           Doc.concat([Doc.comma, Doc.line]),
           List.map(
@@ -802,7 +718,7 @@ and print_record =
                   ~parentIsArrow=false,
                   ~endChar=None,
                   ~original_source,
-                  ~comments,
+                  ~comments=remainingComments,
                   expr,
                 );
               let punned_expr = check_for_pun(expr);
@@ -928,7 +844,6 @@ and print_type =
     };
   | PTyPoly(locationstrings, parsed_type) =>
     let originalCode = get_original_code(p.ptyp_loc, original_source);
-    // Walktree.remove_comments_in_ignore_block(p.ptyp_loc);
     Doc.text(originalCode);
   };
 }
@@ -1490,9 +1405,6 @@ and print_expression =
         ),
       ])
     | PExpMatch(expression, match_branches) =>
-      //let after_brace_comments = Doc.nil;
-      // get_trailing_comments_to_end_of_line(expression.pexp_loc);
-
       let after_brace_comments =
         Comment_utils.get_after_brace_comments(expression.pexp_loc, comments);
 
@@ -2941,29 +2853,7 @@ let import_print = (imp: Parsetree.import_declaration) => {
                             } else {
                               Doc.nil;
                             };
-                          // let (_leading_comments, trailing_comments) =
-                          //   Walktree.partition_comments(
-                          //     ~range=None,
-                          //     ~leading_only=false,
-                          //     identloc.loc,
-                          //   );
 
-                          // Walktree.remove_used_comments(
-                          //   [],
-                          //   trailing_comments,
-                          // );
-
-                          // let trailing_comment_docs =
-                          //   if (List.length(trailing_comments) > 0) {
-                          //     Doc.concat([
-                          //       print_multi_comments(
-                          //         trailing_comments,
-                          //         get_end_loc_line(identloc.loc),
-                          //       ),
-                          //     ]);
-                          //   } else {
-                          //     Doc.nil;
-                          //   };
                           Doc.concat([
                             print_ident(identloc.txt),
                             trailing_comma,
@@ -3013,40 +2903,6 @@ let import_print = (imp: Parsetree.import_declaration) => {
                           } else {
                             Doc.nil;
                           };
-
-                        // let (_leading_comments, trailing_comments) =
-                        //   switch (optloc) {
-                        //   | None =>
-                        //     Walktree.partition_comments(
-                        //       ~range=None,
-                        //       ~leading_only=false,
-                        //       loc.loc,
-                        //     )
-                        //   | Some(alias) =>
-                        //     Walktree.partition_comments(
-                        //       ~range=None,
-                        //       ~leading_only=false,
-                        //       alias.loc,
-                        //     )
-                        //   };
-                        // Walktree.remove_used_comments([], trailing_comments);
-
-                        // let trailing_comment_docs =
-                        //   if (List.length(trailing_comments) > 0) {
-                        //     Doc.concat([
-                        //       print_multi_comments(
-                        //         trailing_comments,
-                        //         get_end_loc_line(
-                        //           switch (optloc) {
-                        //           | None => loc.loc
-                        //           | Some(alias) => alias.loc
-                        //           },
-                        //         ),
-                        //       ),
-                        //     ]);
-                        //   } else {
-                        //     Doc.nil;
-                        //   };
 
                         switch (optloc) {
                         | None =>
