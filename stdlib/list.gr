@@ -331,14 +331,17 @@ let join = (separator: String, items: List<String>) => {
 }
 
 /**
- * Reverses the list and appends items to the end
+ * Reverses the first list and appends the second list to the end.
  * 
- * @param items: Items to be appended to the reversed list
- * @param list: The list that is being reversed and appended to
+ * @param list1: The list to reverse
+ * @param list2: The list to append
  * @since v0.4.5
  */
-let revAppend = (items, list) => { 
-  append(reverse(list), items)
+let rec revAppend = (list1, list2) => { 
+  match (list1) {
+    [hd, ...tl] => revAppend(tl, [hd, ...list2]),
+    [] => list2
+  }
 }
 
 /**
