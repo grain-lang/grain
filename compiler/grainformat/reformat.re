@@ -691,6 +691,136 @@ and print_record =
   let remainingComments =
     List.filter(c => !List.mem(c, after_brace_comments), comments);
 
+  let rec fields_loop =
+          (
+            bracketLine,
+            fields:
+              list(
+                (
+                  Grain_parsing__Location.loc(Grain_parsing__Identifier.t),
+                  Grain_parsing__Parsetree.expression,
+                ),
+              ),
+            previous:
+              option(
+                (
+                  Grain_parsing__Location.loc(Grain_parsing__Identifier.t),
+                  Grain_parsing__Parsetree.expression,
+                ),
+              ),
+          ) =>
+    if (List.length(fields) == 0) {
+      Doc.nil;
+    } else {
+      let field = List.hd(fields);
+
+      let (locidentifier, expr) = field;
+      let ident = locidentifier.txt;
+
+      let lineAbove =
+        switch (previous) {
+        | None => bracketLine
+        | Some((l, e)) =>
+          let (_, cmtsline, _, _) =
+            Locations.get_raw_pos_info(e.pexp_loc.loc_end);
+          cmtsline;
+        };
+
+      let (_, thisLine, _, _) =
+        Locations.get_raw_pos_info(expr.pexp_loc.loc_start);
+
+      let leading_comments =
+        Comment_utils.get_comments_between_lines(
+          lineAbove,
+          thisLine,
+          comments,
+        );
+
+      let line_sep = line_separator(thisLine, lineAbove, leading_comments);
+
+      let leading_comment_docs =
+        Comment_utils.line_ending_comments(~offset=false, leading_comments);
+
+      let line_trailing_comments =
+        Comment_utils.get_comments_to_end_of_line(
+          ~location=expr.pexp_loc,
+          comments,
+        );
+
+      let printed_ident = print_ident(ident);
+      let printed_expr =
+        print_expression(
+          ~parentIsArrow=false,
+          ~endChar=None,
+          ~original_source,
+          ~comments=remainingComments,
+          expr,
+        );
+      let punned_expr = check_for_pun(expr);
+
+      let pun =
+        switch (printed_ident, punned_expr: Doc.t) {
+        | (Text(i), Text(e)) => i == e
+        | _ => false
+        };
+
+      let fieldDoc =
+        if (!pun) {
+          Doc.group(
+            Doc.concat([
+              printed_ident,
+              Doc.text(":"),
+              Doc.space,
+              printed_expr,
+            ]),
+          );
+        } else {
+          Doc.group(printed_ident);
+        };
+
+      if (List.length(fields) == 1) {
+        let block_trailing_comments =
+          Comment_utils.get_comments_between_locations(
+            ~loc1=Some(expr.pexp_loc),
+            ~loc2=None,
+            remainingComments,
+          );
+
+        if (List.length(block_trailing_comments) > 0) {
+          let block_trailing_comment_docs =
+            Comment_utils.line_of_comments_to_doc_no_break(
+              ~offset=false,
+              block_trailing_comments,
+            );
+
+          Doc.concat([
+            line_sep,
+            leading_comment_docs,
+            fieldDoc,
+            Doc.hardLine,
+            block_trailing_comment_docs,
+          ]);
+        } else {
+          Doc.concat([line_sep, leading_comment_docs, fieldDoc]);
+        };
+      } else {
+        Doc.concat([
+          line_sep,
+          leading_comment_docs,
+          fieldDoc,
+          Doc.comma,
+          Comment_utils.line_of_comments_to_doc_no_break(
+            ~offset=true,
+            line_trailing_comments,
+          ),
+          Doc.line,
+          fields_loop(bracketLine, List.tl(fields), Some(field)),
+        ]);
+      };
+    };
+
+  let (_, bracketLine, _, _) = Locations.get_raw_pos_info(recloc.loc_start);
+
   Doc.concat([
     Doc.lbrace,
     Comment_utils.line_of_comments_to_doc_no_break(
@@ -700,56 +830,13 @@ and print_record =
     Doc.indent(
       Doc.concat([
         Comment_utils.hard_line_needed(after_brace_comments),
-        Doc.join(
-          Doc.concat([Doc.comma, Doc.line]),
-          List.map(
-            (
-              field: (
-                Grain_parsing__Location.loc(Grain_parsing__Identifier.t),
-                Grain_parsing__Parsetree.expression,
-              ),
-            ) => {
-              let (locidentifier, expr) = field;
-              let ident = locidentifier.txt;
-
-              let printed_ident = print_ident(ident);
-              let printed_expr =
-                print_expression(
-                  ~parentIsArrow=false,
-                  ~endChar=None,
-                  ~original_source,
-                  ~comments=remainingComments,
-                  expr,
-                );
-              let punned_expr = check_for_pun(expr);
-
-              let pun =
-                switch (printed_ident, punned_expr: Doc.t) {
-                | (Text(i), Text(e)) => i == e
-                | _ => false
-                };
-
-              if (!pun) {
-                Doc.group(
-                  Doc.concat([
-                    printed_ident,
-                    Doc.text(":"),
-                    Doc.space,
-                    printed_expr,
-                  ]),
-                );
-              } else {
-                Doc.group(printed_ident);
-              };
-            },
-            fields,
-          ),
-        ),
+        fields_loop(bracketLine, fields, None),
         if (List.length(fields) == 1) {
           // TODO: not needed once we annotate with ::
           Doc.comma; //  append a comma as single argument record look like block {data:val}
         } else {
-          Doc.ifBreaks(Doc.text(","), Doc.nil);
+          Doc.nil;
+          //   Doc.ifBreaks(Doc.text(","), Doc.nil);
         },
       ]),
     ),
