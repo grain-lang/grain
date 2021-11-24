@@ -356,10 +356,10 @@ let sort = (comp, list) => {
   let rec merge = (left, right, list) => {
     match((left, right)){
       (_, []) => {
-        revAppend(left, list)
+        revAppend(list, left)
       },
       ([], _) => {
-        revAppend(right, list)
+        revAppend(list, right)
       },
       ([lhd, ...ltl], [rhd, ...rtl]) => {
         if(comp(lhd, rhd) < 0){
