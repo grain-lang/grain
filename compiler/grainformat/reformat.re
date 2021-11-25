@@ -198,6 +198,7 @@ let rec block_item_iterator =
           ~get_loc: 'a => Grain_parsing.Location.t,
           ~print_item: 'a => Doc.t,
           ~separator: Doc.t,
+          ~trailingSeparator: bool,
         ) =>
   if (List.length(items) == 0) {
     Doc.nil;
@@ -224,62 +225,132 @@ let rec block_item_iterator =
     let leading_comment_docs =
       Comment_utils.line_ending_comments(~offset=false, leading_comments);
 
-    let line_trailing_comments =
-      Comment_utils.get_comments_to_end_of_line(
-        ~location=get_loc(item),
-        comments,
-      );
-    let line_end =
-      Comment_utils.line_of_comments_to_doc_no_break(
-        ~offset=true,
-        line_trailing_comments,
-      );
+    // look for disable
 
-    let declDoc =
-      Doc.concat([line_sep, leading_comment_docs, print_item(item)]);
+    let leadingCommentCount = List.length(leading_comments);
 
-    if (List.length(items) == 1) {
-      let block_trailing_comments =
-        Comment_utils.get_comments_between_locations(
-          ~loc1=Some(get_loc(item)),
-          ~loc2=None,
-          comments,
-        );
+    let disable_formatting =
+      if (leadingCommentCount > 0) {
+        let lastComment = List.nth(leading_comments, leadingCommentCount - 1);
 
-      if (List.length(block_trailing_comments) > 0) {
-        let block_trailing_comment_docs =
-          Comment_utils.line_of_comments_to_doc_no_break(
-            ~offset=false,
-            block_trailing_comments,
+        is_disable_formatting_comment(lastComment);
+      } else {
+        false;
+      };
+
+    if (disable_formatting) {
+      let originalCode = get_original_code(get_loc(item), original_source);
+      // need to remove any comments that were inside the disabled block
+      let origDoc =
+        Doc.concat([
+          leading_comment_docs,
+          line_sep,
+          // attribute_text,
+          Doc.group(Doc.text(originalCode)),
+        ]);
+      if (List.length(items) == 1) {
+        let block_trailing_comments =
+          Comment_utils.get_comments_between_locations(
+            ~loc1=Some(get_loc(item)),
+            ~loc2=None,
+            comments,
           );
 
-        Doc.concat([
-          declDoc,
-          separator,
-          line_end,
-          Doc.hardLine,
-          block_trailing_comment_docs,
-        ]);
+        if (List.length(block_trailing_comments) > 0) {
+          let block_trailing_comment_docs =
+            Comment_utils.line_of_comments_to_doc_no_break(
+              ~offset=false,
+              block_trailing_comments,
+            );
+
+          Doc.concat([
+            origDoc,
+            //  Doc.hardLine,
+            block_trailing_comment_docs,
+          ]);
+        } else {
+          origDoc;
+        };
       } else {
-        Doc.concat([declDoc, separator, line_end]);
+        Doc.concat([
+          origDoc,
+          Doc.line,
+          block_item_iterator(
+            bracketLine,
+            List.tl(items),
+            Some(item),
+            comments,
+            original_source,
+            ~get_loc,
+            ~print_item,
+            ~separator,
+            ~trailingSeparator,
+          ),
+        ]);
       };
     } else {
-      Doc.concat([
-        declDoc,
-        separator,
-        line_end,
-        Doc.line,
-        block_item_iterator(
-          bracketLine,
-          List.tl(items),
-          Some(item),
+      let line_trailing_comments =
+        Comment_utils.get_comments_to_end_of_line(
+          ~location=get_loc(item),
           comments,
-          original_source,
-          ~get_loc,
-          ~print_item,
-          ~separator,
-        ),
-      ]);
+        );
+      let line_end =
+        Comment_utils.line_of_comments_to_doc_no_break(
+          ~offset=true,
+          line_trailing_comments,
+        );
+
+      let itemDoc =
+        Doc.concat([line_sep, leading_comment_docs, print_item(item)]);
+
+      if (List.length(items) == 1) {
+        let block_trailing_comments =
+          Comment_utils.get_comments_between_locations(
+            ~loc1=Some(get_loc(item)),
+            ~loc2=None,
+            comments,
+          );
+
+        if (List.length(block_trailing_comments) > 0) {
+          let block_trailing_comment_docs =
+            Comment_utils.line_of_comments_to_doc_no_break(
+              ~offset=false,
+              block_trailing_comments,
+            );
+
+          let trailSep = if (trailingSeparator) {separator} else {Doc.nil};
+
+          Doc.concat([
+            itemDoc,
+            trailSep,
+            line_end,
+            Doc.hardLine,
+            block_trailing_comment_docs,
+          ]);
+        } else {
+          let trailSep = if (trailingSeparator) {separator} else {Doc.nil};
+
+          Doc.concat([itemDoc, trailSep, line_end]);
+        };
+      } else {
+        Doc.concat([
+          itemDoc,
+          separator,
+          line_end,
+          Doc.line,
+          block_item_iterator(
+            bracketLine,
+            List.tl(items),
+            Some(item),
+            comments,
+            original_source,
+            ~get_loc,
+            ~print_item,
+            ~separator,
+            ~trailingSeparator=true,
+          ),
+        ]);
+      };
     };
   };
 
@@ -385,6 +456,7 @@ let rec resugar_list_patterns =
       ~get_loc,
       ~print_item,
       ~separator=Doc.comma,
+      ~trailingSeparator=true,
     );
 
   Doc.group(
@@ -562,82 +634,67 @@ and print_record_pattern =
     | Closed => Doc.nil
     };
 
-  let rec patternlocs_loop =
-          (
-            patternlocs:
-              list(
-                (
-                  Grain_parsing__Location.loc(Grain_parsing__Identifier.t),
-                  Grain_parsing__Parsetree.pattern,
-                ),
-              ),
-            comments,
-          ) =>
-    if (List.length(patternlocs) == 0) {
-      Doc.nil;
-    } else {
-      let patternloc = List.hd(patternlocs);
-      let (loc, pat) = patternloc;
-      let printed_ident: Doc.t = print_ident(loc.txt);
-      let printed_pat =
-        print_pattern(pat, ~original_source, ~comments, ~nextLoc);
-      let pun =
-        switch (printed_ident, printed_pat: Doc.t) {
-        | (Text(i), Text(e)) => i == e
-        | _ => false
-        };
-      let line_trailing_comments =
-        Comment_utils.get_comments_to_end_of_line(
-          ~location=pat.ppat_loc,
-          comments,
-        );
-
-      let row =
-        if (pun) {
-          printed_ident;
-        } else {
-          Doc.concat([printed_ident, Doc.text(":"), Doc.space, printed_pat]);
-        };
-      if (List.length(patternlocs) == 1) {
-        Doc.concat([
-          row,
-          Doc.comma,
-          Comment_utils.line_of_comments_to_doc_no_break(
-            ~offset=true,
-            line_trailing_comments,
-          ),
-        ]);
-      } else {
-        Doc.concat([
-          row,
-          Doc.comma,
-          Comment_utils.line_of_comments_to_doc_no_break(
-            ~offset=true,
-            line_trailing_comments,
-          ),
-          Comment_utils.hard_line_needed(line_trailing_comments),
-          patternlocs_loop(List.tl(patternlocs), comments),
-        ]);
-      };
-    };
-
   let after_brace_comments =
     Comment_utils.get_after_brace_comments(patloc, comments);
   let remainingComments =
     List.filter(c => !List.mem(c, after_brace_comments), comments);
+
+  let get_loc =
+      (
+        patternloc: (
+          Grain_parsing__Location.loc(Grain_parsing__Identifier.t),
+          Grain_parsing__Parsetree.pattern,
+        ),
+      ) => {
+    let (_, pat) = patternloc;
+    pat.ppat_loc;
+  };
+
+  let print_item =
+      (
+        patternloc: (
+          Grain_parsing__Location.loc(Grain_parsing__Identifier.t),
+          Grain_parsing__Parsetree.pattern,
+        ),
+      ) => {
+    let (loc, pat) = patternloc;
+    let printed_ident: Doc.t = print_ident(loc.txt);
+    let printed_pat =
+      print_pattern(pat, ~original_source, ~comments, ~nextLoc);
+    let pun =
+      switch (printed_ident, printed_pat: Doc.t) {
+      | (Text(i), Text(e)) => i == e
+      | _ => false
+      };
+
+    if (pun) {
+      printed_ident;
+    } else {
+      Doc.concat([printed_ident, Doc.text(":"), Doc.space, printed_pat]);
+    };
+  };
+
+  let (_, bracketLine, _, _) = Locations.get_raw_pos_info(patloc.loc_end);
+  let printed_fields =
+    block_item_iterator(
+      bracketLine,
+      patternlocs,
+      None,
+      remainingComments,
+      original_source,
+      ~get_loc,
+      ~print_item,
+      ~separator=Doc.comma,
+      ~trailingSeparator=true,
+    );
+
   Doc.concat([
     Doc.lbrace,
     Comment_utils.line_of_comments_to_doc_no_break(
       ~offset=true,
       after_brace_comments,
     ),
-    Doc.indent(
-      Doc.concat([
-        Doc.line,
-        patternlocs_loop(patternlocs, remainingComments),
-        close,
-      ]),
-    ),
+    Doc.indent(Doc.concat([Doc.line, printed_fields, close])),
     Doc.line,
     Doc.rbrace,
   ]);
@@ -920,6 +977,7 @@ and print_record =
       ~get_loc,
       ~print_item,
       ~separator=Doc.comma,
+      ~trailingSeparator=true,
     );
 
   Doc.concat([
@@ -1321,7 +1379,7 @@ and print_patterns_loop =
     let comma =
       switch (previous) {
       | None => Doc.nil
-      | Some(pt) => Doc.concat([Doc.comma, Doc.space])
+      | Some(pt) => Doc.concat([Doc.comma, Doc.line])
       };
     let preComment =
       switch (previous) {
@@ -1697,6 +1755,7 @@ and print_expression =
           ~get_loc,
           ~print_item,
           ~separator=Doc.comma,
+          ~trailingSeparator=true,
         );
 
       Doc.breakableGroup(
@@ -2183,7 +2242,7 @@ and print_expression =
         };
 
         let (_, bracketLine, _, _) =
-          Locations.get_raw_pos_info(expr.pexp_loc.loc_end);
+          Locations.get_raw_pos_info(expr.pexp_loc.loc_start);
 
         let printed_expressions =
           block_item_iterator(
@@ -2195,6 +2254,7 @@ and print_expression =
             ~get_loc,
             ~print_item,
             ~separator=Doc.nil,
+            ~trailingSeparator=true,
           );
 
         Doc.breakableGroup(
@@ -2591,6 +2651,7 @@ let rec print_data =
         ~get_loc,
         ~print_item,
         ~separator=Doc.comma,
+        ~trailingSeparator=false,
       );
 
     let after_brace_comments =
@@ -2668,6 +2729,7 @@ let rec print_data =
         ~get_loc,
         ~print_item,
         ~separator=Doc.comma,
+        ~trailingSeparator=false,
       );
 
     let after_brace_comments =
@@ -2985,147 +3047,130 @@ let toplevel_print =
       allComments,
     );
 
-  if (false) {
-    //if (disable_formatting) {
-    // let originalCode = get_original_code(data.ptop_loc, original_source);
-    // // need to remove any comments that were inside the disabled block
-    // Walktree.remove_comments_in_ignore_block(data.ptop_loc);
-    // Doc.concat([
-    //   stmt_leading_comment_docs,
-    //   blank_line_above,
-    //   attribute_text,
-    //   Doc.group(Doc.text(originalCode)),
-    // ]);
-    Doc.nil;
-  } else {
-    let without_comments =
-      switch (data.ptop_desc) {
-      | PTopImport(import_declaration) => import_print(import_declaration)
-      | PTopForeign(export_flag, value_description) =>
-        let export =
-          switch (export_flag) {
-          | Nonexported => Doc.text("import ")
-          | Exported => Doc.text("export ")
-          };
-        Doc.concat([
-          export,
-          Doc.text("foreign wasm "),
-          print_foreign_value_description(value_description, original_source),
-        ]);
-      | PTopPrimitive(export_flag, value_description) =>
-        let export =
-          switch (export_flag) {
-          | Nonexported => Doc.nil
-          | Exported => Doc.text("export ")
-          };
-        Doc.concat([
-          export,
-          Doc.text("primitive "),
-          print_primitive_value_description(
-            value_description,
-            original_source,
-          ),
-        ]);
-      | PTopData(data_declarations) =>
-        data_print(data_declarations, original_source, comments)
-      | PTopLet(export_flag, rec_flag, mut_flag, value_bindings) =>
-        print_value_bind(
-          export_flag,
-          rec_flag,
-          mut_flag,
-          value_bindings,
-          original_source,
-          comments,
-        )
-      | PTopExpr(expression) =>
-        print_expression(
-          ~parentIsArrow=false,
-          ~endChar=None,
-          ~original_source,
-          ~comments,
-          expression,
-        )
-      | PTopException(export_flag, type_exception) =>
-        let export =
-          switch (export_flag) {
-          | Nonexported => Doc.nil
-          | Exported => Doc.text("export ")
-          };
-        let cstr = type_exception.ptyexn_constructor;
+  let without_comments =
+    switch (data.ptop_desc) {
+    | PTopImport(import_declaration) => import_print(import_declaration)
+    | PTopForeign(export_flag, value_description) =>
+      let export =
+        switch (export_flag) {
+        | Nonexported => Doc.text("import ")
+        | Exported => Doc.text("export ")
+        };
+      Doc.concat([
+        export,
+        Doc.text("foreign wasm "),
+        print_foreign_value_description(value_description, original_source),
+      ]);
+    | PTopPrimitive(export_flag, value_description) =>
+      let export =
+        switch (export_flag) {
+        | Nonexported => Doc.nil
+        | Exported => Doc.text("export ")
+        };
+      Doc.concat([
+        export,
+        Doc.text("primitive "),
+        print_primitive_value_description(value_description, original_source),
+      ]);
+    | PTopData(data_declarations) =>
+      data_print(data_declarations, original_source, comments)
+    | PTopLet(export_flag, rec_flag, mut_flag, value_bindings) =>
+      print_value_bind(
+        export_flag,
+        rec_flag,
+        mut_flag,
+        value_bindings,
+        original_source,
+        comments,
+      )
+    | PTopExpr(expression) =>
+      print_expression(
+        ~parentIsArrow=false,
+        ~endChar=None,
+        ~original_source,
+        ~comments,
+        expression,
+      )
+    | PTopException(export_flag, type_exception) =>
+      let export =
+        switch (export_flag) {
+        | Nonexported => Doc.nil
+        | Exported => Doc.text("export ")
+        };
+      let cstr = type_exception.ptyexn_constructor;
 
-        let kind =
-          switch (cstr.pext_kind) {
-          | PExtDecl(sargs) =>
-            switch (sargs) {
-            | PConstrSingleton => Doc.nil
-            | PConstrTuple(parsed_types) =>
-              if (List.length(parsed_types) > 0) {
-                Doc.concat([
-                  Doc.lparen,
-                  Doc.join(
-                    Doc.comma,
-                    List.map(
-                      t => print_type(t, original_source),
-                      parsed_types,
-                    ),
+      let kind =
+        switch (cstr.pext_kind) {
+        | PExtDecl(sargs) =>
+          switch (sargs) {
+          | PConstrSingleton => Doc.nil
+          | PConstrTuple(parsed_types) =>
+            if (List.length(parsed_types) > 0) {
+              Doc.concat([
+                Doc.lparen,
+                Doc.join(
+                  Doc.comma,
+                  List.map(
+                    t => print_type(t, original_source),
+                    parsed_types,
                   ),
-                  Doc.rparen,
-                ]);
-              } else {
-                Doc.nil;
-              }
-            }
-
-          | PExtRebind(lid) => print_ident(lid.txt)
-          };
-
-        Doc.concat([
-          export,
-          Doc.text("exception "),
-          Doc.text(cstr.pext_name.txt),
-          kind,
-        ]);
-      | PTopExport(export_declarations) =>
-        Doc.concat([
-          Doc.text("export "),
-          Doc.join(
-            Doc.concat([Doc.comma, Doc.line]),
-            List.map(e => print_export_declaration(e), export_declarations),
-          ),
-        ])
-
-      | PTopExportAll(export_excepts) =>
-        Doc.concat([
-          Doc.text("export * "),
-          if (List.length(export_excepts) > 0) {
-            Doc.concat([
-              Doc.text("except "),
-              Doc.join(
-                Doc.comma,
-                List.map(
-                  (excpt: Parsetree.export_except) =>
-                    switch (excpt) {
-                    | ExportExceptData(data) => Doc.text(data.txt)
-                    | ExportExceptValue(value) => Doc.text(value.txt)
-                    },
-                  export_excepts,
                 ),
+                Doc.rparen,
+              ]);
+            } else {
+              Doc.nil;
+            }
+          }
+
+        | PExtRebind(lid) => print_ident(lid.txt)
+        };
+
+      Doc.concat([
+        export,
+        Doc.text("exception "),
+        Doc.text(cstr.pext_name.txt),
+        kind,
+      ]);
+    | PTopExport(export_declarations) =>
+      Doc.concat([
+        Doc.text("export "),
+        Doc.join(
+          Doc.concat([Doc.comma, Doc.line]),
+          List.map(e => print_export_declaration(e), export_declarations),
+        ),
+      ])
+
+    | PTopExportAll(export_excepts) =>
+      Doc.concat([
+        Doc.text("export * "),
+        if (List.length(export_excepts) > 0) {
+          Doc.concat([
+            Doc.text("except "),
+            Doc.join(
+              Doc.comma,
+              List.map(
+                (excpt: Parsetree.export_except) =>
+                  switch (excpt) {
+                  | ExportExceptData(data) => Doc.text(data.txt)
+                  | ExportExceptValue(value) => Doc.text(value.txt)
+                  },
+                export_excepts,
               ),
-            ]);
-          } else {
-            Doc.nil;
-          },
-        ])
-      };
+            ),
+          ]);
+        } else {
+          Doc.nil;
+        },
+      ])
+    };
 
-    let line_end =
-      Comment_utils.line_of_comments_to_doc_no_break(
-        ~offset=true,
-        line_trailing_comments,
-      );
+  let line_end =
+    Comment_utils.line_of_comments_to_doc_no_break(
+      ~offset=true,
+      line_trailing_comments,
+    );
 
-    Doc.concat([attribute_text, Doc.group(without_comments), line_end]);
-  };
+  Doc.concat([attribute_text, Doc.group(without_comments), line_end]);
 };
 
 let rec format_top_stmts =
@@ -3135,7 +3180,7 @@ let rec format_top_stmts =
           previous: option(Grain_parsing.Parsetree.toplevel_stmt),
           original_source: array(string),
         ) =>
-  if (List.length(statements) < 1) {
+  if (List.length(statements) == 0) {
     Doc.nil;
   } else {
     let lineAbove =
@@ -3159,15 +3204,43 @@ let rec format_top_stmts =
     let line_lead_comments =
       Comment_utils.line_ending_comments(~offset=false, leading_comments);
 
+    let leadingCommentCount = List.length(leading_comments);
+
+    let disable_formatting =
+      if (leadingCommentCount > 0) {
+        let lastComment = List.nth(leading_comments, leadingCommentCount - 1);
+
+        is_disable_formatting_comment(lastComment);
+      } else {
+        false;
+      };
+
+    let printed_stmt =
+      if (disable_formatting) {
+        // want to zero start this FIX ME
+
+        let originalCode =
+          get_original_code(this_stmt.ptop_loc, original_source);
+
+        Doc.concat([
+          // line_lead_comments,
+          line_sep,
+          //   attribute_text,
+          Doc.group(Doc.text(originalCode)),
+        ]);
+      } else {
+        toplevel_print(
+          ~original_source,
+          ~previous_line=lineAbove,
+          ~allComments=comments,
+          this_stmt,
+        );
+      };
+
     Doc.concat([
       line_sep,
       line_lead_comments,
-      toplevel_print(
-        ~original_source,
-        ~previous_line=0,
-        ~allComments=comments,
-        this_stmt,
-      ),
+      printed_stmt,
       Doc.hardLine,
       format_top_stmts(
         List.tl(statements),
@@ -3177,11 +3250,6 @@ let rec format_top_stmts =
       ),
     ]);
   };
-
-let printy = (lines: list('a), printfn: 'a => Doc.t) => {
-  let _ = printfn(List.hd(lines));
-  print_endline("printy");
-};
 
 let reformat_ast =
     (
