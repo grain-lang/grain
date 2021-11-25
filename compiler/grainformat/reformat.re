@@ -318,7 +318,8 @@ let rec block_item_iterator =
               block_trailing_comments,
             );
 
-          let trailSep = if (trailingSeparator) {separator} else {Doc.nil};
+          //let trailSep = if (trailingSeparator) {separator} else {Doc.nil};
+          let trailSep = Doc.ifBreaks(separator, Doc.nil);
 
           Doc.concat([
             itemDoc,
@@ -328,7 +329,8 @@ let rec block_item_iterator =
             block_trailing_comment_docs,
           ]);
         } else {
-          let trailSep = if (trailingSeparator) {separator} else {Doc.nil};
+          // let trailSep = if (trailingSeparator) {separator} else {Doc.nil};
+          let trailSep = Doc.ifBreaks(separator, Doc.nil);
 
           Doc.concat([itemDoc, trailSep, line_end]);
         };
@@ -1399,7 +1401,7 @@ and print_patterns_loop =
 
     let spacer =
       if (List.length(preComment) > 0) {
-        Doc.space;
+        Doc.line;
       } else {
         Doc.nil;
       };
@@ -1469,17 +1471,19 @@ and paren_wrap_patterns =
     | _ => Doc.concat([Doc.lparen, args, Doc.rparen])
     };
   | _ =>
+    let trailSep = Doc.ifBreaks(Doc.comma, Doc.nil);
+
     Doc.group(
       Doc.indent(
         Doc.concat([
           Doc.softLine,
           Doc.lparen,
-          Doc.indent(Doc.concat([Doc.softLine, args])),
+          Doc.indent(Doc.concat([Doc.softLine, args, trailSep])),
           Doc.softLine,
           Doc.rparen,
         ]),
       ),
-    )
+    );
   };
 }
 and print_expression =
