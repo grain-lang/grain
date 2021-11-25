@@ -188,49 +188,154 @@ let prefixop = (op: string) => {
   };
 };
 
+let rec block_item_iterator =
+        (
+          bracketLine: int,
+          items: list('a),
+          previous: option('a),
+          comments,
+          original_source,
+          ~get_loc: 'a => Grain_parsing.Location.t,
+          ~print_item: 'a => Doc.t,
+        ) =>
+  if (List.length(items) == 0) {
+    Doc.nil;
+  } else {
+    let item = List.hd(items);
+
+    let lineAbove =
+      switch (previous) {
+      | None => bracketLine
+      | Some(e) =>
+        let (_, cmtsline, _, _) =
+          Locations.get_raw_pos_info(get_loc(e).loc_end);
+        cmtsline;
+      };
+
+    let (_, thisLine, _, _) =
+      Locations.get_raw_pos_info(get_loc(item).loc_start);
+
+    let leading_comments =
+      Comment_utils.get_comments_between_lines(lineAbove, thisLine, comments);
+
+    let line_sep = line_separator(thisLine, lineAbove, leading_comments);
+
+    let leading_comment_docs =
+      Comment_utils.line_ending_comments(~offset=false, leading_comments);
+
+    let line_trailing_comments =
+      Comment_utils.get_comments_to_end_of_line(
+        ~location=get_loc(item),
+        comments,
+      );
+    let line_end =
+      Comment_utils.line_of_comments_to_doc_no_break(
+        ~offset=true,
+        line_trailing_comments,
+      );
+
+    let declDoc =
+      Doc.concat([line_sep, leading_comment_docs, print_item(item)]);
+
+    if (List.length(items) == 1) {
+      let block_trailing_comments =
+        Comment_utils.get_comments_between_locations(
+          ~loc1=Some(get_loc(item)),
+          ~loc2=None,
+          comments,
+        );
+
+      if (List.length(block_trailing_comments) > 0) {
+        let block_trailing_comment_docs =
+          Comment_utils.line_of_comments_to_doc_no_break(
+            ~offset=false,
+            block_trailing_comments,
+          );
+
+        Doc.concat([
+          declDoc,
+          Doc.comma,
+          line_end,
+          Doc.hardLine,
+          block_trailing_comment_docs,
+        ]);
+      } else {
+        Doc.concat([declDoc, Doc.comma, line_end]);
+      };
+    } else {
+      Doc.concat([
+        declDoc,
+        Doc.comma,
+        line_end,
+        Doc.line,
+        block_item_iterator(
+          bracketLine,
+          List.tl(items),
+          Some(item),
+          comments,
+          original_source,
+          ~get_loc,
+          ~print_item,
+        ),
+      ]);
+    };
+  };
+
 let rec resugar_list_patterns =
         (
           ~patterns: list(Parsetree.pattern),
           ~original_source: array(string),
           ~comments: list(Grain_parsing.Parsetree.comment),
+          ~nextLoc,
         ) => {
   let processed_list = resugar_pattern_list_inner(patterns);
   let last_item_was_spread = ref(false);
 
-  let items =
-    List.map(
-      i =>
+  let rec resugar_loop = (processed_list: list(sugared_pattern_item)) =>
+    if (List.length(processed_list) == 0) {
+      Doc.nil;
+    } else {
+      let i = List.hd(processed_list);
+
+      let p =
         switch (i) {
         | RegularPattern(e) =>
           last_item_was_spread := false;
 
           // FIX ME
 
-          //Doc.group(print_pattern(e, ~original_source, ~comments));
-          Doc.nil;
+          Doc.group(print_pattern(e, ~original_source, ~comments, ~nextLoc));
         | SpreadPattern(e) =>
           last_item_was_spread := true;
           Doc.group(
             Doc.concat([
               Doc.text("..."),
-              Doc.nil,
               // FIX ME
-              //   print_pattern(e, ~original_source, ~comments),
+              print_pattern(e, ~original_source, ~comments, ~nextLoc),
             ]),
           );
-        },
-      processed_list,
-    );
+        };
+
+      if (List.length(processed_list) == 1) {
+        p;
+      } else {
+        Doc.concat([
+          p,
+          Doc.comma,
+          Doc.line,
+          resugar_loop(List.tl(processed_list)),
+        ]);
+      };
+    };
+
+  let items = resugar_loop(processed_list);
 
   Doc.group(
     Doc.concat([
       Doc.indent(
         Doc.concat([
           Doc.lbracket,
-          Doc.concat([
-            Doc.softLine,
-            Doc.join(Doc.concat([Doc.comma, Doc.line]), items),
-          ]),
+          Doc.concat([Doc.softLine, items]),
           if (last_item_was_spread^) {
             Doc.nil;
           } else {
@@ -565,7 +670,12 @@ and print_pattern =
         };
       if (func == list_cons) {
         (
-          resugar_list_patterns(~patterns, ~original_source, ~comments),
+          resugar_list_patterns(
+            ~patterns,
+            ~original_source,
+            ~comments,
+            ~nextLoc,
+          ),
           false,
         );
       } else {
@@ -2502,6 +2612,8 @@ and print_value_bind =
   ]);
 };
 
+
+
 let rec print_data =
         (
           data: Grain_parsing__Parsetree.data_declaration,
@@ -2737,108 +2849,136 @@ let rec print_data =
     );
 
   | PDataRecord(label_declarations) =>
-    let rec decl_loop =
-            (
-              bracketLine: int,
-              decls: list(Grain_parsing.Parsetree.label_declaration),
-              previous: option(Grain_parsing.Parsetree.label_declaration),
-              comments,
-            ) =>
-      if (List.length(decls) == 0) {
-        Doc.nil;
-      } else {
-        let lbl = List.hd(decls);
-        let isMutable =
-          switch (lbl.pld_mutable) {
-          | Mutable => Doc.text("mut ")
-          | Immutable => Doc.nil
-          };
+    // let rec decl_loop =
+    //         (
+    //           bracketLine: int,
+    //           decls: list(Grain_parsing.Parsetree.label_declaration),
+    //           previous: option(Grain_parsing.Parsetree.label_declaration),
+    //           comments,
+    //         ) =>
+    //   if (List.length(decls) == 0) {
+    //     Doc.nil;
+    //   } else {
+    //     let lbl = List.hd(decls);
+    //     let isMutable =
+    //       switch (lbl.pld_mutable) {
+    //       | Mutable => Doc.text("mut ")
+    //       | Immutable => Doc.nil
+    //       };
 
-        let lineAbove =
-          switch (previous) {
-          | None => bracketLine
-          | Some(e) =>
-            let (_, cmtsline, _, _) =
-              Locations.get_raw_pos_info(e.pld_loc.loc_end);
-            cmtsline;
-          };
+    //     let lineAbove =
+    //       switch (previous) {
+    //       | None => bracketLine
+    //       | Some(e) =>
+    //         let (_, cmtsline, _, _) =
+    //           Locations.get_raw_pos_info(e.pld_loc.loc_end);
+    //         cmtsline;
+    //       };
 
-        let (_, thisLine, _, _) =
-          Locations.get_raw_pos_info(lbl.pld_loc.loc_start);
+    //     let (_, thisLine, _, _) =
+    //       Locations.get_raw_pos_info(lbl.pld_loc.loc_start);
 
-        let leading_comments =
-          Comment_utils.get_comments_between_lines(
-            lineAbove,
-            thisLine,
-            comments,
-          );
+    //     let leading_comments =
+    //       Comment_utils.get_comments_between_lines(
+    //         lineAbove,
+    //         thisLine,
+    //         comments,
+    //       );
 
-        let line_sep = line_separator(thisLine, lineAbove, leading_comments);
+    //     let line_sep = line_separator(thisLine, lineAbove, leading_comments);
 
-        let leading_comment_docs =
-          Comment_utils.line_ending_comments(~offset=false, leading_comments);
+    //     let leading_comment_docs =
+    //       Comment_utils.line_ending_comments(~offset=false, leading_comments);
 
-        let line_trailing_comments =
-          Comment_utils.get_comments_to_end_of_line(
-            ~location=lbl.pld_loc,
-            comments,
-          );
-        let line_end =
-          Comment_utils.line_of_comments_to_doc_no_break(
-            ~offset=true,
-            line_trailing_comments,
-          );
+    //     let line_trailing_comments =
+    //       Comment_utils.get_comments_to_end_of_line(
+    //         ~location=lbl.pld_loc,
+    //         comments,
+    //       );
+    //     let line_end =
+    //       Comment_utils.line_of_comments_to_doc_no_break(
+    //         ~offset=true,
+    //         line_trailing_comments,
+    //       );
 
-        let declDoc =
-          Doc.concat([
-            line_sep,
-            leading_comment_docs,
-            isMutable,
-            print_ident(lbl.pld_name.txt),
-            Doc.text(":"),
-            Doc.space,
-            print_type(lbl.pld_type, original_source),
-          ]);
+    //     let declDoc =
+    //       Doc.concat([
+    //         line_sep,
+    //         leading_comment_docs,
+    //         isMutable,
+    //         print_ident(lbl.pld_name.txt),
+    //         Doc.text(":"),
+    //         Doc.space,
+    //         print_type(lbl.pld_type, original_source),
+    //       ]);
 
-        if (List.length(decls) == 1) {
-          let block_trailing_comments =
-            Comment_utils.get_comments_between_locations(
-              ~loc1=Some(lbl.pld_loc),
-              ~loc2=None,
-              comments,
-            );
+    //     if (List.length(decls) == 1) {
+    //       let block_trailing_comments =
+    //         Comment_utils.get_comments_between_locations(
+    //           ~loc1=Some(lbl.pld_loc),
+    //           ~loc2=None,
+    //           comments,
+    //         );
 
-          if (List.length(block_trailing_comments) > 0) {
-            let block_trailing_comment_docs =
-              Comment_utils.line_of_comments_to_doc_no_break(
-                ~offset=false,
-                block_trailing_comments,
-              );
+    //       if (List.length(block_trailing_comments) > 0) {
+    //         let block_trailing_comment_docs =
+    //           Comment_utils.line_of_comments_to_doc_no_break(
+    //             ~offset=false,
+    //             block_trailing_comments,
+    //           );
 
-            Doc.concat([
-              declDoc,
-              Doc.comma,
-              line_end,
-              Doc.hardLine,
-              block_trailing_comment_docs,
-            ]);
-          } else {
-            Doc.concat([declDoc, Doc.comma, line_end]);
-          };
-        } else {
-          Doc.concat([
-            declDoc,
-            Doc.comma,
-            line_end,
-            Doc.line,
-            decl_loop(bracketLine, List.tl(decls), Some(lbl), comments),
-          ]);
+    //         Doc.concat([
+    //           declDoc,
+    //           Doc.comma,
+    //           line_end,
+    //           Doc.hardLine,
+    //           block_trailing_comment_docs,
+    //         ]);
+    //       } else {
+    //         Doc.concat([declDoc, Doc.comma, line_end]);
+    //       };
+    //     } else {
+    //       Doc.concat([
+    //         declDoc,
+    //         Doc.comma,
+    //         line_end,
+    //         Doc.line,
+    //         decl_loop(bracketLine, List.tl(decls), Some(lbl), comments),
+    //       ]);
+    //     };
+    //   };
+
+    let get_loc = (lbl: Grain_parsing.Parsetree.label_declaration) => {
+      lbl.pld_loc;
+    };
+
+    let print_decl = (lbl: Grain_parsing.Parsetree.label_declaration) => {
+      let isMutable =
+        switch (lbl.pld_mutable) {
+        | Mutable => Doc.text("mut ")
+        | Immutable => Doc.nil
         };
-      };
+      Doc.concat([
+        isMutable,
+        print_ident(lbl.pld_name.txt),
+        Doc.text(":"),
+        Doc.space,
+        print_type(lbl.pld_type, original_source),
+      ]);
+    };
 
     let (_, bracketLine, _, _) =
       Locations.get_raw_pos_info(data.pdata_loc.loc_start);
-    let decls = decl_loop(bracketLine, label_declarations, None, comments);
+    let printed_decls =
+      new_decl_loop(
+        bracketLine,
+        label_declarations,
+        None,
+        comments,
+        original_source,
+        ~get_loc,
+        ~print_decl,
+      );
 
     let after_brace_comments =
       Comment_utils.get_after_brace_comments(data.pdata_loc, comments);
@@ -2870,7 +3010,7 @@ let rec print_data =
             ~offset=true,
             after_brace_comments,
           ),
-          Doc.indent(Doc.concat([Doc.line, decls])),
+          Doc.indent(Doc.concat([Doc.line, printed_decls])),
           Doc.line,
           Doc.rbrace,
         ]),
@@ -3147,8 +3287,6 @@ let toplevel_print =
       allComments,
     );
 
-  let _ = Comment_utils.print_comments(comments);
-
   let attribute_text = print_attributes(attributes);
 
   let line_trailing_comments =
@@ -3349,6 +3487,11 @@ let rec format_top_stmts =
       ),
     ]);
   };
+
+let printy = (lines: list('a), printfn: 'a => Doc.t) => {
+  let _ = printfn(List.hd(lines));
+  print_endline("printy");
+};
 
 let reformat_ast =
     (
