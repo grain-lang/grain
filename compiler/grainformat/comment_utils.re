@@ -456,6 +456,9 @@ let line_of_comments_to_doc_no_break =
   if (List.length(comments) > 0) {
     let cmts = List.map(c => no_breakcomment_to_doc(c), comments);
 
+    // need to force break between comments
+    // so need the previous one
+
     if (offset) {
       Doc.concat([Doc.space, Doc.join(Doc.space, cmts)]);
     } else {

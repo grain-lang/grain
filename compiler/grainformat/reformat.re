@@ -251,10 +251,10 @@ let rec block_item_iterator =
     let (_, thisLine, _, _) =
       Locations.get_raw_pos_info(this_item_loc.loc_start);
 
-    let leading_comments =
+    let leading_comments = 
       Comment_utils.get_comments_between_lines(lineAbove, thisLine, comments);
 
-    let leading_comments_with_breaking_block =
+    let leading_comments_with_breaking_block = 
       switch (previous) {
       | None =>
         Comment_utils.get_comments_between_lines(
@@ -283,6 +283,9 @@ let rec block_item_iterator =
     let leading_comment_docs =
       Comment_utils.line_ending_comments(~offset=false, leading_comments);
 
+    // print_endline("leading_comment_docs")
+    // Doc.debug(leading_comment_docs);
+
     // look for disable
 
     let leadingCommentCount = List.length(leading_comments);
@@ -307,12 +310,17 @@ let rec block_item_iterator =
           Doc.group(Doc.text(originalCode)),
         ]);
       if (List.length(items) == 1) {
-        let block_trailing_comments =
-          Comment_utils.get_comments_between_locations(
-            ~loc1=Some(get_loc(item)),
-            ~loc2=None,
-            comments,
-          );
+        // let block_trailing_comments =
+        //   Comment_utils.get_comments_between_locations(
+        //     ~loc1=Some(get_loc(item)),
+        //     ~loc2=None,
+        //     comments,
+        //   );
+
+         let (_, lineEnd, _, _) =
+          Locations.get_raw_pos_info(get_loc(item).loc_end);
+
+        let block_trailing_comments = Comment_utils.get_comments_after_line(lineEnd,comments);
 
         if (List.length(block_trailing_comments) > 0) {
           let block_trailing_comment_docs =
@@ -320,6 +328,8 @@ let rec block_item_iterator =
               ~offset=false,
               block_trailing_comments,
             );
+            //   print_endline("block_trailing_comment_docs")
+            // Doc.debug(leading_comment_docs);
 
           Doc.concat([origDoc, breakSeparator, block_trailing_comment_docs]);
         } else {
@@ -358,6 +368,9 @@ let rec block_item_iterator =
           line_trailing_comments,
         );
 
+          // print_endline("line_end")
+          //   Doc.debug(line_end);
+
       //  Doc.debug(line_end);
 
       let itemDoc =
@@ -370,12 +383,17 @@ let rec block_item_iterator =
         ]);
 
       if (List.length(items) == 1) {
-        let block_trailing_comments =
-          Comment_utils.get_comments_between_locations(
-            ~loc1=Some(get_loc(item)),
-            ~loc2=None,
-            comments,
-          );
+        // let block_trailing_comments =
+        //   Comment_utils.get_comments_between_locations(
+        //     ~loc1=Some(get_loc(item)),
+        //     ~loc2=None,
+        //     comments,
+        //   );
+
+       let (_, lineEnd, _, _) =
+          Locations.get_raw_pos_info(get_loc(item).loc_end);
+
+        let block_trailing_comments = Comment_utils.get_comments_after_line(lineEnd,comments);
 
         if (List.length(block_trailing_comments) > 0) {
           let block_trailing_comment_docs =
@@ -3132,11 +3150,11 @@ let toplevel_print =
 
   //let attribute_text = print_attributes(attributes);
 
-  let line_trailing_comments =
-    Comment_utils.get_comments_to_end_of_line(
-      ~location=data.ptop_loc,
-      allComments,
-    );
+  // let line_trailing_comments =
+  //   Comment_utils.get_comments_to_end_of_line(
+  //     ~location=data.ptop_loc,
+  //     allComments,
+  //   );
 
   let without_comments =
     switch (data.ptop_desc) {
@@ -3255,13 +3273,14 @@ let toplevel_print =
       ])
     };
 
-  let line_end =
-    Comment_utils.line_of_comments_to_doc_no_break(
-      ~offset=true,
-      line_trailing_comments,
-    );
+  // let line_end =
+  //   Comment_utils.line_of_comments_to_doc_no_break(
+  //     ~offset=true,
+  //     line_trailing_comments,
+  //   );
 
-  Doc.concat([Doc.group(without_comments), line_end]);
+  //Doc.concat([Doc.group(without_comments)]);//, line_end]);
+  Doc.group(without_comments)
 };
 
 let reformat_ast =
