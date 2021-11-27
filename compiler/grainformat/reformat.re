@@ -302,8 +302,8 @@ let rec block_item_iterator =
         ]);
       };
 
-    //  print_endline("leading_comment_docs")
-    //  Doc.debug(leading_comment_docs);
+    // print_endline("leading_comment_docs")
+    // Doc.debug(leading_comment_docs);
 
     // look for disable
 
@@ -1782,6 +1782,12 @@ and print_expression =
       };
 
       let print_item = (branch: Grain_parsing__Parsetree.match_branch) => {
+        let branch_comments =
+          Comment_utils.get_comments_inside_location(
+            ~location=branch.pmb_loc,
+            comments,
+          );
+
         Doc.group(
           Doc.concat([
             Doc.concat([
@@ -1789,7 +1795,7 @@ and print_expression =
                 print_pattern(
                   branch.pmb_pat,
                   ~original_source,
-                  ~comments,
+                  ~comments=branch_comments,
                   ~nextLoc=
                     switch (branch.pmb_guard) {
                     | None => branch.pmb_body.pexp_loc
@@ -1809,7 +1815,7 @@ and print_expression =
                       ~parentIsArrow=false,
                       ~endChar=None,
                       ~original_source,
-                      ~comments,
+                      ~comments=branch_comments,
                       guard,
                     ),
                   ),
@@ -1827,7 +1833,7 @@ and print_expression =
                     ~parentIsArrow=true,
                     ~endChar=None,
                     ~original_source,
-                    ~comments,
+                    ~comments=branch_comments,
                     branch.pmb_body,
                   ),
                 ])
@@ -1839,7 +1845,7 @@ and print_expression =
                       ~parentIsArrow=true,
                       ~endChar=None,
                       ~original_source,
-                      ~comments,
+                      ~comments=branch_comments,
                       branch.pmb_body,
                     ),
                   ]),
@@ -1861,7 +1867,7 @@ and print_expression =
           ~print_item,
           ~separator=Doc.comma,
           ~trailingSeparator=true,
-          ~breakSeparator=Doc.line,
+          ~breakSeparator=Doc.hardLine,
           ~get_attribute_text=no_attribute,
         );
 
@@ -1874,7 +1880,12 @@ and print_expression =
             ~offset=true,
             after_brace_comments,
           ),
-          Doc.indent(Doc.concat([Comment_utils.hard_line_needed(after_brace_comments), printed_branches])),
+          Doc.indent(
+            Doc.concat([
+              Comment_utils.hard_line_needed(after_brace_comments),
+              printed_branches,
+            ]),
+          ),
           Doc.line,
           Doc.rbrace,
         ]),
@@ -2339,8 +2350,6 @@ and print_expression =
               remainingComments,
             );
 
-          //  let attribute_text = print_attributes(expr.pexp_attributes);
-
           Doc.concat([
             print_expression(
               ~parentIsArrow=false,
@@ -2379,7 +2388,12 @@ and print_expression =
               ~offset=true,
               after_brace_comments,
             ),
-            Doc.indent(Doc.concat([Comment_utils.hard_line_needed(after_brace_comments), printed_expressions])),
+            Doc.indent(
+              Doc.concat([
+                Comment_utils.hard_line_needed(after_brace_comments),
+                printed_expressions,
+              ]),
+            ),
             Doc.line,
             Doc.rbrace,
           ]),
@@ -2808,7 +2822,12 @@ let rec print_data =
           ~offset=true,
           after_brace_comments,
         ),
-        Doc.indent(Doc.concat([Comment_utils.hard_line_needed(after_brace_comments), printed_decls])),
+        Doc.indent(
+          Doc.concat([
+            Comment_utils.hard_line_needed(after_brace_comments),
+            printed_decls,
+          ]),
+        ),
         Doc.line,
         Doc.rbrace,
       ]),
@@ -2881,7 +2900,12 @@ let rec print_data =
             ~offset=true,
             after_brace_comments,
           ),
-          Doc.indent(Doc.concat([Comment_utils.hard_line_needed(after_brace_comments), printed_decls])),
+          Doc.indent(
+            Doc.concat([
+              Comment_utils.hard_line_needed(after_brace_comments),
+              printed_decls,
+            ]),
+          ),
           Doc.line,
           Doc.rbrace,
         ]),
@@ -2918,71 +2942,68 @@ let data_print =
     ),
   );
 };
-let import_print = (imp: Parsetree.import_declaration) => {
+let import_print =
+    (imp: Parsetree.import_declaration, comments, original_source) => {
   let vals =
     List.map(
       (v: Parsetree.import_value) => {
         switch (v) {
         | PImportModule(identloc) => print_ident(identloc.txt)
         | PImportAllExcept(identlocs) =>
-          let numVals = List.length(identlocs);
-
           Doc.concat([
             Doc.text("*"),
             if (List.length(identlocs) > 0) {
+              let get_loc =
+                  (identloc: Location.loc(Grain_parsing__Identifier.t)) => {
+                identloc.loc;
+              };
+
+              let print_item =
+                  (identloc: Location.loc(Grain_parsing__Identifier.t)) => {
+                print_ident(identloc.txt);
+              };
+              let first = List.hd(identlocs);
+
+              let (_, bracketLine, _, _) =
+                Locations.get_raw_pos_info(get_loc(first).loc_end);
+
+              let exceptions =
+                block_item_iterator(
+                  bracketLine,
+                  identlocs,
+                  None,
+                  comments,
+                  original_source,
+                  ~get_loc,
+                  ~print_item,
+                  ~separator=Doc.comma,
+                  ~trailingSeparator=true,
+                  ~breakSeparator=Doc.line,
+                  ~get_attribute_text=no_attribute,
+                );
               Doc.concat([
                 Doc.space,
                 Doc.text("except"),
                 Doc.space,
                 Doc.lbrace,
-                Doc.indent(
-                  Doc.concat([
-                    Doc.line,
-                    Doc.join(
-                      Doc.line,
-                      List.mapi(
-                        (
-                          index,
-                          identloc: Location.loc(Grain_parsing__Identifier.t),
-                        ) => {
-                          let trailing_comma =
-                            if (index < numVals - 1) {
-                              Doc.comma;
-                            } else {
-                              Doc.nil;
-                            };
-
-                          Doc.concat([
-                            print_ident(identloc.txt),
-                            trailing_comma,
-                            //trailing_comment_docs,
-                          ]);
-                        },
-                        identlocs,
-                      ),
-                    ),
-                  ]),
-                ),
+                Doc.indent(Doc.concat([Doc.line, exceptions])),
                 Doc.line,
                 Doc.rbrace,
               ]);
             } else {
               Doc.nil;
             },
-          ]);
+          ])
         | PImportValues(identlocsopts) =>
-          let numVals = List.length(identlocsopts);
+          //let numVals = List.length(identlocsopts);
           Doc.concat([
             Doc.lbrace,
             Doc.indent(
               Doc.concat([
                 Doc.line,
                 if (List.length(identlocsopts) > 0) {
-                  Doc.join(
-                    Doc.line,
-                    List.mapi(
+                  let get_loc =
                       (
-                        index,
                         identlocopt: (
                           Grain_parsing.Parsetree.loc(
                             Grain_parsing.Identifier.t,
@@ -2994,35 +3015,55 @@ let import_print = (imp: Parsetree.import_declaration) => {
                           ),
                         ),
                       ) => {
-                        let (loc, optloc) = identlocopt;
-                        let trailing_comma =
-                          if (index < numVals - 1) {
-                            Doc.comma;
-                          } else {
-                            Doc.nil;
-                          };
+                    let (loc, optloc) = identlocopt;
+                    loc.loc;
+                  };
 
-                        switch (optloc) {
-                        | None =>
-                          Doc.concat([
-                            print_ident(loc.txt),
-                            trailing_comma,
-                            // trailing_comment_docs,
-                          ])
-                        | Some(alias) =>
-                          Doc.concat([
-                            print_ident(loc.txt),
-                            Doc.space,
-                            Doc.text("as"),
-                            Doc.space,
-                            print_ident(alias.txt),
-                            trailing_comma,
-                            //  trailing_comment_docs,
-                          ])
-                        };
-                      },
-                      identlocsopts,
-                    ),
+                  let print_item =
+                      (
+                        identlocopt: (
+                          Grain_parsing.Parsetree.loc(
+                            Grain_parsing.Identifier.t,
+                          ),
+                          option(
+                            Grain_parsing.Parsetree.loc(
+                              Grain_parsing.Identifier.t,
+                            ),
+                          ),
+                        ),
+                      ) => {
+                    let (loc, optloc) = identlocopt;
+
+                    switch (optloc) {
+                    | None => Doc.concat([print_ident(loc.txt)])
+                    | Some(alias) =>
+                      Doc.concat([
+                        print_ident(loc.txt),
+                        Doc.space,
+                        Doc.text("as"),
+                        Doc.space,
+                        print_ident(alias.txt),
+                      ])
+                    };
+                  };
+
+                  let first = List.hd(identlocsopts);
+
+                  let (_, bracketLine, _, _) =
+                    Locations.get_raw_pos_info(get_loc(first).loc_end);
+
+                  block_item_iterator(
+                    bracketLine,
+                    identlocsopts,
+                    None,
+                    comments,
+                    original_source,
+                    ~get_loc,
+                    ~print_item,
+                    ~separator=Doc.comma,
+                    ~trailingSeparator=true,
+                    ~breakSeparator=Doc.line,
+                    ~get_attribute_text=no_attribute,
                   );
                 } else {
                   Doc.nil;
@@ -3031,7 +3072,7 @@ let import_print = (imp: Parsetree.import_declaration) => {
             ),
             Doc.line,
             Doc.rbrace,
-          ]);
+          ])
         }
       },
       imp.pimp_val,
@@ -3042,7 +3083,9 @@ let import_print = (imp: Parsetree.import_declaration) => {
   Doc.group(
     Doc.concat([
       Doc.text("import "),
-      Doc.join(Doc.concat([Doc.comma, Doc.space]), vals),
+      // FIXME
+      //      Doc.join(Doc.concat([Doc.comma, Doc.space]), vals),
+      Doc.concat(vals),
       Doc.space,
       Doc.text("from"),
       Doc.space,
@@ -3156,19 +3199,10 @@ let toplevel_print =
       allComments,
     );
 
-  // let attributes = data.ptop_attributes;
-
-  //let attribute_text = print_attributes(attributes);
-
-  // let line_trailing_comments =
-  //   Comment_utils.get_comments_to_end_of_line(
-  //     ~location=data.ptop_loc,
-  //     allComments,
-  //   );
-
   let without_comments =
     switch (data.ptop_desc) {
-    | PTopImport(import_declaration) => import_print(import_declaration)
+    | PTopImport(import_declaration) =>
+      import_print(import_declaration, comments, original_source)
     | PTopForeign(export_flag, value_description) =>
       let export =
         switch (export_flag) {
