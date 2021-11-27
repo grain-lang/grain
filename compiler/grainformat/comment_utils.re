@@ -357,23 +357,6 @@ let comment_to_doc = (comment: Grain_parsing.Parsetree.comment) => {
   Doc.concat([Doc.text(String.trim(comment_string)), newline]);
 };
 
-let comments_to_docs =
-    (~offset: bool, comments: list(Grain_parsing.Parsetree.comment)) => {
-  let listLength = List.length(comments);
-  if (listLength > 0) {
-    if (offset) {
-      Doc.concat([
-        Doc.space,
-        Doc.concat(List.map(c => comment_to_doc(c), comments)),
-      ]);
-    } else {
-      Doc.concat(List.map(c => comment_to_doc(c), comments));
-    };
-  } else {
-    Doc.nil;
-  };
-};
-
 let print_comments = (comments: list(Grain_parsing.Parsetree.comment)) => {
   List.map(c => Comments.print_comment(c), comments);
 };
@@ -388,11 +371,79 @@ let get_after_brace_comments =
   get_comments_on_line(startline, comments);
 };
 
+let rec line_of_comments_inner =
+        (
+          prev: option(Grain_parsing.Parsetree.comment),
+          comments: list(Grain_parsing.Parsetree.comment),
+          comment_to_doc: Grain_parsing.Parsetree.comment => Doc.t,
+        ) =>
+  if (List.length(comments) == 1) {
+    let cmt = List.hd(comments);
+
+    switch (prev) {
+    | None => comment_to_doc(cmt)
+    | Some(c) =>
+      let (_, prevCmt, _, _) =
+        Locations.get_raw_pos_info(Locations.get_comment_loc(c).loc_end);
+      let (_, thisCmt, _, _) =
+        Locations.get_raw_pos_info(Locations.get_comment_loc(cmt).loc_start);
+
+      if (prevCmt != thisCmt) {
+        Doc.concat([Doc.hardLine, comment_to_doc(cmt)]);
+      } else {
+        comment_to_doc(cmt);
+      };
+    };
+  } else {
+    let cmt = List.hd(comments);
+    Doc.concat([
+      switch (prev) {
+      | None => comment_to_doc(cmt)
+      | Some(c) =>
+        let (_, prevCmt, _, _) =
+          Locations.get_raw_pos_info(Locations.get_comment_loc(c).loc_end);
+        let (_, thisCmt, _, _) =
+          Locations.get_raw_pos_info(
+            Locations.get_comment_loc(cmt).loc_start,
+          );
+
+        if (prevCmt != thisCmt) {
+          Doc.concat([Doc.hardLine, comment_to_doc(cmt)]);
+        } else {
+          comment_to_doc(cmt);
+        };
+      },
+      line_of_comments_inner(Some(cmt), List.tl(comments), comment_to_doc),
+    ]);
+  };
+
+let no_breakcomment_to_doc = (comment: Grain_parsing.Parsetree.comment) => {
+  let comment_string = Comments.get_comment_source(comment);
+
+  Doc.text(String.trim(comment_string));
+};
+
+let comments_to_docs =
+    (~offset: bool, comments: list(Grain_parsing.Parsetree.comment)) => {
+  let listLength = List.length(comments);
+  if (listLength > 0) {
+    if (offset) {
+      Doc.concat([
+        Doc.space,
+        line_of_comments_inner(None, comments, comment_to_doc),
+      ]);
+    } else {
+      Doc.concat([line_of_comments_inner(None, comments, comment_to_doc)]);
+    };
+  } else {
+    Doc.nil;
+  };
+};
+
 let line_of_comments_to_doc =
     (comments: list(Grain_parsing.Parsetree.comment)) =>
   if (List.length(comments) > 0) {
-    let cmts = List.map(c => comment_to_doc(c), comments);
-    Doc.concat([Doc.space, Doc.join(Doc.space, cmts)]);
+    line_of_comments_inner(None, comments, comment_to_doc);
   } else {
     Doc.nil;
   };
@@ -445,24 +496,16 @@ let hard_line_needed = (comments: list(Grain_parsing__Parsetree.comment)) => {
   };
 };
 
-let no_breakcomment_to_doc = (comment: Grain_parsing.Parsetree.comment) => {
-  let comment_string = Comments.get_comment_source(comment);
-
-  Doc.text(String.trim(comment_string));
-};
-
 let line_of_comments_to_doc_no_break =
     (~offset: bool, comments: list(Grain_parsing.Parsetree.comment)) =>
   if (List.length(comments) > 0) {
-    let cmts = List.map(c => no_breakcomment_to_doc(c), comments);
-
-    // need to force break between comments
-    // so need the previous one
-
     if (offset) {
-      Doc.concat([Doc.space, Doc.join(Doc.space, cmts)]);
+      Doc.concat([
+        Doc.space,
+        line_of_comments_inner(None, comments, no_breakcomment_to_doc),
+      ]);
     } else {
-      Doc.join(Doc.space, cmts);
+      line_of_comments_inner(None, comments, no_breakcomment_to_doc);
     };
   } else {
     Doc.nil;

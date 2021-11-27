@@ -251,10 +251,12 @@ let rec block_item_iterator =
     let (_, thisLine, _, _) =
       Locations.get_raw_pos_info(this_item_loc.loc_start);
 
-    let leading_comments = 
+    let leading_comments =
       Comment_utils.get_comments_between_lines(lineAbove, thisLine, comments);
 
-    let leading_comments_with_breaking_block = 
+    // print_endline("****** leading comments")
+
+    let leading_comments_with_breaking_block =
       switch (previous) {
       | None =>
         Comment_utils.get_comments_between_lines(
@@ -280,11 +282,28 @@ let rec block_item_iterator =
     let comment_line_sep =
       comments_line_separator(lineAbove, leading_comments);
 
-    let leading_comment_docs =
-      Comment_utils.line_ending_comments(~offset=false, leading_comments);
+    //print_endline("****** makings docs") ;
 
-    // print_endline("leading_comment_docs")
-    // Doc.debug(leading_comment_docs);
+    let leading_comment_docs_i =
+      Comment_utils.line_of_comments_to_doc_no_break(
+        ~offset=false,
+        leading_comments,
+      );
+    let leading_comment_docs =
+      if (leading_comment_docs_i == Doc.nil) {
+        Doc.nil;
+      } else {
+        Doc.concat([
+          Comment_utils.line_of_comments_to_doc_no_break(
+            ~offset=false,
+            leading_comments,
+          ),
+          Doc.hardLine,
+        ]);
+      };
+
+    //  print_endline("leading_comment_docs")
+    //  Doc.debug(leading_comment_docs);
 
     // look for disable
 
@@ -310,17 +329,11 @@ let rec block_item_iterator =
           Doc.group(Doc.text(originalCode)),
         ]);
       if (List.length(items) == 1) {
-        // let block_trailing_comments =
-        //   Comment_utils.get_comments_between_locations(
-        //     ~loc1=Some(get_loc(item)),
-        //     ~loc2=None,
-        //     comments,
-        //   );
-
-         let (_, lineEnd, _, _) =
+        let (_, lineEnd, _, _) =
           Locations.get_raw_pos_info(get_loc(item).loc_end);
 
-        let block_trailing_comments = Comment_utils.get_comments_after_line(lineEnd,comments);
+        let block_trailing_comments =
+          Comment_utils.get_comments_after_line(lineEnd, comments);
 
         if (List.length(block_trailing_comments) > 0) {
           let block_trailing_comment_docs =
@@ -328,8 +341,6 @@ let rec block_item_iterator =
               ~offset=false,
               block_trailing_comments,
             );
-            //   print_endline("block_trailing_comment_docs")
-            // Doc.debug(leading_comment_docs);
 
           Doc.concat([origDoc, breakSeparator, block_trailing_comment_docs]);
         } else {
@@ -368,8 +379,8 @@ let rec block_item_iterator =
           line_trailing_comments,
         );
 
-          // print_endline("line_end")
-          //   Doc.debug(line_end);
+      // print_endline("line_end")
+      //   Doc.debug(line_end);
 
       //  Doc.debug(line_end);
 
@@ -383,17 +394,11 @@ let rec block_item_iterator =
         ]);
 
       if (List.length(items) == 1) {
-        // let block_trailing_comments =
-        //   Comment_utils.get_comments_between_locations(
-        //     ~loc1=Some(get_loc(item)),
-        //     ~loc2=None,
-        //     comments,
-        //   );
-
-       let (_, lineEnd, _, _) =
+        let (_, lineEnd, _, _) =
           Locations.get_raw_pos_info(get_loc(item).loc_end);
 
-        let block_trailing_comments = Comment_utils.get_comments_after_line(lineEnd,comments);
+        let block_trailing_comments =
+          Comment_utils.get_comments_after_line(lineEnd, comments);
 
         if (List.length(block_trailing_comments) > 0) {
           let block_trailing_comment_docs =
@@ -784,7 +789,13 @@ and print_record_pattern =
       ~offset=true,
       after_brace_comments,
     ),
-    Doc.indent(Doc.concat([Doc.line, printed_fields, close])),
+    Doc.indent(
+      Doc.concat([
+        Comment_utils.hard_line_needed(after_brace_comments),
+        printed_fields,
+        close,
+      ]),
+    ),
     Doc.line,
     Doc.rbrace,
   ]);
@@ -1863,7 +1874,7 @@ and print_expression =
             ~offset=true,
             after_brace_comments,
           ),
-          Doc.indent(Doc.concat([Doc.line, printed_branches])),
+          Doc.indent(Doc.concat([Comment_utils.hard_line_needed(after_brace_comments), printed_branches])),
           Doc.line,
           Doc.rbrace,
         ]),
@@ -2331,7 +2342,6 @@ and print_expression =
           //  let attribute_text = print_attributes(expr.pexp_attributes);
 
           Doc.concat([
-            //  attribute_text,
             print_expression(
               ~parentIsArrow=false,
               ~endChar=None,
@@ -2369,7 +2379,7 @@ and print_expression =
               ~offset=true,
               after_brace_comments,
             ),
-            Doc.indent(Doc.concat([Doc.line, printed_expressions])),
+            Doc.indent(Doc.concat([Comment_utils.hard_line_needed(after_brace_comments), printed_expressions])),
             Doc.line,
             Doc.rbrace,
           ]),
@@ -2798,7 +2808,7 @@ let rec print_data =
           ~offset=true,
           after_brace_comments,
         ),
-        Doc.indent(Doc.concat([Doc.line, printed_decls])),
+        Doc.indent(Doc.concat([Comment_utils.hard_line_needed(after_brace_comments), printed_decls])),
         Doc.line,
         Doc.rbrace,
       ]),
@@ -2871,7 +2881,7 @@ let rec print_data =
             ~offset=true,
             after_brace_comments,
           ),
-          Doc.indent(Doc.concat([Doc.line, printed_decls])),
+          Doc.indent(Doc.concat([Comment_utils.hard_line_needed(after_brace_comments), printed_decls])),
           Doc.line,
           Doc.rbrace,
         ]),
@@ -3280,7 +3290,7 @@ let toplevel_print =
   //   );
 
   //Doc.concat([Doc.group(without_comments)]);//, line_end]);
-  Doc.group(without_comments)
+  Doc.group(without_comments);
 };
 
 let reformat_ast =
