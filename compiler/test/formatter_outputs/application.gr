@@ -76,5 +76,5 @@ let preExistingObjectsWithRefCountMismatch2 = Map.make():
       Number,
       Number,
       Number
-    )
+    ),
   >)
