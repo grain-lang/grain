@@ -2553,18 +2553,25 @@ let rec compile_store = (wasm_mod, env, binds) => {
     let process_bind = ((b, instr), acc) => {
       let store_bind = arg =>
         compile_bind(~action=BindSet(arg), wasm_mod, env, b);
-      let get_bind = compile_bind(~action=BindGet, wasm_mod, env, b);
       let compiled_instr =
         switch (instr.instr_desc) {
         // special logic here for letrec
         | MAllocate(MClosure(cdata)) =>
+          let get_bind =
+            compile_bind(
+              ~action=BindGet,
+              ~skip_incref=true,
+              wasm_mod,
+              env,
+              b,
+            );
           allocate_closure(
             wasm_mod,
             env,
             ~lambda=get_bind,
             ~skip_patching=true,
             cdata,
-          )
+          );
         | MReturnCallIndirect(_)
         | MReturnCallKnown(_)
         | MCallIndirect(_)
