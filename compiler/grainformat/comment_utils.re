@@ -49,8 +49,6 @@ let rec get_comments_after_line = (line: int, comments) =>
   };
 
 let rec get_comments_between_lines = (line1: int, line2: int, comments) =>
-  // print_endline("get_comments_between_lines start " ++ string_of_int(line1));
-  // print_endline("get_comments_between_lines end " ++ string_of_int(line2));
   if (List.length(comments) == 0) {
     [];
   } else {
@@ -61,9 +59,6 @@ let rec get_comments_between_lines = (line1: int, line2: int, comments) =>
 
     let (_, cmteline, cmtechar, _) =
       Locations.get_raw_pos_info(c_loc.loc_end);
-
-    // print_endline("comment start " ++ string_of_int(cmtsline));
-    // print_endline("comment end " ++ string_of_int(cmteline));
 
     if (cmtsline > line1) {
       if (cmteline < line2) {
@@ -106,7 +101,7 @@ let rec get_comments_inside_location =
     } else if (cmteline < stmtStartLine) {
       get_comments_inside_location(location, List.tl(comments));
     } else if
-      // need the clever comparisons here
+      // need the complex comparisons here
       (cmtsline > stmtStartLine
        || cmtsline == stmtStartLine
        && cmtschar >= stmsStartChar) {
@@ -127,56 +122,39 @@ let rec get_comments_inside_location =
 
 let get_comments_between_locations =
     (
-      ~loc1: option(Grain_parsing.Location.t),
-      ~loc2: option(Grain_parsing.Location.t),
+      ~loc1: Grain_parsing.Location.t,
+      ~loc2: Grain_parsing.Location.t,
       comments: list(Grain_parsing.Parsetree.comment),
     ) => {
   // if loc1 is None get all comments before
   // if loc2 is None get all comments after
-  switch (loc1, loc2) {
-  | (None, Some(stmt)) =>
-    let (_, stmtStartLine, stmsStartChar, _) =
-      Locations.get_raw_pos_info(stmt.loc_start);
-    get_comments_before_line(stmtStartLine, comments);
 
-  | (Some(stmt), None) =>
-    let (_, stmtEndine, stmsEndtChar, _) =
-      Locations.get_raw_pos_info(stmt.loc_end);
+  let (_, stmtEndine, stmsEndtChar, _) =
+    Locations.get_raw_pos_info(loc1.loc_end);
+  let (_, stmtStartLine, stmsStartChar, _) =
+    Locations.get_raw_pos_info(loc2.loc_start);
 
-    get_comments_after_line(stmtEndine, comments);
+  // invert the request to look inside the location in the gap
 
-  | (Some(s1), Some(s2)) =>
-    let (_, stmtEndine, stmsEndtChar, _) =
-      Locations.get_raw_pos_info(s1.loc_end);
-    let (_, stmtStartLine, stmsStartChar, _) =
-      Locations.get_raw_pos_info(s2.loc_start);
-
-    // invert the request to look inside the location in the gap
-
-    let start_loc: Lexing.position = {
-      pos_fname: "",
-      pos_lnum: stmtEndine,
-      pos_bol: 0,
-      pos_cnum: stmsEndtChar,
-    };
-    let end_loc: Lexing.position = {
-      pos_fname: "",
-      pos_lnum: stmtStartLine,
-      pos_bol: 0,
-      pos_cnum: stmsStartChar,
-    };
-
-    let location: Grain_parsing.Location.t = {
-      loc_start: start_loc,
-      loc_end: end_loc,
-      loc_ghost: true,
-    };
-    let cmts = get_comments_inside_location(~location, comments);
-
-    cmts;
-
-  | (None, None) => []
+  let start_loc: Lexing.position = {
+    pos_fname: "",
+    pos_lnum: stmtEndine,
+    pos_bol: 0,
+    pos_cnum: stmsEndtChar,
   };
+  let end_loc: Lexing.position = {
+    pos_fname: "",
+    pos_lnum: stmtStartLine,
+    pos_bol: 0,
+    pos_cnum: stmsStartChar,
+  };
+
+  let location: Grain_parsing.Location.t = {
+    loc_start: start_loc,
+    loc_end: end_loc,
+    loc_ghost: true,
+  };
+  get_comments_inside_location(~location, comments);
 };
 
 let get_comments_to_end_of_enclosing_location =
@@ -312,27 +290,6 @@ let get_comments_to_end_of_line =
   let (_, stmtEndine, stmsEndtChar, _) =
     Locations.get_raw_pos_info(location.loc_end);
 
-  // let start_loc: Lexing.position = {
-  //   pos_fname: "",
-  //   pos_lnum: stmtEndine,
-  //   pos_bol: 0,
-  //   pos_cnum: stmsEndtChar,
-  // };
-  // let end_loc: Lexing.position = {
-  //   pos_fname: "",
-  //   pos_lnum: stmtEndine,
-  //   pos_bol: 0,
-  //   pos_cnum: max_int,
-  // };
-
-  // let location: Grain_parsing.Location.t = {
-  //   loc_start: start_loc,
-  //   loc_end: end_loc,
-  //   loc_ghost: true,
-  // };
-  // let cmts = get_comments_inside_location(~location, comments);
-
-  // cmts;
   get_comments_on_line_end(stmtEndine, stmsEndtChar, comments);
 };
 
@@ -487,6 +444,20 @@ let hard_line_needed = (comments: list(Grain_parsing__Parsetree.comment)) => {
 
   switch (num_comments) {
   | 0 => Doc.line
+  | _ =>
+    let last = List.nth(comments, num_comments - 1);
+    switch (last) {
+    | Line(_) => Doc.hardLine
+    | _ => Doc.hardLine
+    };
+  };
+};
+
+let line_needed = (comments: list(Grain_parsing__Parsetree.comment)) => {
+  let num_comments = List.length(comments);
+
+  switch (num_comments) {
+  | 0 => Doc.softLine
   | _ =>
     let last = List.nth(comments, num_comments - 1);
     switch (last) {

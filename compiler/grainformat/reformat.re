@@ -255,8 +255,6 @@ let rec block_item_iterator =
     let leading_comments =
       Comment_utils.get_comments_between_lines(lineAbove, thisLine, comments);
 
-    // print_endline("****** leading comments")
-
     let leading_comments_with_breaking_block =
       switch (previous) {
       | None =>
@@ -267,8 +265,8 @@ let rec block_item_iterator =
         )
       | Some(l) =>
         Comment_utils.get_comments_between_locations(
-          ~loc1=Some(get_loc(l)),
-          ~loc2=Some(get_loc(item)),
+          ~loc1=get_loc(l),
+          ~loc2=get_loc(item),
           comments,
         )
       };
@@ -369,6 +367,10 @@ let rec block_item_iterator =
       };
     } else {
       // Normal formatting
+      print_endline("iterator comments");
+      let _ = Comment_utils.print_comments(comments);
+
+      Debug.print_loc("iterator",get_loc(item));
 
       let line_trailing_comments =
         Comment_utils.get_comments_to_end_of_line(
@@ -380,6 +382,9 @@ let rec block_item_iterator =
           ~offset=true,
           line_trailing_comments,
         );
+
+        print_endline("line_end");
+        Doc.debug(line_end)
 
       // print_endline("line_end")
       //   Doc.debug(line_end);
@@ -2754,33 +2759,41 @@ let rec print_data =
   let nameloc = data.pdata_name;
   switch (data.pdata_kind) {
   | PDataAbstract =>
-    let rec type_loop =
-            (
-              types: list(Grain_parsing.Parsetree.parsed_type),
-              previous: option(Grain_parsing.Parsetree.parsed_type),
-            ) =>
-      if (List.length(types) == 0) {
-        Doc.nil;
-      } else {
-        let t = List.hd(types);
-        if (List.length(types) == 1) {
-          print_type(t, original_source, comments, ~trailingSeparator=false);
-        } else {
-          Doc.concat([
-            print_type(
-              t,
-              original_source,
-              comments,
-              ~trailingSeparator=false,
-            ),
-            Doc.comma,
-            Doc.line,
-            type_loop(List.tl(types), Some(t)),
-          ]);
-        };
-      };
 
-    let types = type_loop(data.pdata_params, None);
+    
+
+    let get_loc = (t: Grain_parsing__Parsetree.parsed_type) => t.ptyp_loc;
+    let print_item = (t: Grain_parsing__Parsetree.parsed_type) => {
+      let localComments = comments;
+      // Comment_utils.get_comments_inside_location(
+      //   ~location=get_loc(t),
+      //   comments,
+      // );
+      print_type(t, original_source, localComments, ~trailingSeparator=false);
+    };
+
+    let (_, openLine, _, _) =
+      Locations.get_raw_pos_info(data.pdata_name.loc.loc_end);
+
+    let types =
+      block_item_iterator(
+        openLine,
+        data.pdata_params,
+        None,
+        comments,
+        original_source,
+        ~get_loc,
+        ~print_item,
+        ~separator=Doc.comma,
+        ~trailingSeparator=false,
+        ~breakSeparator=Doc.line,
+        ~get_attribute_text=no_attribute,
+        ~isBlock=true,
+      );
+
+    // weird comment position after the equals
+    let after_brace_comments =
+      Comment_utils.get_after_brace_comments(data.pdata_loc, comments);
 
     let params =
       if (List.length(data.pdata_params) == 0) {
@@ -2788,7 +2801,18 @@ let rec print_data =
       } else {
         [
           Doc.text("<"),
-          Doc.indent(Doc.group(Doc.concat([Doc.softLine, types]))),
+          Comment_utils.line_of_comments_to_doc_no_break(
+            ~offset=true,
+            after_brace_comments,
+          ),
+          Doc.indent(
+            Doc.group(
+              Doc.concat([
+                Comment_utils.line_needed(after_brace_comments),
+                types,
+              ]),
+            ),
+          ),
           Doc.softLine,
           Doc.text(">"),
         ];
@@ -2806,11 +2830,16 @@ let rec print_data =
               Doc.space,
               Doc.equal,
               Doc.space,
-              print_type(
-                manifest,
-                original_source,
-                comments,
-                ~trailingSeparator=false,
+              Doc.indent(
+                Doc.concat([
+                  Doc.line,
+                  print_type(
+                    manifest,
+                    original_source,
+                    comments,
+                    ~trailingSeparator=false,
+                  ),
+                ]),
               ),
             ])
           | None => Doc.nil
@@ -3379,7 +3408,6 @@ let toplevel_print =
     (
       data: Parsetree.toplevel_stmt,
       ~original_source: array(string),
-      // ~previous_line: int,
       ~allComments,
     ) => {
   let comments =
@@ -3520,13 +3548,6 @@ let toplevel_print =
       ])
     };
 
-  // let line_end =
-  //   Comment_utils.line_of_comments_to_doc_no_break(
-  //     ~offset=true,
-  //     line_trailing_comments,
-  //   );
-
-  //Doc.concat([Doc.group(without_comments)]);//, line_end]);
   Doc.group(without_comments);
 };
 
