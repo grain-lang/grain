@@ -117,10 +117,7 @@ boxes › box_addition1
        )
       )
       (i32.store offset=8
-       (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-        (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-        (local.get $1)
-       )
+       (local.get $1)
        (tuple.extract 0
         (tuple.make
          (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
@@ -130,10 +127,7 @@ boxes › box_addition1
          (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
           (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
           (i32.load offset=8
-           (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-            (local.get $1)
-           )
+           (local.get $1)
           )
          )
         )
