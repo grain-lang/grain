@@ -2,7 +2,7 @@ import Memory from "runtime/unsafe/memory"
 import Tags from "runtime/unsafe/tags"
 import { length, map } from "list"
 
-import WasmI32{
+import WasmI32, {
   add as (+),
   mul as (*),
   xor as (^),
@@ -15,7 +15,7 @@ export foreign wasm storage_read: (
   WasmI64
 ) -> WasmI64 as storageRead from "env"
 
-import WasmI32{
+import WasmI32, {
   eq, // comment1
   // comment 3
   and as (&), // comment 2

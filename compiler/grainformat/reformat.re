@@ -3157,7 +3157,7 @@ let import_print =
   Doc.group(
     Doc.concat([
       Doc.text("import "),
-      Doc.concat(vals),
+      Doc.join(Doc.concat([Doc.comma, Doc.space]), vals),
       Doc.space,
       Doc.text("from"),
       Doc.space,

@@ -1,7 +1,7 @@
 (library
  (name reformat)
  (public_name grainformat.reformat)
- (modules reformat res_doc res_minibuffer walktree debug comment_utils)
+ (modules reformat res_doc res_minibuffer debug comment_utils)
  (libraries grain grain_diagnostics grain_parsing grain_utils))
 
 (executable
