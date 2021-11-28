@@ -357,3 +357,29 @@ let result = Array.sort(comp, arr)
 assert arr == [> "a", "a", "ab", "abc", "abcd", "abcde"]
 // Returns void
 assert result == void
+
+
+// Array.rotate
+let arr1 = [> 1, 2, 3, 4, 5]
+Array.rotate(0, arr1) 
+assert arr1 == [> 1, 2, 3, 4, 5]
+
+let arr2 = [> 1, 2, 3, 4, 5]
+Array.rotate(3, arr2)
+assert arr2 == [> 3, 4, 5, 1, 2]
+
+let arr3 = [> 1, 2, 3, 4, 5]
+Array.rotate(-4, arr3)
+assert arr3 == [> 5, 1, 2, 3, 4]
+
+let arr4 = [> 1, 2, 3, 4, 5]
+Array.rotate(5, arr4)
+assert arr4 == [> 1, 2, 3, 4, 5]
+
+let arr5 = [> 1, 2, 3, 4, 5]
+Array.rotate(48, arr5) 
+assert arr5 == [> 3, 4, 5, 1, 2]
+
+let arr6 = [> 1, 2, 3, 4, 5]
+Array.rotate(-54, arr6) 
+assert arr6 == [> 5, 1, 2, 3, 4]
