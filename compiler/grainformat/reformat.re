@@ -229,6 +229,7 @@ let rec block_item_iterator =
           ~separator: Doc.t,
           ~trailingSeparator: bool,
           ~breakSeparator: Doc.t,
+          ~isBlock: bool,
         ) =>
   if (List.length(items) == 0) {
     Doc.nil;
@@ -362,6 +363,7 @@ let rec block_item_iterator =
             ~trailingSeparator,
             ~breakSeparator,
             ~get_attribute_text,
+            ~isBlock,
           ),
         ]);
       };
@@ -398,7 +400,11 @@ let rec block_item_iterator =
           Locations.get_raw_pos_info(get_loc(item).loc_end);
 
         let block_trailing_comments =
-          Comment_utils.get_comments_after_line(lineEnd, comments);
+          if (isBlock) {
+            Comment_utils.get_comments_after_line(lineEnd, comments);
+          } else {
+            [];
+          };
 
         if (List.length(block_trailing_comments) > 0) {
           let block_trailing_comment_docs =
@@ -408,10 +414,9 @@ let rec block_item_iterator =
             );
 
           let trailSep =
-            if (trailingSeparator) {
-              Doc.ifBreaks(separator, Doc.nil);
-            } else {
-              Doc.nil;
+            if (trailingSeparator) {separator} else {
+              // Doc.ifBreaks(separator, Doc.nil);
+              Doc.nil
             };
 
           Doc.concat([
@@ -449,6 +454,7 @@ let rec block_item_iterator =
             ~trailingSeparator,
             ~breakSeparator,
             ~get_attribute_text,
+            ~isBlock,
           ),
         ]);
       };
@@ -531,21 +537,16 @@ let rec resugar_list_patterns =
   };
 
   let print_item = (pattern: sugared_pattern_item) => {
-    let commentsInPAttern = comments;
-    // Comment_utils.get_comments_inside_location(
-    //   ~location=get_loc(pattern),
-    //   comments,
-    // );
+    let localComments =
+      Comment_utils.get_comments_inside_location(
+        ~location=get_loc(pattern),
+        comments,
+      );
 
     switch (pattern) {
     | RegularPattern(e) =>
       Doc.group(
-        print_pattern(
-          e,
-          ~original_source,
-          ~comments=commentsInPAttern,
-          ~nextLoc,
-        ),
+        print_pattern(e, ~original_source, ~comments=localComments, ~nextLoc),
       )
     | SpreadPattern(e) =>
       Doc.group(
@@ -554,7 +555,7 @@ let rec resugar_list_patterns =
           print_pattern(
             e,
             ~original_source,
-            ~comments=commentsInPAttern,
+            ~comments=localComments,
             ~nextLoc,
           ),
         ]),
@@ -575,6 +576,7 @@ let rec resugar_list_patterns =
       ~trailingSeparator=false,
       ~breakSeparator=Doc.line,
       ~get_attribute_text=no_attribute,
+      ~isBlock=true,
     );
 
   Doc.group(
@@ -772,8 +774,15 @@ and print_record_pattern =
       ) => {
     let (loc, pat) = patternloc;
     let printed_ident: Doc.t = print_ident(loc.txt);
+
+    let localComments =
+      Comment_utils.get_comments_inside_location(
+        ~location=get_loc(patternloc),
+        comments,
+      );
+
     let printed_pat =
-      print_pattern(pat, ~original_source, ~comments, ~nextLoc);
+      print_pattern(pat, ~original_source, ~comments=localComments, ~nextLoc);
     let pun =
       switch (printed_ident, printed_pat: Doc.t) {
       | (Text(i), Text(e)) => i == e
@@ -801,6 +810,7 @@ and print_record_pattern =
       ~trailingSeparator=true,
       ~breakSeparator=Doc.line,
       ~get_attribute_text=no_attribute,
+      ~isBlock=true,
     );
 
   Doc.concat([
@@ -893,7 +903,12 @@ and print_pattern =
             original_source,
           ),
           Doc.concat([Doc.text(":"), Doc.space]),
-          print_type(parsed_type, original_source, comments),
+          print_type(
+            parsed_type,
+            original_source,
+            comments,
+            ~trailingSeparator=false,
+          ),
         ]),
         false,
       )
@@ -1101,6 +1116,7 @@ and print_record =
       ~trailingSeparator=true,
       ~breakSeparator=Doc.line,
       ~get_attribute_text=no_attribute,
+      ~isBlock=true,
     );
 
   Doc.concat([
@@ -1132,6 +1148,7 @@ and print_type =
       p: Grain_parsing__Parsetree.parsed_type,
       original_source: array(string),
       comments,
+      ~trailingSeparator: bool,
     ) => {
   switch (p.ptyp_desc) {
   | PTyAny => Doc.text("_")
@@ -1141,7 +1158,13 @@ and print_type =
       Doc.group(
         switch (List.length(types)) {
         | 0 => Doc.concat([Doc.lparen, Doc.rparen])
-        | 1 => print_type(List.hd(types), original_source, comments)
+        | 1 =>
+          print_type(
+            List.hd(types),
+            original_source,
+            comments,
+            ~trailingSeparator,
+          )
         | _ =>
           Doc.concat([
             Doc.lparen,
@@ -1151,7 +1174,13 @@ and print_type =
                 Doc.join(
                   Doc.concat([Doc.comma, Doc.line]),
                   List.map(
-                    t => print_type(t, original_source, comments),
+                    t =>
+                      print_type(
+                        t,
+                        original_source,
+                        comments,
+                        ~trailingSeparator,
+                      ),
                     types,
                   ),
                 ),
@@ -1165,7 +1194,7 @@ and print_type =
       Doc.space,
       Doc.text("->"),
       Doc.space,
-      print_type(parsed_type, original_source, comments),
+      print_type(parsed_type, original_source, comments, ~trailingSeparator),
     ])
 
   | PTyTuple(parsed_types) =>
@@ -1177,7 +1206,8 @@ and print_type =
           Doc.join(
             Doc.concat([Doc.comma, Doc.line]),
             List.map(
-              t => print_type(t, original_source, comments),
+              t =>
+                print_type(t, original_source, comments, ~trailingSeparator),
               parsed_types,
             ),
           ),
@@ -1202,7 +1232,12 @@ and print_type =
         t.ptyp_loc;
       };
       let print_item = (t: Grain_parsing__Parsetree.parsed_type) => {
-        print_type(t, original_source, comments);
+        let localComments =
+          Comment_utils.get_comments_inside_location(
+            ~location=get_loc(t),
+            comments,
+          );
+        print_type(t, original_source, localComments, ~trailingSeparator);
       };
       let first = List.hd(parsedtypes);
 
@@ -1218,9 +1253,10 @@ and print_type =
           ~get_loc,
           ~print_item,
           ~separator=Doc.comma,
-          ~trailingSeparator=true,
+          ~trailingSeparator=false,
           ~breakSeparator=Doc.line,
           ~get_attribute_text=no_attribute,
+          ~isBlock=true,
         );
       Doc.group(
         Doc.concat([
@@ -1910,6 +1946,7 @@ and print_expression =
           ~trailingSeparator=true,
           ~breakSeparator=Doc.hardLine,
           ~get_attribute_text=no_attribute,
+          ~isBlock=true,
         );
 
       Doc.breakableGroup(
@@ -2309,7 +2346,12 @@ and print_expression =
             Doc.concat([
               Doc.softLine,
               Doc.lparen, // TODO needed to fix compiler bug (trailing type annotation needs paren, #866)
-              print_type(parsed_type, original_source, comments),
+              print_type(
+                parsed_type,
+                original_source,
+                comments,
+                ~trailingSeparator=false,
+              ),
               Doc.rparen,
             ]),
           ),
@@ -2417,8 +2459,9 @@ and print_expression =
             ~separator=Doc.nil,
             ~trailingSeparator=true,
             ~breakSeparator=Doc.hardLine,
-            ~get_attribute_text=expr =>
-            print_attributes(expr.pexp_attributes)
+            ~get_attribute_text=
+              expr => print_attributes(expr.pexp_attributes),
+            ~isBlock=true,
           );
 
         Doc.breakableGroup(
@@ -2721,10 +2764,15 @@ let rec print_data =
       } else {
         let t = List.hd(types);
         if (List.length(types) == 1) {
-          print_type(t, original_source, comments);
+          print_type(t, original_source, comments, ~trailingSeparator=false);
         } else {
           Doc.concat([
-            print_type(t, original_source, comments),
+            print_type(
+              t,
+              original_source,
+              comments,
+              ~trailingSeparator=false,
+            ),
             Doc.comma,
             Doc.line,
             type_loop(List.tl(types), Some(t)),
@@ -2758,7 +2806,12 @@ let rec print_data =
               Doc.space,
               Doc.equal,
               Doc.space,
-              print_type(manifest, original_source, comments),
+              print_type(
+                manifest,
+                original_source,
+                comments,
+                ~trailingSeparator=false,
+              ),
             ])
           | None => Doc.nil
           },
@@ -2772,6 +2825,12 @@ let rec print_data =
     };
 
     let print_item = (d: Grain_parsing.Parsetree.constructor_declaration) => {
+      let localComments =
+        Comment_utils.get_comments_inside_location(
+          ~location=get_loc(d),
+          comments,
+        );
+
       Doc.concat([
         Doc.group(
           Doc.concat([
@@ -2781,8 +2840,19 @@ let rec print_data =
               if (List.length(parsed_types) > 0) {
                 let get_loc = (t: Grain_parsing.Parsetree.parsed_type) =>
                   t.ptyp_loc;
-                let print_item = (t: Grain_parsing.Parsetree.parsed_type) =>
-                  print_type(t, original_source, comments);
+                let print_item = (t: Grain_parsing.Parsetree.parsed_type) => {
+                  let localComments =
+                    Comment_utils.get_comments_inside_location(
+                      ~location=get_loc(t),
+                      comments,
+                    );
+                  print_type(
+                    t,
+                    original_source,
+                    localComments,
+                    ~trailingSeparator=true,
+                  );
+                };
                 let first = List.hd(parsed_types);
 
                 let (_, openLine, _, _) =
@@ -2798,16 +2868,16 @@ let rec print_data =
                           openLine,
                           parsed_types,
                           None,
-                          comments,
+                          localComments,
                           original_source,
                           ~get_loc,
                           ~print_item,
                           ~separator=Doc.comma,
-                          ~trailingSeparator=true,
+                          ~trailingSeparator=false,
                           ~breakSeparator=Doc.line,
                           ~get_attribute_text=no_attribute,
+                          ~isBlock=true,
                         ),
-                        
                       ]),
                     ),
                     Doc.softLine,
@@ -2837,9 +2907,10 @@ let rec print_data =
         ~get_loc,
         ~print_item,
         ~separator=Doc.comma,
-        ~trailingSeparator=false,
+        ~trailingSeparator=true,
         ~breakSeparator=Doc.line,
         ~get_attribute_text=no_attribute,
+        ~isBlock=true,
       );
 
     let after_brace_comments =
@@ -2853,8 +2924,19 @@ let rec print_data =
         if (List.length(data.pdata_params) > 0) {
           let get_loc = (t: Grain_parsing.Parsetree.parsed_type) =>
             t.ptyp_loc;
-          let print_item = (t: Grain_parsing.Parsetree.parsed_type) =>
-            print_type(t, original_source, comments);
+          let print_item = (t: Grain_parsing.Parsetree.parsed_type) => {
+            let localComments =
+              Comment_utils.get_comments_inside_location(
+                ~location=get_loc(t),
+                comments,
+              );
+            print_type(
+              t,
+              original_source,
+              localComments,
+              ~trailingSeparator=false,
+            );
+          };
           let first = List.hd(data.pdata_params);
 
           let (_, openLine, _, _) =
@@ -2874,9 +2956,10 @@ let rec print_data =
                     ~get_loc,
                     ~print_item,
                     ~separator=Doc.comma,
-                    ~trailingSeparator=true,
+                    ~trailingSeparator=false,
                     ~breakSeparator=Doc.line,
                     ~get_attribute_text=no_attribute,
+                    ~isBlock=true,
                   ),
                 ]),
               ),
@@ -2910,6 +2993,11 @@ let rec print_data =
     };
 
     let print_item = (lbl: Grain_parsing.Parsetree.label_declaration) => {
+      let localComments =
+        Comment_utils.get_comments_inside_location(
+          ~location=get_loc(lbl),
+          comments,
+        );
       let isMutable =
         switch (lbl.pld_mutable) {
         | Mutable => Doc.text("mut ")
@@ -2920,7 +3008,12 @@ let rec print_data =
         print_ident(lbl.pld_name.txt),
         Doc.text(":"),
         Doc.space,
-        print_type(lbl.pld_type, original_source, comments),
+        print_type(
+          lbl.pld_type,
+          original_source,
+          localComments,
+          ~trailingSeparator=true,
+        ),
       ]);
     };
 
@@ -2939,6 +3032,7 @@ let rec print_data =
         ~trailingSeparator=true,
         ~breakSeparator=Doc.line,
         ~get_attribute_text=no_attribute,
+        ~isBlock=true,
       );
 
     let after_brace_comments =
@@ -2955,7 +3049,13 @@ let rec print_data =
             Doc.join(
               Doc.concat([Doc.text(","), Doc.space]),
               List.map(
-                t => print_type(t, original_source, comments),
+                t =>
+                  print_type(
+                    t,
+                    original_source,
+                    comments,
+                    ~trailingSeparator=true,
+                  ),
                 data.pdata_params,
               ),
             ),
@@ -3051,6 +3151,7 @@ let import_print =
                   ~trailingSeparator=true,
                   ~breakSeparator=Doc.line,
                   ~get_attribute_text=no_attribute,
+                  ~isBlock=true,
                 );
               Doc.concat([
                 Doc.space,
@@ -3123,12 +3224,6 @@ let import_print =
                   let (_, bracketLine, _, _) =
                     Locations.get_raw_pos_info(get_loc(first).loc_end);
 
-                  // let commentsInIdent =
-                  //   Comment_utils.get_comments_inside_location(
-                  //     ~location=get_loc(first),
-                  //     comments,
-                  //   );
-
                   block_item_iterator(
                     bracketLine,
                     identlocsopts,
@@ -3141,6 +3236,7 @@ let import_print =
                     ~trailingSeparator=true,
                     ~breakSeparator=Doc.line,
                     ~get_attribute_text=no_attribute,
+                    ~isBlock=true,
                   );
                 } else {
                   Doc.nil;
@@ -3221,7 +3317,12 @@ let print_foreign_value_description =
     fixedIdent,
     Doc.text(":"),
     Doc.space,
-    print_type(vd.pval_type, original_source, comments),
+    print_type(
+      vd.pval_type,
+      original_source,
+      comments,
+      ~trailingSeparator=false,
+    ),
     switch (vd.pval_name_alias) {
     | None => Doc.space
     | Some(alias) =>
@@ -3259,7 +3360,12 @@ let print_primitive_value_description =
   Doc.concat([
     fixedIdent,
     Doc.text(" : "),
-    print_type(vd.pval_type, original_source, comments),
+    print_type(
+      vd.pval_type,
+      original_source,
+      comments,
+      ~trailingSeparator=false,
+    ),
     Doc.space,
     Doc.equal,
     Doc.space,
@@ -3355,7 +3461,13 @@ let toplevel_print =
                 Doc.join(
                   Doc.comma,
                   List.map(
-                    t => print_type(t, original_source, comments),
+                    t =>
+                      print_type(
+                        t,
+                        original_source,
+                        comments,
+                        ~trailingSeparator=false,
+                      ),
                     parsed_types,
                   ),
                 ),
@@ -3447,10 +3559,12 @@ let reformat_ast =
       ~separator=Doc.nil,
       ~trailingSeparator=true,
       ~breakSeparator=Doc.hardLine,
-      ~get_attribute_text=stmt => {
-        let attributes = stmt.ptop_attributes;
-        print_attributes(attributes);
-      },
+      ~get_attribute_text=
+        stmt => {
+          let attributes = stmt.ptop_attributes;
+          print_attributes(attributes);
+        },
+      ~isBlock=true,
     );
 
   let final_doc = Doc.concat([top_level_stmts, Doc.hardLine]);
