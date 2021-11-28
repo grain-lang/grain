@@ -270,15 +270,30 @@ let rec get_comments_on_line_end = (line: int, char: int, comments) =>
     let (_, cmtline, cmtchar, _) =
       Locations.get_raw_pos_info(c_loc.loc_start);
 
-    // print_endline("comment is on line " ++ string_of_int(cmtline));
-    // print_endline("comment is on char " ++ string_of_int(cmtchar));
-
     if (cmtline > line) {
       []; // can stop early as there will be no more
     } else if (cmtline == line && cmtchar >= char) {
       [c] @ get_comments_on_line_end(line, char, List.tl(comments));
     } else {
       get_comments_on_line_end(line, char, List.tl(comments));
+    };
+  };
+
+let rec get_comments_on_line_start = (line: int, char: int, comments) =>
+  if (List.length(comments) == 0) {
+    [];
+  } else {
+    let c: Grain_parsing.Parsetree.comment = List.hd(comments);
+    let c_loc: Grain_parsing.Location.t = Locations.get_comment_loc(c);
+    let (_, cmtline, cmtchar, _) =
+      Locations.get_raw_pos_info(c_loc.loc_start);
+
+    if (cmtline > line) {
+      []; // can stop early as there will be no more
+    } else if (cmtline == line && cmtchar <= char) {
+      [c] @ get_comments_on_line_start(line, char, List.tl(comments));
+    } else {
+      get_comments_on_line_start(line, char, List.tl(comments));
     };
   };
 

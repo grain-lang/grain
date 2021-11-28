@@ -120,18 +120,11 @@ let line_separator =
         Locations.get_raw_pos_info(
           Locations.get_comment_loc(lastComment).loc_end,
         );
-      // print_endline(
-      //   "we have a comment above on line " ++ string_of_int(line),
-      // );
+
       line;
     } else {
       lineAbove;
     };
-
-  // print_endline("line sep this line is " ++ string_of_int(thisLine));
-  // print_endline("line sep line above is " ++ string_of_int(lineAbove));
-
-  // print_endline("line actual line above " ++ string_of_int(actualLineAbove));
 
   if (thisLine - actualLineAbove > 1) {
     Doc.hardLine;
@@ -249,8 +242,11 @@ let rec block_item_iterator =
 
     let this_item_loc = get_loc(item);
 
-    let (_, thisLine, _, _) =
+    let (_, thisLine, thisChar, _) =
       Locations.get_raw_pos_info(this_item_loc.loc_start);
+
+    let line_leading_comments =
+      Comment_utils.get_comments_on_line_start(thisLine, thisChar, comments);
 
     let leading_comments =
       Comment_utils.get_comments_between_lines(lineAbove, thisLine, comments);
@@ -281,8 +277,6 @@ let rec block_item_iterator =
     let comment_line_sep =
       comments_line_separator(lineAbove, leading_comments);
 
-    //print_endline("****** makings docs") ;
-
     let leading_comment_docs_i =
       Comment_utils.line_of_comments_to_doc_no_break(
         ~offset=false,
@@ -300,9 +294,6 @@ let rec block_item_iterator =
           Doc.hardLine,
         ]);
       };
-
-    // print_endline("leading_comment_docs")
-    // Doc.debug(leading_comment_docs);
 
     // look for disable
 
@@ -367,10 +358,6 @@ let rec block_item_iterator =
       };
     } else {
       // Normal formatting
-      print_endline("iterator comments");
-      let _ = Comment_utils.print_comments(comments);
-
-      Debug.print_loc("iterator",get_loc(item));
 
       let line_trailing_comments =
         Comment_utils.get_comments_to_end_of_line(
@@ -383,13 +370,12 @@ let rec block_item_iterator =
           line_trailing_comments,
         );
 
-        print_endline("line_end");
-        Doc.debug(line_end)
-
-      // print_endline("line_end")
-      //   Doc.debug(line_end);
-
-      //  Doc.debug(line_end);
+      let leading_comment_space =
+        if (List.length(line_leading_comments) > 0) {
+          Doc.space;
+        } else {
+          Doc.nil;
+        };
 
       let itemDoc =
         Doc.concat([
@@ -397,6 +383,11 @@ let rec block_item_iterator =
           leading_comment_docs,
           line_sep,
           attributeText,
+          Comment_utils.line_of_comments_to_doc_no_break(
+            ~offset=false,
+            line_leading_comments,
+          ),
+          leading_comment_space,
           print_item(item),
         ]);
 
@@ -2759,9 +2750,6 @@ let rec print_data =
   let nameloc = data.pdata_name;
   switch (data.pdata_kind) {
   | PDataAbstract =>
-
-    
-
     let get_loc = (t: Grain_parsing__Parsetree.parsed_type) => t.ptyp_loc;
     let print_item = (t: Grain_parsing__Parsetree.parsed_type) => {
       let localComments = comments;
@@ -2832,7 +2820,7 @@ let rec print_data =
               Doc.space,
               Doc.indent(
                 Doc.concat([
-                  Doc.line,
+                  Doc.softLine,
                   print_type(
                     manifest,
                     original_source,
