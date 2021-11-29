@@ -8,6 +8,8 @@
  * Create new `Option` values using `Some()` and `None`.
  * 
  * @example let has_value = Some(1234), no_value = None
+ * 
+ * @since v0.2.0
  */
 
 /**

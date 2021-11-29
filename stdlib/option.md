@@ -10,6 +10,11 @@ The Option type is an enum that represents the possibility of something being pr
 
 Create new `Option` values using `Some()` and `None`.
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 import Option from "option"
 ```
