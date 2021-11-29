@@ -120,7 +120,7 @@ let line_separator =
         Locations.get_raw_pos_info(
           Locations.get_comment_loc(lastComment).loc_end,
         );
-     // if (line > line_above) { line_above} else
+      // if (line > line_above) { line_above} else
       line;
     } else {
       line_above;
@@ -3585,7 +3585,7 @@ let reformat_ast =
   };
 
   let print_item = (stmt: Grain_parsing.Parsetree.toplevel_stmt) => {
-   // Debug.print_loc("top level", stmt.ptop_loc);
+    // Debug.print_loc("top level", stmt.ptop_loc);
     toplevel_print(
       stmt,
       ~original_source,
@@ -3621,3 +3621,7 @@ let reformat_ast =
 //   // Use this to check the generated output
 //   //Doc.debug(final_doc);
 //   //
+
+if (true) {
+  1 // comment
+} else {2};
