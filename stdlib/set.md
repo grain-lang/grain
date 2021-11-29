@@ -42,7 +42,7 @@ No other changes yet.
 makeSized : Number -> Set<a>
 ```
 
-Creates a new empty Set with an initial storage of the given length. As items are added to the Set, the length may grow or shrink. Generally, you won't need to care about the length of your set and can use `Set.make()` instead.
+Creates a new empty set with an initial storage of the given length. As values are added or removed, the length may grow or shrink. Generally, you won't need to care about the length of your set and can use `Set.make()` instead.
 
 Parameters:
 
@@ -92,7 +92,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`key`|`a`|The value to add to the set|
+|`key`|`a`|The value to add|
 |`set`|`Set<a>`|The set to update|
 
 ### Set.**contains**
@@ -112,8 +112,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`key`|`a`|The key to search for|
-|`set`|`Set<a>`|The set to be searched|
+|`key`|`a`|The value to search for|
+|`set`|`Set<a>`|The set to search|
 
 Returns:
 
@@ -138,7 +138,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`key`|`a`|The value to remove from the set|
+|`key`|`a`|The value to remove|
 |`set`|`Set<a>`|The set to update|
 
 ### Set.**size**
@@ -164,7 +164,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Number`|The number of items in the set|
+|`Number`|The number of elements in the set|
 
 ### Set.**isEmpty**
 
@@ -177,7 +177,7 @@ No other changes yet.
 isEmpty : Set<a> -> Bool
 ```
 
-Determines if the set contains no items.
+Determines if the set contains no elements.
 
 Parameters:
 
@@ -408,7 +408,7 @@ No other changes yet.
 union : (Set<a>, Set<a>) -> Set<a>
 ```
 
-Combines two sets into a single set containing all values from both sets.
+Combines two sets into a single set containing all elements from both sets.
 
 Parameters:
 
@@ -421,7 +421,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Set<a>`|A set containing all items of both sets|
+|`Set<a>`|A set containing all elements of both sets|
 
 ### Set.**diff**
 
@@ -434,7 +434,7 @@ No other changes yet.
 diff : (Set<a>, Set<a>) -> Set<a>
 ```
 
-Combines two sets into a single set containing only the values not shared between both sets.
+Combines two sets into a single set containing only the elements not shared between both sets.
 
 Parameters:
 
@@ -447,7 +447,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Set<a>`|A set containing only unshared values from both sets|
+|`Set<a>`|A set containing only unshared elements from both sets|
 
 ### Set.**intersect**
 
@@ -460,7 +460,7 @@ No other changes yet.
 intersect : (Set<a>, Set<a>) -> Set<a>
 ```
 
-Combines two sets into a single set containing only the values shared between both sets.
+Combines two sets into a single set containing only the elements shared between both sets.
 
 Parameters:
 
@@ -473,7 +473,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Set<a>`|A set containing only shared values from both sets|
+|`Set<a>`|A set containing only shared elements from both sets|
 
 ### Set.**getInternalStats**
 
