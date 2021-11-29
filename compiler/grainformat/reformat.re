@@ -977,6 +977,27 @@ and print_ident = (ident: Identifier.t) => {
   };
 }
 
+
+and debug_ident = (ident: Identifier.t) => {
+  switch (ident) {
+  | IdentName(name) =>
+    if (infixop(name) || prefixop(name)) {
+   //   Doc.concat([Doc.lparen, Doc.text(name), Doc.rparen]);
+      print_endline("(" ++ name ++ ")" );
+    } else {
+     print_endline(name)
+    }
+  | IdentExternal(externalIdent, second) =>
+  debug_ident(externalIdent);
+  print_endline("." ++ second)
+    // Doc.concat([
+    //   print_ident(externalIdent),
+    //   Doc.text("."),
+    //   Doc.text(second),
+    // ])
+  };
+}
+
 and print_record =
     (
       ~fields:
@@ -1163,7 +1184,16 @@ and print_type =
     ])
 
   | PTyConstr(locidentifier, parsedtypes) =>
+    
     let ident = locidentifier.txt;
+
+    print_endline("------")
+    print_endline("PTyConstr:")
+    debug_ident(ident);
+  //  Debug.print_loc("PTyConstr", p.ptyp_loc)
+  Debug.print_loc("PTyConstr", locidentifier.loc)
+    print_endline("")
+   
     if (List.length(parsedtypes) == 0) {
       print_ident(ident);
     } else {
@@ -1171,6 +1201,8 @@ and print_type =
         t.ptyp_loc;
       };
       let print_item = (t: Grain_parsing__Parsetree.parsed_type) => {
+        Debug.print_loc("typ constr item", get_loc(t));
+
         let localComments =
           Comment_utils.get_comments_inside_location(
             ~location=get_loc(t),
@@ -1197,6 +1229,7 @@ and print_type =
           ~get_attribute_text=no_attribute,
           ~isBlock=true,
         );
+         print_endline("------")
       Doc.group(
         Doc.concat([
           print_ident(ident),
@@ -1207,6 +1240,7 @@ and print_type =
         ]),
       );
     };
+    
   | PTyPoly(locationstrings, parsed_type) =>
     let originalCode = get_original_code(p.ptyp_loc, original_source);
     Doc.text(originalCode);
@@ -2628,6 +2662,7 @@ let rec print_data =
   | PDataAbstract =>
     let get_loc = (t: Grain_parsing__Parsetree.parsed_type) => t.ptyp_loc;
     let print_item = (t: Grain_parsing__Parsetree.parsed_type) => {
+      print_endline("debug: print_item");
       let localComments =
         Comment_utils.get_comments_inside_location(
           ~location=get_loc(t),
@@ -2673,10 +2708,7 @@ let rec print_data =
       } else {
         [
           Doc.text("<"),
-          Comment_utils.line_of_comments_to_doc_no_break(
-            ~offset=true,
-            after_brace_comments,
-          ),
+          Comment_utils.comments_to_docs(~offset=true, after_brace_comments),
           Doc.indent(
             Doc.group(
               Doc.concat([
@@ -2826,6 +2858,7 @@ let rec print_data =
           let get_loc = (t: Grain_parsing.Parsetree.parsed_type) =>
             t.ptyp_loc;
           let print_item = (t: Grain_parsing.Parsetree.parsed_type) => {
+            Debug.print_loc("type item", get_loc(t))
             let localComments =
               Comment_utils.get_comments_inside_location(
                 ~location=get_loc(t),
@@ -2842,10 +2875,10 @@ let rec print_data =
 
           let (_, openLine, _, _) =
             Locations.get_raw_pos_info(get_loc(first).loc_end);
-          Doc.concat([
-            Doc.text("<"),
-            Doc.indent(
-              Doc.group(
+          Doc.group(
+            Doc.concat([
+              Doc.text("<"),
+              Doc.indent(
                 Doc.concat([
                   Doc.softLine,
                   block_item_iterator(
@@ -2864,11 +2897,11 @@ let rec print_data =
                   ),
                 ]),
               ),
-            ),
-            Doc.softLine,
-            Doc.text(">"),
-            Doc.space,
-          ]);
+              Doc.softLine,
+              Doc.text(">"),
+              Doc.space,
+            ]),
+          );
         } else {
           Doc.space;
         },
@@ -2894,6 +2927,8 @@ let rec print_data =
     };
 
     let print_item = (lbl: Grain_parsing.Parsetree.label_declaration) => {
+
+      Debug.print_loc("decl item", get_loc(lbl));
       let localComments =
         Comment_utils.get_comments_inside_location(
           ~location=get_loc(lbl),
@@ -2945,24 +2980,72 @@ let rec print_data =
         Doc.space,
         Doc.text(nameloc.txt),
         if (List.length(data.pdata_params) > 0) {
-          Doc.concat([
-            Doc.text("<"),
-            Doc.join(
-              Doc.concat([Doc.text(","), Doc.space]),
-              List.map(
-                t =>
-                  print_type(
-                    t,
-                    original_source,
+          //  Doc.concat([
+          //   Doc.text("<"),
+          //   Doc.join(
+          //     Doc.concat([Doc.text(","), Doc.space]),
+          //     List.map(
+          //       t =>
+          //         print_type(
+          //           t,
+          //           original_source,
+          //           comments,
+          //           ~trailing_separator=true,
+          //         ),
+          //       data.pdata_params,
+          //     ),
+          //   ),
+          //   Doc.text(">"),
+          //   Doc.space,
+          // ]);
+
+          let get_loc = (t: Grain_parsing.Parsetree.parsed_type) =>
+            t.ptyp_loc;
+          let print_item = (t: Grain_parsing.Parsetree.parsed_type) => {
+            let localComments =
+              Comment_utils.get_comments_inside_location(
+                ~location=get_loc(t),
+                comments,
+              );
+            print_type(
+              t,
+              original_source,
+              localComments,
+              ~trailing_separator=false,
+            );
+          };
+
+          let first = List.hd(data.pdata_params);
+
+          let (_, openLine, _, _) =
+            Locations.get_raw_pos_info(get_loc(first).loc_end);
+          Doc.group(
+            Doc.concat([
+              Doc.text("<"),
+              Doc.indent(
+                Doc.concat([
+                  Doc.softLine,
+                  block_item_iterator(
+                    openLine,
+                    data.pdata_params,
+                    None,
                     comments,
-                    ~trailing_separator=true,
+                    original_source,
+                    ~get_loc,
+                    ~print_item,
+                    ~separator=Doc.comma,
+                    ~trailing_separator=false,
+                    ~break_separator=Doc.line,
+                    ~get_attribute_text=no_attribute,
+                    ~isBlock=true,
                   ),
-                data.pdata_params,
+                ]),
               ),
-            ),
-            Doc.text(">"),
-            Doc.space,
-          ]);
+              Doc.softLine,
+              Doc.text(">"),
+              Doc.space,
+            ]),
+          );
         } else {
           Doc.space;
         },
