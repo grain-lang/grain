@@ -2,7 +2,7 @@
  * @module Regex: Regular Expressions.
  * @example import Regex from "regex"
  *
- * @since 0.4.3
+ * @since next
  */
 
 /*
@@ -178,7 +178,8 @@ REGEX TYPE DEFINITIONS
 type RERange = List<(Number, Number)>
 type CharRangeElt = Number
 type CharRange = List<(CharRangeElt, CharRangeElt)>
-
+type IsMatch = Bool
+type CaseSensitive = Bool
 /*
 
 =================================
@@ -391,8 +392,8 @@ enum ParsedRegularExpression {
   RERepeat(ParsedRegularExpression, Number, Option<Number>, Bool), // regex, min, max (None for infinity), true=non-greedy
   REMaybe(ParsedRegularExpression, Bool), // regex, true=non-greedy
   REConditional(ParsedRegularExpression, ParsedRegularExpression, Option<ParsedRegularExpression>, Number, Number, Bool), // test, if-true, if-false, n-start, num-n, needs-backtrack
-  RELookahead(ParsedRegularExpression, Bool, Number, Number), // regex, is-match, n-start, num-n
-  RELookbehind(ParsedRegularExpression, Bool, Box<Number>, Box<Number>, Number, Number), // regex, is-match, lb-min, lb-max, n-start, num-n (lb-xx values patched in later)
+  RELookahead(ParsedRegularExpression, IsMatch, Number, Number), // regex, is-match, n-start, num-n
+  RELookbehind(ParsedRegularExpression, CaseSensitive, Box<Number>, Box<Number>, Number, Number), // regex, is-match, lb-min, lb-max, n-start, num-n (lb-xx values patched in later)
   RECut(ParsedRegularExpression, Number, Number, Bool), // regex, n-start, num-n, needs-backtrack
   REReference(Number, Bool), // n, case-sensitive
   RERange(RERange),
@@ -2605,7 +2606,7 @@ record RegularExpression {
  *
  * @example Regex.make("(foo|bar)[0-9]+")
  *
- * @since 0.4.3
+ * @since next
  */
 export let make = (regexString: String) => {
   let buf = makeRegExBuf(regexString)
@@ -2729,7 +2730,7 @@ let searchMatch = (rx: RegularExpression, buf: MatchBuf, pos, startPos, endPos, 
  *
  * Returns the positions of all groups matched in this match object.
  *
- * @since 0.4.3
+ * @since next
  */
 export record MatchResult {
   /**
@@ -2847,7 +2848,7 @@ let fastDriveRegexMatch = (rx, string, startOffset, endOffset) => {
  *
  * @example assert Regex.isMatch(Result.unwrap(Regex.make("ca+[at]")), "caaat") == true
  *
- * @since 0.4.3
+ * @since next
  */
 export let isMatch = (rx: RegularExpression, string: String) => {
   fastDriveRegexIsMatch(rx, string, 0, String.length(string))
@@ -2864,7 +2865,7 @@ export let isMatch = (rx: RegularExpression, string: String) => {
  * @example assert Regex.isMatchRange(Result.unwrap(Regex.make("ca+[at]")), "caaat", 0, 5) == true
  * @example assert Regex.isMatchRange(Result.unwrap(Regex.make("ca+[at]")), "caaat", 1, 5) == false
  *
- * @since 0.4.3
+ * @since next
  */
 export let isMatchRange = (rx: RegularExpression, string: String, start: Number, end: Number) => {
   fastDriveRegexIsMatch(rx, string, start, end)
@@ -2878,7 +2879,7 @@ export let isMatchRange = (rx: RegularExpression, string: String, start: Number,
  *
  * @example Regex.find(Result.unwrap(Regex.make("ca+[at]")), "caaat")
  *
- * @since 0.4.3
+ * @since next
  */
 export let find = (rx: RegularExpression, string: String) => {
   fastDriveRegexMatch(rx, string, 0, String.length(string))
@@ -2895,7 +2896,7 @@ export let find = (rx: RegularExpression, string: String) => {
  *
  * @example Regex.findRange(Result.unwrap(Regex.make("ca+[at]")), "caaat", 0, 5)
  *
- * @since 0.4.3
+ * @since next
  */
 export let findRange = (rx: RegularExpression, string: String, start: Number, end: Number) => {
   fastDriveRegexMatch(rx, string, start, end)
@@ -2922,7 +2923,7 @@ export let findAll = (rx: RegularExpression, string: String) => {
  *
  * @example Regex.findAllRange(Result.unwrap(Regex.make("ca+[at]")), "caaat", 0, 5)
  *
- * @since 0.4.3
+ * @since next
  */
 export let findAllRange = (rx: RegularExpression, string: String, start: Number, end: Number) => {
   fastDriveRegexMatchAll(rx, string, start, end)
@@ -3039,7 +3040,7 @@ let regexReplaceHelp = (rx: RegularExpression, toSearch: String, replacement: St
  *
  * @example assert Regex.replace(Result.unwrap(Regex.make("o")), "foo", "a") == "fao"
  *
- * @since 0.4.3
+ * @since next
  */
 export let replace = (rx: RegularExpression, toSearch: String, replacement: String) => {
   regexReplaceHelp(rx, toSearch, replacement, false)
@@ -3056,7 +3057,7 @@ export let replace = (rx: RegularExpression, toSearch: String, replacement: Stri
  *
  * @example assert Regex.replaceAll(Result.unwrap(Regex.make("o")), "skoot", "r") == "skrrt"
  *
- * @since 0.4.3
+ * @since next
  */
 export let replaceAll = (rx: RegularExpression, toSearch: String, replacement: String) => {
   regexReplaceHelp(rx, toSearch, replacement, true)
