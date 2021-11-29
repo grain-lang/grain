@@ -5,7 +5,7 @@ x.foo + x.bar
 
 record Rec1 { foo2: Number, bar2: Number }
 record Rec2 { baz2: Rec1 }
-let x = { baz2: { foo2: 4, bar2: 9 }, }
+let x = { baz2: { foo2: 4, bar2: 9 }, } // trailing comma as a single item
 x.baz2.bar2
 
 record Rec3 { foo3: Number, bar3: String, baz3: Bool }

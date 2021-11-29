@@ -417,7 +417,12 @@ let rec block_item_iterator =
               block_trailing_comments,
             );
 
-          let trail_sep = if (trailing_separator) {separator} else {Doc.nil};
+          let trail_sep =
+            if (trailing_separator) {
+              Doc.ifBreaks(separator, Doc.nil);
+            } else {
+              Doc.nil;
+            };
 
           Doc.concat([
             item_doc,
@@ -427,7 +432,12 @@ let rec block_item_iterator =
             block_trailing_comment_docs,
           ]);
         } else {
-          let trail_sep = if (trailing_separator) {separator} else {Doc.nil};
+          let trail_sep =
+            if (trailing_separator) {
+              Doc.ifBreaks(separator, Doc.nil);
+            } else {
+              Doc.nil;
+            };
 
           Doc.concat([item_doc, trail_sep, line_end]);
         };
@@ -1634,31 +1644,64 @@ and print_expression =
         comments,
       )
     | PExpTuple(expressions) =>
+      let get_loc = (e: Grain_parsing__Parsetree.expression) => {
+        e.pexp_loc;
+      };
+      let print_item = (e: Grain_parsing__Parsetree.expression) => {
+        print_expression(
+          ~parentIsArrow=false,
+          ~original_source,
+          ~comments,
+          e,
+        );
+      };
+      let (_, bracket_line, _, _) =
+        Locations.get_raw_pos_info(expr.pexp_loc.loc_end);
       Doc.concat([
         Doc.lparen,
-        Doc.join(
-          Doc.concat([Doc.comma, Doc.space]),
-          List.map(
-            e =>
-              print_expression(
-                ~parentIsArrow=false,
-                ~original_source,
-                ~comments,
-                e,
-              ),
-            expressions,
-          ),
+        Doc.indent(
+          Doc.concat([
+            Doc.softLine,
+            block_item_iterator(
+              bracket_line,
+              expressions,
+              None,
+              comments,
+              original_source,
+              ~get_loc,
+              ~print_item,
+              ~separator=Doc.comma,
+              ~trailing_separator=true,
+              ~break_separator=Doc.line,
+              ~get_attribute_text=no_attribute,
+              ~isBlock=true,
+            ),
+          ]),
         ),
         if (List.length(expressions) == 1) {
           // single arg tuple
-          Doc.comma;
+          Doc.ifBreaks(Doc.nil,Doc.comma);  // looks backwards but we already added one if the line breaks
         } else {
           Doc.nil;
         },
+        Doc.softLine,
         Doc.rparen,
-      ])
+      ]);
 
     | PExpArray(expressions) =>
+      let get_loc = (e: Grain_parsing__Parsetree.expression) => {
+        e.pexp_loc;
+      };
+      let print_item = (e: Grain_parsing__Parsetree.expression) => {
+        print_expression(
+          ~parentIsArrow=false,
+          ~original_source,
+          ~comments,
+          e,
+        );
+      };
+      let (_, bracket_line, _, _) =
+        Locations.get_raw_pos_info(expr.pexp_loc.loc_end);
       Doc.group(
         if (List.length(expressions) == 0) {
           Doc.text("[>]");
@@ -1666,24 +1709,31 @@ and print_expression =
           Doc.concat([
             Doc.lbracket,
             Doc.text("> "),
-            Doc.join(
-              Doc.concat([Doc.comma, Doc.space]),
-              List.map(
-                e =>
-                  print_expression(
-                    ~parentIsArrow=false,
-                    ~original_source,
-                    ~comments,
-                    e,
-                  ),
-                expressions,
-              ),
+           
+            Doc.indent(
+              Doc.concat([
+                Doc.softLine,
+                block_item_iterator(
+                  bracket_line,
+                  expressions,
+                  None,
+                  comments,
+                  original_source,
+                  ~get_loc,
+                  ~print_item,
+                  ~separator=Doc.comma,
+                  ~trailing_separator=true,
+                  ~break_separator=Doc.line,
+                  ~get_attribute_text=no_attribute,
+                  ~isBlock=true,
+                ),
+              ]),
             ),
-            Doc.space,
+            Doc.softLine,
             Doc.rbracket,
           ]);
         },
-      )
+      );
     | PExpArrayGet(expression1, expression2) =>
       Doc.concat([
         print_expression(
