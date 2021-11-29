@@ -329,3 +329,57 @@ let join = (separator: String, items: List<String>) => {
     Some(s) => s,
   }
 }
+
+/**
+ * Reverses the first list and appends the second list to the end.
+ * 
+ * @param list1: The list to reverse
+ * @param list2: The list to append
+ * @since v0.4.5
+ */
+let rec revAppend = (list1, list2) => { 
+  match (list1) {
+    [hd, ...tl] => revAppend(tl, [hd, ...list2]),
+    [] => list2
+  }
+}
+
+/**
+ * Sorts the given list based on a given comparator function. The resulting list is sorted in increasing order.
+ * 
+ * Ordering is calculated using a comparator function which takes two list elements and must return 0 if both are equal, a positive number if the first is greater, and a negative number if the first is smaller.
+ * @param comp: The comparator function used to indicate sort order
+ * @param list: The list to be sorted
+ * @since v0.4.5
+ */
+let sort = (comp, list) => { 
+  let rec merge = (left, right, list) => {
+    match((left, right)){
+      (_, []) => {
+        revAppend(list, left)
+      },
+      ([], _) => {
+        revAppend(list, right)
+      },
+      ([lhd, ...ltl], [rhd, ...rtl]) => {
+        if(comp(lhd, rhd) < 0){
+          merge(ltl, right, append([lhd],list))
+        }else{
+          merge(left, rtl, append([rhd], list))
+        }
+      }
+    }
+  }
+
+  let rec mergesort = (list) => {
+    if(length(list) <= 1){
+      list
+    }else{
+      let middle = length(list) / 2
+      let (left, right) = part(middle, list)
+      merge(mergesort(left), mergesort(right), [])
+    }
+  }
+
+  mergesort(list)
+}
