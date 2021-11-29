@@ -9,7 +9,7 @@
     "node": ">=14"
   },
   "devDependencies": {
-    "esy": "0.6.11"
+    "esy": "0.6.12"
   },
   "scripts": {
     "link": "yarn link",
