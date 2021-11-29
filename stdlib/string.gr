@@ -382,6 +382,9 @@ export let rec implode = (arr: Array<Char>) => {
   ret
 }
 
+// Helper to get the length in constant time
+primitive arrayLength : Array<a> -> Number = "@array.length"
+
 /**
  * Create a string that is the given string reversed.
  *
@@ -393,9 +396,9 @@ export let rec implode = (arr: Array<Char>) => {
  * @since v0.4.5
  */
 export let reverse = (string) => {
-  let len = length(string)
-  let halfLen = len / 2
   let mut arr = explode(string)
+  let len = arrayLength(arr)
+  let halfLen = len / 2
   for (let mut i = 0; i < halfLen; i += 1) {
     let lastIdx = len - i - 1
     let last = arr[lastIdx]
