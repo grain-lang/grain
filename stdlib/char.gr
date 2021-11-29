@@ -2,6 +2,8 @@
  * @module Char: Utilities for working with chars.
  * A Grain `Char` represents a single [Unicode scalar value](https://www.unicode.org/glossary/#unicode_scalar_value)
  * @example import Char from "char"
+ * 
+ * @since 0.3.0
  */
 
 import WasmI32 from "runtime/unsafe/wasmi32"
@@ -13,10 +15,14 @@ exception MalformedUtf8
 
 /**
  * The minimum valid Unicode charCode.
+ * 
+ * @since 0.3.0
  */
 export let min = 0x0000
 /**
  * The maximum valid Unicode charCode.
+ * 
+ * @since 0.3.0
  */
 export let max = 0x10FFFF
 
@@ -25,6 +31,8 @@ export let max = 0x10FFFF
  * 
  * @param charCode: The value to check
  * @returns `true` if the number refers to a valid Unicode character, `false` otherwise
+ * 
+ * @since 0.3.0
  */
 export let isValid = (charCode) => {
   charCode >= min && (charCode <= 0xD7FF || charCode >= 0xE000) && charCode <= max
@@ -35,6 +43,8 @@ export let isValid = (charCode) => {
  * 
  * @param character: The character
  * @returns The integer with the value of the Unicode code point for the given character
+ * 
+ * @since 0.3.0
  */
 @disableGC
 export let rec code = (character: Char) => {
@@ -108,6 +118,8 @@ export let rec code = (character: Char) => {
  * 
  * @param codePoint: The Unicode code point
  * @returns The character for the given code point if valid
+ * 
+ * @since 0.3.0
  */
 @disableGC
 export let rec fromCode = (codePoint: Number) => {
@@ -172,6 +184,8 @@ export let rec fromCode = (codePoint: Number) => {
  * 
  * @param char: The input character
  * @returns The next valid Unicode character by code point
+ * 
+ * @since 0.3.0
  */
 export let succ = (char) => {
   let codePoint = code(char)
@@ -189,6 +203,8 @@ export let succ = (char) => {
  * 
  * @param char: The input character
  * @returns The previous valid Unicode character by code point
+ * 
+ * @since 0.3.0
  */
 export let pred = (char) => {
   let codePoint = code(char)
@@ -206,6 +222,8 @@ export let pred = (char) => {
  * 
  * @param char: The character to convert
  * @returns A string containing the given character
+ * 
+ * @since 0.3.0
  */
 @disableGC
 export let rec toString = (char: Char) => {

@@ -6,11 +6,21 @@ Utilities for working with chars.
 
 A Grain `Char` represents a single [Unicode scalar value](https://www.unicode.org/glossary/#unicode_scalar_value)
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 import Char from "char"
 ```
 
 ### Char.**min**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 min : Number
@@ -20,6 +30,11 @@ The minimum valid Unicode charCode.
 
 ### Char.**max**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 max : Number
 ```
@@ -27,6 +42,11 @@ max : Number
 The maximum valid Unicode charCode.
 
 ### Char.**isValid**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 isValid : Number -> Bool
@@ -48,6 +68,11 @@ Returns:
 
 ### Char.**code**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 code : Char -> Number
 ```
@@ -67,6 +92,11 @@ Returns:
 |`Number`|The integer with the value of the Unicode code point for the given character|
 
 ### Char.**fromCode**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 fromCode : Number -> Char
@@ -88,6 +118,11 @@ Returns:
 
 ### Char.**succ**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 succ : Char -> Char
 ```
@@ -108,6 +143,11 @@ Returns:
 
 ### Char.**pred**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 pred : Char -> Char
 ```
@@ -127,6 +167,11 @@ Returns:
 |`Char`|The previous valid Unicode character by code point|
 
 ### Char.**toString**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 toString : Char -> String
