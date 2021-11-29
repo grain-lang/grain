@@ -441,7 +441,14 @@ let rec block_item_iterator =
           item_doc,
           separator,
           line_end,
-          break_separator,
+          if (break_separator == Doc.hardLine) {
+            Doc.hardLine;
+          } else if (Comment_utils.hard_line_needed(line_trailing_comments)
+                     == Doc.hardLine) {
+            Doc.hardLine;
+          } else {
+            break_separator;
+          },
           block_item_iterator(
             bracket_line,
             List.tl(items),
@@ -977,24 +984,17 @@ and print_ident = (ident: Identifier.t) => {
   };
 }
 
-
 and debug_ident = (ident: Identifier.t) => {
   switch (ident) {
   | IdentName(name) =>
     if (infixop(name) || prefixop(name)) {
-   //   Doc.concat([Doc.lparen, Doc.text(name), Doc.rparen]);
-      print_endline("(" ++ name ++ ")" );
+      print_endline("(" ++ name ++ ")");
     } else {
-     print_endline(name)
+      print_endline(name);
     }
   | IdentExternal(externalIdent, second) =>
-  debug_ident(externalIdent);
-  print_endline("." ++ second)
-    // Doc.concat([
-    //   print_ident(externalIdent),
-    //   Doc.text("."),
-    //   Doc.text(second),
-    // ])
+    debug_ident(externalIdent);
+    print_endline("." ++ second);
   };
 }
 
@@ -1184,16 +1184,8 @@ and print_type =
     ])
 
   | PTyConstr(locidentifier, parsedtypes) =>
-    
     let ident = locidentifier.txt;
 
-    print_endline("------")
-    print_endline("PTyConstr:")
-    debug_ident(ident);
-  //  Debug.print_loc("PTyConstr", p.ptyp_loc)
-  Debug.print_loc("PTyConstr", locidentifier.loc)
-    print_endline("")
-   
     if (List.length(parsedtypes) == 0) {
       print_ident(ident);
     } else {
@@ -1201,8 +1193,6 @@ and print_type =
         t.ptyp_loc;
       };
       let print_item = (t: Grain_parsing__Parsetree.parsed_type) => {
-        Debug.print_loc("typ constr item", get_loc(t));
-
         let localComments =
           Comment_utils.get_comments_inside_location(
             ~location=get_loc(t),
@@ -1229,7 +1219,7 @@ and print_type =
           ~get_attribute_text=no_attribute,
           ~isBlock=true,
         );
-         print_endline("------")
+
       Doc.group(
         Doc.concat([
           print_ident(ident),
@@ -1240,7 +1230,7 @@ and print_type =
         ]),
       );
     };
-    
+
   | PTyPoly(locationstrings, parsed_type) =>
     let originalCode = get_original_code(p.ptyp_loc, original_source);
     Doc.text(originalCode);
@@ -2662,7 +2652,6 @@ let rec print_data =
   | PDataAbstract =>
     let get_loc = (t: Grain_parsing__Parsetree.parsed_type) => t.ptyp_loc;
     let print_item = (t: Grain_parsing__Parsetree.parsed_type) => {
-      print_endline("debug: print_item");
       let localComments =
         Comment_utils.get_comments_inside_location(
           ~location=get_loc(t),
@@ -2858,7 +2847,6 @@ let rec print_data =
           let get_loc = (t: Grain_parsing.Parsetree.parsed_type) =>
             t.ptyp_loc;
           let print_item = (t: Grain_parsing.Parsetree.parsed_type) => {
-            Debug.print_loc("type item", get_loc(t))
             let localComments =
               Comment_utils.get_comments_inside_location(
                 ~location=get_loc(t),
@@ -2927,8 +2915,6 @@ let rec print_data =
     };
 
     let print_item = (lbl: Grain_parsing.Parsetree.label_declaration) => {
-
-      Debug.print_loc("decl item", get_loc(lbl));
       let localComments =
         Comment_utils.get_comments_inside_location(
           ~location=get_loc(lbl),
