@@ -7,6 +7,11 @@ Utilities for working with the Result data type.
 The Result type is an enum that represents the possibility of a success case (with the `Ok` variant),
 or an error case (with the `Err` variant). Use a Result as the return type of a function that may return an error.
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 import Result from "result"
 ```
@@ -25,11 +30,11 @@ Functions for working with the Result data type.
 
 ### Result.**isOk**
 
-
 <details disabled>
 <summary tabindex="-1">Added in <code>0.2.0</code></summary>
 No other changes yet.
 </details>
+
 ```grain
 isOk : Result<a, b> -> Bool
 ```
@@ -49,7 +54,6 @@ Returns:
 |`Bool`|`true` if the Result is the `Ok` variant or `false` otherwise|
 
 ### Result.**isErr**
-
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.2.0</code></summary>
@@ -75,7 +79,6 @@ Returns:
 |`Bool`|`true` if the Result is the `Err` variant or `false` otherwise|
 
 ### Result.**toOption**
-
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.2.0</code></summary>

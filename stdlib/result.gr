@@ -9,6 +9,8 @@
  * 
  * @example let success = Ok((x) => 1 + x) // Creates a successful Result containing (x) => 1 + x
  * @example let failure = Err("Something bad happened") // Creates an unsuccessful Result containing "Something bad happened"
+ * 
+ * @since v0.2.0
  */
 
 /**
