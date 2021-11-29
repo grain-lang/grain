@@ -427,12 +427,7 @@ let rec block_item_iterator =
             block_trailing_comment_docs,
           ]);
         } else {
-          let trail_sep =
-            if (trailing_separator) {
-              Doc.ifBreaks(separator, Doc.nil);
-            } else {
-              Doc.nil;
-            };
+          let trail_sep = if (trailing_separator) {separator} else {Doc.nil};
 
           Doc.concat([item_doc, trail_sep, line_end]);
         };
