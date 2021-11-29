@@ -4,6 +4,11 @@ title: Set
 
 A Set is an unordered collection of unique values. Operations on a Set mutate the internal state, so it never needs to be re-assigned.
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 import Set from "set"
 ```
@@ -28,6 +33,11 @@ record Set<k> {
 
 ### Set.**makeSized**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 makeSized : Number -> Set<a>
 ```
@@ -48,6 +58,11 @@ Returns:
 
 ### Set.**make**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 make : () -> Set<a>
 ```
@@ -61,6 +76,11 @@ Returns:
 |`Set<a>`|An empty Set.|
 
 ### Set.**add**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 add : (a, Set<a>) -> Void
@@ -76,6 +96,11 @@ Parameters:
 |`set`|`Set<a>`|The set to append too|
 
 ### Set.**contains**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 contains : (a, Set<a>) -> Bool
@@ -98,6 +123,11 @@ Returns:
 
 ### Set.**remove**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 remove : (a, Set<a>) -> Void
 ```
@@ -112,6 +142,11 @@ Parameters:
 |`set`|`Set<a>`|The set to remove from|
 
 ### Set.**size**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 size : Set<a> -> Number
@@ -133,6 +168,11 @@ Returns:
 
 ### Set.**isEmpty**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 isEmpty : Set<a> -> Bool
 ```
@@ -153,6 +193,11 @@ Returns:
 
 ### Set.**clear**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 clear : Set<a> -> Void
 ```
@@ -166,6 +211,11 @@ Parameters:
 |`set`|`Set<a>`|The set to clear|
 
 ### Set.**forEach**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 forEach : ((a -> b), Set<a>) -> Void
@@ -181,6 +231,11 @@ Parameters:
 |`set`|`Set<a>`|The set to iterate|
 
 ### Set.**reduce**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 reduce : (((a, b) -> a), a, Set<b>) -> a
@@ -204,6 +259,11 @@ Returns:
 
 ### Set.**filter**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 filter : ((a -> Bool), Set<a>) -> Void
 ```
@@ -219,6 +279,11 @@ Parameters:
 
 ### Set.**reject**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 reject : ((a -> Bool), Set<a>) -> Void
 ```
@@ -233,6 +298,11 @@ Parameters:
 |`set`|`Set<a>`|The set to filter|
 
 ### Set.**toList**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 toList : Set<a> -> List<a>
@@ -254,6 +324,11 @@ Returns:
 
 ### Set.**fromList**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 fromList : List<a> -> Set<a>
 ```
@@ -273,6 +348,11 @@ Returns:
 |`Set<a>`|The generated set|
 
 ### Set.**toArray**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 toArray : Set<a> -> Array<a>
@@ -294,6 +374,11 @@ Returns:
 
 ### Set.**fromArray**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 fromArray : Array<a> -> Set<a>
 ```
@@ -313,6 +398,11 @@ Returns:
 |`Set<a>`|The generated set|
 
 ### Set.**union**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 union : (Set<a>, Set<a>) -> Set<a>
@@ -335,6 +425,11 @@ Returns:
 
 ### Set.**diff**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 diff : (Set<a>, Set<a>) -> Set<a>
 ```
@@ -356,6 +451,11 @@ Returns:
 
 ### Set.**intersect**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 intersect : (Set<a>, Set<a>) -> Set<a>
 ```
@@ -376,6 +476,11 @@ Returns:
 |`Set<a>`|A set containing the values that are in both sets|
 
 ### Set.**getInternalStats**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 getInternalStats : Set<a> -> (Number, Number)
