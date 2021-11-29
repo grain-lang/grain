@@ -390,20 +390,18 @@ export let rec implode = (arr: Array<Char>) => {
  *
  * @example String.reverse("olleH") == "Hello"
  *
- * @since v0.5.0
+ * @since v0.4.5
  */
 export let reverse = (string) => {
-  let len = wasmSafeLength(string)
+  let len = length(string)
   let halfLen = len / 2
   let mut arr = explode(string)
-  let mut i = 0
-  while (i < halfLen) {
+  for (let mut i = 0; i < halfLen; i += 1) {
     let lastIdx = len - i - 1
     let last = arr[lastIdx]
     let first = arr[i]
     arr[i] = last
     arr[lastIdx] = first
-    i = i + 1
   }
   implode(arr)
 }
