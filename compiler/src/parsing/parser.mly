@@ -221,12 +221,9 @@ non_stmt_expr:
   | binop_expr { $1 }
   | annotated_expr { $1 }
 
-%inline opt_annotation:
-  | %prec COLON { None }
-  | colon typ { Some $2 }
-
 annotated_expr:
-  | non_binop_expr opt_annotation { Option.fold ~none:$1 ~some:(fun ann -> Exp.constraint_ ~loc:(to_loc $loc) $1 ann) $2 }
+  | non_binop_expr %prec COLON { $1 }
+  | non_binop_expr colon typ { Exp.constraint_ ~loc:(to_loc $loc) $1 $3 }
 
 binop_expr:
   | non_stmt_expr infix_op opt_eols non_stmt_expr { Exp.binop ~loc:(to_loc $loc) (mkid_expr $loc($2) [$2]) [$1; $4] }
