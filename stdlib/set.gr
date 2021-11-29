@@ -20,7 +20,7 @@ record Set<k> {
 
 // TODO: This could take an `eq` function to custom comparisons
 /**
- * Creates a new empty Set with an initial storage of the given length. As items are added to the Set, the length may grow or shrink. Generally, you won't need to care about the length of your set and can use `Set.make()` instead.
+ * Creates a new empty set with an initial storage of the given length. As values are added or removed, the length may grow or shrink. Generally, you won't need to care about the length of your set and can use `Set.make()` instead.
  *
  * @param storageLength: The initial storage length of the set
  * @returns An empty set with the given initial storage length
@@ -113,7 +113,7 @@ let rec nodeInBucket = (key, node) => {
 /**
  * Adds a new value to the set. If the value already exists, nothing happens.
  *
- * @param key: The value to add to the set
+ * @param key: The value to add
  * @param set: The set to update
  * 
  * @since 0.3.0
@@ -145,8 +145,8 @@ export let add = (key, set) => {
 /**
  * Determines if the set contains the given value.
  *
- * @param key: The key to search for
- * @param set: The set to be searched
+ * @param key: The value to search for
+ * @param set: The set to search
  * @returns `true` if the set contains the given value or `false` otherwise
  * 
  * @since 0.3.0
@@ -178,7 +178,7 @@ let rec removeInBucket = (key, node) => {
 /**
  * Removes the given value from the set. If the value does not exist, nothing happens.
  *
- * @param key: The value to remove from the set
+ * @param key: The value to remove
  * @param set: The set to update
  * 
  * @since 0.3.0
@@ -207,7 +207,7 @@ export let remove = (key, set) => {
  * Returns the number of values within the set.
  *
  * @param set: The set to inspect
- * @returns The number of items in the set
+ * @returns The number of elements in the set
  * 
  * @since 0.3.0
  */
@@ -216,7 +216,7 @@ export let size = (set) => {
 }
 
 /**
- * Determines if the set contains no items.
+ * Determines if the set contains no elements.
  *
  * @param set: The set to inspect
  * @returns `true` if the given set is empty or `false` otherwise
@@ -383,11 +383,11 @@ export let fromArray = (array) => {
 }
 
 /**
- * Combines two sets into a single set containing all values from both sets.
+ * Combines two sets into a single set containing all elements from both sets.
  *
  * @param set1: The first set to combine
  * @param set2: The second set to combine
- * @returns A set containing all items of both sets
+ * @returns A set containing all elements of both sets
  * 
  * @since 0.3.0
  */
@@ -403,11 +403,11 @@ export let union = (set1, set2) => {
 }
 
 /**
- * Combines two sets into a single set containing only the values not shared between both sets.
+ * Combines two sets into a single set containing only the elements not shared between both sets.
  *
  * @param set1: The first set to combine
  * @param set2: The second set to combine
- * @returns A set containing only unshared values from both sets
+ * @returns A set containing only unshared elements from both sets
  * 
  * @since 0.3.0
  */
@@ -427,11 +427,11 @@ export let diff = (set1, set2) => {
 }
 
 /**
- * Combines two sets into a single set containing only the values shared between both sets.
+ * Combines two sets into a single set containing only the elements shared between both sets.
  *
  * @param set1: The first set to combine
  * @param set2: The second set to combine
- * @returns A set containing only shared values from both sets
+ * @returns A set containing only shared elements from both sets
  * 
  * @since 0.3.0
  */
