@@ -379,7 +379,7 @@ module MatchTreeCompiler = {
       (Comp.imm(~allocation_type=StackAllocated(WasmI32), Imm.trap()), [])
     /* Optimizations to avoid unneeded destructuring: */
     | Explode(_, Leaf(_) as inner)
-    | Explode(_, Guard(_) as inner)
+    | Explode(_, Guard(_, Leaf(_) | Fail, Leaf(_) | Fail) as inner)
     | Explode(_, Fail as inner) =>
       compile_tree_help(inner, values, expr, helpI)
     | Explode(matrix_type, rest) =>
