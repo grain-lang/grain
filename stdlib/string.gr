@@ -382,6 +382,33 @@ export let rec implode = (arr: Array<Char>) => {
   ret
 }
 
+// Helper to get the length in constant time without depending on Array
+primitive arrayLength : Array<a> -> Number = "@array.length"
+
+/**
+ * Create a string that is the given string reversed.
+ *
+ * @param string: The string to reverse
+ * @returns A string whose characters are in the reverse order of the given string
+ *
+ * @example String.reverse("olleH") == "Hello"
+ *
+ * @since v0.4.5
+ */
+export let reverse = (string) => {
+  let mut arr = explode(string)
+  let len = arrayLength(arr)
+  let halfLen = len / 2
+  for (let mut i = 0; i < halfLen; i += 1) {
+    let lastIdx = len - i - 1
+    let last = arr[lastIdx]
+    let first = arr[i]
+    arr[i] = last
+    arr[lastIdx] = first
+  }
+  implode(arr)
+}
+
 /**
  * Split a string by the given separator.
  *

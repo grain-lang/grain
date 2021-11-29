@@ -185,6 +185,16 @@ describe("pattern matching", ({test}) => {
      print(value)",
     "79\n",
   );
+  assertRun(
+    "guarded_match_10",
+    "let value = match ([1, 2, 3]) {
+       [a, b, ...rest] when false => 42,
+       [a, b, c, ...rest] when true => 24,
+       _ => 79
+     }
+     print(value)",
+    "24\n",
+  );
   // Constant patterns
   assertSnapshot(
     "constant_match_1",

@@ -1,5 +1,27 @@
 # Changelog
 
+### [0.4.3](https://www.github.com/grain-lang/grain/compare/@grain/compiler-v0.4.2...@grain/compiler-v0.4.3) (2021-10-27)
+
+
+### Features
+
+* **compiler:** Type aliases ([#995](https://www.github.com/grain-lang/grain/issues/995)) ([bc648ce](https://www.github.com/grain-lang/grain/commit/bc648ce98f1263cdb4163f7fd620de75771848ab))
+* **stdlib:** Add cycle function to Array module ([#993](https://www.github.com/grain-lang/grain/issues/993)) ([c595622](https://www.github.com/grain-lang/grain/commit/c595622b28366655dfd5447270e8f9fc3f988a67))
+
+
+### Bug Fixes
+
+* **compiler:** Ensure main module is included in linker dependency graph ([#996](https://www.github.com/grain-lang/grain/issues/996)) ([d5c6c04](https://www.github.com/grain-lang/grain/commit/d5c6c048d4239ef07fb6ac0a79774d85933cccf9))
+* **compiler:** Ensure TExpApp is always expansive in Grain ([ef0a69f](https://www.github.com/grain-lang/grain/commit/ef0a69fb4418d318b3227e5db7e743a026762274))
+* **compiler:** Handle let-mut value restriction, such that mutable lets are always expansive ([ef0a69f](https://www.github.com/grain-lang/grain/commit/ef0a69fb4418d318b3227e5db7e743a026762274))
+* **compiler:** Properly handle value restriction on function application & mutable vars ([#988](https://www.github.com/grain-lang/grain/issues/988)) ([ef0a69f](https://www.github.com/grain-lang/grain/commit/ef0a69fb4418d318b3227e5db7e743a026762274))
+* **compiler:** Properly unmark type manifest bodies ([bc648ce](https://www.github.com/grain-lang/grain/commit/bc648ce98f1263cdb4163f7fd620de75771848ab))
+* **grainfmt:** Break long parameterized types ([bc648ce](https://www.github.com/grain-lang/grain/commit/bc648ce98f1263cdb4163f7fd620de75771848ab))
+* **grainfmt:** Wrap type annotation for a long line let assignment ([#1005](https://www.github.com/grain-lang/grain/issues/1005)) ([963b505](https://www.github.com/grain-lang/grain/commit/963b5053b57aece6b721bd99dbe143b117ad86d7))
+* **linking:** Close file after reading ([c404fcf](https://www.github.com/grain-lang/grain/commit/c404fcf30bceab2911d3ab0c99f284791c799ca0))
+* Properly open & close files ([#985](https://www.github.com/grain-lang/grain/issues/985)) ([c404fcf](https://www.github.com/grain-lang/grain/commit/c404fcf30bceab2911d3ab0c99f284791c799ca0))
+* **runtime:** Add types to boxed GC functions to avoid weak type errors ([ef0a69f](https://www.github.com/grain-lang/grain/commit/ef0a69fb4418d318b3227e5db7e743a026762274))
+
 ### [0.4.2](https://www.github.com/grain-lang/grain/compare/@grain/compiler-v0.4.1...@grain/compiler-v0.4.2) (2021-10-11)
 
 
