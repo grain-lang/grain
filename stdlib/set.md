@@ -132,7 +132,7 @@ No other changes yet.
 remove : (a, Set<a>) -> Void
 ```
 
-Removes the given value from the set. If the value does not exist, nothing happens.
+Removes the given value from the set. If the value doesn't exist, nothing happens.
 
 Parameters:
 
