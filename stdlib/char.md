@@ -4,6 +4,8 @@ title: Char
 
 Utilities for working with chars.
 
+A Grain `Char` represents a single [Unicode scalar value](https://www.unicode.org/glossary/#unicode_scalar_value)
+
 ```grain
 import Char from "char"
 ```
@@ -14,7 +16,7 @@ import Char from "char"
 min : Number
 ```
 
-The minimum value of Unicode characters.
+The minimum valid Unicode charCode.
 
 ### Char.**max**
 
@@ -22,7 +24,7 @@ The minimum value of Unicode characters.
 max : Number
 ```
 
-The maximum value of Unicode characters.
+The maximum valid Unicode charCode.
 
 ### Char.**isValid**
 
@@ -30,19 +32,19 @@ The maximum value of Unicode characters.
 isValid : Number -> Bool
 ```
 
-Returns true if the given number is a valid Unicode scalar value.
+Determines whether the given character code is a valid Unicode Scalar value.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`n`|`Number`|The value to check|
+|`charCode`|`Number`|The value to check|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|A boolean indicating if the number refers to a valid character|
+|`Bool`|`true` if the number refers to a valid Unicode character, `false` otherwise|
 
 ### Char.**code**
 
@@ -50,19 +52,19 @@ Returns:
 code : Char -> Number
 ```
 
-Returns the Unicode code point for the character.
+Determines the Unicode code point for the given character.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`char`|`Char`|The input character|
+|`character`|`Char`|The character|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Number`|The characterCode|
+|`Number`|The integer with the value of the Unicode code point for the given character|
 
 ### Char.**fromCode**
 
@@ -70,7 +72,7 @@ Returns:
 fromCode : Number -> Char
 ```
 
-Returns the Char for the given code point. Fails if the code point is invalid.
+Determines the character from the given Unicode code point.
 
 Parameters:
 
@@ -82,7 +84,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Char`|The character that the charCode represents|
+|`Char`|The character for the given code point if valid|
 
 ### Char.**succ**
 
@@ -96,7 +98,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`char`|`Char`|the input character|
+|`char`|`Char`|The input character|
 
 Returns:
 
@@ -110,13 +112,27 @@ Returns:
 pred : Char -> Char
 ```
 
+Returns the previous valid Unicode character by code point. Fails if the input character is U+0000.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`char`|`Char`|The input character|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Char`|The previous valid Unicode character by code point|
+
 ### Char.**toString**
 
 ```grain
 toString : Char -> String
 ```
 
-Creates a new string containing the character.
+Converts the given character to a string.
 
 Parameters:
 
@@ -128,5 +144,5 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`String`|The character as a string|
+|`String`|A string containing the given character|
 
