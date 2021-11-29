@@ -27,7 +27,11 @@
 
  */
 let partition_comments:
-  (Grain_parsing.Location.t, option(Grain_parsing.Location.t)) =>
+  (
+    ~range: option(Grain_parsing.Location.t),
+    ~leading_only: bool,
+    Grain_parsing.Location.t
+  ) =>
   (
     list(Grain_parsing.Parsetree.comment),
     list(Grain_parsing.Parsetree.comment),

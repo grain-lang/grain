@@ -1,5 +1,9 @@
-// Standard library for Set functionality
-
+/**
+ * @module Set: A Set is an unordered collection of unique values. Operations on a Set mutate the internal state, so it never needs to be re-assigned.
+ * @example import Set from "set"
+ * 
+ * @since 0.3.0
+ */
 import List from "list"
 import Array from "array"
 import { hash } from "hash"
@@ -15,14 +19,28 @@ record Set<k> {
 }
 
 // TODO: This could take an `eq` function to custom comparisons
-export let makeSized = (size) => {
-  let buckets = Array.make(size, None);
+/**
+ * Creates a new empty set with an initial storage of the given length. As values are added or removed, the length may grow or shrink. Generally, you won't need to care about the length of your set and can use `Set.make()` instead.
+ *
+ * @param storageLength: The initial storage length of the set
+ * @returns An empty set with the given initial storage length
+ * 
+ * @since 0.3.0
+ */
+export let makeSized = (storageLength) => {
+  let buckets = Array.make(storageLength, None);
   {
     size: 0,
     buckets
   }
 }
-
+/**
+ * Creates a new, empty set.
+ *
+ * @returns An empty set
+ * 
+ * @since 0.3.0
+ */
 export let make = () => {
   makeSized(16)
 }
@@ -92,6 +110,14 @@ let rec nodeInBucket = (key, node) => {
   }
 }
 
+/**
+ * Adds a new value to the set. If the value already exists, nothing happens.
+ *
+ * @param key: The value to add
+ * @param set: The set to update
+ * 
+ * @since 0.3.0
+ */
 export let add = (key, set) => {
   let buckets = set.buckets;
   let idx = getBucketIndex(key, buckets)
@@ -116,6 +142,15 @@ export let add = (key, set) => {
   }
 }
 
+/**
+ * Determines if the set contains the given value.
+ *
+ * @param key: The value to search for
+ * @param set: The set to search
+ * @returns `true` if the set contains the given value or `false` otherwise
+ * 
+ * @since 0.3.0
+ */
 export let contains = (key, set) => {
   let buckets = set.buckets;
   let idx = getBucketIndex(key, buckets);
@@ -140,6 +175,14 @@ let rec removeInBucket = (key, node) => {
   }
 }
 
+/**
+ * Removes the given value from the set. If the value doesn't exist, nothing happens.
+ *
+ * @param key: The value to remove
+ * @param set: The set to update
+ * 
+ * @since 0.3.0
+ */
 export let remove = (key, set) => {
   let buckets = set.buckets;
   let idx = getBucketIndex(key, buckets);
@@ -160,14 +203,37 @@ export let remove = (key, set) => {
   }
 }
 
+/**
+ * Returns the number of values within the set.
+ *
+ * @param set: The set to inspect
+ * @returns The number of elements in the set
+ * 
+ * @since 0.3.0
+ */
 export let size = (set) => {
   set.size
 }
 
+/**
+ * Determines if the set contains no elements.
+ *
+ * @param set: The set to inspect
+ * @returns `true` if the given set is empty or `false` otherwise
+ * 
+ * @since 0.3.0
+ */
 export let isEmpty = (set) => {
   size(set) == 0
 }
 
+/**
+ * Resets the set by removing all values.
+ *
+ * @param set: The set to reset
+ * 
+ * @since 0.3.0
+ */
 export let clear = (set) => {
   set.size = 0;
   let buckets = set.buckets;
@@ -186,6 +252,14 @@ let rec forEachBucket = (fn, node) => {
   }
 }
 
+/**
+ * Iterates the set, calling an iterator function on each element.
+ *
+ * @param fn: The iterator function to call with each element
+ * @param set: The set to iterate
+ * 
+ * @since 0.3.0
+ */
 export let forEach = (fn, set) => {
   let buckets = set.buckets;
   Array.forEach((bucket) => {
@@ -201,6 +275,16 @@ let rec reduceEachBucket = (fn, node, acc) => {
   }
 }
 
+/**
+ * Combines all elements of a set using a reducer function.
+ *
+ * @param fn: The reducer function to call on each element, where the value returned will be the next accumulator value
+ * @param init: The initial value to use for the accumulator on the first iteration
+ * @param set: The set to iterate
+ * @returns The final accumulator returned from `fn`
+ * 
+ * @since 0.3.0
+ */
 export let reduce = (fn, init, set) => {
   let buckets = set.buckets;
   let mut acc = init;
@@ -210,6 +294,14 @@ export let reduce = (fn, init, set) => {
   acc
 }
 
+/**
+ * Removes elements from a set where a predicate function returns `false`.
+ *
+ * @param fn: The predicate function to indicate which elements to remove from the set, where returning `false` indicates the value should be removed
+ * @param set: The set to iterate
+ * 
+ * @since 0.3.0
+ */
 export let filter = (predicate, set) => {
   let keysToRemove = reduce((list, key) =>
     if (!predicate(key)) {
@@ -222,14 +314,38 @@ export let filter = (predicate, set) => {
   }, keysToRemove);
 }
 
+/**
+ * Removes elements from a set where a predicate function returns `true`.
+ *
+ * @param fn: The predicate function to indicate which elements to remove from the set, where returning `true` indicates the value should be removed
+ * @param set: The set to iterate
+ * 
+ * @since 0.3.0
+ */
 export let reject = (predicate, set) => {
   filter((key) => !predicate(key), set)
 }
 
+/**
+ * Converts a set into a list of its elements.
+ *
+ * @param set: The set to convert
+ * @returns A list containing all set values
+ * 
+ * @since 0.3.0
+ */
 export let toList = (set) => {
   reduce((list, key) => [key, ...list], [], set)
 }
 
+/**
+ * Creates a set from a list.
+ *
+ * @param list: The list to convert
+ * @returns A set containing all list values
+ * 
+ * @since 0.3.0
+ */
 export let fromList = (list) => {
   let set = make();
   List.forEach((key) => {
@@ -238,10 +354,26 @@ export let fromList = (list) => {
   set
 }
 
+/**
+ * Converts a set into an array of its elements.
+ *
+ * @param set: The set to convert
+ * @returns An array containing all set values
+ * 
+ * @since 0.3.0
+ */
 export let toArray = (set) => {
   Array.fromList(toList(set))
 }
 
+/**
+ * Creates a set from an array.
+ *
+ * @param array: The array to convert
+ * @returns A set containing all array values
+ * 
+ * @since 0.3.0
+ */
 export let fromArray = (array) => {
   let set = make();
   Array.forEach((key) => {
@@ -250,6 +382,15 @@ export let fromArray = (array) => {
   set
 }
 
+/**
+ * Combines two sets into a single set containing all elements from both sets.
+ *
+ * @param set1: The first set to combine
+ * @param set2: The second set to combine
+ * @returns A set containing all elements of both sets
+ * 
+ * @since 0.3.0
+ */
 export let union = (set1, set2) => {
   let set = make();
   forEach((key) => {
@@ -261,6 +402,15 @@ export let union = (set1, set2) => {
   set
 }
 
+/**
+ * Combines two sets into a single set containing only the elements not shared between both sets.
+ *
+ * @param set1: The first set to combine
+ * @param set2: The second set to combine
+ * @returns A set containing only unshared elements from both sets
+ * 
+ * @since 0.3.0
+ */
 export let diff = (set1, set2) => {
   let set = make();
   forEach((key) => {
@@ -276,6 +426,15 @@ export let diff = (set1, set2) => {
   set
 }
 
+/**
+ * Combines two sets into a single set containing only the elements shared between both sets.
+ *
+ * @param set1: The first set to combine
+ * @param set2: The second set to combine
+ * @returns A set containing only shared elements from both sets
+ * 
+ * @since 0.3.0
+ */
 export let intersect = (set1, set2) => {
   let set = make();
   forEach((key) => {
@@ -293,6 +452,14 @@ export let intersect = (set1, set2) => {
 
 // TODO: Should return a Record type instead of a Tuple
 // Waiting on https://github.com/grain-lang/grain/issues/190
+/**
+ * Provides data representing the internal state state of the set.
+ *
+ * @param set: The set to inspect
+ * @returns The internal state of the set
+ * 
+ * @since 0.3.0
+ */
 export let getInternalStats = (set) => {
   (set.size, Array.length(set.buckets))
 }

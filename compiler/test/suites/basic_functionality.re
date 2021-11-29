@@ -8,7 +8,12 @@ describe("basic functionality", ({test}) => {
   let assertRunError = makeErrorRunner(test);
 
   assertSnapshot("forty", "let x = 40; x");
-  assertSnapshot("neg", "-1073741824");
+  assertSnapshot("neg", "-40");
+  assertSnapshot("simple_min", "-1073741824");
+  assertSnapshot("simple_max", "1073741823");
+  assertSnapshot("heap_number_i32_wrapper", "1073741824");
+  assertSnapshot("heap_number_i32_wrapper_max", "2147483647");
+  assertSnapshot("heap_number_i64_wrapper", "2147483648");
   assertSnapshot("hex", "0xff");
   assertSnapshot("hex_neg", "-0xff");
   assertSnapshot("bin", "0b1010");
@@ -146,6 +151,16 @@ describe("basic functionality", ({test}) => {
     "if_one_sided_type_err",
     "let foo = (if (false) { ignore(5) }); let bar = foo + 5; bar",
     "has type Void but",
+  );
+  assertCompileError(
+    "value_restriction",
+    {|let f = () => x => x; let id = f(); let a = id(1); let b = id("a")|},
+    "has type String but",
+  );
+  assertCompileError(
+    "exports_weak_types",
+    {|export let f = box(x => 0)|},
+    "type variables that cannot be generalized",
   );
   assertSnapshot("int32_1", "42l");
   assertSnapshot("int64_1", "99999999999999999L");

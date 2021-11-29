@@ -29,7 +29,7 @@ let makeGcProgram = (program, heap_size) => {
 };
 
 let readWholeFile = filename => {
-  let ch = open_in(filename);
+  let ch = open_in_bin(filename);
   let s = really_input_string(ch, in_channel_length(ch));
   close_in(ch);
   s;
@@ -73,12 +73,6 @@ describe("garbage collection", ({test}) => {
     "gc1",
     160,
     "let f = (() => (1, 2));\n       {\n         f();\n         f();\n         f();\n         f()\n       }",
-  );
-  /* Test that cyclic tuples are GC'd properly */
-  assertRunGC(
-    "gc2",
-    256,
-    "enum Opt<x> { None, Some(x) };\n     let f = (() => {\n      let x = (box(None), 2);\n      let (fst, _) = x\n      fst := Some(x)\n      });\n      {\n        f();\n        let x = (1, 2);\n        x\n      }",
   );
   /* https://github.com/grain-lang/grain/issues/774 */
   assertRunGC(

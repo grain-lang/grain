@@ -21,6 +21,17 @@ describe("linking", ({test}) => {
     {|import List from "list"; print(List.map(n => n + 1, [1, 2, 3]))|},
     "[2, 3, 4]\n",
   );
+  assertRun("link_issue_994_no_generated_code", {|0|}, "");
+  assertRun(
+    "link_issue_994_unexported_type",
+    {|record Foo { foo: String }|},
+    "",
+  );
+  assertRun(
+    "link_issue_994_exported_type",
+    {|export record Foo { foo: String }|},
+    "",
+  );
   // --wasi-polyfill
   assertWasiPolyfillRun(
     "test/input/wasiPolyfill.gr",
@@ -40,8 +51,9 @@ describe("linking", ({test}) => {
     let name = "no_start_section";
     let outfile = wasmfile(name);
     ignore @@ compile(name, {|print("Hello, world!")|});
-    let sections =
-      Grain_utils.Wasm_utils.get_wasm_sections(open_in_bin(outfile));
+    let ic = open_in_bin(outfile);
+    let sections = Grain_utils.Wasm_utils.get_wasm_sections(ic);
+    close_in(ic);
     let export_sections =
       List.find_map(
         (sec: Grain_utils.Wasm_utils.wasm_bin_section) =>
@@ -77,8 +89,9 @@ describe("linking", ({test}) => {
       name,
       {|print("Hello, world!")|},
     );
-    let sections =
-      Grain_utils.Wasm_utils.get_wasm_sections(open_in_bin(outfile));
+    let ic = open_in_bin(outfile);
+    let sections = Grain_utils.Wasm_utils.get_wasm_sections(ic);
+    close_in(ic);
     let start_section =
       List.find_opt(
         (sec: Grain_utils.Wasm_utils.wasm_bin_section) =>

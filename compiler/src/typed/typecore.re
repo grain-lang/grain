@@ -350,7 +350,7 @@ let rec is_nonexpansive = exp =>
   | TExpLambda(_)
   | TExpNull => true
   | TExpTuple(es) => List.for_all(is_nonexpansive, es)
-  | TExpLet(rec_flag, mut_flag, binds) =>
+  | TExpLet(rec_flag, Immutable, binds) =>
     List.for_all(vb => is_nonexpansive(vb.vb_expr), binds)
   | TExpMatch(e, cases, _) =>
     is_nonexpansive(e)
@@ -360,8 +360,6 @@ let rec is_nonexpansive = exp =>
   | TExpIf(c, t, f) => is_nonexpansive(t) && is_nonexpansive(f)
   | TExpWhile(c, b) => is_nonexpansive(b)
   | TExpBlock([_, ..._] as es) => is_nonexpansive(last(es))
-  | TExpApp(e, args) =>
-    is_nonexpansive(e) && List.for_all(is_nonexpansive, args)
   | TExpConstruct(_, _, el) => List.for_all(is_nonexpansive, el)
   | _ => false
   };
@@ -1937,9 +1935,11 @@ and type_let =
       pat_list
       (List.map2 (fun (attrs, _) e -> attrs, e) spatl exp_list);*/
   end_def();
+  let mutable_let = mut_flag == Mutable;
   List.iter2(
     (pat, exp) =>
-      if (!is_nonexpansive(exp)) {
+      // All mutable bindings should be treated as expansive
+      if (mutable_let || !is_nonexpansive(exp)) {
         iter_pattern(pat => generalize_expansive(env, pat.pat_type), pat);
       },
     pat_list,
