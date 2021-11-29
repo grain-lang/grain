@@ -263,6 +263,37 @@ Examples:
 String.implode([> 'H', 'e', 'l', 'l', 'o']) == "Hello"
 ```
 
+### String.**reverse**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+reverse : String -> String
+```
+
+Create a string that is the given string reversed.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`string`|`String`|The string to reverse|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`String`|A string whose characters are in the reverse order of the given string|
+
+Examples:
+
+```grain
+String.reverse("olleH") == "Hello"
+```
+
 ### String.**split**
 
 ```grain
