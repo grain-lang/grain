@@ -142,7 +142,7 @@ eols:
 
 eos:
   | eols {}
-  | SEMI opt_eols %prec SEMI {}
+  | SEMI opt_eols {}
 
 lbrack:
   | LBRACK opt_eols %prec EOL {}
