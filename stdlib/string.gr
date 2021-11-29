@@ -382,7 +382,7 @@ export let rec implode = (arr: Array<Char>) => {
   ret
 }
 
-// Helper to get the length in constant time
+// Helper to get the length in constant time without depending on Array
 primitive arrayLength : Array<a> -> Number = "@array.length"
 
 /**
