@@ -2,7 +2,7 @@
  * @module Regex: Regular Expressions.
  * @example import Regex from "regex"
  *
- * @since next
+ * @since 0.4.3
  */
 
 /*
@@ -2730,7 +2730,7 @@ let searchMatch = (rx: RegularExpression, buf: MatchBuf, pos, startPos, endPos, 
  *
  * Returns the positions of all groups matched in this match object.
  *
- * @since next
+ * @since 0.4.3
  */
 export record MatchResult {
   /**
@@ -2848,7 +2848,7 @@ let fastDriveRegexMatch = (rx, string, startOffset, endOffset) => {
  *
  * @example assert Regex.isMatch(Result.unwrap(Regex.make("ca+[at]")), "caaat") == true
  *
- * @since next
+ * @since 0.4.3
  */
 export let isMatch = (rx: RegularExpression, string: String) => {
   fastDriveRegexIsMatch(rx, string, 0, String.length(string))
@@ -2865,7 +2865,7 @@ export let isMatch = (rx: RegularExpression, string: String) => {
  * @example assert Regex.isMatchRange(Result.unwrap(Regex.make("ca+[at]")), "caaat", 0, 5) == true
  * @example assert Regex.isMatchRange(Result.unwrap(Regex.make("ca+[at]")), "caaat", 1, 5) == false
  *
- * @since next
+ * @since 0.4.3
  */
 export let isMatchRange = (rx: RegularExpression, string: String, start: Number, end: Number) => {
   fastDriveRegexIsMatch(rx, string, start, end)
@@ -2879,7 +2879,7 @@ export let isMatchRange = (rx: RegularExpression, string: String, start: Number,
  *
  * @example Regex.find(Result.unwrap(Regex.make("ca+[at]")), "caaat")
  *
- * @since next
+ * @since 0.4.3
  */
 export let find = (rx: RegularExpression, string: String) => {
   fastDriveRegexMatch(rx, string, 0, String.length(string))
@@ -2896,7 +2896,7 @@ export let find = (rx: RegularExpression, string: String) => {
  *
  * @example Regex.findRange(Result.unwrap(Regex.make("ca+[at]")), "caaat", 0, 5)
  *
- * @since next
+ * @since 0.4.3
  */
 export let findRange = (rx: RegularExpression, string: String, start: Number, end: Number) => {
   fastDriveRegexMatch(rx, string, start, end)
@@ -2923,7 +2923,7 @@ export let findAll = (rx: RegularExpression, string: String) => {
  *
  * @example Regex.findAllRange(Result.unwrap(Regex.make("ca+[at]")), "caaat", 0, 5)
  *
- * @since next
+ * @since 0.4.3
  */
 export let findAllRange = (rx: RegularExpression, string: String, start: Number, end: Number) => {
   fastDriveRegexMatchAll(rx, string, start, end)
@@ -3040,7 +3040,7 @@ let regexReplaceHelp = (rx: RegularExpression, toSearch: String, replacement: St
  *
  * @example assert Regex.replace(Result.unwrap(Regex.make("o")), "foo", "a") == "fao"
  *
- * @since next
+ * @since 0.4.3
  */
 export let replace = (rx: RegularExpression, toSearch: String, replacement: String) => {
   regexReplaceHelp(rx, toSearch, replacement, false)
@@ -3057,7 +3057,7 @@ export let replace = (rx: RegularExpression, toSearch: String, replacement: Stri
  *
  * @example assert Regex.replaceAll(Result.unwrap(Regex.make("o")), "skoot", "r") == "skrrt"
  *
- * @since next
+ * @since 0.4.3
  */
 export let replaceAll = (rx: RegularExpression, toSearch: String, replacement: String) => {
   regexReplaceHelp(rx, toSearch, replacement, true)
