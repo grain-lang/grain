@@ -176,7 +176,7 @@ let rec removeInBucket = (key, node) => {
 }
 
 /**
- * Removes the given value from the set. If the value does not exist, nothing happens.
+ * Removes the given value from the set. If the value doesn't exist, nothing happens.
  *
  * @param key: The value to remove
  * @param set: The set to update
