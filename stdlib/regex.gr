@@ -179,7 +179,7 @@ type RERange = List<(Number, Number)>
 type CharRangeElt = Number
 type CharRange = List<(CharRangeElt, CharRangeElt)>
 type GroupID = Number
-type Greedy = Bool
+type NonGreedy = Bool
 type NStart = Number
 type NumN = Number
 type Min = Number
@@ -404,8 +404,8 @@ enum ParsedRegularExpression {
   REAlts(ParsedRegularExpression, ParsedRegularExpression),
   RESequence(SeqElts, NeedsBackTrack), // seq elts, needs backtrack
   REGroup(ParsedRegularExpression, GroupID),
-  RERepeat(ParsedRegularExpression, Min, Max, Greedy), // regex, min, max (None for infinity), true=non-greedy
-  REMaybe(ParsedRegularExpression, Greedy), // regex, true=non-greedy
+  RERepeat(ParsedRegularExpression, Min, Max, NonGreedy), // regex, min, max (None for infinity), true=non-greedy
+  REMaybe(ParsedRegularExpression, NonGreedy), // regex, true=non-greedy
   REConditional(ParsedRegularExpression, IfFalse, IfTrue, NStart, NumN, NeedsBackTrack), // test, if-true, if-false, n-start, num-n, needs-backtrack
   RELookahead(ParsedRegularExpression, IsMatch, NStart, NumN), // regex, is-match, n-start, num-n
   RELookbehind(ParsedRegularExpression, IsMatch, LbMin, LbMax, NStart, NumN), // regex, is-match, lb-min, lb-max, n-start, num-n (lb-xx values patched in later)
