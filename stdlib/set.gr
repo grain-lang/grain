@@ -27,8 +27,8 @@ record Set<k> {
  * 
  * @since 0.3.0
  */
-export let makeSized = (size) => {
-  let buckets = Array.make(size, None);
+export let makeSized = (storageLength) => {
+  let buckets = Array.make(storageLength, None);
   {
     size: 0,
     buckets
@@ -276,7 +276,7 @@ let rec reduceEachBucket = (fn, node, acc) => {
 }
 
 /**
- * Reduces all values within a set to a single value. The reducer function is called with the accumulator and the current value.
+ * Combines all elements of a set using a reducer function.
  *
  * @param fn: The reducer function to call on each element, where the value returned will be the next accumulator value
  * @param init: The initial value to use for the accumulator on the first iteration

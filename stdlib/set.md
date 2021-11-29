@@ -42,19 +42,19 @@ No other changes yet.
 makeSized : Number -> Set<a>
 ```
 
-Creates a mew empty Set with an initial size of the given `size`, the size is mutable.
+Creates a new empty Set with an initial storage of the given length. As items are added to the Set, the length may grow or shrink. Generally, you won't need to care about the length of your set and can use `Set.make()` instead.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`size`|`Number`|The initial size of the set|
+|`storageLength`|`Number`|The initial storage length of the set|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Set<a>`|An empty set with the given initial size|
+|`Set<a>`|An empty set with the given initial storage length|
 
 ### Set.**make**
 
@@ -73,7 +73,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Set<a>`|An empty Set.|
+|`Set<a>`|An empty set|
 
 ### Set.**add**
 
@@ -93,7 +93,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`key`|`a`|The value to add to the set|
-|`set`|`Set<a>`|The set to append too|
+|`set`|`Set<a>`|The set to update|
 
 ### Set.**contains**
 
@@ -106,7 +106,7 @@ No other changes yet.
 contains : (a, Set<a>) -> Bool
 ```
 
-Returns `true` if the set contains the given value.
+Determines if the set contains the given value.
 
 Parameters:
 
@@ -119,7 +119,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if the set contains the given value|
+|`Bool`|`true` if the set contains the given value or `false` otherwise|
 
 ### Set.**remove**
 
@@ -132,14 +132,14 @@ No other changes yet.
 remove : (a, Set<a>) -> Void
 ```
 
-Removes the given value from the set, if the value does not exist it does not modify the Set.
+Removes the given value from the set. If the value does not exist, nothing happens.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
 |`key`|`a`|The value to remove from the set|
-|`set`|`Set<a>`|The set to remove from|
+|`set`|`Set<a>`|The set to update|
 
 ### Set.**size**
 
@@ -158,13 +158,13 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`set`|`Set<a>`|The set to determine the length from|
+|`set`|`Set<a>`|The set to inspect|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Number`|The length of the set|
+|`Number`|The number of items in the set|
 
 ### Set.**isEmpty**
 
@@ -177,7 +177,7 @@ No other changes yet.
 isEmpty : Set<a> -> Bool
 ```
 
-Returns a boolean indicating if the provided Set is empty.
+Determines if the set contains no items.
 
 Parameters:
 
@@ -189,7 +189,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if the given Set is empty, `false` otherwise|
+|`Bool`|`true` if the given set is empty or `false` otherwise|
 
 ### Set.**clear**
 
@@ -202,13 +202,13 @@ No other changes yet.
 clear : Set<a> -> Void
 ```
 
-Removes all values from the given set.
+Resets the set by removing all values.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`set`|`Set<a>`|The set to clear|
+|`set`|`Set<a>`|The set to reset|
 
 ### Set.**forEach**
 
@@ -221,13 +221,13 @@ No other changes yet.
 forEach : ((a -> b), Set<a>) -> Void
 ```
 
-Iterates the given function over each value in the set.
+Iterates the set, calling an iterator function on each element.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> b`|The function to call on each element in the set|
+|`fn`|`a -> b`|The iterator function to call with each element|
 |`set`|`Set<a>`|The set to iterate|
 
 ### Set.**reduce**
@@ -241,21 +241,21 @@ No other changes yet.
 reduce : (((a, b) -> a), a, Set<b>) -> a
 ```
 
-Reduces all values within a set to a single value. The reducer function is called with the accumulator and the current value.
+Combines all elements of a set using a reducer function.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`(a, b) -> a`|The function to call on each element in the set|
-|`init`|`a`|A value to which the previousValue is initialized with|
-|`set`|`Set<a>`|The set to reduce|
+|`fn`|`(a, b) -> a`|The reducer function to call on each element, where the value returned will be the next accumulator value|
+|`init`|`a`|The initial value to use for the accumulator on the first iteration|
+|`set`|`Set<a>`|The set to iterate|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`a`|The reduced set|
+|`a`|The final accumulator returned from `fn`|
 
 ### Set.**filter**
 
@@ -268,14 +268,14 @@ No other changes yet.
 filter : ((a -> Bool), Set<a>) -> Void
 ```
 
-Keeps all values that the predicate returned `true` for from the set.
+Removes elements from a set where a predicate function returns `false`.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Bool`|The function used to filter the set returning `true` indicates to keep the value|
-|`set`|`Set<a>`|The set to filter|
+|`fn`|`a -> Bool`|The predicate function to indicate which elements to remove from the set, where returning `false` indicates the value should be removed|
+|`set`|`Set<a>`|The set to iterate|
 
 ### Set.**reject**
 
@@ -288,14 +288,14 @@ No other changes yet.
 reject : ((a -> Bool), Set<a>) -> Void
 ```
 
-Removes all values that the predicate returned true for from the set.
+Removes elements from a set where a predicate function returns `true`.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Bool`|The function used to filter the set returning `true` indicates to remove the value|
-|`set`|`Set<a>`|The set to filter|
+|`fn`|`a -> Bool`|The predicate function to indicate which elements to remove from the set, where returning `true` indicates the value should be removed|
+|`set`|`Set<a>`|The set to iterate|
 
 ### Set.**toList**
 
@@ -308,7 +308,7 @@ No other changes yet.
 toList : Set<a> -> List<a>
 ```
 
-Returns a list from the values of a set.
+Converts a set into a list of its elements.
 
 Parameters:
 
@@ -320,7 +320,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`List<a>`|The generated List|
+|`List<a>`|A list containing all set values|
 
 ### Set.**fromList**
 
@@ -345,7 +345,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Set<a>`|The generated set|
+|`Set<a>`|A set containing all list values|
 
 ### Set.**toArray**
 
@@ -358,7 +358,7 @@ No other changes yet.
 toArray : Set<a> -> Array<a>
 ```
 
-Returns an array from the values of a set.
+Converts a set into an array of its elements.
 
 Parameters:
 
@@ -370,7 +370,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Array<a>`|The generated array|
+|`Array<a>`|An array containing all set values|
 
 ### Set.**fromArray**
 
@@ -395,7 +395,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Set<a>`|The generated set|
+|`Set<a>`|A set containing all array values|
 
 ### Set.**union**
 
@@ -408,20 +408,20 @@ No other changes yet.
 union : (Set<a>, Set<a>) -> Set<a>
 ```
 
-Creates a single set from the union of the given sets.
+Combines two sets into a single set containing all values from both sets.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`set1`|`Set<a>`|The first set to union|
-|`set2`|`Set<a>`|The second set to union|
+|`set1`|`Set<a>`|The first set to combine|
+|`set2`|`Set<a>`|The second set to combine|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Set<a>`|The generated set|
+|`Set<a>`|A set containing all items of both sets|
 
 ### Set.**diff**
 
@@ -434,20 +434,20 @@ No other changes yet.
 diff : (Set<a>, Set<a>) -> Set<a>
 ```
 
-Creates a set from the difference of the given sets.
+Combines two sets into a single set containing only the values not shared between both sets.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`set1`|`Set<a>`|The first set to merge|
-|`set2`|`Set<a>`|The second set to merge|
+|`set1`|`Set<a>`|The first set to combine|
+|`set2`|`Set<a>`|The second set to combine|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Set<a>`|The generated set|
+|`Set<a>`|A set containing only unshared values from both sets|
 
 ### Set.**intersect**
 
@@ -460,20 +460,20 @@ No other changes yet.
 intersect : (Set<a>, Set<a>) -> Set<a>
 ```
 
-Creates a new set from the values that are in both set1 and set2.
+Combines two sets into a single set containing only the values shared between both sets.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`set1`|`Set<a>`|The first set to intersect|
-|`set2`|`Set<a>`|The second set to intersect|
+|`set1`|`Set<a>`|The first set to combine|
+|`set2`|`Set<a>`|The second set to combine|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Set<a>`|A set containing the values that are in both sets|
+|`Set<a>`|A set containing only shared values from both sets|
 
 ### Set.**getInternalStats**
 
@@ -486,17 +486,17 @@ No other changes yet.
 getInternalStats : Set<a> -> (Number, Number)
 ```
 
-Returns a tuple representing the internal state state of the set.
+Provides data representing the internal state state of the set.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`set`|`Set<a>`|The set to operate on|
+|`set`|`Set<a>`|The set to inspect|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`(Number, Number)`|The internal state of the set represented as a tuple|
+|`(Number, Number)`|The internal state of the set|
 
