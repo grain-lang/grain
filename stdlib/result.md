@@ -7,6 +7,11 @@ Utilities for working with the Result data type.
 The Result type is an enum that represents the possibility of a success case (with the `Ok` variant),
 or an error case (with the `Err` variant). Use a Result as the return type of a function that may return an error.
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 import Result from "result"
 ```
@@ -24,6 +29,11 @@ let failure = Err("Something bad happened") // Creates an unsuccessful Result co
 Functions for working with the Result data type.
 
 ### Result.**isOk**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 isOk : Result<a, b> -> Bool
@@ -45,6 +55,11 @@ Returns:
 
 ### Result.**isErr**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 isErr : Result<a, b> -> Bool
 ```
@@ -65,6 +80,11 @@ Returns:
 
 ### Result.**toOption**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 toOption : Result<a, b> -> Option<a>
 ```
@@ -84,6 +104,11 @@ Returns:
 |`Option<a>`|`Some(value)` if the Result is `Ok(value)` or `None` if the Result is an `Err`|
 
 ### Result.**flatMap**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 flatMap : ((a -> Result<b, c>), Result<a, c>) -> Result<b, c>
@@ -106,6 +131,11 @@ Returns:
 
 ### Result.**flatMapErr**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 flatMapErr : ((a -> Result<b, c>), Result<b, a>) -> Result<b, c>
 ```
@@ -126,6 +156,11 @@ Returns:
 |`Result<a, b>`|A new Result produced by the mapping function if the variant was `Err` or the unmodified `Ok` otherwise|
 
 ### Result.**map**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 map : ((a -> b), Result<a, c>) -> Result<b, c>
@@ -148,6 +183,11 @@ Returns:
 
 ### Result.**mapErr**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 mapErr : ((a -> b), Result<c, a>) -> Result<c, b>
 ```
@@ -168,6 +208,11 @@ Returns:
 |`Result<a, b>`|A new `Err` variant produced by the mapping function if the variant was `Err` or the unmodified `Ok` otherwise|
 
 ### Result.**mapWithDefault**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 mapWithDefault : ((a -> b), b, Result<a, c>) -> b
@@ -191,6 +236,11 @@ Returns:
 |`a`|The value produced by the mapping function if the result is of the `Ok` variant or the default value otherwise|
 
 ### Result.**mapWithDefaultFn**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 mapWithDefaultFn : ((a -> b), (c -> b), Result<a, c>) -> b
@@ -216,6 +266,11 @@ Returns:
 
 ### Result.**or**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 ( or ) : (Result<a, b>, Result<a, b>) -> Result<a, b>
 ```
@@ -236,6 +291,11 @@ Returns:
 |`Result<a, b>`|The first Result if it is the `Ok` variant or the second Result otherwise|
 
 ### Result.**and**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 and : (Result<a, b>, Result<a, b>) -> Result<a, b>
@@ -258,6 +318,11 @@ Returns:
 
 ### Result.**peek**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 peek : ((a -> b), (c -> d), Result<a, c>) -> Void
 ```
@@ -276,6 +341,11 @@ Parameters:
 
 ### Result.**peekOk**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 peekOk : ((a -> b), Result<a, c>) -> Void
 ```
@@ -290,6 +360,11 @@ Parameters:
 |`result`|`Result<a, b>`|The result to inspect|
 
 ### Result.**peekErr**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 peekErr : ((a -> b), Result<c, a>) -> Void
