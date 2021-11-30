@@ -135,7 +135,6 @@ let line_separator =
 
 let comments_line_separator =
     (line_above, comments: list(Grain_parsing.Parsetree.comment)) =>
-  //print_endline("comments_line_separator");
   if (List.length(comments) > 0) {
     let firstComment = List.hd(comments);
     let (_, line, _, _) =
@@ -305,10 +304,6 @@ let rec block_item_iterator =
         leading_comments_with_breaking_block,
       );
 
-    //print_endline("line above is " ++ string_of_int(line_above));
-
-    // check for where the line above may be a dangling comment
-
     let checked_line_above =
       switch (previous) {
       | None => line_above
@@ -324,13 +319,7 @@ let rec block_item_iterator =
             allComments,
           );
 
-        // print_endline("filtering comments");
-        // let _ = Comment_utils.print_comments(allComments);
-        // print_endline("overhanging comments");
-        // let _ = Comment_utils.print_comments(overhangingComments);
-
         if (List.length(overhangingComments) > 0) {
-          //   print_endline("we have an overhanging comment");
           let last_comment =
             List.nth(
               overhangingComments,
@@ -340,25 +329,12 @@ let rec block_item_iterator =
             Locations.get_raw_pos_info(
               Locations.get_comment_loc(last_comment).loc_end,
             );
-          // print_endline(
-          //   "new last source line is " ++ string_of_int(last_cmt_line),
-          // );
+
           last_cmt_line;
         } else {
           last_src_line;
         };
       };
-
-    // print_endline(
-    //   "checked line above " ++ string_of_int(checked_line_above),
-    // );
-
-    // print_endline("regulat");
-    // let _ = Comment_utils.print_comments(leading_comments);
-
-    // print_endline("with breakng blocks");
-    // let _ =
-    //   Comment_utils.print_comments(leading_comments_with_breaking_block);
 
     let comment_line_sep =
       comments_line_separator(
@@ -1080,20 +1056,6 @@ and print_ident = (ident: Identifier.t) => {
       Doc.text("."),
       Doc.text(second),
     ])
-  };
-}
-
-and debug_ident = (ident: Identifier.t) => {
-  switch (ident) {
-  | IdentName(name) =>
-    if (infixop(name) || prefixop(name)) {
-      print_endline("(" ++ name ++ ")");
-    } else {
-      print_endline(name);
-    }
-  | IdentExternal(externalIdent, second) =>
-    debug_ident(externalIdent);
-    print_endline("." ++ second);
   };
 }
 
