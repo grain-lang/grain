@@ -52,8 +52,7 @@ let print_comments = (comments: list(Grain_parsing.Parsetree.comment)) => {
   List.map(c => Comments.print_comment(c), comments);
 };
 
-let rec get_comments_between_lines = (line1: int, line2: int, comments) => {
- 
+let rec get_comments_between_lines = (line1: int, line2: int, comments) =>
   if (List.length(comments) == 0) {
     [];
   } else {
@@ -83,7 +82,6 @@ let rec get_comments_between_lines = (line1: int, line2: int, comments) => {
       };
     cmts;
   };
-};
 
 let rec get_comments_inside_location =
         (
@@ -134,7 +132,6 @@ let get_comments_between_locations =
       ~loc2: Grain_parsing.Location.t,
       comments: list(Grain_parsing.Parsetree.comment),
     ) => {
-  
   let (_, stmtEndine, stmsEndtChar, _) =
     Locations.get_raw_pos_info(loc1.loc_end);
   let (_, stmtStartLine, stmsStartChar, _) =
@@ -169,9 +166,6 @@ let get_comments_enclosed_and_before_location =
       ~loc2: Grain_parsing.Location.t,
       comments: list(Grain_parsing.Parsetree.comment),
     ) => {
-  // if loc1 is None get all comments before
-  // if loc2 is None get all comments after
-
   let (_, locStartLine, locStartChar, _) =
     Locations.get_raw_pos_info(loc1.loc_start);
   let (_, stmtStartLine, stmsStartChar, _) =
@@ -197,6 +191,9 @@ let get_comments_enclosed_and_before_location =
     loc_end: end_loc,
     loc_ghost: true,
   };
+
+  //Debug.print_loc("looking for comments inside", location);
+  //let _ = print_comments(comments);
   get_comments_inside_location(~location, comments);
 };
 
@@ -503,7 +500,7 @@ let hard_line_needed =
     let last = List.nth(comments, num_comments - 1);
     switch (last) {
     | Line(_) => Doc.hardLine
-    | _ => Doc.line
+    | _ => separator
     };
   };
 };

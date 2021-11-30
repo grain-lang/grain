@@ -71,7 +71,7 @@ if (a /*why*/) {
   // end block
 }
 
-let myfun = (/*lead*/ x, /*follow*/ y) => x + 5
+let myfun /*special*/ = (/*lead*/ x, /*follow*/ y) => x + 5
 
 if (true) {
 
