@@ -135,13 +135,13 @@ let line_separator =
 
 let comments_line_separator =
     (line_above, comments: list(Grain_parsing.Parsetree.comment)) =>
+  //print_endline("comments_line_separator");
   if (List.length(comments) > 0) {
     let firstComment = List.hd(comments);
     let (_, line, _, _) =
       Locations.get_raw_pos_info(
         Locations.get_comment_loc(firstComment).loc_start,
       );
-
     if (line - line_above > 1) {
       Doc.hardLine;
     } else {
@@ -277,11 +277,25 @@ let rec block_item_iterator =
           comments,
         )
       | Some(l) =>
-        Comment_utils.get_comments_between_locations(
-          ~loc1=get_loc(l),
-          ~loc2=get_loc(item),
-          allComments,
-        )
+        let lineLoc = get_loc(l);
+        let (_, last_src_line, last_char, _) =
+          Locations.get_raw_pos_info(lineLoc.loc_end);
+        let cmts =
+          Comment_utils.get_comments_between_locations(
+            ~loc1=get_loc(l),
+            ~loc2=get_loc(item),
+            allComments,
+          );
+        List.filter(
+          c => {
+            let (_, cmt_line, _, _) =
+              Locations.get_raw_pos_info(
+                Locations.get_comment_loc(c).loc_end,
+              );
+            cmt_line > last_src_line;
+          },
+          cmts,
+        );
       };
 
     let line_sep =
@@ -291,8 +305,66 @@ let rec block_item_iterator =
         leading_comments_with_breaking_block,
       );
 
+    //print_endline("line above is " ++ string_of_int(line_above));
+
+    // check for where the line above may be a dangling comment
+
+    let checked_line_above =
+      switch (previous) {
+      | None => line_above
+      | Some(l) =>
+        let lineLoc = get_loc(l);
+        let (_, last_src_line, last_char, _) =
+          Locations.get_raw_pos_info(lineLoc.loc_end);
+
+        let overhangingComments =
+          Comment_utils.get_comments_on_line_end(
+            last_src_line,
+            last_char,
+            allComments,
+          );
+
+        // print_endline("filtering comments");
+        // let _ = Comment_utils.print_comments(allComments);
+        // print_endline("overhanging comments");
+        // let _ = Comment_utils.print_comments(overhangingComments);
+
+        if (List.length(overhangingComments) > 0) {
+          //   print_endline("we have an overhanging comment");
+          let last_comment =
+            List.nth(
+              overhangingComments,
+              List.length(overhangingComments) - 1,
+            );
+          let (_, last_cmt_line, _, _) =
+            Locations.get_raw_pos_info(
+              Locations.get_comment_loc(last_comment).loc_end,
+            );
+          // print_endline(
+          //   "new last source line is " ++ string_of_int(last_cmt_line),
+          // );
+          last_cmt_line;
+        } else {
+          last_src_line;
+        };
+      };
+
+    // print_endline(
+    //   "checked line above " ++ string_of_int(checked_line_above),
+    // );
+
+    // print_endline("regulat");
+    // let _ = Comment_utils.print_comments(leading_comments);
+
+    // print_endline("with breakng blocks");
+    // let _ =
+    //   Comment_utils.print_comments(leading_comments_with_breaking_block);
+
     let comment_line_sep =
-      comments_line_separator(line_above, leading_comments);
+      comments_line_separator(
+        checked_line_above,
+        leading_comments_with_breaking_block,
+      );
 
     let leading_comment_docs_i =
       Comment_utils.line_of_comments_to_doc_no_break(
@@ -303,13 +375,7 @@ let rec block_item_iterator =
       if (leading_comment_docs_i == Doc.nil) {
         Doc.nil;
       } else {
-        Doc.concat([
-          Comment_utils.line_of_comments_to_doc_no_break(
-            ~offset=false,
-            leading_comments,
-          ),
-          Doc.hardLine,
-        ]);
+        Doc.concat([leading_comment_docs_i, Doc.hardLine]);
       };
 
     // look for disable
@@ -434,12 +500,15 @@ let rec block_item_iterator =
               ~offset=false,
               block_trailing_comments,
             );
+          let comment_line_sep =
+            comments_line_separator(line, block_trailing_comments);
 
           Doc.concat([
             item_doc,
             trail_sep,
             line_end,
             Doc.hardLine,
+            comment_line_sep,
             block_trailing_comment_docs,
           ]);
         } else {
@@ -2730,7 +2799,6 @@ and print_value_bind =
     } else {
       let get_loc = (vb: Parsetree.value_binding) => vb.pvb_loc;
       let print_item = (vb: Parsetree.value_binding) => {
-        // let _ = Comment_utils.print_comments(comments);
         let after_let_comments =
           Comment_utils.get_comments_enclosed_and_before_location(
             ~loc1=get_loc(vb),
@@ -2738,7 +2806,6 @@ and print_value_bind =
             comments,
           );
 
-        //  let _ = Comment_utils.print_comments(after_let_comments);
         let after_let_comments_docs =
           if (List.length(after_let_comments) > 0) {
             Comment_utils.line_of_comments_to_doc_no_break(
@@ -2863,7 +2930,16 @@ let rec print_data =
 
     // weird comment position after the equals
     let after_brace_comments =
-      Comment_utils.get_after_brace_comments(data.pdata_loc, comments);
+      if (List.length(data.pdata_params) == 0) {
+        Comment_utils.get_after_brace_comments(data.pdata_loc, comments);
+      } else {
+        let first = List.hd(data.pdata_params);
+        Comment_utils.get_comments_enclosed_and_before_location(
+          ~loc1=data.pdata_name.loc,
+          ~loc2=first.ptyp_loc,
+          comments,
+        );
+      };
 
     let remainingComments =
       List.filter(c => !List.mem(c, after_brace_comments), comments);
@@ -2887,7 +2963,7 @@ let rec print_data =
 
     if (List.length(data.pdata_params) == 0) {
       Doc.concat([
-        Doc.text("type2"),
+        Doc.text("type"),
         Doc.space,
         Doc.text(data.pdata_name.txt),
         Doc.group(
@@ -2898,7 +2974,6 @@ let rec print_data =
                 Doc.space,
                 Doc.equal,
                 Doc.concat([
-                  //Doc.space,
                   Comment_utils.line_of_comments_to_doc_no_break(
                     ~offset=true,
                     after_brace_comments,
@@ -2931,14 +3006,18 @@ let rec print_data =
     } else {
       let params = [
         Doc.text("<"),
-        Comment_utils.line_of_comments_to_doc_no_break(
-          ~offset=true,
-          after_brace_comments,
-        ),
+        if (List.length(after_brace_comments) > 0) {
+          Comment_utils.line_of_comments_to_doc_no_break(
+            ~offset=true,
+            after_brace_comments,
+          );
+        } else {
+          Doc.nil;
+        },
         Doc.indent(
           Doc.concat([
             Comment_utils.hard_line_needed(
-              ~separator=Doc.line,
+              ~separator=Doc.softLine,
               after_brace_comments,
             ),
             types,
@@ -2948,7 +3027,7 @@ let rec print_data =
         Doc.text(">"),
       ];
       Doc.concat([
-        Doc.text("type1"),
+        Doc.text("type"),
         Doc.space,
         Doc.group(Doc.concat([Doc.text(data.pdata_name.txt), ...params])),
         Doc.group(
@@ -2959,17 +3038,12 @@ let rec print_data =
                 Doc.space,
                 Doc.equal,
                 Doc.space,
-                // Doc.indent(
-                //   Doc.concat([
-                //     Doc.line,
                 print_type(
                   manifest,
                   original_source,
                   remainingComments,
                   ~trailing_separator=false,
                 ),
-                //   ]),
-                // ),
               ])
             | None => Doc.nil
             },

@@ -1,6 +1,7 @@
 type Foo = String
 
-type Foo = String // Test comment
+type Foo = // Test comment
+  String
 
 type Foo<a> = String
 
@@ -8,9 +9,7 @@ type Foo<a, b> = String
 
 type Foo<a, b> = String // Test comment
 
-type Foo<a, b> = String // Test comment
-
-type AReallyReallyReallyReallyReallyReallyReallyReallyReallyLongLineBreakingType<
+type Foo< // Test comment
   a,
   b
 > = String
@@ -18,19 +17,29 @@ type AReallyReallyReallyReallyReallyReallyReallyReallyReallyLongLineBreakingType
 type AReallyReallyReallyReallyReallyReallyReallyReallyReallyLongLineBreakingType<
   a,
   b
-> = String // Test comment
+> = String
 
-type Foo<a, b> = String // Test comment
+type AReallyReallyReallyReallyReallyReallyReallyReallyReallyLongLineBreakingType<
+  a, // Test comment
+  b
+> = String
 
-type Foo<a, b> = String /* Test comment */
+type Foo<
+  a, // Test comment
+  b
+> = String
 
-type Foo<a, b> = String // Test comment
+type Foo<a, /* Test comment */ b> = String
+
+type Foo<
+  a, // Test comment
+  b
+> = String
 
 // Test comment
 type Foo = String
 
-/* Test comment */
-type Foo = String
+/* Test comment */ type Foo = String
 
 type Foo = String // Test comment
 
@@ -144,6 +153,6 @@ type Bar<
 >
 
 type Foo< // opener
-  a, /* Test comment */ 
+  a, /* Test comment */
   b /* second test comment */
 > = String //trailer

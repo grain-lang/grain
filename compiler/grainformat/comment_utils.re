@@ -192,8 +192,6 @@ let get_comments_enclosed_and_before_location =
     loc_ghost: true,
   };
 
-  //Debug.print_loc("looking for comments inside", location);
-  //let _ = print_comments(comments);
   get_comments_inside_location(~location, comments);
 };
 
@@ -504,20 +502,6 @@ let hard_line_needed =
     };
   };
 };
-
-// let line_needed = (~separator,comments: list(Grain_parsing__Parsetree.comment)) => {
-//   let num_comments = List.length(comments);
-
-//   switch (num_comments) {
-//   | 0 => Doc.softLine
-//   | _ =>
-//     let last = List.nth(comments, num_comments - 1);
-//     switch (last) {
-//     | Line(_) => Doc.hardLine
-//     | _ => Doc.hardLine
-//     };
-//   };
-// };
 
 let line_of_comments_to_doc_no_break =
     (~offset: bool, comments: list(Grain_parsing.Parsetree.comment)) =>
