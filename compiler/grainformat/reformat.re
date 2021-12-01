@@ -1310,7 +1310,6 @@ and print_application =
   let function_name = get_function_name(func);
 
   switch (expressions) {
-  | [] => Doc.nil
   | [first] when prefixop(function_name) =>
     switch (first.pexp_desc) {
     | PExpApp(fn, _) =>
@@ -1445,10 +1444,11 @@ and print_application =
 
   | _ when prefixop(function_name) || infixop(function_name) =>
     raise(Error(Illegal_parse("Formatter error, wrong number of args ")))
-  | [first_expr, ...rem] =>
+  | _ =>
     if (function_name == list_cons) {
       resugar_list(~expressions, ~original_source, ~comments);
     } else if (Array.exists(fn => function_name == fn, exception_primitives)) {
+      let first_expr = List.hd(expressions);
       Doc.concat([
         print_expression(
           ~parent_is_arrow=false,
@@ -3705,5 +3705,6 @@ let reformat_ast =
     );
 
   let final_doc = Doc.concat([top_level_stmts, Doc.hardLine]);
+
   Doc.toString(~width=80, final_doc);
 };
