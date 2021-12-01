@@ -27,7 +27,7 @@ let rec get_comments_before_line =
     let c_loc: Grain_parsing.Location.t = Locations.get_comment_loc(c);
     let (_, cmtline, cmtchar, _) = Locations.get_raw_pos_info(c_loc.loc_end);
     if (cmtline < line) {
-      [c] @ get_comments_before_line(line, remaining_comments);
+      [c, ...get_comments_before_line(line, remaining_comments)];
     } else {
       []; // can stop early as there will be no more
     };
@@ -41,7 +41,7 @@ let rec get_comments_after_line =
     let c_loc: Grain_parsing.Location.t = Locations.get_comment_loc(c);
     let (_, cmtline, cmtchar, _) = Locations.get_raw_pos_info(c_loc.loc_end);
     if (cmtline > line) {
-      [c] @ get_comments_after_line(line, remaining_comments);
+      [c, ...get_comments_after_line(line, remaining_comments)];
     } else {
       get_comments_after_line(
         line,
@@ -66,23 +66,21 @@ let rec get_comments_between_lines =
     let (_, cmteline, cmtechar, _) =
       Locations.get_raw_pos_info(c_loc.loc_end);
 
-    let cmts =
-      if (cmtsline > line1) {
-        if (cmteline < line2) {
-          [c] @ get_comments_between_lines(line1, line2, remaining_comments);
-        } else
-          {
-            [];
-          }; // can stop early
-      } else {
-        // it's before, so keep going
-        get_comments_between_lines(
-          line1,
-          line2,
-          List.tl(comments),
-        );
-      };
-    cmts;
+    if (cmtsline > line1) {
+      if (cmteline < line2) {
+        [c, ...get_comments_between_lines(line1, line2, remaining_comments)];
+      } else
+        {
+          [];
+        }; // can stop early
+    } else {
+      // it's before, so keep going
+      get_comments_between_lines(
+        line1,
+        line2,
+        List.tl(comments),
+      );
+    };
   };
 
 let rec get_comments_inside_location =
@@ -117,7 +115,7 @@ let rec get_comments_inside_location =
       if (cmteline < stmt_end_line
           || cmteline == stmt_end_line
           && cmtechar <= stmt_end_char) {
-        [cmt] @ get_comments_inside_location(location, remaining_comments);
+        [cmt, ...get_comments_inside_location(location, remaining_comments)];
       } else {
         get_comments_inside_location(location, remaining_comments);
       };
@@ -156,7 +154,7 @@ let get_comments_between_locations =
   let location: Grain_parsing.Location.t = {
     loc_start: start_loc,
     loc_end: end_loc,
-    loc_ghost: true,
+    loc_ghost: false,
   };
   get_comments_inside_location(~location, comments);
 };
@@ -190,7 +188,7 @@ let get_comments_enclosed_and_before_location =
   let location: Grain_parsing.Location.t = {
     loc_start: start_loc,
     loc_end: end_loc,
-    loc_ghost: true,
+    loc_ghost: false,
   };
 
   get_comments_inside_location(~location, comments);
@@ -223,11 +221,9 @@ let get_comments_to_end_of_enclosing_location =
   let location: Grain_parsing.Location.t = {
     loc_start: start_loc,
     loc_end: end_loc,
-    loc_ghost: true,
+    loc_ghost: false,
   };
-  let cmts = get_comments_inside_location(~location, comments);
-
-  cmts;
+  get_comments_inside_location(~location, comments);
 };
 
 let get_comments_from_start_of_enclosing_location =
@@ -257,11 +253,9 @@ let get_comments_from_start_of_enclosing_location =
   let location: Grain_parsing.Location.t = {
     loc_start: start_loc,
     loc_end: end_loc,
-    loc_ghost: true,
+    loc_ghost: false,
   };
-  let cmts = get_comments_inside_location(~location, comments);
-
-  cmts;
+  get_comments_inside_location(~location, comments);
 };
 
 let get_comments_between_locs =
@@ -293,11 +287,9 @@ let get_comments_between_locs =
   let location: Grain_parsing.Location.t = {
     loc_start: start_loc,
     loc_end: end_loc,
-    loc_ghost: true,
+    loc_ghost: false,
   };
-  let cmts = get_comments_inside_location(~location, comments);
-
-  cmts;
+  get_comments_inside_location(~location, comments);
 };
 
 let rec get_comments_on_line_end =
@@ -316,7 +308,7 @@ let rec get_comments_on_line_end =
     if (cmtline > line) {
       []; // can stop early as there will be no more
     } else if (cmtline == line && cmtchar >= char) {
-      [c] @ get_comments_on_line_end(line, char, List.tl(comments));
+      [c, ...get_comments_on_line_end(line, char, List.tl(comments))];
     } else {
       get_comments_on_line_end(line, char, List.tl(comments));
     };
@@ -333,7 +325,7 @@ let rec get_comments_on_line_start = (line: int, char: int, comments) =>
     if (cmtline > line) {
       []; // can stop early as there will be no more
     } else if (cmtline == line && cmtchar <= char) {
-      [c] @ get_comments_on_line_start(line, char, List.tl(comments));
+      [c, ...get_comments_on_line_start(line, char, List.tl(comments))];
     } else {
       get_comments_on_line_start(line, char, List.tl(comments));
     };
