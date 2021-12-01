@@ -6,10 +6,7 @@ let data = [>]
 
 let busNumbers = Array.map(
   ((num, idx)) => {
-    (
-      Option.expect("Expected a number", None),
-      idx,
-    )
+    (Option.expect("Expected a number", None), idx)
   },
   data,
 )

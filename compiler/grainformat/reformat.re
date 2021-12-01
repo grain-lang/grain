@@ -869,13 +869,15 @@ and print_pattern =
         (Doc.text(txt), false);
       }
     | PPatTuple(patterns) => (
-        print_patterns(
-          pat.ppat_loc,
-          patterns,
-          None,
-          next_loc,
-          comments,
-          original_source,
+        Doc.group(
+          print_patterns(
+            pat.ppat_loc,
+            patterns,
+            None,
+            next_loc,
+            comments,
+            original_source,
+          ),
         ),
         true,
       )
@@ -1674,40 +1676,42 @@ and print_expression =
       };
       let (_, bracket_line, _, _) =
         Locations.get_raw_pos_info(expr.pexp_loc.loc_end);
-      Doc.concat([
-        Doc.lparen,
-        Doc.indent(
-          Doc.concat([
-            Doc.softLine,
-            block_item_iterator(
-              bracket_line,
-              expressions,
-              None,
-              comments,
-              original_source,
-              ~get_loc,
-              ~print_item,
-              ~separator=Doc.comma,
-              ~trailing_separator=true,
-              ~break_separator=Doc.line,
-              ~get_attribute_text=no_attribute,
-              ~isBlock=true,
-              ~all_comments=comments,
-            ),
-          ]),
-        ),
-        if (List.length(expressions) == 1) {
-          // single arg tuple
-          Doc.ifBreaks(
-            Doc.nil,
-            Doc.comma // looks backwards but we already added one if the line breaks
-          );
-        } else {
-          Doc.nil;
-        },
-        Doc.softLine,
-        Doc.rparen,
-      ]);
+      Doc.group(
+        Doc.concat([
+          Doc.lparen,
+          Doc.indent(
+            Doc.concat([
+              Doc.softLine,
+              block_item_iterator(
+                bracket_line,
+                expressions,
+                None,
+                comments,
+                original_source,
+                ~get_loc,
+                ~print_item,
+                ~separator=Doc.comma,
+                ~trailing_separator=true,
+                ~break_separator=Doc.line,
+                ~get_attribute_text=no_attribute,
+                ~isBlock=true,
+                ~all_comments=comments,
+              ),
+            ]),
+          ),
+          if (List.length(expressions) == 1) {
+            // single arg tuple
+            Doc.ifBreaks(
+              Doc.nil,
+              Doc.comma // looks backwards but we already added one if the line breaks
+            );
+          } else {
+            Doc.nil;
+          },
+          Doc.softLine,
+          Doc.rparen,
+        ]),
+      );
 
     | PExpArray(expressions) =>
       let get_loc = (e: Grain_parsing__Parsetree.expression) => {
