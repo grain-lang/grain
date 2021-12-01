@@ -2258,6 +2258,12 @@ and print_expression =
           ~location=expression4.pexp_loc,
           comments,
         );
+      let comments_before_loop_expression =
+        Comment_utils.get_comments_enclosed_and_before_location(
+          ~loc1=expr.pexp_loc,
+          ~loc2=expression4.pexp_loc,
+          comments,
+        );
       Doc.concat([
         Doc.group(
           Doc.concat([
@@ -2273,7 +2279,7 @@ and print_expression =
                     print_expression(
                       ~parent_is_arrow=false,
                       ~original_source,
-                      ~comments,
+                      ~comments=comments_before_loop_expression,
                       expr,
                     )
                   | None => Doc.nil
@@ -2287,7 +2293,7 @@ and print_expression =
                         print_expression(
                           ~parent_is_arrow=false,
                           ~original_source,
-                          ~comments,
+                          ~comments=comments_before_loop_expression,
                           expr,
                         ),
                       ),
@@ -2303,7 +2309,7 @@ and print_expression =
                         print_expression(
                           ~parent_is_arrow=false,
                           ~original_source,
-                          ~comments,
+                          ~comments=comments_before_loop_expression,
                           expr,
                         ),
                       ),
