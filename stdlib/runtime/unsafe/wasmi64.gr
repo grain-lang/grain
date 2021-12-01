@@ -1,17 +1,44 @@
 /* grainc-flags --compilation-mode=runtime */
-
 // WebAssembly Memory Instructions
 export primitive load : (WasmI32, WasmI32) -> WasmI64 = "@wasm.load_int64"
 export primitive load8S : (WasmI32, WasmI32) -> WasmI64 = "@wasm.load_8_s_int64"
 export primitive load8U : (WasmI32, WasmI32) -> WasmI64 = "@wasm.load_8_u_int64"
-export primitive load16S : (WasmI32, WasmI32) -> WasmI64 = "@wasm.load_16_s_int64"
-export primitive load16U : (WasmI32, WasmI32) -> WasmI64 = "@wasm.load_16_u_int64"
-export primitive load32S : (WasmI32, WasmI32) -> WasmI64 = "@wasm.load_32_s_int64"
-export primitive load32U : (WasmI32, WasmI32) -> WasmI64 = "@wasm.load_32_u_int64"
-export primitive store : (WasmI32, WasmI64, WasmI32) -> Void = "@wasm.store_int64"
-export primitive store8 : (WasmI32, WasmI64, WasmI32) -> Void = "@wasm.store_8_int64"
-export primitive store16 : (WasmI32, WasmI64, WasmI32) -> Void = "@wasm.store_16_int64"
-export primitive store32 : (WasmI32, WasmI64, WasmI32) -> Void = "@wasm.store_32_int64"
+export primitive load16S : (
+  WasmI32,
+  WasmI32
+) -> WasmI64 = "@wasm.load_16_s_int64"
+export primitive load16U : (
+  WasmI32,
+  WasmI32
+) -> WasmI64 = "@wasm.load_16_u_int64"
+export primitive load32S : (
+  WasmI32,
+  WasmI32
+) -> WasmI64 = "@wasm.load_32_s_int64"
+export primitive load32U : (
+  WasmI32,
+  WasmI32
+) -> WasmI64 = "@wasm.load_32_u_int64"
+export primitive store : (
+  WasmI32,
+  WasmI64,
+  WasmI32
+) -> Void = "@wasm.store_int64"
+export primitive store8 : (
+  WasmI32,
+  WasmI64,
+  WasmI32
+) -> Void = "@wasm.store_8_int64"
+export primitive store16 : (
+  WasmI32,
+  WasmI64,
+  WasmI32
+) -> Void = "@wasm.store_16_int64"
+export primitive store32 : (
+  WasmI32,
+  WasmI64,
+  WasmI32
+) -> Void = "@wasm.store_32_int64"
 
 // WebAssembly Unary Instructions
 export primitive clz : WasmI64 -> WasmI64 = "@wasm.clz_int64"

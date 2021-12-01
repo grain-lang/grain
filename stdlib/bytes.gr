@@ -15,7 +15,7 @@ import Conv from "runtime/unsafe/conv"
 import {
   tagSimpleNumber,
   allocateBytes,
-  allocateString
+  allocateString,
 } from "runtime/dataStructures"
 import Exception from "runtime/exception"
 import Int32 from "int32"
@@ -73,7 +73,6 @@ let getSize = ptr => WasmI32.load(ptr, _SIZE_OFFSET)
 /**
  * @section Values: Functions for working with the Bytes data type.
  */
-
 /**
  * Creates a new byte sequence of the input size.
  *
@@ -370,7 +369,6 @@ export let rec fill = (value: Int32, bytes: Bytes) => {
 /**
  * @section Binary operations on integers: Functions for encoding and decoding integers stored in a byte sequence.
  */
-
 /**
  * Gets a signed 8-bit integer starting at the given byte index.
  *

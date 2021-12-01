@@ -12,11 +12,9 @@
  * 
  * @since v0.2.0
  */
-
 /**
  * @section Values: Functions for working with the Result data type.
  */
-
 /**
  * Checks if the Result is the `Ok` variant.
  *

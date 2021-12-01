@@ -1142,7 +1142,7 @@ and print_record =
       ~get_loc,
       ~print_item,
       ~separator=Doc.comma,
-      ~trailing_separator=true,
+      ~trailing_separator=List.length(fields) != 1,
       ~break_separator=Doc.line,
       ~get_attribute_text=no_attribute,
       ~isBlock=true,

@@ -2,70 +2,70 @@
 
 export *
 
-let isSome = (option) => {
+let isSome = option => {
   match (option) {
     Some(_) => true,
-    None => false
+    None => false,
   }
 }
 
-let isNone = (option) => {
+let isNone = option => {
   match (option) {
     None => true,
-    Some(_) => false
+    Some(_) => false,
   }
 }
 
 let contains = (val, option) => {
   match (option) {
     Some(x) => x == val,
-    None => false
+    None => false,
   }
 }
 
 let expect = (msg, option) => {
   match (option) {
     Some(x) => x,
-    None => fail msg
+    None => fail msg,
   }
 }
 
-let unwrap = (option) => {
+let unwrap = option => {
   expect("Could not unwrap None value", option)
 }
 
 let unwrapWithDefault = (default, option) => {
   match (option) {
     Some(x) => x,
-    None => default
+    None => default,
   }
 }
 
 let map = (fn, option) => {
   match (option) {
     Some(x) => Some(fn(x)),
-    None => None
+    None => None,
   }
 }
 
 let mapWithDefault = (fn, default, option) => {
   match (option) {
     Some(x) => fn(x),
-    None => default
+    None => default,
   }
 }
 
 let mapWithDefaultFn = (fn, defaultFn, option) => {
   match (option) {
     Some(x) => fn(x),
-    None => defaultFn()
+    None => defaultFn(),
   }
 }
 
 let flatMap = (fn, option) => {
   match (option) {
     Some(x) => fn(x),
-    None => None
+    None => None,
   }
 }
 
@@ -77,49 +77,49 @@ let filter = (pred, option) => {
       } else {
         None
       },
-    None => None
+    None => None,
   }
 }
 
 let zip = (optionA, optionB) => {
   match ((optionA, optionB)) {
     (Some(a), Some(b)) => Some((a, b)),
-    _ => None
+    _ => None,
   }
 }
 
 let zipWith = (fn, optionA, optionB) => {
   match ((optionA, optionB)) {
     (Some(a), Some(b)) => Some(fn(a, b)),
-    _ => None
+    _ => None,
   }
 }
 
-let flatten = (option) => {
+let flatten = option => {
   match (option) {
     Some(Some(x)) => Some(x),
-    _ => None
+    _ => None,
   }
 }
 
-let toList = (option) => {
+let toList = option => {
   match (option) {
     Some(x) => [x],
-    None => []
+    None => [],
   }
 }
 
-let toArray = (option) => {
+let toArray = option => {
   match (option) {
     Some(x) => [> x],
-    None => [>]
+    None => [>],
   }
 }
 
 let sideEffect = (fn, option) => {
   match (option) {
     Some(x) => fn(x),
-    None => void
+    None => void,
   }
 }
 
@@ -131,20 +131,20 @@ let peek = (fn, option) => {
 let or = (r1, r2) => {
   match (r1) {
     Some(x) => r1,
-    None => r2
+    None => r2,
   }
 }
 
 let and = (r1, r2) => {
   match (r1) {
     Some(_) => r2,
-    None => r1
+    None => r1,
   }
 }
 
 let toResult = (err, option) => {
   match (option) {
     Some(a) => Ok(a),
-    None    => Err(err)
+    None => Err(err),
   }
 }

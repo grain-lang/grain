@@ -6,13 +6,13 @@ import WasmF64 from "runtime/unsafe/wasmf64"
 import Tags from "runtime/unsafe/tags"
 
 @disableGC
-export let toInt32 = (n) => {
+export let toInt32 = n => {
   let ptr = Memory.malloc(12n)
   WasmI32.store(ptr, Tags._GRAIN_BOXED_NUM_HEAP_TAG, 0n)
   WasmI32.store(ptr, Tags._GRAIN_INT32_BOXED_NUM_TAG, 4n)
   WasmI32.store(ptr, n, 8n)
 
-  WasmI32.toGrain(ptr) : Int32
+  WasmI32.toGrain(ptr): (Int32)
 }
 
 @disableGC
@@ -22,13 +22,13 @@ export let fromInt32 = (n: Int32) => {
 }
 
 @disableGC
-export let toInt64 = (n) => {
+export let toInt64 = n => {
   let ptr = Memory.malloc(16n)
   WasmI32.store(ptr, Tags._GRAIN_BOXED_NUM_HEAP_TAG, 0n)
   WasmI32.store(ptr, Tags._GRAIN_INT64_BOXED_NUM_TAG, 4n)
   WasmI64.store(ptr, n, 8n)
 
-  WasmI32.toGrain(ptr) : Int64
+  WasmI32.toGrain(ptr): (Int64)
 }
 
 @disableGC
@@ -38,13 +38,13 @@ export let fromInt64 = (n: Int64) => {
 }
 
 @disableGC
-export let toFloat32 = (n) => {
+export let toFloat32 = n => {
   let ptr = Memory.malloc(12n)
   WasmI32.store(ptr, Tags._GRAIN_BOXED_NUM_HEAP_TAG, 0n)
   WasmI32.store(ptr, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG, 4n)
   WasmF32.store(ptr, n, 8n)
 
-  WasmI32.toGrain(ptr) : Float32
+  WasmI32.toGrain(ptr): (Float32)
 }
 
 @disableGC
@@ -54,13 +54,13 @@ export let fromFloat32 = (n: Float32) => {
 }
 
 @disableGC
-export let toFloat64 = (n) => {
+export let toFloat64 = n => {
   let ptr = Memory.malloc(16n)
   WasmI32.store(ptr, Tags._GRAIN_BOXED_NUM_HEAP_TAG, 0n)
   WasmI32.store(ptr, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG, 4n)
   WasmF64.store(ptr, n, 8n)
 
-  WasmI32.toGrain(ptr) : Float64
+  WasmI32.toGrain(ptr): (Float64)
 }
 
 @disableGC
@@ -89,7 +89,6 @@ export let wasmI32ToNumber = (n: WasmI32) => {
   // call to tagSimpleNumber and instead doing it inline. For the case of
   // numbers not fitting into the range, the cost of these simple ALU
   // instructions are negligible compared to heap allocations.
-
   // First step: naively convert to simple number, just like tagSimpleNumber.
   // This will overflow for values not in the range, but it's fine.
   let simple = WasmI32.xor(WasmI32.shl(n, 1n), 1n)
