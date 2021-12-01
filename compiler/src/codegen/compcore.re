@@ -1108,6 +1108,10 @@ let error_if_true = (wasm_mod, env, cond, err, args) =>
   );
 
 let compile_tuple_op = (~is_box=false, wasm_mod, env, tup_imm, op) => {
+  // We skip the incref here as this is akin to using a swap slot (the
+  // reference we create here cannot escape, so there isn't a need to add an
+  // incref/decref pair). Since it won't live in a local, it wouldn't be
+  // cleaned up automatically anyway.
   let tup = () => compile_imm(~skip_incref=true, wasm_mod, env, tup_imm);
   switch (op) {
   | MTupleGet(idx) =>
@@ -1176,6 +1180,10 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
   let get_swap = n => get_swap(wasm_mod, env, n);
   let set_swap = n => set_swap(wasm_mod, env, n);
   let get_arr_value = () =>
+    // We skip the incref here as this is akin to using a swap slot (the
+    // reference we create here cannot escape, so there isn't a need to add an
+    // incref/decref pair). Since it won't live in a local, it wouldn't be
+    // cleaned up automatically anyway.
     compile_imm(~skip_incref=true, wasm_mod, env, arr_imm);
   switch (op) {
   | MArrayGet(idx_imm) =>
@@ -1396,6 +1404,10 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
 };
 
 let compile_adt_op = (wasm_mod, env, adt_imm, op) => {
+  // We skip the incref here as this is akin to using a swap slot (the
+  // reference we create here cannot escape, so there isn't a need to add an
+  // incref/decref pair). Since it won't live in a local, it wouldn't be
+  // cleaned up automatically anyway.
   let adt = compile_imm(~skip_incref=true, wasm_mod, env, adt_imm);
   switch (op) {
   | MAdtGet(idx) =>
@@ -1411,6 +1423,10 @@ let compile_adt_op = (wasm_mod, env, adt_imm, op) => {
 };
 
 let compile_record_op = (wasm_mod, env, rec_imm, op) => {
+  // We skip the incref here as this is akin to using a swap slot (the
+  // reference we create here cannot escape, so there isn't a need to add an
+  // incref/decref pair). Since it won't live in a local, it wouldn't be
+  // cleaned up automatically anyway.
   let record = () => compile_imm(~skip_incref=true, wasm_mod, env, rec_imm);
   switch (op) {
   | MRecordGet(idx) =>
@@ -2557,6 +2573,10 @@ let rec compile_store = (wasm_mod, env, binds) => {
         switch (instr.instr_desc) {
         // special logic here for letrec
         | MAllocate(MClosure(cdata)) =>
+          // We skip the incref here as this is akin to using a swap slot (the
+          // reference we create here cannot escape, so there isn't a need to add an
+          // incref/decref pair). Since it won't live in a local, it wouldn't be
+          // cleaned up automatically anyway.
           let get_bind =
             compile_bind(
               ~action=BindGet,
