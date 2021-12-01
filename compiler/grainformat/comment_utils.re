@@ -426,8 +426,9 @@ let no_breakcomment_to_doc = (comment: Grain_parsing.Parsetree.comment) => {
 
 let comments_to_docs =
     (~offset: bool, comments: list(Grain_parsing.Parsetree.comment)) => {
-  let listLength = List.length(comments);
-  if (listLength > 0) {
+  switch (comments) {
+  | [] => Doc.nil
+  | _remaining_comments =>
     if (offset) {
       Doc.concat([
         Doc.space,
@@ -435,9 +436,7 @@ let comments_to_docs =
       ]);
     } else {
       Doc.concat([line_of_comments_inner(None, comments, comment_to_doc)]);
-    };
-  } else {
-    Doc.nil;
+    }
   };
 };
 

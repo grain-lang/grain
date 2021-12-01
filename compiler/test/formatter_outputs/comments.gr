@@ -27,7 +27,7 @@ export let slice = (startIndex, endIndex, array) => {
 
 // leading
 
-if ( /*before*/true /*whyt*/) {
+if (/*before*/ true /*whyt*/) {
   // 1
   //a
 

@@ -2160,7 +2160,11 @@ and print_expression =
             Doc.group(
               Doc.concat([
                 Doc.lparen,
-                Comment_utils.comments_to_docs(~offset=true, condLeadingCmt),
+                Comment_utils.comments_to_docs(~offset=false, condLeadingCmt),
+                switch (condLeadingCmt) {
+                | [] => Doc.nil
+                | _ => Doc.space
+                },
                 print_expression(
                   ~parent_is_arrow=false,
                   ~original_source,
@@ -2184,7 +2188,11 @@ and print_expression =
               Doc.text("if"),
               Doc.space,
               Doc.lparen,
-              Comment_utils.comments_to_docs(~offset=true, condLeadingCmt),
+              Comment_utils.comments_to_docs(~offset=false, condLeadingCmt),
+              switch (condLeadingCmt) {
+              | [] => Doc.nil
+              | _ => Doc.space
+              },
               print_expression(
                 ~parent_is_arrow=false,
                 ~original_source,
