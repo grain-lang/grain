@@ -2262,7 +2262,8 @@ and print_expression =
         Comment_utils.get_comments_enclosed_and_before_location(
           ~loc1=expr.pexp_loc,
           ~loc2=expression4.pexp_loc,
-          comments);
+          comments,
+        );
       Doc.concat([
         Doc.group(
           Doc.concat([
