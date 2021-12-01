@@ -62,7 +62,7 @@ if (a /*why*/) {
   // inner comment
   5 // trail 5
 
-  6 /* block 6a *//* block 6 b */
+  6 /* block 6a */ /* block 6 b */
   // ending comment
 } else {
   7 // on time

@@ -394,7 +394,7 @@ let rec line_of_comments_inner =
       if (prevCmt != thisCmt) {
         Doc.concat([Doc.hardLine, comment_to_doc(cmt)]);
       } else {
-        comment_to_doc(cmt);
+        Doc.concat([Doc.space, comment_to_doc(cmt)]);
       };
     }
   | [cmt, ...remainder] =>
@@ -412,7 +412,7 @@ let rec line_of_comments_inner =
         if (prevCmt != thisCmt) {
           Doc.concat([Doc.hardLine, comment_to_doc(cmt)]);
         } else {
-          comment_to_doc(cmt);
+          Doc.concat([Doc.space, comment_to_doc(cmt)]);
         };
       },
       line_of_comments_inner(Some(cmt), List.tl(comments), comment_to_doc),
