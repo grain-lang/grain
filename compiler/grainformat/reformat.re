@@ -139,8 +139,9 @@ let line_separator =
 
 let comments_line_separator =
     (line_above: int, comments: list(Grain_parsing.Parsetree.comment)) =>
-  if (List.length(comments) > 0) {
-    let firstComment = List.hd(comments);
+  switch (comments) {
+  | [] => Doc.nil
+  | [firstComment, ...tl] =>
     let (_, line, _, _) =
       Locations.get_raw_pos_info(
         Locations.get_comment_loc(firstComment).loc_start,
@@ -150,8 +151,6 @@ let comments_line_separator =
     } else {
       Doc.nil;
     };
-  } else {
-    Doc.nil;
   };
 
 let is_disable_formatting_comment = (comment: Parsetree.comment) => {
@@ -236,11 +235,9 @@ let rec block_item_iterator =
           ~isBlock: bool,
           ~all_comments: list(Grain_parsing__Parsetree.comment),
         ) =>
-  if (List.length(items) == 0) {
-    Doc.nil;
-  } else {
-    let item = List.hd(items);
-
+  switch (items) {
+  | [] => Doc.nil
+  | [item, ...rem] =>
     let attribute_text = get_attribute_text(item);
 
     let line_above =
@@ -956,7 +953,9 @@ and print_pattern =
         (
           Doc.concat([
             print_ident(location.txt),
-            if (List.length(patterns) > 0) {
+            switch (patterns) {
+            | [] => Doc.nil
+            | _patterns =>
               add_parens(
                 print_patterns(
                   pat.ppat_loc,
@@ -966,9 +965,7 @@ and print_pattern =
                   comments,
                   original_source,
                 ),
-              );
-            } else {
-              Doc.nil;
+              )
             },
           ]),
           false,
@@ -1015,10 +1012,9 @@ and print_pattern =
     };
 
   let clean_pattern =
-    if (List.length(with_trailing) == 1) {
-      List.hd(with_trailing);
-    } else {
-      Doc.concat(with_trailing);
+    switch (with_trailing) {
+    | [fst] => fst
+    | _ => Doc.concat(with_trailing)
     };
 
   if (parens) {
@@ -1190,16 +1186,11 @@ and print_type =
   | PTyArrow(types, parsed_type) =>
     Doc.concat([
       Doc.group(
-        switch (List.length(types)) {
-        | 0 => Doc.concat([Doc.lparen, Doc.rparen])
-        | 1 =>
-          print_type(
-            List.hd(types),
-            original_source,
-            comments,
-            ~trailing_separator,
-          )
-        | _ =>
+        switch (types) {
+        | [] => Doc.concat([Doc.lparen, Doc.rparen])
+        | [t] =>
+          print_type(t, original_source, comments, ~trailing_separator)
+        | _types =>
           Doc.concat([
             Doc.lparen,
             Doc.indent(
@@ -1259,10 +1250,9 @@ and print_type =
 
   | PTyConstr(locidentifier, parsedtypes) =>
     let ident = locidentifier.txt;
-
-    if (List.length(parsedtypes) == 0) {
-      print_ident(ident);
-    } else {
+    switch (parsedtypes) {
+    | [] => print_ident(ident)
+    | [first, ...rem] =>
       let get_loc = (t: Grain_parsing__Parsetree.parsed_type) => {
         t.ptyp_loc;
       };
@@ -1274,7 +1264,6 @@ and print_type =
           );
         print_type(t, original_source, localComments, ~trailing_separator);
       };
-      let first = List.hd(parsedtypes);
 
       let (_, open_line, _, _) =
         Locations.get_raw_pos_info(get_loc(first).loc_end);
@@ -1321,6 +1310,7 @@ and print_application =
   let function_name = get_function_name(func);
 
   switch (expressions) {
+  | [] => Doc.nil
   | [first] when prefixop(function_name) =>
     switch (first.pexp_desc) {
     | PExpApp(fn, _) =>
@@ -1455,7 +1445,7 @@ and print_application =
 
   | _ when prefixop(function_name) || infixop(function_name) =>
     raise(Error(Illegal_parse("Formatter error, wrong number of args ")))
-  | _ =>
+  | [first_expr, ...rem] =>
     if (function_name == list_cons) {
       resugar_list(~expressions, ~original_source, ~comments);
     } else if (Array.exists(fn => function_name == fn, exception_primitives)) {
@@ -1471,12 +1461,13 @@ and print_application =
           ~parent_is_arrow=false,
           ~original_source,
           ~comments,
-          List.hd(expressions),
+          first_expr,
         ),
       ]);
     } else {
       Doc.group(
-        if (List.length(expressions) == 0) {
+        switch (expressions) {
+        | [] =>
           Doc.concat([
             print_expression(
               ~parent_is_arrow=false,
@@ -1486,8 +1477,8 @@ and print_application =
             ),
             Doc.lparen,
             Doc.rparen,
-          ]);
-        } else {
+          ])
+        | _ =>
           Doc.concat([
             print_expression(
               ~parent_is_arrow=false,
@@ -1517,7 +1508,7 @@ and print_application =
             ),
             Doc.softLine,
             Doc.rparen,
-          ]);
+          ])
         },
       );
     }
@@ -1549,7 +1540,9 @@ and check_for_pun = (expr: Parsetree.expression) =>
 
 and print_attributes =
     (attributes: list(Grain_parsing__Location.loc(string))) =>
-  if (List.length(attributes) > 0) {
+  switch (attributes) {
+  | [] => Doc.nil
+  | _ =>
     Doc.concat([
       Doc.join(
         Doc.space,
@@ -1560,9 +1553,7 @@ and print_attributes =
         ),
       ),
       Doc.hardLine,
-    ]);
-  } else {
-    Doc.nil;
+    ])
   }
 
 and print_patterns =
@@ -1584,9 +1575,9 @@ and print_patterns =
     print_pattern(p, ~original_source, ~comments=localComments, ~next_loc);
   };
 
-  if (List.length(patterns) < 1) {
-    Doc.nil;
-  } else {
+  switch (patterns) {
+  | [] => Doc.nil
+  | _ =>
     let (_, line, _, _) = Locations.get_raw_pos_info(wrapper.loc_end);
 
     block_item_iterator(
@@ -1607,97 +1598,6 @@ and print_patterns =
   };
 }
 
-and print_patterns_old =
-    (
-      wrapper: Grain_parsing.Location.t,
-      patterns: list(Grain_parsing__Parsetree.pattern),
-      previous: option(Grain_parsing__Parsetree.pattern),
-      next_loc: Grain_parsing.Location.t,
-      comments: list(Grain_parsing__Parsetree.comment),
-      original_source: array(string),
-    ) =>
-  if (List.length(patterns) == 0) {
-    Comment_utils.comments_to_docs(
-      ~offset=true,
-      Comment_utils.get_comments_from_start_of_enclosing_location(
-        ~wrapper,
-        ~location=next_loc,
-        comments,
-      ),
-    );
-  } else {
-    let p = List.hd(patterns);
-    let comma =
-      switch (previous) {
-      | None => Doc.nil
-      | Some(pt) => Doc.concat([Doc.comma, Doc.line])
-      };
-    let preComment =
-      switch (previous) {
-      | None =>
-        Comment_utils.get_comments_from_start_of_enclosing_location(
-          ~wrapper,
-          ~location=p.ppat_loc,
-          comments,
-        )
-      | Some(pre) =>
-        Comment_utils.get_comments_between_locs(
-          ~loc1=pre.ppat_loc,
-          ~loc2=p.ppat_loc,
-          comments,
-        )
-      };
-
-    let spacer =
-      if (List.length(preComment) > 0) {
-        Doc.line;
-      } else {
-        Doc.nil;
-      };
-
-    // cover last pattern
-
-    if (List.length(patterns) == 1) {
-      let trailing =
-        Comment_utils.get_comments_between_locs(
-          ~loc1=p.ppat_loc,
-          ~loc2=next_loc,
-          comments,
-        );
-      Doc.concat([
-        comma,
-        Comment_utils.comments_to_docs(~offset=false, preComment),
-        spacer,
-        print_pattern(p, ~original_source, ~comments, ~next_loc),
-        Comment_utils.comments_to_docs(~offset=true, trailing),
-      ]);
-    } else {
-      // we have a pattern after us which we use as the next loc
-      // this is safe but to replace with switch
-
-      let nextPatloc = List.hd(List.tl(patterns));
-
-      Doc.concat([
-        comma,
-        Comment_utils.comments_to_docs(~offset=false, preComment),
-        spacer,
-        print_pattern(
-          p,
-          ~original_source,
-          ~comments,
-          ~next_loc=nextPatloc.ppat_loc,
-        ),
-        print_patterns_old(
-          wrapper,
-          List.tl(patterns),
-          Some(p),
-          next_loc,
-          comments,
-          original_source,
-        ),
-      ]);
-    };
-  }
 and paren_wrap_patterns =
     (
       wrapper: Grain_parsing.Location.t,
@@ -1716,16 +1616,14 @@ and paren_wrap_patterns =
       original_source,
     );
 
-  switch (List.length(patterns)) {
-  | 0 => Doc.concat([Doc.lparen, args, Doc.rparen])
-  | 1 =>
-    let pat = List.hd(patterns);
-
+  switch (patterns) {
+  | [] => Doc.concat([Doc.lparen, args, Doc.rparen])
+  | [pat] =>
     switch (pat.ppat_desc) {
     | PPatVar(_) => args
     | _ => Doc.concat([Doc.lparen, args, Doc.rparen])
-    };
-  | _ =>
+    }
+  | _patterns =>
     let trail_sep = Doc.ifBreaks(Doc.comma, Doc.nil);
 
     Doc.group(
@@ -1826,9 +1724,9 @@ and print_expression =
       let (_, bracket_line, _, _) =
         Locations.get_raw_pos_info(expr.pexp_loc.loc_end);
       Doc.group(
-        if (List.length(expressions) == 0) {
-          Doc.text("[>]");
-        } else {
+        switch (expressions) {
+        | [] => Doc.text("[>]")
+        | _ =>
           Doc.concat([
             Doc.lbracket,
             Doc.text("> "),
@@ -1854,7 +1752,7 @@ and print_expression =
             ),
             Doc.softLine,
             Doc.rbracket,
-          ]);
+          ])
         },
       );
     | PExpArrayGet(expression1, expression2) =>
@@ -2188,7 +2086,9 @@ and print_expression =
       let false_clause =
         switch (falseExpr.pexp_desc) {
         | PExpBlock(expressions) =>
-          if (List.length(expressions) > 0) {
+          switch (expressions) {
+          | [] => Doc.nil
+          | _ =>
             Doc.concat([
               true_false_space,
               Doc.text("else "),
@@ -2198,9 +2098,7 @@ and print_expression =
                 ~comments=comments_in_false_statement,
                 falseExpr,
               ),
-            ]);
-          } else {
-            Doc.nil;
+            ])
           }
         | PExpIf(_condition, _trueExpr, _falseExpr) =>
           Doc.concat([
@@ -2519,7 +2417,19 @@ and print_expression =
         Comment_utils.get_after_brace_comments(expr.pexp_loc, comments);
       let remaining_comments =
         List.filter(c => !List.mem(c, after_brace_comments), comments);
-      if (List.length(expressions) > 0) {
+      switch (expressions) {
+      | [] =>
+        // I think not legal syntac
+        Doc.breakableGroup(
+          ~forceBreak=true,
+          Doc.concat([
+            Doc.lbrace,
+            Doc.indent(Doc.line),
+            Doc.line,
+            Doc.rbrace,
+          ]),
+        )
+      | _ =>
         let get_loc = (expr: Grain_parsing__Parsetree.expression) => {
           expr.pexp_loc;
         };
@@ -2579,17 +2489,6 @@ and print_expression =
                 printed_expressions,
               ]),
             ),
-            Doc.line,
-            Doc.rbrace,
-          ]),
-        );
-      } else {
-        // I think not legal syntac
-        Doc.breakableGroup(
-          ~forceBreak=true,
-          Doc.concat([
-            Doc.lbrace,
-            Doc.indent(Doc.line),
             Doc.line,
             Doc.rbrace,
           ]),
@@ -2772,9 +2671,9 @@ and print_value_bind =
     };
 
   let value_bindings =
-    if (List.length(vbs) < 1) {
-      Doc.nil;
-    } else {
+    switch (vbs) {
+    | [] => Doc.nil
+    | [first, ...rem] =>
       let get_loc = (vb: Parsetree.value_binding) => vb.pvb_loc;
       let print_item = (vb: Parsetree.value_binding) => {
         let after_let_comments =
@@ -2785,13 +2684,13 @@ and print_value_bind =
           );
 
         let after_let_comments_docs =
-          if (List.length(after_let_comments) > 0) {
+          switch (after_let_comments) {
+          | [] => Doc.nil
+          | _ =>
             Comment_utils.line_of_comments_to_doc_no_break(
               ~offset=false,
               after_let_comments,
-            );
-          } else {
-            Doc.nil;
+            )
           };
 
         let exprComments =
@@ -2834,16 +2733,14 @@ and print_value_bind =
             ~separator=Doc.nil,
             after_let_comments,
           ),
-          if (List.length(after_let_comments) == 0) {
-            Doc.space;
-          } else {
-            Doc.nil;
+          switch (after_let_comments) {
+          | [] => Doc.space
+          | _ => Doc.nil
           },
           Doc.equal,
           Doc.group(expressionGrp),
         ]);
       };
-      let first = List.hd(vbs);
 
       let (_, open_line, _, _) =
         Locations.get_raw_pos_info(get_loc(first).loc_end);
@@ -2908,15 +2805,14 @@ let rec print_data =
 
     // weird comment position after the equals
     let after_brace_comments =
-      if (List.length(data.pdata_params) == 0) {
-        Comment_utils.get_after_brace_comments(data.pdata_loc, comments);
-      } else {
-        let first = List.hd(data.pdata_params);
+      switch (data.pdata_params) {
+      | [] => Comment_utils.get_after_brace_comments(data.pdata_loc, comments)
+      | [first, ...rem] =>
         Comment_utils.get_comments_enclosed_and_before_location(
           ~loc1=data.pdata_name.loc,
           ~loc2=first.ptyp_loc,
           comments,
-        );
+        )
       };
 
     let remaining_comments =
@@ -3048,7 +2944,9 @@ let rec print_data =
             Doc.text(d.pcd_name.txt),
             switch (d.pcd_args) {
             | PConstrTuple(parsed_types) =>
-              if (List.length(parsed_types) > 0) {
+              switch (parsed_types) {
+              | [] => Doc.nil
+              | [first, ...rem] =>
                 let get_loc = (t: Grain_parsing.Parsetree.parsed_type) =>
                   t.ptyp_loc;
                 let print_item = (t: Grain_parsing.Parsetree.parsed_type) => {
@@ -3064,7 +2962,6 @@ let rec print_data =
                     ~trailing_separator=true,
                   );
                 };
-                let first = List.hd(parsed_types);
 
                 let (_, open_line, _, _) =
                   Locations.get_raw_pos_info(get_loc(first).loc_end);
@@ -3096,8 +2993,6 @@ let rec print_data =
                     Doc.rparen,
                   ]),
                 );
-              } else {
-                Doc.nil;
               }
             | PConstrSingleton => Doc.nil
             },
@@ -3134,7 +3029,9 @@ let rec print_data =
         Doc.text("enum"),
         Doc.space,
         Doc.text(nameloc.txt),
-        if (List.length(data.pdata_params) > 0) {
+        switch (data.pdata_params) {
+        | [] => Doc.space
+        | [first, ...rem] =>
           let get_loc = (t: Grain_parsing.Parsetree.parsed_type) =>
             t.ptyp_loc;
           let print_item = (t: Grain_parsing.Parsetree.parsed_type) => {
@@ -3150,7 +3047,6 @@ let rec print_data =
               ~trailing_separator=false,
             );
           };
-          let first = List.hd(data.pdata_params);
 
           let (_, open_line, _, _) =
             Locations.get_raw_pos_info(get_loc(first).loc_end);
@@ -3182,8 +3078,6 @@ let rec print_data =
               Doc.space,
             ]),
           );
-        } else {
-          Doc.space;
         },
         Doc.lbrace,
         Comment_utils.line_of_comments_to_doc_no_break(
@@ -3261,7 +3155,9 @@ let rec print_data =
         Doc.text("record"),
         Doc.space,
         Doc.text(nameloc.txt),
-        if (List.length(data.pdata_params) > 0) {
+        switch (data.pdata_params) {
+        | [] => Doc.space
+        | [first, ...rem] =>
           let get_loc = (t: Grain_parsing.Parsetree.parsed_type) =>
             t.ptyp_loc;
           let print_item = (t: Grain_parsing.Parsetree.parsed_type) => {
@@ -3277,8 +3173,6 @@ let rec print_data =
               ~trailing_separator=false,
             );
           };
-
-          let first = List.hd(data.pdata_params);
 
           let (_, open_line, _, _) =
             Locations.get_raw_pos_info(get_loc(first).loc_end);
@@ -3310,8 +3204,6 @@ let rec print_data =
               Doc.space,
             ]),
           );
-        } else {
-          Doc.space;
         },
         Doc.concat([
           Doc.lbrace,
@@ -3378,7 +3270,9 @@ let import_print =
         | PImportAllExcept(identlocs) =>
           Doc.concat([
             Doc.text("*"),
-            if (List.length(identlocs) > 0) {
+            switch (identlocs) {
+            | [] => Doc.nil
+            | [first, ...rem] =>
               let get_loc =
                   (identloc: Location.loc(Grain_parsing__Identifier.t)) => {
                 identloc.loc;
@@ -3388,7 +3282,6 @@ let import_print =
                   (identloc: Location.loc(Grain_parsing__Identifier.t)) => {
                 print_ident(identloc.txt);
               };
-              let first = List.hd(identlocs);
 
               let (_, bracket_line, _, _) =
                 Locations.get_raw_pos_info(get_loc(first).loc_end);
@@ -3418,8 +3311,6 @@ let import_print =
                 Doc.line,
                 Doc.rbrace,
               ]);
-            } else {
-              Doc.nil;
             },
           ])
         | PImportValues(identlocsopts) =>
@@ -3428,7 +3319,9 @@ let import_print =
             Doc.indent(
               Doc.concat([
                 Doc.line,
-                if (List.length(identlocsopts) > 0) {
+                switch (identlocsopts) {
+                | [] => Doc.nil
+                | [first, ...rem] =>
                   let get_loc =
                       (
                         identlocopt: (
@@ -3474,8 +3367,6 @@ let import_print =
                     };
                   };
 
-                  let first = List.hd(identlocsopts);
-
                   let (_, bracket_line, _, _) =
                     Locations.get_raw_pos_info(get_loc(first).loc_end);
 
@@ -3494,8 +3385,6 @@ let import_print =
                     ~isBlock=true,
                     ~all_comments=comments,
                   );
-                } else {
-                  Doc.nil;
                 },
               ]),
             ),
