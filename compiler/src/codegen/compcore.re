@@ -1042,10 +1042,12 @@ let cleanup_locals = (wasm_mod, env: codegen_env, arg, rtype): Expression.t => {
   ret;
 };
 
-let compile_imm = (wasm_mod, env: codegen_env, i: immediate): Expression.t =>
+let compile_imm =
+    (~skip_incref=?, wasm_mod, env: codegen_env, i: immediate): Expression.t =>
   switch (i) {
   | MImmConst(c) => Expression.Const.make(wasm_mod, compile_const(c))
-  | MImmBinding(b) => compile_bind(~action=BindGet, wasm_mod, env, b)
+  | MImmBinding(b) =>
+    compile_bind(~action=BindGet, ~skip_incref?, wasm_mod, env, b)
   | MImmTrap => Expression.Unreachable.make(wasm_mod)
   };
 
@@ -1106,7 +1108,11 @@ let error_if_true = (wasm_mod, env, cond, err, args) =>
   );
 
 let compile_tuple_op = (~is_box=false, wasm_mod, env, tup_imm, op) => {
-  let tup = () => compile_imm(wasm_mod, env, tup_imm);
+  // We skip the incref here as this is akin to using a swap slot (the
+  // reference we create here cannot escape, so there isn't a need to add an
+  // incref/decref pair). Since it won't live in a local, it wouldn't be
+  // cleaned up automatically anyway.
+  let tup = () => compile_imm(~skip_incref=true, wasm_mod, env, tup_imm);
   switch (op) {
   | MTupleGet(idx) =>
     let idx_int = Int32.to_int(idx);
@@ -1173,7 +1179,12 @@ let compile_box_op = (wasm_mod, env, box_imm, op) =>
 let compile_array_op = (wasm_mod, env, arr_imm, op) => {
   let get_swap = n => get_swap(wasm_mod, env, n);
   let set_swap = n => set_swap(wasm_mod, env, n);
-  let get_arr_value = () => compile_imm(wasm_mod, env, arr_imm);
+  let get_arr_value = () =>
+    // We skip the incref here as this is akin to using a swap slot (the
+    // reference we create here cannot escape, so there isn't a need to add an
+    // incref/decref pair). Since it won't live in a local, it wouldn't be
+    // cleaned up automatically anyway.
+    compile_imm(~skip_incref=true, wasm_mod, env, arr_imm);
   switch (op) {
   | MArrayGet(idx_imm) =>
     // ASSUMPTION: idx is a basic (non-heap) int
@@ -1393,7 +1404,11 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
 };
 
 let compile_adt_op = (wasm_mod, env, adt_imm, op) => {
-  let adt = compile_imm(wasm_mod, env, adt_imm);
+  // We skip the incref here as this is akin to using a swap slot (the
+  // reference we create here cannot escape, so there isn't a need to add an
+  // incref/decref pair). Since it won't live in a local, it wouldn't be
+  // cleaned up automatically anyway.
+  let adt = compile_imm(~skip_incref=true, wasm_mod, env, adt_imm);
   switch (op) {
   | MAdtGet(idx) =>
     let idx_int = Int32.to_int(idx);
@@ -1408,7 +1423,11 @@ let compile_adt_op = (wasm_mod, env, adt_imm, op) => {
 };
 
 let compile_record_op = (wasm_mod, env, rec_imm, op) => {
-  let record = () => compile_imm(wasm_mod, env, rec_imm);
+  // We skip the incref here as this is akin to using a swap slot (the
+  // reference we create here cannot escape, so there isn't a need to add an
+  // incref/decref pair). Since it won't live in a local, it wouldn't be
+  // cleaned up automatically anyway.
+  let record = () => compile_imm(~skip_incref=true, wasm_mod, env, rec_imm);
   switch (op) {
   | MRecordGet(idx) =>
     let idx_int = Int32.to_int(idx);
@@ -2550,18 +2569,29 @@ let rec compile_store = (wasm_mod, env, binds) => {
     let process_bind = ((b, instr), acc) => {
       let store_bind = arg =>
         compile_bind(~action=BindSet(arg), wasm_mod, env, b);
-      let get_bind = compile_bind(~action=BindGet, wasm_mod, env, b);
       let compiled_instr =
         switch (instr.instr_desc) {
         // special logic here for letrec
         | MAllocate(MClosure(cdata)) =>
+          // We skip the incref here as this is akin to using a swap slot (the
+          // reference we create here cannot escape, so there isn't a need to add an
+          // incref/decref pair). Since it won't live in a local, it wouldn't be
+          // cleaned up automatically anyway.
+          let get_bind =
+            compile_bind(
+              ~action=BindGet,
+              ~skip_incref=true,
+              wasm_mod,
+              env,
+              b,
+            );
           allocate_closure(
             wasm_mod,
             env,
             ~lambda=get_bind,
             ~skip_patching=true,
             cdata,
-          )
+          );
         | MReturnCallIndirect(_)
         | MReturnCallKnown(_)
         | MCallIndirect(_)
