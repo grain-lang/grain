@@ -1874,6 +1874,12 @@ and print_expression =
             comments,
           );
 
+        let branch_pattern_comments =
+          Comment_utils.get_comments_inside_location(
+            ~location=branch.pmb_pat.ppat_loc,
+            comments,
+          );
+
         Doc.group(
           Doc.concat([
             Doc.concat([
@@ -1881,7 +1887,7 @@ and print_expression =
                 print_pattern(
                   branch.pmb_pat,
                   ~original_source,
-                  ~comments=branch_comments,
+                  ~comments=branch_pattern_comments,
                   ~next_loc=
                     switch (branch.pmb_guard) {
                     | None => branch.pmb_body.pexp_loc
@@ -1892,6 +1898,11 @@ and print_expression =
               switch (branch.pmb_guard) {
               | None => Doc.nil
               | Some(guard) =>
+                let branch_guard_comments =
+                  Comment_utils.get_comments_inside_location(
+                    ~location=guard.pexp_loc,
+                    comments,
+                  );
                 Doc.concat([
                   Doc.space,
                   Doc.text("when"),
@@ -1900,11 +1911,11 @@ and print_expression =
                     print_expression(
                       ~parent_is_arrow=false,
                       ~original_source,
-                      ~comments=branch_comments,
+                      ~comments=branch_guard_comments,
                       guard,
                     ),
                   ),
-                ])
+                ]);
               },
               Doc.space,
               Doc.text("=>"),
@@ -2276,11 +2287,13 @@ and print_expression =
                 Doc.concat([
                   switch (optexpression1) {
                   | Some(expr) =>
-                    print_expression(
-                      ~parent_is_arrow=false,
-                      ~original_source,
-                      ~comments=comments_before_loop_expression,
-                      expr,
+                    Doc.group(
+                      print_expression(
+                        ~parent_is_arrow=false,
+                        ~original_source,
+                        ~comments=comments_before_loop_expression,
+                        expr,
+                      ),
                     )
                   | None => Doc.nil
                   },
@@ -2324,11 +2337,13 @@ and print_expression =
           ]),
         ),
         Doc.space,
-        print_expression(
-          ~parent_is_arrow=false,
-          ~original_source,
-          ~comments=comments_in_expression4,
-          expression4,
+        Doc.group(
+          print_expression(
+            ~parent_is_arrow=false,
+            ~original_source,
+            ~comments=comments_in_expression4,
+            expression4,
+          ),
         ),
       ]);
     | PExpContinue => Doc.group(Doc.concat([Doc.text("continue")]))

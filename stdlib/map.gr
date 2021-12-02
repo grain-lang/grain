@@ -34,23 +34,14 @@ let getBucketIndex = (key, buckets) => {
 let rec copyNodeWithNewHash = (oldNode, next, tail) => {
   match (oldNode) {
     None => void,
-    Some(
-      node
-
-      // If there's already a tail node, we add this to the end
-      // Always place this node as the new tail
-      // Recurse with the next node
-    ) => {
+    Some(node) => {
       let idx = getBucketIndex(node.key, next)
       let newNode = Some(node)
       match (tail[idx]) {
         None => {
           next[idx] = newNode
         },
-        Some(
-          tailNode
-          // If there's already a tail node, we add this to the end
-        ) => {
+        Some(tailNode) => {
           // If there's already a tail node, we add this to the end
           tailNode.next = newNode
         },
@@ -192,10 +183,7 @@ export let remove = (key, map) => {
   let bucket = buckets[idx]
   match (bucket) {
     None => void,
-    Some(
-      node
-      // If it is a top-level node, just replace with next node
-    ) => {
+    Some(node) => {
       // If it is a top-level node, just replace with next node
       if (key == node.key) {
         map.size = decr(map.size)
