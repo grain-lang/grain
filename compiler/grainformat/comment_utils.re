@@ -374,27 +374,32 @@ let get_after_brace_comments =
   get_comments_on_line(startline, comments);
 };
 
+let no_breakcomment_to_doc = (comment: Grain_parsing.Parsetree.comment) => {
+  let comment_string = Comments.get_comment_source(comment);
+  Doc.text(String.trim(comment_string));
+};
+
 let rec line_of_comments_inner =
         (
           prev: option(Grain_parsing.Parsetree.comment),
           comments: list(Grain_parsing.Parsetree.comment),
           comment_to_doc: Grain_parsing.Parsetree.comment => Doc.t,
-        ) =>
+        ) => {
   switch (comments) {
   | [] => Doc.nil
   | [cmt] =>
     switch (prev) {
-    | None => comment_to_doc(cmt)
+    | None => Doc.concat([comment_to_doc(cmt)])
     | Some(c) =>
       let (_, prevCmt, _, _) =
         Locations.get_raw_pos_info(Locations.get_comment_loc(c).loc_end);
       let (_, thisCmt, _, _) =
         Locations.get_raw_pos_info(Locations.get_comment_loc(cmt).loc_start);
 
-      if (prevCmt != thisCmt) {
-        Doc.concat([Doc.hardLine, comment_to_doc(cmt)]);
-      } else {
-        Doc.concat([Doc.space, comment_to_doc(cmt)]);
+      switch (thisCmt - prevCmt) {
+      | 0 => Doc.concat([Doc.line, comment_to_doc(cmt)])
+      | 1 => Doc.concat([Doc.hardLine, comment_to_doc(cmt)])
+      | _ => Doc.concat([Doc.hardLine, Doc.hardLine, comment_to_doc(cmt)])
       };
     }
   | [cmt, ...remainder] =>
@@ -409,19 +414,15 @@ let rec line_of_comments_inner =
             Locations.get_comment_loc(cmt).loc_start,
           );
 
-        if (prevCmt != thisCmt) {
-          Doc.concat([Doc.hardLine, comment_to_doc(cmt)]);
-        } else {
-          Doc.concat([Doc.space, comment_to_doc(cmt)]);
+        switch (thisCmt - prevCmt) {
+        | 0 => Doc.concat([Doc.line, comment_to_doc(cmt)])
+        | 1 => Doc.concat([Doc.hardLine, comment_to_doc(cmt)])
+        | _ => Doc.concat([Doc.hardLine, Doc.hardLine, comment_to_doc(cmt)])
         };
       },
       line_of_comments_inner(Some(cmt), List.tl(comments), comment_to_doc),
     ])
   };
-
-let no_breakcomment_to_doc = (comment: Grain_parsing.Parsetree.comment) => {
-  let comment_string = Comments.get_comment_source(comment);
-  Doc.text(String.trim(comment_string));
 };
 
 let comments_to_docs =
@@ -506,3 +507,44 @@ let line_of_comments_to_doc_no_break =
       line_of_comments_inner(None, comments, no_breakcomment_to_doc);
     }
   };
+
+let inbetween_comments_to_docs =
+    (~offset: bool, comments: list(Grain_parsing.Parsetree.comment)) =>
+  switch (comments) {
+  | [] => Doc.nil
+  | _remaining_comments =>
+    if (offset) {
+      Doc.concat([
+        Doc.space,
+        line_of_comments_inner(None, comments, no_breakcomment_to_doc),
+      ]);
+    } else {
+      line_of_comments_inner(None, comments, no_breakcomment_to_doc);
+    }
+  };
+
+let rec get_comments_after_location =
+        (
+          ~location: Grain_parsing.Location.t,
+          comments: list(Grain_parsing.Parsetree.comment),
+        ) => {
+  let (_, stmt_end_line, stmt_end_char, _) =
+    Locations.get_raw_pos_info(location.loc_end);
+
+  switch (comments) {
+  | [] => []
+  | [cmt, ...remaining_comments] =>
+    let c_loc: Grain_parsing.Location.t = Locations.get_comment_loc(cmt);
+
+    let (_, cmtsline, cmtschar, _) =
+      Locations.get_raw_pos_info(c_loc.loc_start);
+
+    if (cmtsline > stmt_end_line
+        || cmtsline == stmt_end_line
+        && cmtschar > stmt_end_char) {
+      [cmt, ...get_comments_after_location(~location, remaining_comments)];
+    } else {
+      get_comments_after_location(~location, remaining_comments);
+    };
+  };
+};
