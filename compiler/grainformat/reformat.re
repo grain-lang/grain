@@ -2276,12 +2276,12 @@ and print_expression =
                 Doc.concat([
                   switch (optexpression1) {
                   | Some(expr) =>
-                    print_expression(
+                    Doc.group(print_expression(
                       ~parent_is_arrow=false,
                       ~original_source,
                       ~comments=comments_before_loop_expression,
                       expr,
-                    )
+                    ))
                   | None => Doc.nil
                   },
                   Doc.text(";"),
@@ -2324,12 +2324,13 @@ and print_expression =
           ]),
         ),
         Doc.space,
+        Doc.group(
         print_expression(
           ~parent_is_arrow=false,
           ~original_source,
           ~comments=comments_in_expression4,
           expression4,
-        ),
+        )),
       ]);
     | PExpContinue => Doc.group(Doc.concat([Doc.text("continue")]))
     | PExpBreak => Doc.group(Doc.concat([Doc.text("break")]))
