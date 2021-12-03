@@ -1,3 +1,4 @@
+
 /* grainc-flags --compilation-mode=runtime */
 
 import Memory from "runtime/unsafe/memory"
@@ -16,6 +17,7 @@ import WasmF64 from "runtime/unsafe/wasmf64"
 // For performance reasons, all functions in this module do not
 // decRef their arguments. Consequently, callers should not incRef them before calling.
 //
+
 /**
  * Allocates a new Grain array.
  *
@@ -128,6 +130,7 @@ export let allocateChar = () => {
 }
 
 // INT32/INT64
+
 /**
  * Allocates a new Int64.
  *
@@ -201,6 +204,7 @@ export let loadInt32 = xptr => {
 }
 
 // FLOATS
+
 /**
  * Allocates a new Float32.
  *
@@ -274,6 +278,7 @@ export let loadFloat64 = xptr => {
 }
 
 // RATIONALS
+
 /**
  * Allocates a new Rational.
  *

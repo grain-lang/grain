@@ -1,3 +1,4 @@
+
 /* grainc-flags --no-gc */
 /**
  * @module Sys/Process: Utilities for accessing functionality and information about the Grain program's process.
@@ -6,6 +7,7 @@
  *
  * @example import Process from "sys/process"
  */
+
 
 import WasmI32, {
   add as (+),
@@ -28,6 +30,7 @@ import {
 /**
  * @section Types: Type declarations included in the Sys/Process module.
  */
+
 /**
  * Signals that can be sent to the host system.
  */
@@ -93,6 +96,7 @@ export enum Signal {
 /**
  * @section Values: Functions and constants included in the Sys/Process module.
  */
+
 
 let wasmSafeOk = val => {
   Memory.incRef(WasmI32.fromGrain(Ok))

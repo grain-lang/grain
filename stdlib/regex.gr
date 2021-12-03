@@ -1,16 +1,17 @@
+
 /**
  * @module Regex: Regular Expressions.
  * @example import Regex from "regex"
  *
  * @since 0.4.3
  */
+
 /*
  This library provides support for regular expressions in Grain.
  Its parser and analyzer are largely ported from Racket (https://racket-lang.org/),
  which is licensed under Apache 2.0. Racket's regular expression
  engine is itself inspired by the Spencer engine, as found in Tcl.
- */
-import Array from "array"
+ */import Array from "array"
 import Char from "char"
 import List from "list"
 import Map from "map"
@@ -190,6 +191,7 @@ let moreN = (buf: RegExBuf, n) => {
 }
 
 // END Parsing internals for recursive descent
+
 /*
 
 =================================
@@ -227,7 +229,6 @@ let rec rangeAdd = (rng, v) => {
     _ => rangeUnion(rng, [(v, v)]),
   }
 },
-
 rangeUnion = (rng1, rng2) => {
   match ((rng1, rng2)) {
     ([], _) => rng2,
@@ -287,17 +288,7 @@ let rec rangeOverlaps = (rng, lo, hi) => {
 let rangeAddCaseAware = (rng, c, config) => {
   match (c) {
     None => Ok(rng),
-    Some(
-      c
-
-      // Needs Char.upcase and friends (once it's added, change return type from Result<RERange> to RERange) [see #661]:
-      /*
-        let rng = rangeAdd(rng, Char.code(Char.upcase(Char.fromCode(c))))
-        let rng = rangeAdd(rng, Char.code(Char.foldcase(Char.fromCode(c))))
-        let rng = rangeAdd(rng, Char.code(Char.downcase(Char.fromCode(c))))
-        Ok(rng)
-        */
-    ) => {
+    Some(c) => {
       let rng = rangeAdd(rng, c)
       if (config.caseSensitive) {
         Ok(rng)
@@ -506,12 +497,7 @@ let mergeAdjacent = lst => {
         match (accum) {
           [] => [],
           [hd] => [RELiteralString(hd), ...loop(None, [], l)],
-          [
-            hd,
-            ...tl
-
-            // MMByte would go here, if supported
-          ] => {
+          [hd, ...tl] => {
             let newHd = match (mode) {
               // MMByte would go here, if supported
               Some(MMChar) => List.join("", List.reverse(accum)),
@@ -584,6 +570,7 @@ REGEX PARSING DEFINITIONS
 
 */
 // Range parsing ("[a-z]")
+
 // [TODO] (#769) When byte-based regexes are supported, we'll need another limit of 255 for those.
 let rangeLimit = 0x10FFFF
 
@@ -629,7 +616,6 @@ let rec parseRangeNot = (buf: RegExBuf) => {
     }
   }
 },
-
 parseRange = (buf: RegExBuf) => {
   if (!more(buf)) {
     Err(parseErr(buf, "Missing closing `]`", 0))
@@ -654,7 +640,6 @@ parseRange = (buf: RegExBuf) => {
     }
   }
 },
-
 parseClass = (buf: RegExBuf) => {
   if (!more(buf)) {
     Err(
@@ -691,18 +676,13 @@ parseClass = (buf: RegExBuf) => {
     }
   }
 },
-
 parsePosixCharClass = (buf: RegExBuf) => {
   if (!more(buf)) {
     Err(parseErr(buf, "Missing POSIX character class after `[`", 0))
   } else {
     match (peek(buf)) {
       Err(e) => Err(e),
-      Ok(
-        ':'
-
-        // space and tab
-      ) => {
+      Ok(':') => {
         ignore(eat(buf, ':'))
         let rec loop = acc => {
           match (peek(buf)) {
@@ -727,11 +707,7 @@ parsePosixCharClass = (buf: RegExBuf) => {
         }
         match (loop([])) {
           Err(e) => Err(e),
-          Ok(
-            s
-
-            // space and tab
-          ) => {
+          Ok(s) => {
             match (s) {
               "alpha" =>
                 Ok(
@@ -816,7 +792,6 @@ parsePosixCharClass = (buf: RegExBuf) => {
     }
   }
 },
-
 parseRangeRest =
   (
     buf: RegExBuf,
@@ -942,13 +917,7 @@ parseRangeRest =
           }
         }
       },
-      Ok(
-        '['
-
-        // NOTE: Based on the spec, we don't propagate out
-        //       the errors here. Instead, we treat malformed
-        //       POSIX classes as being simple sequences of characters.
-      ) => {
+      Ok('[') => {
         ignore(eat(buf, '['))
         let curPos = unbox(buf.cursor)
         match (parsePosixCharClass(buf)) {
@@ -975,7 +944,6 @@ parseRangeRest =
     }
   }
 },
-
 parseRangeRestSpan =
   (
     buf: RegExBuf,
@@ -1009,17 +977,7 @@ parseRangeRestSpan =
 let rec parseAtom = (buf: RegExBuf) => {
   match (peek(buf)) {
     Err(e) => Err(e),
-    Ok(
-      c
-
-      // fancy group
-      // cut
-      // conditional
-      // match with mode
-      // simple group
-      // Note that this inc operation is side-effecting
-      // if in multiline mode, '.' matches everything but \n
-    ) =>
+    Ok(c) =>
       match (c) {
         '(' => {
           if (!moreN(buf, 1)) {
@@ -1031,10 +989,7 @@ let rec parseAtom = (buf: RegExBuf) => {
             } else {
               match (peekN(buf, 2)) {
                 Err(e) => Err(e),
-                Ok(
-                  '>'
-                  // cut
-                ) => {
+                Ok('>') => {
                   // cut
                   ignore(eat(buf, '('))
                   ignore(eat(buf, '?'))
@@ -1058,10 +1013,7 @@ let rec parseAtom = (buf: RegExBuf) => {
                     },
                   }
                 },
-                Ok(
-                  '('
-                  // conditional
-                ) => {
+                Ok('(') => {
                   // conditional
                   ignore(eat(buf, '('))
                   ignore(eat(buf, '?'))
@@ -1134,10 +1086,7 @@ let rec parseAtom = (buf: RegExBuf) => {
                     },
                   }
                 },
-                Ok(
-                  c
-                  // match with mode
-                ) when c == 'i' || c == 's' || c == 'm' || c == '-' ||
+                Ok(c) when c == 'i' || c == 's' || c == 'm' || c == '-' ||
                 c == ':' => {
                   // match with mode
                   ignore(eat(buf, '('))
@@ -1246,7 +1195,6 @@ let rec parseAtom = (buf: RegExBuf) => {
       },
   }
 },
-
 parseLook = (buf: RegExBuf) => {
   let preNumGroups = unbox(buf.config.groupNumber)
   let spanNumGroups = () => unbox(buf.config.groupNumber) - preNumGroups
@@ -1314,7 +1262,6 @@ parseLook = (buf: RegExBuf) => {
     },
   }
 },
-
 parseTest = (buf: RegExBuf) => {
   if (!more(buf)) {
     Err(parseErr(buf, "Expected test", 0))
@@ -1356,7 +1303,6 @@ parseTest = (buf: RegExBuf) => {
     }
   }
 },
-
 parseInteger = (buf: RegExBuf, n) => {
   if (!more(buf)) {
     Ok(n)
@@ -1372,7 +1318,6 @@ parseInteger = (buf: RegExBuf, n) => {
     }
   }
 },
-
 parseMode = (buf: RegExBuf) => {
   let processState = ((cs, ml)) => {
     let withCs = match (cs) {
@@ -1433,19 +1378,13 @@ parseMode = (buf: RegExBuf) => {
   }
   help((None, None))
 },
-
 parseUnicodeCategories = (buf: RegExBuf, pC: String) => {
   if (!more(buf)) {
     Err(parseErr(buf, "Expected unicode category", 0))
   } else {
     match (peek(buf)) {
       Err(e) => Err(e),
-      Ok(
-        '{'
-
-        // In case anyone is curious where these codes originate from:
-        // https://www.unicode.org/reports/tr44/#General_Category_Values
-      ) => {
+      Ok('{') => {
         ignore(eat(buf, '{'))
         let catNegated = if (peek(buf) == Ok('^')) {
           ignore(eat(buf, '^'))
@@ -1469,11 +1408,7 @@ parseUnicodeCategories = (buf: RegExBuf, pC: String) => {
         }
         let lst = match (loop([])) {
           Err(e) => Err(e),
-          Ok(
-            s
-            // In case anyone is curious where these codes originate from:
-            // https://www.unicode.org/reports/tr44/#General_Category_Values
-          ) => {
+          Ok(s) => {
             // In case anyone is curious where these codes originate from:
             // https://www.unicode.org/reports/tr44/#General_Category_Values
             match (s) {
@@ -1609,7 +1544,6 @@ parseUnicodeCategories = (buf: RegExBuf, pC: String) => {
     }
   }
 },
-
 parseLiteral = (buf: RegExBuf) => {
   if (!more(buf)) {
     Err(parseErr(buf, "Expected literal", 0))
@@ -1645,7 +1579,6 @@ parseLiteral = (buf: RegExBuf) => {
     }
   }
 },
-
 parseBackslashLiteral = (buf: RegExBuf) => {
   if (!more(buf)) {
     // Special case: EOS after backslash matches null
@@ -1705,7 +1638,6 @@ parseBackslashLiteral = (buf: RegExBuf) => {
     }
   }
 },
-
 parseNonGreedy = (buf: RegExBuf) => {
   let checkNotNested = res => {
     if (!more(buf)) {
@@ -1733,16 +1665,10 @@ parseNonGreedy = (buf: RegExBuf) => {
     }
   }
 },
-
 parsePCE = (buf: RegExBuf) => {
   match (parseAtom(buf)) {
     Err(e) => Err(e),
-    Ok(
-      atom
-
-      // for `{n,}`, we match >= n times, so n2adj should be infinity
-      // match exactly n1 times
-    ) => {
+    Ok(atom) => {
       if (!more(buf)) {
         Ok(atom)
       } else {
@@ -1769,42 +1695,21 @@ parsePCE = (buf: RegExBuf) => {
               Ok(ng) => Ok(REMaybe(atom, ng)),
             }
           },
-          Ok(
-            '{'
-
-            // for `{n,}`, we match >= n times, so n2adj should be infinity
-            // match exactly n1 times
-          ) when buf.config.isPerlRegExp => {
+          Ok('{') when buf.config.isPerlRegExp => {
             ignore(eat(buf, '{'))
             match (parseInteger(buf, 0)) {
               Err(e) => Err(e),
-              Ok(
-                n1
-
-                // for `{n,}`, we match >= n times, so n2adj should be infinity
-                // match exactly n1 times
-              ) => {
+              Ok(n1) => {
                 match (peek(buf)) {
-                  Ok(
-                    ','
-
-                    // for `{n,}`, we match >= n times, so n2adj should be infinity
-                  ) => {
+                  Ok(',') => {
                     ignore(eat(buf, ','))
                     let curPos = unbox(buf.cursor)
                     match (parseInteger(buf, 0)) {
                       Err(e) => Err(e),
-                      Ok(
-                        n2
-
-                        // for `{n,}`, we match >= n times, so n2adj should be infinity
-                      ) => {
+                      Ok(n2) => {
                         match (peek(buf)) {
                           Err(e) => Err(e),
-                          Ok(
-                            '}'
-                            // for `{n,}`, we match >= n times, so n2adj should be infinity
-                          ) => {
+                          Ok('}') => {
                             // for `{n,}`, we match >= n times, so n2adj should be infinity
                             let n2adj = if (curPos == unbox(buf.cursor)) {
                               None
@@ -1829,11 +1734,7 @@ parsePCE = (buf: RegExBuf) => {
                       },
                     }
                   },
-                  Ok(
-                    '}'
-
-                    // match exactly n1 times
-                  ) => {
+                  Ok('}') => {
                     ignore(eat(buf, '}'))
                     match (parseNonGreedy(buf)) {
                       Err(e) => Err(e),
@@ -1859,7 +1760,6 @@ parsePCE = (buf: RegExBuf) => {
     },
   }
 },
-
 parsePCEs = (buf: RegExBuf, toplevel: Bool) => {
   if (!more(buf)) {
     Ok([])
@@ -1887,7 +1787,6 @@ parsePCEs = (buf: RegExBuf, toplevel: Bool) => {
     }
   }
 },
-
 parseRegex = (buf: RegExBuf) => {
   if (!more(buf)) {
     Ok(REEmpty)
@@ -1924,7 +1823,6 @@ parseRegex = (buf: RegExBuf) => {
     }
   }
 },
-
 parseRegexNonEmpty = (buf: RegExBuf) => {
   match (parsePCEs(buf, false)) {
     Err(e) => Err(e),
@@ -2147,6 +2045,7 @@ let rec validate = (re: ParsedRegularExpression, numGroups) => {
   /**
    Computes the range of possible UTF-8 byte lengths for the given character range
    */
+
   let rangeUtf8EncodingLengths = rng => {
     let (min, max, _) = List.reduce(
       ((min1, max1, n), (segStart, segEnd)) => {
@@ -3126,8 +3025,7 @@ let asciiCharToLower = c => {
 }
 
 let referenceMatcherCaseInsensitive = makeReferenceMatcher(
-  ((
-    a, b,
+  ((a, b,
   )) =>
     asciiCharToLower(a) == asciiCharToLower(b),
 )
@@ -3346,13 +3244,7 @@ let compileRegexToMatcher = (re: ParsedRegularExpression) => {
       REMaybe(re, true) =>
         altsMatcher(next_m, compile(re, next_m)), // non-greedy
       REMaybe(re, _) => altsMatcher(compile(re, next_m), next_m),
-      RERepeat(
-        actualRe,
-        min,
-        max,
-        nonGreedy
-        // Special case: group around simple pattern in non-lazy repeat
-      ) => {
+      RERepeat(actualRe, min, max, nonGreedy) => {
         // Special case: group around simple pattern in non-lazy repeat
         let re = match (actualRe) {
           REGroup(groupRe, n) when !nonGreedy && !needsBacktrack(groupRe) =>
@@ -3448,6 +3340,7 @@ record RegularExpression {
 /**
  * @section Values: Functions for working with regular expressions.
  */
+
 // [TODO] When #661 is resolved, re-add the following pieces of documentation:
 /*
  [Under POSIX character classes]
@@ -3631,6 +3524,7 @@ export let make = (regexString: String) => {
 // ============
 //
 //
+
 // speed up failures using must-string
 let checkMustString = (ms, buf: MatchBuf, pos, endPos) => {
   match (ms) {
@@ -3733,22 +3627,27 @@ export record MatchResult {
   /**
    * Returns the contents of the given group
    */
+
   group: Number -> Option<String>,
   /**
    * Returns the position of the given group
    */
+
   groupPosition: Number -> Option<(Number, Number)>,
   /**
    * Returns the number of defined groups in this match object (includes group 0)
    */
+
   numGroups: Number,
   /**
    * Returns the contents of all groups matched in this match object
    */
+
   allGroups: () -> Array<Option<String>>,
   /**
    * Returns the positions of all groups matched in this match object
    */
+
   allGroupPositions: () -> Array<Option<(Number, Number)>>,
 }
 

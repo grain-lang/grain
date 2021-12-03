@@ -1,3 +1,4 @@
+
 /**
  * @module Bytes: Utilities for working with byte sequences.
  *
@@ -5,6 +6,7 @@
  *
  * @since v0.3.2
  */
+
 
 import Memory from "runtime/unsafe/memory"
 import WasmI32 from "runtime/unsafe/wasmi32"
@@ -73,6 +75,7 @@ let getSize = ptr => WasmI32.load(ptr, _SIZE_OFFSET)
 /**
  * @section Values: Functions for working with the Bytes data type.
  */
+
 /**
  * Creates a new byte sequence of the input size.
  *
@@ -369,6 +372,7 @@ export let rec fill = (value: Int32, bytes: Bytes) => {
 /**
  * @section Binary operations on integers: Functions for encoding and decoding integers stored in a byte sequence.
  */
+
 /**
  * Gets a signed 8-bit integer starting at the given byte index.
  *

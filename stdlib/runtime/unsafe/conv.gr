@@ -89,6 +89,7 @@ export let wasmI32ToNumber = (n: WasmI32) => {
   // call to tagSimpleNumber and instead doing it inline. For the case of
   // numbers not fitting into the range, the cost of these simple ALU
   // instructions are negligible compared to heap allocations.
+
   // First step: naively convert to simple number, just like tagSimpleNumber.
   // This will overflow for values not in the range, but it's fine.
   let simple = WasmI32.xor(WasmI32.shl(n, 1n), 1n)

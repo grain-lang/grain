@@ -1,11 +1,14 @@
+
 /**
  * @module Range: Utilities for working with ranges. A range represents an interval—a set of values with a beginning and an end.
  * @example import Range from "range"
  * @since v0.3.0
  */
+
 /**
  * @section Types: Type declarations included in the Range module.
  */
+
 /**
  * Ranges can be inclusive or exclusive. When `Inclusive`, the end value will be included in operations. When `Exclusive`, the end value will be excluded from operations.
  */
@@ -14,6 +17,7 @@ export enum Range { Inclusive(Number, Number), Exclusive(Number, Number) }
 /**
  * @section Values: Functions and constants included in the Range module.
  */
+
 /**
  * Checks if the given number is within the range.
  *

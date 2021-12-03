@@ -1,3 +1,4 @@
+
 /**
  * @module Buffer: Utilities for working with buffers.
  *
@@ -6,6 +7,7 @@
  *
  * @since v0.4.0
  */
+
 
 import Memory from "runtime/unsafe/memory"
 import WasmI32 from "runtime/unsafe/wasmi32"
@@ -39,12 +41,14 @@ let _32BIT_LEN = 4
 
 let _64BIT_LEN = 8
 
-/* Gets the size of a Bytes via its ptr */
-@disableGC
+/* Gets the size of a Bytes via its ptr */@disableGC
 let getSize = ptr => WasmI32.load(ptr, _SIZE_OFFSET)
 
-/* Doubles the size of buffer's underlying byte sequence, if the given size is larger than the size of a buffer's underlying byte sequence */
-let autogrow = (len, buf) => {
+/* Doubles the size of buffer's underlying byte sequence, if the given size is larger than the size of a buffer's underlying byte sequence */let autogrow =
+  (
+    len,
+    buf,
+  ) => {
   while (buf.len + len > Bytes.length(buf.data)) {
     let mut n = Bytes.length(buf.data)
     if (n == 0) n = 4 // Make sure bytes of 0 length grow too
@@ -52,15 +56,13 @@ let autogrow = (len, buf) => {
   }
 }
 
-/* Gets the pointer for a char's bytes following the char's tag */
-@disableGC
+/* Gets the pointer for a char's bytes following the char's tag */@disableGC
 let rec getCharAsWasmI32 = char => {
   let c = WasmI32.fromGrain(char)
   WasmI32.load(c, 4n)
 }
 
-/* Gets the UTF-8 byte length of a char */
-@disableGC
+/* Gets the UTF-8 byte length of a char */@disableGC
 let rec getCharByteLength = byte => {
   let (+) = WasmI32.add
   let (&) = WasmI32.and
@@ -76,8 +78,7 @@ let rec getCharByteLength = byte => {
   }
 }
 
-/* Memcopies bytes from a source byte sequence to a destination byte sequence via pointers */
-@disableGC
+/* Memcopies bytes from a source byte sequence to a destination byte sequence via pointers */@disableGC
 let rec appendBytes = (srcOff, dstOff, len, src, dst) => {
   let (+) = WasmI32.add
   Memory.copy(dst + _VALUE_OFFSET + dstOff, src + _VALUE_OFFSET + srcOff, len)
@@ -86,8 +87,12 @@ let rec appendBytes = (srcOff, dstOff, len, src, dst) => {
 /*
  * If given index is negative, returns a positive index.
  * Throws if a given index + len is not within the bounds of a buffer's current length
- */
-let checkIsIndexInBounds = (i, len, buf) => {
+ */let checkIsIndexInBounds =
+  (
+    i,
+    len,
+    buf,
+  ) => {
   if (i < 0) throw Exception.IndexOutOfBounds
   if (i >= buf.len || i + len > buf.len) throw Exception.IndexOutOfBounds
 }
@@ -116,6 +121,7 @@ let addInt32help = (value, buffer) => {
 /**
  * @section Values: Functions for working with the Buffer data type.
  */
+
 /**
  * Creates a fresh buffer, initially empty.
  *
@@ -509,6 +515,7 @@ export let addBufferSlice = (start, length, srcBuffer, dstBuffer) => {
 /**
  * @section Binary operations on integers: Functions for encoding and decoding integers stored in a buffer.
  */
+
 /**
  * Gets a signed 8-bit integer starting at the given byte index.
  *

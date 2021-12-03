@@ -1,3 +1,4 @@
+
 /* grainc-flags --no-gc */
 /**
  * @module Hash: Utilities for hashing any value.
@@ -5,10 +6,12 @@
  *
  * @since v0.1.0
  */
+
 /**
   This module implements MurmurHash3 for Grain data types.
   https://en.wikipedia.org/wiki/MurmurHash
 */
+
 
 import WasmI32, {
   add as (+),
@@ -218,6 +221,7 @@ let rec hashOne = (val, depth) => {
 /**
  * @section Values: Functions for hashing.
  */
+
 /**
  * A generic hash function that produces an integer from any value. If `a == b` then `Hash.hash(a) == Hash.hash(b)`.
  *

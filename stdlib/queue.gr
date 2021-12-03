@@ -1,3 +1,4 @@
+
 /**
  * @module Queue: An immutable queue implementation. A queue is a FIFO (first-in-first-out) data structure where new values are added to the end and retrieved or removed from the beginning.
  * @example import Queue from "queue"
@@ -10,6 +11,7 @@ record Queue<a> { forwards: List<a>, backwards: List<a> }
 /**
  * @section Values: Functions for working with queues.
  */
+
 /**
  * Creates an empty queue.
  * 

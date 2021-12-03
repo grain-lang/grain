@@ -1,9 +1,11 @@
+
 /* grainc-flags --no-gc */
 /**
  * @module Sys/Random: System access to random values.
  *
  * @example import Random from "sys/random"
  */
+
 
 import WasmI32, { eq as (==), ne as (!=) } from "runtime/unsafe/wasmi32"
 import Memory from "runtime/unsafe/memory"
@@ -13,6 +15,7 @@ import { tagSimpleNumber } from "runtime/dataStructures"
 /**
  * @section Values: Functions and constants included in the Sys/Random module.
  */
+
 
 let wasmSafeOk = val => {
   Memory.incRef(WasmI32.fromGrain(Ok))

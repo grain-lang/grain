@@ -1,3 +1,4 @@
+
 /* grainc-flags --compilation-mode=runtime */
 
 import Memory from "runtime/unsafe/memory"
@@ -214,6 +215,7 @@ let safeI64Multiply = (x, y) => {
 }
 
 // Accessor functions
+
 /* Memory Layout:
  * [GRAIN_BOXED_NUM_HEAP_TAG , <boxed_num tag> , <number-specific payload>...]
  * (payload depends on boxed_num tag...see below)
@@ -405,6 +407,7 @@ let isSafeIntegerF64 = value => {
   * NOTE: The preconditions in these functions are important, so do NOT
   *       export them!
   */
+
 
 let numberEqualSimpleHelp = (x, y) => {
   // PRECONDITION: x is a "simple" number (value tag is 0) and x !== y and isNumber(y)
@@ -822,8 +825,7 @@ let rec numberAddSubHelp = (x, y, isSub) => {
       },
     }
   }
-},
-numberAddSubRationalHelp = (x, y, isSub) => {
+},numberAddSubRationalHelp = (x, y, isSub) => {
   if (isSimpleNumber(y)) {
     numberAddSubSimpleHelp(y, x, isSub)
   } else {

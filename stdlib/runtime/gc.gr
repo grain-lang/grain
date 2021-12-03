@@ -1,3 +1,4 @@
+
 /* grainc-flags --compilation-mode=runtime */
 /* Notes:
  *
@@ -198,8 +199,7 @@ let rec decRef = (userPtr: WasmI32, ignoreZeros: Bool) => {
   } else {
     userPtr
   }
-},
-decRefChildren = (userPtr: WasmI32) => {
+},decRefChildren = (userPtr: WasmI32) => {
   match (WasmI32.load(userPtr, 0n)) {
     t when t == Tags._GRAIN_ADT_HEAP_TAG => {
       let arity = WasmI32.load(userPtr, 16n)
@@ -241,6 +241,7 @@ export let decRefIgnoreZeros = userPtr => decRef(userPtr, true)
 export let decRef = userPtr => decRef(userPtr, false)
 
 // For debugging:
+
 // export let getRefCount = (value) => {
 //   let userPtr = WasmI32.fromGrain(value)
 //   let ret = if (WasmI32.eqz(userPtr & Tags._GRAIN_GENERIC_TAG_MASK) && WasmI32.ne(userPtr, 0n)) {
@@ -251,6 +252,7 @@ export let decRef = userPtr => decRef(userPtr, false)
 //   decRef(userPtr)
 //   ret
 // }
+
 // export let rec setDebug = (enabled: Bool) => {
 //   _DEBUG = enabled
 //   decRef(WasmI32.fromGrain(setDebug))

@@ -54,9 +54,11 @@ export (>>>)
 export (>>)
 
 // Number coercions & conversions
+
 // [TODO] (#311) Commented until we nail down semantics
 // import foreign wasm convertExactToInexact : Number -> Number as inexact from "stdlib-external/runtime"
 // import foreign wasm convertInexactToExact : Number -> Number as exact from "stdlib-external/runtime"
+
 // Boolean operations
 primitive (!) : Bool -> Bool = "@not"
 primitive (&&) : (Bool, Bool) -> Bool = "@and"

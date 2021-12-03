@@ -1,9 +1,11 @@
+
 /* grainc-flags --no-gc */
 /**
  * @module Sys/Time: Access to system clocks.
  *
  * @example import Time from "sys/time"
  */
+
 
 import WasmI32, {
   add as (+),
@@ -18,6 +20,7 @@ import { allocateInt64, tagSimpleNumber } from "runtime/dataStructures"
 /**
  * @section Values: Functions and constants included in the Sys/Time module.
  */
+
 
 let wasmSafeOk = val => {
   Memory.incRef(WasmI32.fromGrain(Ok))

@@ -1,3 +1,4 @@
+
 /* grainc-flags --compilation-mode=runtime */
 
 import WasmI32, {
@@ -204,8 +205,7 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
       xptr == yptr
     },
   }
-},
-equalHelp = (x, y) => {
+},equalHelp = (x, y) => {
   if ((x & Tags._GRAIN_GENERIC_TAG_MASK) != 0n &&
   (y & Tags._GRAIN_GENERIC_TAG_MASK) != 0n) {
     // Short circuit for non-pointer values

@@ -1,13 +1,16 @@
+
 /**
  * @module Stack: An immutable stack implementation. A stack is a LIFO (last-in-first-out) data structure where new values are added, retrieved, and removed from the end.
  * @example import Stack from "stack"
  */
+
 
 import List from "list"
 
 /**
  * @section Types: Type declarations included in the Stack module.
  */
+
 /**
  * Stacks are immutable data structures that store their data in a List.
  */
@@ -16,6 +19,7 @@ record Stack<a> { data: List<a> }
 /**
  * @section Values: Functions and constants included in the Stack module.
  */
+
 /**
  * Creates a new stack.
  *

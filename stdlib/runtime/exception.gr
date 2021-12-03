@@ -1,3 +1,4 @@
+
 /* grainc-flags --compilation-mode=runtime */
 
 import WasmI32, { eq as (==), add as (+) } from "runtime/unsafe/wasmi32"
@@ -105,8 +106,7 @@ export exception MatchFailure
  * This would be better as `AssertionError(String, Number)` to allow the exception printer in
  * this file to construct the error, but constructing a string in this module is impractical as we
  * don't have access to memory allocation since malloc.gr depends on this module.
- */
-export exception AssertionError(String)
+ */export exception AssertionError(String)
 export exception InvalidArgument(String)
 export exception OutOfMemory
 

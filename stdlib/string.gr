@@ -1,3 +1,4 @@
+
 /**
  * @module String: Utilities for working with strings.
  * @example import String from "string"
@@ -20,6 +21,7 @@ import {
 /**
  * @section Types: Type declarations included in the String module.
  */
+
 /**
  * Byte encodings
  */
@@ -28,6 +30,7 @@ export enum Encoding { UTF8, UTF16_BE, UTF16_LE, UTF32_BE, UTF32_LE }
 /**
  * @section Values: Functions for working with the String data type.
  */
+
 /**
  * Concatenate two strings.
  *
@@ -781,6 +784,7 @@ export let rec endsWith = (search: String, string: String) => {
 }
 
 // String->Byte encoding and helper functions:
+
 // these are globals to avoid memory leaks
 let _START_NAME = "start"
 let _SIZE_NAME = "size"

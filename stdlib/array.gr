@@ -1,3 +1,4 @@
+
 /**
  * @module Array: Utilities for working with arrays.
  *
@@ -8,6 +9,7 @@
  * @history v0.2.0: Renamed to `array`
  */
 
+
 import WasmI32 from "runtime/unsafe/wasmi32"
 import Memory from "runtime/unsafe/memory"
 import { allocateArray, tagSimpleNumber } from "runtime/dataStructures"
@@ -16,6 +18,7 @@ import Exception from "runtime/exception"
 /**
  * @section Values: Functions for working with the Array data type.
  */
+
 
 @disableGC
 let mut _ARRAY_LENGTH_OFFSET = 1n
