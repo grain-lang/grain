@@ -7,7 +7,6 @@
  * @example import File from "sys/file"
  */
 
-
 import WasmI32, {
   add as (+),
   sub as (-),

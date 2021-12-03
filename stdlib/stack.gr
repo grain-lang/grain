@@ -3,7 +3,6 @@
  * @example import Stack from "stack"
  */
 
-
 import List from "list"
 
 /**

@@ -11,7 +11,6 @@
   https://en.wikipedia.org/wiki/MurmurHash
 */
 
-
 import WasmI32, {
   add as (+),
   sub as (-),

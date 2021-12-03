@@ -1,11 +1,7 @@
 import WasmI32 from "runtime/unsafe/wasmi32"
 import Memory from "runtime/unsafe/memory"
 import Errors from "runtime/unsafe/errors"
-import {
-  tagSimpleNumber,
-  allocateChar,
-  allocateString,
-} from "runtime/dataStructures"
+import { tagSimpleNumber, allocateChar, allocateString } from "runtime/dataStructures"
 
 export *
 
@@ -22,7 +18,7 @@ let max = 0x10FFFF
 // Returns true if the given number is a valid Unicode scalar value.
 // @param n: Number - the value to check
 // @returns Bool
-let isValid = n => {
+let isValid = (n) => {
   n >= min && (n <= 0xD7FF || n >= 0xE000) && n <= max
 }
 
@@ -83,7 +79,7 @@ let rec code = (c: Char) => {
     }
     lowerBoundary = 0x80n
     upperBoundary = 0xBFn
-    codePoint = codePoint << 6n | byte & 0x3Fn
+    codePoint = (codePoint << 6n) | (byte & 0x3Fn)
     bytesSeen += 1n
     if (bytesSeen == bytesNeeded) {
       result = codePoint
@@ -123,7 +119,7 @@ let rec fromCode = (code: Number) => {
   let result = if (code < 0x80n) {
     let char = allocateChar()
     WasmI32.store8(char, code, 4n)
-    WasmI32.toGrain(char): (Char)
+    WasmI32.toGrain(char): Char
   } else {
     let mut count = 0n
     let mut offset = 0n
@@ -138,17 +134,17 @@ let rec fromCode = (code: Number) => {
       offset = 0xF0n
     }
     let char = allocateChar()
-    WasmI32.store8(char, (code >>> 6n * count) + offset, 4n)
+    WasmI32.store8(char, (code >>> (6n * count)) + offset, 4n)
 
     let mut n = 0n
     while (count > 0n) {
       n += 1n
-      let temp = code >>> 6n * (count - 1n)
-      WasmI32.store8(char + n, 0x80n | temp & 0x3Fn, 4n)
+      let temp = code >>> (6n * (count - 1n))
+      WasmI32.store8(char + n, 0x80n | (temp & 0x3Fn), 4n)
       count -= 1n
     }
 
-    WasmI32.toGrain(char): (Char)
+    WasmI32.toGrain(char): Char
   }
 
   // We've asserted that the original `code` was a stack allocated number so
@@ -160,7 +156,7 @@ let rec fromCode = (code: Number) => {
 // Returns the next valid Unicode character by code point. Fails if the input character is U+10FFFF.
 // @param char: Char - the input character
 // @returns Char
-let succ = c => {
+let succ = (c) => {
   let codePoint = code(c)
   if (codePoint == max) {
     fail "no valid Unicode code point past U+10FFF"
@@ -174,7 +170,7 @@ let succ = c => {
 // Returns the previous valid Unicode character by code point. Fails if the input character is U+0000.
 // @param char: Char - the input character
 // @returns Char
-let pred = c => {
+let pred = (c) => {
   let codePoint = code(c)
   if (codePoint == min) {
     fail "no valid Unicode code point below U+0000"
@@ -207,7 +203,7 @@ export let rec toString = (c: Char) => {
   }
   let str = allocateString(n)
   Memory.copy(str + 8n, c + 4n, n)
-  let ret = WasmI32.toGrain(str): (String)
+  let ret = WasmI32.toGrain(str): String
   Memory.decRef(WasmI32.fromGrain(c))
   Memory.decRef(WasmI32.fromGrain(toString))
   ret

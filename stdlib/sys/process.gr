@@ -7,7 +7,6 @@
  * @example import Process from "sys/process"
  */
 
-
 import WasmI32, {
   add as (+),
   mul as (*),
@@ -95,7 +94,6 @@ export enum Signal {
 /**
  * @section Values: Functions and constants included in the Sys/Process module.
  */
-
 
 let wasmSafeOk = val => {
   Memory.incRef(WasmI32.fromGrain(Ok))
