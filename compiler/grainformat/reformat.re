@@ -128,12 +128,16 @@ let comment_separator =
   if (this_line - line_above > 1) {
     switch (comment) {
     | Line(_) => Doc.hardLine
+    | Shebang(_) => Doc.hardLine
+    | Doc(_) => Doc.hardLine
     | _ => Doc.concat([Doc.hardLine, Doc.hardLine])
     };
   } else {
     switch (comment) {
-    | Line(_) => Doc.nil
-    | _ => Doc.softLine
+    | Line(_)
+    | Shebang(_) => Doc.nil
+    | Doc(_) => Doc.softLine
+    | Block(_) => Doc.hardLine
     };
   };
 
