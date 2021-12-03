@@ -1,7 +1,6 @@
 type Foo = String
 
-type Foo = // Test comment
-  String
+type Foo = String // Test comment
 
 type Foo<a> = String
 
