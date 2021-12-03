@@ -1,4 +1,3 @@
-
 /* grainc-flags --compilation-mode=runtime */
 // WebAssembly Memory Instructions
 export primitive load : (WasmI32, WasmI32) -> WasmF32 = "@wasm.load_float32"

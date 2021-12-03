@@ -1,4 +1,3 @@
-
 /* grainc-flags --compilation-mode=runtime */
 /*
  * This module implements a generic memory allocator.

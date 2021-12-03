@@ -1,4 +1,3 @@
-
 /* grainc-flags --compilation-mode=runtime */
 
 import Memory from "runtime/unsafe/memory"

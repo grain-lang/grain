@@ -1,4 +1,3 @@
-
 /**
  * @module Set: A Set is an unordered collection of unique values. Operations on a Set mutate the internal state, so it never needs to be re-assigned.
  * @example import Set from "set"

@@ -1,4 +1,3 @@
-
 /* grainc-flags --compilation-mode=runtime */
 
 export let _GRAIN_ERR_NOT_NUMBER_COMP = 0n

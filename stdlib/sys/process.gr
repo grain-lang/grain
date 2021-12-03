@@ -1,4 +1,3 @@
-
 /* grainc-flags --no-gc */
 /**
  * @module Sys/Process: Utilities for accessing functionality and information about the Grain program's process.

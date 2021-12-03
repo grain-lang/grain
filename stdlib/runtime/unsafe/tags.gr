@@ -1,4 +1,3 @@
-
 /* grainc-flags --compilation-mode=runtime */
 
 export let _GRAIN_NUMBER_TAG_TYPE = 0b0001n
