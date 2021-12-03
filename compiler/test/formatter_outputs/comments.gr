@@ -44,6 +44,7 @@ if (/*before*/ true /*whyt*/) {
   /* after*/
 }
 // trailing
+
 // starting comment
 
 let x = 7 // another comment 1
