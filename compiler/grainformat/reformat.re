@@ -225,7 +225,6 @@ let rec block_item_iterator =
   switch (items) {
   | [] => Doc.nil
   | [item, ...rem] =>
-    // print_endline("bracket line is " ++ string_of_int(bracket_line));
     let attribute_text = get_attribute_text(item);
 
     // get all the comments between the end of the last item and the start of this item
@@ -266,7 +265,7 @@ let rec block_item_iterator =
         )
       };
 
-    let this_loc = get_loc(item); // fix for leading comments on this line
+    let this_loc = get_loc(item);
     let (_, this_line, this_char, _) =
       Locations.get_raw_pos_info(this_loc.loc_start);
 
