@@ -3635,7 +3635,7 @@ let reformat_ast =
           let attributes = stmt.ptop_attributes;
           print_attributes(attributes);
         },
-      ~isBlock=true,
+      ~isBlock=false,
     );
 
   let final_doc = Doc.concat([top_level_stmts, Doc.hardLine]);
