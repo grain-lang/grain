@@ -238,6 +238,7 @@ export let rec hash = (anything) => {
   let result = tagSimpleNumber(h)
 
   Memory.decRef(WasmI32.fromGrain(hash))
+  Memory.decRef(WasmI32.fromGrain(anything))
 
   result
 }
