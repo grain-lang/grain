@@ -1,4 +1,5 @@
 /* grainc-flags --compilation-mode=runtime */
+
 /*
  * This module implements a generic memory allocator.
  * The algorithm is quite simple, being based on the memory allocator
@@ -50,6 +51,7 @@ primitive throw : Exception -> a = "@throw"
  *   getNext(ptr) ===  ptr->s.ptr
  *   getSize(ptr) ===  ptr->s.size
  */
+
 /**
  * Pointer to the start of the free list. This is always a multiple of
  * 8, with the exception of its initial value (used as a sentinel).
@@ -173,7 +175,7 @@ export let free = (ap: WasmI32) => {
     while (true) {
       let nextp = getNext(p)
       if (blockPtr > p && blockPtr < nextp ||
-      p >= nextp && (blockPtr > p || blockPtr < nextp)) {
+        p >= nextp && (blockPtr > p || blockPtr < nextp)) {
         break
       }
       p = nextp
@@ -255,7 +257,7 @@ export let malloc = (nb: WasmI32) => {
 
   // Search the freelist for any blocks large enough.
   for (
-    let mut p = getNext(prevp);;
+    let mut p = getNext(prevp); ;
     {
       prevp = p
       p = getNext(p)

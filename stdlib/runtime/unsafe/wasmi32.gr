@@ -1,4 +1,5 @@
 /* grainc-flags --compilation-mode=runtime */
+
 // WebAssembly Memory Instructions
 export primitive load : (WasmI32, WasmI32) -> WasmI32 = "@wasm.load_int32"
 export primitive load8S : (WasmI32, WasmI32) -> WasmI32 = "@wasm.load_8_s_int32"

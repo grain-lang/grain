@@ -1,4 +1,5 @@
 /* grainc-flags --compilation-mode=runtime */
+
 /*
  * This file was inspired by AssemblyScript's std/assembly/util/number.ts
  */
@@ -881,7 +882,7 @@ let utoa64_any_core = (buffer, num, offset, radix) => {
   if ((radix & radix - 1n) == 0n) { // for radix which pow of two
     let shift = WasmI64.extendI32U(WasmI32.ctz(radix) & 7n)
     let mask = WasmI64.sub(base, 1N)
-    for (;;) {
+    for (; ;) {
       offset -= 1n
       WasmI32.store8(
         buffer + offset,
@@ -892,7 +893,7 @@ let utoa64_any_core = (buffer, num, offset, radix) => {
       if (WasmI64.eqz(num)) break
     }
   } else {
-    for (;;) {
+    for (; ;) {
       offset -= 1n
       let q = WasmI64.divU(num, base)
       WasmI32.store8(
@@ -1284,8 +1285,10 @@ let grisu2 = (value, buffer, sign) => {
     347.0W,
   ) // dk must be positive, so can do ceiling in positive
   let mut k = WasmI32.truncF64S(dk)
-  k += if (WasmF64.ne(WasmF64.convertI32S(k), dk)) 1n
-  else 0n // conversion with ceil
+  k += if (WasmF64.ne(
+      WasmF64.convertI32S(k),
+      dk,
+    )) 1n else 0n // conversion with ceil
 
   let index = WasmI32.shrS(k, 3n) + 1n
   _K = 348n - (index << 3n) // decimal exponent doesn't need lookup table

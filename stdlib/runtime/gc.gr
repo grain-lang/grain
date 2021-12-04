@@ -1,4 +1,5 @@
 /* grainc-flags --compilation-mode=runtime */
+
 /* Notes:
  *
  * Grain's memory system uses a reference-counted garbage collector.
@@ -159,7 +160,7 @@ export let free = (userPtr: WasmI32) => {
 
 export let incRef = (userPtr: WasmI32) => {
   if (WasmI32.eqz(userPtr & Tags._GRAIN_GENERIC_TAG_MASK) &&
-  WasmI32.ne(userPtr, 0n)) {
+    WasmI32.ne(userPtr, 0n)) {
     // if (_DEBUG) {
     //   logIncRef(userPtr, getRefCount(userPtr))
     //   void;
@@ -171,7 +172,7 @@ export let incRef = (userPtr: WasmI32) => {
 
 let rec decRef = (userPtr: WasmI32, ignoreZeros: Bool) => {
   if (WasmI32.eqz(userPtr & Tags._GRAIN_GENERIC_TAG_MASK) &&
-  WasmI32.ne(userPtr, 0n)) {
+    WasmI32.ne(userPtr, 0n)) {
     let refCount = getRefCount(userPtr)
     // if (_DEBUG) {
     //   logDecRef(userPtr, refCount, ignoreZeros)

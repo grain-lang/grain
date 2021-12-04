@@ -15,7 +15,7 @@ import Conv from "runtime/unsafe/conv"
 import {
   tagSimpleNumber,
   allocateBytes,
-  allocateString
+  allocateString,
 } from "runtime/dataStructures"
 import Exception from "runtime/exception"
 import Int32 from "int32"
