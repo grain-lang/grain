@@ -91,22 +91,7 @@ functions › app_1
         )
        )
       )
-<<<<<<< HEAD
-      (local.set $0
-       (tuple.extract 0
-        (tuple.make
-         (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-          (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-          (local.get $1)
-         )
-         (local.get $0)
-        )
-       )
-      )
       (call $lam_lambda_1162
-=======
-      (call $lam_lambda_1158
->>>>>>> upstream/main
        (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
         (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
         (local.get $1)

@@ -9,15 +9,9 @@ stdlib › stdlib_equal_3
  (import \"_grainEnv\" \"relocBase\" (global $import__grainEnv_0_relocBase_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRefIgnoreZeros\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0 (mut i32)))
-<<<<<<< HEAD
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$[]\" (global $import_pervasives_1282_[]_1283 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$[...]\" (global $import_pervasives_1284_[...]_1285 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$==\" (global $import_pervasives_1286_==_1287 (mut i32)))
-=======
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$[]\" (global $import_pervasives_1284_[]_1285 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$[...]\" (global $import_pervasives_1286_[...]_1287 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$==\" (global $import_pervasives_1288_==_1289 (mut i32)))
->>>>>>> upstream/main
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$[]\" (global $import_pervasives_1288_[]_1289 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$[...]\" (global $import_pervasives_1290_[...]_1291 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$==\" (global $import_pervasives_1292_==_1293 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $import_GRAIN$MODULE$runtime/gc_0_incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRefIgnoreZeros\" (func $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0 (param i32 i32) (result i32)))
  (global $global_1 i32 (i32.const 0))
@@ -46,11 +40,7 @@ stdlib › stdlib_equal_3
             (tuple.make
              (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-<<<<<<< HEAD
-              (global.get $import_pervasives_1284_[...]_1285)
-=======
-              (global.get $import_pervasives_1286_[...]_1287)
->>>>>>> upstream/main
+              (global.get $import_pervasives_1290_[...]_1291)
              )
              (i32.const 0)
             )
@@ -59,11 +49,7 @@ stdlib › stdlib_equal_3
           (i32.const 7)
           (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-<<<<<<< HEAD
-           (global.get $import_pervasives_1282_[]_1283)
-=======
-           (global.get $import_pervasives_1284_[]_1285)
->>>>>>> upstream/main
+           (global.get $import_pervasives_1288_[]_1289)
           )
           (i32.load offset=8
            (local.get $0)
@@ -85,11 +71,7 @@ stdlib › stdlib_equal_3
             (tuple.make
              (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-<<<<<<< HEAD
-              (global.get $import_pervasives_1284_[...]_1285)
-=======
-              (global.get $import_pervasives_1286_[...]_1287)
->>>>>>> upstream/main
+              (global.get $import_pervasives_1290_[...]_1291)
              )
              (local.get $0)
             )
@@ -120,11 +102,7 @@ stdlib › stdlib_equal_3
             (tuple.make
              (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-<<<<<<< HEAD
-              (global.get $import_pervasives_1284_[...]_1285)
-=======
-              (global.get $import_pervasives_1286_[...]_1287)
->>>>>>> upstream/main
+              (global.get $import_pervasives_1290_[...]_1291)
              )
              (local.get $0)
             )
@@ -155,11 +133,7 @@ stdlib › stdlib_equal_3
             (tuple.make
              (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-<<<<<<< HEAD
-              (global.get $import_pervasives_1284_[...]_1285)
-=======
-              (global.get $import_pervasives_1286_[...]_1287)
->>>>>>> upstream/main
+              (global.get $import_pervasives_1290_[...]_1291)
              )
              (local.get $0)
             )
@@ -168,11 +142,7 @@ stdlib › stdlib_equal_3
           (i32.const 7)
           (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-<<<<<<< HEAD
-           (global.get $import_pervasives_1282_[]_1283)
-=======
-           (global.get $import_pervasives_1284_[]_1285)
->>>>>>> upstream/main
+           (global.get $import_pervasives_1288_[]_1289)
           )
           (i32.load offset=8
            (local.get $0)
@@ -194,11 +164,7 @@ stdlib › stdlib_equal_3
             (tuple.make
              (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-<<<<<<< HEAD
-              (global.get $import_pervasives_1284_[...]_1285)
-=======
-              (global.get $import_pervasives_1286_[...]_1287)
->>>>>>> upstream/main
+              (global.get $import_pervasives_1290_[...]_1291)
              )
              (local.get $0)
             )
@@ -229,11 +195,7 @@ stdlib › stdlib_equal_3
             (tuple.make
              (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-<<<<<<< HEAD
-              (global.get $import_pervasives_1284_[...]_1285)
-=======
-              (global.get $import_pervasives_1286_[...]_1287)
->>>>>>> upstream/main
+              (global.get $import_pervasives_1290_[...]_1291)
              )
              (local.get $0)
             )
@@ -261,11 +223,7 @@ stdlib › stdlib_equal_3
          (tuple.make
           (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-<<<<<<< HEAD
-           (global.get $import_pervasives_1286_==_1287)
-=======
-           (global.get $import_pervasives_1288_==_1289)
->>>>>>> upstream/main
+           (global.get $import_pervasives_1292_==_1293)
           )
           (local.get $0)
          )

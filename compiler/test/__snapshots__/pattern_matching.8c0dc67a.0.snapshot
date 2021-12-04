@@ -39,14 +39,7 @@ pattern matching › adt_match_1
        (tuple.extract 0
         (tuple.make
          (i32.load offset=12
-<<<<<<< HEAD
-          (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-           (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-           (global.get $import_pervasives_1213_[]_1214)
-          )
-=======
-          (global.get $import_pervasives_1209_[]_1210)
->>>>>>> upstream/main
+          (global.get $import_pervasives_1213_[]_1214)
          )
          (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
           (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
@@ -90,30 +83,7 @@ pattern matching › adt_match_1
            (i32.const 31)
           )
           (block (result i32)
-<<<<<<< HEAD
-           (local.set $3
-            (tuple.extract 0
-             (tuple.make
-              (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-               (i32.load offset=24
-                (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-                 (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                 (global.get $import_pervasives_1213_[]_1214)
-                )
-               )
-              )
-              (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
-               (i32.const 0)
-              )
-             )
-            )
-           )
-           (local.set $1
-=======
            (local.set $0
->>>>>>> upstream/main
             (tuple.extract 0
              (tuple.make
               (i32.load offset=12
@@ -123,7 +93,7 @@ pattern matching › adt_match_1
                   (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
                    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
                    (i32.load offset=24
-                    (global.get $import_pervasives_1209_[]_1210)
+                    (global.get $import_pervasives_1213_[]_1214)
                    )
                   )
                   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
@@ -455,14 +425,7 @@ pattern matching › adt_match_1
                 (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
                  (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
                  (i32.load offset=24
-<<<<<<< HEAD
-                  (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-                   (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                   (global.get $import_pervasives_1213_[]_1214)
-                  )
-=======
-                  (global.get $import_pervasives_1209_[]_1210)
->>>>>>> upstream/main
+                  (global.get $import_pervasives_1213_[]_1214)
                  )
                 )
                 (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
@@ -526,14 +489,7 @@ pattern matching › adt_match_1
                 (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
                  (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
                  (i32.load offset=20
-<<<<<<< HEAD
-                  (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-                   (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                   (global.get $import_pervasives_1213_[]_1214)
-                  )
-=======
-                  (global.get $import_pervasives_1209_[]_1210)
->>>>>>> upstream/main
+                  (global.get $import_pervasives_1213_[]_1214)
                  )
                 )
                 (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
@@ -611,14 +567,7 @@ pattern matching › adt_match_1
               (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
                (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
                (i32.load offset=24
-<<<<<<< HEAD
-                (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-                 (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                 (global.get $import_pervasives_1213_[]_1214)
-                )
-=======
-                (global.get $import_pervasives_1209_[]_1210)
->>>>>>> upstream/main
+                (global.get $import_pervasives_1213_[]_1214)
                )
               )
               (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
@@ -650,14 +599,7 @@ pattern matching › adt_match_1
               (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
                (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
                (i32.load offset=20
-<<<<<<< HEAD
-                (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-                 (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                 (global.get $import_pervasives_1213_[]_1214)
-                )
-=======
-                (global.get $import_pervasives_1209_[]_1210)
->>>>>>> upstream/main
+                (global.get $import_pervasives_1213_[]_1214)
                )
               )
               (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
@@ -699,14 +641,7 @@ pattern matching › adt_match_1
           (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
            (i32.load offset=20
-<<<<<<< HEAD
-            (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-             (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-             (global.get $import_pervasives_1213_[]_1214)
-            )
-=======
-            (global.get $import_pervasives_1209_[]_1210)
->>>>>>> upstream/main
+            (global.get $import_pervasives_1213_[]_1214)
            )
           )
          )

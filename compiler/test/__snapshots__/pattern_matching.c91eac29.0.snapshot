@@ -76,18 +76,13 @@ pattern matching › adt_match_3
           (local.tee $4
            (tuple.extract 0
             (tuple.make
-<<<<<<< HEAD
-             (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-              (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-              (global.get $import_pervasives_1220_[...]_1221)
-=======
              (call_indirect (type $i32_i32_i32_=>_i32)
               (local.tee $0
                (tuple.extract 0
                 (tuple.make
                  (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
                   (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                  (global.get $import_pervasives_1216_[...]_1217)
+                  (global.get $import_pervasives_1220_[...]_1221)
                  )
                  (local.get $0)
                 )
@@ -105,7 +100,6 @@ pattern matching › adt_match_3
              (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
               (i32.const 0)
->>>>>>> upstream/main
              )
             )
            )

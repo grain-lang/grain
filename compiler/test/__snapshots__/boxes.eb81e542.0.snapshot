@@ -23,18 +23,6 @@ boxes › test_set_extra1
    (tuple.extract 0
     (tuple.make
      (block (result i32)
-<<<<<<< HEAD
-      (local.set $1
-       (tuple.extract 0
-        (tuple.make
-         (call_indirect (type $i32_i32_=>_i32)
-          (local.tee $0
-           (tuple.extract 0
-            (tuple.make
-             (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-              (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-              (global.get $import_pervasives_1164_box_1165)
-=======
       (i32.store offset=8
        (local.tee $1
         (tuple.extract 0
@@ -45,10 +33,9 @@ boxes › test_set_extra1
              (tuple.make
               (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
                (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-               (global.get $import_pervasives_1160_box_1161)
+               (global.get $import_pervasives_1164_box_1165)
               )
               (i32.const 0)
->>>>>>> upstream/main
              )
             )
            )
