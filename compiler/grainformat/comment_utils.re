@@ -344,6 +344,8 @@ let rec comments_inner =
         ]
       | _ => [
           switch (prev_cmt) {
+          | Doc(_)
+          | Shebang(_)
           | Line(_) => Doc.nil
           | _ => Doc.hardLine
           },
