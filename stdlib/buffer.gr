@@ -192,7 +192,6 @@ export let reset = (buffer) => {
 @disableGC
 export let rec truncate = (length, buffer) => {
   Memory.incRef(WasmI32.fromGrain((<)))
-  Memory.incRef(WasmI32.fromGrain((||)))
   Memory.incRef(WasmI32.fromGrain((>)))
   if (length < 0 || length > buffer.len) throw Exception.IndexOutOfBounds
 
@@ -286,6 +285,8 @@ export let rec addChar = (char: Char, buffer: Buffer) => {
       Memory.incRef(WasmI32.fromGrain(c))
       Memory.incRef(WasmI32.fromGrain(buffer))
       addInt8help(c, buffer)
+      Memory.decRef(WasmI32.fromGrain(c))
+      void
     },
     2n => {
       let c = Conv.toInt32(n)
@@ -293,6 +294,8 @@ export let rec addChar = (char: Char, buffer: Buffer) => {
       Memory.incRef(WasmI32.fromGrain(c))
       Memory.incRef(WasmI32.fromGrain(buffer))
       addInt16help(c, buffer)
+      Memory.decRef(WasmI32.fromGrain(c))
+      void
     },
     3n => {
       let (<) = WasmI32.ltU
@@ -306,6 +309,8 @@ export let rec addChar = (char: Char, buffer: Buffer) => {
         Memory.incRef(WasmI32.fromGrain(c))
         Memory.incRef(WasmI32.fromGrain(buffer))
         addInt8help(c, buffer)
+        Memory.decRef(WasmI32.fromGrain(c))
+        void
       }
     },
     _ => {
@@ -314,6 +319,8 @@ export let rec addChar = (char: Char, buffer: Buffer) => {
       Memory.incRef(WasmI32.fromGrain(c))
       Memory.incRef(WasmI32.fromGrain(buffer))
       addInt32help(c, buffer)
+      Memory.decRef(WasmI32.fromGrain(c))
+      void
     },
   }
 
@@ -407,11 +414,17 @@ export let rec addString = (string, buffer) => {
  */
 @disableGC
 export let rec addStringSlice = (start, length, string, buffer) => {
-  Memory.incRef(WasmI32.fromGrain(String.byteLength))
+  Memory.incRef(WasmI32.fromGrain(String.slice))
   Memory.incRef(WasmI32.fromGrain(start))
   Memory.incRef(WasmI32.fromGrain(length))
   Memory.incRef(WasmI32.fromGrain(string))
-  let bytelen = String.byteLength(String.slice(start, length, string))
+  let slice = String.slice(start, length, string)
+
+  Memory.incRef(WasmI32.fromGrain(String.byteLength))
+  Memory.incRef(WasmI32.fromGrain(slice))
+  let bytelen = String.byteLength(slice)
+
+  Memory.decRef(WasmI32.fromGrain(slice))
 
   Memory.incRef(WasmI32.fromGrain(autogrow))
   Memory.incRef(WasmI32.fromGrain(bytelen))
