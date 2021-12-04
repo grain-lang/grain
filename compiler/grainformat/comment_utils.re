@@ -343,6 +343,10 @@ let rec comments_inner =
           ...comments_inner(Some(cmt), bracket_line_opt, rem),
         ]
       | _ => [
+          switch (prev_cmt) {
+          | Line(_) => Doc.nil
+          | _ => Doc.hardLine
+          },
           Doc.hardLine,
           comment_to_doc(cmt),
           ...comments_inner(Some(cmt), bracket_line_opt, rem),

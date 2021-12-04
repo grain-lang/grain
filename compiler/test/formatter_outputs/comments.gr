@@ -51,6 +51,7 @@ let x = 7 // another comment 1
 let y = 9 // another comment 2
 
 /* stand alone block */
+
 // trailing comment
 
 let a = false

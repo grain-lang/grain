@@ -1985,11 +1985,11 @@ and print_expression =
 
       //  let true_false_space = Doc.space;
       //  keep this - we need this if we force single lines into block expressions
-      let true_false_space =
-        switch (trueExpr.pexp_desc) {
-        | PExpBlock(expressions) => Doc.space
-        | _ => if (false_is_block) {Doc.space} else {Doc.line}
-        };
+      // let true_false_space =
+      //   switch (trueExpr.pexp_desc) {
+      //   | PExpBlock(expressions) => Doc.space
+      //   | _ => if (false_is_block) {Doc.space} else {Doc.line}
+      //   };
 
       let commentsInCondition =
         Comment_utils.get_comments_inside_location(
@@ -2055,7 +2055,7 @@ and print_expression =
           | [] => Doc.nil
           | _ =>
             Doc.concat([
-              true_false_space,
+              Doc.space,
               Doc.text("else "),
               print_expression(
                 ~parent_is_arrow=false,
@@ -2067,7 +2067,7 @@ and print_expression =
           }
         | PExpIf(_condition, _trueExpr, _falseExpr) =>
           Doc.concat([
-            true_false_space,
+            Doc.space,
             Doc.text("else "),
             print_expression(
               ~parent_is_arrow=false,
@@ -2078,7 +2078,7 @@ and print_expression =
           ])
         | _ =>
           Doc.concat([
-            true_false_space,
+            Doc.space,
             Doc.text("else"),
             Doc.space,
             if (true_is_block) {
@@ -2121,30 +2121,34 @@ and print_expression =
             Doc.group(
               Doc.concat([
                 Doc.lparen,
-                Doc.concat([
-                  Comment_utils.inbetween_comments_to_docs(
-                    ~offset=false,
-                    ~bracket_line=None,
-                    condLeadingCmt,
-                  ),
-                ]),
-                switch (condLeadingCmt) {
-                | [] => Doc.nil
-                | _ => Doc.space
-                },
-                print_expression(
-                  ~parent_is_arrow=false,
-                  ~original_source,
-                  ~comments=commentsInCondition,
-                  condition,
+                Doc.indent(
+                  Doc.concat([
+                    Doc.concat([
+                      Comment_utils.inbetween_comments_to_docs(
+                        ~offset=false,
+                        ~bracket_line=None,
+                        condLeadingCmt,
+                      ),
+                    ]),
+                    switch (condLeadingCmt) {
+                    | [] => Doc.nil
+                    | _ => Doc.space
+                    },
+                    print_expression(
+                      ~parent_is_arrow=false,
+                      ~original_source,
+                      ~comments=commentsInCondition,
+                      condition,
+                    ),
+                    Doc.concat([
+                      Comment_utils.inbetween_comments_to_docs(
+                        ~offset=true,
+                        ~bracket_line=None,
+                        condTrailingCmt,
+                      ),
+                    ]),
+                  ]),
                 ),
-                Doc.concat([
-                  Comment_utils.inbetween_comments_to_docs(
-                    ~offset=true,
-                    ~bracket_line=None,
-                    condTrailingCmt,
-                  ),
-                ]),
                 Doc.rparen,
                 Doc.space,
               ]),
@@ -2167,30 +2171,34 @@ and print_expression =
               Doc.text("if"),
               Doc.space,
               Doc.lparen,
-              Doc.concat([
-                Comment_utils.inbetween_comments_to_docs(
-                  ~offset=false,
-                  ~bracket_line=None,
-                  condLeadingCmt,
-                ),
-              ]),
-              switch (condLeadingCmt) {
-              | [] => Doc.nil
-              | _ => Doc.space
-              },
-              print_expression(
-                ~parent_is_arrow=false,
-                ~original_source,
-                ~comments=commentsInCondition,
-                condition,
+              Doc.indent(
+                Doc.concat([
+                  Doc.concat([
+                    Comment_utils.inbetween_comments_to_docs(
+                      ~offset=false,
+                      ~bracket_line=None,
+                      condLeadingCmt,
+                    ),
+                  ]),
+                  switch (condLeadingCmt) {
+                  | [] => Doc.nil
+                  | _ => Doc.space
+                  },
+                  print_expression(
+                    ~parent_is_arrow=false,
+                    ~original_source,
+                    ~comments=commentsInCondition,
+                    condition,
+                  ),
+                  Doc.concat([
+                    Comment_utils.inbetween_comments_to_docs(
+                      ~offset=true,
+                      ~bracket_line=None,
+                      condTrailingCmt,
+                    ),
+                  ]),
+                ]),
               ),
-              Doc.concat([
-                Comment_utils.inbetween_comments_to_docs(
-                  ~offset=true,
-                  ~bracket_line=None,
-                  condTrailingCmt,
-                ),
-              ]),
               Doc.rparen,
               Doc.space,
             ]),
@@ -2295,7 +2303,7 @@ and print_expression =
                         ),
                       ),
                     ])
-                  | None => Doc.nil
+                  | None => Doc.space
                   },
                   Doc.text(";"),
                   switch (optexpression3) {
