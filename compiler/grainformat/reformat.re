@@ -2121,30 +2121,34 @@ and print_expression =
             Doc.group(
               Doc.concat([
                 Doc.lparen,
-                Doc.concat([
-                  Comment_utils.inbetween_comments_to_docs(
-                    ~offset=false,
-                    ~bracket_line=None,
-                    condLeadingCmt,
-                  ),
-                ]),
-                switch (condLeadingCmt) {
-                | [] => Doc.nil
-                | _ => Doc.space
-                },
-                print_expression(
-                  ~parent_is_arrow=false,
-                  ~original_source,
-                  ~comments=commentsInCondition,
-                  condition,
+                Doc.indent(
+                  Doc.concat([
+                    Doc.concat([
+                      Comment_utils.inbetween_comments_to_docs(
+                        ~offset=false,
+                        ~bracket_line=None,
+                        condLeadingCmt,
+                      ),
+                    ]),
+                    switch (condLeadingCmt) {
+                    | [] => Doc.nil
+                    | _ => Doc.space
+                    },
+                    print_expression(
+                      ~parent_is_arrow=false,
+                      ~original_source,
+                      ~comments=commentsInCondition,
+                      condition,
+                    ),
+                    Doc.concat([
+                      Comment_utils.inbetween_comments_to_docs(
+                        ~offset=true,
+                        ~bracket_line=None,
+                        condTrailingCmt,
+                      ),
+                    ]),
+                  ]),
                 ),
-                Doc.concat([
-                  Comment_utils.inbetween_comments_to_docs(
-                    ~offset=true,
-                    ~bracket_line=None,
-                    condTrailingCmt,
-                  ),
-                ]),
                 Doc.rparen,
                 Doc.space,
               ]),
@@ -2167,30 +2171,34 @@ and print_expression =
               Doc.text("if"),
               Doc.space,
               Doc.lparen,
-              Doc.concat([
-                Comment_utils.inbetween_comments_to_docs(
-                  ~offset=false,
-                  ~bracket_line=None,
-                  condLeadingCmt,
-                ),
-              ]),
-              switch (condLeadingCmt) {
-              | [] => Doc.nil
-              | _ => Doc.space
-              },
-              print_expression(
-                ~parent_is_arrow=false,
-                ~original_source,
-                ~comments=commentsInCondition,
-                condition,
+              Doc.indent(
+                Doc.concat([
+                  Doc.concat([
+                    Comment_utils.inbetween_comments_to_docs(
+                      ~offset=false,
+                      ~bracket_line=None,
+                      condLeadingCmt,
+                    ),
+                  ]),
+                  switch (condLeadingCmt) {
+                  | [] => Doc.nil
+                  | _ => Doc.space
+                  },
+                  print_expression(
+                    ~parent_is_arrow=false,
+                    ~original_source,
+                    ~comments=commentsInCondition,
+                    condition,
+                  ),
+                  Doc.concat([
+                    Comment_utils.inbetween_comments_to_docs(
+                      ~offset=true,
+                      ~bracket_line=None,
+                      condTrailingCmt,
+                    ),
+                  ]),
+                ]),
               ),
-              Doc.concat([
-                Comment_utils.inbetween_comments_to_docs(
-                  ~offset=true,
-                  ~bracket_line=None,
-                  condTrailingCmt,
-                ),
-              ]),
               Doc.rparen,
               Doc.space,
             ]),
