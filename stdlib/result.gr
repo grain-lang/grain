@@ -262,6 +262,7 @@ export let expect = (msg, result) => {
  *
  * @since v0.4.0
  */
+
 export let unwrap = result => {
   expect("Could not unwrap Err value", result)
 }
