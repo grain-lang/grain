@@ -202,6 +202,14 @@ let rec isSimpleObjectType = (tag: Number) => {
   result
 }
 
+@disableGC
+let rec forceDeallocate = x => {
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(x))
+  Memory.decRef(WasmI32.fromGrain(forceDeallocate))
+  void
+}
+
 let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
   // The objective of this function is to find and report any memory leaks in
   // the function f to be examined.
@@ -579,6 +587,14 @@ let leakDebugBlockImpl = (options: LeakDebugBlockOptions, f: () -> Void) => {
   f()
 
   GC.removeDebugHooks()
+
+  // The above hook functions don't get deallocated because @disableGC applies not
+  // just to their internals, but also to the lifetime of the closures allocated
+  // locally here, so they need to be cleaned up manually.
+  forceDeallocate(incRefHook)
+  forceDeallocate(decRefHook)
+  forceDeallocate(mallocHook)
+  forceDeallocate(freeHook)
 
   // Determine objects that existed before executing the function that have been
   // messed up with unmaching incRefs/decRefs.
