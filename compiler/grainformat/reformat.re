@@ -2303,7 +2303,7 @@ and print_expression =
                         ),
                       ),
                     ])
-                  | None => Doc.nil
+                  | None => Doc.space
                   },
                   Doc.text(";"),
                   switch (optexpression3) {
