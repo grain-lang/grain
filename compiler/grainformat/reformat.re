@@ -1985,11 +1985,11 @@ and print_expression =
 
       //  let true_false_space = Doc.space;
       //  keep this - we need this if we force single lines into block expressions
-      let true_false_space =
-        switch (trueExpr.pexp_desc) {
-        | PExpBlock(expressions) => Doc.space
-        | _ => if (false_is_block) {Doc.space} else {Doc.line}
-        };
+      // let true_false_space =
+      //   switch (trueExpr.pexp_desc) {
+      //   | PExpBlock(expressions) => Doc.space
+      //   | _ => if (false_is_block) {Doc.space} else {Doc.line}
+      //   };
 
       let commentsInCondition =
         Comment_utils.get_comments_inside_location(
@@ -2055,7 +2055,7 @@ and print_expression =
           | [] => Doc.nil
           | _ =>
             Doc.concat([
-              true_false_space,
+              Doc.space,
               Doc.text("else "),
               print_expression(
                 ~parent_is_arrow=false,
@@ -2067,7 +2067,7 @@ and print_expression =
           }
         | PExpIf(_condition, _trueExpr, _falseExpr) =>
           Doc.concat([
-            true_false_space,
+            Doc.space,
             Doc.text("else "),
             print_expression(
               ~parent_is_arrow=false,
@@ -2078,7 +2078,7 @@ and print_expression =
           ])
         | _ =>
           Doc.concat([
-            true_false_space,
+            Doc.space,
             Doc.text("else"),
             Doc.space,
             if (true_is_block) {
