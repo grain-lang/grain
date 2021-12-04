@@ -22,6 +22,8 @@ There are a set of contributor docs in [docs/contributor](https://github.com/gra
 
 ### Compiler
 
+When working with the compiler, you'll want to install [esy](https://esy.sh/docs/en/getting-started.html#install-esy) globally and make it available in your `$PATH`. This will allow you to have LSP services while working on the compiler code.
+
 Once you have the compiler building, the typical flow for development is to make changes in the `compiler` directory, then run:
 
 ```bash

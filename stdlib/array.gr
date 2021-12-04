@@ -814,6 +814,18 @@ export let join = (separator: String, items: Array<String>) => {
 }
 
 /**
+ * A simple helper function to convert a negative array index
+ * number to its positive positional equivalent.
+ */
+let wrapNegativeIndex = (arrLen, idx) => {
+  if (idx >= 0) {
+    idx
+  } else {
+    arrLen + idx
+  }
+}
+
+/**
  * Slices an array given zero-based start and end indexes. The value
  * at the end index will not be included in the result.
  *
@@ -829,17 +841,8 @@ export let join = (separator: String, items: Array<String>) => {
  */
 export let slice = (startIndex, endIndex, array) => {
   let arrayLength = length(array)
-
-  let wrapNegativeIndex = idx => {
-    if (idx >= 0) {
-      idx
-    } else {
-      arrayLength + idx
-    }
-  }
-
-  let startIndex = wrapNegativeIndex(startIndex)
-  let endIndex = wrapNegativeIndex(endIndex)
+  let startIndex = wrapNegativeIndex(arrayLength, startIndex)
+  let endIndex = wrapNegativeIndex(arrayLength, endIndex)
   // Ensure we aren't working with an `end` value that is too big
   let endIndex = if (endIndex > arrayLength) {
     arrayLength
@@ -891,4 +894,48 @@ export let sort = (comp, array) => {
   }
   let len = length(array)
   quicksort(0, len - 1)
+}
+
+/**
+ * Rotates an array by n elements to the right, in place.
+ *
+ * If n is negative, the array will be rotated by n elements
+ * to the left. See examples.
+ *
+ * @param n: The number of elements to rotate by
+ * @param arr: The array to be rotated
+ *
+ * @example let array = [> 1, 2, 3, 4, 5]; rotate(2, arr); arr == [> 4, 5, 1, 2, 3]
+ * @example let array = [> 1, 2, 3, 4, 5]; rotate(-1, arr); arr == [> 2, 3, 4, 5, 1]
+ * @since v0.4.5
+ */
+export let rotate = (n, arr) => {
+  let rec gcd = (a, b) => {
+    if (b == 0) {
+      a
+    }
+    else{
+      gcd(b, a % b)
+    }
+  }
+
+  let arrLen = length(arr)
+  let k = n % arrLen
+  let mut d = -1
+  let mut temp = 0
+  let mut j  = 0
+  for (let mut i = 0; i < gcd(arrLen, k); i += 1) {
+    j = i
+    temp = arr[i]
+    while (true) {
+      d = (j - k) % arrLen
+      if (d == i) {
+        break
+      }
+      let newVal = arr[d]
+      arr[j] = newVal
+      j = d
+    }
+    arr[j] = temp
+  }
 }

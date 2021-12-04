@@ -37,21 +37,48 @@ pattern matching › adt_match_2
    (tuple.extract 0
     (tuple.make
      (block (result i32)
-      (local.set $3
+      (local.set $9
        (tuple.extract 0
         (tuple.make
-         (call_indirect (type $i32_i32_i32_=>_i32)
-          (local.tee $0
+         (i32.load offset=12
+          (local.tee $4
            (tuple.extract 0
             (tuple.make
+<<<<<<< HEAD
              (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
               (global.get $import_pervasives_1218_[...]_1219)
+=======
+             (call_indirect (type $i32_i32_i32_=>_i32)
+              (local.tee $0
+               (tuple.extract 0
+                (tuple.make
+                 (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+                  (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+                  (global.get $import_pervasives_1214_[...]_1215)
+                 )
+                 (i32.const 0)
+                )
+               )
+              )
+              (i32.const 5)
+              (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+               (global.get $import_pervasives_1212_[]_1213)
+              )
+              (i32.load offset=8
+               (local.get $0)
+              )
              )
-             (i32.const 0)
+             (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+              (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+              (i32.const 0)
+>>>>>>> upstream/main
+             )
             )
            )
           )
+<<<<<<< HEAD
           (i32.const 5)
           (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
@@ -76,6 +103,8 @@ pattern matching › adt_match_2
            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
            (local.get $3)
           )
+=======
+>>>>>>> upstream/main
          )
          (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
           (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
@@ -107,7 +136,7 @@ pattern matching › adt_match_2
         )
        )
       )
-      (local.set $4
+      (local.set $5
        (tuple.extract 0
         (tuple.make
          (if (result i32)
@@ -119,15 +148,24 @@ pattern matching › adt_match_2
            (i32.const 31)
           )
           (block (result i32)
-           (local.set $4
+           (local.set $1
             (tuple.extract 0
              (tuple.make
-              (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-               (i32.load offset=24
-                (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-                 (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                 (local.get $3)
+              (i32.load offset=12
+               (local.tee $5
+                (tuple.extract 0
+                 (tuple.make
+                  (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+                   (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+                   (i32.load offset=24
+                    (local.get $4)
+                   )
+                  )
+                  (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+                   (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+                   (i32.const 0)
+                  )
+                 )
                 )
                )
               )
@@ -138,23 +176,7 @@ pattern matching › adt_match_2
              )
             )
            )
-           (local.set $2
-            (tuple.extract 0
-             (tuple.make
-              (i32.load offset=12
-               (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-                (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                (local.get $4)
-               )
-              )
-              (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
-               (i32.const 0)
-              )
-             )
-            )
-           )
-           (local.set $5
+           (local.set $3
             (tuple.extract 0
              (tuple.make
               (i32.or
@@ -162,7 +184,7 @@ pattern matching › adt_match_2
                 (i32.eq
                  (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
                   (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                  (local.get $2)
+                  (local.get $1)
                  )
                  (i32.const 3)
                 )
@@ -181,37 +203,30 @@ pattern matching › adt_match_2
             (i32.shr_u
              (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-              (local.get $5)
+              (local.get $3)
              )
              (i32.const 31)
             )
             (block (result i32)
-             (local.set $1
-              (tuple.extract 0
-               (tuple.make
-                (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-                 (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                 (i32.load offset=24
-                  (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-                   (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                   (local.get $4)
-                  )
-                 )
-                )
-                (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-                 (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
-                 (i32.const 0)
-                )
-               )
-              )
-             )
-             (local.set $7
+             (local.set $6
               (tuple.extract 0
                (tuple.make
                 (i32.load offset=12
-                 (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-                  (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                  (local.get $1)
+                 (local.tee $2
+                  (tuple.extract 0
+                   (tuple.make
+                    (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+                     (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+                     (i32.load offset=24
+                      (local.get $5)
+                     )
+                    )
+                    (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+                     (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+                     (i32.const 0)
+                    )
+                   )
+                  )
                  )
                 )
                 (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
@@ -229,7 +244,7 @@ pattern matching › adt_match_2
                   (i32.eq
                    (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
                     (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                    (local.get $7)
+                    (local.get $6)
                    )
                    (i32.const 3)
                   )
@@ -253,32 +268,25 @@ pattern matching › adt_match_2
                (i32.const 31)
               )
               (block (result i32)
-               (local.set $6
-                (tuple.extract 0
-                 (tuple.make
-                  (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-                   (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                   (i32.load offset=24
-                    (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-                     (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                     (local.get $1)
-                    )
-                   )
-                  )
-                  (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-                   (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
-                   (i32.const 0)
-                  )
-                 )
-                )
-               )
                (local.set $11
                 (tuple.extract 0
                  (tuple.make
                   (i32.load offset=12
-                   (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-                    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                    (local.get $6)
+                   (local.tee $7
+                    (tuple.extract 0
+                     (tuple.make
+                      (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+                       (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+                       (i32.load offset=24
+                        (local.get $2)
+                       )
+                      )
+                      (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+                       (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+                       (i32.const 0)
+                      )
+                     )
+                    )
                    )
                   )
                   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
@@ -324,7 +332,7 @@ pattern matching › adt_match_2
                )
               )
               (block (result i32)
-               (local.set $6
+               (local.set $7
                 (tuple.extract 0
                  (tuple.make
                   (i32.or
@@ -332,7 +340,7 @@ pattern matching › adt_match_2
                     (i32.eq
                      (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
                       (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                      (local.get $7)
+                      (local.get $6)
                      )
                      (i32.const 1)
                     )
@@ -353,7 +361,7 @@ pattern matching › adt_match_2
                 (i32.shr_u
                  (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
                   (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                  (local.get $6)
+                  (local.get $7)
                  )
                  (i32.const 31)
                 )
@@ -362,7 +370,7 @@ pattern matching › adt_match_2
              )
             )
             (block (result i32)
-             (local.set $1
+             (local.set $2
               (tuple.extract 0
                (tuple.make
                 (i32.or
@@ -370,7 +378,7 @@ pattern matching › adt_match_2
                   (i32.eq
                    (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
                     (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                    (local.get $2)
+                    (local.get $1)
                    )
                    (i32.const 1)
                   )
@@ -391,7 +399,7 @@ pattern matching › adt_match_2
               (i32.shr_u
                (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
                 (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                (local.get $1)
+                (local.get $2)
                )
                (i32.const 31)
               )
@@ -400,7 +408,7 @@ pattern matching › adt_match_2
            )
           )
           (block (result i32)
-           (local.set $4
+           (local.set $5
             (tuple.extract 0
              (tuple.make
               (i32.or
@@ -427,7 +435,7 @@ pattern matching › adt_match_2
             (i32.shr_u
              (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-              (local.get $4)
+              (local.get $5)
              )
              (i32.const 31)
             )
@@ -438,7 +446,7 @@ pattern matching › adt_match_2
          )
          (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
           (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
-          (local.get $4)
+          (local.get $5)
          )
         )
        )
@@ -461,7 +469,7 @@ pattern matching › adt_match_2
                     (i32.shr_s
                      (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
                       (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                      (local.get $4)
+                      (local.get $5)
                      )
                      (i32.const 1)
                     )
@@ -476,54 +484,13 @@ pattern matching › adt_match_2
                )
               )
              )
-             (local.set $2
-              (tuple.extract 0
-               (tuple.make
-                (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-                 (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                 (i32.load offset=24
-                  (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-                   (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                   (local.get $3)
-                  )
-                 )
-                )
-                (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-                 (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
-                 (local.get $2)
-                )
-               )
-              )
-             )
-             (local.set $5
-              (tuple.extract 0
-               (tuple.make
-                (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-                 (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                 (i32.load offset=24
-                  (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-                   (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                   (local.get $2)
-                  )
-                 )
-                )
-                (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-                 (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
-                 (local.get $5)
-                )
-               )
-              )
-             )
              (local.set $1
               (tuple.extract 0
                (tuple.make
                 (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
                  (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                 (i32.load offset=20
-                  (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-                   (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                   (local.get $5)
-                  )
+                 (i32.load offset=24
+                  (local.get $4)
                  )
                 )
                 (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
@@ -533,21 +500,50 @@ pattern matching › adt_match_2
                )
               )
              )
-             (local.set $7
+             (local.set $3
+              (tuple.extract 0
+               (tuple.make
+                (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+                 (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+                 (i32.load offset=24
+                  (local.get $1)
+                 )
+                )
+                (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+                 (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+                 (local.get $3)
+                )
+               )
+              )
+             )
+             (local.set $2
               (tuple.extract 0
                (tuple.make
                 (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
                  (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
                  (i32.load offset=20
-                  (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-                   (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                   (local.get $2)
-                  )
+                  (local.get $3)
                  )
                 )
                 (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
                  (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
-                 (local.get $7)
+                 (local.get $2)
+                )
+               )
+              )
+             )
+             (local.set $6
+              (tuple.extract 0
+               (tuple.make
+                (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+                 (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+                 (i32.load offset=20
+                  (local.get $1)
+                 )
+                )
+                (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+                 (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+                 (local.get $6)
                 )
                )
               )
@@ -558,10 +554,7 @@ pattern matching › adt_match_2
                 (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
                  (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
                  (i32.load offset=20
-                  (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-                   (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                   (local.get $3)
-                  )
+                  (local.get $4)
                  )
                 )
                 (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
@@ -571,7 +564,7 @@ pattern matching › adt_match_2
                )
               )
              )
-             (local.set $6
+             (local.set $7
               (tuple.extract 0
                (tuple.make
                 (call_indirect (type $i32_i32_i32_=>_i32)
@@ -592,7 +585,7 @@ pattern matching › adt_match_2
                  )
                  (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
                   (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                  (local.get $7)
+                  (local.get $6)
                  )
                  (i32.load offset=8
                   (local.get $0)
@@ -600,7 +593,7 @@ pattern matching › adt_match_2
                 )
                 (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
                  (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
-                 (local.get $6)
+                 (local.get $7)
                 )
                )
               )
@@ -620,53 +613,15 @@ pattern matching › adt_match_2
                )
                (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
                 (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                (local.get $6)
+                (local.get $7)
                )
                (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
                 (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                (local.get $1)
+                (local.get $2)
                )
                (i32.load offset=8
                 (local.get $0)
                )
-              )
-             )
-            )
-           )
-           (local.set $2
-            (tuple.extract 0
-             (tuple.make
-              (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-               (i32.load offset=24
-                (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-                 (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                 (local.get $3)
-                )
-               )
-              )
-              (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
-               (local.get $2)
-              )
-             )
-            )
-           )
-           (local.set $5
-            (tuple.extract 0
-             (tuple.make
-              (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-               (i32.load offset=20
-                (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-                 (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                 (local.get $2)
-                )
-               )
-              )
-              (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
-               (local.get $5)
               )
              )
             )
@@ -676,16 +631,45 @@ pattern matching › adt_match_2
              (tuple.make
               (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
                (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-               (i32.load offset=20
-                (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-                 (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                 (local.get $3)
-                )
+               (i32.load offset=24
+                (local.get $4)
                )
               )
               (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
                (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
                (local.get $1)
+              )
+             )
+            )
+           )
+           (local.set $3
+            (tuple.extract 0
+             (tuple.make
+              (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+               (i32.load offset=20
+                (local.get $1)
+               )
+              )
+              (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+               (local.get $3)
+              )
+             )
+            )
+           )
+           (local.set $2
+            (tuple.extract 0
+             (tuple.make
+              (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
+               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+               (i32.load offset=20
+                (local.get $4)
+               )
+              )
+              (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+               (local.get $2)
               )
              )
             )
@@ -705,11 +689,11 @@ pattern matching › adt_match_2
              )
              (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-              (local.get $1)
+              (local.get $2)
              )
              (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-              (local.get $5)
+              (local.get $3)
              )
              (i32.load offset=8
               (local.get $0)
@@ -722,10 +706,7 @@ pattern matching › adt_match_2
           (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
            (i32.load offset=20
-            (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-             (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-             (local.get $3)
-            )
+            (local.get $4)
            )
           )
          )
@@ -741,7 +722,7 @@ pattern matching › adt_match_2
   (drop
    (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
     (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
-    (local.get $3)
+    (local.get $4)
    )
   )
   (drop
@@ -759,18 +740,6 @@ pattern matching › adt_match_2
   (drop
    (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
     (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
-    (local.get $4)
-   )
-  )
-  (drop
-   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
-    (local.get $2)
-   )
-  )
-  (drop
-   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
     (local.get $5)
    )
   )
@@ -783,7 +752,19 @@ pattern matching › adt_match_2
   (drop
    (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
     (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
-    (local.get $7)
+    (local.get $3)
+   )
+  )
+  (drop
+   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+    (local.get $2)
+   )
+  )
+  (drop
+   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
+    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+    (local.get $6)
    )
   )
   (drop
@@ -795,7 +776,7 @@ pattern matching › adt_match_2
   (drop
    (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
     (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
-    (local.get $6)
+    (local.get $7)
    )
   )
   (drop

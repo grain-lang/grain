@@ -13,7 +13,6 @@
     "node": ">=14"
   },
   "scripts": {
-    "vscode": "node .vscode/setup-ocaml-lsp.js && yarn compiler prepare",
     "prepare": "yarn js-runner build && yarn cli link",
     "test": "yarn compiler test",
     "cli": "yarn workspace @grain/cli run",

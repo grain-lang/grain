@@ -137,10 +137,7 @@ records › record_get_2
       (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
        (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
        (i32.load offset=16
-        (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-         (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-         (local.get $1)
-        )
+        (local.get $1)
        )
       )
      )

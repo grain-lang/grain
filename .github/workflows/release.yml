@@ -174,6 +174,20 @@ jobs:
           repo: grain-lang/homebrew-tap
           tag_input: ${{ needs.release-please.outputs.tag_name }}
 
+  dispatch-docker:
+    needs: [release-please, prepare-artifacts]
+    if: ${{ needs.release-please.outputs.release_created }}
+    name: Dispatch Docker builds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: grain-lang/workflow-dispatch-action@v1.0.0
+        with:
+          workflow: Publish Docker images
+          token: ${{ secrets.WORKFLOW_TOKEN }}
+          ref: main
+          repo: grain-lang/grain
+          tag_input: ${{ needs.release-please.outputs.tag_name }}
+
   npm-release-stdlib:
     needs: [release-please, prepare-artifacts]
     if: ${{ needs.release-please.outputs.stdlib_release_created }}

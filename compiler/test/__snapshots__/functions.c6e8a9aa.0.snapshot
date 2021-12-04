@@ -80,17 +80,6 @@ functions › lam_destructure_2
         )
        )
       )
-      (local.set $0
-       (tuple.extract 0
-        (tuple.make
-         (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-          (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-          (local.get $1)
-         )
-         (local.get $0)
-        )
-       )
-      )
       (local.set $2
        (tuple.extract 0
         (tuple.make
@@ -103,7 +92,12 @@ functions › lam_destructure_2
                (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0)
                (i32.const 16)
               )
-              (local.get $0)
+              (tuple.extract 0
+               (tuple.make
+                (local.get $1)
+                (local.get $0)
+               )
+              )
              )
             )
            )

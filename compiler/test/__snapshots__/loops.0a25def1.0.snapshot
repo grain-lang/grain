@@ -220,10 +220,7 @@ loops › loop2
              (tuple.make
               (block (result i32)
                (i32.store offset=8
-                (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-                 (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                 (local.get $2)
-                )
+                (local.get $2)
                 (tuple.extract 0
                  (tuple.make
                   (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
@@ -233,10 +230,7 @@ loops › loop2
                   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
                    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
                    (i32.load offset=8
-                    (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-                     (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                     (local.get $2)
-                    )
+                    (local.get $2)
                    )
                   )
                  )
@@ -313,10 +307,7 @@ loops › loop2
             )
            )
            (i32.store offset=8
-            (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-             (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-             (local.get $3)
-            )
+            (local.get $3)
             (tuple.extract 0
              (tuple.make
               (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
@@ -326,10 +317,7 @@ loops › loop2
               (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
                (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
                (i32.load offset=8
-                (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-                 (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                 (local.get $3)
-                )
+                (local.get $3)
                )
               )
              )

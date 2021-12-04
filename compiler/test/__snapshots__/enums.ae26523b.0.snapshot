@@ -387,10 +387,7 @@ enums › enum_recursive_data_definition
       (local.set $0
        (tuple.extract 0
         (tuple.make
-         (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-          (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-          (global.get $global_1)
-         )
+         (global.get $global_1)
          (local.get $0)
         )
        )
@@ -486,10 +483,7 @@ enums › enum_recursive_data_definition
       (local.set $0
        (tuple.extract 0
         (tuple.make
-         (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-          (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-          (global.get $global_3)
-         )
+         (global.get $global_3)
          (local.get $0)
         )
        )
