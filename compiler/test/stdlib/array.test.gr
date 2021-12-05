@@ -383,3 +383,11 @@ assert arr5 == [> 3, 4, 5, 1, 2]
 let arr6 = [> 1, 2, 3, 4, 5]
 Array.rotate(-54, arr6) 
 assert arr6 == [> 5, 1, 2, 3, 4]
+
+let arr7 = [> ] : (Array<Number>)
+Array.rotate(1, arr7)
+assert arr7 == [> ]
+
+let arr8 = [> "a", "b", "c"]
+Array.rotate(1, arr8)
+assert arr8 == [> "c", "a", "b"]
