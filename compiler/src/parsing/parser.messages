@@ -217,25 +217,6 @@ program: ENUM TYPEID LBRACE TYPEID LPAREN WHILE
 
 Expected a type (or a closing paren to finish the variant definition).
 
-program: ENUM TYPEID LBRACE TYPEID RBRACE COMMA AT ID LET
-##
-## Ends in an error in state: 846.
-##
-## data_declaration_stmt -> attributes . EXPORT data_declaration [ SEMI EOL EOF COMMA ]
-## data_declaration_stmt -> attributes . data_declaration [ SEMI EOL EOF COMMA ]
-##
-## The known suffix of the stack is as follows:
-## attributes
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 186, spurious reduction of production attribute -> AT id_str
-## In state 402, spurious reduction of production list(attribute) ->
-## In state 403, spurious reduction of production list(attribute) -> attribute list(attribute)
-## In state 314, spurious reduction of production attributes -> list(attribute)
-##
 program: ENUM TYPEID LBRACE TYPEID RBRACE COMMA EOL WHILE
 ##
 ## Ends in an error in state: 844.

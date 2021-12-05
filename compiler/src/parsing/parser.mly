@@ -321,9 +321,8 @@ import_stmt:
   | IMPORT lseparated_nonempty_list(comma, import_shape) comma? FROM file_path { Imp.mk ~loc:(to_loc $loc) $2 $5 }
 
 data_declaration_stmt:
-  // TODO: Attach attributes to the node
-  | attributes EXPORT data_declaration { (Exported, $3) }
-  | attributes data_declaration { (Nonexported, $2) }
+  | EXPORT data_declaration { (Exported, $2) }
+  | data_declaration { (Nonexported, $1) }
 
 data_declaration_stmts:
   | separated_nonempty_list(comma, data_declaration_stmt) { $1 }
@@ -694,10 +693,10 @@ toplevel_stmt:
   | attributes LET value_binds { Top.let_ ~loc:(to_loc $sloc) ~attributes:$1 Nonexported Nonrecursive Immutable $3 }
   | attributes LET REC MUT value_binds { Top.let_ ~loc:(to_loc $sloc) ~attributes:$1 Nonexported Recursive Mutable $5 }
   | attributes LET MUT value_binds { Top.let_ ~loc:(to_loc $sloc) ~attributes:$1 Nonexported Nonrecursive Mutable $4 }
+  | attributes data_declaration_stmts { Top.data ~loc:(to_loc $sloc) ~attributes:$1 $2 }
   | expr { Top.expr ~loc:(to_loc $loc) $1 }
   | import_stmt { Top.import ~loc:(to_loc $loc) $1 }
   | IMPORT foreign_stmt { Top.foreign ~loc:(to_loc $loc) Nonexported $2 }
-  | data_declaration_stmts { Top.data ~loc:(to_loc $loc) $1 }
   | export_stmt { $1 }
   | primitive_stmt { Top.primitive ~loc:(to_loc $loc) Nonexported $1 }
   | exception_stmt { Top.grain_exception ~loc:(to_loc $loc) Nonexported $1 }
