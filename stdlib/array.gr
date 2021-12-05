@@ -922,11 +922,10 @@ export let rotate = (n, arr) => {
   let arrLen = length(arr)
   let k = n % arrLen
   let mut d = -1
-  let mut temp = 0
   let mut j  = 0
   for (let mut i = 0; i < gcd(arrLen, k); i += 1) {
     j = i
-    temp = arr[i]
+    let temp = arr[i]
     while (true) {
       d = (j - k) % arrLen
       if (d == i) {
