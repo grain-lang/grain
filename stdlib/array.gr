@@ -920,22 +920,23 @@ export let rotate = (n, arr) => {
   }
 
   let arrLen = length(arr)
-  let k = n % arrLen
-  let mut d = -1
-  let mut temp = 0
-  let mut j  = 0
-  for (let mut i = 0; i < gcd(arrLen, k); i += 1) {
-    j = i
-    temp = arr[i]
-    while (true) {
-      d = (j - k) % arrLen
-      if (d == i) {
-        break
+  if (arrLen > 0) {
+    let k = n % arrLen
+    let mut d = -1
+    let mut j  = 0
+    for (let mut i = 0; i < gcd(arrLen, k); i += 1) {
+      j = i
+      let temp = arr[i]
+      while (true) {
+        d = (j - k) % arrLen
+        if (d == i) {
+          break
+        }
+        let newVal = arr[d]
+        arr[j] = newVal
+        j = d
       }
-      let newVal = arr[d]
-      arr[j] = newVal
-      j = d
+      arr[j] = temp
     }
-    arr[j] = temp
   }
 }
