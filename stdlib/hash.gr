@@ -227,7 +227,7 @@ let rec hashOne = (val, depth) => {
  *
  * @since v0.1.0
  */
-export let hash = (anything) => {
+export let rec hash = (anything) => {
   h = seed
 
   hashOne(WasmI32.fromGrain(anything), 0n)
@@ -235,5 +235,10 @@ export let hash = (anything) => {
 
   // Tag the number on the way out.
   // Since Grain has proper modulus, negative numbers are okay.
-  tagSimpleNumber(h)
+  let result = tagSimpleNumber(h)
+
+  Memory.decRef(WasmI32.fromGrain(hash))
+  Memory.decRef(WasmI32.fromGrain(anything))
+
+  result
 }
