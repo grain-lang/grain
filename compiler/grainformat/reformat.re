@@ -2432,14 +2432,10 @@ and print_expression =
       switch (expressions) {
       | [] =>
         // Not legal syntax so we shouldn't ever hit it, but we'll handle
-        // it just in case. 
+        // it just in case.
         Doc.breakableGroup(
           ~forceBreak=true,
-          Doc.concat([
-            Doc.lbrace,
-            Doc.indent(Doc.line),
-            Doc.rbrace,
-          ]),
+          Doc.concat([Doc.lbrace, Doc.indent(Doc.line), Doc.rbrace]),
         )
       | _ =>
         let get_loc = (expr: Grain_parsing__Parsetree.expression) => {
