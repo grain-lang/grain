@@ -391,3 +391,7 @@ assert arr7 == [> ]
 let arr8 = [> "a", "b", "c"]
 Array.rotate(1, arr8)
 assert arr8 == [> "c", "a", "b"]
+
+let arr9 = [> ]
+Array.rotate(1, arr9)
+assert arr9 == [> ]
