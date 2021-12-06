@@ -1649,7 +1649,6 @@ and print_expression =
           Doc.lparen,
           Doc.indent(
             Doc.concat([
-              //  Doc.softLine,
               block_item_iterator(
                 bracket_line,
                 expressions,
@@ -1982,14 +1981,6 @@ and print_expression =
         | PExpBlock(expressions) => List.length(expressions) > 0
         | _ => false
         };
-
-      //  let true_false_space = Doc.space;
-      //  keep this - we need this if we force single lines into block expressions
-      // let true_false_space =
-      //   switch (trueExpr.pexp_desc) {
-      //   | PExpBlock(expressions) => Doc.space
-      //   | _ => if (false_is_block) {Doc.space} else {Doc.line}
-      //   };
 
       let commentsInCondition =
         Comment_utils.get_comments_inside_location(
@@ -2440,13 +2431,13 @@ and print_expression =
     | PExpBlock(expressions) =>
       switch (expressions) {
       | [] =>
-        // I think not legal syntac
+        // Not legal syntax so we shouldn't ever hit it, but we'll handle
+        // it just in case. 
         Doc.breakableGroup(
           ~forceBreak=true,
           Doc.concat([
             Doc.lbrace,
             Doc.indent(Doc.line),
-            // Doc.line,
             Doc.rbrace,
           ]),
         )
