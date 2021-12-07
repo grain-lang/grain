@@ -318,7 +318,7 @@ export let rec isInfinite = (x: Number) => {
  * 
  * @param input: The string to parse
  * @param radix: The number system base to use when parsing the input string
- * @returns `Ok(value)` on a successful parse or `Err(msg)` on an unsuccessful parse, with `value` as the parsed number or `msg` as an error message string.
+ * @returns `Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise
  * 
  * @since v0.4.5
  */
