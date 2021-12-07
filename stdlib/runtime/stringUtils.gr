@@ -1,4 +1,4 @@
-// TODO: Remove dependency on Pervasives once Option/Result types are imbedded in the compiler (#1050)
+// TODO(#1050): Remove dependency on Pervasives once Option/Result types are imbedded in the compiler
 
 import WasmI32, {
   add as (+),
