@@ -9,9 +9,9 @@ exports › export8
  (import \"_grainEnv\" \"relocBase\" (global $import__grainEnv_0_relocBase_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRefIgnoreZeros\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0 (mut i32)))
- (import \"GRAIN$MODULE$exportStar\" \"GRAIN$EXPORT$y\" (global $import_exportStar_1169_y_1170 (mut i32)))
- (import \"GRAIN$MODULE$exportStar\" \"GRAIN$EXPORT$x\" (global $import_exportStar_1171_x_1172 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $import_pervasives_1173_+_1174 (mut i32)))
+ (import \"GRAIN$MODULE$exportStar\" \"GRAIN$EXPORT$y\" (global $import_exportStar_1173_y_1174 (mut i32)))
+ (import \"GRAIN$MODULE$exportStar\" \"GRAIN$EXPORT$x\" (global $import_exportStar_1175_x_1176 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $import_pervasives_1177_+_1178 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $import_GRAIN$MODULE$runtime/gc_0_incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRefIgnoreZeros\" (func $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0 (param i32 i32) (result i32)))
  (global $global_1 i32 (i32.const 0))
@@ -35,7 +35,7 @@ exports › export8
             (tuple.make
              (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-              (global.get $import_exportStar_1169_y_1170)
+              (global.get $import_exportStar_1173_y_1174)
              )
              (i32.const 0)
             )
@@ -59,7 +59,7 @@ exports › export8
          (tuple.make
           (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-           (global.get $import_pervasives_1173_+_1174)
+           (global.get $import_pervasives_1177_+_1178)
           )
           (local.get $0)
          )
@@ -67,7 +67,7 @@ exports › export8
        )
        (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
         (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-        (global.get $import_exportStar_1171_x_1172)
+        (global.get $import_exportStar_1175_x_1176)
        )
        (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
         (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)

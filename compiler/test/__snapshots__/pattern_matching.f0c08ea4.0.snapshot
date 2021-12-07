@@ -10,9 +10,9 @@ pattern matching › tuple_match_deep7
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRefIgnoreZeros\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $import_pervasives_1239_+_1240 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$[]\" (global $import_pervasives_1241_[]_1242 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$[...]\" (global $import_pervasives_1243_[...]_1244 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $import_pervasives_1243_+_1244 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$[]\" (global $import_pervasives_1245_[]_1246 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$[...]\" (global $import_pervasives_1247_[...]_1248 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $import_GRAIN$MODULE$runtime/gc_0_malloc_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $import_GRAIN$MODULE$runtime/gc_0_incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRefIgnoreZeros\" (func $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0 (param i32 i32) (result i32)))
@@ -54,7 +54,7 @@ pattern matching › tuple_match_deep7
             (tuple.make
              (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-              (global.get $import_pervasives_1243_[...]_1244)
+              (global.get $import_pervasives_1247_[...]_1248)
              )
              (i32.const 0)
             )
@@ -63,7 +63,7 @@ pattern matching › tuple_match_deep7
           (i32.const 15)
           (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
            (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-           (global.get $import_pervasives_1241_[]_1242)
+           (global.get $import_pervasives_1245_[]_1246)
           )
           (i32.load offset=8
            (local.get $0)
@@ -85,7 +85,7 @@ pattern matching › tuple_match_deep7
             (tuple.make
              (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-              (global.get $import_pervasives_1243_[...]_1244)
+              (global.get $import_pervasives_1247_[...]_1248)
              )
              (local.get $0)
             )
@@ -116,7 +116,7 @@ pattern matching › tuple_match_deep7
             (tuple.make
              (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-              (global.get $import_pervasives_1243_[...]_1244)
+              (global.get $import_pervasives_1247_[...]_1248)
              )
              (local.get $0)
             )
@@ -147,7 +147,7 @@ pattern matching › tuple_match_deep7
             (tuple.make
              (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-              (global.get $import_pervasives_1243_[...]_1244)
+              (global.get $import_pervasives_1247_[...]_1248)
              )
              (local.get $0)
             )
@@ -731,7 +731,7 @@ pattern matching › tuple_match_deep7
                    (tuple.make
                     (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
                      (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                     (global.get $import_pervasives_1239_+_1240)
+                     (global.get $import_pervasives_1243_+_1244)
                     )
                     (local.get $0)
                    )
@@ -765,7 +765,7 @@ pattern matching › tuple_match_deep7
                    (tuple.make
                     (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
                      (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                     (global.get $import_pervasives_1239_+_1240)
+                     (global.get $import_pervasives_1243_+_1244)
                     )
                     (local.get $0)
                    )
@@ -797,7 +797,7 @@ pattern matching › tuple_match_deep7
                  (tuple.make
                   (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
                    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                   (global.get $import_pervasives_1239_+_1240)
+                   (global.get $import_pervasives_1243_+_1244)
                   )
                   (local.get $0)
                  )
@@ -907,7 +907,7 @@ pattern matching › tuple_match_deep7
                  (tuple.make
                   (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
                    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                   (global.get $import_pervasives_1239_+_1240)
+                   (global.get $import_pervasives_1243_+_1244)
                   )
                   (local.get $0)
                  )
@@ -939,7 +939,7 @@ pattern matching › tuple_match_deep7
                (tuple.make
                 (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
                  (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-                 (global.get $import_pervasives_1239_+_1240)
+                 (global.get $import_pervasives_1243_+_1244)
                 )
                 (local.get $0)
                )
@@ -1015,7 +1015,7 @@ pattern matching › tuple_match_deep7
              (tuple.make
               (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
                (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-               (global.get $import_pervasives_1239_+_1240)
+               (global.get $import_pervasives_1243_+_1244)
               )
               (local.get $0)
              )

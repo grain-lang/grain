@@ -45,6 +45,12 @@ export let utoa32Buffered = box((a: WasmI32, b: WasmI32, c: WasmI32) => void)
 
 let mut _DEBUG = false
 
+let mut _DEBUG_HOOK_INCREF = 0n
+let mut _DEBUG_HOOK_DECREF = 0n
+let mut _DEBUG_HOOK_MALLOC = 0n
+let mut _DEBUG_HOOK_FREE = 0n
+let mut _DEBUG_HOOK_RUNNING = false
+
 let _HEADER_SIZE = 8n
 
 /*
@@ -136,6 +142,81 @@ let setRefCount = (userPtr: WasmI32, count: WasmI32) => {
   WasmI32.store(userPtr - _HEADER_SIZE, count, 0n)
 }
 
+let incRefNoDebug = (userPtr: WasmI32) => {
+  if (WasmI32.eqz(userPtr & Tags._GRAIN_GENERIC_TAG_MASK) && WasmI32.ne(userPtr, 0n)) {
+    setRefCount(userPtr, getRefCount(userPtr) + 1n)
+  }
+  userPtr
+}
+
+let callDebugHookMalloc = (userPtr: WasmI32) => {
+  if (_DEBUG_HOOK_RUNNING) {
+    // Don't call the hook for refcounting activity inside the hook itself.
+    void
+  } else {
+    _DEBUG_HOOK_RUNNING = true
+
+    let fPtr = _DEBUG_HOOK_MALLOC
+
+    let onMalloc = WasmI32.toGrain(fPtr) : (WasmI32 -> Void)
+
+    onMalloc(userPtr)
+
+    _DEBUG_HOOK_RUNNING = false
+  }
+}
+
+let callDebugHookFree = (userPtr: WasmI32) => {
+  if (_DEBUG_HOOK_RUNNING) {
+    // Don't call the hook for refcounting activity inside the hook itself.
+    void
+  } else {
+    _DEBUG_HOOK_RUNNING = true
+
+    let fPtr = _DEBUG_HOOK_FREE
+
+    let onFree = WasmI32.toGrain(fPtr) : (WasmI32 -> Void)
+
+    onFree(userPtr)
+
+    _DEBUG_HOOK_RUNNING = false
+  }
+}
+
+let callDebugHookIncRef = (userPtr: WasmI32) => {
+  if (_DEBUG_HOOK_RUNNING) {
+    // Don't call the hook for refcounting activity inside the hook itself.
+    void
+  } else {
+    _DEBUG_HOOK_RUNNING = true
+
+    let fPtr = _DEBUG_HOOK_INCREF
+
+    let onIncRef = WasmI32.toGrain(fPtr) : (WasmI32 -> Void)
+
+    onIncRef(userPtr)
+
+    _DEBUG_HOOK_RUNNING = false
+  }
+}
+
+let callDebugHookDecRef = (userPtr: WasmI32, ignoreZeros: Bool) => {
+  if (_DEBUG_HOOK_RUNNING) {
+    // Don't call the hook for refcounting activity inside the hook itself.
+    void
+  } else {
+    _DEBUG_HOOK_RUNNING = true
+
+    let fPtr = _DEBUG_HOOK_DECREF
+
+    let onDecRef = WasmI32.toGrain(fPtr) : ((WasmI32,Bool) -> Void)
+
+    onDecRef(userPtr, ignoreZeros)
+
+    _DEBUG_HOOK_RUNNING = false
+  }
+}
+
 export let malloc = (size: WasmI32) => {
   // Add space for header
   let rawPtr = Malloc.malloc(size + _HEADER_SIZE)
@@ -145,10 +226,22 @@ export let malloc = (size: WasmI32) => {
   WasmI32.store(rawPtr, 0n, 4n)
 
   // Return pointer past header
-  rawPtr + _HEADER_SIZE
+  let userPtr = rawPtr + _HEADER_SIZE
+
+  if (WasmI32.ne(_DEBUG_HOOK_MALLOC, 0n)) {
+    callDebugHookMalloc(userPtr)
+    void
+  }
+
+  userPtr
 }
 
 export let free = (userPtr: WasmI32) => {
+  if (WasmI32.ne(_DEBUG_HOOK_FREE, 0n)) {
+    callDebugHookFree(userPtr)
+    void
+  }
+
   // Free the raw pointer
   Malloc.free(userPtr - _HEADER_SIZE)
 }
@@ -159,6 +252,12 @@ export let incRef = (userPtr: WasmI32) => {
     //   logIncRef(userPtr, getRefCount(userPtr))
     //   void;
     // }
+
+    if (WasmI32.ne(_DEBUG_HOOK_INCREF, 0n)) {
+      callDebugHookIncRef(userPtr)
+      void
+    }
+
     setRefCount(userPtr, getRefCount(userPtr) + 1n)
   }
   userPtr
@@ -172,11 +271,25 @@ let rec decRef = (userPtr: WasmI32, ignoreZeros: Bool) => {
     //   void
     // }
 
+    if (WasmI32.ne(_DEBUG_HOOK_DECREF, 0n)) {
+      callDebugHookDecRef(userPtr, ignoreZeros)
+      void
+    }
+
     if (WasmI32.eqz(refCount)) {
       if (ignoreZeros) {
         userPtr
       } else {
-        throw DecRefError
+        // Throwing causes last logged print statements to not be printed,
+        // so it becomes very difficult to debug memory problems. Maybe a
+        // buffer is not being flushed? If the debugging hooks are active then
+        // behave as if ignoreZeros was true to continue executing and give the
+        // debugging hooks an opportunity to report the issue.
+        if (WasmI32.ne(_DEBUG_HOOK_DECREF, 0n)) {
+          userPtr
+        } else {
+          throw DecRefError
+        }
       }
     } else {
       let refCount = refCount - 1n
@@ -250,3 +363,47 @@ export let decRef = (userPtr) => decRef(userPtr, false)
 //   decRef(WasmI32.fromGrain(setDebug))
 //   void
 // }
+
+export let rec setDebugHooks = (
+  onIncRef: (WasmI32 -> Void),
+  onDecRef: ((WasmI32,Bool) -> Void),
+  onMalloc: (WasmI32 -> Void),
+  onFree: (WasmI32 -> Void)
+) => {
+  incRefNoDebug(WasmI32.fromGrain(onIncRef))
+  incRefNoDebug(WasmI32.fromGrain(onDecRef))
+  incRefNoDebug(WasmI32.fromGrain(onMalloc))
+  incRefNoDebug(WasmI32.fromGrain(onFree))
+
+  decRef(WasmI32.fromGrain(setDebugHooks))
+
+  _DEBUG_HOOK_INCREF = WasmI32.fromGrain(onIncRef)
+  _DEBUG_HOOK_DECREF = WasmI32.fromGrain(onDecRef)
+  _DEBUG_HOOK_MALLOC = WasmI32.fromGrain(onMalloc)
+  _DEBUG_HOOK_FREE = WasmI32.fromGrain(onFree)
+
+  void
+}
+
+export let rec removeDebugHooks = () => {
+  // We need to decRef the hook functions, but without triggering
+  // the the decRef hook while doing so. So just clean the global
+  // variables first and then do the decRefs.
+  let tmp1 = _DEBUG_HOOK_INCREF
+  let tmp2 = _DEBUG_HOOK_DECREF
+  let tmp3 = _DEBUG_HOOK_MALLOC
+  let tmp4 = _DEBUG_HOOK_FREE
+
+  _DEBUG_HOOK_INCREF = 0n
+  _DEBUG_HOOK_DECREF = 0n
+  _DEBUG_HOOK_MALLOC = 0n
+  _DEBUG_HOOK_FREE = 0n
+
+  decRef(tmp1)
+  decRef(tmp2)
+  decRef(tmp3)
+  decRef(tmp4)
+
+  decRef(WasmI32.fromGrain(removeDebugHooks))
+  void
+}
