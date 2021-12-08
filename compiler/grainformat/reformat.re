@@ -1454,6 +1454,7 @@ and print_application =
             Doc.rparen,
           ])
         | _ =>
+          let numArgs = List.length(expressions);
           Doc.concat([
             print_expression(
               ~parent_is_arrow=false,
@@ -1467,15 +1468,37 @@ and print_application =
                 Doc.softLine,
                 Doc.join(
                   Doc.concat([Doc.comma, Doc.line]),
-                  List.map(
-                    e =>
+                  List.mapi(
+                    (index, e: Parsetree.expression) =>
                       Doc.group(
-                        print_expression(
-                          ~parent_is_arrow=false,
-                          ~original_source,
-                          ~comments,
-                          e,
-                        ),
+                        if (index + 1 == numArgs) {
+                          switch (e.pexp_desc) {
+                          | PExpLambda(_) =>
+                            Doc.customLayout([
+                              print_expression(
+                                ~parent_is_arrow=false,
+                                ~original_source,
+                                ~comments,
+                                ~indented=true,
+                                e,
+                              ),
+                            ])
+                          | _ =>
+                            print_expression(
+                              ~parent_is_arrow=false,
+                              ~original_source,
+                              ~comments,
+                              e,
+                            )
+                          };
+                        } else {
+                          print_expression(
+                            ~parent_is_arrow=false,
+                            ~original_source,
+                            ~comments,
+                            e,
+                          );
+                        },
                       ),
                     expressions,
                   ),
@@ -1485,7 +1508,7 @@ and print_application =
             ),
             Doc.softLine,
             Doc.rparen,
-          ])
+          ]);
         },
       );
     }
@@ -1622,6 +1645,7 @@ and print_expression =
       ~parent_is_arrow: bool,
       ~original_source: array(string),
       ~comments: list(Grain_parsing__Parsetree.comment),
+      ~indented: option(bool)=?,
       expr: Parsetree.expression,
     ) => {
   let expression_doc =
@@ -2245,6 +2269,7 @@ and print_expression =
                   Doc.lparen,
                   Doc.indent(
                     Doc.concat([
+                      Doc.softLine,
                       Doc.concat([
                         Comment_utils.inbetween_comments_to_docs(
                           ~offset=false,
@@ -2271,6 +2296,7 @@ and print_expression =
                       ]),
                     ]),
                   ),
+                  Doc.softLine,
                   Doc.rparen,
                 ]),
               ),
@@ -2481,9 +2507,14 @@ and print_expression =
             ),
             Doc.customLayout([
               print_expression(
-                ~parent_is_arrow=false,
+                ~parent_is_arrow=true,
                 ~original_source,
                 ~comments=comments_in_expression,
+                ~indented=
+                  switch (indented) {
+                  | None => false
+                  | Some(b) => b
+                  },
                 expression,
               ),
             ]),
@@ -2496,14 +2527,17 @@ and print_expression =
               Doc.indent(
                 Doc.concat([
                   Doc.line,
-                  Doc.customLayout([
-                    print_expression(
-                      ~parent_is_arrow=false,
-                      ~original_source,
-                      ~comments=comments_in_expression,
-                      expression,
-                    ),
-                  ]),
+                  print_expression(
+                    ~parent_is_arrow=true,
+                    ~original_source,
+                    ~comments=comments_in_expression,
+                    ~indented=
+                      switch (indented) {
+                      | None => false
+                      | Some(b) => b
+                      },
+                    expression,
+                  ),
                 ]),
               ),
             ]),
@@ -2535,14 +2569,17 @@ and print_expression =
               comments,
             );
 
-          Doc.concat([
-            print_expression(
-              ~parent_is_arrow=false,
-              ~original_source,
-              ~comments=commentsInExpr,
-              expr,
-            ),
-          ]);
+          print_expression(
+            ~parent_is_arrow=false,
+            ~original_source,
+            ~comments=commentsInExpr,
+            ~indented=
+              switch (indented) {
+              | None => false
+              | Some(b) => b
+              },
+            expr,
+          );
         };
 
         let (_, bracket_line, _, _) =
@@ -2565,15 +2602,27 @@ and print_expression =
             ~isBlock=true,
           );
 
-        Doc.breakableGroup(
-          ~forceBreak=true,
-          Doc.concat([
-            Doc.lbrace,
-            Doc.indent(printed_expressions),
-            Doc.line,
-            Doc.rbrace,
-          ]),
-        );
+        if (parent_is_arrow) {
+          Doc.breakableGroup(
+            ~forceBreak=true,
+            Doc.concat([
+              Doc.lbrace,
+              Doc.indent(printed_expressions),
+              Doc.line,
+              Doc.rbrace,
+            ]),
+          );
+        } else {
+          Doc.breakableGroup(
+            ~forceBreak=true,
+            Doc.concat([
+              Doc.lbrace,
+              Doc.indent(printed_expressions),
+              Doc.line,
+              Doc.rbrace,
+            ]),
+          );
+        };
       }
 
     | PExpBoxAssign(expression, expression1) =>
@@ -3723,6 +3772,5 @@ let reformat_ast =
     );
 
   let final_doc = Doc.concat([top_level_stmts, Doc.hardLine]);
-
   Doc.toString(~width=80, final_doc);
 };
