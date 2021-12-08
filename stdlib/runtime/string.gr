@@ -623,7 +623,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
       string
     },
   }
-},  toStringHelp = (grainValue, extraIndents, toplevel) => {
+}, toStringHelp = (grainValue, extraIndents, toplevel) => {
   if ((grainValue & 1n) != 0n) {
     // Simple (unboxed) numbers
     NumberUtils.itoa32(grainValue >> 1n, 10n)
@@ -638,7 +638,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
   } else {
     "<unknown value>"
   }
-},  listToString = (ptr, extraIndents) => {
+}, listToString = (ptr, extraIndents) => {
   let mut cur = ptr
   let mut isFirst = true
 

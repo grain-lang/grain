@@ -647,7 +647,7 @@ export let rec contains = (search: String, string: String) => {
   string += 8n
   search += 8n
 
-  let mut j = 0n,  k = 0n,  ell = 0n
+  let mut j = 0n, k = 0n, ell = 0n
 
   let ret = if (m > n) {
     // Bail if pattern length is longer than input length
@@ -1910,8 +1910,8 @@ export let rec forEachCodePointi =
   void
 }
 let trimString = (str: String, end: Bool) => {
-  let chars = explode(str),  charsLength = length(str)
-  let mut i = 0,  offset = 1
+  let chars = explode(str), charsLength = length(str)
+  let mut i = 0, offset = 1
   if (end) {
     i = charsLength - 1
     offset = -1
