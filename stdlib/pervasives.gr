@@ -120,15 +120,13 @@ let identity = x => x
 // Setup exception printing
 @disableGC
 let rec setupExceptions = () => {
-  Exception.dangerouslyRegisterPrinter(
-    e => {
+  Exception.dangerouslyRegisterPrinter(e => {
       match (e) {
         Failure(msg) => Some("Failure: " ++ msg),
         InvalidArgument(msg) => Some("Invalid argument: " ++ msg),
         _ => None,
       }
-    },
-  )
+    })
 
   Exception.dangerouslyRegisterBasePrinter(e => Some(toString(e)))
   Memory.decRef(WasmI32.fromGrain(setupExceptions))

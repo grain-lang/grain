@@ -99,23 +99,15 @@ let rec flatMap = (fn, list) => {
 }
 
 let every = (fn, list) => {
-  reduce(
-    (acc, value) => {
+  reduce((acc, value) => {
       acc && fn(value)
-    },
-    true,
-    list,
-  )
+    }, true, list)
 }
 
 let some = (fn, list) => {
-  reduce(
-    (acc, value) => {
+  reduce((acc, value) => {
       acc || fn(value)
-    },
-    false,
-    list,
-  )
+    }, false, list)
 }
 
 let rec forEach = (fn, list) => {
@@ -318,17 +310,11 @@ let findIndex = (fn, list) => {
 
 let product = (a, b) => {
   let mut list = []
-  forEach(
-    aItem => {
-      forEach(
-        bItem => {
+  forEach(aItem => {
+      forEach(bItem => {
           list = [(aItem, bItem), ...list]
-        },
-        b,
-      )
-    },
-    a,
-  )
+        }, b)
+    }, a)
   reverse(list)
 }
 

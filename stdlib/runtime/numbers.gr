@@ -825,7 +825,7 @@ let rec numberAddSubHelp = (x, y, isSub) => {
       },
     }
   }
-},numberAddSubRationalHelp = (x, y, isSub) => {
+},  numberAddSubRationalHelp = (x, y, isSub) => {
   if (isSimpleNumber(y)) {
     numberAddSubSimpleHelp(y, x, isSub)
   } else {

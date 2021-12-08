@@ -63,23 +63,17 @@ let resize = map => {
     // This tracks the tail nodes so we can set their `next` to None
     let tailNodes = Array.make(nextSize, None)
     map.buckets = nextBuckets
-    Array.forEach(
-      old => {
+    Array.forEach(old => {
         copyNodeWithNewHash(old, nextBuckets, tailNodes)
-      },
-      currentBuckets,
-    )
-    Array.forEach(
-      tail => {
+      }, currentBuckets)
+    Array.forEach(tail => {
         match (tail) {
           None => void,
           Some(node) => {
             node.next = None
           },
         }
-      },
-      tailNodes,
-    )
+      }, tailNodes)
   } else {
     void
   }
@@ -216,12 +210,9 @@ export let isEmpty = map => {
 export let clear = map => {
   map.size = 0
   let buckets = map.buckets
-  Array.forEachi(
-    (bucket, idx) => {
+  Array.forEachi((bucket, idx) => {
       buckets[idx] = None
-    },
-    buckets,
-  )
+    }, buckets)
 }
 
 let rec forEachBucket = (fn, node) => {
@@ -236,12 +227,9 @@ let rec forEachBucket = (fn, node) => {
 
 export let forEach = (fn, map) => {
   let buckets = map.buckets
-  Array.forEach(
-    bucket => {
+  Array.forEach(bucket => {
       forEachBucket(fn, bucket)
-    },
-    buckets,
-  )
+    }, buckets)
 }
 
 let rec reduceEachBucket = (fn, node, acc) => {
@@ -255,12 +243,9 @@ let rec reduceEachBucket = (fn, node, acc) => {
 export let reduce = (fn, init, map) => {
   let buckets = map.buckets
   let mut acc = init
-  Array.forEach(
-    bucket => {
+  Array.forEach(bucket => {
       acc = reduceEachBucket(fn, bucket, acc)
-    },
-    buckets,
-  )
+    }, buckets)
   acc
 }
 
@@ -278,13 +263,10 @@ export let toList = map => {
 
 export let fromList = list => {
   let map = make()
-  List.forEach(
-    pair => {
+  List.forEach(pair => {
       let (key, value) = pair
       set(key, value, map)
-    },
-    list,
-  )
+    }, list)
   map
 }
 
@@ -319,33 +301,22 @@ export let rec toArray = map => {
 
 export let fromArray = array => {
   let map = make()
-  Array.forEach(
-    pair => {
+  Array.forEach(pair => {
       let (key, value) = pair
       set(key, value, map)
-    },
-    array,
-  )
+    }, array)
   map
 }
 
 export let filter = (predicate, map) => {
-  let keysToRemove = reduce(
-    (list, key, value) =>
-      if (!predicate(key, value)) {
+  let keysToRemove = reduce((list, key, value) => if (!predicate(key, value)) {
         [key, ...list]
       } else {
         list
-      },
-    [],
-    map,
-  )
-  List.forEach(
-    key => {
+      }, [], map)
+  List.forEach(key => {
       remove(key, map)
-    },
-    keysToRemove,
-  )
+    }, keysToRemove)
 }
 
 export let reject = (predicate, map) => {
