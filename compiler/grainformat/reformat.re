@@ -2833,9 +2833,9 @@ and print_value_bind =
         original_source,
         ~get_loc,
         ~print_item,
-        ~separator=Doc.concat([Doc.comma, Doc.space]),
+        ~separator=Doc.comma,
         ~trailing_separator=false,
-        ~break_separator=Doc.ifBreaks(Doc.nil, Doc.space),
+        ~break_separator=Doc.space,
         ~get_attribute_text=no_attribute,
         ~isBlock=false,
       );
