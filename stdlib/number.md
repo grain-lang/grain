@@ -422,3 +422,35 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the value is infinite, otherwise `false`|
 
+### Number.**parseInt**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+parseInt : (String, Number) -> Result<Number, String>
+```
+
+Parses a string representation of an integer into a `Number` using the
+specified radix (also known as a number system "base").
+
+If the string has a radix prefix (i.e. "0x"/"0X", "0o"/"0O", or "0b"/"0B"
+for radixes 16, 8, or 2 respectively), the supplied radix is ignored in
+favor of the prefix. Underscores that appear in the numeric portion of the
+input are ignored.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`input`|`String`|The string to parse|
+|`radix`|`Number`|The number system base to use when parsing the input string|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Result<Number, String>`|`Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise|
+
