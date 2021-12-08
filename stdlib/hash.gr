@@ -107,7 +107,8 @@ let rec hashOne = (val, depth) => {
           rem = rem << 8n
           rem = rem | WasmI32.load8U(heapPtr + l + i, 8n)
         }
-        if (rem != 0n) hashRemaining(rem)
+        if (rem != 0n)
+          hashRemaining(rem)
         finalize(length)
       },
       t when t == Tags._GRAIN_CHAR_HEAP_TAG => {

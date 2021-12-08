@@ -154,11 +154,8 @@ let filteri = (fn, list) => {
     match (list) {
       [] => [],
       [first, ...rest] =>
-        if (fn(first, index)) [first, ...iter(fn, rest, index + 1)] else iter(
-          fn,
-          rest,
-          index + 1,
-        ),
+        if (fn(first, index))
+          [first, ...iter(fn, rest, index + 1)] else iter(fn, rest, index + 1),
     }
   }
   iter(fn, list, 0)
@@ -211,10 +208,8 @@ let rec insert = (value, index, list) => {
     match (list) {
       [] => if (index == 0) [value] else fail "insert index is out-of-bounds",
       [first, ...rest] =>
-        if (index == 0) [value, ...list] else [
-          first,
-          ...insert(value, index - 1, rest)
-        ],
+        if (index == 0)
+          [value, ...list] else [first, ...insert(value, index - 1, rest)],
     }
   }
 }
@@ -238,10 +233,8 @@ let part = (count, list) => {
         [] =>
           if (count > 0) fail "part count is out-of-bounds" else (list1, list2),
         [first, ...rest] =>
-          if (count > 0) iter([first, ...list1], rest, count - 1) else (
-            list1,
-            list2,
-          ),
+          if (count > 0)
+            iter([first, ...list1], rest, count - 1) else (list1, list2),
       }
     }
     let (pt1, pt2) = iter([], list, count)
@@ -250,10 +243,8 @@ let part = (count, list) => {
 }
 
 let rotate = (count, list) => {
-  let (beginning, end) = if (count >= 0) part(count, list) else part(
-    length(list) + count,
-    list,
-  )
+  let (beginning, end) = if (count >= 0)
+    part(count, list) else part(length(list) + count, list)
   append(end, beginning)
 }
 
@@ -262,10 +253,8 @@ let unique = list => {
     match (list) {
       [] => reverse(acc),
       [first, ...rest] =>
-        if (contains(first, acc)) iter(rest, acc) else iter(
-          rest,
-          [first, ...acc],
-        ),
+        if (contains(first, acc))
+          iter(rest, acc) else iter(rest, [first, ...acc]),
     }
   }
   iter(list, [])
