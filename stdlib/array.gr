@@ -184,16 +184,13 @@ export let append = (array1, array2) => {
   let len1 = length(array1)
   let len2 = length(array2)
 
-  init(
-    len1 + len2,
-    n => {
+  init(len1 + len2, n => {
       if (n < len1) {
         array1[n]
       } else {
         array2[n - len1]
       }
-    },
-  )
+    })
 }
 
 /**
@@ -315,12 +312,9 @@ export let forEachi = (fn, array) => {
  */
 export let map = (fn, array) => {
   let length = length(array)
-  init(
-    length,
-    i => {
+  init(length, i => {
       fn(array[i])
-    },
-  )
+    })
 }
 
 /**
@@ -335,12 +329,9 @@ export let map = (fn, array) => {
  */
 export let mapi = (fn, array) => {
   let length = length(array)
-  init(
-    length,
-    index => {
+  init(length, index => {
       fn(array[index], index)
-    },
-  )
+    })
 }
 
 /**
@@ -417,13 +408,9 @@ export let flatMap = (fn, array) => {
  * @since v0.3.0
  */
 export let every = (fn, array) => {
-  reduce(
-    (acc, value) => {
+  reduce((acc, value) => {
       acc && fn(value)
-    },
-    true,
-    array,
-  )
+    }, true, array)
 }
 
 /**
@@ -437,13 +424,9 @@ export let every = (fn, array) => {
  * @since v0.3.0
  */
 export let some = (fn, array) => {
-  reduce(
-    (acc, value) => {
+  reduce((acc, value) => {
       acc || fn(value)
-    },
-    false,
-    array,
-  )
+    }, false, array)
 }
 
 /**
@@ -456,12 +439,9 @@ export let some = (fn, array) => {
  */
 export let fill = (value, array) => {
   let length = length(array)
-  forEachi(
-    (_, index) => {
+  forEachi((_, index) => {
       array[index] = value
-    },
-    array,
-  )
+    }, array)
   void
 }
 
@@ -509,13 +489,10 @@ export let fillRange = (value, start, stop, array) => {
  */
 export let reverse = array => {
   let len = length(array)
-  init(
-    len,
-    index => {
+  init(len, index => {
       let last = len - index - 1
       array[last]
-    },
-  )
+    })
 }
 
 /**
@@ -670,17 +647,14 @@ export let product = (array1: Array<a>, array2: Array<b>) => {
   let lenB = length(array2)
   let mut indexA = -1
 
-  init(
-    lenA * lenB,
-    n => {
+  init(lenA * lenB, n => {
       if (n % lenB == 0) {
         indexA += 1
       } else {
         indexA = indexA
       }
       (array1[indexA], array2[n % lenB])
-    },
-  )
+    })
 }
 
 /**
@@ -739,21 +713,15 @@ export let counti = (fn, array) => {
 export let filter = (fn, array) => {
   let filtered = copy(array)
   let mut position = 0
-  forEach(
-    el => {
+  forEach(el => {
       if (fn(el)) {
         filtered[position] = el
         position += 1
       }
-    },
-    array,
-  )
-  init(
-    position,
-    index => {
+    }, array)
+  init(position, index => {
       filtered[index]
-    },
-  )
+    })
 }
 
 /**
@@ -770,21 +738,15 @@ export let filter = (fn, array) => {
 export let filteri = (fn, array) => {
   let filtered = copy(array)
   let mut position = 0
-  forEachi(
-    (el, index) => {
+  forEachi((el, index) => {
       if (fn(el, index)) {
         filtered[position] = el
         position += 1
       }
-    },
-    array,
-  )
-  init(
-    position,
-    index => {
+    }, array)
+  init(position, index => {
       filtered[index]
-    },
-  )
+    })
 }
 
 /**
@@ -821,12 +783,9 @@ export let zip = (array1: Array<a>, array2: Array<b>) => {
   if (len != length(array2)) {
     fail "arguments to zip must be same length"
   } else {
-    init(
-      len,
-      n => {
+    init(len, n => {
         (array1[n], array2[n])
-      },
-    )
+      })
   }
 }
 
@@ -841,21 +800,15 @@ export let zip = (array1: Array<a>, array2: Array<b>) => {
 export let unzip = array => {
   let lenArr = length(array)
 
-  let a = init(
-    lenArr,
-    n => {
+  let a = init(lenArr, n => {
       let (fst, _) = array[n]
       fst
-    },
-  )
+    })
 
-  let b = init(
-    lenArr,
-    n => {
+  let b = init(lenArr, n => {
       let (_, snd) = array[n]
       snd
-    },
-  )
+    })
 
   (a, b)
 }
