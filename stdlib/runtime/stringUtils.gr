@@ -1,0 +1,172 @@
+// TODO(#1050): Remove dependency on Pervasives once Option/Result types are imbedded in the compiler
+
+import WasmI32, {
+  add as (+),
+  sub as (-),
+  gtU as (>),
+  geU as (>=),
+  ltU as (<),
+  shrS as (>>),
+  eq as (==),
+  ne as (!=),
+  and as (&),
+} from "runtime/unsafe/wasmi32"
+import WasmI64 from "runtime/unsafe/wasmi64"
+import Memory from "runtime/unsafe/memory"
+import Tags from "runtime/unsafe/tags"
+import { reducedInteger } from "runtime/numbers"
+
+@disableGC
+export let rec parseInt = (string: String, radix: Number) => {
+  let _CHAR_0 = 0x30n
+  let _CHAR_B = 0x42n
+  let _CHAR_b = 0x62n
+  let _CHAR_O = 0x4fn
+  let _CHAR_o = 0x6fn
+  let _CHAR_X = 0x58n
+  let _CHAR_x = 0x78n
+
+  let _CHAR_A = 0x41n
+  let _CHAR_a = 0x61n
+
+  let _CHAR_UNDERSCORE = 0x5fn
+  let _CHAR_MINUS = 0x2dn
+
+  let _INT_MIN = -9223372036854775808N
+
+  // Don't need to process Unicode length since if the string
+  // contains non-ascii characters, it's not a valid integer
+  let strLen = WasmI32.load(WasmI32.fromGrain(string), 4n)
+
+  // Our pointer within the string we're parsing, offset by the
+  // header
+  let mut offset = WasmI32.fromGrain(string) + 8n
+
+  let strEnd = offset + strLen
+
+  let radix = WasmI32.fromGrain(radix)
+  let result = if (WasmI32.eqz(radix & Tags._GRAIN_NUMBER_TAG_MASK) || radix < WasmI32.fromGrain(2) || radix > WasmI32.fromGrain(36)) {
+    Memory.incRef(WasmI32.fromGrain(Err))
+    Err("Radix must be an integer between 2 and 36")
+  } else if (WasmI32.eqz(strLen)) {
+    Memory.incRef(WasmI32.fromGrain(Err))
+    Err("Invalid input")
+  } else {
+    let mut char = WasmI32.load8U(offset, 0n)
+
+    let mut limit = WasmI64.add(_INT_MIN, 1N)
+
+    // Check for a sign
+    let mut negative = false
+    if (char == _CHAR_MINUS) {
+      negative = true
+      offset += 1n
+      limit = _INT_MIN
+      char = WasmI32.load8U(offset, 0n)
+    }
+
+    let mut radix = WasmI64.extendI32S(radix >> 1n)
+
+    // Check if we should override the supplied radix
+    if (char == _CHAR_0 && strLen > 2n) {
+      match (WasmI32.load8U(offset, 1n)) {
+        c when c == _CHAR_B || c == _CHAR_b => {
+          radix = 2N
+          offset += 2n
+        },
+        c when c == _CHAR_O || c == _CHAR_o => {
+          radix = 8N
+          offset += 2n
+        },
+        c when c == _CHAR_X || c == _CHAR_x => {
+          radix = 16N
+          offset += 2n
+        },
+        _ => void,
+      }
+    }
+
+    let mut value = 0N
+
+    // we use 0 to represent no error, 1 to represent an invalid
+    // input, and 2 to represent an overflow
+    let mut error = 1n
+
+    for (let mut i = offset; i < strEnd; i += 1n) {
+      let char = WasmI32.load8U(i, 0n)
+
+      // Ignore underscore characters
+      if (char == _CHAR_UNDERSCORE) {
+        continue
+      }
+
+      // We've seen at least one non-underscore character, so we'll consider
+      // the input valid until we find out otherwise
+
+      error = 0n
+
+      let mut digit = 0n
+
+      match (char) {
+        c when c - _CHAR_0 < 10n => digit = char - _CHAR_0,
+        c when c - _CHAR_A < 26n => digit = char - _CHAR_A + 10n,
+        c when c - _CHAR_a < 26n => digit = char - _CHAR_a + 10n,
+        _ => {
+          error = 1n
+          // invalid digit
+          break
+        },
+      }
+
+      if (digit >= WasmI32.wrapI64(radix)) {
+        error = 1n
+        // invalid digit
+        break
+      }
+
+      let digit = WasmI64.extendI32U(digit)
+
+      value = WasmI64.mul(value, radix)
+
+      // Check for overflow
+      // 64-bit int min + 1
+      if (WasmI64.ltS(value, WasmI64.add(limit, digit))) {
+        error = 2n
+        // overflow
+        break
+      }
+
+      // To quote the OpenJDK,
+      // "Accumulating negatively avoids surprises near MAX_VALUE"
+      // The minimum value of a 64-bit integer (-9223372036854775808) can't be
+      // represented as a positive number because it would be larger than the
+      // maximum 64-bit integer (9223372036854775807), so we'd be unable to
+      // parse negatives as positives and multiply by the sign at the end.
+      // Instead, we represent all positive numbers as negative numbers since
+      // we have one unit more headroom.
+      value = WasmI64.sub(value, digit)
+    }
+
+    match (error) {
+      1n => {
+        Memory.incRef(WasmI32.fromGrain(Err))
+        Err("Invalid digit in input")
+      },
+      2n => {
+        Memory.incRef(WasmI32.fromGrain(Err))
+        Err("Input out of range of representable integers")
+      },
+      _ => {
+        let value = if (negative) value else WasmI64.mul(value, -1N)
+        let number = WasmI32.toGrain(reducedInteger(value)): (Number)
+        Memory.incRef(WasmI32.fromGrain(Ok))
+        Ok(number)
+      },
+    }
+  }
+
+  Memory.decRef(WasmI32.fromGrain(parseInt))
+  Memory.decRef(radix)
+
+  result
+}
