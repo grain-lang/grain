@@ -2833,7 +2833,7 @@ and print_value_bind =
         original_source,
         ~get_loc,
         ~print_item,
-        ~separator=Doc.comma,
+        ~separator=Doc.concat([Doc.comma, Doc.space]),
         ~trailing_separator=false,
         ~break_separator=Doc.ifBreaks(Doc.nil, Doc.space),
         ~get_attribute_text=no_attribute,
