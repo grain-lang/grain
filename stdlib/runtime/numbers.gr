@@ -683,8 +683,8 @@ let numberAddSubSimpleHelp = (x, y, isSub) => {
           yDenominator,
         )
         let result = if (isSub)
-          WasmI64.sub(expandedXNumerator, yNumerator) else
-        WasmI64.add(expandedXNumerator, yNumerator)
+          WasmI64.sub(expandedXNumerator, yNumerator)
+        else WasmI64.add(expandedXNumerator, yNumerator)
         if (WasmI64.ltS(result, _I32_MIN) || WasmI64.gtS(result, _I32_MAX)) {
           throw Exception.Overflow
         }
@@ -749,8 +749,8 @@ let numberAddSubInt64Help = (xval, y, isSub) => {
         let yDenominator = WasmI64.extendI32S(boxedRationalDenominator(y))
         let expandedXNumerator = safeI64Multiply(xval, yDenominator)
         let result = if (isSub)
-          WasmI64.sub(expandedXNumerator, yNumerator) else
-        WasmI64.add(expandedXNumerator, yNumerator)
+          WasmI64.sub(expandedXNumerator, yNumerator)
+        else WasmI64.add(expandedXNumerator, yNumerator)
         if (WasmI64.ltS(result, _I32_MIN) || WasmI64.gtS(result, _I32_MAX)) {
           throw Exception.Overflow
         }
@@ -846,15 +846,15 @@ let rec numberAddSubHelp = (x, y, isSub) => {
         // TODO: {#304) this could be written in a more overflow-proof way
         if (WasmI64.eq(xDenominator, yDenominator)) {
           let result = if (isSub)
-            WasmI64.sub(xNumerator, yNumerator) else
-          WasmI64.add(xNumerator, yNumerator)
+            WasmI64.sub(xNumerator, yNumerator)
+          else WasmI64.add(xNumerator, yNumerator)
           reducedFraction64(result, xDenominator)
         } else {
           let numerator1 = safeI64Multiply(xNumerator, yDenominator)
           let numerator2 = safeI64Multiply(yNumerator, xDenominator)
           let numerator = if (isSub)
-            WasmI64.sub(numerator1, numerator2) else
-          WasmI64.add(numerator1, numerator2)
+            WasmI64.sub(numerator1, numerator2)
+          else WasmI64.add(numerator1, numerator2)
           let denominator = safeI64Multiply(xDenominator, yDenominator)
           reducedFraction64(numerator, denominator)
         }
@@ -1028,11 +1028,11 @@ let numberTimesDivideRationalHelp = (x, y, isDivide) => {
         // (a / b) / (c / d) == (a * d) / (b * c)
         // TODO: (#304) this could maybe be written in a more overflow-proof way
         let numerator = if (isDivide)
-          safeI64Multiply(xNumerator, yDenominator) else
-        safeI64Multiply(xNumerator, yNumerator)
+          safeI64Multiply(xNumerator, yDenominator)
+        else safeI64Multiply(xNumerator, yNumerator)
         let denominator = if (isDivide)
-          safeI64Multiply(xDenominator, yNumerator) else
-        safeI64Multiply(xDenominator, yDenominator)
+          safeI64Multiply(xDenominator, yNumerator)
+        else safeI64Multiply(xDenominator, yDenominator)
         reducedFraction64(numerator, denominator)
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {

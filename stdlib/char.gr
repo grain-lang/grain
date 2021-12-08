@@ -127,7 +127,7 @@ let rec fromCode = (code: Number) => {
   let result = if (code < 0x80n) {
     let char = allocateChar()
     WasmI32.store8(char, code, 4n)
-    WasmI32.toGrain(char): (Char)
+    WasmI32.toGrain(char): Char
   } else {
     let mut count = 0n
     let mut offset = 0n
@@ -152,7 +152,7 @@ let rec fromCode = (code: Number) => {
       count -= 1n
     }
 
-    WasmI32.toGrain(char): (Char)
+    WasmI32.toGrain(char): Char
   }
 
   // We've asserted that the original `code` was a stack allocated number so
@@ -211,7 +211,7 @@ export let rec toString = (c: Char) => {
   }
   let str = allocateString(n)
   Memory.copy(str + 8n, c + 4n, n)
-  let ret = WasmI32.toGrain(str): (String)
+  let ret = WasmI32.toGrain(str): String
   Memory.decRef(WasmI32.fromGrain(c))
   Memory.decRef(WasmI32.fromGrain(toString))
   ret
