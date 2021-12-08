@@ -174,8 +174,10 @@ export let free = (ap: WasmI32) => {
     // Find the location to insert this block into the free list
     while (true) {
       let nextp = getNext(p)
-      if (blockPtr > p && blockPtr < nextp ||
-        p >= nextp && (blockPtr > p || blockPtr < nextp)) {
+      if (
+        blockPtr > p && blockPtr < nextp ||
+        p >= nextp && (blockPtr > p || blockPtr < nextp)
+      ) {
         break
       }
       p = nextp

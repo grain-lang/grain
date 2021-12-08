@@ -296,11 +296,16 @@ export let reduce = (fn, init, set) => {
  * @since 0.3.0
  */
 export let filter = (predicate, set) => {
-  let keysToRemove = reduce((list, key) => if (!predicate(key)) {
+  let keysToRemove = reduce(
+    (list, key) =>
+      if (!predicate(key)) {
         [key, ...list]
       } else {
         list
-      }, [], set)
+      },
+    [],
+    set,
+  )
   List.forEach(key => {
       remove(key, set)
     }, keysToRemove)
