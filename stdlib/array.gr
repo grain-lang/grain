@@ -261,7 +261,7 @@ export let cycle = (fn, n, array) => {
   let length = length(array)
   for (let mut iteration = 0; iteration < n; iteration += 1) {
     for (let mut count = 0; count < length; count += 1) {
-      fn(array[count]): (Void)
+      fn(array[count]): Void
     }
   }
 }
@@ -278,7 +278,7 @@ export let cycle = (fn, n, array) => {
 export let forEach = (fn, array) => {
   let length = length(array)
   for (let mut count = 0; count < length; count += 1) {
-    fn(array[count]): (Void)
+    fn(array[count]): Void
   }
 }
 
@@ -295,7 +295,7 @@ export let forEach = (fn, array) => {
 export let forEachi = (fn, array) => {
   let length = length(array)
   for (let mut count = 0; count < length; count += 1) {
-    fn(array[count], count): (Void)
+    fn(array[count], count): Void
   }
 }
 

@@ -957,7 +957,7 @@ export let utoa32 = (value, radix) => {
     utoa64_any_core(out, WasmI64.extendI32U(value), decimals, radix)
     out
   }
-  WasmI32.toGrain(str): (String)
+  WasmI32.toGrain(str): String
 }
 
 export let itoa32 = (value, radix) => {
@@ -991,7 +991,7 @@ export let itoa32 = (value, radix) => {
   }
   if (WasmI32.ne(sign, 0n))
     WasmI32.store8(out, _CHAR_CODE_MINUS, 8n)
-  WasmI32.toGrain(out): (String)
+  WasmI32.toGrain(out): String
 }
 
 export let utoa64 = (value, radix) => {
@@ -1027,7 +1027,7 @@ export let utoa64 = (value, radix) => {
     utoa64_any_core(out + 8n, value, decimals, radix)
     out
   }
-  WasmI32.toGrain(str): (String)
+  WasmI32.toGrain(str): String
 }
 
 export let itoa64 = (value, radix) => {
@@ -1070,7 +1070,7 @@ export let itoa64 = (value, radix) => {
   }
   if (sign != 0n)
     WasmI32.store8(out, _CHAR_CODE_MINUS, 8n)
-  WasmI32.toGrain(out): (String)
+  WasmI32.toGrain(out): String
 }
 
 let mut _K = 0n
@@ -1422,7 +1422,7 @@ export let dtoa = value => {
     Memory.copy(result + 8n, get_dtoa_buf(), size)
     result
   }
-  WasmI32.toGrain(str): (String)
+  WasmI32.toGrain(str): String
 }
 
 Memory.utoa32Buffered := utoa32Buffered

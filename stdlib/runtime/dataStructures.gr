@@ -362,5 +362,5 @@ export let stringSize = ptr => {
 }
 
 export let tagSimpleNumber = x => {
-  WasmI32.toGrain(x << 1n ^ 1n): (Number)
+  WasmI32.toGrain(x << 1n ^ 1n): Number
 }

@@ -12,7 +12,7 @@ export let toInt32 = n => {
   WasmI32.store(ptr, Tags._GRAIN_INT32_BOXED_NUM_TAG, 4n)
   WasmI32.store(ptr, n, 8n)
 
-  WasmI32.toGrain(ptr): (Int32)
+  WasmI32.toGrain(ptr): Int32
 }
 
 @disableGC
@@ -28,7 +28,7 @@ export let toInt64 = n => {
   WasmI32.store(ptr, Tags._GRAIN_INT64_BOXED_NUM_TAG, 4n)
   WasmI64.store(ptr, n, 8n)
 
-  WasmI32.toGrain(ptr): (Int64)
+  WasmI32.toGrain(ptr): Int64
 }
 
 @disableGC
@@ -44,7 +44,7 @@ export let toFloat32 = n => {
   WasmI32.store(ptr, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG, 4n)
   WasmF32.store(ptr, n, 8n)
 
-  WasmI32.toGrain(ptr): (Float32)
+  WasmI32.toGrain(ptr): Float32
 }
 
 @disableGC
@@ -60,7 +60,7 @@ export let toFloat64 = n => {
   WasmI32.store(ptr, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG, 4n)
   WasmF64.store(ptr, n, 8n)
 
-  WasmI32.toGrain(ptr): (Float64)
+  WasmI32.toGrain(ptr): Float64
 }
 
 @disableGC
@@ -101,13 +101,13 @@ export let wasmI32ToNumber = (n: WasmI32) => {
     // Just test if the untagged number is the same. If it didn't overflow, then
     // we're good. We just need to cast the raw value into a Number at the type
     // system level.
-    WasmI32.toGrain(simple): (Number)
+    WasmI32.toGrain(simple): Number
   } else {
     // If it did overflow, then the value differs and we need to discard it and
     // allocate the number on the heap. A boxed 32 bit number actually is the
     // same thing as an Int32. It only needs to be cast into Number.
     let asInt32 = toInt32(n)
-    WasmI32.toGrain(WasmI32.fromGrain(asInt32)): (Number)
+    WasmI32.toGrain(WasmI32.fromGrain(asInt32)): Number
   }
   result
 }

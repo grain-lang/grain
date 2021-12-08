@@ -244,7 +244,7 @@ export let rec charAt = (position, string: String) => {
   if (result == 0n) {
     fail "charAt: should be impossible (please report)"
   }
-  let ret = WasmI32.toGrain(result): (Char)
+  let ret = WasmI32.toGrain(result): Char
   Memory.decRef(WasmI32.fromGrain(string))
   Memory.decRef(WasmI32.fromGrain(charAt))
   ret
@@ -382,7 +382,7 @@ export let rec implode = (arr: Array<Char>) => {
     offset += n
   }
 
-  let ret = WasmI32.toGrain(str): (String)
+  let ret = WasmI32.toGrain(str): String
   Memory.decRef(WasmI32.fromGrain(arr))
   Memory.decRef(WasmI32.fromGrain(implode))
   ret
@@ -603,7 +603,7 @@ export let rec slice = (start: Number, to: Number, string: String) => {
 
   Memory.copy(newString + 8n, begin, newSize)
 
-  let ret = WasmI32.toGrain(newString): (String)
+  let ret = WasmI32.toGrain(newString): String
   Memory.decRef(WasmI32.fromGrain(startOrig))
   Memory.decRef(WasmI32.fromGrain(toOrig))
   Memory.decRef(WasmI32.fromGrain(string))
@@ -937,7 +937,7 @@ let getCodePoint = (ptr: WasmI32) => {
       break
     }
   }
-  result: (WasmI32)
+  result: WasmI32
 }
 
 // hack to avoid incRef on this pointer
@@ -1204,7 +1204,7 @@ let rec encodeAtHelp =
     },
   }
 
-  let ret = WasmI32.toGrain(bytes): (Bytes)
+  let ret = WasmI32.toGrain(bytes): Bytes
   Memory.decRef(WasmI32.fromGrain(string))
   Memory.decRef(WasmI32.fromGrain(encoding))
   Memory.decRef(WasmI32.fromGrain(includeBom))
@@ -1612,7 +1612,7 @@ let rec decodeRangeHelp =
     }
   }
   let ret = if (stringSize == 0n) {
-    WasmI32.toGrain(str): (String)
+    WasmI32.toGrain(str): String
   } else {
     match (encoding) {
       UTF8 => {
@@ -1690,7 +1690,7 @@ let rec decodeRangeHelp =
         }
       },
     }
-    WasmI32.toGrain(str): (String)
+    WasmI32.toGrain(str): String
   }
   // bytes: Bytes, encoding: Encoding, skipBom: Bool, start: Number, size: Number
   Memory.decRef(WasmI32.fromGrain(bytes))

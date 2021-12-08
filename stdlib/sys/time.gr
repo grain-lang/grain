@@ -39,7 +39,7 @@ let getClockTime = (clockid, precision) => {
     Memory.free(int64Ptr)
     wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
-    wasmSafeOk(WasmI32.toGrain(int64Ptr): (Int64))
+    wasmSafeOk(WasmI32.toGrain(int64Ptr): Int64)
   }
 }
 

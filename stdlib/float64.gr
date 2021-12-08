@@ -16,7 +16,7 @@ export let rec add = (x: Float64, y: Float64) => {
   let xv = WasmF64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
   let ptr = newFloat64(WasmF64.add(xv, yv))
-  let ret = WasmI32.toGrain(ptr): (Float64)
+  let ret = WasmI32.toGrain(ptr): Float64
   Memory.decRef(WasmI32.fromGrain(x))
   Memory.decRef(WasmI32.fromGrain(y))
   Memory.decRef(WasmI32.fromGrain(add))
@@ -28,7 +28,7 @@ export let rec sub = (x: Float64, y: Float64) => {
   let xv = WasmF64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
   let ptr = newFloat64(WasmF64.sub(xv, yv))
-  let ret = WasmI32.toGrain(ptr): (Float64)
+  let ret = WasmI32.toGrain(ptr): Float64
   Memory.decRef(WasmI32.fromGrain(x))
   Memory.decRef(WasmI32.fromGrain(y))
   Memory.decRef(WasmI32.fromGrain(sub))
@@ -40,7 +40,7 @@ export let rec mul = (x: Float64, y: Float64) => {
   let xv = WasmF64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
   let ptr = newFloat64(WasmF64.mul(xv, yv))
-  let ret = WasmI32.toGrain(ptr): (Float64)
+  let ret = WasmI32.toGrain(ptr): Float64
   Memory.decRef(WasmI32.fromGrain(x))
   Memory.decRef(WasmI32.fromGrain(y))
   Memory.decRef(WasmI32.fromGrain(mul))
@@ -52,7 +52,7 @@ export let rec div = (x: Float64, y: Float64) => {
   let xv = WasmF64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
   let ptr = newFloat64(WasmF64.div(xv, yv))
-  let ret = WasmI32.toGrain(ptr): (Float64)
+  let ret = WasmI32.toGrain(ptr): Float64
   Memory.decRef(WasmI32.fromGrain(x))
   Memory.decRef(WasmI32.fromGrain(y))
   Memory.decRef(WasmI32.fromGrain(div))
@@ -113,7 +113,7 @@ let rec makeInfinity = () => {
       0b0111111111110000000000000000000000000000000000000000000000000000N,
     ),
   )
-  let ret = WasmI32.toGrain(ptr): (Float64)
+  let ret = WasmI32.toGrain(ptr): Float64
   Memory.decRef(WasmI32.fromGrain(makeInfinity))
   ret
 }
@@ -127,7 +127,7 @@ let rec makeNaN = () => {
       0b0111111111110000000000000000000000000000000000000000000000000001N,
     ),
   )
-  let ret = WasmI32.toGrain(ptr): (Float64)
+  let ret = WasmI32.toGrain(ptr): Float64
   Memory.decRef(WasmI32.fromGrain(makeNaN))
   ret
 }

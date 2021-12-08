@@ -511,7 +511,7 @@ export let rec fdRead = (fd: FileDescriptor, size: Number) => {
 
     Memory.free(iovs)
 
-    wasmSafeOk((WasmI32.toGrain(strPtr): (String), tagSimpleNumber(nread)))
+    wasmSafeOk((WasmI32.toGrain(strPtr): String, tagSimpleNumber(nread)))
   }
   Memory.decRef(WasmI32.fromGrain(fd))
   Memory.decRef(WasmI32.fromGrain(size))
@@ -556,7 +556,7 @@ export let rec fdPread = (fd: FileDescriptor, offset: Int64, size: Number) => {
 
     Memory.free(iovs)
 
-    wasmSafeOk((WasmI32.toGrain(strPtr): (String), tagSimpleNumber(nread)))
+    wasmSafeOk((WasmI32.toGrain(strPtr): String, tagSimpleNumber(nread)))
   }
   Memory.decRef(WasmI32.fromGrain(fdArg))
   Memory.decRef(WasmI32.fromGrain(offsetArg))
@@ -999,18 +999,20 @@ export let rec fdFilestats = (fd: FileDescriptor) => {
     Memory.free(filestats)
     wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
-    let device = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 0n))): (Int64)
-    let inode = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 8n))): (Int64)
+    let device = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 0n))): Int64
+    let inode = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 8n))): Int64
     let filetype = filetypeFromNumber(WasmI32.load8U(filestats, 16n))
-    let linkcount = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 24n))):
-      (Int64)
-    let size = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 32n))): (Int64)
-    let accessed = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 40n))):
-      (Int64)
-    let modified = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 48n))):
-      (Int64)
-    let changed = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 56n))):
-      (Int64)
+    let linkcount = WasmI32.toGrain(
+      newInt64(WasmI64.load(filestats, 24n)),
+    ): Int64
+    let size = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 32n))): Int64
+    let accessed = WasmI32.toGrain(
+      newInt64(WasmI64.load(filestats, 40n)),
+    ): Int64
+    let modified = WasmI32.toGrain(
+      newInt64(WasmI64.load(filestats, 48n)),
+    ): Int64
+    let changed = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 56n))): Int64
 
     Memory.free(filestats)
 
@@ -1226,13 +1228,12 @@ export let rec fdReaddir = (fd: FileDescriptor) => {
           for (let mut i = numEntries - 1n; i >= 0n; i -= 1n) {
             let ent = WasmI32.load(bufs, 0n)
 
-            let inode = WasmI32.toGrain(newInt64(WasmI64.load(ent, 8n))):
-              (Int64)
+            let inode = WasmI32.toGrain(newInt64(WasmI64.load(ent, 8n))): Int64
 
             let dirnameLen = WasmI32.load(ent, 16n)
             let dirname = allocateString(dirnameLen)
             Memory.copy(dirname + 8n, ent + structWidth, dirnameLen)
-            let path = WasmI32.toGrain(dirname): (String)
+            let path = WasmI32.toGrain(dirname): String
 
             let filetype = filetypeFromNumber(WasmI32.load8U(ent, 20n))
 
@@ -1313,7 +1314,7 @@ export let rec fdSeek = (fd: FileDescriptor, offset: Int64, whence: Whence) => {
     Memory.free(newoffset)
     wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
-    wasmSafeOk(WasmI32.toGrain(newoffset): (Int64))
+    wasmSafeOk(WasmI32.toGrain(newoffset): Int64)
   }
   Memory.decRef(WasmI32.fromGrain(fdArg))
   Memory.decRef(WasmI32.fromGrain(offsetArg))
@@ -1340,7 +1341,7 @@ export let rec fdTell = (fd: FileDescriptor) => {
     Memory.free(offset)
     wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
-    wasmSafeOk(WasmI32.toGrain(offset): (Int64))
+    wasmSafeOk(WasmI32.toGrain(offset): Int64)
   }
   Memory.decRef(WasmI32.fromGrain(fdArg))
   Memory.decRef(WasmI32.fromGrain(fdTell))
@@ -1410,18 +1411,20 @@ export let rec pathFilestats =
     Memory.free(filestats)
     wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
-    let device = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 0n))): (Int64)
-    let inode = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 8n))): (Int64)
+    let device = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 0n))): Int64
+    let inode = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 8n))): Int64
     let filetype = filetypeFromNumber(WasmI32.load8U(filestats, 16n))
-    let linkcount = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 24n))):
-      (Int64)
-    let size = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 32n))): (Int64)
-    let accessed = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 40n))):
-      (Int64)
-    let modified = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 48n))):
-      (Int64)
-    let changed = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 56n))):
-      (Int64)
+    let linkcount = WasmI32.toGrain(
+      newInt64(WasmI64.load(filestats, 24n)),
+    ): Int64
+    let size = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 32n))): Int64
+    let accessed = WasmI32.toGrain(
+      newInt64(WasmI64.load(filestats, 40n)),
+    ): Int64
+    let modified = WasmI32.toGrain(
+      newInt64(WasmI64.load(filestats, 48n)),
+    ): Int64
+    let changed = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 56n))): Int64
 
     Memory.free(filestats)
 
@@ -1786,7 +1789,7 @@ export let rec pathReadlink =
     let read = tagSimpleNumber(WasmI32.load(nread, 0n))
     Memory.free(nread)
 
-    wasmSafeOk((WasmI32.toGrain(grainStrPtr): (String), read))
+    wasmSafeOk((WasmI32.toGrain(grainStrPtr): String, read))
   }
   Memory.decRef(WasmI32.fromGrain(fdArg))
   Memory.decRef(WasmI32.fromGrain(path))
