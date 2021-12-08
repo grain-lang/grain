@@ -2166,7 +2166,7 @@ and print_expression =
           ])
         | _ =>
           Doc.concat([
-            Doc.space,
+            Doc.line,
             Doc.text("else"),
             if (true_is_block) {
               false_made_block := true;
@@ -2192,7 +2192,8 @@ and print_expression =
               );
             } else {
               Doc.concat([
-                Doc.line,
+                //  Doc.line,
+                Doc.space,
                 print_expression(
                   ~parent_is_arrow=false,
                   ~original_source,
@@ -2255,7 +2256,11 @@ and print_expression =
                 trueTrailingCmt,
               ),
             ]),
-            Doc.group(false_clause),
+            if (false_is_block || false_made_block^) {
+              Doc.group(false_clause);
+            } else {
+              Doc.group(false_clause);
+            },
           ]),
         );
       } else {
@@ -2312,7 +2317,11 @@ and print_expression =
             ~bracket_line=None,
             trueTrailingCmt,
           ),
-          Doc.group(false_clause),
+          if (false_is_block || false_made_block^) {
+            Doc.group(false_clause);
+          } else {
+            Doc.group(false_clause);
+          },
         ]);
       };
     | PExpWhile(expression, expression1) =>
