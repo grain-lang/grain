@@ -1287,22 +1287,26 @@ and print_application =
         Doc.concat([
           Doc.text(function_name),
           Doc.lparen,
-          print_expression(
-            ~parent_is_arrow=false,
-            ~original_source,
-            ~comments,
-            first,
+          Doc.group(
+            print_expression(
+              ~parent_is_arrow=false,
+              ~original_source,
+              ~comments,
+              first,
+            ),
           ),
           Doc.rparen,
         ]);
       } else {
         Doc.concat([
           Doc.text(function_name),
-          print_expression(
-            ~parent_is_arrow=false,
-            ~original_source,
-            ~comments,
-            first,
+          Doc.group(
+            print_expression(
+              ~parent_is_arrow=false,
+              ~original_source,
+              ~comments,
+              first,
+            ),
           ),
         ]);
       };
@@ -1310,11 +1314,13 @@ and print_application =
     | _ =>
       Doc.concat([
         Doc.text(function_name),
-        print_expression(
-          ~parent_is_arrow=false,
-          ~original_source,
-          ~comments,
-          first,
+        Doc.group(
+          print_expression(
+            ~parent_is_arrow=false,
+            ~original_source,
+            ~comments,
+            first,
+          ),
         ),
       ])
     }
@@ -1385,8 +1391,8 @@ and print_application =
       | _ => (false, false)
       };
 
-    let left_needs_parens = false || left_is_if || left_grouping_required;
-    let right_needs_parens = false || right_is_if || right_grouping_required;
+    let left_needs_parens = left_is_if || left_grouping_required;
+    let right_needs_parens = right_is_if || right_grouping_required;
 
     let wrapped_left =
       if (left_needs_parens) {
@@ -1463,11 +1469,13 @@ and print_application =
                   Doc.concat([Doc.comma, Doc.line]),
                   List.map(
                     e =>
-                      print_expression(
-                        ~parent_is_arrow=false,
-                        ~original_source,
-                        ~comments,
-                        e,
+                      Doc.group(
+                        print_expression(
+                          ~parent_is_arrow=false,
+                          ~original_source,
+                          ~comments,
+                          e,
+                        ),
                       ),
                     expressions,
                   ),
@@ -1649,7 +1657,6 @@ and print_expression =
           Doc.lparen,
           Doc.indent(
             Doc.concat([
-              //  Doc.softLine,
               block_item_iterator(
                 bracket_line,
                 expressions,
@@ -1977,19 +1984,31 @@ and print_expression =
         | _ => false
         };
 
+      let true_is_if =
+        switch (trueExpr.pexp_desc) {
+        | PExpIf(_) => true
+        | _ => false
+        };
+
       let false_is_block =
         switch (falseExpr.pexp_desc) {
         | PExpBlock(expressions) => List.length(expressions) > 0
         | _ => false
         };
 
-      //  let true_false_space = Doc.space;
-      //  keep this - we need this if we force single lines into block expressions
-      // let true_false_space =
-      //   switch (trueExpr.pexp_desc) {
-      //   | PExpBlock(expressions) => Doc.space
-      //   | _ => if (false_is_block) {Doc.space} else {Doc.line}
-      //   };
+      let false_is_if =
+        switch (falseExpr.pexp_desc) {
+        | PExpBlock(expressions) =>
+          switch (expressions) {
+          | [] => false
+          | [hd, ...tail] =>
+            switch (hd.pexp_desc) {
+            | PExpIf(_) => true
+            | _ => false
+            }
+          }
+        | _ => false
+        };
 
       let commentsInCondition =
         Comment_utils.get_comments_inside_location(
@@ -2003,6 +2022,9 @@ and print_expression =
           comments,
         );
 
+      let true_made_block = ref(false);
+      let false_made_block = ref(false);
+
       let true_clause =
         switch (trueExpr.pexp_desc) {
         | PExpBlock(expressions) =>
@@ -2015,6 +2037,7 @@ and print_expression =
 
         | _ =>
           if (false_is_block) {
+            true_made_block := true;
             Doc.concat([
               Doc.lbrace,
               // no comment to add here as this was a single line expression
@@ -2031,6 +2054,23 @@ and print_expression =
               ),
               Doc.hardLine,
               Doc.rbrace,
+            ]);
+          } else if (true_is_if) {
+            Doc.concat([
+              Doc.lparen,
+              Doc.indent(
+                Doc.concat([
+                  Doc.softLine,
+                  print_expression(
+                    ~parent_is_arrow=false,
+                    ~original_source,
+                    ~comments=comments_in_true_statement,
+                    trueExpr,
+                  ),
+                ]),
+              ),
+              Doc.softLine,
+              Doc.rparen,
             ]);
           } else {
             print_expression(
@@ -2056,7 +2096,8 @@ and print_expression =
           | _ =>
             Doc.concat([
               Doc.space,
-              Doc.text("else "),
+              Doc.text("else"),
+              Doc.space,
               print_expression(
                 ~parent_is_arrow=false,
                 ~original_source,
@@ -2068,20 +2109,43 @@ and print_expression =
         | PExpIf(_condition, _trueExpr, _falseExpr) =>
           Doc.concat([
             Doc.space,
-            Doc.text("else "),
-            print_expression(
-              ~parent_is_arrow=false,
-              ~original_source,
-              ~comments=comments_in_false_statement,
-              falseExpr,
-            ),
+            Doc.text("else"),
+            if (false_is_if) {
+              Doc.concat([
+                Doc.space,
+                Doc.lparen,
+                Doc.indent(
+                  Doc.concat([
+                    Doc.softLine,
+                    print_expression(
+                      ~parent_is_arrow=false,
+                      ~original_source,
+                      ~comments=comments_in_false_statement,
+                      falseExpr,
+                    ),
+                  ]),
+                ),
+                Doc.softLine,
+                Doc.rparen,
+              ]);
+            } else {
+              Doc.concat([
+                Doc.space,
+                print_expression(
+                  ~parent_is_arrow=false,
+                  ~original_source,
+                  ~comments=comments_in_false_statement,
+                  falseExpr,
+                ),
+              ]);
+            },
           ])
         | _ =>
           Doc.concat([
             Doc.space,
             Doc.text("else"),
-            Doc.space,
             if (true_is_block) {
+              false_made_block := true;
               Doc.group(
                 Doc.concat([
                   Doc.space,
@@ -2103,12 +2167,15 @@ and print_expression =
                 ]),
               );
             } else {
-              print_expression(
-                ~parent_is_arrow=false,
-                ~original_source,
-                ~comments=comments_in_false_statement,
-                falseExpr,
-              );
+              Doc.concat([
+                Doc.line,
+                print_expression(
+                  ~parent_is_arrow=false,
+                  ~original_source,
+                  ~comments=comments_in_false_statement,
+                  falseExpr,
+                ),
+              ]);
             },
           ])
         };
@@ -2118,9 +2185,9 @@ and print_expression =
           Doc.concat([
             Doc.text("if"),
             Doc.space,
-            Doc.group(
-              Doc.concat([
-                Doc.lparen,
+            Doc.concat([
+              Doc.lparen,
+              Doc.group(
                 Doc.indent(
                   Doc.concat([
                     Doc.concat([
@@ -2149,11 +2216,14 @@ and print_expression =
                     ]),
                   ]),
                 ),
-                Doc.rparen,
-                Doc.space,
-              ]),
-            ),
-            true_clause,
+              ),
+              Doc.rparen,
+            ]),
+            if (true_is_block || true_made_block^) {
+              Doc.concat([Doc.space, Doc.group(true_clause)]);
+            } else {
+              Doc.indent(Doc.concat([Doc.line, Doc.group(true_clause)]));
+            },
             Doc.concat([
               Comment_utils.inbetween_comments_to_docs(
                 ~offset=true,
@@ -2161,7 +2231,7 @@ and print_expression =
                 trueTrailingCmt,
               ),
             ]),
-            false_clause,
+            Doc.group(false_clause),
           ]),
         );
       } else {
@@ -2170,46 +2240,53 @@ and print_expression =
             Doc.concat([
               Doc.text("if"),
               Doc.space,
-              Doc.lparen,
-              Doc.indent(
+              Doc.group(
                 Doc.concat([
-                  Doc.concat([
-                    Comment_utils.inbetween_comments_to_docs(
-                      ~offset=false,
-                      ~bracket_line=None,
-                      condLeadingCmt,
-                    ),
-                  ]),
-                  switch (condLeadingCmt) {
-                  | [] => Doc.nil
-                  | _ => Doc.space
-                  },
-                  print_expression(
-                    ~parent_is_arrow=false,
-                    ~original_source,
-                    ~comments=commentsInCondition,
-                    condition,
+                  Doc.lparen,
+                  Doc.indent(
+                    Doc.concat([
+                      Doc.concat([
+                        Comment_utils.inbetween_comments_to_docs(
+                          ~offset=false,
+                          ~bracket_line=None,
+                          condLeadingCmt,
+                        ),
+                      ]),
+                      switch (condLeadingCmt) {
+                      | [] => Doc.nil
+                      | _ => Doc.space
+                      },
+                      print_expression(
+                        ~parent_is_arrow=false,
+                        ~original_source,
+                        ~comments=commentsInCondition,
+                        condition,
+                      ),
+                      Doc.concat([
+                        Comment_utils.inbetween_comments_to_docs(
+                          ~offset=true,
+                          ~bracket_line=None,
+                          condTrailingCmt,
+                        ),
+                      ]),
+                    ]),
                   ),
-                  Doc.concat([
-                    Comment_utils.inbetween_comments_to_docs(
-                      ~offset=true,
-                      ~bracket_line=None,
-                      condTrailingCmt,
-                    ),
-                  ]),
+                  Doc.rparen,
                 ]),
               ),
-              Doc.rparen,
-              Doc.space,
             ]),
           ),
-          true_clause,
+          if (true_is_block || true_made_block^) {
+            Doc.concat([Doc.space, Doc.group(true_clause)]);
+          } else {
+            Doc.indent(Doc.concat([Doc.line, Doc.group(true_clause)]));
+          },
           Comment_utils.inbetween_comments_to_docs(
             ~offset=true,
             ~bracket_line=None,
             trueTrailingCmt,
           ),
-          false_clause,
+          Doc.group(false_clause),
         ]);
       };
     | PExpWhile(expression, expression1) =>
@@ -2440,15 +2517,11 @@ and print_expression =
     | PExpBlock(expressions) =>
       switch (expressions) {
       | [] =>
-        // I think not legal syntac
+        // Not legal syntax so we shouldn't ever hit it, but we'll handle
+        // it just in case.
         Doc.breakableGroup(
           ~forceBreak=true,
-          Doc.concat([
-            Doc.lbrace,
-            Doc.indent(Doc.line),
-            // Doc.line,
-            Doc.rbrace,
-          ]),
+          Doc.concat([Doc.lbrace, Doc.indent(Doc.line), Doc.rbrace]),
         )
       | _ =>
         let get_loc = (expr: Grain_parsing__Parsetree.expression) => {

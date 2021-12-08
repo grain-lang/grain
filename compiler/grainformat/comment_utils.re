@@ -44,7 +44,9 @@ let rec get_comments_inside_location =
     } else if (cmteline < stmt_start_line) {
       get_comments_inside_location(location, remaining_comments);
     } else if
-      // need the complex comparisons here
+      // other cases were simple as we are on lines before or after.
+      // Now we need to check when the start line or end line match that we also take
+      // into account the start or end characte
       (cmtsline > stmt_start_line
        || cmtsline == stmt_start_line
        && cmtschar >= stm_start_char) {
