@@ -38,8 +38,7 @@ let findIndex = (x, y) => None
  */
 export let unique = array => {
   filteri(
-    (el, index) =>
-      findIndex(value => value == el, array) == Some(index),
+    (el, index) => findIndex(value => value == el, array) == Some(index),
     array,
   )
 }
