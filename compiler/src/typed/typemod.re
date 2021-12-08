@@ -634,7 +634,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
   let type_export_aliases = ref([]);
   let process_export_data = (env, exports, loc) => {
     let process_one = (rs, {pex_name: name, pex_alias: alias, pex_loc: loc}) => {
-      let type_id = Env.lookup_type(IdentName(name.txt), env);
+      let (type_id, _) = Typetexp.find_type(env, loc, IdentName(name.txt));
       switch (alias) {
       | Some(alias) =>
         type_export_aliases :=
