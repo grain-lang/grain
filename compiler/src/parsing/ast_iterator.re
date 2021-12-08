@@ -30,7 +30,13 @@ module Cnst = {
 module E = {
   let iter = (sub, {pexp_desc: desc, pexp_attributes: attrs, pexp_loc: loc}) => {
     sub.location(sub, loc);
-    List.iter(iter_loc(sub), attrs);
+    List.iter(
+      ((attr, args)) => {
+        iter_loc(sub, attr);
+        List.iter(iter_loc(sub), args);
+      },
+      attrs,
+    );
     switch (desc) {
     | PExpId(i) => iter_loc(sub, i)
     | PExpConstant(c) => sub.constant(sub, c)
@@ -288,7 +294,13 @@ module VD = {
 module TL = {
   let iter = (sub, {ptop_desc: desc, ptop_attributes: attrs, ptop_loc: loc}) => {
     sub.location(sub, loc);
-    List.iter(iter_loc(sub), attrs);
+    List.iter(
+      ((attr, args)) => {
+        iter_loc(sub, attr);
+        List.iter(iter_loc(sub), args);
+      },
+      attrs,
+    );
     switch (desc) {
     | PTopImport(id) => sub.import(sub, id)
     | PTopExport(ex) => sub.export(sub, ex)

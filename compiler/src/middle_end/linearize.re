@@ -1421,6 +1421,18 @@ let rec transl_anf_statement =
       | Exported => Global
       | Nonexported => Nonglobal
       };
+    let external_name =
+      switch (
+        List.find_opt(
+          fun
+          | External_name(_) => true
+          | _ => false,
+          attributes,
+        )
+      ) {
+      | Some(External_name(name)) => name
+      | _ => desc.tvd_name.txt
+      };
     switch (desc.tvd_desc.ctyp_type.desc) {
     | TTyArrow(_) =>
       let (argsty, retty) =
@@ -1438,7 +1450,7 @@ let rec transl_anf_statement =
             ~global,
             desc.tvd_id,
             desc.tvd_mod.txt,
-            desc.tvd_name.txt,
+            external_name,
             FunctionShape(argsty, retty),
           ),
         ],
@@ -1452,7 +1464,7 @@ let rec transl_anf_statement =
             ~global,
             desc.tvd_id,
             desc.tvd_mod.txt,
-            desc.tvd_name.txt,
+            external_name,
             GlobalShape(ty),
           ),
         ],

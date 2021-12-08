@@ -21,6 +21,15 @@ open Types;
 let sexp_locs_disabled = _ => ! Grain_utils.Config.sexp_locs_enabled^;
 
 type loc('a) = Location.loc('a);
+
+[@deriving sexp]
+type attributes = list(attribute)
+
+[@deriving sexp]
+and attribute =
+  | Disable_gc
+  | External_name(string);
+
 [@deriving sexp]
 type partial =
   | Partial

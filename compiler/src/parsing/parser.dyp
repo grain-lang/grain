@@ -414,7 +414,7 @@ lam_expr :
   | ID thickarrow block_or_expr { Exp.lambda ~loc:(symbol_rloc dyp) [Pat.var ~loc:(rhs_loc dyp 1) (mkstr dyp $1)] $3 }
 
 attributes :
-  | [AT id_str eols? { $2 }]* { $1 }
+  | [AT id_str [lparen STRING rparen { Location.mkloc $2 (symbol_rloc dyp) }]? eols? { $2, Option.to_list $3 }]* { $1 }
 
 let_expr :
   | attributes LET REC value_binds { Exp.let_ ~loc:(symbol_rloc dyp) ~attributes:$1 Recursive Immutable $4 }
@@ -570,9 +570,9 @@ toplevel_stmt :
   | attributes LET value_binds { Top.let_ ~loc:(symbol_rloc dyp) ~attributes:$1 Nonexported Nonrecursive Immutable $3 }
   | attributes LET REC MUT value_binds { Top.let_ ~loc:(symbol_rloc dyp) ~attributes:$1 Nonexported Recursive Mutable $5 }
   | attributes LET MUT value_binds { Top.let_ ~loc:(symbol_rloc dyp) ~attributes:$1 Nonexported Nonrecursive Mutable $4 }
+  | attributes IMPORT foreign_stmt { Top.foreign ~loc:(symbol_rloc dyp) ~attributes:$1 Nonexported $3 }
   | expr { Top.expr ~loc:(symbol_rloc dyp) $1 }
   | import_stmt { Top.import ~loc:(symbol_rloc dyp) $1 }
-  | IMPORT foreign_stmt { Top.foreign ~loc:(symbol_rloc dyp) Nonexported $2 }
   | data_declaration_stmts { Top.data ~loc:(symbol_rloc dyp) $1 }
   | export_stmt { $1 }
   | primitive_stmt { Top.primitive ~loc:(symbol_rloc dyp) Nonexported $1 }
