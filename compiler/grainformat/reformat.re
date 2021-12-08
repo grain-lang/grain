@@ -2479,14 +2479,14 @@ and print_expression =
             Doc.group(
               Doc.concat([args, Doc.space, Doc.text("=>"), Doc.space]),
             ),
-            Doc.group(
+            Doc.customLayout([
               print_expression(
                 ~parent_is_arrow=false,
                 ~original_source,
                 ~comments=comments_in_expression,
                 expression,
               ),
-            ),
+            ]),
           ]
         | _ => [
             Doc.concat([
@@ -2496,14 +2496,14 @@ and print_expression =
               Doc.indent(
                 Doc.concat([
                   Doc.line,
-                  Doc.group(
+                  Doc.customLayout([
                     print_expression(
                       ~parent_is_arrow=false,
                       ~original_source,
                       ~comments=comments_in_expression,
                       expression,
                     ),
-                  ),
+                  ]),
                 ]),
               ),
             ]),
