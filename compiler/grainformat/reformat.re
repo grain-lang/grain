@@ -118,12 +118,7 @@ let item_separator = (~this_line: int, ~line_above: int, break_separator) =>
   };
 
 let comment_separator =
-    (
-      ~this_line: int,
-      ~line_above: int,
-      ~break_separator,
-      comment: Parsetree.comment,
-    ) =>
+    (~this_line: int, ~line_above: int, comment: Parsetree.comment) =>
   if (this_line - line_above > 1) {
     switch (comment) {
     | Line(_) => Doc.hardLine
@@ -318,7 +313,6 @@ let rec block_item_iterator =
           comment_separator(
             ~this_line,
             ~line_above=last_comment_line,
-            ~break_separator,
             last_comment,
           );
         };
