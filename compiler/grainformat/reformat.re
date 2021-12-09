@@ -3448,7 +3448,8 @@ let print_primitive_value_description =
 
   Doc.concat([
     fixed_ident,
-    Doc.text(" : "),
+    Doc.text(":"),
+    Doc.space,
     print_type(
       ~original_source,
       ~comments,
