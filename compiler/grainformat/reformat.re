@@ -819,7 +819,6 @@ and print_pattern =
           print_patterns(
             pat.ppat_loc,
             patterns,
-            None,
             next_loc,
             comments,
             original_source,
@@ -837,7 +836,6 @@ and print_pattern =
             print_patterns(
               pat.ppat_loc,
               patterns,
-              None,
               next_loc,
               comments,
               original_source,
@@ -864,7 +862,6 @@ and print_pattern =
           print_patterns(
             pat.ppat_loc,
             [pattern],
-            None,
             next_loc,
             comments,
             original_source,
@@ -912,7 +909,6 @@ and print_pattern =
                 print_patterns(
                   pat.ppat_loc,
                   patterns,
-                  None,
                   next_loc,
                   comments,
                   original_source,
@@ -1494,7 +1490,6 @@ and print_patterns =
     (
       wrapper: Location.t,
       patterns: list(Parsetree.pattern),
-      previous: option(Parsetree.pattern),
       next_loc: Location.t,
       comments: list(Parsetree.comment),
       original_source: array(string),
@@ -1544,7 +1539,6 @@ and paren_wrap_patterns =
     print_patterns(
       wrapper,
       patterns,
-      None,
       next_loc,
       comments,
       original_source,
