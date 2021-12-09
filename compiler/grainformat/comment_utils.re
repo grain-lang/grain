@@ -263,7 +263,7 @@ let comment_to_doc = (comment: Grain_parsing.Parsetree.comment) => {
 let nobreak_comment_to_doc = (comment: Grain_parsing.Parsetree.comment) => {
   let comment_string = Comments.get_comment_source(comment);
 
-  Doc.concat([Doc.text(String.trim(comment_string))]);
+  Doc.text(String.trim(comment_string));
 };
 
 let get_after_brace_comments =
@@ -274,11 +274,6 @@ let get_after_brace_comments =
   let (_, startline, startc, _) = Locations.get_raw_pos_info(loc.loc_start);
 
   get_comments_on_line(startline, comments);
-};
-
-let no_breakcomment_to_doc = (comment: Grain_parsing.Parsetree.comment) => {
-  let comment_string = Comments.get_comment_source(comment);
-  Doc.text(String.trim(comment_string));
 };
 
 let rec comments_inner =
