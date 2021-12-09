@@ -568,12 +568,7 @@ let rec resugar_list_patterns =
 
   Doc.group(
     Doc.concat([
-      Doc.indent(
-        Doc.concat([
-          Doc.lbracket,
-          Doc.concat([Doc.softLine, printed_patterns]),
-        ]),
-      ),
+      Doc.indent(Doc.concat([Doc.lbracket, Doc.softLine, printed_patterns])),
       Doc.softLine,
       Doc.rbracket,
     ]),
