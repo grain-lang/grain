@@ -36,12 +36,12 @@ import foreign wasm fd_write: (
   WasmI32
 ) -> WasmI32 from "wasi_snapshot_preview1"
 
-primitive (&&) : (Bool, Bool) -> Bool = "@and"
-primitive (||) : (Bool, Bool) -> Bool = "@or"
-primitive throw : Exception -> a = "@throw"
-primitive ignore : a -> Void = "@ignore"
-primitive box : a -> Box<a> = "@box"
-primitive unbox : Box<a> -> a = "@unbox"
+primitive (&&): (Bool, Bool) -> Bool = "@and"
+primitive (||): (Bool, Bool) -> Bool = "@or"
+primitive throw: Exception -> a = "@throw"
+primitive ignore: a -> Void = "@ignore"
+primitive box: a -> Box<a> = "@box"
+primitive unbox: Box<a> -> a = "@unbox"
 
 exception DecRefError
 

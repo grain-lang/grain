@@ -20,10 +20,10 @@ import WasmF64 from "runtime/unsafe/wasmf64"
 import Exception from "runtime/exception"
 import { allocateString, singleByteString } from "runtime/dataStructures"
 
-primitive (!) : Bool -> Bool = "@not"
-primitive (&&) : (Bool, Bool) -> Bool = "@and"
-primitive (||) : (Bool, Bool) -> Bool = "@or"
-primitive throw : Exception -> a = "@throw"
+primitive (!): Bool -> Bool = "@not"
+primitive (&&): (Bool, Bool) -> Bool = "@and"
+primitive (||): (Bool, Bool) -> Bool = "@or"
+primitive throw: Exception -> a = "@throw"
 
 export let _MAX_DOUBLE_LENGTH = 28n
 

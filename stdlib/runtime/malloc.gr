@@ -21,14 +21,14 @@ import WasmI32, {
 } from "runtime/unsafe/wasmi32"
 import Exception from "runtime/exception"
 
-primitive memorySize : () -> WasmI32 = "@wasm.memory_size"
-primitive memoryGrow : WasmI32 -> WasmI32 = "@wasm.memory_grow"
+primitive memorySize: () -> WasmI32 = "@wasm.memory_size"
+primitive memoryGrow: WasmI32 -> WasmI32 = "@wasm.memory_grow"
 
-primitive (!) : Bool -> Bool = "@not"
-primitive (&&) : (Bool, Bool) -> Bool = "@and"
-primitive (||) : (Bool, Bool) -> Bool = "@or"
+primitive (!): Bool -> Bool = "@not"
+primitive (&&): (Bool, Bool) -> Bool = "@and"
+primitive (||): (Bool, Bool) -> Bool = "@or"
 
-primitive throw : Exception -> a = "@throw"
+primitive throw: Exception -> a = "@throw"
 
 /* UNDERSTANDING THE STRUCTURE OF THE FREE LIST
  * The original K&R definition for the free list entry type was the following:

@@ -16,9 +16,9 @@ import WasmI64 from "runtime/unsafe/wasmi64"
 import Tags from "runtime/unsafe/tags"
 import Memory from "runtime/unsafe/memory"
 
-primitive (!) : Bool -> Bool = "@not"
-primitive (||) : (Bool, Bool) -> Bool = "@or"
-primitive (&&) : (Bool, Bool) -> Bool = "@and"
+primitive (!): Bool -> Bool = "@not"
+primitive (||): (Bool, Bool) -> Bool = "@or"
+primitive (&&): (Bool, Bool) -> Bool = "@and"
 
 import { isNumber, numberEqual } from "runtime/numbers"
 

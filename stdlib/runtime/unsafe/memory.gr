@@ -55,7 +55,7 @@ export let fill = (dest, c, n) => {
   }
 }
 
-export primitive compare : (
+export primitive compare: (
   WasmI32,
   WasmI32,
   WasmI32

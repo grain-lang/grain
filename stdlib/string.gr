@@ -389,7 +389,7 @@ export let rec implode = (arr: Array<Char>) => {
 }
 
 // Helper to get the length in constant time without depending on Array
-primitive arrayLength : Array<a> -> Number = "@array.length"
+primitive arrayLength: Array<a> -> Number = "@array.length"
 
 /**
  * Create a string that is the given string reversed.
