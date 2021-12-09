@@ -85,6 +85,7 @@ module Grain_parsing = struct end
 // closing paren for the function call" rather than "A plus sign
 // could work here"
 %on_error_reduce
+  eol+
   eols
   record_get
   array_get
@@ -545,10 +546,10 @@ for_expr:
   | FOR lparen block_body_expr? opt_eols SEMI opt_eols for_inner_expr opt_eols SEMI opt_eols for_inner_expr rparen block { Exp.for_ ~loc:(to_loc $loc) $3 $7 $11 $13 }
 
 when_guard:
-  | WHEN expr {$2}
+  | opt_eols WHEN expr { $3 }
 
 match_branch:
-  | pattern when_guard? thickarrow expr { Mb.mk ~loc:(to_loc $loc) $1 $4 $2 }
+  | pattern ioption(when_guard) thickarrow expr { Mb.mk ~loc:(to_loc $loc) $1 $4 $2 }
 
 match_branches:
   | lseparated_nonempty_list(comma, match_branch) comma? { $1 }

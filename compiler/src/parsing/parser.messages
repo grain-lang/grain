@@ -421,16 +421,6 @@ program: EOL WASMI64 THICKARROW
 
 Expected an infix operator to continue the expression or a newline character to terminate it.
 
-program: EOL WHEN
-##
-## Ends in an error in state: 3.
-##
-## nonempty_list(eol) -> EOL . [ WHILE WASMI64 WASMI32 WASMF64 WASMF32 VOID UNDERSCORE TYPEID TYPE TRUE THROW THICKARROW STRING STAR SLASH SEMI RPAREN RECORD RCARET RBRACK RBRACE PRIMITIVE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NUMBER_INT NUMBER_FLOAT NOTEQ NOT MUT MATCH LPAREN LET LESSEQ LCARETLCARET LCARET LBRACKRCARET LBRACK LBRACE ISNT IS INT64 INT32 IMPORT IF ID GREATEREQ FUN FROM FOR FLOAT64 FLOAT32 FALSE FAIL EXPORT EXCEPTION EQEQ EOL EOF ENUM ELLIPSIS DASH CONTINUE COMMA CHAR CARET BREAK AT ASSERT AMPAMP AMP ]
-## nonempty_list(eol) -> EOL . nonempty_list(eol) [ WHILE WASMI64 WASMI32 WASMF64 WASMF32 VOID UNDERSCORE TYPEID TYPE TRUE THROW THICKARROW STRING STAR SLASH SEMI RPAREN RECORD RCARET RBRACK RBRACE PRIMITIVE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NUMBER_INT NUMBER_FLOAT NOTEQ NOT MUT MATCH LPAREN LET LESSEQ LCARETLCARET LCARET LBRACKRCARET LBRACK LBRACE ISNT IS INT64 INT32 IMPORT IF ID GREATEREQ FUN FROM FOR FLOAT64 FLOAT32 FALSE FAIL EXPORT EXCEPTION EQEQ EOL EOF ENUM ELLIPSIS DASH CONTINUE COMMA CHAR CARET BREAK AT ASSERT AMPAMP AMP ]
-##
-## The known suffix of the stack is as follows:
-## EOL
-##
 program: LBRACE BREAK RBRACE DOT EOL ID EQUAL EOL UNDERSCORE
 ##
 ## Ends in an error in state: 285.
@@ -775,6 +765,30 @@ program: WHILE LPAREN WASMI64 RPAREN LBRACE UNDERSCORE
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 20, spurious reduction of production lbrace -> LBRACE
+##
+program: MATCH LPAREN FLOAT32 RPAREN LBRACE NUMBER_INT WHEN FLOAT32 THICKARROW WHEN
+##
+## Ends in an error in state: 738.
+##
+## match_branch -> pattern WHEN expr thickarrow . expr [ RBRACE EOL COMMA ]
+##
+## The known suffix of the stack is as follows:
+## pattern WHEN expr thickarrow
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 27, spurious reduction of production thickarrow -> THICKARROW
+##
+program: MATCH LPAREN FLOAT32 RPAREN LBRACE NUMBER_INT EOL WHEN WHEN
+##
+## Ends in an error in state: 743.
+##
+## match_branch -> pattern eols WHEN . expr thickarrow expr [ RBRACE EOL COMMA ]
+##
+## The known suffix of the stack is as follows:
+## pattern eols WHEN
 ##
 
 Expected an expression.
@@ -7354,3 +7368,24 @@ program: WHILE WHILE
 ##
 
 Expected an open paren followed by an expression for the while loop condition.
+
+program: MATCH LPAREN FLOAT32 RPAREN LBRACE NUMBER_INT EOL WHILE
+##
+## Ends in an error in state: 742.
+##
+## match_branch -> pattern eols . WHEN expr thickarrow expr [ RBRACE EOL COMMA ]
+## thickarrow -> eols . THICKARROW [ WHILE WASMI64 WASMI32 WASMF64 WASMF32 VOID TYPEID TRUE THROW STRING NUMBER_INT NUMBER_FLOAT NOT MATCH LPAREN LBRACKRCARET LBRACK LBRACE INT64 INT32 IF ID FUN FOR FLOAT64 FLOAT32 FALSE FAIL DASH CONTINUE CHAR BREAK ASSERT ]
+## thickarrow -> eols . THICKARROW eols [ WHILE WASMI64 WASMI32 WASMF64 WASMF32 VOID TYPEID TRUE THROW STRING NUMBER_INT NUMBER_FLOAT NOT MATCH LPAREN LBRACKRCARET LBRACK LBRACE INT64 INT32 IF ID FUN FOR FLOAT64 FLOAT32 FALSE FAIL DASH CONTINUE CHAR BREAK ASSERT ]
+##
+## The known suffix of the stack is as follows:
+## pattern eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+##
+
+Expected an arrow (=>) followed by an expression (or a branch guard, i.e. the keyword `when` followed by an expression).
