@@ -1451,7 +1451,39 @@ and print_application =
             Doc.rparen,
           ])
         | _ =>
-          let numArgs = List.length(expressions);
+          let needs_indent = ref(true);
+          let body =
+            Doc.concat([
+              Doc.softLine,
+              Doc.join(
+                Doc.concat([Doc.comma, Doc.line]),
+                List.map(
+                  (e: Parsetree.expression) =>
+                    switch (e.pexp_desc) {
+                    | PExpLambda(_, {pexp_desc: PExpBlock(_)}) =>
+                      needs_indent := false;
+                      Doc.customLayout([
+                        print_expression(
+                          ~parent_is_arrow=false,
+                          ~original_source,
+                          ~comments,
+                          ~indented=true,
+                          e,
+                        ),
+                      ]);
+                    | _ =>
+                      print_expression(
+                        ~parent_is_arrow=false,
+                        ~original_source,
+                        ~comments,
+                        e,
+                      )
+                    },
+                  expressions,
+                ),
+              ),
+              Doc.ifBreaks(Doc.comma, Doc.nil),
+            ]);
           Doc.concat([
             print_expression(
               ~parent_is_arrow=false,
@@ -1460,49 +1492,7 @@ and print_application =
               func,
             ),
             Doc.lparen,
-            Doc.indent(
-              Doc.concat([
-                Doc.softLine,
-                Doc.join(
-                  Doc.concat([Doc.comma, Doc.line]),
-                  List.mapi(
-                    (index, e: Parsetree.expression) =>
-                      Doc.group(
-                        if (index + 1 == numArgs) {
-                          switch (e.pexp_desc) {
-                          | PExpLambda(_) =>
-                            Doc.customLayout([
-                              print_expression(
-                                ~parent_is_arrow=false,
-                                ~original_source,
-                                ~comments,
-                                ~indented=true,
-                                e,
-                              ),
-                            ])
-                          | _ =>
-                            print_expression(
-                              ~parent_is_arrow=false,
-                              ~original_source,
-                              ~comments,
-                              e,
-                            )
-                          };
-                        } else {
-                          print_expression(
-                            ~parent_is_arrow=false,
-                            ~original_source,
-                            ~comments,
-                            e,
-                          );
-                        },
-                      ),
-                    expressions,
-                  ),
-                ),
-                Doc.ifBreaks(Doc.comma, Doc.nil),
-              ]),
-            ),
+            needs_indent^ ? Doc.indent(body) : body,
             Doc.softLine,
             Doc.rparen,
           ]);
@@ -2528,19 +2518,17 @@ and print_expression =
           Doc.group(
             Doc.concat([args, Doc.space, Doc.text("=>"), Doc.space]),
           ),
-          Doc.customLayout([
-            print_expression(
-              ~parent_is_arrow=true,
-              ~original_source,
-              ~comments=comments_in_expression,
-              ~indented=
-                switch (indented) {
-                | None => false
-                | Some(b) => b
-                },
-              expression,
-            ),
-          ]),
+          print_expression(
+            ~parent_is_arrow=true,
+            ~original_source,
+            ~comments=comments_in_expression,
+            ~indented=
+              switch (indented) {
+              | None => false
+              | Some(b) => b
+              },
+            expression,
+          ),
         ])
       | _ =>
         Doc.concat([

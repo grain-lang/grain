@@ -5,8 +5,8 @@ import Map from "map"
 let data = [>]
 
 let busNumbers = Array.map(((num, idx)) => {
-    (Option.expect("Expected a number", None), idx)
-  }, data)
+  (Option.expect("Expected a number", None), idx)
+}, data)
 
 let sillyFunction = (a, b, c, d, e, f, g, h, j, k) => 10
 
@@ -35,7 +35,8 @@ let findIndex = (x, y) => None
  */
 export let unique = array => {
   filteri(
-    (el, index) => findIndex(value => value == el, array) == Some(index),
+    (el, index) =>
+      findIndex(value => value == el, array) == Some(index),
     array,
   )
 }
