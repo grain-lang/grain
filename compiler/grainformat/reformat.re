@@ -45,15 +45,14 @@ type error =
 exception Error(error);
 
 type sugared_list_item =
-  | Regular(Grain_parsing.Parsetree.expression)
-  | Spread(Grain_parsing.Parsetree.expression);
+  | Regular(Parsetree.expression)
+  | Spread(Parsetree.expression);
 
 type sugared_pattern_item =
-  | RegularPattern(Grain_parsing.Parsetree.pattern)
-  | SpreadPattern(Grain_parsing.Parsetree.pattern);
+  | RegularPattern(Parsetree.pattern)
+  | SpreadPattern(Parsetree.pattern);
 
-let get_original_code_snippet =
-    (location: Grain_parsing.Location.t, source: array(string)) => {
+let get_original_code_snippet = (location: Location.t, source: array(string)) => {
   let (_, startline, startc, _) =
     Locations.get_raw_pos_info(location.loc_start);
   let (_, endline, endc, _) = Locations.get_raw_pos_info(location.loc_end);
@@ -79,8 +78,7 @@ let get_original_code_snippet =
   };
 };
 
-let get_original_code =
-    (location: Grain_parsing.Location.t, source: array(string)) => {
+let get_original_code = (location: Location.t, source: array(string)) => {
   let (_, startline, startc, _) =
     Locations.get_raw_pos_info(location.loc_start);
   let (_, endline, endc, _) = Locations.get_raw_pos_info(location.loc_end);
@@ -195,8 +193,8 @@ let no_attribute = _ => Doc.nil;
 
 let remove_used_comments =
     (
-      remove_comments: list(Grain_parsing__Parsetree.comment),
-      ~all_comments: list(Grain_parsing__Parsetree.comment),
+      remove_comments: list(Parsetree.comment),
+      ~all_comments: list(Parsetree.comment),
     ) => {
   List.filter(c => !List.mem(c, remove_comments), all_comments);
 };
@@ -206,9 +204,9 @@ let rec block_item_iterator =
           bracket_line: int,
           items: list('a),
           previous: option('a),
-          comments: list(Grain_parsing__Parsetree.comment),
+          comments: list(Parsetree.comment),
           original_source,
-          ~get_loc: 'a => Grain_parsing.Location.t,
+          ~get_loc: 'a => Location.t,
           ~get_attribute_text: 'a => Doc.t,
           ~print_item: 'a => Doc.t,
           ~separator: Doc.t,
@@ -237,7 +235,7 @@ let rec block_item_iterator =
       pos_cnum: 0,
     };
 
-    let fake_location: Grain_parsing.Location.t = {
+    let fake_location: Location.t = {
       loc_start: start_loc,
       loc_end: end_loc,
       loc_ghost: false,
@@ -506,8 +504,8 @@ let rec resugar_list_patterns =
           ~bracket_line,
           ~patterns: list(Parsetree.pattern),
           ~original_source: array(string),
-          ~comments: list(Grain_parsing.Parsetree.comment),
-          ~next_loc: Grain_parsing.Location.t,
+          ~comments: list(Parsetree.comment),
+          ~next_loc: Location.t,
         ) => {
   let processed_list = resugar_pattern_list_inner(patterns);
 
@@ -716,18 +714,12 @@ and check_for_pattern_pun = (pat: Parsetree.pattern) =>
 
 and print_record_pattern =
     (
-      ~patternlocs:
-         list(
-           (
-             Grain_parsing__Location.loc(Grain_parsing__Identifier.t),
-             Grain_parsing__Parsetree.pattern,
-           ),
-         ),
-      ~closedflag: Grain_parsing__Asttypes.closed_flag,
+      ~patternlocs: list((Location.loc(Identifier.t), Parsetree.pattern)),
+      ~closedflag: Asttypes.closed_flag,
       ~original_source: array(string),
-      ~comments: list(Grain_parsing.Parsetree.comment),
-      ~next_loc: Grain_parsing__Location.t,
-      patloc: Grain_parsing__Location.t,
+      ~comments: list(Parsetree.comment),
+      ~next_loc: Location.t,
+      patloc: Location.t,
     ) => {
   let close =
     switch (closedflag) {
@@ -736,23 +728,13 @@ and print_record_pattern =
     };
 
   let get_loc =
-      (
-        patternloc: (
-          Grain_parsing__Location.loc(Grain_parsing__Identifier.t),
-          Grain_parsing__Parsetree.pattern,
-        ),
-      ) => {
+      (patternloc: (Location.loc(Identifier.t), Parsetree.pattern)) => {
     let (_, pat) = patternloc;
     pat.ppat_loc;
   };
 
   let print_item =
-      (
-        patternloc: (
-          Grain_parsing__Location.loc(Grain_parsing__Identifier.t),
-          Grain_parsing__Parsetree.pattern,
-        ),
-      ) => {
+      (patternloc: (Location.loc(Identifier.t), Parsetree.pattern)) => {
     let (loc, pat) = patternloc;
     let printed_ident: Doc.t = print_ident(loc.txt);
 
@@ -816,8 +798,8 @@ and print_pattern =
     (
       pat: Parsetree.pattern,
       ~original_source: array(string),
-      ~comments: list(Grain_parsing.Parsetree.comment),
-      ~next_loc: Grain_parsing.Location.t,
+      ~comments: list(Parsetree.comment),
+      ~next_loc: Location.t,
     ) => {
   let printed_pattern: (Doc.t, bool) =
     switch (pat.ppat_desc) {
@@ -1002,7 +984,7 @@ and print_pattern =
 and print_constant =
     (
       ~original_source: array(string),
-      ~loc: Grain_parsing__Location.t,
+      ~loc: Location.t,
       c: Parsetree.constant,
     ) => {
   // we get the original code here to ensure it's well formatted and retains the
@@ -1031,37 +1013,20 @@ and print_ident = (ident: Identifier.t) => {
 
 and print_record =
     (
-      ~fields:
-         list(
-           (
-             Grain_parsing__Location.loc(Grain_parsing__Identifier.t),
-             Grain_parsing__Parsetree.expression,
-           ),
-         ),
+      ~fields: list((Location.loc(Identifier.t), Parsetree.expression)),
       ~original_source: array(string),
       ~comments: list(Parsetree.comment),
-      recloc: Grain_parsing__Location.t,
+      recloc: Location.t,
     ) => {
   let (_, bracket_line, _, _) = Locations.get_raw_pos_info(recloc.loc_start);
 
-  let get_loc =
-      (
-        field: (
-          Grain_parsing__Location.loc(Grain_parsing__Identifier.t),
-          Grain_parsing__Parsetree.expression,
-        ),
-      ) => {
+  let get_loc = (field: (Location.loc(Identifier.t), Parsetree.expression)) => {
     let (_, expr) = field;
     expr.pexp_loc;
   };
 
   let print_item =
-      (
-        field: (
-          Grain_parsing__Location.loc(Grain_parsing__Identifier.t),
-          Grain_parsing__Parsetree.expression,
-        ),
-      ) => {
+      (field: (Location.loc(Identifier.t), Parsetree.expression)) => {
     let (locidentifier, expr) = field;
     let ident = locidentifier.txt;
     let printed_ident = print_ident(ident);
@@ -1126,9 +1091,9 @@ and print_record =
 
 and print_type =
     (
-      p: Grain_parsing__Parsetree.parsed_type,
+      p: Parsetree.parsed_type,
       original_source: array(string),
-      comments: list(Grain_parsing__Parsetree.comment),
+      comments: list(Parsetree.comment),
       ~trailing_separator: bool,
     ) => {
   switch (p.ptyp_desc) {
@@ -1204,10 +1169,10 @@ and print_type =
     switch (parsedtypes) {
     | [] => print_ident(ident)
     | [first, ...rem] =>
-      let get_loc = (t: Grain_parsing__Parsetree.parsed_type) => {
+      let get_loc = (t: Parsetree.parsed_type) => {
         t.ptyp_loc;
       };
-      let print_item = (t: Grain_parsing__Parsetree.parsed_type) => {
+      let print_item = (t: Parsetree.parsed_type) => {
         let localComments =
           Comment_utils.get_comments_inside_location(
             ~location=get_loc(t),
@@ -1508,8 +1473,7 @@ and check_for_pun = (expr: Parsetree.expression) =>
   | _ => Doc.nil
   }
 
-and print_attributes =
-    (attributes: list(Grain_parsing__Location.loc(string))) =>
+and print_attributes = (attributes: list(Location.loc(string))) =>
   switch (attributes) {
   | [] => Doc.nil
   | _ =>
@@ -1528,16 +1492,16 @@ and print_attributes =
 
 and print_patterns =
     (
-      wrapper: Grain_parsing.Location.t,
-      patterns: list(Grain_parsing__Parsetree.pattern),
-      previous: option(Grain_parsing__Parsetree.pattern),
-      next_loc: Grain_parsing.Location.t,
-      comments: list(Grain_parsing__Parsetree.comment),
+      wrapper: Location.t,
+      patterns: list(Parsetree.pattern),
+      previous: option(Parsetree.pattern),
+      next_loc: Location.t,
+      comments: list(Parsetree.comment),
       original_source: array(string),
       ~isBlock: bool,
     ) => {
-  let get_loc = (p: Grain_parsing__Parsetree.pattern) => p.ppat_loc;
-  let print_item = (p: Grain_parsing__Parsetree.pattern) => {
+  let get_loc = (p: Parsetree.pattern) => p.ppat_loc;
+  let print_item = (p: Parsetree.pattern) => {
     let localComments =
       Comment_utils.get_comments_inside_location(
         ~location=get_loc(p),
@@ -1570,10 +1534,10 @@ and print_patterns =
 
 and paren_wrap_patterns =
     (
-      wrapper: Grain_parsing.Location.t,
-      patterns: list(Grain_parsing__Parsetree.pattern),
-      next_loc: Grain_parsing.Location.t,
-      comments: list(Grain_parsing__Parsetree.comment),
+      wrapper: Location.t,
+      patterns: list(Parsetree.pattern),
+      next_loc: Location.t,
+      comments: list(Parsetree.comment),
       original_source: array(string),
     ) => {
   let args =
@@ -1614,7 +1578,7 @@ and print_expression =
     (
       ~parent_is_arrow: bool,
       ~original_source: array(string),
-      ~comments: list(Grain_parsing__Parsetree.comment),
+      ~comments: list(Parsetree.comment),
       expr: Parsetree.expression,
     ) => {
   let expression_doc =
@@ -1632,10 +1596,10 @@ and print_expression =
         comments,
       )
     | PExpTuple(expressions) =>
-      let get_loc = (e: Grain_parsing__Parsetree.expression) => {
+      let get_loc = (e: Parsetree.expression) => {
         e.pexp_loc;
       };
-      let print_item = (e: Grain_parsing__Parsetree.expression) => {
+      let print_item = (e: Parsetree.expression) => {
         print_expression(
           ~parent_is_arrow=false,
           ~original_source,
@@ -1681,10 +1645,10 @@ and print_expression =
       );
 
     | PExpArray(expressions) =>
-      let get_loc = (e: Grain_parsing__Parsetree.expression) => {
+      let get_loc = (e: Parsetree.expression) => {
         e.pexp_loc;
       };
-      let print_item = (e: Grain_parsing__Parsetree.expression) => {
+      let print_item = (e: Parsetree.expression) => {
         print_expression(
           ~parent_is_arrow=false,
           ~original_source,
@@ -1826,11 +1790,11 @@ and print_expression =
       let (_, bracket_line, _, _) =
         Locations.get_raw_pos_info(expression.pexp_loc.loc_end);
 
-      let get_loc = (branch: Grain_parsing__Parsetree.match_branch) => {
+      let get_loc = (branch: Parsetree.match_branch) => {
         branch.pmb_loc;
       };
 
-      let print_item = (branch: Grain_parsing__Parsetree.match_branch) => {
+      let print_item = (branch: Parsetree.match_branch) => {
         let branch_comments =
           Comment_utils.get_comments_inside_location(
             ~location=branch.pmb_loc,
@@ -2538,11 +2502,11 @@ and print_expression =
           Doc.concat([Doc.lbrace, Doc.indent(Doc.line), Doc.rbrace]),
         )
       | _ =>
-        let get_loc = (expr: Grain_parsing__Parsetree.expression) => {
+        let get_loc = (expr: Parsetree.expression) => {
           expr.pexp_loc;
         };
 
-        let print_item = (expr: Grain_parsing__Parsetree.expression) => {
+        let print_item = (expr: Parsetree.expression) => {
           let commentsInExpr =
             Comment_utils.get_comments_inside_location(
               ~location=expr.pexp_loc,
@@ -2741,8 +2705,8 @@ and print_expression =
 and print_value_bind =
     (
       export_flag: Asttypes.export_flag,
-      rec_flag: Grain_parsing.Asttypes.rec_flag,
-      mut_flag: Grain_parsing.Asttypes.mut_flag,
+      rec_flag: Asttypes.rec_flag,
+      mut_flag: Asttypes.mut_flag,
       vbs: list(Parsetree.value_binding),
       original_source: array(string),
       comments: list(Parsetree.comment),
@@ -2861,15 +2825,15 @@ and print_value_bind =
 
 let rec print_data =
         (
-          data: Grain_parsing__Parsetree.data_declaration,
+          data: Parsetree.data_declaration,
           original_source: array(string),
-          comments: list(Grain_parsing.Parsetree.comment),
+          comments: list(Parsetree.comment),
         ) => {
   let nameloc = data.pdata_name;
   switch (data.pdata_kind) {
   | PDataAbstract =>
-    let get_loc = (t: Grain_parsing__Parsetree.parsed_type) => t.ptyp_loc;
-    let print_item = (t: Grain_parsing__Parsetree.parsed_type) => {
+    let get_loc = (t: Parsetree.parsed_type) => t.ptyp_loc;
+    let print_item = (t: Parsetree.parsed_type) => {
       let localComments =
         Comment_utils.get_comments_inside_location(
           ~location=get_loc(t),
@@ -2986,11 +2950,11 @@ let rec print_data =
     };
 
   | PDataVariant(constr_declarations) =>
-    let get_loc = (lbl: Grain_parsing.Parsetree.constructor_declaration) => {
+    let get_loc = (lbl: Parsetree.constructor_declaration) => {
       lbl.pcd_loc;
     };
 
-    let print_item = (d: Grain_parsing.Parsetree.constructor_declaration) => {
+    let print_item = (d: Parsetree.constructor_declaration) => {
       let localComments =
         Comment_utils.get_comments_inside_location(
           ~location=get_loc(d),
@@ -3005,9 +2969,8 @@ let rec print_data =
             switch (parsed_types) {
             | [] => Doc.nil
             | [first, ...rem] =>
-              let get_loc = (t: Grain_parsing.Parsetree.parsed_type) =>
-                t.ptyp_loc;
-              let print_item = (t: Grain_parsing.Parsetree.parsed_type) => {
+              let get_loc = (t: Parsetree.parsed_type) => t.ptyp_loc;
+              let print_item = (t: Parsetree.parsed_type) => {
                 let localComments =
                   Comment_utils.get_comments_inside_location(
                     ~location=get_loc(t),
@@ -3083,9 +3046,8 @@ let rec print_data =
         switch (data.pdata_params) {
         | [] => Doc.space
         | [first, ...rem] =>
-          let get_loc = (t: Grain_parsing.Parsetree.parsed_type) =>
-            t.ptyp_loc;
-          let print_item = (t: Grain_parsing.Parsetree.parsed_type) => {
+          let get_loc = (t: Parsetree.parsed_type) => t.ptyp_loc;
+          let print_item = (t: Parsetree.parsed_type) => {
             let localComments =
               Comment_utils.get_comments_inside_location(
                 ~location=get_loc(t),
@@ -3136,11 +3098,11 @@ let rec print_data =
     );
 
   | PDataRecord(label_declarations) =>
-    let get_loc = (lbl: Grain_parsing.Parsetree.label_declaration) => {
+    let get_loc = (lbl: Parsetree.label_declaration) => {
       lbl.pld_loc;
     };
 
-    let print_item = (lbl: Grain_parsing.Parsetree.label_declaration) => {
+    let print_item = (lbl: Parsetree.label_declaration) => {
       let localComments =
         Comment_utils.get_comments_inside_location(
           ~location=get_loc(lbl),
@@ -3191,9 +3153,8 @@ let rec print_data =
         switch (data.pdata_params) {
         | [] => Doc.space
         | [first, ...rem] =>
-          let get_loc = (t: Grain_parsing.Parsetree.parsed_type) =>
-            t.ptyp_loc;
-          let print_item = (t: Grain_parsing.Parsetree.parsed_type) => {
+          let get_loc = (t: Parsetree.parsed_type) => t.ptyp_loc;
+          let print_item = (t: Parsetree.parsed_type) => {
             let localComments =
               Comment_utils.get_comments_inside_location(
                 ~location=get_loc(t),
@@ -3248,15 +3209,9 @@ let rec print_data =
 };
 let data_print =
     (
-      datas:
-        list(
-          (
-            Grain_parsing__Parsetree.export_flag,
-            Grain_parsing__Parsetree.data_declaration,
-          ),
-        ),
+      datas: list((Parsetree.export_flag, Parsetree.data_declaration)),
       original_source: array(string),
-      comments: list(Grain_parsing__Parsetree.comment),
+      comments: list(Parsetree.comment),
     ) => {
   Doc.join(
     Doc.concat([Doc.comma, Doc.hardLine]),
@@ -3278,7 +3233,7 @@ let data_print =
 let import_print =
     (
       imp: Parsetree.import_declaration,
-      comments: list(Grain_parsing__Parsetree.comment),
+      comments: list(Parsetree.comment),
       original_source: array(string),
     ) => {
   let vals =
@@ -3292,13 +3247,11 @@ let import_print =
             switch (identlocs) {
             | [] => Doc.nil
             | [first, ...rem] =>
-              let get_loc =
-                  (identloc: Location.loc(Grain_parsing__Identifier.t)) => {
+              let get_loc = (identloc: Location.loc(Identifier.t)) => {
                 identloc.loc;
               };
 
-              let print_item =
-                  (identloc: Location.loc(Grain_parsing__Identifier.t)) => {
+              let print_item = (identloc: Location.loc(Identifier.t)) => {
                 print_ident(identloc.txt);
               };
 
@@ -3343,14 +3296,8 @@ let import_print =
                   let get_loc =
                       (
                         identlocopt: (
-                          Grain_parsing.Parsetree.loc(
-                            Grain_parsing.Identifier.t,
-                          ),
-                          option(
-                            Grain_parsing.Parsetree.loc(
-                              Grain_parsing.Identifier.t,
-                            ),
-                          ),
+                          Parsetree.loc(Identifier.t),
+                          option(Parsetree.loc(Identifier.t)),
                         ),
                       ) => {
                     let (loc, optloc) = identlocopt;
@@ -3360,14 +3307,8 @@ let import_print =
                   let print_item =
                       (
                         identlocopt: (
-                          Grain_parsing.Parsetree.loc(
-                            Grain_parsing.Identifier.t,
-                          ),
-                          option(
-                            Grain_parsing.Parsetree.loc(
-                              Grain_parsing.Identifier.t,
-                            ),
-                          ),
+                          Parsetree.loc(Identifier.t),
+                          option(Parsetree.loc(Identifier.t)),
                         ),
                       ) => {
                     let (loc, optloc) = identlocopt;
@@ -3464,7 +3405,7 @@ let print_foreign_value_description =
     (
       vd: Parsetree.value_description,
       original_source: array(string),
-      comments: list(Grain_parsing__Parsetree.comment),
+      comments: list(Parsetree.comment),
     ) => {
   let ident = vd.pval_name.txt;
 
@@ -3508,7 +3449,7 @@ let print_primitive_value_description =
     (
       vd: Parsetree.value_description,
       original_source: array(string),
-      comments: list(Grain_parsing__Parsetree.comment),
+      comments: list(Parsetree.comment),
     ) => {
   let ident = vd.pval_name.txt;
 
@@ -3541,7 +3482,7 @@ let toplevel_print =
     (
       data: Parsetree.toplevel_stmt,
       ~original_source: array(string),
-      ~all_comments: list(Grain_parsing__Parsetree.comment),
+      ~all_comments: list(Parsetree.comment),
     ) => {
   let comments =
     Comment_utils.get_comments_inside_location(
@@ -3688,11 +3629,11 @@ let reformat_ast =
       parsed_program: Parsetree.parsed_program,
       original_source: array(string),
     ) => {
-  let get_loc = (stmt: Grain_parsing.Parsetree.toplevel_stmt) => {
+  let get_loc = (stmt: Parsetree.toplevel_stmt) => {
     stmt.ptop_loc;
   };
 
-  let print_item = (stmt: Grain_parsing.Parsetree.toplevel_stmt) => {
+  let print_item = (stmt: Parsetree.toplevel_stmt) => {
     toplevel_print(
       stmt,
       ~original_source,
