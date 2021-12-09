@@ -2134,113 +2134,61 @@ and print_expression =
           ])
         };
 
-      if (parent_is_arrow) {
+      Doc.concat([
         Doc.group(
           Doc.concat([
             Doc.text("if"),
             Doc.space,
-            Doc.lparen,
             Doc.group(
-              Doc.indent(
-                Doc.concat([
-                  Comment_utils.inbetween_comments_to_docs(
-                    ~offset=false,
-                    ~bracket_line=None,
-                    cond_leading_comment,
-                  ),
-                  switch (cond_leading_comment) {
-                  | [] => Doc.nil
-                  | _ => Doc.space
-                  },
-                  print_expression(
-                    ~parent_is_arrow=false,
-                    ~original_source,
-                    ~comments=commentsInCondition,
-                    condition,
-                  ),
-                  Comment_utils.inbetween_comments_to_docs(
-                    ~offset=true,
-                    ~bracket_line=None,
-                    cond_trailing_comment,
-                  ),
-                ]),
-              ),
+              Doc.concat([
+                Doc.lparen,
+                Doc.indent(
+                  Doc.concat([
+                    Doc.softLine,
+                    Comment_utils.inbetween_comments_to_docs(
+                      ~offset=false,
+                      ~bracket_line=None,
+                      cond_leading_comment,
+                    ),
+                    switch (cond_leading_comment) {
+                    | [] => Doc.nil
+                    | _ => Doc.space
+                    },
+                    print_expression(
+                      ~parent_is_arrow=false,
+                      ~original_source,
+                      ~comments=commentsInCondition,
+                      condition,
+                    ),
+                    Comment_utils.inbetween_comments_to_docs(
+                      ~offset=true,
+                      ~bracket_line=None,
+                      cond_trailing_comment,
+                    ),
+                  ]),
+                ),
+                Doc.softLine,
+                Doc.rparen,
+              ]),
             ),
-            Doc.rparen,
-            if (true_is_block || true_made_block^) {
-              Doc.concat([Doc.space, Doc.group(true_clause)]);
-            } else {
-              Doc.indent(Doc.concat([Doc.line, Doc.group(true_clause)]));
-            },
-            Comment_utils.inbetween_comments_to_docs(
-              ~offset=true,
-              ~bracket_line=None,
-              true_trailing_comment,
-            ),
-            if (false_is_block || false_made_block^) {
-              Doc.group(false_clause);
-            } else {
-              Doc.group(false_clause);
-            },
           ]),
-        );
-      } else {
-        Doc.concat([
-          Doc.group(
-            Doc.concat([
-              Doc.text("if"),
-              Doc.space,
-              Doc.group(
-                Doc.concat([
-                  Doc.lparen,
-                  Doc.indent(
-                    Doc.concat([
-                      Doc.softLine,
-                      Comment_utils.inbetween_comments_to_docs(
-                        ~offset=false,
-                        ~bracket_line=None,
-                        cond_leading_comment,
-                      ),
-                      switch (cond_leading_comment) {
-                      | [] => Doc.nil
-                      | _ => Doc.space
-                      },
-                      print_expression(
-                        ~parent_is_arrow=false,
-                        ~original_source,
-                        ~comments=commentsInCondition,
-                        condition,
-                      ),
-                      Comment_utils.inbetween_comments_to_docs(
-                        ~offset=true,
-                        ~bracket_line=None,
-                        cond_trailing_comment,
-                      ),
-                    ]),
-                  ),
-                  Doc.softLine,
-                  Doc.rparen,
-                ]),
-              ),
-            ]),
-          ),
-          if (true_is_block || true_made_block^) {
-            Doc.concat([Doc.space, Doc.group(true_clause)]);
-          } else {
-            Doc.indent(Doc.concat([Doc.line, Doc.group(true_clause)]));
-          },
-          Comment_utils.inbetween_comments_to_docs(
-            ~offset=true,
-            ~bracket_line=None,
-            true_trailing_comment,
-          ),
-          if (false_is_block || false_made_block^) {
-            Doc.group(false_clause);
-          } else {
-            Doc.group(false_clause);
-          },
-        ]);
-      };
+        ),
+        if (true_is_block || true_made_block^) {
+          Doc.indent(Doc.concat([Doc.line, Doc.group(true_clause)]));
+        } else {
+          Doc.concat([Doc.space, Doc.group(true_clause)]);
+        },
+        Comment_utils.inbetween_comments_to_docs(
+          ~offset=true,
+          ~bracket_line=None,
+          true_trailing_comment,
+        ),
+        if (false_is_block || false_made_block^) {
+          Doc.group(false_clause);
+        } else {
+          Doc.group(false_clause);
+        },
+      ]);
     | PExpWhile(expression, expression1) =>
       let comments_in_expression =
         Comment_utils.get_comments_inside_location(
