@@ -110,8 +110,7 @@ let get_original_code =
   };
 };
 
-let item_separator =
-    (~this_line: int, ~line_above: int, ~break_separator, separator) =>
+let item_separator = (~this_line: int, ~line_above: int, break_separator) =>
   if (this_line - line_above > 1) {
     Doc.concat([Doc.text(""), break_separator, Doc.hardLine]);
   } else {
@@ -280,8 +279,7 @@ let rec block_item_iterator =
           item_separator(
             ~this_line,
             ~line_above=last_stmt_line,
-            ~break_separator,
-            separator,
+            break_separator,
           )
 
         | [first_comment, ...rem] =>
@@ -296,8 +294,7 @@ let rec block_item_iterator =
             item_separator(
               ~this_line=first_comment_line,
               ~line_above=last_stmt_line,
-              ~break_separator,
-              separator,
+              break_separator,
             );
           };
         };
