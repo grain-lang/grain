@@ -1467,7 +1467,6 @@ and print_application =
                           ~parent_is_arrow=false,
                           ~original_source,
                           ~comments,
-                          ~indented=true,
                           e,
                         ),
                       ]);
@@ -1632,7 +1631,6 @@ and print_expression =
       ~parent_is_arrow: bool,
       ~original_source: array(string),
       ~comments: list(Grain_parsing__Parsetree.comment),
-      ~indented: option(bool)=?,
       expr: Parsetree.expression,
     ) => {
   let expression_doc =
@@ -2522,11 +2520,6 @@ and print_expression =
             ~parent_is_arrow=true,
             ~original_source,
             ~comments=comments_in_expression,
-            ~indented=
-              switch (indented) {
-              | None => false
-              | Some(b) => b
-              },
             expression,
           ),
         ])
@@ -2542,11 +2535,6 @@ and print_expression =
                 ~parent_is_arrow=true,
                 ~original_source,
                 ~comments=comments_in_expression,
-                ~indented=
-                  switch (indented) {
-                  | None => false
-                  | Some(b) => b
-                  },
                 expression,
               ),
             ]),
@@ -2581,11 +2569,6 @@ and print_expression =
             ~parent_is_arrow=false,
             ~original_source,
             ~comments=commentsInExpr,
-            ~indented=
-              switch (indented) {
-              | None => false
-              | Some(b) => b
-              },
             expr,
           );
         };
