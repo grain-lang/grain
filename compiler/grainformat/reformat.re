@@ -326,13 +326,11 @@ let rec block_item_iterator =
       };
 
     let leading_comment_docs =
-      Doc.concat([
-        Comment_utils.inbetween_comments_to_docs(
-          ~offset=false,
-          ~bracket_line=top_line,
-          comments_between,
-        ),
-      ]);
+      Comment_utils.inbetween_comments_to_docs(
+        ~offset=false,
+        ~bracket_line=top_line,
+        comments_between,
+      );
 
     let disable_formatting =
       switch (comments_between) {
