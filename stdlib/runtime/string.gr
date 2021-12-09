@@ -173,7 +173,7 @@ let join = list => {
   let len = totalBytes(0n, list)
   let str = allocateString(len)
   writeStrings(str + 8n, list)
-  WasmI32.toGrain(str): (String)
+  WasmI32.toGrain(str): String
 }
 
 @disableGC
@@ -202,7 +202,7 @@ export let rec concat = (s1: String, s2: String) => {
   Memory.copy(newString + 8n, ptr1 + 8n, size1)
   Memory.copy(newString + 8n + size1, ptr2 + 8n, size2)
 
-  let ret = WasmI32.toGrain(newString): (String)
+  let ret = WasmI32.toGrain(newString): String
   Memory.decRef(ptr1)
   Memory.decRef(ptr2)
   Memory.decRef(WasmI32.fromGrain(concat))
@@ -246,9 +246,11 @@ let escape = (ptr, isString) => {
   let mut newSize = 2n // extra space for quote characters
   for (let mut i = 0n; i < size; i += 1n) {
     let byte = WasmI32.load8U(ptr + i, startOffset)
-    if (byte >= _SEQ_B && byte <= _SEQ_R || byte == _SEQ_V ||
+    if (
+      byte >= _SEQ_B && byte <= _SEQ_R || byte == _SEQ_V ||
       byte == _SEQ_SLASH ||
-      byte == _SEQ_QUOTE) {
+      byte == _SEQ_QUOTE
+    ) {
       newSize += 2n
     } else {
       newSize += 1n
@@ -262,9 +264,11 @@ let escape = (ptr, isString) => {
 
   for (let mut i = 0n; i < size; i += 1n) {
     let byte = WasmI32.load8U(ptr + i, startOffset)
-    if (byte >= _SEQ_B && byte <= _SEQ_R || byte == _SEQ_V ||
+    if (
+      byte >= _SEQ_B && byte <= _SEQ_R || byte == _SEQ_V ||
       byte == _SEQ_SLASH ||
-      byte == _SEQ_QUOTE) {
+      byte == _SEQ_QUOTE
+    ) {
       WasmI32.store8(escapedString + j, _SEQ_SLASH, stringOffset)
       j += 1n
       let seq = match (byte) {
@@ -287,7 +291,7 @@ let escape = (ptr, isString) => {
   WasmI32.store8(escapedString, _SEQ_QUOTE, 8n)
   WasmI32.store8(escapedString + j, _SEQ_QUOTE, stringOffset)
 
-  WasmI32.toGrain(escapedString): (String)
+  WasmI32.toGrain(escapedString): String
 }
 
 @disableGC
@@ -317,7 +321,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
         // doesn't need escaping in this case, but by convention its reference
         // count needs to be incremented.
         Memory.incRef(ptr)
-        WasmI32.toGrain(ptr): (String)
+        WasmI32.toGrain(ptr): String
       } else {
         escapeString(WasmI32.toGrain(ptr))
       }
@@ -358,7 +362,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
         WasmI32.store8(strOffset + hexBytes, 0x3en, 0n) // >
       }
 
-      WasmI32.toGrain(str): (String)
+      WasmI32.toGrain(str): String
     },
     t when t == Tags._GRAIN_CHAR_HEAP_TAG => {
       if (toplevel) {
@@ -374,7 +378,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
         }
         let str = allocateString(numBytes)
         Memory.copy(str + 8n, ptr + 4n, numBytes)
-        WasmI32.toGrain(str): (String)
+        WasmI32.toGrain(str): String
       } else {
         escapeChar(WasmI32.toGrain(ptr))
       }
@@ -386,7 +390,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
       if (variantName == -1n) {
         "<enum value>"
       } else {
-        let variantName = WasmI32.toGrain(variantName): (String)
+        let variantName = WasmI32.toGrain(variantName): String
         // Check if this is a list
         if (isListVariant(variantName)) {
           listToString(ptr, extraIndents)
@@ -444,12 +448,12 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
             0x20n,
             prevPadAmount,
           ) // create indentation for closing brace
-          WasmI32.toGrain(v): (String)
+          WasmI32.toGrain(v): String
         }
         let padAmount = (extraIndents + 1n) * 2n
         let spacePadding = allocateString(padAmount)
         Memory.fill(spacePadding + 8n, 0x20n, padAmount) // create indentation
-        let spacePadding = WasmI32.toGrain(spacePadding): (String)
+        let spacePadding = WasmI32.toGrain(spacePadding): String
         Memory.incRef(WasmI32.fromGrain(SLEmpty))
         let newline = "\n"
         let rbrace = "}"
@@ -460,8 +464,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
         let colspace = ": "
         let comlf = ",\n"
         for (let mut i = recordArity * 4n - 4n; i >= 0n; i -= 4n) {
-          let fieldName = WasmI32.toGrain(WasmI32.load(fields + i, 8n)):
-            (String)
+          let fieldName = WasmI32.toGrain(WasmI32.load(fields + i, 8n)): String
           let fieldValue = toStringHelp(
             WasmI32.load(ptr + i, 16n),
             extraIndents + 1n,

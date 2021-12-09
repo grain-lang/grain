@@ -1152,7 +1152,8 @@ let numberMod = (x, y) => {
     let result = if (WasmI64.ne(modval, 0N))
       WasmI64.mul(
         WasmI64.sub(i64abs(yval), modval),
-        if (WasmI64.ltS(yval, 0N)) -1N else 1N,
+        if (WasmI64.ltS(yval, 0N))
+          -1N else 1N,
       ) else modval
     reducedInteger(result)
   } else {

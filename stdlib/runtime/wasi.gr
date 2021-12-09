@@ -416,8 +416,8 @@ let stringOfSystemError = code => {
 }
 
 Exception.registerPrinter(e => {
-    match (e) {
-      SystemError(n) => Some(stringOfSystemError(n)),
-      _ => None,
-    }
-  })
+  match (e) {
+    SystemError(n) => Some(stringOfSystemError(n)),
+    _ => None,
+  }
+})

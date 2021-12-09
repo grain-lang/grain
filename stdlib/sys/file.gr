@@ -1017,7 +1017,16 @@ export let rec fdFilestats = (fd: FileDescriptor) => {
     Memory.free(filestats)
 
     wasmSafeOk(
-      { device, inode, filetype, linkcount, size, accessed, modified, changed },
+      {
+        device,
+        inode,
+        filetype,
+        linkcount,
+        size,
+        accessed,
+        modified,
+        changed,
+      },
     )
   }
   Memory.decRef(WasmI32.fromGrain(fdArg))
@@ -1429,7 +1438,16 @@ export let rec pathFilestats =
     Memory.free(filestats)
 
     wasmSafeOk(
-      { device, inode, filetype, linkcount, size, accessed, modified, changed },
+      {
+        device,
+        inode,
+        filetype,
+        linkcount,
+        size,
+        accessed,
+        modified,
+        changed,
+      },
     )
   }
   Memory.decRef(WasmI32.fromGrain(fdArg))
