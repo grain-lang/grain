@@ -53,19 +53,19 @@ type sugared_pattern_item =
   | SpreadPattern(Parsetree.pattern);
 
 let get_original_code_snippet = (location: Location.t, source: array(string)) => {
-  let (_, startline, startc, _) =
+  let (_, start_line, startc, _) =
     Locations.get_raw_pos_info(location.loc_start);
-  let (_, endline, endc, _) = Locations.get_raw_pos_info(location.loc_end);
+  let (_, end_line, endc, _) = Locations.get_raw_pos_info(location.loc_end);
 
-  if (Array.length(source) > endline - 1) {
-    if (startline == endline) {
-      String.sub(source[startline - 1], startc, endc - startc);
+  if (Array.length(source) > end_line - 1) {
+    if (start_line == end_line) {
+      String.sub(source[start_line - 1], startc, endc - startc);
     } else {
       let text = ref("");
-      for (line in startline - 1 to endline - 1) {
-        if (line + 1 == startline) {
+      for (line in start_line - 1 to end_line - 1) {
+        if (line + 1 == start_line) {
           text := text^ ++ Str.string_after(source[line], startc) ++ "\n";
-        } else if (line + 1 == endline) {
+        } else if (line + 1 == end_line) {
           text := text^ ++ String.sub(source[line], 0, endc);
         } else {
           text := text^ ++ source[line] ++ "\n";
@@ -79,23 +79,23 @@ let get_original_code_snippet = (location: Location.t, source: array(string)) =>
 };
 
 let get_original_code = (location: Location.t, source: array(string)) => {
-  let (_, startline, startc, _) =
+  let (_, start_line, startc, _) =
     Locations.get_raw_pos_info(location.loc_start);
-  let (_, endline, endc, _) = Locations.get_raw_pos_info(location.loc_end);
+  let (_, end_line, endc, _) = Locations.get_raw_pos_info(location.loc_end);
 
   let text = ref("");
-  if (Array.length(source) > endline - 1) {
-    if (startline == endline) {
-      let full_line = source[startline - 1];
+  if (Array.length(source) > end_line - 1) {
+    if (start_line == end_line) {
+      let full_line = source[start_line - 1];
 
       let without_trailing = Str.string_before(full_line, endc);
 
       text := text^ ++ without_trailing;
     } else {
-      for (line in startline - 1 to endline - 1) {
-        if (line + 1 == startline) {
+      for (line in start_line - 1 to end_line - 1) {
+        if (line + 1 == start_line) {
           text := text^ ++ Str.string_after(source[line], startc) ++ "\n";
-        } else if (line + 1 == endline) {
+        } else if (line + 1 == end_line) {
           text := text^ ++ source[line];
         } else {
           text := text^ ++ source[line] ++ "\n";
@@ -208,7 +208,7 @@ let rec block_item_iterator =
           ~separator: Doc.t,
           ~trailing_separator: bool,
           ~break_separator: Doc.t,
-          ~isBlock: bool,
+          ~is_block: bool,
           ~bracket_line: int,
           ~original_source,
           ~comments: list(Parsetree.comment),
@@ -317,7 +317,7 @@ let rec block_item_iterator =
       };
 
     let top_line =
-      if (isBlock) {
+      if (is_block) {
         Some(bracket_line);
       } else {
         None;
@@ -343,7 +343,7 @@ let rec block_item_iterator =
       let original_code =
         get_original_code_snippet(get_loc(item), original_source);
 
-      let origDoc =
+      let orig_doc =
         Doc.concat([
           before_comments_break(previous, comments_between),
           leading_comment_docs,
@@ -365,7 +365,7 @@ let rec block_item_iterator =
           );
 
         switch (block_trailing_comments) {
-        | [] => origDoc
+        | [] => orig_doc
         | _ =>
           let block_trailing_comment_docs =
             Comment_utils.block_trailing_comments_docs(
@@ -373,14 +373,14 @@ let rec block_item_iterator =
             );
 
           Doc.concat([
-            origDoc,
+            orig_doc,
             before_comments_break(Some(last_item), block_trailing_comments),
             block_trailing_comment_docs,
           ]);
         };
       | _ =>
         Doc.concat([
-          origDoc,
+          orig_doc,
           block_item_iterator(
             ~bracket_line,
             ~comments=cleaned_comments,
@@ -392,7 +392,7 @@ let rec block_item_iterator =
             ~trailing_separator,
             ~break_separator,
             ~get_attribute_text,
-            ~isBlock=false,
+            ~is_block=false,
             List.tl(items),
           ),
         ])
@@ -403,7 +403,7 @@ let rec block_item_iterator =
       let bcb = before_comments_break(previous, comments_between);
 
       let block_push =
-        if (isBlock) {
+        if (is_block) {
           switch (comments_between) {
           | [] =>
             if (this_line - bracket_line > 1) {
@@ -491,7 +491,7 @@ let rec block_item_iterator =
             ~trailing_separator,
             ~break_separator,
             ~get_attribute_text,
-            ~isBlock=false,
+            ~is_block=false,
             List.tl(items),
           ),
         ])
@@ -517,7 +517,7 @@ let rec resugar_list_patterns =
   };
 
   let print_item = (pattern: sugared_pattern_item) => {
-    let localComments =
+    let local_comments =
       Comment_utils.get_comments_inside_location(
         ~location=get_loc(pattern),
         comments,
@@ -528,7 +528,7 @@ let rec resugar_list_patterns =
       Doc.group(
         print_pattern(
           ~original_source,
-          ~comments=localComments,
+          ~comments=local_comments,
           ~next_loc,
           e,
         ),
@@ -539,7 +539,7 @@ let rec resugar_list_patterns =
           Doc.text("..."),
           print_pattern(
             ~original_source,
-            ~comments=localComments,
+            ~comments=local_comments,
             ~next_loc,
             e,
           ),
@@ -559,7 +559,7 @@ let rec resugar_list_patterns =
       ~trailing_separator=false,
       ~break_separator=Doc.line,
       ~get_attribute_text=no_attribute,
-      ~isBlock=true,
+      ~is_block=true,
       processed_list,
     );
 
@@ -737,7 +737,7 @@ and print_record_pattern =
     let (loc, pat) = patternloc;
     let printed_ident: Doc.t = print_ident(loc.txt);
 
-    let localComments =
+    let local_comments =
       Comment_utils.get_comments_inside_location(
         ~location=get_loc(patternloc),
         comments,
@@ -746,7 +746,7 @@ and print_record_pattern =
     let printed_pat =
       print_pattern(
         ~original_source,
-        ~comments=localComments,
+        ~comments=local_comments,
         ~next_loc,
         pat,
       );
@@ -778,7 +778,7 @@ and print_record_pattern =
       ~trailing_separator=true,
       ~break_separator=Doc.line,
       ~get_attribute_text=no_attribute,
-      ~isBlock=true,
+      ~is_block=true,
       patternlocs,
     );
 
@@ -819,7 +819,7 @@ and print_pattern =
             ~next_loc,
             ~comments,
             ~original_source,
-            ~isBlock=true,
+            ~is_block=true,
             patterns,
           ),
         ),
@@ -836,7 +836,7 @@ and print_pattern =
               ~next_loc,
               ~comments,
               ~original_source,
-              ~isBlock=true,
+              ~is_block=true,
               patterns,
             ),
             Doc.rbracket,
@@ -862,7 +862,7 @@ and print_pattern =
             ~next_loc,
             ~comments,
             ~original_source,
-            ~isBlock=false,
+            ~is_block=false,
             [pattern],
           ),
           Doc.text(":"),
@@ -909,7 +909,7 @@ and print_pattern =
                   ~next_loc,
                   ~comments,
                   ~original_source,
-                  ~isBlock=false,
+                  ~is_block=false,
                   patterns,
                 ),
               )
@@ -961,11 +961,7 @@ and print_pattern =
     Doc.concat([
       Doc.lparen,
       Doc.indent(
-        Doc.concat([
-          //   Doc.softLine,
-          clean_pattern,
-          Doc.ifBreaks(Doc.comma, Doc.nil),
-        ]),
+        Doc.concat([clean_pattern, Doc.ifBreaks(Doc.comma, Doc.nil)]),
       ),
       Doc.softLine,
       Doc.rparen,
@@ -1059,7 +1055,7 @@ and print_record =
       ~trailing_separator=List.length(fields) != 1,
       ~break_separator=Doc.line,
       ~get_attribute_text=no_attribute,
-      ~isBlock=true,
+      ~is_block=true,
       fields,
     );
 
@@ -1176,14 +1172,14 @@ and print_type =
         t.ptyp_loc;
       };
       let print_item = (t: Parsetree.parsed_type) => {
-        let localComments =
+        let local_comments =
           Comment_utils.get_comments_inside_location(
             ~location=get_loc(t),
             comments,
           );
         print_type(
           ~original_source,
-          ~comments=localComments,
+          ~comments=local_comments,
           ~trailing_separator,
           t,
         );
@@ -1202,7 +1198,7 @@ and print_type =
           ~trailing_separator=false,
           ~break_separator=Doc.line,
           ~get_attribute_text=no_attribute,
-          ~isBlock=true,
+          ~is_block=true,
           parsedtypes,
         );
 
@@ -1319,10 +1315,10 @@ and print_application =
         // the equality check is needed for the function on the right
         // as we process from the left by default when the same prededence
 
-        let neededLeft = left_prec < parent_prec;
-        let neededRight = right_prec <= parent_prec;
+        let needed_left = left_prec < parent_prec;
+        let needed_right = right_prec <= parent_prec;
 
-        (neededLeft, neededRight);
+        (needed_left, needed_right);
 
       | (PExpApp(fn1, _), _) =>
         let left_prec = op_precedence(get_function_name(fn1));
@@ -1503,17 +1499,17 @@ and print_patterns =
       ~next_loc: Location.t,
       ~comments: list(Parsetree.comment),
       ~original_source: array(string),
-      ~isBlock: bool,
+      ~is_block: bool,
       patterns: list(Parsetree.pattern),
     ) => {
   let get_loc = (p: Parsetree.pattern) => p.ppat_loc;
   let print_item = (p: Parsetree.pattern) => {
-    let localComments =
+    let local_comments =
       Comment_utils.get_comments_inside_location(
         ~location=get_loc(p),
         comments,
       );
-    print_pattern(~original_source, ~comments=localComments, ~next_loc, p);
+    print_pattern(~original_source, ~comments=local_comments, ~next_loc, p);
   };
 
   switch (patterns) {
@@ -1531,7 +1527,7 @@ and print_patterns =
       ~trailing_separator=false,
       ~break_separator=Doc.line,
       ~get_attribute_text=no_attribute,
-      ~isBlock,
+      ~is_block,
       patterns,
     );
   };
@@ -1551,7 +1547,7 @@ and paren_wrap_patterns =
       ~next_loc,
       ~comments,
       ~original_source,
-      ~isBlock=false,
+      ~is_block=false,
       patterns,
     );
 
@@ -1628,7 +1624,7 @@ and print_expression =
                 ~trailing_separator=true,
                 ~break_separator=Doc.line,
                 ~get_attribute_text=no_attribute,
-                ~isBlock=true,
+                ~is_block=true,
                 expressions,
               ),
             ]),
@@ -1681,7 +1677,7 @@ and print_expression =
                   ~trailing_separator=true,
                   ~break_separator=Doc.line,
                   ~get_attribute_text=no_attribute,
-                  ~isBlock=true,
+                  ~is_block=true,
                   expressions,
                 ),
               ]),
@@ -1888,7 +1884,7 @@ and print_expression =
           ~trailing_separator=true,
           ~break_separator=Doc.hardLine,
           ~get_attribute_text=no_attribute,
-          ~isBlock=true,
+          ~is_block=true,
           match_branches,
         );
 
@@ -1914,48 +1910,48 @@ and print_expression =
     | PExpPrimN(primn, expressions) =>
       let original_code = get_original_code(expr.pexp_loc, original_source);
       Doc.text(original_code);
-    | PExpIf(condition, trueExpr, falseExpr) =>
-      let condLeadingCmt =
+    | PExpIf(condition, true_expr, false_expr) =>
+      let cond_leading_comment =
         Comment_utils.get_comments_from_start_of_enclosing_location(
           ~wrapper=expr.pexp_loc,
           ~location=condition.pexp_loc,
           comments,
         );
 
-      let condTrailingCmt =
+      let cond_trailing_comment =
         Comment_utils.get_comments_between_locs(
           ~loc1=condition.pexp_loc,
-          ~loc2=trueExpr.pexp_loc,
+          ~loc2=true_expr.pexp_loc,
           comments,
         );
 
-      let trueTrailingCmt =
+      let true_trailing_comment =
         Comment_utils.get_comments_between_locs(
-          ~loc1=trueExpr.pexp_loc,
-          ~loc2=falseExpr.pexp_loc,
+          ~loc1=true_expr.pexp_loc,
+          ~loc2=false_expr.pexp_loc,
           comments,
         );
 
       let true_is_block =
-        switch (trueExpr.pexp_desc) {
+        switch (true_expr.pexp_desc) {
         | PExpBlock(_) => true
         | _ => false
         };
 
       let true_is_if =
-        switch (trueExpr.pexp_desc) {
+        switch (true_expr.pexp_desc) {
         | PExpIf(_) => true
         | _ => false
         };
 
       let false_is_block =
-        switch (falseExpr.pexp_desc) {
+        switch (false_expr.pexp_desc) {
         | PExpBlock(expressions) => List.length(expressions) > 0
         | _ => false
         };
 
       let false_is_if =
-        switch (falseExpr.pexp_desc) {
+        switch (false_expr.pexp_desc) {
         | PExpBlock(expressions) =>
           switch (expressions) {
           | [] => false
@@ -1976,7 +1972,7 @@ and print_expression =
 
       let comments_in_true_statement =
         Comment_utils.get_comments_inside_location(
-          ~location=trueExpr.pexp_loc,
+          ~location=true_expr.pexp_loc,
           comments,
         );
 
@@ -1984,13 +1980,13 @@ and print_expression =
       let false_made_block = ref(false);
 
       let true_clause =
-        switch (trueExpr.pexp_desc) {
+        switch (true_expr.pexp_desc) {
         | PExpBlock(expressions) =>
           print_expression(
             ~parent_is_arrow=false,
             ~original_source,
             ~comments=comments_in_true_statement,
-            trueExpr,
+            true_expr,
           )
 
         | _ =>
@@ -2006,7 +2002,7 @@ and print_expression =
                     ~parent_is_arrow=false,
                     ~original_source,
                     ~comments=comments_in_true_statement,
-                    trueExpr,
+                    true_expr,
                   ),
                 ]),
               ),
@@ -2023,7 +2019,7 @@ and print_expression =
                     ~parent_is_arrow=false,
                     ~original_source,
                     ~comments=comments_in_true_statement,
-                    trueExpr,
+                    true_expr,
                   ),
                 ]),
               ),
@@ -2035,19 +2031,19 @@ and print_expression =
               ~parent_is_arrow=false,
               ~original_source,
               ~comments=comments_in_true_statement,
-              trueExpr,
+              true_expr,
             );
           }
         };
 
       let comments_in_false_statement =
         Comment_utils.get_comments_inside_location(
-          ~location=falseExpr.pexp_loc,
+          ~location=false_expr.pexp_loc,
           comments,
         );
 
       let false_clause =
-        switch (falseExpr.pexp_desc) {
+        switch (false_expr.pexp_desc) {
         | PExpBlock(expressions) =>
           switch (expressions) {
           | [] => Doc.nil
@@ -2060,11 +2056,11 @@ and print_expression =
                 ~parent_is_arrow=false,
                 ~original_source,
                 ~comments=comments_in_false_statement,
-                falseExpr,
+                false_expr,
               ),
             ])
           }
-        | PExpIf(_condition, _trueExpr, _falseExpr) =>
+        | PExpIf(_condition, _true_expr, _false_expr) =>
           Doc.concat([
             Doc.space,
             Doc.text("else"),
@@ -2079,7 +2075,7 @@ and print_expression =
                       ~parent_is_arrow=false,
                       ~original_source,
                       ~comments=comments_in_false_statement,
-                      falseExpr,
+                      false_expr,
                     ),
                   ]),
                 ),
@@ -2093,7 +2089,7 @@ and print_expression =
                   ~parent_is_arrow=false,
                   ~original_source,
                   ~comments=comments_in_false_statement,
-                  falseExpr,
+                  false_expr,
                 ),
               ]);
             },
@@ -2116,7 +2112,7 @@ and print_expression =
                         ~parent_is_arrow=false,
                         ~original_source,
                         ~comments=comments_in_false_statement,
-                        falseExpr,
+                        false_expr,
                       ),
                     ]),
                   ),
@@ -2126,13 +2122,12 @@ and print_expression =
               );
             } else {
               Doc.concat([
-                //  Doc.line,
                 Doc.space,
                 print_expression(
                   ~parent_is_arrow=false,
                   ~original_source,
                   ~comments=comments_in_false_statement,
-                  falseExpr,
+                  false_expr,
                 ),
               ]);
             },
@@ -2151,9 +2146,9 @@ and print_expression =
                   Comment_utils.inbetween_comments_to_docs(
                     ~offset=false,
                     ~bracket_line=None,
-                    condLeadingCmt,
+                    cond_leading_comment,
                   ),
-                  switch (condLeadingCmt) {
+                  switch (cond_leading_comment) {
                   | [] => Doc.nil
                   | _ => Doc.space
                   },
@@ -2166,7 +2161,7 @@ and print_expression =
                   Comment_utils.inbetween_comments_to_docs(
                     ~offset=true,
                     ~bracket_line=None,
-                    condTrailingCmt,
+                    cond_trailing_comment,
                   ),
                 ]),
               ),
@@ -2180,7 +2175,7 @@ and print_expression =
             Comment_utils.inbetween_comments_to_docs(
               ~offset=true,
               ~bracket_line=None,
-              trueTrailingCmt,
+              true_trailing_comment,
             ),
             if (false_is_block || false_made_block^) {
               Doc.group(false_clause);
@@ -2204,9 +2199,9 @@ and print_expression =
                       Comment_utils.inbetween_comments_to_docs(
                         ~offset=false,
                         ~bracket_line=None,
-                        condLeadingCmt,
+                        cond_leading_comment,
                       ),
-                      switch (condLeadingCmt) {
+                      switch (cond_leading_comment) {
                       | [] => Doc.nil
                       | _ => Doc.space
                       },
@@ -2219,7 +2214,7 @@ and print_expression =
                       Comment_utils.inbetween_comments_to_docs(
                         ~offset=true,
                         ~bracket_line=None,
-                        condTrailingCmt,
+                        cond_trailing_comment,
                       ),
                     ]),
                   ),
@@ -2237,7 +2232,7 @@ and print_expression =
           Comment_utils.inbetween_comments_to_docs(
             ~offset=true,
             ~bracket_line=None,
-            trueTrailingCmt,
+            true_trailing_comment,
           ),
           if (false_is_block || false_made_block^) {
             Doc.group(false_clause);
@@ -2537,7 +2532,7 @@ and print_expression =
             ~break_separator=Doc.hardLine,
             ~get_attribute_text=
               expr => print_attributes(expr.pexp_attributes),
-            ~isBlock=true,
+            ~is_block=true,
             expressions,
           );
 
@@ -2573,9 +2568,9 @@ and print_expression =
     | PExpAssign(expression, expression1) =>
       switch (expression1.pexp_desc) {
       | PExpApp(func, expressions) =>
-        let functionName = get_function_name(func);
+        let function_name = get_function_name(func);
 
-        let trimmed_operator = String.trim(functionName);
+        let trimmed_operator = String.trim(function_name);
 
         let left =
           print_expression(
@@ -2585,7 +2580,7 @@ and print_expression =
             expression,
           );
 
-        let leftMatchesFirst =
+        let left_matches_first =
           switch (expressions) {
           | [expr, ...remainder] =>
             print_expression(
@@ -2598,7 +2593,7 @@ and print_expression =
           | _ => false
           };
 
-        if (leftMatchesFirst) {
+        if (left_matches_first) {
           // +=, -=, *=, /=, and %=
           switch (trimmed_operator) {
           | "+"
@@ -2606,7 +2601,7 @@ and print_expression =
           | "*"
           | "/"
           | "%" =>
-            let sugaredOp = Doc.text(" " ++ trimmed_operator ++ "= ");
+            let sugared_op = Doc.text(" " ++ trimmed_operator ++ "= ");
             Doc.concat([
               print_expression(
                 ~parent_is_arrow=false,
@@ -2614,7 +2609,7 @@ and print_expression =
                 ~comments,
                 expression,
               ),
-              sugaredOp,
+              sugared_op,
               switch (expressions) {
               | [] =>
                 raise(
@@ -2751,7 +2746,7 @@ and print_value_bind =
             )
           };
 
-        let exprComments =
+        let expr_comments =
           Comment_utils.get_comments_inside_location(
             ~location=vb.pvb_expr.pexp_loc,
             comments,
@@ -2760,13 +2755,13 @@ and print_value_bind =
           print_expression(
             ~parent_is_arrow=false,
             ~original_source,
-            ~comments=exprComments,
+            ~comments=expr_comments,
             vb.pvb_expr,
           );
 
-        let expressionGrp = Doc.concat([Doc.space, expression]);
+        let expression_group = Doc.concat([Doc.space, expression]);
 
-        let patternComments =
+        let pattern_comments =
           Comment_utils.get_comments_enclosed_and_before_location(
             ~loc1=vb.pvb_loc,
             ~loc2=vb.pvb_expr.pexp_loc,
@@ -2777,7 +2772,7 @@ and print_value_bind =
           Doc.group(
             print_pattern(
               ~original_source,
-              ~comments=patternComments,
+              ~comments=pattern_comments,
               ~next_loc=vb.pvb_loc,
               vb.pvb_pat,
             ),
@@ -2788,7 +2783,7 @@ and print_value_bind =
           | _ => Doc.nil
           },
           Doc.equal,
-          Doc.group(expressionGrp),
+          Doc.group(expression_group),
         ]);
       };
 
@@ -2805,7 +2800,7 @@ and print_value_bind =
         ~trailing_separator=false,
         ~break_separator=Doc.space,
         ~get_attribute_text=no_attribute,
-        ~isBlock=false,
+        ~is_block=false,
         vbs,
       );
     };
@@ -2833,14 +2828,14 @@ let rec print_data =
   | PDataAbstract =>
     let get_loc = (t: Parsetree.parsed_type) => t.ptyp_loc;
     let print_item = (t: Parsetree.parsed_type) => {
-      let localComments =
+      let local_comments =
         Comment_utils.get_comments_inside_location(
           ~location=get_loc(t),
           comments,
         );
       print_type(
         ~original_source,
-        ~comments=localComments,
+        ~comments=local_comments,
         ~trailing_separator=false,
         t,
       );
@@ -2914,7 +2909,7 @@ let rec print_data =
           ~trailing_separator=false,
           ~break_separator=Doc.line,
           ~get_attribute_text=no_attribute,
-          ~isBlock=true,
+          ~is_block=true,
           data.pdata_params,
         );
       let params = [
@@ -2953,7 +2948,7 @@ let rec print_data =
     };
 
     let print_item = (d: Parsetree.constructor_declaration) => {
-      let localComments =
+      let local_comments =
         Comment_utils.get_comments_inside_location(
           ~location=get_loc(d),
           comments,
@@ -2969,14 +2964,14 @@ let rec print_data =
             | [first, ...rem] =>
               let get_loc = (t: Parsetree.parsed_type) => t.ptyp_loc;
               let print_item = (t: Parsetree.parsed_type) => {
-                let localComments =
+                let local_comments =
                   Comment_utils.get_comments_inside_location(
                     ~location=get_loc(t),
                     comments,
                   );
                 print_type(
                   ~original_source,
-                  ~comments=localComments,
+                  ~comments=local_comments,
                   ~trailing_separator=true,
                   t,
                 );
@@ -2992,7 +2987,7 @@ let rec print_data =
                     Doc.concat([
                       block_item_iterator(
                         ~bracket_line=open_line,
-                        ~comments=localComments,
+                        ~comments=local_comments,
                         ~original_source,
                         ~get_loc,
                         ~print_item,
@@ -3000,7 +2995,7 @@ let rec print_data =
                         ~trailing_separator=false,
                         ~break_separator=Doc.line,
                         ~get_attribute_text=no_attribute,
-                        ~isBlock=true,
+                        ~is_block=true,
                         parsed_types,
                       ),
                     ]),
@@ -3030,7 +3025,7 @@ let rec print_data =
         ~trailing_separator=true,
         ~break_separator=Doc.line,
         ~get_attribute_text=no_attribute,
-        ~isBlock=true,
+        ~is_block=true,
         constr_declarations,
       );
 
@@ -3044,14 +3039,14 @@ let rec print_data =
         | [first, ...rem] =>
           let get_loc = (t: Parsetree.parsed_type) => t.ptyp_loc;
           let print_item = (t: Parsetree.parsed_type) => {
-            let localComments =
+            let local_comments =
               Comment_utils.get_comments_inside_location(
                 ~location=get_loc(t),
                 comments,
               );
             print_type(
               ~original_source,
-              ~comments=localComments,
+              ~comments=local_comments,
               ~trailing_separator=false,
               t,
             );
@@ -3073,7 +3068,7 @@ let rec print_data =
                   ~trailing_separator=false,
                   ~break_separator=Doc.line,
                   ~get_attribute_text=no_attribute,
-                  ~isBlock=true,
+                  ~is_block=true,
                   data.pdata_params,
                 ),
               ),
@@ -3098,7 +3093,7 @@ let rec print_data =
     };
 
     let print_item = (lbl: Parsetree.label_declaration) => {
-      let localComments =
+      let local_comments =
         Comment_utils.get_comments_inside_location(
           ~location=get_loc(lbl),
           comments,
@@ -3115,7 +3110,7 @@ let rec print_data =
         Doc.space,
         print_type(
           ~original_source,
-          ~comments=localComments,
+          ~comments=local_comments,
           ~trailing_separator=true,
           lbl.pld_type,
         ),
@@ -3135,7 +3130,7 @@ let rec print_data =
         ~trailing_separator=true,
         ~break_separator=Doc.line,
         ~get_attribute_text=no_attribute,
-        ~isBlock=true,
+        ~is_block=true,
         label_declarations,
       );
 
@@ -3149,14 +3144,14 @@ let rec print_data =
         | [first, ...rem] =>
           let get_loc = (t: Parsetree.parsed_type) => t.ptyp_loc;
           let print_item = (t: Parsetree.parsed_type) => {
-            let localComments =
+            let local_comments =
               Comment_utils.get_comments_inside_location(
                 ~location=get_loc(t),
                 comments,
               );
             print_type(
               ~original_source,
-              ~comments=localComments,
+              ~comments=local_comments,
               ~trailing_separator=false,
               t,
             );
@@ -3178,7 +3173,7 @@ let rec print_data =
                   ~trailing_separator=false,
                   ~break_separator=Doc.line,
                   ~get_attribute_text=no_attribute,
-                  ~isBlock=true,
+                  ~is_block=true,
                   data.pdata_params,
                 ),
               ),
@@ -3262,7 +3257,7 @@ let import_print =
                   ~trailing_separator=true,
                   ~break_separator=Doc.line,
                   ~get_attribute_text=no_attribute,
-                  ~isBlock=true,
+                  ~is_block=true,
                   identlocs,
                 );
               Doc.concat([
@@ -3331,7 +3326,7 @@ let import_print =
                     ~trailing_separator=true,
                     ~break_separator=Doc.line,
                     ~get_attribute_text=no_attribute,
-                    ~isBlock=true,
+                    ~is_block=true,
                     identlocsopts,
                   );
                 },
@@ -3364,14 +3359,14 @@ let import_print =
 let print_export_desc = (desc: Parsetree.export_declaration_desc) => {
   let ident = desc.pex_name.txt;
 
-  let fixedIdent =
+  let fixed_ident =
     if (infixop(ident) || prefixop(ident)) {
       Doc.concat([Doc.lparen, Doc.text(ident), Doc.rparen]);
     } else {
       Doc.text(ident);
     };
   Doc.concat([
-    fixedIdent,
+    fixed_ident,
     switch (desc.pex_alias) {
     | Some(alias) =>
       Doc.concat([
@@ -3400,7 +3395,7 @@ let print_foreign_value_description =
     ) => {
   let ident = vd.pval_name.txt;
 
-  let fixedIdent =
+  let fixed_ident =
     if (infixop(ident) || prefixop(ident)) {
       Doc.concat([Doc.lparen, Doc.text(ident), Doc.rparen]);
     } else {
@@ -3408,7 +3403,7 @@ let print_foreign_value_description =
     };
 
   Doc.concat([
-    fixedIdent,
+    fixed_ident,
     Doc.text(":"),
     Doc.space,
     print_type(
@@ -3444,7 +3439,7 @@ let print_primitive_value_description =
     ) => {
   let ident = vd.pval_name.txt;
 
-  let fixedIdent =
+  let fixed_ident =
     if (infixop(ident) || prefixop(ident)) {
       Doc.concat([Doc.lparen, Doc.text(ident), Doc.rparen]);
     } else {
@@ -3452,7 +3447,7 @@ let print_primitive_value_description =
     };
 
   Doc.concat([
-    fixedIdent,
+    fixed_ident,
     Doc.text(" : "),
     print_type(
       ~original_source,
@@ -3626,9 +3621,9 @@ let reformat_ast =
 
   let print_item = (stmt: Parsetree.toplevel_stmt) => {
     toplevel_print(
-      stmt,
       ~original_source,
       ~all_comments=parsed_program.comments,
+      stmt,
     );
   };
 
@@ -3647,7 +3642,7 @@ let reformat_ast =
           let attributes = stmt.ptop_attributes;
           print_attributes(attributes);
         },
-      ~isBlock=false,
+      ~is_block=false,
       parsed_program.statements,
     );
 
