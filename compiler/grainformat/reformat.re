@@ -1982,17 +1982,21 @@ and print_expression =
       let true_clause =
         switch (true_expr.pexp_desc) {
         | PExpBlock(expressions) =>
-          print_expression(
-            ~parent_is_arrow=false,
-            ~original_source,
-            ~comments=comments_in_true_statement,
-            true_expr,
-          )
+          Doc.concat([
+            Doc.space,
+            print_expression(
+              ~parent_is_arrow=false,
+              ~original_source,
+              ~comments=comments_in_true_statement,
+              true_expr,
+            ),
+          ])
 
         | _ =>
           if (false_is_block) {
             true_made_block := true;
             Doc.concat([
+              Doc.space,
               Doc.lbrace,
               // no comment to add here as this was a single line expression
               Doc.indent(
@@ -2011,6 +2015,7 @@ and print_expression =
             ]);
           } else if (true_is_if) {
             Doc.concat([
+              Doc.space,
               Doc.lparen,
               Doc.indent(
                 Doc.concat([
@@ -2027,11 +2032,16 @@ and print_expression =
               Doc.rparen,
             ]);
           } else {
-            print_expression(
-              ~parent_is_arrow=false,
-              ~original_source,
-              ~comments=comments_in_true_statement,
-              true_expr,
+            Doc.indent(
+              Doc.concat([
+                Doc.line,
+                print_expression(
+                  ~parent_is_arrow=false,
+                  ~original_source,
+                  ~comments=comments_in_true_statement,
+                  true_expr,
+                ),
+              ]),
             );
           }
         };
@@ -2100,26 +2110,24 @@ and print_expression =
             Doc.text("else"),
             if (true_is_block) {
               false_made_block := true;
-              Doc.group(
-                Doc.concat([
-                  Doc.space,
-                  Doc.lbrace,
-                  // no comments to add here as original was single line
-                  Doc.indent(
-                    Doc.concat([
-                      Doc.hardLine,
-                      print_expression(
-                        ~parent_is_arrow=false,
-                        ~original_source,
-                        ~comments=comments_in_false_statement,
-                        false_expr,
-                      ),
-                    ]),
-                  ),
-                  Doc.hardLine,
-                  Doc.rbrace,
-                ]),
-              );
+              Doc.concat([
+                Doc.space,
+                Doc.lbrace,
+                // no comments to add here as original was single line
+                Doc.indent(
+                  Doc.concat([
+                    Doc.hardLine,
+                    print_expression(
+                      ~parent_is_arrow=false,
+                      ~original_source,
+                      ~comments=comments_in_false_statement,
+                      false_expr,
+                    ),
+                  ]),
+                ),
+                Doc.hardLine,
+                Doc.rbrace,
+              ]);
             } else {
               Doc.concat([
                 Doc.space,
@@ -2139,55 +2147,43 @@ and print_expression =
           Doc.concat([
             Doc.text("if"),
             Doc.space,
-            Doc.group(
+            Doc.lparen,
+            Doc.indent(
               Doc.concat([
-                Doc.lparen,
-                Doc.indent(
-                  Doc.concat([
-                    Doc.softLine,
-                    Comment_utils.inbetween_comments_to_docs(
-                      ~offset=false,
-                      ~bracket_line=None,
-                      cond_leading_comment,
-                    ),
-                    switch (cond_leading_comment) {
-                    | [] => Doc.nil
-                    | _ => Doc.space
-                    },
-                    print_expression(
-                      ~parent_is_arrow=false,
-                      ~original_source,
-                      ~comments=commentsInCondition,
-                      condition,
-                    ),
-                    Comment_utils.inbetween_comments_to_docs(
-                      ~offset=true,
-                      ~bracket_line=None,
-                      cond_trailing_comment,
-                    ),
-                  ]),
-                ),
                 Doc.softLine,
-                Doc.rparen,
+                Comment_utils.inbetween_comments_to_docs(
+                  ~offset=false,
+                  ~bracket_line=None,
+                  cond_leading_comment,
+                ),
+                switch (cond_leading_comment) {
+                | [] => Doc.nil
+                | _ => Doc.space
+                },
+                print_expression(
+                  ~parent_is_arrow=false,
+                  ~original_source,
+                  ~comments=commentsInCondition,
+                  condition,
+                ),
+                Comment_utils.inbetween_comments_to_docs(
+                  ~offset=true,
+                  ~bracket_line=None,
+                  cond_trailing_comment,
+                ),
               ]),
             ),
+            Doc.softLine,
+            Doc.rparen,
           ]),
         ),
-        if (true_is_block || true_made_block^) {
-          Doc.indent(Doc.concat([Doc.line, Doc.group(true_clause)]));
-        } else {
-          Doc.concat([Doc.space, Doc.group(true_clause)]);
-        },
+        Doc.group(true_clause),
         Comment_utils.inbetween_comments_to_docs(
           ~offset=true,
           ~bracket_line=None,
           true_trailing_comment,
         ),
-        if (false_is_block || false_made_block^) {
-          Doc.group(false_clause);
-        } else {
-          Doc.group(false_clause);
-        },
+        Doc.group(false_clause),
       ]);
     | PExpWhile(expression, expression1) =>
       let comments_in_expression =
