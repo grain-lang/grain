@@ -137,8 +137,9 @@ export let rec mod = (x: Int32, y: Int32) => {
     let mval = WasmI32.remS(xabs, yabs)
     let mres = WasmI32.sub(yabs, mval)
     newInt32(
-      if (WasmI32.ne(mval, 0n))
-        (if (WasmI32.ltS(yval, 0n)) WasmI32.sub(0n, mres) else mres) else 0n,
+      if (WasmI32.ne(mval, 0n)) (
+        if (WasmI32.ltS(yval, 0n)) WasmI32.sub(0n, mres) else mres
+      ) else 0n,
     )
   } else {
     newInt32(WasmI32.remS(xval, yval))

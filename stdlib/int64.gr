@@ -138,8 +138,9 @@ export let rec mod = (x: Int64, y: Int64) => {
     let mval = WasmI64.remS(xabs, yabs)
     let mres = WasmI64.sub(yabs, mval)
     newInt64(
-      if (WasmI64.ne(mval, 0N))
-        (if (WasmI64.ltS(yval, 0N)) WasmI64.sub(0N, mres) else mres) else 0N,
+      if (WasmI64.ne(mval, 0N)) (
+        if (WasmI64.ltS(yval, 0N)) WasmI64.sub(0N, mres) else mres
+      ) else 0N,
     )
   } else {
     newInt64(WasmI64.remS(xval, yval))

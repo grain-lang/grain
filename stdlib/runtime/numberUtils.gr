@@ -890,8 +890,7 @@ let utoa64_any_core = (buffer, num, offset, radix) => {
         0n,
       )
       num = WasmI64.shrU(num, shift)
-      if (WasmI64.eqz(num))
-        break
+      if (WasmI64.eqz(num)) break
     }
   } else {
     for (; ;) {
@@ -906,8 +905,7 @@ let utoa64_any_core = (buffer, num, offset, radix) => {
         0n,
       )
       num = q
-      if (WasmI64.eqz(num))
-        break
+      if (WasmI64.eqz(num)) break
     }
   }
 }
@@ -970,8 +968,7 @@ export let itoa32 = (value, radix) => {
   let mut out = 0n
   let sign = WasmI32.shrU(value, 31n)
 
-  if (WasmI32.ne(sign, 0n))
-    value = 0n - value
+  if (WasmI32.ne(sign, 0n)) value = 0n - value
 
   if (WasmI32.eqz(value)) {
     out = singleByteString(_CHAR_CODE_0)
@@ -989,8 +986,7 @@ export let itoa32 = (value, radix) => {
     out = allocateString(decimals)
     utoa64_any_core(out + 8n, val64, decimals, radix)
   }
-  if (WasmI32.ne(sign, 0n))
-    WasmI32.store8(out, _CHAR_CODE_MINUS, 8n)
+  if (WasmI32.ne(sign, 0n)) WasmI32.store8(out, _CHAR_CODE_MINUS, 8n)
   WasmI32.toGrain(out): String
 }
 
@@ -1041,8 +1037,7 @@ export let itoa64 = (value, radix) => {
   let mut out = 0n
 
   let sign = WasmI32.wrapI64(WasmI64.shrU(value, 63N))
-  if (sign != 0n)
-    value = WasmI64.sub(0N, value)
+  if (sign != 0n) value = WasmI64.sub(0N, value)
 
   if (WasmI64.eqz(value)) {
     out = singleByteString(_CHAR_CODE_0)
@@ -1068,8 +1063,7 @@ export let itoa64 = (value, radix) => {
     out = allocateString(decimals)
     utoa64_any_core(out + 8n, value, decimals, radix)
   }
-  if (sign != 0n)
-    WasmI32.store8(out, _CHAR_CODE_MINUS, 8n)
+  if (sign != 0n) WasmI32.store8(out, _CHAR_CODE_MINUS, 8n)
   WasmI32.toGrain(out): String
 }
 
@@ -1247,8 +1241,7 @@ let genDigits = (buffer, w_frc, w_exp, mp_frc, mp_exp, delta, sign) => {
 let genExponent = (buffer, k) => {
   let mut k = k
   let sign = WasmI32.ltS(k, 0n)
-  if (sign)
-    k = 0n - k
+  if (sign) k = 0n - k
   let decimals = decimalCount32(k) + 1n
   utoa32_dec_core(buffer, k, decimals)
   WasmI32.store8(buffer, if (sign) _CHAR_CODE_MINUS else _CHAR_CODE_PLUS, 0n)
@@ -1293,8 +1286,8 @@ let grisu2 = (value, buffer, sign) => {
     347.0W,
   ) // dk must be positive, so can do ceiling in positive
   let mut k = WasmI32.truncF64S(dk)
-  k += if (WasmF64.ne(WasmF64.convertI32S(k), dk))
-    1n else 0n // conversion with ceil
+  k += if (WasmF64.ne(WasmF64.convertI32S(k), dk)) 1n
+  else 0n // conversion with ceil
 
   let index = WasmI32.shrS(k, 3n) + 1n
   _K = 348n - (index << 3n) // decimal exponent doesn't need lookup table

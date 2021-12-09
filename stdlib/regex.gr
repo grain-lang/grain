@@ -2283,8 +2283,7 @@ let charMatcher = (toMatch, next_m) =>
         Ok(c) => toMatch == c,
       }
     }
-  )
-    next_m(buf, pos + 1, start, limit, end, state, stack) else None
+  ) next_m(buf, pos + 1, start, limit, end, state, stack) else None
 }
 
 let charTailMatcher = toMatch =>
@@ -2305,8 +2304,7 @@ let charTailMatcher = toMatch =>
         Ok(c) => toMatch == c,
       }
     }
-  )
-    Some(pos + 1) else None
+  ) Some(pos + 1) else None
 }
 
 let charMatcherIterated = (toMatch, max) =>
@@ -2370,8 +2368,7 @@ let stringMatcher = (toMatch, len, next_m) =>
         len,
       )
     }
-  )
-    next_m(buf, pos + len, start, limit, end, state, stack) else None
+  ) next_m(buf, pos + len, start, limit, end, state, stack) else None
 }
 
 let stringTailMatcher = (toMatch, len) =>
@@ -2395,8 +2392,7 @@ let stringTailMatcher = (toMatch, len) =>
         len,
       )
     }
-  )
-    Some(pos + len) else None
+  ) Some(pos + len) else None
 }
 
 let stringMatcherIterated = (toMatch, len, max) =>
@@ -2448,8 +2444,7 @@ let anyMatcher = next_m =>
     {
       pos < limit
     }
-  )
-    next_m(buf, pos + 1, start, limit, end, state, stack) else None
+  ) next_m(buf, pos + 1, start, limit, end, state, stack) else None
 }
 
 let anyTailMatcher = () =>
@@ -2466,8 +2461,7 @@ let anyTailMatcher = () =>
     {
       pos < limit
     }
-  )
-    Some(pos + 1) else None
+  ) Some(pos + 1) else None
 }
 
 let anyMatcherIterated = max =>
@@ -2507,8 +2501,7 @@ let rangeMatcher = (rng, next_m) =>
         Ok(c) => rangeContains(rng, Char.code(c)),
       }
     }
-  )
-    next_m(buf, pos + 1, start, limit, end, state, stack) else None
+  ) next_m(buf, pos + 1, start, limit, end, state, stack) else None
 }
 
 let rangeTailMatcher = rng =>
@@ -2529,8 +2522,7 @@ let rangeTailMatcher = rng =>
         Ok(c) => rangeContains(rng, Char.code(c)),
       }
     }
-  )
-    Some(pos + 1) else None
+  ) Some(pos + 1) else None
 }
 
 let rangeMatcherIterated = (rng, max) =>
@@ -2566,8 +2558,7 @@ let startMatcher = next_m =>
     state,
     stack,
   ) => {
-  if (pos == start)
-    next_m(buf, pos, start, limit, end, state, stack) else None
+  if (pos == start) next_m(buf, pos, start, limit, end, state, stack) else None
 }
 
 let endMatcher = next_m =>
@@ -2580,8 +2571,7 @@ let endMatcher = next_m =>
     state,
     stack,
   ) => {
-  if (pos == end)
-    next_m(buf, pos, start, limit, end, state, stack) else None
+  if (pos == end) next_m(buf, pos, start, limit, end, state, stack) else None
 }
 
 let lineStartMatcher = next_m =>
@@ -3662,8 +3652,8 @@ let makeMatchResult = (origString, start, end, state) => {
 // Helpers for user-facing match functionality
 
 let fastDriveRegexIsMatch = (rx, string, startOffset, endOffset) => {
-  let state = if (rx.reReferences)
-    Array.make(rx.reNumGroups, None) else Array.make(0, None)
+  let state = if (rx.reReferences) Array.make(rx.reNumGroups, None)
+  else Array.make(0, None)
   let toWrap = if (startOffset == 0 && endOffset == String.length(string))
     string else String.slice(startOffset, endOffset, string)
   let buf = makeMatchBuffer(toWrap)
@@ -3881,8 +3871,8 @@ let computeReplacement =
     }
   }
   let consRange = (start, end, lst) => {
-    if (start == end)
-      lst else [String.slice(start, end, replacementString), ...lst]
+    if (start == end) lst
+    else [String.slice(start, end, replacementString), ...lst]
   }
   let rec loop = (pos, since) => {
     if (pos == len) {
@@ -3968,16 +3958,14 @@ let regexReplaceHelp =
     }
     match (poss) {
       None =>
-        if (searchPos == 0)
-          toSearch
+        if (searchPos == 0) toSearch
         else String.slice(searchPos, String.length(toSearch), toSearch),
       Some((start, end)) =>
         String.concat(
           String.slice(searchPos, start, toSearch),
           String.concat(
             computeReplacement(buf, replacement, start, end, state),
-            if (all)
-              recur(start, end)
+            if (all) recur(start, end)
             else String.slice(end, String.length(toSearch), toSearch),
           ),
         ),

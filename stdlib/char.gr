@@ -64,17 +64,13 @@ let rec code = (c: Char) => {
         bytesNeeded = 1n
         codePoint = byte & 0x1Fn
       } else if (byte >= 0xE0n && byte <= 0xEFn) {
-        if (byte == 0xE0n)
-          lowerBoundary = 0xA0n
-        if (byte == 0xEDn)
-          upperBoundary = 0x9Fn
+        if (byte == 0xE0n) lowerBoundary = 0xA0n
+        if (byte == 0xEDn) upperBoundary = 0x9Fn
         bytesNeeded = 2n
         codePoint = byte & 0xFn
       } else if (byte >= 0xF0n && byte <= 0xF4n) {
-        if (byte == 0xF0n)
-          lowerBoundary = 0x90n
-        if (byte == 0xF4n)
-          upperBoundary = 0x8Fn
+        if (byte == 0xF0n) lowerBoundary = 0x90n
+        if (byte == 0xF4n) upperBoundary = 0x8Fn
         bytesNeeded = 3n
         codePoint = byte & 0x7n
       } else {
