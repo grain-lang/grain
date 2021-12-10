@@ -552,7 +552,13 @@ let compile_lambda =
   let idx = next_lift();
   let args = List.map(((_, ty)) => ty, new_args);
   let arity = List.length(args);
-  let (stack_size_i32, stack_size_i64, stack_size_f32, stack_size_f64) =
+  let (
+    stack_size_ptr,
+    stack_size_i32,
+    stack_size_i64,
+    stack_size_f32,
+    stack_size_f64,
+  ) =
     Anf_utils.anf_count_vars(body);
   let lam_env = {
     ...env,
@@ -573,6 +579,7 @@ let compile_lambda =
     return_type,
     attrs,
     stack_size: {
+      stack_size_ptr,
       stack_size_i32,
       stack_size_i64,
       stack_size_f32,
@@ -641,6 +648,7 @@ let compile_wrapper = (id, env, func_name, args, rets): Mashtree.closure_data =>
     args: [Types.HeapAllocated, ...args],
     return_type,
     stack_size: {
+      stack_size_ptr: 0,
       stack_size_i32: 0,
       stack_size_i64: 0,
       stack_size_f32: 0,
@@ -1160,9 +1168,16 @@ let transl_anf_program =
 
   let (imports, setups, env) =
     lift_imports(initial_compilation_env, anf_prog.imports);
-  let (stack_size_i32, stack_size_i64, stack_size_f32, stack_size_f64) =
+  let (
+    stack_size_ptr,
+    stack_size_i32,
+    stack_size_i64,
+    stack_size_f32,
+    stack_size_f64,
+  ) =
     Anf_utils.anf_count_vars(anf_prog.body);
   let main_body_stack_size = {
+    stack_size_ptr,
     stack_size_i32,
     stack_size_i64,
     stack_size_f32,

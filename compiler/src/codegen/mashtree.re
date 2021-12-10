@@ -445,6 +445,7 @@ type mash_function = {
   func_loc: Location.t,
 }
 and stack_size = {
+  stack_size_ptr: int,
   stack_size_i32: int,
   stack_size_i64: int,
   stack_size_f32: int,
