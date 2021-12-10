@@ -435,7 +435,7 @@ for_expr :
   | FOR lparen block_body_expr? eols? SEMI eols? expr? eols? SEMI eols? expr? rparen block { Exp.for_ ~loc:(symbol_rloc dyp) $3 $7 $11 $13 }
 
 match_branch :
-  | pattern [WHEN expr {$2}]? thickarrow expr { Mb.mk ~loc:(symbol_rloc dyp) $1 $4 $2 }
+  | pattern [eols? WHEN expr {$3}]? thickarrow expr { Mb.mk ~loc:(symbol_rloc dyp) $1 $4 $2 }
 
 match_branches :
   | match_branch [comma match_branch {$2}]* trailing_comma? { $1::$2 }
