@@ -244,7 +244,7 @@ program: ENUM TYPEID LBRACE TYPEID RBRACE COMMA EXPORT WHILE
 ## attributes EXPORT
 ##
 
-Mutually recurisve data declarations are separated by commas, but these cannot be mixed with other kinds of expressions.
+Mutually recursive data declarations are separated by commas, but these cannot be mixed with other kinds of expressions.
 
 program: ENUM TYPEID LBRACE TYPEID WHILE
 ##
