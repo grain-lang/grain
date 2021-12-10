@@ -377,6 +377,7 @@ let init_codegen_env = name => {
   num_args: 0,
   global_offset: 2,
   stack_size: {
+    stack_size_ptr: 0,
     stack_size_i32: 0,
     stack_size_i64: 0,
     stack_size_f32: 0,
@@ -663,7 +664,7 @@ type bind_action =
 let cleanup_local_slot_instructions = (wasm_mod, env: codegen_env) => {
   let instrs =
     List.init(
-      env.num_args + env.stack_size.stack_size_i32,
+      env.num_args + env.stack_size.stack_size_ptr,
       i => {
         // cleanup called on args and i32 (GC-tracked) locals
         // <arg0> <arg1> <...> <argN> <swap0> <swap1> <...> <swapN> <local1> <local2> <...> <localN>
