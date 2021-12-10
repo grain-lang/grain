@@ -1,3 +1,4 @@
+import Array from "array"
 import String from "string"
 import Buffer from "buffer"
 import Bytes from "bytes"
@@ -196,12 +197,17 @@ Buffer.addString(str, buf)
 assert Buffer.toString(buf) == str
 
 // addStringSlice
-let str = "Let's get this 🍞"
-let buf = Buffer.make(0)
-Buffer.addStringSlice(0, 0, str, buf)
-assert Buffer.toString(buf) == ""
-Buffer.addStringSlice(0, String.length(str), str, buf)
-assert Buffer.toString(buf) == str
+let slices = [>
+  ("Let's get this 🍞", 0, 16),
+  ("0123456789", -10, 10),
+  ("0123456789", -1, 10),
+];
+for (let mut i = 0; i < Array.length(slices); i += 1) {
+  let (str, off, len) = slices[i];
+  let buf = Buffer.make(0)
+  Buffer.addStringSlice(off, len, str, buf)
+  assert Buffer.toString(buf) == String.slice(off, len, str)
+}
 
 // toStringSlice
 let str = "Let's get this 🍞"

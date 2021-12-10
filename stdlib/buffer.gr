@@ -414,33 +414,34 @@ export let rec addString = (string, buffer) => {
  */
 @disableGC
 export let rec addStringSlice = (start, length, string, buffer) => {
-  Memory.incRef(WasmI32.fromGrain(String.slice))
   Memory.incRef(WasmI32.fromGrain(start))
   Memory.incRef(WasmI32.fromGrain(length))
   Memory.incRef(WasmI32.fromGrain(string))
+
+  Memory.incRef(WasmI32.fromGrain(String.slice))
   let slice = String.slice(start, length, string)
 
   Memory.incRef(WasmI32.fromGrain(String.byteLength))
   Memory.incRef(WasmI32.fromGrain(slice))
   let bytelen = String.byteLength(slice)
 
-  Memory.decRef(WasmI32.fromGrain(slice))
-
   Memory.incRef(WasmI32.fromGrain(autogrow))
   Memory.incRef(WasmI32.fromGrain(bytelen))
   Memory.incRef(WasmI32.fromGrain(buffer))
   autogrow(bytelen, buffer)
 
-  let srcOff = coerceNumberToWasmI32(start)
+  let srcOff = 0n
   let dstOff = coerceNumberToWasmI32(buffer.len)
-  let src = WasmI32.fromGrain(string)
+  let src = WasmI32.fromGrain(slice)
   let dst = WasmI32.fromGrain(buffer.data)
   appendBytes(srcOff, dstOff, coerceNumberToWasmI32(bytelen), src, dst)
+  Memory.decRef(WasmI32.fromGrain(slice))
 
   Memory.incRef(WasmI32.fromGrain((+)))
   Memory.incRef(WasmI32.fromGrain(buffer.len))
   Memory.incRef(WasmI32.fromGrain(bytelen))
   buffer.len = buffer.len + bytelen
+  Memory.decRef(WasmI32.fromGrain(bytelen))
 
   Memory.decRef(WasmI32.fromGrain(start))
   Memory.decRef(WasmI32.fromGrain(length))
@@ -462,16 +463,32 @@ export let rec addStringSlice = (start, length, string, buffer) => {
  */
 @disableGC
 export let rec addBytesSlice = (start: Number, length: Number, bytes: Bytes, buffer: Buffer) => {
+  let (<) = WasmI32.ltS
+  let (>) = WasmI32.gtS
+  let (>=) = WasmI32.geS
+
+  // bounds check start
+  let bytelen = WasmI32.load(WasmI32.fromGrain(bytes), 1n)
+  let srcOff = coerceNumberToWasmI32(start)
+  if (srcOff < 0n || srcOff >= bytelen) {
+    throw Exception.IndexOutOfBounds
+  }
+
+  // bounds check length
+  let len = coerceNumberToWasmI32(length)
+  if (len < 0n || len > bytelen) {
+    throw Exception.IndexOutOfBounds
+  }
+
   Memory.incRef(WasmI32.fromGrain(autogrow))
   Memory.incRef(WasmI32.fromGrain(length))
   Memory.incRef(WasmI32.fromGrain(buffer))
   autogrow(length, buffer)
 
-  let srcOff = coerceNumberToWasmI32(start)
   let dstOff = coerceNumberToWasmI32(buffer.len)
   let src = WasmI32.fromGrain(bytes)
   let dst = WasmI32.fromGrain(buffer.data)
-  appendBytes(srcOff, dstOff, coerceNumberToWasmI32(length), src, dst)
+  appendBytes(srcOff, dstOff, len, src, dst)
 
   Memory.incRef(WasmI32.fromGrain((+)))
   Memory.incRef(WasmI32.fromGrain(buffer.len))
