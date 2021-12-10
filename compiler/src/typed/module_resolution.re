@@ -276,46 +276,48 @@ module Dependency_graph =
 
     let get_filename = dn => dn.dn_file_name;
 
-    let get_dependencies: (t, string => option(t)) => list(t) =
+    let rec get_dependencies: (t, string => option(t)) => list(t) =
       (dn, lookup) => {
         let base_dir = Filename.dirname(dn.dn_file_name);
         let active_search_path = Config.module_search_path();
         let located = dn.dn_latest_resolution^;
+
+        let from_srcpath = srcpath => {
+          List.map(
+            name => {
+              let located = locate_module(base_dir, active_search_path, name);
+              let out_file_name = located_to_out_file_name(located);
+              let existing_dependency = lookup(out_file_name);
+              switch (existing_dependency) {
+              | Some(ed) =>
+                Hashtbl.add(ed.dn_unit_name, Some(dn), name);
+                ed;
+              | None =>
+                let tbl = Hashtbl.create(8);
+                Hashtbl.add(tbl, Some(dn), name);
+                {
+                  dn_unit_name: tbl,
+                  dn_file_name: out_file_name,
+                  dn_up_to_date: ref(false), // <- needs to be checked
+                  dn_latest_resolution: ref(Some(located)),
+                };
+              };
+            },
+            Grain_parsing.Driver.scan_for_imports(srcpath),
+          );
+        };
+
         // TODO: (#597) Propagating the compiler flag information correctly is tricky.
         //        For the moment, from the dependency graph's perspective, we assume that
         //        nothing uses --no-pervasives or --no-gc.
         switch (located) {
         | None => failwith("get_dependencies: Should be impossible")
         | Some(WasmModule(_)) => []
-        | Some(GrainModule(srcpath, None)) =>
-          let ret =
-            List.map(
-              name => {
-                let located =
-                  locate_module(base_dir, active_search_path, name);
-                let out_file_name = located_to_out_file_name(located);
-                let existing_dependency = lookup(out_file_name);
-                switch (existing_dependency) {
-                | Some(ed) =>
-                  Hashtbl.add(ed.dn_unit_name, Some(dn), name);
-                  ed;
-                | None =>
-                  let tbl = Hashtbl.create(8);
-                  Hashtbl.add(tbl, Some(dn), name);
-                  {
-                    dn_unit_name: tbl,
-                    dn_file_name: out_file_name,
-                    dn_up_to_date: ref(false), // <- needs to be checked
-                    dn_latest_resolution: ref(Some(located)),
-                  };
-                };
-              },
-              Grain_parsing.Driver.scan_for_imports(srcpath),
-            );
-          ret;
+        | Some(GrainModule(srcpath, None)) => from_srcpath(srcpath)
         | Some(GrainModule(srcpath, Some(objpath))) =>
-          let cmi = read_file_cmi(objpath);
-          let ret =
+          switch (read_file_cmi(objpath)) {
+          | exception (Cmi_format.Error(_)) => from_srcpath(srcpath)
+          | cmi =>
             List.map(
               ((name, _)) => {
                 let located =
@@ -338,8 +340,8 @@ module Dependency_graph =
                 };
               },
               cmi.cmi_crcs,
-            );
-          ret;
+            )
+          }
         };
       };
 
@@ -359,31 +361,39 @@ module Dependency_graph =
           // all dependencies have expected CRC, and the module was compiled with
           // the current compiler configuration. Otherwise, we need to recompile.
           let config_sum = Cmi_format.config_sum();
-          let cmi = read_file_cmi(objpath);
           let base_dir = Filename.dirname(srcpath);
           dn.dn_up_to_date :=
-            config_sum == cmi.cmi_config_sum
-            && file_older(srcpath, objpath)
-            && List.for_all(
-                 ((name, crc)) => {
-                   let resolved = resolve_unit(~base_dir, name);
-                   let out_file_name = get_output_name(resolved);
-                   Fs_access.file_exists(out_file_name)
-                   && (
-                     switch (crc) {
-                     | None => true
-                     | Some(crc) =>
-                       try(
-                         Cmi_format.cmi_to_crc(read_file_cmi(out_file_name))
-                         == crc
-                       ) {
-                       | _ => true
-                       }
-                     }
-                   );
-                 },
-                 cmi.cmi_crcs,
-               );
+            (
+              switch (read_file_cmi(objpath)) {
+              // Treat corrupted CMI as invalid
+              | exception (Cmi_format.Error(_)) => false
+              | cmi =>
+                config_sum == cmi.cmi_config_sum
+                && file_older(srcpath, objpath)
+                && List.for_all(
+                     ((name, crc)) => {
+                       let resolved = resolve_unit(~base_dir, name);
+                       let out_file_name = get_output_name(resolved);
+                       Fs_access.file_exists(out_file_name)
+                       && (
+                         switch (crc) {
+                         | None => false
+                         | Some(crc) =>
+                           try(
+                             Cmi_format.cmi_to_crc(
+                               read_file_cmi(out_file_name),
+                             )
+                             == crc
+                           ) {
+                           | _ => false
+                           }
+                         }
+                       );
+                     },
+                     cmi.cmi_crcs,
+                   )
+              }
+            );
         };
       };
 
