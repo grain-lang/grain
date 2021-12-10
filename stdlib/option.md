@@ -4,11 +4,7 @@ title: Option
 
 Utilities for working with the Option data type.
 
-The Option type is an enum that represents the possibility of something being present (with the `Some` variant), or not (with the `None` variant). There’s no standalone `null` or `none` type in Grain; use an Option where you would normally reach for `null` or `none`
-
-
-
-Create new `Option` values using `Some()` and `None`.
+The Option type is an enum that represents the possibility of something being present (with the `Some` variant), or not (with the `None` variant). There’s no standalone `null` or `none` type in Grain; use an Option where you would normally reach for `null` or `none`.
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.2.0</code></summary>
@@ -20,7 +16,11 @@ import Option from "option"
 ```
 
 ```grain
-let has_value = Some(1234), no_value = None
+let hasValue = Some(1234) // Creates an Option containing 1234
+```
+
+```grain
+let noValue = None // Creates an Option containing nothing
 ```
 
 ## Values
@@ -50,7 +50,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if the Option is the `Some` variant, `false` otherwise|
+|`Bool`|`true` if the Option is the `Some` variant or `false` otherwise|
 
 ### Option.**isNone**
 
@@ -75,7 +75,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if the Option is the `None` variant, `false` otherwise|
+|`Bool`|`true` if the Option is the `None` variant or `false` otherwise|
 
 ### Option.**contains**
 
@@ -94,14 +94,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value`|`a`|The value to expect|
-|`option`|`Option<a>`|The Option to check|
+|`value`|`a`|The value to search for|
+|`option`|`Option<a>`|The option to search|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if the Option is the `Some` variant and contains the given value, `false` otherwise|
+|`Bool`|`true` if the Option is equivalent to `Some(value)` or `false` otherwise|
 
 ### Option.**expect**
 
@@ -114,16 +114,15 @@ No other changes yet.
 expect : (String, Option<a>) -> a
 ```
 
-Extracts the value inside a `Some` result, otherwise throw an
+Extracts the value inside a `Some` option, otherwise throw an
 exception containing the message provided.
-If it is `None`, throws the provided failure message.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`msg`|`String`|The failure message|
-|`option`|`Option<a>`|The Option to unwrap|
+|`msg`|`String`|The message to use upon failure|
+|`option`|`Option<a>`|The option to extract a value from|
 
 Returns:
 
@@ -142,14 +141,14 @@ No other changes yet.
 unwrap : Option<a> -> a
 ```
 
-Extracts the value inside a `Some` Option, otherwise
+Extracts the value inside a `Some` option, otherwise
 throw an exception containing a default message.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`option`|`Option<a>`|The Option to extract the value from|
+|`option`|`Option<a>`|The option to extract the value from|
 
 Returns:
 
@@ -168,21 +167,20 @@ No other changes yet.
 unwrapWithDefault : (a, Option<a>) -> a
 ```
 
-Extracts the value inside a `Some` Option, otherwise
-return the provided default value.
+Extracts the value inside a `Some` option or provide the default value if `None`.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`default`|`a`|The default value to return|
-|`option`|`Option<a>`|The Option to unwrap|
+|`default`|`a`|The default value|
+|`option`|`Option<a>`|The option to unwrap|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`a`|The unwrapped value if the Option is the `Some` variant, otherwise the default value provided|
+|`a`|The unwrapped value if the Option is the `Some` variant or the default value otherwise|
 
 ### Option.**map**
 
@@ -195,20 +193,20 @@ No other changes yet.
 map : ((a -> b), Option<a>) -> Option<b>
 ```
 
-If the Option is `Some(value)`, applies the given function to the `value` to produce a new Option.
+If the Option is `Some(value)`, applies the given function to the `value` and wraps the new value in a `Some` variant.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> b`|The function to call on the value of an `Some` variant|
-|`option`|`Option<a>`|The Option to map|
+|`fn`|`a -> b`|The function to call on the value of a `Some` variant|
+|`option`|`Option<a>`|The option to map|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Option<a>`|A new Option produced by the mapping function if the variant was `Some` or the unmodified `None` otherwise|
+|`Option<a>`|A new `Some` variant produced by the mapping function if the variant was `Some` or the unmodified `None` otherwise|
 
 ### Option.**mapWithDefault**
 
@@ -222,7 +220,7 @@ mapWithDefault : ((a -> b), b, Option<a>) -> b
 ```
 
 If the Option is `Some(value)`, applies the given function to the `value` to produce a new value, otherwise uses the default value.
-Useful for unwrapping a `Some` Option while providing a fallback for any None values.
+Useful for unwrapping an Option while providing a fallback for any `None` variants.
 
 Parameters:
 
@@ -230,7 +228,7 @@ Parameters:
 |-----|----|-----------|
 |`fn`|`a -> b`|The function to call on the value of a `Some` variant|
 |`default`|`a`|A fallback value for a `None` variant|
-|`option`|`Option<a>`|The Option to map|
+|`option`|`Option<a>`|The option to map|
 
 Returns:
 
@@ -250,7 +248,7 @@ mapWithDefaultFn : ((a -> b), (() -> b), Option<a>) -> b
 ```
 
 If the Option is `Some(value)`, applies the `fn` function to the `value` to produce a new value.
-If the Option is `None`, applies the `defaultFn` function to produce a new value.
+If the Option is `None`, calls the `defaultFn` function to produce a new value.
 Useful for unwrapping an Option into a value, whether it is `Some` or `None`.
 
 Parameters:
@@ -258,8 +256,8 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`fn`|`a -> b`|The function to call on the value of a `Some` variant|
-|`defaultFn`|`() -> a`|The default function to map with|
-|`option`|`Option<a>`|The Option to map|
+|`defaultFn`|`() -> a`|The default function|
+|`option`|`Option<a>`|The option to map|
 
 Returns:
 
@@ -285,7 +283,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`fn`|`a -> Option<b>`|The function to call on the value of a `Some` variant|
-|`option`|`Option<a>`|The result to map|
+|`option`|`Option<a>`|The option to map|
 
 Returns:
 
@@ -304,21 +302,22 @@ No other changes yet.
 filter : ((a -> Bool), Option<a>) -> Option<a>
 ```
 
-If the Option is `Some(value)` call `fn` with the `value`,
+Converts `Some(value)` variants to `None` variants where the predicate function returns `false`.
+Useful for applying some value validation to your Options.
 if the `fn` return `true` returns `Some(value)`, otherwise returns `None`.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Bool`|The function to filter with|
-|`option`|`Option<a>`|The Option to filter|
+|`fn`|`a -> Bool`|The predicate function to indicate if the option should remain `Some`|
+|`option`|`Option<a>`|The option to inspect|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Option<a>`|`Some(value)` if the filter function returns `true`, `None` otherwise|
+|`Option<a>`|`Some(value)` if the variant was `Some` and the predicate returns `true` or `None` otherwise|
 
 ### Option.**zip**
 
@@ -331,20 +330,20 @@ No other changes yet.
 zip : (Option<a>, Option<b>) -> Option<(a, b)>
 ```
 
-If both `optionA` and `optionB` are `Some(value)` return `Some((valueA, valueB))`, otherwise return `None`.
+Combine two Options into a single Option containing a tuple of their values.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`optionA`|`Option<a>`|The first Option to zip|
-|`optionB`|`Option<a>`|The second Option to zip|
+|`optionA`|`Option<a>`|The first option to combine|
+|`optionB`|`Option<a>`|The second option to combine|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Option<(a, b)>`|`Some((valueA, valueB))` if both Options are `Some` variants, otherwise `None`|
+|`Option<(a, b)>`|`Some((valueA, valueB))` if both Options are `Some` variants or `None` otherwise|
 
 ### Option.**zipWith**
 
@@ -357,21 +356,21 @@ No other changes yet.
 zipWith : (((a, b) -> c), Option<a>, Option<b>) -> Option<c>
 ```
 
-If both `optionA` and `optionB` are `Some(value)` return `Some((fn(valueA), fn(valueB)))`, otherwise return `None`.
+Combine two Options into a single Option containing a tuple of new values produced by calling the provided function on each value.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`(a, b) -> c`|The function to zip with|
-|`optionA`|`Option<a>`|The first Option to zip|
-|`optionB`|`Option<a>`|The second Option to zip|
+|`fn`|`(a, b) -> c`|The function to generate new values|
+|`optionA`|`Option<a>`|The first option to combine|
+|`optionB`|`Option<a>`|The second option to combine|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Option<a>`|`Some((fn(valueA), fn(valueB)))` if both Options are `Some` variants, otherwise `None`|
+|`Option<a>`|`Some((newValueA, newValueB))` if both Options are `Some` variants or `None` otherwise|
 
 ### Option.**flatten**
 
@@ -384,19 +383,25 @@ No other changes yet.
 flatten : Option<Option<a>> -> Option<a>
 ```
 
-Flattens nested Options, like `Some(Some(1))` to `Some(1)`. If any of the Options are `None`, returns `None`.
+Flattens nested Options.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`option`|`Option<Option<a>>`|The Option to flatten|
+|`option`|`Option<Option<a>>`|The option to flatten|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Option<a>`|`Some(Some(1))` to `Some(1)`. If any of the Options are `None`, returns `None`|
+|`Option<a>`|`Some(innerValue)` if all nested options were the `Some` variant or `None` otherwise|
+
+Examples:
+
+```grain
+Option.flatten(Some(Some(1))) == Some(1)
+```
 
 ### Option.**toList**
 
@@ -409,19 +414,19 @@ No other changes yet.
 toList : Option<a> -> List<a>
 ```
 
-If the Option is `Some(value)` returns `[ value ]`, Otherwise returns `[ ]`.
+Converts an Option to a list with either zero or one item.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`option`|`Option<a>`|The Option to convert|
+|`option`|`Option<a>`|The option to convert|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`List<a>`|`Some(value)` returns `[ value ]`, Otherwise returns `[ ]`|
+|`List<a>`|`[value]` if the Option was the `Some` variant or `[]` otherwise|
 
 ### Option.**toArray**
 
@@ -434,19 +439,19 @@ No other changes yet.
 toArray : Option<a> -> Array<a>
 ```
 
-If the Option is `Some(value)` returns `[> value ]`, Otherwise returns `[> ]`.
+Converts an Option to an array with either zero or one item.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`option`|`Option<a>`|The Option to convert|
+|`option`|`Option<a>`|The option to convert|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Array<a>`|`Some(value)` returns `[> value ]`, Otherwise returns `[> ]`|
+|`Array<a>`|`[> value]` if the Option was the `Some` variant or `[> ]` otherwise|
 
 ### Option.**toResult**
 
@@ -459,16 +464,14 @@ No other changes yet.
 toResult : (a, Option<b>) -> Result<b, a>
 ```
 
-If the Option is the `Some(value)`, returns `Ok(value)`.
-If it is `None`, returns an `Err(err)` where `err` is the provided error message.
-Converts the Option to a Result. .
+Converts the Option to a Result, using the provided Error in case of the `None` variant.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`err`|`a`|The error to use if the Option is `None`|
-|`option`|`Option<a>`|The Option to convert|
+|`err`|`a`|The error to use if the option is `None`|
+|`option`|`Option<a>`|The option to convert|
 
 Returns:
 
@@ -488,14 +491,13 @@ sideEffect : ((a -> Void), Option<a>) -> Void
 ```
 
 If the Option is `Some(value)`, applies the `fn` function to the `value` without producing a new value.
-Useful for inspecting Options without changing anything.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
 |`fn`|`a -> Void`|The function to call on the value of a `Some` variant|
-|`option`|`Option<a>`|The Option to inspect|
+|`option`|`Option<a>`|The option to inspect|
 
 ### Option.**peek**
 
@@ -516,13 +518,13 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`fn`|`a -> Void`|The function to call on the value of a `Some` variant|
-|`option`|`Option<a>`|The Option to inspect|
+|`option`|`Option<a>`|The option to inspect|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Option<a>`|The modified Option|
+|`Option<a>`|The unmodified option|
 
 ### Option.**or**
 
@@ -541,8 +543,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`optionA`|`Option<a>`|The first Option|
-|`optionB`|`Option<a>`|The first Option|
+|`optionA`|`Option<a>`|The first option|
+|`optionB`|`Option<a>`|The first option|
 
 Returns:
 
@@ -567,8 +569,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`optionA`|`Option<a>`|The first Option|
-|`optionB`|`Option<a>`|The first Option|
+|`optionA`|`Option<a>`|The first option|
+|`optionB`|`Option<a>`|The first option|
 
 Returns:
 
