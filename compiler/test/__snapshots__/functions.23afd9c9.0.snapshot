@@ -319,18 +319,6 @@ functions › lam_destructure_5
     (local.get $11)
    )
   )
-  (drop
-   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
-    (i32.const 0)
-   )
-  )
-  (drop
-   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
-    (i32.const 0)
-   )
-  )
   (local.get $3)
  )
  (func $_gmain (; has Stack IR ;) (result i32)
@@ -511,18 +499,6 @@ functions › lam_destructure_5
    (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
     (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
     (local.get $3)
-   )
-  )
-  (drop
-   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
-    (i32.const 0)
-   )
-  )
-  (drop
-   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
-    (i32.const 0)
    )
   )
   (local.get $0)
