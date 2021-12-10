@@ -245,15 +245,7 @@ module ClearLocationsArg: Anf_mapper.MapArgument = {
 
   let leave_imm_expression = i => {...i, imm_loc: Location.dummy_loc};
 
-  let leave_comp_expression = c => {
-    ...c,
-    comp_loc: Location.dummy_loc,
-    comp_attributes:
-      List.map(
-        attr => {...attr, Asttypes.loc: Location.dummy_loc},
-        c.comp_attributes,
-      ),
-  };
+  let leave_comp_expression = c => {...c, comp_loc: Location.dummy_loc};
 
   let leave_anf_expression = a => {...a, anf_loc: Location.dummy_loc};
 };

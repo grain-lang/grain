@@ -32,7 +32,12 @@ module E = {
   let map = (sub, {pexp_desc: desc, pexp_attributes: attrs, pexp_loc: loc}) => {
     open Exp;
     let loc = sub.location(sub, loc);
-    let attributes = List.map(map_loc(sub), attrs);
+    let attributes =
+      List.map(
+        ((attr, args)) =>
+          (map_loc(sub, attr), List.map(map_loc(sub), args)),
+        attrs,
+      );
     switch (desc) {
     | PExpId(i) => ident(~loc, ~attributes, map_loc(sub, i))
     | PExpConstant(c) => constant(~loc, ~attributes, sub.constant(sub, c))
@@ -336,7 +341,12 @@ module TL = {
   let map = (sub, {ptop_desc: desc, ptop_attributes: attrs, ptop_loc: loc}) => {
     open Top;
     let loc = sub.location(sub, loc);
-    let attributes = List.map(map_loc(sub), attrs);
+    let attributes =
+      List.map(
+        ((attr, args)) =>
+          (map_loc(sub, attr), List.map(map_loc(sub), args)),
+        attrs,
+      );
     switch (desc) {
     | PTopImport(decls) =>
       Top.import(~loc, ~attributes, sub.import(sub, decls))

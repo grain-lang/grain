@@ -22,6 +22,15 @@ open Types;
 let sexp_locs_disabled: 'a => bool;
 
 type loc('a) = Location.loc('a);
+
+[@deriving sexp]
+type attributes = list(attribute)
+
+[@deriving sexp]
+and attribute =
+  | Disable_gc
+  | External_name(string);
+
 type partial =
   | Partial
   | Total;
