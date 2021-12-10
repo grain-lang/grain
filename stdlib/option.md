@@ -4,7 +4,7 @@ title: Option
 
 Utilities for working with the Option data type.
 
-The Option type is an enum that represents the possibility of something being present (with the `Some` variant), or not (with the `None` variant). There’s no standalone `null` or `none` type in Grain; use an Option where you would normally reach for `null` or `none`.
+The Option type is an enum that represents the possibility of something being present (with the `Some` variant), or not (with the `None` variant). There’s no standalone `null` or `nil` type in Grain; use an Option where you would normally reach for `null` or `nil`.
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.2.0</code></summary>
@@ -114,7 +114,7 @@ No other changes yet.
 expect : (String, Option<a>) -> a
 ```
 
-Extracts the value inside a `Some` option, otherwise throw an
+Extracts the value inside a `Some` option, otherwise throws an
 exception containing the message provided.
 
 Parameters:
@@ -142,7 +142,7 @@ unwrap : Option<a> -> a
 ```
 
 Extracts the value inside a `Some` option, otherwise
-throw an exception containing a default message.
+throws an exception containing a default message.
 
 Parameters:
 
@@ -206,7 +206,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Option<b>`|A new `Some` variant produced by the mapping function if the variant was `Some` or the unmodified `None` otherwise|
+|`Option<a>`|A new `Some` variant produced by the mapping function if the variant was `Some` or the unmodified `None` otherwise|
 
 ### Option.**mapWithDefault**
 
@@ -227,14 +227,14 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`fn`|`a -> b`|The function to call on the value of a `Some` variant|
-|`default`|`b`|A fallback value for a `None` variant|
+|`default`|`a`|A fallback value for a `None` variant|
 |`option`|`Option<a>`|The option to map|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`b`|The value produced by the mapping function if the Option is of the `Some` variant or the default value otherwise|
+|`a`|The value produced by the mapping function if the Option is of the `Some` variant or the default value otherwise|
 
 ### Option.**mapWithDefaultFn**
 
@@ -256,14 +256,14 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`fn`|`a -> b`|The function to call on the value of a `Some` variant|
-|`defaultFn`|`() -> b`|The default function|
+|`defaultFn`|`() -> a`|The default function|
 |`option`|`Option<a>`|The option to map|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`b`|The value produced by one of the mapping functions|
+|`a`|The value produced by one of the mapping functions|
 
 ### Option.**flatMap**
 
@@ -289,7 +289,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Option<b>`|A new Option produced by the mapping function if the variant was `Some` or the unmodified `None` otherwise|
+|`Option<a>`|A new Option produced by the mapping function if the variant was `Some` or the unmodified `None` otherwise|
 
 ### Option.**filter**
 
@@ -303,7 +303,6 @@ filter : ((a -> Bool), Option<a>) -> Option<a>
 ```
 
 Converts `Some(value)` variants to `None` variants where the predicate function returns `false`.
-Useful for applying some value validation to your Options.
 if the `fn` return `true` returns `Some(value)`, otherwise returns `None`.
 
 Parameters:
@@ -337,7 +336,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`optionA`|`Option<a>`|The first option to combine|
-|`optionB`|`Option<b>`|The second option to combine|
+|`optionB`|`Option<a>`|The second option to combine|
 
 Returns:
 
@@ -356,7 +355,7 @@ No other changes yet.
 zipWith : (((a, b) -> c), Option<a>, Option<b>) -> Option<c>
 ```
 
-Combine two Options into a single Option a new value produced by applying the given function to each value.
+Combine two Options into a single Option. The new value is produced by applying the given function to both values.
 
 Parameters:
 
@@ -364,13 +363,13 @@ Parameters:
 |-----|----|-----------|
 |`fn`|`(a, b) -> c`|The function to generate a new value|
 |`optionA`|`Option<a>`|The first option to combine|
-|`optionB`|`Option<b>`|The second option to combine|
+|`optionB`|`Option<a>`|The second option to combine|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Option<c>`|`Some(newValue)` if both Options are `Some` variants or `None` otherwise|
+|`Option<a>`|`Some(newValue)` if both Options are `Some` variants or `None` otherwise|
 
 ### Option.**flatten**
 
@@ -471,13 +470,13 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`err`|`a`|The error to use if the option is `None`|
-|`option`|`Option<b>`|The option to convert|
+|`option`|`Option<a>`|The option to convert|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Result<b, a>`|`Ok(value)` if the Option is `Some(value)` or `Err(err)` if the Option is `None`|
+|`Result<a, b>`|`Ok(value)` if the Option is `Some(value)` or `Err(err)` if the Option is `None`|
 
 ### Option.**sideEffect**
 
