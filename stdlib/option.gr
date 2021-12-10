@@ -216,12 +216,12 @@ export let zip = (optionA, optionB) => {
 }
 
 /**
- * Combine two Options into a single Option containing a tuple of new values produced by calling the provided function on each value.
+ * Combine two Options into a single Option a new value produced by applying the given function to each value.
  *
- * @param fn: The function to generate new values
+ * @param fn: The function to generate a new value
  * @param optionA: The first option to combine
  * @param optionB: The second option to combine
- * @returns `Some((newValueA, newValueB))` if both Options are `Some` variants or `None` otherwise
+ * @returns `Some(newValue)` if both Options are `Some` variants or `None` otherwise
  * 
  * @since v0.2.0
  */
@@ -280,7 +280,7 @@ export let toArray = (option) => {
 }
 
 /**
- * Converts the Option to a Result, using the provided Error in case of the `None` variant.
+ * Converts the Option to a Result, using the provided error in case of the `None` variant.
  *
  * @param err: The error to use if the option is `None`
  * @param option: The option to convert
@@ -329,7 +329,7 @@ export let peek = (fn, option) => {
  * Behaves like a logical OR (`||`) where the first Option is only returned if it is the `Some` variant and falling back to the second Option in all other cases.
  *
  * @param optionA: The first option
- * @param optionB: The first option
+ * @param optionB: The second option
  * @returns The first Option if it is the `Some` variant or the second Option otherwise
  * 
  * @since v0.2.0
@@ -345,7 +345,7 @@ export let or = (optionA, optionB) => {
  * Behaves like a logical AND (`&&`) where the first Option is only returned if it is the `None` variant and falling back to the second Option Result in all other cases.
  *
  * @param optionA: The first option
- * @param optionB: The first option
+ * @param optionB: The second option
  * @returns The second Option if both are the `Some` variant or the first Option otherwise
  * 
  * @since v0.2.0
