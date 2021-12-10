@@ -356,13 +356,13 @@ No other changes yet.
 zipWith : (((a, b) -> c), Option<a>, Option<b>) -> Option<c>
 ```
 
-Combine two Options into a single Option containing a tuple of new values produced by calling the provided function on each value.
+Combine two Options into a single Option a new value produced by applying the given function to each value.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`(a, b) -> c`|The function to generate new values|
+|`fn`|`(a, b) -> c`|The function to generate a new value|
 |`optionA`|`Option<a>`|The first option to combine|
 |`optionB`|`Option<a>`|The second option to combine|
 
@@ -370,7 +370,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Option<a>`|`Some((newValueA, newValueB))` if both Options are `Some` variants or `None` otherwise|
+|`Option<a>`|`Some(newValue)` if both Options are `Some` variants or `None` otherwise|
 
 ### Option.**flatten**
 
@@ -464,7 +464,7 @@ No other changes yet.
 toResult : (a, Option<b>) -> Result<b, a>
 ```
 
-Converts the Option to a Result, using the provided Error in case of the `None` variant.
+Converts the Option to a Result, using the provided error in case of the `None` variant.
 
 Parameters:
 
@@ -544,7 +544,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`optionA`|`Option<a>`|The first option|
-|`optionB`|`Option<a>`|The first option|
+|`optionB`|`Option<a>`|The second option|
 
 Returns:
 
@@ -570,7 +570,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`optionA`|`Option<a>`|The first option|
-|`optionB`|`Option<a>`|The first option|
+|`optionB`|`Option<a>`|The second option|
 
 Returns:
 
