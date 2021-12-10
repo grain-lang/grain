@@ -365,6 +365,7 @@ module Dependency_graph =
           dn.dn_up_to_date :=
             (
               switch (read_file_cmi(objpath)) {
+              // Treat corrupted CMI as invalid
               | exception (Cmi_format.Error(_)) => false
               | cmi =>
                 config_sum == cmi.cmi_config_sum
