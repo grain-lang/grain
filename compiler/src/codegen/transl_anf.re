@@ -61,20 +61,10 @@ let next_lift = () => {
   ret;
 };
 
-let asmtype_of_alloctype = {
-  Types.(
-    fun
-    | HeapAllocated
-    | StackAllocated(WasmI32) => I32Type
-    | StackAllocated(WasmI64) => I64Type
-    | StackAllocated(WasmF32) => F32Type
-    | StackAllocated(WasmF64) => F64Type
-  );
-};
-
 /** Global index (index of global variables) */
 
-let global_table = ref(Ident.empty: Ident.tbl((bool, int32, asmtype)));
+let global_table =
+  ref(Ident.empty: Ident.tbl((bool, int32, Types.allocation_type)));
 let global_index = ref(0);
 
 let global_exports = () => {
@@ -96,7 +86,7 @@ let reset_global = () => {
   global_index := 0;
 };
 
-let next_global = (exported, id, ty) =>
+let next_global = (exported, id, ty: Types.allocation_type) =>
   /* RIP Hygiene (this behavior works as expected until we have more metaprogramming constructs) */
   switch (Ident.find_same_opt(id, global_table^)) {
   | Some((_, ret, _)) => Int32.to_int(ret)
@@ -153,7 +143,7 @@ module RegisterAllocation = {
   };
 
   let rec apply_allocations =
-          (ty: Mashtree.asmtype, allocs: t, instr: Mashtree.instr)
+          (ty: Types.allocation_type, allocs: t, instr: Mashtree.instr)
           : Mashtree.instr => {
     let apply_allocation_to_bind =
       fun
@@ -263,7 +253,7 @@ module RegisterAllocation = {
   };
 };
 
-type live_local = (Mashtree.asmtype, int);
+type live_local = (Types.allocation_type, int);
 
 let run_register_allocation = (instrs: list(Mashtree.instr)) => {
   let uniq = l => {
@@ -333,7 +323,7 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
   let instr_live_sets =
     List.mapi((i, instr) => (i, uniq @@ live_locals(instr)), instrs);
   let (num_locals_i32, num_locals_i64, num_locals_f32, num_locals_f64) = {
-    let rec help = ((ty, acc)) =>
+    let rec help = ((ty: Types.allocation_type, acc: int)) =>
       fun
       | [] => (ty, acc)
       | [(hd_ty, hd), ...tl] when hd_ty == ty && hd > acc =>
@@ -342,38 +332,51 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
     let i32 =
       snd @@
       help(
-        (I32Type, 0),
-        List.map(((_, lst)) => help((I32Type, 0), lst), instr_live_sets),
+        (Types.StackAllocated(WasmI32), 0),
+        List.map(
+          ((_, lst)) => help((Types.StackAllocated(WasmI32), 0), lst),
+          instr_live_sets,
+        ),
       );
     let i64 =
       snd @@
       help(
-        (I64Type, 0),
-        List.map(((_, lst)) => help((I64Type, 0), lst), instr_live_sets),
+        (Types.StackAllocated(WasmI64), 0),
+        List.map(
+          ((_, lst)) => help((Types.StackAllocated(WasmI64), 0), lst),
+          instr_live_sets,
+        ),
       );
     let f32 =
       snd @@
       help(
-        (F32Type, 0),
-        List.map(((_, lst)) => help((F32Type, 0), lst), instr_live_sets),
+        (Types.StackAllocated(WasmF32), 0),
+        List.map(
+          ((_, lst)) => help((Types.StackAllocated(WasmF32), 0), lst),
+          instr_live_sets,
+        ),
       );
     let f64 =
       snd @@
       help(
-        (F64Type, 0),
-        List.map(((_, lst)) => help((F64Type, 0), lst), instr_live_sets),
+        (Types.StackAllocated(WasmF64), 0),
+        List.map(
+          ((_, lst)) => help((Types.StackAllocated(WasmF64), 0), lst),
+          instr_live_sets,
+        ),
       );
     (i32 + 1, i64 + 1, f32 + 1, f64 + 1);
   };
   /* Printf.eprintf "Live sets:\n";
      List.iter (fun (i, items) -> Printf.eprintf "%d -> [%s]\n" i (BatString.join ", " (List.map string_of_int items))) instr_live_sets; */
-  let run = (ty, instrs) => {
+  let run = (ty: Types.allocation_type, instrs) => {
     let num_locals =
       switch (ty) {
-      | I32Type => num_locals_i32
-      | I64Type => num_locals_i64
-      | F32Type => num_locals_f32
-      | F64Type => num_locals_f64
+      | Types.HeapAllocated
+      | Types.StackAllocated(WasmI32) => num_locals_i32
+      | Types.StackAllocated(WasmI64) => num_locals_i64
+      | Types.StackAllocated(WasmF32) => num_locals_f32
+      | Types.StackAllocated(WasmF64) => num_locals_f64
       };
     if (num_locals < 2) {
       instrs;
@@ -469,7 +472,10 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
       instrs;
     };
   };
-  run(I32Type, instrs) |> run(I64Type) |> run(F32Type) |> run(F64Type);
+  run(Types.StackAllocated(WasmI32), instrs)
+  |> run(Types.StackAllocated(WasmI64))
+  |> run(Types.StackAllocated(WasmF32))
+  |> run(Types.StackAllocated(WasmF64));
 };
 
 let compile_const = (c: Asttypes.constant) =>
@@ -538,11 +544,7 @@ let compile_lambda =
   let arg_binds =
     List_utils.fold_lefti(
       (acc, arg_idx, (arg, arg_type)) => {
-        Ident.add(
-          arg,
-          MArgBind(Int32.of_int(arg_idx), asmtype_of_alloctype(arg_type)),
-          acc,
-        )
+        Ident.add(arg, MArgBind(Int32.of_int(arg_idx), arg_type), acc)
       },
       free_binds,
       new_args,
@@ -593,16 +595,10 @@ let compile_wrapper = (id, env, func_name, args, rets): Mashtree.closure_data =>
       instr_desc:
         MCallRaw({
           func: func_name,
-          func_type: (
-            List.map(asmtype_of_alloctype, args),
-            List.map(asmtype_of_alloctype, rets),
-          ),
+          func_type: (args, rets),
           args:
             List.mapi(
-              (i, arg) =>
-                MImmBinding(
-                  MArgBind(Int32.of_int(i + 1), asmtype_of_alloctype(arg)),
-                ),
+              (i, arg) => MImmBinding(MArgBind(Int32.of_int(i + 1), arg)),
               args,
             ),
         }),
@@ -684,8 +680,8 @@ let rec compile_comp = (~id=?, env, c) => {
       let compiled_arg = compile_imm(env, arg);
       let switch_type =
         Option.fold(
-          ~none=I32Type,
-          ~some=((_, exp)) => asmtype_of_alloctype(exp.anf_allocation_type),
+          ~none=Types.StackAllocated(WasmI32),
+          ~some=((_, exp)) => exp.anf_allocation_type,
           List.nth_opt(branches, 0),
         );
       let default =
@@ -831,10 +827,7 @@ let rec compile_comp = (~id=?, env, c) => {
         ),
       );
     | CApp((f, (argsty, retty)), args, true) =>
-      let func_type = (
-        List.map(asmtype_of_alloctype, argsty),
-        [asmtype_of_alloctype(retty)],
-      );
+      let func_type = (argsty, [retty]);
       let closure = compile_imm(env, f);
       let args = List.map(compile_imm(env), args);
       switch (known_function(f)) {
@@ -842,10 +835,7 @@ let rec compile_comp = (~id=?, env, c) => {
       | None => MReturnCallIndirect({func: closure, func_type, args})
       };
     | CApp((f, (argsty, retty)), args, _) =>
-      let func_type = (
-        List.map(asmtype_of_alloctype, argsty),
-        [asmtype_of_alloctype(retty)],
-      );
+      let func_type = (argsty, [retty]);
       let closure = compile_imm(env, f);
       let args = List.map(compile_imm(env), args);
       switch (known_function(f)) {
@@ -855,7 +845,10 @@ let rec compile_comp = (~id=?, env, c) => {
     | CAppBuiltin(modname, name, args) =>
       MCallRaw({
         func: "builtin",
-        func_type: (List.map(i => I32Type, args), [I32Type]),
+        func_type: (
+          List.map(i => Types.StackAllocated(WasmI32), args),
+          [Types.StackAllocated(WasmI32)],
+        ),
         args: List.map(compile_imm(env), args),
       })
     | CImmExpr(i) => MImmediate(compile_imm(env, i))
@@ -872,34 +865,34 @@ and compile_anf_expr = (env, a) =>
     let rec get_locs = (env, binds) => {
       switch (binds) {
       | [(id, {comp_allocation_type}), ...rest] =>
-        let (asmtype, gc, stack_idx, next_env) =
+        let (alloc, gc, stack_idx, next_env) =
           switch (comp_allocation_type) {
           | HeapAllocated => (
-              I32Type,
+              Types.HeapAllocated,
               true,
               env.ce_stack_idx_i32,
               {...env, ce_stack_idx_i32: env.ce_stack_idx_i32 + 1},
             )
           | StackAllocated(WasmI32) => (
-              I32Type,
+              Types.StackAllocated(WasmI32),
               false,
               env.ce_stack_idx_i32,
               {...env, ce_stack_idx_i32: env.ce_stack_idx_i32 + 1},
             )
           | StackAllocated(WasmI64) => (
-              I64Type,
+              Types.StackAllocated(WasmI64),
               false,
               env.ce_stack_idx_i64,
               {...env, ce_stack_idx_i64: env.ce_stack_idx_i64 + 1},
             )
           | StackAllocated(WasmF32) => (
-              F32Type,
+              Types.StackAllocated(WasmF32),
               false,
               env.ce_stack_idx_f32,
               {...env, ce_stack_idx_f32: env.ce_stack_idx_f32 + 1},
             )
           | StackAllocated(WasmF64) => (
-              F64Type,
+              Types.StackAllocated(WasmF64),
               false,
               env.ce_stack_idx_f64,
               {...env, ce_stack_idx_f64: env.ce_stack_idx_f64 + 1},
@@ -909,15 +902,11 @@ and compile_anf_expr = (env, a) =>
           switch (global) {
           | Global => (
               env,
-              MGlobalBind(
-                next_global(~exported=true, id, asmtype),
-                asmtype,
-                gc,
-              ),
+              MGlobalBind(next_global(~exported=true, id, alloc), alloc, gc),
             )
           | Nonglobal => (
               next_env,
-              MLocalBind(Int32.of_int(stack_idx), asmtype),
+              MLocalBind(Int32.of_int(stack_idx), alloc),
             )
           };
         let env = {...env, ce_binds: Ident.add(id, loc, env.ce_binds)};
@@ -988,8 +977,8 @@ let compile_remaining_worklist = () => {
       index: Int32.of_int(index),
       id,
       name,
-      args: List.map(asmtype_of_alloctype, args),
-      return_type: List.map(asmtype_of_alloctype, return_type),
+      args,
+      return_type,
       body,
       stack_size,
       attrs,
@@ -1003,12 +992,8 @@ let compile_remaining_worklist = () => {
 let lift_imports = (env, imports) => {
   let process_shape = (mut, shape) =>
     switch (shape) {
-    | GlobalShape(alloc) => MGlobalImport(asmtype_of_alloctype(alloc), mut)
-    | FunctionShape(inputs, outputs) =>
-      MFuncImport(
-        List.map(asmtype_of_alloctype, inputs),
-        List.map(asmtype_of_alloctype, outputs),
-      )
+    | GlobalShape(alloc) => MGlobalImport(alloc, mut)
+    | FunctionShape(inputs, outputs) => MFuncImport(inputs, outputs)
     };
 
   let process_import =
@@ -1020,13 +1005,10 @@ let lift_imports = (env, imports) => {
     | GrainValue(mod_, name) =>
       let mimp_mod = Ident.create(mod_);
       let mimp_name = Ident.create(name);
-      let (asmtype, gc) =
+      let (alloc, gc) =
         switch (imp_shape) {
-        | GlobalShape(HeapAllocated as alloc) => (
-            asmtype_of_alloctype(alloc),
-            true,
-          )
-        | GlobalShape(alloc) => (asmtype_of_alloctype(alloc), false)
+        | GlobalShape(HeapAllocated as alloc) => (alloc, true)
+        | GlobalShape(alloc) => (alloc, false)
         | FunctionShape(_) =>
           failwith("internal: GrainValue had FunctionShape")
         };
@@ -1051,7 +1033,7 @@ let lift_imports = (env, imports) => {
                   Ident.unique_name(mimp_mod),
                   Ident.unique_name(mimp_name),
                 ),
-                asmtype,
+                alloc,
                 gc,
               ),
               env.ce_binds,
@@ -1061,13 +1043,10 @@ let lift_imports = (env, imports) => {
     | WasmValue(mod_, name) =>
       let mimp_mod = Ident.create(mod_);
       let mimp_name = Ident.create(name);
-      let (asmtype, gc) =
+      let (alloc, gc) =
         switch (imp_shape) {
-        | GlobalShape(HeapAllocated as alloc) => (
-            asmtype_of_alloctype(alloc),
-            true,
-          )
-        | GlobalShape(alloc) => (asmtype_of_alloctype(alloc), false)
+        | GlobalShape(HeapAllocated as alloc) => (alloc, true)
+        | GlobalShape(alloc) => (alloc, false)
         | FunctionShape(_) =>
           failwith("internal: WasmValue had FunctionShape")
         };
@@ -1092,7 +1071,7 @@ let lift_imports = (env, imports) => {
                   Ident.unique_name(mimp_mod),
                   Ident.unique_name(mimp_name),
                 ),
-                asmtype,
+                alloc,
                 gc,
               ),
               env.ce_binds,
@@ -1101,7 +1080,11 @@ let lift_imports = (env, imports) => {
       );
     | WasmFunction(mod_, name) =>
       let glob =
-        next_global(~exported=imp_exported == Global, imp_use_id, I32Type);
+        next_global(
+          ~exported=imp_exported == Global,
+          imp_use_id,
+          Types.StackAllocated(WasmI32),
+        );
       let new_mod = {
         mimp_mod: Ident.create(mod_),
         mimp_name: Ident.create(name),
@@ -1129,7 +1112,11 @@ let lift_imports = (env, imports) => {
                   instr_desc:
                     MStore([
                       (
-                        MGlobalBind(glob, I32Type, true),
+                        MGlobalBind(
+                          glob,
+                          Types.StackAllocated(WasmI32),
+                          true,
+                        ),
                         {
                           instr_desc:
                             MAllocate(
@@ -1159,7 +1146,7 @@ let lift_imports = (env, imports) => {
           ce_binds:
             Ident.add(
               imp_use_id,
-              MGlobalBind(glob, I32Type, true),
+              MGlobalBind(glob, Types.StackAllocated(WasmI32), true),
               env.ce_binds,
             ),
         },
