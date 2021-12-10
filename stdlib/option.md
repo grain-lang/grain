@@ -44,7 +44,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`option`|`Option<a>`|The Option to check|
+|`option`|`Option<a>`|The option to check|
 
 Returns:
 
@@ -69,7 +69,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`option`|`Option<a>`|The Option to check|
+|`option`|`Option<a>`|The option to check|
 
 Returns:
 
