@@ -1,7 +1,7 @@
 /**
  * @module Option: Utilities for working with the Option data type.
  * 
- * The Option type is an enum that represents the possibility of something being present (with the `Some` variant), or not (with the `None` variant). There’s no standalone `null` or `none` type in Grain; use an Option where you would normally reach for `null` or `none`.
+ * The Option type is an enum that represents the possibility of something being present (with the `Some` variant), or not (with the `None` variant). There’s no standalone `null` or `nil` type in Grain; use an Option where you would normally reach for `null` or `nil`.
  * 
  * @example import Option from "option"
  * 
@@ -62,7 +62,7 @@ export let contains = (value, option) => {
 }
 
 /**
- * Extracts the value inside a `Some` option, otherwise throw an
+ * Extracts the value inside a `Some` option, otherwise throws an
  * exception containing the message provided.
  *
  * @param msg: The message to use upon failure
@@ -80,7 +80,7 @@ export let expect = (msg, option) => {
 
 /**
  * Extracts the value inside a `Some` option, otherwise 
- * throw an exception containing a default message.
+ * throws an exception containing a default message.
  *
  * @param option: The option to extract the value from
  * @returns The unwrapped value if the Option is the `Some` variant
@@ -178,7 +178,6 @@ export let flatMap = (fn, option) => {
 
 /**
  * Converts `Some(value)` variants to `None` variants where the predicate function returns `false`.
- * Useful for applying some value validation to your Options.
  * if the `fn` return `true` returns `Some(value)`, otherwise returns `None`.
  *
  * @param fn: The predicate function to indicate if the option should remain `Some`
@@ -216,7 +215,7 @@ export let zip = (optionA, optionB) => {
 }
 
 /**
- * Combine two Options into a single Option a new value produced by applying the given function to each value.
+ * Combine two Options into a single Option. The new value is produced by applying the given function to both values.
  *
  * @param fn: The function to generate a new value
  * @param optionA: The first option to combine
