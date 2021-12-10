@@ -429,6 +429,7 @@ let disallowed_attributes = (errs, super) => {
     switch (List.find_opt((({txt}, _)) => txt == "externalName", attrs)) {
     | Some(({txt, loc}, _)) =>
       switch (desc) {
+      | PTopForeign(_)
       | PTopLet(
           _,
           _,
@@ -441,13 +442,29 @@ let disallowed_attributes = (errs, super) => {
               },
             },
           ],
-        )
-      | PTopForeign(_) => ()
+        ) =>
+        ()
+      | PTopLet(_, _, _, [_]) =>
+        errs :=
+          [
+            AttributeDisallowed(
+              "`externalName` cannot be used with a destructuring pattern.",
+              loc,
+            ),
+          ]
+      | PTopLet(_, _, _, [_, _, ..._]) =>
+        errs :=
+          [
+            AttributeDisallowed(
+              "`externalName` cannot be used on a `let` with multiple bindings.",
+              loc,
+            ),
+          ]
       | _ =>
         errs :=
           [
             AttributeDisallowed(
-              "`externalName` is only allowed on `foreign` statements and let bindings of a single name.",
+              "`externalName` is only allowed on `foreign` statements and `let` bindings.",
               loc,
             ),
           ]
