@@ -1422,17 +1422,14 @@ let rec transl_anf_statement =
       | Nonexported => Nonglobal
       };
     let external_name =
-      switch (
-        List.find_opt(
+      List.fold_left(
+        name =>
           fun
-          | External_name(_) => true
-          | _ => false,
-          attributes,
-        )
-      ) {
-      | Some(External_name(name)) => name
-      | _ => desc.tvd_name.txt
-      };
+          | External_name(name) => name
+          | _ => name,
+        desc.tvd_name.txt,
+        attributes,
+      );
     switch (desc.tvd_desc.ctyp_type.desc) {
     | TTyArrow(_) =>
       let (argsty, retty) =
