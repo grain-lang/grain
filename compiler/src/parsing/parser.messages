@@ -7388,4 +7388,4 @@ program: MATCH LPAREN FLOAT32 RPAREN LBRACE NUMBER_INT EOL WHILE
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
 
-Expected an arrow (=>) followed by an expression (or a branch guard, i.e. the keyword `when` followed by an expression).
+Expected an arrow (=>) followed by an expression (or a branch guard, i.e. the keyword 'when' followed by an expression).
