@@ -2604,7 +2604,7 @@ record RegularExpression {
  *
  * @example Regex.make("(foo|bar)[0-9]+")
  *
- * @since next
+ * @since 0.4.3
  */
 export let make = (regexString: String) => {
   let buf = makeRegExBuf(regexString)
