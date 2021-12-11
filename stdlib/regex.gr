@@ -178,18 +178,6 @@ REGEX TYPE DEFINITIONS
 type RERange = List<(Number, Number)>
 type CharRangeElt = Number
 type CharRange = List<(CharRangeElt, CharRangeElt)>
-type GroupID = Number
-type NonGreedy = Bool
-type NStart = Number
-type NumN = Number
-type Min = Number
-type Max = Option<Number>
-type LbMin = Box<Number>
-type LbMax = Box<Number>
-type IsMatch = Bool
-type CaseSensitive = Bool
-type NeedsBackTrack = Bool
-type Matches = Bool
 /*
 
 =================================
@@ -384,11 +372,6 @@ enum UnicodeCategory {
   OtherPrivateUse
 }
 
-type SymList = List<UnicodeCategory>
-type SeqElts = List<ParsedRegularExpression>,
-type IfFalse = ParsedRegularExpression,
-type IfTrue = Option<ParsedRegularExpression>,
-
 enum ParsedRegularExpression {
   RENever,
   REEmpty,
@@ -402,17 +385,17 @@ enum ParsedRegularExpression {
   RELiteral(Char),
   RELiteralString(String), // <- sequences of literals are flattened into a string
   REAlts(ParsedRegularExpression, ParsedRegularExpression),
-  RESequence(SeqElts, NeedsBackTrack), // seq elts, needs backtrack
-  REGroup(ParsedRegularExpression, GroupID),
-  RERepeat(ParsedRegularExpression, Min, Max, NonGreedy), // regex, min, max (None for infinity), true=non-greedy
-  REMaybe(ParsedRegularExpression, NonGreedy), // regex, true=non-greedy
-  REConditional(ParsedRegularExpression, IfFalse, IfTrue, NStart, NumN, NeedsBackTrack), // test, if-true, if-false, n-start, num-n, needs-backtrack
-  RELookahead(ParsedRegularExpression, IsMatch, NStart, NumN), // regex, is-match, n-start, num-n
-  RELookbehind(ParsedRegularExpression, IsMatch, LbMin, LbMax, NStart, NumN), // regex, is-match, lb-min, lb-max, n-start, num-n (lb-xx values patched in later)
-  RECut(ParsedRegularExpression, NStart, NumN, NeedsBackTrack), // regex, n-start, num-n, needs-backtrack
-  REReference(Number, CaseSensitive), // n, case-sensitive
+  RESequence(List<ParsedRegularExpression>, Bool), // seq elts, needs backtrack
+  REGroup(ParsedRegularExpression, Number),
+  RERepeat(ParsedRegularExpression, Number, Option<Number>, Bool), // regex, min, max (None for infinity), true=non-greedy
+  REMaybe(ParsedRegularExpression, Bool), // regex, true=non-greedy
+  REConditional(ParsedRegularExpression, ParsedRegularExpression, Option<ParsedRegularExpression>, Number, Number, Bool), // test, if-true, if-false, n-start, num-n, needs-backtrack
+  RELookahead(ParsedRegularExpression, Bool, Number, Number), // regex, is-match, n-start, num-n
+  RELookbehind(ParsedRegularExpression, Bool, Box<Number>, Box<Number>, Number, Number), // regex, is-match, lb-min, lb-max, n-start, num-n (lb-xx values patched in later)
+  RECut(ParsedRegularExpression, Number, Number, Bool), // regex, n-start, num-n, needs-backtrack
+  REReference(Number, Bool), // n, case-sensitive
   RERange(RERange),
-  REUnicodeCategories(SymList, Matches) // symlist, true=match/false=does-not-match
+  REUnicodeCategories(List<UnicodeCategory>, Bool) // symlist, true=match/false=does-not-match
 }
 
 let needsBacktrack = (rx: ParsedRegularExpression) => {
