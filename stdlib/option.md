@@ -206,7 +206,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Option<a>`|A new `Some` variant produced by the mapping function if the variant was `Some` or the unmodified `None` otherwise|
+|`Option<b>`|A new `Some` variant produced by the mapping function if the variant was `Some` or the unmodified `None` otherwise|
 
 ### Option.**mapWithDefault**
 
@@ -227,14 +227,14 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`fn`|`a -> b`|The function to call on the value of a `Some` variant|
-|`default`|`a`|A fallback value for a `None` variant|
+|`default`|`b`|A fallback value for a `None` variant|
 |`option`|`Option<a>`|The option to map|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`a`|The value produced by the mapping function if the Option is of the `Some` variant or the default value otherwise|
+|`b`|The value produced by the mapping function if the Option is of the `Some` variant or the default value otherwise|
 
 ### Option.**mapWithDefaultFn**
 
@@ -256,14 +256,14 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`fn`|`a -> b`|The function to call on the value of a `Some` variant|
-|`defaultFn`|`() -> a`|The default function|
+|`defaultFn`|`() -> b`|The default function|
 |`option`|`Option<a>`|The option to map|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`a`|The value produced by one of the mapping functions|
+|`b`|The value produced by one of the mapping functions|
 
 ### Option.**flatMap**
 
@@ -289,7 +289,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Option<a>`|A new Option produced by the mapping function if the variant was `Some` or the unmodified `None` otherwise|
+|`Option<b>`|A new Option produced by the mapping function if the variant was `Some` or the unmodified `None` otherwise|
 
 ### Option.**filter**
 
@@ -336,7 +336,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`optionA`|`Option<a>`|The first option to combine|
-|`optionB`|`Option<a>`|The second option to combine|
+|`optionB`|`Option<b>`|The second option to combine|
 
 Returns:
 
@@ -363,13 +363,13 @@ Parameters:
 |-----|----|-----------|
 |`fn`|`(a, b) -> c`|The function to generate a new value|
 |`optionA`|`Option<a>`|The first option to combine|
-|`optionB`|`Option<a>`|The second option to combine|
+|`optionB`|`Option<b>`|The second option to combine|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Option<a>`|`Some(newValue)` if both Options are `Some` variants or `None` otherwise|
+|`Option<c>`|`Some(newValue)` if both Options are `Some` variants or `None` otherwise|
 
 ### Option.**flatten**
 
@@ -470,13 +470,13 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`err`|`a`|The error to use if the option is `None`|
-|`option`|`Option<a>`|The option to convert|
+|`option`|`Option<b>`|The option to convert|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Result<a, b>`|`Ok(value)` if the Option is `Some(value)` or `Err(err)` if the Option is `None`|
+|`Result<b, a>`|`Ok(value)` if the Option is `Some(value)` or `Err(err)` if the Option is `None`|
 
 ### Option.**sideEffect**
 
