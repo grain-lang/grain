@@ -1,5 +1,14 @@
 # Changelog
 
+### [0.4.5](https://www.github.com/grain-lang/grain/compare/cli-v0.4.4...cli-v0.4.5) (2021-12-11)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @grain/stdlib bumped from ^0.4.3 to ^0.4.4
+
 ### [0.4.4](https://www.github.com/grain-lang/grain/compare/cli-v0.4.3...cli-v0.4.4) (2021-10-27)
 
 
