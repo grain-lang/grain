@@ -238,8 +238,6 @@ and comp_count_vars = c =>
   | CSwitch(_, bs, _) =>
     List.fold_left(tuple_max, tuple_zero) @@
     List.map(((_, b)) => anf_count_vars(b), bs)
-  | CApp(_, args, _) => (List.length(args), 0, 0, 0, 0)
-  | CAppBuiltin(_, _, args) => (List.length(args), 0, 0, 0, 0)
   | _ => tuple_zero
   };
 
@@ -248,15 +246,7 @@ module ClearLocationsArg: Anf_mapper.MapArgument = {
 
   let leave_imm_expression = i => {...i, imm_loc: Location.dummy_loc};
 
-  let leave_comp_expression = c => {
-    ...c,
-    comp_loc: Location.dummy_loc,
-    comp_attributes:
-      List.map(
-        attr => {...attr, Asttypes.loc: Location.dummy_loc},
-        c.comp_attributes,
-      ),
-  };
+  let leave_comp_expression = c => {...c, comp_loc: Location.dummy_loc};
 
   let leave_anf_expression = a => {...a, anf_loc: Location.dummy_loc};
 };

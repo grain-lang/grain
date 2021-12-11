@@ -18,6 +18,8 @@ type wferr =
   | NoLetRecMut(Location.t)
   | RationalZeroDenominator(Location.t)
   | UnknownAttribute(string, Location.t)
+  | InvalidAttributeArity(string, int, Location.t)
+  | AttributeDisallowed(string, Location.t)
   | LoopControlOutsideLoop(string, Location.t);
 
 exception Error(wferr);
@@ -66,6 +68,14 @@ let prepare_error =
         errorf(~loc, "Rational numbers may not have a denominator of zero.")
       | UnknownAttribute(attr, loc) =>
         errorf(~loc, "Unknown attribute `%s`.", attr)
+      | InvalidAttributeArity(attr, arity, loc) =>
+        switch (arity) {
+        | 0 => errorf(~loc, "Attribute `%s` expects no arguments.", attr)
+        | 1 => errorf(~loc, "Attribute `%s` expects one argument.", attr)
+        | _ =>
+          errorf(~loc, "Attribute `%s` expects %d arguments.", attr, arity)
+        }
+      | AttributeDisallowed(msg, loc) => errorf(~loc, "%s", msg)
       | LoopControlOutsideLoop(control, loc) =>
         errorf(~loc, "`%s` statement used outside of a loop.", control)
     )
@@ -367,27 +377,100 @@ let no_zero_denominator_rational = (errs, super) => {
   {errs, iterator};
 };
 
-let known_attributes = ["disableGC"];
+type known_attribute = {
+  name: string,
+  arity: int,
+};
 
-let no_unknown_attributes = (errs, super) => {
+let known_attributes = [
+  {name: "disableGC", arity: 0},
+  {name: "externalName", arity: 1},
+];
+
+let valid_attributes = (errs, super) => {
+  let iter_attributes = (({txt, loc}, args)) => {
+    switch (List.find_opt(({name}) => name == txt, known_attributes)) {
+    | Some({arity}) when List.length(args) != arity =>
+      errs := [InvalidAttributeArity(txt, arity, loc), ...errs^]
+    | None => errs := [UnknownAttribute(txt, loc), ...errs^]
+    | _ => ()
+    };
+  };
+
   let iter_expr = (self, {pexp_attributes: attrs} as e) => {
-    List.iter(
-      ({txt, loc}) =>
-        if (!List.mem(txt, known_attributes)) {
-          errs := [UnknownAttribute(txt, loc), ...errs^];
-        },
-      attrs,
-    );
+    List.iter(iter_attributes, attrs);
     super.expr(self, e);
   };
   let iter_toplevel = (self, {ptop_attributes: attrs} as top) => {
-    List.iter(
-      ({txt, loc}) =>
-        if (!List.mem(txt, known_attributes)) {
-          errs := [UnknownAttribute(txt, loc), ...errs^];
-        },
-      attrs,
-    );
+    List.iter(iter_attributes, attrs);
+    super.toplevel(self, top);
+  };
+  let iterator = {...super, expr: iter_expr, toplevel: iter_toplevel};
+  {errs, iterator};
+};
+
+let disallowed_attributes = (errs, super) => {
+  let iter_expr = (self, {pexp_desc: desc, pexp_attributes: attrs} as e) => {
+    switch (List.find_opt((({txt}, _)) => txt == "externalName", attrs)) {
+    | Some(({txt, loc}, _)) =>
+      errs :=
+        [
+          AttributeDisallowed(
+            "`externalName` is only allowed on top-level let bindings and `foreign` statements.",
+            loc,
+          ),
+        ]
+    | None => ()
+    };
+    super.expr(self, e);
+  };
+  let iter_toplevel =
+      (self, {ptop_desc: desc, ptop_attributes: attrs} as top) => {
+    switch (List.find_opt((({txt}, _)) => txt == "externalName", attrs)) {
+    | Some(({txt, loc}, _)) =>
+      switch (desc) {
+      | PTopForeign(_)
+      | PTopLet(
+          _,
+          _,
+          _,
+          [
+            {
+              pvb_pat: {
+                ppat_desc:
+                  PPatVar(_) | PPatConstraint({ppat_desc: PPatVar(_)}, _),
+              },
+            },
+          ],
+        ) =>
+        ()
+      | PTopLet(_, _, _, [_]) =>
+        errs :=
+          [
+            AttributeDisallowed(
+              "`externalName` cannot be used with a destructuring pattern.",
+              loc,
+            ),
+          ]
+      | PTopLet(_, _, _, [_, _, ..._]) =>
+        errs :=
+          [
+            AttributeDisallowed(
+              "`externalName` cannot be used on a `let` with multiple bindings.",
+              loc,
+            ),
+          ]
+      | _ =>
+        errs :=
+          [
+            AttributeDisallowed(
+              "`externalName` is only allowed on `foreign` statements and `let` bindings.",
+              loc,
+            ),
+          ]
+      }
+    | None => ()
+    };
     super.toplevel(self, top);
   };
   let iterator = {...super, expr: iter_expr, toplevel: iter_toplevel};
@@ -434,7 +517,8 @@ let well_formedness_checks = [
   only_functions_oh_rhs_letrec,
   no_letrec_mut,
   no_zero_denominator_rational,
-  no_unknown_attributes,
+  valid_attributes,
+  disallowed_attributes,
   no_loop_control_statement_outside_of_loop,
 ];
 

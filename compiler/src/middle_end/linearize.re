@@ -1421,6 +1421,15 @@ let rec transl_anf_statement =
       | Exported => Global
       | Nonexported => Nonglobal
       };
+    let external_name =
+      List.fold_left(
+        name =>
+          fun
+          | External_name(name) => name
+          | _ => name,
+        desc.tvd_name.txt,
+        attributes,
+      );
     switch (desc.tvd_desc.ctyp_type.desc) {
     | TTyArrow(_) =>
       let (argsty, retty) =
@@ -1438,7 +1447,7 @@ let rec transl_anf_statement =
             ~global,
             desc.tvd_id,
             desc.tvd_mod.txt,
-            desc.tvd_name.txt,
+            external_name,
             FunctionShape(argsty, retty),
           ),
         ],
@@ -1452,7 +1461,7 @@ let rec transl_anf_statement =
             ~global,
             desc.tvd_id,
             desc.tvd_mod.txt,
-            desc.tvd_name.txt,
+            external_name,
             GlobalShape(ty),
           ),
         ],

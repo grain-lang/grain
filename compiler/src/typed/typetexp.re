@@ -583,6 +583,18 @@ let fold_modules = fold_persistent(Env.fold_modules);
 let fold_constructors = fold_descr(Env.fold_constructors, d => d.cstr_name);
 let fold_modtypes = fold_simple(Env.fold_modtypes);
 
+let type_attributes = attrs => {
+  List.map(
+    (({txt}, args)) =>
+      switch (txt, args) {
+      | ("disableGC", []) => Disable_gc
+      | ("externalName", [{txt}]) => External_name(txt)
+      | _ => failwith("type_attributes: impossible by well-formedness")
+      },
+    attrs,
+  );
+};
+
 let report_error = (env, ppf) =>
   fun
   | Unbound_type_variable(name) =>

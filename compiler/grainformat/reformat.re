@@ -1462,8 +1462,30 @@ and print_attributes = attributes =>
       Doc.join(
         Doc.space,
         List.map(
-          (a: Location.loc(string)) =>
-            Doc.concat([Doc.text("@"), Doc.text(a.txt)]),
+          ((a: Location.loc(string), args: list(Location.loc(string)))) => {
+            switch (args) {
+            | [] => Doc.concat([Doc.text("@"), Doc.text(a.txt)])
+            | _ =>
+              Doc.concat([
+                Doc.text("@"),
+                Doc.text(a.txt),
+                Doc.text("("),
+                Doc.join(
+                  Doc.concat([Doc.comma, Doc.space]),
+                  List.map(
+                    (b: Location.loc(string)) =>
+                      Doc.concat([
+                        Doc.text("\""),
+                        Doc.text(b.txt),
+                        Doc.text("\""),
+                      ]),
+                    args,
+                  ),
+                ),
+                Doc.text(")"),
+              ])
+            }
+          },
           attributes,
         ),
       ),
