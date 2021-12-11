@@ -386,7 +386,7 @@ enum ParsedRegularExpression {
   RELiteralString(String), // <- sequences of literals are flattened into a string
   REAlts(ParsedRegularExpression, ParsedRegularExpression),
   RESequence(List<ParsedRegularExpression>, Bool), // seq elts, needs backtrack
-  REGroup(ParsedRegularExpression, Number),
+  REGroup(ParsedRegularExpression, Number), // regex, group ID
   RERepeat(ParsedRegularExpression, Number, Option<Number>, Bool), // regex, min, max (None for infinity), true=non-greedy
   REMaybe(ParsedRegularExpression, Bool), // regex, true=non-greedy
   REConditional(ParsedRegularExpression, ParsedRegularExpression, Option<ParsedRegularExpression>, Number, Number, Bool), // test, if-true, if-false, n-start, num-n, needs-backtrack
