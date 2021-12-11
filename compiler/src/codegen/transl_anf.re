@@ -11,6 +11,7 @@ type compilation_env = {
   ce_binds: Ident.tbl(Mashtree.binding),
   /* Useful due to us needing a second pass over exports (for mutual recursion) */
   ce_exported_globals: Ident.tbl(int32),
+  ce_stack_idx_ptr: int,
   ce_stack_idx_i32: int,
   ce_stack_idx_i64: int,
   ce_stack_idx_f32: int,
@@ -21,6 +22,7 @@ type compilation_env = {
 let initial_compilation_env = {
   ce_binds: Ident.empty,
   ce_exported_globals: Ident.empty,
+  ce_stack_idx_ptr: 0,
   ce_stack_idx_i32: 0,
   ce_stack_idx_i64: 0,
   ce_stack_idx_f32: 0,
@@ -322,13 +324,28 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
   /*** Mapping from (instruction index) -> (used locals) */
   let instr_live_sets =
     List.mapi((i, instr) => (i, uniq @@ live_locals(instr)), instrs);
-  let (num_locals_i32, num_locals_i64, num_locals_f32, num_locals_f64) = {
+  let (
+    num_locals_ptr,
+    num_locals_i32,
+    num_locals_i64,
+    num_locals_f32,
+    num_locals_f64,
+  ) = {
     let rec help = ((ty: Types.allocation_type, acc: int)) =>
       fun
       | [] => (ty, acc)
       | [(hd_ty, hd), ...tl] when hd_ty == ty && hd > acc =>
         help((ty, hd), tl)
       | [_, ...tl] => help((ty, acc), tl);
+    let ptr =
+      snd @@
+      help(
+        (Types.HeapAllocated, 0),
+        List.map(
+          ((_, lst)) => help((Types.HeapAllocated, 0), lst),
+          instr_live_sets,
+        ),
+      );
     let i32 =
       snd @@
       help(
@@ -365,14 +382,14 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
           instr_live_sets,
         ),
       );
-    (i32 + 1, i64 + 1, f32 + 1, f64 + 1);
+    (ptr + 1, i32 + 1, i64 + 1, f32 + 1, f64 + 1);
   };
   /* Printf.eprintf "Live sets:\n";
      List.iter (fun (i, items) -> Printf.eprintf "%d -> [%s]\n" i (BatString.join ", " (List.map string_of_int items))) instr_live_sets; */
   let run = (ty: Types.allocation_type, instrs) => {
     let num_locals =
       switch (ty) {
-      | Types.HeapAllocated
+      | Types.HeapAllocated => num_locals_ptr
       | Types.StackAllocated(WasmI32) => num_locals_i32
       | Types.StackAllocated(WasmI64) => num_locals_i64
       | Types.StackAllocated(WasmF32) => num_locals_f32
@@ -472,7 +489,8 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
       instrs;
     };
   };
-  run(Types.StackAllocated(WasmI32), instrs)
+  run(Types.HeapAllocated, instrs)
+  |> run(Types.StackAllocated(WasmI32))
   |> run(Types.StackAllocated(WasmI64))
   |> run(Types.StackAllocated(WasmF32))
   |> run(Types.StackAllocated(WasmF64));
@@ -563,6 +581,7 @@ let compile_lambda =
   let lam_env = {
     ...env,
     ce_binds: arg_binds,
+    ce_stack_idx_ptr: 0,
     ce_stack_idx_i32: 0,
     ce_stack_idx_i64: 0,
     ce_stack_idx_f32: 0,
@@ -633,6 +652,7 @@ let compile_wrapper = (id, env, func_name, args, rets): Mashtree.closure_data =>
   let lam_env = {
     ...env,
     ce_binds: Ident.empty,
+    ce_stack_idx_ptr: 0,
     ce_stack_idx_i32: 0,
     ce_stack_idx_i64: 0,
     ce_stack_idx_f32: 0,
@@ -867,8 +887,8 @@ and compile_anf_expr = (env, a) =>
           | HeapAllocated => (
               Types.HeapAllocated,
               true,
-              env.ce_stack_idx_i32,
-              {...env, ce_stack_idx_i32: env.ce_stack_idx_i32 + 1},
+              env.ce_stack_idx_ptr,
+              {...env, ce_stack_idx_ptr: env.ce_stack_idx_ptr + 1},
             )
           | StackAllocated(WasmI32) => (
               Types.StackAllocated(WasmI32),

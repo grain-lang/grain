@@ -656,11 +656,11 @@ let cleanup_local_slot_instructions = (wasm_mod, env: codegen_env) => {
 };
 let appropriate_incref = (wasm_mod, env, arg, b) =>
   switch (b) {
-  | MArgBind(_, Types.StackAllocated(WasmI32))
-  | MLocalBind(_, Types.StackAllocated(WasmI32))
-  | MSwapBind(_, Types.StackAllocated(WasmI32))
+  | MArgBind(_, Types.HeapAllocated)
+  | MLocalBind(_, Types.HeapAllocated)
+  | MSwapBind(_, Types.HeapAllocated)
   | MClosureBind(_)
-  | MGlobalBind(_, Types.StackAllocated(WasmI32), true) =>
+  | MGlobalBind(_, Types.HeapAllocated, true) =>
     call_incref(wasm_mod, env, arg)
   | MArgBind(_)
   | MLocalBind(_)
@@ -671,11 +671,11 @@ let appropriate_incref = (wasm_mod, env, arg, b) =>
 
 let appropriate_decref = (wasm_mod, env, arg, b) =>
   switch (b) {
-  | MArgBind(_, Types.StackAllocated(WasmI32))
-  | MLocalBind(_, Types.StackAllocated(WasmI32))
-  | MSwapBind(_, Types.StackAllocated(WasmI32))
+  | MArgBind(_, Types.HeapAllocated)
+  | MLocalBind(_, Types.HeapAllocated)
+  | MSwapBind(_, Types.HeapAllocated)
   | MClosureBind(_)
-  | MGlobalBind(_, Types.StackAllocated(WasmI32), true) =>
+  | MGlobalBind(_, Types.HeapAllocated, true) =>
     call_decref(wasm_mod, env, arg)
   | MArgBind(_)
   | MLocalBind(_)
@@ -776,15 +776,22 @@ let compile_bind =
     /* Local bindings need to be offset to account for arguments and swap variables */
     let (typ, slot) =
       switch (alloc) {
-      | Types.HeapAllocated
-      | Types.StackAllocated(WasmI32) => (
+      | Types.HeapAllocated => (
           Type.int32,
           env.num_args + Array.length(swap_slots) + Int32.to_int(i),
+        )
+      | Types.StackAllocated(WasmI32) => (
+          Type.int32,
+          env.num_args
+          + Array.length(swap_slots)
+          + env.stack_size.stack_size_ptr
+          + Int32.to_int(i),
         )
       | Types.StackAllocated(WasmI64) => (
           Type.int64,
           env.num_args
           + Array.length(swap_slots)
+          + env.stack_size.stack_size_ptr
           + env.stack_size.stack_size_i32
           + Int32.to_int(i),
         )
@@ -792,6 +799,7 @@ let compile_bind =
           Type.float32,
           env.num_args
           + Array.length(swap_slots)
+          + env.stack_size.stack_size_ptr
           + env.stack_size.stack_size_i32
           + env.stack_size.stack_size_i64
           + Int32.to_int(i),
@@ -800,6 +808,7 @@ let compile_bind =
           Type.float64,
           env.num_args
           + Array.length(swap_slots)
+          + env.stack_size.stack_size_ptr
           + env.stack_size.stack_size_i32
           + env.stack_size.stack_size_i64
           + env.stack_size.stack_size_f32
@@ -1056,18 +1065,18 @@ let cleanup_locals = (wasm_mod, env: codegen_env, arg, rtype): Expression.t => {
         - Call decref() on all non-swap locals (should include return value)
         - Return the value in the swap variable (which should now have no net change in its refcount)
      */
-  let ret =
-    if (Config.no_gc^) {
-      arg;
-    } else {
-      Expression.Block.make(wasm_mod, gensym_label("cleanup_locals")) @@
-      Concatlist.list_of_t(
-        singleton(set_swap(wasm_mod, env, 0, arg, ~skip_incref=false))
-        @ cleanup_local_slot_instructions(wasm_mod, env)
-        +@ [get_swap(wasm_mod, env, 0)],
-      );
-    };
-  ret;
+  switch (rtype) {
+  | [_] when Config.no_gc^ => arg
+  | [Types.StackAllocated(_)] => arg
+  | [_] =>
+    Expression.Block.make(wasm_mod, gensym_label("cleanup_locals")) @@
+    Concatlist.list_of_t(
+      singleton(set_swap(wasm_mod, env, 0, arg, ~skip_incref=false))
+      @ cleanup_local_slot_instructions(wasm_mod, env)
+      +@ [get_swap(wasm_mod, env, 0)],
+    )
+  | _ => failwith("NYI: multiple return types")
+  };
 };
 
 let compile_imm =
