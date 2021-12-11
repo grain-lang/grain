@@ -2237,8 +2237,8 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
   | BoxBind => failwith("Unreachable case; should never get here: BoxBind")
   | UnboxBind =>
     failwith("Unreachable case; should never get here: UnboxBind")
-  | WasmFromGrain
-  | WasmToGrain => compiled_arg // These are no-ops
+  | WasmFromGrain => compile_imm(~skip_incref=true, wasm_mod, env, arg) // no-op, but we can't cause an incref here
+  | WasmToGrain => compiled_arg // no-op
   | WasmMemoryGrow => Expression.Memory_grow.make(wasm_mod, compiled_arg)
   | WasmUnaryI32({wasm_op, ret_type})
   | WasmUnaryI64({wasm_op, ret_type})
@@ -3144,6 +3144,7 @@ let compile_function =
   let locals =
     [
       swap_slots,
+      Array.make(stack_size.stack_size_ptr, Type.int32),
       Array.make(stack_size.stack_size_i32, Type.int32),
       Array.make(stack_size.stack_size_i64, Type.int64),
       Array.make(stack_size.stack_size_f32, Type.float32),

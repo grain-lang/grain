@@ -147,7 +147,8 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
 module WellFormednessIterator = TypedtreeIter.MakeIterator(WellFormednessArg);
 
 let check_well_formedness = ({statements}) => {
-  List.iter(WellFormednessIterator.iter_toplevel_stmt, statements);
+  ();
+    // List.iter(WellFormednessIterator.iter_toplevel_stmt, statements);
 };
 
 open Format;
