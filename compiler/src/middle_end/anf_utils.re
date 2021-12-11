@@ -235,8 +235,6 @@ and comp_count_vars = c =>
   | CSwitch(_, bs, _) =>
     List.fold_left(tuple_max, tuple_zero) @@
     List.map(((_, b)) => anf_count_vars(b), bs)
-  | CApp(_, args, _) => (List.length(args), 0, 0, 0)
-  | CAppBuiltin(_, _, args) => (List.length(args), 0, 0, 0)
   | _ => tuple_zero
   };
 

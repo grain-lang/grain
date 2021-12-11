@@ -157,12 +157,6 @@ boxes › box_multiplication1
     (local.get $3)
    )
   )
-  (drop
-   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
-    (i32.const 0)
-   )
-  )
   (local.get $0)
  )
  (func $_start (; has Stack IR ;)
