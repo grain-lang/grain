@@ -21,7 +21,7 @@ export let _RESERVED_RUNTIME_SPACE: WasmI32
  * @param nbytes: WasmI32 - The number of bytes to allocate
  * @return WasmI32 - The pointer to the allocated region (8-byte aligned), or -1 if the allocation failed.
  */
-export let malloc: (nbytes: WasmI32) => WasmI32
+export let malloc: (nbytes: WasmI32) -> WasmI32
 
 /**
  * Frees the given allocated pointer.
