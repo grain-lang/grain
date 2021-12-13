@@ -18,11 +18,15 @@ let wasm_unsafe_types = [
   Builtin_types.path_wasmf64,
 ];
 
-let exp_is_wasm_unsafe = ({exp_type: {desc}}) => {
-  switch (desc) {
-  | TTyConstr(path, _, _) => List.mem(path, wasm_unsafe_types)
-  | _ => false
+let rec exp_is_wasm_unsafe = ({exp_type}) => {
+  let rec type_is_wasm_unsafe = t => {
+    switch (t.desc) {
+    | TTyConstr(path, _, _) => List.mem(path, wasm_unsafe_types)
+    | TTyLink(t) => type_is_wasm_unsafe(t)
+    | _ => false
+    };
   };
+  type_is_wasm_unsafe(exp_type);
 };
 
 let is_marked_unsafe = attrs => {
