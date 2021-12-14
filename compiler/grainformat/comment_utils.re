@@ -19,6 +19,28 @@ let rec get_comments_on_line = (line: int, comments: list(Parsetree.comment)) =>
     }; // can stop early as there will be no more
   };
 
+let rec get_comments_before_location =
+        (~location: Location.t, comments: list(Parsetree.comment)) => {
+  let (_, stmt_start_line, stm_start_char, _) =
+    Locations.get_raw_pos_info(location.loc_start);
+  switch (comments) {
+  | [] => []
+  | [cmt, ...remaining_comments] =>
+    let c_loc: Location.t = Locations.get_comment_loc(cmt);
+    let (_, cmteline, cmtechar, _) =
+      Locations.get_raw_pos_info(c_loc.loc_end);
+    if (cmteline > stmt_start_line) {
+      []; // can stop now
+    } else if (cmteline < stmt_start_line) {
+      [cmt, ...get_comments_before_location(location,remaining_comments)]
+    } else if (cmtechar < stm_start_char) {
+      //  ends on the same line as the stmt starts
+      [cmt, ...get_comments_before_location(location,remaining_comments)]
+    } else []
+  };
+};
+
+
 let rec get_comments_inside_location =
         (~location: Location.t, comments: list(Parsetree.comment)) => {
   let (_, stmt_start_line, stm_start_char, _) =

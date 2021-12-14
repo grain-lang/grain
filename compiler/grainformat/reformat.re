@@ -201,6 +201,41 @@ let remove_used_comments =
 
 let rec block_item_iterator =
         (
+          ~previous: option('a),
+          ~get_loc: 'a => Location.t,
+          ~print_item: 'a => Doc.t,
+          ~comments: list(Parsetree.comment),
+          items: list('a),
+        ) =>
+  switch (items) {
+  | [] => []
+  | [item, ...remainder] =>
+    // let leading_comments = switch (previous) {
+    //   | None => Comment_utils.get_comments_before_location(~location=get_loc(item), comments)
+    //   | Some(prev_node) =>  Comment_utils.get_comments_between_locations(
+    //       ~loc1=get_loc(prev_node),
+    //       ~loc2=get_loc(item),
+    //       comments,
+    //     )
+    // };
+    //  let leading_comment_docs = List.map(c => Comment_utils.comment_to_doc(c),leading_comments)
+
+    // let this_item = [leading_comment_docs,...[print_item(item)]];
+
+    [
+      print_item(item),
+      ...block_item_iterator(
+           ~previous=Some(item),
+           ~get_loc,
+           ~print_item,
+           ~comments,
+           remainder,
+         ),
+    ]
+  };
+
+let rec old_item_iterator =
+        (
           ~previous=?,
           ~get_loc: 'a => Location.t,
           ~get_attribute_text: 'a => Doc.t,
@@ -381,7 +416,7 @@ let rec block_item_iterator =
       | _ =>
         Doc.concat([
           orig_doc,
-          block_item_iterator(
+          old_item_iterator(
             ~bracket_line,
             ~comments=cleaned_comments,
             ~original_source,
@@ -473,6 +508,7 @@ let rec block_item_iterator =
           ]);
         };
       | [an_item, ...rem] =>
+       
         Doc.concat([
           item_doc,
           if (separator != Doc.line && separator != Doc.hardLine) {
@@ -480,7 +516,7 @@ let rec block_item_iterator =
           } else {
             Doc.nil;
           },
-          block_item_iterator(
+          old_item_iterator(
             ~bracket_line,
             ~comments,
             ~original_source,
@@ -494,7 +530,7 @@ let rec block_item_iterator =
             ~is_block=false,
             List.tl(items),
           ),
-        ])
+        ]);
       };
     };
   };
@@ -548,20 +584,30 @@ let rec resugar_list_patterns =
     };
   };
 
-  let printed_patterns =
+  // let printed_patterns =
+  //   old_item_iterator(
+  //     ~bracket_line,
+  //     ~comments,
+  //     ~original_source,
+  //     ~get_loc,
+  //     ~print_item,
+  //     ~separator=Doc.comma,
+  //     ~trailing_separator=false,
+  //     ~break_separator=Doc.line,
+  //     ~get_attribute_text=no_attribute,
+  //     ~is_block=true,
+  //     processed_list,
+  //   );
+
+  let items =
     block_item_iterator(
-      ~bracket_line,
-      ~comments,
-      ~original_source,
+      ~previous=None,
       ~get_loc,
       ~print_item,
-      ~separator=Doc.comma,
-      ~trailing_separator=false,
-      ~break_separator=Doc.line,
-      ~get_attribute_text=no_attribute,
-      ~is_block=true,
+      ~comments,
       processed_list,
     );
+  let printed_patterns = Doc.join(Doc.concat([Doc.comma, Doc.line]), items);
 
   Doc.group(
     Doc.concat([
@@ -767,20 +813,30 @@ and print_record_pattern =
   };
 
   let (_, bracket_line, _, _) = Locations.get_raw_pos_info(patloc.loc_start);
-  let printed_fields =
+  // let printed_fields =
+  //   old_item_iterator(
+  //     ~bracket_line,
+  //     ~comments,
+  //     ~original_source,
+  //     ~get_loc,
+  //     ~print_item,
+  //     ~separator=Doc.comma,
+  //     ~trailing_separator=true,
+  //     ~break_separator=Doc.line,
+  //     ~get_attribute_text=no_attribute,
+  //     ~is_block=true,
+  //     patternlocs,
+  //   );
+
+  let items =
     block_item_iterator(
-      ~bracket_line,
-      ~comments,
-      ~original_source,
+      ~previous=None,
       ~get_loc,
       ~print_item,
-      ~separator=Doc.comma,
-      ~trailing_separator=true,
-      ~break_separator=Doc.line,
-      ~get_attribute_text=no_attribute,
-      ~is_block=true,
+      ~comments,
       patternlocs,
     );
+  let printed_fields = Doc.join(Doc.concat([Doc.comma, Doc.line]), items);
 
   Doc.concat([
     Doc.lbrace,
@@ -1044,20 +1100,30 @@ and print_record =
     };
   };
 
-  let printed_fields =
+  // let printed_fields =
+  //   old_item_iterator(
+  //     ~bracket_line,
+  //     ~comments,
+  //     ~original_source,
+  //     ~get_loc,
+  //     ~print_item,
+  //     ~separator=Doc.comma,
+  //     ~trailing_separator=List.length(fields) != 1,
+  //     ~break_separator=Doc.line,
+  //     ~get_attribute_text=no_attribute,
+  //     ~is_block=true,
+  //     fields,
+  //   );
+
+  let items =
     block_item_iterator(
-      ~bracket_line,
-      ~comments,
-      ~original_source,
+      ~previous=None,
       ~get_loc,
       ~print_item,
-      ~separator=Doc.comma,
-      ~trailing_separator=List.length(fields) != 1,
-      ~break_separator=Doc.line,
-      ~get_attribute_text=no_attribute,
-      ~is_block=true,
+      ~comments,
       fields,
     );
+  let printed_fields = Doc.join(Doc.concat([Doc.comma, Doc.line]), items);
 
   Doc.concat([
     Doc.lbrace,
@@ -1187,20 +1253,30 @@ and print_type =
 
       let (_, open_line, _, _) =
         Locations.get_raw_pos_info(get_loc(first).loc_end);
-      let types =
+      // let types =
+      //   old_item_iterator(
+      //     ~bracket_line=open_line,
+      //     ~comments,
+      //     ~original_source,
+      //     ~get_loc,
+      //     ~print_item,
+      //     ~separator=Doc.comma,
+      //     ~trailing_separator=false,
+      //     ~break_separator=Doc.line,
+      //     ~get_attribute_text=no_attribute,
+      //     ~is_block=true,
+      //     parsedtypes,
+      //   );
+
+      let items =
         block_item_iterator(
-          ~bracket_line=open_line,
-          ~comments,
-          ~original_source,
+          ~previous=None,
           ~get_loc,
           ~print_item,
-          ~separator=Doc.comma,
-          ~trailing_separator=false,
-          ~break_separator=Doc.line,
-          ~get_attribute_text=no_attribute,
-          ~is_block=true,
+          ~comments,
           parsedtypes,
         );
+      let types = Doc.join(Doc.concat([Doc.comma, Doc.line]), items);
 
       Doc.group(
         Doc.concat([
@@ -1517,19 +1593,29 @@ and print_patterns =
   | _ =>
     let (_, line, _, _) = Locations.get_raw_pos_info(wrapper.loc_end);
 
-    block_item_iterator(
-      ~bracket_line=line,
-      ~comments,
-      ~original_source,
-      ~get_loc,
-      ~print_item,
-      ~separator=Doc.comma,
-      ~trailing_separator=false,
-      ~break_separator=Doc.line,
-      ~get_attribute_text=no_attribute,
-      ~is_block,
-      patterns,
-    );
+    // old_item_iterator(
+    //   ~bracket_line=line,
+    //   ~comments,
+    //   ~original_source,
+    //   ~get_loc,
+    //   ~print_item,
+    //   ~separator=Doc.comma,
+    //   ~trailing_separator=false,
+    //   ~break_separator=Doc.line,
+    //   ~get_attribute_text=no_attribute,
+    //   ~is_block,
+    //   patterns,
+    // );
+
+    let items =
+      block_item_iterator(
+        ~previous=None,
+        ~get_loc,
+        ~print_item,
+        ~comments,
+        patterns,
+      );
+    Doc.join(Doc.concat([Doc.comma, Doc.line]), items);
   };
 }
 
@@ -1607,27 +1693,36 @@ and print_expression =
           e,
         );
       };
-      let (_, bracket_line, _, _) =
-        Locations.get_raw_pos_info(expr.pexp_loc.loc_end);
+      // let (_, bracket_line, _, _) =
+      //   Locations.get_raw_pos_info(expr.pexp_loc.loc_end);
+      let items =
+        block_item_iterator(
+          ~previous=None,
+          ~get_loc,
+          ~print_item,
+          ~comments,
+          expressions,
+        );
       Doc.group(
         Doc.concat([
           Doc.lparen,
           Doc.indent(
-            Doc.concat([
-              block_item_iterator(
-                ~bracket_line,
-                ~comments,
-                ~original_source,
-                ~get_loc,
-                ~print_item,
-                ~separator=Doc.comma,
-                ~trailing_separator=true,
-                ~break_separator=Doc.line,
-                ~get_attribute_text=no_attribute,
-                ~is_block=true,
-                expressions,
-              ),
-            ]),
+            // Doc.concat([
+            //   old_item_iterator(
+            //     ~bracket_line,
+            //     ~comments,
+            //     ~original_source,
+            //     ~get_loc,
+            //     ~print_item,
+            //     ~separator=Doc.comma,
+            //     ~trailing_separator=true,
+            //     ~break_separator=Doc.line,
+            //     ~get_attribute_text=no_attribute,
+            //     ~is_block=true,
+            //     expressions,
+            //   ),
+            // ]),
+            Doc.join(Doc.concat([Doc.comma, Doc.line]), items),
           ),
           if (List.length(expressions) == 1) {
             // single arg tuple
@@ -1655,8 +1750,16 @@ and print_expression =
           e,
         );
       };
-      let (_, bracket_line, _, _) =
-        Locations.get_raw_pos_info(expr.pexp_loc.loc_end);
+      // let (_, bracket_line, _, _) =
+      //   Locations.get_raw_pos_info(expr.pexp_loc.loc_end);
+      let items =
+        block_item_iterator(
+          ~previous=None,
+          ~get_loc,
+          ~print_item,
+          ~comments,
+          expressions,
+        );
       Doc.group(
         switch (expressions) {
         | [] => Doc.text("[>]")
@@ -1667,19 +1770,20 @@ and print_expression =
             Doc.indent(
               Doc.concat([
                 Doc.softLine,
-                block_item_iterator(
-                  ~bracket_line,
-                  ~comments,
-                  ~original_source,
-                  ~get_loc,
-                  ~print_item,
-                  ~separator=Doc.comma,
-                  ~trailing_separator=true,
-                  ~break_separator=Doc.line,
-                  ~get_attribute_text=no_attribute,
-                  ~is_block=true,
-                  expressions,
-                ),
+                // old_item_iterator(
+                //   ~bracket_line,
+                //   ~comments,
+                //   ~original_source,
+                //   ~get_loc,
+                //   ~print_item,
+                //   ~separator=Doc.comma,
+                //   ~trailing_separator=true,
+                //   ~break_separator=Doc.line,
+                //   ~get_attribute_text=no_attribute,
+                //   ~is_block=true,
+                //   expressions,
+                // ),
+                Doc.join(Doc.concat([Doc.comma, Doc.line]), items),
               ]),
             ),
             Doc.softLine,
@@ -1785,8 +1889,8 @@ and print_expression =
           Doc.rparen,
         ]);
 
-      let (_, bracket_line, _, _) =
-        Locations.get_raw_pos_info(expression.pexp_loc.loc_end);
+      // let (_, bracket_line, _, _) =
+      //   Locations.get_raw_pos_info(expression.pexp_loc.loc_end);
 
       let get_loc = (branch: Parsetree.match_branch) => {
         branch.pmb_loc;
@@ -1873,20 +1977,33 @@ and print_expression =
         );
       };
 
-      let printed_branches =
+      // let printed_branches =
+      //   old_item_iterator(
+      //     ~bracket_line,
+      //     ~comments,
+      //     ~original_source,
+      //     ~get_loc,
+      //     ~print_item,
+      //     ~separator=Doc.comma,
+      //     ~trailing_separator=true,
+      //     ~break_separator=Doc.hardLine,
+      //     ~get_attribute_text=no_attribute,
+      //     ~is_block=true,
+      //     match_branches,
+      //   );
+
+      let items =
         block_item_iterator(
-          ~bracket_line,
-          ~comments,
-          ~original_source,
+          ~previous=None,
           ~get_loc,
           ~print_item,
-          ~separator=Doc.comma,
-          ~trailing_separator=true,
-          ~break_separator=Doc.hardLine,
-          ~get_attribute_text=no_attribute,
-          ~is_block=true,
+          ~comments,
           match_branches,
         );
+      let printed_branches =
+        Doc.join(Doc.concat([Doc.comma, Doc.hardLine]), items);
+
+      let printed_branches_after_brace = Doc.concat([Doc.line,printed_branches])
 
       Doc.breakableGroup(
         ~forceBreak=false,
@@ -1895,7 +2012,7 @@ and print_expression =
           arg,
           Doc.space,
           Doc.lbrace,
-          Doc.indent(printed_branches),
+          Doc.indent(printed_branches_after_brace),
           Doc.line,
           Doc.rbrace,
         ]),
@@ -2461,30 +2578,43 @@ and print_expression =
           );
         };
 
-        let (_, bracket_line, _, _) =
-          Locations.get_raw_pos_info(expr.pexp_loc.loc_start);
+        // let (_, bracket_line, _, _) =
+        //   Locations.get_raw_pos_info(expr.pexp_loc.loc_start);
+
+        // let printed_expressions =
+        //   old_item_iterator(
+        //     ~bracket_line,
+        //     ~comments,
+        //     ~original_source,
+        //     ~get_loc,
+        //     ~print_item,
+        //     ~separator=Doc.nil,
+        //     ~trailing_separator=true,
+        //     ~break_separator=Doc.hardLine,
+        //     ~get_attribute_text=
+        //       expr => print_attributes(expr.pexp_attributes),
+        //     ~is_block=true,
+        //     expressions,
+        //   );
 
         let printed_expressions =
           block_item_iterator(
-            ~bracket_line,
-            ~comments,
-            ~original_source,
+            ~previous=None,
             ~get_loc,
             ~print_item,
-            ~separator=Doc.nil,
-            ~trailing_separator=true,
-            ~break_separator=Doc.hardLine,
-            ~get_attribute_text=
-              expr => print_attributes(expr.pexp_attributes),
-            ~is_block=true,
+            ~comments,
             expressions,
           );
+        let printed_expressions_with_breaks =
+          Doc.join(Doc.hardLine, printed_expressions);
+
+        let start_after_brace = Doc.concat([Doc.line,printed_expressions_with_breaks])
 
         Doc.breakableGroup(
           ~forceBreak=true,
           Doc.concat([
             Doc.lbrace,
-            Doc.indent(printed_expressions),
+            Doc.indent(start_after_brace),
             Doc.line,
             Doc.rbrace,
           ]),
@@ -2731,22 +2861,32 @@ and print_value_bind =
         ]);
       };
 
-      let (_, open_line, _, _) =
-        Locations.get_raw_pos_info(get_loc(first).loc_end);
+      // let (_, open_line, _, _) =
+      //   Locations.get_raw_pos_info(get_loc(first).loc_end);
 
-      block_item_iterator(
-        ~bracket_line=open_line,
-        ~comments,
-        ~original_source,
-        ~get_loc,
-        ~print_item,
-        ~separator=Doc.comma,
-        ~trailing_separator=false,
-        ~break_separator=Doc.space,
-        ~get_attribute_text=no_attribute,
-        ~is_block=false,
-        vbs,
-      );
+      // old_item_iterator(
+      //   ~bracket_line=open_line,
+      //   ~comments,
+      //   ~original_source,
+      //   ~get_loc,
+      //   ~print_item,
+      //   ~separator=Doc.comma,
+      //   ~trailing_separator=false,
+      //   ~break_separator=Doc.space,
+      //   ~get_attribute_text=no_attribute,
+      //   ~is_block=false,
+      //   vbs,
+      // );
+
+      let items =
+        block_item_iterator(
+          ~previous=None,
+          ~get_loc,
+          ~print_item,
+          ~comments,
+          vbs,
+        );
+      Doc.join(Doc.concat([Doc.comma, Doc.space]), items);
     };
 
   Doc.group(
@@ -2842,20 +2982,30 @@ let rec print_data =
     | [hd, ...rem] =>
       let (_, name_line, _, _) =
         Locations.get_raw_pos_info(nameloc.loc.loc_end);
-      let types =
+      // let types =
+      //   old_item_iterator(
+      //     ~bracket_line=name_line,
+      //     ~comments,
+      //     ~original_source,
+      //     ~get_loc,
+      //     ~print_item,
+      //     ~separator=Doc.comma,
+      //     ~trailing_separator=false,
+      //     ~break_separator=Doc.line,
+      //     ~get_attribute_text=no_attribute,
+      //     ~is_block=true,
+      //     data.pdata_params,
+      //   );
+
+      let items =
         block_item_iterator(
-          ~bracket_line=name_line,
-          ~comments,
-          ~original_source,
+          ~previous=None,
           ~get_loc,
           ~print_item,
-          ~separator=Doc.comma,
-          ~trailing_separator=false,
-          ~break_separator=Doc.line,
-          ~get_attribute_text=no_attribute,
-          ~is_block=true,
+          ~comments,
           data.pdata_params,
         );
+      let types = Doc.join(Doc.concat([Doc.comma, Doc.line]), items);
       let params = [
         Doc.text("<"),
         Doc.indent(types),
@@ -2921,27 +3071,37 @@ let rec print_data =
                 );
               };
 
-              let (_, open_line, _, _) =
-                Locations.get_raw_pos_info(get_loc(first).loc_end);
+              // let (_, open_line, _, _) =
+              //   Locations.get_raw_pos_info(get_loc(first).loc_end);
+
+              let items =
+                block_item_iterator(
+                  ~previous=None,
+                  ~get_loc,
+                  ~print_item,
+                  ~comments,
+                  parsed_types,
+                );
 
               Doc.group(
                 Doc.concat([
                   Doc.lparen,
                   Doc.indent(
                     Doc.concat([
-                      block_item_iterator(
-                        ~bracket_line=open_line,
-                        ~comments=local_comments,
-                        ~original_source,
-                        ~get_loc,
-                        ~print_item,
-                        ~separator=Doc.comma,
-                        ~trailing_separator=false,
-                        ~break_separator=Doc.line,
-                        ~get_attribute_text=no_attribute,
-                        ~is_block=true,
-                        parsed_types,
-                      ),
+                      // old_item_iterator(
+                      //   ~bracket_line=open_line,
+                      //   ~comments=local_comments,
+                      //   ~original_source,
+                      //   ~get_loc,
+                      //   ~print_item,
+                      //   ~separator=Doc.comma,
+                      //   ~trailing_separator=false,
+                      //   ~break_separator=Doc.line,
+                      //   ~get_attribute_text=no_attribute,
+                      //   ~is_block=true,
+                      //   parsed_types,
+                      // ),
+                      Doc.join(Doc.concat([Doc.comma, Doc.line]), items),
                     ]),
                   ),
                   Doc.softLine,
@@ -2958,20 +3118,30 @@ let rec print_data =
     let (_, bracket_line, _, _) =
       Locations.get_raw_pos_info(data.pdata_loc.loc_start);
 
-    let printed_decls =
+    // let printed_decls =
+    //   old_item_iterator(
+    //     ~bracket_line,
+    //     ~comments,
+    //     ~original_source,
+    //     ~get_loc,
+    //     ~print_item,
+    //     ~separator=Doc.comma,
+    //     ~trailing_separator=true,
+    //     ~break_separator=Doc.line,
+    //     ~get_attribute_text=no_attribute,
+    //     ~is_block=true,
+    //     constr_declarations,
+    //   );
+
+    let items =
       block_item_iterator(
-        ~bracket_line,
-        ~comments,
-        ~original_source,
+        ~previous=None,
         ~get_loc,
         ~print_item,
-        ~separator=Doc.comma,
-        ~trailing_separator=true,
-        ~break_separator=Doc.line,
-        ~get_attribute_text=no_attribute,
-        ~is_block=true,
+        ~comments,
         constr_declarations,
       );
+    let printed_decls = Doc.join(Doc.concat([Doc.comma, Doc.line]), items);
 
     Doc.group(
       Doc.concat([
@@ -2996,25 +3166,36 @@ let rec print_data =
             );
           };
 
-          let (_, open_line, _, _) =
-            Locations.get_raw_pos_info(get_loc(first).loc_end);
+          // let (_, open_line, _, _) =
+          //   Locations.get_raw_pos_info(get_loc(first).loc_end);
+
+          let items =
+            block_item_iterator(
+              ~previous=None,
+              ~get_loc,
+              ~print_item,
+              ~comments,
+              data.pdata_params,
+            );
+
           Doc.group(
             Doc.concat([
               Doc.text("<"),
               Doc.indent(
-                block_item_iterator(
-                  ~bracket_line=open_line,
-                  ~comments,
-                  ~original_source,
-                  ~get_loc,
-                  ~print_item,
-                  ~separator=Doc.comma,
-                  ~trailing_separator=false,
-                  ~break_separator=Doc.line,
-                  ~get_attribute_text=no_attribute,
-                  ~is_block=true,
-                  data.pdata_params,
-                ),
+                // old_item_iterator(
+                //   ~bracket_line=open_line,
+                //   ~comments,
+                //   ~original_source,
+                //   ~get_loc,
+                //   ~print_item,
+                //   ~separator=Doc.comma,
+                //   ~trailing_separator=false,
+                //   ~break_separator=Doc.line,
+                //   ~get_attribute_text=no_attribute,
+                //   ~is_block=true,
+                //   data.pdata_params,
+                // ),
+                Doc.join(Doc.concat([Doc.comma, Doc.line]), items),
               ),
               Doc.softLine,
               Doc.text(">"),
@@ -3061,22 +3242,32 @@ let rec print_data =
       ]);
     };
 
-    let (_, bracket_line, _, _) =
-      Locations.get_raw_pos_info(data.pdata_loc.loc_start);
-    let printed_decls =
+    // let (_, bracket_line, _, _) =
+    //   Locations.get_raw_pos_info(data.pdata_loc.loc_start);
+    // let printed_decls =
+    //   old_item_iterator(
+    //     ~bracket_line,
+    //     ~comments,
+    //     ~original_source,
+    //     ~get_loc,
+    //     ~print_item,
+    //     ~separator=Doc.comma,
+    //     ~trailing_separator=true,
+    //     ~break_separator=Doc.line,
+    //     ~get_attribute_text=no_attribute,
+    //     ~is_block=true,
+    //     label_declarations,
+    //   );
+
+    let items =
       block_item_iterator(
-        ~bracket_line,
-        ~comments,
-        ~original_source,
+        ~previous=None,
         ~get_loc,
         ~print_item,
-        ~separator=Doc.comma,
-        ~trailing_separator=true,
-        ~break_separator=Doc.line,
-        ~get_attribute_text=no_attribute,
-        ~is_block=true,
+        ~comments,
         label_declarations,
       );
+    let printed_decls = Doc.join(Doc.concat([Doc.comma, Doc.line]), items);
 
     Doc.group(
       Doc.concat([
@@ -3101,25 +3292,35 @@ let rec print_data =
             );
           };
 
-          let (_, open_line, _, _) =
-            Locations.get_raw_pos_info(get_loc(first).loc_end);
+          // let (_, open_line, _, _) =
+          //   Locations.get_raw_pos_info(get_loc(first).loc_end);
+
+          let items =
+            block_item_iterator(
+              ~previous=None,
+              ~get_loc,
+              ~print_item,
+              ~comments,
+              data.pdata_params,
+            );
           Doc.group(
             Doc.concat([
               Doc.text("<"),
               Doc.indent(
-                block_item_iterator(
-                  ~bracket_line=open_line,
-                  ~comments,
-                  ~original_source,
-                  ~get_loc,
-                  ~print_item,
-                  ~separator=Doc.comma,
-                  ~trailing_separator=false,
-                  ~break_separator=Doc.line,
-                  ~get_attribute_text=no_attribute,
-                  ~is_block=true,
-                  data.pdata_params,
-                ),
+                // old_item_iterator(
+                //   ~bracket_line=open_line,
+                //   ~comments,
+                //   ~original_source,
+                //   ~get_loc,
+                //   ~print_item,
+                //   ~separator=Doc.comma,
+                //   ~trailing_separator=false,
+                //   ~break_separator=Doc.line,
+                //   ~get_attribute_text=no_attribute,
+                //   ~is_block=true,
+                //   data.pdata_params,
+                // ),
+                Doc.join(Doc.concat([Doc.comma, Doc.line]), items),
               ),
               Doc.softLine,
               Doc.text(">"),
@@ -3187,23 +3388,35 @@ let import_print =
                 print_ident(identloc.txt);
               };
 
-              let (_, bracket_line, _, _) =
-                Locations.get_raw_pos_info(get_loc(first).loc_end);
+              // let (_, bracket_line, _, _) =
+              //   Locations.get_raw_pos_info(get_loc(first).loc_end);
 
-              let exceptions =
+              // let exceptions =
+              //   old_item_iterator(
+              //     ~bracket_line,
+              //     ~comments,
+              //     ~original_source,
+              //     ~get_loc,
+              //     ~print_item,
+              //     ~separator=Doc.comma,
+              //     ~trailing_separator=true,
+              //     ~break_separator=Doc.line,
+              //     ~get_attribute_text=no_attribute,
+              //     ~is_block=true,
+              //     identlocs,
+              //   );
+
+              let items =
                 block_item_iterator(
-                  ~bracket_line,
-                  ~comments,
-                  ~original_source,
+                  ~previous=None,
                   ~get_loc,
                   ~print_item,
-                  ~separator=Doc.comma,
-                  ~trailing_separator=true,
-                  ~break_separator=Doc.line,
-                  ~get_attribute_text=no_attribute,
-                  ~is_block=true,
+                  ~comments,
                   identlocs,
                 );
+              let exceptions =
+                Doc.join(Doc.concat([Doc.comma, Doc.line]), items);
+
               Doc.concat([
                 Doc.space,
                 Doc.text("except"),
@@ -3257,22 +3470,32 @@ let import_print =
                     };
                   };
 
-                  let (_, bracket_line, _, _) =
-                    Locations.get_raw_pos_info(get_loc(first).loc_end);
+                  // let (_, bracket_line, _, _) =
+                  //   Locations.get_raw_pos_info(get_loc(first).loc_end);
 
-                  block_item_iterator(
-                    ~bracket_line,
-                    ~comments,
-                    ~original_source,
-                    ~get_loc,
-                    ~print_item,
-                    ~separator=Doc.comma,
-                    ~trailing_separator=true,
-                    ~break_separator=Doc.line,
-                    ~get_attribute_text=no_attribute,
-                    ~is_block=true,
-                    identlocsopts,
-                  );
+                  // old_item_iterator(
+                  //   ~bracket_line,
+                  //   ~comments,
+                  //   ~original_source,
+                  //   ~get_loc,
+                  //   ~print_item,
+                  //   ~separator=Doc.comma,
+                  //   ~trailing_separator=true,
+                  //   ~break_separator=Doc.line,
+                  //   ~get_attribute_text=no_attribute,
+                  //   ~is_block=true,
+                  //   identlocsopts,
+                  // );
+
+                  let items =
+                    block_item_iterator(
+                      ~previous=None,
+                      ~get_loc,
+                      ~print_item,
+                      ~comments,
+                      identlocsopts,
+                    );
+                  Doc.join(Doc.concat([Doc.comma, Doc.line]), items);
                 },
               ]),
             ),
@@ -3572,25 +3795,38 @@ let reformat_ast =
     );
   };
 
-  let top_level_stmts =
+  let top_level_stmt_items =
     block_item_iterator(
-      ~bracket_line=0,
-      ~comments=parsed_program.comments,
-      ~original_source,
+      ~previous=None,
       ~get_loc,
       ~print_item,
-      ~separator=Doc.hardLine,
-      ~trailing_separator=true,
-      ~break_separator=Doc.hardLine,
-      ~get_attribute_text=
-        stmt => {
-          let attributes = stmt.ptop_attributes;
-          print_attributes(attributes);
-        },
-      ~is_block=false,
+      ~comments=parsed_program.comments,
       parsed_program.statements,
     );
 
+  let top_level_stmts = Doc.join(Doc.hardLine, top_level_stmt_items);
+
+  //let final_doc = Doc.concat([Doc.lineSuffix(Doc.text("// the start")),Doc.text("AA "),Doc.lineSuffix(Doc.text("// the end")), Doc.text("BB")]);
+
+  // old_item_iterator(
+  //   ~bracket_line=0,
+  //   ~comments=parsed_program.comments,
+  //   ~original_source,
+  //   ~get_loc,
+  //   ~print_item,
+  //   ~separator=Doc.hardLine,
+  //   ~trailing_separator=true,
+  //   ~break_separator=Doc.hardLine,
+  //   ~get_attribute_text=
+  //     stmt => {
+  //       let attributes = stmt.ptop_attributes;
+  //       print_attributes(attributes);
+  //     },
+  //   ~is_block=false,
+  //   parsed_program.statements,
+  // );
+
   let final_doc = Doc.concat([top_level_stmts, Doc.hardLine]);
+
   Doc.toString(~width=80, final_doc);
 };
