@@ -1007,8 +1007,8 @@ let lift_imports = (env, imports) => {
       ) => {
     switch (imp_desc) {
     | GrainValue(mod_, name) =>
-      let mimp_mod = Ident.create(mod_);
-      let mimp_name = Ident.create(name);
+      let mimp_mod = Ident.create_persistent(mod_);
+      let mimp_name = Ident.create_persistent(name);
       let (asmtype, gc) =
         switch (imp_shape) {
         | GlobalShape(HeapAllocated as alloc) => (
@@ -1036,9 +1036,9 @@ let lift_imports = (env, imports) => {
               imp_use_id,
               MGlobalBind(
                 Printf.sprintf(
-                  "import_%s_%s",
-                  Ident.unique_name(mimp_mod),
-                  Ident.unique_name(mimp_name),
+                  "gimport_%s_%s",
+                  Ident.name(mimp_mod),
+                  Ident.name(mimp_name),
                 ),
                 asmtype,
                 gc,
@@ -1048,8 +1048,8 @@ let lift_imports = (env, imports) => {
         },
       );
     | WasmValue(mod_, name) =>
-      let mimp_mod = Ident.create(mod_);
-      let mimp_name = Ident.create(name);
+      let mimp_mod = Ident.create_persistent(mod_);
+      let mimp_name = Ident.create_persistent(name);
       let (asmtype, gc) =
         switch (imp_shape) {
         | GlobalShape(HeapAllocated as alloc) => (
@@ -1077,9 +1077,9 @@ let lift_imports = (env, imports) => {
               imp_use_id,
               MGlobalBind(
                 Printf.sprintf(
-                  "import_%s_%s",
-                  Ident.unique_name(mimp_mod),
-                  Ident.unique_name(mimp_name),
+                  "wimport_%s_%s",
+                  Ident.name(mimp_mod),
+                  Ident.name(mimp_name),
                 ),
                 asmtype,
                 gc,
@@ -1092,17 +1092,17 @@ let lift_imports = (env, imports) => {
       let glob =
         next_global(~exported=imp_exported == Global, imp_use_id, I32Type);
       let new_mod = {
-        mimp_mod: Ident.create(mod_),
-        mimp_name: Ident.create(name),
+        mimp_mod: Ident.create_persistent(mod_),
+        mimp_name: Ident.create_persistent(name),
         mimp_type: process_shape(false, imp_shape),
         mimp_kind: MImportWasm,
         mimp_setup: MWrap(Int32.zero),
       };
       let func_name =
         Printf.sprintf(
-          "import_%s_%s",
-          Ident.unique_name(new_mod.mimp_mod),
-          Ident.unique_name(new_mod.mimp_name),
+          "wimport_%s_%s",
+          Ident.name(new_mod.mimp_mod),
+          Ident.name(new_mod.mimp_name),
         );
       (
         [new_mod, ...imports],

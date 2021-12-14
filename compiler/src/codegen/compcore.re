@@ -357,26 +357,25 @@ let runtime_heap_start = 0x410;
 // Static pointer to runtime type information
 let runtime_type_metadata_ptr = 0x408;
 
-let get_imported_name = (mod_, name) =>
-  Printf.sprintf(
-    "import_%s_%s",
-    Ident.unique_name(mod_),
-    Ident.unique_name(name),
-  );
+let get_wasm_imported_name = (mod_, name) =>
+  Printf.sprintf("wimport_%s_%s", Ident.name(mod_), Ident.name(name));
+
+let get_grain_imported_name = (mod_, name) =>
+  Printf.sprintf("gimport_%s_%s", Ident.name(mod_), Ident.name(name));
 
 let call_exception_printer = (wasm_mod, env, args) => {
   needs_exceptions := true;
   let args = [
     Expression.Global_get.make(
       wasm_mod,
-      get_imported_name(exception_mod, print_exception_closure_ident),
+      get_wasm_imported_name(exception_mod, print_exception_closure_ident),
       Type.int32,
     ),
     ...args,
   ];
   Expression.Call.make(
     wasm_mod,
-    get_imported_name(exception_mod, print_exception_ident),
+    get_wasm_imported_name(exception_mod, print_exception_ident),
     args,
     Type.int32,
   );
@@ -386,14 +385,14 @@ let call_malloc = (wasm_mod, env, args) => {
   let args = [
     Expression.Global_get.make(
       wasm_mod,
-      get_imported_name(gc_mod, malloc_closure_ident),
+      get_wasm_imported_name(gc_mod, malloc_closure_ident),
       Type.int32,
     ),
     ...args,
   ];
   Expression.Call.make(
     wasm_mod,
-    get_imported_name(gc_mod, malloc_ident),
+    get_wasm_imported_name(gc_mod, malloc_ident),
     args,
     Type.int32,
   );
@@ -402,7 +401,7 @@ let call_incref = (wasm_mod, env, arg) => {
   let args = [
     Expression.Global_get.make(
       wasm_mod,
-      get_imported_name(gc_mod, incref_closure_ident),
+      get_wasm_imported_name(gc_mod, incref_closure_ident),
       Type.int32,
     ),
     arg,
@@ -412,7 +411,7 @@ let call_incref = (wasm_mod, env, arg) => {
   } else {
     Expression.Call.make(
       wasm_mod,
-      get_imported_name(gc_mod, incref_ident),
+      get_wasm_imported_name(gc_mod, incref_ident),
       args,
       Type.int32,
     );
@@ -422,7 +421,7 @@ let call_decref_ignore_zeros = (wasm_mod, env, arg) => {
   let args = [
     Expression.Global_get.make(
       wasm_mod,
-      get_imported_name(gc_mod, decref_ignore_zeros_closure_ident),
+      get_wasm_imported_name(gc_mod, decref_ignore_zeros_closure_ident),
       Type.int32,
     ),
     arg,
@@ -432,7 +431,7 @@ let call_decref_ignore_zeros = (wasm_mod, env, arg) => {
   } else {
     Expression.Call.make(
       wasm_mod,
-      get_imported_name(gc_mod, decref_ignore_zeros_ident),
+      get_wasm_imported_name(gc_mod, decref_ignore_zeros_ident),
       args,
       Type.int32,
     );
@@ -445,7 +444,7 @@ let call_decref = (wasm_mod, env, arg) =>
     let args = [
       Expression.Global_get.make(
         wasm_mod,
-        get_imported_name(gc_mod, decref_closure_ident),
+        get_wasm_imported_name(gc_mod, decref_closure_ident),
         Type.int32,
       ),
       arg,
@@ -455,7 +454,7 @@ let call_decref = (wasm_mod, env, arg) =>
     } else {
       Expression.Call.make(
         wasm_mod,
-        get_imported_name(gc_mod, decref_ident),
+        get_wasm_imported_name(gc_mod, decref_ident),
         args,
         Type.int32,
       );
@@ -464,11 +463,14 @@ let call_decref = (wasm_mod, env, arg) =>
 let call_new_rational = (wasm_mod, env, args) =>
   Expression.Call.make(
     wasm_mod,
-    get_imported_name(data_structures_mod, new_rational_ident),
+    get_wasm_imported_name(data_structures_mod, new_rational_ident),
     [
       Expression.Global_get.make(
         wasm_mod,
-        get_imported_name(data_structures_mod, new_rational_closure_ident),
+        get_wasm_imported_name(
+          data_structures_mod,
+          new_rational_closure_ident,
+        ),
         Type.int32,
       ),
       ...args,
@@ -478,11 +480,14 @@ let call_new_rational = (wasm_mod, env, args) =>
 let call_new_float32 = (wasm_mod, env, args) =>
   Expression.Call.make(
     wasm_mod,
-    get_imported_name(data_structures_mod, new_float32_ident),
+    get_wasm_imported_name(data_structures_mod, new_float32_ident),
     [
       Expression.Global_get.make(
         wasm_mod,
-        get_imported_name(data_structures_mod, new_float32_closure_ident),
+        get_wasm_imported_name(
+          data_structures_mod,
+          new_float32_closure_ident,
+        ),
         Type.int32,
       ),
       ...args,
@@ -492,11 +497,14 @@ let call_new_float32 = (wasm_mod, env, args) =>
 let call_new_float64 = (wasm_mod, env, args) =>
   Expression.Call.make(
     wasm_mod,
-    get_imported_name(data_structures_mod, new_float64_ident),
+    get_wasm_imported_name(data_structures_mod, new_float64_ident),
     [
       Expression.Global_get.make(
         wasm_mod,
-        get_imported_name(data_structures_mod, new_float64_closure_ident),
+        get_wasm_imported_name(
+          data_structures_mod,
+          new_float64_closure_ident,
+        ),
         Type.int32,
       ),
       ...args,
@@ -506,11 +514,11 @@ let call_new_float64 = (wasm_mod, env, args) =>
 let call_new_int32 = (wasm_mod, env, args) =>
   Expression.Call.make(
     wasm_mod,
-    get_imported_name(data_structures_mod, new_int32_ident),
+    get_wasm_imported_name(data_structures_mod, new_int32_ident),
     [
       Expression.Global_get.make(
         wasm_mod,
-        get_imported_name(data_structures_mod, new_int32_closure_ident),
+        get_wasm_imported_name(data_structures_mod, new_int32_closure_ident),
         Type.int32,
       ),
       ...args,
@@ -520,11 +528,11 @@ let call_new_int32 = (wasm_mod, env, args) =>
 let call_new_int64 = (wasm_mod, env, args) =>
   Expression.Call.make(
     wasm_mod,
-    get_imported_name(data_structures_mod, new_int64_ident),
+    get_wasm_imported_name(data_structures_mod, new_int64_ident),
     [
       Expression.Global_get.make(
         wasm_mod,
-        get_imported_name(data_structures_mod, new_int64_closure_ident),
+        get_wasm_imported_name(data_structures_mod, new_int64_closure_ident),
         Type.int32,
       ),
       ...args,
@@ -534,12 +542,12 @@ let call_new_int64 = (wasm_mod, env, args) =>
 let call_equal = (wasm_mod, env, args) =>
   Expression.Call.make(
     wasm_mod,
-    get_imported_name(equal_mod, equal_ident),
+    get_wasm_imported_name(equal_mod, equal_ident),
     [
       call_incref(wasm_mod, env) @@
       Expression.Global_get.make(
         wasm_mod,
-        get_imported_name(equal_mod, equal_closure_ident),
+        get_wasm_imported_name(equal_mod, equal_closure_ident),
         Type.int32,
       ),
       ...args,
@@ -552,7 +560,7 @@ let call_equal = (wasm_mod, env, args) =>
 let tracepoint = (wasm_mod, env, n) =>
   Expression.Call.make(
     wasm_mod,
-    get_imported_name(console_mod, tracepoint_ident),
+    get_wasm_imported_name(console_mod, tracepoint_ident),
     [Expression.Const.make(wasm_mod, const_int32(n))],
     Type.none,
   );
@@ -1062,7 +1070,7 @@ let call_error_handler = (wasm_mod, env, err, args) => {
   let mk_err = () =>
     Expression.Global_get.make(
       wasm_mod,
-      get_imported_name(exception_mod, err_ident),
+      get_wasm_imported_name(exception_mod, err_ident),
       Type.int32,
     );
   let err =
@@ -1877,7 +1885,7 @@ let allocate_closure =
         Op.add_int32,
         Expression.Global_get.make(
           wasm_mod,
-          get_imported_name(grain_env_mod, reloc_base),
+          get_wasm_imported_name(grain_env_mod, reloc_base),
           Type.int32,
         ),
         Expression.Const.make(wasm_mod, wrap_int32(func_idx)),
@@ -1937,7 +1945,7 @@ let allocate_adt = (wasm_mod, env, ttag, vtag, elts) => {
         Op.mul_int32,
         Expression.Global_get.make(
           wasm_mod,
-          get_imported_name(grain_env_mod, module_runtime_id),
+          get_wasm_imported_name(grain_env_mod, module_runtime_id),
           Type.int32,
         ),
         Expression.Const.make(wasm_mod, const_int32(2)),
@@ -2097,7 +2105,7 @@ let allocate_record = (wasm_mod, env, ttag, elts) => {
         Op.mul_int32,
         Expression.Global_get.make(
           wasm_mod,
-          get_imported_name(grain_env_mod, module_runtime_id),
+          get_wasm_imported_name(grain_env_mod, module_runtime_id),
           Type.int32,
         ),
         Expression.Const.make(wasm_mod, const_int32(2)),
@@ -3048,7 +3056,7 @@ let compile_type_metadata = (wasm_mod, env, type_metadata) => {
         get_swap(wasm_mod, env, 0),
         Expression.Global_get.make(
           wasm_mod,
-          get_imported_name(grain_env_mod, module_runtime_id),
+          get_wasm_imported_name(grain_env_mod, module_runtime_id),
           Type.int32,
         ),
       ),
@@ -3162,7 +3170,11 @@ let compile_imports = (wasm_mod, env, {imports}) => {
   let compile_import = ({mimp_mod, mimp_name, mimp_type, mimp_kind}) => {
     let module_name = compile_module_name(mimp_mod, mimp_kind);
     let item_name = compile_import_name(mimp_name, mimp_kind);
-    let internal_name = get_imported_name(mimp_mod, mimp_name);
+    let internal_name =
+      switch (mimp_kind) {
+      | MImportGrain => get_grain_imported_name(mimp_mod, mimp_name)
+      | MImportWasm => get_wasm_imported_name(mimp_mod, mimp_name)
+      };
     switch (mimp_kind, mimp_type) {
     | (MImportGrain, MGlobalImport(ty, mut)) =>
       Import.add_global_import(
@@ -3293,7 +3305,7 @@ let compile_tables = (wasm_mod, env, {functions}) => {
     function_names,
     Expression.Global_get.make(
       wasm_mod,
-      get_imported_name(grain_env_mod, reloc_base),
+      get_wasm_imported_name(grain_env_mod, reloc_base),
       Type.int32,
     ),
   );
