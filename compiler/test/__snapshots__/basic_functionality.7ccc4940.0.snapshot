@@ -4,9 +4,9 @@ basic functionality › division1
  (type $none_=>_i32 (func (result i32)))
  (type $i32_i32_i32_=>_i32 (func (param i32 i32 i32) (result i32)))
  (import \"_grainEnv\" \"mem\" (memory $0 0))
- (import \"_grainEnv\" \"relocBase\" (global $import__grainEnv_0_relocBase_0 i32))
- (import \"GRAIN$MODULE$runtime/dataStructures\" \"GRAIN$EXPORT$newRational\" (global $import_GRAIN$MODULE$runtime/dataStructures_0_GRAIN$EXPORT$newRational_0 (mut i32)))
- (import \"GRAIN$MODULE$runtime/dataStructures\" \"newRational\" (func $import_GRAIN$MODULE$runtime/dataStructures_0_newRational_0 (param i32 i32 i32) (result i32)))
+ (import \"_grainEnv\" \"relocBase\" (global $wimport__grainEnv_relocBase i32))
+ (import \"GRAIN$MODULE$runtime/dataStructures\" \"GRAIN$EXPORT$newRational\" (global $wimport_GRAIN$MODULE$runtime/dataStructures_GRAIN$EXPORT$newRational (mut i32)))
+ (import \"GRAIN$MODULE$runtime/dataStructures\" \"newRational\" (func $wimport_GRAIN$MODULE$runtime/dataStructures_newRational (param i32 i32 i32) (result i32)))
  (global $global_1 i32 (i32.const 0))
  (export \"memory\" (memory $0))
  (export \"_gmain\" (func $_gmain))
@@ -15,8 +15,8 @@ basic functionality › division1
  (func $_gmain (; has Stack IR ;) (result i32)
   (tuple.extract 0
    (tuple.make
-    (call $import_GRAIN$MODULE$runtime/dataStructures_0_newRational_0
-     (global.get $import_GRAIN$MODULE$runtime/dataStructures_0_GRAIN$EXPORT$newRational_0)
+    (call $wimport_GRAIN$MODULE$runtime/dataStructures_newRational
+     (global.get $wimport_GRAIN$MODULE$runtime/dataStructures_GRAIN$EXPORT$newRational)
      (i32.const 5)
      (i32.const 2)
     )
