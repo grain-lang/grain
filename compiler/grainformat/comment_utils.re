@@ -32,14 +32,18 @@ let rec get_comments_before_location =
     if (cmteline > stmt_start_line) {
       []; // can stop now
     } else if (cmteline < stmt_start_line) {
-      [cmt, ...get_comments_before_location(location,remaining_comments)]
+      [cmt, ...get_comments_before_location(location, remaining_comments)];
     } else if (cmtechar < stm_start_char) {
-      //  ends on the same line as the stmt starts
-      [cmt, ...get_comments_before_location(location,remaining_comments)]
-    } else []
+      [
+        //  ends on the same line as the stmt starts
+        cmt,
+        ...get_comments_before_location(location, remaining_comments),
+      ];
+    } else {
+      [];
+    };
   };
 };
-
 
 let rec get_comments_inside_location =
         (~location: Location.t, comments: list(Parsetree.comment)) => {
@@ -470,4 +474,63 @@ let single_line_of_comments = (comments: list(Parsetree.comment)) =>
         List.map(c => {nobreak_comment_to_doc(c)}, comments),
       ),
     ])
+  };
+
+let rec new_comments_inner =
+        (prev: option(Parsetree.comment), comments: list(Parsetree.comment)) => {
+  switch (prev) {
+  | None =>
+    switch (comments) {
+    | [] => [Doc.nil]
+    | [cmt, ...rem] => [
+        comment_to_doc(cmt),
+        ...new_comments_inner(Some(cmt), rem),
+      ]
+    }
+  | Some(prev_cmt) =>
+    switch (comments) {
+    | [] => [Doc.nil]
+    | [cmt, ...rem] =>
+      let (_, prev_line, _, _) =
+        Locations.get_raw_pos_info(
+          Locations.get_comment_loc(prev_cmt).loc_end,
+        );
+      let (_, this_line, _, _) =
+        Locations.get_raw_pos_info(Locations.get_comment_loc(cmt).loc_start);
+
+      switch (this_line - prev_line) {
+      | 0 => [
+          Doc.space,
+          comment_to_doc(cmt),
+          ...new_comments_inner(Some(cmt), rem),
+        ]
+
+      | 1 => [
+          switch (prev_cmt) {
+          | Line(_) => Doc.nil
+          | _ => Doc.hardLine
+          },
+          comment_to_doc(cmt),
+          ...new_comments_inner(Some(cmt), rem),
+        ]
+      | _ => [
+          switch (prev_cmt) {
+          | Doc(_)
+          | Shebang(_)
+          | Line(_) => Doc.nil
+          | _ => Doc.hardLine
+          },
+          Doc.hardLine,
+          comment_to_doc(cmt),
+          ...new_comments_inner(Some(cmt), rem),
+        ]
+      };
+    }
+  };
+};
+
+let new_comments_to_docs = (comments: list(Parsetree.comment)) =>
+  switch (comments) {
+  | [] => Doc.nil
+  | _remaining_comments => Doc.concat(new_comments_inner(None, comments))
   };

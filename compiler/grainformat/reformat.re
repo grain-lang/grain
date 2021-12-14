@@ -208,30 +208,143 @@ let rec block_item_iterator =
           items: list('a),
         ) =>
   switch (items) {
+  | [] => Doc.nil
+  | [item, ...remainder] =>
+    let leading_comments =
+      switch (previous) {
+      | None =>
+        Comment_utils.get_comments_before_location(
+          ~location=get_loc(item),
+          comments,
+        )
+      | Some(prev_node) =>
+        Comment_utils.get_comments_between_locations(
+          ~loc1=get_loc(prev_node),
+          ~loc2=get_loc(item),
+          comments,
+        )
+      };
+    let leading_comment_docs =
+      Comment_utils.new_comments_to_docs(leading_comments);
+    //List.map(c => Comment_utils.comment_to_doc(c), leading_comments);
+
+    let this_loc = get_loc(item);
+    let (_, this_line, this_char, _) =
+      Locations.get_raw_pos_info(this_loc.loc_start);
+
+    let before_comments_break = (previous, ccoments) =>
+      switch (previous) {
+      | None => Doc.nil
+      | Some(prev) =>
+        let (_, last_stmt_line, _, _) =
+          Locations.get_raw_pos_info(get_loc(prev).loc_end);
+        switch (ccoments) {
+        | [] =>
+          item_separator(~this_line, ~line_above=last_stmt_line, Doc.hardLine)
+
+        | [first_comment, ...rem] =>
+          let (_, first_comment_line, _, _) =
+            Locations.get_raw_pos_info(
+              Locations.get_comment_loc(first_comment).loc_start,
+            );
+
+          if (first_comment_line == last_stmt_line) {
+            Doc.space;
+          } else {
+            item_separator(
+              ~this_line=first_comment_line,
+              ~line_above=last_stmt_line,
+              Doc.hardLine,
+            );
+          };
+        };
+      };
+
+    let after_comments_break =
+      switch (leading_comments) {
+      | [] => Doc.nil
+
+      | in_comments =>
+        let last_comment =
+          List.nth(in_comments, List.length(in_comments) - 1);
+        let (_, last_comment_line, _, _) =
+          Locations.get_raw_pos_info(
+            Locations.get_comment_loc(last_comment).loc_end,
+          );
+
+        if (last_comment_line == this_line) {
+          Doc.space;
+        } else {
+          comment_separator(
+            ~this_line,
+            ~line_above=last_comment_line,
+            last_comment,
+          );
+        };
+      };
+
+    let bcb = before_comments_break(previous, leading_comments);
+
+    let this_item =
+      Doc.concat([
+        bcb,
+        leading_comment_docs,
+        after_comments_break,
+        print_item(item),
+      ]);
+
+    Doc.concat([
+      this_item,
+      block_item_iterator(
+        ~previous=Some(item),
+        ~get_loc,
+        ~print_item,
+        ~comments,
+        remainder,
+      ),
+    ]);
+  };
+
+let rec item_iterator =
+        (
+          ~previous: option('a),
+          ~get_loc: 'a => Location.t,
+          ~print_item: 'a => Doc.t,
+          ~comments: list(Parsetree.comment),
+          items: list('a),
+        ) =>
+  switch (items) {
   | [] => []
   | [item, ...remainder] =>
-    // let leading_comments = switch (previous) {
-    //   | None => Comment_utils.get_comments_before_location(~location=get_loc(item), comments)
-    //   | Some(prev_node) =>  Comment_utils.get_comments_between_locations(
-    //       ~loc1=get_loc(prev_node),
-    //       ~loc2=get_loc(item),
-    //       comments,
-    //     )
-    // };
-    //  let leading_comment_docs = List.map(c => Comment_utils.comment_to_doc(c),leading_comments)
+    let leading_comments =
+      switch (previous) {
+      | None =>
+        Comment_utils.get_comments_before_location(
+          ~location=get_loc(item),
+          comments,
+        )
+      | Some(prev_node) =>
+        Comment_utils.get_comments_between_locations(
+          ~loc1=get_loc(prev_node),
+          ~loc2=get_loc(item),
+          comments,
+        )
+      };
+    let leading_comment_docs =
+      Comment_utils.new_comments_to_docs(leading_comments);
 
-    // let this_item = [leading_comment_docs,...[print_item(item)]];
+    let this_item = Doc.concat([leading_comment_docs, print_item(item)]);
 
     [
-      print_item(item),
-      ...block_item_iterator(
+      this_item,
+      ...item_iterator(
            ~previous=Some(item),
            ~get_loc,
            ~print_item,
            ~comments,
            remainder,
          ),
-    ]
+    ];
   };
 
 let rec old_item_iterator =
@@ -508,7 +621,6 @@ let rec old_item_iterator =
           ]);
         };
       | [an_item, ...rem] =>
-       
         Doc.concat([
           item_doc,
           if (separator != Doc.line && separator != Doc.hardLine) {
@@ -530,7 +642,7 @@ let rec old_item_iterator =
             ~is_block=false,
             List.tl(items),
           ),
-        ]);
+        ])
       };
     };
   };
@@ -600,7 +712,7 @@ let rec resugar_list_patterns =
   //   );
 
   let items =
-    block_item_iterator(
+    item_iterator(
       ~previous=None,
       ~get_loc,
       ~print_item,
@@ -608,10 +720,13 @@ let rec resugar_list_patterns =
       processed_list,
     );
   let printed_patterns = Doc.join(Doc.concat([Doc.comma, Doc.line]), items);
+  let printed_patterns_after_bracket =
+    Doc.concat([Doc.line, printed_patterns]);
 
   Doc.group(
     Doc.concat([
-      Doc.indent(Doc.concat([Doc.lbracket, Doc.softLine, printed_patterns])),
+      Doc.lbracket,
+      Doc.indent(printed_patterns_after_bracket),
       Doc.softLine,
       Doc.rbracket,
     ]),
@@ -829,7 +944,7 @@ and print_record_pattern =
   //   );
 
   let items =
-    block_item_iterator(
+    item_iterator(
       ~previous=None,
       ~get_loc,
       ~print_item,
@@ -838,11 +953,11 @@ and print_record_pattern =
     );
   let printed_fields = Doc.join(Doc.concat([Doc.comma, Doc.line]), items);
 
+  let printed_fields_after_brace = Doc.concat([Doc.line, printed_fields]);
+
   Doc.concat([
     Doc.lbrace,
-    Doc.indent(
-      Doc.concat([Doc.ifBreaks(Doc.nil, Doc.space), printed_fields, close]),
-    ),
+    Doc.indent(Doc.concat([printed_fields_after_brace, close])),
     Doc.line,
     Doc.rbrace,
   ]);
@@ -1116,21 +1231,16 @@ and print_record =
   //   );
 
   let items =
-    block_item_iterator(
-      ~previous=None,
-      ~get_loc,
-      ~print_item,
-      ~comments,
-      fields,
-    );
+    item_iterator(~previous=None, ~get_loc, ~print_item, ~comments, fields);
   let printed_fields = Doc.join(Doc.concat([Doc.comma, Doc.line]), items);
+
+  let printed_fields_after_brace = Doc.concat([Doc.line, printed_fields]);
 
   Doc.concat([
     Doc.lbrace,
     Doc.indent(
       Doc.concat([
-        Doc.ifBreaks(Doc.nil, Doc.space),
-        printed_fields,
+        printed_fields_after_brace,
         if (List.length(fields) == 1) {
           // TODO: not needed once we annotate with ::
           Doc.comma; //  append a comma as single argument record look like block {data:val}
@@ -1268,21 +1378,23 @@ and print_type =
       //     parsedtypes,
       //   );
 
-      let items =
-        block_item_iterator(
+      let type_items =
+        item_iterator(
           ~previous=None,
           ~get_loc,
           ~print_item,
           ~comments,
           parsedtypes,
         );
-      let types = Doc.join(Doc.concat([Doc.comma, Doc.line]), items);
+      let printed_types =
+        Doc.join(Doc.concat([Doc.comma, Doc.line]), type_items);
+      let printed_types_after_angle = Doc.concat([Doc.line, printed_types]);
 
       Doc.group(
         Doc.concat([
           print_ident(ident),
           Doc.text("<"),
-          Doc.indent(Doc.group(types)),
+          Doc.indent(Doc.group(printed_types_after_angle)),
           Doc.softLine,
           Doc.text(">"),
         ]),
@@ -1482,7 +1594,7 @@ and print_application =
           let needs_indent = ref(true);
           let body =
             Doc.concat([
-              Doc.softLine,
+              //   Doc.softLine,
               Doc.join(
                 Doc.concat([Doc.comma, Doc.line]),
                 List.map(
@@ -1591,7 +1703,7 @@ and print_patterns =
   switch (patterns) {
   | [] => Doc.nil
   | _ =>
-    let (_, line, _, _) = Locations.get_raw_pos_info(wrapper.loc_end);
+    //let (_, line, _, _) = Locations.get_raw_pos_info(wrapper.loc_end);
 
     // old_item_iterator(
     //   ~bracket_line=line,
@@ -1608,7 +1720,7 @@ and print_patterns =
     // );
 
     let items =
-      block_item_iterator(
+      item_iterator(
         ~previous=None,
         ~get_loc,
         ~print_item,
@@ -1695,14 +1807,19 @@ and print_expression =
       };
       // let (_, bracket_line, _, _) =
       //   Locations.get_raw_pos_info(expr.pexp_loc.loc_end);
-      let items =
-        block_item_iterator(
+      let expr_items =
+        item_iterator(
           ~previous=None,
           ~get_loc,
           ~print_item,
           ~comments,
           expressions,
         );
+
+      let printed_expr_items =
+        Doc.join(Doc.concat([Doc.comma, Doc.line]), expr_items);
+      let printed_expr_items_after_paren =
+        Doc.concat([Doc.line, printed_expr_items]);
       Doc.group(
         Doc.concat([
           Doc.lparen,
@@ -1722,7 +1839,7 @@ and print_expression =
             //     expressions,
             //   ),
             // ]),
-            Doc.join(Doc.concat([Doc.comma, Doc.line]), items),
+            printed_expr_items_after_paren,
           ),
           if (List.length(expressions) == 1) {
             // single arg tuple
@@ -1753,7 +1870,7 @@ and print_expression =
       // let (_, bracket_line, _, _) =
       //   Locations.get_raw_pos_info(expr.pexp_loc.loc_end);
       let items =
-        block_item_iterator(
+        item_iterator(
           ~previous=None,
           ~get_loc,
           ~print_item,
@@ -1993,7 +2110,7 @@ and print_expression =
       //   );
 
       let items =
-        block_item_iterator(
+        item_iterator(
           ~previous=None,
           ~get_loc,
           ~print_item,
@@ -2003,7 +2120,10 @@ and print_expression =
       let printed_branches =
         Doc.join(Doc.concat([Doc.comma, Doc.hardLine]), items);
 
-      let printed_branches_after_brace = Doc.concat([Doc.line,printed_branches])
+      let printed_branches_after_brace =
+        Doc.concat([Doc.line, printed_branches]);
+      let after_brace_comments =
+        Comment_utils.get_after_brace_comments(expr.pexp_loc, comments);
 
       Doc.breakableGroup(
         ~forceBreak=false,
@@ -2012,6 +2132,7 @@ and print_expression =
           arg,
           Doc.space,
           Doc.lbrace,
+          Comment_utils.single_line_of_comments(after_brace_comments),
           Doc.indent(printed_branches_after_brace),
           Doc.line,
           Doc.rbrace,
@@ -2597,6 +2718,9 @@ and print_expression =
         //     expressions,
         //   );
 
+        let after_brace_comments =
+          Comment_utils.get_after_brace_comments(expr.pexp_loc, comments);
+
         let printed_expressions =
           block_item_iterator(
             ~previous=None,
@@ -2605,15 +2729,16 @@ and print_expression =
             ~comments,
             expressions,
           );
-        let printed_expressions_with_breaks =
-          Doc.join(Doc.hardLine, printed_expressions);
+        // let printed_expressions_with_breaks =
+        //   Doc.join(Doc.hardLine, printed_expressions);
 
-        let start_after_brace = Doc.concat([Doc.line,printed_expressions_with_breaks])
+        let start_after_brace = Doc.concat([Doc.line, printed_expressions]);
 
         Doc.breakableGroup(
           ~forceBreak=true,
           Doc.concat([
             Doc.lbrace,
+            Comment_utils.single_line_of_comments(after_brace_comments),
             Doc.indent(start_after_brace),
             Doc.line,
             Doc.rbrace,
@@ -2879,13 +3004,7 @@ and print_value_bind =
       // );
 
       let items =
-        block_item_iterator(
-          ~previous=None,
-          ~get_loc,
-          ~print_item,
-          ~comments,
-          vbs,
-        );
+        item_iterator(~previous=None, ~get_loc, ~print_item, ~comments, vbs);
       Doc.join(Doc.concat([Doc.comma, Doc.space]), items);
     };
 
@@ -2998,17 +3117,18 @@ let rec print_data =
       //   );
 
       let items =
-        block_item_iterator(
+        item_iterator(
           ~previous=None,
           ~get_loc,
           ~print_item,
           ~comments,
           data.pdata_params,
         );
-      let types = Doc.join(Doc.concat([Doc.comma, Doc.line]), items);
+      let printed_types = Doc.join(Doc.concat([Doc.comma, Doc.line]), items);
+      let printed_types_after_angle = Doc.concat([Doc.line, printed_types]);
       let params = [
         Doc.text("<"),
-        Doc.indent(types),
+        Doc.indent(printed_types_after_angle),
         Doc.softLine,
         Doc.text(">"),
       ];
@@ -3074,14 +3194,19 @@ let rec print_data =
               // let (_, open_line, _, _) =
               //   Locations.get_raw_pos_info(get_loc(first).loc_end);
 
-              let items =
-                block_item_iterator(
+              let type_items =
+                item_iterator(
                   ~previous=None,
                   ~get_loc,
                   ~print_item,
                   ~comments,
                   parsed_types,
                 );
+              let printed_type_items =
+                Doc.join(Doc.concat([Doc.comma, Doc.line]), type_items);
+
+              let printed_type_items_after_parens =
+                Doc.concat([Doc.line, printed_type_items]);
 
               Doc.group(
                 Doc.concat([
@@ -3101,7 +3226,7 @@ let rec print_data =
                       //   ~is_block=true,
                       //   parsed_types,
                       // ),
-                      Doc.join(Doc.concat([Doc.comma, Doc.line]), items),
+                      printed_type_items_after_parens,
                     ]),
                   ),
                   Doc.softLine,
@@ -3133,15 +3258,17 @@ let rec print_data =
     //     constr_declarations,
     //   );
 
-    let items =
-      block_item_iterator(
+    let decl_items =
+      item_iterator(
         ~previous=None,
         ~get_loc,
         ~print_item,
         ~comments,
         constr_declarations,
       );
-    let printed_decls = Doc.join(Doc.concat([Doc.comma, Doc.line]), items);
+    let printed_decls =
+      Doc.join(Doc.concat([Doc.comma, Doc.line]), decl_items);
+    let printed_decls_after_brace = Doc.concat([Doc.line, printed_decls]);
 
     Doc.group(
       Doc.concat([
@@ -3169,8 +3296,8 @@ let rec print_data =
           // let (_, open_line, _, _) =
           //   Locations.get_raw_pos_info(get_loc(first).loc_end);
 
-          let items =
-            block_item_iterator(
+          let params =
+            item_iterator(
               ~previous=None,
               ~get_loc,
               ~print_item,
@@ -3178,10 +3305,17 @@ let rec print_data =
               data.pdata_params,
             );
 
+          let printed_data_params =
+            Doc.join(Doc.concat([Doc.comma, Doc.line]), params);
+
+          let printed_data_params_after_angle =
+            Doc.concat([Doc.line, printed_data_params]);
+
           Doc.group(
             Doc.concat([
               Doc.text("<"),
               Doc.indent(
+                printed_data_params_after_angle,
                 // old_item_iterator(
                 //   ~bracket_line=open_line,
                 //   ~comments,
@@ -3195,7 +3329,6 @@ let rec print_data =
                 //   ~is_block=true,
                 //   data.pdata_params,
                 // ),
-                Doc.join(Doc.concat([Doc.comma, Doc.line]), items),
               ),
               Doc.softLine,
               Doc.text(">"),
@@ -3205,7 +3338,8 @@ let rec print_data =
         },
         Doc.lbrace,
         Doc.indent(
-          Doc.concat([Doc.ifBreaks(Doc.nil, Doc.space), printed_decls]),
+          //  Doc.concat([Doc.ifBreaks(Doc.nil, Doc.space), printed_decls]),
+          printed_decls_after_brace,
         ),
         Doc.line,
         Doc.rbrace,
@@ -3259,15 +3393,17 @@ let rec print_data =
     //     label_declarations,
     //   );
 
-    let items =
-      block_item_iterator(
+    let decl_items =
+      item_iterator(
         ~previous=None,
         ~get_loc,
         ~print_item,
         ~comments,
         label_declarations,
       );
-    let printed_decls = Doc.join(Doc.concat([Doc.comma, Doc.line]), items);
+    let printed_decls =
+      Doc.join(Doc.concat([Doc.comma, Doc.line]), decl_items);
+    let printed_decls_after_brace = Doc.concat([Doc.line, printed_decls]);
 
     Doc.group(
       Doc.concat([
@@ -3295,14 +3431,18 @@ let rec print_data =
           // let (_, open_line, _, _) =
           //   Locations.get_raw_pos_info(get_loc(first).loc_end);
 
-          let items =
-            block_item_iterator(
+          let param_items =
+            item_iterator(
               ~previous=None,
               ~get_loc,
               ~print_item,
               ~comments,
               data.pdata_params,
             );
+          let printed_param_items =
+            Doc.join(Doc.concat([Doc.comma, Doc.line]), param_items);
+          let printed_params_after_angle =
+            Doc.concat([Doc.line, printed_param_items]);
           Doc.group(
             Doc.concat([
               Doc.text("<"),
@@ -3320,7 +3460,7 @@ let rec print_data =
                 //   ~is_block=true,
                 //   data.pdata_params,
                 // ),
-                Doc.join(Doc.concat([Doc.comma, Doc.line]), items),
+                printed_params_after_angle,
               ),
               Doc.softLine,
               Doc.text(">"),
@@ -3330,9 +3470,7 @@ let rec print_data =
         },
         Doc.concat([
           Doc.lbrace,
-          Doc.indent(
-            Doc.concat([Doc.ifBreaks(Doc.nil, Doc.space), printed_decls]),
-          ),
+          Doc.indent(printed_decls_after_brace),
           Doc.line,
           Doc.rbrace,
         ]),
@@ -3407,7 +3545,7 @@ let import_print =
               //   );
 
               let items =
-                block_item_iterator(
+                item_iterator(
                   ~previous=None,
                   ~get_loc,
                   ~print_item,
@@ -3488,14 +3626,16 @@ let import_print =
                   // );
 
                   let items =
-                    block_item_iterator(
+                    item_iterator(
                       ~previous=None,
                       ~get_loc,
                       ~print_item,
                       ~comments,
                       identlocsopts,
                     );
-                  Doc.join(Doc.concat([Doc.comma, Doc.line]), items);
+                  let printed_items =
+                    Doc.join(Doc.concat([Doc.comma, Doc.line]), items);
+                  Doc.concat([Doc.line, printed_items]);
                 },
               ]),
             ),
@@ -3795,7 +3935,7 @@ let reformat_ast =
     );
   };
 
-  let top_level_stmt_items =
+  let top_level_stmts =
     block_item_iterator(
       ~previous=None,
       ~get_loc,
@@ -3803,8 +3943,6 @@ let reformat_ast =
       ~comments=parsed_program.comments,
       parsed_program.statements,
     );
-
-  let top_level_stmts = Doc.join(Doc.hardLine, top_level_stmt_items);
 
   //let final_doc = Doc.concat([Doc.lineSuffix(Doc.text("// the start")),Doc.text("AA "),Doc.lineSuffix(Doc.text("// the end")), Doc.text("BB")]);
 
