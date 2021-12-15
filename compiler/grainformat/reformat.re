@@ -333,7 +333,7 @@ let rec item_iterator =
     let leading_comment_docs =
       Comment_utils.new_comments_to_docs(leading_comments);
 
-    let this_item = Doc.concat([leading_comment_docs, print_item(item), Doc.lineSuffix(Doc.text(" // end comment"))]);
+    let this_item = Doc.concat([leading_comment_docs, print_item(item)]);
 
     [
       this_item,
