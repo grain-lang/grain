@@ -333,7 +333,7 @@ let rec item_iterator =
     let leading_comment_docs =
       Comment_utils.new_comments_to_docs(leading_comments);
 
-    let this_item = Doc.concat([leading_comment_docs, print_item(item)]);
+    let this_item = Doc.concat([leading_comment_docs, print_item(item), Doc.lineSuffix(Doc.text(" // end comment"))]);
 
     [
       this_item,
@@ -2109,12 +2109,17 @@ and print_expression =
       //     match_branches,
       //   );
 
+        let after_brace_comments =
+        Comment_utils.get_after_brace_comments(expr.pexp_loc, comments);
+        let cleaned_comments =
+        remove_used_comments(~all_comments=comments, after_brace_comments);
+
       let items =
         item_iterator(
           ~previous=None,
           ~get_loc,
           ~print_item,
-          ~comments,
+          ~comments=cleaned_comments,
           match_branches,
         );
       let printed_branches =
@@ -2122,8 +2127,9 @@ and print_expression =
 
       let printed_branches_after_brace =
         Doc.concat([Doc.line, printed_branches]);
-      let after_brace_comments =
-        Comment_utils.get_after_brace_comments(expr.pexp_loc, comments);
+    
+
+        
 
       Doc.breakableGroup(
         ~forceBreak=false,
@@ -2721,12 +2727,15 @@ and print_expression =
         let after_brace_comments =
           Comment_utils.get_after_brace_comments(expr.pexp_loc, comments);
 
+        let cleaned_comments =
+        remove_used_comments(~all_comments=comments, after_brace_comments);
+
         let printed_expressions =
           block_item_iterator(
             ~previous=None,
             ~get_loc,
             ~print_item,
-            ~comments,
+            ~comments=cleaned_comments,
             expressions,
           );
         // let printed_expressions_with_breaks =
@@ -3935,12 +3944,17 @@ let reformat_ast =
     );
   };
 
+  let leading_comments = [];
+
+   let cleaned_comments =
+        remove_used_comments(~all_comments=parsed_program.comments, leading_comments);
+
   let top_level_stmts =
     block_item_iterator(
       ~previous=None,
       ~get_loc,
       ~print_item,
-      ~comments=parsed_program.comments,
+      ~comments=cleaned_comments,
       parsed_program.statements,
     );
 
