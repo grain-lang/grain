@@ -205,12 +205,13 @@ let rec block_item_iterator =
           ~get_loc: 'a => Location.t,
           ~print_item: ('a, list(Parsetree.comment)) => Doc.t,
           ~comments: list(Parsetree.comment),
+          ~get_attribute_text: 'a => Doc.t,
           items: list('a),
         ) => {
-  let attribute_text = get_attribute_text(item);
   switch (items) {
   | [] => Doc.nil
   | [item, ...remainder] =>
+    let attribute_text = get_attribute_text(item);
     let leading_comments =
       switch (previous) {
       | None =>
@@ -332,6 +333,7 @@ let rec block_item_iterator =
           bcb,
           leading_comment_docs,
           after_comments_break,
+          attribute_text,
           print_item(item, item_comments),
           trailing_comment_separator,
           trailing_comment_docs,
@@ -345,6 +347,7 @@ let rec block_item_iterator =
           bcb,
           leading_comment_docs,
           after_comments_break,
+          attribute_text,
           print_item(item, item_comments),
         ]);
 
@@ -361,6 +364,7 @@ let rec block_item_iterator =
           ~get_loc,
           ~print_item,
           ~comments=comments_without_item_comments,
+          ~get_attribute_text,
           remainder,
         ),
       ]);
@@ -1391,7 +1395,7 @@ and print_type =
           Doc.text("<"),
           Comment_utils.single_line_of_comments(after_angle_comments),
           Doc.indent(Doc.group(printed_types_after_angle)),
-          Doc.ifBreaks(Doc.comma, Doc.nil),
+          // Doc.ifBreaks(Doc.comma, Doc.nil),
           Doc.softLine,
           Doc.text(">"),
         ]),
@@ -2640,6 +2644,8 @@ and print_expression =
             ~get_loc,
             ~print_item,
             ~comments=cleaned_comments,
+            ~get_attribute_text=
+              expr => print_attributes(expr.pexp_attributes),
             expressions,
           );
 
@@ -3003,7 +3009,7 @@ let rec print_data =
         Doc.text("<"),
         Comment_utils.single_line_of_comments(after_angle_comments),
         Doc.indent(printed_types_after_angle),
-        Doc.ifBreaks(Doc.comma, Doc.nil),
+        //   Doc.ifBreaks(Doc.comma, Doc.nil),
         Doc.softLine,
         Doc.text(">"),
       ];
@@ -3085,7 +3091,7 @@ let rec print_data =
                   Doc.lparen,
                   Comment_utils.single_line_of_comments(after_paren_comments),
                   Doc.indent(Doc.concat([printed_type_items_after_parens])),
-                  Doc.ifBreaks(Doc.comma, Doc.nil),
+                  //  Doc.ifBreaks(Doc.comma, Doc.nil),
                   Doc.softLine,
                   Doc.rparen,
                 ]),
@@ -3161,7 +3167,7 @@ let rec print_data =
               Doc.text("<"),
               Comment_utils.single_line_of_comments(after_angle_comments),
               Doc.indent(printed_data_params_after_angle),
-              Doc.ifBreaks(Doc.comma, Doc.nil),
+              // Doc.ifBreaks(Doc.comma, Doc.nil),
               Doc.softLine,
               Doc.text(">"),
               Doc.space,
@@ -3261,7 +3267,7 @@ let rec print_data =
               Doc.text("<"),
               Comment_utils.single_line_of_comments(after_angle_comments),
               Doc.indent(printed_params_after_angle),
-              Doc.ifBreaks(Doc.comma, Doc.nil),
+              // Doc.ifBreaks(Doc.comma, Doc.nil),
               Doc.softLine,
               Doc.text(">"),
               Doc.space,
@@ -3733,6 +3739,11 @@ let reformat_ast =
       ~get_loc,
       ~print_item,
       ~comments=cleaned_comments,
+      ~get_attribute_text=
+        stmt => {
+          let attributes = stmt.ptop_attributes;
+          print_attributes(attributes);
+        },
       parsed_program.statements,
     );
 
