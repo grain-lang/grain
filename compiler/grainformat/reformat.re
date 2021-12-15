@@ -207,7 +207,7 @@ let rec block_item_iterator =
           ~comments: list(Parsetree.comment),
           items: list('a),
         ) => {
-           let attribute_text = get_attribute_text(item);
+  let attribute_text = get_attribute_text(item);
   switch (items) {
   | [] => Doc.nil
   | [item, ...remainder] =>
