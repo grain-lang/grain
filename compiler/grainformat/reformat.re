@@ -383,6 +383,198 @@ let rec item_iterator =
   switch (items) {
   | [] => []
   | [item, ...remainder] =>
+    let item_comments =
+      Comment_utils.get_comments_inside_location(
+        ~location=get_loc(item),
+        comments,
+      );
+    switch (remainder) {
+    | [following, ...rem] =>
+
+      let trailing_comments= Comment_utils.get_comments_between_locations(
+        ~loc1=get_loc(item),
+        ~loc2=get_loc(following),
+        comments,
+      );
+      let this_loc = get_loc(item);
+    let (_, this_line, this_char, _) =
+      Locations.get_raw_pos_info(this_loc.loc_start);
+
+       let before_comments_break = (previous, ccoments) =>
+      switch (previous) {
+      | None => Doc.nil
+      | Some(prev) =>
+        let (_, last_stmt_line, _, _) =
+          Locations.get_raw_pos_info(get_loc(prev).loc_end);
+        switch (ccoments) {
+        | [] =>
+          item_separator(~this_line, ~line_above=last_stmt_line, Doc.hardLine)
+
+        | [first_comment, ...rem] =>
+          let (_, first_comment_line, _, _) =
+            Locations.get_raw_pos_info(
+              Locations.get_comment_loc(first_comment).loc_start,
+            );
+
+          if (first_comment_line == last_stmt_line) {
+            Doc.space;
+          } else {
+            item_separator(
+              ~this_line=first_comment_line,
+              ~line_above=last_stmt_line,
+              Doc.hardLine,
+            );
+          };
+        };
+      };
+
+      let bcb = before_comments_break(Some(item), trailing_comments);
+
+
+      let this_item =
+        Doc.concat([
+
+          print_item(item, item_comments),
+         
+         Doc.lineSuffix(Doc.concat([ bcb,Comment_utils.block_trailing_comments_docs(trailing_comments)])),
+        ]);
+      [
+        this_item,
+        
+        ...item_iterator(
+             ~previous=None,
+             ~get_loc,
+             ~print_item,
+             ~comments,
+             remainder,
+           ),
+      ];
+
+    | [] =>
+      let this_item =
+        Doc.concat([
+          print_item(item, item_comments),
+        //  Doc.lineSuffix(Doc.text("// end comment 2")),
+        ]);
+      let comments_without_item_comments =
+        remove_used_comments(~all_comments=comments, item_comments);
+      [
+        this_item,
+      //  Doc.text("// a comment on its own also"),
+        ...item_iterator(
+             ~previous=None,
+             ~get_loc,
+             ~print_item,
+             ~comments=comments_without_item_comments,
+             remainder,
+           ),
+      ];
+    };
+  };
+
+//   let leading_comments =
+//     switch (previous) {
+//     | None =>
+//       Comment_utils.get_comments_before_location(
+//         ~location=get_loc(item),
+//         comments,
+//       )
+//     | Some(prev_node) =>
+//       Comment_utils.get_comments_between_locations(
+//         ~loc1=get_loc(prev_node),
+//         ~loc2=get_loc(item),
+//         comments,
+//       )
+//     };
+//   let leading_comment_docs =
+//     Comment_utils.new_comments_to_docs(leading_comments);
+
+//   let item_comments =
+//     Comment_utils.get_comments_inside_location(
+//       ~location=get_loc(item),
+//       comments,
+//     );
+
+//   let comments_without_leading =
+//     remove_used_comments(~all_comments=comments, leading_comments);
+//   switch (remainder) {
+//   | [] =>
+//     let trailing_comments =
+//       remove_used_comments(
+//         ~all_comments=comments_without_leading,
+//         item_comments,
+//       );
+
+//     let trailing_comment_docs =
+//       Comment_utils.block_trailing_comments_docs(trailing_comments);
+
+//     let (_, last_stmt_line, _, _) =
+//       Locations.get_raw_pos_info(get_loc(item).loc_end);
+//     let trailing_comment_separator =
+//       switch (trailing_comments) {
+//       | [] => Doc.nil
+
+//       | [first_comment, ...rem] =>
+//         let (_, first_comment_line, _, _) =
+//           Locations.get_raw_pos_info(
+//             Locations.get_comment_loc(first_comment).loc_start,
+//           );
+
+//         if (first_comment_line == last_stmt_line) {
+//           Doc.space;
+//         } else {
+//           item_separator(
+//             ~this_line=first_comment_line,
+//             ~line_above=last_stmt_line,
+//             Doc.hardLine,
+//           );
+//         };
+//       };
+
+//     let this_item =
+//       Doc.concat([
+//         leading_comment_docs,
+//         print_item(item, item_comments),
+//         trailing_comment_separator,
+//         trailing_comment_docs,
+//       ]);
+
+//     [this_item];
+
+//   | _more =>
+//     let comments_without_item_comments =
+//       remove_used_comments(
+//         ~all_comments=comments_without_leading,
+//         item_comments,
+//       );
+
+//     let this_item =
+//       Doc.concat([leading_comment_docs, print_item(item, item_comments)]);
+
+//     [
+//       this_item,
+//       ...item_iterator(
+//            ~previous=Some(item),
+//            ~get_loc,
+//            ~print_item,
+//            ~comments=comments_without_item_comments,
+//            remainder,
+//          ),
+//     ];
+//   };
+// };
+
+let rec item_iterator_a =
+        (
+          ~previous: option('a),
+          ~get_loc: 'a => Location.t,
+          ~print_item: ('a, list(Parsetree.comment)) => Doc.t,
+          ~comments: list(Parsetree.comment),
+          items: list('a),
+        ) =>
+  switch (items) {
+  | [] => []
+  | [item, ...remainder] =>
     let leading_comments =
       switch (previous) {
       | None =>
@@ -406,19 +598,73 @@ let rec item_iterator =
         comments,
       );
 
-    let this_item =
-      Doc.concat([leading_comment_docs, print_item(item, item_comments)]);
+    let comments_without_leading =
+      remove_used_comments(~all_comments=comments, leading_comments);
+    switch (remainder) {
+    | [] =>
+      let trailing_comments =
+        remove_used_comments(
+          ~all_comments=comments_without_leading,
+          item_comments,
+        );
 
-    [
-      this_item,
-      ...item_iterator(
-           ~previous=Some(item),
-           ~get_loc,
-           ~print_item,
-           ~comments,
-           remainder,
-         ),
-    ];
+      let trailing_comment_docs =
+        Comment_utils.block_trailing_comments_docs(trailing_comments);
+
+      let (_, last_stmt_line, _, _) =
+        Locations.get_raw_pos_info(get_loc(item).loc_end);
+      let trailing_comment_separator =
+        switch (trailing_comments) {
+        | [] => Doc.nil
+
+        | [first_comment, ...rem] =>
+          let (_, first_comment_line, _, _) =
+            Locations.get_raw_pos_info(
+              Locations.get_comment_loc(first_comment).loc_start,
+            );
+
+          if (first_comment_line == last_stmt_line) {
+            Doc.space;
+          } else {
+            item_separator(
+              ~this_line=first_comment_line,
+              ~line_above=last_stmt_line,
+              Doc.hardLine,
+            );
+          };
+        };
+
+      let this_item =
+        Doc.concat([
+          leading_comment_docs,
+          print_item(item, item_comments),
+          trailing_comment_separator,
+          trailing_comment_docs,
+        ]);
+
+      [this_item];
+
+    | _more =>
+      let comments_without_item_comments =
+        remove_used_comments(
+          ~all_comments=comments_without_leading,
+          item_comments,
+        );
+
+      let this_item =
+        Doc.concat([leading_comment_docs, print_item(item, item_comments)]);
+
+      [
+        this_item,
+        ...item_iterator(
+             ~previous=Some(item),
+             ~get_loc,
+             ~print_item,
+             ~comments=comments_without_item_comments,
+             remainder,
+           ),
+      ];
+    };
   };
 
 let rec old_item_iterator =
