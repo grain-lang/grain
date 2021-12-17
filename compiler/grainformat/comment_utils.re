@@ -33,7 +33,7 @@ let rec get_comments_before_location =
       []; // can stop now
     } else if (cmteline < stmt_start_line) {
       [cmt, ...get_comments_before_location(location, remaining_comments)];
-    } else if (cmtechar < stm_start_char) {
+    } else if (cmtechar <= stm_start_char) {
       [
         //  ends on the same line as the stmt starts
         cmt,
