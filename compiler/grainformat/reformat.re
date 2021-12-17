@@ -277,6 +277,7 @@ let rec block_item_iterator =
           ~comments: list(Parsetree.comment),
           ~get_attribute_text: 'a => Doc.t,
           ~original_source,
+          ~separator: option(Doc.t),
           items: list('a),
         ) => {
   switch (items) {
@@ -432,6 +433,7 @@ let rec block_item_iterator =
             ~comments=comments_without_item_comments,
             ~get_attribute_text,
             ~original_source,
+            ~separator=None,
             remainder,
           ),
         ]);
@@ -489,6 +491,10 @@ let rec block_item_iterator =
             after_comments_break,
             attribute_text,
             print_item(item, item_comments),
+            switch (separator) {
+            | None => Doc.nil
+            | Some(sp) => sp
+            },
             trailing_comment_separator,
             trailing_comment_docs,
           ]);
@@ -504,6 +510,10 @@ let rec block_item_iterator =
             after_comments_break,
             attribute_text,
             print_item(item, item_comments),
+            switch (separator) {
+            | None => Doc.nil
+            | Some(sp) => sp
+            },
           ]);
 
         let comments_without_item_comments =
@@ -521,6 +531,7 @@ let rec block_item_iterator =
             ~comments=comments_without_item_comments,
             ~get_attribute_text,
             ~original_source,
+            ~separator,
             remainder,
           ),
         ]);
@@ -597,7 +608,6 @@ let rec item_iterator =
                 | _ => Doc.space
                 };
               Doc.concat([
-                //   bcb,
                 Comment_utils.new_comments_to_docs(leading_comments),
                 filler,
               ]);
@@ -605,7 +615,6 @@ let rec item_iterator =
               Doc.nil;
             },
             print_item(item, item_comments),
-            //  Doc.lineSuffix(
             separator,
             Doc.concat([
               bcb,
@@ -2698,6 +2707,7 @@ and print_expression =
             ~get_attribute_text=
               expr => print_attributes(expr.pexp_attributes),
             ~original_source,
+            ~separator=None,
             expressions,
           );
 
@@ -3430,16 +3440,17 @@ let import_print =
                   after_brace_comments,
                 );
 
-              let items =
-                item_iterator(
-                  ~previous=None,
+              let exceptions =
+                block_item_iterator(
+                  ~previous=Block(imp),
                   ~get_loc,
                   ~print_item,
+                  ~get_attribute_text=_ => Doc.nil,
                   ~comments=cleaned_comments,
-                  ~separator=Doc.comma,
+                  ~original_source,
+                  ~separator=Some(Doc.comma),
                   identlocs,
                 );
-              let exceptions = Doc.join(Doc.line, items);
 
               Doc.concat([
                 Doc.space,
@@ -3454,7 +3465,6 @@ let import_print =
                       Doc.line,
                     ),
                     exceptions,
-                    Doc.ifBreaks(Doc.comma, Doc.nil),
                   ]),
                 ),
                 Doc.line,
@@ -3511,16 +3521,18 @@ let import_print =
               };
             };
 
-            let items =
-              item_iterator(
-                ~previous=None,
+            let printed_items =
+              block_item_iterator(
+                ~previous=Block(imp),
                 ~get_loc,
                 ~print_item,
                 ~comments=cleaned_comments,
-                ~separator=Doc.comma,
+                ~separator=Some(Doc.comma),
+                ~original_source,
+                ~get_attribute_text=_ => Doc.nil,
                 identlocsopts,
               );
-            let printed_items = Doc.join(Doc.line, items);
+            // let printed_items = Doc.join(Doc.line, items);
 
             Doc.concat([
               Doc.lbrace,
@@ -3529,7 +3541,7 @@ let import_print =
                 Doc.concat([
                   force_break_if_line_comment(after_brace_comments, Doc.line),
                   printed_items,
-                  Doc.ifBreaks(Doc.comma, Doc.nil),
+                  // Doc.ifBreaks(Doc.comma, Doc.nil),
                 ]),
               ),
               Doc.line,
@@ -3840,6 +3852,7 @@ let reformat_ast =
           print_attributes(attributes);
         },
       ~original_source,
+      ~separator=None,
       parsed_program.statements,
     );
 
