@@ -271,10 +271,38 @@ let nobreak_comment_to_doc = (comment: Parsetree.comment) => {
 };
 
 let get_after_brace_comments =
-    (loc: Location.t, comments: list(Parsetree.comment)) => {
+    (
+      loc: Location.t,
+      comments: list(Parsetree.comment),
+      first: option(Location.t),
+    ) => {
   let (_, startline, startc, _) = Locations.get_raw_pos_info(loc.loc_start);
 
-  get_comments_on_line(startline, comments);
+  let cmts = get_comments_on_line(startline, comments);
+  switch (cmts) {
+  | [] => cmts
+  | [fst, ...rem] =>
+    switch (first) {
+    | None => cmts
+    | Some(leading) =>
+      let fstclog = Locations.get_comment_loc(fst);
+
+      let (_, itemstartline, itemstartc, _) =
+        Locations.get_raw_pos_info(leading.loc_start);
+
+      if (itemstartline > startline) {
+        cmts;
+      } else {
+        let (_, cmtstartline, cmtstartc, _) =
+          Locations.get_raw_pos_info(fstclog.loc_start);
+        if (cmtstartline >= itemstartline && cmtstartc > itemstartc) {
+          [];
+        } else {
+          cmts;
+        };
+      };
+    }
+  };
 };
 
 let rec comments_inner =
