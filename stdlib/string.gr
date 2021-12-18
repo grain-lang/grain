@@ -1252,7 +1252,8 @@ let rec encodeHelp = (string: String, encoding: Encoding, includeBom: Bool) => {
       UTF32_LE => 4,
       UTF32_BE => 4,
     }
-  } else {
+  }
+  else {
     0
   })
   let (>>>) = WasmI32.shrU

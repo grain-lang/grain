@@ -33,7 +33,7 @@ import foreign wasm fd_write: (
   WasmI32,
   WasmI32,
   WasmI32,
-  WasmI32
+  WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 
 primitive (&&): (Bool, Bool) -> Bool = "@and"

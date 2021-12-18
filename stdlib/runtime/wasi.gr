@@ -8,19 +8,19 @@ import Exception from "exception"
 // env
 import foreign wasm args_get: (
   WasmI32,
-  WasmI32
+  WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 import foreign wasm args_sizes_get: (
   WasmI32,
-  WasmI32
+  WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 import foreign wasm environ_get: (
   WasmI32,
-  WasmI32
+  WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 import foreign wasm environ_sizes_get: (
   WasmI32,
-  WasmI32
+  WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 
 // proc
@@ -31,14 +31,14 @@ import foreign wasm sched_yield: () -> WasmI32 from "wasi_snapshot_preview1"
 // random
 import foreign wasm random_get: (
   WasmI32,
-  WasmI32
+  WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 
 // time
 import foreign wasm clock_time_get: (
   WasmI32,
   WasmI64,
-  WasmI32
+  WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 
 // file
@@ -51,20 +51,20 @@ import foreign wasm path_open: (
   WasmI64,
   WasmI64,
   WasmI32,
-  WasmI32
+  WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 import foreign wasm fd_read: (
   WasmI32,
   WasmI32,
   WasmI32,
-  WasmI32
+  WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 import foreign wasm fd_pread: (
   WasmI32,
   WasmI32,
   WasmI32,
   WasmI64,
-  WasmI32
+  WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 /**
  * Invokes the `fd_write` system call.
@@ -79,82 +79,82 @@ import foreign wasm fd_write: (
   WasmI32,
   WasmI32,
   WasmI32,
-  WasmI32
+  WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 import foreign wasm fd_pwrite: (
   WasmI32,
   WasmI32,
   WasmI32,
   WasmI64,
-  WasmI32
+  WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 import foreign wasm fd_allocate: (
   WasmI32,
   WasmI64,
-  WasmI64
+  WasmI64,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 import foreign wasm fd_close: WasmI32 -> WasmI32 from "wasi_snapshot_preview1"
 import foreign wasm fd_datasync: WasmI32 -> WasmI32 from "wasi_snapshot_preview1"
 import foreign wasm fd_sync: WasmI32 -> WasmI32 from "wasi_snapshot_preview1"
 import foreign wasm fd_fdstat_get: (
   WasmI32,
-  WasmI32
+  WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 import foreign wasm fd_fdstat_set_flags: (
   WasmI32,
-  WasmI32
+  WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 import foreign wasm fd_fdstat_set_rights: (
   WasmI32,
   WasmI64,
-  WasmI64
+  WasmI64,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 import foreign wasm fd_filestat_get: (
   WasmI32,
-  WasmI32
+  WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 import foreign wasm fd_filestat_set_size: (
   WasmI32,
-  WasmI64
+  WasmI64,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 import foreign wasm fd_filestat_set_times: (
   WasmI32,
   WasmI64,
   WasmI64,
-  WasmI32
+  WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 import foreign wasm fd_readdir: (
   WasmI32,
   WasmI32,
   WasmI32,
   WasmI64,
-  WasmI32
+  WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 import foreign wasm fd_renumber: (
   WasmI32,
-  WasmI32
+  WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 import foreign wasm fd_seek: (
   WasmI32,
   WasmI64,
   WasmI32,
-  WasmI32
+  WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 import foreign wasm fd_tell: (
   WasmI32,
-  WasmI32
+  WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 import foreign wasm path_create_directory: (
   WasmI32,
   WasmI32,
-  WasmI32
+  WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 import foreign wasm path_filestat_get: (
   WasmI32,
   WasmI32,
   WasmI32,
   WasmI32,
-  WasmI32
+  WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 import foreign wasm path_filestat_set_times: (
   WasmI32,
@@ -163,7 +163,7 @@ import foreign wasm path_filestat_set_times: (
   WasmI32,
   WasmI64,
   WasmI64,
-  WasmI32
+  WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 import foreign wasm path_link: (
   WasmI32,
@@ -172,19 +172,19 @@ import foreign wasm path_link: (
   WasmI32,
   WasmI32,
   WasmI32,
-  WasmI32
+  WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 import foreign wasm path_symlink: (
   WasmI32,
   WasmI32,
   WasmI32,
   WasmI32,
-  WasmI32
+  WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 import foreign wasm path_unlink_file: (
   WasmI32,
   WasmI32,
-  WasmI32
+  WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 import foreign wasm path_readlink: (
   WasmI32,
@@ -192,12 +192,12 @@ import foreign wasm path_readlink: (
   WasmI32,
   WasmI32,
   WasmI32,
-  WasmI32
+  WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 import foreign wasm path_remove_directory: (
   WasmI32,
   WasmI32,
-  WasmI32
+  WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 import foreign wasm path_rename: (
   WasmI32,
@@ -205,7 +205,7 @@ import foreign wasm path_rename: (
   WasmI32,
   WasmI32,
   WasmI32,
-  WasmI32
+  WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 
 // clocks
