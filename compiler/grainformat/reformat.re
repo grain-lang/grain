@@ -3161,23 +3161,8 @@ and print_value_bind =
         let expression =
           switch (vb.pvb_expr.pexp_desc) {
           | PExpApp(fn, exprs) =>
-            // special case if any of the exprs are lambdas we handle indentiation differently
-
-            let lambdas =
-              List.filter(
-                (e: Parsetree.expression) =>
-                  switch (e.pexp_desc) {
-                  | PExpLambda(_) => true
-                  | _ => false
-                  },
-                exprs,
-              );
-
-            let function_name = get_function_name(fn);
-
-            function_name == list_cons || List.length(lambdas) > 0
-              //  || Doc.willBreak(printed)
-              ? printed : Doc.indent(printed);
+            Doc.willBreak(printed)
+              ? printed : Doc.ifBreaks(printed, Doc.indent(printed))
 
           | _ => printed
           };
