@@ -3151,13 +3151,21 @@ and print_value_bind =
             ~location=vb.pvb_expr.pexp_loc,
             comments,
           );
-        let expression =
+        let printed =
           print_expression(
             ~parent_is_arrow=false,
             ~original_source,
             ~comments=expr_comments,
             vb.pvb_expr,
           );
+        let expression =
+          switch (vb.pvb_expr.pexp_desc) {
+          | PExpApp(fn, exprs) =>
+            Doc.willBreak(printed)
+              ? printed : Doc.ifBreaks(printed, Doc.indent(printed))
+
+          | _ => printed
+          };
 
         let expression_group = Doc.concat([Doc.space, expression]);
 
