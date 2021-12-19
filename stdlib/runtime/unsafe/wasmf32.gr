@@ -2,7 +2,11 @@
 
 // WebAssembly Memory Instructions
 export primitive load: (WasmI32, WasmI32) -> WasmF32 = "@wasm.load_float32"
-export primitive store: (WasmI32, WasmF32, WasmI32) -> Void = "@wasm.store_float32"
+export primitive store: (
+  WasmI32,
+  WasmF32,
+  WasmI32,
+) -> Void = "@wasm.store_float32"
 
 // WebAssembly Unary Instructions
 export primitive neg: WasmF32 -> WasmF32 = "@wasm.neg_float32"
@@ -18,7 +22,10 @@ export primitive add: (WasmF32, WasmF32) -> WasmF32 = "@wasm.add_float32"
 export primitive sub: (WasmF32, WasmF32) -> WasmF32 = "@wasm.sub_float32"
 export primitive mul: (WasmF32, WasmF32) -> WasmF32 = "@wasm.mul_float32"
 export primitive div: (WasmF32, WasmF32) -> WasmF32 = "@wasm.div_float32"
-export primitive copySign: (WasmF32, WasmF32) -> WasmF32 = "@wasm.copy_sign_float32"
+export primitive copySign: (
+  WasmF32,
+  WasmF32,
+) -> WasmF32 = "@wasm.copy_sign_float32"
 export primitive min: (WasmF32, WasmF32) -> WasmF32 = "@wasm.min_float32"
 export primitive max: (WasmF32, WasmF32) -> WasmF32 = "@wasm.max_float32"
 export primitive eq: (WasmF32, WasmF32) -> Bool = "@wasm.eq_float32"
