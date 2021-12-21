@@ -134,3 +134,9 @@ assert Result.isErr(Number.parseInt("zzzzz", 37))
 assert Result.isErr(Number.parseInt("zzzzz", 9223372036854775807))
 assert Result.isErr(Number.parseInt("10", 1.23))
 assert Result.isErr(Number.parseInt("10", 2/3))
+
+// Number.sign
+assert Number.sign(-10000) == -1
+assert Number.sign(22222) == 1
+assert Number.sign(0) == 0
+assert Number.sign(-0) == 0
