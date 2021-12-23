@@ -3257,6 +3257,13 @@ and print_value_bind =
               printed;
             };
 
+          | PExpIf(_) =>
+            if (Doc.willBreak(printed)) {
+              printed;
+            } else {
+              Doc.indent(printed);
+            }
+
           | _ => printed
           };
 
