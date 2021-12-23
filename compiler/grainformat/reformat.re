@@ -1097,9 +1097,9 @@ and resugar_list =
 
   Doc.group(
     Doc.concat([
+      Doc.lbracket,
       Doc.indent(
         Doc.concat([
-          Doc.lbracket,
           Doc.concat([
             Doc.softLine,
             Doc.join(Doc.concat([Doc.comma, Doc.line]), items),
@@ -1666,6 +1666,7 @@ and print_type =
     Doc.text(original_code);
   };
 }
+
 and print_application =
     (
       ~expressions: list(Parsetree.expression),
@@ -1676,53 +1677,24 @@ and print_application =
   let function_name = get_function_name(func);
 
   switch (expressions) {
-  | [first] when prefixop(function_name) =>
-    switch (first.pexp_desc) {
-    | PExpApp(fn, _) =>
-      let inner_fn = get_function_name(fn);
-      if (infixop(inner_fn)) {
-        Doc.concat([
-          Doc.text(function_name),
-          Doc.lparen,
-          Doc.group(
-            print_expression(
-              ~parent_is_arrow=false,
-              ~original_source,
-              ~comments,
-              first,
-            ),
-          ),
-          Doc.rparen,
-        ]);
-      } else {
-        Doc.concat([
-          Doc.text(function_name),
-          Doc.group(
-            print_expression(
-              ~parent_is_arrow=false,
-              ~original_source,
-              ~comments,
-              first,
-            ),
-          ),
-        ]);
-      };
-
-    | _ =>
-      Doc.concat([
-        Doc.text(function_name),
-        Doc.group(
-          print_expression(
-            ~parent_is_arrow=false,
-            ~original_source,
-            ~comments,
-            first,
-          ),
-        ),
-      ])
-    }
-
   | [first, second] when infixop(function_name) =>
+    print_infix_application(~expressions, ~original_source, ~comments, func)
+  | _ =>
+    print_other_application(~expressions, ~original_source, ~comments, func)
+  };
+}
+
+and print_infix_application =
+    (
+      ~expressions: list(Parsetree.expression),
+      ~original_source: array(string),
+      ~comments: list(Parsetree.comment),
+      func: Parsetree.expression,
+    ) => {
+  let function_name = get_function_name(func);
+
+  switch (expressions) {
+  | [first, second] =>
     let left_expr =
       print_expression(
         ~parent_is_arrow=false,
@@ -1738,6 +1710,21 @@ and print_application =
         ~comments,
         second,
       );
+
+    let left_is_leaf =
+      switch (first.pexp_desc) {
+      | PExpApp(fn, expr) =>
+        let child_name = get_function_name(fn);
+        child_name != function_name;
+      | _ => true
+      };
+    let right_is_leaf =
+      switch (second.pexp_desc) {
+      | PExpApp(fn, expr) =>
+        let child_name = get_function_name(fn);
+        child_name != function_name;
+      | _ => true
+      };
 
     // wrap if in parens
 
@@ -1804,18 +1791,183 @@ and print_application =
       } else {
         right_expr;
       };
-    Doc.group(
-      Doc.concat([
-        Doc.group(wrapped_left),
-        Doc.space,
-        Doc.text(function_name),
-        Doc.line,
-        Doc.group(wrapped_right),
-      ]),
-    );
 
-  | _ when prefixop(function_name) || infixop(function_name) =>
+    let lhs = left_is_leaf ? Doc.group(wrapped_left) : wrapped_left;
+    let rhs = right_is_leaf ? Doc.group(wrapped_right) : wrapped_right;
+
+    Doc.concat([lhs, Doc.space, Doc.text(function_name), Doc.line, rhs]);
+
+  | _ =>
     raise(Error(Illegal_parse("Formatter error, wrong number of args ")))
+  };
+}
+
+and print_other_application =
+    (
+      ~expressions: list(Parsetree.expression),
+      ~original_source: array(string),
+      ~comments: list(Parsetree.comment),
+      func: Parsetree.expression,
+    ) => {
+  let function_name = get_function_name(func);
+
+  switch (expressions) {
+  | [first] when prefixop(function_name) =>
+    switch (first.pexp_desc) {
+    | PExpApp(fn, _) =>
+      let inner_fn = get_function_name(fn);
+      if (infixop(inner_fn)) {
+        Doc.concat([
+          Doc.text(function_name),
+          Doc.lparen,
+          Doc.group(
+            print_expression(
+              ~parent_is_arrow=false,
+              ~original_source,
+              ~comments,
+              first,
+            ),
+          ),
+          Doc.rparen,
+        ]);
+      } else {
+        Doc.concat([
+          Doc.text(function_name),
+          Doc.group(
+            print_expression(
+              ~parent_is_arrow=false,
+              ~original_source,
+              ~comments,
+              first,
+            ),
+          ),
+        ]);
+      };
+
+    | _ =>
+      Doc.concat([
+        Doc.text(function_name),
+        Doc.group(
+          print_expression(
+            ~parent_is_arrow=false,
+            ~original_source,
+            ~comments,
+            first,
+          ),
+        ),
+      ])
+    }
+
+  // | [first, second] when infixop(function_name) =>
+  //   let left_expr =
+  //     print_expression(
+  //       ~parent_is_arrow=false,
+  //       ~original_source,
+  //       ~comments,
+  //       first,
+  //     );
+
+  //   let right_expr =
+  //     print_expression(
+  //       ~parent_is_arrow=false,
+  //       ~original_source,
+  //       ~comments,
+  //       second,
+  //     );
+
+  //   // wrap if in parens
+
+  //   let left_is_if =
+  //     switch (first.pexp_desc) {
+  //     | PExpIf(_) => true
+  //     | _ => false
+  //     };
+
+  //   let right_is_if =
+  //     switch (second.pexp_desc) {
+  //     | PExpIf(_) => true
+  //     | _ => false
+  //     };
+
+  //   let left_is_app =
+  //     switch (first.pexp_desc) {
+  //     | PExpApp(_) => true
+  //     | _ => false
+  //     };
+
+  //   let right_is_app =
+  //     switch (second.pexp_desc) {
+  //     | PExpApp(_) => true
+  //     | _ => false
+  //     };
+
+  //   let (left_grouping_required, right_grouping_required) =
+  //     switch (first.pexp_desc, second.pexp_desc) {
+  //     | (PExpApp(fn1, _), PExpApp(fn2, _)) =>
+  //       let left_prec = op_precedence(get_function_name(fn1));
+  //       let right_prec = op_precedence(get_function_name(fn2));
+  //       let parent_prec = op_precedence(function_name);
+
+  //       // the equality check is needed for the function on the right
+  //       // as we process from the left by default when the same prededence
+
+  //       let needed_left = left_prec < parent_prec;
+  //       let needed_right = right_prec <= parent_prec;
+
+  //       (needed_left, needed_right);
+
+  //     | (PExpApp(fn1, _), _) =>
+  //       let left_prec = op_precedence(get_function_name(fn1));
+  //       let parent_prec = op_precedence(function_name);
+  //       if (left_prec < parent_prec) {
+  //         (true, false);
+  //       } else {
+  //         (false, false);
+  //       };
+  //     | (_, PExpApp(fn2, _)) =>
+  //       let parent_prec = op_precedence(function_name);
+  //       let right_prec = op_precedence(get_function_name(fn2));
+  //       if (right_prec <= parent_prec) {
+  //         (false, true);
+  //       } else {
+  //         (false, false);
+  //       };
+
+  //     | _ => (false, false)
+  //     };
+
+  //   let left_needs_parens = left_is_if || left_grouping_required;
+  //   let right_needs_parens = right_is_if || right_grouping_required;
+
+  //   let wrapped_left =
+  //     if (left_needs_parens) {
+  //       Doc.concat([Doc.lparen, left_expr, Doc.rparen]);
+  //     } else {
+  //       left_expr;
+  //     };
+
+  //   let wrapped_right =
+  //     if (right_needs_parens) {
+  //       Doc.concat([Doc.lparen, right_expr, Doc.rparen]);
+  //     } else {
+  //       right_expr;
+  //     };
+  //    Doc.group(
+  //   Doc.concat([
+  //     //  Doc.group(wrapped_left),
+  //     wrapped_left,
+  //   //  left_is_app ? Doc.group(wrapped_left) : wrapped_left,
+  //     Doc.space,
+  //     Doc.text(function_name),
+  //     Doc.line,
+  //      // Doc.group(wrapped_right),
+  //     wrapped_right,
+  //     // right_is_app ? Doc.group(wrapped_right) : wrapped_right,
+  //   ])
+  //  );
+
+  // | _ when prefixop(function_name) || infixop(function_name) =>
+  //   raise(Error(Illegal_parse("Formatter error, wrong number of args ")))
   | _ =>
     if (function_name == list_cons) {
       resugar_list(~original_source, ~comments, expressions);
@@ -1871,12 +2023,12 @@ and print_application =
                         ),
                       ]);
                     | _ =>
-                      print_expression(
+                      Doc.group(print_expression(
                         ~parent_is_arrow=false,
                         ~original_source,
                         ~comments,
                         e,
-                      )
+                      ))
                     },
                   expressions,
                 ),
@@ -2899,11 +3051,13 @@ and print_expression =
         };
 
         let print_item = (expr: Parsetree.expression, comments) => {
-          print_expression(
-            ~parent_is_arrow=false,
-            ~original_source,
-            ~comments,
-            expr,
+          Doc.group(
+            print_expression(
+              ~parent_is_arrow=false,
+              ~original_source,
+              ~comments,
+              expr,
+            ),
           );
         };
 
@@ -3158,16 +3312,19 @@ and print_value_bind =
             ~comments=expr_comments,
             vb.pvb_expr,
           );
+
         let expression =
           switch (vb.pvb_expr.pexp_desc) {
-          | PExpApp(fn, exprs) =>
-            Doc.willBreak(printed)
-              ? printed : Doc.ifBreaks(printed, Doc.indent(printed))
+          | PExpApp(fn, _) =>
+            let function_name = get_function_name(fn);
+           
+           if (infixop(function_name)) Doc.indent(Doc.concat([printed])) else printed
 
           | _ => printed
           };
+       
 
-        let expression_group = Doc.concat([Doc.space, expression]);
+        let expression_group = Doc.group(expression);
 
         let pattern_comments =
           Comment_utils.get_comments_enclosed_and_before_location(
@@ -3191,7 +3348,8 @@ and print_value_bind =
           | _ => Doc.nil
           },
           Doc.equal,
-          Doc.group(expression_group),
+          Doc.space,
+          expression_group,
         ]);
       };
 
@@ -4103,6 +4261,7 @@ let reformat_ast =
     );
 
   let final_doc = Doc.concat([top_level_stmts, Doc.hardLine]);
+
 
   Doc.toString(~width=80, final_doc);
 };
