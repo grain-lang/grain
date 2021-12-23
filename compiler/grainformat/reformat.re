@@ -1715,14 +1715,20 @@ and print_infix_application =
       switch (first.pexp_desc) {
       | PExpApp(fn, expr) =>
         let child_name = get_function_name(fn);
-        child_name != function_name;
+        let this_prec = op_precedence(child_name);
+        let parent_prec = op_precedence(function_name);
+
+        this_prec == parent_prec || child_name != function_name;
       | _ => true
       };
     let right_is_leaf =
       switch (second.pexp_desc) {
       | PExpApp(fn, expr) =>
         let child_name = get_function_name(fn);
-        child_name != function_name;
+        let this_prec = op_precedence(child_name);
+        let parent_prec = op_precedence(function_name);
+
+        this_prec == parent_prec || child_name != function_name;
       | _ => true
       };
 
@@ -2812,7 +2818,7 @@ and print_expression =
                       ),
                     ),
                   ])
-                | None => Doc.space
+                | None => Doc.nil
                 },
                 Doc.text(";"),
                 switch (optexpression3) {
