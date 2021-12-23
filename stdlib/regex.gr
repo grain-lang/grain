@@ -3682,9 +3682,9 @@ let makeMatchResult = (origString, start, end, state) => {
 
 let fastDriveRegexIsMatch = (rx, string, startOffset, endOffset) => {
   let state = if (rx.reReferences) Array.make(rx.reNumGroups, None)
-  else Array.make(0, None)
+    else Array.make(0, None)
   let toWrap = if (startOffset == 0 && endOffset == String.length(string))
-    string else String.slice(startOffset, endOffset, string)
+      string else String.slice(startOffset, endOffset, string)
   let buf = makeMatchBuffer(toWrap)
   Option.isSome(
     searchMatch(rx, buf, 0, 0, Array.length(buf.matchInputExploded), state),
@@ -3697,7 +3697,7 @@ let rec fastDriveRegexMatchAll = (rx, string, startOffset, endOffset) => {
   } else {
     let state = Array.make(rx.reNumGroups, None)
     let toWrap = if (startOffset == 0 && endOffset == String.length(string))
-      string else String.slice(startOffset, endOffset, string)
+        string else String.slice(startOffset, endOffset, string)
     let buf = makeMatchBuffer(toWrap)
     match (searchMatch(
       rx,
@@ -3736,7 +3736,7 @@ let rec fastDriveRegexMatchAll = (rx, string, startOffset, endOffset) => {
 let fastDriveRegexMatch = (rx, string, startOffset, endOffset) => {
   let state = Array.make(rx.reNumGroups, None)
   let toWrap = if (startOffset == 0 && endOffset == String.length(string))
-    string else String.slice(startOffset, endOffset, string)
+      string else String.slice(startOffset, endOffset, string)
   let buf = makeMatchBuffer(toWrap)
   match (searchMatch(
     rx,
