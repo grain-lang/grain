@@ -2352,42 +2352,49 @@ and print_expression =
                     guard,
                   ),
                 );
-              Doc.indent(
+              Doc.concat([
+                Doc.space,
+                Doc.text("when"),
+                Doc.space,
+                Doc.group(
+                  Doc.concat([
+                    Doc.ifBreaks(Doc.lparen, Doc.nil),
+                    Doc.indent(Doc.concat([Doc.softLine, guard_doc])),
+                    Doc.softLine,
+                    Doc.ifBreaks(Doc.rparen, Doc.nil),
+                  ]),
+                ),
+                Doc.space,
+                Doc.text("=>"),
+                //  Doc.ifBreaks(
+                // switch (branch.pmb_body.pexp_desc) {
+                // | PExpBlock(expressions) =>
+                //  Doc.indent(
                 Doc.concat([
                   Doc.space,
-                  Doc.text("when"),
-                  Doc.space,
-                  Doc.indent(guard_doc),
-                  Doc.space,
-                  Doc.text("=>"),
-                  //  Doc.ifBreaks(
-                  // switch (branch.pmb_body.pexp_desc) {
-                  // | PExpBlock(expressions) =>
-                  Doc.concat([
-                    Doc.space,
-                    print_expression(
-                      ~parent_is_arrow=true,
-                      ~original_source,
-                      ~comments=branch_comments,
-                      branch.pmb_body,
-                    ),
-                  ]),
-                  // | _ =>
-                  //Doc.indent(
-                  //   Doc.concat([
-                  //     Doc.space,
-                  //     print_expression(
-                  //       ~parent_is_arrow=true,
-                  //       ~original_source,
-                  //       ~comments=branch_comments,
-                  //       branch.pmb_body,
-                  //     ),
-                  //   ]),
-                  //   //),
-                  // ),
-                  // },
+                  print_expression(
+                    ~parent_is_arrow=true,
+                    ~original_source,
+                    ~comments=branch_comments,
+                    branch.pmb_body,
+                  ),
                 ]),
-              );
+                //),
+                // | _ =>
+                //Doc.indent(
+                //   Doc.concat([
+                //     Doc.space,
+                //     print_expression(
+                //       ~parent_is_arrow=true,
+                //       ~original_source,
+                //       ~comments=branch_comments,
+                //       branch.pmb_body,
+                //     ),
+                //   ]),
+                //   //),
+                // ),
+                // },
+              ]);
             },
           ]),
         );
