@@ -120,9 +120,7 @@ let withConfig = (buf: RegExBuf, config: RegExParserConfig) => {
 // Parsing internals for recursive descent
 
 let parseErr = (buf: RegExBuf, msg: String, posShift) => {
-  "Invalid Regular Expression: " ++
-  msg ++
-  " (position " ++
+  "Invalid Regular Expression: " ++ msg ++ " (position " ++
   toString(unbox(buf.cursor) + posShift) ++
   ")"
 }
@@ -169,8 +167,7 @@ let eat = (buf: RegExBuf, char: Char) => {
       Err(
         parseErr(
           buf,
-          "Expected character '" ++
-          Char.toString(char) ++
+          "Expected character '" ++ Char.toString(char) ++
           ", but found character '" ++
           Char.toString(ret) ++
           "'",
@@ -1392,8 +1389,7 @@ let rec parseAtom = (buf: RegExBuf) => {
         let catNegated = if (peek(buf) == Ok('^')) {
           ignore(eat(buf, '^'))
           true
-        }
-        else {
+        } else {
           false
         }
         let rec loop = acc => {
@@ -1531,10 +1527,7 @@ let rec parseAtom = (buf: RegExBuf) => {
                 Err(
                   parseErr(
                     buf,
-                    "Unrecognized property name in `\\" ++
-                    pC ++
-                    "`: `" ++
-                    s ++
+                    "Unrecognized property name in `\\" ++ pC ++ "`: `" ++ s ++
                     "`",
                     0,
                   ),
@@ -1594,8 +1587,7 @@ let rec parseAtom = (buf: RegExBuf) => {
       // pregexp:
       Ok(c) when (
         buf.config.isPerlRegExp &&
-        (Char.code(c) >= Char.code('0') &&
-        Char.code(c) <= Char.code('9'))
+        (Char.code(c) >= Char.code('0') && Char.code(c) <= Char.code('9'))
       ) => {
         buf.config.references := true
         match (parseInteger(buf, 0)) {
@@ -2864,8 +2856,7 @@ let lazyRepeatMatcher = (r_m, min, max, next_m) =>
       }
     ) {
       next_m(buf, pos, start, limit, end, state, stack)
-    }
-    else {
+    } else {
       match (next_m(buf, pos, start, limit, end, state, stack)) {
         Some(p) => Some(p),
         None => rloop(pos, n, min + 1),
@@ -2898,8 +2889,7 @@ let lazyRepeatSimpleMatcher = (r_m, min, max, next_m) =>
       }
     ) {
       next_m(buf, pos, start, limit, end, state, stack)
-    }
-    else {
+    } else {
       match (next_m(buf, pos, start, limit, end, state, stack)) {
         Some(p) => Some(p),
         None => rloop(pos, n, min + 1),
@@ -2982,8 +2972,7 @@ let makeReferenceMatcher = eq => (n, next_m) =>
         )
       ) {
         next_m(buf, pos + len, start, limit, end, state, stack)
-      }
-      else {
+      } else {
         None
       }
     },
@@ -3637,8 +3626,7 @@ let makeMatchResult = (origString, start, end, state) => {
       Some((start, end))
     } else if (n < 0 || n - 1 > Array.length(state)) {
       None
-    }
-    else {
+    } else {
       match (state[n - 1]) {
         None => None,
         Some((start, end)) => Some((start, end)),

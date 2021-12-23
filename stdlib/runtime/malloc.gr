@@ -259,7 +259,7 @@ export let malloc = (nb: WasmI32) => {
 
   // Search the freelist for any blocks large enough.
   for (
-    let mut p = getNext(prevp); ;
+    let mut p = getNext(prevp);;
     {
       prevp = p
       p = getNext(p)
