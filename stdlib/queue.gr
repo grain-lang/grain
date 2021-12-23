@@ -18,10 +18,7 @@ record Queue<a> { forwards: List<a>, backwards: List<a> }
  * @since v0.2.0
  */
 export let make = () => {
-  {
-    forwards: [],
-    backwards: [],
-  }
+  { forwards: [], backwards: [] }
 }
 
 /**

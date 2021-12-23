@@ -24,9 +24,7 @@ record Stack<a> { data: List<a> }
  * @returns An empty stack
  */
 export let make = () => {
-  {
-    data: [],
-  }
+  { data: [], }
 }
 
 /**

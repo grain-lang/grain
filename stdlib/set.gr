@@ -23,10 +23,7 @@ record Set<k> { mut size: Number, mut buckets: Array<Option<Bucket<k>>> }
  */
 export let makeSized = storageLength => {
   let buckets = Array.make(storageLength, None)
-  {
-    size: 0,
-    buckets,
-  }
+  { size: 0, buckets }
 }
 /**
  * Creates a new, empty set.
