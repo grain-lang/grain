@@ -13,7 +13,7 @@ import {
   coerceNumberToWasmF64,
   reducedInteger,
   isFloat,
-  isBoxedNumber,
+  isBoxedNumber
 } from "runtime/numbers"
 import { newFloat64, newInt64 } from "runtime/dataStructures"
 import Tags from "runtime/unsafe/tags"

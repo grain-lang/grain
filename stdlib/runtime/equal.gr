@@ -121,8 +121,9 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
         result
       }
     },
-    t when t == Tags._GRAIN_STRING_HEAP_TAG ||
-    t == Tags._GRAIN_BYTES_HEAP_TAG => {
+    t when (
+      t == Tags._GRAIN_STRING_HEAP_TAG || t == Tags._GRAIN_BYTES_HEAP_TAG
+    ) => {
       let xlength = WasmI32.load(xptr, 4n)
       let ylength = WasmI32.load(yptr, 4n)
 

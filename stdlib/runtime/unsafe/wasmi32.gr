@@ -1,58 +1,76 @@
 /* grainc-flags --compilation-mode=runtime */
 
 // WebAssembly Memory Instructions
-export primitive load : (WasmI32, WasmI32) -> WasmI32 = "@wasm.load_int32"
-export primitive load8S : (WasmI32, WasmI32) -> WasmI32 = "@wasm.load_8_s_int32"
-export primitive load8U : (WasmI32, WasmI32) -> WasmI32 = "@wasm.load_8_u_int32"
-export primitive load16S : (WasmI32, WasmI32) -> WasmI32 = "@wasm.load_16_s_int32"
-export primitive load16U : (WasmI32, WasmI32) -> WasmI32 = "@wasm.load_16_u_int32"
-export primitive store : (WasmI32, WasmI32, WasmI32) -> Void = "@wasm.store_int32"
-export primitive store8 : (WasmI32, WasmI32, WasmI32) -> Void = "@wasm.store_8_int32"
-export primitive store16 : (WasmI32, WasmI32, WasmI32) -> Void = "@wasm.store_16_int32"
+export primitive load: (WasmI32, WasmI32) -> WasmI32 = "@wasm.load_int32"
+export primitive load8S: (WasmI32, WasmI32) -> WasmI32 = "@wasm.load_8_s_int32"
+export primitive load8U: (WasmI32, WasmI32) -> WasmI32 = "@wasm.load_8_u_int32"
+export primitive load16S: (
+  WasmI32,
+  WasmI32,
+) -> WasmI32 = "@wasm.load_16_s_int32"
+export primitive load16U: (
+  WasmI32,
+  WasmI32,
+) -> WasmI32 = "@wasm.load_16_u_int32"
+export primitive store: (
+  WasmI32,
+  WasmI32,
+  WasmI32,
+) -> Void = "@wasm.store_int32"
+export primitive store8: (
+  WasmI32,
+  WasmI32,
+  WasmI32,
+) -> Void = "@wasm.store_8_int32"
+export primitive store16: (
+  WasmI32,
+  WasmI32,
+  WasmI32,
+) -> Void = "@wasm.store_16_int32"
 
 // WebAssembly Unary Instructions
-export primitive clz : WasmI32 -> WasmI32 = "@wasm.clz_int32"
-export primitive ctz : WasmI32 -> WasmI32 = "@wasm.ctz_int32"
-export primitive popcnt : WasmI32 -> WasmI32 = "@wasm.popcnt_int32"
-export primitive eqz : WasmI32 -> Bool = "@wasm.eq_z_int32"
+export primitive clz: WasmI32 -> WasmI32 = "@wasm.clz_int32"
+export primitive ctz: WasmI32 -> WasmI32 = "@wasm.ctz_int32"
+export primitive popcnt: WasmI32 -> WasmI32 = "@wasm.popcnt_int32"
+export primitive eqz: WasmI32 -> Bool = "@wasm.eq_z_int32"
 
 // WebAssembly Binary Instructions
-export primitive add : (WasmI32, WasmI32) -> WasmI32 = "@wasm.add_int32"
-export primitive sub : (WasmI32, WasmI32) -> WasmI32 = "@wasm.sub_int32"
-export primitive mul : (WasmI32, WasmI32) -> WasmI32 = "@wasm.mul_int32"
-export primitive divS : (WasmI32, WasmI32) -> WasmI32 = "@wasm.div_s_int32"
-export primitive divU : (WasmI32, WasmI32) -> WasmI32 = "@wasm.div_u_int32"
-export primitive remS : (WasmI32, WasmI32) -> WasmI32 = "@wasm.rem_s_int32"
-export primitive remU : (WasmI32, WasmI32) -> WasmI32 = "@wasm.rem_u_int32"
-export primitive and : (WasmI32, WasmI32) -> WasmI32 = "@wasm.and_int32"
-export primitive or : (WasmI32, WasmI32) -> WasmI32 = "@wasm.or_int32"
-export primitive xor : (WasmI32, WasmI32) -> WasmI32 = "@wasm.xor_int32"
-export primitive shl : (WasmI32, WasmI32) -> WasmI32 = "@wasm.shl_int32"
-export primitive shrS : (WasmI32, WasmI32) -> WasmI32 = "@wasm.shr_s_int32"
-export primitive shrU : (WasmI32, WasmI32) -> WasmI32 = "@wasm.shr_u_int32"
-export primitive rotl : (WasmI32, WasmI32) -> WasmI32 = "@wasm.rot_l_int32"
-export primitive rotr : (WasmI32, WasmI32) -> WasmI32 = "@wasm.rot_r_int32"
-export primitive eq : (WasmI32, WasmI32) -> Bool = "@wasm.eq_int32"
-export primitive ne : (WasmI32, WasmI32) -> Bool = "@wasm.ne_int32"
-export primitive ltS : (WasmI32, WasmI32) -> Bool = "@wasm.lt_s_int32"
-export primitive ltU : (WasmI32, WasmI32) -> Bool = "@wasm.lt_u_int32"
-export primitive leS : (WasmI32, WasmI32) -> Bool = "@wasm.le_s_int32"
-export primitive leU : (WasmI32, WasmI32) -> Bool = "@wasm.le_u_int32"
-export primitive gtS : (WasmI32, WasmI32) -> Bool = "@wasm.gt_s_int32"
-export primitive gtU : (WasmI32, WasmI32) -> Bool = "@wasm.gt_u_int32"
-export primitive geS : (WasmI32, WasmI32) -> Bool = "@wasm.ge_s_int32"
-export primitive geU : (WasmI32, WasmI32) -> Bool = "@wasm.ge_u_int32"
+export primitive add: (WasmI32, WasmI32) -> WasmI32 = "@wasm.add_int32"
+export primitive sub: (WasmI32, WasmI32) -> WasmI32 = "@wasm.sub_int32"
+export primitive mul: (WasmI32, WasmI32) -> WasmI32 = "@wasm.mul_int32"
+export primitive divS: (WasmI32, WasmI32) -> WasmI32 = "@wasm.div_s_int32"
+export primitive divU: (WasmI32, WasmI32) -> WasmI32 = "@wasm.div_u_int32"
+export primitive remS: (WasmI32, WasmI32) -> WasmI32 = "@wasm.rem_s_int32"
+export primitive remU: (WasmI32, WasmI32) -> WasmI32 = "@wasm.rem_u_int32"
+export primitive and: (WasmI32, WasmI32) -> WasmI32 = "@wasm.and_int32"
+export primitive or: (WasmI32, WasmI32) -> WasmI32 = "@wasm.or_int32"
+export primitive xor: (WasmI32, WasmI32) -> WasmI32 = "@wasm.xor_int32"
+export primitive shl: (WasmI32, WasmI32) -> WasmI32 = "@wasm.shl_int32"
+export primitive shrS: (WasmI32, WasmI32) -> WasmI32 = "@wasm.shr_s_int32"
+export primitive shrU: (WasmI32, WasmI32) -> WasmI32 = "@wasm.shr_u_int32"
+export primitive rotl: (WasmI32, WasmI32) -> WasmI32 = "@wasm.rot_l_int32"
+export primitive rotr: (WasmI32, WasmI32) -> WasmI32 = "@wasm.rot_r_int32"
+export primitive eq: (WasmI32, WasmI32) -> Bool = "@wasm.eq_int32"
+export primitive ne: (WasmI32, WasmI32) -> Bool = "@wasm.ne_int32"
+export primitive ltS: (WasmI32, WasmI32) -> Bool = "@wasm.lt_s_int32"
+export primitive ltU: (WasmI32, WasmI32) -> Bool = "@wasm.lt_u_int32"
+export primitive leS: (WasmI32, WasmI32) -> Bool = "@wasm.le_s_int32"
+export primitive leU: (WasmI32, WasmI32) -> Bool = "@wasm.le_u_int32"
+export primitive gtS: (WasmI32, WasmI32) -> Bool = "@wasm.gt_s_int32"
+export primitive gtU: (WasmI32, WasmI32) -> Bool = "@wasm.gt_u_int32"
+export primitive geS: (WasmI32, WasmI32) -> Bool = "@wasm.ge_s_int32"
+export primitive geU: (WasmI32, WasmI32) -> Bool = "@wasm.ge_u_int32"
 
 // WebAssembly Conversion Instructions
-export primitive wrapI64 : WasmI64 -> WasmI32 = "@wasm.wrap_int64"
-export primitive truncF32S : WasmF32 -> WasmI32 = "@wasm.trunc_s_float32_to_int32"
-export primitive truncF32U : WasmF32 -> WasmI32 = "@wasm.trunc_u_float32_to_int32"
-export primitive truncF64S : WasmF64 -> WasmI32 = "@wasm.trunc_s_float64_to_int32"
-export primitive truncF64U : WasmF64 -> WasmI32 = "@wasm.trunc_u_float64_to_int32"
-export primitive reinterpretF32 : WasmF32 -> WasmI32 = "@wasm.reinterpret_float32"
-export primitive extendS8 : WasmI32 -> WasmI32 = "@wasm.extend_s8_int32"
-export primitive extendS16 : WasmI32 -> WasmI32 = "@wasm.extend_s16_int32"
+export primitive wrapI64: WasmI64 -> WasmI32 = "@wasm.wrap_int64"
+export primitive truncF32S: WasmF32 -> WasmI32 = "@wasm.trunc_s_float32_to_int32"
+export primitive truncF32U: WasmF32 -> WasmI32 = "@wasm.trunc_u_float32_to_int32"
+export primitive truncF64S: WasmF64 -> WasmI32 = "@wasm.trunc_s_float64_to_int32"
+export primitive truncF64U: WasmF64 -> WasmI32 = "@wasm.trunc_u_float64_to_int32"
+export primitive reinterpretF32: WasmF32 -> WasmI32 = "@wasm.reinterpret_float32"
+export primitive extendS8: WasmI32 -> WasmI32 = "@wasm.extend_s8_int32"
+export primitive extendS16: WasmI32 -> WasmI32 = "@wasm.extend_s16_int32"
 
 // Grain Conversions
-export primitive fromGrain : a -> WasmI32 = "@wasm.fromGrain"
-export primitive toGrain : WasmI32 -> a = "@wasm.toGrain"
+export primitive fromGrain: a -> WasmI32 = "@wasm.fromGrain"
+export primitive toGrain: WasmI32 -> a = "@wasm.toGrain"
