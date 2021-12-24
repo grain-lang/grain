@@ -4245,6 +4245,5 @@ let reformat_ast =
 
   let final_doc = Doc.concat([top_level_stmts, Doc.hardLine]);
 
-  //Doc.debug(final_doc);
   Doc.toString(~width=80, final_doc);
 };

@@ -21,3 +21,7 @@ let trimString = (str: String, end: Bool) => {
   if (end) slice(0, i+1, str)
   else slice(i, charsLength, str)
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> marcus/formatter_v2_rework
