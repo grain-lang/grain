@@ -422,11 +422,6 @@ let rec block_item_iterator_line =
           if (first_comment_line == last_stmt_line) {
             Doc.space;
           } else {
-            // item_separator(
-            //   ~this_line=first_comment_line,
-            //   ~line_above=last_stmt_line,
-            //   Doc.hardLine,
-            // );
             Doc.line;
           };
         };
@@ -434,10 +429,8 @@ let rec block_item_iterator_line =
       let this_item =
         Doc.concat([
           bcb,
-          // // block_top_spacing,
           leading_comment_docs,
           after_comments_break,
-          // attribute_text,
           print_item(item, item_comments),
           Doc.ifBreaks(
             switch (separator) {
@@ -459,7 +452,6 @@ let rec block_item_iterator_line =
           block_top_spacing,
           leading_comment_docs,
           after_comments_break,
-          // attribute_text,
           print_item(item, item_comments),
           switch (separator) {
           | None => Doc.nil
@@ -1703,6 +1695,26 @@ and print_infix_application =
         first,
       );
 
+    let next_comments =
+      Comment_utils.get_comments_between_locations(
+        ~loc1=first.pexp_loc,
+        ~loc2=second.pexp_loc,
+        comments,
+      );
+
+    let (_, line, _, _) = Locations.get_raw_pos_info(first.pexp_loc.loc_end);
+
+    let line_comments =
+      Comment_utils.get_comments_on_line(line, next_comments);
+
+    let after_comments = remove_used_comments(next_comments, line_comments);
+
+    let after_comments_docs =
+      Comment_utils.block_trailing_comments_docs(after_comments);
+
+    let line_comment_docs =
+      Comment_utils.single_line_of_comments(line_comments);
+
     let right_expr =
       print_expression(
         ~parent_is_arrow=false,
@@ -1718,7 +1730,7 @@ and print_infix_application =
         let this_prec = op_precedence(child_name);
         let parent_prec = op_precedence(function_name);
 
-        this_prec == parent_prec || child_name != function_name;
+        this_prec < parent_prec || child_name != function_name;
       | _ => true
       };
     let right_is_leaf =
@@ -1728,7 +1740,7 @@ and print_infix_application =
         let this_prec = op_precedence(child_name);
         let parent_prec = op_precedence(function_name);
 
-        this_prec == parent_prec || child_name != function_name;
+        this_prec < parent_prec || child_name != function_name;
       | _ => true
       };
 
@@ -1801,7 +1813,22 @@ and print_infix_application =
     let lhs = left_is_leaf ? Doc.group(wrapped_left) : wrapped_left;
     let rhs = right_is_leaf ? Doc.group(wrapped_right) : wrapped_right;
 
-    Doc.concat([lhs, Doc.space, Doc.text(function_name), Doc.line, rhs]);
+    let trailing_line_comments =
+      if (line_comment_docs == Doc.nil) {
+        Doc.line;
+      } else {
+        Doc.concat([Doc.nil, line_comment_docs, Doc.line]);
+      };
+
+    Doc.concat([
+      lhs,
+      Doc.space,
+      Doc.text(function_name),
+      trailing_line_comments,
+      after_comments_docs,
+      force_break_if_line_comment(after_comments, Doc.nil),
+      rhs,
+    ]);
 
   | _ =>
     raise(Error(Illegal_parse("Formatter error, wrong number of args ")))
@@ -2376,15 +2403,17 @@ and print_expression =
                 // switch (branch.pmb_body.pexp_desc) {
                 // | PExpBlock(expressions) =>
                 //  Doc.indent(
-                Doc.concat([
-                  Doc.space,
-                  print_expression(
-                    ~parent_is_arrow=true,
-                    ~original_source,
-                    ~comments=branch_comments,
-                    branch.pmb_body,
-                  ),
-                ]),
+                Doc.group(
+                  Doc.concat([
+                    Doc.space,
+                    print_expression(
+                      ~parent_is_arrow=true,
+                      ~original_source,
+                      ~comments=branch_comments,
+                      branch.pmb_body,
+                    ),
+                  ]),
+                ),
                 //),
                 // | _ =>
                 //Doc.indent(
@@ -2701,7 +2730,7 @@ and print_expression =
                 ),
                 switch (cond_leading_comment) {
                 | [] => Doc.nil
-                | _ => Doc.space
+                | _ => Doc.ifBreaks(Doc.nil, Doc.space)
                 },
                 print_expression(
                   ~parent_is_arrow=false,
@@ -2709,11 +2738,16 @@ and print_expression =
                   ~comments=commentsInCondition,
                   condition,
                 ),
-                Comment_utils.inbetween_comments_to_docs(
-                  ~offset=true,
-                  ~bracket_line=None,
-                  cond_trailing_comment,
-                ),
+                if (cond_trailing_comment == []) {
+                  Doc.nil;
+                } else {
+                  Doc.concat([
+                    Doc.space,
+                    Comment_utils.block_trailing_comments_docs(
+                      cond_trailing_comment,
+                    ),
+                  ]);
+                },
               ]),
             ),
             Doc.softLine,
@@ -4211,6 +4245,5 @@ let reformat_ast =
 
   let final_doc = Doc.concat([top_level_stmts, Doc.hardLine]);
 
-  // Doc.debug(final_doc);
   Doc.toString(~width=80, final_doc);
 };
