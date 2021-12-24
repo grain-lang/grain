@@ -1840,6 +1840,12 @@ and print_other_application =
       ])
     }
 
+  | [first, second] when infixop(function_name) =>
+    raise(
+      Error(
+        Illegal_parse("Should not be processing an infix operator here "),
+      ),
+    )
   | _ =>
     if (function_name == list_cons) {
       resugar_list(~original_source, ~comments, expressions);
@@ -1860,7 +1866,6 @@ and print_other_application =
             Doc.rparen,
           ])
         | _ =>
-          let needs_indent = ref(true);
           let body =
             Doc.concat([
               Doc.softLine,
@@ -1869,11 +1874,70 @@ and print_other_application =
                 List.map(
                   (e: Parsetree.expression) =>
                     switch (e.pexp_desc) {
-                    | PExpLambda(_, {pexp_desc: PExpBlock(_)}) =>
-                      needs_indent := false;
-                      Doc.customLayout([
-                        print_expression(~original_source, ~comments, e),
-                      ]);
+                    | PExpLambda(patterns, expression) =>
+                      let comments_in_expression =
+                        Comment_utils.get_comments_inside_location(
+                          ~location=expression.pexp_loc,
+                          comments,
+                        );
+                      let raw_args =
+                        print_patterns(
+                          ~wrapper=e.pexp_loc,
+                          ~next_loc=expression.pexp_loc,
+                          ~comments,
+                          ~original_source,
+                          ~is_block=false,
+                          patterns,
+                        );
+
+                      let args =
+                        switch (patterns) {
+                        | [arg] => raw_args
+                        | _ =>
+                          Doc.group(
+                            Doc.concat([
+                              Doc.lparen,
+                              Doc.indent(
+                                Doc.concat([Doc.softLine, raw_args]),
+                              ),
+                              Doc.softLine,
+                              Doc.rparen,
+                            ]),
+                          )
+                        };
+
+                      switch (expression.pexp_desc) {
+                      | PExpBlock(_)
+                      | PExpLambda(_) =>
+                        Doc.concat([
+                          args,
+                          Doc.space,
+                          Doc.text("=>"),
+                          Doc.space,
+                          print_expression(
+                            ~original_source,
+                            ~comments=comments_in_expression,
+                            expression,
+                          ),
+                        ])
+
+                      | _ =>
+                        Doc.concat([
+                          args,
+                          Doc.space,
+                          Doc.text("=>"),
+                          Doc.indent(
+                            Doc.concat([
+                              Doc.line,
+                              print_expression(
+                                ~original_source,
+                                ~comments=comments_in_expression,
+                                expression,
+                              ),
+                            ]),
+                          ),
+                        ])
+                      };
                     | _ =>
                       Doc.group(
                         print_expression(~original_source, ~comments, e),
@@ -1884,10 +1948,11 @@ and print_other_application =
               ),
               Doc.ifBreaks(Doc.comma, Doc.nil),
             ]);
+
           Doc.concat([
             print_expression(~original_source, ~comments, func),
             Doc.lparen,
-            needs_indent^ ? Doc.indent(body) : body,
+            Doc.indent(body),
             Doc.softLine,
             Doc.rparen,
           ]);
@@ -1896,6 +1961,183 @@ and print_other_application =
     }
   };
 }
+
+// and print_other_application =
+//     (
+//       ~expressions: list(Parsetree.expression),
+//       ~original_source: array(string),
+//       ~comments: list(Parsetree.comment),
+//       func: Parsetree.expression,
+//     ) => {
+//   let function_name = get_function_name(func);
+
+//   switch (expressions) {
+//   | [first] when prefixop(function_name) =>
+//     switch (first.pexp_desc) {
+//     | PExpApp(fn, _) =>
+//       let inner_fn = get_function_name(fn);
+//       if (infixop(inner_fn)) {
+//         Doc.concat([
+//           Doc.text(function_name),
+//           Doc.lparen,
+//           Doc.group(print_expression(~original_source, ~comments, first)),
+//           Doc.rparen,
+//         ]);
+//       } else {
+//         Doc.concat([
+//           Doc.text(function_name),
+//           Doc.group(print_expression(~original_source, ~comments, first)),
+//         ]);
+//       };
+
+//     | _ =>
+//       Doc.concat([
+//         Doc.text(function_name),
+//         Doc.group(print_expression(~original_source, ~comments, first)),
+//       ])
+//     }
+
+//   | [first, second] when infixop(function_name) =>
+//     raise(
+//       Error(
+//         Illegal_parse("Should not be processing an infix operator here "),
+//       ),
+//     )
+//   | _ =>
+//     if (function_name == list_cons) {
+//       resugar_list(~original_source, ~comments, expressions);
+//     } else if (Array.exists(fn => function_name == fn, exception_primitives)) {
+//       let first_expr = List.hd(expressions);
+//       Doc.concat([
+//         print_expression(~original_source, ~comments, func),
+//         Doc.space,
+//         print_expression(~original_source, ~comments, first_expr),
+//       ]);
+//     } else {
+//       Doc.group(
+//         switch (expressions) {
+//         | [] =>
+//           Doc.concat([
+//             print_expression(~original_source, ~comments, func),
+//             Doc.lparen,
+//             Doc.rparen,
+//           ])
+//         | _ =>
+//           let lam = List.hd(expressions);
+
+//           switch (lam.pexp_desc) {
+//           | PExpLambda(patterns, expression) =>
+//             let comments_in_expression =
+//               Comment_utils.get_comments_inside_location(
+//                 ~location=expression.pexp_loc,
+//                 comments,
+//               );
+
+//             // let patterns_comments =
+//             //   Comment_utils.get_comments_enclosed_and_before_location(
+//             //     ~loc1=expr.pexp_loc,
+//             //     ~loc2=expression.pexp_loc,
+//             //     comments,
+//             //   );
+
+//             // let args = Doc.text("(args)");
+//             // paren_wrap_patterns(
+//             //   ~wrapper=expr.pexp_loc,
+//             //   ~next_loc=expression.pexp_loc,
+//             //   ~comments=patterns_comments,
+//             //   ~original_source,
+//             //   patterns,
+//             // );
+
+//             let raw_args =
+//               print_patterns(
+//                 ~wrapper=lam.pexp_loc,
+//                 ~next_loc=expression.pexp_loc,
+//                 ~comments,
+//                 ~original_source,
+//                 ~is_block=false,
+//                 patterns,
+//               );
+
+//             let args =
+//               Doc.concat([
+//                 Doc.lparen,
+//                 Doc.indent(Doc.concat([Doc.softLine, raw_args])),
+//                 Doc.softLine,
+//                 Doc.rparen,
+//               ]);
+
+//             switch (expression.pexp_desc) {
+//             | PExpBlock(_)
+//             | PExpLambda(_) =>
+//               Doc.concat([
+//                 Doc.group(
+//                   Doc.concat([args, Doc.space, Doc.text("=>"), Doc.space]),
+//                 ),
+//                 print_expression(
+//                   ~original_source,
+//                   ~comments=comments_in_expression,
+//                   expression,
+//                 ),
+//               ])
+//             | _ =>
+//               Doc.concat([
+//                 args,
+//                 Doc.space,
+//                 Doc.text("=>"),
+//                 Doc.indent(
+//                   Doc.concat([
+//                     Doc.line,
+//                     print_expression(
+//                       ~original_source,
+//                       ~comments=comments_in_expression,
+//                       expression,
+//                     ),
+//                   ]),
+//                 ),
+//               ])
+//             };
+//           | _ =>
+//             let needs_indent = ref(true);
+//             let body =
+//               Doc.concat([
+//                 Doc.softLine,
+//                 Doc.join(
+//                   Doc.concat([Doc.comma, Doc.line]),
+//                   List.map(
+//                     (e: Parsetree.expression) =>
+//                       switch (e.pexp_desc) {
+//                       | PExpLambda(_, {pexp_desc: PExpBlock(_)}) =>
+//                         needs_indent := false;
+//                         Doc.group(
+//                           Doc.customLayout([
+//                             print_expression(~original_source, ~comments, e),
+//                           ]),
+//                         );
+//                       | _ =>
+//                         Doc.group(
+//                           print_expression(~original_source, ~comments, e),
+//                         )
+//                       },
+//                     expressions,
+//                   ),
+//                 ),
+//                 Doc.ifBreaks(Doc.comma, Doc.nil),
+//               ]);
+
+//             Doc.concat([
+//               print_expression(~original_source, ~comments, func),
+//               Doc.lparen,
+//               needs_indent^ ? Doc.indent(body) : body,
+//               Doc.softLine,
+//               Doc.rparen,
+//             ]);
+//           };
+//         },
+//       );
+//     }
+//   };
+// }
 
 and get_function_name = (expr: Parsetree.expression) => {
   switch (expr.pexp_desc) {
