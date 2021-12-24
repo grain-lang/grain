@@ -1062,25 +1062,13 @@ and resugar_list =
         | Regular(e) =>
           last_item_was_spread := false;
 
-          Doc.group(
-            print_expression(
-              ~parent_is_arrow=false,
-              ~original_source,
-              ~comments,
-              e,
-            ),
-          );
+          Doc.group(print_expression(~original_source, ~comments, e));
         | Spread(e) =>
           last_item_was_spread := true;
           Doc.group(
             Doc.concat([
               Doc.text("..."),
-              print_expression(
-                ~parent_is_arrow=false,
-                ~original_source,
-                ~comments,
-                e,
-              ),
+              print_expression(~original_source, ~comments, e),
             ]),
           );
         },
@@ -1449,13 +1437,7 @@ and print_record =
     let (locidentifier, expr) = field;
     let ident = locidentifier.txt;
     let printed_ident = print_ident(ident);
-    let printed_expr =
-      print_expression(
-        ~parent_is_arrow=false,
-        ~original_source,
-        ~comments,
-        expr,
-      );
+    let printed_expr = print_expression(~original_source, ~comments, expr);
     let punned_expr = check_for_pun(expr);
 
     let pun =
@@ -1687,13 +1669,7 @@ and print_infix_application =
 
   switch (expressions) {
   | [first, second] =>
-    let left_expr =
-      print_expression(
-        ~parent_is_arrow=false,
-        ~original_source,
-        ~comments,
-        first,
-      );
+    let left_expr = print_expression(~original_source, ~comments, first);
 
     let next_comments =
       Comment_utils.get_comments_between_locations(
@@ -1715,13 +1691,7 @@ and print_infix_application =
     let line_comment_docs =
       Comment_utils.single_line_of_comments(line_comments);
 
-    let right_expr =
-      print_expression(
-        ~parent_is_arrow=false,
-        ~original_source,
-        ~comments,
-        second,
-      );
+    let right_expr = print_expression(~original_source, ~comments, second);
 
     let left_is_leaf =
       switch (first.pexp_desc) {
@@ -1853,41 +1823,20 @@ and print_other_application =
         Doc.concat([
           Doc.text(function_name),
           Doc.lparen,
-          Doc.group(
-            print_expression(
-              ~parent_is_arrow=false,
-              ~original_source,
-              ~comments,
-              first,
-            ),
-          ),
+          Doc.group(print_expression(~original_source, ~comments, first)),
           Doc.rparen,
         ]);
       } else {
         Doc.concat([
           Doc.text(function_name),
-          Doc.group(
-            print_expression(
-              ~parent_is_arrow=false,
-              ~original_source,
-              ~comments,
-              first,
-            ),
-          ),
+          Doc.group(print_expression(~original_source, ~comments, first)),
         ]);
       };
 
     | _ =>
       Doc.concat([
         Doc.text(function_name),
-        Doc.group(
-          print_expression(
-            ~parent_is_arrow=false,
-            ~original_source,
-            ~comments,
-            first,
-          ),
-        ),
+        Doc.group(print_expression(~original_source, ~comments, first)),
       ])
     }
 
@@ -1897,31 +1846,16 @@ and print_other_application =
     } else if (Array.exists(fn => function_name == fn, exception_primitives)) {
       let first_expr = List.hd(expressions);
       Doc.concat([
-        print_expression(
-          ~parent_is_arrow=false,
-          ~original_source,
-          ~comments,
-          func,
-        ),
+        print_expression(~original_source, ~comments, func),
         Doc.space,
-        print_expression(
-          ~parent_is_arrow=false,
-          ~original_source,
-          ~comments,
-          first_expr,
-        ),
+        print_expression(~original_source, ~comments, first_expr),
       ]);
     } else {
       Doc.group(
         switch (expressions) {
         | [] =>
           Doc.concat([
-            print_expression(
-              ~parent_is_arrow=false,
-              ~original_source,
-              ~comments,
-              func,
-            ),
+            print_expression(~original_source, ~comments, func),
             Doc.lparen,
             Doc.rparen,
           ])
@@ -1938,21 +1872,11 @@ and print_other_application =
                     | PExpLambda(_, {pexp_desc: PExpBlock(_)}) =>
                       needs_indent := false;
                       Doc.customLayout([
-                        print_expression(
-                          ~parent_is_arrow=false,
-                          ~original_source,
-                          ~comments,
-                          e,
-                        ),
+                        print_expression(~original_source, ~comments, e),
                       ]);
                     | _ =>
                       Doc.group(
-                        print_expression(
-                          ~parent_is_arrow=false,
-                          ~original_source,
-                          ~comments,
-                          e,
-                        ),
+                        print_expression(~original_source, ~comments, e),
                       )
                     },
                   expressions,
@@ -1961,12 +1885,7 @@ and print_other_application =
               Doc.ifBreaks(Doc.comma, Doc.nil),
             ]);
           Doc.concat([
-            print_expression(
-              ~parent_is_arrow=false,
-              ~original_source,
-              ~comments,
-              func,
-            ),
+            print_expression(~original_source, ~comments, func),
             Doc.lparen,
             needs_indent^ ? Doc.indent(body) : body,
             Doc.softLine,
@@ -2091,7 +2010,6 @@ and paren_wrap_patterns =
 }
 and print_expression =
     (
-      ~parent_is_arrow: bool,
       ~original_source: array(string),
       ~comments: list(Parsetree.comment),
       expr: Parsetree.expression,
@@ -2115,12 +2033,7 @@ and print_expression =
         e.pexp_loc;
       };
       let print_item = (e: Parsetree.expression, comments) => {
-        print_expression(
-          ~parent_is_arrow=false,
-          ~original_source,
-          ~comments,
-          e,
-        );
+        print_expression(~original_source, ~comments, e);
       };
 
       let after_paren_comments =
@@ -2163,12 +2076,7 @@ and print_expression =
         e.pexp_loc;
       };
       let print_item = (e: Parsetree.expression, comments) => {
-        print_expression(
-          ~parent_is_arrow=false,
-          ~original_source,
-          ~comments,
-          e,
-        );
+        print_expression(~original_source, ~comments, e);
       };
 
       let after_bracket_comments =
@@ -2209,49 +2117,24 @@ and print_expression =
       );
     | PExpArrayGet(expression1, expression2) =>
       Doc.concat([
-        print_expression(
-          ~parent_is_arrow=false,
-          ~original_source,
-          ~comments,
-          expression1,
-        ),
+        print_expression(~original_source, ~comments, expression1),
         Doc.lbracket,
-        print_expression(
-          ~parent_is_arrow=false,
-          ~original_source,
-          ~comments,
-          expression2,
-        ),
+        print_expression(~original_source, ~comments, expression2),
         Doc.rbracket,
       ])
     | PExpArraySet(expression1, expression2, expression3) =>
       Doc.group(
         Doc.concat([
-          print_expression(
-            ~parent_is_arrow=false,
-            ~original_source,
-            ~comments,
-            expression1,
-          ),
+          print_expression(~original_source, ~comments, expression1),
           Doc.lbracket,
-          print_expression(
-            ~parent_is_arrow=false,
-            ~original_source,
-            ~comments,
-            expression2,
-          ),
+          print_expression(~original_source, ~comments, expression2),
           Doc.rbracket,
           Doc.space,
           Doc.text("="),
           Doc.indent(
             Doc.concat([
               Doc.space,
-              print_expression(
-                ~parent_is_arrow=false,
-                ~original_source,
-                ~comments,
-                expression3,
-              ),
+              print_expression(~original_source, ~comments, expression3),
             ]),
           ),
         ]),
@@ -2261,46 +2144,26 @@ and print_expression =
       print_record(~fields=record, ~original_source, ~comments, expr.pexp_loc)
     | PExpRecordGet(expression, {txt, _}) =>
       Doc.concat([
-        print_expression(
-          ~parent_is_arrow=false,
-          ~original_source,
-          ~comments,
-          expression,
-        ),
+        print_expression(~original_source, ~comments, expression),
         Doc.dot,
         print_ident(txt),
       ])
     | PExpRecordSet(expression, {txt, _}, expression2) =>
       Doc.concat([
-        print_expression(
-          ~parent_is_arrow=false,
-          ~original_source,
-          ~comments,
-          expression,
-        ),
+        print_expression(~original_source, ~comments, expression),
         Doc.dot,
         print_ident(txt),
         Doc.space,
         Doc.equal,
         Doc.space,
-        print_expression(
-          ~parent_is_arrow=false,
-          ~original_source,
-          ~comments,
-          expression2,
-        ),
+        print_expression(~original_source, ~comments, expression2),
       ])
     | PExpMatch(expression, match_branches) =>
       let arg =
         Doc.concat([
           Doc.lparen,
           Doc.group(
-            print_expression(
-              ~parent_is_arrow=false,
-              ~original_source,
-              ~comments,
-              expression,
-            ),
+            print_expression(~original_source, ~comments, expression),
           ),
           Doc.rparen,
         ]);
@@ -2350,7 +2213,6 @@ and print_expression =
                   Doc.concat([
                     Doc.space,
                     print_expression(
-                      ~parent_is_arrow=true,
                       ~original_source,
                       ~comments=branch_comments,
                       branch.pmb_body,
@@ -2361,7 +2223,6 @@ and print_expression =
                     Doc.concat([
                       Doc.line,
                       print_expression(
-                        ~parent_is_arrow=true,
                         ~original_source,
                         ~comments=branch_comments,
                         branch.pmb_body,
@@ -2379,7 +2240,6 @@ and print_expression =
               let guard_doc =
                 Doc.group(
                   print_expression(
-                    ~parent_is_arrow=false,
                     ~original_source,
                     ~comments=branch_guard_comments,
                     guard,
@@ -2399,36 +2259,16 @@ and print_expression =
                 ),
                 Doc.space,
                 Doc.text("=>"),
-                //  Doc.ifBreaks(
-                // switch (branch.pmb_body.pexp_desc) {
-                // | PExpBlock(expressions) =>
-                //  Doc.indent(
                 Doc.group(
                   Doc.concat([
                     Doc.space,
                     print_expression(
-                      ~parent_is_arrow=true,
                       ~original_source,
                       ~comments=branch_comments,
                       branch.pmb_body,
                     ),
                   ]),
                 ),
-                //),
-                // | _ =>
-                //Doc.indent(
-                //   Doc.concat([
-                //     Doc.space,
-                //     print_expression(
-                //       ~parent_is_arrow=true,
-                //       ~original_source,
-                //       ~comments=branch_comments,
-                //       branch.pmb_body,
-                //     ),
-                //   ]),
-                //   //),
-                // ),
-                // },
               ]);
             },
           ]),
@@ -2557,7 +2397,6 @@ and print_expression =
           Doc.concat([
             Doc.space,
             print_expression(
-              ~parent_is_arrow=false,
               ~original_source,
               ~comments=comments_in_true_statement,
               true_expr,
@@ -2575,7 +2414,6 @@ and print_expression =
                 Doc.concat([
                   Doc.hardLine,
                   print_expression(
-                    ~parent_is_arrow=false,
                     ~original_source,
                     ~comments=comments_in_true_statement,
                     true_expr,
@@ -2593,7 +2431,6 @@ and print_expression =
                 Doc.concat([
                   Doc.softLine,
                   print_expression(
-                    ~parent_is_arrow=false,
                     ~original_source,
                     ~comments=comments_in_true_statement,
                     true_expr,
@@ -2608,7 +2445,6 @@ and print_expression =
               Doc.concat([
                 Doc.line,
                 print_expression(
-                  ~parent_is_arrow=false,
                   ~original_source,
                   ~comments=comments_in_true_statement,
                   true_expr,
@@ -2635,7 +2471,6 @@ and print_expression =
               Doc.text("else"),
               Doc.space,
               print_expression(
-                ~parent_is_arrow=false,
                 ~original_source,
                 ~comments=comments_in_false_statement,
                 false_expr,
@@ -2654,7 +2489,6 @@ and print_expression =
                   Doc.concat([
                     Doc.softLine,
                     print_expression(
-                      ~parent_is_arrow=false,
                       ~original_source,
                       ~comments=comments_in_false_statement,
                       false_expr,
@@ -2668,7 +2502,6 @@ and print_expression =
               Doc.concat([
                 Doc.space,
                 print_expression(
-                  ~parent_is_arrow=false,
                   ~original_source,
                   ~comments=comments_in_false_statement,
                   false_expr,
@@ -2690,7 +2523,6 @@ and print_expression =
                   Doc.concat([
                     Doc.hardLine,
                     print_expression(
-                      ~parent_is_arrow=false,
                       ~original_source,
                       ~comments=comments_in_false_statement,
                       false_expr,
@@ -2704,7 +2536,6 @@ and print_expression =
               Doc.concat([
                 Doc.space,
                 print_expression(
-                  ~parent_is_arrow=false,
                   ~original_source,
                   ~comments=comments_in_false_statement,
                   false_expr,
@@ -2733,7 +2564,6 @@ and print_expression =
                 | _ => Doc.ifBreaks(Doc.nil, Doc.space)
                 },
                 print_expression(
-                  ~parent_is_arrow=false,
                   ~original_source,
                   ~comments=commentsInCondition,
                   condition,
@@ -2783,7 +2613,6 @@ and print_expression =
               Doc.concat([
                 Doc.softLine,
                 print_expression(
-                  ~parent_is_arrow=false,
                   ~original_source,
                   ~comments=comments_in_expression,
                   expression,
@@ -2797,7 +2626,6 @@ and print_expression =
         Doc.space,
         Doc.group(
           print_expression(
-            ~parent_is_arrow=false,
             ~original_source,
             ~comments=comments_in_expression_1,
             expression1,
@@ -2830,7 +2658,6 @@ and print_expression =
                 | Some(expr) =>
                   Doc.group(
                     print_expression(
-                      ~parent_is_arrow=false,
                       ~original_source,
                       ~comments=comments_before_loop_expression,
                       expr,
@@ -2845,7 +2672,6 @@ and print_expression =
                     Doc.line,
                     Doc.group(
                       print_expression(
-                        ~parent_is_arrow=false,
                         ~original_source,
                         ~comments=comments_before_loop_expression,
                         expr,
@@ -2861,7 +2687,6 @@ and print_expression =
                     Doc.line,
                     Doc.group(
                       print_expression(
-                        ~parent_is_arrow=false,
                         ~original_source,
                         ~comments=comments_before_loop_expression,
                         expr,
@@ -2879,7 +2704,6 @@ and print_expression =
         Doc.space,
         Doc.group(
           print_expression(
-            ~parent_is_arrow=false,
             ~original_source,
             ~comments=comments_in_expression4,
             expression4,
@@ -2898,7 +2722,6 @@ and print_expression =
       Doc.group(
         Doc.concat([
           print_expression(
-            ~parent_is_arrow=false,
             ~original_source,
             ~comments=comments_in_expression,
             expression,
@@ -2982,7 +2805,6 @@ and print_expression =
             Doc.concat([args, Doc.space, Doc.text("=>"), Doc.space]),
           ),
           print_expression(
-            ~parent_is_arrow=true,
             ~original_source,
             ~comments=comments_in_expression,
             expression,
@@ -2997,7 +2819,6 @@ and print_expression =
             Doc.concat([
               Doc.line,
               print_expression(
-                ~parent_is_arrow=true,
                 ~original_source,
                 ~comments=comments_in_expression,
                 expression,
@@ -3024,14 +2845,7 @@ and print_expression =
         };
 
         let print_item = (expr: Parsetree.expression, comments) => {
-          Doc.group(
-            print_expression(
-              ~parent_is_arrow=false,
-              ~original_source,
-              ~comments,
-              expr,
-            ),
-          );
+          Doc.group(print_expression(~original_source, ~comments, expr));
         };
 
         let after_brace_comments =
@@ -3076,21 +2890,11 @@ and print_expression =
 
     | PExpBoxAssign(expression, expression1) =>
       Doc.concat([
-        print_expression(
-          ~parent_is_arrow=false,
-          ~original_source,
-          ~comments,
-          expression,
-        ),
+        print_expression(~original_source, ~comments, expression),
         Doc.space,
         Doc.text(":="),
         Doc.space,
-        print_expression(
-          ~parent_is_arrow=false,
-          ~original_source,
-          ~comments,
-          expression1,
-        ),
+        print_expression(~original_source, ~comments, expression1),
       ])
     | PExpAssign(expression, expression1) =>
       switch (expression1.pexp_desc) {
@@ -3099,24 +2903,12 @@ and print_expression =
 
         let trimmed_operator = String.trim(function_name);
 
-        let left =
-          print_expression(
-            ~parent_is_arrow=false,
-            ~original_source,
-            ~comments,
-            expression,
-          );
+        let left = print_expression(~original_source, ~comments, expression);
 
         let left_matches_first =
           switch (expressions) {
           | [expr, ...remainder] =>
-            print_expression(
-              ~parent_is_arrow=false,
-              ~original_source,
-              ~comments,
-              expr,
-            )
-            == left
+            print_expression(~original_source, ~comments, expr) == left
           | _ => false
           };
 
@@ -3130,12 +2922,7 @@ and print_expression =
           | "%" =>
             let sugared_op = Doc.text(" " ++ trimmed_operator ++ "= ");
             Doc.concat([
-              print_expression(
-                ~parent_is_arrow=false,
-                ~original_source,
-                ~comments,
-                expression,
-              ),
+              print_expression(~original_source, ~comments, expression),
               sugared_op,
               switch (expressions) {
               | [] =>
@@ -3145,77 +2932,41 @@ and print_expression =
                   ),
                 )
               | [expression] =>
-                print_expression(
-                  ~parent_is_arrow=false,
-                  ~original_source,
-                  ~comments,
-                  expression,
+                Doc.indent(
+                  print_expression(~original_source, ~comments, expression),
                 )
               | [expression1, expression2, ...rest] =>
-                print_expression(
-                  ~parent_is_arrow=false,
-                  ~original_source,
-                  ~comments,
-                  expression2,
+                Doc.indent(
+                  print_expression(~original_source, ~comments, expression2),
                 )
               },
             ]);
           | _ =>
             Doc.concat([
-              print_expression(
-                ~parent_is_arrow=false,
-                ~original_source,
-                ~comments,
-                expression,
-              ),
+              print_expression(~original_source, ~comments, expression),
               Doc.space,
               Doc.equal,
               Doc.space,
-              print_expression(
-                ~parent_is_arrow=false,
-                ~original_source,
-                ~comments,
-                expression1,
-              ),
+              print_expression(~original_source, ~comments, expression1),
             ])
           };
         } else {
           Doc.concat([
-            print_expression(
-              ~parent_is_arrow=false,
-              ~original_source,
-              ~comments,
-              expression,
-            ),
+            print_expression(~original_source, ~comments, expression),
             Doc.space,
             Doc.equal,
             Doc.space,
-            print_expression(
-              ~parent_is_arrow=false,
-              ~original_source,
-              ~comments,
-              expression1,
-            ),
+            print_expression(~original_source, ~comments, expression1),
           ]);
         };
 
       | _ =>
         Doc.concat([
-          print_expression(
-            ~parent_is_arrow=false,
-            ~original_source,
-            ~comments,
-            expression,
-          ),
+          print_expression(~original_source, ~comments, expression),
           Doc.space,
           Doc.equal,
           Doc.space,
-          print_expression(
-            ~parent_is_arrow=false,
-            ~original_source,
-            ~comments,
-            expression1,
-          ),
+          print_expression(~original_source, ~comments, expression1),
         ])
       }
 
@@ -3280,7 +3031,6 @@ and print_value_bind =
           );
         let printed =
           print_expression(
-            ~parent_is_arrow=false,
             ~original_source,
             ~comments=expr_comments,
             vb.pvb_expr,
@@ -4119,12 +3869,7 @@ let toplevel_print =
         value_bindings,
       )
     | PTopExpr(expression) =>
-      print_expression(
-        ~parent_is_arrow=false,
-        ~original_source,
-        ~comments,
-        expression,
-      )
+      print_expression(~original_source, ~comments, expression)
     | PTopException(export_flag, type_exception) =>
       let export =
         switch (export_flag) {
