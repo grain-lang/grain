@@ -1,3 +1,2 @@
 /* grainc-flags --compilation-mode=runtime */
 export foreign wasm debug: a -> Void from "console"
-
