@@ -1709,12 +1709,11 @@ and print_infix_application =
 
     let after_comments = remove_used_comments(next_comments, line_comments);
 
-    let after_comments_docs =  Comment_utils.block_trailing_comments_docs(after_comments);
+    let after_comments_docs =
+      Comment_utils.block_trailing_comments_docs(after_comments);
 
     let line_comment_docs =
       Comment_utils.single_line_of_comments(line_comments);
-
-
 
     let right_expr =
       print_expression(
@@ -2739,9 +2738,16 @@ and print_expression =
                   ~comments=commentsInCondition,
                   condition,
                 ),
-              
-                if (cond_trailing_comment == []) Doc.nil else
-                Doc.concat([Doc.space,Comment_utils.block_trailing_comments_docs(cond_trailing_comment)])
+                if (cond_trailing_comment == []) {
+                  Doc.nil;
+                } else {
+                  Doc.concat([
+                    Doc.space,
+                    Comment_utils.block_trailing_comments_docs(
+                      cond_trailing_comment,
+                    ),
+                  ]);
+                },
               ]),
             ),
             Doc.softLine,
