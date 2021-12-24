@@ -1252,7 +1252,8 @@ let rec encodeHelp = (string: String, encoding: Encoding, includeBom: Bool) => {
         UTF32_LE => 4,
         UTF32_BE => 4,
       }
-    } else {
+    }
+    else {
       0
     })
   let (>>>) = WasmI32.shrU
@@ -1365,26 +1366,31 @@ let bytesHaveBom = (bytes: Bytes, encoding: Encoding, start: WasmI32) => {
   let ptr = ptr + start
   match (encoding) {
     UTF8 => {
-      bytesSize >= 3n && WasmI32.load8U(ptr, _BYTES_OFFSET) == 0xEFn &&
+      bytesSize >= 3n &&
+      WasmI32.load8U(ptr, _BYTES_OFFSET) == 0xEFn &&
       WasmI32.load8U(ptr + 1n, _BYTES_OFFSET) == 0xBBn &&
       WasmI32.load8U(ptr + 2n, _BYTES_OFFSET) == 0xBFn
     },
     UTF16_BE => {
-      bytesSize >= 2n && WasmI32.load8U(ptr, _BYTES_OFFSET) == 0xFEn &&
+      bytesSize >= 2n &&
+      WasmI32.load8U(ptr, _BYTES_OFFSET) == 0xFEn &&
       WasmI32.load8U(ptr + 1n, _BYTES_OFFSET) == 0xFFn
     },
     UTF16_LE => {
-      bytesSize >= 2n && WasmI32.load8U(ptr, _BYTES_OFFSET) == 0xFFn &&
+      bytesSize >= 2n &&
+      WasmI32.load8U(ptr, _BYTES_OFFSET) == 0xFFn &&
       WasmI32.load8U(ptr + 1n, _BYTES_OFFSET) == 0xFEn
     },
     UTF32_BE => {
-      bytesSize >= 4n && WasmI32.load8U(ptr, _BYTES_OFFSET) == 0x00n &&
+      bytesSize >= 4n &&
+      WasmI32.load8U(ptr, _BYTES_OFFSET) == 0x00n &&
       WasmI32.load8U(ptr + 1n, _BYTES_OFFSET) == 0x00n &&
       WasmI32.load8U(ptr + 2n, _BYTES_OFFSET) == 0xFEn &&
       WasmI32.load8U(ptr + 3n, _BYTES_OFFSET) == 0xFFn
     },
     UTF32_LE => {
-      bytesSize >= 4n && WasmI32.load8U(ptr, _BYTES_OFFSET) == 0xFFn &&
+      bytesSize >= 4n &&
+      WasmI32.load8U(ptr, _BYTES_OFFSET) == 0xFFn &&
       WasmI32.load8U(ptr + 1n, _BYTES_OFFSET) == 0xFEn &&
       WasmI32.load8U(ptr + 2n, _BYTES_OFFSET) == 0x00n &&
       WasmI32.load8U(ptr + 3n, _BYTES_OFFSET) == 0x00n
@@ -1921,14 +1927,15 @@ let trimString = (str: String, end: Bool) => {
     // TODO: Use unicode whitespace property and unicode line terminator once github issue #661 is completed
     if (
       // Spacing
-       currentChar != '\u{0009}' && currentChar != '\u{000B}' &&
-      currentChar != '\u{000C}' &&
-      currentChar != '\u{0020}' &&
-      currentChar != '\u{00A0}' &&
-      currentChar != '\u{FEFF}' &&
-      currentChar != '\n' &&
+      currentChar != '\u{0009}' && // Tab
+      currentChar != '\u{000B}' && // LINE TABULATION
+      currentChar != '\u{000C}' && // FORM FEED (FF)
+      currentChar != '\u{0020}' && // Space
+      currentChar != '\u{00A0}' && // No Break Space
+      currentChar != '\u{FEFF}' && // ZERO WIDTH NO-BREAK SPACE
+      // Line Terminators
+      currentChar != '\n' && // LF
       currentChar != '\r' // CR
-
     ) break
   }
   if (end) slice(0, i + 1, str) else slice(i, charsLength, str)
