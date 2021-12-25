@@ -74,17 +74,23 @@ let resize = set => {
     // This tracks the tail nodes so we can set their `next` to None
     let tailNodes = Array.make(nextSize, None)
     set.buckets = nextBuckets
-    Array.forEach(old => {
-      copyNodeWithNewHash(old, nextBuckets, tailNodes)
-    }, currentBuckets)
-    Array.forEach(tail => {
-      match (tail) {
-        None => void,
-        Some(node) => {
-          node.next = None
-        },
-      }
-    }, tailNodes)
+    Array.forEach(
+      old => {
+        copyNodeWithNewHash(old, nextBuckets, tailNodes)
+      },
+      currentBuckets,
+    )
+    Array.forEach(
+      tail => {
+        match (tail) {
+          None => void,
+          Some(node) => {
+            node.next = None
+          },
+        }
+      },
+      tailNodes,
+    )
   } else {
     void
   }
@@ -228,9 +234,12 @@ export let isEmpty = set => {
 export let clear = set => {
   set.size = 0
   let buckets = set.buckets
-  Array.forEachi((bucket, idx) => {
-    buckets[idx] = None
-  }, buckets)
+  Array.forEachi(
+    (bucket, idx) => {
+      buckets[idx] = None
+    },
+    buckets,
+  )
 }
 
 let rec forEachBucket = (fn, node) => {
@@ -253,9 +262,12 @@ let rec forEachBucket = (fn, node) => {
  */
 export let forEach = (fn, set) => {
   let buckets = set.buckets
-  Array.forEach(bucket => {
-    forEachBucket(fn, bucket)
-  }, buckets)
+  Array.forEach(
+    bucket => {
+      forEachBucket(fn, bucket)
+    },
+    buckets,
+  )
 }
 
 let rec reduceEachBucket = (fn, node, acc) => {
@@ -278,9 +290,12 @@ let rec reduceEachBucket = (fn, node, acc) => {
 export let reduce = (fn, init, set) => {
   let buckets = set.buckets
   let mut acc = init
-  Array.forEach(bucket => {
-    acc = reduceEachBucket(fn, bucket, acc)
-  }, buckets)
+  Array.forEach(
+    bucket => {
+      acc = reduceEachBucket(fn, bucket, acc)
+    },
+    buckets,
+  )
   acc
 }
 
@@ -303,9 +318,12 @@ export let filter = (predicate, set) => {
     [],
     set,
   )
-  List.forEach(key => {
-    remove(key, set)
-  }, keysToRemove)
+  List.forEach(
+    key => {
+      remove(key, set)
+    },
+    keysToRemove,
+  )
 }
 
 /**
@@ -342,9 +360,12 @@ export let toList = set => {
  */
 export let fromList = list => {
   let set = make()
-  List.forEach(key => {
-    add(key, set)
-  }, list)
+  List.forEach(
+    key => {
+      add(key, set)
+    },
+    list,
+  )
   set
 }
 
@@ -370,9 +391,12 @@ export let toArray = set => {
  */
 export let fromArray = array => {
   let set = make()
-  Array.forEach(key => {
-    add(key, set)
-  }, array)
+  Array.forEach(
+    key => {
+      add(key, set)
+    },
+    array,
+  )
   set
 }
 
@@ -387,12 +411,18 @@ export let fromArray = array => {
  */
 export let union = (set1, set2) => {
   let set = make()
-  forEach(key => {
-    add(key, set)
-  }, set1)
-  forEach(key => {
-    add(key, set)
-  }, set2)
+  forEach(
+    key => {
+      add(key, set)
+    },
+    set1,
+  )
+  forEach(
+    key => {
+      add(key, set)
+    },
+    set2,
+  )
   set
 }
 
@@ -407,16 +437,22 @@ export let union = (set1, set2) => {
  */
 export let diff = (set1, set2) => {
   let set = make()
-  forEach(key => {
-    if (!contains(key, set2)) {
-      add(key, set)
-    }
-  }, set1)
-  forEach(key => {
-    if (!contains(key, set1)) {
-      add(key, set)
-    }
-  }, set2)
+  forEach(
+    key => {
+      if (!contains(key, set2)) {
+        add(key, set)
+      }
+    },
+    set1,
+  )
+  forEach(
+    key => {
+      if (!contains(key, set1)) {
+        add(key, set)
+      }
+    },
+    set2,
+  )
   set
 }
 
@@ -431,16 +467,22 @@ export let diff = (set1, set2) => {
  */
 export let intersect = (set1, set2) => {
   let set = make()
-  forEach(key => {
-    if (contains(key, set2)) {
-      add(key, set)
-    }
-  }, set1)
-  forEach(key => {
-    if (contains(key, set1)) {
-      add(key, set)
-    }
-  }, set2)
+  forEach(
+    key => {
+      if (contains(key, set2)) {
+        add(key, set)
+      }
+    },
+    set1,
+  )
+  forEach(
+    key => {
+      if (contains(key, set1)) {
+        add(key, set)
+      }
+    },
+    set2,
+  )
   set
 }
 
