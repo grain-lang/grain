@@ -1841,11 +1841,7 @@ and print_other_application =
     }
 
   | [first, second] when infixop(function_name) =>
-    raise(
-      Error(
-        Illegal_parse("Should not be processing an infix operator here "),
-      ),
-    )
+    print_infix_application(~expressions, ~original_source, ~comments, func)
   | _ =>
     if (function_name == list_cons) {
       resugar_list(~original_source, ~comments, expressions);
@@ -1873,76 +1869,85 @@ and print_other_application =
                 Doc.concat([Doc.comma, Doc.line]),
                 List.map(
                   (e: Parsetree.expression) =>
-                    switch (e.pexp_desc) {
-                    | PExpLambda(patterns, expression) =>
-                      let comments_in_expression =
-                        Comment_utils.get_comments_inside_location(
-                          ~location=expression.pexp_loc,
-                          comments,
-                        );
-                      let raw_args =
-                        print_patterns(
-                          ~wrapper=e.pexp_loc,
-                          ~next_loc=expression.pexp_loc,
-                          ~comments,
-                          ~original_source,
-                          ~is_block=false,
-                          patterns,
-                        );
-
-                      let args =
-                        switch (patterns) {
-                        | [arg] => raw_args
-                        | _ =>
-                          Doc.group(
-                            Doc.concat([
-                              Doc.lparen,
-                              Doc.indent(
-                                Doc.concat([Doc.softLine, raw_args]),
-                              ),
-                              Doc.softLine,
-                              Doc.rparen,
-                            ]),
-                          )
-                        };
-
-                      switch (expression.pexp_desc) {
-                      | PExpBlock(_)
-                      | PExpLambda(_) =>
-                        Doc.concat([
-                          args,
-                          Doc.space,
-                          Doc.text("=>"),
-                          Doc.space,
-                          print_expression(
+                    Doc.group(
+                      switch (e.pexp_desc) {
+                      | PExpLambda(patterns, expression) =>
+                        let comments_in_expression =
+                          Comment_utils.get_comments_inside_location(
+                            ~location=expression.pexp_loc,
+                            comments,
+                          );
+                        let raw_args =
+                          print_patterns(
+                            ~wrapper=e.pexp_loc,
+                            ~next_loc=expression.pexp_loc,
+                            ~comments,
                             ~original_source,
-                            ~comments=comments_in_expression,
-                            expression,
-                          ),
-                        ])
+                            ~is_block=false,
+                            patterns,
+                          );
 
+                        let args =
+                          switch (patterns) {
+                          | [] =>
+                            Doc.concat([Doc.lparen, raw_args, Doc.rparen])
+                          | [pat] =>
+                            switch (pat.ppat_desc) {
+                            | PPatVar(_) => raw_args
+                            | _ =>
+                              Doc.concat([Doc.lparen, raw_args, Doc.rparen])
+                            }
+                          | _patterns =>
+                            Doc.group(
+                              Doc.concat([
+                                Doc.lparen,
+                                Doc.indent(
+                                  Doc.concat([Doc.softLine, raw_args]),
+                                ),
+                                Doc.softLine,
+                                Doc.rparen,
+                              ]),
+                            )
+                          };
+
+                        switch (expression.pexp_desc) {
+                        | PExpBlock(_)
+                        | PExpLambda(_) =>
+                          Doc.concat([
+                            Doc.group(args),
+                            Doc.space,
+                            Doc.text("=>"),
+                            Doc.space,
+                            print_expression(
+                              ~original_source,
+                              ~comments=comments_in_expression,
+                              expression,
+                            ),
+                          ])
+
+                        | _ =>
+                          Doc.concat([
+                            Doc.group(args),
+                            Doc.space,
+                            Doc.text("=>"),
+                            Doc.indent(
+                              Doc.concat([
+                                Doc.line,
+                                print_expression(
+                                  ~original_source,
+                                  ~comments=comments_in_expression,
+                                  expression,
+                                ),
+                              ]),
+                            ),
+                          ])
+                        };
                       | _ =>
-                        Doc.concat([
-                          args,
-                          Doc.space,
-                          Doc.text("=>"),
-                          Doc.indent(
-                            Doc.concat([
-                              Doc.line,
-                              print_expression(
-                                ~original_source,
-                                ~comments=comments_in_expression,
-                                expression,
-                              ),
-                            ]),
-                          ),
-                        ])
-                      };
-                    | _ =>
-                      Doc.group(
-                        print_expression(~original_source, ~comments, e),
-                      )
-                    },
+                        Doc.group(
+                          print_expression(~original_source, ~comments, e),
+                        )
+                      },
+                    ),
                   expressions,
                 ),
               ),
