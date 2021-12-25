@@ -211,6 +211,7 @@ program
 program
   .command("doc <file>")
   .description("generate documentation for a grain file")
+  .option("-o <filename>", "output filename")
   .action(
     wrapAction(function (file, options, program) {
       doc(file, program);
