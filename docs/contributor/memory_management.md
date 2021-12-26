@@ -109,9 +109,11 @@ to them, it will be returned without any side effects. **However**, it should be
 
 In most Grain programs, the above functions do not need to be invoked by users. Instead, the compiler automatically inserts calls to them where required. When developing in `compcore.re`, it is important to understand the conventions used by the garbage collector.
 
+**Functions contain references to themselves.** In order to support closures, Grain's compiler emits code which passes the current closure to each function as an extra argument. With respect to the calling convention, this extra argument is the same as normal arguments, so it follows the same `incRef`-before-function-call pattern as standard arguments (and must be `decRef`ed before functions return), as described in the following section. This is particularly important to keep in mind when writing `@disableGC` code, as discussed in "Disabling the Garbage Collector" below.
+
 **Reference counts are incremented upon access.** With some exceptions in generated code, reference counts are incremented whenever a value is accessed (loaded from storage slots such as arguments, locals, and globals). This streamlines the conventions in generated code, as function calls require no specific `incRef` invocation for arguments (see "References are callee-owned" subsection below). For clarity, a couple of notes:
 
-- If a value is stored somewhere, no `incRef`/`decRef` calls are needed (again, there are rare exceptions to this in the compiler, specifically regarding "swap slots", which are local variables used as registers).
+- If a value is stored somewhere, no extra `incRef`/`decRef` calls are needed (again, there are rare exceptions to this in the compiler, specifically regarding "swap slots", which are local variables used as registers).
 - If the computation no longer needs a live value (e.g. after a statement in the middle of a block), it should be `decRef`ed.
 - No special `incRef` is needed for return values, as the access of those values performs the requisite `incRef`. It should be noted that in generated WebAssembly code, the function postamble looks as follows:
 
@@ -131,16 +133,19 @@ Note that `load_swap` is one of the aforementioned exceptions which does not `in
 - If a function is called with an argument, it is the responsibility of that function to `decRef` that argument
 - If a value is passed to a function with a reference count of `n`, when it returns, it will have the a reference count of `n-1` (unless it was stored in an external location, in which case the reference count may be higher).
 
-**Functions contain references to themselves.** In order to support closures, Grain's compiler emits code which passes the current closure to each function as an extra argument. With respect to the calling convention, this extra argument is the same as normal arguments, so it follows the same `incRef`-before-function-call pattern as standard arguments (and must be `decRef`ed before functions return). This is particularly important to keep in mind when writing `@disableGC` code, as discussed below.
-
 ## Disabling the Garbage Collector
 
 There are times in which the garbage collector is not desired in Grain code. The typical example of this is the implementation of the core runtime (for example the garbage collector itself), which involves working with native WebAssembly values. Consequently, Grain provides two mechanisms for disabling the garbage collector, either on a per-function or a per-file basis.
 
-First, it is possible to annotate functions with `@disableGC`. This will compile the annotated function with no garbage collection instructions. Second, it is possible to pass the `--compilation-mode=runtime` flag to the compiler (**NOTE** that this is not the only effect of this flag; see `runtime.md` for more details), which is typically done by placing this at the beginning of the file:
+First, it is possible to annotate functions with `@disableGC`. This will compile the annotated function with no garbage collection instructions. Second, the following compiler flags impact the emission of GC instructions:
+
+- `--no-gc`: disables the garbage collector, allocations are still done via `malloc`
+- `--compilation-mode=runtime`: GC doesn't exist (so no GC instructions will be emitted); implicit allocations can't be reclaimed. See `runtime.md` for more details.
+
+These flags are typically used by placing something like this at the beginning of the file:
 
 ```grain
-/* grainc-flags --compilation-mode=runtime */
+/* grainc-flags --no-gc */
 ```
 
 When this flag is enabled, no functions in the file will be compiled with garbage collection instructions.
