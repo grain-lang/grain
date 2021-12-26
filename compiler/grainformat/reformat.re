@@ -1214,7 +1214,6 @@ and print_pattern =
             ~next_loc,
             ~comments,
             ~original_source,
-            ~is_block=true,
             patterns,
           ),
         ),
@@ -1231,7 +1230,6 @@ and print_pattern =
               ~next_loc,
               ~comments,
               ~original_source,
-              ~is_block=true,
               patterns,
             ),
             Doc.rbracket,
@@ -1257,7 +1255,6 @@ and print_pattern =
             ~next_loc,
             ~comments,
             ~original_source,
-            ~is_block=false,
             [pattern],
           ),
           Doc.text(":"),
@@ -1304,7 +1301,6 @@ and print_pattern =
                   ~next_loc,
                   ~comments,
                   ~original_source,
-                  ~is_block=false,
                   patterns,
                 ),
               )
@@ -1777,6 +1773,215 @@ and print_infix_application =
   };
 }
 
+and print_arg_lambda =
+    (~comments, ~original_source, lambda: Parsetree.expression) => {
+  switch (lambda.pexp_desc) {
+  | PExpLambda(patterns, expression) =>
+    let comments_in_expression =
+      Comment_utils.get_comments_inside_location(
+        ~location=expression.pexp_loc,
+        comments,
+      );
+    let raw_args =
+      print_patterns(
+        ~wrapper=lambda.pexp_loc,
+        ~next_loc=expression.pexp_loc,
+        ~comments,
+        ~original_source,
+        patterns,
+      );
+
+    let args =
+      Doc.group(
+        switch (patterns) {
+        | [] => Doc.concat([Doc.lparen, raw_args, Doc.rparen])
+        | [pat] =>
+          switch (pat.ppat_desc) {
+          | PPatVar(_) => raw_args
+          | _ => Doc.concat([Doc.lparen, raw_args, Doc.rparen])
+          }
+        | _patterns =>
+          Doc.concat([
+            Doc.lparen,
+            Doc.group(Doc.indent(Doc.concat([Doc.softLine, raw_args]))),
+            Doc.softLine,
+            Doc.rparen,
+          ])
+        },
+      );
+
+    let body =
+      switch (expression.pexp_desc) {
+      | PExpBlock(block_expressions) =>
+        switch (block_expressions) {
+        | [] =>
+          // Not legal syntax so we shouldn't ever hit it, but we'll handle
+          // it just in case.
+          Doc.group(Doc.concat([Doc.lbrace, Doc.rbrace]))
+        | _ =>
+          let get_loc = (expr: Parsetree.expression) => {
+            expr.pexp_loc;
+          };
+          let print_item = (expr: Parsetree.expression, comments) => {
+            Doc.group(print_expression(~original_source, ~comments, expr));
+          };
+          let after_brace_comments =
+            Comment_utils.get_after_brace_comments(
+              expression.pexp_loc,
+              comments,
+              None,
+            );
+          let cleaned_comments =
+            remove_used_comments(
+              ~all_comments=comments,
+              after_brace_comments,
+            );
+          let printed_expressions =
+            block_item_iterator(
+              ~previous=Block(expression.pexp_loc),
+              ~get_loc,
+              ~print_item,
+              ~comments=cleaned_comments,
+              ~get_attribute_text=
+                expr => print_attributes(expr.pexp_attributes),
+              ~original_source,
+              block_expressions,
+            );
+          let start_after_brace =
+            Doc.concat([
+              force_break_if_line_comment(after_brace_comments, Doc.softLine),
+              printed_expressions,
+            ]);
+          Doc.group(
+            Doc.concat([
+              Doc.lbrace,
+              Comment_utils.single_line_of_comments(after_brace_comments),
+              Doc.indent(start_after_brace),
+              Doc.softLine,
+              Doc.rbrace,
+            ]),
+          );
+        }
+      | PExpLambda(_) =>
+        Doc.group(
+          print_expression(
+            ~original_source,
+            ~comments=comments_in_expression,
+            expression,
+          ),
+        )
+      | _ =>
+        Doc.group(
+          print_expression(
+            ~original_source,
+            ~comments=comments_in_expression,
+            expression,
+          ),
+        )
+      };
+
+    Doc.concat([args, Doc.space, Doc.text("=>"), Doc.space, body]);
+
+  | _ => raise(Error(Illegal_parse("Called on a non-lambda")))
+  };
+}
+
+and print_arg = (arg: Parsetree.expression, ~original_source, ~comments) => {
+  Doc.group(
+    switch (arg.pexp_desc) {
+    | PExpLambda(patterns, expression) =>
+      print_arg_lambda(~comments, ~original_source, arg)
+    | _ => print_expression(~original_source, ~comments, arg)
+    },
+  );
+}
+
+and printArgumentsWithCallbackInFirstPosition =
+    (~original_source, ~comments, args: list(Parsetree.expression)) => {
+  switch (args) {
+  | [] => Doc.nil
+  | [callback, ...remainder] =>
+    let printed_callback =
+      Doc.customLayout([
+        print_arg_lambda(~comments, ~original_source, callback),
+      ]);
+    let printed_args =
+      switch (remainder) {
+      | [] => Doc.nil
+      | _ =>
+        Doc.concat([
+          Doc.comma,
+          Doc.line,
+          Doc.join(
+            Doc.concat([Doc.comma, Doc.line]),
+            List.map(print_arg(~comments, ~original_source), remainder),
+          ),
+        ])
+      };
+
+    if (Doc.willBreak(printed_args)) {
+      Doc.concat([
+        Doc.indent(
+          Doc.concat([
+            Doc.softLine,
+            Doc.group(printed_callback),
+            printed_args,
+          ]),
+        ),
+        Doc.softLine,
+      ]);
+    } else {
+      Doc.concat([Doc.group(printed_callback), printed_args]);
+    };
+  };
+}
+
+and printArgumentsWithCallbackInLastPosition =
+    (~original_source, ~comments, args: list(Parsetree.expression)) =>
+  switch (args) {
+  | [] => Doc.nil
+  | _ =>
+    let last_expression = List.nth(args, List.length(args) - 1);
+    let printed_callback =
+      Doc.customLayout([
+        print_arg_lambda(~comments, ~original_source, last_expression),
+      ]);
+
+    let remainderArr =
+      Array.sub(Array.of_list(args), 0, List.length(args) - 1);
+
+    let printed_args =
+      Doc.join(
+        Doc.concat([Doc.comma, Doc.line]),
+        List.map(
+          print_arg(~comments, ~original_source),
+          Array.to_list(remainderArr),
+        ),
+      );
+
+    if (Doc.willBreak(printed_args)) {
+      Doc.concat([
+        Doc.indent(
+          Doc.concat([
+            Doc.softLine,
+            printed_args,
+            Doc.comma,
+            Doc.line,
+            Doc.group(printed_callback),
+          ]),
+        ),
+        Doc.softLine,
+      ]);
+    } else {
+      Doc.concat([
+        printed_args,
+        Doc.comma,
+        Doc.line,
+        Doc.group(printed_callback),
+      ]);
+    };
+  }
+
 and print_other_application =
     (
       ~expressions: list(Parsetree.expression),
@@ -1827,116 +2032,75 @@ and print_other_application =
         print_expression(~original_source, ~comments, first_expr),
       ]);
     } else {
-      Doc.group(
+      // standard function application
+      // look out for special cases of callbacks in first or last position
+
+      let first_arg_is_callback =
         switch (expressions) {
-        | [] =>
-          Doc.concat([
-            print_expression(~original_source, ~comments, func),
-            Doc.lparen,
-            Doc.rparen,
-          ])
+        | [first, ..._] =>
+          switch (first.pexp_desc) {
+          | PExpLambda(_) => true
+          | _ => false
+          }
+        | _ => false
+        };
+
+      let last_arg_is_callback =
+        switch (expressions) {
+        | [] => false
         | _ =>
-          let body =
-            Doc.concat([
-              Doc.softLine,
-              Doc.join(
-                Doc.concat([Doc.comma, Doc.line]),
-                List.map(
-                  (e: Parsetree.expression) =>
-                    Doc.group(
-                      switch (e.pexp_desc) {
-                      | PExpLambda(patterns, expression) =>
-                        let comments_in_expression =
-                          Comment_utils.get_comments_inside_location(
-                            ~location=expression.pexp_loc,
-                            comments,
-                          );
-                        let raw_args =
-                          print_patterns(
-                            ~wrapper=e.pexp_loc,
-                            ~next_loc=expression.pexp_loc,
-                            ~comments,
-                            ~original_source,
-                            ~is_block=false,
-                            patterns,
-                          );
+          let last_expression =
+            List.nth(expressions, List.length(expressions) - 1);
 
-                        let args =
-                          switch (patterns) {
-                          | [] =>
-                            Doc.concat([Doc.lparen, raw_args, Doc.rparen])
-                          | [pat] =>
-                            switch (pat.ppat_desc) {
-                            | PPatVar(_) => raw_args
-                            | _ =>
-                              Doc.concat([Doc.lparen, raw_args, Doc.rparen])
-                            }
-                          | _patterns =>
-                            Doc.group(
-                              Doc.concat([
-                                Doc.lparen,
-                                Doc.indent(
-                                  Doc.concat([Doc.softLine, raw_args]),
-                                ),
-                                Doc.softLine,
-                                Doc.rparen,
-                              ]),
-                            )
-                          };
+          switch (last_expression.pexp_desc) {
+          | PExpLambda(_) => true
+          | _ => false
+          };
+        };
 
-                        switch (expression.pexp_desc) {
-                        | PExpBlock(_)
-                        | PExpLambda(_) =>
-                          Doc.concat([
-                            Doc.group(args),
-                            Doc.space,
-                            Doc.text("=>"),
-                            Doc.space,
-                            print_expression(
-                              ~original_source,
-                              ~comments=comments_in_expression,
-                              expression,
-                            ),
-                          ])
+      if (first_arg_is_callback) {
+        let printed_args =
+          printArgumentsWithCallbackInFirstPosition(
+            ~original_source,
+            ~comments,
+            expressions,
+          );
+        Doc.concat([
+          print_expression(~original_source, ~comments, func),
+          Doc.lparen,
+          printed_args,
+          Doc.rparen,
+        ]);
+      } else if (last_arg_is_callback) {
+        let printed_args =
+          printArgumentsWithCallbackInLastPosition(
+            ~original_source,
+            ~comments,
+            expressions,
+          );
+        Doc.concat([
+          print_expression(~original_source, ~comments, func),
+          Doc.lparen,
+          printed_args,
+          Doc.rparen,
+        ]);
+      } else {
+        let printed_args =
+          Doc.join(
+            Doc.concat([Doc.comma, Doc.line]),
+            List.map(print_arg(~comments, ~original_source), expressions),
+          );
 
-                        | _ =>
-                          Doc.concat([
-                            Doc.group(args),
-                            Doc.space,
-                            Doc.text("=>"),
-                            Doc.indent(
-                              Doc.concat([
-                                Doc.line,
-                                print_expression(
-                                  ~original_source,
-                                  ~comments=comments_in_expression,
-                                  expression,
-                                ),
-                              ]),
-                            ),
-                          ])
-                        };
-                      | _ =>
-                        Doc.group(
-                          print_expression(~original_source, ~comments, e),
-                        )
-                      },
-                    ),
-                  expressions,
-                ),
-              ),
-              Doc.ifBreaks(Doc.comma, Doc.nil),
-            ]);
-
+        Doc.group(
           Doc.concat([
             print_expression(~original_source, ~comments, func),
             Doc.lparen,
-            Doc.indent(body),
+            Doc.indent(Doc.concat([Doc.softLine, printed_args])),
             Doc.softLine,
             Doc.rparen,
-          ]);
-        },
-      );
+          ]),
+        );
+      };
     }
   };
 }
@@ -1987,7 +2151,6 @@ and print_patterns =
       ~next_loc: Location.t,
       ~comments: list(Parsetree.comment),
       ~original_source: array(string),
-      ~is_block: bool,
       patterns: list(Parsetree.pattern),
     ) => {
   let get_loc = (p: Parsetree.pattern) => p.ppat_loc;
@@ -2025,7 +2188,6 @@ and paren_wrap_patterns =
       ~next_loc,
       ~comments,
       ~original_source,
-      ~is_block=false,
       patterns,
     );
 
@@ -4022,5 +4184,93 @@ let reformat_ast =
 
   let final_doc = Doc.concat([top_level_stmts, Doc.hardLine]);
 
+  // let args =
+  //   Doc.concat([
+  //     Doc.text("position"),
+  //     Doc.comma,
+  //     Doc.line,
+  //     // Doc.text("position2"),
+  //     // Doc.comma,
+  //     // Doc.line,
+  //     // Doc.text("position2position2"),
+  //     // Doc.comma,
+  //     // Doc.line,
+  //     // Doc.text("position2position2"),
+  //     // Doc.comma,
+  //     // Doc.line,
+  //     // Doc.text("position2"),
+  //     // Doc.comma,
+  //     // Doc.line,
+  //     // Doc.text("position2position2"),
+  //     // Doc.comma,
+  //     // Doc.line,
+  //     Doc.text("index"),
+  //     Doc.space,
+  //     Doc.text("=>"),
+  //     Doc.space,
+  //     // Doc.breakParent,
+  //     Doc.customLayout([
+  //       Doc.group(
+  //         Doc.concat([
+  //           Doc.lbrace,
+  //           // Doc.indent(
+  //           //   Doc.concat([
+  //           //     Doc.line,
+  //           Doc.group(
+  //             Doc.concat([
+  //               Doc.text("filtered[index]"),
+  //               // Doc.hardLine,
+  //               // Doc.text("true"),
+  //             ]),
+  //           ),
+  //           //   ]),
+  //           // ),
+  //           // Doc.line,
+  //           Doc.rbrace,
+  //         ]),
+  //       ),
+  //     ]),
+  //   ]);
+
+  // let final_doc =
+  //   Doc.group(
+  //     Doc.concat([
+  //       Doc.text("init2"),
+  //       Doc.lparen,
+  //       args,
+  //       // Doc.comma,
+  //       // Doc.space,
+  //       // Doc.text("position4"),
+  //       Doc.rparen,
+  //     ]),
+  //   );
+
+  // if (Doc.willBreak(args)) {
+  //   print_endline("Args Will break");
+  // } else {
+  //   print_endline("Args Will not break");
+  // };
+
   Doc.toString(~width=80, final_doc);
 };
+
+// init2(position, index => {
+//   filtered[index]
+//   true
+//   })
+
+// init3(
+//   index => {
+//     filtered[index];
+//     true;
+//   },
+//   positions,
+// );
+
+// init2(
+//   position,
+//   index => {
+//     filtered[index];
+//     true;
+//   },
+// );

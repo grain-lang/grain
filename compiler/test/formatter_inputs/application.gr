@@ -49,3 +49,14 @@ let preEmatch = Map.make(): (Map.Map<Number, (Number,Number,Number,Number)>)
 let preExistingObjectsch2 = Map.make(): (Map.Map<Number, (Number,Number)>)
 
 let preExistingObjectsWithRefCountMismatch2 = Map.make(): (Map.Map<Number, (Number,Number,Number,Number,Number,Number,Number,Number,Number,Number,Number)>)
+
+init(position, index => {filtered[index]});
+
+forEach(
+  el =>
+    if (fn(el)) {
+      filtered[position] = el;
+      position += 1;
+    },
+  array,
+);
