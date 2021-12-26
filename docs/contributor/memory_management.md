@@ -41,7 +41,7 @@ export let getFreePtr = () => WasmI32
 
 These functions should be familiar to programmers who have used `malloc` and `free` in C (and C-like languages). For further reading, refer to this Wikipedia page: [C dynamic memory allocation](https://en.wikipedia.org/wiki/C_dynamic_memory_allocation). The semantics of these functions align near-identically with those of C's corresponding functions.
 
-Users should not call these functions directly in 99% of circumstances, and should instead use the `GC` module's wrappers (described below).
+These functions generally should not be called directly in 99% of circumstances, and the `GC` module's wrappers should be used instead (described below).
 
 ## Garbage Collector
 
