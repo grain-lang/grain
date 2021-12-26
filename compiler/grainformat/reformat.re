@@ -319,7 +319,6 @@ let rec block_item_iterator_line =
   switch (items) {
   | [] => Doc.nil
   | [item, ...remainder] =>
-    // let attribute_text = get_attribute_text(item);
     let leading_comments =
       switch (previous) {
       | Block(prev_node) =>
@@ -734,7 +733,6 @@ let rec block_item_iterator =
   };
 };
 
-// this is the one we want
 let rec item_iterator =
         (
           ~previous: option(Location.t),
@@ -780,10 +778,6 @@ let rec item_iterator =
           this_line,
         );
 
-      // can switch on thest to reduce code
-      // also need to fix extra space - not needed after a line
-      // we alreay have code for this
-
       let after_comments_break =
         switch (trailing_comments) {
         | [] => Doc.nil
@@ -797,60 +791,52 @@ let rec item_iterator =
         };
 
       let this_item =
-        if (List.length(trailing_comments) > 0) {
+        switch (leading_comments, trailing_comments) {
+        | ([leading, ..._], [trailing, ..._]) =>
+          let last_comment =
+            List.nth(leading_comments, List.length(leading_comments) - 1);
+          let filler =
+            switch (last_comment) {
+            | Line(_) => Doc.nil
+            | _ => Doc.space
+            };
           Doc.concat([
-            if (List.length(leading_comments) > 0) {
-              let last_comment =
-                List.nth(
-                  leading_comments,
-                  List.length(leading_comments) - 1,
-                );
-              let filler =
-                switch (last_comment) {
-                | Line(_) => Doc.nil
-                | _ => Doc.space
-                };
-              Doc.concat([
-                Comment_utils.new_comments_to_docs(leading_comments),
-                filler,
-              ]);
-            } else {
-              Doc.nil;
-            },
+            Comment_utils.new_comments_to_docs(leading_comments),
+            filler,
             print_item(item, item_comments),
             separator,
-            Doc.concat([
-              bcb,
-              Comment_utils.block_trailing_comments_docs(trailing_comments),
-              after_comments_break,
-            ]),
-            // ),
+            bcb,
+            Comment_utils.block_trailing_comments_docs(trailing_comments),
+            after_comments_break,
           ]);
-        } else {
+        | ([leading, ..._], []) =>
+          let last_comment =
+            List.nth(leading_comments, List.length(leading_comments) - 1);
+          let filler =
+            switch (last_comment) {
+            | Line(_) => Doc.nil
+            | _ => Doc.space
+            };
           Doc.concat([
-            if (List.length(leading_comments) > 0) {
-              let last_comment =
-                List.nth(
-                  leading_comments,
-                  List.length(leading_comments) - 1,
-                );
-              let filler =
-                switch (last_comment) {
-                | Line(_) => Doc.nil
-                | _ => Doc.space
-                };
-              Doc.concat([
-                //   bcb,
-                Comment_utils.new_comments_to_docs(leading_comments),
-                filler,
-              ]);
-            } else {
-              Doc.nil;
-            },
+            Comment_utils.new_comments_to_docs(leading_comments),
+            filler,
             print_item(item, item_comments),
             separator,
           ]);
+
+        | ([], [trailing, ..._]) =>
+          Doc.concat([
+            print_item(item, item_comments),
+            separator,
+            bcb,
+            Comment_utils.block_trailing_comments_docs(trailing_comments),
+            after_comments_break,
+          ])
+
+        | ([], []) =>
+          Doc.concat([print_item(item, item_comments), separator])
         };
+
       [
         this_item,
         ...item_iterator(
@@ -879,27 +865,18 @@ let rec item_iterator =
           this_line,
         );
       let this_item =
-        if (List.length(trailing_comments) > 0) {
+        switch (leading_comments, trailing_comments) {
+        | ([leading, ..._], [trailing, ..._]) =>
+          let last_comment =
+            List.nth(leading_comments, List.length(leading_comments) - 1);
+          let filler =
+            switch (last_comment) {
+            | Line(_) => Doc.nil
+            | _ => Doc.space
+            };
           Doc.concat([
-            if (List.length(leading_comments) > 0) {
-              let last_comment =
-                List.nth(
-                  leading_comments,
-                  List.length(leading_comments) - 1,
-                );
-              let filler =
-                switch (last_comment) {
-                | Line(_) => Doc.nil
-                | _ => Doc.space
-                };
-              Doc.concat([
-                //   bcb,
-                Comment_utils.new_comments_to_docs(leading_comments),
-                filler,
-              ]);
-            } else {
-              Doc.nil;
-            },
+            Comment_utils.new_comments_to_docs(leading_comments),
+            filler,
             print_item(item, item_comments),
             Doc.lineSuffix(
               Doc.concat([
@@ -908,29 +885,33 @@ let rec item_iterator =
               ]),
             ),
           ]);
-        } else {
+
+        | ([leading, ..._], []) =>
+          let last_comment =
+            List.nth(leading_comments, List.length(leading_comments) - 1);
+          let filler =
+            switch (last_comment) {
+            | Line(_) => Doc.nil
+            | _ => Doc.space
+            };
           Doc.concat([
-            if (List.length(leading_comments) > 0) {
-              let last_comment =
-                List.nth(
-                  leading_comments,
-                  List.length(leading_comments) - 1,
-                );
-              let filler =
-                switch (last_comment) {
-                | Line(_) => Doc.nil
-                | _ => Doc.space
-                };
-              Doc.concat([
-                //   bcb,
-                Comment_utils.new_comments_to_docs(leading_comments),
-                filler,
-              ]);
-            } else {
-              Doc.nil;
-            },
+            Comment_utils.new_comments_to_docs(leading_comments),
+            filler,
             print_item(item, item_comments),
           ]);
+
+        | ([], [trailing, ..._]) =>
+          Doc.concat([
+            print_item(item, item_comments),
+            Doc.lineSuffix(
+              Doc.concat([
+                bcb,
+                Comment_utils.block_trailing_comments_docs(trailing_comments),
+              ]),
+            ),
+          ])
+
+        | ([], []) => print_item(item, item_comments)
         };
       [
         this_item,
@@ -989,11 +970,7 @@ let rec resugar_list_patterns =
     );
   let printed_patterns = Doc.join(Doc.line, items);
   let printed_patterns_after_bracket =
-    Doc.concat([
-      //  force_break_if_line_comment(after_bracket_comments, Doc.softLine),
-      Doc.softLine,
-      printed_patterns,
-    ]);
+    Doc.concat([Doc.softLine, printed_patterns]);
 
   Doc.group(
     Doc.concat([
@@ -1098,16 +1075,8 @@ and resugar_list =
 }
 
 and resugar_list_inner = (expressions: list(Parsetree.expression)) =>
-  if (List.length(expressions) < 2) {
-    // Grain syntax makes it impossible to construct a list cons without
-    // two arguments, but we'll check just to make sure
-    raise(
-      Error(Illegal_parse("List cons should always have two expressions")),
-    );
-  } else {
-    let arg1 = List.nth(expressions, 0);
-    let arg2 = List.nth(expressions, 1);
-
+  switch (expressions) {
+  | [arg1, arg2] =>
     switch (arg2.pexp_desc) {
     | PExpApp(innerfunc, innerexpressions) =>
       let func_name = get_function_name(innerfunc);
@@ -1124,7 +1093,13 @@ and resugar_list_inner = (expressions: list(Parsetree.expression)) =>
       } else {
         [Regular(arg1), Spread(arg2)];
       }
-    };
+    }
+  | _ =>
+    // Grain syntax makes it impossible to construct a list cons without
+    // two arguments, but we'll check just to make sure
+    raise(
+      Error(Illegal_parse("List cons should always have two expressions")),
+    )
   }
 
 and check_for_pattern_pun = (pat: Parsetree.pattern) =>
@@ -1485,11 +1460,11 @@ and print_record =
         printed_fields_after_brace,
         Doc.ifBreaks(
           Doc.comma,
-          if (List.length(fields) == 1) {
+          switch (fields) {
+          | [_one] =>
             // TODO: not needed once we annotate with ::
-            Doc.comma; //  append a comma as single argument record look like block {data:val}
-          } else {
-            Doc.nil;
+            Doc.comma //  append a comma as single argument record look like block {data:val}
+          | _ => Doc.nil
           },
         ),
       ]),
@@ -1573,11 +1548,9 @@ and print_type =
               parsed_types,
             ),
           ),
-          if (List.length(parsed_types) == 1) {
-            // single arg tuple
-            Doc.comma;
-          } else {
-            Doc.nil;
+          switch (parsed_types) {
+          | [_one] => Doc.comma
+          | _ => Doc.nil
           },
         ]),
       ),
@@ -1628,7 +1601,6 @@ and print_type =
           Doc.text("<"),
           Comment_utils.single_line_of_comments(after_angle_comments),
           Doc.indent(Doc.group(printed_types_after_angle)),
-          // Doc.ifBreaks(Doc.comma, Doc.nil),
           Doc.softLine,
           Doc.text(">"),
         ]),
@@ -1842,6 +1814,8 @@ and print_other_application =
 
   | [first, second] when infixop(function_name) =>
     print_infix_application(~expressions, ~original_source, ~comments, func)
+  | _ when infixop(function_name) =>
+    raise(Error(Illegal_parse("Formatter error, wrong number of args ")))
   | _ =>
     if (function_name == list_cons) {
       resugar_list(~original_source, ~comments, expressions);
@@ -1966,183 +1940,6 @@ and print_other_application =
     }
   };
 }
-
-// and print_other_application =
-//     (
-//       ~expressions: list(Parsetree.expression),
-//       ~original_source: array(string),
-//       ~comments: list(Parsetree.comment),
-//       func: Parsetree.expression,
-//     ) => {
-//   let function_name = get_function_name(func);
-
-//   switch (expressions) {
-//   | [first] when prefixop(function_name) =>
-//     switch (first.pexp_desc) {
-//     | PExpApp(fn, _) =>
-//       let inner_fn = get_function_name(fn);
-//       if (infixop(inner_fn)) {
-//         Doc.concat([
-//           Doc.text(function_name),
-//           Doc.lparen,
-//           Doc.group(print_expression(~original_source, ~comments, first)),
-//           Doc.rparen,
-//         ]);
-//       } else {
-//         Doc.concat([
-//           Doc.text(function_name),
-//           Doc.group(print_expression(~original_source, ~comments, first)),
-//         ]);
-//       };
-
-//     | _ =>
-//       Doc.concat([
-//         Doc.text(function_name),
-//         Doc.group(print_expression(~original_source, ~comments, first)),
-//       ])
-//     }
-
-//   | [first, second] when infixop(function_name) =>
-//     raise(
-//       Error(
-//         Illegal_parse("Should not be processing an infix operator here "),
-//       ),
-//     )
-//   | _ =>
-//     if (function_name == list_cons) {
-//       resugar_list(~original_source, ~comments, expressions);
-//     } else if (Array.exists(fn => function_name == fn, exception_primitives)) {
-//       let first_expr = List.hd(expressions);
-//       Doc.concat([
-//         print_expression(~original_source, ~comments, func),
-//         Doc.space,
-//         print_expression(~original_source, ~comments, first_expr),
-//       ]);
-//     } else {
-//       Doc.group(
-//         switch (expressions) {
-//         | [] =>
-//           Doc.concat([
-//             print_expression(~original_source, ~comments, func),
-//             Doc.lparen,
-//             Doc.rparen,
-//           ])
-//         | _ =>
-//           let lam = List.hd(expressions);
-
-//           switch (lam.pexp_desc) {
-//           | PExpLambda(patterns, expression) =>
-//             let comments_in_expression =
-//               Comment_utils.get_comments_inside_location(
-//                 ~location=expression.pexp_loc,
-//                 comments,
-//               );
-
-//             // let patterns_comments =
-//             //   Comment_utils.get_comments_enclosed_and_before_location(
-//             //     ~loc1=expr.pexp_loc,
-//             //     ~loc2=expression.pexp_loc,
-//             //     comments,
-//             //   );
-
-//             // let args = Doc.text("(args)");
-//             // paren_wrap_patterns(
-//             //   ~wrapper=expr.pexp_loc,
-//             //   ~next_loc=expression.pexp_loc,
-//             //   ~comments=patterns_comments,
-//             //   ~original_source,
-//             //   patterns,
-//             // );
-
-//             let raw_args =
-//               print_patterns(
-//                 ~wrapper=lam.pexp_loc,
-//                 ~next_loc=expression.pexp_loc,
-//                 ~comments,
-//                 ~original_source,
-//                 ~is_block=false,
-//                 patterns,
-//               );
-
-//             let args =
-//               Doc.concat([
-//                 Doc.lparen,
-//                 Doc.indent(Doc.concat([Doc.softLine, raw_args])),
-//                 Doc.softLine,
-//                 Doc.rparen,
-//               ]);
-
-//             switch (expression.pexp_desc) {
-//             | PExpBlock(_)
-//             | PExpLambda(_) =>
-//               Doc.concat([
-//                 Doc.group(
-//                   Doc.concat([args, Doc.space, Doc.text("=>"), Doc.space]),
-//                 ),
-//                 print_expression(
-//                   ~original_source,
-//                   ~comments=comments_in_expression,
-//                   expression,
-//                 ),
-//               ])
-//             | _ =>
-//               Doc.concat([
-//                 args,
-//                 Doc.space,
-//                 Doc.text("=>"),
-//                 Doc.indent(
-//                   Doc.concat([
-//                     Doc.line,
-//                     print_expression(
-//                       ~original_source,
-//                       ~comments=comments_in_expression,
-//                       expression,
-//                     ),
-//                   ]),
-//                 ),
-//               ])
-//             };
-//           | _ =>
-//             let needs_indent = ref(true);
-//             let body =
-//               Doc.concat([
-//                 Doc.softLine,
-//                 Doc.join(
-//                   Doc.concat([Doc.comma, Doc.line]),
-//                   List.map(
-//                     (e: Parsetree.expression) =>
-//                       switch (e.pexp_desc) {
-//                       | PExpLambda(_, {pexp_desc: PExpBlock(_)}) =>
-//                         needs_indent := false;
-//                         Doc.group(
-//                           Doc.customLayout([
-//                             print_expression(~original_source, ~comments, e),
-//                           ]),
-//                         );
-//                       | _ =>
-//                         Doc.group(
-//                           print_expression(~original_source, ~comments, e),
-//                         )
-//                       },
-//                     expressions,
-//                   ),
-//                 ),
-//                 Doc.ifBreaks(Doc.comma, Doc.nil),
-//               ]);
-
-//             Doc.concat([
-//               print_expression(~original_source, ~comments, func),
-//               Doc.lparen,
-//               needs_indent^ ? Doc.indent(body) : body,
-//               Doc.softLine,
-//               Doc.rparen,
-//             ]);
-//           };
-//         },
-//       );
-//     }
-//   };
-// }
 
 and get_function_name = (expr: Parsetree.expression) => {
   switch (expr.pexp_desc) {
@@ -2307,10 +2104,9 @@ and print_expression =
           Doc.indent(printed_expr_items_after_paren),
           Doc.ifBreaks(
             Doc.comma,
-            if (List.length(expressions) == 1) {
-              Doc.comma;
-            } else {
-              Doc.nil;
+            switch (expressions) {
+            | [_one] => Doc.comma
+            | _ => Doc.nil
             },
           ),
           Doc.softLine,
@@ -2415,9 +2211,6 @@ and print_expression =
           Doc.rparen,
         ]);
 
-      // let (_, bracket_line, _, _) =
-      //   Locations.get_raw_pos_info(expression.pexp_loc.loc_end);
-
       let get_loc = (branch: Parsetree.match_branch) => {
         branch.pmb_loc;
       };
@@ -2454,7 +2247,6 @@ and print_expression =
               Doc.concat([
                 Doc.space,
                 Doc.text("=>"),
-                // Doc.group(
                 switch (branch.pmb_body.pexp_desc) {
                 | PExpBlock(expressions) =>
                   Doc.concat([
@@ -3342,7 +3134,7 @@ and print_value_bind =
           ~separator=Doc.comma,
           vbs,
         );
-      Doc.join(Doc.concat([Doc.space]), items);
+      Doc.join(Doc.space, items);
     };
 
   Doc.group(
@@ -3371,7 +3163,7 @@ let rec print_data =
       print_type(~original_source, ~comments, ~trailing_separator=false, t);
     };
 
-    // weird comment position after the equals
+    // handle weird comment position after the equals
     let after_brace_comments =
       switch (data.pdata_params) {
       | [] =>
@@ -3630,7 +3422,6 @@ let rec print_data =
               Doc.text("<"),
               Comment_utils.single_line_of_comments(after_angle_comments),
               Doc.indent(printed_data_params_after_angle),
-              // Doc.ifBreaks(Doc.comma, Doc.nil),
               Doc.softLine,
               Doc.text(">"),
               Doc.space,
@@ -3741,7 +3532,6 @@ let rec print_data =
               Doc.text("<"),
               Comment_utils.single_line_of_comments(after_angle_comments),
               Doc.indent(printed_params_after_angle),
-              // Doc.ifBreaks(Doc.comma, Doc.nil),
               Doc.softLine,
               Doc.text(">"),
               Doc.space,
@@ -3751,12 +3541,7 @@ let rec print_data =
         Doc.concat([
           Doc.lbrace,
           Comment_utils.single_line_of_comments(after_brace_comments),
-          Doc.indent(
-            // Doc.concat([
-            //   force_break_if_line_comment(after_brace_comments, Doc.line),
-            printed_decls_after_brace,
-            //  ]),
-          ),
+          Doc.indent(printed_decls_after_brace),
           Doc.ifBreaks(Doc.comma, Doc.nil),
           Doc.line,
           Doc.rbrace,
