@@ -74,9 +74,10 @@ let resize = set => {
     // This tracks the tail nodes so we can set their `next` to None
     let tailNodes = Array.make(nextSize, None)
     set.buckets = nextBuckets
-    Array.forEach(old => {
-      copyNodeWithNewHash(old, nextBuckets, tailNodes)
-    }, currentBuckets)
+    Array.forEach(
+      old => {copyNodeWithNewHash(old, nextBuckets, tailNodes)},
+      currentBuckets
+    )
     Array.forEach(tail => {
       match (tail) {
         None => void,
