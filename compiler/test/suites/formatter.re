@@ -5,6 +5,7 @@ describe("formatter", ({test}) => {
   let assertFormatOutput = makeFormatterRunner(test);
   assertFormatOutput("aliases", "aliases");
   assertFormatOutput("application", "application");
+  assertFormatOutput("application2", "application2");
   assertFormatOutput("function_params", "function_params");
   assertFormatOutput("variants", "variants");
   assertFormatOutput("matches", "matches");
