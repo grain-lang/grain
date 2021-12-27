@@ -1919,12 +1919,27 @@ and printArgumentsWithCallbackInFirstPosition =
       print_arg_lambda(~comments, ~original_source, callback);
     let printed_arg = print_arg(~comments, ~original_source, expr);
 
-    Doc.concat([
-      Doc.group(printed_callback),
-      Doc.comma,
-      Doc.space,
-      printed_arg,
-    ]);
+    if (Doc.willBreak(printed_callback)) {
+      Doc.concat([
+        Doc.group(printed_callback),
+        Doc.comma,
+        Doc.space,
+        printed_arg,
+      ]);
+    } else {
+      Doc.concat([
+        Doc.indent(
+          Doc.concat([
+            Doc.softLine,
+            Doc.group(printed_callback),
+            Doc.comma,
+            Doc.line,
+            printed_arg,
+          ]),
+        ),
+        Doc.softLine,
+      ]);
+    };
   | [callback, ...remainder] =>
     let printed_callback =
       print_arg_lambda(~comments, ~original_source, callback);
