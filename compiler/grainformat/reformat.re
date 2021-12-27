@@ -2161,7 +2161,7 @@ and check_for_pun = (expr: Parsetree.expression) =>
   | _ => Doc.nil
   }
 
-and print_attributes = (attributes: list(Location.loc(string))) =>
+and print_attributes = attributes =>
   switch (attributes) {
   | [] => Doc.nil
   | _ =>
