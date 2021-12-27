@@ -14,7 +14,7 @@ type global_flag =
 type loc('a) = Location.loc('a);
 
 [@deriving sexp]
-type attributes = Asttypes.attributes;
+type attributes = Typedtree.attributes;
 
 type analysis = ..;
 

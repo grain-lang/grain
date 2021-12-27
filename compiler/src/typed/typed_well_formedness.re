@@ -26,14 +26,7 @@ let exp_is_wasm_unsafe = ({exp_type: {desc}}) => {
 };
 
 let is_marked_disable_gc = attrs => {
-  List.exists(
-    ({txt}) =>
-      switch (txt) {
-      | "disableGC" => true
-      | _ => false
-      },
-    attrs,
-  );
+  List.mem(Disable_gc, attrs);
 };
 
 let make_bool_stack = () => {

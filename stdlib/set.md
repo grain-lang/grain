@@ -249,7 +249,7 @@ Parameters:
 |-----|----|-----------|
 |`fn`|`(a, b) -> a`|The reducer function to call on each element, where the value returned will be the next accumulator value|
 |`init`|`a`|The initial value to use for the accumulator on the first iteration|
-|`set`|`Set<a>`|The set to iterate|
+|`set`|`Set<b>`|The set to iterate|
 
 Returns:
 

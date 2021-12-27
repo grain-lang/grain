@@ -1,5 +1,39 @@
 # Changelog
 
+### [0.4.5](https://www.github.com/grain-lang/grain/compare/grain-v0.4.4...grain-v0.4.5) (2021-12-11)
+
+
+### Features
+
+* **compiler:** Allow [@external](https://www.github.com/external)Name attribute for foreign names ([#1060](https://www.github.com/grain-lang/grain/issues/1060)) ([f4c1311](https://www.github.com/grain-lang/grain/commit/f4c13115ef2eb589f035c31370e56a12bdc2e10c))
+* **compiler:** Allow a newline character before a match guard ([#1063](https://www.github.com/grain-lang/grain/issues/1063)) ([bf41a9c](https://www.github.com/grain-lang/grain/commit/bf41a9cf585c63eb2482c7d94d9c615428bc8435))
+* **stdlib:** Add reverse function to String module ([#1027](https://www.github.com/grain-lang/grain/issues/1027)) ([df761db](https://www.github.com/grain-lang/grain/commit/df761db55b3e14e31190090ae008ce5047135c09))
+* **stdlib:** Add rotate function in Array module ([#838](https://www.github.com/grain-lang/grain/issues/838)) ([98fc577](https://www.github.com/grain-lang/grain/commit/98fc577ee754317cd2421bfaa8e3c1e049488949))
+* **stdlib:** Add sort function to Array module ([#1012](https://www.github.com/grain-lang/grain/issues/1012)) ([9091930](https://www.github.com/grain-lang/grain/commit/9091930344224925bb7b2e1ef6f879c79a5c2f62))
+* **stdlib:** Implement List.sort via mergesort ([#1014](https://www.github.com/grain-lang/grain/issues/1014)) ([a076e20](https://www.github.com/grain-lang/grain/commit/a076e200013114ccf16c2e6cbe814af1ec09c1ce))
+* **stdlib:** Number.parseInt ([#1051](https://www.github.com/grain-lang/grain/issues/1051)) ([abafb58](https://www.github.com/grain-lang/grain/commit/abafb587e54219a32ed77ba09863bb2d6a80bac8))
+
+
+### Bug Fixes
+
+* **compiler:** Allow modules to re-export imported types containing generics ([#1019](https://www.github.com/grain-lang/grain/issues/1019)) ([003cb1e](https://www.github.com/grain-lang/grain/commit/003cb1e10ca51c3f16d2155581eb8dccdde3ce5c))
+* **compiler:** Consider invalid CMIs as out of date and recompile ([#1061](https://www.github.com/grain-lang/grain/issues/1061)) ([80da3a9](https://www.github.com/grain-lang/grain/commit/80da3a9667020e4f5f855a0b9da8286508a07275))
+* **compiler:** Fix binop operator reported location ([#1018](https://www.github.com/grain-lang/grain/issues/1018)) ([422dbcb](https://www.github.com/grain-lang/grain/commit/422dbcb01cd09627c6a5f4494cc7c2e7644e92f0))
+* **compiler:** Fix counting of stack size ([#1066](https://www.github.com/grain-lang/grain/issues/1066)) ([f1b3e51](https://www.github.com/grain-lang/grain/commit/f1b3e51580062da9b7e42ec36eb9880b71375cb9))
+* **compiler:** Fix error message when trying to export a constructor ([#1055](https://www.github.com/grain-lang/grain/issues/1055)) ([54ddb67](https://www.github.com/grain-lang/grain/commit/54ddb671745b554eacc8640b1337a46f423b1cc5))
+* **compiler:** Fix memory leaks when loading from heap values ([#1038](https://www.github.com/grain-lang/grain/issues/1038)) ([7d3402d](https://www.github.com/grain-lang/grain/commit/7d3402db09b6e4e24e49d168e8ddd49044a98df1))
+* **compiler:** Properly apply bindings when executing match guard ([#1039](https://www.github.com/grain-lang/grain/issues/1039)) ([121644b](https://www.github.com/grain-lang/grain/commit/121644be48e66ea1a7ce884ea816fe9af223442c))
+* **compiler:** Remove <id></id> from default ident printer ([#1056](https://www.github.com/grain-lang/grain/issues/1056)) ([49cd5a0](https://www.github.com/grain-lang/grain/commit/49cd5a08e5d9b2753b47af324b7fb90f4a98b339))
+* **graindoc:** Ensure value_description is resolved to outcome before printing ([#1070](https://www.github.com/grain-lang/grain/issues/1070)) ([5eb05cc](https://www.github.com/grain-lang/grain/commit/5eb05cc2dedc3b933e194be86dd5d3c3656d6490))
+* **grainfmt:** Handle recursive enums ([7dc77cd](https://www.github.com/grain-lang/grain/commit/7dc77cd3ec28745dfad6cdbd1551c09a82a1ba6b))
+* **grainfmt:** Resugar match lists properly ([7dc77cd](https://www.github.com/grain-lang/grain/commit/7dc77cd3ec28745dfad6cdbd1551c09a82a1ba6b))
+* **stdlib:** Add bounds checking to Buffer addStringSlice & addBytesSlice ([#1065](https://www.github.com/grain-lang/grain/issues/1065)) ([06fe512](https://www.github.com/grain-lang/grain/commit/06fe512e863aeeb855ccf3e3b83bcd3bc8854723))
+* **stdlib:** Fix String.encode GC ([#1067](https://www.github.com/grain-lang/grain/issues/1067)) ([0ab38c9](https://www.github.com/grain-lang/grain/commit/0ab38c9f4aa0ee84688ba5c6bec1521b380d38b1))
+* **stdlib:** Removed memory leak in Hash module ([#1045](https://www.github.com/grain-lang/grain/issues/1045)) ([01a81c6](https://www.github.com/grain-lang/grain/commit/01a81c6a2573cca94b2d57d0fc70693d39f810a1))
+* **stdlib:** Removed memory leaks in Buffer module ([#1047](https://www.github.com/grain-lang/grain/issues/1047)) ([d33017b](https://www.github.com/grain-lang/grain/commit/d33017b37e988d3facbca2e30e3de4fb8c7b5b8a))
+* **stdlib:** Support arrays of any type in Array rotate ([#1048](https://www.github.com/grain-lang/grain/issues/1048)) ([3ceb1cf](https://www.github.com/grain-lang/grain/commit/3ceb1cf04c1604f49077e8733dcccb6cdaaf9f3a))
+* **stdlib:** Support empty arrays in Array rotate ([3ceb1cf](https://www.github.com/grain-lang/grain/commit/3ceb1cf04c1604f49077e8733dcccb6cdaaf9f3a))
+
 ### [0.4.4](https://www.github.com/grain-lang/grain/compare/grain-v0.4.3...grain-v0.4.4) (2021-10-27)
 
 

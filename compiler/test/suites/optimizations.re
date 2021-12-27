@@ -398,7 +398,7 @@ describe("optimizations", ({test}) => {
             foo,
             Comp.lambda(
               ~name=Ident.name(foo),
-              ~attributes=[Grain_parsing.Asttypes.mknoloc("disableGC")],
+              ~attributes=[Disable_gc],
               [
                 (arg, HeapAllocated),
                 (arg, HeapAllocated),
@@ -472,7 +472,7 @@ describe("optimizations", ({test}) => {
             foo,
             Comp.lambda(
               ~name=Ident.name(foo),
-              ~attributes=[Grain_parsing.Asttypes.mknoloc("disableGC")],
+              ~attributes=[Disable_gc],
               [],
               (
                 AExp.seq(
@@ -553,7 +553,7 @@ describe("optimizations", ({test}) => {
             foo,
             Comp.lambda(
               ~name=Ident.name(foo),
-              ~attributes=[Grain_parsing.Asttypes.mknoloc("disableGC")],
+              ~attributes=[Disable_gc],
               [],
               (
                 AExp.seq(

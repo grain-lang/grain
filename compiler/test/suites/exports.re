@@ -70,6 +70,11 @@ describe("exports", ({test}) => {
     "import * from \"exportStar\"; y(secret)",
     "Unbound value secret",
   );
+  assertCompileError(
+    "export10",
+    "enum Foo { Bar }; export Bar",
+    "Unbound type constructor",
+  );
 
   assertSnapshot("let_rec_export", "export let rec foo = () => 5");
   assertHasExport(

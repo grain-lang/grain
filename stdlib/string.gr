@@ -1124,14 +1124,14 @@ let rec encodeAtHelp = (string: String, encoding: Encoding, includeBom: Bool, de
     }
   }
 
-  let ret = WasmI32.toGrain(bytes): Bytes
   Memory.decRef(WasmI32.fromGrain(string))
   Memory.decRef(WasmI32.fromGrain(encoding))
   Memory.decRef(WasmI32.fromGrain(includeBom))
-  Memory.decRef(WasmI32.fromGrain(dest))
   Memory.decRef(WasmI32.fromGrain(destPos))
   Memory.decRef(WasmI32.fromGrain(encodeAtHelp))
-  ret
+
+  // We don't decRef `dest` because we're returning it
+  dest
 }
 
 /**
