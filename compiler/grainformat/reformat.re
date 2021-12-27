@@ -3210,13 +3210,29 @@ and print_expression =
                   ),
                 )
               | [expression] =>
-                Doc.indent(
-                  print_expression(~original_source, ~comments, expression),
-                )
+                let expr =
+                  print_expression(~original_source, ~comments, expression);
+                if (Doc.willIndent(expr)) {
+                  expr;
+                } else {
+                  Doc.indent(
+                    print_expression(~original_source, ~comments, expression),
+                  );
+                };
               | [expression1, expression2, ...rest] =>
-                Doc.indent(
-                  print_expression(~original_source, ~comments, expression2),
-                )
+                let expr =
+                  print_expression(~original_source, ~comments, expression2);
+                if (Doc.willIndent(expr)) {
+                  expr;
+                } else {
+                  Doc.indent(
+                    print_expression(
+                      ~original_source,
+                      ~comments,
+                      expression2,
+                    ),
+                  );
+                };
               },
             ]);
           | _ =>
