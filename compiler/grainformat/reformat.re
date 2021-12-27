@@ -1903,7 +1903,7 @@ and print_arg = (arg: Parsetree.expression, ~original_source, ~comments) => {
   );
 }
 
-and printArgumentsWithCallbackInFirstPosition =
+and print_arguments_with_callback_in_first_position =
     (~original_source, ~comments, args: list(Parsetree.expression)) => {
   switch (args) {
   | [] => Doc.nil
@@ -1968,7 +1968,7 @@ and printArgumentsWithCallbackInFirstPosition =
   };
 }
 
-and printArgumentsWithCallbackInLastPosition =
+and print_arguments_with_callback_in_last_position =
     (~original_source, ~comments, args: list(Parsetree.expression)) =>
   switch (args) {
   | [] => Doc.nil
@@ -2093,7 +2093,7 @@ and print_other_application =
 
       if (first_arg_is_callback) {
         let printed_args =
-          printArgumentsWithCallbackInFirstPosition(
+          print_arguments_with_callback_in_first_position(
             ~original_source,
             ~comments,
             expressions,
@@ -2106,7 +2106,7 @@ and print_other_application =
         ]);
       } else if (last_arg_is_callback) {
         let printed_args =
-          printArgumentsWithCallbackInLastPosition(
+          print_arguments_with_callback_in_last_position(
             ~original_source,
             ~comments,
             expressions,
@@ -4239,95 +4239,5 @@ let reformat_ast =
 
   let final_doc = Doc.concat([top_level_stmts, Doc.hardLine]);
 
-  // let args =
-  //   Doc.concat([
-  //     Doc.text("position"),
-  //     Doc.comma,
-  //     Doc.line,
-  //     // Doc.text("position2"),
-  //     // Doc.comma,
-  //     // Doc.line,
-  //     // Doc.text("position2position2"),
-  //     // Doc.comma,
-  //     // Doc.line,
-  //     // Doc.text("position2position2"),
-  //     // Doc.comma,
-  //     // Doc.line,
-  //     // Doc.text("position2"),
-  //     // Doc.comma,
-  //     // Doc.line,
-  //     // Doc.text("position2position2"),
-  //     // Doc.comma,
-  //     // Doc.line,
-  //     Doc.text("index"),
-  //     Doc.space,
-  //     Doc.text("=>"),
-  //     Doc.space,
-  //     // Doc.breakParent,
-  //     Doc.customLayout([
-  //       Doc.group(
-  //         Doc.concat([
-  //           Doc.lbrace,
-  //           // Doc.indent(
-  //           //   Doc.concat([
-  //           //     Doc.line,
-  //           Doc.group(
-  //             Doc.concat([
-  //               Doc.text("filtered[index]"),
-  //               // Doc.hardLine,
-  //               // Doc.text("true"),
-  //             ]),
-  //           ),
-  //           //   ]),
-  //           // ),
-  //           // Doc.line,
-  //           Doc.rbrace,
-  //         ]),
-  //       ),
-  //     ]),
-  //   ]);
-
-  // let final_doc =
-  //   Doc.group(
-  //     Doc.concat([
-  //       Doc.text("init2"),
-  //       Doc.lparen,
-  //       args,
-  //       // Doc.comma,
-  //       // Doc.space,
-  //       // Doc.text("position4"),
-  //       Doc.rparen,
-  //     ]),
-  //   );
-
-  // if (Doc.willBreak(args)) {
-  //   print_endline("Args Will break");
-  // } else {
-  //   print_endline("Args Will not break");
-  // };
-
-  // Doc.debug(final_doc);
-
   Doc.toString(~width=80, final_doc);
 };
-
-// init2(position, index => {
-//   filtered[index]
-//   true
-//   })
-
-// init3(
-//   index => {
-//     filtered[index];
-//     true;
-//   },
-//   positions,
-// );
-
-// init2(
-//   position,
-//   index => {
-//     filtered[index];
-//     true;
-//   },
-// );
