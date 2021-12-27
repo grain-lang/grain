@@ -1,4 +1,6 @@
 import Number from "number"
+import Result from "result"
+
 // add
 assert Number.add(25, 5) == 30
 // sub
@@ -96,3 +98,39 @@ assert Number.isInfinite(25.76) == false
 assert Number.isInfinite(-25.00) == false
 assert Number.isInfinite(1/2) == false
 assert Number.isInfinite(-1/2) == false
+
+// parseInt
+assert Number.parseInt("42", 10) == Ok(42)
+assert Number.parseInt("042", 10) == Ok(42)
+assert Number.parseInt("_0___42___", 10) == Ok(42)
+assert Number.parseInt("-42", 10) == Ok(-42)
+assert Number.parseInt("-042", 10) == Ok(-42)
+assert Number.parseInt("-_0___42___", 10) == Ok(-42)
+assert Number.parseInt("1073741823", 10) == Ok(1073741823) // grain simple number max
+assert Number.parseInt("-1073741824", 10) == Ok(-1073741824) // grain simple number min
+assert Number.parseInt("2147483647", 10) == Ok(2147483647) // i32 max
+assert Number.parseInt("-2147483648", 10) == Ok(-2147483648) // i32 min
+assert Number.parseInt("9223372036854775807", 10) == Ok(9223372036854775807) // i64 max
+assert Number.parseInt("-9223372036854775808", 10) == Ok(-9223372036854775808) // i64 min
+assert Number.parseInt("0xabcdef", 10) == Ok(0xabcdef)
+assert Number.parseInt("0Xabcdef", 10) == Ok(0xabcdef)
+assert Number.parseInt("abcdef", 16) == Ok(0xabcdef)
+assert Number.parseInt("AbCdEf", 16) == Ok(0xabcdef)
+assert Number.parseInt("0o7654321", 10) == Ok(0o7654321)
+assert Number.parseInt("0O7654321", 10) == Ok(0o7654321)
+assert Number.parseInt("7654321", 8) == Ok(0o7654321)
+assert Number.parseInt("0b100101110110", 10) == Ok(0b100101110110)
+assert Number.parseInt("0B100101110110", 10) == Ok(0b100101110110)
+assert Number.parseInt("100101110110", 2) == Ok(0b100101110110)
+assert Number.parseInt("zyxw44ab", 36) == Ok(2818805666483)
+assert Number.parseInt("ZYXW44AB", 36) == Ok(2818805666483)
+assert Result.isErr(Number.parseInt("", 10))
+assert Result.isErr(Number.parseInt("_", 10))
+assert Result.isErr(Number.parseInt("1.23", 10))
+assert Result.isErr(Number.parseInt("9223372036854775808", 10))
+assert Result.isErr(Number.parseInt("-9223372036854775809", 10))
+assert Result.isErr(Number.parseInt("000000", 1))
+assert Result.isErr(Number.parseInt("zzzzz", 37))
+assert Result.isErr(Number.parseInt("zzzzz", 9223372036854775807))
+assert Result.isErr(Number.parseInt("10", 1.23))
+assert Result.isErr(Number.parseInt("10", 2/3))

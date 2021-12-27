@@ -22,8 +22,7 @@ let rec print_ident = ppf =>
   | IdentName(n) => fprintf(ppf, "%s", n)
   | IdentExternal(m, n) => fprintf(ppf, "%a%s%s", print_ident, m, sep, n);
 
-let default_printer = (ppf, i) =>
-  fprintf(ppf, "@{<id>%a@}@,", print_ident, i);
+let default_printer = (ppf, i) => fprintf(ppf, "%a@,", print_ident, i);
 
 let printer = ref(default_printer);
 let print = ppf => printer^(ppf);

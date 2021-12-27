@@ -7,7 +7,7 @@ type str = loc(string);
 type loc = Location.t;
 type env = Env.t;
 type ident = Ident.t;
-type attributes = Asttypes.attributes;
+type attributes = Typedtree.attributes;
 
 let default_loc = Location.dummy_loc;
 let default_env = Env.empty;

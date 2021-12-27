@@ -7,7 +7,7 @@ type str = loc(string);
 type loc = Location.t;
 type env = Env.t;
 type ident = Ident.t;
-type attributes = Asttypes.attributes;
+type attributes = Typedtree.attributes;
 
 module Imm: {
   let mk: (~loc: loc=?, ~env: env=?, imm_expression_desc) => imm_expression;

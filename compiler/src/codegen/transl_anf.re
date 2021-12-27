@@ -666,17 +666,6 @@ let next_global = (~exported=false, id, ty) => {
   Printf.sprintf("global_%d", ret);
 };
 
-let transl_attributes = attrs => {
-  List.map(
-    ({txt}) =>
-      switch (txt) {
-      | "disableGC" => Disable_gc
-      | _ => failwith("impossible by well-formedness")
-      },
-    attrs,
-  );
-};
-
 let rec compile_comp = (~id=?, env, c) => {
   let desc =
     switch (c.comp_desc) {
@@ -825,7 +814,7 @@ let rec compile_comp = (~id=?, env, c) => {
             env,
             args,
             body,
-            transl_attributes(c.comp_attributes),
+            c.comp_attributes,
             c.comp_loc,
           ),
         ),
