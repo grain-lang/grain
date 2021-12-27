@@ -23,10 +23,10 @@
  * 
  * @since v0.2.0
  */
-export let isSome = (option) => {
+export let isSome = option => {
   match (option) {
     Some(_) => true,
-    None => false
+    None => false,
   }
 }
 
@@ -38,10 +38,10 @@ export let isSome = (option) => {
  * 
  * @since v0.2.0
  */
-export let isNone = (option) => {
+export let isNone = option => {
   match (option) {
     None => true,
-    Some(_) => false
+    Some(_) => false,
   }
 }
 
@@ -57,7 +57,7 @@ export let isNone = (option) => {
 export let contains = (value, option) => {
   match (option) {
     Some(x) => x == value,
-    None => false
+    None => false,
   }
 }
 
@@ -74,7 +74,7 @@ export let contains = (value, option) => {
 export let expect = (msg, option) => {
   match (option) {
     Some(x) => x,
-    None => fail msg
+    None => fail msg,
   }
 }
 
@@ -87,7 +87,7 @@ export let expect = (msg, option) => {
  * 
  * @since v0.2.0
  */
-export let unwrap = (option) => {
+export let unwrap = option => {
   expect("Could not unwrap None value", option)
 }
 
@@ -103,7 +103,7 @@ export let unwrap = (option) => {
 export let unwrapWithDefault = (default, option) => {
   match (option) {
     Some(x) => x,
-    None => default
+    None => default,
   }
 }
 
@@ -119,7 +119,7 @@ export let unwrapWithDefault = (default, option) => {
 export let map = (fn, option) => {
   match (option) {
     Some(x) => Some(fn(x)),
-    None => None
+    None => None,
   }
 }
 
@@ -137,7 +137,7 @@ export let map = (fn, option) => {
 export let mapWithDefault = (fn, default, option) => {
   match (option) {
     Some(x) => fn(x),
-    None => default
+    None => default,
   }
 }
 
@@ -156,7 +156,7 @@ export let mapWithDefault = (fn, default, option) => {
 export let mapWithDefaultFn = (fn, defaultFn, option) => {
   match (option) {
     Some(x) => fn(x),
-    None => defaultFn()
+    None => defaultFn(),
   }
 }
 
@@ -172,7 +172,7 @@ export let mapWithDefaultFn = (fn, defaultFn, option) => {
 export let flatMap = (fn, option) => {
   match (option) {
     Some(x) => fn(x),
-    None => None
+    None => None,
   }
 }
 
@@ -194,7 +194,7 @@ export let filter = (fn, option) => {
       } else {
         None
       },
-    None => None
+    None => None,
   }
 }
 
@@ -210,7 +210,7 @@ export let filter = (fn, option) => {
 export let zip = (optionA, optionB) => {
   match ((optionA, optionB)) {
     (Some(a), Some(b)) => Some((a, b)),
-    _ => None
+    _ => None,
   }
 }
 
@@ -227,7 +227,7 @@ export let zip = (optionA, optionB) => {
 export let zipWith = (fn, optionA, optionB) => {
   match ((optionA, optionB)) {
     (Some(a), Some(b)) => Some(fn(a, b)),
-    _ => None
+    _ => None,
   }
 }
 
@@ -241,10 +241,10 @@ export let zipWith = (fn, optionA, optionB) => {
  *
  * @since v0.2.0
  */
-export let flatten = (option) => {
+export let flatten = option => {
   match (option) {
     Some(Some(x)) => Some(x),
-    _ => None
+    _ => None,
   }
 }
 
@@ -256,10 +256,10 @@ export let flatten = (option) => {
  * 
  * @since v0.2.0
  */
-export let toList = (option) => {
+export let toList = option => {
   match (option) {
     Some(x) => [x],
-    None => []
+    None => [],
   }
 }
 
@@ -271,10 +271,10 @@ export let toList = (option) => {
  * 
  * @since v0.2.0
  */
-export let toArray = (option) => {
+export let toArray = option => {
   match (option) {
     Some(x) => [> x],
-    None => [>]
+    None => [>],
   }
 }
 
@@ -290,7 +290,7 @@ export let toArray = (option) => {
 export let toResult = (err, option) => {
   match (option) {
     Some(a) => Ok(a),
-    None    => Err(err)
+    None => Err(err),
   }
 }
 
@@ -305,7 +305,7 @@ export let toResult = (err, option) => {
 export let sideEffect = (fn, option) => {
   match (option) {
     Some(x) => fn(x),
-    None => void
+    None => void,
   }
 }
 
@@ -336,7 +336,7 @@ export let peek = (fn, option) => {
 export let or = (optionA, optionB) => {
   match (optionA) {
     Some(x) => optionA,
-    None => optionB
+    None => optionB,
   }
 }
 
@@ -352,6 +352,6 @@ export let or = (optionA, optionB) => {
 export let and = (optionA, optionB) => {
   match (optionA) {
     Some(_) => optionB,
-    None => optionA
+    None => optionA,
   }
 }

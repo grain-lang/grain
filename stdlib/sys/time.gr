@@ -8,7 +8,7 @@
 import WasmI32, {
   add as (+),
   eq as (==),
-  ne as (!=)
+  ne as (!=),
 } from "runtime/unsafe/wasmi32"
 import Memory from "runtime/unsafe/memory"
 import Wasi from "runtime/wasi"
@@ -19,13 +19,13 @@ import { allocateInt64, tagSimpleNumber } from "runtime/dataStructures"
  * @section Values: Functions and constants included in the Sys/Time module.
  */
 
-let wasmSafeOk = (val) => {
+let wasmSafeOk = val => {
   Memory.incRef(WasmI32.fromGrain(Ok))
   Memory.incRef(WasmI32.fromGrain(val))
   Ok(val)
 }
 
-let wasmSafeErr = (err) => {
+let wasmSafeErr = err => {
   Memory.incRef(WasmI32.fromGrain(Err))
   Memory.incRef(WasmI32.fromGrain(err))
   Err(err)

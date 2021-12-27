@@ -3,13 +3,11 @@ import WasmI64 from "runtime/unsafe/wasmi64"
 import Exception from "runtime/exception"
 import Memory from "runtime/unsafe/memory"
 
-import {
-  newInt64
-} from "runtime/dataStructures"
+import { newInt64 } from "runtime/dataStructures"
 
 import {
   coerceNumberToInt64 as fromNumber,
-  coerceInt64ToNumber as toNumber
+  coerceInt64ToNumber as toNumber,
 } from "runtime/numbers"
 
 export fromNumber
@@ -120,7 +118,7 @@ export let rec remU = (x: Int64, y: Int64) => {
 }
 
 @disableGC
-let abs = (n) => {
+let abs = n => {
   let mask = WasmI64.shrS(n, 63N)
   WasmI64.sub(WasmI64.xor(n, mask), mask)
 }
@@ -139,7 +137,11 @@ export let rec mod = (x: Int64, y: Int64) => {
     let yabs = abs(yval)
     let mval = WasmI64.remS(xabs, yabs)
     let mres = WasmI64.sub(yabs, mval)
-    newInt64(if (WasmI64.ne(mval, 0N)) (if (WasmI64.ltS(yval, 0N)) WasmI64.sub(0N, mres) else mres) else 0N)
+    newInt64(
+      if (WasmI64.ne(mval, 0N)) (
+        if (WasmI64.ltS(yval, 0N)) WasmI64.sub(0N, mres) else mres
+      ) else 0N
+    )
   } else {
     newInt64(WasmI64.remS(xval, yval))
   }
@@ -292,7 +294,6 @@ export let rec lnot = (x: Int64) => {
   ret
 }
 
-
 @disableGC
 export let rec land = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
@@ -328,7 +329,6 @@ export let rec lxor = (x: Int64, y: Int64) => {
   Memory.decRef(WasmI32.fromGrain(lxor))
   ret
 }
-
 
 @disableGC
 export let rec shl = (x: Int64, y: Int64) => {
