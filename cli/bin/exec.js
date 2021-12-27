@@ -50,8 +50,13 @@ function execGraindoc(
   execOpts = { stdio: "pipe" }
 ) {
   const flags = [];
-  // Inherit compiler flags passed to the parent
-  const options = program.parent.options.concat(program.options);
+  // Inherit compiler flags passed to the parent, with the exception for the
+  // "-o" option, which both the main grain command and the doc command have.
+  // In this case passing the output path as compilation flag doesn't make
+  // sense and the meaning is output for the doc command itself.
+  const options = program.parent.options
+    .filter((option) => option.name() !== "o")
+    .concat(program.options);
   const opts = { ...program.parent.opts(), ...program.opts() };
   options.forEach((option) => {
     if (!option.forward) return;
