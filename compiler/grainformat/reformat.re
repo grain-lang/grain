@@ -1903,7 +1903,7 @@ and print_arg = (arg: Parsetree.expression, ~original_source, ~comments) => {
   );
 }
 
-and printArgumentsWithCallbackInFirstPosition =
+and print_arguments_with_callback_in_first_position =
     (~original_source, ~comments, args: list(Parsetree.expression)) => {
   switch (args) {
   | [] => Doc.nil
@@ -1968,7 +1968,7 @@ and printArgumentsWithCallbackInFirstPosition =
   };
 }
 
-and printArgumentsWithCallbackInLastPosition =
+and print_arguments_with_callback_in_last_position =
     (~original_source, ~comments, args: list(Parsetree.expression)) =>
   switch (args) {
   | [] => Doc.nil
@@ -2093,7 +2093,7 @@ and print_other_application =
 
       if (first_arg_is_callback) {
         let printed_args =
-          printArgumentsWithCallbackInFirstPosition(
+          print_arguments_with_callback_in_first_position(
             ~original_source,
             ~comments,
             expressions,
@@ -2106,7 +2106,7 @@ and print_other_application =
         ]);
       } else if (last_arg_is_callback) {
         let printed_args =
-          printArgumentsWithCallbackInLastPosition(
+          print_arguments_with_callback_in_last_position(
             ~original_source,
             ~comments,
             expressions,
