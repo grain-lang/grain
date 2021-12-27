@@ -409,7 +409,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
               let tmp = toStringHelp(
                 WasmI32.load(ptr + i, 20n),
                 extraIndents,
-                false,
+                false
               )
               strings = slConsDisableGc(tmp, strings)
               Memory.decRef(WasmI32.fromGrain(tmp))
@@ -421,7 +421,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
             let lparen = "("
             strings = slConsDisableGc(
               variantName,
-              slConsDisableGc(lparen, strings),
+              slConsDisableGc(lparen, strings)
             )
             let string = join(strings)
             Memory.decRef(WasmI32.fromGrain(variantName))
@@ -448,7 +448,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
           Memory.fill(
             v + 8n,
             0x20n,
-            prevPadAmount,
+            prevPadAmount
           ) // create indentation for closing brace
           WasmI32.toGrain(v): String
         }
@@ -461,7 +461,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
         let rbrace = "}"
         let mut strings = slConsDisableGc(
           newline,
-          slConsDisableGc(prevSpacePadding, slConsDisableGc(rbrace, SLEmpty)),
+          slConsDisableGc(prevSpacePadding, slConsDisableGc(rbrace, SLEmpty))
         )
         let colspace = ": "
         let comlf = ",\n"
@@ -470,14 +470,14 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
           let fieldValue = toStringHelp(
             WasmI32.load(ptr + i, 16n),
             extraIndents + 1n,
-            false,
+            false
           )
           strings = slConsDisableGc(
             spacePadding,
             slConsDisableGc(
               fieldName,
-              slConsDisableGc(colspace, slConsDisableGc(fieldValue, strings)),
-            ),
+              slConsDisableGc(colspace, slConsDisableGc(fieldValue, strings))
+            )
           )
           Memory.decRef(WasmI32.fromGrain(fieldValue))
           if (i > 0n) {
@@ -541,7 +541,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
           let slash = "/"
           let strings = slConsDisableGc(
             numerator,
-            slConsDisableGc(slash, slConsDisableGc(denominator, SLEmpty)),
+            slConsDisableGc(slash, slConsDisableGc(denominator, SLEmpty))
           )
           let string = join(strings)
           Memory.decRef(WasmI32.fromGrain(strings))
@@ -582,7 +582,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
           let item = toStringHelp(
             WasmI32.load(ptr + i, 8n),
             extraIndents,
-            false,
+            false
           )
           strings = slConsDisableGc(item, strings)
           Memory.decRef(WasmI32.fromGrain(item))
@@ -618,10 +618,10 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
             " | value: 0x",
             slConsDisableGc(
               NumberUtils.itoa32(ptr, 16n),
-              slConsDisableGc(">", SLEmpty),
-            ),
-          ),
-        ),
+              slConsDisableGc(">", SLEmpty)
+            )
+          )
+        )
       )
       let string = join(strings)
       Memory.decRef(WasmI32.fromGrain(strings))

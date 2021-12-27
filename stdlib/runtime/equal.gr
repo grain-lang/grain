@@ -48,7 +48,7 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
             if (
               !equalHelp(
                 WasmI32.load(xptr + i, 20n),
-                WasmI32.load(yptr + i, 20n),
+                WasmI32.load(yptr + i, 20n)
               )
             ) {
               result = false

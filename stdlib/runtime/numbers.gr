@@ -51,7 +51,7 @@ let untagSimple = x => {
 let isSimpleNumber = x => {
   WasmI32.eq(
     WasmI32.and(x, Tags._GRAIN_NUMBER_TAG_MASK),
-    Tags._GRAIN_NUMBER_TAG_TYPE,
+    Tags._GRAIN_NUMBER_TAG_TYPE
   )
 }
 
@@ -59,7 +59,7 @@ export let isBoxedNumber = x => {
   if (
     WasmI32.eq(
       WasmI32.and(x, Tags._GRAIN_GENERIC_TAG_MASK),
-      Tags._GRAIN_GENERIC_HEAP_TAG_TYPE,
+      Tags._GRAIN_GENERIC_HEAP_TAG_TYPE
     )
   ) {
     WasmI32.eq(WasmI32.load(x, 0n), Tags._GRAIN_BOXED_NUM_HEAP_TAG)
@@ -284,7 +284,7 @@ export let coerceNumberToWasmF32 = (x: Number) => {
       t when WasmI32.eq(t, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG) => {
         WasmF32.div(
           WasmF32.convertI32S(boxedRationalNumerator(x)),
-          WasmF32.convertI32S(boxedRationalDenominator(x)),
+          WasmF32.convertI32S(boxedRationalDenominator(x))
         )
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
@@ -322,7 +322,7 @@ export let coerceNumberToWasmF64 = (x: Number) => {
       t when WasmI32.eq(t, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG) => {
         WasmF64.div(
           WasmF64.convertI32S(boxedRationalNumerator(x)),
-          WasmF64.convertI32S(boxedRationalDenominator(x)),
+          WasmF64.convertI32S(boxedRationalDenominator(x))
         )
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
@@ -519,7 +519,7 @@ let numberEqualRationalHelp = (xptr, y) => {
         let yBoxedVal = boxedFloat32Number(y)
         let xAsFloat = WasmF32.div(
           WasmF32.convertI32S(xNumerator),
-          WasmF32.convertI32S(xDenominator),
+          WasmF32.convertI32S(xDenominator)
         )
         // TODO: (#303) maybe we should have some sort of tolerance?
         WasmF32.eq(xAsFloat, yBoxedVal)
@@ -528,7 +528,7 @@ let numberEqualRationalHelp = (xptr, y) => {
         let yBoxedVal = boxedFloat64Number(y)
         let xAsFloat = WasmF64.div(
           WasmF64.convertI32S(xNumerator),
-          WasmF64.convertI32S(xDenominator),
+          WasmF64.convertI32S(xDenominator)
         )
         // TODO: (#303) maybe we should have some sort of tolerance?
         WasmF64.eq(xAsFloat, yBoxedVal)
@@ -562,7 +562,7 @@ let numberEqualFloat64Help = (x, y) => {
         let yDenominator = boxedRationalDenominator(y)
         let yAsFloat = WasmF64.div(
           WasmF64.convertI32S(yNumerator),
-          WasmF64.convertI32S(yDenominator),
+          WasmF64.convertI32S(yDenominator)
         )
         WasmF64.eq(x, yAsFloat)
       },
@@ -680,7 +680,7 @@ let numberAddSubSimpleHelp = (x, y, isSub) => {
         let yDenominator = WasmI64.extendI32S(boxedRationalDenominator(y))
         let expandedXNumerator = safeI64Multiply(
           WasmI64.extendI32S(xval),
-          yDenominator,
+          yDenominator
         )
         let result = if (isSub) WasmI64.sub(expandedXNumerator, yNumerator)
           else WasmI64.add(expandedXNumerator, yNumerator)
@@ -971,14 +971,14 @@ let numberTimesDivideRationalHelp = (x, y, isDivide) => {
       // (a / b) / y == a / (b * y)
       let denominator = safeI64Multiply(
         xDenominator,
-        WasmI64.extendI32S(untagSimple(y)),
+        WasmI64.extendI32S(untagSimple(y))
       )
       reducedFraction64(xNumerator, denominator)
     } else {
       // (a / b) * y == (a * y) / b
       let numerator = safeI64Multiply(
         xNumerator,
-        WasmI64.extendI32S(untagSimple(y)),
+        WasmI64.extendI32S(untagSimple(y))
       )
       reducedFraction64(numerator, xDenominator)
     }
@@ -991,14 +991,14 @@ let numberTimesDivideRationalHelp = (x, y, isDivide) => {
           // (a / b) / y == a / (b * y)
           let denominator = safeI64Multiply(
             xDenominator,
-            WasmI64.extendI32S(boxedInt32Number(y)),
+            WasmI64.extendI32S(boxedInt32Number(y))
           )
           reducedFraction64(xNumerator, denominator)
         } else {
           // (a / b) * y == (a * y) / b
           let numerator = safeI64Multiply(
             xNumerator,
-            WasmI64.extendI32S(boxedInt32Number(y)),
+            WasmI64.extendI32S(boxedInt32Number(y))
           )
           reducedFraction64(numerator, xDenominator)
         }
@@ -1033,7 +1033,7 @@ let numberTimesDivideRationalHelp = (x, y, isDivide) => {
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
         let asFloat = WasmF32.div(
           WasmF32.convertI64S(xNumerator),
-          WasmF32.convertI64S(xDenominator),
+          WasmF32.convertI64S(xDenominator)
         )
         if (isDivide) {
           newFloat32(WasmF32.div(asFloat, boxedFloat32Number(y)))
@@ -1044,7 +1044,7 @@ let numberTimesDivideRationalHelp = (x, y, isDivide) => {
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
         let asFloat = WasmF64.div(
           WasmF64.convertI64S(xNumerator),
-          WasmF64.convertI64S(xDenominator),
+          WasmF64.convertI64S(xDenominator)
         )
         if (isDivide) {
           newFloat64(WasmF64.div(asFloat, boxedFloat64Number(y)))
@@ -1147,7 +1147,7 @@ let numberMod = (x, y) => {
     let result = if (WasmI64.ne(modval, 0N))
         WasmI64.mul(
           WasmI64.sub(i64abs(yval), modval),
-          if (WasmI64.ltS(yval, 0N)) -1N else 1N,
+          if (WasmI64.ltS(yval, 0N)) -1N else 1N
         ) else modval
     reducedInteger(result)
   } else {
@@ -1471,12 +1471,12 @@ let convertInexactToExactHelp = x => {
         t when WasmI32.eq(t, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG) => x,
         t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
           reducedInteger(
-            WasmI64.truncF32S(WasmF32.nearest(boxedFloat32Number(x))),
+            WasmI64.truncF32S(WasmF32.nearest(boxedFloat32Number(x)))
           )
         },
         t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
           reducedInteger(
-            WasmI64.truncF64S(WasmF64.nearest(boxedFloat64Number(x))),
+            WasmI64.truncF64S(WasmF64.nearest(boxedFloat64Number(x)))
           )
         },
         _ => {
@@ -1489,7 +1489,7 @@ let convertInexactToExactHelp = x => {
 
 export let rec convertInexactToExact = (x: Number) => {
   let ret = WasmI32.toGrain(
-    convertInexactToExactHelp(WasmI32.fromGrain(x)),
+    convertInexactToExactHelp(WasmI32.fromGrain(x))
   ): Number
   if (WasmI32.fromGrain(ret) != WasmI32.fromGrain(x)) {
     Memory.decRef(WasmI32.fromGrain(x))

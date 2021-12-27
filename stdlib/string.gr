@@ -1072,12 +1072,12 @@ let rec encodeAtHelp =
               WasmI32.store8(
                 bytes + bytesIdx,
                 (codePoint & 0xff00n) >>> 8n,
-                _BYTES_OFFSET,
+                _BYTES_OFFSET
               )
               WasmI32.store8(
                 bytes + bytesIdx + 1n,
                 codePoint & 0xffn,
-                _BYTES_OFFSET,
+                _BYTES_OFFSET
               )
               bytesIdx += 2n
             } else {
@@ -1093,13 +1093,13 @@ let rec encodeAtHelp =
               WasmI32.store8(
                 bytes + bytesIdx,
                 (w1 & 0xff00n) >>> 8n,
-                _BYTES_OFFSET,
+                _BYTES_OFFSET
               )
               WasmI32.store8(bytes + bytesIdx + 1n, w1 & 0xffn, _BYTES_OFFSET)
               WasmI32.store8(
                 bytes + bytesIdx + 2n,
                 (w2 & 0xff00n) >>> 8n,
-                _BYTES_OFFSET,
+                _BYTES_OFFSET
               )
               WasmI32.store8(bytes + bytesIdx + 3n, w2 & 0xffn, _BYTES_OFFSET)
               bytesIdx += 4n
@@ -1116,7 +1116,7 @@ let rec encodeAtHelp =
               WasmI32.store8(
                 bytes + bytesIdx + 1n,
                 (codePoint & 0xff00n) >>> 8n,
-                _BYTES_OFFSET,
+                _BYTES_OFFSET
               )
               bytesIdx += 2n
             } else {
@@ -1133,13 +1133,13 @@ let rec encodeAtHelp =
               WasmI32.store8(
                 bytes + bytesIdx + 1n,
                 (w1 & 0xff00n) >>> 8n,
-                _BYTES_OFFSET,
+                _BYTES_OFFSET
               )
               WasmI32.store8(bytes + bytesIdx + 2n, w2 & 0xffn, _BYTES_OFFSET)
               WasmI32.store8(
                 bytes + bytesIdx + 3n,
                 (w2 & 0xff00n) >>> 8n,
-                _BYTES_OFFSET,
+                _BYTES_OFFSET
               )
               bytesIdx += 4n
             }
@@ -1152,22 +1152,22 @@ let rec encodeAtHelp =
             WasmI32.store8(
               bytes + bytesIdx,
               (codePoint & 0xff000000n) >>> 24n,
-              _BYTES_OFFSET,
+              _BYTES_OFFSET
             )
             WasmI32.store8(
               bytes + bytesIdx + 1n,
               (codePoint & 0xff0000n) >>> 16n,
-              _BYTES_OFFSET,
+              _BYTES_OFFSET
             )
             WasmI32.store8(
               bytes + bytesIdx + 2n,
               (codePoint & 0xff00n) >>> 8n,
-              _BYTES_OFFSET,
+              _BYTES_OFFSET
             )
             WasmI32.store8(
               bytes + bytesIdx + 3n,
               codePoint & 0xffn,
-              _BYTES_OFFSET,
+              _BYTES_OFFSET
             )
             bytesIdx += 4n
           },
@@ -1180,17 +1180,17 @@ let rec encodeAtHelp =
             WasmI32.store8(
               bytes + bytesIdx + 1n,
               (codePoint & 0xff00n) >>> 8n,
-              _BYTES_OFFSET,
+              _BYTES_OFFSET
             )
             WasmI32.store8(
               bytes + bytesIdx + 2n,
               (codePoint & 0xff0000n) >>> 16n,
-              _BYTES_OFFSET,
+              _BYTES_OFFSET
             )
             WasmI32.store8(
               bytes + bytesIdx + 3n,
               (codePoint & 0xff000000n) >>> 24n,
-              _BYTES_OFFSET,
+              _BYTES_OFFSET
             )
             bytesIdx += 4n
           },
@@ -1252,7 +1252,8 @@ let rec encodeHelp = (string: String, encoding: Encoding, includeBom: Bool) => {
         UTF32_LE => 4,
         UTF32_BE => 4,
       }
-    } else {
+    }
+    else {
       0
     })
   let (>>>) = WasmI32.shrU
@@ -1755,7 +1756,7 @@ let rec decodeHelp = (bytes: Bytes, encoding: Encoding, skipBom: Bool) => {
     encoding,
     skipBom,
     0,
-    tagSimpleNumber(bytesSize),
+    tagSimpleNumber(bytesSize)
   )
   Memory.incRef(WasmI32.fromGrain(bytes))
   Memory.incRef(WasmI32.fromGrain(encoding))

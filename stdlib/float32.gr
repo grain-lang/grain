@@ -109,7 +109,7 @@ export let rec gte = (x: Float32, y: Float32) => {
 @disableGC
 let rec makeInfinity = () => {
   let ptr = newFloat32(
-    WasmF32.reinterpretI32(0b01111111100000000000000000000000n),
+    WasmF32.reinterpretI32(0b01111111100000000000000000000000n)
   )
   let ret = WasmI32.toGrain(ptr): Float32
   Memory.decRef(WasmI32.fromGrain(makeInfinity))
@@ -121,7 +121,7 @@ export let infinity = makeInfinity()
 @disableGC
 let rec makeNaN = () => {
   let ptr = newFloat32(
-    WasmF32.reinterpretI32(0b01111111100000000000000000000001n),
+    WasmF32.reinterpretI32(0b01111111100000000000000000000001n)
   )
   let ret = WasmI32.toGrain(ptr): Float32
   Memory.decRef(WasmI32.fromGrain(makeNaN))
