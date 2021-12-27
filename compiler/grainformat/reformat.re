@@ -1798,21 +1798,21 @@ and print_arg_lambda =
         | [pat] =>
           switch (pat.ppat_desc) {
           | PPatVar(_) => raw_args
-          | _ => Doc.concat([Doc.lparen, raw_args, Doc.rparen])
+          | _ => Doc.group(Doc.concat([Doc.lparen, raw_args, Doc.rparen]))
           }
         | _patterns =>
           Doc.concat([
             Doc.lparen,
-            Doc.group(Doc.indent(Doc.concat([Doc.softLine, raw_args]))),
+            Doc.indent(Doc.concat([Doc.softLine, raw_args])),
             Doc.softLine,
             Doc.rparen,
           ])
         },
       );
 
-    let body =
-      switch (expression.pexp_desc) {
-      | PExpBlock(block_expressions) =>
+    switch (expression.pexp_desc) {
+    | PExpBlock(block_expressions) =>
+      let body =
         switch (block_expressions) {
         | [] =>
           // Not legal syntax so we shouldn't ever hit it, but we'll handle
@@ -1852,35 +1852,42 @@ and print_arg_lambda =
               force_break_if_line_comment(after_brace_comments, Doc.softLine),
               printed_expressions,
             ]);
-          Doc.group(
-            Doc.concat([
-              Doc.lbrace,
-              Comment_utils.single_line_of_comments(after_brace_comments),
-              Doc.indent(start_after_brace),
-              Doc.softLine,
-              Doc.rbrace,
-            ]),
-          );
-        }
-      | PExpLambda(_) =>
-        Doc.group(
-          print_expression(
-            ~original_source,
-            ~comments=comments_in_expression,
-            expression,
-          ),
-        )
-      | _ =>
-        Doc.group(
-          print_expression(
-            ~original_source,
-            ~comments=comments_in_expression,
-            expression,
-          ),
-        )
-      };
 
-    Doc.concat([args, Doc.space, Doc.text("=>"), Doc.space, body]);
+          Doc.concat([
+            Doc.lbrace,
+            Comment_utils.single_line_of_comments(after_brace_comments),
+            Doc.indent(start_after_brace),
+            Doc.softLine,
+            Doc.rbrace,
+          ]);
+        };
+      Doc.concat([args, Doc.space, Doc.text("=>"), Doc.space, body]);
+
+    | _ =>
+      let body =
+        Doc.group(
+          print_expression(
+            ~original_source,
+            ~comments=comments_in_expression,
+            expression,
+          ),
+        );
+      if (Doc.willBreak(body)) {
+        Doc.concat([
+          args,
+          Doc.space,
+          Doc.text("=>"),
+          Doc.concat([Doc.space, Doc.group(body)]),
+        ]);
+      } else {
+        Doc.concat([
+          args,
+          Doc.space,
+          Doc.text("=>"),
+          Doc.indent(Doc.concat([Doc.line, Doc.group(body)])),
+        ]);
+      };
+    };
 
   | _ => raise(Error(Illegal_parse("Called on a non-lambda")))
   };
@@ -1900,39 +1907,49 @@ and printArgumentsWithCallbackInFirstPosition =
     (~original_source, ~comments, args: list(Parsetree.expression)) => {
   switch (args) {
   | [] => Doc.nil
+  | [callback] =>
+    // we handle the special case of just one callback here as we call this if the first arg is a callback
+    let printed_callback =
+      print_arg_lambda(~comments, ~original_source, callback);
+
+    Doc.group(printed_callback);
+
+  | [callback, expr] =>
+    let printed_callback =
+      print_arg_lambda(~comments, ~original_source, callback);
+    let printed_arg = print_arg(~comments, ~original_source, expr);
+
+    Doc.concat([
+      Doc.group(printed_callback),
+      Doc.comma,
+      Doc.space,
+      printed_arg,
+    ]);
   | [callback, ...remainder] =>
     let printed_callback =
-      Doc.customLayout([
-        print_arg_lambda(~comments, ~original_source, callback),
-      ]);
+      print_arg_lambda(~comments, ~original_source, callback);
     let printed_args =
       switch (remainder) {
       | [] => Doc.nil
       | _ =>
-        Doc.concat([
-          Doc.comma,
-          Doc.line,
-          Doc.join(
-            Doc.concat([Doc.comma, Doc.line]),
-            List.map(print_arg(~comments, ~original_source), remainder),
-          ),
-        ])
+        Doc.join(
+          Doc.concat([Doc.comma, Doc.line]),
+          List.map(print_arg(~comments, ~original_source), remainder),
+        )
       };
 
-    if (Doc.willBreak(printed_args)) {
-      Doc.concat([
-        Doc.indent(
-          Doc.concat([
-            Doc.softLine,
-            Doc.group(printed_callback),
-            printed_args,
-          ]),
-        ),
-        Doc.softLine,
-      ]);
-    } else {
-      Doc.concat([Doc.group(printed_callback), printed_args]);
-    };
+    Doc.concat([
+      Doc.indent(
+        Doc.concat([
+          Doc.softLine,
+          Doc.group(printed_callback),
+          Doc.comma,
+          Doc.line,
+          printed_args,
+        ]),
+      ),
+      Doc.softLine,
+    ]);
   };
 }
 
@@ -1940,12 +1957,22 @@ and printArgumentsWithCallbackInLastPosition =
     (~original_source, ~comments, args: list(Parsetree.expression)) =>
   switch (args) {
   | [] => Doc.nil
+  | [expr, callback] =>
+    let printed_callback =
+      print_arg_lambda(~comments, ~original_source, callback);
+    let printed_first_arg = print_arg(~comments, ~original_source, expr);
+
+    Doc.concat([
+      printed_first_arg,
+      Doc.comma,
+      Doc.space,
+      Doc.group(printed_callback),
+    ]);
+
   | _ =>
     let last_expression = List.nth(args, List.length(args) - 1);
     let printed_callback =
-      Doc.customLayout([
-        print_arg_lambda(~comments, ~original_source, last_expression),
-      ]);
+      print_arg_lambda(~comments, ~original_source, last_expression);
 
     let remainderArr =
       Array.sub(Array.of_list(args), 0, List.length(args) - 1);
@@ -1959,27 +1986,18 @@ and printArgumentsWithCallbackInLastPosition =
         ),
       );
 
-    if (Doc.willBreak(printed_args)) {
-      Doc.concat([
-        Doc.indent(
-          Doc.concat([
-            Doc.softLine,
-            printed_args,
-            Doc.comma,
-            Doc.line,
-            Doc.group(printed_callback),
-          ]),
-        ),
-        Doc.softLine,
-      ]);
-    } else {
-      Doc.concat([
-        printed_args,
-        Doc.comma,
-        Doc.line,
-        Doc.group(printed_callback),
-      ]);
-    };
+    Doc.concat([
+      Doc.indent(
+        Doc.concat([
+          Doc.softLine,
+          printed_args,
+          Doc.comma,
+          Doc.line,
+          Doc.group(printed_callback),
+        ]),
+      ),
+      Doc.softLine,
+    ]);
   }
 
 and print_other_application =
@@ -3011,6 +3029,28 @@ and print_expression =
             expression,
           ),
         ])
+      | PExpIf(_) =>
+        let out =
+          print_expression(
+            ~original_source,
+            ~comments=comments_in_expression,
+            expression,
+          );
+        if (Doc.willBreak(out)) {
+          Doc.concat([
+            Doc.group(
+              Doc.concat([args, Doc.space, Doc.text("=>"), Doc.space]),
+            ),
+            out,
+          ]);
+        } else {
+          Doc.concat([
+            Doc.group(
+              Doc.concat([args, Doc.space, Doc.text("=>"), Doc.line]),
+            ),
+            out,
+          ]);
+        };
       | _ =>
         Doc.concat([
           args,
@@ -4250,6 +4290,8 @@ let reformat_ast =
   // } else {
   //   print_endline("Args Will not break");
   // };
+
+  // Doc.debug(final_doc);
 
   Doc.toString(~width=80, final_doc);
 };
