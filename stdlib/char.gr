@@ -1,6 +1,8 @@
 /**
- * @module Char: Utilities for working with chars.
- * A Grain `Char` represents a single [Unicode scalar value](https://www.unicode.org/glossary/#unicode_scalar_value)
+ * @module Char: Utilities for working with the Char data type.
+ *
+ * The Char type that represents a single [Unicode scalar value](https://www.unicode.org/glossary/#unicode_scalar_value).
+ *
  * @example import Char from "char"
  * 
  * @since 0.3.0
@@ -14,23 +16,23 @@ import { tagSimpleNumber, allocateChar, allocateString } from "runtime/dataStruc
 exception MalformedUtf8
 
 /**
- * The minimum valid Unicode charCode.
+ * The minimum valid Unicode scalar value.
  * 
  * @since 0.3.0
  */
 export let min = 0x0000
 /**
- * The maximum valid Unicode charCode.
+ * The maximum valid Unicode scalar value.
  * 
  * @since 0.3.0
  */
 export let max = 0x10FFFF
 
 /**
- * Determines whether the given character code is a valid Unicode Scalar value.
+ * Determines whether the given character code is a valid Unicode scalar value.
  * 
- * @param charCode: The value to check
- * @returns `true` if the number refers to a valid Unicode character, `false` otherwise
+ * @param charCode: The number to check
+ * @returns `true` if the number refers to a valid Unicode scalar value or `false` otherwise
  * 
  * @since 0.3.0
  */
@@ -39,10 +41,10 @@ export let isValid = (charCode) => {
 }
 
 /**
- * Determines the Unicode code point for the given character.
+ * Determines the Unicode code point for the given Char.
  * 
  * @param character: The character
- * @returns The integer with the value of the Unicode code point for the given character
+ * @returns The Unicode code point for the given character
  * 
  * @since 0.3.0
  */
@@ -115,9 +117,10 @@ export let rec code = (character: Char) => {
 
 /**
  * Determines the character from the given Unicode code point.
+ * Throws an exception if the code point is invalid.
  * 
  * @param codePoint: The Unicode code point
- * @returns The character for the given code point if valid
+ * @returns The character for the given code point
  * 
  * @since 0.3.0
  */
@@ -180,9 +183,9 @@ export let rec fromCode = (codePoint: Number) => {
 }
 
 /**
- * Returns the next valid Unicode character by code point. Fails if the input character is U+10FFFF.
+ * Returns the next valid Unicode character by code point. Throws if the input character is the max valid code point.
  * 
- * @param char: The input character
+ * @param char: The character
  * @returns The next valid Unicode character by code point
  * 
  * @since 0.3.0
@@ -199,9 +202,9 @@ export let succ = (char) => {
 }
 
 /**
- * Returns the previous valid Unicode character by code point. Fails if the input character is U+0000.
+ * Returns the previous valid Unicode character by code point. Throws if the input character is the min valid code point.
  * 
- * @param char: The input character
+ * @param char: The character
  * @returns The previous valid Unicode character by code point
  * 
  * @since 0.3.0
