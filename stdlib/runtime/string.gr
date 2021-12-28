@@ -36,7 +36,10 @@ primitive (!): Bool -> Bool = "@not"
 primitive (&&): (Bool, Bool) -> Bool = "@and"
 primitive (||): (Bool, Bool) -> Bool = "@or"
 
-enum StringList { SLEmpty, SLCons(String, StringList) }
+enum StringList {
+  SLEmpty,
+  SLCons(String, StringList),
+}
 
 @disableGC
 let slConsDisableGc = (a, b) => {

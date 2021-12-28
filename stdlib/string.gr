@@ -24,7 +24,13 @@ import {
 /**
  * Byte encodings
  */
-export enum Encoding { UTF8, UTF16_BE, UTF16_LE, UTF32_BE, UTF32_LE }
+export enum Encoding {
+  UTF8,
+  UTF16_BE,
+  UTF16_LE,
+  UTF32_BE,
+  UTF32_LE,
+}
 
 /**
  * @section Values: Functions for working with the String data type.

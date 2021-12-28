@@ -44,7 +44,9 @@ import List from "list"
 /**
  * Represents a handle to an open file on the system.
  */
-export enum FileDescriptor { FileDescriptor(Number) }
+export enum FileDescriptor {
+  FileDescriptor(Number),
+}
 
 /**
  * Flags that determine how paths should be resolved when looking up a file or directory.

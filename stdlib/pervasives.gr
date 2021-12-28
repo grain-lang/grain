@@ -96,7 +96,10 @@ primitive (is): (a, a) -> Bool = "@is"
 // The opposite of is operator
 let (isnt): (a, a) -> Bool = (x, y) => !(x is y)
 
-export enum List<a> { [], [...](a, List<a>) }
+export enum List<a> {
+  [],
+  [...](a, List<a>),
+}
 
 /**
  * @deprecated This will be removed in a future release of Grain.
@@ -109,10 +112,16 @@ let cons = (a, b) =>
 let empty = [] // <- for parity with `cons`, but should be deleted as well
 
 // Maybe some data, maybe not!
-enum Option<a> { Some(a), None }
+enum Option<a> {
+  Some(a),
+  None,
+}
 
 // Maybe some data, maybe an error!
-enum Result<t, e> { Ok(t), Err(e) }
+enum Result<t, e> {
+  Ok(t),
+  Err(e),
+}
 
 // Identity function
 let identity = x => x

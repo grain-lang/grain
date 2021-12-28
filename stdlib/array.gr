@@ -312,7 +312,9 @@ export let forEachi = (fn, array) => {
  */
 export let map = (fn, array) => {
   let length = length(array)
-  init(length, i => {fn(array[i])})
+  init(length, i => {
+    fn(array[i])
+  })
 }
 
 /**
@@ -327,7 +329,9 @@ export let map = (fn, array) => {
  */
 export let mapi = (fn, array) => {
   let length = length(array)
-  init(length, index => {fn(array[index], index)})
+  init(length, index => {
+    fn(array[index], index)
+  })
 }
 
 /**
@@ -404,7 +408,13 @@ export let flatMap = (fn, array) => {
  * @since v0.3.0
  */
 export let every = (fn, array) => {
-  reduce((acc, value) => {acc && fn(value)}, true, array)
+  reduce(
+    (acc, value) => {
+      acc && fn(value)
+    },
+    true,
+    array
+  )
 }
 
 /**
@@ -418,7 +428,13 @@ export let every = (fn, array) => {
  * @since v0.3.0
  */
 export let some = (fn, array) => {
-  reduce((acc, value) => {acc || fn(value)}, false, array)
+  reduce(
+    (acc, value) => {
+      acc || fn(value)
+    },
+    false,
+    array
+  )
 }
 
 /**
@@ -431,7 +447,9 @@ export let some = (fn, array) => {
  */
 export let fill = (value, array) => {
   let length = length(array)
-  forEachi((_, index) => {array[index] = value}, array)
+  forEachi((_, index) => {
+    array[index] = value
+  }, array)
   void
 }
 
@@ -709,7 +727,9 @@ export let filter = (fn, array) => {
       position += 1
     }
   }, array)
-  init(position, index => {filtered[index]})
+  init(position, index => {
+    filtered[index]
+  })
 }
 
 /**
@@ -732,7 +752,9 @@ export let filteri = (fn, array) => {
       position += 1
     }
   }, array)
-  init(position, index => {filtered[index]})
+  init(position, index => {
+    filtered[index]
+  })
 }
 
 /**
@@ -769,7 +791,9 @@ export let zip = (array1: Array<a>, array2: Array<b>) => {
   if (len != length(array2)) {
     fail "arguments to zip must be same length"
   } else {
-    init(len, n => {(array1[n], array2[n])})
+    init(len, n => {
+      (array1[n], array2[n])
+    })
   }
 }
 

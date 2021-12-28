@@ -16,7 +16,11 @@ import Bytes from "bytes"
 import String from "string"
 import { coerceNumberToWasmI32 } from "runtime/numbers"
 
-record Buffer { mut len: Number, initialSize: Number, mut data: Bytes }
+record Buffer {
+  mut len: Number,
+  initialSize: Number,
+  mut data: Bytes,
+}
 
 @disableGC
 let mut _SIZE_OFFSET = 1n

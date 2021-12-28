@@ -9,7 +9,10 @@ import foreign wasm fd_write: (
   WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 
-enum Option<a> { Some(a), None }
+enum Option<a> {
+  Some(a),
+  None,
+}
 
 export let mut printers = 0n
 
