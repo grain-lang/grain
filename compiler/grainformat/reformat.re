@@ -1874,14 +1874,14 @@ and print_arg_lambda =
           args,
           Doc.space,
           Doc.text("=>"),
-          Doc.concat([Doc.space, Doc.group(body)]),
+          Doc.concat([Doc.space, body]),
         ]);
       } else {
         Doc.concat([
           args,
           Doc.space,
           Doc.text("=>"),
-          Doc.indent(Doc.concat([Doc.line, Doc.group(body)])),
+          Doc.indent(Doc.concat([Doc.line, body])),
         ]);
       };
     };
