@@ -2943,10 +2943,10 @@ and print_expression =
                 | None => Doc.nil
                 },
                 Doc.text(";"),
-                switch ((optexpression2,optexpression3)) {
-                | (None,None) => Doc.nil
+                switch (optexpression2, optexpression3) {
+                | (None, None) => Doc.nil
                 | (None, Some(_)) => Doc.space
-                | (Some(expr),_) =>
+                | (Some(expr), _) =>
                   Doc.concat([
                     Doc.line,
                     Doc.group(
@@ -2962,9 +2962,9 @@ and print_expression =
                 switch (optexpression3) {
                 | Some(expr) =>
                   Doc.concat([
-                    switch(expr.pexp_desc) {
-                      | PExpBlock(_) => Doc.space 
-                      | _ => Doc.line
+                    switch (expr.pexp_desc) {
+                    | PExpBlock(_) => Doc.space
+                    | _ => Doc.line
                     },
                     Doc.group(
                       print_expression(
@@ -3098,21 +3098,18 @@ and print_expression =
             ~comments=comments_in_expression,
             expression,
           );
-        if (Doc.willBreak(out)) {
-          Doc.concat([
-            Doc.group(
-              Doc.concat([args, Doc.space, Doc.text("=>"), Doc.space]),
-            ),
-            out,
-          ]);
-        } else {
-          Doc.concat([
-            Doc.group(
-              Doc.concat([args, Doc.space, Doc.text("=>"), Doc.line]),
-            ),
-            out,
-          ]);
-        };
+
+        Doc.concat([
+          Doc.group(
+            Doc.concat([
+              args,
+              Doc.space,
+              Doc.text("=>"),
+              Doc.ifBreaks(Doc.space, Doc.line),
+            ]),
+          ),
+          out,
+        ]);
       | _ =>
         Doc.concat([
           args,
