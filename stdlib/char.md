@@ -17,7 +17,7 @@ import Char from "char"
 
 ## Values
 
-Functions for working with the Char data type.
+Functions and constants included in the Char module.
 
 ### Char.**min**
 
@@ -132,7 +132,8 @@ No other changes yet.
 succ : Char -> Char
 ```
 
-Returns the next valid Unicode character by code point. Throws if the input character is the max valid code point.
+Returns the next valid Unicode character by code point.
+Throws if the input character is the max valid code point.
 
 Parameters:
 
@@ -157,7 +158,8 @@ No other changes yet.
 pred : Char -> Char
 ```
 
-Returns the previous valid Unicode character by code point. Throws if the input character is the min valid code point.
+Returns the previous valid Unicode character by code point.
+Throws if the input character is the min valid code point.
 
 Parameters:
 
