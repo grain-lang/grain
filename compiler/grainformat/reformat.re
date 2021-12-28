@@ -1848,11 +1848,7 @@ and print_arg_lambda =
               block_expressions,
             );
           let start_after_brace =
-            Doc.concat([
-             // force_break_if_line_comment(after_brace_comments, Doc.softLine),
-              Doc.hardLine,
-              printed_expressions,
-            ]);
+            Doc.concat([Doc.hardLine, printed_expressions]);
 
           Doc.concat([
             Doc.lbrace,
@@ -3157,7 +3153,7 @@ and print_expression =
 
         let start_after_brace =
           Doc.concat([
-           // force_break_if_line_comment(after_brace_comments, Doc.line),
+            // force_break_if_line_comment(after_brace_comments, Doc.line),
             Doc.hardLine,
             printed_expressions,
           ]);
@@ -3220,26 +3216,26 @@ and print_expression =
               | [expression] =>
                 let expr =
                   print_expression(~original_source, ~comments, expression);
-                if (Doc.willIndent(expr)) {
-                  expr;
-                } else {
+                switch (expression.pexp_desc) {
+                | PExpIf(_) =>
                   Doc.indent(
                     print_expression(~original_source, ~comments, expression),
-                  );
+                  )
+                | _ => expr
                 };
               | [expression1, expression2, ...rest] =>
                 let expr =
                   print_expression(~original_source, ~comments, expression2);
-                if (Doc.willIndent(expr)) {
-                  expr;
-                } else {
+                switch (expression2.pexp_desc) {
+                | PExpIf(_) =>
                   Doc.indent(
                     print_expression(
                       ~original_source,
                       ~comments,
                       expression2,
                     ),
-                  );
+                  )
+                | _ => expr
                 };
               },
             ]);
@@ -3743,12 +3739,7 @@ let rec print_data =
         label_declarations,
       );
     let printed_decls = Doc.join(Doc.hardLine, decl_items);
-    let printed_decls_after_brace =
-      Doc.concat([
-        // force_break_if_line_comment(after_brace_comments, Doc.line),
-        Doc.hardLine,
-        printed_decls,
-      ]);
+    let printed_decls_after_brace = Doc.concat([Doc.hardLine, printed_decls]);
 
     Doc.group(
       Doc.concat([
