@@ -26,7 +26,10 @@ export let pop = queue => {
   }
 }
 
-enum Foo<a, b, c> { A(a, b), B(b, c) }
+enum Foo<a, b, c> {
+  A(a, b),
+  B(b, c),
+}
 
 match (A(1, 2)) {
   A(a, b) => true,
