@@ -17,7 +17,7 @@ depends: [
   "ppxlib" {>= "0.15.0"}
   "re" {with-test}
   "cmdliner"
-  "menhir"
+  "menhir" {< "20211215"}
   "menhirLib"
   "menhirSdk"
   "yojson"
@@ -27,6 +27,7 @@ depopts: ["ocamlfind"]
 conflicts: [
   "ocamlfind" {< "1.5.1"}
   "js_of_ocaml" {< "3.0"}
+  "base-domains"
 ]
 dev-repo: "git+https://github.com/ocsigen/js_of_ocaml.git"
 build: [
