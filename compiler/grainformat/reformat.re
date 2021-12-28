@@ -2943,8 +2943,10 @@ and print_expression =
                 | None => Doc.nil
                 },
                 Doc.text(";"),
-                switch (optexpression2) {
-                | Some(expr) =>
+                switch ((optexpression2,optexpression3)) {
+                | (None,None) => Doc.nil
+                | (None, Some(_)) => Doc.space
+                | (Some(expr),_) =>
                   Doc.concat([
                     Doc.line,
                     Doc.group(
@@ -2955,13 +2957,15 @@ and print_expression =
                       ),
                     ),
                   ])
-                | None => Doc.nil
                 },
                 Doc.text(";"),
                 switch (optexpression3) {
                 | Some(expr) =>
                   Doc.concat([
-                    Doc.line,
+                    switch(expr.pexp_desc) {
+                      | PExpBlock(_) => Doc.space 
+                      | _ => Doc.line
+                    },
                     Doc.group(
                       print_expression(
                         ~original_source,
