@@ -16,6 +16,10 @@ import { tagSimpleNumber, allocateChar, allocateString } from "runtime/dataStruc
 exception MalformedUtf8
 
 /**
+ * @section Values: Functions for working with the Char data type.
+ */
+
+/**
  * The minimum valid Unicode scalar value.
  * 
  * @since 0.3.0
@@ -43,16 +47,16 @@ export let isValid = (charCode) => {
 /**
  * Determines the Unicode code point for the given Char.
  * 
- * @param character: The character
+ * @param char: The character
  * @returns The Unicode code point for the given character
  * 
  * @since 0.3.0
  */
 @disableGC
-export let rec code = (character: Char) => {
+export let rec code = (char: Char) => {
   // Algorithm from https://encoding.spec.whatwg.org/#utf-8-decoder
 
-  let character = WasmI32.fromGrain(character)
+  let char = WasmI32.fromGrain(char)
 
   let (+) = WasmI32.add
   let (==) = WasmI32.eq
@@ -73,7 +77,7 @@ export let rec code = (character: Char) => {
   let mut result = 0n
 
   while (true) {
-    let byte = WasmI32.load8U(character + offset, 4n)
+    let byte = WasmI32.load8U(char + offset, 4n)
     offset += 1n
     if (bytesNeeded == 0n) {
       if (byte >= 0x00n && byte <= 0x7Fn) {
@@ -110,7 +114,7 @@ export let rec code = (character: Char) => {
     }
   }
 
-  Memory.decRef(character)
+  Memory.decRef(char)
   Memory.decRef(WasmI32.fromGrain(code))
   tagSimpleNumber(result)
 }
