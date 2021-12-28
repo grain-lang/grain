@@ -1,7 +1,7 @@
 /**
  * @module Char: Utilities for working with the Char data type.
  *
- * The Char type that represents a single [Unicode scalar value](https://www.unicode.org/glossary/#unicode_scalar_value).
+ * The Char type represents a single [Unicode scalar value](https://www.unicode.org/glossary/#unicode_scalar_value).
  *
  * @example import Char from "char"
  * 
