@@ -16,7 +16,7 @@ import { tagSimpleNumber, allocateChar, allocateString } from "runtime/dataStruc
 exception MalformedUtf8
 
 /**
- * @section Values: Functions for working with the Char data type.
+ * @section Values: Functions and constants included in the Char module.
  */
 
 /**
@@ -187,7 +187,8 @@ export let rec fromCode = (codePoint: Number) => {
 }
 
 /**
- * Returns the next valid Unicode character by code point. Throws if the input character is the max valid code point.
+ * Returns the next valid Unicode character by code point.
+ * Throws if the input character is the max valid code point.
  * 
  * @param char: The character
  * @returns The next valid Unicode character by code point
@@ -206,7 +207,8 @@ export let succ = (char) => {
 }
 
 /**
- * Returns the previous valid Unicode character by code point. Throws if the input character is the min valid code point.
+ * Returns the previous valid Unicode character by code point.
+ * Throws if the input character is the min valid code point.
  * 
  * @param char: The character
  * @returns The previous valid Unicode character by code point
