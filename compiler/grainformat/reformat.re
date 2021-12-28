@@ -2512,16 +2512,34 @@ and print_expression =
                 ),
                 Doc.space,
                 Doc.text("=>"),
-                Doc.group(
+                switch (branch.pmb_body.pexp_desc) {
+                | PExpBlock(_)
+                | PExpIf(_) =>
                   Doc.concat([
                     Doc.space,
-                    print_expression(
-                      ~original_source,
-                      ~comments=branch_comments,
-                      branch.pmb_body,
+                    Doc.group(
+                      print_expression(
+                        ~original_source,
+                        ~comments=branch_comments,
+                        branch.pmb_body,
+                      ),
                     ),
-                  ]),
-                ),
+                  ])
+
+                | _ =>
+                  Doc.indent(
+                    Doc.concat([
+                      Doc.line,
+                      Doc.group(
+                        print_expression(
+                          ~original_source,
+                          ~comments=branch_comments,
+                          branch.pmb_body,
+                        ),
+                      ),
+                    ]),
+                  )
+                },
               ]);
             },
           ]),
