@@ -1,6 +1,9 @@
 import List from "list"
 
-record Queue<a> { forwards: List<a>, backwards: List<a> }
+record Queue<a> {
+  forwards: List<a>,
+  backwards: List<a>,
+}
 
 export let push = (value, queue) => {
   match (queue) {
@@ -23,7 +26,10 @@ export let pop = queue => {
   }
 }
 
-enum Foo<a, b, c> { A(a, b), B(b, c) }
+enum Foo<a, b, c> {
+  A(a, b),
+  B(b, c),
+}
 
 match (A(1, 2)) {
   A(a, b) => true,

@@ -1,4 +1,6 @@
-init(position, index => {filtered[index]})
+init(position, index => {
+  filtered[index]
+})
 
 forEach(el => if (fn(el)) {
   filtered[position] = el
@@ -16,10 +18,14 @@ init3(index => {
 }, positions)
 
 [
-  fn(x => {let _ = x}),
+  fn(x => {
+    let _ = x
+  }),
   fn(y => {
     let _ = y
     void
   }),
-  fn(z => {let _ = z}),
+  fn(z => {
+    let _ = z
+  }),
 ]

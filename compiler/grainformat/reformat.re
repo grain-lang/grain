@@ -1849,7 +1849,8 @@ and print_arg_lambda =
             );
           let start_after_brace =
             Doc.concat([
-              force_break_if_line_comment(after_brace_comments, Doc.softLine),
+             // force_break_if_line_comment(after_brace_comments, Doc.softLine),
+              Doc.hardLine,
               printed_expressions,
             ]);
 
@@ -1857,7 +1858,7 @@ and print_arg_lambda =
             Doc.lbrace,
             Comment_utils.single_line_of_comments(after_brace_comments),
             Doc.indent(start_after_brace),
-            Doc.softLine,
+            Doc.hardLine,
             Doc.rbrace,
           ]);
         };
@@ -3156,7 +3157,8 @@ and print_expression =
 
         let start_after_brace =
           Doc.concat([
-            force_break_if_line_comment(after_brace_comments, Doc.line),
+           // force_break_if_line_comment(after_brace_comments, Doc.line),
+            Doc.hardLine,
             printed_expressions,
           ]);
 
@@ -3166,7 +3168,7 @@ and print_expression =
             Doc.lbrace,
             Comment_utils.single_line_of_comments(after_brace_comments),
             Doc.indent(start_after_brace),
-            Doc.line,
+            Doc.hardLine,
             Doc.rbrace,
           ]),
         );
@@ -3622,11 +3624,11 @@ let rec print_data =
         ~separator=Doc.comma,
         constr_declarations,
       );
-    let printed_decls = Doc.join(Doc.line, decl_items);
+    let printed_decls = Doc.join(Doc.hardLine, decl_items);
 
     let printed_decls_after_brace =
       Doc.concat([
-        force_break_if_line_comment(after_brace_comments, Doc.line),
+        force_break_if_line_comment(after_brace_comments, Doc.hardLine),
         printed_decls,
       ]);
 
@@ -3680,11 +3682,15 @@ let rec print_data =
 
           Doc.group(
             Doc.concat([
-              Doc.text("<"),
-              Comment_utils.single_line_of_comments(after_angle_comments),
-              Doc.indent(printed_data_params_after_angle),
-              Doc.softLine,
-              Doc.text(">"),
+              Doc.group(
+                Doc.concat([
+                  Doc.text("<"),
+                  Comment_utils.single_line_of_comments(after_angle_comments),
+                  Doc.indent(printed_data_params_after_angle),
+                  Doc.softLine,
+                  Doc.text(">"),
+                ]),
+              ),
               Doc.space,
             ]),
           );
@@ -3693,7 +3699,7 @@ let rec print_data =
         Comment_utils.single_line_of_comments(after_brace_comments),
         Doc.indent(printed_decls_after_brace),
         Doc.ifBreaks(Doc.comma, Doc.nil),
-        Doc.line,
+        Doc.hardLine,
         Doc.rbrace,
       ]),
     );
