@@ -12,7 +12,9 @@ import List from "list"
 /**
  * Stacks are immutable data structures that store their data in a List.
  */
-record Stack<a> { data: List<a> }
+record Stack<a> {
+  data: List<a>,
+}
 
 /**
  * @section Values: Functions and constants included in the Stack module.

@@ -8,9 +8,16 @@ import WasmI32 from "runtime/unsafe/wasmi32"
 import { allocateArray } from "runtime/dataStructures"
 
 // TODO: Consider implementing this as List<(Box<k>, Box<v>)>
-record Bucket<k, v> { mut key: k, mut value: v, mut next: Option<Bucket<k, v>> }
+record Bucket<k, v> {
+  mut key: k,
+  mut value: v,
+  mut next: Option<Bucket<k, v>>,
+}
 
-record Map<k, v> { mut size: Number, mut buckets: Array<Option<Bucket<k, v>>> }
+record Map<k, v> {
+  mut size: Number,
+  mut buckets: Array<Option<Bucket<k, v>>>,
+}
 
 // TODO: This could take an `eq` function to custom comparisons
 export let makeSized = size => {

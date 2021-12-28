@@ -8,9 +8,15 @@ import List from "list"
 import Array from "array"
 import { hash } from "hash"
 
-record Bucket<t> { mut key: t, mut next: Option<Bucket<t>> }
+record Bucket<t> {
+  mut key: t,
+  mut next: Option<Bucket<t>>,
+}
 
-record Set<k> { mut size: Number, mut buckets: Array<Option<Bucket<k>>> }
+record Set<k> {
+  mut size: Number,
+  mut buckets: Array<Option<Bucket<k>>>,
+}
 
 // TODO: This could take an `eq` function to custom comparisons
 /**

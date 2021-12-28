@@ -371,7 +371,11 @@ export record Filestats {
 /**
  * An entry in a directory.
  */
-export record DirectoryEntry { inode: Int64, filetype: Filetype, path: String }
+export record DirectoryEntry {
+  inode: Int64,
+  filetype: Filetype,
+  path: String,
+}
 
 /**
  * @section Values: Functions and constants included in the Sys/File module.
