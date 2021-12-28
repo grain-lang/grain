@@ -1398,8 +1398,7 @@ let rec parseAtom = (buf: RegExBuf) => {
         let catNegated = if (peek(buf) == Ok('^')) {
           ignore(eat(buf, '^'))
           true
-        }
-        else {
+        } else {
           false
         }
         let rec loop = acc => {
@@ -2897,8 +2896,7 @@ let lazyRepeatMatcher = (r_m, min, max, next_m) =>
       }
     ) {
       next_m(buf, pos, start, limit, end, state, stack)
-    }
-    else {
+    } else {
       match (next_m(buf, pos, start, limit, end, state, stack)) {
         Some(p) => Some(p),
         None => rloop(pos, n, min + 1),
@@ -2931,8 +2929,7 @@ let lazyRepeatSimpleMatcher = (r_m, min, max, next_m) =>
       }
     ) {
       next_m(buf, pos, start, limit, end, state, stack)
-    }
-    else {
+    } else {
       match (next_m(buf, pos, start, limit, end, state, stack)) {
         Some(p) => Some(p),
         None => rloop(pos, n, min + 1),
@@ -3015,8 +3012,7 @@ let makeReferenceMatcher = eq => (n, next_m) =>
         )
       ) {
         next_m(buf, pos + len, start, limit, end, state, stack)
-      }
-      else {
+      } else {
         None
       }
     },
@@ -3668,8 +3664,7 @@ let makeMatchResult = (origString, start, end, state) => {
       Some((start, end))
     } else if (n < 0 || n - 1 > Array.length(state)) {
       None
-    }
-    else {
+    } else {
       match (state[n - 1]) {
         None => None,
         Some((start, end)) => Some((start, end)),

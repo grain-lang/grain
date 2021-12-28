@@ -1292,7 +1292,7 @@ let grisu2 = (value, buffer, sign) => {
   ) // dk must be positive, so can do ceiling in positive
   let mut k = WasmI32.truncF64S(dk)
   k += if (WasmF64.ne(WasmF64.convertI32S(k), dk)) 1n
-  else 0n // conversion with ceil
+    else 0n // conversion with ceil
 
   let index = WasmI32.shrS(k, 3n) + 1n
   _K = 348n - (index << 3n) // decimal exponent doesn't need lookup table
