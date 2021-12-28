@@ -2822,11 +2822,12 @@ and print_expression =
                     | _ => Doc.ifBreaks(Doc.nil, Doc.space)
                     },
                     Doc.group(
-                    print_expression(
-                      ~original_source,
-                      ~comments=commentsInCondition,
-                      condition,
-                    )),
+                      print_expression(
+                        ~original_source,
+                        ~comments=commentsInCondition,
+                        condition,
+                      ),
+                    ),
                     if (cond_trailing_comment == []) {
                       Doc.nil;
                     } else {
