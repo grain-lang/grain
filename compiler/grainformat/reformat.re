@@ -2806,38 +2806,43 @@ and print_expression =
           Doc.concat([
             Doc.text("if"),
             Doc.space,
-            Doc.lparen,
-            Doc.indent(
+            Doc.group(
               Doc.concat([
-                Doc.softLine,
-                Comment_utils.inbetween_comments_to_docs(
-                  ~offset=false,
-                  ~bracket_line=None,
-                  cond_leading_comment,
-                ),
-                switch (cond_leading_comment) {
-                | [] => Doc.nil
-                | _ => Doc.ifBreaks(Doc.nil, Doc.space)
-                },
-                print_expression(
-                  ~original_source,
-                  ~comments=commentsInCondition,
-                  condition,
-                ),
-                if (cond_trailing_comment == []) {
-                  Doc.nil;
-                } else {
+                Doc.lparen,
+                Doc.indent(
                   Doc.concat([
-                    Doc.space,
-                    Comment_utils.block_trailing_comments_docs(
-                      cond_trailing_comment,
+                    Doc.softLine,
+                    Comment_utils.inbetween_comments_to_docs(
+                      ~offset=false,
+                      ~bracket_line=None,
+                      cond_leading_comment,
                     ),
-                  ]);
-                },
+                    switch (cond_leading_comment) {
+                    | [] => Doc.nil
+                    | _ => Doc.ifBreaks(Doc.nil, Doc.space)
+                    },
+                    Doc.group(
+                    print_expression(
+                      ~original_source,
+                      ~comments=commentsInCondition,
+                      condition,
+                    )),
+                    if (cond_trailing_comment == []) {
+                      Doc.nil;
+                    } else {
+                      Doc.concat([
+                        Doc.space,
+                        Comment_utils.block_trailing_comments_docs(
+                          cond_trailing_comment,
+                        ),
+                      ]);
+                    },
+                  ]),
+                ),
+                Doc.softLine,
+                Doc.rparen,
               ]),
             ),
-            Doc.softLine,
-            Doc.rparen,
           ]),
         ),
         Doc.group(true_clause),
