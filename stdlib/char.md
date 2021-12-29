@@ -81,7 +81,7 @@ No other changes yet.
 code : Char -> Number
 ```
 
-Determines the Unicode Unicode scalar value for the given Char.
+Determines the Unicode scalar value for the given Char.
 
 Parameters:
 
@@ -93,7 +93,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Number`|The Unicode Unicode scalar value for the given character|
+|`Number`|The Unicode scalar value for the given character|
 
 ### Char.**fromCode**
 
@@ -106,14 +106,14 @@ No other changes yet.
 fromCode : Number -> Char
 ```
 
-Creates a character from the given Unicode Unicode scalar value.
+Creates a character from the given Unicode scalar value.
 Throws an exception if the Unicode scalar value is invalid.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`codePoint`|`Number`|The Unicode Unicode scalar value|
+|`codePoint`|`Number`|The Unicode scalar value|
 
 Returns:
 
