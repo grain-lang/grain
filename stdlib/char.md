@@ -2,7 +2,7 @@
 title: Char
 ---
 
-Utilities for working with the Char data type.
+Utilities for working with the Char type.
 
 The Char type represents a single [Unicode scalar value](https://www.unicode.org/glossary/#unicode_scalar_value).
 
@@ -81,7 +81,7 @@ No other changes yet.
 code : Char -> Number
 ```
 
-Determines the Unicode scalar value for the given Char.
+Determines the Unicode scalar value for a character.
 
 Parameters:
 
