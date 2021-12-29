@@ -90,7 +90,7 @@ export let rec sqrt = (x: Number) => {
  * Determine the positivity or negativity of a Number.
  *
  * @param x: The number to inspect
- * @returns `-1` if the number is negative, `1` if positive, or +/-`0` otherwise
+ * @returns `-1` if the number is negative, `1` if positive, or `0` otherwise; signedness of `-0.0` is preserved
  *
  * @example Number.sign(-10000) == -1
  * @example Number.sign(222222) == 1
