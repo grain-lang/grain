@@ -94,7 +94,7 @@ export let rec sqrt = (x: Number) => {
  *
  * @example Number.sign(-10000) == -1
  * @example Number.sign(222222) == 1
- * @example Number.sign(-0.0) == -0.0
+ * @example Number.sign(0) == 0
  */
 export let sign = x => {
   match (x) {
