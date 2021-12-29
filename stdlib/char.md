@@ -81,7 +81,7 @@ No other changes yet.
 code : Char -> Number
 ```
 
-Determines the Unicode code point for the given Char.
+Determines the Unicode Unicode scalar valu for the given Char.
 
 Parameters:
 
@@ -93,7 +93,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Number`|The Unicode code point for the given character|
+|`Number`|The Unicode Unicode scalar valu for the given character|
 
 ### Char.**fromCode**
 
@@ -106,20 +106,20 @@ No other changes yet.
 fromCode : Number -> Char
 ```
 
-Determines the character from the given Unicode code point.
-Throws an exception if the code point is invalid.
+Creates a character from the given Unicode Unicode scalar valu.
+Throws an exception if the Unicode scalar valu is invalid.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`codePoint`|`Number`|The Unicode code point|
+|`codePoint`|`Number`|The Unicode Unicode scalar valu|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Char`|The character for the given code point|
+|`Char`|The character for the given Unicode scalar valu|
 
 ### Char.**succ**
 
@@ -132,8 +132,8 @@ No other changes yet.
 succ : Char -> Char
 ```
 
-Returns the next valid Unicode character by code point.
-Throws if the input character is the max valid code point.
+Returns the next valid Unicode character by Unicode scalar valu.
+Throws if the input character is the max valid Unicode scalar valu.
 
 Parameters:
 
@@ -145,7 +145,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Char`|The next valid Unicode character by code point|
+|`Char`|The next valid Unicode character by Unicode scalar valu|
 
 ### Char.**pred**
 
@@ -158,8 +158,8 @@ No other changes yet.
 pred : Char -> Char
 ```
 
-Returns the previous valid Unicode character by code point.
-Throws if the input character is the min valid code point.
+Returns the previous valid Unicode character by Unicode scalar valu.
+Throws if the input character is the min valid Unicode scalar valu.
 
 Parameters:
 
@@ -171,7 +171,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Char`|The previous valid Unicode character by code point|
+|`Char`|The previous valid Unicode character by Unicode scalar valu|
 
 ### Char.**toString**
 
