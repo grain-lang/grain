@@ -120,7 +120,7 @@ export let rec code = (char: Char) => {
 }
 
 /**
- * Determines the character from the given Unicode code point.
+ * Creates a character from the given Unicode code point.
  * Throws an exception if the code point is invalid.
  * 
  * @param codePoint: The Unicode code point
