@@ -123,13 +123,13 @@ export let rec code = (char: Char) => {
  * Creates a character from the given Unicode scalar value.
  * Throws an exception if the Unicode scalar value is invalid.
  * 
- * @param codePoint: The Unicode scalar value
+ * @param usv: The Unicode scalar value
  * @returns The character for the given Unicode scalar value
  * 
  * @since 0.3.0
  */
 @disableGC
-export let rec fromCode = (codePoint: Number) => {
+export let rec fromCode = (usv: Number) => {
   // Algorithm from https://encoding.spec.whatwg.org/#utf-8-encoder
 
   let (+) = WasmI32.add
@@ -143,23 +143,23 @@ export let rec fromCode = (codePoint: Number) => {
   let (&) = WasmI32.and
   let (|) = WasmI32.or
 
-  let codePoint = WasmI32.fromGrain(codePoint)
-  if ((codePoint & 1n) == 0n) {
+  let usv = WasmI32.fromGrain(usv)
+  if ((usv & 1n) == 0n) {
     throw InvalidArgument("Invalid character code")
   }
 
-  let codePoint = codePoint >>> 1n
-  let result = if (codePoint < 0x80n) {
+  let usv = usv >>> 1n
+  let result = if (usv < 0x80n) {
     let char = allocateChar()
-    WasmI32.store8(char, codePoint, 4n)
+    WasmI32.store8(char, usv, 4n)
     WasmI32.toGrain(char): Char
   } else {
     let mut count = 0n
     let mut offset = 0n
-    if (codePoint <= 0x07FFn) {
+    if (usv <= 0x07FFn) {
       count = 1n
       offset = 0xC0n
-    } else if (codePoint <= 0xFFFFn) {
+    } else if (usv <= 0xFFFFn) {
       count = 2n
       offset = 0xE0n
     } else {
@@ -167,12 +167,12 @@ export let rec fromCode = (codePoint: Number) => {
       offset = 0xF0n
     }
     let char = allocateChar()
-    WasmI32.store8(char, (codePoint >>> (6n * count)) + offset, 4n)
+    WasmI32.store8(char, (usv >>> (6n * count)) + offset, 4n)
 
     let mut n = 0n
     while (count > 0n) {
       n += 1n
-      let temp = codePoint >>> (6n * (count - 1n))
+      let temp = usv >>> (6n * (count - 1n))
       WasmI32.store8(char + n, 0x80n | (temp & 0x3Fn), 4n)
       count -= 1n
     }
@@ -187,7 +187,7 @@ export let rec fromCode = (codePoint: Number) => {
 }
 
 /**
- * Returns the next valid Unicode character by Unicode scalar value.
+ * Returns the next valid character by Unicode scalar value.
  * Throws if the input character is the max valid Unicode scalar value.
  * 
  * @param char: The character
@@ -207,7 +207,7 @@ export let succ = (char) => {
 }
 
 /**
- * Returns the previous valid Unicode character by Unicode scalar value.
+ * Returns the previous valid character by Unicode scalar value.
  * Throws if the input character is the min valid Unicode scalar value.
  * 
  * @param char: The character

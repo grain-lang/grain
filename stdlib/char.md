@@ -113,7 +113,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`codePoint`|`Number`|The Unicode scalar value|
+|`usv`|`Number`|The Unicode scalar value|
 
 Returns:
 
@@ -132,7 +132,7 @@ No other changes yet.
 succ : Char -> Char
 ```
 
-Returns the next valid Unicode character by Unicode scalar value.
+Returns the next valid character by Unicode scalar value.
 Throws if the input character is the max valid Unicode scalar value.
 
 Parameters:
@@ -158,7 +158,7 @@ No other changes yet.
 pred : Char -> Char
 ```
 
-Returns the previous valid Unicode character by Unicode scalar value.
+Returns the previous valid character by Unicode scalar value.
 Throws if the input character is the min valid Unicode scalar value.
 
 Parameters:
