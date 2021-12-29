@@ -145,7 +145,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Char`|The next valid Unicode character by Unicode scalar value|
+|`Char`|The next valid character by Unicode scalar value|
 
 ### Char.**pred**
 
@@ -171,7 +171,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Char`|The previous valid Unicode character by Unicode scalar value|
+|`Char`|The previous valid character by Unicode scalar value|
 
 ### Char.**toString**
 

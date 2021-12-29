@@ -191,7 +191,7 @@ export let rec fromCode = (usv: Number) => {
  * Throws if the input character is the max valid Unicode scalar value.
  * 
  * @param char: The character
- * @returns The next valid Unicode character by Unicode scalar value
+ * @returns The next valid character by Unicode scalar value
  * 
  * @since 0.3.0
  */
@@ -211,7 +211,7 @@ export let succ = (char) => {
  * Throws if the input character is the min valid Unicode scalar value.
  * 
  * @param char: The character
- * @returns The previous valid Unicode character by Unicode scalar value
+ * @returns The previous valid character by Unicode scalar value
  * 
  * @since 0.3.0
  */
