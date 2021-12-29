@@ -45,10 +45,10 @@ export let isValid = (charCode) => {
 }
 
 /**
- * Determines the Unicode Unicode scalar valu for the given Char.
+ * Determines the Unicode Unicode scalar value for the given Char.
  * 
  * @param char: The character
- * @returns The Unicode Unicode scalar valu for the given character
+ * @returns The Unicode Unicode scalar value for the given character
  * 
  * @since 0.3.0
  */
@@ -120,11 +120,11 @@ export let rec code = (char: Char) => {
 }
 
 /**
- * Creates a character from the given Unicode Unicode scalar valu.
- * Throws an exception if the Unicode scalar valu is invalid.
+ * Creates a character from the given Unicode Unicode scalar value.
+ * Throws an exception if the Unicode scalar value is invalid.
  * 
- * @param codePoint: The Unicode Unicode scalar valu
- * @returns The character for the given Unicode scalar valu
+ * @param codePoint: The Unicode Unicode scalar value
+ * @returns The character for the given Unicode scalar value
  * 
  * @since 0.3.0
  */
@@ -187,18 +187,18 @@ export let rec fromCode = (codePoint: Number) => {
 }
 
 /**
- * Returns the next valid Unicode character by Unicode scalar valu.
- * Throws if the input character is the max valid Unicode scalar valu.
+ * Returns the next valid Unicode character by Unicode scalar value.
+ * Throws if the input character is the max valid Unicode scalar value.
  * 
  * @param char: The character
- * @returns The next valid Unicode character by Unicode scalar valu
+ * @returns The next valid Unicode character by Unicode scalar value
  * 
  * @since 0.3.0
  */
 export let succ = (char) => {
   let codePoint = code(char)
   if (codePoint == max) {
-    fail "no valid Unicode Unicode scalar valu past U+10FFF"
+    fail "no valid Unicode Unicode scalar value past U+10FFF"
   } else if (codePoint == 0xD7FF) {
     fromCode(0xE000)
   } else {
@@ -207,18 +207,18 @@ export let succ = (char) => {
 }
 
 /**
- * Returns the previous valid Unicode character by Unicode scalar valu.
- * Throws if the input character is the min valid Unicode scalar valu.
+ * Returns the previous valid Unicode character by Unicode scalar value.
+ * Throws if the input character is the min valid Unicode scalar value.
  * 
  * @param char: The character
- * @returns The previous valid Unicode character by Unicode scalar valu
+ * @returns The previous valid Unicode character by Unicode scalar value
  * 
  * @since 0.3.0
  */
 export let pred = (char) => {
   let codePoint = code(char)
   if (codePoint == min) {
-    fail "no valid Unicode Unicode scalar valu below U+0000"
+    fail "no valid Unicode Unicode scalar value below U+0000"
   } else if (codePoint == 0xE000) {
     fromCode(0xD7FF)
   } else {

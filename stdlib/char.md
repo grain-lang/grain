@@ -81,7 +81,7 @@ No other changes yet.
 code : Char -> Number
 ```
 
-Determines the Unicode Unicode scalar valu for the given Char.
+Determines the Unicode Unicode scalar value for the given Char.
 
 Parameters:
 
@@ -93,7 +93,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Number`|The Unicode Unicode scalar valu for the given character|
+|`Number`|The Unicode Unicode scalar value for the given character|
 
 ### Char.**fromCode**
 
@@ -106,20 +106,20 @@ No other changes yet.
 fromCode : Number -> Char
 ```
 
-Creates a character from the given Unicode Unicode scalar valu.
-Throws an exception if the Unicode scalar valu is invalid.
+Creates a character from the given Unicode Unicode scalar value.
+Throws an exception if the Unicode scalar value is invalid.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`codePoint`|`Number`|The Unicode Unicode scalar valu|
+|`codePoint`|`Number`|The Unicode Unicode scalar value|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Char`|The character for the given Unicode scalar valu|
+|`Char`|The character for the given Unicode scalar value|
 
 ### Char.**succ**
 
@@ -132,8 +132,8 @@ No other changes yet.
 succ : Char -> Char
 ```
 
-Returns the next valid Unicode character by Unicode scalar valu.
-Throws if the input character is the max valid Unicode scalar valu.
+Returns the next valid Unicode character by Unicode scalar value.
+Throws if the input character is the max valid Unicode scalar value.
 
 Parameters:
 
@@ -145,7 +145,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Char`|The next valid Unicode character by Unicode scalar valu|
+|`Char`|The next valid Unicode character by Unicode scalar value|
 
 ### Char.**pred**
 
@@ -158,8 +158,8 @@ No other changes yet.
 pred : Char -> Char
 ```
 
-Returns the previous valid Unicode character by Unicode scalar valu.
-Throws if the input character is the min valid Unicode scalar valu.
+Returns the previous valid Unicode character by Unicode scalar value.
+Throws if the input character is the min valid Unicode scalar value.
 
 Parameters:
 
@@ -171,7 +171,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Char`|The previous valid Unicode character by Unicode scalar valu|
+|`Char`|The previous valid Unicode character by Unicode scalar value|
 
 ### Char.**toString**
 
