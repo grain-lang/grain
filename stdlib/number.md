@@ -142,6 +142,40 @@ Returns:
 |----|-----------|
 |`Number`|The square root of the operand|
 
+### Number.**sign**
+
+```grain
+sign : Number -> Number
+```
+
+Determine the positivity or negativity of a Number.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Number`|The number to inspect|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|`-1` if the number is negative, `1` if positive, or `0` otherwise; signedness of `-0.0` is preserved|
+
+Examples:
+
+```grain
+Number.sign(-10000) == -1
+```
+
+```grain
+Number.sign(222222) == 1
+```
+
+```grain
+Number.sign(0) == 0
+```
+
 ### Number.**min**
 
 <details disabled>
