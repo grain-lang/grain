@@ -92,9 +92,9 @@ export let rec sqrt = (x: Number) => {
  * @param x: The number to inspect
  * @returns `-1` if the number is negative, `1` if positive, or +/-`0` otherwise
  *
- * @example Math.sign(-10000) == -1
- * @example Math.sign(222222) == 1
- * @example Math.sign(-0.0) == -0.0
+ * @example Number.sign(-10000) == -1
+ * @example Number.sign(222222) == 1
+ * @example Number.sign(-0.0) == -0.0
  */
 export let sign = x => {
   match (x) {
