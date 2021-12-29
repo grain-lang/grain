@@ -160,20 +160,20 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Number`|`-1` if the number is negative, `1` if positive, or +/-`0` otherwise|
+|`Number`|`-1` if the number is negative, `1` if positive, or `0` otherwise; signedness of `-0.0` is preserved|
 
 Examples:
 
 ```grain
-Math.sign(-10000) == -1
+Number.sign(-10000) == -1
 ```
 
 ```grain
-Math.sign(222222) == 1
+Number.sign(222222) == 1
 ```
 
 ```grain
-Math.sign(-0.0) == -0.0
+Number.sign(0) == 0
 ```
 
 ### Number.**min**
