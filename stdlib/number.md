@@ -173,7 +173,7 @@ Math.sign(222222) == 1
 ```
 
 ```grain
-Math.sign(-0) == -0
+Math.sign(-0.0) == -0.0
 ```
 
 ### Number.**min**
