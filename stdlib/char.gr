@@ -1,5 +1,5 @@
 /**
- * @module Char: Utilities for working with the Char data type.
+ * @module Char: Utilities for working with the Char type.
  *
  * The Char type represents a single [Unicode scalar value](https://www.unicode.org/glossary/#unicode_scalar_value).
  *
@@ -45,7 +45,7 @@ export let isValid = (charCode) => {
 }
 
 /**
- * Determines the Unicode scalar value for the given Char.
+ * Determines the Unicode scalar value for a character.
  * 
  * @param char: The character
  * @returns The Unicode scalar value for the given character
