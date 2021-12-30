@@ -17,18 +17,18 @@ import WasmI32, {
   shl as (<<),
   shrU as (>>),
   eq as (==),
-  ne as (!=)
+  ne as (!=),
 } from "runtime/unsafe/wasmi32"
 import Exception from "runtime/exception"
 
 primitive memorySize: () -> WasmI32 = "@wasm.memory_size"
-primitive memoryGrow: (WasmI32) -> WasmI32 = "@wasm.memory_grow"
+primitive memoryGrow: WasmI32 -> WasmI32 = "@wasm.memory_grow"
 
-primitive (!) : Bool -> Bool = "@not"
-primitive (&&) : (Bool, Bool) -> Bool = "@and"
-primitive (||) : (Bool, Bool) -> Bool = "@or"
+primitive (!): Bool -> Bool = "@not"
+primitive (&&): (Bool, Bool) -> Bool = "@and"
+primitive (||): (Bool, Bool) -> Bool = "@or"
 
-primitive throw : Exception -> a = "@throw"
+primitive throw: Exception -> a = "@throw"
 
 /* UNDERSTANDING THE STRUCTURE OF THE FREE LIST
  * The original K&R definition for the free list entry type was the following:
@@ -130,7 +130,7 @@ let growHeap = (nbytes: WasmI32) => {
       // so we need to request more anyway.
       reqSize = nbytes - heapSize
       reqSize = reqSize >> 16n
-      reqSize = reqSize + 1n
+      reqSize += 1n
       reqResult = memoryGrow(reqSize)
       if (reqResult == -1n) {
         -1n
@@ -147,7 +147,7 @@ let growHeap = (nbytes: WasmI32) => {
 
     reqSize = nbytes
     reqSize = reqSize >> 16n
-    reqSize = reqSize + 1n
+    reqSize += 1n
 
     reqResult = memoryGrow(reqSize)
     if (reqResult == -1n) {
@@ -174,7 +174,10 @@ export let free = (ap: WasmI32) => {
     // Find the location to insert this block into the free list
     while (true) {
       let nextp = getNext(p)
-      if ( ((blockPtr > p) && (blockPtr < nextp)) || ((p >= nextp) && ((blockPtr > p) || (blockPtr < nextp))) ) {
+      if (
+        blockPtr > p && blockPtr < nextp ||
+        p >= nextp && (blockPtr > p || blockPtr < nextp)
+      ) {
         break
       }
       p = nextp
@@ -255,7 +258,12 @@ export let malloc = (nb: WasmI32) => {
   let mut ret = -1n
 
   // Search the freelist for any blocks large enough.
-  for (let mut p = getNext(prevp); ; {prevp = p; p = getNext(p)}) {
+  for (
+    let mut p = getNext(prevp); ; {
+      prevp = p
+      p = getNext(p)
+    }
+  ) {
     let size = getSize(p)
     if (size >= nbytes) {
       // If this block is big enough, allocate from it.
@@ -266,7 +274,7 @@ export let malloc = (nb: WasmI32) => {
         // Shrink it as needed
         let newSize = size - nbytes
         setSize(p, newSize)
-        p = p + newSize
+        p += newSize
         setSize(p, nbytes)
       }
       // Update the pointer to the free list.

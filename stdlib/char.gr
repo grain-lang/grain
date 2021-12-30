@@ -11,7 +11,11 @@
 import WasmI32 from "runtime/unsafe/wasmi32"
 import Memory from "runtime/unsafe/memory"
 import Errors from "runtime/unsafe/errors"
-import { tagSimpleNumber, allocateChar, allocateString } from "runtime/dataStructures"
+import {
+  tagSimpleNumber,
+  allocateChar,
+  allocateString,
+} from "runtime/dataStructures"
 
 exception MalformedUtf8
 
@@ -40,8 +44,10 @@ export let max = 0x10FFFF
  * 
  * @since 0.3.0
  */
-export let isValid = (charCode) => {
-  charCode >= min && (charCode <= 0xD7FF || charCode >= 0xE000) && charCode <= max
+export let isValid = charCode => {
+  charCode >= min &&
+  (charCode <= 0xD7FF || charCode >= 0xE000) &&
+  charCode <= max
 }
 
 /**
@@ -106,7 +112,7 @@ export let rec code = (char: Char) => {
     }
     lowerBoundary = 0x80n
     upperBoundary = 0xBFn
-    codePoint = (codePoint << 6n) | (byte & 0x3Fn)
+    codePoint = codePoint << 6n | byte & 0x3Fn
     bytesSeen += 1n
     if (bytesSeen == bytesNeeded) {
       result = codePoint
@@ -167,13 +173,13 @@ export let rec fromCode = (usv: Number) => {
       offset = 0xF0n
     }
     let char = allocateChar()
-    WasmI32.store8(char, (usv >>> (6n * count)) + offset, 4n)
+    WasmI32.store8(char, (usv >>> 6n * count) + offset, 4n)
 
     let mut n = 0n
     while (count > 0n) {
       n += 1n
-      let temp = usv >>> (6n * (count - 1n))
-      WasmI32.store8(char + n, 0x80n | (temp & 0x3Fn), 4n)
+      let temp = usv >>> 6n * (count - 1n)
+      WasmI32.store8(char + n, 0x80n | temp & 0x3Fn, 4n)
       count -= 1n
     }
 
@@ -195,7 +201,7 @@ export let rec fromCode = (usv: Number) => {
  * 
  * @since 0.3.0
  */
-export let succ = (char) => {
+export let succ = char => {
   let codePoint = code(char)
   if (codePoint == max) {
     fail "no valid Unicode scalar value past U+10FFF"
@@ -215,7 +221,7 @@ export let succ = (char) => {
  * 
  * @since 0.3.0
  */
-export let pred = (char) => {
+export let pred = char => {
   let codePoint = code(char)
   if (codePoint == min) {
     fail "no valid Unicode scalar value below U+0000"

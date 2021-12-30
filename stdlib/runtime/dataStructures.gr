@@ -6,7 +6,7 @@ import WasmI32, {
   add as (+),
   mul as (*),
   xor as (^),
-  shl as (<<)
+  shl as (<<),
 } from "runtime/unsafe/wasmi32"
 import WasmI64 from "runtime/unsafe/wasmi64"
 import WasmF32 from "runtime/unsafe/wasmf32"
@@ -23,7 +23,7 @@ import WasmF64 from "runtime/unsafe/wasmf64"
  * @param {WasmI32} numElts The number of elements to be contained in this array
  * @returns {WasmI32} The pointer to the array
  */
-export let allocateArray = (numElts) => {
+export let allocateArray = numElts => {
   let arr = Memory.malloc((numElts + 2n) * 4n)
 
   WasmI32.store(arr, Tags._GRAIN_ARRAY_HEAP_TAG, 0n)
@@ -49,7 +49,7 @@ export let storeInArray = (arr, idx, item) => {
  * @param {WasmI32} numElts The number of elements to be contained in this tuple
  * @returns {WasmI32} The pointer to the tuple
  */
-export let allocateTuple = (numElts) => {
+export let allocateTuple = numElts => {
   let tuple = Memory.malloc((numElts + 2n) * 4n)
 
   WasmI32.store(tuple, Tags._GRAIN_TUPLE_HEAP_TAG, 0n)
@@ -75,7 +75,7 @@ export let storeInTuple = (tuple, idx, item) => {
  * @param {WasmI32} size The number of bytes to be contained in this buffer
  * @returns {WasmI32} The pointer to the bytes
  */
-export let allocateBytes = (size) => {
+export let allocateBytes = size => {
   let len = size + 8n
   let bytes = Memory.malloc(len)
   Memory.fill(bytes, 0n, len)
@@ -90,7 +90,7 @@ export let allocateBytes = (size) => {
  * @param {WasmI32} size The size (in bytes) of the string to allocate
  * @returns {WasmI32} The pointer to the string
  */
-export let allocateString = (size) => {
+export let allocateString = size => {
   let str = Memory.malloc(size + 8n)
 
   WasmI32.store(str, Tags._GRAIN_STRING_HEAP_TAG, 0n)
@@ -105,7 +105,7 @@ export let allocateString = (size) => {
  * @param {WasmI32} c The character for which to allocate a string
  * @returns {WasmI32} The pointer to the string
  */
-export let singleByteString = (c) => {
+export let singleByteString = c => {
   let str = Memory.malloc(9n)
 
   WasmI32.store(str, Tags._GRAIN_STRING_HEAP_TAG, 0n)
@@ -148,7 +148,7 @@ export let allocateInt64 = () => {
  * Allocates a new Int64 with a prepopulated value
  * @param value The value to store
  */
-export let newInt64 = (value) => {
+export let newInt64 = value => {
   let ptr = allocateInt64()
   WasmI64.store(ptr, value, 8n)
   ptr
@@ -158,11 +158,11 @@ export let newInt64 = (value) => {
  * Returns a pointer to the heap location containing this boxed number's Int64
  * @param wrappedInt64 The boxed int64 to return
  */
-export let rawInt64Ptr = (wrappedInt64) => {
+export let rawInt64Ptr = wrappedInt64 => {
   wrappedInt64 + 8n
 }
 
-export let loadInt64 = (xptr) => {
+export let loadInt64 = xptr => {
   WasmI64.load(xptr, 8n)
 }
 
@@ -184,7 +184,7 @@ export let allocateInt32 = () => {
  * Allocates a new Int32 with a prepopulated value
  * @param value The value to store
  */
-export let newInt32 = (value) => {
+export let newInt32 = value => {
   let ptr = allocateInt32()
   WasmI32.store(ptr, value, 8n)
   ptr
@@ -194,11 +194,11 @@ export let newInt32 = (value) => {
  * Returns a pointer to the heap location containing this boxed number's Int32
  * @param wrappedInt32 The boxed int32 to return
  */
-export let rawInt32Ptr = (wrappedInt32) => {
+export let rawInt32Ptr = wrappedInt32 => {
   wrappedInt32 + 8n
 }
 
-export let loadInt32 = (xptr) => {
+export let loadInt32 = xptr => {
   WasmI32.load(xptr, 8n)
 }
 
@@ -222,7 +222,7 @@ export let allocateFloat32 = () => {
  * Allocates a new Float32 with a prepopulated value
  * @param value The value to store
  */
-export let newFloat32 = (value) => {
+export let newFloat32 = value => {
   let ptr = allocateFloat32()
   WasmF32.store(ptr, value, 8n)
   ptr
@@ -232,11 +232,11 @@ export let newFloat32 = (value) => {
  * Returns a pointer to the heap location containing this boxed number's Float32
  * @param wrappedFloat32 The boxed float32 to return
  */
-export let rawFloat32Ptr = (wrappedFloat32) => {
+export let rawFloat32Ptr = wrappedFloat32 => {
   wrappedFloat32 + 8n
 }
 
-export let loadFloat32 = (xptr) => {
+export let loadFloat32 = xptr => {
   WasmF32.load(xptr, 8n)
 }
 
@@ -258,7 +258,7 @@ export let allocateFloat64 = () => {
  * Allocates a new Float64 with a prepopulated value
  * @param value The value to store
  */
-export let newFloat64 = (value) => {
+export let newFloat64 = value => {
   let ptr = allocateFloat64()
   WasmF64.store(ptr, value, 8n)
   ptr
@@ -268,11 +268,11 @@ export let newFloat64 = (value) => {
  * Returns a pointer to the heap location containing this boxed number's Float64
  * @param wrappedFloat64 The boxed float64 to return
  */
-export let rawFloat64Ptr = (wrappedFloat64) => {
+export let rawFloat64Ptr = wrappedFloat64 => {
   wrappedFloat64 + 8n
 }
 
-export let loadFloat64 = (xptr) => {
+export let loadFloat64 = xptr => {
   WasmF64.load(xptr, 8n)
 }
 
@@ -296,7 +296,7 @@ export let allocateRational = () => {
  * Allocates a new Rational with a prepopulated value
  * @param value The value to store
  */
-export let newRational = (numerator, denominator) =>{
+export let newRational = (numerator, denominator) => {
   let ptr = allocateRational()
   WasmI32.store(ptr, numerator, 8n)
   WasmI32.store(ptr, denominator, 12n)
@@ -307,7 +307,7 @@ export let newRational = (numerator, denominator) =>{
  * Returns a pointer to the heap location containing this boxed number's Rational numerator
  * @param wrappedRational The boxed rational to return
  */
-export let rawRationalNumeratorPtr = (wrappedRational) => {
+export let rawRationalNumeratorPtr = wrappedRational => {
   wrappedRational + 8n
 }
 
@@ -315,18 +315,17 @@ export let rawRationalNumeratorPtr = (wrappedRational) => {
  * Returns a pointer to the heap location containing this boxed number's Rational numerator
  * @param wrappedRational The boxed rational to return
  */
-export let rawRationalDenominatorPtr = (wrappedRational) => {
+export let rawRationalDenominatorPtr = wrappedRational => {
   wrappedRational + 12n
 }
 
-export let loadRationalNumerator = (xptr) => {
+export let loadRationalNumerator = xptr => {
   WasmI32.load(xptr, 8n)
 }
 
-export let loadRationalDenominator = (xptr) => {
+export let loadRationalDenominator = xptr => {
   WasmI32.load(xptr, 12n)
 }
-
 
 /**
  * Load a value from an ADT.
@@ -337,7 +336,7 @@ export let loadRationalDenominator = (xptr) => {
  * @returns {WasmI32} The value located at the index
  */
 export let loadAdtVal = (ptr, idx) => {
-  WasmI32.load(ptr + (idx * 4n), 20n)
+  WasmI32.load(ptr + idx * 4n, 20n)
 }
 
 /**
@@ -347,7 +346,7 @@ export let loadAdtVal = (ptr, idx) => {
  * @param {WasmI32} ptr Untagged pointer to the ADT
  * @returns {WasmI32} The (tagged) ADT variant id
  */
-export let loadAdtVariant = (ptr) => {
+export let loadAdtVariant = ptr => {
   WasmI32.load(ptr, 12n)
 }
 
@@ -358,10 +357,10 @@ export let loadAdtVariant = (ptr) => {
  * @param {WasmI32} ptr Untagged pointer to the string
  * @returns {WasmI32} The string size (in bytes)
  */
-export let stringSize = (ptr) => {
+export let stringSize = ptr => {
   WasmI32.load(ptr, 4n)
 }
 
-export let tagSimpleNumber = (x) => {
-  WasmI32.toGrain((x << 1n) ^ 1n): Number
+export let tagSimpleNumber = x => {
+  WasmI32.toGrain(x << 1n ^ 1n): Number
 }

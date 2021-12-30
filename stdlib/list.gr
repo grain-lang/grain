@@ -16,11 +16,11 @@ let init = (length, fn) => {
   iter(0, length)
 }
 
-let length = (list) => {
+let length = list => {
   let rec iter = (len, list) => {
     match (list) {
       [] => len,
-      [_, ...rest] => iter(len + 1, rest)
+      [_, ...rest] => iter(len + 1, rest),
     }
   }
   iter(0, list)
@@ -30,17 +30,17 @@ let sum = list => {
   let rec iter = (n, list) => {
     match (list) {
       [] => n,
-      [first, ...rest] => iter(n + first, rest)
+      [first, ...rest] => iter(n + first, rest),
     }
   }
   iter(0, list)
 }
 
-let reverse = (list) => {
+let reverse = list => {
   let rec iter = (list, acc) => {
     match (list) {
       [] => acc,
-      [first, ...rest] => iter(rest, [first, ...acc])
+      [first, ...rest] => iter(rest, [first, ...acc]),
     }
   }
   iter(list, [])
@@ -49,35 +49,35 @@ let reverse = (list) => {
 let rec append = (list1, list2) => {
   match (list1) {
     [] => list2,
-    [first, ...rest] => [first, ...append(rest, list2)]
+    [first, ...rest] => [first, ...append(rest, list2)],
   }
 }
 
 let rec contains = (value, list) => {
   match (list) {
     [] => false,
-    [first, ...rest] => (first == value) || contains(value, rest)
+    [first, ...rest] => first == value || contains(value, rest),
   }
 }
 
 let rec reduce = (fn, acc, list) => {
   match (list) {
     [] => acc,
-    [first, ...rest] => reduce(fn, fn(acc, first), rest)
+    [first, ...rest] => reduce(fn, fn(acc, first), rest),
   }
 }
 
 let rec reduceRight = (fn, acc, list) => {
   match (list) {
     [] => acc,
-    [first, ...rest] => fn(first, reduceRight(fn, acc, rest))
+    [first, ...rest] => fn(first, reduceRight(fn, acc, rest)),
   }
 }
 
 let rec map = (fn, list) => {
   match (list) {
     [] => [],
-    [first, ...rest] => [fn(first), ...map(fn, rest)]
+    [first, ...rest] => [fn(first), ...map(fn, rest)],
   }
 }
 
@@ -85,7 +85,7 @@ let mapi = (fn, list) => {
   let rec iter = (fn, list, index) => {
     match (list) {
       [] => [],
-      [first, ...rest] => [fn(first, index), ...iter(fn, rest, index + 1)]
+      [first, ...rest] => [fn(first, index), ...iter(fn, rest, index + 1)],
     }
   }
   iter(fn, list, 0)
@@ -94,16 +94,20 @@ let mapi = (fn, list) => {
 let rec flatMap = (fn, list) => {
   match (list) {
     [] => [],
-    [first, ...rest] => append(fn(first), flatMap(fn, rest))
+    [first, ...rest] => append(fn(first), flatMap(fn, rest)),
   }
 }
 
 let every = (fn, list) => {
-  reduce((acc, value) => { acc && fn(value) }, true, list)
+  reduce((acc, value) => {
+    acc && fn(value)
+  }, true, list)
 }
 
 let some = (fn, list) => {
-  reduce((acc, value) => { acc || fn(value) }, false, list)
+  reduce((acc, value) => {
+    acc || fn(value)
+  }, false, list)
 }
 
 let rec forEach = (fn, list) => {
@@ -112,7 +116,7 @@ let rec forEach = (fn, list) => {
     [first, ...rest] => {
       fn(first)
       forEach(fn, rest)
-    }
+    },
   }
 }
 
@@ -123,7 +127,7 @@ let forEachi = (fn, list) => {
       [first, ...rest] => {
         fn(first, index)
         iter(fn, rest, index + 1)
-      }
+      },
     }
   }
   iter(fn, list, 0)
@@ -132,7 +136,8 @@ let forEachi = (fn, list) => {
 let rec filter = (fn, list) => {
   match (list) {
     [] => [],
-    [first, ...rest] => if (fn(first)) [first, ...filter(fn, rest)] else filter(fn, rest)
+    [first, ...rest] =>
+      if (fn(first)) [first, ...filter(fn, rest)] else filter(fn, rest),
   }
 }
 
@@ -140,7 +145,9 @@ let filteri = (fn, list) => {
   let rec iter = (fn, list, index) => {
     match (list) {
       [] => [],
-      [first, ...rest] => if (fn(first, index)) [first, ...iter(fn, rest, index + 1)] else iter(fn, rest, index + 1)
+      [first, ...rest] =>
+        if (fn(first, index)) [first, ...iter(fn, rest, index + 1)]
+        else iter(fn, rest, index + 1),
     }
   }
   iter(fn, list, 0)
@@ -149,21 +156,22 @@ let filteri = (fn, list) => {
 let rec reject = (fn, list) => {
   match (list) {
     [] => [],
-    [first, ...rest] => if (!fn(first)) [first, ...reject(fn, rest)] else reject(fn, rest)
+    [first, ...rest] =>
+      if (!fn(first)) [first, ...reject(fn, rest)] else reject(fn, rest),
   }
 }
 
-let head = (list) => {
+let head = list => {
   match (list) {
     [] => None,
-    [first, ..._] => Some(first)
+    [first, ..._] => Some(first),
   }
 }
 
-let tail = (list) => {
+let tail = list => {
   match (list) {
     [] => None,
-    [_, ...rest] => Some(rest)
+    [_, ...rest] => Some(rest),
   }
 }
 
@@ -173,15 +181,15 @@ let rec nth = (index, list) => {
   } else {
     match (list) {
       [] => None,
-      [first, ...rest] => if (index == 0) Some(first) else nth(index - 1, rest)
+      [first, ...rest] => if (index == 0) Some(first) else nth(index - 1, rest),
     }
   }
 }
 
-let rec flatten = (list) => {
+let rec flatten = list => {
   match (list) {
     [] => [],
-    [first, ...rest] => append(first, flatten(rest))
+    [first, ...rest] => append(first, flatten(rest)),
   }
 }
 
@@ -189,9 +197,11 @@ let rec insert = (value, index, list) => {
   if (index < 0) {
     fail "insert index cannot be a negative number"
   } else {
-    match(list) {
+    match (list) {
       [] => if (index == 0) [value] else fail "insert index is out-of-bounds",
-      [first, ...rest] => if (index == 0) [value, ...list] else [first, ...insert(value, index - 1, rest)]
+      [first, ...rest] =>
+        if (index == 0) [value, ...list]
+        else [first, ...insert(value, index - 1, rest)],
     }
   }
 }
@@ -200,7 +210,7 @@ let count = (fn, list) => {
   let rec iter = (n, list) => {
     match (list) {
       [] => n,
-      [first, ...rest] => if (fn(first)) iter(n + 1, rest) else iter(n, rest)
+      [first, ...rest] => if (fn(first)) iter(n + 1, rest) else iter(n, rest),
     }
   }
   iter(0, list)
@@ -212,8 +222,11 @@ let part = (count, list) => {
   } else {
     let rec iter = (list1, list2, count) => {
       match (list2) {
-        [] => if (count > 0) fail "part count is out-of-bounds" else (list1, list2),
-        [first, ...rest] => if (count > 0) iter([first, ...list1], rest, count - 1) else (list1, list2)
+        [] =>
+          if (count > 0) fail "part count is out-of-bounds" else (list1, list2),
+        [first, ...rest] =>
+          if (count > 0) iter([first, ...list1], rest, count - 1)
+          else (list1, list2),
       }
     }
     let (pt1, pt2) = iter([], list, count)
@@ -222,15 +235,18 @@ let part = (count, list) => {
 }
 
 let rotate = (count, list) => {
-  let (beginning, end) = if (count >= 0) part(count, list) else part(length(list) + count, list)
+  let (beginning, end) = if (count >= 0) part(count, list)
+    else part(length(list) + count, list)
   append(end, beginning)
 }
 
-let unique = (list) => {
+let unique = list => {
   let rec iter = (list, acc) => {
     match (list) {
       [] => reverse(acc),
-      [first, ...rest] => if (contains(first, acc)) iter(rest, acc) else iter(rest, [first, ...acc])
+      [first, ...rest] =>
+        if (contains(first, acc)) iter(rest, acc)
+        else iter(rest, [first, ...acc]),
     }
   }
   iter(list, [])
@@ -241,9 +257,9 @@ let rec drop = (n, list) => {
     fail "number of items to drop cannot be a negative number"
   } else {
     match ((n, list)) {
-      (_,[]) => [],
+      (_, []) => [],
       (n, _) when n == 0 => list,
-      (n, [first, ...rest]) => drop(n - 1, rest)
+      (n, [first, ...rest]) => drop(n - 1, rest),
     }
   }
 }
@@ -251,7 +267,7 @@ let rec drop = (n, list) => {
 let rec dropWhile = (fn, list) => {
   match (list) {
     [] => list,
-    [first, ...rest] => if (fn(first)) dropWhile(fn, rest) else list
+    [first, ...rest] => if (fn(first)) dropWhile(fn, rest) else list,
   }
 }
 
@@ -262,7 +278,7 @@ let rec take = (n, list) => {
     match ((n, list)) {
       (_, []) => list,
       (n, _) when n == 0 => [],
-      (n, [first, ...rest]) => [first, ...take(n-1, rest)]
+      (n, [first, ...rest]) => [first, ...take(n - 1, rest)],
     }
   }
 }
@@ -270,14 +286,14 @@ let rec take = (n, list) => {
 let rec takeWhile = (p, list) => {
   match (list) {
     [] => [],
-    [first, ...rest] => if (p(first)) [first, ...takeWhile(p, rest)] else []
+    [first, ...rest] => if (p(first)) [first, ...takeWhile(p, rest)] else [],
   }
 }
 
 let rec find = (fn, list) => {
   match (list) {
     [] => None,
-    [first, ...rest] => if (fn(first)) Some(first) else find(fn, rest)
+    [first, ...rest] => if (fn(first)) Some(first) else find(fn, rest),
   }
 }
 
@@ -285,7 +301,8 @@ let findIndex = (fn, list) => {
   let rec findItemIndex = (l, index) => {
     match (l) {
       [] => None,
-      [first, ...rest] => if (fn(first)) Some(index) else findItemIndex(rest, index + 1)
+      [first, ...rest] =>
+        if (fn(first)) Some(index) else findItemIndex(rest, index + 1),
     }
   }
   findItemIndex(list, 0)
@@ -293,10 +310,10 @@ let findIndex = (fn, list) => {
 
 let product = (a, b) => {
   let mut list = []
-  forEach((aItem) => {
-    forEach((bItem) => {
-     list = [(aItem, bItem), ...list]
-    },b)
+  forEach(aItem => {
+    forEach(bItem => {
+      list = [(aItem, bItem), ...list]
+    }, b)
   }, a)
   reverse(list)
 }
@@ -311,20 +328,20 @@ let sub = (start, length, list) => {
 // @returns String
 let join = (separator: String, items: List<String>) => {
   let rec iter = (sep, acc, rem) => {
-    match(rem) {
+    match (rem) {
       [] => acc,
       [hd, ...tl] => {
-        let newAcc = match(acc) {
+        let newAcc = match (acc) {
           None => Some(hd),
-          Some(s) => Some(hd ++ sep ++ s)
+          Some(s) => Some(hd ++ sep ++ s),
         }
         iter(sep, newAcc, tl)
-      }
+      },
     }
   }
 
   // Reverse and reduce to take advantage of TCE
-  match(iter(separator, None, reverse(items))) {
+  match (iter(separator, None, reverse(items))) {
     None => "",
     Some(s) => s,
   }
@@ -337,10 +354,10 @@ let join = (separator: String, items: List<String>) => {
  * @param list2: The list to append
  * @since v0.4.5
  */
-let rec revAppend = (list1, list2) => { 
+let rec revAppend = (list1, list2) => {
   match (list1) {
     [hd, ...tl] => revAppend(tl, [hd, ...list2]),
-    [] => list2
+    [] => list2,
   }
 }
 
@@ -352,9 +369,9 @@ let rec revAppend = (list1, list2) => {
  * @param list: The list to be sorted
  * @since v0.4.5
  */
-let sort = (comp, list) => { 
+let sort = (comp, list) => {
   let rec merge = (left, right, list) => {
-    match((left, right)){
+    match ((left, right)) {
       (_, []) => {
         revAppend(list, left)
       },
@@ -362,19 +379,19 @@ let sort = (comp, list) => {
         revAppend(list, right)
       },
       ([lhd, ...ltl], [rhd, ...rtl]) => {
-        if(comp(lhd, rhd) < 0){
-          merge(ltl, right, append([lhd],list))
-        }else{
+        if (comp(lhd, rhd) < 0) {
+          merge(ltl, right, append([lhd], list))
+        } else {
           merge(left, rtl, append([rhd], list))
         }
-      }
+      },
     }
   }
 
-  let rec mergesort = (list) => {
-    if(length(list) <= 1){
+  let rec mergesort = list => {
+    if (length(list) <= 1) {
       list
-    }else{
+    } else {
       let middle = length(list) / 2
       let (left, right) = part(middle, list)
       merge(mergesort(left), mergesort(right), [])

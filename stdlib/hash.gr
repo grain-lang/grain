@@ -25,7 +25,7 @@ import WasmI32, {
   eq as (==),
   ne as (!=),
   gtU as (>),
-  ltU as (<)
+  ltU as (<),
 } from "runtime/unsafe/wasmi32"
 import Tags from "runtime/unsafe/tags"
 import Memory from "runtime/unsafe/memory"
@@ -55,17 +55,17 @@ let n = 0xe6546b64n
 
 let mut h = seed
 
-let hash32 = (k) => {
+let hash32 = k => {
   let mut k = k * c1
   k = WasmI32.rotl(k, r1)
   k *= c2
 
   h = h ^ k
   h = WasmI32.rotl(h, r2)
-  h = (h * m) + n
+  h = h * m + n
 }
 
-let hashRemaining = (r) => {
+let hashRemaining = r => {
   // Note: wasm is little-endian so no swap is necessary
 
   let mut r = r * c1
@@ -75,14 +75,14 @@ let hashRemaining = (r) => {
   h = h ^ r
 }
 
-let finalize = (len) => {
+let finalize = len => {
   h = h ^ len
 
-  h = h ^ (h >>> 16n)
+  h = h ^ h >>> 16n
   h *= 0x85ebca6bn
-  h = h ^ (h >>> 13n)
+  h = h ^ h >>> 13n
   h *= 0xc2b2ae35n
-  h = h ^ (h >>> 16n)
+  h = h ^ h >>> 16n
 }
 
 let rec hashOne = (val, depth) => {
@@ -90,10 +90,14 @@ let rec hashOne = (val, depth) => {
     void
   } else if ((val & Tags._GRAIN_NUMBER_TAG_MASK) != 0n) {
     hash32(val)
-  } else if ((val & Tags._GRAIN_GENERIC_TAG_MASK) == Tags._GRAIN_GENERIC_HEAP_TAG_TYPE) {
+  } else if (
+    (val & Tags._GRAIN_GENERIC_TAG_MASK) == Tags._GRAIN_GENERIC_HEAP_TAG_TYPE
+  ) {
     let heapPtr = val
     match (WasmI32.load(heapPtr, 0n)) {
-      t when t == Tags._GRAIN_STRING_HEAP_TAG || t == Tags._GRAIN_BYTES_HEAP_TAG => {
+      t when (
+        t == Tags._GRAIN_STRING_HEAP_TAG || t == Tags._GRAIN_BYTES_HEAP_TAG
+      ) => {
         let length = WasmI32.load(heapPtr, 4n)
         let extra = length % 4n
         let l = length - extra
@@ -198,12 +202,12 @@ let rec hashOne = (val, depth) => {
           },
           _ => {
             hash32(heapPtr)
-          }
+          },
         }
       },
       _ => {
         hash32(heapPtr)
-      }
+      },
     }
   } else if (val == WasmI32.fromGrain(true)) {
     hash32(val)
@@ -227,7 +231,7 @@ let rec hashOne = (val, depth) => {
  *
  * @since v0.1.0
  */
-export let rec hash = (anything) => {
+export let rec hash = anything => {
   h = seed
 
   hashOne(WasmI32.fromGrain(anything), 0n)

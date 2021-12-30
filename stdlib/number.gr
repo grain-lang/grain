@@ -13,7 +13,7 @@ import {
   coerceNumberToWasmF64,
   reducedInteger,
   isFloat,
-  isBoxedNumber
+  isBoxedNumber,
 } from "runtime/numbers"
 import { parseInt } from "runtime/stringUtils"
 import { newFloat64, newInt64 } from "runtime/dataStructures"
@@ -77,9 +77,9 @@ export let rec sqrt = (x: Number) => {
   let x = WasmI32.fromGrain(x)
   let sqrtd = WasmF64.sqrt(xval)
   let ret = if (!isFloat(x) && WasmF64.eq(sqrtd, WasmF64.trunc(sqrtd))) {
-    WasmI32.toGrain(reducedInteger(WasmI64.truncF64S(sqrtd))): (Number)
+    WasmI32.toGrain(reducedInteger(WasmI64.truncF64S(sqrtd))): Number
   } else {
-    WasmI32.toGrain(newFloat64(sqrtd)): (Number)
+    WasmI32.toGrain(newFloat64(sqrtd)): Number
   }
   Memory.decRef(WasmI32.fromGrain(x))
   Memory.decRef(WasmI32.fromGrain(sqrt))
@@ -138,7 +138,7 @@ export let max = (x: Number, y: Number) => if (x > y) x else y
 export let rec ceil = (x: Number) => {
   let xval = coerceNumberToWasmF64(x)
   let ceiling = WasmI64.truncF64S(WasmF64.ceil(xval))
-  let ret = WasmI32.toGrain(reducedInteger(ceiling)): (Number)
+  let ret = WasmI32.toGrain(reducedInteger(ceiling)): Number
   Memory.decRef(WasmI32.fromGrain(x))
   Memory.decRef(WasmI32.fromGrain(ceil))
   ret
@@ -156,7 +156,7 @@ export let rec ceil = (x: Number) => {
 export let rec floor = (x: Number) => {
   let xval = coerceNumberToWasmF64(x)
   let floored = WasmI64.truncF64S(WasmF64.floor(xval))
-  let ret = WasmI32.toGrain(reducedInteger(floored)): (Number)
+  let ret = WasmI32.toGrain(reducedInteger(floored)): Number
   Memory.decRef(WasmI32.fromGrain(x))
   Memory.decRef(WasmI32.fromGrain(floor))
   ret
@@ -174,7 +174,7 @@ export let rec floor = (x: Number) => {
 export let rec trunc = (x: Number) => {
   let xval = coerceNumberToWasmF64(x)
   let trunced = WasmI64.truncF64S(xval)
-  let ret = WasmI32.toGrain(reducedInteger(trunced)): (Number)
+  let ret = WasmI32.toGrain(reducedInteger(trunced)): Number
   Memory.decRef(WasmI32.fromGrain(x))
   Memory.decRef(WasmI32.fromGrain(trunc))
   ret
@@ -192,7 +192,7 @@ export let rec trunc = (x: Number) => {
 export let rec round = (x: Number) => {
   let xval = coerceNumberToWasmF64(x)
   let rounded = WasmI64.truncF64S(WasmF64.nearest(xval))
-  let ret = WasmI32.toGrain(reducedInteger(rounded)): (Number)
+  let ret = WasmI32.toGrain(reducedInteger(rounded)): Number
   Memory.decRef(WasmI32.fromGrain(x))
   Memory.decRef(WasmI32.fromGrain(round))
   ret

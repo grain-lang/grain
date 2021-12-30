@@ -1,59 +1,87 @@
 /* grainc-flags --compilation-mode=runtime */
 
 // WebAssembly Memory Instructions
-export primitive load : (WasmI32, WasmI32) -> WasmI64 = "@wasm.load_int64"
-export primitive load8S : (WasmI32, WasmI32) -> WasmI64 = "@wasm.load_8_s_int64"
-export primitive load8U : (WasmI32, WasmI32) -> WasmI64 = "@wasm.load_8_u_int64"
-export primitive load16S : (WasmI32, WasmI32) -> WasmI64 = "@wasm.load_16_s_int64"
-export primitive load16U : (WasmI32, WasmI32) -> WasmI64 = "@wasm.load_16_u_int64"
-export primitive load32S : (WasmI32, WasmI32) -> WasmI64 = "@wasm.load_32_s_int64"
-export primitive load32U : (WasmI32, WasmI32) -> WasmI64 = "@wasm.load_32_u_int64"
-export primitive store : (WasmI32, WasmI64, WasmI32) -> Void = "@wasm.store_int64"
-export primitive store8 : (WasmI32, WasmI64, WasmI32) -> Void = "@wasm.store_8_int64"
-export primitive store16 : (WasmI32, WasmI64, WasmI32) -> Void = "@wasm.store_16_int64"
-export primitive store32 : (WasmI32, WasmI64, WasmI32) -> Void = "@wasm.store_32_int64"
+export primitive load: (WasmI32, WasmI32) -> WasmI64 = "@wasm.load_int64"
+export primitive load8S: (WasmI32, WasmI32) -> WasmI64 = "@wasm.load_8_s_int64"
+export primitive load8U: (WasmI32, WasmI32) -> WasmI64 = "@wasm.load_8_u_int64"
+export primitive load16S: (
+  WasmI32,
+  WasmI32,
+) -> WasmI64 = "@wasm.load_16_s_int64"
+export primitive load16U: (
+  WasmI32,
+  WasmI32,
+) -> WasmI64 = "@wasm.load_16_u_int64"
+export primitive load32S: (
+  WasmI32,
+  WasmI32,
+) -> WasmI64 = "@wasm.load_32_s_int64"
+export primitive load32U: (
+  WasmI32,
+  WasmI32,
+) -> WasmI64 = "@wasm.load_32_u_int64"
+export primitive store: (
+  WasmI32,
+  WasmI64,
+  WasmI32,
+) -> Void = "@wasm.store_int64"
+export primitive store8: (
+  WasmI32,
+  WasmI64,
+  WasmI32,
+) -> Void = "@wasm.store_8_int64"
+export primitive store16: (
+  WasmI32,
+  WasmI64,
+  WasmI32,
+) -> Void = "@wasm.store_16_int64"
+export primitive store32: (
+  WasmI32,
+  WasmI64,
+  WasmI32,
+) -> Void = "@wasm.store_32_int64"
 
 // WebAssembly Unary Instructions
-export primitive clz : WasmI64 -> WasmI64 = "@wasm.clz_int64"
-export primitive ctz : WasmI64 -> WasmI64 = "@wasm.ctz_int64"
-export primitive popcnt : WasmI64 -> WasmI64 = "@wasm.popcnt_int64"
-export primitive eqz : WasmI64 -> Bool = "@wasm.eq_z_int64"
+export primitive clz: WasmI64 -> WasmI64 = "@wasm.clz_int64"
+export primitive ctz: WasmI64 -> WasmI64 = "@wasm.ctz_int64"
+export primitive popcnt: WasmI64 -> WasmI64 = "@wasm.popcnt_int64"
+export primitive eqz: WasmI64 -> Bool = "@wasm.eq_z_int64"
 
 // WebAssembly Binary Instructions
-export primitive add : (WasmI64, WasmI64) -> WasmI64 = "@wasm.add_int64"
-export primitive sub : (WasmI64, WasmI64) -> WasmI64 = "@wasm.sub_int64"
-export primitive mul : (WasmI64, WasmI64) -> WasmI64 = "@wasm.mul_int64"
-export primitive divS : (WasmI64, WasmI64) -> WasmI64 = "@wasm.div_s_int64"
-export primitive divU : (WasmI64, WasmI64) -> WasmI64 = "@wasm.div_u_int64"
-export primitive remS : (WasmI64, WasmI64) -> WasmI64 = "@wasm.rem_s_int64"
-export primitive remU : (WasmI64, WasmI64) -> WasmI64 = "@wasm.rem_u_int64"
-export primitive and : (WasmI64, WasmI64) -> WasmI64 = "@wasm.and_int64"
-export primitive or : (WasmI64, WasmI64) -> WasmI64 = "@wasm.or_int64"
-export primitive xor : (WasmI64, WasmI64) -> WasmI64 = "@wasm.xor_int64"
-export primitive shl : (WasmI64, WasmI64) -> WasmI64 = "@wasm.shl_int64"
-export primitive shrU : (WasmI64, WasmI64) -> WasmI64 = "@wasm.shr_u_int64"
-export primitive shrS : (WasmI64, WasmI64) -> WasmI64 = "@wasm.shr_s_int64"
-export primitive rotl : (WasmI64, WasmI64) -> WasmI64 = "@wasm.rot_l_int64"
-export primitive rotr : (WasmI64, WasmI64) -> WasmI64 = "@wasm.rot_r_int64"
-export primitive eq : (WasmI64, WasmI64) -> Bool = "@wasm.eq_int64"
-export primitive ne : (WasmI64, WasmI64) -> Bool = "@wasm.ne_int64"
-export primitive ltS : (WasmI64, WasmI64) -> Bool = "@wasm.lt_s_int64"
-export primitive ltU : (WasmI64, WasmI64) -> Bool = "@wasm.lt_u_int64"
-export primitive leS : (WasmI64, WasmI64) -> Bool = "@wasm.le_s_int64"
-export primitive leU : (WasmI64, WasmI64) -> Bool = "@wasm.le_u_int64"
-export primitive gtS : (WasmI64, WasmI64) -> Bool = "@wasm.gt_s_int64"
-export primitive gtU : (WasmI64, WasmI64) -> Bool = "@wasm.gt_u_int64"
-export primitive geS : (WasmI64, WasmI64) -> Bool = "@wasm.ge_s_int64"
-export primitive geU : (WasmI64, WasmI64) -> Bool = "@wasm.ge_u_int64"
+export primitive add: (WasmI64, WasmI64) -> WasmI64 = "@wasm.add_int64"
+export primitive sub: (WasmI64, WasmI64) -> WasmI64 = "@wasm.sub_int64"
+export primitive mul: (WasmI64, WasmI64) -> WasmI64 = "@wasm.mul_int64"
+export primitive divS: (WasmI64, WasmI64) -> WasmI64 = "@wasm.div_s_int64"
+export primitive divU: (WasmI64, WasmI64) -> WasmI64 = "@wasm.div_u_int64"
+export primitive remS: (WasmI64, WasmI64) -> WasmI64 = "@wasm.rem_s_int64"
+export primitive remU: (WasmI64, WasmI64) -> WasmI64 = "@wasm.rem_u_int64"
+export primitive and: (WasmI64, WasmI64) -> WasmI64 = "@wasm.and_int64"
+export primitive or: (WasmI64, WasmI64) -> WasmI64 = "@wasm.or_int64"
+export primitive xor: (WasmI64, WasmI64) -> WasmI64 = "@wasm.xor_int64"
+export primitive shl: (WasmI64, WasmI64) -> WasmI64 = "@wasm.shl_int64"
+export primitive shrU: (WasmI64, WasmI64) -> WasmI64 = "@wasm.shr_u_int64"
+export primitive shrS: (WasmI64, WasmI64) -> WasmI64 = "@wasm.shr_s_int64"
+export primitive rotl: (WasmI64, WasmI64) -> WasmI64 = "@wasm.rot_l_int64"
+export primitive rotr: (WasmI64, WasmI64) -> WasmI64 = "@wasm.rot_r_int64"
+export primitive eq: (WasmI64, WasmI64) -> Bool = "@wasm.eq_int64"
+export primitive ne: (WasmI64, WasmI64) -> Bool = "@wasm.ne_int64"
+export primitive ltS: (WasmI64, WasmI64) -> Bool = "@wasm.lt_s_int64"
+export primitive ltU: (WasmI64, WasmI64) -> Bool = "@wasm.lt_u_int64"
+export primitive leS: (WasmI64, WasmI64) -> Bool = "@wasm.le_s_int64"
+export primitive leU: (WasmI64, WasmI64) -> Bool = "@wasm.le_u_int64"
+export primitive gtS: (WasmI64, WasmI64) -> Bool = "@wasm.gt_s_int64"
+export primitive gtU: (WasmI64, WasmI64) -> Bool = "@wasm.gt_u_int64"
+export primitive geS: (WasmI64, WasmI64) -> Bool = "@wasm.ge_s_int64"
+export primitive geU: (WasmI64, WasmI64) -> Bool = "@wasm.ge_u_int64"
 
 // WebAssembly Conversion instructions
-export primitive extendI32S : WasmI32 -> WasmI64 = "@wasm.extend_s_int32"
-export primitive extendI32U : WasmI32 -> WasmI64 = "@wasm.extend_u_int32"
-export primitive truncF32S : WasmF32 -> WasmI64 = "@wasm.trunc_s_float32_to_int64"
-export primitive truncF32U : WasmF32 -> WasmI64 = "@wasm.trunc_u_float32_to_int64"
-export primitive truncF64S : WasmF64 -> WasmI64 = "@wasm.trunc_s_float64_to_int64"
-export primitive truncF64U : WasmF64 -> WasmI64 = "@wasm.trunc_u_float64_to_int64"
-export primitive reinterpretF64 : WasmF64 -> WasmI64 = "@wasm.reinterpret_float64"
-export primitive extendS8 : WasmI64 -> WasmI64 = "@wasm.extend_s8_int64"
-export primitive extendS16 : WasmI64 -> WasmI64 = "@wasm.extend_s16_int64"
-export primitive extendS32 : WasmI64 -> WasmI64 = "@wasm.extend_s32_int64"
+export primitive extendI32S: WasmI32 -> WasmI64 = "@wasm.extend_s_int32"
+export primitive extendI32U: WasmI32 -> WasmI64 = "@wasm.extend_u_int32"
+export primitive truncF32S: WasmF32 -> WasmI64 = "@wasm.trunc_s_float32_to_int64"
+export primitive truncF32U: WasmF32 -> WasmI64 = "@wasm.trunc_u_float32_to_int64"
+export primitive truncF64S: WasmF64 -> WasmI64 = "@wasm.trunc_s_float64_to_int64"
+export primitive truncF64U: WasmF64 -> WasmI64 = "@wasm.trunc_u_float64_to_int64"
+export primitive reinterpretF64: WasmF64 -> WasmI64 = "@wasm.reinterpret_float64"
+export primitive extendS8: WasmI64 -> WasmI64 = "@wasm.extend_s8_int64"
+export primitive extendS16: WasmI64 -> WasmI64 = "@wasm.extend_s16_int64"
+export primitive extendS32: WasmI64 -> WasmI64 = "@wasm.extend_s32_int64"

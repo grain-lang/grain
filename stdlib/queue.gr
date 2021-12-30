@@ -5,7 +5,10 @@
  */
 import List from "list"
 
-record Queue<a> { forwards: List<a>, backwards: List<a> }
+record Queue<a> {
+  forwards: List<a>,
+  backwards: List<a>,
+}
 
 /**
  * @section Values: Functions for working with queues.
