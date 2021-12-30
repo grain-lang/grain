@@ -1156,7 +1156,7 @@ and print_record_pattern =
   };
 
   let after_brace_comments =
-    Comment_utils.get_after_brace_comments(patloc, comments, None);
+    Comment_utils.get_after_brace_comments(~loc=patloc, comments);
   let cleaned_comments =
     remove_used_comments(~all_comments=comments, after_brace_comments);
 
@@ -1331,7 +1331,6 @@ and print_pattern =
   let after_parens_comments_docs =
     Comment_utils.inbetween_comments_to_docs(
       ~offset=true,
-      ~bracket_line=None,
       after_parens_comments,
     );
 
@@ -1427,7 +1426,7 @@ and print_record =
   };
 
   let after_brace_comments =
-    Comment_utils.get_after_brace_comments(recloc, comments, None);
+    Comment_utils.get_after_brace_comments(~loc=recloc, comments);
   let cleaned_comments =
     remove_used_comments(~all_comments=comments, after_brace_comments);
 
@@ -1568,9 +1567,8 @@ and print_type =
 
       let after_angle_comments =
         Comment_utils.get_after_brace_comments(
-          get_loc(first),
+          ~loc=get_loc(first),
           comments,
-          None,
         );
       let cleaned_comments =
         remove_used_comments(~all_comments=comments, after_angle_comments);
@@ -1827,9 +1825,8 @@ and print_arg_lambda =
           };
           let after_brace_comments =
             Comment_utils.get_after_brace_comments(
-              expression.pexp_loc,
+              ~loc=expression.pexp_loc,
               comments,
-              None,
             );
           let cleaned_comments =
             remove_used_comments(
@@ -2294,7 +2291,7 @@ and print_expression =
       };
 
       let after_paren_comments =
-        Comment_utils.get_after_brace_comments(expr.pexp_loc, comments, None);
+        Comment_utils.get_after_brace_comments(~loc=expr.pexp_loc, comments);
       let cleaned_comments =
         remove_used_comments(~all_comments=comments, after_paren_comments);
       let expr_items =
@@ -2336,7 +2333,7 @@ and print_expression =
       };
 
       let after_bracket_comments =
-        Comment_utils.get_after_brace_comments(expr.pexp_loc, comments, None);
+        Comment_utils.get_after_brace_comments(~loc=expr.pexp_loc, comments);
       let cleaned_comments =
         remove_used_comments(~all_comments=comments, after_bracket_comments);
       let items =
@@ -2546,7 +2543,7 @@ and print_expression =
       };
 
       let after_brace_comments =
-        Comment_utils.get_after_brace_comments(expr.pexp_loc, comments, None);
+        Comment_utils.get_after_brace_comments(~loc=expr.pexp_loc, comments);
       let cleaned_comments =
         remove_used_comments(~all_comments=comments, after_brace_comments);
 
@@ -2595,22 +2592,22 @@ and print_expression =
     | PExpIf(condition, true_expr, false_expr) =>
       let cond_leading_comment =
         Comment_utils.get_comments_from_start_of_enclosing_location(
-          ~wrapper=expr.pexp_loc,
+          ~enclosing_location=expr.pexp_loc,
           ~location=condition.pexp_loc,
           comments,
         );
 
       let cond_trailing_comment =
         Comment_utils.get_comments_between_locs(
-          ~loc1=condition.pexp_loc,
-          ~loc2=true_expr.pexp_loc,
+          ~begin_loc=condition.pexp_loc,
+          ~end_loc=true_expr.pexp_loc,
           comments,
         );
 
       let true_trailing_comment =
         Comment_utils.get_comments_between_locs(
-          ~loc1=true_expr.pexp_loc,
-          ~loc2=false_expr.pexp_loc,
+          ~begin_loc=true_expr.pexp_loc,
+          ~end_loc=false_expr.pexp_loc,
           comments,
         );
 
@@ -2828,7 +2825,6 @@ and print_expression =
                     Doc.softLine,
                     Comment_utils.inbetween_comments_to_docs(
                       ~offset=false,
-                      ~bracket_line=None,
                       cond_leading_comment,
                     ),
                     switch (cond_leading_comment) {
@@ -2863,7 +2859,6 @@ and print_expression =
         Doc.group(true_clause),
         Comment_utils.inbetween_comments_to_docs(
           ~offset=true,
-          ~bracket_line=None,
           true_trailing_comment,
         ),
         Doc.group(false_clause),
@@ -3149,9 +3144,8 @@ and print_expression =
 
         let after_brace_comments =
           Comment_utils.get_after_brace_comments(
-            expr.pexp_loc,
+            ~loc=expr.pexp_loc,
             comments,
-            None,
           );
 
         let cleaned_comments =
@@ -3335,7 +3329,6 @@ and print_value_bind =
           | _ =>
             Comment_utils.inbetween_comments_to_docs(
               ~offset=false,
-              ~bracket_line=None,
               after_let_comments,
             )
           };
@@ -3444,7 +3437,7 @@ let rec print_data =
     let after_brace_comments =
       switch (data.pdata_params) {
       | [] =>
-        Comment_utils.get_after_brace_comments(data.pdata_loc, comments, None)
+        Comment_utils.get_after_brace_comments(~loc=data.pdata_loc, comments)
       | [first, ...rem] =>
         Comment_utils.get_comments_enclosed_and_before_location(
           ~loc1=data.pdata_name.loc,
@@ -3498,9 +3491,9 @@ let rec print_data =
     | [hd, ...rem] =>
       let after_angle_comments =
         Comment_utils.get_after_brace_comments(
-          nameloc.loc,
+          ~first=hd.ptyp_loc,
+          ~loc=nameloc.loc,
           comments,
-          Some(hd.ptyp_loc),
         );
       let cleaned_comments =
         remove_used_comments(~all_comments=comments, after_angle_comments);
@@ -3578,9 +3571,9 @@ let rec print_data =
 
               let after_paren_comments =
                 Comment_utils.get_after_brace_comments(
-                  get_loc(first),
+                  ~first=first.ptyp_loc,
+                  ~loc=get_loc(first),
                   comments,
-                  Some(first.ptyp_loc),
                 );
               let cleaned_comments =
                 remove_used_comments(
@@ -3625,7 +3618,7 @@ let rec print_data =
     };
 
     let after_brace_comments =
-      Comment_utils.get_after_brace_comments(data.pdata_loc, comments, None);
+      Comment_utils.get_after_brace_comments(~loc=data.pdata_loc, comments);
     let cleaned_comments =
       remove_used_comments(~all_comments=comments, after_brace_comments);
 
@@ -3666,9 +3659,8 @@ let rec print_data =
 
           let after_angle_comments =
             Comment_utils.get_after_brace_comments(
-              get_loc(first),
+              ~loc=get_loc(first),
               comments,
-              None,
             );
           let cleaned_comments =
             remove_used_comments(
@@ -3744,7 +3736,7 @@ let rec print_data =
     };
 
     let after_brace_comments =
-      Comment_utils.get_after_brace_comments(data.pdata_loc, comments, None);
+      Comment_utils.get_after_brace_comments(~loc=data.pdata_loc, comments);
     let cleaned_comments =
       remove_used_comments(~all_comments=comments, after_brace_comments);
     let decl_items =
@@ -3779,9 +3771,8 @@ let rec print_data =
 
           let after_angle_comments =
             Comment_utils.get_after_brace_comments(
-              get_loc(first),
+              ~loc=get_loc(first),
               comments,
-              None,
             );
           let cleaned_comments =
             remove_used_comments(
@@ -3878,9 +3869,8 @@ let import_print =
 
               let after_brace_comments =
                 Comment_utils.get_after_brace_comments(
-                  imp.pimp_loc,
+                  ~loc=imp.pimp_loc,
                   comments,
-                  None,
                 );
               let cleaned_comments =
                 remove_used_comments(
@@ -3937,9 +3927,8 @@ let import_print =
             };
             let after_brace_comments =
               Comment_utils.get_after_brace_comments(
-                imp.pimp_loc,
+                ~loc=imp.pimp_loc,
                 comments,
-                None,
               );
             let cleaned_comments =
               remove_used_comments(
