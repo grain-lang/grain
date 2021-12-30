@@ -1,5 +1,6 @@
 import Number from "number"
 import Result from "result"
+import Float64 from "float64"
 
 // add
 assert Number.add(25, 5) == 30
@@ -134,3 +135,11 @@ assert Result.isErr(Number.parseInt("zzzzz", 37))
 assert Result.isErr(Number.parseInt("zzzzz", 9223372036854775807))
 assert Result.isErr(Number.parseInt("10", 1.23))
 assert Result.isErr(Number.parseInt("10", 2/3))
+
+// Number.sign
+assert Number.sign(-10000) == -1
+assert Number.sign(22222) == 1
+// TODO(#693): Replace with Infinity literal when it exists
+assert 1 / Number.sign(0.0) == Float64.toNumber(Float64.infinity)
+// TODO(#693): Replace with -Infinity literal when it exists
+assert 1 / Number.sign(-0.0) == Number.neg(Float64.toNumber(Float64.infinity))
