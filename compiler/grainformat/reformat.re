@@ -1951,16 +1951,15 @@ and print_arguments_with_callback_in_first_position =
       };
 
     Doc.concat([
-      Doc.indent(
+      Doc.group(printed_callback),
+      Doc.comma,
+      Doc.group(
         Doc.concat([
-          Doc.softLine,
-          Doc.group(printed_callback),
-          Doc.comma,
           Doc.line,
           printed_args,
+          Doc.ifBreaks(Doc.line, Doc.nil),
         ]),
       ),
-      Doc.softLine,
     ]);
   };
 }
