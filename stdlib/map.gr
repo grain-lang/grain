@@ -313,15 +313,11 @@ export let fromArray = array => {
 }
 
 export let filter = (predicate, map) => {
-  let keysToRemove = reduce(
-    (list, key, value) => if (!predicate(key, value)) {
-      [key, ...list]
-    } else {
-      list
-    },
-    [],
-    map
-  )
+  let keysToRemove = reduce((list, key, value) => if (!predicate(key, value)) {
+    [key, ...list]
+  } else {
+    list
+  }, [], map)
   List.forEach(key => {
     remove(key, map)
   }, keysToRemove)

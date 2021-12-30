@@ -99,23 +99,15 @@ let rec flatMap = (fn, list) => {
 }
 
 let every = (fn, list) => {
-  reduce(
-    (acc, value) => {
-      acc && fn(value)
-    },
-    true,
-    list
-  )
+  reduce((acc, value) => {
+    acc && fn(value)
+  }, true, list)
 }
 
 let some = (fn, list) => {
-  reduce(
-    (acc, value) => {
-      acc || fn(value)
-    },
-    false,
-    list
-  )
+  reduce((acc, value) => {
+    acc || fn(value)
+  }, false, list)
 }
 
 let rec forEach = (fn, list) => {

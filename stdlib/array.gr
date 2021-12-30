@@ -408,13 +408,9 @@ export let flatMap = (fn, array) => {
  * @since v0.3.0
  */
 export let every = (fn, array) => {
-  reduce(
-    (acc, value) => {
-      acc && fn(value)
-    },
-    true,
-    array
-  )
+  reduce((acc, value) => {
+    acc && fn(value)
+  }, true, array)
 }
 
 /**
@@ -428,13 +424,9 @@ export let every = (fn, array) => {
  * @since v0.3.0
  */
 export let some = (fn, array) => {
-  reduce(
-    (acc, value) => {
-      acc || fn(value)
-    },
-    false,
-    array
-  )
+  reduce((acc, value) => {
+    acc || fn(value)
+  }, false, array)
 }
 
 /**
