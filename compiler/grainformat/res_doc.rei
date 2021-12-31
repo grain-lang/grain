@@ -116,6 +116,8 @@ let doubleQuote: t;
  */
 let willBreak: t => bool;
 
+let willIndent: t => bool;
+
 let toString: (~width: int, t) => string;
 [@live]
 let debug: t => unit;

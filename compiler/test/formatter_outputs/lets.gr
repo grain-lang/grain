@@ -1,5 +1,4 @@
-let rec myFun1 = x => x + 1,
-myFun2 = x => x + 1
+let rec myFun1 = x => x + 1, myFun2 = x => x + 1
 
 let myBlock = {
   "some string"
@@ -8,8 +7,7 @@ let myBlock = {
 let myFunction2 = x => {
   let inter = x + 1
   "some string"
-},
-myFunction3 = y => {
+}, myFunction3 = y => {
   let myVal = 5
   "some string"
 }
@@ -22,4 +20,10 @@ let myToplevelAttributeFunction = x => x
 let myFunction4 = () => {
   @attribute
   let myAttributeFunction = () => 5
+}
+
+let rotate = (count, list) => {
+  let (beginning, end) = if (count >= 0) part(count, list)
+    else part(length(list) + count, list)
+  append(end, beginning)
 }
