@@ -521,14 +521,14 @@ let rec block_item_iterator =
           ~get_loc: 'a => Location.t,
           ~print_item: (~comments: list(Parsetree.comment), 'a) => Doc.t,
           ~comments: list(Parsetree.comment),
-          ~get_attribute_text: 'a => Doc.t,
+          ~print_attribute: 'a => Doc.t,
           ~original_source,
           items: list('a),
         ) => {
   switch (items) {
   | [] => Doc.nil
   | [item, ...remainder] =>
-    let attribute_text = get_attribute_text(item);
+    let attribute_text = print_attribute(item);
     let leading_comments =
       switch (previous) {
       | Block(prev_node) =>
@@ -649,7 +649,7 @@ let rec block_item_iterator =
             ~get_loc,
             ~print_item,
             ~comments=comments_without_item_comments,
-            ~get_attribute_text,
+            ~print_attribute,
             ~original_source,
             remainder,
           ),
@@ -738,7 +738,7 @@ let rec block_item_iterator =
             ~get_loc,
             ~print_item,
             ~comments=comments_without_item_comments,
-            ~get_attribute_text,
+            ~print_attribute,
             ~original_source,
             remainder,
           ),
@@ -1838,7 +1838,7 @@ and print_arg_lambda =
                 ~get_loc,
                 ~print_item,
                 ~comments=cleaned_comments,
-                ~get_attribute_text=print_attribute,
+                ~print_attribute,
                 ~original_source,
                 block_expressions,
               );
@@ -3097,7 +3097,7 @@ and print_expression =
             ~get_loc,
             ~print_item,
             ~comments=cleaned_comments,
-            ~get_attribute_text=print_attribute,
+            ~print_attribute,
             ~original_source,
             expressions,
           );
@@ -4183,7 +4183,7 @@ let reformat_ast =
       ~get_loc,
       ~print_item,
       ~comments=cleaned_comments,
-      ~get_attribute_text=get_attributes,
+      ~print_attribute=get_attributes,
       ~original_source,
       parsed_program.statements,
     );
