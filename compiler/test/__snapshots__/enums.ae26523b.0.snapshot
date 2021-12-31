@@ -6,16 +6,16 @@ enums › enum_recursive_data_definition
  (type $none_=>_i32 (func (result i32)))
  (import \"_grainEnv\" \"mem\" (memory $0 0))
  (import \"_grainEnv\" \"tbl\" (table $tbl 0 funcref))
- (elem $elem (global.get $import__grainEnv_0_relocBase_0) $Node_1158 $Cons_1160)
- (import \"_grainEnv\" \"relocBase\" (global $import__grainEnv_0_relocBase_0 i32))
- (import \"_grainEnv\" \"moduleRuntimeId\" (global $import__grainEnv_0_moduleRuntimeId_0 i32))
- (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0 (mut i32)))
- (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0 (mut i32)))
- (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRefIgnoreZeros\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$print\" (global $import_pervasives_1182_print_1183 (mut i32)))
- (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $import_GRAIN$MODULE$runtime/gc_0_malloc_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $import_GRAIN$MODULE$runtime/gc_0_incRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$runtime/gc\" \"decRefIgnoreZeros\" (func $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0 (param i32 i32) (result i32)))
+ (elem $elem (global.get $wimport__grainEnv_relocBase) $Node_1158 $Cons_1160)
+ (import \"_grainEnv\" \"relocBase\" (global $wimport__grainEnv_relocBase i32))
+ (import \"_grainEnv\" \"moduleRuntimeId\" (global $wimport__grainEnv_moduleRuntimeId i32))
+ (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc (mut i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef (mut i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRefIgnoreZeros\" (global $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$print\" (global $gimport_pervasives_print (mut i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $wimport_GRAIN$MODULE$runtime/gc_malloc (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $wimport_GRAIN$MODULE$runtime/gc_incRef (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"decRefIgnoreZeros\" (func $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros (param i32 i32) (result i32)))
  (global $global_3 (mut i32) (i32.const 0))
  (global $global_0 (mut i32) (i32.const 0))
  (global $global_1 (mut i32) (i32.const 0))
@@ -39,8 +39,8 @@ enums › enum_recursive_data_definition
        (local.tee $3
         (tuple.extract 0
          (tuple.make
-          (call $import_GRAIN$MODULE$runtime/gc_0_malloc_0
-           (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0)
+          (call $wimport_GRAIN$MODULE$runtime/gc_malloc
+           (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
            (i32.const 28)
           )
           (i32.const 0)
@@ -52,7 +52,7 @@ enums › enum_recursive_data_definition
       (i32.store offset=4
        (local.get $3)
        (i32.shl
-        (global.get $import__grainEnv_0_moduleRuntimeId_0)
+        (global.get $wimport__grainEnv_moduleRuntimeId)
         (i32.const 1)
        )
       )
@@ -70,15 +70,15 @@ enums › enum_recursive_data_definition
       )
       (i32.store offset=20
        (local.get $3)
-       (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-        (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+       (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+        (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
         (local.get $1)
        )
       )
       (i32.store offset=24
        (local.get $3)
-       (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-        (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+       (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+        (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
         (local.get $2)
        )
       )
@@ -89,20 +89,20 @@ enums › enum_recursive_data_definition
    )
   )
   (drop
-   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
     (local.get $0)
    )
   )
   (drop
-   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
     (local.get $1)
    )
   )
   (drop
-   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
     (local.get $2)
    )
   )
@@ -118,8 +118,8 @@ enums › enum_recursive_data_definition
        (local.tee $3
         (tuple.extract 0
          (tuple.make
-          (call $import_GRAIN$MODULE$runtime/gc_0_malloc_0
-           (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0)
+          (call $wimport_GRAIN$MODULE$runtime/gc_malloc
+           (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
            (i32.const 28)
           )
           (i32.const 0)
@@ -131,7 +131,7 @@ enums › enum_recursive_data_definition
       (i32.store offset=4
        (local.get $3)
        (i32.shl
-        (global.get $import__grainEnv_0_moduleRuntimeId_0)
+        (global.get $wimport__grainEnv_moduleRuntimeId)
         (i32.const 1)
        )
       )
@@ -149,15 +149,15 @@ enums › enum_recursive_data_definition
       )
       (i32.store offset=20
        (local.get $3)
-       (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-        (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+       (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+        (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
         (local.get $1)
        )
       )
       (i32.store offset=24
        (local.get $3)
-       (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-        (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+       (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+        (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
         (local.get $2)
        )
       )
@@ -168,20 +168,20 @@ enums › enum_recursive_data_definition
    )
   )
   (drop
-   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
     (local.get $0)
    )
   )
   (drop
-   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
     (local.get $1)
    )
   )
   (drop
-   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
     (local.get $2)
    )
   )
@@ -208,8 +208,8 @@ enums › enum_recursive_data_definition
             (local.tee $0
              (tuple.extract 0
               (tuple.make
-               (call $import_GRAIN$MODULE$runtime/gc_0_malloc_0
-                (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0)
+               (call $wimport_GRAIN$MODULE$runtime/gc_malloc
+                (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
                 (i32.const 120)
                )
                (i32.const 0)
@@ -293,7 +293,7 @@ enums › enum_recursive_data_definition
       )
       (i32.store offset=4
        (local.get $0)
-       (global.get $import__grainEnv_0_moduleRuntimeId_0)
+       (global.get $wimport__grainEnv_moduleRuntimeId)
       )
       (i32.store
        (i32.const 1032)
@@ -307,8 +307,8 @@ enums › enum_recursive_data_definition
            (local.tee $0
             (tuple.extract 0
              (tuple.make
-              (call $import_GRAIN$MODULE$runtime/gc_0_malloc_0
-               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0)
+              (call $wimport_GRAIN$MODULE$runtime/gc_malloc
+               (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
                (i32.const 20)
               )
               (local.get $0)
@@ -320,7 +320,7 @@ enums › enum_recursive_data_definition
           (i32.store offset=4
            (local.get $0)
            (i32.shl
-            (global.get $import__grainEnv_0_moduleRuntimeId_0)
+            (global.get $wimport__grainEnv_moduleRuntimeId)
             (i32.const 1)
            )
           )
@@ -338,8 +338,8 @@ enums › enum_recursive_data_definition
           )
           (local.get $0)
          )
-         (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-          (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+         (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
+          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
           (global.get $global_0)
          )
         )
@@ -353,8 +353,8 @@ enums › enum_recursive_data_definition
            (local.tee $0
             (tuple.extract 0
              (tuple.make
-              (call $import_GRAIN$MODULE$runtime/gc_0_malloc_0
-               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0)
+              (call $wimport_GRAIN$MODULE$runtime/gc_malloc
+               (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
                (i32.const 16)
               )
               (local.get $0)
@@ -369,7 +369,7 @@ enums › enum_recursive_data_definition
           )
           (i32.store offset=8
            (local.get $0)
-           (global.get $import__grainEnv_0_relocBase_0)
+           (global.get $wimport__grainEnv_relocBase)
           )
           (i32.store offset=12
            (local.get $0)
@@ -377,8 +377,8 @@ enums › enum_recursive_data_definition
           )
           (local.get $0)
          )
-         (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-          (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+         (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
+          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
           (global.get $global_1)
          )
         )
@@ -400,8 +400,8 @@ enums › enum_recursive_data_definition
            (local.tee $0
             (tuple.extract 0
              (tuple.make
-              (call $import_GRAIN$MODULE$runtime/gc_0_malloc_0
-               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0)
+              (call $wimport_GRAIN$MODULE$runtime/gc_malloc
+               (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
                (i32.const 20)
               )
               (local.get $0)
@@ -413,7 +413,7 @@ enums › enum_recursive_data_definition
           (i32.store offset=4
            (local.get $0)
            (i32.shl
-            (global.get $import__grainEnv_0_moduleRuntimeId_0)
+            (global.get $wimport__grainEnv_moduleRuntimeId)
             (i32.const 1)
            )
           )
@@ -431,8 +431,8 @@ enums › enum_recursive_data_definition
           )
           (local.get $0)
          )
-         (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-          (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+         (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
+          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
           (global.get $global_2)
          )
         )
@@ -446,8 +446,8 @@ enums › enum_recursive_data_definition
            (local.tee $0
             (tuple.extract 0
              (tuple.make
-              (call $import_GRAIN$MODULE$runtime/gc_0_malloc_0
-               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0)
+              (call $wimport_GRAIN$MODULE$runtime/gc_malloc
+               (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
                (i32.const 16)
               )
               (local.get $0)
@@ -463,7 +463,7 @@ enums › enum_recursive_data_definition
           (i32.store offset=8
            (local.get $0)
            (i32.add
-            (global.get $import__grainEnv_0_relocBase_0)
+            (global.get $wimport__grainEnv_relocBase)
             (i32.const 1)
            )
           )
@@ -473,8 +473,8 @@ enums › enum_recursive_data_definition
           )
           (local.get $0)
          )
-         (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-          (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+         (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
+          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
           (global.get $global_3)
          )
         )
@@ -496,8 +496,8 @@ enums › enum_recursive_data_definition
            (local.tee $0
             (tuple.extract 0
              (tuple.make
-              (call $import_GRAIN$MODULE$runtime/gc_0_malloc_0
-               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0)
+              (call $wimport_GRAIN$MODULE$runtime/gc_malloc
+               (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
                (i32.const 16)
               )
               (local.get $0)
@@ -516,8 +516,8 @@ enums › enum_recursive_data_definition
           )
           (local.get $0)
          )
-         (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-          (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+         (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
+          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
           (i32.const 0)
          )
         )
@@ -531,8 +531,8 @@ enums › enum_recursive_data_definition
            (local.tee $0
             (tuple.extract 0
              (tuple.make
-              (call $import_GRAIN$MODULE$runtime/gc_0_malloc_0
-               (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0)
+              (call $wimport_GRAIN$MODULE$runtime/gc_malloc
+               (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
                (i32.const 16)
               )
               (local.get $0)
@@ -551,8 +551,8 @@ enums › enum_recursive_data_definition
           )
           (local.get $0)
          )
-         (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-          (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+         (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
+          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
           (i32.const 0)
          )
         )
@@ -562,21 +562,21 @@ enums › enum_recursive_data_definition
        (tuple.extract 0
         (tuple.make
          (call $Node_1158
-          (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-           (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+          (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+           (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
            (global.get $global_1)
           )
-          (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-           (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+          (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+           (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
            (local.get $2)
           )
-          (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-           (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+          (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+           (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
            (global.get $global_2)
           )
          )
-         (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-          (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+         (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
+          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
           (i32.const 0)
          )
         )
@@ -586,21 +586,21 @@ enums › enum_recursive_data_definition
        (tuple.extract 0
         (tuple.make
          (call $Cons_1160
-          (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-           (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+          (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+           (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
            (global.get $global_3)
           )
-          (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-           (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+          (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+           (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
            (local.get $3)
           )
-          (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-           (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+          (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+           (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
            (global.get $global_2)
           )
          )
-         (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-          (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+         (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
+          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
           (i32.const 0)
          )
         )
@@ -610,21 +610,21 @@ enums › enum_recursive_data_definition
        (tuple.extract 0
         (tuple.make
          (call $Node_1158
-          (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-           (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+          (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+           (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
            (global.get $global_1)
           )
-          (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-           (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+          (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+           (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
            (local.get $1)
           )
-          (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-           (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+          (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+           (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
            (local.get $4)
           )
          )
-         (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-          (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+         (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
+          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
           (i32.const 0)
          )
         )
@@ -634,21 +634,21 @@ enums › enum_recursive_data_definition
        (tuple.extract 0
         (tuple.make
          (call $Cons_1160
-          (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-           (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+          (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+           (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
            (global.get $global_3)
           )
-          (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-           (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+          (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+           (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
            (local.get $5)
           )
-          (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-           (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+          (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+           (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
            (global.get $global_2)
           )
          )
-         (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-          (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+         (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
+          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
           (i32.const 0)
          )
         )
@@ -658,16 +658,16 @@ enums › enum_recursive_data_definition
        (local.tee $0
         (tuple.extract 0
          (tuple.make
-          (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-           (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-           (global.get $import_pervasives_1182_print_1183)
+          (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+           (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+           (global.get $gimport_pervasives_print)
           )
           (local.get $0)
          )
         )
        )
-       (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-        (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+       (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+        (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
         (local.get $6)
        )
        (i32.load offset=8
@@ -680,38 +680,38 @@ enums › enum_recursive_data_definition
    )
   )
   (drop
-   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
     (local.get $1)
    )
   )
   (drop
-   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
     (local.get $2)
    )
   )
   (drop
-   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
     (local.get $3)
    )
   )
   (drop
-   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
     (local.get $4)
    )
   )
   (drop
-   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
     (local.get $5)
    )
   )
   (drop
-   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
     (local.get $6)
    )
   )

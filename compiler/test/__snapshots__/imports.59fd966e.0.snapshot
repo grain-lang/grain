@@ -5,11 +5,11 @@ imports › import_some_multiple
  (type $none_=>_i32 (func (result i32)))
  (import \"_grainEnv\" \"mem\" (memory $0 0))
  (import \"_grainEnv\" \"tbl\" (table $tbl 0 funcref))
- (import \"_grainEnv\" \"relocBase\" (global $import__grainEnv_0_relocBase_0 i32))
- (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0 (mut i32)))
- (import \"GRAIN$MODULE$exportStar\" \"GRAIN$EXPORT$x\" (global $import_exportStar_1166_x_1167 (mut i32)))
- (import \"GRAIN$MODULE$exportStar\" \"GRAIN$EXPORT$y\" (global $import_exportStar_1168_y_1169 (mut i32)))
- (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $import_GRAIN$MODULE$runtime/gc_0_incRef_0 (param i32 i32) (result i32)))
+ (import \"_grainEnv\" \"relocBase\" (global $wimport__grainEnv_relocBase i32))
+ (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef (mut i32)))
+ (import \"GRAIN$MODULE$exportStar\" \"GRAIN$EXPORT$x\" (global $gimport_exportStar_x (mut i32)))
+ (import \"GRAIN$MODULE$exportStar\" \"GRAIN$EXPORT$y\" (global $gimport_exportStar_y (mut i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $wimport_GRAIN$MODULE$runtime/gc_incRef (param i32 i32) (result i32)))
  (global $global_1 i32 (i32.const 0))
  (export \"memory\" (memory $0))
  (export \"_gmain\" (func $_gmain))
@@ -23,17 +23,17 @@ imports › import_some_multiple
      (local.tee $0
       (tuple.extract 0
        (tuple.make
-        (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-         (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-         (global.get $import_exportStar_1168_y_1169)
+        (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+         (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+         (global.get $gimport_exportStar_y)
         )
         (i32.const 0)
        )
       )
      )
-     (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-      (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
-      (global.get $import_exportStar_1166_x_1167)
+     (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+      (global.get $gimport_exportStar_x)
      )
      (i32.load offset=8
       (local.get $0)

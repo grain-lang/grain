@@ -4,16 +4,16 @@ arrays › array_access4
  (type $none_=>_none (func))
  (type $none_=>_i32 (func (result i32)))
  (import \"_grainEnv\" \"mem\" (memory $0 0))
- (import \"_grainEnv\" \"relocBase\" (global $import__grainEnv_0_relocBase_0 i32))
- (import \"GRAIN$MODULE$runtime/exception\" \"GRAIN$EXPORT$printException\" (global $import_GRAIN$MODULE$runtime/exception_0_GRAIN$EXPORT$printException_0 (mut i32)))
- (import \"GRAIN$MODULE$runtime/exception\" \"GRAIN$EXPORT$IndexOutOfBounds\" (global $import_GRAIN$MODULE$runtime/exception_0_GRAIN$EXPORT$IndexOutOfBounds_0 (mut i32)))
- (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0 (mut i32)))
- (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0 (mut i32)))
- (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRefIgnoreZeros\" (global $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0 (mut i32)))
- (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $import_GRAIN$MODULE$runtime/gc_0_malloc_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $import_GRAIN$MODULE$runtime/gc_0_incRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$runtime/gc\" \"decRefIgnoreZeros\" (func $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$runtime/exception\" \"printException\" (func $import_GRAIN$MODULE$runtime/exception_0_printException_0 (param i32 i32) (result i32)))
+ (import \"_grainEnv\" \"relocBase\" (global $wimport__grainEnv_relocBase i32))
+ (import \"GRAIN$MODULE$runtime/exception\" \"GRAIN$EXPORT$printException\" (global $wimport_GRAIN$MODULE$runtime/exception_GRAIN$EXPORT$printException (mut i32)))
+ (import \"GRAIN$MODULE$runtime/exception\" \"GRAIN$EXPORT$IndexOutOfBounds\" (global $wimport_GRAIN$MODULE$runtime/exception_GRAIN$EXPORT$IndexOutOfBounds (mut i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc (mut i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef (mut i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRefIgnoreZeros\" (global $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros (mut i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $wimport_GRAIN$MODULE$runtime/gc_malloc (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $wimport_GRAIN$MODULE$runtime/gc_incRef (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"decRefIgnoreZeros\" (func $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$runtime/exception\" \"printException\" (func $wimport_GRAIN$MODULE$runtime/exception_printException (param i32 i32) (result i32)))
  (global $global_1 i32 (i32.const 0))
  (export \"memory\" (memory $0))
  (export \"_gmain\" (func $_gmain))
@@ -47,8 +47,8 @@ arrays › array_access4
                   (local.tee $0
                    (tuple.extract 0
                     (tuple.make
-                     (call $import_GRAIN$MODULE$runtime/gc_0_malloc_0
-                      (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$malloc_0)
+                     (call $wimport_GRAIN$MODULE$runtime/gc_malloc
+                      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
                       (i32.const 20)
                      )
                      (i32.const 0)
@@ -75,8 +75,8 @@ arrays › array_access4
                  )
                  (local.get $0)
                 )
-                (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-                 (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+                (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
+                 (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
                  (i32.const 0)
                 )
                )
@@ -91,9 +91,9 @@ arrays › array_access4
        )
        (block
         (drop
-         (call $import_GRAIN$MODULE$runtime/exception_0_printException_0
-          (global.get $import_GRAIN$MODULE$runtime/exception_0_GRAIN$EXPORT$printException_0)
-          (global.get $import_GRAIN$MODULE$runtime/exception_0_GRAIN$EXPORT$IndexOutOfBounds_0)
+         (call $wimport_GRAIN$MODULE$runtime/exception_printException
+          (global.get $wimport_GRAIN$MODULE$runtime/exception_GRAIN$EXPORT$printException)
+          (global.get $wimport_GRAIN$MODULE$runtime/exception_GRAIN$EXPORT$IndexOutOfBounds)
          )
         )
         (unreachable)
@@ -108,16 +108,16 @@ arrays › array_access4
        )
        (block
         (drop
-         (call $import_GRAIN$MODULE$runtime/exception_0_printException_0
-          (global.get $import_GRAIN$MODULE$runtime/exception_0_GRAIN$EXPORT$printException_0)
-          (global.get $import_GRAIN$MODULE$runtime/exception_0_GRAIN$EXPORT$IndexOutOfBounds_0)
+         (call $wimport_GRAIN$MODULE$runtime/exception_printException
+          (global.get $wimport_GRAIN$MODULE$runtime/exception_GRAIN$EXPORT$printException)
+          (global.get $wimport_GRAIN$MODULE$runtime/exception_GRAIN$EXPORT$IndexOutOfBounds)
          )
         )
         (unreachable)
        )
       )
-      (call $import_GRAIN$MODULE$runtime/gc_0_incRef_0
-       (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$incRef_0)
+      (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
        (i32.load offset=8
         (i32.add
          (i32.shl
@@ -146,8 +146,8 @@ arrays › array_access4
    )
   )
   (drop
-   (call $import_GRAIN$MODULE$runtime/gc_0_decRefIgnoreZeros_0
-    (global.get $import_GRAIN$MODULE$runtime/gc_0_GRAIN$EXPORT$decRefIgnoreZeros_0)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
     (local.get $3)
    )
   )
