@@ -2,7 +2,7 @@
 title: Float64
 ---
 
-Operations on the Float64 type.
+Utilities for working with the Float64 data type.
 
 ```grain
 import Float64 from "float64"
@@ -10,7 +10,7 @@ import Float64 from "float64"
 
 ## Values
 
-Functions for working with the `Float64` data type.
+Functions for working with the Float64 data type.
 
 ### Float64.**fromNumber**
 
@@ -18,19 +18,19 @@ Functions for working with the `Float64` data type.
 fromNumber : Number -> Float64
 ```
 
-Coverts the argument from a `Number` to a `Float64`.
+Converts a Number to a Float64.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Number`|The `Number` to convert|
+|`number`|`Number`|The Number to convert|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Float64`|The converted `Number`|
+|`Float64`|The Number represented as a Float64|
 
 ### Float64.**toNumber**
 
@@ -38,19 +38,19 @@ Returns:
 toNumber : Float64 -> Number
 ```
 
-Coverts the argument from a `Float64` to a `Number`.
+Converts a Float64 to a Number.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Float64`|The `Float64` to convert|
+|`float`|`Float64`|The Float64 to convert|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Number`|The converted `Float64`|
+|`Number`|The Float64 represented as a Number|
 
 ### Float64.**add**
 
@@ -58,7 +58,7 @@ Returns:
 add : (Float64, Float64) -> Float64
 ```
 
-Floating-point addition.
+Computes the sum of its operands.
 
 Parameters:
 
@@ -79,7 +79,7 @@ Returns:
 sub : (Float64, Float64) -> Float64
 ```
 
-Floating-point subtraction.
+Computes the difference of its operands.
 
 Parameters:
 
@@ -100,7 +100,7 @@ Returns:
 mul : (Float64, Float64) -> Float64
 ```
 
-Floating-point multiplication.
+Computes the product of its operands.
 
 Parameters:
 
@@ -121,7 +121,7 @@ Returns:
 div : (Float64, Float64) -> Float64
 ```
 
-Floating-point division.
+Computes the quotient of its operands.
 
 Parameters:
 
@@ -159,7 +159,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|A boolean representing if the first argument is less then the second argument|
+|`Bool`|`true` if the first argument is less then the second argument, `false` otherwise|
 
 ### Float64.**gt**
 
@@ -180,7 +180,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|A boolean representing if the first argument is greater then the second argument|
+|`Bool`|`true` if the first argument is greater then the second argument, `false` otherwise|
 
 ### Float64.**lte**
 
@@ -201,7 +201,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|A boolean representing if the first argument is less then or equal to the second argument|
+|`Bool`|`true` if the first argument is less than or equal to the second argument, `false` otherwise|
 
 ### Float64.**gte**
 
@@ -222,7 +222,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|A boolean representing if the first argument is greater then or equal to the second argument|
+|`Bool`|`true` if the first argument is greater than or equal to the second argument, `false` otherwise|
 
 ## Constants
 
@@ -234,7 +234,7 @@ Constants related to floating points.
 infinity : Float64
 ```
 
-Infinity as a `Float64`.
+Infinity represented as a `Float64`.
 
 ### Float64.**nan**
 
@@ -242,5 +242,5 @@ Infinity as a `Float64`.
 nan : Float64
 ```
 
-Nan as a `Float64`.
+Nan represented as a `Float64`.
 
