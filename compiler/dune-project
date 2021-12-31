@@ -1,6 +1,6 @@
 (lang dune 2.3)
 (name grain)
-(version 0.4.4)
+(version 0.4.5)
 
 ; Flip this to `true` when we want to generate opam files again
 (generate_opam_files false)
