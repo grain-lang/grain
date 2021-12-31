@@ -1,13 +1,20 @@
 /* grainc-flags --compilation-mode=runtime */
 
-import { malloc, free, incRef, decRef, utoa32Buffered, decimalCount32 } from "runtime/gc"
+import {
+  malloc,
+  free,
+  incRef,
+  decRef,
+  utoa32Buffered,
+  decimalCount32,
+} from "runtime/gc"
 import WasmI32, {
   add as (+),
   sub as (-),
   shl as (<<),
   eq as (==),
   ne as (!=),
-  ltU as (<)
+  ltU as (<),
 } from "runtime/unsafe/wasmi32"
 
 export malloc
@@ -48,4 +55,8 @@ export let fill = (dest, c, n) => {
   }
 }
 
-export primitive compare: (WasmI32, WasmI32, WasmI32) -> WasmI32 = "@wasm.memory_compare"
+export primitive compare: (
+  WasmI32,
+  WasmI32,
+  WasmI32,
+) -> WasmI32 = "@wasm.memory_compare"

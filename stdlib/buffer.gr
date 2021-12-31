@@ -16,7 +16,11 @@ import Bytes from "bytes"
 import String from "string"
 import { coerceNumberToWasmI32 } from "runtime/numbers"
 
-record Buffer { mut len: Number, initialSize: Number, mut data: Bytes }
+record Buffer {
+  mut len: Number,
+  initialSize: Number,
+  mut data: Bytes,
+}
 
 @disableGC
 let mut _SIZE_OFFSET = 1n
@@ -130,9 +134,8 @@ let addInt32help = (value, buffer) => {
  * @since v0.4.0
  */
 export let make = initialSize => {
-  if (initialSize < 0) throw Exception.InvalidArgument(
-    "Buffers size must be >= 0",
-  )
+  if (initialSize < 0)
+    throw Exception.InvalidArgument("Buffers size must be >= 0")
   { len: 0, initialSize, data: Bytes.make(initialSize) }
 }
 

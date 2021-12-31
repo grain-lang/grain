@@ -15,7 +15,7 @@ import Conv from "runtime/unsafe/conv"
 import {
   tagSimpleNumber,
   allocateBytes,
-  allocateString
+  allocateString,
 } from "runtime/dataStructures"
 import Exception from "runtime/exception"
 import Int32 from "int32"
@@ -85,7 +85,7 @@ let getSize = ptr => WasmI32.load(ptr, _SIZE_OFFSET)
 @disableGC
 export let rec make = (size: Number) => {
   let bytes = allocateBytes(coerceNumberToWasmI32(size))
-  let ret = WasmI32.toGrain(bytes): (Bytes)
+  let ret = WasmI32.toGrain(bytes): Bytes
   Memory.decRef(WasmI32.fromGrain(size))
   Memory.decRef(WasmI32.fromGrain(make))
   ret
@@ -113,7 +113,7 @@ export let rec fromString = (string: String) => {
   let size = getSize(src)
   let dst = allocateBytes(size)
   Memory.copy(dst + _VALUE_OFFSET, src + _VALUE_OFFSET, size)
-  let ret = WasmI32.toGrain(dst): (Bytes)
+  let ret = WasmI32.toGrain(dst): Bytes
   Memory.decRef(WasmI32.fromGrain(string))
   Memory.decRef(WasmI32.fromGrain(fromString))
   ret
@@ -134,7 +134,7 @@ export let rec toString = (bytes: Bytes) => {
   let size = getSize(src)
   let dst = allocateString(size)
   Memory.copy(dst + _VALUE_OFFSET, src + _VALUE_OFFSET, size)
-  let ret = WasmI32.toGrain(dst): (String)
+  let ret = WasmI32.toGrain(dst): String
   Memory.decRef(WasmI32.fromGrain(bytes))
   Memory.decRef(WasmI32.fromGrain(toString))
   ret
@@ -172,7 +172,7 @@ export let rec copy = (b: Bytes) => {
   let size = getSize(src)
   let dst = allocateBytes(size)
   Memory.copy(dst + _VALUE_OFFSET, src + _VALUE_OFFSET, size)
-  let ret = WasmI32.toGrain(dst): (Bytes)
+  let ret = WasmI32.toGrain(dst): Bytes
   Memory.decRef(WasmI32.fromGrain(b))
   Memory.decRef(WasmI32.fromGrain(copy))
   ret
@@ -200,13 +200,13 @@ export let rec slice = (start: Number, length: Number, bytes: Bytes) => {
   let length = coerceNumberToWasmI32(length)
   if (start + length > size) {
     throw Exception.InvalidArgument(
-      "The given index and length do not specify a valid range of bytes",
+      "The given index and length do not specify a valid range of bytes"
     )
   }
   let dst = allocateBytes(length)
   let offset = start
   Memory.copy(dst + _VALUE_OFFSET, src + _VALUE_OFFSET + start, length)
-  let ret = WasmI32.toGrain(dst): (Bytes)
+  let ret = WasmI32.toGrain(dst): Bytes
   Memory.decRef(WasmI32.fromGrain(iOrig))
   Memory.decRef(WasmI32.fromGrain(lenOrig))
   Memory.decRef(WasmI32.fromGrain(bytes))
@@ -263,10 +263,10 @@ export let rec resize = (left: Number, right: Number, bytes: Bytes) => {
     Memory.copy(
       dst + _VALUE_OFFSET + dstOffset,
       src + _VALUE_OFFSET + srcOffset,
-      len,
+      len
     )
   }
-  let ret = WasmI32.toGrain(dst): (Bytes)
+  let ret = WasmI32.toGrain(dst): Bytes
   Memory.decRef(WasmI32.fromGrain(leftOrig))
   Memory.decRef(WasmI32.fromGrain(rightOrig))
   Memory.decRef(WasmI32.fromGrain(bytes))
@@ -317,7 +317,7 @@ export let rec move =
   let ret = Memory.copy(
     dst + _VALUE_OFFSET + dstIndex,
     src + _VALUE_OFFSET + srcIndex,
-    length,
+    length
   )
 
   Memory.decRef(WasmI32.fromGrain(srcIndexOrig))

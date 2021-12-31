@@ -30,7 +30,7 @@ let initPtr = () => {
 initPtr()
 
 @disableGC
-let initLength = (length) => {
+let initLength = length => {
   let length = WasmI32.fromGrain(length)
   if (WasmI32.eqz(WasmI32.and(length, 1n))) {
     throw Exception.InvalidArgument("Length argument must be an integer")
@@ -51,8 +51,8 @@ let initLength = (length) => {
  * @since v0.1.0
  */
 @disableGC
-export let rec length = (array) => {
-  let ptr = WasmI32.fromGrain(array: Array<a>)
+export let rec length = array => {
+  let ptr = WasmI32.fromGrain(array: (Array<a>))
   let ret = tagSimpleNumber(WasmI32.load(ptr, _ARRAY_LENGTH_OFFSET))
   Memory.decRef(ptr)
   Memory.decRef(WasmI32.fromGrain(length))
@@ -73,13 +73,21 @@ export let rec length = (array) => {
  * @since v0.1.0
  */
 @disableGC
-export let rec make /*: (Number, a) -> Array<a>*/  = (length: Number, item: a) => {
+export let rec make /*: (Number, a) -> Array<a>*/ =
+  (
+    length: Number,
+    item: a,
+  ) => {
   let lengthArg = length
   let length = initLength(length)
   let byteLength = WasmI32.mul(length, 4n)
   let array = allocateArray(length)
   for (let mut i = 0n; WasmI32.ltS(i, byteLength); i = WasmI32.add(i, 4n)) {
-    WasmI32.store(WasmI32.add(array, i), Memory.incRef(WasmI32.fromGrain(item)), _ARRAY_START_OFFSET)
+    WasmI32.store(
+      WasmI32.add(array, i),
+      Memory.incRef(WasmI32.fromGrain(item)),
+      _ARRAY_START_OFFSET
+    )
   }
   let ret = WasmI32.toGrain(array): (Array<a>)
   Memory.decRef(WasmI32.fromGrain(lengthArg))
@@ -102,16 +110,24 @@ export let rec make /*: (Number, a) -> Array<a>*/  = (length: Number, item: a) =
  * @since v0.1.0
  */
 @disableGC
-export let rec init /*: (Number, Number -> a) -> Array<a>*/ = (length: Number, fn: Number -> a) => {
+export let rec init /*: (Number, Number -> a) -> Array<a>*/ =
+  (
+    length: Number,
+    fn: Number -> a,
+  ) => {
   let length = initLength(length)
   let byteLength = WasmI32.mul(length, 4n)
   let array = allocateArray(length)
   let mut index = 0n
   for (let mut i = 0n; WasmI32.ltS(i, byteLength); i = WasmI32.add(i, 4n)) {
-    Memory.incRef(WasmI32.fromGrain(fn));
+    Memory.incRef(WasmI32.fromGrain(fn))
     // [FIXME] This line fails the array/map test suite (#815)
     //assert !WasmI32.eqz(WasmI32.and(WasmI32.fromGrain(index), 1n)) // must be a simple int for next line to be correct
-    WasmI32.store(WasmI32.add(array, i), WasmI32.fromGrain(fn(tagSimpleNumber(index))), _ARRAY_START_OFFSET)
+    WasmI32.store(
+      WasmI32.add(array, i),
+      WasmI32.fromGrain(fn(tagSimpleNumber(index))),
+      _ARRAY_START_OFFSET
+    )
     //WasmI32.store(WasmI32.add(array, i), WasmI32.fromGrain(4), _ARRAY_START_OFFSET)
     index = WasmI32.add(index, 1n)
   }
@@ -186,29 +202,29 @@ export let append = (array1, array2) => {
  *
  * @since v0.1.0
  */
-export let concat = (arrays) => {
+export let concat = arrays => {
   // This function is slightly verbose to avoid depending on the List stdlib.
 
   let rec findLength = (arrays, acc) => {
     match (arrays) {
       [fst, ...rest] => findLength(rest, acc + length(fst)),
-      [] => acc
+      [] => acc,
     }
   }
 
   let mut offset = 0
   let mut arrs = arrays
 
-  let rec next = (index) => {
+  let rec next = index => {
     let array = match (arrs) {
       [fst, ..._] => fst,
-      [] => fail "end of arrays list"
+      [] => fail "end of arrays list",
     }
     if (index - offset == length(array)) {
       offset += length(array)
       arrs = match (arrs) {
         [_, ...rest] => rest,
-        [] => fail "end of arrays list"
+        [] => fail "end of arrays list",
       }
       next(index)
     } else {
@@ -228,7 +244,7 @@ export let concat = (arrays) => {
  *
  * @since v0.1.0
  */
-export let copy = (array) => {
+export let copy = array => {
   init(length(array), n => array[n])
 }
 
@@ -245,7 +261,7 @@ export let cycle = (fn, n, array) => {
   let length = length(array)
   for (let mut iteration = 0; iteration < n; iteration += 1) {
     for (let mut count = 0; count < length; count += 1) {
-      fn(array[count]): (Void)
+      fn(array[count]): Void
     }
   }
 }
@@ -262,7 +278,7 @@ export let cycle = (fn, n, array) => {
 export let forEach = (fn, array) => {
   let length = length(array)
   for (let mut count = 0; count < length; count += 1) {
-    fn(array[count]): (Void)
+    fn(array[count]): Void
   }
 }
 
@@ -279,7 +295,7 @@ export let forEach = (fn, array) => {
 export let forEachi = (fn, array) => {
   let length = length(array)
   for (let mut count = 0; count < length; count += 1) {
-    fn(array[count], count): (Void)
+    fn(array[count], count): Void
   }
 }
 
@@ -296,7 +312,7 @@ export let forEachi = (fn, array) => {
  */
 export let map = (fn, array) => {
   let length = length(array)
-  init(length, (i) => {
+  init(length, i => {
     fn(array[i])
   })
 }
@@ -313,7 +329,7 @@ export let map = (fn, array) => {
  */
 export let mapi = (fn, array) => {
   let length = length(array)
-  init(length, (index) => {
+  init(length, index => {
     fn(array[index], index)
   })
 }
@@ -338,7 +354,7 @@ export let mapi = (fn, array) => {
  */
 export let reduce = (fn, initial, array) => {
   let mut acc = initial
-  forEach((el) => acc = fn(acc, el), array)
+  forEach(el => acc = fn(acc, el), array)
   acc
 }
 
@@ -392,7 +408,9 @@ export let flatMap = (fn, array) => {
  * @since v0.3.0
  */
 export let every = (fn, array) => {
-  reduce((acc, value) => { acc && fn(value) }, true, array)
+  reduce((acc, value) => {
+    acc && fn(value)
+  }, true, array)
 }
 
 /**
@@ -406,7 +424,9 @@ export let every = (fn, array) => {
  * @since v0.3.0
  */
 export let some = (fn, array) => {
-  reduce((acc, value) => { acc || fn(value) }, false, array)
+  reduce((acc, value) => {
+    acc || fn(value)
+  }, false, array)
 }
 
 /**
@@ -467,9 +487,9 @@ export let fillRange = (value, start, stop, array) => {
  *
  * @since v0.4.0
  */
-export let reverse = (array) => {
+export let reverse = array => {
   let len = length(array)
-  init(len, (index) => {
+  init(len, index => {
     let last = len - index - 1
     array[last]
   })
@@ -483,7 +503,7 @@ export let reverse = (array) => {
  *
  * @since v0.1.0
  */
-export let toList = (array) => {
+export let toList = array => {
   let rec buildList = (acc, index) => {
     let index = index - 1
     if (index < 0) {
@@ -503,22 +523,22 @@ export let toList = (array) => {
  *
  * @since v0.1.0
  */
-export let fromList = (list) => {
+export let fromList = list => {
   let rec listLength = (list, acc) => {
     match (list) {
       [_, ...rest] => listLength(rest, acc + 1),
-      [] => acc
+      [] => acc,
     }
   }
 
   let mut lst = list
-  let rec next = (index) => {
+  let rec next = index => {
     match (lst) {
       [fst, ...rest] => {
         lst = rest
         fst
       },
-      [] => next(index)
+      [] => next(index),
     }
   }
   init(listLength(list, 0), next)
@@ -555,14 +575,14 @@ export let contains = (search, array) => {
  */
 export let find = (fn, array) => {
   let length = length(array)
-  if(length == 0){
+  if (length == 0) {
     None
   } else {
     let mut count = 0
     let mut matching = false
     let mut matchedItem = array[0]
     while (count < length) {
-      if(fn(array[count])) {
+      if (fn(array[count])) {
         matching = true
         matchedItem = array[count]
         count = length
@@ -570,7 +590,7 @@ export let find = (fn, array) => {
         count += 1
       }
     }
-    if(!matching) {
+    if (!matching) {
       None
     } else {
       Some(matchedItem)
@@ -589,14 +609,14 @@ export let find = (fn, array) => {
  */
 export let findIndex = (fn, array) => {
   let length = length(array)
-  if(length == 0){
+  if (length == 0) {
     None
   } else {
     let mut count = 0
     let mut matching = false
     let mut matchedIndex = 0
     while (count < length) {
-      if(fn(array[count])) {
+      if (fn(array[count])) {
         matching = true
         matchedIndex = count
         count = length
@@ -604,7 +624,7 @@ export let findIndex = (fn, array) => {
         count += 1
       }
     }
-    if(!matching) {
+    if (!matching) {
       None
     } else {
       Some(matchedIndex)
@@ -628,7 +648,7 @@ export let product = (array1: Array<a>, array2: Array<b>) => {
   let mut indexA = -1
 
   init(lenA * lenB, n => {
-    if(n % lenB == 0){
+    if (n % lenB == 0) {
       indexA += 1
     } else {
       indexA = indexA
@@ -651,7 +671,7 @@ export let count = (fn, array) => {
   let mut position = 0
   let mut count = 0
   for (let mut position = 0; position < length; position += 1) {
-    if(fn(array[position])) {
+    if (fn(array[position])) {
       count += 1
     }
   }
@@ -693,13 +713,13 @@ export let counti = (fn, array) => {
 export let filter = (fn, array) => {
   let filtered = copy(array)
   let mut position = 0
-  forEach((el) => {
+  forEach(el => {
     if (fn(el)) {
       filtered[position] = el
       position += 1
     }
   }, array)
-  init(position, (index) => {
+  init(position, index => {
     filtered[index]
   })
 }
@@ -724,7 +744,7 @@ export let filteri = (fn, array) => {
       position += 1
     }
   }, array)
-  init(position, (index) => {
+  init(position, index => {
     filtered[index]
   })
 }
@@ -738,11 +758,9 @@ export let filteri = (fn, array) => {
  *
  * @since v0.3.0
  */
-export let unique = (array) => {
-  filteri(
-    (el, index) => findIndex(value => value == el, array) == Some(index),
-    array
-  )
+export let unique = array => {
+  filteri((el, index) =>
+    findIndex(value => value == el, array) == Some(index), array)
 }
 
 /**
@@ -777,15 +795,17 @@ export let zip = (array1: Array<a>, array2: Array<b>) => {
  *
  * @since v0.4.0
  */
-export let unzip = (array) => {
+export let unzip = array => {
   let lenArr = length(array)
 
   let a = init(lenArr, n => {
-    let (fst, _) = array[n]; fst
+    let (fst, _) = array[n]
+    fst
   })
 
   let b = init(lenArr, n => {
-    let (_, snd) = array[n]; snd
+    let (_, snd) = array[n]
+    snd
   })
 
   (a, b)
@@ -804,10 +824,10 @@ export let join = (separator: String, items: Array<String>) => {
   let iter = (acc, str) => {
     match (acc) {
       None => Some(str),
-      Some(prev) => Some(prev ++ separator ++ str)
+      Some(prev) => Some(prev ++ separator ++ str),
     }
   }
-  match(reduce(iter, None, items)) {
+  match (reduce(iter, None, items)) {
     None => "",
     Some(s) => s,
   }
@@ -850,7 +870,7 @@ export let slice = (startIndex, endIndex, array) => {
     endIndex
   }
 
-  let newLength = endIndex - startIndex;
+  let newLength = endIndex - startIndex
   if (newLength < 0) {
     [>]
   } else if (newLength > arrayLength) {
@@ -872,8 +892,8 @@ export let sort = (comp, array) => {
   let partition = (low, high) => {
     let pivot = array[high]
     let mut i = low - 1
-    for(let mut j = low; j < high; j += 1) {
-      if(comp(array[j], pivot) < 0){
+    for (let mut j = low; j < high; j += 1) {
+      if (comp(array[j], pivot) < 0) {
         i += 1
         let temp = array[i]
         array[i] = array[j]
@@ -886,7 +906,7 @@ export let sort = (comp, array) => {
     i + 1
   }
   let rec quicksort = (low, high) => {
-    if(low < high){
+    if (low < high) {
       let partitionIndex = partition(low, high)
       quicksort(partitionIndex + 1, high)
       quicksort(low, partitionIndex - 1)
@@ -913,8 +933,7 @@ export let rotate = (n, arr) => {
   let rec gcd = (a, b) => {
     if (b == 0) {
       a
-    }
-    else{
+    } else {
       gcd(b, a % b)
     }
   }
@@ -923,7 +942,7 @@ export let rotate = (n, arr) => {
   if (arrLen > 0) {
     let k = n % arrLen
     let mut d = -1
-    let mut j  = 0
+    let mut j = 0
     for (let mut i = 0; i < gcd(arrLen, k); i += 1) {
       j = i
       let temp = arr[i]
