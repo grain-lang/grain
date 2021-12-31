@@ -4151,7 +4151,7 @@ let toplevel_print =
   Doc.group(without_comments);
 };
 
-let reformat_ast =
+let format_ast =
     (
       ~original_source: array(string),
       parsed_program: Parsetree.parsed_program,
