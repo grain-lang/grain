@@ -19,12 +19,25 @@ record Map<k, v> {
   mut buckets: Array<Option<Bucket<k, v>>>,
 }
 
+/**
+ * Creates a new empty map with an initial storage of the given length. As values are added or removed, the length may grow or shrink. Generally, you won't need to care about the length of your map and can use `Map.make()` instead.
+ *
+ * @param storageLength: The initial storage length of the map
+ * @returns An empty map with the given initial storage length
+ * 
+ */
 // TODO: This could take an `eq` function to custom comparisons
-export let makeSized = size => {
-  let buckets = Array.make(size, None)
+export let makeSized = storageLength => {
+  let buckets = Array.make(storageLength, None)
   { size: 0, buckets }
 }
 
+/**
+ * Creates a new, empty map.
+ *
+ * @returns An empty map
+ * 
+ */
 export let make = () => {
   makeSized(16)
 }
@@ -95,6 +108,14 @@ let rec replaceInBucket = (key, value, node) => {
   }
 }
 
+/**
+ * Adds a new key pair to the map. If the key already exists in the map, the value is replaced.
+ *
+ * @param key: The key to add the value under
+ * @param value: The value to set
+ * @param map: The map to modify
+ * 
+ */
 export let set = (key, value, map) => {
   let buckets = map.buckets
   let idx = getBucketIndex(key, buckets)
@@ -130,6 +151,14 @@ let rec valueFromBucket = (key, node) => {
   }
 }
 
+/**
+ * Returns the value for the given key.
+ *
+ * @param key: The key to look up
+ * @param map: The map to get the value from
+ * 
+ * @returns `Some(value)` if the given key pair is in the map, `None` otherwise
+ */
 export let get = (key, map) => {
   let buckets = map.buckets
   let idx = getBucketIndex(key, buckets)
@@ -151,6 +180,14 @@ let rec nodeInBucket = (key, node) => {
   }
 }
 
+/**
+ * Determines if the map contains a value for the given key.
+ *
+ * @param key: The key to search for
+ * @param map: The map to search
+ * @returns `true` if the map contains the given key, `false` otherwise
+ * 
+ */
 export let contains = (key, map) => {
   let buckets = map.buckets
   let idx = getBucketIndex(key, buckets)
@@ -175,6 +212,13 @@ let rec removeInBucket = (key, node) => {
   }
 }
 
+/**
+ * Removes the given key pair from the map. If the key pair doesn't exist, nothing happens.
+ *
+ * @param key: The key to remove
+ * @param map: The map to update
+ * 
+ */
 export let remove = (key, map) => {
   let buckets = map.buckets
   let idx = getBucketIndex(key, buckets)
@@ -195,6 +239,14 @@ export let remove = (key, map) => {
   }
 }
 
+/**
+ * Applys a given function to a key pair in the map.
+ *
+ * @param key: The key indicating which key pair to update
+ * @param fn: The function to apply
+ * @param map: The map to modify
+ * 
+ */
 export let update = (key, fn, map) => {
   let val = get(key, map)
   match (fn(val)) {
@@ -203,14 +255,34 @@ export let update = (key, fn, map) => {
   }
 }
 
+/**
+ * Returns the number of key pairs within the map.
+ *
+ * @param map: The map to inspect
+ * @returns The number of key pairs in the map
+ * 
+ */
 export let size = map => {
   map.size
 }
 
+/**
+ * Determines if the map contains no key pairs.
+ *
+ * @param map: The map to inspect
+ * @returns `true` if the given map is empty, `false` otherwise
+ * 
+ */
 export let isEmpty = map => {
   size(map) == 0
 }
 
+/**
+ * Resets the map by removing all key pairs.
+ *
+ * @param map: The map to reset
+ * 
+ */
 export let clear = map => {
   map.size = 0
   let buckets = map.buckets
@@ -229,6 +301,13 @@ let rec forEachBucket = (fn, node) => {
   }
 }
 
+/**
+ * Iterates the map, calling an iterator function on each key pair.
+ *
+ * @param fn: The iterator function to call with each key pair
+ * @param map: The map to iterate
+ * 
+ */
 export let forEach = (fn, map) => {
   let buckets = map.buckets
   Array.forEach(bucket => {
@@ -244,6 +323,15 @@ let rec reduceEachBucket = (fn, node, acc) => {
   }
 }
 
+/**
+ * Combines all elements of a map using a reducer function.
+ *
+ * @param fn: The reducer function to call on each key pair, where the value returned will be the next accumulator value
+ * @param init: The initial value to use for the accumulator on the first iteration
+ * @param map: The map to iterate
+ * @returns The final accumulator returned from `fn`
+ * 
+ */
 export let reduce = (fn, init, map) => {
   let buckets = map.buckets
   let mut acc = init
@@ -253,18 +341,46 @@ export let reduce = (fn, init, map) => {
   acc
 }
 
+/**
+ * Generates a list of all keys in the given map.
+ *
+ * @param map: The map to inspect
+ * 
+ * @returns A list of all keys in the given map
+ */
 export let keys = map => {
   reduce((list, key, _value) => [key, ...list], [], map)
 }
 
+/**
+ * Generates a list of all values in the given map.
+ *
+ * @param map: The map to inspect
+ * 
+ * @returns A list of all values in the given map
+ */
 export let values = map => {
   reduce((list, _key, value) => [value, ...list], [], map)
 }
 
+/**
+ * Generates a list of all key pairs in the given map.
+ *
+ * @param map: The map to inspect
+ * 
+ * @returns A list of all key pairs in the given map
+ */
 export let toList = map => {
   reduce((list, key, value) => [(key, value), ...list], [], map)
 }
 
+/**
+ * Generates a map given a list of key pairs.
+ *
+ * @param list: The list to inspect
+ * 
+ * @returns A map made from the list of key pairs
+ */
 export let fromList = list => {
   let map = make()
   List.forEach(pair => {
@@ -285,6 +401,13 @@ let setInArray = array => {
   iter
 }
 
+/**
+ * Generates a array of all key pairs in the given map.
+ *
+ * @param map: The map to inspect
+ * 
+ * @returns A array of all key pairs in the given map
+ */
 @disableGC
 export let rec toArray = map => {
   let length = WasmI32.shrS(WasmI32.fromGrain(map.size), 1n)
@@ -303,6 +426,13 @@ export let rec toArray = map => {
   array
 }
 
+/**
+ * Generates a map given a array of key pairs.
+ *
+ * @param array: The array to inspect
+ * 
+ * @returns A map made from the array of key pairs
+ */
 export let fromArray = array => {
   let map = make()
   Array.forEach(pair => {
@@ -312,6 +442,13 @@ export let fromArray = array => {
   map
 }
 
+/**
+ * Removes key pairs from a map where a predicate function returns `false`.
+ *
+ * @param fn: The predicate function to indicate which key pairs to remove from the map, where returning `false` indicates the key pair should be removed
+ * @param map: The map to iterate
+ * 
+ */
 export let filter = (predicate, map) => {
   let keysToRemove = reduce((list, key, value) => if (!predicate(key, value)) {
     [key, ...list]
@@ -323,12 +460,26 @@ export let filter = (predicate, map) => {
   }, keysToRemove)
 }
 
+/**
+ * Removes key pairs from a map where a predicate function returns `true`.
+ *
+ * @param fn: The predicate function to indicate which key pairs to remove from the map, where returning `true` indicates the key pair should be removed
+ * @param map: The map to iterate
+ * 
+ */
 export let reject = (predicate, map) => {
   filter((key, value) => !predicate(key, value), map)
 }
 
 // TODO: Should return a Record type instead of a Tuple
 // Waiting on https://github.com/grain-lang/grain/issues/190
+/**
+ * Provides data representing the internal state state of the map.
+ *
+ * @param map: The map to inspect
+ * @returns The internal state of the map
+ * 
+ */
 export let getInternalStats = map => {
   (map.size, Array.length(map.buckets))
 }
