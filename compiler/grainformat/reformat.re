@@ -116,7 +116,7 @@ let get_last_item_in_list = comments =>
 let is_disable_formatting_comment = (comment: Parsetree.comment) => {
   switch (comment) {
   | Line(cmt) =>
-    if (String.trim(cmt.cmt_source) == "// formatter-ignore") {
+    if (cmt.cmt_content == "formatter-ignore") {
       true;
     } else {
       false;
